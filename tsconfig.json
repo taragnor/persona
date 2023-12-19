@@ -1,0 +1,27 @@
+{
+ "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Node 16",
+
+  "compilerOptions": {
+    "target": "es2021",
+    "moduleResolution": "node",
+    "types": ["@league-of-foundry-developers/foundry-vtt-types"],
+
+    "outDir": "dist",
+    "rootDir": "src",
+
+	 "noImplicitAny": true,
+	 "alwaysStrict": true,
+	 "noImplicitOverride": true,
+	 "allowJs": false,
+	 "strictNullChecks": true,
+	 "esModuleInterop": true,
+	 "skipLibCheck": true,
+	 "forceConsistentCasingInFileNames": true,
+	 "allowUmdGlobalAccess": true,
+	 "resolveJsonModule": true
+  },
+  "exclude": [
+	 "node_modules"
+  ]
+}
