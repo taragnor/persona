@@ -1,0 +1,17 @@
+{
+    "Actor": {
+        "types": ["pc", "shadow", "npc"],
+        "htmlFields": ["description"],
+        "pc": {},
+        "shadow": {},
+        "npc": {}
+    },
+    "Item": {
+        "types": ["weapon", "item", "skill"],
+        "htmlFields": ["description"],
+        "skill": {},
+        "weapon": {},
+        "item": {}
+    }
+}
+
