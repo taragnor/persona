@@ -12,7 +12,8 @@ declare const foundry:   {
 
 declare const CONFIG : {
 	Actor: {
-		dataModels: Record<string, DataModel>
+		dataModels: Record<string, typeof foundry.abstract.DataModel>,
+			documentClass: typeof Actor
 	}
 }
 

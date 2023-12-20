@@ -1,10 +1,6 @@
 
-function registerDataModels () {
-	CONFIG.Actor.dataModels.pc = testSchema;
-}
-
-
-class testSchema extends window.foundry.abstract.DataModel {
+class pcSchema extends window.foundry.abstract.DataModel {
+		get type() { return "pc" as const;}
 	static override defineSchema() {
 		const fields = window.foundry.data.fields;
 		const ret = {
@@ -12,21 +8,52 @@ class testSchema extends window.foundry.abstract.DataModel {
 			test : new fields.NumberField(),
 		} as const;
 		return ret;
-
-		type X = SystemDataObject <typeof ret>
-
-
-
 	}
 }
 
-type Y = ReturnType<(typeof testSchema)['defineSchema']>;
-type Z = SystemDataObject<Y>;
-type ZZ = SystemDataObjectFromDM<typeof testSchema>;
-
-class MyActor extends Actor<typeof testSchema> {
-
+class ShadowSchema extends foundry.abstract.DataModel {
+	get type() { return "shadow" as const;}
+	get shadowstuff() {return "thing";}
+	static override defineSchema() {
+		const fields = window.foundry.data.fields;
+		const ret = {
+			shadowdesc: new fields.StringField(),
+			shadowattack : new fields.NumberField(),
+		} as const;
+		return ret;
+	}
 }
 
-let x = new MyActor();
+class NPCSchema extends foundry.abstract.DataModel {
+	get type() { return "npc" as const;}
+	static override defineSchema() {
+		const fields = window.foundry.data.fields;
+		const ret = {
+			shadowdesc: new fields.StringField(),
+			shadowattack : new fields.NumberField(),
+		} as const;
+		return ret;
+	}
+}
+
+
+
+const actormodels = {pc: pcSchema, shadow: ShadowSchema, npc: NPCSchema} as const;
+
+function registerDataModels () {
+	CONFIG.Actor.dataModels= actormodels;
+}
+
+	class PersonaActor extends Actor<typeof actormodels> {
+
+		test() {
+			if (this.system.type == "shadow") {
+				this.system.shadowattack 
+
+			}
+
+		}
+
+	}
+
 
