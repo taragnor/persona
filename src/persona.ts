@@ -30,7 +30,7 @@ class NPCSchema extends foundry.abstract.DataModel {
 		const fields = window.foundry.data.fields;
 		const ret = {
 			shadowdesc: new fields.StringField(),
-			shadowattack : new fields.NumberField(),
+			schemaTest: new fields.SchemaField( {num: new fields.NumberField()}),
 		} as const;
 		return ret;
 	}
@@ -49,8 +49,11 @@ function registerDataModels () {
 		test() {
 			if (this.system.type == "shadow") {
 				this.system.shadowattack 
-
 			}
+			if (this.system.type == "npc") {
+				this.system.schemaTest.num
+			}
+
 
 		}
 
