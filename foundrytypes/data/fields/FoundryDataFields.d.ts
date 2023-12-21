@@ -11,7 +11,7 @@ declare interface FoundryDataFields {
 	//DocumentOwnershipField: any
 	DocumentIdField: typeof DocumentIdField;
 	FilePathField: typeof FilePathField;
-	HTMLField: typeof HTLMField;
+	HTMLField: typeof HTMLField;
 	JSONField: typeof JSONField;
 	NumberField: typeof NumberField;
 	ObjectField: typeof ObjectField;
@@ -108,7 +108,7 @@ interface NumberDataFieldOptions extends DataFieldOptions<number> {
 interface StringFieldOptions extends DataFieldOptions<string> {
 	blank ?: boolean;
 	trim ?: boolean;
-	choices: string[] | Record < string, string> | (()=> string[]);
+	choices?: string[] | Record < string, string> | (()=> string[]);
 
 }
 

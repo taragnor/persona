@@ -10,6 +10,7 @@ import { PersonaItemSheetBase } from "./module/item/sheets/base-item-sheet.js";
 
 function registerDataModels () {
 	CONFIG.Actor.dataModels= ACTORMODELS;
+	CONFIG.Item.dataModels= ITEMMODELS;
 }
 
 declare global {

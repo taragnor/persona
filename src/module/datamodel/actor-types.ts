@@ -1,13 +1,41 @@
-const {StringField:str, NumberField: num, SchemaField: sch  } = foundry.data.fields;
+const {StringField:txt, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 
+
+const personalBio = new sch( {
+	description: new html(),
+	background: new html(),
+});
+
+const combatStats = new sch( {
+	hp: new sch( {
+		curr: new num(),
+		max: new num(),
+	}),
+	wpnatk: new num(),
+	magatk: new num(),
+	defenses : new sch({
+		ref: new num(),
+		will: new num(),
+		fort: new num(),
+	}),
+});
+
+const socialLinks = new sch( {
+	links: new arr( new sch( {
+		linkId: new id(),
+		linkLevel: new num(),
+	})
+	),
+});
 
 export class PCSchema extends window.foundry.abstract.DataModel {
 		get type() { return "pc" as const;}
 	static override defineSchema() {
-		const fields = window.foundry.data.fields;
 		const ret = {
-			description: new str(),
-			test : new fields.NumberField(),
+			tarot: new txt(),
+			combat:combatStats,
+			bio: personalBio,
+			social: socialLinks,
 		} as const;
 		return ret;
 	}
@@ -17,10 +45,9 @@ export class ShadowSchema extends foundry.abstract.DataModel {
 	get type() { return "shadow" as const;}
 	get shadowstuff() {return "thing";}
 	static override defineSchema() {
-		const fields = window.foundry.data.fields;
 		const ret = {
-			shadowdesc: new fields.StringField(),
-			shadowattack : new fields.NumberField(),
+			tarot: new txt(),
+			combat: combatStats,
 		} as const;
 		return ret;
 	}
@@ -29,10 +56,9 @@ export class ShadowSchema extends foundry.abstract.DataModel {
 export class NPCSchema extends foundry.abstract.DataModel {
 	get type() { return "npc" as const;}
 	static override defineSchema() {
-		const fields = window.foundry.data.fields;
 		const ret = {
-			shadowdesc: new fields.StringField(),
-			schemaTest: new fields.SchemaField( {num: new fields.NumberField()}),
+			tarot: new txt(),
+			bio: personalBio,
 		} as const;
 		return ret;
 	}
@@ -44,15 +70,12 @@ export const ACTORMODELS = {pc: PCSchema, shadow: ShadowSchema, npc: NPCSchema} 
 
 		test() {
 			if (this.system.type == "shadow") {
-				this.system.shadowattack
+				this.system.tarot
 			}
-			if (this.system.type == "npc") {
-				this.system.schemaTest.num
+			if (this.system.type == "pc") {
+				this.system.social.links
 			}
-
-
 		}
-
 	}
 
 //example typecheck code
