@@ -66,18 +66,6 @@ export class NPCSchema extends foundry.abstract.DataModel {
 
 export const ACTORMODELS = {pc: PCSchema, shadow: ShadowSchema, npc: NPCSchema} as const;
 
-	export class PersonaActor extends Actor<typeof ACTORMODELS> {
-
-		test() {
-			if (this.system.type == "shadow") {
-				this.system.tarot
-			}
-			if (this.system.type == "pc") {
-				this.system.social.links
-			}
-		}
-	}
-
 //example typecheck code
 type testPC = SystemDataObjectFromDM<typeof PCSchema>;
 type testNPC = SystemDataObjectFromDM<typeof NPCSchema>;
