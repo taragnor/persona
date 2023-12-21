@@ -1,9 +1,12 @@
-export class pcSchema extends window.foundry.abstract.DataModel {
+const {StringField:str, NumberField: num, SchemaField: sch  } = foundry.data.fields;
+
+
+export class PCSchema extends window.foundry.abstract.DataModel {
 		get type() { return "pc" as const;}
 	static override defineSchema() {
 		const fields = window.foundry.data.fields;
 		const ret = {
-			description: new fields.StringField(),
+			description: new str(),
 			test : new fields.NumberField(),
 		} as const;
 		return ret;
@@ -35,7 +38,7 @@ export class NPCSchema extends foundry.abstract.DataModel {
 	}
 }
 
-export const ACTORMODELS = {pc: pcSchema, shadow: ShadowSchema, npc: NPCSchema} as const;
+export const ACTORMODELS = {pc: PCSchema, shadow: ShadowSchema, npc: NPCSchema} as const;
 
 	export class PersonaActor extends Actor<typeof ACTORMODELS> {
 
@@ -52,3 +55,6 @@ export const ACTORMODELS = {pc: pcSchema, shadow: ShadowSchema, npc: NPCSchema} 
 
 	}
 
+//example typecheck code
+type testPC = SystemDataObjectFromDM<typeof PCSchema>;
+type testNPC = SystemDataObjectFromDM<typeof NPCSchema>;
