@@ -45,12 +45,39 @@ export class Weapon extends foundry.abstract.DataModel {
 	}
 }
 
-export class PlaceholderSchema extends foundry.abstract.DataModel {
-	get type() { return "placeholder" as const;}
+export class Focus extends foundry.abstract.DataModel {
+	get type() { return "talent" as const;}
 	static override defineSchema() {
 		const ret = {
 			desciption: new html(),
 		}
+		return ret;
+	}
+}
+
+
+export class Talent extends foundry.abstract.DataModel {
+	get type() { return "talent" as const;}
+	static override defineSchema() {
+		const ret = {
+			desciption: new html(),
+		}
+		return ret;
+	}
+}
+
+export class CharacterClass extends foundry.abstract.DataModel {
+	get type() { return "class" as const;}
+	static override defineSchema() {
+		const ret = {
+			talentChoices: new arr(
+				new id()
+			),
+			focusChoices: new arr(
+				new id()
+			),
+			desciption: new html(),
+		};
 		return ret;
 	}
 }
@@ -67,15 +94,15 @@ export class InventoryItemSchema extends foundry.abstract.DataModel {
 
 export const ITEMMODELS = {
 	item: InventoryItemSchema,
-	skill: PlaceholderSchema,
+	skill: Skill,
 	studentSkill: StudentSkill,
-	characterClass: PlaceholderSchema,
-	focus: PlaceholderSchema,
-	talent: PlaceholderSchema,
+	characterClass: CharacterClass,
+	focus: Focus,
+	talent: Talent,
 	weapon: Weapon,
 } as const;
 
 
 //testing the types, purely for debug purposes
-type testWeapon = SystemDataObjectFromDM<typeof Weapon>;
+type CClass = SystemDataObjectFromDM<typeof CharacterClass>;
 

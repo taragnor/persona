@@ -21,6 +21,4 @@ export const tarotDeck = {
 	"Sun": "persona.tarot.19.name",
 	"Judgment": "persona.tarot.20.name",
 	"World": "persona.tarot.21.name",
-
-
 } as const;
