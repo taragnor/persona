@@ -1,7 +1,7 @@
 {
-    "id": "persona-d20",
-    "title": "MechWarrior: Destiny Unofficial",
-    "description": "Unofficial FVTT implementation of the MechWarrior: Destiny RPG.",
+    "id": "persona",
+    "title": "Persona d20 syste",
+    "description": "Foundry VTT version of Persona homebrew system",
     "version": "0.5.0",
     "compatibility": {
         "minimum": 11,

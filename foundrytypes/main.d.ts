@@ -35,10 +35,6 @@ declare interface Game {
 
 }
 
-declare interface Hooks {
-	once(hookname: string, fn: (...args : any[]) => any): void;
-	on (hookname: string, fn: (...args : any[]) => any): void;
-}
 
 declare class Actors {
 	static unregisterSheet(scope: string, sheetClass: typeof ActorSheet): void;
@@ -51,4 +47,6 @@ declare class Items {
 	static registerSheet(scope: string, sheetClass: typeof ActorSheet, details: {
 		types: string[], makeDefault: boolean}) : void;
 }
+
+
 

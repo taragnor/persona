@@ -1,0 +1,26 @@
+{
+
+	"persona.tarot.0.name": "The Fool",
+	"persona.tarot.1.name": "The Magician",
+	"persona.tarot.2.name": "The High Priestess",
+	"persona.tarot.3.name": "The Empress",
+	"persona.tarot.4.name": "The Emperor",
+	"persona.tarot.5.name": "The Hierophant",
+	"persona.tarot.6.name": "The Lovers",
+	"persona.tarot.7.name": "The Chariot",
+	"persona.tarot.8.name": "Justice",
+	"persona.tarot.9.name": "The Hermit",
+	"persona.tarot.10.name": "The Wheel of Fortune",
+	"persona.tarot.11.name": "Strength",
+	"persona.tarot.12.name": "The Hanged Man",
+
+	"persona.tarot.13.name": "Death",
+	"persona.tarot.14.name": "Temperance",
+	"persona.tarot.15.name": "The Devil",
+	"persona.tarot.16.name": "The Tower",
+	"persona.tarot.17.name": "The Star",
+	"persona.tarot.18.name": "The Moon",
+	"persona.tarot.19.name": "The Sun",
+	"persona.tarot.20.name": "Judgment",
+	"persona.tarot.21.name": "The World"
+}

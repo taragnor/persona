@@ -56,7 +56,7 @@ class DocumentIdField extends StringFieldClass {
 }
 
 declare class StringFieldClass extends FoundryDMField<string> {
-	contructor (options?: StringFieldOptions);
+	constructor (StringOptions?: StringFieldOptions);
 
 }
 
@@ -105,7 +105,7 @@ interface NumberDataFieldOptions extends DataFieldOptions<number> {
 	choices?: number[] | Record<string, number> | (() => number[]);
 }
 
-interface StringFieldOptions extends DataFieldOptions<string> {
+declare interface StringFieldOptions extends DataFieldOptions<string> {
 	blank ?: boolean;
 	trim ?: boolean;
 	choices?: string[] | Record < string, string> | (()=> string[]);
