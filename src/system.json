@@ -1,6 +1,6 @@
 {
     "id": "persona",
-    "title": "Persona d20 syste",
+    "title": "Persona d20 system",
     "description": "Foundry VTT version of Persona homebrew system",
     "version": "0.5.0",
     "compatibility": {
@@ -21,7 +21,7 @@
         "module/persona.js"
     ],
     "styles": [
-        "styles/persona.css"
+        "style/persona.css"
     ],
     "languages": [
         {

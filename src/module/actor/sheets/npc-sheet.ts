@@ -1,4 +1,4 @@
-import { PersonaActor } from "../persona-actor";
+import { PersonaActor } from "../persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 
 export class NPCSheet extends ActorSheet<PersonaActor> {

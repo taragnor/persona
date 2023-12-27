@@ -1,30 +1,28 @@
 const {StringField:txt, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 
-const int = new num( {integer:true});
-
-const damage = new sch( {
-	low_damage: int,
-	high_damage: int,
+const damage = function() { return new sch( {
+	low_damage: new num( {integer:true}),
+	high_damage: new num( {integer:true}),
 });
-
+}
 
 export class StudentSkill extends foundry.abstract.DataModel {
 	get type() { return "studentSkill" as const;}
 	static override defineSchema() {
 		const ret = {
-			bonus: int,
+			bonus: new num( {integer:true}),
 		};
 		return ret;
 	}
 }
 
 export class Skill extends foundry.abstract.DataModel {
-	get type() {return "skill";}
+	get type() {return "skill" as const;}
 	static override defineSchema() {
 		const ret = {
 			subtype: new txt( {choices: ["weapon", "magic", "other", "none"]} ),
-			hpcost: int,
-			damage,
+			hpcost: new num( {integer:true}),
+			damage: damage(),
 			slot: new num( {integer: true, positive:true}),
 		};
 		return ret;
@@ -39,7 +37,7 @@ export class Weapon extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		const ret = {
 			...InventoryItemSchema.defineSchema(),
-			damage,
+			damage: damage(),
 		};
 		return ret;
 	}

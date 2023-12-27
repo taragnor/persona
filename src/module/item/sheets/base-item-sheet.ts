@@ -1,4 +1,4 @@
-import { PersonaItem } from "../persona-item";
+import { PersonaItem } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 
 export class PersonaItemSheetBase extends ItemSheet<PersonaItem> {

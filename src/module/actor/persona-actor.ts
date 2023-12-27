@@ -1,4 +1,4 @@
-import { ACTORMODELS } from "../datamodel/actor-types"
+import { ACTORMODELS } from "../datamodel/actor-types.js"
 
 	export class PersonaActor extends Actor<typeof ACTORMODELS> {
 
