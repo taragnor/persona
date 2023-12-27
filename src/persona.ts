@@ -65,8 +65,8 @@ function registerHandlebarsHelpers() {
 
 function preloadHandlebarsTemplates() {
 	const path = HANDLEBARS_TEMPLATE_DIR;
-	const templateFileNames: string[] =[
 
+	const templateFileNames : string[] =[
 	];
 
 	const templatePaths = templateFileNames.

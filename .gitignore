@@ -1,5 +1,6 @@
 # Logs
 logs
+buildandDeploy
 *.log
 npm-debug.log*
 yarn-debug.log*
