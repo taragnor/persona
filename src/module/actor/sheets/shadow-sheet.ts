@@ -1,12 +1,12 @@
-import { PersonaActor } from "../persona-actor";
-import { TEMPLATESDIR } from "../../../config/persona-settings";
+import { PersonaActor } from "../persona-actor.js";
+import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 
 export class ShadowSheet extends ActorSheet<PersonaActor> {
 
 	static override get defaultOptions() {
 		return mergeObject(super.defaultOptions, {
 			classes: ["persona", "sheet", "actor"],
-			template: `${TEMPLATESDIR}/shadow-sheet.hbs`,
+			template: `${HBS_TEMPLATES_DIR}/shadow-sheet.hbs`,
 			width: 800,
 			height: 800,
 			tabs: [{navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "main"}]

@@ -1,12 +1,12 @@
-// import { pcSchema } from "./module/datamodel/actor-types";
-// import { ShadowSchema } from "./module/datamodel/actor-types";
-// import { NPCSchema } from "./module/datamodel/actor-types";
 import { ACTORMODELS } from "./module/datamodel/actor-types.js";
 import { ITEMMODELS} from "./module/datamodel/item-types.js";
 import { PersonaActor } from "./module/actor/persona-actor.js";
 import { PersonaItem } from "./module/item/persona-item.js";
 import { PCSheet } from "./module/actor/sheets/pc-sheet.js";
+import { ShadowSheet } from "./module/actor/sheets/shadow-sheet.js";
+import { NPCSheet } from "./module/actor/sheets/npc-sheet.js";
 import { PersonaItemSheetBase } from "./module/item/sheets/base-item-sheet.js";
+import { HANDLEBARS_TEMPLATE_DIR } from "./config/persona-settings.js";
 
 function registerDataModels () {
 	CONFIG.Actor.dataModels= ACTORMODELS;
@@ -35,6 +35,9 @@ function registerSheetApplications() {
   Items.unregisterSheet("core", ItemSheet);
 	//custom sheets
   Actors.registerSheet("persona", PCSheet, {types: ["pc"], makeDefault: true});
+  Actors.registerSheet("persona", NPCSheet, {types: ["npc"], makeDefault: true});
+  Actors.registerSheet("persona", ShadowSheet, {types: ["shadow"], makeDefault: true});
+
   Items.registerSheet("persona", PersonaItemSheetBase, {types: ["item"], makeDefault: true});
 }
 
@@ -61,8 +64,12 @@ function registerHandlebarsHelpers() {
 }
 
 function preloadHandlebarsTemplates() {
-	const templatePaths = [
-		"systems/mw-destiny/templates/parts/pc/header.hbs",
-	] as const;
+	const path = HANDLEBARS_TEMPLATE_DIR;
+	const templateFileNames: string[] =[
+
+	];
+
+	const templatePaths = templateFileNames.
+		map( fname => `${path}/${fname}`);
 	loadTemplates(templatePaths);
 }

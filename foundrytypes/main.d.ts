@@ -37,14 +37,14 @@ declare interface Game {
 
 
 declare class Actors {
-	static unregisterSheet(scope: string, sheetClass: typeof ActorSheet): void;
-	static registerSheet(scope: string, sheetClass: typeof ActorSheet, details: {
+	static unregisterSheet<T>(scope: string, sheetClass: typeof ActorSheet<T>): void;
+	static registerSheet<T>(scope: string, sheetClass: typeof ActorSheet<T>, details: {
 		types: string[], makeDefault: boolean}) : void;
 }
 
 declare class Items {
-	static unregisterSheet(scope: string, sheetClass: typeof ActorSheet): void;
-	static registerSheet(scope: string, sheetClass: typeof ActorSheet, details: {
+	static unregisterSheet<T>(scope: string, sheetClass: typeof ItemSheet<T>): void;
+	static registerSheet<T>(scope: string, sheetClass: typeof ItemSheet<T>, details: {
 		types: string[], makeDefault: boolean}) : void;
 }
 
