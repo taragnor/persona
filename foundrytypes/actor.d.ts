@@ -9,7 +9,7 @@
 
 
 // declare class Actor<T extends {[key:string]: foundry.abstract.DataModel}, U extends X<T>> {
-declare class Actor<T extends SchemaDict >{
+declare class Actor<T extends SchemaDict> extends Document{
 	name: string;
 	id: string;
 	type: string;
