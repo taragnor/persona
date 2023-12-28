@@ -1,4 +1,4 @@
-const {StringField:txt, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
+const {StringField:txt, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 
 const damage = function() {
 	return new sch( {
@@ -7,18 +7,34 @@ const damage = function() {
 	});
 }
 
+type ClassLevelType = {
+								lvl_num: number,
+								maxhp: number,
+								slots: [number,number,number,number]
+								talents: [number,number,number,number],
+								powers_known: [number,number,number,number],
+								magic_damage: {low: number, high:number},
+								wpn_mult: number,
+};
+
 function level_table(min = 1, max=  10) {
-	let ret= new arr( new sch(
-		{
-			lvl_num: new num({min, max, integer:true}),
-			maxhp: new num({positive: true, integer:true, initial: 1}),
-			slots: new arr(  new num( {min:0, integer:true, initial:0})),
-			talents: new arr(  new num( {min: 0, integer:true, initial:0})),
-			powers_known: new arr(  new num( {min: 0, integer:true, initial:0})),
-			magic_damage: damage(),
-			wpn_mult: new num( {positive: true, integer:true, initial:1})
-		})
-	, {initial: []});
+	// const internalSch = function() {
+	// 	return new sch(
+	// 		{
+	// 			lvl_num: new num({min, max, integer:true}),
+	// 			maxhp: new num({positive: true, integer:true, initial: 1}),
+	// 			slots: new arr(  new num( {min:0, integer:true, initial:0})),
+	// 			talents: new arr(  new num( {min: 0, integer:true, initial:0})),
+	// 			powers_known: new arr(  new num( {min: 0, integer:true, initial:0})),
+	// 			magic_damage: damage(),
+	// 			wpn_mult: new num( {positive: true, integer:true, initial:1})
+	// 		});
+	// };
+	const internalObj = function () {
+		return new obj<ClassLevelType>();
+	};
+	let ret= new arr( internalObj()
+		, {initial: []});
 	return ret;
 }
 

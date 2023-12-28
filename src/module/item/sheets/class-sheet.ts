@@ -37,9 +37,11 @@ export class PersonaClassSheet  extends PersonaItemSheetBase {
 			magic_damage: { low: 1, high:1},
 			wpn_mult: 1,
 		};
-		oldtable.push(newobj);
-		console.log(oldtable);
-		await this.item.update({"system.leveling_table":oldtable});
+		const newtable = oldtable.concat([newobj]);
+		console.log(newtable);
+		await this.item.update({"system.leveling_table":newtable});
 	}
 
 }
+
+

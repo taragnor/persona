@@ -24,13 +24,16 @@ type SystemDataObject<T extends SchemaReturnObject> = {[name in keyof T]: Schema
 
 type SchemaConvert<F> = F extends FoundryDMField<infer T>
 	? T extends object ? {[K in keyof T] : SchemaConvert<T[K]>} : T
-	:never;
+	:F;
 
 
 //Components to help with converting
 type MakeSchemaData<T extends typeof foundry.abstract.DataModel> = T & SystemDataObjectFromDM<T>;
+
 type MakeSchemaDataList<T extends Record<string | number | symbol, typeof foundry.abstract.DataModel>> = {[K in keyof T]: MakeSchemaData<T[K]>};
+
 type DefineActor<T extends typeof CONFIG.Actor.dataModels> = typeof Actor & {new () : DefineActorInstance<T>};
+
 type DefineActorInstance<T extends typeof CONFIG.Actor.dataModels> = Actor & X<MakeSchemaDataList<T>>;
 
 type TransformToRealData<T extends SchemaDict> = {
@@ -43,4 +46,6 @@ type UnionizeRecords<T extends Record<string, object>> = {
 
 type TotalConvert<T extends SchemaDict> = UnionizeRecords<TransformToRealData<T>>;
 type SchemaDict = Record<string, typeof foundry["abstract"]["DataModel"]>;
+
+
 

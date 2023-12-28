@@ -67,7 +67,7 @@ class FilePathField extends StringFieldClass {
 class HTMLField extends StringFieldClass{
 }
 
-class ObjectField extends FoundryDMField<Object>{
+class ObjectField<T extends object> extends FoundryDMField<T>{
 }
 
 class SetField<T> extends  ArrayFieldClass<T> {
