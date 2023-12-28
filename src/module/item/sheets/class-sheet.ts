@@ -20,8 +20,6 @@ export class PersonaClassSheet  extends PersonaItemSheetBase {
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 		html.find("table").on("click",()=> console.log("You clicked the table"));
-		html.find(".add-row").each( () => console.log("found"));
-
 		html.find(".add-row").on("click", this.#addRow.bind(this));
 	}
 

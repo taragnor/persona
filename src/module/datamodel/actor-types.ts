@@ -13,21 +13,37 @@ const tarot = function () { return new txt( { choices: Object.keys(tarotDeck)});
 
 const combatStats = function () {
 	return new sch( {
-	hp: new sch( {
-		curr: new num( {integer:true}),
-		max: new num( {integer:true}),
-	}),
-	wpnatk: new num( {integer:true}),
-	magatk: new num( {integer:true}),
-	defenses :
-	new sch({
-		ref: new num( {integer:true}),
-		will: new num( {integer:true}),
-		fort: new num( {integer:true}),
-	}),
-	equippedWeapon: new id(),
-});
+		hp: new sch( {
+			curr: new num( {integer:true}),
+			max: new num( {integer:true}),
+		}),
+		wpnatk: new num( {integer:true}),
+		magatk: new num( {integer:true}),
+		defenses :
+		new sch({
+			ref: new num( {integer:true}),
+			will: new num( {integer:true}),
+			fort: new num( {integer:true}),
+		}),
+		equippedWeapon: new id(),
+	});
 };
+
+const classData = function () {
+	return  new sch( {
+		classId: new id(),
+		incremental: new sch( {
+			hp: new bool({initial:false}),
+			atkbonus: new bool({initial:false}),
+			defbonus: new bool({initial:false}),
+			slots: new bool({initial:false}),
+			talents: new bool({initial:false}),
+			powers: new bool({initial:false}),
+			wpn_mult: new bool({initial:false}),
+			mag_dmg: new bool({initial:false}),
+		}),
+	});
+}
 
 const socialLinks = new sch( {
 	links: new arr( new sch( {
@@ -58,6 +74,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			combat: combatStats(),
 			bio: personalBio(),
 			social: socialLinks,
+			class: classData(),
 		} as const;
 		return ret;
 	}
