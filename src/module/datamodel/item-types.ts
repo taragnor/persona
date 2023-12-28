@@ -2,9 +2,24 @@ const {StringField:txt, NumberField: num, SchemaField: sch, HTMLField: html , Ar
 
 const damage = function() {
 	return new sch( {
-		low: new num( {integer:true}),
-		high: new num( {integer:true}),
+		low: new num( {integer:true, positive: true, initial:1}),
+		high: new num( {integer:true, positive: true, initial: 1}),
 	});
+}
+
+function level_table(min = 1, max=  10) {
+	let ret= new arr( new sch(
+		{
+			lvl_num: new num({min, max, integer:true}),
+			maxhp: new num({positive: true, integer:true, initial: 1}),
+			slots: new arr(  new num( {min:0, integer:true, initial:0})),
+			talents: new arr(  new num( {min: 0, integer:true, initial:0})),
+			powers_known: new arr(  new num( {min: 0, integer:true, initial:0})),
+			magic_damage: damage(),
+			wpn_mult: new num( {positive: true, integer:true, initial:1})
+		})
+	, {initial: []});
+	return ret;
 }
 
 export class StudentSkill extends foundry.abstract.DataModel {
@@ -66,7 +81,7 @@ export class Talent extends foundry.abstract.DataModel {
 }
 
 export class CharacterClass extends foundry.abstract.DataModel {
-	get type() { return "class" as const;}
+	get type() { return "characterClass" as const;}
 	static override defineSchema() {
 		const ret = {
 			talentChoices: new arr(
@@ -75,6 +90,7 @@ export class CharacterClass extends foundry.abstract.DataModel {
 			focusChoices: new arr(
 				new id()
 			),
+			leveling_table: level_table(),
 			desciption: new html(),
 		};
 		return ret;

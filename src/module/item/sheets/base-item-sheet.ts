@@ -19,7 +19,6 @@ export class PersonaItemSheetBase extends ItemSheet<PersonaItem> {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
-
 	}
 
 

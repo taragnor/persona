@@ -1,5 +1,22 @@
 <form class="class-sheet">
-	<div>
-		Class sheet works!
-	</div>
+	<table>
+		<tr>
+			<th>Level</th>
+			<th> Max HP</th>
+		</tr>
+		{{#each item.system.leveling_table as |lvl i|}}
+		<tr>
+			<td>
+				<input class="short" type="number" name="system.leveling_table.{{i}}.lvl_num" value="{{lvl.lvl_num}}">
+			</td>
+			<td>
+				<input class="short" type="number" name="system.leveling_table.{{i}}.maxhp" value="{{lvl.maxhp}}">
+			</td>
+		</tr>
+		{{/each}}
+	</table>
+	<button class="add-row"> Add Row </button>
+
 </form>
+
+

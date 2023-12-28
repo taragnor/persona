@@ -3,8 +3,8 @@ import { PersonaItem } from "../item/persona-item.js"
 
 	export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem> {
 
-		createNewItem() {
-			return this.createEmbeddedDocuments("Item", [{"name": "Unnamed Item", type: "item"}])[0];
+		async createNewItem() {
+			return (await this.createEmbeddedDocuments("Item", [{"name": "Unnamed Item", type: "item"}]))[0];
 		}
 
 		get inventory() {

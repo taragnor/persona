@@ -1,9 +1,9 @@
  class FoundryDocument <Embedded extends (FoundryDocument | never)> {
 	get parent(): FoundryDocument | null;
-	update(updateData: Record<string, any>): void;
+	async update(updateData: Record<string, any>): Promise<void>;
 	name: string;
 	id: string;
-	createEmbeddedDocuments(type: string, objData: Record<string, any>[]): Embedded[];
+	async createEmbeddedDocuments(type: string, objData: Record<string, any>[]): Promise<Embedded[]>;
 
 }
 
