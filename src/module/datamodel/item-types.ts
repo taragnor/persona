@@ -18,18 +18,6 @@ type ClassLevelType = {
 };
 
 function level_table(min = 1, max=  10) {
-	// const internalSch = function() {
-	// 	return new sch(
-	// 		{
-	// 			lvl_num: new num({min, max, integer:true}),
-	// 			maxhp: new num({positive: true, integer:true, initial: 1}),
-	// 			slots: new arr(  new num( {min:0, integer:true, initial:0})),
-	// 			talents: new arr(  new num( {min: 0, integer:true, initial:0})),
-	// 			powers_known: new arr(  new num( {min: 0, integer:true, initial:0})),
-	// 			magic_damage: damage(),
-	// 			wpn_mult: new num( {positive: true, integer:true, initial:1})
-	// 		});
-	// };
 	const internalObj = function () {
 		return new obj<ClassLevelType>();
 	};
