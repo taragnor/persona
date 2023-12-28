@@ -9,7 +9,7 @@ declare global {
 		PERSONACFG: unknown
 	}
 }
-
+import { PersonaClassSheet } from "./item/sheets/class-sheet.js";
 import { ACTORMODELS } from "./datamodel/actor-types.js";
 import { ITEMMODELS} from "./datamodel/item-types.js";
 import { PersonaActor } from "./actor/persona-actor.js";
@@ -41,6 +41,7 @@ function registerSheetApplications() {
   Actors.registerSheet("persona", PCSheet, {types: ["pc"], makeDefault: true});
   Actors.registerSheet("persona", NPCSheet, {types: ["npc"], makeDefault: true});
   Actors.registerSheet("persona", ShadowSheet, {types: ["shadow"], makeDefault: true});
+  Items.registerSheet("persona", PersonaClassSheet, {types: ["characterClass"], makeDefault: true});
 
   Items.registerSheet("persona", PersonaItemSheetBase, {types: ["item"], makeDefault: true});
 }
@@ -71,7 +72,8 @@ function registerSheetApplications() {
  	const path = HANDLEBARS_TEMPLATE_DIR;
 
  	const templateFileNames : string[] =[
-		"inventory-section.hbs"
+		"inventory-section.hbs",
+		"combat-section.hbs",
  	];
 
  	const templatePaths = templateFileNames.

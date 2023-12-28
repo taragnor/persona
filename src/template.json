@@ -7,7 +7,7 @@
         "npc": {}
     },
     "Item": {
-        "types": ["weapon", "item", "skill"],
+        "types": ["weapon", "item", "skill", "studentSkill", "characterClass", "focus", "talent"],
         "htmlFields": ["description"],
         "skill": {},
         "weapon": {},

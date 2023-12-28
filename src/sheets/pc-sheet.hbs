@@ -15,16 +15,25 @@
 	</header>
 	<nav class="sheet-tabs tabs" data-group="primary">
 		<a class="item" data-tab="main">
-			{{localize "persona.sheet.tabs.pcmain" }}
+			{{localize "persona.sheet.tabs.pcmain.tabname" }}
+		</a>
+		<a class="item" data-tab="combat">
+			{{localize "persona.sheet.tabs.combat.tabname" }}
 		</a>
 		<a class="item" data-tab="inv">
-			{{localize "persona.sheet.tabs.inventory" }}
+			{{localize "persona.sheet.tabs.inventory.tabname" }}
 		</a>
 	</nav>
 	<section class="sheet-body">
-		<div class="tab tab-content main-section flexcol" data-group="primary" data-tab="main">
+		<section class="tab tab-content main-section flexcol" data-group="primary" data-tab="main">
 			<div> PC WORKING!</div>
-		</div>
-		{{> "systems/persona/parts/inventory-section.hbs" actor=actor inventory=inventory}}
+		</section>
+		<section class="tab tab-content combat-section flexcol" data-group="primary" data-tab="combat">
+
+			{{> "systems/persona/parts/combat-section.hbs" actor=actor}}
+		</section>
+		<section class="tab tab-content inventory-section flexcol" data-group="primary" data-tab="inv">
+			{{> "systems/persona/parts/inventory-section.hbs" actor=actor }}
+		</section>
 	</section>
 </form>

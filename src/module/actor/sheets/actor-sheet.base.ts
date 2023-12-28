@@ -6,7 +6,6 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 	override getData() {
 		const data= super.getData();
 		data.TAROT  = tarotDeck;
-		data.inventory = this.actor.items.filter( x=> x.system.type == "item" || x.system.type == "weapon");
 		return data;
 	}
 

@@ -1,6 +1,11 @@
 {
-	"persona.sheet.tabs.inventory" : "Inventory",
-	"persona.sheet.tabs.pcmain" : "Main",
+	"persona.sheet.tabs.inventory.tabname" : "Inventory",
+	"persona.sheet.tabs.pcmain.tabname" : "Main",
+
+	"persona.sheet.tabs.combat.tabname" : "Combat",
+	"persona.sheet.tabs.combat.header": "Combat Stats",
+
+
 	"persona.tarot.cardname": "Tarot Card",
 	"persona.tarot.0.name": "The Fool",
 	"persona.tarot.1.name": "The Magician",
@@ -15,7 +20,6 @@
 	"persona.tarot.10.name": "The Wheel of Fortune",
 	"persona.tarot.11.name": "Strength",
 	"persona.tarot.12.name": "The Hanged Man",
-
 	"persona.tarot.13.name": "Death",
 	"persona.tarot.14.name": "Temperance",
 	"persona.tarot.15.name": "The Devil",
