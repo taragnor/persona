@@ -1,4 +1,4 @@
-<form class="pc-sheet flexcol {{#if actor.system.locked}} locked {{else}} unlocked {{/if}}">
+<form class="pc-sheet {{#if actor.system.locked}} locked {{else}} unlocked {{/if}}">
 	<header class="flexcol">
 		<div class="">
 			<input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
@@ -12,12 +12,12 @@
 			{{localize "persona.sheet.tabs.inventory" }}
 		</a>
 	</nav>
-	<section class="sheet-body flexcol">
-		<div class="tab tab-content main-section" data-group="primary" data-tab="main">
+	<section class="sheet-body">
+		<div class="tab tab-content main-section flexcol" data-group="primary" data-tab="main">
 			<div> PC WORKING!</div>
 		</div>
-		<div class="tab tab-content inventory-section" data-group="primary" data-tab="inv">
-			inventory goes here
+		<div class="tab tab-content inventory-section flexcol" data-group="primary" data-tab="inv">
+			<div>inventory goes here</div>
 		</div>
 	</section>
 </form>
