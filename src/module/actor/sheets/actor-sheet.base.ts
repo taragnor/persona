@@ -1,24 +1,23 @@
 import { PersonaActor } from "../persona-actor.js";
-import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
+import { tarotDeck} from "../../../config/tarot.js";
 
 export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
-	// static override get defaultOptions() {
-	// 	return mergeObject(super.defaultOptions, {
-	// 		classes: ["persona", "sheet", "actor"],
-	// 		template: `${HBS_TEMPLATES_DIR}/pc-sheet.hbs`,
-	// 		width: 800,
-	// 		height: 800,
-	// 		tabs: [{navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "main"}]
-	// 	});
-	// }
-
 	override getData() {
-		return super.getData();
+		const data= super.getData();
+		data.TAROT  = tarotDeck;
+		data.inventory = this.actor.items.filter( x=> x.system.type == "item" || x.system.type == "weapon");
+		return data;
 	}
 
-	override activateListeners(html: HTMLElement) {
+	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
+		html.find(".addItem").on("click", this.#addItem.bind(this));
 	}
+
+	#addItem(_ev: JQuery<Event>) {
+		this.actor.createNewItem();
+	}
+
 
 }

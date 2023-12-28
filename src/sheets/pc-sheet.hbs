@@ -3,6 +3,15 @@
 		<div class="">
 			<input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
 		</div>
+		<textarea name="system.short_desc"> {{actor.system.short_desc}} </textarea>
+		<div class="flexrow">
+			<label>
+				{{localize "persona.tarot.cardname"}}
+			</label>
+			<select name="system.tarot">
+				{{selectOptions TAROT localize=true selected=actor.system.tarot}}
+			</select>
+		</div>
 	</header>
 	<nav class="sheet-tabs tabs" data-group="primary">
 		<a class="item" data-tab="main">
@@ -16,8 +25,6 @@
 		<div class="tab tab-content main-section flexcol" data-group="primary" data-tab="main">
 			<div> PC WORKING!</div>
 		</div>
-		<div class="tab tab-content inventory-section flexcol" data-group="primary" data-tab="inv">
-			<div>inventory goes here</div>
-		</div>
+		{{> "systems/persona/parts/inventory-section.hbs" actor=actor inventory=inventory}}
 	</section>
 </form>

@@ -71,9 +71,11 @@ function registerSheetApplications() {
  	const path = HANDLEBARS_TEMPLATE_DIR;
 
  	const templateFileNames : string[] =[
+		"inventory-section.hbs"
  	];
 
  	const templatePaths = templateFileNames.
  		map( fname => `${path}/${fname}`);
+	 templatePaths.forEach(path => console.log(path));
  	loadTemplates(templatePaths);
  }

@@ -18,7 +18,7 @@ export class NPCSheet extends PersonaActorSheetBase {
 		return super.getData();
 	}
 
-	override activateListeners(html: HTMLElement) {
+	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 
 	}

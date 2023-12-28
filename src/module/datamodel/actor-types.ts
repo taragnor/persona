@@ -2,10 +2,12 @@ const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, 
 
 import { tarotDeck } from "../../config/tarot.js";
 
-const personalBio = new sch( {
-	description: new html(),
-	background: new html(),
-});
+const personalBio = function () {
+	return new sch( {
+		description: new html(),
+		background: new html(),
+	});
+}
 
 const tarot = function () { return new txt( { choices: Object.keys(tarotDeck)});}
 
@@ -39,7 +41,8 @@ abstract class BaseStuff extends window.foundry.abstract.DataModel {
 
 	static override defineSchema() {
 		return {
-			locked: new bool( { initial: false})
+			locked: new bool( { initial: false}),
+			short_desc: new txt(),
 		}
 
 	}
@@ -53,7 +56,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			...BaseStuff.defineSchema(),
 			tarot: tarot(),
 			combat: combatStats(),
-			bio: personalBio,
+			bio: personalBio(),
 			social: socialLinks,
 		} as const;
 		return ret;
@@ -79,7 +82,7 @@ export class NPCSchema extends foundry.abstract.DataModel {
 		const ret = {
 			...BaseStuff.defineSchema(),
 			tarot: tarot(),
-			bio: personalBio,
+			bio: personalBio(),
 		} as const;
 		return ret;
 	}

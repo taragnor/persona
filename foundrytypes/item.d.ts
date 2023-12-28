@@ -1,4 +1,4 @@
-declare class Item<T extends SchemaDict> extends Document {
+declare class Item<T extends SchemaDict> extends FoundryDocument<never> {
 	name: string;
 	id: string;
 	type: string;
