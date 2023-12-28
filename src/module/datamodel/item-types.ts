@@ -1,9 +1,10 @@
 const {StringField:txt, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 
-const damage = function() { return new sch( {
-	low_damage: new num( {integer:true}),
-	high_damage: new num( {integer:true}),
-});
+const damage = function() {
+	return new sch( {
+		low: new num( {integer:true}),
+		high: new num( {integer:true}),
+	});
 }
 
 export class StudentSkill extends foundry.abstract.DataModel {

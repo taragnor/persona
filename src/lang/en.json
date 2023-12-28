@@ -1,5 +1,6 @@
 {
-
+	"persona.sheet.tabs.inventory" : "Inventory",
+	"persona.sheet.tabs.pcmain" : "Main",
 	"persona.tarot.0.name": "The Fool",
 	"persona.tarot.1.name": "The Magician",
 	"persona.tarot.2.name": "The High Priestess",

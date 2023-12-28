@@ -23,9 +23,8 @@ declare interface FoundryDataFields {
 
 
 declare class FoundryDMField<T> {
-	constructor (options?: DataFieldOptions);
+	constructor (options?: DataFieldOptions<T>);
 	_phantomData : T;
-
 }
 
 class NumberField extends FoundryDMField<number> {
