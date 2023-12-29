@@ -1,30 +1,14 @@
 const {StringField:txt, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 
+import { CharacterClass } from "./character-class";
+
 const damage = function() {
 	return new sch( {
-		low: new num( {integer:true, positive: true, initial:1}),
-		high: new num( {integer:true, positive: true, initial: 1}),
+		low: new num( {integer:true, min: 0, initial:1}),
+		high: new num( {integer:true, min: 0, initial: 1}),
 	});
 }
 
-type ClassLevelType = {
-								lvl_num: number,
-								maxhp: number,
-								slots: [number,number,number,number]
-								talents: [number,number,number,number],
-								powers_known: [number,number,number,number],
-								magic_damage: {low: number, high:number},
-								wpn_mult: number,
-};
-
-function level_table(min = 1, max=  10) {
-	const internalObj = function () {
-		return new obj<ClassLevelType>();
-	};
-	let ret= new arr( internalObj()
-		, {initial: []});
-	return ret;
-}
 
 export class StudentSkill extends foundry.abstract.DataModel {
 	get type() { return "studentSkill" as const;}
@@ -84,22 +68,6 @@ export class Talent extends foundry.abstract.DataModel {
 	}
 }
 
-export class CharacterClass extends foundry.abstract.DataModel {
-	get type() { return "characterClass" as const;}
-	static override defineSchema() {
-		const ret = {
-			talentChoices: new arr(
-				new id()
-			),
-			focusChoices: new arr(
-				new id()
-			),
-			leveling_table: level_table(),
-			desciption: new html(),
-		};
-		return ret;
-	}
-}
 
 export class InventoryItemSchema extends foundry.abstract.DataModel {
 	get type() { return "item" as const;}
