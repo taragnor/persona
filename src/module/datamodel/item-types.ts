@@ -9,7 +9,6 @@ const damage = function() {
 	});
 }
 
-
 export class StudentSkill extends foundry.abstract.DataModel {
 	get type() { return "studentSkill" as const;}
 	static override defineSchema() {
@@ -30,8 +29,6 @@ export class Skill extends foundry.abstract.DataModel {
 			slot: new num( {integer: true, positive:true}),
 		};
 		return ret;
-
-
 	}
 
 }
