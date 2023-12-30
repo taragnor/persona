@@ -1,4 +1,9 @@
 input.short{
-	width: 5%;
+	width: 3em;
+
+}
+
+input.single-digit {
+	width: 1em;
 
 }

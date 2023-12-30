@@ -1,6 +1,6 @@
 const {StringField:txt, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 
-import { CharacterClass } from "./character-class";
+import { CharacterClass } from "./character-class.js";
 
 const damage = function() {
 	return new sch( {
