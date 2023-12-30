@@ -4,6 +4,7 @@
 	name: string;
 	id: string;
 	async createEmbeddedDocuments(type: string, objData: Record<string, any>[]): Promise<Embedded[]>;
+	 sheet: Sheet<this>
 
 }
 

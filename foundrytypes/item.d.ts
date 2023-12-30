@@ -3,4 +3,5 @@ declare class Item<T extends SchemaDict> extends FoundryDocument<never> {
 	id: string;
 	type: string;
 	system: TotalConvert<T>;
+	sheet: ItemSheet<this>;
 }

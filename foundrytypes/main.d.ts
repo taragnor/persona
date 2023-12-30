@@ -31,8 +31,11 @@ declare interface CONFIG {
 
 
 declare interface Game {
-	actors: Collection<Actor>
-
+	actors: Collection<Actor<any, any>>;
+	items: Collection<Item<any>>,
+		packs: Collection<FoundryCompendium<any>>,
+		users: Collection<FoundryUser>,
+		system: FoundrySystem,
 }
 
 
@@ -48,5 +51,24 @@ declare class Items {
 		types: string[], makeDefault: boolean}) : void;
 }
 
+declare interface Collection<T> {
+	filter(fn: (T) => boolean) : T[];
+	map(fn: (T) => boolean) : T[];
+	[Symbol.iterator]() : Iterator<T>
+}
+
+declare class FoundryCompendium<T extends object> {
+	documentName: FoundryDocumentTypes;
+	async getDocuments(): Promise<T[]>;
+}
+
+declare class FoundryUser extends FoundryDocument<never>{
+
+}
+
+type FoundryDocumentTypes = "Actor" | "Item" | "Scene";
 
 
+interface FoundrySystem {
+	id: string
+}

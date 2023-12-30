@@ -13,6 +13,7 @@ declare class Actor<T extends SchemaDict, ItemType extends Item<J>> extends Foun
 	type: string;
 	system: TotalConvert<T>;
 	get items(): ItemType[];
+	sheet: ActorSheet<this>;
 
 }
 

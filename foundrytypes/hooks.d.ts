@@ -7,6 +7,7 @@ declare interface Hooks {
 interface HOOKS{
 	"init": () => void;
 	"ready": () => void;
+	"updateCompendium": () =>void;
 };
 
 type HOOKS_NAMES= keyof HOOKS;
