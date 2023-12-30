@@ -40,8 +40,7 @@ declare global {
 				}
 				cl = namesearch as ItemSub<"characterClass">;
 			}
-			return cl as Subtype<PersonaItem,"characterClass">;
-
+			return cl;
 		}
 
 		test() {
