@@ -11,8 +11,25 @@ const personalBio = function () {
 
 const tarot = function () { return new txt( { choices: Object.keys(tarotDeck)});}
 
+const classData = function () {
+	return  new sch( {
+		classId: new id(),
+		incremental: new sch( {
+			hp: new bool({initial:false}),
+			atkbonus: new bool({initial:false}),
+			defbonus: new bool({initial:false}),
+			slots: new bool({initial:false}),
+			talents: new bool({initial:false}),
+			powers: new bool({initial:false}),
+			wpn_mult: new bool({initial:false}),
+			mag_dmg: new bool({initial:false}),
+		}),
+	});
+}
+
 const combatStats = function () {
 	return new sch( {
+		classData: classData(),
 		hp: new sch( {
 			curr: new num( {integer:true}),
 			max: new num( {integer:true}),
@@ -29,21 +46,6 @@ const combatStats = function () {
 	});
 };
 
-const classData = function () {
-	return  new sch( {
-		classId: new id(),
-		incremental: new sch( {
-			hp: new bool({initial:false}),
-			atkbonus: new bool({initial:false}),
-			defbonus: new bool({initial:false}),
-			slots: new bool({initial:false}),
-			talents: new bool({initial:false}),
-			powers: new bool({initial:false}),
-			wpn_mult: new bool({initial:false}),
-			mag_dmg: new bool({initial:false}),
-		}),
-	});
-}
 
 const socialLinks = new sch( {
 	links: new arr( new sch( {
@@ -74,7 +76,6 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			combat: combatStats(),
 			bio: personalBio(),
 			social: socialLinks,
-			class: classData(),
 		} as const;
 		return ret;
 	}

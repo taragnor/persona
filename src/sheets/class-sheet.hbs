@@ -5,9 +5,9 @@
 			<th> Max HP</th>
 			<th> Wpn Multiplier </th>
 			<th> Magic Damage </th>
+			<th> Powers Known </th>
 			<th> Slots </th>
 			<th> Talents </th>
-			<th> Powers Known </th>
 		</tr>
 		{{#each item.system.leveling_table as |lvl i|}}
 		<tr>
@@ -24,6 +24,15 @@
 				<input class="short" type="number" name="system.leveling_table.{{i}}.magic_damage.low" value="{{lvl.magic_damage.low}}">
 				-
 				<input class="short" type="number" name="system.leveling_table.{{i}}.magic_damage.high" value="{{lvl.magic_damage.high}}">
+				boost (
+				<input class="short" type="number" name="system.leveling_table.{{i}}.magic_damage.boost" value="{{lvl.magic_damage.boost}}">
+				)
+			</td>
+			<td>
+				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.powers_known.0" value="{{lvl.powers_known.[0]}}">
+				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.powers_known.1" value="{{lvl.powers_known.[1]}}">
+				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.powers_known.2" value="{{lvl.powers_known.[2]}}">
+				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.powers_known.3" value="{{lvl.powers_known.[3]}}">
 			</td>
 			<td>
 				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.slots.0" value="{{lvl.slots.[0]}}">
@@ -36,12 +45,6 @@
 				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.talents.1" value="{{lvl.talents.[1]}}">
 				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.talents.2" value="{{lvl.talents.[2]}}">
 				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.talents.3" value="{{lvl.talents.[3]}}">
-			</td>
-			<td>
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.powers_known.0" value="{{lvl.powers_known.[0]}}">
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.powers_known.1" value="{{lvl.powers_known.[1]}}">
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.powers_known.2" value="{{lvl.powers_known.[2]}}">
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.powers_known.3" value="{{lvl.powers_known.[3]}}">
 			</td>
 		</tr>
 		{{/each}}

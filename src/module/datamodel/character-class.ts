@@ -6,7 +6,7 @@ type ClassLevelType = {
 	slots: [number,number,number,number]
 	talents: [number,number,number,number],
 	powers_known: [number,number,number,number],
-	magic_damage: {low: number, high:number},
+	magic_damage: {low: number, high:number, boost: number},
 	wpn_mult: number,
 };
 

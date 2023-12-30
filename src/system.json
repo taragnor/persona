@@ -30,5 +30,11 @@
             "path": "lang/en.json"
         }
     ],
-    "packs": []
+  "packs": [{
+    "name": "persona-classes",
+    "label": "Persona Classes",
+    "system": "persona",
+    "type": "Item",
+    "path": "packs/classes"
+  }]
 }

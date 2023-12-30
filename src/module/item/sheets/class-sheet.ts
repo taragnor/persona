@@ -34,7 +34,7 @@ export class PersonaClassSheet  extends PersonaItemSheetBase {
 			slots: [0, 0, 0, 0],
 			powers_known: [0,0,0,0],
 			talents: [0,0,0,0],
-			magic_damage: { low: 1, high:1},
+			magic_damage: { low: 1, high:1, boost: 1},
 			wpn_mult: 1,
 		};
 		const newtable = oldtable.concat([newobj]);
