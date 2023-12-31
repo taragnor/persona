@@ -1,3 +1,4 @@
+import { Power } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
 import { ACTORMODELS } from "../datamodel/actor-types.js"
 import { PersonaItem } from "../item/persona-item.js"
@@ -43,17 +44,67 @@ declare global {
 			return cl;
 		}
 
-		test() {
-			if (this.system.type == "shadow") {
-				this.system.tarot
-			}
-			if (this.system.type == "pc") {
-				this.system.combat.hp.curr
-				this.system.social.links
-			}
-
+		set hp(newval: number) {
+			this.update({"system.combat.hp": newval});
+		}
+		get hp(): number {
+			if (this.system.type =="npc") return 0;
+			return this.system.combat.hp;
 
 		}
+
+		get mhp() : number {
+			if (this.system.type == "npc") return 0;
+			try {
+				const inc= this.hasIncremental("hp")? 1: 0;
+				const lvl = this.system.combat.classData.level;
+				return this.class.getClassProperty(lvl + inc, "maxhp");
+			} catch (e) {
+				console.warn(`Can't get Hp for ${this.name} (${this.id})`);
+				return 0;
+			}
+		}
+
+		hasIncremental(type: keyof Subtype<PersonaActor, "pc">["system"]["combat"]["classData"]["incremental"]) {
+			switch (this.system.type) {
+				case "pc": case "shadow":
+					return this.system.combat.classData.incremental[type];
+				default:
+					throw new Error("Doesn't have incremental");
+			}
+
+		}
+
+		getMaxSlotsAt(slot_lvl: number) : number {
+			if (this.system.type != "pc") return 0;
+			try {
+				const inc =this.hasIncremental("slots") ? 1 : 0;
+				const lvl = this.system.combat.classData.level;
+				return this.class.getClassProperty(lvl + inc, "slots")[slot_lvl] ?? -999;
+
+			} catch (e) {
+				return -999;
+			}
+		}
+
+		get powers(): Power[] {
+			if (this.system.type =="npc") return [];
+			try {
+				const powerIds = this.system.combat.powers;
+				const powers : Power[] = powerIds
+					.flatMap( id => {
+						const i = PersonaDB.getItemById(id) as Power;
+						return i ? [i] : []
+					});
+				const basicAtk = PersonaItem.getBasicAttack();
+				return powers.concat([basicAtk]);
+			} catch(e) {
+				console.error(e);
+				return [];
+			}
+		}
+
+
 
 	}
 

@@ -3,9 +3,44 @@
 		<h2>
 			{{localize "persona.sheet.tabs.combat.header" }}
 		</h2>
+		<div class="lvl">
+			<span> Level:</span>
+			<span>
+				<input class="short" type="number" name="system.combat.classData.level" value="{{actor.system.combat.classData.level}}">
+			</span>
+		</div>
 		<div class="hp">
 			<span>
-				<input class="short" type="number" name="system.combat.hp.curr" value="{{actor.system.combat.hp.curr}}"> / {{actor.system.combat.hp.max}}</span>
+				<input class="short" type="number" name="system.combat.hp" value="{{actor.hp}}">
+				/ {{actor.mhp}}</span>
 		</div>
+		<div class="slots">
+			<h2>
+				Slots
+			</h2>
+			{{#each actor.system.slots as |slot lvl|}}
+			<div>
+				<span>
+					{{lvl}}:
+				</span>
+				<input class="short" type="number" name="system.slots.[lvl]" value="{{slot}}">
+				/ {{getMaxSlotsAt ../actor lvl}}
+				{{/each}}
+			</div>
+		</div>
+		<div class="powers-section">
+			<h2>
+				Powers
+			</h2>
+			{{#each actor.powers as |power|}}
+			<div class="power-block">
+				<h3>
+					{{power.name}}
+				</h3>
+			</div>
+
+			{{/each}}
+		</div>
+
 	</div>
 </section>

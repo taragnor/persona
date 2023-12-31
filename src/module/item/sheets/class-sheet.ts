@@ -5,7 +5,7 @@ export class PersonaClassSheet  extends PersonaItemSheetBase {
 
 	static override get defaultOptions() {
 		return mergeObject(super.defaultOptions, {
-			classes: ["persona", "sheet", "actor"],
+			classes: ["persona", "sheet", "item"],
 			template: `${HBS_TEMPLATES_DIR}/class-sheet.hbs`,
 			width: 800,
 			height: 800,

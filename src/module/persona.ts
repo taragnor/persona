@@ -62,6 +62,11 @@ function registerSheetApplications() {
 
  function registerHandlebarsHelpers() {
    Handlebars.registerHelper("caps", (str) => str.toUpperCase?.() || str);
+	 Handlebars.registerHelper("getMaxSlotsAt", (actor: PersonaActor, lvl:number) => {
+		 console.log(actor);
+		 console.log(lvl);
+		 return actor.getMaxSlotsAt(lvl);
+	 });
  }
 
  function preloadHandlebarsTemplates() {

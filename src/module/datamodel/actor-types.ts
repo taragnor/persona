@@ -24,6 +24,7 @@ const tarot = function () { return new txt( { choices: Object.keys(tarotDeck)});
 
 const classData = function () {
 	return  new sch( {
+		level: new num({min: 0, max: 10, initial: 1, integer:true}),
 		classId: new id(),
 		incremental: new sch( {
 			hp: new bool({initial:false}),
@@ -41,10 +42,7 @@ const classData = function () {
 const combatStats = function () {
 	return new sch( {
 		classData: classData(),
-		hp: new sch( {
-			curr: new num( {integer:true}),
-			max: new num( {integer:true}),
-		}),
+		hp: new num( {integer:true, initial: 1}),
 		wpnatk: new num( {integer:true}),
 		magatk: new num( {integer:true}),
 		defenses :
@@ -54,6 +52,7 @@ const combatStats = function () {
 			fort: new num( {integer:true}),
 		}),
 		equippedWeapon: new id(),
+		powers: new arr( new id()),
 	});
 };
 
@@ -87,10 +86,11 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			combat: combatStats(),
 			bio: personalBio(),
 			social: socialLinks,
-			skill_slots: skillSlots(),
+			slots: skillSlots(),
 		} as const;
 		return ret;
 	}
+
 }
 
 export class ShadowSchema extends foundry.abstract.DataModel {

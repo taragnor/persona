@@ -19,8 +19,8 @@ export class StudentSkill extends foundry.abstract.DataModel {
 	}
 }
 
-export class Skill extends foundry.abstract.DataModel {
-	get type() {return "skill" as const;}
+export class Power extends foundry.abstract.DataModel {
+	get type() {return "power" as const;}
 	static override defineSchema() {
 		const ret = {
 			subtype: new txt( {choices: ["weapon", "magic", "other", "none"]} ),
@@ -78,7 +78,7 @@ export class InventoryItemSchema extends foundry.abstract.DataModel {
 
 export const ITEMMODELS = {
 	item: InventoryItemSchema,
-	skill: Skill,
+	power: Power,
 	studentSkill: StudentSkill,
 	characterClass: CharacterClass,
 	focus: Focus,
