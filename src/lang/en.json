@@ -28,5 +28,11 @@
 	"persona.tarot.18.name": "The Moon",
 	"persona.tarot.19.name": "The Sun",
 	"persona.tarot.20.name": "Judgment",
-	"persona.tarot.21.name": "The World"
+	"persona.tarot.21.name": "The World",
+
+	"persona.power.subtype.weapon": "Weapon",
+	"persona.power.subtype.magic": "Magic",
+	"persona.power.subtype.other": "Other",
+	"persona.power.subtype.none": "None"
+
 }

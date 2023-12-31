@@ -1,5 +1,6 @@
 import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
+import { Power } from "../persona-item.js";
 
 export class PersonaPowerSheet  extends PersonaItemSheetBase {
 	static override get defaultOptions() {
@@ -13,7 +14,13 @@ export class PersonaPowerSheet  extends PersonaItemSheetBase {
 	}
 
 	override getData() {
-		return super.getData();
+		const data = super.getData();
+		const POWERTYPES : Record<Power["system"]["subtype"], string> = Object.fromEntries(
+			[ "weapon", "magic", "other", "none"]
+			.map( x=> [x, `persona.power.subtype.${x}`])
+		);
+		data.POWERTYPES = POWERTYPES;
+		return data;
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {

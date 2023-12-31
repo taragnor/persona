@@ -19,6 +19,7 @@ import { ShadowSheet } from "./actor/sheets/shadow-sheet.js";
 import { NPCSheet } from "./actor/sheets/npc-sheet.js";
 import { PersonaItemSheetBase } from "./item/sheets/base-item-sheet.js";
 import { HANDLEBARS_TEMPLATE_DIR } from "../config/persona-settings.js";
+import { PersonaPowerSheet } from "./item/sheets/power-sheet.js";
 
 function registerDataModels() {
 	CONFIG.Actor.dataModels= ACTORMODELS;
@@ -38,6 +39,7 @@ function registerSheetApplications() {
   Actors.registerSheet("persona", NPCSheet, {types: ["npc"], makeDefault: true});
   Actors.registerSheet("persona", ShadowSheet, {types: ["shadow"], makeDefault: true});
   Items.registerSheet("persona", PersonaClassSheet, {types: ["characterClass"], makeDefault: true});
+  Items.registerSheet("persona", PersonaPowerSheet, {types: ["power"], makeDefault: true});
 
   Items.registerSheet("persona", PersonaItemSheetBase, {types: ["item"], makeDefault: true});
 }

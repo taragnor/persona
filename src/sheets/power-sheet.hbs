@@ -1,4 +1,7 @@
 <form class="power-sheet">
 	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Power Name" placeholder="Power Name">
+	<select name="system.subtype">
+		{{selectOptions POWERTYPES localize=true selected=item.system.subtype}}
+	</select>
 
 </form>
