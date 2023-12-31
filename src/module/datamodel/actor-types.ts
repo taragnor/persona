@@ -9,6 +9,17 @@ const personalBio = function () {
 	});
 }
 
+function skillSlots() {
+	return new sch(
+		{
+			0: new num({min:0, max:8, initial:0}),
+			1: new num({min:0, max:8, initial:0}),
+			2: new num({min:0, max:8, initial:0}),
+			3: new num({min:0, max:8, initial:0}),
+		}
+	);
+}
+
 const tarot = function () { return new txt( { choices: Object.keys(tarotDeck)});}
 
 const classData = function () {
@@ -76,6 +87,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			combat: combatStats(),
 			bio: personalBio(),
 			social: socialLinks,
+			skill_slots: skillSlots(),
 		} as const;
 		return ret;
 	}
