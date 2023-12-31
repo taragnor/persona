@@ -20,10 +20,6 @@ import { NPCSheet } from "./actor/sheets/npc-sheet.js";
 import { PersonaItemSheetBase } from "./item/sheets/base-item-sheet.js";
 import { HANDLEBARS_TEMPLATE_DIR } from "../config/persona-settings.js";
 
-Hooks.once("init", async function() {
-  console.log("*** PERSONA SYSTEM INIT START ***");
-});
-
 function registerDataModels() {
 	CONFIG.Actor.dataModels= ACTORMODELS;
 	CONFIG.Item.dataModels= ITEMMODELS;

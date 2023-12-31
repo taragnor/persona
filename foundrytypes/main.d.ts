@@ -54,7 +54,10 @@ declare class Items {
 declare interface Collection<T> {
 	filter(fn: (T) => boolean) : T[];
 	map(fn: (T) => boolean) : T[];
-	[Symbol.iterator]() : Iterator<T>
+	[Symbol.iterator]() : Iterator<T>;
+	get(id: string) : T | null;
+	getName(name: string): T | null;
+
 }
 
 declare class FoundryCompendium<T extends object> {

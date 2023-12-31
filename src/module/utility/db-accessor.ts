@@ -8,10 +8,6 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 	comp_actors: ActorType[] = [];
 
 	constructor() {
-		Hooks.once("ready", ()=> this.init);
-	}
-
-	 async init() {
 		Hooks.once("ready", () => {
 			this._loadPacks();
 			this._initHooks();
@@ -128,7 +124,8 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 		}
 	}
 
-	 async _loadPacks() : Promise<void> {
+	async _loadPacks() : Promise<void> {
+		console.log("Loading Packs");
 		this.comp_items = await this.getCompendiumDataByType("Item") as ItemType[];
 		this.comp_actors = await this.getCompendiumDataByType("Actor") as ActorType[];
 		this.loadPacks();
