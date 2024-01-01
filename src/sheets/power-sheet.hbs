@@ -3,5 +3,38 @@
 	<select name="system.subtype">
 		{{selectOptions POWERTYPES localize=true selected=item.system.subtype}}
 	</select>
-
+	{{#if (eq item.system.subtype "weapon")}}
+	<div class="hp-cost">
+		<label class="hp-cost">
+			{{localize	"persona.power.hpcost"}}
+		</label>
+		{{numberInput item.system.hpcost class="short" name="system.hpcost" step=1 min=0 max=100}}
+	</div>
+	<div class="damage">
+		<label class="dmg-low">
+			Low
+		</label>
+		{{numberInput item.system.damage.low class="short" name="system.damage.low" step=1 min=0 max=900}}
+		<label class="dmg-high">
+			High
+		</label>
+		{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=900}}
+	</div>
+	{{/if}}
+	{{#if (eq item.system.subtype "magic")}}
+	<div class="slot-cost">
+		<label>
+			{{localize "persona.power.slotcost"}}
+		</label>
+		<select name="system.slot">
+			{{selectOptions SLOTTYPES localize=true selected=item.system.slot}}
+		</select>
+	</div>
+	<div class="mag-mult">
+		<label>
+			Multiplier
+		</label>
+		{{numberInput item.system.mag_mult class="short" name="system.mag_mult" step=1 min=0 max=900}}
+	</div>
+	{{/if}}
 </form>

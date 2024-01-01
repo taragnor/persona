@@ -5,7 +5,6 @@
 	"persona.sheet.tabs.combat.tabname" : "Combat",
 	"persona.sheet.tabs.combat.header": "Combat Stats",
 
-
 	"persona.tarot.cardname": "Tarot Card",
 	"persona.tarot.0.name": "The Fool",
 	"persona.tarot.1.name": "The Magician",
@@ -33,6 +32,33 @@
 	"persona.power.subtype.weapon": "Weapon",
 	"persona.power.subtype.magic": "Magic",
 	"persona.power.subtype.other": "Other",
-	"persona.power.subtype.none": "None"
+	"persona.power.subtype.none": "None",
+	"persona.power.hpcost": "Hp Cost",
+	"persona.power.slotcost": "Slot Cost",
+	"persona.power.types.weapon": "Weapon",
+	"persona.power.types.magic": "Magic Skill",
+	"persona.power.types.other": "Other",
+	"persona.power.types.none": "None",
 
+
+	"persona.slottypes.0.name": "Basic",
+	"persona.slottypes.1.name": "Advanced",
+	"persona.slottypes.2.name": "Expert",
+	"persona.slottypes.3.name": "Ultimate",
+
+	"persona.effecttypes.damage": "Damage",
+	"persona.effecttypes.healing": "Healing",
+	"persona.effecttypes.addStatus": "Add Status",
+	"persona.effecttypes.removeStatus": "Remove Status",
+	"persona.effecttypes.escalationManipulation": "Change Escalation",
+
+	"persona.preconditions.natural+": "Natural >=",
+	"persona.preconditions.natural-": "Natural <=",
+	"persona.preconditions.naturalodd": "Natural Odd",
+	"persona.preconditions.naturaleven": "Natural Even",
+	"persona.preconditions.critical": "Critical Hit",
+	"persona.preconditions.miss": "Miss",
+	"persona.preconditions.hit": "Hit",
+	"persona.preconditions.escalation+": "Escalation >=",
+	"persona.preconditions.escalation-": "Escalation <="
 }

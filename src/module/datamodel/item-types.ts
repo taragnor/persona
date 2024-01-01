@@ -1,13 +1,9 @@
 const {StringField:txt, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 
-import { CharacterClass } from "./character-class.js";
+import { CharacterClass } from "./character-class-dm.js";
+import { Power } from "./power-dm.js";
+import { damage } from "./power-dm.js";
 
-const damage = function() {
-	return new sch( {
-		low: new num( {integer:true, min: 0, initial:1}),
-		high: new num( {integer:true, min: 0, initial: 1}),
-	});
-}
 
 export class StudentSkill extends foundry.abstract.DataModel {
 	get type() { return "studentSkill" as const;}
@@ -17,20 +13,6 @@ export class StudentSkill extends foundry.abstract.DataModel {
 		};
 		return ret;
 	}
-}
-
-export class Power extends foundry.abstract.DataModel {
-	get type() {return "power" as const;}
-	static override defineSchema() {
-		const ret = {
-			subtype: new txt( {choices: ["weapon", "magic", "other", "none"]} ),
-			hpcost: new num( {integer:true}),
-			damage: damage(),
-			slot: new num( {integer: true, positive:true}),
-		};
-		return ret;
-	}
-
 }
 
 export class Weapon extends foundry.abstract.DataModel {

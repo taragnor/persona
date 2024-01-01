@@ -1,6 +1,7 @@
 import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { Power } from "../persona-item.js";
+import { SLOTTYPES } from "../../../config/slot-types.js";
 
 export class PersonaPowerSheet  extends PersonaItemSheetBase {
 	static override get defaultOptions() {
@@ -20,6 +21,7 @@ export class PersonaPowerSheet  extends PersonaItemSheetBase {
 			.map( x=> [x, `persona.power.subtype.${x}`])
 		);
 		data.POWERTYPES = POWERTYPES;
+		data.SLOTTYPES = SLOTTYPES;
 		return data;
 	}
 
