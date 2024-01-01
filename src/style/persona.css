@@ -7,3 +7,19 @@ input.single-digit {
 	width: 1em;
 
 }
+
+.power-effect {
+	display:flex;
+	flex-direction:row;
+	justify-content: space-between;
+}
+
+.conditions-section {
+	display:flex;
+	flex-direction: column;
+}
+
+.consequences-section {
+	display:flex;
+	flex-direction: column;
+}

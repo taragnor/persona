@@ -11,8 +11,41 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		return this.system.leveling_table[lvl][property];
 	}
 
-	static getBasicAttack() : Power {
+	static getBasicAttack() : Option<Power> {
 		return PersonaDB.getItemByName("Basic Attack")  as Power;
+	}
+
+	async addNewPowerEffect(this: Power) {
+
+		const arr= this.system.effects ?? [];
+		arr.push( {
+			conditions: [
+				{
+					type:"always",
+			} ],
+			consequences: [{
+				type:"damage",
+				amount:0
+			}]
+		});
+		await this.update({ "system.effects": arr});
+	}
+
+	async addNewPowerPrecondition(this: Power, index:number) {
+		const x = this.system.effects[index];
+		x.conditions.push( {
+			type: "always"
+		});
+		await this.update({"system.effects": x});
+	}
+
+	async addNewPowerConsequence(this: Power, index:number) {
+		const x = this.system.effects[index];
+		x.consequences.push( {
+			type: "damage",
+			amount: 0,
+		});
+		await this.update({"system.effects": x});
 	}
 
 }

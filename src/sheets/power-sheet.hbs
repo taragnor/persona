@@ -37,4 +37,46 @@
 		{{numberInput item.system.mag_mult class="short" name="system.mag_mult" step=1 min=0 max=900}}
 	</div>
 	{{/if}}
+	<h1>
+		Effects
+		<a class="addPowerEffect">
+			<i class="fa-solid fa-plus"> </i>
+		</a>
+	</h1>
+	<div class="effects-list">
+		{{#each item.system.effects as |effect i|}}
+		<div class="power-effect" data-effect-index="{{i}}">
+			<div class="conditions-section">
+				<h2> Conditions
+					<a class="addCondition">
+						<i class="fa-solid fa-plus"> </i>
+					</a>
+				</h2>
+				<div class="condition-block">
+					{{#each effect.conditions as |cond j|}}
+					<label>
+						type:
+					</label>
+					<select name="system.effects.{{../i}}.conditions.{{j}}.type">
+						{{selectOptions ../../PRECONDITIONTYPES localize=true selected=cond.type}}
+					</select>
+					{{/each}}
+				</div>
+			</div>
+			<div class="consequences-section">
+				<h2> Consequences
+					<a class="addConsequence">
+						<i class="fa-solid fa-plus"> </i>
+					</a>
+				</h2>
+				{{#each effect.consequences as |cons|}}
+				<select name="system.effects.{{../i}}.consequences.{{j}}.type">
+					{{selectOptions ../../CONSTYPES localize=true selected=cons.type}}
+				</select>
+				{{/each}}
+			</div>
+		</div>
+		{{/each}}
+	</div>
+
 </form>

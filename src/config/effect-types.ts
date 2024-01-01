@@ -1,18 +1,18 @@
-export const EFFECTLIST= [
+export const CONSQUENCELIST= [
 	"damage",
 	"healing",
 	"addStatus",
 	"removeStatus",
 	"escalationManipulation",
+	"extraAttack"
 ] as const;
 
-export const EFFECTTYPES = Object.fromEntries(
-EFFECTLIST.map( x=> [x, `persona.effecttypes.${x}`])
+export const CONSQUENCETYPES = Object.fromEntries(
+CONSQUENCELIST.map( x=> [x, `persona.effecttypes.${x}`])
 );
 
-
-
 export const PRECONDITIONLIST = [
+	"always",
 	"natural+",
 	"natural-",
 	"naturalodd",
@@ -22,7 +22,7 @@ export const PRECONDITIONLIST = [
 	"hit",
 	"escalation+",
 	"escalation-",
-]
+] as const;
 
 export const PRECONDITIONTYPES = Object.fromEntries( PRECONDITIONLIST.map(x=> [x, `persona.preconditions.${x}`]));
 
@@ -31,7 +31,7 @@ export const POWERTYPESLIST = [
 	"magic",
 	"other",
 	"none",
-]
+] as const;
 
-export const POWER= Object.fromEntries( POWERTYPESLIST.map(x=> [x, `persona.power.types.${x}`]));
+export const POWERTYPES= Object.fromEntries( POWERTYPESLIST.map(x=> [x, `persona.power.types.${x}`]));
 

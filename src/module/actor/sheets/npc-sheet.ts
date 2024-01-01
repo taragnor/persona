@@ -3,6 +3,7 @@ import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { PersonaActorSheetBase } from "./actor-sheet.base.js";
 
 export class NPCSheet extends PersonaActorSheetBase {
+	override actor: Subtype<PersonaActor, "npc">;
 
 	static override get defaultOptions() {
 		return mergeObject(super.defaultOptions, {

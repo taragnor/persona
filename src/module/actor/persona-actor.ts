@@ -91,13 +91,16 @@ declare global {
 			if (this.system.type =="npc") return [];
 			try {
 				const powerIds = this.system.combat.powers;
-				const powers : Power[] = powerIds
+				let powers : Power[] = powerIds
 					.flatMap( id => {
 						const i = PersonaDB.getItemById(id) as Power;
 						return i ? [i] : []
 					});
 				const basicAtk = PersonaItem.getBasicAttack();
-				return powers.concat([basicAtk]);
+				if (basicAtk) {
+					powers = powers.concat([basicAtk]);
+				}
+				return powers;
 			} catch(e) {
 				console.error(e);
 				return [];

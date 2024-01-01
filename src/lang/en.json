@@ -52,6 +52,7 @@
 	"persona.effecttypes.removeStatus": "Remove Status",
 	"persona.effecttypes.escalationManipulation": "Change Escalation",
 
+	"persona.preconditions.always": "always",
 	"persona.preconditions.natural+": "Natural >=",
 	"persona.preconditions.natural-": "Natural <=",
 	"persona.preconditions.naturalodd": "Natural Odd",

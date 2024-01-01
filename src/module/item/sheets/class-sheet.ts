@@ -1,7 +1,9 @@
 import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
+import { PersonaItem } from "../persona-item.js";
 
 export class PersonaClassSheet  extends PersonaItemSheetBase {
+	override item: Subtype<PersonaItem, "characterClass">;
 
 	static override get defaultOptions() {
 		return mergeObject(super.defaultOptions, {
@@ -25,8 +27,6 @@ export class PersonaClassSheet  extends PersonaItemSheetBase {
 
 	async #addRow() {
 		console.log("Adding a row");
-		if (!(this.item.system.type == "characterClass"))
-			throw new Error("Not a class");
 		let oldtable = this.item.system.leveling_table;
 		const newobj: typeof oldtable[number] = {
 			lvl_num: 0,

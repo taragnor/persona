@@ -107,7 +107,7 @@ interface NumberDataFieldOptions extends DataFieldOptions<number> {
 declare interface StringFieldOptions extends DataFieldOptions<string> {
 	blank ?: boolean;
 	trim ?: boolean;
-	choices?: string[] | Record < string, string> | (()=> string[]);
+	choices?: readonly string[] | Record < string, string> | (()=> string[]);
 
 }
 
