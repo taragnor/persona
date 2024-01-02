@@ -21,6 +21,7 @@ export class Weapon extends foundry.abstract.DataModel {
 		const ret = {
 			...InventoryItemSchema.defineSchema(),
 			damage: damage(),
+			atkBonus: new num({initial: 0, integer: true}),
 		};
 		return ret;
 	}

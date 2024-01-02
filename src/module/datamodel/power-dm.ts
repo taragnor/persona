@@ -43,13 +43,13 @@ export class Power extends foundry.abstract.DataModel {
 	get type() {return "power" as const;}
 	static override defineSchema() {
 		const ret = {
-			subtype: new txt( {choices: POWERTYPESLIST, initial: "none"} ),
+			subtype: new txt<typeof POWERTYPESLIST[number]>( {choices: POWERTYPESLIST, initial: "none"} ),
 			hpcost: new num( {integer:true}),
 			damage: damage(),
 			mag_mult: new num( {integer:true, min:1, max: 100, initial:1}),
-			targets: new txt ( {choices: TARGETINGLIST, initial: "1-engaged"}),
+			targets: new txt<typeof TARGETINGLIST[number]> ( {choices: TARGETINGLIST, initial: "1-engaged"}),
 			slot: new num( {integer: true, min:0, max:20, initial: 0}),
-			dmg_type: new txt( {choices: DAMAGETYPESLIST, initial:"physical"}),
+			dmg_type: new txt<typeof DAMAGETYPESLIST[number]>( {choices: DAMAGETYPESLIST, initial:"physical"}),
 			crit_boost: new num( {min: 0, max:20, initial: 0, integer:true}),
 			effects: powerEffects(),
 			//TODO: add shadow type requirements (charged, uncharged)

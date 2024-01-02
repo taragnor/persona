@@ -1,3 +1,4 @@
+import { Weapon } from "../item/persona-item.js";
 import { Power } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
 import { ACTORMODELS } from "../datamodel/actor-types.js"
@@ -107,7 +108,43 @@ declare global {
 			}
 		}
 
+		get weapon() : Option<Weapon> {
+			if (this.system.type != "pc") {
+				return null;
+			}
+			const id = this.system.combat.equippedWeapon;
+			const item = this.items.find( x=> x.id == id);
+			if (item) return item as Weapon;
+			const dbitem = PersonaDB.getItemById(id);
+			if (dbitem) return dbitem as Weapon;
+			return null;
+		}
+
+		wpnAtkBonus(this: PC | Shadow) : number {
+			const lvl = this.system.combat.classData.level;
+			const wpnAtk = this.system.combat.wpnatk;
+			const inc = this.system.combat.classData.incremental.atkbonus ? 1 : 0;
+			const wpn = this.weapon;
+			let wpnbonus = 0;
+			if (wpn) {
+				wpnbonus = wpn.system.atkBonus;
+			}
+			return lvl + wpnAtk + inc + wpnbonus;
+		}
+
+		magAtkBonus(this:PC | Shadow) : number {
+			const lvl = this.system.combat.classData.level;
+			const magAtk = this.system.combat.magatk;
+			const inc = this.system.combat.classData.incremental.atkbonus ? 1 : 0;
+			return lvl + magAtk + inc;
+		}
+
 
 
 	}
+
+export type PC = Subtype<PersonaActor, "pc">;
+export type Shadow = Subtype<PersonaActor, "shadow">;
+export type NPC = Subtype<PersonaActor, "npc">;
+
 

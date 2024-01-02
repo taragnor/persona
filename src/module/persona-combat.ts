@@ -4,28 +4,39 @@ import { PersonaActor } from "./actor/persona-actor";
 
 import { Power } from "./item/persona-item";
 export class PersonaCombat {
-	static usePowerOn(attacker: Token<PersonaActor>, power: Power, targets: Token<PersonaActor>[]) : CombatResult<Token<PersonaActor>> {
+	static usePowerOn(attacker: PToken, power: Power, targets: PToken[]) : CombatResult<PToken> {
+		const attackbonus= this.getAttackBonus(attacker, power);
 		return {
 			tokens: [],
 			escalationMod: 0,
 		}; //Placeholder
 	}
 
-
-	static usePower(attacker: Token<PersonaActor>, power: Power) {
-		const targets= this.getTargets();
-		return this.usePowerOn(attacker, power, targets);
-
+	static getAttackBonus(attacker: PToken, power:Power):number {
+		const actor = attacker.actor;
+		if (power.system.subtype == "weapon")
+			return actor.wpnAtkBonus();
+		if (power.system.subtype == "magic")
+			return actor.magAtkBonus();
 
 	}
 
-	static getTargets(): Token<PersonaActor>[] {
+	static usePower(attacker: PToken, power: Power) {
+		const targets= this.getTargets();
+		return this.usePowerOn(attacker, power, targets);
+	}
+
+	static getTargets(): PToken[] {
 		const targets = game.user.targets.contents;
 		return targets;
 	}
 
 
 }
+
+type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shadow">;
+
+type PToken = Token<ValidAttackers>;
 
 
 export interface CombatResult<T extends Token<any>> {
@@ -45,3 +56,4 @@ export interface TokenChange<T extends Token<any>> {
 		id: (typeof STATUS_EFFECT_LIST)[number]["id"],
 	}[];
 }
+

@@ -57,3 +57,4 @@ export function ArrayCorrector<T extends any>(obj: (T[] | Record<string | number
 
 export type CClass = Subtype<PersonaItem, "characterClass">;
 export type Power = Subtype<PersonaItem, "power">;
+export type Weapon = Subtype<PersonaItem, "weapon">;

@@ -54,7 +54,7 @@ class JSONField extends StringFieldClass {
 class DocumentIdField extends StringFieldClass {
 }
 
-declare class StringFieldClass extends FoundryDMField<string> {
+declare class StringFieldClass<T extends string= string> extends FoundryDMField<T> {
 	constructor (StringOptions?: StringFieldOptions);
 
 }
