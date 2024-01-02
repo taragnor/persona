@@ -20,7 +20,7 @@ function skillSlots() {
 	);
 }
 
-const tarot = function () { return new txt( { choices: Object.keys(tarotDeck)});}
+const tarot = function () { return new txt<keyof typeof tarotDeck>( { choices: Object.keys(tarotDeck)});}
 
 const classData = function () {
 	return  new sch( {

@@ -18,7 +18,7 @@ export class PersonaCombat {
 			return actor.wpnAtkBonus();
 		if (power.system.subtype == "magic")
 			return actor.magAtkBonus();
-
+		return -999;//placehholder value
 	}
 
 	static usePower(attacker: PToken, power: Power) {
