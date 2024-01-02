@@ -6,6 +6,9 @@ import { PRECONDITIONTYPES } from "../../../config/effect-types.js";
 import { CONSQUENCETYPES } from "../../../config/effect-types.js";
 import { PersonaItem } from "../persona-item.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
+import { DAMAGETYPES } from "../../../config/damage-types.js";
+import { STATUS_EFFECT_TRANSLATION_TABLE } from "../../../config/status-effects.js";
+import { STATUS_EFFECT_DURATIONS } from "../../../config/status-effects.js";
 
 export class PersonaPowerSheet  extends PersonaItemSheetBase {
 	override item: Subtype<PersonaItem, "power">;
@@ -26,6 +29,9 @@ export class PersonaPowerSheet  extends PersonaItemSheetBase {
 		data.SLOTTYPES = SLOTTYPES;
 		data.PRECONDITIONTYPES= PRECONDITIONTYPES;
 		data.CONSTYPES= CONSQUENCETYPES;
+		data.DAMAGETYPES = DAMAGETYPES;
+		data.STATUSEFFECTS= STATUS_EFFECT_TRANSLATION_TABLE;
+		data.STATUSDURATIONS = STATUS_EFFECT_DURATIONS;
 		return data;
 	}
 

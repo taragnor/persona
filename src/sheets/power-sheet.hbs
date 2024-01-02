@@ -46,36 +46,59 @@
 	<div class="effects-list">
 		{{#each item.system.effects as |effect i|}}
 		<div class="power-effect" data-effect-index="{{i}}">
-			<div class="conditions-section">
+			<section class="conditions-section">
 				<h2> Conditions
 					<a class="addCondition">
 						<i class="fa-solid fa-plus"> </i>
 					</a>
 				</h2>
+				{{#each effect.conditions as |cond j|}}
 				<div class="condition-block">
-					{{#each effect.conditions as |cond j|}}
-					<label>
-						type:
-					</label>
-					<select name="system.effects.{{../i}}.conditions.{{j}}.type">
-						{{selectOptions ../../PRECONDITIONTYPES localize=true selected=cond.type}}
-					</select>
-					{{/each}}
+					<div class="type-selector">
+						<label>
+							type:
+						</label>
+						<select name="system.effects.{{../i}}.conditions.{{j}}.type">
+							{{selectOptions ../../PRECONDITIONTYPES localize=true selected=cond.type}}
+						</select>
+						<input class="short" type=number name="system.effects.{{../i}}.conditions.{{j}}.num" value="{{cond.num}}">
+					</div>
 				</div>
-			</div>
-			<div class="consequences-section">
+				{{/each}}
+			</section>
+			<section class="consequences-section">
 				<h2> Consequences
 					<a class="addConsequence">
 						<i class="fa-solid fa-plus"> </i>
 					</a>
 				</h2>
-				{{#each effect.consequences as |cons|}}
-				<select name="system.effects.{{../i}}.consequences.{{j}}.type">
-					{{selectOptions ../../CONSTYPES localize=true selected=cons.type}}
-				</select>
+				{{#each effect.consequences as |cons j|}}
+				<div class="consequence-block">
+					<div class="type-select">
+						<select name="system.effects.{{../i}}.consequences.{{j}}.type">
+							{{selectOptions ../../CONSTYPES localize=true selected=cons.type}}
+						</select>
+						{{#if (eq cons.type "damage")}}
+						<select name="system.effects.{{../i}}.consequences.{{j}}.damageType">
+							{{selectOptions ../../DAMAGETYPES localize=true selected=cons.damageType}}
+						</select>
+					</div>
+					{{/if}}
+					{{#if (or (eq cons.type "addStatus") (eq cons.type "removeStatus"))}}
+					<select name="system.effects.{{../i}}.consequences.{{j}}.statusName">
+						{{selectOptions ../../STATUSEFFECTS localize=true selected=cons.statusName}}
+					</select>
+					{{/if}}
+					{{#if (eq cons.type "addStatus")}}
+					<select name="system.effects.{{../i}}.consequences.{{j}}.statusDuration">
+						{{selectOptions ../../STATUSDURATIONS localize=true selected=cons.statusName}}
+					</select>
+					{{/if}}
+				</div>
 				{{/each}}
-			</div>
+			</section>
 		</div>
+		<hr>
 		{{/each}}
 	</div>
 

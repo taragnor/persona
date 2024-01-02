@@ -3,6 +3,7 @@ const {StringField:txt, ObjectField:obj, NumberField: num, SchemaField: sch, HTM
 import { CONSQUENCELIST } from "../../config/effect-types.js";
 import { PRECONDITIONLIST } from "../../config/effect-types.js";
 import { POWERTYPESLIST } from "../../config/effect-types.js";
+import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 
 export  const damage = function() {
 	return new sch( {
@@ -13,11 +14,11 @@ export  const damage = function() {
 
 type EffectObject = {
 	type: typeof CONSQUENCELIST[number],
+	damageType ?: typeof DAMAGETYPESLIST[number],
 	amount?: number,
 	statusName?: string,
 	statusDuration?: string,
 }
-
 
 type ConditionalEffect  = {
 	conditions: Precondition[],
@@ -30,7 +31,12 @@ type Precondition = {
 }
 
 const powerEffects = function () {
-	return new arr( new obj<ConditionalEffect>());
+	return new arr( new obj<ConditionalEffect>()
+		,{
+			validate: (x:ConditionalEffect[])=> {
+				return x.every( e=> Array.isArray(e.conditions) && Array.isArray(e.consequences))
+			}
+			});
 }
 
 

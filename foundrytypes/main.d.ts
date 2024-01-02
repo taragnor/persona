@@ -17,18 +17,6 @@ declare const Hooks: Hooks;
 declare const CONFIG : CONFIG;
 
 
-declare interface CONFIG {
-	Actor: {
-		dataModels: Record<string, typeof foundry.abstract.DataModel>;
-		documentClass: typeof Actor<T>;
-	}
-	Item: {
-		dataModels: Record<string, typeof foundry.abstract.DataModel>;
-		documentClass: typeof Item<T>;
-	}
-
-}
-
 
 declare interface Game {
 	actors: Collection<Actor<any, any>>;
