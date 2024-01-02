@@ -9,6 +9,7 @@ import { HTMLTools } from "../../utility/HTMLTools.js";
 import { DAMAGETYPES } from "../../../config/damage-types.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../../../config/status-effects.js";
 import { STATUS_EFFECT_DURATIONS } from "../../../config/status-effects.js";
+import { TARGETING } from "../../../config/effect-types.js";
 
 export class PersonaPowerSheet  extends PersonaItemSheetBase {
 	override item: Subtype<PersonaItem, "power">;
@@ -32,6 +33,7 @@ export class PersonaPowerSheet  extends PersonaItemSheetBase {
 		data.DAMAGETYPES = DAMAGETYPES;
 		data.STATUSEFFECTS= STATUS_EFFECT_TRANSLATION_TABLE;
 		data.STATUSDURATIONS = STATUS_EFFECT_DURATIONS;
+		data.TARGETING = TARGETING;
 		return data;
 	}
 

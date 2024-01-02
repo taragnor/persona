@@ -6,7 +6,9 @@ export const DAMAGETYPESLIST = [
 	"lightning",
 	"light",
 	"dark",
-	"untyped"
+	"untyped",
+	"healing",
+	"none"
 ] as const;
 
 export const DAMAGETYPES = Object.fromEntries(

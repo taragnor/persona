@@ -19,14 +19,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 
 		const arr= this.system.effects ?? [];
 		arr.push( {
-			conditions: [
-				{
-					type:"always",
-			} ],
-			consequences: [{
-				type:"damage",
-				amount:0
-			}]
+			conditions: [ ],
+			consequences: []
 		});
 		await this.update({ "system.effects": arr});
 	}
@@ -44,9 +38,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		const x = this.system.effects[index];
 		x.consequences = ArrayCorrector(x.consequences);
 		x.consequences.push( {
-			type: "damage",
+			type: "none",
 			amount: 0,
-			damageType: "untyped",
 		});
 		await this.update({"system.effects": this.system.effects});
 	}

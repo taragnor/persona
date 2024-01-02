@@ -4,6 +4,7 @@ import { CONSQUENCELIST } from "../../config/effect-types.js";
 import { PRECONDITIONLIST } from "../../config/effect-types.js";
 import { POWERTYPESLIST } from "../../config/effect-types.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
+import { TARGETINGLIST } from "../../config/effect-types.js";
 
 export  const damage = function() {
 	return new sch( {
@@ -12,9 +13,8 @@ export  const damage = function() {
 	});
 }
 
-type EffectObject = {
+type ConsequencesObject = {
 	type: typeof CONSQUENCELIST[number],
-	damageType ?: typeof DAMAGETYPESLIST[number],
 	amount?: number,
 	statusName?: string,
 	statusDuration?: string,
@@ -22,7 +22,7 @@ type EffectObject = {
 
 type ConditionalEffect  = {
 	conditions: Precondition[],
-	consequences: EffectObject[]
+	consequences: ConsequencesObject[]
 };
 
 type Precondition = {
@@ -36,9 +36,8 @@ const powerEffects = function () {
 			validate: (x:ConditionalEffect[])=> {
 				return x.every( e=> Array.isArray(e.conditions) && Array.isArray(e.consequences))
 			}
-			});
+		});
 }
-
 
 export class Power extends foundry.abstract.DataModel {
 	get type() {return "power" as const;}
@@ -48,8 +47,12 @@ export class Power extends foundry.abstract.DataModel {
 			hpcost: new num( {integer:true}),
 			damage: damage(),
 			mag_mult: new num( {integer:true, min:1, max: 100, initial:1}),
+			targets: new txt ( {choices: TARGETINGLIST, initial: "1-engaged"}),
 			slot: new num( {integer: true, min:0, max:20, initial: 0}),
+			dmg_type: new txt( {choices: DAMAGETYPESLIST, initial:"physical"}),
+			crit_boost: new num( {min: 0, max:20, initial: 0, integer:true}),
 			effects: powerEffects(),
+			//TODO: add shadow type requirements (charged, uncharged)
 		};
 		return ret;
 	}

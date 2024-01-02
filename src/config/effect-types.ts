@@ -1,10 +1,11 @@
-export const CONSQUENCELIST= [
-	"damage",
+export const CONSQUENCELIST = [
+	"none",
+	"half-damage",
 	"healing",
 	"addStatus",
 	"removeStatus",
 	"escalationManipulation",
-	"extraAttack"
+	"extraAttack",
 ] as const;
 
 export const CONSQUENCETYPES = Object.fromEntries(
@@ -34,4 +35,19 @@ export const POWERTYPESLIST = [
 ] as const;
 
 export const POWERTYPES= Object.fromEntries( POWERTYPESLIST.map(x=> [x, `persona.power.types.${x}`]));
+
+
+export const TARGETINGLIST = [
+	"1-engaged",
+	"1-nearby",
+	"1d4-random",
+	"1d4-random-rep",
+	"1d3-random",
+	"1d3-random-rep",
+	"1-ally",
+	"1d4-allies",
+	"self",
+];
+
+export const TARGETING= Object.fromEntries( TARGETINGLIST.map(x=> [x, `persona.power.targets.${x}`]));
 
