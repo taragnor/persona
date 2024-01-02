@@ -4,6 +4,8 @@ export const CONSQUENCELIST = [
 	"healing",
 	"addStatus",
 	"removeStatus",
+	"removeStatus-self",
+	"addStatus-self",
 	"escalationManipulation",
 	"extraAttack",
 ] as const;
@@ -16,13 +18,17 @@ export const PRECONDITIONLIST = [
 	"always",
 	"natural+",
 	"natural-",
-	"naturalodd",
-	"naturaleven",
+	"natural-odd",
+	"natural-even",
 	"critical",
 	"miss",
 	"hit",
 	"escalation+",
 	"escalation-",
+	"activation+",
+	"activation-",
+	"activation-odd",
+	"activation-even",
 ] as const;
 
 export const PRECONDITIONTYPES = Object.fromEntries( PRECONDITIONLIST.map(x=> [x, `persona.preconditions.${x}`]));

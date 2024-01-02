@@ -1,4 +1,4 @@
-const STATUS_EFFECT_LIST = [
+export const STATUS_EFFECT_LIST = [
 	{
 		id: "burn",
 		icon: "icons/svg/fire.svg",

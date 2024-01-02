@@ -96,6 +96,8 @@
 	"persona.effecttypes.healing": "Healing",
 	"persona.effecttypes.addStatus": "Add Status",
 	"persona.effecttypes.removeStatus": "Remove Status",
+	"persona.effecttypes.addStatus-self": "Add Status (self)",
+	"persona.effecttypes.removeStatus-self": "Remove Status (self)",
 	"persona.effecttypes.escalationManipulation": "Change Escalation",
 	"persona.effecttypes.extraAttack": "Extra Attack",
 	"persona.effecttypes.none": "-",
@@ -109,5 +111,9 @@
 	"persona.preconditions.miss": "Miss",
 	"persona.preconditions.hit": "Hit",
 	"persona.preconditions.escalation+": "Escalation >=",
-	"persona.preconditions.escalation-": "Escalation <="
+	"persona.preconditions.escalation-": "Escalation <=",
+	"persona.preconditions.activation-": "Activation Roll <=",
+	"persona.preconditions.activation+": "Activation Roll >=",
+	"persona.preconditions.activation-odd": "Odd Activation Roll",
+	"persona.preconditions.activation-even": "Even Activation Roll"
 }

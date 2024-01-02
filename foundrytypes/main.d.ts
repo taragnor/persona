@@ -24,6 +24,7 @@ declare interface Game {
 		packs: Collection<FoundryCompendium<any>>,
 		users: Collection<FoundryUser>,
 		system: FoundrySystem,
+		user: FoundryUser,
 }
 
 
@@ -40,6 +41,7 @@ declare class Items {
 }
 
 declare interface Collection<T> {
+	contents: T[];
 	filter(fn: (T) => boolean) : T[];
 	map(fn: (T) => boolean) : T[];
 	[Symbol.iterator]() : Iterator<T>;
@@ -54,6 +56,9 @@ declare class FoundryCompendium<T extends object> {
 }
 
 declare class FoundryUser extends FoundryDocument<never>{
+	targets: Collection<Token<any>> & {user: FoundryUser};
+	role: number;
+	viewedScene: string;
 
 }
 
