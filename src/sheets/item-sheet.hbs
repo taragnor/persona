@@ -1,0 +1,17 @@
+<form class="item-sheet">
+	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Power Name" placeholder="Power Name">
+
+	<div class="equip-slot">
+		<label>
+			Slot
+		</label>
+		<select name="system.subtype">
+			{{selectOptions POWERTYPES localize=true selected=item.system.subtype}}
+		</select>
+	</div>
+
+			{{> "systems/persona/parts/item-modifiers-section.hbs" item=item }}
+
+
+
+</form>

@@ -11,6 +11,7 @@ const personalBio = function () {
 
 function equipslots() {
 	return new sch( {
+		weapon: new id(),
 		body: new id(),
 		accessory: new id(),
 		weapon_crystal: new id(),
@@ -59,7 +60,6 @@ const combatStats = function () {
 			will: new num( {integer:true}),
 			fort: new num( {integer:true}),
 		}),
-		equippedWeapon: new id(),
 		powers: new arr( new id()),
 	});
 };

@@ -19,7 +19,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 
 		const arr= this.system.effects ?? [];
 		arr.push( {
-			conditions: [ ],
+			conditions: [],
 			consequences: []
 		});
 		await this.update({ "system.effects": arr});
@@ -63,4 +63,7 @@ export type CClass = Subtype<PersonaItem, "characterClass">;
 export type Power = Subtype<PersonaItem, "power">;
 export type Weapon = Subtype<PersonaItem, "weapon">;
 export type InvItem = Subtype<PersonaItem, "item">;
+export type Talent = Subtype<PersonaItem, "talent">;
+export type StudentSkill = Subtype<PersonaItem, "studentSkill">;
+export type Focus = Subtype<PersonaItem, "focus">;
 

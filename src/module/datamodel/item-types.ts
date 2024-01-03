@@ -43,7 +43,7 @@ export class Weapon extends foundry.abstract.DataModel {
 }
 
 export class Focus extends foundry.abstract.DataModel {
-	get type() { return "talent" as const;}
+	get type() { return "focus" as const;}
 	static override defineSchema() {
 		const ret = {
 			desciption: new html(),

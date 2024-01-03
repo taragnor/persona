@@ -1,4 +1,3 @@
-import { MODIFIERLIST } from "../../config/item_modifiers.js";
 import { InvItem } from "../item/persona-item.js";
 import { Weapon } from "../item/persona-item.js";
 import { Power } from "../item/persona-item.js";
@@ -114,7 +113,7 @@ declare global {
 			if (this.system.type != "pc") {
 				return null;
 			}
-			const id = this.system.combat.equippedWeapon;
+			const id = this.system.equipped.weapon;
 			const item = this.items.find( x=> x.id == id);
 			if (item) return item as Weapon;
 			const dbitem = PersonaDB.getItemById(id);
@@ -153,13 +152,8 @@ declare global {
 			let itemBonus = this.getItemBonus("magAtk");
 			return lvl + magAtk + inc + itemBonus;
 		}
-
-
-
 	}
 
 export type PC = Subtype<PersonaActor, "pc">;
 export type Shadow = Subtype<PersonaActor, "shadow">;
 export type NPC = Subtype<PersonaActor, "npc">;
-
-

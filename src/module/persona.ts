@@ -1,3 +1,4 @@
+
 declare global {
 	interface Game {
 		persona:  {
@@ -9,6 +10,7 @@ declare global {
 		PERSONACFG: unknown
 	}
 }
+import { templatePaths } from "../config/handlebars-templates.js";
 import { PersonaClassSheet } from "./item/sheets/class-sheet.js";
 import { ACTORMODELS } from "./datamodel/actor-types.js";
 import { ITEMMODELS} from "./datamodel/item-types.js";
@@ -20,6 +22,11 @@ import { NPCSheet } from "./actor/sheets/npc-sheet.js";
 import { PersonaItemSheetBase } from "./item/sheets/base-item-sheet.js";
 import { HANDLEBARS_TEMPLATE_DIR } from "../config/persona-settings.js";
 import { PersonaPowerSheet } from "./item/sheets/power-sheet.js";
+import { PersonaWeaponSheet } from "./item/sheets/weapon-sheet.js";
+import { PersonaItemSheet } from "./item/sheets/item-sheet.js";
+import { PersonaStudentSkillSheet } from "./item/sheets/student-skill-sheet.js";
+import { PersonaFocusSheet } from "./item/sheets/focus-sheet.js";
+import { PersonaTalentSheet } from "./item/sheets/talent-sheet.js";
 
 function registerDataModels() {
 	CONFIG.Actor.dataModels= ACTORMODELS;
@@ -40,6 +47,11 @@ function registerSheetApplications() {
   Actors.registerSheet("persona", ShadowSheet, {types: ["shadow"], makeDefault: true});
   Items.registerSheet("persona", PersonaClassSheet, {types: ["characterClass"], makeDefault: true});
   Items.registerSheet("persona", PersonaPowerSheet, {types: ["power"], makeDefault: true});
+  Items.registerSheet("persona", PersonaWeaponSheet, {types: ["weapon"], makeDefault: true});
+  Items.registerSheet("persona", PersonaItemSheet, {types: ["item"], makeDefault: true});
+  Items.registerSheet("persona", PersonaTalentSheet, {types: ["talent"], makeDefault: true});
+  Items.registerSheet("persona", PersonaFocusSheet, {types: ["focus"], makeDefault: true});
+  Items.registerSheet("persona", PersonaStudentSkillSheet, {types: ["studentSkill"], makeDefault: true});
 
   Items.registerSheet("persona", PersonaItemSheetBase, {types: ["item"], makeDefault: true});
 }
@@ -72,15 +84,6 @@ function registerSheetApplications() {
  }
 
  function preloadHandlebarsTemplates() {
- 	const path = HANDLEBARS_TEMPLATE_DIR;
-
- 	const templateFileNames : string[] =[
-		"inventory-section.hbs",
-		"combat-section.hbs",
- 	];
-
- 	const templatePaths = templateFileNames.
- 		map( fname => `${path}/${fname}`);
 	 templatePaths.forEach(path => console.log(path));
- 	loadTemplates(templatePaths);
+	 loadTemplates(templatePaths);
  }
