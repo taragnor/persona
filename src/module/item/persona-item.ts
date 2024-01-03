@@ -44,6 +44,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		await this.update({"system.effects": this.system.effects});
 	}
 
+	getItemBonus(this: InvItem | Weapon, type : keyof InvItem["system"]["modifiers"]) : number {
+		return this.system.modifiers[type];
+	}
+
 }
 
 
@@ -58,3 +62,5 @@ export function ArrayCorrector<T extends any>(obj: (T[] | Record<string | number
 export type CClass = Subtype<PersonaItem, "characterClass">;
 export type Power = Subtype<PersonaItem, "power">;
 export type Weapon = Subtype<PersonaItem, "weapon">;
+export type InvItem = Subtype<PersonaItem, "item">;
+

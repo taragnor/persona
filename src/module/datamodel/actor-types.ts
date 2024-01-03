@@ -9,6 +9,14 @@ const personalBio = function () {
 	});
 }
 
+function equipslots() {
+	return new sch( {
+		body: new id(),
+		accessory: new id(),
+		weapon_crystal: new id(),
+	});
+}
+
 function skillSlots() {
 	return new sch(
 		{
@@ -82,6 +90,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 	static override defineSchema() {
 		const ret = {
 			...BaseStuff.defineSchema(),
+			equipped: equipslots(),
 			tarot: tarot(),
 			combat: combatStats(),
 			bio: personalBio(),

@@ -1,3 +1,5 @@
+import { MODIFIERLIST } from "../../config/item_modifiers.js";
+import { InvItem } from "../item/persona-item.js";
 import { Weapon } from "../item/persona-item.js";
 import { Power } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
@@ -120,23 +122,36 @@ declare global {
 			return null;
 		}
 
+		equippedItems(this: PC) : (InvItem | Weapon)[]  {
+			const inv = this.inventory;
+			const slots : (keyof typeof this.system.equipped)[]=  ["body", "accessory", "weapon_crystal"]
+			const ret = slots
+				.map( slot=> inv
+					.find(item => item.id == this.system.equipped[slot]))
+				.flatMap (x=> x? [x]: []);
+			return ret as (InvItem | Weapon)[];
+		}
+
+		getItemBonus(type : keyof InvItem["system"]["modifiers"]): number {
+			if (this.system.type != "pc")  return 0;
+			return (this as PC).equippedItems().reduce( (acc, item) => acc + item.getItemBonus(type), 0);
+		}
+
+
 		wpnAtkBonus(this: PC | Shadow) : number {
 			const lvl = this.system.combat.classData.level;
 			const wpnAtk = this.system.combat.wpnatk;
 			const inc = this.system.combat.classData.incremental.atkbonus ? 1 : 0;
-			const wpn = this.weapon;
-			let wpnbonus = 0;
-			if (wpn) {
-				wpnbonus = wpn.system.atkBonus;
-			}
-			return lvl + wpnAtk + inc + wpnbonus;
+			let itemBonus = this.getItemBonus("wpnAtk");
+			return lvl + wpnAtk + inc + itemBonus;
 		}
 
 		magAtkBonus(this:PC | Shadow) : number {
 			const lvl = this.system.combat.classData.level;
 			const magAtk = this.system.combat.magatk;
 			const inc = this.system.combat.classData.incremental.atkbonus ? 1 : 0;
-			return lvl + magAtk + inc;
+			let itemBonus = this.getItemBonus("magAtk");
+			return lvl + magAtk + inc + itemBonus;
 		}
 
 

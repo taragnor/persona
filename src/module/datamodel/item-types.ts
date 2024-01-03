@@ -5,6 +5,21 @@ import { Power } from "./power-dm.js";
 import { damage } from "./power-dm.js";
 
 
+//Note: have to manually match this with MODIIFERLIST
+function modifiers() {
+	return new sch( {
+		wpnAtk: new num({initial: 0, integer: true}),
+		magAtk: new num({initial: 0, integer: true}),
+		wpnDmg: new num({initial: 0, integer: true}),
+		magDmg: new num({initial: 0, integer: true}),
+		criticalBoost: new num({initial: 0, integer: true}),
+		ref: new num({initial: 0, integer: true}),
+		fort: new num({initial: 0, integer: true}),
+		will: new num({initial: 0, integer: true}),
+	});
+}
+
+
 export class StudentSkill extends foundry.abstract.DataModel {
 	get type() { return "studentSkill" as const;}
 	static override defineSchema() {
@@ -21,7 +36,7 @@ export class Weapon extends foundry.abstract.DataModel {
 		const ret = {
 			...InventoryItemSchema.defineSchema(),
 			damage: damage(),
-			atkBonus: new num({initial: 0, integer: true}),
+			modifiers: modifiers(),
 		};
 		return ret;
 	}
@@ -54,6 +69,7 @@ export class InventoryItemSchema extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		const ret = {
 			desciption: new html(),
+			modifiers: modifiers(),
 		}
 		return ret;
 	}
