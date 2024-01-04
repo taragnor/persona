@@ -34,6 +34,10 @@
 	"persona.status.buffed" : "Buffed",
 	"persona.status.debuffed" : "Debuffed",
 
+	"persona.damage.low": "Low",
+	"persona.damage.high": "High",
+
+
 	"persona.status.duration.expedition": "Lasts for expedition",
 	"persona.status.duration.combat": "Combat Duration",
 	"persona.status.duration.save-normal": "Save Ends (normal)",

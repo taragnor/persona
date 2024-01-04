@@ -19,8 +19,6 @@ import { PersonaItem } from "./item/persona-item.js";
 import { PCSheet } from "./actor/sheets/pc-sheet.js";
 import { ShadowSheet } from "./actor/sheets/shadow-sheet.js";
 import { NPCSheet } from "./actor/sheets/npc-sheet.js";
-import { PersonaItemSheetBase } from "./item/sheets/base-item-sheet.js";
-import { HANDLEBARS_TEMPLATE_DIR } from "../config/persona-settings.js";
 import { PersonaPowerSheet } from "./item/sheets/power-sheet.js";
 import { PersonaWeaponSheet } from "./item/sheets/weapon-sheet.js";
 import { PersonaItemSheet } from "./item/sheets/item-sheet.js";
@@ -53,7 +51,6 @@ function registerSheetApplications() {
   Items.registerSheet("persona", PersonaFocusSheet, {types: ["focus"], makeDefault: true});
   Items.registerSheet("persona", PersonaStudentSkillSheet, {types: ["studentSkill"], makeDefault: true});
 
-  Items.registerSheet("persona", PersonaItemSheetBase, {types: ["item"], makeDefault: true});
 }
 
  Hooks.once("init", async function() {

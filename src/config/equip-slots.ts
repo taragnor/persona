@@ -3,7 +3,7 @@ export const EQUIP_SLOTS_LIST = [
 	"accessory",
 	"weapon_crystal",
 	"none",
-];
+] as const;
 
 
 export const EQUIP_SLOTS = Object.fromEntries(

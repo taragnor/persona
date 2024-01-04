@@ -1,3 +1,28 @@
 <form class="weapon-sheet">
+	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Power Name" placeholder="Power Name">
+
+	<div class="editor description">
+{{editor item.system.description target="system.description" button=false engine="prosemirror" collaborate=false}}
+	</div>
+
+	<div class="dmg">
+		<div class="dmg-low">
+		<label>
+			{{localize	"persona.damage.low"}}
+		</label>
+		{{numberInput item.system.damage.low class="short" name="system.damage.low" step=1 min=0 max=900}}
+		</div>
+	</div>
+	<div class="dmg">
+		<div class="dmg-high">
+		<label>
+			{{localize	"persona.damage.high"}}
+		</label>
+		{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=900}}
+		</div>
+	</div>
+
+
+	{{> "systems/persona/parts/item-modifiers-section.hbs" item=item }}
 
 </form>

@@ -5,9 +5,13 @@
 		<label>
 			Slot
 		</label>
-		<select name="system.subtype">
-			{{selectOptions POWERTYPES localize=true selected=item.system.subtype}}
+		<select name="system.slot">
+			{{selectOptions EQUIP_SLOTS localize=true selected=item.system.slot}}
 		</select>
+	</div>
+
+	<div class="flexcol editor description">
+{{editor item.system.description target="system.description" button=false engine="prosemirror" collaborate=false}}
 	</div>
 
 			{{> "systems/persona/parts/item-modifiers-section.hbs" item=item }}

@@ -3,6 +3,7 @@ const {StringField:txt, ObjectField:obj, NumberField: num, SchemaField: sch, HTM
 import { CharacterClass } from "./character-class-dm.js";
 import { Power } from "./power-dm.js";
 import { damage } from "./power-dm.js";
+import { EQUIP_SLOTS_LIST } from "../../config/equip-slots.js";
 
 
 //Note: have to manually match this with MODIIFERLIST
@@ -70,6 +71,7 @@ export class InventoryItemSchema extends foundry.abstract.DataModel {
 		const ret = {
 			desciption: new html(),
 			modifiers: modifiers(),
+			slot: new txt<typeof EQUIP_SLOTS_LIST[number]>({choices: EQUIP_SLOTS_LIST}),
 		}
 		return ret;
 	}
