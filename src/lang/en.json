@@ -16,6 +16,13 @@
 	"persona.damage.types.healing": "Healing",
 	"persona.damage.types.none": "None",
 
+	"persona.damage.resist.weakness": "Weakness",
+	"persona.damage.resist.normal": "Normal",
+	"persona.damage.resist.resist": "Resist",
+	"persona.damage.resist.block": "Block",
+	"persona.damage.resist.absorb": "Absorb",
+	"persona.damage.resist.reflect": "Reflect",
+
 	"persona.status.burn" : "Burn",
 	"persona.status.charmed" : "Charmed",
 	"persona.status.curse" : "Cursed",

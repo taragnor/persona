@@ -1,12 +1,30 @@
-const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
+const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
+import { ResistType } from "../../config/damage-types";
 
 import { tarotDeck } from "../../config/tarot.js";
+import { ResistStrength } from "../../config/damage-types";
 
 const personalBio = function () {
 	return new sch( {
 		description: new html(),
 		background: new html(),
 	});
+}
+
+
+
+function elementalResists() {
+	const initial :Record< ResistType, ResistStrength>  = {
+		physical: "normal",
+		fire: "normal",
+		cold: "normal",
+		wind: "normal",
+		lightning: "normal",
+		light: "normal",
+		dark: "normal"
+	};
+	return new obj <Record<ResistType, ResistStrength>> ({
+		initial });
 }
 
 function equipslots() {
@@ -61,6 +79,8 @@ const combatStats = function () {
 			fort: new num( {integer:true}),
 		}),
 		powers: new arr( new id()),
+		resists: elementalResists,
+
 	});
 };
 

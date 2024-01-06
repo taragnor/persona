@@ -3,6 +3,9 @@ import { STATUS_EFFECT_DURATIONS_LIST } from "../config/status-effects";
 import { PersonaActor } from "./actor/persona-actor";
 
 import { Power } from "./item/persona-item";
+import { DamageType } from "../config/damage-types";
+import { ResistStrength } from "../config/damage-types";
+
 export class PersonaCombat {
 	static usePowerOn(attacker: PToken, power: Power, targets: PToken[]) : CombatResult<PToken> {
 		const attackbonus= this.getAttackBonus(attacker, power);
@@ -30,7 +33,6 @@ export class PersonaCombat {
 		const targets = game.user.targets.contents;
 		return targets;
 	}
-
 
 }
 
