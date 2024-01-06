@@ -25,6 +25,7 @@ import { PersonaItemSheet } from "./item/sheets/item-sheet.js";
 import { PersonaStudentSkillSheet } from "./item/sheets/student-skill-sheet.js";
 import { PersonaFocusSheet } from "./item/sheets/focus-sheet.js";
 import { PersonaTalentSheet } from "./item/sheets/talent-sheet.js";
+import { ConsumableSheet } from "./item/sheets/consumable-sheet.js";
 
 function registerDataModels() {
 	CONFIG.Actor.dataModels= ACTORMODELS;
@@ -50,6 +51,7 @@ function registerSheetApplications() {
   Items.registerSheet("persona", PersonaTalentSheet, {types: ["talent"], makeDefault: true});
   Items.registerSheet("persona", PersonaFocusSheet, {types: ["focus"], makeDefault: true});
   Items.registerSheet("persona", PersonaStudentSkillSheet, {types: ["studentSkill"], makeDefault: true});
+  Items.registerSheet("persona", ConsumableSheet, {types: ["consumable"], makeDefault: true});
 
 }
 

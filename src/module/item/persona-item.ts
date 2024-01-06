@@ -66,4 +66,5 @@ export type InvItem = Subtype<PersonaItem, "item">;
 export type Talent = Subtype<PersonaItem, "talent">;
 export type StudentSkill = Subtype<PersonaItem, "studentSkill">;
 export type Focus = Subtype<PersonaItem, "focus">;
+export type Consumable = Subtype<PersonaItem, "consumable">;
 
