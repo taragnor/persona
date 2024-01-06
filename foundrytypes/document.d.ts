@@ -1,4 +1,4 @@
- class FoundryDocument <Embedded extends (FoundryDocument | never)> {
+ class FoundryDocument <Embedded extends (FoundryDocument | never) = never> {
 	get parent(): FoundryDocument | null;
 	async update(updateData: Record<string, any>): Promise<void>;
 	name: string;

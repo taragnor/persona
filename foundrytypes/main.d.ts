@@ -25,6 +25,7 @@ declare interface Game {
 		users: Collection<FoundryUser>,
 		system: FoundrySystem,
 		user: FoundryUser,
+		scenes: SceneCollection,
 }
 
 
@@ -50,7 +51,7 @@ declare interface Collection<T> {
 
 }
 
-declare class FoundryCompendium<T extends object> {
+declare class FoundryCompendium<T extends object> extends FoundryDocument<never> {
 	documentName: FoundryDocumentTypes;
 	async getDocuments(): Promise<T[]>;
 }
@@ -61,6 +62,16 @@ declare class FoundryUser extends FoundryDocument<never>{
 	viewedScene: string;
 
 }
+
+declare class Scene extends FoundryDocument<never> {
+
+}
+
+declare class SceneCollection extends Collection<Scene> {
+	get active(): Scene;
+
+}
+
 
 type FoundryDocumentTypes = "Actor" | "Item" | "Scene";
 

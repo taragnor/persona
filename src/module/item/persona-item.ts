@@ -15,8 +15,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		return PersonaDB.getItemByName("Basic Attack")  as Power;
 	}
 
-	async addNewPowerEffect(this: Power) {
-
+	async addNewPowerEffect(this: PowerContainer) {
 		const arr= this.system.effects ?? [];
 		arr.push( {
 			conditions: [],
@@ -25,7 +24,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		await this.update({ "system.effects": arr});
 	}
 
-	async addNewPowerPrecondition(this: Power, index:number) {
+	async deletePowerEffect(this: PowerContainer, index: number) : Promise<void> {
+		let arr =this.system.effects ?? [];
+		arr.splice(index, 1);
+		await this.update({ "system.effects": arr});
+}
+
+	async addNewPowerPrecondition(this: PowerContainer, index:number) {
 		const x = this.system.effects[index];
 		x.conditions = ArrayCorrector(x.conditions);
 		x.conditions.push( {
@@ -34,7 +39,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		await this.update({"system.effects": this.system.effects});
 	}
 
-	async addNewPowerConsequence(this: Power, index:number) {
+async deletePowerPrecondition( this: PowerContainer, index: number) {
+		const x = this.system.effects[index];
+		x.conditions = ArrayCorrector(x.conditions);
+	   x.conditions.splice(index, 1);
+		await this.update({"system.effects": this.system.effects});
+}
+
+	async addNewPowerConsequence(this: PowerContainer, index:number) {
 		const x = this.system.effects[index];
 		x.consequences = ArrayCorrector(x.consequences);
 		x.consequences.push( {
@@ -43,6 +55,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		});
 		await this.update({"system.effects": this.system.effects});
 	}
+
+async deletePowerConsequence (this: PowerContainer, index: number) {
+	const x = this.system.effects[index];
+	x.consequences = ArrayCorrector(x.consequences);
+	x.consequences.splice(index, 1);
+	await this.update({"system.effects": this.system.effects});
+}
 
 	getItemBonus(this: InvItem | Weapon, type : keyof InvItem["system"]["modifiers"]) : number {
 		return this.system.modifiers[type];
@@ -67,4 +86,6 @@ export type Talent = Subtype<PersonaItem, "talent">;
 export type StudentSkill = Subtype<PersonaItem, "studentSkill">;
 export type Focus = Subtype<PersonaItem, "focus">;
 export type Consumable = Subtype<PersonaItem, "consumable">;
+
+export type PowerContainer = Consumable | Power;
 

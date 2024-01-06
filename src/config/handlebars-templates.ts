@@ -6,6 +6,7 @@ const templateFileNames : string[] =[
 	"inventory-section.hbs",
 	"combat-section.hbs",
 	"modifiers-section.hbs",
+	"power-effects.hbs",
 ];
 
 export const templatePaths = templateFileNames.

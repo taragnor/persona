@@ -3,6 +3,12 @@ input.short{
 
 }
 
+div.short{
+	width: 4em;
+	max-width: 5%;
+	min-width: 1%;
+}
+
 input.single-digit {
 	width: 1em;
 

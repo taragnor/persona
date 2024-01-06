@@ -39,14 +39,24 @@ const powerEffects = function () {
 		});
 }
 
-export function UsablePowerProps() {
+export function powerSpecific () {
 	return {
 		subtype: new txt<typeof POWERTYPESLIST[number]>( {choices: POWERTYPESLIST, initial: "none"} ),
+	}
+}
+
+export function powerCost() {
+	return {
 		hpcost: new num( {integer:true}),
+		slot: new num( {integer: true, min:0, max:20, initial: 0}),
+	}
+
+}
+export function UsablePowerProps() {
+	return {
 		damage: damage(),
 		mag_mult: new num( {integer:true, min:1, max: 100, initial:1}),
 		targets: new txt<typeof TARGETINGLIST[number]> ( {choices: TARGETINGLIST, initial: "1-engaged"}),
-		slot: new num( {integer: true, min:0, max:20, initial: 0}),
 		dmg_type: new txt<typeof DAMAGETYPESLIST[number]>( {choices: DAMAGETYPESLIST, initial:"physical"}),
 		crit_boost: new num( {min: 0, max:20, initial: 0, integer:true}),
 		effects: powerEffects(),

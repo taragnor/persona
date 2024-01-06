@@ -54,7 +54,7 @@
 	"persona.modifier.will": "Will Bonus",
 	"persona.modifier.fort": "Fortitude Bonus",
 
-	"persona.equipslots.weapon": "Body",
+	"persona.equipslots.weapon": "Weapon",
 	"persona.equipslots.body": "Body",
 	"persona.equipslots.accessory": "Accessory",
 	"persona.equipslots.weapon_crystal": "Weapon Attachment",
@@ -93,6 +93,7 @@
 	"persona.power.types.weapon": "Weapon",
 	"persona.power.types.magic": "Magic Skill",
 	"persona.power.types.other": "Other",
+	"persona.power.types.none": "None",
 
 	"persona.power.targets.1-engaged": "1 Engaged Target",
 	"persona.power.targets.1-nearby": "1 Nearby Target",

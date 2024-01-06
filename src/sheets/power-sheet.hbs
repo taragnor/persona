@@ -1,22 +1,15 @@
 <form class="power-sheet">
 	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Power Name" placeholder="Power Name">
 	<select name="system.subtype">
-		{{selectOptions POWERTYPES localize=true selected=item.system.subtype}}
+		{{selectOptions POWERSTUFF.POWERTYPES localize=true selected=item.system.subtype}}
 	</select>
+
 	{{#if (eq item.system.subtype "weapon")}}
 	<div class="hp-cost">
 		<label class="hp-cost">
 			{{localize	"persona.power.hpcost"}}
 		</label>
 		{{numberInput item.system.hpcost class="short" name="system.hpcost" step=1 min=0 max=100}}
-	</div>
-	<div class="targets">
-		<label>
-			Targets
-		</label>
-		<select name="system.targets">
-			{{selectOptions TARGETING localize=true selected=item.system.targets}}
-		</select>
 	</div>
 	<div class="damage">
 		<label class="dmg-low">
@@ -35,7 +28,7 @@
 			{{localize "persona.power.slotcost"}}
 		</label>
 		<select name="system.slot">
-			{{selectOptions SLOTTYPES localize=true selected=item.system.slot}}
+			{{selectOptions POWERSTUFF.SLOTTYPES localize=true selected=item.system.slot}}
 		</select>
 	</div>
 	<div class="mag-mult">
@@ -45,85 +38,8 @@
 		{{numberInput item.system.mag_mult class="short" name="system.mag_mult" step=1 min=0 max=900}}
 	</div>
 	{{/if}}
-	<div class="dmg-type">
-		<label>
-			Damage Type
-		</label>
-		<select name="system.dmg_type">
-			{{selectOptions DAMAGETYPES localize=true selected=item.system.dmg_type}}
-		</select>
-	</div>
-	<div class="crit-boost">
-		<label>
-			Crit Boost
-		</label>
-		{{numberInput item.system.crit_boost class="short" name="system.crit_boost" step=1 min=0 max=900}}
+	<hr>
+			{{> "systems/persona/parts/power-effects.hbs" item=item POWERSTUFF=POWERSTUFF}}
 
-	</div>
-	<h1>
-		Effects
-		<a class="addPowerEffect">
-			<i class="fa-solid fa-plus"> </i>
-		</a>
-	</h1>
-	<div class="effects-list">
-		{{#each item.system.effects as |effect i|}}
-		<div class="power-effect" data-effect-index="{{i}}">
-			<section class="conditions-section">
-				<h2> Conditions
-					<a class="addCondition">
-						<i class="fa-solid fa-plus"> </i>
-					</a>
-				</h2>
-				{{#each effect.conditions as |cond j|}}
-				<div class="condition-block">
-					<div class="type-selector">
-						<label>
-							type:
-						</label>
-						<select name="system.effects.{{i}}.conditions.{{j}}.type">
-							{{selectOptions ../../PRECONDITIONTYPES localize=true selected=cond.type}}
-						</select>
-						<input class="short" type=number name="system.effects.{{i}}.conditions.{{j}}.num" value="{{cond.num}}">
-					</div>
-				</div>
-				{{/each}}
-			</section>
-			<section class="consequences-section">
-				<h2> Consequences
-					<a class="addConsequence">
-						<i class="fa-solid fa-plus"> </i>
-					</a>
-				</h2>
-				{{#each effect.consequences as |cons j|}}
-				<div class="consequence-block">
-					<div class="type-select">
-						<select name="system.effects.{{i}}.consequences.{{j}}.type">
-							{{selectOptions ../../CONSTYPES localize=true selected=cons.type}}
-						</select>
-					</div>
-					{{#if (or (eq cons.type "addStatus") (eq cons.type "removeStatus"))}}
-					<select name="system.effects.{{i}}.consequences.{{j}}.statusName">
-						{{selectOptions ../../STATUSEFFECTS localize=true selected=cons.statusName}}
-					</select>
-					{{/if}}
-					{{#if (eq cons.type "addStatus")}}
-					<input class="short" type=number name="system.effects.{{i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
-					<select name="system.effects.{{i}}.consequences.{{j}}.statusDuration">
-						{{selectOptions ../../STATUSDURATIONS localize=true selected=cons.statusName}}
-					</select>
-					{{/if}}
-					{{#if (eq cons.type "escalationManipulation")}}
-					<input class="short" type=number name="system.effects.{{i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
-					{{/if}}
-					{{#if (eq cons.type "extraAttack")}}
-					<input class="short" type=number name="system.effects.{{i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
-					{{/if}}
-				</div>
-				{{/each}}
-			</section>
-		</div>
-		<hr>
-		{{/each}}
-	</div>
+
 </form>

@@ -2,6 +2,8 @@ const {StringField:txt, ObjectField:obj, NumberField: num, SchemaField: sch, HTM
 
 import { CharacterClass } from "./character-class-dm.js";
 import { UsablePowerProps } from "./power-dm.js";
+import { powerCost } from "./power-dm.js";
+import { powerSpecific } from "./power-dm.js";
 import { damage } from "./power-dm.js";
 import { EQUIP_SLOTS_LIST } from "../../config/equip-slots.js";
 
@@ -64,6 +66,8 @@ function itemBase() {
 	get type() {return "power" as const;}
 	static override defineSchema() {
 		const ret = {
+			...powerSpecific(),
+			...powerCost(),
 			...UsablePowerProps()
 		};
 		return ret;
