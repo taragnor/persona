@@ -116,6 +116,8 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			bio: personalBio(),
 			social: socialLinks,
 			slots: skillSlots(),
+			talents: new arr( new id(), {initial: []}),
+			focuses: new arr( new id(), {initial: []}),
 		} as const;
 		return ret;
 	}

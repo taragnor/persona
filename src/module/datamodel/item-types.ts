@@ -57,6 +57,7 @@ function itemBase() {
 	static override defineSchema() {
 		const ret = {
 			desciption: new html(),
+			modifiers: modifiers(),
 		}
 		return ret;
 	}
@@ -91,6 +92,7 @@ function itemBase() {
 	get type() { return "talent" as const;}
 	static override defineSchema() {
 		const ret = {
+			modifiers: modifiers(),
 			desciption: new html(),
 		}
 		return ret;

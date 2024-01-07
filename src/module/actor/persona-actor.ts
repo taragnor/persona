@@ -1,3 +1,6 @@
+import { Talent } from "../item/persona-item.js";
+import { Focus } from "../item/persona-item.js";
+import { ModifierContainer } from "../item/persona-item.js";
 import { InvItem } from "../item/persona-item.js";
 import { Weapon } from "../item/persona-item.js";
 import { Power } from "../item/persona-item.js";
@@ -121,26 +124,56 @@ declare global {
 			return null;
 		}
 
-		equippedItems(this: PC) : (InvItem | Weapon)[]  {
+		talents() : Talent[] {
+			if (this.system.type != "pc") return [];
+			const talentIds = this.system.talents;
+			const talents = talentIds.flatMap( id => {
+				const tal= PersonaDB.getItemById(id);
+				if (!tal) return [];
+				if (tal.system.type != "talent") return [];
+				return [tal as Talent];
+			})
+			return talents;
+		}
+
+		focii(): Focus[] {
+			if (this.system.type != "pc") return [];
+			const fIds = this.system.focuses;
+			const focii = fIds.flatMap( id => {
+				const focus = PersonaDB.getItemById(id);
+				if (!focus) return [];
+				if (focus.system.type != "focus") return [];
+				return [focus as Focus];
+			});
+			return focii;
+		}
+
+		equippedItems() : (InvItem | Weapon)[]  {
+			if (this.system.type != "pc") return [];
 			const inv = this.inventory;
 			const slots : (keyof typeof this.system.equipped)[]=  ["body", "accessory", "weapon_crystal"]
 			const ret = slots
 				.map( slot=> inv
-					.find(item => item.id == this.system.equipped[slot]))
+					.find(item => item.id == (this as PC).system.equipped[slot]))
 				.flatMap (x=> x? [x]: []);
 			return ret as (InvItem | Weapon)[];
 		}
 
-		getItemBonus(type : keyof InvItem["system"]["modifiers"]): number {
+		getBonuses (type : keyof InvItem["system"]["modifiers"]): number {
 			if (this.system.type != "pc")  return 0;
-			return (this as PC).equippedItems().reduce( (acc, item) => acc + item.getItemBonus(type), 0);
+			const modifiers : ModifierContainer[] =[
+				...this.equippedItems(),
+				...this.focii(),
+				...this.talents(),
+			];
+			return modifiers.reduce( (acc, item) => acc + item.getModifier(type), 0);
 		}
 
 		wpnAtkBonus(this: PC | Shadow) : number {
 			const lvl = this.system.combat.classData.level;
 			const wpnAtk = this.system.combat.wpnatk;
 			const inc = this.system.combat.classData.incremental.atkbonus ? 1 : 0;
-			let itemBonus = this.getItemBonus("wpnAtk");
+			let itemBonus = this.getBonuses("wpnAtk");
 			return lvl + wpnAtk + inc + itemBonus;
 		}
 
@@ -148,7 +181,7 @@ declare global {
 			const lvl = this.system.combat.classData.level;
 			const magAtk = this.system.combat.magatk;
 			const inc = this.system.combat.classData.incremental.atkbonus ? 1 : 0;
-			let itemBonus = this.getItemBonus("magAtk");
+			let itemBonus = this.getBonuses("magAtk");
 			return lvl + magAtk + inc + itemBonus;
 		}
 	}

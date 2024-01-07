@@ -63,7 +63,7 @@ async deletePowerConsequence (this: PowerContainer, index: number) {
 	await this.update({"system.effects": this.system.effects});
 }
 
-	getItemBonus(this: InvItem | Weapon, type : keyof InvItem["system"]["modifiers"]) : number {
+	getModifier(this: ModifierContainer, type : keyof InvItem["system"]["modifiers"]) : number {
 		return this.system.modifiers[type];
 	}
 
@@ -86,6 +86,8 @@ export type Talent = Subtype<PersonaItem, "talent">;
 export type StudentSkill = Subtype<PersonaItem, "studentSkill">;
 export type Focus = Subtype<PersonaItem, "focus">;
 export type Consumable = Subtype<PersonaItem, "consumable">;
+
+export type ModifierContainer = Weapon | InvItem | Focus | Talent;
 
 export type PowerContainer = Consumable | Power;
 
