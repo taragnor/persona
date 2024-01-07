@@ -9,6 +9,25 @@ div.short{
 	min-width: 1%;
 }
 
+div.resistance-block {
+	display:flex;
+	flex-direction: row;
+	justify-content: center;
+}
+
+div.resistance-item {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.resistance-item img {
+	width: 50px;
+	height: 36px;
+	justify-content: center;
+	margin:auto;
+}
+
 input.single-digit {
 	width: 1em;
 

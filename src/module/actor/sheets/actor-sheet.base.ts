@@ -1,11 +1,17 @@
+import { RESIST_STRENGTHS } from "../../../config/damage-types.js";
 import { PersonaActor } from "../persona-actor.js";
 import { tarotDeck} from "../../../config/tarot.js";
+import { DAMAGETYPES } from "../../../config/damage-types.js";
 
 export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
 	override getData() {
 		const data= super.getData();
-		data.TAROT  = tarotDeck;
+		data.CONST = {
+			TAROT  : tarotDeck,
+			RESIST_STRENGTHS : RESIST_STRENGTHS,
+			DAMAGETYPES : DAMAGETYPES,
+		};
 		return data;
 	}
 

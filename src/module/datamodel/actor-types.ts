@@ -18,8 +18,8 @@ function elementalResists() {
 		physical: "normal",
 		fire: "normal",
 		cold: "normal",
-		wind: "normal",
 		lightning: "normal",
+		wind: "normal",
 		light: "normal",
 		dark: "normal"
 	};
@@ -79,7 +79,7 @@ const combatStats = function () {
 			fort: new num( {integer:true}),
 		}),
 		powers: new arr( new id()),
-		resists: elementalResists,
+		resists: elementalResists(),
 
 	});
 };

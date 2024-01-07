@@ -136,7 +136,6 @@ declare global {
 			return (this as PC).equippedItems().reduce( (acc, item) => acc + item.getItemBonus(type), 0);
 		}
 
-
 		wpnAtkBonus(this: PC | Shadow) : number {
 			const lvl = this.system.combat.classData.level;
 			const wpnAtk = this.system.combat.wpnatk;
