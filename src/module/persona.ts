@@ -26,6 +26,7 @@ import { PersonaStudentSkillSheet } from "./item/sheets/student-skill-sheet.js";
 import { PersonaFocusSheet } from "./item/sheets/focus-sheet.js";
 import { PersonaTalentSheet } from "./item/sheets/talent-sheet.js";
 import { ConsumableSheet } from "./item/sheets/consumable-sheet.js";
+import { PersonaHandleBarsHelpers } from "./handlebars-helpers.js";
 
 function registerDataModels() {
 	CONFIG.Actor.dataModels= ACTORMODELS;
@@ -73,14 +74,9 @@ function registerSheetApplications() {
  	preloadHandlebarsTemplates();
  });
 
- function registerHandlebarsHelpers() {
-   Handlebars.registerHelper("caps", (str) => str.toUpperCase?.() || str);
-	 Handlebars.registerHelper("getMaxSlotsAt", (actor: PersonaActor, lvl:number) => {
-		 console.log(actor);
-		 console.log(lvl);
-		 return actor.getMaxSlotsAt(lvl);
-	 });
- }
+function registerHandlebarsHelpers() {
+	PersonaHandleBarsHelpers.init();
+}
 
  function preloadHandlebarsTemplates() {
 	 templatePaths.forEach(path => console.log(path));

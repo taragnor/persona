@@ -1,3 +1,5 @@
+import { Situation } from "../combat/modifier-list.js";
+import { ModifierList } from "../combat/modifier-list.js";
 import { Talent } from "../item/persona-item.js";
 import { Focus } from "../item/persona-item.js";
 import { ModifierContainer } from "../item/persona-item.js";
@@ -79,6 +81,8 @@ declare global {
 			}
 
 		}
+
+
 
 		getMaxSlotsAt(slot_lvl: number) : number {
 			if (this.system.type != "pc") return 0;
@@ -171,31 +175,57 @@ declare global {
 			return this.system.combat.wpndmg;
 		}
 
-		getBonuses (type : keyof InvItem["system"]["modifiers"]): number {
-			if (this.system.type != "pc")  return 0;
+		getBonuses (type : keyof InvItem["system"]["modifiers"]): ModifierList {
+			if (this.system.type != "pc")  return new ModifierList();
 			const modifiers : ModifierContainer[] =[
 				...this.equippedItems(),
 				...this.focii(),
 				...this.talents(),
 			];
-			return modifiers.reduce( (acc, item) => acc + item.getModifier(type), 0);
-		}
+			return new ModifierList( modifiers.map( item => ({
+				name: item.name,
+				conditions:[],
+				modifier: item.getModifier(type),
 
-		wpnAtkBonus(this: PC | Shadow) : number {
+				}))
+			);
+
+			}
+
+		wpnAtkBonus(this: PC | Shadow) : ModifierList {
+			const mods = new ModifierList();
 			const lvl = this.system.combat.classData.level;
-			const wpnAtk = this.system.combat.wpnatk;
 			const inc = this.system.combat.classData.incremental.atkbonus ? 1 : 0;
-			let itemBonus = this.getBonuses("wpnAtk");
-			return lvl + wpnAtk + inc + itemBonus;
+			const wpnAtk = this.system.combat.wpnatk;
+			mods.add("Base Weapon Attack Bonus", wpnAtk);
+			mods.add("Level Bonus", lvl + inc);
+			const itemBonus = this.getBonuses("wpnAtk");
+			return mods.concat(itemBonus);
 		}
 
-		magAtkBonus(this:PC | Shadow) : number {
+		magAtkBonus(this:PC | Shadow) : ModifierList {
+			const mods = new ModifierList();
 			const lvl = this.system.combat.classData.level;
 			const magAtk = this.system.combat.magatk;
 			const inc = this.system.combat.classData.incremental.atkbonus ? 1 : 0;
-			let itemBonus = this.getBonuses("magAtk");
-			return lvl + magAtk + inc + itemBonus;
+			mods.add("Base Magic Attack Bonus", magAtk);
+			mods.add("Level Bonus", lvl + inc);
+			const itemBonus = this.getBonuses("magAtk");
+			return mods.concat(itemBonus);
 		}
+
+		getDefense(this: PC | Shadow,  type : keyof PC["system"]["combat"]["defenses"]) : ModifierList {
+			const mods = new ModifierList();
+			const lvl = this.system.combat.classData.level;
+			const baseDef = this.system.combat.defenses.ref;
+			const inc = this.system.combat.classData.incremental.defbonus ? 1 : 0;
+			mods.add("Base", 10);
+			mods.add("Base Defense Bonus", baseDef);
+			mods.add("Level Bonus", lvl + inc);
+			const itemBonus = this.getBonuses("ref");
+			return mods.concat(itemBonus);
+		}
+
 	}
 
 export type PC = Subtype<PersonaActor, "pc">;

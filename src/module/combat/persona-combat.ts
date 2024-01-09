@@ -1,10 +1,8 @@
-import { STATUS_EFFECT_LIST} from "../config/status-effects";
-import { STATUS_EFFECT_DURATIONS_LIST } from "../config/status-effects";
-import { PersonaActor } from "./actor/persona-actor";
-
-import { Power } from "./item/persona-item";
-import { DamageType } from "../config/damage-types";
-import { ResistStrength } from "../config/damage-types";
+import { STATUS_EFFECT_LIST } from "../../config/status-effects";
+import { STATUS_EFFECT_DURATIONS_LIST } from "../../config/status-effects";
+import { PersonaActor } from "../actor/persona-actor";
+import { Power } from "../item/persona-item";
+import { ModifierList } from "./modifier-list";
 
 export class PersonaCombat {
 	static usePowerOn(attacker: PToken, power: Power, targets: PToken[]) : CombatResult<PToken> {
@@ -15,13 +13,13 @@ export class PersonaCombat {
 		}; //Placeholder
 	}
 
-	static getAttackBonus(attacker: PToken, power:Power):number {
+	static getAttackBonus(attacker: PToken, power:Power): ModifierList {
 		const actor = attacker.actor;
 		if (power.system.subtype == "weapon")
 			return actor.wpnAtkBonus();
 		if (power.system.subtype == "magic")
 			return actor.magAtkBonus();
-		return -999;//placehholder value
+		return new ModifierList();
 	}
 
 	static usePower(attacker: PToken, power: Power) {

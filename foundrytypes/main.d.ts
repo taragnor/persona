@@ -41,7 +41,7 @@ declare class Items {
 		types: string[], makeDefault: boolean}) : void;
 }
 
-declare interface Collection<T> {
+interface Collection<T> {
 	contents: T[];
 	filter(fn: (T) => boolean) : T[];
 	map(fn: (T) => boolean) : T[];
@@ -51,23 +51,23 @@ declare interface Collection<T> {
 
 }
 
-declare class FoundryCompendium<T extends object> extends FoundryDocument<never> {
+class FoundryCompendium<T extends object> extends FoundryDocument<never> {
 	documentName: FoundryDocumentTypes;
 	async getDocuments(): Promise<T[]>;
 }
 
-declare class FoundryUser extends FoundryDocument<never>{
+class FoundryUser extends FoundryDocument<never>{
 	targets: Collection<Token<any>> & {user: FoundryUser};
 	role: number;
 	viewedScene: string;
 
 }
 
-declare class Scene extends FoundryDocument<never> {
+class Scene extends FoundryDocument<never> {
 
 }
 
-declare class SceneCollection extends Collection<Scene> {
+class SceneCollection extends Collection<Scene> {
 	get active(): Scene;
 
 }

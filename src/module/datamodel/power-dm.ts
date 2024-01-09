@@ -5,6 +5,7 @@ import { PRECONDITIONLIST } from "../../config/effect-types.js";
 import { POWERTYPESLIST } from "../../config/effect-types.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { TARGETINGLIST } from "../../config/effect-types.js";
+import { Precondition } from "../combat/modifier-list.js";
 
 export  const damage = function() {
 	return new sch( {
@@ -24,11 +25,6 @@ type ConditionalEffect  = {
 	conditions: Precondition[],
 	consequences: ConsequencesObject[]
 };
-
-type Precondition = {
-	type : typeof PRECONDITIONLIST[number],
-	num?: number,
-}
 
 const powerEffects = function () {
 	return new arr( new obj<ConditionalEffect>()

@@ -104,7 +104,7 @@ abstract class BaseStuff extends window.foundry.abstract.DataModel {
 }
 
 export class PCSchema extends window.foundry.abstract.DataModel {
-		get type() { return "pc" as const;}
+	get type() { return "pc" as const;}
 	static override defineSchema() {
 		const ret = {
 			...BaseStuff.defineSchema(),

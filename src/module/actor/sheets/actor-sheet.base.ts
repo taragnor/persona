@@ -13,6 +13,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 			DAMAGETYPES : DAMAGETYPES,
 		};
 		return data;
+
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {
