@@ -66,8 +66,8 @@ const classData = function () {
 	});
 }
 
-const combatStats = function () {
-	return new sch( {
+const combatCommonStats = function () {
+	return {
 		classData: classData(),
 		hp: new num( {integer:true, initial: 1}),
 		wpnatk: new num( {integer:true}),
@@ -80,10 +80,8 @@ const combatStats = function () {
 		}),
 		powers: new arr( new id()),
 		resists: elementalResists(),
-
-	});
+	};
 };
-
 
 const socialLinks = new sch( {
 	links: new arr( new sch( {
@@ -112,7 +110,9 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			...BaseStuff.defineSchema(),
 			equipped: equipslots(),
 			tarot: tarot(),
-			combat: combatStats(),
+			combat: new sch( {
+				...combatCommonStats(),
+			}),
 			bio: personalBio(),
 			social: socialLinks,
 			slots: skillSlots(),
@@ -121,7 +121,6 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 		} as const;
 		return ret;
 	}
-
 }
 
 export class ShadowSchema extends foundry.abstract.DataModel {
@@ -131,7 +130,13 @@ export class ShadowSchema extends foundry.abstract.DataModel {
 		const ret = {
 			...BaseStuff.defineSchema(),
 			tarot: tarot(),
-			combat: combatStats(),
+			combat: new sch({
+				...combatCommonStats(),
+				wpndmg: new sch({
+					low: new num({integer:true, min:0, initial:1}),
+					high: new num({integer:true, min:0, initial:2}),
+				}),
+			}),
 		} as const;
 		return ret;
 	}
@@ -155,3 +160,4 @@ export class NPCSchema extends foundry.abstract.DataModel {
 //testing the types, purely for debug purposes
 type testPC = SystemDataObjectFromDM<typeof PCSchema>;
 type testNPC = SystemDataObjectFromDM<typeof NPCSchema>;
+type testShadow =SystemDataObjectFromDM<typeof ShadowSchema> 

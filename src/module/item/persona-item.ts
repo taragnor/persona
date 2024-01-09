@@ -66,7 +66,6 @@ async deletePowerConsequence (this: PowerContainer, index: number) {
 	getModifier(this: ModifierContainer, type : keyof InvItem["system"]["modifiers"]) : number {
 		return this.system.modifiers[type];
 	}
-
 }
 
 

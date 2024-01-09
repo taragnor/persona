@@ -159,6 +159,18 @@ declare global {
 			return ret as (InvItem | Weapon)[];
 		}
 
+		wpnDamage(this: PC | Shadow) : {low: number, high:number} {
+			if (this.system.type == "pc") {
+				const wpn = this.weapon;
+				if (!wpn) {
+					ui.notifications.warn(`${this.name} doesn't have an equipped weapon`)
+					return {low: 1, high:2};
+				}
+				return wpn.system.damage;
+			}
+			return this.system.combat.wpndmg;
+		}
+
 		getBonuses (type : keyof InvItem["system"]["modifiers"]): number {
 			if (this.system.type != "pc")  return 0;
 			const modifiers : ModifierContainer[] =[
