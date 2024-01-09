@@ -28,6 +28,18 @@ div.resistance-item {
 	margin:auto;
 }
 
+div.defenses {
+	display:flex;
+	flex-direction: row;
+	justify-content: flex-start;
+}
+
+div.defense {
+	margin-left: 10px;
+	margin-right: 10px;
+
+}
+
 input.single-digit {
 	width: 1em;
 
