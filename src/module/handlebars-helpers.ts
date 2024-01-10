@@ -7,15 +7,6 @@ export class PersonaHandleBarsHelpers {
 		for (const [k, v] of Object.entries(PersonaHandleBarsHelpers.helpers)) {
 			Handlebars.registerHelper(k, v);
 		}
-		// Handlebars.registerHelper("caps", (str) => str.toUpperCase?.() || str);
-
-		// Handlebars.registerHelper("getMaxSlotsAt", 
-		// 	(actor: PersonaActor, lvl:number) => {
-		// 	console.log(actor);
-		// 	console.log(lvl);
-		// 	return actor.getMaxSlotsAt(lvl);
-		// });
-
 
 	}
 

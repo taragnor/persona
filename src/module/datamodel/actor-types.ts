@@ -1,8 +1,9 @@
 const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
 import { ResistType } from "../../config/damage-types";
+import { INCREMENTAL_ADVANCE_TYPES } from "../../config/incremental-advance-types.js";
 
 import { tarotDeck } from "../../config/tarot.js";
-import { ResistStrength } from "../../config/damage-types";
+import { ResistStrength } from "../../config/damage-types.js";
 
 const personalBio = function () {
 	return new sch( {
@@ -47,22 +48,18 @@ function skillSlots() {
 	);
 }
 
+type IncAdvanceObject = Required<Record<INCREMENTAL_ADVANCE_TYPES, boolean>>;
+
+
 const tarot = function () { return new txt<keyof typeof tarotDeck>( { choices: Object.keys(tarotDeck)});}
 
 const classData = function () {
+	const initial : IncAdvanceObject =  Object.fromEntries( INCREMENTAL_ADVANCE_TYPES.map (x=> ([x, false]))
+	) as IncAdvanceObject;
 	return  new sch( {
 		level: new num({min: 0, max: 10, initial: 1, integer:true}),
 		classId: new id(),
-		incremental: new sch( {
-			hp: new bool({initial:false}),
-			atkbonus: new bool({initial:false}),
-			defbonus: new bool({initial:false}),
-			slots: new bool({initial:false}),
-			talents: new bool({initial:false}),
-			powers: new bool({initial:false}),
-			wpn_mult: new bool({initial:false}),
-			mag_dmg: new bool({initial:false}),
-		}),
+		incremental: new obj<IncAdvanceObject>({initial}),
 	});
 }
 

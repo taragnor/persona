@@ -8,6 +8,8 @@ const templateFileNames : string[] =[
 	"modifiers-section.hbs",
 	"power-effects.hbs",
 	"resistance-section.hbs",
+	"defenses-section.hbs",
+	"incremental-section.hbs",
 ];
 
 export const templatePaths = templateFileNames.

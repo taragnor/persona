@@ -1,0 +1,14 @@
+<h2>
+	{{localize "persona.sheet.tabs.incremental.header"}}
+</h2>
+<div class="incremental-advance-block">
+	{{#each CONST.INC as |inc i|}}
+	<div class="incremental-advance">
+		<label>
+			{{localize inc.local}}
+		</label>
+		<input type="checkbox" name="system.combat.classData.incremental.{{inc.varname}}" {{checked inc.val}}>
+	</div>
+	{{/each}}
+
+</div>

@@ -4,19 +4,26 @@
 			{{localize "persona.sheet.tabs.combat.header" }}
 		</h2>
 		<div class="lvl">
-			<span> Level:</span>
+			<span>
+				{{localize "persona.statistic.level"}}:
+			</span>
 			<span>
 				<input class="short" type="number" name="system.combat.classData.level" value="{{actor.system.combat.classData.level}}">
 			</span>
 		</div>
 		<div class="hp">
+			<label>
+				HP:
+			</label>
 			<span>
 				<input class="short" type="number" name="system.combat.hp" value="{{actor.hp}}">
 				/ {{actor.mhp}}</span>
 		</div>
+		{{> "systems/persona/parts/defenses-section.hbs" actor=actor CONST=CONST}}
+		{{> "systems/persona/parts/resistance-section.hbs" actor=actor CONST=CONST}}
 		<div class="slots">
 			<h2>
-				Slots
+				{{localize	"persona.statistic.powerslots"}}
 			</h2>
 			{{#each actor.system.slots as |slot lvl|}}
 			<div>
@@ -28,35 +35,9 @@
 				{{/each}}
 			</div>
 		</div>
-		<div class="defenses">
-			<div class="defense">
-				<label>
-					Fort
-				</label>
-				<span>
-					{{getDefense actor "fort"}}
-				</span>
-			</div>
-			<div class="defense">
-				<label>
-					Reflex
-				</label>
-				<span>
-					{{getDefense actor "ref"}}
-				</span>
-			</div>
-			<div class="defense">
-				<label>
-					Will
-				</label>
-				<span>
-					{{getDefense actor "will"}}
-				</span>
-			</div>
-		</div>
 		<div class="powers-section">
 			<h2>
-				Powers
+				{{localize 	"persona.statistic.powers"}}
 			</h2>
 			{{#each actor.powers as |power|}}
 			<div class="power-block">
@@ -67,6 +48,5 @@
 
 			{{/each}}
 		</div>
-		{{> "systems/persona/parts/resistance-section.hbs" actor=actor CONST=CONST}}
 	</div>
 </section>
