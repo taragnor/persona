@@ -6,6 +6,9 @@ export const STATUS_EFFECT_LIST = [
 		id: "charmed",
 		icon:  "icons/svg/heal.svg",
 	}, {
+		id: "blocking",
+		icon:  "icons/svg/shield.svg",
+	}, {
 		id: "curse",
 		icon:  "",
 	}, {

@@ -48,6 +48,7 @@
 
 	"persona.status.burn" : "Burn",
 	"persona.status.charmed" : "Charmed",
+	"persona.status.blocking" : "Blocking",
 	"persona.status.curse" : "Cursed",
 	"persona.status.confused" : "Confused",
 	"persona.status.down" : "Down",

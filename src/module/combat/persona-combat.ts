@@ -92,6 +92,9 @@ export class PersonaCombat {
 		if (resist == "weakness") {
 			critBoostMod.add("weakness", 4);
 		}
+		if (target.actor.statuses.has("blocking")) {
+			critBoostMod.add("defender blocking", -100);
+		}
 		const critBoost = critBoostMod.total(situation);
 		const validDefModifiers= target.actor.getDefense(def).list(situation);
 		if (total < target.actor.getDefense(def).total(situation))

@@ -1,3 +1,4 @@
+import { PersonaActor } from "../actor/persona-actor";
 import { PRECONDITIONLIST } from "../../config/effect-types";
 
 type ModifierListItem = {
@@ -96,6 +97,7 @@ export type Situation = {
 	hit?: boolean;
 	escalationDie ?: number;
 	activationRoll ?: boolean;
+	target?: PersonaActor;
 }
 
 
