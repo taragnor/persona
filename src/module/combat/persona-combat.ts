@@ -101,7 +101,7 @@ export class PersonaCombat {
 				validDefModifiers,
 				naturalRoll: naturalAttackRoll
 			};
-		if (naturalAttackRoll + critBoost >= 20) {
+		if (resist != "resist" && naturalAttackRoll + critBoost >= 20) {
 			return {
 				result: "crit",
 				validAtkModifiers,
