@@ -28,7 +28,7 @@ export class PersonaCombat {
 		for (const target of targets) {
 			const roll = new Roll("1d20");
 			await roll.roll();
-			const atkResult = await processAttackRoll(roll, power, target, i==0);
+			const atkResult = await this.processAttackRoll(roll, attacker, power, target, i==0);
 			i++;
 		}
 		return {
@@ -37,7 +37,7 @@ export class PersonaCombat {
 		}; //Placeholder
 	}
 
-	static processAttackRoll(roll: Roll, attacker: PToken, power: Power, target: PToken, isActivationRoll: boolean) : AttackResult {
+	static async processAttackRoll(roll: Roll, attacker: PToken, power: Power, target: PToken, isActivationRoll: boolean) : Promise<AttackResult> {
 		const element = power.system.dmg_type;
 		const resist = target.actor.elementalResist(element);
 		const attackbonus= this.getAttackBonus(attacker, power);
