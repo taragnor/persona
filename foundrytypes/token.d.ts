@@ -12,6 +12,8 @@ class TokenDocument<T extends Actor<any, any>> extends FoundryDocument<never>
 		get combatant(): Combatant;
 		get isLinked(): boolean;
 		sight: SightObject;
+		x: number;
+		y: number;
 
 
 

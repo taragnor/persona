@@ -26,6 +26,7 @@ declare interface Game {
 		system: FoundrySystem,
 		user: FoundryUser,
 		scenes: SceneCollection,
+		combat: undefined | Combat,
 }
 
 
@@ -43,8 +44,8 @@ declare class Items {
 
 interface Collection<T> {
 	contents: T[];
-	filter(fn: (T) => boolean) : T[];
-	map(fn: (T) => boolean) : T[];
+	filter(fn: (item: T) => boolean) : T[];
+	map<R>(fn: (item: T) => R) : R[];
 	[Symbol.iterator]() : Iterator<T>;
 	get(id: string) : T | null;
 	getName(name: string): T | null;
@@ -57,7 +58,7 @@ class FoundryCompendium<T extends object> extends FoundryDocument<never> {
 }
 
 class FoundryUser extends FoundryDocument<never>{
-	targets: Collection<Token<any>> & {user: FoundryUser};
+	targets: Set<Token<any>> & {user: FoundryUser };
 	role: number;
 	viewedScene: string;
 

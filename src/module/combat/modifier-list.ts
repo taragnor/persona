@@ -6,26 +6,31 @@ type ModifierListItem = {
 	modifier: number,
 }
 export class ModifierList {
-	list: ModifierListItem[];
+	_data: ModifierListItem[];
 	constructor (list: ModifierListItem[] = []) {
-		this.list = list;
+		this._data = list;
 	}
 
 	add(name: string, modifier: number, conditions: Precondition[] = []) {
-		this.list.push( {
+		this._data.push( {
 			name,
 			conditions,
 			modifier
 		});
 	}
 
+	list(situtation: Situation): [number, string][] {
+		const filtered= this._data.filter( item=> item.conditions.every(cond => ModifierList.satisfiesPrecondition(cond, situtation)));
+			return filtered.map( x=> [x.modifier, x.name]);
+	}
+
 	concat (this: ModifierList, other: ModifierList) : ModifierList {
-		const list = this.list.concat(other.list);
+		const list = this._data.concat(other._data);
 		return new ModifierList(list);
 	}
 
 	total(situation: Situation = {}) : number {
-		return this.list.reduce ( (acc, item) => {
+		return this._data.reduce ( (acc, item) => {
 			if (item.conditions.every( cond => ModifierList.satisfiesPrecondition(cond, situation))) {
 				return acc + item.modifier;
 			}
@@ -63,13 +68,13 @@ export class ModifierList {
 			case "escalation-":
 				return situation.escalationDie != undefined && situation.escalationDie <= condition.num!;
 			case "activation+":
-				return situation.activationRoll != undefined && situation.activationRoll >= condition.num!;
+				return !!situation.activationRoll && nat! >= condition.num!;
 			case "activation-":
-				return situation.activationRoll != undefined && situation.activationRoll <= condition.num!;
+				return !!situation.activationRoll && nat! <= condition.num!;
 			case "activation-odd":
-				return situation.activationRoll != undefined && situation.activationRoll % 2 == 1;
+				return !!situation.activationRoll && nat! % 2 == 1;
 			case "activation-even":
-				return situation.activationRoll != undefined && situation.activationRoll % 2 == 0;
+				return !!situation.activationRoll && nat! % 2 == 0;
 			default:
 				condition.type satisfies never;
 				return false;
@@ -90,7 +95,7 @@ export type Situation = {
 	criticalHit ?: boolean;
 	hit?: boolean;
 	escalationDie ?: number;
-	activationRoll ?: number;
+	activationRoll ?: boolean;
 }
 
 

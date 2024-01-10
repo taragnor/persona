@@ -14,6 +14,8 @@ export  const damage = function() {
 	});
 }
 
+const DEFENSECHOICES = ["fort" , "ref" , "will", "none"] as const;
+
 type ConsequencesObject = {
 	type: typeof CONSQUENCELIST[number],
 	amount?: number,
@@ -52,6 +54,7 @@ export function UsablePowerProps() {
 	return {
 		damage: damage(),
 		mag_mult: new num( {integer:true, min:1, max: 100, initial:1}),
+		defense: new txt<(typeof DEFENSECHOICES[number]) >( {choices: DEFENSECHOICES, initial: "ref"}),
 		targets: new txt<typeof TARGETINGLIST[number]> ( {choices: TARGETINGLIST, initial: "1-engaged"}),
 		dmg_type: new txt<typeof DAMAGETYPESLIST[number]>( {choices: DAMAGETYPESLIST, initial:"physical"}),
 		crit_boost: new num( {min: 0, max:20, initial: 0, integer:true}),

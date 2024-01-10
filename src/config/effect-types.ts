@@ -53,7 +53,9 @@ export const TARGETINGLIST = [
 	"1-ally",
 	"1d4-allies",
 	"self",
-];
+	"all-enemies",
+	"all-allies",
+] as const;
 
 export const TARGETING= Object.fromEntries( TARGETINGLIST.map(x=> [x, `persona.power.targets.${x}`]));
 

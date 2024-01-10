@@ -1,3 +1,5 @@
+import { DAMAGETYPESLIST } from "../../config/damage-types.js";
+import { ResistStrength } from "../../config/damage-types.js";
 import { Situation } from "../combat/modifier-list.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { Talent } from "../item/persona-item.js";
@@ -224,6 +226,21 @@ declare global {
 			mods.add("Level Bonus", lvl + inc);
 			const itemBonus = this.getBonuses("ref");
 			return mods.concat(itemBonus);
+		}
+
+		elementalResist(this: PC | Shadow, type: typeof DAMAGETYPESLIST[number]) : ResistStrength  {
+			switch (type) {
+				case "untyped": case "healing": case "none":
+					return "normal";
+			}
+			return this.system.combat.resists[type] ?? "normal";
+		}
+
+		critBoost(this: PC | Shadow) : ModifierList {
+			const itemBonus = this.getBonuses("ref");
+			return itemBonus; //placeholder
+
+
 		}
 
 	}

@@ -134,6 +134,8 @@
 	"persona.power.targets.1-ally": "One nearby Ally",
 	"persona.power.targets.1d4-allies": "1d4 nearby allies",
 	"persona.power.targets.self": "Self",
+	"persona.power.targets.all-enemies": "All Enemies",
+	"persona.power.targets.all-allies": "All Allies",
 
 	"persona.slottypes.0.name": "Basic",
 	"persona.slottypes.1.name": "Advanced",
