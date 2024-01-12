@@ -9,17 +9,23 @@ import { Usable } from "../item/persona-item.js";
 import { PToken } from "./persona-combat.js";
 
 export class CombatResult  {
-	attackResults : AttackResult[] = [];
-	changes : TokenChange<PToken>[] = [];
+	attacks: Map<AttackResult, TokenChange<PToken>[]> = new Map();
+	// attackResults : AttackResult[] = [];
+	// changes : TokenChange<PToken>[] = [];
 	escalationMod: number = 0;
+	costs: TokenChange<PToken>[] = [];
+
+
+
 
 	constructor(atkResult ?: AttackResult) {
 		if (atkResult) {
-			this.attackResults.push(atkResult);
+			this.attacks.set(atkResult, []);
+			// this.attackResults.push(atkResult);
 		}
 	}
 
-	addEffect(target: PToken, cons:Consequence) {
+	addEffect(atkResult: AttackResult | null, target: PToken, cons:Consequence) {
 		const effect : TokenChange<PToken>= {
 			token: target,
 			hpchange: 0,
@@ -86,26 +92,61 @@ export class CombatResult  {
 				throw new Error("Should be unreachable");
 			}
 		}
-		this.#mergeEffect(effect);
+		if (atkResult == null) {
+			CombatResult.mergeChanges(this.costs, [effect]);
+			return;
+		}
+
+		if (!this.attacks.has(atkResult)) {
+			this.attacks.set(atkResult, []);
+		}
+		const effects = this.attacks.get(atkResult)!;
+		CombatResult.mergeChanges(effects, [effect]);
 	}
 
 	merge(other: CombatResult) {
-		this.attackResults = this.attackResults.concat(other.attackResults);
 		this.escalationMod += other.escalationMod;
-		for (const change of other.changes)  {
-			this.#mergeEffect(change);
+		CombatResult.mergeChanges( this.costs, other.costs);
+		for (const [atkResult, changeArr] of other.attacks.entries()) {
+			const myRes = this.attacks.get(atkResult);
+			if (myRes) {
+				CombatResult.mergeChanges(myRes, changeArr);
+			} else {
+				this.attacks.set(atkResult, changeArr);
+			}
 		}
-
 	}
 
-	#mergeEffect(newEffect: TokenChange<PToken> ) {
-		const entry = this.changes.find( change=> change.token == newEffect.token);
-		if (!entry) {
-			this.changes.push(newEffect);
-		} else {
-			const index = this.changes.indexOf(entry);
-			this.changes[index] = CombatResult.combineChanges(entry, newEffect);
+	static mergeChanges(mainEffects: TokenChange<PToken>[], newEffects: TokenChange<PToken>[]) {
+		for (const newEffect of newEffects) {
+			const entry = mainEffects.find( change => change.token == newEffect.token);
+			if (!entry) {
+				mainEffects.push(newEffect);
+			} else {
+				const index = mainEffects.indexOf(entry);
+				mainEffects[index] = CombatResult.combineChanges(entry, newEffect);
+			}
+
 		}
+	}
+
+
+	async print(): Promise<void> {
+		const signedFormatter = new Intl.NumberFormat(String(this.escalationMod), {signDisplay:"always"});
+		let msg = "";
+		if (this.escalationMod) {
+			msg += `escalation Mod: ${signedFormatter.format(this.escalationMod)}`;
+		}
+	}
+
+
+
+
+
+	async apply(): Promise<void> {
+		//TODO: change escalation die when that's a thing
+
+
 	}
 
 	/** combines other's data into initial*/

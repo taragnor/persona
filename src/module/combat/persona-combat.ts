@@ -9,13 +9,13 @@ import { Usable } from "../item/persona-item.js";
 export class PersonaCombat {
 	static async usePower(attacker: PToken, power: Usable) : Promise<CombatResult> {
 		const targets= await this.getTargets(attacker, power);
-		return this.#usePowerOn(attacker, power, targets);
+		const result = await  this.#usePowerOn(attacker, power, targets);
+		await result.print();
+		await result.apply();
+		return result;
 	}
 
 	static async #usePowerOn(attacker: PToken, power: Usable, targets: PToken[]) : Promise<CombatResult> {
-		const attackbonus= this.getAttackBonus(attacker, power);
-		const combat = this.ensureCombatExists();
-		const escalationDie = 0; //placeholder
 		let i = 0;
 		const result = new CombatResult();
 
@@ -43,6 +43,7 @@ export class PersonaCombat {
 		const attackbonus= this.getAttackBonus(attacker, power);
 		const combat = this.ensureCombatExists();
 		const escalationDie = this.getEscalationDie(combat);
+		attackbonus.add("Escalation Die", escalationDie);
 		const naturalAttackRoll = roll.total;
 		switch (resist) {
 			case "reflect": {
@@ -52,6 +53,7 @@ export class PersonaCombat {
 					validDefModifiers: [],
 					situation: {
 						naturalAttackRoll,
+						escalationDie,
 					},
 					...baseData,
 				};
@@ -63,6 +65,7 @@ export class PersonaCombat {
 					validDefModifiers: [],
 					situation: {
 						naturalAttackRoll,
+						escalationDie,
 					},
 					...baseData,
 				};
@@ -74,6 +77,7 @@ export class PersonaCombat {
 					validDefModifiers: [],
 					situation: {
 						naturalAttackRoll,
+						escalationDie,
 					},
 					...baseData,
 				};
@@ -167,13 +171,13 @@ export class PersonaCombat {
 					damageMult *= crit ? 2 : 1;
 					switch (cons.type) {
 						case "dmg-high":
-							CombatRes.addEffect(consTarget, {
+							CombatRes.addEffect(atkResult, consTarget, {
 								type: "dmg-high",
 								amount: power.getDamage(attacker.actor, "high") * (absorb ? -1 : damageMult),
 							});
 							continue;
 						case "dmg-low":
-							CombatRes.addEffect(consTarget, {
+							CombatRes.addEffect(atkResult, consTarget, {
 								type: "dmg-low",
 								amount: power.getDamage(attacker.actor, "low") * (absorb ? -1 : damageMult),
 							});
@@ -188,14 +192,11 @@ export class PersonaCombat {
 						default:
 							break;
 					}
-					CombatRes.addEffect(consTarget, cons);
+					CombatRes.addEffect(atkResult, consTarget, cons);
 				}
 
 			}
-
-
 		}
-
 		return CombatRes;
 	}
 
@@ -204,13 +205,13 @@ export class PersonaCombat {
 			const res = new CombatResult();
 			if (power.system.type == "power") {
 				if (attacker.actor.system.type == "pc" && power.system.hpcost) {
-					res.addEffect( attacker, {
+					res.addEffect(null, attacker, {
 						type: "hp-loss",
 						amount: power.system.hpcost
 					});
 				}
 				if (attacker.actor.system.type == "pc" && power.system.subtype == "magic" && power.system.slot){
-					res.addEffect(attacker, {
+					res.addEffect(null, attacker, {
 						type: "expend-slot",
 						amount: power.system.slot,
 					});
