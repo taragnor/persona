@@ -5,7 +5,7 @@ import { StatusEffectId } from "../../config/status-effects.js";
 import { StatusDuration } from "../../config/status-effects.js";
 import { Situation } from "./modifier-list.js";
 import { Usable } from "../item/persona-item.js";
-
+import { PC } from "../actor/persona-actor.js";
 import { PToken } from "./persona-combat.js";
 
 export class CombatResult  {
@@ -96,7 +96,6 @@ export class CombatResult  {
 			CombatResult.mergeChanges(this.costs, [effect]);
 			return;
 		}
-
 		if (!this.attacks.has(atkResult)) {
 			this.attacks.set(atkResult, []);
 		}
@@ -137,16 +136,48 @@ export class CombatResult  {
 		if (this.escalationMod) {
 			msg += `escalation Mod: ${signedFormatter.format(this.escalationMod)}`;
 		}
+
+		for (const [atkRes, changes] of this.attacks.entries()) {
+
+
+
+		}
+
+		for (const cost of this.costs) {
+
+		}
 	}
 
-
-
-
-
 	async apply(): Promise<void> {
+		const escalationChange = this.escalationMod;
 		//TODO: change escalation die when that's a thing
+		for (const changes of this.attacks.values()) {
+			for (const change of changes) {
+				await CombatResult.applyChange(change);
+
+			}
+		}
+		for (const cost of this.costs) {
+			await CombatResult.applyChange(cost);
+		}
 
 
+	}
+
+	static async applyChange(change: TokenChange<PToken>) {
+		const actor = change.token.actor;
+		await actor.modifyHP(change.hpchange * change.hpchangemult);
+		for (const status of change.addStatus) {
+			await actor.addStatus(status.id, status.duration, status.potency);
+		}
+		for (const status of change.removeStatus) {
+			await actor.removeStatus(status.id);
+		}
+		if (actor.system.type == "pc") {
+			change.expendSlot.forEach(async (val, i) => {
+				await (actor as PC).expendSlot(i, val);
+			});
+		}
 	}
 
 	/** combines other's data into initial*/

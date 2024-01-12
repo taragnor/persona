@@ -1,3 +1,5 @@
+import { StatusEffectId } from "../../config/status-effects.js";
+import { StatusDuration } from "../../config/status-effects.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { ResistStrength } from "../../config/damage-types.js";
 import { Situation } from "../combat/modifier-list.js";
@@ -152,6 +154,27 @@ declare global {
 				return [focus as Focus];
 			});
 			return focii;
+		}
+
+		async modifyHP( this: Shadow | PC, delta: number) {
+			let hp = this.system.combat.hp;
+			hp += delta;
+			await this.update( {"system.combat.hp": hp});
+		}
+
+		async addStatus(id: StatusEffectId, duration: StatusDuration, potency?: number ): Promise<void> {
+			//TODO: implemnent this
+		}
+
+		async removeStatus(id: StatusEffectId) : Promise<void>{
+			//TODO: implemnent this
+		}
+
+		async expendSlot(this: PC,  slot: number, amount = 1) {
+			if (slot < 0 && slot >= 4) return;
+			const slots = this.system.slots;
+			slots[slot as (0 | 1 | 2 | 3)] -= amount;
+			await this.update( {"system.slots" : slots});
 		}
 
 		equippedItems() : (InvItem | Weapon)[]  {
