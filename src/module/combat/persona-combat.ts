@@ -1,10 +1,10 @@
-import { PersonaItem } from "../item/persona-item";
-import { CombatResult } from "./combat-result";
-import { PersonaActor } from "../actor/persona-actor";
-import { Power } from "../item/persona-item";
-import { ModifierList } from "./modifier-list";
-import { Situation } from "./modifier-list";
-import { AttackResult } from "./combat-result";
+import { PersonaItem } from "../item/persona-item.js";
+import { CombatResult } from "./combat-result.js";
+import { PersonaActor } from "../actor/persona-actor.js";
+import { Power } from "../item/persona-item.js";
+import { ModifierList } from "./modifier-list.js";
+import { Situation } from "./modifier-list.js";
+import { AttackResult } from "./combat-result.js";
 
 
 
@@ -159,17 +159,26 @@ export class PersonaCombat {
 				cond => PersonaItem.testPrecondition(cond, situation))
 			) {
 				for (const cons of consequences) {
+					let damageMult = 1;
 					const absorb = result == "absorb" && !cons.applyToSelf;
 					const block = result == "block" && !cons.applyToSelf;
-					const damageMult = block ? 0.5 : 1;
+					const consTarget = cons.applyToSelf ? attacker: target;
+					const crit = result == "crit" && !cons.applyToSelf;
+					damageMult *= block ? 0.5 : 1;
+					damageMult *= crit ? 2 : 1;
 					switch (cons.type) {
 						case "dmg-high":
-							//NOTE: don't change amount here
-							cons.amount = power.getDamage(attacker.actor, "high") * (absorb ? -1 : damageMult);
-							break;
+							CombatRes.addEffect(consTarget, {
+								type: "dmg-high",
+								amount: power.getDamage(attacker.actor, "high") * (absorb ? -1 : damageMult),
+							});
+							continue;
 						case "dmg-low":
-							//NOTE: don't change amount here
-							cons.amount = power.getDamage(attacker.actor, "low") * (absorb ? -1 : damageMult);
+							CombatRes.addEffect(consTarget, {
+								type: "dmg-low",
+								amount: power.getDamage(attacker.actor, "low") * (absorb ? -1 : damageMult),
+							});
+							continue;
 						case "extraAttack" :
 							//TODO: handle later
 							break;
@@ -180,7 +189,6 @@ export class PersonaCombat {
 						default:
 							break;
 					}
-					const consTarget = cons.applyToSelf ? attacker: target;
 					CombatRes.addEffect(consTarget, cons);
 				}
 

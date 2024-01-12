@@ -64,6 +64,12 @@
 					</h2>
 					{{#each effect.consequences as |cons j|}}
 					<div class="consequence-block" data-consequence-index="{{j}}">
+						<div>
+							<label>
+								Apply to Self
+							</label>
+							<input type="checkbox" name="system.effects.{{i}}.consequences.{{j}}.applyToSelf"" {{checked cons.applyToSelf}}>
+		</div>
 						<div class="type-select">
 							<select name="system.effects.{{i}}.consequences.{{j}}.type">
 								{{selectOptions ../../POWERSTUFF.CONSTYPES localize=true selected=cons.type}}

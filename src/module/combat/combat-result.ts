@@ -1,12 +1,12 @@
-import { STATUS_EFFECT_LIST } from "../../config/status-effects";
-import { STATUS_EFFECT_DURATIONS_LIST } from "../../config/status-effects";
-import { CONSQUENCELIST } from "../../config/effect-types";
-import { StatusEffectId } from "../../config/status-effects";
-import { StatusDuration } from "../../config/status-effects";
-import { Situation } from "./modifier-list";
-import { Power } from "../item/persona-item";
+import { STATUS_EFFECT_LIST } from "../../config/status-effects.js";
+import { STATUS_EFFECT_DURATIONS_LIST } from "../../config/status-effects.js";
+import { CONSQUENCELIST } from "../../config/effect-types.js";
+import { StatusEffectId } from "../../config/status-effects.js";
+import { StatusDuration } from "../../config/status-effects.js";
+import { Situation } from "./modifier-list.js";
+import { Power } from "../item/persona-item.js";
 
-import { PToken } from "./persona-combat";
+import { PToken } from "./persona-combat.js";
 
 export class CombatResult  {
 	attackResults : AttackResult[] = [];

@@ -1,6 +1,6 @@
-import { PersonaItem } from "../item/persona-item";
-import { PersonaActor } from "../actor/persona-actor";
-import { PRECONDITIONLIST } from "../../config/effect-types";
+import { PersonaItem } from "../item/persona-item.js";
+import { PersonaActor } from "../actor/persona-actor.js";
+import { PRECONDITIONLIST } from "../../config/effect-types.js";
 
 type ModifierListItem = {
 	name: string;

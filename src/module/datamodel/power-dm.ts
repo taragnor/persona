@@ -22,12 +22,47 @@ type ConditionalEffect  = {
 	consequences: Consequence[]
 };
 
+const evenDmg :ConditionalEffect = {
+	conditions: [
+		{
+			type: "hit",
+		},
+		{
+			type: "natural-even",
+		},
+	],
+	consequences: [
+		{
+			type: "dmg-high"
+		}
+	]
+}
+
+const oddDmg :ConditionalEffect = {
+	conditions: [
+		{
+			type: "hit",
+		},
+		{
+			type: "natural-odd",
+		},
+	],
+	consequences: [
+		{
+			type: "dmg-low"
+		}
+	]
+}
+
+
 const powerEffects = function () {
+	const initial = [evenDmg, oddDmg];
 	return new arr( new obj<ConditionalEffect>()
 		,{
 			validate: (x:ConditionalEffect[])=> {
 				return x.every( e=> Array.isArray(e.conditions) && Array.isArray(e.consequences))
-			}
+			},
+			initial
 		});
 }
 
