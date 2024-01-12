@@ -6,6 +6,7 @@ import { POWERTYPESLIST } from "../../config/effect-types.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { TARGETINGLIST } from "../../config/effect-types.js";
 import { Precondition } from "../combat/modifier-list.js";
+import { Consequence } from "../combat/combat-result.js";
 
 export  const damage = function() {
 	return new sch( {
@@ -16,16 +17,9 @@ export  const damage = function() {
 
 const DEFENSECHOICES = ["fort" , "ref" , "will", "none"] as const;
 
-type ConsequencesObject = {
-	type: typeof CONSQUENCELIST[number],
-	amount?: number,
-	statusName?: string,
-	statusDuration?: string,
-}
-
 type ConditionalEffect  = {
 	conditions: Precondition[],
-	consequences: ConsequencesObject[]
+	consequences: Consequence[]
 };
 
 const powerEffects = function () {

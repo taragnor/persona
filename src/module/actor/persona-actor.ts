@@ -165,16 +165,25 @@ declare global {
 			return ret as (InvItem | Weapon)[];
 		}
 
-		wpnDamage(this: PC | Shadow) : {low: number, high:number} {
+		wpnDamage(this: PC | Shadow, multiplier_factored: boolean = true) : {low: number, high:number} {
+			let basedmg: {low: number, high:number};
 			if (this.system.type == "pc") {
 				const wpn = this.weapon;
 				if (!wpn) {
 					ui.notifications.warn(`${this.name} doesn't have an equipped weapon`)
-					return {low: 1, high:2};
+					return  {low: 1, high:2};
 				}
-				return wpn.system.damage;
+				basedmg =  wpn.system.damage;
+			} else {
+				basedmg = this.system.combat.wpndmg;
 			}
-			return this.system.combat.wpndmg;
+			if (!multiplier_factored)
+				return basedmg;
+			const mult =this.wpnMult();
+			return {
+				low: basedmg.low * mult,
+				high: basedmg.high * mult,
+			}
 		}
 
 		getBonuses (type : keyof InvItem["system"]["modifiers"]): ModifierList {
@@ -230,10 +239,27 @@ declare global {
 
 		elementalResist(this: PC | Shadow, type: typeof DAMAGETYPESLIST[number]) : ResistStrength  {
 			switch (type) {
-				case "untyped": case "healing": case "none":
+				case "untyped":  case "none":
 					return "normal";
+				case "healing":
+					return "absorb";
 			}
 			return this.system.combat.resists[type] ?? "normal";
+		}
+
+		wpnMult( this: PC | Shadow) : number {
+			const lvl = this.system.combat.classData.level;
+			const inc = this.system.combat.classData.incremental.wpn_mult ? 1 : 0;
+			const mult = this.class.getClassProperty(lvl + inc, "wpn_mult") ?? 0;
+			return mult;
+
+		}
+
+		magDmg (this: PC | Shadow) : {low: number, high:number} {
+			const lvl = this.system.combat.classData.level;
+			const inc = this.system.combat.classData.incremental.mag_dmg ? 1 : 0;
+			const magDmg = this.class.getClassProperty(lvl + inc, "magic_damage") ?? 0;
+			return magDmg ;
 		}
 
 		critBoost(this: PC | Shadow) : ModifierList {

@@ -1,13 +1,16 @@
 export const CONSQUENCELIST = [
 	"none",
-	"half-damage",
-	"healing",
+	"absorb",
+	"hp-loss",
+	"dmg-low",
+	"dmg-high",
+	"dmg-mult",
 	"addStatus",
 	"removeStatus",
-	"removeStatus-self",
-	"addStatus-self",
 	"escalationManipulation",
 	"extraAttack",
+	"expend-slot",
+
 ] as const;
 
 export const CONSQUENCETYPES = Object.fromEntries(

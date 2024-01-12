@@ -1,43 +1,44 @@
-import { STATUS_EFFECT_LIST } from "../../config/status-effects";
-import { STATUS_EFFECT_DURATIONS_LIST } from "../../config/status-effects";
+import { PersonaItem } from "../item/persona-item";
+import { CombatResult } from "./combat-result";
 import { PersonaActor } from "../actor/persona-actor";
 import { Power } from "../item/persona-item";
 import { ModifierList } from "./modifier-list";
 import { Situation } from "./modifier-list";
+import { AttackResult } from "./combat-result";
 
 
-type AttackResult = {
-	result: "hit" | "miss" | "crit" | "reflect" | "block" | "absorb",
-	validAtkModifiers: [number, string][],
-	validDefModifiers: [number, string][],
-	naturalRoll: number,
-};
+
 
 export class PersonaCombat {
-	static async usePower(attacker: PToken, power: Power) {
+	static async usePower(attacker: PToken, power: Power) : Promise<CombatResult> {
 		const targets= await this.getTargets(attacker, power);
 		return this.#usePowerOn(attacker, power, targets);
 	}
 
-	static async #usePowerOn(attacker: PToken, power: Power, targets: PToken[]) : Promise<CombatResult<PToken>> {
+	static async #usePowerOn(attacker: PToken, power: Power, targets: PToken[]) : Promise<CombatResult> {
 		const attackbonus= this.getAttackBonus(attacker, power);
 		const combat = this.ensureCombatExists();
 		const escalationDie = 0; //placeholder
 		let i = 0;
+		const result = new CombatResult();
 
 		for (const target of targets) {
 			const roll = new Roll("1d20");
 			await roll.roll();
 			const atkResult = await this.processAttackRoll(roll, attacker, power, target, i==0);
+			const this_result = await this.processEffects(atkResult);
+			result.merge(this_result);
 			i++;
 		}
-		return {
-			tokens: [],
-			escalationMod: 0,
-		}; //Placeholder
+		return result;
 	}
 
 	static async processAttackRoll(roll: Roll, attacker: PToken, power: Power, target: PToken, isActivationRoll: boolean) : Promise<AttackResult> {
+		const baseData = {
+			attacker ,
+			target,
+			power
+		} satisfies Pick<AttackResult, "attacker" | "target"  | "power">;
 		const element = power.system.dmg_type;
 		const resist = target.actor.elementalResist(element);
 		const attackbonus= this.getAttackBonus(attacker, power);
@@ -50,7 +51,10 @@ export class PersonaCombat {
 					result: "reflect",
 					validAtkModifiers: [],
 					validDefModifiers: [],
-					naturalRoll : naturalAttackRoll,
+					situation: {
+						naturalAttackRoll,
+					},
+					...baseData,
 				};
 			}
 			case "block": {
@@ -58,7 +62,10 @@ export class PersonaCombat {
 					result: "block",
 					validAtkModifiers: [],
 					validDefModifiers: [],
-					naturalRoll : naturalAttackRoll,
+					situation: {
+						naturalAttackRoll,
+					},
+					...baseData,
 				};
 			}
 			case "absorb" : {
@@ -66,7 +73,10 @@ export class PersonaCombat {
 					result: "absorb",
 					validAtkModifiers: [],
 					validDefModifiers: [],
-					naturalRoll : naturalAttackRoll,
+					situation: {
+						naturalAttackRoll,
+					},
+					...baseData,
 				};
 			}
 
@@ -85,7 +95,8 @@ export class PersonaCombat {
 				result: "hit",
 				validAtkModifiers,
 				validDefModifiers: [],
-				naturalRoll : naturalAttackRoll,
+				situation,
+				...baseData,
 			};
 		}
 		const critBoostMod = attacker.actor.critBoost();
@@ -98,25 +109,87 @@ export class PersonaCombat {
 		const critBoost = critBoostMod.total(situation);
 		const validDefModifiers= target.actor.getDefense(def).list(situation);
 		if (total < target.actor.getDefense(def).total(situation))
-			return {
-				result: "miss",
-				validAtkModifiers,
-				validDefModifiers,
-				naturalRoll: naturalAttackRoll
-			};
+		return {
+			result: "miss",
+			validAtkModifiers,
+			validDefModifiers,
+			situation,
+			...baseData,
+		};
 		if (resist != "resist" && naturalAttackRoll + critBoost >= 20) {
 			return {
 				result: "crit",
 				validAtkModifiers,
 				validDefModifiers,
-				naturalRoll: naturalAttackRoll
+				situation,
+				...baseData,
 			};
 		} else return {
 			result: "hit",
 			validAtkModifiers,
 			validDefModifiers,
-			naturalRoll: naturalAttackRoll
+			situation,
+			...baseData,
 		}
+	}
+
+	static async processEffects(atkResult: AttackResult) : Promise<CombatResult> {
+		const CombatRes= new CombatResult();
+		const {result, validAtkModifiers, validDefModifiers, attacker, target, situation, power} = atkResult;
+		CombatRes.merge(await this.processPowerEffectsOnTarget(atkResult));
+		switch (result) {
+			case "reflect":
+				CombatRes.merge(await this.#usePowerOn(attacker, power, [attacker]));
+				break;
+			case "block":
+				const blockRes = new CombatResult(atkResult);
+				CombatRes.merge(blockRes);
+				break;
+
+		}
+
+		return CombatRes;
+	}
+
+	static async processPowerEffectsOnTarget(atkResult: AttackResult) {
+		const CombatRes= new CombatResult(atkResult);
+		const {result, validAtkModifiers, validDefModifiers, attacker, target, situation, power} = atkResult;
+		for (const {conditions, consequences} of power.system.effects) {
+			if (conditions.every(
+				cond => PersonaItem.testPrecondition(cond, situation))
+			) {
+				for (const cons of consequences) {
+					const absorb = result == "absorb" && !cons.applyToSelf;
+					const block = result == "block" && !cons.applyToSelf;
+					const damageMult = block ? 0.5 : 1;
+					switch (cons.type) {
+						case "dmg-high":
+							//NOTE: don't change amount here
+							cons.amount = power.getDamage(attacker.actor, "high") * (absorb ? -1 : damageMult);
+							break;
+						case "dmg-low":
+							//NOTE: don't change amount here
+							cons.amount = power.getDamage(attacker.actor, "low") * (absorb ? -1 : damageMult);
+						case "extraAttack" :
+							//TODO: handle later
+							break;
+						case "none":
+							continue;
+						case "addStatus": case "removeStatus":
+							if (absorb || block) continue;
+						default:
+							break;
+					}
+					const consTarget = cons.applyToSelf ? attacker: target;
+					CombatRes.addEffect(consTarget, cons);
+				}
+
+			}
+
+
+		}
+
+		return CombatRes;
 	}
 
 	static getAttackBonus(attacker: PToken, power:Power): ModifierList {
@@ -203,24 +276,7 @@ export class PersonaCombat {
 
 type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shadow">;
 
-type PToken = Token<ValidAttackers>;
+export type PToken = Token<ValidAttackers>;
 
 
-export interface CombatResult<T extends Token<any>> {
-	tokens: TokenChange<T>[];
-	escalationMod: number;
-}
-
-export interface TokenChange<T extends Token<any>> {
-	token: T;
-	hpchange: number;
-	addStatus: {
-		id: (typeof STATUS_EFFECT_LIST)[number]["id"],
-		potency ?: number,
-		duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
-	}[];
-	removeStatus: {
-		id: (typeof STATUS_EFFECT_LIST)[number]["id"],
-	}[];
-}
 

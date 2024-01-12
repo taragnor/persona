@@ -60,6 +60,8 @@ CONFIG.statusEffects= STATUS_EFFECT_LIST.map( ({id, icon})=> {
 	return {id, icon, name:`persona.status.${id}`};
 });
 
+export type StatusEffectId = typeof STATUS_EFFECT_LIST[number]["id"];
+
 export const STATUS_EFFECT_TRANSLATION_TABLE = Object.fromEntries(
 	CONFIG.statusEffects.map( ({id, name}) => [id, name])
 );
@@ -71,7 +73,10 @@ export const STATUS_EFFECT_DURATIONS_LIST = [
 	"save-easy",
 	"save-hard",
 	"UEoNT",
+	"instant",
 ] as const;
+
+export type StatusDuration = typeof STATUS_EFFECT_DURATIONS_LIST[number];
 
 export const STATUS_EFFECT_DURATIONS = Object.fromEntries(
 	STATUS_EFFECT_DURATIONS_LIST.map( x=> [x, `persona.status.duration.${x}`]
