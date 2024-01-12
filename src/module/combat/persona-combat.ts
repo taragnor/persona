@@ -6,9 +6,6 @@ import { ModifierList } from "./modifier-list.js";
 import { Situation } from "./modifier-list.js";
 import { AttackResult } from "./combat-result.js";
 
-
-
-
 export class PersonaCombat {
 	static async usePower(attacker: PToken, power: Power) : Promise<CombatResult> {
 		const targets= await this.getTargets(attacker, power);
