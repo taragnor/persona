@@ -41,7 +41,10 @@ export const POWERTYPESLIST = [
 	"magic",
 	"other",
 	"none",
+	"standalone",
 ] as const;
+
+export type PowerType = typeof POWERTYPESLIST[number];
 
 export const POWERTYPES= Object.fromEntries( POWERTYPESLIST.map(x=> [x, `persona.power.types.${x}`]));
 

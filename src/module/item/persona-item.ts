@@ -1,3 +1,4 @@
+import { PowerType } from "../../config/effect-types.js";
 import { PC } from "../actor/persona-actor.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { Situation } from "../combat/modifier-list.js";
@@ -71,10 +72,11 @@ async deletePowerConsequence (this: PowerContainer, index: number) {
 		return this.system.modifiers[type];
 	}
 
-	getDamage(this: Power, user: PC | Shadow, type: "high" | "low") : number {
-		switch(this.system.subtype) {
+	getDamage(this:Usable , user: PC | Shadow, type: "high" | "low") : number {
+		const subtype : PowerType  = this.system.type == "power" ? this.system.subtype : "standalone";
+		switch(subtype) {
 			case "weapon" : {
-				const dmg =user.wpnDamage(true)
+				const dmg =user.wpnDamage(true);
 				const bonus = this.system.damage;
 				const modified = {
 					low: dmg.low + bonus.low,
@@ -90,6 +92,10 @@ async deletePowerConsequence (this: PowerContainer, index: number) {
 					high: dmg.high * mult
 				}
 				return modified[type];
+			}
+			case "standalone": {
+				const dmg = this.system.damage;
+				return dmg[type];
 			}
 			default:
 				return 0;
@@ -156,4 +162,5 @@ export type Consumable = Subtype<PersonaItem, "consumable">;
 export type ModifierContainer = Weapon | InvItem | Focus | Talent;
 
 export type PowerContainer = Consumable | Power;
+export type Usable = Power | Consumable;
 

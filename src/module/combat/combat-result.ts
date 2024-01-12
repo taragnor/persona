@@ -4,7 +4,7 @@ import { CONSQUENCELIST } from "../../config/effect-types.js";
 import { StatusEffectId } from "../../config/status-effects.js";
 import { StatusDuration } from "../../config/status-effects.js";
 import { Situation } from "./modifier-list.js";
-import { Power } from "../item/persona-item.js";
+import { Usable } from "../item/persona-item.js";
 
 import { PToken } from "./persona-combat.js";
 
@@ -153,7 +153,8 @@ export type AttackResult = {
 	validDefModifiers: [number, string][],
 	target: PToken,
 	attacker: PToken,
-	power: Power,
+	power: Usable,
 	situation: Situation,
 };
+
 

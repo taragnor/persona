@@ -1,18 +1,18 @@
 import { PersonaItem } from "../item/persona-item.js";
 import { CombatResult } from "./combat-result.js";
 import { PersonaActor } from "../actor/persona-actor.js";
-import { Power } from "../item/persona-item.js";
 import { ModifierList } from "./modifier-list.js";
 import { Situation } from "./modifier-list.js";
 import { AttackResult } from "./combat-result.js";
+import { Usable } from "../item/persona-item.js";
 
 export class PersonaCombat {
-	static async usePower(attacker: PToken, power: Power) : Promise<CombatResult> {
+	static async usePower(attacker: PToken, power: Usable) : Promise<CombatResult> {
 		const targets= await this.getTargets(attacker, power);
 		return this.#usePowerOn(attacker, power, targets);
 	}
 
-	static async #usePowerOn(attacker: PToken, power: Power, targets: PToken[]) : Promise<CombatResult> {
+	static async #usePowerOn(attacker: PToken, power: Usable, targets: PToken[]) : Promise<CombatResult> {
 		const attackbonus= this.getAttackBonus(attacker, power);
 		const combat = this.ensureCombatExists();
 		const escalationDie = 0; //placeholder
@@ -27,10 +27,12 @@ export class PersonaCombat {
 			result.merge(this_result);
 			i++;
 		}
+		const costs = await this.#processCosts(attacker, power);
+		result.merge(costs);
 		return result;
 	}
 
-	static async processAttackRoll(roll: Roll, attacker: PToken, power: Power, target: PToken, isActivationRoll: boolean) : Promise<AttackResult> {
+	static async processAttackRoll(roll: Roll, attacker: PToken, power: Usable, target: PToken, isActivationRoll: boolean) : Promise<AttackResult> {
 		const baseData = {
 			attacker ,
 			target,
@@ -197,8 +199,32 @@ export class PersonaCombat {
 		return CombatRes;
 	}
 
-	static getAttackBonus(attacker: PToken, power:Power): ModifierList {
+	static async #processCosts(attacker: PToken , power: Usable) : Promise<CombatResult>
+		{
+			const res = new CombatResult();
+			if (power.system.type == "power") {
+				if (attacker.actor.system.type == "pc" && power.system.hpcost) {
+					res.addEffect( attacker, {
+						type: "hp-loss",
+						amount: power.system.hpcost
+					});
+				}
+				if (attacker.actor.system.type == "pc" && power.system.subtype == "magic" && power.system.slot){
+					res.addEffect(attacker, {
+						type: "expend-slot",
+						amount: power.system.slot,
+					});
+				}
+			}
+			return res;
+		}
+	static getAttackBonus(attacker: PToken, power:Usable): ModifierList {
 		const actor = attacker.actor;
+		if (power.system.type == "consumable") {
+			const l = new ModifierList();
+			l.add("Item Base Bonus", power.system.atk_bonus);
+			return l;
+		}
 		if (power.system.subtype == "weapon")
 			return actor.wpnAtkBonus();
 		if (power.system.subtype == "magic")
@@ -207,7 +233,7 @@ export class PersonaCombat {
 	}
 
 
-	static async getTargets(attacker: PToken, power: Power): Promise<PToken[]> {
+	static async getTargets(attacker: PToken, power: Usable): Promise<PToken[]> {
 		const selected = Array.from(game.user.targets) as PToken[];
 		const attackerType = attacker.actor.system.type;
 		switch (power.system.targets) {
@@ -282,6 +308,4 @@ export class PersonaCombat {
 type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shadow">;
 
 export type PToken = Token<ValidAttackers>;
-
-
 

@@ -29,6 +29,12 @@ function itemBase() {
 	};
 }
 
+function consumableSpecific() {
+	return {
+		atk_bonus: new num({initial: 0, integer: true}),
+	}
+
+}
 
  class StudentSkill extends foundry.abstract.DataModel {
 	get type() { return "studentSkill" as const;}
@@ -80,6 +86,7 @@ function itemBase() {
 	get type() {return "consumable" as const;}
 	static override defineSchema() {
 		const ret = {
+			...consumableSpecific(),
 			...itemBase(),
 			...UsablePowerProps(),
 		};
