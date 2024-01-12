@@ -1,8 +1,7 @@
 import { StatusEffectId } from "../../config/status-effects.js";
-import { StatusDuration } from "../../config/status-effects.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { ResistStrength } from "../../config/damage-types.js";
-import { Situation } from "../combat/modifier-list.js";
+import { StatusEffect } from "../combat/combat-result.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { Talent } from "../item/persona-item.js";
 import { Focus } from "../item/persona-item.js";
@@ -162,11 +161,13 @@ declare global {
 			await this.update( {"system.combat.hp": hp});
 		}
 
-		async addStatus(id: StatusEffectId, duration: StatusDuration, potency?: number ): Promise<void> {
-			//TODO: implemnent this
+		async addStatus({id, potency, duration}: StatusEffect): Promise<void> {
+			//TODO: implemnent this, this is active effect stuff
+
+
 		}
 
-		async removeStatus(id: StatusEffectId) : Promise<void>{
+		async removeStatus({id}: Pick<StatusEffect, "id">) : Promise<void>{
 			//TODO: implemnent this
 		}
 

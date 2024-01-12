@@ -4,6 +4,7 @@ import { INCREMENTAL_ADVANCE_TYPES } from "../../config/incremental-advance-type
 
 import { tarotDeck } from "../../config/tarot.js";
 import { ResistStrength } from "../../config/damage-types.js";
+import { StatusEffect } from "../combat/combat-result";
 
 const personalBio = function () {
 	return new sch( {
@@ -77,6 +78,7 @@ const combatCommonStats = function () {
 		}),
 		powers: new arr( new id()),
 		resists: elementalResists(),
+		// statuses: new arr( new obj<StatusEffect>(), {initial: []}),
 	};
 };
 

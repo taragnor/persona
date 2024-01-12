@@ -1,12 +1,12 @@
 import { STATUS_EFFECT_LIST } from "../../config/status-effects.js";
 import { STATUS_EFFECT_DURATIONS_LIST } from "../../config/status-effects.js";
 import { CONSQUENCELIST } from "../../config/effect-types.js";
-import { StatusEffectId } from "../../config/status-effects.js";
 import { StatusDuration } from "../../config/status-effects.js";
 import { Situation } from "./modifier-list.js";
 import { Usable } from "../item/persona-item.js";
 import { PC } from "../actor/persona-actor.js";
 import { PToken } from "./persona-combat.js";
+import { StatusEffectId } from "../../config/status-effects.js";
 
 export class CombatResult  {
 	attacks: Map<AttackResult, TokenChange<PToken>[]> = new Map();
@@ -160,18 +160,16 @@ export class CombatResult  {
 		for (const cost of this.costs) {
 			await CombatResult.applyChange(cost);
 		}
-
-
 	}
 
 	static async applyChange(change: TokenChange<PToken>) {
 		const actor = change.token.actor;
 		await actor.modifyHP(change.hpchange * change.hpchangemult);
 		for (const status of change.addStatus) {
-			await actor.addStatus(status.id, status.duration, status.potency);
+			await actor.addStatus(status);
 		}
 		for (const status of change.removeStatus) {
-			await actor.removeStatus(status.id);
+			await actor.removeStatus(status);
 		}
 		if (actor.system.type == "pc") {
 			change.expendSlot.forEach(async (val, i) => {
@@ -191,25 +189,23 @@ export class CombatResult  {
 			expendSlot : initial.expendSlot.map( (x,i)=> x + other.expendSlot[i]) as [number, number, number, number],
 		};
 	}
-
-
 }
 
 export interface TokenChange<T extends Token<any>> {
 	token: T;
 	hpchange: number;
 	hpchangemult: number;
-	addStatus: {
-		id: (typeof STATUS_EFFECT_LIST)[number]["id"],
-		potency ?: number,
-		duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
-	}[];
-	removeStatus: {
-		id: (typeof STATUS_EFFECT_LIST)[number]["id"],
-	}[];
+	addStatus: StatusEffect[],
+
+	removeStatus: Pick<StatusEffect, "id">[],
 	expendSlot: [number, number, number, number];
 }
 
+export type StatusEffect = {
+		id: StatusEffectId,
+		potency ?: number,
+		duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
+	};
 
 export type Consequence = {
 	type: typeof CONSQUENCELIST[number],

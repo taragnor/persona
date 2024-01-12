@@ -15,6 +15,9 @@ declare class Actor<T extends SchemaDict, ItemType extends Item<J>> extends Foun
 	get items(): ItemType[];
 	sheet: ActorSheet<this>;
 	statuses: Set<string>;
+	get effects(): Collection<ActiveEffect<this>>;
+	get statuses(): Set<string>;
+
 
 }
 
