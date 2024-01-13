@@ -14,8 +14,6 @@ export class PersonaHandleBarsHelpers {
 		"caps" : (str) => str.toUpperCase?.() || str,
 
 		"getMaxSlotsAt": (actor: PersonaActor, lvl:number) => {
-			console.log(actor);
-			console.log(lvl);
 			return actor.getMaxSlotsAt(lvl);
 		},
 
