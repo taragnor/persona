@@ -13,6 +13,7 @@ import { PersonaDB } from "../persona-db.js";
 import { ACTORMODELS } from "../datamodel/actor-types.js"
 import { PersonaItem } from "../item/persona-item.js"
 
+
 declare global {
 	type ActorSub<X extends PersonaActor["system"]["type"]> = Subtype<PersonaActor, X>;
 }
@@ -163,8 +164,6 @@ declare global {
 
 		async addStatus({id, potency, duration}: StatusEffect): Promise<void> {
 			//TODO: implemnent this, this is active effect stuff
-
-
 		}
 
 		async removeStatus({id}: Pick<StatusEffect, "id">) : Promise<void>{

@@ -1,16 +1,16 @@
 
 declare interface Hooks {
-	once(hookname: keyof HOOKS, fn: HOOKS[keyof HOOKS]): void;
-	on (hookname: keyof HOOKS, fn: HOOKS[keyof HOOKS]): void;
+	once< T extends keyof HOOKS>(hookname: T, fn: HOOKS[T]): void;
+	on <T extends keyof HOOKS>(hookname: T, fn: HOOKS[T]): void;
 }
 
-interface HOOKS{
+interface HOOKS {
 	"init": () => void;
 	"ready": () => void;
 	"updateCompendium": () =>void;
+	"applyActiveEffect": ApplyAEHookFn
+
 };
 
-type HOOKS_NAMES= keyof HOOKS;
-type HOOK_FNs= HOOKS[HOOKS_NAMES];
-
+type ApplyAEHookFn = (actor: Actor<any,any>, change: AECHANGE , current: any , delta: any, changes: Record<string, any>) => void;
 
