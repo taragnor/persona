@@ -21,6 +21,24 @@ div.resistance-item {
 	justify-content: center;
 }
 
+div.tag-list {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+}
+
+div.tag-item {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+	margin: 10px;
+}
+
+.tag-item select {
+	margin-right: 10px;
+}
+
 .resistance-item img {
 	width: 50px;
 	height: 36px;

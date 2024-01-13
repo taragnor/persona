@@ -7,6 +7,7 @@ import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { TARGETINGLIST } from "../../config/effect-types.js";
 import { Precondition } from "../combat/modifier-list.js";
 import { Consequence } from "../combat/combat-result.js";
+import { POWER_TAGS_LIST } from "../../config/power-tags.js";
 
 export  const damage = function() {
 	return new sch( {
@@ -79,8 +80,10 @@ export function powerCost() {
 	}
 
 }
+
 export function UsablePowerProps() {
 	return {
+		tags: new arr( new txt<typeof POWER_TAGS_LIST[number]>({choices: POWER_TAGS_LIST})),
 		damage: damage(),
 		mag_mult: new num( {integer:true, min:1, max: 100, initial:1}),
 		defense: new txt<(typeof DEFENSECHOICES[number]) >( {choices: DEFENSECHOICES, initial: "ref"}),

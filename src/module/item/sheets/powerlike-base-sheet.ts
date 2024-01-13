@@ -9,6 +9,7 @@ import { DAMAGETYPES } from "../../../config/damage-types.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../../../config/status-effects.js";
 import { STATUS_EFFECT_DURATIONS } from "../../../config/status-effects.js";
 import { TARGETING } from "../../../config/effect-types.js";
+import { POWER_TAGS } from "../../../config/power-tags.js";
 
 export abstract class PersonaPowerLikeBaseSheet extends PersonaItemSheetBase {
 	override item: PowerContainer;
@@ -24,6 +25,7 @@ export abstract class PersonaPowerLikeBaseSheet extends PersonaItemSheetBase {
 			STATUSEFFECTS: STATUS_EFFECT_TRANSLATION_TABLE,
 			STATUSDURATIONS : STATUS_EFFECT_DURATIONS,
 			TARGETING : TARGETING,
+			TAGS: POWER_TAGS,
 		}
 		return data;
 	}
@@ -33,9 +35,12 @@ export abstract class PersonaPowerLikeBaseSheet extends PersonaItemSheetBase {
 		html.find(".addPowerEffect").on("click", this.addPowerEffect.bind(this));
 		html.find(".addCondition").on("click", this.addPrecondition.bind(this));
 		html.find(".addConsequence").on("click", this.addConsequence.bind(this));
+		html.find(".addTag").on("click", this.addTag.bind(this));
 		html.find(".delConsequence").on("click", this.deleteConsequence.bind(this));
 		html.find(".delCondition").on("click", this.deletePrecondition.bind(this));
 		html.find(".delEffect").on("click", this.deletePowerEffect.bind(this));
+		html.find(".delTag").on("click", this.deleteTag.bind(this));
+
 	}
 
 	async addPowerEffect() {
@@ -50,6 +55,13 @@ export abstract class PersonaPowerLikeBaseSheet extends PersonaItemSheetBase {
 	async addConsequence(event: Event) {
 		const index= Number(HTMLTools.getClosestData(event, "effectIndex"));
 		await this.item.addNewPowerConsequence(index);
+	}
+
+	async addTag(event: Event) {
+		const item = this.item;
+		const x = item.system.tags;
+		x.push("weapon");
+		await this.item.update({ "system.tags": x});
 	}
 
 	async deletePowerEffect(ev: Event) {
@@ -68,6 +80,14 @@ export abstract class PersonaPowerLikeBaseSheet extends PersonaItemSheetBase {
 			"preconditionIndex");
 		this.item.deletePowerPrecondition(index);
 
+	}
+
+	async deleteTag(ev: Event) {
+		const index = Number(HTMLTools.getClosestData(ev, "tagIndex"));
+		const item = this.item;
+		const x = item.system.tags;
+		x.splice(index, 1);
+		await this.item.update({ "system.tags": x});
 	}
 
 }

@@ -138,6 +138,16 @@
 	"persona.power.targets.all-enemies": "All Enemies",
 	"persona.power.targets.all-allies": "All Allies",
 
+	"persona.power.tag.fire": "Fire",
+	"persona.power.tag.ice": "Ice",
+	"persona.power.tag.elec": "Electricity",
+	"persona.power.tag.wind": "Wind",
+	"persona.power.tag.light": "Light",
+	"persona.power.tag.dark": "Dark",
+	"persona.power.tag.buff": "Enhancing",
+	"persona.power.tag.debuff": "Debilitating",
+	"persona.power.tag.weapon": "Weapon",
+
 	"persona.slottypes.0.name": "Basic",
 	"persona.slottypes.1.name": "Advanced",
 	"persona.slottypes.2.name": "Expert",
