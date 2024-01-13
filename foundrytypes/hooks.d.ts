@@ -12,5 +12,5 @@ interface HOOKS {
 
 };
 
-type ApplyAEHookFn = (actor: Actor<any,any>, change: AECHANGE , current: any , delta: any, changes: Record<string, any>) => void;
+type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , delta: any, changes: Record<string, any>) => void;
 

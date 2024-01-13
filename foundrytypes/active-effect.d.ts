@@ -17,7 +17,7 @@ declare class ActiveEffect<A extends Actor<any,I>, I extends Item<any>> extends 
 
 
 
-type AECHANGE = {
+type AEChange = {
 	effect: ActiveEffect<any>;
 	key: string; //keys to one of the system values
 	mode: number,
