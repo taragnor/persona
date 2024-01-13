@@ -170,11 +170,15 @@ declare global {
 				throw new Error(`Couldn't find status effect Id: ${id}`);
 			}
 			if (!eff) {
-				const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [stateData]))[0] as PersonaAE;
-				const s = newEffect.statuses;
+				const s= new Set();
 				s.add(id);
-				const statuses= Array.from(s);
-				newEffect.update({statuses});
+				const newState = {
+					...stateData,
+					statuses: s
+				};
+				const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
+				// const statuses= Array.from(s);
+				// newEffect.update({statuses});
 			} else  {
 
 				//TODO: update the effect
