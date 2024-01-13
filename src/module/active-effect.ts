@@ -15,3 +15,5 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 
 Hooks.on("applyActiveEffect", PersonaAE.applyHook);
 
+
+CONFIG.ActiveEffect.legacyTransferral = false;

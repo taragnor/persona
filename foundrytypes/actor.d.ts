@@ -18,7 +18,14 @@ declare class Actor<T extends SchemaDict, ItemType extends Item<J> = Item, AETyp
 	get effects(): Collection<AEType>;
 	get statuses(): Set<string>;
 
+	/** Retrieve an iterator over all effects that can apply to the actor.
+  The effect might exist on the Actor, or it might exist on one of the Actor's Items.
+  If it's the latter, then its transfer value will be true.
+  */
+	allApplicableEffects() : Generator<AEType>
 
+// Get a list of all effects that are actually applied to the actor.
+	get appliedEffects(): AEType[];
 }
 
 

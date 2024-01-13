@@ -10,7 +10,7 @@ declare interface CONFIG {
 	statusEffects: StatusEffectObject[]
 	ActiveEffect: {
 		documentClass: typeof ActiveEffect<any, any>;
-
+		legacyTransferral: boolean;
 	}
 
 }

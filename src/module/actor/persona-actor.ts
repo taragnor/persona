@@ -171,7 +171,12 @@ declare global {
 			}
 			if (!eff) {
 				const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [stateData]))[0] as PersonaAE;
-			} else {
+				const s = newEffect.statuses;
+				s.add(id);
+				const statuses= Array.from(s);
+				newEffect.update({statuses});
+			} else  {
+
 				//TODO: update the effect
 
 			}

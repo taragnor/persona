@@ -13,6 +13,7 @@ declare class ActiveEffect<A extends Actor<any,I>, I extends Item<any>> extends 
 	changes: unknown[];
 	description: string;
 	duration: Record<string, unknown>;
+	transfer: boolean;
 }
 
 
