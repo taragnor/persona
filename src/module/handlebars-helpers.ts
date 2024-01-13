@@ -17,11 +17,13 @@ export class PersonaHandleBarsHelpers {
 			return actor.getMaxSlotsAt(lvl);
 		},
 
-	"getDefense" : (actor: PC | Shadow, defense: keyof typeof actor["system"]["combat"]["defenses"]) => {
-		return actor.getDefense(defense).total();
+		"getDefense" : (actor: PC | Shadow, defense: keyof typeof actor["system"]["combat"]["defenses"]) => {
+			return actor.getDefense(defense).total();
 
-	}
-
+		},
+		"isGM" : () => {
+			return game.user.isGM;
+		}
 
 	}
 }

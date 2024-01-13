@@ -61,6 +61,7 @@ class FoundryUser extends FoundryDocument<never>{
 	targets: Set<Token<any>> & {user: FoundryUser };
 	role: number;
 	viewedScene: string;
+	get isGM(): boolean;
 
 }
 
