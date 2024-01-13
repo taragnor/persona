@@ -16,8 +16,8 @@ export class ConsumableSheet extends PersonaItemSheetBase {
 		});
 	}
 
-	override getData() {
-		const data = super.getData();
+	override async getData() {
+		const data = await super.getData();
 		data.EQUIP_SLOTS = EQUIP_SLOTS;
 
 		return data;

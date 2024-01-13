@@ -14,8 +14,9 @@ import { POWER_TAGS } from "../../../config/power-tags.js";
 export abstract class PersonaPowerLikeBaseSheet extends PersonaItemSheetBase {
 	override item: PowerContainer;
 
-	override getData() {
-		const data = super.getData();
+	override async getData() {
+		await this.item.sanitizeEffectsData();//required becuase foundry input hates arrays;
+		const data = await super.getData();
 		data.POWERSTUFF = {
 			POWERTYPES : POWERTYPES,
 			SLOTTYPES : SLOTTYPES,
@@ -41,6 +42,12 @@ export abstract class PersonaPowerLikeBaseSheet extends PersonaItemSheetBase {
 		html.find(".delEffect").on("click", this.deletePowerEffect.bind(this));
 		html.find(".delTag").on("click", this.deleteTag.bind(this));
 
+	}
+
+	override _getSubmitData(data: Record<string, any>): Record<string, any> {
+		data = super._getSubmitData(data);
+		console.log(data);
+		return data;
 	}
 
 	async addPowerEffect() {

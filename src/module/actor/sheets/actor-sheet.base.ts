@@ -7,8 +7,8 @@ import { INCREMENTAL_ADVANCE_TYPES } from "../../../config/incremental-advance-t
 
 export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
-	override getData() {
-		const data= super.getData();
+	override async getData() {
+		const data= await super.getData();
 		data.CONST = {
 			TAROT  : tarotDeck,
 			RESIST_STRENGTHS : RESIST_STRENGTHS,

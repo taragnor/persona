@@ -20,6 +20,30 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		return PersonaDB.getItemByName("Basic Attack")  as Power;
 	}
 
+	/** required because foundry input hates arrays*/
+	async sanitizeEffectsData(this: Usable) {
+		const isArray = Array.isArray;
+		let update = false;
+		let effects=ArrayCorrector(this.system.effects);
+		if (!isArray(this.system.effects)) {
+			effects=ArrayCorrector(this.system.effects);
+			update=  true;
+		}
+		effects.forEach( ({conditions, consequences}, i) => {
+			if (!isArray(conditions)) {
+				effects[i].conditions = ArrayCorrector(conditions);
+				update=  true;
+			}
+			if (!isArray(consequences)) {
+				effects[i].consequences = ArrayCorrector(consequences);
+				update=  true;
+			}
+		});
+		if (update) {
+			await this.update({"system.effects": effects});
+		}
+	}
+
 	async addNewPowerEffect(this: PowerContainer) {
 		const arr= this.system.effects ?? [];
 		arr.push( {
