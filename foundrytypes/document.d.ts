@@ -6,6 +6,8 @@
 	async createEmbeddedDocuments(type: string, objData: Record<string, any>[]): Promise<Embedded[]>;
 	 sheet: Sheet<this>
 
+	 async delete(): void;
+	 async deleteEmbeddedDocuments( embeddedName: string, ids: unknown, context: Record<string, any>): Promise<void>;
 	 get isOwner(): boolean;
 	 get limited(): boolean;
 	 get hasPlayerOwner(): boolean;

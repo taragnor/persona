@@ -16,6 +16,7 @@ import { ACTORMODELS } from "./datamodel/actor-types.js";
 import { ITEMMODELS} from "./datamodel/item-types.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaItem } from "./item/persona-item.js";
+import { PersonaAE } from "./active-effect.js";
 import { PCSheet } from "./actor/sheets/pc-sheet.js";
 import { ShadowSheet } from "./actor/sheets/shadow-sheet.js";
 import { NPCSheet } from "./actor/sheets/npc-sheet.js";
@@ -34,8 +35,9 @@ function registerDataModels() {
 }
 
 function registerDocumentClasses() {
-  CONFIG.Actor.documentClass = PersonaActor;
-  CONFIG.Item.documentClass = PersonaItem;
+	CONFIG.Actor.documentClass = PersonaActor;
+	CONFIG.Item.documentClass = PersonaItem;
+	CONFIG.ActiveEffect.documentClass = PersonaAE;
 }
 
 function registerSheetApplications() {

@@ -1,4 +1,4 @@
-declare class ActiveEffect<T extends Actor, I extends Item> extends FoundryDocument<never>  {
+declare class ActiveEffect<A extends Actor<any,I>, I extends Item<any>> extends FoundryDocument<never>  {
 	/** returns if effect is active, by default is !disabled && !isSuppressed() */
 	get active(): boolean
 
@@ -6,7 +6,13 @@ declare class ActiveEffect<T extends Actor, I extends Item> extends FoundryDocum
 	disabled: boolean;
 	/** always returns false by default but can be overloaded*/
 	isSuppressed(): boolean;
-	parent:T | I;
+	parent:A | I;
+	origin: Option<unknown>;
+	icon: string;
+	name: string;
+	changes: unknown[];
+	description: string;
+	duration: Record<string, unknown>;
 }
 
 

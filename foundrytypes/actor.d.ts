@@ -9,13 +9,13 @@
 
 
 // declare class Actor<T extends {[key:string]: foundry.abstract.DataModel}, U extends X<T>> {
-declare class Actor<T extends SchemaDict, ItemType extends Item<J>> extends FoundryDocument<ItemType>{
+declare class Actor<T extends SchemaDict, ItemType extends Item<J> = Item, AEType extends ActiveEffect<this, ItemType> = ActiveEffect> extends FoundryDocument<ItemType | AEType>{
 	type: string;
 	system: TotalConvert<T>;
 	get items(): ItemType[];
 	sheet: ActorSheet<this>;
 	statuses: Set<string>;
-	get effects(): Collection<ActiveEffect<this>>;
+	get effects(): Collection<AEType>;
 	get statuses(): Set<string>;
 
 

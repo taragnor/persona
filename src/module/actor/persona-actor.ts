@@ -12,13 +12,14 @@ import { Power } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
 import { ACTORMODELS } from "../datamodel/actor-types.js"
 import { PersonaItem } from "../item/persona-item.js"
+import { PersonaAE } from "../active-effect.js";
 
 
 declare global {
 	type ActorSub<X extends PersonaActor["system"]["type"]> = Subtype<PersonaActor, X>;
 }
 
-	export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem> {
+	export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
 
 		async createNewItem() {
 			return (await this.createEmbeddedDocuments("Item", [{"name": "Unnamed Item", type: "item"}]))[0];
@@ -163,11 +164,24 @@ declare global {
 		}
 
 		async addStatus({id, potency, duration}: StatusEffect): Promise<void> {
-			//TODO: implemnent this, this is active effect stuff
+			const eff = this.effects.find( eff => eff.statuses.has(id));
+			const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
+			if (!stateData) {
+				throw new Error(`Couldn't find status effect Id: ${id}`);
+			}
+			if (!eff) {
+				const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [stateData]))[0] as PersonaAE;
+			} else {
+				//TODO: update the effect
+
+			}
+
 		}
 
 		async removeStatus({id}: Pick<StatusEffect, "id">) : Promise<void>{
-			//TODO: implemnent this
+			this.effects
+			.filter( eff => eff.statuses.has(id))
+			.forEach( eff => eff.delete());
 		}
 
 		async expendSlot(this: PC,  slot: number, amount = 1) {

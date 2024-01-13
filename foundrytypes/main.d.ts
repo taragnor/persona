@@ -42,14 +42,14 @@ declare class Items {
 		types: string[], makeDefault: boolean}) : void;
 }
 
-interface Collection<T> {
+interface Collection<T> extends Map<string, T> {
 	contents: T[];
 	filter(fn: (item: T) => boolean) : T[];
-	map<R>(fn: (item: T) => R) : R[];
+	// map<R>(fn: (item: T) => R) : R[];
 	[Symbol.iterator]() : Iterator<T>;
 	get(id: string) : T | null;
 	getName(name: string): T | null;
-
+	find (fn : (item: T) => boolean): Option<T>;
 }
 
 class FoundryCompendium<T extends object> extends FoundryDocument<never> {

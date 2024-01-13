@@ -1,13 +1,17 @@
 declare interface CONFIG {
 	Actor: {
 		dataModels: Record<string, typeof foundry.abstract.DataModel>;
-		documentClass: typeof Actor<T>;
+		documentClass: typeof Actor<any, any>;
 	}
 	Item: {
 		dataModels: Record<string, typeof foundry.abstract.DataModel>;
-		documentClass: typeof Item<T>;
+		documentClass: typeof Item<any>;
 	}
 	statusEffects: StatusEffectObject[]
+	ActiveEffect: {
+		documentClass: typeof ActiveEffect<any, any>;
+
+	}
 
 }
 
