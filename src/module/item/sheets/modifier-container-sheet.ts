@@ -1,8 +1,8 @@
 
-import { PersonaItemSheetBase } from "./base-item-sheet";
-import { ModifierContainer } from "../persona-item";
+import { PersonaItemSheetBase } from "./base-item-sheet.js";
+import { ModifierContainer } from "../persona-item.js";
 import { PRECONDITIONTYPES } from "../../../config/effect-types.js";
-import { MODIFIERS_TABLE } from "../../../config/item-modifiers";
+import { MODIFIERS_TABLE } from "../../../config/item-modifiers.js";
 
 export abstract class PersonaModifierContainerBaseSheet extends PersonaItemSheetBase {
 	override item: ModifierContainer;
