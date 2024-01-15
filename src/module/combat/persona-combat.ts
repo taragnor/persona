@@ -159,7 +159,7 @@ export class PersonaCombat {
 		const {result, validAtkModifiers, validDefModifiers, attacker, target, situation, power} = atkResult;
 		for (const {conditions, consequences} of power.system.effects) {
 			if (conditions.every(
-				cond => PersonaItem.testPrecondition(cond, situation))
+				cond => ModifierList.testPrecondition(cond, situation))
 			) {
 				for (const cons of consequences) {
 					let damageMult = 1;

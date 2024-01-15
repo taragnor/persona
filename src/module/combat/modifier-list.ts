@@ -1,8 +1,8 @@
-import { PersonaItem } from "../item/persona-item.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PRECONDITIONLIST } from "../../config/effect-types.js";
+import { ModifierTarget } from "../../config/item-modifiers.js";
 
-type ModifierListItem = {
+export type ModifierListItem = {
 	name: string;
 	conditions: Precondition[]
 	modifier: number,
@@ -22,7 +22,7 @@ export class ModifierList {
 	}
 
 	list(situtation: Situation): [number, string][] {
-		const filtered= this._data.filter( item=> item.conditions.every(cond => PersonaItem.testPrecondition(cond, situtation)));
+		const filtered= this._data.filter( item=> item.conditions.every(cond => ModifierList.testPrecondition(cond, situtation)));
 			return filtered.map( x=> [x.modifier, x.name]);
 	}
 
@@ -33,7 +33,7 @@ export class ModifierList {
 
 	total(situation: Situation = {}) : number {
 		return this._data.reduce ( (acc, item) => {
-			if (item.conditions.every( cond => PersonaItem.testPrecondition(cond, situation))) {
+			if (item.conditions.every( cond => ModifierList.testPrecondition(cond, situation))) {
 				return acc + item.modifier;
 			}
 			return acc;
@@ -45,12 +45,65 @@ export class ModifierList {
 		return this.total({});
 	}
 
+	static testPrecondition (condition: Precondition, situation:Situation) : boolean {
+		const nat = situation.naturalAttackRoll;
+		switch (condition.type) {
+			case "always":
+				return true;
+			case "natural+":
+				return nat != undefined && nat >= condition.num! ;
+			case "natural-":
+				return nat != undefined && nat <= condition.num! ;
+			case "natural-odd":
+				return nat != undefined && nat % 2 == 1;
+			case "natural-even":
+				return nat != undefined && nat % 2 == 0;
+			case "critical":
+				return situation.criticalHit ?? false;
+			case "miss":
+					return situation.hit === false;
+			case "hit":
+					return situation.hit === true;
+			case "escalation+":
+				return situation.escalationDie != undefined && situation.escalationDie >= condition.num!;
+			case "escalation-":
+				return situation.escalationDie != undefined && situation.escalationDie <= condition.num!;
+			case "activation+":
+				return !!situation.activationRoll && nat! >= condition.num!;
+			case "activation-":
+				return !!situation.activationRoll && nat! <= condition.num!;
+			case "activation-odd":
+				return !!situation.activationRoll && nat! % 2 == 1;
+			case "activation-even":
+				return !!situation.activationRoll && nat! % 2 == 0;
+			case "in-battle":
+				return situation.activeCombat != undefined;
+			case "non-combat":
+				return situation.activeCombat == undefined;
+			default:
+				condition.type satisfies never;
+				const err = `Unexpected Condition: ${condition.type}`;
+				console.error(err);
+				ui.notifications.error(err);
+				return false;
+		}
+	}
 
 }
 
 export type Precondition = {
 	type : typeof PRECONDITIONLIST[number],
 	num?: number,
+}
+
+export type ConditionalModifier = {
+	conditions: Precondition[],
+	modifiers: Modifier[],
+}
+
+type Modifier = {
+	target: ModifierTarget,
+	amount: number;
 }
 
 
@@ -64,5 +117,6 @@ export type Situation = {
 	activationRoll ?: boolean;
 	target?: PersonaActor;
 }
+
 
 

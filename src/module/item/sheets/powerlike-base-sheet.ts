@@ -44,11 +44,10 @@ export abstract class PersonaPowerLikeBaseSheet extends PersonaItemSheetBase {
 
 	}
 
-	override _getSubmitData(data: Record<string, any>): Record<string, any> {
-		data = super._getSubmitData(data);
-		console.log(data);
-		return data;
-	}
+	// override _getSubmitData(data: Record<string, any>): Record<string, any> {
+	// 	data = super._getSubmitData(data);
+	// 	return data;
+	// }
 
 	async addPowerEffect() {
 		await this.item.addNewPowerEffect();

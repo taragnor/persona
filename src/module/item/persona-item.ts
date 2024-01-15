@@ -1,3 +1,5 @@
+import { ModifierListItem } from "../combat/modifier-list.js";
+import { ModifierTarget } from "../../config/item-modifiers.js";
 import { PowerType } from "../../config/effect-types.js";
 import { PC } from "../actor/persona-actor.js";
 import { Shadow } from "../actor/persona-actor.js";
@@ -24,7 +26,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	async sanitizeEffectsData(this: Usable) {
 		const isArray = Array.isArray;
 		let update = false;
-		let effects=ArrayCorrector(this.system.effects);
+		let effects= this.system.effects;
 		if (!isArray(this.system.effects)) {
 			effects=ArrayCorrector(this.system.effects);
 			update=  true;
@@ -42,6 +44,31 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		if (update) {
 			await this.update({"system.effects": effects});
 		}
+	}
+
+	async sanitizeModifiersData(this: ModifierContainer) {
+		const isArray = Array.isArray;
+		let update = false;
+		let mods=this.system.modifiers;
+		if (!isArray(this.system.modifiers)) {
+			mods=ArrayCorrector(mods);
+			update=  true;
+		}
+		mods.forEach( ({conditions, modifiers}, i) => {
+			if (!isArray(conditions)) {
+				mods[i].conditions = ArrayCorrector(conditions);
+				update=  true;
+			}
+			if (!isArray(modifiers)) {
+				mods[i].modifiers = ArrayCorrector(modifiers);
+				update=  true;
+			}
+		});
+		if (update) {
+			await this.update({"system.modifiers": mods});
+		}
+
+
 	}
 
 	async addNewPowerEffect(this: PowerContainer) {
@@ -92,9 +119,19 @@ async deletePowerConsequence (this: PowerContainer, index: number) {
 	await this.update({"system.effects": this.system.effects});
 }
 
-	getModifier(this: ModifierContainer, type : keyof InvItem["system"]["modifiers"]) : number {
-		return this.system.modifiers[type];
-	}
+getModifier(this: ModifierContainer, type : ModifierTarget) : Pick<ModifierListItem, "conditions" | "modifier">[] {
+	return this.system.modifiers
+		.map(x =>
+			({
+				conditions: x.conditions,
+				modifier: x.modifiers.reduce( (acc,x)=> {
+					if ( x.target == type) return acc+x.amount;
+					return acc;
+				}, 0),
+			})
+		);
+	// return this.system.modifiers[type];
+}
 
 	getDamage(this:Usable , user: PC | Shadow, type: "high" | "low") : number {
 		const subtype : PowerType  = this.system.type == "power" ? this.system.subtype : "standalone";
@@ -123,43 +160,6 @@ async deletePowerConsequence (this: PowerContainer, index: number) {
 			}
 			default:
 				return 0;
-		}
-	}
-
-static testPrecondition (condition: Precondition, situation:Situation) : boolean {
-		const nat = situation.naturalAttackRoll;
-		switch (condition.type) {
-			case "always":
-				return true;
-			case "natural+":
-				return nat != undefined && nat >= condition.num! ;
-			case "natural-":
-				return nat != undefined && nat <= condition.num! ;
-			case "natural-odd":
-				return nat != undefined && nat % 2 == 1;
-			case "natural-even":
-				return nat != undefined && nat % 2 == 0;
-			case "critical":
-				return situation.criticalHit ?? false;
-			case "miss":
-					return situation.hit === false;
-			case "hit":
-					return situation.hit === true;
-			case "escalation+":
-				return situation.escalationDie != undefined && situation.escalationDie >= condition.num!;
-			case "escalation-":
-				return situation.escalationDie != undefined && situation.escalationDie <= condition.num!;
-			case "activation+":
-				return !!situation.activationRoll && nat! >= condition.num!;
-			case "activation-":
-				return !!situation.activationRoll && nat! <= condition.num!;
-			case "activation-odd":
-				return !!situation.activationRoll && nat! % 2 == 1;
-			case "activation-even":
-				return !!situation.activationRoll && nat! % 2 == 0;
-			default:
-				condition.type satisfies never;
-				return false;
 		}
 	}
 
