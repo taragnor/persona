@@ -1,0 +1,13 @@
+<form class="talent-sheet">
+	<header class="flexcol">
+		<div class="">
+			<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Talent Name" placeholder="Talent Name">
+		</div>
+	</header>
+	<body>
+		{{> "systems/persona/parts/modifiers-section.hbs" item=item }}
+	</body>
+</form>
+
+
+

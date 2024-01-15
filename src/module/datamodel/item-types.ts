@@ -11,6 +11,7 @@ import { EQUIP_SLOTS_LIST } from "../../config/equip-slots.js";
 //Note: have to manually match this with MODIIFERLIST
 function modifiers() {
 	return new sch( {
+		maxhp: new num({initial: 0, integer: true}),
 		wpnAtk: new num({initial: 0, integer: true}),
 		magAtk: new num({initial: 0, integer: true}),
 		wpnDmg: new num({initial: 0, integer: true}),

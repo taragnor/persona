@@ -70,7 +70,8 @@ declare global {
 			try {
 				const inc= this.hasIncremental("hp")? 1: 0;
 				const lvl = this.system.combat.classData.level;
-				return this.class.getClassProperty(lvl + inc, "maxhp");
+				const bonuses = this.getBonuses("maxhp");
+				return this.class.getClassProperty(lvl + inc, "maxhp") + bonuses.total();
 			} catch (e) {
 				console.warn(`Can't get Hp for ${this.name} (${this.id})`);
 				return 0;

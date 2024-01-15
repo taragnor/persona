@@ -76,6 +76,7 @@
 	"persona.status.duration.save-hard": "Save Ends (hard)",
 	"persona.status.duration.UEoNT": "Until End of Your Next Turn",
 
+	"persona.modifier.maxhp": "Maximum HP",
 	"persona.modifier.wpnAtk": "Weapon Attack Bonus",
 	"persona.modifier.magAtk": "Magic Attack Bonus",
 	"persona.modifier.wpnDmg": "Weapon Damage",
