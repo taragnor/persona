@@ -88,8 +88,6 @@ declare global {
 
 		}
 
-
-
 		getMaxSlotsAt(slot_lvl: number) : number {
 			if (this.system.type != "pc") return 0;
 			try {
@@ -245,10 +243,9 @@ declare global {
 				conditions:[],
 				modifier: item.getModifier(type),
 
-				}))
+			}))
 			);
-
-			}
+		}
 
 		wpnAtkBonus(this: PC | Shadow) : ModifierList {
 			const mods = new ModifierList();
@@ -312,10 +309,7 @@ declare global {
 		critBoost(this: PC | Shadow) : ModifierList {
 			const itemBonus = this.getBonuses("ref");
 			return itemBonus; //placeholder
-
-
 		}
-
 	}
 
 export type PC = Subtype<PersonaActor, "pc">;
