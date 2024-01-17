@@ -5,22 +5,7 @@
 		</div>
 	</header>
 	<body>
-	<div class="effects-list">
-		{{#each item.system.effects as |effect i|}}
-		<div class="flexrow" data-effect-index="{{i}}">
-			<div class="power-effect" >
-				{{> "systems/persona/parts/conditions-section.hbs" effect=effect CONDITIONS=../POWERSTUFF.PRECONDITIONTYPES i=i}}
-				{{> "systems/persona/parts/consequences-section.hbs" effect=effect POWERSTUFF=../POWERSTUFF i=i}}
-			</div>
-			<div class="short">
-				<a class="delEffect">
-					<i class="fa-solid fa-trash-can"></i>
-				</a>
-			</div>
-		</div>
-		<hr>
-		{{/each}}
-	</div>
+	{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
 	</body>
 </form>
 

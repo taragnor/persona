@@ -90,6 +90,19 @@ const socialLinks = new sch( {
 	),
 });
 
+type TalentData = {
+	talentId: string,
+	talentLevel: number,
+}
+
+function sharedAbilities() {
+	return {
+		talents: new arr( new obj<TalentData>(), {initial: []}),
+		focuses: new arr( new id(), {initial: []}),
+	}
+
+};
+
 abstract class BaseStuff extends window.foundry.abstract.DataModel {
 
 	static override defineSchema() {
@@ -97,7 +110,6 @@ abstract class BaseStuff extends window.foundry.abstract.DataModel {
 			locked: new bool( { initial: false}),
 			short_desc: new txt(),
 		}
-
 	}
 
 }
@@ -115,8 +127,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			bio: personalBio(),
 			social: socialLinks,
 			slots: skillSlots(),
-			talents: new arr( new id(), {initial: []}),
-			focuses: new arr( new id(), {initial: []}),
+			...sharedAbilities(),
 		} as const;
 		return ret;
 	}
@@ -129,6 +140,7 @@ export class ShadowSchema extends foundry.abstract.DataModel {
 		const ret = {
 			...BaseStuff.defineSchema(),
 			tarot: tarot(),
+			...sharedAbilities(),
 			combat: new sch({
 				...combatCommonStats(),
 				wpndmg: new sch({

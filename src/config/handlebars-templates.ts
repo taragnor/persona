@@ -12,6 +12,7 @@ const templateFileNames : string[] =[
 	"incremental-section.hbs",
 	"conditions-section.hbs",
 	"consequences-section.hbs",
+	"effects-section.hbs",
 ];
 
 export const templatePaths = templateFileNames.

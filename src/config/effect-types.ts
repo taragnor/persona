@@ -34,7 +34,9 @@ export const PRECONDITIONLIST = [
 	"activation-odd",
 	"activation-even",
 	"in-battle",
-	"non-combat"
+	"non-combat",
+	"talent-level+",
+
 ] as const;
 
 export const PRECONDITIONTYPES = Object.fromEntries( PRECONDITIONLIST.map(x=> [x, `persona.preconditions.${x}`]));

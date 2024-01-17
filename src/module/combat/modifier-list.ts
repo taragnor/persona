@@ -1,20 +1,27 @@
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PRECONDITIONLIST } from "../../config/effect-types.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
+import { ModifierContainer } from "../item/persona-item.js";
+import { PC } from "../actor/persona-actor.js";
+import { Shadow } from "../actor/persona-actor.js";
+import { Usable } from "../item/persona-item.js";
+import { PowerContainer } from "../item/persona-item.js";
 
 export type ModifierListItem = {
 	name: string;
-	conditions: Precondition[]
-	modifier: number,
+	source: Option<ModifierContainer>;
+	conditions: Precondition[];
+	modifier: number;
 }
 export class ModifierList {
 	_data: ModifierListItem[];
-	constructor (list: ModifierListItem[] = []) {
+	constructor ( list: ModifierListItem[] = []) {
 		this._data = list;
 	}
 
-	add(name: string, modifier: number, conditions: Precondition[] = []) {
+	add(name: string, modifier: number, source: Option<ModifierContainer> = null, conditions: Precondition[] = []) {
 		this._data.push( {
+			source,
 			name,
 			conditions,
 			modifier
@@ -22,7 +29,7 @@ export class ModifierList {
 	}
 
 	list(situtation: Situation): [number, string][] {
-		const filtered= this._data.filter( item=> item.conditions.every(cond => ModifierList.testPrecondition(cond, situtation)));
+		const filtered= this._data.filter( item=> item.conditions.every(cond => ModifierList.testPrecondition(cond, situtation, item.source)));
 			return filtered.map( x=> [x.modifier, x.name]);
 	}
 
@@ -31,9 +38,9 @@ export class ModifierList {
 		return new ModifierList(list);
 	}
 
-	total(situation: Situation = {}) : number {
+	total(situation: Situation ) : number {
 		return this._data.reduce ( (acc, item) => {
-			if (item.conditions.every( cond => ModifierList.testPrecondition(cond, situation))) {
+			if (item.conditions.every( cond => ModifierList.testPrecondition(cond, situation, item.source))) {
 				return acc + item.modifier;
 			}
 			return acc;
@@ -41,11 +48,7 @@ export class ModifierList {
 
 	}
 
-	valueOf() : number {
-		return this.total({});
-	}
-
-	static testPrecondition (condition: Precondition, situation:Situation) : boolean {
+	static testPrecondition (condition: Precondition, situation:Situation, source: Option<PowerContainer>) : boolean {
 		const nat = situation.naturalAttackRoll;
 		switch (condition.type) {
 			case "always":
@@ -80,6 +83,10 @@ export class ModifierList {
 				return situation.activeCombat != undefined;
 			case "non-combat":
 				return situation.activeCombat == undefined;
+			case "talent-level+":
+				if (!situation.user) return false
+				const id = source ? source.id! : "";
+				return !situation.user.system.talents.some( x=> x.talentId == id && x.talentLevel < (condition.num ?? 0))
 			default:
 				condition.type satisfies never;
 				const err = `Unexpected Condition: ${condition.type}`;
@@ -109,6 +116,7 @@ type Modifier = {
 
 export type Situation = {
 	//more things can be added here all should be optional
+	usedPower?: Usable;
 	activeCombat ?: unknown ;
 	naturalAttackRoll ?: number;
 	criticalHit ?: boolean;
@@ -116,6 +124,7 @@ export type Situation = {
 	escalationDie ?: number;
 	activationRoll ?: boolean;
 	target?: PersonaActor;
+	user: PC | Shadow;
 }
 
 

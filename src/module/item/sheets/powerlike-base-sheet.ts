@@ -1,8 +1,9 @@
 import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { Usable } from "../persona-item.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
+import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 
-export abstract class PersonaPowerLikeBaseSheet extends PersonaItemSheetBase {
+export abstract class PersonaPowerLikeBaseSheet extends PersonaEffectContainerBaseSheet {
 	override item: Usable;
 
 

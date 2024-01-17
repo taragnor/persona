@@ -52,6 +52,7 @@ export class PersonaCombat {
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					situation: {
+						user: attacker.actor,
 						naturalAttackRoll,
 						escalationDie,
 					},
@@ -64,6 +65,7 @@ export class PersonaCombat {
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					situation: {
+						user: attacker.actor,
 						naturalAttackRoll,
 						escalationDie,
 					},
@@ -76,6 +78,7 @@ export class PersonaCombat {
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					situation: {
+						user: attacker.actor,
 						naturalAttackRoll,
 						escalationDie,
 					},
@@ -85,6 +88,7 @@ export class PersonaCombat {
 
 		}
 		const situation : Situation = {
+			user: attacker.actor,
 			activeCombat: combat,
 			escalationDie,
 			activationRoll : isActivationRoll,
@@ -159,7 +163,7 @@ export class PersonaCombat {
 		const {result, validAtkModifiers, validDefModifiers, attacker, target, situation, power} = atkResult;
 		for (const {conditions, consequences} of power.system.effects) {
 			if (conditions.every(
-				cond => ModifierList.testPrecondition(cond, situation))
+				cond => ModifierList.testPrecondition(cond, situation, power))
 			) {
 				for (const cons of consequences) {
 					let damageMult = 1;

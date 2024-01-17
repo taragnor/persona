@@ -15,8 +15,8 @@ export class PersonaTalentSheet extends PersonaEffectContainerBaseSheet {
 		});
 	}
 
-	override getData() {
-		const data = super.getData();
+	override async getData() {
+		const data = await super.getData();
 		return data;
 	}
 

@@ -181,5 +181,8 @@
 	"persona.preconditions.activation-": "Activation Roll <=",
 	"persona.preconditions.activation+": "Activation Roll >=",
 	"persona.preconditions.activation-odd": "Odd Activation Roll",
-	"persona.preconditions.activation-even": "Even Activation Roll"
+	"persona.preconditions.activation-even": "Even Activation Roll",
+	"persona.preconditions.in-battle": "In Battle",
+	"persona.preconditions.non-combat": "Not in Combat",
+	"persona.preconditions.talent-level+": "Level in Talent >="
 }

@@ -72,7 +72,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const inc= this.hasIncremental("hp")? 1: 0;
 			const lvl = this.system.combat.classData.level;
 			const bonuses = this.getBonuses("maxhp");
-			return this.class.getClassProperty(lvl + inc, "maxhp") + bonuses.total();
+			return this.class.getClassProperty(lvl + inc, "maxhp") + bonuses.total( {user: this as PC | Shadow});
 		} catch (e) {
 			console.warn(`Can't get Hp for ${this.name} (${this.id})`);
 			return 0;
@@ -135,15 +135,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	talents() : Talent[] {
 		if (this.system.type != "pc") return [];
-		const talentIds = this.system.talents;
-		const talents = talentIds.flatMap( id => {
-			const tal= PersonaDB.getItemById(id);
+		return this.system.talents.flatMap( ({talentId}) => {
+			const tal= PersonaDB.getItemById(talentId);
 			if (!tal) return [];
 			if (tal.system.type != "talent") return [];
-			return [tal as Talent];
-		})
-		return talents;
+			return tal as Talent;
+		});
 	}
+
 
 	focii(): Focus[] {
 		if (this.system.type != "pc") return [];
@@ -239,15 +238,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.focii(),
 			...this.talents(),
 		];
-		return new ModifierList( modifiers.flatMap( item => {
+		const modList = new ModifierList( modifiers.flatMap( item => {
 			return item.getModifier(type)
 				.map( x=>
 					({
+						source: item,
 						name: item.name,
 						...x,
 					})
 				);
 		}));
+		return modList;
 	}
 
 	wpnAtkBonus(this: PC | Shadow) : ModifierList {

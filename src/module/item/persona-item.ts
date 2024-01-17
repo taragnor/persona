@@ -1,3 +1,4 @@
+import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { ModifierListItem } from "../combat/modifier-list.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { PowerType } from "../../config/effect-types.js";

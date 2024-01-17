@@ -21,26 +21,5 @@
 		</label>
 		{{numberInput item.system.crit_boost class="short" name="system.crit_boost" step=1 min=0 max=900}}
 	</div>
-	<h1>
-		Effects
-		<a class="addPowerEffect">
-			<i class="fa-solid fa-plus"> </i>
-		</a>
-	</h1>
-	<div class="effects-list">
-		{{#each item.system.effects as |effect i|}}
-		<div class="flexrow" data-effect-index="{{i}}">
-			<div class="power-effect" >
-				{{> "systems/persona/parts/conditions-section.hbs" effect=effect CONDITIONS=../POWERSTUFF.PRECONDITIONTYPES i=i}}
-				{{> "systems/persona/parts/consequences-section.hbs" effect=effect POWERSTUFF=../POWERSTUFF i=i}}
-			</div>
-			<div class="short">
-				<a class="delEffect">
-					<i class="fa-solid fa-trash-can"></i>
-				</a>
-			</div>
-		</div>
-		<hr>
-		{{/each}}
-	</div>
+	{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
 </section>

@@ -18,7 +18,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"getDefense" : (actor: PC | Shadow, defense: keyof typeof actor["system"]["combat"]["defenses"]) => {
-			return actor.getDefense(defense).total();
+			return actor.getDefense(defense).total({user:actor});
 
 		},
 		"isGM" : () => {
