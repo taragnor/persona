@@ -20,13 +20,15 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		super.activateListeners(html);
 	}
 
-	override async _onDropItem(_event: Event, item: PersonaItem) : Promise<void> {
+	override async _onDropItem(_event: Event, itemD: unknown, ...rest:any[]) : Promise<void> {
+		//@ts-ignore
+		const item: PersonaItem = await Item.implementation.fromDropData(itemD);
 		switch (item.system.type) {
 			case "talent":
 				this.actor.addTalent(item as Talent);
 				return;
 			case "consumable":
-				super._onDropItem(_event, item);
+				super._onDropItem(_event, itemD);
 				return;
 			case "power":
 				this.actor.addPower(item as Power);
@@ -35,10 +37,10 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				this.actor.addFocus(item as Focus);
 				return;
 			case "item":
-				super._onDropItem(_event, item);
+				super._onDropItem(_event, itemD);
 				return;
 			case "weapon":
-				super._onDropItem(_event, item);
+				super._onDropItem(_event, itemD);
 				return;
 			case "characterClass":
 				this.actor.setClass(item as CClass);
@@ -50,7 +52,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				item.system satisfies never;
 				throw new Error(`Unknown type ${item.type}`);
 		}
-
 	}
 
 }

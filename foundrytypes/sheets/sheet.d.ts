@@ -5,8 +5,9 @@ class Sheet<T extends Document> {
 	async render(force: boolean):Promise<void>;
 	_state: number;
 	_getSubmitData(data: Record<string, any>): Record<string, any>;
-	async _onDropActor<T extends Actor<any, any>>(_event: Event, actor: T ): Promise<void>;
-	async _onDropItem(_event: Event, item: Item<any> ): Promise<void>;
+	async _onDropActor<T extends Actor<any, any>>(_event: Event, actorObj: unknown ): Promise<void>;
+	/** call  Item.implementation.fromDropData to convert the item type to an actual FoundryItem*/
+	async _onDropItem(_event: Event, item: unknown): Promise<void>;
 
 }
 
