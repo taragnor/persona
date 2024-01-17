@@ -21,6 +21,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 		};
 		return data;
 
+
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {

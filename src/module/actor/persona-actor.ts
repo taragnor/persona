@@ -1,3 +1,4 @@
+import { CClass } from "../item/persona-item.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { StatusEffectId } from "../../config/status-effects.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
@@ -146,7 +147,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	focii(): Focus[] {
 		if (this.system.type != "pc") return [];
-		const fIds = this.system.focuses;
+		const fIds = this.system.combat.focuses;
 		const focii = fIds.flatMap( id => {
 			const focus = PersonaDB.getItemById(id);
 			if (!focus) return [];
@@ -314,6 +315,37 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const itemBonus = this.getBonuses("ref");
 		return itemBonus; //placeholder
 	}
+
+	async addTalent(this: PC | Shadow, talent: Talent) {
+		const talents = this.system.talents;
+		if (talents.find(x => x.talentId == talent.id)) return;
+		talents.push( {
+			talentLevel: 0,
+			talentId: talent.id
+		});
+		await this.update( {"system.talents": talents});
+	}
+
+	async addPower(this: PC | Shadow, power: Power) {
+		const powers = this.system.combat.powers;
+		if (powers.includes(power.id)) return;
+		powers.push(power.id);
+		await this.update( {"system.combat.powers": powers});
+	}
+
+	async addFocus(this: PC | Shadow, focus: Focus) {
+		const foci = this.system.combat.focuses;
+		if (foci.includes(focus.id)) return;
+		foci.push(focus.id);
+		await this.update( {"system.combat.focuses": foci});
+	}
+
+	async  setClass(this: PC | Shadow, cClass: CClass) {
+		await this.update( {"this.system.combat.classData.classId": cClass.id});
+
+
+	}
+
 }
 
 export type PC = Subtype<PersonaActor, "pc">;

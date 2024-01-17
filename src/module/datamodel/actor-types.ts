@@ -76,6 +76,7 @@ const combatCommonStats = function () {
 			will: new num( {integer:true}),
 			fort: new num( {integer:true}),
 		}),
+		focuses: new arr( new id(), {initial: []}),
 		powers: new arr( new id()),
 		resists: elementalResists(),
 		// statuses: new arr( new obj<StatusEffect>(), {initial: []}),
@@ -98,7 +99,6 @@ type TalentData = {
 function sharedAbilities() {
 	return {
 		talents: new arr( new obj<TalentData>(), {initial: []}),
-		focuses: new arr( new id(), {initial: []}),
 	}
 
 };

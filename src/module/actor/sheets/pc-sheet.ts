@@ -1,8 +1,8 @@
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
-import { PersonaActorSheetBase } from "./actor-sheet.base.js";
+import { CombatantSheetBase } from "./combatant-sheet.js";
 import { PersonaActor } from "../persona-actor.js";
 
-export class PCSheet extends PersonaActorSheetBase {
+export class PCSheet extends CombatantSheetBase {
 	override actor: Subtype<PersonaActor, "pc">;
 	static override get defaultOptions() {
 		return mergeObject(super.defaultOptions, {

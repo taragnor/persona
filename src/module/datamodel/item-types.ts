@@ -1,6 +1,6 @@
 const {StringField:txt, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 
-import { CharacterClass } from "./character-class-dm.js";
+import { CharacterClassDM } from "./character-class-dm.js";
 import { UsablePowerProps } from "./power-dm.js";
 import { powerCost } from "./power-dm.js";
 import { powerSpecific } from "./power-dm.js";
@@ -113,7 +113,7 @@ export const ITEMMODELS = {
 	item: InventoryItemSchema,
 	power: Power,
 	studentSkill: StudentSkill,
-	characterClass: CharacterClass,
+	characterClass: CharacterClassDM,
 	focus: Focus,
 	talent: Talent,
 	weapon: Weapon,
@@ -121,6 +121,6 @@ export const ITEMMODELS = {
 
 
 //testing the types, purely for debug purposes
-type CClass = SystemDataObjectFromDM<typeof CharacterClass>;
+type CClass = SystemDataObjectFromDM<typeof CharacterClassDM>;
 type PowerSO= SystemDataObjectFromDM<typeof Power>;
 

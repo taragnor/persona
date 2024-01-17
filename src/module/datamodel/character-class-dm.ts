@@ -19,7 +19,7 @@ function level_table() {
 	return ret;
 }
 
-export class CharacterClass extends foundry.abstract.DataModel {
+export class CharacterClassDM extends foundry.abstract.DataModel {
 	get type() { return "characterClass" as const;}
 	static override defineSchema() {
 		const ret = {
