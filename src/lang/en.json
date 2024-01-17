@@ -165,6 +165,7 @@
 	"persona.effecttypes.expend-slot": "Expend Slot",
 	"persona.effecttypes.escalationManipulation": "Change Escalation",
 	"persona.effecttypes.extraAttack": "Extra Attack",
+	"persona.effecttypes.modifier": "Apply Modifier",
 	"persona.effecttypes.none": "-",
 
 	"persona.preconditions.always": "always",

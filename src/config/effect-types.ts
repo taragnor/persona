@@ -10,6 +10,7 @@ export const CONSQUENCELIST = [
 	"escalationManipulation",
 	"extraAttack",
 	"expend-slot",
+	"modifier",
 
 ] as const;
 

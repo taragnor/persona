@@ -1,9 +1,8 @@
-import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { Talent } from "../persona-item.js";
-import { PersonaModifierContainerBaseSheet } from "./modifier-container-sheet.js";
+import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 
-export class PersonaTalentSheet extends PersonaModifierContainerBaseSheet {
+export class PersonaTalentSheet extends PersonaEffectContainerBaseSheet {
 	override item: Talent;
 
 	static override get defaultOptions() {

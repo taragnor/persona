@@ -56,13 +56,13 @@ const oddDmg :ConditionalEffect = {
 }
 
 
-const powerEffects = function () {
-	const initial = [evenDmg, oddDmg];
+const powerEffects = function (fillBaseAttack: boolean) {
+	const initial = fillBaseAttack ? [evenDmg, oddDmg] : [];
 	return new arr( new obj<ConditionalEffect>()
 		,{
-			validate: (x:ConditionalEffect[])=> {
-				return x.every( e=> Array.isArray(e.conditions) && Array.isArray(e.consequences))
-			},
+			// validate: (x:ConditionalEffect[])=> {
+			// 	return x.every( e=> Array.isArray(e.conditions) && Array.isArray(e.consequences))
+			// },
 			initial
 		});
 }
@@ -90,9 +90,14 @@ export function UsablePowerProps() {
 		targets: new txt<typeof TARGETINGLIST[number]> ( {choices: TARGETINGLIST, initial: "1-engaged"}),
 		dmg_type: new txt<typeof DAMAGETYPESLIST[number]>( {choices: DAMAGETYPESLIST, initial:"physical"}),
 		crit_boost: new num( {min: 0, max:20, initial: 0, integer:true}),
-		effects: powerEffects(),
 	};
 	//TODO: add shadow type requirements (charged, uncharged)
+}
+
+export function effects(baseattack: boolean) {
+	return {
+		effects: powerEffects(baseattack),
+	}
 }
 
 

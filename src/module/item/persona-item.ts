@@ -23,7 +23,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	}
 
 	/** required because foundry input hates arrays*/
-	async sanitizeEffectsData(this: Usable) {
+	async sanitizeEffectsData(this: PowerContainer) {
 		const isArray = Array.isArray;
 		let update = false;
 		let effects = this.system.effects;
@@ -51,30 +51,30 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		}
 	}
 
-	async sanitizeModifiersData(this: ModifierContainer) {
-		const isArray = Array.isArray;
-		let update = false;
-		let mods = this.system.modifiers;
-		if (!isArray(this.system.modifiers)) {
-			mods = ArrayCorrector(mods);
-			update =  true;
-		}
-		mods.forEach( ({conditions, modifiers}, i) => {
-			if (!isArray(conditions)) {
-				mods[i].conditions = ArrayCorrector(conditions);
-				update = true;
-			}
-			if (!isArray(modifiers)) {
-				mods[i].modifiers = ArrayCorrector(modifiers);
-				update = true;
-			}
-		});
-		if (update) {
-			await this.update({"system.modifiers": mods});
-		}
+	// async sanitizeModifiersData(this: ModifierContainer) {
+	// 	const isArray = Array.isArray;
+	// 	let update = false;
+	// 	let mods = this.system.modifiers;
+	// 	if (!isArray(this.system.modifiers)) {
+	// 		mods = ArrayCorrector(mods);
+	// 		update =  true;
+	// 	}
+	// 	mods.forEach( ({conditions, modifiers}, i) => {
+	// 		if (!isArray(conditions)) {
+	// 			mods[i].conditions = ArrayCorrector(conditions);
+	// 			update = true;
+	// 		}
+	// 		if (!isArray(modifiers)) {
+	// 			mods[i].modifiers = ArrayCorrector(modifiers);
+	// 			update = true;
+	// 		}
+	// 	});
+	// 	if (update) {
+	// 		await this.update({"system.modifiers": mods});
+	// 	}
 
 
-	}
+	// }
 
 	async addNewPowerEffect(this: PowerContainer) {
 		const arr= this.system.effects ?? [];
@@ -125,12 +125,12 @@ async deletePowerConsequence (this: PowerContainer, index: number) {
 }
 
 getModifier(this: ModifierContainer, type : ModifierTarget) : Pick<ModifierListItem, "conditions" | "modifier">[] {
-	return this.system.modifiers
+	return this.system.effects
 		.map(x =>
 			({
 				conditions: x.conditions,
-				modifier: x.modifiers.reduce( (acc,x)=> {
-					if ( x.target == type) return acc+x.amount;
+				modifier: x.consequences.reduce( (acc,x)=> {
+					if ( x.modifiedField == type) return acc+(x.amount ?? 0);
 					return acc;
 				}, 0),
 			})
@@ -195,6 +195,6 @@ export type Consumable = Subtype<PersonaItem, "consumable">;
 
 export type ModifierContainer = Weapon | InvItem | Focus | Talent;
 
-export type PowerContainer = Consumable | Power;
+export type PowerContainer = Consumable | Power | ModifierContainer;
 export type Usable = Power | Consumable;
 

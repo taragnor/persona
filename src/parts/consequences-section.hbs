@@ -34,6 +34,12 @@
 		{{#if (eq cons.type "extraAttack")}}
 		<input class="short" type=number name="system.effects.{{../i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
 		{{/if}}
+		{{#if (eq cons.type "modifier")}}
+		<input class="short" type=number name="system.effects.{{../i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
+		<select name="system.effects.{{../i}}.consequences.{{j}}.modifiedField">
+		{{selectOptions ../POWERSTUFF.MODIFIER_TARGETS localize=true selected=cons.modifiedField}}
+		</select>
+		{{/if}}
 		<a class="delConsequence">
 			<i class="fa-solid fa-trash-can"></i>
 		</a>

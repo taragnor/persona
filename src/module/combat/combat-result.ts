@@ -87,6 +87,9 @@ export class CombatResult  {
 				break;
 			}
 
+			case "modifier":
+				break;
+
 			default: {
 				cons.type satisfies never;
 				throw new Error("Should be unreachable");
@@ -210,6 +213,7 @@ export type StatusEffect = {
 export type Consequence = {
 	type: typeof CONSQUENCELIST[number],
 	amount?: number,
+	modifiedField?: string,
 	statusName?: StatusEffectId,
 	statusDuration?: StatusDuration,
 	applyToSelf?: boolean,

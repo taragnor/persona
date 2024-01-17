@@ -6,8 +6,8 @@ import { powerCost } from "./power-dm.js";
 import { powerSpecific } from "./power-dm.js";
 import { damage } from "./power-dm.js";
 import { EQUIP_SLOTS_LIST } from "../../config/equip-slots.js";
-import { modifiers } from "./modifiers-dm.js";
-
+// import { modifiers } from "./modifiers-dm.js";
+import { effects } from "./power-dm.js";
 
 function itemBase() {
 	return {
@@ -39,7 +39,7 @@ function consumableSpecific() {
 		const ret = {
 			...itemBase(),
 			damage: damage(),
-			modifiers: modifiers(),
+			...effects (false),
 		};
 		return ret;
 	}
@@ -50,7 +50,7 @@ function consumableSpecific() {
 	static override defineSchema() {
 		const ret = {
 			desciption: new html(),
-			modifiers: modifiers(),
+			...effects (false),
 		}
 		return ret;
 	}
@@ -62,7 +62,8 @@ function consumableSpecific() {
 		const ret = {
 			...powerSpecific(),
 			...powerCost(),
-			...UsablePowerProps()
+			...UsablePowerProps(),
+			...effects(true),
 		};
 		return ret;
 	}
@@ -76,6 +77,7 @@ function consumableSpecific() {
 			...consumableSpecific(),
 			...itemBase(),
 			...UsablePowerProps(),
+			...effects(true),
 		};
 		return ret;
 	}
@@ -86,8 +88,8 @@ function consumableSpecific() {
 	get type() { return "talent" as const;}
 	static override defineSchema() {
 		const ret = {
-			modifiers: modifiers(),
 			desciption: new html(),
+			...effects(false),
 		}
 		return ret;
 	}
@@ -100,7 +102,7 @@ function consumableSpecific() {
 		const ret = {
 			...itemBase(),
 			slot: new txt<typeof EQUIP_SLOTS_LIST[number]>({choices: EQUIP_SLOTS_LIST}),
-			modifiers: modifiers(),
+			...effects(false),
 		}
 		return ret;
 	}
