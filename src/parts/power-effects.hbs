@@ -7,7 +7,6 @@
 			{{selectOptions POWERSTUFF.TARGETING localize=true selected=item.system.targets}}
 		</select>
 	</div>
-
 	<div class="dmg-type">
 		<label>
 			Damage Type
@@ -21,7 +20,6 @@
 			Crit Boost
 		</label>
 		{{numberInput item.system.crit_boost class="short" name="system.crit_boost" step=1 min=0 max=900}}
-
 	</div>
 	<h1>
 		Effects
@@ -33,71 +31,8 @@
 		{{#each item.system.effects as |effect i|}}
 		<div class="flexrow" data-effect-index="{{i}}">
 			<div class="power-effect" >
-				<section class="conditions-section">
-					<h2> Conditions
-						<a class="addCondition">
-							<i class="fa-solid fa-plus"> </i>
-						</a>
-					</h2>
-					{{#each effect.conditions as |cond j|}}
-					<div class="condition-block" data-precondition-index="{{j}}">
-						<div class="type-selector">
-							<label>
-								type:
-							</label>
-							<select name="system.effects.{{i}}.conditions.{{j}}.type">
-								{{selectOptions ../../POWERSTUFF.PRECONDITIONTYPES localize=true selected=cond.type}}
-							</select>
-							<input class="short" type=number name="system.effects.{{i}}.conditions.{{j}}.num" value="{{cond.num}}">
-						</div>
-					<a class="delCondition">
-						<i class="fa-solid fa-trash-can"></i>
-					</a>
-					</div>
-					{{/each}}
-				</section>
-				<section class="consequences-section">
-					<h2> Consequences
-						<a class="addConsequence">
-							<i class="fa-solid fa-plus"> </i>
-						</a>
-					</h2>
-					{{#each effect.consequences as |cons j|}}
-					<div class="consequence-block" data-consequence-index="{{j}}">
-						<div>
-							<label>
-								Apply to Self
-							</label>
-							<input type="checkbox" name="system.effects.{{i}}.consequences.{{j}}.applyToSelf"" {{checked cons.applyToSelf}}>
-		</div>
-						<div class="type-select">
-							<select name="system.effects.{{i}}.consequences.{{j}}.type">
-								{{selectOptions ../../POWERSTUFF.CONSTYPES localize=true selected=cons.type}}
-							</select>
-						</div>
-						{{#if (or (eq cons.type "addStatus") (eq cons.type "removeStatus"))}}
-						<select name="system.effects.{{i}}.consequences.{{j}}.statusName">
-							{{selectOptions ../../POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
-						</select>
-						{{/if}}
-						{{#if (eq cons.type "addStatus")}}
-						<input class="short" type=number name="system.effects.{{i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
-						<select name="system.effects.{{i}}.consequences.{{j}}.statusDuration">
-							{{selectOptions ../../POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusName}}
-						</select>
-						{{/if}}
-						{{#if (eq cons.type "escalationManipulation")}}
-						<input class="short" type=number name="system.effects.{{i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
-						{{/if}}
-						{{#if (eq cons.type "extraAttack")}}
-						<input class="short" type=number name="system.effects.{{i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
-						{{/if}}
-						<a class="delConsequence">
-							<i class="fa-solid fa-trash-can"></i>
-						</a>
-					</div>
-					{{/each}}
-				</section>
+				{{> "systems/persona/parts/conditions-section.hbs" effect=effect CONDITIONS=../POWERSTUFF.PRECONDITIONTYPES i=i}}
+				{{> "systems/persona/parts/consequences-section.hbs" effect=effect POWERSTUFF=../POWERSTUFF i=i}}
 			</div>
 			<div class="short">
 				<a class="delEffect">

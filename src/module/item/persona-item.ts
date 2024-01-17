@@ -26,10 +26,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	async sanitizeEffectsData(this: Usable) {
 		const isArray = Array.isArray;
 		let update = false;
-		let effects= this.system.effects;
+		let effects = this.system.effects;
+		try {
 		if (!isArray(this.system.effects)) {
-			effects=ArrayCorrector(this.system.effects);
-			update=  true;
+			effects = ArrayCorrector(this.system.effects);
+			update = true;
 		}
 		effects.forEach( ({conditions, consequences}, i) => {
 			if (!isArray(conditions)) {
@@ -41,6 +42,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 				update=  true;
 			}
 		});
+		} catch (e) {
+			console.log(this);
+			throw e;
+		}
 		if (update) {
 			await this.update({"system.effects": effects});
 		}
@@ -49,19 +54,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	async sanitizeModifiersData(this: ModifierContainer) {
 		const isArray = Array.isArray;
 		let update = false;
-		let mods=this.system.modifiers;
+		let mods = this.system.modifiers;
 		if (!isArray(this.system.modifiers)) {
-			mods=ArrayCorrector(mods);
-			update=  true;
+			mods = ArrayCorrector(mods);
+			update =  true;
 		}
 		mods.forEach( ({conditions, modifiers}, i) => {
 			if (!isArray(conditions)) {
 				mods[i].conditions = ArrayCorrector(conditions);
-				update=  true;
+				update = true;
 			}
 			if (!isArray(modifiers)) {
 				mods[i].modifiers = ArrayCorrector(modifiers);
-				update=  true;
+				update = true;
 			}
 		});
 		if (update) {
@@ -168,8 +173,13 @@ getModifier(this: ModifierContainer, type : ModifierTarget) : Pick<ModifierListI
 
 /** Handlesbars keeps turning my arrays inside an object into an object with numeric keys, this fixes that */
 export function ArrayCorrector<T extends any>(obj: (T[] | Record<string | number, T>)): T[] {
-	if (!Array.isArray(obj)) {
-		return Object.keys(obj).map(function(k) { return obj[k] });
+	try {
+		if (obj == null) return[];
+		if (!Array.isArray(obj)) {
+			return Object.keys(obj).map(function(k) { return obj[k] });
+		}
+	} catch (e) {
+		throw e;
 	}
 	return obj;
 }

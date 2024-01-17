@@ -1,0 +1,23 @@
+<section class="conditions-section">
+	<h2> Conditions
+		<a class="addCondition">
+			<i class="fa-solid fa-plus"> </i>
+		</a>
+	</h2>
+	{{#each effect.conditions as |cond j|}}
+	<div class="condition-block" data-precondition-index="{{j}}">
+		<div class="type-selector">
+			<label>
+				type:
+			</label>
+			<select name="system.effects.{{../i}}.conditions.{{j}}.type">
+				{{selectOptions ../CONDITIONS localize=true selected=cond.type}}
+			</select>
+			<input class="short" type=number name="system.effects.{{../i}}.conditions.{{j}}.num" value="{{cond.num}}">
+		</div>
+		<a class="delCondition">
+			<i class="fa-solid fa-trash-can"></i>
+		</a>
+	</div>
+	{{/each}}
+</section>

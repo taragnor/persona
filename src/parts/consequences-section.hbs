@@ -1,0 +1,43 @@
+<section class="consequences-section">
+	<h2> Consequences
+		<a class="addConsequence">
+			<i class="fa-solid fa-plus"> </i>
+		</a>
+	</h2>
+	{{#each effect.consequences as |cons j|}}
+	<div class="consequence-block" data-consequence-index="{{j}}">
+		<div>
+			<label>
+				Apply to Self
+			</label>
+			<input type="checkbox" name="system.effects.{{../i}}.consequences.{{j}}.applyToSelf" {{checked cons.applyToSelf}}>
+		</div>
+		<div class="type-select">
+			<select name="system.effects.{{../i}}.consequences.{{j}}.type">
+			{{selectOptions ../POWERSTUFF.CONSTYPES localize=true selected=cons.type}}
+			</select>
+		</div>
+		{{#if (or (eq cons.type "addStatus") (eq cons.type "removeStatus"))}}
+		<select name="system.effects.{{../i}}.consequences.{{j}}.statusName">
+		{{selectOptions ../POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
+		</select>
+		{{/if}}
+		{{#if (eq cons.type "addStatus")}}
+		<input class="short" type=number name="system.effects.{{../i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
+		<select name="system.effects.{{../i}}.consequences.{{j}}.statusDuration">
+		{{selectOptions ../POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusName}}
+		</select>
+		{{/if}}
+		{{#if (eq cons.type "escalationManipulation")}}
+		<input class="short" type=number name="system.effects.{{../i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
+		{{/if}}
+		{{#if (eq cons.type "extraAttack")}}
+		<input class="short" type=number name="system.effects.{{../i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
+		{{/if}}
+		<a class="delConsequence">
+			<i class="fa-solid fa-trash-can"></i>
+		</a>
+	</div>
+	{{/each}}
+</section>
+

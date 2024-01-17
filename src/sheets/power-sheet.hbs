@@ -25,7 +25,6 @@
 		</div>
 	</div>
 
-
 	{{#if (eq item.system.subtype "weapon")}}
 	<div class="hp-cost">
 		<label class="hp-cost">
@@ -61,7 +60,5 @@
 	</div>
 	{{/if}}
 	<hr>
-			{{> "systems/persona/parts/power-effects.hbs" item=item POWERSTUFF=POWERSTUFF}}
-
-
+	{{> "systems/persona/parts/power-effects.hbs" item=item POWERSTUFF=POWERSTUFF}}
 </form>
