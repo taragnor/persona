@@ -325,6 +325,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update( {"system.talents": talents});
 	}
 
+	async deleteTalent(this: PC | Shadow, id: string) {
+		let talents = this.system.talents;
+		if (!talents.find(x => x.talentId == id)) return;
+		talents = talents.filter( x=> x.talentId != id);
+		await this.update( {"system.talents": talents});
+	}
+
 	async addPower(this: PC | Shadow, power: Power) {
 		const powers = this.system.combat.powers;
 		if (powers.includes(power.id)) return;
@@ -344,6 +351,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const foci = this.system.combat.focuses;
 		if (foci.includes(focus.id)) return;
 		foci.push(focus.id);
+		await this.update( {"system.combat.focuses": foci});
+	}
+
+	async deleteFocus(this: PC | Shadow, focusId: string) {
+		let foci = this.system.combat.focuses;
+		if (!foci.includes(focusId)) return;
+		foci = foci.filter( x=> x != focusId);
 		await this.update( {"system.combat.focuses": foci});
 	}
 
