@@ -1,3 +1,8 @@
+import { PersonaError } from "../../persona-error.js";
+import { PersonaCombat } from "../../combat/persona-combat.js"
+import { PToken } from "../../combat/persona-combat.js";
+import { Usable } from "../../item/persona-item.js";
+
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { CClass } from "../../item/persona-item.js";
 
@@ -63,9 +68,33 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async usePower(event: Event) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		const power = PersonaDB.getItemById(powerId);
+		if (!power) {
+			throw new PersonaError(`Can't find Power Id:${powerId}`);
+		}
+		const ptype = power.system.type;
+		if (ptype!= "power" && ptype != "consumable")
+			throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);
 		if (!power) throw new Error(`Can't find power id: ${powerId}`);
+		const actor = this.actor;
+		let token : PToken;
+		if (actor.token) {
+			token = actor.token._object;
+		} else {
+			const tokens = this.actor._dependentTokens.get(game.scenes.current)!;
+			//@ts-ignore
+			token = Array.from(tokens)[0]._object;
+		}
+		if (!token) {
+			throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` )
+		}
 		console.log(`Trying to use power: ${power.name}`);
-
+		try {
+		const results  = await PersonaCombat.usePower(token, power as Usable);
+		console.log("Results: ");
+		console.log(results);
+		} catch (e) {
+			throw e;
+		}
 	}
 
 	async deleteTalent(event: Event) {

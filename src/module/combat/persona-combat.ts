@@ -5,6 +5,8 @@ import { ModifierList } from "./modifier-list.js";
 import { Situation } from "./modifier-list.js";
 import { AttackResult } from "./combat-result.js";
 import { Usable } from "../item/persona-item.js";
+import { ArrayCorrector } from "../item/persona-item.js"
+
 
 export class PersonaCombat {
 	static async usePower(attacker: PToken, power: Usable) : Promise<CombatResult> {
@@ -20,13 +22,17 @@ export class PersonaCombat {
 		const result = new CombatResult();
 
 		for (const target of targets) {
+			console.log(`Target: ${target.actor.name}`);
 			const roll = new Roll("1d20");
 			await roll.roll();
+			console.log("Atk Roll");
 			const atkResult = await this.processAttackRoll(roll, attacker, power, target, i==0);
+			console.log("Effects step");
 			const this_result = await this.processEffects(atkResult);
 			result.merge(this_result);
 			i++;
 		}
+		console.log("Processing Costs");
 		const costs = await this.#processCosts(attacker, power);
 		result.merge(costs);
 		return result;
@@ -161,11 +167,15 @@ export class PersonaCombat {
 	static async processPowerEffectsOnTarget(atkResult: AttackResult) {
 		const CombatRes= new CombatResult(atkResult);
 		const {result, validAtkModifiers, validDefModifiers, attacker, target, situation, power} = atkResult;
-		for (const {conditions, consequences} of power.system.effects) {
+		for (let {conditions, consequences} of power.system.effects) {
+			conditions = ArrayCorrector(conditions);
+			consequences  = ArrayCorrector(consequences);
+
 			if (conditions.every(
 				cond => ModifierList.testPrecondition(cond, situation, power))
 			) {
 				for (const cons of consequences) {
+					console.log("Processing Consquences");
 					let damageMult = 1;
 					const absorb = result == "absorb" && !cons.applyToSelf;
 					const block = result == "block" && !cons.applyToSelf;

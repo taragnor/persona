@@ -134,7 +134,7 @@ export class CombatResult  {
 
 
 	async print(): Promise<void> {
-		const signedFormatter = new Intl.NumberFormat(String(this.escalationMod), {signDisplay:"always"});
+		const signedFormatter = new Intl.NumberFormat("en-US", {signDisplay:"always"});
 		let msg = "";
 		if (this.escalationMod) {
 			msg += `escalation Mod: ${signedFormatter.format(this.escalationMod)}`;

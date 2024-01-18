@@ -38,7 +38,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				classNameDefault = "Persona User";
 				break;
 			case "shadow":
-				classNameDefault = "Shadow";
+				classNameDefault = "Persona User";
+				// classNameDefault = "Shadow";
 				break;
 			default:
 				throw new Error("NPCs have no classes");

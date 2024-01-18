@@ -17,7 +17,8 @@ declare class Actor<T extends SchemaDict, ItemType extends Item<J> = Item, AETyp
 	statuses: Set<string>;
 	get effects(): Collection<AEType>;
 	get statuses(): Set<string>;
-
+	token: TokenDocument<typeof this>;
+	_dependentTokens:WeakMap<Scene, WeakSet<TokenDocument<typeof this>>> ;
 	/** Retrieve an iterator over all effects that can apply to the actor.
   The effect might exist on the Actor, or it might exist on one of the Actor's Items.
   If it's the latter, then its transfer value will be true.

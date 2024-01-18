@@ -1,4 +1,18 @@
 <form class="shadow-sheet">
-	<div> Shadow WORKING!</div>
+	<header class="flexcol">
+		<div class="">
+			<input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
+		</div>
+		<textarea name="system.short_desc"> {{actor.system.short_desc}} </textarea>
+		<div class="flexrow">
+			<label>
+				{{localize "persona.tarot.cardname"}}
+			</label>
+			<select name="system.tarot">
+				{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
+			</select>
+		</div>
+	</header>
+	{{> "systems/persona/parts/combat-section.hbs" actor=actor}}
 </form>
 

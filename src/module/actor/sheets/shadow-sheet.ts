@@ -1,8 +1,8 @@
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
-import { PersonaActorSheetBase } from "./actor-sheet.base.js";
 import { PersonaActor } from "../persona-actor.js";
+import { CombatantSheetBase } from "./combatant-sheet.js";
 
-export class ShadowSheet extends PersonaActorSheetBase {
+export class ShadowSheet extends CombatantSheetBase {
 	override actor: Subtype<PersonaActor, "shadow">;
 
 	static override get defaultOptions() {
