@@ -103,6 +103,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get powers(): Power[] {
+		if (!(this instanceof Actor)) {
+			console.log(this);
+			console.warn("wtf?");
+			return [];
+		}
 		if (this.system.type =="npc") return [];
 		try {
 			const powerIds = this.system.combat.powers;
@@ -134,7 +139,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return null;
 	}
 
-	talents() : Talent[] {
+	get talents() : Talent[] {
 		if (this.system.type != "pc") return [];
 		return this.system.talents.flatMap( ({talentId}) => {
 			const tal= PersonaDB.getItemById(talentId);
@@ -144,7 +149,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		});
 	}
 
-	focii(): Focus[] {
+	get focii(): Focus[] {
 		if (this.system.type != "pc") return [];
 		const fIds = this.system.combat.focuses;
 		const focii = fIds.flatMap( id => {
@@ -235,8 +240,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (this.system.type != "pc")  return new ModifierList();
 		const modifiers : ModifierContainer[] =[
 			...this.equippedItems(),
-			...this.focii(),
-			...this.talents(),
+			...this.focii,
+			...this.talents,
 		];
 		const modList = new ModifierList( modifiers.flatMap( item => {
 			return item.getModifier(type)

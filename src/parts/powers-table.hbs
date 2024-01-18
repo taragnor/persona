@@ -1,31 +1,31 @@
-		<div class="powers-section">
-			<h2>
-				{{localize 	"persona.statistic.powers"}}
-			</h2>
-			<table class="powers-table">
-				{{#each actor.powers as |power|}}
-				<tr data-power-id="{{power.id}}">
-					<td>
-						<a class="rollPower">
-							<img src="icons/dice/d20black.svg">
-						</a>
-					</td>
-					<td>
-						{{power.name}}
-					</td>
-					<td>
-						{{power.tags}}
-					</td>
-					<td>
-						{{power.costString}}
-					</td>
-					<td>
-						<a class="delPower">
-							<i class="fa-solid fa-trash-can"></i>
-						</a>
-					</td>
-				</tr>
-				{{/each}}
-			</table>
-		</div>
+<div class="powers-section">
+	<h2>
+		{{localize 	"persona.statistic.powers"}}
+	</h2>
+	<table class="powers-table">
+		{{#each actor.powers as |power|}}
+		<tr data-power-id="{{power.id}}">
+			<td>
+				<a class="rollPower">
+					<img src="icons/dice/d20black.svg">
+				</a>
+			</td>
+			<td>
+				{{power.name}}
+			</td>
+			<td>
+				{{power.tags}}
+			</td>
+			<td>
+				{{power.costString}}
+			</td>
+			<td>
+				<a class="delPower">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</td>
+		</tr>
+		{{/each}}
+	</table>
+</div>
 

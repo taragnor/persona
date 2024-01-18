@@ -21,6 +21,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 		html.find(".delPower").on("click", this.deletePower.bind(this));
+		html.find(".delFocus").on("click", this.deleteFocus.bind(this));
+		html.find(".delTalent").on("click", this.deleteTalent.bind(this));
 		html.find(".rollPower").on("click", this.usePower.bind(this));
 	}
 
@@ -64,6 +66,33 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!power) throw new Error(`Can't find power id: ${powerId}`);
 		console.log(`Trying to use power: ${power.name}`);
 
+	}
+
+	async deleteTalent(event: Event) {
+		const talentId = HTMLTools.getClosestData(event, "talentId");
+		if (talentId == undefined) {
+			const err = `Can't find talent at index ${talentId}`;
+			console.error(err);
+			ui.notifications.error(err);
+			throw new Error(err);
+		}
+		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this talent?")) {
+			this.actor.deleteTalent(talentId);
+		}
+
+	}
+
+	async deleteFocus(event: Event) {
+		const focusId = HTMLTools.getClosestData(event, "focusId");
+		if (focusId == undefined) {
+			const err = `Can't find talent at index $focusId}`;
+			console.error(err);
+			ui.notifications.error(err);
+			throw new Error(err);
+		}
+		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this Focus?")) {
+			this.actor.deleteFocus(focusId);
+		}
 	}
 
 	async deletePower(event: Event) {

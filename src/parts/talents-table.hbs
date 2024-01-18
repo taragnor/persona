@@ -1,0 +1,22 @@
+<div class="talent-section">
+	<h2>
+		{{localize 	"persona.statistic.talents"}}
+	</h2>
+	test: {{actor.name}}
+	<table class="talents-table">
+		{{#each actor.talents as |talent|}}
+		<tr data-talent-id="{{talent.id}}">
+			<td>
+				{{talent.name}}
+			</td>
+			<td>
+				<a class="delTalent">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</td>
+		</tr>
+		{{/each}}
+	</table>
+</div>
+
+
