@@ -61,6 +61,16 @@ input.single-digit {
 	width: 1em;
 
 }
+
+.powers-section img {
+	width: 20px;
+	height: 20px;
+	justify-content: center;
+	margin:auto;
+	border:none;
+	border-radius:0px;
+}
+
 .effects-list {
 	display:flex;
 	flex-direction:column;

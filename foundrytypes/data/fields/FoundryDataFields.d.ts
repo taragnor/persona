@@ -24,6 +24,7 @@ declare interface FoundryDataFields {
 
 declare class FoundryDMField<T> {
 	constructor (options?: DataFieldOptions<T>);
+	/** Required for some TS functionality, doesn't really exist in foundry */
 	_phantomData : T;
 }
 

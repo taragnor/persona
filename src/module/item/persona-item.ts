@@ -1,11 +1,9 @@
-import { ConditionalEffect } from "../datamodel/power-dm.js";
+import { SLOTTYPES } from "../../config/slot-types.js";
 import { ModifierListItem } from "../combat/modifier-list.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { PowerType } from "../../config/effect-types.js";
 import { PC } from "../actor/persona-actor.js";
 import { Shadow } from "../actor/persona-actor.js";
-import { Situation } from "../combat/modifier-list.js";
-import { Precondition } from "../combat/modifier-list.js";
 import { ITEMMODELS } from "../datamodel/item-types.js";
 import { PersonaDB } from "../persona-db.js";
 
@@ -21,6 +19,45 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 
 	static getBasicAttack() : Option<Power> {
 		return PersonaDB.getItemByName("Basic Attack")  as Power;
+	}
+
+	get tags() : string {
+		if ("tags" in this.system)
+			return this.system.tags.join(", ");
+		return "";
+	}
+
+	get costString() : string {
+		switch (this.system.type) {
+
+			case "power":
+				return (this as Power).powerCostString();
+			case "consumable":
+				return "consumable";
+
+			default:
+				return "free";
+		}
+	}
+
+	powerCostString(this: Power) : string {
+		switch (this.system.subtype) {
+
+			case "weapon":
+				if (this.system.hpcost) 
+					return `${this.system.hpcost} HP`;
+				else return "free";
+			case "magic":
+				const slotName = PersonaItem.getSlotName(this.system.slot);
+				return `${slotName} slot`;
+			default:
+				return "free";
+		}
+
+	}
+
+	static getSlotName(num : number) {
+		return game.i18n.localize(SLOTTYPES[num]);
 	}
 
 	/** required because foundry input hates arrays*/
@@ -51,31 +88,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 			await this.update({"system.effects": effects});
 		}
 	}
-
-	// async sanitizeModifiersData(this: ModifierContainer) {
-	// 	const isArray = Array.isArray;
-	// 	let update = false;
-	// 	let mods = this.system.modifiers;
-	// 	if (!isArray(this.system.modifiers)) {
-	// 		mods = ArrayCorrector(mods);
-	// 		update =  true;
-	// 	}
-	// 	mods.forEach( ({conditions, modifiers}, i) => {
-	// 		if (!isArray(conditions)) {
-	// 			mods[i].conditions = ArrayCorrector(conditions);
-	// 			update = true;
-	// 		}
-	// 		if (!isArray(modifiers)) {
-	// 			mods[i].modifiers = ArrayCorrector(modifiers);
-	// 			update = true;
-	// 		}
-	// 	});
-	// 	if (update) {
-	// 		await this.update({"system.modifiers": mods});
-	// 	}
-
-
-	// }
 
 	async addNewPowerEffect(this: PowerContainer) {
 		const arr= this.system.effects ?? [];
@@ -129,8 +141,8 @@ getModifier(this: ModifierContainer, type : ModifierTarget) : Pick<ModifierListI
 	return this.system.effects
 		.map(x =>
 			({
-				conditions: x.conditions,
-				modifier: x.consequences.reduce( (acc,x)=> {
+				conditions: ArrayCorrector(x.conditions),
+				modifier: ArrayCorrector(x.consequences).reduce( (acc,x)=> {
 					if ( x.modifiedField == type) return acc+(x.amount ?? 0);
 					return acc;
 				}, 0),

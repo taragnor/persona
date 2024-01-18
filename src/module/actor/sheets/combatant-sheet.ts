@@ -50,7 +50,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				return;
 			default:
 				item.system satisfies never;
-				throw new Error(`Unknown type ${item.type}`);
+				throw new Error(`Unknown supported type ${item.type}`);
 		}
 	}
 

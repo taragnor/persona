@@ -20,6 +20,7 @@ declare const CONFIG : CONFIG;
 
 declare interface Game {
 	actors: Collection<Actor<any, any>>;
+	i18n: Localization;
 	items: Collection<Item<any>>,
 		packs: Collection<FoundryCompendium<any>>,
 		users: Collection<FoundryUser>,
@@ -27,6 +28,10 @@ declare interface Game {
 		user: FoundryUser,
 		scenes: SceneCollection,
 		combat: undefined | Combat,
+}
+
+interface Localization{
+	localize(x: string) : string;
 }
 
 

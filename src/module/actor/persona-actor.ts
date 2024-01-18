@@ -144,7 +144,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		});
 	}
 
-
 	focii(): Focus[] {
 		if (this.system.type != "pc") return [];
 		const fIds = this.system.combat.focuses;

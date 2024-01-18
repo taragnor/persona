@@ -39,14 +39,26 @@
 			<h2>
 				{{localize 	"persona.statistic.powers"}}
 			</h2>
-			{{#each actor.powers as |power|}}
-			<div class="power-block">
-				<h3>
-					{{power.name}}
-				</h3>
-			</div>
-
-			{{/each}}
+			<table class="powers-table">
+				{{#each actor.powers as |power|}}
+				<tr>
+					<td>
+						<a class="roll">
+							<img src="icons/dice/d20black.svg">
+						</a>
+					</td>
+					<td>
+						{{power.name}}
+					</td>
+					<td>
+						{{power.tags}}
+					</td>
+					<td>
+						{{power.costString}}
+					</td>
+				</tr>
+				{{/each}}
+			</table>
 		</div>
 	</div>
 </section>
