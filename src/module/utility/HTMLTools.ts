@@ -46,7 +46,9 @@ export class HTMLTools {
 
 	static async confirmBox(title: string, text: string, defaultYes = false) {
 		const templateData = {text};
-		const html = await renderTemplate(`systems/${game.system.id}/module/tools/confirmation-dialog.hbs`, templateData);
+		const html = `<div>
+		${text}
+			</div>`;
 		return await new Promise( (conf, _reject) => {
 			Dialog.confirm({
 				title,

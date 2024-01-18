@@ -1,5 +1,7 @@
+import { HTMLTools } from "../../utility/HTMLTools.js";
 import { CClass } from "../../item/persona-item.js";
 
+import { PersonaDB } from "../../persona-db.js";
 import { PersonaItem } from "../../item/persona-item.js";
 import { PersonaActor } from "../persona-actor.js";
 import { PersonaActorSheetBase } from "./actor-sheet.base.js";
@@ -18,6 +20,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
+		html.find(".delPower").on("click", this.deletePower.bind(this));
+		html.find(".rollPower").on("click", this.usePower.bind(this));
 	}
 
 	override async _onDropItem(_event: Event, itemD: unknown, ...rest:any[]) : Promise<void> {
@@ -54,5 +58,25 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 	}
 
-}
+	async usePower(event: Event) {
+		const powerId = HTMLTools.getClosestData(event, "powerId");
+		const power = PersonaDB.getItemById(powerId);
+		if (!power) throw new Error(`Can't find power id: ${powerId}`);
+		console.log(`Trying to use power: ${power.name}`);
 
+	}
+
+	async deletePower(event: Event) {
+		const powerId = HTMLTools.getClosestData(event, "powerId");
+		if (powerId == undefined) {
+			const err = `Can't find power at index ${powerId}`;
+			console.error(err);
+			ui.notifications.error(err);
+			throw new Error(err);
+		}
+		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this power?")) {
+			this.actor.deletePower(powerId);
+		}
+	}
+
+}
