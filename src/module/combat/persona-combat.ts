@@ -6,6 +6,7 @@ import { Situation } from "./modifier-list.js";
 import { AttackResult } from "./combat-result.js";
 import { Usable } from "../item/persona-item.js";
 import { ArrayCorrector } from "../item/persona-item.js"
+import { PersonaDB } from "../persona-db.js";
 
 
 export class PersonaCombat {
@@ -58,7 +59,9 @@ export class PersonaCombat {
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					situation: {
-						user: attacker.actor,
+						usedPower: PersonaDB.getUniversalItemAccessor(power),
+						user: PersonaDB.getUniversalActorAccessor(attacker.actor),
+						userToken: PersonaDB.getUniversalTokenAccessor(attacker),
 						naturalAttackRoll,
 						escalationDie,
 					},
@@ -71,7 +74,9 @@ export class PersonaCombat {
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					situation: {
-						user: attacker.actor,
+						usedPower: PersonaDB.getUniversalItemAccessor(power),
+						user: PersonaDB.getUniversalActorAccessor(attacker.actor),
+						userToken: PersonaDB.getUniversalTokenAccessor(attacker),
 						naturalAttackRoll,
 						escalationDie,
 					},
@@ -84,7 +89,9 @@ export class PersonaCombat {
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					situation: {
-						user: attacker.actor,
+						usedPower: PersonaDB.getUniversalItemAccessor(power),
+						user: PersonaDB.getUniversalActorAccessor(attacker.actor),
+						userToken: PersonaDB.getUniversalTokenAccessor(attacker),
 						naturalAttackRoll,
 						escalationDie,
 					},
@@ -94,7 +101,8 @@ export class PersonaCombat {
 
 		}
 		const situation : Situation = {
-			user: attacker.actor,
+			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
+			userToken: PersonaDB.getUniversalTokenAccessor(attacker),
 			activeCombat: combat,
 			escalationDie,
 			activationRoll : isActivationRoll,

@@ -14,11 +14,11 @@
 		</div>
 	</header>
 	<nav class="sheet-tabs tabs" data-group="primary">
-		<a class="item" data-tab="main">
-			{{localize "persona.sheet.tabs.pcmain.tabname" }}
-		</a>
 		<a class="item" data-tab="combat">
 			{{localize "persona.sheet.tabs.combat.tabname" }}
+		</a>
+		<a class="item" data-tab="social">
+			{{localize "persona.sheet.tabs.social.tabname" }}
 		</a>
 		<a class="item" data-tab="inv">
 			{{localize "persona.sheet.tabs.inventory.tabname" }}
@@ -28,8 +28,8 @@
 		</a>
 	</nav>
 	<section class="sheet-body">
-		<section class="tab tab-content main-section flexcol" data-group="primary" data-tab="main">
-			<div> PC WORKING!</div>
+		<section class="tab tab-content social-section flexcol" data-group="primary" data-tab="social">
+			{{> "systems/persona/parts/social-section.hbs" actor=actor}}
 		</section>
 		<section class="tab tab-content combat-section flexcol" data-group="primary" data-tab="combat">
 

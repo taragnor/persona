@@ -1,15 +1,19 @@
-import { PersonaActor } from "../actor/persona-actor.js";
 import { PRECONDITIONLIST } from "../../config/effect-types.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { ModifierContainer } from "../item/persona-item.js";
-import { PC } from "../actor/persona-actor.js";
-import { Shadow } from "../actor/persona-actor.js";
 import { Usable } from "../item/persona-item.js";
 import { PowerContainer } from "../item/persona-item.js";
+import { UniversalItemAccessor } from "../utility/db-accessor.js";
+import { UniversalTokenAccessor } from "../utility/db-accessor.js";
+import { PersonaDB } from "../persona-db.js";
+import { PToken } from "./persona-combat.js";
+import { PC } from "../actor/persona-actor.js";
+import { Shadow } from "../actor/persona-actor.js";
+import { UniversalActorAccessor } from "../utility/db-accessor.js";
 
 export type ModifierListItem = {
 	name: string;
-	source: Option<ModifierContainer>;
+	source: Option<UniversalItemAccessor<PowerContainer>>;
 	conditions: Precondition[];
 	modifier: number;
 }
@@ -19,7 +23,8 @@ export class ModifierList {
 		this._data = list;
 	}
 
-	add(name: string, modifier: number, source: Option<ModifierContainer> = null, conditions: Precondition[] = []) {
+	add(name: string, modifier: number, sourceItem: Option<ModifierContainer> = null, conditions: Precondition[] = []) {
+		const source = sourceItem ? PersonaDB.getUniversalItemAccessor(sourceItem) : null;
 		this._data.push( {
 			source,
 			name,
@@ -29,7 +34,12 @@ export class ModifierList {
 	}
 
 	list(situtation: Situation): [number, string][] {
-		const filtered= this._data.filter( item=> item.conditions.every(cond => ModifierList.testPrecondition(cond, situtation, item.source)));
+		const filtered= this._data.filter( item=> item.conditions.every(cond => {
+			const source = item.source ? PersonaDB.findItem(item.source): null;
+			ModifierList.testPrecondition(cond, situtation, 
+				source)
+		}
+		));
 			return filtered.map( x=> [x.modifier, x.name]);
 	}
 
@@ -40,7 +50,8 @@ export class ModifierList {
 
 	total(situation: Situation ) : number {
 		return this._data.reduce ( (acc, item) => {
-			if (item.conditions.every( cond => ModifierList.testPrecondition(cond, situation, item.source))) {
+			const source = item.source ? PersonaDB.findItem(item.source) as PowerContainer: null;
+			if (item.conditions.every( cond => ModifierList.testPrecondition(cond, situation, source))) {
 				return acc + item.modifier;
 			}
 			return acc;
@@ -86,7 +97,8 @@ export class ModifierList {
 			case "talent-level+":
 				if (!situation.user) return false
 				const id = source ? source.id! : "";
-				return !situation.user.system.talents.some( x=> x.talentId == id && x.talentLevel < (condition.num ?? 0))
+				const user = PersonaDB.findActor(situation.user);
+				return !user.system.talents.some( x=> x.talentId == id && x.talentLevel < (condition.num ?? 0))
 			default:
 				condition.type satisfies never;
 				const err = `Unexpected Condition: ${condition.type}`;
@@ -113,18 +125,18 @@ type Modifier = {
 	amount: number;
 }
 
-
 export type Situation = {
 	//more things can be added here all should be optional
-	usedPower?: Usable;
+	usedPower?: UniversalItemAccessor<Usable>;
 	activeCombat ?: unknown ;
 	naturalAttackRoll ?: number;
 	criticalHit ?: boolean;
 	hit?: boolean;
 	escalationDie ?: number;
 	activationRoll ?: boolean;
-	target?: PersonaActor;
-	user: PC | Shadow;
+	target?: UniversalTokenAccessor<PToken>;
+	userToken?: UniversalTokenAccessor<PToken>;
+	user: UniversalActorAccessor<PC | Shadow>;
 }
 
 

@@ -174,7 +174,97 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 		return a.name.localeCompare(b.name);
 	}
 
+	findItem<T extends Item<any>> ({actorId, itemId}: UniversalItemAccessor<T>): T {
+		if (actorId) {
+			const actor = this.getActorById(actorId);
+			if (!actor) throw new Error(`Actor Id ${actorId} doesn't exist`);
+			const item = actor.items.find( x=> x.id == itemId);
+			if (!item) {
+				throw new Error(`Item Id ${itemId} not found on Actor Id ${actorId}` );
+			}
+			return item as unknown as T;
+		}
+		return this.getItemById(itemId) as unknown as T;
+	}
+
+
+	findToken<T extends Token<any>>({scene, tokenId, actorId}: UniversalTokenAccessor<T>) :T  {
+		if (scene != null) {
+			const sc = game.scenes.get(scene);
+			if (!sc)  {
+				throw new Error(`Scene Id ${scene} doesn't exist`);
+			}
+			const tok = sc.tokens.get(tokenId!);
+			if (!tok) {
+				throw new Error(`Token Id ${tokenId} doesn't exist`);
+			}
+			if (!tok.actor) {
+				throw new Error(`No actor on Token Id ${tokenId}`);
+			}
+			return tok._object as T;
+		}
+		const sc = game.scenes.find(x=> x.tokens.get(tokenId) != null);
+		if (!sc)
+		throw new Error(`Couldn't find tokenId ${tokenId} on any scene`);
+		const tok = sc.tokens.get(tokenId)!;
+		if (!tok.actor) {
+			throw new Error(`No actor on Token Id ${tokenId}`);
+		}
+		return tok._object as T;
+	}
+
+	findActor<T extends Actor<any>>(accessor: UniversalActorAccessor<T>) : T {
+		if (accessor.tokenId != undefined) {
+			const token =  this.findToken(accessor as UniversalTokenAccessor<Token<T>>);
+			return token.actor;
+		}
+		return this.getActorById(accessor.actorId) as unknown as T;
+
+	}
+
+	getUniversalItemAccessor<T extends Item<any>>(item: T) : UniversalItemAccessor<T> {
+		return {
+			actorId: item.parent?.id,
+			itemId: item.id,
+		}
+	}
+
+	getUniversalActorAccessor<T extends Actor<any>> (actor: T) : UniversalActorAccessor<T> {
+		return {
+			actorId: actor.id,
+			tokenId: actor.token?.id,
+		}
+
+	}
+
+	getUniversalTokenAccessor<T extends Token<any>>(tok: T) : UniversalTokenAccessor<T> {
+		return {
+			scene: tok.scene.id,
+			tokenId: tok.id,
+			actorId: tok.actor.id
+		};
+	}
 
 } //End of class
 
 
+export type UniversalTokenAccessor<T extends Token<any>> = {
+	scene?: string,
+	tokenId : string,
+	actorId : string,
+	__phantomData?: T
+};
+
+export type UniversalActorAccessor<T extends Actor<any, any, any>> = {
+	scene?: string,
+	tokenId ?: string,
+	actorId : string,
+	__phantomData?: T
+}
+
+
+export type UniversalItemAccessor<T extends Item<any>> = {
+	actorId?: string,
+	itemId: string,
+	__phantomData?: T,
+}

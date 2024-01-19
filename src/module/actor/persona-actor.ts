@@ -70,7 +70,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get hp(): number {
 		if (this.system.type =="npc") return 0;
 		return this.system.combat.hp;
-
 	}
 
 	get mhp() : number {
@@ -79,7 +78,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const inc= this.hasIncremental("hp")? 1: 0;
 			const lvl = this.system.combat.classData.level;
 			const bonuses = this.getBonuses("maxhp");
-			return this.class.getClassProperty(lvl + inc, "maxhp") + bonuses.total( {user: this as PC | Shadow});
+			return this.class.getClassProperty(lvl + inc, "maxhp") + bonuses.total( {user: PersonaDB.getUniversalActorAccessor(this as PC)});
 		} catch (e) {
 			console.warn(`Can't get Hp for ${this.name} (${this.id})`);
 			return 0;
@@ -107,6 +106,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			return -999;
 		}
 	}
+
+	get socialLinks() : {level: number, person: NPC}[] {
+		if (this.system.type != "pc") return [];
+		return this.system.social.links.flatMap(({linkId, linkLevel}) => {
+			const npc = PersonaDB.getActor(linkId);
+			if (!npc) return [];
+			return [{
+				level: linkLevel,
+				person:npc as NPC,
+			}];
+		});
+	}
+
 
 	get powers(): Power[] {
 		if (!(this instanceof Actor)) {
@@ -253,7 +265,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			return item.getModifier(type)
 				.map( x=>
 					({
-						source: item,
+						source: PersonaDB.getUniversalItemAccessor(item),
 						name: item.name,
 						...x,
 					})

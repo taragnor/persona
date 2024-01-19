@@ -24,8 +24,10 @@ class TokenDocument<T extends Actor<any, any>> extends FoundryDocument<never>
 
 //this is canvas stuff so I've ignored it for now
 class Token<Act extends Actor<any, any>> extends PlaceableObject {
-	actor: Act;
-	document: TokenDocument<Act>
+	get actor(): Act;
+	document: TokenDocument<Act>;
+	get scene(): Scene;
+	id: string;
 }
 
 

@@ -1,6 +1,7 @@
 import { PersonaActor } from "./actor/persona-actor";
 import { PC } from "./actor/persona-actor";
 import { Shadow } from "./actor/persona-actor";
+import { PersonaDB } from "./persona-db";
 
 export class PersonaHandleBarsHelpers {
 	static init() {
@@ -18,7 +19,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"getDefense" : (actor: PC | Shadow, defense: keyof typeof actor["system"]["combat"]["defenses"]) => {
-			return actor.getDefense(defense).total({user:actor});
+			return actor.getDefense(defense).total({user: PersonaDB.getUniversalActorAccessor(actor)});
 
 		},
 		"isGM" : () => {

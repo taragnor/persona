@@ -47,10 +47,9 @@ declare class Items {
 		types: string[], makeDefault: boolean}) : void;
 }
 
-interface Collection<T> extends Map<string, T> {
+class Collection<T> extends Map<string, T> {
 	contents: T[];
 	filter(fn: (item: T) => boolean) : T[];
-	// map<R>(fn: (item: T) => R) : R[];
 	[Symbol.iterator]() : Iterator<T>;
 	get(id: string) : T | null;
 	getName(name: string): T | null;
@@ -71,7 +70,7 @@ class FoundryUser extends FoundryDocument<never>{
 }
 
 class Scene extends FoundryDocument<never> {
-
+	tokens: Collection<TokenDocument<Actor<any>>>
 }
 
 class SceneCollection extends Collection<Scene> {

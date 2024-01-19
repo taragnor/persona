@@ -1,6 +1,8 @@
 import { PersonaItem } from "./item/persona-item.js";
 import { DBAccessor } from "./utility/db-accessor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
+import { UniversalTokenAccessor } from "./utility/db-accessor.js";
+import { UniversalItemAccessor } from "./utility/db-accessor.js";
 
 
 class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
@@ -14,8 +16,9 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		throw new Error("Id ${id} points towards invalid type");
 	}
 
+
+
 }
 
 export const PersonaDB = new PersonaDatabase();
 
-let x: Game;
