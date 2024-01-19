@@ -31,6 +31,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.items.filter( x=> x.system.type == "item" || x.system.type == "weapon") as ItemSub<"weapon" | "item">[];
 	}
 
+	get displayedName() : string {
+		return this.name;
+	}
+
 	get class() : Subtype<PersonaItem, "characterClass"> {
 		let classNameDefault;
 		switch (this.system.type) {

@@ -132,6 +132,14 @@ export class CombatResult  {
 		}
 	}
 
+	async toMessage() : Promise<ChatMessage> {
+		for (const [attackResult, changes] of this.attacks.entries()) {
+			attackResult.attacker.document.name
+			attackResult.attacker.actor.name
+
+		}
+		return await ChatMessage.create("", {});
+	}
 
 	async print(): Promise<void> {
 		const signedFormatter = new Intl.NumberFormat("en-US", {signDisplay:"always"});

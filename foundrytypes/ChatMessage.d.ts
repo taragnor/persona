@@ -3,6 +3,7 @@ declare class ChatMessage {
 	static async create(msgData: MessageData, options: MessageOptions): Promise<ChatMessage>;
 }
 
+type MessageData = unknown;
 
 
 
