@@ -91,6 +91,16 @@ const socialLinks = new sch( {
 	),
 });
 
+function studentSkills() {
+	return new sch( {
+		diligence: new num({integer:true, initial:0}),
+		courage: new num({integer:true, initial:0}),
+		knowledge: new num({integer:true, initial:0}),
+		expression: new num({integer:true, initial:0}),
+	});
+
+}
+
 type TalentData = {
 	talentId: string,
 	talentLevel: number,
@@ -128,6 +138,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			social: socialLinks,
 			slots: skillSlots(),
 			...sharedAbilities(),
+			skills: studentSkills(),
 		} as const;
 		return ret;
 	}

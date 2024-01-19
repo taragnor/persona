@@ -56,9 +56,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			case "characterClass":
 				this.actor.setClass(item as CClass);
 				return;
-			case "studentSkill":
-				//DO nothing as this will probably get removed;
-				return;
 			default:
 				item.system satisfies never;
 				throw new Error(`Unknown supported type ${item.type}`);

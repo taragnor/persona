@@ -23,7 +23,6 @@ import { NPCSheet } from "./actor/sheets/npc-sheet.js";
 import { PersonaPowerSheet } from "./item/sheets/power-sheet.js";
 import { PersonaWeaponSheet } from "./item/sheets/weapon-sheet.js";
 import { PersonaItemSheet } from "./item/sheets/item-sheet.js";
-import { PersonaStudentSkillSheet } from "./item/sheets/student-skill-sheet.js";
 import { PersonaFocusSheet } from "./item/sheets/focus-sheet.js";
 import { PersonaTalentSheet } from "./item/sheets/talent-sheet.js";
 import { ConsumableSheet } from "./item/sheets/consumable-sheet.js";
@@ -53,7 +52,6 @@ function registerSheetApplications() {
   Items.registerSheet("persona", PersonaItemSheet, {types: ["item"], makeDefault: true});
   Items.registerSheet("persona", PersonaTalentSheet, {types: ["talent"], makeDefault: true});
   Items.registerSheet("persona", PersonaFocusSheet, {types: ["focus"], makeDefault: true});
-  Items.registerSheet("persona", PersonaStudentSkillSheet, {types: ["studentSkill"], makeDefault: true});
   Items.registerSheet("persona", ConsumableSheet, {types: ["consumable"], makeDefault: true});
 
 }

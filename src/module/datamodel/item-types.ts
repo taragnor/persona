@@ -23,15 +23,6 @@ function consumableSpecific() {
 
 }
 
- class StudentSkill extends foundry.abstract.DataModel {
-	get type() { return "studentSkill" as const;}
-	static override defineSchema() {
-		const ret = {
-			bonus: new num( {integer:true}),
-		};
-		return ret;
-	}
-}
 
  class Weapon extends foundry.abstract.DataModel {
 	get type() { return "weapon" as const;}
@@ -112,7 +103,6 @@ export const ITEMMODELS = {
 	consumable: Consumable,
 	item: InventoryItemSchema,
 	power: Power,
-	studentSkill: StudentSkill,
 	characterClass: CharacterClassDM,
 	focus: Focus,
 	talent: Talent,

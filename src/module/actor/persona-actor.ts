@@ -66,6 +66,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	set hp(newval: number) {
 		this.update({"system.combat.hp": newval});
 	}
+
 	get hp(): number {
 		if (this.system.type =="npc") return 0;
 		return this.system.combat.hp;
