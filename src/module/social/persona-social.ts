@@ -1,10 +1,10 @@
-import { PC } from "../actor/persona-actor";
-import { SocialStat } from "../../config/student-skills";
-import { ModifierList } from "../combat/modifier-list";
-import { STUDENT_SKILLS } from "../../config/student-skills";
-import { Situation } from "../combat/modifier-list";
-import { PersonaRoll } from "../persona-roll";
-import { PersonaDB } from "../persona-db";
+import { PC } from "../actor/persona-actor.js";
+import { SocialStat } from "../../config/student-skills.js";
+import { ModifierList } from "../combat/modifier-list.js";
+import { STUDENT_SKILLS } from "../../config/student-skills.js";
+import { Situation } from "../combat/modifier-list.js";
+import { PersonaRoll } from "../persona-roll.js";
+import { PersonaDB } from "../persona-db.js";
 
 export class PersonaSocial {
 

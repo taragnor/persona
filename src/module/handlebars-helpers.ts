@@ -1,7 +1,7 @@
-import { PersonaActor } from "./actor/persona-actor";
-import { PC } from "./actor/persona-actor";
-import { Shadow } from "./actor/persona-actor";
-import { PersonaDB } from "./persona-db";
+import { PersonaActor } from "./actor/persona-actor.js";
+import { PC } from "./actor/persona-actor.js";
+import { Shadow } from "./actor/persona-actor.js";
+import { PersonaDB } from "./persona-db.js";
 
 export class PersonaHandleBarsHelpers {
 	static init() {
