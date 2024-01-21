@@ -11,14 +11,14 @@ export class PersonaSocial {
 	static async rollSocialStat( pc: PC, socialStat: SocialStat) : Promise<ChatMessage> {
 		const stat = pc.system.skills[socialStat];
 		const mods = new ModifierList();
-		mods.add(STUDENT_SKILLS[socialStat], stat);
+		const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
+		mods.add(skillName, stat);
 		const sit: Situation = {
 			user: PersonaDB.getUniversalActorAccessor(pc),
 		};
-		const dice = new PersonaRoll("1d20", mods, sit);
+		const dice = new PersonaRoll("1d20", mods, sit, skillName);
 		await dice.roll();
 		return await dice.toModifiedMessage(sit);
 	}
-
 
 }

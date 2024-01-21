@@ -1,0 +1,23 @@
+<section>
+	<h2>
+		{{roll.name}}
+	</h2>
+	<span>
+		Roll:
+		{{#each roll.dice as |die|}}
+		<div>
+			<span>{{die.number}}d{{die.faces}} </span> {{die.total}}
+		</div>
+		{{/each}}
+		{{#each mods as |mod|}}
+		<div>
+			{{mod.name}} {{mod.modifier}}
+		</div>
+		{{/each}}
+		Total: 
+		{{roll.total}}
+	</span>
+
+
+	</section>
+

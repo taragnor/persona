@@ -48,14 +48,25 @@ export class ModifierList {
 		return new ModifierList(list);
 	}
 
-	total(situation: Situation ) : number {
-		return this._data.reduce ( (acc, item) => {
+	validModifiers (situation: Situation) : ModifierListItem[]  {
+		return this._data.filter( item => {
 			const source = item.source ? PersonaDB.findItem(item.source) as PowerContainer: null;
 			if (item.conditions.every( cond => ModifierList.testPrecondition(cond, situation, source))) {
-				return acc + item.modifier;
+				return true;
 			}
-			return acc;
-		}, 0);
+			return false;
+		});
+	}
+
+	total(situation: Situation ) : number {
+		// return this._data.reduce ( (acc, item) => {
+		// 	const source = item.source ? PersonaDB.findItem(item.source) as PowerContainer: null;
+		// 	if (item.conditions.every( cond => ModifierList.testPrecondition(cond, situation, source))) {
+		// 		return acc + item.modifier;
+		// 	}
+		// 	return acc;
+		// }, 0);
+		return this.validModifiers(situation).reduce( (acc, item) => acc + item.modifier, 0);
 
 	}
 
@@ -89,8 +100,7 @@ export class ModifierList {
 			case "activation-odd":
 				return !!situation.activationRoll && nat! % 2 == 1;
 			case "activation-even":
-				return !!situation.activationRoll && nat! % 2 == 0;
-			case "in-battle":
+				return !!situation.activationRoll && nat! % 2 == 0; case "in-battle":
 				return situation.activeCombat != undefined;
 			case "non-combat":
 				return situation.activeCombat == undefined;
@@ -106,6 +116,12 @@ export class ModifierList {
 				ui.notifications.error(err);
 				return false;
 		}
+	}
+
+	/** returns an array of values to use in printing the rol */
+	printable(situation:Situation) : {name: string, modifier:string}[] {
+		const signedFormatter = new Intl.NumberFormat("en-US", {signDisplay:"always"});
+		return this.validModifiers(situation).map( ({name, modifier}) => ({ name, modifier: signedFormatter.format(modifier) }));
 	}
 
 }

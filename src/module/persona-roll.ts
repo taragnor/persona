@@ -1,25 +1,39 @@
-import { ModifierList } from "./combat/modifier-list";
-import { Situation } from "./combat/modifier-list";
+import { ModifierList } from "./combat/modifier-list.js";
+import { Situation } from "./combat/modifier-list.js";
+import { PersonaDB } from "./persona-db.js";
 
 export class PersonaRoll extends Roll {
 	mods: ModifierList;
 	situation: Situation;
+	name: string;
 
-	constructor (dice: string, modifierList : ModifierList, situation: Situation) {
+	constructor (dice: string, modifierList : ModifierList, situation: Situation, rollName: string) {
 		super(dice);
 		this.mods = modifierList;
 		this.situation = situation;
+		this.name = rollName;
 	}
 
 	 async toModifiedMessage(situation: Situation ) : Promise<ChatMessage> {
-		 const mods = this.mods;
-		const html = await renderTemplate("system/persona/other-hbs/simple-roll.hbs", {mods, roll: this});
-		const msg = await ChatMessage.create(html);
+		 const mods = this.mods.printable(situation);
+		const html = await renderTemplate("systems/persona/other-hbs/simple-roll.hbs", {mods, roll: this});
+		 const actor  = PersonaDB.findActor(situation.user);
+		 const speaker : ChatSpeakerObject = {
+			 actor: actor.id,
+		 };
+		const msg = await ChatMessage.create({
+			speaker,
+			content: html,
+			user: game.user,
+			type:CONST.CHAT_MESSAGE_TYPES.ROLL,
+			rolls: [this],
+			sound: CONFIG.sounds.dice
+		}, {});
 		return msg;
 	}
 
 	override get total(): number {
-		const total = this.total + this.mods.total(this.situation);
+		const total = super.total + this.mods.total(this.situation);
 		return total;
 	}
 

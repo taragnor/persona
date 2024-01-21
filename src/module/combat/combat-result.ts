@@ -138,6 +138,7 @@ export class CombatResult  {
 			attackResult.attacker.actor.name
 
 		}
+		//@ts-ignore
 		return await ChatMessage.create("", {});
 	}
 

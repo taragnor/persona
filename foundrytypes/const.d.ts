@@ -1,11 +1,15 @@
 declare const CONST : {
 	ACTIVE_EFFECT_MODES	: AE_MODES,
-	USER_ROLES: {
-		GAMEMASTER:number,
-	}
+		USER_ROLES: {
+			GAMEMASTER:number,
+		}
 	CHAT_MESSAGE_TYPES: {
 		WHISPER: number,
 			OOC: number,
+			ROLL: number,
+			EMOTE: number,
+			OTHER: number,
+			IC: number,
 	}
 };
 

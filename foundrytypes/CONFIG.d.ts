@@ -12,6 +12,9 @@ declare interface CONFIG {
 		documentClass: typeof ActiveEffect<any, any>;
 		legacyTransferral: boolean;
 	}
+	sounds: {
+		dice: string
+	}
 
 }
 

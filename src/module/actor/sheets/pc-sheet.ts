@@ -23,7 +23,7 @@ export class PCSheet extends CombatantSheetBase {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		for (const stat of STUDENT_SKILLS_LIST) {
-		html.find(`.${stat} roll-icon`).on("click", this.rollSocial.bind(this, stat));
+			html.find(`.${stat} .roll-icon`).on("click", this.rollSocial.bind(this, stat));
 		}
 		super.activateListeners(html);
 	}

@@ -1,16 +1,26 @@
 declare class ChatMessage {
-	static getSpeaker(spkOptions: SpeakerOptions) : SpeakerOptions;
+	static getSpeaker(spkOptions: Partial<ChatSpeakerObject>) : SpeakerOptions;
 	static async create(msgData: MessageData, options: MessageOptions = {}): Promise<ChatMessage>;
+	static getSpeaker() : ChatSpeakerObject;
 }
 
-type MessageData = unknown;
+type MessageData<R extends Roll = Roll> = {
+	speaker: ChatSpeakerObject,
+	content: string,
+	user?: User,
+	type: typeof CONST.CHAT_MESSAGE_TYPES[string],
+	sound?: string,
+	rolls?: R[],
+	whisper?: User[],
+}
 
 type MessageOptions = Record<string, any>;
 
-
-
-interface SpeakerOptions {
-	alias?: string,
-	token?: string,
-	actor?: string,
+type ChatSpeakerObject = {
+	scene?: Option<string>,
+	actor?: Option<string>,
+	token?: Option<string>,
+	alias?: Option<string>,
 }
+
+
