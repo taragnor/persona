@@ -1,23 +1,33 @@
-<section>
+<section class="simple-roll">
 	<h2>
 		{{roll.name}}
 	</h2>
-	<span>
-		Roll:
+	<div class="roll-body">
 		{{#each roll.dice as |die|}}
-		<div>
-			<span>{{die.number}}d{{die.faces}} </span> {{die.total}}
+		<div class="dice">
+			<span>{{die.number}}d{{die.faces}} </span>
+			<i class="fa-solid fa-arrow-right"></i>
+			<span class="die-total">
+				{{die.total}}
+			</span>
 		</div>
 		{{/each}}
-		{{#each mods as |mod|}}
-		<div>
-			{{mod.name}} {{mod.modifier}}
+		<div class="mods-section">
+			{{#each mods as |mod|}}
+			<div class="mod-item">
+				<span class="mod-name">
+					{{mod.name}}
+				</span>
+				<span class="mod-amt">
+					{{mod.modifier}}
+				</span>
+			</div>
+			{{/each}}
 		</div>
-		{{/each}}
-		Total: 
-		{{roll.total}}
-	</span>
-
-
-	</section>
+		<div class="final-total">
+			Total:
+			{{roll.total}}
+		</div>
+	</div>
+</section>
 

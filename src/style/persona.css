@@ -57,6 +57,32 @@ div.defense {
 
 }
 
+div.roll-body {
+	margin-left: 1rem;
+	margin-right:1rem;
+
+}
+
+.simple-roll .dice {
+	font-size: larger;
+	font-weight: bold;
+	justify-content: center;
+}
+
+.simple-roll .mods-section {
+	border: 2px;
+	margin: 0.5rem;
+}
+
+.simple-roll .mod-name {
+	font-weight: bold;
+}
+
+.simple-roll .final-total {
+	font-weight: bold;
+	font-size: larger;
+}
+
 input.single-digit {
 	width: 1em;
 
