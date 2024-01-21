@@ -27,6 +27,7 @@ import { PersonaFocusSheet } from "./item/sheets/focus-sheet.js";
 import { PersonaTalentSheet } from "./item/sheets/talent-sheet.js";
 import { ConsumableSheet } from "./item/sheets/consumable-sheet.js";
 import { PersonaHandleBarsHelpers } from "./handlebars-helpers.js";
+import { PersonaRoll } from "./persona-roll.js";
 
 function registerDataModels() {
 	CONFIG.Actor.dataModels= ACTORMODELS;
@@ -37,6 +38,8 @@ function registerDocumentClasses() {
 	CONFIG.Actor.documentClass = PersonaActor;
 	CONFIG.Item.documentClass = PersonaItem;
 	CONFIG.ActiveEffect.documentClass = PersonaAE;
+	CONFIG.Dice.rolls.push(PersonaRoll);
+
 }
 
 function registerSheetApplications() {

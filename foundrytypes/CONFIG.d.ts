@@ -15,6 +15,9 @@ declare interface CONFIG {
 	sounds: {
 		dice: string
 	}
+	Dice: {
+		rolls: typeof unknown[];
+	}
 
 }
 
