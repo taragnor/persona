@@ -18,7 +18,7 @@ export class PersonaSocial {
 		};
 		const dice = new PersonaRoll("1d20", mods, sit, skillName);
 		await dice.roll();
-		return await dice.toModifiedMessage(sit);
+		return await dice.toModifiedMessage();
 	}
 
 }

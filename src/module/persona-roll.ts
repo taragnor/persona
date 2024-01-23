@@ -14,10 +14,17 @@ export class PersonaRoll extends Roll {
 		this.name = rollName;
 	}
 
-	 async toModifiedMessage(situation: Situation ) : Promise<ChatMessage> {
-		 const mods = this.mods.printable(situation);
-		const html = await renderTemplate("systems/persona/other-hbs/simple-roll.hbs", {mods, roll: this});
-		 const actor  = PersonaDB.findActor(situation.user);
+	get printableMods() {
+		return this.mods.printable(this.situation);
+	}
+
+	setSituation(sit: Situation) {
+		this.situation = sit;
+	}
+
+	 async toModifiedMessage() : Promise<ChatMessage> {
+		const html = await renderTemplate("systems/persona/other-hbs/simple-roll.hbs", {roll: this});
+		 const actor  = PersonaDB.findActor(this.situation.user);
 		 const speaker : ChatSpeakerObject = {
 			 actor: actor.id,
 		 };
@@ -42,3 +49,4 @@ export class PersonaRoll extends Roll {
 	}
 
 }
+

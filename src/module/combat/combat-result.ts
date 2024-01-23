@@ -7,6 +7,7 @@ import { Usable } from "../item/persona-item.js";
 import { PC } from "../actor/persona-actor.js";
 import { PToken } from "./persona-combat.js";
 import { StatusEffectId } from "../../config/status-effects.js";
+import { PersonaRoll } from "../persona-roll.js";
 
 export class CombatResult  {
 	attacks: Map<AttackResult, TokenChange<PToken>[]> = new Map();
@@ -132,18 +133,33 @@ export class CombatResult  {
 		}
 	}
 
-	async toMessage() : Promise<ChatMessage> {
+	async toMessage(initiatingToken: PToken, powerUsed: Usable) : Promise<ChatMessage> {
+
+		const rolls : PersonaRoll[] = Array.from(this.attacks.entries()).map( ([attackResult]) => attackResult.roll);
+
 		for (const [attackResult, changes] of this.attacks.entries()) {
 			attackResult.attacker.document.name
 			attackResult.attacker.actor.name
-
 		}
-		//@ts-ignore
-		return await ChatMessage.create("", {});
+
+		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attacker: initiatingToken, power: powerUsed,  attacks:this.attacks.entries(), roll: this});
+
+		return await ChatMessage.create( {
+			speaker: {
+				scene: undefined,
+				actor: undefined,
+				token: undefined,
+				alias: undefined
+			},
+			rolls: rolls,
+			content: html,
+			user: game.user,
+			type: CONST.CHAT_MESSAGE_TYPES.ROLL
+		}, {})
 	}
 
 	async print(): Promise<void> {
-		const signedFormatter = new Intl.NumberFormat("en-US", {signDisplay:"always"});
+		const signedFormatter = new Intl.NumberFormat("en-US", {signDisplay : "always"});
 		let msg = "";
 		if (this.escalationMod) {
 			msg += `escalation Mod: ${signedFormatter.format(this.escalationMod)}`;
@@ -236,6 +252,8 @@ export type AttackResult = {
 	attacker: PToken,
 	power: Usable,
 	situation: Situation,
+	roll: PersonaRoll,
+	printableModifiers: {name: string, modifier:string} [],
 };
 
 

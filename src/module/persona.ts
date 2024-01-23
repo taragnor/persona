@@ -39,7 +39,6 @@ function registerDocumentClasses() {
 	CONFIG.Item.documentClass = PersonaItem;
 	CONFIG.ActiveEffect.documentClass = PersonaAE;
 	CONFIG.Dice.rolls.push(PersonaRoll);
-
 }
 
 function registerSheetApplications() {

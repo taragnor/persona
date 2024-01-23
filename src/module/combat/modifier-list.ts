@@ -59,13 +59,6 @@ export class ModifierList {
 	}
 
 	total(situation: Situation ) : number {
-		// return this._data.reduce ( (acc, item) => {
-		// 	const source = item.source ? PersonaDB.findItem(item.source) as PowerContainer: null;
-		// 	if (item.conditions.every( cond => ModifierList.testPrecondition(cond, situation, source))) {
-		// 		return acc + item.modifier;
-		// 	}
-		// 	return acc;
-		// }, 0);
 		return this.validModifiers(situation).reduce( (acc, item) => acc + item.modifier, 0);
 
 	}

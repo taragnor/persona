@@ -1,0 +1,25 @@
+<h2>
+	<span class="token-name">
+		{{attacker.name}}
+	</span>
+	<span class="uses">
+		uses
+	</span>
+	<span class="power-name">
+		{{power.name}}
+	</span>
+</h2>
+
+<section class="persona-roll">
+	{{#each attacks as |atk|}}
+	<div class="atk-block">
+
+		{{#each attackResult as |atkres|}}
+		{{> "systems/persona/other-hbs/simple-rll.hbs" roll=atkres.roll mods=atkres.printableModifiers }}
+		{{/each}}
+
+
+
+		{{/each}}
+	</div>
+</section>

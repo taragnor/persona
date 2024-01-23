@@ -7,6 +7,7 @@ import { AttackResult } from "./combat-result.js";
 import { Usable } from "../item/persona-item.js";
 import { ArrayCorrector } from "../item/persona-item.js"
 import { PersonaDB } from "../persona-db.js";
+import { PersonaRoll } from "../persona-roll.js";
 
 
 export class PersonaCombat {
@@ -24,10 +25,8 @@ export class PersonaCombat {
 
 		for (const target of targets) {
 			console.log(`Target: ${target.actor.name}`);
-			const roll = new Roll("1d20");
-			await roll.roll();
 			console.log("Atk Roll");
-			const atkResult = await this.processAttackRoll(roll, attacker, power, target, i==0);
+			const atkResult = await this.processAttackRoll( attacker, power, target, i==0);
 			console.log("Effects step");
 			const this_result = await this.processEffects(atkResult);
 			result.merge(this_result);
@@ -39,23 +38,34 @@ export class PersonaCombat {
 		return result;
 	}
 
-	static async processAttackRoll(roll: Roll, attacker: PToken, power: Usable, target: PToken, isActivationRoll: boolean) : Promise<AttackResult> {
-		const baseData = {
-			attacker ,
-			target,
-			power
-		} satisfies Pick<AttackResult, "attacker" | "target"  | "power">;
+	static async processAttackRoll( attacker: PToken, power: Usable, target: PToken, isActivationRoll: boolean) : Promise<AttackResult> {
+
+		const situation : Situation = {
+			usedPower: PersonaDB.getUniversalItemAccessor(power),
+			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
+			userToken: PersonaDB.getUniversalTokenAccessor(attacker),
+		};
 		const element = power.system.dmg_type;
 		const resist = target.actor.elementalResist(element);
 		const attackbonus= this.getAttackBonus(attacker, power);
 		const combat = this.ensureCombatExists();
 		const escalationDie = this.getEscalationDie(combat);
 		attackbonus.add("Escalation Die", escalationDie);
-		const naturalAttackRoll = roll.total;
+		const roll = new PersonaRoll("1d20", attackbonus, situation, `${target.document.name}`);
+		await roll.roll();
+		const naturalAttackRoll = roll.dice[0].total;
+		const baseData = {
+			roll,
+			attacker ,
+			target,
+			power
+		} satisfies Pick<AttackResult, "attacker" | "target"  | "power" | "roll">;
+
 		switch (resist) {
 			case "reflect": {
 				return {
 					result: "reflect",
+					printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					situation: {
@@ -71,6 +81,7 @@ export class PersonaCombat {
 			case "block": {
 				return {
 					result: "block",
+					printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					situation: {
@@ -86,6 +97,7 @@ export class PersonaCombat {
 			case "absorb" : {
 				return {
 					result: "absorb",
+					printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					situation: {
@@ -100,20 +112,20 @@ export class PersonaCombat {
 			}
 
 		}
-		const situation : Situation = {
-			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
-			userToken: PersonaDB.getUniversalTokenAccessor(attacker),
-			activeCombat: combat,
-			escalationDie,
-			activationRoll : isActivationRoll,
-			naturalAttackRoll
-		};
-		const total = attackbonus.total(situation);
+		situation.user= PersonaDB.getUniversalActorAccessor(attacker.actor);
+		situation.userToken= PersonaDB.getUniversalTokenAccessor(attacker);
+		situation.activeCombat= combat;
+		situation.escalationDie= escalationDie;
+		situation.activationRoll = isActivationRoll;
+		situation.naturalAttackRoll = naturalAttackRoll;
+		const total = roll.total;
 		const def = power.system.defense;
 		const validAtkModifiers = attackbonus.list(situation);
+		const printableModifiers = attackbonus.printable(situation);
 		if (def == "none") {
 			return {
 				result: "hit",
+				printableModifiers,
 				validAtkModifiers,
 				validDefModifiers: [],
 				situation,
@@ -132,6 +144,7 @@ export class PersonaCombat {
 		if (total < target.actor.getDefense(def).total(situation))
 		return {
 			result: "miss",
+			printableModifiers,
 			validAtkModifiers,
 			validDefModifiers,
 			situation,
@@ -142,6 +155,7 @@ export class PersonaCombat {
 				result: "crit",
 				validAtkModifiers,
 				validDefModifiers,
+				printableModifiers,
 				situation,
 				...baseData,
 			};
@@ -149,6 +163,7 @@ export class PersonaCombat {
 			result: "hit",
 			validAtkModifiers,
 			validDefModifiers,
+			printableModifiers,
 			situation,
 			...baseData,
 		}

@@ -8,7 +8,7 @@ type MessageData<R extends Roll = Roll> = {
 	speaker: ChatSpeakerObject,
 	content: string,
 	user?: User,
-	type: typeof CONST.CHAT_MESSAGE_TYPES[string],
+	type: (typeof CONST.CHAT_MESSAGE_TYPES)[ keyof (typeof CONST.CHAT_MESSAGE_TYPES)],
 	sound?: string,
 	rolls?: R[],
 	whisper?: User[],
