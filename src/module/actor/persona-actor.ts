@@ -182,6 +182,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async modifyHP( this: Shadow | PC, delta: number) {
 		let hp = this.system.combat.hp;
 		hp += delta;
+		if (hp < 0 ) {
+			hp = 0;
+		}
+		if (hp >= this.mhp) {
+			hp = this.mhp;
+		}
 		await this.update( {"system.combat.hp": hp});
 	}
 

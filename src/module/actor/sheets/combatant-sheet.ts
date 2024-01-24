@@ -84,11 +84,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!token) {
 			throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` )
 		}
-		console.log(`Trying to use power: ${power.name}`);
 		try {
-		const results  = await PersonaCombat.usePower(token, power as Usable);
-		console.log("Results: ");
-		console.log(results);
+			const results  = await PersonaCombat.usePower(token, power as Usable);
 		} catch (e) {
 			throw e;
 		}

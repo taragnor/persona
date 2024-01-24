@@ -144,6 +144,9 @@ export type Situation = {
 	naturalAttackRoll ?: number;
 	criticalHit ?: boolean;
 	hit?: boolean;
+	resisted ?: boolean;
+	struckWeakness ?: boolean;
+	isAbsorbed ?: boolean;
 	escalationDie ?: number;
 	activationRoll ?: boolean;
 	target?: UniversalTokenAccessor<PToken>;

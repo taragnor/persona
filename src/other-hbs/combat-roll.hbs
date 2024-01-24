@@ -15,6 +15,15 @@
 	<div class="atk-block">
 		{{> "systems/persona/parts/simple-roll.hbs" roll=atk.attackResult.roll }}
 		{{atk.attackResult.result}}
+		{{#if atk.attackResult.situation.resisted}}
+		<span class="resisted">(Resist)</span>
+		{{/if}}
+		{{#if atk.attackResult.situation.struckWeakness}}
+		<span class="resisted">(Weak)</span>
+		{{/if}}
+		{{#if atk.attackResult.situation.isAbsorbed}}
+		<span class="resisted">(Absorbed)</span>
+		{{/if}}
 		{{#each atk.changes as |change|}}
 		<h3>
 			{{change.token.name}}

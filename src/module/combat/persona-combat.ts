@@ -25,12 +25,10 @@ export class PersonaCombat {
 
 		for (const target of targets) {
 			const atkResult = await this.processAttackRoll( attacker, power, target, i==0);
-			console.log("Effects step");
 			const this_result = await this.processEffects(atkResult);
 			result.merge(this_result);
 			i++;
 		}
-		console.log("Processing Costs");
 		await result.toMessage(attacker, power);
 		const costs = await this.#processCosts(attacker, power);
 		result.merge(costs);
@@ -105,6 +103,9 @@ export class PersonaCombat {
 						userToken: PersonaDB.getUniversalTokenAccessor(attacker),
 						naturalAttackRoll,
 						escalationDie,
+						hit: true,
+						criticalHit: false,
+						isAbsorbed: true,
 					},
 					...baseData,
 				};
@@ -141,6 +142,9 @@ export class PersonaCombat {
 		}
 		const critBoost = critBoostMod.total(situation);
 		const validDefModifiers= target.actor.getDefense(def).list(situation);
+		situation.resisted = resist == "resist";
+		situation.struckWeakness = resist == "weakness";
+
 		if (total < target.actor.getDefense(def).total(situation)) {
 			situation.hit = false;
 			situation.criticalHit = false;
@@ -207,16 +211,12 @@ export class PersonaCombat {
 				cond => ModifierList.testPrecondition(cond, situation, power))
 			) {
 				for (const cons of consequences) {
-					console.log("Processing Consquences");
 					let damageMult = 1;
-					const absorb = result == "absorb" && !cons.applyToSelf;
+					const absorb = situation.isAbsorbed && !cons.applyToSelf;
 					const block = result == "block" && !cons.applyToSelf;
 					const consTarget = cons.applyToSelf ? attacker: target;
-					if (cons.applyToSelf) {
-						debugger;
-					}
 					const crit = result == "crit" && !cons.applyToSelf;
-					damageMult *= block ? 0.5 : 1;
+					damageMult *= situation.resisted ? 0.5 : 1;
 					damageMult *= crit ? 2 : 1;
 					switch (cons.type) {
 						case "dmg-high":
