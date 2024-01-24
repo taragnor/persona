@@ -225,7 +225,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	equippedItems() : (InvItem | Weapon)[]  {
 		if (this.system.type != "pc") return [];
 		const inv = this.inventory;
-		const slots : (keyof typeof this.system.equipped)[]=  ["body", "accessory", "weapon_crystal"]
+		const slots : (keyof typeof this.system.equipped)[]=  ["weapon", "body", "accessory", "weapon_crystal"]
 		const ret = slots
 			.map( slot=> inv
 				.find(item => item.id == (this as PC).system.equipped[slot]))

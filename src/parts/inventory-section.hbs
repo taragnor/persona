@@ -1,3 +1,36 @@
+<div class="equips">
+	<div class="weapon">
+		<label>
+			Weapon
+		</label>
+		<select name="system.equipped.weapon">
+			{{selectOptions equips.weapons localize=true selected=actor.system.equipped.weapon}}
+		</select>
+	</div>
+	<div class="armor"> <label>
+			Clothing
+		</label>
+		<select name="system.equipped.body">
+			{{selectOptions equips.body localize=true selected=actor.system.equipped.body}}
+		</select>
+	</div>
+	<div class="accessory"> <label>
+			Accessory
+		</label>
+		<select name="system.equipped.accessory">
+			{{selectOptions equips.accessory localize=true selected=actor.system.equipped.accessory}}
+		</select>
+	</div>
+
+	<div class="weapon-crystal"> <label>
+			Weapon Attachment
+		</label>
+		<select name="system.equipped.weapon_crystal">
+			{{selectOptions equips.attachment localize=true selected=actor.system.equipped.weapon_crystal}}
+		</select>
+	</div>
+
+</div>
 <button class="addItem">Create Item</button>
 <div class="item-list flexcol">
 	{{#each actor.inventory as |item|}}

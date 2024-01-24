@@ -17,8 +17,32 @@ export class PCSheet extends CombatantSheetBase {
 		});
 	}
 
-	override getData() {
-		return super.getData();
+	override async getData() {
+		const data = await super.getData();
+		console.log(this.actor.items);
+		data.equips = {
+			weapons: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
+				if (x.system.type == "weapon")
+				return [[ x.id, x.name]];
+				else return [];
+			})),
+			body: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
+				if (x.system.type == "item" && x.system.slot =="body")
+				return [[ x.id, x.name]];
+				else return [];
+			})),
+			accessory: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
+				if (x.system.type == "item" && x.system.slot =="accessory")
+				return [[ x.id, x.name]];
+				else return [];
+			})),
+			attachment: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
+				if (x.system.type == "item" && x.system.slot =="weapon_crystal")
+				return [[ x.id, x.name]];
+				else return [];
+			})),
+		};
+		return data;
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {

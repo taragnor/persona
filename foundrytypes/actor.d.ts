@@ -12,7 +12,7 @@
 declare class Actor<T extends SchemaDict, ItemType extends Item<J> = Item, AEType extends ActiveEffect<this, ItemType> = ActiveEffect> extends FoundryDocument<ItemType | AEType>{
 	type: string;
 	system: TotalConvert<T>;
-	get items(): ItemType[];
+	get items(): Collection<ItemType>;
 	sheet: ActorSheet<this>;
 	statuses: Set<string>;
 	get effects(): Collection<AEType>;
