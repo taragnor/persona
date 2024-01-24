@@ -64,8 +64,6 @@ export class PCSheet extends CombatantSheetBase {
 		if (item && await HTMLTools.confirmBox("Confirm", "Really delete?")) {
 			item.delete();
 		}
-
-
 	}
 
 }
