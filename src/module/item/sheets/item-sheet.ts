@@ -1,9 +1,9 @@
-import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { InvItem } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { EQUIP_SLOTS } from "../../../config/equip-slots.js";
+import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 
-export class PersonaItemSheet extends PersonaItemSheetBase {
+export class PersonaItemSheet extends PersonaEffectContainerBaseSheet {
 	override item: InvItem;
 
 	static override get defaultOptions() {

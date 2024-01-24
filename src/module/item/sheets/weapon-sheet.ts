@@ -1,8 +1,8 @@
-import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { Weapon } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
+import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 
-export class PersonaWeaponSheet extends PersonaItemSheetBase {
+export class PersonaWeaponSheet extends PersonaEffectContainerBaseSheet {
 	override item: Weapon;
 
 	static override get defaultOptions() {
@@ -15,8 +15,8 @@ export class PersonaWeaponSheet extends PersonaItemSheetBase {
 		});
 	}
 
-	override getData() {
-		const data = super.getData();
+	override async getData() {
+		const data = await super.getData();
 		return data;
 	}
 

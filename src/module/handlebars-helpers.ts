@@ -24,6 +24,10 @@ export class PersonaHandleBarsHelpers {
 		},
 		"isGM" : () => {
 			return game.user.isGM;
+		},
+		"abs" : (x:string | number) => {
+			return Math.abs(Number(x))
+
 		}
 
 	}

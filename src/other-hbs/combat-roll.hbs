@@ -21,7 +21,7 @@
 		</h3>
 		<div class="changes">
 			{{#if change.hpchange}}
-			{{change.hpchange}} damage
+			{{abs change.hpchange}} damage ({{../../power.system.dmg_type}})
 			{{/if}}
 			{{#each change.addStatus as |status|}}
 			+{{status.id}}

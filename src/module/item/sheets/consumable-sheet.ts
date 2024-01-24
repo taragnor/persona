@@ -1,9 +1,9 @@
-import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { Consumable } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { EQUIP_SLOTS } from "../../../config/equip-slots.js";
+import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 
-export class ConsumableSheet extends PersonaItemSheetBase {
+export class ConsumableSheet extends PersonaEffectContainerBaseSheet {
 	override item: Consumable;
 
 	static override get defaultOptions() {

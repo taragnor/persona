@@ -11,13 +11,8 @@ import { PersonaRoll } from "../persona-roll.js";
 
 export class CombatResult  {
 	attacks: Map<AttackResult, TokenChange<PToken>[]> = new Map();
-	// attackResults : AttackResult[] = [];
-	// changes : TokenChange<PToken>[] = [];
 	escalationMod: number = 0;
 	costs: TokenChange<PToken>[] = [];
-
-
-
 
 	constructor(atkResult ?: AttackResult) {
 		if (atkResult) {
@@ -26,7 +21,7 @@ export class CombatResult  {
 		}
 	}
 
-	addEffect(atkResult: AttackResult | null, target: PToken, cons:Consequence) {
+	addEffect(atkResult: AttackResult | null, target: PToken, cons: Consequence) {
 		const effect : TokenChange<PToken>= {
 			token: target,
 			hpchange: 0,
@@ -141,8 +136,6 @@ export class CombatResult  {
 	async toMessage(initiatingToken: PToken, powerUsed: Usable) : Promise<ChatMessage> {
 
 		const rolls : PersonaRoll[] = Array.from(this.attacks.entries()).map( ([attackResult]) => attackResult.roll);
-
-
 		const attacks = Array.from(this.attacks.entries()).map( ([attackResult, changes])=> {
 			for (const change of changes) {
 				CombatResult.normalizeChange(change);
@@ -174,16 +167,6 @@ export class CombatResult  {
 		let msg = "";
 		if (this.escalationMod) {
 			msg += `escalation Mod: ${signedFormatter.format(this.escalationMod)}`;
-		}
-
-		for (const [atkRes, changes] of this.attacks.entries()) {
-
-
-
-		}
-
-		for (const cost of this.costs) {
-
 		}
 	}
 

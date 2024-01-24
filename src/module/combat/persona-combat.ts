@@ -122,6 +122,7 @@ export class PersonaCombat {
 		const validAtkModifiers = attackbonus.list(situation);
 		const printableModifiers = attackbonus.printable(situation);
 		if (def == "none") {
+			situation.hit = true;
 			return {
 				result: "hit",
 				printableModifiers,
@@ -140,16 +141,21 @@ export class PersonaCombat {
 		}
 		const critBoost = critBoostMod.total(situation);
 		const validDefModifiers= target.actor.getDefense(def).list(situation);
-		if (total < target.actor.getDefense(def).total(situation))
-		return {
-			result: "miss",
-			printableModifiers,
-			validAtkModifiers,
-			validDefModifiers,
-			situation,
-			...baseData,
-		};
+		if (total < target.actor.getDefense(def).total(situation)) {
+			situation.hit = false;
+			situation.criticalHit = false;
+			return {
+				result: "miss",
+				printableModifiers,
+				validAtkModifiers,
+				validDefModifiers,
+				situation,
+				...baseData,
+			};
+		}
 		if (resist != "resist" && naturalAttackRoll + critBoost >= 20) {
+			situation.hit = true;
+			situation.criticalHit  = true;
 			return {
 				result: "crit",
 				validAtkModifiers,
@@ -158,20 +164,23 @@ export class PersonaCombat {
 				situation,
 				...baseData,
 			};
-		} else return {
-			result: "hit",
-			validAtkModifiers,
-			validDefModifiers,
-			printableModifiers,
-			situation,
-			...baseData,
+		} else {
+			situation.hit = true;
+			situation.criticalHit = false;
+			return {
+				result: "hit",
+				validAtkModifiers,
+				validDefModifiers,
+				printableModifiers,
+				situation,
+				...baseData,
+			}
 		}
 	}
 
 	static async processEffects(atkResult: AttackResult) : Promise<CombatResult> {
 		const CombatRes= new CombatResult();
 		const {result, validAtkModifiers, validDefModifiers, attacker, target, situation, power} = atkResult;
-		CombatRes.merge(await this.processPowerEffectsOnTarget(atkResult));
 		switch (result) {
 			case "reflect":
 				CombatRes.merge(await this.#usePowerOn(attacker, power, [attacker]));
@@ -182,11 +191,12 @@ export class PersonaCombat {
 				break;
 
 		}
+		CombatRes.merge(await this.processPowerEffectsOnTarget(atkResult));
 
 		return CombatRes;
 	}
 
-	static async processPowerEffectsOnTarget(atkResult: AttackResult) {
+	static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<CombatResult> {
 		const CombatRes= new CombatResult(atkResult);
 		const {result, validAtkModifiers, validDefModifiers, attacker, target, situation, power} = atkResult;
 		for (let {conditions, consequences} of power.system.effects) {
@@ -202,6 +212,9 @@ export class PersonaCombat {
 					const absorb = result == "absorb" && !cons.applyToSelf;
 					const block = result == "block" && !cons.applyToSelf;
 					const consTarget = cons.applyToSelf ? attacker: target;
+					if (cons.applyToSelf) {
+						debugger;
+					}
 					const crit = result == "crit" && !cons.applyToSelf;
 					damageMult *= block ? 0.5 : 1;
 					damageMult *= crit ? 2 : 1;
@@ -220,15 +233,30 @@ export class PersonaCombat {
 							continue;
 						case "extraAttack" :
 							//TODO: handle later
-							break;
+							continue;
 						case "none":
 							continue;
 						case "addStatus": case "removeStatus":
 							if (absorb || block) continue;
+							CombatRes.addEffect(atkResult, consTarget, cons);
+						case "dmg-mult":
+							CombatRes.addEffect(atkResult, consTarget, cons);
+							break;
+						case "escalationManipulation":
+							CombatRes.escalationMod += (cons.amount ?? 0);
+							continue;
+						case "modifier":
+								continue;
+						case "hp-loss":
+								CombatRes.addEffect(atkResult, consTarget, {
+									type: "hp-loss",
+									amount: cons.amount ?? 0,
+								});
+							continue;
 						default:
+								CombatRes.addEffect(atkResult, consTarget, cons);
 							break;
 					}
-					CombatRes.addEffect(atkResult, consTarget, cons);
 				}
 
 			}
