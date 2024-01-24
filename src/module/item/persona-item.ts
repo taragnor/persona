@@ -113,10 +113,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		await this.update({"system.effects": this.system.effects});
 	}
 
-async deletePowerPrecondition( this: PowerContainer, index: number) {
-		const x = this.system.effects[index];
+async deletePowerPrecondition( this: PowerContainer, effectIndex: number, condIndex: number) {
+		const x = this.system.effects[effectIndex];
 		x.conditions = ArrayCorrector(x.conditions);
-	   x.conditions.splice(index, 1);
+	   x.conditions.splice(condIndex, 1);
 		await this.update({"system.effects": this.system.effects});
 }
 
@@ -130,10 +130,10 @@ async deletePowerPrecondition( this: PowerContainer, index: number) {
 		await this.update({"system.effects": this.system.effects});
 	}
 
-async deletePowerConsequence (this: PowerContainer, index: number) {
-	const x = this.system.effects[index];
+async deletePowerConsequence (this: PowerContainer, effectIndex: number, consIndex: number) {
+	const x = this.system.effects[effectIndex];
 	x.consequences = ArrayCorrector(x.consequences);
-	x.consequences.splice(index, 1);
+	x.consequences.splice(consIndex, 1);
 	await this.update({"system.effects": this.system.effects});
 }
 

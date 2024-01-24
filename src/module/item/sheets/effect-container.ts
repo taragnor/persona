@@ -64,15 +64,17 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 	}
 
 	async deleteConsequence(ev: Event) {
-		const index = HTMLTools.getClosestData(ev,
+		const effindex = HTMLTools.getClosestData(ev, "effectIndex");
+		const conindex = HTMLTools.getClosestData(ev,
 			"consequenceIndex");
-		this.item.deletePowerConsequence(index);
+		this.item.deletePowerConsequence(effindex, conindex);
 	}
 
 	async deletePrecondition(ev: Event) {
-		const index = HTMLTools.getClosestData(ev,
+		const effIndex = HTMLTools.getClosestData(ev, "effectIndex");
+		const condIndex = HTMLTools.getClosestData(ev,
 			"preconditionIndex");
-		this.item.deletePowerPrecondition(index);
+		this.item.deletePowerPrecondition(effIndex, condIndex);
 
 	}
 
