@@ -1,4 +1,5 @@
 import { PRECONDITIONLIST } from "../../config/effect-types.js";
+import { DamageType } from "../../config/damage-types.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { ModifierContainer } from "../item/persona-item.js";
 import { Usable } from "../item/persona-item.js";
@@ -34,7 +35,7 @@ export class ModifierList {
 	}
 
 	list(situtation: Situation): [number, string][] {
-		const filtered= this._data.filter( item=> item.conditions.every(cond => {
+		const filtered = this._data.filter( item=> item.conditions.every(cond => {
 			const source = item.source ? PersonaDB.findItem(item.source): null;
 			ModifierList.testPrecondition(cond, situtation,
 				source)
@@ -102,6 +103,11 @@ export class ModifierList {
 				const id = source ? source.id! : "";
 				const user = PersonaDB.findActor(situation.user);
 				return !user.system.talents.some( x=> x.talentId == id && x.talentLevel < (condition.num ?? 0))
+			case "power-damage-type-is":
+					if (!situation.usedPower) return false;
+					const power = PersonaDB.findItem(situation.usedPower);
+					return condition.powerDamageType == power.system.dmg_type;
+
 			default:
 				condition.type satisfies never;
 				const err = `Unexpected Condition: ${condition.type}`;
@@ -125,6 +131,7 @@ export class ModifierList {
 export type Precondition = {
 	type : typeof PRECONDITIONLIST[number],
 	num?: number,
+	powerDamageType ?: DamageType,
 }
 
 export type ConditionalModifier = {

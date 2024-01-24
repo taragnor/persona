@@ -258,7 +258,6 @@ export class PersonaCombat {
 							break;
 					}
 				}
-
 			}
 		}
 		return CombatRes;
@@ -283,6 +282,7 @@ export class PersonaCombat {
 			}
 			return res;
 		}
+
 	static getAttackBonus(attacker: PToken, power:Usable): ModifierList {
 		const actor = attacker.actor;
 		if (power.system.type == "consumable") {
@@ -300,7 +300,6 @@ export class PersonaCombat {
 		}
 		return new ModifierList();
 	}
-
 
 	static async getTargets(attacker: PToken, power: Usable): Promise<PToken[]> {
 		const selected = Array.from(game.user.targets) as PToken[];
@@ -365,7 +364,6 @@ export class PersonaCombat {
 			throw new Error(error);
 		}
 		return combat;
-
 	}
 
 	static getEscalationDie<T extends Combat<any>>(combat: T) : number {

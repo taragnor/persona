@@ -11,9 +11,14 @@
 				type:
 			</label>
 			<select name="system.effects.{{../i}}.conditions.{{j}}.type">
-				{{selectOptions ../CONDITIONS localize=true selected=cond.type}}
+				{{selectOptions ../POWERSTUFF.PRECONDITIONTYPES localize=true selected=cond.type}}
 			</select>
 			<input class="short" type=number name="system.effects.{{../i}}.conditions.{{j}}.num" value="{{cond.num}}">
+			{{#if (eq cond.type	"power-damage-type-is")}}
+			<select name="system.effects.{{../i}}.conditions.{{j}}.powerDamageType">
+				{{selectOptions ../POWERSTUFF.DAMAGETYPES localize=true selected=cond.powerDamageType}}
+			</select>
+			{{/if}}
 		</div>
 		<a class="delCondition">
 			<i class="fa-solid fa-trash-can"></i>

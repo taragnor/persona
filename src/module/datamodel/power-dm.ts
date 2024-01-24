@@ -60,9 +60,6 @@ const powerEffects = function (fillBaseAttack: boolean) {
 	const initial = fillBaseAttack ? [evenDmg, oddDmg] : [];
 	return new arr( new obj<ConditionalEffect>()
 		,{
-			// validate: (x:ConditionalEffect[])=> {
-			// 	return x.every( e=> Array.isArray(e.conditions) && Array.isArray(e.consequences))
-			// },
 			initial
 		});
 }

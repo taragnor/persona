@@ -9,7 +9,7 @@
 		{{#each item.system.effects as |effect i|}}
 		<div class="flexrow" data-effect-index="{{i}}">
 			<div class="power-effect" >
-				{{> "systems/persona/parts/conditions-section.hbs" effect=effect CONDITIONS=../POWERSTUFF.PRECONDITIONTYPES i=i}}
+				{{> "systems/persona/parts/conditions-section.hbs" effect=effect POWERSTUFF=../POWERSTUFF i=i}}
 				{{> "systems/persona/parts/consequences-section.hbs" effect=effect POWERSTUFF=../POWERSTUFF i=i}}
 			</div>
 			<div class="short">

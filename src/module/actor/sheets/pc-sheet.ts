@@ -4,6 +4,7 @@ import { PersonaActor } from "../persona-actor.js";
 import { PersonaSocial } from "../../social/persona-social.js";
 import { SocialStat } from "../../../config/student-skills.js";
 import { STUDENT_SKILLS_LIST } from "../../../config/student-skills.js";
+import { HTMLTools } from "../../utility/HTMLTools.js";
 
 export class PCSheet extends CombatantSheetBase {
 	override actor: Subtype<PersonaActor, "pc">;
@@ -46,6 +47,7 @@ export class PCSheet extends CombatantSheetBase {
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {
+		html.find(".delItem").on("click", this.delItem.bind(this));
 		for (const stat of STUDENT_SKILLS_LIST) {
 			html.find(`.${stat} .roll-icon`).on("click", this.rollSocial.bind(this, stat));
 		}
@@ -54,6 +56,16 @@ export class PCSheet extends CombatantSheetBase {
 
 	async rollSocial (socialStat: SocialStat) {
 		PersonaSocial.rollSocialStat(this.actor, socialStat);
+	}
+
+	async delItem (event : Event) {
+		const item_id= String(HTMLTools.getClosestData(event, "itemId"));
+		const item = this.actor.items.find(x=> x.id == item_id);
+		if (item && await HTMLTools.confirmBox("Confirm", "Really delete?")) {
+			item.delete();
+		}
+
+
 	}
 
 }

@@ -34,8 +34,13 @@
 <button class="addItem">Create Item</button>
 <div class="item-list flexcol">
 	{{#each actor.inventory as |item|}}
-	<div class="inventory-item">
-		{{item.name}}
+	<div class="inventory-item" data-item-id="{{item.id}}">
+		<span class="item-name">
+			{{item.name}}
+		</span>
+	<a class="delItem">
+		<i class="fa-solid fa-trash-can"></i>
+	</a>
 	</div>
 	{{/each}}
 </div>

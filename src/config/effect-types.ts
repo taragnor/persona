@@ -36,6 +36,7 @@ export const PRECONDITIONLIST = [
 	"in-battle",
 	"non-combat",
 	"talent-level+",
+	"power-damage-type-is",
 
 ] as const;
 
