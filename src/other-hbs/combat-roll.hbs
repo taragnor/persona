@@ -13,13 +13,27 @@
 <section class="persona-roll">
 	{{#each attacks as |atk|}}
 	<div class="atk-block">
-
-		{{#each attackResult as |atkres|}}
-		{{> "systems/persona/other-hbs/simple-rll.hbs" roll=atkres.roll mods=atkres.printableModifiers }}
+		{{> "systems/persona/parts/simple-roll.hbs" roll=atk.attackResult.roll }}
+		{{atk.attackResult.result}}
+		{{#each atk.changes as |change|}}
+		<h3>
+			{{change.token.name}}
+		</h3>
+		<div class="changes">
+			{{#if change.hpchange}}
+			{{change.hpchange}} damage
+			{{/if}}
+			{{#each change.addStatus as |status|}}
+			+{{status.id}}
+			{{/each}}
+			{{#each change.removeStatus as |status|}}
+			-{{status.id}}
+			{{/each}}
+		</div>
 		{{/each}}
-
-
-
-		{{/each}}
+		{{#if escalation}}
+		Escalation Die {{escalation}}
+		{{/if}}
 	</div>
+	{{/each}}
 </section>

@@ -129,26 +129,37 @@ export class CombatResult  {
 				const index = mainEffects.indexOf(entry);
 				mainEffects[index] = CombatResult.combineChanges(entry, newEffect);
 			}
-
 		}
 	}
+
+		static normalizeChange(change: TokenChange<PToken>) {
+			change.hpchange *= change.hpchangemult;
+			change.hpchangemult = 1;
+
+			}
 
 	async toMessage(initiatingToken: PToken, powerUsed: Usable) : Promise<ChatMessage> {
 
 		const rolls : PersonaRoll[] = Array.from(this.attacks.entries()).map( ([attackResult]) => attackResult.roll);
 
-		for (const [attackResult, changes] of this.attacks.entries()) {
-			attackResult.attacker.document.name
-			attackResult.attacker.actor.name
-		}
 
-		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attacker: initiatingToken, power: powerUsed,  attacks:this.attacks.entries(), roll: this});
+		const attacks = Array.from(this.attacks.entries()).map( ([attackResult, changes])=> {
+			for (const change of changes) {
+				CombatResult.normalizeChange(change);
+			}
+			return {
+				attackResult,
+				changes
+			};
+		});
+
+		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attacker: initiatingToken, power: powerUsed,  attacks, escalation: this.escalationMod});
 
 		return await ChatMessage.create( {
 			speaker: {
-				scene: undefined,
+				scene: initiatingToken.scene.id,
 				actor: undefined,
-				token: undefined,
+				token: initiatingToken.id,
 				alias: undefined
 			},
 			rolls: rolls,

@@ -68,13 +68,13 @@ const combatCommonStats = function () {
 	return {
 		classData: classData(),
 		hp: new num( {integer:true, initial: 1}),
-		wpnatk: new num( {integer:true}),
-		magatk: new num( {integer:true}),
+		wpnatk: new num( {integer:true, initial: 0}),
+		magatk: new num( {integer:true, initial: 0}),
 		defenses :
 		new sch({
-			ref: new num( {integer:true}),
-			will: new num( {integer:true}),
-			fort: new num( {integer:true}),
+			ref: new num( {integer:true, initial: 0}),
+			will: new num( {integer:true, initial: 0}),
+			fort: new num( {integer:true, initial: 0}),
 		}),
 		focuses: new arr( new id(), {initial: []}),
 		powers: new arr( new id()),

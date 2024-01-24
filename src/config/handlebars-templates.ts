@@ -17,6 +17,7 @@ const templateFileNames : string[] =[
 	"focii-table.hbs",
 	"talents-table.hbs",
 	"social-section.hbs",
+	"simple-roll.hbs",
 ];
 
 export const templatePaths = templateFileNames.

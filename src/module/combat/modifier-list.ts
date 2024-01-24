@@ -114,7 +114,10 @@ export class ModifierList {
 	/** returns an array of values to use in printing the rol */
 	printable(situation:Situation) : {name: string, modifier:string}[] {
 		const signedFormatter = new Intl.NumberFormat("en-US", {signDisplay:"always"});
-		return this.validModifiers(situation).map( ({name, modifier}) => ({ name, modifier: signedFormatter.format(modifier) }));
+		return this
+			.validModifiers(situation)
+			.filter(x=> x.modifier != 0)
+			.map( ({name, modifier}) => ({ name, modifier: signedFormatter.format(modifier) }));
 	}
 
 }

@@ -23,7 +23,7 @@ export class PersonaRoll extends Roll {
 	}
 
 	 async toModifiedMessage() : Promise<ChatMessage> {
-		const html = await renderTemplate("systems/persona/other-hbs/simple-roll.hbs", {roll: this});
+		const html = await renderTemplate("systems/persona/parts/simple-roll.hbs", {roll: this});
 		 const actor  = PersonaDB.findActor(this.situation.user);
 		 const speaker : ChatSpeakerObject = {
 			 actor: actor.id,

@@ -24,8 +24,6 @@ export class PersonaCombat {
 		const result = new CombatResult();
 
 		for (const target of targets) {
-			console.log(`Target: ${target.actor.name}`);
-			console.log("Atk Roll");
 			const atkResult = await this.processAttackRoll( attacker, power, target, i==0);
 			console.log("Effects step");
 			const this_result = await this.processEffects(atkResult);
@@ -33,6 +31,7 @@ export class PersonaCombat {
 			i++;
 		}
 		console.log("Processing Costs");
+		await result.toMessage(attacker, power);
 		const costs = await this.#processCosts(attacker, power);
 		result.merge(costs);
 		return result;

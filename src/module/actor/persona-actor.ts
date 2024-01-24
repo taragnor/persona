@@ -287,8 +287,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	magAtkBonus(this:PC | Shadow) : ModifierList {
 		const mods = new ModifierList();
-		const lvl = this.system.combat.classData.level;
-		const magAtk = this.system.combat.magatk;
+		const lvl = this.system.combat.classData.level ?? 0;
+		const magAtk = this.system.combat.magatk ?? 0;
 		const inc = this.system.combat.classData.incremental.atkbonus ? 1 : 0;
 		mods.add("Base Magic Attack Bonus", magAtk);
 		mods.add("Level Bonus", lvl + inc);
