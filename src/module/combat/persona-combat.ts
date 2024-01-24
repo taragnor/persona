@@ -290,10 +290,14 @@ export class PersonaCombat {
 			l.add("Item Base Bonus", power.system.atk_bonus);
 			return l;
 		}
-		if (power.system.subtype == "weapon")
-			return actor.wpnAtkBonus();
-		if (power.system.subtype == "magic")
-			return actor.magAtkBonus();
+		if (power.system.subtype == "weapon") {
+			const mod = actor.wpnAtkBonus();
+			return mod.concat(new ModifierList(power.getModifier("wpnAtk")));
+		}
+		if (power.system.subtype == "magic") {
+			const mod = actor.magAtkBonus();
+			return mod.concat(new ModifierList(power.getModifier("magAtk")));
+		}
 		return new ModifierList();
 	}
 

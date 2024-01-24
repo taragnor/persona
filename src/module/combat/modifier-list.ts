@@ -36,7 +36,7 @@ export class ModifierList {
 	list(situtation: Situation): [number, string][] {
 		const filtered= this._data.filter( item=> item.conditions.every(cond => {
 			const source = item.source ? PersonaDB.findItem(item.source): null;
-			ModifierList.testPrecondition(cond, situtation, 
+			ModifierList.testPrecondition(cond, situtation,
 				source)
 		}
 		));

@@ -267,16 +267,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.focii,
 			...this.talents,
 		];
-		const modList = new ModifierList( modifiers.flatMap( item => {
-			return item.getModifier(type)
-				.map( x=>
-					({
-						source: PersonaDB.getUniversalItemAccessor(item),
-						name: item.name,
-						...x,
-					})
-				);
-		}));
+		const modList = new ModifierList( modifiers.flatMap( item => item.getModifier(type)
+		));
 		return modList;
 	}
 

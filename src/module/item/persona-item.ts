@@ -137,10 +137,12 @@ async deletePowerConsequence (this: PowerContainer, effectIndex: number, consInd
 	await this.update({"system.effects": this.system.effects});
 }
 
-getModifier(this: ModifierContainer, type : ModifierTarget) : Pick<ModifierListItem, "conditions" | "modifier">[] {
+getModifier(this: ModifierContainer, type : ModifierTarget) : ModifierListItem[] {
 	return this.system.effects
 		.map(x =>
 			({
+				name: this.name,
+				source: PersonaDB.getUniversalItemAccessor(this),
 				conditions: ArrayCorrector(x.conditions),
 				modifier: ArrayCorrector(x.consequences).reduce( (acc,x)=> {
 					if ( x.modifiedField == type) return acc+(x.amount ?? 0);
@@ -205,7 +207,7 @@ export type Talent = Subtype<PersonaItem, "talent">;
 export type Focus = Subtype<PersonaItem, "focus">;
 export type Consumable = Subtype<PersonaItem, "consumable">;
 
-export type ModifierContainer = Weapon | InvItem | Focus | Talent;
+export type ModifierContainer = Weapon | InvItem | Focus | Talent | Power | Consumable;
 
 export type PowerContainer = Consumable | Power | ModifierContainer;
 export type Usable = Power | Consumable;
