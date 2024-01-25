@@ -1,3 +1,4 @@
+import { Usable } from "../item/persona-item.js";
 import { CClass } from "../item/persona-item.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { StatusEffectId } from "../../config/status-effects.js";
@@ -385,6 +386,43 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async  setClass(this: PC | Shadow, cClass: CClass) {
 		await this.update( {"this.system.combat.classData.classId": cClass.id});
 
+
+	}
+
+	 canPayActivationCost(this: PC | Shadow, usable: Usable) : boolean {
+		if (this.system.type == "pc") {
+			return (this as PC).canPayActivationCost_pc(usable);
+		}
+		else return (this as Shadow).canPayActiationCost_shadow(usable);
+	}
+
+	canPayActivationCost_pc(this: PC, usable: Usable) : boolean {
+		switch (usable.system.type) {
+			case "power": {
+				switch (usable.system.subtype) {
+					case "weapon":
+						return  this.hp > usable.system.hpcost;
+					case "magic":
+						let x = usable.system.slot as keyof typeof this["system"]["slots"];
+						while (x <= 3) {
+							if (this.system.slots[x] > 0) {
+								return true;
+							}
+							else x+=1;
+						}
+						return false;
+					default:
+						return true;
+				}
+			}
+			case "consumable":
+				return true; //may have some check later
+		}
+
+	}
+
+	canPayActiationCost_shadow(this: Shadow, usable: Usable) : boolean {
+		return true; //placeholder
 
 	}
 

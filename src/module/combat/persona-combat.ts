@@ -12,6 +12,10 @@ import { PersonaRoll } from "../persona-roll.js";
 
 export class PersonaCombat {
 	static async usePower(attacker: PToken, power: Usable) : Promise<CombatResult> {
+		if (!attacker.actor.canPayActivationCost(power)) {
+			ui.notifications.notify("You can't pay the activation cost for this power");
+			return new CombatResult();
+		}
 		const targets= await this.getTargets(attacker, power);
 		const result = await  this.#usePowerOn(attacker, power, targets);
 		await result.print();
@@ -273,7 +277,7 @@ export class PersonaCombat {
 						amount: power.system.hpcost
 					});
 				}
-				if (attacker.actor.system.type == "pc" && power.system.subtype == "magic" && power.system.slot){
+				if (attacker.actor.system.type == "pc" && power.system.subtype == "magic" && power.system.slot >= 0){
 					res.addEffect(null, attacker, {
 						type: "expend-slot",
 						amount: power.system.slot,
@@ -369,6 +373,7 @@ export class PersonaCombat {
 	static getEscalationDie<T extends Combat<any>>(combat: T) : number {
 		return 0;//placeholder
 	}
+
 
 }
 

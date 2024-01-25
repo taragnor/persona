@@ -20,7 +20,6 @@ export class PCSheet extends CombatantSheetBase {
 
 	override async getData() {
 		const data = await super.getData();
-		console.log(this.actor.items);
 		data.equips = {
 			weapons: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
 				if (x.system.type == "weapon")
