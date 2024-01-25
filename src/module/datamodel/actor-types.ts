@@ -17,6 +17,7 @@ export type SocialData = {
 	linkId: string,
 	linkLevel: number,
 	inspiration: number,
+	currentProgress: number,
 };
 
 

@@ -1,3 +1,5 @@
+import { PersonaError } from "../persona-error.js";
+import { PersonaSounds } from "../persona-sounds.js";
 import { Usable } from "../item/persona-item.js";
 import { CClass } from "../item/persona-item.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
@@ -435,11 +437,49 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			{
 				linkId: npc.id,
 				linkLevel: 1,
-				inspiration: 1
+				inspiration: 1,
+				currentProgress: 0
 			}
 		);
+		PersonaSounds.newSocialLink();
 		await this.update({"system.social": this.system.social});
 	}
+
+	async increaseSocialLink(this: PC, npc: NPC) {
+		const link = this.system.social.find( x=> x.linkId == npc.id);
+		if (!link) {
+			throw new PersonaError("Trying to increase social link you don't have");
+		}
+		if (link.linkLevel >= 10) {
+			throw new PersonaError("Social Link is already maxed out");
+		}
+		link.linkLevel +=1 ;
+		link.currentProgress= 0;
+		link.inspiration = link.linkLevel;
+		if (link.linkLevel == 10) {
+			PersonaSounds.socialLinkMax();
+		} else {
+			PersonaSounds.socialLinkUp();
+		}
+		await this.update({"system.social": this.system.social});
+	}
+
+	async socialLinkProgress(this: PC, npc: NPC, progress: 5 | 10) {
+		const link = this.system.social.find( x=> x.linkId == npc.id);
+		if (!link) {
+			throw new PersonaError("Trying to increase social link you don't have");
+		}
+		link.currentProgress += progress;
+		link.inspiration = link.linkLevel;
+		switch (progress) {
+			case 5: PersonaSounds.socialBoostJingle(1);
+				break;
+			case 10: PersonaSounds.socialBoostJingle(2);
+				break;
+		}
+		await this.update({"system.social": this.system.social});
+	}
+
 
 }
 
