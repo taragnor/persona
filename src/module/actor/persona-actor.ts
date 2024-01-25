@@ -472,9 +472,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		link.currentProgress += progress;
 		link.inspiration = link.linkLevel;
 		switch (progress) {
-			case 5: PersonaSounds.socialBoostJingle(1);
+			case 5: PersonaSounds.socialBoostJingle(2);
 				break;
-			case 10: PersonaSounds.socialBoostJingle(2);
+			case 10: PersonaSounds.socialBoostJingle(3);
 				break;
 		}
 		await this.update({"system.social": this.system.social});
