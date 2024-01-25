@@ -5,6 +5,9 @@ import { PersonaSocial } from "../../social/persona-social.js";
 import { SocialStat } from "../../../config/student-skills.js";
 import { STUDENT_SKILLS_LIST } from "../../../config/student-skills.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
+import { PersonaDB } from "../../persona-db.js"
+import { NPC } from "../persona-actor.js";
+
 
 export class PCSheet extends CombatantSheetBase {
 	override actor: Subtype<PersonaActor, "pc">;
@@ -16,6 +19,24 @@ export class PCSheet extends CombatantSheetBase {
 			height: 800,
 			tabs: [{navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "combat"}]
 		});
+	}
+
+
+	override async _onDropActor(_event: Event, actorD: unknown)
+		{
+			//@ts-ignore
+			const actor : PersonaActor = await Actor.implementation.fromDropData(actorD);
+			switch (actor.system.type) {
+				case "pc" : return;
+				case "shadow": return;
+				case "npc":
+					//create a social link
+					await this.actor.createSocialLink(actor as NPC)
+					return;
+				default: 
+					actor.system satisfies never;
+					throw new Error(`Unknown unsupported type ${actor.type}`);
+			}
 	}
 
 	override async getData() {

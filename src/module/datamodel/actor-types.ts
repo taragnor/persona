@@ -13,6 +13,11 @@ const personalBio = function () {
 	});
 }
 
+export type SocialData = {
+	linkId: string,
+	linkLevel: number,
+	inspiration: number,
+};
 
 
 function elementalResists() {
@@ -83,13 +88,9 @@ const combatCommonStats = function () {
 	};
 };
 
-const socialLinks = new sch( {
-	links: new arr( new sch( {
-		linkId: new id(),
-		linkLevel: new num( {min:0, max:10, integer:true}),
-	})
-	),
-});
+function socialLinks() {
+	return new arr( new obj<SocialData>(), {initial: []});
+}
 
 function studentSkills() {
 	return new sch( {
@@ -135,13 +136,14 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 				...combatCommonStats(),
 			}),
 			bio: personalBio(),
-			social: socialLinks,
+			social: socialLinks(),
 			slots: skillSlots(),
 			...sharedAbilities(),
 			skills: studentSkills(),
 		} as const;
 		return ret;
 	}
+
 }
 
 export class ShadowSchema extends foundry.abstract.DataModel {

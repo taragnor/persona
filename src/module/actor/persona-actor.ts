@@ -108,14 +108,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	get socialLinks() : {level: number, person: NPC}[] {
+	get socialLinks() : {linkLevel: number, actor: NPC, inspiration: number}[] {
 		if (this.system.type != "pc") return [];
-		return this.system.social.links.flatMap(({linkId, linkLevel}) => {
+		return this.system.social.flatMap(({linkId, linkLevel, inspiration}) => {
 			const npc = PersonaDB.getActor(linkId);
 			if (!npc) return [];
 			return [{
-				level: linkLevel,
-				person:npc as NPC,
+				linkLevel,
+				inspiration,
+				actor:npc as NPC,
 			}];
 		});
 	}
@@ -424,6 +425,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	canPayActiationCost_shadow(this: Shadow, usable: Usable) : boolean {
 		return true; //placeholder
 
+	}
+
+	async createSocialLink(this: PC, npc: NPC) {
+		if (this.system.social.find( x=> x.linkId == npc.id)) {
+			return;
+		}
+		this.system.social.push(
+			{
+				linkId: npc.id,
+				linkLevel: 1,
+				inspiration: 1
+			}
+		);
+		await this.update({"system.social": this.system.social});
 	}
 
 }

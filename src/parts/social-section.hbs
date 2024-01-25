@@ -2,49 +2,50 @@
 	<h2> Student Skills</h2>
 	<div class="social-stat expression">
 		<label>
-				<a class="roll-icon">
-					<img src="icons/dice/d20black.svg">
-				</a>
+			<a class="roll-icon">
+				<img src="icons/dice/d20black.svg">
+			</a>
 			{{localize	"persona.skills.expression.name"}}
 		</label>
 		{{numberInput actor.system.skills.expression class="short" name="system.skills.expression" step=1 min=0 max=100}}
 	</div>
 	<div class="social-stat courage">
 		<label>
-				<a class="roll-icon">
-					<img src="icons/dice/d20black.svg">
-				</a>
+			<a class="roll-icon">
+				<img src="icons/dice/d20black.svg">
+			</a>
 			{{localize	"persona.skills.courage.name"}}
 		</label>
 		{{numberInput actor.system.skills.courage class="short" name="system.skills.courage" step=1 min=0 max=100}}
 	</div>
 	<div class="social-stat diligence">
 		<label>
-				<a class="roll-icon">
-					<img src="icons/dice/d20black.svg">
-				</a>
+			<a class="roll-icon">
+				<img src="icons/dice/d20black.svg">
+			</a>
 			{{localize	"persona.skills.diligence.name"}}
 		</label>
 		{{numberInput actor.system.skills.diligence class="short" name="system.skills.diligence" step=1 min=0 max=100}}
 	</div>
 	<div class="social-stat knowledge">
 		<label>
-				<a class="roll-icon">
-					<img src="icons/dice/d20black.svg">
-				</a>
+			<a class="roll-icon">
+				<img src="icons/dice/d20black.svg">
+			</a>
 			{{localize	"persona.skills.knowledge.name"}}
 		</label>
 		{{numberInput actor.system.skills.knowledge class="short" name="system.skills.knowledge" step=1 min=0 max=100}}
 	</div>
 
-	<section class="social-links">
-		<h2> Social Links</h2>
-		{{#each actor.socialLinks as |link|}}
-		<div class="social-link">
-			{{link.person.displayedName}} - {{link.level}}
-		</div>
-		{{/each}}
+</section>
 
-	</section>
+
+<section class="social-links">
+	<h2> Social Links</h2>
+	{{#each actor.socialLinks as |link|}}
+	{{link.actor.displayedName}} ( {{link.actor.system.tarot}} )
+	{{link.inspiration}} / {{link.linkLevel}}
+	{{/each}}
 
 </section>
+
