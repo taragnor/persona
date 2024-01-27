@@ -21,6 +21,13 @@ export class ShadowSheet extends CombatantSheetBase {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
+		html.find('.addShadowPower').on("click", this.onAddPower.bind(this));
+
+	}
+
+	async onAddPower( ev: Event) {
+
+
 
 	}
 

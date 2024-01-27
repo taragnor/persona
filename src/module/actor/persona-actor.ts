@@ -126,11 +126,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 
 	get powers(): Power[] {
-		if (!(this instanceof Actor)) {
-			console.log(this);
-			console.warn("wtf?");
-			return [];
-		}
 		if (this.system.type =="npc") return [];
 		try {
 			const powerIds = this.system.combat.powers;
@@ -143,7 +138,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (basicAtk) {
 				powers = powers.concat([basicAtk]);
 			}
-			return powers;
+			const itemPowers = this.items.filter( x=> x.system.type == "power") as Power[];
+			return powers.concat(itemPowers);;
 		} catch(e) {
 			console.error(e);
 			return [];
@@ -164,12 +160,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get talents() : Talent[] {
 		if (this.system.type != "pc") return [];
-		return this.system.talents.flatMap( ({talentId}) => {
+		const extTalents = this.system.talents.flatMap( ({talentId}) => {
 			const tal= PersonaDB.getItemById(talentId);
 			if (!tal) return [];
 			if (tal.system.type != "talent") return [];
 			return tal as Talent;
 		});
+		const itemTalents = this.items.filter ( x => x.system.type == "talent") as Talent[];
+		return extTalents.concat(itemTalents);
 	}
 
 	get focii(): Focus[] {
@@ -181,7 +179,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (focus.system.type != "focus") return [];
 			return [focus as Focus];
 		});
-		return focii;
+		const itemFocii = this.items.filter ( x => x.system.type == "focus") as Focus[];
+		return focii.concat(itemFocii);
 	}
 
 	async modifyHP( this: Shadow | PC, delta: number) {

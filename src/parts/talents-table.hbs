@@ -6,7 +6,9 @@
 		{{#each actor.talents as |talent|}}
 		<tr data-talent-id="{{talent.id}}">
 			<td>
-				{{talent.name}}
+				<a class="talentName">
+					{{talent.name}}
+				</a>
 			</td>
 			<td>
 				<a class="delTalent">

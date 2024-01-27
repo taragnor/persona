@@ -1,6 +1,12 @@
 <div class="powers-section">
 	<h2>
 		{{localize 	"persona.statistic.powers"}}
+		{{#if (isShadow actor)}}
+		<a class="addShadowPower">
+			<i class="fa-solid fa-plus"> </i>
+		</a>
+
+		{{/if}}
 	</h2>
 	<table class="powers-table">
 		{{#each actor.powers as |power|}}
@@ -11,7 +17,9 @@
 				</a>
 			</td>
 			<td>
-				{{power.name}}
+				<a class="powerName">
+					{{power.name}}
+				</a>
 			</td>
 			<td>
 				{{power.tags}}

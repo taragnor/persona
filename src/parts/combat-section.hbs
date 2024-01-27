@@ -7,9 +7,15 @@
 			<span>
 				{{localize "persona.statistic.level"}}:
 			</span>
+			{{#if (isPC actor)}}
+			<span>
+				{{actor.system.combat.classData.level}}
+			</span>
+			{{else}}
 			<span>
 				<input class="short" type="number" name="system.combat.classData.level" value="{{actor.system.combat.classData.level}}">
 			</span>
+			{{/if}}
 		</div>
 		<div class="hp">
 			<label>
@@ -21,6 +27,7 @@
 		</div>
 		{{> "systems/persona/parts/defenses-section.hbs" actor=actor CONST=CONST}}
 		{{> "systems/persona/parts/resistance-section.hbs" actor=actor CONST=CONST}}
+		{{#if (isPC actor)}}
 		<div class="slots">
 			<h2>
 				{{localize	"persona.statistic.powerslots"}}
@@ -35,6 +42,7 @@
 				{{/each}}
 			</div>
 		</div>
+		{{/if}}
 		{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST}}
 		{{> "systems/persona/parts/talents-table.hbs" actor=actor CONST=CONST}}
 		<hr>

@@ -27,7 +27,12 @@ export class PersonaHandleBarsHelpers {
 		},
 		"abs" : (x:string | number) => {
 			return Math.abs(Number(x))
-
+		},
+		"isPC" : (actor: PersonaActor) => {
+			return actor.system.type == "pc";
+		},
+		"isShadow" : (actor: PersonaActor) => {
+			return actor.system.type == "shadow";
 		}
 
 	}

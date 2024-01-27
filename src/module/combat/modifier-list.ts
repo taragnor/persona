@@ -1,3 +1,4 @@
+import { PersonaError } from "../persona-error.js";
 import { PowerTag } from "../../config/power-tags.js";
 import { PRECONDITIONLIST } from "../../config/effect-types.js";
 import { DamageType } from "../../config/damage-types.js";
@@ -116,9 +117,7 @@ export class ModifierList {
 			}
 			default:
 				condition.type satisfies never;
-				const err = `Unexpected Condition: ${condition.type}`;
-				console.error(err);
-				ui.notifications.error(err);
+				PersonaError.softFail(`Unexpected Condition: ${condition.type}`);
 				return false;
 		}
 	}

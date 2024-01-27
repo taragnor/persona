@@ -29,6 +29,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".delFocus").on("click", this.deleteFocus.bind(this));
 		html.find(".delTalent").on("click", this.deleteTalent.bind(this));
 		html.find(".rollPower").on("click", this.usePower.bind(this));
+		html.find(".powerName").on("click", this.openPower.bind(this));
+		html.find(".talentName").on("click", this.openTalent.bind(this));
+		html.find(".focusName").on("click", this.openFocus.bind(this));
 	}
 
 	override async _onDropItem(_event: Event, itemD: unknown, ...rest:any[]) : Promise<void> {
@@ -130,5 +133,44 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			this.actor.deletePower(powerId);
 		}
 	}
+
+	async openPower(event: Event) {
+		const powerId = HTMLTools.getClosestData(event, "powerId");
+		if (powerId == undefined) {
+			throw new PersonaError(`Can't find power`);
+		}
+		const power = this.actor.powers.find(x=> x.id == powerId);
+		if (!power) {
+			throw new PersonaError(`Can't find power id ${powerId}`);
+		}
+		await power.sheet.render(true);
+	}
+
+	async openTalent(event: Event) {
+		const itemType = "Talent";
+		const talentId = HTMLTools.getClosestData(event, "talentId");
+		if (talentId == undefined) {
+			throw new PersonaError(`Can't find ${itemType}`);
+		}
+		const talent = this.actor.talents.find(x=> x.id == talentId);
+		if (!talent) {
+			throw new PersonaError(`Can't find ${itemType} id ${talentId}`);
+		}
+		await talent.sheet.render(true);
+	}
+
+	async openFocus(event: Event) {
+		const itemType = "Focus";
+		const focusId = HTMLTools.getClosestData(event, "focusId");
+		if (focusId == undefined) {
+			throw new PersonaError(`Can't find ${itemType}`);
+		}
+		const focus = this.actor.focii.find(x=> x.id == focusId);
+		if (!focus) {
+			throw new PersonaError(`Can't find ${itemType} id ${focusId}`);
+		}
+		await focus.sheet.render(true);
+	}
+
 
 }
