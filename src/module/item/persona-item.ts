@@ -66,20 +66,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		let update = false;
 		let effects = this.system.effects;
 		try {
-		if (!isArray(this.system.effects)) {
-			effects = ArrayCorrector(this.system.effects);
-			update = true;
-		}
-		effects.forEach( ({conditions, consequences}, i) => {
-			if (!isArray(conditions)) {
-				effects[i].conditions = ArrayCorrector(conditions);
-				update=  true;
+			if (!isArray(this.system.effects)) {
+				effects = ArrayCorrector(this.system.effects);
+				update = true;
 			}
-			if (!isArray(consequences)) {
-				effects[i].consequences = ArrayCorrector(consequences);
-				update=  true;
-			}
-		});
+			effects.forEach( ({conditions, consequences}, i) => {
+				if (!isArray(conditions)) {
+					effects[i].conditions = ArrayCorrector(conditions);
+					update=  true;
+				}
+				if (!isArray(consequences)) {
+					effects[i].consequences = ArrayCorrector(consequences);
+					update=  true;
+				}
+			});
 		} catch (e) {
 			console.log(this);
 			throw e;
@@ -102,7 +102,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		let arr =this.system.effects ?? [];
 		arr.splice(index, 1);
 		await this.update({ "system.effects": arr});
-}
+	}
 
 	async addNewPowerPrecondition(this: PowerContainer, index:number) {
 		const x = this.system.effects[index];
@@ -113,12 +113,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		await this.update({"system.effects": this.system.effects});
 	}
 
-async deletePowerPrecondition( this: PowerContainer, effectIndex: number, condIndex: number) {
+	async deletePowerPrecondition( this: PowerContainer, effectIndex: number, condIndex: number) {
 		const x = this.system.effects[effectIndex];
 		x.conditions = ArrayCorrector(x.conditions);
-	   x.conditions.splice(condIndex, 1);
+		x.conditions.splice(condIndex, 1);
 		await this.update({"system.effects": this.system.effects});
-}
+	}
 
 	async addNewPowerConsequence(this: PowerContainer, index:number) {
 		const x = this.system.effects[index];
@@ -130,28 +130,28 @@ async deletePowerPrecondition( this: PowerContainer, effectIndex: number, condIn
 		await this.update({"system.effects": this.system.effects});
 	}
 
-async deletePowerConsequence (this: PowerContainer, effectIndex: number, consIndex: number) {
-	const x = this.system.effects[effectIndex];
-	x.consequences = ArrayCorrector(x.consequences);
-	x.consequences.splice(consIndex, 1);
-	await this.update({"system.effects": this.system.effects});
-}
+	async deletePowerConsequence (this: PowerContainer, effectIndex: number, consIndex: number) {
+		const x = this.system.effects[effectIndex];
+		x.consequences = ArrayCorrector(x.consequences);
+		x.consequences.splice(consIndex, 1);
+		await this.update({"system.effects": this.system.effects});
+	}
 
-getModifier(this: ModifierContainer, type : ModifierTarget) : ModifierListItem[] {
-	return this.system.effects
-		.map(x =>
-			({
-				name: this.name,
-				source: PersonaDB.getUniversalItemAccessor(this),
-				conditions: ArrayCorrector(x.conditions),
-				modifier: ArrayCorrector(x.consequences).reduce( (acc,x)=> {
-					if ( x.modifiedField == type) return acc+(x.amount ?? 0);
-					return acc;
-				}, 0),
-			})
-		);
-	// return this.system.modifiers[type];
-}
+	getModifier(this: ModifierContainer, type : ModifierTarget) : ModifierListItem[] {
+		return this.system.effects
+			.map(x =>
+				({
+					name: this.name,
+					source: PersonaDB.getUniversalItemAccessor(this),
+					conditions: ArrayCorrector(x.conditions),
+					modifier: ArrayCorrector(x.consequences).reduce( (acc,x)=> {
+						if ( x.modifiedField == type) return acc+(x.amount ?? 0);
+						return acc;
+					}, 0),
+				})
+			);
+		// return this.system.modifiers[type];
+	}
 
 	getDamage(this:Usable , user: PC | Shadow, type: "high" | "low") : number {
 		const subtype : PowerType  = this.system.type == "power" ? this.system.subtype : "standalone";
@@ -183,10 +183,19 @@ getModifier(this: ModifierContainer, type : ModifierTarget) : ModifierListItem[]
 		}
 	}
 
+	getEffects(this: ModifierContainer) {
+		return this.system.effects.map( eff=> {
+			return {
+				conditions: ArrayCorrector(eff.conditions),
+				consequences: ArrayCorrector(eff.consequences)
+			}
+		});
+	}
+
 }
 
 
-/** Handlesbars keeps turning my arrays inside an object into an object with numeric keys, this fixes that */
+/** Handlebars keeps turning my arrays inside an object into an object with numeric keys, this fixes that */
 export function ArrayCorrector<T extends any>(obj: (T[] | Record<string | number, T>)): T[] {
 	try {
 		if (obj == null) return[];

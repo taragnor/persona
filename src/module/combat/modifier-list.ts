@@ -1,3 +1,4 @@
+import { PowerTag } from "../../config/power-tags.js";
 import { PRECONDITIONLIST } from "../../config/effect-types.js";
 import { DamageType } from "../../config/damage-types.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
@@ -103,11 +104,16 @@ export class ModifierList {
 				const id = source ? source.id! : "";
 				const user = PersonaDB.findActor(situation.user);
 				return !user.system.talents.some( x=> x.talentId == id && x.talentLevel < (condition.num ?? 0))
-			case "power-damage-type-is":
+			case "power-damage-type-is": {
 					if (!situation.usedPower) return false;
 					const power = PersonaDB.findItem(situation.usedPower);
 					return condition.powerDamageType == power.system.dmg_type;
-
+			}
+			case "has-tag": {
+				if (!situation.usedPower) return false;
+				const power = PersonaDB.findItem(situation.usedPower);
+				return power.system.tags.includes(condition.powerTag!);
+			}
 			default:
 				condition.type satisfies never;
 				const err = `Unexpected Condition: ${condition.type}`;
@@ -132,6 +138,7 @@ export type Precondition = {
 	type : typeof PRECONDITIONLIST[number],
 	num?: number,
 	powerDamageType ?: DamageType,
+	powerTag ?: PowerTag,
 }
 
 export type ConditionalModifier = {

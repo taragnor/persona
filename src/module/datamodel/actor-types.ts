@@ -5,12 +5,35 @@ import { INCREMENTAL_ADVANCE_TYPES } from "../../config/incremental-advance-type
 import { tarotDeck } from "../../config/tarot.js";
 import { ResistStrength } from "../../config/damage-types.js";
 import { StatusEffect } from "../combat/combat-result";
+import { ConditionalEffect } from "./power-dm";
 
 const personalBio = function () {
 	return new sch( {
 		description: new html(),
 		background: new html(),
 	});
+}
+
+function condArr() {
+	return new arr(
+		new id(),
+		{initial:[]});
+}
+
+function linkBenefits() {
+	return new sch ( {
+		1: condArr(),
+		2: condArr(),
+		3: condArr(),
+		4: condArr(),
+		5: condArr(),
+		6: condArr(),
+		7: condArr(),
+		8: condArr(),
+		9: condArr(),
+		10: condArr(),
+	})
+
 }
 
 export type SocialData = {
@@ -174,6 +197,8 @@ export class NPCSchema extends foundry.abstract.DataModel {
 			...BaseStuff.defineSchema(),
 			tarot: tarot(),
 			bio: personalBio(),
+			linkBenefits: linkBenefits(),
+			//include
 		} as const;
 		return ret;
 	}

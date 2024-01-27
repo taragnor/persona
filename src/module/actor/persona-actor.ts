@@ -1,3 +1,4 @@
+import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { PersonaError } from "../persona-error.js";
 import { PersonaSounds } from "../persona-sounds.js";
 import { Usable } from "../item/persona-item.js";
@@ -110,7 +111,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	get socialLinks() : {linkLevel: number, actor: NPC, inspiration: number}[] {
+	get socialLinks() : {linkLevel: number, actor: SocialLink, inspiration: number}[] {
 		if (this.system.type != "pc") return [];
 		return this.system.social.flatMap(({linkId, linkLevel, inspiration}) => {
 			const npc = PersonaDB.getActor(linkId);
@@ -118,7 +119,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			return [{
 				linkLevel,
 				inspiration,
-				actor:npc as NPC,
+				actor:npc as SocialLink,
 			}];
 		});
 	}
@@ -270,8 +271,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.equippedItems(),
 			...this.focii,
 			...this.talents,
+			...(this as PC).getSocialFocii(),
 		];
-		const modList = new ModifierList( modifiers.flatMap( item => item.getModifier(type)
+		let modList = new ModifierList( modifiers.flatMap( item => item.getModifier(type)
 		));
 		return modList;
 	}
@@ -421,7 +423,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "consumable":
 				return true; //may have some check later
 		}
-
 	}
 
 	canPayActiationCost_shadow(this: Shadow, usable: Usable) : boolean {
@@ -429,7 +430,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	async createSocialLink(this: PC, npc: NPC) {
+	async createSocialLink(this: PC, npc: SocialLink) {
 		if (this.system.social.find( x=> x.linkId == npc.id)) {
 			return;
 		}
@@ -445,7 +446,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.social": this.system.social});
 	}
 
-	async increaseSocialLink(this: PC, npc: NPC) {
+	async increaseSocialLink(this: PC, npc: SocialLink) {
 		const link = this.system.social.find( x=> x.linkId == npc.id);
 		if (!link) {
 			throw new PersonaError("Trying to increase social link you don't have");
@@ -464,7 +465,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.social": this.system.social});
 	}
 
-	async socialLinkProgress(this: PC, npc: NPC, progress: 5 | 10) {
+	async socialLinkProgress(this: PC, npc: SocialLink, progress: 5 | 10) {
 		const link = this.system.social.find( x=> x.linkId == npc.id);
 		if (!link) {
 			throw new PersonaError("Trying to increase social link you don't have");
@@ -480,9 +481,81 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.social": this.system.social});
 	}
 
+	async refreshSocialLink(this: PC, npc: SocialLink) {
+		const link = this.system.social.find( x=> x.linkId == npc.id);
+		if (!link) {
+			throw new PersonaError("Trying to refresh social link you don't have");
+		}
+		link.inspiration = link.linkLevel;
+		await this.update({"system.social": this.system.social});
+	}
+
+
+	async spendInspiration(this: PC, npc:SocialLink, amt: number = 1) {
+		const link = this.system.social.find( x=> x.linkId == npc.id);
+		if (!link) {
+			throw new PersonaError("Trying to refresh social link you don't have");
+		}
+		if (link.inspiration <= 0) {
+			throw new PersonaError("You are trying to spend Inspiration you don't have");
+		}
+		link.inspiration -= amt;
+		await this.update({"system.social": this.system.social});
+
+	}
+
+	getSocialFocii(this: PC) : Focus[] {
+		return this.socialLinks.flatMap( link => {
+			let focusContainer : NPC;
+			switch (link.actor.system.type) {
+				case "pc": {
+					if (this == link.actor) {
+						const focus = PersonaDB.getActorByName("Personal Social Link") as NPC;
+						if (!focus) {
+							ui.notifications.warn("Couldn't find personal social link");
+							return [];
+						}
+
+						focusContainer = focus;
+						break;
+					}
+					const focus = PersonaDB.getActorByName("Teammate Social Link") as NPC;
+					if (!focus) {
+						ui.notifications.warn("Couldn't find teammate social link");
+						return [];
+					}
+					focusContainer = focus;
+					break;
+				}
+				case "npc": {
+					focusContainer = link.actor as NPC;
+					break;
+				}
+				default:
+					throw new Error("Not sure how this happened?");
+			}
+			let focusIds : string[] = [];
+			for (let i=1; i<= link.linkLevel; i++) {
+				focusIds = focusIds.concat(focusContainer.system.linkBenefits[i as keyof typeof focusContainer.system.linkBenefits]);
+			}
+			return focusContainer.items
+				.filter(x => focusIds.includes(x.id))
+		}) as Focus[];
+	}
+
+	getEffects() : ConditionalEffect[] {
+		const containers : ModifierContainer[] = [
+			...this.equippedItems(),
+			...this.focii,
+			...this.talents,
+			...(this as PC).getSocialFocii(),
+		];
+		return containers.flatMap( x=> x.getEffects());
+	}
 
 }
 
 export type PC = Subtype<PersonaActor, "pc">;
 export type Shadow = Subtype<PersonaActor, "shadow">;
 export type NPC = Subtype<PersonaActor, "npc">;
+export type SocialLink = PC | NPC;

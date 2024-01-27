@@ -192,5 +192,6 @@
 	"persona.preconditions.in-battle": "In Battle",
 	"persona.preconditions.non-combat": "Not in Combat",
 	"persona.preconditions.talent-level+": "Level in Talent >=",
-	"persona.preconditions.power-damage-type-is": "Using a power of type:"
+	"persona.preconditions.power-damage-type-is": "Using a power of type:",
+	"persona.preconditions.has-tag": "Used Power has Tag"
 }

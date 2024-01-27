@@ -43,9 +43,25 @@
 <section class="social-links">
 	<h2> Social Links</h2>
 	{{#each actor.socialLinks as |link|}}
-	{{link.actor.displayedName}} ( {{link.actor.system.tarot}} )
-	{{link.inspiration}} / {{link.linkLevel}}
-	{{/each}}
+	<div class="social-link" data-link-id="{{link.actor.id}}">
+		<span class="name">
+			{{link.actor.displayedName}}
+		</span>
+		<span class="tarot">
+			( {{link.actor.system.tarot}} )
+		</span>
+		<span class="inspiration">
+			{{link.inspiration}} / {{link.linkLevel}}
+		</span>
+		<a class="useInspiration" title="Spend Inspiration">
+			<i class="fa-solid fa-user-minus"></i>
+		</a>
+		<a class="refreshLink" title="Refresh Inspiration">
+			<i class="fa fa-refresh" aria-hidden="true"></i>
+		</a>
+	</div>
+
+		{{/each}}
 
 </section>
 

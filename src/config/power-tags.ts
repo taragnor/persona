@@ -9,9 +9,6 @@ export const POWER_TAGS_LIST = [
 	"debuff",
 	"weapon",
 
-
-
-
 ] as const;
 
 export type PowerTag = typeof POWER_TAGS_LIST[number];

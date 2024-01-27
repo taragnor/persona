@@ -1,3 +1,4 @@
+import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { PersonaItem } from "../item/persona-item.js";
 import { CombatResult } from "./combat-result.js";
 import { PersonaActor } from "../actor/persona-actor.js";
@@ -116,10 +117,10 @@ export class PersonaCombat {
 			}
 
 		}
-		situation.user= PersonaDB.getUniversalActorAccessor(attacker.actor);
-		situation.userToken= PersonaDB.getUniversalTokenAccessor(attacker);
-		situation.activeCombat= combat;
-		situation.escalationDie= escalationDie;
+		situation.user = PersonaDB.getUniversalActorAccessor(attacker.actor);
+		situation.userToken = PersonaDB.getUniversalTokenAccessor(attacker);
+		situation.activeCombat = combat;
+		situation.escalationDie = escalationDie;
 		situation.activationRoll = isActivationRoll;
 		situation.naturalAttackRoll = naturalAttackRoll;
 		const total = roll.total;
@@ -207,10 +208,8 @@ export class PersonaCombat {
 	static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<CombatResult> {
 		const CombatRes= new CombatResult(atkResult);
 		const {result, validAtkModifiers, validDefModifiers, attacker, target, situation, power} = atkResult;
-		for (let {conditions, consequences} of power.system.effects) {
-			conditions = ArrayCorrector(conditions);
-			consequences  = ArrayCorrector(consequences);
-
+		const relevantEffects : ConditionalEffect[] = power.getEffects().concat(attacker.actor.getEffects());
+		for (let {conditions, consequences} of relevantEffects) {
 			if (conditions.every(
 				cond => ModifierList.testPrecondition(cond, situation, power))
 			) {

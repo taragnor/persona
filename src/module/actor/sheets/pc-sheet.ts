@@ -1,3 +1,5 @@
+import { Logger } from "../../utility/logger.js";
+import { PersonaError } from "../../persona-error.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { CombatantSheetBase } from "./combatant-sheet.js";
 import { PersonaActor } from "../persona-actor.js";
@@ -68,6 +70,8 @@ export class PCSheet extends CombatantSheetBase {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		html.find(".delItem").on("click", this.delItem.bind(this));
+		html.find(".refreshLink").on("click", this.refreshLink.bind(this));
+		html.find(".useInspiration").on("click", this.useInspiration.bind(this));
 		for (const stat of STUDENT_SKILLS_LIST) {
 			html.find(`.${stat} .roll-icon`).on("click", this.rollSocial.bind(this, stat));
 		}
@@ -84,6 +88,29 @@ export class PCSheet extends CombatantSheetBase {
 		if (item && await HTMLTools.confirmBox("Confirm", "Really delete?")) {
 			item.delete();
 		}
+	}
+
+	async refreshLink(event: Event) {
+		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
+		const link = this.actor.socialLinks.find(x=> x.actor.id == linkId);
+		const npc = link?.actor;
+		if (!npc || npc.system.type != "npc") {
+			throw new PersonaError(`COuldn't find NPC with Id ${linkId}`);
+		}
+		await Logger.sendToChat(`Refreshed inpiration for ${npc.name} (was ${link.inspiration})`, this.actor);
+		await this.actor.refreshSocialLink(npc);
+	}
+
+	async useInspiration(event: Event) {
+		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
+		const npc = this.actor.socialLinks.find(x=> x.actor.id == linkId)?.actor;
+		if (!npc || npc.system.type != "npc") {
+			throw new PersonaError(`COuldn't find NPC with Id ${linkId}`);
+		}
+		await this.actor.spendInspiration(npc, 1);
+		await Logger.sendToChat(`Spent an inpiration for ${npc.name}`, this.actor);
+
+
 	}
 
 }
