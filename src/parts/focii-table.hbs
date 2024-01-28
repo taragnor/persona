@@ -1,7 +1,14 @@
 <div class="focus-section">
 	<h2>
 		{{localize 	"persona.statistic.focii"}}
+		{{#if (isShadow actor)}}
+		<a class="addShadowFocus">
+			<i class="fa-solid fa-plus"> </i>
+		</a>
+		{{/if}}
+
 	</h2>
+
 	<table class="focus-table">
 		{{#each actor.focii as |focus|}}
 		<tr data-focus-id="{{focus.id}}">

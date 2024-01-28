@@ -3,10 +3,10 @@
 	async update(updateData: Record<string, any>): Promise<void>;
 	name: string;
 	id: string;
-	async createEmbeddedDocuments(type: string, objData: Record<string, any>[]): Promise<Embedded[]>;
+	async createEmbeddedDocuments(type: string, objData: Record<string, any>[], context?: unknown): Promise<Embedded[]>;
 	 sheet: Sheet<this>
 
-	 async delete(): void;
+	 async delete(): Promise<void>;
 	 async deleteEmbeddedDocuments( embeddedName: string, ids: unknown, context: Record<string, any>): Promise<void>;
 	 get isOwner(): boolean;
 	 get limited(): boolean;

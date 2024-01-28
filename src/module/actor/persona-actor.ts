@@ -159,6 +159,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get talents() : Talent[] {
+		if (this.system.type == "shadow") {
+			return this.items.filter( x=> x.system.type == "talent") as Talent[];
+		}
 		if (this.system.type != "pc") return [];
 		const extTalents = this.system.talents.flatMap( ({talentId}) => {
 			const tal= PersonaDB.getItemById(talentId);
@@ -171,6 +174,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get focii(): Focus[] {
+		if (this.system.type == "shadow") {
+			return this.items.filter( x=> x.system.type == "focus") as Focus[];
+		}
 		if (this.system.type != "pc") return [];
 		const fIds = this.system.combat.focuses;
 		const focii = fIds.flatMap( id => {
@@ -265,12 +271,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	getBonuses (type : ModifierTarget): ModifierList {
-		if (this.system.type != "pc")  return new ModifierList();
+		if (this.system.type == "npc")  return new ModifierList();
 		const modifiers : ModifierContainer[] =[
 			...this.equippedItems(),
 			...this.focii,
 			...this.talents,
-			...(this as PC).getSocialFocii(),
+			...this.getSocialFocii(),
 		];
 		let modList = new ModifierList( modifiers.flatMap( item => item.getModifier(type)
 		));
@@ -352,6 +358,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async deleteTalent(this: PC | Shadow, id: string) {
+		const item = this.items.find(x => x.id == id);
+		if (item) {
+			await item.delete();
+			return;
+		}
 		let talents = this.system.talents;
 		if (!talents.find(x => x.talentId == id)) return;
 		talents = talents.filter( x=> x.talentId != id);
@@ -366,6 +377,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async deletePower(this: PC | Shadow, id: string ) {
+		const item = this.items.find(x => x.id == id);
+		if (item) {
+			await item.delete();
+			return;
+		}
 		let powers = this.system.combat.powers;
 		if (!powers.includes(id)) return;
 		powers = powers.filter( x=> x != id);
@@ -381,6 +397,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async deleteFocus(this: PC | Shadow, focusId: string) {
+		const item = this.items.find(x => x.id == focusId);
+		if (item) {
+			await item.delete();
+			return;
+		}
 		let foci = this.system.combat.focuses;
 		if (!foci.includes(focusId)) return;
 		foci = foci.filter( x=> x != focusId);
@@ -503,7 +524,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	getSocialFocii(this: PC) : Focus[] {
+	getSocialFocii() : Focus[] {
+		if (this.system.type != "pc")  {
+			return [];
+		}
 		return this.socialLinks.flatMap( link => {
 			let focusContainer : NPC;
 			switch (link.actor.system.type) {
