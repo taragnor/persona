@@ -17,8 +17,5 @@
 	 prepareBaseData(): void;
 	 prepareEmbeddedDocuments(): void;
 	 prepareDerivedData(): void;
-
-
-
 }
 

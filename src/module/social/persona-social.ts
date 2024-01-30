@@ -9,10 +9,11 @@ import { PersonaDB } from "../persona-db.js";
 export class PersonaSocial {
 
 	static async rollSocialStat( pc: PC, socialStat: SocialStat) : Promise<ChatMessage> {
-		const stat = pc.system.skills[socialStat];
-		const mods = new ModifierList();
+		const mods = pc.getSocialStat(socialStat);
+		// const stat = pc.system.skills[socialStat];
+		// const mods = new ModifierList();
 		const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
-		mods.add(skillName, stat);
+		// mods.add(skillName, stat);
 		const sit: Situation = {
 			user: PersonaDB.getUniversalActorAccessor(pc),
 		};

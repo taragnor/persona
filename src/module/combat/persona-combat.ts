@@ -381,6 +381,6 @@ type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shado
 export type PToken = Token<ValidAttackers>;
 
 CONFIG.Combat.initiative = {
-	formula : "1d20 + @parent.ref",
+	formula : "1d20 + @parent.combatInit",
 	decimals: 2
 }

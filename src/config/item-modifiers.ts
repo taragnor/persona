@@ -1,3 +1,4 @@
+import { STUDENT_SKILLS_LIST } from "./student-skills";
 export const MODIFIERLIST = [
 	"maxhp",
 	"wpnAtk",
@@ -8,6 +9,7 @@ export const MODIFIERLIST = [
 	"ref",
 	"fort",
 	"will",
+	...STUDENT_SKILLS_LIST
 ] as const;
 
 export const MODIFIERS_TABLE = Object.fromEntries(

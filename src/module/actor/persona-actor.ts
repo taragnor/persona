@@ -1,3 +1,5 @@
+import { STUDENT_SKILLS } from "../../config/student-skills.js";
+import { SocialStat } from "../../config/student-skills.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { PersonaError } from "../persona-error.js";
@@ -40,7 +42,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.name;
 	}
 
-	get ref(): number {
+	get socialInit(): number {
+		if (this.system.type != "pc") return -999
+		return this.
+
+
+	}
+
+	get combatInit(): number {
 		switch (this.system.type) {
 			case "npc":
 				return -5;
@@ -291,15 +300,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	getBonuses (type : ModifierTarget): ModifierList {
 		if (this.system.type == "npc")  return new ModifierList();
-		const modifiers : ModifierContainer[] =[
+		let modList = new ModifierList( this.mainModifiers().flatMap( item => item.getModifier(type)
+		));
+		return modList;
+	}
+
+	mainModifiers(): ModifierContainer[] {
+		return [
 			...this.equippedItems(),
 			...this.focii,
 			...this.talents,
 			...this.getSocialFocii(),
 		];
-		let modList = new ModifierList( modifiers.flatMap( item => item.getModifier(type)
-		));
-		return modList;
 	}
 
 	wpnAtkBonus(this: PC | Shadow) : ModifierList {
@@ -466,7 +478,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	canPayActiationCost_shadow(this: Shadow, usable: Usable) : boolean {
 		return true; //placeholder
+	}
 
+	getSocialStat(this: PC, socialStat: SocialStat) : ModifierList {
+		const stat = this.system.skills[socialStat];
+		const mods = new ModifierList();
+		const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
+		mods.add(skillName, stat);
+		return mods.concat(this.getBonuses(socialStat));
 	}
 
 	async createSocialLink(this: PC, npc: SocialLink) {
