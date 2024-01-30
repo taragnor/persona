@@ -43,10 +43,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get socialInit(): number {
-		if (this.system.type != "pc") return -999
-		return this.
-
-
+		if (this.system.type != "pc") return -999;
+		return (this as PC).getSocialStat("expression").total({user:(this as PC).accessor});
 	}
 
 	get combatInit(): number {
