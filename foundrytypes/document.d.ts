@@ -14,6 +14,10 @@
 	 get documentName(): string;
 	 async setFlag(scope:string, key:string, value: any): Promise<void>;
 	 async unsetFlag(scope:string, key:string): Promise<void>;
+	 prepareBaseData(): void;
+	 prepareEmbeddedDocuments(): void;
+	 prepareDerivedData(): void;
+
 
 
 }
