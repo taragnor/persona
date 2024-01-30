@@ -1,3 +1,4 @@
+import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { PersonaError } from "../persona-error.js";
 import { PersonaSounds } from "../persona-sounds.js";
@@ -37,6 +38,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get displayedName() : string {
 		return this.name;
+	}
+
+	get ref(): number {
+		switch (this.system.type) {
+			case "npc":
+				return -5;
+			case "shadow":
+			case "pc":
+				const actor = this as (Shadow | PC);
+				return actor.getDefense("ref").total( {user:actor.accessor});
+			default:
+				this.system satisfies never;
+				throw new PersonaError(`Unepxected Type : ${this.type}`);
+		}
+	}
+
+	get accessor() : UniversalActorAccessor<typeof this> {
+		return PersonaDB.getUniversalActorAccessor(this);
 	}
 
 	get class() : Subtype<PersonaItem, "characterClass"> {

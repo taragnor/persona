@@ -4,13 +4,13 @@ declare interface Hooks {
 	on <T extends keyof HOOKS>(hookname: T, fn: HOOKS[T]): void;
 }
 
-interface HOOKS {
-	"init": () => void;
-	"ready": () => void;
-	"updateCompendium": () =>void;
+declare interface HOOKS {
+	"init": () => Promise<void>;
+	"ready": () => Promise<void>;
+	"updateCompendium": () => Promise<void>;
 	"applyActiveEffect": ApplyAEHookFn
 
 };
 
-type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , delta: any, changes: Record<string, any>) => void;
+type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , delta: any, changes: Record<string, any>) => Promise<void>;
 

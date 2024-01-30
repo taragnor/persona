@@ -18,7 +18,12 @@ declare interface CONFIG {
 	Dice: {
 		rolls: typeof unknown[];
 	}
-
+	Combat: {
+		initiative: {
+			formula: string;
+			decimals: number;
+		},
+	},
 }
 
 

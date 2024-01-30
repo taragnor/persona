@@ -13,6 +13,7 @@ declare class Actor<T extends SchemaDict, ItemType extends Item<J> = Item, AETyp
 	type: string;
 	system: TotalConvert<T>;
 	get items(): Collection<ItemType>;
+	getRollData(): Record<string, any>;
 	sheet: ActorSheet<this>;
 	statuses: Set<string>;
 	get effects(): Collection<AEType>;

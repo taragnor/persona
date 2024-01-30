@@ -9,7 +9,7 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 	comp_actors: ActorType[] = [];
 
 	constructor() {
-		Hooks.once("ready", () => {
+		Hooks.once("ready", async () => {
 			this._loadPacks();
 			this._initHooks();
 			console.log("Database initialized");
@@ -187,7 +187,6 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 		}
 		return this.getItemById(itemId) as unknown as T;
 	}
-
 
 	findToken<T extends Token<any>>({scene, tokenId}: UniversalTokenAccessor<T>) :T  {
 		if (scene != null) {
