@@ -40,8 +40,10 @@ export class CombatResult  {
 				effect.hpchangemult *= cons.amount ?? 0;
 				break;
 			case "dmg-high":
+					effect.hpchange = -(cons.amount ?? 0);
+				break;
 			case "dmg-low":
-					effect.hpchange -= cons.amount ?? 0;
+					effect.hpchange = -(cons.amount ?? 0);
 				break;
 
 			case "addStatus": {
@@ -205,7 +207,7 @@ export class CombatResult  {
 	static combineChanges (initial: TokenChange<PToken>, other: TokenChange<PToken>) : TokenChange<PToken> {
 		return {
 			token: initial.token,
-			hpchange: initial.hpchange + other.hpchange,
+			hpchange: absMax(initial.hpchange, other.hpchange),
 			hpchangemult: initial.hpchangemult * other.hpchangemult,
 			addStatus : initial.addStatus.concat(other.addStatus),
 			removeStatus : initial.removeStatus.concat(other.removeStatus),
@@ -252,3 +254,9 @@ export type AttackResult = {
 };
 
 
+function absMax(...nums : number[]) {
+	const absnums = nums.map( x=> Math.abs(x));
+	const maxabs = Math.max(...absnums);
+	const index = absnums.indexOf(maxabs);
+	return nums[index];
+}
