@@ -19,6 +19,11 @@
 				{{selectOptions ../POWERSTUFF.DAMAGETYPES localize=true selected=cond.powerDamageType}}
 			</select>
 			{{/if}}
+			{{#if (strIncludes cond.type "has-tag")}}
+			<select name="system.effects.{{../i}}.conditions.{{j}}.powerTag">
+				{{selectOptions ../POWERSTUFF.TAGS localize=true selected=cond.powerTag}}
+			</select>
+			{{/if}}
 			{{#if (strIncludes cond.type "status")}}
 			<select name="system.effects.{{../i}}.conditions.{{j}}.status">
 				{{selectOptions ../POWERSTUFF.STATUSEFFECTS localize=true selected=cond.status}}
