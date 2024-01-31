@@ -54,7 +54,7 @@ export class PersonaCombat {
 		const combat = this.ensureCombatExists();
 		const escalationDie = this.getEscalationDie(combat);
 		attackbonus.add("Escalation Die", escalationDie);
-		const roll = new PersonaRoll("1d20", attackbonus, situation, `${target.document.name}`);
+		const roll = new PersonaRoll("1d20", attackbonus, situation, `${target.document.name} (vs ${power.system.defense})`);
 		await roll.roll();
 		const naturalAttackRoll = roll.dice[0].total;
 		const baseData = {
