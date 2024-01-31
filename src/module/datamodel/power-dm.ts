@@ -5,7 +5,7 @@ import { PRECONDITIONLIST } from "../../config/effect-types.js";
 import { POWERTYPESLIST } from "../../config/effect-types.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { TARGETINGLIST } from "../../config/effect-types.js";
-import { Precondition } from "../combat/modifier-list.js";
+import { Precondition } from "../preconditions.js";
 import { Consequence } from "../combat/combat-result.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
 

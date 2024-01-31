@@ -1,5 +1,5 @@
 import { ModifierList } from "./combat/modifier-list.js";
-import { Situation } from "./combat/modifier-list.js";
+import { Situation } from "./preconditions.js";
 import { PersonaDB } from "./persona-db.js";
 
 export class PersonaRoll extends Roll {

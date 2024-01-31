@@ -157,6 +157,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new PersonaError(`Can't find ${itemType} id ${talentId}`);
 		}
 		await talent.sheet.render(true);
+		this.actor.system.combat.defenses.fort
 	}
 
 	async openFocus(event: Event) {

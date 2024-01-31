@@ -1,4 +1,4 @@
-declare class Combat<T extends Actor<any, any>> extends FoundryDocument {
+declare class Combat<T extends Actor<any, any> = Actor<any, any>> extends FoundryDocument {
 	active: boolean;
 	round: number;
 	turn: number;
@@ -11,7 +11,4 @@ declare class Combat<T extends Actor<any, any>> extends FoundryDocument {
 	}
 	combatants: Collection<Combatant<T>>;
 	turns: Combatant<T>[];
-
-
-
 }

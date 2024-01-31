@@ -3,7 +3,7 @@ import { PersonaItem } from "../item/persona-item.js";
 import { CombatResult } from "./combat-result.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { ModifierList } from "./modifier-list.js";
-import { Situation } from "./modifier-list.js";
+import { Situation } from "../preconditions.js";
 import { AttackResult } from "./combat-result.js";
 import { Usable } from "../item/persona-item.js";
 import { ArrayCorrector } from "../item/persona-item.js"
@@ -366,7 +366,7 @@ export class PersonaCombat {
 			ui.notifications.warn(error);
 			throw new Error(error);
 		}
-		return combat;
+		return combat as Combat<PersonaActor>;
 	}
 
 	static getEscalationDie<T extends Combat<any>>(combat: T) : number {
@@ -381,6 +381,6 @@ type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shado
 export type PToken = Token<ValidAttackers>;
 
 CONFIG.Combat.initiative = {
-	formula : "1d20 + @parent.combatInit",
+	formula : "1d20 + @parent.init",
 	decimals: 2
 }

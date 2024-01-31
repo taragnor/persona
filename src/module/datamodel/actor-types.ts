@@ -4,8 +4,6 @@ import { INCREMENTAL_ADVANCE_TYPES } from "../../config/incremental-advance-type
 
 import { tarotDeck } from "../../config/tarot.js";
 import { ResistStrength } from "../../config/damage-types.js";
-import { StatusEffect } from "../combat/combat-result";
-import { ConditionalEffect } from "./power-dm";
 
 const personalBio = function () {
 	return new sch( {

@@ -2,7 +2,7 @@ import { STATUS_EFFECT_LIST } from "../../config/status-effects.js";
 import { STATUS_EFFECT_DURATIONS_LIST } from "../../config/status-effects.js";
 import { CONSQUENCELIST } from "../../config/effect-types.js";
 import { StatusDuration } from "../../config/status-effects.js";
-import { Situation } from "./modifier-list.js";
+import { Situation } from "../preconditions.js";
 import { Usable } from "../item/persona-item.js";
 import { PC } from "../actor/persona-actor.js";
 import { PToken } from "./persona-combat.js";

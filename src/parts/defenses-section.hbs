@@ -3,6 +3,11 @@
 		<label>
 			{{localize "persona.defense.fort"}}
 		</label>
+		{{#if (isShadow actor)}}
+		<span class="manual-boost">
+			{{numberInput actor.system.combat.defenses.fort class="short" name="system.combat.defenses.fort" step=1 min=-10 max=10}}
+		</span>
+		{{/if}}
 		<span>
 			{{getDefense actor "fort"}}
 		</span>
@@ -11,6 +16,11 @@
 		<label>
 			{{localize "persona.defense.ref"}}
 		</label>
+		{{#if (isShadow actor)}}
+		<span class="manual-boost">
+			{{numberInput actor.system.combat.defenses.ref class="short" name="system.combat.defenses.ref" step=1 min=-10 max=10}}
+		</span>
+		{{/if}}
 		<span>
 			{{getDefense actor "ref"}}
 		</span>
@@ -19,6 +29,11 @@
 		<label>
 			{{localize "persona.defense.will"}}
 		</label>
+		{{#if (isShadow actor)}}
+		<span class="manual-boost">
+			{{numberInput actor.system.combat.defenses.will class="short" name="system.combat.defenses.will" step=1 min=-10 max=10}}
+		</span>
+		{{/if}}
 		<span>
 			{{getDefense actor "will"}}
 		</span>

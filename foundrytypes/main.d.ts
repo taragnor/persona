@@ -21,13 +21,13 @@ declare const CONFIG : CONFIG;
 declare interface Game {
 	actors: Collection<Actor<any, any>>;
 	i18n: Localization;
-	items: Collection<Item<any>>,
-		packs: Collection<FoundryCompendium<any>>,
-		users: Collection<FoundryUser>,
-		system: FoundrySystem,
-		user: FoundryUser,
-		scenes: SceneCollection,
-		combat: undefined | Combat,
+	items: Collection<Item<any>>;
+	packs: Collection<FoundryCompendium<any>>;
+	users: Collection<FoundryUser>;
+	system: FoundrySystem;
+	user: FoundryUser;
+	scenes: SceneCollection;
+	combat?: Combat;
 }
 
 interface Localization{

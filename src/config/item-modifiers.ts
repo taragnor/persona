@@ -1,4 +1,4 @@
-import { STUDENT_SKILLS_LIST } from "./student-skills";
+import { STUDENT_SKILLS_LIST } from "./student-skills.js";
 export const MODIFIERLIST = [
 	"maxhp",
 	"wpnAtk",

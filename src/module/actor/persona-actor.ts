@@ -42,9 +42,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.name;
 	}
 
+	get init() : number {
+		const combat = game.combat as Combat<PersonaActor>;
+		if (!combat) {
+			throw new PersonaError("Can't get initiative when not in combat!");
+		}
+		if (combat.combatants.contents.some( x=> x.actor && x.actor.system.type =="shadow")) {
+			return this.combatInit;
+		}
+		return this.socialInit;
+	}
+
 	get socialInit(): number {
 		if (this.system.type != "pc") return -999;
-		return (this as PC).getSocialStat("expression").total({user:(this as PC).accessor});
+		return (this as PC).getSocialStat("courage").total({user:(this as PC).accessor});
 	}
 
 	get combatInit(): number {
@@ -337,7 +348,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	getDefense(this: PC | Shadow,  type : keyof PC["system"]["combat"]["defenses"]) : ModifierList {
 		const mods = new ModifierList();
 		const lvl = this.system.combat.classData.level;
-		const baseDef = this.system.combat.defenses.ref;
+		const baseDef = this.system.combat.defenses[type];
 		const inc = this.system.combat.classData.incremental.defbonus ? 1 : 0;
 		mods.add("Base", 10);
 		mods.add("Base Defense Bonus", baseDef);

@@ -2,7 +2,7 @@ import { PC } from "../actor/persona-actor.js";
 import { SocialStat } from "../../config/student-skills.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { STUDENT_SKILLS } from "../../config/student-skills.js";
-import { Situation } from "../combat/modifier-list.js";
+import { Situation } from "../preconditions.js";
 import { PersonaRoll } from "../persona-roll.js";
 import { PersonaDB } from "../persona-db.js";
 

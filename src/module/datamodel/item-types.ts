@@ -6,7 +6,6 @@ import { powerCost } from "./power-dm.js";
 import { powerSpecific } from "./power-dm.js";
 import { damage } from "./power-dm.js";
 import { EQUIP_SLOTS_LIST } from "../../config/equip-slots.js";
-// import { modifiers } from "./modifiers-dm.js";
 import { effects } from "./power-dm.js";
 
 function itemBase() {

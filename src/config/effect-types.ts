@@ -38,8 +38,13 @@ export const PRECONDITIONLIST = [
 	"talent-level+",
 	"power-damage-type-is",
 	"has-tag",
-
+	"user-has-status",
+	"user-not-status",
+	"target-has-status",
+	"target-not-status",
 ] as const;
+
+export type PreconditionType = typeof PRECONDITIONLIST[number];
 
 export const PRECONDITIONTYPES = Object.fromEntries( PRECONDITIONLIST.map(x=> [x, `persona.preconditions.${x}`]));
 
