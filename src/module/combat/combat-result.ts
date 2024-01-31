@@ -65,7 +65,7 @@ export class CombatResult  {
 				break;
 			}
 			case "hp-loss": {
-				effect.hpchange -= cons.amount ?? 0;
+				effect.hpchange -= Math.floor(cons.amount ?? 0);
 				break;
 			}
 
@@ -130,6 +130,7 @@ export class CombatResult  {
 		static normalizeChange(change: TokenChange<PToken>) {
 			change.hpchange *= change.hpchangemult;
 			change.hpchangemult = 1;
+			change.hpchange = Math.trunc(change.hpchange);
 
 			}
 

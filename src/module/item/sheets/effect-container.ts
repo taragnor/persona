@@ -11,6 +11,7 @@ import { STATUS_EFFECT_DURATIONS } from "../../../config/status-effects.js";
 import { TARGETING } from "../../../config/effect-types.js";
 import { POWER_TAGS } from "../../../config/power-tags.js";
 import { MODIFIERS_TABLE } from "../../../config/item-modifiers.js";
+import { DEFENSECHOICES } from "../../datamodel/power-dm.js";
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
 	override item: PowerContainer;
@@ -29,6 +30,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			TARGETING : TARGETING,
 			TAGS: POWER_TAGS,
 			MODIFIER_TARGETS: MODIFIERS_TABLE,
+			DEFENSES: Object.fromEntries(DEFENSECHOICES.map( x=> [x, x])),
 		}
 		return data;
 	}

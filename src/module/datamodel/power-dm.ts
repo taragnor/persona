@@ -16,7 +16,7 @@ export  const damage = function() {
 	});
 }
 
-const DEFENSECHOICES = ["fort" , "ref" , "will", "none"] as const;
+export const DEFENSECHOICES = ["fort" , "ref" , "will", "none"] as const;
 
 export type ConditionalEffect  = {
 	conditions: Precondition[],

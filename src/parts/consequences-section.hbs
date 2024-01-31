@@ -28,6 +28,9 @@
 		{{selectOptions ../POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusName}}
 		</select>
 		{{/if}}
+		{{#if (eq cons.type "dmg-mult")}}
+		<input class="short" type=number name="system.effects.{{../i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
+		{{/if}}
 		{{#if (eq cons.type "escalationManipulation")}}
 		<input class="short" type=number name="system.effects.{{../i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
 		{{/if}}
