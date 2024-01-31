@@ -60,7 +60,6 @@ export type PowerType = typeof POWERTYPESLIST[number];
 
 export const POWERTYPES= Object.fromEntries( POWERTYPESLIST.map(x=> [x, `persona.power.types.${x}`]));
 
-
 export const TARGETINGLIST = [
 	"1-engaged",
 	"1-nearby",
@@ -76,4 +75,3 @@ export const TARGETINGLIST = [
 ] as const;
 
 export const TARGETING= Object.fromEntries( TARGETINGLIST.map(x=> [x, `persona.power.targets.${x}`]));
-

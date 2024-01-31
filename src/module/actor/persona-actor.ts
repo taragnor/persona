@@ -320,6 +320,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.focii,
 			...this.talents,
 			...this.getSocialFocii(),
+			...PersonaDB.getGlobalModifiers(),
 		];
 	}
 
@@ -473,7 +474,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 							if (this.system.slots[x] > 0) {
 								return true;
 							}
-							else x+=1;
+							else x += 1;
 						}
 						return false;
 					default:
@@ -614,13 +615,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	getEffects() : ConditionalEffect[] {
-		const containers : ModifierContainer[] = [
-			...this.equippedItems(),
-			...this.focii,
-			...this.talents,
-			...(this as PC).getSocialFocii(),
-		];
-		return containers.flatMap( x=> x.getEffects());
+		return this.mainModifiers().flatMap( x=> x.getEffects());
 	}
 
 }

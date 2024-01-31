@@ -1,4 +1,4 @@
-const {StringField:txt, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
+const {StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 
 import { CharacterClassDM } from "./character-class-dm.js";
 import { UsablePowerProps } from "./power-dm.js";
@@ -41,6 +41,7 @@ function consumableSpecific() {
 		const ret = {
 			desciption: new html(),
 			...effects (false),
+			universal_modifier: new bool({initial: false})
 		}
 		return ret;
 	}

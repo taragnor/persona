@@ -43,6 +43,7 @@ export class PersonaCombat {
 	static async processAttackRoll( attacker: PToken, power: Usable, target: PToken, isActivationRoll: boolean) : Promise<AttackResult> {
 
 		const situation : Situation = {
+			target: PersonaDB.getUniversalTokenAccessor(target),
 			usedPower: PersonaDB.getUniversalItemAccessor(power),
 			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
 			userToken: PersonaDB.getUniversalTokenAccessor(attacker),
