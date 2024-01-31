@@ -33,7 +33,10 @@ export class PersonaHandleBarsHelpers {
 		},
 		"isShadow" : (actor: PersonaActor) => {
 			return actor.system.type == "shadow";
-		}
+		},
+		"strIncludes" : (testStr: string, substr: string) => {
+			return testStr.includes(substr);
+		},
 
 	}
 }

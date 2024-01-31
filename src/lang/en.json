@@ -193,5 +193,9 @@
 	"persona.preconditions.non-combat": "Not in Combat",
 	"persona.preconditions.talent-level+": "Level in Talent >=",
 	"persona.preconditions.power-damage-type-is": "Using a power of type:",
-	"persona.preconditions.has-tag": "Used Power has Tag"
+	"persona.preconditions.has-tag": "Used Power has Tag",
+	"persona.preconditions.user-has-status": "User Has Status",
+	"persona.preconditions.user-not-status": "User doesn't Have Status",
+	"persona.preconditions.target-has-status": "Target Has Status",
+	"persona.preconditions.target-not-status": "Target doesn't Have Status"
 }

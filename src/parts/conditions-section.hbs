@@ -19,6 +19,11 @@
 				{{selectOptions ../POWERSTUFF.DAMAGETYPES localize=true selected=cond.powerDamageType}}
 			</select>
 			{{/if}}
+			{{#if (strIncludes cond.type "status")}}
+			<select name="system.effects.{{../i}}.conditions.{{j}}.status">
+				{{selectOptions ../POWERSTUFF.STATUSEFFECTS localize=true selected=cond.status}}
+			</select>
+			{{/if}}
 		</div>
 		<a class="delCondition">
 			<i class="fa-solid fa-trash-can"></i>
