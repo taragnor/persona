@@ -12,6 +12,7 @@ import { Shadow } from "./actor/persona-actor.js";
 import { DamageType } from "../config/damage-types.js";
 import { PowerTag } from "../config/power-tags.js";
 import { StatusEffectId } from "../config/status-effects.js";
+import { PersonaCombat } from "./combat/persona-combat.js";
 
 export function testPrecondition (condition: Precondition, situation:Situation, source: Option<PowerContainer>) : boolean {
 	const nat = situation.naturalAttackRoll;
@@ -80,6 +81,23 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 			return user.system.type == "pc";
 		case "user-is-shadow":
 			return user.system.type == "shadow";
+		case "is-engaged": {
+			if (!situation.activeCombat ) return false;
+			const combat = PersonaCombat.ensureCombatExists();
+			return combat.isEngaged(situation.userToken!);
+		}
+		case "is-engaged-with-target": {
+			if (!situation.activeCombat ) return false;
+			const combat = PersonaCombat.ensureCombatExists();
+			if (!situation.target || !situation.userToken) return false;
+			return combat.isEngagedWith(situation.userToken, situation.target);
+		}
+		case "is-not-engaged-with-target": {
+			if (!situation.activeCombat ) return true;
+			if (!situation.target || !situation.userToken) return true;
+			const combat = PersonaCombat.ensureCombatExists();
+			return !combat.isEngagedWith(situation.userToken, situation.target);
+		}
 		default:
 			condition.type satisfies never;
 			PersonaError.softFail(`Unexpected Condition: ${condition.type}`);

@@ -1,7 +1,6 @@
 
 import { PersonaError } from "../persona-error.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
-import { PersonaItem } from "../item/persona-item.js";
 import { CombatResult } from "./combat-result.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { ModifierList } from "./modifier-list.js";
@@ -11,7 +10,7 @@ import { Usable } from "../item/persona-item.js";
 import { ArrayCorrector } from "../item/persona-item.js"
 import { PersonaDB } from "../persona-db.js";
 import { PersonaRoll } from "../persona-roll.js";
-const {StringField:txt, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
+import { UniversalTokenAccessor } from "../utility/db-accessor.js";
 
 
 export class PersonaCombat extends Combat<PersonaActor> {
@@ -407,6 +406,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const x = super.previousRound();
 		this.decEscalationDie();
 		return x;
+	}
+
+	isEngaged(subject: UniversalTokenAccessor<PToken>) : boolean{
+		//TODO: placeholder
+		return false;
+	}
+	isEngagedWith(one: UniversalTokenAccessor<PToken>, two: UniversalTokenAccessor<PToken>) : boolean {
+		//TODO: placeholder
+		return false;
+
 	}
 
 }

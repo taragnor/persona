@@ -53,6 +53,9 @@ export const PRECONDITIONLIST = [
 	"target-not-status",
 	"user-is-pc",
 	"user-is-shadow",
+	"is-engaged",
+	"is-engaged-with-target",
+	"is-not-engaged-with-target",
 ] as const;
 
 export type PreconditionType = typeof PRECONDITIONLIST[number];
