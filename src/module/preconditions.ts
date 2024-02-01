@@ -76,6 +76,10 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 			const target = PersonaDB.findToken(situation.target);
 			return (!target.actor.statuses.has(condition.status!));
 		}
+		case "user-is-pc":
+			return user.system.type == "pc";
+		case "user-is-shadow":
+			return user.system.type == "shadow";
 		default:
 			condition.type satisfies never;
 			PersonaError.softFail(`Unexpected Condition: ${condition.type}`);

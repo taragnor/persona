@@ -19,6 +19,7 @@ declare interface CONFIG {
 		rolls: typeof unknown[];
 	}
 	Combat: {
+		documentClass: typeof Combat<any>;
 		initiative: {
 			formula: string;
 			decimals: number;

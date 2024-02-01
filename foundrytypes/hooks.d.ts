@@ -17,13 +17,6 @@ declare interface HOOKS {
 type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , delta: any, changes: Record<string, any>) => Promise<void>;
 
 
-type CombatUpdateData = {
-	/** The current round of combat */
-	round:number,
-	/** The new turn number*/
-	turn: number
-}
-
 type CombatUpdateOptions = {
 	/**The amount of time in seconds that time is being advanced*/
 	advanceTime: number,

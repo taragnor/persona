@@ -86,6 +86,7 @@ export class CombatResult  {
 			}
 
 			case "modifier":
+			case "add-escalation":
 				break;
 
 			default: {

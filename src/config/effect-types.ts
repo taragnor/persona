@@ -11,8 +11,17 @@ export const CONSQUENCELIST = [
 	"extraAttack",
 	"expend-slot",
 	"modifier",
+	"add-escalation",
 
 ] as const;
+
+
+export  const MODIFIER_VARIABLES = [
+	"escalationDie" //Escalation Die
+
+] as const;
+
+export type ModifierVariable = typeof MODIFIER_VARIABLES[number];
 
 export const CONSQUENCETYPES = Object.fromEntries(
 CONSQUENCELIST.map( x=> [x, `persona.effecttypes.${x}`])
@@ -42,6 +51,8 @@ export const PRECONDITIONLIST = [
 	"user-not-status",
 	"target-has-status",
 	"target-not-status",
+	"user-is-pc",
+	"user-is-shadow",
 ] as const;
 
 export type PreconditionType = typeof PRECONDITIONLIST[number];

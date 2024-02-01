@@ -1,7 +1,5 @@
 const {StringField:txt, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 
-import { CONSQUENCELIST } from "../../config/effect-types.js";
-import { PRECONDITIONLIST } from "../../config/effect-types.js";
 import { POWERTYPESLIST } from "../../config/effect-types.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { TARGETINGLIST } from "../../config/effect-types.js";

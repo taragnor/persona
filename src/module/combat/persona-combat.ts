@@ -9,9 +9,19 @@ import { Usable } from "../item/persona-item.js";
 import { ArrayCorrector } from "../item/persona-item.js"
 import { PersonaDB } from "../persona-db.js";
 import { PersonaRoll } from "../persona-roll.js";
+const {StringField:txt, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 
 
-export class PersonaCombat {
+export class PersonaCombat extends Combat<PersonaActor> {
+
+	override async startCombat() {
+		const x = await super.startCombat();
+		await this.setEscalationDie(0);
+		return x;
+	}
+
+
+
 	static async usePower(attacker: PToken, power: Usable) : Promise<CombatResult> {
 		if (!attacker.actor.canPayActivationCost(power)) {
 			ui.notifications.notify("You can't pay the activation cost for this power");
@@ -42,21 +52,27 @@ export class PersonaCombat {
 
 	static async processAttackRoll( attacker: PToken, power: Usable, target: PToken, isActivationRoll: boolean) : Promise<AttackResult> {
 
+		const combat = this.ensureCombatExists();
+		const escalationDie = combat.getEscalationDie();
 		const situation : Situation = {
 			target: PersonaDB.getUniversalTokenAccessor(target),
 			usedPower: PersonaDB.getUniversalItemAccessor(power),
 			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
 			userToken: PersonaDB.getUniversalTokenAccessor(attacker),
+			escalationDie,
+			activationRoll: isActivationRoll,
+			activeCombat:combat,
 		};
 		const element = power.system.dmg_type;
 		const resist = target.actor.elementalResist(element);
 		const attackbonus= this.getAttackBonus(attacker, power);
-		const combat = this.ensureCombatExists();
-		const escalationDie = this.getEscalationDie(combat);
-		attackbonus.add("Escalation Die", escalationDie);
+		// if (attacker.actor.system.type == "pc") {
+		// 	attackbonus.add("Escalation Die", escalationDie);
+		// }
 		const roll = new PersonaRoll("1d20", attackbonus, situation, `${target.document.name} (vs ${power.system.defense})`);
 		await roll.roll();
 		const naturalAttackRoll = roll.dice[0].total;
+		situation.naturalAttackRoll = naturalAttackRoll;
 		const baseData = {
 			roll,
 			attacker ,
@@ -72,11 +88,8 @@ export class PersonaCombat {
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					situation: {
-						usedPower: PersonaDB.getUniversalItemAccessor(power),
-						user: PersonaDB.getUniversalActorAccessor(attacker.actor),
-						userToken: PersonaDB.getUniversalTokenAccessor(attacker),
+						...situation,
 						naturalAttackRoll,
-						escalationDie,
 					},
 					...baseData,
 				};
@@ -88,11 +101,8 @@ export class PersonaCombat {
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					situation: {
-						usedPower: PersonaDB.getUniversalItemAccessor(power),
-						user: PersonaDB.getUniversalActorAccessor(attacker.actor),
-						userToken: PersonaDB.getUniversalTokenAccessor(attacker),
+						...situation,
 						naturalAttackRoll,
-						escalationDie,
 					},
 					...baseData,
 				};
@@ -104,11 +114,8 @@ export class PersonaCombat {
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					situation: {
-						usedPower: PersonaDB.getUniversalItemAccessor(power),
-						user: PersonaDB.getUniversalActorAccessor(attacker.actor),
-						userToken: PersonaDB.getUniversalTokenAccessor(attacker),
+						...situation,
 						naturalAttackRoll,
-						escalationDie,
 						hit: true,
 						criticalHit: false,
 						isAbsorbed: true,
@@ -118,12 +125,6 @@ export class PersonaCombat {
 			}
 
 		}
-		situation.user = PersonaDB.getUniversalActorAccessor(attacker.actor);
-		situation.userToken = PersonaDB.getUniversalTokenAccessor(attacker);
-		situation.activeCombat = combat;
-		situation.escalationDie = escalationDie;
-		situation.activationRoll = isActivationRoll;
-		situation.naturalAttackRoll = naturalAttackRoll;
 		const total = roll.total;
 		const def = power.system.defense;
 		const validAtkModifiers = attackbonus.list(situation);
@@ -360,21 +361,49 @@ export class PersonaCombat {
 		}
 	}
 
-	static ensureCombatExists() : Combat<PersonaActor> {
+	static ensureCombatExists() : PersonaCombat {
 		const combat = game.combat;
 		if (!combat) {
 			const error = "No Combat";
 			ui.notifications.warn(error);
 			throw new Error(error);
 		}
-		return combat as Combat<PersonaActor>;
+		return combat as PersonaCombat;
 	}
 
-	static getEscalationDie<T extends Combat<any>>(combat: T) : number {
-		return 0;//placeholder
+	getEscalationDie() : number {
+		return (this.getFlag("persona", "escalation") as number) ?? -1;
 	}
 
+	async incEscalationDie() : Promise<void> {
+		this.setEscalationDie(Math.min(this.getEscalationDie() +1, 6));
+	}
 
+	async decEscalationDie() : Promise<void> {
+		this.setEscalationDie(Math.max(this.getEscalationDie() - 1, 0));
+
+	}
+
+	async setEscalationDie(val: number) : Promise<void> {
+		await this.setFlag("persona", "escalation", val);
+	}
+
+	override nextTurn() : Promise<this> {
+		const x = super.nextTurn();
+		return x;
+	}
+
+	override nextRound() : Promise<this> {
+		const x = super.nextRound();
+		this.incEscalationDie();
+		return x;
+	}
+
+	override previousRound(): Promise<this> {
+		const x = super.previousRound();
+		this.decEscalationDie();
+		return x;
+	}
 }
 
 type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shadow">;

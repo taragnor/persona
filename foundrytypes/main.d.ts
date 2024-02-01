@@ -10,6 +10,15 @@ declare const game : Game;
 declare const foundry:   {
 	abstract: FoundryAbstract;
 	data: FoundryData;
+	documents: {
+		BaseCombat: typeof BaseCombat;
+
+	}
+
+}
+
+class BaseCombat {
+	static defineSchema() : SchemaReturnObject
 }
 
 declare const Hooks: Hooks;

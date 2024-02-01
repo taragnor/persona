@@ -145,9 +145,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 					source: PersonaDB.getUniversalItemAccessor(this),
 					conditions: ArrayCorrector(x.conditions),
 					modifier: ArrayCorrector(x.consequences).reduce( (acc,x)=> {
-						if ( x.modifiedField == type) return acc+(x.amount ?? 0);
+						if ( x.modifiedField == type) {
+							if (x.amount != 0) return acc+(x.amount ?? 0);
+						}
 						return acc;
 					}, 0),
+					variableModifier: new Set(ArrayCorrector(x.consequences).flatMap ( x=> {
+						if (x.modifiedField != type) return [];
+						if (x.type == "add-escalation") return ["escalationDie"];
+						return [];
+					}))
 				})
 			);
 		// return this.system.modifiers[type];

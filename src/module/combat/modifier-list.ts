@@ -6,16 +6,19 @@ import { PersonaDB } from "../persona-db.js";
 import { Precondition } from "../preconditions.js";
 import { Situation } from "../preconditions.js"
 import { testPrecondition } from "../preconditions.js";
+import { ModifierVariable } from "../../config/effect-types.js";
 
 export type ModifierListItem = {
 	name: string;
 	source: Option<UniversalItemAccessor<PowerContainer>>;
 	conditions: Precondition[];
 	modifier: number;
+	variableModifier: Set<ModifierVariable>;
 }
 
 export class ModifierList {
 	_data: ModifierListItem[];
+
 	constructor ( list: ModifierListItem[] = []) {
 		this._data = list;
 	}
@@ -26,7 +29,8 @@ export class ModifierList {
 			source,
 			name,
 			conditions,
-			modifier
+			modifier,
+			variableModifier: new Set(),
 		});
 	}
 
@@ -37,7 +41,7 @@ export class ModifierList {
 				source)
 		}
 		));
-			return filtered.map( x=> [x.modifier, x.name]);
+		return filtered.map( x=> [x.modifier, x.name]);
 	}
 
 	concat (this: ModifierList, other: ModifierList) : ModifierList {
@@ -56,12 +60,28 @@ export class ModifierList {
 	}
 
 	total(situation: Situation ) : number {
-		return this.validModifiers(situation).reduce( (acc, item) => acc + item.modifier, 0);
-
+		const mods = this.validModifiers(situation);
+		const base =  mods.reduce( (acc, item) => acc + item.modifier , 0);
+		const vartotal = mods.reduce((acc, item) => {
+			return acc + ModifierList.resolveVariableModifiers(item.variableModifier, situation);
+		}, 0);
+		return base + vartotal;
 	}
 
 	static testPrecondition (condition: Precondition, situation:Situation, source: Option<PowerContainer>) : boolean {
 		return testPrecondition( condition, situation, source);
+	}
+
+	static resolveVariableModifiers( variableMods:Set<ModifierVariable> , situation: Situation) : number {
+		return Array.from(variableMods).reduce( (acc, varmod) => {
+			switch (varmod) {
+				case "escalationDie":
+					return acc + (situation.escalationDie ?? 0);
+				default:
+						varmod satisfies never;
+			}
+			return acc;
+		},0);
 	}
 
 	/** returns an array of values to use in printing the rol */
@@ -69,8 +89,11 @@ export class ModifierList {
 		const signedFormatter = new Intl.NumberFormat("en-US", {signDisplay:"always"});
 		return this
 			.validModifiers(situation)
-			.filter(x=> x.modifier != 0)
-			.map( ({name, modifier}) => ({ name, modifier: signedFormatter.format(modifier) }));
+			.map( ({name, modifier, variableModifier}) => {
+				const total = modifier + ModifierList.resolveVariableModifiers(variableModifier, situation);
+				return { name, modifier: signedFormatter.format(total), raw: total}
+			})
+			.filter(x=> x.raw != 0);
 	}
 
 }

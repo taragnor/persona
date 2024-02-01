@@ -197,5 +197,7 @@
 	"persona.preconditions.user-has-status": "User Has Status",
 	"persona.preconditions.user-not-status": "User doesn't Have Status",
 	"persona.preconditions.target-has-status": "Target Has Status",
-	"persona.preconditions.target-not-status": "Target doesn't Have Status"
+	"persona.preconditions.target-not-status": "Target doesn't Have Status",
+	"persona.preconditions.user-is-pc": "User is PC",
+	"persona.preconditions.user-is-shadow": "User is Shadow"
 }

@@ -28,6 +28,7 @@ import { PersonaTalentSheet } from "./item/sheets/talent-sheet.js";
 import { ConsumableSheet } from "./item/sheets/consumable-sheet.js";
 import { PersonaHandleBarsHelpers } from "./handlebars-helpers.js";
 import { PersonaRoll } from "./persona-roll.js";
+import { PersonaCombat } from "./combat/persona-combat.js";
 
 function registerDataModels() {
 	CONFIG.Actor.dataModels= ACTORMODELS;
@@ -39,6 +40,8 @@ function registerDocumentClasses() {
 	CONFIG.Item.documentClass = PersonaItem;
 	CONFIG.ActiveEffect.documentClass = PersonaAE;
 	CONFIG.Dice.rolls.push(PersonaRoll);
+	CONFIG.Combat.documentClass = PersonaCombat;
+
 }
 
 function registerSheetApplications() {
