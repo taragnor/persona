@@ -30,7 +30,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const targets= await this.getTargets(attacker, power);
 		const result = await  this.#usePowerOn(attacker, power, targets);
 		await result.print();
-		await result.apply();
+		// await result.apply();
 		return result;
 	}
 

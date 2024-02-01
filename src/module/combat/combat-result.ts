@@ -1,3 +1,4 @@
+import { PersonaError } from "../persona-error.js";
 import { STATUS_EFFECT_LIST } from "../../config/status-effects.js";
 import { STATUS_EFFECT_DURATIONS_LIST } from "../../config/status-effects.js";
 import { CONSQUENCELIST } from "../../config/effect-types.js";
@@ -172,9 +173,8 @@ export class CombatResult  {
 			};
 		});
 
-		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attacker: initiatingToken, power: powerUsed,  attacks, escalation: this.escalationMod, result: this.toJSON()});
-
-		return await ChatMessage.create( {
+		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attacker: initiatingToken, power: powerUsed,  attacks, escalation: this.escalationMod, result: this});
+		const chatMsg = await ChatMessage.create( {
 			speaker: {
 				scene: initiatingToken.scene.id,
 				actor: undefined,
@@ -186,6 +186,8 @@ export class CombatResult  {
 			user: game.user,
 			type: CONST.CHAT_MESSAGE_TYPES.ROLL
 		}, {})
+		await chatMsg.setFlag("persona", "atkResult", this.toJSON());
+		return chatMsg;
 	}
 
 	async print(): Promise<void> {
@@ -197,7 +199,6 @@ export class CombatResult  {
 	}
 
 	async apply(): Promise<void> {
-		console.log(this);
 		const escalationChange = this.escalationMod;
 		if (escalationChange) {
 			const combat = PersonaCombat.ensureCombatExists();
@@ -288,3 +289,22 @@ function absMax(...nums : number[]) {
 	const index = absnums.indexOf(maxabs);
 	return nums[index];
 }
+
+
+Hooks.on("renderChatMessage", async (msg: ChatMessage, html: JQuery<HTMLElement>) => {
+		const flag = msg.getFlag("persona", "atkResult") as string;
+	if (!flag) {
+		html.find(".applyChanges").each( function () { this.remove()});
+	}
+	html.find(".applyChanges").on("click", async () => {
+		const flag = msg.getFlag("persona", "atkResult") as string;
+		if (!flag) throw new PersonaError("Can't apply twice");
+		if (!game.user.isGM) {
+			throw new PersonaError("Only GM can click this");
+		}
+		const res = CombatResult.fromJSON(flag);
+		await res.apply();
+		await msg.unsetFlag("persona", "atkResult");
+	});
+});
+

@@ -1,4 +1,4 @@
-declare class ChatMessage {
+declare class ChatMessage extends FoundryDocument {
 	static getSpeaker(spkOptions: Partial<ChatSpeakerObject>) : SpeakerOptions;
 	static async create(msgData: MessageData, options: MessageOptions = {}): Promise<ChatMessage>;
 	static getSpeaker() : ChatSpeakerObject;
@@ -23,4 +23,7 @@ type ChatSpeakerObject = {
 	alias?: Option<string>,
 }
 
+
+
+type ChatLog = unknown;
 

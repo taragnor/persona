@@ -12,6 +12,11 @@ declare interface HOOKS {
 	"combatStart": (combat: Combat, updateData: CombatUpdateData) => Promise<void>;
 	"combatTurn": (combat: Combat, updateData: CombatUpdateData, updateOptions: CombatUpdateOptions) => Promise<void>;
 	"combatRound": (combat: Combat, updateData: CombatUpdateData, updateOptions: CombatUpdateOptions) => Promise<void>;
+	"chatMessage": (chatLog: ChatLog, contents: string, chatMsgData: unknown) => Promise<void>;
+	"preCreateChatMessage": (msg: ChatMessage, spkdata: unknown, otherstuff: unknown, id: string) => Promise<void>;
+	"createChatMessage": (msg: ChatMessage, otherstuff: unknown, id: string) => Promise<void>;
+	"renderChatMessage": (msg: ChatMessage, htmlElement: JQuery<HTMLElement>, data: unknown) => Promise<void>;
+
 };
 
 type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , delta: any, changes: Record<string, any>) => Promise<void>;
@@ -23,3 +28,4 @@ type CombatUpdateOptions = {
 	/** A signed integer for whether the turn order is advancing or rewinding */
 	direction: number
 }
+
