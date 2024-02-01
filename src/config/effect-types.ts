@@ -58,6 +58,7 @@ export const PRECONDITIONLIST = [
 	"is-engaged",
 	"is-engaged-with-target",
 	"is-not-engaged-with-target",
+	"metaverse-enhanced",
 ] as const;
 
 export type PreconditionType = typeof PRECONDITIONLIST[number];

@@ -1,3 +1,4 @@
+import {Metaverse} from "./metaverse.js";
 import { PreconditionType } from "../config/effect-types.js";
 import { PowerContainer } from "./item/persona-item.js";
 import { UniversalItemAccessor } from "./utility/db-accessor.js";
@@ -98,6 +99,8 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 			const combat = PersonaCombat.ensureCombatExists();
 			return !combat.isEngagedWith(situation.userToken, situation.target);
 		}
+		case "metaverse-enhanced":
+			return Metaverse.isEnhanced();
 		default:
 			condition.type satisfies never;
 			PersonaError.softFail(`Unexpected Condition: ${condition.type}`);

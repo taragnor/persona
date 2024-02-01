@@ -203,6 +203,6 @@
 	"persona.preconditions.user-is-shadow": "User is Shadow",
 	"persona.preconditions.is-engaged": "Is engaged with anyone",
 	"persona.preconditions.is-engaged-with-target": "Is engaged with target",
-	"persona.preconditions.is-not-engaged-with-target": "Is not engaged with target"
-
+	"persona.preconditions.is-not-engaged-with-target": "Is not engaged with target",
+	"persona.preconditions.metaverse-enhanced": "Metaverse has enhanced Foes"
 }

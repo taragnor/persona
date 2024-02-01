@@ -37,7 +37,9 @@ declare interface Game {
 	user: FoundryUser;
 	scenes: SceneCollection;
 	combat?: Combat;
+	settings: ClientSettings;
 }
+
 
 interface Localization{
 	localize(x: string) : string;

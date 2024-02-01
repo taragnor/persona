@@ -1,4 +1,4 @@
-class Sheet<T extends Document> {
+class Sheet<T extends Document> extends FormApplication {
 	static get defaultOptions() : Object; //TODO: be more specific here
 	getData(): SheetData | Promise<SheetData>;
 	activateListeners(html: JQuery<HTMLElement>): void;
@@ -11,6 +11,11 @@ class Sheet<T extends Document> {
 
 }
 
+
+class FormApplication {
+	activateListeners(html: JQuery<HTMLElement>): void;
+	close( options: unknown): void;
+}
 
 
 
