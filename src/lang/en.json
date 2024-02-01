@@ -171,6 +171,9 @@
 	"persona.effecttypes.escalationManipulation": "Change Escalation",
 	"persona.effecttypes.extraAttack": "Extra Attack",
 	"persona.effecttypes.modifier": "Apply Modifier",
+	"persona.effecttypes.add-escalation": "Add escalation die",
+	"persona.effecttypes.save-slot": "Don't expend slot",
+	"persona.effecttypes.half-hp-cost": "Halve HP cost",
 	"persona.effecttypes.none": "-",
 
 	"persona.preconditions.always": "always",
@@ -197,5 +200,9 @@
 	"persona.preconditions.target-has-status": "Target Has Status",
 	"persona.preconditions.target-not-status": "Target doesn't Have Status",
 	"persona.preconditions.user-is-pc": "User is PC",
-	"persona.preconditions.user-is-shadow": "User is Shadow"
+	"persona.preconditions.user-is-shadow": "User is Shadow",
+	"persona.preconditions.is-engaged": "Is engaged with anyone",
+	"persona.preconditions.is-engaged-with-target": "Is engaged with target",
+	"persona.preconditions.is-not-engaged-with-target": "Is not engaged with target"
+
 }

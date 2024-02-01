@@ -47,6 +47,7 @@ export class CombatResult  {
 	addEffect(atkResult: AttackResult | null, target: PToken, cons: Consequence) {
 		const effect : TokenChange<PToken>= {
 			token: PersonaDB.getUniversalTokenAccessor(target),
+			otherEffects: [],
 			hpchange: 0,
 			hpchangemult: 1,
 			addStatus: [],
@@ -110,6 +111,12 @@ export class CombatResult  {
 
 			case "modifier":
 			case "add-escalation":
+				break;
+			case "save-slot":
+				effect.otherEffects.push("save-slot");
+				break;
+			case "half-hp-cost":
+				effect.otherEffects.push("half-hp-cost");
 				break;
 
 			default: {
@@ -225,6 +232,10 @@ export class CombatResult  {
 		for (const status of change.removeStatus) {
 			await actor.removeStatus(status);
 		}
+		for (const otherEffect of change.otherEffects) {
+		//TODO: handle otherEffects
+
+		}
 		if (actor.system.type == "pc") {
 			change.expendSlot.forEach(async (val, i) => {
 				await (actor as PC).expendSlot(i, val);
@@ -241,19 +252,24 @@ export class CombatResult  {
 			addStatus : initial.addStatus.concat(other.addStatus),
 			removeStatus : initial.removeStatus.concat(other.removeStatus),
 			expendSlot : initial.expendSlot.map( (x,i)=> x + other.expendSlot[i]) as [number, number, number, number],
+			otherEffects: initial.otherEffects.concat(other.otherEffects)
 		};
 	}
 }
+
 
 export interface TokenChange<T extends Token<any>> {
 	token: UniversalTokenAccessor<T>;
 	hpchange: number;
 	hpchangemult: number;
 	addStatus: StatusEffect[],
-
+	otherEffects: OtherEffect[]
 	removeStatus: Pick<StatusEffect, "id">[],
 	expendSlot: [number, number, number, number];
 }
+
+type OtherEffect= "save-slot" | "half-hp-cost";
+
 
 export type StatusEffect = {
 		id: StatusEffectId,
