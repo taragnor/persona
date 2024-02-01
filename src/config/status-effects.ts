@@ -27,6 +27,9 @@ export const STATUS_EFFECT_LIST = [
 		id: "expel",
 		icon:  "",
 	}, {
+		id: "fading",
+		icon:  "icons/svg/invisible.svg",
+	}, {
 		id: "fear",
 		icon:  "icons/svg/terror.svg",
 	}, {

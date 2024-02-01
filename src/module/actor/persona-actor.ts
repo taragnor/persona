@@ -236,6 +236,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			hp = this.mhp;
 		}
 		await this.update( {"system.combat.hp": hp});
+		if (hp <= 0) {
+			await this.addStatus({
+				id:"fading",
+				duration: "combat",
+			});
+		}
+		if (hp > 0) {
+			await this.removeStatus({
+				id: "fading"
+			});
+		}
 	}
 
 	async addStatus({id, potency, duration}: StatusEffect): Promise<void> {
@@ -245,15 +256,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			throw new Error(`Couldn't find status effect Id: ${id}`);
 		}
 		if (!eff) {
-			const s= new Set();
-			s.add(id);
+			const s = [id];
 			const newState = {
 				...stateData,
 				statuses: s
 			};
 			const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
-			// const statuses= Array.from(s);
-			// newEffect.update({statuses});
 		} else  {
 
 			//TODO: update the effect
