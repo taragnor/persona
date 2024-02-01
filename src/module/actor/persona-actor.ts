@@ -262,6 +262,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				statuses: s
 			};
 			const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
+			await newEffect.setFlag("persona", "duration", duration);
+			await newEffect.setFlag("persona", "potency", potency);
 		} else  {
 
 			//TODO: update the effect

@@ -41,7 +41,6 @@
 	"persona.defense.will": "Will",
 	"persona.defense.fort": "Fortitude",
 
-
 	"persona.incremental.type.hp": "Hit Points",
 	"persona.incremental.type.atkbonus": "Attack Bonus",
 	"persona.incremental.type.defbonus": "Defense Bonus",
@@ -50,8 +49,6 @@
 	"persona.incremental.type.powers": "Powers",
 	"persona.incremental.type.wpn_mult": "Weapon Multiplier",
 	"persona.incremental.type.mag_dmg": "Magic Damage",
-
-
 
 	"persona.status.burn" : "Burn",
 	"persona.status.charmed" : "Charmed",
