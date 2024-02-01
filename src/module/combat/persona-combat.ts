@@ -1,3 +1,5 @@
+
+import { PersonaError } from "../persona-error.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { PersonaItem } from "../item/persona-item.js";
 import { CombatResult } from "./combat-result.js";
@@ -19,8 +21,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		await this.setEscalationDie(0);
 		return x;
 	}
-
-
 
 	static async usePower(attacker: PToken, power: Usable) : Promise<CombatResult> {
 		if (!attacker.actor.canPayActivationCost(power)) {
@@ -61,7 +61,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			userToken: PersonaDB.getUniversalTokenAccessor(attacker),
 			escalationDie,
 			activationRoll: isActivationRoll,
-			activeCombat:combat,
+			activeCombat:true,
 		};
 		const element = power.system.dmg_type;
 		const resist = target.actor.elementalResist(element);
@@ -75,9 +75,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		situation.naturalAttackRoll = naturalAttackRoll;
 		const baseData = {
 			roll,
-			attacker ,
-			target,
-			power
+			attacker: PersonaDB.getUniversalTokenAccessor(attacker) ,
+			target: PersonaDB.getUniversalTokenAccessor(target),
+			power: PersonaDB.getUniversalItemAccessor(power)
 		} satisfies Pick<AttackResult, "attacker" | "target"  | "power" | "roll">;
 
 		switch (resist) {
@@ -191,7 +191,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	static async processEffects(atkResult: AttackResult) : Promise<CombatResult> {
 		const CombatRes= new CombatResult();
-		const {result, validAtkModifiers, validDefModifiers, attacker, target, situation, power} = atkResult;
+		const {result, validAtkModifiers, validDefModifiers,  target, situation, } = atkResult;
+		const attacker = PersonaDB.findToken(atkResult.attacker);
+		const power = PersonaDB.findItem(atkResult.power);
 		switch (result) {
 			case "reflect":
 				CombatRes.merge(await this.#usePowerOn(attacker, power, [attacker]));
@@ -209,7 +211,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<CombatResult> {
 		const CombatRes= new CombatResult(atkResult);
-		const {result, validAtkModifiers, validDefModifiers, attacker, target, situation, power} = atkResult;
+		const {result, validAtkModifiers, validDefModifiers,   situation} = atkResult;
+		const power = PersonaDB.findItem(atkResult.power);
+		const attacker = PersonaDB.findToken(atkResult.attacker);
+		const target = PersonaDB.findToken(atkResult.target);
 		const relevantEffects : ConditionalEffect[] = power.getEffects().concat(attacker.actor.getEffects());
 		for (let {conditions, consequences} of relevantEffects) {
 			if (conditions.every(
@@ -365,8 +370,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const combat = game.combat;
 		if (!combat) {
 			const error = "No Combat";
-			ui.notifications.warn(error);
-			throw new Error(error);
+			throw new PersonaError(error);
 		}
 		return combat as PersonaCombat;
 	}
@@ -404,6 +408,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		this.decEscalationDie();
 		return x;
 	}
+
 }
 
 type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shadow">;

@@ -8,6 +8,10 @@ import { PC } from "../actor/persona-actor.js";
 import { PToken } from "./persona-combat.js";
 import { StatusEffectId } from "../../config/status-effects.js";
 import { PersonaRoll } from "../persona-roll.js";
+import { UniversalTokenAccessor } from "../utility/db-accessor.js";
+import { UniversalItemAccessor } from "../utility/db-accessor.js";
+import { PersonaCombat } from "./persona-combat.js";
+import { PersonaDB } from "../persona-db.js";
 
 export class CombatResult  {
 	attacks: Map<AttackResult, TokenChange<PToken>[]> = new Map();
@@ -21,9 +25,27 @@ export class CombatResult  {
 		}
 	}
 
+	toJSON() : string {
+		const obj = {
+			attacks: Array.from(this.attacks),
+			escalationMod: this.escalationMod,
+			costs: this.costs,
+		}
+		return JSON.stringify(obj);
+	}
+
+	static fromJSON(json: string) : CombatResult { 
+		const x = JSON.parse(json);
+		const ret = new CombatResult();
+		ret.attacks = new Map(x.attacks);
+		ret.escalationMod = x.escalationMod;
+		ret.costs = x.costs;
+		return ret;
+	}
+
 	addEffect(atkResult: AttackResult | null, target: PToken, cons: Consequence) {
 		const effect : TokenChange<PToken>= {
-			token: target,
+			token: PersonaDB.getUniversalTokenAccessor(target),
 			hpchange: 0,
 			hpchangemult: 1,
 			addStatus: [],
@@ -120,7 +142,7 @@ export class CombatResult  {
 
 	static mergeChanges(mainEffects: TokenChange<PToken>[], newEffects: TokenChange<PToken>[]) {
 		for (const newEffect of newEffects) {
-			const entry = mainEffects.find( change => change.token == newEffect.token);
+			const entry = mainEffects.find( change => change.token.tokenId == newEffect.token.tokenId);
 			if (!entry) {
 				mainEffects.push(newEffect);
 			} else {
@@ -150,7 +172,7 @@ export class CombatResult  {
 			};
 		});
 
-		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attacker: initiatingToken, power: powerUsed,  attacks, escalation: this.escalationMod});
+		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attacker: initiatingToken, power: powerUsed,  attacks, escalation: this.escalationMod, result: this.toJSON()});
 
 		return await ChatMessage.create( {
 			speaker: {
@@ -175,8 +197,13 @@ export class CombatResult  {
 	}
 
 	async apply(): Promise<void> {
+		console.log(this);
 		const escalationChange = this.escalationMod;
-		//TODO: change escalation die when that's a thing
+		if (escalationChange) {
+			const combat = PersonaCombat.ensureCombatExists();
+			combat.setEscalationDie(combat.getEscalationDie() + escalationChange);
+		}
+
 		for (const changes of this.attacks.values()) {
 			for (const change of changes) {
 				await CombatResult.applyChange(change);
@@ -189,7 +216,7 @@ export class CombatResult  {
 	}
 
 	static async applyChange(change: TokenChange<PToken>) {
-		const actor = change.token.actor;
+		const actor = PersonaDB.findToken(change.token).actor;
 		await actor.modifyHP(change.hpchange * change.hpchangemult);
 		for (const status of change.addStatus) {
 			await actor.addStatus(status);
@@ -218,7 +245,7 @@ export class CombatResult  {
 }
 
 export interface TokenChange<T extends Token<any>> {
-	token: T;
+	token: UniversalTokenAccessor<T>;
 	hpchange: number;
 	hpchangemult: number;
 	addStatus: StatusEffect[],
@@ -246,9 +273,9 @@ export type AttackResult = {
 	result: "hit" | "miss" | "crit" | "reflect" | "block" | "absorb",
 	validAtkModifiers: [number, string][],
 	validDefModifiers: [number, string][],
-	target: PToken,
-	attacker: PToken,
-	power: Usable,
+	target: UniversalTokenAccessor<PToken>,
+	attacker: UniversalTokenAccessor<PToken>,
+	power: UniversalItemAccessor<Usable>,
 	situation: Situation,
 	roll: PersonaRoll,
 	printableModifiers: {name: string, modifier:string} [],

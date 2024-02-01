@@ -98,7 +98,7 @@ export type Precondition = {
 export type Situation = {
 	//more things can be added here all should be optional
 	usedPower?: UniversalItemAccessor<Usable>;
-	activeCombat ?: unknown ;
+	activeCombat ?: boolean ;
 	naturalAttackRoll ?: number;
 	criticalHit ?: boolean;
 	hit?: boolean;
