@@ -18,10 +18,9 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	getGlobalModifiers() : ModifierContainer [] {
 		const items = this.getAllByType("Item") as PersonaItem[];
-		const focii = items.filter( x=> x.system.type == "focus" && x.system.universal_modifier) as ModifierContainer[];
-		return focii;
+		const UMs = items.filter( x=> x.system.type == "universalModifier") as ModifierContainer[];
+		return UMs;
 	}
-
 
 }
 

@@ -47,6 +47,17 @@ function consumableSpecific() {
 	}
 }
 
+ class UniversalModifier extends foundry.abstract.DataModel {
+	get type() { return "universalModifier" as const;}
+	static override defineSchema() {
+		const ret = {
+			desciption: new html(),
+			...effects (false),
+		}
+		return ret;
+	}
+}
+
  class Power extends foundry.abstract.DataModel {
 	get type() {return "power" as const;}
 	static override defineSchema() {
@@ -107,6 +118,7 @@ export const ITEMMODELS = {
 	focus: Focus,
 	talent: Talent,
 	weapon: Weapon,
+	universalModifier: UniversalModifier,
 } as const;
 
 

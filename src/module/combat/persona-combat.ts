@@ -224,9 +224,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					const absorb = situation.isAbsorbed && !cons.applyToSelf;
 					const block = result == "block" && !cons.applyToSelf;
 					const consTarget = cons.applyToSelf ? attacker: target;
-					const crit = result == "crit" && !cons.applyToSelf;
+					// const crit = result == "crit" && !cons.applyToSelf;
+					// damageMult *= crit ? 2 : 1;
 					damageMult *= situation.resisted ? 0.5 : 1;
-					damageMult *= crit ? 2 : 1;
 					switch (cons.type) {
 						case "dmg-high":
 							CombatRes.addEffect(atkResult, consTarget, {

@@ -223,7 +223,9 @@ export type Talent = Subtype<PersonaItem, "talent">;
 export type Focus = Subtype<PersonaItem, "focus">;
 export type Consumable = Subtype<PersonaItem, "consumable">;
 
-export type ModifierContainer = Weapon | InvItem | Focus | Talent | Power | Consumable;
+export type UniversalModifier = Subtype<PersonaItem, "universalModifier">;
+
+export type ModifierContainer = Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier;
 
 export type PowerContainer = Consumable | Power | ModifierContainer;
 export type Usable = Power | Consumable;

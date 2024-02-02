@@ -29,6 +29,7 @@ import { ConsumableSheet } from "./item/sheets/consumable-sheet.js";
 import { PersonaHandleBarsHelpers } from "./handlebars-helpers.js";
 import { PersonaRoll } from "./persona-roll.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
+import { UniversalModifierSheet } from "./item/sheets/universalmodifier-sheet.js";
 
 function registerDataModels() {
 	CONFIG.Actor.dataModels= ACTORMODELS;
@@ -58,6 +59,7 @@ function registerSheetApplications() {
   Items.registerSheet("persona", PersonaTalentSheet, {types: ["talent"], makeDefault: true});
   Items.registerSheet("persona", PersonaFocusSheet, {types: ["focus"], makeDefault: true});
   Items.registerSheet("persona", ConsumableSheet, {types: ["consumable"], makeDefault: true});
+  Items.registerSheet("persona", UniversalModifierSheet, {types: ["universalModifier"], makeDefault: true});
 
 }
 

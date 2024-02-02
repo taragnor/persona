@@ -1,4 +1,4 @@
-import { PersonaSettings } from "../config/persona-settings";
+import { PersonaSettings } from "../config/persona-settings.js";
 
 export class Metaverse {
 	static isEnhanced() : boolean {

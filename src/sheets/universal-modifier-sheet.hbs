@@ -1,0 +1,13 @@
+<form class="universal-mod-sheet">
+	<header class="flexcol">
+		<div class="">
+			<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="UM Name" placeholder="UM Name">
+		</div>
+		<b>Universal Modifier</b>
+	</header>
+	<body>
+	{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
+	</body>
+</form>
+
+
