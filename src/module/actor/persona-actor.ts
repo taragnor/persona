@@ -640,6 +640,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.mainModifiers().flatMap( x=> x.getEffects());
 	}
 
+	canEngage() :boolean {
+		return true; //placeholder
+
+	}
+
 }
 
 export type PC = Subtype<PersonaActor, "pc">;

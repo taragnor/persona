@@ -7,15 +7,19 @@ import { ModifierList } from "./modifier-list.js";
 import { Situation } from "../preconditions.js";
 import { AttackResult } from "./combat-result.js";
 import { Usable } from "../item/persona-item.js";
-import { ArrayCorrector } from "../item/persona-item.js"
 import { PersonaDB } from "../persona-db.js";
 import { PersonaRoll } from "../persona-roll.js";
 import { UniversalTokenAccessor } from "../utility/db-accessor.js";
+import { EngagementList } from "./engagementList.js";
 
 
 export class PersonaCombat extends Combat<PersonaActor> {
 
+	// engagedList: Combatant<PersonaActor>[][] = [];
+	engagedList: EngagementList;
+
 	override async startCombat() {
+		this.engagedList = new EngagementList(this);
 		const x = await super.startCombat();
 		await this.setEscalationDie(0);
 		return x;
@@ -263,7 +267,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 								});
 							continue;
 						default:
-								CombatRes.addEffect(atkResult, consTarget, cons);
+							CombatRes.addEffect(atkResult, consTarget, cons);
 							break;
 					}
 				}
@@ -273,24 +277,24 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	static async #processCosts(attacker: PToken , power: Usable) : Promise<CombatResult>
-		{
-			const res = new CombatResult();
-			if (power.system.type == "power") {
-				if (attacker.actor.system.type == "pc" && power.system.hpcost) {
-					res.addEffect(null, attacker, {
-						type: "hp-loss",
-						amount: power.system.hpcost
-					});
-				}
-				if (attacker.actor.system.type == "pc" && power.system.subtype == "magic" && power.system.slot >= 0){
-					res.addEffect(null, attacker, {
-						type: "expend-slot",
-						amount: power.system.slot,
-					});
-				}
+	{
+		const res = new CombatResult();
+		if (power.system.type == "power") {
+			if (attacker.actor.system.type == "pc" && power.system.hpcost) {
+				res.addEffect(null, attacker, {
+					type: "hp-loss",
+					amount: power.system.hpcost
+				});
 			}
-			return res;
+			if (attacker.actor.system.type == "pc" && power.system.subtype == "magic" && power.system.slot >= 0){
+				res.addEffect(null, attacker, {
+					type: "expend-slot",
+					amount: power.system.slot,
+				});
+			}
 		}
+		return res;
+	}
 
 	static getAttackBonus(attacker: PToken, power:Usable): ModifierList {
 		const actor = attacker.actor;
@@ -408,15 +412,40 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return x;
 	}
 
-	isEngaged(subject: UniversalTokenAccessor<PToken>) : boolean{
-		//TODO: placeholder
-		return false;
+
+	isEngaged(subject: UniversalTokenAccessor<PToken>) : boolean {
+		const c1 = this.getCombatantFromTokenAcc(subject);
+		const engagement = this.engagedList.findEngagement(c1);
+		return engagement
+		.map( id => this.combatants.get(id))
+		.some( (comb : Combatant<PersonaActor>) => comb?.actor?.type != c1.actor?.type );
 	}
-	isEngagedWith(one: UniversalTokenAccessor<PToken>, two: UniversalTokenAccessor<PToken>) : boolean {
-		//TODO: placeholder
-		return false;
+
+	 isEngagedWith(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
+		const c1 = this.getCombatantFromTokenAcc(token1);
+		const c2 = this.getCombatantFromTokenAcc(token2);
+		const engagement = this.engagedList.findEngagement(c1);
+		if (!engagement) return false;
+		return engagement.some( cId => cId == c2.id);
+	}
+
+	getCombatantFromTokenAcc(acc: UniversalTokenAccessor<PToken>): Combatant<PersonaActor> {
+		const token = PersonaDB.findToken(acc);
+		const combatant = this.combatants.find( x=> x.token._object.actor.id == token.id);
+		if (!combatant) {
+			throw new PersonaError(`Can't find combatant for ${token.document.name}. are you sure this token is in the fight? `);
+		}
+		return combatant;
 
 	}
+
+
+	async setEngageWith(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) {
+		const c1 = this.getCombatantFromTokenAcc(token1);
+		const c2 = this.getCombatantFromTokenAcc(token2);
+		await this.engagedList.setEngageWith(c1, c2);
+	}
+
 
 }
 
