@@ -239,7 +239,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (hp <= 0) {
 			await this.addStatus({
 				id:"fading",
-				duration: "combat",
+				duration: "expedition",
 			});
 		}
 		if (hp > 0) {
