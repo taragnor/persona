@@ -10,6 +10,10 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		// example: changes["system.hp"] = 25
 	}
 
+	get displayedName() {
+		return game.i18n.localize(this.name);
+	}
+
 	get potency(): number {
 		try {
 			const potency = Number(this.getFlag<string>("persona", "potency"));

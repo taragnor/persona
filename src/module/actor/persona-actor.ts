@@ -265,6 +265,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const s = [id];
 			const newState = {
 				...stateData,
+				name: game.i18n.localize(stateData.name),
 				statuses: s
 			};
 			const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;

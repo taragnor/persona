@@ -1,3 +1,4 @@
+import { StatusEffectId } from "../../config/status-effects.js";
 
 import { PersonaError } from "../persona-error.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
@@ -37,10 +38,22 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (!game.user.isGM) return;
 		for (const effect of actor.effects) {
 			if (effect.statusDuration == "USoNT")  {
-				await Logger.sendToChat(`Removed condition: ${effect.name} at start of turn`, actor);
+				await Logger.sendToChat(`Removed condition: ${effect.displayedName} at start of turn`, actor);
 				await effect.delete();
 			}
 		}
+		let startTurnMsg= `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`;
+		const debilitatingStatuses :StatusEffectId[] = [
+			"sleep",
+			"charmed",
+			"frozen",
+			"shock"
+		];
+		const debilitatingStatus = actor.effects.find( eff=> debilitatingStatuses.some( debil => eff.statuses.has(debil)));
+		if (debilitatingStatus) {
+			startTurnMsg += `<br> can't take actioins normally because of ${debilitatingStatus.name}`;
+		}
+		await Logger.sendToChat(startTurnMsg, actor);
 	}
 
 	async endCombatantTurn(combatant: Combatant<ValidAttackers>) {
@@ -50,24 +63,24 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		for (const effect of actor.effects) {
 			switch (effect.statusDuration) {
 				case "UEoNT":
-					await Logger.sendToChat(`Removed condition: ${effect.name} at end of turn`, actor);
+					await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
 					await effect.delete();
 					break;
 				case "save-normal":
 					if (await PersonaCombat.rollSave(actor, 11)) {
-						await Logger.sendToChat(`Removed condition: ${effect.name} from saving throw`, actor);
+						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
 						await effect.delete();
 					}
 					break;
 				case "save-easy":
 					if (await PersonaCombat.rollSave(actor, 6)) {
-						await Logger.sendToChat(`Removed condition: ${effect.name} from saving throw`, actor);
+						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
 						await effect.delete();
 					}
 					break;
 				case "save-hard":
 					if (await PersonaCombat.rollSave(actor, 16)) {
-						await Logger.sendToChat(`Removed condition: ${effect.name} from saving throw`, actor);
+						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
 						await effect.delete();
 					}
 					break;
@@ -204,6 +217,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			};
 		}
 		const critBoostMod = attacker.actor.critBoost();
+		critBoostMod.add("Power Modifier", power.system.crit_boost);
 		if (resist == "weakness") {
 			critBoostMod.add("weakness", 4);
 		}
@@ -512,7 +526,7 @@ CONFIG.Combat.initiative = {
 
 Hooks.on("preUpdateCombat" , async (combat: PersonaCombat, changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
 		const prevActor = combat?.combatant?.actor
-		if (prevActor) {
+		if (prevActor && diffObject.direction && diffObject.direction > 0) {
 			await combat.endCombatantTurn(combat.combatant)
 		}
 
@@ -521,7 +535,7 @@ Hooks.on("preUpdateCombat" , async (combat: PersonaCombat, changes: Record<strin
 Hooks.on("updateCombat" , async (combat: PersonaCombat, changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
 	if (changes.turn != undefined && diffObject.direction && diffObject.direction != 0) {
 		const currentActor = combat?.combatant?.actor
-		if (currentActor) {
+		if (currentActor && diffObject.direction > 0) {
 			await combat.startCombatantTurn(combat.combatant)
 		}
 		//new turn

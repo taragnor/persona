@@ -9,7 +9,6 @@ declare class ActiveEffect<A extends Actor<any,I>, I extends Item<any>> extends 
 	parent:A | I;
 	origin: Option<unknown>;
 	icon: string;
-	name: string;
 	changes: unknown[];
 	description: string;
 	duration: Record<string, unknown>;
