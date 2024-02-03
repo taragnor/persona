@@ -1,7 +1,7 @@
-import { PersonaItem } from "./item/persona-item";
-import { PersonaActor } from "./actor/persona-actor";
-import { PersonaError } from "./persona-error";
-import { StatusDuration } from "../config/status-effects";
+import { PersonaItem } from "./item/persona-item.js";
+import { PersonaActor } from "./actor/persona-actor.js";
+import { PersonaError } from "./persona-error.js";
+import { StatusDuration } from "../config/status-effects.js";
 
 export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 
@@ -28,6 +28,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 	async setPotency(potency: number) : Promise<void> {
 		await this.setFlag("persona", "potency", potency);
 	}
+
 	async setDuration(duration: StatusDuration) : Promise<void> {
 		await this.setFlag("persona", "potency", duration);
 	}

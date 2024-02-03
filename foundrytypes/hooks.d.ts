@@ -16,11 +16,18 @@ declare interface HOOKS {
 	"preCreateChatMessage": (msg: ChatMessage, spkdata: unknown, otherstuff: unknown, id: string) => Promise<void>;
 	"createChatMessage": (msg: ChatMessage, otherstuff: unknown, id: string) => Promise<void>;
 	"renderChatMessage": (msg: ChatMessage, htmlElement: JQuery<HTMLElement>, data: unknown) => Promise<void>;
+	"updateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<void>,
+	"preUpdateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<false | void>,
+
 
 };
 
 type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , delta: any, changes: Record<string, any>) => Promise<void>;
 
+type DiffObject = {
+	diff: boolean,
+	render: boolean
+}
 
 type CombatUpdateOptions = {
 	/**The amount of time in seconds that time is being advanced*/

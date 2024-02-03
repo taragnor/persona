@@ -236,6 +236,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			hp = this.mhp;
 		}
 		await this.update( {"system.combat.hp": hp});
+		// await this.refreshHpStatus();
+	}
+
+	async refreshHpStatus(this: Shadow | PC, newval?: number) {
+		const hp = newval ?? this.system.combat.hp;
 		if (hp <= 0) {
 			await this.addStatus({
 				id:"fading",
@@ -641,3 +646,26 @@ export type PC = Subtype<PersonaActor, "pc">;
 export type Shadow = Subtype<PersonaActor, "shadow">;
 export type NPC = Subtype<PersonaActor, "npc">;
 export type SocialLink = PC | NPC;
+
+Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) => {
+	switch (actor.system.type) {
+		case "npc": return;
+		case "pc": {
+			const newHp = changes?.system?.combat?.hp;
+			if (newHp == undefined)
+				return;
+			await (actor as PC | Shadow).refreshHpStatus(newHp);
+			return ;
+		}
+		case "shadow": {
+			const newHp = changes?.system?.combat?.hp;
+			if (newHp == undefined)
+				return;
+			await (actor as PC | Shadow).refreshHpStatus(newHp);
+			return;
+		}
+		default:
+			actor.system satisfies never;
+			throw new PersonaError(`Unknown Type ${actor.type}`);
+	}
+});
