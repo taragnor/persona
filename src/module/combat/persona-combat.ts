@@ -109,15 +109,19 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			ui.notifications.notify("You can't pay the activation cost for this power");
 			return new CombatResult();
 		}
-		this.customAtkBonus = 0;
-		//TODO: implement this function
-		// this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
+		try {
 		const targets= await this.getTargets(attacker, power);
+		this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
 		const result = await  this.#usePowerOn(attacker, power, targets);
 		await result.print();
 		await result.toMessage(attacker, power);
 		// await result.apply();
 		return result;
+		} catch(e) {
+			console.log(e);
+			throw e;
+		}
+
 	}
 
 	static async #usePowerOn(attacker: PToken, power: Usable, targets: PToken[]) : Promise<CombatResult> {

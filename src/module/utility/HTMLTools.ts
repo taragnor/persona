@@ -117,6 +117,47 @@ export class HTMLTools {
 		});
 	}
 
+
+	static async getNumber(comment: string) : Promise<number> {
+		const html = `<div> ${comment} </div>
+		<input type='number' class='numInput' value=0>
+		`;
+		return await new Promise( (conf, _reject) => {
+			const dialog = new Dialog({
+				title: `Prompt`,
+				content: html,
+				render: async (html: string) => {
+					$(html).find(".numInput").focus();
+				},
+				buttons: {
+					one: {
+						icon: `<i class="fas fa-check"></i>`,
+						label: "Confirm",
+						callback: (htm: string) => {
+							const value = Number($(htm).find(".numInput").val());
+							if (value != undefined) {
+								conf(value);
+							} else {
+								_reject("Something weird happened");
+							}
+						}
+					},
+					two: {
+						icon: `<i class="fas fa-times"></i>`,
+						label: "Cancel",
+						callback: () => _reject("Cancel"),
+					}
+				},
+				default: "one",
+				close: () => {
+					_reject("close");
+				},
+			}, {});
+			dialog.render(true);
+		});
+
+	}
+
 // **************************************************
 // **************   EventHandlers  *************** *
 // **************************************************

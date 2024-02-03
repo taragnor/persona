@@ -20,6 +20,9 @@ interface DialogOptions {
 	content: string;
 	close ?: (html:string) => void;
 	buttons?: Record<string, buttonOptions>;
+	render ?: (html:string) => void;
+	/**default button label */
+	default?: string
 
 
 
