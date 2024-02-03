@@ -445,7 +445,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			throw new PersonaError(`Can't find combatant for ${token.document.name}. are you sure this token is in the fight? `);
 		}
 		return combatant;
-
 	}
 
 
@@ -455,6 +454,18 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		await this.engagedList.setEngageWith(c1, c2);
 	}
 
+
+	/** returns pass or fail */
+	static async rollSave (actor: ValidAttackers, difficulty: number =11) : Promise<boolean> {
+		const mods = actor.getSaveBonus();
+		const situation : Situation = {
+			user: PersonaDB.getUniversalActorAccessor(actor),
+		}
+		const roll = new PersonaRoll("1d20", mods, situation, "Saving Throw");
+		await roll.roll();
+		await roll.toModifiedMessage();
+		return roll.total >= difficulty;
+	}
 
 }
 

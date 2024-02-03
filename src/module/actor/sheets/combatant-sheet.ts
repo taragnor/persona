@@ -32,6 +32,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".powerName").on("click", this.openPower.bind(this));
 		html.find(".talentName").on("click", this.openTalent.bind(this));
 		html.find(".focusName").on("click", this.openFocus.bind(this));
+		html.find(".rollSave").on("click", this.rollSave.bind(this));
 	}
 
 	override async _onDropItem(_event: Event, itemD: unknown, ...rest:any[]) : Promise<void> {
@@ -176,5 +177,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		await focus.sheet.render(true);
 	}
 
+	async rollSave(event: Event) {
+		await PersonaCombat.rollSave(this.actor, 11);
+	}
 
 }

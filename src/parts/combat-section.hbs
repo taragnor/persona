@@ -50,6 +50,10 @@
 			</div>
 		</div>
 		{{/if}}
+		<button class="rollSave">
+			Roll Save
+		</button>
+
 		{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST}}
 		{{#if (eq actor.type "pc")}}
 		{{> "systems/persona/parts/talents-table.hbs" actor=actor CONST=CONST}}

@@ -80,7 +80,7 @@ export function UsablePowerProps() {
 	return {
 		tags: new arr( new txt<typeof POWER_TAGS_LIST[number]>({choices: POWER_TAGS_LIST})),
 		damage: damage(),
-		mag_mult: new num( {integer:true, min:1, max: 100, initial:1}),
+		mag_mult: new num( {integer:true, min:0, max: 100, initial:1}),
 		defense: new txt<(typeof DEFENSECHOICES[number]) >( {choices: DEFENSECHOICES, initial: "ref"}),
 		targets: new txt<typeof TARGETINGLIST[number]> ( {choices: TARGETINGLIST, initial: "1-engaged"}),
 		dmg_type: new txt<typeof DAMAGETYPESLIST[number]>( {choices: DAMAGETYPESLIST, initial:"physical"}),

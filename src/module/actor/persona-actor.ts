@@ -672,6 +672,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.talents": this.system.talents});
 	}
 
+	getSaveBonus() : ModifierList {
+		const mods = this.mainModifiers().flatMap( item => item.getModifier("save"));
+		return new ModifierList(mods);
+	}
+
 }
 
 export type PC = Subtype<PersonaActor, "pc">;

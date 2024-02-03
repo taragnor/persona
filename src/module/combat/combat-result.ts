@@ -42,7 +42,6 @@ export class CombatResult  {
 		ret.attacks = new Map(x.attacks);
 		ret.escalationMod = x.escalationMod;
 		ret.costs = x.costs;
-		console.log(json);
 		return ret;
 	}
 
@@ -214,7 +213,6 @@ export class CombatResult  {
 	}
 
 	async apply(): Promise<void> {
-		console.log(this);
 		const escalationChange = this.escalationMod;
 		if (escalationChange) {
 			const combat = PersonaCombat.ensureCombatExists();
