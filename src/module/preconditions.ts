@@ -108,6 +108,50 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 			if (!situation.usedPower) return false;
 			const power = PersonaDB.findItem(situation.usedPower);
 			return power.system.type == "power" && power.system.subtype == condition.powerType;
+		case "is-resistant-to": {
+			const resist =user.elementalResist(condition.powerDamageType!);
+			switch (resist)  {
+				case "resist": case "block": case "absorb": case "reflect": return true;
+				case "weakness": case "normal": return false;
+				default:
+					resist satisfies never;
+					return false;
+			}
+		}
+		case "not-resistant-to": {
+			const resist =user.elementalResist(condition.powerDamageType!);
+			switch (resist)  {
+				case "resist": case "block": case "absorb": case "reflect": return false;
+				case "weakness": case "normal": return true;
+				default:
+					resist satisfies never;
+					return true;
+			}
+		}
+		case "target-is-resistant-to": {
+			if(!situation.target) return false;
+			const target = PersonaDB.findToken(situation.target);
+			const resist =target.actor.elementalResist(condition.powerDamageType!);
+			switch (resist) {
+				case "resist": case "block": case "absorb": case "reflect": return true;
+				case "weakness": case "normal": return false;
+				default:
+					resist satisfies never;
+					return false;
+			}
+		}
+		case "target-is-not-resistant-to": {
+			if(!situation.target) return false;
+			const target = PersonaDB.findToken(situation.target);
+			const resist =target.actor.elementalResist(condition.powerDamageType!);
+			switch (resist) {
+				case "resist": case "block": case "absorb": case "reflect": return false;
+				case "weakness": case "normal": return true;
+				default:
+					resist satisfies never;
+					return true;
+			}
+		}
 		default:
 			condition.type satisfies never;
 			PersonaError.softFail(`Unexpected Condition: ${condition.type}`);

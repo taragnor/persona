@@ -159,6 +159,7 @@
 	"persona.power.tag.buff": "Enhancing",
 	"persona.power.tag.debuff": "Debilitating",
 	"persona.power.tag.weapon": "Weapon",
+	"persona.power.tag.healing": "Healing",
 
 	"persona.slottypes.0.name": "Basic",
 	"persona.slottypes.1.name": "Advanced",
@@ -216,5 +217,9 @@
 	"persona.preconditions.is-engaged": "Is engaged with anyone",
 	"persona.preconditions.is-engaged-with-target": "Is engaged with target",
 	"persona.preconditions.is-not-engaged-with-target": "Is not engaged with target",
-	"persona.preconditions.metaverse-enhanced": "Metaverse has enhanced Foes"
+	"persona.preconditions.metaverse-enhanced": "Metaverse has enhanced Foes",
+	"persona.preconditions.is-resistant-to": "User is resistant or better to element",
+	"persona.preconditions.target-is-resistant-to": "Target is resistant or better to element",
+	"persona.preconditions.is-not-resistant-to": "User is not resistant or better to element",
+	"persona.preconditions.target-is-not-resistant-to": "Target is not resistant or better to element"
 }

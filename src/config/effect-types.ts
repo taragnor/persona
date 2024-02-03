@@ -60,6 +60,10 @@ export const PRECONDITIONLIST = [
 	"is-engaged-with-target",
 	"is-not-engaged-with-target",
 	"metaverse-enhanced",
+	"is-resistant-to",
+	"not-resistant-to",
+	"target-is-resistant-to",
+	"target-is-not-resistant-to"
 ] as const;
 
 export type PreconditionType = typeof PRECONDITIONLIST[number];

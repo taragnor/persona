@@ -8,6 +8,7 @@ export const POWER_TAGS_LIST = [
 	"buff",
 	"debuff",
 	"weapon",
+	"healing",
 
 ] as const;
 
