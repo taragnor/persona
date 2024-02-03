@@ -197,7 +197,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get talents() : Talent[] {
 		if (this.system.type == "shadow") {
-			return this.items.filter( x=> x.system.type == "talent") as Talent[];
+			return [];
+			// return this.items.filter( x=> x.system.type == "talent") as Talent[];
 		}
 		if (this.system.type != "pc") return [];
 		const extTalents = this.system.talents.flatMap( ({talentId}) => {
@@ -411,6 +412,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async addTalent(this: PC | Shadow, talent: Talent) {
+		if (this.system.type == "shadow") {
+			ui.notifications.warn("Shadows can't use talents");
+			return;
+		}
+
 		const talents = this.system.talents;
 		if (talents.find(x => x.talentId == talent.id)) return;
 		talents.push( {
@@ -643,6 +649,27 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	canEngage() :boolean {
 		return true; //placeholder
 
+	}
+
+	getLevelOfTalent(this: PC, talent: Talent) : number {
+		const x= this.system.talents.find( x=> x.talentId == talent.id);
+		if (!x) return 0;
+		return x.talentLevel;
+	}
+
+	async incrementTalent(this:PC, talentId: string) {
+		const x = this.system.talents.find( x => x.talentId == talentId);
+		if (!x) return;
+		x.talentLevel = Math.min(3, x.talentLevel+1);
+		await this.update({"system.talents": this.system.talents});
+	}
+
+	async decrementTalent(this:PC, talentId :string) {
+		const x = this.system.talents.find( x => x.talentId == talentId);
+
+		if (!x) return;
+		x.talentLevel = Math.max(0, x.talentLevel-1);
+		await this.update({"system.talents": this.system.talents});
 	}
 
 }

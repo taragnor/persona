@@ -72,6 +72,8 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".delItem").on("click", this.delItem.bind(this));
 		html.find(".refreshLink").on("click", this.refreshLink.bind(this));
 		html.find(".useInspiration").on("click", this.useInspiration.bind(this));
+		html.find(".incTalent").on("click", this.incTalent.bind(this));
+		html.find(".decTalent").on("click", this.decTalent.bind(this));
 		for (const stat of STUDENT_SKILLS_LIST) {
 			html.find(`.${stat} .roll-icon`).on("click", this.rollSocial.bind(this, stat));
 		}
@@ -112,5 +114,16 @@ export class PCSheet extends CombatantSheetBase {
 
 
 	}
+
+	async incTalent(event: Event) {
+		const talentId= String(HTMLTools.getClosestData(event, "talentId"));
+		await this.actor.incrementTalent(talentId);
+	}
+
+	async decTalent(event: Event) {
+		const talentId= String(HTMLTools.getClosestData(event, "talentId"));
+		await this.actor.decrementTalent(talentId);
+	}
+
 
 }

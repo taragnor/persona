@@ -1,7 +1,6 @@
 import { PersonaCombat } from "./persona-combat.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaError } from "../persona-error.js";
-import { PToken } from "./persona-combat.js";
 
 export class EngagementList {
 	parent : PersonaCombat;
@@ -57,7 +56,6 @@ export class EngagementList {
 
 	async setEngageWith(combatant1: Combatant<PersonaActor>, combatant2: Combatant<PersonaActor>) {
 		const engagement = this.findEngagement(combatant2);
-		// const combatantOne = this.combatants.find( x=> x.token._object.actor.id == tokenOne.id);
 		if (!engagement.includes(combatant1.id)) {
 			engagement.push(combatant1.id);
 			if (!this.data.includes(engagement))

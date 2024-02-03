@@ -22,7 +22,6 @@ export class ShadowSheet extends CombatantSheetBase {
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 		html.find('.addShadowPower').on("click", this.onAddPower.bind(this));
-		html.find('.addShadowTalent').on("click", this.onAddTalent.bind(this));
 		html.find('.addShadowFocus').on("click", this.onAddFocus.bind(this));
 
 	}
@@ -31,13 +30,6 @@ export class ShadowSheet extends CombatantSheetBase {
 		await this.actor.createEmbeddedDocuments( "Item", [{
 			name: "New Power",
 			type: "power",
-		}]);
-	}
-
-	async onAddTalent(_ev: Event) {
-		await this.actor.createEmbeddedDocuments( "Item", [{
-			name: "New Talent",
-			type: "talent",
 		}]);
 	}
 

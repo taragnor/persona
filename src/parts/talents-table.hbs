@@ -1,19 +1,19 @@
 <div class="talent-section">
 	<h2>
 		{{localize 	"persona.statistic.talents"}}
-	{{#if (isShadow actor)}}
-	<a class="addShadowTalent">
-		<i class="fa-solid fa-plus"> </i>
-	</a>
-	{{/if}}
-
 	</h2>
 	<table class="talents-table">
 		{{#each actor.talents as |talent|}}
 		<tr data-talent-id="{{talent.id}}">
 			<td>
 				<a class="talentName">
-					{{talent.name}}
+					{{talent.name}} ({{getTalentLevel ../actor talent}})
+				</a>
+				<a class="incTalent">
+					<i class="fa-solid fa-circle-plus"></i>
+				</a>
+				<a class="decTalent">
+					<i class="fa-solid fa-circle-minus"></i>
 				</a>
 			</td>
 			<td>

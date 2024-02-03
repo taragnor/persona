@@ -51,7 +51,9 @@
 		</div>
 		{{/if}}
 		{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST}}
+		{{#if (eq actor.type "pc")}}
 		{{> "systems/persona/parts/talents-table.hbs" actor=actor CONST=CONST}}
+		{{/if}}
 		<hr>
 		{{> "systems/persona/parts/focii-table.hbs" actor=actor CONST=CONST}}
 		<hr>

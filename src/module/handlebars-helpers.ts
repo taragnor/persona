@@ -2,6 +2,8 @@ import { PersonaActor } from "./actor/persona-actor.js";
 import { PC } from "./actor/persona-actor.js";
 import { Shadow } from "./actor/persona-actor.js";
 import { PersonaDB } from "./persona-db.js";
+import { Talent } from "./item/persona-item.js";
+
 
 export class PersonaHandleBarsHelpers {
 	static init() {
@@ -37,6 +39,14 @@ export class PersonaHandleBarsHelpers {
 		"strIncludes" : (testStr: string, substr: string) => {
 			return testStr.includes(substr);
 		},
+		"getTalentLevel": (actor: PersonaActor, talent: Talent) => {
+			if (actor.system.type == "pc") {
+				const numLevel = (actor as PC).getLevelOfTalent(talent);
+				return game.i18n.localize(`persona.talentLevels.${numLevel}.name`);
+			}
+			else return 0;
+
+		}
 
 	}
 }

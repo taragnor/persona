@@ -163,6 +163,11 @@
 	"persona.slottypes.2.name": "Expert",
 	"persona.slottypes.3.name": "Ultimate",
 
+	"persona.talentLevels.0.name": "Basic",
+	"persona.talentLevels.1.name": "Adept",
+	"persona.talentLevels.2.name": "Expert",
+	"persona.talentLevels.3.name": "Master",
+
 	"persona.effecttypes.dmg-mult": "Damage Multiplier",
 	"persona.effecttypes.hp-loss": "HP Loss",
 	"persona.effecttypes.dmg-low": "Low Damage",
