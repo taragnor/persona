@@ -10,7 +10,11 @@ export class EngagementList {
 	}
 
 	get data() : CombatantId[][] {
-		return this.parent.getFlag("persona", "engageList");
+		return this.parent.getFlag("persona", "engageList") ?? [];
+	}
+
+	async flushData() {
+		await this.storeData([]);
 	}
 
 	async refreshList() {

@@ -16,13 +16,21 @@ import { EngagementList } from "./engagementList.js";
 export class PersonaCombat extends Combat<PersonaActor> {
 
 	// engagedList: Combatant<PersonaActor>[][] = [];
-	engagedList: EngagementList;
+	_engagedList: EngagementList;
 
 	override async startCombat() {
-		this.engagedList = new EngagementList(this);
+		this._engagedList = new EngagementList(this);
+		await this._engagedList.flushData();
 		const x = await super.startCombat();
 		await this.setEscalationDie(0);
 		return x;
+	}
+
+	get engagedList() : EngagementList {
+		if (!this._engagedList)  {
+			this._engagedList = new EngagementList(this);
+		}
+		return this._engagedList
 	}
 
 	static async usePower(attacker: PToken, power: Usable) : Promise<CombatResult> {
@@ -252,6 +260,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						case "addStatus": case "removeStatus":
 							if (absorb || block) continue;
 							CombatRes.addEffect(atkResult, consTarget, cons);
+							break;
 						case "dmg-mult":
 							CombatRes.addEffect(atkResult, consTarget, cons);
 							break;
@@ -431,7 +440,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	getCombatantFromTokenAcc(acc: UniversalTokenAccessor<PToken>): Combatant<PersonaActor> {
 		const token = PersonaDB.findToken(acc);
-		const combatant = this.combatants.find( x=> x.token._object.actor.id == token.id);
+		const combatant = this.combatants.find( x=> x?.actor?.id == token.actor.id);
 		if (!combatant) {
 			throw new PersonaError(`Can't find combatant for ${token.document.name}. are you sure this token is in the fight? `);
 		}

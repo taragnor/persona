@@ -206,6 +206,7 @@ export class CombatResult  {
 	}
 
 	async apply(): Promise<void> {
+		console.log(this);
 		const escalationChange = this.escalationMod;
 		if (escalationChange) {
 			const combat = PersonaCombat.ensureCombatExists();
