@@ -1,4 +1,5 @@
 import { StatusEffectId } from "../../config/status-effects.js";
+import { HTMLTools } from "../utility/HTMLTools.js";
 
 import { PersonaError } from "../persona-error.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
@@ -20,6 +21,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	// engagedList: Combatant<PersonaActor>[][] = [];
 	_engagedList: EngagementList;
+	static customAtkBonus: number
 
 	override async startCombat() {
 		this._engagedList = new EngagementList(this);
@@ -107,6 +109,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			ui.notifications.notify("You can't pay the activation cost for this power");
 			return new CombatResult();
 		}
+		this.customAtkBonus = 0;
+		//TODO: implement this function
+		// this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
 		const targets= await this.getTargets(attacker, power);
 		const result = await  this.#usePowerOn(attacker, power, targets);
 		await result.print();
@@ -146,9 +151,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const element = power.system.dmg_type;
 		const resist = target.actor.elementalResist(element);
 		const attackbonus= this.getAttackBonus(attacker, power);
-		// if (attacker.actor.system.type == "pc") {
-		// 	attackbonus.add("Escalation Die", escalationDie);
-		// }
+		attackbonus.add("Custom modifier", this.customAtkBonus);
 		const roll = new PersonaRoll("1d20", attackbonus, situation, `${target.document.name} (vs ${power.system.defense})`);
 		await roll.roll();
 		const naturalAttackRoll = roll.dice[0].total;
