@@ -76,6 +76,7 @@ export const STATUS_EFFECT_DURATIONS_LIST = [
 	"save-easy",
 	"save-hard",
 	"UEoNT",
+	"USoNT",
 	"instant",
 ] as const;
 

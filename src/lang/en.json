@@ -80,6 +80,8 @@
 	"persona.status.duration.save-easy": "Save Ends (easy)",
 	"persona.status.duration.save-hard": "Save Ends (hard)",
 	"persona.status.duration.UEoNT": "Until End of Your Next Turn",
+	"persona.status.duration.USoNT": "Until Start of Your Next Turn",
+	"persona.status.duration.instant": "Instant",
 
 	"persona.modifier.maxhp": "Maximum HP",
 	"persona.modifier.wpnAtk": "Weapon Attack Bonus",
