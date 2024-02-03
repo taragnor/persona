@@ -59,7 +59,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	async endCombatantTurn(combatant: Combatant<ValidAttackers>) {
 		const actor = combatant.actor;
 		if (!actor) return;
-		if (!game.user.isGM) return;
+		if (!game.user.isOwner) return;
 		for (const effect of actor.effects) {
 			switch (effect.statusDuration) {
 				case "UEoNT":
@@ -474,11 +474,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const c1 = this.getCombatantFromTokenAcc(subject);
 		const engagement = this.engagedList.findEngagement(c1);
 		return engagement
-		.map( id => this.combatants.get(id))
-		.some( (comb : Combatant<PersonaActor>) => comb?.actor?.type != c1.actor?.type );
+			.map( id => this.combatants.get(id))
+			.some( (comb : Combatant<PersonaActor>) => comb?.actor?.type != c1.actor?.type );
 	}
 
-	 isEngagedWith(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
+	isEngagedWith(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
 		const c1 = this.getCombatantFromTokenAcc(token1);
 		const c2 = this.getCombatantFromTokenAcc(token2);
 		const engagement = this.engagedList.findEngagement(c1);
@@ -525,10 +525,10 @@ CONFIG.Combat.initiative = {
 }
 
 Hooks.on("preUpdateCombat" , async (combat: PersonaCombat, changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
-		const prevActor = combat?.combatant?.actor
-		if (prevActor && diffObject.direction && diffObject.direction > 0) {
-			await combat.endCombatantTurn(combat.combatant)
-		}
+	const prevActor = combat?.combatant?.actor
+	if (prevActor && diffObject.direction && diffObject.direction > 0) {
+		await combat.endCombatantTurn(combat.combatant)
+	}
 
 });
 
