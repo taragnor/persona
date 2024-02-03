@@ -28,6 +28,9 @@ declare class Combat<T extends Actor<any, any> = Actor<any, any>> extends Foundr
    * Return the Array of combatants sorted into initiative order, breaking ties alphabetically by name.
    */
 	setupTurns: Combatant<T>[];
+	/** current combatant whose turn it is */
+	get combatant(): Option<Combatant<T>>
+
 }
 
 type CombatUpdateData = {

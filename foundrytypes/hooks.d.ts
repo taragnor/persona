@@ -17,12 +17,16 @@ declare interface HOOKS {
 	"createChatMessage": (msg: ChatMessage, otherstuff: unknown, id: string) => Promise<void>;
 	"renderChatMessage": (msg: ChatMessage, htmlElement: JQuery<HTMLElement>, data: unknown) => Promise<void>;
 	"updateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<void>,
-	"preUpdateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<false | void>,
+		"preUpdateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<false | void>,
+		"preUpdateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>,
+		"updateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>,
 
 
 };
 
 type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , delta: any, changes: Record<string, any>) => Promise<void>;
+
+type UpdateHook<T, Diff = {}> = (updatedItem: T, changes: Record<string, unknown>, diff: DiffObject & Diff, id: string) => Promise<void>;
 
 type DiffObject = {
 	diff: boolean,

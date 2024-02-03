@@ -11,6 +11,7 @@ import { PersonaDB } from "../persona-db.js";
 import { PersonaRoll } from "../persona-roll.js";
 import { UniversalTokenAccessor } from "../utility/db-accessor.js";
 import { EngagementList } from "./engagementList.js";
+import { Logger } from "../utility/logger.js";
 
 
 export class PersonaCombat extends Combat<PersonaActor> {
@@ -24,6 +25,57 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const x = await super.startCombat();
 		await this.setEscalationDie(0);
 		return x;
+	}
+
+	override get combatant() : Option<Combatant<ValidAttackers>>{
+		return super.combatant as Option<Combatant<ValidAttackers>>;
+	}
+
+	async startCombatantTurn( combatant: Combatant<ValidAttackers> ){
+		const actor = combatant.actor;
+		if (!actor) return;
+		if (!game.user.isGM) return;
+		for (const effect of actor.effects) {
+			if (effect.statusDuration == "USoNT")  {
+				await Logger.sendToChat(`Removed condition: ${effect.name} at start of turn`, actor);
+				await effect.delete();
+			}
+		}
+	}
+
+	async endCombatantTurn(combatant: Combatant<ValidAttackers>) {
+		const actor = combatant.actor;
+		if (!actor) return;
+		if (!game.user.isGM) return;
+		for (const effect of actor.effects) {
+			switch (effect.statusDuration) {
+				case "UEoNT":
+					await Logger.sendToChat(`Removed condition: ${effect.name} at end of turn`, actor);
+					await effect.delete();
+					break;
+				case "save-normal":
+					if (await PersonaCombat.rollSave(actor, 11)) {
+						await Logger.sendToChat(`Removed condition: ${effect.name} from saving throw`, actor);
+						await effect.delete();
+					}
+					break;
+				case "save-easy":
+					if (await PersonaCombat.rollSave(actor, 6)) {
+						await Logger.sendToChat(`Removed condition: ${effect.name} from saving throw`, actor);
+						await effect.delete();
+					}
+					break;
+				case "save-hard":
+					if (await PersonaCombat.rollSave(actor, 16)) {
+						await Logger.sendToChat(`Removed condition: ${effect.name} from saving throw`, actor);
+						await effect.delete();
+					}
+					break;
+			}
+
+
+		}
+
 	}
 
 	get engagedList() : EngagementList {
@@ -404,24 +456,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		await this.setFlag("persona", "escalation", val);
 	}
 
-	override nextTurn() : Promise<this> {
-		const x = super.nextTurn();
-		return x;
-	}
-
-	override nextRound() : Promise<this> {
-		const x = super.nextRound();
-		this.incEscalationDie();
-		return x;
-	}
-
-	override previousRound(): Promise<this> {
-		const x = super.previousRound();
-		this.decEscalationDie();
-		return x;
-	}
-
-
 	isEngaged(subject: UniversalTokenAccessor<PToken>) : boolean {
 		const c1 = this.getCombatantFromTokenAcc(subject);
 		const engagement = this.engagedList.findEngagement(c1);
@@ -447,13 +481,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return combatant;
 	}
 
-
 	async setEngageWith(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) {
 		const c1 = this.getCombatantFromTokenAcc(token1);
 		const c2 = this.getCombatantFromTokenAcc(token2);
 		await this.engagedList.setEngageWith(c1, c2);
 	}
-
 
 	/** returns pass or fail */
 	static async rollSave (actor: ValidAttackers, difficulty: number =11) : Promise<boolean> {
@@ -477,3 +509,31 @@ CONFIG.Combat.initiative = {
 	formula : "1d20 + @parent.init",
 	decimals: 2
 }
+
+Hooks.on("preUpdateCombat" , async (combat: PersonaCombat, changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
+		const prevActor = combat?.combatant?.actor
+		if (prevActor) {
+			await combat.endCombatantTurn(combat.combatant)
+		}
+
+});
+
+Hooks.on("updateCombat" , async (combat: PersonaCombat, changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
+	if (changes.turn != undefined && diffObject.direction && diffObject.direction != 0) {
+		const currentActor = combat?.combatant?.actor
+		if (currentActor) {
+			await combat.startCombatantTurn(combat.combatant)
+		}
+		//new turn
+		if (changes.round != undefined) {
+			//new round
+			if (diffObject.direction > 0 && game.user.isGM) {
+				await combat.incEscalationDie();
+			}
+			if (diffObject.direction < 0 && game.user.isGM) {
+				await combat.decEscalationDie();
+			}
+		}
+	}
+
+});
