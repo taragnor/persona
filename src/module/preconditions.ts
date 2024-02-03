@@ -1,5 +1,8 @@
 import {Metaverse} from "./metaverse.js";
 import { PreconditionType } from "../config/effect-types.js";
+import { PowerType } from "../config/effect-types.js"
+
+
 import { PowerContainer } from "./item/persona-item.js";
 import { UniversalItemAccessor } from "./utility/db-accessor.js";
 import { UniversalTokenAccessor } from "./utility/db-accessor.js";
@@ -101,6 +104,10 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 		}
 		case "metaverse-enhanced":
 			return Metaverse.isEnhanced();
+		case "power-type-is":
+			if (!situation.usedPower) return false;
+			const power = PersonaDB.findItem(situation.usedPower);
+			return power.system.type == "power" && power.system.subtype == condition.powerType;
 		default:
 			condition.type satisfies never;
 			PersonaError.softFail(`Unexpected Condition: ${condition.type}`);
@@ -111,6 +118,7 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 export type Precondition = {
 	type : PreconditionType,
 	num?: number,
+	powerType ?: PowerType,
 	powerDamageType ?: DamageType,
 	powerTag ?: PowerTag,
 	status?: StatusEffectId,

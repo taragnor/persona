@@ -48,6 +48,7 @@ export const PRECONDITIONLIST = [
 	"non-combat",
 	"talent-level+",
 	"power-damage-type-is",
+	"power-type-is",
 	"has-tag",
 	"user-has-status",
 	"user-not-status",

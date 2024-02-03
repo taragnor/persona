@@ -12,7 +12,7 @@
 	 get limited(): boolean;
 	 get hasPlayerOwner(): boolean;
 	 get documentName(): string;
-	 getFlag(scope: string, key: string): unknown;
+	 getFlag<T = unknown>(scope: string, key: string): T;
 	 async setFlag(scope:string, key:string, value: any): Promise<void>;
 	 async unsetFlag(scope:string, key:string): Promise<void>;
 	 prepareBaseData(): void;

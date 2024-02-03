@@ -25,7 +25,7 @@
 		{{#if (eq cons.type "addStatus")}}
 		<input class="short" type=number name="system.effects.{{../i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
 		<select name="system.effects.{{../i}}.consequences.{{j}}.statusDuration">
-		{{selectOptions ../POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusName}}
+		{{selectOptions ../POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusDuration}}
 		</select>
 		{{/if}}
 		{{#if (eq cons.type "dmg-mult")}}

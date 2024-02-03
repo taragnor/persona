@@ -41,7 +41,6 @@ function consumableSpecific() {
 		const ret = {
 			desciption: new html(),
 			...effects (false),
-			universal_modifier: new bool({initial: false})
 		}
 		return ret;
 	}

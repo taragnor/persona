@@ -262,10 +262,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				statuses: s
 			};
 			const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
+			await newEffect.setPotency(potency ?? 0);
+			await newEffect.setDuration(duration);
 			await newEffect.setFlag("persona", "duration", duration);
 			await newEffect.setFlag("persona", "potency", potency);
 		} else  {
-
+			if (potency && eff.potency < potency) {
+				await eff.setPotency(potency);
+			}
+			if (duration && eff.durationLessThan(duration)) {
+				await eff.setDuration(duration);
+			}
 			//TODO: update the effect
 
 		}
@@ -394,8 +401,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	critBoost(this: PC | Shadow) : ModifierList {
-		const itemBonus = this.getBonuses("ref");
-		return itemBonus; //placeholder
+		const mods = this.mainModifiers().flatMap( item => item.getModifier("criticalBoost"));
+		return new ModifierList(mods);
 	}
 
 	async addTalent(this: PC | Shadow, talent: Talent) {

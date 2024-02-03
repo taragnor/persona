@@ -29,6 +29,12 @@
 				{{selectOptions ../POWERSTUFF.STATUSEFFECTS localize=true selected=cond.status}}
 			</select>
 			{{/if}}
+			{{#if (eq cond.type	"power-type-is")}}
+			<select name="system.effects.{{../i}}.conditions.{{j}}.powerType">
+				{{selectOptions ../POWERSTUFF.POWERTYPES localize=true selected=cond.powerType}}
+			</select>
+
+			{{/if}}
 		</div>
 		<a class="delCondition">
 			<i class="fa-solid fa-trash-can"></i>
