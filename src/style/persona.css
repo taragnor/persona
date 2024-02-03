@@ -141,3 +141,9 @@ input.single-digit {
 .change-target {
 	font-weight: bold;
 }
+
+.profile-img {
+	max-height: 180px !important;
+	max-width: 180px !important;
+}
+

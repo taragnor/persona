@@ -1,17 +1,22 @@
 <form class="pc-sheet {{#if actor.system.locked}} locked {{else}} unlocked {{/if}}">
 	<header class="flexcol">
-		<div class="">
-			<input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
-		</div>
-		<textarea name="system.short_desc"> {{actor.system.short_desc}} </textarea>
 		<div class="flexrow">
-			<label>
-				{{localize "persona.tarot.cardname"}}
-			</label>
-			<select name="system.tarot">
-				{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
-			</select>
+			<img class="profile-img" src="{{actor.img}}" data-edit="img"/>
+			<div>
+				<input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
+				<div class="flexrow">
+					<label>
+						{{localize "persona.tarot.cardname"}}
+					</label>
+					<select name="system.tarot">
+						{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
+					</select>
+				</div>
+			</div>
+
 		</div>
+
+		<textarea name="system.short_desc"> {{actor.system.short_desc}} </textarea>
 	</header>
 	<nav class="sheet-tabs tabs" data-group="primary">
 		<a class="item" data-tab="combat">

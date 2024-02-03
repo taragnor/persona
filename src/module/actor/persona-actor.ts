@@ -163,7 +163,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		});
 	}
 
-
 	async spendRecovery(this: PC, socialLinkId: string) {
 		const link = this.system.social.find( x=> x.linkId == socialLinkId);
 		if (!link) {
