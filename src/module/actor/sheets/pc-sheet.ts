@@ -72,6 +72,7 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".delItem").on("click", this.delItem.bind(this));
 		html.find(".refreshLink").on("click", this.refreshLink.bind(this));
 		html.find(".useInspiration").on("click", this.useInspiration.bind(this));
+		html.find(".useRecovery").on("click", this.useRecovery.bind(this));
 		html.find(".incTalent").on("click", this.incTalent.bind(this));
 		html.find(".decTalent").on("click", this.decTalent.bind(this));
 		for (const stat of STUDENT_SKILLS_LIST) {
@@ -111,8 +112,11 @@ export class PCSheet extends CombatantSheetBase {
 		}
 		await this.actor.spendInspiration(npc, 1);
 		await Logger.sendToChat(`Spent an inpiration for ${npc.name}`, this.actor);
+	}
 
-
+	async useRecovery(event: Event) {
+		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
+		await this.actor.spendRecovery(linkId);
 	}
 
 	async incTalent(event: Event) {

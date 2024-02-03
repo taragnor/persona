@@ -97,7 +97,7 @@ export class CombatResult  {
 			}
 
 			case "extraAttack":
-					break;
+				break;
 
 			case "expend-slot": {
 				const slot = cons.amount;
@@ -125,7 +125,9 @@ export class CombatResult  {
 				effect.hpchange = Math.round(target.actor.mhp * (cons.amount ?? 0.01));
 				effect.hpchangemult = 1;
 				break;
-
+			case "extraTurn":
+					effect.otherEffects.push("extraTurn");
+				break;
 			default: {
 				cons.type satisfies never;
 				throw new Error("Should be unreachable");
@@ -167,15 +169,23 @@ export class CombatResult  {
 		}
 	}
 
-		static normalizeChange(change: TokenChange<PToken>) {
-			change.hpchange *= change.hpchangemult;
-			change.hpchangemult = 1;
-			change.hpchange = Math.trunc(change.hpchange);
+	static normalizeChange(change: TokenChange<PToken>) {
+		change.hpchange *= change.hpchangemult;
+		change.hpchangemult = 1;
+		change.hpchange = Math.trunc(change.hpchange);
 
-			}
+	}
+
+	getOtherEffects(token : PToken): OtherEffect[] {
+		const acc = PersonaDB.getUniversalTokenAccessor(token);
+		return Array
+			.from(this.attacks.values())
+			.flat()
+			.filter(x => x.token == acc && x.otherEffects.length > 0)
+			.flatMap( x=> x.otherEffects)
+	}
 
 	async toMessage(initiatingToken: PToken, powerUsed: Usable) : Promise<ChatMessage> {
-
 		const rolls : PersonaRoll[] = Array.from(this.attacks.entries()).map( ([attackResult]) => attackResult.roll);
 		const attacks = Array.from(this.attacks.entries()).map( ([attackResult, changes])=> {
 			for (const change of changes) {
@@ -187,7 +197,7 @@ export class CombatResult  {
 			};
 		});
 
-		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attacker: initiatingToken, power: powerUsed,  attacks, escalation: this.escalationMod, result: this});
+		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attacker: initiatingToken, power: powerUsed,  attacks, escalation: this.escalationMod, result: this, costs: this.costs});
 		const chatMsg = await ChatMessage.create( {
 			speaker: {
 				scene: initiatingToken.scene.id,
@@ -240,7 +250,7 @@ export class CombatResult  {
 			await actor.removeStatus(status);
 		}
 		for (const otherEffect of change.otherEffects) {
-		//TODO: handle otherEffects
+			//TODO: handle otherEffects
 
 		}
 		if (actor.system.type == "pc") {
@@ -275,14 +285,14 @@ export interface TokenChange<T extends Token<any>> {
 	expendSlot: [number, number, number, number];
 }
 
-type OtherEffect= "save-slot" | "half-hp-cost";
+export type OtherEffect= "save-slot" | "half-hp-cost" | "extraTurn";
 
 
 export type StatusEffect = {
-		id: StatusEffectId,
-		potency ?: number,
-		duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
-	};
+	id: StatusEffectId,
+	potency ?: number,
+	duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
+};
 
 export type Consequence = {
 	type: typeof CONSQUENCELIST[number],
@@ -315,7 +325,7 @@ function absMax(...nums : number[]) {
 
 
 Hooks.on("renderChatMessage", async (msg: ChatMessage, html: JQuery<HTMLElement>) => {
-		const flag = msg.getFlag("persona", "atkResult") as string;
+	const flag = msg.getFlag("persona", "atkResult") as string;
 	if (!flag) {
 		html.find(".applyChanges").each( function () { this.remove()});
 	}

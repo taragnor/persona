@@ -13,6 +13,7 @@ import { PersonaRoll } from "../persona-roll.js";
 import { UniversalTokenAccessor } from "../utility/db-accessor.js";
 import { EngagementList } from "./engagementList.js";
 import { Logger } from "../utility/logger.js";
+import { OtherEffect } from "./combat-result.js";
 
 
 export class PersonaCombat extends Combat<PersonaActor> {
@@ -37,6 +38,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (!actor) return;
 		if (!game.user.isGM) return;
 		for (const effect of actor.effects) {
+			if (effect.statuses.has("blocking")) {
+				await effect.delete();
+			}
 			if (effect.statusDuration == "USoNT")  {
 				await Logger.sendToChat(`Removed condition: ${effect.displayedName} at start of turn`, actor);
 				await effect.delete();
@@ -121,7 +125,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			result.merge(this_result);
 			i++;
 		}
-		const costs = await this.#processCosts(attacker, power);
+		const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker));
 		result.merge(costs);
 		return result;
 	}
@@ -351,21 +355,24 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return CombatRes;
 	}
 
-	static async #processCosts(attacker: PToken , power: Usable) : Promise<CombatResult>
+	static async #processCosts(attacker: PToken , power: Usable, costModifiers: OtherEffect[]) : Promise<CombatResult>
 	{
 		const res = new CombatResult();
 		if (power.system.type == "power") {
 			if (attacker.actor.system.type == "pc" && power.system.hpcost) {
+				const hpcostmod = costModifiers.includes("half-hp-cost") ? 0.5 : 1;
 				res.addEffect(null, attacker, {
 					type: "hp-loss",
-					amount: power.system.hpcost
+					amount: power.system.hpcost * hpcostmod
 				});
 			}
 			if (attacker.actor.system.type == "pc" && power.system.subtype == "magic" && power.system.slot >= 0){
-				res.addEffect(null, attacker, {
-					type: "expend-slot",
-					amount: power.system.slot,
-				});
+				if (!costModifiers.includes("save-slot")) {
+					res.addEffect(null, attacker, {
+						type: "expend-slot",
+						amount: power.system.slot,
+					});
+				}
 			}
 		}
 		return res;
@@ -512,7 +519,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		await roll.toModifiedMessage();
 		return roll.total >= difficulty;
 	}
-
 }
 
 type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shadow">;

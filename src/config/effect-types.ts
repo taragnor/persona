@@ -14,7 +14,8 @@ export const CONSQUENCELIST = [
 	"add-escalation",
 	"save-slot", //don't expend slot you normally would
 	"half-hp-cost", //half hp cost of weapon skills
-	"revive"
+	"revive",
+	"extraTurn",
 ] as const;
 
 
@@ -40,6 +41,8 @@ export const PRECONDITIONLIST = [
 	"hit",
 	"escalation+",
 	"escalation-",
+	"escalation-odd",
+	"escalation-even",
 	"activation+",
 	"activation-",
 	"activation-odd",
@@ -50,6 +53,7 @@ export const PRECONDITIONLIST = [
 	"power-damage-type-is",
 	"power-type-is",
 	"has-tag",
+	"not-tag",
 	"user-has-status",
 	"user-not-status",
 	"target-has-status",

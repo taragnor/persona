@@ -137,3 +137,7 @@ input.single-digit {
 	margin: 10px;
 	display:block;
 }
+
+.change-target {
+	font-weight: bold;
+}

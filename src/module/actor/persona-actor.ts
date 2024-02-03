@@ -1,3 +1,5 @@
+import { Logger } from "../utility/logger.js";
+import { Situation } from "../preconditions.js";
 import { STUDENT_SKILLS } from "../../config/student-skills.js";
 import { SocialStat } from "../../config/student-skills.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
@@ -161,6 +163,26 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		});
 	}
 
+
+	async spendRecovery(this: PC, socialLinkId: string) {
+		const link = this.system.social.find( x=> x.linkId == socialLinkId);
+		if (!link) {
+			throw new PersonaError(`Can't find link ${socialLinkId}`);
+		}
+		if (link.inspiration <= 0) {
+			throw new PersonaError("Can't spend recovery!");
+		}
+		link.inspiration-=1;
+		const rec_bonuses = this.getBonuses("recovery");
+		rec_bonuses.add("Base", 10);
+		const situation : Situation = {
+			user: PersonaDB.getUniversalActorAccessor(this)
+		};
+		const healing = rec_bonuses.total(situation);
+		await Logger.sendToChat(`${this.name} used inspiration to heal ${healing} hit points (original HP: ${this.hp})` , this);
+		await this.update({"system.social": this.system.social});
+		await this.modifyHP(healing);
+	}
 
 	get powers(): Power[] {
 		if (this.system.type =="npc") return [];

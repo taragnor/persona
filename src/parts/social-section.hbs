@@ -56,9 +56,14 @@
 		<a class="useInspiration" title="Spend Inspiration">
 			<i class="fa-solid fa-user-minus"></i>
 		</a>
+		<a class="useRecovery" title="Use Recovery">
+			<i class="fa fa-heart" aria-hidden="true"></i>
+		</a>
+		{{#if (isGM)}}
 		<a class="refreshLink" title="Refresh Inspiration">
 			<i class="fa fa-refresh" aria-hidden="true"></i>
 		</a>
+		{{/if}}
 	</div>
 
 		{{/each}}

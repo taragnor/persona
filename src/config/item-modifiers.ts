@@ -11,6 +11,7 @@ export const MODIFIERLIST = [
 	"will",
 	...STUDENT_SKILLS_LIST,
 	"save",
+	"recovery",
 ] as const;
 
 export const MODIFIERS_TABLE = Object.fromEntries(

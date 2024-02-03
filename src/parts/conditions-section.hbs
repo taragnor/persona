@@ -24,6 +24,11 @@
 				{{selectOptions ../POWERSTUFF.TAGS localize=true selected=cond.powerTag}}
 			</select>
 			{{/if}}
+			{{#if (strIncludes cond.type "not-tag")}}
+			<select name="system.effects.{{../i}}.conditions.{{j}}.powerTag">
+				{{selectOptions ../POWERSTUFF.TAGS localize=true selected=cond.powerTag}}
+			</select>
+			{{/if}}
 			{{#if (strIncludes cond.type "resistant")}}
 			<select name="system.effects.{{../i}}.conditions.{{j}}.powerDamageType">
 				{{selectOptions ../POWERSTUFF.DAMAGETYPES localize=true selected=cond.powerDamageType}}

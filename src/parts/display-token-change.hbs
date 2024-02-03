@@ -1,0 +1,20 @@
+<div class="changes">
+	<span class="change-target">
+	{{getTokenAccName change.token}}:
+	</span>
+	{{#if change.hpchange}}
+	{{abs change.hpchange}} damage ({{power.system.dmg_type}})
+	{{/if}}
+	{{#each change.addStatus as |status|}}
+	+{{status.id}}
+	{{/each}}
+	{{#each change.removeStatus as |status|}}
+	-{{status.id}}
+	{{/each}}
+	{{#each change.expendSlot as |slot i|}}
+	{{#if (ne slot 0)}}
+	Expend Slot {{i}}
+	{{/if}}
+	{{/each}}
+</div>
+

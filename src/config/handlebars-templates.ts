@@ -18,6 +18,7 @@ const templateFileNames : string[] =[
 	"talents-table.hbs",
 	"social-section.hbs",
 	"simple-roll.hbs",
+	"display-token-change.hbs",
 ];
 
 export const templatePaths = templateFileNames.

@@ -25,25 +25,15 @@
 		<span class="resisted">(Absorbed)</span>
 		{{/if}}
 		{{#each atk.changes as |change|}}
-		<h3>
-			{{change.token.name}}
-		</h3>
-		<div class="changes">
-			{{#if change.hpchange}}
-			{{abs change.hpchange}} damage ({{../../power.system.dmg_type}})
-			{{/if}}
-			{{#each change.addStatus as |status|}}
-			+{{status.id}}
-			{{/each}}
-			{{#each change.removeStatus as |status|}}
-			-{{status.id}}
-			{{/each}}
-		</div>
+		{{> "systems/persona/parts/display-token-change.hbs" change=change power=../../power}}
 		{{/each}}
 		{{#if escalation}}
 		Escalation Die {{escalation}}
 		{{/if}}
 	</div>
+	{{/each}}
+	{{#each costs as |cost|}}
+	{{> "systems/persona/parts/display-token-change.hbs" change=cost power=../power}}
 	{{/each}}
 </section>
 <button class="applyChanges">

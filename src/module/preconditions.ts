@@ -42,6 +42,10 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 			return situation.escalationDie != undefined && situation.escalationDie >= condition.num!;
 		case "escalation-":
 			return situation.escalationDie != undefined && situation.escalationDie <= condition.num!;
+		case "escalation-odd":
+			return situation.escalationDie != undefined && situation.escalationDie % 2 == 1;
+		case "escalation-even":
+			return situation.escalationDie != undefined && situation.escalationDie % 2 == 0;
 		case "activation+":
 			return !!situation.activationRoll && nat! >= condition.num!;
 		case "activation-":
@@ -66,6 +70,11 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 			if (!situation.usedPower) return false;
 			const power = PersonaDB.findItem(situation.usedPower);
 			return power.system.tags.includes(condition.powerTag!);
+		}
+		case "not-tag": {
+			if (!situation.usedPower) return false;
+			const power = PersonaDB.findItem(situation.usedPower);
+			return !power.system.tags.includes(condition.powerTag!);
 		}
 		case "user-has-status":
 			return (user.statuses.has(condition.status!));
