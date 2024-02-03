@@ -30,7 +30,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (!this._engagedList)  {
 			this._engagedList = new EngagementList(this);
 		}
-		return this._engagedList
+		return this._engagedList;
 	}
 
 	static async usePower(attacker: PToken, power: Usable) : Promise<CombatResult> {
@@ -41,6 +41,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const targets= await this.getTargets(attacker, power);
 		const result = await  this.#usePowerOn(attacker, power, targets);
 		await result.print();
+		await result.toMessage(attacker, power);
 		// await result.apply();
 		return result;
 	}
@@ -55,7 +56,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			result.merge(this_result);
 			i++;
 		}
-		await result.toMessage(attacker, power);
 		const costs = await this.#processCosts(attacker, power);
 		result.merge(costs);
 		return result;

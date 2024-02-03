@@ -14,7 +14,7 @@ export const CONSQUENCELIST = [
 	"add-escalation",
 	"save-slot", //don't expend slot you normally would
 	"half-hp-cost", //half hp cost of weapon skills
-
+	"revive"
 ] as const;
 
 

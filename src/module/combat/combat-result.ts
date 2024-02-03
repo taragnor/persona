@@ -32,7 +32,8 @@ export class CombatResult  {
 			escalationMod: this.escalationMod,
 			costs: this.costs,
 		}
-		return JSON.stringify(obj);
+		const json = JSON.stringify(obj);
+		return json;
 	}
 
 	static fromJSON(json: string) : CombatResult { 
@@ -41,6 +42,7 @@ export class CombatResult  {
 		ret.attacks = new Map(x.attacks);
 		ret.escalationMod = x.escalationMod;
 		ret.costs = x.costs;
+		console.log(json);
 		return ret;
 	}
 
@@ -117,6 +119,12 @@ export class CombatResult  {
 				break;
 			case "half-hp-cost":
 				effect.otherEffects.push("half-hp-cost");
+				break;
+
+			case "revive":
+				effect.removeStatus.push({ id: "fading"});
+				effect.hpchange = Math.round(target.actor.mhp * (cons.amount ?? 0.01));
+				effect.hpchangemult = 1;
 				break;
 
 			default: {
