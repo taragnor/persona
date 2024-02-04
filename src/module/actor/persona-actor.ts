@@ -418,7 +418,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		mods.add("Base", 10);
 		mods.add("Base Defense Bonus", baseDef);
 		mods.add("Level Bonus", lvl + inc);
-		const itemBonus = this.getBonuses("ref");
+		const itemBonus = this.getBonuses(type);
 		return mods.concat(itemBonus);
 	}
 
