@@ -87,20 +87,27 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 	}
 
 	#findById(id: string, type: ValidDBTypes = "Actor") : Option<ItemType | ActorType> {
-		let retarr;
+		let retarr: (Actor<any> | Item<any>)[];
 		switch (type) {
 			case "Actor":
 				retarr =  this.filterActors( x => x.id == id);
 				break;
 			case "Item":
 				retarr = this.filterItems( x => x.id == id);
+				if (retarr.length == 0) {
+					const x= this.allActors().find( x=> x.items.find( item => item.id == id));
+					if (!x) break;
+					retarr = [x.items.find(x=> x.id == id)! as Item<any>];
+
+				}
 				break;
 			default:
 				throw new Error(`Unsupported Type ${type}`);
 		}
-		if (retarr.length == 0)
+		if (retarr.length == 0) {
 			return null;
-		return retarr[0];
+		}
+		return retarr[0] as ItemType | ActorType;
 	}
 
 	 getAllByType(type : ValidDBTypes) : (ItemType | ActorType)[] {

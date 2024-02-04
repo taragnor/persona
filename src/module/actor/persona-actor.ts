@@ -32,6 +32,25 @@ declare global {
 
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
 
+
+	override prepareBaseData() {
+		super.prepareBaseData();
+		//@ts-ignore
+		this.system.hpTracker = {
+			value: this.hp,
+			max: this.mhp
+		}
+	}
+
+	get hpTracker()  {
+		console.log("called HP Tracker");
+		return {
+			min: 0,
+			max: this.mhp,
+			value: this.hp
+		}
+
+	}
 	async createNewItem() {
 		return (await this.createEmbeddedDocuments("Item", [{"name": "Unnamed Item", type: "item"}]))[0];
 	}

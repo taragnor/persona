@@ -89,3 +89,18 @@ function registerHandlebarsHelpers() {
 	 templatePaths.forEach(path => console.log(path));
 	 loadTemplates(templatePaths);
  }
+
+Hooks.on("init", async () => {
+	//@ts-ignore
+  CONFIG.Actor.trackableAttributes = {
+    pc: {
+      bar: ["hpTracker"],
+      value: []
+    },
+	  shadow: {
+      bar: ["hpTracker"],
+      value: []
+	  }
+
+  };
+});
