@@ -31,25 +31,19 @@ declare global {
 }
 
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
-
-
 	override prepareBaseData() {
 		super.prepareBaseData();
+		setTimeout( () => {
+			this.refreshHpTracker();
+		}, 20000); //hopefuly after all the crap loads it can generate
+	}
+
+	refreshHpTracker()  {
 		//@ts-ignore
 		this.system.hpTracker = {
 			value: this.hp,
 			max: this.mhp
 		}
-	}
-
-	get hpTracker()  {
-		console.log("called HP Tracker");
-		return {
-			min: 0,
-			max: this.mhp,
-			value: this.hp
-		}
-
 	}
 	async createNewItem() {
 		return (await this.createEmbeddedDocuments("Item", [{"name": "Unnamed Item", type: "item"}]))[0];
@@ -747,3 +741,9 @@ Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) =
 			throw new PersonaError(`Unknown Type ${actor.type}`);
 	}
 });
+
+
+Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
+	actor.refreshHpTracker();
+});
+
