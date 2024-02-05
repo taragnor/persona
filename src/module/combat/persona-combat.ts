@@ -92,7 +92,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					break;
 			}
 
-
 		}
 
 	}

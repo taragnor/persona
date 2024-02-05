@@ -17,7 +17,9 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 	override item: PowerContainer;
 
 	override async getData() {
-		await this.item.sanitizeEffectsData();//required becuase foundry input hates arrays;
+		if (this.item.isOwner) {
+			await this.item.sanitizeEffectsData();//required becuase foundry input hates arrays;
+		}
 		const data = await super.getData();
 		data.POWERSTUFF = {
 			POWERTYPES : POWERTYPES,
