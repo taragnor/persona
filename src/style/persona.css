@@ -147,3 +147,9 @@ input.single-digit {
 	max-width: 180px !important;
 }
 
+.rollItem img{
+	max-height: 15px !important;
+	max-width: 15px !important;
+	border:none;
+}
+

@@ -17,14 +17,29 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		return this.system.leveling_table[lvl][property];
 	}
 
-	static getBasicAttack() : Option<Power> {
-		return PersonaDB.getItemByName("Basic Attack")  as Power;
+	static getBasicPowers() : Power[] {
+		const basic = [
+			"Basic Attack",
+			"Defend",
+		] as const;
+		return basic.flatMap( (powerName:string) =>  {
+const power = PersonaDB.getItemByName(powerName);
+			if (!power) return [];
+			return [power as Power];
+		});
 	}
 
 	get tags() : string {
 		if ("tags" in this.system)
 			return this.system.tags.join(", ");
 		return "";
+	}
+
+	get amount() : number {
+		if (this.system.type != "consumable") {
+			return 1;
+		}
+		return this.system.amount;
 	}
 
 	get costString() : string {

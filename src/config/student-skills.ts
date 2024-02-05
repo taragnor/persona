@@ -3,6 +3,7 @@ export const STUDENT_SKILLS_LIST = [
 	"courage",
 	"expression",
 	"knowledge",
+	"understanding",
 ] as const;
 
 export const STUDENT_SKILLS = Object.fromEntries(STUDENT_SKILLS_LIST.map( x=> [x, `persona.skills.${x}.name`])

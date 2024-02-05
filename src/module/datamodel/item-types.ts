@@ -18,6 +18,7 @@ function itemBase() {
 function consumableSpecific() {
 	return {
 		atk_bonus: new num({initial: 0, integer: true}),
+		amount: new num({initial:1, integer: true, min:0, max: 999}),
 	}
 
 }

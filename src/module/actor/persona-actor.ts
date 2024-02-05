@@ -1,6 +1,7 @@
 import { Logger } from "../utility/logger.js";
 import { Situation } from "../preconditions.js";
 import { STUDENT_SKILLS } from "../../config/student-skills.js";
+import { Consumable } from "../item/persona-item.js";
 import { SocialStat } from "../../config/student-skills.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
@@ -49,8 +50,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return (await this.createEmbeddedDocuments("Item", [{"name": "Unnamed Item", type: "item"}]))[0];
 	}
 
-	get inventory() : ItemSub<"weapon" | "item">[] {
-		return this.items.filter( x=> x.system.type == "item" || x.system.type == "weapon") as ItemSub<"weapon" | "item">[];
+	get inventory() : (Consumable | PersonaItem | Weapon)[] {
+		return this.items.filter( x=> x.system.type == "item" || x.system.type == "weapon" || x.system.type == "consumable") as (Consumable | PersonaItem | Weapon)[];
 	}
 
 	get displayedName() : string {
@@ -72,6 +73,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (this.system.type != "pc") return -999;
 		return (this as PC).getSocialStat("courage").total({user:(this as PC).accessor});
 	}
+
 
 	get combatInit(): number {
 		switch (this.system.type) {
@@ -197,23 +199,22 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get powers(): Power[] {
-		if (this.system.type =="npc") return [];
-		try {
-			const powerIds = this.system.combat.powers;
-			let powers : Power[] = powerIds
-				.flatMap( id => {
-					const i = PersonaDB.getItemById(id) as Power;
-					return i ? [i] : []
+		const basicPowers = PersonaItem.getBasicPowers();
+		switch (this.system.type) {
+			case "npc" : return [];
+			case "pc":
+				const powerIds = this.system.combat.powers;
+				const pcPowers : Power[] = powerIds.flatMap( id=> {
+					const i = PersonaDB.getItemById(id);
+					return (i ? [i as Power] : []);
 				});
-			const basicAtk = PersonaItem.getBasicAttack();
-			if (basicAtk) {
-				powers = powers.concat([basicAtk]);
-			}
-			const itemPowers = this.items.filter( x=> x.system.type == "power") as Power[];
-			return powers.concat(itemPowers);;
-		} catch(e) {
-			console.error(e);
-			return [];
+				return basicPowers.concat(pcPowers);
+			case "shadow":
+				const shadowPowers = this.items.filter( x=> x.system.type == "power") as Power[];
+				return basicPowers.concat(shadowPowers);
+			default:
+				this.system satisfies never;
+				throw new PersonaError("Something weird happened");
 		}
 	}
 

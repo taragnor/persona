@@ -126,6 +126,7 @@ function studentSkills() {
 		courage: new num({integer:true, initial:0}),
 		knowledge: new num({integer:true, initial:0}),
 		expression: new num({integer:true, initial:0}),
+		understanding: new num({integer:true, initial:0}),
 	});
 
 }

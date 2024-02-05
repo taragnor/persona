@@ -46,7 +46,13 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				super._onDropItem(_event, itemD);
 				return;
 			case "power":
-				this.actor.addPower(item as Power);
+				if (this.actor.system.type == "shadow") {
+					super._onDropItem(_event, itemD);
+					return;
+				} else {
+					this.actor.addPower(item as Power);
+					return;
+				}
 				return;
 			case "focus":
 				if (this.actor.system.type == "shadow") {
@@ -66,7 +72,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				this.actor.setClass(item as CClass);
 				return;
 			case "universalModifier":
-				//never add these to sheets
+				throw new PersonaError("Universal Modifiers can't be added to sheets");
 				return;
 			default:
 				item.system satisfies never;
