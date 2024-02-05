@@ -12,6 +12,11 @@ const personalBio = function () {
 	});
 }
 
+type HPTracking = {
+	value: number;
+	max: number;
+}
+
 function condArr() {
 	return new arr(
 		new id(),
@@ -106,6 +111,7 @@ const combatCommonStats = function () {
 		focuses: new arr( new id(), {initial: []}),
 		powers: new arr( new id()),
 		resists: elementalResists(),
+		hpTracker: new obj<HPTracking>(),
 		// statuses: new arr( new obj<StatusEffect>(), {initial: []}),
 	};
 };

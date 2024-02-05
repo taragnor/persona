@@ -33,18 +33,18 @@ declare global {
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
 	override prepareBaseData() {
 		super.prepareBaseData();
-		setTimeout( () => {
-			this.refreshHpTracker();
-		}, 20000); //hopefuly after all the crap loads it can generate
 	}
 
-	refreshHpTracker()  {
-		//@ts-ignore
-		this.system.hpTracker = {
-			value: this.hp,
-			max: this.mhp
+	async refreshHpTracker(this:PC | Shadow)  {
+		if (!this.isOwner) return;
+		if (this.system.combat.hpTracker.value != this.hp
+			|| this.system.combat.hpTracker.max != this.mhp){
+			this.update( {"system.combat.hpTracker.value" : this.hp,
+				"system.combat.hpTracker.max": this.mhp
+			});
 		}
 	}
+
 	async createNewItem() {
 		return (await this.createEmbeddedDocuments("Item", [{"name": "Unnamed Item", type: "item"}]))[0];
 	}
@@ -286,6 +286,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			await this.removeStatus({
 				id: "fading"
 			});
+		}
+		if (hp > this.mhp) {
+			await this.update( {"system.combat.hp": this.mhp});
 		}
 	}
 
@@ -742,8 +745,10 @@ Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) =
 	}
 });
 
-
 Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
-	actor.refreshHpTracker();
-});
+	if (actor.system.type != "npc") {
+		await	(actor as PC | Shadow).refreshHpTracker();
+	}
 
+
+});

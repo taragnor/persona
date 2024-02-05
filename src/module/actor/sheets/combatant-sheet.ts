@@ -49,8 +49,13 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				this.actor.addPower(item as Power);
 				return;
 			case "focus":
-				this.actor.addFocus(item as Focus);
-				return;
+				if (this.actor.system.type == "shadow") {
+					super._onDropItem(_event, itemD);
+					return;
+				} else {
+					this.actor.addFocus(item as Focus);
+					return;
+				}
 			case "item":
 				super._onDropItem(_event, itemD);
 				return;

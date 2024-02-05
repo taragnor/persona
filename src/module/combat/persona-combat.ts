@@ -73,19 +73,19 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					await effect.delete();
 					break;
 				case "save-normal":
-					if (await PersonaCombat.rollSave(actor, 11)) {
+					if (await PersonaCombat.rollSave(actor, 11, effect.name)) {
 						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
 						await effect.delete();
 					}
 					break;
 				case "save-easy":
-					if (await PersonaCombat.rollSave(actor, 6)) {
+					if (await PersonaCombat.rollSave(actor, 6, effect.name)) {
 						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
 						await effect.delete();
 					}
 					break;
 				case "save-hard":
-					if (await PersonaCombat.rollSave(actor, 16)) {
+					if (await PersonaCombat.rollSave(actor, 16, effect.name)) {
 						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
 						await effect.delete();
 					}
@@ -516,12 +516,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	/** returns pass or fail */
-	static async rollSave (actor: ValidAttackers, difficulty: number =11) : Promise<boolean> {
+	static async rollSave (actor: ValidAttackers, difficulty: number =11, label ?: string) : Promise<boolean> {
 		const mods = actor.getSaveBonus();
 		const situation : Situation = {
 			user: PersonaDB.getUniversalActorAccessor(actor),
 		}
-		const roll = new PersonaRoll("1d20", mods, situation, "Saving Throw");
+		const labelTxt = `Saving Throw (${label ? label : ""})`;
+		const roll = new PersonaRoll("1d20", mods, situation,labelTxt);
 		await roll.roll();
 		await roll.toModifiedMessage();
 		return roll.total >= difficulty;
