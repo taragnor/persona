@@ -1,9 +1,18 @@
 <div class="changes">
 	<span class="change-target">
-	{{getTokenAccName change.token}}:
+		{{getTokenAccName change.token}}:
 	</span>
 	{{#if change.hpchange}}
 	{{abs change.hpchange}} damage ({{power.system.dmg_type}})
+	{{#if attack.attackResult.situation.resisted}}
+	<span class="resisted">(Resist)</span>
+	{{/if}}
+	{{#if attack.attackResult.situation.struckWeakness}}
+	<span class="resisted">(Weak)</span>
+	{{/if}}
+	{{#if attack.attackResult.situation.isAbsorbed}}
+	<span class="resisted">(Absorbed)</span>
+	{{/if}}
 	{{/if}}
 	{{#each change.addStatus as |status|}}
 	+{{status.id}}

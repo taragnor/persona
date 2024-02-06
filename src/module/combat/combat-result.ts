@@ -73,6 +73,7 @@ export class CombatResult  {
 				break;
 
 			case "addStatus": {
+				//TODO: automated burning
 				const id = cons.statusName!;
 				effect.addStatus.push({
 					id,

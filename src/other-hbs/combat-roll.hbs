@@ -15,17 +15,8 @@
 	<div class="atk-block">
 		{{> "systems/persona/parts/simple-roll.hbs" roll=atk.attackResult.roll }}
 		{{atk.attackResult.result}}
-		{{#if atk.attackResult.situation.resisted}}
-		<span class="resisted">(Resist)</span>
-		{{/if}}
-		{{#if atk.attackResult.situation.struckWeakness}}
-		<span class="resisted">(Weak)</span>
-		{{/if}}
-		{{#if atk.attackResult.situation.isAbsorbed}}
-		<span class="resisted">(Absorbed)</span>
-		{{/if}}
 		{{#each atk.changes as |change|}}
-		{{> "systems/persona/parts/display-token-change.hbs" change=change power=../../power}}
+		{{> "systems/persona/parts/display-token-change.hbs" change=change power=../../power attack=atk}}
 		{{/each}}
 		{{#if escalation}}
 		Escalation Die {{escalation}}
