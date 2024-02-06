@@ -366,14 +366,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const res = new CombatResult();
 		if (power.system.type == "power") {
 			if (attacker.actor.system.type == "pc" && power.system.hpcost) {
-				const hpcostmod = costModifiers.includes("half-hp-cost") ? 0.5 : 1;
+				const hpcostmod = costModifiers.find(x=> x.type== "half-hp-cost") ? 0.5 : 1;
 				res.addEffect(null, attacker, {
 					type: "hp-loss",
 					amount: power.system.hpcost * hpcostmod
 				});
 			}
 			if (attacker.actor.system.type == "pc" && power.system.subtype == "magic" && power.system.slot >= 0){
-				if (!costModifiers.includes("save-slot")) {
+				if (!costModifiers.find(x=> x.type == "save-slot")) {
 					res.addEffect(null, attacker, {
 						type: "expend-slot",
 						amount: power.system.slot,
@@ -384,7 +384,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (power.system.type == "consumable") {
 			res.addEffect(null, attacker, {
 				type: "expend-item",
-				amount: 1,
+				itemAcc: PersonaDB.getUniversalItemAccessor(power),
 			});
 		}
 		return res;

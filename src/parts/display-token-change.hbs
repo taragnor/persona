@@ -16,5 +16,10 @@
 	Expend Slot {{i}}
 	{{/if}}
 	{{/each}}
+	{{#each change.otherEffects as |effect|}}
+	{{#if (eq effect.type "expend-item")}}
+	Expend Item
+	{{/if}}
+	{{/each}}
 </div>
 

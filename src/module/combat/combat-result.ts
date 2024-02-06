@@ -13,6 +13,7 @@ import { UniversalTokenAccessor } from "../utility/db-accessor.js";
 import { UniversalItemAccessor } from "../utility/db-accessor.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { PersonaDB } from "../persona-db.js";
+import { PersonaActor } from "../actor/persona-actor.js";
 
 export class CombatResult  {
 	attacks: Map<AttackResult, TokenChange<PToken>[]> = new Map();
@@ -114,10 +115,10 @@ export class CombatResult  {
 			case "add-escalation":
 				break;
 			case "save-slot":
-				effect.otherEffects.push("save-slot");
+				effect.otherEffects.push({ type: "save-slot"});
 				break;
 			case "half-hp-cost":
-				effect.otherEffects.push("half-hp-cost");
+				effect.otherEffects.push({type: "half-hp-cost"});
 				break;
 
 			case "revive":
@@ -126,26 +127,29 @@ export class CombatResult  {
 				effect.hpchangemult = 1;
 				break;
 			case "extraTurn":
-					effect.otherEffects.push("extraTurn");
+					effect.otherEffects.push({ type: "extraTurn"});
 				break;
 			case "expend-item":
-					effect.otherEffects.push("expend-item");
-				break;
-			default: {
-				cons.type satisfies never;
-				throw new Error("Should be unreachable");
-			}
-		}
-		if (atkResult == null) {
-			CombatResult.mergeChanges(this.costs, [effect]);
-			return;
-		}
-		if (!this.attacks.has(atkResult)) {
-			this.attacks.set(atkResult, []);
-		}
-		const effects = this.attacks.get(atkResult)!;
-		CombatResult.mergeChanges(effects, [effect]);
-	}
+					effect.otherEffects.push({
+						type: 	"expend-item",
+						itemAcc: cons.itemAcc!
+					});
+						break;
+						default: {
+							cons.type satisfies never;
+							throw new Error("Should be unreachable");
+						}
+					}
+						if (atkResult == null) {
+							CombatResult.mergeChanges(this.costs, [effect]);
+							return;
+						}
+						if (!this.attacks.has(atkResult)) {
+							this.attacks.set(atkResult, []);
+						}
+						const effects = this.attacks.get(atkResult)!;
+						CombatResult.mergeChanges(effects, [effect]);
+					}
 
 	merge(other: CombatResult) {
 		this.escalationMod += other.escalationMod;
@@ -254,12 +258,17 @@ export class CombatResult  {
 			await actor.removeStatus(status);
 		}
 		for (const otherEffect of change.otherEffects) {
-			switch (otherEffect) {
+			switch (otherEffect.type) {
 					//TODO: handle otherEffects
 				case "expend-item":
+					const item = PersonaDB.findItem(otherEffect.itemAcc);
+					if ( item.parent) {
+						await (item.parent as PersonaActor).expendConsumable(item);
+					} else  {
+						PersonaError.softFail("Can't find item's parent to execute consume item");
+					}
 					break;
 				case "save-slot":
-					saveSlot =true;
 					break;
 				case "half-hp-cost":
 					break;
@@ -301,8 +310,16 @@ export interface TokenChange<T extends Token<any>> {
 	expendSlot: [number, number, number, number];
 }
 
-export type OtherEffect= "save-slot" | "half-hp-cost" | "extraTurn" | "expend-item";
+export type ExpendOtherEffect= {
+	type: "expend-item";
+	itemAcc: UniversalItemAccessor<Usable>;
+}
 
+type SimpleOtherEffect = {
+	type: "save-slot" | "half-hp-cost" | "extraTurn";
+}
+
+export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect;
 
 export type StatusEffect = {
 	id: StatusEffectId,
@@ -317,6 +334,7 @@ export type Consequence = {
 	statusName?: StatusEffectId,
 	statusDuration?: StatusDuration,
 	applyToSelf?: boolean,
+		itemAcc?: UniversalItemAccessor<Usable>,
 }
 
 export type AttackResult = {

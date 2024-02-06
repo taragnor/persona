@@ -716,6 +716,22 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return new ModifierList(mods);
 	}
 
+	async expendConsumable(item: Usable) {
+		if (item.system.type == "power") {
+			PersonaError.softFail("Can't expend a power, this function requires an item");
+			return;
+		}
+		const amount = item.system.amount;
+		if (amount <= 1) {
+			await item.delete();
+			return;
+		}
+		if (amount > 1) {
+			await item.update({"system.amount": amount-1});
+			return;
+		}
+	}
+
 }
 
 export type PC = Subtype<PersonaActor, "pc">;
