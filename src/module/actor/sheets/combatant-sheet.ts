@@ -29,9 +29,11 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".delFocus").on("click", this.deleteFocus.bind(this));
 		html.find(".delTalent").on("click", this.deleteTalent.bind(this));
 		html.find(".rollPower").on("click", this.usePower.bind(this));
+		html.find(".rollItem").on("click", this.useItem.bind(this));
 		html.find(".powerName").on("click", this.openPower.bind(this));
 		html.find(".talentName").on("click", this.openTalent.bind(this));
 		html.find(".focusName").on("click", this.openFocus.bind(this));
+		html.find(".itemName").on("click", this.openItem.bind(this));
 		html.find(".rollSave").on("click", this.rollSave.bind(this));
 	}
 
@@ -83,14 +85,16 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async usePower(event: Event) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		const power = this.actor.powers.find(power => power.id ==powerId);
-		// const power = PersonaDB.getItemById(powerId);
 		if (!power) {
 			throw new PersonaError(`Can't find Power Id:${powerId}`);
 		}
 		const ptype = power.system.type;
 		if (ptype!= "power" && ptype != "consumable")
 			throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);
-		if (!power) throw new Error(`Can't find power id: ${powerId}`);
+		this.#useItemOrPower(power);
+	}
+
+	async #useItemOrPower(power : Usable) {
 		const actor = this.actor;
 		let token : PToken;
 		if (actor.token) {
@@ -108,6 +112,20 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		} catch (e) {
 			throw e;
 		}
+
+	}
+
+	async useItem(event: Event) {
+		const itemId = HTMLTools.getClosestData(event, "itemId");
+		const item = this.actor.inventory.find(item => item.id ==itemId);
+		if (!item) {
+			throw new PersonaError(`Can't find Item Id:${itemId}`);
+		}
+		const itype = item.system.type;
+		if (itype!= "power" && itype != "consumable") {
+			throw new PersonaError(`itemId pointed to unsualbe power ${itemId}`);
+		}
+		this.#useItemOrPower(item as Usable);
 	}
 
 	async deleteTalent(event: Event) {
@@ -173,7 +191,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new PersonaError(`Can't find ${itemType} id ${talentId}`);
 		}
 		await talent.sheet.render(true);
-		this.actor.system.combat.defenses.fort
 	}
 
 	async openFocus(event: Event) {
@@ -187,6 +204,16 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new PersonaError(`Can't find ${itemType} id ${focusId}`);
 		}
 		await focus.sheet.render(true);
+	}
+
+	async openItem(event: Event) {
+		const itemType = "Inventory Item";
+		const itemId = HTMLTools.getClosestData(event, "itemId");
+		const item = this.actor.inventory.find(x=> x.id == itemId);
+		if (!item) {
+			throw new PersonaError(`Can't find ${itemType} id ${itemId}`);
+		}
+		await item.sheet.render(true);
 	}
 
 	async rollSave(event: Event) {

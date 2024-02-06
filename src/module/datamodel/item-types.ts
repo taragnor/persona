@@ -76,6 +76,7 @@ function consumableSpecific() {
 	get type() {return "consumable" as const;}
 	static override defineSchema() {
 		const ret = {
+			subtype: new txt({ initial: "consumable", choices: ["consumable"]}),
 			...consumableSpecific(),
 			...itemBase(),
 			...UsablePowerProps(),

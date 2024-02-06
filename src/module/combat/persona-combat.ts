@@ -381,6 +381,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				}
 			}
 		}
+		if (power.system.type == "consumable") {
+			res.addEffect(null, attacker, {
+				type: "expend-item",
+				amount: 1,
+			});
+		}
 		return res;
 	}
 

@@ -128,6 +128,9 @@ export class CombatResult  {
 			case "extraTurn":
 					effect.otherEffects.push("extraTurn");
 				break;
+			case "expend-item":
+					effect.otherEffects.push("expend-item");
+				break;
 			default: {
 				cons.type satisfies never;
 				throw new Error("Should be unreachable");
@@ -242,6 +245,7 @@ export class CombatResult  {
 
 	static async applyChange(change: TokenChange<PToken>) {
 		const actor = PersonaDB.findToken(change.token).actor;
+		let saveSlot = false;
 		await actor.modifyHP(change.hpchange * change.hpchangemult);
 		for (const status of change.addStatus) {
 			await actor.addStatus(status);
@@ -250,10 +254,22 @@ export class CombatResult  {
 			await actor.removeStatus(status);
 		}
 		for (const otherEffect of change.otherEffects) {
-			//TODO: handle otherEffects
-
+			switch (otherEffect) {
+					//TODO: handle otherEffects
+				case "expend-item":
+					break;
+				case "save-slot":
+					saveSlot =true;
+					break;
+				case "half-hp-cost":
+					break;
+				case "extraTurn":
+					break;
+				default:
+					otherEffect satisfies never;
+			}
 		}
-		if (actor.system.type == "pc") {
+		if (!saveSlot && actor.system.type == "pc") {
 			change.expendSlot.forEach(async (val, i) => {
 				await (actor as PC).expendSlot(i, val);
 			});
@@ -285,7 +301,7 @@ export interface TokenChange<T extends Token<any>> {
 	expendSlot: [number, number, number, number];
 }
 
-export type OtherEffect= "save-slot" | "half-hp-cost" | "extraTurn";
+export type OtherEffect= "save-slot" | "half-hp-cost" | "extraTurn" | "expend-item";
 
 
 export type StatusEffect = {

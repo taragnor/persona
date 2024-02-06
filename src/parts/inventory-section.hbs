@@ -35,12 +35,12 @@
 <div class="item-list flexcol">
 	{{#each actor.inventory as |item|}}
 	<div class="inventory-item" data-item-id="{{item.id}}">
-		<span class="item-name">
 			{{#if (eq item.system.type "consumable")}}
 			<a class="rollItem">
 				<img src="icons/dice/d20black.svg">
 			</a>
 			{{/if}}
+		<span class="itemName">
 			{{item.name}}
 			( {{item.amount}} )
 			{{#if (eq item.system.type "consumable")}}

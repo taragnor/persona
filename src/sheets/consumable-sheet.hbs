@@ -1,8 +1,26 @@
 <form class="weapon-sheet">
 	<input type="text" class="borderless item-name" name="name" value="{{item.name}}" title="Conusmable Name" placeholder="Consumable Name">
 	<div class="editor description">
-{{editor item.system.description target="system.description" button=false engine="prosemirror" collaborate=false}}
+		{{editor item.system.description target="system.description" button=false engine="prosemirror" collaborate=false}}
 	</div>
+	<hr>
+	<div class="damage">
+		<label class="dmg-low">
+			Low
+		</label>
+		{{numberInput item.system.damage.low class="short" name="system.damage.low" step=1 min=0 max=900}}
+		<label class="dmg-high">
+			High
+		</label>
+		{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=900}}
+	</div>
+	<div class="atk-bonus">
+		<label>
+			Attack Bonus
+		</label>
+		{{numberInput item.system.atk_bonus class="short" name="system.atk_bonus" step=1 min=0 max=900}}
+	</div>
+
 	<hr>
 	{{> "systems/persona/parts/power-effects.hbs" item=item POWERSTUFF=POWERSTUFF}}
 

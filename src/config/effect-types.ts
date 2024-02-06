@@ -16,6 +16,7 @@ export const CONSQUENCELIST = [
 	"half-hp-cost", //half hp cost of weapon skills
 	"revive",
 	"extraTurn",
+	"expend-item",
 ] as const;
 
 
