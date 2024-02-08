@@ -73,11 +73,17 @@ export class CombatResult  {
 				break;
 
 			case "addStatus": {
-				//TODO: automated burning
+				let status_damage : number | undefined = undefined;
+				if (atkResult && cons.statusName == "burn") {
+					const power=PersonaDB.findItem(atkResult.power);
+					const attacker = PersonaDB.findToken(atkResult.attacker).actor;
+					status_damage = power.getDamage(attacker, "low");
+
+				}
 				const id = cons.statusName!;
 				effect.addStatus.push({
 					id,
-					potency: cons.amount ?? 0,
+					potency: status_damage ?? cons.amount ?? 0,
 					duration: cons.statusDuration ?? "instant",
 				});
 				break;

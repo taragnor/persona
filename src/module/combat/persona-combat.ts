@@ -57,7 +57,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		];
 		const debilitatingStatus = actor.effects.find( eff=> debilitatingStatuses.some( debil => eff.statuses.has(debil)));
 		if (debilitatingStatus) {
-			startTurnMsg += `<br> can't take actioins normally because of ${debilitatingStatus.name}`;
+			startTurnMsg += `${combatant.name} can't take actioins normally because of ${debilitatingStatus.name}`;
+		}
+		const burnStatus = actor.effects.find( eff=> eff.statuses.has("burn"));
+		if (burnStatus) {
+			const damage = burnStatus.potency;
+			startTurnMsg += `${combatant.name} is burning ${damage} damage. (original Hp: ${actor.hp}`;
+			await actor.modifyHP(-damage);
 		}
 		await Logger.sendToChat(startTurnMsg, actor);
 	}
@@ -312,8 +318,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					const absorb = situation.isAbsorbed && !cons.applyToSelf;
 					const block = result == "block" && !cons.applyToSelf;
 					const consTarget = cons.applyToSelf ? attacker: target;
-					// const crit = result == "crit" && !cons.applyToSelf;
-					// damageMult *= crit ? 2 : 1;
 					damageMult *= situation.resisted ? 0.5 : 1;
 					switch (cons.type) {
 						case "dmg-high":

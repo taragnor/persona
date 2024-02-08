@@ -2,8 +2,11 @@ import { PersonaItem } from "./item/persona-item.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaError } from "./persona-error.js";
 import { StatusDuration } from "../config/status-effects.js";
+import { StatusEffectId } from "../config/status-effects.js";
 
 export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
+
+	override statuses: Set<StatusEffectId>;
 
 	static async applyHook (actor: PersonaActor, change: AEChange, current: any, delta: any, changes: Record<string, any> ) {
 		//*changes object is a record of valeus taht may get changed by applying the AE;
