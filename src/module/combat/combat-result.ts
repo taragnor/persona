@@ -1,5 +1,5 @@
+import { SlotType } from "../../config/slot-types.js";
 import { PersonaError } from "../persona-error.js";
-import { STATUS_EFFECT_LIST } from "../../config/status-effects.js";
 import { STATUS_EFFECT_DURATIONS_LIST } from "../../config/status-effects.js";
 import { CONSQUENCELIST } from "../../config/effect-types.js";
 import { StatusDuration } from "../../config/status-effects.js";
@@ -141,22 +141,29 @@ export class CombatResult  {
 						type: 	"expend-item",
 						itemAcc: cons.itemAcc!
 					});
-						break;
-						default: {
-							cons.type satisfies never;
-							throw new Error("Should be unreachable");
-						}
-					}
-						if (atkResult == null) {
-							CombatResult.mergeChanges(this.costs, [effect]);
-							return;
-						}
-						if (!this.attacks.has(atkResult)) {
-							this.attacks.set(atkResult, []);
-						}
-						const effects = this.attacks.get(atkResult)!;
-						CombatResult.mergeChanges(effects, [effect]);
-					}
+				break;
+			case "recover-slot":
+				effect.otherEffects.push( {
+					type: "recover-slot",
+					slot: cons.slotType!,
+				});
+				break;
+
+			default: {
+				cons.type satisfies never;
+				throw new Error("Should be unreachable");
+			}
+		}
+		if (atkResult == null) {
+			CombatResult.mergeChanges(this.costs, [effect]);
+			return;
+		}
+		if (!this.attacks.has(atkResult)) {
+			this.attacks.set(atkResult, []);
+		}
+		const effects = this.attacks.get(atkResult)!;
+		CombatResult.mergeChanges(effects, [effect]);
+	}
 
 	merge(other: CombatResult) {
 		this.escalationMod += other.escalationMod;
@@ -266,7 +273,6 @@ export class CombatResult  {
 		}
 		for (const otherEffect of change.otherEffects) {
 			switch (otherEffect.type) {
-					//TODO: handle otherEffects
 				case "expend-item":
 					const item = PersonaDB.findItem(otherEffect.itemAcc);
 					if ( item.parent) {
@@ -280,6 +286,8 @@ export class CombatResult  {
 				case "half-hp-cost":
 					break;
 				case "extraTurn":
+					break;
+				case "recover-slot":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -317,16 +325,21 @@ export interface TokenChange<T extends Token<any>> {
 	expendSlot: [number, number, number, number];
 }
 
-export type ExpendOtherEffect= {
+type ExpendOtherEffect= {
 	type: "expend-item";
 	itemAcc: UniversalItemAccessor<Usable>;
+}
+
+type RecoverSlotEffect = {
+	type: "recover-slot",
+	slot: SlotType
 }
 
 type SimpleOtherEffect = {
 	type: "save-slot" | "half-hp-cost" | "extraTurn";
 }
 
-export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect;
+export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect;
 
 export type StatusEffect = {
 	id: StatusEffectId,
@@ -341,7 +354,8 @@ export type Consequence = {
 	statusName?: StatusEffectId,
 	statusDuration?: StatusDuration,
 	applyToSelf?: boolean,
-		itemAcc?: UniversalItemAccessor<Usable>,
+	itemAcc?: UniversalItemAccessor<Usable>,
+	slotType?: SlotType,
 }
 
 export type AttackResult = {

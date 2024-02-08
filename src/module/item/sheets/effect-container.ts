@@ -1,3 +1,4 @@
+import { SLOT_TYPES_EXPANDED } from "../../../config/slot-types.js";
 import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { PowerContainer } from "../persona-item.js";
 import { SLOTTYPES } from "../../../config/slot-types.js";
@@ -35,6 +36,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			MODIFIER_TARGETS: MODIFIERS_TABLE,
 			DEFENSES: Object.fromEntries(DEFENSECHOICES.map( x=> [x, x])),
 			SHADOW_CHARGE_REQ: SHADOW_CHARGE_REQ,
+			SLOT_TYPES_EXPANDED: SLOT_TYPES_EXPANDED,
 		}
 		return data;
 	}

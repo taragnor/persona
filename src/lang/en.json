@@ -171,6 +171,8 @@
 	"persona.slottypes.1.name": "Advanced",
 	"persona.slottypes.2.name": "Expert",
 	"persona.slottypes.3.name": "Ultimate",
+	"persona.slottypes.lowest.name": "Lowest",
+	"persona.slottypes.highest.name": "Highest",
 
 	"persona.talentLevels.0.name": "Basic",
 	"persona.talentLevels.1.name": "Adept",
@@ -196,6 +198,7 @@
 	"persona.effecttypes.revive": "Revive Ally at X% of hp",
 	"persona.effecttypes.extraTurn": "Take an extra Turn",
 	"persona.effecttypes.expend-item": "Expend Item",
+	"persona.effecttypes.recover-slot": "Recover Power Slot",
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.natural+": "Natural >=",

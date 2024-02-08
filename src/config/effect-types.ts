@@ -17,6 +17,7 @@ export const CONSQUENCELIST = [
 	"revive",
 	"extraTurn",
 	"expend-item",
+	"recover-slot",
 ] as const;
 
 

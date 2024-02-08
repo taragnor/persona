@@ -26,9 +26,17 @@
 	{{/if}}
 	{{/each}}
 	{{#each change.otherEffects as |effect|}}
-	{{#if (eq effect.type "expend-item")}}
-	Expend Item
-	{{/if}}
+	<span class="other-effect">
+		{{#if (eq effect.type "expend-item")}}
+		Expend Item
+		{{/if}}
+		{{#if (eq effect.type "extraTurn")}}
+		Take an Extra turn
+		{{/if}}
+		{{#if (eq effect.type "recover-slot")}}
+		Recover Slot ({{effect.slot}}), (apply manually)
+		{{/if}}
+	</span>
 	{{/each}}
 </div>
 
