@@ -21,6 +21,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		const basic = [
 			"Basic Attack",
 			"Defend",
+			"All-out Attack",
 		] as const;
 		return basic.flatMap( (powerName:string) =>  {
 const power = PersonaDB.getItemByName(powerName);

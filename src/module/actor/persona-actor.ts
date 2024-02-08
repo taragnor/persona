@@ -80,13 +80,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 
 	get combatInit(): number {
+		const situation = {user: (this as PC | Shadow).accessor};
 		switch (this.system.type) {
 			case "npc":
 				return -5;
-			case "shadow":
-			case "pc":
+			case "shadow": {
 				const actor = this as (Shadow | PC);
-				return actor.getDefense("ref").total( {user:actor.accessor});
+				return  -50 + actor.getDefense("ref").total(situation) +(actor.getDefense("will").total(situation)* 0.01);
+			}
+			case "pc":{
+				const actor = this as (Shadow | PC);
+				return 10 * actor.getDefense("ref").total( {user:actor.accessor}) + actor.getDefense("fort").total(situation) + actor.getDefense("will").total(situation);
+			}
 			default:
 				this.system satisfies never;
 				throw new PersonaError(`Unepxected Type : ${this.type}`);
