@@ -63,8 +63,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const burnStatus = actor.effects.find( eff=> eff.statuses.has("burn"));
 		if (burnStatus) {
 			const damage = burnStatus.potency;
-			startTurnMsg += `${combatant.name} is burning ${damage} damage. (original Hp: ${actor.hp}`;
-			await actor.modifyHP(-damage);
+			startTurnMsg += `${combatant.name} is burning and will take ${damage} damage at end of turn. (original Hp: ${actor.hp}`;
 		}
 		await Logger.sendToChat(startTurnMsg, actor);
 	}
@@ -73,6 +72,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const actor = combatant.actor;
 		if (!actor) return;
 		if (!game.user.isOwner) return;
+		const burnStatus = actor.effects.find( eff=> eff.statuses.has("burn"));
+		if (burnStatus) {
+			const damage = burnStatus.potency;
+			await actor.modifyHP(-damage);
+		}
 		for (const effect of actor.effects) {
 			switch (effect.statusDuration) {
 				case "UEoNT":
