@@ -30,6 +30,7 @@ import { PersonaHandleBarsHelpers } from "./handlebars-helpers.js";
 import { PersonaRoll } from "./persona-roll.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { UniversalModifierSheet } from "./item/sheets/universalmodifier-sheet.js";
+import { PersonaSettings } from "../config/persona-settings.js";
 
 function registerDataModels() {
 	CONFIG.Actor.dataModels= ACTORMODELS;
@@ -74,11 +75,12 @@ function registerSheetApplications() {
    // Add custom config constants
    CONFIG.PERSONACFG = {}; //TODO: config object goes here
 
- 	registerDataModels();
- 	registerDocumentClasses();
- 	registerSheetApplications();
- 	registerHandlebarsHelpers();
- 	preloadHandlebarsTemplates();
+	 registerDataModels();
+	 registerDocumentClasses();
+	 registerSheetApplications();
+	 registerHandlebarsHelpers();
+	 PersonaSettings.registerSettings();
+	 preloadHandlebarsTemplates();
  });
 
 function registerHandlebarsHelpers() {

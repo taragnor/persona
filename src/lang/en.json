@@ -97,6 +97,9 @@
 	"persona.modifier.expression": "Expression",
 	"persona.modifier.understanding": "Understanding",
 	"persona.modifier.courage": "Courage",
+	"persona.modifier.maxhpMult": "Max Hp Multiplier",
+	"persona.modifier.save": "Saving Throws",
+	"persona.modifier.recovery": "Recovery Amount",
 
 	"persona.equipslots.weapon": "Weapon",
 	"persona.equipslots.body": "Body",

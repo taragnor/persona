@@ -29,7 +29,7 @@ const SETTINGS = {
 			hint: "Is Metaverse Enhanced?",
 			scope: "world",
 			restricted: true,
-			config: false,
+			config: true, //turn this off eventually
 			type :Boolean,
 			default: false,
 	}

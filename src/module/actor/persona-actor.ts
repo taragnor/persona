@@ -142,10 +142,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get mhp() : number {
 		if (this.system.type == "npc") return 0;
 		try {
+			const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
 			const inc= this.hasIncremental("hp")? 1: 0;
 			const lvl = this.system.combat.classData.level;
 			const bonuses = this.getBonuses("maxhp");
-			return this.class.getClassProperty(lvl + inc, "maxhp") + bonuses.total( {user: PersonaDB.getUniversalActorAccessor(this as PC)});
+			const mult = this.getBonuses("maxhpMult").total(sit) + 1;
+			return (this.class.getClassProperty(lvl + inc, "maxhp") + bonuses.total(sit)) * mult ;
 		} catch (e) {
 			console.warn(`Can't get Hp for ${this.name} (${this.id})`);
 			return 0;

@@ -96,7 +96,7 @@ export class CombatResult  {
 				break;
 			}
 			case "escalationManipulation" : {
-				this.escalationMod += cons.amount ?? 0;
+				this.escalationMod += Number(cons.amount) ?? 0;
 				break;
 			}
 			case "hp-loss": {
