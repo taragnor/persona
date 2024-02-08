@@ -40,8 +40,12 @@ export class PersonaRoll extends Roll {
 	}
 
 	override get total(): number {
-		const total = super.total + this.mods.total(this.situation);
-		return total;
+		try {
+			const total = super.total + this.mods.total(this.situation);
+			return total;
+		} catch (e) {
+			return -999;
+		}
 	}
 
 	override get result(): string {
