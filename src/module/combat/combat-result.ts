@@ -217,7 +217,6 @@ export class CombatResult  {
 				changes
 			};
 		});
-
 		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attacker: initiatingToken, power: powerUsed,  attacks, escalation: this.escalationMod, result: this, costs: this.costs});
 		const chatMsg = await ChatMessage.create( {
 			speaker: {
@@ -367,6 +366,7 @@ export type AttackResult = {
 	power: UniversalItemAccessor<Usable>,
 	situation: Situation,
 	roll: PersonaRoll,
+	critBoost: number,
 	printableModifiers: {name: string, modifier:string} [],
 };
 

@@ -118,13 +118,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			return new CombatResult();
 		}
 		try {
-		const targets= await this.getTargets(attacker, power);
-		this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
-		const result = await  this.#usePowerOn(attacker, power, targets);
-		await result.print();
-		await result.toMessage(attacker, power);
-		// await result.apply();
-		return result;
+			const targets= await this.getTargets(attacker, power);
+			this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
+			const result = await  this.#usePowerOn(attacker, power, targets);
+			await result.print();
+			await result.toMessage(attacker, power);
+			// await result.apply();
+			return result;
 		} catch(e) {
 			console.log(e);
 			throw e;
@@ -148,7 +148,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	static async processAttackRoll( attacker: PToken, power: Usable, target: PToken, isActivationRoll: boolean) : Promise<AttackResult> {
-
 		const combat = this.ensureCombatExists();
 		const escalationDie = combat.getEscalationDie();
 		const situation : Situation = {
@@ -182,6 +181,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
+					critBoost: 0,
 					situation: {
 						...situation,
 						naturalAttackRoll,
@@ -195,6 +195,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
+					critBoost: 0,
 					situation: {
 						...situation,
 						naturalAttackRoll,
@@ -208,6 +209,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
+					critBoost: 0,
 					situation: {
 						...situation,
 						naturalAttackRoll,
@@ -228,6 +230,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			situation.hit = true;
 			return {
 				result: "hit",
+				critBoost: 0,
 				printableModifiers,
 				validAtkModifiers,
 				validDefModifiers: [],
@@ -237,6 +240,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		const critBoostMod = attacker.actor.critBoost();
 		critBoostMod.add("Power Modifier", power.system.crit_boost);
+		const critResist = target.actor.critResist().total(situation);
+		critBoostMod.add("Enemy Critical Resistance", -critResist);
 		if (resist == "weakness") {
 			critBoostMod.add("weakness", 4);
 		}
@@ -256,6 +261,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				printableModifiers,
 				validAtkModifiers,
 				validDefModifiers,
+				critBoost,
 				situation,
 				...baseData,
 			};
@@ -268,6 +274,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				validAtkModifiers,
 				validDefModifiers,
 				printableModifiers,
+				critBoost,
 				situation,
 				...baseData,
 			};
@@ -279,6 +286,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				validAtkModifiers,
 				validDefModifiers,
 				printableModifiers,
+				critBoost,
 				situation,
 				...baseData,
 			}

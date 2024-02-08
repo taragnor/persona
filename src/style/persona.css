@@ -162,3 +162,14 @@ input.single-digit {
 	font-weight: bold;
 }
 
+.persona-roll .crit-boost{
+	text-align: center;
+	justify-content: center;
+}
+
+.persona-roll .attack-result{
+	text-align: center;
+	justify-content: center;
+	font-size: larger;
+	font-weight: bold;
+}

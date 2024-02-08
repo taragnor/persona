@@ -14,7 +14,20 @@
 	{{#each attacks as |atk|}}
 	<div class="atk-block">
 		{{> "systems/persona/parts/simple-roll.hbs" roll=atk.attackResult.roll }}
-		{{atk.attackResult.result}}
+		{{#if atk.attackResult.critBoost}}
+		<div class="crit-boost">
+			<span>
+				Critical Boost:
+			</span>
+			<span>
+				{{atk.attackResult.critBoost}}
+			</span>
+		</div>
+		{{/if}}
+		<hr>
+		<div class="attack-result">
+			{{atk.attackResult.result}}
+		</div>
 		{{#each atk.changes as |change|}}
 		{{> "systems/persona/parts/display-token-change.hbs" change=change power=../../power attack=atk}}
 		{{/each}}

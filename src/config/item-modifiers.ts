@@ -13,6 +13,7 @@ export const MODIFIERLIST = [
 	"save",
 	"recovery",
 	"maxhpMult",
+	"critResist",
 ] as const;
 
 export const MODIFIERS_TABLE = Object.fromEntries(

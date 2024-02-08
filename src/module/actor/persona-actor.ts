@@ -476,6 +476,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update( {"system.talents": talents});
 	}
 
+	critResist(this: PC | Shadow) : ModifierList {
+		const mods = this.mainModifiers().flatMap( item => item.getModifier("critResist"));
+		return new ModifierList(mods);
+	}
+
 	async deleteTalent(this: PC | Shadow, id: string) {
 		const item = this.items.find(x => x.id == id);
 		if (item) {
