@@ -55,8 +55,8 @@ class JSONField extends StringFieldClass {
 class DocumentIdField extends StringFieldClass {
 }
 
-declare class StringFieldClass<T extends string= string> extends FoundryDMField<T> {
-	constructor (StringOptions?: StringFieldOptions);
+declare class StringFieldClass<const T extends string= string> extends FoundryDMField<T> {
+	constructor (StringOptions?: StringFieldOptions<T>);
 
 }
 
@@ -89,7 +89,7 @@ interface FilePathFieldOptions extends StringFieldOptions<string> {
 interface DataFieldOptions<T> {
 	required ?: boolean;
 	nullable ?: boolean;
-	initial?: T,
+	initial?: NoInfer<T>,
 	validate?: (val: T) => boolean,
 	label?: string,
 	hint?: string,
@@ -105,10 +105,11 @@ interface NumberDataFieldOptions extends DataFieldOptions<number> {
 	choices?: number[] | Record<string, number> | (() => number[]);
 }
 
-declare interface StringFieldOptions extends DataFieldOptions<string> {
+declare interface StringFieldOptions<const T extends string> extends DataFieldOptions<T> {
 	blank ?: boolean;
 	trim ?: boolean;
-	choices?: readonly string[] | Record < string, string> | (()=> string[]);
+	choices?: readonly T[] | Record < string, string> | (()=> string[]);
 
 }
 
+type NoInfer<A>= [A][A extends any ? 0 : never]

@@ -60,5 +60,16 @@
 	</div>
 	{{/if}}
 	<hr>
+	<section = "shadow-costs">
+		<label>
+			Requires Charge Depletion
+		</label>
+		<select name="system.reqCharge">
+			{{selectOptions POWERSTUFF.SHADOW_CHARGE_REQ localize=true selected=item.system.reqCharge}}
+		</select>
+	</section>
+
+
+	<hr>
 	{{> "systems/persona/parts/power-effects.hbs" item=item POWERSTUFF=POWERSTUFF}}
 </form>

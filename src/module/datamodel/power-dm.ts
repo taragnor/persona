@@ -6,6 +6,7 @@ import { TARGETINGLIST } from "../../config/effect-types.js";
 import { Precondition } from "../preconditions.js";
 import { Consequence } from "../combat/combat-result.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
+import { SHADOW_CHANGE_REQ_LIST } from "../../config/effect-types.js";
 
 export  const damage = function() {
 	return new sch( {
@@ -72,9 +73,12 @@ export function powerCost() {
 	return {
 		hpcost: new num( {integer:true}),
 		slot: new num( {integer: true, min:0, max:20, initial: 0}),
+		reqCharge: new txt( {choices: SHADOW_CHANGE_REQ_LIST , initial: "none"}),
 	}
-
 }
+
+
+
 
 export function UsablePowerProps() {
 	return {

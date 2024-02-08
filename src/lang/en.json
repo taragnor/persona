@@ -162,6 +162,11 @@
 	"persona.power.tag.weapon": "Weapon",
 	"persona.power.tag.healing": "Healing",
 
+	"persona.power.shadowcosts.none": "None",
+	"persona.power.shadowcosts.always": "Always",
+	"persona.power.shadowcosts.not-enhanced": "Not Enhanced Metaverse",
+	"persona.power.shadowcosts.supercharged": "SUPERCHARGED",
+
 	"persona.slottypes.0.name": "Basic",
 	"persona.slottypes.1.name": "Advanced",
 	"persona.slottypes.2.name": "Expert",

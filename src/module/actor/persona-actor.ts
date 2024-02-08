@@ -1,3 +1,4 @@
+import { Metaverse } from "../metaverse.js";
 import { Logger } from "../utility/logger.js";
 import { Situation } from "../preconditions.js";
 import { STUDENT_SKILLS } from "../../config/student-skills.js";
@@ -32,6 +33,9 @@ declare global {
 }
 
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
+	override statuses: Set<StatusEffectId>;
+
+
 	override prepareBaseData() {
 		super.prepareBaseData();
 	}
@@ -554,6 +558,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	canPayActiationCost_shadow(this: Shadow, usable: Usable) : boolean {
+		if (usable.system.type == "power") {
+			switch (usable.system.reqCharge) {
+				case "none": return true;
+				case "always": return !this.statuses.has("depleted");
+				case "not-enhanced": return (Metaverse.isEnhanced() || !this.statuses.has("depleted"));
+				case "supercharged":
+					return this.statuses.has("supercharged");
+				default:
+					usable.system.reqCharge satisfies never;
+					throw new PersonaError(`Unknown REquirement${usable.system.reqCharge}`);
+			}
+		}
 		return true; //placeholder
 	}
 

@@ -1,3 +1,4 @@
+import { Metaverse } from "../metaverse.js";
 import { StatusEffectId } from "../../config/status-effects.js";
 import { HTMLTools } from "../utility/HTMLTools.js";
 
@@ -382,6 +383,35 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						type: "expend-slot",
 						amount: power.system.slot,
 					});
+				}
+			}
+			if (attacker.actor.system.type == "shadow") {
+				switch(power.system.reqCharge) {
+					case "none":
+						break;
+					case "always":
+						res.addEffect(null, attacker, {
+							type: "addStatus",
+							statusName: "depleted",
+							statusDuration:"combat",
+						});
+						break;
+					case "not-enhanced":
+						if (Metaverse.isEnhanced()) {
+							break;
+						}
+						res.addEffect(null, attacker, {
+							type: "addStatus",
+							statusName: "depleted",
+							statusDuration:"combat",
+						});
+						break;
+					case "supercharged":
+						res.addEffect(null, attacker, {
+							type: "removeStatus",
+							statusName: "supercharged",
+						});
+						break;
 				}
 			}
 		}

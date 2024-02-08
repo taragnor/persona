@@ -84,7 +84,7 @@ function skillSlots() {
 type IncAdvanceObject = Required<Record<INCREMENTAL_ADVANCE_TYPES, boolean>>;
 
 
-const tarot = function () { return new txt<keyof typeof tarotDeck>( { choices: Object.keys(tarotDeck)});}
+const tarot = function () { return new txt<keyof typeof tarotDeck>( { choices: Object.keys(tarotDeck) as (keyof typeof tarotDeck)[]});}
 
 const classData = function () {
 	const initial : IncAdvanceObject =  Object.fromEntries( INCREMENTAL_ADVANCE_TYPES.map (x=> ([x, false]))
