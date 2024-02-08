@@ -102,9 +102,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					}
 					break;
 			}
-
 		}
-
 	}
 
 	get engagedList() : EngagementList {

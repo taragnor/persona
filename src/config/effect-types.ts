@@ -68,7 +68,8 @@ export const PRECONDITIONLIST = [
 	"is-resistant-to",
 	"not-resistant-to",
 	"target-is-resistant-to",
-	"target-is-not-resistant-to"
+	"target-is-not-resistant-to",
+	"struck-weakness"
 ] as const;
 
 export type PreconditionType = typeof PRECONDITIONLIST[number];

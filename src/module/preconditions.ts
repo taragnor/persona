@@ -161,6 +161,14 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 					return true;
 			}
 		}
+		case "struck-weakness":{
+			if (!situation.target) return false;
+			if (!situation.usedPower) return false;
+			const target = PersonaDB.findToken(situation.target);
+			const power = PersonaDB.findItem(situation.usedPower);
+			const resist = target.actor.elementalResist(power.system.dmg_type);
+			return (resist == "weakness");
+		}
 		default:
 			condition.type satisfies never;
 			PersonaError.softFail(`Unexpected Condition: ${condition.type}`);
