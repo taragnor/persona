@@ -28,6 +28,9 @@ class Token<Act extends Actor<any, any>> extends PlaceableObject {
 	document: TokenDocument<Act>;
 	get scene(): Scene;
 	id: string;
+	x: number;
+	y: number;
+	scene: Scene;
 }
 
 

@@ -760,6 +760,23 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
+	isCapableOfAction() : boolean {
+		const deblitatingStatuses :StatusEffectId[] = [
+			"charmed",
+			"confused",
+			"down",
+			"fading",
+			"fear",
+			"frozen",
+			"sleep",
+			"shock",
+		];
+		return (
+			this.hp > 0
+		&& !deblitatingStatuses.some( stat => this.statuses.has(stat))
+		);
+	}
+
 }
 
 export type PC = Subtype<PersonaActor, "pc">;
