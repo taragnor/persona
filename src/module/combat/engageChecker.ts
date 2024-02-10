@@ -45,6 +45,3 @@ export class EngagementChecker {
 
 }
 
-
-//@ts-ignore
-window.EngagementChecker = EngagementChecker;
