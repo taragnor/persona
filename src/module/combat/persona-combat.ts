@@ -620,3 +620,15 @@ Hooks.on("updateCombat" , async (combat: PersonaCombat, changes: Record<string, 
 	}
 
 });
+
+Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
+	for (const combatant of combat.combatants) {
+		const actor = combatant.actor;
+		if (!actor) continue;
+		for (const effect of actor.effects) {
+			if (effect.durationLessThan("expedition")) {
+				await effect.delete();
+			}
+		}
+	}
+});

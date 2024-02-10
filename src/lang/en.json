@@ -69,6 +69,12 @@
 	"persona.status.supercharged" : "SUPERCHARGED",
 	"persona.status.buffed" : "Buffed",
 	"persona.status.debuffed" : "Debuffed",
+	"persona.status.defense-boost" : "Rakukaja",
+	"persona.status.defense-nerf" : "Rakunda",
+	"persona.status.attack-boost" : "Sukukaja",
+	"persona.status.attack-nerf" : "Sukunda",
+	"persona.status.damage-boost" : "Tarukaja",
+	"persona.status.damage-nerf" : "Tarunda",
 
 	"persona.damage.low": "Low",
 	"persona.damage.high": "High",

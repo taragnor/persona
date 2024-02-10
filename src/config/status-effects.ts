@@ -56,6 +56,27 @@ export const STATUS_EFFECT_LIST = [
 	}, {
 		id: "debuffed",
 		icon:  "icons/svg/downgrade.svg",
+	}, {
+		id: "defense-boost",
+		icon:  "icons/svg/mountain.svg",
+	},{
+		id: "defense-nerf",
+		icon:  "icons/svg/net.svg",
+	}, {
+		id: "attack-boost",
+		icon:  "icons/svg/light.svg",
+	}, {
+		id: "attack-nerf",
+		icon:  "icons/svg/light-off.svg",
+	}, {
+		id: "damage-boost",
+		icon:  "icons/svg/pawprint.svg",
+	}, {
+		id: "damage-nerf",
+		icon:  "icons/svg/direction.svg",
+	}, {
+		id: "bonus-action",
+		icon:  "icons/svg/angel.svg",
 	}
 ] as const;
 
