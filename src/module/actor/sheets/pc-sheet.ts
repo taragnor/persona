@@ -143,8 +143,6 @@ export class PCSheet extends CombatantSheetBase {
 	async addSocialBoost(event: Event) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
 		this.actor.socialLinkProgress(linkId, 5);
-
 	}
-
 
 }
