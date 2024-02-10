@@ -9,6 +9,7 @@ import { STUDENT_SKILLS_LIST } from "../../../config/student-skills.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaDB } from "../../persona-db.js"
 import { NPC } from "../persona-actor.js";
+import { PC } from "../persona-actor.js";
 
 
 export class PCSheet extends CombatantSheetBase {
@@ -29,7 +30,10 @@ export class PCSheet extends CombatantSheetBase {
 			//@ts-ignore
 			const actor : PersonaActor = await Actor.implementation.fromDropData(actorD);
 			switch (actor.system.type) {
-				case "pc" : return;
+				case "pc" :{
+					await this.actor.createSocialLink(actor as PC)
+					return;
+				}
 				case "shadow": return;
 				case "npc":
 					//create a social link
@@ -75,6 +79,8 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".useRecovery").on("click", this.useRecovery.bind(this));
 		html.find(".incTalent").on("click", this.incTalent.bind(this));
 		html.find(".decTalent").on("click", this.decTalent.bind(this));
+		html.find(".addSocialRank").on("click", this.addSocialRank.bind(this));
+		html.find(".addSocialBoost").on("click", this.addSocialBoost.bind(this));
 		for (const stat of STUDENT_SKILLS_LIST) {
 			html.find(`.${stat} .roll-icon`).on("click", this.rollSocial.bind(this, stat));
 		}
@@ -127,6 +133,17 @@ export class PCSheet extends CombatantSheetBase {
 	async decTalent(event: Event) {
 		const talentId= String(HTMLTools.getClosestData(event, "talentId"));
 		await this.actor.decrementTalent(talentId);
+	}
+
+	async addSocialRank(event: Event) {
+		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
+		this.actor.increaseSocialLink(linkId)
+	}
+
+	async addSocialBoost(event: Event) {
+		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
+		this.actor.socialLinkProgress(linkId, 5);
+
 	}
 
 

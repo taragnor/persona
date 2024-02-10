@@ -609,8 +609,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.social": this.system.social});
 	}
 
-	async increaseSocialLink(this: PC, npc: SocialLink) {
-		const link = this.system.social.find( x=> x.linkId == npc.id);
+	async increaseSocialLink(this: PC, linkId: string) {
+		const link = this.system.social.find( x=> x.linkId == linkId);
 		if (!link) {
 			throw new PersonaError("Trying to increase social link you don't have");
 		}
@@ -628,8 +628,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.social": this.system.social});
 	}
 
-	async socialLinkProgress(this: PC, npc: SocialLink, progress: 5 | 10) {
-		const link = this.system.social.find( x=> x.linkId == npc.id);
+	async socialLinkProgress(this: PC, linkId: string, progress: 5 | 10) {
+		const link = this.system.social.find( x=> x.linkId == linkId);
 		if (!link) {
 			throw new PersonaError("Trying to increase social link you don't have");
 		}
