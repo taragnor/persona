@@ -21,7 +21,7 @@
 	"persona.damage.types.lightning": "Lightning",
 	"persona.damage.types.light": "Light",
 	"persona.damage.types.dark": "Dark",
-	"persona.damage.types.untyped": "Untyped",
+	"persona.damage.types.untyped": "Almighty",
 	"persona.damage.types.healing": "Healing",
 	"persona.damage.types.none": "None",
 
@@ -69,7 +69,7 @@
 	"persona.status.supercharged" : "SUPERCHARGED",
 	"persona.status.buffed" : "Buffed",
 	"persona.status.debuffed" : "Debuffed",
-	"persona.status.defense-boost" : "Rakukaja",
+	"persona.status.defense-boost" : "Tarukaja",
 	"persona.status.defense-nerf" : "Rakunda",
 	"persona.status.attack-boost" : "Sukukaja",
 	"persona.status.attack-nerf" : "Sukunda",
