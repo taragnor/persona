@@ -43,8 +43,7 @@
 	"persona.defense.fort": "Fortitude",
 
 	"persona.incremental.type.hp": "Hit Points",
-	"persona.incremental.type.atkbonus": "Attack Bonus",
-	"persona.incremental.type.defbonus": "Defense Bonus",
+	"persona.incremental.type.lvl_bonus": "Attack and Defense Bonus",
 	"persona.incremental.type.slots": "Power Slots",
 	"persona.incremental.type.talents": "Talents",
 	"persona.incremental.type.powers": "Powers",

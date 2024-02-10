@@ -400,7 +400,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	wpnAtkBonus(this: PC | Shadow) : ModifierList {
 		const mods = new ModifierList();
 		const lvl = this.system.combat.classData.level;
-		const inc = this.system.combat.classData.incremental.atkbonus ? 1 : 0;
+		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
 		const wpnAtk = this.system.combat.wpnatk;
 		mods.add("Base Weapon Attack Bonus", wpnAtk);
 		mods.add("Level Bonus", lvl + inc);
@@ -412,7 +412,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const mods = new ModifierList();
 		const lvl = this.system.combat.classData.level ?? 0;
 		const magAtk = this.system.combat.magatk ?? 0;
-		const inc = this.system.combat.classData.incremental.atkbonus ? 1 : 0;
+		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
 		mods.add("Base Magic Attack Bonus", magAtk);
 		mods.add("Level Bonus", lvl + inc);
 		const itemBonus = this.getBonuses("magAtk");
@@ -423,7 +423,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const mods = new ModifierList();
 		const lvl = this.system.combat.classData.level;
 		const baseDef = this.system.combat.defenses[type];
-		const inc = this.system.combat.classData.incremental.defbonus ? 1 : 0;
+		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
 		mods.add("Base", 10);
 		mods.add("Base Defense Bonus", baseDef);
 		mods.add("Level Bonus", lvl + inc);
