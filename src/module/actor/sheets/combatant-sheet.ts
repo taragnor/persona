@@ -96,7 +96,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async #useItemOrPower(power : Usable) {
 		const actor = this.actor;
-		let token : PToken;
+		let token : PToken | undefined;
 		if (actor.token) {
 			token = actor.token._object;
 		} else {
@@ -104,6 +104,10 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			//@ts-ignore
 			token = Array.from(tokens)[0]._object;
 		}
+		if (!token) {
+			token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id)?._object as PToken;
+		}
+
 		if (!token) {
 			throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` )
 		}
