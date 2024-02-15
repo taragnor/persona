@@ -62,6 +62,9 @@
 		<span class="inspiration">
 			{{link.inspiration}} / {{link.linkLevel}}
 		</span>
+		{{#if link.currentProgress}}
+		( {{link.currentProgress}} progress )
+		{{/if}}
 		<a class="useInspiration" title="Spend Inspiration">
 			<i class="fa-solid fa-user-minus"></i>
 		</a>

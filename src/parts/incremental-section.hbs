@@ -1,6 +1,11 @@
 <h2>
 	{{localize "persona.sheet.tabs.incremental.header"}}
 </h2>
+	<label>
+		Metaverse Progress Tokens
+	</label>
+	<input class="short" type="number" name="system.combat.classData.incremental_progress" value="{{actor.system.combat.classData.incremental_progress}}">
+<hr>
 <div class="incremental-advance-block">
 	{{#each CONST.INC as |inc i|}}
 	<div class="incremental-advance">

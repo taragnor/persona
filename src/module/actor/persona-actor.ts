@@ -178,10 +178,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get socialLinks() : {linkLevel: number, actor: SocialLink, inspiration: number}[] {
 		if (this.system.type != "pc") return [];
-		return this.system.social.flatMap(({linkId, linkLevel, inspiration}) => {
+		return this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress}) => {
 			const npc = PersonaDB.getActor(linkId);
 			if (!npc) return [];
 			return [{
+				currentProgress,
 				linkLevel,
 				inspiration,
 				actor:npc as SocialLink,
@@ -628,7 +629,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.social": this.system.social});
 	}
 
-	async socialLinkProgress(this: PC, linkId: string, progress: 5 | 10) {
+	async socialLinkProgress(this: PC, linkId: string, progress: 1 | 2) {
 		const link = this.system.social.find( x=> x.linkId == linkId);
 		if (!link) {
 			throw new PersonaError("Trying to increase social link you don't have");
@@ -636,9 +637,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		link.currentProgress += progress;
 		link.inspiration = link.linkLevel;
 		switch (progress) {
-			case 5: PersonaSounds.socialBoostJingle(2);
+			case 1: PersonaSounds.socialBoostJingle(2);
 				break;
-			case 10: PersonaSounds.socialBoostJingle(3);
+			case 2: PersonaSounds.socialBoostJingle(3);
 				break;
 		}
 		await this.update({"system.social": this.system.social});

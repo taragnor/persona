@@ -26,12 +26,8 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
-		html.find(".addItem").on("click", this.#addItem.bind(this));
 	}
 
-	#addItem(_ev: JQuery<Event>) {
-		this.actor.createNewItem();
-	}
 
 	getIncAdvanceValue(val: INCREMENTAL_ADVANCE_TYPES) {
 		const actor = this.actor

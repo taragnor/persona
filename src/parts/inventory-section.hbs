@@ -31,7 +31,23 @@
 	</div>
 
 </div>
-<button class="addItem">Create Item</button>
+<hr>
+<section class="money">
+	<h2>
+	Money
+	</h2>
+	<label>
+		Resource Points (Money)
+	</label>
+	<input class="short" type="number" name="system.money" value="{{actor.system.money}}">
+</section>
+<hr>
+<section class="items">
+<h2>Items
+		<a class="addItem">
+			<i class="fa-solid fa-plus"> </i>
+		</a>
+</h2>
 <div class="item-list flexcol">
 	{{#each actor.inventory as |item|}}
 	<div class="inventory-item" data-item-id="{{item.id}}">
@@ -52,4 +68,5 @@
 	</div>
 	{{/each}}
 </div>
+</section>
 

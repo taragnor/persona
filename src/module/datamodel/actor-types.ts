@@ -93,6 +93,7 @@ const classData = function () {
 		level: new num({min: 0, max: 10, initial: 1, integer:true}),
 		classId: new id(),
 		incremental: new obj<IncAdvanceObject>({initial}),
+		incremental_progress: new num({initial:0, min:0, integer:true}),
 	});
 }
 
@@ -112,7 +113,6 @@ const combatCommonStats = function () {
 		powers: new arr( new id()),
 		resists: elementalResists(),
 		hpTracker: new obj<HPTracking>(),
-		// statuses: new arr( new obj<StatusEffect>(), {initial: []}),
 	};
 };
 
@@ -160,6 +160,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 		const ret = {
 			...BaseStuff.defineSchema(),
 			equipped: equipslots(),
+			money: new num({integer: true, min: 0, initial:1}),
 			tarot: tarot(),
 			combat: new sch( {
 				...combatCommonStats(),
