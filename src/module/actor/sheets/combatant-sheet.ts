@@ -221,7 +221,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	async rollSave(event: Event) {
-		await PersonaCombat.rollSave(this.actor, 11);
+		await PersonaCombat.rollSave(this.actor, {
+			DC:11, label:"Manual Save", askForModifier:true});
 	}
 
 }

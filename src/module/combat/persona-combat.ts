@@ -85,19 +85,28 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					await effect.delete();
 					break;
 				case "save-normal":
-					if (await PersonaCombat.rollSave(actor, 11, effect.name)) {
+					if (await PersonaCombat.rollSave(actor, {
+						DC:11,
+						label:effect.name
+					})) {
 						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
 						await effect.delete();
 					}
 					break;
 				case "save-easy":
-					if (await PersonaCombat.rollSave(actor, 6, effect.name)) {
+					if (await PersonaCombat.rollSave(actor, {
+						DC: 6,
+						label: effect.name
+					})) {
 						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
 						await effect.delete();
 					}
 					break;
 				case "save-hard":
-					if (await PersonaCombat.rollSave(actor, 16, effect.name)) {
+					if (await PersonaCombat.rollSave(actor, {
+						DC:16,
+						label:	effect.name
+					})) {
 						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
 						await effect.delete();
 					}
@@ -571,8 +580,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	/** returns pass or fail */
-	static async rollSave (actor: ValidAttackers, difficulty: number =11, label ?: string) : Promise<boolean> {
+	static async rollSave (actor: ValidAttackers, {DC, label, askForModifier} :SaveOptions) : Promise<boolean> {
+		// static async rollSave (actor: ValidAttackers, difficulty: number =11, label ?: string) : Promise<boolean> {
+		const difficulty = DC ? DC : 11;
 		const mods = actor.getSaveBonus();
+		if (askForModifier) {
+			const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
+			mods.add("Custom modifier", customMod);
+		}
 		const situation : Situation = {
 			user: PersonaDB.getUniversalActorAccessor(actor),
 		}
@@ -632,3 +647,10 @@ Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
 		}
 	}
 });
+
+
+type SaveOptions = {
+	label?: string,
+	DC?: number,
+	askForModifier?: boolean,
+}
