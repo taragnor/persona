@@ -81,6 +81,7 @@ export const POWERTYPESLIST = [
 	"weapon",
 	"magic",
 	"other",
+	"passive",
 	"none",
 	"standalone",
 ] as const;

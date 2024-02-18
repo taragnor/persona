@@ -394,6 +394,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.focii,
 			...this.talents,
 			...this.getSocialFocii(),
+			...this.getPassivePowers(),
 			...PersonaDB.getGlobalModifiers(),
 		];
 	}
@@ -712,6 +713,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	getEffects() : ConditionalEffect[] {
 		return this.mainModifiers().flatMap( x=> x.getEffects());
+	}
+
+	getPassivePowers(): Power[] {
+		return this.powers
+			.filter( power=> {
+				power.system.subtype == "passive";
+			});
 	}
 
 	canEngage() :boolean {
