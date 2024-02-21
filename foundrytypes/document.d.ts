@@ -7,7 +7,7 @@
 	 sheet: Sheet<this>
 
 	 async delete(): Promise<void>;
-	 async deleteEmbeddedDocuments( embeddedName: string, ids: unknown, context: Record<string, any>): Promise<void>;
+	 async deleteEmbeddedDocuments( embeddedName: string, ids: unknown, context: Record<string, any> = {}): Promise<void>;
 	 get isOwner(): boolean;
 	 get limited(): boolean;
 	 get hasPlayerOwner(): boolean;

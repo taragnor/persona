@@ -2,6 +2,7 @@
 declare interface Hooks {
 	once< T extends keyof HOOKS>(hookname: T, fn: HOOKS[T]): void;
 	on <T extends keyof HOOKS>(hookname: T, fn: HOOKS[T]): void;
+	callAll(hookname:keyof HOOKS): void;
 }
 
 declare interface HOOKS {
@@ -21,7 +22,14 @@ declare interface HOOKS {
 		"preUpdateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>,
 		"updateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>,
 		"deleteCombat": DeleteHook<Combat>,
-
+		"updateItem": UpdateHook<Item<any>>,
+		"deleteItem": DeleteHook<Item<any>>,
+		"createItem": CreateHook<Item<any>>,
+		"createToken": CreateHook<TokenDocument<any>>,
+		"updateToken": UpdateHook<TokenDocument<any>>,
+		"deleteToken": DeleteHook<TokenDocument<any>>,
+		"deleteActor": DeleteHook<Actor<any>>,
+		"updateScene": UpdateHook<Scene>,
 
 };
 
