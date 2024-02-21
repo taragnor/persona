@@ -9,8 +9,8 @@
 
 
 // declare class Actor<T extends {[key:string]: foundry.abstract.DataModel}, U extends X<T>> {
-declare class Actor<T extends SchemaDict, ItemType extends Item<J> = Item, AEType extends ActiveEffect<this, ItemType> = ActiveEffect> extends FoundryDocument<ItemType | AEType>{
-	type: string;
+declare class Actor<const T extends SchemaDict, ItemType extends Item<J> = Item, AEType extends ActiveEffect<this, ItemType> = ActiveEffect> extends FoundryDocument<ItemType | AEType>{
+	type: keyof T;
 	system: TotalConvert<T>;
 	get items(): Collection<ItemType>;
 	getRollData(): TotalConvert<T>;
@@ -19,6 +19,7 @@ declare class Actor<T extends SchemaDict, ItemType extends Item<J> = Item, AETyp
 	get effects(): Collection<AEType>;
 	get statuses(): Set<string>;
 	get token(): TokenDocument<typeof this> | undefined;
+	get visible(): boolean;
 	_dependentTokens:WeakMap<Scene, WeakSet<TokenDocument<typeof this>>> ;
 	/** Retrieve an iterator over all effects that can apply to the actor.
   The effect might exist on the Actor, or it might exist on one of the Actor's Items.
