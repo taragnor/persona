@@ -5,6 +5,7 @@ declare class ClientSettings {
 	register<T extends typeof String | typeof Number | typeof Boolean>(namespace: string, key: string, data: SettingConfig<T> ): void;
 	registerMenu<C extends typeof FormApplication>(namespace:string, key: string, data: SettingSubmenuConfig<C>): void;
 	get<Output = unknown>(namespace: string, key: string): Output;
+	async set(namespace:string, key: string, value: unkwown): Promise<void>
 
 }
 
@@ -16,7 +17,7 @@ interface SettingConfig<T extends typeof String | typeof Number | typeof Boolean
 	config: boolean;
 	requiresReload?: boolean;
 	type: T;
-	choices?: Map<T, string>;
+	choices?: Record<T, string>;
 	default: InstanceType<T>;
 	onChange?: (newval: InstanceType<T>) => void;
 	/** Restrict this submenu to gamemaster only? */
@@ -34,5 +35,5 @@ interface SettingSubmenuConfig<C extends typeof FormApplication> {
 	/** A FormApplication subclass which should be created*/
 	type: C,
 	/** Restrict this submenu to gamemaster only? */
-	restricted: true
+	restricted: boolean
 }
