@@ -59,7 +59,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		];
 		const debilitatingStatus = actor.effects.find( eff=> debilitatingStatuses.some( debil => eff.statuses.has(debil)));
 		if (debilitatingStatus) {
-			startTurnMsg += `${combatant.name} can't take actioins normally because of ${debilitatingStatus.name}`;
+			const msg =  `${combatant.name} can't take actioins normally because of ${debilitatingStatus.name}`
+			startTurnMsg += msg ;
+			this.skipBox(`${msg}. <br> Skip turn?`);
 		}
 		const burnStatus = actor.effects.find( eff=> eff.statuses.has("burn"));
 		if (burnStatus) {
@@ -67,6 +69,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			startTurnMsg += `${combatant.name} is burning and will take ${damage} damage at end of turn. (original Hp: ${actor.hp}`;
 		}
 		await Logger.sendToChat(startTurnMsg, actor);
+	}
+
+	async skipBox(msg: string) {
+		if (await HTMLTools.confirmBox(msg, msg)) {
+			this.nextTurn();
+		}
 	}
 
 	async endCombatantTurn(combatant: Combatant<ValidAttackers>) {
@@ -131,6 +139,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const targets= await this.getTargets(attacker, power);
 			this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
 			const result = await  this.#usePowerOn(attacker, power, targets);
+			await result.finalize();
 			await result.print();
 			await result.toMessage(attacker, power);
 			// await result.apply();
@@ -167,7 +176,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			userToken: PersonaDB.getUniversalTokenAccessor(attacker),
 			escalationDie,
 			activationRoll: isActivationRoll,
-			activeCombat:true,
+			activeCombat:!!combat.combatants.find( x=> x.actor?.type != attacker.actor.type) ,
 		};
 		const element = power.system.dmg_type;
 		const resist = target.actor.elementalResist(element);

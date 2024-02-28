@@ -43,9 +43,9 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 		case "escalation-":
 			return situation.escalationDie != undefined && situation.escalationDie <= condition.num!;
 		case "escalation-odd":
-			return situation.escalationDie != undefined && situation.escalationDie % 2 == 1;
+			return situation.escalationDie != undefined && situation.escalationDie % 2 == 1 && !!situation.activeCombat;
 		case "escalation-even":
-			return situation.escalationDie != undefined && situation.escalationDie % 2 == 0;
+			return situation.escalationDie != undefined && situation.escalationDie % 2 == 0 && situation.escalationDie >0 && !!situation.activeCombat;
 		case "activation+":
 			return !!situation.activationRoll && nat! >= condition.num!;
 		case "activation-":

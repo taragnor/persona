@@ -16,6 +16,7 @@ import { PersonaDB } from "../persona-db.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 
 export class CombatResult  {
+	tokenFlags: WeakMap<PersonaActor, OtherEffect[]> = new WeakMap();
 	attacks: Map<AttackResult, TokenChange<PToken>[]> = new Map();
 	escalationMod: number = 0;
 	costs: TokenChange<PToken>[] = [];
@@ -206,12 +207,29 @@ export class CombatResult  {
 			.flatMap( x=> x.otherEffects)
 	}
 
+	async finalize() {
+		this.clearFlags();
+		for (const changes of this.attacks.values()) {
+			for (const change of changes) {
+				await this.finalizeChange(change);
+			}
+		}
+		for (const cost of this.costs) {
+			const token = PersonaDB.findToken(cost.token);
+			if (this.hasFlag(token.actor, "half-hp-cost")) {
+				console.log("Halving HP cost");
+				cost.hpchangemult *= 0.5;
+			}
+			if (this.hasFlag(token.actor, "save-slot")) {
+				cost.expendSlot = [0, 0, 0, 0];
+			}
+			await this.finalizeChange(cost);
+		}
+	}
+
 	async toMessage(initiatingToken: PToken, powerUsed: Usable) : Promise<ChatMessage> {
 		const rolls : PersonaRoll[] = Array.from(this.attacks.entries()).map( ([attackResult]) => attackResult.roll);
 		const attacks = Array.from(this.attacks.entries()).map( ([attackResult, changes])=> {
-			for (const change of changes) {
-				CombatResult.normalizeChange(change);
-			}
 			return {
 				attackResult,
 				changes
@@ -248,21 +266,69 @@ export class CombatResult  {
 			const combat = PersonaCombat.ensureCombatExists();
 			combat.setEscalationDie(combat.getEscalationDie() + escalationChange);
 		}
-
+		this.clearFlags();
 		for (const changes of this.attacks.values()) {
 			for (const change of changes) {
-				await CombatResult.applyChange(change);
-
+				await this.applyChange(change);
 			}
 		}
 		for (const cost of this.costs) {
-			await CombatResult.applyChange(cost);
+			const token = PersonaDB.findToken(cost.token);
+			if (this.hasFlag(token.actor, "half-hp-cost")) {
+				cost.hpchangemult *= 0.5;
+			}
+			await this.applyChange(cost);
 		}
 	}
 
-	static async applyChange(change: TokenChange<PToken>) {
+	clearFlags() {
+		this.tokenFlags = new WeakMap();
+	}
+
+	addFlag(actor: PersonaActor, flag: OtherEffect) {
+		const list = this.tokenFlags.get(actor);
+		if (!list) {
+			const newlist = [flag];
+			this.tokenFlags.set(actor, newlist);
+			return;
+		} else {
+			if (!list.includes(flag))
+				list.push(flag);
+		}
+	}
+
+	hasFlag(actor: PersonaActor, flag: OtherEffect["type"]) : boolean{
+		return !!this.tokenFlags.get(actor)?.find(x=> x.type == flag);
+
+	}
+
+	async finalizeChange(change: TokenChange<PToken>) {
 		const actor = PersonaDB.findToken(change.token).actor;
-		let saveSlot = false;
+		for (const otherEffect of change.otherEffects) {
+			switch (otherEffect.type) {
+				case "expend-item":
+					break;
+				case "save-slot":
+					this.addFlag(actor, otherEffect);
+					break;
+				case "half-hp-cost":
+					this.addFlag(actor, otherEffect);
+					break;
+				case "extraTurn":
+					this.addFlag(actor, otherEffect);
+					break;
+				case "recover-slot":
+					break;
+				default:
+					otherEffect satisfies never;
+			}
+
+		}
+		CombatResult.normalizeChange(change);
+	}
+
+	async applyChange(change: TokenChange<PToken>) {
+		const actor = PersonaDB.findToken(change.token).actor;
 		await actor.modifyHP(change.hpchange * change.hpchangemult);
 		for (const status of change.addStatus) {
 			await actor.addStatus(status);
@@ -292,6 +358,7 @@ export class CombatResult  {
 					otherEffect satisfies never;
 			}
 		}
+		const saveSlot = this.tokenFlags.get(actor)?.find(x=> x.type == "save-slot");
 		if (!saveSlot && actor.system.type == "pc") {
 			change.expendSlot.forEach(async (val, i) => {
 				await (actor as PC).expendSlot(i, val);
