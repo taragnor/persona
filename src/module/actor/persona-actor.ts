@@ -323,6 +323,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			await newEffect.setDuration(duration);
 			await newEffect.setFlag("persona", "duration", duration);
 			await newEffect.setFlag("persona", "potency", potency);
+			if (duration == "3-rounds") {
+				await newEffect.update({"duration.rounds": 3});
+			}
 		} else  {
 			if (potency && eff.potency < potency) {
 				await eff.setPotency(potency);

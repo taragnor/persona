@@ -119,6 +119,29 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						await effect.delete();
 					}
 					break;
+				case "3-rounds":
+					const rounds = effect.duration.rounds ?? 0;
+					if (rounds<= 1) {
+						await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
+						await effect.delete();
+						return;
+					}
+					else  {
+						await effect.update({"duration.rounds" : rounds-1});
+						return;
+					}
+				case "expedition":
+				case "combat":
+				case "USoNT":
+				case "UEoT":
+					await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
+					await effect.delete();
+					break;
+				case "instant":
+					await effect.delete();
+					break;
+				default:
+					effect.statusDuration satisfies never;
 			}
 		}
 	}
@@ -613,7 +636,7 @@ type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shado
 export type PToken = Token<ValidAttackers>;
 
 CONFIG.Combat.initiative = {
-	formula : "@parent.init",
+	formula : "1d6 + @parent.init",
 	decimals: 2
 }
 

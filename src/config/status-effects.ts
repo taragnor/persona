@@ -96,8 +96,10 @@ export const STATUS_EFFECT_DURATIONS_LIST = [
 	"save-normal",
 	"save-easy",
 	"save-hard",
+	"3-rounds",
 	"UEoNT",
 	"USoNT",
+	"UEoT",
 	"instant",
 ] as const;
 

@@ -11,11 +11,22 @@ declare class ActiveEffect<A extends Actor<any,I>, I extends Item<any>> extends 
 	icon: string;
 	changes: unknown[];
 	description: string;
-	duration: Record<string, unknown>;
+	duration: EffectDuration;
 	transfer: boolean;
 }
 
 
+type EffectDuration = {
+	duration: number | null,
+	rounds: number | null,
+	seconds: number | null,
+	startRound: number,
+	startTime: number,
+	startTurn: number,
+	type:"none",
+	turns: "none",
+	label: "None",
+}
 
 type AEChange = {
 	effect: ActiveEffect<any>;

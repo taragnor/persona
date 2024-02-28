@@ -223,6 +223,13 @@ export class CombatResult  {
 			if (this.hasFlag(token.actor, "save-slot")) {
 				cost.expendSlot = [0, 0, 0, 0];
 			}
+			if (this.hasFlag(token.actor, "extraTurn")) {
+				const status : StatusEffect = {
+					id: "bonus-action",
+					duration: "UEoT",
+				};
+				cost.addStatus.push( status);
+			}
 			await this.finalizeChange(cost);
 		}
 	}

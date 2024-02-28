@@ -37,7 +37,10 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 	}
 
 	async setDuration(duration: StatusDuration) : Promise<void> {
-		await this.setFlag("persona", "potency", duration);
+		await this.setFlag("persona", "duration", duration);
+		if (duration == "3-rounds") {
+			await this.update({"duration.rounds": 3});
+		}
 	}
 
 	durationLessThan(x : StatusDuration): boolean {
@@ -50,6 +53,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				return 10;
 			case "combat":
 				return 9;
+			case "3-rounds":
+				return 8
 			case "save-hard":
 				return 6;
 			case "save-normal":
@@ -60,6 +65,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				return 3;
 			case "USoNT":
 				return 2;
+			case "UEoT":
+				return 1;
 			case "instant":
 				return 1;
 			default:
