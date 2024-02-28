@@ -363,7 +363,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return ret as (InvItem | Weapon)[];
 	}
 
-	wpnDamage(this: PC | Shadow, multiplier_factored: boolean = true) : {low: number, high:number} {
+	wpnDamage(this: PC | Shadow, multiplier_factored: boolean = true, situation: Situation = { user: this.accessor}) : {low: number, high:number} {
 		let basedmg: {low: number, high:number};
 		if (this.system.type == "pc") {
 			const wpn = this.weapon;
@@ -377,10 +377,21 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		if (!multiplier_factored)
 			return basedmg;
-		const mult =this.wpnMult();
+		const mult = this.wpnMult();
+		const bonusDamage = this.getBonusWpnDamage(situation);
 		return {
-			low: basedmg.low * mult,
-			high: basedmg.high * mult,
+			low: basedmg.low * mult + bonusDamage.low.total(situation),
+			high: basedmg.high * mult + bonusDamage.high.total(situation),
+		}
+	}
+
+	getBonusWpnDamage(situation: Situation) : {low: ModifierList, high: ModifierList} {
+		const total = this.getBonuses("wpnDmg");
+		const low = this.getBonuses("wpnDmg_low");
+		const high = this.getBonuses("wpnDmg_high");
+		return {
+			low: total.concat(low),
+			high: total.concat(high)
 		}
 	}
 
@@ -403,7 +414,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	wpnAtkBonus(this: PC | Shadow) : ModifierList {
-		const mods = new ModifierList();
+		const mods = this.getBonuses("allAtk");
 		const lvl = this.system.combat.classData.level;
 		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
 		const wpnAtk = this.system.combat.wpnatk;
@@ -414,7 +425,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	magAtkBonus(this:PC | Shadow) : ModifierList {
-		const mods = new ModifierList();
+		const mods = this.getBonuses("allAtk");
 		const lvl = this.system.combat.classData.level ?? 0;
 		const magAtk = this.system.combat.magatk ?? 0;
 		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
@@ -422,6 +433,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		mods.add("Level Bonus", lvl + inc);
 		const itemBonus = this.getBonuses("magAtk");
 		return mods.concat(itemBonus);
+	}
+
+	itemAtkBonus(this: PC | Shadow, item :Consumable) : ModifierList {
+		const mm = this.getBonuses("itemAtk");
+		mm.concat(this.getBonuses("allAtk"));
+		mm.add("Item Base Bonus", item.system.atk_bonus);
+
+		return mm;
 	}
 
 	getDefense(this: PC | Shadow,  type : keyof PC["system"]["combat"]["defenses"]) : ModifierList {

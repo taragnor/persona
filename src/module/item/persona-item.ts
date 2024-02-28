@@ -1,3 +1,4 @@
+import { Situation } from "../preconditions.js";
 import { SLOTTYPES } from "../../config/slot-types.js";
 import { ModifierListItem } from "../combat/modifier-list.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
@@ -176,7 +177,7 @@ const power = PersonaDB.getItemByName(powerName);
 		// return this.system.modifiers[type];
 	}
 
-	getDamage(this:Usable , user: PC | Shadow, type: "high" | "low") : number {
+	getDamage(this:Usable , user: PC | Shadow, type: "high" | "low", situation: Situation = {user: user.accessor}) : number {
 		const subtype : PowerType  = this.system.type == "power" ? this.system.subtype : "standalone";
 		switch(subtype) {
 			case "weapon" : {

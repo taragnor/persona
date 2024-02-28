@@ -1,6 +1,7 @@
 import { STUDENT_SKILLS_LIST } from "./student-skills.js";
 export const MODIFIERLIST = [
 	"maxhp",
+	"allAtk",
 	"wpnAtk",
 	"magAtk",
 	"wpnDmg",
@@ -14,6 +15,9 @@ export const MODIFIERLIST = [
 	"recovery",
 	"maxhpMult",
 	"critResist",
+	"wpnDmg_low",
+	"wpnDmg_high",
+	"itemAtk",
 ] as const;
 
 export const MODIFIERS_TABLE = Object.fromEntries(

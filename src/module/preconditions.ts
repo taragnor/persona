@@ -187,6 +187,7 @@ export type Precondition = {
 
 export type Situation = {
 	//more things can be added here all should be optional
+	user: UniversalActorAccessor<PC | Shadow>;
 	usedPower?: UniversalItemAccessor<Usable>;
 	activeCombat ?: boolean ;
 	naturalAttackRoll ?: number;
@@ -199,7 +200,6 @@ export type Situation = {
 	activationRoll ?: boolean;
 	target?: UniversalTokenAccessor<PToken>;
 	userToken?: UniversalTokenAccessor<PToken>;
-	user: UniversalActorAccessor<PC | Shadow>;
 }
 
 

@@ -17,6 +17,7 @@ import { UniversalTokenAccessor } from "../utility/db-accessor.js";
 import { EngagementList } from "./engagementList.js";
 import { Logger } from "../utility/logger.js";
 import { OtherEffect } from "./combat-result.js";
+import { Consumable } from "../item/persona-item.js";
 
 
 export class PersonaCombat extends Combat<PersonaActor> {
@@ -376,13 +377,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						case "dmg-high":
 							CombatRes.addEffect(atkResult, consTarget, {
 								type: "dmg-high",
-								amount: power.getDamage(attacker.actor, "high") * (absorb ? -1 : damageMult),
+								amount: power.getDamage(attacker.actor, "high", situation) * (absorb ? -1 : damageMult),
 							});
 							continue;
 						case "dmg-low":
 							CombatRes.addEffect(atkResult, consTarget, {
 								type: "dmg-low",
-								amount: power.getDamage(attacker.actor, "low") * (absorb ? -1 : damageMult),
+								amount: power.getDamage(attacker.actor, "low", situation) * (absorb ? -1 : damageMult),
 							});
 							continue;
 						case "extraAttack" :
@@ -479,8 +480,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	static getAttackBonus(attacker: PToken, power:Usable): ModifierList {
 		const actor = attacker.actor;
 		if (power.system.type == "consumable") {
-			const l = new ModifierList();
-			l.add("Item Base Bonus", power.system.atk_bonus);
+			const l = actor.itemAtkBonus(power as Consumable);
+			// l.add("Item Base Bonus", power.system.atk_bonus);
 			return l;
 		}
 		if (power.system.subtype == "weapon") {

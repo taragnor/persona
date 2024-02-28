@@ -44,7 +44,7 @@ export class ModifierList {
 		return filtered.map( x=> [x.modifier, x.name]);
 	}
 
-	concat (this: ModifierList, other: ModifierList) : ModifierList {
+	concat (this: Readonly<ModifierList>, other: Readonly<ModifierList>) : ModifierList {
 		const list = this._data.concat(other._data);
 		return new ModifierList(list);
 	}
