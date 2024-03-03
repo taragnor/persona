@@ -85,7 +85,7 @@ export class ModifierList {
 	}
 
 	/** returns an array of values to use in printing the rol */
-	printable(situation:Situation) : {name: string, modifier:string}[] {
+	printable(situation:Situation) : ResolvedModifierList {
 		const signedFormatter = new Intl.NumberFormat("en-US", {signDisplay:"always"});
 		return this
 			.validModifiers(situation)
@@ -109,4 +109,6 @@ type Modifier = {
 	amount: number;
 }
 
+
+export type ResolvedModifierList ={name: string, modifier:string}[];
 

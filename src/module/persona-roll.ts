@@ -1,30 +1,61 @@
+import { PersonaError } from "./persona-error.js";
+import { ResolvedModifierList } from "./combat/modifier-list.js";
 import { ModifierList } from "./combat/modifier-list.js";
 import { Situation } from "./preconditions.js";
 import { PersonaDB } from "./persona-db.js";
+import { UniversalActorAccessor } from "./utility/db-accessor.js";
+import { PC } from "./actor/persona-actor.js";
+import { Shadow } from "./actor/persona-actor.js";
 
 export class PersonaRoll extends Roll {
-	mods: ModifierList;
-	situation: Situation;
+	modList: UnresolvedRoll | ResolvedRoll;
+	// mods: ModifierList;
+	// situation: Situation;
 	name: string;
 
 	constructor (dice: string, modifierList : ModifierList, situation: Situation, rollName: string) {
 		super(dice);
-		this.mods = modifierList;
-		this.situation = situation;
+		this.modList = {
+			mods : modifierList,
+			situation : situation,
+		};
 		this.name = rollName;
 	}
 
-	get printableMods() {
-		return this.mods.printable(this.situation);
+	get printableMods() : ResolvedModifierList {
+		if ("situation" in this.modList) {
+			return this.resolveMods().mods;
+		}
+		return this.modList.mods;
+	}
+
+	resolveMods() : ResolvedRoll {
+		if ("modtotal" in this.modList) {
+			return this.modList;
+		}
+		const {mods, situation} = this.modList;
+		this.modList =  {
+			mods : mods.printable(situation),
+			modtotal: mods.total(situation),
+			actor: situation.user,
+		} satisfies ResolvedRoll;
+		return this.modList;
 	}
 
 	setSituation(sit: Situation) {
-		this.situation = sit;
+		if ("modtotal" in this.modList) {
+			throw new PersonaError("Can't set Situation, Roll is already resolved");
+		}
+		this.modList.situation = sit;
 	}
 
 	 async toModifiedMessage() : Promise<ChatMessage> {
+		 this.resolveMods();
+		 if ("situation" in this.modList) {
+			 throw new PersonaError("Mod List not resolved");
+		 }
 		const html = await renderTemplate("systems/persona/parts/simple-roll.hbs", {roll: this});
-		 const actor  = PersonaDB.findActor(this.situation.user);
+		 const actor  = PersonaDB.findActor(this.modList.actor);
 		 const speaker : ChatSpeakerObject = {
 			 actor: actor.id,
 		 };
@@ -41,7 +72,11 @@ export class PersonaRoll extends Roll {
 
 	override get total(): number {
 		try {
-			const total = super.total + this.mods.total(this.situation);
+			this.resolveMods();
+			if ("situation" in this.modList) {
+				throw new PersonaError("Mod List not resolved");
+			}
+			const total = super.total + this.modList.modtotal;
 			return total;
 		} catch (e) {
 			return -999;
@@ -54,3 +89,13 @@ export class PersonaRoll extends Roll {
 
 }
 
+type UnresolvedRoll = {
+	mods: ModifierList,
+	situation: Situation,
+}
+
+type ResolvedRoll = {
+	mods: ResolvedModifierList,
+	modtotal : number,
+	actor: UniversalActorAccessor<PC | Shadow>,
+}

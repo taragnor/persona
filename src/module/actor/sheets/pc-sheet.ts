@@ -104,7 +104,7 @@ export class PCSheet extends CombatantSheetBase {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
 		const link = this.actor.socialLinks.find(x=> x.actor.id == linkId);
 		const npc = link?.actor;
-		if (!npc || npc.system.type != "npc") {
+		if (!npc) {
 			throw new PersonaError(`COuldn't find NPC with Id ${linkId}`);
 		}
 		await Logger.sendToChat(`Refreshed inpiration for ${npc.name} (was ${link.inspiration})`, this.actor);

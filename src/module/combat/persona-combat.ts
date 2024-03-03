@@ -60,7 +60,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		];
 		const debilitatingStatus = actor.effects.find( eff=> debilitatingStatuses.some( debil => eff.statuses.has(debil)));
 		if (debilitatingStatus) {
-			const msg =  `${combatant.name} can't take actioins normally because of ${debilitatingStatus.name}`
+			const msg =  `${combatant.name} can't take actions normally because of ${debilitatingStatus.name}`
 			startTurnMsg += msg ;
 			this.skipBox(`${msg}. <br> Skip turn?`);
 		}
@@ -69,8 +69,40 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const damage = burnStatus.potency;
 			startTurnMsg += `${combatant.name} is burning and will take ${damage} damage at end of turn. (original Hp: ${actor.hp}`;
 		}
+		for (const effect of actor.effects) {
+			switch (effect.statusDuration) {
+				case "expedition":
+				case "combat":
+				case "save-normal":
+				case "save-easy":
+				case "save-hard":
+				case "UEoNT":
+				case "UEoT":
+					break;
+				case "instant":
+				case "USoNT":
+					startTurnMsg += `<br> ${effect.displayedName} has expired`;
+					await effect.delete();
+					break;
+				case "3-rounds":
+					const rounds = effect.duration.rounds ?? 0;
+					if (rounds<= 0) {
+						startTurnMsg += `<br>${effect.displayedName} has expired.`;
+						await effect.delete();
+						break;
+					}
+					else  {
+						await effect.update({"duration.rounds" : rounds-1});
+						break;
+					}
+				default:
+						effect.statusDuration satisfies never;
+			}
+
+		}
 		await Logger.sendToChat(startTurnMsg, actor);
 	}
+
 
 	async skipBox(msg: string) {
 		if (await HTMLTools.confirmBox(msg, msg)) {
@@ -90,6 +122,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		for (const effect of actor.effects) {
 			switch (effect.statusDuration) {
 				case "UEoNT":
+					if (effect.duration.startRound != this.round)
 					await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
 					await effect.delete();
 					break;
@@ -121,25 +154,27 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					}
 					break;
 				case "3-rounds":
-					const rounds = effect.duration.rounds ?? 0;
-					if (rounds<= 1) {
-						await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
-						await effect.delete();
-						return;
-					}
-					else  {
-						await effect.update({"duration.rounds" : rounds-1});
-						return;
-					}
-				case "expedition":
-				case "combat":
-				case "USoNT":
+					// const rounds = effect.duration.rounds ?? 0;
+					// if (rounds<= 1) {
+					// 	await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
+					// 	await effect.delete();
+					// 	return;
+					// }
+					// else  {
+					// 	await effect.update({"duration.rounds" : rounds-1});
+					// 	return;
+					// }
+					break;
 				case "UEoT":
 					await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
 					await effect.delete();
 					break;
 				case "instant":
 					await effect.delete();
+					break;
+				case "USoNT":
+				case "expedition":
+				case "combat":
 					break;
 				default:
 					effect.statusDuration satisfies never;

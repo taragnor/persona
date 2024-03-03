@@ -1,5 +1,6 @@
 class Sheet<T extends Document> extends FormApplication {
-	static get defaultOptions() : Object; //TODO: be more specific here
+	options: SheetOptions;
+	static get defaultOptions() : SheetOptions;
 	getData(): SheetData | Promise<SheetData>;
 	activateListeners(html: JQuery<HTMLElement>): void;
 	async render(force: boolean):Promise<void>;
@@ -18,5 +19,10 @@ class FormApplication {
 }
 
 
+interface SheetOptions {
+	editable: boolean;
+	template: string;
+
+}
 
 type SheetData = Record<number | string, unknown>;

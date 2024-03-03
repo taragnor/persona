@@ -23,7 +23,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"getDefense" : (actor: PC | Shadow, defense: keyof typeof actor["system"]["combat"]["defenses"]) => {
-			return actor.getDefense(defense).total({user: PersonaDB.getUniversalActorAccessor(actor)});
+			return actor.getDefense(defense).total({user: PersonaDB.getUniversalActorAccessor(actor) });
 
 		},
 
