@@ -18,6 +18,7 @@ export const MODIFIERLIST = [
 	"wpnDmg_low",
 	"wpnDmg_high",
 	"itemAtk",
+	"disengage",
 ] as const;
 
 export const MODIFIERS_TABLE = Object.fromEntries(

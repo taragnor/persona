@@ -9,8 +9,6 @@ import { Shadow } from "./actor/persona-actor.js";
 
 export class PersonaRoll extends Roll {
 	modList: UnresolvedRoll | ResolvedRoll;
-	// mods: ModifierList;
-	// situation: Situation;
 	name: string;
 
 	constructor (dice: string, modifierList : ModifierList, situation: Situation, rollName: string) {

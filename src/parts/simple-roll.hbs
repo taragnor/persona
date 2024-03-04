@@ -2,7 +2,7 @@
 	<h2>
 		{{roll.name}}
 	</h2>
-	<div class="roll-body">
+	<div class="roll-body tooltip">
 		{{#each roll.dice as |die|}}
 		<div class="dice">
 			<span>{{die.number}}d{{die.faces}} </span>
@@ -12,7 +12,7 @@
 			</span>
 		</div>
 		{{/each}}
-		<div class="mods-section">
+		<div class="mods-section tooltiptext">
 			{{#each roll.printableMods as |mod|}}
 			<div class="mod-item">
 				<span class="mod-name">

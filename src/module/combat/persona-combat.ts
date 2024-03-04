@@ -102,6 +102,18 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 
 		}
+		if (!debilitatingStatus) {
+			const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token._object);
+			if (this.isEngaged(accessor)) {
+				const DC = undefined;
+				const disengage = await PersonaCombat.disengageRoll(actor, DC);
+				let disengageResult = "failed";
+
+				if (disengage >= 11) disengageResult = "normal";
+				if (disengage >= 16) disengageResult = "hard";
+				startTurnMsg += `<br> <b>Disengage Opportunity:</b> ${disengageResult}`;
+			}
+		}
 		await Logger.sendToChat(startTurnMsg, actor);
 	}
 
@@ -669,7 +681,20 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		await roll.toModifiedMessage();
 		return roll.total >= difficulty;
 	}
+
+	static async disengageRoll( actor: ValidAttackers, DC = 11) : Promise<number> {
+		const situation : Situation = {
+			user: PersonaDB.getUniversalActorAccessor(actor),
+		}
+		const mods = actor.getDisengageBonus();
+		const labelTxt = `Disengage Check`;
+		const roll = new PersonaRoll("1d20", mods, situation, labelTxt);
+		await roll.roll();
+		await roll.toModifiedMessage();
+		return roll.total;
+	}
 }
+
 
 type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shadow">;
 
@@ -722,14 +747,12 @@ Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
 
 
 Hooks.on("renderCombatTracker", async (item: CombatTracker, element: JQuery<HTMLElement>, options: RenderCombatTabOptions) => {
-	console.log("Rendering combatTab");
 	if (element.find(".escalation-die").length == 0) {
 		const escalationTracker = `<div class="escalation-tracker"><span class="title"> Escalation Die: </span><span class="escalation-die">N/A</div>`;
-	const header = element.find(".combat-tracker-header").append(escalationTracker);
+		element.find(".combat-tracker-header").append(escalationTracker);
 	}
 	const combat = (game.combat as PersonaCombat);
 	const escalationDie = combat ? String(combat.getEscalationDie()): "N\A";
-	console.log(`Escalation Die: ${escalationDie}`);
 	element.find(".escalation-die").text(escalationDie);
 });
 

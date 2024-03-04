@@ -781,6 +781,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return new ModifierList(mods);
 	}
 
+	getDisengageBonus() : ModifierList {
+		const mods = this.mainModifiers().flatMap( item => item.getModifier("disengage"));
+		return new ModifierList(mods);
+
+	}
 	async expendConsumable(item: Usable) {
 		if (item.system.type == "power") {
 			PersonaError.softFail("Can't expend a power, this function requires an item");
