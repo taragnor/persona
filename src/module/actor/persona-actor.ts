@@ -27,7 +27,6 @@ import { ACTORMODELS } from "../datamodel/actor-types.js"
 import { PersonaItem } from "../item/persona-item.js"
 import { PersonaAE } from "../active-effect.js";
 
-
 declare global {
 	type ActorSub<X extends PersonaActor["system"]["type"]> = Subtype<PersonaActor, X>;
 }
@@ -806,6 +805,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			this.hp > 0
 		&& !deblitatingStatuses.some( stat => this.statuses.has(stat))
 		);
+	}
+
+	async levelUp(this: PC) : Promise<void> {
+		const newlevel  = this.system.combat.classData.level+1 ;
+		const incremental = this.system.combat.classData.incremental;
+		for (const [k, v] of Object.entries(incremental)){
+			incremental[k as keyof typeof incremental]= false;
+		}
+		await this.update({
+			"system.combat.classData.level": newlevel,
+			"system.combat.classData.incremental": incremental,
+			"system.combat.classData.incremental_progress": 0,
+		});
 	}
 
 }
