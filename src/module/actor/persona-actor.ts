@@ -89,7 +89,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			}
 			case "pc":{
 				const actor = this as (Shadow | PC);
-				return 10 * actor.getDefense("ref").total( {user:actor.accessor}) + actor.getDefense("fort").total(situation) + actor.getDefense("will").total(situation);
+				return actor.getDefense("ref").total( {user:actor.accessor}) + 0.1 * actor.getDefense("fort").total(situation) + 0.01 * actor.getDefense("will").total(situation);
 			}
 			default:
 				this.system satisfies never;

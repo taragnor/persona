@@ -173,3 +173,9 @@ input.single-digit {
 	font-size: larger;
 	font-weight: bold;
 }
+
+.powers-table th {
+	text-align: left;
+	justify-content: left;
+
+}

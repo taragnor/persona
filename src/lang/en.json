@@ -181,6 +181,8 @@
 	"persona.power.tag.debuff": "Debilitating",
 	"persona.power.tag.weapon": "Weapon",
 	"persona.power.tag.healing": "Healing",
+	"persona.power.tag.mobile": "Mobile",
+	"persona.power.tag.basicatk": "Basic Attack",
 
 	"persona.power.shadowcosts.none": "None",
 	"persona.power.shadowcosts.always": "Always",

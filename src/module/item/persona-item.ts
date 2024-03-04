@@ -178,6 +178,7 @@ const power = PersonaDB.getItemByName(powerName);
 	}
 
 	getDamage(this:Usable , user: PC | Shadow, type: "high" | "low", situation: Situation = {user: user.accessor}) : number {
+		if (this.system.dmg_type == "none") return 0;
 		const subtype : PowerType  = this.system.type == "power" ? this.system.subtype : "standalone";
 		switch(subtype) {
 			case "weapon" : {

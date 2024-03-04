@@ -5,6 +5,7 @@ import { PersonaDB } from "./persona-db.js";
 import { Talent } from "./item/persona-item.js";
 import { UniversalTokenAccessor } from "./utility/db-accessor.js";
 import { PToken } from "./combat/persona-combat.js";
+import { Usable } from "./item/persona-item.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -53,6 +54,18 @@ export class PersonaHandleBarsHelpers {
 				return game.i18n.localize(`persona.talentLevels.${numLevel}.name`);
 			}
 			else return 0;
+		},
+
+		"getDamage": (actor: PersonaActor, usable: Usable) => {
+			switch (actor.system.type) {
+				case "npc":
+					return "0/0";
+				case "pc": case"shadow":
+					const combatant = actor as PC | Shadow;
+					const low = usable.getDamage(combatant, "low");
+					const high = usable.getDamage(combatant, "high");
+					return low + " / " + high;
+			}
 		},
 
 		"getTokenAccName" : (tokenAcc: UniversalTokenAccessor<PToken>) =>  {

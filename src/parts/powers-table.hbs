@@ -8,6 +8,24 @@
 		{{/if}}
 	</h2>
 	<table class="powers-table">
+		<tr>
+			<th>
+			</th>
+			<th>
+				Name
+			</th>
+			<th>
+				Tags
+			</th>
+			<th>
+				Damage
+			</th>
+			<th>
+				Cost
+			</th>
+			<th>
+			</th>
+		</tr>
 		{{#each actor.powers as |power|}}
 		<tr data-power-id="{{power.id}}">
 			<td>
@@ -22,6 +40,9 @@
 			</td>
 			<td>
 				{{power.tags}}
+			</td>
+			<td>
+				{{getDamage ../actor power}}
 			</td>
 			<td>
 				{{power.costString}}

@@ -62,7 +62,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (debilitatingStatus) {
 			const msg =  `${combatant.name} can't take actions normally because of ${debilitatingStatus.name}`
 			startTurnMsg += msg ;
-			this.skipBox(`${msg}. <br> Skip turn?`);
+			if (actor.system.type == "shadow") {
+				this.skipBox(`${msg}. <br> Skip turn?`); //don't await this so it processes the rest of the code
+			}
 		}
 		const burnStatus = actor.effects.find( eff=> eff.statuses.has("burn"));
 		if (burnStatus) {
@@ -521,10 +523,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		if (power.system.subtype == "weapon") {
 			const mod = actor.wpnAtkBonus();
+			mod.add("Power attack modifier", power.system.atk_bonus);
 			return mod.concat(new ModifierList(power.getModifier("wpnAtk")));
 		}
 		if (power.system.subtype == "magic") {
 			const mod = actor.magAtkBonus();
+			mod.add("Power attack modifier", power.system.atk_bonus);
 			return mod.concat(new ModifierList(power.getModifier("magAtk")));
 		}
 		return new ModifierList();
