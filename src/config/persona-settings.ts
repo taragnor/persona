@@ -19,6 +19,9 @@ export class PersonaSettings {
 		return this.get("metaverseState").valueOf();
 	}
 
+	static autoApplyCombatResults(): boolean {
+		return this.get("autoApplyCombatResults").valueOf();
+	}
 
 }
 
@@ -32,7 +35,16 @@ const SETTINGS = {
 			config: true, //turn this off eventually
 			type :Boolean,
 			default: false,
-	}
+	},
+	"autoApplyCombatResults" : {
+			name: "Auto Apply Combat Results",
+			hint: "Auto apply combat results?",
+			scope: "world",
+			restricted: true,
+			config: true,
+			type :Boolean,
+			default: false,
+	},
 } as const;
 
 type SETTINGKEYS = keyof typeof SETTINGS;

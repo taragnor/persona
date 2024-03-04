@@ -40,6 +40,8 @@
 	{{> "systems/persona/parts/display-token-change.hbs" change=cost power=../power}}
 	{{/each}}
 </section>
+{{#if manualApply}}
 <button class="applyChanges">
 	Apply Changes
 </button>
+{{/if}}

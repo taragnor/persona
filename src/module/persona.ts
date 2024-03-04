@@ -10,6 +10,7 @@ declare global {
 		PERSONACFG: unknown
 	}
 }
+import { SocketManager } from "./utility/socket-manager.js";
 import { templatePaths } from "../config/handlebars-templates.js";
 import { PersonaClassSheet } from "./item/sheets/class-sheet.js";
 import { ACTORMODELS } from "./datamodel/actor-types.js";
@@ -31,6 +32,9 @@ import { PersonaRoll } from "./persona-roll.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { UniversalModifierSheet } from "./item/sheets/universalmodifier-sheet.js";
 import { PersonaSettings } from "../config/persona-settings.js";
+
+
+export const PersonaSockets = new SocketManager ("persona", true);
 
 function registerDataModels() {
 	CONFIG.Actor.dataModels= ACTORMODELS;

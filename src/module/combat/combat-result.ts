@@ -1,3 +1,11 @@
+declare global {
+	interface SocketMessage {
+"COMBAT_RESULT_APPLY" : string;
+	}
+}
+
+import { PersonaSockets } from "../persona.js";
+import { PersonaSettings } from "../../config/persona-settings.js";
 import { SlotType } from "../../config/slot-types.js";
 import { PersonaError } from "../persona-error.js";
 import { STATUS_EFFECT_DURATIONS_LIST } from "../../config/status-effects.js";
@@ -14,6 +22,8 @@ import { UniversalItemAccessor } from "../utility/db-accessor.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { PersonaDB } from "../persona-db.js";
 import { PersonaActor } from "../actor/persona-actor.js";
+
+
 
 export class CombatResult  {
 	tokenFlags: WeakMap<PersonaActor, OtherEffect[]> = new WeakMap();
@@ -38,7 +48,7 @@ export class CombatResult  {
 		return json;
 	}
 
-	static fromJSON(json: string) : CombatResult { 
+	static fromJSON(json: string) : CombatResult {
 		const x = JSON.parse(json);
 		const ret = new CombatResult();
 		ret.attacks = new Map(x.attacks);
@@ -242,7 +252,8 @@ export class CombatResult  {
 				changes
 			};
 		});
-		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attacker: initiatingToken, power: powerUsed,  attacks, escalation: this.escalationMod, result: this, costs: this.costs});
+		const manualApply = !PersonaSettings.autoApplyCombatResults();
+		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attacker: initiatingToken, power: powerUsed,  attacks, escalation: this.escalationMod, result: this, costs: this.costs, manualApply});
 		const chatMsg = await ChatMessage.create( {
 			speaker: {
 				scene: initiatingToken.scene.id,
@@ -255,7 +266,20 @@ export class CombatResult  {
 			user: game.user,
 			type: CONST.CHAT_MESSAGE_TYPES.ROLL
 		}, {})
-		await chatMsg.setFlag("persona", "atkResult", this.toJSON());
+		if (!manualApply) {
+			if (game.user.isGM) {
+				await this.apply();
+			} else  {
+				const gmTarget = game.users.find(x=> x.isGM && x.active);
+				if (gmTarget)  {
+					PersonaSockets.simpleSend("COMBAT_RESULT_APPLY", this.toJSON(), [gmTarget.id])
+				} else {
+					await chatMsg.setFlag("persona", "atkResult", this.toJSON());
+				}
+			}
+		} else {
+			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
+		}
 		return chatMsg;
 	}
 
@@ -265,6 +289,11 @@ export class CombatResult  {
 		if (this.escalationMod) {
 			msg += `escalation Mod: ${signedFormatter.format(this.escalationMod)}`;
 		}
+	}
+
+	static async applyHandler(x: SocketMessage["COMBAT_RESULT_APPLY"]) : Promise<void> {
+		const result = CombatResult.fromJSON(x);
+		await result.apply();
 	}
 
 	async apply(): Promise<void> {
@@ -470,3 +499,6 @@ Hooks.on("renderChatMessage", async (msg: ChatMessage, html: JQuery<HTMLElement>
 	});
 });
 
+Hooks.on("ready", async () => {
+	PersonaSockets.setHandler("COMBAT_RESULT_APPLY", CombatResult.applyHandler.bind(CombatResult));
+});

@@ -145,8 +145,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const inc= this.hasIncremental("hp")? 1: 0;
 			const lvl = this.system.combat.classData.level;
 			const bonuses = this.getBonuses("maxhp");
+			const lvlbase = this.class.getClassProperty(lvl, "maxhp");
+			const incbonus = this.class.getClassProperty(lvl+inc, "maxhp") - lvlbase;
+
+			bonuses.add("incremental bonus hp", incbonus)
 			const mult = this.getBonuses("maxhpMult").total(sit) + 1;
-			return (this.class.getClassProperty(lvl + inc, "maxhp") + bonuses.total(sit)) * mult ;
+
+			const mhp= (mult * lvlbase) + bonuses.total(sit);
+			return Math.round(mhp);
+			// return (this.class.getClassProperty(lvl + inc, "maxhp") + bonuses.total(sit)) * mult ;
 		} catch (e) {
 			console.warn(`Can't get Hp for ${this.name} (${this.id})`);
 			return 0;

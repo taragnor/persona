@@ -1,40 +1,41 @@
 {
-    "id": "persona",
-    "title": "Persona d20 system",
-    "description": "Foundry VTT version of Persona homebrew system",
-    "version": "0.5.0",
-    "compatibility": {
-        "minimum": 11,
-        "verified": 11
-    },
-    "url": "https://github.com/taragnor/persona",
-    "manifest": "https://raw.githubusercontent.com/taragnor/persona/src/system.json",
-    "download": "",
-    "authors": [
-        {
-            "name": "taragnor",
-            "url": "https://github.com/taragnor",
-            "discord": "taragnor"
-        }
-    ],
-    "esmodules": [
-        "module/persona.js"
-    ],
-    "styles": [
-        "style/persona.css"
-    ],
-    "languages": [
-        {
-            "lang": "en",
-            "name": "English",
-            "path": "lang/en.json"
-        }
-    ],
-  "packs": [{
-    "name": "persona-classes",
-    "label": "Persona Classes",
-    "system": "persona",
-    "type": "Item",
-    "path": "packs/classes"
-  }]
+	"id": "persona",
+	"title": "Persona d20 system",
+	"description": "Foundry VTT version of Persona homebrew system",
+	"version": "0.5.0",
+	"compatibility": {
+		"minimum": 11,
+		"verified": 11
+	},
+	"url": "https://github.com/taragnor/persona",
+	"manifest": "https://raw.githubusercontent.com/taragnor/persona/src/system.json",
+	"download": "",
+	"authors": [
+		{
+			"name": "taragnor",
+			"url": "https://github.com/taragnor",
+			"discord": "taragnor"
+		}
+	],
+	"esmodules": [
+		"module/persona.js"
+	],
+	"styles": [
+		"style/persona.css"
+	],
+	"languages": [
+		{
+			"lang": "en",
+			"name": "English",
+			"path": "lang/en.json"
+		}
+	],
+	"socket": true,
+	"packs": [{
+		"name": "persona-classes",
+		"label": "Persona Classes",
+		"system": "persona",
+		"type": "Item",
+		"path": "packs/classes"
+	}]
 }

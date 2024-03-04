@@ -39,6 +39,7 @@ declare interface Game {
 	scenes: SceneCollection;
 	combat?: Combat;
 	settings: ClientSettings;
+	socket: Socket;
 }
 
 
@@ -74,6 +75,7 @@ class FoundryCompendium<T extends object> extends FoundryDocument<never> {
 }
 
 class FoundryUser extends FoundryDocument<never>{
+	get active(): boolean;
 	targets: Set<Token<any>> & {user: FoundryUser };
 	role: number;
 	viewedScene: string;
