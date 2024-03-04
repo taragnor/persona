@@ -30,6 +30,7 @@ declare interface HOOKS {
 		"deleteToken": DeleteHook<TokenDocument<any>>,
 		"deleteActor": DeleteHook<Actor<any>>,
 		"updateScene": UpdateHook<Scene>,
+		"renderCombatTracker": RenderCombatTabFn,
 
 };
 
@@ -50,4 +51,29 @@ type CombatUpdateOptions = {
 	/** A signed integer for whether the turn order is advancing or rewinding */
 	direction: number
 }
+
+
+type RenderCombatTabFn= (item: CombatTracker, element: JQuery<HTMLElement>, options: RenderCombatTabOptions) => Promise<void>;
+
+type RenderCombatTabOptions = {
+	combat: Combat;
+	combatCount: number;
+	combats: Combat[];
+	control: boolean;
+	cssClass: string;
+	cssId: string;
+	currentIndex: number;
+	hasCombat: boolean;
+	labels: Record<string, string>;
+	linked: boolean;
+	nextId: unknown | null;
+	previousId: unknown | null;
+	round: number;
+	settings: Record<string, unknown>;
+	started: undefined | unknown;
+	tabName: string;
+	turn: number;
+	turns: unknown[];
+	user: FoundryUser
+};
 

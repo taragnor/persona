@@ -721,6 +721,18 @@ Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
 });
 
 
+Hooks.on("renderCombatTracker", async (item: CombatTracker, element: JQuery<HTMLElement>, options: RenderCombatTabOptions) => {
+	console.log("Rendering combatTab");
+	if (element.find(".escalation-die").length == 0) {
+		const escalationTracker = `<div class="escalation-tracker"><span class="title"> Escalation Die: </span><span class="escalation-die">N/A</div>`;
+	const header = element.find(".combat-tracker-header").append(escalationTracker);
+	}
+	const combat = (game.combat as PersonaCombat);
+	const escalationDie = combat ? String(combat.getEscalationDie()): "N\A";
+	console.log(`Escalation Die: ${escalationDie}`);
+	element.find(".escalation-die").text(escalationDie);
+});
+
 type SaveOptions = {
 	label?: string,
 	DC?: number,
