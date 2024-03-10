@@ -27,7 +27,6 @@ declare const Hooks: Hooks;
 declare const CONFIG : CONFIG;
 
 
-
 declare interface Game {
 	actors: Collection<Actor<any, any>>;
 	i18n: Localization;
@@ -40,6 +39,7 @@ declare interface Game {
 	combat?: Combat;
 	settings: ClientSettings;
 	socket: Socket;
+	messages: Collection<ChatMessage>;
 }
 
 
@@ -66,7 +66,7 @@ class Collection<T> extends Map<string, T> {
 	[Symbol.iterator]() : Iterator<T>;
 	get(id: string) : T | null;
 	getName(name: string): T | null;
-	find (fn : (item: T) => boolean): Option<T>;
+	find (fn : (item: T) => boolean): T | undefined;
 }
 
 class FoundryCompendium<T extends object> extends FoundryDocument<never> {
@@ -80,6 +80,7 @@ class FoundryUser extends FoundryDocument<never>{
 	role: number;
 	viewedScene: string;
 	get isGM(): boolean;
+	get character(): Actor<any, any, any> | null;
 
 }
 

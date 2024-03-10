@@ -1,3 +1,4 @@
+import { PersonaActorSheetBase } from "./sheets/actor-sheet.base.js";
 import { Metaverse } from "../metaverse.js";
 import { Logger } from "../utility/logger.js";
 import { Situation } from "../preconditions.js";
@@ -33,6 +34,7 @@ declare global {
 
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
 	override statuses: Set<StatusEffectId>;
+	override sheet: PersonaActorSheetBase;
 
 
 	override prepareBaseData() {
@@ -745,9 +747,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	getPassivePowers(): Power[] {
 		return this.powers
-			.filter( power=> {
-				power.system.subtype == "passive";
-			});
+			.filter( power=> power.system.subtype == "passive");
 	}
 
 	canEngage() :boolean {
@@ -778,6 +778,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	getSaveBonus() : ModifierList {
 		const mods = this.mainModifiers().flatMap( item => item.getModifier("save"));
+		const x = this.getActiveTokens()[0]
 		return new ModifierList(mods);
 	}
 

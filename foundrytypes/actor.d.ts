@@ -14,18 +14,20 @@ declare class Actor<const T extends SchemaDict, ItemType extends Item<J> = Item,
 	system: TotalConvert<T>;
 	get items(): Collection<ItemType>;
 	getRollData(): TotalConvert<T>;
-	sheet: ActorSheet<this>;
+	sheet: ActorSheet<Actor<T, ItemType, AEType>>;
 	statuses: Set<string>;
 	get effects(): Collection<AEType>;
 	get statuses(): Set<string>;
 	get token(): TokenDocument<typeof this> | undefined;
 	get visible(): boolean;
-	_dependentTokens:WeakMap<Scene, WeakSet<TokenDocument<typeof this>>> ;
+	get isToken(): boolean;
+	_dependentTokens:WeakMap<Scene, WeakSet<TokenDocument<typeof Actor<T, ItemType, AEType>>>> ;
 	/** Retrieve an iterator over all effects that can apply to the actor.
   The effect might exist on the Actor, or it might exist on one of the Actor's Items.
   If it's the latter, then its transfer value will be true.
   */
 	allApplicableEffects() : Generator<AEType>
+	getActiveTokens(linked?: boolean, document?: boolean) : Token<Actor<T, ItemType, AEType>>[];
 
 // Get a list of all effects that are actually applied to the actor.
 	get appliedEffects(): AEType[];

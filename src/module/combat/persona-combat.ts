@@ -761,3 +761,5 @@ type SaveOptions = {
 	DC?: number,
 	askForModifier?: boolean,
 }
+
+Actor

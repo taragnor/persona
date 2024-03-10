@@ -3,6 +3,10 @@ declare global {
 		"TEST": string,
 			"X": number,
 	}
+	interface HOOKS {
+		"socketsReady": (x: SocketManager) => Promise<void>;
+
+	}
 }
 
 export class SocketManager {
@@ -16,7 +20,7 @@ export class SocketManager {
 			async () => {
 				game.socket.on(this.#socketName, (x: SocketPayload<keyof SocketMessage>) => this.onMsgRecieve(x));
 				console.log(`Sockets intiailized : ${this.#socketName}`);
-
+				Hooks.callAll("socketsReady");
 			});
 	}
 

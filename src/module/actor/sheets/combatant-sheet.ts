@@ -98,7 +98,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const actor = this.actor;
 		let token : PToken | undefined;
 		if (actor.token) {
-			token = actor.token._object;
+			token = actor.token._object as PToken;
 		} else {
 			const tokens = this.actor._dependentTokens.get(game.scenes.current)!;
 			//@ts-ignore

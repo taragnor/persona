@@ -1,8 +1,3 @@
-declare global {
-	interface SocketMessage {
-"COMBAT_RESULT_APPLY" : string;
-	}
-}
 
 import { PersonaSockets } from "../persona.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
@@ -23,6 +18,11 @@ import { PersonaCombat } from "./persona-combat.js";
 import { PersonaDB } from "../persona-db.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 
+declare global {
+	interface SocketMessage {
+"COMBAT_RESULT_APPLY" : string;
+	}
+}
 
 
 export class CombatResult  {
@@ -499,6 +499,6 @@ Hooks.on("renderChatMessage", async (msg: ChatMessage, html: JQuery<HTMLElement>
 	});
 });
 
-Hooks.on("ready", async () => {
+Hooks.on("socketsReady", async () => {
 	PersonaSockets.setHandler("COMBAT_RESULT_APPLY", CombatResult.applyHandler.bind(CombatResult));
 });

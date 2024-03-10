@@ -238,7 +238,7 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 	getUniversalActorAccessor<T extends Actor<any>> (actor: T) : UniversalActorAccessor<T> {
 		return {
 			actorId: actor.id,
-			token: (actor.token) ? this.getUniversalTokenAccessor(actor.token._object) : undefined,
+			token: (actor.token) ? this.getUniversalTokenAccessor(actor.token._object)  : undefined,
 		}
 
 	}

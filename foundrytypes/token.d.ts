@@ -32,6 +32,7 @@ class Token<Act extends Actor<any, any>> extends PlaceableObject {
 	x: number;
 	y: number;
 	scene: Scene;
+	get inCombat(): boolean;
 }
 
 

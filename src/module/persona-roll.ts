@@ -97,3 +97,4 @@ type ResolvedRoll = {
 	modtotal : number,
 	actor: UniversalActorAccessor<PC | Shadow>,
 }
+
