@@ -199,12 +199,38 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress}) => {
 			const npc = PersonaDB.getActor(linkId);
 			if (!npc) return [];
-			return [{
-				currentProgress,
-				linkLevel,
-				inspiration,
-				actor:npc as SocialLink,
-			}];
+			if (npc.system.type =="npc") {
+				return [{
+					currentProgress,
+					linkLevel,
+					inspiration,
+					actor:npc as SocialLink,
+				}];
+			} else {
+				if (npc == this) {
+					const personalLink = PersonaDB.getActorByName("Personal Social Link") as NPC;
+					if (!personalLink)  {
+						return [];
+					}
+					return [{
+						currentProgress,
+						linkLevel,
+						inspiration,
+						actor:personalLink
+					}];
+				} else {
+					const teammate = PersonaDB.getActorByName("Teammate Social Link") as NPC;
+					if (!teammate)  {
+						return [];
+					}
+					return [{
+						currentProgress,
+						linkLevel,
+						inspiration,
+						actor:teammate
+					}];
+				}
+			}
 		});
 	}
 
@@ -216,7 +242,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (link.inspiration <= 0) {
 			throw new PersonaError("Can't spend recovery!");
 		}
-		link.inspiration-=1;
+		link.inspiration -= 1;
 		const rec_bonuses = this.getBonuses("recovery");
 		rec_bonuses.add("Base", 10);
 		const situation : Situation = {
