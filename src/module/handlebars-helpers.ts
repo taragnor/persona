@@ -1,3 +1,4 @@
+import { SocialBenefit } from "./actor/persona-actor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PC } from "./actor/persona-actor.js";
 import { Shadow } from "./actor/persona-actor.js";
@@ -56,6 +57,12 @@ export class PersonaHandleBarsHelpers {
 			else return 0;
 		},
 
+		"meetsSLRequirement": (benefit: SocialBenefit) => {
+			if (game.user.isGM) return true;
+			const pc= game.user.character as PersonaActor;
+			if (!pc || pc.system.type != "pc") return false;
+			return (pc as PC).meetsSLRequirement(benefit);
+		},
 		"getDamage": (actor: PersonaActor, usable: Usable) => {
 			switch (actor.system.type) {
 				case "npc":

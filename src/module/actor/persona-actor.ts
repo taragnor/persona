@@ -184,11 +184,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	get socialBenefits() {
+	get socialBenefits() : SocialBenefit[] {
 		if (this.system.type != "npc") return [];
 		const focuses = this.focii;
 		focuses.sort((a, b) => a.requiredLinkLevel() - b.requiredLinkLevel() );
 		return focuses.map( focus =>({
+			id: this.id,
 			focus,
 			lvl_requirement: focus.requiredLinkLevel(),
 		}));
@@ -865,6 +866,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		});
 	}
 
+	meetsSLRequirement(this: PC, benefit: SocialBenefit) : boolean {
+		return this.socialLinks.some( x=> {
+			return x.actor.socialBenefits.some( ben => {
+				return	ben.focus == benefit.focus && x.linkLevel >= ben.lvl_requirement;
+			});
+		});
+	}
+
 }
 
 export type PC = Subtype<PersonaActor, "pc">;
@@ -902,3 +911,10 @@ Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
 
 
 });
+
+
+export type SocialBenefit= {
+	id: string,
+	focus: Focus,
+	lvl_requirement: number,
+};

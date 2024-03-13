@@ -39,7 +39,7 @@ function consumableSpecific() {
 	get type() { return "focus" as const;}
 	static override defineSchema() {
 		const ret = {
-			desciption: new html(),
+			description: new txt(),
 			...effects (false),
 		}
 		return ret;
@@ -50,7 +50,7 @@ function consumableSpecific() {
 	get type() { return "universalModifier" as const;}
 	static override defineSchema() {
 		const ret = {
-			desciption: new html(),
+			description: new html(),
 			...effects (false),
 		}
 		return ret;
