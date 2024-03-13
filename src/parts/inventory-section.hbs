@@ -44,9 +44,11 @@
 <hr>
 <section class="items">
 <h2>Items
+	{{#if (isGM)}}
 		<a class="addItem">
 			<i class="fa-solid fa-plus"> </i>
 		</a>
+	{{/if}}
 </h2>
 <div class="item-list flexcol">
 	{{#each actor.inventory as |item|}}

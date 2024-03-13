@@ -169,6 +169,17 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 			const resist = target.actor.elementalResist(power.system.dmg_type);
 			return (resist == "weakness");
 		}
+		case "requires-social-link-level":
+			if (!situation.user) return false;
+			const actor = PersonaDB.findActor(situation.user);
+			if (!actor  || actor.system.type =="shadow") return false;
+			return actor.socialLinks.some(
+				link => {
+					const target= link.actor.socialBenefits
+						.find( x=> x.focus == source);
+					if (!target) return false;
+					return link.linkLevel >= target.lvl_requirement;
+				});
 		default:
 			condition.type satisfies never;
 			PersonaError.softFail(`Unexpected Condition: ${condition.type}`);

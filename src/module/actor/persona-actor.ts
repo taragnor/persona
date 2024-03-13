@@ -184,6 +184,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
+	get socialBenefits() {
+		if (this.system.type != "npc") return [];
+		const focuses = this.focii;
+		focuses.sort((a, b) => a.requiredLinkLevel() - b.requiredLinkLevel() );
+		return focuses.map( focus =>({
+			focus,
+			lvl_requirement: focus.requiredLinkLevel(),
+		}));
+	}
+
 	get socialLinks() : {linkLevel: number, actor: SocialLink, inspiration: number}[] {
 		if (this.system.type != "pc") return [];
 		return this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress}) => {
@@ -267,10 +277,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get focii(): Focus[] {
-		if (this.system.type == "shadow") {
+		if (this.system.type != "pc") {
 			return this.items.filter( x=> x.system.type == "focus") as Focus[];
 		}
-		if (this.system.type != "pc") return [];
 		const fIds = this.system.combat.focuses;
 		const focii = fIds.flatMap( id => {
 			const focus = PersonaDB.getItemById(id);
@@ -552,12 +561,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update( {"system.combat.focuses": foci});
 	}
 
-	async deleteFocus(this: PC | Shadow, focusId: string) {
+	async deleteFocus(focusId: string) {
 		const item = this.items.find(x => x.id == focusId);
 		if (item) {
 			await item.delete();
 			return;
 		}
+		if (this.system.type == "npc") return;
 		let foci = this.system.combat.focuses;
 		if (!foci.includes(focusId)) return;
 		foci = foci.filter( x=> x != focusId);
@@ -732,12 +742,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				default:
 					throw new Error("Not sure how this happened?");
 			}
-			let focusIds : string[] = [];
-			for (let i=1; i<= link.linkLevel; i++) {
-				focusIds = focusIds.concat(focusContainer.system.linkBenefits[i as keyof typeof focusContainer.system.linkBenefits]);
-			}
 			return focusContainer.items
-				.filter(x => focusIds.includes(x.id))
+				.filter(x => x.system.type == "focus")
 		}) as Focus[];
 	}
 

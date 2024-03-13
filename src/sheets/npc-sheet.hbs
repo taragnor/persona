@@ -12,6 +12,55 @@
 				{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
 			</select>
 		</div>
+		<div class="key-skills flexrow">
+			<div class="primary">
+				<label>
+					Primary Skill
+				</label>
+				<select name="system.keyskill.primary">
+					{{selectOptions CONST.STUDENT_SKILLS localize=true selected=actor.system.keyskill.primary}}
+				</select>
+			</div>
+			<div class="secondary">
+				<label>
+					Secondary Skill
+				</label>
+				<select name="system.keyskill.secondary">
+					{{selectOptions CONST.STUDENT_SKILLS localize=true selected=actor.system.keyskill.secondary}}
+				</select>
+			</div>
+		</div>
 	</header>
+	<section class="focii">
+		<h2>
+			Social Link Benefits
+			<a class="addFocus">
+				<i class="fa-solid fa-plus"> </i>
+			</a>
+		</h2>
+		{{#each actor.socialBenefits as |benefit|}}
+		<div class="focus" data-focus-id="{{benefit.focus.id}}">
+		{{#if (isGM)}}
+		<div>
+			<a class="focusName">
+
+				{{benefit.focus.name}}
+			</a>
+				<a class="delFocus">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+		</div>
+		{{else}}
+		{{#if (meetsSLRequirement actor benefit)}}
+		<div class="SL-description">
+			{{benefit.focus.name}}:
+			{{benefit.focus.description}}
+		</div>
+		{{/if}}
+		{{/if}}
+		</div>
+		{{/each}}
+
+	</section>
 </form>
 

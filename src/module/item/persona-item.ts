@@ -217,6 +217,20 @@ const power = PersonaDB.getItemByName(powerName);
 		});
 	}
 
+	requiredLinkLevel(this: Focus) : number  {
+		let requirement = 0;
+		for (const eff of ArrayCorrector(this.system.effects)) {
+			for (const cond of ArrayCorrector(eff.conditions)) {
+				if (cond.type == "requires-social-link-level")
+				{
+					if (cond.num)
+						requirement = Math.max(requirement, cond.num);
+				}
+			}
+		}
+		return requirement;
+	}
+
 }
 
 

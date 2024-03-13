@@ -4,6 +4,7 @@ import { INCREMENTAL_ADVANCE_TYPES } from "../../config/incremental-advance-type
 
 import { tarotDeck } from "../../config/tarot.js";
 import { ResistStrength } from "../../config/damage-types.js";
+import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
 
 const personalBio = function () {
 	return new sch( {
@@ -17,26 +18,13 @@ type HPTracking = {
 	max: number;
 }
 
-function condArr() {
-	return new arr(
-		new id(),
-		{initial:[]});
-}
 
-function linkBenefits() {
+function keySkills() {
 	return new sch ( {
-		1: condArr(),
-		2: condArr(),
-		3: condArr(),
-		4: condArr(),
-		5: condArr(),
-		6: condArr(),
-		7: condArr(),
-		8: condArr(),
-		9: condArr(),
-		10: condArr(),
-	})
+		primary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
+		secondary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
 
+	});
 }
 
 export type SocialData = {
@@ -203,7 +191,7 @@ export class NPCSchema extends foundry.abstract.DataModel {
 			...BaseStuff.defineSchema(),
 			tarot: tarot(),
 			bio: personalBio(),
-			linkBenefits: linkBenefits(),
+			keyskill: keySkills(),
 			//include
 		} as const;
 		return ret;

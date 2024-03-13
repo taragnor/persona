@@ -259,5 +259,6 @@
 	"persona.preconditions.target-is-resistant-to": "Target is resistant or better to element",
 	"persona.preconditions.not-resistant-to": "User is not resistant or better to element",
 	"persona.preconditions.target-is-not-resistant-to": "Target is not resistant or better to element",
-	"persona.preconditions.struck-weakness": "Attack struck a weakness"
+	"persona.preconditions.struck-weakness": "Attack struck a weakness",
+	"persona.preconditions.requires-social-link-level": "Requires Social Link Level X"
 }
