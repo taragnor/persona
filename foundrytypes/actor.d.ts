@@ -16,6 +16,7 @@ declare class Actor<const T extends SchemaDict, ItemType extends Item<J> = Item,
 	getRollData(): TotalConvert<T>;
 	sheet: ActorSheet<Actor<T, ItemType, AEType>>;
 	statuses: Set<string>;
+	prototypeToken: PrototypeToken<typeof this>;
 	get effects(): Collection<AEType>;
 	get statuses(): Set<string>;
 	get token(): TokenDocument<typeof this> | undefined;

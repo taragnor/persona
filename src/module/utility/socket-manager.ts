@@ -20,7 +20,7 @@ export class SocketManager {
 			async () => {
 				game.socket.on(this.#socketName, (x: SocketPayload<keyof SocketMessage>) => this.onMsgRecieve(x));
 				console.log(`Sockets intiailized : ${this.#socketName}`);
-				Hooks.callAll("socketsReady");
+				Hooks.callAll("socketsReady", this);
 			});
 	}
 

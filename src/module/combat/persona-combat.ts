@@ -204,6 +204,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	static async usePower(attacker: PToken, power: Usable) : Promise<CombatResult> {
+		const combat = this.ensureCombatExists();
+		if (!combat.turnCheck(attacker)) {
+			ui.notifications.notify("It's not your turn!");
+			return new CombatResult();
+		}
 		if (!attacker.actor.canPayActivationCost(power)) {
 			ui.notifications.notify("You can't pay the activation cost for this power");
 			return new CombatResult();
@@ -692,6 +697,19 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		await roll.roll();
 		await roll.toModifiedMessage();
 		return roll.total;
+	}
+
+	/** return true if the token has any enemies remainig*/
+	enemiesRemaining(token: PToken) : boolean{
+		return this.combatants.contents.some(x=> x.token.actor && x.token.actor.system.type != token.actor.system.type);
+	}
+
+	/**return true if it is the token's turn
+	*/
+	turnCheck(token: PToken): boolean {
+		if (!this.enemiesRemaining(token)) return true;
+		if (!this.combatant) return true;
+		return (this.combatant.token == token.document)
 	}
 }
 

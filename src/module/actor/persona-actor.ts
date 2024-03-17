@@ -195,7 +195,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}));
 	}
 
-	get socialLinks() : {linkLevel: number, actor: SocialLink, inspiration: number}[] {
+	get socialLinks() : {linkLevel: number, actor: SocialLink, inspiration: number, linkBenefits: SocialLink}[] {
 		if (this.system.type != "pc") return [];
 		return this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress}) => {
 			const npc = PersonaDB.getActor(linkId);
@@ -206,6 +206,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					linkLevel,
 					inspiration,
 					actor:npc as SocialLink,
+					linkBenefits: npc as SocialLink,
 				}];
 			} else {
 				if (npc == this) {
@@ -217,7 +218,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						currentProgress,
 						linkLevel,
 						inspiration,
-						actor:personalLink
+						actor:npc as SocialLink,
+						linkBenefits: personalLink,
 					}];
 				} else {
 					const teammate = PersonaDB.getActorByName("Teammate Social Link") as NPC;
@@ -228,7 +230,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						currentProgress,
 						linkLevel,
 						inspiration,
-						actor:teammate
+						actor:npc as SocialLink,
+						linkBenefits: teammate,
 					}];
 				}
 			}
@@ -873,7 +876,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			});
 		});
 	}
-
 }
 
 export type PC = Subtype<PersonaActor, "pc">;
@@ -911,9 +913,8 @@ Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
 
 
 });
-
-
-export type SocialBenefit= {
+Hooks
+export type SocialBenefit = {
 	id: string,
 	focus: Focus,
 	lvl_requirement: number,

@@ -175,7 +175,7 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 			if (!actor  || actor.system.type =="shadow") return false;
 			return actor.socialLinks.some(
 				link => {
-					const benefit= link.actor.socialBenefits
+					const benefit= link.linkBenefits.socialBenefits
 						.find( x=> x.focus == source);
 					if (!benefit) return false;
 					return link.linkLevel >= benefit.lvl_requirement;

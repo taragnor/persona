@@ -15,7 +15,7 @@ class Sheet<T extends Document> extends FormApplication {
 
 class FormApplication {
 	activateListeners(html: JQuery<HTMLElement>): void;
-	close( options: unknown): void;
+	close( options?: unknown): void;
 }
 
 

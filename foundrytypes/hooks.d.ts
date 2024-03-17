@@ -2,7 +2,8 @@
 declare interface Hooks {
 	once< T extends keyof HOOKS>(hookname: T, fn: HOOKS[T]): void;
 	on <T extends keyof HOOKS>(hookname: T, fn: HOOKS[T]): void;
-	callAll(hookname:keyof HOOKS): void;
+	callAll<T extends keyof HOOKS>(hookname:T, ...args: Parameters<HOOKS[T]>): void;
+	call<T extends keyof HOOKS>(hookname: T, ...args: Parameters<HOOKS[T]>): boolean;
 }
 
 declare interface HOOKS {

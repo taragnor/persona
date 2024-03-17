@@ -2,7 +2,7 @@ class TokenDocument<T extends Actor<any, any>> extends FoundryDocument<never>
 	{
 		actorId: string;
 		actorLink: boolean;
-		actor?: T;
+		get actor() : T | undefined;
 		parent: Scene;
 		name: string;
 		baseActor: T;
@@ -33,6 +33,8 @@ class Token<Act extends Actor<any, any>> extends PlaceableObject {
 	y: number;
 	scene: Scene;
 	get inCombat(): boolean;
+	get controlled(): boolean;
+	get name(): string;
 }
 
 
@@ -40,3 +42,29 @@ class Token<Act extends Actor<any, any>> extends PlaceableObject {
 class PlaceableObject {}
 
 
+
+class PrototypeToken<Act extends Actor<any, any>> {
+	actorLink: boolean;
+	appendNumber: boolean;
+	bar1: unknown;
+	bar2: unknown;
+	detectionModes: unknown[];
+	displayBars: number;
+	displayName: number;
+	disposition: number;
+	height: number;
+	light: unknown;
+	lockRotation: boolean;
+	name: string;
+	prependAdjective: boolean;
+	randomImg: boolean;
+	rotation: number;
+	sight: Record<string, unknown>;
+	texture: {src: string, scaleX: number, scaleY: number, offsetX: number, offsetY: number, rotation: number, tint?: unknown};
+	width: number;
+	get parent(): Act;
+
+
+
+
+}
