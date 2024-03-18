@@ -162,6 +162,12 @@ input.single-digit {
 	border:none;
 }
 
+.roll-icon img{
+	max-height: 15px !important;
+	max-width: 15px !important;
+	border:none;
+}
+
 .other-effect {
 	font-weight: bold;
 }

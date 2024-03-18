@@ -158,6 +158,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			slots: skillSlots(),
 			...sharedAbilities(),
 			skills: studentSkills(),
+			keyskill: keySkills(),
 		} as const;
 		return ret;
 	}

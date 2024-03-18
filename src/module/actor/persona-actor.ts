@@ -195,7 +195,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}));
 	}
 
-	get socialLinks() : {linkLevel: number, actor: SocialLink, inspiration: number, linkBenefits: SocialLink}[] {
+	getSocialStatToRaiseLink(this: NPC | PC, classification: "primary" | "secondary") : SocialStat {
+		switch (classification) {
+			case "primary":
+				return this.system.keyskill.primary;
+			case "secondary":
+				return this.system.keyskill.secondary;
+			default:
+				classification satisfies never;
+				throw new PersonaError(`Unknown type ${classification}`);
+		}
+	}
+
+	get socialLinks() : {linkLevel: number, actor: SocialLink, inspiration: number, linkBenefits: SocialLink, currentProgress:number}[] {
 		if (this.system.type != "pc") return [];
 		return this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress}) => {
 			const npc = PersonaDB.getActor(linkId);
