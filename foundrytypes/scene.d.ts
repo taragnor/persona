@@ -1,4 +1,5 @@
 class Scene extends FoundryDocument<never> {
-	tokens
-
+	tokens: Collection<TokenDocument<Actor<any>>>
+	dimensions: {distance:number};
 }
+

@@ -28,6 +28,10 @@ export class PersonaSounds {
 
 	}
 
+	static async socialLinkReverse() {
+		await PersonaSounds.play(`sociallinkreverse.wav.mp3`, 1.0, game.users.contents.map( x=> x.id));
+	}
+
 }
 
 //@ts-ignore

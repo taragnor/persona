@@ -2,6 +2,8 @@ class Dialog {
 	static confirm(options: ConfirmDialogOptions);
 	constructor(options : DialogOptions, secondaryOptions: Record<string, any>);
 	async render(force : boolean) : void;
+	element: JQuery;
+	close(): void;
 
 }
 

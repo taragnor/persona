@@ -84,10 +84,6 @@ class FoundryUser extends FoundryDocument<never>{
 
 }
 
-class Scene extends FoundryDocument<never> {
-	tokens: Collection<TokenDocument<Actor<any>>>
-	dimensions: {distance:number};
-}
 
 class SceneCollection extends Collection<Scene> {
 	get active(): Scene;

@@ -700,13 +700,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.social": this.system.social});
 	}
 
-	async socialLinkProgress(this: PC, linkId: string, progress: 1 | 2) {
+	async socialLinkProgress(this: PC, linkId: string, progress: number) {
 		const link = this.system.social.find( x=> x.linkId == linkId);
 		if (!link) {
 			throw new PersonaError("Trying to increase social link you don't have");
 		}
-		link.currentProgress += progress;
+		link.currentProgress = Math.max(0,progress + link.currentProgress);
 		link.inspiration = link.linkLevel;
+		if (progress < 0) {
+			PersonaSounds.socialLinkReverse();
+		}
 		switch (progress) {
 			case 1: PersonaSounds.socialBoostJingle(2);
 				break;

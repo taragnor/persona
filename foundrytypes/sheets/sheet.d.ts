@@ -3,6 +3,7 @@ class Sheet<T extends Document> extends FormApplication {
 	static get defaultOptions() : SheetOptions;
 	getData(): SheetData | Promise<SheetData>;
 	activateListeners(html: JQuery<HTMLElement>): void;
+	get form(): HMTLFormElement;
 	async render(force: boolean):Promise<void>;
 	_state: number;
 	_getSubmitData(data: Record<string, any>): Record<string, any>;

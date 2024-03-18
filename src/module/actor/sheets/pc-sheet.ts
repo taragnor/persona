@@ -83,6 +83,8 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".addSocialBoost").on("click", this.addSocialBoost.bind(this));
 		html.find(".addItem").on("click", this.#addItem.bind(this));
 		html.find(".levelUp").on("click", this.levelUp.bind(this));
+		html.find(".social-link .name").on("click", this.openSL.bind(this));
+		html.find(".clearSocialBoosts").on("click", this.clearSLBoosts.bind(this));
 		for (const stat of STUDENT_SKILLS_LIST) {
 			html.find(`.${stat} .roll-icon`).on("click", this.rollSocial.bind(this, stat));
 		}
@@ -147,6 +149,12 @@ export class PCSheet extends CombatantSheetBase {
 		this.actor.socialLinkProgress(linkId, 1);
 	}
 
+async clearSLBoosts (event: Event) {
+		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
+		this.actor.socialLinkProgress(linkId, -100);
+
+}
+
 	#addItem(_ev: JQuery<Event>) {
 		this.actor.createNewItem();
 	}
@@ -156,6 +164,14 @@ export class PCSheet extends CombatantSheetBase {
 			await this.actor.levelUp();
 		}
 
+	}
+
+	async openSL(ev: Event) {
+		const linkId= String(HTMLTools.getClosestData(ev, "linkId"));
+		const link = this.actor.socialLinks.find( link=> link.actor.id == linkId);
+		if (link && link.actor != this.actor) {
+			link.actor.sheet.render(true);
+		}
 	}
 
 }
