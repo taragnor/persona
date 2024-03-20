@@ -41,6 +41,7 @@ declare interface Game {
 	socket: Socket;
 	messages: Collection<ChatMessage>;
 	keybindings: Keybindings;
+	combats: Collection<Combat>;
 }
 
 

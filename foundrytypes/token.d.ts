@@ -35,6 +35,9 @@ class Token<Act extends Actor<any, any>> extends PlaceableObject {
 	get controlled(): boolean;
 	get name(): string;
 	get center(): {x: number, y:number};
+	get worldTransform(): {a: number, b:number, c: number, d: number, tx: number, ty: number, array: null | unknown[]};
+	get w():number;
+	get h():number;
 }
 
 

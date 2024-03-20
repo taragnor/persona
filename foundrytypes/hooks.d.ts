@@ -17,21 +17,24 @@ declare interface HOOKS {
 	"chatMessage": (chatLog: ChatLog, contents: string, chatMsgData: unknown) => Promise<unknown>;
 	"preCreateChatMessage": (msg: ChatMessage, spkdata: unknown, otherstuff: unknown, id: string) => Promise<unknown>;
 	"createChatMessage": (msg: ChatMessage, otherstuff: unknown, id: string) => Promise<unknown>;
-	"updateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<unknown>,
-		"preUpdateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<boolean | void>,
+	"preUpdateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<boolean | void>,
 		"preUpdateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>,
-		"updateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>,
 		"deleteCombat": DeleteHook<Combat>,
-		"updateItem": UpdateHook<Item<any>>,
-		"deleteItem": DeleteHook<Item<any>>,
-		"deleteScene": DeleteHook<Scene>,
+		"createActor": CreateHook<Actor<any,any>>,
 		"createItem": CreateHook<Item<any>>,
 		"createToken": CreateHook<TokenDocument<any>>,
 		"createScene": CreateHook<Scene>,
+		"createCombatant": CreateHook<Combatant>,
 		"updateToken": UpdateHook<TokenDocument<any>>,
 		"deleteToken": DeleteHook<TokenDocument<any>>,
 		"deleteActor": DeleteHook<Actor<any>>,
+		"deleteCombatant": DeleteHook<Combatant>,
+		"deleteItem": DeleteHook<Item<any>>,
+		"deleteScene": DeleteHook<Scene>,
 		"updateScene": UpdateHook<Scene>,
+		"updateItem": UpdateHook<Item<any>>,
+		"updateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>,
+		"updateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<unknown>,
 		"getSceneControlButtons": Function,
 		"renderJournalDirectory": Function,
 		"renderCombatTracker": RenderCombatTabFn,
@@ -39,13 +42,15 @@ declare interface HOOKS {
 		"renderChatMessage": (msg: ChatMessage, htmlElement: JQuery<HTMLElement>, data: unknown) => Promise<unknown>;
 	"canvasReady": Function,
 
+		"hoverToken" : (token: Token<any>, hover:boolean) => unknown;
+
 };
 
-type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , delta: any, changes: Record<string, any>) => Promise<unknown>;
+type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , delta: any, changes: Record<string, any>) => unknown;
 
-type UpdateHook<T, Diff = {}> = (updatedItem: T, changes: Record<string, unknown>, diff: DiffObject & Diff, id: string) => Promise<unknown>;
+type UpdateHook<T, Diff = {}> = (updatedItem: T, changes: Record<string, unknown>, diff: DiffObject & Diff, id: string) => unknown;
 
-type DeleteHook<T> = (deletedItem: T, something: Record<string, unknown>, id: string) => Promise<unknown>;
+type DeleteHook<T> = (deletedItem: T, something: Record<string, unknown>, id: string) => unknown;
 
 type DiffObject = {
 	diff: boolean,
