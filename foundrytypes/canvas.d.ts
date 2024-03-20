@@ -24,5 +24,4 @@ class TokenLayer {
 
 class Stage {
 	scale: {get y(): number, get x():number}
-
 }
