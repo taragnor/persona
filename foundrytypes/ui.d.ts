@@ -5,8 +5,9 @@ interface Notifications {
 };
 
 declare const ui : {
-	notifications: Notifications,
-		chat: ChatUI;
+	notifications: Notifications;
+	chat: ChatUI;
+	actors: ActorDirectory;
 }
 
 

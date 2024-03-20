@@ -40,6 +40,7 @@ declare interface Game {
 	settings: ClientSettings;
 	socket: Socket;
 	messages: Collection<ChatMessage>;
+	keybindings: Keybindings;
 }
 
 
@@ -96,5 +97,6 @@ type FoundryDocumentTypes = "Actor" | "Item" | "Scene";
 
 
 interface FoundrySystem {
-	id: string
+	id: string,
+	version: string,
 }

@@ -14,10 +14,9 @@ class TokenDocument<T extends Actor<any, any>> extends FoundryDocument<never>
 		sight: SightObject;
 		x: number;
 		y: number;
+		img: string
 
 		hidden: boolean;
-
-
 }
 
  type SightObject = Record < string, any>;
@@ -35,6 +34,7 @@ class Token<Act extends Actor<any, any>> extends PlaceableObject {
 	get inCombat(): boolean;
 	get controlled(): boolean;
 	get name(): string;
+	get center(): {x: number, y:number};
 }
 
 

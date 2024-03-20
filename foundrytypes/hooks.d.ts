@@ -7,39 +7,45 @@ declare interface Hooks {
 }
 
 declare interface HOOKS {
-	"init": () => Promise<void>;
-	"ready": () => Promise<void>;
-	"updateCompendium": () => Promise<void>;
+	"init": () => Promise<unknown>;
+	"ready": () => Promise<unknown>;
+	"updateCompendium": () => Promise<unknown>;
 	"applyActiveEffect": ApplyAEHookFn;
-	"combatStart": (combat: Combat, updateData: CombatUpdateData) => Promise<void>;
-	"combatTurn": (combat: Combat, updateData: CombatUpdateData, updateOptions: CombatUpdateOptions) => Promise<void>;
-	"combatRound": (combat: Combat, updateData: CombatUpdateData, updateOptions: CombatUpdateOptions) => Promise<void>;
-	"chatMessage": (chatLog: ChatLog, contents: string, chatMsgData: unknown) => Promise<void>;
-	"preCreateChatMessage": (msg: ChatMessage, spkdata: unknown, otherstuff: unknown, id: string) => Promise<void>;
-	"createChatMessage": (msg: ChatMessage, otherstuff: unknown, id: string) => Promise<void>;
-	"renderChatMessage": (msg: ChatMessage, htmlElement: JQuery<HTMLElement>, data: unknown) => Promise<void>;
-	"updateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<void>,
-		"preUpdateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<false | void>,
+	"combatStart": (combat: Combat, updateData: CombatUpdateData) => Promise<unknown>;
+	"combatTurn": (combat: Combat, updateData: CombatUpdateData, updateOptions: CombatUpdateOptions) => Promise<unknown>;
+	"combatRound": (combat: Combat, updateData: CombatUpdateData, updateOptions: CombatUpdateOptions) => Promise<unknown>;
+	"chatMessage": (chatLog: ChatLog, contents: string, chatMsgData: unknown) => Promise<unknown>;
+	"preCreateChatMessage": (msg: ChatMessage, spkdata: unknown, otherstuff: unknown, id: string) => Promise<unknown>;
+	"createChatMessage": (msg: ChatMessage, otherstuff: unknown, id: string) => Promise<unknown>;
+	"updateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<unknown>,
+		"preUpdateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<boolean | void>,
 		"preUpdateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>,
 		"updateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>,
 		"deleteCombat": DeleteHook<Combat>,
 		"updateItem": UpdateHook<Item<any>>,
 		"deleteItem": DeleteHook<Item<any>>,
+		"deleteScene": DeleteHook<Scene>,
 		"createItem": CreateHook<Item<any>>,
 		"createToken": CreateHook<TokenDocument<any>>,
+		"createScene": CreateHook<Scene>,
 		"updateToken": UpdateHook<TokenDocument<any>>,
 		"deleteToken": DeleteHook<TokenDocument<any>>,
 		"deleteActor": DeleteHook<Actor<any>>,
 		"updateScene": UpdateHook<Scene>,
+		"getSceneControlButtons": Function,
+		"renderJournalDirectory": Function,
 		"renderCombatTracker": RenderCombatTabFn,
+		"renderApplication": Function,
+		"renderChatMessage": (msg: ChatMessage, htmlElement: JQuery<HTMLElement>, data: unknown) => Promise<unknown>;
+	"canvasReady": Function,
 
 };
 
-type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , delta: any, changes: Record<string, any>) => Promise<void>;
+type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , delta: any, changes: Record<string, any>) => Promise<unknown>;
 
-type UpdateHook<T, Diff = {}> = (updatedItem: T, changes: Record<string, unknown>, diff: DiffObject & Diff, id: string) => Promise<void>;
+type UpdateHook<T, Diff = {}> = (updatedItem: T, changes: Record<string, unknown>, diff: DiffObject & Diff, id: string) => Promise<unknown>;
 
-type DeleteHook<T> = (deletedItem: T, something: Record<string, unknown>, id: string) => Promise<void>;
+type DeleteHook<T> = (deletedItem: T, something: Record<string, unknown>, id: string) => Promise<unknown>;
 
 type DiffObject = {
 	diff: boolean,
@@ -54,7 +60,7 @@ type CombatUpdateOptions = {
 }
 
 
-type RenderCombatTabFn= (item: CombatTracker, element: JQuery<HTMLElement>, options: RenderCombatTabOptions) => Promise<void>;
+type RenderCombatTabFn= (item: CombatTracker, element: JQuery<HTMLElement>, options: RenderCombatTabOptions) => Promise<unknown>;
 
 type RenderCombatTabOptions = {
 	combat: Combat;

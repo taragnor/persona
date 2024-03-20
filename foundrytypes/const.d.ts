@@ -1,16 +1,22 @@
 declare const CONST : {
-	ACTIVE_EFFECT_MODES	: AE_MODES,
-		USER_ROLES: {
-			GAMEMASTER:number,
-		}
-	CHAT_MESSAGE_TYPES: {
-		WHISPER: number,
-			OOC: number,
-			ROLL: number,
-			EMOTE: number,
-			OTHER: number,
-			IC: number,
+	ACTIVE_EFFECT_MODES	: AE_MODES;
+	USER_ROLES: {
+		GAMEMASTER:number,
 	}
+	CHAT_MESSAGE_TYPES: {
+		WHISPER: number;
+		OOC: number;
+		ROLL: number;
+		EMOTE: number;
+		OTHER: number;
+		IC: number;
+	},
+		KEYBINDING_PRECEDENCE: {
+			PRIORITY: number;
+			NORMAL: number;
+			DEFERRED: number;
+		}
+
 };
 
 type AE_MODES = {

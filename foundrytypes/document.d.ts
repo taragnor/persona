@@ -18,5 +18,14 @@
 	 prepareBaseData(): void;
 	 prepareEmbeddedDocuments(): void;
 	 prepareDerivedData(): void;
+	 testUserPermission(user: FoundryUser, permissionLevel: "NONE" | "LIMITED" | "OWNER" | "OBSERVER"): boolean;
+	 static async create<T>(this: T, data: CreationData):Promise<InstanceType<T>>;
+
 }
 
+
+type CreationData = Record<string, unknown>  & {
+	name: string;
+	type: string;
+
+}

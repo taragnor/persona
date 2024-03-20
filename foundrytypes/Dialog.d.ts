@@ -4,6 +4,7 @@ class Dialog {
 	async render(force : boolean) : void;
 	element: JQuery;
 	close(): void;
+	submit(data: unknown) : void;
 
 }
 
@@ -32,9 +33,8 @@ interface DialogOptions {
 
 interface ButtonOptions {
 
-	icon: string;
+	icon?: string;
 	label: string;
-	callback: (html: string) => void;
-
+	callback?: (html: string) => void;
 
 }
