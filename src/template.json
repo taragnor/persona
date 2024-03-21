@@ -1,17 +1,17 @@
 {
-    "Actor": {
-        "types": ["pc", "shadow", "npc"],
-        "htmlFields": ["description"],
-        "pc": {},
-        "shadow": {},
-        "npc": {}
-    },
-    "Item": {
-			  "types": ["weapon", "item", "consumable", "power", "characterClass", "focus", "talent", "universalModifier"],
-        "htmlFields": ["description"],
-        "skill": {},
-        "weapon": {},
-        "item": {}
-    }
+	"Actor": {
+		"types": ["pc", "shadow", "npc"],
+		"htmlFields": ["description"],
+		"pc": {},
+		"shadow": {},
+		"npc": {}
+	},
+	"Item": {
+		"types": ["weapon", "item", "consumable", "power", "characterClass", "focus", "talent", "universalModifier"],
+		"htmlFields": ["description"],
+		"skill": {},
+		"weapon": {},
+		"item": {}
+	}
 }
 

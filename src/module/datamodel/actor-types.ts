@@ -205,4 +205,4 @@ export class NPCSchema extends foundry.abstract.DataModel {
 //testing the types, purely for debug purposes
 type testPC = SystemDataObjectFromDM<typeof PCSchema>;
 type testNPC = SystemDataObjectFromDM<typeof NPCSchema>;
-type testShadow =SystemDataObjectFromDM<typeof ShadowSchema> 
+type testShadow =SystemDataObjectFromDM<typeof ShadowSchema>;
