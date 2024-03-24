@@ -1,3 +1,4 @@
+import { UniversalItemAccessor } from "../utility/db-accessor.js";
 import { Situation } from "../preconditions.js";
 import { SLOTTYPES } from "../../config/slot-types.js";
 import { ModifierListItem } from "../combat/modifier-list.js";
@@ -16,6 +17,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 
 	getClassProperty<T extends keyof CClass["system"]["leveling_table"][number]> (this: CClass,lvl: number, property:T)  : CClass["system"]["leveling_table"][number][T] {
 		return this.system.leveling_table[lvl][property];
+	}
+
+	get accessor() : UniversalItemAccessor<typeof this> {
+		return PersonaDB.getUniversalItemAccessor(this);
 	}
 
 	static getBasicPowers() : Power[] {
@@ -177,12 +182,12 @@ const power = PersonaDB.getItemByName(powerName);
 		// return this.system.modifiers[type];
 	}
 
-	getDamage(this:Usable , user: PC | Shadow, type: "high" | "low", situation: Situation = {user: user.accessor}) : number {
+	getDamage(this:Usable , user: PC | Shadow, type: "high" | "low", situation: Situation = {user: user.accessor , usedPower: this.accessor}) : number {
 		if (this.system.dmg_type == "none") return 0;
 		const subtype : PowerType  = this.system.type == "power" ? this.system.subtype : "standalone";
 		switch(subtype) {
 			case "weapon" : {
-				const dmg =user.wpnDamage(true);
+				const dmg = user.wpnDamage(true, situation);
 				const bonus = this.system.damage;
 				const modified = {
 					low: dmg.low + bonus.low,
@@ -206,6 +211,7 @@ const power = PersonaDB.getItemByName(powerName);
 			default:
 				return 0;
 		}
+
 	}
 
 	getEffects(this: ModifierContainer) {
