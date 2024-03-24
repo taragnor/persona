@@ -78,7 +78,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		for (const effect of actor.effects) {
 			switch (effect.statusDuration) {
 				case "fear-hard": {
-					const {success, total} = await PersonaCombat.rollSave(actor, { DC:16, label:effect.name }) 
+					const {success, total} = await PersonaCombat.rollSave(actor, { DC:16, label:effect.name })
 					if (success)
 					{
 						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);

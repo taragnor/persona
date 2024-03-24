@@ -863,7 +863,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	isCapableOfAction() : boolean {
 		const deblitatingStatuses :StatusEffectId[] = [
-			"charmed",
 			"confused",
 			"down",
 			"fading",

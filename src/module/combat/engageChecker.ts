@@ -3,13 +3,12 @@ import { PersonaCombat } from "./persona-combat";
 
 export class EngagementChecker {
 	static isEngaged(subject: PToken, combat: PersonaCombat): boolean {
-		return combat.combatants.contents
-			.flatMap( comb => comb.token? [comb.token._object as PToken]: [])
-			.some ( tok => tok != subject
-				&& tok.actor.getAllegiance() != subject.actor.getAllegiance()
-				&& tok.actor.isCapableOfAction()
-				&& EngagementChecker.isWithinEngagedRange(subject, tok)
-			);
+		const myAllegiance = subject.actor.getAllegiance();
+		const engageArray = Array.from(this.getEngagedList(subject, combat));
+		const output = engageArray. map ( x=> `${x.name}: ${x.actor.getAllegiance()} ${x.actor.isCapableOfAction()}` );
+		return engageArray.some( tok =>
+			tok.actor.getAllegiance() != myAllegiance && tok.actor.isCapableOfAction()
+		)
 	}
 
 	static isEngagedWith(subject: PToken, target: PToken, combat: PersonaCombat) : boolean {
@@ -22,6 +21,7 @@ export class EngagementChecker {
 		while (checkList.length > 0) {
 			const checkedToken = checkList.pop()!;
 			for (const comb of combat.combatants.contents) {
+				if (!comb.token) continue;
 				const token  = comb.token._object as PToken;
 				if ( this.isWithinEngagedRange(checkedToken, token)
 					&& !engagedList.has(token)
