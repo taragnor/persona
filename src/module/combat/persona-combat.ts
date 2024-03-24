@@ -39,6 +39,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	async startCombatantTurn( combatant: Combatant<ValidAttackers> ){
+		const rolls :PersonaRoll[] = [];
 		const actor = combatant.actor;
 		if (!actor) return;
 		if (!game.user.isGM) return;
@@ -54,7 +55,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		let startTurnMsg= `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`;
 		const debilitatingStatuses :StatusEffectId[] = [
 			"sleep",
-			"charmed",
 			"frozen",
 			"shock"
 		];
@@ -66,6 +66,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				this.skipBox(`${msg}. <br> Skip turn?`); //don't await this so it processes the rest of the code
 			}
 		}
+		const charmStatus = actor.effects.find( eff=> eff.statuses.has("charmed"));
+		if (charmStatus) {
+			startTurnMsg += `${combatant.name} is charmed.`;
+		}
 		const burnStatus = actor.effects.find( eff=> eff.statuses.has("burn"));
 		if (burnStatus) {
 			const damage = burnStatus.potency;
@@ -73,6 +77,39 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		for (const effect of actor.effects) {
 			switch (effect.statusDuration) {
+				case "fear-hard": {
+					const {success, total} = await PersonaCombat.rollSave(actor, { DC:16, label:effect.name }) 
+					if (success)
+					{
+						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
+						await effect.delete();
+					}
+					if (total <= 2) {
+						await Logger.sendToChat(`${actor.name} flees from combat!`, actor);
+					}
+				}
+				case "fear-normal": {
+					const {success, total} = await PersonaCombat.rollSave(actor, { DC:11, label:effect.name })
+					if (success)
+					{
+						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
+						await effect.delete();
+					}
+					if (total <= 2) {
+						await Logger.sendToChat(`${actor.name} flees from combat!`, actor);
+					}
+				}
+				case "fear-easy": {
+					const {success, total} = await PersonaCombat.rollSave(actor, { DC:6, label:effect.name })
+					if (success)
+					{
+						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
+						await effect.delete();
+					}
+					if (total <= 2) {
+						await Logger.sendToChat(`${actor.name} flees from combat!`, actor);
+					}
+				}
 				case "expedition":
 				case "combat":
 				case "save-normal":
@@ -106,15 +143,26 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token._object);
 			if (this.isEngaged(accessor)) {
 				const DC = undefined;
-				const disengage = await PersonaCombat.disengageRoll(actor, DC);
+				const {total, roll} = await PersonaCombat.disengageRoll(actor, DC);
+				rolls.push(roll);
 				let disengageResult = "failed";
 
-				if (disengage >= 11) disengageResult = "normal";
-				if (disengage >= 16) disengageResult = "hard";
-				startTurnMsg += `<br> <b>Disengage Opportunity:</b> ${disengageResult}`;
+				if (total >= 11) disengageResult = "normal";
+				if (total >= 16) disengageResult = "hard";
+				startTurnMsg += "<br>"+ await renderTemplate("systems/persona/parts/disengage-check.hbs", {roll, disengageResult});
+				// startTurnMsg += `<br> <b>Disengage Opportunity:</b> ${disengageResult}`;
 			}
 		}
-		await Logger.sendToChat(startTurnMsg, actor);
+		const speaker = ChatMessage.getSpeaker({alias: actor.name});
+		let messageData = {
+			speaker: speaker,
+			content: startTurnMsg,
+			type: CONST.CHAT_MESSAGE_TYPES.OOC,
+			rolls,
+			sound: rolls.length > 0 ? CONFIG.sounds.dice : undefined
+
+		};
+		ChatMessage.create(messageData, {});
 	}
 
 
@@ -140,44 +188,31 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
 					await effect.delete();
 					break;
-				case "save-normal":
-					if (await PersonaCombat.rollSave(actor, {
-						DC:11,
-						label:effect.name
-					})) {
+				case "save-normal": {
+					const {success} = await PersonaCombat.rollSave(actor, { DC:11, label:effect.name })
+					if (success) {
 						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
 						await effect.delete();
 					}
 					break;
-				case "save-easy":
-					if (await PersonaCombat.rollSave(actor, {
-						DC: 6,
-						label: effect.name
-					})) {
+				}
+				case "save-easy": {
+					const {success} = await PersonaCombat.rollSave(actor, { DC:6, label:effect.name })
+					if (success) {
 						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
 						await effect.delete();
 					}
 					break;
-				case "save-hard":
-					if (await PersonaCombat.rollSave(actor, {
-						DC:16,
-						label:	effect.name
-					})) {
+				}
+				case "save-hard": {
+					const {success} = await PersonaCombat.rollSave(actor, { DC:16, label:effect.name })
+					if (success) {
 						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
 						await effect.delete();
 					}
 					break;
+				}
 				case "3-rounds":
-					// const rounds = effect.duration.rounds ?? 0;
-					// if (rounds<= 1) {
-					// 	await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
-					// 	await effect.delete();
-					// 	return;
-					// }
-					// else  {
-					// 	await effect.update({"duration.rounds" : rounds-1});
-					// 	return;
-					// }
 					break;
 				case "UEoT":
 					await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
@@ -186,6 +221,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case "instant":
 					await effect.delete();
 					break;
+				case"fear-easy":
+				case"fear-hard":
+				case"fear-normal":
 				case "USoNT":
 				case "expedition":
 				case "combat":
@@ -553,7 +591,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	static async getTargets(attacker: PToken, power: Usable): Promise<PToken[]> {
 		const selected = Array.from(game.user.targets) as PToken[];
-		const attackerType = attacker.actor.system.type;
+		const attackerType = attacker.actor.getAllegiance();
 		switch (power.system.targets) {
 			case "1-engaged":
 				this.checkTargets(1,1);
@@ -566,7 +604,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				const targets= combat.combatants.filter( x => {
 					const actor = x.actor;
 					if (!actor)  return false;
-					return (x.actor.system.type != attackerType)
+					return ((x.actor as ValidAttackers).getAllegiance() != attackerType)
 				});
 				return targets.map( x=> x.token._object as PToken);
 			}
@@ -575,15 +613,21 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				const targets= combat.combatants.filter( x => {
 					const actor = x.actor;
 					if (!actor)  return false;
-					return (x.actor.system.type == attackerType)
+					return ((x.actor as ValidAttackers).getAllegiance() == attackerType)
 				});
 				return targets.map( x=> x.token._object as PToken);
 			}
 			case "self": {
 				return [attacker];
 			}
+			case "1d4-random":
+			case "1d4-random-rep":
+			case "1d3-random-rep":
+			case "1d3-random":
+				throw new PersonaError("Targetting type not yet implemented");
 			default:
-				throw new Error(`targets ${power.system.targets} Not yet implemented`);
+				power.system.targets satisfies never;
+				throw new PersonaError(`targets ${power.system.targets} Not yet implemented`);
 		}
 	}
 
@@ -669,7 +713,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	/** returns pass or fail */
-	static async rollSave (actor: ValidAttackers, {DC, label, askForModifier} :SaveOptions) : Promise<boolean> {
+	static async rollSave (actor: ValidAttackers, {DC, label, askForModifier} :SaveOptions) : Promise<{success:boolean, total:number}> {
 		// static async rollSave (actor: ValidAttackers, difficulty: number =11, label ?: string) : Promise<boolean> {
 		const difficulty = DC ? DC : 11;
 		const mods = actor.getSaveBonus();
@@ -684,10 +728,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const roll = new PersonaRoll("1d20", mods, situation,labelTxt);
 		await roll.roll();
 		await roll.toModifiedMessage();
-		return roll.total >= difficulty;
-	}
+		return {
+			success: roll.total >= difficulty,
+			total: roll.total,
+		}
+	};
 
-	static async disengageRoll( actor: ValidAttackers, DC = 11) : Promise<number> {
+	static async disengageRoll( actor: ValidAttackers, DC = 11) : Promise<{total: number, roll: PersonaRoll}> {
 		const situation : Situation = {
 			user: PersonaDB.getUniversalActorAccessor(actor),
 		}
@@ -695,8 +742,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const labelTxt = `Disengage Check`;
 		const roll = new PersonaRoll("1d20", mods, situation, labelTxt);
 		await roll.roll();
-		await roll.toModifiedMessage();
-		return roll.total;
+		// await roll.toModifiedMessage();
+		return {
+			total: roll.total,
+			roll
+		}
 	}
 
 	/** return true if the token has any enemies remainig*/
@@ -764,7 +814,7 @@ Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
 });
 
 
-Hooks.on("renderCombatTracker", async (item: CombatTracker, element: JQuery<HTMLElement>, options: RenderCombatTabOptions) => {
+Hooks.on("renderCombatTracker", async (_item: CombatTracker, element: JQuery<HTMLElement>, _options: RenderCombatTabOptions) => {
 	if (element.find(".escalation-die").length == 0) {
 		const escalationTracker = `<div class="escalation-tracker"><span class="title"> Escalation Die: </span><span class="escalation-die">N/A</div>`;
 		element.find(".combat-tracker-header").append(escalationTracker);

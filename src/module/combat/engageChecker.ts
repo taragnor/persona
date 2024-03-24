@@ -6,7 +6,7 @@ export class EngagementChecker {
 		return combat.combatants.contents
 			.flatMap( comb => comb.token? [comb.token._object as PToken]: [])
 			.some ( tok => tok != subject
-				&& tok.actor.type != subject.actor.type
+				&& tok.actor.getAllegiance() != subject.actor.getAllegiance()
 				&& tok.actor.isCapableOfAction()
 				&& EngagementChecker.isWithinEngagedRange(subject, tok)
 			);

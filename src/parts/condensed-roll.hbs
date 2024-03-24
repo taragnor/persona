@@ -1,0 +1,26 @@
+<div class="tooltip">
+	{{roll.total}}
+	<div class="mods-section tooltiptext">
+		{{#each roll.dice as |die|}}
+		<div class="dice">
+			<span>{{die.number}}d{{die.faces}} </span>
+			<i class="fa-solid fa-arrow-right"></i>
+			<span class="die-total">
+				{{die.total}}
+			</span>
+		</div>
+		{{/each}}
+		{{#each roll.printableMods as |mod|}}
+		<div class="mod-item">
+			<span class="mod-name">
+				{{mod.name}}
+			</span>
+			<span class="mod-amt">
+				{{mod.modifier}}
+			</span>
+		</div>
+		{{/each}}
+	</div>
+
+</div>
+

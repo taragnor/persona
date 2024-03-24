@@ -838,6 +838,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return new ModifierList(mods);
 	}
 
+	/** returns current team (taking into account charm)*/
+	getAllegiance(this: PC | Shadow)  : "PCs" | "Shadows" {
+		const base = this.system.type == "pc" ? "PCs" : "Shadows";
+		if (!this.statuses.has("charmed")) return base;
+		return base == "PCs" ? "Shadows" : "PCs";
+	}
+
 	async expendConsumable(item: Usable) {
 		if (item.system.type == "power") {
 			PersonaError.softFail("Can't expend a power, this function requires an item");

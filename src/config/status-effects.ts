@@ -93,6 +93,9 @@ export const STATUS_EFFECT_TRANSLATION_TABLE = Object.fromEntries(
 export const STATUS_EFFECT_DURATIONS_LIST = [
 	"expedition",
 	"combat",
+	"fear-easy",
+	"fear-normal",
+	"fear-hard",
 	"save-normal",
 	"save-easy",
 	"save-hard",

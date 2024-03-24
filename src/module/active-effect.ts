@@ -55,10 +55,13 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				return 9;
 			case "3-rounds":
 				return 8
+			case "fear-hard":
 			case "save-hard":
 				return 6;
+			case "fear-normal":
 			case "save-normal":
 				return 5;
+			case "fear-easy":
 			case "save-easy":
 				return 4;
 			case "UEoNT":

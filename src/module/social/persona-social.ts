@@ -12,6 +12,8 @@ export class PersonaSocial {
 
 	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string) : Promise<ChatMessage> {
 		let mods = pc.getSocialStat(socialStat);
+		let socialmods = pc.getBonuses("socialRoll");
+		mods = mods.concat(socialmods);
 		const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
 		mods.add("Custom Modifier", customMod);
 		if (extraModifiers) {

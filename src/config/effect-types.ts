@@ -98,8 +98,6 @@ export const TARGETINGLIST = [
 	"1d4-random-rep",
 	"1d3-random",
 	"1d3-random-rep",
-	"1-ally",
-	"1d4-allies",
 	"self",
 	"all-enemies",
 	"all-allies",
