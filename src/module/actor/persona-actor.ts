@@ -175,7 +175,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	getMaxSlotsAt(slot_lvl: number) : number {
 		if (this.system.type != "pc") return 0;
 		try {
-			const inc =this.hasIncremental("slots") ? 1 : 0;
+			const inc =this.hasIncremental("powers") ? 1 : 0;
 			const lvl = this.system.combat.classData.level;
 			return this.class.getClassProperty(lvl + inc, "slots")[slot_lvl] ?? -999;
 
@@ -444,7 +444,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	getBonusWpnDamage(situation: Situation) : {low: ModifierList, high: ModifierList} {
+	getBonusWpnDamage(_situation: Situation) : {low: ModifierList, high: ModifierList} {
 		const total = this.getBonuses("wpnDmg");
 		const low = this.getBonuses("wpnDmg_low");
 		const high = this.getBonuses("wpnDmg_high");
@@ -829,7 +829,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	getSaveBonus() : ModifierList {
 		const mods = this.mainModifiers().flatMap( item => item.getModifier("save"));
-		const x = this.getActiveTokens()[0]
+		// const x = this.getActiveTokens()[0]
 		return new ModifierList(mods);
 	}
 
@@ -880,7 +880,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async levelUp(this: PC) : Promise<void> {
 		const newlevel  = this.system.combat.classData.level+1 ;
 		const incremental = this.system.combat.classData.incremental;
-		for (const [k, v] of Object.entries(incremental)){
+		for (const [k, _v] of Object.entries(incremental)){
 			incremental[k as keyof typeof incremental]= false;
 		}
 		await this.update({
@@ -927,7 +927,7 @@ Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) =
 	}
 });
 
-Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
+Hooks.on("updateActor", async (actor: PersonaActor, _changes: {system: any}) => {
 	if (actor.system.type != "npc") {
 		await	(actor as PC | Shadow).refreshHpTracker();
 	}

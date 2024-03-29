@@ -253,7 +253,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return new CombatResult();
 				}
 
-
 			}
 		}
 		if (!attacker.actor.canPayActivationCost(power)) {
@@ -840,4 +839,3 @@ type SaveOptions = {
 	askForModifier?: boolean,
 }
 
-Actor

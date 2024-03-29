@@ -1,7 +1,6 @@
 export const INCREMENTAL_ADVANCE_TYPES = [
 	"hp",
 	"lvl_bonus",
-	"slots",
 	"talents",
 	"powers",
 	"wpn_mult",
