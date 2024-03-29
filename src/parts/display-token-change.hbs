@@ -15,10 +15,10 @@
 	{{/if}}
 	{{/if}}
 	{{#each change.addStatus as |status|}}
-	+{{status.id}}
+	+{{localize (concat "persona.status." status.id)}}
 	{{/each}}
 	{{#each change.removeStatus as |status|}}
-	-{{status.id}}
+	-{{localize (concat "persona.status." status.id)}}
 	{{/each}}
 	{{#each change.expendSlot as |slot i|}}
 	{{#if (ne slot 0)}}

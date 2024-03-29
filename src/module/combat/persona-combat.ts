@@ -244,8 +244,17 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	static async usePower(attacker: PToken, power: Usable) : Promise<CombatResult> {
 		const combat = this.ensureCombatExists();
 		if (!combat.turnCheck(attacker)) {
-			ui.notifications.notify("It's not your turn!");
-			return new CombatResult();
+			if (!game.user.isGM) {
+				ui.notifications.notify("It's not your turn!");
+				return new CombatResult();
+			}
+			else {
+				if (!await HTMLTools.confirmBox("Out of turn Action", "It's not your turn, act anyway?")) {
+				return new CombatResult();
+				}
+
+
+			}
 		}
 		if (!attacker.actor.canPayActivationCost(power)) {
 			ui.notifications.notify("You can't pay the activation cost for this power");
@@ -724,7 +733,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const situation : Situation = {
 			user: PersonaDB.getUniversalActorAccessor(actor),
 		}
-		const labelTxt = `Saving Throw (${label ? label : ""})`;
+		const difficultyTxt = DC == 11 ? "normal" : DC == 16 ? "hard" : DC == 6 ? "easy" : "unknown difficulty";
+		const labelTxt = `Saving Throw (${label ? label + " " + difficultyTxt : ""})`;
 		const roll = new PersonaRoll("1d20", mods, situation,labelTxt);
 		await roll.roll();
 		await roll.toModifiedMessage();
