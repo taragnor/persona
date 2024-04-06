@@ -206,8 +206,8 @@ input.single-digit {
   border-radius: 6px;
   position: absolute;
   z-index: 1;
-  right: 105%;
-  top: -100%;
+  /* right: 105%; */
+  top: -200%;
 }
 
 .tooltip:hover .tooltiptext {

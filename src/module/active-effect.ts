@@ -74,7 +74,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				return 1;
 			default:
 				duration satisfies never;
-				throw new PersonaError(`Unknwon duration ${duration}`);
+				PersonaError.softFail(`Unknwon duration ${duration}`);
+				return 100;
 		}
 	}
 

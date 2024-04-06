@@ -807,6 +807,14 @@ Hooks.on("updateCombat" , async (combat: PersonaCombat, changes: Record<string, 
 			}
 		}
 	}
+});
+
+Hooks.on("combatStart", async (combat: PersonaCombat) => {
+	const x =combat.turns[0];
+	if (x.actor) {
+		await combat.startCombatantTurn(x as Combatant<ValidAttackers>);
+
+	}
 
 });
 
