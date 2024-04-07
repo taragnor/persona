@@ -138,6 +138,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	set hp(newval: number) {
 		if (this.system.type == "npc") return;
 		this.update({"system.combat.hp": newval});
+		(this as PC | Shadow).refreshHpStatus();
 	}
 
 	get hp(): number {
@@ -388,6 +389,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (hp > this.mhp) {
 			await this.update( {"system.combat.hp": this.mhp});
 		}
+		if (this.token) {
+				await this.token.update({"alpha": hp > 0 ? 1.0: 0.5});
+		} else {
+			//@ts-ignore
+			for (const iterableList of this._dependentTokens.values()) {
+				for (const tokDoc of iterableList) {
+					(tokDoc as TokenDocument<PersonaActor>).update({"alpha": hp >0 ? 1.0: 0.5});
+				}
+			}
+		}
+
 	}
 
 	async addStatus({id, potency, duration}: StatusEffect): Promise<void> {
@@ -895,7 +907,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			return;
 		}
 	}
-
 
 	isCapableOfAction() : boolean {
 		const deblitatingStatuses :StatusEffectId[] = [
