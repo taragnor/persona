@@ -17,9 +17,9 @@ export class Logger {
 		await ChatMessage.create(messageData, {});
 	}
 
-	static async sendToChat<T extends Actor<any, Item<any>>>(text: string, actor: T) {
+	static async sendToChat<T extends Actor<any, Item<any>>>(text: string, actor?: T) {
 		// const speaker = ChatMessage.getSpeaker(sender);
-		const speaker = ChatMessage.getSpeaker({alias: actor.name});
+		const speaker = ChatMessage.getSpeaker({alias: actor?.name ?? "System"});
 		let messageData = {
 			speaker: speaker,
 			content: text,

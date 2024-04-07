@@ -61,10 +61,10 @@ function equipslots() {
 function skillSlots() {
 	return new sch(
 		{
-			0: new num({min:0, max:8, initial:0}),
-			1: new num({min:0, max:8, initial:0}),
-			2: new num({min:0, max:8, initial:0}),
-			3: new num({min:0, max:8, initial:0}),
+			0: new num({min:0, max:10, initial:0}),
+			1: new num({min:0, max:10, initial:0}),
+			2: new num({min:0, max:10, initial:0}),
+			3: new num({min:0, max:10, initial:0}),
 		}
 	);
 }

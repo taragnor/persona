@@ -175,13 +175,31 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
+	getWeakestSlot(): number {
+		if (this.system.type != "pc") return 0;
+		for (let slot_lvl=0 ; slot_lvl<=4; slot_lvl++) {
+			const inc = this.hasIncremental("powers") ? 1 : 0;
+			const lvl = this.system.combat.classData.level;
+			if ( this.class.getClassProperty(lvl + inc, "slots")[slot_lvl] ?? -999 > 0) return slot_lvl;
+		}
+		PersonaError.softFail(`Can't get weakest slot for ${this.name}`);
+		return 0;
+	}
+
 	getMaxSlotsAt(slot_lvl: number) : number {
 		if (this.system.type != "pc") return 0;
 		try {
-			const inc =this.hasIncremental("powers") ? 1 : 0;
+			const inc = this.hasIncremental("powers") ? 1 : 0;
 			const lvl = this.system.combat.classData.level;
-			return this.class.getClassProperty(lvl + inc, "slots")[slot_lvl] ?? -999;
-
+			let baseSlots =  this.class.getClassProperty(lvl + inc, "slots")[slot_lvl] ?? -999;
+			const sit : Situation = {
+				user: (this as PC).accessor
+			}
+			const bonusWeak= this.getBonuses("weakestSlot").total(sit);
+			if (bonusWeak > 0 && slot_lvl == this.getWeakestSlot()) {
+				baseSlots += bonusWeak;
+			}
+			return baseSlots;
 		} catch (e) {
 			return -999;
 		}
@@ -880,6 +898,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		);
 	}
 
+	async OnExitMetaverse(this: PC ) {
+		this.hp = this.mhp;
+		await this.update( {"system.slots" : {
+			0: this.getMaxSlotsAt(0),
+			1: this.getMaxSlotsAt(1),
+			2: this.getMaxSlotsAt(2),
+			3: this.getMaxSlotsAt(3),
+		}});
+		await this.refreshSocialLink(this);
+	}
+
 	async levelUp(this: PC) : Promise<void> {
 		const newlevel  = this.system.combat.classData.level+1 ;
 		const incremental = this.system.combat.classData.incremental;
@@ -943,3 +972,4 @@ export type SocialBenefit = {
 	focus: Focus,
 	lvl_requirement: number,
 };
+

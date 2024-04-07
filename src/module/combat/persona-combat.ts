@@ -790,20 +790,17 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case "charmed":
 					if (total <= 5) {
 						retstr+= `<b>${actor.name} is under full enemy control</b>`;
-						break;
 					} else {
 						retstr +=`<b>${actor.name} is charmed and makes a basic attack against a random possible target</b>`;
-						break;
-
 					}
+					break;
 			}
 		}
 		return retstr;
 	}
 
 
-}
-
+} // end of class
 
 type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shadow">;
 
