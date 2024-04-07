@@ -119,6 +119,7 @@
 	"persona.modifier.allAtk": "Universal Attack Bonus",
 	"persona.modifier.disengage": "Disengage Checks",
 	"persona.modifier.socialRoll": "Social Rolls",
+	"persona.modifier.weakestSlot": "Extra slots of weakest type",
 
 	"persona.equipslots.weapon": "Weapon",
 	"persona.equipslots.body": "Body",
