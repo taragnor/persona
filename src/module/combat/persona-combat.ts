@@ -87,6 +87,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					if (total <= 2) {
 						await Logger.sendToChat(`${actor.name} flees from combat!`, actor);
 					}
+					break;
 				}
 				case "fear-normal": {
 					const {success, total} = await PersonaCombat.rollSave(actor, { DC:11, label:effect.name })
@@ -98,6 +99,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					if (total <= 2) {
 						await Logger.sendToChat(`${actor.name} flees from combat!`, actor);
 					}
+					break;
 				}
 				case "fear-easy": {
 					const {success, total} = await PersonaCombat.rollSave(actor, { DC:6, label:effect.name })
@@ -109,6 +111,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					if (total <= 2) {
 						await Logger.sendToChat(`${actor.name} flees from combat!`, actor);
 					}
+					break;
 				}
 				case "expedition":
 				case "combat":
