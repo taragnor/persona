@@ -43,6 +43,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async refreshHpTracker(this:PC | Shadow)  {
 		if (!this.isOwner) return;
+		if (this.hp > this.mhp) {
+			this.update({"system.combat.hp": this.mhp});
+		}
 		if (this.system.combat.hpTracker.value != this.hp
 			|| this.system.combat.hpTracker.max != this.mhp){
 			this.update( {"system.combat.hpTracker.value" : this.hp,

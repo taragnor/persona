@@ -82,9 +82,9 @@
 
 	"persona.status.duration.expedition": "Lasts for expedition",
 	"persona.status.duration.combat": "Combat Duration",
-	"persona.status.duration.fear-easy": "Fear Save Ends (easy)",
-	"persona.status.duration.fear-normal": "Fear Save Ends (normal)",
-	"persona.status.duration.fear-hard": "Fear Save Ends (hard)",
+	"persona.status.duration.presave-easy": "Start of Turn Save Ends (easy)",
+	"persona.status.duration.presave-normal": "Start of Turn Save Ends (normal)",
+	"persona.status.duration.presave-hard": "Start of Turn Save Ends (hard)",
 	"persona.status.duration.save-easy": "Save Ends (easy)",
 	"persona.status.duration.save-normal": "Save Ends (normal)",
 	"persona.status.duration.save-hard": "Save Ends (hard)",

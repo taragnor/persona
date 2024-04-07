@@ -1,3 +1,4 @@
+import { PersonaAE } from "../active-effect.js";
 import { EngagementChecker } from "./engageChecker.js";
 import { Metaverse } from "../metaverse.js";
 import { StatusEffectId } from "../../config/status-effects.js";
@@ -53,96 +54,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 		}
 		let startTurnMsg= `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`;
-		const debilitatingStatuses :StatusEffectId[] = [
-			"sleep",
-			"frozen",
-			"shock"
-		];
-		const debilitatingStatus = actor.effects.find( eff=> debilitatingStatuses.some( debil => eff.statuses.has(debil)));
-		if (debilitatingStatus) {
-			const msg =  `${combatant.name} can't take actions normally because of ${debilitatingStatus.name}`
-			startTurnMsg += msg ;
-			if (actor.system.type == "shadow") {
-				this.skipBox(`${msg}. <br> Skip turn?`); //don't await this so it processes the rest of the code
-			}
-		}
-		const charmStatus = actor.effects.find( eff=> eff.statuses.has("charmed"));
-		if (charmStatus) {
-			startTurnMsg += `${combatant.name} is charmed.`;
-		}
-		const burnStatus = actor.effects.find( eff=> eff.statuses.has("burn"));
-		if (burnStatus) {
-			const damage = burnStatus.potency;
-			startTurnMsg += `${combatant.name} is burning and will take ${damage} damage at end of turn. (original Hp: ${actor.hp}`;
-		}
-		for (const effect of actor.effects) {
-			switch (effect.statusDuration) {
-				case "fear-hard": {
-					const {success, total} = await PersonaCombat.rollSave(actor, { DC:16, label:effect.name })
-					if (success)
-					{
-						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
-						await effect.delete();
-					}
-					if (total <= 2) {
-						await Logger.sendToChat(`${actor.name} flees from combat!`, actor);
-					}
-					break;
-				}
-				case "fear-normal": {
-					const {success, total} = await PersonaCombat.rollSave(actor, { DC:11, label:effect.name })
-					if (success)
-					{
-						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
-						await effect.delete();
-					}
-					if (total <= 2) {
-						await Logger.sendToChat(`${actor.name} flees from combat!`, actor);
-					}
-					break;
-				}
-				case "fear-easy": {
-					const {success, total} = await PersonaCombat.rollSave(actor, { DC:6, label:effect.name })
-					if (success)
-					{
-						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
-						await effect.delete();
-					}
-					if (total <= 2) {
-						await Logger.sendToChat(`${actor.name} flees from combat!`, actor);
-					}
-					break;
-				}
-				case "expedition":
-				case "combat":
-				case "save-normal":
-				case "save-easy":
-				case "save-hard":
-				case "UEoNT":
-				case "UEoT":
-					break;
-				case "instant":
-				case "USoNT":
-					startTurnMsg += `<br> ${effect.displayedName} has expired`;
-					await effect.delete();
-					break;
-				case "3-rounds":
-					const rounds = effect.duration.rounds ?? 0;
-					if (rounds<= 0) {
-						startTurnMsg += `<br>${effect.displayedName} has expired.`;
-						await effect.delete();
-						break;
-					}
-					else  {
-						await effect.update({"duration.rounds" : rounds-1});
-						break;
-					}
-				default:
-						effect.statusDuration satisfies never;
-			}
-
-		}
-		if (!debilitatingStatus) {
+		startTurnMsg += await this.handleStartTurnEffects(combatant);
+		if (combatant.actor.isCapableOfAction()) {
 			const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token._object);
 			if (this.isEngaged(accessor)) {
 				const DC = undefined;
@@ -153,7 +66,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				if (total >= 11) disengageResult = "normal";
 				if (total >= 16) disengageResult = "hard";
 				startTurnMsg += "<br>"+ await renderTemplate("systems/persona/parts/disengage-check.hbs", {roll, disengageResult});
-				// startTurnMsg += `<br> <b>Disengage Opportunity:</b> ${disengageResult}`;
 			}
 		}
 		const speaker = ChatMessage.getSpeaker({alias: actor.name});
@@ -188,7 +100,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			switch (effect.statusDuration) {
 				case "UEoNT":
 					if (effect.duration.startRound != this.round)
-					await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
+						await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
 					await effect.delete();
 					break;
 				case "save-normal": {
@@ -224,9 +136,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case "instant":
 					await effect.delete();
 					break;
-				case"fear-easy":
-				case"fear-hard":
-				case"fear-normal":
+				case"presave-easy":
+				case"presave-hard":
+				case"presave-normal":
 				case "USoNT":
 				case "expedition":
 				case "combat":
@@ -234,6 +146,97 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				default:
 					effect.statusDuration satisfies never;
 			}
+		}
+	}
+
+	async handleStartTurnEffects(combatant: Combatant<ValidAttackers>): Promise<string> {
+		const actor= combatant.actor;
+		if (!actor) return "";
+		let Msg = "";
+		for (const effect of actor.effects) {
+			let DC = this.getStatusSaveDC(effect);
+			switch (effect.statusDuration) {
+				case "presave-easy":
+				case "presave-normal":
+				case "presave-hard":
+					const {success, total} = await PersonaCombat.rollSave(actor, { DC, label:effect.name })
+					if (success) {
+						Msg += `Removed condition: ${effect.displayedName} from saving throw`;
+						await effect.delete();
+						break;
+					}
+					Msg += await this.preSaveEffect(total, effect, actor);
+					break;
+				case "expedition":
+				case "combat":
+				case "save-normal":
+				case "save-easy":
+				case "save-hard":
+				case "UEoNT":
+				case "UEoT":
+					break;
+				case "instant":
+				case "USoNT":
+					Msg += `<br> ${effect.displayedName} has expired`;
+					await effect.delete();
+					break;
+				case "3-rounds":
+					const rounds = effect.duration.rounds ?? 0;
+					if (rounds<= 0) {
+						Msg += `<br>${effect.displayedName} has expired.`;
+						await effect.delete();
+						break;
+					}
+					else  {
+						await effect.update({"duration.rounds" : rounds-1});
+						break;
+					}
+				default:
+						effect.statusDuration satisfies never;
+			}
+
+		}
+		const debilitatingStatuses :StatusEffectId[] = [
+			"sleep",
+			"frozen",
+			"shock"
+		];
+		const debilitatingStatus = actor.effects.find( eff=> debilitatingStatuses.some( debil => eff.statuses.has(debil)));
+		if (debilitatingStatus) {
+			const msg =  `${combatant.name} can't take actions normally because of ${debilitatingStatus.name}`
+			Msg += msg ;
+			if (actor.system.type == "shadow") {
+				this.skipBox(`${msg}. <br> Skip turn?`); //don't await this so it processes the rest of the code
+			}
+		}
+		// const charmStatus = actor.effects.find( eff=> eff.statuses.has("charmed"));
+		// if (charmStatus) {
+		// 	Msg += `${combatant.name} is charmed.`;
+		// }
+		const burnStatus = actor.effects.find( eff=> eff.statuses.has("burn"));
+		if (burnStatus) {
+			const damage = burnStatus.potency;
+			Msg += `${combatant.name} is burning and will take ${damage} damage at end of turn. (original Hp: ${actor.hp}`;
+		}
+
+		return Msg;
+	}
+
+	getStatusSaveDC(effect: PersonaAE) {
+		switch (effect.statusDuration) {
+			case "save-hard":
+				return 16;
+			case "save-normal":
+				return 11;
+			case "save-easy":
+				return 6;
+			case "presave-hard":
+				return 16;
+			case "presave-normal":
+				return 11;
+			case "presave-easy":
+				return 6;
+			default: return 2000;
 		}
 	}
 
@@ -253,7 +256,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 			else {
 				if (!await HTMLTools.confirmBox("Out of turn Action", "It's not your turn, act anyway?")) {
-				return new CombatResult();
+					return new CombatResult();
 				}
 
 			}
@@ -767,12 +770,38 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	/**return true if it is the token's turn
-	*/
+	 */
 	turnCheck(token: PToken): boolean {
 		if (!this.enemiesRemaining(token)) return true;
 		if (!this.combatant) return true;
 		return (this.combatant.token == token.document)
 	}
+
+	async preSaveEffect( total: number, effect: PersonaAE, actor: PersonaActor) : Promise<string> {
+		let retstr = "";
+		const statuses = Array.from(effect.statuses)
+		for (const status of statuses) {
+			switch (status) {
+				case "fear":
+					if (total <= 2) {
+						retstr +=`<b>${actor.name} flees from combat!</b>`;
+					}
+					break;
+				case "charmed":
+					if (total <= 5) {
+						retstr+= `<b>${actor.name} is under full enemy control</b>`;
+						break;
+					} else {
+						retstr +=`<b>${actor.name} is charmed and makes a basic attack against a random possible target</b>`;
+						break;
+
+					}
+			}
+		}
+		return retstr;
+	}
+
+
 }
 
 
@@ -849,4 +878,7 @@ type SaveOptions = {
 	DC?: number,
 	askForModifier?: boolean,
 }
+
+
+
 
