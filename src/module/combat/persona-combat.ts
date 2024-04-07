@@ -620,7 +620,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				const combat= this.ensureCombatExists();
 				const targets= combat.combatants.filter( x => {
 					const actor = x.actor;
-					if (!actor)  return false;
+					if (!actor || actor.hp <= 0)  return false;
 					return ((x.actor as ValidAttackers).getAllegiance() != attackerType)
 				});
 				return targets.map( x=> x.token._object as PToken);
@@ -649,7 +649,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	static checkTargets(min: number, max: number) {
-		const selected = Array.from(game.user.targets);
+		const selected : Array<Token<PersonaActor>> = Array.from(game.user.targets);
 		if (selected.length == 0)  {
 			const error = "Requires Target to be selected";
 			ui.notifications.warn(error);
