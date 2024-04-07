@@ -1,3 +1,5 @@
+import { PersonaActor } from "../module/actor/persona-actor";
+
 export const SYSTEMNAME = `persona` as const;
 export const SYSTEMPATH = `systems/${SYSTEMNAME}` as const;
 export const HBS_TEMPLATES_DIR = `${SYSTEMPATH}/sheets` as const;
@@ -28,22 +30,30 @@ export class PersonaSettings {
 
 const SETTINGS = {
 	"metaverseState" : {
-			name: "Metaverse Enhanced",
-			hint: "Is Metaverse Enhanced?",
-			scope: "world",
-			restricted: true,
-			config: true, //turn this off eventually
-			type :Boolean,
-			default: false,
+		name: "Metaverse Enhanced",
+		hint: "Is Metaverse Enhanced?",
+		scope: "world",
+		restricted: true,
+		config: true, //turn this off eventually
+		type :Boolean,
+		default: false,
+		onChange: () => {
+			console.log("Executing MEtaverse state update");
+			game.scenes
+				.forEach( scene => scene.tokens.contents
+					.forEach( tok => (tok.actor as PersonaActor | undefined)?.fullHeal()
+					)
+				);
+		}
 	},
 	"autoApplyCombatResults" : {
-			name: "Auto Apply Combat Results",
-			hint: "Auto apply combat results?",
-			scope: "world",
-			restricted: true,
-			config: true,
-			type :Boolean,
-			default: false,
+		name: "Auto Apply Combat Results",
+		hint: "Auto apply combat results?",
+		scope: "world",
+		restricted: true,
+		config: true,
+		type :Boolean,
+		default: false,
 	},
 } as const;
 

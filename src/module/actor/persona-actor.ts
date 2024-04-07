@@ -1,3 +1,4 @@
+import { PersonaCombat } from "../combat/persona-combat.js";
 import { PersonaActorSheetBase } from "./sheets/actor-sheet.base.js";
 import { Metaverse } from "../metaverse.js";
 import { Logger } from "../utility/logger.js";
@@ -135,6 +136,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	set hp(newval: number) {
+		if (this.system.type == "npc") return;
 		this.update({"system.combat.hp": newval});
 	}
 
@@ -160,6 +162,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			return Math.round(mhp);
 			// return (this.class.getClassProperty(lvl + inc, "maxhp") + bonuses.total(sit)) * mult ;
 		} catch (e) {
+			console.log(e);
 			console.warn(`Can't get Hp for ${this.name} (${this.id})`);
 			return 0;
 		}
@@ -676,6 +679,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	canPayActiationCost_shadow(this: Shadow, usable: Usable) : boolean {
 		if (usable.system.type == "power") {
+			if (usable.system.reqEnhancedMultiverse && !Metaverse.isEnhanced()) {
+				ui.notifications.notify(`only usable in enhanced multiverse`);
+				return false;
+			}
+			const combat = game.combat;
+			if (combat && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
+				ui.notifications.notify(`Escalation die must be ${usable.system.reqEscalation} or higher to use this pwoer`);
+				return false;
+			}
 			switch (usable.system.reqCharge) {
 				case "none": return true;
 				case "always": return !this.statuses.has("depleted");
@@ -898,8 +910,23 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		);
 	}
 
-	async OnExitMetaverse(this: PC ) {
+	async fullHeal() {
 		this.hp = this.mhp;
+	}
+
+	async OnEnterMetaverse(this: PC) {
+		this.fullHeal();
+		await this.update( {"system.slots" : {
+			0: this.getMaxSlotsAt(0),
+			1: this.getMaxSlotsAt(1),
+			2: this.getMaxSlotsAt(2),
+			3: this.getMaxSlotsAt(3),
+		}});
+		await this.refreshSocialLink(this);
+	}
+
+	async OnExitMetaverse(this: PC ) {
+		this.fullHeal();
 		await this.update( {"system.slots" : {
 			0: this.getMaxSlotsAt(0),
 			1: this.getMaxSlotsAt(1),
@@ -966,7 +993,13 @@ Hooks.on("updateActor", async (actor: PersonaActor, _changes: {system: any}) => 
 
 
 });
-Hooks
+
+Hooks.on("createToken", async function (token: Token<PersonaActor>)  {
+	token.actor.fullHeal();
+}
+);
+
+
 export type SocialBenefit = {
 	id: string,
 	focus: Focus,

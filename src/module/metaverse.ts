@@ -8,6 +8,20 @@ export class Metaverse {
 		return PersonaSettings.isMetaverseEnhanced(); //placeholder
 	}
 
+	static async enterMetaverse() {
+		(game.actors as Collection<PersonaActor>)
+			.filter( (x: PersonaActor)=> x.system.type == "pc")
+			.forEach( (x: PC)=> x.OnEnterMetaverse());
+		game.scenes
+			.forEach( scene => scene.tokens.contents
+				.forEach( tok => (tok.actor as PersonaActor | undefined)?.fullHeal()
+				)
+			);
+
+		Hooks.callAll("enterMetaverse");
+		await Logger.sendToChat(`Entering Metaverse...`);
+	}
+
 	static async exitMetaverse() {
 		(game.actors as Collection<PersonaActor>)
 			.filter( (x: PersonaActor)=> x.system.type == "pc")
@@ -22,6 +36,7 @@ export class Metaverse {
 declare global {
 	interface HOOKS {
 		"exitMetaverse" : () => void;
+		"enterMetaverse" : () => void;
 	}
 }
 

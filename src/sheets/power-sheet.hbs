@@ -59,6 +59,7 @@
 		{{numberInput item.system.mag_mult class="short" name="system.mag_mult" step=1 min=0 max=900}}
 	</div>
 	{{/if}}
+	{{#if (eq item.parent.type "shadow")}}
 	<hr>
 	<section = "shadow-costs">
 		<label>
@@ -67,7 +68,19 @@
 		<select name="system.reqCharge">
 			{{selectOptions POWERSTUFF.SHADOW_CHARGE_REQ localize=true selected=item.system.reqCharge}}
 		</select>
+
+		<label>
+			Requires Enhanced Metaverse
+			</label>
+<input type="checkbox" name="system.reqEnhancedMultiverse" {{checked item.system.reqEnhancedMultiverse}}>
+			<label>
+				ESC requirement
+			</label>
+		{{numberInput item.system.reqEscalation class="short" name="system.reqEscalation" step=1 min=0 max=6}}
+
+
 	</section>
+	{{/if}}
 
 
 	<hr>

@@ -1,4 +1,4 @@
-const {StringField:txt, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
+const {StringField:txt, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, BooleanField: bool } = foundry.data.fields;
 
 import { POWERTYPESLIST } from "../../config/effect-types.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
@@ -74,6 +74,8 @@ export function powerCost() {
 		hpcost: new num( {integer:true}),
 		slot: new num( {integer: true, min:0, max:20, initial: 0}),
 		reqCharge: new txt( {choices: SHADOW_CHANGE_REQ_LIST , initial: "none"}),
+		reqEscalation: new num( {initial: 0, integer: true, min: 0, max: 6}),
+		reqEnhancedMultiverse: new bool( {initial:false}),
 	}
 }
 
