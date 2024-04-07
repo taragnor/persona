@@ -217,3 +217,7 @@ input.single-digit {
 .social-link .name {
 	cursor: pointer;
 }
+
+.faded {
+	opacity: 50%;
+}

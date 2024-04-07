@@ -261,6 +261,7 @@
 	"persona.preconditions.is-engaged-with-target": "Is engaged with target",
 	"persona.preconditions.is-not-engaged-with-target": "Is not engaged with target",
 	"persona.preconditions.metaverse-enhanced": "Metaverse has enhanced Foes",
+	"persona.preconditions.metaverse-normal": "Metaverse is normal",
 	"persona.preconditions.is-resistant-to": "User is resistant or better to element",
 	"persona.preconditions.target-is-resistant-to": "Target is resistant or better to element",
 	"persona.preconditions.not-resistant-to": "User is not resistant or better to element",

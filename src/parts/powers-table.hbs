@@ -27,11 +27,13 @@
 			</th>
 		</tr>
 		{{#each actor.powers as |power|}}
-		<tr data-power-id="{{power.id}}">
+		<tr class="power-row {{#if (not (canUsePower ../actor power))}} faded {{/if}}" data-power-id="{{power.id}}">
 			<td>
+				{{#if (canUsePower ../actor power)}}
 				<a class="rollPower">
 					<img src="icons/dice/d20black.svg">
 				</a>
+				{{/if}}
 			</td>
 			<td>
 				<a class="powerName">

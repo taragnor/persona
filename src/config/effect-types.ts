@@ -66,6 +66,7 @@ export const PRECONDITIONLIST = [
 	"is-engaged-with-target",
 	"is-not-engaged-with-target",
 	"metaverse-enhanced",
+	"metaverse-normal",
 	"is-resistant-to",
 	"not-resistant-to",
 	"target-is-resistant-to",

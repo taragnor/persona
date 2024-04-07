@@ -1,3 +1,5 @@
+import { Metaverse } from "../metaverse.js"
+import { PersonaActor } from "../actor/persona-actor.js";
 import { UniversalItemAccessor } from "../utility/db-accessor.js";
 import { Situation } from "../preconditions.js";
 import { SLOTTYPES } from "../../config/slot-types.js";
@@ -14,6 +16,8 @@ declare global {
 }
 
 export class PersonaItem extends Item<typeof ITEMMODELS> {
+
+	declare parent : PersonaActor;
 
 	getClassProperty<T extends keyof CClass["system"]["leveling_table"][number]> (this: CClass,lvl: number, property:T)  : CClass["system"]["leveling_table"][number][T] {
 		return this.system.leveling_table[lvl][property];
@@ -63,6 +67,14 @@ const power = PersonaDB.getItemByName(powerName);
 	}
 
 	powerCostString(this: Power) : string {
+		if (!this.parent || this.parent.type == "pc")
+			return this.powerCostString_PC();
+		if (this.parent.type == "shadow")
+			return this.powerCostString_Shadow();
+		else return "";
+	}
+
+	powerCostString_PC(this: Power) : string {
 		switch (this.system.subtype) {
 
 			case "weapon":
@@ -75,7 +87,32 @@ const power = PersonaDB.getItemByName(powerName);
 			default:
 				return "free";
 		}
+	}
 
+	powerCostString_Shadow(this: Power) : string {
+		let costs : string[] = [];
+		if (this.system.reqEnhancedMultiverse) {
+			costs.push("ENH");
+		}
+		if (this.system.reqEscalation) {
+			costs.push(`ESC${this.system.reqEscalation}+`);
+		}
+		switch (this.system.reqCharge) {
+			case "none":
+				break;
+			case "always":
+				costs.push("Charged");
+				break;
+			case "not-enhanced":
+				if (!Metaverse.isEnhanced()) {costs.push("Charged")}
+				break;
+			case "supercharged":
+				costs.push("SUPERCHARGE");
+				break;
+			default:
+				this.system.reqCharge satisfies never;
+		}
+		return costs.join(", ");
 	}
 
 	static getSlotName(num : number) {

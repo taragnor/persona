@@ -1,3 +1,4 @@
+import { TurnAlert } from "../utility/turnAlert.js";
 import { PersonaAE } from "../active-effect.js";
 import { EngagementChecker } from "./engageChecker.js";
 import { Metaverse } from "../metaverse.js";
@@ -43,6 +44,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const rolls :PersonaRoll[] = [];
 		const actor = combatant.actor;
 		if (!actor) return;
+		if (actor.isOwner && !game.user.isGM)
+			TurnAlert.alert();
 		if (!game.user.isGM) return;
 		for (const effect of actor.effects) {
 			if (effect.statuses.has("blocking")) {

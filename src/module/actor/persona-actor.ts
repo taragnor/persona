@@ -289,7 +289,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			user: PersonaDB.getUniversalActorAccessor(this)
 		};
 		const healing = rec_bonuses.total(situation);
-		await Logger.sendToChat(`${this.name} used inspiration to heal ${healing} hit points (original HP: ${this.hp})` , this);
+		const linkActor = game.actors.get(socialLinkId);
+
+		await Logger.sendToChat(`${this.name} used inspiration from link ${linkActor?.name} to heal ${healing} hit points (original HP: ${this.hp})` , this);
 		await this.update({"system.social": this.system.social});
 		await this.modifyHP(healing);
 	}

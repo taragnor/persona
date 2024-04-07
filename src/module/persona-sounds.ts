@@ -1,7 +1,7 @@
 export class PersonaSounds {
 
-	static async play(filename: string, volume = 1.0, recipients:string[] =[]) {
-		const socketOpts = (recipients.length) ? { recipients} : false;
+	static async play(filename: string, volume = 1.0, recipients:string[] | false =[]) {
+		const socketOpts = (recipients && recipients.length) ? { recipients} : false;
 		const src  = `systems/persona/sound/${filename}`;
 		await AudioHelper.play( {
 			src,

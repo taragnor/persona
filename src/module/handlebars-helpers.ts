@@ -1,3 +1,4 @@
+import { Power } from "./item/persona-item.js";
 import { SocialBenefit } from "./actor/persona-actor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PC } from "./actor/persona-actor.js";
@@ -78,8 +79,11 @@ export class PersonaHandleBarsHelpers {
 		"getTokenAccName" : (tokenAcc: UniversalTokenAccessor<PToken>) =>  {
 			const token = PersonaDB.findToken(tokenAcc);
 			return token.document.name;
-		}
+		},
 
+		'canUsePower': (actor:PC | Shadow, power: Power) => {
+			return actor.canPayActivationCost(power);
+		},
 	}
 }
 
