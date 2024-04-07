@@ -253,22 +253,18 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 } //End of class
 
 
-export type UniversalTokenAccessor<T extends Token<any>> = {
+export type UniversalTokenAccessor<_T extends Token<any>> = {
 	scene?: string,
 	tokenId : string,
-	// actorId : string,
-	__phantomData?: T
 };
 
 export type UniversalActorAccessor<T extends Actor<any, any, any>> = {
 	token ?: UniversalTokenAccessor<Token<T>>,
 	actorId : string,
-	__phantomData?: T
 }
 
-export type UniversalItemAccessor<T extends Item<any>> = {
+export type UniversalItemAccessor<_T extends Item<any>> = {
 	actor?: UniversalActorAccessor<Actor<any, any>>
 	itemId: string,
-	__phantomData?: T,
 }
 
