@@ -101,6 +101,7 @@ const combatCommonStats = function () {
 		powers: new arr( new id()),
 		resists: elementalResists(),
 		hpTracker: new obj<HPTracking>(),
+		fadingState: new num( {integer:true, initial:0}),
 	};
 };
 

@@ -56,8 +56,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				await effect.delete();
 			}
 		}
-		let startTurnMsg= `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`;
-		startTurnMsg += await this.handleStartTurnEffects(combatant);
+		let startTurnMsg=[ `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`];
+		startTurnMsg = startTurnMsg.concat(await this.handleStartTurnEffects(combatant));
 		if (combatant.actor.isCapableOfAction()) {
 			const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token._object);
 			if (this.isEngaged(accessor)) {
@@ -68,13 +68,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 				if (total >= 11) disengageResult = "normal";
 				if (total >= 16) disengageResult = "hard";
-				startTurnMsg += "<br>"+ await renderTemplate("systems/persona/parts/disengage-check.hbs", {roll, disengageResult});
+				startTurnMsg.push("<br>"+ await renderTemplate("systems/persona/parts/disengage-check.hbs", {roll, disengageResult}));
 			}
 		}
 		const speaker = ChatMessage.getSpeaker({alias: actor.name});
 		let messageData = {
 			speaker: speaker,
-			content: startTurnMsg,
+			content: startTurnMsg.join("<br>"),
 			type: CONST.CHAT_MESSAGE_TYPES.OOC,
 			rolls,
 			sound: rolls.length > 0 ? CONFIG.sounds.dice : undefined
@@ -152,10 +152,37 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
-	async handleStartTurnEffects(combatant: Combatant<ValidAttackers>): Promise<string> {
+	async handleFading(combatant: Combatant<ValidAttackers>): Promise<string[]> {
+		let Msg :string[] = [];
 		const actor= combatant.actor;
-		if (!actor) return "";
-		let Msg = "";
+		if (!actor) return [];
+		if (actor.hp <= 0 && actor.system.type == "pc") {
+			if (actor.system.combat.fadingState < 2) {
+				Msg.push(`${combatant.name} is fading...`);
+				const {success, total} = await PersonaCombat.rollSave(actor, { DC:11, label: "Fading Roll"});
+				if (!success) {
+					const newval = actor.system.combat.fadingState +1;
+					await actor.setFadingState(newval);
+					if (newval >= 2) {
+						Msg.push(`<b>${combatant.name} is compeltely faded!`);
+					}
+				}
+			} else {
+
+					Msg.push(`${combatant.name} is totally faded!`);
+
+				}
+				Msg.push( `${combatant.name} can fight in spirit!`);
+			}
+		return Msg;
+
+	}
+
+	async handleStartTurnEffects(combatant: Combatant<ValidAttackers>): Promise<string[]> {
+		const actor= combatant.actor;
+		if (!actor) return [];
+		let Msg: string[] = [];
+		Msg = Msg.concat(await this.handleFading(combatant));
 		for (const effect of actor.effects) {
 			let DC = this.getStatusSaveDC(effect);
 			switch (effect.statusDuration) {
@@ -164,11 +191,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case "presave-hard":
 					const {success, total} = await PersonaCombat.rollSave(actor, { DC, label:effect.name })
 					if (success) {
-						Msg += `Removed condition: ${effect.displayedName} from saving throw`;
+						Msg.push(`Removed condition: ${effect.displayedName} from saving throw`);
 						await effect.delete();
 						break;
 					}
-					Msg += await this.preSaveEffect(total, effect, actor);
+					Msg = Msg.concat( await this.preSaveEffect(total, effect, actor));
 					break;
 				case "expedition":
 				case "combat":
@@ -180,13 +207,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					break;
 				case "instant":
 				case "USoNT":
-					Msg += `<br> ${effect.displayedName} has expired`;
+					Msg.push( `<br> ${effect.displayedName} has expired`);
 					await effect.delete();
 					break;
 				case "3-rounds":
 					const rounds = effect.duration.rounds ?? 0;
 					if (rounds<= 0) {
-						Msg += `<br>${effect.displayedName} has expired.`;
+						Msg.push(`<br>${effect.displayedName} has expired.`);
 						await effect.delete();
 						break;
 					}
@@ -207,7 +234,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const debilitatingStatus = actor.effects.find( eff=> debilitatingStatuses.some( debil => eff.statuses.has(debil)));
 		if (debilitatingStatus) {
 			const msg =  `${combatant.name} can't take actions normally because of ${debilitatingStatus.name}`
-			Msg += msg ;
+			Msg.push(msg) ;
 			if (actor.system.type == "shadow") {
 				this.skipBox(`${msg}. <br> Skip turn?`); //don't await this so it processes the rest of the code
 			}
@@ -219,7 +246,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const burnStatus = actor.effects.find( eff=> eff.statuses.has("burn"));
 		if (burnStatus) {
 			const damage = burnStatus.potency;
-			Msg += `${combatant.name} is burning and will take ${damage} damage at end of turn. (original Hp: ${actor.hp}`;
+			Msg.push(`${combatant.name} is burning and will take ${damage} damage at end of turn. (original Hp: ${actor.hp}`);
 		}
 
 		return Msg;
@@ -630,6 +657,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				const targets= combat.combatants.filter( x => {
 					const actor = x.actor;
 					if (!actor)  return false;
+					if ((actor as ValidAttackers).isFullyFaded()) return false;
 					return ((x.actor as ValidAttackers).getAllegiance() == attackerType)
 				});
 				return targets.map( x=> x.token._object as PToken);
@@ -780,21 +808,21 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return (this.combatant.token == token.document)
 	}
 
-	async preSaveEffect( total: number, effect: PersonaAE, actor: PersonaActor) : Promise<string> {
-		let retstr = "";
+	async preSaveEffect( total: number, effect: PersonaAE, actor: PersonaActor) : Promise<string[]> {
+		let retstr: string[] = [];
 		const statuses = Array.from(effect.statuses)
 		for (const status of statuses) {
 			switch (status) {
 				case "fear":
 					if (total <= 2) {
-						retstr +=`<b>${actor.name} flees from combat!</b>`;
+						retstr.push(`(<b>${actor.name} flees from combat!</b>`);
 					}
 					break;
 				case "charmed":
 					if (total <= 5) {
-						retstr+= `<b>${actor.name} is under full enemy control</b>`;
+						retstr.push(`<b>${actor.name} is under full enemy control</b>`);
 					} else {
-						retstr +=`<b>${actor.name} is charmed and makes a basic attack against a random possible target</b>`;
+						retstr.push(`<b>${actor.name} is charmed and makes a basic attack against a random possible target</b>`);
 					}
 					break;
 			}

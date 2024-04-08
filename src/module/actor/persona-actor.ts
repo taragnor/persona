@@ -138,7 +138,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	set hp(newval: number) {
 		if (this.system.type == "npc") return;
 		this.update({"system.combat.hp": newval});
-		(this as PC | Shadow).refreshHpStatus();
+		(this as PC | Shadow).refreshHpStatus(newval);
 	}
 
 	get hp(): number {
@@ -375,27 +375,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async refreshHpStatus(this: Shadow | PC, newval?: number) {
 		const hp = newval ?? this.system.combat.hp;
-		if (hp <= 0) {
-			await this.addStatus({
-				id:"fading",
-				duration: "expedition",
-			});
-		}
 		if (hp > 0) {
-			await this.removeStatus({
-				id: "fading"
-			});
+			await this.setFadingState(0);
 		}
 		if (hp > this.mhp) {
 			await this.update( {"system.combat.hp": this.mhp});
 		}
+		const opacity = hp > 0 ? 1.0 : (this.isFullyFaded(hp) ? 0.2 : 0.6);
 		if (this.token) {
-				await this.token.update({"alpha": hp > 0 ? 1.0: 0.5});
+				await this.token.update({"alpha": opacity});
 		} else {
 			//@ts-ignore
 			for (const iterableList of this._dependentTokens.values()) {
 				for (const tokDoc of iterableList) {
-					(tokDoc as TokenDocument<PersonaActor>).update({"alpha": hp >0 ? 1.0: 0.5});
+					(tokDoc as TokenDocument<PersonaActor>).update({"alpha": opacity});
 				}
 			}
 		}
@@ -970,6 +963,41 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			});
 		});
 	}
+
+	isFullyFaded(this: PC | Shadow, newhp?:number) : boolean {
+		if (this.system.type== "shadow")
+			return (newhp ?? this.hp) <= 0;
+		else return this.system.combat.fadingState >= 2;
+	}
+
+	isFading(this:PC): boolean {
+		return this.hp <= 0 && this.system.combat.fadingState < 2;
+	}
+
+	async setFadingState (this: PC | Shadow, state: number) {
+		switch (state) {
+			case 0:
+				await this.removeStatus({
+					id: "fading"
+				});
+				break;
+			case 1:
+				if (state == this.system.combat.fadingState)
+					return;
+				await this.addStatus({
+					id:"fading",
+					duration: "expedition",
+				});
+				break;
+			case 2:
+				break;
+		}
+		if (state == this.system.combat.fadingState)
+			return;
+		await this.update( {"system.combat.fadingState": state});
+		await this.refreshHpStatus();
+	}
+
 }
 
 export type PC = Subtype<PersonaActor, "pc">;
