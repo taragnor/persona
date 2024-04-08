@@ -106,30 +106,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
 					await effect.delete();
 					break;
-				case "save-normal": {
-					const {success} = await PersonaCombat.rollSave(actor, { DC:11, label:effect.name })
+				case "save-hard":
+				case "save-easy":
+				case "save-normal":
+					const DC = this.getStatusSaveDC(effect);
+					const {success} = await PersonaCombat.rollSave(actor, { DC, label:effect.name, saveVersus:effect.statusId })
 					if (success) {
 						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
 						await effect.delete();
 					}
 					break;
-				}
-				case "save-easy": {
-					const {success} = await PersonaCombat.rollSave(actor, { DC:6, label:effect.name })
-					if (success) {
-						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
-						await effect.delete();
-					}
-					break;
-				}
-				case "save-hard": {
-					const {success} = await PersonaCombat.rollSave(actor, { DC:16, label:effect.name })
-					if (success) {
-						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
-						await effect.delete();
-					}
-					break;
-				}
 				case "3-rounds":
 					break;
 				case "UEoT":
@@ -159,7 +145,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (actor.hp <= 0 && actor.system.type == "pc") {
 			if (actor.system.combat.fadingState < 2) {
 				Msg.push(`${combatant.name} is fading...`);
-				const {success, total} = await PersonaCombat.rollSave(actor, { DC:11, label: "Fading Roll"});
+				const {success, total} = await PersonaCombat.rollSave(actor, { DC:11, label: "Fading Roll", saveVersus:"fading"});
 				if (!success) {
 					const newval = actor.system.combat.fadingState +1;
 					await actor.setFadingState(newval);
@@ -189,7 +175,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case "presave-easy":
 				case "presave-normal":
 				case "presave-hard":
-					const {success, total} = await PersonaCombat.rollSave(actor, { DC, label:effect.name })
+					const {success, total} = await PersonaCombat.rollSave(actor, { DC, label:effect.name, saveVersus:effect.statusId})
 					if (success) {
 						Msg.push(`Removed condition: ${effect.displayedName} from saving throw`);
 						await effect.delete();
@@ -758,8 +744,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	/** returns pass or fail */
-	static async rollSave (actor: ValidAttackers, {DC, label, askForModifier} :SaveOptions) : Promise<{success:boolean, total:number}> {
-		// static async rollSave (actor: ValidAttackers, difficulty: number =11, label ?: string) : Promise<boolean> {
+	static async rollSave (actor: ValidAttackers, {DC, label, askForModifier, saveVersus} :SaveOptions) : Promise<{success:boolean, total:number}> {
 		const difficulty = DC ? DC : 11;
 		const mods = actor.getSaveBonus();
 		if (askForModifier) {
@@ -768,6 +753,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		const situation : Situation = {
 			user: PersonaDB.getUniversalActorAccessor(actor),
+			saveVersus: saveVersus ? saveVersus : undefined,
 		}
 		const difficultyTxt = DC == 11 ? "normal" : DC == 16 ? "hard" : DC == 6 ? "easy" : "unknown difficulty";
 		const labelTxt = `Saving Throw (${label ? label + " " + difficultyTxt : ""})`;
@@ -905,6 +891,7 @@ type SaveOptions = {
 	label?: string,
 	DC?: number,
 	askForModifier?: boolean,
+	saveVersus?: StatusEffectId,
 }
 
 

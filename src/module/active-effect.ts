@@ -47,6 +47,13 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		return  PersonaAE.getStatusValue(this.statusDuration) < PersonaAE.getStatusValue(x);
 	}
 
+	get statusId() : StatusEffectId | undefined {
+		for (const status of this.statuses) {
+			return status;
+		}
+		return undefined;
+	}
+
 	static getStatusValue (duration : StatusDuration) : number {
 		switch (duration) {
 			case "expedition":

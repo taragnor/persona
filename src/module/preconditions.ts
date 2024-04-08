@@ -182,6 +182,9 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 					if (!benefit) return false;
 					return link.linkLevel >= benefit.lvl_requirement;
 				});
+		case "save-versus":
+			if (!situation.saveVersus) return false;
+			return situation.saveVersus == condition.status;
 		default:
 			condition.type satisfies never;
 			PersonaError.softFail(`Unexpected Condition: ${condition.type}`);
@@ -213,6 +216,7 @@ export type Situation = {
 	activationRoll ?: boolean;
 	target?: UniversalTokenAccessor<PToken>;
 	userToken?: UniversalTokenAccessor<PToken>;
+	saveVersus?: StatusEffectId;
 }
 
 
