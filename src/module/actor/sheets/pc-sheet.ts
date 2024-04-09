@@ -27,23 +27,23 @@ export class PCSheet extends CombatantSheetBase {
 
 
 	override async _onDropActor(_event: Event, actorD: unknown)
-		{
-			//@ts-ignore
-			const actor : PersonaActor = await Actor.implementation.fromDropData(actorD);
-			switch (actor.system.type) {
-				case "pc" :{
-					await this.actor.createSocialLink(actor as PC)
-					return;
-				}
-				case "shadow": return;
-				case "npc":
-					//create a social link
-					await this.actor.createSocialLink(actor as NPC)
-					return;
-				default: 
-					actor.system satisfies never;
-					throw new Error(`Unknown unsupported type ${actor.type}`);
+	{
+		//@ts-ignore
+		const actor : PersonaActor = await Actor.implementation.fromDropData(actorD);
+		switch (actor.system.type) {
+			case "pc" :{
+				await this.actor.createSocialLink(actor as PC)
+				return;
 			}
+			case "shadow": return;
+			case "npc":
+				//create a social link
+				await this.actor.createSocialLink(actor as NPC)
+				return;
+			default: 
+				actor.system satisfies never;
+				throw new Error(`Unknown unsupported type ${actor.type}`);
+		}
 	}
 
 	override async getData() {
@@ -51,22 +51,22 @@ export class PCSheet extends CombatantSheetBase {
 		data.equips = {
 			weapons: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
 				if (x.system.type == "weapon")
-				return [[ x.id, x.name]];
+					return [[ x.id, x.name]];
 				else return [];
 			})),
 			body: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
 				if (x.system.type == "item" && x.system.slot =="body")
-				return [[ x.id, x.name]];
+					return [[ x.id, x.name]];
 				else return [];
 			})),
 			accessory: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
 				if (x.system.type == "item" && x.system.slot =="accessory")
-				return [[ x.id, x.name]];
+					return [[ x.id, x.name]];
 				else return [];
 			})),
 			attachment: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
 				if (x.system.type == "item" && x.system.slot =="weapon_crystal")
-				return [[ x.id, x.name]];
+					return [[ x.id, x.name]];
 				else return [];
 			})),
 		};
@@ -164,11 +164,11 @@ export class PCSheet extends CombatantSheetBase {
 		this.actor.socialLinkProgress(linkId, 1);
 	}
 
-async clearSLBoosts (event: Event) {
+	async clearSLBoosts (event: Event) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
 		this.actor.socialLinkProgress(linkId, -100);
 
-}
+	}
 
 	#addItem(_ev: JQuery<Event>) {
 		this.actor.createNewItem();
@@ -189,22 +189,24 @@ async clearSLBoosts (event: Event) {
 		}
 	}
 
-async rollSL(event: Event) {
+	async rollSL(event: Event) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
-	await PersonaSocial.makeUpgradeLinkRoll(this.actor, linkId)
-}
+		await PersonaSocial.makeUpgradeLinkRoll(this.actor, linkId)
+	}
 
-async gainMoney(_ev: Event) {
-	const x = await HTMLTools.getNumber("Amount to gain");
-	await Logger.sendToChat(`Gained ${x} resource points`);
-	await PersonaSounds.ching();
-}
+	async gainMoney(_ev: Event) {
+		const x = await HTMLTools.getNumber("Amount to gain");
+		if (x <= 0) return;
+		await this.actor.gainMoney(x);
+		await Logger.sendToChat(`${this.actor.name} Gained ${x} resource points`);
+		await PersonaSounds.ching();
+	}
 
-async spendMoney(_ev: Event) {
-	const x = await HTMLTools.getNumber("Amount to spend");
-	await this.actor.spendMoney(x);
-	await Logger.sendToChat(`Spent ${x} resource points`);
-
-}
+	async spendMoney(_ev: Event) {
+		const x = await HTMLTools.getNumber("Amount to spend");
+		if (x <= 0) return;
+		await this.actor.spendMoney(x);
+		await Logger.sendToChat(`${this.actor.name} Spent ${x} resource points`);
+	}
 
 }
