@@ -196,25 +196,14 @@ async rollSL(event: Event) {
 
 async gainMoney(_ev: Event) {
 	const x = await HTMLTools.getNumber("Amount to gain");
-	if (x > 20) {
-		ui.notifications.warn("Can't get this much money at once!");
-		return;
-	}
-	Logger.sendToChat(`Gained ${x} resource points`);
-	const resources = this.actor.system.money + x;
-	await this.actor.update({ "system.money": resources});
+	await Logger.sendToChat(`Gained ${x} resource points`);
 	await PersonaSounds.ching();
 }
 
 async spendMoney(_ev: Event) {
 	const x = await HTMLTools.getNumber("Amount to spend");
-	if (x > this.actor.system.money) {
-		ui.notifications.warn("You don't have that much money!");
-		return;
-	}
-	Logger.sendToChat(`Spent ${x} resource points`);
-	const resources = this.actor.system.money - x;
-	await this.actor.update({ "system.money": resources});
+	await this.actor.spendMoney(x);
+	await Logger.sendToChat(`Spent ${x} resource points`);
 
 }
 

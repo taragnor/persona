@@ -1006,6 +1006,22 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update(upgradeObj);
 	}
 
+	async gainMoney(this: PC, amt: number) {
+		if (amt > 20) {
+			throw new PersonaError("Can't get this much money at once!");
+		}
+		const resources = this.system.money + amt;
+		await this.update({ "system.money": resources});
+	}
+
+	async spendMoney(this: PC, amt: number) {
+		if (amt > this.system.money) {
+			throw new PersonaError("You don't have that much money!");
+		}
+		const resources = this.system.money - amt;
+		await this.update({ "system.money": resources});
+	}
+
 }
 
 export type PC = Subtype<PersonaActor, "pc">;
