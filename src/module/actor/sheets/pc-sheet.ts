@@ -86,14 +86,25 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".social-link .name").on("click", this.openSL.bind(this));
 		html.find(".clearSocialBoosts").on("click", this.clearSLBoosts.bind(this));
 		html.find(".roll-icon img").on("click", this.rollSL.bind(this));
-		for (const stat of STUDENT_SKILLS_LIST) {
-			html.find(`.${stat} .roll-icon`).on("click", this.rollSocial.bind(this, stat));
-		}
+		html.find(`.social-stat .roll-icon`).on("click", this.rollSocial.bind(this));
+		html.find(`.social-stat .social-boost`).on("click", this.socialBoost.bind(this));
 		super.activateListeners(html);
 	}
 
-	async rollSocial (socialStat: SocialStat) {
+	async rollSocial (ev: JQuery.Event) {
+		const socialStat = HTMLTools.getClosestData(ev, "socialSkill") as SocialStat;
+		if (!STUDENT_SKILLS_LIST.includes(socialStat)) {
+			throw new PersonaError(`Invalid student skill: ${socialStat}.`);
+		}
 		PersonaSocial.rollSocialStat(this.actor, socialStat);
+	}
+
+	async socialBoost (ev: JQuery.Event) {
+		const socialStat = HTMLTools.getClosestData(ev, "socialSkill") as SocialStat;
+		if (!STUDENT_SKILLS_LIST.includes(socialStat)) {
+			throw new PersonaError(`Invalid student skill: ${socialStat}.`);
+		}
+		PersonaSocial.boostSocialSkill(this.actor, socialStat)
 	}
 
 	async delItem (event : Event) {

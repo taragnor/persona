@@ -711,21 +711,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 		const tok = PersonaDB.findToken(subject);
 		return EngagementChecker.isEngaged(tok, this);
-		// const engagement = this.engagedList.findEngagement(c1);
-		// return engagement
-		// 	.map( id => this.combatants.get(id))
-		// 	.some( (comb : Combatant<PersonaActor>) => comb?.actor?.type != c1.actor?.type );
 	}
 
 	isEngagedWith(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
 		const t1 = PersonaDB.findToken(token1);
 		const t2 = PersonaDB.findToken(token2);
 		return EngagementChecker.isEngagedWith(t1, t2, this);
-		// const c1 = this.getCombatantFromTokenAcc(token1);
-		// const c2 = this.getCombatantFromTokenAcc(token2);
-		// const engagement = this.engagedList.findEngagement(c1);
-		// if (!engagement) return false;
-		// return engagement.some( cId => cId == c2.id);
 	}
 
 	getCombatantFromTokenAcc(acc: UniversalTokenAccessor<PToken>): Combatant<PersonaActor> {
@@ -774,7 +765,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const labelTxt = `Disengage Check`;
 		const roll = new PersonaRoll("1d20", mods, situation, labelTxt);
 		await roll.roll();
-		// await roll.toModifiedMessage();
 		return {
 			total: roll.total,
 			roll

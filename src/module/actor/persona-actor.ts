@@ -998,6 +998,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.refreshHpStatus();
 	}
 
+	async raiseSocialSkill (this: PC, socialStat: SocialStat, amt: number) {
+		const newval = this.system.skills[socialStat] + amt;
+		const upgradeObj : Record<string, any> = {};
+		const skillLoc = `system.skills.${socialStat}`;
+		upgradeObj[skillLoc] = newval;
+		await this.update(upgradeObj);
+	}
+
 }
 
 export type PC = Subtype<PersonaActor, "pc">;

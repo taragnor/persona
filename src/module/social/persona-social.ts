@@ -1,3 +1,5 @@
+import { PersonaSounds } from "../persona-sounds.js";
+import { Logger } from "../utility/logger.js";
 import { PersonaError } from "../persona-error.js";
 import { PC } from "../actor/persona-actor.js";
 import { SocialStat } from "../../config/student-skills.js";
@@ -27,6 +29,13 @@ export class PersonaSocial {
 		const dice = new PersonaRoll("1d20", mods, sit, rollName);
 		await dice.roll();
 		return await dice.toModifiedMessage();
+	}
+
+	static async boostSocialSkill(pc: PC, socialStat: SocialStat) {
+		const amount = await HTMLTools.numberButtons("Amount", 1, 3) as 1 | 2| 3;
+		await pc.raiseSocialSkill(socialStat, amount);
+		await PersonaSounds.skillBoost(amount);
+		await Logger.sendToChat(`<b>${pc.name}:</b> Raised ${socialStat} by ${amount}`, pc);
 	}
 
 	static async makeUpgradeLinkRoll(actor: PC, linkId: string) {

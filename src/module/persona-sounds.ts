@@ -1,3 +1,5 @@
+import { Helpers } from "./utility/helpers.js";
+
 export class PersonaSounds {
 
 	static async play(filename: string, volume = 1.0, recipients:string[] | false =[]) {
@@ -30,6 +32,13 @@ export class PersonaSounds {
 
 	static async socialLinkReverse() {
 		await PersonaSounds.play(`sociallinkreverse.wav.mp3`, 1.0, game.users.contents.map( x=> x.id));
+	}
+
+	static async skillBoost (amt: 1 | 2 | 3) {
+		for (let i = 0; i< amt; i++) {
+			await PersonaSounds.play(`skillup.mp3`, 1.0, game.users.contents.map( x=> x.id));
+			await Helpers.sleep(1);
+		}
 	}
 
 }

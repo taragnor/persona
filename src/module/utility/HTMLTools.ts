@@ -1,6 +1,6 @@
 
 export class HTMLTools {
-	static getClosestData ( eventOrJQObj: Event | JQuery<HTMLElement>, prop: string) {
+	static getClosestData ( eventOrJQObj: Event | JQuery<HTMLElement> | JQuery.Event, prop: string) {
 		const target = ("currentTarget" in eventOrJQObj) ? (eventOrJQObj as Event).currentTarget : eventOrJQObj;
 		if (!target) throw new Error("No target for event");
 		const convert = function (str: string) {
@@ -156,6 +156,27 @@ export class HTMLTools {
 			dialog.render(true);
 		});
 
+	}
+
+	static async numberButtons(msg: string, min: number, max :number) : Promise<number> {
+		const html = `<div> ${msg} </div> `;
+		const buttons : Record<string, ButtonOptions> = { };
+		return await new Promise( (conf, rej) => {
+			for (let i = min; i<= max; i++) {
+				buttons[`${i}`] = {
+					label: `${i}`,
+					callback: (htm: string) => conf(i),
+				};
+			};
+			const dialog = new Dialog ( {
+				title: `Prompt`,
+				content: html,
+				buttons,
+				default: `${min}`,
+				close: () => rej ("closed"),
+			}, {});
+			dialog.render(true);
+		});
 	}
 
 // **************************************************
