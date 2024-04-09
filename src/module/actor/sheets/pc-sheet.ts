@@ -1,3 +1,4 @@
+import { PersonaSounds } from "../../persona-sounds.js";
 import { Logger } from "../../utility/logger.js";
 import { PersonaError } from "../../persona-error.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
@@ -88,6 +89,8 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".roll-icon img").on("click", this.rollSL.bind(this));
 		html.find(`.social-stat .roll-icon`).on("click", this.rollSocial.bind(this));
 		html.find(`.social-stat .social-boost`).on("click", this.socialBoost.bind(this));
+		html.find(`.spend-money`).on('click', this.spendMoney.bind(this));
+		html.find(`.gain-money`).on('click', this.gainMoney.bind(this));
 		super.activateListeners(html);
 	}
 
@@ -189,6 +192,30 @@ async clearSLBoosts (event: Event) {
 async rollSL(event: Event) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
 	await PersonaSocial.makeUpgradeLinkRoll(this.actor, linkId)
+}
+
+async gainMoney(_ev: Event) {
+	const x = await HTMLTools.getNumber("Amount to gain");
+	if (x > 20) {
+		ui.notifications.warn("Can't get this much money at once!");
+		return;
+	}
+	Logger.sendToChat(`Gained ${x} resource points`);
+	const resources = this.actor.system.money + x;
+	await this.actor.update({ "system.money": resources});
+	await PersonaSounds.ching();
+}
+
+async spendMoney(_ev: Event) {
+	const x = await HTMLTools.getNumber("Amount to spend");
+	if (x > this.actor.system.money) {
+		ui.notifications.warn("You don't have that much money!");
+		return;
+	}
+	Logger.sendToChat(`Spent ${x} resource points`);
+	const resources = this.actor.system.money - x;
+	await this.actor.update({ "system.money": resources});
+
 }
 
 }

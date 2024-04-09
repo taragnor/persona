@@ -34,12 +34,25 @@
 <hr>
 <section class="money">
 	<h2>
-	Money
+		Money
 	</h2>
-	<label>
-		Resource Points (Money)
-	</label>
-	<input class="short" type="number" name="system.money" value="{{actor.system.money}}">
+	<div class="resource-points">
+		<label>
+			Resource Points (Money)
+		</label>
+		{{#if ( isGM )}}
+		<input class="short" type="number" name="system.money" value="{{actor.system.money}}">
+		{{else}}
+		{{actor.system.money}}
+		<a class="gain-money">
+			<i class="fa-solid fa-square-plus"></i>
+		</a>
+		<a class="spend-money">
+			<i class="fa-solid fa-square-minus"></i>
+		</a>
+		{{/if}}
+	</div>
+
 </section>
 <hr>
 <section class="items">

@@ -41,6 +41,10 @@ export class PersonaSounds {
 		}
 	}
 
+	static async ching() {
+			await PersonaSounds.play(`ching.mp3`, 1.0, game.users.contents.map( x=> x.id));
+	}
+
 }
 
 //@ts-ignore
