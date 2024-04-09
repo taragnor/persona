@@ -30,7 +30,20 @@
 				</select>
 			</div>
 		</div>
+		<div class="availability">
+			{{#if (isGM)}}
+			<label>
+				Availability
+			</label>
+			<select name="system.availability">
+				{{selectOptions CONST.AVAILABILITY localize=true selected=actor.system.availability}}
+			</select>
+			{{/if}}
+		</div>
 	</header>
+
+
+
 	<section class="focii">
 		<h2>
 			Social Link Benefits

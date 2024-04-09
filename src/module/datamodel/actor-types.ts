@@ -1,4 +1,5 @@
 const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
+import { AVAILABILITY_LIST } from "../../config/availability-types.js";
 import { ResistType } from "../../config/damage-types";
 import { INCREMENTAL_ADVANCE_TYPES } from "../../config/incremental-advance-types.js";
 
@@ -194,6 +195,7 @@ export class NPCSchema extends foundry.abstract.DataModel {
 			tarot: tarot(),
 			bio: personalBio(),
 			keyskill: keySkills(),
+			availability: new txt({choices: AVAILABILITY_LIST, initial: "-"}),
 			//include
 		} as const;
 		return ret;

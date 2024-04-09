@@ -5,6 +5,7 @@ import { DAMAGETYPES } from "../../../config/damage-types.js";
 import { INCREMENTAL_ADVANCES } from "../../../config/incremental-advance-types.js";
 import { INCREMENTAL_ADVANCE_TYPES } from "../../../config/incremental-advance-types.js";
 import { STUDENT_SKILLS } from "../../../config/student-skills.js";
+import { AVAILABILITY } from "../../../config/availability-types.js";
 
 export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
@@ -12,7 +13,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 		const data= await super.getData();
 		data.CONST = {
 			STUDENT_SKILLS,
-
+			AVAILABILITY,
 			TAROT  : tarotDeck,
 			RESIST_STRENGTHS : RESIST_STRENGTHS,
 			DAMAGETYPES : DAMAGETYPES,
