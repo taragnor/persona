@@ -32,6 +32,7 @@ import { PersonaRoll } from "./persona-roll.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { UniversalModifierSheet } from "./item/sheets/universalmodifier-sheet.js";
 import { PersonaSettings } from "../config/persona-settings.js";
+import { PersonaJobSheet } from "./item/sheets/job-sheet.js";
 
 
 export const PersonaSockets = new SocketManager ("persona", true);
@@ -64,6 +65,7 @@ function registerSheetApplications() {
   Items.registerSheet("persona", PersonaTalentSheet, {types: ["talent"], makeDefault: true});
   Items.registerSheet("persona", PersonaFocusSheet, {types: ["focus"], makeDefault: true});
   Items.registerSheet("persona", ConsumableSheet, {types: ["consumable"], makeDefault: true});
+  Items.registerSheet("persona", PersonaJobSheet, {types: ["job"], makeDefault: true});
   Items.registerSheet("persona", UniversalModifierSheet, {types: ["universalModifier"], makeDefault: true});
 
 }

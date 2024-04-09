@@ -37,7 +37,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".rollSave").on("click", this.rollSave.bind(this));
 	}
 
-	override async _onDropItem(_event: Event, itemD: unknown, ...rest:any[]) : Promise<void> {
+	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) : Promise<void> {
 		//@ts-ignore
 		const item: PersonaItem = await Item.implementation.fromDropData(itemD);
 		switch (item.system.type) {
@@ -55,7 +55,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 					this.actor.addPower(item as Power);
 					return;
 				}
-				return;
 			case "focus":
 				if (this.actor.system.type == "shadow") {
 					super._onDropItem(_event, itemD);
@@ -75,6 +74,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				return;
 			case "universalModifier":
 				throw new PersonaError("Universal Modifiers can't be added to sheets");
+			case "job":
 				return;
 			default:
 				item.system satisfies never;

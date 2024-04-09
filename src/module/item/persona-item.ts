@@ -297,6 +297,7 @@ export type InvItem = Subtype<PersonaItem, "item">;
 export type Talent = Subtype<PersonaItem, "talent">;
 export type Focus = Subtype<PersonaItem, "focus">;
 export type Consumable = Subtype<PersonaItem, "consumable">;
+export type Job = Subtype<PersonaItem, "job">;
 
 export type UniversalModifier = Subtype<PersonaItem, "universalModifier">;
 

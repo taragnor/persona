@@ -268,4 +268,11 @@
 	"persona.preconditions.target-is-not-resistant-to": "Target is not resistant or better to element",
 	"persona.preconditions.struck-weakness": "Attack struck a weakness",
 	"persona.preconditions.requires-social-link-level": "Requires Social Link Level X",
-	"persona.preconditions.save-versus": "Rolling saving throw versus" }
+	"persona.preconditions.save-versus": "Rolling saving throw versus" ,
+	"persona.availability.++": "Favored (++)",
+	"persona.availability.+": "Advantageous (+)",
+	"persona.availability.-": "Normal (-)",
+	"persona.availability.--": "Negative (--)",
+	"persona.availability.N/A": "Not Available (N/A)"
+}
+
