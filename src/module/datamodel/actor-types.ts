@@ -161,6 +161,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			...sharedAbilities(),
 			skills: studentSkills(),
 			keyskill: keySkills(),
+			availability: new txt({choices: AVAILABILITY_LIST, initial: "-"}),
 		} as const;
 		return ret;
 	}

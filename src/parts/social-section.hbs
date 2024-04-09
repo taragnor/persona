@@ -101,6 +101,16 @@
 			<i class="fa-solid fa-square-plus"></i>
 		</a>
 	</div>
+	<div class="availability">
+		{{#if (isGM)}}
+		<label>
+			Availability
+		</label>
+		<select name="system.availability">
+			{{selectOptions CONST.AVAILABILITY localize=true selected=actor.system.availability}}
+		</select>
+		{{/if}}
+	</div>
 
 </section>
 
