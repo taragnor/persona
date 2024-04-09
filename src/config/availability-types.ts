@@ -8,4 +8,4 @@ export const AVAILABILITY_LIST = [
 
 export const AVAILABILITY = Object.fromEntries( AVAILABILITY_LIST.map(x=> [x, `persona.availability.${x}`]));
 
-export type Availability = keyof typeof AVAILABILITY_LIST;
+export type Availability = (typeof AVAILABILITY_LIST)[number];

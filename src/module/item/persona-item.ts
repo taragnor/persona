@@ -1,3 +1,5 @@
+import { Availability } from "../../config/availability-types.js";
+import { PersonaError } from "../persona-error.js";
 import { Metaverse } from "../metaverse.js"
 import { PersonaActor } from "../actor/persona-actor.js";
 import { UniversalItemAccessor } from "../utility/db-accessor.js";
@@ -272,6 +274,31 @@ const power = PersonaDB.getItemByName(powerName);
 			}
 		}
 		return requirement;
+	}
+
+	async setAvailability(this: Job, d6roll:number) {
+		if (this.system.availability == "N/A")
+			return;
+		let avail: Availability = "--";
+		switch (d6roll) {
+			case 1:
+				avail = "--";
+				break;
+			case 2:
+			case 3:
+				avail = "-";
+				break;
+			case 4:
+			case 5:
+				avail = "+";
+				break;
+			case 6:
+				avail = "++";
+				break;
+			default:
+				throw new PersonaError(`d6 roll doesn't fall within range: ${d6roll}`);
+		}
+		await this.update({ "system.availability": avail});
 	}
 
 }

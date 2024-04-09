@@ -1,3 +1,4 @@
+import { Availability } from "../../config/availability-types.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { PersonaActorSheetBase } from "./sheets/actor-sheet.base.js";
 import { Metaverse } from "../metaverse.js";
@@ -1020,6 +1021,31 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		const resources = this.system.money - amt;
 		await this.update({ "system.money": resources});
+	}
+
+	async setAvailability(this: PC | NPC, d6roll:number) {
+		if (this.system.availability == "N/A")
+			return;
+		let avail: Availability = "--";
+		switch (d6roll) {
+			case 1:
+				avail = "--";
+				break;
+			case 2:
+			case 3:
+				avail = "-";
+				break;
+			case 4:
+			case 5:
+				avail = "+";
+				break;
+			case 6:
+				avail = "++";
+				break;
+			default:
+				throw new PersonaError(`d6 roll doesn't fall within range: ${d6roll}`);
+		}
+		await this.update({ "system.availability": avail});
 	}
 
 }
