@@ -33,13 +33,13 @@ export class PCSheet extends CombatantSheetBase {
 		switch (actor.system.type) {
 			case "pc" :{
 				await this.actor.createSocialLink(actor as PC)
-				return;
+				return undefined;
 			}
 			case "shadow": return;
 			case "npc":
 				//create a social link
 				await this.actor.createSocialLink(actor as NPC)
-				return;
+				return undefined;
 			default: 
 				actor.system satisfies never;
 				throw new Error(`Unknown unsupported type ${actor.type}`);

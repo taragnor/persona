@@ -37,45 +37,40 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".rollSave").on("click", this.rollSave.bind(this));
 	}
 
-	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) : Promise<void> {
+	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) {
 		//@ts-ignore
 		const item: PersonaItem = await Item.implementation.fromDropData(itemD);
 		switch (item.system.type) {
 			case "talent":
 				this.actor.addTalent(item as Talent);
-				return;
+				return undefined;
 			case "consumable":
-				super._onDropItem(_event, itemD);
-				return;
+				return super._onDropItem(_event, itemD);
 			case "power":
 				if (this.actor.system.type == "shadow") {
-					super._onDropItem(_event, itemD);
-					return;
+					return super._onDropItem(_event, itemD);
 				} else {
 					this.actor.addPower(item as Power);
-					return;
+					return item ;
 				}
 			case "focus":
 				if (this.actor.system.type == "shadow") {
-					super._onDropItem(_event, itemD);
-					return;
+					return super._onDropItem(_event, itemD);
 				} else {
 					this.actor.addFocus(item as Focus);
-					return;
+					return item;
 				}
 			case "item":
-				super._onDropItem(_event, itemD);
-				return;
+				return super._onDropItem(_event, itemD);
 			case "weapon":
-				super._onDropItem(_event, itemD);
-				return;
+				return super._onDropItem(_event, itemD);
 			case "characterClass":
 				this.actor.setClass(item as CClass);
-				return;
+				return item;
 			case "universalModifier":
 				throw new PersonaError("Universal Modifiers can't be added to sheets");
 			case "job":
-				return;
+				return undefined;
 			default:
 				item.system satisfies never;
 				throw new Error(`Unknown supported type ${item.type}`);

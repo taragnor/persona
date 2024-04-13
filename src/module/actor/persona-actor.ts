@@ -654,14 +654,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	 canPayActivationCost(this: PC | Shadow, usable: Usable) : boolean {
+	 canPayActivationCost(this: PC | Shadow, usable: Usable, outputReason: boolean = true) : boolean {
 		if (this.system.type == "pc") {
-			return (this as PC).canPayActivationCost_pc(usable);
+			return (this as PC).canPayActivationCost_pc(usable, outputReason);
 		}
-		else return (this as Shadow).canPayActiationCost_shadow(usable);
+		else return (this as Shadow).canPayActivationCost_shadow(usable, outputReason);
 	}
 
-	canPayActivationCost_pc(this: PC, usable: Usable) : boolean {
+	canPayActivationCost_pc(this: PC, usable: Usable, _outputReason: boolean) : boolean {
 		switch (usable.system.type) {
 			case "power": {
 				switch (usable.system.subtype) {
@@ -685,15 +685,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	canPayActiationCost_shadow(this: Shadow, usable: Usable) : boolean {
+	canPayActivationCost_shadow(this: Shadow, usable: Usable, outputReason: boolean) : boolean {
 		if (usable.system.type == "power") {
 			if (usable.system.reqEnhancedMultiverse && !Metaverse.isEnhanced()) {
-				ui.notifications.notify(`only usable in enhanced multiverse`);
+				if (outputReason) {
+					ui.notifications.notify(`only usable in enhanced multiverse`);
+				}
 				return false;
 			}
 			const combat = game.combat;
 			if (combat && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
-				ui.notifications.notify(`Escalation die must be ${usable.system.reqEscalation} or higher to use this pwoer`);
+				if (outputReason) {
+					ui.notifications.notify(`Escalation die must be ${usable.system.reqEscalation} or higher to use this pwoer`);
+				}
 				return false;
 			}
 			switch (usable.system.reqCharge) {

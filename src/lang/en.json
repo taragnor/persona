@@ -189,6 +189,10 @@
 	"persona.power.tag.healing": "Healing",
 	"persona.power.tag.mobile": "Mobile",
 	"persona.power.tag.basicatk": "Basic Attack",
+	"persona.power.tag.charm": "Charm",
+	"persona.power.tag.sleep": "Sleep",
+	"persona.power.tag.fear": "Fear",
+	"persona.power.tag.confusion": "Confusion",
 
 	"persona.power.shadowcosts.none": "None",
 	"persona.power.shadowcosts.always": "Always",

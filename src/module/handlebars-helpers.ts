@@ -82,7 +82,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		'canUsePower': (actor:PC | Shadow, power: Power) => {
-			return actor.canPayActivationCost(power);
+			return actor.canPayActivationCost(power, false);
 		},
 	}
 }

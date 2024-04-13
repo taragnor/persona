@@ -11,6 +11,10 @@ export const POWER_TAGS_LIST = [
 	"healing",
 	"mobile",
 	"basicatk",
+	"charm",
+	"fear",
+	"sleep",
+	"confusion"
 
 ] as const;
 
