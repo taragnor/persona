@@ -77,10 +77,18 @@ export const STATUS_EFFECT_LIST = [
 	}, {
 		id: "bonus-action",
 		icon:  "icons/svg/angel.svg",
-	}
+	}, {
+		id: "magic-charge",
+		icon:  "icons/magic/lightning/bolt-strike-explosion-blue.webp",
+	}, {
+		id: "power-charge",
+		icon:  "icons/magic/control/buff-strength-muscle-damage-orange.webp",
+	},
+
 ] as const;
 
-CONFIG.statusEffects= STATUS_EFFECT_LIST.map( ({id, icon})=> {
+CONFIG.statusEffects= STATUS_EFFECT_LIST
+	.map( ({id, icon})=> {
 	return {id, icon, name:`persona.status.${id}`};
 });
 

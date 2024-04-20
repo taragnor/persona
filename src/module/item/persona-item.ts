@@ -109,7 +109,14 @@ const power = PersonaDB.getItemByName(powerName);
 				if (!Metaverse.isEnhanced()) {costs.push("Charged")}
 				break;
 			case "supercharged":
-				costs.push("SUPERCHARGE");
+				costs.push("AMPED");
+				break;
+			case "supercharged-not-enhanced":
+				if (!Metaverse.isEnhanced()) {
+					costs.push("AMPED")
+				} else {
+					costs.push("Charged");
+				}
 				break;
 			default:
 				this.system.reqCharge satisfies never;

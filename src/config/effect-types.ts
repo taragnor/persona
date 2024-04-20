@@ -112,6 +112,7 @@ export const SHADOW_CHANGE_REQ_LIST= [
 	"always",
 	"not-enhanced",
 	"supercharged",
+	"supercharged-not-enhanced",
 ] as const;
 
 export type ShadowChargeReq = typeof SHADOW_CHANGE_REQ_LIST[number];

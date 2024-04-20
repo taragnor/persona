@@ -409,6 +409,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				name: game.i18n.localize(stateData.name),
 				statuses: s
 			};
+			if (await this.checkStatusNullificaton(id)) return;
 			const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
 			await newEffect.setPotency(potency ?? 0);
 			await newEffect.setDuration(duration);
@@ -430,10 +431,40 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	async removeStatus({id}: Pick<StatusEffect, "id">) : Promise<void>{
-		this.effects
+	hasStatus (id: StatusEffectId) : boolean {
+		return this.effects.contents.some( eff => eff.statuses.has(id));
+	}
+
+
+	/** returns status id of nullified status otherwise return undefined */
+	async checkStatusNullificaton(statusId: StatusEffectId) : Promise<StatusEffectId  | undefined> {
+		let remList : StatusEffectId[] = [];
+		switch (statusId) {
+			case "supercharged":
+				remList.push("depleted");
+				break;
+			case "depleted":
+				remList.push("supercharged");
+				remList.push("power-charge");
+				remList.push("magic-charge");
+				break;
+		}
+		for (const id of remList) {
+			if (await this.removeStatus(id)) {
+				return id;
+			}
+		}
+		return undefined;
+	}
+
+
+	async removeStatus(status: Pick<StatusEffect, "id"> | StatusEffectId) : Promise<boolean>{
+		const id = typeof status == "object" ? status.id : status;
+		const promises =this.effects
 		.filter( eff => eff.statuses.has(id))
-		.forEach( eff => eff.delete());
+		.map( eff => eff.delete());
+		await Promise.all(promises);
+		return promises.length > 0;
 	}
 
 	async expendSlot(this: PC,  slot: number, amount = 1) {
@@ -700,12 +731,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				}
 				return false;
 			}
+			const enhanced= Metaverse.isEnhanced();
 			switch (usable.system.reqCharge) {
 				case "none": return true;
 				case "always": return !this.statuses.has("depleted");
-				case "not-enhanced": return (Metaverse.isEnhanced() || !this.statuses.has("depleted"));
+				case "not-enhanced": return (enhanced || !this.statuses.has("depleted"));
 				case "supercharged":
 					return this.statuses.has("supercharged");
+				case "supercharged-not-enhanced":
+					return enhanced
+						? !this.statuses.has("depleted")
+						: this.statuses.has("supercharged");
+
 				default:
 					usable.system.reqCharge satisfies never;
 					throw new PersonaError(`Unknown REquirement${usable.system.reqCharge}`);

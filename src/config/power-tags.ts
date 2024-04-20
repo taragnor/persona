@@ -1,5 +1,7 @@
 export const POWER_TAGS_LIST = [
+	"amped",
 	"fire",
+	"charged",
 	"ice",
 	"elec",
 	"wind",
@@ -14,12 +16,15 @@ export const POWER_TAGS_LIST = [
 	"charm",
 	"fear",
 	"sleep",
-	"confusion"
-
+	"confusion",
 ] as const;
 
 export type PowerTag = typeof POWER_TAGS_LIST[number];
 
 export const POWER_TAGS = Object.fromEntries(
-	POWER_TAGS_LIST.map(x => ([x, `persona.power.tag.${x}`])
-	));
+	POWER_TAGS_LIST
+	.slice()
+	.sort()
+	.map(x => ([x, `persona.power.tag.${x}`] as const))
+);
+
