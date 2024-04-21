@@ -79,6 +79,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				return 1;
 			case "instant":
 				return 1;
+			case undefined: //custom statuses player added
+				return 11;
 			default:
 				duration satisfies never;
 				PersonaError.softFail(`Unknwon duration ${duration}`);
