@@ -6,11 +6,13 @@ import { INCREMENTAL_ADVANCES } from "../../../config/incremental-advance-types.
 import { INCREMENTAL_ADVANCE_TYPES } from "../../../config/incremental-advance-types.js";
 import { STUDENT_SKILLS } from "../../../config/student-skills.js";
 import { AVAILABILITY } from "../../../config/availability-types.js";
+import { PersonaDB } from "../../persona-db.js";
 
 export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
 	override async getData() {
 		const data= await super.getData();
+		await PersonaDB.waitUntilLoaded();
 		data.CONST = {
 			STUDENT_SKILLS,
 			AVAILABILITY,

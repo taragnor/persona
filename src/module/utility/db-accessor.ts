@@ -5,14 +5,32 @@ type ValidDBTypes = "Actor" | "Item";
 
 export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extends Item<any>> {
 
-	comp_items: ItemType[] = [];
-	comp_actors: ActorType[] = [];
+	private comp_items: ItemType[] = [];
+	private comp_actors: ActorType[] = [];
+	private _loaded= false;
 
 	constructor() {
 		Hooks.once("ready", async () => {
 			this._loadPacks();
 			this._initHooks();
 			console.log("Database initialized");
+			this._loaded=true;
+		});
+	}
+
+	get isLoaded(): boolean {
+		return this._loaded;
+	}
+
+	async waitUntilLoaded(): Promise<void> {
+		if (this.isLoaded) return;
+		return await new Promise( (conf) => {
+			const interval = setInterval( () => {
+				if (this.isLoaded) {
+					window.clearInterval(interval);
+					conf();
+				}
+			});
 		});
 	}
 

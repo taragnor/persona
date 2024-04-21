@@ -2,6 +2,7 @@ import { InvItem } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { EQUIP_SLOTS } from "../../../config/equip-slots.js";
 import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
+import { PersonaDB } from "../../persona-db.js";
 
 export class PersonaItemSheet extends PersonaEffectContainerBaseSheet {
 	override item: InvItem;
@@ -17,6 +18,7 @@ export class PersonaItemSheet extends PersonaEffectContainerBaseSheet {
 	}
 
 	override async getData() {
+		await PersonaDB.waitUntilLoaded();
 		const data = await super.getData();
 		data.EQUIP_SLOTS = EQUIP_SLOTS;
 		return data;
