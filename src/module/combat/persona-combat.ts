@@ -264,8 +264,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	static async usePower(attacker: PToken, power: Usable) : Promise<CombatResult> {
-		const combat = this.ensureCombatExists();
-		if (!combat.turnCheck(attacker)) {
+		const combat = game.combat as PersonaCombat;
+		if (combat && !combat.turnCheck(attacker)) {
 			if (!game.user.isGM) {
 				ui.notifications.notify("It's not your turn!");
 				return new CombatResult();
@@ -282,7 +282,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			return new CombatResult();
 		}
 		try {
-			const targets= await this.getTargets(attacker, power);
+			const targets = await this.getTargets(attacker, power);
+			if (targets.some( target => target.actor.system.type == "shadow" ) ) {
+				this.ensureCombatExists();
+			}
 			this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
 			const result = await  this.#usePowerOn(attacker, power, targets);
 			await result.finalize();
@@ -313,8 +316,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	static async processAttackRoll( attacker: PToken, power: Usable, target: PToken, isActivationRoll: boolean) : Promise<AttackResult> {
-		const combat = this.ensureCombatExists();
-		const escalationDie = combat.getEscalationDie();
+		const combat = game.combat as PersonaCombat | undefined;
+		const escalationDie = combat  ? combat.getEscalationDie(): 0;
 		const situation : Situation = {
 			target: PersonaDB.getUniversalTokenAccessor(target),
 			usedPower: PersonaDB.getUniversalItemAccessor(power),
@@ -322,7 +325,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			userToken: PersonaDB.getUniversalTokenAccessor(attacker),
 			escalationDie,
 			activationRoll: isActivationRoll,
-			activeCombat:!!combat.combatants.find( x=> x.actor?.type != attacker.actor.type) ,
+			activeCombat:combat ? !!combat.combatants.find( x=> x.actor?.type != attacker.actor.type): false ,
 		};
 		const element = power.system.dmg_type;
 		const resist = target.actor.elementalResist(element);
@@ -639,24 +642,45 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "1-nearby":
 				this.checkTargets(1,1);
 				return selected;
+			case "1-nearby-dead":
+				this.checkTargets(1,1, false);
+				return selected;
 			case "all-enemies": {
 				const combat= this.ensureCombatExists();
 				const targets= combat.combatants.filter( x => {
 					const actor = x.actor;
-					if (!actor || actor.hp <= 0)  return false;
+					if (!actor || !(actor as ValidAttackers).isAlive())  return false;
 					return ((x.actor as ValidAttackers).getAllegiance() != attackerType)
 				});
 				return targets.map( x=> x.token._object as PToken);
 			}
-			case "all-allies": {
+			case "all-dead-allies": {
 				const combat= this.ensureCombatExists();
 				const targets= combat.combatants.filter( x => {
 					const actor = x.actor;
 					if (!actor)  return false;
+					if ((actor as ValidAttackers).isAlive()) return false;
 					if ((actor as ValidAttackers).isFullyFaded()) return false;
 					return ((x.actor as ValidAttackers).getAllegiance() == attackerType)
 				});
 				return targets.map( x=> x.token._object as PToken);
+			}
+			case "all-allies": {
+				const combat= game.combat;
+				const tokens = combat
+				? combat.combatants.contents
+				.filter( x=> x.actor)
+				.map(x=> x.token)
+				: game.scenes.current.tokens
+				.filter( x=> !!x.actor && (x.actor as PersonaActor).system.type == "pc");
+				const targets= tokens.filter( x => {
+					const actor = x.actor;
+					if (!actor)  return false;
+					if (!(actor as ValidAttackers).isAlive()) return false;
+					if ((actor as ValidAttackers).isFullyFaded()) return false;
+					return ((x.actor as ValidAttackers).getAllegiance() == attackerType)
+				});
+				return targets.map( x=> x._object as PToken);
 			}
 			case "self": {
 				return [attacker];
@@ -672,8 +696,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
-	static checkTargets(min: number, max: number) {
-		const selected : Array<Token<PersonaActor>> = Array.from(game.user.targets);
+	static checkTargets(min: number, max: number, aliveTargets= true) {
+		const selected : Array<Token<PersonaActor>> = Array.from(game.user.targets)
+		.filter(x=> aliveTargets ? x.actor.isAlive() : (!x.actor.isAlive() && !x.actor.isFullyFaded()));
 		if (selected.length == 0)  {
 			const error = "Requires Target to be selected";
 			ui.notifications.warn(error);
@@ -866,12 +891,15 @@ Hooks.on("combatStart", async (combat: PersonaCombat) => {
 
 Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
 	for (const combatant of combat.combatants) {
-		const actor = combatant.actor;
+		const actor = combatant.actor as ValidAttackers  | undefined;
 		if (!actor) continue;
 		for (const effect of actor.effects) {
 			if (effect.durationLessThan("expedition")) {
 				await effect.delete();
 			}
+		}
+		if (actor.isFading()) {
+			await actor.modifyHP(1);
 		}
 	}
 });

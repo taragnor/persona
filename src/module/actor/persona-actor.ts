@@ -1017,7 +1017,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		else return this.system.combat.fadingState >= 2;
 	}
 
-	isFading(this:PC): boolean {
+	isFading(this:PC | Shadow): boolean {
+		if (this.system.type == "shadow") return false;
 		return this.hp <= 0 && this.system.combat.fadingState < 2;
 	}
 
@@ -1067,6 +1068,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		const resources = this.system.money - amt;
 		await this.update({ "system.money": resources});
+	}
+
+	isAlive(this: PC | Shadow): boolean {
+		return this.hp > 0;
 	}
 
 	async setAvailability(this: PC | NPC, d6roll:number) {

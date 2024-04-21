@@ -98,6 +98,7 @@ export const POWERTYPES= Object.fromEntries( POWERTYPESLIST.map(x=> [x, `persona
 export const TARGETINGLIST = [
 	"1-engaged",
 	"1-nearby",
+	"1-nearby-dead",
 	"1d4-random",
 	"1d4-random-rep",
 	"1d3-random",
@@ -105,6 +106,7 @@ export const TARGETINGLIST = [
 	"self",
 	"all-enemies",
 	"all-allies",
+	"all-dead-allies",
 ] as const;
 
 export const TARGETING= Object.fromEntries( TARGETINGLIST.map(x=> [x, `persona.power.targets.${x}`]));

@@ -168,6 +168,7 @@
 	"persona.power.types.standalone": "Standalone",
 
 	"persona.power.targets.1-engaged": "1 Engaged Target",
+	"persona.power.targets.1-nearby-dead": "1 Nearby dying Target",
 	"persona.power.targets.1-nearby": "1 Nearby Target",
 	"persona.power.targets.1d4-random": "1d4 random targets",
 	"persona.power.targets.1d4-random-rep": "1d4 random targets (repeats allowed)",
@@ -177,7 +178,8 @@
 	"persona.power.targets.1d4-allies": "1d4 nearby allies",
 	"persona.power.targets.self": "Self",
 	"persona.power.targets.all-enemies": "All Enemies",
-	"persona.power.targets.all-allies": "All Allies",
+	"persona.power.targets.all-dead-allies": "All Dying Allies",
+	"persona.power.targets.all-allies": "All Living Allies",
 
 	"persona.power.tag.fire": "Fire",
 	"persona.power.tag.ice": "Ice",
