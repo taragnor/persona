@@ -1,3 +1,6 @@
+import { ConditionalEffect } from "../datamodel/power-dm.js";
+import { getActiveConsequences } from "../preconditions.js";
+import { testPrecondition } from "../preconditions.js";
 import { Availability } from "../../config/availability-types.js";
 import { PersonaError } from "../persona-error.js";
 import { Metaverse } from "../metaverse.js"
@@ -68,12 +71,48 @@ const power = PersonaDB.getItemByName(powerName);
 		}
 	}
 
+	get conditional_effects() : ConditionalEffect[] {
+		if (! ("effects" in this.system)) return [];
+		return (this as ModifierContainer).getEffects();
+
+	}
+
 	powerCostString(this: Power) : string {
 		if (!this.parent || this.parent.type == "pc")
 			return this.powerCostString_PC();
 		if (this.parent.type == "shadow")
 			return this.powerCostString_Shadow();
 		else return "";
+	}
+
+	grantsPowers(this: ModifierContainer): boolean {
+		try{
+		return this.conditional_effects.some(
+			eff => eff.consequences.some(
+				cons => cons.type == "add-power-to-list"
+			));
+		} catch (e) {
+			console.log(this);
+			return false;
+		}
+	}
+
+	getGrantedPowers(this: ModifierContainer, user: PC | Shadow, situation?: Situation): Power[] {
+		if (!this.grantsPowers()) return [];
+		if (!situation) {
+			situation = {
+				user: user.accessor
+			};
+		}
+		return this.conditional_effects
+			.filter(
+				eff => eff.consequences.some(
+					cons => cons.type == "add-power-to-list"
+				))
+			.flatMap(eff=> getActiveConsequences(eff, situation, null))
+			.flatMap(x=> x.type == "add-power-to-list" ? [x.id] : [])
+			.map(id=> PersonaDB.allPowers().find( x=>x.id == id))
+			.flatMap( pwr=> pwr? [pwr]: []);
 	}
 
 	powerCostString_PC(this: Power) : string {
@@ -260,7 +299,7 @@ const power = PersonaDB.getItemByName(powerName);
 
 	}
 
-	getEffects(this: ModifierContainer) {
+	getEffects(this: ModifierContainer): ConditionalEffect[] {
 		return this.system.effects.map( eff=> {
 			return {
 				conditions: ArrayCorrector(eff.conditions),

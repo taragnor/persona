@@ -17,6 +17,15 @@ import { DamageType } from "../config/damage-types.js";
 import { PowerTag } from "../config/power-tags.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
+import { ConditionalEffect } from "./datamodel/power-dm.js";
+import { Consequence } from "./combat/combat-result.js";
+
+export function getActiveConsequences(condEffect: ConditionalEffect, situation: Situation, source: Option<PowerContainer>) : Consequence[] {
+	if (condEffect.conditions.some(
+		cond=>!testPrecondition(cond, situation, source)
+	)) return [];
+	return condEffect.consequences;
+}
 
 export function testPrecondition (condition: Precondition, situation:Situation, source: Option<PowerContainer>) : boolean {
 	const nat = situation.naturalAttackRoll;
@@ -185,6 +194,10 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 		case "save-versus":
 			if (!situation.saveVersus) return false;
 			return situation.saveVersus == condition.status;
+		case "target-is-dead":
+			if(!situation.target) return false;
+			const target = PersonaDB.findToken(situation.target);
+			return target.actor.hp <= 0;
 		default:
 			condition.type satisfies never;
 			PersonaError.softFail(`Unexpected Condition: ${condition.type}`);

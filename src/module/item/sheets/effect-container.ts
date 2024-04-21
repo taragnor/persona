@@ -14,6 +14,7 @@ import { POWER_TAGS } from "../../../config/power-tags.js";
 import { MODIFIERS_TABLE } from "../../../config/item-modifiers.js";
 import { DEFENSECHOICES } from "../../datamodel/power-dm.js";
 import { SHADOW_CHARGE_REQ } from "../../../config/effect-types.js";
+import { PersonaDB } from "../../persona-db.js";
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
 	override item: PowerContainer;
@@ -37,6 +38,11 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			DEFENSES: Object.fromEntries(DEFENSECHOICES.map( x=> [x, x])),
 			SHADOW_CHARGE_REQ: SHADOW_CHARGE_REQ,
 			SLOT_TYPES_EXPANDED: SLOT_TYPES_EXPANDED,
+			COMPENDIUM_POWERS: Object.fromEntries(
+				PersonaDB.allPowers()
+				.sort((a,b) => a.name.localeCompare(b.name))
+				.map(pwr=> ([pwr.id, pwr.name]))
+			),
 		}
 		return data;
 	}

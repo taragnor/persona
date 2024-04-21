@@ -308,7 +308,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					const i = PersonaDB.getItemById(id);
 					return (i ? [i as Power] : []);
 				});
-				return basicPowers.concat(pcPowers);
+				const bonusPowers : Power[] =
+					this.mainModifiers({omitPowers:true})
+					.filter(x=> x.grantsPowers())
+					.flatMap(x=> x.getGrantedPowers(this as PC ));
+				return basicPowers.concat(pcPowers).concat(bonusPowers);
 			case "shadow":
 				const shadowPowers = this.items.filter( x=> x.system.type == "power") as Power[];
 				return basicPowers.concat(shadowPowers);
@@ -524,13 +528,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return modList;
 	}
 
-	mainModifiers(): ModifierContainer[] {
+	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
+		const passivePowers = (options && options.omitPowers) ? [] : this.getPassivePowers();
 		return [
 			...this.equippedItems(),
 			...this.focii,
 			...this.talents,
+			...passivePowers,
 			...this.getSocialFocii(),
-			...this.getPassivePowers(),
 			...PersonaDB.getGlobalModifiers(),
 		];
 	}

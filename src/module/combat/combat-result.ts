@@ -159,7 +159,8 @@ export class CombatResult  {
 					slot: cons.slotType!,
 				});
 				break;
-
+			case "add-power-to-list":
+				break;
 			default: {
 				cons.type satisfies never;
 				throw new Error("Should be unreachable");
@@ -458,6 +459,7 @@ export type Consequence = {
 	applyToSelf?: boolean,
 	itemAcc?: UniversalItemAccessor<Usable>,
 	slotType?: SlotType,
+	id?: string,
 }
 
 export type AttackResult = {

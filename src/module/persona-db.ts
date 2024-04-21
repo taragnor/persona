@@ -2,7 +2,7 @@ import { PersonaItem } from "./item/persona-item.js";
 import { DBAccessor } from "./utility/db-accessor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { ModifierContainer } from "./item/persona-item.js";
-import { Focus } from "./item/persona-item.js";
+import { Power } from "./item/persona-item.js";
 
 
 class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
@@ -20,6 +20,12 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		const items = this.getAllByType("Item") as PersonaItem[];
 		const UMs = items.filter( x=> x.system.type == "universalModifier") as ModifierContainer[];
 		return UMs;
+	}
+
+	allPowers() : Power[] {
+		const items = this.getAllByType("Item") as PersonaItem[];
+		return items
+		.filter( x=> x.system.type == "power") as Power[];
 	}
 
 }

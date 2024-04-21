@@ -236,6 +236,7 @@
 	"persona.effecttypes.extraTurn": "Take an extra Turn",
 	"persona.effecttypes.expend-item": "Expend Item",
 	"persona.effecttypes.recover-slot": "Recover Power Slot",
+	"persona.effecttypes.add-power-to-list": "Add a power to the list",
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.natural+": "Natural >=",
@@ -278,6 +279,7 @@
 	"persona.preconditions.struck-weakness": "Attack struck a weakness",
 	"persona.preconditions.requires-social-link-level": "Requires Social Link Level X",
 	"persona.preconditions.save-versus": "Rolling saving throw versus" ,
+	"persona.preconditions.target-is-dead": "Target is dead" ,
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",
 	"persona.availability.-": "Normal (-)",

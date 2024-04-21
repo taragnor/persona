@@ -18,6 +18,7 @@ export const CONSQUENCELIST = [
 	"extraTurn",
 	"expend-item",
 	"recover-slot",
+	"add-power-to-list",
 ] as const;
 
 
@@ -74,6 +75,7 @@ export const PRECONDITIONLIST = [
 	"struck-weakness",
 	"requires-social-link-level",
 	"save-versus",
+	"target-is-dead",
 ] as const;
 
 export type PreconditionType = typeof PRECONDITIONLIST[number];
