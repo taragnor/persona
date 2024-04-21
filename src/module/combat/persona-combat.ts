@@ -587,6 +587,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 							statusName: "supercharged",
 						});
 						break;
+					case "supercharged-not-enhanced":
+						res.addEffect(null, attacker, {
+							type: "addStatus",
+							statusName: "depleted",
+							statusDuration:"combat",
+						});
+						break;
+
+						 default:
+						power.system.reqCharge satisfies never;
 				}
 			}
 		}
