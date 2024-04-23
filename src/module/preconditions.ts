@@ -1,3 +1,4 @@
+import { Trigger } from "../config/triggers.js";
 import {Metaverse} from "./metaverse.js";
 import { PreconditionType } from "../config/effect-types.js";
 import { PowerType } from "../config/effect-types.js"
@@ -198,6 +199,9 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 			if(!situation.target) return false;
 			const target = PersonaDB.findToken(situation.target);
 			return target.actor.hp <= 0;
+		case "on-trigger":
+			if (!situation.trigger) return false;
+			return (condition.trigger == situation.trigger);
 		default:
 			condition.type satisfies never;
 			PersonaError.softFail(`Unexpected Condition: ${condition.type}`);
@@ -212,6 +216,7 @@ export type Precondition = {
 	powerDamageType ?: DamageType,
 	powerTag ?: PowerTag,
 	status?: StatusEffectId,
+	trigger?: Trigger,
 }
 
 export type Situation = {
@@ -230,6 +235,7 @@ export type Situation = {
 	target?: UniversalTokenAccessor<PToken>;
 	userToken?: UniversalTokenAccessor<PToken>;
 	saveVersus?: StatusEffectId;
+	trigger ?: Trigger,
 }
 
 

@@ -76,7 +76,9 @@ export const PRECONDITIONLIST = [
 	"requires-social-link-level",
 	"save-versus",
 	"target-is-dead",
+	"on-trigger",
 ] as const;
+
 
 export type PreconditionType = typeof PRECONDITIONLIST[number];
 

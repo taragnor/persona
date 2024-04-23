@@ -43,7 +43,11 @@
 			<select name="system.effects.{{../i}}.conditions.{{j}}.powerType">
 				{{selectOptions ../POWERSTUFF.POWERTYPES localize=true selected=cond.powerType}}
 			</select>
-
+			{{/if}}
+			{{#if (eq cond.type	"on-trigger")}}
+			<select name="system.effects.{{../i}}.conditions.{{j}}.trigger">
+				{{selectOptions ../POWERSTUFF.TRIGGERS localize=true selected=cond.trigger}}
+			</select>
 			{{/if}}
 		</div>
 		<a class="delCondition">
