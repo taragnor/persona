@@ -4,6 +4,8 @@ export const TRIGGER_LIST = [
 	"on-combat-start",
 	"on-use-power",
 	"on-combat-end",
+	"enter-metaverse",
+	"exit-metaverse",
 ] as const;
 
 

@@ -226,7 +226,7 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 			if (!tok.actor) {
 				throw new Error(`No actor on Token Id ${tokenId}`);
 			}
-			return tok._object as T;
+			return tok.object as T;
 		}
 		const sc = game.scenes.find(x=> x.tokens.get(tokenId) != null);
 		if (!sc)
@@ -235,7 +235,7 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 		if (!tok.actor) {
 			throw new Error(`No actor on Token Id ${tokenId}`);
 		}
-		return tok._object as T;
+		return tok.object as T;
 	}
 
 	findActor<T extends Actor<any>>(accessor: UniversalActorAccessor<T>) : T {
@@ -256,7 +256,7 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 	getUniversalActorAccessor<T extends Actor<any>> (actor: T) : UniversalActorAccessor<T> {
 		return {
 			actorId: actor.id,
-			token: (actor.token && actor.token._object) ? this.getUniversalTokenAccessor(actor.token._object)  : undefined,
+			token: (actor.token && actor.token.object) ? this.getUniversalTokenAccessor(actor.token.object)  : undefined,
 		}
 
 	}

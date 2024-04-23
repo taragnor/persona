@@ -287,8 +287,10 @@
 	"persona.triggers.on-damage": "Character Takes Damage",
 	"persona.triggers.on-kill-target": "Character kills a target",
 	"persona.triggers.on-combat-start": "Combat Starts",
-	"persona.triggers.use-power": "Character uses a power",
+	"persona.triggers.on-use-power": "Character uses a power",
 	"persona.triggers.on-combat-end": "Combat Ends",
+	"persona.triggers.enter-metaverse": "Enter the Metaverse",
+	"persona.triggers.exit-metaverse": "Exit the Metaverse",
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",

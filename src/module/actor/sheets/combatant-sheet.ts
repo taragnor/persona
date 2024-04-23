@@ -93,14 +93,14 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const actor = this.actor;
 		let token : PToken | undefined;
 		if (actor.token) {
-			token = actor.token._object as PToken;
+			token = actor.token.object as PToken;
 		} else {
 			const tokens = this.actor._dependentTokens.get(game.scenes.current)!;
 			//@ts-ignore
-			token = Array.from(tokens)[0]._object;
+			token = Array.from(tokens)[0].object;
 		}
 		if (!token) {
-			token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id)?._object as PToken;
+			token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id)?.object as PToken;
 		}
 
 		if (!token) {

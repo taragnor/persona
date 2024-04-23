@@ -22,7 +22,7 @@ export class EngagementChecker {
 			const checkedToken = checkList.pop()!;
 			for (const comb of combat.combatants.contents) {
 				if (!comb.token) continue;
-				const token  = comb.token._object as PToken;
+				const token  = comb.token.object as PToken;
 				if ( this.isWithinEngagedRange(checkedToken, token)
 					&& !engagedList.has(token)
 				) {

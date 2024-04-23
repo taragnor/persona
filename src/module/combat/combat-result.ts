@@ -319,9 +319,16 @@ export class CombatResult  {
 			combat.setEscalationDie(combat.getEscalationDie() + escalationChange);
 		}
 		this.clearFlags();
-		for (const changes of this.attacks.values()) {
+		for (const [result, changes] of this.attacks.entries()) {
 			for (const change of changes) {
 				await this.applyChange(change);
+				const token = PersonaDB.findToken(change.token);
+				if (!token.actor.isAlive()) {
+					const attacker = PersonaDB.findToken(result.attacker);
+					this.merge(
+						PersonaCombat.onTrigger("on-kill-target", token)
+					);
+				}
 			}
 		}
 		for (const cost of this.costs) {
