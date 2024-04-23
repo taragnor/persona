@@ -1,3 +1,4 @@
+import { DamageType } from "../../config/damage-types.js";
 import { Trigger } from "../../config/triggers.js";
 import { ModifierContainer } from "../item/persona-item.js";
 import { Consequence } from "./combat-result.js";
@@ -23,6 +24,13 @@ import { EngagementList } from "./engagementList.js";
 import { Logger } from "../utility/logger.js";
 import { OtherEffect } from "./combat-result.js";
 import { Consumable } from "../item/persona-item.js";
+
+declare global {
+	interface HOOKS {
+		"onUsePower": (power: Usable, user: PToken, defender: PToken) => any;
+		"onTakeDamage": (token: PToken, amount: number, damageType: DamageType)=> any;
+	}
+}
 
 
 export class PersonaCombat extends Combat<PersonaActor> {
@@ -310,6 +318,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		for (const target of targets) {
 			const atkResult = await this.processAttackRoll( attacker, power, target, i==0);
 			const this_result = await this.processEffects(atkResult);
+			Hooks.callAll("onUsePower", power, attacker, target);
 			result.merge(this_result);
 			i++;
 		}
@@ -424,7 +433,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		situation.resisted = resist == "resist";
 		situation.struckWeakness = resist == "weakness";
 
-		if (total < target.actor.getDefense(def).total(situation)) {
+		if (naturalAttackRoll == 1
+			|| total < target.actor.getDefense(def).total(situation)) {
 			situation.hit = false;
 			situation.criticalHit = false;
 			return {
@@ -623,6 +633,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (!situation) {
 			situation = {
 				user: token.actor.accessor,
+				target: PersonaDB.getUniversalTokenAccessor(token),
 			}
 		}
 		situation = {

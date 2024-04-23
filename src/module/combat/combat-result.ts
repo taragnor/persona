@@ -380,8 +380,20 @@ export class CombatResult  {
 	}
 
 	async applyChange(change: TokenChange<PToken>) {
-		const actor = PersonaDB.findToken(change.token).actor;
-		await actor.modifyHP(change.hpchange * change.hpchangemult);
+		const token = PersonaDB.findToken(change.token);
+		const actor = token.actor;
+		if (change.hpchange != 0) {
+			if (change.hpchange < 0) {
+				setTimeout( () => {
+					PersonaCombat
+						.onTrigger("on-damage", token)
+						.emptyCheck()
+						?.toMessage(token, "Reaction (Taking Damage)" )
+				});
+			}
+			Hooks.callAll("onTakeDamage", token, change.hpchange, change.damageType);
+			await actor.modifyHP(change.hpchange * change.hpchangemult);
+		}
 		for (const status of change.addStatus) {
 			await actor.addStatus(status);
 		}
