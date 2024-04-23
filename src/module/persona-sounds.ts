@@ -1,11 +1,33 @@
 import { Helpers } from "./utility/helpers.js";
 
+const SOUNDS = {
+
+	"fire": "",
+	"absorb": "atk-absorb.m4a.mp3",
+	"dark": "atk-dark.m4a.mp3",
+	"heal": "atk-heal.m4a.mp3",
+	"cold": "atk-ice.m4a.mp3",
+	"light": "atk-light.m4a.mp3",
+	"debuff": "atk-debuff.m4a.mp3",
+	"block": "atk-block.m4a.mp3",
+	"physical": "atk-phys.m4a.mp3",
+	"buff": "atk-buff.m4a.mp3",
+	"raise": "atk-raise-dead.m4a.mp3",
+	"reflect": "atk-reflect.m4a.mp3",
+	"lightning": "atk-thunder.m4a.mp3",
+	"wind": "atk-wind.m4a.mp3",
+	"miss": "",
+
+} as const;
+
+
 export class PersonaSounds {
 
 	static async play(filename: string, volume = 1.0, recipients:string[] | false =[]) {
+		if (!filename) return;
 		const socketOpts = (recipients && recipients.length) ? { recipients} : false;
 		const src  = `systems/persona/sound/${filename}`;
-		await AudioHelper.play( {
+		return await AudioHelper.play( {
 			src,
 			volume,
 			loop: false
@@ -42,7 +64,12 @@ export class PersonaSounds {
 	}
 
 	static async ching() {
-			await PersonaSounds.play(`ching.mp3`, 1.0, game.users.contents.map( x=> x.id));
+			return await PersonaSounds.play(`ching.mp3`, 1.0, game.users.contents.map( x=> x.id));
+	}
+
+	static async playBattleSound(sound: keyof typeof SOUNDS) {
+		const fname = SOUNDS[sound];
+		return await PersonaSounds.play(fname, 1.0, game.users.contents.map(x=> x.id));
 	}
 
 }

@@ -299,6 +299,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 			this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
 			const result = await  this.#usePowerOn(attacker, power, targets);
+			await attacker.actor.removeStatus("bonus-action");
 			await result.finalize();
 			await result.print();
 			await result.toMessage(attacker, power.name);

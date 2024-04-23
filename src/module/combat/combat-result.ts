@@ -1,3 +1,4 @@
+import { PersonaSFX } from "./persona-sfx.js";
 import { DamageType } from "../../config/damage-types.js";
 
 import { PersonaSockets } from "../persona.js";
@@ -320,15 +321,23 @@ export class CombatResult  {
 		}
 		this.clearFlags();
 		for (const [result, changes] of this.attacks.entries()) {
+			switch (result.result) {
+				case "miss":
+				case "absorb":
+				case "block":
+				case "reflect":
+					await PersonaSFX.onDefend(PersonaDB.findToken(result.target), result.result);
+			}
+			let token: PToken | undefined;
 			for (const change of changes) {
 				await this.applyChange(change);
-				const token = PersonaDB.findToken(change.token);
-				if (!token.actor.isAlive()) {
-					const attacker = PersonaDB.findToken(result.attacker);
-					this.merge(
-						PersonaCombat.onTrigger("on-kill-target", token)
-					);
-				}
+				token = PersonaDB.findToken(change.token);
+			}
+			if (token && !token.actor.isAlive()) {
+				const attacker = PersonaDB.findToken(result.attacker);
+				this.merge(
+					PersonaCombat.onTrigger("on-kill-target", token)
+				);
 			}
 		}
 		for (const cost of this.costs) {
@@ -398,6 +407,7 @@ export class CombatResult  {
 						?.toMessage(token, "Reaction (Taking Damage)" )
 				});
 			}
+			await PersonaSFX.onDamage(token, change.hpchange, change.damageType);
 			Hooks.callAll("onTakeDamage", token, change.hpchange, change.damageType);
 			await actor.modifyHP(change.hpchange * change.hpchangemult);
 		}

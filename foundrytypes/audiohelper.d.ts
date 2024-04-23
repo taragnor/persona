@@ -1,5 +1,5 @@
 class AudioHelper {
-	static async play (options: AudioOptions, pushToAll?: SocketOptions | boolean): Promise<void>;
+	static async play (options: AudioOptions, pushToAll?: SocketOptions | boolean): Promise<Sound>;
 }
 
 type AudioOptions = {
@@ -10,5 +10,15 @@ type AudioOptions = {
 
 type SocketOptions = {
 	recipients: string[], //array of user Ids
+
+}
+
+class Sound {
+	id: string;
+	get playing(): boolean;
+	get startTime(): number;
+	get loaded(): boolean;
+	get failed(): boolean;
+	get loop(): boolean;
 
 }
