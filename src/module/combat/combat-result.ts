@@ -1,3 +1,4 @@
+import { DamageType } from "../../config/damage-types.js";
 
 import { PersonaSockets } from "../persona.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
@@ -57,11 +58,12 @@ export class CombatResult  {
 		return ret;
 	}
 
-	addEffect(atkResult: AttackResult | null, target: PToken, cons: Consequence) {
+	addEffect(atkResult: AttackResult | null, target: PToken, cons: Consequence, damageType ?: DamageType) {
 		const effect : TokenChange<PToken>= {
 			token: PersonaDB.getUniversalTokenAccessor(target),
 			otherEffects: [],
 			hpchange: 0,
+			damageType: "untyped",
 			hpchangemult: 1,
 			addStatus: [],
 			removeStatus: [],
@@ -77,16 +79,22 @@ export class CombatResult  {
 				effect.hpchangemult *= cons.amount ?? 0;
 				break;
 			case "dmg-high":
-					effect.hpchange = -(cons.amount ?? 0);
+					if (damageType) {
+						effect.damageType = damageType;
+					}
+				effect.hpchange = -(cons.amount ?? 0);
 				break;
 			case "dmg-low":
-					effect.hpchange = -(cons.amount ?? 0);
+					if (damageType) {
+						effect.damageType = damageType;
+					}
+				effect.hpchange = -(cons.amount ?? 0);
 				break;
 
 			case "addStatus": {
 				let status_damage : number | undefined = undefined;
 				if (atkResult && cons.statusName == "burn") {
-					const power=PersonaDB.findItem(atkResult.power);
+					const power= PersonaDB.findItem(atkResult.power);
 					const attacker = PersonaDB.findToken(atkResult.attacker).actor;
 					status_damage = power.getDamage(attacker, "low");
 
@@ -245,7 +253,14 @@ export class CombatResult  {
 		}
 	}
 
-	async toMessage(initiatingToken: PToken, powerUsed: Usable) : Promise<ChatMessage> {
+	emptyCheck() : this | undefined {
+		const attacks = Array.from(this.attacks.entries());
+		if (this.escalationMod == 0 && this.costs.length == 0 && attacks.length ==0) return undefined;
+		return this;
+	}
+
+
+	async toMessage(initiatingToken: PToken, effectName: string) : Promise<ChatMessage> {
 		const rolls : PersonaRoll[] = Array.from(this.attacks.entries()).map( ([attackResult]) => attackResult.roll);
 		const attacks = Array.from(this.attacks.entries()).map( ([attackResult, changes])=> {
 			return {
@@ -253,8 +268,8 @@ export class CombatResult  {
 				changes
 			};
 		});
-		const manualApply = !PersonaSettings.autoApplyCombatResults();
-		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attacker: initiatingToken, power: powerUsed,  attacks, escalation: this.escalationMod, result: this, costs: this.costs, manualApply});
+		const manualApply = !PersonaSettings.autoApplyCombatResults() || !game.users.contents.some( x=> x.isGM && x.active);
+		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attacker: initiatingToken, effectName,  attacks, escalation: this.escalationMod, result: this, costs: this.costs, manualApply});
 		const chatMsg = await ChatMessage.create( {
 			speaker: {
 				scene: initiatingToken.scene.id,
@@ -408,6 +423,7 @@ export class CombatResult  {
 		return {
 			token: initial.token,
 			hpchange: absMax(initial.hpchange, other.hpchange),
+			damageType : initial.damageType == "untyped" ? other.damageType : initial.damageType,
 			hpchangemult: initial.hpchangemult * other.hpchangemult,
 			addStatus : initial.addStatus.concat(other.addStatus),
 			removeStatus : initial.removeStatus.concat(other.removeStatus),
@@ -421,6 +437,7 @@ export class CombatResult  {
 export interface TokenChange<T extends Token<any>> {
 	token: UniversalTokenAccessor<T>;
 	hpchange: number;
+	damageType: DamageType;
 	hpchangemult: number;
 	addStatus: StatusEffect[],
 	otherEffects: OtherEffect[]
@@ -464,8 +481,8 @@ export type Consequence = {
 
 export type AttackResult = {
 	result: "hit" | "miss" | "crit" | "reflect" | "block" | "absorb",
-	validAtkModifiers: [number, string][],
-	validDefModifiers: [number, string][],
+	validAtkModifiers?: [number, string][],
+	validDefModifiers?: [number, string][],
 	target: UniversalTokenAccessor<PToken>,
 	attacker: UniversalTokenAccessor<PToken>,
 	power: UniversalItemAccessor<Usable>,

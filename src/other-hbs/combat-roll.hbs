@@ -6,7 +6,7 @@
 		uses
 	</span>
 	<span class="power-name">
-		{{power.name}}
+		{{effectName}}
 	</span>
 </h2>
 
@@ -29,7 +29,7 @@
 			{{atk.attackResult.result}}
 		</div>
 		{{#each atk.changes as |change|}}
-		{{> "systems/persona/parts/display-token-change.hbs" change=change power=../../power attack=atk}}
+		{{> "systems/persona/parts/display-token-change.hbs" change=change attack=atk}}
 		{{/each}}
 		{{#if ../escalation}}
 		Escalation Die {{../escalation}}
@@ -37,7 +37,7 @@
 	</div>
 	{{/each}}
 	{{#each costs as |cost|}}
-	{{> "systems/persona/parts/display-token-change.hbs" change=cost power=../power}}
+	{{> "systems/persona/parts/display-token-change.hbs" change=cost }}
 	{{/each}}
 </section>
 {{#if manualApply}}

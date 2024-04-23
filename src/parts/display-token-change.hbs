@@ -3,7 +3,7 @@
 		{{getTokenAccName change.token}}:
 	</span>
 	{{#if change.hpchange}}
-	{{abs change.hpchange}} damage ({{power.system.dmg_type}})
+	{{abs change.hpchange}} damage ({{change.damageType}})
 	{{#if attack.attackResult.situation.resisted}}
 	<span class="resisted">(Resist)</span>
 	{{/if}}

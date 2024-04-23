@@ -1,7 +1,7 @@
-import { Availability } from "../../config/availability-types.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
-import { PersonaActorSheetBase } from "./sheets/actor-sheet.base.js";
 import { Metaverse } from "../metaverse.js";
+import { PersonaActorSheetBase } from "./sheets/actor-sheet.base.js";
+import { Availability } from "../../config/availability-types.js";
 import { Logger } from "../utility/logger.js";
 import { Situation } from "../preconditions.js";
 import { STUDENT_SKILLS } from "../../config/student-skills.js";
@@ -1020,6 +1020,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	isFading(this:PC | Shadow): boolean {
 		if (this.system.type == "shadow") return false;
 		return this.hp <= 0 && this.system.combat.fadingState < 2;
+	}
+
+	get triggers() : ModifierContainer[] {
+		if (this.system.type == "npc") return [];
+		return this.mainModifiers().filter( x=>
+			x.getEffects().some( eff =>
+				eff.conditions.some( cond => cond.type == "on-trigger")
+			)
+		);
 	}
 
 	async setFadingState (this: PC | Shadow, state: number) {

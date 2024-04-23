@@ -1,3 +1,6 @@
+import { Trigger } from "../../config/triggers.js";
+import { ModifierContainer } from "../item/persona-item.js";
+import { Consequence } from "./combat-result.js";
 import { TurnAlert } from "../utility/turnAlert.js";
 import { PersonaAE } from "../active-effect.js";
 import { EngagementChecker } from "./engageChecker.js";
@@ -290,7 +293,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const result = await  this.#usePowerOn(attacker, power, targets);
 			await result.finalize();
 			await result.print();
-			await result.toMessage(attacker, power);
+			await result.toMessage(attacker, power.name);
 			// await result.apply();
 			return result;
 		} catch(e) {
@@ -482,66 +485,164 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<CombatResult> {
-		const CombatRes= new CombatResult(atkResult);
-		const {result, validAtkModifiers, validDefModifiers,   situation} = atkResult;
+		const {result,  situation} = atkResult;
 		const power = PersonaDB.findItem(atkResult.power);
 		const attacker = PersonaDB.findToken(atkResult.attacker);
 		const target = PersonaDB.findToken(atkResult.target);
 		const relevantEffects : ConditionalEffect[] = power.getEffects().concat(attacker.actor.getEffects());
+		const CombatRes= new CombatResult(atkResult);
 		for (let {conditions, consequences} of relevantEffects) {
 			if (conditions.every(
 				cond => ModifierList.testPrecondition(cond, situation, power))
 			) {
-				for (const cons of consequences) {
-					let damageMult = 1;
-					const absorb = situation.isAbsorbed && !cons.applyToSelf;
-					const block = result == "block" && !cons.applyToSelf;
-					const consTarget = cons.applyToSelf ? attacker: target;
-					damageMult *= situation.resisted ? 0.5 : 1;
-					switch (cons.type) {
-						case "dmg-high":
-							CombatRes.addEffect(atkResult, consTarget, {
-								type: "dmg-high",
-								amount: power.getDamage(attacker.actor, "high", situation) * (absorb ? -1 : damageMult),
-							});
-							continue;
-						case "dmg-low":
-							CombatRes.addEffect(atkResult, consTarget, {
-								type: "dmg-low",
-								amount: power.getDamage(attacker.actor, "low", situation) * (absorb ? -1 : damageMult),
-							});
-							continue;
-						case "extraAttack" :
-							//TODO: handle later
-							continue;
-						case "none":
-							continue;
-						case "addStatus": case "removeStatus":
-							if (absorb || block) continue;
-							CombatRes.addEffect(atkResult, consTarget, cons);
-							break;
-						case "dmg-mult":
-							CombatRes.addEffect(atkResult, consTarget, cons);
-							break;
-						case "escalationManipulation":
-							CombatRes.escalationMod += (cons.amount ?? 0);
-							continue;
-						case "modifier":
-								continue;
-						case "hp-loss":
-								CombatRes.addEffect(atkResult, consTarget, {
-									type: "hp-loss",
-									amount: cons.amount ?? 0,
-								});
-							continue;
-						default:
-							CombatRes.addEffect(atkResult, consTarget, cons);
-							break;
-					}
+				const x = this.ProcessConsequences(power, situation, consequences, attacker.actor, atkResult);
+				CombatRes.escalationMod += x.escalationMod;
+				for (const cons of x.consequences) {
+					const effectiveTarget = cons.applyToSelf ? attacker : target;
+					CombatRes.addEffect(atkResult, effectiveTarget, cons.cons, power.system.dmg_type);
 				}
+				//for (const cons of consequences) {
+				//	let damageMult = 1;
+				//	const absorb = situation.isAbsorbed && !cons.applyToSelf;
+				//	const block = result == "block" && !cons.applyToSelf;
+				//	const consTarget = cons.applyToSelf ? attacker: target;
+				//	damageMult *= situation.resisted ? 0.5 : 1;
+				//	switch (cons.type) {
+				//		case "dmg-high":
+				//			CombatRes.addEffect(atkResult, consTarget, {
+				//				type: "dmg-high",
+				//				amount: power.getDamage(attacker.actor, "high", situation) * (absorb ? -1 : damageMult),
+				//			});
+				//			continue;
+				//		case "dmg-low":
+				//			CombatRes.addEffect(atkResult, consTarget, {
+				//				type: "dmg-low",
+				//				amount: power.getDamage(attacker.actor, "low", situation) * (absorb ? -1 : damageMult),
+				//			});
+				//			continue;
+				//		case "extraAttack" :
+				//			//TODO: handle later
+				//			continue;
+				//		case "none":
+				//			continue;
+				//		case "addStatus": case "removeStatus":
+				//			if (absorb || block) continue;
+				//			CombatRes.addEffect(atkResult, consTarget, cons);
+				//			break;
+				//		case "dmg-mult":
+				//			CombatRes.addEffect(atkResult, consTarget, cons);
+				//			break;
+				//		case "escalationManipulation":
+				//			CombatRes.escalationMod += (cons.amount ?? 0);
+				//			continue;
+				//		case "modifier":
+				//				continue;
+				//		case "hp-loss":
+				//				CombatRes.addEffect(atkResult, consTarget, {
+				//					type: "hp-loss",
+				//					amount: cons.amount ?? 0,
+				//				});
+				//			continue;
+				//		default:
+				//			CombatRes.addEffect(atkResult, consTarget, cons);
+				//			break;
+				//	}
+				//}
 			}
 		}
 		return CombatRes;
+	}
+
+	static ProcessConsequences(power: ModifierContainer, situation: Situation, relevantConsequences: Consequence[], attacker: ValidAttackers, atkresult ?: Partial<AttackResult>)
+	: ConsequenceProcessed {
+		let escalationMod = 0;
+		let consequences : ConsequenceProcessed["consequences"]= [];
+		for (const cons of relevantConsequences) {
+			let damageMult = 1;
+			const applyToSelf = cons.applyToSelf ?? false;
+			const absorb = situation.isAbsorbed && !applyToSelf;
+			const block = atkresult && atkresult.result == "block" && !applyToSelf;
+			damageMult *= situation.resisted ? 0.5 : 1;
+			switch (cons.type) {
+				case "dmg-high":
+					consequences.push({
+						applyToSelf,
+						cons: {
+							type: "dmg-high",
+							amount: power.getDamage(attacker, "high", situation) * (absorb ? -1 : damageMult),
+						}
+					});
+					continue;
+				case "dmg-low":
+					consequences.push({
+						applyToSelf,
+						cons: {
+							type: "dmg-low",
+							amount: power.getDamage(attacker, "low", situation) * (absorb ? -1 : damageMult),
+						}
+					});
+					continue;
+				case "extraAttack" :
+					//TODO: handle later
+					continue;
+				case "none":
+					continue;
+				case "addStatus": case "removeStatus":
+					if (absorb || block) continue;
+					consequences.push({applyToSelf,cons});
+					break;
+				case "dmg-mult":
+					consequences.push({applyToSelf,cons});
+					break;
+				case "escalationManipulation":
+					escalationMod += (cons.amount ?? 0);
+					continue;
+				case "modifier":
+						continue;
+				case "hp-loss":
+						consequences.push({
+							applyToSelf,
+							cons: {
+								type: "hp-loss",
+								amount: cons.amount ?? 0,
+							}
+						});
+					continue;
+				default:
+					consequences.push({applyToSelf,cons});
+					break;
+			}
+		}
+		return {consequences, escalationMod} satisfies ConsequenceProcessed;
+	}
+
+
+	static onTrigger(trigger: Trigger, token : PToken, situation ?: Situation) : CombatResult {
+		const result = new CombatResult();
+		if (!token.actor) return result;
+		if (!situation) {
+			situation = {
+				user: token.actor.accessor,
+			}
+		}
+		situation = {
+				...situation,
+				trigger
+			} ; //copy the object so it doesn't permanently change it
+
+		for (const trig of token.actor.triggers) {
+			for (const eff of trig.getEffects()) {
+				if (!eff.conditions.every( cond =>
+					ModifierList.testPrecondition(cond, situation, trig)
+				)) { continue; }
+				const cons = this.ProcessConsequences(trig, situation, eff.consequences, token.actor)
+				result.escalationMod+= cons.escalationMod;
+				for (const c of cons.consequences) {
+					result.addEffect(null, token, c.cons);
+				}
+			}
+		}
+		return result;
 	}
 
 	static async #processCosts(attacker: PToken , power: Usable, costModifiers: OtherEffect[]) : Promise<CombatResult>
@@ -881,18 +982,34 @@ Hooks.on("updateCombat" , async (combat: PersonaCombat, changes: Record<string, 
 });
 
 Hooks.on("combatStart", async (combat: PersonaCombat) => {
+	for (const comb of combat.combatants) {
+		if (!comb.actor) continue;
+		const situation : Situation = {
+			activeCombat : true,
+			user: comb.actor.accessor
+		};
+		const token = comb.token._object as PToken;
+		await PersonaCombat
+			.onTrigger("on-combat-start", token, situation)
+			.emptyCheck()
+			?.toMessage(token, "Triggered Effect");
+	}
 	const x =combat.turns[0];
 	if (x.actor) {
 		await combat.startCombatantTurn(x as Combatant<ValidAttackers>);
-
 	}
-
 });
 
 Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
 	for (const combatant of combat.combatants) {
 		const actor = combatant.actor as ValidAttackers  | undefined;
 		if (!actor) continue;
+		const token = combatant.token._object as PToken;
+		await PersonaCombat
+			.onTrigger("on-combat-end", token)
+			.emptyCheck()
+			?.toMessage(token, "Triggered Effect" );
+
 		for (const effect of actor.effects) {
 			if (effect.durationLessThan("expedition")) {
 				await effect.delete();
@@ -923,5 +1040,11 @@ type SaveOptions = {
 }
 
 
-
+export type ConsequenceProcessed = {
+	consequences: {
+		applyToSelf: boolean,
+		cons: Consequence
+	}[],
+	escalationMod: number
+}
 
