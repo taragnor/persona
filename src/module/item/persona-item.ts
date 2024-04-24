@@ -1,3 +1,4 @@
+import { BASIC_POWER_NAMES } from "../../config/basic-powers.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { getActiveConsequences } from "../preconditions.js";
 import { testPrecondition } from "../preconditions.js";
@@ -33,13 +34,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	}
 
 	static getBasicPowers() : Power[] {
-		const basic = [
-			"Basic Attack",
-			"Defend",
-			"All-out Attack",
-		] as const;
-		return basic.flatMap( (powerName:string) =>  {
-const power = PersonaDB.getItemByName(powerName);
+const basic = BASIC_POWER_NAMES;
+		// 	"Basic Attack",
+		// 	"Defend",
+		// 	"All-out Attack",
+		// ] as const;
+		return basic.flatMap( powerName =>  {
+const power = PersonaDB.getBasicPower(powerName);
 			if (!power) return [];
 			return [power as Power];
 		});

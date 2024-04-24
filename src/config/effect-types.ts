@@ -4,6 +4,8 @@ export const CONSQUENCELIST = [
 	"hp-loss",
 	"dmg-low",
 	"dmg-high",
+	"dmg-allout-low",
+	"dmg-allout-high",
 	"dmg-mult",
 	"addStatus",
 	"removeStatus",
@@ -24,8 +26,8 @@ export const CONSQUENCELIST = [
 
 export  const MODIFIER_VARIABLES = [
 	"escalationDie" //Escalation Die
-
 ] as const;
+
 
 export type ModifierVariable = typeof MODIFIER_VARIABLES[number];
 

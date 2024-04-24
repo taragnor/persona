@@ -3,6 +3,7 @@ import { DBAccessor } from "./utility/db-accessor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { ModifierContainer } from "./item/persona-item.js";
 import { Power } from "./item/persona-item.js";
+import { BASIC_POWER_NAMES } from "../config/basic-powers.js";
 
 
 class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
@@ -26,6 +27,10 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		const items = this.getAllByType("Item") as PersonaItem[];
 		return items
 		.filter( x=> x.system.type == "power") as Power[];
+	}
+
+	getBasicPower( name: typeof BASIC_POWER_NAMES[number]) : Power | undefined {
+		return PersonaDB.getItemByName(name) as Power | undefined;
 	}
 
 }

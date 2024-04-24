@@ -57,6 +57,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return x;
 	}
 
+	get validCombatants() : Combatant<ValidAttackers>[] {
+		return this.combatants.contents
+			.filter( x=> x.actor != undefined
+				&& x.actor.system.type != "npc"
+			) as Combatant<ValidAttackers>[];
+	}
+
 	override get combatant() : Option<Combatant<ValidAttackers>>{
 		return super.combatant as Option<Combatant<ValidAttackers>>;
 	}
@@ -523,53 +530,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					const effectiveTarget = cons.applyToSelf ? attacker : target;
 					CombatRes.addEffect(atkResult, effectiveTarget, cons.cons, power.system.dmg_type);
 				}
-				//for (const cons of consequences) {
-				//	let damageMult = 1;
-				//	const absorb = situation.isAbsorbed && !cons.applyToSelf;
-				//	const block = result == "block" && !cons.applyToSelf;
-				//	const consTarget = cons.applyToSelf ? attacker: target;
-				//	damageMult *= situation.resisted ? 0.5 : 1;
-				//	switch (cons.type) {
-				//		case "dmg-high":
-				//			CombatRes.addEffect(atkResult, consTarget, {
-				//				type: "dmg-high",
-				//				amount: power.getDamage(attacker.actor, "high", situation) * (absorb ? -1 : damageMult),
-				//			});
-				//			continue;
-				//		case "dmg-low":
-				//			CombatRes.addEffect(atkResult, consTarget, {
-				//				type: "dmg-low",
-				//				amount: power.getDamage(attacker.actor, "low", situation) * (absorb ? -1 : damageMult),
-				//			});
-				//			continue;
-				//		case "extraAttack" :
-				//			//TODO: handle later
-				//			continue;
-				//		case "none":
-				//			continue;
-				//		case "addStatus": case "removeStatus":
-				//			if (absorb || block) continue;
-				//			CombatRes.addEffect(atkResult, consTarget, cons);
-				//			break;
-				//		case "dmg-mult":
-				//			CombatRes.addEffect(atkResult, consTarget, cons);
-				//			break;
-				//		case "escalationManipulation":
-				//			CombatRes.escalationMod += (cons.amount ?? 0);
-				//			continue;
-				//		case "modifier":
-				//				continue;
-				//		case "hp-loss":
-				//				CombatRes.addEffect(atkResult, consTarget, {
-				//					type: "hp-loss",
-				//					amount: cons.amount ?? 0,
-				//				});
-				//			continue;
-				//		default:
-				//			CombatRes.addEffect(atkResult, consTarget, cons);
-				//			break;
-				//	}
-				//}
 			}
 		}
 		return CombatRes;
@@ -590,25 +550,50 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					consequences.push({
 						applyToSelf,
 						cons: {
-							type: "dmg-high",
+							type: cons.type,
 							amount: power.getDamage(attacker, "high", situation) * (absorb ? -1 : damageMult),
 						}
 					});
-					continue;
+					break;
 				case "dmg-low":
 					consequences.push({
 						applyToSelf,
 						cons: {
-							type: "dmg-low",
+							type: cons.type,
 							amount: power.getDamage(attacker, "low", situation) * (absorb ? -1 : damageMult),
 						}
 					});
-					continue;
+					break;
+				case "dmg-allout-low":
+					if (!situation.userToken) {
+						PersonaError.softFail("Can't calculate All out damage");
+						break;
+					}
+					consequences.push({
+						applyToSelf,
+						cons : {
+							type: cons.type,
+							amount: PersonaCombat.calculateAllOutAttackDamage(PersonaDB.findToken(situation.userToken), situation).low * (absorb ? -1 : damageMult),
+						}
+					});
+					break;
+				case "dmg-allout-high":
+					if (!situation.userToken) {
+						PersonaError.softFail("Can't calculate All out damage");
+						break;
+					}
+					consequences.push({
+						applyToSelf,
+						cons : {
+							type: cons.type,
+							amount: PersonaCombat.calculateAllOutAttackDamage(PersonaDB.findToken(situation.userToken), situation).high * (absorb ? -1 : damageMult),
+						}
+					});
 				case "extraAttack" :
 					//TODO: handle later
-					continue;
+					break;
 				case "none":
-					continue;
+					break;
 				case "addStatus": case "removeStatus":
 					if (absorb || block) continue;
 					consequences.push({applyToSelf,cons});
@@ -618,9 +603,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					break;
 				case "escalationManipulation":
 					escalationMod += (cons.amount ?? 0);
-					continue;
+					break;
 				case "modifier":
-						continue;
+						break;
 				case "hp-loss":
 						consequences.push({
 							applyToSelf,
@@ -629,9 +614,21 @@ export class PersonaCombat extends Combat<PersonaActor> {
 								amount: cons.amount ?? 0,
 							}
 						});
-					continue;
-				default:
+					break;
+				case "absorb":
+				case "expend-slot":
+				case "add-escalation":
+				case "save-slot":
+				case "revive":
+				case "extraTurn":
+				case"expend-item":
+				case "recover-slot":
+				case "half-hp-cost":
+				case "add-power-to-list":
 					consequences.push({applyToSelf,cons});
+					break;
+				default:
+					cons.type satisfies never;
 					break;
 			}
 		}
@@ -968,28 +965,67 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	static async allOutAttackPrompt() {
 		if (!PersonaSettings.get("allOutAttackPrompt"))
 			return;
-		const comb = game.combat?.combatant;
-		const actor = comb?.actor as PersonaActor | undefined;
+		debugger;
+		const combat= this.ensureCombatExists();
+		const comb = combat?.combatant as Combatant<ValidAttackers> | undefined;
+		const actor = comb?.actor as ValidAttackers | undefined;
 		if (!comb || !actor) return;
 		if (!actor.isCapableOfAction()) return;
-		const numOfAllies = game.combat!.combatants.contents.reduce( (acc, com) => {
-			const actor = com?.actor as ValidAttackers;
-			if (actor && actor.isCapableOfAction() && actor.getAllegiance() == actor.getAllegiance()) {
-				return acc+1;
-			}
-			return acc;
-		}, 0);
-		if (numOfAllies < 2) {
+		const numOfAllies = combat.getAllies(comb).length;
+		if (numOfAllies < 1) {
 			ui.notifications.notify("Not enough allies to all out attack!");
 			return;
 		}
-			if (!comb || !comb?.actor?.isOwner) return;
-		if (!await HTMLTools.confirmBox("All out attack!", "All out attack is available, would you like to do it?")
-		) return;
+		if (!comb || !actor?.isOwner) return;
+			if (!await HTMLTools.confirmBox("All out attack!", `All out attack is available, would you like to do it? (active Party members: ${numOfAllies}`)
+			) return;
+		if (!actor.hasStatus("bonus-action")) ui.notifications.warn("No bonus action");
+			const allOutAttack = PersonaDB.getBasicPower("All-out Attack");
+		if (!allOutAttack) throw new PersonaError("Can't find all out attack in database");
+		await PersonaCombat.usePower(comb.token.object, allOutAttack);
 	}
 
+	findCombatant(token :PToken) : Combatant<ValidAttackers> | undefined {
+		return this.validCombatants.find( comb=> comb.token.object == token);
+	}
+
+	getAllies(comb: Combatant<ValidAttackers>) : Combatant<ValidAttackers>[] {
+		const allegiance = comb.actor?.getAllegiance();
+		if (!allegiance) return [];
+		return this.validCombatants.filter( c => c.actor != null
+			&& (c.actor.getAllegiance() == allegiance)
+			&& c != comb);
+	}
+
+	static calculateAllOutAttackDamage(attacker: PToken, situation: Situation) : {high: number, low:number} {
+		let dmg = {
+			high: 0,
+			low:0
+		};
+		const combat = this.ensureCombatExists();
+		const attackerComb = combat.findCombatant(attacker);
+		if (!attackerComb) return dmg;
+		const attackers=  [
+			attackerComb,
+			...combat.getAllies(attackerComb)
+		].flatMap (c=>c.actor?  [c.actor] : []);
+		for (const actor of attackers) {
+			const wpndmg = actor.wpnDamage(true, situation);
+			dmg.high+= wpndmg.high;
+			dmg.low += wpndmg.low;
+			console.log(`Adding damage for ${actor.name}`)
+		}
+		dmg.high /= 3;
+		dmg.low /= 3;
+		dmg.high = Math.round(dmg.high);
+		dmg.low = Math.round(dmg.low);
+		console.log(dmg);
+		return dmg;
+	}
 
 } // end of class
+
+
 
 type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shadow">;
 

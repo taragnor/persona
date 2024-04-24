@@ -80,18 +80,14 @@ export class CombatResult  {
 				effect.hpchangemult *= cons.amount ?? 0;
 				break;
 			case "dmg-high":
-					if (damageType) {
-						effect.damageType = damageType;
-					}
-				effect.hpchange = -(cons.amount ?? 0);
-				break;
 			case "dmg-low":
+			case "dmg-allout-high":
+			case "dmg-allout-low":
 					if (damageType) {
 						effect.damageType = damageType;
 					}
 				effect.hpchange = -(cons.amount ?? 0);
 				break;
-
 			case "addStatus": {
 				let status_damage : number | undefined = undefined;
 				if (atkResult && cons.statusName == "burn") {
