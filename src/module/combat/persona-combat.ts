@@ -969,11 +969,23 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (!PersonaSettings.get("allOutAttackPrompt"))
 			return;
 		const comb = game.combat?.combatant;
-		if (!comb || !comb?.actor?.isOwner) return;
+		const actor = comb?.actor as PersonaActor | undefined;
+		if (!comb || !actor) return;
+		if (!actor.isCapableOfAction()) return;
+		const numOfAllies = game.combat!.combatants.contents.reduce( (acc, com) => {
+			const actor = com?.actor as ValidAttackers;
+			if (actor && actor.isCapableOfAction() && actor.getAllegiance() == actor.getAllegiance()) {
+				return acc+1;
+			}
+			return acc;
+		}, 0);
+		if (numOfAllies < 2) {
+			ui.notifications.notify("Not enough allies to all out attack!");
+			return;
+		}
+			if (!comb || !comb?.actor?.isOwner) return;
 		if (!await HTMLTools.confirmBox("All out attack!", "All out attack is available, would you like to do it?")
 		) return;
-
-
 	}
 
 
