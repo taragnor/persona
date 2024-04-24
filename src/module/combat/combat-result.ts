@@ -412,7 +412,9 @@ export class CombatResult  {
 			await actor.modifyHP(change.hpchange * change.hpchangemult);
 		}
 		for (const status of change.addStatus) {
-			await actor.addStatus(status);
+			if (await actor.addStatus(status)) {
+				Hooks.call("onAddStatus", token, status);
+			}
 		}
 		for (const status of change.removeStatus) {
 			await actor.removeStatus(status);

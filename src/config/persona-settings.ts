@@ -46,6 +46,7 @@ const SETTINGS = {
 				);
 		}
 	},
+
 	"autoApplyCombatResults" : {
 		name: "Auto Apply Combat Results",
 		hint: "Auto apply combat results?",
@@ -55,6 +56,17 @@ const SETTINGS = {
 		type :Boolean,
 		default: false,
 	},
+
+	"allOutAttackPrompt" : {
+		name: "All out attack Prompt",
+		hint: "Show prompt when AoA is available",
+		scope: "world",
+		restricted: true,
+		config: true,
+		type: Boolean,
+		default: false,
+	},
+
 } as const;
 
 type SETTINGKEYS = keyof typeof SETTINGS;

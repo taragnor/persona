@@ -1,3 +1,6 @@
+import { PersonaSettings } from "../../config/persona-settings.js";
+import { PersonaSockets } from "../persona.js";
+import { StatusEffect } from "./combat-result.js";
 import { DamageType } from "../../config/damage-types.js";
 import { Trigger } from "../../config/triggers.js";
 import { ModifierContainer } from "../item/persona-item.js";
@@ -26,9 +29,16 @@ import { OtherEffect } from "./combat-result.js";
 import { Consumable } from "../item/persona-item.js";
 
 declare global {
+	interface SocketMessage {
+"QUERY_ALL_OUT_ATTACK" : {};
+	}
+}
+
+declare global {
 	interface HOOKS {
 		"onUsePower": (power: Usable, user: PToken, defender: PToken) => any;
 		"onTakeDamage": (token: PToken, amount: number, damageType: DamageType)=> any;
+		"onAddStatus": (token: PToken, status: StatusEffect) => any;
 	}
 }
 
@@ -955,6 +965,17 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return retstr;
 	}
 
+	static async allOutAttackPrompt() {
+		if (!PersonaSettings.get("allOutAttackPrompt"))
+			return;
+		const comb = game.combat?.combatant;
+		if (!comb || !comb?.actor?.isOwner) return;
+		if (!await HTMLTools.confirmBox("All out attack!", "All out attack is available, would you like to do it?")
+		) return;
+
+
+	}
+
 
 } // end of class
 
@@ -1045,6 +1066,35 @@ Hooks.on("renderCombatTracker", async (_item: CombatTracker, element: JQuery<HTM
 	element.find(".escalation-die").text(escalationDie);
 });
 
+Hooks.on("onAddStatus", async function (token: PToken, status: StatusEffect)  {
+	console.log("Calling on Add Status");
+	if (status.id != "down") return;
+	if (!game.user.isGM) {
+		throw new PersonaError("Somehow isn't GM executing this");
+	}
+	if (game.combat) {
+		const allegiance = token.actor.getAllegiance();
+		const standingAllies = game.combat.combatants.contents.some(comb => {
+			if (!comb.token) return false;
+			const actor = comb.actor as ValidAttackers;
+			return actor.isCapableOfAction() && actor.getAllegiance() == allegiance;
+		})
+		if (!standingAllies) {
+			const currentTurnCharacter =game.combat.combatant?.actor;
+			if (!currentTurnCharacter) return;
+			const currentTurnType = currentTurnCharacter.system.type;
+			if (currentTurnType == "shadow") {
+				return await PersonaCombat.allOutAttackPrompt();
+			} else {
+				PersonaSockets.simpleSend("QUERY_ALL_OUT_ATTACK", {}, game.users
+					.filter( user=> currentTurnCharacter.testUserPermission(user, "OWNER") && !user.isGM )
+					.map( usr=> usr.id)
+				);
+			}
+		}
+	}
+});
+
 type SaveOptions = {
 	label?: string,
 	DC?: number,
@@ -1060,4 +1110,10 @@ export type ConsequenceProcessed = {
 	}[],
 	escalationMod: number
 }
+
+Hooks.on("socketsReady", async () => {
+	PersonaSockets.setHandler("QUERY_ALL_OUT_ATTACK", () => {
+		PersonaCombat.allOutAttackPrompt();
+	});
+});
 

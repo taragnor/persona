@@ -400,7 +400,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	async addStatus({id, potency, duration}: StatusEffect): Promise<void> {
+	/** returns true if status is added*/
+	async addStatus({id, potency, duration}: StatusEffect): Promise<boolean> {
 		const eff = this.effects.find( eff => eff.statuses.has(id));
 		const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
 		if (!stateData) {
@@ -413,7 +414,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				name: game.i18n.localize(stateData.name),
 				statuses: s
 			};
-			if (await this.checkStatusNullificaton(id)) return;
+			if (await this.checkStatusNullificaton(id)) return false;
 			const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
 			await newEffect.setPotency(potency ?? 0);
 			await newEffect.setDuration(duration);
@@ -422,6 +423,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (duration == "3-rounds") {
 				await newEffect.update({"duration.rounds": 3});
 			}
+			return true;
 		} else  {
 			if (potency && eff.potency < potency) {
 				await eff.setPotency(potency);
@@ -430,7 +432,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				await eff.setDuration(duration);
 			}
 			//TODO: update the effect
-
+			return false;
 		}
 
 	}
