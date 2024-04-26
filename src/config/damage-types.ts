@@ -8,7 +8,8 @@ export const DAMAGETYPESLIST = [
 	"dark",
 	"untyped",
 	"healing",
-	"none"
+	"all-out",
+	"none",
 ] as const;
 
 export const DAMAGETYPES = Object.fromEntries(
@@ -17,7 +18,7 @@ export const DAMAGETYPES = Object.fromEntries(
 
 export type DamageType = ((typeof DAMAGETYPESLIST)[number]);
 
-export type ResistType = Exclude<DamageType, "none" | "healing" | "untyped">;
+export type ResistType = Exclude<DamageType, "none" | "healing" | "untyped" | "all-out">;
 
 export const RESIST_STRENGTH_LIST = [
 	"weakness",

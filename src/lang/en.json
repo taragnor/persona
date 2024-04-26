@@ -40,6 +40,7 @@
 	"persona.damage.types.untyped": "Almighty",
 	"persona.damage.types.healing": "Healing",
 	"persona.damage.types.none": "None",
+	"persona.damage.types.all-out": "All-out attack",
 
 	"persona.damage.resist.weakness": "Weak",
 	"persona.damage.resist.normal": "Normal",

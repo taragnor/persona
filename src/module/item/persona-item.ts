@@ -35,10 +35,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 
 	static getBasicPowers() : Power[] {
 const basic = BASIC_POWER_NAMES;
-		// 	"Basic Attack",
-		// 	"Defend",
-		// 	"All-out Attack",
-		// ] as const;
 		return basic.flatMap( powerName =>  {
 const power = PersonaDB.getBasicPower(powerName);
 			if (!power) return [];

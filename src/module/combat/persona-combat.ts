@@ -1,3 +1,4 @@
+import { BASIC_POWER_NAMES } from "../../config/basic-powers.js";
 import { PersonaSFX } from "./persona-sfx.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaSockets } from "../persona.js";
@@ -321,19 +322,21 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			await result.finalize();
 			await result.print();
 			await result.toMessage(attacker, power.name);
+			console.log(result);
 			// await result.apply();
 			return result;
 		} catch(e) {
 			console.log(e);
 			throw e;
 		}
-
 	}
 
 	static async #usePowerOn(attacker: PToken, power: Usable, targets: PToken[]) : Promise<CombatResult> {
 		let i = 0;
 		const result = new CombatResult();
-
+		if (power.name == BASIC_POWER_NAMES[2]) {
+			PersonaSFX.play("all-out");
+		}
 		for (const target of targets) {
 			const atkResult = await this.processAttackRoll( attacker, power, target, i==0);
 			const this_result = await this.processEffects(atkResult);

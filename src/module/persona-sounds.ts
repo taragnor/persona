@@ -8,18 +8,24 @@ const SOUNDS = {
 	"heal": "atk-heal.m4a.mp3",
 	"cold": "atk-ice.m4a.mp3",
 	"light": "atk-light.m4a.mp3",
-	"debuff": "atk-debuff.m4a.mp3",
+	"debuff": "atk-debuff.mp3",
 	"block": "atk-block.m4a.mp3",
-	"physical": "atk-phys.m4a.mp3",
+	"physical": "atk-blunt.mp3",
 	"buff": "atk-buff.m4a.mp3",
 	"raise": "atk-raise-dead.m4a.mp3",
 	"reflect": "atk-reflect.m4a.mp3",
 	"lightning": "atk-thunder.m4a.mp3",
 	"wind": "atk-wind.m4a.mp3",
 	"miss": "",
-	"all-out prompt": "atk-all-out-prompt.mp3"
-
+	"all-out prompt": "atk-all-out-prompt.mp3",
+	"all-out" : "atk-all-out.mp3",
+	"untyped": "atk-almighty.mp3",
+	"defense-nerf": "atk-debuff.mp3",
+	"attack-nerf": "atk-debuff.mp3",
+	"damage-nerf": "atk-debuff.mp3",
 } as const;
+
+export type ValidSound = keyof typeof SOUNDS;
 
 
 export class PersonaSounds {
@@ -35,26 +41,30 @@ export class PersonaSounds {
 		}, socketOpts);
 	}
 
+	static isValidSound(s: string): s is ValidSound {
+		return s in SOUNDS;
+	}
+
 	static async newSocialLink() {
-		await PersonaSounds.play("newsociallink2.wav.mp3", 1.0, game.users.contents.map( x=> x.id));
+		return await PersonaSounds.play("newsociallink2.wav.mp3", 1.0, game.users.contents.map( x=> x.id));
 	}
 
 	static async socialLinkUp() {
-		await PersonaSounds.play("sociallinkrankup.wav.mp3", 1.0, game.users.contents.map( x=> x.id));
+		return await PersonaSounds.play("sociallinkrankup.wav.mp3", 1.0, game.users.contents.map( x=> x.id));
 
 	}
 
 	static async socialLinkMax() {
-		await PersonaSounds.play("sociallinkmax.wav.mp3", 1.0, game.users.contents.map( x=> x.id));
+		return await PersonaSounds.play("sociallinkmax.wav.mp3", 1.0, game.users.contents.map( x=> x.id));
 
 	}
 	static async socialBoostJingle(amt: 1 | 2 | 3) {
-		await PersonaSounds.play(`sociallinkjingle${String(amt)}.wav.mp3`, 1.0, game.users.contents.map( x=> x.id));
+		return await PersonaSounds.play(`sociallinkjingle${String(amt)}.wav.mp3`, 1.0, game.users.contents.map( x=> x.id));
 
 	}
 
 	static async socialLinkReverse() {
-		await PersonaSounds.play(`sociallinkreverse.wav.mp3`, 1.0, game.users.contents.map( x=> x.id));
+		return await PersonaSounds.play(`sociallinkreverse.wav.mp3`, 1.0, game.users.contents.map( x=> x.id));
 	}
 
 	static async skillBoost (amt: 1 | 2 | 3) {

@@ -608,6 +608,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	elementalResist(this: PC | Shadow, type: typeof DAMAGETYPESLIST[number]) : ResistStrength  {
 		switch (type) {
 			case "untyped":  case "none":
+			case "all-out":
 				return "normal";
 			case "healing":
 				return "absorb";

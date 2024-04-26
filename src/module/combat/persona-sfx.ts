@@ -1,3 +1,4 @@
+import { StatusEffectId } from "../../config/status-effects.js";
 import { DamageType } from "../../config/damage-types.js";
 import { PToken } from "./persona-combat.js";
 import { PersonaSounds } from "../persona-sounds.js";
@@ -21,11 +22,11 @@ export class PersonaSFX {
 			case "lightning":
 			case "light":
 			case "dark":
-				await this.play(damageType);
 			case "untyped":
-
+				await this.play(damageType);
 			case "healing":
 				return;
+			case "all-out": //silent since AoA plays earlier
 			case "none":
 				return;
 			default:
@@ -37,10 +38,20 @@ export class PersonaSFX {
 		const s = await this.play(defenseType);
 	}
 
+	static async onStatus( token : PToken, statusEffect: StatusEffectId) {
+		if (PersonaSounds.isValidSound(statusEffect)) {
+			const s = await this.play(statusEffect);
+		}
+	}
+
 	static async play(snd: Parameters<typeof PersonaSounds["playBattleSound"]>[0], volume = 1.0) {
-		const sound= await PersonaSounds.playBattleSound(snd, volume);
-		if (sound) {
-			await waitUntilTrue( () => !sound.playing);
+		try {
+			const sound= await PersonaSounds.playBattleSound(snd, volume);
+			if (sound) {
+				await waitUntilTrue( () => !sound.playing);
+			}
+		} catch(e) {
+			ui.notifications.error("Trouble playing sounds ${snd}");
 		}
 	}
 

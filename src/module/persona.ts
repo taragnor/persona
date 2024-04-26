@@ -50,7 +50,6 @@ function registerDocumentClasses() {
 	CONFIG.ActiveEffect.documentClass = PersonaAE;
 	CONFIG.Dice.rolls.push(PersonaRoll);
 	CONFIG.Combat.documentClass = PersonaCombat;
-
 }
 
 function registerSheetApplications() {

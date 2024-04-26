@@ -1,3 +1,4 @@
+import { ValidSound } from "../persona-sounds.js";
 import { PersonaSFX } from "./persona-sfx.js";
 import { DamageType } from "../../config/damage-types.js";
 
@@ -32,6 +33,7 @@ export class CombatResult  {
 	attacks: Map<AttackResult, TokenChange<PToken>[]> = new Map();
 	escalationMod: number = 0;
 	costs: TokenChange<PToken>[] = [];
+	sounds: {sound: ValidSound, timing: "pre" | "post"}[] = [];
 
 	constructor(atkResult ?: AttackResult) {
 		if (atkResult) {
@@ -59,12 +61,16 @@ export class CombatResult  {
 		return ret;
 	}
 
+	addSound(sound: ValidSound, timing: this["sounds"][number]["timing"]) {
+		this.sounds.push({sound, timing});
+	}
+
 	addEffect(atkResult: AttackResult | null, target: PToken, cons: Consequence, damageType ?: DamageType) {
 		const effect : TokenChange<PToken>= {
 			token: PersonaDB.getUniversalTokenAccessor(target),
 			otherEffects: [],
 			hpchange: 0,
-			damageType: "untyped",
+			damageType: "none",
 			hpchangemult: 1,
 			addStatus: [],
 			removeStatus: [],
@@ -410,6 +416,7 @@ export class CombatResult  {
 		for (const status of change.addStatus) {
 			if (await actor.addStatus(status)) {
 				Hooks.call("onAddStatus", token, status);
+				await PersonaSFX.onStatus(token, status.id);
 			}
 		}
 		for (const status of change.removeStatus) {
