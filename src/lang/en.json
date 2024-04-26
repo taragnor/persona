@@ -1,4 +1,20 @@
 {
+
+	"TYPES.Actor.shadow": "Shadow",
+	"TYPES.Actor.pc": "Player Character",
+	"TYPES.Actor.npc": "NPC",
+
+	"TYPES.Item.weapon": "weapon",
+	"TYPES.Item.item": "Item (Equippable)",
+	"TYPES.Item.consumable": "Item (Consumable)",
+	"TYPES.Item.power": "Power",
+	"TYPES.Item.characterClass": "Character Class",
+	"TYPES.Item.focus": "Focus",
+	"TYPES.Item.talent": "Focus",
+	"TYPES.Item.universalModifier": "Universal Modifier",
+	"TYPES.Item.job": "Job",
+	"TYPES.Item.tarot": "Tarot Card",
+
 	"persona.sheet.tabs.inventory.tabname" : "Inventory",
 	"persona.sheet.tabs.social.tabname" : "Social",
 
