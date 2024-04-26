@@ -43,6 +43,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		super.prepareBaseData();
 	}
 
+
 	async refreshHpTracker(this:PC | Shadow)  {
 		if (!this.isOwner) return;
 		if (this.hp > this.mhp) {
@@ -228,13 +229,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "shadow": return [];
 			case "tarot":
 			case "npc":
-				const focuses = this.focii;
+				const focuses = this.focii
+				.concat(this.tarot?.focii ?? []);
 				focuses.sort((a, b) => a.requiredLinkLevel() - b.requiredLinkLevel() );
 				return focuses.map( focus =>({
 					id: this.id,
 					focus,
 					lvl_requirement: focus.requiredLinkLevel(),
-				}));
+				}))
+					;
 			default:
 				this.system satisfies never;
 				throw new PersonaError("Unknwon type");
@@ -409,7 +412,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		const opacity = hp > 0 ? 1.0 : (this.isFullyFaded(hp) ? 0.2 : 0.6);
 		if (this.token) {
-				await this.token.update({"alpha": opacity});
+			await this.token.update({"alpha": opacity});
 		} else {
 			//@ts-ignore
 			for (const iterableList of this._dependentTokens.values()) {
@@ -721,7 +724,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	 canPayActivationCost(this: PC | Shadow, usable: Usable, outputReason: boolean = true) : boolean {
+	canPayActivationCost(this: PC | Shadow, usable: Usable, outputReason: boolean = true) : boolean {
 		if (this.system.type == "pc") {
 			return (this as PC).canPayActivationCost_pc(usable, outputReason);
 		}
@@ -991,7 +994,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		];
 		return (
 			this.hp > 0
-		&& !deblitatingStatuses.some( stat => this.statuses.has(stat))
+			&& !deblitatingStatuses.some( stat => this.statuses.has(stat))
 		);
 	}
 
@@ -1139,6 +1142,39 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({ "system.availability": avail});
 	}
 
+	get tarot() : Tarot | undefined {
+		switch (this.system.type) {
+			case "pc":
+				const PC = this as PC;
+				PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
+				break;
+			case "shadow":
+				return undefined;
+			case "npc":
+				const NPC = this as NPC;
+				PersonaDB.tarotCards().find(x=> x.name == NPC.system.tarot);
+			case "tarot":
+				return this as Tarot;
+		}
+
+	}
+
+	get perk() : string {
+		switch (this.system.type) {
+			case "pc":
+				return this.tarot?.perk ?? "";
+			case "shadow":
+					return "";
+			case "npc":
+					return this.tarot?.perk ?? "";
+			case "tarot":
+					return this.system.perk;
+			default:
+					this.system satisfies never;
+				return "";
+		}
+	}
+
 }
 
 
@@ -1149,14 +1185,14 @@ Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) =
 		case "pc": {
 			const newHp = changes?.system?.combat?.hp;
 			if (newHp == undefined)
-				return;
+			return;
 			await (actor as PC | Shadow).refreshHpStatus(newHp);
 			return ;
 		}
 		case "shadow": {
 			const newHp = changes?.system?.combat?.hp;
 			if (newHp == undefined)
-				return;
+			return;
 			await (actor as PC | Shadow).refreshHpStatus(newHp);
 			return;
 		}
