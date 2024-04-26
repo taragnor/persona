@@ -7,43 +7,42 @@ declare interface Hooks {
 }
 
 declare interface HOOKS {
-	"init": () => Promise<unknown>;
-	"ready": () => Promise<unknown>;
-	"updateCompendium": () => Promise<unknown>;
+	"init": () => unknown;
+	"ready": () => unknown;
+	"updateCompendium": () => unknown;
 	"applyActiveEffect": ApplyAEHookFn;
-	"combatStart": (combat: Combat, updateData: CombatUpdateData) => Promise<unknown>;
-	"combatTurn": (combat: Combat, updateData: CombatUpdateData, updateOptions: CombatUpdateOptions) => Promise<unknown>;
-	"combatRound": (combat: Combat, updateData: CombatUpdateData, updateOptions: CombatUpdateOptions) => Promise<unknown>;
-	"chatMessage": (chatLog: ChatLog, contents: string, chatMsgData: unknown) => Promise<unknown>;
-	"preCreateChatMessage": (msg: ChatMessage, spkdata: unknown, otherstuff: unknown, id: string) => Promise<unknown>;
-	"createChatMessage": (msg: ChatMessage, otherstuff: unknown, id: string) => Promise<unknown>;
-	"preUpdateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<boolean | void>,
-		"preUpdateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>,
-		"deleteCombat": DeleteHook<Combat>,
-		"createActor": CreateHook<Actor<any,any>>,
-		"createItem": CreateHook<Item<any>>,
-		"createToken": CreateHook<TokenDocument<any>>,
-		"createScene": CreateHook<Scene>,
-		"createCombatant": CreateHook<Combatant>,
-		"updateToken": UpdateHook<TokenDocument<any>>,
-		"deleteToken": DeleteHook<TokenDocument<any>>,
-		"deleteActor": DeleteHook<Actor<any>>,
-		"deleteCombatant": DeleteHook<Combatant>,
-		"deleteItem": DeleteHook<Item<any>>,
-		"deleteScene": DeleteHook<Scene>,
-		"updateScene": UpdateHook<Scene>,
-		"updateItem": UpdateHook<Item<any>>,
-		"updateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>,
-		"updateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<unknown>,
-		"getSceneControlButtons": Function,
-		"renderJournalDirectory": Function,
-		"renderCombatTracker": RenderCombatTabFn,
-		"renderApplication": Function,
-		"renderChatMessage": (msg: ChatMessage, htmlElement: JQuery<HTMLElement>, data: unknown) => Promise<unknown>;
-	"canvasReady": Function,
-
-		"hoverToken" : (token: Token<any>, hover:boolean) => unknown;
-
+	"combatStart": (combat: Combat, updateData: CombatUpdateData) => unknown;
+	"combatTurn": (combat: Combat, updateData: CombatUpdateData, updateOptions: CombatUpdateOptions) => unknown;
+	"combatRound": (combat: Combat, updateData: CombatUpdateData, updateOptions: CombatUpdateOptions) => unknown;
+	"chatMessage": (chatLog: ChatLog, contents: string, chatMsgData: unknown) => unknown;
+	"preCreateChatMessage": (msg: ChatMessage, spkdata: unknown, otherstuff: unknown, id: string) => unknown;
+	"createChatMessage": (msg: ChatMessage, otherstuff: unknown, id: string) => unknown;
+	"preUpdateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<boolean | void>;
+	"preUpdateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>;
+	"deleteCombat": DeleteHook<Combat>;
+	"createActor": CreateHook<Actor<any,any>>;
+	"createItem": CreateHook<Item<any>>;
+	"createToken": CreateHook<TokenDocument<any>>;
+	"createScene": CreateHook<Scene>;
+	"createCombatant": CreateHook<Combatant>;
+	"updateToken": UpdateHook<TokenDocument<any>>;
+	"deleteToken": DeleteHook<TokenDocument<any>>;
+	"deleteActor": DeleteHook<Actor<any>>;
+	"deleteCombatant": DeleteHook<Combatant>;
+	"deleteItem": DeleteHook<Item<any>>;
+	"deleteScene": DeleteHook<Scene>;
+	"updateScene": UpdateHook<Scene>;
+	"updateItem": UpdateHook<Item<any>>;
+	"updateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>;
+	"updateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<unknown>;
+	"getSceneControlButtons": Function;
+	"renderJournalDirectory": Function;
+	"renderCombatTracker": RenderCombatTabFn;
+	"renderApplication": Function;
+	"renderChatMessage": (msg: ChatMessage, htmlElement: JQuery<HTMLElement>, data: unknown) => Promise<unknown>;
+	"canvasReady": Function;
+	"hoverToken" : (token: Token<any>, hover:boolean) => unknown;
+	"userConnected": (user: FoundryUser, unknownBool : boolean) => unknown;
 };
 
 type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , delta: any, changes: Record<string, any>) => unknown;
