@@ -2,10 +2,15 @@
 	<header class="flexcol">
 		<div class="flexrow">
 			<img class="profile-img" src="{{actor.img}}" data-edit="img"/>
-			<input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
+			<select name="name">
+				{{selectOptions CONST.TAROT localize=true selected=actor.name}}
+			</select>
 		</div>
 	</header>
-
+	<label/> Perk
+		<textarea name="system.perk"> {{actor.system.perk}} </textarea>
+		<label/> Student Advantage
+		<textarea name="system.studentAbility"> {{actor.system.studentAbility}} </textarea>
 	<section class="focii">
 		<h2>
 			Social Link Benefits

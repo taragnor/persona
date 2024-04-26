@@ -224,24 +224,29 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get socialBenefits() : SocialBenefit[] {
+		let focuses : Focus[] = [];
 		switch (this.system.type) {
 			case "pc": return [];
 			case "shadow": return [];
 			case "tarot":
+				focuses = this.focii;
+				break;
 			case "npc":
-				const focuses = this.focii
-				.concat(this.tarot?.focii ?? []);
-				focuses.sort((a, b) => a.requiredLinkLevel() - b.requiredLinkLevel() );
-				return focuses.map( focus =>({
-					id: this.id,
-					focus,
-					lvl_requirement: focus.requiredLinkLevel(),
-				}))
-					;
+				focuses = this.focii
+					.concat(this.tarot?.focii ?? []);
+				break;
 			default:
-				this.system satisfies never;
+					this.system satisfies never;
 				throw new PersonaError("Unknwon type");
 		}
+		focuses.sort((a, b) => a.requiredLinkLevel() - b.requiredLinkLevel() );
+		return focuses.map( focus =>({
+			id: this.id,
+			focus,
+			lvl_requirement: focus.requiredLinkLevel(),
+		}))
+		;
+
 	}
 
 	getSocialStatToRaiseLink(this: NPC | PC, classification: "primary" | "secondary") : SocialStat {
@@ -1146,15 +1151,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		switch (this.system.type) {
 			case "pc":
 				const PC = this as PC;
-				PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
-				break;
+				return PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
 			case "shadow":
 				return undefined;
 			case "npc":
 				const NPC = this as NPC;
-				PersonaDB.tarotCards().find(x=> x.name == NPC.system.tarot);
+				return PersonaDB.tarotCards().find(x=> x.name == NPC.system.tarot);
 			case "tarot":
 				return this as Tarot;
+			default:
+				this.system satisfies never;
 		}
 
 	}
@@ -1203,11 +1209,15 @@ Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) =
 });
 
 Hooks.on("updateActor", async (actor: PersonaActor, _changes: {system: any}) => {
-	if (actor.system.type != "npc") {
-		await	(actor as PC | Shadow).refreshHpTracker();
+	switch (actor.system.type) {
+		case "pc": case "shadow":
+			await	(actor as PC | Shadow).refreshHpTracker();
+			break;
+		case "npc": case "tarot":
+			break;
+		default:
+			actor.system satisfies never;
 	}
-
-
 });
 
 Hooks.on("createToken", async function (token: Token<PersonaActor>)  {
