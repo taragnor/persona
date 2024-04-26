@@ -1,13 +1,13 @@
 {
 	"Actor": {
-		"types": ["shadow", "pc", "npc"],
+		"types": ["shadow", "pc", "npc", "tarot"],
 		"htmlFields": ["description"],
 		"pc": {},
 		"shadow": {},
 		"npc": {}
 	},
 	"Item": {
-		"types": ["weapon", "item", "consumable", "power", "characterClass", "focus", "talent", "universalModifier", "job", "tarot"],
+		"types": ["weapon", "item", "consumable", "power", "characterClass", "focus", "talent", "universalModifier", "job"],
 		"htmlFields": ["description"],
 		"skill": {},
 		"weapon": {},

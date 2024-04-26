@@ -70,7 +70,6 @@ function consumableSpecific() {
 		};
 		return ret;
 	}
-
 }
 
  class Consumable extends foundry.abstract.DataModel {

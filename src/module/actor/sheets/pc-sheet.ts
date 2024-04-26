@@ -35,7 +35,10 @@ export class PCSheet extends CombatantSheetBase {
 				await this.actor.createSocialLink(actor as PC)
 				return undefined;
 			}
-			case "shadow": return;
+			case "shadow":
+				return;
+				case "tarot":
+				return;
 			case "npc":
 				//create a social link
 				await this.actor.createSocialLink(actor as NPC)

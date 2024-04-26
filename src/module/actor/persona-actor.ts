@@ -98,6 +98,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				const actor = this as (Shadow | PC);
 				return actor.getDefense("ref").total( {user:actor.accessor}) + 0.1 * actor.getDefense("fort").total(situation) + 0.01 * actor.getDefense("will").total(situation);
 			}
+			case "tarot" :{
+				return -5;
+			}
 			default:
 				this.system satisfies never;
 				throw new PersonaError(`Unepxected Type : ${this.type}`);
@@ -143,15 +146,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get hp(): number {
-		if (this.system.type =="npc") return 0;
-		return this.system.combat.hp;
+		switch (this.system.type) {
+			case "npc": return 0;
+			case "tarot": return 0;
+			case "pc":
+			case "shadow":
+				return this.system.combat.hp;
+			default:
+				this.system satisfies never;
+				throw new PersonaError(`Unknown Type, can't get hp`);
+		}
 	}
 
 	get mhp() : number {
 		if (this.system.type == "npc") return 0;
+		if (this.system.type == "tarot") return 0;
 		try {
 			const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
-			const inc= this.hasIncremental("hp")? 1: 0;
+			const inc = this.hasIncremental("hp")? 1: 0;
 			const lvl = this.system.combat.classData.level;
 			const bonuses = this.getBonuses("maxhp");
 			const lvlbase = this.class.getClassProperty(lvl, "maxhp");
@@ -301,6 +313,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get powers(): Power[] {
 		const basicPowers = PersonaItem.getBasicPowers();
 		switch (this.system.type) {
+			case "tarot": return [];
 			case "npc" : return [];
 			case "pc":
 				const powerIds = this.system.combat.powers;
@@ -679,11 +692,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			await item.delete();
 			return;
 		}
-		if (this.system.type == "npc") return;
-		let foci = this.system.combat.focuses;
-		if (!foci.includes(focusId)) return;
-		foci = foci.filter( x=> x != focusId);
-		await this.update( {"system.combat.focuses": foci});
+		const actorType = this.system.type;
+		switch (actorType) {
+			case "npc": return;
+			case "tarot": return;
+			case "pc": case "shadow":
+				let foci = this.system.combat.focuses;
+				if (!foci.includes(focusId)) return;
+				foci = foci.filter( x=> x != focusId);
+				return await this.update( {"system.combat.focuses": foci});
+			default:
+				actorType satisfies never;
+		}
 	}
 
 	async  setClass(this: PC | Shadow, cClass: CClass) {
@@ -1112,14 +1132,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 }
 
-export type PC = Subtype<PersonaActor, "pc">;
-export type Shadow = Subtype<PersonaActor, "shadow">;
-export type NPC = Subtype<PersonaActor, "npc">;
-export type SocialLink = PC | NPC;
 
 Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) => {
 	switch (actor.system.type) {
 		case "npc": return;
+		case "tarot": return;
 		case "pc": {
 			const newHp = changes?.system?.combat?.hp;
 			if (newHp == undefined)
@@ -1159,4 +1176,10 @@ export type SocialBenefit = {
 	focus: Focus,
 	lvl_requirement: number,
 };
+
+export type PC = Subtype<PersonaActor, "pc">;
+export type Shadow = Subtype<PersonaActor, "shadow">;
+export type NPC = Subtype<PersonaActor, "npc">;
+export type Tarot = Subtype<PersonaActor, "tarot">;
+export type SocialLink = PC | NPC;
 

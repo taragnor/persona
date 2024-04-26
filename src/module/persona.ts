@@ -34,6 +34,7 @@ import { PersonaCombat } from "./combat/persona-combat.js";
 import { UniversalModifierSheet } from "./item/sheets/universalmodifier-sheet.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaJobSheet } from "./item/sheets/job-sheet.js";
+import { TarotSheet } from "./actor/sheets/tarot-sheet.js";
 
 
 export const PersonaSockets = new SocketManager ("persona", true);
@@ -59,6 +60,7 @@ function registerSheetApplications() {
   Actors.registerSheet("persona", PCSheet, {types: ["pc"], makeDefault: true});
   Actors.registerSheet("persona", NPCSheet, {types: ["npc"], makeDefault: true});
   Actors.registerSheet("persona", ShadowSheet, {types: ["shadow"], makeDefault: true});
+  Actors.registerSheet("persona", TarotSheet, {types: ["tarot"], makeDefault: true});
   Items.registerSheet("persona", PersonaClassSheet, {types: ["characterClass"], makeDefault: true});
   Items.registerSheet("persona", PersonaPowerSheet, {types: ["power"], makeDefault: true});
   Items.registerSheet("persona", PersonaWeaponSheet, {types: ["weapon"], makeDefault: true});

@@ -39,12 +39,11 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 		const actor = this.actor
 		switch (actor.system.type) {
 			case "npc":
+			case "tarot":
 				return false;
 			default:
 				return actor.system.combat.classData.incremental[val];
 		}
-
 	}
-
 
 }

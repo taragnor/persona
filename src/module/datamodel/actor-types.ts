@@ -203,8 +203,26 @@ export class NPCSchema extends foundry.abstract.DataModel {
 	}
 }
 
+export class TarotSchema extends foundry.abstract.DataModel {
+	get type() { return "tarot" as const;}
+	static override defineSchema() {
+		const ret = {
+			...BaseStuff.defineSchema(),
+			studentAbility: new txt(),
+			perk: new txt(),
+			//include
+		} as const;
+		return ret;
+	}
+}
 
- export const ACTORMODELS = {pc: PCSchema, shadow: ShadowSchema, npc: NPCSchema} as const;
+
+ export const ACTORMODELS = {
+	 pc: PCSchema,
+	 shadow: ShadowSchema,
+	 npc: NPCSchema,
+	 tarot: TarotSchema
+ } as const;
 
 //testing the types, purely for debug purposes
 type testPC = SystemDataObjectFromDM<typeof PCSchema>;
