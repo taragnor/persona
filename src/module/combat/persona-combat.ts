@@ -978,7 +978,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		if (!comb || !actor?.isOwner) return;
 		PersonaSFX.play("all-out prompt");
-		if (!await HTMLTools.confirmBox("All out attack!", `All out attack is available, would you like to do it? (active Party members: ${numOfAllies}`)
+		if (!await HTMLTools.confirmBox("All out attack!", `All out attack is available, would you like to do it? <br> (active Party members: ${numOfAllies})`)
 		) return;
 		if (!actor.hasStatus("bonus-action")) ui.notifications.warn("No bonus action");
 		const allOutAttack = PersonaDB.getBasicPower("All-out Attack");
