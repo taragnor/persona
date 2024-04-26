@@ -1191,3 +1191,4 @@ export type NPC = Subtype<PersonaActor, "npc">;
 export type Tarot = Subtype<PersonaActor, "tarot">;
 export type SocialLink = PC | NPC;
 
+

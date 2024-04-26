@@ -1,3 +1,4 @@
+import { Tarot } from "./actor/persona-actor.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { DBAccessor } from "./utility/db-accessor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
@@ -24,13 +25,18 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	allPowers() : Power[] {
-		const items = this.getAllByType("Item") as PersonaItem[];
+		const items = this.allItems();
 		return items
 		.filter( x=> x.system.type == "power") as Power[];
 	}
 
 	getBasicPower( name: typeof BASIC_POWER_NAMES[number]) : Power | undefined {
 		return PersonaDB.getItemByName(name) as Power | undefined;
+	}
+
+	tarotCards(): Tarot[] {
+		const actors = this.allActors();
+		return actors.filter( actor=> actor.system.type == "tarot") as Tarot[];
 	}
 
 }

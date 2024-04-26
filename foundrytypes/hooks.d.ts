@@ -42,7 +42,8 @@ declare interface HOOKS {
 	"renderChatMessage": (msg: ChatMessage, htmlElement: JQuery<HTMLElement>, data: unknown) => Promise<unknown>;
 	"canvasReady": Function;
 	"hoverToken" : (token: Token<any>, hover:boolean) => unknown;
-	"userConnected": (user: FoundryUser, unknownBool : boolean) => unknown;
+	/**hook boolean value is true on connect, false on disconnect*/
+	"userConnected": (user: FoundryUser, isConnectionEvent : boolean) => unknown;
 };
 
 type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , delta: any, changes: Record<string, any>) => unknown;
