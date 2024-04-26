@@ -5,13 +5,13 @@
 	"TYPES.Actor.npc": "NPC",
 	"TYPES.Actor.tarot": "Tarot Card",
 
-	"TYPES.Item.weapon": "weapon",
+	"TYPES.Item.weapon": "Weapon",
 	"TYPES.Item.item": "Item (Equippable)",
 	"TYPES.Item.consumable": "Item (Consumable)",
 	"TYPES.Item.power": "Power",
 	"TYPES.Item.characterClass": "Character Class",
 	"TYPES.Item.focus": "Focus",
-	"TYPES.Item.talent": "Focus",
+	"TYPES.Item.talent": "Talent",
 	"TYPES.Item.universalModifier": "Universal Modifier",
 	"TYPES.Item.job": "Job",
 

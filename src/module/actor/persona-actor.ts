@@ -223,14 +223,22 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get socialBenefits() : SocialBenefit[] {
-		if (this.system.type != "npc") return [];
-		const focuses = this.focii;
-		focuses.sort((a, b) => a.requiredLinkLevel() - b.requiredLinkLevel() );
-		return focuses.map( focus =>({
-			id: this.id,
-			focus,
-			lvl_requirement: focus.requiredLinkLevel(),
-		}));
+		switch (this.system.type) {
+			case "pc": return [];
+			case "shadow": return [];
+			case "tarot":
+			case "npc":
+				const focuses = this.focii;
+				focuses.sort((a, b) => a.requiredLinkLevel() - b.requiredLinkLevel() );
+				return focuses.map( focus =>({
+					id: this.id,
+					focus,
+					lvl_requirement: focus.requiredLinkLevel(),
+				}));
+			default:
+				this.system satisfies never;
+				throw new PersonaError("Unknwon type");
+		}
 	}
 
 	getSocialStatToRaiseLink(this: NPC | PC, classification: "primary" | "secondary") : SocialStat {
