@@ -17,6 +17,7 @@ const SOUNDS = {
 	"lightning": "atk-thunder.m4a.mp3",
 	"wind": "atk-wind.m4a.mp3",
 	"miss": "",
+	"all-out prompt": "atk-all-out-prompt.mp3"
 
 } as const;
 
@@ -67,9 +68,9 @@ export class PersonaSounds {
 			return await PersonaSounds.play(`ching.mp3`, 1.0, game.users.contents.map( x=> x.id));
 	}
 
-	static async playBattleSound(sound: keyof typeof SOUNDS) {
+	static async playBattleSound(sound: keyof typeof SOUNDS, volume = 1.0) {
 		const fname = SOUNDS[sound];
-		return await PersonaSounds.play(fname, 1.0, game.users.contents.map(x=> x.id));
+		return await PersonaSounds.play(fname, volume, game.users.contents.map(x=> x.id));
 	}
 
 }

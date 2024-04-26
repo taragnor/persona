@@ -1,6 +1,6 @@
-import { PersonaActor } from "../persona-actor";
-import { PersonaActorSheetBase } from "./actor-sheet.base";
-import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings";
+import { PersonaActor } from "../persona-actor.js";
+import { PersonaActorSheetBase } from "./actor-sheet.base.js";
+import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 
 export class TarotSheet extends PersonaActorSheetBase {
 	override actor: Subtype<PersonaActor, "tarot">;

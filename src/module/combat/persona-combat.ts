@@ -1,3 +1,4 @@
+import { PersonaSFX } from "./persona-sfx.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaSockets } from "../persona.js";
 import { StatusEffect } from "./combat-result.js";
@@ -965,7 +966,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	static async allOutAttackPrompt() {
 		if (!PersonaSettings.get("allOutAttackPrompt"))
 			return;
-		debugger;
 		const combat= this.ensureCombatExists();
 		const comb = combat?.combatant as Combatant<ValidAttackers> | undefined;
 		const actor = comb?.actor as ValidAttackers | undefined;
@@ -977,10 +977,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			return;
 		}
 		if (!comb || !actor?.isOwner) return;
-			if (!await HTMLTools.confirmBox("All out attack!", `All out attack is available, would you like to do it? (active Party members: ${numOfAllies}`)
-			) return;
+		PersonaSFX.play("all-out prompt");
+		if (!await HTMLTools.confirmBox("All out attack!", `All out attack is available, would you like to do it? (active Party members: ${numOfAllies}`)
+		) return;
 		if (!actor.hasStatus("bonus-action")) ui.notifications.warn("No bonus action");
-			const allOutAttack = PersonaDB.getBasicPower("All-out Attack");
+		const allOutAttack = PersonaDB.getBasicPower("All-out Attack");
 		if (!allOutAttack) throw new PersonaError("Can't find all out attack in database");
 		await PersonaCombat.usePower(comb.token.object, allOutAttack);
 	}
@@ -1019,7 +1020,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		dmg.low /= 3;
 		dmg.high = Math.round(dmg.high);
 		dmg.low = Math.round(dmg.low);
-		console.log(dmg);
 		return dmg;
 	}
 
