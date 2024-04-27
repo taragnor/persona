@@ -202,6 +202,11 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 		case "on-trigger":
 			if (!situation.trigger) return false;
 			return (condition.trigger == situation.trigger);
+		case "is-a-consumable":  {
+			if (!situation.usedPower) return false;
+			const power = PersonaDB.findItem(situation.usedPower);
+			return power.system.type == "consumable";
+		}
 		default:
 			condition.type satisfies never;
 			PersonaError.softFail(`Unexpected Condition: ${condition.type}`);
@@ -211,18 +216,18 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 
 export type Precondition = {
 	type : PreconditionType,
-	num?: number,
+	num ?: number,
 	powerType ?: PowerType,
 	powerDamageType ?: DamageType,
 	powerTag ?: PowerTag,
-	status?: StatusEffectId,
-	trigger?: Trigger,
+	status ?: StatusEffectId,
+	trigger ?: Trigger,
 }
 
 export type Situation = {
 	//more things can be added here all should be optional
 	user: UniversalActorAccessor<PC | Shadow>;
-	usedPower?: UniversalItemAccessor<Usable>;
+	usedPower ?: UniversalItemAccessor<Usable>;
 	activeCombat ?: boolean ;
 	naturalAttackRoll ?: number;
 	criticalHit ?: boolean;
@@ -232,9 +237,9 @@ export type Situation = {
 	isAbsorbed ?: boolean;
 	escalationDie ?: number;
 	activationRoll ?: boolean;
-	target?: UniversalTokenAccessor<PToken>;
-	userToken?: UniversalTokenAccessor<PToken>;
-	saveVersus?: StatusEffectId;
+	target ?: UniversalTokenAccessor<PToken>;
+	userToken ?: UniversalTokenAccessor<PToken>;
+	saveVersus ?: StatusEffectId;
 	trigger ?: Trigger,
 }
 

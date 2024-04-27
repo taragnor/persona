@@ -79,6 +79,7 @@ export const PRECONDITIONLIST = [
 	"save-versus",
 	"target-is-dead",
 	"on-trigger",
+	"is-a-consumable",
 ] as const;
 
 

@@ -1222,8 +1222,7 @@ Hooks.on("updateActor", async (actor: PersonaActor, _changes: {system: any}) => 
 
 Hooks.on("createToken", async function (token: Token<PersonaActor>)  {
 	token.actor.fullHeal();
-}
-);
+});
 
 
 export type SocialBenefit = {

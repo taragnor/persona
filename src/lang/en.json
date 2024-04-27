@@ -302,6 +302,7 @@
 	"persona.preconditions.save-versus": "Rolling saving throw versus" ,
 	"persona.preconditions.target-is-dead": "Target is dead" ,
 	"persona.preconditions.on-trigger": "On Trigger" ,
+	"persona.preconditions.is-a-consumable": "Using a consumable Item" ,
 
 	"persona.triggers.on-damage": "Character Takes Damage",
 	"persona.triggers.on-kill-target": "Character kills a target",
