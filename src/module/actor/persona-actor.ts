@@ -525,7 +525,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (this.system.type == "pc") {
 			const wpn = this.weapon;
 			if (!wpn) {
-				ui.notifications.warn(`${this.name} doesn't have an equipped weapon`)
 				return  {low: 1, high:2};
 			}
 			basedmg =  wpn.system.damage;

@@ -14,16 +14,11 @@ function itemBase() {
 	return {
 		itemCost: new num({ integer: true, min:0, initial: 0}),
 		desciption: new html(),
-		quantity: new num({ integer: true, initial: 1, min: 0})
+		amount: new num({ integer: true, initial: 1, min: 0}),
+		price: new num({ integer: true, initial: 0, min:0}),
 	};
 }
 
-function consumableSpecific() {
-	return {
-		amount: new num({initial:1, integer: true, min:0, max: 999}),
-	}
-
-}
 
 
  class Weapon extends foundry.abstract.DataModel {
@@ -78,7 +73,6 @@ function consumableSpecific() {
 	static override defineSchema() {
 		const ret = {
 			subtype: new txt({ initial: "consumable", choices: ["consumable"]}),
-			...consumableSpecific(),
 			...itemBase(),
 			...UsablePowerProps(),
 			...effects(true),
