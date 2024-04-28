@@ -12,8 +12,9 @@ import { effects } from "./power-dm.js";
 
 function itemBase() {
 	return {
-			itemCost: new num({ integer: true, min:0, initial: 0}),
-			desciption: new html(),
+		itemCost: new num({ integer: true, min:0, initial: 0}),
+		desciption: new html(),
+		quantity: new num({ integer: true, initial: 1, min: 0})
 	};
 }
 

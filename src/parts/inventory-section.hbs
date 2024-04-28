@@ -65,7 +65,7 @@
 </h2>
 <div class="item-list flexcol">
 	{{#each actor.inventory as |item|}}
-	<div class="inventory-item" data-item-id="{{item.id}}">
+	<div class="item item-entry inventory-item" data-item-id="{{item.id}}">
 			{{#if (eq item.system.type "consumable")}}
 			<a class="rollItem">
 				<img src="icons/dice/d20black.svg">
