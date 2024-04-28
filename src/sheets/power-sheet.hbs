@@ -59,6 +59,19 @@
 		{{numberInput item.system.mag_mult class="short" name="system.mag_mult" step=1 min=0 max=900}}
 	</div>
 	{{/if}}
+	{{#if (eq item.system.subtype "standalone")}}
+	<div class="damage">
+		<label class="dmg-low">
+			Low
+		</label>
+		{{numberInput item.system.damage.low class="short" name="system.damage.low" step=1 min=0 max=900}}
+		<label class="dmg-high">
+			High
+		</label>
+		{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=900}}
+	</div>
+	{{/if}}
+
 	{{#if (eq item.parent.type "shadow")}}
 	<hr>
 	<section = "shadow-costs">
@@ -77,8 +90,6 @@
 				ESC requirement
 			</label>
 		{{numberInput item.system.reqEscalation class="short" name="system.reqEscalation" step=1 min=0 max=6}}
-
-
 	</section>
 	{{/if}}
 
