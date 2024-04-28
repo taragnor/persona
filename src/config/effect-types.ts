@@ -80,6 +80,7 @@ export const PRECONDITIONLIST = [
 	"target-is-dead",
 	"on-trigger",
 	"is-a-consumable",
+	"target-is-same-arcana"
 ] as const;
 
 

@@ -207,6 +207,12 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 			const power = PersonaDB.findItem(situation.usedPower);
 			return power.system.type == "consumable";
 		}
+		case "target-is-same-arcana": {
+			const actor = PersonaDB.findActor(situation.user);
+			if(!situation.target) return false;
+			const target = PersonaDB.findToken(situation.target);
+			return actor.system.tarot == target.actor.system.tarot;
+			 }
 		default:
 			condition.type satisfies never;
 			PersonaError.softFail(`Unexpected Condition: ${condition.type}`);
