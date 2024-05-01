@@ -16,6 +16,7 @@ import { DEFENSECHOICES } from "../../datamodel/power-dm.js";
 import { SHADOW_CHARGE_REQ } from "../../../config/effect-types.js";
 import { PersonaDB } from "../../persona-db.js";
 import { TRIGGERS } from "../../../config/triggers.js";
+import { OTHER_CONSEQUENCES } from "../../datamodel/other-effects.js";
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
 	override item: PowerContainer;
@@ -26,6 +27,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 		}
 		const data = await super.getData();
 		data.POWERSTUFF = {
+			OTHER_CONSEQUENCES : OTHER_CONSEQUENCES,
 			TRIGGERS: TRIGGERS,
 			POWERTYPES : POWERTYPES,
 			SLOTTYPES : SLOTTYPES,

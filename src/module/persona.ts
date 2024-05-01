@@ -35,6 +35,7 @@ import { UniversalModifierSheet } from "./item/sheets/universalmodifier-sheet.js
 import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaJobSheet } from "./item/sheets/job-sheet.js";
 import { TarotSheet } from "./actor/sheets/tarot-sheet.js";
+import { SearchMenu } from "./exploration/searchMenu.js";
 
 
 export const PersonaSockets = new SocketManager ("persona", true);
@@ -82,6 +83,9 @@ function registerSheetApplications() {
 
    // Add custom config constants
    CONFIG.PERSONACFG = {}; //TODO: config object goes here
+
+//@ts-ignore
+window.SearchMenu = SearchMenu;
 
 	 registerDataModels();
 	 registerDocumentClasses();

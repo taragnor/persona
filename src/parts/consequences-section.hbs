@@ -60,8 +60,14 @@
 		<select name="system.effects.{{../i}}.consequences.{{j}}.id">
 		{{selectOptions ../POWERSTUFF.COMPENDIUM_POWERS localize=false selected=cons.id}}
 		</select>
-
 		{{/if}}
+
+		{{#if (eq cons.type	"other-effect")}}
+		<select name="system.effects.{{../i}}.consequences.{{j}}.otherEffect">
+			{{selectOptions ../POWERSTUFF.OTHER_CONSEQUENCES localize=true selected=cons.otherEffect}}
+		</select>
+		{{/if}}
+
 		<a class="delConsequence">
 			<i class="fa-solid fa-trash-can"></i>
 		</a>

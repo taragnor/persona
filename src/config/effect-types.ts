@@ -21,6 +21,7 @@ export const CONSQUENCELIST = [
 	"expend-item",
 	"recover-slot",
 	"add-power-to-list",
+	"other-effect",
 ] as const;
 
 

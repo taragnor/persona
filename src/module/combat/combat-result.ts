@@ -1,3 +1,4 @@
+import { OtherConsequence } from "../datamodel/other-effects.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { ValidSound } from "../persona-sounds.js";
 import { PersonaSFX } from "./persona-sfx.js";
@@ -172,6 +173,8 @@ export class CombatResult  {
 				});
 				break;
 			case "add-power-to-list":
+				break;
+			case "other-effect":
 				break;
 			default: {
 				cons.type satisfies never;
@@ -511,6 +514,7 @@ export type Consequence = {
 	itemAcc?: UniversalItemAccessor<Usable>,
 	slotType?: SlotType,
 	id?: string,
+	otherEffect?: OtherConsequence,
 }
 
 export type AttackResult = {
@@ -555,3 +559,5 @@ Hooks.on("renderChatMessage", async (msg: ChatMessage, html: JQuery<HTMLElement>
 Hooks.on("socketsReady", async () => {
 	PersonaSockets.setHandler("COMBAT_RESULT_APPLY", CombatResult.applyHandler.bind(CombatResult));
 });
+
+

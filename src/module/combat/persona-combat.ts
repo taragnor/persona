@@ -632,6 +632,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case"expend-item":
 				case "recover-slot":
 				case "half-hp-cost":
+				case "other-effect":
 				case "add-power-to-list":
 					consequences.push({applyToSelf,cons});
 					break;

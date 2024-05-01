@@ -1,0 +1,22 @@
+<section class="search-options">
+	<label>
+		Secret Present
+	</label>
+	<input type="checkbox" id="isSecret" {{checked options.isSecret}}>
+	<br>
+	<label>
+		Hazard Present
+	</label>
+	<input type="checkbox" id="isHazard" {{checked options.isHazard}}>
+	<br>
+	<label>
+	Stop On Hazard
+	</label>
+	<input type="checkbox" id="stopOnHazard" {{checked options.stopOnHazard}}>
+	<br>
+	<label>
+		Treasures Remaining
+	</label>
+
+		{{numberInput options.treasureRemaining class="short treasureRemaining"  step=1 min=0 max=10}}
+</section>

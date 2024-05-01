@@ -259,6 +259,7 @@
 	"persona.effecttypes.expend-item": "Expend Item",
 	"persona.effecttypes.recover-slot": "Recover Power Slot",
 	"persona.effecttypes.add-power-to-list": "Add a power to the list",
+	"persona.effecttypes.other-effect": "Other Effects",
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.natural+": "Natural >=",
@@ -314,6 +315,8 @@
 	"persona.triggers.on-combat-end": "Combat Ends",
 	"persona.triggers.enter-metaverse": "Enter the Metaverse",
 	"persona.triggers.exit-metaverse": "Exit the Metaverse",
+	"persona.othereffect.search-twice": "Search Twice",
+	"persona.othereffect.ignore-surprise": "Act during surprise rounds",
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",
