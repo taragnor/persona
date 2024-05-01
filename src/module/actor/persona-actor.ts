@@ -574,7 +574,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.passiveItems(),
 			...this.getSocialFocii(),
 			...PersonaDB.getGlobalModifiers(),
-		];
+		].filter( x => x.getEffects().length > 0);
 	}
 
 	wpnAtkBonus(this: PC | Shadow) : ModifierList {
@@ -616,7 +616,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		mods.add("Base Defense Bonus", baseDef);
 		mods.add("Level Bonus", lvl + inc);
 		const itemBonus = this.getBonuses(type);
-		return mods.concat(itemBonus);
+		const universalDefenseType = this.getBonuses("allDefenses");
+		return mods.concat(itemBonus).concat(universalDefenseType);
 	}
 
 	elementalResist(this: PC | Shadow, type: typeof DAMAGETYPESLIST[number]) : ResistStrength  {

@@ -1,3 +1,4 @@
+import { ModifierTarget } from "../../config/item-modifiers.js";
 import { ValidSound } from "../persona-sounds.js";
 import { PersonaSFX } from "./persona-sfx.js";
 import { DamageType } from "../../config/damage-types.js";
@@ -239,7 +240,6 @@ export class CombatResult  {
 		for (const cost of this.costs) {
 			const token = PersonaDB.findToken(cost.token);
 			if (this.hasFlag(token.actor, "half-hp-cost")) {
-				console.log("Halving HP cost");
 				cost.hpchangemult *= 0.5;
 			}
 			if (this.hasFlag(token.actor, "save-slot")) {
@@ -504,7 +504,7 @@ export type StatusEffect = {
 export type Consequence = {
 	type: typeof CONSQUENCELIST[number],
 	amount?: number,
-	modifiedField?: string,
+	modifiedField?: ModifierTarget,
 	statusName?: StatusEffectId,
 	statusDuration?: StatusDuration,
 	applyToSelf?: boolean,

@@ -35,12 +35,13 @@ export class ModifierList {
 	}
 
 	list(situtation: Situation): [number, string][] {
-		const filtered = this._data.filter( item=> item.conditions.every(cond => {
-			const source = item.source ? PersonaDB.findItem(item.source): null;
-			ModifierList.testPrecondition(cond, situtation,
-				source)
-		}
-		));
+		const filtered = this.validModifiers(situtation);
+		// const filtered = this._data.filter( item=> item.conditions.every(cond => {
+		// 	const source = item.source ? PersonaDB.findItem(item.source): null;
+		// 	ModifierList.testPrecondition(cond, situtation,
+		// 		source)
+		// }
+		// ));
 		return filtered.map( x=> [x.modifier, x.name]);
 	}
 
@@ -53,7 +54,9 @@ export class ModifierList {
 		return this._data.filter( item => {
 			const source = item.source ? PersonaDB.findItem(item.source) as PowerContainer: null;
 			if (item.conditions.every( cond => ModifierList.testPrecondition(cond, situation, source))) {
-				return true;
+				if (item.modifier != 0 || item.variableModifier.size != 0) {
+					return true;
+				}
 			}
 			return false;
 		});

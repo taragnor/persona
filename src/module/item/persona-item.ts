@@ -242,7 +242,7 @@ const power = PersonaDB.getBasicPower(powerName);
 	}
 
 	getModifier(this: ModifierContainer, type : ModifierTarget) : ModifierListItem[] {
-		return this.system.effects
+		return this.getEffects()
 			.map(x =>
 				({
 					name: this.name,
@@ -250,7 +250,7 @@ const power = PersonaDB.getBasicPower(powerName);
 					conditions: ArrayCorrector(x.conditions),
 					modifier: ArrayCorrector(x.consequences).reduce( (acc,x)=> {
 						if ( x.modifiedField == type) {
-							if (x.amount != 0) return acc+(x.amount ?? 0);
+							if (x.amount != 0) return acc + (x.amount ?? 0);
 						}
 						return acc;
 					}, 0),

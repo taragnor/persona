@@ -451,12 +451,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			critBoostMod.add("defender blocking", -100);
 		}
 		const critBoost = critBoostMod.total(situation);
-		const validDefModifiers= target.actor.getDefense(def).list(situation);
 		situation.resisted = resist == "resist";
 		situation.struckWeakness = resist == "weakness";
+		const defenseVal = target.actor.getDefense(def).total(situation);
+		const validDefModifiers= target.actor.getDefense(def).list(situation);
+		// console.log(target.actor.getDefense(def).validModifiers(situation));
+		// console.log(validDefModifiers);
+		// console.log(`${def}:  ${defenseVal}`);
 
 		if (naturalAttackRoll == 1
-			|| total < target.actor.getDefense(def).total(situation)
+			|| total < defenseVal
 		) {
 			situation.hit = false;
 			situation.criticalHit = false;

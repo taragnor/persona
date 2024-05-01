@@ -7,6 +7,7 @@ export const MODIFIERLIST = [
 	"wpnDmg",
 	"magDmg",
 	"criticalBoost",
+	"allDefenses",
 	"ref",
 	"fort",
 	"will",
