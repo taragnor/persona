@@ -10,14 +10,21 @@
 		</select>
 	</div>
 
-	<div class="flexcol editor description">
-{{editor item.system.description target="system.description" button=false engine="prosemirror" collaborate=false}}
-	</div>
+	<textarea name="system.description">
+		{{item.system.description}}
+	</textarea>
 
-	<label>
-		{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=900}}
-	</label>
-
+	{{#if (isGM)}}
+	<label> Price </label>
+	{{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}
+	<br>
+	<label> No Trade </label>
+	<input type="checkbox" name="system.noTrade" {{checked item.system.noTrade}}>
+	{{else}}
+	{{#if item.system.noTrade}}
+	<b> Can't trade</b>
+	{{/if}}
+	{{/if}}
 
 	{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
 </form>

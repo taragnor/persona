@@ -1,8 +1,8 @@
 <form class="weapon-sheet">
 	<input type="text" class="borderless item-name" name="name" value="{{item.name}}" title="Conusmable Name" placeholder="Consumable Name">
-	<div class="editor description">
-		{{editor item.system.description target="system.description" button=false engine="prosemirror" collaborate=false}}
-	</div>
+	<textarea name="system.description">
+		{{item.system.description}}
+	</textarea>
 	<hr>
 	<div class="damage">
 		<label class="dmg-low">
@@ -15,7 +15,21 @@
 		{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=900}}
 	</div>
 	<hr>
+
+	{{#if (isGM)}}
+	<label> Price </label>
+	{{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}
+	<br>
+	<label> No Trade </label>
+	<input type="checkbox" name="system.noTrade" {{checked item.system.noTrade}}>
+	{{else}}
+	{{#if item.system.noTrade}}
+	<b> Can't trade</b>
+	{{/if}}
+	{{/if}}
+
 	{{> "systems/persona/parts/power-effects.hbs" item=item POWERSTUFF=POWERSTUFF}}
+
 
 </form>
 

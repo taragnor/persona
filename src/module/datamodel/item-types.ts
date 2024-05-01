@@ -16,6 +16,7 @@ function itemBase() {
 		desciption: new html(),
 		amount: new num({ integer: true, initial: 1, min: 0}),
 		price: new num({ integer: true, initial: 0, min:0}),
+		noTrade: new bool({initial: false}),
 	};
 }
 
@@ -59,7 +60,7 @@ function itemBase() {
 	get type() {return "power" as const;}
 	static override defineSchema() {
 		const ret = {
-			...powerSpecific(),
+				...powerSpecific(),
 			...powerCost(),
 			...UsablePowerProps(),
 			...effects(true),
