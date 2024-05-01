@@ -520,6 +520,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return ret as (InvItem | Weapon)[];
 	}
 
+	passiveItems(): InvItem[] {
+		if (this.system.type != "pc") return [];
+		const inv = this.inventory;
+		return inv.filter( item => item.system.type == "item" && item.system.slot == "none") as InvItem[];
+	}
+
 	wpnDamage(this: PC | Shadow, multiplier_factored: boolean = true, situation: Situation = { user: this.accessor}) : {low: number, high:number} {
 		let basedmg: {low: number, high:number};
 		if (this.system.type == "pc") {
@@ -565,6 +571,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.focii,
 			...this.talents,
 			...passivePowers,
+			...this.passiveItems(),
 			...this.getSocialFocii(),
 			...PersonaDB.getGlobalModifiers(),
 		];
