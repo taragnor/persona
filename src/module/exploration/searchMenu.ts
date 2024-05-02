@@ -297,6 +297,7 @@ export class SearchMenu {
 			this.data = updateData;
 			if (updateData.suspended) {
 				this.suspend(false);
+				return;
 			}
 			if (!this.isOpen()) {
 				this.openDialog(updateData);
@@ -327,6 +328,10 @@ export class SearchMenu {
 
 	private static suspend(notifyOthers: boolean) {
 		ui.notifications.notify("Suspending Search");
+		this.data!.suspended = true;
+		if (this.dialog) {
+			this.dialog.close();
+		}
 		const dialog = this.dialog;
 		this.dialog = undefined;
 		if (dialog) {
