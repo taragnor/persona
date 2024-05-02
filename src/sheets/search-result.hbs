@@ -1,8 +1,19 @@
+<h2> Search Rolls </h2>
 <section class= "search-result">
 	{{#each results as |res|}}
-	{{res.searcher.name}} ({{res.searcher.declaration}} : {{res.roll}} --- {{res.result}}
+	<div class="result">
+		{{res.searcher.name}} ({{res.declaration}}) : {{res.roll}} --- <b>{{res.result}}</b>
+	</div>
 	{{/each}}
 	<hr>
 	<b> Tension Pool:</b>
-	 {{tensionResult}}
+	<div class="tension-rolls">
+		{{#each tensionRoll as |val|}}
+		<span>
+			{{val}}
+		</span>
+		{{/each}}
+	</div>
+	<br>
+	{{tensionResult}}
 </section>

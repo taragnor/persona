@@ -218,6 +218,6 @@ input.single-digit {
 	cursor: pointer;
 }
 
-.faded {
+	.faded {
 	opacity: 50%;
 }

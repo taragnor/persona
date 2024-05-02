@@ -13,6 +13,7 @@ import { TensionPool } from "./tension-pool.js";
 
 export class SearchMenu {
 	private static dialog: Dialog | undefined = undefined;
+	static options: SearchOptions;
 	static progress = {
 		treasuresFound: 0,
 		hazardFound: false,
@@ -25,48 +26,92 @@ export class SearchMenu {
 	static data: null | SearchUpdate = null;
 
 	static isOpen() : boolean {
-		return !!this.dialog;
+		return !!this.dialog && !(this.data && this.data.suspended);
 	}
 
 	static async start() : Promise<void> {
+		this.data = null;
 		this.progress = {
 			treasuresFound: 0,
 			hazardFound: false,
 			secretFound: false
 		}
 		const searchOptions =  await this.searchOptionsDialog();
-		while (true) {
-			const results = await this.openSearchWindow(searchOptions);
-			if (results.some( res => res.declaration == "leave")) {
-				this.leaveRoom(searchOptions);
-				break;
-			}
-			await this.execSearch(results, searchOptions);
+		this.options = searchOptions;
+		await this.mainLoop();
+	}
+
+	static async resume() : Promise<void> {
+		if (!this.data) {
+			ui.notifications.warn("Can't resume as there is no data");
+			return;
+		}
+		if (this.data?.suspended) {
+			this.data.suspended = false;
+			await this.mainLoop();
 		}
 
 	}
 
-	static leaveRoom(_options: SearchOptions) {
-		const _progress = this.progress;
-		ui.notifications.notify("left the room");
+
+	private static async mainLoop() {
+		while (true) {
+			const results = await this.openSearchWindow(this.options!);
+			if (results.some( res => res.declaration == "leave")) {
+				this.endSearch();
+				break;
+			}
+			const ret = await this.execSearch(results, this.options);
+			if (!ret) {this.endSearch(); break;}
+		}
+	}
+
+	static endSearch() {
+		let html = "";
+		const progress = this.progress;
+		if (this.progress.treasuresFound) {
+			html += `<div> Treasures Found  ${this.progress.treasuresFound}</div> `;
+			html += `<div> Treasures Left  ${this.options.treasureRemaining}</div> `;
+		}
+		if (this.progress.secretFound && this.options.isSecret){
+			html += "<div>Secret Found</div>";
+		}
+		if (this.progress.hazardFound && this.options.isHazard) {
+			html += "<div>Hazard Found</div>";
+		}
+
+		const msg = ChatMessage.create({
+			speaker: {
+				scene: undefined,
+				actor: undefined,
+				token: undefined,
+				alias: "Search Results"
+			},
+			content: html,
+			type: CONST.CHAT_MESSAGE_TYPES.OOC,
+		})
+
 	}
 
 	static async execSearch(results : SearchResult[], options: SearchOptions) {
 		let rolls : Roll[] = [];
-		ui.notifications.notify("executing search");
 		const guards = results.filter( x=> x.declaration == "guard").length;
-		for (const searcher of results) {
+		exitFor: for (const searcher of results) {
 			switch (searcher.declaration) {
 				case "search": {
 					const roll = new Roll("1d6");
-					searcher.result = await this.processSearchRoll([roll], options);
+					const [result, total] = await this.processSearchRoll([roll], options);
+					searcher.result = result;
+					searcher.roll = total;
 					rolls.push(roll);
 					break;
 				}
 				case "careful-search": {
 					const roll = new Roll("1d6");
 					const roll2 = new Roll("1d10");
-					searcher.result = await this.processSearchRoll([roll, roll2], options);
+					const [result, total]= await this.processSearchRoll([roll, roll2], options);
+					searcher.result = result;
+					searcher.roll = total;
 					rolls.push(roll, roll2);
 					break;
 				}
@@ -77,8 +122,10 @@ export class SearchMenu {
 			switch (searcher.result) {
 				case "hazard":
 					this.progress.hazardFound = true;
-					if (options.stopOnHazard)
-						return;
+					if (options.stopOnHazard) {
+						this.suspend(true);
+						break exitFor;
+					}
 					break;
 				case "secret":
 					this.progress.secretFound = true;
@@ -92,7 +139,7 @@ export class SearchMenu {
 		}
 		const [roll, result] = await this.tensionPool(guards);
 		rolls.push(roll);
-		const html  =await renderTemplate(`${HBS_TEMPLATES_DIR}/search-result.hbs`, {tensionRoll : roll, results, options, tensionResult: result} );
+		const html  =await renderTemplate(`${HBS_TEMPLATES_DIR}/search-result.hbs`, {tensionRoll : roll.dice[0].values, results, options, tensionResult: result} );
 		const msg = ChatMessage.create({
 			speaker: {
 				scene: undefined,
@@ -104,31 +151,47 @@ export class SearchMenu {
 			type: CONST.CHAT_MESSAGE_TYPES.ROLL,
 			rolls,
 		})
+		if (result != "none") {
+			this.suspend(true);
+			return;
+		}
 		return msg;
 	}
 
-		static async processSearchRoll(rolls: Roll[], options: SearchOptions) : Promise<NonNullable<SearchResult["result"]>> {
+		static async processSearchRoll(rolls: Roll[], options: SearchOptions) : Promise<[result: NonNullable<SearchResult["result"]>, rollamt: number]> {
 			for (const roll of rolls) {
 				await roll.roll();
 			}
 			const val = Math.max( ...rolls.map (x=> x.total))
+			let result : SearchResult["result"];
 			switch (val) {
-				case 1:return options.isHazard ? "hazard" : "nothing";
-				case 2: return "nothing";
-				case 3: return options.isSecret ? "secret" : "nothing";
+				case 1:
+					result = options.isHazard ? "hazard" : "nothing";
+					break;
+				case 2:
+					result ="nothing";
+					break;
+				case 3:
+					result = options.isSecret ? "secret" : "nothing";
+					break;;
 				case 4:
-					return options.treasureRemaining >= 3 ? "treasure" : "nothing";
+					result= options.treasureRemaining >= 3 ? "treasure" : "nothing";
+					break;
 				case 5:
-					return options.treasureRemaining >= 2 ? "treasure" : "nothing";
+					result = options.treasureRemaining >= 2 ? "treasure" : "nothing";
+					break;
 				case 6:
-					return options.treasureRemaining >= 1 ? "treasure" : "nothing";
-				default: return "nothing";
+					result= options.treasureRemaining >= 1 ? "treasure" : "nothing";
+					break;
+				default:
+					result= "nothing";
 			}
+			return [result, val];
 
 		}
 
 		static async tensionPool(guards: number) : Promise<[Roll, "ambush" | "battle" |"reaper" | "none"]> {
-			const tensionPool= TensionPool.inc();
+			const tensionPool= await TensionPool.inc();
 
 			const roll = new Roll(`${tensionPool}d6`);
 			roll.roll();
@@ -159,7 +222,6 @@ export class SearchMenu {
 						submit: {
 							label: "Submit",
 							callback: (html: string) => {
-								console.log(html);
 								options.isSecret = $(html).find("#isSecret").is(":checked");
 								options.isHazard = $(html).find("#isHazard").is(":checked");
 								options.stopOnHazard = $(html).find("#stopOnHazard").is(":checked");
@@ -180,7 +242,8 @@ export class SearchMenu {
 			}
 			let searchUpdate: SearchUpdate ={
 				results: this.generateOriginalSearchResults(),
-				options
+				options,
+				suspended: false
 			};
 			this.onSearchUpdate(searchUpdate);
 			return new Promise( (res, rej) => {
@@ -223,12 +286,18 @@ export class SearchMenu {
 		}
 
 		private static sendUpdate() {
-			if (this.data)
+			if (this.data) {
 				PersonaSockets.simpleSend("SEARCH_UPDATE", this.data, game.users.contents.filter(x=> x.active).map( x=> x.id));
+			} else {
+			PersonaError.softFail("can't send update, no data");
+			}
 		}
 
 		static async onSearchUpdate(updateData  : SearchUpdate, send: boolean  = true) {
 			this.data = updateData;
+			if (updateData.suspended) {
+				this.suspend(false);
+			}
 			if (!this.isOpen()) {
 				this.openDialog(updateData);
 			} else {
@@ -253,14 +322,24 @@ export class SearchMenu {
 		}
 
 		static closeDialog() {
-			this.data = null;
 			this.dialog = undefined;
 		}
+
+	private static suspend(notifyOthers: boolean) {
+		ui.notifications.notify("Suspending Search");
+		const dialog = this.dialog;
+		this.dialog = undefined;
+		if (dialog) {
+			dialog.close();
+			this.data!.suspended = true;
+		}
+		if (notifyOthers)
+			this.sendUpdate();
+	}
 
 		private static async updateDialog() {
 			if (!this.dialog) throw new PersonaError("Dialog isn't open!");
 			if (!this.data) throw new PersonaError("Can't find Data");
-			ui.notifications.notify("Updating Dialog");
 			const html = await this.renderTemplate();
 			this.dialog.element.find(".dialog-content").children().replaceWith(html);
 			this.setListeners(this.dialog.element);
@@ -292,7 +371,6 @@ export class SearchMenu {
 			}
 			const dialog = this.dialog;
 			this.dialog = undefined;
-			this.data = null;
 			if (dialog)
 				dialog.close();
 		}
@@ -375,6 +453,7 @@ export class SearchMenu {
 	}
 
 	type SearchUpdate = {
+		suspended: boolean;
 		results: SearchResult[];
 		options: SearchOptions;
 	};
