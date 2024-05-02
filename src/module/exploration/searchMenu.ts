@@ -8,6 +8,7 @@ import { PersonaSockets } from "../persona.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { TensionPool } from "./tension-pool.js";
+import { sleep } from "../utility/async-wait.js";
 
 
 
@@ -327,7 +328,6 @@ export class SearchMenu {
 		}
 
 	private static suspend(notifyOthers: boolean) {
-		ui.notifications.notify("Suspending Search");
 		this.data!.suspended = true;
 		if (this.dialog) {
 			this.dialog.close();
@@ -408,9 +408,14 @@ export class SearchMenu {
 		}
 
 
-		static onUserConnect(_user: FoundryUser) {
+		static async onUserConnect(_user: FoundryUser) {
 			if (this.isOpen() && this.data) {
 				this.onSearchUpdate(this.data);
+				if (game.user.isGM) {
+					ui.notifications.notify("Sending to client to try to revive search");
+					await sleep(4000);
+					this.sendUpdate();
+				}
 			}
 		}
 
