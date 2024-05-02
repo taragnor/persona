@@ -1,0 +1,8 @@
+<section class= "search-result">
+	{{#each results as |res|}}
+	{{res.searcher.name}} ({{res.searcher.declaration}} : {{res.roll}} --- {{res.result}}
+	{{/each}}
+	<hr>
+	<b> Tension Pool:</b>
+	 {{tensionResult}}
+</section>
