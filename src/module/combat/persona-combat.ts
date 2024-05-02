@@ -322,7 +322,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			await result.finalize();
 			await result.print();
 			await result.toMessage(attacker, power.name);
-			console.log(result);
 			// await result.apply();
 			return result;
 		} catch(e) {
@@ -455,9 +454,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		situation.struckWeakness = resist == "weakness";
 		const defenseVal = target.actor.getDefense(def).total(situation);
 		const validDefModifiers= target.actor.getDefense(def).list(situation);
-		// console.log(target.actor.getDefense(def).validModifiers(situation));
-		// console.log(validDefModifiers);
-		// console.log(`${def}:  ${defenseVal}`);
 
 		if (naturalAttackRoll == 1
 			|| total < defenseVal
@@ -1022,7 +1018,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const wpndmg = actor.wpnDamage(true, situation);
 			dmg.high+= wpndmg.high;
 			dmg.low += wpndmg.low;
-			console.log(`Adding damage for ${actor.name}`)
 		}
 		dmg.high /= 3;
 		dmg.low /= 3;
@@ -1123,7 +1118,6 @@ Hooks.on("renderCombatTracker", async (_item: CombatTracker, element: JQuery<HTM
 });
 
 Hooks.on("onAddStatus", async function (token: PToken, status: StatusEffect)  {
-	console.log("Calling on Add Status");
 	if (status.id != "down") return;
 	if (!game.user.isGM) {
 		throw new PersonaError("Somehow isn't GM executing this");
