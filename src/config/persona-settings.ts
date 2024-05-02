@@ -1,4 +1,4 @@
-import { PersonaActor } from "../module/actor/persona-actor";
+import { PersonaActor } from "../module/actor/persona-actor.js";
 
 export const SYSTEMNAME = `persona` as const;
 export const SYSTEMPATH = `systems/${SYSTEMNAME}` as const;

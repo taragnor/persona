@@ -1,6 +1,6 @@
 const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
 import { AVAILABILITY_LIST } from "../../config/availability-types.js";
-import { ResistType } from "../../config/damage-types";
+import { ResistType } from "../../config/damage-types.js";
 import { INCREMENTAL_ADVANCE_TYPES } from "../../config/incremental-advance-types.js";
 
 import { tarotDeck } from "../../config/tarot.js";

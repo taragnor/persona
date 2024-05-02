@@ -1,3 +1,4 @@
+import { UniversalActorAccessor } from "./utility/db-accessor.js";
 import { Power } from "./item/persona-item.js";
 import { SocialBenefit } from "./actor/persona-actor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
@@ -84,6 +85,15 @@ export class PersonaHandleBarsHelpers {
 		'canUsePower': (actor:PC | Shadow, power: Power) => {
 			return actor.isAlive() && actor.canPayActivationCost(power, false);
 		},
+
+		'canModifySearchChoice': (ownerId : string) => {
+			const user = game.users.get(ownerId);
+			if (user && user.active) {
+				return game.user == user;
+			}
+			return game.user.isGM;
+		},
+
 	}
 }
 

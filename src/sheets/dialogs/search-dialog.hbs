@@ -1,0 +1,27 @@
+<section class="search-dialog">
+	<div>
+	<b>Treasures Remaining: </b>{{data.options.treasureRemaining}}
+	</div>
+	<hr>
+	<ul class="searchers">
+		{{#each data.results as |result|}}
+		<li class="searcher" data-actor-id="{{result.searcher.actor.actorId}}" owner-id="{{result.searcher.ownerId}}"}}>
+			<div class = "flexrow">
+				<b>
+					{{result.searcher.name}} ({{result.searcher.ownerName}}):
+				</b>
+			{{#if (canModifySearchChoice result.searcher.ownerId)}}
+		<select class="action-choice">
+		{{selectOptions ../SEARCH_ACTIONS localize=true selected=result.declaration}}
+		</select>
+		{{else}}
+		{{result.declaration}}
+		{{/if}}
+			</div>
+		</li>
+		{{/each}}
+	</ul>
+
+
+
+</section>

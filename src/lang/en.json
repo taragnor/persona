@@ -318,6 +318,13 @@
 	"persona.othereffect.search-twice": "Search Twice",
 	"persona.othereffect.ignore-surprise": "Act during surprise rounds",
 
+	"persona.search.actions.undecided": "Undecided",
+	"persona.search.actions.search": "Search",
+	"persona.search.actions.careful-search": "Careful Search",
+	"persona.search.actions.guard": "Guard",
+	"persona.search.actions.leave": "Leave Room",
+	"persona.search.actions.disconnected": "Player Disconnected",
+
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",
 	"persona.availability.-": "Normal (-)",

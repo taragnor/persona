@@ -4,13 +4,14 @@ declare global {
 			"X": number,
 	}
 	interface HOOKS {
-		"socketsReady": (x: SocketManager) => Promise<void>;
+		"socketsReady": (x: SocketManager) => unknown;
 
 	}
 }
 
 export class SocketManager {
 	#socketName: string;
+	_socketsReady: boolean = false;
 	#handlers: HandlerMap<keyof SocketMessage>= new Map();
 
 	constructor (socketName: string, isSystem: boolean = false) {
@@ -20,8 +21,13 @@ export class SocketManager {
 			async () => {
 				game.socket.on(this.#socketName, (x: SocketPayload<keyof SocketMessage>) => this.onMsgRecieve(x));
 				console.log(`Sockets intiailized : ${this.#socketName}`);
+				this._socketsReady = true;
 				Hooks.callAll("socketsReady", this);
 			});
+	}
+
+	get socketsReady() : boolean {
+		return this._socketsReady;
 	}
 
 	/** A simple send with no confirmation that it was recieved */
@@ -43,6 +49,12 @@ export class SocketManager {
 	}
 
 	setHandler<T extends keyof SocketMessage>(msgType: T, handlerFn : DataHandlerFn<T>) : void {
+		if (!this.socketsReady) {
+			Hooks.on("socketsReady", () => {
+				this.setHandler(msgType, handlerFn);
+			});
+			return;
+		}
 		if (!this.#handlers.has(msgType)) {
 			this.#handlers.set(msgType, []);
 		}

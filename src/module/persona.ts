@@ -85,7 +85,7 @@ function registerSheetApplications() {
    CONFIG.PERSONACFG = {}; //TODO: config object goes here
 
 //@ts-ignore
-window.SearchMenu = SearchMenu;
+	 window.SearchMenu = SearchMenu;
 
 	 registerDataModels();
 	 registerDocumentClasses();
