@@ -269,6 +269,7 @@
 	"persona.preconditions.critical": "Critical Hit",
 	"persona.preconditions.miss": "Miss",
 	"persona.preconditions.hit": "Hit",
+	"persona.preconditions.miss-all-targets": "Miss all Targets",
 	"persona.preconditions.escalation+": "Escalation >=",
 	"persona.preconditions.escalation-": "Escalation <=",
 	"persona.preconditions.escalation-odd": "Escalation is odd",

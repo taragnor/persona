@@ -304,7 +304,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				if (!await HTMLTools.confirmBox("Out of turn Action", "It's not your turn, act anyway?")) {
 					return new CombatResult();
 				}
-
 			}
 		}
 		if (!attacker.actor.canPayActivationCost(power)) {
@@ -318,6 +317,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 			this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
 			const result = await  this.#usePowerOn(attacker, power, targets);
+			this.computeResultBasedEffects(result);
 			await attacker.actor.removeStatus("bonus-action");
 			await result.finalize();
 			await result.print();
@@ -343,9 +343,15 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			result.merge(this_result);
 			i++;
 		}
+		this.computeResultBasedEffects(result);
 		const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker));
 		result.merge(costs);
 		return result;
+	}
+
+	static computeResultBasedEffects(result: CombatResult) {
+		//TODO: Put code to check for miss all targets in ehere
+			return result;
 	}
 
 	static async processAttackRoll( attacker: PToken, power: Usable, target: PToken, isActivationRoll: boolean) : Promise<AttackResult> {
@@ -742,7 +748,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const actor = attacker.actor;
 		if (power.system.type == "consumable") {
 			const l = actor.itemAtkBonus(power as Consumable);
-			// l.add("Item Base Bonus", power.system.atk_bonus);
 			return l;
 		}
 		if (power.system.subtype == "weapon") {

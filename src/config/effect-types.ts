@@ -45,6 +45,7 @@ export const PRECONDITIONLIST = [
 	"critical",
 	"miss",
 	"hit",
+	"miss-all-targets",
 	"escalation+",
 	"escalation-",
 	"escalation-odd",

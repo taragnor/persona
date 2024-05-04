@@ -48,6 +48,8 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 				return situation.hit === false;
 		case "hit":
 				return situation.hit === true;
+		case "miss-all-targets":
+			return false; //placeholder
 		case "escalation+":
 			return situation.escalationDie != undefined && situation.escalationDie >= condition.num!;
 		case "escalation-":

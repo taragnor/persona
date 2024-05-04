@@ -170,11 +170,11 @@ export class SearchMenu {
 					result = options.isHazard ? "hazard" : "nothing";
 					break;
 				case 2:
-					result ="nothing";
+					result = "nothing";
 					break;
 				case 3:
 					result = options.isSecret ? "secret" : "nothing";
-					break;;
+					break;
 				case 4:
 					result= options.treasureRemaining >= 3 ? "treasure" : "nothing";
 					break;
@@ -185,10 +185,9 @@ export class SearchMenu {
 					result= options.treasureRemaining >= 1 ? "treasure" : "nothing";
 					break;
 				default:
-					result= "nothing";
+					result = "nothing";
 			}
 			return [result, val];
-
 		}
 
 		static async tensionPool(guards: number) : Promise<[Roll, "ambush" | "battle" |"reaper" | "none"]> {
@@ -407,7 +406,6 @@ export class SearchMenu {
 			});
 		}
 
-
 		static async onUserConnect(_user: FoundryUser) {
 			if (this.isOpen() && this.data) {
 				this.onSearchUpdate(this.data);
@@ -427,7 +425,6 @@ export class SearchMenu {
 				this.onSearchUpdate(this.data);
 			}
 		}
-
 	} // end of class
 
 	Hooks.on("userConnected", (user: FoundryUser, isConnectionEvent: boolean) => {
@@ -439,7 +436,6 @@ export class SearchMenu {
 			}
 		}
 	});
-
 
 	type SearchOptions = {
 		treasureRemaining: number;
