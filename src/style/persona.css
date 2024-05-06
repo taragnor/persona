@@ -221,3 +221,12 @@ input.single-digit {
 	.faded {
 	opacity: 50%;
 }
+
+input.flag-id {
+	width: 4em;
+}
+
+input.flag-name {
+	width: 10em;
+
+}

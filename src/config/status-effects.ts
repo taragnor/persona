@@ -99,6 +99,7 @@ export const STATUS_EFFECT_TRANSLATION_TABLE = Object.fromEntries(
 );
 
 export const STATUS_EFFECT_DURATIONS_LIST = [
+	"permanent",
 	"expedition",
 	"combat",
 	"presave-easy",

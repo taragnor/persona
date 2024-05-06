@@ -99,6 +99,7 @@
 	"persona.damage.high": "High",
 
 
+	"persona.status.duration.permanent": "Permanent",
 	"persona.status.duration.expedition": "Lasts for expedition",
 	"persona.status.duration.combat": "Combat Duration",
 	"persona.status.duration.presave-easy": "Start of Turn Save Ends (easy)",
@@ -260,8 +261,10 @@
 	"persona.effecttypes.recover-slot": "Recover Power Slot",
 	"persona.effecttypes.add-power-to-list": "Add a power to the list",
 	"persona.effecttypes.other-effect": "Other Effects",
+	"persona.effecttypes.set-flag": "Set Flag",
 
 	"persona.preconditions.always": "always",
+	"persona.preconditions.numeric": "Numeric Criteria",
 	"persona.preconditions.natural+": "Natural >=",
 	"persona.preconditions.natural-": "Natural <=",
 	"persona.preconditions.natural-odd": "Natural Odd",
@@ -307,6 +310,24 @@
 	"persona.preconditions.on-trigger": "On Trigger" ,
 	"persona.preconditions.is-a-consumable": "Using a consumable Item" ,
 	"persona.preconditions.target-is-same-arcana": "Target is the same arcana as attacker" ,
+	"persona.preconditions.flag-state": "Flag State" ,
+
+	"persona.preconditions.targets.owner": "Owner of Power" ,
+	"persona.preconditions.targets.target": "Target of Power" ,
+	"persona.preconditions.targets.attacker": "Attacker" ,
+	"persona.preconditions.dice.escalation": "Escalation DIe" ,
+	"persona.preconditions.dice.activation": "Activation Roll" ,
+	"persona.preconditions.dice.save": "Saving Throw" ,
+	"persona.preconditions.dice.skill": "Student Skill Roll" ,
+	"persona.preconditions.dice.attack-roll": "Attack Roll" ,
+"persona.preconditions.comparison.escalation": "Escalation Die",
+"persona.preconditions.comparison.activation-roll": "Activation Roll",
+"persona.preconditions.comparison.natural-roll": "Natural Roll",
+"persona.preconditions.comparison.total-roll": "Total Roll",
+"persona.preconditions.comparison.talent-level": "Talent Level",
+"persona.preconditions.comparison.social-link-level": "Social Link Level",
+"persona.preconditions.comparison.student-skill": "Rank in Student Skill",
+
 
 
 	"persona.triggers.on-damage": "Character Takes Damage",

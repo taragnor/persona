@@ -6,6 +6,7 @@ import { INCREMENTAL_ADVANCE_TYPES } from "../../config/incremental-advance-type
 import { tarotDeck } from "../../config/tarot.js";
 import { ResistStrength } from "../../config/damage-types.js";
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
+import { StatusDuration } from "../../config/status-effects.js";
 
 const personalBio = function () {
 	return new sch( {
@@ -19,6 +20,11 @@ type HPTracking = {
 	max: number;
 }
 
+export type FlagData = {
+	flagId: string,
+	duration: StatusDuration
+	flagName?: string,
+};
 
 function keySkills() {
 	return new sch ( {
@@ -139,6 +145,7 @@ abstract class BaseStuff extends window.foundry.abstract.DataModel {
 		return {
 			locked: new bool( { initial: false}),
 			short_desc: new txt(),
+			flags: new arr(new obj<FlagData>()),
 		}
 	}
 

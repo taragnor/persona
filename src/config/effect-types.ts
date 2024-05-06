@@ -22,6 +22,7 @@ export const CONSQUENCELIST = [
 	"recover-slot",
 	"add-power-to-list",
 	"other-effect",
+	"set-flag",
 ] as const;
 
 
@@ -38,6 +39,7 @@ CONSQUENCELIST.map( x=> [x, `persona.effecttypes.${x}`])
 
 export const PRECONDITIONLIST = [
 	"always",
+	"numeric",
 	"natural+",
 	"natural-",
 	"natural-odd",
@@ -82,7 +84,8 @@ export const PRECONDITIONLIST = [
 	"target-is-dead",
 	"on-trigger",
 	"is-a-consumable",
-	"target-is-same-arcana"
+	"target-is-same-arcana",
+	"flag-state",
 ] as const;
 
 
@@ -130,3 +133,5 @@ export const SHADOW_CHANGE_REQ_LIST= [
 export type ShadowChargeReq = typeof SHADOW_CHANGE_REQ_LIST[number];
 
 export const SHADOW_CHARGE_REQ = Object.fromEntries( SHADOW_CHANGE_REQ_LIST.map( x=> [x, `persona.power.shadowcosts.${x}`]));
+
+

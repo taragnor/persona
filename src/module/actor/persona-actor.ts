@@ -29,6 +29,7 @@ import { PersonaDB } from "../persona-db.js";
 import { ACTORMODELS } from "../datamodel/actor-types.js"
 import { PersonaItem } from "../item/persona-item.js"
 import { PersonaAE } from "../active-effect.js";
+import { StatusDuration } from "../../config/status-effects.js";
 
 declare global {
 	type ActorSub<X extends PersonaActor["system"]["type"]> = Subtype<PersonaActor, X>;
@@ -1022,7 +1023,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			2: this.getMaxSlotsAt(2),
 			3: this.getMaxSlotsAt(3),
 		}});
-		await this.refreshSocialLink(this);
+		try {
+			await this.refreshSocialLink(this);
+		} catch (e) {
+			PersonaError.softFail(e);
+		}
 	}
 
 	async OnExitMetaverse(this: PC ) {
@@ -1033,7 +1038,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			2: this.getMaxSlotsAt(2),
 			3: this.getMaxSlotsAt(3),
 		}});
-		await this.refreshSocialLink(this);
+		try {
+			await this.refreshSocialLink(this);
+		} catch (e) {
+			PersonaError.softFail(e);
+		}
 	}
 
 	async levelUp(this: PC) : Promise<void> {
@@ -1186,6 +1195,34 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					this.system satisfies never;
 				return "";
 		}
+	}
+
+
+	getEffectFlag(flagId: string) : this["system"]["flags"][number] | undefined {
+		 return this.system.flags.find(flag=> flag.flagId == flagId.toLowerCase());
+	}
+	 getFlagState(flagName: string) : boolean {
+		 return !!this.getEffectFlag(flagName);
+	 }
+
+	getFlagDuration(flagName: string) : StatusDuration | undefined {
+		return this.getEffectFlag(flagName)?.duration;
+	}
+
+	async setEffectFlag(flagId: string, setting: boolean, duration: StatusDuration, flagName ?: string) {
+		let flags = this.system.flags;
+		const current = this.getFlagState(flagId);
+		if (setting == current) return;
+		if (setting == true) {
+			flags.push({
+				flagId: flagId.toLowerCase(),
+				flagName: flagName,
+				duration
+			});
+		} else {
+			flags = flags.filter(flag=> flag.flagName != flagName);
+		}
+		await this.update({"system.flags": flags});
 	}
 
 }

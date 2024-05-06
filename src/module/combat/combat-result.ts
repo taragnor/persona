@@ -72,7 +72,7 @@ export class CombatResult  {
 			token: PersonaDB.getUniversalTokenAccessor(target),
 			otherEffects: [],
 			hpchange: 0,
-			damageType: "none",
+				damageType: "none",
 			hpchangemult: 1,
 			addStatus: [],
 			removeStatus: [],
@@ -120,7 +120,7 @@ export class CombatResult  {
 				break;
 			}
 			case "escalationManipulation" : {
-				this.escalationMod += Number(cons.amount) ?? 0;
+				this.escalationMod += Number(cons.amount ?? 0);
 				break;
 			}
 			case "hp-loss": {
@@ -175,6 +175,15 @@ export class CombatResult  {
 			case "add-power-to-list":
 				break;
 			case "other-effect":
+				break;
+			case "set-flag":
+				effect.otherEffects.push( {
+					type: "set-flag",
+					flagId: cons.flagId ?? "",
+					flagName: cons.flagName ?? "",
+					state: cons.flagState ?? true,
+					duration: cons.statusDuration ?? "permanent",
+				});
 				break;
 			default: {
 				cons.type satisfies never;
@@ -392,6 +401,9 @@ export class CombatResult  {
 					break;
 				case "recover-slot":
 					break;
+				case "set-flag":
+					this.addFlag(actor, otherEffect);
+					break;
 				default:
 					otherEffect satisfies never;
 			}
@@ -443,6 +455,9 @@ export class CombatResult  {
 					break;
 				case "recover-slot":
 					break;
+				case "set-flag":
+					await actor.setEffectFlag(otherEffect.flagName, otherEffect.state, otherEffect.duration);
+					break;
 				default:
 					otherEffect satisfies never;
 			}
@@ -470,7 +485,6 @@ export class CombatResult  {
 	}
 }
 
-
 export interface TokenChange<T extends Token<any>> {
 	token: UniversalTokenAccessor<T>;
 	hpchange: number;
@@ -496,13 +510,22 @@ type SimpleOtherEffect = {
 	type: "save-slot" | "half-hp-cost" | "extraTurn";
 }
 
-export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect;
+export type SetFlagEffect = {
+	type: "set-flag",
+	flagId: string,
+	flagName: string,
+	state: boolean,
+	duration: StatusDuration
+}
+
+export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect;
 
 export type StatusEffect = {
 	id: StatusEffectId,
 	potency ?: number,
 	duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
 };
+
 
 export type Consequence = {
 	type: typeof CONSQUENCELIST[number],
@@ -515,6 +538,9 @@ export type Consequence = {
 	slotType?: SlotType,
 	id?: string,
 	otherEffect?: OtherConsequence,
+	flagName?: string,
+	flagId?: string,
+	flagState?: boolean,
 }
 
 export type AttackResult = {

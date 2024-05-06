@@ -13,7 +13,6 @@
 			<select name="system.effects.{{../i}}.conditions.{{j}}.type">
 				{{selectOptions ../POWERSTUFF.PRECONDITIONTYPES localize=true selected=cond.type}}
 			</select>
-			<input class="short" type=number name="system.effects.{{../i}}.conditions.{{j}}.num" value="{{cond.num}}">
 			{{#if (eq cond.type	"power-damage-type-is")}}
 			<select name="system.effects.{{../i}}.conditions.{{j}}.powerDamageType">
 				{{selectOptions ../POWERSTUFF.DAMAGETYPES localize=true selected=cond.powerDamageType}}
@@ -28,6 +27,21 @@
 			<select name="system.effects.{{../i}}.conditions.{{j}}.powerTag">
 				{{selectOptions ../POWERSTUFF.TAGS localize=true selected=cond.powerTag}}
 			</select>
+			{{/if}}
+			{{#if (strIncludes cond.type "numeric")}}
+			<div>
+			<label for="comparison-target">
+				Target
+			</label>
+			<select id="comparison-target" name="system.effects.{{../i}}.conditions.{{j}}.comparisonTarget">
+				{{selectOptions ../POWERSTUFF.COMPARISON_TARGET localize=true selected=cond.comparisonTarget}}
+			</select>
+			</div>
+			<div>
+			<select id="comparator" name="system.effects.{{../i}}.conditions.{{j}}.comparator">
+				{{selectOptions ../POWERSTUFF.COMPARATORS localize=false selected=cond.comparator}}
+			</select>
+			<input class="short" type=number name="system.effects.{{../i}}.conditions.{{j}}.num" value="{{cond.num}}">
 			{{/if}}
 			{{#if (strIncludes cond.type "resistant")}}
 			<select name="system.effects.{{../i}}.conditions.{{j}}.powerDamageType">
@@ -48,6 +62,23 @@
 			<select name="system.effects.{{../i}}.conditions.{{j}}.trigger">
 				{{selectOptions ../POWERSTUFF.TRIGGERS localize=true selected=cond.trigger}}
 			</select>
+			{{/if}}
+			{{#if (eq cond.type	"flag-state")}}
+			<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
+				{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+			</select>
+			<br>
+			<label>Flag Id </label>
+			<input class="flag-id" type="text" width=2 name="system.effects.{{../i}}.conditions.{{j}}.flagId" value="{{cond.flagId}}">
+			</input>
+			<div>
+				<label for="flagState">
+					Flag Is Set
+				</label>
+				<input type="checkbox" id="flagState" name="system.effects.{{../i}}.conditions.{{j}}.booleanState" {{checked cond.booleanState}}>
+			</div>
+
+
 			{{/if}}
 		</div>
 		<a class="delCondition">

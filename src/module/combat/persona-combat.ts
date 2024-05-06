@@ -160,6 +160,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case"presave-normal":
 				case "USoNT":
 				case "expedition":
+				case "permanent":
 				case "combat":
 					break;
 				default:
@@ -220,6 +221,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case "save-hard":
 				case "UEoNT":
 				case "UEoT":
+				case "permanent":
 					break;
 				case "instant":
 				case "USoNT":
@@ -362,6 +364,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			usedPower: PersonaDB.getUniversalItemAccessor(power),
 			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
 			userToken: PersonaDB.getUniversalTokenAccessor(attacker),
+			attacker: PersonaDB.getUniversalTokenAccessor(attacker),
 			escalationDie,
 			activationRoll: isActivationRoll,
 			activeCombat:combat ? !!combat.combatants.find( x=> x.actor?.type != attacker.actor.type): false ,
@@ -635,6 +638,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case "recover-slot":
 				case "half-hp-cost":
 				case "other-effect":
+				case "set-flag":
 				case "add-power-to-list":
 					consequences.push({applyToSelf,cons});
 					break;

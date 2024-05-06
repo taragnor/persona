@@ -67,7 +67,24 @@
 			{{selectOptions ../POWERSTUFF.OTHER_CONSEQUENCES localize=true selected=cons.otherEffect}}
 		</select>
 		{{/if}}
+		{{#if (eq cons.type	"set-flag")}}
+		<div>
+			<label for="flag-id"> Flag Id</label>
+			<input class="flag-id" id="flag-id" type="text" name="system.effects.{{../i}}.consequences.{{j}}.flagId" {{checked cons.flagId}}>
+		</div>
+		<div>
+			<label for="flag-name"> Flag Name </label>
+			<input class="flag-name" id="flag-name" type="text" name="system.effects.{{../i}}.consequences.{{j}}.flagName" {{checked cons.flagName}}>
+		</div>
+		<div>
+			<label> State</label>
+			<input type="checkbox" name="system.effects.{{../i}}.consequences.{{j}}.flagState" {{checked cons.flagState}}>
+		</div>
+		<select name="system.effects.{{../i}}.consequences.{{j}}.statusDuration">
+			{{selectOptions ../POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusDuration}}
+		</select>
 
+		{{/if}}
 		<a class="delConsequence">
 			<i class="fa-solid fa-trash-can"></i>
 		</a>
