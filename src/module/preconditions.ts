@@ -292,6 +292,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 	}
 	const testCase = condition.num;
 	switch (condition.comparator) {
+		case "!=" : return target != testCase;
 		case "==" : return target == testCase;
 		case ">=": return target >= (testCase ?? Infinity);
 		case ">": return target > (testCase ?? Infinity) ;
@@ -303,7 +304,6 @@ function numericComparison(condition: Precondition, situation: Situation, source
 				condition.comparator satisfies undefined;
 	}
 	return false;
-
 }
 
 function getSubject(situation: Situation, cond: Precondition)  {
@@ -365,6 +365,7 @@ export const COMPARISON_TARGET = Object.fromEntries(
 
 const COMPARATORS_LIST = [
 	"==",
+	"!=",
 	">=",
 	">",
 	"<",
