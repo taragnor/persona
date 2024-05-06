@@ -121,15 +121,30 @@ class JobItemSchema extends foundry.abstract.DataModel {
 				low: new num({initial: 0, min: 0, integer:true, max: 20}),
 			}),
 			perk: new txt(),
+			critical: new txt(),
 			active: new bool({initial: false}),
 			availability: new txt({choices: AVAILABILITY_LIST, initial: "-"}),
 		}
 		return ret;
 	}
-
-
-
 }
+
+class SocialCardSchema extends foundry.abstract.DataModel {
+	get type() { return "socialCard" as const;}
+	static override defineSchema() {
+		const ret = {
+			skill: new txt<"primary" | "secondary">({initial: "primary"}),
+			perk: new txt( {initial: "standard Tarot effect"}),
+			opportunity: new txt(),
+			bane: new txt(),
+			critical: new txt(),
+			active: new bool({initial: false}),
+		}
+		return ret;
+	}
+}
+
+
 
 export const ITEMMODELS = {
 	consumable: Consumable,
@@ -141,6 +156,7 @@ export const ITEMMODELS = {
 	weapon: Weapon,
 	universalModifier: UniversalModifier,
 	job: JobItemSchema,
+	socialCard: SocialCardSchema,
 } as const;
 
 

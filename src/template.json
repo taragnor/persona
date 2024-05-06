@@ -7,7 +7,7 @@
 		"npc": {}
 	},
 	"Item": {
-		"types": ["weapon", "item", "consumable", "power", "characterClass", "focus", "talent", "universalModifier", "job"],
+		"types": ["weapon", "item", "consumable", "power", "characterClass", "focus", "talent", "universalModifier", "job", "socialCard"],
 		"htmlFields": ["description"],
 		"skill": {},
 		"weapon": {},

@@ -1197,7 +1197,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-
 	getEffectFlag(flagId: string) : this["system"]["flags"][number] | undefined {
 		 return this.system.flags.find(flag=> flag.flagId == flagId.toLowerCase());
 	}
@@ -1224,9 +1223,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		await this.update({"system.flags": flags});
 	}
-
 }
-
 
 Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) => {
 	switch (actor.system.type) {

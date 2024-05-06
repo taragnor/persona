@@ -14,6 +14,7 @@
 	"TYPES.Item.talent": "Talent",
 	"TYPES.Item.universalModifier": "Universal Modifier",
 	"TYPES.Item.job": "Job",
+	"TYPES.Item.socialCard": "Social Card",
 
 	"persona.sheet.tabs.inventory.tabname" : "Inventory",
 	"persona.sheet.tabs.social.tabname" : "Social",

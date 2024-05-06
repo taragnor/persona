@@ -1,3 +1,6 @@
+import { SocialCard } from "./item/persona-item.js";
+import { Job } from "./item/persona-item.js";
+import { NPC } from "./actor/persona-actor.js";
 import { SocialStat } from "../config/student-skills.js";
 import { Trigger } from "../config/triggers.js";
 import {Metaverse} from "./metaverse.js";
@@ -410,6 +413,7 @@ export type Situation = {
 	//more things can be added here all should be optional
 	user: UniversalActorAccessor<PC | Shadow>;
 	usedPower ?: UniversalItemAccessor<Usable>;
+	usedSkill ?: SocialStat;
 	activeCombat ?: boolean ;
 	naturalAttackRoll ?: number;
 	rollTotal ?: number;
@@ -425,6 +429,8 @@ export type Situation = {
 	userToken ?: UniversalTokenAccessor<PToken>;
 	saveVersus ?: StatusEffectId;
 	trigger ?: Trigger,
+	socialTarget ?: UniversalActorAccessor<PC | NPC>,
+	eventCard ?: UniversalItemAccessor<Job | SocialCard>
 }
 
 

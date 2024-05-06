@@ -1,3 +1,4 @@
+import { SocialCard } from "../item/persona-item.js";
 import { PersonaSounds } from "../persona-sounds.js";
 import { Logger } from "../utility/logger.js";
 import { PersonaError } from "../persona-error.js";
@@ -12,7 +13,9 @@ import { HTMLTools } from "../utility/HTMLTools.js";
 
 export class PersonaSocial {
 
-	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string) : Promise<ChatMessage> {
+	static drawnCardIds: string[] = [];
+
+	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation) : Promise<PersonaRoll> {
 		let mods = pc.getSocialStat(socialStat);
 		let socialmods = pc.getBonuses("socialRoll");
 		mods = mods.concat(socialmods);
@@ -23,12 +26,12 @@ export class PersonaSocial {
 		}
 		const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
 		const rollName = (altName) ? altName : skillName;
-		const sit: Situation = {
+		const sit: Situation = situation ?? {
 			user: PersonaDB.getUniversalActorAccessor(pc),
 		};
 		const dice = new PersonaRoll("1d20", mods, sit, rollName);
 		await dice.roll();
-		return await dice.toModifiedMessage();
+		return dice;
 	}
 
 	static async boostSocialSkill(pc: PC, socialStat: SocialStat) {
@@ -47,12 +50,20 @@ export class PersonaSocial {
 		}
 		const priOrSec : "primary" | "secondary" = await this.getPrimarySecondary();
 		const socialStat = link.actor.getSocialStatToRaiseLink(priOrSec);
+		const situation: Situation  = {
+			user: actor.accessor,
+			usedSkill: socialStat,
+			socialTarget: link.actor.accessor,
+		};
 		const progressTokens = link.currentProgress;
 		const mods = new ModifierList();
 		const DC = 10 + 3 * link.linkLevel;
 		mods.add("Progress Tokens", 3 * progressTokens)
 		const rollName= `${link.actor.name} --> Social Roll (${socialStat}) vs DC ${DC}`;
-		await this.rollSocialStat(actor, socialStat, mods, rollName);
+		const roll =await this.rollSocialStat(actor, socialStat, mods, rollName, situation);
+		await roll.toModifiedMessage();
+		situation.hit = roll.total >= DC ;
+		situation.criticalHit = roll.total >= DC + 10;
 	}
 
 	static async getPrimarySecondary() :Promise<"primary" | "secondary"> {
@@ -101,6 +112,19 @@ export class PersonaSocial {
 			dialog.render(true);
 		});
 
+	}
+
+	static drawSocialCard(actor: PC, linkId : string) : SocialCard {
+		const cards = PersonaDB.allItems().filter( item => item.system.type == "socialCard") as SocialCard[];
+		let undrawn = cards.filter( card=> !this.drawnCardIds.includes(card.id));
+		if (undrawn.length < 4) {
+			undrawn = cards;
+			this.drawnCardIds = [];
+		}
+		const draw  = Math.random() * undrawn.length ;
+		const chosenCard =  undrawn[draw];
+		this.drawnCardIds.push(chosenCard.id);
+		return chosenCard;
 	}
 
 }

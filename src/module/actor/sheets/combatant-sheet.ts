@@ -70,6 +70,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			case "universalModifier":
 				throw new PersonaError("Universal Modifiers can't be added to sheets");
 			case "job":
+			case "socialCard":
 				return undefined;
 			default:
 				item.system satisfies never;

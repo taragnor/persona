@@ -36,7 +36,7 @@ import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaJobSheet } from "./item/sheets/job-sheet.js";
 import { TarotSheet } from "./actor/sheets/tarot-sheet.js";
 import { SearchMenu } from "./exploration/searchMenu.js";
-
+import { PersonaSocialCardSheet } from "./item/sheets/social-card-sheet.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -70,6 +70,7 @@ function registerSheetApplications() {
   Items.registerSheet("persona", ConsumableSheet, {types: ["consumable"], makeDefault: true});
   Items.registerSheet("persona", PersonaJobSheet, {types: ["job"], makeDefault: true});
   Items.registerSheet("persona", UniversalModifierSheet, {types: ["universalModifier"], makeDefault: true});
+  Items.registerSheet("persona", PersonaSocialCardSheet, {types: ["socialCard"], makeDefault: true});
 
 }
 

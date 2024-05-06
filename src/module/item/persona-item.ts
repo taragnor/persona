@@ -369,6 +369,7 @@ export type Talent = Subtype<PersonaItem, "talent">;
 export type Focus = Subtype<PersonaItem, "focus">;
 export type Consumable = Subtype<PersonaItem, "consumable">;
 export type Job = Subtype<PersonaItem, "job">;
+export type SocialCard = Subtype<PersonaItem, "socialCard">;
 
 export type UniversalModifier = Subtype<PersonaItem, "universalModifier">;
 

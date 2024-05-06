@@ -102,7 +102,8 @@ export class PCSheet extends CombatantSheetBase {
 		if (!STUDENT_SKILLS_LIST.includes(socialStat)) {
 			throw new PersonaError(`Invalid student skill: ${socialStat}.`);
 		}
-		PersonaSocial.rollSocialStat(this.actor, socialStat);
+		const roll = await PersonaSocial.rollSocialStat(this.actor, socialStat);
+		await roll.toModifiedMessage();
 	}
 
 	async socialBoost (ev: JQuery.Event) {
