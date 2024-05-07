@@ -1,3 +1,5 @@
+import { Shadow } from "../actor/persona-actor.js";
+import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { OtherConsequence } from "../datamodel/other-effects.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { ValidSound } from "../persona-sounds.js";
@@ -31,7 +33,10 @@ declare global {
 
 
 export class CombatResult  {
-	tokenFlags: WeakMap<PersonaActor, OtherEffect[]> = new WeakMap();
+	tokenFlags: {
+		actor: UniversalActorAccessor<PC |Shadow>,
+			effects: OtherEffect[]
+		}[] = [] ;
 	attacks: Map<AttackResult, TokenChange<PToken>[]> = new Map();
 	escalationMod: number = 0;
 	costs: TokenChange<PToken>[] = [];
@@ -49,6 +54,7 @@ export class CombatResult  {
 			attacks: Array.from(this.attacks),
 			escalationMod: this.escalationMod,
 			costs: this.costs,
+			tokenFlags: this.tokenFlags,
 		}
 		const json = JSON.stringify(obj);
 		return json;
@@ -60,6 +66,7 @@ export class CombatResult  {
 		ret.attacks = new Map(x.attacks);
 		ret.escalationMod = x.escalationMod;
 		ret.costs = x.costs;
+		ret.tokenFlags = x.tokenFlags;
 		return ret;
 	}
 
@@ -243,6 +250,7 @@ export class CombatResult  {
 	}
 
 	async finalize() {
+		console.log("Finalize Called!");
 		this.clearFlags();
 		for (const changes of this.attacks.values()) {
 			for (const change of changes) {
@@ -256,13 +264,6 @@ export class CombatResult  {
 			}
 			if (this.hasFlag(token.actor, "save-slot")) {
 				cost.expendSlot = [0, 0, 0, 0];
-			}
-			if (this.hasFlag(token.actor, "extraTurn")) {
-				const status : StatusEffect = {
-					id: "bonus-action",
-					duration: "UEoT",
-				};
-				cost.addStatus.push( status);
 			}
 			await this.finalizeChange(cost);
 		}
@@ -328,12 +329,12 @@ export class CombatResult  {
 	}
 
 	async apply(): Promise<void> {
+		console.log(this);
 		const escalationChange = this.escalationMod;
 		if (escalationChange) {
 			const combat = PersonaCombat.ensureCombatExists();
 			combat.setEscalationDie(combat.getEscalationDie() + escalationChange);
 		}
-		this.clearFlags();
 		for (const [result, changes] of this.attacks.entries()) {
 			switch (result.result) {
 				case "miss":
@@ -348,7 +349,7 @@ export class CombatResult  {
 				token = PersonaDB.findToken(change.token);
 			}
 			if (token && !token.actor.isAlive()) {
-				const attacker = PersonaDB.findToken(result.attacker);
+				// const attacker = PersonaDB.findToken(result.attacker);
 				this.merge(
 					PersonaCombat.onTrigger("on-kill-target", token)
 				);
@@ -364,23 +365,25 @@ export class CombatResult  {
 	}
 
 	clearFlags() {
-		this.tokenFlags = new WeakMap();
+		this.tokenFlags = [];
 	}
 
 	addFlag(actor: PersonaActor, flag: OtherEffect) {
-		const list = this.tokenFlags.get(actor);
-		if (!list) {
-			const newlist = [flag];
-			this.tokenFlags.set(actor, newlist);
-			return;
+		const item = this.tokenFlags.find(x=> x.actor.actorId ==  actor.accessor.actorId );
+		if (!item) {
+			this.tokenFlags.push({
+				actor: actor.accessor,
+				effects: [flag]
+			});
 		} else {
-			if (!list.includes(flag))
-				list.push(flag);
+			if (!item.effects.includes(flag))
+				item.effects.push(flag);
 		}
+		console.log(this.tokenFlags);
 	}
 
 	hasFlag(actor: PersonaActor, flag: OtherEffect["type"]) : boolean{
-		return !!this.tokenFlags.get(actor)?.find(x=> x.type == flag);
+		return !!this.tokenFlags.find(x=> x.actor.actorId == actor.id)?.effects.find( eff=> eff.type == flag);
 
 	}
 
@@ -397,7 +400,21 @@ export class CombatResult  {
 					this.addFlag(actor, otherEffect);
 					break;
 				case "extraTurn":
-					this.addFlag(actor, otherEffect);
+					const bonusAction : StatusEffect = {
+						id: "bonus-action",
+						duration: "UEoT"
+					};
+					const extraTurnChange : TokenChange<PToken> = {
+						token:change.token,
+						hpchange: 0,
+						damageType: "none",
+						hpchangemult: 0,
+						addStatus: [bonusAction],
+						otherEffects: [],
+						removeStatus: [],
+						expendSlot: [0, 0, 0, 0]
+					}
+					this.costs.push(extraTurnChange);
 					break;
 				case "recover-slot":
 					break;
@@ -462,7 +479,7 @@ export class CombatResult  {
 					otherEffect satisfies never;
 			}
 		}
-		const saveSlot = this.tokenFlags.get(actor)?.find(x=> x.type == "save-slot");
+		const saveSlot = this.hasFlag(actor, "save-slot");
 		if (!saveSlot && actor.system.type == "pc") {
 			change.expendSlot.forEach(async (val, i) => {
 				await (actor as PC).expendSlot(i, val);
