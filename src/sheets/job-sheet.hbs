@@ -1,43 +1,56 @@
 <form class="job-sheet">
 	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Job Name" placeholder="Job Name">
-		<div class="primary">
-			<label>
-				Primary Skill
-			</label>
-			<select name="system.keyskill.primary">
-				{{selectOptions STUDENT_SKILLS localize=true selected=item.system.keyskill.primary}}
-			</select>
-		</div>
-		<div class="secondary">
-			<label>
-				Secondary Skill
-			</label>
-			<select name="system.keyskill.secondary">
-				{{selectOptions STUDENT_SKILLS localize=true selected=item.system.keyskill.secondary}}
-			</select>
-		</div>
-
+	<div class="primary">
+		<label>
+			Primary Skill
+		</label>
+		<select name="system.keyskill.primary">
+			{{selectOptions STUDENT_SKILLS localize=true selected=item.system.keyskill.primary}}
+		</select>
+	</div>
+	<div class="secondary">
+		<label>
+			Secondary Skill
+		</label>
+		<select name="system.keyskill.secondary">
+			{{selectOptions STUDENT_SKILLS localize=true selected=item.system.keyskill.secondary}}
+		</select>
+	</div>
+	<div>
+		<label>
+			DC
+		</label>
+		{{numberInput item.system.dc class="short" name="system.dc" step=1 min=10 max=50}}
+	</div>
+	<div>
 		<label>
 			Pay
 		</label>
 		{{numberInput item.system.pay.low class="short" name="system.pay.low" step=1 min=0 max=20}}
 		{{numberInput item.system.pay.high class="short" name="system.pay.high" step=1 min=0 max=20}}
 
-		<br>
-		<label>
-			Active
-		</label>
-		<input type="checkbox" name="system.active" {{checked item.system.active}}>
-		<hr>
-		<label>
-			Perk
-		</label>
-		<textarea name="system.perk">
-			{{item.system.perk}}
-		</textarea>
-		<label>
-			Availability
-		</label>
+	</div>
+	<br>
+	<label>
+		Active
+	</label>
+	<input type="checkbox" name="system.active" {{checked item.system.active}}>
+	<hr>
+	<label>
+		Perk
+	</label>
+	<textarea name="system.perk">
+		{{item.system.perk}}
+	</textarea>
+	<label>
+		Critical
+	</label>
+	<textarea name="system.critical">
+		{{item.system.critical}}
+	</textarea>
+	<label>
+		Availability
+	</label>
 	<select name="system.availability">
 		{{selectOptions AVAILABILITY localize=true selected=item.system.availability}}
 	</select>

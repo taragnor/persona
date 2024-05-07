@@ -114,6 +114,7 @@ class JobItemSchema extends foundry.abstract.DataModel {
 				primary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
 				secondary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
 			}),
+			dc: new num({integer: true, initial: 0}),
 			pay:new sch( {
 				high: new num({initial: 0, min: 0, integer:true, max: 20}),
 				low: new num({initial: 0, min: 0, integer:true, max: 20}),

@@ -1,3 +1,4 @@
+import { SocialLink } from "../actor/persona-actor.js";
 import { Job } from "../item/persona-item.js";
 import { PersonaItem } from "../item/persona-item.js";
 import { NPC } from "../actor/persona-actor.js";
@@ -223,11 +224,109 @@ export class PersonaSocial {
 		return [newavail, roll];
 	}
 
+	static async chooseActivity(actor: PC, activity: SocialLink | Job, options: ActivityOptions) {
+		if (activity instanceof PersonaItem) {
+			await this.#doJob(actor, activity);
+		} else {
+			await this.#socialEncounter(actor, activity);
+		}
+		const availability = activity.system.availability;
+		if (!options.noDegrade) {
+			await activity.update(
+				{"system.availability": this.#degradedAvailability(availability) }
+			);
+		}
+	}
+
+
+	static async #socialEncounter(actor: PC, activity: SocialLink) {
+		await this.drawSocialCard(actor, activity.id);
+	}
+
+
+	static async #doJob(actor: PC,  activity :Job) {
+		const roll = new Roll("1d6");
+		await roll.roll();
+		const stat =  (roll.total > 2) ? "primary": "secondary";
+		const skill = activity.system.keyskill[stat];
+		const situation : Situation = {
+			user: actor.accessor,
+			isSocial: true,
+			socialId: activity.id
+		};
+		let html = "";
+		const avail = activity.system.availability;
+		const modifiers = new ModifierList();
+		switch (avail) {
+			case "++":
+				modifiers.add("Favorable", 5);
+				html += `<div><b> Perk: </b> ${activity.system.perk}</div>`;
+				break;
+			case "+":
+				html += `<div><b> Perk: </b> ${activity.system.perk}</div>`;
+				break;
+			case "-":
+				break;
+			case "--":
+				modifiers.add("Negative Availabilty", -5);
+				break;
+			default:
+		}
+
+		const rollTitle = `${activity.name} roll (DC ${activity.system.dc}, ${stat} --- ${skill}) `
+		const socialRoll = await this.rollSocialStat(actor, skill, modifiers, rollTitle,situation);
+		await socialRoll.toModifiedMessage();
+		let pay = 0;
+		if (socialRoll.total >= activity.system.dc) {
+			pay = activity.system.pay.high;
+		} else {
+			pay = activity.system.pay.low;
+		}
+		const payBonus = actor.getBonuses("pay").total(situation);
+		if (pay > 0) {
+			html += `<div> <b>Pay:</b> ${pay} ${payBonus ? `+ ${payBonus}` : ""}`;
+		}
+		await actor.gainMoney(pay + payBonus);
+		await PersonaSounds.ching();
+		if (socialRoll.total >= activity.system.dc + 10 && activity.system.critical) {
+			html += `<div> <b>Critical:</b> ${activity.system.critical}</div>`;
+		}
+		const speaker = ChatMessage.getSpeaker();
+		return await ChatMessage.create( {
+			speaker,
+			content: html,
+			type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+			rolls: [roll]
+		}, {});
+
+	}
+
+	static #degradedAvailability (availability: Job["system"]["availability"]) {
+		switch (availability) {
+			case "++":
+				return "+";
+			case "+":
+				return "-";
+			case "-":
+				return "--";
+			case "--":
+				return "--";
+			case "N/A":
+				return "N/A";
+		}
+	}
+
 	static drawnCards() : string[] {
+		//NOTE: Only a debug function
 		return this.#drawnCardIds;
 	}
 
 } //end of class
+
+type ActivityOptions = {
+	noDegrade ?: boolean;
+
+}
 
 //@ts-ignore
 window.PersonaSocial = PersonaSocial

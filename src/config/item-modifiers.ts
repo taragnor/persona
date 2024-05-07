@@ -22,6 +22,7 @@ export const MODIFIERLIST = [
 	"disengage",
 	"socialRoll",
 	"weakestSlot",
+	"pay",
 ] as const;
 
 export const MODIFIERS_TABLE = Object.fromEntries(

@@ -430,7 +430,9 @@ export type Situation = {
 	saveVersus ?: StatusEffectId;
 	trigger ?: Trigger,
 	socialTarget ?: UniversalActorAccessor<PC | NPC>,
-	eventCard ?: UniversalItemAccessor<Job | SocialCard>
+	eventCard ?: UniversalItemAccessor<Job | SocialCard>,
+	isSocial?: boolean,
+	socialId?: string,
 }
 
 
