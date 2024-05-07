@@ -30,7 +30,9 @@ const evenDmg :ConditionalEffect = {
 			type: "hit",
 		},
 		{
-			type: "natural-even",
+			type: "numeric",
+			comparisonTarget:"natural-roll",
+			comparator: "even",
 		},
 	],
 	consequences: [
@@ -46,7 +48,9 @@ const oddDmg :ConditionalEffect = {
 			type: "hit",
 		},
 		{
-			type: "natural-odd",
+			type: "numeric",
+			comparisonTarget:"natural-roll",
+			comparator: "odd",
 		},
 	],
 	consequences: [

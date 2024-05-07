@@ -269,6 +269,7 @@
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",
+	"persona.preconditions.boolean": "Boolean Comparison",
 	"persona.preconditions.natural+": "Natural >=",
 	"persona.preconditions.natural-": "Natural <=",
 	"persona.preconditions.natural-odd": "Natural Odd",
@@ -331,6 +332,24 @@
 "persona.preconditions.comparison.talent-level": "Talent Level",
 "persona.preconditions.comparison.social-link-level": "Social Link Level",
 "persona.preconditions.comparison.student-skill": "Rank in Student Skill",
+"persona.preconditions.comparison.engaged": "Is Engaged",
+"persona.preconditions.comparison.engaged-with": "Is Engaged With",
+"persona.preconditions.comparison.metaverse-enhanced": "Metaverse Enhanced ",
+"persona.preconditions.comparison.is-shadow": "Is Shadow",
+"persona.preconditions.comparison.is-pc": "Is PC",
+"persona.preconditions.comparison.has-tag": "Has Tag",
+"persona.preconditions.comparison.in-combat": "In Combat",
+"persona.preconditions.comparison.is-critical": "Critical Hit",
+"persona.preconditions.comparison.is-hit": "Hit",
+"persona.preconditions.comparison.damage-type-is": "Damage Type is",
+"persona.preconditions.comparison.power-type-is": "Power Type Is",
+"persona.preconditions.comparison.has-status": "Has Status",
+"persona.preconditions.comparison.struck-weakness": "Attack struck weakness",
+"persona.preconditions.comparison.is-resistant-to": "Is Resistant To",
+"persona.preconditions.comparison.is-same-arcana": "Is Same Arcana",
+"persona.preconditions.comparison.flag-state": "Flag State",
+
+
 
 
 

@@ -231,14 +231,18 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 		case "numeric": {
 			return numericComparison(condition, situation, source);
 		}
+		case "boolean": {
+			return booleanComparison(condition, situation, source);
+		}
 		default:
-			condition.type satisfies never;
-			PersonaError.softFail(`Unexpected Condition: ${condition.type}`);
+			condition satisfies never;
+			PersonaError.softFail(`Unexpected Condition: ${(condition as any)?.type}`);
 			return false;
 	}
 }
 
 function numericComparison(condition: Precondition, situation: Situation, source:Option<PowerContainer>) : boolean {
+	if (condition.type != "numeric") throw new PersonaError("Not a numeric comparison");
 	let target: number;
 	switch (condition.comparisonTarget) {
 		case "natural-roll":
@@ -309,46 +313,267 @@ function numericComparison(condition: Precondition, situation: Situation, source
 	return false;
 }
 
+function booleanComparison(condition: Precondition, situation: Situation, _source:Option<PowerContainer>): boolean {
+	if (condition.type != "boolean") throw new PersonaError("Not a boolean comparison");
+
+	const user = PersonaDB.findActor(situation.user);
+	let targetState = condition.booleanState;
+	let condTarget = condition.conditionTarget ?? "target";
+	let target: UniversalTokenAccessor<PToken>;
+	switch (condTarget) {
+		case "owner":
+			if (!situation.userToken) return targetState == false;
+			target= situation.userToken;
+			break;
+		case  "target":
+			if (!situation.target) return targetState == false;
+			target =situation.target;
+			break;
+		case "attacker":
+			if (!situation.attacker) return targetState == false;
+			target =situation.attacker;
+			break;
+	}
+	if (!target) return targetState == false;
+	const targetActor = PersonaDB.findToken(target)?.actor;
+	if (!targetActor) return targetState == false;
+
+	switch(condition.boolComparisonTarget) {
+		case "engaged": {
+			if (!situation.activeCombat ) {
+				return targetState == false;
+			}
+			const combat = PersonaCombat.ensureCombatExists();
+			return combat.isEngaged(target);
+		}
+		case "engaged-with": {
+			if (!situation.activeCombat ) {
+				return targetState == false;
+			}
+			const combat = PersonaCombat.ensureCombatExists();
+			if (!situation.target || !situation.userToken) {
+				return targetState == false;
+			}
+			return combat.isEngagedWith(situation.userToken, target);
+		}
+		case "metaverse-enhanced":
+			return Metaverse.isEnhanced() == targetState;
+		case "is-shadow":
+			return (targetActor.system.type == "shadow") == targetState;
+		case "is-pc":
+			return (targetActor.system.type == "pc") == targetState;
+		case "has-tag": {
+			if (!situation.usedPower) {
+				return targetState == false;
+			}
+			const power = PersonaDB.findItem(situation.usedPower);
+			return power.system.tags.includes(condition.powerTag!) == targetState;
+		}
+		case "power-type-is": {
+			if (!situation.usedPower) {
+				return targetState == false;
+			}
+			const power = PersonaDB.findItem(situation.usedPower);
+			return targetState == (power.system.type == "power" && power.system.subtype == condition.powerType);
+		}
+		case "in-combat": {
+			return targetState  == (situation.activeCombat != undefined);
+		}
+		case "is-critical": {
+			return targetState == (situation.criticalHit ?? false);
+		}
+		case "is-hit": {
+			return targetState == (situation.hit === true);
+		}
+		case "damage-type-is": {
+			if (!situation.usedPower) {
+				return targetState == false;
+			}
+			const power = PersonaDB.findItem(situation.usedPower);
+			return targetState == (condition.powerDamageType == power.system.dmg_type);
+		}
+		case "has-status" : {
+			if(!situation.target) {
+				return targetState == false;
+			}
+			return targetState == targetActor.statuses.has(condition.status!);
+		}
+		case  "struck-weakness": {
+			if (!situation.target) {
+				return targetState == false;
+			}
+			if (!situation.usedPower) {
+				return targetState == false;
+			}
+			const power = PersonaDB.findItem(situation.usedPower);
+			const resist = targetActor.elementalResist(power.system.dmg_type);
+			return targetState == (resist == "weakness");
+		}
+		case "is-resistant-to": {
+			if(!situation.target) {
+				return targetState == false;
+			}
+			const target = PersonaDB.findToken(situation.target);
+			const resist =target.actor.elementalResist(condition.powerDamageType!);
+			switch (resist) {
+				case "resist": case "block": case "absorb": case "reflect": return targetState == true;
+				case "weakness": case "normal": return targetState == false;
+				default:
+					resist satisfies never;
+					return false;
+			}
+		}
+		case "flag-state": {
+			let subject = getSubject(situation, condition);
+			if (!subject) {
+				return targetState == false;
+			}
+			if (subject instanceof Token)  {
+				subject  = subject.actor;
+			}
+			if (condition.flagId) {
+				return targetState == (subject.getFlagState(condition.flagId) == condition.booleanState);
+			}
+			else return false == targetState;
+		}
+		case "is-same-arcana": {
+			const actor = PersonaDB.findActor(situation.user);
+			if(!situation.target) {
+				return targetState == false;
+			}
+			const target = PersonaDB.findToken(situation.target);
+			return targetState == (actor.system.tarot == targetActor.system.tarot);
+		}
+		case "is-dead": {
+			return targetState == targetActor.hp <= 0;
+		}
+		case "is-consumable": {
+			if (!situation.usedPower) {
+				return targetState == false;
+			}
+			const power = PersonaDB.findItem(situation.usedPower);
+			return targetState == (power.system.type == "consumable");
+		}
+		default :
+			condition.boolComparisonTarget satisfies undefined;
+			return false;
+	}
+}
+
 function getSubject(situation: Situation, cond: Precondition)  {
+	if (!("conditionTarget" in cond)) throw new PersonaError("No conditon target");
 	const condTarget = cond.conditionTarget;
 	switch (condTarget) {
 		case "owner":
 			if (situation.userToken)
-			return PersonaDB.findToken(situation.userToken);
+				return PersonaDB.findToken(situation.userToken);
 			else return PersonaDB.findActor(situation.user);
 		case "attacker":
 			if (situation.attacker)
-			return PersonaDB.findToken(situation.attacker);
+				return PersonaDB.findToken(situation.attacker);
 			else return undefined;
 		case "target":
 			if (situation.target)
-			return PersonaDB.findToken(situation.target);
+				return PersonaDB.findToken(situation.target);
 			else return undefined;
 		default:
 			condTarget satisfies undefined;
 			if (situation.target)
-			return PersonaDB.findToken(situation.target);
+				return PersonaDB.findToken(situation.target);
 			else return PersonaDB.findActor(situation.user);
 	}
 }
 
-export type Precondition = {
-	type : PreconditionType,
-	num ?: number,
+// export type Precondition = {
+// 	type : PreconditionType,
+// 	num ?: number,
+// 	powerType ?: PowerType,
+// 	powerDamageType ?: DamageType,
+// 	powerTag ?: PowerTag,
+// 	status ?: StatusEffectId,
+// 	trigger ?: Trigger,
+// 	conditionTarget ?: ConditionTarget,
+// 	comparisonTarget ?: NumericComparisonTarget,
+// 	boolComparisonTarget ?: BooleanComparisonTarget,
+// 	flagId ?: string
+// 	comparator ?: Comparator;
+// 	booleanState ?: boolean;
+// 	studentSkill ?: SocialStat;
+// }
+
+
+export type Precondition = GenericPC | NumericComparisonPC | BooleanComparisonPC | SaveVersus | Triggered;
+
+type GenericPC = {
+	type: Exclude<PreconditionType, "numeric" | "boolean" | 'save-versus' | "on-trigger">;
+	status ?: StatusEffectId,
+	powerTag ?: PowerTag,
 	powerType ?: PowerType,
 	powerDamageType ?: DamageType,
-	powerTag ?: PowerTag,
-	status ?: StatusEffectId,
-	trigger ?: Trigger,
-	conditionTarget ?: ConditionTarget,
-	comparisonTarget ?: ComparisonTarget,
+	num ?: number,
 	flagId ?: string
-	comparator ?: Comparator;
-	booleanState ?: boolean;
-	studentSkill ?: SocialStat;
+	booleanState ?: boolean,
 }
 
-const COMPARISON_TARGET_LIST = [
+type SaveVersus = {
+	type : "save-versus",
+	status ?: StatusEffectId,
+};
+
+type Triggered = {
+	type: "on-trigger",
+	trigger ?: Trigger,
+}
+
+type NumericComparisonPC = {
+	type: "numeric",
+	comparator : Comparator;
+	comparisonTarget : NumericComparisonTarget,
+	studentSkill ?: SocialStat;
+	num ?: number,
+}
+
+type BooleanComparisonPC = {
+	type : "boolean",
+	booleanState : boolean,
+	boolComparisonTarget: BooleanComparisonTarget,
+	conditionTarget : ConditionTarget,
+	powerTag ?: PowerTag,
+	powerType ?: PowerType,
+	powerDamageType ?: DamageType,
+	status ?: StatusEffectId,
+	flagId ?: string
+}
+
+
+const BOOLEAN_COMPARISON_TARGET_LIST = [
+	"engaged",
+	"engaged-with",
+	"metaverse-enhanced",
+	"is-shadow",
+	"is-pc",
+	"has-tag",
+	"in-combat",
+	"is-critical",
+	"is-hit",
+	"is-dead",
+	"damage-type-is",
+	"power-type-is",
+	"has-status",
+	"struck-weakness",
+	"is-resistant-to",
+	"is-same-arcana",
+	"flag-state",
+	"is-consumable",
+] as const;
+
+export type BooleanComparisonTarget = typeof BOOLEAN_COMPARISON_TARGET_LIST[number];
+
+export const BOOLEAN_COMPARISON_TARGET = Object.fromEntries(
+	BOOLEAN_COMPARISON_TARGET_LIST.map( x=> [x, `persona.preconditions.comparison.${x}`])
+);
+
+const NUMERIC_COMPARISON_TARGET_LIST = [
 	"natural-roll",
 	"activation-roll",
 	"escalation",
@@ -358,10 +583,10 @@ const COMPARISON_TARGET_LIST = [
 	"student-skill",
 ] as const;
 
-export type ComparisonTarget = typeof COMPARISON_TARGET_LIST[number];
+export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];
 
-export const COMPARISON_TARGET = Object.fromEntries( 
-	COMPARISON_TARGET_LIST.map( x=> [x, `persona.preconditions.comparison.${x}`])
+export const NUMERIC_COMPARISON_TARGET = Object.fromEntries(
+	NUMERIC_COMPARISON_TARGET_LIST.map( x=> [x, `persona.preconditions.comparison.${x}`])
 );
 
 
@@ -384,8 +609,8 @@ export const COMPARATORS = Object.fromEntries (
 );
 
 const CONDITION_TARGETS_LIST = [
-	"owner",
 	"target",
+	"owner",
 	"attacker",
 ] as const;
 

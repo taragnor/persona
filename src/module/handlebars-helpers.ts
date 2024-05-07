@@ -48,7 +48,8 @@ export class PersonaHandleBarsHelpers {
 			return actor.system.type == "shadow";
 		},
 
-		"strIncludes" : (testStr: string, substr: string) => {
+		"strIncludes" : (testStr: string | undefined, substr: string) => {
+			if (!testStr) return false;
 			return testStr.includes(substr);
 		},
 

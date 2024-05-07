@@ -1245,6 +1245,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		await this.update({"system.flags": flags});
 	}
+
 }
 
 Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) => {

@@ -11,6 +11,7 @@ declare global {
 	}
 }
 
+import { ErrorScanner } from "./deprecated_scan.js";
 import { SocketManager } from "./utility/socket-manager.js";
 import { templatePaths } from "../config/handlebars-templates.js";
 import { PersonaClassSheet } from "./item/sheets/class-sheet.js";
@@ -94,6 +95,7 @@ function registerSheetApplications() {
 	 registerHandlebarsHelpers();
 	 PersonaSettings.registerSettings();
 	 preloadHandlebarsTemplates();
+	 ErrorScanner.check();
  });
 
 function registerHandlebarsHelpers() {

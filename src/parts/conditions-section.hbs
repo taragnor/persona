@@ -28,21 +28,73 @@
 				{{selectOptions ../POWERSTUFF.TAGS localize=true selected=cond.powerTag}}
 			</select>
 			{{/if}}
+
 			{{#if (strIncludes cond.type "numeric")}}
 			<div>
-			<label for="comparison-target">
-				Target
-			</label>
-			<select id="comparison-target" name="system.effects.{{../i}}.conditions.{{j}}.comparisonTarget">
-				{{selectOptions ../POWERSTUFF.COMPARISON_TARGET localize=true selected=cond.comparisonTarget}}
-			</select>
+				<label for="comparison-target">
+					Target
+				</label>
+				<select id="comparison-target" name="system.effects.{{../i}}.conditions.{{j}}.comparisonTarget">
+					{{selectOptions ../POWERSTUFF.NUMERIC_COMPARISON_TARGET localize=true selected=cond.comparisonTarget}}
+				</select>
 			</div>
 			<div>
-			<select id="comparator" name="system.effects.{{../i}}.conditions.{{j}}.comparator">
-				{{selectOptions ../POWERSTUFF.COMPARATORS localize=false selected=cond.comparator}}
-			</select>
-			<input class="short" type=number name="system.effects.{{../i}}.conditions.{{j}}.num" value="{{cond.num}}">
+				<select id="comparator" name="system.effects.{{../i}}.conditions.{{j}}.comparator">
+					{{selectOptions ../POWERSTUFF.COMPARATORS localize=false selected=cond.comparator}}
+				</select>
+				<input class="short" type=number name="system.effects.{{../i}}.conditions.{{j}}.num" value="{{cond.num}}">
+			</div>
 			{{/if}}
+
+			{{#if (eq cond.type "boolean")}}
+			<div>
+				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
+					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+				</select>
+			</div>
+
+			<div>
+				<select id="comparison-target" name="system.effects.{{../i}}.conditions.{{j}}.boolComparisonTarget">
+					{{selectOptions ../POWERSTUFF.BOOLEAN_COMPARISON_TARGET localize=true selected=cond.boolComparisonTarget}}
+				</select>
+			</div>
+			<div>
+				<label>
+					Is True</label>
+				<input type="checkbox" id="flagState" name="system.effects.{{../i}}.conditions.{{j}}.booleanState" {{checked cond.booleanState}}>
+			</div>
+			{{#if (strIncludes cond.boolComparisonTarget "status")}}
+			<select name="system.effects.{{../i}}.conditions.{{j}}.status">
+				{{selectOptions ../POWERSTUFF.STATUSEFFECTS localize=true selected=cond.status}}
+			</select>
+			{{/if}}
+			{{#if (strIncludes cond.boolComparisonTarget "damage")}}
+			<select name="system.effects.{{../i}}.conditions.{{j}}.powerDamageType">
+				{{selectOptions ../POWERSTUFF.DAMAGETYPES localize=true selected=cond.powerDamageType}}
+			</select>
+			{{/if}}
+			{{#if (strIncludes cond.boolComparisonTarget "resistant")}}
+			<select name="system.effects.{{../i}}.conditions.{{j}}.powerDamageType">
+				{{selectOptions ../POWERSTUFF.DAMAGETYPES localize=true selected=cond.powerDamageType}}
+			</select>
+			{{/if}}
+			{{#if (strIncludes cond.boolComparisonTarget "tag")}}
+			<select name="system.effects.{{../i}}.conditions.{{j}}.powerTag">
+				{{selectOptions ../POWERSTUFF.TAGS localize=true selected=cond.powerTag}}
+			</select>
+			{{/if}}
+			{{#if (eq cond.boolComparisonTarget	"power-type-is")}}
+			<select name="system.effects.{{../i}}.conditions.{{j}}.powerType">
+				{{selectOptions ../POWERSTUFF.POWERTYPES localize=true selected=cond.powerType}}
+			</select>
+			{{/if}}
+			{{#if (eq cond.boolComparisonTarget "flag-state")}}
+			<label>Flag Id </label>
+			<input class="flag-id" type="text" width=2 name="system.effects.{{../i}}.conditions.{{j}}.flagId" value="{{cond.flagId}}">
+			</input>
+			{{/if}}
+			{{/if}}
+
 			{{#if (strIncludes cond.type "resistant")}}
 			<select name="system.effects.{{../i}}.conditions.{{j}}.powerDamageType">
 				{{selectOptions ../POWERSTUFF.DAMAGETYPES localize=true selected=cond.powerDamageType}}
@@ -79,11 +131,11 @@
 			</div>
 
 
-			{{/if}}
+				{{/if}}
+			</div>
+			<a class="delCondition">
+				<i class="fa-solid fa-trash-can"></i>
+			</a>
 		</div>
-		<a class="delCondition">
-			<i class="fa-solid fa-trash-can"></i>
-		</a>
-	</div>
-	{{/each}}
+		{{/each}}
 </section>

@@ -18,7 +18,8 @@ import { PersonaDB } from "../../persona-db.js";
 import { TRIGGERS } from "../../../config/triggers.js";
 import { OTHER_CONSEQUENCES } from "../../datamodel/other-effects.js";
 import { CONDITION_TARGETS } from "../../preconditions.js";
-import { COMPARISON_TARGET } from "../../preconditions.js";
+import { NUMERIC_COMPARISON_TARGET } from "../../preconditions.js";
+import { BOOLEAN_COMPARISON_TARGET } from "../../preconditions.js";
 import { COMPARATORS } from "../../preconditions.js";
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
@@ -30,7 +31,8 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 		}
 		const data = await super.getData();
 		data.POWERSTUFF = {
-			COMPARISON_TARGET: COMPARISON_TARGET,
+			NUMERIC_COMPARISON_TARGET,
+			BOOLEAN_COMPARISON_TARGET,
 			COMPARATORS,
 			CONDITION_TARGETS,
 			OTHER_CONSEQUENCES : OTHER_CONSEQUENCES,

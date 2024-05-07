@@ -40,6 +40,7 @@ CONSQUENCELIST.map( x=> [x, `persona.effecttypes.${x}`])
 export const PRECONDITIONLIST = [
 	"always",
 	"numeric",
+	"boolean",
 	"natural+",
 	"natural-",
 	"natural-odd",

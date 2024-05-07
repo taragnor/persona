@@ -284,7 +284,7 @@ export class PersonaSocial {
 		}
 		const payBonus = actor.getBonuses("pay").total(situation);
 		if (pay > 0) {
-			html += `<div> <b>Pay:</b> ${pay} ${payBonus ? `+ ${payBonus}` : ""}`;
+			html += `<div> <b>Pay (auto-added):</b> ${pay} ${payBonus ? `+ ${payBonus}` : ""}`;
 		}
 		await actor.gainMoney(pay + payBonus);
 		await PersonaSounds.ching();
