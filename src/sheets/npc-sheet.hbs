@@ -30,16 +30,27 @@
 				</select>
 			</div>
 		</div>
+		{{#if (isGM)}}
+		<div class="base-relationship">
+			<label>
+				Base relationship
+			</label>
+		  <input class= "baseRelationship" name="system.baseRelationship" type="text" list="relationshipTypes" value="{{actor.system.baseRelationship}}">
+		  <datalist id="relationshipTypes">
+			 {{#each RELATIONSHIP_TYPES as |item|}}
+			 <option> {{item}}</option>
+			 {{/each}}
+		  </datalist>
+		</div>
 		<div class="availability">
-			{{#if (isGM)}}
 			<label>
 				Availability
 			</label>
 			<select name="system.availability">
 				{{selectOptions CONST.AVAILABILITY localize=true selected=actor.system.availability}}
 			</select>
-			{{/if}}
 		</div>
+		{{/if}}
 	</header>
 
 	<div class="perk">

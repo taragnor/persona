@@ -1,6 +1,7 @@
 import { PersonaActor } from "../persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { NoncombatantSheet } from "./noncombatant-sheet.js";
+import { PersonaDB } from "../../persona-db.js";
 
 export class NPCSheet extends NoncombatantSheet  {
 	override actor: Subtype<PersonaActor, "npc">;
@@ -15,8 +16,14 @@ export class NPCSheet extends NoncombatantSheet  {
 		});
 	}
 
-	override getData() {
-		return super.getData();
+	override async getData() {
+		const data= await super.getData();
+		data.RELATIONSHIP_TYPES = PersonaDB.allSocialCards()
+			.flatMap(card => card.system.qualifiers)
+			.map(qual=> qual.relationshipName)
+			.filter( (val, i, arr) => arr.indexOf(val) == i);
+		return data;
+
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {

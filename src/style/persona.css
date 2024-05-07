@@ -241,3 +241,33 @@ div.social-card {
 	padding: 5px;
 	border:
 }
+
+.qualifier input.name,
+input.baseRelationship
+{
+  width: 10em;
+}
+
+.social-link {
+  padding-top:10px;
+}
+
+.social-link img.portrait {
+  width: 40px;
+  height: 40px;
+}
+
+
+div.social-link {
+  display:flex;
+  align-items:center;
+}
+
+.social-link .name {
+  font-size: 1.5em;
+  margin-left: 8px;
+  margin-right: 8px;
+  font-family: Serif;
+
+
+}

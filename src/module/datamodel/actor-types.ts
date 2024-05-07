@@ -39,6 +39,7 @@ export type SocialData = {
 	linkLevel: number,
 	inspiration: number,
 	currentProgress: number,
+	relationshipType: string,
 };
 
 
@@ -203,6 +204,7 @@ export class NPCSchema extends foundry.abstract.DataModel {
 			tarot: tarot(),
 			bio: personalBio(),
 			keyskill: keySkills(),
+			baseRelationship: new txt(),
 			availability: new txt({choices: AVAILABILITY_LIST, initial: "-"}),
 			//include
 		} as const;

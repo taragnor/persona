@@ -5,6 +5,7 @@ import { PersonaActor } from "./actor/persona-actor.js";
 import { ModifierContainer } from "./item/persona-item.js";
 import { Power } from "./item/persona-item.js";
 import { BASIC_POWER_NAMES } from "../config/basic-powers.js";
+import { SocialCard } from "./item/persona-item.js";
 
 
 class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
@@ -38,6 +39,12 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		const actors = this.allActors();
 		return actors.filter( actor=> actor.system.type == "tarot") as Tarot[];
 	}
+
+	allSocialCards() :SocialCard[] {
+		return this.allItems()
+			.filter( x=> x.system.type == "socialCard") as SocialCard[];
+	}
+
 
 }
 

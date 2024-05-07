@@ -116,15 +116,25 @@ export class PersonaSocial {
 	}
 
 	static #drawSocialCard(actor: PC, linkId : string) : SocialCard {
-		const cards = PersonaDB.allItems().filter( item => item.system.type == "socialCard") as SocialCard[];
+		const link = actor.socialLinks.find(link => link.actor.id == linkId);
+		if (!link) throw new PersonaError(`Can't find link ${linkId}`);
+		const relationshipName : string = link.relationshipType;
+		const cards = PersonaDB.allSocialCards()
+			.filter( item => item.system.qualifiers
+				.some(x=> x.relationshipName == relationshipName
+					&& link.linkLevel >= x.min
+					&& link.linkLevel <= x.max
+				)
+			);
+
 		let undrawn = cards.filter( card=> !this.#drawnCardIds.includes(card.id));
+
 		if (undrawn.length < 4) {
 			undrawn = cards;
 			this.#drawnCardIds = [];
 		}
 		const draw  = Math.floor(Math.random() * undrawn.length) ;
 		const chosenCard =  undrawn[draw];
-		//TODO: check validit based on relationship
 		if (!chosenCard) throw new PersonaError("Can't find valid card!");
 		this.#drawnCardIds.push(chosenCard.id);
 		return chosenCard;
@@ -136,7 +146,6 @@ export class PersonaSocial {
 	}
 
 	static async #printSocialCard(card: SocialCard, actor: PC, linkId: string ) : Promise<ChatMessage> {
-		//TODO: print out chatmessage for card
 		const link = actor.socialLinks.find(link => link.actor.id == linkId);
 		const skill = STUDENT_SKILLS[actor.getSocialStatToRaiseLink(card.system.skill)];
 

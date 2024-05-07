@@ -130,11 +130,15 @@
 		<a class="roll-icon" title="Roll to Improve Social Link">
 			<img src="icons/dice/d20black.svg">
 		</a>
+		<img class="portrait" src={{actor.img}}>
 		<a class="name">
 			{{link.actor.displayedName}}
 		</a>
 		<span class="tarot">
 			( {{link.actor.system.tarot}} )
+		</span>
+		<span class="relationshipType">
+			[ {{link.relationshipType}} ]
 		</span>
 		<span class="inspiration">
 			{{link.inspiration}} / {{link.linkLevel}}

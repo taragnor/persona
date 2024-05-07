@@ -262,9 +262,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	get socialLinks() : {linkLevel: number, actor: SocialLink, inspiration: number, linkBenefits: SocialLink, currentProgress:number}[] {
+	get socialLinks() : {linkLevel: number, actor: SocialLink, inspiration: number, linkBenefits: SocialLink, currentProgress:number, relationshipType: string}[] {
 		if (this.system.type != "pc") return [];
-		return this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress}) => {
+		return this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
 			const npc = PersonaDB.getActor(linkId);
 			if (!npc) return [];
 			if (npc.system.type =="npc") {
@@ -272,6 +272,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					currentProgress,
 					linkLevel,
 					inspiration,
+					relationshipType: relationshipType ? relationshipType : "Peer",
 					actor:npc as SocialLink,
 					linkBenefits: npc as SocialLink,
 				}];
@@ -285,6 +286,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						currentProgress,
 						linkLevel,
 						inspiration,
+						relationshipType,
 						actor:npc as SocialLink,
 						linkBenefits: personalLink,
 					}];
@@ -297,6 +299,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						currentProgress,
 						linkLevel,
 						inspiration,
+						relationshipType,
 						actor:npc as SocialLink,
 						linkBenefits: teammate,
 					}];
@@ -820,7 +823,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				linkId: npc.id,
 				linkLevel: 1,
 				inspiration: 1,
-				currentProgress: 0
+				currentProgress: 0,
+				relationshipType: npc.system.type == "pc"? "Peer" : npc.system.baseRelationship,
 			}
 		);
 		PersonaSounds.newSocialLink();

@@ -20,8 +20,6 @@ function itemBase() {
 	};
 }
 
-
-
  class Weapon extends foundry.abstract.DataModel {
 	get type() { return "weapon" as const;}
 	static override defineSchema() {
@@ -133,6 +131,13 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 	get type() { return "socialCard" as const;}
 	static override defineSchema() {
 		const ret = {
+			qualifiers: new arr( new obj<{
+				relationshipName: string,
+				min: number,
+				max: number,
+			}>({
+				initial: {relationshipName: "Unnamed Relationship", min:0, max:0}
+			}), {initial: []}),
 			skill: new txt<"primary" | "secondary">({initial: "primary"}),
 			cameo: new txt(),
 			perk: new txt( {initial: "standard Tarot effect"}),
@@ -144,8 +149,6 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 		return ret;
 	}
 }
-
-
 
 export const ITEMMODELS = {
 	consumable: Consumable,
