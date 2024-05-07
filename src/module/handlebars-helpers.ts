@@ -1,3 +1,4 @@
+import { SocialLinkData } from "./actor/persona-actor.js";
 import { UniversalActorAccessor } from "./utility/db-accessor.js";
 import { Power } from "./item/persona-item.js";
 import { SocialBenefit } from "./actor/persona-actor.js";
@@ -98,9 +99,14 @@ export class PersonaHandleBarsHelpers {
 			return new Handlebars.SafeString(txt.replaceAll("\n", "<br>"));
 		},
 
-
+		'isHighestLinker': (pc: PC, linkData:SocialLinkData ) => {
+			if (!linkData) return false;
+			const highest = linkData.actor.highestLinker();
+			return highest[1] == linkData.linkLevel;
+		},
 
 	}
-}
+
+} //end of class
 
 

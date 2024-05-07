@@ -1,3 +1,7 @@
+import { Job } from "../item/persona-item.js";
+import { PersonaItem } from "../item/persona-item.js";
+import { NPC } from "../actor/persona-actor.js";
+import { PersonaActor } from "../actor/persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../config/persona-settings.js";
 import { SocialCard } from "../item/persona-item.js";
 import { PersonaSounds } from "../persona-sounds.js";
@@ -15,6 +19,7 @@ import { HTMLTools } from "../utility/HTMLTools.js";
 export class PersonaSocial {
 
 	static #drawnCardIds: string[] = [];
+
 
 	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation) : Promise<PersonaRoll> {
 		let mods = pc.getSocialStat(socialStat);
@@ -131,16 +136,17 @@ export class PersonaSocial {
 
 		if (undrawn.length < 4) {
 			undrawn = cards;
-			this.#drawnCardIds = [];
+			this.#drawnCardIds = this.#drawnCardIds
+				.filter(cardId=> !cards.find(card => card.id == cardId));
 		}
 		const draw  = Math.floor(Math.random() * undrawn.length) ;
 		const chosenCard =  undrawn[draw];
-		if (!chosenCard) throw new PersonaError("Can't find valid card!");
+		if (!chosenCard) throw new PersonaError("Can't find valid social card!");
 		this.#drawnCardIds.push(chosenCard.id);
 		return chosenCard;
 	}
 
-	static async socialCard(actor: PC, linkId: string) : Promise<ChatMessage> {
+	static async drawSocialCard(actor: PC, linkId: string) : Promise<ChatMessage> {
 		const card = this.#drawSocialCard(actor, linkId);
 		return await this.#printSocialCard(card, actor, linkId);
 	}
@@ -158,6 +164,67 @@ export class PersonaSocial {
 			type: CONST.CHAT_MESSAGE_TYPES.OOC
 		};
 		return await ChatMessage.create(msgData,{} );
+	}
+
+	static async rerollAvailability() {
+		let rolls : Roll[] = [];
+		let html = "";
+		const links = (game.actors.contents as PersonaActor[])
+			.filter( x=> (x.system.type == "pc" || x.system.type == "npc") && x.system.availability != "N/A");
+		for (const social of links) {
+			const [newavail, roll] = await this.#rollAvailability();
+			await (social as PC | NPC).update({"system.availability": newavail});
+			rolls.push(roll);
+			html += `<div> ${social.name} : ${newavail} </div>`;
+		}
+		const jobs = (game.items.contents as PersonaItem[])
+		.filter( item => item.system.type =="job"
+			&& item.system.availability != "N/A" 
+			&& item.system.active
+		) as Job[];
+		for (const job of jobs) {
+			const [newavail, roll] = await this.#rollAvailability();
+			await job.update({"system.availability": newavail});
+			rolls.push(roll);
+			html += `<div> ${job.name} : ${newavail} </div>`;
+		}
+
+		return await ChatMessage.create( {
+			speaker: {
+				alias: "Social System"
+			},
+			content: html,
+			type: CONST.CHAT_MESSAGE_TYPES.OOC,
+			rolls: rolls,
+		}, {});
+	}
+
+	static async #rollAvailability() : Promise<[availability: PC["system"]["availability"], roll: Roll]> {
+		const roll = new Roll("1d6");
+		await roll.roll();
+		let newavail : PC["system"]["availability"];
+		switch (roll.total) {
+			case 1:
+				newavail = "--";
+				break;
+			case 2:
+			case 3:
+				newavail = "-";
+				break;
+			case 4:
+			case 5:
+				newavail = "+";
+				break;
+			case 6:
+				newavail = "++";
+				break;
+			default: throw new PersonaError(`Somehow a d6 got a value of ${roll.total}`);
+		}
+		return [newavail, roll];
+	}
+
+	static drawnCards() : string[] {
+		return this.#drawnCardIds;
 	}
 
 } //end of class

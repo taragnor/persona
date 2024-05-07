@@ -262,7 +262,25 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	get socialLinks() : {linkLevel: number, actor: SocialLink, inspiration: number, linkBenefits: SocialLink, currentProgress:number, relationshipType: string}[] {
+	highestLinker(this: SocialLink) : [pc: PC | null, linkLevel: number] {
+		const listOfLinkers = (game.actors.contents as PersonaActor[])
+			.filter( x=> x.system.type == "pc" && x != this)
+			.map( (pc : PC)=> ({
+				pc,
+				highest: pc.socialLinks
+				.find( link=> link.actor == this)
+				?.linkLevel ?? 0
+			}))
+		.sort ( (a,b) => b.highest - a.highest);
+		const highest = listOfLinkers[0];
+		if (!highest || highest.highest == 0) {
+			return [null, 0];
+		}
+		return [highest.pc, highest.highest];
+
+	}
+
+	get socialLinks() : SocialLinkData[] {
 		if (this.system.type != "pc") return [];
 		return this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
 			const npc = PersonaDB.getActor(linkId);
@@ -1283,3 +1301,11 @@ export type Tarot = Subtype<PersonaActor, "tarot">;
 export type SocialLink = PC | NPC;
 
 
+export type SocialLinkData = {
+	linkLevel: number,
+	actor: SocialLink,
+	inspiration: number,
+	linkBenefits: SocialLink,
+	currentProgress:number,
+	relationshipType: string
+}

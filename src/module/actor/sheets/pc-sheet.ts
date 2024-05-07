@@ -94,6 +94,7 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(`.social-stat .social-boost`).on("click", this.socialBoost.bind(this));
 		html.find(`.spend-money`).on('click', this.spendMoney.bind(this));
 		html.find(`.gain-money`).on('click', this.gainMoney.bind(this));
+		html.find(".draw-social-card").on("click", this.drawSocialCard.bind(this))
 		super.activateListeners(html);
 	}
 
@@ -211,6 +212,13 @@ export class PCSheet extends CombatantSheetBase {
 		if (x <= 0) return;
 		await this.actor.spendMoney(x);
 		await Logger.sendToChat(`${this.actor.name} Spent ${x} resource points`);
+	}
+
+	async drawSocialCard(event: JQuery.ClickEvent) {
+		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
+		if (await HTMLTools.confirmBox("Social Card", "Draw Social Card?")) {
+			await PersonaSocial.drawSocialCard(this.actor, linkId);
+		}
 	}
 
 }
