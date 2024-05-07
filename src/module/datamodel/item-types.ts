@@ -134,6 +134,7 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		const ret = {
 			skill: new txt<"primary" | "secondary">({initial: "primary"}),
+			cameo: new txt(),
 			perk: new txt( {initial: "standard Tarot effect"}),
 			opportunity: new txt(),
 			bane: new txt(),

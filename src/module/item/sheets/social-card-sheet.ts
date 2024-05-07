@@ -2,11 +2,17 @@ import { SocialCard } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { PersonaItemSheetBase } from "./base-item-sheet.js";
 
+const PRIMARY_SECONDARY = {
+	"primary": "persona.term.primary",
+	"secondary": "persona.term.secondary",
+};
+
 export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 	override item: SocialCard;
 
 	override async getData() {
 		const data = await super.getData();
+		data.PRIMARY_SECONDARY = PRIMARY_SECONDARY;
 		return data;
 	}
 

@@ -1,0 +1,31 @@
+<div class="social-card">
+	<h2 class="card-title">
+		{{card.name}}
+	</h2>
+	<div class="skill">
+		<b>Skill: </b>
+		{{newlineConversion card.system.skill}} ({{localize skill}})
+	</div>
+	<div class="perk">
+		<b>Perk: </b>
+		{{newlineConversion card.system.perk}}
+	</div>
+	{{#if card.system.cameo}}
+	<div class="cameo">
+		<b>Cameo: </b>
+		{{newlineConversion card.system.cameo}}
+	</div>
+	{{/if}}
+	{{#if card.system.opportunity}}
+	<div class="opportunity">
+		<b>Opportunity: </b>
+		{{newlineConversion card.system.opportunity}}
+	</div>
+	{{/if}}
+	{{#if card.system.bane}}
+	<div class="bane">
+		<b>Bane: </b>
+		{{newlineConversion card.system.bane}}
+	</div>
+	{{/if}}
+</div>

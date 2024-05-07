@@ -80,12 +80,12 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async usePower(event: Event) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
-		const power = this.actor.powers.find(power => power.id ==powerId);
+		const power = this.actor.powers.find(power => power.id == powerId);
 		if (!power) {
 			throw new PersonaError(`Can't find Power Id:${powerId}`);
 		}
 		const ptype = power.system.type;
-		if (ptype!= "power" && ptype != "consumable")
+		if (ptype != "power" && ptype != "consumable")
 			throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);
 		this.#useItemOrPower(power);
 	}

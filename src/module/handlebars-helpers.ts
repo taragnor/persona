@@ -94,6 +94,12 @@ export class PersonaHandleBarsHelpers {
 			return game.user.isGM;
 		},
 
+		'newlineConversion': function (txt: string) : SafeString {
+			return new Handlebars.SafeString(txt.replaceAll("\n", "<br>"));
+		},
+
+
+
 	}
 }
 

@@ -230,3 +230,14 @@ input.flag-name {
 	width: 10em;
 
 }
+
+.social-card-sheet textarea {
+	text-align:left;
+}
+
+div.social-card {
+	border-radius: 25px;
+	border: 2px solid #73AD21;
+	padding: 5px;
+	border:
+}

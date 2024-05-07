@@ -1,0 +1,38 @@
+<form class="social-card-sheet">
+	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Job Name" placeholder="Job Name">
+	<div>
+		<label>Skill</label>
+		<select name="system.skill">
+			{{selectOptions PRIMARY_SECONDARY localize=true selected=item.system.skill}}
+		</select>
+	</div>
+	<div>
+		<label> Perk</label>
+		<textarea name="system.perk">
+			{{item.system.perk}}
+		</textarea>
+	</div>
+
+	<div>
+		<label> Cameo</label>
+		<textarea name="system.cameo">
+			{{item.system.cameo}}
+		</textarea>
+	</div>
+
+	<div>
+		<label> Opportunity</label>
+		<textarea name="system.opportunity">
+			{{item.system.opportunity}}
+		</textarea>
+	</div>
+
+	<div>
+		<label> Bane</label>
+		<textarea name="system.bane">
+			{{item.system.bane}}
+		</textarea>
+	</div>
+
+</form>
+

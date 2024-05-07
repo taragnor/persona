@@ -962,6 +962,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case "fear":
 					if (total <= 2) {
 						retstr.push(`(<b>${actor.name} flees from combat!</b>`);
+					} else {
+						retstr.push(`(<b>${actor.name} is paralyzed with fear and can't act this turn</b>`);
 					}
 					break;
 				case "charmed":
