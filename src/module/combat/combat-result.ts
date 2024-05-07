@@ -250,7 +250,6 @@ export class CombatResult  {
 	}
 
 	async finalize() {
-		console.log("Finalize Called!");
 		this.clearFlags();
 		for (const changes of this.attacks.values()) {
 			for (const change of changes) {
@@ -329,7 +328,6 @@ export class CombatResult  {
 	}
 
 	async apply(): Promise<void> {
-		console.log(this);
 		const escalationChange = this.escalationMod;
 		if (escalationChange) {
 			const combat = PersonaCombat.ensureCombatExists();
@@ -379,7 +377,6 @@ export class CombatResult  {
 			if (!item.effects.includes(flag))
 				item.effects.push(flag);
 		}
-		console.log(this.tokenFlags);
 	}
 
 	hasFlag(actor: PersonaActor, flag: OtherEffect["type"]) : boolean{
