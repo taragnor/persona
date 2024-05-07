@@ -348,6 +348,8 @@
 "persona.preconditions.comparison.is-resistant-to": "Is Resistant To",
 "persona.preconditions.comparison.is-same-arcana": "Is Same Arcana",
 "persona.preconditions.comparison.flag-state": "Flag State",
+"persona.preconditions.comparison.is-dead": "Is Dead",
+"persona.preconditions.comparison.is-consumable": "Is Consumable Item",
 
 
 

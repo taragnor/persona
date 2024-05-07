@@ -47,11 +47,71 @@
 			{{/if}}
 
 			{{#if (eq cond.type "boolean")}}
+
+			{{#if (strIncludes cond.boolComparisonTarget "engaged")}}
 			<div>
 				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
 					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
 				</select>
 			</div>
+			{{/if}}
+
+			{{#if (strIncludes cond.boolComparisonTarget "is-pc")}}
+			<div>
+				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
+					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+				</select>
+			</div>
+			{{/if}}
+
+			{{#if (strIncludes cond.boolComparisonTarget "is-shadow")}}
+			<div>
+				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
+					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+				</select>
+			</div>
+			{{/if}}
+
+			{{#if (strIncludes cond.boolComparisonTarget "is-dead")}}
+			<div>
+				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
+					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+				</select>
+			</div>
+			{{/if}}
+
+			{{#if (strIncludes cond.boolComparisonTarget "is-ame-arcana")}}
+			<div>
+				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
+					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+				</select>
+			</div>
+			{{/if}}
+
+
+			{{#if (strIncludes cond.boolComparisonTarget "struck-weakness")}}
+			<div>
+				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
+					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+				</select>
+			</div>
+			{{/if}}
+
+			{{#if (strIncludes cond.boolComparisonTarget "has-status")}}
+			<div>
+				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
+					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+				</select>
+			</div>
+			{{/if}}
+
+			{{#if (strIncludes cond.boolComparisonTarget "flag-state")}}
+			<div>
+				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
+					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+				</select>
+			</div>
+			{{/if}}
 
 			<div>
 				<select id="comparison-target" name="system.effects.{{../i}}.conditions.{{j}}.boolComparisonTarget">

@@ -27,7 +27,9 @@ export type ConditionalEffect  = {
 const evenDmg :ConditionalEffect = {
 	conditions: [
 		{
-			type: "hit",
+			type: "boolean",
+			booleanState: true,
+			boolComparisonTarget: "is-hit",
 		},
 		{
 			type: "numeric",
@@ -45,7 +47,9 @@ const evenDmg :ConditionalEffect = {
 const oddDmg :ConditionalEffect = {
 	conditions: [
 		{
-			type: "hit",
+			type: "boolean",
+			booleanState: true,
+			boolComparisonTarget: "is-hit",
 		},
 		{
 			type: "numeric",
@@ -85,9 +89,6 @@ export function powerCost() {
 		reqEnhancedMultiverse: new bool( {initial:false}),
 	}
 }
-
-
-
 
 export function UsablePowerProps() {
 	return {
