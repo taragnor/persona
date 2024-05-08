@@ -1,3 +1,4 @@
+import { Triggered } from "../config/precondition-types.js";
 import { PToken } from "./combat/persona-combat.js";
 import { UniversalTokenAccessor } from "./utility/db-accessor.js";
 import { TarotCard } from "../config/tarot.js";
@@ -43,8 +44,7 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 			if (!situation.saveVersus) return false;
 			return situation.saveVersus == condition.status;
 		case "on-trigger":
-			if (!situation.trigger) return false;
-			return (condition.trigger == situation.trigger);
+			return triggerComparison(condition, situation, source);
 		case "numeric": {
 			return numericComparison(condition, situation, source);
 		}
@@ -143,6 +143,29 @@ function getToken(condition: TargettedBComparionPC, situation: Situation) : Univ
 		case "attacker":
 			if (!situation.attacker?.token) return undefined;
 			return situation.attacker.token;
+	}
+
+}
+
+function triggerComparison(condition: Triggered, situation: Situation, _source:Option<PowerContainer>) : boolean {
+	if (!situation.trigger) return false;
+	if (condition.trigger != situation.trigger) return false;
+	switch (condition.trigger) {
+		case "on-attain-tarot-perk":
+			return condition.tarot == situation.tarot;
+		case "on-inflict-status":
+			return condition.status == situation.statusEffect;
+		case "exit-metaverse":
+		case "enter-metaverse":
+		case "on-use-power":
+		case "on-combat-end":
+		case "on-combat-start":
+		case "on-kill-target":
+		case "on-damage":
+			return true;
+		default:
+			condition.trigger satisfies never;
+			return false;
 	}
 
 }
@@ -330,6 +353,7 @@ export type Situation = {
 	attacker ?:UniversalActorAccessor<PC | Shadow>;
 	// userToken ?: UniversalTokenAccessor<PToken>;
 	saveVersus ?: StatusEffectId;
+	statusEffect ?: StatusEffectId;
 	trigger ?: Trigger,
 	socialTarget ?: UniversalActorAccessor<PC | NPC>,
 	eventCard ?: UniversalItemAccessor<Job | SocialCard>,

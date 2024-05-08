@@ -70,11 +70,11 @@
 		{{#if (eq cons.type	"set-flag")}}
 		<div>
 			<label for="flag-id"> Flag Id</label>
-			<input class="flag-id" id="flag-id" type="text" name="system.effects.{{../i}}.consequences.{{j}}.flagId" {{checked cons.flagId}}>
+			<input class="flag-id" id="flag-id" type="text" name="system.effects.{{../i}}.consequences.{{j}}.flagId" value="{{cons.flagId}}">
 		</div>
 		<div>
 			<label for="flag-name"> Flag Name </label>
-			<input class="flag-name" id="flag-name" type="text" name="system.effects.{{../i}}.consequences.{{j}}.flagName" {{checked cons.flagName}}>
+			<input class="flag-name" id="flag-name" type="text" name="system.effects.{{../i}}.consequences.{{j}}.flagName" value="{{cons.flagName}}">
 		</div>
 		<div>
 			<label> State</label>

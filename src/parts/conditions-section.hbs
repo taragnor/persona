@@ -48,64 +48,7 @@
 
 			{{#if (eq cond.type "boolean")}}
 
-			{{#if (strIncludes cond.boolComparisonTarget "engaged")}}
-			<div>
-				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
-					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
-				</select>
-			</div>
-			{{/if}}
-
-			{{#if (strIncludes cond.boolComparisonTarget "is-pc")}}
-			<div>
-				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
-					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
-				</select>
-			</div>
-			{{/if}}
-
-			{{#if (strIncludes cond.boolComparisonTarget "is-shadow")}}
-			<div>
-				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
-					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
-				</select>
-			</div>
-			{{/if}}
-
-			{{#if (strIncludes cond.boolComparisonTarget "is-dead")}}
-			<div>
-				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
-					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
-				</select>
-			</div>
-			{{/if}}
-
-			{{#if (strIncludes cond.boolComparisonTarget "is-ame-arcana")}}
-			<div>
-				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
-					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
-				</select>
-			</div>
-			{{/if}}
-
-
-			{{#if (strIncludes cond.boolComparisonTarget "struck-weakness")}}
-			<div>
-				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
-					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
-				</select>
-			</div>
-			{{/if}}
-
-			{{#if (strIncludes cond.boolComparisonTarget "has-status")}}
-			<div>
-				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
-					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
-				</select>
-			</div>
-			{{/if}}
-
-			{{#if (strIncludes cond.boolComparisonTarget "flag-state")}}
+			{{#if (eqAny cond.boolComparisonTarget "engaged" "is-pc" "is-shadow" "is-dead" "is-same-arcana" "struck-weakness" "has-status" "flag-state")}}
 			<div>
 				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
 					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
@@ -170,11 +113,20 @@
 				{{selectOptions ../POWERSTUFF.POWERTYPES localize=true selected=cond.powerType}}
 			</select>
 			{{/if}}
+
 			{{#if (eq cond.type	"on-trigger")}}
 			<select name="system.effects.{{../i}}.conditions.{{j}}.trigger">
 				{{selectOptions ../POWERSTUFF.TRIGGERS localize=true selected=cond.trigger}}
 			</select>
+			{{#if (eq cond.trigger "on-attain-tarot-perk")}}
+			<select name="system.effects.{{../i}}.conditions.{{j}}.tarot">
+				{{selectOptions ../POWERSTUFF.TAROT_DECK localize=true selected=cond.tarot}}
+			</select>
+
 			{{/if}}
+
+			{{/if}}
+
 			{{#if (eq cond.type	"flag-state")}}
 			<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
 				{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}

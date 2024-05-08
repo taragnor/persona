@@ -475,7 +475,7 @@ export class CombatResult  {
 				case "recover-slot":
 					break;
 				case "set-flag":
-					await actor.setEffectFlag(otherEffect.flagName, otherEffect.state, otherEffect.duration);
+					await actor.setEffectFlag(otherEffect.flagId, otherEffect.state, otherEffect.duration, otherEffect.flagName);
 					break;
 				default:
 					otherEffect satisfies never;

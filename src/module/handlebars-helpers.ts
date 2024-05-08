@@ -110,6 +110,9 @@ export class PersonaHandleBarsHelpers {
 			const highest = linkData.actor.highestLinker();
 			return highest[1] == linkData.linkLevel;
 		},
+		'eqAny': function (testCase: string, ...rest: string[]) : boolean {
+			return rest.some( str => str == testCase)
+		}
 
 	}
 

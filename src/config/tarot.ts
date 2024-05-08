@@ -1,4 +1,4 @@
-export const tarotDeck = {
+export const TAROT_DECK = {
 	"Fool": "persona.tarot.0.name",
 	"Magician": "persona.tarot.1.name",
 	"HighPriestess": "persona.tarot.2.name",
@@ -24,4 +24,4 @@ export const tarotDeck = {
 	"": "-",
 } as const;
 
-export type TarotCard = keyof typeof tarotDeck;
+export type TarotCard = keyof typeof TAROT_DECK;

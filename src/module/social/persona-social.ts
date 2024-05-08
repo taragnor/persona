@@ -1,3 +1,4 @@
+import { TarotCard } from "../../config/tarot.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { CombatResult } from "../combat/combat-result.js";
 import { NonCombatTrigger } from "../../config/triggers.js";
@@ -324,10 +325,10 @@ export class PersonaSocial {
 		return this.#drawnCardIds;
 	}
 
-	static async execTrigger( trigger: NonCombatTrigger, actor: PC, situation ?: Situation) {
+	static async execTrigger( trigger: NonCombatTrigger, actor: PC, situation ?: Situation, msg = "Triggered Effect") {
 		await this.onTrigger(trigger, actor, situation)
 			.emptyCheck()
-			?.toMessage("Triggered Effect", actor);
+			?.toMessage(msg, actor);
 
 	}
 	static onTrigger(trigger: NonCombatTrigger, actor: PC, situation ?: Situation) : CombatResult {
@@ -354,6 +355,16 @@ export class PersonaSocial {
 		}
 
 		return result;
+	}
+
+	static async awardPerk(target: PC, socialLink: SocialLink) {
+		const situation : Situation = {
+			user: target.accessor,
+			tarot: socialLink.tarot?.name as TarotCard,
+			target: target.accessor
+		}
+		console.log(situation);
+		await this.execTrigger("on-attain-tarot-perk", target, situation, `Gains Perk (${socialLink.tarot?.name})`) ;
 	}
 
 } //end of class

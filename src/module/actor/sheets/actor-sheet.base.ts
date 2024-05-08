@@ -1,6 +1,6 @@
 import { RESIST_STRENGTHS } from "../../../config/damage-types.js";
 import { PersonaActor } from "../persona-actor.js";
-import { tarotDeck} from "../../../config/tarot.js";
+import { TAROT_DECK } from "../../../config/tarot.js";
 import { DAMAGETYPES } from "../../../config/damage-types.js";
 import { INCREMENTAL_ADVANCES } from "../../../config/incremental-advance-types.js";
 import { INCREMENTAL_ADVANCE_TYPES } from "../../../config/incremental-advance-types.js";
@@ -16,7 +16,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 		data.CONST = {
 			STUDENT_SKILLS,
 			AVAILABILITY,
-			TAROT  : tarotDeck,
+			TAROT  : TAROT_DECK,
 			RESIST_STRENGTHS : RESIST_STRENGTHS,
 			DAMAGETYPES : DAMAGETYPES,
 			INC: INCREMENTAL_ADVANCE_TYPES.map(x=> ({

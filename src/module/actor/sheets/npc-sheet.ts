@@ -1,3 +1,4 @@
+import { PersonaSocial } from "../../social/persona-social.js";
 import { PersonaActor } from "../persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { NoncombatantSheet } from "./noncombatant-sheet.js";
@@ -27,9 +28,20 @@ export class NPCSheet extends NoncombatantSheet  {
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {
+		html.find(".award-perk").on("click", this.activatePerk.bind(this));
 		super.activateListeners(html);
 	}
 
+	activatePerk(ev: JQuery.ClickEvent) {
+		const target = Array.from(game.user.targets)
+			.find( (x: Token<PersonaActor>) => x.actor.system.type == "pc");
+		if (target) {
+			console.log(`Awarding Perk to ${target?.name}`)
+			PersonaSocial.awardPerk(target.actor, this.actor);
+		}
+
+
+	}
 
 
 }

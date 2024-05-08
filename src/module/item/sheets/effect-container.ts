@@ -1,3 +1,4 @@
+import { TAROT_DECK } from "../../../config/tarot.js";
 import { SLOT_TYPES_EXPANDED } from "../../../config/slot-types.js";
 import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { PowerContainer } from "../persona-item.js";
@@ -31,6 +32,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 		}
 		const data = await super.getData();
 		data.POWERSTUFF = {
+			TAROT_DECK,
 			NUMERIC_COMPARISON_TARGET,
 			BOOLEAN_COMPARISON_TARGET,
 			COMPARATORS,

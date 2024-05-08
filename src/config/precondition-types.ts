@@ -52,7 +52,6 @@ type SimpleTrigger = {
 type onInflictStatus = {
 	trigger: "on-inflict-status",
 	status : StatusEffectId,
-	conditionTarget : ConditionTarget,
 }
 
 type onTarotPerk = {

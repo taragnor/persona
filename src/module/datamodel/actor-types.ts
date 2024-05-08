@@ -3,10 +3,11 @@ import { AVAILABILITY_LIST } from "../../config/availability-types.js";
 import { ResistType } from "../../config/damage-types.js";
 import { INCREMENTAL_ADVANCE_TYPES } from "../../config/incremental-advance-types.js";
 
-import { tarotDeck } from "../../config/tarot.js";
 import { ResistStrength } from "../../config/damage-types.js";
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
 import { StatusDuration } from "../../config/status-effects.js";
+import { TarotCard } from "../../config/tarot.js";
+import { TAROT_DECK } from "../../config/tarot.js";
 
 const personalBio = function () {
 	return new sch( {
@@ -80,7 +81,7 @@ function skillSlots() {
 type IncAdvanceObject = Required<Record<INCREMENTAL_ADVANCE_TYPES, boolean>>;
 
 
-const tarot = function () { return new txt<keyof typeof tarotDeck>( { choices: Object.keys(tarotDeck) as (keyof typeof tarotDeck)[], blank: true, initial:""});}
+const tarot = function () { return new txt<TarotCard>( { choices: Object.keys(TAROT_DECK) as (TarotCard)[], blank: true, initial:""});}
 
 const classData = function () {
 	const initial : IncAdvanceObject =  Object.fromEntries( INCREMENTAL_ADVANCE_TYPES.map (x=> ([x, false]))
