@@ -3,7 +3,7 @@ import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { PowerContainer } from "../persona-item.js";
 import { SLOTTYPES } from "../../../config/slot-types.js";
 import { POWERTYPES } from "../../../config/effect-types.js";
-import { PRECONDITIONTYPES } from "../../../config/effect-types.js";
+import { PRECONDITIONTYPES } from "../../../config/precondition-types.js";
 import { CONSQUENCETYPES } from "../../../config/effect-types.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { DAMAGETYPES } from "../../../config/damage-types.js";
@@ -17,10 +17,10 @@ import { SHADOW_CHARGE_REQ } from "../../../config/effect-types.js";
 import { PersonaDB } from "../../persona-db.js";
 import { TRIGGERS } from "../../../config/triggers.js";
 import { OTHER_CONSEQUENCES } from "../../datamodel/other-effects.js";
-import { CONDITION_TARGETS } from "../../preconditions.js";
-import { NUMERIC_COMPARISON_TARGET } from "../../preconditions.js";
-import { BOOLEAN_COMPARISON_TARGET } from "../../preconditions.js";
-import { COMPARATORS } from "../../preconditions.js";
+import { CONDITION_TARGETS } from "../../../config/precondition-types.js";
+import { NUMERIC_COMPARISON_TARGET } from "../../../config/precondition-types.js";
+import { BOOLEAN_COMPARISON_TARGET } from "../../../config/precondition-types.js";
+import { COMPARATORS } from "../../../config/precondition-types.js";
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
 	override item: PowerContainer;

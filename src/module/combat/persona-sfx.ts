@@ -6,7 +6,7 @@ import { waitUntilTrue } from "../utility/async-wait.js";
 
 
 export class PersonaSFX {
-	static async onDamage( token: PToken, hpchange: number, damageType: DamageType) {
+	static async onDamage( token: PToken | undefined, hpchange: number, damageType: DamageType) {
 		if (hpchange == 0) return;
 		if (hpchange > 0) {
 			if (damageType == "healing") {
@@ -34,11 +34,11 @@ export class PersonaSFX {
 		}
 	}
 
-	static async onDefend( token: PToken, defenseType: "block" | "absorb" | "miss" | "reflect") {
+	static async onDefend( token: PToken | undefined, defenseType: "block" | "absorb" | "miss" | "reflect") {
 		const s = await this.play(defenseType);
 	}
 
-	static async onStatus( token : PToken, statusEffect: StatusEffectId) {
+	static async onStatus( token : PToken | undefined, statusEffect: StatusEffectId) {
 		if (PersonaSounds.isValidSound(statusEffect)) {
 			const s = await this.play(statusEffect);
 		}

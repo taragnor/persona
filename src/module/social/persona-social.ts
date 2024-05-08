@@ -1,3 +1,6 @@
+import { PersonaCombat } from "../combat/persona-combat.js";
+import { CombatResult } from "../combat/combat-result.js";
+import { NonCombatTrigger } from "../../config/triggers.js";
 import { SocialLink } from "../actor/persona-actor.js";
 import { Job } from "../item/persona-item.js";
 import { PersonaItem } from "../item/persona-item.js";
@@ -153,7 +156,7 @@ export class PersonaSocial {
 	}
 
 	static async #printSocialCard(card: SocialCard, actor: PC, linkId: string ) : Promise<ChatMessage> {
-		const link = actor.socialLinks.find(link => link.actor.id == linkId);
+		// const link = actor.socialLinks.find(link => link.actor.id == linkId);
 		const skill = STUDENT_SKILLS[actor.getSocialStatToRaiseLink(card.system.skill)];
 
 		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/social-card.hbs`, {item: card,card,  skill} );
@@ -319,6 +322,38 @@ export class PersonaSocial {
 	static drawnCards() : string[] {
 		//NOTE: Only a debug function
 		return this.#drawnCardIds;
+	}
+
+	static async execTrigger( trigger: NonCombatTrigger, actor: PC, situation ?: Situation) {
+		await this.onTrigger(trigger, actor, situation)
+			.emptyCheck()
+			?.toMessage("Triggered Effect", actor);
+
+	}
+	static onTrigger(trigger: NonCombatTrigger, actor: PC, situation ?: Situation) : CombatResult {
+		const result = new CombatResult();
+		if (!situation) {
+			situation = {
+				user: actor.accessor,
+			}
+		}
+		situation = {
+				...situation,
+				trigger
+			} ; //copy the object so it doesn't permanently change it
+		for (const trig of actor.triggers) {
+			for (const eff of trig.getEffects()) {
+				if (!eff.conditions.every( cond =>
+					ModifierList.testPrecondition(cond, situation, trig)
+				)) { continue; }
+				const cons = PersonaCombat.ProcessConsequences(trig, situation, eff.consequences, actor)
+				for (const c of cons.consequences) {
+					result.addEffect(null, actor, c.cons);
+				}
+			}
+		}
+
+		return result;
 	}
 
 } //end of class

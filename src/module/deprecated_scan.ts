@@ -1,4 +1,4 @@
-import { Precondition } from "./preconditions.js";
+import { Precondition } from "../config/precondition-types.js";
 import { ModifierContainer } from "./item/persona-item.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaItem } from "./item/persona-item.js";

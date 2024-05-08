@@ -79,7 +79,12 @@ export class PersonaHandleBarsHelpers {
 			}
 		},
 
-		"getTokenAccName" : (tokenAcc: UniversalTokenAccessor<PToken>) =>  {
+		"getTokenAccName" : (tokenAcc: UniversalTokenAccessor<PToken> | UniversalActorAccessor<PC | Shadow>) =>  {
+
+			if ("actorId" in tokenAcc) {
+				const token = PersonaDB.findToken(tokenAcc.token);
+				return token?.document?.name ?? PersonaDB.findActor(tokenAcc).name ?? "Unknown Token";
+			}
 			const token = PersonaDB.findToken(tokenAcc);
 			return token.document.name;
 		},

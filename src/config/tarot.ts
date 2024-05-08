@@ -24,3 +24,4 @@ export const tarotDeck = {
 	"": "-",
 } as const;
 
+export type TarotCard = keyof typeof tarotDeck;

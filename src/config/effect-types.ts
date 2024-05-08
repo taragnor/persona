@@ -37,63 +37,6 @@ export const CONSQUENCETYPES = Object.fromEntries(
 CONSQUENCELIST.map( x=> [x, `persona.effecttypes.${x}`])
 );
 
-export const PRECONDITIONLIST = [
-	"always",
-	"numeric",
-	"boolean",
-	// "natural+",
-	// "natural-",
-	// "natural-odd",
-	// "natural-even",
-	// "critical",
-	// "miss",
-	// "hit",
-	"miss-all-targets",
-	// "escalation+",
-	// "escalation-",
-	// "escalation-odd",
-	// "escalation-even",
-	// "activation+",
-	// "activation-",
-	// "activation-odd",
-	// "activation-even",
-	// "in-battle",
-	// "non-combat",
-	// "talent-level+",
-	// "power-damage-type-is",
-	// "power-type-is",
-	// "has-tag",
-	// "not-tag",
-	// "user-has-status",
-	// "user-not-status",
-	// "target-has-status",
-	// "target-not-status",
-	// "user-is-pc",
-	// "user-is-shadow",
-	// "is-engaged",
-	// "is-engaged-with-target",
-	// "is-not-engaged-with-target",
-	// "metaverse-enhanced",
-	// "metaverse-normal",
-	// "is-resistant-to",
-	// "not-resistant-to",
-	// "target-is-resistant-to",
-	// "target-is-not-resistant-to",
-	// "struck-weakness",
-	// "requires-social-link-level",
-	"save-versus",
-	// "target-is-dead",
-	"on-trigger",
-	// "is-a-consumable",
-	// "target-is-same-arcana",
-	// "flag-state",
-] as const;
-
-
-export type PreconditionType = typeof PRECONDITIONLIST[number];
-
-export const PRECONDITIONTYPES = Object.fromEntries( PRECONDITIONLIST.map(x=> [x, `persona.preconditions.${x}`]));
-
 export const POWERTYPESLIST = [
 	"weapon",
 	"magic",

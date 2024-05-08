@@ -37,9 +37,9 @@ export class CombatResult  {
 		actor: UniversalActorAccessor<PC |Shadow>,
 			effects: OtherEffect[]
 		}[] = [] ;
-	attacks: Map<AttackResult, TokenChange<PToken>[]> = new Map();
+	attacks: Map<AttackResult, ActorChange<PC | Shadow>[]> = new Map();
 	escalationMod: number = 0;
-	costs: TokenChange<PToken>[] = [];
+	costs: ActorChange<PC | Shadow>[] = [];
 	sounds: {sound: ValidSound, timing: "pre" | "post"}[] = [];
 
 	constructor(atkResult ?: AttackResult) {
@@ -74,9 +74,9 @@ export class CombatResult  {
 		this.sounds.push({sound, timing});
 	}
 
-	addEffect(atkResult: AttackResult | null, target: PToken, cons: Consequence, damageType ?: DamageType) {
-		const effect : TokenChange<PToken>= {
-			token: PersonaDB.getUniversalTokenAccessor(target),
+	addEffect(atkResult: AttackResult | null, target: PC | Shadow, cons: Consequence, damageType ?: DamageType) {
+		const effect : ActorChange<PC | Shadow>= {
+			actor: target.accessor,
 			otherEffects: [],
 			hpchange: 0,
 				damageType: "none",
@@ -161,7 +161,7 @@ export class CombatResult  {
 
 			case "revive":
 				effect.removeStatus.push({ id: "fading"});
-				effect.hpchange = Math.round(target.actor.mhp * (cons.amount ?? 0.01));
+				effect.hpchange = Math.round(target.mhp * (cons.amount ?? 0.01));
 				effect.hpchangemult = 1;
 				break;
 			case "extraTurn":
@@ -221,9 +221,9 @@ export class CombatResult  {
 		}
 	}
 
-	static mergeChanges(mainEffects: TokenChange<PToken>[], newEffects: TokenChange<PToken>[]) {
+	static mergeChanges(mainEffects: ActorChange<PC | Shadow>[], newEffects: ActorChange<PC | Shadow>[]) {
 		for (const newEffect of newEffects) {
-			const entry = mainEffects.find( change => change.token.tokenId == newEffect.token.tokenId);
+			const entry = mainEffects.find( change => PersonaDB.accessorEq(change.actor, newEffect.actor));
 			if (!entry) {
 				mainEffects.push(newEffect);
 			} else {
@@ -233,19 +233,19 @@ export class CombatResult  {
 		}
 	}
 
-	static normalizeChange(change: TokenChange<PToken>) {
+	static normalizeChange(change: ActorChange<PC | Shadow>) {
 		change.hpchange *= change.hpchangemult;
 		change.hpchangemult = 1;
 		change.hpchange = Math.trunc(change.hpchange);
 
 	}
 
-	getOtherEffects(token : PToken): OtherEffect[] {
-		const acc = PersonaDB.getUniversalTokenAccessor(token);
+	getOtherEffects(actor : PC | Shadow): OtherEffect[] {
+		const acc = actor.accessor;
 		return Array
 			.from(this.attacks.values())
 			.flat()
-			.filter(x => x.token == acc && x.otherEffects.length > 0)
+			.filter(x => PersonaDB.accessorEq(x.actor,acc) && x.otherEffects.length > 0)
 			.flatMap( x=> x.otherEffects)
 	}
 
@@ -257,11 +257,11 @@ export class CombatResult  {
 			}
 		}
 		for (const cost of this.costs) {
-			const token = PersonaDB.findToken(cost.token);
-			if (this.hasFlag(token.actor, "half-hp-cost")) {
+			const actor = PersonaDB.findActor(cost.actor);
+			if (this.hasFlag(actor, "half-hp-cost")) {
 				cost.hpchangemult *= 0.5;
 			}
-			if (this.hasFlag(token.actor, "save-slot")) {
+			if (this.hasFlag(actor, "save-slot")) {
 				cost.expendSlot = [0, 0, 0, 0];
 			}
 			await this.finalizeChange(cost);
@@ -275,7 +275,7 @@ export class CombatResult  {
 	}
 
 
-	async toMessage(initiatingToken: PToken, effectName: string) : Promise<ChatMessage> {
+	async toMessage( effectName: string, initiator: PersonaActor) : Promise<ChatMessage> {
 		const rolls : PersonaRoll[] = Array.from(this.attacks.entries()).map( ([attackResult]) => attackResult.roll);
 		const attacks = Array.from(this.attacks.entries()).map( ([attackResult, changes])=> {
 			return {
@@ -284,13 +284,14 @@ export class CombatResult  {
 			};
 		});
 		const manualApply = !PersonaSettings.autoApplyCombatResults() || !game.users.contents.some( x=> x.isGM && x.active);
-		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attacker: initiatingToken, effectName,  attacks, escalation: this.escalationMod, result: this, costs: this.costs, manualApply});
+		const attackerName = initiator.token?.name ?? initiator.name;
+		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attackerName, effectName,  attacks, escalation: this.escalationMod, result: this, costs: this.costs, manualApply});
 		const chatMsg = await ChatMessage.create( {
 			speaker: {
-				scene: initiatingToken.scene.id,
-				actor: undefined,
-				token: initiatingToken.id,
-				alias: undefined
+				scene: initiator?.token?.object.scene.id,
+				actor: initiator.id,
+				token:  initiator.token?.id ,
+				alias: undefined,
 			},
 			rolls: rolls,
 			content: html,
@@ -344,18 +345,19 @@ export class CombatResult  {
 			let token: PToken | undefined;
 			for (const change of changes) {
 				await this.applyChange(change);
-				token = PersonaDB.findToken(change.token);
+				if (change.actor.token)
+				token = PersonaDB.findToken(change.actor.token);
 			}
 			if (token && !token.actor.isAlive()) {
 				// const attacker = PersonaDB.findToken(result.attacker);
 				this.merge(
-					PersonaCombat.onTrigger("on-kill-target", token)
+					PersonaCombat.onTrigger("on-kill-target", token.actor)
 				);
 			}
 		}
 		for (const cost of this.costs) {
-			const token = PersonaDB.findToken(cost.token);
-			if (this.hasFlag(token.actor, "half-hp-cost")) {
+			const actor = PersonaDB.findActor(cost.actor);
+			if (this.hasFlag(actor, "half-hp-cost")) {
 				cost.hpchangemult *= 0.5;
 			}
 			await this.applyChange(cost);
@@ -384,8 +386,9 @@ export class CombatResult  {
 
 	}
 
-	async finalizeChange(change: TokenChange<PToken>) {
-		const actor = PersonaDB.findToken(change.token).actor;
+	async finalizeChange(change: ActorChange<PC | Shadow>) {
+		const actor = PersonaDB.findActor(change.actor);
+
 		for (const otherEffect of change.otherEffects) {
 			switch (otherEffect.type) {
 				case "expend-item":
@@ -401,8 +404,8 @@ export class CombatResult  {
 						id: "bonus-action",
 						duration: "UEoT"
 					};
-					const extraTurnChange : TokenChange<PToken> = {
-						token:change.token,
+					const extraTurnChange : ActorChange<PC | Shadow> = {
+						actor:change.actor,
 						hpchange: 0,
 						damageType: "none",
 						hpchangemult: 0,
@@ -426,24 +429,26 @@ export class CombatResult  {
 		CombatResult.normalizeChange(change);
 	}
 
-	async applyChange(change: TokenChange<PToken>) {
-		const token = PersonaDB.findToken(change.token);
-		const actor = token.actor;
+	async applyChange(change: ActorChange<PC | Shadow>) {
+		const actor = PersonaDB.findActor(change.actor);
+		const token  = change.actor.token ? PersonaDB.findToken(change.actor.token): undefined;
 		if (change.hpchange != 0) {
 			if (change.hpchange < 0) {
 				setTimeout( () => {
 					PersonaCombat
-						.onTrigger("on-damage", token)
+						.onTrigger("on-damage", actor)
 						.emptyCheck()
-						?.toMessage(token, "Reaction (Taking Damage)" )
+						?.toMessage("Reaction (Taking Damage)" , actor)
 				});
 			}
-			await PersonaSFX.onDamage(token, change.hpchange, change.damageType);
-			Hooks.callAll("onTakeDamage", token, change.hpchange, change.damageType);
+			if (token) {
+				await PersonaSFX.onDamage(token, change.hpchange, change.damageType);
+				Hooks.callAll("onTakeDamage", token, change.hpchange, change.damageType);
+			}
 			await actor.modifyHP(change.hpchange * change.hpchangemult);
 		}
 		for (const status of change.addStatus) {
-			if (await actor.addStatus(status)) {
+			if (await actor.addStatus(status) && token) {
 				Hooks.call("onAddStatus", token, status);
 				await PersonaSFX.onStatus(token, status.id);
 			}
@@ -485,9 +490,9 @@ export class CombatResult  {
 	}
 
 	/** combines other's data into initial*/
-	static combineChanges (initial: TokenChange<PToken>, other: TokenChange<PToken>) : TokenChange<PToken> {
+	static combineChanges (initial: ActorChange<PC | Shadow>, other: ActorChange<PC | Shadow>) : ActorChange<PC | Shadow> {
 		return {
-			token: initial.token,
+			actor: initial.actor,
 			hpchange: absMax(initial.hpchange, other.hpchange),
 			damageType : initial.damageType == "untyped" ? other.damageType : initial.damageType,
 			hpchangemult: initial.hpchangemult * other.hpchangemult,
@@ -499,8 +504,8 @@ export class CombatResult  {
 	}
 }
 
-export interface TokenChange<T extends Token<any>> {
-	token: UniversalTokenAccessor<T>;
+export interface ActorChange<T extends PersonaActor> {
+	actor: UniversalActorAccessor<T>;
 	hpchange: number;
 	damageType: DamageType;
 	hpchangemult: number;

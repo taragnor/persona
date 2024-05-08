@@ -1,10 +1,10 @@
+import { CombatTrigger } from "../../config/triggers.js";
 import { BASIC_POWER_NAMES } from "../../config/basic-powers.js";
 import { PersonaSFX } from "./persona-sfx.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaSockets } from "../persona.js";
 import { StatusEffect } from "./combat-result.js";
 import { DamageType } from "../../config/damage-types.js";
-import { Trigger } from "../../config/triggers.js";
 import { ModifierContainer } from "../item/persona-item.js";
 import { Consequence } from "./combat-result.js";
 import { TurnAlert } from "../utility/turnAlert.js";
@@ -176,7 +176,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (actor.hp <= 0 && actor.system.type == "pc") {
 			if (actor.system.combat.fadingState < 2) {
 				Msg.push(`${combatant.name} is fading...`);
-				const {success, total} = await PersonaCombat.rollSave(actor, { DC:11, label: "Fading Roll", saveVersus:"fading"});
+				const {success} = await PersonaCombat.rollSave(actor, { DC:11, label: "Fading Roll", saveVersus:"fading"});
 				if (!success) {
 					const newval = actor.system.combat.fadingState +1;
 					await actor.setFadingState(newval);
@@ -257,10 +257,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				this.skipBox(`${msg}. <br> Skip turn?`); //don't await this so it processes the rest of the code
 			}
 		}
-		// const charmStatus = actor.effects.find( eff=> eff.statuses.has("charmed"));
-		// if (charmStatus) {
-		// 	Msg += `${combatant.name} is charmed.`;
-		// }
 		const burnStatus = actor.effects.find( eff=> eff.statuses.has("burn"));
 		if (burnStatus) {
 			const damage = burnStatus.potency;
@@ -323,7 +319,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			await attacker.actor.removeStatus("bonus-action");
 			await result.finalize();
 			await result.print();
-			await result.toMessage(attacker, power.name);
+			await result.toMessage(power.name, attacker.actor);
 			// await result.apply();
 			return result;
 		} catch(e) {
@@ -346,7 +342,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			i++;
 		}
 		this.computeResultBasedEffects(result);
-		const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker));
+		const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
 		result.merge(costs);
 		return result;
 	}
@@ -360,11 +356,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const combat = game.combat as PersonaCombat | undefined;
 		const escalationDie = combat  ? combat.getEscalationDie(): 0;
 		const situation : Situation = {
-			target: PersonaDB.getUniversalTokenAccessor(target),
+			target: target.actor.accessor,
 			usedPower: PersonaDB.getUniversalItemAccessor(power),
 			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
-			userToken: PersonaDB.getUniversalTokenAccessor(attacker),
-			attacker: PersonaDB.getUniversalTokenAccessor(attacker),
+			attacker: attacker.actor.accessor,
 			escalationDie,
 			activationRoll: isActivationRoll,
 			activeCombat:combat ? !!combat.combatants.find( x=> x.actor?.type != attacker.actor.type): false ,
@@ -508,7 +503,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	static async processEffects(atkResult: AttackResult) : Promise<CombatResult> {
 		const CombatRes= new CombatResult();
-		const {result, validAtkModifiers, validDefModifiers,  target, situation, } = atkResult;
+		const {result } = atkResult;
 		const attacker = PersonaDB.findToken(atkResult.attacker);
 		const power = PersonaDB.findItem(atkResult.power);
 		switch (result) {
@@ -527,7 +522,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<CombatResult> {
-		const {result,  situation} = atkResult;
+		const {situation} = atkResult;
 		const power = PersonaDB.findItem(atkResult.power);
 		const attacker = PersonaDB.findToken(atkResult.attacker);
 		const target = PersonaDB.findToken(atkResult.target);
@@ -541,7 +536,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				CombatRes.escalationMod += x.escalationMod;
 				for (const cons of x.consequences) {
 					const effectiveTarget = cons.applyToSelf ? attacker : target;
-					CombatRes.addEffect(atkResult, effectiveTarget, cons.cons, power.system.dmg_type);
+					CombatRes.addEffect(atkResult, effectiveTarget.actor, cons.cons, power.system.dmg_type);
 				}
 			}
 		}
@@ -577,31 +572,35 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						}
 					});
 					break;
-				case "dmg-allout-low":
-					if (!situation.userToken) {
+				case "dmg-allout-low": {
+					if (!situation.user.token) {
 						PersonaError.softFail("Can't calculate All out damage");
 						break;
 					}
+					const userToken = PersonaDB.findToken(situation.user.token);
 					consequences.push({
 						applyToSelf,
 						cons : {
 							type: cons.type,
-							amount: PersonaCombat.calculateAllOutAttackDamage(PersonaDB.findToken(situation.userToken), situation).low * (absorb ? -1 : damageMult),
+							amount: PersonaCombat.calculateAllOutAttackDamage(userToken, situation).low * (absorb ? -1 : damageMult),
 						}
 					});
 					break;
-				case "dmg-allout-high":
-					if (!situation.userToken) {
+				}
+				case "dmg-allout-high": {
+					if (!situation.user.token) {
 						PersonaError.softFail("Can't calculate All out damage");
 						break;
 					}
+					const userToken = PersonaDB.findToken(situation.user.token);
 					consequences.push({
 						applyToSelf,
 						cons : {
 							type: cons.type,
-							amount: PersonaCombat.calculateAllOutAttackDamage(PersonaDB.findToken(situation.userToken), situation).high * (absorb ? -1 : damageMult),
+							amount: PersonaCombat.calculateAllOutAttackDamage(userToken, situation).high * (absorb ? -1 : damageMult),
 						}
 					});
+				}
 				case "extraAttack" :
 					//TODO: handle later
 					break;
@@ -650,14 +649,18 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return {consequences, escalationMod} satisfies ConsequenceProcessed;
 	}
 
+	static async execTrigger(trigger: CombatTrigger, actor: ValidAttackers, situation?: Situation) : Promise<void> {
+		await this.onTrigger(trigger, actor, situation)
+			.emptyCheck()
+			?.toMessage("Triggered Effect", actor);
+	}
 
-	static onTrigger(trigger: Trigger, token : PToken, situation ?: Situation) : CombatResult {
+	static onTrigger(trigger: CombatTrigger, actor : ValidAttackers, situation ?: Situation) : CombatResult {
 		const result = new CombatResult();
-		if (!token.actor) return result;
 		if (!situation) {
 			situation = {
-				user: token.actor.accessor,
-				target: PersonaDB.getUniversalTokenAccessor(token),
+				user: actor.accessor,
+				target: actor.accessor
 			}
 		}
 		situation = {
@@ -665,15 +668,15 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				trigger
 			} ; //copy the object so it doesn't permanently change it
 
-		for (const trig of token.actor.triggers) {
+		for (const trig of actor.triggers) {
 			for (const eff of trig.getEffects()) {
 				if (!eff.conditions.every( cond =>
 					ModifierList.testPrecondition(cond, situation, trig)
 				)) { continue; }
-				const cons = this.ProcessConsequences(trig, situation, eff.consequences, token.actor)
+				const cons = this.ProcessConsequences(trig, situation, eff.consequences, actor)
 				result.escalationMod+= cons.escalationMod;
 				for (const c of cons.consequences) {
-					result.addEffect(null, token, c.cons);
+					result.addEffect(null, actor, c.cons);
 				}
 			}
 		}
@@ -686,14 +689,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (power.system.type == "power") {
 			if (attacker.actor.system.type == "pc" && power.system.hpcost) {
 				const hpcostmod = costModifiers.find(x=> x.type== "half-hp-cost") ? 0.5 : 1;
-				res.addEffect(null, attacker, {
+				res.addEffect(null, attacker.actor, {
 					type: "hp-loss",
 					amount: power.system.hpcost * hpcostmod
 				});
 			}
 			if (attacker.actor.system.type == "pc" && power.system.subtype == "magic" && power.system.slot >= 0){
 				if (!costModifiers.find(x=> x.type == "save-slot")) {
-					res.addEffect(null, attacker, {
+					res.addEffect(null, attacker.actor, {
 						type: "expend-slot",
 						amount: power.system.slot,
 					});
@@ -704,7 +707,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					case "none":
 						break;
 					case "always":
-						res.addEffect(null, attacker, {
+						res.addEffect(null, attacker.actor, {
 							type: "addStatus",
 							statusName: "depleted",
 							statusDuration:"combat",
@@ -714,20 +717,20 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						if (Metaverse.isEnhanced()) {
 							break;
 						}
-						res.addEffect(null, attacker, {
+						res.addEffect(null, attacker.actor, {
 							type: "addStatus",
 							statusName: "depleted",
 							statusDuration:"combat",
 						});
 						break;
 					case "supercharged":
-						res.addEffect(null, attacker, {
+						res.addEffect(null, attacker.actor, {
 							type: "removeStatus",
 							statusName: "supercharged",
 						});
 						break;
 					case "supercharged-not-enhanced":
-						res.addEffect(null, attacker, {
+						res.addEffect(null, attacker.actor, {
 							type: "addStatus",
 							statusName: "depleted",
 							statusDuration:"combat",
@@ -740,7 +743,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 		}
 		if (power.system.type == "consumable") {
-			res.addEffect(null, attacker, {
+			res.addEffect(null, attacker.actor, {
 				type: "expend-item",
 				itemAcc: PersonaDB.getUniversalItemAccessor(power),
 			});
@@ -927,7 +930,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	};
 
-	static async disengageRoll( actor: ValidAttackers, DC = 11) : Promise<{total: number, roll: PersonaRoll}> {
+	static async disengageRoll( actor: ValidAttackers, _DC = 11) : Promise<{total: number, roll: PersonaRoll}> {
 		const situation : Situation = {
 			user: PersonaDB.getUniversalActorAccessor(actor),
 		}
@@ -1050,7 +1053,7 @@ CONFIG.Combat.initiative = {
 	decimals: 2
 }
 
-Hooks.on("preUpdateCombat" , async (combat: PersonaCombat, changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
+Hooks.on("preUpdateCombat" , async (combat: PersonaCombat, _changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
 	const prevActor = combat?.combatant?.actor
 	if (prevActor && diffObject.direction && diffObject.direction > 0) {
 		await combat.endCombatantTurn(combat.combatant)
@@ -1086,9 +1089,9 @@ Hooks.on("combatStart", async (combat: PersonaCombat) => {
 		};
 		const token = comb.token.object as PToken;
 		await PersonaCombat
-			.onTrigger("on-combat-start", token, situation)
+			.onTrigger("on-combat-start", token.actor, situation)
 			.emptyCheck()
-			?.toMessage(token, "Triggered Effect");
+			?.toMessage("Triggered Effect", token.actor);
 	}
 	const x =combat.turns[0];
 	if (x.actor) {
@@ -1102,9 +1105,9 @@ Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
 		if (!actor) continue;
 		const token = combatant.token.object as PToken;
 		await PersonaCombat
-			.onTrigger("on-combat-end", token)
+			.onTrigger("on-combat-end", token.actor)
 			.emptyCheck()
-			?.toMessage(token, "Triggered Effect" );
+			?.toMessage("Triggered Effect", token.actor );
 
 		for (const effect of actor.effects) {
 			if (effect.durationLessThan("expedition")) {

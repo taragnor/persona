@@ -213,7 +213,9 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 		return this.getItemById(itemId) as unknown as T;
 	}
 
-	findToken<T extends Token<any>>({scene, tokenId}: UniversalTokenAccessor<T>) :T  {
+	findToken<X extends UniversalTokenAccessor<any> | undefined>(acc: X) : X extends UniversalTokenAccessor<infer R> ? R : undefined  {
+		if (!acc) return undefined as any;
+			const {scene, tokenId} = acc;
 		if (scene != null) {
 			const sc = game.scenes.get(scene);
 			if (!sc)  {
@@ -226,7 +228,7 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 			if (!tok.actor) {
 				throw new Error(`No actor on Token Id ${tokenId}`);
 			}
-			return tok.object as T;
+			return tok.object as any;
 		}
 		const sc = game.scenes.find(x=> x.tokens.get(tokenId) != null);
 		if (!sc)
@@ -235,7 +237,7 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 		if (!tok.actor) {
 			throw new Error(`No actor on Token Id ${tokenId}`);
 		}
-		return tok.object as T;
+		return tok.object as any;
 	}
 
 	findActor<T extends Actor<any>>(accessor: UniversalActorAccessor<T>) : T {
@@ -266,6 +268,19 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 			scene: tok.scene.id,
 			tokenId: tok.id,
 		};
+	}
+
+	accessorEq<T extends UniversalTokenAccessor<any> | UniversalItemAccessor<any> | UniversalActorAccessor<any>> ( a: T, b: T) : boolean {
+		if ("tokenId" in a && "tokenId" in b) {
+			return a.tokenId == b.tokenId
+		}
+		if ("actorId" in a && "actorId" in b) {
+			return a.actorId == b.actorId && a.token?.tokenId == a.token?.tokenId;
+		}
+		if ("itemId" in a && "itemId" in b) {
+			return a.itemId == b.itemId && a.actor?.actorId == b.actor?.actorId && a.actor?.token?.tokenId == b.actor?.token?.tokenId;
+		}
+		return false;
 	}
 
 } //End of class

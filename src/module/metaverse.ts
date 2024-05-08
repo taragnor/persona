@@ -1,4 +1,4 @@
-import { PToken } from "./combat/persona-combat.js";
+import { Shadow } from "./actor/persona-actor.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { Logger } from "./utility/logger.js";
 import { PC } from "./actor/persona-actor.js";
@@ -18,7 +18,7 @@ export class Metaverse {
 			.forEach( scene => scene.tokens.contents
 				.forEach( tok => {
 					(tok.actor as PersonaActor | undefined)?.fullHeal();
-					PersonaCombat.onTrigger("enter-metaverse", tok.object as PToken);
+					PersonaCombat.onTrigger("enter-metaverse", tok.actor as PC | Shadow);
 				})
 			);
 
@@ -33,7 +33,7 @@ export class Metaverse {
 		game.scenes
 			.forEach( scene => scene.tokens.contents
 				.forEach( tok => {
-					PersonaCombat.onTrigger("exit-metaverse", tok.object as PToken);
+					PersonaCombat.onTrigger("exit-metaverse", tok.actor as PC | Shadow);
 				})
 			);
 		Hooks.callAll("exitMetaverse");
