@@ -1241,7 +1241,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				duration
 			});
 		} else {
-			console.log(`Removing Flag ${flagId}`);
 			flags = flags.filter(flag=> flag.flagId.toLowerCase() != flagId.toLowerCase());
 		}
 		await this.update({"system.flags": flags});
