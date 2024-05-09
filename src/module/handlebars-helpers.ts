@@ -1,3 +1,4 @@
+import { SetFlagEffect } from "./combat/combat-result.js";
 import { SocialLinkData } from "./actor/persona-actor.js";
 import { UniversalActorAccessor } from "./utility/db-accessor.js";
 import { Power } from "./item/persona-item.js";
@@ -127,6 +128,12 @@ export class PersonaHandleBarsHelpers {
 			}
 			return str;
 		},
+		"getEffectFlagName" : function (acc: UniversalActorAccessor<PC | Shadow>, flagEffect: SetFlagEffect): string {
+			const actor = PersonaDB.findActor(acc);
+			const flag = actor.getEffectFlag(flagEffect.flagId);
+			if (flag) return flag.flagName ?? flagEffect.flagName ?? flag.flagId;
+			return flagEffect.flagName ?? flagEffect.flagId;
+		}
 
 	}
 
