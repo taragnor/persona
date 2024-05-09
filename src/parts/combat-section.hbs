@@ -60,7 +60,10 @@
 				<span>
 					{{lvl}}:
 				</span>
+				{{#if (isGM)}}
 				<input class="short" type="number" name="system.slots.{{lvl}}" value="{{slot}}">
+				{{/if}}
+				{{lookup ../actor.system.slots lvl}}
 				/ {{getMaxSlotsAt ../actor lvl}}
 				{{/each}}
 			</div>

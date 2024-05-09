@@ -112,7 +112,21 @@ export class PersonaHandleBarsHelpers {
 		},
 		'eqAny': function (testCase: string, ...rest: string[]) : boolean {
 			return rest.some( str => str == testCase)
-		}
+		},
+
+		"strcat": function (...args: (string | number)[]) : string{
+			let str = "";
+			for (const arg of args)  {
+				switch (typeof arg) {
+					case "string":
+					case "number":
+						str += String(arg);
+					default:
+						break;
+				}
+			}
+			return str;
+		},
 
 	}
 
