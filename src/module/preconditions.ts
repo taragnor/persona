@@ -240,18 +240,12 @@ function booleanComparison(condition: Precondition, situation: Situation, _sourc
 			return targetState == (condition.powerDamageType == power.system.dmg_type);
 		}
 		case "has-status" : {
-			if(!situation.target) {
-				return targetState == false;
-			}
 			const target = getSubject(condition, situation);
 			if (!target) return targetState == false;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
 			return targetState == targetActor.statuses.has(condition.status);
 		}
 		case  "struck-weakness": {
-			if (!situation.target) {
-				return targetState == false;
-			}
 			if (!situation.usedPower) {
 				return targetState == false;
 			}
