@@ -25,12 +25,15 @@ declare interface HOOKS {
 	"createToken": CreateHook<TokenDocument<any>>;
 	"createScene": CreateHook<Scene>;
 	"createCombatant": CreateHook<Combatant>;
+	"createActiveEffect": CreateHook<ActiveEffect>;
 	"updateToken": UpdateHook<TokenDocument<any>>;
 	"deleteToken": DeleteHook<TokenDocument<any>>;
 	"deleteActor": DeleteHook<Actor<any>>;
 	"deleteCombatant": DeleteHook<Combatant>;
 	"deleteItem": DeleteHook<Item<any>>;
 	"deleteScene": DeleteHook<Scene>;
+	"deleteActiveEffect": DeleteHook<ActiveEffect>;
+	"preDeleteActiveEffect": PreDeleteHook<ActiveEffect>;
 	"updateScene": UpdateHook<Scene>;
 	"updateItem": UpdateHook<Item<any>>;
 	"updateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>;
@@ -51,6 +54,8 @@ type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , d
 type UpdateHook<T, Diff = {}> = (updatedItem: T, changes: Record<string, unknown>, diff: DiffObject & Diff, id: string) => unknown;
 
 type DeleteHook<T> = (deletedItem: T, something: Record<string, unknown>, id: string) => unknown;
+
+type PreDeleteHook<T> = DeleteHook<T>;
 
 type DiffObject = {
 	diff: boolean,

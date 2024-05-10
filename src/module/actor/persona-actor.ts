@@ -469,8 +469,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
 			await newEffect.setPotency(potency ?? 0);
 			await newEffect.setDuration(duration);
-			await newEffect.setFlag("persona", "duration", duration);
-			await newEffect.setFlag("persona", "potency", potency);
+			// await newEffect.setFlag("persona", "duration", duration);
+			// await newEffect.setFlag("persona", "potency", potency);
 			if (duration == "3-rounds") {
 				await newEffect.update({"duration.rounds": 3});
 			}
@@ -1235,17 +1235,48 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.getEffectFlag(flagName)?.duration;
 	}
 
-	async setEffectFlag(flagId: string, setting: boolean, duration: StatusDuration, flagName ?: string) {
+	async setEffectFlag(flagId: string, setting: boolean, duration: StatusDuration = "instant", flagName ?: string) {
+		flagId = flagId.toLowerCase();
 		let flags = this.system.flags;
 		const current = this.getFlagState(flagId);
-		if (setting == current) return;
+		if (setting == current) {
+			const flag = flags.find(flag => flag.flagId == flagId);
+			if (!flag) return;
+			const eff  =this.effects.find(eff => eff.id == flag.AEId);
+			eff!.setDuration(duration);
+			return;
+		}
+
 		if (setting == true) {
+			const newAE = {
+				name: flagName,
+			};
+			const AE = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
 			flags.push({
 				flagId: flagId.toLowerCase(),
 				flagName: flagName,
-				duration
+				duration,
+				AEId: AE.id,
 			});
+			await AE.setDuration(duration);
+			await AE.linkToEffectFlag(flagId);
 		} else {
+			const flag = flags.find(flag => flag.flagId == flagId);
+			if (flag) {
+				try {
+					const effects =  this.effects
+						.filter(eff=> eff.linkedFlagId == flagId);
+					for (const eff of effects) {
+						if ("_flaggedDeletion" in eff && eff._flaggedDeletion){ continue;}
+						if (eff.linkedFlagId) {
+							await eff.unsetFlag("persona", "LinkedEffectFlag");
+							await eff.delete();
+						}
+					}
+				} catch(e) {
+					console.log(e);
+				}
+			}
 			flags = flags.filter(flag=> flag.flagId.toLowerCase() != flagId.toLowerCase());
 		}
 		await this.update({"system.flags": flags});

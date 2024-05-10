@@ -28,8 +28,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 	}
 
 	get statusDuration() : StatusDuration {
-		const potency = this.getFlag<string>("persona", "duration") as StatusDuration;
-		return potency;
+		return this.getFlag<StatusDuration>("persona", "duration");
 	}
 
 	async setPotency(potency: number) : Promise<void> {
@@ -89,7 +88,30 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		}
 	}
 
+	get linkedFlagId() : undefined | string {
+		return this.getFlag<string>("persona", "linkedEffectFlag") ?? undefined;
+	}
+
+	async linkToEffectFlag( flagId: string) {
+		await this.setFlag("persona", "linkedEffectFlag", flagId);
+	}
+
+	static async onPreDelete(effect: PersonaAE) {
+		const flag = effect.linkedFlagId;
+		try {
+			// await effect.unsetFlag("persona", "LinkedEffectFlag");
+		} catch (e)  {
+			console.log(e);
+		}
+		if (flag && effect.parent instanceof PersonaActor) {
+			(effect as any)["_flaggedDeletion"] = true;
+			await effect.parent.setEffectFlag(flag, false);
+		}
+	}
+
 }
+
+Hooks.on("preDeleteActiveEffect", PersonaAE.onPreDelete);
 
 Hooks.on("applyActiveEffect", PersonaAE.applyHook);
 

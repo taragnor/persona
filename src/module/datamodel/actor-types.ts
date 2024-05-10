@@ -25,6 +25,7 @@ export type FlagData = {
 	flagId: string,
 	duration: StatusDuration
 	flagName?: string,
+	AEId: string,
 };
 
 function keySkills() {
