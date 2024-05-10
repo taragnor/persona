@@ -228,7 +228,7 @@ function booleanComparison(condition: Precondition, situation: Situation, _sourc
 			return targetState == (power.system.type == "power" && power.system.subtype == condition.powerType);
 		}
 		case "in-combat": {
-			return targetState  == (situation.activeCombat != undefined);
+			return targetState  == situation.activeCombat;
 		}
 		case "is-critical": {
 			return targetState == (situation.criticalHit ?? false);
