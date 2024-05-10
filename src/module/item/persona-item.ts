@@ -297,6 +297,12 @@ const power = PersonaDB.getBasicPower(powerName);
 
 	}
 
+	getSourcedEffects(this: ModifierContainer): {source: ModifierContainer, effects: ConditionalEffect[]} {
+		return {source: this,
+			effects: this.getEffects()
+		};
+	}
+
 	getEffects(this: ModifierContainer): ConditionalEffect[] {
 		return this.system.effects.map( eff=> {
 			return {

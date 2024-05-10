@@ -88,7 +88,11 @@ function numericComparison(condition: Precondition, situation: Situation, source
 
 			const id = source ? source.id! : "";
 			const talent = user.system.talents.find( x=> x.talentId == id);
-			if (!talent) return false;
+			if (!talent) {
+				console.log(`COuldn't find Talent ${id}`);
+				console.log(source);
+				return false;
+			}
 			target = talent.talentLevel;
 			break;
 		}

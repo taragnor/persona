@@ -948,6 +948,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}) as Focus[];
 	}
 
+	getSourcedEffects(): {source: ModifierContainer, effects: ConditionalEffect[]} []{
+		return this.mainModifiers().flatMap( x=> x.getSourcedEffects());
+	}
+
 	getEffects() : ConditionalEffect[] {
 		return this.mainModifiers().flatMap( x=> x.getEffects());
 	}

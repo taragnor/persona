@@ -526,17 +526,20 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const power = PersonaDB.findItem(atkResult.power);
 		const attacker = PersonaDB.findToken(atkResult.attacker);
 		const target = PersonaDB.findToken(atkResult.target);
-		const relevantEffects : ConditionalEffect[] = power.getEffects().concat(attacker.actor.getEffects());
+		const sourcedEffects = [power.getSourcedEffects()].concat(attacker.actor.getSourcedEffects());
 		const CombatRes= new CombatResult(atkResult);
-		for (let {conditions, consequences} of relevantEffects) {
-			if (conditions.every(
-				cond => ModifierList.testPrecondition(cond, situation, power))
-			) {
-				const x = this.ProcessConsequences(power, situation, consequences, attacker.actor, atkResult);
-				CombatRes.escalationMod += x.escalationMod;
-				for (const cons of x.consequences) {
-					const effectiveTarget = cons.applyToSelf ? attacker : target;
-					CombatRes.addEffect(atkResult, effectiveTarget.actor, cons.cons, power.system.dmg_type);
+		for (const {source, effects} of sourcedEffects){
+			for (let effect of effects) {
+				const {conditions, consequences}  = effect;
+				if (conditions.every(
+					cond => ModifierList.testPrecondition(cond, situation, source))
+				) {
+					const x = this.ProcessConsequences(power, situation, consequences, attacker.actor, atkResult);
+					CombatRes.escalationMod += x.escalationMod;
+					for (const cons of x.consequences) {
+						const effectiveTarget = cons.applyToSelf ? attacker : target;
+						CombatRes.addEffect(atkResult, effectiveTarget.actor, cons.cons, power.system.dmg_type);
+					}
 				}
 			}
 		}
