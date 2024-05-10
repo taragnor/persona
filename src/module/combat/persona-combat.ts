@@ -831,6 +831,20 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "1d3-random-rep":
 			case "1d3-random":
 				throw new PersonaError("Targetting type not yet implemented");
+			case "all-others": {
+				const combat= this.ensureCombatExists();
+				return combat.combatants.contents
+				.filter( x=> x.actorId != attacker.actor.id
+					&& x?.actor?.isAlive())
+				.map( x=> x.token.object as PToken);
+			}
+			case "everyone":{
+				const combat= this.ensureCombatExists();
+				return combat.combatants.contents
+				.filter( x=> x?.actor?.isAlive())
+				.map( x=> x.token.object as PToken);
+			}
+
 			default:
 				power.system.targets satisfies never;
 				throw new PersonaError(`targets ${power.system.targets} Not yet implemented`);

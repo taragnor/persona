@@ -1160,7 +1160,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({ "system.money": resources});
 	}
 
-	isAlive(this: PC | Shadow): boolean {
+	isAlive(): boolean {
+		if (this.system.type == "npc") return true;
 		return this.hp > 0;
 	}
 
