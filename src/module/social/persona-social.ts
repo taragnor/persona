@@ -392,6 +392,8 @@ export class PersonaSocial {
 			socialId: activity.id
 		};
 		let html = "";
+		html += `<h2>${activity.name}</h2>`
+		html += `<img src='${activity.img}'>`;
 		const avail = activity.system.availability;
 		const modifiers = this.getAvailModifier(avail);
 		switch (avail) {
@@ -418,13 +420,17 @@ export class PersonaSocial {
 			pay = activity.system.pay.low;
 		}
 		const payBonus = actor.getBonuses("pay").total(situation);
-		if (pay > 0) {
+		if (pay + payBonus > 0) {
 			html += `<div> <b>Pay (auto-added):</b> ${pay} ${payBonus ? `+ ${payBonus}` : ""}`;
+			await actor.gainMoney(pay + payBonus);
+			await PersonaSounds.ching();
 		}
-		await actor.gainMoney(pay + payBonus);
-		await PersonaSounds.ching();
 		if (socialRoll.total >= activity.system.dc + 10 && activity.system.critical) {
 			html += `<div> <b>Critical:</b> ${activity.system.critical}</div>`;
+		}
+		if (activity.system.bane) {
+			html += `<div> <b>Bane:</b> ${activity.system.bane}</div>`;
+
 		}
 		const speaker = ChatMessage.getSpeaker();
 		return await ChatMessage.create( {
