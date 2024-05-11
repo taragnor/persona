@@ -253,18 +253,21 @@ input.baseRelationship
   padding-top:10px;
 }
 
-.social-link img.portrait {
+.social-link img.portrait,
+.job img.portrait {
   width: 40px;
   height: 40px;
 }
 
 
-div.social-link {
+div.social-link ,
+div.job {
   display:flex;
   align-items:center;
 }
 
-.social-link .name {
+.social-link .name ,
+.job .name {
   font-size: 1.5em;
   margin-left: 8px;
   margin-right: 8px;
@@ -286,3 +289,45 @@ section.qualifiers {
 	opacity: 0.5;
 }
 
+.red {
+	color: red;
+}
+
+.blue {
+	color: blue;
+}
+
+.orange {
+	color: orange;
+}
+
+.yellow {
+	color: yellow;
+
+}
+
+.green {
+	color: green;
+}
+
+.social-command {
+	height: auto;
+	width: auto;
+	font-size: 1.5em;
+}
+
+.social-command img {
+	height: 2em !important;
+	width: 2em !important;
+	max-height: 2em !important;
+	margin-right: 5px;
+	margin-left: 5px;
+}
+
+.availability {
+	margin-right: 5px;
+	margin-left: 5px;
+	height: auto;
+	width: auto;
+	font-size: 1.5em;
+}

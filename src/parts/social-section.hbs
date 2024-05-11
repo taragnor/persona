@@ -127,22 +127,36 @@
 	<h2> Social Links</h2>
 	{{#each actor.socialLinks as |link|}}
 	<div class="social-link" data-link-id="{{link.actor.id}}">
-		{{#if (isGM)}}
+		<span class="availability" title="{{link.actor.system.availability}}">
+			{{#if (eq link.actor.system.availability "++")}}
+			<i class="green fa-solid fa-heart-circle-plus"></i>
+			{{/if}}
+			{{#if (eq link.actor.system.availability "+")}}
+			<i class="orange fa-solid fa-heart"></i>
+			{{/if}}
+			{{#if (eq link.actor.system.availability "-")}}
+			<i class="yellow fa-solid fa-face-meh"></i>
+			{{/if}}
+			{{#if (eq link.actor.system.availability "--")}}
+			<i class="red fa-solid fa-person-circle-xmark"></i>
+			{{/if}}
+		</span>
+
+		<span class="social-command social-card">
 		<a class="draw-social-card" title="Draw Social card">
 			<i class="fa-regular fa-id-card"></i>
 		</a>
-		{{/if}}
+		</span>
+		<span class="social-command social-roll">
 		<a class="roll-icon" title="Roll to Improve Social Link">
 			<img src="icons/dice/d20black.svg">
 		</a>
 
+		</span>
 		<img class="portrait" src={{actor.img}}>
 		{{#if (isHighestLinker ../actor link)}}
 		<i title="Highest Link Level" class="fa-solid fa-star"></i>
 		{{/if}}
-		<span class="availability">
-			({{link.actor.system.availability}})
-		</span>
 		<a class="name">
 			{{link.actor.displayedName}}
 		</a>
@@ -184,3 +198,34 @@
 
 </section>
 
+<section>
+	<h2> Jobs </h2>
+	{{#each jobs as |job|}}
+	<div class="job" data-job-id="{{job.id}}">
+		<span class="availability" title="{{job.system.availability}}">
+			{{#if (eq job.system.availability "++")}}
+			<i class="green fa-solid fa-heart-circle-plus"></i>
+			{{/if}}
+			{{#if (eq job.system.availability "+")}}
+			<i class="orange fa-solid fa-heart"></i>
+			{{/if}}
+			{{#if (eq job.system.availability "-")}}
+			<i class="yellow fa-solid fa-face-meh"></i>
+			{{/if}}
+			{{#if (eq job.system.availability "--")}}
+			<i class="red fa-solid fa-person-circle-xmark"></i>
+			{{/if}}
+		</span>
+		<span class="social-command social-roll">
+			<a class="roll-icon" title="Roll to Improve Social Link">
+				<img src="icons/dice/d20black.svg">
+			</a>
+		</span>
+		<img class="portrait" src="{{job.img}}">
+		<span class="name">
+			{{job.name}}
+		</span>
+
+	</div>
+	{{/each}}
+</section>

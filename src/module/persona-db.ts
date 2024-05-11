@@ -1,3 +1,4 @@
+import { Job } from "./item/persona-item.js";
 import { Tarot } from "./actor/persona-actor.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { DBAccessor } from "./utility/db-accessor.js";
@@ -43,6 +44,11 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	allSocialCards() :SocialCard[] {
 		return this.allItems()
 			.filter( x=> x.system.type == "socialCard") as SocialCard[];
+	}
+
+	allJobs(): Job[] {
+		return this.allItems()
+		.filter( x=> x.system.type == "job") as Job[];
 	}
 
 

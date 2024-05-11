@@ -73,6 +73,8 @@ export class PCSheet extends CombatantSheetBase {
 				else return [];
 			})),
 		};
+		data.jobs = PersonaDB.allJobs()
+		.filter( job => job.system.availability != "N/A" && job.system.active);
 		return data;
 	}
 
@@ -89,7 +91,8 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".levelUp").on("click", this.levelUp.bind(this));
 		html.find(".social-link .name").on("click", this.openSL.bind(this));
 		html.find(".clearSocialBoosts").on("click", this.clearSLBoosts.bind(this));
-		html.find(".roll-icon img").on("click", this.rollSL.bind(this));
+		html.find(".social-links .roll-icon img").on("click", this.rollSL.bind(this));
+		html.find(".job .roll-icon img").on("click", this.rollJob.bind(this));
 		html.find(`.social-stat .roll-icon`).on("click", this.rollSocial.bind(this));
 		html.find(`.social-stat .social-boost`).on("click", this.socialBoost.bind(this));
 		html.find(`.spend-money`).on('click', this.spendMoney.bind(this));
@@ -199,6 +202,17 @@ export class PCSheet extends CombatantSheetBase {
 		await PersonaSocial.makeUpgradeLinkRoll(this.actor, linkId)
 	}
 
+	async rollJob(event: JQuery.ClickEvent) {
+		const jobId= String(HTMLTools.getClosestData(event, "jobId"));
+		const job= PersonaDB.allJobs().find(x=> x.id == jobId);
+		if (!job) {
+			throw new PersonaError(`Can't find Job : ${jobId}`);
+		}
+		if (await HTMLTools.confirmBox("Job", `Work at ${job.name}`)) {
+			await PersonaSocial.chooseActivity(this.actor, job);
+		}
+	}
+
 	async gainMoney(_ev: Event) {
 		const x = await HTMLTools.getNumber("Amount to gain");
 		if (x <= 0) return;
@@ -216,9 +230,12 @@ export class PCSheet extends CombatantSheetBase {
 
 	async drawSocialCard(event: JQuery.ClickEvent) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
-		if (await HTMLTools.confirmBox("Social Card", "Draw Social Card?")) {
-			await PersonaSocial.drawSocialCard(this.actor, linkId);
+		const link = PersonaSocial.lookupLinkId(this.actor, linkId);
+		if (link &&
+			await HTMLTools.confirmBox("Social Card", "Draw Social Card?")) {
+			await PersonaSocial.chooseActivity(this.actor, link.actor)
 		}
 	}
+
 
 }

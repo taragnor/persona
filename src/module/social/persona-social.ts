@@ -1,3 +1,4 @@
+import { PersonaSockets } from "../persona.js";
 import { SocialLinkData } from "../actor/persona-actor.js";
 import { TarotCard } from "../../config/tarot.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
@@ -333,20 +334,47 @@ export class PersonaSocial {
 		return [newavail, roll];
 	}
 
-	static async chooseActivity(actor: PC, activity: SocialLink | Job, options: ActivityOptions) {
+	static async chooseActivity(actor: PC, activity: SocialLink | Job, options: ActivityOptions = {}) {
 		if (activity instanceof PersonaItem) {
 			await this.#doJob(actor, activity);
 		} else {
 			await this.#socialEncounter(actor, activity);
 		}
-		const availability = activity.system.availability;
 		if (!options.noDegrade) {
-			await activity.update(
-				{"system.availability": this.#degradedAvailability(availability) }
-			);
+			await this.degradeActivity(activity);
 		}
 	}
 
+	static async degradeActivity( activity: SocialLink | Job) {
+		if (game.user.isGM) {
+			const availability = activity.system.availability;
+			await activity.update(
+				{"system.availability": this.#degradedAvailability(availability) });
+			console.log(`Degraded Activity: ${activity.name}`);
+		} else {
+			PersonaSockets.simpleSend("DEC_AVAILABILITY", activity.id, game.users.filter( x=> x.isGM && x.active).map( x=>x.id))
+		}
+
+	}
+
+
+	static getAvailModifier (avail: NPC["system"]["availability"]) : ModifierList {
+		const modifiers = new ModifierList();
+		switch (avail) {
+			case "++":
+				modifiers.add("Favorable", 5);
+				break;
+			case "+":
+				break;
+			case "-":
+				break;
+			case "--":
+				modifiers.add("Negative Availabilty", -5);
+				break;
+			default:
+		}
+		return modifiers;
+	}
 
 	static async #socialEncounter(actor: PC, activity: SocialLink) {
 		await this.drawSocialCard(actor, activity.id);
@@ -365,10 +393,9 @@ export class PersonaSocial {
 		};
 		let html = "";
 		const avail = activity.system.availability;
-		const modifiers = new ModifierList();
+		const modifiers = this.getAvailModifier(avail);
 		switch (avail) {
 			case "++":
-				modifiers.add("Favorable", 5);
 				html += `<div><b> Perk: </b> ${activity.system.perk}</div>`;
 				break;
 			case "+":
@@ -377,7 +404,6 @@ export class PersonaSocial {
 			case "-":
 				break;
 			case "--":
-				modifiers.add("Negative Availabilty", -5);
 				break;
 			default:
 		}
@@ -478,6 +504,29 @@ type ActivityOptions = {
 	noDegrade ?: boolean;
 
 }
+
+declare global {
+	interface SocketMessage {
+		"DEC_AVAILABILITY": string,
+	}
+}
+
+Hooks.on("socketsReady" , () => {PersonaSockets.setHandler("DEC_AVAILABILITY", ( task_id: string) => {
+	if (!game.user.isGM) return;
+	const link = game.actors.find(x=> x.id == task_id);
+	if (link) {
+		PersonaSocial.degradeActivity(link as SocialLink);
+		return;
+	}
+	const job = PersonaDB.allJobs().find( x=> x.id == task_id);
+	if (job){
+		PersonaSocial.degradeActivity(job);
+		return;
+	}
+	throw new PersonaError(`Can't find Task ${task_id} to decremetn availability`);
+
+});
+});
 
 //@ts-ignore
 window.PersonaSocial = PersonaSocial
