@@ -140,6 +140,9 @@
 		{{#if (isHighestLinker ../actor link)}}
 		<i title="Highest Link Level" class="fa-solid fa-star"></i>
 		{{/if}}
+		<span class="availability">
+			({{link.actor.system.availability}})
+		</span>
 		<a class="name">
 			{{link.actor.displayedName}}
 		</a>

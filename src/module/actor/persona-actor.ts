@@ -301,6 +301,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					relationshipType,
 					actor:npc as SocialLink,
 					linkBenefits: npc as SocialLink,
+					availability: npc.system.availability,
 				}];
 			} else {
 				if (npc == this) {
@@ -315,6 +316,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						relationshipType,
 						actor:npc as SocialLink,
 						linkBenefits: personalLink,
+						availability: (npc as SocialLink).system.availability,
 					}];
 				} else {
 					const teammate = PersonaDB.getActorByName("Teammate Social Link") as NPC;
@@ -328,6 +330,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						relationshipType,
 						actor:npc as SocialLink,
 						linkBenefits: teammate,
+						availability: (npc as SocialLink).system.availability,
 					}];
 				}
 			}
@@ -1368,5 +1371,6 @@ export type SocialLinkData = {
 	inspiration: number,
 	linkBenefits: SocialLink,
 	currentProgress:number,
-	relationshipType: string
+	relationshipType: string,
+	availability: NPC["system"]["availability"],
 }

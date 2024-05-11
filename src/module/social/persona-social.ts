@@ -280,7 +280,7 @@ export class PersonaSocial {
 		let rolls : Roll[] = [];
 		let html = "";
 		const links = (game.actors.contents as PersonaActor[])
-			.filter( x=> (x.system.type == "pc" || x.system.type == "npc") && x.system.availability != "N/A");
+			.filter( x=> (x.system.type == "pc" || x.system.type == "npc" ) && x.system.availability != "N/A" && x.tarot);
 		for (const social of links) {
 			const [newavail, roll] = await this.#rollAvailability();
 			await (social as PC | NPC).update({"system.availability": newavail});
