@@ -530,3 +530,22 @@ Hooks.on("socketsReady" , () => {PersonaSockets.setHandler("DEC_AVAILABILITY", (
 
 //@ts-ignore
 window.PersonaSocial = PersonaSocial
+
+Hooks.on("updateActor", async (_actor: PersonaActor, changes) => {
+	if ((changes as any)?.system?.availability) {
+		(game.actors.contents as PersonaActor[])
+			.filter(x=> x.system.type =="pc"
+			&& x.sheet._state > 0)
+		.forEach(x=> x.sheet.render(true));
+	}
+});
+
+Hooks.on("updateItem", async (_item: PersonaItem, changes) => {
+	if ((changes as any)?.system?.availability) {
+		(game.actors.contents as PersonaActor[])
+			.filter(x=> x.system.type =="pc"
+			&& x.sheet._state > 0)
+		.forEach(x=> x.sheet.render(true));
+	}
+});
+

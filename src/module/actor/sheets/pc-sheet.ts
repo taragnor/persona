@@ -90,6 +90,7 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".addItem").on("click", this.#addItem.bind(this));
 		html.find(".levelUp").on("click", this.levelUp.bind(this));
 		html.find(".social-link .name").on("click", this.openSL.bind(this));
+		html.find(".job .name").on("click", this.openJob.bind(this));
 		html.find(".clearSocialBoosts").on("click", this.clearSLBoosts.bind(this));
 		html.find(".social-links .roll-icon img").on("click", this.rollSL.bind(this));
 		html.find(".job .roll-icon img").on("click", this.rollJob.bind(this));
@@ -194,6 +195,14 @@ export class PCSheet extends CombatantSheetBase {
 		const link = this.actor.socialLinks.find( link=> link.actor.id == linkId);
 		if (link && link.actor != this.actor) {
 			link.actor.sheet.render(true);
+		}
+	}
+
+	async openJob(ev: Event) {
+		const jobId= String(HTMLTools.getClosestData(ev, "jobId"));
+		const job = PersonaDB.allJobs().find(x=> x.id == jobId);
+		if (job){
+			job.sheet.render(true);
 		}
 	}
 
