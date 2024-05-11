@@ -62,8 +62,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return (await this.createEmbeddedDocuments("Item", [{"name": "Unnamed Item", type: "item"}]))[0];
 	}
 
-	get inventory() : (Consumable | PersonaItem | Weapon)[] {
-		return this.items.filter( x=> x.system.type == "item" || x.system.type == "weapon" || x.system.type == "consumable") as (Consumable | PersonaItem | Weapon)[];
+	get inventory() : (Consumable | InvItem | Weapon)[] {
+		return this.items.filter( x=> x.system.type == "item" || x.system.type == "weapon" || x.system.type == "consumable") as (Consumable | InvItem | Weapon)[];
+	}
+
+	get consumables(): Consumable[] {
+		return this.items.filter( x=> x.system.type == "consumable") as Consumable[];
+	}
+
+	get nonUsableInventory() : (InvItem | Weapon)[] {
+		return this.items.filter( i=> i.system.type == "item" || i.system.type == "weapon") as (InvItem | Weapon)[];
 	}
 
 	get displayedName() : string {
@@ -262,7 +270,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	highestLinker(this: SocialLink) : [pc: PC | null, linkLevel: number] {
+	highestLinker(this: SocialLink) : {pc: PC | null, linkLevel: number} {
 		const listOfLinkers = (game.actors.contents as PersonaActor[])
 			.filter( x=> x.system.type == "pc" && x != this)
 			.map( (pc : PC)=> ({
@@ -274,10 +282,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		.sort ( (a,b) => b.highest - a.highest);
 		const highest = listOfLinkers[0];
 		if (!highest || highest.highest == 0) {
-			return [null, 0];
+			return {pc: null, linkLevel: 0};
 		}
-		return [highest.pc, highest.highest];
-
+		return {pc : highest.pc, linkLevel: highest.highest};
 	}
 
 	get socialLinks() : SocialLinkData[] {
@@ -285,12 +292,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
 			const npc = PersonaDB.getActor(linkId);
 			if (!npc) return [];
+			relationshipType = relationshipType ? relationshipType : npc.baseRelationship;
 			if (npc.system.type =="npc") {
 				return [{
 					currentProgress,
 					linkLevel,
 					inspiration,
-					relationshipType: relationshipType ? relationshipType : "Peer",
+					relationshipType,
 					actor:npc as SocialLink,
 					linkBenefits: npc as SocialLink,
 				}];
@@ -842,11 +850,22 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				linkLevel: 1,
 				inspiration: 1,
 				currentProgress: 0,
-				relationshipType: npc.system.type == "pc"? "Peer" : npc.system.baseRelationship,
+				relationshipType: npc.system.type == "pc"? "PEER" : npc.system.baseRelationship,
 			}
 		);
 		PersonaSounds.newSocialLink();
 		await this.update({"system.social": this.system.social});
+	}
+
+	get baseRelationship(): string {
+		switch (this.system.type) {
+			case "pc":
+				return "PEER";
+				 case "npc":
+				return this.system.baseRelationship;
+			default:
+				return "NONE";
+		}
 	}
 
 	async increaseSocialLink(this: PC, linkId: string) {

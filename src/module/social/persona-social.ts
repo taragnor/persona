@@ -1,3 +1,4 @@
+import { SocialLinkData } from "../actor/persona-actor.js";
 import { TarotCard } from "../../config/tarot.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { CombatResult } from "../combat/combat-result.js";
@@ -153,14 +154,118 @@ export class PersonaSocial {
 
 	static async drawSocialCard(actor: PC, linkId: string) : Promise<ChatMessage> {
 		const card = this.#drawSocialCard(actor, linkId);
-		return await this.#printSocialCard(card, actor, linkId);
+		const cameos = this.#getCameos(card, actor, linkId);
+		const perk = this.#getPerk(card, actor, linkId, cameos);
+		return await this.#printSocialCard(card, actor, linkId, cameos, perk);
 	}
 
-	static async #printSocialCard(card: SocialCard, actor: PC, linkId: string ) : Promise<ChatMessage> {
-		// const link = actor.socialLinks.find(link => link.actor.id == linkId);
+	static lookupLinkId(actor: PC, linkId: string) :SocialLinkData {
+		const link= actor.socialLinks.find(link => link.actor.id == linkId);
+		if (!link)
+			throw new PersonaError(`Can't find link ${linkId}`);
+		return link;
+	}
+
+	static #getCameos(card: SocialCard, actor: PC, linkId: string) : SocialLink[] {
+		let targets : (undefined | SocialLink)[] = [];
+		switch (card.system.cameoType) {
+			case "none": return [];
+			case "above":
+				targets.push(this.getCharInInitiativeList(-1));
+				break;
+			case "below":
+				targets.push(this.getCharInInitiativeList(1));
+				break;
+			case "above+below":
+				targets.push(this.getCharInInitiativeList(-1));
+				targets.push(this.getCharInInitiativeList(1));
+				break;
+			case "student": {
+				const students = (game.actors.contents as PersonaActor[])
+					.filter( x=>
+						(x.system.type == "npc" || x.system.type == "pc")
+						&& x.baseRelationship == "PEER"
+						&& x != actor && x.id != linkId
+						&& x.system.availability != "N/A"
+					) as SocialLink[];
+				const randomPick = students[Math.floor(Math.random() * students.length)];
+				if (!randomPick)
+					throw new PersonaError("Random student select failed");
+				return [randomPick];
+			}
+			case "any": {
+				const anyLink = (game.actors.contents as PersonaActor[])
+					.filter( x=>
+						(x.system.type == "npc" || x.system.type == "pc")
+						&& x.baseRelationship != "SHADOW"
+						&& x != actor && x.id != linkId
+						&& x.system.availability != "N/A"
+					) as SocialLink[];
+				const randomPick = anyLink[Math.floor(Math.random() * anyLink.length)];
+				if (!randomPick)
+					throw new PersonaError("Random any link select failed");
+				return [randomPick];
+			}
+			case "invite-sl4":
+				PersonaError.softFail("invite not yet implemented");
+				return [];
+			case "invite-couple":
+				PersonaError.softFail("invite couple type not yet implemented");
+				return [];
+			case "buy-in-2":
+				PersonaError.softFail("Buy in 2 not yet implemented");
+				return [];
+			default:
+				card.system.cameoType satisfies never;
+		}
+		return targets.filter( x=> x != undefined 
+			&& x != actor
+			&& x.id != linkId) as SocialLink[];
+	}
+
+	static #getPerk(card: SocialCard,actor: PC, linkId: string, cameos: SocialLink[]) {
+		const linkdata = this.lookupLinkId(actor, linkId);
+		switch (card.system.perkType) {
+			case "standard":
+				return linkdata.actor.perk;
+			case "standard-or-cameo":
+				return "Choose One: <br>" +
+					cameos.concat([linkdata.actor])
+				.map( x=> `* ${x.perk}`)
+				.join("<br>");
+			case "custom-only":
+				return card.system.perk;
+			case "standard-or-custom":
+				return "Choose One: <br>" +
+					[actor.perk, card.system.perk]
+				.map( x=> `* ${x}`)
+				.join("<br>");
+			default:
+				card.system.perkType satisfies never;
+				return "";
+		}
+	}
+
+	static getCharInInitiativeList( offset: number) : SocialLink | undefined {
+		if (!game.combat || !game.combat.combatant) return undefined;
+			const initList = game.combat.turns;
+			const index = initList.indexOf(game.combat.combatant);
+			let modOffset = (index + offset) % initList.length;
+			while(modOffset < 0) {
+				modOffset += initList.length;
+			}
+			return initList[modOffset].actor as SocialLink;
+	}
+
+	static async #printSocialCard(card: SocialCard, actor: PC, linkId: string, cameos: SocialLink[], perk:string ) : Promise<ChatMessage> {
+		const link = this.lookupLinkId(actor, linkId);
+		const DC = 10 + link.linkLevel *3;
+		const perkAvail = link.actor.system.availability == "++" || link.actor.system.availability == "+";
+		const isCameo = card.system.cameoType != "none";
 		const skill = STUDENT_SKILLS[actor.getSocialStatToRaiseLink(card.system.skill)];
 
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/social-card.hbs`, {item: card,card,  skill} );
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/social-card.hbs`, {item: card,card,  skill, cameos, perk, link: link, pc: actor, perkAvail, isCameo, DC} );
+		console.log(cameos);
 
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {

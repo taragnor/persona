@@ -56,32 +56,54 @@
 </section>
 <hr>
 <section class="items">
-<h2>Items
-	{{#if (isGM)}}
+	<h2>Items
+		{{#if (isGM)}}
 		<a class="addItem">
 			<i class="fa-solid fa-plus"> </i>
 		</a>
-	{{/if}}
-</h2>
-<div class="item-list flexcol">
-	{{#each actor.inventory as |item|}}
-	<div class="{{#if (ne item.system.noTrade true)}} item item-entry {{/if}} inventory-item" data-item-id="{{item.id}}">
-			{{#if (eq item.system.type "consumable")}}
-			<a class="rollItem">
-				<img src="icons/dice/d20black.svg">
-			</a>
-			{{/if}}
-		<span class="itemName">
-			{{item.name}}
-			( {{item.amount}} )
-			{{#if (eq item.system.type "consumable")}}
-			{{/if}}
-		</span>
-		<a class="delItem">
-			<i class="fa-solid fa-trash-can"></i>
-		</a>
+		{{/if}}
+	</h2>
+	<div class="flexrow">
+		<div class="item-list flexcol">
+			{{#each actor.consumables as |item|}}
+			<div class="{{#if (ne item.system.noTrade true)}} item item-entry {{/if}} inventory-item" data-item-id="{{item.id}}">
+				{{#if (eq item.system.type "consumable")}}
+				<a class="rollItem">
+					<img src="icons/dice/d20black.svg">
+				</a>
+				{{/if}}
+				<span class="itemName">
+					{{item.name}}
+					( {{item.amount}} )
+					{{#if (eq item.system.type "consumable")}}
+					{{/if}}
+				</span>
+				<a class="delItem">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</div>
+			{{/each}}
+		</div>
+		<div class="item-list flexcol">
+			{{#each actor.nonUsableInventory as |item|}}
+			<div class="{{#if (ne item.system.noTrade true)}} item item-entry {{/if}} inventory-item" data-item-id="{{item.id}}">
+				{{#if (eq item.system.type "consumable")}}
+				<a class="rollItem">
+					<img src="icons/dice/d20black.svg">
+				</a>
+				{{/if}}
+				<span class="itemName">
+					{{item.name}}
+					( {{item.amount}} )
+					{{#if (eq item.system.type "consumable")}}
+					{{/if}}
+				</span>
+				<a class="delItem">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</div>
+			{{/each}}
+		</div>
 	</div>
-	{{/each}}
-</div>
 </section>
 

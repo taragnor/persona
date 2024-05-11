@@ -109,7 +109,7 @@ export class PersonaHandleBarsHelpers {
 		'isHighestLinker': (pc: PC, linkData:SocialLinkData ) => {
 			if (!linkData) return false;
 			const highest = linkData.actor.highestLinker();
-			return highest[1] == linkData.linkLevel;
+			return highest.linkLevel == linkData.linkLevel;
 		},
 		'eqAny': function (testCase: string, ...rest: string[]) : boolean {
 			return rest.some( str => str == testCase)
@@ -133,6 +133,13 @@ export class PersonaHandleBarsHelpers {
 			const flag = actor.getEffectFlag(flagEffect.flagId);
 			if (flag) return flag.flagName ?? flagEffect.flagName ?? flag.flagId;
 			return flagEffect.flagName ?? flagEffect.flagId;
+		},
+
+		"isNonstandardPic": function (imgPath:string) : boolean {
+			if (imgPath.startsWith("icons")) {
+				return false;
+			}
+			return true;
 		}
 
 	}

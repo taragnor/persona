@@ -122,7 +122,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new PersonaError(`Can't find Item Id:${itemId}`);
 		}
 		const itype = item.system.type;
-		if (itype!= "power" && itype != "consumable") {
+		if (itype != "consumable") {
 			throw new PersonaError(`itemId pointed to unsualbe power ${itemId}`);
 		}
 		this.#useItemOrPower(item as Usable);

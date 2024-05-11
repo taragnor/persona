@@ -272,6 +272,17 @@ div.social-link {
 }
 
 section.qualifiers {
+	border: solid;
+	padding: 10px;
 	margin: 1em;
-
 }
+
+.qualifiers .header {
+	font-size: 1.5em;
+	font-weight: bold;
+}
+
+.perk.disabled {
+	opacity: 0.5;
+}
+

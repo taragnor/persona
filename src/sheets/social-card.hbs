@@ -1,19 +1,37 @@
 <div class="social-card">
+	<h2> {{link.actor.name}} ({{link.actor.system.availability}})
+		{{#if (isHighestLinker pc link)}}
+		<i title="Highest Link Level" class="fa-solid fa-star"></i>
+		{{/if}}
+	</h2>
+	{{#if (isNonstandardPic card.img)}}
+	<img src="{{card.img}}">
+	{{else}}
+	<img src="{{link.actor.img}}">
+	{{/if}}
 	<h2 class="card-title">
 		{{card.name}}
 	</h2>
 	<div class="skill">
 		<b>Skill: </b>
-		{{newlineConversion card.system.skill}} ({{localize skill}})
+		{{newlineConversion card.system.skill}}
+		({{localize skill}} DC {{DC}})
 	</div>
-	<div class="perk">
+	<div class="perk {{#if (not perkAvail)}} disabled {{/if}}">
 		<b>Perk: </b>
-		{{newlineConversion card.system.perk}}
+		{{newlineConversion perk}}
 	</div>
-	{{#if card.system.cameo}}
+	{{#if isCameo}}
 	<div class="cameo">
 		<b>Cameo: </b>
+		<ul>
+		{{#each cameos as |cameo|}}
+		<li>{{cameo.name}} </li>
+		{{/each}}
+		</ul>
+		{{#if (not cameos)}}
 		{{newlineConversion card.system.cameo}}
+		{{/if}}
 	</div>
 	{{/if}}
 	{{#if card.system.opportunity}}
