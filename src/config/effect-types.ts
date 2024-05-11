@@ -23,6 +23,8 @@ export const CONSQUENCELIST = [
 	"add-power-to-list",
 	"other-effect",
 	"set-flag",
+	"raise-resistance",
+	"lower-resistance",
 ] as const;
 
 

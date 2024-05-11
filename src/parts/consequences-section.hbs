@@ -67,6 +67,17 @@
 			{{selectOptions ../POWERSTUFF.OTHER_CONSEQUENCES localize=true selected=cons.otherEffect}}
 		</select>
 		{{/if}}
+		{{#if (eqAny cons.type "raise-resistance" "lower-resistance")}}
+		<div>
+		<select name="system.effects.{{../i}}.consequences.{{j}}.resistType">
+			{{selectOptions ../POWERSTUFF.DAMAGETYPES localize=true selected=cons.resistType}}
+		</select>
+		<select name="system.effects.{{../i}}.consequences.{{j}}.resistanceLevel">
+			{{selectOptions ../POWERSTUFF.RESIST_STRENGTHS localize=true selected=cons.resistanceLevel}}
+		</select>
+			</div>
+
+		{{/if}}
 		{{#if (eq cons.type	"set-flag")}}
 		<div>
 			<label for="flag-id"> Flag Id</label>

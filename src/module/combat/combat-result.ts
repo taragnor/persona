@@ -1,3 +1,5 @@
+import { ResistStrength } from "../../config/damage-types.js";
+import { ResistType } from "../../config/damage-types.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { OtherConsequence } from "../datamodel/other-effects.js";
@@ -150,6 +152,9 @@ export class CombatResult  {
 			}
 
 			case "modifier":
+			case "raise-resistance":
+			case "lower-resistance":
+				break;
 			case "add-escalation":
 				break;
 			case "save-slot":
@@ -419,7 +424,9 @@ export class CombatResult  {
 				case "recover-slot":
 					break;
 				case "set-flag":
-					this.addFlag(actor, otherEffect);
+					break;
+				case "raise-resistance":
+				case "lower-resistance":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -476,6 +483,9 @@ export class CombatResult  {
 					break;
 				case "set-flag":
 					await actor.setEffectFlag(otherEffect.flagId, otherEffect.state, otherEffect.duration, otherEffect.flagName);
+					break;
+				case "lower-resistance":
+				case "raise-resistance":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -537,13 +547,21 @@ export type SetFlagEffect = {
 	duration: StatusDuration
 }
 
-export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect;
+export type ResistanceShiftEffect= {
+	type: "raise-resistance" | "lower-resistance",
+	element: keyof PC["system"]["combat"]["resists"],
+	level: PC["system"]["combat"]["resists"]["physical"],
+	duration: StatusDuration,
+}
+
+export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect;
 
 export type StatusEffect = {
 	id: StatusEffectId,
 	potency ?: number,
 	duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
 };
+
 
 
 export type Consequence = {
@@ -560,6 +578,8 @@ export type Consequence = {
 	flagName?: string,
 	flagId?: string,
 	flagState?: boolean,
+	resistType?: ResistType,
+	resistanceLevel?: ResistStrength,
 }
 
 export type AttackResult = {

@@ -1,3 +1,5 @@
+import { getActiveConsequences } from "../preconditions.js";
+import { ResistanceShiftEffect } from "../combat/combat-result.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { Metaverse } from "../metaverse.js";
 import { PersonaActorSheetBase } from "./sheets/actor-sheet.base.js";
@@ -661,7 +663,36 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "healing":
 				return "absorb";
 		}
-		return this.system.combat.resists[type] ?? "normal";
+
+		let resist= this.system.combat.resists[type] ?? "normal";
+		const effectChangers=  this.mainModifiers().filter( x=> x.getEffects()
+			.some(x=> x.consequences
+				.some( cons=>cons.type == "raise-resistance" || cons.type == "lower-resistance")));
+		const situation : Situation = {
+			user: this.accessor,
+		};
+		const consequences = effectChangers.flatMap(
+			item => item.getEffects().flatMap(eff =>
+				getActiveConsequences(eff, situation, item)
+			)
+		);
+		for (const cons of consequences) {
+			switch (cons.type) {
+				case "raise-resistance":
+					if (cons.resistType == type && (resist == "weakness" || resist == "normal")) {
+						resist = "resist";
+					}
+					break;
+				case "lower-resistance":
+					if (cons.resistType == type && resist != "weakness" ) {
+						resist = "normal";
+					}
+					break;
+				default:
+					break;
+			}
+		}
+		return resist;
 	}
 
 	wpnMult( this: PC | Shadow) : number {

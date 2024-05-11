@@ -642,6 +642,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case "other-effect":
 				case "set-flag":
 				case "add-power-to-list":
+				case "raise-resistance":
+				case "lower-resistance":
 					consequences.push({applyToSelf,cons});
 					break;
 				default:

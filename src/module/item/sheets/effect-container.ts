@@ -1,3 +1,4 @@
+import { RESIST_STRENGTHS } from "../../../config/damage-types.js";
 import { TAROT_DECK } from "../../../config/tarot.js";
 import { SLOT_TYPES_EXPANDED } from "../../../config/slot-types.js";
 import { PersonaItemSheetBase } from "./base-item-sheet.js";
@@ -35,6 +36,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			TAROT_DECK,
 			NUMERIC_COMPARISON_TARGET,
 			BOOLEAN_COMPARISON_TARGET,
+			RESIST_STRENGTHS,
 			COMPARATORS,
 			CONDITION_TARGETS,
 			OTHER_CONSEQUENCES : OTHER_CONSEQUENCES,
