@@ -1127,7 +1127,7 @@ Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
 			?.toMessage("Triggered Effect", token.actor );
 
 		for (const effect of actor.effects) {
-			if (effect.durationLessThan("expedition")) {
+			if (effect.durationLessThanOrEqualTo("combat")) {
 				await effect.delete();
 			}
 		}

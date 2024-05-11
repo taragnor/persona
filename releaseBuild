@@ -1,0 +1,5 @@
+#!/bin/bash
+
+npm run build &&
+scp -r ./dist/* FU2:~/persona/
+

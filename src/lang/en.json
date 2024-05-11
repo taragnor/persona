@@ -364,6 +364,9 @@
 	"persona.triggers.on-combat-end": "Combat Ends",
 	"persona.triggers.enter-metaverse": "Enter the Metaverse",
 	"persona.triggers.exit-metaverse": "Exit the Metaverse",
+	"persona.triggers.on-inflict-status": "Inflict a Status",
+	"persona.triggers.on-attain-tarot-perk": "Attain a Tarot Perk",
+
 	"persona.othereffect.search-twice": "Search Twice",
 	"persona.othereffect.ignore-surprise": "Act during surprise rounds",
 
@@ -373,6 +376,21 @@
 	"persona.search.actions.guard": "Guard",
 	"persona.search.actions.leave": "Leave Room",
 	"persona.search.actions.disconnected": "Player Disconnected",
+
+	"persona.social.perk-type.standard": "Tarot Perk (Target)",
+	"persona.social.perk-type.standard-or-cameo": "Tarot Perk (Target or Cameo)",
+	"persona.social.perk-type.custom-only": "Card perk",
+	"persona.social.perk-type.standard-or-custom": "Tarot Perk (Target) or Card Perk",
+
+	"persona.social.cameo-type.none": "No Cameo",
+	"persona.social.cameo-type.above": "PC above",
+	"persona.social.cameo-type.below": "PC below",
+	"persona.social.cameo-type.above+below": "Above and Below",
+	"persona.social.cameo-type.student": "Random Student",
+	"persona.social.cameo-type.any": "Any Person",
+	"persona.social.cameo-type.invite-sl4": "Invite another (SL4+)",
+	"persona.social.cameo-type.invite-couple": "Invite a dating couple (SL 5+)",
+	"persona.social.cameo-type.buy-in-2": "Any # (buy-in 2)",
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",

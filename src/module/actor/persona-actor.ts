@@ -479,7 +479,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (potency && eff.potency < potency) {
 				await eff.setPotency(potency);
 			}
-			if (duration && eff.durationLessThan(duration)) {
+			if (duration && eff.durationLessThanOrEqualTo(duration)) {
 				await eff.setDuration(duration);
 			}
 			//TODO: update the effect
@@ -1058,6 +1058,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async OnExitMetaverse(this: PC ) {
 		this.fullHeal();
+		for (const eff of this.effects) {
+			if (eff.durationLessThanOrEqualTo("expedition")) {
+				await eff.delete();
+			}
+		}
 		await this.update( {"system.slots" : {
 			0: this.getMaxSlotsAt(0),
 			1: this.getMaxSlotsAt(1),

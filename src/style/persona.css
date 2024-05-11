@@ -233,6 +233,7 @@ input.flag-name {
 
 .social-card-sheet textarea {
 	text-align:left;
+	text-indent: 10px;
 }
 
 div.social-card {
@@ -268,6 +269,9 @@ div.social-link {
   margin-left: 8px;
   margin-right: 8px;
   font-family: Serif;
+}
 
+section.qualifiers {
+	margin: 1em;
 
 }

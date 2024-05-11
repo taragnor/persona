@@ -5,6 +5,9 @@ import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { PersonaDB } from "../../persona-db.js";
 import { ArrayCorrector } from "../persona-item.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
+import { PERK_TYPES } from "../../../config/perk-types.js";
+import { CAMEO_TYPES } from "../../../config/cameo-types.js";
+
 
 const PRIMARY_SECONDARY = {
 	"primary": "persona.term.primary",
@@ -16,6 +19,8 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 
 	override async getData() {
 		const data = await super.getData();
+		data.CAMEO_TYPES = CAMEO_TYPES;
+		data.PERK_TYPES = PERK_TYPES;
 		data.PRIMARY_SECONDARY = PRIMARY_SECONDARY;
 		data.QUALIFIERS_NAME_LIST = PersonaDB.allSocialCards()
 			.flatMap(card => card.system.qualifiers)
@@ -43,7 +48,7 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 	async addQualifier(_ev: JQuery.ClickEvent) {
 		const qual = ArrayCorrector(this.item.system.qualifiers);
 		qual.push({
-			relationshipName: "Unnamed Relationship",
+			relationshipName: "",
 			min: 0,
 			max: 0
 		});
