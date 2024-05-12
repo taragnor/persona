@@ -69,7 +69,7 @@ type NumericComparisonPC = {
 	num ?: number,
 }
 
-type BooleanComparisonPC = {
+export type BooleanComparisonPC = {
 	type : "boolean",
 	booleanState : boolean,
 } & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparionPC | ResistanceCheck);

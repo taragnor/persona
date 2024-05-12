@@ -1,3 +1,4 @@
+import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { CombatTrigger } from "../../config/triggers.js";
 import { BASIC_POWER_NAMES } from "../../config/basic-powers.js";
 import { PersonaSFX } from "./persona-sfx.js";
@@ -316,8 +317,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
 			const result = await  this.#usePowerOn(attacker, power, targets);
 			this.computeResultBasedEffects(result);
-			await attacker.actor.removeStatus("bonus-action");
 			await result.finalize();
+			await attacker.actor.removeStatus("bonus-action");
 			await result.print();
 			await result.toMessage(power.name, attacker.actor);
 			// await result.apply();
@@ -534,6 +535,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				if (conditions.every(
 					cond => ModifierList.testPrecondition(cond, situation, source))
 				) {
+					console.log(`Precondition Passed: ${source.name}`);
 					const x = this.ProcessConsequences(power, situation, consequences, attacker.actor, atkResult);
 					CombatRes.escalationMod += x.escalationMod;
 					for (const cons of x.consequences) {
@@ -576,11 +578,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					});
 					break;
 				case "dmg-allout-low": {
-					if (!situation.user.token) {
-						PersonaError.softFail("Can't calculate All out damage");
+					const combat =this.ensureCombatExists();
+					const userTokenAcc = combat.getToken(situation.user);
+					if (!userTokenAcc) {
+						PersonaError.softFail(`Can't calculate All out damage - no token for ${situation.user.actorId}`);
 						break;
 					}
-					const userToken = PersonaDB.findToken(situation.user.token);
+					const userToken = PersonaDB.findToken(userTokenAcc);
 					consequences.push({
 						applyToSelf,
 						cons : {
@@ -591,11 +595,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					break;
 				}
 				case "dmg-allout-high": {
-					if (!situation.user.token) {
-						PersonaError.softFail("Can't calculate All out damage");
+					const combat =this.ensureCombatExists();
+					const userTokenAcc = combat.getToken(situation.user);
+					if (!userTokenAcc) {
+						PersonaError.softFail(`Can't calculate All out damage - no token for ${situation.user.actorId}`);
 						break;
 					}
-					const userToken = PersonaDB.findToken(situation.user.token);
+					const userToken = PersonaDB.findToken(userTokenAcc);
 					consequences.push({
 						applyToSelf,
 						cons : {
@@ -603,6 +609,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 							amount: PersonaCombat.calculateAllOutAttackDamage(userToken, situation).high * (absorb ? -1 : damageMult),
 						}
 					});
+					break;
 				}
 				case "extraAttack" :
 					//TODO: handle later
@@ -1059,8 +1066,15 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return dmg;
 	}
 
-} // end of class
+	getToken( acc: UniversalActorAccessor<ValidAttackers> ): UniversalTokenAccessor<PToken> | undefined {
+		if (acc.token) return acc.token;
+		const token = this.combatants.find( comb=> comb?.actor?.id == acc.actorId && comb.actor.token == undefined)?.token?.object;
+		if (token) return PersonaDB.getUniversalTokenAccessor(token);
+		return undefined;
+	}
 
+
+} // end of class
 
 
 type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shadow">;
@@ -1176,6 +1190,7 @@ Hooks.on("onAddStatus", async function (token: PToken, status: StatusEffect)  {
 			}
 		}
 	}
+
 });
 
 type SaveOptions = {

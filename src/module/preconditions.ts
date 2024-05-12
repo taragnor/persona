@@ -1,3 +1,4 @@
+import { BooleanComparisonPC } from "../config/precondition-types.js";
 import { Triggered } from "../config/precondition-types.js";
 import { PToken } from "./combat/persona-combat.js";
 import { UniversalTokenAccessor } from "./utility/db-accessor.js";
@@ -140,17 +141,28 @@ function getToken(condition: TargettedBComparionPC, situation: Situation) : Univ
 	let condTarget ="conditionTarget" in condition ?  condition.conditionTarget : "target";
 	switch (condTarget) {
 		case "owner":
-			if (!situation.user.token) return undefined;
+			if (situation.activeCombat) {
+				const combat = PersonaCombat.ensureCombatExists();
+				return combat.getToken(situation.user);
+			}
 			return situation.user.token;
 		case  "target":
+			if (situation.activeCombat) {
+				const combat = PersonaCombat.ensureCombatExists();
+				return combat.getToken(situation.target!);
+			}
 			if (!situation.target?.token) return undefined;
 			return situation.target.token;
 		case "attacker":
+			if (situation.activeCombat) {
+				const combat = PersonaCombat.ensureCombatExists();
+				return combat.getToken(situation.attacker!);
+			}
 			if (!situation.attacker?.token) return undefined;
 			return situation.attacker.token;
 	}
-
 }
+
 
 function triggerComparison(condition: Triggered, situation: Situation, _source:Option<PowerContainer>) : boolean {
 	if (!situation.trigger) return false;
@@ -175,100 +187,119 @@ function triggerComparison(condition: Triggered, situation: Situation, _source:O
 
 }
 
-function booleanComparison(condition: Precondition, situation: Situation, _source:Option<PowerContainer>): boolean {
-	if (condition.type != "boolean") throw new PersonaError("Not a boolean comparison");
-
-	let targetState = condition.booleanState;
-
+/** returns undefined in case of a state that just shouldn't be analzyed at all*/
+function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, source: Option<PowerContainer>): boolean | undefined {
 	switch(condition.boolComparisonTarget) {
 		case "engaged": {
-			const target = getToken(condition, situation);
-			if (!situation.activeCombat || !target ) {
-				return targetState == false;
+			if (!situation.activeCombat){
+				return undefined;
+			}
+			const subject = getSubject(condition, situation, source);
+			if (!subject) {
+				PersonaError.softFail(`Can't find Subject of ${source?.name} check for: ${condition.boolComparisonTarget}`);
+				return undefined;
+
 			}
 			const combat = PersonaCombat.ensureCombatExists();
-			return combat.isEngaged(target);
+			const subjectToken = subject instanceof Token ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken(subject.accessor);
+			if (!subjectToken) {
+				PersonaError.softFail(`Can't find token for ${subject?.name}`);
+				return undefined;
+			}
+			return combat.isEngaged(subjectToken);
 		}
 		case "engaged-with": {
-			const target = getToken(condition, situation);
-			if (!situation.activeCombat || !target ) {
-				return targetState == false;
+			if (!situation.activeCombat){
+				return undefined;
+			}
+			const subject = getSubject(condition, situation, source);
+			if (!subject) {
+				PersonaError.softFail(`Can't find Subject of ${source?.name} check for: ${condition.boolComparisonTarget}`);
+				return undefined;
+
 			}
 			const combat = PersonaCombat.ensureCombatExists();
-			if (!situation.target || !situation.user.token) {
-				return targetState == false;
+			const subjectToken = subject instanceof Token ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken(subject.accessor);
+			if (!subjectToken) {
+				PersonaError.softFail(`Can't find token for ${subject?.name}`);
+				return undefined;
 			}
-			return combat.isEngagedWith(situation.user.token, target);
+			const attackerToken = combat.getToken(situation.attacker!);
+			if (!attackerToken || !subjectToken) {
+				PersonaError.softFail(`Can't find tokens for attacker`);
+				return undefined;
+			}
+			return combat.isEngagedWith(attackerToken, subjectToken);
 		}
 		case "metaverse-enhanced":
-			return Metaverse.isEnhanced() == targetState;
+			return Metaverse.isEnhanced();
 		case "is-shadow": {
-			const target = getSubject(condition, situation);
-			if (!target) return targetState == false;
+			const target = getSubject(condition, situation, source);
+			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
-			return (targetActor.system.type == "shadow") == targetState;
+			return  targetActor.system.type == "shadow";
 		}
 		case "is-pc": {
-			const target = getSubject(condition, situation);
-			if (!target) return targetState == false;
+			const target = getSubject(condition, situation, source);
+			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
-			return (targetActor.system.type == "pc") == targetState;
+			return targetActor.system.type == "pc";
 		}
 		case "has-tag": {
 			if (!situation.usedPower) {
-				return targetState == false;
+				return undefined;
 			}
 			const power = PersonaDB.findItem(situation.usedPower);
-			return power.system.tags.includes(condition.powerTag!) == targetState;
+			return power.system.tags.includes(condition.powerTag!);
 		}
 		case "power-type-is": {
 			if (!situation.usedPower) {
-				return targetState == false;
+				return undefined;
 			}
 			const power = PersonaDB.findItem(situation.usedPower);
-			return targetState == (power.system.type == "power" && power.system.subtype == condition.powerType);
+			return power.system.type == "power" && power.system.subtype == condition.powerType;
 		}
 		case "in-combat": {
-			return targetState  == situation.activeCombat;
+			return !!situation.activeCombat;
 		}
 		case "is-critical": {
-			return targetState == (situation.criticalHit ?? false);
+			return situation.criticalHit ?? false;
 		}
 		case "is-hit": {
-			return targetState == (situation.hit === true);
+			return situation.hit === true;
 		}
 		case "damage-type-is": {
 			if (!situation.usedPower) {
-				return targetState == false;
+				return undefined;
 			}
 			const power = PersonaDB.findItem(situation.usedPower);
-			return targetState == (condition.powerDamageType == power.system.dmg_type);
+			return condition.powerDamageType == power.system.dmg_type;
 		}
 		case "has-status" : {
-			const target = getSubject(condition, situation);
-			if (!target) return targetState == false;
+			const target = getSubject(condition, situation, source);
+			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
-			return targetState == targetActor.statuses.has(condition.status);
+			return targetActor.statuses.has(condition.status);
 		}
 		case  "struck-weakness": {
 			if (!situation.usedPower) {
-				return targetState == false;
+				return false;
 			}
-			const target = getSubject(condition, situation);
-			if (!target) return targetState == false;
+			const target = getSubject(condition, situation, source);
+			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
 			const power = PersonaDB.findItem(situation.usedPower);
 			const resist = targetActor.elementalResist(power.system.dmg_type);
-			return targetState == (resist == "weakness");
+			return resist == "weakness";
 		}
 		case "is-resistant-to": {
-			const target = getSubject(condition, situation);
-			if (!target) return targetState == false;
+			const target = getSubject(condition, situation, source);
+			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
-			const resist =targetActor.elementalResist(condition.powerDamageType);
+			const resist = targetActor.elementalResist(condition.powerDamageType);
 			switch (resist) {
-				case "resist": case "block": case "absorb": case "reflect": return targetState == true;
-				case "weakness": case "normal": return targetState == false;
+				case "resist": case "block": case "absorb": case "reflect": return true;
+				case "weakness": case "normal": return  false;
 				default:
 					resist satisfies never;
 					return false;
@@ -276,39 +307,50 @@ function booleanComparison(condition: Precondition, situation: Situation, _sourc
 		}
 		case "flag-state": {
 			let actor = PersonaDB.findActor(situation.user);
-				return targetState == (actor.getFlagState(condition.flagId) == condition.booleanState);
+			return actor.getFlagState(condition.flagId) == condition.booleanState;
 		}
 		case "is-same-arcana": {
 			const actor = PersonaDB.findActor(situation.user);
 			if(!situation.target) {
-				return targetState == false;
+				return undefined;
 			}
-			const target = getSubject(condition, situation);
-			if (!target) return targetState == false;
+			const target = getSubject(condition, situation, source);
+			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
-			return targetState == (actor.system.tarot == targetActor.system.tarot);
+			return actor.system.tarot == targetActor.system.tarot;
 		}
 		case "is-dead": {
-			const target = getSubject(condition, situation);
-			if (!target) return targetState == false;
+			const target = getSubject(condition, situation, source);
+			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
-			return targetState == targetActor.hp <= 0;
+			return targetActor.hp <= 0;
 		}
 		case "is-consumable": {
 			if (!situation.usedPower) {
-				return targetState == false;
+				return undefined;
 			}
 			const power = PersonaDB.findItem(situation.usedPower);
-			return targetState == (power.system.type == "consumable");
+			return power.system.type == "consumable";
 		}
 		default :
 			condition satisfies never;
-			return false;
+			return undefined;
 	}
 }
 
-function getSubject( cond: Precondition & {conditionTarget: ConditionTarget}, situation: Situation, ) : PToken | PC| Shadow | undefined {
-	if (!("conditionTarget" in cond)) throw new PersonaError("No conditon target");
+function booleanComparison(condition: Precondition, situation: Situation, source:Option<PowerContainer>): boolean {
+	if (condition.type != "boolean") throw new PersonaError("Not a boolean comparison");
+	const testState = getBoolTestState(condition, situation, source);
+	if (testState === undefined) return false;
+	const targetState = condition.booleanState;
+	return targetState == testState;
+}
+
+function getSubject( cond: Precondition & {conditionTarget: ConditionTarget}, situation: Situation, source: Option<PowerContainer>) : PToken | PC| Shadow | undefined {
+	if (!("conditionTarget" in cond)) {
+		PersonaError.softFail(`No conditon target in ${source?.name}`)
+		return undefined;
+	}
 	const condTarget = cond.conditionTarget;
 	switch (condTarget) {
 		case "owner":
@@ -330,8 +372,6 @@ function getSubject( cond: Precondition & {conditionTarget: ConditionTarget}, si
 			else return PersonaDB.findActor(situation.user);
 	}
 }
-
-
 
 export type Situation = {
 	//more things can be added here all should be optional
