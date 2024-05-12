@@ -184,7 +184,6 @@ function triggerComparison(condition: Triggered, situation: Situation, _source:O
 			condition.trigger satisfies never;
 			return false;
 	}
-
 }
 
 /** returns undefined in case of a state that just shouldn't be analzyed at all*/

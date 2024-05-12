@@ -319,7 +319,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			this.computeResultBasedEffects(result);
 			await result.finalize();
 			await attacker.actor.removeStatus("bonus-action");
-			await result.print();
+			// await result.print();
 			await result.toMessage(power.name, attacker.actor);
 			// await result.apply();
 			return result;
@@ -535,7 +535,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				if (conditions.every(
 					cond => ModifierList.testPrecondition(cond, situation, source))
 				) {
-					console.log(`Precondition Passed: ${source.name}`);
+					// console.log(`Precondition Passed: ${source.name}`);
 					const x = this.ProcessConsequences(power, situation, consequences, attacker.actor, atkResult);
 					CombatRes.escalationMod += x.escalationMod;
 					for (const cons of x.consequences) {
