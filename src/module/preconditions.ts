@@ -106,6 +106,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			const benefit = benefits.find(x=> x.focus == source);
 			if (!benefit) return false;
 			target = benefit.lvl_requirement;
+			break;
 		}
 		case "student-skill":
 			if (!situation.user) return false;
@@ -317,11 +318,11 @@ function getSubject( cond: Precondition & {conditionTarget: ConditionTarget}, si
 		case "attacker":
 			if (situation.attacker?.token)
 				return PersonaDB.findToken(situation.attacker.token);
-			else return undefined;
+			else return situation.attacker ? PersonaDB.findActor(situation.attacker): undefined;
 		case "target":
 			if (situation.target?.token)
 				return PersonaDB.findToken(situation.target.token);
-			else return undefined;
+			else return situation.target ? PersonaDB.findActor(situation.target): undefined;
 		default:
 			condTarget satisfies undefined;
 			if (situation.target?.token)
