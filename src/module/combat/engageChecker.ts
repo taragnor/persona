@@ -40,7 +40,6 @@ export class EngagementChecker {
 	static isWithinEngagedRange(subject: PToken, target:PToken) {
 		const mapUnits = subject.scene.dimensions.distance;
 		return canvas.grid.measureDistance(subject, target, {gridSpaces:true}) <= mapUnits;
-
 	}
 
 }
