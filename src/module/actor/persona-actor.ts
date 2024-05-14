@@ -847,6 +847,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return false;
 			}
 			const enhanced= Metaverse.isEnhanced();
+			if (usable.system.reqHealthPercentage < 100) {
+				const reqHp = (usable.system.reqHealthPercentage / 100) * this.mhp ;
+				if (this.hp > reqHp) return false;
+			}
 			switch (usable.system.reqCharge) {
 				case "none": return true;
 				case "always": return !this.statuses.has("depleted");

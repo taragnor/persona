@@ -296,8 +296,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const combat = game.combat as PersonaCombat;
 		if (combat && !combat.turnCheck(attacker)) {
 			if (!game.user.isGM) {
-				ui.notifications.notify("It's not your turn!");
-				return new CombatResult();
+				if (!await HTMLTools.confirmBox("Out of turn Action", "It's not your turn, act anyway?")) {
+					return new CombatResult();
+				}
+				// ui.notifications.notify("It's not your turn!");
+				// return new CombatResult();
 			}
 			else {
 				if (!await HTMLTools.confirmBox("Out of turn Action", "It's not your turn, act anyway?")) {
@@ -1095,7 +1098,10 @@ Hooks.on("preUpdateCombat" , async (combat: PersonaCombat, _changes: Record<stri
 });
 
 Hooks.on("updateCombat" , async (combat: PersonaCombat, changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
-	if (changes.turn != undefined && diffObject.direction && diffObject.direction != 0) {
+	if (changes.turn == undefined && changes.round == undefined) {
+		return;
+	}
+	if (diffObject.direction && diffObject.direction != 0) {
 		const currentActor = combat?.combatant?.actor
 		if (currentActor && diffObject.direction > 0) {
 			await combat.startCombatantTurn(combat.combatant)

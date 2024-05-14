@@ -87,6 +87,7 @@ export function powerCost() {
 		reqCharge: new txt( {choices: SHADOW_CHANGE_REQ_LIST , initial: "none"}),
 		reqEscalation: new num( {initial: 0, integer: true, min: 0, max: 6}),
 		reqEnhancedMultiverse: new bool( {initial:false}),
+		reqHealthPercentage: new num( {initial: 100, min : 1, max: 100}),
 	}
 }
 
