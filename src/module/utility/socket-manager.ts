@@ -3,16 +3,22 @@ declare global {
 		"TEST": string,
 			"X": number,
 	}
+
 	interface HOOKS {
 		"socketsReady": (x: SocketManager) => unknown;
 
 	}
 }
 
+import { ChannelMessage } from "./socket-channel";
+
+import { SocketChannel } from "./socket-channel.js";
+
 export class SocketManager {
 	#socketName: string;
 	_socketsReady: boolean = false;
 	#handlers: HandlerMap<keyof SocketMessage>= new Map();
+	#channelNumber = 0;
 
 	constructor (socketName: string, isSystem: boolean = false) {
 		const namestarter = isSystem? "system" : "module";
@@ -62,7 +68,7 @@ export class SocketManager {
 		arr.push(handlerFn);
 	}
 
-	onMsgRecieve(packet: SocketPayload<keyof SocketMessage>) :void {
+	private onMsgRecieve(packet: SocketPayload<keyof SocketMessage>) :void {
 		const {code, recipients} = packet;
 		if (!recipients.includes(game.user.id)) return;
 		const handlers = this.#handlers.get(code);
@@ -74,6 +80,11 @@ export class SocketManager {
 			handler(packet.data, packet);
 		}
 	}
+
+	createChannel<T extends ChannelMessage>(linkCode: string, recipients: SocketChannel<T>["recipients"] = []) : SocketChannel<T> {
+		return new SocketChannel<T>(this.#channelNumber++,linkCode, recipients);
+	}
+
 
 }
 
@@ -87,7 +98,7 @@ type SocketPayload<T extends keyof SocketMessage> = {
 
 };
 
-type DataHandlerFn<T extends keyof SocketMessage> = 
+type DataHandlerFn<T extends keyof SocketMessage> =
 	(data: SocketMessage[T], payload: SocketPayload<T>) => any;
 
 
