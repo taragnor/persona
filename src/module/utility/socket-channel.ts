@@ -7,20 +7,20 @@ declare global {
 	}
 	interface HOOKS {
 "newRecieverChannel": (reciever: SocketChannel<any>) => void;
+		"channelsReady": () => void;
 
 	}
 }
 
 interface OpenChannel {
-	"OPEN_CHANNEL" : {linkCode : string;}
-
+	"OPEN_CHANNEL" : undefined;
 }
 
 type ChannelMessagePayload = {
 	channelMsgCode: (keyof ChannelMessage | keyof OpenChannel) & string;
 	channelId: number;
 	sessionCode: number;
-	msgType: "initial" | "reply";
+	msgType: "initial" | "reply" | "open" | "close";
 	data: ChannelMessage[string]["initial" | "reply"];
 	sender: FoundryUser["id"];
 	linkCode: SocketChannel<any>["linkCode"];
@@ -47,13 +47,14 @@ type HandlerFn<T extends ChannelMessage, K extends keyof T> = (data: T[K]["initi
 
 
 export class SocketChannel<MSGTYPE extends ChannelMessage> {
+	closed= false;
 	recipients: FoundryUser["id"][]= [];
 	static socket: SocketManager;
 	socket: SocketManager;
 	id: number;
 	linkCode: string;
-	sessionCode: number;
-	static channels: SocketChannel<any>[];
+	sessionCode: number = 0;
+	static channels: SocketChannel<any>[] = [];
 	awaiters: Map<SocketMessage["CHANNEL_MESSAGE"]["sessionCode"], {
 		res: (reply: MSGTYPE[string]["initial" | "reply"]) => void ,
 		rej: (reason: any) => void
@@ -64,6 +65,7 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 		this.id = numericId;
 		this.socket = SocketChannel.socket;
 		this.linkCode = linkCode;
+		this.recipients = recipients;
 		if (!this.socket) {
 			throw new Error("Sockets not started and trying to make a channel");
 		}
@@ -73,6 +75,7 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 		Hooks.on("socketsReady", (socketManager) => {
 			this.socket = socketManager;
 			socketManager.setHandler("CHANNEL_MESSAGE", this.onChannelMessage.bind(this));
+			Hooks.callAll("channelsReady");
 		});
 
 	}
@@ -82,14 +85,16 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 	}
 
 	static onChannelMessage( payload: SocketMessage["CHANNEL_MESSAGE"]) : void {
-		if (payload.channelMsgCode == "OPEN_CHANNEL") {
-			const reciever = this.socket.createChannel(payload.linkCode);
-			this.channels.push(reciever);
-			Hooks.callAll("newRecieverChannel", reciever);
+		switch (payload.msgType) {
+			case "open":
+				const reciever = this.socket.createChannel(payload.linkCode);
+				Hooks.callAll("newRecieverChannel", reciever);
+				console.debug("Opening Channel");
+				break;
 		}
 		const channel = this.channels.find(ch => ch.linkCode == payload.linkCode);
 		if (!channel) {
-			console.warn(`Trying to send to non-existent channel Id :${payload.channelId}`);
+			console.warn(`Trying to send to non-existent link Code :${payload.linkCode}`);
 			console.warn(payload);
 			return;
 		}
@@ -99,11 +104,16 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 	onChannelMessage( payload: SocketMessage["CHANNEL_MESSAGE"]) {
 		const sessionCode = payload.sessionCode;
 		switch (payload.msgType) {
+			case "open":
+				return;
 			case "initial":
 				this.#onInitialMsg(payload.channelMsgCode, payload.data, payload);
 				break;
 			case "reply":
 				this.#onReplyMsg(payload.channelMsgCode, payload.data, payload.sessionCode);
+				break;
+			case "close":
+				this.#closeSub();
 				break;
 			default:
 				payload.msgType satisfies never;
@@ -128,7 +138,7 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 	async #onReplyMsg<T extends keyof MSGTYPE & string> (msgCode: T, data: MSGTYPE[T]["reply"], sessionCode: ChannelMessagePayload["sessionCode"]) {
 		const awaiter = this.awaiters.get(sessionCode);
 		if (!awaiter) {
-			console.log(`No awaiter found for ${msgCode}, sessionId: ${sessionCode}`);
+			console.warn(`No awaiter found for ${msgCode}, sessionId: ${sessionCode}`);
 			return;
 		}
 		awaiter.res(data);
@@ -164,6 +174,50 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 			linkCode: this.linkCode
 		}, [target]);
 	}
+
+	sendOpen() {
+		this.socket.simpleSend("CHANNEL_MESSAGE", {
+			channelMsgCode: "OPEN_CHANNEL",
+			channelId: this.id,
+			sessionCode: -1,
+			msgType: "open",
+			data: undefined,
+			sender: game.user.id,
+			linkCode: this.linkCode
+		}, this.recipients);
+	}
+
+	sendClose() {
+		this.socket.simpleSend("CHANNEL_MESSAGE", {
+			channelMsgCode: "CLOSE_CHANNEL",
+			channelId: this.id,
+			sessionCode: -1,
+			msgType: "close",
+			data: undefined,
+			sender: game.user.id,
+			linkCode: this.linkCode
+		}, this.recipients);
+	}
+
+	close() {
+		this.sendClose();
+		this.#closeSub();
+	}
+
+	#closeSub() {
+		this.closed = true;
+		this.awaiters.forEach( awaiter => {
+			awaiter.rej("Channel closed");
+		});
+		this.awaiters.clear();
+		this.recipients = [];
+		this.handlers.clear();
+		this.linkCode= "";
+		this.sessionCode=-1;
+		SocketChannel.channels = SocketChannel.channels.filter( x=> x.id == this.id);
+	}
+
 }
 
+Hooks.on("ready", () => SocketChannel.init());
 

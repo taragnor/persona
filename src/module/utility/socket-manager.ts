@@ -82,10 +82,14 @@ export class SocketManager {
 	}
 
 	createChannel<T extends ChannelMessage>(linkCode: string, recipients: SocketChannel<T>["recipients"] = []) : SocketChannel<T> {
-		return new SocketChannel<T>(this.#channelNumber++,linkCode, recipients);
+		const channel =  new SocketChannel<T>(this.#channelNumber++,linkCode, recipients);
+		SocketChannel.channels.push(channel);
+
+		if (recipients.length) {
+			channel.sendOpen();
+		}
+		return channel;
 	}
-
-
 }
 
 type SocketPayload<T extends keyof SocketMessage> = {

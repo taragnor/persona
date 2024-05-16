@@ -38,6 +38,7 @@ import { PersonaJobSheet } from "./item/sheets/job-sheet.js";
 import { TarotSheet } from "./actor/sheets/tarot-sheet.js";
 import { SearchMenu } from "./exploration/searchMenu.js";
 import { PersonaSocialCardSheet } from "./item/sheets/social-card-sheet.js";
+import { Heartbeat } from "./utility/heartbeat.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -96,6 +97,7 @@ function registerSheetApplications() {
 	 PersonaSettings.registerSettings();
 	 preloadHandlebarsTemplates();
 	 ErrorScanner.check();
+	 Heartbeat.start();
  });
 
 function registerHandlebarsHelpers() {
