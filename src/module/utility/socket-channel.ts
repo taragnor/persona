@@ -159,6 +159,9 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 		}, recipients);
 		return await new Promise( (res, rej) => {
 			this.awaiters.set(sessionCode, {res,rej});
+			setTimeout( () => {
+				rej("Timeout");
+			}, 8000);
 		});
 	}
 
