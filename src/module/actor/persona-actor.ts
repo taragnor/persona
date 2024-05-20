@@ -703,11 +703,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	magDmg (this: PC | Shadow) : {low: number, high:number} {
+	magDmg (this: PC | Shadow, situation: Situation) : {low: number, high:number} {
 		const lvl = this.system.combat.classData.level;
 		const inc = this.system.combat.classData.incremental.mag_dmg ? 1 : 0;
 		const magDmg = this.class.getClassProperty(lvl + inc, "magic_damage") ?? 0;
-		return magDmg ;
+		return magDmg;
+		// const bonus = bonuses.total(situation);
+		// return {
+		// 	high: magDmg.high + bonus,
+		// 	low: magDmg.low + bonus,
+		// };
 	}
 
 	critBoost(this: PC | Shadow) : ModifierList {

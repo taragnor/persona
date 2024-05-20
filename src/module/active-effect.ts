@@ -112,6 +112,19 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		}
 	}
 
+	AEtestEffect() {
+		let changes= this.changes;
+		changes = [
+			{
+				effect: undefined,
+				key: "",
+				mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+				priority: 0,
+				value: ""
+			}
+		];
+		this.update({"changes": changes});
+	}
 
 }
 
