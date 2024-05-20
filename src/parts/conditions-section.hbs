@@ -48,7 +48,7 @@
 
 			{{#if (eq cond.type "boolean")}}
 
-			{{#if (eqAny cond.boolComparisonTarget "engaged" "engaged-with" "is-pc" "is-shadow" "is-dead" "is-same-arcana" "struck-weakness" "has-status" "flag-state")}}
+			{{#if (eqAny cond.boolComparisonTarget "engaged" "engaged-with" "is-pc" "is-shadow" "is-dead" "is-same-arcana" "struck-weakness" "has-status" "flag-state" "is-resistant-to" )}}
 			<div>
 				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
 					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
