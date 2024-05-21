@@ -351,13 +351,19 @@ export class CombatResult  {
 			for (const change of changes) {
 				await this.applyChange(change);
 				if (change.actor.token)
-				token = PersonaDB.findToken(change.actor.token);
+					token = PersonaDB.findToken(change.actor.token);
 			}
 			if (token && !token.actor.isAlive()) {
 				// const attacker = PersonaDB.findToken(result.attacker);
-				this.merge(
-					PersonaCombat.onTrigger("on-kill-target", token.actor)
-				);
+				const actingActor = PersonaDB.findToken(result.attacker)?.actor;
+				if (!actingActor) break;
+				if (token.actor.system.type == "shadow") {
+					const shadow= game.combat?.getCombatantByToken(token.id);
+					if (shadow) {
+						await shadow.update( {defeated: true});
+					}
+				}
+				PersonaCombat.execTrigger("on-kill-target", actingActor);
 			}
 		}
 		for (const cost of this.costs) {

@@ -682,7 +682,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				...situation,
 				trigger
 			} ; //copy the object so it doesn't permanently change it
-
 		for (const trig of actor.triggers) {
 			for (const eff of trig.getEffects()) {
 				if (!eff.conditions.every( cond =>
