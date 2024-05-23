@@ -6,7 +6,7 @@ export class PersonaTalentSheet extends PersonaEffectContainerBaseSheet {
 	override item: Talent;
 
 	static override get defaultOptions() {
-		return mergeObject(super.defaultOptions, {
+		return foundry.utils.mergeObject(super.defaultOptions, {
 			classes: ["persona", "sheet", "item"],
 			template: `${HBS_TEMPLATES_DIR}/talent-sheet.hbs`,
 			width: 800,

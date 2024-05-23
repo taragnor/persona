@@ -15,7 +15,7 @@ export class PersonaJobSheet extends PersonaItemSheetBase {
 	}
 
 	static override get defaultOptions() {
-		return mergeObject(super.defaultOptions, {
+		return foundry.utils.mergeObject(super.defaultOptions, {
 			classes: ["persona", "sheet", "actor"],
 			template: `${HBS_TEMPLATES_DIR}/job-sheet.hbs`,
 			width: 800,

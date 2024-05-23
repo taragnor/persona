@@ -6,7 +6,7 @@ export class PersonaWeaponSheet extends PersonaEffectContainerBaseSheet {
 	override item: Weapon;
 
 	static override get defaultOptions() {
-		return mergeObject(super.defaultOptions, {
+		return foundry.utils.mergeObject(super.defaultOptions, {
 			classes: ["persona", "sheet", "item"],
 			template: `${HBS_TEMPLATES_DIR}/weapon-sheet.hbs`,
 			width: 800,

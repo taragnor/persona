@@ -7,7 +7,7 @@ export class ConsumableSheet extends PersonaEffectContainerBaseSheet {
 	override item: Consumable;
 
 	static override get defaultOptions() {
-		return mergeObject(super.defaultOptions, {
+		return foundry.utils.mergeObject(super.defaultOptions, {
 			classes: ["persona", "sheet", "item"],
 			template: `${HBS_TEMPLATES_DIR}/consumable-sheet.hbs`,
 			width: 800,

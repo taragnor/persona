@@ -6,7 +6,7 @@ export class PersonaFocusSheet extends PersonaEffectContainerBaseSheet {
 	override item: Focus;
 
 	static override get defaultOptions() {
-		return mergeObject(super.defaultOptions, {
+		return foundry.utils.mergeObject(super.defaultOptions, {
 			classes: ["persona", "sheet", "item"],
 			template: `${HBS_TEMPLATES_DIR}/focus-sheet.hbs`,
 			width: 800,

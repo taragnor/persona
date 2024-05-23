@@ -6,7 +6,7 @@ export class PersonaPowerSheet  extends PersonaPowerLikeBaseSheet {
 	override item: Power;
 
 	static override get defaultOptions() {
-		return mergeObject(super.defaultOptions, {
+		return foundry.utils.mergeObject(super.defaultOptions, {
 			classes: ["persona", "sheet", "item"],
 			template: `${HBS_TEMPLATES_DIR}/power-sheet.hbs`,
 			width: 800,

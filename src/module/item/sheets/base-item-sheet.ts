@@ -4,7 +4,7 @@ import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 export class PersonaItemSheetBase extends ItemSheet<PersonaItem> {
 
 	static override get defaultOptions() {
-		return mergeObject(super.defaultOptions, {
+		return foundry.utils.mergeObject(super.defaultOptions, {
 			classes: ["persona", "sheet", "item"],
 			template: `${HBS_TEMPLATES_DIR}/item-sheet-base.hbs`,
 			width: 800,
