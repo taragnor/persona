@@ -15,10 +15,10 @@ declare interface HOOKS {
 	"combatTurn": (combat: Combat, updateData: CombatUpdateData, updateOptions: CombatUpdateOptions) => unknown;
 	"combatRound": (combat: Combat, updateData: CombatUpdateData, updateOptions: CombatUpdateOptions) => unknown;
 	"chatMessage": (chatLog: ChatLog, contents: string, chatMsgData: unknown) => unknown;
-	"preCreateChatMessage": (msg: ChatMessage, spkdata: unknown, otherstuff: unknown, id: string) => unknown;
-	"createChatMessage": (msg: ChatMessage, otherstuff: unknown, id: string) => unknown;
-	"preUpdateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<boolean | void>;
-	"preUpdateItem": (item: Item<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<boolean | void>;
+	"preCreateChatMessage": PreCreateHook<ChatMessage>;
+	"createChatMessage": CreateHook<ChatMessage>;
+	"preUpdateActor": UpdateHook<Actor>;
+	"preUpdateItem": UpdateHook<Item>;
 	"preUpdateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>;
 	"deleteCombat": DeleteHook<Combat>;
 	"createActor": CreateHook<Actor<any,any>>;
@@ -38,7 +38,7 @@ declare interface HOOKS {
 	"updateScene": UpdateHook<Scene>;
 	"updateItem": UpdateHook<Item<any>>;
 	"updateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>;
-	"updateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<unknown>;
+	"updateActor": UpdateHook<Actor>;
 	"getSceneControlButtons": Function;
 	"renderJournalDirectory": Function;
 	"renderCombatTracker": RenderCombatTabFn;
@@ -50,13 +50,17 @@ declare interface HOOKS {
 	"userConnected": (user: FoundryUser, isConnectionEvent : boolean) => unknown;
 };
 
+type PreCreateHook<T extends FoundryDocument> = (document: T, documentData: {name:string, type:string} & Record<string, unknown>, metaData: Record<string, unknown>, id:string) => unknown;
+
+type CreateHook<T extends FoundryDocument> = (item: T, metaData: Record<string, unknown>, id: string) => unknown | Promise<unknown>;
+
 type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , delta: any, changes: Record<string, any>) => unknown;
 
-type UpdateHook<T, Diff = {}> = (updatedItem: T, changes: Record<string, unknown>, diff: DiffObject & Diff, id: string) => unknown;
+type UpdateHook<T extends FoundryDocument, Diff = {}> = (updatedItem: T, changes: Record<string, unknown>, diff: DiffObject & Diff, id: string) => unknown;
 
-type DeleteHook<T> = (deletedItem: T, something: Record<string, unknown>, id: string) => unknown;
+type DeleteHook<T extends FoundryDocument> = (deletedItem: T, something: Record<string, unknown>, id: string) => unknown;
 
-type PreDeleteHook<T> = DeleteHook<T>;
+type PreDeleteHook<T extends FoundryDocument> = DeleteHook<T>;
 
 type DiffObject = {
 	diff: boolean,

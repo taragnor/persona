@@ -48,6 +48,7 @@ declare interface Game {
 	keybindings: Keybindings;
 	combats: Collection<Combat>;
 	journal: Collection<JournalEntry>;
+	world: World;
 }
 
 

@@ -110,6 +110,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		try {
 			const results  = await PersonaCombat.usePower(token, power as Usable);
 		} catch (e) {
+			console.error(e);
 			throw e;
 		}
 
