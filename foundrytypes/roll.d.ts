@@ -14,6 +14,7 @@ class Roll {
 	static fromJSON<T extends Roll= Roll>(json: string): T;
 	static fromData<T extends Roll= Roll>(obj: Object): T;
 	toAnchor(...stuff : unknown[]): HTMLElement;
+	_evaluated: boolean;
 }
 
 interface Die extends TermBase {

@@ -30,7 +30,6 @@ import { PersonaFocusSheet } from "./item/sheets/focus-sheet.js";
 import { PersonaTalentSheet } from "./item/sheets/talent-sheet.js";
 import { ConsumableSheet } from "./item/sheets/consumable-sheet.js";
 import { PersonaHandleBarsHelpers } from "./handlebars-helpers.js";
-import { PersonaRoll } from "./persona-roll.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { UniversalModifierSheet } from "./item/sheets/universalmodifier-sheet.js";
 import { PersonaSettings } from "../config/persona-settings.js";
@@ -51,7 +50,7 @@ function registerDocumentClasses() {
 	CONFIG.Actor.documentClass = PersonaActor;
 	CONFIG.Item.documentClass = PersonaItem;
 	CONFIG.ActiveEffect.documentClass = PersonaAE;
-	CONFIG.Dice.rolls.push(PersonaRoll);
+	// CONFIG.Dice.rolls.push(PersonaRoll);
 	CONFIG.Combat.documentClass = PersonaCombat;
 }
 

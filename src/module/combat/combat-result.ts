@@ -20,7 +20,7 @@ import { Usable } from "../item/persona-item.js";
 import { PC } from "../actor/persona-actor.js";
 import { PToken } from "./persona-combat.js";
 import { StatusEffectId } from "../../config/status-effects.js";
-import { PersonaRoll } from "../persona-roll.js";
+import { RollBundle } from "../persona-roll.js";
 import { UniversalTokenAccessor } from "../utility/db-accessor.js";
 import { UniversalItemAccessor } from "../utility/db-accessor.js";
 import { PersonaCombat } from "./persona-combat.js";
@@ -281,7 +281,7 @@ export class CombatResult  {
 
 
 	async toMessage( effectName: string, initiator: PersonaActor) : Promise<ChatMessage> {
-		const rolls : PersonaRoll[] = Array.from(this.attacks.entries()).map( ([attackResult]) => attackResult.roll);
+		const rolls : RollBundle[] = Array.from(this.attacks.entries()).map( ([attackResult]) => attackResult.roll);
 		const attacks = Array.from(this.attacks.entries()).map( ([attackResult, changes])=> {
 			return {
 				attackResult,
@@ -298,7 +298,7 @@ export class CombatResult  {
 				token:  initiator.token?.id ,
 				alias: undefined,
 			},
-			rolls: rolls,
+			rolls: rolls.map( rb=> rb.roll),
 			content: html,
 			user: game.user,
 			// V12 compatibility, causes error if combined with type though
@@ -598,7 +598,7 @@ export type AttackResult = {
 	attacker: UniversalTokenAccessor<PToken>,
 	power: UniversalItemAccessor<Usable>,
 	situation: Situation,
-	roll: PersonaRoll,
+	roll: RollBundle,
 	critBoost: number,
 	printableModifiers: {name: string, modifier:string} [],
 };

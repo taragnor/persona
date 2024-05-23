@@ -24,7 +24,7 @@ import { Situation } from "../preconditions.js";
 import { AttackResult } from "./combat-result.js";
 import { Usable } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
-import { PersonaRoll } from "../persona-roll.js";
+import { RollBundle } from "../persona-roll.js";
 import { UniversalTokenAccessor } from "../utility/db-accessor.js";
 import { EngagementList } from "./engagementList.js";
 import { Logger } from "../utility/logger.js";
@@ -72,7 +72,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	async startCombatantTurn( combatant: Combatant<ValidAttackers> ){
-		const rolls :PersonaRoll[] = [];
+		const rolls :RollBundle[] = [];
 		const actor = combatant.actor;
 		if (!actor) return;
 		if (actor.isOwner && !game.user.isGM)
@@ -93,13 +93,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token.object);
 			if (this.isEngaged(accessor)) {
 				const DC = undefined;
-				const {total, roll} = await PersonaCombat.disengageRoll(actor, DC);
-				rolls.push(roll);
+				const {total, rollBundle} = await PersonaCombat.disengageRoll(actor, DC);
+				rolls.push(rollBundle);
 				let disengageResult = "failed";
 
 				if (total >= 11) disengageResult = "normal";
 				if (total >= 16) disengageResult = "hard";
-				startTurnMsg.push("<br>"+ await renderTemplate("systems/persona/parts/disengage-check.hbs", {roll, disengageResult}));
+				startTurnMsg.push("<br>"+ await renderTemplate("systems/persona/parts/disengage-check.hbs", {rollBundle, disengageResult}));
 			}
 		}
 		const speaker = ChatMessage.getSpeaker({alias: actor.name});
@@ -107,7 +107,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			speaker: speaker,
 			content: startTurnMsg.join("<br>"),
 			type: CONST.CHAT_MESSAGE_TYPES.OOC,
-			rolls,
+			rolls: rolls.map(r=> r.roll),
 			sound: rolls.length > 0 ? CONFIG.sounds.dice : undefined
 
 		};
@@ -372,8 +372,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const resist = target.actor.elementalResist(element);
 		const attackbonus= this.getAttackBonus(attacker, power);
 		attackbonus.add("Custom modifier", this.customAtkBonus);
-		const roll = new PersonaRoll("1d20", attackbonus, situation, `${target.document.name} (vs ${power.system.defense})`);
-		await roll.roll();
+		const r = await new Roll("1d20").roll();
+		const rollName =  `${target.document.name} (vs ${power.system.defense})`;
+		const roll = new RollBundle(rollName, r, attackbonus, situation);
 		const naturalAttackRoll = roll.dice[0].total;
 		situation.naturalAttackRoll = naturalAttackRoll;
 		const baseData = {
@@ -949,8 +950,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		const difficultyTxt = DC == 11 ? "normal" : DC == 16 ? "hard" : DC == 6 ? "easy" : "unknown difficulty";
 		const labelTxt = `Saving Throw (${label ? label + " " + difficultyTxt : ""})`;
-		const roll = new PersonaRoll("1d20", mods, situation,labelTxt);
-		await roll.roll();
+		const r = await new Roll("1d20").roll();
+		const roll = new RollBundle(labelTxt, r, mods, situation);
 		await roll.toModifiedMessage();
 		return {
 			success: roll.total >= difficulty,
@@ -958,17 +959,18 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	};
 
-	static async disengageRoll( actor: ValidAttackers, _DC = 11) : Promise<{total: number, roll: PersonaRoll}> {
+	static async disengageRoll( actor: ValidAttackers, _DC = 11) : Promise<{total: number, rollBundle: RollBundle}> {
 		const situation : Situation = {
 			user: PersonaDB.getUniversalActorAccessor(actor),
 		}
 		const mods = actor.getDisengageBonus();
 		const labelTxt = `Disengage Check`;
-		const roll = new PersonaRoll("1d20", mods, situation, labelTxt);
+		const roll = new Roll("1d20");
 		await roll.roll();
+		const rollBundle = new RollBundle(labelTxt, roll, mods, situation);
 		return {
 			total: roll.total,
-			roll
+			rollBundle
 		}
 	}
 

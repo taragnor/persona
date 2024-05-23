@@ -19,7 +19,7 @@ import { SocialStat } from "../../config/student-skills.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { STUDENT_SKILLS } from "../../config/student-skills.js";
 import { Situation } from "../preconditions.js";
-import { PersonaRoll } from "../persona-roll.js";
+import { RollBundle } from "../persona-roll.js";
 import { PersonaDB } from "../persona-db.js";
 import { HTMLTools } from "../utility/HTMLTools.js";
 
@@ -28,7 +28,7 @@ export class PersonaSocial {
 	static #drawnCardIds: string[] = [];
 
 
-	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation) : Promise<PersonaRoll> {
+	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation) : Promise<RollBundle> {
 		let mods = pc.getSocialStat(socialStat);
 		let socialmods = pc.getBonuses("socialRoll");
 		mods = mods.concat(socialmods);
@@ -42,8 +42,8 @@ export class PersonaSocial {
 		const sit: Situation = situation ?? {
 			user: PersonaDB.getUniversalActorAccessor(pc),
 		};
-		const dice = new PersonaRoll("1d20", mods, sit, rollName);
-		await dice.roll();
+		const r = await new Roll("1d20").roll();
+		const dice = new RollBundle(rollName, r,  mods, sit);
 		return dice;
 	}
 
