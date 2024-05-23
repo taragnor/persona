@@ -8,7 +8,7 @@ class Roll {
 	get dice(): Die[];
 	options: Record<string, unknown>;
 	toJSON(): string;
-
+	static fromJSON<T extends Roll>(string): T;
 }
 
 class Die {
@@ -16,9 +16,6 @@ class Die {
 	number: number;
 	get total(): number;
 	values: number[]
-
-
-
 
 }
 

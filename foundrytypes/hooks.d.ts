@@ -18,6 +18,7 @@ declare interface HOOKS {
 	"preCreateChatMessage": (msg: ChatMessage, spkdata: unknown, otherstuff: unknown, id: string) => unknown;
 	"createChatMessage": (msg: ChatMessage, otherstuff: unknown, id: string) => unknown;
 	"preUpdateActor": (actor: Actor<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<boolean | void>;
+	"preUpdateItem": (item: Item<any>, changes: Record<string, unknown>, diffObject: DiffObject, id: string) => Promise<boolean | void>;
 	"preUpdateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>;
 	"deleteCombat": DeleteHook<Combat>;
 	"createActor": CreateHook<Actor<any,any>>;

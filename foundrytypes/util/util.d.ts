@@ -16,9 +16,11 @@ interface FoundryUtil {
 			lineLineIntersection(a: Point, b: Point, c: Point,d: Point, options:unknown): unknown,
 			lineSegmentIntersection(...args: unknown[]): unknown,
 			lineSegmentIntersects(...args: unknown[]): unknown,
-			mergeObject<T extends Object>(original: T, other: Partial<T>={}, {insertKeys=true, insertValues=true, overwrite=true, recursive=true, inplace=true, enforceTypes=false,
-				      performDeletions=false}: MergeOptions ): T,
+			mergeObject<A extends Object, B extends Object>(original: A, other: B={}, {insertKeys=true, insertValues=true, overwrite=true, recursive=true, inplace=true, enforceTypes=false,
+
+				      performDeletions=false}: MergeOptions = {}): A&B,
 		randomId(length =16) : string,
+		expandObject(obj : Object): Object;
 }
 
 type MergeOptions = {
