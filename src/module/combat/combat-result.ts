@@ -301,7 +301,9 @@ export class CombatResult  {
 			rolls: rolls,
 			content: html,
 			user: game.user,
-			type: CONST.CHAT_MESSAGE_TYPES.ROLL
+			// V12 compatibility, causes error if combined with type though
+			// style: CONST?.CHAT_MESSAGE_STYLES?.OOC,
+			type: CONST.CHAT_MESSAGE_TYPES.ROLL,
 		}, {})
 		if (!manualApply) {
 			if (game.user.isGM) {

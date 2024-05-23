@@ -12,10 +12,15 @@ declare const foundry:   {
 	data: FoundryData;
 	documents: {
 		BaseCombat: typeof BaseCombat;
-
 	}
+	audio: {
+		AudiHelper: typeof AudioHelper;
+		Sound: typeof Sound;
+	}
+	utils: FoundryUtil
 
 }
+
 
 
 class BaseCombat {

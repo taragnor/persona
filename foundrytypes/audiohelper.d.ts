@@ -1,3 +1,12 @@
+
+/** @deprecated as of V12, use foundry.audio version instead
+*/
+const AudioHelper : typeof AudioHelper;
+
+/** @deprecated as of V12, use foundry.audio version instead
+*/
+const Sound : typeof Sound;
+
 class AudioHelper {
 	static async play (options: AudioOptions, pushToAll?: SocketOptions | boolean): Promise<Sound>;
 }

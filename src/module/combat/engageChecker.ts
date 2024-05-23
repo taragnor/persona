@@ -37,8 +37,12 @@ export class EngagementChecker {
 		return engagedList;
 	}
 
-	static isWithinEngagedRange(subject: PToken, target:PToken) {
+	static isWithinEngagedRange(subject: PToken, target:PToken) : boolean {
 		const mapUnits = subject.scene.dimensions.distance;
+		if (canvas?.grid?.measurePath) {
+			//V12
+			return canvas.grid.measurePath([subject, target]).distance <= mapUnits;
+		}
 		return canvas.grid.measureDistance(subject, target, {gridSpaces:true}) <= mapUnits;
 	}
 
