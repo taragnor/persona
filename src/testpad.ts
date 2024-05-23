@@ -1,5 +1,3 @@
-ChatMessage
-document.createElement
-
+game.i18n
 
 

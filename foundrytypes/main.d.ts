@@ -53,7 +53,9 @@ declare interface Game {
 
 
 interface Localization{
-	localize(x: string) : string;
+	localize(localizationString: string) : string;
+	/** replaces {X} with substitution data using X as a keylookup*/
+	format(localizationString: string, substitutionData: Record<string, string>): string;
 }
 
 

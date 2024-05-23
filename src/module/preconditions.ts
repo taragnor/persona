@@ -215,8 +215,8 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 			if (!subject) {
 				PersonaError.softFail(`Can't find Subject of ${source?.name} check for: ${condition.boolComparisonTarget}`);
 				return undefined;
-
 			}
+
 			const combat = PersonaCombat.ensureCombatExists();
 			const subjectToken = subject instanceof Token ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken(subject.accessor);
 			if (!subjectToken) {
