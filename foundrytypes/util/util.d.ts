@@ -21,7 +21,14 @@ interface FoundryUtil {
 				      performDeletions=false}: MergeOptions = {}): A&B,
 		randomId(length =16) : string,
 		expandObject(obj : Object): Object;
+
+	/**
+ * Wrap a callback in a debounced timeout.
+   * Delay execution of the callback function until the function has not been called for delay milliseconds
+	*/
+	debounce<T extends (...args:any[]) => any>(callback: T, delayMs: number) : T;
 }
+
 
 type MergeOptions = {
 
