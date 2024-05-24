@@ -2,7 +2,15 @@ class Roll {
 	constructor (dice_expr: string);
 
 	async roll(options: RollEvalOptions = {}): Promise<this>;
+	/**@deprecated eval is no longer necessary in Foundry V12
+	*/
+	async roll(options: DeprecatedRollEvalOptions = {}): Promise<this>;
 	async evaluate(options: RollEvalOptions= {}): Promise<this>;
+
+	/**@deprecated eval is no longer necessary in Foundry V12
+	*/
+	async evaluate(options: DeprecatedRollEvalOptions= {}): Promise<this>;
+
 	get total(): number;
 	get result(): string;
 	async toMessage(): Promise<ChatMessage>;
@@ -65,12 +73,14 @@ default: false
 	 */
 	allowInteractive?: boolean;
 
+}
+
+interface DeprecatedRollEvalOptions extends RollEvalOptions{
 	/**makes the roll async or sync
 @deprecated as of Foundry V12, use evaluateSync instead
 default: true
 	 */
-	async: boolean
-
+	async?: boolean
 }
 
 type RollTerm = Die | OperatorTerm | NumericTerm;
