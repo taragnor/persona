@@ -13,8 +13,9 @@ declare const foundry:   {
 	documents: {
 		BaseCombat: typeof BaseCombat;
 	}
+	/** audio doesn't exist in v11 */
 	audio: {
-		AudiHelper: typeof AudioHelper;
+		AudioHelper: typeof FOUNDRY.AUDIO.AudioHelper;
 		Sound: typeof Sound;
 	}
 	utils: FoundryUtil
