@@ -1,8 +1,8 @@
 class Roll {
 	constructor (dice_expr: string);
 
-	async roll(options: {async:boolean} = {}): Promise<this>;
-	async evaluate(options: {async:boolean} = {}): Promise<this>;
+	async roll(options: RollEvalOptions = {}): Promise<this>;
+	async evaluate(options: RollEvalOptions= {}): Promise<this>;
 	get total(): number;
 	get result(): string;
 	async toMessage(): Promise<ChatMessage>;
@@ -41,4 +41,37 @@ interface TermBase {
 	isDeterministic: boolean;
 }
 
+interface RollEvalOptions {
+	/**
+Minimize the result, obtaining the smallest possible value.
+		default: false
+	 */
+	minimize?: boolean;
+
+	/**
+Maximize the result, obtaining the larges possible value.
+		default: false
+	 */
+	maximize?: boolean;
+
+	/**
+  If true, string terms will not cause an error to be thrown during
+default: false
+	 */
+	allowStrings?: boolean;
+
+	/**If false, force the use of non-interactive rolls and do not prompt the user to make manual rolls.
+	 default: true
+	 */
+	allowInteractive?: boolean;
+
+	/**makes the roll async or sync
+@deprecated as of Foundry V12, use evaluateSync instead
+default: true
+	 */
+	async: boolean
+
+}
+
 type RollTerm = Die | OperatorTerm | NumericTerm;
+
