@@ -1,3 +1,4 @@
+import { PersonaSettings } from "../../config/persona-settings.js";
 import { sleep } from "./async-wait.js";
 import { SocketChannel } from "./socket-channel.js";
 import { PersonaSockets } from "../persona.js";
@@ -15,7 +16,6 @@ interface HEARTBEAT_MSG extends ChannelMessage {
 		reply: {initialTime: number}
 	}
 }
-
 
 export class Heartbeat {
 	static LINK_CODE = "HEARTBEAT";
@@ -92,8 +92,13 @@ export class Heartbeat {
 	async pingTarget(session: Heartbeat["sessions"][number]) {
 		let notifyTime = 0;
 		while (true) {
+			if(!PersonaSettings.get("heartbeatOn")) {
+				await sleep(20000);
+				continue;
+			}
 			const target = game.users.find( x=> x.id == session.recipients[0]);
 			if (!target) throw new Error("Not sending to anyone");
+			// console.log(`Sending pulse to ${target.name}`);
 			const initialTime= Date.now();
 			try {
 				const x = await session.sendInitial("HEARTBEAT", {initialTime});
@@ -106,6 +111,7 @@ export class Heartbeat {
 					notifyTime = 20;
 				}
 			}
+			if (session.closed) return;
 			await sleep(4000);
 			if (notifyTime > 0) {
 				notifyTime -= 1;

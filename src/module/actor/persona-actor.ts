@@ -1,3 +1,4 @@
+import { UniversalModifier } from "../item/persona-item.js";
 import { getActiveConsequences } from "../preconditions.js";
 import { ResistanceShiftEffect } from "../combat/combat-result.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
@@ -608,6 +609,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...passivePowers,
 			...this.passiveItems(),
 			...this.getSocialFocii(),
+			...this.roomModifiers(),
 			...PersonaDB.getGlobalModifiers(),
 		].filter( x => x.getEffects().length > 0);
 	}
@@ -1076,6 +1078,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			await item.update({"system.amount": amount-1});
 			return;
 		}
+	}
+
+	roomModifiers() : ModifierContainer[] {
+		return (game.combats.contents as PersonaCombat[])
+			.filter(combat => combat.combatants.contents
+				.some( comb => comb.actor == this)
+			).flatMap( combat=> combat.getRoomEffects())
 	}
 
 	isCapableOfAction() : boolean {

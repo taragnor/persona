@@ -49,10 +49,12 @@ type HandlerFn<T extends ChannelMessage, K extends keyof T> = (data: T[K]["initi
 export class SocketChannel<MSGTYPE extends ChannelMessage> {
 	closed= false;
 	recipients: FoundryUser["id"][]= [];
+	static nextId = 0;
 	static socket: SocketManager;
 	socket: SocketManager;
 	id: number;
 	linkCode: string;
+	static nextSessionCode = 0;
 	sessionCode: number = 0;
 	static channels: SocketChannel<any>[] = [];
 	awaiters: Map<SocketMessage["CHANNEL_MESSAGE"]["sessionCode"], {
@@ -61,8 +63,11 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 	}> = new Map();
 	handlers: Map<keyof MSGTYPE, HandlerFn<MSGTYPE, keyof MSGTYPE>> = new Map();
 
-	constructor (numericId : number, linkCode: string, recipients: SocketChannel<MSGTYPE>["recipients"]) {
-		this.id = numericId;
+	constructor (linkCode: string, recipients: SocketChannel<MSGTYPE>["recipients"], channelId?: number) {
+		if (channelId == undefined) {
+			channelId = SocketChannel.nextId++;
+		}
+		this.id = channelId;
 		this.socket = SocketChannel.socket;
 		this.linkCode = linkCode;
 		this.recipients = recipients;
@@ -70,6 +75,13 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 			throw new Error("Sockets not started and trying to make a channel");
 		}
 	}
+
+	static open<MSGTYPE extends ChannelMessage>(openerChannelId: SocketChannel<MSGTYPE>["id"], linkCode: string) {
+		const channel=  new SocketChannel(linkCode, [], openerChannelId);
+		SocketChannel.channels.push(channel);
+		return channel;
+	}
+
 
 	static init() {
 		Hooks.on("socketsReady", (socketManager) => {
@@ -87,15 +99,20 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 	static onChannelMessage( payload: SocketMessage["CHANNEL_MESSAGE"]) : void {
 		switch (payload.msgType) {
 			case "open":
-				const reciever = this.socket.createChannel(payload.linkCode);
+				const reciever = SocketChannel.open(payload.channelId, payload.linkCode);
 				Hooks.callAll("newRecieverChannel", reciever);
 				console.debug("Opening Channel");
 				break;
 		}
-		const channel = this.channels.find(ch => ch.linkCode == payload.linkCode);
+		const channel = this.channels.find(ch => ch.linkCode == payload.linkCode && payload.channelId == ch.id);
 		if (!channel) {
-			console.warn(`Trying to send to non-existent link Code :${payload.linkCode}`);
+			console.warn(this.channels);
+			console.warn(`Recieved non-existant link Code :${payload.linkCode}`);
 			console.warn(payload);
+			return;
+		}
+		if (channel.closed) {
+			channel.sendClose();
 			return;
 		}
 		channel.onChannelMessage(payload);
@@ -110,7 +127,7 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 				this.#onInitialMsg(payload.channelMsgCode, payload.data, payload);
 				break;
 			case "reply":
-				this.#onReplyMsg(payload.channelMsgCode, payload.data, payload.sessionCode);
+				this.#onReplyMsg(payload.channelMsgCode, payload.data, payload);
 				break;
 			case "close":
 				this.#closeSub();
@@ -130,12 +147,14 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 		if (x) {
 			const y = await x(data);
 			if (y) {
-				await this.#reply(msgCode, y, payload.sessionCode, payload.sender);
+				this.sessionCode = payload.sessionCode;
+				this.#reply(msgCode, y, payload.sessionCode, payload.sender);
 			}
 		}
 	}
 
-	async #onReplyMsg<T extends keyof MSGTYPE & string> (msgCode: T, data: MSGTYPE[T]["reply"], sessionCode: ChannelMessagePayload["sessionCode"]) {
+	async #onReplyMsg<T extends keyof MSGTYPE & string> (msgCode: T, data: MSGTYPE[T]["reply"], payload: ChannelMessagePayload) {
+		const {sessionCode} = payload;
 		const awaiter = this.awaiters.get(sessionCode);
 		if (!awaiter) {
 			console.warn(`No awaiter found for ${msgCode}, sessionId: ${sessionCode}`);
@@ -146,26 +165,30 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 	}
 
 	async sendInitial<T extends keyof MSGTYPE & string> (msgCode: T, initialMsg: MSGTYPE[T]["initial"]) : Promise<MSGTYPE[T]["reply"]> {
+		if (this.closed) {
+			return Promise.reject("Channel closed");
+		}
 		const recipients = this.recipients;
-		const sessionCode = this.sessionCode++;
-		this.socket.simpleSend("CHANNEL_MESSAGE", {
-			channelMsgCode: msgCode,
-			channelId: this.id,
-			data: initialMsg,
-			sessionCode: sessionCode,
-			msgType: "initial",
-			sender: game.user.id,
-			linkCode: this.linkCode
-		}, recipients);
+		this.sessionCode = SocketChannel.nextSessionCode++;
 		return await new Promise( (res, rej) => {
-			this.awaiters.set(sessionCode, {res,rej});
+			// console.log(`Creating Awaiter for :${recipients.map(id => game.users.get!(id)!.name).join(", ")} ${this.sessionCode}`);
+			this.awaiters.set(this.sessionCode, {res,rej});
+			this.socket.simpleSend("CHANNEL_MESSAGE", {
+				channelMsgCode: msgCode,
+				channelId: this.id,
+				data: initialMsg,
+				sessionCode: this.sessionCode,
+				msgType: "initial",
+				sender: game.user.id,
+				linkCode: this.linkCode
+			}, recipients);
 			setTimeout( () => {
 				rej("Timeout");
 			}, 8000);
 		});
 	}
 
-	async #reply<T extends keyof MSGTYPE & string> (msgCode: T, reply: MSGTYPE[T]["reply"], sessionCode: ChannelMessagePayload["sessionCode"], target: FoundryUser["id"] ) {
+	#reply<T extends keyof MSGTYPE & string> (msgCode: T, reply: MSGTYPE[T]["reply"], sessionCode: ChannelMessagePayload["sessionCode"], target: FoundryUser["id"] ) {
 		const recipients = this.recipients;
 		this.socket.simpleSend("CHANNEL_MESSAGE", {
 			channelMsgCode: msgCode,
@@ -194,7 +217,7 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 		this.socket.simpleSend("CHANNEL_MESSAGE", {
 			channelMsgCode: "CLOSE_CHANNEL",
 			channelId: this.id,
-			sessionCode: -1,
+			sessionCode: this.sessionCode,
 			msgType: "close",
 			data: undefined,
 			sender: game.user.id,
@@ -216,7 +239,6 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 		this.recipients = [];
 		this.handlers.clear();
 		this.linkCode= "";
-		this.sessionCode=-1;
 		SocketChannel.channels = SocketChannel.channels.filter( x=> x.id == this.id);
 	}
 

@@ -5,8 +5,15 @@
 		</div>
 		<b>Universal Modifier</b>
 	</header>
+	<div>
+		<label> Room Effect? </label>
+		<input type="checkbox" name="system.room_effect" {{checked item.system.room_effect}}>
+	</div>
+		<textarea name="system.description">
+			{{item.system.description}}
+		</textarea>
 	<body>
-	{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
+		{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
 	</body>
 </form>
 

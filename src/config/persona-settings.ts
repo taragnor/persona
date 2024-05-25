@@ -67,6 +67,16 @@ const SETTINGS = {
 		default: false,
 	},
 
+	"heartbeatOn": {
+		name: "Heartbeat Code",
+		hint: "Constantly checks to see if players disconnect",
+		scope: "world",
+		restricted: true,
+		config: true,
+		type: Boolean,
+		default: true,
+	}
+
 } as const;
 
 type SETTINGKEYS = keyof typeof SETTINGS;

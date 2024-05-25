@@ -81,8 +81,8 @@ export class SocketManager {
 		}
 	}
 
-	createChannel<T extends ChannelMessage>(linkCode: string, recipients: SocketChannel<T>["recipients"] = []) : SocketChannel<T> {
-		const channel =  new SocketChannel<T>(this.#channelNumber++,linkCode, recipients);
+	createChannel<T extends ChannelMessage>(linkCode: string, recipients: SocketChannel<T>["recipients"] = [], sessionCode?: number) : SocketChannel<T> {
+		const channel =  new SocketChannel<T>(linkCode, recipients);
 		SocketChannel.channels.push(channel);
 
 		if (recipients.length) {
@@ -90,7 +90,9 @@ export class SocketManager {
 		}
 		return channel;
 	}
+
 }
+
 
 type SocketPayload<T extends keyof SocketMessage> = {
 	code: T,

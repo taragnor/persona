@@ -50,6 +50,7 @@ function itemBase() {
 	static override defineSchema() {
 		const ret = {
 			description: new html(),
+			room_effect: new bool({initial: false}),
 			...effects (false),
 		}
 		return ret;

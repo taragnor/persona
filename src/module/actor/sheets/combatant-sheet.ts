@@ -1,5 +1,5 @@
 import { PersonaError } from "../../persona-error.js";
-import { PersonaCombat } from "../../combat/persona-combat.js"
+import { PersonaCombat } from "../../combat/persona-combat.js";
 import { PToken } from "../../combat/persona-combat.js";
 import { Usable } from "../../item/persona-item.js";
 

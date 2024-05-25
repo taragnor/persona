@@ -1,3 +1,4 @@
+import { UniversalModifier } from "./item/persona-item.js";
 import { Job } from "./item/persona-item.js";
 import { Tarot } from "./actor/persona-actor.js";
 import { PersonaItem } from "./item/persona-item.js";
@@ -20,10 +21,16 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		throw new Error("Id ${id} points towards invalid type");
 	}
 
-	getGlobalModifiers() : ModifierContainer [] {
+	getGlobalModifiers() : UniversalModifier [] {
 		const items = this.getAllByType("Item") as PersonaItem[];
-		const UMs = items.filter( x=> x.system.type == "universalModifier") as ModifierContainer[];
-		return UMs;
+		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
+		return UMs.filter(um=> !um.system.room_effect);
+	}
+
+	getRoomModifiers() : UniversalModifier [] {
+		const items = this.getAllByType("Item") as PersonaItem[];
+		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
+		return UMs.filter(um=> um.system.room_effect);
 	}
 
 	allPowers() : Power[] {

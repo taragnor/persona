@@ -1,3 +1,4 @@
+import { UniversalModifier } from "../item/persona-item.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { CombatTrigger } from "../../config/triggers.js";
 import { BASIC_POWER_NAMES } from "../../config/basic-powers.js";
@@ -53,10 +54,26 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	static customAtkBonus: number
 
 	override async startCombat() {
+		let msg = "";
 		this._engagedList = new EngagementList(this);
 		await this._engagedList.flushData();
+		const mods = await this.roomEffectsDialog();
 		const x = await super.startCombat();
+		this.setRoomEffects(mods);
 		await this.setEscalationDie(0);
+		if (mods.length > 0) {
+			msg += "<u><h2>Room Effects</h2></u><ul>";
+			msg += mods.map( x=> `<li><b>${x.name}</b> : ${x.system.description}</li>`).join("");
+			msg += "</ul>";
+		}
+		if (msg.length > 0) {
+			const messageData = {
+				speaker: {alias: "Combat Start"},
+				content: msg,
+				type: CONST.CHAT_MESSAGE_TYPES.OOC,
+			};
+			ChatMessage.create(messageData, {});
+		}
 		return x;
 	}
 
@@ -187,11 +204,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				}
 			} else {
 
-					Msg.push(`${combatant.name} is totally faded!`);
+				Msg.push(`${combatant.name} is totally faded!`);
 
-				}
-				Msg.push( `${combatant.name} can fight in spirit!`);
 			}
+			Msg.push( `${combatant.name} can fight in spirit!`);
+		}
 		return Msg;
 
 	}
@@ -353,7 +370,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	static computeResultBasedEffects(result: CombatResult) {
 		//TODO: Put code to check for miss all targets in ehere
-			return result;
+		return result;
 	}
 
 	static async processAttackRoll( attacker: PToken, power: Usable, target: PToken, isActivationRoll: boolean) : Promise<AttackResult> {
@@ -667,8 +684,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	static async execTrigger(trigger: CombatTrigger, actor: ValidAttackers, situation?: Situation) : Promise<void> {
 		await this.onTrigger(trigger, actor, situation)
-			.emptyCheck()
-			?.toMessage("Triggered Effect", actor);
+		.emptyCheck()
+		?.toMessage("Triggered Effect", actor);
 	}
 
 	static onTrigger(trigger: CombatTrigger, actor : ValidAttackers, situation ?: Situation) : CombatResult {
@@ -680,9 +697,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 		}
 		situation = {
-				...situation,
-				trigger
-			} ; //copy the object so it doesn't permanently change it
+			...situation,
+			trigger
+		} ; //copy the object so it doesn't permanently change it
 		for (const trig of actor.triggers) {
 			for (const eff of trig.getEffects()) {
 				if (!eff.conditions.every( cond =>
@@ -752,7 +769,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						});
 						break;
 
-						 default:
+					default:
 						power.system.reqCharge satisfies never;
 				}
 			}
@@ -865,7 +882,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	static checkTargets(min: number, max: number, aliveTargets= true) {
 		const selected : Array<Token<PersonaActor>> = Array.from(game.user.targets)
-		.filter(x=> aliveTargets ? x.actor.isAlive() : (!x.actor.isAlive() && !x.actor.isFullyFaded()));
+			.filter(x=> aliveTargets ? x.actor.isAlive() : (!x.actor.isAlive() && !x.actor.isFullyFaded()));
 		if (selected.length == 0)  {
 			const error = "Requires Target to be selected";
 			ui.notifications.warn(error);
@@ -1075,6 +1092,56 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const token = this.combatants.find( comb=> comb?.actor?.id == acc.actorId && comb.actor.token == undefined)?.token?.object;
 		if (token) return PersonaDB.getUniversalTokenAccessor(token);
 		return undefined;
+	}
+
+	getRoomEffects() : ModifierContainer[] {
+		const effectIds= this.getFlag<string[]>("persona", "roomEffects")
+		const allRoomEffects=  PersonaDB.getRoomModifiers();
+		if (!effectIds) return [];
+		return effectIds.flatMap(id=> {
+			const effect = allRoomEffects.find(eff => eff.id == id);
+			return effect ? [effect] : [];
+		})
+	}
+
+	async setRoomEffects(effects: ModifierContainer[]) {
+		await this.setFlag("persona", "roomEffects", effects.map(eff=> eff.id));
+	}
+
+	async roomEffectsDialog() : Promise<UniversalModifier[]>{
+		const roomMods = PersonaDB.getRoomModifiers();
+		const ROOMMODS =Object.fromEntries(roomMods.map( mod => [mod.id, mod.name]));
+		const html = await renderTemplate("systems/persona/sheets/dialogs/room-effects.hbs", {
+			ROOMMODS : {"": "-",
+				...ROOMMODS}
+		});
+		return new Promise( (conf, _rej) => {
+			const dialogOptions : DialogOptions = {
+				title: "room Effects",
+				content: html,
+				buttons: {
+					"ok": {
+						label: "ok",
+						callback: (html: string) => {
+							let ret : UniversalModifier[] = [];
+							$(html)
+								.find("select.room-mod")
+								.find(":selected")
+								.each( function ()  {
+									const id= String( $(this).val());
+									const mod = roomMods.find(x=> x.id == id);
+									if (mod) {
+										ret.push(mod);
+									}
+								})
+							conf(ret);
+						},
+					}
+				}
+			}
+			const dialog = new Dialog( dialogOptions, {});
+			dialog.render(true);
+		});
 	}
 
 
