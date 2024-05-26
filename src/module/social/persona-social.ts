@@ -263,7 +263,7 @@ export class PersonaSocial {
 		const DC = 10 + link.linkLevel *3;
 		const perkAvail = link.actor.system.availability == "++" || link.actor.system.availability == "+";
 		const isCameo = card.system.cameoType != "none";
-		const skill = STUDENT_SKILLS[actor.getSocialStatToRaiseLink(card.system.skill)];
+		const skill = STUDENT_SKILLS[link.actor.getSocialStatToRaiseLink(card.system.skill)];
 
 		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/social-card.hbs`, {item: card,card,  skill, cameos, perk, link: link, pc: actor, perkAvail, isCameo, DC} );
 
@@ -393,7 +393,7 @@ export class PersonaSocial {
 		const avail = activity.system.availability;
 		const modifiers = this.getAvailModifier(avail);
 		let html = "";
-		html += `<h2>${activity.name}</h2>`
+		html += `<h2>${activity.name} (${activity.system.availability})</h2>`
 		html += `<img src='${activity.img}'>`;
 		const rollTitle = `${activity.name} roll (DC ${activity.system.dc}, ${stat} --- ${skill}) `
 		const socialRoll = await this.rollSocialStat(actor, skill, modifiers, rollTitle,situation);

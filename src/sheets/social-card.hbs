@@ -13,6 +13,7 @@
 		{{card.name}}
 	</h2>
 	<div class="skill">
+		<hr>
 		<b>Skill: </b>
 		{{newlineConversion card.system.skill}}
 		({{localize skill}} DC {{DC}})
@@ -22,12 +23,13 @@
 		{{newlineConversion perk}}
 	</div>
 	{{#if isCameo}}
+	<hr>
 	<div class="cameo">
 		<b>Cameo: </b>
 		<ul>
-		{{#each cameos as |cameo|}}
-		<li>{{cameo.name}} </li>
-		{{/each}}
+			{{#each cameos as |cameo|}}
+			<li>{{cameo.name}} </li>
+			{{/each}}
 		</ul>
 		{{#if (not cameos)}}
 		{{newlineConversion card.system.cameo}}
@@ -35,12 +37,14 @@
 	</div>
 	{{/if}}
 	{{#if card.system.opportunity}}
+	<hr>
 	<div class="opportunity">
 		<b>Opportunity: </b>
 		{{newlineConversion card.system.opportunity}}
 	</div>
 	{{/if}}
 	{{#if card.system.bane}}
+	<hr>
 	<div class="bane">
 		<b>Bane: </b>
 		{{newlineConversion card.system.bane}}
