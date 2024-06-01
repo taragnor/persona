@@ -48,7 +48,18 @@
 
 			{{#if (eq cond.type "boolean")}}
 
-			{{#if (eqAny cond.boolComparisonTarget "engaged" "engaged-with" "is-pc" "is-shadow" "is-dead" "is-same-arcana" "struck-weakness" "has-status" "flag-state" "is-resistant-to" )}}
+			{{#if (eqAny cond.boolComparisonTarget "target-owner-comparison")}}
+			<div>
+				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget2">
+					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget2}}
+				</select>
+				<span>==</span>
+				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
+					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+				</select>
+			</div>
+			{{/if}}
+			{{#if (eqAny cond.boolComparisonTarget "engaged" "engaged-with" "is-pc" "is-shadow" "is-dead" "is-same-arcana" "struck-weakness" "has-status" "flag-state" "is-resistant-to")}}
 			<div>
 				<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">
 					{{selectOptions ../POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}

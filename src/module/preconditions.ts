@@ -1,10 +1,10 @@
+import { TargettedBComparisonPC } from "../config/precondition-types.js";
 import { BooleanComparisonPC } from "../config/precondition-types.js";
 import { Triggered } from "../config/precondition-types.js";
 import { PToken } from "./combat/persona-combat.js";
 import { UniversalTokenAccessor } from "./utility/db-accessor.js";
 import { TarotCard } from "../config/tarot.js";
 import { ConditionTarget } from "../config/precondition-types.js";
-import { TargettedBComparionPC } from "../config/precondition-types.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { SocialCard } from "./item/persona-item.js";
 import { Job } from "./item/persona-item.js";
@@ -115,6 +115,12 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (actor.system.type != "pc") return false;
 			target = actor.system.skills[condition.studentSkill!];
 			break;
+		case "character-level": {
+			if (!situation.user) return false;
+			const actor = PersonaDB.findActor(situation.user);
+			target= actor.system.combat.classData.level;
+			break;
+		}
 		default:
 			condition.comparisonTarget satisfies undefined;
 			PersonaError.softFail(`Unknwon numeric comparison type ${condition.comparisonTarget}`)
@@ -137,7 +143,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 }
 
 
-function getToken(condition: TargettedBComparionPC, situation: Situation) : UniversalTokenAccessor<PToken> | undefined{
+function getToken(condition: TargettedBComparisonPC, situation: Situation) : UniversalTokenAccessor<PToken> | undefined{
 	let condTarget ="conditionTarget" in condition ?  condition.conditionTarget : "target";
 	switch (condTarget) {
 		case "owner":
@@ -193,7 +199,7 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 			if (!situation.activeCombat){
 				return undefined;
 			}
-			const subject = getSubject(condition, situation, source);
+			const subject = getSubject(condition, situation, source, "conditionTarget");
 			if (!subject) {
 				PersonaError.softFail(`Can't find Subject of ${source?.name} check for: ${condition.boolComparisonTarget}`);
 				return undefined;
@@ -211,7 +217,7 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 			if (!situation.activeCombat){
 				return undefined;
 			}
-			const subject = getSubject(condition, situation, source);
+			const subject = getSubject(condition, situation, source, "conditionTarget");
 			if (!subject) {
 				PersonaError.softFail(`Can't find Subject of ${source?.name} check for: ${condition.boolComparisonTarget}`);
 				return undefined;
@@ -233,13 +239,13 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 		case "metaverse-enhanced":
 			return Metaverse.isEnhanced();
 		case "is-shadow": {
-			const target = getSubject(condition, situation, source);
+			const target = getSubject(condition, situation, source,  "conditionTarget");
 			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
 			return  targetActor.system.type == "shadow";
 		}
 		case "is-pc": {
-			const target = getSubject(condition, situation, source);
+			const target = getSubject(condition, situation, source,  "conditionTarget");
 			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
 			return targetActor.system.type == "pc";
@@ -275,7 +281,7 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 			return condition.powerDamageType == power.system.dmg_type;
 		}
 		case "has-status" : {
-			const target = getSubject(condition, situation, source);
+			const target = getSubject(condition, situation, source,  "conditionTarget");
 			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
 			return targetActor.statuses.has(condition.status);
@@ -284,7 +290,7 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 			if (!situation.usedPower) {
 				return false;
 			}
-			const target = getSubject(condition, situation, source);
+			const target = getSubject(condition, situation, source,  "conditionTarget");
 			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
 			const power = PersonaDB.findItem(situation.usedPower);
@@ -292,7 +298,7 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 			return resist == "weakness";
 		}
 		case "is-resistant-to": {
-			const target = getSubject(condition, situation, source);
+			const target = getSubject(condition, situation, source,  "conditionTarget");
 			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
 			const resist = targetActor.elementalResist(condition.powerDamageType);
@@ -313,13 +319,13 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 			if(!situation.target) {
 				return undefined;
 			}
-			const target = getSubject(condition, situation, source);
+			const target = getSubject(condition, situation, source,  "conditionTarget");
 			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
 			return actor.system.tarot == targetActor.system.tarot;
 		}
 		case "is-dead": {
-			const target = getSubject(condition, situation, source);
+			const target = getSubject(condition, situation, source,  "conditionTarget");
 			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
 			return targetActor.hp <= 0;
@@ -331,9 +337,15 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 			const power = PersonaDB.findItem(situation.usedPower);
 			return power.system.type == "consumable";
 		}
+		case "target-owner-comparison":
+			const target = getSubject(condition, situation, source, "conditionTarget");
+			const target2 = getSubject(condition, situation, source, "conditionTarget2");
+			if (!target || !target2) return undefined;
+			return target == target2;
 		default :
 			condition satisfies never;
 			return undefined;
+
 	}
 }
 
@@ -345,12 +357,12 @@ function booleanComparison(condition: Precondition, situation: Situation, source
 	return targetState == testState;
 }
 
-function getSubject( cond: Precondition & {conditionTarget: ConditionTarget}, situation: Situation, source: Option<PowerContainer>) : PToken | PC| Shadow | undefined {
-	if (!("conditionTarget" in cond)) {
+function getSubject<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K) : PToken | PC| Shadow | undefined {
+	if (!(field in cond)) {
 		PersonaError.softFail(`No conditon target in ${source?.name}`)
 		return undefined;
 	}
-	const condTarget = cond.conditionTarget;
+	const condTarget = cond[field];
 	switch (condTarget) {
 		case "owner":
 			if (situation.user.token)

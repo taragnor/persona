@@ -180,6 +180,7 @@
 	"persona.power.subtype.magic": "Magic",
 	"persona.power.subtype.other": "Other",
 	"persona.power.subtype.passive": "Passive",
+	"persona.power.subtype.defensive": "Defensive",
 	"persona.power.subtype.none": "None",
 	"persona.power.hpcost": "Hp Cost",
 	"persona.power.slotcost": "Slot Cost",
@@ -335,6 +336,7 @@
 	"persona.preconditions.comparison.total-roll": "Total Roll",
 	"persona.preconditions.comparison.talent-level": "Talent Level",
 	"persona.preconditions.comparison.social-link-level": "Social Link Level",
+	"persona.preconditions.comparison.character-level": "Character Level",
 	"persona.preconditions.comparison.student-skill": "Rank in Student Skill",
 	"persona.preconditions.comparison.engaged": "Is Engaged",
 	"persona.preconditions.comparison.engaged-with": "Is Engaged With Attacker",
@@ -354,6 +356,7 @@
 	"persona.preconditions.comparison.flag-state": "Flag State",
 	"persona.preconditions.comparison.is-dead": "Is Dead",
 	"persona.preconditions.comparison.is-consumable": "Is Consumable Item",
+	"persona.preconditions.comparison.target-owner-comparison": "Target/Attacker/Owner comparison",
 
 	"persona.triggers.on-damage": "Character Takes Damage",
 	"persona.triggers.on-kill-target": "Character kills a target",

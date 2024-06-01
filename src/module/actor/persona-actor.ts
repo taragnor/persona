@@ -600,6 +600,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return modList;
 	}
 
+	// getDefenseBonuses(type: ModifierTarget): ModifierList {
+	// 	return new ModifierList( this.defensivePowers()
+	// 		.flatMap(item => item.getModifier(type)));
+	// }
+
+	// defensivePowers():Power[] {
+	// 	return this.powers
+	// 		.filter( power=> power.system.subtype == "defensive");
+	// }
+
 	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
 		const passivePowers = (options && options.omitPowers) ? [] : this.getPassivePowers();
 		return [

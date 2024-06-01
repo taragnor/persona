@@ -72,17 +72,25 @@ type NumericComparisonPC = {
 export type BooleanComparisonPC = {
 	type : "boolean",
 	booleanState : boolean,
-} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparionPC | ResistanceCheck);
+	boolComparisonTarget: BooleanComparisonTarget,
+} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck);
 
 	type BasicBComparisonPC ={
 	boolComparisonTarget: Exclude<BooleanComparisonTarget,
-	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "flag-state" | "is-resistant-to" | TargettedBComparionPC["boolComparisonTarget"]>,
+	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "flag-state" | "is-resistant-to" | TargettedBComparisonPC["boolComparisonTarget"]>,
 }
 
-export type TargettedBComparionPC = {
+export type TargettedBComparisonPC = SingleTargetComparison | TwoTargetComparison;
+
+export type SingleTargetComparison = {
 	boolComparisonTarget: "engaged" | "engaged-with" | "is-dead" | "struck-weakness" | "is-shadow" | "is-pc" | "is-same-arcana";
 	conditionTarget : ConditionTarget,
+};
 
+type TwoTargetComparison = {
+	boolComparisonTarget:	"target-owner-comparison",
+	conditionTarget : ConditionTarget,
+	conditionTarget2: ConditionTarget,
 }
 
 type StatusComparisonPC = {
@@ -131,6 +139,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"is-critical",
 	"is-hit",
 	"is-dead",
+	"target-owner-comparison",
 	"damage-type-is",
 	"power-type-is",
 	"has-status",
@@ -155,6 +164,7 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"talent-level",
 	"social-link-level",
 	"student-skill",
+	"character-level",
 ] as const;
 
 export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];
