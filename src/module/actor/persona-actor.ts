@@ -979,6 +979,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
+	get socialFocii() : Focus[] {
+		switch (this.system.type) {
+			case "pc":
+				return this.getSocialFocii();
+			case "tarot":
+			case "shadow":
+			case "npc" : return[];
+			default:
+				this.system satisfies never;
+				return [];
+		}
+	}
+
 	getSocialFocii() : Focus[] {
 		if (this.system.type != "pc")  {
 			return [];

@@ -25,6 +25,9 @@
 	"persona.sheet.tabs.combat.tabname" : "Combat",
 	"persona.sheet.tabs.combat.header": "Combat Stats",
 
+	"persona.sheet.tabs.social-benefits.tabname" : "Social Benefits",
+	"persona.sheet.tabs.social-benefits.header" : "Social Benefits",
+
 	"persona.sheet.tabs.incremental.tabname" : "Incremental Advances",
 	"persona.sheet.tabs.incremental.header" : "Incremental Advances",
 

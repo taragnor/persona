@@ -1,0 +1,19 @@
+<h2>
+	{{localize "persona.sheet.tabs.social-benefits.header" }}
+</h2>
+{{#each actor.socialLinks as |link|}}
+<span class="sl-name">
+	<b> {{link.actor.name}}</b>
+</span>
+<ul>
+	{{#each link.linkBenefits.socialBenefits as |benefit|}}
+	{{#if (meetsSLRequirement benefit)}}
+	<li>
+		<b>{{benefit.focus.name}}:</b>
+		{{benefit.focus.system.description}}
+	</li>
+	{{/if}}
+	{{/each}}
+</ul>
+{{/each}}
+

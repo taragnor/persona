@@ -21,6 +21,7 @@ const templateFileNames : string[] =[
 	"display-token-change.hbs",
 	"disengage-check.hbs",
 	"condensed-roll.hbs",
+	"social-benefits-section.hbs",
 ];
 
 export const templatePaths = templateFileNames.
