@@ -1,3 +1,4 @@
+import { Focus } from "./item/persona-item.js";
 import { SetFlagEffect } from "./combat/combat-result.js";
 import { SocialLinkData } from "./actor/persona-actor.js";
 import { UniversalActorAccessor } from "./utility/db-accessor.js";
@@ -62,11 +63,15 @@ export class PersonaHandleBarsHelpers {
 			else return 0;
 		},
 
-		"meetsSLRequirement": (benefit: SocialBenefit) => {
+		"meetsSLRequirement": ( owner: PC, focus: Focus) => {
+			return owner.meetsSLRequirement(focus);
+		},
+
+		"meetsSLRequirementNPC": (benefit: SocialBenefit) => {
 			if (game.user.isGM) return true;
 			const pc= game.user.character as PersonaActor;
 			if (!pc || pc.system.type != "pc") return false;
-			return (pc as PC).meetsSLRequirement(benefit);
+			return (pc as PC).meetsSLRequirement(benefit.focus);
 		},
 		"getDamage": (actor: PersonaActor, usable: Usable) => {
 			switch (actor.system.type) {

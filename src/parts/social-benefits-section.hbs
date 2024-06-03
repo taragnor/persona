@@ -6,11 +6,11 @@
 	<b> {{link.actor.name}}</b>
 </span>
 <ul>
-	{{#each link.linkBenefits.socialBenefits as |benefit|}}
-	{{#if (meetsSLRequirement benefit)}}
+	{{#each link.focii as |focus|}}
+	{{#if (meetsSLRequirement ../../actor focus)}}
 	<li>
-		<b>{{benefit.focus.name}}:</b>
-		{{benefit.focus.system.description}}
+		<b>{{focus.name}}:</b>
+		{{focus.system.description}}
 	</li>
 	{{/if}}
 	{{/each}}

@@ -53,7 +53,11 @@ export class ModifierList {
 	validModifiers (situation: Situation) : ModifierListItem[]  {
 		return this._data.filter( item => {
 			const source = item.source ? PersonaDB.findItem(item.source) as PowerContainer: null;
-			if (item.conditions.every( cond => ModifierList.testPrecondition(cond, situation, source))) {
+			// if (! source) {
+			// 	console.error(`No source for ${item.name}`);
+			// 	return false;
+			// }
+			if (item.conditions.every( cond => !source  || ModifierList.testPrecondition(cond, situation, source))) {
 				if (item.modifier != 0 || item.variableModifier.size != 0) {
 					return true;
 				}
@@ -71,7 +75,7 @@ export class ModifierList {
 		return base + vartotal;
 	}
 
-	static testPrecondition (condition: Precondition, situation:Situation, source: Option<PowerContainer>) : boolean {
+	static testPrecondition (condition: Precondition, situation:Situation, source: PowerContainer) : boolean {
 		return testPrecondition( condition, situation, source);
 	}
 

@@ -106,7 +106,7 @@ const power = PersonaDB.getBasicPower(powerName);
 				eff => eff.consequences.some(
 					cons => cons.type == "add-power-to-list"
 				))
-			.flatMap(eff=> getActiveConsequences(eff, situation, null))
+			.flatMap(eff=> getActiveConsequences(eff, situation, this))
 			.flatMap(x=> x.type == "add-power-to-list" ? [x.id] : [])
 			.map(id=> PersonaDB.allPowers().find( x=>x.id == id))
 			.flatMap( pwr=> pwr? [pwr]: []);

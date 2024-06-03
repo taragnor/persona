@@ -1,3 +1,4 @@
+import { NPC } from "./actor/persona-actor.js";
 import { UniversalModifier } from "./item/persona-item.js";
 import { Job } from "./item/persona-item.js";
 import { Tarot } from "./actor/persona-actor.js";
@@ -56,6 +57,14 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	allJobs(): Job[] {
 		return this.allItems()
 		.filter( x=> x.system.type == "job") as Job[];
+	}
+
+	personalSocialLink(): NPC {
+		return this.getActorByName("Personal Social Link") as NPC;
+	}
+
+	teammateSocialLink(): NPC {
+					return PersonaDB.getActorByName("Teammate Social Link") as NPC;
 	}
 
 

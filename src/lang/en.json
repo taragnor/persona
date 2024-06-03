@@ -326,7 +326,7 @@
 	"persona.preconditions.flag-state": "Flag State" ,
 
 	"persona.preconditions.targets.owner": "Owner of Power" ,
-	"persona.preconditions.targets.target": "Target of Power" ,
+	"persona.preconditions.targets.target": "Target of Attack" ,
 	"persona.preconditions.targets.attacker": "Attacker" ,
 	"persona.preconditions.dice.escalation": "Escalation DIe" ,
 	"persona.preconditions.dice.activation": "Activation Roll" ,

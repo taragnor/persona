@@ -304,11 +304,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					relationshipType,
 					actor:npc as SocialLink,
 					linkBenefits: npc as SocialLink,
+					focii: (npc as NPC).getSocialFocii(npc as SocialLink),
 					availability: npc.system.availability,
 				}];
 			} else {
 				if (npc == this) {
-					const personalLink = PersonaDB.getActorByName("Personal Social Link") as NPC;
+					const personalLink = PersonaDB.personalSocialLink();
 					if (!personalLink)  {
 						return [];
 					}
@@ -319,10 +320,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						relationshipType,
 						actor:npc as SocialLink,
 						linkBenefits: personalLink,
+						focii: personalLink.getSocialFocii(npc as PC),
 						availability: (npc as SocialLink).system.availability,
 					}];
 				} else {
-					const teammate = PersonaDB.getActorByName("Teammate Social Link") as NPC;
+					const teammate = PersonaDB.teammateSocialLink();
 					if (!teammate)  {
 						return [];
 					}
@@ -333,6 +335,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						relationshipType,
 						actor:npc as SocialLink,
 						linkBenefits: teammate,
+						focii: teammate.getSocialFocii(npc as PC),
 						availability: (npc as SocialLink).system.availability,
 					}];
 				}
@@ -618,7 +621,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.talents,
 			...passivePowers,
 			...this.passiveItems(),
-			...this.getSocialFocii(),
+			...this.getAllSocialFocii(),
 			...this.roomModifiers(),
 			...PersonaDB.getGlobalModifiers(),
 		].filter( x => x.getEffects().length > 0);
@@ -979,55 +982,25 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	get socialFocii() : Focus[] {
-		switch (this.system.type) {
-			case "pc":
-				return this.getSocialFocii();
-			case "tarot":
-			case "shadow":
-			case "npc" : return[];
-			default:
-				this.system satisfies never;
-				return [];
+	getSocialFocii(this: NPC, linkHolder: SocialLink) : Focus[] {
+		const sortFn = function (a: Focus, b: Focus) {
+			return a.requiredLinkLevel() - b.requiredLinkLevel();
+		};
+		const tarot = this.tarot ?? linkHolder.tarot;
+		if (!tarot) {
+			console.log(`No tarot found for ${this.name}`);
+			return this.focii.sort( sortFn);
 		}
+		return this.focii.concat(tarot.focii).sort(sortFn);
 	}
 
-	getSocialFocii() : Focus[] {
+	getAllSocialFocii() : Focus[] {
 		if (this.system.type != "pc")  {
 			return [];
 		}
 		return this.socialLinks.flatMap( link => {
-			let focusContainer : NPC;
-			switch (link.actor.system.type) {
-				case "pc": {
-					if (this == link.actor) {
-						const focus = PersonaDB.getActorByName("Personal Social Link") as NPC;
-						if (!focus) {
-							ui.notifications.warn("Couldn't find personal social link");
-							return [];
-						}
-
-						focusContainer = focus;
-						break;
-					}
-					const focus = PersonaDB.getActorByName("Teammate Social Link") as NPC;
-					if (!focus) {
-						ui.notifications.warn("Couldn't find teammate social link");
-						return [];
-					}
-					focusContainer = focus;
-					break;
-				}
-				case "npc": {
-					focusContainer = link.actor as NPC;
-					break;
-				}
-				default:
-					throw new Error("Not sure how this happened?");
-			}
-			return focusContainer.items
-				.filter(x => x.system.type == "focus")
-		}) as Focus[];
+			return link.focii;
+		});
 	}
 
 	getSourcedEffects(): {source: ModifierContainer, effects: ConditionalEffect[]} []{
@@ -1178,11 +1151,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		});
 	}
 
-	meetsSLRequirement(this: PC, benefit: SocialBenefit) : boolean {
-		return this.socialLinks.some( x=> {
-			return x.actor.socialBenefits.some( ben => {
-				return	ben.focus == benefit.focus && x.linkLevel >= ben.lvl_requirement;
-			});
+	meetsSLRequirement (this: PC, focus: Focus) {
+		return this.socialLinks.some( link=> {
+			return	link.focii.includes(focus) && link.linkLevel >= focus.requiredLinkLevel();
 		});
 	}
 
@@ -1293,11 +1264,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return undefined;
 			case "npc":
 				const NPC = this as NPC;
+				if (NPC == PersonaDB.personalSocialLink()
+					|| NPC == PersonaDB.teammateSocialLink()
+				) {
+					return undefined;
+				}
 				return PersonaDB.tarotCards().find(x=> x.name == NPC.system.tarot);
 			case "tarot":
 				return this as Tarot;
 			default:
 				this.system satisfies never;
+				return undefined;
 		}
 
 	}
@@ -1439,6 +1416,7 @@ export type SocialLinkData = {
 	actor: SocialLink,
 	inspiration: number,
 	linkBenefits: SocialLink,
+	focii: Focus[],
 	currentProgress:number,
 	relationshipType: string,
 	availability: NPC["system"]["availability"],

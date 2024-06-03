@@ -1,3 +1,4 @@
+import { Focus } from "./item/persona-item.js";
 import { TargettedBComparisonPC } from "../config/precondition-types.js";
 import { BooleanComparisonPC } from "../config/precondition-types.js";
 import { Triggered } from "../config/precondition-types.js";
@@ -26,14 +27,14 @@ import { PersonaCombat } from "./combat/persona-combat.js";
 import { ConditionalEffect } from "./datamodel/power-dm.js";
 import { Consequence } from "./combat/combat-result.js";
 
-export function getActiveConsequences(condEffect: ConditionalEffect, situation: Situation, source: Option<PowerContainer>) : Consequence[] {
+export function getActiveConsequences(condEffect: ConditionalEffect, situation: Situation, source: PowerContainer) : Consequence[] {
 	if (condEffect.conditions.some(
 		cond=>!testPrecondition(cond, situation, source)
 	)) return [];
 	return condEffect.consequences;
 }
 
-export function testPrecondition (condition: Precondition, situation:Situation, source: Option<PowerContainer>) : boolean {
+export function testPrecondition (condition: Precondition, situation:Situation, source: PowerContainer) : boolean {
 	// const nat = situation.naturalAttackRoll;
 	// const user = PersonaDB.findActor(situation.user);
 	switch (condition.type) {
@@ -101,12 +102,13 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (!situation.user) return false;
 			const actor = PersonaDB.findActor(situation.user);
 			if (!actor  || actor.system.type =="shadow") return false;
-			const benefits = actor.socialLinks.flatMap(
-				link => link.linkBenefits.socialBenefits
-			);
-			const benefit = benefits.find(x=> x.focus == source);
-			if (!benefit) return false;
-			target = benefit.lvl_requirement;
+			if (!source || source.system.type != "focus") return false;
+			const link = actor.socialLinks.find(link=>
+				link.focii.includes(source as Focus));
+			if (!link) return false;
+			target = link.linkLevel;
+			// if (!benefit) return false;
+			// target = benefit.lvl_requirement;
 			break;
 		}
 		case "student-skill":
