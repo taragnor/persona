@@ -122,9 +122,20 @@ const power = PersonaDB.getBasicPower(powerName);
 			case "magic":
 				const slotName = PersonaItem.getSlotName(this.system.slot);
 				return `${slotName} slot`;
+			case "social-link":
+				if (this.system.inspirationCost > 0) {
+					return `${this.system.inspirationCost} Inspiration`;
+				}
+
+			case "other":
+			case "passive":
+			case "none":
+			case "standalone":
+				break;
 			default:
-				return "free";
+				this.system.subtype satisfies never;
 		}
+		return "free";
 	}
 
 	powerCostString_Shadow(this: Power) : string {
