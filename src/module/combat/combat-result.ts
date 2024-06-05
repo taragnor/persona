@@ -463,6 +463,11 @@ export class CombatResult  {
 			await actor.modifyHP(change.hpchange * change.hpchangemult);
 		}
 		for (const status of change.addStatus) {
+			if (status.id == "curse" || status.id == "expel") {
+				if (!token || Math.abs(change.hpchange) < (token.actor.mhp * 0.2)) {
+					continue;
+				}
+			}
 			if (await actor.addStatus(status) && token) {
 				Hooks.call("onAddStatus", token, status);
 				await PersonaSFX.onStatus(token, status.id);

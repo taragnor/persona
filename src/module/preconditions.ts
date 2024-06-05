@@ -35,8 +35,6 @@ export function getActiveConsequences(condEffect: ConditionalEffect, situation: 
 }
 
 export function testPrecondition (condition: Precondition, situation:Situation, source: PowerContainer) : boolean {
-	// const nat = situation.naturalAttackRoll;
-	// const user = PersonaDB.findActor(situation.user);
 	switch (condition.type) {
 		case "always":
 			return true;
@@ -361,7 +359,7 @@ function booleanComparison(condition: Precondition, situation: Situation, source
 
 function getSubject<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K) : PToken | PC| Shadow | undefined {
 	if (!(field in cond)) {
-		PersonaError.softFail(`No conditon target in ${source?.name}`)
+		PersonaError.softFail(`No conditon target in ${source?.name} of ${source?.parent?.name}`)
 		return undefined;
 	}
 	const condTarget = cond[field];

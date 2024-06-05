@@ -1,3 +1,6 @@
+import { PersonaCombat } from "./persona-combat.js";
+import { PersonaActor } from "../actor/persona-actor.js";
+import { PersonaAE } from "../active-effect.js";
 import { StatusEffectId } from "../../config/status-effects.js";
 import { DamageType } from "../../config/damage-types.js";
 import { PToken } from "./persona-combat.js";
@@ -44,6 +47,261 @@ export class PersonaSFX {
 		}
 	}
 
+	static async onAddStatus(statusId: StatusEffectId, actor: PersonaActor) {
+		let token;
+		if (game.combat && game.combat.active) {
+			token = (game.combat as PersonaCombat).combatants.find( x=> x.actor == actor)?.token;
+			if (!token) return;
+			try {
+				this.addTMFilters(statusId, token);
+			} catch (e)  {
+				console.error(e);
+			}
+		}
+	}
+
+	static async addTMFilters(statusId: StatusEffectId, token: TokenDocument<any>) {
+		//@ts-ignore
+		if (!TokenMagic) return;
+		let params;
+		switch (statusId) {
+			case "burn":
+				params =
+					[{
+						filterType: "fire",
+						filterId: "myFire",
+						intensity: 1,
+						color: 0xFFFFFF,
+						amplitude: 1,
+						time: 0,
+						blend: 2,
+						fireBlend : 1,
+						animated :
+						{
+							time :
+							{
+								active: true,
+								speed: -0.0024,
+								animType: "move"
+							},
+							intensity:
+							{
+								active:true,
+								loopDuration: 15000,
+								val1: 0.8,
+								val2: 2,
+								animType: "syncCosOscillation"
+							},
+							amplitude:
+							{
+								active:true,
+								loopDuration: 4400,
+								val1: 1,
+								val2: 1.4,
+								animType: "syncCosOscillation"
+							}
+						}
+					}];
+				break;
+			case "frozen":
+				params =
+					[{
+						filterType: "zapshadow",
+						filterId: "myPureIceZapShadow",
+						alphaTolerance: 0.50
+					},
+						{
+							filterType: "xglow",
+							filterId: "myPureIceAura",
+							auraType: 1,
+							color: 0x5099DD,
+							thickness: 4.5,
+							scale: 10,
+							time: 0,
+							auraIntensity: 0.25,
+							subAuraIntensity: 1,
+							threshold: 0.5,
+							discard: false,
+							animated:
+							{
+								time:
+								{
+									active: true,
+									speed: 0.0018,
+									animType: "move"
+								},
+								thickness:
+								{
+									val1: 2, val2: 2.5,
+									animType: "cosOscillation",
+									loopDuration: 3000
+								},
+								subAuraIntensity:
+								{
+									val1: 0.45, val2: 0.65,
+									animType: "cosOscillation",
+									loopDuration: 6000
+								},
+								auraIntensity:
+								{
+									val1: 0.9, val2: 2.2,
+									animType: "cosOscillation",
+									loopDuration: 3000
+								}
+							}
+						},
+						{
+							filterType: "smoke",
+							filterId: "myPureIceSmoke",
+							color: 0x80CCFF,
+							time: 0,
+							blend: 2,
+							dimX: 0.3,
+							dimY: 1,
+							animated:
+							{
+								time:
+								{
+									active: true,
+									speed: -0.006,
+									animType: "move"
+								},
+								dimX:
+								{
+									val1: 0.4, val2: 0.2,
+									animType: "cosOscillation",
+									loopDuration: 3000
+								}
+							}
+						}];
+				break;
+			case "curse":
+				params =
+					[{
+						filterType: "xfire",
+						filterId: "myBlackXFire",
+						time: 0,
+						color: 0x707070,
+						blend: 11,
+						amplitude: 1,
+						dispersion: 2.2,
+						chromatic: false,
+						scaleX: 2.5,
+						scaleY: 2,
+						inlay: false,
+						animated :
+						{
+							time :
+							{
+								active: true,
+								speed: -0.0015,
+								animType: "move"
+							}
+						}
+					}];
+				break;
+			case "shock":
+				params =
+					[{
+						filterType: "electric",
+						filterId: "myElectric",
+						color: 0xFFFFFF,
+						time: 0,
+						blend: 1,
+						intensity: 5,
+						animated :
+						{
+							time :
+							{
+								active: true,
+								speed: 0.0020,
+								animType: "move"
+							}
+						}
+					}];
+				break;
+			case "expel":
+				params =
+					[{
+						filterType: "xray",
+						filterId: "mySunburstRays",
+						time: 0,
+						color: 0xFFBB00,
+						blend: 9,
+						dimX: 1,
+						dimY: 1,
+						anchorX: 0,
+						anchorY: 0,
+						divisor: 36,
+						intensity: 4,
+						animated :
+						{
+							time :
+							{
+								active: true,
+								speed: 0.0012,
+								animType: "move"
+							},
+							anchorX:
+							{
+								animType: "syncCosOscillation",
+								loopDuration : 6000,
+								val1: 0.40,
+								val2: 0.60
+							}
+						}
+					}];
+				break;
+			default:
+				return;
+		}
+
+		//@ts-ignore
+		await TokenMagic.addUpdateFilters(token.object, params);
+	}
+
+	static async onRemoveStatus(statusId: StatusEffectId, actor: PersonaActor) {
+		let token;
+		if (game.combat && game.combat.active) {
+			token = (game.combat as PersonaCombat).combatants.find( x=> x.actor == actor)?.token;
+			if (!token) return;
+			try {
+				this.removeTMFilters(statusId, token);
+			} catch (e)  {
+				console.error(e);
+			}
+		}
+
+	}
+
+	static removeTMFilters(statusId: StatusEffectId, token: TokenDocument<any>) {
+		let filters : string[] = [];
+		switch (statusId) {
+			case "burn":
+				filters= ["myFire"];
+				break;
+			case "frozen":
+				filters=  ["myPureIceZapShadow", "myPureIceSmoke", "myPureIceAura"];
+				break;
+			case "curse":
+				filters=  ["myBlackXFire"];
+				break;
+			case "shock":
+				filters = ["myElectric"];
+				break;
+			case "expel":
+				filters=  ["mySunburstRays"];
+				break;
+			default:
+				return;
+		}
+		for (const filterId of filters) {
+			//@ts-ignore
+			TokenMagic?.deleteFilters(token.object, filterId);
+		}
+
+	}
+
 	static async play(snd: Parameters<typeof PersonaSounds["playBattleSound"]>[0], volume = 1.0) {
 		try {
 			const sound= await PersonaSounds.playBattleSound(snd, volume);
@@ -56,3 +314,21 @@ export class PersonaSFX {
 	}
 
 }
+
+Hooks.on("createActiveEffect",(eff: PersonaAE) => {
+	console.log(`Create Active effect ${eff.name}`);
+	eff.statuses.forEach( statusId => {
+		if (eff.parent instanceof PersonaActor)  {
+			PersonaSFX.onAddStatus(statusId, eff.parent);
+		}
+	});
+});
+
+Hooks.on("deleteActiveEffect", (eff: PersonaAE) => {
+	eff.statuses.forEach( statusId => {
+		if (eff.parent instanceof PersonaActor)  {
+			PersonaSFX.onRemoveStatus(statusId, eff.parent);
+		}
+	});
+});
+
