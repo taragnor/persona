@@ -57,11 +57,11 @@ function itemBase() {
 	}
 }
 
- class Power extends foundry.abstract.DataModel {
+class Power extends foundry.abstract.DataModel {
 	get type() {return "power" as const;}
 	static override defineSchema() {
 		const ret = {
-				...powerSpecific(),
+			...powerSpecific(),
 			...powerCost(),
 			...UsablePowerProps(),
 			...effects(true),

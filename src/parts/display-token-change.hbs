@@ -40,6 +40,12 @@
 		{{#if (eq effect.type "recover-slot")}}
 		Recover Slot ({{effect.slot}}), (apply manually)
 		{{/if}}
+		{{#if (eq effect.type "Inspiration")}}
+		Inspiration Paid: {{effect.amount}}
+		{{/if}}
+		{{#if (eq effect.type "display-message")}}
+		{{effect.msg}}
+		{{/if}}
 	</span>
 	{{/each}}
 </div>

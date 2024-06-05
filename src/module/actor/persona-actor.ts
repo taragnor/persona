@@ -837,12 +837,23 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 							else x += 1;
 						}
 						return false;
+					case "social-link":
+						const inspirationId = usable.system.inspirationId;
+						if (inspirationId) {
+							const socialLink = this.system.social.find( x=> x.linkId == inspirationId);
+							if (!socialLink) return false;
+							return socialLink.inspiration >= usable.system.inspirationCost;
+						} else {
+							const inspiration = this.system.social.reduce( (acc, item) => acc + item.inspiration , 0)
+							return inspiration >= usable.system.inspirationCost;
+						}
+
 					default:
 						return true;
 				}
 			}
 			case "consumable":
-				return true; //may have some check later
+				return usable.system.amount > 0;
 		}
 	}
 
@@ -969,8 +980,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 
-	async spendInspiration(this: PC, npc:SocialLink, amt: number = 1) {
-		const link = this.system.social.find( x=> x.linkId == npc.id);
+	async spendInspiration(this: PC, linkId:string, amt?: number) : Promise<void> ;
+	async spendInspiration(this: PC, socialLink:SocialLink , amt?: number): Promise<void> ;
+
+	async spendInspiration(this: PC, socialLinkOrId:SocialLink | string, amt: number = 1): Promise<void> {
+		const id = typeof socialLinkOrId == "string" ? socialLinkOrId : socialLinkOrId.id;
+		const link = this.system.social.find( x=> x.linkId == id);
 		if (!link) {
 			throw new PersonaError("Trying to refresh social link you don't have");
 		}
@@ -988,7 +1003,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		};
 		const tarot = this.tarot ?? linkHolder.tarot;
 		if (!tarot) {
-			console.log(`No tarot found for ${this.name}`);
+			console.log(`No tarot found for ${this.name} or ${linkHolder.name}`);
 			return this.focii.sort( sortFn);
 		}
 		return this.focii.concat(tarot.focii).sort(sortFn);

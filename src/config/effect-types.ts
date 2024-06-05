@@ -25,6 +25,8 @@ export const CONSQUENCELIST = [
 	"set-flag",
 	"raise-resistance",
 	"lower-resistance",
+	"inspiration-cost",
+	"display-msg",
 ] as const;
 
 
@@ -42,6 +44,7 @@ CONSQUENCELIST.map( x=> [x, `persona.effecttypes.${x}`])
 export const POWERTYPESLIST = [
 	"weapon",
 	"magic",
+	"social-link",
 	"other",
 	"passive",
 	"none",

@@ -71,6 +71,19 @@
 		{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=900}}
 	</div>
 	{{/if}}
+	{{#if (eq item.system.subtype "social-link")}}
+	<label>
+	Social Link
+	</label>
+	<select name="system.inspirationId">
+			{{selectOptions POWERSTUFF.SOCIAL_LINKS localize=false selected=item.system.inspirationId}}
+	</select>
+	<label>
+		Inspiration Amt
+	</label>
+		{{numberInput item.system.inspirationCost class="short" name="system.inspirationCost" step=1 min=0 max=10}}
+
+	{{/if}}
 
 	{{#if (eq item.parent.type "shadow")}}
 	<hr>

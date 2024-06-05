@@ -672,6 +672,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case "add-power-to-list":
 				case "raise-resistance":
 				case "lower-resistance":
+				case "inspiration-cost":
+				case "display-msg":
 					consequences.push({applyToSelf,cons});
 					break;
 				default:
@@ -719,6 +721,15 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	{
 		const res = new CombatResult();
 		if (power.system.type == "power") {
+			if (power.system.subtype == "social-link") {
+				if (power.system.inspirationId) {
+					res.addEffect(null, attacker.actor, {
+						type:"inspiration-cost",
+						amount: power.system.inspirationCost,
+						id: power.system.inspirationId
+					});
+				}
+			}
 			if (attacker.actor.system.type == "pc" && power.system.hpcost) {
 				const hpcostmod = costModifiers.find(x=> x.type== "half-hp-cost") ? 0.5 : 1;
 				res.addEffect(null, attacker.actor, {

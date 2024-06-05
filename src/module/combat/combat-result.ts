@@ -197,6 +197,20 @@ export class CombatResult  {
 					duration: cons.statusDuration ?? "permanent",
 				});
 				break;
+			case "inspiration-cost":
+				effect.otherEffects.push( {
+					type: "Inspiration",
+					amount: cons.amount ?? 1,
+					linkId: cons.id ?? "",
+				});
+				break;
+			case "display-msg":
+				effect.otherEffects.push( {
+					type: "display-message",
+					msg: cons.msg ?? "",
+				});
+				break;
+
 			default: {
 				cons.type satisfies never;
 				throw new Error("Should be unreachable");
@@ -435,6 +449,8 @@ export class CombatResult  {
 					break;
 				case "raise-resistance":
 				case "lower-resistance":
+				case "display-message":
+				case "Inspiration":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -499,6 +515,12 @@ export class CombatResult  {
 					break;
 				case "lower-resistance":
 				case "raise-resistance":
+				case "display-message":
+					break;
+				case "Inspiration":
+					if (actor.system.type == "pc") {
+						await (actor as PC).spendInspiration(otherEffect.linkId, otherEffect.amount)
+					}
 					break;
 				default:
 					otherEffect satisfies never;
@@ -567,13 +589,25 @@ export type ResistanceShiftEffect= {
 	duration: StatusDuration,
 }
 
-export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect;
+export type InspirationChange = {
+	type: "Inspiration",
+	linkId: string,
+	amount: number,
+}
+
+export type DisplayMessage = {
+	type : "display-message",
+	msg: string,
+}
+
+export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage;
 
 export type StatusEffect = {
 	id: StatusEffectId,
 	potency ?: number,
 	duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
 };
+
 
 
 
@@ -593,6 +627,7 @@ export type Consequence = {
 	flagState?: boolean,
 	resistType?: ResistType,
 	resistanceLevel?: ResistStrength,
+	msg?: string,
 }
 
 export type AttackResult = {

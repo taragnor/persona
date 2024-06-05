@@ -32,7 +32,12 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			await this.item.sanitizeEffectsData();//required becuase foundry input hates arrays;
 		}
 		const data = await super.getData();
+		const SOCIAL_LINKS = Object.fromEntries(
+			PersonaDB.socialLinks().map(actor => [actor.id, actor.name])
+		);
+		SOCIAL_LINKS[""] = "-";
 		data.POWERSTUFF = {
+			SOCIAL_LINKS,
 			TAROT_DECK,
 			NUMERIC_COMPARISON_TARGET,
 			BOOLEAN_COMPARISON_TARGET,

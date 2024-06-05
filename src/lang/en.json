@@ -193,6 +193,7 @@
 	"persona.power.types.passive": "Passive",
 	"persona.power.types.none": "None",
 	"persona.power.types.standalone": "Standalone",
+	"persona.power.types.social-link": "Social Link Based",
 
 	"persona.power.targets.1-engaged": "1 Engaged Target",
 	"persona.power.targets.1-nearby-dead": "1 Nearby dying Target",
@@ -274,6 +275,8 @@
 	"persona.effecttypes.set-flag": "Set Flag",
 	"persona.effecttypes.raise-resistance": "Raise Damage Resistance",
 	"persona.effecttypes.lower-resistance": "Lower Damage Resistance",
+	"persona.effecttypes.inspiration-cost": "Pay Inspiration",
+	"persona.effecttypes.display-msg": "Print Message",
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",
