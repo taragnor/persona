@@ -1,6 +1,6 @@
 
 export class HTMLTools {
-	static getClosestData ( eventOrJQObj: Event | JQuery<HTMLElement> | JQuery.Event, prop: string) {
+	static getClosestData <ReturnType extends string | number = string> ( eventOrJQObj: Event | JQuery<HTMLElement> | JQuery.Event, prop: string) : ReturnType {
 		const target = ("currentTarget" in eventOrJQObj) ? (eventOrJQObj as Event).currentTarget : eventOrJQObj;
 		if (!target) throw new Error("No target for event");
 		const convert = function (str: string) {

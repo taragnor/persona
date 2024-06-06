@@ -1,3 +1,4 @@
+import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
 import { PersonaSockets } from "../persona.js";
 import { SocialLinkData } from "../actor/persona-actor.js";
 import { TarotCard } from "../../config/tarot.js";
@@ -61,36 +62,45 @@ export class PersonaSocial {
 			ui.notifications.notify("Can't make a roll against yourself");
 			return;
 		}
-		const priOrSec : "primary" | "secondary" = await this.getPrimarySecondary();
-		const socialStat = link.actor.getSocialStatToRaiseLink(priOrSec);
+		const statChoice : "primary" | "secondary" | SocialStat = await this.getPrimarySecondary();
+		let socialStat: SocialStat;
+		switch (statChoice) {
+			case "primary":
+			case "secondary":
+				socialStat = link.actor.getSocialStatToRaiseLink(statChoice);
+				break;
+			default:
+				socialStat = statChoice;
+				break;
+		}
 		const situation: Situation  = {
 			user: actor.accessor,
 			usedSkill: socialStat,
 			socialTarget: link.actor.accessor,
 		};
 		const progressTokens = link.currentProgress;
-		const mods = new ModifierList();
+		let mods = new ModifierList();
 		const DC = 10 + 3 * link.linkLevel;
 		mods.add("Progress Tokens", 3 * progressTokens)
+		const availabilityMod = this.getAvailModifier(link.actor.system.availability);
+		mods = mods.concat(availabilityMod);
 		const rollName= `${link.actor.name} --> Social Roll (${socialStat}) vs DC ${DC}`;
 		const roll =await this.rollSocialStat(actor, socialStat, mods, rollName, situation);
 		await roll.toModifiedMessage();
 		situation.hit = roll.total >= DC ;
 		situation.criticalHit = roll.total >= DC + 10;
+		await this.degradeActivity(link.actor);
 	}
 
-	static async getPrimarySecondary() :Promise<"primary" | "secondary"> {
-		const html = `<div><u> Primary or Secondary</u></div>
-		<div>
-		<input name="PorS" type='radio' value='primary'>
-		<label>Primary</label>
-		</div>
-		<div>
-		<input name="PorS" type='radio' value='secondary'>
-		<label>Secondary</label>
-		</div>
 
-		`;
+	static async getPrimarySecondary(defaultChoice: "primary" | "secondary" | SocialStat = "primary") :Promise<"primary" | "secondary" | SocialStat> {
+		const skillList = foundry.utils.mergeObject(
+			{
+				"primary":		"persona.term.primary",
+				"secondary":"persona.term.secondary"
+			} ,
+			STUDENT_SKILLS);
+			const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/dialogs/social-skill-selector.hbs`, {skillList, defaultChoice} );
 		return await new Promise( (conf, reject) => {
 			const dialog = new Dialog({
 				title: `Prompt`,
@@ -103,7 +113,8 @@ export class PersonaSocial {
 						icon: `<i class="fas fa-check"></i>`,
 						label: "Confirm",
 						callback: (htm: string) => {
-							const value =$('input[name="PorS"]:checked').val() as "primary" | "secondary" | undefined;
+							// const value =$('select[name="PorS"]:checked').val() as "primary" | "secondary" | undefined;
+							const value = $(htm).find(".social-skill-choice").find(":selected").val() as "primary" | "secondary" | SocialStat | undefined;
 							if (value) {
 								conf(value);
 							} else {
@@ -265,7 +276,7 @@ export class PersonaSocial {
 		const isCameo = card.system.cameoType != "none";
 		const skill = STUDENT_SKILLS[link.actor.getSocialStatToRaiseLink(card.system.skill)];
 
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/social-card.hbs`, {item: card,card,  skill, cameos, perk, link: link, pc: actor, perkAvail, isCameo, DC} );
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/social-card.hbs`, {item: card,card,  skill, cameos, perk, link: link, pc: actor, perkAvail, isCameo, DC, user: game.user} );
 
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
@@ -335,12 +346,9 @@ export class PersonaSocial {
 
 	static async chooseActivity(actor: PC, activity: SocialLink | Job, options: ActivityOptions = {}) {
 		if (activity instanceof PersonaItem) {
-			await this.#doJob(actor, activity);
+			await this.#doJob(actor, activity, options);
 		} else {
 			await this.#socialEncounter(actor, activity);
-		}
-		if (!options.noDegrade) {
-			await this.degradeActivity(activity);
 		}
 	}
 
@@ -380,7 +388,7 @@ export class PersonaSocial {
 	}
 
 
-	static async #doJob(actor: PC,  activity :Job) {
+	static async #doJob(actor: PC,  activity :Job, options: ActivityOptions) {
 		const roll = new Roll("1d6");
 		await roll.roll();
 		const stat =  (roll.total > 2) ? "primary": "secondary";
@@ -432,12 +440,16 @@ export class PersonaSocial {
 
 		}
 		const speaker = ChatMessage.getSpeaker();
+		if (!options.noDegrade) {
+			await this.degradeActivity(activity);
+		}
 		return await ChatMessage.create( {
 			speaker,
 			content: html,
 			type: CONST.CHAT_MESSAGE_TYPES.ROLL,
 			rolls: [roll, socialRoll.roll]
 		}, {});
+
 
 	}
 
@@ -503,6 +515,28 @@ export class PersonaSocial {
 		await this.execTrigger("on-attain-tarot-perk", target, situation, `Gains Perk (${socialLink.tarot?.name})`) ;
 	}
 
+	static async execSocialCard(event: JQuery.ClickEvent) {
+		console.log("Exec social card");
+		const linkActorId = HTMLTools.getClosestData(event, "linkActorId");
+		const userId = HTMLTools.getClosestData(event, "userId");
+		const PCId = HTMLTools.getClosestData(event, "pcId");
+		if (userId != game.user.id) {
+			ui.notifications.notify(`Can't execute, user Id's not match`);
+			return;
+		}
+		const pc = game.actors.get(PCId);
+		if (!pc || pc.system.type != "pc") {
+			ui.notifications.notify(`Can't find PC id ${PCId}`);
+			return;
+		}
+		await this.makeUpgradeLinkRoll(pc as PC, linkActorId)
+		const socialLink = game.actors.get(linkActorId);
+		if (!socialLink) {
+			ui.notifications.notify(`Can't find SL id ${linkActorId}`);
+			return;
+		}
+	}
+
 } //end of class
 
 type ActivityOptions = {
@@ -551,6 +585,12 @@ Hooks.on("updateItem", async (_item: PersonaItem, changes) => {
 			.filter(x=> x.system.type =="pc"
 			&& x.sheet._state > 0)
 		.forEach(x=> x.sheet.render(true));
+	}
+});
+
+Hooks.on("renderChatMessage", async (message: ChatMessage, html: JQuery ) => {
+	if ((message?.author ?? message?.user) == game.user) {
+		html.find("button.social-roll").on ("click", PersonaSocial.execSocialCard.bind(PersonaSocial));
 	}
 });
 

@@ -242,7 +242,7 @@ export class PCSheet extends CombatantSheetBase {
 		const link = PersonaSocial.lookupLinkId(this.actor, linkId);
 		if (link &&
 			await HTMLTools.confirmBox("Social Card", "Draw Social Card?")) {
-			await PersonaSocial.chooseActivity(this.actor, link.actor)
+			await PersonaSocial.chooseActivity(this.actor, link.actor, {noDegrade:true})
 		}
 	}
 
