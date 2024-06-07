@@ -9,7 +9,9 @@ declare global {
 	interface CONFIG {
 		PERSONACFG: unknown
 	}
+
 }
+
 
 import { DebugTools } from "./utility/debug.js";
 import { ErrorScanner } from "./deprecated_scan.js";

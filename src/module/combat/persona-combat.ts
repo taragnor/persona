@@ -339,9 +339,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			this.computeResultBasedEffects(result);
 			await result.finalize();
 			await attacker.actor.removeStatus("bonus-action");
-			// await result.print();
 			await result.toMessage(power.name, attacker.actor);
-			// await result.apply();
 			return result;
 		} catch(e) {
 			console.log(e);
@@ -531,12 +529,19 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		switch (result) {
 			case "reflect":
 				CombatRes.merge(await this.#usePowerOn(attacker, power, [attacker]));
-				break;
+				return CombatRes;
 			case "block":
 				const blockRes = new CombatResult(atkResult);
 				CombatRes.merge(blockRes);
+				return CombatRes;
+			case "hit":
+			case "miss":
+			case "crit":
+			case "absorb":
 				break;
-
+			default:
+				result satisfies never;
+				PersonaError.softFail(`Unknown hit result ${result}`);
 		}
 		CombatRes.merge(await this.processPowerEffectsOnTarget(atkResult));
 
@@ -638,7 +643,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case "none":
 					break;
 				case "addStatus": case "removeStatus":
-					if (absorb || block) continue;
+					if (!applyToSelf && (absorb || block)) continue;
 					consequences.push({applyToSelf,cons});
 					break;
 				case "dmg-mult":

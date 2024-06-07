@@ -132,10 +132,11 @@ export class CombatResult  {
 				this.escalationMod += Number(cons.amount ?? 0);
 				break;
 			}
-			case "hp-loss": {
-				effect.hpchange -= Math.floor(cons.amount ?? 0);
-				break;
-			}
+			// case "hp-loss": {
+			// 	this is applying the damage modifier so I have to change this
+			// 	 effect.hpchange -= Math.floor(cons.amount ?? 0);
+			// 	break;
+			// }
 
 			case "extraAttack":
 				break;
@@ -159,6 +160,9 @@ export class CombatResult  {
 				break;
 			case "save-slot":
 				effect.otherEffects.push({ type: "save-slot"});
+				break;
+			case "hp-loss":
+				effect.otherEffects.push({ type: "hp-loss", amount: Math.floor(cons.amount ?? 0)});
 				break;
 			case "half-hp-cost":
 				effect.otherEffects.push({type: "half-hp-cost"});
@@ -451,6 +455,7 @@ export class CombatResult  {
 				case "lower-resistance":
 				case "display-message":
 				case "Inspiration":
+				case "hp-loss":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -521,6 +526,9 @@ export class CombatResult  {
 					if (actor.system.type == "pc") {
 						await (actor as PC).spendInspiration(otherEffect.linkId, otherEffect.amount)
 					}
+					break;
+				case "hp-loss":
+					await actor.modifyHP(-otherEffect.amount);
 					break;
 				default:
 					otherEffect satisfies never;
@@ -600,7 +608,12 @@ export type DisplayMessage = {
 	msg: string,
 }
 
-export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage;
+export type HPLossEffect = {
+	type: "hp-loss",
+	amount: number,
+}
+
+export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect;
 
 export type StatusEffect = {
 	id: StatusEffectId,
