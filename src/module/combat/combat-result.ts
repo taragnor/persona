@@ -565,7 +565,7 @@ export class CombatResult  {
 		return {
 			actor: initial.actor,
 			hpchange: absMax(initial.hpchange, other.hpchange),
-			damageType : initial.damageType == "untyped" ? other.damageType : initial.damageType,
+			damageType : initial.damageType == "untyped" || initial.damageType == "none" ? other.damageType : initial.damageType,
 			hpchangemult: initial.hpchangemult * other.hpchangemult,
 			addStatus : initial.addStatus.concat(other.addStatus),
 			removeStatus : initial.removeStatus.concat(other.removeStatus),

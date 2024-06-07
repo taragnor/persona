@@ -584,7 +584,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const attacker = PersonaDB.findToken(atkResult.attacker);
 		const target = PersonaDB.findToken(atkResult.target);
 		const sourcedEffects = [power.getSourcedEffects()].concat(attacker.actor.getSourcedEffects());
-		const CombatRes= new CombatResult(atkResult);
+		const CombatRes = new CombatResult(atkResult);
 		for (const {source, effects} of sourcedEffects){
 			for (let effect of effects) {
 				const {conditions, consequences}  = effect;
