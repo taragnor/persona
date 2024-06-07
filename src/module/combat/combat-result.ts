@@ -62,6 +62,16 @@ export class CombatResult  {
 		return json;
 	}
 
+	findEffect<T extends OtherEffect["type"]>(effectType: T): (OtherEffect & {type:T}) | undefined {
+		for (const v of this.attacks.values()) {
+			for (const eff of v.flatMap(chg => chg.otherEffects) ) {
+				if (eff.type == effectType)
+					return eff as OtherEffect & {type:T};
+			}
+		}
+		return undefined;
+	}
+
 	static fromJSON(json: string) : CombatResult {
 		const x = JSON.parse(json);
 		const ret = new CombatResult();
@@ -139,6 +149,11 @@ export class CombatResult  {
 			// }
 
 			case "extraAttack":
+				effect.otherEffects.push({
+					type: "extra-attack",
+					maxChain: cons.amount ?? 1,
+					iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
+				});
 				break;
 
 			case "expend-slot": {
@@ -456,6 +471,7 @@ export class CombatResult  {
 				case "display-message":
 				case "Inspiration":
 				case "hp-loss":
+				case "extra-attack":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -529,6 +545,8 @@ export class CombatResult  {
 					break;
 				case "hp-loss":
 					await actor.modifyHP(-otherEffect.amount);
+					break;
+				case "extra-attack":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -613,7 +631,13 @@ export type HPLossEffect = {
 	amount: number,
 }
 
-export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect;
+export type ExtraAttackEffect = {
+	type : "extra-attack",
+	maxChain: number,
+	iterativePenalty: number,
+}
+
+export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect;
 
 export type StatusEffect = {
 	id: StatusEffectId,
@@ -627,6 +651,7 @@ export type StatusEffect = {
 export type Consequence = {
 	type: typeof CONSQUENCELIST[number],
 	amount?: number,
+	iterativePenalty?: number,
 	modifiedField?: ModifierTarget,
 	statusName?: StatusEffectId,
 	statusDuration?: StatusDuration,

@@ -47,6 +47,8 @@ declare global {
 }
 
 
+type AttackRollType = "activation" | "standard" | "reflect" | number; //number is used for bonus attacks
+
 export class PersonaCombat extends Combat<PersonaActor> {
 
 	// engagedList: Combatant<PersonaActor>[][] = [];
@@ -309,24 +311,29 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return this._engagedList;
 	}
 
-	static async usePower(attacker: PToken, power: Usable) : Promise<CombatResult> {
+	static async checkPowerPreqs(attacker: PToken, power: Usable) : Promise<boolean> {
 		const combat = game.combat as PersonaCombat;
 		if (combat && !combat.turnCheck(attacker)) {
 			if (!game.user.isGM) {
 				if (!await HTMLTools.confirmBox("Out of turn Action", "It's not your turn, act anyway?")) {
-					return new CombatResult();
+					return false;
 				}
-				// ui.notifications.notify("It's not your turn!");
-				// return new CombatResult();
 			}
 			else {
 				if (!await HTMLTools.confirmBox("Out of turn Action", "It's not your turn, act anyway?")) {
-					return new CombatResult();
+					return false;
 				}
 			}
 		}
 		if (!attacker.actor.canPayActivationCost(power)) {
 			ui.notifications.notify("You can't pay the activation cost for this power");
+			return false;
+		}
+		return true;
+	}
+
+	static async usePower(attacker: PToken, power: Usable) : Promise<CombatResult> {
+		if (!await this.checkPowerPreqs(attacker, power)) {
 			return new CombatResult();
 		}
 		try {
@@ -335,8 +342,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				this.ensureCombatExists();
 			}
 			this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
-			const result = await  this.#usePowerOn(attacker, power, targets);
-			this.computeResultBasedEffects(result);
+			const result = new CombatResult();
+			if (power.name == BASIC_POWER_NAMES[2]) {
+				PersonaSFX.play("all-out");
+			}
+			result.merge(await  this.#usePowerOn(attacker, power, targets, "standard"));
+			const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
+			result.merge(costs);
+
 			await result.finalize();
 			await attacker.actor.removeStatus("bonus-action");
 			await result.toMessage(power.name, attacker.actor);
@@ -347,22 +360,34 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
-	static async #usePowerOn(attacker: PToken, power: Usable, targets: PToken[]) : Promise<CombatResult> {
+
+	static async #usePowerOn(attacker: PToken, power: Usable, targets: PToken[], rollType : AttackRollType, modifiers: ModifierList = new ModifierList()) : Promise<CombatResult> {
 		let i = 0;
 		const result = new CombatResult();
-		if (power.name == BASIC_POWER_NAMES[2]) {
-			PersonaSFX.play("all-out");
-		}
 		for (const target of targets) {
-			const atkResult = await this.processAttackRoll( attacker, power, target, i==0);
+			const atkResult = await this.processAttackRoll( attacker, power, target, modifiers, rollType == "standard" && i==0 ? "activation" : rollType);
 			const this_result = await this.processEffects(atkResult);
-			Hooks.callAll("onUsePower", power, attacker, target);
 			result.merge(this_result);
+			if (atkResult.result == "reflect") {
+				result.merge(await this.#usePowerOn(attacker, power, [attacker], "reflect"));
+			}
+			const extraAttack = this_result.findEffect("extra-attack");
+			if (extraAttack)
+			{
+				const bonusRollType = typeof rollType != "number" ? 0: rollType+1;
+				const mods = new ModifierList();
+				if (extraAttack.iterativePenalty) {
+					mods.add("Iterative Penalty", (bonusRollType + 1) * extraAttack.iterativePenalty);
+				}
+				if (bonusRollType < extraAttack.maxChain) {
+					const extra = await this.#usePowerOn(attacker, power, [target], bonusRollType, mods);
+					result.merge(extra);
+				}
+			}
+			Hooks.callAll("onUsePower", power, attacker, target);
 			i++;
 		}
 		this.computeResultBasedEffects(result);
-		const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
-		result.merge(costs);
 		return result;
 	}
 
@@ -371,7 +396,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return result;
 	}
 
-	static async processAttackRoll( attacker: PToken, power: Usable, target: PToken, isActivationRoll: boolean) : Promise<AttackResult> {
+	static async processAttackRoll( attacker: PToken, power: Usable, target: PToken, modifiers: ModifierList, rollType: AttackRollType) : Promise<AttackResult> {
 		const combat = game.combat as PersonaCombat | undefined;
 		const escalationDie = combat  ? combat.getEscalationDie(): 0;
 		const situation : Situation = {
@@ -380,12 +405,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
 			attacker: attacker.actor.accessor,
 			escalationDie,
-			activationRoll: isActivationRoll,
+			activationRoll: rollType == "activation",
 			activeCombat:combat ? !!combat.combatants.find( x=> x.actor?.type != attacker.actor.type): false ,
 		};
 		const element = power.system.dmg_type;
 		const resist = target.actor.elementalResist(element);
-		const attackbonus= this.getAttackBonus(attacker, power);
+		const attackbonus= this.getAttackBonus(attacker, power).concat(modifiers);
 		attackbonus.add("Custom modifier", this.customAtkBonus);
 		const r = await new Roll("1d20").roll();
 		const rollName =  `${target.document.name} (vs ${power.system.defense})`;
@@ -402,12 +427,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		switch (resist) {
 			case "reflect": {
 				return {
-					result: "reflect",
+					result: rollType != "reflect" ? "reflect": "block",
 					printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					critBoost: 0,
 					situation: {
+						hit: false,
+						criticalHit: false,
 						...situation,
 						naturalAttackRoll,
 					},
@@ -422,6 +449,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					validDefModifiers: [],
 					critBoost: 0,
 					situation: {
+						hit: false,
+						criticalHit: false,
 						...situation,
 						naturalAttackRoll,
 					},
@@ -522,13 +551,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	static async processEffects(atkResult: AttackResult) : Promise<CombatResult> {
-		const CombatRes= new CombatResult();
+		const CombatRes = new CombatResult();
 		const {result } = atkResult;
-		const attacker = PersonaDB.findToken(atkResult.attacker);
-		const power = PersonaDB.findItem(atkResult.power);
+		// const attacker = PersonaDB.findToken(atkResult.attacker);
+		// const power = PersonaDB.findItem(atkResult.power);
 		switch (result) {
 			case "reflect":
-				CombatRes.merge(await this.#usePowerOn(attacker, power, [attacker]));
+				const reflectRes = new CombatResult(atkResult);
+				CombatRes.merge(reflectRes);
 				return CombatRes;
 			case "block":
 				const blockRes = new CombatResult(atkResult);
@@ -561,7 +591,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				if (conditions.every(
 					cond => ModifierList.testPrecondition(cond, situation, source))
 				) {
-					// console.log(`Precondition Passed: ${source.name}`);
 					const x = this.ProcessConsequences(power, situation, consequences, attacker.actor, atkResult);
 					CombatRes.escalationMod += x.escalationMod;
 					for (const cons of x.consequences) {
@@ -637,9 +666,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					});
 					break;
 				}
-				case "extraAttack" :
-					//TODO: handle later
-					break;
 				case "none":
 					break;
 				case "addStatus": case "removeStatus":
@@ -663,6 +689,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 							}
 						});
 					break;
+				case "extraAttack" :
 				case "absorb":
 				case "expend-slot":
 				case "add-escalation":

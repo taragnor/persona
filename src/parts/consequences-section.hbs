@@ -14,18 +14,18 @@
 		</div>
 		<div class="type-select">
 			<select name="system.effects.{{../i}}.consequences.{{j}}.type">
-			{{selectOptions ../POWERSTUFF.CONSTYPES localize=true selected=cons.type}}
+				{{selectOptions ../POWERSTUFF.CONSTYPES localize=true selected=cons.type}}
 			</select>
 		</div>
 		{{#if (or (eq cons.type "addStatus") (eq cons.type "removeStatus"))}}
 		<select name="system.effects.{{../i}}.consequences.{{j}}.statusName">
-		{{selectOptions ../POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
+			{{selectOptions ../POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
 		</select>
 		{{/if}}
 		{{#if (eq cons.type "addStatus")}}
 		<input class="short" type=number name="system.effects.{{../i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
 		<select name="system.effects.{{../i}}.consequences.{{j}}.statusDuration">
-		{{selectOptions ../POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusDuration}}
+			{{selectOptions ../POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusDuration}}
 		</select>
 		{{/if}}
 		{{#if (eq cons.type "dmg-mult")}}
@@ -38,27 +38,38 @@
 		<input class="short" type=number name="system.effects.{{../i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
 		{{/if}}
 		{{#if (eq cons.type "extraAttack")}}
-		<input class="short" type=number name="system.effects.{{../i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
+		<div>
+			<label>
+				Max Chain
+			</label>
+			<input class="short" type=number name="system.effects.{{../i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
+		</div>
+		<div>
+			<label>
+				Iterative Penalty
+			</label>
+			<input class="short" type=number name="system.effects.{{../i}}.consequences.{{j}}.iterativePenalty" value="{{cons.iterativePenalty}}">
+		</div>
 		{{/if}}
 		{{#if (eq cons.type "modifier")}}
 		<input class="short" type=number name="system.effects.{{../i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
 		<select name="system.effects.{{../i}}.consequences.{{j}}.modifiedField">
-		{{selectOptions ../POWERSTUFF.MODIFIER_TARGETS localize=true selected=cons.modifiedField}}
+			{{selectOptions ../POWERSTUFF.MODIFIER_TARGETS localize=true selected=cons.modifiedField}}
 		</select>
 		{{/if}}
 		{{#if (eq cons.type "add-escalation")}}
 		<select name="system.effects.{{../i}}.consequences.{{j}}.modifiedField">
-		{{selectOptions ../POWERSTUFF.MODIFIER_TARGETS localize=true selected=cons.modifiedField}}
+			{{selectOptions ../POWERSTUFF.MODIFIER_TARGETS localize=true selected=cons.modifiedField}}
 		</select>
 		{{/if}}
 		{{#if (eq cons.type "recover-slot")}}
 		<select name="system.effects.{{../i}}.consequences.{{j}}.slotType">
-		{{selectOptions ../POWERSTUFF.SLOT_TYPES_EXPANDED localize=true selected=cons.slotType}}
+			{{selectOptions ../POWERSTUFF.SLOT_TYPES_EXPANDED localize=true selected=cons.slotType}}
 		</select>
 		{{/if}}
 		{{#if (eq cons.type	"add-power-to-list")}}
 		<select name="system.effects.{{../i}}.consequences.{{j}}.id">
-		{{selectOptions ../POWERSTUFF.COMPENDIUM_POWERS localize=false selected=cons.id}}
+			{{selectOptions ../POWERSTUFF.COMPENDIUM_POWERS localize=false selected=cons.id}}
 		</select>
 		{{/if}}
 
