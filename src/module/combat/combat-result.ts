@@ -645,9 +645,6 @@ export type StatusEffect = {
 	duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
 };
 
-
-
-
 export type Consequence = {
 	type: typeof CONSQUENCELIST[number],
 	amount?: number,

@@ -956,18 +956,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!link) {
 			throw new PersonaError("Trying to increase social link you don't have");
 		}
+		const orig = link.currentProgress;
 		link.currentProgress = Math.max(0,progress + link.currentProgress);
 		link.inspiration = link.linkLevel;
+		const linkActor = game.actors.get(link.linkId);
 		if (progress < 0) {
 			PersonaSounds.socialLinkReverse();
 		}
 		switch (progress) {
-			case 1: PersonaSounds.socialBoostJingle(2);
+			case 1: PersonaSounds.socialBoostJingle(1);
 				break;
-			case 2: PersonaSounds.socialBoostJingle(3);
+			case 2: PersonaSounds.socialBoostJingle(2);
+				break;
+			case 3: PersonaSounds.socialBoostJingle(3);
 				break;
 		}
 		await this.update({"system.social": this.system.social});
+		await Logger.sendToChat(`${this.name} added ${progress} social boosts to link ${linkActor?.name} (original Value: ${orig})` , this);
+
 	}
 
 	async refreshSocialLink(this: PC, npc: SocialLink) {
@@ -1366,6 +1372,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			flags = flags.filter(flag=> flag.flagId.toLowerCase() != flagId.toLowerCase());
 		}
 		await this.update({"system.flags": flags});
+	}
+
+	async setRelationshipType(this: PC, socialLinkId: string, newRelationshipType: string) {
+		const link = this.system.social.find(x=> x.linkId == socialLinkId);
+
+		if (!link) {
+			throw new PersonaError(`Can't find link for Id ${socialLinkId}`);
+		}
+		link.relationshipType = newRelationshipType;
+		await this.update({"system.social": this.system.social});
 	}
 
 }

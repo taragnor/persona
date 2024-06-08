@@ -13,6 +13,14 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 	override async getData() {
 		const data= await super.getData();
 		await PersonaDB.waitUntilLoaded();
+		data.RELATIONSHIP_TYPES_LIST = PersonaDB.allSocialCards()
+			.flatMap(card => card.system.qualifiers)
+			.map(qual=> qual.relationshipName)
+			.filter( (val, i, arr) => arr.indexOf(val) == i);
+		data.RELATIONSHIP_TYPES = Object.fromEntries(
+			(data.RELATIONSHIP_TYPES_LIST as string[])
+			.map(x=> ([x,x]))
+		);
 		data.CONST = {
 			STUDENT_SKILLS,
 			AVAILABILITY,
@@ -25,9 +33,8 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 				val: this.getIncAdvanceValue(x),
 			}))
 		};
+		Debug(data);
 		return data;
-
-
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {

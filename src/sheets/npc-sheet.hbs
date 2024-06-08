@@ -35,12 +35,9 @@
 			<label>
 				Base relationship
 			</label>
-		  <input class= "baseRelationship" name="system.baseRelationship" type="text" list="relationshipTypes" value="{{actor.system.baseRelationship}}">
-		  <datalist id="relationshipTypes">
-			 {{#each RELATIONSHIP_TYPES as |item|}}
-			 <option> {{item}}</option>
-			 {{/each}}
-		  </datalist>
+			<select name="system.baseRelationship">
+				{{selectOptions RELATIONSHIP_TYPES localize=false selected=actor.system.relationshipType}}
+			</select>
 		</div>
 		<div class="availability">
 			<label>

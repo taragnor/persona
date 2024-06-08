@@ -330,3 +330,10 @@ section.qualifiers {
 	width: auto;
 	font-size: 1.5em;
 }
+
+.social-icons .fa,
+.social-icons .fa-solid {
+	margin-left: 5px;
+	margin-right: 5px;
+
+}

@@ -63,60 +63,42 @@ export class HTMLTools {
 		});
 	}
 
-	static async ItemSelectionDialog<T extends (Actor<any, any> | Item<any>)> ( itemlist: T[], title= "Select One", list_of_properties = [])  {
-		const revlist = itemlist.map ( x=> {
-			return {
-				id: x.id,
-				description: x.system.description
-			};
-		} );
-		return await this.singleChoiceBox( revlist, title);
-	}
 
-	static async singleChoiceBox< T extends unknown>( list: T[], headerText: string) {
-		//List is in form of {id, data: [rows], description}
-		const options = {};
-		const templateData = {list};
-		const html = await renderTemplate(`systems/${game.system.id}/module/tools/singleChoiceBox.hbs`, templateData);
-		return await new Promise( (conf, _reject) => {
-			const dialog = new Dialog({
-				title: `${headerText}`,
+	static async singleChoiceBox<K extends string, const T extends Record<K, any>>(choices: T, options: ChoiceBoxOptions<T> = {}) : Promise<K | null> {
+		const localize = options.localize ?? false;
+		const defaultChoice = options.default ?? undefined;
+		const html = await renderTemplate(`systems/${game.system.id}/module/utility/singleChoiceBox.hbs`, {choices, localize, defaultChoice});
+		return await new Promise( (conf, _rej) => {
+			const dialog = new Dialog( {
+				title: options.title ?? "Choose One",
 				content: html,
 				buttons: {
-					one: {
+					submit: {
 						icon: `<i class="fas fa-check"></i>`,
 						label: "Confirm",
 						callback: (htm: string) => {
-							let selection : string[] = [];
-							$(htm).find(".single-choice-box").find("input:checked").each(function() {
-								const v = $(this).val();
-								if (v)
-									selection.push(String(v));
-							});
-							if (selection.length  > 1) {
-								throw new Error(`Problem with selection, Length is ${selection.length}`);
-							}
-							if (selection.length > 0) {
-								conf(selection[0]);
-							} else {
-								conf(null);
-							}
+							const ret =
+								$(htm).find("select.selection").find(":selected").val();
+							if (!ret) conf(null);
+							conf(ret as any);
 						}
 					},
-					two: {
+					cancel : {
 						icon: `<i class="fas fa-times"></i>`,
 						label: "Cancel",
 						callback: () => conf(null)
+
 					}
 				},
 				close: () => {
-					conf(null);
+					conf(null as any);
 				},
-			}, options);
+			},
+				{}
+			);
 			dialog.render(true);
 		});
 	}
-
 
 	static async getNumber(comment: string) : Promise<number> {
 		const html = `<div> ${comment} </div>
@@ -229,3 +211,8 @@ declare global{
 }
 
 
+type ChoiceBoxOptions<T> = {
+	localize?: boolean;
+	title ?: string;
+	default?: keyof T;
+}

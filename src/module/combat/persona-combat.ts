@@ -249,6 +249,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					await effect.delete();
 					break;
 				case "3-rounds":
+					if (effect.statuses.has("confused")) {
+						const {success, total} = await PersonaCombat.rollSave(actor, { DC, label:effect.name, saveVersus:effect.statusId})
+						if (!success) {
+							Msg = Msg.concat( await this.preSaveEffect(total, effect, actor));
+						}
+					}
 					const rounds = effect.duration.rounds ?? 0;
 					if (rounds<= 0) {
 						Msg.push(`<br>${effect.displayedName} has expired.`);
@@ -300,7 +306,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return 11;
 			case "presave-easy":
 				return 6;
-			default: return 2000;
+			default:
+				return 2000;
 		}
 	}
 
@@ -1052,6 +1059,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const statuses = Array.from(effect.statuses)
 		for (const status of statuses) {
 			switch (status) {
+					//need to fix the save DC on confused so its can be set properly
+				case "confused":
+					retstr.push(`<b>${actor.name} is confused and can't take actions this turn!`);
+					break;
 				case "fear":
 					if (total <= 2) {
 						retstr.push(`(<b>${actor.name} flees from combat!</b>`);

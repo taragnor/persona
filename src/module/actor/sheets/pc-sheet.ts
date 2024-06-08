@@ -91,7 +91,8 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".levelUp").on("click", this.levelUp.bind(this));
 		html.find(".social-link .name").on("click", this.openSL.bind(this));
 		html.find(".job .name").on("click", this.openJob.bind(this));
-		html.find(".clearSocialBoosts").on("click", this.clearSLBoosts.bind(this));
+		html.find(".removeSocialBoosts").on("click", this.removeSLBoosts.bind(this));
+		// html.find(".clearSocialBoosts").on("click", this.clearSLBoosts.bind(this));
 		html.find(".social-links .roll-icon img").on("click", this.rollSL.bind(this));
 		html.find(".job .roll-icon img").on("click", this.rollJob.bind(this));
 		html.find(`.social-stat .roll-icon`).on("click", this.rollSocial.bind(this));
@@ -99,6 +100,7 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(`.spend-money`).on('click', this.spendMoney.bind(this));
 		html.find(`.gain-money`).on('click', this.gainMoney.bind(this));
 		html.find(".draw-social-card").on("click", this.drawSocialCard.bind(this))
+		html.find(".relationship-type").on("change", this.relationshipTypeChange.bind(this))
 		super.activateListeners(html);
 	}
 
@@ -165,19 +167,45 @@ export class PCSheet extends CombatantSheetBase {
 
 	async addSocialRank(event: Event) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
-		this.actor.increaseSocialLink(linkId)
+		const link = this.actor.socialLinks.find( x=> x.actor.id == linkId);
+		if (!link) {
+			throw new PersonaError(`Can't find Actor for SL ${linkId}`);
+		}
+		if (await HTMLTools.confirmBox("Riase SL", `Raise SL for link ${link.actor.name}`)) {
+			await this.actor.increaseSocialLink(linkId);
+		}
 	}
 
 	async addSocialBoost(event: Event) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
-		this.actor.socialLinkProgress(linkId, 1);
+		const choice = await HTMLTools.singleChoiceBox({
+			1: "1",
+			2: "2",
+			3: "3",
+		}, {default: 1, title: "Add Social Boost"});
+		if (choice == null) return;
+		await this.actor.socialLinkProgress(linkId, Number(choice));
 	}
 
-	async clearSLBoosts (event: Event) {
+
+	async removeSLBoosts(event: JQuery.ClickEvent) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
-		this.actor.socialLinkProgress(linkId, -100);
-
+		const choice = await HTMLTools.singleChoiceBox({
+			1: "1",
+			2: "2",
+			3: "3",
+			9999: "All",
+		}, {default: 1, title: "Remove Social Boosts"});
+		if (choice == null) return;
+		await this.actor.socialLinkProgress(linkId, -Number(choice));
 	}
+
+	async relationshipTypeChange(event: JQuery.ChangeEvent) {
+		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
+		const newval = $(event.currentTarget).find(":selected").val();
+		if (!newval) return;
+		this.actor.setRelationshipType(linkId, String(newval));
+}
 
 	#addItem(_ev: JQuery<Event>) {
 		this.actor.createNewItem();
@@ -205,6 +233,7 @@ export class PCSheet extends CombatantSheetBase {
 			job.sheet.render(true);
 		}
 	}
+
 
 	async rollSL(event: Event) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
