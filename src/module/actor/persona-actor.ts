@@ -996,7 +996,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-
 	async refreshSocialLink(this: PC, npc: SocialLink) {
 		const link = this.system.social.find( x=> x.linkId == npc.id);
 		if (!link) {
@@ -1005,7 +1004,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		link.inspiration = link.linkLevel;
 		await this.update({"system.social": this.system.social});
 	}
-
 
 	async spendInspiration(this: PC, linkId:string, amt?: number) : Promise<void> ;
 	async spendInspiration(this: PC, socialLink:SocialLink , amt?: number): Promise<void> ;
@@ -1021,7 +1019,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		link.inspiration -= amt;
 		await this.update({"system.social": this.system.social});
-
 	}
 
 	async addInspiration(this:PC, linkId:SocialLink["id"], amt: number) {
