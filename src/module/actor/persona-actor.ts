@@ -951,6 +951,26 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.social": this.system.social});
 	}
 
+	async decreaseSocialLink(this: PC, linkId: string) {
+		const link = this.system.social.find( x=> x.linkId == linkId);
+		if (!link) {
+			throw new PersonaError("Trying to decrease social link you don't have");
+		}
+		if (link.linkLevel >= 10) {
+			throw new PersonaError("Social Link is already maxed out");
+		}
+		link.linkLevel -=1 ;
+		link.currentProgress= 0;
+		link.inspiration = link.linkLevel;
+		PersonaSounds.socialLinkReverse();
+		if (link.linkLevel == 0) {
+			const newSocial = this.system.social.filter( x=> x != link);
+			await this.update({"system.social": newSocial});
+			return;
+		}
+		await this.update({"system.social": this.system.social});
+	}
+
 	async socialLinkProgress(this: PC, linkId: string, progress: number) {
 		const link = this.system.social.find( x=> x.linkId == linkId);
 		if (!link) {
@@ -975,6 +995,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await Logger.sendToChat(`${this.name} added ${progress} social boosts to link ${linkActor?.name} (original Value: ${orig})` , this);
 
 	}
+
 
 	async refreshSocialLink(this: PC, npc: SocialLink) {
 		const link = this.system.social.find( x=> x.linkId == npc.id);
@@ -1001,6 +1022,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		link.inspiration -= amt;
 		await this.update({"system.social": this.system.social});
 
+	}
+
+	async addInspiration(this:PC, linkId:SocialLink["id"], amt: number) {
+		const link = this.system.social.find( x=> x.linkId == linkId);
+		if (!link) {
+			throw new PersonaError("Trying to refresh social link you don't have");
+		}
+		link.inspiration += amt;
+		link.inspiration = Math.min(link.linkLevel, link.inspiration);
+		await this.update({"system.social": this.system.social});
 	}
 
 	getSocialFocii(this: NPC, linkHolder: SocialLink) : Focus[] {

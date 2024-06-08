@@ -86,6 +86,7 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".incTalent").on("click", this.incTalent.bind(this));
 		html.find(".decTalent").on("click", this.decTalent.bind(this));
 		html.find(".addSocialRank").on("click", this.addSocialRank.bind(this));
+		html.find(".removeSocialRank").on("click", this.reduceSocialRank.bind(this));
 		html.find(".addSocialBoost").on("click", this.addSocialBoost.bind(this));
 		html.find(".addItem").on("click", this.#addItem.bind(this));
 		html.find(".levelUp").on("click", this.levelUp.bind(this));
@@ -136,8 +137,16 @@ export class PCSheet extends CombatantSheetBase {
 		if (!npc) {
 			throw new PersonaError(`COuldn't find NPC with Id ${linkId}`);
 		}
-		await Logger.sendToChat(`Refreshed inpiration for ${npc.name} (was ${link.inspiration})`, this.actor);
-		await this.actor.refreshSocialLink(npc);
+		const amount = await HTMLTools.singleChoiceBox({
+			1: "1",
+			2: "2",
+			3: "3",
+			9999: "All",
+		}, {default: 1, title: "Remove Social Boosts"});
+
+		if (!amount) return;
+		await Logger.sendToChat(`Added ${Number(amount)} inpiration for ${npc.name} (was ${link.inspiration})`, this.actor);
+		await this.actor.addInspiration(npc.id, Number(amount));
 	}
 
 	async useInspiration(event: Event) {
@@ -173,6 +182,17 @@ export class PCSheet extends CombatantSheetBase {
 		}
 		if (await HTMLTools.confirmBox("Riase SL", `Raise SL for link ${link.actor.name}`)) {
 			await this.actor.increaseSocialLink(linkId);
+		}
+	}
+
+	async reduceSocialRank(event: Event) {
+		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
+		const link = this.actor.socialLinks.find( x=> x.actor.id == linkId);
+		if (!link) {
+			throw new PersonaError(`Can't find Actor for SL ${linkId}`);
+		}
+		if (await HTMLTools.confirmBox("Lower SL", `Lower SL for link ${link.actor.name}`)) {
+			await this.actor.decreaseSocialLink(linkId);
 		}
 	}
 
