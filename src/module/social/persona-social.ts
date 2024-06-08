@@ -165,6 +165,11 @@ export class PersonaSocial {
 	}
 
 	static async drawSocialCard(actor: PC, linkId: string) : Promise<ChatMessage> {
+		const npc = this.lookupLinkId(actor, linkId);
+		if (npc.actor.isSpecialEvent(npc.linkLevel+1)) {
+			//TODO: Finish later
+
+		}
 		const card = this.#drawSocialCard(actor, linkId);
 		const cameos = this.#getCameos(card, actor, linkId);
 		const perk = this.#getPerk(card, actor, linkId, cameos);

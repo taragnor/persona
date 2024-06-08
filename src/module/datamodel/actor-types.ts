@@ -208,6 +208,7 @@ export class NPCSchema extends foundry.abstract.DataModel {
 			keyskill: keySkills(),
 			baseRelationship: new txt(),
 			availability: new txt({choices: AVAILABILITY_LIST, initial: "-"}),
+			specialEvents: new txt(),
 			//include
 		} as const;
 		return ret;

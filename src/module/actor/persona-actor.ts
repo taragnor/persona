@@ -1021,6 +1021,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.social": this.system.social});
 	}
 
+
 	async addInspiration(this:PC, linkId:SocialLink["id"], amt: number) {
 		const link = this.system.social.find( x=> x.linkId == linkId);
 		if (!link) {
@@ -1410,6 +1411,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		link.relationshipType = newRelationshipType;
 		await this.update({"system.social": this.system.social});
+	}
+
+	isSpecialEvent(this:SocialLink, numberToCheck: number) : boolean {
+		if (this.system.type == "pc") return false;
+		const peices = this.system.specialEvents.split(",", 20).map(x=> Number(x));
+		return peices.includes(numberToCheck);
 	}
 
 }
