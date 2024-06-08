@@ -503,12 +503,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		critBoostMod.add("Power Modifier", power.system.crit_boost);
 		const critResist = target.actor.critResist().total(situation);
 		critBoostMod.add("Enemy Critical Resistance", -critResist);
-		if (resist == "weakness") {
-			critBoostMod.add("weakness", 4);
-		}
-		if (target.actor.statuses.has("blocking")) {
-			critBoostMod.add("defender blocking", -100);
-		}
+		// if (resist == "weakness") {
+		// 	critBoostMod.add("weakness", 4);
+		// }
+		// if (target.actor.statuses.has("blocking")) {
+		// 	critBoostMod.add("defender blocking", -100);
+		// }
 		const critBoost = critBoostMod.total(situation);
 		situation.resisted = resist == "resist";
 		situation.struckWeakness = resist == "weakness";
