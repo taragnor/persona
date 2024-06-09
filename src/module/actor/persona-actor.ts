@@ -1215,9 +1215,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	meetsSLRequirement (this: PC, focus: Focus) {
-		return this.socialLinks.some( link=> {
-			return	link.focii.includes(focus) && link.linkLevel >= focus.requiredLinkLevel();
-		});
+		return this.system.social.some( link=>
+			link.linkId == focus.parent?.id
+			&& link.linkLevel >= focus.requiredLinkLevel()
+		);
+		// return this.socialLinks.some( link=> {
+		// 	return	link.focii.includes(focus) && link.linkLevel >= focus.requiredLinkLevel();
+		// });
 	}
 
 	isFullyFaded(this: PC | Shadow, newhp?:number) : boolean {
