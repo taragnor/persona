@@ -7,13 +7,10 @@
 </span>
 <ul>
 	{{#each link.focii as |focus|}}
-	{{#if (meetsSLRequirement ../../actor focus)}}
 	<li>
 		<b>{{focus.name}}:</b>
 		{{focus.system.description}}
 	</li>
-	{{/if}}
 	{{/each}}
 </ul>
 {{/each}}
-

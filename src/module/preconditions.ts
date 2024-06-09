@@ -101,12 +101,9 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			const actor = PersonaDB.findActor(situation.user);
 			if (!actor  || actor.system.type =="shadow") return false;
 			if (!source || source.system.type != "focus") return false;
-			const link = actor.socialLinks.find(link=>
-				link.focii.includes(source as Focus));
+			const link = actor.system.social.find(data=> data.linkId == source?.parent?.id);
 			if (!link) return false;
-			target = link.linkLevel;
-			// if (!benefit) return false;
-			// target = benefit.lvl_requirement;
+			target= link.linkLevel;
 			break;
 		}
 		case "student-skill":

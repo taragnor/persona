@@ -49,7 +49,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 
 	async refreshHpTracker(this:PC | Shadow)  {
-		if (!this.isOwner) return;
+		if (!game.user.isGM) return;//attempt at fixing lag hopefully won't lead to inaccurate bar
+		// if (!this.isOwner) return; //old code lagged maybe
 		if (this.hp > this.mhp) {
 			this.update({"system.combat.hp": this.mhp});
 		}
@@ -291,12 +292,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get socialLinks() : SocialLinkData[] {
+		const meetsSL = function (linkLevel: number, focus:Focus) {
+			return	linkLevel >= focus.requiredLinkLevel();
+		};
 		if (this.system.type != "pc") return [];
 		return this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
 			const npc = PersonaDB.getActor(linkId);
 			if (!npc) return [];
 			relationshipType = relationshipType ? relationshipType : npc.baseRelationship;
 			if (npc.system.type =="npc") {
+				const allFocii = (npc as NPC).getSocialFocii(npc as SocialLink);
+				const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
 				return [{
 					currentProgress,
 					linkLevel,
@@ -304,8 +310,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					relationshipType,
 					actor:npc as SocialLink,
 					linkBenefits: npc as SocialLink,
-					focii: (npc as NPC).getSocialFocii(npc as SocialLink),
+					allFocii: (npc as NPC).getSocialFocii(npc as SocialLink),
 					availability: npc.system.availability,
+					focii: qualifiedFocii,
 				}];
 			} else {
 				if (npc == this) {
@@ -313,6 +320,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					if (!personalLink)  {
 						return [];
 					}
+					const allFocii = (personalLink as NPC).getSocialFocii(personalLink as SocialLink);
+					const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
 					return [{
 						currentProgress,
 						linkLevel,
@@ -320,7 +329,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						relationshipType,
 						actor:npc as SocialLink,
 						linkBenefits: personalLink,
-						focii: personalLink.getSocialFocii(npc as PC),
+						allFocii: allFocii,
+						focii: qualifiedFocii,
 						availability: (npc as SocialLink).system.availability,
 					}];
 				} else {
@@ -328,6 +338,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					if (!teammate)  {
 						return [];
 					}
+					const allFocii = (teammate as NPC).getSocialFocii(teammate as SocialLink);
+					const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
 					return [{
 						currentProgress,
 						linkLevel,
@@ -335,7 +347,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						relationshipType,
 						actor:npc as SocialLink,
 						linkBenefits: teammate,
-						focii: teammate.getSocialFocii(npc as PC),
+						allFocii: allFocii,
+						focii: qualifiedFocii,
 						availability: (npc as SocialLink).system.availability,
 					}];
 				}

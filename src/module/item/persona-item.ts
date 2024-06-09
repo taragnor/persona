@@ -326,8 +326,8 @@ const power = PersonaDB.getBasicPower(powerName);
 
 	requiredLinkLevel(this: Focus) : number  {
 		let requirement = 0;
-		for (const eff of ArrayCorrector(this.system.effects)) {
-			for (const cond of ArrayCorrector(eff.conditions)) {
+		for (const eff of this.getEffects()) {
+			for (const cond of eff.conditions) {
 				if (cond.type == "numeric" && cond.comparisonTarget == "social-link-level")
 				{
 					if (cond.num)

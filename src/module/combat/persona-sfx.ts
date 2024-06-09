@@ -266,7 +266,7 @@ export class PersonaSFX {
 			token = (game.combat as PersonaCombat).combatants.find( x=> x.actor == actor)?.token;
 			if (!token) return;
 			try {
-				this.removeTMFilters(statusId, token);
+				await this.removeTMFilters(statusId, token);
 			} catch (e)  {
 				console.error(e);
 			}
@@ -274,7 +274,7 @@ export class PersonaSFX {
 
 	}
 
-	static removeTMFilters(statusId: StatusEffectId, token: TokenDocument<any>) {
+	static async removeTMFilters(statusId: StatusEffectId, token: TokenDocument<any>) {
 		let filters : string[] = [];
 		switch (statusId) {
 			case "burn":
@@ -297,7 +297,7 @@ export class PersonaSFX {
 		}
 		for (const filterId of filters) {
 			//@ts-ignore
-			TokenMagic?.deleteFilters(token.object, filterId);
+			await TokenMagic?.deleteFilters(token.object, filterId);
 		}
 
 	}

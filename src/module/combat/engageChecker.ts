@@ -12,6 +12,7 @@ export class EngagementChecker {
 	}
 
 	static isEngagedWith(subject: PToken, target: PToken, combat: PersonaCombat) : boolean {
+		if (subject == target) return true;
 		return this.getEngagedList(subject, combat).has(target);
 	}
 
