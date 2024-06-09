@@ -39,11 +39,13 @@ const SETTINGS = {
 		default: false,
 		onChange: () => {
 			console.log("Executing MEtaverse state update");
+			if (game.user.isGM) {
 			game.scenes
 				.forEach( scene => scene.tokens.contents
 					.forEach( tok => (tok.actor as PersonaActor | undefined)?.fullHeal()
 					)
 				);
+			}
 		}
 	},
 
