@@ -1415,7 +1415,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	isSpecialEvent(this:SocialLink, numberToCheck: number) : boolean {
 		if (this.system.type == "pc") return false;
-		const peices = this.system.specialEvents.split(",", 20).map(x=> Number(x));
+		const peices = (this.system.specialEvents ?? "").split(",", 20).map(x=> Number(x));
 		return peices.includes(numberToCheck);
 	}
 
