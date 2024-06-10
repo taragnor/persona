@@ -226,7 +226,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const sit : Situation = {
 				user: (this as PC).accessor
 			}
-			const bonusWeak= this.getBonuses("weakestSlot").total(sit);
+			const bonusWeak = this.getBonuses("weakestSlot").total(sit);
 			if (bonusWeak > 0 && slot_lvl == this.getWeakestSlot()) {
 				baseSlots += bonusWeak;
 			}
@@ -234,6 +234,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		} catch (e) {
 			return -999;
 		}
+	}
+
+	async recoverSlot(slottype: any) {
+
 	}
 
 	get socialBenefits() : SocialBenefit[] {
@@ -615,16 +619,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		));
 		return modList;
 	}
-
-	// getDefenseBonuses(type: ModifierTarget): ModifierList {
-	// 	return new ModifierList( this.defensivePowers()
-	// 		.flatMap(item => item.getModifier(type)));
-	// }
-
-	// defensivePowers():Power[] {
-	// 	return this.powers
-	// 		.filter( power=> power.system.subtype == "defensive");
-	// }
 
 	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
 		const passivePowers = (options && options.omitPowers) ? [] : this.getPassivePowers();
@@ -1017,7 +1011,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async refreshSocialLink(this: PC, npc: SocialLink) {
 		const link = this.system.social.find( x=> x.linkId == npc.id);
 		if (!link) {
-			throw new PersonaError("Trying to refresh social link you don't have");
+			throw new PersonaError(`Trying to refresh social link ${this.name} doesn't have: ${npc.name} `);
 		}
 		link.inspiration = link.linkLevel;
 		await this.update({"system.social": this.system.social});
@@ -1171,37 +1165,39 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async OnEnterMetaverse(this: PC) {
-		this.fullHeal();
-		await this.update( {"system.slots" : {
-			0: this.getMaxSlotsAt(0),
-			1: this.getMaxSlotsAt(1),
-			2: this.getMaxSlotsAt(2),
-			3: this.getMaxSlotsAt(3),
-		}});
 		try {
+			this.fullHeal();
+			await this.update( {"system.slots" : {
+				0: this.getMaxSlotsAt(0),
+				1: this.getMaxSlotsAt(1),
+				2: this.getMaxSlotsAt(2),
+				3: this.getMaxSlotsAt(3),
+			}});
 			await this.refreshSocialLink(this);
 		} catch (e) {
-			PersonaError.softFail(e);
+			console.log(e);
+			ui.notifications.error(`problem with Onentermetaverse for ${this.name}`);
 		}
 	}
 
 	async OnExitMetaverse(this: PC ) {
-		this.fullHeal();
-		for (const eff of this.effects) {
-			if (eff.durationLessThanOrEqualTo("expedition")) {
-				await eff.delete();
-			}
-		}
-		await this.update( {"system.slots" : {
-			0: this.getMaxSlotsAt(0),
-			1: this.getMaxSlotsAt(1),
-			2: this.getMaxSlotsAt(2),
-			3: this.getMaxSlotsAt(3),
-		}});
 		try {
+			this.fullHeal();
+			for (const eff of this.effects) {
+				if (eff.durationLessThanOrEqualTo("expedition")) {
+					await eff.delete();
+				}
+			}
+			await this.update( {"system.slots" : {
+				0: this.getMaxSlotsAt(0),
+				1: this.getMaxSlotsAt(1),
+				2: this.getMaxSlotsAt(2),
+				3: this.getMaxSlotsAt(3),
+			}});
 			await this.refreshSocialLink(this);
 		} catch (e) {
-			PersonaError.softFail(e);
+			console.log(e);
+			ui.notifications.error(`problem with OnExitMetaverse for ${this.name}`);
 		}
 	}
 

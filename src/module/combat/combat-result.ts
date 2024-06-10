@@ -531,6 +531,7 @@ export class CombatResult  {
 				case "extraTurn":
 					break;
 				case "recover-slot":
+					await actor.recoverSlot(otherEffect)
 					break;
 				case "set-flag":
 					await actor.setEffectFlag(otherEffect.flagId, otherEffect.state, otherEffect.duration, otherEffect.flagName);

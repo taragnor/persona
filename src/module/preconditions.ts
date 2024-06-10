@@ -101,7 +101,26 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			const actor = PersonaDB.findActor(situation.user);
 			if (!actor  || actor.system.type =="shadow") return false;
 			if (!source || source.system.type != "focus") return false;
-			const link = actor.system.social.find(data=> data.linkId == source?.parent?.id);
+			let targetId: string;
+			if (source?.parent?.type == "tarot") {
+				const tarotName = source?.parent?.name;
+				if (!tarotName)  {
+					PersonaError.softFail("Can't find tarot card for ${source.name}");
+					return false;
+				}
+				const sourceActor = 
+					(game.actors.contents as PersonaActor[])
+				.find( x=>
+					(x.system.type == "npc" || x.system.type == "pc") && x.system.tarot == tarotName);
+				if (!sourceActor) {
+					PersonaError.softFail("No one holds tarot ${tarotName}");
+					return false;
+				}
+				targetId = sourceActor.id;
+			} else {
+				targetId = source?.parent?.id ?? "";
+			}
+			const link = actor.system.social.find(data=> data.linkId == targetId);
 			if (!link) return false;
 			target= link.linkLevel;
 			break;

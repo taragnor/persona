@@ -17,8 +17,10 @@ export class Metaverse {
 		game.scenes
 			.forEach( scene => scene.tokens.contents
 				.forEach( tok => {
+					try {
 					(tok.actor as PersonaActor | undefined)?.fullHeal();
 					PersonaCombat.onTrigger("enter-metaverse", tok.actor as PC | Shadow);
+					} catch (e) {console.log(e)}
 				})
 			);
 
@@ -33,7 +35,9 @@ export class Metaverse {
 		game.scenes
 			.forEach( scene => scene.tokens.contents
 				.forEach( tok => {
+					try {
 					PersonaCombat.onTrigger("exit-metaverse", tok.actor as PC | Shadow);
+					} catch (e) {console.log(e)}
 				})
 			);
 		Hooks.callAll("exitMetaverse");

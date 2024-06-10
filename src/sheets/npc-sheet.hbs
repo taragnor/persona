@@ -67,14 +67,16 @@
 			Award Perk
 		</button>
 	</div>
-		{{#if (isGM)}}
 		<label> Date Perk</label>
+		{{#if (isGM)}}
 		<textarea name="system.datePerk">
 			{{actor.system.datePerk}}
 		</textarea>
-
+		{{else}}
+		<div>
+			{{actor.system.datePerk}}
+		</div>
 		{{/if}}
-
 	<section class="focii">
 		<h2>
 			Social Link Benefits
