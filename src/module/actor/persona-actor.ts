@@ -1,3 +1,4 @@
+import { RecoverSlotEffect } from "../combat/combat-result.js";
 import { UniversalModifier } from "../item/persona-item.js";
 import { getActiveConsequences } from "../preconditions.js";
 import { ResistanceShiftEffect } from "../combat/combat-result.js";
@@ -206,12 +207,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	getWeakestSlot(): number {
+	getWeakestSlot(): 0 | 1 | 2 | 3 {
 		if (this.system.type != "pc") return 0;
 		for (let slot_lvl=0 ; slot_lvl<=4; slot_lvl++) {
 			const inc = this.hasIncremental("powers") ? 1 : 0;
 			const lvl = this.system.combat.classData.level;
-			if ( this.class.getClassProperty(lvl + inc, "slots")[slot_lvl] ?? -999 > 0) return slot_lvl;
+			if ( this.class.getClassProperty(lvl + inc, "slots")[slot_lvl] ?? -999 > 0) return slot_lvl as 0 | 1 | 2 | 3;
 		}
 		PersonaError.softFail(`Can't get weakest slot for ${this.name}`);
 		return 0;
@@ -236,8 +237,29 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	async recoverSlot(slottype: any) {
-
+	async recoverSlot(this: PC, slottype: RecoverSlotEffect["slot"], amt: number = 1) {
+		let slotNum: keyof typeof this.system.slots;
+		switch (slottype) {
+			case "lowest":
+				slotNum = this.getWeakestSlot();
+				break;
+			case "0":
+			case "1":
+			case "2":
+			case "3":
+				slotNum = Number(slottype) as 0 | 1 | 2 | 3;
+				break;
+			case "highest":
+				PersonaError.softFail("Recover slot for highest is not yet implemented");
+				return;
+			default:
+				slottype satisfies never;
+				PersonaError.softFail(`Unexpected slottype : ${slottype}`);
+				return;
+		}
+		const maxSlots = this.getMaxSlotsAt(slotNum);
+		this.system.slots[slotNum] = Math.min (this.system.slots[slotNum] + amt, maxSlots);
+		await this.update( {"system.slots": this.system.slots});
 	}
 
 	get socialBenefits() : SocialBenefit[] {

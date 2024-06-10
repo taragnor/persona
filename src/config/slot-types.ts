@@ -2,7 +2,7 @@ export const SLOTTYPES = Object.fromEntries(
 	[0, 1, 2, 3].map( x=> [x, `persona.slottypes.${x}.name`])
 );
 
-export type SlotType = typeof SLOTTYPES[number] | "lowest" | "highest";
+export type SlotType = "0" | "1" | "2" | "3"| "lowest" | "highest";
 
 export const SLOT_TYPES_EXPANDED = {
 	...SLOTTYPES,

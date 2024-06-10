@@ -201,6 +201,7 @@ export class CombatResult  {
 				effect.otherEffects.push( {
 					type: "recover-slot",
 					slot: cons.slotType!,
+					amt: cons.amount ?? 1,
 				});
 				break;
 			case "add-power-to-list":
@@ -531,7 +532,9 @@ export class CombatResult  {
 				case "extraTurn":
 					break;
 				case "recover-slot":
-					await actor.recoverSlot(otherEffect)
+					if (actor.system.type == "pc") {
+					await (actor as PC).recoverSlot(otherEffect.slot, otherEffect.amt)
+					}
 					break;
 				case "set-flag":
 					await actor.setEffectFlag(otherEffect.flagId, otherEffect.state, otherEffect.duration, otherEffect.flagName);
@@ -593,9 +596,10 @@ type ExpendOtherEffect= {
 	itemAcc: UniversalItemAccessor<Usable>;
 }
 
-type RecoverSlotEffect = {
+export type RecoverSlotEffect = {
 	type: "recover-slot",
-	slot: SlotType
+	slot: SlotType;
+	amt: number;
 }
 
 type SimpleOtherEffect = {

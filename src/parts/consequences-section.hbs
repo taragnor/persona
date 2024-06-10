@@ -63,9 +63,12 @@
 		</select>
 		{{/if}}
 		{{#if (eq cons.type "recover-slot")}}
+		<label> Slot</label>
 		<select name="system.effects.{{../i}}.consequences.{{j}}.slotType">
 			{{selectOptions ../POWERSTUFF.SLOT_TYPES_EXPANDED localize=true selected=cons.slotType}}
 		</select>
+		<label> Amount</label>
+		<input class="short" type=number name="system.effects.{{../i}}.consequences.{{j}}.amount" value="{{cons.amount}}">
 		{{/if}}
 		{{#if (eq cons.type	"add-power-to-list")}}
 		<select name="system.effects.{{../i}}.consequences.{{j}}.id">
