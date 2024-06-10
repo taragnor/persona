@@ -297,7 +297,8 @@ export class CombatResult  {
 		for (const cost of this.costs) {
 			const actor = PersonaDB.findActor(cost.actor);
 			if (this.hasFlag(actor, "half-hp-cost")) {
-				cost.hpchangemult *= 0.5;
+				// cost.hpchangemult *= 0.5;
+				cost.hpchangemult *= 0.666;
 			}
 			if (this.hasFlag(actor, "save-slot")) {
 				cost.expendSlot = [0, 0, 0, 0];

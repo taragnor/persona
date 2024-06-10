@@ -209,6 +209,7 @@ export class NPCSchema extends foundry.abstract.DataModel {
 			baseRelationship: new txt(),
 			availability: new txt({choices: AVAILABILITY_LIST, initial: "-"}),
 			specialEvents: new txt(),
+			datePerk: new txt(),
 			//include
 		} as const;
 		return ret;

@@ -254,13 +254,34 @@ export class PersonaSocial {
 				return card.system.perk;
 			case "standard-or-custom":
 				return "Choose One: <br>" +
-					[actor.perk, card.system.perk]
+					[linkdata.actor.perk, card.system.perk]
 				.map( x=> `* ${x}`)
 				.join("<br>");
+			case "standard-or-date":
+				const link = linkdata.actor;
+				let datePerk : string;
+				switch (link.system.type) {
+					case "pc":
+						datePerk = this.defaultDatePerk();
+						break;
+					case "npc":
+						datePerk = link.system.datePerk || this.defaultDatePerk();
+						break;
+				}
+				return "Choose One: <br>" +
+					[actor.perk, datePerk]
+				.map( x=> `* ${x}`)
+				.join("<br>");
+
 			default:
 				card.system.perkType satisfies never;
 				return "";
 		}
+	}
+
+	static defaultDatePerk() : string {
+		return "Gain 2 social progress tokens with the target character";
+
 	}
 
 	static getCharInInitiativeList( offset: number) : SocialLink | undefined {

@@ -25,6 +25,15 @@
 		</div>
 	</div>
 
+	<div class="slot-cost">
+		<label>
+			{{localize	"persona.power.powertype"}}
+		</label>
+		<select name="system.slot">
+			{{selectOptions POWERSTUFF.SLOTTYPES localize=true selected=item.system.slot}}
+		</select>
+	</div>
+
 	{{#if (eq item.system.subtype "weapon")}}
 	<div class="hp-cost">
 		<label class="hp-cost">
@@ -44,14 +53,6 @@
 	</div>
 	{{/if}}
 	{{#if (eq item.system.subtype "magic")}}
-	<div class="slot-cost">
-		<label>
-			{{localize "persona.power.slotcost"}}
-		</label>
-		<select name="system.slot">
-			{{selectOptions POWERSTUFF.SLOTTYPES localize=true selected=item.system.slot}}
-		</select>
-	</div>
 	<div class="mag-mult">
 		<label>
 			Multiplier

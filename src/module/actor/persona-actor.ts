@@ -759,8 +759,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	critResist(this: PC | Shadow) : ModifierList {
+		const adjustedLevel = this.system.combat.classData.level + (this.system.combat.classData.incremental.lvl_bonus ? 1 : 0) ;
+		const modifier  = Math.floor(adjustedLevel /4);
+		const ret = new ModifierList();
+		ret.add("Base Modifier", modifier);
+
 		const mods = this.mainModifiers().flatMap( item => item.getModifier("critResist"));
-		return new ModifierList(mods);
+		return ret.concat(new ModifierList(mods));
 	}
 
 	async deleteTalent(this: PC | Shadow, id: string) {
@@ -1081,7 +1086,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	canEngage() :boolean {
 		return true; //placeholder
-
 	}
 
 	getLevelOfTalent(this: PC, talent: Talent) : number {

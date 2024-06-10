@@ -29,6 +29,9 @@ export class PersonaHandleBarsHelpers {
 			return actor.getMaxSlotsAt(lvl);
 		},
 
+		"getCritResist": (actor: PC | Shadow) => {
+			return actor.critResist().total({user: actor.accessor});
+		},
 		"getDefense" : (actor: PC | Shadow, defense: keyof typeof actor["system"]["combat"]["defenses"]) => {
 			return actor.getDefense(defense).total({user: PersonaDB.getUniversalActorAccessor(actor) });
 

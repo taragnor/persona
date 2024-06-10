@@ -67,6 +67,13 @@
 			Award Perk
 		</button>
 	</div>
+		{{#if (isGM)}}
+		<label> Date Perk</label>
+		<textarea name="system.datePerk">
+			{{actor.system.datePerk}}
+		</textarea>
+
+		{{/if}}
 
 	<section class="focii">
 		<h2>
