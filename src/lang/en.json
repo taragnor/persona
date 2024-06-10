@@ -364,6 +364,7 @@
 	"persona.preconditions.comparison.is-dead": "Is Dead",
 	"persona.preconditions.comparison.is-consumable": "Is Consumable Item",
 	"persona.preconditions.comparison.target-owner-comparison": "Target/Attacker/Owner comparison",
+	"persona.preconditions.comparison.power-target-type-is": "Power's targets are",
 
 	"persona.triggers.on-damage": "Character Takes Damage",
 	"persona.triggers.on-kill-target": "Character kills a target",

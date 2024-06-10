@@ -1,3 +1,4 @@
+import { Power } from "../module/item/persona-item.js";
 import { TarotCard } from "./tarot.js";
 import { PowerTag } from "../config/power-tags.js";
 import { StatusEffectId } from "../config/status-effects.js";
@@ -73,11 +74,11 @@ export type BooleanComparisonPC = {
 	type : "boolean",
 	booleanState : boolean,
 	boolComparisonTarget: BooleanComparisonTarget,
-} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck);
+} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison);
 
 	type BasicBComparisonPC ={
 	boolComparisonTarget: Exclude<BooleanComparisonTarget,
-	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "flag-state" | "is-resistant-to" | TargettedBComparisonPC["boolComparisonTarget"]>,
+	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "flag-state" | "is-resistant-to" | TargettedBComparisonPC["boolComparisonTarget"] | "power-target-type-is">,
 }
 
 export type TargettedBComparisonPC = SingleTargetComparison | TwoTargetComparison;
@@ -88,9 +89,14 @@ export type SingleTargetComparison = {
 };
 
 type TwoTargetComparison = {
-	boolComparisonTarget:	"target-owner-comparison",
+	boolComparisonTarget:	"target-owner-comparison" ,
 	conditionTarget : ConditionTarget,
 	conditionTarget2: ConditionTarget,
+}
+
+type PowerTypeComparison = {
+	boolComparisonTarget:  "power-target-type-is",
+	powerTargetType: Power["system"]["targets"],
 }
 
 type StatusComparisonPC = {
@@ -148,6 +154,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"is-same-arcana",
 	"flag-state",
 	"is-consumable",
+	"power-target-type-is",
 ] as const;
 
 export type BooleanComparisonTarget = typeof BOOLEAN_COMPARISON_TARGET_LIST[number];

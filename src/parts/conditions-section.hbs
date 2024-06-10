@@ -107,6 +107,14 @@
 			<input class="flag-id" type="text" width=2 name="system.effects.{{../i}}.conditions.{{j}}.flagId" value="{{cond.flagId}}">
 			</input>
 			{{/if}}
+			{{#if (eq cond.boolComparisonTarget  "power-target-type-is")}}
+			<div>
+				<select name="system.effects.{{../i}}.conditions.{{j}}.powerTargetType">
+					{{selectOptions ../POWERSTUFF.TARGETING localize=true selected=cond.powerTargetType}}
+				</select>
+			</div>
+			{{/if}}
+
 			{{/if}}
 
 			{{#if (strIncludes cond.type "resistant")}}
@@ -137,6 +145,7 @@
 			{{/if}}
 
 			{{/if}}
+
 
 			{{#if (eq cond.type	"flag-state")}}
 			<select name="system.effects.{{../i}}.conditions.{{j}}.conditionTarget">

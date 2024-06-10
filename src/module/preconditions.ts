@@ -358,6 +358,14 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 			const target2 = getSubject(condition, situation, source, "conditionTarget2");
 			if (!target || !target2) return undefined;
 			return target == target2;
+		case "power-target-type-is":
+			if (!situation.usedPower) return undefined;
+			const power = PersonaDB.findItem(situation.usedPower);
+			if (!power) {
+				PersonaError.softFail(`Can't find power in conditional`);
+				return undefined;
+			}
+			return power.system.targets == condition.powerTargetType;
 		default :
 			condition satisfies never;
 			return undefined;
