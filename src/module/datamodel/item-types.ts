@@ -1,3 +1,4 @@
+import { Opportunity } from "../../config/social-card-config.js";
 import { CardEvent } from "../../config/social-card-config.js";
 const {StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 
@@ -147,12 +148,15 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 			}), {initial: []}),
 			type: new txt({initial: "social", choices: SOCIAL_CARD_TYPES_LIST}),
 			events: new arr( new obj<CardEvent>()),
+			automatic: new txt(),
 			skill: new txt<"primary" | "secondary">({initial: "primary"}),
 			cameoType: new txt({initial: "none", choices: CAMEO_TYPES_LIST}),
 			cameo: new txt(),
 			perkType: new txt({choices: PERK_TYPES_LIST, initial: "standard"}),
 			perk: new txt( {initial: "standard Tarot effect"}),
 			opportunity: new txt(),
+			opportunity_choies: new num({initial:0, integer: true, min: 0, max: 10}),
+			opportunity_list: new arr(new obj<Opportunity>()),
 			bane: new txt(),
 			critical: new txt(),
 			active: new bool({initial: false}),

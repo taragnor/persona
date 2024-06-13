@@ -12,17 +12,19 @@ export const SOCIAL_CARD_TYPES_LIST = [
 
 export type SocialCardType = keyof typeof SOCIAL_CARD_TYPES_LIST;
 
-export const SOCIAL_CARD_TYPES = Object.fromEntries( 
+export const SOCIAL_CARD_TYPES = Object.fromEntries(
 	SOCIAL_CARD_TYPES_LIST.map(a=> [a, `persona.social.card.types.${a}`])
 );
 
-
-export type CardEvent = {
-	frequency: number, //defaults to 1
+type CardChoice = {
 	prereqs: CardPrereq[],
 	text: string,
 	rollProcedure:CardRoll, //defaults to "none"
 };
+
+export type CardEvent = {
+	frequency: number, //defaults to 1
+} & CardChoice;
 
 
 type CardRoll = CardRollList[keyof CardRollList];
@@ -45,14 +47,21 @@ type CardRollList = {
 		modifier: number,
 		disallow_other_modifiers: boolean,
 	},
+	"waitForGM" : {
+		rollType: "gmspecial"
+	}
 }
-
-
-type CardPrereq = CardPrereqList[keyof CardPrereqList];
 
 type CardRollResult = {
 	resultString : string,
 };
+
+export type Opportunity = {
+	choices: number, //amount of choice points this option takes,
+} & CardChoice;
+
+export type CardPrereq = CardPrereqList[keyof CardPrereqList];
+
 
 
 type CardPrereqList = {
