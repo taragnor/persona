@@ -1,3 +1,4 @@
+import { ThresholdOrDC } from "../../config/social-card-config.js";
 import { Opportunity } from "../../config/social-card-config.js";
 import { CardEvent } from "../../config/social-card-config.js";
 const {StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
@@ -147,6 +148,18 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 				initial: {relationshipName: "Unnamed Relationship", min:0, max:0}
 			}), {initial: []}),
 			type: new txt({initial: "social", choices: SOCIAL_CARD_TYPES_LIST}),
+			dc: new obj<ThresholdOrDC>( {
+				initial: {
+					thresholdType: "static",
+					num: 0
+				},
+			}),
+			threshold: new obj<ThresholdOrDC>( {
+				initial: {
+					thresholdType: "static",
+					num: 0
+				},
+			}),
 			events: new arr( new obj<CardEvent>()),
 			automatic: new txt(),
 			skill: new txt<"primary" | "secondary">({initial: "primary"}),

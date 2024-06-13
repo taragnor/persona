@@ -6,7 +6,6 @@ export const SAVE_TYPES = {
 
 export type SaveType = keyof typeof SAVE_TYPES;
 
-
 export const SAVE_TYPES_LOCALIZED = Object.fromEntries(
 	Object.keys(SAVE_TYPES).map(a=> [a, `persona.saves.types.${a}`])
 );

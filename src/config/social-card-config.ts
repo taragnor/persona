@@ -63,7 +63,6 @@ export type Opportunity = {
 export type CardPrereq = CardPrereqList[keyof CardPrereqList];
 
 
-
 type CardPrereqList = {
 	"weekday": {
 		prereqType : "weekday",
@@ -82,4 +81,22 @@ type CardPrereqList = {
 
 };
 
+export type ThresholdOrDC= ThresholdList[keyof ThresholdList];
+
+type ThresholdList = {
+	"static" : {
+		thresholdType: "static",
+		num: number
+	},
+	"levelScaled": {
+		thresholdType: "levelScaled",
+		startingVal: number,
+		multiplier: number,
+	},
+	"SL_based": {
+		thresholdType: "SL_Based",
+		startingVal: number,
+		multiplier: number,
+	}
+}
 
