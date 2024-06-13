@@ -1,5 +1,7 @@
+import { CardEvent } from "../../config/social-card-config.js";
 const {StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 
+import { SOCIAL_CARD_TYPES_LIST } from "../../config/social-card-config.js";
 import { AVAILABILITY_LIST } from "../../config/availability-types.js";
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
 import { CharacterClassDM } from "./character-class-dm.js";
@@ -143,6 +145,8 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 			}>({
 				initial: {relationshipName: "Unnamed Relationship", min:0, max:0}
 			}), {initial: []}),
+			type: new txt({initial: "social", choices: SOCIAL_CARD_TYPES_LIST}),
+			events: new arr( new obj<CardEvent>()),
 			skill: new txt<"primary" | "secondary">({initial: "primary"}),
 			cameoType: new txt({initial: "none", choices: CAMEO_TYPES_LIST}),
 			cameo: new txt(),
