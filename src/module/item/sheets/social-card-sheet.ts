@@ -2,7 +2,6 @@ import { Opportunity } from "../../../config/social-card-config.js";
 import { PersonaError } from "../../persona-error.js";
 import { SocialCard } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
-import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { PersonaDB } from "../../persona-db.js";
 import { ArrayCorrector } from "../persona-item.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
@@ -11,14 +10,14 @@ import { CAMEO_TYPES } from "../../../config/cameo-types.js";
 import { SOCIAL_CARD_TYPES } from "../../../config/social-card-config.js";
 import { SOCIAL_CARD_ROLL_TYPES } from "../../../config/social-card-config.js";
 import { STUDENT_SKILLS } from "../../../config/student-skills.js";
-
+import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 
 const PRIMARY_SECONDARY = {
 	"primary": "persona.term.primary",
 	"secondary": "persona.term.secondary",
 };
 
-export class PersonaSocialCardSheet extends PersonaItemSheetBase {
+export class PersonaSocialCardSheet extends PersonaEffectContainerBaseSheet {
 	override item: SocialCard;
 
 	override async getData() {

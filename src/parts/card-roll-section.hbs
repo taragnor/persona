@@ -11,5 +11,7 @@
 	</label>
 	<input class="short" type=number name='{{strcat namePrefix "modifier"}}' value="{{roll.modifier}}">
 </div>
+<label> Roll Effects </label>
+{{> "systems/persona/parts/effects-section-adaptable.hbs" namePrefix=(strcat namePrefix ".effects.") effects=roll.effects POWERSTUFF=item.sheet.powerStuff item=item}}
 {{/if}}
 

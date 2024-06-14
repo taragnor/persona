@@ -23,21 +23,30 @@ import { CONDITION_TARGETS } from "../../../config/precondition-types.js";
 import { NUMERIC_COMPARISON_TARGET } from "../../../config/precondition-types.js";
 import { BOOLEAN_COMPARISON_TARGET } from "../../../config/precondition-types.js";
 import { COMPARATORS } from "../../../config/precondition-types.js";
+import { SocialCard } from "../persona-item.js";
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
-	override item: PowerContainer;
+	override item: PowerContainer | SocialCard;
+	_powerStuffBase?: Record<string, any>;
 
 	override async getData() {
-		if (this.item.isOwner) {
-			await this.item.sanitizeEffectsData();//required becuase foundry input hates arrays;
+		if (this.item.isOwner && this.item.type != "socialCard") {
+			await (this.item as PowerContainer).sanitizeEffectsData();//required becuase foundry input hates arrays;
 		}
 		const data = await super.getData();
 		const SOCIAL_LINKS = Object.fromEntries(
 			PersonaDB.socialLinks().map(actor => [actor.id, actor.name])
 		);
 		SOCIAL_LINKS[""] = "-";
-		data.POWERSTUFF = {
-			SOCIAL_LINKS,
+		data.POWERSTUFF = this.powerStuff;
+		return data;
+	}
+
+	get powerStuffBase() :Record<string, any> {
+		if (this._powerStuffBase)  {
+			return this._powerStuffBase;
+		}
+		this._powerStuffBase = {
 			TAROT_DECK,
 			NUMERIC_COMPARISON_TARGET,
 			BOOLEAN_COMPARISON_TARGET,
@@ -59,13 +68,25 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			DEFENSES: Object.fromEntries(DEFENSECHOICES.map( x=> [x, x])),
 			SHADOW_CHARGE_REQ: SHADOW_CHARGE_REQ,
 			SLOT_TYPES_EXPANDED: SLOT_TYPES_EXPANDED,
+		};
+		return this._powerStuffBase;
+	}
+
+
+	get powerStuff(): Record<string, any> {
+		const SOCIAL_LINKS = Object.fromEntries(
+			PersonaDB.socialLinks().map(actor => [actor.id, actor.name])
+		);
+		SOCIAL_LINKS[""] = "-";
+		return {
+			...this.powerStuffBase,
+			SOCIAL_LINKS,
 			COMPENDIUM_POWERS: Object.fromEntries(
 				PersonaDB.allPowers()
 				.sort((a,b) => a.name.localeCompare(b.name))
 				.map(pwr=> ([pwr.id, pwr.name]))
 			),
-		}
-		return data;
+		};
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {
@@ -79,12 +100,15 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 	}
 
 	async addPowerEffect() {
-		await this.item.addNewPowerEffect();
+		if (this.item.system.type != "socialCard") {
+			await (this.item as PowerContainer).addNewPowerEffect();
+		}
 	}
 
 	async addPrecondition(event: Event) {
 		const index= Number(HTMLTools.getClosestData(event, "effectIndex"));
-		await this.item.addNewPowerPrecondition(index);
+		if (this.item.system.type != "socialCard") {
+		await (this.item as PowerContainer).addNewPowerPrecondition(index);
 	}
 
 	async addConsequence(event: Event) {

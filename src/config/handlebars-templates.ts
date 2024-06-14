@@ -13,6 +13,7 @@ const templateFileNames : string[] =[
 	"conditions-section.hbs",
 	"consequences-section.hbs",
 	"effects-section.hbs",
+	"effects-section-adaptable.hbs",
 	"powers-table.hbs",
 	"focii-table.hbs",
 	"talents-table.hbs",
@@ -25,6 +26,8 @@ const templateFileNames : string[] =[
 	"card-events-section.hbs",
 	"card-opportunity-section.hbs",
 	"card-roll-section.hbs",
+	"input-condition.hbs",
+	"input-consequence.hbs",
 ];
 
 export const templatePaths = templateFileNames.

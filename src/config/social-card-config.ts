@@ -1,6 +1,7 @@
 import { SaveType } from "./save-types";
 import { SocialStat } from "./student-skills";
 import { WeatherType } from "./weather-types";
+import { ConditionalEffect } from "../module/datamodel/power-dm";
 
 export const SOCIAL_CARD_TYPES_LIST = [
 	"social",
@@ -49,17 +50,14 @@ type CardRollList = {
 		rollType: "studentSkillCheck",
 		studentSkill: SocialStat,
 		modifier: number,
-		success: CardRollResult,
-		failure: CardRollResult,
-		crtical: CardRollResult,
+		effects: ConditionalEffect,
 	}
 	"save" : {
 		rollType: "save",
 		type: SaveType,
 		modifier: number,
 		disallow_other_modifiers: boolean,
-		success: CardRollResult,
-		failure: CardRollResult,
+		effects: ConditionalEffect,
 	},
 	"waitForGM" : {
 		rollType: "gmspecial"

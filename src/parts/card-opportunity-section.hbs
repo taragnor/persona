@@ -18,7 +18,7 @@
 			{{opportunity.text}}
 		</textarea>
 		<div class="card-roll">
-			{{> "systems/persona/parts/card-roll-section.hbs" CONST=../SOCIAL_DATA namePrefix=(strcat "system.opportunity_list." i ".roll.") roll=opportunity.roll opp_index=i}}
+			{{> "systems/persona/parts/card-roll-section.hbs" CONST=../SOCIAL_DATA namePrefix=(strcat "system.opportunity_list." i ".roll.") roll=opportunity.roll opp_index=i item=../item}}
 		</div>
 		<span>
 			<a class="del-opportunity">

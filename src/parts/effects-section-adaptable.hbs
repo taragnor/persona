@@ -1,0 +1,35 @@
+<div class="effects-list">
+	{{#each effects as |effect i|}}
+	<div class="flexrow" data-effect-index="{{i}}">
+		<div class="power-effect" >
+			<section class="conditions-section">
+				<h2> Conditions
+					<a class="addCondition">
+						<i class="fa-solid fa-plus"> </i>
+					</a>
+				</h2>
+				{{#each effect.conditions as |cond j|}}
+				{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat namePrefix "." ../i ".conditions." j ".")  cond=cond POWERSTUFF=../../POWERSTUFF i=../i condition_index=j}}
+				{{/each}}
+			</section>
+			<section class="consequences-section">
+				<h2> Consequences
+					<a class="addConsequence">
+						<i class="fa-solid fa-plus"> </i>
+					</a>
+				</h2>
+				{{#each effect.consequences as |cons j|}}
+				{{> "systems/persona/parts/input-consequence.hbs" namePrefix=(strcat namePrefix "." ../i ".consequences." j ".") cons=cons POWERSTUFF=../../POWERSTUFF i=../i consequence_index=j}}
+				{{/each}}
+			</section>
+			<div class="short">
+				<a class="delEffect">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<hr>
+	{{/each}}
+</div>
+
