@@ -1,0 +1,15 @@
+<select name='{{strcat namePrefix "rollType"}}'>
+	{{selectOptions CONST.ROLLTYPES localize=true selected=roll.rollType}}
+</select>
+{{#if (eq roll.rollType "studentSkillCheck")}}
+<select name='{{strcat namePrefix "studentSkill"}}'>
+	{{selectOptions CONST.STUDENT_SKILLS localize=true selected=roll.studentSkill}}
+</select>
+<div>
+	<label>
+		Modifier
+	</label>
+	<input class="short" type=number name='{{strcat namePrefix "modifier"}}' value="{{roll.modifier}}">
+</div>
+{{/if}}
+

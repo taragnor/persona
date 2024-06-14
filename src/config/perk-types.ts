@@ -4,6 +4,7 @@ export const PERK_TYPES_LIST =[
 	"custom-only",
 	"standard-or-custom",
 	"standard-or-date",
+	"none",
 ] as const;
 
 export type PerkType = typeof PERK_TYPES_LIST[number];

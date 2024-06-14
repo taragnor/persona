@@ -391,6 +391,7 @@
 	"persona.social.perk-type.custom-only": "Card perk",
 	"persona.social.perk-type.standard-or-custom": "Tarot Perk (Target) or Card Perk",
 	"persona.social.perk-type.standard-or-date": "Tarot Perk (Target) or target's date perk",
+	"persona.social.perk-type.none": "None",
 
 	"persona.social.cameo-type.none": "No Cameo",
 	"persona.social.cameo-type.above": "PC above",
@@ -402,10 +403,23 @@
 	"persona.social.cameo-type.invite-couple": "Invite a dating couple (SL 5+)",
 	"persona.social.cameo-type.buy-in-2": "Any # (buy-in 2)",
 
+	"persona.social.card.types.social": "Social",
+	"persona.social.card.types.job": "Job",
+	"persona.social.card.types.training": "Training",
+	"persona.social.card.types.recovery": "Recovery",
+	"persona.social.card.types.other": "Other",
+
+	"persona.social.card.rolls.types.none": "None",
+	"persona.social.card.rolls.types.studentSkillCheck": "Student Skill Check",
+	"persona.social.card.rolls.types.save": "Save Roll",
+	"persona.social.card.rolls.types.gmspecial": "GM Special",
+
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",
 	"persona.availability.-": "Normal (-)",
 	"persona.availability.--": "Negative (--)",
 	"persona.availability.N/A": "Not Available (N/A)"
+
+
 }
 

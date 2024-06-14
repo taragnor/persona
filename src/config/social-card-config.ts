@@ -10,6 +10,18 @@ export const SOCIAL_CARD_TYPES_LIST = [
 	"other"
 ] as const;
 
+export const SOCIAL_CARD_ROLL_TYPES_LIST = [
+	"none",
+	"studentSkillCheck",
+	"save",
+	"gmspecial",
+];
+
+export const SOCIAL_CARD_ROLL_TYPES = Object.fromEntries(
+	SOCIAL_CARD_ROLL_TYPES_LIST.map(a=> [a, `persona.social.card.rolls.types.${a}`])
+);
+
+
 export type SocialCardType = keyof typeof SOCIAL_CARD_TYPES_LIST;
 
 export const SOCIAL_CARD_TYPES = Object.fromEntries(
@@ -19,7 +31,7 @@ export const SOCIAL_CARD_TYPES = Object.fromEntries(
 type CardChoice = {
 	prereqs: CardPrereq[],
 	text: string,
-	rollProcedure:CardRoll, //defaults to "none"
+	roll: CardRoll, //defaults to "none"
 };
 
 export type CardEvent = {
@@ -27,7 +39,7 @@ export type CardEvent = {
 } & CardChoice;
 
 
-type CardRoll = CardRollList[keyof CardRollList];
+export type CardRoll = {rollType: typeof SOCIAL_CARD_ROLL_TYPES_LIST[number]} & CardRollList[keyof CardRollList];
 
 type CardRollList = {
 	"none": {
@@ -46,6 +58,8 @@ type CardRollList = {
 		type: SaveType,
 		modifier: number,
 		disallow_other_modifiers: boolean,
+		success: CardRollResult,
+		failure: CardRollResult,
 	},
 	"waitForGM" : {
 		rollType: "gmspecial"

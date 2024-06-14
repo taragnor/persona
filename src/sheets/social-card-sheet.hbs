@@ -1,71 +1,44 @@
+
 <form class="social-card-sheet">
-			<img class="profile-img" src="{{item.img}}" data-edit="img"/>
-  <input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Job Name" placeholder="Job Name">
 
-  <div>
-	 <section class="qualifiers">
-		<div class="header"> Qualifiers
-		  <a class="add-qualifier">
-			 <i class="fa-solid fa-square-plus"></i>
-		  </a>
-		</div>
-		{{#each item.system.qualifiers as |qual i|}}
-		<div class="qualifier" data-qualifier-index="{{i}}">
-		  <label for="qualname-{{i}}">
-			 Name
-		  </label>
-		  <input id="qualname-{{i}}" class= "name" name="system.qualifiers.{{i}}.relationshipName" type="text" list="qualifiers-{{i}}" value="{{qual.relationshipName}}">
-		  <datalist id="qualifiers-{{i}}">
-			 {{#each ../QUALIFIERS_NAME_LIST as |item|}}
-			 <option> {{item}}</option>
-			 {{/each}}
-		  </datalist>
-		  <input class="short" type=number name="system.qualifiers.{{i}}.min" value="{{qual.min}}">
-		  <input class="short" type=number name="system.qualifiers.{{i}}.max" value="{{qual.max}}">
-		  <a class="delete-qualifier">
-			 <i class="fa-solid fa-trash"></i>
-		  </a>
-		</div>
-		{{/each}}
-	 </section>
-	 <label>Skill</label>
-	 <select name="system.skill">
-		{{selectOptions PRIMARY_SECONDARY localize=true selected=item.system.skill}}
+	<img class="profile-img" src="{{item.img}}" data-edit="img"/>
+	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Job Name" placeholder="Job Name">
+
+	<div>
+	 <select name="system.cardType">
+		{{selectOptions SOCIAL_CARD_TYPES localize=true selected=item.system.cardType}}
 	 </select>
+	</div>
+
+  <div class="perk">
+	  <label> Perk</label>
+	  <select name="system.perkType">
+		  {{selectOptions PERK_TYPES localize=true selected=item.system.perkType}}
+	  </select>
+	  <textarea name="system.perk">
+		  {{item.system.perk}}
+	  </textarea>
   </div>
-  <div>
-	 <label> Perk</label>
-	 <select name="system.perkType">
-		{{selectOptions PERK_TYPES localize=true selected=item.system.perkType}}
-		</select>
-	 <textarea name="system.perk">
-		{{item.system.perk}}
-	 </textarea>
+
+  <div class="cameo">
+	  <label> Cameo</label>
+	  <select name="system.cameoType">
+		  {{selectOptions CAMEO_TYPES localize=true selected=item.system.cameoType}}
+	  </select>
+	  <textarea name="system.cameo">
+		  {{item.system.cameo}}
+	  </textarea>
+	  <label> Cameo Opportunity</label>
+	  <textarea name="system.cameoOpportunity">
+		  {{item.system.cameo}}
+	  </textarea>
   </div>
 
-	<div>
-		<label> Cameo</label>
-	 <select name="system.cameoType">
-		{{selectOptions CAMEO_TYPES localize=true selected=item.system.cameoType}}
-		</select>
-		<textarea name="system.cameo">
-			{{item.system.cameo}}
-		</textarea>
-	</div>
+		  {{> "systems/persona/parts/card-opportunity-section.hbs" item=item}}
 
-	<div>
-		<label> Opportunity</label>
-		<textarea name="system.opportunity">
-			{{item.system.opportunity}}
-		</textarea>
-	</div>
+  <section class="events">
+			{{> "systems/persona/parts/card-events-section.hbs" item=item}}
+  </section>
 
-	<div>
-		<label> Bane</label>
-		<textarea name="system.bane">
-			{{item.system.bane}}
-		</textarea>
-	</div>
 
 </form>
-

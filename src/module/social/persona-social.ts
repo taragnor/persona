@@ -272,7 +272,8 @@ export class PersonaSocial {
 					[actor.perk, datePerk]
 				.map( x=> `* ${x}`)
 				.join("<br>");
-
+			case "none":
+				return "";
 			default:
 				card.system.perkType satisfies never;
 				return "";

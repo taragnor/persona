@@ -1,3 +1,4 @@
+import { Precondition } from "../../config/precondition-types.js";
 import { ThresholdOrDC } from "../../config/social-card-config.js";
 import { Opportunity } from "../../config/social-card-config.js";
 import { CardEvent } from "../../config/social-card-config.js";
@@ -147,7 +148,8 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 			}>({
 				initial: {relationshipName: "Unnamed Relationship", min:0, max:0}
 			}), {initial: []}),
-			type: new txt({initial: "social", choices: SOCIAL_CARD_TYPES_LIST}),
+			conditions: new arr(new obj<Precondition>()),
+			cardType: new txt({initial: "social", choices: SOCIAL_CARD_TYPES_LIST}),
 			dc: new obj<ThresholdOrDC>( {
 				initial: {
 					thresholdType: "static",
@@ -166,9 +168,10 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 			cameoType: new txt({initial: "none", choices: CAMEO_TYPES_LIST}),
 			cameo: new txt(),
 			perkType: new txt({choices: PERK_TYPES_LIST, initial: "standard"}),
-			perk: new txt( {initial: "standard Tarot effect"}),
+			perk: new txt( {initial: ""}),
+			cameoOpportunity: new txt(),
 			opportunity: new txt(),
-			opportunity_choies: new num({initial:0, integer: true, min: 0, max: 10}),
+			opportunity_choices: new num({initial:0, integer: true, min: 0, max: 10}),
 			opportunity_list: new arr(new obj<Opportunity>()),
 			bane: new txt(),
 			critical: new txt(),

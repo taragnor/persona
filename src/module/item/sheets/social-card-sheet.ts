@@ -1,3 +1,4 @@
+import { Opportunity } from "../../../config/social-card-config.js";
 import { PersonaError } from "../../persona-error.js";
 import { SocialCard } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
@@ -7,6 +8,9 @@ import { ArrayCorrector } from "../persona-item.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PERK_TYPES } from "../../../config/perk-types.js";
 import { CAMEO_TYPES } from "../../../config/cameo-types.js";
+import { SOCIAL_CARD_TYPES } from "../../../config/social-card-config.js";
+import { SOCIAL_CARD_ROLL_TYPES } from "../../../config/social-card-config.js";
+import { STUDENT_SKILLS } from "../../../config/student-skills.js";
 
 
 const PRIMARY_SECONDARY = {
@@ -19,6 +23,11 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 
 	override async getData() {
 		const data = await super.getData();
+		data.SOCIAL_DATA = {
+			ROLLTYPES : SOCIAL_CARD_ROLL_TYPES,
+			STUDENT_SKILLS,
+		};
+		data.SOCIAL_CARD_TYPES = SOCIAL_CARD_TYPES;
 		data.CAMEO_TYPES = CAMEO_TYPES;
 		data.PERK_TYPES = PERK_TYPES;
 		data.PRIMARY_SECONDARY = PRIMARY_SECONDARY;
@@ -43,6 +52,9 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 		 super.activateListeners(html);
 		 html.find(".add-qualifier").on("click", this.addQualifier.bind(this));
 		 html.find(".delete-qualifier").on("click", this.deleteQualifier.bind(this));
+		 html.find(".add-opportunity").on("click", this.addOpportunity.bind(this));
+		 html.find(".del-opportunity").on("click", this.deleteOpportunity.bind(this));
+
 	 }
 
 	async addQualifier(_ev: JQuery.ClickEvent) {
@@ -64,6 +76,33 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 		const qual = ArrayCorrector(this.item.system.qualifiers);
 		qual.splice(index, 1);
 		await this.item.update({"system.qualifiers": qual});
+	}
+
+	async addOpportunity(_ev: JQuery.ClickEvent) {
+		const card = this.item;
+		let opList =card.system.opportunity_list;
+		const newOpportunity : Opportunity = {
+			choices: 1,
+			prereqs: [],
+			text: "",
+			roll: {
+				rollType: "none",
+			}
+		};
+		opList.push( newOpportunity);
+		await card.update({"system.opportunity_list": opList});
+	}
+
+	async deleteOpportunity(ev: JQuery.ClickEvent) {
+		const indexStr = HTMLTools.getClosestData(ev, "opportunityIndex");
+		const index = Number(indexStr);
+		if (Number.isNaN(index)) {
+			throw new PersonaError("Bad index on Delete opportunity");
+		}
+		const card = this.item;
+		let opList =card.system.opportunity_list;
+		opList.splice(index,1);
+		await card.update({"system.opportunity_list": opList});
 	}
 
 }
