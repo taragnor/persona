@@ -12,6 +12,7 @@ import { SOCIAL_CARD_ROLL_TYPES } from "../../../config/social-card-config.js";
 import { STUDENT_SKILLS } from "../../../config/student-skills.js";
 import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 import { PersonaItemSheetBase } from "./base-item-sheet.js";
+import { SAVE_TYPES_LOCALIZED } from "../../../config/save-types.js";
 
 const PRIMARY_SECONDARY = {
 	"primary": "persona.term.primary",
@@ -27,6 +28,7 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 		data.SOCIAL_DATA = {
 			ROLLTYPES : SOCIAL_CARD_ROLL_TYPES,
 			STUDENT_SKILLS,
+			SAVE_DIFFICULTY: SAVE_TYPES_LOCALIZED,
 		};
 		data.SOCIAL_CARD_TYPES = SOCIAL_CARD_TYPES;
 		data.CAMEO_TYPES = CAMEO_TYPES;

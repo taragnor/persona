@@ -23,6 +23,7 @@ import { CONDITION_TARGETS } from "../../../config/precondition-types.js";
 import { NUMERIC_COMPARISON_TARGET } from "../../../config/precondition-types.js";
 import { BOOLEAN_COMPARISON_TARGET } from "../../../config/precondition-types.js";
 import { COMPARATORS } from "../../../config/precondition-types.js";
+import { SAVE_TYPES_LOCALIZED } from "../../../config/save-types.js";
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
 	override item: PowerContainer;
@@ -67,6 +68,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			DEFENSES: Object.fromEntries(DEFENSECHOICES.map( x=> [x, x])),
 			SHADOW_CHARGE_REQ: SHADOW_CHARGE_REQ,
 			SLOT_TYPES_EXPANDED: SLOT_TYPES_EXPANDED,
+			SAVE_DIFFICULTY: SAVE_TYPES_LOCALIZED,
 		};
 		return this._powerStuffBase;
 	}

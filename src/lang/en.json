@@ -414,6 +414,11 @@
 	"persona.social.card.rolls.types.save": "Save Roll",
 	"persona.social.card.rolls.types.gmspecial": "GM Special",
 
+	"persona.saves.types.easy": "Easy",
+	"persona.saves.types.normal": "Normal",
+	"persona.saves.types.hard": "Hard",
+
+
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",
 	"persona.availability.-": "Normal (-)",

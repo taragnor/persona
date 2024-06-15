@@ -54,7 +54,7 @@ type CardRollList = {
 	}
 	"save" : {
 		rollType: "save",
-		type: SaveType,
+		saveType: SaveType,
 		modifier: number,
 		disallow_other_modifiers: boolean,
 		effects: ConditionalEffect[],
