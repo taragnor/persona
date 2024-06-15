@@ -27,7 +27,6 @@
 			{{#each opportunity.conditions as |cond j|}}
 			{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat "system.opportunity_list." i ".conditions." j ".")  cond=cond POWERSTUFF=../../item.sheet.powerStuff condition_index=j}}
 			{{/each}}
-
 		</div>
 
 		<div>
@@ -37,9 +36,7 @@
 		<textarea name="system.opportunity_list.{{i}}.text">
 			{{opportunity.text}}
 		</textarea>
-		<div class="card-roll">
-			{{> "systems/persona/parts/card-roll-section.hbs" CONST=../SOCIAL_DATA namePrefix=(strcat "system.opportunity_list." i ".roll.") roll=opportunity.roll opp_index=i item=../item}}
-		</div>
+		{{> "systems/persona/parts/card-roll-section.hbs" CONST=../SOCIAL_DATA namePrefix=(strcat "system.opportunity_list." i ".roll.") roll=opportunity.roll opp_index=i item=../item}}
 	</div>
 	{{/each}}
 

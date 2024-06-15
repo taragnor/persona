@@ -162,6 +162,7 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 					num: 0
 				},
 			}),
+			num_of_events: new num({initial: 0, min:0, max: 5, integer:true}),
 			events: new arr( new obj<CardEvent>()),
 			automatic: new txt(),
 			skill: new txt<"primary" | "secondary">({initial: "primary"}),
@@ -174,6 +175,7 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 			opportunity_choices: new num({initial:0, integer: true, min: 0, max: 10}),
 			opportunity_list: new arr(new obj<Opportunity>()),
 			bane: new txt(),
+			boon: new txt(),
 			critical: new txt(),
 			active: new bool({initial: false}),
 		}

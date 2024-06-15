@@ -1,3 +1,5 @@
+import { CardChoice } from "../../config/social-card-config.js";
+import { CardEvent } from "../../config/social-card-config.js";
 import { Consequence } from "../combat/combat-result.js";
 import { Precondition } from "../../config/precondition-types.js";
 import { BASIC_POWER_NAMES } from "../../config/basic-powers.js";
@@ -620,6 +622,40 @@ const power = PersonaDB.getBasicPower(powerName);
 				throw new PersonaError(`d6 roll doesn't fall within range: ${d6roll}`);
 		}
 		await this.update({ "system.availability": avail});
+	}
+
+	async addCardEvent(this: SocialCard) {
+		const newEv : CardEvent = {
+			name: "Unnamed Event",
+			frequency: 1,
+			choices: []
+		};
+		this.system.events.push( newEv);
+		this.update({"system.events": this.system.events});
+	}
+
+	async deleteCardEvent(this: SocialCard, eventIndex: number) {
+		this.system.events.splice(eventIndex, 1);
+		this.update({"system.events": this.system.events});
+	}
+
+	async addEventChoice(this: SocialCard, eventIndex: number) {
+		const event = this.system.events[eventIndex];
+		event.choices = ArrayCorrector(event.choices);
+		const newChoice: CardChoice = {
+			conditions: [],
+			text: "",
+			roll: {rollType: "none"},
+		};
+		event.choices.push( newChoice);
+		await this.update({"system.events": this.system.events});
+	}
+
+	async deleteEventChoice(this: SocialCard, eventIndex: number, choiceIndex: number) {
+		const event = this.system.events[eventIndex];
+		event.choices = ArrayCorrector(event.choices);
+		event.choices.splice(choiceIndex, 1);
+		await this.update({"system.events": this.system.events});
 	}
 
 }

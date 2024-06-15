@@ -9,35 +9,55 @@
 	 </select>
 	</div>
 
+  <div class="automatic">
+	  <h4>Automatic</h4>
+	  <textarea name="system.automatic">
+		  {{trim item.system.automatic}}
+	  </textarea>
+  </div>
+
   <div class="perk">
-	  <label> Perk</label>
+	  <h4>
+		  Perk
+	  </h4>
 	  <select name="system.perkType">
 		  {{selectOptions PERK_TYPES localize=true selected=item.system.perkType}}
 	  </select>
 	  <textarea name="system.perk">
-		  {{item.system.perk}}
+		  {{trim item.system.perk}}
 	  </textarea>
   </div>
 
   <div class="cameo">
-	  <label> Cameo</label>
+	  <h4> Cameo</h4>
 	  <select name="system.cameoType">
 		  {{selectOptions CAMEO_TYPES localize=true selected=item.system.cameoType}}
 	  </select>
 	  <textarea name="system.cameo">
-		  {{item.system.cameo}}
+		  {{trim item.system.cameo}}
 	  </textarea>
 	  <label> Cameo Opportunity</label>
 	  <textarea name="system.cameoOpportunity">
-		  {{item.system.cameo}}
+		  {{trim item.system.cameo}}
 	  </textarea>
   </div>
 
-		  {{> "systems/persona/parts/card-opportunity-section.hbs" item=item SOCIAL_DATA=SOCIAL_DATA}}
+  {{> "systems/persona/parts/card-opportunity-section.hbs" item=item SOCIAL_DATA=SOCIAL_DATA}}
 
-  <section class="events">
-			{{> "systems/persona/parts/card-events-section.hbs" item=item SOCIAL_DATA=SOCIAL_DATA}}
-  </section>
+  {{> "systems/persona/parts/card-events-section.hbs" item=item SOCIAL_DATA=SOCIAL_DATA}}
+
+  <div class="bane">
+	  <label>Bane</label>
+	  <textarea name="system.bane">
+		  {{trim item.system.bane}}
+	  </textarea>
+  </div>
+  <div class="boon">
+	  <label>Boon</label>
+	  <textarea name="system.boon">
+		  {{trim item.system.boon}}
+	  </textarea>
+  </div>
 
 
 </form>

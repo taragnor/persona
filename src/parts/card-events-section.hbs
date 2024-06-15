@@ -1,24 +1,36 @@
 <section class="events-section">
-<h3>
-	Events
+	<h3>
+		Events
 		<a class="add-event">
 			<i class="fa-solid fa-plus"> </i>
 		</a>
-</h3>
-{{#each item.system.events as |event i|}}
-<div class="card-event" data-event-index="{{i}}">
-<label> Frequency</label>
-<input class="short" type=number name="system.events.{{i}}.frequency" value="{{event.frequency}}">
+	</h3>
+	<label> Number of Events</label>
+		<input class="short" type="number" name="system.num_of_events" value="{{item.system.num_of_events}}">
 
-{{#each event.choices as |choice j|}}
-<div class="choice" data-choice-index="{{j}}">
-	<h4> Choice {{j}}</h4>
-	{{> "systems/persona/parts/input-card-choice.hbs" CONST=../../SOCIAL_DATA POWERSTUFF=../../item.sheet.powerStuff namePrefix=(strcat "system.events." i ".choices." j ".") }}
-</div>
-{{/each}}
+		{{#each item.system.events as |event i|}}
+		<div class="card-event" data-event-index="{{i}}">
+			<h3>
+			<input type=string name="system.events.{{i}}.name" value="{{event.name}}">
+				<a class="del-event">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</h3>
+			<label> Frequency</label>
+			<input class="short" type=number name="system.events.{{i}}.frequency" value="{{event.frequency}}">
 
-</div>
-{{/each}}
+		<h4> Choices
+			<a class="add-choice">
+				<i class="fa-solid fa-plus"> </i>
+			</a>
+		</h4>
+
+		{{#each event.choices as |choice j|}}
+		{{> "systems/persona/parts/input-card-choice.hbs" CONST=../../SOCIAL_DATA POWERSTUFF=../../item.sheet.powerStuff namePrefix=(strcat "system.events." i ".choices." j ".") choiceIndex=j item=../../item choice=choice}}
+		{{/each}}
+
+	</div>
+	{{/each}}
 
 </section>
 

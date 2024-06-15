@@ -68,6 +68,10 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 		html.find(".del-condition").on("click", this.deleteConditional.bind(this));
 		html.find(".add-consequence").on("click", this.addConsequence.bind(this));
 		html.find(".del-consequence").on("click", this.deleteConsequence.bind(this));
+		html.find(".add-event").on("click", this.addCardEvent.bind(this));
+		html.find(".del-event").on("click", this.deleteCardEvent.bind(this));
+		html.find(".add-choice").on("click", this.addChoice.bind(this));
+		html.find(".del-choice").on("click", this.deleteChoice.bind(this));
 
 	}
 
@@ -182,6 +186,27 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 		const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
 		const consequenceIndex = Number(HTMLTools.getClosestData(ev, "consequenceIndex"));
 		return await card.deleteConsequence(...location, effectIndex, consequenceIndex);
+	}
+
+	async addCardEvent( _ev: JQuery.ClickEvent) {
+		await this.item.addCardEvent();
+	}
+	async deleteCardEvent( ev: JQuery.ClickEvent) {
+		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
+		await this.item.deleteCardEvent(eventIndex);
+
+	}
+
+	async addChoice(ev: JQuery.ClickEvent) {
+		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
+		await this.item.addEventChoice(eventIndex);
+
+	}
+
+	async deleteChoice(ev: JQuery.ClickEvent) {
+		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
+		const choiceIndex = Number(HTMLTools.getClosestData(ev, "choiceIndex"));
+		await this.item.deleteEventChoice(eventIndex,choiceIndex);
 	}
 
 }

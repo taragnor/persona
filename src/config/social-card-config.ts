@@ -30,13 +30,14 @@ export const SOCIAL_CARD_TYPES = Object.fromEntries(
 	SOCIAL_CARD_TYPES_LIST.map(a=> [a, `persona.social.card.types.${a}`])
 );
 
-type CardChoice = {
+export type CardChoice = {
 	conditions: Precondition[],
 	text: string,
 	roll: CardRoll, //defaults to "none"
 };
 
 export type CardEvent = {
+	name: string,
 	frequency: number, //defaults to 1
 	choices: CardChoice[]
 };

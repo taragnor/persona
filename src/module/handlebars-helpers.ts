@@ -148,8 +148,13 @@ export class PersonaHandleBarsHelpers {
 				return false;
 			}
 			return true;
-		}
+		},
 
+		"trim" : function (str: string) {
+			if (typeof str == "string")
+				return str.trim();
+			else return str;
+		},
 	}
 
 } //end of class

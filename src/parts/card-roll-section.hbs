@@ -1,27 +1,29 @@
-<select name='{{strcat namePrefix "rollType"}}'>
-	{{selectOptions CONST.ROLLTYPES localize=true selected=roll.rollType}}
-</select>
-{{#if (eq roll.rollType "studentSkillCheck")}}
-<select name='{{strcat namePrefix "studentSkill"}}'>
-	{{selectOptions CONST.STUDENT_SKILLS localize=true selected=roll.studentSkill}}
-</select>
-{{/if}}
-{{#if (eq roll.rollType "save")}}
-<div>
-	<select name='{{strcat namePrefix "saveType"}}'>
-		{{selectOptions CONST.SAVE_DIFFICULTY localize=true selected=roll.saveType}}
+<div class="card-roll">
+	<select name='{{strcat namePrefix "rollType"}}'>
+		{{selectOptions CONST.ROLLTYPES localize=true selected=roll.rollType}}
 	</select>
-	<label> Disallow Other Modifiers</label>
-	<input type="checkbox" id="flagState" name="{{strcat namePrefix 'disallow_other_modifiers'}}" {{checked roll.disallow_other_modifiers}}>
-</div>
-{{/if}}
-{{#if (eqAny roll.rollType "studentSkillCheck" "save")}}
-<div>
-	<label>
-		Modifier
-	</label>
-	<input class="short" type=number name='{{strcat namePrefix "modifier"}}' value="{{roll.modifier}}">
-</div>
+	{{#if (eq roll.rollType "studentSkillCheck")}}
+	<select name='{{strcat namePrefix "studentSkill"}}'>
+		{{selectOptions CONST.STUDENT_SKILLS localize=true selected=roll.studentSkill}}
+	</select>
+	{{/if}}
+	{{#if (eq roll.rollType "save")}}
+	<div>
+		<select name='{{strcat namePrefix "saveType"}}'>
+			{{selectOptions CONST.SAVE_DIFFICULTY localize=true selected=roll.saveType}}
+		</select>
+		<label> Disallow Other Modifiers</label>
+		<input type="checkbox" id="flagState" name="{{strcat namePrefix 'disallow_other_modifiers'}}" {{checked roll.disallow_other_modifiers}}>
+	</div>
+	{{/if}}
+	{{#if (eqAny roll.rollType "studentSkillCheck" "save")}}
+	<div>
+		<label>
+			Modifier
+		</label>
+		<input class="short" type=number name='{{strcat namePrefix "modifier"}}' value="{{roll.modifier}}">
+	</div>
 
 {{> "systems/persona/parts/effects-section-adaptable.hbs" namePrefix=(strcat namePrefix "effects.") effects=roll.effects POWERSTUFF=item.sheet.powerStuff item=item}}
 {{/if}}
+</div>
