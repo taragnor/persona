@@ -12,7 +12,8 @@
 
 {{#each event.choices as |choice j|}}
 <div class="choice" data-choice-index="{{j}}">
-	{{> "systems/persona/parts/input-card-choice.hbs" CONST=../../SOCIAL_DATA namePrefix=(strcat "system.events." i ".choices." j ".") choice=choices }}
+	<h4> Choice {{j}}</h4>
+	{{> "systems/persona/parts/input-card-choice.hbs" CONST=../../SOCIAL_DATA POWERSTUFF=../../item.sheet.powerStuff namePrefix=(strcat "system.events." i ".choices." j ".") }}
 </div>
 {{/each}}
 

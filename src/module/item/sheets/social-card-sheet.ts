@@ -97,7 +97,8 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 		let opList =card.system.opportunity_list;
 		const newOpportunity : Opportunity = {
 			choices: 1,
-			prereqs: [],
+			//TODO: Add this to the actual opportunity sheet, right now doesn't have a conditions entry section
+			conditions: [],
 			text: "",
 			roll: {
 				rollType: "none",

@@ -1,3 +1,4 @@
+import { Precondition } from "./precondition-types";
 import { SaveType } from "./save-types";
 import { SocialStat } from "./student-skills";
 import { WeatherType } from "./weather-types";
@@ -30,7 +31,7 @@ export const SOCIAL_CARD_TYPES = Object.fromEntries(
 );
 
 type CardChoice = {
-	prereqs: CardPrereq[],
+	conditions: Precondition[],
 	text: string,
 	roll: CardRoll, //defaults to "none"
 };

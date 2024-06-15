@@ -1,7 +1,17 @@
 
+<h5> Conditions
+	<a class="add-condition">
+		<i class="fa-solid fa-plus"> </i>
+	</a>
+</h5>
+
+{{#each choice.conditions as |cond i|}}
+
+{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat namePrefix ".conditions.")  cond=cond POWERSTUFF=POWERSTUFF}}
+
+{{/each}}
 
 <textarea name="{{strcat namePrefix "text"}}">
 	{{choice.text}}
 </textarea>
-
 
