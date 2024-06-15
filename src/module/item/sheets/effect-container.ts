@@ -92,12 +92,19 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
-		html.find(".addPowerEffect").on("click", this.addPowerEffect.bind(this));
-		html.find(".addCondition").on("click", this.addPrecondition.bind(this));
-		html.find(".addConsequence").on("click", this.addConsequence.bind(this));
-		html.find(".delConsequence").on("click", this.deleteConsequence.bind(this));
-		html.find(".delCondition").on("click", this.deletePrecondition.bind(this));
-		html.find(".delEffect").on("click", this.deletePowerEffect.bind(this));
+		html.find(".add-effect").on("click", this.addPowerEffect.bind(this));
+		html.find(".add-condition").on("click", this.addPrecondition.bind(this));
+		html.find(".add-consequence").on("click", this.addConsequence.bind(this));
+		html.find(".del-consequence").on("click", this.deleteConsequence.bind(this));
+		html.find(".del-condition").on("click", this.deletePrecondition.bind(this));
+		html.find(".del-effect").on("click", this.deletePowerEffect.bind(this));
+
+		// html.find(".add-PowerEffect").on("click", this.addPowerEffect.bind(this));
+		// html.find(".addCondition").on("click", this.addPrecondition.bind(this));
+		// html.find(".addConsequence").on("click", this.addConsequence.bind(this));
+		// html.find(".delConsequence").on("click", this.deleteConsequence.bind(this));
+		// html.find(".delCondition").on("click", this.deletePrecondition.bind(this));
+		// html.find(".delEffect").on("click", this.deletePowerEffect.bind(this));
 	}
 
 	async addPowerEffect() {

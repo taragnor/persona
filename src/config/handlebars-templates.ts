@@ -10,8 +10,6 @@ const templateFileNames : string[] =[
 	"resistance-section.hbs",
 	"defenses-section.hbs",
 	"incremental-section.hbs",
-	"conditions-section.hbs",
-	"consequences-section.hbs",
 	"effects-section.hbs",
 	"effects-section-adaptable.hbs",
 	"powers-table.hbs",
