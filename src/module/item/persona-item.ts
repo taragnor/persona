@@ -238,6 +238,7 @@ const power = PersonaDB.getBasicPower(powerName);
 					if (!("effects" in roll)) {
 						throw new PersonaError("something weird happened");
 					}
+					roll.effects = ArrayCorrector(roll.effects);
 					roll.effects.push( PersonaItem.newConditionalEffectsObject());
 					await this.update({"system.opportunity_list": list});
 					break;
@@ -267,6 +268,7 @@ const power = PersonaDB.getBasicPower(powerName);
 				const list = this.system.opportunity_list;
 				const roll = list[opportunity_index!].roll;
 				if (("effects" in roll)) {
+					roll.effects = ArrayCorrector(roll.effects);
 					roll.effects.splice(effect_index!, 1);
 					await this.update({"system.opportunity_list": list});
 				}
@@ -299,7 +301,9 @@ const power = PersonaDB.getBasicPower(powerName);
 				const list = this.system.opportunity_list;
 				const roll = list[opportunity_index!].roll;
 				if (("effects" in roll)) {
+					roll.effects= ArrayCorrector(roll.effects);
 					const effect = roll.effects[effect_index!];
+					effect.conditions = ArrayCorrector(effect.conditions);
 					effect.conditions.push({
 						type: "always"
 					});
@@ -320,6 +324,33 @@ const power = PersonaDB.getBasicPower(powerName);
 		await this.update({"system.effects": this.system.effects});
 	}
 
+	async deleteCondition(this: PowerContainer, effectIndex: number, condIndex: number): Promise<void>;
+	async deleteCondition(this: SocialCard, location: "opportunity", opportunityIndex: number, effectIndex: number, condIndex: number): Promise<void>;
+	async deleteCondition(this: SocialCard | PowerContainer, locationOrIndex: "opportunity" | number, opportunityIndex: number, effectIndex?: number, condIndex?: number): Promise<void> {
+		if (this.system.type != "socialCard") {
+			return await (this as PowerContainer).deletePowerPrecondition(locationOrIndex as number, opportunityIndex);
+		}
+		switch (locationOrIndex) {
+			case "opportunity": {
+				const card = this as SocialCard;
+				const list = this.system.opportunity_list;
+				const roll = list[opportunityIndex!].roll;
+				if (("effects" in roll)) {
+					roll.effects= ArrayCorrector(roll.effects);
+					const effect = roll.effects[effectIndex!];
+					effect.conditions = ArrayCorrector(effect.conditions);
+					effect.conditions.splice(condIndex!, 1);
+					await this.update({"system.opportunity_list": list});
+				}
+			}
+				break;
+			default:
+				locationOrIndex satisfies number | undefined;
+				throw new PersonaError(`invalid location: ${locationOrIndex}`);
+		}
+	}
+
+
 	async addNewPowerConsequence(this: PowerContainer, index:number) {
 		const x = this.system.effects[index];
 		x.consequences = ArrayCorrector(x.consequences);
@@ -329,6 +360,63 @@ const power = PersonaDB.getBasicPower(powerName);
 		});
 		await this.update({"system.effects": this.system.effects});
 	}
+
+	async addConsequence(this: PowerContainer, effectIndex: number): Promise<void>;
+	async addConsequence(this: SocialCard, location: "opportunity", opportunityIndex:number, effectIndex: number): Promise<void>;
+	async addConsequence(this: SocialCard | PowerContainer, locationOrIndex: "opportunity"| number, opportunityIndex?: number, effectIndex?: number){
+		if (this.system.type != "socialCard") {
+			return await (this as PowerContainer).addNewPowerConsequence(locationOrIndex as number);
+		}
+		switch (locationOrIndex) {
+			case "opportunity": {
+				const card = this as SocialCard;
+				const list = this.system.opportunity_list;
+				const roll = list[opportunityIndex!].roll;
+				if (("effects" in roll)) {
+					roll.effects= ArrayCorrector(roll.effects);
+					const effect = roll.effects[effectIndex!];
+					effect.consequences = ArrayCorrector(effect.consequences);
+					effect.consequences.push({
+						type: "none",
+						amount: 0,
+					});
+					await this.update({"system.opportunity_list": list});
+				}
+			}
+				break;
+			default:
+				locationOrIndex satisfies number | undefined;
+				throw new PersonaError(`invalid location: ${locationOrIndex}`);
+		}
+	}
+
+	async deleteConsequence(this: PowerContainer, effectIndex: number, consIndex: number): Promise<void>;
+	async deleteConsequence(this: SocialCard, location: "opportunity", opportunityIndex: number, effectIndex: number, consIndex: number): Promise<void>;
+	async deleteConsequence(this: SocialCard | PowerContainer, locationOrIndex: "opportunity" | number, index1: number, index2?: number, index3?: number): Promise<void> {
+		if (this.system.type != "socialCard") {
+			return await (this as PowerContainer).deletePowerConsequence(locationOrIndex as number, index1);
+		}
+		switch (locationOrIndex) {
+			case "opportunity": {
+				const card = this as SocialCard;
+				const list = this.system.opportunity_list;
+				const roll = list[index1!].roll;
+				if (("effects" in roll)) {
+					roll.effects= ArrayCorrector(roll.effects);
+					const effect = roll.effects[index2!];
+					effect.consequences = ArrayCorrector(effect.consequences);
+					effect.consequences.splice(index3!, 1);
+					await this.update({"system.opportunity_list": list});
+				}
+			}
+				break;
+			default:
+				locationOrIndex satisfies number | undefined;
+				throw new PersonaError(`invalid location: ${locationOrIndex}`);
+		}
+	}
+
+
 
 	async deletePowerConsequence (this: PowerContainer, effectIndex: number, consIndex: number) {
 		const x = this.system.effects[effectIndex];

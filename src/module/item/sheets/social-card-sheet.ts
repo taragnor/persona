@@ -39,6 +39,11 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 		return data;
 	}
 
+	get powerStuff() {
+		const data = PersonaEffectContainerBaseSheet.powerStuff;
+		return data;
+	}
+
 	static override get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {
 			classes: ["persona", "sheet", "actor"],
@@ -58,6 +63,9 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 		html.find(".add-effect").on("click", this.addCardEffect.bind(this));
 		html.find(".del-effect").on("click", this.deleteCardEffect.bind(this));
 		html.find(".add-condition").on("click", this.addConditional.bind(this));
+		html.find(".del-condition").on("click", this.deleteConditional.bind(this));
+		html.find(".add-consequence").on("click", this.addConsequence.bind(this));
+		html.find(".del-consequence").on("click", this.deleteConsequence.bind(this));
 
 	}
 
@@ -148,5 +156,39 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 			return await card.addCondition("opportunity", indexNum, effectIndex);
 		}
 	}
+
+	async deleteConditional(ev: JQuery.ClickEvent) {
+		const card = this.item;
+		const opportunityIndexStr= HTMLTools.getClosestData(ev, "opportunityIndex");
+		if (opportunityIndexStr != undefined) {
+			const indexNum = Number(opportunityIndexStr);
+			const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+			const conditionIndex = Number(HTMLTools.getClosestData(ev, "preconditionIndex"));
+			return await card.deleteCondition("opportunity", indexNum, effectIndex, conditionIndex);
+		}
+	}
+
+	async addConsequence(ev: JQuery.ClickEvent) {
+		const card = this.item;
+		const opportunityIndexStr= HTMLTools.getClosestData(ev, "opportunityIndex");
+		if (opportunityIndexStr != undefined) {
+			const indexNum = Number(opportunityIndexStr);
+			const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+			return await card.addConsequence("opportunity", indexNum, effectIndex);
+		}
+	}
+
+	async deleteConsequence(ev: JQuery.ClickEvent) {
+		const card = this.item;
+		const opportunityIndexStr= HTMLTools.getClosestData(ev, "opportunityIndex");
+		if (opportunityIndexStr != undefined) {
+			const indexNum = Number(opportunityIndexStr);
+			const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+			const consequenceIndex = Number(HTMLTools.getClosestData(ev, "consequenceIndex"));
+			return await card.deleteConsequence("opportunity", indexNum, effectIndex, consequenceIndex);
+		}
+	}
+
 }
+
 

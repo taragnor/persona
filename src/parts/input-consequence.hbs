@@ -7,18 +7,18 @@
 	</div>
 	<div class="type-select">
 		<select name="{{strcat namePrefix 'type'}}">
-			{{selectOptions ../POWERSTUFF.CONSTYPES localize=true selected=cons.type}}
+			{{selectOptions POWERSTUFF.CONSTYPES localize=true selected=cons.type}}
 		</select>
 	</div>
 	{{#if (or (eq cons.type "addStatus") (eq cons.type "removeStatus"))}}
 	<select name="{{strcat namePrefix 'statusName' }}">
-		{{selectOptions ../POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
+		{{selectOptions POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
 	</select>
 	{{/if}}
 	{{#if (eq cons.type "addStatus")}}
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 	<select name="{{strcat namePrefix 'statusDuration'}}">
-		{{selectOptions ../POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusDuration}}
+		{{selectOptions POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusDuration}}
 	</select>
 	{{/if}}
 	{{#if (eqAny cons.type "dmg-mult" "revive" "escalationManipulation" "modifier" "recover-slot")}}
@@ -40,33 +40,33 @@
 	{{/if}}
 	{{#if (eqAny cons.type "modifier" "add-escalation")}}
 	<select name="{{strcat namePrefix 'modifiedField'}}">
-		{{selectOptions ../POWERSTUFF.MODIFIER_TARGETS localize=true selected=cons.modifiedField}}
+		{{selectOptions POWERSTUFF.MODIFIER_TARGETS localize=true selected=cons.modifiedField}}
 	</select>
 	{{/if}}
 	{{#if (eq cons.type "recover-slot")}}
 	<label> Slot</label>
 	<select name="{{strcat namePrefix 'slotType'}}">
-		{{selectOptions ../POWERSTUFF.SLOT_TYPES_EXPANDED localize=true selected=cons.slotType}}
+		{{selectOptions POWERSTUFF.SLOT_TYPES_EXPANDED localize=true selected=cons.slotType}}
 	</select>
 	{{/if}}
 	{{#if (eq cons.type	"add-power-to-list")}}
 	<select name="{{strcat namePrefix 'id'}}">
-		{{selectOptions ../POWERSTUFF.COMPENDIUM_POWERS localize=false selected=cons.id}}
+		{{selectOptions POWERSTUFF.COMPENDIUM_POWERS localize=false selected=cons.id}}
 	</select>
 	{{/if}}
 
 	{{#if (eq cons.type	"other-effect")}}
 	<select name="{{strcat namePrefix 'otherEffect'}}">
-		{{selectOptions ../POWERSTUFF.OTHER_CONSEQUENCES localize=true selected=cons.otherEffect}}
+		{{selectOptions POWERSTUFF.OTHER_CONSEQUENCES localize=true selected=cons.otherEffect}}
 	</select>
 	{{/if}}
 	{{#if (eqAny cons.type "raise-resistance" "lower-resistance")}}
 	<div>
 		<select name="{{strcat namePrefix 'resistType'}}">
-			{{selectOptions ../POWERSTUFF.DAMAGETYPES localize=true selected=cons.resistType}}
+			{{selectOptions POWERSTUFF.DAMAGETYPES localize=true selected=cons.resistType}}
 		</select>
 		<select name="{{strcat namePrefix 'resistanceLevel'}}">
-			{{selectOptions ../POWERSTUFF.RESIST_STRENGTHS localize=true selected=cons.resistanceLevel}}
+			{{selectOptions POWERSTUFF.RESIST_STRENGTHS localize=true selected=cons.resistanceLevel}}
 		</select>
 	</div>
 	{{/if}}
@@ -85,7 +85,7 @@
 		<input type="checkbox" name="{{strcat namePrefix 'flagState'}}" {{checked cons.flagState}}>
 	</div>
 	<select name="{{strcat namePrefix 'statusDuration'}}">
-		{{selectOptions ../POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusDuration}}
+		{{selectOptions POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusDuration}}
 	</select>
 
 	{{/if}}
@@ -97,7 +97,7 @@
 		</textarea>
 	</div>
 	{{/if}}
-	<a class="delConsequence">
+	<a class="del-consequence">
 		<i class="fa-solid fa-trash-can"></i>
 	</a>
 </div>
