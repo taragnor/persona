@@ -1,4 +1,4 @@
-<section class="opportunity">
+<section class="opportunity-section">
 	<h3>
 		Opportunities
 		<a class="add-opportunity">
@@ -18,6 +18,18 @@
 				</a>
 			</span>
 		</h4>
+		<div class="opportunity-cond">
+			<h5> Conditions
+				<a class="add-condition">
+					<i class="fa-solid fa-plus"> </i>
+				</a>
+			</h5>
+			{{#each opportunity.conditions as |cond j|}}
+			{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat "system.opportunity_list." i ".conditions." j ".")  cond=cond POWERSTUFF=../../item.sheet.powerStuff condition_index=j}}
+			{{/each}}
+
+		</div>
+
 		<div>
 			<label> Number of Choices Expended </label>
 			<input class="short" type=number name="system.opportunity_list.{{i}}.choices" value="{{opportunity.choices}}">

@@ -343,3 +343,12 @@ section.qualifiers {
 	min-height: 4em;
 	max-height: 12em;
 }
+
+.social-card-sheet .opportunity-section {
+	border: 2px solid blue;
+	padding: 0.5rem;
+}
+.social-card-sheet .opportunity {
+	border: 1px solid black;
+	padding: 0.5rem;
+}

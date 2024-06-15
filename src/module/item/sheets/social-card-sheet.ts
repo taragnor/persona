@@ -122,74 +122,66 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 
 	async addCardEffect(ev: JQuery.ClickEvent) {
 		const card = this.item;
-		const opportunityIndexStr= HTMLTools.getClosestData(ev, "opportunityIndex");
-		if (opportunityIndexStr != undefined) {
-			const indexNum = Number(opportunityIndexStr);
-			if (Number.isNaN(indexNum)) {
-				throw new PersonaError("Opportunity Index is NaN");
-			}
-			return await card.addConditionalEffect("opportunity", indexNum);
-		}
+		const location = this.getEffectLocation(ev);
+		if (location[0] != "opportunity-roll")
+			throw new PersonaError("Trouble finding location");
+		return await card.addConditionalEffect("opportunity-roll", location[1]);
 	}
 
 	async deleteCardEffect(ev: JQuery.ClickEvent) {
-		console.log("Delete Card effect");
-		const card = this.item;
-		const opportunityIndexStr= HTMLTools.getClosestData(ev, "opportunityIndex");
+		const location = this.getEffectLocation(ev);
 
+		const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+		if (Number.isNaN(effectIndex)){
+			throw new PersonaError("Effect Index is NaN");
+		}
+		return await this.item
+			.deleteConditionalEffect(...location, effectIndex);
+	}
+
+	getEffectLocation(ev: JQuery.ClickEvent) : ["opportunity-condition" | "opportunity-roll", number] {
+		const opportunityIndexStr= HTMLTools.getClosestData(ev, "opportunityIndex");
 		if (opportunityIndexStr != undefined) {
 			const indexNum = Number(opportunityIndexStr);
-			const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
-			if (Number.isNaN(indexNum)) {
-				throw new PersonaError("Opportunity Index is NaN");
+
+			const evTarget = $(ev.currentTarget);
+			if ( evTarget.closest(".opportunity-cond").length > 0)
+				return ["opportunity-condition", indexNum];
+			if (evTarget.closest(".card-roll").length > 0) {
+				return ["opportunity-roll", indexNum];
 			}
-			if (Number.isNaN(effectIndex)){
-				throw new PersonaError("Effect Index is NaN");
-			}
-			return await card.deleteConditionalEffect("opportunity", indexNum, effectIndex);
 		}
+		throw new PersonaError("Unknwon Location");
 	}
 
 	async addConditional(ev: JQuery.ClickEvent) {
 		const card = this.item;
-		const opportunityIndexStr= HTMLTools.getClosestData(ev, "opportunityIndex");
-		if (opportunityIndexStr != undefined) {
-			const indexNum = Number(opportunityIndexStr);
-			const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
-			return await card.addCondition("opportunity", indexNum, effectIndex);
-		}
+		const location = this.getEffectLocation(ev);
+		const effectIndex = Number(HTMLTools.getClosestDataSafe(ev, "effectIndex", "-1"));
+		return await card.addCondition(...location, effectIndex);
 	}
 
 	async deleteConditional(ev: JQuery.ClickEvent) {
 		const card = this.item;
-		const opportunityIndexStr= HTMLTools.getClosestData(ev, "opportunityIndex");
-		if (opportunityIndexStr != undefined) {
-			const indexNum = Number(opportunityIndexStr);
-			const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
-			const conditionIndex = Number(HTMLTools.getClosestData(ev, "preconditionIndex"));
-			return await card.deleteCondition("opportunity", indexNum, effectIndex, conditionIndex);
-		}
+		const location = this.getEffectLocation(ev);
+		const effectIndex = Number(HTMLTools.getClosestDataSafe(ev, "effectIndex", -1));
+		const conditionIndex = Number(HTMLTools.getClosestData(ev, "preconditionIndex"));
+		return await card.deleteCondition(...location, effectIndex, conditionIndex);
 	}
 
 	async addConsequence(ev: JQuery.ClickEvent) {
 		const card = this.item;
-		const opportunityIndexStr= HTMLTools.getClosestData(ev, "opportunityIndex");
-		if (opportunityIndexStr != undefined) {
-			const indexNum = Number(opportunityIndexStr);
-			const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
-			return await card.addConsequence("opportunity", indexNum, effectIndex);
-		}
+		const location = this.getEffectLocation(ev);
+		const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+		return await card.addConsequence(...location, effectIndex);
 	}
 
 	async deleteConsequence(ev: JQuery.ClickEvent) {
 		const card = this.item;
-		const opportunityIndexStr= HTMLTools.getClosestData(ev, "opportunityIndex");
-		if (opportunityIndexStr != undefined) {
-			const indexNum = Number(opportunityIndexStr);
-			const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
-			const consequenceIndex = Number(HTMLTools.getClosestData(ev, "consequenceIndex"));
-			return await card.deleteConsequence("opportunity", indexNum, effectIndex, consequenceIndex);
-		}
+		const location = this.getEffectLocation(ev);
+		const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+		const consequenceIndex = Number(HTMLTools.getClosestData(ev, "consequenceIndex"));
+		return await card.deleteConsequence(...location, effectIndex, consequenceIndex);
 	}
 
 }

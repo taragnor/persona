@@ -19,6 +19,14 @@ export class HTMLTools {
 		}
 	}
 
+	static getClosestDataSafe<T extends string | number> (eventOrJQObj: Event | JQuery<HTMLElement> | JQuery.Event, prop: string, elseValue: T): T {
+		try {
+			return this.getClosestData(eventOrJQObj, prop);
+		} catch (_) {
+			return elseValue;
+		}
+	}
+
 	static convertForm(str: string) {
 		return Array.from(str).map(x => {
 			if (x === x.toLowerCase()) return x;

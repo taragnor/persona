@@ -170,7 +170,7 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 			perkType: new txt({choices: PERK_TYPES_LIST, initial: "standard"}),
 			perk: new txt( {initial: ""}),
 			cameoOpportunity: new txt(),
-			opportunity: new txt(),
+			opportunity: new txt(), //deprecated
 			opportunity_choices: new num({initial:0, integer: true, min: 0, max: 10}),
 			opportunity_list: new arr(new obj<Opportunity>()),
 			bane: new txt(),
