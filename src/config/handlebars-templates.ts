@@ -28,6 +28,7 @@ const templateFileNames : string[] =[
 	"card-roll-section.hbs",
 	"input-condition.hbs",
 	"input-consequence.hbs",
+	"input-card-choice.hbs",
 ];
 
 export const templatePaths = templateFileNames.

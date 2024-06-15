@@ -1,0 +1,24 @@
+<section class="events-section">
+<h3>
+	Events
+		<a class="add-event">
+			<i class="fa-solid fa-plus"> </i>
+		</a>
+</h3>
+{{#each item.system.events as |event i|}}
+<div class="card-event" data-event-index="{{i}}">
+<label> Frequency</label>
+<input class="short" type=number name="system.events.{{i}}.frequency" value="{{event.frequency}}">
+
+{{#each event.choices as |choice j|}}
+<div class="choice" data-choice-index="{{j}}">
+	{{> "systems/persona/parts/input-card-choice.hbs" CONST=../../SOCIAL_DATA namePrefix=(strcat "system.events." i ".choices." j ".") choice=choices }}
+</div>
+{{/each}}
+
+</div>
+{{/each}}
+
+</section>
+
+

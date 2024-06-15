@@ -37,8 +37,8 @@ type CardChoice = {
 
 export type CardEvent = {
 	frequency: number, //defaults to 1
-} & CardChoice;
-
+	choices: CardChoice[]
+};
 
 export type CardRoll = {rollType: typeof SOCIAL_CARD_ROLL_TYPES_LIST[number]} & CardRollList[keyof CardRollList];
 

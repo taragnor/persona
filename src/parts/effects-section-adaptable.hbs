@@ -1,29 +1,29 @@
 <hr>
 <div class="effects-list">
-	<h3> Effects
+	<h4> Effects
 		<a class="add-effect">
 			<i class="fa-solid fa-plus"> </i>
 		</a>
-	</h3>
+	</h4>
 	{{#each effects as |effect i|}}
 	<div class="flexrow" data-effect-index="{{i}}">
 		<div class="power-effect" >
 			<section class="conditions-section">
-				<h2> Conditions
+				<h5> Conditions
 					<a class="add-condition">
 						<i class="fa-solid fa-plus"> </i>
 					</a>
-				</h2>
+				</h5>
 				{{#each effect.conditions as |cond j|}}
 				{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat ../../namePrefix i ".conditions." j ".")  cond=cond POWERSTUFF=../../POWERSTUFF i=../i condition_index=j}}
 				{{/each}}
 			</section>
 			<section class="consequences-section">
-				<h2> Consequences
+				<h5> Consequences
 					<a class="add-consequence">
 						<i class="fa-solid fa-plus"> </i>
 					</a>
-				</h2>
+				</h5>
 				{{#each effect.consequences as |cons j|}}
 				{{> "systems/persona/parts/input-consequence.hbs" namePrefix=(strcat ../../namePrefix i ".consequences." j ".") cons=cons POWERSTUFF=../../POWERSTUFF i=../i consequence_index=j}}
 				{{/each}}

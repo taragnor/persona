@@ -1,23 +1,23 @@
 <section class="opportunity">
-	<h2>
+	<h3>
 		Opportunities
 		<a class="add-opportunity">
 			<i class="fa-solid fa-plus"> </i>
 		</a>
-	</h2>
+	</h3>
 	<label> Opportunity Choices</label>
 	<input class="short" type=number name="system.opportunity_choices" value="{{item.system.opportunity_choices}}">
 
 	{{#each item.system.opportunity_list as |opportunity i|}}
 	<div class="opportunity" data-opportunity-index="{{i}}">
-		<h3>
+		<h4>
 			Opportunity {{i}}
 			<span>
 				<a class="del-opportunity">
 					<i class="fa-solid fa-trash-can"></i>
 				</a>
 			</span>
-		</h3>
+		</h4>
 		<div>
 			<label> Number of Choices Expended </label>
 			<input class="short" type=number name="system.opportunity_list.{{i}}.choices" value="{{opportunity.choices}}">
