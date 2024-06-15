@@ -10,6 +10,14 @@
 
 	{{#each item.system.opportunity_list as |opportunity i|}}
 	<div class="opportunity" data-opportunity-index="{{i}}">
+		<h3>
+			Opportunity {{i}}
+			<span>
+				<a class="del-opportunity">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</span>
+		</h3>
 		<div>
 			<label> Number of Choices Expended </label>
 			<input class="short" type=number name="system.opportunity_list.{{i}}.choices" value="{{opportunity.choices}}">
@@ -20,11 +28,6 @@
 		<div class="card-roll">
 			{{> "systems/persona/parts/card-roll-section.hbs" CONST=../SOCIAL_DATA namePrefix=(strcat "system.opportunity_list." i ".roll.") roll=opportunity.roll opp_index=i item=../item}}
 		</div>
-		<span>
-			<a class="del-opportunity">
-				<i class="fa-solid fa-trash-can"></i>
-			</a>
-		</span>
 	</div>
 	{{/each}}
 
