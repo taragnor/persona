@@ -11,17 +11,19 @@ import { SOCIAL_CARD_TYPES } from "../../../config/social-card-config.js";
 import { SOCIAL_CARD_ROLL_TYPES } from "../../../config/social-card-config.js";
 import { STUDENT_SKILLS } from "../../../config/student-skills.js";
 import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
+import { PersonaItemSheetBase } from "./base-item-sheet.js";
 
 const PRIMARY_SECONDARY = {
 	"primary": "persona.term.primary",
 	"secondary": "persona.term.secondary",
 };
 
-export class PersonaSocialCardSheet extends PersonaEffectContainerBaseSheet {
+export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 	override item: SocialCard;
 
 	override async getData() {
 		const data = await super.getData();
+		data.POWERSTUFF =  PersonaEffectContainerBaseSheet.powerStuff;
 		data.SOCIAL_DATA = {
 			ROLLTYPES : SOCIAL_CARD_ROLL_TYPES,
 			STUDENT_SKILLS,
@@ -47,14 +49,17 @@ export class PersonaSocialCardSheet extends PersonaEffectContainerBaseSheet {
 		});
 	}
 
-	 override activateListeners(html: JQuery<HTMLElement>) {
-		 super.activateListeners(html);
-		 html.find(".add-qualifier").on("click", this.addQualifier.bind(this));
-		 html.find(".delete-qualifier").on("click", this.deleteQualifier.bind(this));
-		 html.find(".add-opportunity").on("click", this.addOpportunity.bind(this));
-		 html.find(".del-opportunity").on("click", this.deleteOpportunity.bind(this));
+	override activateListeners(html: JQuery<HTMLElement>) {
+		super.activateListeners(html);
+		html.find(".add-qualifier").on("click", this.addQualifier.bind(this));
+		html.find(".delete-qualifier").on("click", this.deleteQualifier.bind(this));
+		html.find(".add-opportunity").on("click", this.addOpportunity.bind(this));
+		html.find(".del-opportunity").on("click", this.deleteOpportunity.bind(this));
+		html.find(".add-effect").on("click", this.addCardEffect.bind(this));
+		html.find(".del-effect").on("click", this.deleteCardEffect.bind(this));
+		html.find(".add-condition").on("click", this.addConditional.bind(this));
 
-	 }
+	}
 
 	async addQualifier(_ev: JQuery.ClickEvent) {
 		const qual = ArrayCorrector(this.item.system.qualifiers);
@@ -104,4 +109,44 @@ export class PersonaSocialCardSheet extends PersonaEffectContainerBaseSheet {
 		await card.update({"system.opportunity_list": opList});
 	}
 
+	async addCardEffect(ev: JQuery.ClickEvent) {
+		const card = this.item;
+		const opportunityIndexStr= HTMLTools.getClosestData(ev, "opportunityIndex");
+		if (opportunityIndexStr != undefined) {
+			const indexNum = Number(opportunityIndexStr);
+			if (Number.isNaN(indexNum)) {
+				throw new PersonaError("Opportunity Index is NaN");
+			}
+			return await card.addConditionalEffect("opportunity", indexNum);
+		}
+	}
+
+	async deleteCardEffect(ev: JQuery.ClickEvent) {
+		console.log("Delete Card effect");
+		const card = this.item;
+		const opportunityIndexStr= HTMLTools.getClosestData(ev, "opportunityIndex");
+
+		if (opportunityIndexStr != undefined) {
+			const indexNum = Number(opportunityIndexStr);
+			const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+			if (Number.isNaN(indexNum)) {
+				throw new PersonaError("Opportunity Index is NaN");
+			}
+			if (Number.isNaN(effectIndex)){
+				throw new PersonaError("Effect Index is NaN");
+			}
+			return await card.deleteConditionalEffect("opportunity", indexNum, effectIndex);
+		}
+	}
+
+	async addConditional(ev: JQuery.ClickEvent) {
+		const card = this.item;
+		const opportunityIndexStr= HTMLTools.getClosestData(ev, "opportunityIndex");
+		if (opportunityIndexStr != undefined) {
+			const indexNum = Number(opportunityIndexStr);
+			const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+			return await card.addCondition("opportunity", indexNum, effectIndex);
+		}
+	}
 }
+

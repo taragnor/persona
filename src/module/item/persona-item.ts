@@ -204,19 +204,77 @@ const power = PersonaDB.getBasicPower(powerName);
 		}
 	}
 
-	async addNewPowerEffect(this: PowerContainer) {
-		const arr= this.system.effects ?? [];
-		arr.push( {
+	static newConditionalEffectsObject() {
+		return {
 			conditions: [],
 			consequences: []
-		});
+		};
+	}
+
+	async addNewPowerEffect(this: PowerContainer) {
+		const arr= this.system.effects ?? [];
+		arr.push(
+			PersonaItem.newConditionalEffectsObject()
+		);
 		await this.update({ "system.effects": arr});
+	}
+
+	async addConditionalEffect(this: PowerContainer): Promise<void>;
+	async addConditionalEffect(this: SocialCard, location: "opportunity" | "event", index: number) :Promise<void> 
+	async addConditionalEffect(this: SocialCard | PowerContainer, location?: "opportunity" | "event", index?: number) :Promise<void>
+	{
+		if (this.system.type != "socialCard") {
+			return await (this as Exclude<typeof this, SocialCard>).addNewPowerEffect();
+		} else {
+			const card = this as SocialCard;
+			if (index == undefined)  throw new PersonaError("no index provided");
+			switch (location) {
+				case "opportunity":
+					const list = this.system.opportunity_list;
+				const roll = list[index].roll;
+					if (!("effects" in roll)) {
+						(roll as any)["effects"] = [];
+					}
+					if (!("effects" in roll)) {
+						throw new PersonaError("something weird happened");
+					}
+					roll.effects.push( PersonaItem.newConditionalEffectsObject());
+					await this.update({"system.opportunity_list": list});
+					break;
+				case "event":
+					throw new PersonaError("Not yet implemented");
+				default:
+					location satisfies undefined;
+					throw new PersonaError(`Not yet implemented for location ${location}`);
+			}
+		}
 	}
 
 	async deletePowerEffect(this: PowerContainer, index: number) : Promise<void> {
 		let arr =this.system.effects ?? [];
 		arr.splice(index, 1);
 		await this.update({ "system.effects": arr});
+	}
+
+	async deleteConditionalEffect(this: PowerContainer, effect_index: number): Promise<void>;
+	async deleteConditionalEffect(this: SocialCard, location: "opportunity", opportunity_index: number, effect_index: number) : Promise<void>;
+	async deleteConditionalEffect(this: SocialCard | PowerContainer, locationOrIndex?: number | "opportunity", opportunity_index?: number, effect_index?: number) : Promise<void> {
+		if (this.system.type != "socialCard") {
+			return await (this as Exclude<typeof this, SocialCard>) .deletePowerEffect(locationOrIndex as number);
+		}
+		switch (locationOrIndex) {
+			case "opportunity":
+				const list = this.system.opportunity_list;
+				const roll = list[opportunity_index!].roll;
+				if (("effects" in roll)) {
+					roll.effects.splice(effect_index!, 1);
+					await this.update({"system.opportunity_list": list});
+				}
+				return;
+			default:
+				locationOrIndex satisfies undefined | number;
+				throw new PersonaError(`invalid location: ${locationOrIndex}`);
+		}
 	}
 
 	async addNewPowerPrecondition(this: PowerContainer, index:number) {
@@ -226,6 +284,33 @@ const power = PersonaDB.getBasicPower(powerName);
 			type: "always"
 		});
 		await this.update({"system.effects": this.system.effects});
+	}
+
+	async addCondition(this: PowerContainer, effect_index: number) : Promise<void>;
+	async addCondition(this: SocialCard, location: "opportunity", opportunity_index: number, effect_index: number): Promise<void>;
+	async addCondition(this: SocialCard | PowerContainer, locationOrIndex: "opportunity" | number, opportunity_index?: number, effect_index?: number): Promise<void>
+	{
+		if (this.system.type != "socialCard") {
+			return await (this as PowerContainer).addNewPowerPrecondition(locationOrIndex as number);
+		}
+		switch (locationOrIndex) {
+			case "opportunity": {
+				const card = this as SocialCard;
+				const list = this.system.opportunity_list;
+				const roll = list[opportunity_index!].roll;
+				if (("effects" in roll)) {
+					const effect = roll.effects[effect_index!];
+					effect.conditions.push({
+						type: "always"
+					});
+					await this.update({"system.opportunity_list": list});
+				}
+			}
+				break;
+			default:
+				locationOrIndex satisfies number | undefined;
+				throw new PersonaError(`invalid location: ${locationOrIndex}`);
+		}
 	}
 
 	async deletePowerPrecondition( this: PowerContainer, effectIndex: number, condIndex: number) {

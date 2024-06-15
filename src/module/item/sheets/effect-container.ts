@@ -23,11 +23,10 @@ import { CONDITION_TARGETS } from "../../../config/precondition-types.js";
 import { NUMERIC_COMPARISON_TARGET } from "../../../config/precondition-types.js";
 import { BOOLEAN_COMPARISON_TARGET } from "../../../config/precondition-types.js";
 import { COMPARATORS } from "../../../config/precondition-types.js";
-import { SocialCard } from "../persona-item.js";
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
-	override item: PowerContainer | SocialCard;
-	_powerStuffBase?: Record<string, any>;
+	override item: PowerContainer;
+	static _powerStuffBase?: Record<string, any>;
 
 	override async getData() {
 		if (this.item.isOwner && this.item.type != "socialCard") {
@@ -38,11 +37,11 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			PersonaDB.socialLinks().map(actor => [actor.id, actor.name])
 		);
 		SOCIAL_LINKS[""] = "-";
-		data.POWERSTUFF = this.powerStuff;
+		data.POWERSTUFF = PersonaEffectContainerBaseSheet.powerStuff;
 		return data;
 	}
 
-	get powerStuffBase() :Record<string, any> {
+	static get powerStuffBase() :Record<string, any> {
 		if (this._powerStuffBase)  {
 			return this._powerStuffBase;
 		}
@@ -73,7 +72,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 	}
 
 
-	get powerStuff(): Record<string, any> {
+	static get powerStuff(): Record<string, any> {
 		const SOCIAL_LINKS = Object.fromEntries(
 			PersonaDB.socialLinks().map(actor => [actor.id, actor.name])
 		);
@@ -100,15 +99,12 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 	}
 
 	async addPowerEffect() {
-		if (this.item.system.type != "socialCard") {
-			await (this.item as PowerContainer).addNewPowerEffect();
-		}
+			await this.item.addNewPowerEffect();
 	}
 
 	async addPrecondition(event: Event) {
 		const index= Number(HTMLTools.getClosestData(event, "effectIndex"));
-		if (this.item.system.type != "socialCard") {
-		await (this.item as PowerContainer).addNewPowerPrecondition(index);
+		await this.item.addNewPowerPrecondition(index);
 	}
 
 	async addConsequence(event: Event) {

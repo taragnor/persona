@@ -50,14 +50,14 @@ type CardRollList = {
 		rollType: "studentSkillCheck",
 		studentSkill: SocialStat,
 		modifier: number,
-		effects: ConditionalEffect,
+		effects: ConditionalEffect[],
 	}
 	"save" : {
 		rollType: "save",
 		type: SaveType,
 		modifier: number,
 		disallow_other_modifiers: boolean,
-		effects: ConditionalEffect,
+		effects: ConditionalEffect[],
 	},
 	"waitForGM" : {
 		rollType: "gmspecial"

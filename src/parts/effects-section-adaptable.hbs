@@ -1,10 +1,15 @@
 <div class="effects-list">
+	<h2> Effects
+		<a class="add-effect">
+			<i class="fa-solid fa-plus"> </i>
+		</a>
+	</h2>
 	{{#each effects as |effect i|}}
 	<div class="flexrow" data-effect-index="{{i}}">
 		<div class="power-effect" >
 			<section class="conditions-section">
 				<h2> Conditions
-					<a class="addCondition">
+					<a class="add-condition">
 						<i class="fa-solid fa-plus"> </i>
 					</a>
 				</h2>
@@ -23,7 +28,7 @@
 				{{/each}}
 			</section>
 			<div class="short">
-				<a class="delEffect">
+				<a class="del-effect">
 					<i class="fa-solid fa-trash-can"></i>
 				</a>
 			</div>
