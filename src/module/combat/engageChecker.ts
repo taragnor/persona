@@ -26,6 +26,7 @@ export class EngagementChecker {
 				const token  = comb.token.object as PToken;
 				if ( this.isWithinEngagedRange(checkedToken, token)
 					&& !engagedList.has(token)
+					&& token.actor.isCapableOfAction()
 				) {
 
 					if (token != subject)  {
