@@ -135,14 +135,14 @@ export class PCSheet extends CombatantSheetBase {
 		const link = this.actor.socialLinks.find(x=> x.actor.id == linkId);
 		const npc = link?.actor;
 		if (!npc) {
-			throw new PersonaError(`COuldn't find NPC with Id ${linkId}`);
+			throw new PersonaError(`Couldn't find NPC with Id ${linkId}`);
 		}
 		const amount = await HTMLTools.singleChoiceBox({
 			1: "1",
 			2: "2",
 			3: "3",
 			9999: "All",
-		}, {default: 1, title: "Remove Social Boosts"});
+		}, {default: 1, title: "Refresh Inspiration from Link"});
 
 		if (!amount) return;
 		await Logger.sendToChat(`Added ${Number(amount)} inpiration for ${npc.name} (was ${link.inspiration})`, this.actor);
