@@ -1,3 +1,4 @@
+import { CardEffectLocation } from "./sheets/social-card-sheet.js";
 import { CardChoice } from "../../config/social-card-config.js";
 import { CardEvent } from "../../config/social-card-config.js";
 import { Consequence } from "../combat/combat-result.js";
@@ -224,18 +225,25 @@ const power = PersonaDB.getBasicPower(powerName);
 	}
 
 	async addConditionalEffect(this: PowerContainer): Promise<void>;
-	async addConditionalEffect(this: SocialCard, location: "opportunity-roll" | "event", index: number) :Promise<void>;
-	async addConditionalEffect(this: SocialCard | PowerContainer, location?: "opportunity-roll" | "event", index?: number) :Promise<void>
+	async addConditionalEffect(this: SocialCard, location:CardEffectLocation) :Promise<void>;
+	async addConditionalEffect(this: SocialCard | PowerContainer, location?:CardEffectLocation) :Promise<void>
 	{
 		if (this.system.type != "socialCard") {
 			return await (this as Exclude<typeof this, SocialCard>).addNewPowerEffect();
 		} else {
-			const card = this as SocialCard;
-			if (index == undefined)  throw new PersonaError("no index provided");
-			switch (location) {
+			if (location == undefined)  throw new PersonaError("no index provided");
+			switch (location.name) {
+				case "opportunity-condition":
+					throw new PersonaError("This location only contains conditions, can't add an effect");
+				case "card-modifiers": {
+					const list= ArrayCorrector(this.system.globalModifiers) ?? [];
+					this.#appendNewEffect(list);
+					await this.update({"system.globalModifiers": list});
+					break;
+				}
 				case "opportunity-roll": {
 					const list = this.system.opportunity_list;
-				const roll = list[index].roll;
+					const roll = list[location.opportunityIndex].roll;
 					if (!("effects" in roll)) {
 						(roll as any)["effects"] = [];
 					}
@@ -244,10 +252,24 @@ const power = PersonaDB.getBasicPower(powerName);
 					}
 					this.#appendNewEffect(roll);
 					await this.update({"system.opportunity_list": list});
-				}
 					break;
-				case "event":
-					throw new PersonaError("Not yet implemented");
+				}
+				case "event-choice-conditions": {
+					throw new PersonaError("Error: Only conditions here");
+				}
+				case "event-choice-roll": {
+					const list = this.system.events;
+					const event = list[location.eventIndex];
+					event.choices = ArrayCorrector(event.choices);
+					const choice = event.choices[location.choiceIndex];
+					const roll = choice.roll;
+					(roll as any).effects = (roll as any).effects ?? [];
+					if ("effects" in roll) {
+						this.#appendNewEffect(roll);
+						await this.update({"system.events": list});
+					}
+					break;
+				}
 				default:
 					location satisfies undefined;
 					throw new PersonaError(`Not yet implemented for location ${location}`);
@@ -262,29 +284,52 @@ const power = PersonaDB.getBasicPower(powerName);
 	}
 
 	async deleteConditionalEffect(this: PowerContainer, effect_index: number): Promise<void>;
-	async deleteConditionalEffect(this: SocialCard, location: "opportunity-condition" | "opportunity-roll", opportunity_index: number, effect_index: number) : Promise<void>;
-	async deleteConditionalEffect(this: SocialCard | PowerContainer, locationOrIndex?: number | "opportunity-condition" | "opportunity-roll", opportunity_index?: number, effect_index?: number) : Promise<void> {
+	async deleteConditionalEffect(this: SocialCard, effectIndex: number, location: CardEffectLocation) : Promise<void>;
+	async deleteConditionalEffect(this: SocialCard | PowerContainer, effectIndex: number, location ?: CardEffectLocation) : Promise<void> {
 		if (this.system.type != "socialCard") {
-			return await (this as Exclude<typeof this, SocialCard>) .deletePowerEffect(locationOrIndex as number);
+			return await (this as Exclude<typeof this, SocialCard>) .deletePowerEffect(effectIndex);
 		}
-		switch (locationOrIndex) {
+		if (!location) {
+			throw new PersonaError("No location given");
+		}
+		const loc = location;
+		switch (loc.name) {
+			case "event-choice-conditions":
+				throw new PersonaError("This location only has conditions");
+			case "event-choice-roll" : {
+				const list = this.system.events;
+				const event = list[loc.eventIndex];
+				event.choices = ArrayCorrector(event.choices);
+				const choice = event.choices[loc.choiceIndex];
+				const roll = choice.roll;
+				(roll as any).effects = (roll as any).effects ?? [];
+				if ("effects" in roll) {
+					this.#deleteEffect(roll, effectIndex);
+					await this.update({"system.events": list});
+				}
+				break;
+			}
+
+			case "card-modifiers":
+				const list = this.system.globalModifiers;
+				this.#deleteEffect(list, effectIndex!);
+				await this.update({"system.globalModifiers": list});
+				break;
 			case "opportunity-condition": {
 				throw new PersonaError("This location doesn't have effects");
 			}
 			case "opportunity-roll":{
 				const list = this.system.opportunity_list;
-				const roll = list[opportunity_index!].roll;
+				const roll = list[loc.opportunityIndex].roll;
 				if (("effects" in roll)) {
-					this.#deleteEffect(roll, effect_index!);
-					// roll.effects = ArrayCorrector(roll.effects);
-					// roll.effects.splice(effect_index!, 1);
+					this.#deleteEffect(roll, effectIndex);
 					await this.update({"system.opportunity_list": list});
 				}
 				break;
 			}
 			default:
-				locationOrIndex satisfies undefined | number;
-				throw new PersonaError(`invalid location: ${locationOrIndex}`);
+				loc satisfies never;
+				throw new PersonaError(`invalid location: ${loc}`);
 		}
 	}
 
@@ -297,17 +342,29 @@ const power = PersonaDB.getBasicPower(powerName);
 		await this.update({"system.effects": this.system.effects});
 	}
 
-	#appendNewEffect(effectHolder:{effects:ConditionalEffect[]}): void {
-		effectHolder.effects = ArrayCorrector(effectHolder.effects);
-		effectHolder.effects.push( {
-			conditions: [],
-			consequences: []
-		});
+	#appendNewEffect(effectHolder:{effects:ConditionalEffect[]} | ConditionalEffect[]): void {
+		if ("effects" in effectHolder) {
+			effectHolder.effects = ArrayCorrector(effectHolder.effects);
+			effectHolder.effects.push( {
+				conditions: [],
+				consequences: []
+			});
+		} else {
+			effectHolder.push( {
+				conditions: [],
+				consequences: []
+			});
+
+		}
 	}
 
-	#deleteEffect(effectHolder:{effects:ConditionalEffect[]}, effectIndex:number): void {
+	#deleteEffect(effectHolder:{effects:ConditionalEffect[]} | ConditionalEffect[], effectIndex:number): void {
+		if ("effects" in effectHolder) {
 		effectHolder.effects = ArrayCorrector(effectHolder.effects);
 		effectHolder.effects.splice(effectIndex,1);
+		} else {
+			effectHolder.splice(effectIndex, 1);
+		}
 	}
 
 
@@ -358,45 +415,70 @@ const power = PersonaDB.getBasicPower(powerName);
 
 	#deleteConsequence(effectArr:{effects:ConditionalEffect[]} , consIndex:number, effectIndex:number): void;
 	#deleteConsequence(preconditionArr:{consequences:Consequence[]}, consIndex:number): void;
-	#deleteConsequence(array: ({consequences: Consequence[]} | {effects:ConditionalEffect[]}), consIndex: number, effectIndex?: number) {
+	#deleteConsequence(array: ({consequences: Consequence[]} | {effects:ConditionalEffect[]}), consIndex: number, effectIndex?: number) : void {
 		if ("effects" in array) {
 			array.effects = ArrayCorrector(array.effects);
 			const effect = array.effects[effectIndex!];
-			return this.#deletePrecondition(effect, consIndex);
+			return this.#deleteConsequence(effect, consIndex);
 		}
 		array.consequences = ArrayCorrector(array.consequences);
 		array.consequences.splice(consIndex, 1);
 		return;
-
 	}
 
-	async addCondition(this: PowerContainer, effect_index: number) : Promise<void>;
-	async addCondition(this: SocialCard, location: "opportunity-roll" | "opportunity-condition", opportunity_index: number, effect_index: number): Promise<void>;
-	async addCondition(this: SocialCard | PowerContainer, locationOrIndex: "opportunity-roll" | "opportunity-condition" | number, opportunity_index?: number, effect_index?: number): Promise<void>
+	async addCondition(this: PowerContainer, effectIndex: number) : Promise<void>;
+	async addCondition(this: SocialCard, effectIndex: number, location: CardEffectLocation): Promise<void>;
+	async addCondition(this: SocialCard | PowerContainer, effectIndex: number, location?: CardEffectLocation): Promise<void>
 	{
 		if (this.system.type != "socialCard") {
-			return await (this as PowerContainer).addNewPowerPrecondition(locationOrIndex as number);
+			return await (this as PowerContainer).addNewPowerPrecondition(effectIndex);
 		}
-		switch (locationOrIndex) {
+		if (!location) {
+			throw new PersonaError("No location");
+		}
+		const loc = location;
+		switch (loc.name) {
+			case "event-choice-conditions":{
+				const list = this.system.events;
+				const choice  =this.system.events[loc.eventIndex!].choices[loc.choiceIndex];
+				this.#appendNewPrecondition(choice);
+				await this.update({"system.events": list});
+				break;
+			}
+			case "event-choice-roll":
+				const list = this.system.events;
+				const roll  =this.system.events[loc.eventIndex!].choices[loc.choiceIndex].roll;
+				if ("effects" in roll) {
+					this.#appendNewPrecondition(roll, effectIndex);
+					await this.update({"system.events": list});
+				}
+				break;
+			case "card-modifiers":{
+				const list = this.system.globalModifiers
+				this.#appendNewPrecondition(list[effectIndex] );
+				await this.update({"system.globalModifiers": list});
+
+				break;
+			}
 			case "opportunity-condition": {
 				const list = this.system.opportunity_list;
-				const opportunity = list[opportunity_index!];
+				const opportunity = list[loc.opportunityIndex];
 				this.#appendNewPrecondition(opportunity);
 				await this.update({"system.opportunity_list": list});
 				break;
 			}
 			case "opportunity-roll": {
 				const list = this.system.opportunity_list;
-				const roll = list[opportunity_index!].roll;
+				const roll = list[loc.opportunityIndex].roll;
 				if (("effects" in roll)) {
-					this.#appendNewPrecondition(roll, effect_index!);
+					this.#appendNewPrecondition(roll, effectIndex);
 					await this.update({"system.opportunity_list": list});
 				}
 				break;
 			}
 			default:
-				locationOrIndex satisfies number | undefined;
-				throw new PersonaError(`invalid location: ${locationOrIndex}`);
+				loc satisfies never;
+				throw new PersonaError(`invalid location: ${loc}`);
 		}
 	}
 
@@ -408,23 +490,55 @@ const power = PersonaDB.getBasicPower(powerName);
 	}
 
 	async deleteCondition(this: PowerContainer, effectIndex: number, condIndex: number): Promise<void>;
-	async deleteCondition(this: SocialCard, location: "opportunity-roll" | "opportunity-condition", opportunityIndex: number, effectIndex: number, condIndex: number): Promise<void>;
-	async deleteCondition(this: SocialCard | PowerContainer, locationOrIndex: "opportunity-roll" | "opportunity-condition" | number, opportunityIndex: number, effectIndex?: number, condIndex?: number): Promise<void> {
+	async deleteCondition(this: SocialCard,  effectIndex: number, condIndex: number, location: CardEffectLocation): Promise<void>;
+	async deleteCondition(this: SocialCard | PowerContainer, effectIndex: number, condIndex: number, location?: CardEffectLocation): Promise<void> {
 		if (this.system.type != "socialCard") {
-			return await (this as PowerContainer).deletePowerPrecondition(locationOrIndex as number, opportunityIndex);
+			return await (this as PowerContainer).deletePowerPrecondition(effectIndex, condIndex);
 		}
-		switch (locationOrIndex) {
+		if (!location) {
+			throw new PersonaError("No location given");
+		}
+		const loc = location;
+		switch (loc.name) {
+			case "card-modifiers":{
+				const list = this.system.globalModifiers;
+				this.#deletePrecondition(list[effectIndex], condIndex);
+				await this.update({"system.globalModifiers": list});
+				break;
+			}
+			case "event-choice-conditions": {
+				const list = this.system.events;
+				const event = list[loc.eventIndex];
+				event.choices = ArrayCorrector(event.choices);
+				const choice = event.choices[loc.choiceIndex];
+				this.#deletePrecondition(choice, condIndex);
+				await this.update({"system.events": list});
+				break;
+			}
+			case "event-choice-roll": {
+				const list = this.system.events;
+				const event = list[loc.eventIndex];
+				event.choices = ArrayCorrector(event.choices);
+				const choice = event.choices[loc.choiceIndex];
+				const roll = choice.roll;
+				(roll as any).effects = (roll as any).effects ?? [];
+				if ("effects" in roll) {
+					this.#deletePrecondition(roll, effectIndex, condIndex);
+						await this.update({"system.events": list});
+				}
+				break;
+			}
 			case "opportunity-condition": {
 				const list = this.system.opportunity_list;
-				const opportunity = list[opportunityIndex!];
-				this.#deletePrecondition(opportunity, condIndex!);
+				const opportunity = list[loc.opportunityIndex];
+				this.#deletePrecondition(opportunity, condIndex);
 				await this.update({"system.opportunity_list": list});
 				break;
 			}
 
 			case "opportunity-roll": {
 				const list = this.system.opportunity_list;
-				const roll = list[opportunityIndex!].roll;
+				const roll = list[loc.opportunityIndex].roll;
 				if (("effects" in roll)) {
 					this.#deletePrecondition(roll, condIndex!, effectIndex!)
 					await this.update({"system.opportunity_list": list});
@@ -432,8 +546,8 @@ const power = PersonaDB.getBasicPower(powerName);
 				break;
 			}
 			default:
-				locationOrIndex satisfies number | undefined;
-				throw new PersonaError(`invalid location: ${locationOrIndex}`);
+				loc satisfies never;
+				throw new PersonaError(`invalid location: ${loc}`);
 		}
 	}
 
@@ -449,19 +563,43 @@ const power = PersonaDB.getBasicPower(powerName);
 	}
 
 	async addConsequence(this: PowerContainer, effectIndex: number): Promise<void>;
-	async addConsequence(this: SocialCard, location: "opportunity-roll" | "opportunity-condition", opportunityIndex:number, effectIndex: number): Promise<void>;
-	async addConsequence(this: SocialCard | PowerContainer, locationOrIndex: "opportunity-roll"|  "opportunity-condition" | number, opportunityIndex?: number, effectIndex?: number){
+	async addConsequence(this: SocialCard, effectIndex:number, location: CardEffectLocation): Promise<void>;
+	async addConsequence(this: SocialCard | PowerContainer, effectIndex: number, location?: CardEffectLocation){
 		if (this.system.type != "socialCard") {
-			return await (this as PowerContainer).addNewPowerConsequence(locationOrIndex as number);
+			return await (this as PowerContainer).addNewPowerConsequence(effectIndex as number);
 		}
-		switch (locationOrIndex) {
+		if (!location)
+			throw new Error("No location provided for card");
+
+		switch (location.name) {
+			case "card-modifiers":
+				const list = this.system.globalModifiers;
+				this.#appendNewConsequence(list[effectIndex]);
+				await this.update({"system.globalModifiers": list});
+				break;
+			case "event-choice-conditions":
+				throw new PersonaError("Conditions only");
+
+			case "event-choice-roll": {
+				const list = this.system.events;
+				const event = list[location.eventIndex];
+				event.choices = ArrayCorrector(event.choices);
+				const choice = event.choices[location.choiceIndex];
+				const roll = choice.roll;
+				(roll as any).effects = (roll as any).effects ?? [];
+				if ("effects" in roll) {
+					this.#appendNewConsequence(roll, effectIndex);
+					await this.update({"system.events": list});
+				}
+				break;
+			}
 			case "opportunity-condition": {
 				PersonaError.softFail("opportunity-condition has no consequences an error was made");
 				break;
 			}
 			case "opportunity-roll": {
 				const list = this.system.opportunity_list;
-				const roll = list[opportunityIndex!].roll;
+				const roll = list[location.opportunityIndex].roll;
 				if (("effects" in roll)) {
 					this.#appendNewConsequence(roll, effectIndex!);
 					await this.update({"system.opportunity_list": list});
@@ -469,38 +607,54 @@ const power = PersonaDB.getBasicPower(powerName);
 			}
 				break;
 			default:
-				locationOrIndex satisfies number | undefined;
-				throw new PersonaError(`invalid location: ${locationOrIndex}`);
+				location satisfies never;
+				throw new PersonaError(`invalid location: ${location}`);
 		}
 	}
 
 	async deleteConsequence(this: PowerContainer, effectIndex: number, consIndex: number): Promise<void>;
-	async deleteConsequence(this: SocialCard, location: "opportunity-roll" | "opportunity-condition" , opportunityIndex: number, effectIndex: number, consIndex: number): Promise<void>;
-	async deleteConsequence(this: SocialCard | PowerContainer, locationOrIndex: "opportunity-roll" | "opportunity-condition" |  number, index1: number, index2?: number, index3?: number): Promise<void> {
+	async deleteConsequence(this: SocialCard, effectIndex: number, consIndex: number, location: CardEffectLocation): Promise<void>;
+	async deleteConsequence(this: SocialCard | PowerContainer, effectIndex: number, consIndex:number, location?: CardEffectLocation): Promise<void> {
 		if (this.system.type != "socialCard") {
-			return await (this as PowerContainer).deletePowerConsequence(locationOrIndex as number, index1);
+			return await (this as PowerContainer).deletePowerConsequence(effectIndex, consIndex);
 		}
-		switch (locationOrIndex) {
-			case "opportunity-condition": {
-				PersonaError.softFail("opportunity-condition has no consequences an error was made");
+		if (!location) {
+			throw new PersonaError("No location given");
+		}
+		switch (location.name) {
+			case "card-modifiers":
+				const list = this.system.globalModifiers;
+				this.#deleteConsequence(list[effectIndex], consIndex)
+				await this.update({"system.globalModifiers": list});
 				break;
-			}
+			case "event-choice-roll":{
+				const list = this.system.events;
+				const event = list[location.eventIndex];
+				event.choices = ArrayCorrector(event.choices);
+				const choice = event.choices[location.choiceIndex];
+				const roll = choice.roll;
+				(roll as any).effects = (roll as any).effects ?? [];
+				if ("effects" in roll) {
+					this.#deleteConsequence(roll, consIndex, effectIndex);
+					await this.update({"system.events": list});
+				}
+				break;
+		}
+			case "event-choice-conditions":
+			case "opportunity-condition":
+				throw new PersonaError( `${location.name} has no consequences an error was made`);
 			case "opportunity-roll": {
-				const card = this as SocialCard;
 				const list = this.system.opportunity_list;
-				const roll = list[index1!].roll;
+				const roll = list[location.opportunityIndex].roll;
 				if (("effects" in roll)) {
-					roll.effects= ArrayCorrector(roll.effects);
-					const effect = roll.effects[index2!];
-					effect.consequences = ArrayCorrector(effect.consequences);
-					effect.consequences.splice(index3!, 1);
+					this.#deleteConsequence(roll, consIndex, effectIndex);
 					await this.update({"system.opportunity_list": list});
 				}
 			}
 				break;
 			default:
-				locationOrIndex satisfies number | undefined;
-				throw new PersonaError(`invalid location: ${locationOrIndex}`);
+				location satisfies never;
+				throw new PersonaError(`invalid location: ${location}`);
 		}
 	}
 
@@ -643,6 +797,7 @@ const power = PersonaDB.getBasicPower(powerName);
 		const event = this.system.events[eventIndex];
 		event.choices = ArrayCorrector(event.choices);
 		const newChoice: CardChoice = {
+			name: "Unnamed Choice",
 			conditions: [],
 			text: "",
 			roll: {rollType: "none"},

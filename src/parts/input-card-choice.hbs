@@ -1,5 +1,6 @@
 <div class="choice" data-choice-index="{{choiceIndex}}">
-	<h5> Choice {{choiceIndex}}
+	<h5>
+		<input type=string name='{{strcat namePrefix "name"}}' value="{{choice.name}}">
 		<a class="del-choice">
 			<i class="fa-solid fa-trash-can"></i>
 		</a>
@@ -13,7 +14,7 @@
 	</h5>
 	{{#each choice.conditions as |cond i|}}
 
-	{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat namePrefix "conditions." i ".")  cond=cond POWERSTUFF=../POWERSTUFF}}
+	{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat ../namePrefix "conditions." i ".")  cond=cond POWERSTUFF=../POWERSTUFF condition_index=i}}
 
 	{{/each}}
 

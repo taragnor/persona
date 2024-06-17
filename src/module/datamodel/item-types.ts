@@ -1,3 +1,4 @@
+import { ConditionalEffect } from "./power-dm.js";
 import { Precondition } from "../../config/precondition-types.js";
 import { ThresholdOrDC } from "../../config/social-card-config.js";
 import { Opportunity } from "../../config/social-card-config.js";
@@ -176,7 +177,7 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 			opportunity_list: new arr(new obj<Opportunity>()),
 			bane: new txt(),
 			boon: new txt(),
-			critical: new txt(),
+			globalModifiers: new arr( new obj<ConditionalEffect>()),
 			active: new bool({initial: false}),
 		}
 		return ret;

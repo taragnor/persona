@@ -46,18 +46,28 @@
 
   {{> "systems/persona/parts/card-events-section.hbs" item=item SOCIAL_DATA=SOCIAL_DATA}}
 
-  <div class="bane">
-	  <label>Bane</label>
-	  <textarea name="system.bane">
-		  {{trim item.system.bane}}
-	  </textarea>
-  </div>
   <div class="boon">
 	  <label>Boon</label>
 	  <textarea name="system.boon">
 		  {{trim item.system.boon}}
 	  </textarea>
   </div>
+  <div class="bane">
+	  <label>Bane</label>
+	  <textarea name="system.bane">
+		  {{trim item.system.bane}}
+	  </textarea>
+  </div>
+  <div class="event-modifiers">
+  <h4> Universal Event Modifiers
+		<a class="add-effect">
+			<i class="fa-solid fa-plus"> </i>
+		</a>
+  </h4>
+
+</div>
+
+
 
 
 </form>

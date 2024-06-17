@@ -31,6 +31,7 @@ export const SOCIAL_CARD_TYPES = Object.fromEntries(
 );
 
 export type CardChoice = {
+	name: string,
 	conditions: Precondition[],
 	text: string,
 	roll: CardRoll, //defaults to "none"
