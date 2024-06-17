@@ -58,6 +58,7 @@
 		  {{trim item.system.bane}}
 	  </textarea>
   </div>
+
   <div class="event-modifiers">
   <h4> Universal Event Modifiers
 		<a class="add-effect">
@@ -65,7 +66,8 @@
 		</a>
   </h4>
 
-</div>
+  {{> "systems/persona/parts/effects-section-adaptable.hbs" namePrefix=(strcat "system.globalModifiers.") effects=item.system.globalModifiers POWERSTUFF=item.sheet.powerStuff item=item}}
+  </div>
 
 
 

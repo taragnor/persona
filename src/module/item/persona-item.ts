@@ -523,7 +523,7 @@ const power = PersonaDB.getBasicPower(powerName);
 				const roll = choice.roll;
 				(roll as any).effects = (roll as any).effects ?? [];
 				if ("effects" in roll) {
-					this.#deletePrecondition(roll, effectIndex, condIndex);
+					this.#deletePrecondition(roll,condIndex, effectIndex);
 						await this.update({"system.events": list});
 				}
 				break;
