@@ -1,3 +1,4 @@
+import { CardEvent } from "../../config/social-card-config.js";
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
 import { PersonaSockets } from "../persona.js";
 import { SocialLinkData } from "../actor/persona-actor.js";
@@ -164,7 +165,7 @@ export class PersonaSocial {
 		return chosenCard;
 	}
 
-	static async drawSocialCard(actor: PC, linkId: string) : Promise<ChatMessage> {
+	static async drawSocialCard(actor: PC, linkId: string) : Promise<ChatMessage[]> {
 		const npc = this.lookupLinkId(actor, linkId);
 		if (npc.actor.isSpecialEvent(npc.linkLevel+1)) {
 			//TODO: Finish later
@@ -173,8 +174,20 @@ export class PersonaSocial {
 		const card = this.#drawSocialCard(actor, linkId);
 		const cameos = this.#getCameos(card, actor, linkId);
 		const perk = this.#getPerk(card, actor, linkId, cameos);
-		return await this.#printSocialCard(card, actor, linkId, cameos, perk);
+		const cardData : CardData = {
+			card,
+			actor,
+			linkId,
+			cameos,
+			perk,
+			eventsChosen: [],
+			eventsRemaining : card.system.num_of_events,
+		};
+		return await this.#execCardSequence(cardData);
+
+		// return await this.#printSocialCard(card, actor, linkId, cameos, perk);
 	}
+
 
 	static lookupLinkId(actor: PC, linkId: string) :SocialLinkData {
 		const link= actor.socialLinks.find(link => link.actor.id == linkId);
@@ -295,6 +308,36 @@ export class PersonaSocial {
 			}
 			return initList[modOffset].actor as SocialLink;
 	}
+
+	static async #execCardSequence(cardData: CardData): Promise<ChatMessage[]> {
+		let chatMessages: ChatMessage[] = [];
+		while (cardData.eventsRemaining > 0) {
+			const ev = this.#getCardEvent(cardData);
+			if (!ev) {
+				PersonaError.softFail("Ran out of events");
+				break;
+			}
+			cardData.eventsRemaining--;
+			await this.#execEvent(ev, cardData);
+		}
+		return chatMessages;
+	}
+
+	static #getCardEvent(cardData:CardData) : CardEvent | undefined  {
+		const eventList = cardData.card.system.events
+		.filter( (_ev, i) => !cardData.eventsChosen.includes(i));
+		if (eventList.length == 0)
+			return undefined;
+		const index=  Math.floor(Math.random() * eventList.length);
+		const ev = eventList[index];
+		cardData.eventsChosen.push(cardData.card.system.events.indexOf(ev));
+		return ev;
+	}
+
+	static async #execEvent(ev: CardEvent, cardData: CardData) {
+
+	}
+
 
 	static async #printSocialCard(card: SocialCard, actor: PC, linkId: string, cameos: SocialLink[], perk:string ) : Promise<ChatMessage> {
 		const link = this.lookupLinkId(actor, linkId);
@@ -621,3 +664,13 @@ Hooks.on("renderChatMessage", async (message: ChatMessage, html: JQuery ) => {
 	}
 });
 
+
+type CardData = {
+	card: SocialCard,
+	actor: PC,
+	linkId: string,
+	cameos: SocialLink[],
+	perk: string,
+	eventsChosen: number[],
+	eventsRemaining: number,
+};
