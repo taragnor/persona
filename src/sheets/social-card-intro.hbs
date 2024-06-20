@@ -12,6 +12,10 @@
 	<h2 class="card-title">
 		{{card.name}}
 	</h2>
+	<div class="automatic">
+		<h4> Automatic<h4>
+				{{newlineConversion card.system.automatic}}
+	</div>
 	<div class="perk {{#if (not perkAvail)}} disabled {{/if}}">
 		<b>Perk: </b>
 		{{newlineConversion perk}}

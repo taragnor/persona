@@ -144,10 +144,11 @@ export class PersonaSocial {
 		const link = actor.socialLinks.find(link => link.actor.id == linkId);
 		const situation : Situation= {
 			user: actor.accessor,
+			attacker: actor.accessor,
 			socialTarget: link? link.actor.accessor : undefined,
 		};
 		const preconditionPass=  PersonaDB.allSocialCards()
-			.filter( card => testPreconditions(card.system.availabilityConditions, situation, null));
+			.filter( card => testPreconditions(card.system.conditions, situation, null));
 		if (!link) return preconditionPass;
 		else return  preconditionPass
 			.filter( item => {
@@ -351,11 +352,9 @@ export class PersonaSocial {
 
 	static async #printCardIntro(cardData: CardData) {
 		const {card, cameos, perk, actor } = cardData;
-
 		const link = this.lookupLinkId(actor, cardData.linkId);
-
-		let perkAvail:any, isCameo:any, DC: any, skill:any;
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/social-card-intro.hbs`, {item: card,card,  skill, cameos, perk, link: link, pc: actor, perkAvail, isCameo, DC, user: game.user} );
+		const isCameo = card.system.cameoType != "none";
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/social-card-intro.hbs`, {item: card,card, cameos, perk, link: link, pc: actor, isCameo, user: game.user} );
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
 			speaker,
