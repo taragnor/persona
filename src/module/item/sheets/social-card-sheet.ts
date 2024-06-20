@@ -35,6 +35,9 @@ type CardLocationTypes = [
 		name: "event-choice-conditions",
 		eventIndex: number,
 		choiceIndex: number
+	},
+	{
+		name: "card-conditions",
 	}
 ];
 
@@ -171,7 +174,7 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 
 	getEffectLocation(ev: JQuery.ClickEvent) : CardEffectLocation {
 		const evTarget = $(ev.currentTarget);
-		if (evTarget.closest("opportunity").length > 0) {
+		if (evTarget.closest(".opportunity").length > 0) {
 			const opportunityIndex= Number(HTMLTools.getClosestData(ev, "opportunityIndex"));
 
 			if (evTarget.closest(".card-roll").length > 0) {
@@ -205,6 +208,11 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 			return {
 				name: "card-modifiers",
 			};
+		}
+		if (evTarget.closest(".card-conditions").length > 0) {
+			return {
+				name: "card-conditions",
+			}
 		}
 	throw new PersonaError("Unknwon Location");
 }

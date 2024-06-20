@@ -3,6 +3,17 @@
 	<img class="profile-img" src="{{item.img}}" data-edit="img"/>
 	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Job Name" placeholder="Job Name">
 
+	<div class="card-conditions">
+		<h5> Conditions
+			<a class="add-condition">
+				<i class="fa-solid fa-plus"> </i>
+			</a>
+		</h5>
+		{{#each item.system.conditions as |cond i|}}
+		{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat "system.conditions." i  ".")  cond=cond POWERSTUFF=../item.sheet.powerStuff condition_index=i}}
+		{{/each}}
+	</div>
+
 	<div>
 	 <select name="system.cardType">
 		{{selectOptions SOCIAL_CARD_TYPES localize=true selected=item.system.cardType}}

@@ -27,14 +27,20 @@ import { PersonaCombat } from "./combat/persona-combat.js";
 import { ConditionalEffect } from "./datamodel/power-dm.js";
 import { Consequence } from "./combat/combat-result.js";
 
-export function getActiveConsequences(condEffect: ConditionalEffect, situation: Situation, source: PowerContainer) : Consequence[] {
+export function getActiveConsequences(condEffect: ConditionalEffect, situation: Situation, source: PowerContainer | null) : Consequence[] {
 	if (condEffect.conditions.some(
 		cond=>!testPrecondition(cond, situation, source)
 	)) return [];
 	return condEffect.consequences;
 }
 
-export function testPrecondition (condition: Precondition, situation:Situation, source: PowerContainer) : boolean {
+export function testPreconditions(conditionArr: Precondition[], situation: Situation, source : PowerContainer | null) : boolean {
+	return conditionArr
+		.every( cond => testPrecondition(cond, situation, source));
+}
+
+
+export function testPrecondition (condition: Precondition, situation:Situation, source: PowerContainer| null) : boolean {
 	switch (condition.type) {
 		case "always":
 			return true;
@@ -100,25 +106,32 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (!situation.user) return false;
 			const actor = PersonaDB.findActor(situation.user);
 			if (!actor  || actor.system.type =="shadow") return false;
-			if (!source || source.system.type != "focus") return false;
+			if (!source && !situation.socialTarget)  return false;
+			const socialTarget = source?.parent
+			?? (
+				situation.socialTarget
+				? PersonaDB.findActor(situation?.socialTarget)
+				: null
+			);
+			if (!socialTarget) return false;
 			let targetId: string;
-			if (source?.parent?.type == "tarot") {
-				const tarotName = source?.parent?.name;
+			if (socialTarget.type == "tarot") {
+				const tarotName = socialTarget.name;
 				if (!tarotName)  {
 					PersonaError.softFail("Can't find tarot card for ${source.name}");
 					return false;
 				}
-				const sourceActor = 
+				const sourceActor =
 					(game.actors.contents as PersonaActor[])
-				.find( x=>
-					(x.system.type == "npc" || x.system.type == "pc") && x.system.tarot == tarotName);
+					.find( x=>
+						(x.system.type == "npc" || x.system.type == "pc") && x.system.tarot == tarotName);
 				if (!sourceActor) {
 					PersonaError.softFail("No one holds tarot ${tarotName}");
 					return false;
 				}
 				targetId = sourceActor.id;
 			} else {
-				targetId = source?.parent?.id ?? "";
+				targetId = socialTarget.id;
 			}
 			const link = actor.system.social.find(data=> data.linkId == targetId);
 			if (!link) return false;
@@ -157,34 +170,6 @@ function numericComparison(condition: Precondition, situation: Situation, source
 	}
 	return false;
 }
-
-
-function getToken(condition: TargettedBComparisonPC, situation: Situation) : UniversalTokenAccessor<PToken> | undefined{
-	let condTarget ="conditionTarget" in condition ?  condition.conditionTarget : "target";
-	switch (condTarget) {
-		case "owner":
-			if (situation.activeCombat) {
-				const combat = PersonaCombat.ensureCombatExists();
-				return combat.getToken(situation.user);
-			}
-			return situation.user.token;
-		case  "target":
-			if (situation.activeCombat) {
-				const combat = PersonaCombat.ensureCombatExists();
-				return combat.getToken(situation.target!);
-			}
-			if (!situation.target?.token) return undefined;
-			return situation.target.token;
-		case "attacker":
-			if (situation.activeCombat) {
-				const combat = PersonaCombat.ensureCombatExists();
-				return combat.getToken(situation.attacker!);
-			}
-			if (!situation.attacker?.token) return undefined;
-			return situation.attacker.token;
-	}
-}
-
 
 function triggerComparison(condition: Triggered, situation: Situation, _source:Option<PowerContainer>) : boolean {
 	if (!situation.trigger) return false;

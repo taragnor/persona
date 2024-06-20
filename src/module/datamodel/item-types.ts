@@ -163,6 +163,7 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 					num: 0
 				},
 			}),
+			availabilityConditions: new arr(new obj<Precondition>()),
 			num_of_events: new num({initial: 0, min:0, max: 5, integer:true}),
 			events: new arr( new obj<CardEvent>()),
 			automatic: new txt(),

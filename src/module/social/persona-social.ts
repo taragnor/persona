@@ -1,3 +1,4 @@
+import { testPreconditions } from "../preconditions.js";
 import { CardEvent } from "../../config/social-card-config.js";
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
 import { PersonaSockets } from "../persona.js";
@@ -139,17 +140,30 @@ export class PersonaSocial {
 
 	}
 
+	static validSocialCards(actor: PC, linkId?: string) : SocialCard[] {
+		const link = actor.socialLinks.find(link => link.actor.id == linkId);
+		const situation : Situation= {
+			user: actor.accessor,
+			socialTarget: link? link.actor.accessor : undefined,
+		};
+		const preconditionPass=  PersonaDB.allSocialCards()
+			.filter( card => testPreconditions(card.system.availabilityConditions, situation, null));
+		if (!link) return preconditionPass;
+		else return  preconditionPass
+			.filter( item => {
+				const relationshipName : string = link.relationshipType;
+				return item.system.qualifiers
+					.some(x=> x.relationshipName == relationshipName
+						&& link.linkLevel >= x.min
+						&& link.linkLevel <= x.max
+					)
+			});
+	}
+
 	static #drawSocialCard(actor: PC, linkId : string) : SocialCard {
 		const link = actor.socialLinks.find(link => link.actor.id == linkId);
 		if (!link) throw new PersonaError(`Can't find link ${linkId}`);
-		const relationshipName : string = link.relationshipType;
-		const cards = PersonaDB.allSocialCards()
-			.filter( item => item.system.qualifiers
-				.some(x=> x.relationshipName == relationshipName
-					&& link.linkLevel >= x.min
-					&& link.linkLevel <= x.max
-				)
-			);
+		const cards = this.validSocialCards(actor, linkId);
 
 		let undrawn = cards.filter( card=> !this.#drawnCardIds.includes(card.id));
 
@@ -311,6 +325,7 @@ export class PersonaSocial {
 
 	static async #execCardSequence(cardData: CardData): Promise<ChatMessage[]> {
 		let chatMessages: ChatMessage[] = [];
+		this.#printCardIntro(cardData);
 		while (cardData.eventsRemaining > 0) {
 			const ev = this.#getCardEvent(cardData);
 			if (!ev) {
@@ -332,6 +347,23 @@ export class PersonaSocial {
 		const ev = eventList[index];
 		cardData.eventsChosen.push(cardData.card.system.events.indexOf(ev));
 		return ev;
+	}
+
+	static async #printCardIntro(cardData: CardData) {
+		const {card, cameos, perk, actor } = cardData;
+
+		const link = this.lookupLinkId(actor, cardData.linkId);
+
+		let perkAvail:any, isCameo:any, DC: any, skill:any;
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/social-card-intro.hbs`, {item: card,card,  skill, cameos, perk, link: link, pc: actor, perkAvail, isCameo, DC, user: game.user} );
+		const speaker = ChatMessage.getSpeaker();
+		const msgData : MessageData = {
+			speaker,
+			content: html,
+			type: CONST.CHAT_MESSAGE_TYPES.OOC
+		};
+		return await ChatMessage.create(msgData,{} );
+
 	}
 
 	static async #execEvent(ev: CardEvent, cardData: CardData) {
