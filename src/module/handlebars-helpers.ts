@@ -1,3 +1,7 @@
+import { SocialLink } from "./actor/persona-actor.js";
+import { Situation } from "./preconditions.js";
+import { testPreconditions } from "./preconditions.js";
+import { Precondition } from "../config/precondition-types.js";
 import { Focus } from "./item/persona-item.js";
 import { SetFlagEffect } from "./combat/combat-result.js";
 import { SocialLinkData } from "./actor/persona-actor.js";
@@ -155,6 +159,20 @@ export class PersonaHandleBarsHelpers {
 				return str.trim();
 			else return str;
 		},
+		"meetsConditions" : function (actorOrSit: PC | Situation, conditions: Precondition[], target: SocialLink) : boolean {
+			let situation : Situation;
+			if (actorOrSit instanceof PersonaActor) {
+				situation = {
+					user: actorOrSit.accessor,
+					socialTarget: target.accessor,
+					attacker: actorOrSit.accessor,
+					isSocial: true,
+				};
+			} else {
+				situation = actorOrSit;
+			}
+			return testPreconditions(conditions, situation, null);
+		}
 	}
 
 } //end of class

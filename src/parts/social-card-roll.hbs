@@ -1,0 +1,15 @@
+{{#if (neq roll.type "none")}}
+<div class="social-card-roll" data-roll-type="{{roll.type}}">
+	{{#if (eqAny roll.type "studentSkillCheck" "save")}}
+	<button class="make-roll">
+		Make Roll
+	</button>
+	{{/if}}
+
+	{{#if (eq roll.type "gmspecial")}}
+	<div>
+		Custom Roll (see text)
+	</div>
+
+</div>
+{{/if}}

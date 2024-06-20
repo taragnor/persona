@@ -24,7 +24,7 @@ export const SOCIAL_CARD_ROLL_TYPES = Object.fromEntries(
 );
 
 
-export type SocialCardType = keyof typeof SOCIAL_CARD_TYPES_LIST;
+	export type SocialCardType = keyof typeof SOCIAL_CARD_TYPES_LIST;
 
 export const SOCIAL_CARD_TYPES = Object.fromEntries(
 	SOCIAL_CARD_TYPES_LIST.map(a=> [a, `persona.social.card.types.${a}`])
@@ -40,6 +40,7 @@ export type CardChoice = {
 export type CardEvent = {
 	name: string,
 	frequency: number, //defaults to 1
+	text: string,
 	choices: CardChoice[]
 };
 
@@ -114,4 +115,5 @@ type ThresholdList = {
 		multiplier: number,
 	}
 }
+
 

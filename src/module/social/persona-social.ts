@@ -344,7 +344,7 @@ export class PersonaSocial {
 		.filter( (_ev, i) => !cardData.eventsChosen.includes(i));
 		if (eventList.length == 0)
 			return undefined;
-		const index=  Math.floor(Math.random() * eventList.length);
+		const index =  Math.floor(Math.random() * eventList.length);
 		const ev = eventList[index];
 		cardData.eventsChosen.push(cardData.card.system.events.indexOf(ev));
 		return ev;
@@ -354,7 +354,7 @@ export class PersonaSocial {
 		const {card, cameos, perk, actor } = cardData;
 		const link = this.lookupLinkId(actor, cardData.linkId);
 		const isCameo = card.system.cameoType != "none";
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/social-card-intro.hbs`, {item: card,card, cameos, perk, link: link, pc: actor, isCameo, user: game.user} );
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-intro.hbs`, {item: card,card, cameos, perk, link: link, pc: actor, isCameo, user: game.user} );
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
 			speaker,
@@ -365,7 +365,19 @@ export class PersonaSocial {
 
 	}
 
-	static async #execEvent(ev: CardEvent, cardData: CardData) {
+	static async #execEvent(event: CardEvent, cardData: CardData) {
+		const eventNumber = cardData.eventsChosen.length;
+		const link = this.lookupLinkId(cardData.actor, cardData.linkId);
+		const eventIndex = cardData.card.system.events.indexOf(event);
+		const situation : Situation = {
+			user: cardData.actor.accessor,
+			socialTarget: link.actor.accessor,
+			attacker: cardData.actor.accessor,
+			isSocial: true
+		};
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event,eventNumber, cardData, situation, eventIndex});
+		const choice = event.choices[0];
+		choice.roll
 
 	}
 
@@ -638,6 +650,35 @@ export class PersonaSocial {
 		}
 	}
 
+	static async makeCardRoll(ev: JQuery.ClickEvent) {
+		const cardId = HTMLTools.getClosestData(ev, "cardId");
+		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
+		const choiceIndex = Number(HTMLTools.getClosestData(ev, "choiceIndex"));
+		const card = PersonaDB.allSocialCards().find(card=> card.id == cardId);
+		if (!card) {
+			throw new PersonaError(`Can't find card ${cardId}`);
+		}
+		const cardEvent = card.system.events[eventIndex];
+		const choice= cardEvent.choices[choiceIndex];
+		const roll = choice.roll;
+		switch (roll.rollType) {
+			case "none":
+			case "gmspecial":
+				throw new PersonaError(`Can't roll this type of roll: ${roll.rollType}`);
+			case "studentSkillCheck":
+				throw new PersonaError("Not yet implemented");
+				//TODO: write this
+				break;
+			case "save":
+				throw new PersonaError("Not yet implemented");
+				//TODO: write this
+				break;
+			default:
+				roll satisfies never;
+		}
+
+	}
+
 } //end of class
 
 type ActivityOptions = {
@@ -692,6 +733,8 @@ Hooks.on("updateItem", async (_item: PersonaItem, changes) => {
 Hooks.on("renderChatMessage", async (message: ChatMessage, html: JQuery ) => {
 	if ((message?.author ?? message?.user) == game.user) {
 		html.find("button.social-roll").on ("click", PersonaSocial.execSocialCard.bind(PersonaSocial));
+		html.find(".make-roll").on("click", PersonaSocial.makeCardRoll.bind(this));
+
 	}
 });
 
@@ -705,3 +748,5 @@ type CardData = {
 	eventsChosen: number[],
 	eventsRemaining: number,
 };
+
+

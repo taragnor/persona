@@ -693,6 +693,7 @@ const power = PersonaDB.getBasicPower(powerName);
 
 	async addCardEvent(this: SocialCard) {
 		const newEv : CardEvent = {
+			text: "",
 			name: "Unnamed Event",
 			frequency: 1,
 			choices: []

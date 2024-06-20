@@ -19,11 +19,16 @@
 			<label> Frequency</label>
 			<input class="short" type=number name="system.events.{{i}}.frequency" value="{{event.frequency}}">
 
+			<label> Event Setup</label>
+			<textarea name="system.evnets.{{i}}.text">
+				{{trim event.text}}
+			</textarea>
 		<h4> Choices
 			<a class="add-choice">
 				<i class="fa-solid fa-plus"> </i>
 			</a>
 		</h4>
+
 
 		{{#each event.choices as |choice j|}}
 		{{> "systems/persona/parts/input-card-choice.hbs" CONST=../../SOCIAL_DATA POWERSTUFF=../../item.sheet.powerStuff namePrefix=(strcat "system.events." i ".choices." j ".") choiceIndex=j item=../../item choice=choice}}
