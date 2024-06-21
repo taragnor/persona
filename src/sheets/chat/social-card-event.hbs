@@ -1,4 +1,4 @@
-<div class="event-card-event" data-event-index="{{eventIndex}}" data-card-id="{{cardData.card.id}}">
+<div class="social-card-event" data-event-index="{{eventIndex}}" data-card-id="{{cardData.card.id}}">
 	<h4>
 		Event {{eventNumber}}:
 		{{event.name}}
@@ -8,11 +8,11 @@
 	</div>
 	{{#each event.choices as |choice i|}}
 	<div class="event-choice" data-choice-index="{{i}}">
-		<h5>
-			{{#if (meetsConditions situation choice.conditions)}}
-			{{choice.name}}
+		<h3>
+			{{#if (meetsConditions ../situation choice.conditions ../cardData)}}
+			Choice : {{choice.name}}
 			{{/if}}
-		</h5>
+		</h3>
 		<div class="choice-text">
 			{{choice.text}}
 		</div>

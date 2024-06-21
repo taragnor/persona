@@ -29,6 +29,7 @@ import { HTMLTools } from "../utility/HTMLTools.js";
 export class PersonaSocial {
 
 	static #drawnCardIds: string[] = [];
+	static continuation: null | ((...args: any) => void) = null;
 
 
 	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation) : Promise<RollBundle> {
@@ -326,7 +327,7 @@ export class PersonaSocial {
 
 	static async #execCardSequence(cardData: CardData): Promise<ChatMessage[]> {
 		let chatMessages: ChatMessage[] = [];
-		this.#printCardIntro(cardData);
+		await this.#printCardIntro(cardData);
 		while (cardData.eventsRemaining > 0) {
 			const ev = this.#getCardEvent(cardData);
 			if (!ev) {
@@ -362,7 +363,6 @@ export class PersonaSocial {
 			type: CONST.CHAT_MESSAGE_TYPES.OOC
 		};
 		return await ChatMessage.create(msgData,{} );
-
 	}
 
 	static async #execEvent(event: CardEvent, cardData: CardData) {
@@ -376,9 +376,16 @@ export class PersonaSocial {
 			isSocial: true
 		};
 		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event,eventNumber, cardData, situation, eventIndex});
-		const choice = event.choices[0];
-		choice.roll
-
+		const speaker = ChatMessage.getSpeaker();
+		const msgData : MessageData = {
+			speaker,
+			content: html,
+			type: CONST.CHAT_MESSAGE_TYPES.OOC
+		};
+		const msg= await ChatMessage.create(msgData,{} );
+		return await new Promise( (conf, ref) => {
+			this.continuation=conf;
+		});
 	}
 
 
@@ -652,9 +659,15 @@ export class PersonaSocial {
 
 	static async makeCardRoll(ev: JQuery.ClickEvent) {
 		const cardId = HTMLTools.getClosestData(ev, "cardId");
+		const messageId = HTMLTools.getClosestData(ev, "messageId");
+		const message = game.messages.get(messageId);
+		if (!message) {
+			throw new PersonaError(`Couldn't find messsage ${messageId}`);
+		}
 		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
 		const choiceIndex = Number(HTMLTools.getClosestData(ev, "choiceIndex"));
 		const card = PersonaDB.allSocialCards().find(card=> card.id == cardId);
+
 		if (!card) {
 			throw new PersonaError(`Can't find card ${cardId}`);
 		}
@@ -664,7 +677,7 @@ export class PersonaSocial {
 		switch (roll.rollType) {
 			case "none":
 			case "gmspecial":
-				throw new PersonaError(`Can't roll this type of roll: ${roll.rollType}`);
+				break;
 			case "studentSkillCheck":
 				throw new PersonaError("Not yet implemented");
 				//TODO: write this
@@ -676,7 +689,25 @@ export class PersonaSocial {
 			default:
 				roll satisfies never;
 		}
-
+		const content = $(message.content);
+		content
+			.closest(".social-card-event")
+			.find(".event-choice")
+			.each( function () {
+				const index = Number(HTMLTools.getClosestData($(this), "choiceIndex"));
+				if (index != choiceIndex) {
+					$(this).remove();
+				} else {
+					$(this).find("button").remove();
+					$(this).find(".event-choice").addClass("chosen");
+				}
+		});
+		const html = content.html();
+		await message.update( {"content": html});
+		if (!this.continuation) {
+			throw new PersonaError("No roll is currently ongoing, can't execute");
+		}
+		this.continuation()
 	}
 
 } //end of class
@@ -733,13 +764,13 @@ Hooks.on("updateItem", async (_item: PersonaItem, changes) => {
 Hooks.on("renderChatMessage", async (message: ChatMessage, html: JQuery ) => {
 	if ((message?.author ?? message?.user) == game.user) {
 		html.find("button.social-roll").on ("click", PersonaSocial.execSocialCard.bind(PersonaSocial));
-		html.find(".make-roll").on("click", PersonaSocial.makeCardRoll.bind(this));
-
+		html.find(".social-card-roll .make-roll").on("click", PersonaSocial.makeCardRoll.bind(this));
+		html.find(".social-card-roll .next").on("click", PersonaSocial.makeCardRoll.bind(this));
 	}
 });
 
 
-type CardData = {
+export type CardData = {
 	card: SocialCard,
 	actor: PC,
 	linkId: string,

@@ -358,3 +358,12 @@ section.qualifiers {
 	padding: 0.5rem;
 }
 
+.event-choice {
+	border: 1px solid green;
+	padding: 0.5rem;
+}
+
+.event-choice .chosen {
+	font-weight: bold;
+	font-size: larger;
+}

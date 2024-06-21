@@ -20,6 +20,32 @@
 	 </select>
 	</div>
 
+	  <section class="qualifiers">
+		  <div class="header"> Qualifiers
+			  <a class="add-qualifier">
+				  <i class="fa-solid fa-square-plus"></i>
+			  </a>
+		  </div>
+		  {{#each item.system.qualifiers as |qual i|}}
+		  <div class="qualifier" data-qualifier-index="{{i}}">
+			  <label for="qualname-{{i}}">
+				  Name
+			  </label>
+			  <input id="qualname-{{i}}" class= "name" name="system.qualifiers.{{i}}.relationshipName" type="text" list="qualifiers-{{i}}" value="{{qual.relationshipName}}">
+			  <datalist id="qualifiers-{{i}}">
+				  {{#each ../QUALIFIERS_NAME_LIST as |item|}}
+				  <option> {{item}}</option>
+				  {{/each}}
+			  </datalist>
+			  <input class="short" type=number name="system.qualifiers.{{i}}.min" value="{{qual.min}}">
+			  <input class="short" type=number name="system.qualifiers.{{i}}.max" value="{{qual.max}}">
+			  <a class="delete-qualifier">
+				  <i class="fa-solid fa-trash"></i>
+			  </a>
+		  </div>
+		  {{/each}}
+	  </section>
+
   <div class="automatic">
 	  <h4>Automatic</h4>
 	  <textarea name="system.automatic">

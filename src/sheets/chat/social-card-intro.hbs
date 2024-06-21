@@ -1,4 +1,4 @@
-<div class="social-card">
+<div class="social-card" data-link-actor-id="{{link.actor.id}}" data-user-id="{{user.id}}" data-pc-id="{{pc.id}}">
 	<h2> {{link.actor.name}} (SL {{link.linkLevel}})
 		{{#if (isHighestLinker pc link)}}
 		<i title="Highest Link Level" class="fa-solid fa-star"></i>
@@ -48,8 +48,5 @@
 		{{newlineConversion card.system.bane}}
 	</div>
 	{{/if}}
-	<button class="social-roll" data-link-actor-id="{{link.actor.id}}" data-user-id="{{user.id}}" data-pc-id="{{pc.id}}">
-		Make Roll
-	</button>
 </div>
 

@@ -1,4 +1,5 @@
-import { SocialLink } from "./actor/persona-actor.js";
+import { PersonaSocial } from "./social/persona-social.js";
+import { CardData } from "./social/persona-social.js";
 import { Situation } from "./preconditions.js";
 import { testPreconditions } from "./preconditions.js";
 import { Precondition } from "../config/precondition-types.js";
@@ -159,19 +160,20 @@ export class PersonaHandleBarsHelpers {
 				return str.trim();
 			else return str;
 		},
-		"meetsConditions" : function (actorOrSit: PC | Situation, conditions: Precondition[], target: SocialLink) : boolean {
+		"meetsConditions" : function (actorOrSit: PC | Situation, conditions: Precondition[], cardData: CardData) : boolean {
+			const link = PersonaSocial.lookupLinkId(cardData.actor, cardData.linkId);
 			let situation : Situation;
 			if (actorOrSit instanceof PersonaActor) {
 				situation = {
 					user: actorOrSit.accessor,
-					socialTarget: target.accessor,
+					socialTarget: link.actor.accessor,
 					attacker: actorOrSit.accessor,
 					isSocial: true,
 				};
 			} else {
 				situation = actorOrSit;
 			}
-			return testPreconditions(conditions, situation, null);
+			return testPreconditions(conditions ?? [], situation, null);
 		}
 	}
 
