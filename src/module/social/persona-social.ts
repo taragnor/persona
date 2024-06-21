@@ -80,6 +80,7 @@ export class PersonaSocial {
 			user: actor.accessor,
 			usedSkill: socialStat,
 			socialTarget: link.actor.accessor,
+			isSocial: true,
 		};
 		const progressTokens = link.currentProgress;
 		let mods = new ModifierList();
@@ -147,6 +148,7 @@ export class PersonaSocial {
 			user: actor.accessor,
 			attacker: actor.accessor,
 			socialTarget: link? link.actor.accessor : undefined,
+			isSocial: true,
 		};
 		const preconditionPass=  PersonaDB.allSocialCards()
 			.filter( card => testPreconditions(card.system.conditions, situation, null));
@@ -182,14 +184,20 @@ export class PersonaSocial {
 	}
 
 	static async drawSocialCard(actor: PC, linkId: string) : Promise<ChatMessage[]> {
-		const npc = this.lookupLinkId(actor, linkId);
-		if (npc.actor.isSpecialEvent(npc.linkLevel+1)) {
+		const link = this.lookupLinkId(actor, linkId);
+		if (link.actor.isSpecialEvent(link.linkLevel+1)) {
 			//TODO: Finish later
 
 		}
 		const card = this.#drawSocialCard(actor, linkId);
 		const cameos = this.#getCameos(card, actor, linkId);
 		const perk = this.#getPerk(card, actor, linkId, cameos);
+		const situation : Situation = {
+			user: actor.accessor,
+			socialTarget: link.actor.accessor,
+			attacker: actor.accessor,
+			isSocial: true,
+		};
 		const cardData : CardData = {
 			card,
 			actor,
@@ -198,6 +206,7 @@ export class PersonaSocial {
 			perk,
 			eventsChosen: [],
 			eventsRemaining : card.system.num_of_events,
+			situation
 		};
 		return await this.#execCardSequence(cardData);
 
@@ -337,7 +346,18 @@ export class PersonaSocial {
 			cardData.eventsRemaining--;
 			await this.#execEvent(ev, cardData);
 		}
+		await this.#execOpportunity(cardData);
 		return chatMessages;
+	}
+
+	static async #execOpportunity(cardData: CardData) {
+		const card = cardData.card;
+		if (card.system.opportunity.trim() == ""
+			&& card.system.opportunity_choices == 0)
+			return;
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-opportunity.hbs`, {item: card,card, situation: cardData.situation  } );
+		const list = card.system.opportunity_list[0];
+
 	}
 
 	static #getCardEvent(cardData:CardData) : CardEvent | undefined  {
@@ -369,13 +389,7 @@ export class PersonaSocial {
 		const eventNumber = cardData.eventsChosen.length;
 		const link = this.lookupLinkId(cardData.actor, cardData.linkId);
 		const eventIndex = cardData.card.system.events.indexOf(event);
-		const situation : Situation = {
-			user: cardData.actor.accessor,
-			socialTarget: link.actor.accessor,
-			attacker: cardData.actor.accessor,
-			isSocial: true
-		};
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event,eventNumber, cardData, situation, eventIndex});
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event,eventNumber, cardData, situation : cardData.situation, eventIndex});
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
 			speaker,
@@ -383,9 +397,10 @@ export class PersonaSocial {
 			type: CONST.CHAT_MESSAGE_TYPES.OOC
 		};
 		const msg= await ChatMessage.create(msgData,{} );
-		return await new Promise( (conf, ref) => {
+		await new Promise( (conf, ref) => {
 			this.continuation=conf;
 		});
+		return msg;
 	}
 
 
@@ -707,7 +722,7 @@ export class PersonaSocial {
 		if (!this.continuation) {
 			throw new PersonaError("No roll is currently ongoing, can't execute");
 		}
-		this.continuation()
+		this.continuation();
 	}
 
 } //end of class
@@ -764,8 +779,8 @@ Hooks.on("updateItem", async (_item: PersonaItem, changes) => {
 Hooks.on("renderChatMessage", async (message: ChatMessage, html: JQuery ) => {
 	if ((message?.author ?? message?.user) == game.user) {
 		html.find("button.social-roll").on ("click", PersonaSocial.execSocialCard.bind(PersonaSocial));
-		html.find(".social-card-roll .make-roll").on("click", PersonaSocial.makeCardRoll.bind(this));
-		html.find(".social-card-roll .next").on("click", PersonaSocial.makeCardRoll.bind(this));
+		html.find(".social-card-roll .make-roll").on("click", PersonaSocial.makeCardRoll.bind(PersonaSocial));
+		html.find(".social-card-roll .next").on("click", PersonaSocial.makeCardRoll.bind(PersonaSocial));
 	}
 });
 
@@ -778,6 +793,7 @@ export type CardData = {
 	perk: string,
 	eventsChosen: number[],
 	eventsRemaining: number,
+	situation: Situation
 };
 
 

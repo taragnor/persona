@@ -1,0 +1,20 @@
+<div class="social-card-opportunity">
+	{{item.system.opportunity}}
+	{{#if item.system.opportunity_choices}}
+	Choices : {{item.system.opportunity_choices}}
+	<ul class="opportunity-list">
+	{{#each item.system.opportunity_list as |opp i|}}
+			{{#if (meetsConditions ../cardData opp.conditions )}}
+			<li data-opportunity-index="{{i}}">
+				({{opp.choices}}) : {{opp.name}} - {{opp.text}}
+			</li>
+
+			{{/if}}
+	{{/each}}
+	</ul>
+
+	{{/if}}
+</div>
+
+
+

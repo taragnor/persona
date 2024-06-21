@@ -9,7 +9,7 @@
 	{{#each event.choices as |choice i|}}
 	<div class="event-choice" data-choice-index="{{i}}">
 		<h3>
-			{{#if (meetsConditions ../situation choice.conditions ../cardData)}}
+			{{#if (meetsConditions ../cardData choice.conditions)}}
 			Choice : {{choice.name}}
 			{{/if}}
 		</h3>

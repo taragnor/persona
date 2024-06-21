@@ -160,20 +160,8 @@ export class PersonaHandleBarsHelpers {
 				return str.trim();
 			else return str;
 		},
-		"meetsConditions" : function (actorOrSit: PC | Situation, conditions: Precondition[], cardData: CardData) : boolean {
-			const link = PersonaSocial.lookupLinkId(cardData.actor, cardData.linkId);
-			let situation : Situation;
-			if (actorOrSit instanceof PersonaActor) {
-				situation = {
-					user: actorOrSit.accessor,
-					socialTarget: link.actor.accessor,
-					attacker: actorOrSit.accessor,
-					isSocial: true,
-				};
-			} else {
-				situation = actorOrSit;
-			}
-			return testPreconditions(conditions ?? [], situation, null);
+		"meetsConditions" : function (cardData: CardData, conditions: Precondition[]) : boolean {
+			return testPreconditions(conditions ?? [], cardData.situation, null);
 		}
 	}
 
