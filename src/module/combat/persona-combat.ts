@@ -503,12 +503,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		critBoostMod.add("Power Modifier", power.system.crit_boost);
 		const critResist = target.actor.critResist().total(situation);
 		critBoostMod.add("Enemy Critical Resistance", -critResist);
-		// if (resist == "weakness") {
-		// 	critBoostMod.add("weakness", 4);
-		// }
-		// if (target.actor.statuses.has("blocking")) {
-		// 	critBoostMod.add("defender blocking", -100);
-		// }
 		const critBoost = critBoostMod.total(situation);
 		situation.resisted = resist == "resist";
 		situation.struckWeakness = resist == "weakness";
@@ -610,117 +604,149 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return CombatRes;
 	}
 
+	static ProcessConsequences_simple(consequence_list: Consequence[]): ConsequenceProcessed {
+		let consequences : ConsequenceProcessed["consequences"] = [];
+		for (const cons of consequence_list) {
+			consequences= consequences.concat(this.processConsequence_simple(cons));
+		}
+		return {
+			escalationMod:0,
+			consequences
+		};
+	}
+
+
 	static ProcessConsequences(power: ModifierContainer, situation: Situation, relevantConsequences: Consequence[], attacker: ValidAttackers, atkresult ?: Partial<AttackResult>)
 	: ConsequenceProcessed {
 		let escalationMod = 0;
 		let consequences : ConsequenceProcessed["consequences"]= [];
 		for (const cons of relevantConsequences) {
-			let damageMult = 1;
-			const applyToSelf = cons.applyToSelf ?? false;
-			const absorb = situation.isAbsorbed && !applyToSelf;
-			const block = atkresult && atkresult.result == "block" && !applyToSelf;
-			damageMult *= situation.resisted ? 0.5 : 1;
-			switch (cons.type) {
-				case "dmg-high":
-					consequences.push({
-						applyToSelf,
-						cons: {
-							type: cons.type,
-							amount: power.getDamage(attacker, "high", situation) * (absorb ? -1 : damageMult),
-						}
-					});
-					break;
-				case "dmg-low":
-					consequences.push({
-						applyToSelf,
-						cons: {
-							type: cons.type,
-							amount: power.getDamage(attacker, "low", situation) * (absorb ? -1 : damageMult),
-						}
-					});
-					break;
-				case "dmg-allout-low": {
-					const combat =this.ensureCombatExists();
-					const userTokenAcc = combat.getToken(situation.user);
-					if (!userTokenAcc) {
-						PersonaError.softFail(`Can't calculate All out damage - no token for ${situation.user.actorId}`);
-						break;
-					}
-					const userToken = PersonaDB.findToken(userTokenAcc);
-					consequences.push({
-						applyToSelf,
-						cons : {
-							type: cons.type,
-							amount: PersonaCombat.calculateAllOutAttackDamage(userToken, situation).low * (absorb ? -1 : damageMult),
-						}
-					});
-					break;
-				}
-				case "dmg-allout-high": {
-					const combat =this.ensureCombatExists();
-					const userTokenAcc = combat.getToken(situation.user);
-					if (!userTokenAcc) {
-						PersonaError.softFail(`Can't calculate All out damage - no token for ${situation.user.actorId}`);
-						break;
-					}
-					const userToken = PersonaDB.findToken(userTokenAcc);
-					consequences.push({
-						applyToSelf,
-						cons : {
-							type: cons.type,
-							amount: PersonaCombat.calculateAllOutAttackDamage(userToken, situation).high * (absorb ? -1 : damageMult),
-						}
-					});
-					break;
-				}
-				case "none":
-					break;
-				case "addStatus": case "removeStatus":
-					if (!applyToSelf && (absorb || block)) continue;
-					consequences.push({applyToSelf,cons});
-					break;
-				case "dmg-mult":
-					consequences.push({applyToSelf,cons});
-					break;
-				case "escalationManipulation":
-					escalationMod += (cons.amount ?? 0);
-					break;
-				case "modifier":
-						break;
-				case "hp-loss":
-						consequences.push({
-							applyToSelf,
-							cons: {
-								type: "hp-loss",
-								amount: cons.amount ?? 0,
-							}
-						});
-					break;
-				case "extraAttack" :
-				case "absorb":
-				case "expend-slot":
-				case "add-escalation":
-				case "save-slot":
-				case "revive":
-				case "extraTurn":
-				case"expend-item":
-				case "recover-slot":
-				case "half-hp-cost":
-				case "other-effect":
-				case "set-flag":
-				case "add-power-to-list":
-				case "raise-resistance":
-				case "lower-resistance":
-				case "inspiration-cost":
-				case "display-msg":
-					consequences.push({applyToSelf,cons});
-					break;
-				default:
-					cons.type satisfies never;
-					break;
+			const newCons = this.processConsequence(power, situation, cons, attacker, atkresult);
+			consequences = consequences.concat(newCons);
+			if (cons.type == "escalationManipulation") {
+				escalationMod += (cons.amount ?? 0);
 			}
 		}
 		return {consequences, escalationMod} satisfies ConsequenceProcessed;
+	}
+
+	static processConsequence( power: ModifierContainer, situation: Situation, cons: Consequence, attacker: ValidAttackers, atkresult ?: Partial<AttackResult>) : ConsequenceProcessed["consequences"] {
+		let x : ConsequenceProcessed["consequences"];
+		let damageMult = 1;
+		const applyToSelf = cons.applyToSelf ?? false;
+		const absorb = situation.isAbsorbed && !applyToSelf;
+		const block = atkresult && atkresult.result == "block" && !applyToSelf;
+		damageMult *= situation.resisted ? 0.5 : 1;
+		switch (cons.type) {
+			case "dmg-high":
+				return [{
+					applyToSelf,
+					cons: {
+						type: cons.type,
+						amount: power.getDamage(attacker, "high", situation) * (absorb ? -1 : damageMult),
+					}
+				}];
+			case "dmg-low":
+				return [{
+					applyToSelf,
+					cons: {
+						type: cons.type,
+						amount: power.getDamage(attacker, "low", situation) * (absorb ? -1 : damageMult),
+					}
+				}];
+			case "dmg-allout-low": {
+				const combat =this.ensureCombatExists();
+				const userTokenAcc = combat.getToken(situation.user);
+				if (!userTokenAcc) {
+					PersonaError.softFail(`Can't calculate All out damage - no token for ${situation.user.actorId}`);
+					break;
+				}
+				const userToken = PersonaDB.findToken(userTokenAcc);
+				return [{
+					applyToSelf,
+					cons : {
+						type: cons.type,
+						amount: PersonaCombat.calculateAllOutAttackDamage(userToken, situation).low * (absorb ? -1 : damageMult),
+					}
+				}];
+			}
+			case "dmg-allout-high": {
+				const combat =this.ensureCombatExists();
+				const userTokenAcc = combat.getToken(situation.user);
+				if (!userTokenAcc) {
+					PersonaError.softFail(`Can't calculate All out damage - no token for ${situation.user.actorId}`);
+					break;
+				}
+				const userToken = PersonaDB.findToken(userTokenAcc);
+				return [{
+					applyToSelf,
+					cons : {
+						type: cons.type,
+						amount: PersonaCombat.calculateAllOutAttackDamage(userToken, situation).high * (absorb ? -1 : damageMult),
+					}
+				}];
+			}
+			case "none":
+			case "modifier":
+			case "escalationManipulation": //since this is no llonger handled here we do nothing
+				break;
+			case "addStatus": case "removeStatus":
+				if (!applyToSelf && (absorb || block)) {return [];}
+				return  [{applyToSelf,cons}];
+			default:
+				return this.processConsequence_simple(cons);
+	}
+		return [];
+	}
+
+	static processConsequence_simple( cons: Consequence) :ConsequenceProcessed["consequences"] {
+		const applyToSelf = cons.applyToSelf ?? false;
+		switch (cons.type) {
+			case "dmg-low":
+			case "dmg-high":
+			case "dmg-allout-low":
+			case "dmg-allout-high":
+			case "dmg-mult":
+				PersonaError.softFail(`Process Consequnec Simple does not handle ${cons.type}`);
+				return [];
+			case "hp-loss":
+				return [{
+					applyToSelf,
+					cons: {
+						type: "hp-loss",
+						amount: cons.amount ?? 0,
+					}
+				}];
+			case "addStatus":
+			case "removeStatus":
+				return  [{applyToSelf,cons}];
+			case "none":
+			case "modifier":
+			case "escalationManipulation": //since this is no llonger handled here we do nothing
+				break;
+			case "extraAttack" :
+			case "absorb":
+			case "expend-slot":
+			case "add-escalation":
+			case "save-slot":
+			case "revive":
+			case "extraTurn":
+			case "expend-item":
+			case "recover-slot":
+			case "half-hp-cost":
+			case "other-effect":
+			case "set-flag":
+			case "add-power-to-list":
+			case "raise-resistance":
+			case "lower-resistance":
+			case "inspiration-cost":
+			case "display-msg":
+				return [{applyToSelf,cons}];
+			default:
+				cons.type satisfies never;
+				break;
+		}
+		return [];
 	}
 
 	static async execTrigger(trigger: CombatTrigger, actor: ValidAttackers, situation?: Situation) : Promise<void> {

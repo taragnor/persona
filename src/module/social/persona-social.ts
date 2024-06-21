@@ -1,3 +1,6 @@
+import { PersonaCombat } from "../combat/persona-combat.js";
+import { getActiveConsequences } from "../preconditions.js";
+import { CardRoll } from "../../config/social-card-config.js";
 import { testPreconditions } from "../preconditions.js";
 import { CardEvent } from "../../config/social-card-config.js";
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
@@ -29,7 +32,10 @@ import { HTMLTools } from "../utility/HTMLTools.js";
 export class PersonaSocial {
 
 	static #drawnCardIds: string[] = [];
-	static continuation: null | ((...args: any) => void) = null;
+	static rollState: null | {
+		continuation: ((...args: any) => void) = null;
+	static cardData: CardData;
+	}
 
 
 	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation) : Promise<RollBundle> {
@@ -353,6 +359,7 @@ export class PersonaSocial {
 		}
 		const final = await this.#finalizeCard(cardData);
 		chatMessages.push(final);
+		this.rollState = null;
 		return chatMessages;
 	}
 
@@ -408,8 +415,15 @@ export class PersonaSocial {
 			type: CONST.CHAT_MESSAGE_TYPES.OOC
 		};
 		const msg= await ChatMessage.create(msgData,{} );
-		await new Promise( (conf, ref) => {
-			this.continuation=conf;
+		await new Promise( (conf, rej) => {
+			if (!this.rollState) {
+				rej("RollState is null");
+				return;
+			}
+			this.rollState = {
+				cardData,
+				continuation: conf
+			};
 		});
 		return msg;
 	}
@@ -694,7 +708,38 @@ export class PersonaSocial {
 		}
 	}
 
+	static async handleCardRoll(cardData: CardData, cardRoll:CardRoll) {
+		switch (cardRoll.rollType) {
+			case "none":
+			case "gmspecial":
+				break;
+			case "studentSkillCheck":
+				const modifiers = new ModifierList();
+				modifiers.add("Roll Modifier", cardRoll.modifier);
+				const roll = await this.rollSocialStat(cardData.actor, cardRoll.studentSkill, modifiers, "Card Roll",  cardData.situation);
+				const situation = {
+					...cardData.situation,
+					naturalSkillRoll: roll.natural,
+					rollTotal: roll.total
+				};
+				const results = cardRoll.effects.flatMap( eff=> getActiveConsequences(eff, situation, null));
+				const processed= PersonaCombat.ProcessConsequences_simple(results);
+				//TODO: turn into CombatResult
+				throw new PersonaError("Not yet implemented");
+				//TODO: write this
+				break;
+			case "save":
+				throw new PersonaError("Not yet implemented");
+				//TODO: write this
+				break;
+			default:
+				roll satisfies never;
+		}
+	}
+
 	static async makeCardRoll(ev: JQuery.ClickEvent) {
+		if (!this.rollState)
+			throw new PersonaError("No event state present, can't resume roll");
 		const cardId = HTMLTools.getClosestData(ev, "cardId");
 		const messageId = HTMLTools.getClosestData(ev, "messageId");
 		const message = game.messages.get(messageId);
@@ -710,22 +755,7 @@ export class PersonaSocial {
 		}
 		const cardEvent = card.system.events[eventIndex];
 		const choice= cardEvent.choices[choiceIndex];
-		const roll = choice.roll;
-		switch (roll.rollType) {
-			case "none":
-			case "gmspecial":
-				break;
-			case "studentSkillCheck":
-				throw new PersonaError("Not yet implemented");
-				//TODO: write this
-				break;
-			case "save":
-				throw new PersonaError("Not yet implemented");
-				//TODO: write this
-				break;
-			default:
-				roll satisfies never;
-		}
+		await this.handleCardRoll(this.rollState.cardData, choice.roll);
 		const content = $(message.content);
 		content
 			.closest(".social-card-event")
@@ -741,10 +771,10 @@ export class PersonaSocial {
 		});
 		const html = content.html();
 		await message.update( {"content": html});
-		if (!this.continuation) {
+		if (!this.rollState.continuation) {
 			throw new PersonaError("No roll is currently ongoing, can't execute");
 		}
-		this.continuation();
+		this.rollState.continuation();
 	}
 
 } //end of class

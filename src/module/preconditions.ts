@@ -400,6 +400,7 @@ export type Situation = {
 	usedSkill ?: SocialStat;
 	activeCombat ?: boolean ;
 	naturalAttackRoll ?: number;
+	naturalSkillRoll ?: number;
 	rollTotal ?: number;
 	criticalHit ?: boolean;
 	hit?: boolean;
