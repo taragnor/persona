@@ -11,7 +11,7 @@
 	{{#each item.system.opportunity_list as |opportunity i|}}
 	<div class="opportunity" data-opportunity-index="{{i}}">
 		<h4>
-			Opportunity {{i}}
+			<input type="string" name="system.opportunity_list.{{i}}.name" value="{{opportunity.name}}">
 			<span>
 				<a class="del-opportunity">
 					<i class="fa-solid fa-trash-can"></i>
@@ -34,7 +34,7 @@
 			<input class="short" type=number name="system.opportunity_list.{{i}}.choices" value="{{opportunity.choices}}">
 		</div>
 		<textarea name="system.opportunity_list.{{i}}.text">
-			{{opportunity.text}}
+			{{trim opportunity.text}}
 		</textarea>
 		{{> "systems/persona/parts/card-roll-section.hbs" CONST=../SOCIAL_DATA namePrefix=(strcat "system.opportunity_list." i ".roll.") roll=opportunity.roll opp_index=i item=../item}}
 	</div>

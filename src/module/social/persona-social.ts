@@ -344,9 +344,15 @@ export class PersonaSocial {
 				break;
 			}
 			cardData.eventsRemaining--;
-			await this.#execEvent(ev, cardData);
+			const msg = await this.#execEvent(ev, cardData);
+			chatMessages.push(msg);
 		}
-		await this.#execOpportunity(cardData);
+		const opp = await this.#execOpportunity(cardData);
+		if (opp) {
+			chatMessages.push(opp);
+		}
+		const final = await this.#finalizeCard(cardData);
+		chatMessages.push(final);
 		return chatMessages;
 	}
 
@@ -355,9 +361,14 @@ export class PersonaSocial {
 		if (card.system.opportunity.trim() == ""
 			&& card.system.opportunity_choices == 0)
 			return;
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-opportunity.hbs`, {item: card,card, situation: cardData.situation  } );
-		const list = card.system.opportunity_list[0];
-
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-opportunity.hbs`, {item: card,card,cardData} );
+		const speaker = ChatMessage.getSpeaker();
+		const msgData : MessageData = {
+			speaker,
+			content: html,
+			type: CONST.CHAT_MESSAGE_TYPES.OOC
+		};
+		return await ChatMessage.create(msgData,{} );
 	}
 
 	static #getCardEvent(cardData:CardData) : CardEvent | undefined  {
@@ -403,6 +414,17 @@ export class PersonaSocial {
 		return msg;
 	}
 
+	static async #finalizeCard( cardData: CardData) : Promise<ChatMessage<Roll>> {
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-final.hbs`,{cardData, situation : cardData.situation});
+		const speaker = ChatMessage.getSpeaker();
+		const msgData : MessageData = {
+			speaker,
+			content: html,
+			type: CONST.CHAT_MESSAGE_TYPES.OOC
+		};
+		const msg= await ChatMessage.create(msgData,{} );
+		return msg;
+	}
 
 	static async #printSocialCard(card: SocialCard, actor: PC, linkId: string, cameos: SocialLink[], perk:string ) : Promise<ChatMessage> {
 		const link = this.lookupLinkId(actor, linkId);

@@ -3,11 +3,15 @@
 	{{#if item.system.opportunity_choices}}
 	Choices : {{item.system.opportunity_choices}}
 	<ul class="opportunity-list">
-	{{#each item.system.opportunity_list as |opp i|}}
-			{{#if (meetsConditions ../cardData opp.conditions )}}
-			<li data-opportunity-index="{{i}}">
-				({{opp.choices}}) : {{opp.name}} - {{opp.text}}
-			</li>
+		{{#each item.system.opportunity_list as |opp i|}}
+		{{#if (meetsConditions ../cardData opp.conditions )}}
+		<li data-opportunity-index="{{i}}">
+			{{#if (gt opp.choices 1)}}
+			({{opp.choices}}) :
+			{{/if}}
+			{{opp.name}} -
+			{{newlineConversion opp.text}}
+		</li>
 
 			{{/if}}
 	{{/each}}
