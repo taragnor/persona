@@ -1,4 +1,3 @@
-import { PersonaCombat } from "../combat/persona-combat.js";
 import { getActiveConsequences } from "../preconditions.js";
 import { CardRoll } from "../../config/social-card-config.js";
 import { testPreconditions } from "../preconditions.js";
@@ -32,10 +31,11 @@ import { HTMLTools } from "../utility/HTMLTools.js";
 export class PersonaSocial {
 
 	static #drawnCardIds: string[] = [];
-	static rollState: null | {
-		continuation: ((...args: any) => void) = null;
-	static cardData: CardData;
-	}
+	static rollState: null |
+		{
+			continuation: ((...args: any) => void);
+			cardData: CardData;
+		};
 
 
 	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation) : Promise<RollBundle> {
@@ -733,7 +733,7 @@ export class PersonaSocial {
 				//TODO: write this
 				break;
 			default:
-				roll satisfies never;
+				cardRoll satisfies never;
 		}
 	}
 
