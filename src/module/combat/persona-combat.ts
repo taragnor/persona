@@ -1,3 +1,4 @@
+import { testPreconditions } from "../preconditions.js"
 import { UniversalModifier } from "../item/persona-item.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { CombatTrigger } from "../../config/triggers.js";
@@ -589,9 +590,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		for (const {source, effects} of sourcedEffects){
 			for (let effect of effects) {
 				const {conditions, consequences}  = effect;
-				if (conditions.every(
-					cond => ModifierList.testPrecondition(cond, situation, source))
-				) {
+				if (ModifierList.testPreconditions(conditions, situation, source)) {
 					const x = this.ProcessConsequences(power, situation, consequences, attacker.actor, atkResult);
 					CombatRes.escalationMod += x.escalationMod;
 					for (const cons of x.consequences) {
@@ -769,9 +768,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		} ; //copy the object so it doesn't permanently change it
 		for (const trig of actor.triggers) {
 			for (const eff of trig.getEffects()) {
-				if (!eff.conditions.every( cond =>
-					ModifierList.testPrecondition(cond, situation, trig)
-				)) { continue; }
+				if (!ModifierList.testPreconditions(eff.conditions, situation, trig)) { continue; }
 				const cons = this.ProcessConsequences(trig, situation, eff.consequences, actor)
 				result.escalationMod+= cons.escalationMod;
 				for (const c of cons.consequences) {

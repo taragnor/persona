@@ -1,3 +1,4 @@
+import { ModifierList } from "../combat/modifier-list.js";
 import { testPreconditions } from "../preconditions.js";
 import { CardEffectLocation } from "./sheets/social-card-sheet.js";
 import { CardChoice } from "../../config/social-card-config.js";
@@ -581,24 +582,28 @@ const power = PersonaDB.getBasicPower(powerName);
 		await this.update({"system.effects": this.system.effects});
 	}
 
-	getModifier(this: ModifierContainer, type : ModifierTarget) : ModifierListItem[] {
+	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget) : ModifierListItem[] {
+		bonusTypes = Array.isArray(bonusTypes) ? bonusTypes: [bonusTypes];
 		return this.getEffects()
 			.map(x =>
 				({
 					name: this.name,
 					source: PersonaDB.getUniversalItemAccessor(this),
 					conditions: ArrayCorrector(x.conditions),
-					modifier: ArrayCorrector(x.consequences).reduce( (acc,x)=> {
-						if ( x.modifiedField == type) {
-							if (x.amount != 0) return acc + (x.amount ?? 0);
-						}
-						return acc;
-					}, 0),
-					variableModifier: new Set(ArrayCorrector(x.consequences).flatMap ( x=> {
-						if (x.modifiedField != type) return [];
-						if (x.type == "add-escalation") return ["escalationDie"];
-						return [];
-					}))
+					modifier: ModifierList.getModifierAmount(x.consequences, bonusTypes),
+					// modifier: ArrayCorrector(x.consequences)
+					// .reduce( (acc,x)=> {
+					// 	if ( x.modifiedField == type) {
+					// 		if (x.amount != 0) return acc + (x.amount ?? 0);
+					// 	}
+					// 	return acc;
+					// }, 0),
+					variableModifier: ModifierList.getVariableModifiers(x.consequences, bonusTypes),
+					// variableModifier: new Set(ArrayCorrector(x.consequences).flatMap ( x=> {
+					// 	if (x.modifiedField != type) return [];
+					// 	if (x.type == "add-escalation") return ["escalationDie"];
+					// 	return [];
+					// }))
 				})
 			);
 		// return this.system.modifiers[type];

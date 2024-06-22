@@ -1,3 +1,7 @@
+import { Consequence } from "./combat-result.js";
+import { ArrayCorrector } from "../item/persona-item.js";
+import { ConditionalEffect } from "../datamodel/power-dm.js";
+import { testPreconditions } from "../preconditions.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { ModifierContainer } from "../item/persona-item.js";
 import { PowerContainer } from "../item/persona-item.js";
@@ -36,12 +40,6 @@ export class ModifierList {
 
 	list(situtation: Situation): [number, string][] {
 		const filtered = this.validModifiers(situtation);
-		// const filtered = this._data.filter( item=> item.conditions.every(cond => {
-		// 	const source = item.source ? PersonaDB.findItem(item.source): null;
-		// 	ModifierList.testPrecondition(cond, situtation,
-		// 		source)
-		// }
-		// ));
 		return filtered.map( x=> [x.modifier, x.name]);
 	}
 
@@ -53,17 +51,50 @@ export class ModifierList {
 	validModifiers (situation: Situation) : ModifierListItem[]  {
 		return this._data.filter( item => {
 			const source = item.source ? PersonaDB.findItem(item.source) as PowerContainer: null;
-			// if (! source) {
-			// 	console.error(`No source for ${item.name}`);
-			// 	return false;
-			// }
-			if (item.conditions.every( cond => !source  || ModifierList.testPrecondition(cond, situation, source))) {
+			if (ModifierList.testPreconditions(item.conditions, situation, source)) {
 				if (item.modifier != 0 || item.variableModifier.size != 0) {
 					return true;
 				}
 			}
 			return false;
 		});
+	}
+
+	static getVariableModifiers(consequences: Consequence[], targetMods: ModifierTarget[]): ModifierList["_data"][number]["variableModifier"] {
+		return new Set(ArrayCorrector(consequences).flatMap ( c=> {
+			if (!c.modifiedField) return [];
+			if (!targetMods.includes(c.modifiedField)) return [];
+			if (c.type == "add-escalation") return ["escalationDie"];
+			return [];
+		}))
+	}
+
+	static getModifierAmount(consequences: Consequence[], targetMods: ModifierTarget[] | ModifierTarget) : number {
+		targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
+		return (ArrayCorrector(consequences) ?? [])
+			.reduce( (acc,x)=> {
+				if (x.modifiedField && targetMods.includes(x.modifiedField)) {
+					if (x.amount) return acc + x.amount;
+				}
+				return acc;
+			}, 0);
+	}
+
+	addConditionalEffects( effects: ConditionalEffect[], source: PowerContainer  | string, bonusTypes: ModifierTarget[]) : this {
+		const sourceName = typeof source =="string" ? source : source.name;
+		const sourceAccessor = typeof source == "string" ? null : source.accessor;
+		const stuff : ModifierListItem[] = (ArrayCorrector(effects) ?? []).map( eff=>{
+			return {
+					name: sourceName,
+					source: sourceAccessor,
+					conditions: ArrayCorrector(eff.conditions),
+				modifier: ModifierList.getModifierAmount(eff.consequences, bonusTypes),
+				variableModifier: ModifierList.getVariableModifiers(eff.consequences, bonusTypes),
+			}
+		});
+		this._data = this._data.concat(stuff);
+		return this;
+
 	}
 
 	total(situation: Situation ) : number {
@@ -75,8 +106,8 @@ export class ModifierList {
 		return base + vartotal;
 	}
 
-	static testPrecondition (condition: Precondition, situation:Situation, source: PowerContainer) : boolean {
-		return testPrecondition( condition, situation, source);
+	static testPreconditions (...args: Parameters<typeof testPreconditions>) : boolean {
+		return testPreconditions( ...args);
 	}
 
 	static resolveVariableModifiers( variableMods:Set<ModifierVariable> , situation: Situation) : number {

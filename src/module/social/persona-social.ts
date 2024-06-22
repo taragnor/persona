@@ -1,3 +1,4 @@
+import { ModifierContainer } from "../item/persona-item.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { ArrayCorrector } from "../item/persona-item.js";
 import { ActivityLink } from "../actor/persona-actor.js";
@@ -460,9 +461,19 @@ export class PersonaSocial {
 		return msg;
 	}
 
+	static getCardModifiers(cardData: CardData) : ModifierList {
+		const card= cardData.card;
+		let effects : ConditionalEffect[] = [];
+		effects = effects.concat(card.system.globalModifiers);
+		const retList = new ModifierList();
+		retList.addConditionalEffects(effects, "Card Modifier",["socialRoll"]);
+		return retList;
+	}
+
+
+
 	static async #finalizeCard( cardData: CardData) : Promise<ChatMessage<Roll>> {
 		let html = "";
-		// const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-final.hbs`,{cardData, situation : cardData.situation});
 		const tokenSpends = (cardData.card.system.tokenSpends ?? [])
 		.concat(cardData.activity.system.tokenSpends ?? [])
 		.filter( spend => testPreconditions(spend.conditions ?? [], cardData.situation, null))
@@ -687,9 +698,7 @@ export class PersonaSocial {
 			} ; //copy the object so it doesn't permanently change it
 		for (const trig of actor.triggers) {
 			for (const eff of trig.getEffects()) {
-				if (!eff.conditions.every( cond =>
-					ModifierList.testPrecondition(cond, situation, trig)
-				)) { continue; }
+				if (ModifierList.testPreconditions(eff.conditions, situation, trig)) { continue;}
 				const cons = PersonaCombat.ProcessConsequences(trig, situation, eff.consequences, actor)
 				for (const c of cons.consequences) {
 					result.addEffect(null, actor, c.cons);
@@ -708,28 +717,6 @@ export class PersonaSocial {
 		console.log(situation);
 		await this.execTrigger("on-attain-tarot-perk", target, situation, `Gains Perk (${socialLink.tarot?.name})`) ;
 	}
-
-	// static async execSocialCard(event: JQuery.ClickEvent) {
-	// 	console.log("Exec social card");
-	// 	const linkId = HTMLTools.getClosestData(event, "linkActorId");
-	// 	const userId = HTMLTools.getClosestData(event, "userId");
-	// 	const PCId = HTMLTools.getClosestData(event, "pcId");
-	// 	if (userId != game.user.id) {
-	// 		ui.notifications.notify(`Can't execute, user Id's not match`);
-	// 		return;
-	// 	}
-	// 	const pc = game.actors.get(PCId);
-	// 	if (!pc || pc.system.type != "pc") {
-	// 		ui.notifications.notify(`Can't find PC id ${PCId}`);
-	// 		return;
-	// 	}
-	// 	await this.makeUpgradeLinkRoll(pc as PC, linkActorId)
-	// 	const socialLink = game.actors.get(linkActorId);
-	// 	if (!socialLink) {
-	// 		ui.notifications.notify(`Can't find SL id ${linkActorId}`);
-	// 		return;
-	// 	}
-	// }
 
 	static getBaseSkillThreshold (cardData: CardData) : number {
 		return this.getBaseSkillDC(cardData) - 5;
@@ -783,13 +770,13 @@ export class PersonaSocial {
 			case "gmspecial":
 				break;
 			case "studentSkillCheck": {
-				const modifiers = new ModifierList();
+				const modifiers = this.getCardModifiers(cardData);
 				modifiers.add("Roll Modifier", cardRoll.modifier);
 				const DC = this.getCardRollDC(cardData, cardRoll);
 				const link = this.lookupLink(cardData);
 				const activityOrActor = "actor" in link ? link.actor: link.activity;
 				const skill = this.resolvePrimarySecondarySocialStat(cardRoll.studentSkill, activityOrActor);
-				const roll = await this.rollSocialStat(cardData.actor, skill, modifiers, `Card Roll (${skill} ${cardRoll.modifier})`,  cardData.situation);
+				const roll = await this.rollSocialStat(cardData.actor, skill, modifiers, `Card Roll (${skill} ${cardRoll.modifier} vs DC ${DC})`,  cardData.situation);
 				await roll.toModifiedMessage();
 				const situation : Situation = {
 					...cardData.situation,
