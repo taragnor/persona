@@ -1,7 +1,4 @@
-import { WEATHER_TYPE_LIST } from "../../config/weather-types.js";
-import { WeatherType } from "../../config/weather-types.js";
-import { PersonaSettings } from "../../config/persona-settings.js";
-import { ModifierContainer } from "../item/persona-item.js";
+import { PersonaCalendar } from "./persona-calendar.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { ArrayCorrector } from "../item/persona-item.js";
 import { ActivityLink } from "../actor/persona-actor.js";
@@ -12,7 +9,6 @@ import { getActiveConsequences } from "../preconditions.js";
 import { CardRoll } from "../../config/social-card-config.js";
 import { testPreconditions } from "../preconditions.js";
 import { CardEvent } from "../../config/social-card-config.js";
-import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
 import { PersonaSockets } from "../persona.js";
 import { SocialLinkData } from "../actor/persona-actor.js";
 import { TarotCard } from "../../config/tarot.js";
@@ -48,6 +44,13 @@ export class PersonaSocial {
 			cardData: CardData;
 		};
 
+
+	static async advanceCalendar() {
+		if (!(await HTMLTools.confirmBox( "Advance Date", "Advnace Date?", true)))
+			return;
+		await PersonaCalendar.nextDay();
+
+	}
 
 	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation) : Promise<RollBundle> {
 		let mods = pc.getSocialStat(socialStat);
@@ -860,17 +863,6 @@ export class PersonaSocial {
 		this.rollState.continuation();
 	}
 
-	static getWeather() : WeatherType {
-		const weather = PersonaSettings.get("weather");
-		if (WEATHER_TYPE_LIST.includes(weather as any)) {
-			return weather as typeof WEATHER_TYPE_LIST[number];
-		}
-		return "cloudy";
-	}
-
-	static async setWeather(weather: WeatherType) {
-		await PersonaSettings.set("weather", weather);
-	}
 
 } //end of class
 

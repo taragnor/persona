@@ -1,21 +1,9 @@
 declare global {
 	interface Window {
 		TensionPool: typeof TensionPool;
-		clockDatabase: undefined | {
-			getName(name: string) : Clock | undefined;
-			update(newData : {id: string, value: number}): Promise<void>;
-		}
 	}
 }
 
-type Clock = {
-	name: string,
-	id: string,
-	value: number,
-	max: number,
-	private: boolean;
-
-}
 
 
 export class TensionPool {

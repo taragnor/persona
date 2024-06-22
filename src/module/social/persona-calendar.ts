@@ -1,0 +1,136 @@
+import { WEATHER_TYPE_LIST } from "../../config/weather-types.js";
+import { PersonaSettings } from "../../config/persona-settings.js";
+import { WeatherType } from "../../config/weather-types.js";
+import { PersonaError } from "../persona-error.js";
+
+export class PersonaCalendar {
+	static weekday() : SimpleCalendar.WeekdayName {
+		if (!window.SimpleCalendar)
+			throw new PersonaError("Simple Calendar isn't enabled!");
+		return window.SimpleCalendar.api.getCurrentWeekday().name;
+	}
+
+	static async nextDay() {
+		if(!game.user.isGM) return;
+		const rolls: Roll[] = [];
+		rolls.push(await this.randomizeWeather());
+		const weather = this.getWeather();
+		if (!window.SimpleCalendar)
+			throw new PersonaError("Simple Calendar isn't enabled!");
+		await window.SimpleCalendar.api.changeDate({day:1});
+		await DoomsdayClock.inc();
+		const date = window.SimpleCalendar.api.currentDateTimeDisplay().date;
+		let doomsdayMsg = ""
+		if (DoomsdayClock.isFull()) {
+			doomsdayMsg = `<div class="doomsday">Doomsday is here! Succeed or Something horrible happens!</div>`;
+		}
+		const html = `
+		<div class="date">
+		<h2> ${date} </h2>
+		<div class="weather">
+		Weather: ${weather}
+		</div>
+		${doomsdayMsg}
+		</div>
+			`;
+		const speaker: ChatSpeakerObject = {
+			alias: "Calendar"
+		};
+		const msgData : MessageData = {
+			speaker,
+			content: html,
+			type: CONST.CHAT_MESSAGE_TYPES.OOC,
+			rolls,
+		};
+		await ChatMessage.create(msgData,{} );
+		return date;
+	}
+
+	static async randomizeWeather() : Promise<Roll> {
+		const roll = new Roll("2d6");
+		await roll.roll();
+		const season = window.SimpleCalendar!.api.getCurrentSeason().name;
+		let weather : WeatherType;
+		switch (roll.total) {
+			case 2: weather = "lightning"; break;
+			case 3: weather = "rain"; break;
+			case 4: weather = "rain"; break;
+			case 5: weather = "sunny"; break;
+			case 6: weather = "sunny"; break;
+			case 7: weather = "cloudy"; break;
+			case 8: weather = "cloudy"; break;
+			case 9: weather = "cloudy"; break;
+			case 10: weather = "cloudy"; break;
+			case 11: weather = "windy"; break;
+			case 12: weather = "windy"; break;
+			default:
+				PersonaError.softFail(`Odd Weather Result ${roll.total}`);
+				weather = "cloudy";
+		}
+		if (season == "Winter" && weather == "rain") {
+			weather = "snow";
+		}
+		await this.setWeather(weather);
+		return roll;
+	}
+
+	static getWeather() : WeatherType {
+		const weather = PersonaSettings.get("weather");
+		if (WEATHER_TYPE_LIST.includes(weather as any)) {
+			return weather as typeof WEATHER_TYPE_LIST[number];
+		}
+		return "cloudy";
+	}
+
+
+
+	static async setWeather(weather: WeatherType) {
+		await PersonaSettings.set("weather", weather);
+	}
+
+}
+
+export class DoomsdayClock {
+	static MAX_TICKS: number = 16;
+
+	static isFull() :boolean {
+		const clock = this.#getClock();
+		if (!clock) return false;
+		return (clock.value == clock.max)
+}
+
+static async inc(): Promise<void> {
+	const clock = this.#getClock();
+	if (!clock) return;
+	clock.value += 1;
+	if (clock.value > clock.max) {
+		clock.value = 0;
+	}
+	await window.clockDatabase!.update(clock);
+}
+
+static #getClock(): undefined |  GlobalProgressClocks.ProgressClock {
+		if (!window.clockDatabase) {
+			PersonaError.softFail("No clock database, is Global Progress Clocks enabled?");
+			return undefined;
+		}
+
+		let clock = window.clockDatabase.getName("Doomsday Clock");
+	if (!clock) {
+		window.clockDatabase.addClock({
+			name: "Doomsday Clock",
+			value: 0,
+			max: this.MAX_TICKS,
+	});
+		clock = window.clockDatabase.getName("Doomsday Clock");
+	}
+		return clock;
+}
+
+
+	static clockStatus(): number {
+		const clock = this.#getClock();
+		return clock?.value ?? -1;
+	}
+
+}

@@ -1,11 +1,8 @@
-import { PersonaSocial } from "./social/persona-social.js";
+import { PersonaCalendar } from "./social/persona-calendar.js";
 import { ArrayCorrector } from "./item/persona-item.js";
-import { Focus } from "./item/persona-item.js";
-import { TargettedBComparisonPC } from "../config/precondition-types.js";
 import { BooleanComparisonPC } from "../config/precondition-types.js";
 import { Triggered } from "../config/precondition-types.js";
 import { PToken } from "./combat/persona-combat.js";
-import { UniversalTokenAccessor } from "./utility/db-accessor.js";
 import { TarotCard } from "../config/tarot.js";
 import { ConditionTarget } from "../config/precondition-types.js";
 import { PersonaActor } from "./actor/persona-actor.js";
@@ -354,7 +351,7 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 			}
 			return power.system.targets == condition.powerTargetType;
 		case "weather-is":
-			const weather = PersonaSocial.getWeather();
+			const weather = PersonaCalendar.getWeather();
 			return condition.weatherComparison == weather;
 		default :
 			condition satisfies never;
