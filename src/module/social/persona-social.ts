@@ -225,6 +225,7 @@ export class PersonaSocial {
 			card,
 			actor,
 			linkId: activity.id,
+			activity,
 			cameos,
 			perk,
 			eventsChosen: [],
@@ -440,7 +441,6 @@ export class PersonaSocial {
 
 	static async #execEvent(event: CardEvent, cardData: CardData) {
 		const eventNumber = cardData.eventsChosen.length;
-		// const link = this.lookupLink(cardData);
 		const eventIndex = cardData.card.system.events.indexOf(event);
 		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event,eventNumber, cardData, situation : cardData.situation, eventIndex});
 		const speaker = ChatMessage.getSpeaker();
@@ -450,11 +450,7 @@ export class PersonaSocial {
 			type: CONST.CHAT_MESSAGE_TYPES.OOC
 		};
 		const msg= await ChatMessage.create(msgData,{} );
-		await new Promise( (conf, rej) => {
-			if (!this.rollState) {
-				rej("RollState is null");
-				return;
-			}
+		await new Promise( (conf, _rej) => {
 			this.rollState = {
 				cardData,
 				continuation: conf
@@ -464,7 +460,22 @@ export class PersonaSocial {
 	}
 
 	static async #finalizeCard( cardData: CardData) : Promise<ChatMessage<Roll>> {
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-final.hbs`,{cardData, situation : cardData.situation});
+		let html = "";
+		// const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-final.hbs`,{cardData, situation : cardData.situation});
+		const tokenSpends = (cardData.card.system.tokenSpends ?? [])
+		.concat(cardData.activity.system.tokenSpends ?? [])
+		.filter( spend => testPreconditions(spend.conditions ?? [], cardData.situation, null))
+		.map(x=> `spend ${x.amount} progress tokens to ${x.text}.`)
+		.map(x=> `<li class="token-spend"> ${x} </li>`);
+
+
+		html += `<div class="token-spends">
+		<h3>Token Spends:</h3>
+		<ul>
+		${tokenSpends.join("")}
+		</ul>
+		</div>
+		`;
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
 			speaker,
@@ -474,24 +485,6 @@ export class PersonaSocial {
 		const msg= await ChatMessage.create(msgData,{} );
 		return msg;
 	}
-
-	// static async #printSocialCard(card: SocialCard, actor: PC, linkId: string, cameos: SocialLink[], perk:string ) : Promise<ChatMessage> {
-	// 	const link = this.lookupSocialLink(actor, linkId);
-	// 	const DC = 10 + link.linkLevel *3;
-	// 	const perkAvail = link.actor.system.availability == "++" || link.actor.system.availability == "+";
-	// 	const isCameo = card.system.cameoType != "none";
-	// 	const skill = STUDENT_SKILLS[link.actor.getSocialStatToRaiseLink(card.system.skill)];
-
-	// 	const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/social-card.hbs`, {item: card,card,  skill, cameos, perk, link: link, pc: actor, perkAvail, isCameo, DC, user: game.user} );
-
-	// 	const speaker = ChatMessage.getSpeaker();
-	// 	const msgData : MessageData = {
-	// 		speaker,
-	// 		content: html,
-	// 		type: CONST.CHAT_MESSAGE_TYPES.OOC
-	// 	};
-	// 	return await ChatMessage.create(msgData,{} );
-	// }
 
 	static async rerollAvailability() {
 		let rolls : Roll[] = [];
@@ -924,6 +917,7 @@ export type CardData = {
 	card: SocialCard,
 	actor: PC,
 	linkId: string,
+	activity: Job | SocialLink,
 	cameos: SocialLink[],
 	perk: string,
 	eventsChosen: number[],

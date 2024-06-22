@@ -118,5 +118,9 @@
 		{{/each}}
 
 	</section>
+	{{#if (isGM)}}
+  {{> "systems/persona/parts/token-spends-section.hbs" item=actor}}
+  {{/if}}
+
 </form>
 

@@ -3,8 +3,9 @@ import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { STUDENT_SKILLS } from "../../../config/student-skills.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { AVAILABILITY } from "../../../config/availability-types.js";
+import { PersonaSocialSheetBase } from "./social-sheet-base.js";
 
-export class PersonaJobSheet extends PersonaItemSheetBase {
+export class PersonaJobSheet extends PersonaSocialSheetBase {
 	override item: Job;
 
 	override async getData() {

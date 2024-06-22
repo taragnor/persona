@@ -1490,6 +1490,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return peices.includes(numberToCheck);
 	}
 
+	async createNewTokenSpend(this: SocialLink) {
+		const list = this.system.tokenSpends;
+		const newItem : typeof list[number] = {
+			conditions: [],
+			amount: 1,
+			text: "",
+			consequences: []
+		};
+		list.push(newItem);
+		await this.update({"system.tokenSpends":list});
+	}
+
+	async deleteTokenSpend(this: SocialLink, deleteIndex:number) {
+		const list = this.system.tokenSpends;
+		list.splice(deleteIndex,1);
+		await this.update({"system.tokenSpends":list});
+	}
+
 }
 
 Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) => {

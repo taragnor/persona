@@ -1,0 +1,19 @@
+<div class="token-spends">
+	<h3> Token Spends</h3>
+	<a class="add-token-spend">
+		<i class="fa-solid fa-plus"> </i>
+	</a>
+</div>
+
+{{#each item.system.tokenSpends as |spend i|}}
+
+<div class="token-spend" data-spend-index="{{i}}">
+	<input class="short" type="number" name="system.tokenSpends.{{i}}.amount" value="{{spend.amount}}">
+	<input name="system.tokenSpends.{{i}}.text" type:"string" value="{{spend.text}}">
+	<a class="del-token-spend">
+		<i class="fa-solid fa-trash"></i>
+	</a>
+
+</div>
+
+{{/each}}

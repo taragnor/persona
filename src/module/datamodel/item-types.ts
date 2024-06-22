@@ -1,3 +1,4 @@
+import { TokenSpend } from "../../config/social-card-config.js";
 import { ConditionalEffect } from "./power-dm.js";
 import { Precondition } from "../../config/precondition-types.js";
 import { ThresholdOrDC } from "../../config/social-card-config.js";
@@ -135,6 +136,7 @@ class JobItemSchema extends foundry.abstract.DataModel {
 			active: new bool({initial: false}),
 			availability: new txt({choices: AVAILABILITY_LIST, initial: "-"}),
 			bane: new txt(),
+			tokenSpends:new arr(new obj<TokenSpend>()),
 		}
 		return ret;
 	}
@@ -182,6 +184,7 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 			boon: new txt(),
 			globalModifiers: new arr( new obj<ConditionalEffect>()),
 			active: new bool({initial: false}),
+			tokenSpends:new arr(new obj<TokenSpend>()),
 		}
 		return ret;
 	}

@@ -1,4 +1,5 @@
 const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
+import { TokenSpend } from "../../config/social-card-config.js";
 import { Precondition } from "../../config/precondition-types.js";
 import { AVAILABILITY_LIST } from "../../config/availability-types.js";
 import { ResistType } from "../../config/damage-types.js";
@@ -185,6 +186,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			skills: studentSkills(),
 			keyskill: keySkills(),
 			availability: new txt({choices: AVAILABILITY_LIST, initial: "N/A"}),
+			tokenSpends:new arr(new obj<TokenSpend>()),
 		} as const;
 		return ret;
 	}
@@ -224,6 +226,7 @@ export class NPCSchema extends foundry.abstract.DataModel {
 			availability: new txt({choices: AVAILABILITY_LIST, initial: "-"}),
 			specialEvents: new txt(),
 			datePerk: new txt(),
+			tokenSpends:new arr(new obj<TokenSpend>()),
 			//include
 		} as const;
 		return ret;

@@ -31,14 +31,14 @@
 			  <label for="qualname-{{i}}">
 				  Name
 			  </label>
-			  <input id="qualname-{{i}}" class= "name" name="system.qualifiers.{{i}}.relationshipName" type="text" list="qualifiers-{{i}}" value="{{qual.relationshipName}}">
+			  <input id="qualname-{{i}}" class="name" name="system.qualifiers.{{i}}.relationshipName" type="text" list="qualifiers-{{i}}" value="{{qual.relationshipName}}">
 			  <datalist id="qualifiers-{{i}}">
 				  {{#each ../QUALIFIERS_NAME_LIST as |item|}}
 				  <option> {{item}}</option>
 				  {{/each}}
 			  </datalist>
-			  <input class="short" type=number name="system.qualifiers.{{i}}.min" value="{{qual.min}}">
-			  <input class="short" type=number name="system.qualifiers.{{i}}.max" value="{{qual.max}}">
+			  <input class="short" type="number" name="system.qualifiers.{{i}}.min" value="{{qual.min}}">
+			  <input class="short" type="number" name="system.qualifiers.{{i}}.max" value="{{qual.max}}">
 			  <a class="delete-qualifier">
 				  <i class="fa-solid fa-trash"></i>
 			  </a>
@@ -107,7 +107,6 @@
   {{> "systems/persona/parts/effects-section-adaptable.hbs" namePrefix=(strcat "system.globalModifiers.") effects=item.system.globalModifiers POWERSTUFF=item.sheet.powerStuff item=item}}
   </div>
 
-
-
+  {{> "systems/persona/parts/token-spends-section.hbs" item=item}}
 
 </form>

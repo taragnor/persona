@@ -1,3 +1,4 @@
+import { PersonaSocialSheetBase } from "./social-sheet-base.js";
 import { Opportunity } from "../../../config/social-card-config.js";
 import { PersonaError } from "../../persona-error.js";
 import { SocialCard } from "../persona-item.js";
@@ -50,7 +51,7 @@ const PRIMARY_SECONDARY = {
 	"secondary": "persona.term.secondary",
 };
 
-export class PersonaSocialCardSheet extends PersonaItemSheetBase {
+export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 	override item: SocialCard;
 
 	override async getData() {
@@ -92,6 +93,7 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 		super.activateListeners(html);
 		html.find(".add-qualifier").on("click", this.addQualifier.bind(this));
 		html.find(".delete-qualifier").on("click", this.deleteQualifier.bind(this));
+
 		html.find(".add-opportunity").on("click", this.addOpportunity.bind(this));
 		html.find(".del-opportunity").on("click", this.deleteOpportunity.bind(this));
 		html.find(".add-effect").on("click", this.addCardEffect.bind(this));
@@ -105,27 +107,6 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 		html.find(".add-choice").on("click", this.addChoice.bind(this));
 		html.find(".del-choice").on("click", this.deleteChoice.bind(this));
 
-	}
-
-	async addQualifier(_ev: JQuery.ClickEvent) {
-		const qual = ArrayCorrector(this.item.system.qualifiers);
-		qual.push({
-			relationshipName: "",
-			min: 0,
-			max: 0
-		});
-		await this.item.update({"system.qualifiers": qual});
-	}
-
-	async deleteQualifier(ev: JQuery.ClickEvent) {
-		const index : number = Number(HTMLTools.getClosestData(ev, "qualifierIndex"));
-		console.log(`Deleting qualifier - ${index}`);
-		if (Number.isNaN(index))  {
-			throw new PersonaError("NaN index");
-		}
-		const qual = ArrayCorrector(this.item.system.qualifiers);
-		qual.splice(index, 1);
-		await this.item.update({"system.qualifiers": qual});
 	}
 
 	async addOpportunity(_ev: JQuery.ClickEvent) {
@@ -270,6 +251,28 @@ async deleteConditional(ev: JQuery.ClickEvent) {
 		await this.item.deleteEventChoice(eventIndex,choiceIndex);
 	}
 
+	async addQualifier(_ev: JQuery.ClickEvent) {
+		const qual = ArrayCorrector(this.item.system.qualifiers);
+		qual.push({
+			relationshipName: "",
+			min: 0,
+			max: 0
+		});
+		await this.item.update({"system.qualifiers": qual});
+	}
+
+	async deleteQualifier(ev: JQuery.ClickEvent) {
+		const index : number = Number(HTMLTools.getClosestData(ev, "qualifierIndex"));
+		console.log(`Deleting qualifier - ${index}`);
+		if (Number.isNaN(index))  {
+			throw new PersonaError("NaN index");
+		}
+		const qual = ArrayCorrector(this.item.system.qualifiers);
+		qual.splice(index, 1);
+		await this.item.update({"system.qualifiers": qual});
+	}
+
+
+
+
 }
-
-

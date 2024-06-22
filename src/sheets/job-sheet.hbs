@@ -98,5 +98,7 @@
 	<select name="system.availability">
 		{{selectOptions AVAILABILITY localize=true selected=item.system.availability}}
 	</select>
+  {{> "systems/persona/parts/token-spends-section.hbs" item=item}}
+
 </form>
 

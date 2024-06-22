@@ -1,3 +1,4 @@
+import { Consequence } from "../module/combat/combat-result.js";
 import { StudentSkillExt } from "./student-skills.js";
 import { Precondition } from "./precondition-types.js";
 import { SaveType } from "./save-types.js";
@@ -117,6 +118,13 @@ type ThresholdList = {
 		startingVal: number,
 		multiplier: number,
 	}
+}
+
+export type TokenSpend = {
+	conditions: Precondition[],
+	amount: number,
+	text: string,
+	consequences: Consequence[]
 }
 
 

@@ -1,3 +1,6 @@
+import { ArrayCorrector } from "../../item/persona-item.js";
+import { PersonaError } from "../../persona-error.js";
+import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaSocial } from "../../social/persona-social.js";
 import { PersonaActor } from "../persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
@@ -29,6 +32,8 @@ export class NPCSheet extends NoncombatantSheet  {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		html.find(".award-perk").on("click", this.activatePerk.bind(this));
+		html.find(".add-token-spend").on("click", this.addTokenSpend.bind(this));
+		html.find(".del-token-spend").on("click", this.deleteTokenSpend.bind(this));
 		super.activateListeners(html);
 	}
 
@@ -42,6 +47,15 @@ export class NPCSheet extends NoncombatantSheet  {
 
 
 	}
+
+	async addTokenSpend(_ev: JQuery.ClickEvent) {
+		await this.actor.createNewTokenSpend();
+	}
+
+async deleteTokenSpend(ev: JQuery.ClickEvent) {
+	const spendIndex= Number(HTMLTools.getClosestData(ev, "spendIndex"));
+	await this.actor.deleteTokenSpend(spendIndex);
+}
 
 
 }
