@@ -1,3 +1,6 @@
+import { WEATHER_TYPE_LIST } from "../../config/weather-types.js";
+import { WeatherType } from "../../config/weather-types.js";
+import { PersonaSettings } from "../../config/persona-settings.js";
 import { ModifierContainer } from "../item/persona-item.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { ArrayCorrector } from "../item/persona-item.js";
@@ -855,6 +858,18 @@ export class PersonaSocial {
 			throw new PersonaError("No roll is currently ongoing, can't execute");
 		}
 		this.rollState.continuation();
+	}
+
+	static getWeather() : WeatherType {
+		const weather = PersonaSettings.get("weather");
+		if (WEATHER_TYPE_LIST.includes(weather as any)) {
+			return weather as typeof WEATHER_TYPE_LIST[number];
+		}
+		return "cloudy";
+	}
+
+	static async setWeather(weather: WeatherType) {
+		await PersonaSettings.set("weather", weather);
 	}
 
 } //end of class

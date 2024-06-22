@@ -24,6 +24,7 @@ import { NUMERIC_COMPARISON_TARGET } from "../../../config/precondition-types.js
 import { BOOLEAN_COMPARISON_TARGET } from "../../../config/precondition-types.js";
 import { COMPARATORS } from "../../../config/precondition-types.js";
 import { SAVE_TYPES_LOCALIZED } from "../../../config/save-types.js";
+import { WEATHER_TYPES } from "../../../config/weather-types.js";
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
 	override item: PowerContainer;
@@ -69,6 +70,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			SHADOW_CHARGE_REQ: SHADOW_CHARGE_REQ,
 			SLOT_TYPES_EXPANDED: SLOT_TYPES_EXPANDED,
 			SAVE_DIFFICULTY: SAVE_TYPES_LOCALIZED,
+			WEATHER_TYPES: WEATHER_TYPES,
 		};
 		return this._powerStuffBase;
 	}

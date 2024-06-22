@@ -104,6 +104,12 @@
 	<input class="flag-id" type="text" width=2 name="{{strcat namePrefix 'flagId'}}" value="{{cond.flagId}}">
 	</input>
 	{{/if}}
+	{{#if (eq cond.boolComparisonTarget "weather-is")}}
+	<label>Weather </label>
+	<select name="{{strcat namePrefix 'weatherComparison'}}">
+		{{selectOptions POWERSTUFF.WEATHER_TYPES localize=true selected=cond.weatherComparison}}
+	</select>
+	{{/if}}
 	{{#if (eq cond.boolComparisonTarget  "power-target-type-is")}}
 	<div>
 		<select name="{{strcat namePrefix 'powerTargetType'}}">

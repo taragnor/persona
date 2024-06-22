@@ -1,3 +1,4 @@
+import { PersonaSocial } from "./social/persona-social.js";
 import { ArrayCorrector } from "./item/persona-item.js";
 import { Focus } from "./item/persona-item.js";
 import { TargettedBComparisonPC } from "../config/precondition-types.js";
@@ -352,6 +353,9 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 				return undefined;
 			}
 			return power.system.targets == condition.powerTargetType;
+		case "weather-is":
+			const weather = PersonaSocial.getWeather();
+			return condition.weatherComparison == weather;
 		default :
 			condition satisfies never;
 			return undefined;

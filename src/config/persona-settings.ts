@@ -1,3 +1,4 @@
+import { WEATHER_TYPES } from "./weather-types.js";
 import { PersonaActor } from "../module/actor/persona-actor.js";
 
 export const SYSTEMNAME = `persona` as const;
@@ -9,12 +10,18 @@ export const HANDLEBARS_TEMPLATE_DIR = `${SYSTEMPATH}/parts` as const;
 export class PersonaSettings {
 	static registerSettings() {
 		for (const [key, options] of Object.entries(SETTINGS)) {
+			//@ts-ignore
 			game.settings.register("persona", key, options);
 		}
 	}
 
 	static get<T extends SETTINGKEYS>(settingName: T) : InstanceType<typeof SETTINGS[T]["type"]> {
 		return game.settings.get("persona", settingName);
+	}
+
+	static async set<T extends SETTINGKEYS>(settingName: T, value: InstanceType<typeof SETTINGS[T]["type"]>) {
+		await game.settings.set("persona", settingName, value);
+
 	}
 
 	static isMetaverseEnhanced() : boolean {
@@ -77,7 +84,19 @@ const SETTINGS = {
 		config: true,
 		type: Boolean,
 		default: true,
+	},
+
+	"weather": {
+		name: "Weather Conditions",
+		hint: "Weather conditions in world",
+		scope: "world",
+		restricted: true,
+		config: true,
+		choices: WEATHER_TYPES,
+		default: "cloudy",
+		type: String,
 	}
+
 
 } as const;
 

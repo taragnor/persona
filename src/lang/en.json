@@ -365,6 +365,7 @@
 	"persona.preconditions.comparison.is-consumable": "Is Consumable Item",
 	"persona.preconditions.comparison.target-owner-comparison": "Target/Attacker/Owner comparison",
 	"persona.preconditions.comparison.power-target-type-is": "Power's targets are",
+	"persona.preconditions.comparison.weather-is": "Current Weather is",
 
 	"persona.triggers.on-damage": "Character Takes Damage",
 	"persona.triggers.on-kill-target": "Character kills a target",
@@ -417,6 +418,13 @@
 	"persona.saves.types.easy": "Easy",
 	"persona.saves.types.normal": "Normal",
 	"persona.saves.types.hard": "Hard",
+
+	"persona.weather.cloudy": "Cloudy",
+	"persona.weather.sunny": "Sunny",
+	"persona.weather.lightning": "Lightning",
+	"persona.weather.rain": "Rainy",
+	"persona.weather.windy": "Windy",
+	"persona.weather.snow": "Snow",
 
 
 	"persona.availability.++": "Favored (++)",

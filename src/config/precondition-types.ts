@@ -1,3 +1,4 @@
+import { WeatherType } from "./weather-types.js";
 import { Power } from "../module/item/persona-item.js";
 import { TarotCard } from "./tarot.js";
 import { PowerTag } from "../config/power-tags.js";
@@ -74,11 +75,11 @@ export type BooleanComparisonPC = {
 	type : "boolean",
 	booleanState : boolean,
 	boolComparisonTarget: BooleanComparisonTarget,
-} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison);
+} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison);
 
 	type BasicBComparisonPC ={
 	boolComparisonTarget: Exclude<BooleanComparisonTarget,
-	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "flag-state" | "is-resistant-to" | TargettedBComparisonPC["boolComparisonTarget"] | "power-target-type-is">,
+	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "flag-state" | "is-resistant-to" | TargettedBComparisonPC["boolComparisonTarget"] | "power-target-type-is" | "weather-is">,
 }
 
 export type TargettedBComparisonPC = SingleTargetComparison | TwoTargetComparison;
@@ -133,6 +134,11 @@ type FlagComparisonPC = {
 	conditionTarget : ConditionTarget,
 };
 
+type WeatherComparison = {
+	boolComparisonTarget: "weather-is",
+	weatherComparison: WeatherType,
+};
+
 
 const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"engaged",
@@ -155,7 +161,9 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"flag-state",
 	"is-consumable",
 	"power-target-type-is",
+	"weather-is",
 ] as const;
+
 
 export type BooleanComparisonTarget = typeof BOOLEAN_COMPARISON_TARGET_LIST[number];
 
