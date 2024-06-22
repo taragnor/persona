@@ -167,7 +167,6 @@ export class PersonaSocial {
 				);
 		}
 		const link = this.lookupSocialLink(actor, activity.id)
-		// const link = actor.socialLinks.find(link => link.actor.id == linkId);
 		const situation : Situation= {
 			user: actor.accessor,
 			attacker: actor.accessor,
@@ -788,7 +787,7 @@ export class PersonaSocial {
 				const link = this.lookupLink(cardData);
 				const activityOrActor = "actor" in link ? link.actor: link.activity;
 				const skill = this.resolvePrimarySecondarySocialStat(cardRoll.studentSkill, activityOrActor);
-				const roll = await this.rollSocialStat(cardData.actor, skill, modifiers, "Card Roll",  cardData.situation);
+				const roll = await this.rollSocialStat(cardData.actor, skill, modifiers, `Card Roll (${skill} ${cardRoll.modifier})`,  cardData.situation);
 				const situation : Situation = {
 					hit: roll.total >= DC,
 					criticalHit: roll.total >= DC + 10,
@@ -796,8 +795,9 @@ export class PersonaSocial {
 					naturalSkillRoll: roll.natural,
 					rollTotal: roll.total
 				};
-				const results = cardRoll.effects.flatMap( eff=> getActiveConsequences(eff, situation, null));
+				const results = (cardRoll.effects ?? []).flatMap( eff=> getActiveConsequences(eff, situation, null));
 				const processed= PersonaCombat.ProcessConsequences_simple(results);
+				await roll.toModifiedMessage();
 				const result = new CombatResult();
 				for (const c of processed.consequences) {
 					result.addEffect(null, cardData.actor, c.cons);
@@ -805,8 +805,10 @@ export class PersonaSocial {
 				await result.emptyCheck()?.toMessage("SocialResult", cardData.actor);
 				break;
 			case "save":
-				throw new PersonaError("Not yet implemented");
-				//TODO: write this
+					const saveResult = await PersonaCombat.rollSave(cardData.actor, {
+						DC: this.getCardRollDC(cardData, cardRoll),
+						label: "Card Roll (Saving Throw)",
+					});
 				break;
 			default:
 				cardRoll satisfies never;

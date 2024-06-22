@@ -20,16 +20,6 @@ export class NPCSheet extends NoncombatantSheet  {
 		});
 	}
 
-	// override async getData() {
-	// 	const data= await super.getData();
-	// 	data.RELATIONSHIP_TYPES = PersonaDB.allSocialCards()
-	// 		.flatMap(card => card.system.qualifiers)
-	// 		.map(qual=> qual.relationshipName)
-	// 		.filter( (val, i, arr) => arr.indexOf(val) == i);
-	// 	return data;
-
-	// }
-
 	override activateListeners(html: JQuery<HTMLElement>) {
 		html.find(".award-perk").on("click", this.activatePerk.bind(this));
 		html.find(".add-token-spend").on("click", this.addTokenSpend.bind(this));

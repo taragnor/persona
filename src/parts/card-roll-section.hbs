@@ -6,6 +6,14 @@
 	<select name='{{strcat namePrefix "studentSkill"}}'>
 		{{selectOptions CONST.STUDENT_SKILLS_EXT localize=true selected=roll.studentSkill}}
 	</select>
+	<select name='{{strcat namePrefix "DC.subtype"}}'>
+		{{selectOptions CONST.ROLL_DC_TYPES localize=false selected=roll.DC.subtype}}
+	</select>
+	{{#if (eq roll.DC.subtype "static")}}
+		<input class="short" type=number name='{{strcat namePrefix "DC.staticDC"}}' value="{{roll.DC.staticDC}}">
+
+	{{/if}}
+
 	{{/if}}
 	{{#if (eq roll.rollType "save")}}
 	<div>

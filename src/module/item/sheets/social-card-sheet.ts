@@ -62,6 +62,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 			STUDENT_SKILLS,
 			STUDENT_SKILLS_EXT,
 			SAVE_DIFFICULTY: SAVE_TYPES_LOCALIZED,
+			ROLL_DC_TYPES: {"base": "Base", "static": "Static DC"},
 		};
 		data.SOCIAL_CARD_TYPES = SOCIAL_CARD_TYPES;
 		data.CAMEO_TYPES = CAMEO_TYPES;

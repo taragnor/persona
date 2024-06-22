@@ -1030,9 +1030,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	/** returns pass or fail */
-	static async rollSave (actor: ValidAttackers, {DC, label, askForModifier, saveVersus} :SaveOptions) : Promise<{success:boolean, total:number}> {
+	static async rollSave (actor: ValidAttackers, {DC, label, askForModifier, saveVersus, modifier} :SaveOptions) : Promise<{success:boolean, total:number}> {
 		const difficulty = DC ? DC : 11;
 		const mods = actor.getSaveBonus();
+		if (modifier) {
+			mods.add("Modifier", modifier);
+		}
 		if (askForModifier) {
 			const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
 			mods.add("Custom modifier", customMod);
@@ -1352,6 +1355,7 @@ type SaveOptions = {
 	DC?: number,
 	askForModifier?: boolean,
 	saveVersus?: StatusEffectId,
+	modifier ?: number,
 }
 
 

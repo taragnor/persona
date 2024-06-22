@@ -1,8 +1,12 @@
 <div class="social-card-roll" data-roll-type="{{roll.type}}">
-{{#if (ne roll.type "none")}}
+	{{#if (ne roll.type "none")}}
 	{{#if (eqAny roll.type "studentSkillCheck" "save")}}
 	<button class="make-roll">
-		Select Option
+		{{#if (eq roll.type "save")}}
+		Roll {{roll.saveType}} Save
+		{{else}}
+		Roll {{roll.studentSkill}}
+		{{/if}}
 	</button>
 	{{else}}
 	<button class="next">
