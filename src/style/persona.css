@@ -383,3 +383,11 @@ input.event-name {
 	flex-direction: row;
 	justify-content: center;
 }
+
+.weekly-availability .day {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	margin-left: 10px;
+	margin-right: 10px;
+}
