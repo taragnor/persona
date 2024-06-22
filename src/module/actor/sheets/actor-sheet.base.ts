@@ -7,6 +7,7 @@ import { INCREMENTAL_ADVANCE_TYPES } from "../../../config/incremental-advance-t
 import { STUDENT_SKILLS } from "../../../config/student-skills.js";
 import { AVAILABILITY } from "../../../config/availability-types.js";
 import { PersonaDB } from "../../persona-db.js";
+import { DAYS } from "../../../config/days.js";
 
 export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
@@ -22,6 +23,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 			.map(x=> ([x,x]))
 		);
 		data.CONST = {
+			DAYS,
 			STUDENT_SKILLS,
 			AVAILABILITY,
 			TAROT  : TAROT_DECK,

@@ -38,6 +38,19 @@ function keySkills() {
 	});
 }
 
+function weeklyAvailability() {
+	return new sch( {
+		Monday: new bool(),
+		Tuesday: new bool(),
+		Wednesday: new bool(),
+		Thursday: new bool(),
+		Friday: new bool(),
+		Saturday: new bool(),
+		Sunday: new bool(),
+		available: new bool()
+	});
+}
+
 export type SocialData = {
 	linkId: string,
 	linkLevel: number,
@@ -172,6 +185,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 	static override defineSchema() {
 		const ret = {
 			...BaseStuff.defineSchema(),
+			weeklyAvailability: weeklyAvailability(),
 			equipped: equipslots(),
 			money: new num({integer: true, min: 0, initial:1}),
 			tarot: tarot(),
@@ -185,7 +199,6 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			...sharedAbilities(),
 			skills: studentSkills(),
 			keyskill: keySkills(),
-			availability: new txt({choices: AVAILABILITY_LIST, initial: "N/A"}),
 			tokenSpends:new arr(new obj<TokenSpend>()),
 		} as const;
 		return ret;
@@ -218,12 +231,12 @@ export class NPCSchema extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		const ret = {
 			...BaseStuff.defineSchema(),
+			weeklyAvailability: weeklyAvailability(),
 			conditions: new arr(new obj<Precondition>()),
 			tarot: tarot(),
 			bio: personalBio(),
 			keyskill: keySkills(),
 			baseRelationship: new txt(),
-			availability: new txt({choices: AVAILABILITY_LIST, initial: "-"}),
 			specialEvents: new txt(),
 			datePerk: new txt(),
 			tokenSpends:new arr(new obj<TokenSpend>()),

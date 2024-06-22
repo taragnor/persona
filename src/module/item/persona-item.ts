@@ -672,29 +672,16 @@ const power = PersonaDB.getBasicPower(powerName);
 		return requirement;
 	}
 
-	async setAvailability(this: Job, d6roll:number) {
-		if (this.system.availability == "N/A")
-			return;
-		let avail: Availability = "--";
-		switch (d6roll) {
-			case 1:
-				avail = "--";
-				break;
-			case 2:
-			case 3:
-				avail = "-";
-				break;
-			case 4:
-			case 5:
-				avail = "+";
-				break;
-			case 6:
-				avail = "++";
-				break;
-			default:
-				throw new PersonaError(`d6 roll doesn't fall within range: ${d6roll}`);
-		}
-		await this.update({ "system.availability": avail});
+	isAvailable(this: Activity, pc: PC): boolean {
+		const sit: Situation = {
+			user: pc.accessor
+		};
+		if(!testPreconditions(this.system.conditions,sit, null)) return false;
+		return this.system.weeklyAvailability.available;
+	}
+
+	async setAvailability(this: Job, bool: boolean) {
+		await	this.update( {"system.weeklyAvailability.available": bool});
 	}
 
 	async addCardEvent(this: SocialCard) {
@@ -733,13 +720,6 @@ const power = PersonaDB.getBasicPower(powerName);
 		await this.update({"system.events": this.system.events});
 	}
 
-	isAvailable(this: Activity, pc: PC): boolean {
-		const sit: Situation = {
-			user: pc.accessor
-			};
-		return testPreconditions(this.system.conditions,sit, null);
-
-	}
 
 	get perk() : string {
 		switch (this.system.type) {

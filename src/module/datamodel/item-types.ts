@@ -29,6 +29,19 @@ function itemBase() {
 	};
 }
 
+function weeklyAvailability() {
+	return new sch( {
+		Monday: new bool(),
+		Tuesday: new bool(),
+		Wednesday: new bool(),
+		Thursday: new bool(),
+		Friday: new bool(),
+		Saturday: new bool(),
+		Sunday: new bool(),
+		available: new bool()
+	});
+}
+
  class Weapon extends foundry.abstract.DataModel {
 	get type() { return "weapon" as const;}
 	static override defineSchema() {
@@ -121,6 +134,7 @@ class JobItemSchema extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		const ret = {
 			baseRelationship: new txt(),
+			weeklyAvailability: weeklyAvailability(),
 			conditions: new arr(new obj<Precondition>()),
 			keyskill: new sch({
 				primary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),

@@ -13,20 +13,21 @@ export class PersonaCalendar {
 	static async nextDay() {
 		if(!game.user.isGM) return;
 		const rolls: Roll[] = [];
-		rolls.push(await this.randomizeWeather());
-		const weather = this.getWeather();
 		if (!window.SimpleCalendar)
 			throw new PersonaError("Simple Calendar isn't enabled!");
 		await window.SimpleCalendar.api.changeDate({day:1});
 		await DoomsdayClock.inc();
+		rolls.push(await this.randomizeWeather());
+		const weather = this.getWeather();
 		const date = window.SimpleCalendar.api.currentDateTimeDisplay().date;
+		const weekday = window.SimpleCalendar.api.getCurrentWeekday().name;
 		let doomsdayMsg = ""
 		if (DoomsdayClock.isFull()) {
 			doomsdayMsg = `<div class="doomsday">Doomsday is here! Succeed or Something horrible happens!</div>`;
 		}
 		const html = `
 		<div class="date">
-		<h2> ${date} </h2>
+		<h2> ${date} (${weekday}) </h2>
 		<div class="weather">
 		Weather: ${weather}
 		</div>

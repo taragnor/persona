@@ -12,6 +12,9 @@
 				{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
 			</select>
 		</div>
+
+  {{> "systems/persona/parts/weekly-availability.hbs" item=actor CONST=CONST}}
+
 		<div class="key-skills flexrow">
 			<div class="primary">
 				<label>

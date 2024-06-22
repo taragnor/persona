@@ -29,6 +29,7 @@ const templateFileNames : string[] =[
 	"input-card-choice.hbs",
 	"social-card-roll.hbs",
 	"token-spends-section.hbs",
+	"weekly-availability.hbs",
 ];
 
 export const templatePaths = templateFileNames.

@@ -1,4 +1,6 @@
 <section>
+  {{> "systems/persona/parts/weekly-availability.hbs" item=actor CONST=CONST}}
+
 	<h2> Key Skills</h2>
 	<div class="key-skills flexrow">
 		<div class="primary">
@@ -127,32 +129,14 @@
 	<h2> Social Links</h2>
 	{{#each actor.socialLinks as |link|}}
 	<div class="social-link" data-link-id="{{link.actor.id}}">
-		<span class="availability" title="{{link.actor.system.availability}}">
-			{{#if (eq link.actor.system.availability "++")}}
-			<i class="green fa-solid fa-heart-circle-plus"></i>
-			{{/if}}
-			{{#if (eq link.actor.system.availability "+")}}
-			<i class="orange fa-solid fa-heart"></i>
-			{{/if}}
-			{{#if (eq link.actor.system.availability "-")}}
-			<i class="yellow fa-solid fa-face-meh"></i>
-			{{/if}}
-			{{#if (eq link.actor.system.availability "--")}}
-			<i class="red fa-solid fa-person-circle-xmark"></i>
-			{{/if}}
-		</span>
-
+		{{#if link.available}}
 		<span class="social-command social-card">
 		<a class="draw-social-card" title="Draw Social card">
 			<i class="fa-regular fa-id-card"></i>
 		</a>
 		</span>
-		<span class="social-command social-roll">
-		<a class="roll-icon" title="Roll to Improve Social Link">
-			<img src="icons/dice/d20black.svg">
-		</a>
+		{{/if}}
 
-		</span>
 		<img class="portrait" src={{actor.img}}>
 		{{#if (isHighestLinker ../actor link)}}
 		<i title="Highest Link Level" class="fa-solid fa-star"></i>
@@ -213,26 +197,14 @@
 <section>
 	<h2> Jobs </h2>
 	{{#each jobs as |job|}}
-	<div class="job" data-job-id="{{job.id}}">
-		<span class="availability" title="{{job.system.availability}}">
-			{{#if (eq job.system.availability "++")}}
-			<i class="green fa-solid fa-heart-circle-plus"></i>
-			{{/if}}
-			{{#if (eq job.system.availability "+")}}
-			<i class="orange fa-solid fa-heart"></i>
-			{{/if}}
-			{{#if (eq job.system.availability "-")}}
-			<i class="yellow fa-solid fa-face-meh"></i>
-			{{/if}}
-			{{#if (eq job.system.availability "--")}}
-			<i class="red fa-solid fa-person-circle-xmark"></i>
-			{{/if}}
+	<div class="job" data-activity-id="{{job.id}}">
+		{{#if job.system.weeklyAvailability.available}}
+		<span class="social-command social-card">
+		<a class="draw-activity-card" title="Draw Activity card">
+			<i class="fa-regular fa-id-card"></i>
+		</a>
 		</span>
-		<span class="social-command social-roll">
-			<a class="roll-icon" title="Roll to Improve Social Link">
-				<img src="icons/dice/d20black.svg">
-			</a>
-		</span>
+		{{/if}}
 		<img class="portrait" src="{{job.img}}">
 		<a class="name">
 			{{job.name}}

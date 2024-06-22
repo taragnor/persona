@@ -49,6 +49,17 @@ export class PersonaSocial {
 		if (!(await HTMLTools.confirmBox( "Advance Date", "Advnace Date?", true)))
 			return;
 		await PersonaCalendar.nextDay();
+		const day = PersonaCalendar.weekday();
+		const socialLinks = (game.actors.contents as PersonaActor[]).filter( actor=> actor.system.type == "pc" || actor.system.type == "npc").map(x=> x as SocialLink);
+
+		for (const link of socialLinks){
+			const avail = link.system.weeklyAvailability[day];
+			await link.setAvailability(avail);
+		}
+		for (const activity of PersonaDB.allActivities()){
+			const avail = activity.system.weeklyAvailability[day];
+			await activity.setAvailability(avail);
+		}
 
 	}
 
@@ -76,35 +87,6 @@ export class PersonaSocial {
 		await pc.raiseSocialSkill(socialStat, amount);
 		await PersonaSounds.skillBoost(amount);
 		await Logger.sendToChat(`<b>${pc.name}:</b> Raised ${socialStat} by ${amount}`, pc);
-	}
-
-	static async makeUpgradeLinkRoll(actor: PC, linkId: string) {
-		const link = actor.socialLinks.find(link => link.actor.id == linkId);
-		if (!link) throw new PersonaError(`Couldn't find link to ${linkId}`);
-		if (link.actor == actor) {
-			ui.notifications.notify("Can't make a roll against yourself");
-			return;
-		}
-		const statChoice : "primary" | "secondary" | SocialStat = await this.getPrimarySecondary();
-		const socialStat = this.resolvePrimarySecondarySocialStat(statChoice, link.actor);
-		const situation: Situation  = {
-			user: actor.accessor,
-			usedSkill: socialStat,
-			socialTarget: link.actor.accessor,
-			isSocial: true,
-		};
-		const progressTokens = link.currentProgress;
-		let mods = new ModifierList();
-		const DC = 10 + 3 * link.linkLevel;
-		mods.add("Progress Tokens", 3 * progressTokens)
-		const availabilityMod = this.getAvailModifier(link.actor.system.availability);
-		mods = mods.concat(availabilityMod);
-		const rollName= `${link.actor.name} --> Social Roll (${socialStat}) vs DC ${DC}`;
-		const roll =await this.rollSocialStat(actor, socialStat, mods, rollName, situation);
-		await roll.toModifiedMessage();
-		situation.hit = roll.total >= DC ;
-		situation.criticalHit = roll.total >= DC + 10;
-		await this.degradeActivity(link.actor);
 	}
 
 	static resolvePrimarySecondarySocialStat(choice: StudentSkillExt, link: SocialLink | Job) : StudentSkill {
@@ -289,7 +271,7 @@ export class PersonaSocial {
 						(x.system.type == "npc" || x.system.type == "pc")
 						&& x.baseRelationship == "PEER"
 						&& x != actor && x.id != linkId
-						&& x.system.availability != "N/A"
+						&& x.isAvailable()
 					) as SocialLink[];
 				const randomPick = students[Math.floor(Math.random() * students.length)];
 				if (!randomPick)
@@ -302,7 +284,7 @@ export class PersonaSocial {
 						(x.system.type == "npc" || x.system.type == "pc")
 						&& x.baseRelationship != "SHADOW"
 						&& x != actor && x.id != linkId
-						&& x.system.availability != "N/A"
+						&& x.isAvailable()
 					) as SocialLink[];
 				const randomPick = anyLink[Math.floor(Math.random() * anyLink.length)];
 				if (!randomPick)
@@ -504,180 +486,12 @@ export class PersonaSocial {
 		return msg;
 	}
 
-	static async rerollAvailability() {
-		let rolls : Roll[] = [];
-		let html = "";
-		const links = (game.actors.contents as PersonaActor[])
-			.filter( x=> (x.system.type == "pc" || x.system.type == "npc" ) && x.system.availability != "N/A" && x.tarot);
-		for (const social of links) {
-			const [newavail, roll] = await this.#rollAvailability();
-			await (social as PC | NPC).update({"system.availability": newavail});
-			rolls.push(roll);
-			html += `<div> ${social.name} : ${newavail} </div>`;
-		}
-		const jobs = (game.items.contents as PersonaItem[])
-		.filter( item => item.system.type =="job"
-			&& item.system.availability != "N/A" 
-			&& item.system.active
-		) as Job[];
-		for (const job of jobs) {
-			const [newavail, roll] = await this.#rollAvailability();
-			await job.update({"system.availability": newavail});
-			rolls.push(roll);
-			html += `<div> ${job.name} : ${newavail} </div>`;
-		}
-
-		return await ChatMessage.create( {
-			speaker: {
-				alias: "Social System"
-			},
-			content: html,
-			type: CONST.CHAT_MESSAGE_TYPES.OOC,
-			rolls: rolls,
-		}, {});
-	}
-
-	static async #rollAvailability() : Promise<[availability: PC["system"]["availability"], roll: Roll]> {
-		const roll = new Roll("1d6");
-		await roll.roll();
-		let newavail : PC["system"]["availability"];
-		switch (roll.total) {
-			case 1:
-				newavail = "--";
-				break;
-			case 2:
-			case 3:
-				newavail = "-";
-				break;
-			case 4:
-			case 5:
-				newavail = "+";
-				break;
-			case 6:
-				newavail = "++";
-				break;
-			default: throw new PersonaError(`Somehow a d6 got a value of ${roll.total}`);
-		}
-		return [newavail, roll];
-	}
-
 	static async chooseActivity(actor: PC, activity: SocialLink | Activity, options: ActivityOptions = {}) {
 		if (activity instanceof PersonaItem) {
 				await actor.addNewActivity(activity);
 			}
+		//TODO: mark shit unavailable if you chnoose it and it's not trainign
 		this.#socialEncounter(actor, activity);
-	}
-
-	static async degradeActivity( activity: SocialLink | Job) {
-		if (game.user.isGM) {
-			const availability = activity.system.availability;
-			await activity.update(
-				{"system.availability": this.#degradedAvailability(availability) });
-			console.log(`Degraded Activity: ${activity.name}`);
-		} else {
-			PersonaSockets.simpleSend("DEC_AVAILABILITY", activity.id, game.users.filter( x=> x.isGM && x.active).map( x=>x.id))
-		}
-
-	}
-
-
-	static getAvailModifier (avail: NPC["system"]["availability"]) : ModifierList {
-		const modifiers = new ModifierList();
-		switch (avail) {
-			case "++":
-				modifiers.add("Favorable", 5);
-				break;
-			case "+":
-				break;
-			case "-":
-				break;
-			case "--":
-				modifiers.add("Negative Availabilty", -5);
-				break;
-			default:
-		}
-		return modifiers;
-	}
-
-
-	// static async #doJob(actor: PC,  activity :Job, options: ActivityOptions) {
-	// 	const roll = new Roll("1d6");
-	// 	await roll.roll();
-	// 	const stat =  (roll.total > 2) ? "primary": "secondary";
-	// 	const skill = activity.system.keyskill[stat];
-	// 	const situation : Situation = {
-	// 		user: actor.accessor,
-	// 		isSocial: true,
-	// 		socialId: activity.id
-	// 	};
-	// 	const avail = activity.system.availability;
-	// 	const modifiers = this.getAvailModifier(avail);
-	// 	let html = "";
-	// 	html += `<h2>${activity.name} (${activity.system.availability})</h2>`
-	// 	html += `<img src='${activity.img}'>`;
-	// 	const rollTitle = `${activity.name} roll (DC ${activity.system.dc}, ${stat} --- ${skill}) `
-	// 	const socialRoll = await this.rollSocialStat(actor, skill, modifiers, rollTitle,situation);
-	// 	html += await socialRoll.getHTML();
-	// 	// await socialRoll.toModifiedMessage();
-	// 	switch (avail) {
-	// 		case "++":
-	// 			html += `<div><b> Perk: </b> ${activity.system.perk}</div>`;
-	// 			break;
-	// 		case "+":
-	// 			html += `<div><b> Perk: </b> ${activity.system.perk}</div>`;
-	// 			break;
-	// 		case "-":
-	// 			break;
-	// 		case "--":
-	// 			break;
-	// 		default:
-	// 	}
-	// 	let pay = 0;
-	// 	if (socialRoll.total >= activity.system.dc) {
-	// 		pay = activity.system.pay.high;
-	// 	} else {
-	// 		pay = activity.system.pay.low;
-	// 	}
-	// 	const payBonus = actor.getBonuses("pay").total(situation);
-	// 	if (pay + payBonus > 0) {
-	// 		html += `<div> <b>Pay (auto-added):</b> ${pay} ${payBonus ? `+ ${payBonus}` : ""}`;
-	// 		await actor.gainMoney(pay + payBonus);
-	// 		await PersonaSounds.ching();
-	// 	}
-	// 	if (socialRoll.total >= activity.system.dc + 10 && activity.system.critical) {
-	// 		html += `<div> <b>Critical:</b> ${activity.system.critical}</div>`;
-	// 	}
-	// 	if (activity.system.bane) {
-	// 		html += `<div> <b>Bane:</b> ${activity.system.bane}</div>`;
-
-	// 	}
-	// 	const speaker = ChatMessage.getSpeaker();
-	// 	if (!options.noDegrade) {
-	// 		await this.degradeActivity(activity);
-	// 	}
-	// 	return await ChatMessage.create( {
-	// 		speaker,
-	// 		content: html,
-	// 		type: CONST.CHAT_MESSAGE_TYPES.ROLL,
-	// 		rolls: [roll, socialRoll.roll]
-	// 	}, {});
-
-
-	// }
-
-	static #degradedAvailability (availability: Job["system"]["availability"]) {
-		switch (availability) {
-			case "++":
-				return "+";
-			case "+":
-				return "-";
-			case "-":
-				return "--";
-			case "--":
-				return "--";
-			case "N/A":
-				return "N/A";
-		}
 	}
 
 	static drawnCards() : string[] {
@@ -881,12 +695,15 @@ Hooks.on("socketsReady" , () => {PersonaSockets.setHandler("DEC_AVAILABILITY", (
 	if (!game.user.isGM) return;
 	const link = game.actors.find(x=> x.id == task_id);
 	if (link) {
-		PersonaSocial.degradeActivity(link as SocialLink);
+		const actor = link as PersonaActor;
+		if (actor.system.type == "npc" || actor.system.type == "pc") {
+			(actor as SocialLink).setAvailability(false);
+		}
 		return;
 	}
 	const job = PersonaDB.allJobs().find( x=> x.id == task_id);
 	if (job){
-		PersonaSocial.degradeActivity(job);
+		//TODO: Degrade this if it's a job and not something else
 		return;
 	}
 	throw new PersonaError(`Can't find Task ${task_id} to decremetn availability`);

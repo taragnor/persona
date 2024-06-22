@@ -1,6 +1,8 @@
 <form class="job-sheet">
 	<img class="profile-img" src="{{item.img}}" data-edit="img"/>
 	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Job Name" placeholder="Job Name">
+
+  {{> "systems/persona/parts/weekly-availability.hbs" item=item CONST=CONST}}
 	<div class="card-conditions">
 		<h5> Conditions
 			<a class="add-condition">

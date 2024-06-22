@@ -1,0 +1,14 @@
+<h2> Weekly Availability</h2>
+<section class="weekly-availability">
+	{{#each CONST.DAYS as |day i|}}
+	<div class="day">
+		<label>{{day}}</label>
+		<input type="checkbox" name={{strcat "system.weeklyAvailability." day}} {{checked (lookup ../item.system.weeklyAvailability day) }}>
+	</div>
+	{{/each}}
+</section>
+{{#if (isGM)}}
+<label>Available</label>
+<input type="checkbox" name="system.weeklyAvailability.available"}} {{checked item.system.weeklyAvailability.available }}>
+{{/if}}
+

@@ -5,12 +5,16 @@ import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { AVAILABILITY } from "../../../config/availability-types.js";
 import { PersonaSocialSheetBase } from "./social-sheet-base.js";
 import { PersonaDB } from "../../persona-db.js";
+import { DAYS } from "../../../config/days.js";
 
 export class PersonaJobSheet extends PersonaSocialSheetBase {
 	override item: Job;
 
 	override async getData() {
 		const data = await super.getData();
+		data.CONST = {
+			DAYS
+		};
 		data.STUDENT_SKILLS = STUDENT_SKILLS;
 		data.AVAILABILITY = AVAILABILITY;
 		data.RELATIONSHIP_TYPES_LIST = PersonaDB.allSocialCards()

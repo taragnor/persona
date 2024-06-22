@@ -377,3 +377,9 @@ section.qualifiers {
 input.event-name {
 	font-size: 2em;
 }
+
+.weekly-availability {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+}

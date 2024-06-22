@@ -369,7 +369,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					actor:npc as SocialLink,
 					linkBenefits: npc as SocialLink,
 					allFocii: (npc as NPC).getSocialFocii(npc as SocialLink),
-					availability: npc.system.availability,
+					available: npc.isAvailable(),
 					focii: qualifiedFocii,
 				}];
 			} else {
@@ -389,7 +389,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						linkBenefits: personalLink,
 						allFocii: allFocii,
 						focii: qualifiedFocii,
-						availability: (npc as SocialLink).system.availability,
+						available: (npc as SocialLink).isAvailable(),
 					}];
 				} else {
 					const teammate = PersonaDB.teammateSocialLink();
@@ -407,7 +407,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						linkBenefits: teammate,
 						allFocii: allFocii,
 						focii: qualifiedFocii,
-						availability: (npc as SocialLink).system.availability,
+						available: (npc as SocialLink).isAvailable()
 					}];
 				}
 			}
@@ -1351,29 +1351,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.hp > 0;
 	}
 
-	async setAvailability(this: PC | NPC, d6roll:number) {
-		if (this.system.availability == "N/A")
-			return;
-		let avail: Availability = "--";
-		switch (d6roll) {
-			case 1:
-				avail = "--";
-				break;
-			case 2:
-			case 3:
-				avail = "-";
-				break;
-			case 4:
-			case 5:
-				avail = "+";
-				break;
-			case 6:
-				avail = "++";
-				break;
-			default:
-				throw new PersonaError(`d6 roll doesn't fall within range: ${d6roll}`);
-		}
-		await this.update({ "system.availability": avail});
+	async setAvailability(this: SocialLink, bool: boolean) {
+		await	this.update( {"system.weeklyAvailability.available": bool});
 	}
 
 	get tarot() : Tarot | undefined {
@@ -1508,6 +1487,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.tokenSpends":list});
 	}
 
+	isAvailable() : boolean {
+		if (this.system.type == "shadow" || this.system.type == "tarot") return false;
+		return this.system.weeklyAvailability.available;
+	}
+
 }
 
 Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) => {
@@ -1582,7 +1566,7 @@ export type SocialLinkData = {
 	focii: Focus[],
 	currentProgress:number,
 	relationshipType: string,
-	availability: NPC["system"]["availability"],
+	available: boolean,
 }
 
 

@@ -101,6 +101,7 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(`.spend-money`).on('click', this.spendMoney.bind(this));
 		html.find(`.gain-money`).on('click', this.gainMoney.bind(this));
 		html.find(".draw-social-card").on("click", this.drawSocialCard.bind(this))
+		html.find(".draw-activity-card").on("click", this.drawActivityCard.bind(this))
 		html.find(".relationship-type").on("change", this.relationshipTypeChange.bind(this))
 		super.activateListeners(html);
 	}
@@ -257,7 +258,8 @@ export class PCSheet extends CombatantSheetBase {
 
 	async rollSL(event: Event) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
-		await PersonaSocial.makeUpgradeLinkRoll(this.actor, linkId)
+		PersonaError.softFail("This button no longer works");
+		// await PersonaSocial.makeUpgradeLinkRoll(this.actor, linkId)
 	}
 
 	async rollJob(event: JQuery.ClickEvent) {
@@ -286,6 +288,14 @@ export class PCSheet extends CombatantSheetBase {
 		await Logger.sendToChat(`${this.actor.name} Spent ${x} resource points`);
 	}
 
+async drawActivityCard (event: JQuery.ClickEvent) {
+	const activityId= String(HTMLTools.getClosestData(event, "activityId"));
+	const link = PersonaSocial.lookupActivity(this.actor, activityId);
+	if (link &&
+		await HTMLTools.confirmBox("Social Card", "Draw Activity Card?")) {
+		await PersonaSocial.chooseActivity(this.actor, link.activity, {noDegrade:true})
+	}
+}
 	async drawSocialCard(event: JQuery.ClickEvent) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
 		const link = PersonaSocial.lookupSocialLink(this.actor, linkId);
