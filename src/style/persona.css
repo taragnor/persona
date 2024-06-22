@@ -354,7 +354,7 @@ section.qualifiers {
 }
 
 .social-card-sheet .card-event {
-	border: 1px solid green;
+	border: 3px solid green;
 	padding: 0.5rem;
 }
 
@@ -363,7 +363,17 @@ section.qualifiers {
 	padding: 0.5rem;
 }
 
+.card-event .choice{
+	border: 2px solid red;
+	padding: 0.5rem;
+
+}
+
 .event-choice .chosen {
 	font-weight: bold;
 	font-size: larger;
+}
+
+input.event-name {
+	font-size: 2em;
 }

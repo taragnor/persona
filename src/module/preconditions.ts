@@ -1,3 +1,4 @@
+import { ArrayCorrector } from "./item/persona-item.js";
 import { Focus } from "./item/persona-item.js";
 import { TargettedBComparisonPC } from "../config/precondition-types.js";
 import { BooleanComparisonPC } from "../config/precondition-types.js";
@@ -28,14 +29,14 @@ import { ConditionalEffect } from "./datamodel/power-dm.js";
 import { Consequence } from "./combat/combat-result.js";
 
 export function getActiveConsequences(condEffect: ConditionalEffect, situation: Situation, source: PowerContainer | null) : Consequence[] {
-	if (condEffect.conditions.some(
+	if (ArrayCorrector(condEffect.conditions).some(
 		cond=>!testPrecondition(cond, situation, source)
 	)) return [];
-	return condEffect.consequences;
+	return ArrayCorrector(condEffect.consequences);
 }
 
 export function testPreconditions(conditionArr: Precondition[], situation: Situation, source : PowerContainer | null) : boolean {
-	return conditionArr
+	return ArrayCorrector(conditionArr ?? [])
 		.every( cond => testPrecondition(cond, situation, source));
 }
 

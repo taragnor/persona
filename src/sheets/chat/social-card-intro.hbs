@@ -23,16 +23,27 @@
 	{{#if isCameo}}
 	<hr>
 	<div class="cameo">
-		<b>Cameo: </b>
-		<ul>
-			{{#each cameos as |cameo|}}
-			<li>{{cameo.name}} </li>
-			{{/each}}
-		</ul>
+		<h2>Cameo </h2>
+		<div>
+			Cameos:
+			<ul>
+				{{#each cameos as |cameo|}}
+				<li>{{cameo.name}} </li>
+				{{/each}}
+			</ul>
+		</div>
 		{{#if card.system.cameo}}
-		{{newlineConversion card.system.cameo}}
+		<div>
+			{{newlineConversion card.system.cameo}}
+		</div>
+		{{/if}}
+		{{#if card.system.cameoOpportunity}}
+		<div>
+		<b> Cameo Opportunity:</b> {{newlineConversion card.system.cameoOpportunity}}
+		</div>
 		{{/if}}
 	</div>
+
 	{{/if}}
 	{{#if card.system.opportunity}}
 	<hr>

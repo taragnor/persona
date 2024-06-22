@@ -275,6 +275,8 @@ export class PersonaSFX {
 	}
 
 	static async removeTMFilters(statusId: StatusEffectId, token: TokenDocument<any>) {
+		//@ts-ignore
+		if (!TokenMagic) return;
 		let filters : string[] = [];
 		switch (statusId) {
 			case "burn":
@@ -296,10 +298,9 @@ export class PersonaSFX {
 				return;
 		}
 		for (const filterId of filters) {
-			//@ts-ignore
-			await TokenMagic?.deleteFilters(token.object, filterId);
+				//@ts-ignore
+				await TokenMagic?.deleteFilters(token.object, filterId);
 		}
-
 	}
 
 	static async play(snd: Parameters<typeof PersonaSounds["playBattleSound"]>[0], volume = 1.0) {

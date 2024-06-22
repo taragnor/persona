@@ -1,3 +1,5 @@
+import { ConditionalEffect } from "../datamodel/power-dm.js";
+import { ArrayCorrector } from "../item/persona-item.js";
 import { ActivityLink } from "../actor/persona-actor.js";
 import { Activity } from "../item/persona-item.js";
 import { StudentSkill } from "../../config/student-skills.js"
@@ -780,7 +782,7 @@ export class PersonaSocial {
 			case "none":
 			case "gmspecial":
 				break;
-			case "studentSkillCheck":
+			case "studentSkillCheck": {
 				const modifiers = new ModifierList();
 				modifiers.add("Roll Modifier", cardRoll.modifier);
 				const DC = this.getCardRollDC(cardData, cardRoll);
@@ -788,31 +790,44 @@ export class PersonaSocial {
 				const activityOrActor = "actor" in link ? link.actor: link.activity;
 				const skill = this.resolvePrimarySecondarySocialStat(cardRoll.studentSkill, activityOrActor);
 				const roll = await this.rollSocialStat(cardData.actor, skill, modifiers, `Card Roll (${skill} ${cardRoll.modifier})`,  cardData.situation);
+				await roll.toModifiedMessage();
 				const situation : Situation = {
+					...cardData.situation,
 					hit: roll.total >= DC,
 					criticalHit: roll.total >= DC + 10,
-					...cardData.situation,
 					naturalSkillRoll: roll.natural,
 					rollTotal: roll.total
 				};
-				const results = (cardRoll.effects ?? []).flatMap( eff=> getActiveConsequences(eff, situation, null));
-				const processed= PersonaCombat.ProcessConsequences_simple(results);
-				await roll.toModifiedMessage();
-				const result = new CombatResult();
-				for (const c of processed.consequences) {
-					result.addEffect(null, cardData.actor, c.cons);
-				}
-				await result.emptyCheck()?.toMessage("SocialResult", cardData.actor);
+				this.applyEffects(cardRoll.effects,situation, cardData.actor);
 				break;
-			case "save":
+			}
+			case "save": {
 					const saveResult = await PersonaCombat.rollSave(cardData.actor, {
 						DC: this.getCardRollDC(cardData, cardRoll),
 						label: "Card Roll (Saving Throw)",
 					});
+				const situation : Situation = {
+					...cardData.situation,
+					hit: saveResult.success,
+					rollTotal: saveResult.total
+				};
+				this.applyEffects(cardRoll.effects,situation, cardData.actor);
 				break;
+			}
 			default:
 				cardRoll satisfies never;
 		}
+	}
+
+	static async applyEffects(effects: ConditionalEffect[], situation: Situation, actor: PC) {
+				const results = ArrayCorrector(effects ?? []).flatMap( eff=> getActiveConsequences(eff, situation, null));
+				const processed= PersonaCombat.ProcessConsequences_simple(results);
+				const result = new CombatResult();
+				for (const c of processed.consequences) {
+					result.addEffect(null, actor, c.cons);
+				}
+				await result.emptyCheck()?.toMessage("Social Roll Effects", actor);
+
 	}
 
 	static async makeCardRoll(ev: JQuery.ClickEvent) {

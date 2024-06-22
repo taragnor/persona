@@ -6,12 +6,12 @@
 		</a>
 	</h3>
 	<label> Number of Events</label>
-		<input class="short" type="number" name="system.num_of_events" value="{{item.system.num_of_events}}">
+		Event: <input class="short" type="number" name="system.num_of_events" value="{{item.system.num_of_events}}">
 
 		{{#each item.system.events as |event i|}}
 		<div class="card-event" data-event-index="{{i}}">
 			<h3>
-			<input type="string" name="system.events.{{i}}.name" value="{{event.name}}">
+			<input class="event-name" type="string" name="system.events.{{i}}.name" value="{{event.name}}">
 				<a class="del-event">
 					<i class="fa-solid fa-trash-can"></i>
 				</a>
@@ -20,7 +20,7 @@
 			<input class="short" type=number name="system.events.{{i}}.frequency" value="{{event.frequency}}">
 
 			<label> Event Setup</label>
-			<textarea name="system.evnets.{{i}}.text">
+			<textarea name="system.events.{{i}}.text">
 				{{trim event.text}}
 			</textarea>
 		<h4> Choices
