@@ -4,7 +4,7 @@
 	</select>
 	{{#if (eq roll.rollType "studentSkillCheck")}}
 	<select name='{{strcat namePrefix "studentSkill"}}'>
-		{{selectOptions CONST.STUDENT_SKILLS localize=true selected=roll.studentSkill}}
+		{{selectOptions CONST.STUDENT_SKILLS_EXT localize=true selected=roll.studentSkill}}
 	</select>
 	{{/if}}
 	{{#if (eq roll.rollType "save")}}

@@ -1,3 +1,7 @@
+import { ActivityLink } from "../actor/persona-actor.js";
+import { Activity } from "../item/persona-item.js";
+import { StudentSkill } from "../../config/student-skills.js"
+
 import { getActiveConsequences } from "../preconditions.js";
 import { CardRoll } from "../../config/social-card-config.js";
 import { testPreconditions } from "../preconditions.js";
@@ -27,6 +31,7 @@ import { Situation } from "../preconditions.js";
 import { RollBundle } from "../persona-roll.js";
 import { PersonaDB } from "../persona-db.js";
 import { HTMLTools } from "../utility/HTMLTools.js";
+import { StudentSkillExt } from "../../config/student-skills.js";
 
 export class PersonaSocial {
 
@@ -72,16 +77,7 @@ export class PersonaSocial {
 			return;
 		}
 		const statChoice : "primary" | "secondary" | SocialStat = await this.getPrimarySecondary();
-		let socialStat: SocialStat;
-		switch (statChoice) {
-			case "primary":
-			case "secondary":
-				socialStat = link.actor.getSocialStatToRaiseLink(statChoice);
-				break;
-			default:
-				socialStat = statChoice;
-				break;
-		}
+		const socialStat = this.resolvePrimarySecondarySocialStat(statChoice, link.actor);
 		const situation: Situation  = {
 			user: actor.accessor,
 			usedSkill: socialStat,
@@ -101,6 +97,21 @@ export class PersonaSocial {
 		situation.criticalHit = roll.total >= DC + 10;
 		await this.degradeActivity(link.actor);
 	}
+
+	static resolvePrimarySecondarySocialStat(choice: StudentSkillExt, link: SocialLink | Job) : StudentSkill {
+		switch (choice) {
+			case "primary":
+			case "secondary":
+				if (link instanceof PersonaActor){
+					return link.getSocialStatToRaiseLink(choice);
+				}else {
+					return link.system.keyskill[choice];
+				}
+			default:
+				return choice;
+		}
+	}
+
 
 
 	static async getPrimarySecondary(defaultChoice: "primary" | "secondary" | SocialStat = "primary") :Promise<"primary" | "secondary" | SocialStat> {
@@ -148,8 +159,15 @@ export class PersonaSocial {
 
 	}
 
-	static validSocialCards(actor: PC, linkId?: string) : SocialCard[] {
-		const link = actor.socialLinks.find(link => link.actor.id == linkId);
+	static validSocialCards(actor: PC, activity: Activity | SocialLink) : SocialCard[] {
+		if (activity instanceof PersonaItem) {
+			return PersonaDB.allSocialCards()
+				.filter(card=> card.system.qualifiers
+					.some(x=> x.relationshipName == activity.system.baseRelationship)
+				);
+		}
+		const link = this.lookupSocialLink(actor, activity.id)
+		// const link = actor.socialLinks.find(link => link.actor.id == linkId);
 		const situation : Situation= {
 			user: actor.accessor,
 			attacker: actor.accessor,
@@ -170,10 +188,8 @@ export class PersonaSocial {
 			});
 	}
 
-	static #drawSocialCard(actor: PC, linkId : string) : SocialCard {
-		const link = actor.socialLinks.find(link => link.actor.id == linkId);
-		if (!link) throw new PersonaError(`Can't find link ${linkId}`);
-		const cards = this.validSocialCards(actor, linkId);
+	static #drawSocialCard(actor: PC, link : Activity | SocialLink) : SocialCard {
+		const cards = this.validSocialCards(actor, link);
 
 		let undrawn = cards.filter( card=> !this.#drawnCardIds.includes(card.id));
 
@@ -189,25 +205,26 @@ export class PersonaSocial {
 		return chosenCard;
 	}
 
-	static async drawSocialCard(actor: PC, linkId: string) : Promise<ChatMessage[]> {
-		const link = this.lookupLinkId(actor, linkId);
-		if (link.actor.isSpecialEvent(link.linkLevel+1)) {
-			//TODO: Finish later
-
+	static async #socialEncounter(actor: PC, activity: SocialLink | Activity) : Promise<ChatMessage[]> {
+		if (activity instanceof PersonaActor) {
+			const link = this.lookupSocialLink(actor, activity.id);
+			if (link.actor.isSpecialEvent(link.linkLevel+1)) {
+				//TODO: Finish later
+			}
 		}
-		const card = this.#drawSocialCard(actor, linkId);
-		const cameos = this.#getCameos(card, actor, linkId);
-		const perk = this.#getPerk(card, actor, linkId, cameos);
+		const card = this.#drawSocialCard(actor, activity);
+		const cameos = this.#getCameos(card, actor, activity.id);
+		const perk = this.#getPerk(card, actor, activity, cameos);
 		const situation : Situation = {
 			user: actor.accessor,
-			socialTarget: link.actor.accessor,
+			socialTarget: activity instanceof PersonaActor ?  activity.accessor: undefined,
 			attacker: actor.accessor,
 			isSocial: true,
 		};
 		const cardData : CardData = {
 			card,
 			actor,
-			linkId,
+			linkId: activity.id,
 			cameos,
 			perk,
 			eventsChosen: [],
@@ -220,7 +237,23 @@ export class PersonaSocial {
 	}
 
 
-	static lookupLinkId(actor: PC, linkId: string) :SocialLinkData {
+	static lookupLink(cardData: CardData): ActivityLink | SocialLinkData {
+		switch (cardData.card.system.cardType) {
+			case "social":
+				return this.lookupSocialLink(cardData.actor, cardData.linkId);
+			default:
+				return this.lookupActivity(cardData.actor, cardData.linkId);
+		}
+
+	}
+
+	static lookupActivity(actor: PC, activityId: string): ActivityLink {
+		const link = actor.activityLinks.find( x=> x.activity.id == activityId);
+		if (!link) throw new PersonaError(`Can't find activity: ${activityId}`);
+		return link;
+	}
+
+	static lookupSocialLink(actor: PC, linkId: string) :SocialLinkData {
 		const link= actor.socialLinks.find(link => link.actor.id == linkId);
 		if (!link)
 			throw new PersonaError(`Can't find link ${linkId}`);
@@ -284,25 +317,23 @@ export class PersonaSocial {
 			&& x.id != linkId) as SocialLink[];
 	}
 
-	static #getPerk(card: SocialCard,actor: PC, linkId: string, cameos: SocialLink[]) {
-		const linkdata = this.lookupLinkId(actor, linkId);
+	static #getPerk(card: SocialCard,actor: PC, link: Activity | SocialLink, cameos: SocialLink[]) {
 		switch (card.system.perkType) {
 			case "standard":
-				return linkdata.actor.perk;
+				return link.perk;
 			case "standard-or-cameo":
 				return "Choose One: <br>" +
-					cameos.concat([linkdata.actor])
+					[link].concat(cameos)
 				.map( x=> `* ${x.perk}`)
 				.join("<br>");
 			case "custom-only":
 				return card.system.perk;
 			case "standard-or-custom":
 				return "Choose One: <br>" +
-					[linkdata.actor.perk, card.system.perk]
+					[link.perk, card.perk]
 				.map( x=> `* ${x}`)
 				.join("<br>");
 			case "standard-or-date":
-				const link = linkdata.actor;
 				let datePerk : string;
 				switch (link.system.type) {
 					case "pc":
@@ -311,6 +342,9 @@ export class PersonaSocial {
 					case "npc":
 						datePerk = link.system.datePerk || this.defaultDatePerk();
 						break;
+					default:
+						PersonaError.softFail(`No datePerk type for ${link.system.type}`);
+						datePerk="";
 				}
 				return "Choose One: <br>" +
 					[actor.perk, datePerk]
@@ -391,9 +425,10 @@ export class PersonaSocial {
 
 	static async #printCardIntro(cardData: CardData) {
 		const {card, cameos, perk, actor } = cardData;
-		const link = this.lookupLinkId(actor, cardData.linkId);
+		const link = this.lookupLink(cardData);
+		const linkId =  "actor" in link ? link.actor.id : link.activity.id;
 		const isCameo = card.system.cameoType != "none";
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-intro.hbs`, {item: card,card, cameos, perk, link: link, pc: actor, isCameo, user: game.user} );
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-intro.hbs`, {item: card,card, cameos, perk, link: link, linkId, pc: actor, isCameo, user: game.user} );
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
 			speaker,
@@ -405,7 +440,7 @@ export class PersonaSocial {
 
 	static async #execEvent(event: CardEvent, cardData: CardData) {
 		const eventNumber = cardData.eventsChosen.length;
-		const link = this.lookupLinkId(cardData.actor, cardData.linkId);
+		// const link = this.lookupLink(cardData);
 		const eventIndex = cardData.card.system.events.indexOf(event);
 		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event,eventNumber, cardData, situation : cardData.situation, eventIndex});
 		const speaker = ChatMessage.getSpeaker();
@@ -440,23 +475,23 @@ export class PersonaSocial {
 		return msg;
 	}
 
-	static async #printSocialCard(card: SocialCard, actor: PC, linkId: string, cameos: SocialLink[], perk:string ) : Promise<ChatMessage> {
-		const link = this.lookupLinkId(actor, linkId);
-		const DC = 10 + link.linkLevel *3;
-		const perkAvail = link.actor.system.availability == "++" || link.actor.system.availability == "+";
-		const isCameo = card.system.cameoType != "none";
-		const skill = STUDENT_SKILLS[link.actor.getSocialStatToRaiseLink(card.system.skill)];
+	// static async #printSocialCard(card: SocialCard, actor: PC, linkId: string, cameos: SocialLink[], perk:string ) : Promise<ChatMessage> {
+	// 	const link = this.lookupSocialLink(actor, linkId);
+	// 	const DC = 10 + link.linkLevel *3;
+	// 	const perkAvail = link.actor.system.availability == "++" || link.actor.system.availability == "+";
+	// 	const isCameo = card.system.cameoType != "none";
+	// 	const skill = STUDENT_SKILLS[link.actor.getSocialStatToRaiseLink(card.system.skill)];
 
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/social-card.hbs`, {item: card,card,  skill, cameos, perk, link: link, pc: actor, perkAvail, isCameo, DC, user: game.user} );
+	// 	const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/social-card.hbs`, {item: card,card,  skill, cameos, perk, link: link, pc: actor, perkAvail, isCameo, DC, user: game.user} );
 
-		const speaker = ChatMessage.getSpeaker();
-		const msgData : MessageData = {
-			speaker,
-			content: html,
-			type: CONST.CHAT_MESSAGE_TYPES.OOC
-		};
-		return await ChatMessage.create(msgData,{} );
-	}
+	// 	const speaker = ChatMessage.getSpeaker();
+	// 	const msgData : MessageData = {
+	// 		speaker,
+	// 		content: html,
+	// 		type: CONST.CHAT_MESSAGE_TYPES.OOC
+	// 	};
+	// 	return await ChatMessage.create(msgData,{} );
+	// }
 
 	static async rerollAvailability() {
 		let rolls : Roll[] = [];
@@ -515,12 +550,11 @@ export class PersonaSocial {
 		return [newavail, roll];
 	}
 
-	static async chooseActivity(actor: PC, activity: SocialLink | Job, options: ActivityOptions = {}) {
+	static async chooseActivity(actor: PC, activity: SocialLink | Activity, options: ActivityOptions = {}) {
 		if (activity instanceof PersonaItem) {
-			await this.#doJob(actor, activity, options);
-		} else {
-			await this.#socialEncounter(actor, activity);
-		}
+				await actor.addNewActivity(activity);
+			}
+		this.#socialEncounter(actor, activity);
 	}
 
 	static async degradeActivity( activity: SocialLink | Job) {
@@ -554,75 +588,71 @@ export class PersonaSocial {
 		return modifiers;
 	}
 
-	static async #socialEncounter(actor: PC, activity: SocialLink) {
-		await this.drawSocialCard(actor, activity.id);
-	}
+
+	// static async #doJob(actor: PC,  activity :Job, options: ActivityOptions) {
+	// 	const roll = new Roll("1d6");
+	// 	await roll.roll();
+	// 	const stat =  (roll.total > 2) ? "primary": "secondary";
+	// 	const skill = activity.system.keyskill[stat];
+	// 	const situation : Situation = {
+	// 		user: actor.accessor,
+	// 		isSocial: true,
+	// 		socialId: activity.id
+	// 	};
+	// 	const avail = activity.system.availability;
+	// 	const modifiers = this.getAvailModifier(avail);
+	// 	let html = "";
+	// 	html += `<h2>${activity.name} (${activity.system.availability})</h2>`
+	// 	html += `<img src='${activity.img}'>`;
+	// 	const rollTitle = `${activity.name} roll (DC ${activity.system.dc}, ${stat} --- ${skill}) `
+	// 	const socialRoll = await this.rollSocialStat(actor, skill, modifiers, rollTitle,situation);
+	// 	html += await socialRoll.getHTML();
+	// 	// await socialRoll.toModifiedMessage();
+	// 	switch (avail) {
+	// 		case "++":
+	// 			html += `<div><b> Perk: </b> ${activity.system.perk}</div>`;
+	// 			break;
+	// 		case "+":
+	// 			html += `<div><b> Perk: </b> ${activity.system.perk}</div>`;
+	// 			break;
+	// 		case "-":
+	// 			break;
+	// 		case "--":
+	// 			break;
+	// 		default:
+	// 	}
+	// 	let pay = 0;
+	// 	if (socialRoll.total >= activity.system.dc) {
+	// 		pay = activity.system.pay.high;
+	// 	} else {
+	// 		pay = activity.system.pay.low;
+	// 	}
+	// 	const payBonus = actor.getBonuses("pay").total(situation);
+	// 	if (pay + payBonus > 0) {
+	// 		html += `<div> <b>Pay (auto-added):</b> ${pay} ${payBonus ? `+ ${payBonus}` : ""}`;
+	// 		await actor.gainMoney(pay + payBonus);
+	// 		await PersonaSounds.ching();
+	// 	}
+	// 	if (socialRoll.total >= activity.system.dc + 10 && activity.system.critical) {
+	// 		html += `<div> <b>Critical:</b> ${activity.system.critical}</div>`;
+	// 	}
+	// 	if (activity.system.bane) {
+	// 		html += `<div> <b>Bane:</b> ${activity.system.bane}</div>`;
+
+	// 	}
+	// 	const speaker = ChatMessage.getSpeaker();
+	// 	if (!options.noDegrade) {
+	// 		await this.degradeActivity(activity);
+	// 	}
+	// 	return await ChatMessage.create( {
+	// 		speaker,
+	// 		content: html,
+	// 		type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+	// 		rolls: [roll, socialRoll.roll]
+	// 	}, {});
 
 
-	static async #doJob(actor: PC,  activity :Job, options: ActivityOptions) {
-		const roll = new Roll("1d6");
-		await roll.roll();
-		const stat =  (roll.total > 2) ? "primary": "secondary";
-		const skill = activity.system.keyskill[stat];
-		const situation : Situation = {
-			user: actor.accessor,
-			isSocial: true,
-			socialId: activity.id
-		};
-		const avail = activity.system.availability;
-		const modifiers = this.getAvailModifier(avail);
-		let html = "";
-		html += `<h2>${activity.name} (${activity.system.availability})</h2>`
-		html += `<img src='${activity.img}'>`;
-		const rollTitle = `${activity.name} roll (DC ${activity.system.dc}, ${stat} --- ${skill}) `
-		const socialRoll = await this.rollSocialStat(actor, skill, modifiers, rollTitle,situation);
-		html += await socialRoll.getHTML();
-		// await socialRoll.toModifiedMessage();
-		switch (avail) {
-			case "++":
-				html += `<div><b> Perk: </b> ${activity.system.perk}</div>`;
-				break;
-			case "+":
-				html += `<div><b> Perk: </b> ${activity.system.perk}</div>`;
-				break;
-			case "-":
-				break;
-			case "--":
-				break;
-			default:
-		}
-		let pay = 0;
-		if (socialRoll.total >= activity.system.dc) {
-			pay = activity.system.pay.high;
-		} else {
-			pay = activity.system.pay.low;
-		}
-		const payBonus = actor.getBonuses("pay").total(situation);
-		if (pay + payBonus > 0) {
-			html += `<div> <b>Pay (auto-added):</b> ${pay} ${payBonus ? `+ ${payBonus}` : ""}`;
-			await actor.gainMoney(pay + payBonus);
-			await PersonaSounds.ching();
-		}
-		if (socialRoll.total >= activity.system.dc + 10 && activity.system.critical) {
-			html += `<div> <b>Critical:</b> ${activity.system.critical}</div>`;
-		}
-		if (activity.system.bane) {
-			html += `<div> <b>Bane:</b> ${activity.system.bane}</div>`;
-
-		}
-		const speaker = ChatMessage.getSpeaker();
-		if (!options.noDegrade) {
-			await this.degradeActivity(activity);
-		}
-		return await ChatMessage.create( {
-			speaker,
-			content: html,
-			type: CONST.CHAT_MESSAGE_TYPES.ROLL,
-			rolls: [roll, socialRoll.roll]
-		}, {});
-
-
-	}
+	// }
 
 	static #degradedAvailability (availability: Job["system"]["availability"]) {
 		switch (availability) {
@@ -672,7 +702,6 @@ export class PersonaSocial {
 				}
 			}
 		}
-
 		return result;
 	}
 
@@ -686,25 +715,71 @@ export class PersonaSocial {
 		await this.execTrigger("on-attain-tarot-perk", target, situation, `Gains Perk (${socialLink.tarot?.name})`) ;
 	}
 
-	static async execSocialCard(event: JQuery.ClickEvent) {
-		console.log("Exec social card");
-		const linkActorId = HTMLTools.getClosestData(event, "linkActorId");
-		const userId = HTMLTools.getClosestData(event, "userId");
-		const PCId = HTMLTools.getClosestData(event, "pcId");
-		if (userId != game.user.id) {
-			ui.notifications.notify(`Can't execute, user Id's not match`);
-			return;
+	// static async execSocialCard(event: JQuery.ClickEvent) {
+	// 	console.log("Exec social card");
+	// 	const linkId = HTMLTools.getClosestData(event, "linkActorId");
+	// 	const userId = HTMLTools.getClosestData(event, "userId");
+	// 	const PCId = HTMLTools.getClosestData(event, "pcId");
+	// 	if (userId != game.user.id) {
+	// 		ui.notifications.notify(`Can't execute, user Id's not match`);
+	// 		return;
+	// 	}
+	// 	const pc = game.actors.get(PCId);
+	// 	if (!pc || pc.system.type != "pc") {
+	// 		ui.notifications.notify(`Can't find PC id ${PCId}`);
+	// 		return;
+	// 	}
+	// 	await this.makeUpgradeLinkRoll(pc as PC, linkActorId)
+	// 	const socialLink = game.actors.get(linkActorId);
+	// 	if (!socialLink) {
+	// 		ui.notifications.notify(`Can't find SL id ${linkActorId}`);
+	// 		return;
+	// 	}
+	// }
+
+	static getBaseSkillThreshold (cardData: CardData) : number {
+		return this.getBaseSkillDC(cardData) - 5;
+	}
+
+	static getBaseSkillDC (cardData: CardData) : number {
+		const ctype = cardData.card.system.cardType;
+		switch (ctype) {
+			case "job":
+				const activity = this.lookupActivity(cardData.actor, cardData.linkId);
+				return activity.activity.system.dc;
+			case "social":
+				const link = this.lookupSocialLink(cardData.actor, cardData.linkId);
+				return 10 + link.linkLevel * 2;
+			case "training":
+			case "other":
+				return 10 + cardData.actor.system.combat.classData.level * 2;
+			case "recovery":
+				return 20;
+			default:
+				ctype satisfies never;
+				throw new PersonaError("Should be unreachable");
 		}
-		const pc = game.actors.get(PCId);
-		if (!pc || pc.system.type != "pc") {
-			ui.notifications.notify(`Can't find PC id ${PCId}`);
-			return;
-		}
-		await this.makeUpgradeLinkRoll(pc as PC, linkActorId)
-		const socialLink = game.actors.get(linkActorId);
-		if (!socialLink) {
-			ui.notifications.notify(`Can't find SL id ${linkActorId}`);
-			return;
+	}
+
+
+	static getCardRollDC(cardData: CardData, roll: CardRoll) : number {
+		switch (roll.rollType) {
+			case "save":
+				switch (roll.saveType) {
+					case "normal": return 11;
+					case "easy": return 6;
+					case "hard": return 16;
+					default: roll.saveType satisfies never;
+						throw new PersonaError("Should be unreachable");
+				}
+			case "studentSkillCheck":
+				switch (roll.DC.subtype) {
+					case "static":
+						return roll.DC.staticDC;
+					case "base":
+						return this.getBaseSkillDC(cardData);
+				}
+			default: return 0;
 		}
 	}
 
@@ -716,17 +791,25 @@ export class PersonaSocial {
 			case "studentSkillCheck":
 				const modifiers = new ModifierList();
 				modifiers.add("Roll Modifier", cardRoll.modifier);
-				const roll = await this.rollSocialStat(cardData.actor, cardRoll.studentSkill, modifiers, "Card Roll",  cardData.situation);
-				const situation = {
+				const DC = this.getCardRollDC(cardData, cardRoll);
+				const link = this.lookupLink(cardData);
+				const activityOrActor = "actor" in link ? link.actor: link.activity;
+				const skill = this.resolvePrimarySecondarySocialStat(cardRoll.studentSkill, activityOrActor);
+				const roll = await this.rollSocialStat(cardData.actor, skill, modifiers, "Card Roll",  cardData.situation);
+				const situation : Situation = {
+					hit: roll.total >= DC,
+					criticalHit: roll.total >= DC + 10,
 					...cardData.situation,
 					naturalSkillRoll: roll.natural,
 					rollTotal: roll.total
 				};
 				const results = cardRoll.effects.flatMap( eff=> getActiveConsequences(eff, situation, null));
 				const processed= PersonaCombat.ProcessConsequences_simple(results);
-				//TODO: turn into CombatResult
-				throw new PersonaError("Not yet implemented");
-				//TODO: write this
+				const result = new CombatResult();
+				for (const c of processed.consequences) {
+					result.addEffect(null, cardData.actor, c.cons);
+				}
+				await result.emptyCheck()?.toMessage("SocialResult", cardData.actor);
 				break;
 			case "save":
 				throw new PersonaError("Not yet implemented");
@@ -830,7 +913,7 @@ Hooks.on("updateItem", async (_item: PersonaItem, changes) => {
 
 Hooks.on("renderChatMessage", async (message: ChatMessage, html: JQuery ) => {
 	if ((message?.author ?? message?.user) == game.user) {
-		html.find("button.social-roll").on ("click", PersonaSocial.execSocialCard.bind(PersonaSocial));
+		// html.find("button.social-roll").on ("click", PersonaSocial.execSocialCard.bind(PersonaSocial));
 		html.find(".social-card-roll .make-roll").on("click", PersonaSocial.makeCardRoll.bind(PersonaSocial));
 		html.find(".social-card-roll .next").on("click", PersonaSocial.makeCardRoll.bind(PersonaSocial));
 	}

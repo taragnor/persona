@@ -40,6 +40,7 @@ type CardLocationTypes = [
 		name: "card-conditions",
 	}
 ];
+import { STUDENT_SKILLS_EXT } from "../../../config/student-skills.js";
 
 export type CardEffectLocation = CardLocationTypes[number];
 
@@ -58,6 +59,7 @@ export class PersonaSocialCardSheet extends PersonaItemSheetBase {
 		data.SOCIAL_DATA = {
 			ROLLTYPES : SOCIAL_CARD_ROLL_TYPES,
 			STUDENT_SKILLS,
+			STUDENT_SKILLS_EXT,
 			SAVE_DIFFICULTY: SAVE_TYPES_LOCALIZED,
 		};
 		data.SOCIAL_CARD_TYPES = SOCIAL_CARD_TYPES;

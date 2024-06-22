@@ -1,8 +1,9 @@
-import { Precondition } from "./precondition-types";
-import { SaveType } from "./save-types";
-import { SocialStat } from "./student-skills";
-import { WeatherType } from "./weather-types";
-import { ConditionalEffect } from "../module/datamodel/power-dm";
+import { StudentSkillExt } from "./student-skills.js";
+import { Precondition } from "./precondition-types.js";
+import { SaveType } from "./save-types.js";
+import { SocialStat } from "./student-skills.js";
+import { WeatherType } from "./weather-types.js";
+import { ConditionalEffect } from "../module/datamodel/power-dm.js";
 
 export const SOCIAL_CARD_TYPES_LIST = [
 	"social",
@@ -52,9 +53,10 @@ type CardRollList = {
 	},
 	"studentSkillCheck": {
 		rollType: "studentSkillCheck",
-		studentSkill: SocialStat,
+		studentSkill: StudentSkillExt,
 		modifier: number,
 		effects: ConditionalEffect[],
+		DC: CardRollDC,
 	}
 	"save" : {
 		rollType: "save",
@@ -68,8 +70,9 @@ type CardRollList = {
 	}
 }
 
-type CardRollResult = {
-	resultString : string,
+type CardRollDC = {
+	subtype: "static" | "base",
+	staticDC: number,
 };
 
 export type Opportunity = {

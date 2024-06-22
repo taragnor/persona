@@ -1,3 +1,4 @@
+import { testPreconditions } from "../preconditions.js";
 import { CardEffectLocation } from "./sheets/social-card-sheet.js";
 import { CardChoice } from "../../config/social-card-config.js";
 import { CardEvent } from "../../config/social-card-config.js";
@@ -727,6 +728,25 @@ const power = PersonaDB.getBasicPower(powerName);
 		await this.update({"system.events": this.system.events});
 	}
 
+	isAvailable(this: Activity, pc: PC): boolean {
+		const sit: Situation = {
+			user: pc.accessor
+			};
+		return testPreconditions(this.system.conditions,sit, null);
+
+	}
+
+	get perk() : string {
+		switch (this.system.type) {
+			case "job":
+				return this.system.perk;
+			case "socialCard":
+				return this.system.perk;
+			default:
+				return "";
+		}
+	}
+
 }
 
 
@@ -751,6 +771,7 @@ export type Talent = Subtype<PersonaItem, "talent">;
 export type Focus = Subtype<PersonaItem, "focus">;
 export type Consumable = Subtype<PersonaItem, "consumable">;
 export type Job = Subtype<PersonaItem, "job">;
+export type Activity = Job;
 export type SocialCard = Subtype<PersonaItem, "socialCard">;
 
 export type UniversalModifier = Subtype<PersonaItem, "universalModifier">;

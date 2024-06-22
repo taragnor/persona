@@ -1,3 +1,4 @@
+import { Activity } from "./item/persona-item.js";
 import { PC } from "./actor/persona-actor.js";
 import { NPC } from "./actor/persona-actor.js";
 import { UniversalModifier } from "./item/persona-item.js";
@@ -58,6 +59,11 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	allJobs(): Job[] {
 		return this.allItems()
 		.filter( x=> x.system.type == "job") as Job[];
+	}
+
+	allActivities(): Activity[] {
+		return this.allItems()
+		.filter( x=> x.system.type == "job") as Activity[];
 	}
 
 	personalSocialLink(): NPC {

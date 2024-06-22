@@ -119,6 +119,8 @@ class JobItemSchema extends foundry.abstract.DataModel {
 	get type() { return "job" as const;}
 	static override defineSchema() {
 		const ret = {
+			baseRelationship: new txt(),
+			conditions: new arr(new obj<Precondition>()),
 			keyskill: new sch({
 				primary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
 				secondary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),

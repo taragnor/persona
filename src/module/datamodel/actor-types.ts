@@ -1,4 +1,5 @@
 const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
+import { Precondition } from "../../config/precondition-types.js";
 import { AVAILABILITY_LIST } from "../../config/availability-types.js";
 import { ResistType } from "../../config/damage-types.js";
 import { INCREMENTAL_ADVANCE_TYPES } from "../../config/incremental-advance-types.js";
@@ -44,6 +45,12 @@ export type SocialData = {
 	relationshipType: string,
 };
 
+export type ActivityData = {
+	linkId: string,
+	strikes: number,
+	currentProgress: number,
+	relationshipType: string,
+}
 
 function elementalResists() {
 	const initial :Record< ResistType, ResistStrength>  = {
@@ -119,6 +126,11 @@ function socialLinks() {
 	return new arr( new obj<SocialData>(), {initial: []});
 }
 
+function activityLinks() {
+	return new arr( new obj<ActivityData>(), {initial: []});
+
+}
+
 function studentSkills() {
 	return new sch( {
 		diligence: new num({integer:true, initial:0}),
@@ -167,6 +179,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			}),
 			bio: personalBio(),
 			social: socialLinks(),
+			activities: activityLinks(),
 			slots: skillSlots(),
 			...sharedAbilities(),
 			skills: studentSkills(),
@@ -203,6 +216,7 @@ export class NPCSchema extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		const ret = {
 			...BaseStuff.defineSchema(),
+			conditions: new arr(new obj<Precondition>()),
 			tarot: tarot(),
 			bio: personalBio(),
 			keyskill: keySkills(),

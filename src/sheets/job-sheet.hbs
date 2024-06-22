@@ -1,6 +1,43 @@
 <form class="job-sheet">
 	<img class="profile-img" src="{{item.img}}" data-edit="img"/>
 	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Job Name" placeholder="Job Name">
+	<div class="card-conditions">
+		<h5> Conditions
+			<a class="add-condition">
+				<i class="fa-solid fa-plus"> </i>
+			</a>
+		</h5>
+		{{#each item.system.conditions as |cond i|}}
+		{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat "system.conditions." i  ".")  cond=cond POWERSTUFF=../item.sheet.powerStuff condition_index=i}}
+		{{/each}}
+	</div>
+
+	<section class="qualifiers">
+		<div class="header"> Qualifiers
+			<a class="add-qualifier">
+				<i class="fa-solid fa-square-plus"></i>
+			</a>
+		</div>
+		{{#each item.system.qualifiers as |qual i|}}
+		<div class="qualifier" data-qualifier-index="{{i}}">
+			<label for="qualname-{{i}}">
+				Name
+			</label>
+			<input id="qualname-{{i}}" class= "name" name="system.qualifiers.{{i}}.relationshipName" type="text" list="qualifiers-{{i}}" value="{{qual.relationshipName}}">
+			<datalist id="qualifiers-{{i}}">
+				{{#each ../QUALIFIERS_NAME_LIST as |item|}}
+				<option> {{item}}</option>
+				{{/each}}
+			</datalist>
+			<input class="short" type=number name="system.qualifiers.{{i}}.min" value="{{qual.min}}">
+			<input class="short" type=number name="system.qualifiers.{{i}}.max" value="{{qual.max}}">
+			<a class="delete-qualifier">
+				<i class="fa-solid fa-trash"></i>
+			</a>
+		</div>
+		{{/each}}
+	</section>
+
 	<div class="primary">
 		<label>
 			Primary Skill

@@ -1,3 +1,4 @@
+import { Activity } from "../item/persona-item.js";
 import { RecoverSlotEffect } from "../combat/combat-result.js";
 import { UniversalModifier } from "../item/persona-item.js";
 import { getActiveConsequences } from "../preconditions.js";
@@ -315,6 +316,37 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			return {pc: null, linkLevel: 0};
 		}
 		return {pc : highest.pc, linkLevel: highest.highest};
+	}
+
+	async addNewActivity(this: PC, activity: Activity) {
+		const act= this.system.activities;
+		if (act.find(x=> x.linkId == activity.id))
+			return;
+		const item : typeof act[number] = {
+			linkId: activity.id,
+			strikes: 0,
+			currentProgress: 0,
+			relationshipType: activity.system.baseRelationship
+		};
+		act.push( item);
+		await this.update( {"system.activities": act});
+	}
+
+	get activityLinks() : ActivityLink[] {
+		if (this.system.type != "pc") return [];
+		return this.system.activities
+		.flatMap( aData => {
+			const activity = PersonaDB.allActivities().find(x=> x.id == aData.linkId);
+			if (!activity) return [];
+			const aLink : ActivityLink = {
+				strikes: aData.strikes ?? 0,
+				available: activity.isAvailable(this as PC),
+				currentProgress: aData.currentProgress,
+				activity,
+				relationshipType: aData.relationshipType,
+			}
+			return aLink;
+		});
 	}
 
 	get socialLinks() : SocialLinkData[] {
@@ -1516,6 +1548,14 @@ export type Tarot = Subtype<PersonaActor, "tarot">;
 export type SocialLink = PC | NPC;
 
 
+export type ActivityLink = {
+	strikes: number,
+	available: boolean,
+	activity: Activity,
+	currentProgress: number,
+	relationshipType: string,
+}
+
 export type SocialLinkData = {
 	linkLevel: number,
 	actor: SocialLink,
@@ -1526,3 +1566,5 @@ export type SocialLinkData = {
 	relationshipType: string,
 	availability: NPC["system"]["availability"],
 }
+
+
