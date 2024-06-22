@@ -1,9 +1,14 @@
 <div class="social-card" data-link-id="{{linkId}}" data-user-id="{{user.id}}" data-pc-id="{{pc.id}}">
+	{{#if link.actor}}
 	<h2> {{link.actor.name}} (SL {{link.linkLevel}})
 		{{#if (isHighestLinker pc link)}}
 		<i title="Highest Link Level" class="fa-solid fa-star"></i>
 		{{/if}}
 	</h2>
+	{{/if}}
+	{{#if link.activity}}
+	<h2> {{link.activity.name}} </h2>
+	{{/if}}
 	{{#if (isNonstandardPic card.img)}}
 	<img src="{{card.img}}">
 	{{else}}
@@ -57,6 +62,13 @@
 	<div class="bane">
 		<b>Bane: </b>
 		{{newlineConversion card.system.bane}}
+	</div>
+	{{/if}}
+	{{#if card.system.boon}}
+	<hr>
+	<div class="boon">
+		<b>Boon: </b>
+		{{newlineConversion card.system.boon}}
 	</div>
 	{{/if}}
 </div>

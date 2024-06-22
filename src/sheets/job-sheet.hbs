@@ -12,31 +12,14 @@
 		{{/each}}
 	</div>
 
-	<section class="qualifiers">
-		<div class="header"> Qualifiers
-			<a class="add-qualifier">
-				<i class="fa-solid fa-square-plus"></i>
-			</a>
-		</div>
-		{{#each item.system.qualifiers as |qual i|}}
-		<div class="qualifier" data-qualifier-index="{{i}}">
-			<label for="qualname-{{i}}">
-				Name
+		<div class="base-relationship">
+			<label>
+				Card specifier
 			</label>
-			<input id="qualname-{{i}}" class= "name" name="system.qualifiers.{{i}}.relationshipName" type="text" list="qualifiers-{{i}}" value="{{qual.relationshipName}}">
-			<datalist id="qualifiers-{{i}}">
-				{{#each ../QUALIFIERS_NAME_LIST as |item|}}
-				<option> {{item}}</option>
-				{{/each}}
-			</datalist>
-			<input class="short" type=number name="system.qualifiers.{{i}}.min" value="{{qual.min}}">
-			<input class="short" type=number name="system.qualifiers.{{i}}.max" value="{{qual.max}}">
-			<a class="delete-qualifier">
-				<i class="fa-solid fa-trash"></i>
-			</a>
+			<select name="system.baseRelationship">
+				{{selectOptions RELATIONSHIP_TYPES localize=false selected=item.system.baseRelationship}}
+			</select>
 		</div>
-		{{/each}}
-	</section>
 
 	<div class="primary">
 		<label>

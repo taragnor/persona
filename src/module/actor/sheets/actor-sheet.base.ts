@@ -33,7 +33,6 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 				val: this.getIncAdvanceValue(x),
 			}))
 		};
-		Debug(data);
 		return data;
 	}
 

@@ -4,6 +4,7 @@ import { STUDENT_SKILLS } from "../../../config/student-skills.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { AVAILABILITY } from "../../../config/availability-types.js";
 import { PersonaSocialSheetBase } from "./social-sheet-base.js";
+import { PersonaDB } from "../../persona-db.js";
 
 export class PersonaJobSheet extends PersonaSocialSheetBase {
 	override item: Job;
@@ -12,6 +13,14 @@ export class PersonaJobSheet extends PersonaSocialSheetBase {
 		const data = await super.getData();
 		data.STUDENT_SKILLS = STUDENT_SKILLS;
 		data.AVAILABILITY = AVAILABILITY;
+		data.RELATIONSHIP_TYPES_LIST = PersonaDB.allSocialCards()
+			.flatMap(card => card.system.qualifiers)
+			.map(qual=> qual.relationshipName)
+			.filter( (val, i, arr) => arr.indexOf(val) == i);
+		data.RELATIONSHIP_TYPES = Object.fromEntries(
+			(data.RELATIONSHIP_TYPES_LIST as string[])
+			.map(x=> ([x,x]))
+		);
 		return data;
 	}
 

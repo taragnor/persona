@@ -401,8 +401,8 @@ export class PersonaSocial {
 
 	static async #execOpportunity(cardData: CardData) {
 		const card = cardData.card;
-		if (card.system.opportunity.trim() == ""
-			&& card.system.opportunity_choices == 0)
+		if (!card.system.opportunity
+			&& !card.system.opportunity_choices)
 			return;
 		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-opportunity.hbs`, {item: card,card,cardData} );
 		const speaker = ChatMessage.getSpeaker();
