@@ -50,8 +50,7 @@ export class PersonaSocial {
 			return;
 		await PersonaCalendar.nextDay();
 		const day = PersonaCalendar.weekday();
-		const socialLinks = (game.actors.contents as PersonaActor[]).filter( actor=> actor.system.type == "pc" || actor.system.type == "npc").map(x=> x as SocialLink);
-
+		const socialLinks = (game.actors.contents as PersonaActor[]).filter( actor=> actor.system.type == "pc" || actor.system.type == "npc" && actor.tarot).map(x=> x as SocialLink);
 		for (const link of socialLinks){
 			const avail = link.system.weeklyAvailability[day];
 			await link.setAvailability(avail);
