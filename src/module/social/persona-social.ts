@@ -36,6 +36,8 @@ import { HTMLTools } from "../utility/HTMLTools.js";
 import { StudentSkillExt } from "../../config/student-skills.js";
 
 export class PersonaSocial {
+	static allowMetaverse: boolean = true;
+	static metaverseChoosers = 0;
 
 	static #drawnCardIds: string[] = [];
 	static rollState: null |
@@ -45,10 +47,28 @@ export class PersonaSocial {
 		};
 
 
-	static async advanceCalendar() {
-		if (!(await HTMLTools.confirmBox( "Advance Date", "Advnace Date?", true)))
+	static async startSocialCombatTurn(disallowMetaverse = false, advanceCalendar = true) {
+		this.allowMetaverse = !disallowMetaverse;
+		this.metaverseChoosers = 0;
+		if (!game.user.isGM) {
+			ui.notifications.error("Only GM can start new social combat turn");
 			return;
-		await PersonaCalendar.nextDay();
+		}
+		const extraMsgs : string [] = [];
+		if (this.allowMetaverse) {
+			extraMsgs.push("<b>Metaverse</b>: You may opt to go to the metaverse, though you must decide to now before taking any actions");
+		}
+
+		if (advanceCalendar) {
+			await this.advanceCalendar(true, extraMsgs);
+		}
+
+	}
+
+	static async advanceCalendar(force = false, extraMsgs : string [] = []) {
+		if (!force && !(await HTMLTools.confirmBox( "Advance Date", "Advnace Date?", true)))
+			return;
+		await PersonaCalendar.nextDay(extraMsgs);
 		const day = PersonaCalendar.weekday();
 		const socialLinks = (game.actors.contents as PersonaActor[]).filter( actor=> actor.system.type == "pc" || actor.system.type == "npc" && actor.tarot).map(x=> x as SocialLink);
 		for (const link of socialLinks){

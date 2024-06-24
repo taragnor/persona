@@ -74,7 +74,7 @@ export class PCSheet extends CombatantSheetBase {
 			})),
 		};
 		data.jobs = PersonaDB.allJobs()
-		.filter( job => job.system.availability != "N/A" && job.system.active);
+		.filter( job => job.system.weeklyAvailability.available);
 		return data;
 	}
 

@@ -1,3 +1,4 @@
+import { PersonaSocial } from "../social/persona-social.js"
 import { testPreconditions } from "../preconditions.js"
 import { UniversalModifier } from "../item/persona-item.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
@@ -60,8 +61,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		let msg = "";
 		this._engagedList = new EngagementList(this);
 		await this._engagedList.flushData();
-		const mods = await this.roomEffectsDialog();
-		const x = await super.startCombat();
+		const assumeSocial = !(this.combatants.contents.some(comb=> comb.actor && comb.actor.system.type == "shadow"));
+		const combatInit = await this.roomEffectsDialog(assumeSocial);
+		this.setSocialEncounter(combatInit.isSocialScene);
+		if (combatInit.isSocialScene) {
+			await PersonaSocial.startSocialCombatTurn(combatInit.disallowMetaverse, combatInit.advanceCalendar);
+		}
+		const mods = combatInit.roomModifiers;
 		this.setRoomEffects(mods);
 		await this.setEscalationDie(0);
 		if (mods.length > 0) {
@@ -77,7 +83,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			};
 			ChatMessage.create(messageData, {});
 		}
-		return x;
+		return await super.startCombat();
 	}
 
 	get validCombatants() : Combatant<ValidAttackers>[] {
@@ -999,6 +1005,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		await this.setFlag("persona", "escalation", val);
 	}
 
+	async setSocialEncounter(isSocial: boolean) {
+		await this.setFlag("persona", "isSocial", isSocial);
+	}
+
+	get isSocial() : boolean {
+		return this.getFlag("persona", "isSocial") ?? false;
+	}
+
 	isEngaged(subject: UniversalTokenAccessor<PToken>) : boolean {
 
 		const tok = PersonaDB.findToken(subject);
@@ -1188,22 +1202,24 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		await this.setFlag("persona", "roomEffects", effects.map(eff=> eff.id));
 	}
 
-	async roomEffectsDialog() : Promise<UniversalModifier[]>{
+	async roomEffectsDialog(startSocial: boolean) : Promise<DialogReturn>{
 		const roomMods = PersonaDB.getRoomModifiers();
 		const ROOMMODS =Object.fromEntries(roomMods.map( mod => [mod.id, mod.name]));
 		const html = await renderTemplate("systems/persona/sheets/dialogs/room-effects.hbs", {
 			ROOMMODS : {"": "-",
-				...ROOMMODS}
+				...ROOMMODS},
+			startSocial,
 		});
-		return new Promise( (conf, _rej) => {
+		return new Promise( (conf, rej) => {
 			const dialogOptions : DialogOptions = {
 				title: "room Effects",
 				content: html,
+				close: () => rej("Closed"),
 				buttons: {
 					"ok": {
 						label: "ok",
 						callback: (html: string) => {
-							let ret : UniversalModifier[] = [];
+							let mods : UniversalModifier[] = [];
 							$(html)
 								.find("select.room-mod")
 								.find(":selected")
@@ -1211,9 +1227,18 @@ export class PersonaCombat extends Combat<PersonaActor> {
 									const id= String( $(this).val());
 									const mod = roomMods.find(x=> x.id == id);
 									if (mod) {
-										ret.push(mod);
+										mods.push(mod);
 									}
 								})
+							const isSocialScene = $(html).find(".social-round").is(":checked");
+							const advanceCalendar = $(html).find(".advance-calendar").is(":checked");
+							const disallowMetaverse = $(html).find(".disallow-metaverse").is(":checked");
+							const ret : DialogReturn = {
+								roomModifiers: mods,
+								isSocialScene,
+								advanceCalendar,
+								disallowMetaverse,
+							}
 							conf(ret);
 						},
 					}
@@ -1223,7 +1248,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			dialog.render(true);
 		});
 	}
-
 
 } // end of class
 
@@ -1258,6 +1282,9 @@ Hooks.on("updateCombat" , async (combat: PersonaCombat, changes: Record<string, 
 		if (changes.round != undefined) {
 			//new round
 			if (diffObject.direction > 0 && game.user.isGM) {
+				if (combat.isSocial) {
+					PersonaSocial.startSocialCombatTurn();
+				}
 				await combat.incEscalationDie();
 			}
 			if (diffObject.direction < 0 && game.user.isGM) {
@@ -1370,3 +1397,10 @@ Hooks.on("socketsReady", async () => {
 	});
 });
 
+
+type DialogReturn = {
+	roomModifiers: UniversalModifier[],
+	isSocialScene: boolean,
+	advanceCalendar: boolean,
+	disallowMetaverse: boolean,
+}

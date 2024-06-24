@@ -10,7 +10,7 @@ export class PersonaCalendar {
 		return window.SimpleCalendar.api.getCurrentWeekday().name;
 	}
 
-	static async nextDay() {
+	static async nextDay(extraMsgs : string[] = []) {
 		if(!game.user.isGM) return;
 		const rolls: Roll[] = [];
 		if (!window.SimpleCalendar)
@@ -23,14 +23,17 @@ export class PersonaCalendar {
 		const weekday = window.SimpleCalendar.api.getCurrentWeekday().name;
 		let doomsdayMsg = ""
 		if (DoomsdayClock.isFull()) {
-			doomsdayMsg = `<div class="doomsday">Doomsday is here! Succeed or Something horrible happens!</div>`;
+			doomsdayMsg = `<hr><div class="doomsday"><h2> Doomsday</h2> Doomsday is here! Succeed or Something horrible happens!</div>`;
 		}
+		extraMsgs = extraMsgs
+			.map( x=> `<div> ${x} </div>`);
 		const html = `
 		<div class="date">
 		<h2> ${date} (${weekday}) </h2>
 		<div class="weather">
 		Weather: ${weather}
 		</div>
+			${extraMsgs.join("")}
 		${doomsdayMsg}
 		</div>
 			`;
