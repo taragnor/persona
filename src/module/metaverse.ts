@@ -1,3 +1,4 @@
+import { TensionPool } from "./exploration/tension-pool.js";
 import { Shadow } from "./actor/persona-actor.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { Logger } from "./utility/logger.js";
@@ -23,7 +24,7 @@ export class Metaverse {
 					} catch (e) {console.log(e)}
 				})
 			);
-
+		await TensionPool.clear();
 		Hooks.callAll("enterMetaverse");
 		await Logger.sendToChat(`Entering Metaverse...`);
 	}
@@ -40,6 +41,7 @@ export class Metaverse {
 					} catch (e) {console.log(e)}
 				})
 			);
+		await TensionPool.clear();
 		Hooks.callAll("exitMetaverse");
 		await Logger.sendToChat(`Exiting Metaverse...`);
 	}

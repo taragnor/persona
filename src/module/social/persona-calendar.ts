@@ -95,7 +95,7 @@ export class PersonaCalendar {
 }
 
 export class DoomsdayClock {
-	static MAX_TICKS: number = 16;
+	static MAX_TICKS: number = 30;
 
 	static isFull() :boolean {
 		const clock = this.#getClock();

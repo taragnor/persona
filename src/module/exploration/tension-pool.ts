@@ -22,6 +22,11 @@ export class TensionPool {
 
 	}
 
+	static async clear() : Promise< void> {
+		this._amt = 0;
+		await this.refreshValue(this._amt);
+	}
+
 	static async inc(): Promise<number> {
 		if (!this.isMaxed())
 			await this.modifyTensionPool(1);
