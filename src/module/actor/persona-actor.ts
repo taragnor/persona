@@ -1492,6 +1492,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.system.weeklyAvailability.available;
 	}
 
+	canTakeNormalDowntimeActions(): boolean {
+		return !this.hasStatus("jailed") && !this.hasStatus("crippled");
+	}
+
 }
 
 Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) => {

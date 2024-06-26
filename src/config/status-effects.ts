@@ -83,7 +83,21 @@ export const STATUS_EFFECT_LIST = [
 	}, {
 		id: "power-charge",
 		icon:  "icons/magic/control/buff-strength-muscle-damage-orange.webp",
+	}, {
+		id: "crippled",
+		icon:  "icons/skills/wounds/injury-eyes-blood-red.webp",
+	}, {
+		id: "injured",
+		icon:  "icons/skills/wounds/injury-triple-slash-bleed.webp",
 	},
+	{
+		id: "jailed",
+		icon:  "icons/environment/traps/steel.webp",
+	}, {
+		id: "exhausted",
+		icon:  "icons/svg/unconscious.svg",
+	},
+
 
 ] as const;
 

@@ -136,6 +136,7 @@ class JobItemSchema extends foundry.abstract.DataModel {
 			baseRelationship: new txt(),
 			weeklyAvailability: weeklyAvailability(),
 			conditions: new arr(new obj<Precondition>()),
+			subtype: new txt({initial: "job", choices: SOCIAL_CARD_TYPES_LIST}),
 			keyskill: new sch({
 				primary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
 				secondary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),

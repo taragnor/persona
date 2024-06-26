@@ -13,6 +13,12 @@
 		{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat "system.conditions." i  ".")  cond=cond POWERSTUFF=../item.sheet.powerStuff condition_index=i}}
 		{{/each}}
 	</div>
+	<div>
+	 <select name="system.subtype">
+		{{selectOptions SOCIAL_CARD_TYPES localize=true selected=item.system.subtype}}
+	 </select>
+	</div>
+
 
 		<div class="base-relationship">
 			<label>
@@ -22,6 +28,7 @@
 				{{selectOptions RELATIONSHIP_TYPES localize=false selected=item.system.baseRelationship}}
 			</select>
 		</div>
+
 
 	<div class="primary">
 		<label>

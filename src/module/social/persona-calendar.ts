@@ -131,7 +131,6 @@ static #getClock(): undefined |  GlobalProgressClocks.ProgressClock {
 		return clock;
 }
 
-
 	static clockStatus(): number {
 		const clock = this.#getClock();
 		return clock?.value ?? -1;

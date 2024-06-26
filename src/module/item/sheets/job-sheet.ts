@@ -6,6 +6,7 @@ import { AVAILABILITY } from "../../../config/availability-types.js";
 import { PersonaSocialSheetBase } from "./social-sheet-base.js";
 import { PersonaDB } from "../../persona-db.js";
 import { DAYS } from "../../../config/days.js";
+import { SOCIAL_CARD_TYPES } from "../../../config/social-card-config.js";
 
 export class PersonaJobSheet extends PersonaSocialSheetBase {
 	override item: Job;
@@ -15,6 +16,7 @@ export class PersonaJobSheet extends PersonaSocialSheetBase {
 		data.CONST = {
 			DAYS
 		};
+		data.SOCIAL_CARD_TYPES = SOCIAL_CARD_TYPES;
 		data.STUDENT_SKILLS = STUDENT_SKILLS;
 		data.AVAILABILITY = AVAILABILITY;
 		data.RELATIONSHIP_TYPES_LIST = PersonaDB.allSocialCards()

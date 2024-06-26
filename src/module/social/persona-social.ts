@@ -55,6 +55,21 @@ export class PersonaSocial {
 			return;
 		}
 		const extraMsgs : string [] = [];
+		const actingCharacter = game?.combat?.combatant?.actor as PersonaActor | undefined;
+		if (actingCharacter && actingCharacter.system.type == "pc") {
+			if (actingCharacter.hasStatus("injured")) {
+				extraMsgs.push(`<b> ${actingCharacter.name} </b>: is injured and should probably take the rest action`);
+			}
+			if (actingCharacter.hasStatus("jailed")) {
+				extraMsgs.push(`<b> ${actingCharacter.name} </b>: is jailed and must either pay their bail or take the jail action`);
+			}
+			if (actingCharacter.hasStatus("crippled")) {
+				extraMsgs.push(`<b> ${actingCharacter.name} </b>: is crippled and must take the hospital action.`);
+			}
+			if (actingCharacter.hasStatus("exhausted")) {
+				extraMsgs.push(`<b> ${actingCharacter.name} </b>: is exhausted and should probably take the rest action.`);
+			}
+		}
 		if (this.allowMetaverse) {
 			extraMsgs.push("<b>Metaverse</b>: You may opt to go to the metaverse, though you must decide to now before taking any actions");
 		}
@@ -506,6 +521,21 @@ export class PersonaSocial {
 	}
 
 	static async chooseActivity(actor: PC, activity: SocialLink | Activity, options: ActivityOptions = {}) {
+		if (actor.hasStatus("exhausted") && activity instanceof PersonaItem && activity.system.subtype == "training") {
+			ui.notifications.warn("You're currently unable to take this action, you must recover first");
+			return;
+		}
+		if (!actor.canTakeNormalDowntimeActions()) {
+			if (activity instanceof PersonaActor) {
+				ui.notifications.warn("You're currently unable to take this action, you must recover first");
+				return;
+			}
+			if (activity.system.subtype != "recovery") {
+				ui.notifications.warn("You're currently unable to take this action, you must recover first");
+				return;
+			}
+
+		}
 		if (activity instanceof PersonaItem) {
 				await actor.addNewActivity(activity);
 			}
