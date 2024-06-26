@@ -1,39 +1,36 @@
 <section class="events-section">
-	<h3>
+	<h2>
 		Events
-		<a class="add-event">
-			<i class="fa-solid fa-plus"> </i>
-		</a>
-	</h3>
+	</h2>
 	<label> Number of Events</label>
-		Event: <input class="short" type="number" name="system.num_of_events" value="{{item.system.num_of_events}}">
+	Event: <input class="short" type="number" name="system.num_of_events" value="{{item.system.num_of_events}}">
 
-		{{#each item.system.events as |event i|}}
-		<div class="card-event" data-event-index="{{i}}">
-			<h3>
+	{{#each item.system.events as |event i|}}
+	<div class="card-event" data-event-index="{{i}}">
+		<h3>
 			<input class="event-name" type="string" name="system.events.{{i}}.name" value="{{event.name}}">
-				<a class="del-event">
-					<i class="fa-solid fa-trash-can"></i>
-				</a>
-			</h3>
-			<label> Frequency</label>
-			<input class="short" type=number name="system.events.{{i}}.frequency" value="{{event.frequency}}">
+			<a class="del-event">
+				<i class="fa-solid fa-trash-can"></i>
+			</a>
+		</h3>
+		<label> Frequency</label>
+		<input class="short" type=number name="system.events.{{i}}.frequency" value="{{event.frequency}}">
 
-	<h5> Event Conditions
-		<a class="add-condition">
-			<i class="fa-solid fa-plus"> </i>
-		</a>
-	</h5>
-	{{#each event.conditions as |cond j|}}
+		<h5> Event Conditions
+			<a class="add-condition">
+				<i class="fa-solid fa-plus"> </i>
+			</a>
+		</h5>
+		{{#each event.conditions as |cond j|}}
 
-	{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat "system.events." i ".conditions." j ".")  cond=cond POWERSTUFF=../../POWERSTUFF condition_index=j}}
+		{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat "system.events." i ".conditions." j ".")  cond=cond POWERSTUFF=../../POWERSTUFF condition_index=j}}
 
-	{{/each}}
+		{{/each}}
 
-			<label> Event Setup</label>
-			<textarea name="system.events.{{i}}.text">
-				{{trim event.text}}
-			</textarea>
+		<label> Event Setup</label>
+		<textarea name="system.events.{{i}}.text">
+			{{trim event.text}}
+		</textarea>
 		<h4> Choices
 			<a class="add-choice">
 				<i class="fa-solid fa-plus"> </i>
@@ -47,6 +44,13 @@
 
 	</div>
 	{{/each}}
+	<div>
+		<h4>Add Event
+			<a class="add-event">
+				<i class="fa-solid fa-plus"> </i>
+			</a>
+		</h4>
+	</div>
 
 </section>
 
