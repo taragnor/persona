@@ -51,7 +51,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 		}
 		const SocialLinks = Object.fromEntries(
 			PersonaDB.allActors()
-			.filter (x=> x.tarot && x.system.type != "shadow")
+			.filter (x=> x.tarot && x.system.type != "shadow" && x.system.type != "tarot")
 			.map( actor=> [actor.id,actor.name])
 		);
 
