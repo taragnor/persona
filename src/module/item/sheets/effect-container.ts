@@ -25,6 +25,8 @@ import { BOOLEAN_COMPARISON_TARGET } from "../../../config/precondition-types.js
 import { COMPARATORS } from "../../../config/precondition-types.js";
 import { SAVE_TYPES_LOCALIZED } from "../../../config/save-types.js";
 import { WEATHER_TYPES } from "../../../config/weather-types.js";
+import { STUDENT_SKILLS } from "../../../config/student-skills.js"
+
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
 	override item: PowerContainer;
@@ -86,6 +88,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			SAVE_DIFFICULTY: SAVE_TYPES_LOCALIZED,
 			WEATHER_TYPES: WEATHER_TYPES,
 			SOCIAL_LINK_OR_TAROT,
+			STUDENT_SKILLS,
 		};
 		return this._powerStuffBase;
 	}

@@ -4,8 +4,8 @@ export const DAYS_LIST = [
 	"Wednesday",
 	"Thursday",
 	"Friday",
+	"Saturday",
 	"Sunday",
-	"Saturday"
 ] as const;
 
 export const DAYS = Object.fromEntries( 

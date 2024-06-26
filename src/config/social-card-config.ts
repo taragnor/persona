@@ -43,6 +43,7 @@ export type CardEvent = {
 	name: string,
 	frequency: number, //defaults to 1
 	text: string,
+	conditions: Precondition[],
 	choices: CardChoice[]
 };
 

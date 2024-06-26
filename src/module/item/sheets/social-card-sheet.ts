@@ -39,7 +39,12 @@ type CardLocationTypes = [
 	},
 	{
 		name: "card-conditions",
-	}
+	},
+	{
+		name: "event-conditions",
+		eventIndex: number
+	},
+
 ];
 import { STUDENT_SKILLS_EXT } from "../../../config/student-skills.js";
 
@@ -175,19 +180,28 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 			}
 		} else if (evTarget.closest(".card-event").length > 0) {
 			const eventIndex= Number(HTMLTools.getClosestData(ev, "eventIndex"));
-			const choiceIndex= Number(HTMLTools.getClosestData(ev, "choiceIndex"));
 			if (evTarget.closest(".card-roll").length > 0) {
+				const choiceIndex= Number(HTMLTools.getClosestData(ev, "choiceIndex"));
 				return {
 					name: "event-choice-roll",
 					eventIndex,
 					choiceIndex,
 				};
 			}
-			return {
-				name: "event-choice-conditions",
-				eventIndex,
-				choiceIndex
-			};
+			if (evTarget.closest(".choice").length > 0) {
+				const choiceIndex= Number(HTMLTools.getClosestData(ev, "choiceIndex"));
+				return {
+					name: "event-choice-conditions",
+					eventIndex,
+					choiceIndex
+				};
+			}
+			if (evTarget.closest(".card-event").length > 0) {
+				return {
+					name: "event-conditions",
+					eventIndex,
+				};
+			}
 		} else if (evTarget.closest(".event-modifiers").length > 0) {
 			return {
 				name: "card-modifiers",
@@ -198,11 +212,10 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 				name: "card-conditions",
 			}
 		}
-	throw new PersonaError("Unknwon Location");
-}
+		throw new PersonaError("Unknwon Location");
+	}
 
 	async addConditional(ev: JQuery.ClickEvent) {
-		debugger;
 		const card = this.item;
 		const location = this.getEffectLocation(ev);
 		const effectIndex = Number(HTMLTools.getClosestDataSafe(ev, "effectIndex", "-1"));

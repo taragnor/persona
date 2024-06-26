@@ -46,7 +46,12 @@
 		<select name="{{strcat namePrefix 'socialLinkIdOrTarot'}}">
 			{{selectOptions POWERSTUFF.SOCIAL_LINK_OR_TAROT localize=true selected=cond.socialLinkIdOrTarot}}
 		</select>
+	{{/if}}
 
+	{{#if (eq cond.comparisonTarget "student-skill")}}
+		<select name="{{strcat namePrefix 'studentSkill'}}">
+			{{selectOptions POWERSTUFF.STUDENT_SKILLS localize=true selected=cond.studentSkill}}
+		</select>
 
 	{{/if}}
 

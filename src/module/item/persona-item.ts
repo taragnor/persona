@@ -281,6 +281,9 @@ const power = PersonaDB.getBasicPower(powerName);
 			case "opportunity-condition": {
 				const array = this.system.opportunity_list;
 				const opportunity = array[location.opportunityIndex];
+				if (opportunity.conditions== undefined) {
+					opportunity.conditions = [];
+				}
 				return {
 					array: opportunity,
 					updater: async () => await this.update({"system.opportunity_list": array})
@@ -319,6 +322,18 @@ const power = PersonaDB.getBasicPower(powerName);
 					},
 				};
 			}
+			case "event-conditions":
+				const list = this.system.events;
+				const event = this.system.events[location.eventIndex];
+				if (event.conditions == undefined) {
+					event.conditions = [];
+				}
+				return {
+					array: event,
+					updater: async () => {
+						await this.update({"system.events": list});
+					},
+				};
 			default:
 				location satisfies never;
 				throw new PersonaError("Shouldn't be able to get here");
@@ -692,7 +707,8 @@ const power = PersonaDB.getBasicPower(powerName);
 			text: "",
 			name: "Unnamed Event",
 			frequency: 1,
-			choices: []
+			choices: [],
+			conditions: [],
 		};
 		this.system.events.push( newEv);
 		this.update({"system.events": this.system.events});

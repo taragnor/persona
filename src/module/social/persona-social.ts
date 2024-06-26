@@ -439,7 +439,7 @@ export class PersonaSocial {
 
 	static #getCardEvent(cardData:CardData) : CardEvent | undefined  {
 		const eventList = cardData.card.system.events
-		.filter( (_ev, i) => !cardData.eventsChosen.includes(i));
+		.filter( (ev, i) => !cardData.eventsChosen.includes(i) && testPreconditions(ev.conditions, cardData.situation, null));
 		if (eventList.length == 0)
 			return undefined;
 		const index =  Math.floor(Math.random() * eventList.length);
