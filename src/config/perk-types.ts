@@ -1,6 +1,7 @@
 export const PERK_TYPES_LIST =[
 	"standard",
 	"standard-or-cameo",
+	"card-or-cameo",
 	"custom-only",
 	"standard-or-custom",
 	"standard-or-date",

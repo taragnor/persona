@@ -349,8 +349,12 @@ export class PersonaSocial {
 			case "standard-or-cameo":
 				return "Choose One: <br>" +
 					[link].concat(cameos)
-				.map( x=> `* ${x.perk}`)
-				.join("<br>");
+					.map( x=> `* ${x.perk}`)
+					.join("<br>");
+			case "card-or-cameo":
+				return "Choose One: <br>" +
+					[card.system.perk].concat(cameos.map( x=> `* ${x.perk}`))
+					.join("<br>");
 			case "custom-only":
 				return card.system.perk;
 			case "standard-or-custom":

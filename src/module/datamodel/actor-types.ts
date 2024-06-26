@@ -1,7 +1,6 @@
 const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
 import { TokenSpend } from "../../config/social-card-config.js";
 import { Precondition } from "../../config/precondition-types.js";
-import { AVAILABILITY_LIST } from "../../config/availability-types.js";
 import { ResistType } from "../../config/damage-types.js";
 import { INCREMENTAL_ADVANCE_TYPES } from "../../config/incremental-advance-types.js";
 

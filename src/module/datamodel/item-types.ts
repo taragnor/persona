@@ -149,7 +149,6 @@ class JobItemSchema extends foundry.abstract.DataModel {
 			perk: new txt(),
 			critical: new txt(),
 			active: new bool({initial: false}),
-			availability: new txt({choices: AVAILABILITY_LIST, initial: "-"}),
 			bane: new txt(),
 			tokenSpends:new arr(new obj<TokenSpend>()),
 		}
