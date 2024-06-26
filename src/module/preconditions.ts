@@ -114,6 +114,9 @@ function numericComparison(condition: Precondition, situation: Situation, source
 					.find(x=> x.tarot == condition.socialLinkIdOrTarot);
 				if (actor) {
 					specifiedTarget=actor;
+				} else {
+					target =  0;
+					break;
 				}
 			}
 			if (!source && !situation.socialTarget)  return false;
