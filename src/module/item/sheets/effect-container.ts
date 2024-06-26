@@ -47,6 +47,20 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 		if (this._powerStuffBase)  {
 			return this._powerStuffBase;
 		}
+		const SocialLinks = Object.fromEntries(
+			PersonaDB.allActors()
+			.filter (x=> x.tarot && x.system.type != "shadow")
+			.map( actor=> [actor.id,actor.name])
+		);
+
+		const SOCIAL_LINK_OR_TAROT =
+		{
+			...TAROT_DECK,
+			...SocialLinks,
+			"" : "current Social Target",
+		};
+
+
 		this._powerStuffBase = {
 			TAROT_DECK,
 			NUMERIC_COMPARISON_TARGET,
@@ -71,6 +85,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			SLOT_TYPES_EXPANDED: SLOT_TYPES_EXPANDED,
 			SAVE_DIFFICULTY: SAVE_TYPES_LOCALIZED,
 			WEATHER_TYPES: WEATHER_TYPES,
+			SOCIAL_LINK_OR_TAROT,
 		};
 		return this._powerStuffBase;
 	}

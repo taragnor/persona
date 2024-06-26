@@ -105,8 +105,20 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (!situation.user) return false;
 			const actor = PersonaDB.findActor(situation.user);
 			if (!actor  || actor.system.type =="shadow") return false;
+
+			let specifiedTarget : PersonaActor | null = null;
+			if (condition.socialLinkIdOrTarot) {
+				const actor  = PersonaDB.allActors()
+					.find( x=> x.id == condition.socialLinkIdOrTarot)
+					?? PersonaDB.allActors()
+					.find(x=> x.tarot == condition.socialLinkIdOrTarot);
+				if (actor) {
+					specifiedTarget=actor;
+				}
+			}
 			if (!source && !situation.socialTarget)  return false;
-			const socialTarget = source?.parent
+			const socialTarget = specifiedTarget ??
+			source?.parent
 			?? (
 				situation.socialTarget
 				? PersonaDB.findActor(situation?.socialTarget)
@@ -169,7 +181,6 @@ function numericComparison(condition: Precondition, situation: Situation, source
 	}
 	return false;
 }
-
 function triggerComparison(condition: Triggered, situation: Situation, _source:Option<PowerContainer>) : boolean {
 	if (!situation.trigger) return false;
 	if (condition.trigger != situation.trigger) return false;
@@ -353,6 +364,7 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 		case "weather-is":
 			const weather = PersonaCalendar.getWeather();
 			return condition.weatherComparison == weather;
+
 		default :
 			condition satisfies never;
 			return undefined;

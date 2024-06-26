@@ -43,7 +43,7 @@ export class PCSheet extends CombatantSheetBase {
 				//create a social link
 				await this.actor.createSocialLink(actor as NPC)
 				return undefined;
-			default: 
+			default:
 				actor.system satisfies never;
 				throw new Error(`Unknown unsupported type ${actor.type}`);
 		}

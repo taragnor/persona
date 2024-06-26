@@ -202,6 +202,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 }
 
 	async addConditional(ev: JQuery.ClickEvent) {
+		debugger;
 		const card = this.item;
 		const location = this.getEffectLocation(ev);
 		const effectIndex = Number(HTMLTools.getClosestDataSafe(ev, "effectIndex", "-1"));

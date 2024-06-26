@@ -69,6 +69,7 @@ type NumericComparisonPC = {
 	comparisonTarget : NumericComparisonTarget,
 	studentSkill ?: SocialStat;
 	num ?: number,
+	socialLinkIdOrTarot ?: TarotCard | string;
 }
 
 export type BooleanComparisonPC = {

@@ -289,7 +289,7 @@ const power = PersonaDB.getBasicPower(powerName);
 			case "event-choice-roll": {
 				const list = this.system.events;
 				const event = list[location.eventIndex];
-				event.choices = ArrayCorrector(event.choices);
+				event.choices = ArrayCorrector(event.choices  ?? []);
 				const choice = event.choices[location.choiceIndex];
 				const roll = choice.roll;
 				(roll as any).effects = (roll as any).effects ?? [];
@@ -309,6 +309,9 @@ const power = PersonaDB.getBasicPower(powerName);
 			case "event-choice-conditions": {
 				const list = this.system.events;
 				const choice  =this.system.events[location.eventIndex!].choices[location.choiceIndex];
+				if (choice.conditions == undefined) {
+					choice.conditions = [];
+				}
 				return {
 					array: choice,
 					updater: async () => {
