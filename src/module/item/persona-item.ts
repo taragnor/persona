@@ -496,16 +496,13 @@ const power = PersonaDB.getBasicPower(powerName);
 	}
 
 	async addCondition(this: PowerContainer, effectIndex: number) : Promise<void>;
-	async addCondition(this: SocialCard, effectIndex: number, location: CardEffectLocation): Promise<void>;
-	async addCondition(this: SocialCard | PowerContainer, effectIndex: number, location?: CardEffectLocation): Promise<void>
+	async addCondition(this: SocialCard | Job, effectIndex: number, location: CardEffectLocation): Promise<void>;
+	async addCondition(this: SocialCard | PowerContainer | Job, effectIndex: number, location?: CardEffectLocation): Promise<void>
 	{
-		if (this.system.type != "socialCard") {
+		if (!location) {
 			return await (this as PowerContainer).addNewPowerPrecondition(effectIndex);
 		}
 
-		if (!location) {
-			throw new PersonaError("No location");
-		}
 		const {array, updater} =  (this as SocialCard).createConditionalEffectUpdater(location);
 		if ("conditions" in array) {
 			this.#appendNewPrecondition(array);
@@ -524,13 +521,10 @@ const power = PersonaDB.getBasicPower(powerName);
 	}
 
 	async deleteCondition(this: PowerContainer, effectIndex: number, condIndex: number): Promise<void>;
-	async deleteCondition(this: SocialCard,  effectIndex: number, condIndex: number, location: CardEffectLocation): Promise<void>;
-	async deleteCondition(this: SocialCard | PowerContainer, effectIndex: number, condIndex: number, location?: CardEffectLocation): Promise<void> {
-		if (this.system.type != "socialCard") {
-			return await (this as PowerContainer).deletePowerPrecondition(effectIndex, condIndex);
-		}
+	async deleteCondition(this: SocialCard | Job,  effectIndex: number, condIndex: number, location: CardEffectLocation): Promise<void>;
+	async deleteCondition(this: SocialCard | PowerContainer | Job, effectIndex: number, condIndex: number, location?: CardEffectLocation): Promise<void> {
 		if (!location) {
-			throw new PersonaError("No location given");
+			return await (this as PowerContainer).deletePowerPrecondition(effectIndex, condIndex);
 		}
 		const {array, updater} =  (this as SocialCard).createConditionalEffectUpdater(location);
 		if ("conditions" in array) {

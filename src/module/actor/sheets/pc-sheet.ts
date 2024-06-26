@@ -1,3 +1,4 @@
+import { testPreconditions } from "../../preconditions.js";
 import { PersonaSounds } from "../../persona-sounds.js";
 import { Logger } from "../../utility/logger.js";
 import { PersonaError } from "../../persona-error.js";
@@ -73,8 +74,11 @@ export class PCSheet extends CombatantSheetBase {
 				else return [];
 			})),
 		};
+		const situation = {
+			user: this.actor.accessor
+		};
 		data.jobs = PersonaDB.allJobs()
-		.filter( job => job.system.weeklyAvailability.available);
+		.filter( job => job.system.weeklyAvailability.available && testPreconditions(job.system.conditions, situation, null) );
 		return data;
 	}
 
