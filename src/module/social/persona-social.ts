@@ -496,7 +496,7 @@ export class PersonaSocial {
 	static async #finalizeCard( cardData: CardData) : Promise<ChatMessage<Roll>> {
 		let html = "";
 		const tokenSpends = (cardData.card.system.tokenSpends ?? [])
-		.concat(cardData.activity.system.tokenSpends ?? [])
+		.concat(cardData.activity != cardData.card ?  cardData.activity.system.tokenSpends ?? [] : [])
 		.filter( spend => testPreconditions(spend.conditions ?? [], cardData.situation, null))
 		.map(x=> `spend ${x.amount} progress tokens to ${x.text}.`)
 		.map(x=> `<li class="token-spend"> ${x} </li>`);

@@ -76,7 +76,13 @@
 			{{#if (eq item.system.dc.thresholdType "static")}}
 			{{numberInput item.system.dc.num class="short" name="system.dc.num" step=1 min=10 max=50}}
 			{{else}}
+			<label>
+				Starting Value
+			</label>
 			{{numberInput item.system.dc.startingVal class="short" name="system.dc.startingVal" step=1 min=10 max=50}}
+			<label>
+				Level Multiplier
+			</label>
 			{{numberInput item.system.dc.multiplier class="short" name="system.dc.multiplier" step=1 min=1 max=10}}
 			{{/if}}
 		</div>
