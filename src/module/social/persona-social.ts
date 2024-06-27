@@ -535,11 +535,14 @@ export class PersonaSocial {
 			}
 
 		}
-		debugger;
 		if (activity instanceof PersonaItem) {
-				await actor.addNewActivity(activity);
-			}
-		//TODO: mark shit unavailable if you chnoose it and it's not trainign
+			await actor.addNewActivity(activity);
+			if (activity.system.cardType == "job")
+				await activity.setAvailability(false);
+		}
+		if (activity instanceof PersonaActor) {
+			await activity.setAvailability(false);
+		}
 		this.#socialEncounter(actor, activity);
 	}
 
