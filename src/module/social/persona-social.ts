@@ -653,7 +653,7 @@ export class PersonaSocial {
 				const link = this.lookupLink(cardData);
 				const activityOrActor = "actor" in link ? link.actor: link.activity;
 				const skill = this.resolvePrimarySecondarySocialStat(cardRoll.studentSkill, activityOrActor);
-				const roll = await this.rollSocialStat(cardData.actor, skill, modifiers, `Card Roll (${skill} ${cardRoll.modifier} vs DC ${DC})`,  cardData.situation);
+				const roll = await this.rollSocialStat(cardData.actor, skill, modifiers, `Card Roll (${skill} ${cardRoll.modifier || ""} vs DC ${DC})`,  cardData.situation);
 				await roll.toModifiedMessage();
 				const situation : Situation = {
 					...cardData.situation,
@@ -772,7 +772,7 @@ Hooks.on("socketsReady" , () => {PersonaSockets.setHandler("DEC_AVAILABILITY", (
 window.PersonaSocial = PersonaSocial
 
 Hooks.on("updateActor", async (_actor: PersonaActor, changes) => {
-	if ((changes as any)?.system?.availability) {
+	if ((changes as any)?.system?.weeklyAvailability) {
 		(game.actors.contents as PersonaActor[])
 			.filter(x=> x.system.type =="pc"
 			&& x.sheet._state > 0)
@@ -781,7 +781,7 @@ Hooks.on("updateActor", async (_actor: PersonaActor, changes) => {
 });
 
 Hooks.on("updateItem", async (_item: PersonaItem, changes) => {
-	if ((changes as any)?.system?.availability) {
+	if ((changes as any)?.system?.weeklyAvailability) {
 		(game.actors.contents as PersonaActor[])
 			.filter(x=> x.system.type =="pc"
 			&& x.sheet._state > 0)
