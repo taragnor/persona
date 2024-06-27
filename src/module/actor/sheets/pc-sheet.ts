@@ -293,10 +293,10 @@ export class PCSheet extends CombatantSheetBase {
 
 async drawActivityCard (event: JQuery.ClickEvent) {
 	const activityId= String(HTMLTools.getClosestData(event, "activityId"));
-	const link = PersonaSocial.lookupActivity(this.actor, activityId);
-	if (link &&
+	const activity = PersonaDB.allActivities().find(x => x.id == activityId);
+	if (activity &&
 		await HTMLTools.confirmBox("Social Card", "Draw Activity Card?")) {
-		await PersonaSocial.chooseActivity(this.actor, link.activity, {noDegrade:true})
+		await PersonaSocial.chooseActivity(this.actor, activity, {noDegrade:true})
 	}
 }
 	async drawSocialCard(event: JQuery.ClickEvent) {

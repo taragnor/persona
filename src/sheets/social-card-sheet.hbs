@@ -49,6 +49,7 @@
 	{{/if}}
 	{{#if (ne item.system.cardType "social")}}
 	<section class="non-social-attributes">
+		{{> "systems/persona/parts/weekly-availability.hbs" item=item CONST=CONST}}
 		<div class="primary">
 			<label>
 				Primary Skill

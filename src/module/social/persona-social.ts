@@ -535,6 +535,7 @@ export class PersonaSocial {
 			}
 
 		}
+		debugger;
 		if (activity instanceof PersonaItem) {
 				await actor.addNewActivity(activity);
 			}

@@ -13,7 +13,7 @@ import { SOCIAL_CARD_TYPES } from "../../../config/social-card-config.js";
 import { SOCIAL_CARD_ROLL_TYPES } from "../../../config/social-card-config.js";
 import { STUDENT_SKILLS } from "../../../config/student-skills.js";
 import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
-import { PersonaItemSheetBase } from "./base-item-sheet.js";
+import { DAYS } from "../../../config/days.js";
 import { SAVE_TYPES_LOCALIZED } from "../../../config/save-types.js";
 
 type CardLocationTypes = [
@@ -64,6 +64,9 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		const data = await super.getData();
 		data.THRESHOLD_TYPE = THRESHOLD_TYPE;
 		data.POWERSTUFF =  PersonaEffectContainerBaseSheet.powerStuff;
+		data.CONST = {
+			DAYS
+		};
 		data.SOCIAL_DATA = {
 			ROLLTYPES : SOCIAL_CARD_ROLL_TYPES,
 			STUDENT_SKILLS,
