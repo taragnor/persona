@@ -1,6 +1,6 @@
-import { PersonaSocial } from "./social/persona-social.js";
-import { CardData } from "./social/persona-social.js";
 import { Situation } from "./preconditions.js";
+import { Activity } from "./item/persona-item.js";
+import { CardData } from "./social/persona-social.js";
 import { testPreconditions } from "./preconditions.js";
 import { Precondition } from "../config/precondition-types.js";
 import { Focus } from "./item/persona-item.js";
@@ -160,11 +160,21 @@ export class PersonaHandleBarsHelpers {
 				return str.trim();
 			else return str;
 		},
+
 		"meetsConditions" : function (cardData: CardData, conditions: Precondition[]) : boolean {
 			return testPreconditions(conditions ?? [], cardData.situation, null);
-		}
+		},
+
+		"isActivitySelectable": function (pc: PC, activity: Activity): boolean {
+			if (!activity.system.weeklyAvailability.available)
+				return false;
+			const situation : Situation=  {
+				user: pc.accessor
+		};
+			return testPreconditions(activity.system.conditions, situation, null);
+	}
+
 	}
 
 } //end of class
-
 

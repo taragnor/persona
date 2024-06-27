@@ -62,7 +62,6 @@ export type ActivityData = {
 	linkId: string,
 	strikes: number,
 	currentProgress: number,
-	relationshipType: string,
 }
 
 function elementalResists() {

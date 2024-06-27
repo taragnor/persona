@@ -9,8 +9,9 @@ import { PersonaDB } from "../../persona-db.js";
 import { DAYS } from "../../../config/days.js";
 import { SOCIAL_CARD_TYPES } from "../../../config/social-card-config.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
+import { PersonaItemSheetBase } from "./base-item-sheet.js";
 
-export class PersonaJobSheet extends PersonaSocialSheetBase {
+export class PersonaJobSheet extends PersonaItemSheetBase {
 	override item: Job;
 
 	override async getData() {

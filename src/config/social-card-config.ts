@@ -102,24 +102,31 @@ type CardPrereqList = {
 
 };
 
-export type ThresholdOrDC= ThresholdList[keyof ThresholdList];
+export type ThresholdOrDC= ThresholdList[number] & {thresholdType: ThresholdType};
 
-type ThresholdList = {
-	"static" : {
+type ThresholdList = [
+	{
 		thresholdType: "static",
 		num: number
 	},
-	"levelScaled": {
+	{
 		thresholdType: "levelScaled",
 		startingVal: number,
 		multiplier: number,
 	},
-	"SL_based": {
-		thresholdType: "SL_Based",
-		startingVal: number,
-		multiplier: number,
-	}
-}
+];
+
+const THRESHOLD_TYPE_LIST = [
+	"static",
+	"levelScaled"
+] as const;
+
+type ThresholdType = typeof THRESHOLD_TYPE_LIST[number]
+
+export const THRESHOLD_TYPE = Object.fromEntries (
+	THRESHOLD_TYPE_LIST.map (x=> [x, `persona.social.card.thresholdType.${x}`])
+);
+
 
 export type TokenSpend = {
 	conditions: Precondition[],

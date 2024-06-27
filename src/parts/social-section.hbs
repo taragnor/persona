@@ -198,7 +198,7 @@
 	<h2> Jobs </h2>
 	{{#each jobs as |job|}}
 	<div class="job" data-activity-id="{{job.id}}">
-		{{#if job.system.weeklyAvailability.available}}
+		{{#if (isActivitySelectable ../actor job)}}
 		<span class="social-command social-card">
 		<a class="draw-activity-card" title="Draw Activity card">
 			<i class="fa-regular fa-id-card"></i>

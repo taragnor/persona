@@ -20,31 +20,67 @@
 	 </select>
 	</div>
 
-	  <section class="qualifiers">
-		  <div class="header"> Qualifiers
-			  <a class="add-qualifier">
-				  <i class="fa-solid fa-square-plus"></i>
-			  </a>
-		  </div>
-		  {{#each item.system.qualifiers as |qual i|}}
-		  <div class="qualifier" data-qualifier-index="{{i}}">
-			  <label for="qualname-{{i}}">
-				  Name
-			  </label>
-			  <input id="qualname-{{i}}" class="name" name="system.qualifiers.{{i}}.relationshipName" type="text" list="qualifiers-{{i}}" value="{{qual.relationshipName}}">
-			  <datalist id="qualifiers-{{i}}">
-				  {{#each ../QUALIFIERS_NAME_LIST as |item|}}
-				  <option> {{item}}</option>
-				  {{/each}}
-			  </datalist>
-			  <input class="short" type="number" name="system.qualifiers.{{i}}.min" value="{{qual.min}}">
-			  <input class="short" type="number" name="system.qualifiers.{{i}}.max" value="{{qual.max}}">
-			  <a class="delete-qualifier">
-				  <i class="fa-solid fa-trash"></i>
-			  </a>
-		  </div>
-		  {{/each}}
-	  </section>
+	{{#if (eq item.system.cardType "social")}}
+	<section class="qualifiers">
+		<div class="header"> Qualifiers
+			<a class="add-qualifier">
+				<i class="fa-solid fa-square-plus"></i>
+			</a>
+		</div>
+		{{#each item.system.qualifiers as |qual i|}}
+		<div class="qualifier" data-qualifier-index="{{i}}">
+			<label for="qualname-{{i}}">
+				Name
+			</label>
+			<input id="qualname-{{i}}" class="name" name="system.qualifiers.{{i}}.relationshipName" type="text" list="qualifiers-{{i}}" value="{{qual.relationshipName}}">
+			<datalist id="qualifiers-{{i}}">
+				{{#each ../QUALIFIERS_NAME_LIST as |item|}}
+				<option> {{item}}</option>
+				{{/each}}
+			</datalist>
+			<input class="short" type="number" name="system.qualifiers.{{i}}.min" value="{{qual.min}}">
+			<input class="short" type="number" name="system.qualifiers.{{i}}.max" value="{{qual.max}}">
+			<a class="delete-qualifier">
+				<i class="fa-solid fa-trash"></i>
+			</a>
+		</div>
+		{{/each}}
+	</section>
+	{{/if}}
+	{{#if (ne item.system.cardType "social")}}
+	<section class="non-social-attributes">
+		<div class="primary">
+			<label>
+				Primary Skill
+			</label>
+			<select name="system.keyskill.primary">
+				{{selectOptions SOCIAL_DATA.STUDENT_SKILLS localize=true selected=item.system.keyskill.primary}}
+			</select>
+		</div>
+		<div class="secondary">
+			<label>
+				Secondary Skill
+			</label>
+			<select name="system.keyskill.secondary">
+				{{selectOptions SOCIAL_DATA.STUDENT_SKILLS localize=true selected=item.system.keyskill.secondary}}
+			</select>
+		</div>
+		<div class="dc">
+			<label>
+				DC
+			</label>
+			<select name="system.dc.thresholdType">
+				{{selectOptions THRESHOLD_TYPE localize=true selected=item.system.dc.thresholdType}}
+			</select>
+			{{#if (eq item.system.dc.thresholdType "static")}}
+			{{numberInput item.system.dc.num class="short" name="system.dc.num" step=1 min=10 max=50}}
+			{{else}}
+			{{numberInput item.system.dc.startingVal class="short" name="system.dc.startingVal" step=1 min=10 max=50}}
+			{{numberInput item.system.dc.multiplier class="short" name="system.dc.multiplier" step=1 min=1 max=10}}
+			{{/if}}
+		</div>
+	</section>
+	{{/if}}
 
   <div class="automatic">
 	  <h4>Automatic</h4>

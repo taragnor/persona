@@ -16,9 +16,7 @@ import { PersonaCombat } from "../combat/persona-combat.js";
 import { CombatResult } from "../combat/combat-result.js";
 import { NonCombatTrigger } from "../../config/triggers.js";
 import { SocialLink } from "../actor/persona-actor.js";
-import { Job } from "../item/persona-item.js";
 import { PersonaItem } from "../item/persona-item.js";
-import { NPC } from "../actor/persona-actor.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../config/persona-settings.js";
 import { SocialCard } from "../item/persona-item.js";
@@ -123,7 +121,7 @@ export class PersonaSocial {
 		await Logger.sendToChat(`<b>${pc.name}:</b> Raised ${socialStat} by ${amount}`, pc);
 	}
 
-	static resolvePrimarySecondarySocialStat(choice: StudentSkillExt, link: SocialLink | Job) : StudentSkill {
+	static resolvePrimarySecondarySocialStat(choice: StudentSkillExt, link: SocialLink | Activity) : StudentSkill {
 		switch (choice) {
 			case "primary":
 			case "secondary":
@@ -186,10 +184,7 @@ export class PersonaSocial {
 
 	static validSocialCards(actor: PC, activity: Activity | SocialLink) : SocialCard[] {
 		if (activity instanceof PersonaItem) {
-			return PersonaDB.allSocialCards()
-				.filter(card=> card.system.qualifiers
-					.some(x=> x.relationshipName == activity.system.baseRelationship)
-				);
+			return [activity];
 		}
 		const link = this.lookupSocialLink(actor, activity.id)
 		const situation : Situation= {
@@ -524,8 +519,8 @@ export class PersonaSocial {
 		return msg;
 	}
 
-	static async chooseActivity(actor: PC, activity: SocialLink | Activity, options: ActivityOptions = {}) {
-		if (actor.hasStatus("exhausted") && activity instanceof PersonaItem && activity.system.subtype == "training") {
+	static async chooseActivity(actor: PC, activity: SocialLink | Activity, _options: ActivityOptions = {}) {
+		if (actor.hasStatus("exhausted") && activity instanceof PersonaItem && activity.system.cardType == "training") {
 			ui.notifications.warn("You're currently unable to take this action, you must recover first");
 			return;
 		}
@@ -534,7 +529,7 @@ export class PersonaSocial {
 				ui.notifications.warn("You're currently unable to take this action, you must recover first");
 				return;
 			}
-			if (activity.system.subtype != "recovery") {
+			if (activity.system.cardType != "recovery") {
 				ui.notifications.warn("You're currently unable to take this action, you must recover first");
 				return;
 			}
@@ -598,17 +593,22 @@ export class PersonaSocial {
 	static getBaseSkillDC (cardData: CardData) : number {
 		const ctype = cardData.card.system.cardType;
 		switch (ctype) {
-			case "job":
-				const activity = this.lookupActivity(cardData.actor, cardData.linkId);
-				return activity.activity.system.dc;
 			case "social":
 				const link = this.lookupSocialLink(cardData.actor, cardData.linkId);
 				return 10 + link.linkLevel * 2;
 			case "training":
 			case "other":
-				return 10 + cardData.actor.system.combat.classData.level * 2;
+			case "job":
 			case "recovery":
-				return 20;
+				switch (cardData.card.system.dc.thresholdType) {
+					case "static":
+						return cardData.card.system.dc.num;
+					case "levelScaled":
+						return cardData.card.system.dc.multiplier * cardData.actor.system.combat.classData.level + cardData.card.system.dc.startingVal;
+					default:
+						cardData.card.system.dc satisfies never;
+						return 20;
+				}
 			default:
 				ctype satisfies never;
 				throw new PersonaError("Should be unreachable");
@@ -798,7 +798,7 @@ export type CardData = {
 	card: SocialCard,
 	actor: PC,
 	linkId: string,
-	activity: Job | SocialLink,
+	activity: Activity | SocialLink,
 	cameos: SocialLink[],
 	perk: string,
 	eventsChosen: number[],

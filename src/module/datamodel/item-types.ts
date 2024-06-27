@@ -160,6 +160,9 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 	get type() { return "socialCard" as const;}
 	static override defineSchema() {
 		const ret = {
+			cardType: new txt({initial: "social", choices: SOCIAL_CARD_TYPES_LIST}),
+			//for social cards
+
 			qualifiers: new arr( new obj<{
 				relationshipName: string,
 				min: number,
@@ -167,20 +170,21 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 			}>({
 				initial: {relationshipName: "Unnamed Relationship", min:0, max:0}
 			}), {initial: []}),
-			conditions: new arr(new obj<Precondition>()),
-			cardType: new txt({initial: "social", choices: SOCIAL_CARD_TYPES_LIST}),
+			//for nonsocial cards
 			dc: new obj<ThresholdOrDC>( {
 				initial: {
 					thresholdType: "static",
 					num: 0
 				},
 			}),
-			threshold: new obj<ThresholdOrDC>( {
-				initial: {
-					thresholdType: "static",
-					num: 0
-				},
+			keyskill: new sch({
+				primary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
+				secondary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
 			}),
+			weeklyAvailability: weeklyAvailability(),
+
+			//for all cards
+			conditions: new arr(new obj<Precondition>()),
 			availabilityConditions: new arr(new obj<Precondition>()),
 			num_of_events: new num({initial: 0, min:0, max: 5, integer:true}),
 			events: new arr( new obj<CardEvent>()),

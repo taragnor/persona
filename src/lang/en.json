@@ -101,6 +101,10 @@
 	"persona.status.bonus-action" : "Bonus Action",
 	"persona.status.magic-charge" : "Magic Charge",
 	"persona.status.power-charge" : "Power Charge",
+	"persona.status.injured" : "Injured",
+	"persona.status.crippled" : "Crippled",
+	"persona.status.exhausted" : "Exhausted",
+	"persona.status.jailed" : "Imprisoned",
 
 	"persona.damage.low": "Low",
 	"persona.damage.high": "High",
@@ -428,6 +432,8 @@
 	"persona.weather.windy": "Windy",
 	"persona.weather.snow": "Snow",
 
+	"persona.social.card.thresholdType.static": "Static",
+	"persona.social.card.thresholdType.levelScaled": "Level Scaled",
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",

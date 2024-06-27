@@ -692,7 +692,7 @@ const power = PersonaDB.getBasicPower(powerName);
 		return this.system.weeklyAvailability.available;
 	}
 
-	async setAvailability(this: Job, bool: boolean) {
+	async setAvailability(this: SocialCard, bool: boolean) {
 		await	this.update( {"system.weeklyAvailability.available": bool});
 	}
 
@@ -787,7 +787,7 @@ export type Talent = Subtype<PersonaItem, "talent">;
 export type Focus = Subtype<PersonaItem, "focus">;
 export type Consumable = Subtype<PersonaItem, "consumable">;
 export type Job = Subtype<PersonaItem, "job">;
-export type Activity = Job;
+export type Activity = SocialCard;
 export type SocialCard = Subtype<PersonaItem, "socialCard">;
 
 export type UniversalModifier = Subtype<PersonaItem, "universalModifier">;

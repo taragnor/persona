@@ -1,11 +1,9 @@
 import { HTMLTools } from "../../utility/HTMLTools.js";
-import { ArrayCorrector } from "../persona-item.js";
 import { PersonaItemSheetBase } from "./base-item-sheet.js";
-import { Job } from "../persona-item.js";
 import { SocialCard } from "../persona-item.js";
 
 export class PersonaSocialSheetBase extends PersonaItemSheetBase {
-	override item: Job | SocialCard;
+	override item: SocialCard;
 
 
 	override activateListeners(html: JQuery<HTMLElement>) {

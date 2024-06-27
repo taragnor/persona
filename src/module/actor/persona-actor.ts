@@ -326,7 +326,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			linkId: activity.id,
 			strikes: 0,
 			currentProgress: 0,
-			relationshipType: activity.system.baseRelationship
 		};
 		act.push( item);
 		await this.update( {"system.activities": act});
@@ -343,7 +342,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				available: activity.isAvailable(this as PC),
 				currentProgress: aData.currentProgress,
 				activity,
-				relationshipType: aData.relationshipType,
 			}
 			return aLink;
 		});
@@ -1559,7 +1557,6 @@ export type ActivityLink = {
 	available: boolean,
 	activity: Activity,
 	currentProgress: number,
-	relationshipType: string,
 }
 
 export type SocialLinkData = {

@@ -1,3 +1,4 @@
+import { THRESHOLD_TYPE } from "../../../config/social-card-config.js";
 import { PersonaSocialSheetBase } from "./social-sheet-base.js";
 import { Opportunity } from "../../../config/social-card-config.js";
 import { PersonaError } from "../../persona-error.js";
@@ -61,6 +62,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 
 	override async getData() {
 		const data = await super.getData();
+		data.THRESHOLD_TYPE = THRESHOLD_TYPE;
 		data.POWERSTUFF =  PersonaEffectContainerBaseSheet.powerStuff;
 		data.SOCIAL_DATA = {
 			ROLLTYPES : SOCIAL_CARD_ROLL_TYPES,
