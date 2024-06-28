@@ -439,10 +439,21 @@ export class PersonaSocial {
 	static #getCardEvent(cardData:CardData) : CardEvent | undefined  {
 		const eventList = cardData.card.system.events
 		.filter( (ev, i) => !cardData.eventsChosen.includes(i) && testPreconditions(ev.conditions, cardData.situation, null));
+		const eventScaled = eventList.map( ev=> [ev, ev.frequency * 1000] as [typeof ev, number]);
+		const eventTotal = eventScaled.reduce ( (acc, [_x, score])=> acc+score, 0);
 		if (eventList.length == 0)
 			return undefined;
-		const index =  Math.floor(Math.random() * eventList.length);
-		const ev = eventList[index];
+		let choice = Math.floor(Math.random() * eventTotal);
+		let ev : CardEvent;
+		do {
+			const entry = eventScaled.pop()!;
+			choice -= entry[1];
+			ev = entry[0];
+		} while (choice > 0);
+		if (!ev) {
+			PersonaError.softFail("Somehow got no event");
+			return ev;
+		}
 		cardData.eventsChosen.push(cardData.card.system.events.indexOf(ev));
 		return ev;
 	}
