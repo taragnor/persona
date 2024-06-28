@@ -114,11 +114,17 @@ type ThresholdList = [
 		startingVal: number,
 		multiplier: number,
 	},
+	{
+		thresholdType: "statScaled",
+		stat: SocialStat,
+
+	}
 ];
 
 const THRESHOLD_TYPE_LIST = [
 	"static",
-	"levelScaled"
+	"levelScaled",
+	"statScaled",
 ] as const;
 
 type ThresholdType = typeof THRESHOLD_TYPE_LIST[number]

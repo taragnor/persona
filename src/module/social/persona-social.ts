@@ -620,6 +620,9 @@ export class PersonaSocial {
 						return cardData.card.system.dc.num;
 					case "levelScaled":
 						return cardData.card.system.dc.multiplier * cardData.actor.system.combat.classData.level + cardData.card.system.dc.startingVal;
+					case "statScaled":
+						const stat = cardData.card.system.dc.stat;
+						return 10 + (cardData.actor.system.skills[stat] ?? -999);
 					default:
 						cardData.card.system.dc satisfies never;
 						return 20;

@@ -435,6 +435,7 @@
 
 	"persona.social.card.thresholdType.static": "Static",
 	"persona.social.card.thresholdType.levelScaled": "Level Scaled",
+	"persona.social.card.thresholdType.statScaled": "10 + social stat",
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",
