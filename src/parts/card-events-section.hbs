@@ -31,18 +31,19 @@
 		<textarea name="system.events.{{i}}.text">
 			{{trim event.text}}
 		</textarea>
-		<h4> Choices
-			<a class="add-choice">
-				<i class="fa-solid fa-plus"> </i>
-			</a>
-		</h4>
-
-
+		<h3> Choices </h3>
 		{{#each event.choices as |choice j|}}
 		{{> "systems/persona/parts/input-card-choice.hbs" CONST=../../SOCIAL_DATA POWERSTUFF=../../item.sheet.powerStuff namePrefix=(strcat "system.events." i ".choices." j ".") choiceIndex=j item=../../item choice=choice}}
 		{{/each}}
-
+		<div>
+			<label>Add Choice
+				<a class="add-choice">
+					<i class="fa-solid fa-plus"> </i>
+				</a>
+			</label>
+		</div>
 	</div>
+
 	{{/each}}
 	<div>
 		<h4>Add Event
