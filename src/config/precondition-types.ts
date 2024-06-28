@@ -181,6 +181,7 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"social-link-level",
 	"student-skill",
 	"character-level",
+	"has-resources"
 ] as const;
 
 export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];

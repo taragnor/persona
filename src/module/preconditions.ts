@@ -165,6 +165,13 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			target= actor.system.combat.classData.level;
 			break;
 		}
+		case "has-resources": {
+			if (!situation.user) return false;
+			const actor = PersonaDB.findActor(situation.user);
+			if (actor.system.type != "pc") return false;
+			target = actor.system.money;
+			break;
+		}
 		default:
 			condition.comparisonTarget satisfies undefined;
 			PersonaError.softFail(`Unknwon numeric comparison type ${condition.comparisonTarget}`)

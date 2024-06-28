@@ -348,6 +348,7 @@
 	"persona.preconditions.comparison.talent-level": "Talent Level",
 	"persona.preconditions.comparison.social-link-level": "Social Link Level",
 	"persona.preconditions.comparison.character-level": "Character Level",
+	"persona.preconditions.comparison.has-resources": "Resouce Points",
 	"persona.preconditions.comparison.student-skill": "Rank in Student Skill",
 	"persona.preconditions.comparison.engaged": "Is Engaged",
 	"persona.preconditions.comparison.engaged-with": "Is Engaged With Attacker",
