@@ -113,8 +113,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 					?? PersonaDB.allActors()
 					.find(x=> x.tarot == condition.socialLinkIdOrTarot);
 				if (targetActor) {
-					specifiedTarget=targetActor;
-					target = actor.socialLinks.find(sl => sl.actor == specifiedTarget)?.linkLevel ?? 0;
+					target = actor.system.social.find(x=> x.linkId == targetActor.id)?.linkLevel ?? 0;
 					break;
 				} else {
 					target =  0;
