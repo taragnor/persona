@@ -1072,6 +1072,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
+	async activityStrikes(this: PC, activityId: string, strikes: number) {
+		const activityData = this.system.activities.find( x=> x.linkId == activityId);
+		if (!activityData) {
+			throw new PersonaError("Trying to increase activty you don't have");
+		}
+		const orig = activityData.strikes;
+		activityData.strikes = Math.max(0,strikes + activityData.strikes);
+		await this.update({"system.activities": this.system.activities});
+		const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
+		await Logger.sendToChat(`${this.name} added ${strikes} strikes to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this);
+	}
+
 	async refreshSocialLink(this: PC, npc: SocialLink) {
 		const link = this.system.social.find( x=> x.linkId == npc.id);
 		if (!link) {

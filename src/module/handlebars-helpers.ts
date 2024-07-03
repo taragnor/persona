@@ -168,6 +168,8 @@ export class PersonaHandleBarsHelpers {
 		"isActivitySelectable": function (pc: PC, activity: Activity): boolean {
 			if (!activity.system.weeklyAvailability.available)
 				return false;
+			if ((pc.system.activities.find( act=> act.linkId == activity.id)?.strikes ?? 0) >= 3)
+				return false;
 			const situation : Situation=  {
 				user: pc.accessor
 		};
@@ -181,7 +183,16 @@ export class PersonaHandleBarsHelpers {
 				}
 			}
 			return 0;
-		}
+		},
+		"getActivityStrikes": function (actor: PersonaActor, activity: Activity) : number {
+			if (actor.system.type == "pc") {
+				const act = actor.system.activities.find(act=> act.linkId  == activity.id);
+				if (act) {
+					return act.strikes;
+				}
+			}
+			return 0;
+		},
 
 	}
 

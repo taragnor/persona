@@ -104,6 +104,8 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".draw-social-card").on("click", this.drawSocialCard.bind(this))
 		html.find(".draw-activity-card").on("click", this.drawActivityCard.bind(this))
 		html.find(".relationship-type").on("change", this.relationshipTypeChange.bind(this))
+		html.find(".add-strike").on("click", this.addStrike.bind(this));
+		html.find(".rem-strike").on("click", this.removeStrike.bind(this));
 		super.activateListeners(html);
 	}
 
@@ -235,6 +237,27 @@ export class PCSheet extends CombatantSheetBase {
 		}
 	}
 
+	async #modStrike(event: JQuery.ClickEvent, amt: number) {
+		if ($(event.currentTarget).closest(".social-link").length > 0) {
+			const linkId= String(HTMLTools.getClosestData(event, "linkId"));
+			await this.actor.activityStrikes(linkId, amt);
+		}
+		if ($(event.currentTarget).closest(".job").length > 0) {
+		const activityId= String(HTMLTools.getClosestData(event, "activityId"));
+			await this.actor.activityStrikes(activityId, amt);
+		}
+
+	}
+
+	async addStrike(event: JQuery.ClickEvent) {
+		await this.#modStrike(event, 1);
+	}
+
+	async removeStrike(event: JQuery.ClickEvent) {
+		await this.#modStrike (event, -1);
+
+	}
+
 	async relationshipTypeChange(event: JQuery.ChangeEvent) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
 		const newval = $(event.currentTarget).find(":selected").val();
@@ -262,8 +285,8 @@ export class PCSheet extends CombatantSheetBase {
 	}
 
 	async openJob(ev: Event) {
-		const jobId= String(HTMLTools.getClosestData(ev, "jobId"));
-		const job = PersonaDB.allJobs().find(x=> x.id == jobId);
+		const jobId= String(HTMLTools.getClosestData(ev, "activityId"));
+		const job = PersonaDB.allActivities().find(x=> x.id == jobId);
 		if (job){
 			job.sheet.render(true);
 		}
@@ -276,16 +299,6 @@ export class PCSheet extends CombatantSheetBase {
 		// await PersonaSocial.makeUpgradeLinkRoll(this.actor, linkId)
 	}
 
-	// async rollJob(event: JQuery.ClickEvent) {
-	// 	const jobId= String(HTMLTools.getClosestData(event, "jobId"));
-	// 	const job= PersonaDB.allActivities().find(x=> x.id == jobId);
-	// 	if (!job) {
-	// 		throw new PersonaError(`Can't find Job : ${jobId}`);
-	// 	}
-	// 	if (await HTMLTools.confirmBox("Job", `Work at ${job.name}`)) {
-	// 		await PersonaSocial.chooseActivity(this.actor, job);
-	// 	}
-	// }
 
 	async gainMoney(_ev: Event) {
 		const x = await HTMLTools.getNumber("Amount to gain");

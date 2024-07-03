@@ -633,7 +633,6 @@ export class PersonaSocial {
 		}
 	}
 
-
 	static getCardRollDC(cardData: CardData, roll: CardRoll) : number {
 		switch (roll.rollType) {
 			case "save":
