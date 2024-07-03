@@ -174,10 +174,10 @@
 				<i class="fa-solid fa-user-minus"></i>
 			</a>
 			{{/if}}
-			<a class="addSocialBoost" title="Give Social Boost">
+			<a class="add-progress-token" title="+1 Progress Token">
 				<i class="fa-solid fa-arrow-up"></i>
 			</a>
-			<a class="removeSocialBoosts" title="Clear Social Boosts">
+			<a class="rem-progress-token" title="-1 Progress Token">
 				<i class="fa-solid fa-arrow-down"></i>
 			</a>
 		</span>
@@ -200,14 +200,23 @@
 	<div class="job" data-activity-id="{{job.id}}">
 		{{#if (isActivitySelectable ../actor job)}}
 		<span class="social-command social-card">
-		<a class="draw-activity-card" title="Draw Activity card">
-			<i class="fa-regular fa-id-card"></i>
-		</a>
+			<a class="draw-activity-card" title="Draw Activity card">
+				<i class="fa-regular fa-id-card"></i>
+			</a>
 		</span>
 		{{/if}}
 		<img class="portrait" src="{{job.img}}">
 		<a class="name">
 			{{job.name}}
+			{{#if (getActivityProgress ../actor job)}}
+			( Progress: {{getActivityProgress ../actor job}})
+			{{/if}}
+		</a>
+		<a class="add-progress-token" title="+1 Progress Token">
+			<i class="fa-solid fa-arrow-up"></i>
+		</a>
+		<a class="rem-progress-token" title="-1 Progress Token">
+			<i class="fa-solid fa-arrow-down"></i>
 		</a>
 	</div>
 	{{/each}}

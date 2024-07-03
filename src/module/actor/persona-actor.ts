@@ -1056,7 +1056,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				break;
 		}
 		await this.update({"system.social": this.system.social});
-		await Logger.sendToChat(`${this.name} added ${progress} social boosts to link ${linkActor?.name} (original Value: ${orig})` , this);
+		await Logger.sendToChat(`${this.name} added ${progress} progress tokens to link ${linkActor?.name} (original Value: ${orig})` , this);
+	}
+
+	async activityProgress(this: PC, activityId :string, progress: number) {
+		const activityData = this.system.activities.find( x=> x.linkId == activityId);
+		if (!activityData) {
+			throw new PersonaError("Trying to increase activty you don't have");
+		}
+		const orig = activityData.currentProgress;
+		activityData.currentProgress = Math.max(0,progress + activityData.currentProgress);
+		await this.update({"system.activities": this.system.activities});
+		const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
+		await Logger.sendToChat(`${this.name} added ${progress} progress tokens to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this);
 
 	}
 

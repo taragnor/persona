@@ -172,7 +172,16 @@ export class PersonaHandleBarsHelpers {
 				user: pc.accessor
 		};
 			return testPreconditions(activity.system.conditions, situation, null);
-	}
+	},
+		"getActivityProgress": function( actor: PersonaActor, activity: Activity): number {
+			if (actor.system.type == "pc") {
+				const act = actor.system.activities.find(act=> act.linkId  == activity.id);
+				if (act) {
+					return act.currentProgress;
+				}
+			}
+			return 0;
+		}
 
 	}
 
