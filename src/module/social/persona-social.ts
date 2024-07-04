@@ -461,10 +461,11 @@ export class PersonaSocial {
 	static async #printCardIntro(cardData: CardData) {
 		const {card, cameos, perk, actor } = cardData;
 		const link = this.lookupLink(cardData);
+		const DC = this.getBaseSkillDC(cardData);
 		const linkId =  "actor" in link ? link.actor.id : link.activity.id;
 		const { perkDisabled } = card.system;
 		const isCameo = card.system.cameoType != "none";
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-intro.hbs`, {item: card,card, cameos, perk, perkDisabled, link: link, linkId, pc: actor, isCameo, user: game.user} );
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-intro.hbs`, {item: card,card, cameos, perk, perkDisabled, link: link, linkId, pc: actor, isCameo, user: game.user, DC} );
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
 			speaker,
@@ -661,6 +662,9 @@ export class PersonaSocial {
 						return roll.DC.staticDC;
 					case "base":
 						return this.getBaseSkillDC(cardData);
+					default:
+						roll.DC.subtype satisfies never;
+
 				}
 			default: return 0;
 		}
