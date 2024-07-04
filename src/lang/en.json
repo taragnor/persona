@@ -372,7 +372,7 @@
 	"persona.preconditions.comparison.power-target-type-is": "Power's targets are",
 	"persona.preconditions.comparison.weather-is": "Current Weather is",
 	"persona.preconditions.comparison.target-social-link-is": "Target Social Link is",
-	"persona.preconditions.weekday-is": "Weekday is",
+	"persona.preconditions.comparison.weekday-is": "Weekday is",
 
 	"persona.triggers.on-damage": "Character Takes Damage",
 	"persona.triggers.on-kill-target": "Character kills a target",

@@ -193,6 +193,7 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 			cameoType: new txt({initial: "none", choices: CAMEO_TYPES_LIST}),
 			cameo: new txt(),
 			perkType: new txt({choices: PERK_TYPES_LIST, initial: "standard"}),
+			perkDisabled: new bool({initial: false}),
 			perk: new txt( {initial: ""}),
 			cameoOpportunity: new txt(),
 			opportunity: new txt(), //deprecated

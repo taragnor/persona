@@ -111,6 +111,10 @@
 	  <select name="system.perkType">
 		  {{selectOptions PERK_TYPES localize=true selected=item.system.perkType}}
 	  </select>
+	  <span>
+		  <label> Starts Disabled</label>
+		  <input type="checkbox" id="flagState" name="system.perkDisabled" {{checked item.system.perkDisabled}}>
+	  </span>
 	  <textarea name="system.perk">
 		  {{trim item.system.perk}}
 	  </textarea>

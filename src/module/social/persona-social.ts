@@ -462,8 +462,9 @@ export class PersonaSocial {
 		const {card, cameos, perk, actor } = cardData;
 		const link = this.lookupLink(cardData);
 		const linkId =  "actor" in link ? link.actor.id : link.activity.id;
+		const { perkDisabled } = card.system;
 		const isCameo = card.system.cameoType != "none";
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-intro.hbs`, {item: card,card, cameos, perk, link: link, linkId, pc: actor, isCameo, user: game.user} );
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-intro.hbs`, {item: card,card, cameos, perk, perkDisabled, link: link, linkId, pc: actor, isCameo, user: game.user} );
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
 			speaker,
@@ -541,6 +542,7 @@ export class PersonaSocial {
 				return;
 			}
 		}
+
 		if (actor.hasStatus("exhausted") && activity instanceof PersonaItem && activity.system.cardType == "training") {
 			ui.notifications.warn("You're currently unable to take this action, you must recover first");
 			return;
