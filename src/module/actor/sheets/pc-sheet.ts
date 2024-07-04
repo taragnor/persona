@@ -77,7 +77,7 @@ export class PCSheet extends CombatantSheetBase {
 		const situation = {
 			user: this.actor.accessor
 		};
-		data.jobs = PersonaDB.allActivities();
+		data.jobs = PersonaDB.allActivities().filter( activity=> Object.values(activity.system.weeklyAvailability).some (val => val));
 		return data;
 	}
 
