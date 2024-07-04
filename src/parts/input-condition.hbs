@@ -52,9 +52,7 @@
 		<select name="{{strcat namePrefix 'studentSkill'}}">
 			{{selectOptions POWERSTUFF.STUDENT_SKILLS localize=true selected=cond.studentSkill}}
 		</select>
-
 	{{/if}}
-
 
 	{{/if}}
 
@@ -134,6 +132,23 @@
 	</div>
 	{{/if}}
 
+	{{#if (eq cond.boolComparisonTarget  "weekday-is")}}
+	<div class="days">
+		{{#each POWERSTUFF.DAYS_LIST as |day i|}}
+		<div class="day">
+			<div>
+				<label> {{day}} </label>
+			</div>
+			<div>
+				<input type="checkbox" id="{{day}}" name="{{strcat ../namePrefix 'days.' day}}" {{checked (lookup ../cond.days day)}} }}>
+			</div>
+		</div>
+		{{/each}}
+	</div>
+	{{/if}}
+
+
+
 	{{/if}}
 
 	{{#if (strIncludes cond.type "resistant")}}
@@ -160,8 +175,8 @@
 	<select name="{{strcat namePrefix 'tarot'}}">
 		{{selectOptions POWERSTUFF.TAROT_DECK localize=true selected=cond.tarot}}
 	</select>
-
 	{{/if}}
+
 
 	{{/if}}
 

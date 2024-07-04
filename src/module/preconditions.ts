@@ -375,11 +375,12 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 		case "weather-is":
 			const weather = PersonaCalendar.getWeather();
 			return condition.weatherComparison == weather;
-
+		case "weekday-is":
+			const weekday = PersonaCalendar.weekday();
+			return condition.days[weekday];
 		default :
 			condition satisfies never;
 			return undefined;
-
 	}
 }
 
@@ -387,7 +388,7 @@ function booleanComparison(condition: Precondition, situation: Situation, source
 	if (condition.type != "boolean") throw new PersonaError("Not a boolean comparison");
 	const testState = getBoolTestState(condition, situation, source);
 	if (testState === undefined) return false;
-	const targetState = condition.booleanState;
+	const targetState = condition.booleanState ?? false;
 	return targetState == testState;
 }
 

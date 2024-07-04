@@ -404,3 +404,16 @@ div.job {
 	align-items:center;
 }
 
+.condition-block div.days{
+	display: flex;
+	flex-direction: row;
+	margin-left: 10px;
+	margin-right: 10px;
+	align-items:center;
+}
+
+.condition-block div.day {
+	margin-left: 10px;
+	margin-right: 10px;
+
+}

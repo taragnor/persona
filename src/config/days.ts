@@ -8,6 +8,6 @@ export const DAYS_LIST = [
 	"Sunday",
 ] as const;
 
-export const DAYS = Object.fromEntries( 
+export const DAYS = Object.fromEntries(
 	DAYS_LIST.map( x=> [x,x])
 );

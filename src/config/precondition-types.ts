@@ -1,3 +1,4 @@
+import { DAYS_LIST } from "./days.js";
 import { WeatherType } from "./weather-types.js";
 import { Power } from "../module/item/persona-item.js";
 import { TarotCard } from "./tarot.js";
@@ -76,11 +77,11 @@ export type BooleanComparisonPC = {
 	type : "boolean",
 	booleanState : boolean,
 	boolComparisonTarget: BooleanComparisonTarget,
-} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison);
+} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison);
 
 	type BasicBComparisonPC ={
 	boolComparisonTarget: Exclude<BooleanComparisonTarget,
-	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "flag-state" | "is-resistant-to" | TargettedBComparisonPC["boolComparisonTarget"] | "power-target-type-is" | "weather-is">,
+	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "weekday-is" | "flag-state" | "is-resistant-to" | TargettedBComparisonPC["boolComparisonTarget"] | "power-target-type-is" | "weather-is">,
 }
 
 export type TargettedBComparisonPC = SingleTargetComparison | TwoTargetComparison;
@@ -94,6 +95,12 @@ type TwoTargetComparison = {
 	boolComparisonTarget:	"target-owner-comparison" ,
 	conditionTarget : ConditionTarget,
 	conditionTarget2: ConditionTarget,
+}
+
+type WeekdayComparison = {
+	boolComparisonTarget: "weekday-is",
+	booleanState: false,
+	days: { [k in typeof DAYS_LIST[number]]: boolean},
 }
 
 type PowerTypeComparison = {
@@ -163,6 +170,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"is-consumable",
 	"power-target-type-is",
 	"weather-is",
+	"weekday-is",
 ] as const;
 
 

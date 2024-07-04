@@ -531,6 +531,16 @@ export class PersonaSocial {
 	}
 
 	static async chooseActivity(actor: PC, activity: SocialLink | Activity, _options: ActivityOptions = {}) {
+		if (activity instanceof PersonaItem) {
+			const situation : Situation = {
+				user: actor.accessor,
+				isSocial: true,
+			};
+			if (!testPreconditions( activity.system.conditions, situation, null)) {
+				ui.notifications.warn("Fails to meet preconditions for this activity.");
+				return;
+			}
+		}
 		if (actor.hasStatus("exhausted") && activity instanceof PersonaItem && activity.system.cardType == "training") {
 			ui.notifications.warn("You're currently unable to take this action, you must recover first");
 			return;
