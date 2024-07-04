@@ -533,6 +533,11 @@ export class PersonaSocial {
 	}
 
 	static async chooseActivity(actor: PC, activity: SocialLink | Activity, _options: ActivityOptions = {}) {
+		if (!game.combat
+			|| !(game.combat.combatant?.actor == actor)) {
+			ui.notifications.warn("It's not your turn");
+			return;
+		}
 		if (activity instanceof PersonaItem) {
 			const situation : Situation = {
 				user: actor.accessor,
