@@ -60,7 +60,6 @@ type onInflictStatus = {
 type onTarotPerk = {
 	trigger: "on-attain-tarot-perk";
 	tarot: TarotCard,
-
 }
 
 
@@ -117,7 +116,6 @@ type StatusComparisonPC = {
 type TagComparisonPC = {
 	boolComparisonTarget: "has-tag",
 	powerTag : PowerTag,
-
 }
 
 type DamageTypeComparisonPC= {
