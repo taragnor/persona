@@ -1353,7 +1353,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async gainMoney(this: PC, amt: number) {
-		if (amt > 20) {
+		if (amt > 200) {
 			throw new PersonaError("Can't get this much money at once!");
 		}
 		const resources = this.system.money + amt;
