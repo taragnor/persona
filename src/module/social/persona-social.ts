@@ -541,6 +541,7 @@ export class PersonaSocial {
 		if (activity instanceof PersonaItem) {
 			const situation : Situation = {
 				user: actor.accessor,
+				attacker: actor.accessor,
 				isSocial: true,
 			};
 			if (!testPreconditions( activity.system.conditions, situation, null)) {

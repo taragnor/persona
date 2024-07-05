@@ -171,7 +171,8 @@ export class PersonaHandleBarsHelpers {
 			if ((pc.system.activities.find( act=> act.linkId == activity.id)?.strikes ?? 0) >= 3)
 				return false;
 			const situation : Situation=  {
-				user: pc.accessor
+				user: pc.accessor,
+				attacker: pc.accessor,
 		};
 			return testPreconditions(activity.system.conditions, situation, null);
 	},
