@@ -108,6 +108,7 @@ export class PersonaSocial {
 		const rollName = (altName) ? altName : skillName;
 		const sit: Situation = situation ?? {
 			user: PersonaDB.getUniversalActorAccessor(pc),
+			attacker: pc.accessor,
 		};
 		const r = await new Roll("1d20").roll();
 		const dice = new RollBundle(rollName, r,  mods, sit);
