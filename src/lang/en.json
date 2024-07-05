@@ -36,6 +36,8 @@
 	"persona.skills.diligence.name": "Diligence",
 	"persona.skills.knowledge.name": "Knowledge",
 	"persona.skills.understanding.name": "Understanding",
+	"persona.skills.primary.name": "Primary",
+	"persona.skills.secondary.name": "Secondary",
 
 	"persona.damage.types.physical": "Physical",
 	"persona.damage.types.fire": "Fire",
