@@ -373,6 +373,7 @@
 	"persona.preconditions.comparison.weather-is": "Current Weather is",
 	"persona.preconditions.comparison.target-social-link-is": "Target Social Link is",
 	"persona.preconditions.comparison.weekday-is": "Weekday is",
+	"persona.preconditions.comparison.social-target-is": "Social Target Is",
 
 	"persona.triggers.on-damage": "Character Takes Damage",
 	"persona.triggers.on-kill-target": "Character kills a target",

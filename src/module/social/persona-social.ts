@@ -193,6 +193,7 @@ export class PersonaSocial {
 			attacker: actor.accessor,
 			socialTarget: link? link.actor.accessor : undefined,
 			isSocial: true,
+			target: link? link.actor.accessor : undefined,
 		};
 		const preconditionPass=  PersonaDB.allSocialCards()
 			.filter( card => testPreconditions(card.system.conditions, situation, null));
@@ -239,6 +240,7 @@ export class PersonaSocial {
 			user: actor.accessor,
 			socialTarget: activity instanceof PersonaActor ?  activity.accessor: undefined,
 			attacker: actor.accessor,
+			target: activity instanceof PersonaActor ?  activity.accessor: undefined,
 			isSocial: true,
 		};
 		const cardData : CardData = {

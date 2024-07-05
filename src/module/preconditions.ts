@@ -378,8 +378,19 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 		case "weekday-is":
 			const weekday = PersonaCalendar.weekday();
 			return condition.days[weekday];
+		case "social-target-is": {
+			if (!condition.socialLinkIdOrTarot) {
+				return undefined;
+			}
+			const desiredActor  = PersonaDB.allActors()
+				.find( x=> x.id == condition.socialLinkIdOrTarot)
+				?? PersonaDB.allActors()
+				.find(x=> x.tarot == condition.socialLinkIdOrTarot);
+			const target = getSubject(condition, situation, source, "conditionTarget");
+			return target == desiredActor;
+		}
 		default :
-			condition satisfies never;
+				condition satisfies never;
 			return undefined;
 	}
 }

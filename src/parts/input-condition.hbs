@@ -70,7 +70,7 @@
 		</select>
 	</div>
 	{{/if}}
-	{{#if (eqAny cond.boolComparisonTarget "engaged" "engaged-with" "is-pc" "is-shadow" "is-dead" "is-same-arcana" "struck-weakness" "has-status" "flag-state" "is-resistant-to")}}
+	{{#if (eqAny cond.boolComparisonTarget "engaged" "engaged-with" "is-pc" "is-shadow" "is-dead" "is-same-arcana" "struck-weakness" "has-status" "flag-state" "is-resistant-to" "social-target-is")}}
 	<div>
 		<select name="{{strcat namePrefix 'conditionTarget'}}">
 			{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
@@ -147,6 +147,11 @@
 	</div>
 	{{/if}}
 
+	{{#if (eq cond.boolComparisonTarget  "social-target-is")}}
+	<select name="{{strcat namePrefix 'socialLinkIdOrTarot'}}">
+		{{selectOptions POWERSTUFF.SOCIAL_LINK_OR_TAROT localize=true selected=cond.socialLinkIdOrTarot}}
+	</select>
+	{{/if}}
 
 
 	{{/if}}

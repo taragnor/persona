@@ -135,7 +135,18 @@
   </div>
 
 
+
   {{> "systems/persona/parts/card-events-section.hbs" item=item SOCIAL_DATA=SOCIAL_DATA}}
+
+  {{#if (isGM)}}
+  <div>
+	  <label> Opoortunity (Deprecated)</label>
+	  <textarea name="system.opportunity">
+		  {{trim item.system.opportunity}}
+	  </textarea>
+  </div>
+
+  {{/if}}
 
   {{> "systems/persona/parts/card-opportunity-section.hbs" item=item SOCIAL_DATA=SOCIAL_DATA}}
 

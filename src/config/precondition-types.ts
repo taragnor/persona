@@ -76,11 +76,11 @@ export type BooleanComparisonPC = {
 	type : "boolean",
 	booleanState : boolean,
 	boolComparisonTarget: BooleanComparisonTarget,
-} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison);
+} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison);
 
 	type BasicBComparisonPC ={
 	boolComparisonTarget: Exclude<BooleanComparisonTarget,
-	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "weekday-is" | "flag-state" | "is-resistant-to" | TargettedBComparisonPC["boolComparisonTarget"] | "power-target-type-is" | "weather-is">,
+	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "weekday-is" | "flag-state" | "is-resistant-to" | "social-target-is" | TargettedBComparisonPC["boolComparisonTarget"] | "power-target-type-is" | "weather-is">,
 }
 
 export type TargettedBComparisonPC = SingleTargetComparison | TwoTargetComparison;
@@ -94,6 +94,12 @@ type TwoTargetComparison = {
 	boolComparisonTarget:	"target-owner-comparison" ,
 	conditionTarget : ConditionTarget,
 	conditionTarget2: ConditionTarget,
+}
+
+type SocialTargetIsComparison = {
+	boolComparisonTarget: "social-target-is",
+	conditionTarget : ConditionTarget,
+	socialLinkIdOrTarot ?: TarotCard | string;
 }
 
 type WeekdayComparison = {
@@ -169,6 +175,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"power-target-type-is",
 	"weather-is",
 	"weekday-is",
+	"social-target-is",
 ] as const;
 
 
