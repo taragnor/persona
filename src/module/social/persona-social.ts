@@ -488,13 +488,15 @@ export class PersonaSocial {
 			content: html,
 			type: CONST.CHAT_MESSAGE_TYPES.OOC
 		};
-		const msg= await ChatMessage.create(msgData,{} );
-		await new Promise( (conf, _rej) => {
-			this.rollState = {
-				cardData,
-				continuation: conf
-			};
-		});
+		const msg = await ChatMessage.create(msgData,{} );
+		if (ArrayCorrector(event.choices).length > 0) {
+			await new Promise( (conf, _rej) => {
+				this.rollState = {
+					cardData,
+					continuation: conf
+				};
+			});
+		}
 		return msg;
 	}
 
