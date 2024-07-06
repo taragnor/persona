@@ -1518,6 +1518,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return !this.hasStatus("jailed") && !this.hasStatus("crippled");
 	}
 
+	async moneyFix() {
+		//updates money to new x10 total
+		switch (this.system.type) {
+			case "pc":
+				const money = this.system.money * 10;
+				await this.update({"system.money": money});
+			default:
+				return;
+		}
+	}
+
 }
 
 Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) => {

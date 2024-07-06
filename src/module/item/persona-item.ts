@@ -763,6 +763,18 @@ const power = PersonaDB.getBasicPower(powerName);
 		await this.update({"system.tokenSpends":list});
 	}
 
+	async priceFix() {
+		//updates money to new x10 total
+		switch (this.system.type) {
+			case "item":
+			case "consumable":
+				const price = this.system.price * 10;
+				await this.update({"system.price": price});
+			default:
+				return;
+		}
+	}
+
 }
 
 

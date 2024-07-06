@@ -21,7 +21,7 @@ import { PERK_TYPES_LIST } from "../../config/perk-types.js";
 
 function itemBase() {
 	return {
-		itemCost: new num({ integer: true, min:0, initial: 0}),
+		// itemCost: new num({ integer: true, min:0, initial: 0}),
 		description: new txt(),
 		amount: new num({ integer: true, initial: 1, min: 0}),
 		price: new num({ integer: true, initial: 0, min:0}),
