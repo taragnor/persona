@@ -34,7 +34,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		for (const status of this.statuses) {
 			switch (status) {
 				case "depleted":
-					return "UEoT";
+					return "UEoNT";
 				default:
 					break;
 			}

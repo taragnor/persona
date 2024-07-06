@@ -62,7 +62,7 @@ export class PersonaSFX {
 
 	static async addTMFilters(statusId: StatusEffectId, token: TokenDocument<any>) {
 		//@ts-ignore
-		if (!TokenMagic) return;
+		if (!window.TokenMagic) return;
 		let params;
 		switch (statusId) {
 			case "burn":
@@ -276,7 +276,7 @@ export class PersonaSFX {
 
 	static async removeTMFilters(statusId: StatusEffectId, token: TokenDocument<any>) {
 		//@ts-ignore
-		if (!TokenMagic) return;
+		if (!window.TokenMagic) return;
 		let filters : string[] = [];
 		switch (statusId) {
 			case "burn":

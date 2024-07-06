@@ -159,9 +159,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		for (const effect of actor.effects) {
 			switch (effect.statusDuration) {
 				case "UEoNT":
-					if (effect.duration.startRound != this.round)
+					if (effect.duration.startRound != this.round) {
 						await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
-					await effect.delete();
+						await effect.delete();
+					}
 					break;
 				case "save-hard":
 				case "save-easy":
