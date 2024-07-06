@@ -31,6 +31,14 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 	}
 
 	get statusDuration() : StatusDuration {
+		for (const status of this.statuses) {
+			switch (status) {
+				case "depleted":
+					return "UEoT";
+				default:
+					break;
+			}
+		}
 		return this.getFlag<StatusDuration>("persona", "duration");
 	}
 
