@@ -1005,7 +1005,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			throw new PersonaError("Social Link is already maxed out");
 		}
 		link.linkLevel +=1 ;
-		link.currentProgress= 0;
+		// link.currentProgress= 0;
 		link.inspiration = link.linkLevel;
 		if (link.linkLevel == 10) {
 			PersonaSounds.socialLinkMax();
