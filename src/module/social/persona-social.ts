@@ -621,7 +621,8 @@ export class PersonaSocial {
 		const situation : Situation = {
 			user: target.accessor,
 			tarot: socialLink.tarot?.name as TarotCard,
-			target: target.accessor
+			target: target.accessor,
+			socialTarget: target.accessor,
 		}
 		console.log(situation);
 		await this.execTrigger("on-attain-tarot-perk", target, situation, `Gains Perk (${socialLink.tarot?.name})`) ;

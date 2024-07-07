@@ -110,8 +110,9 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (condition.socialLinkIdOrTarot) {
 				const targetActor  = PersonaDB.allActors()
 					.find( x=> x.id == condition.socialLinkIdOrTarot)
-					?? PersonaDB.allActors()
-					.find(x=> x.tarot == condition.socialLinkIdOrTarot);
+					?? PersonaDB.socialLinks()
+					.find(x=> x.tarot?.name  == condition.socialLinkIdOrTarot);
+				debugger;
 				if (targetActor) {
 					target = actor.system.social.find(x=> x.linkId == targetActor.id)?.linkLevel ?? 0;
 					break;
