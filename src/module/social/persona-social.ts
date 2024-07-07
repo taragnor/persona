@@ -572,11 +572,13 @@ export class PersonaSocial {
 		}
 		if (activity instanceof PersonaItem) {
 			await actor.addNewActivity(activity);
-			if (activity.system.cardType == "job")
-				await activity.setAvailability(false);
+			if (activity.system.cardType == "job") {
+				//TODO: sockets to send availability change
+				// await activity.setAvailability(false);
+			}
 		}
 		if (activity instanceof PersonaActor) {
-			await activity.setAvailability(false);
+			// await activity.setAvailability(false);
 		}
 		this.#socialEncounter(actor, activity);
 	}
