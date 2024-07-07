@@ -644,6 +644,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const block = atkresult && atkresult.result == "block" && !applyToSelf;
 		damageMult *= situation.resisted ? 0.5 : 1;
 		switch (cons.type) {
+			case "dmg-mult":
+				return [{
+					applyToSelf,
+					cons
+				}];
 			case "dmg-high":
 				return [{
 					applyToSelf,
