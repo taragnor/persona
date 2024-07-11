@@ -668,6 +668,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	getBonuses (type : ModifierTarget): ModifierList {
 		if (this.system.type == "npc")  return new ModifierList();
 		let modList = new ModifierList( this.mainModifiers().flatMap( item => item.getModifier(type)
+			.filter( mod => mod.modifier > 0 || mod.variableModifier.size > 0)
 		));
 		return modList;
 	}

@@ -145,7 +145,11 @@ function numericComparison(condition: Precondition, situation: Situation, source
 					return false;
 				}
 				targetId = sourceActor.id;
+			} else if (socialTarget.id == PersonaDB.personalSocialLink().id) {
+				//personal link
+				targetId = actor.id;
 			} else {
+				//NPCs
 				targetId = socialTarget.id;
 			}
 			const link = actor.system.social.find(data=> data.linkId == targetId);
