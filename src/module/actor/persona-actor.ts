@@ -44,7 +44,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	override statuses: Set<StatusEffectId>;
 	override sheet: PersonaActorSheetBase;
 
-
 	override prepareBaseData() {
 		super.prepareBaseData();
 	}
@@ -156,7 +155,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	set hp(newval: number) {
-		if (this.system.type == "npc") return;
+		if (this.system.type == "npc"
+			|| this.system.type == "tarot") return;
 		this.update({"system.combat.hp": newval});
 		(this as PC | Shadow).refreshHpStatus(newval);
 	}
@@ -210,7 +210,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	getWeakestSlot(): 0 | 1 | 2 | 3 {
 		if (this.system.type != "pc") return 0;
-		for (let slot_lvl=0 ; slot_lvl<=4; slot_lvl++) {
+		for (let slot_lvl = 0 ; slot_lvl <= 4; slot_lvl++) {
 			const inc = this.hasIncremental("powers") ? 1 : 0;
 			const lvl = this.system.combat.classData.level;
 			if ( this.class.getClassProperty(lvl + inc, "slots")[slot_lvl] ?? -999 > 0) return slot_lvl as 0 | 1 | 2 | 3;
@@ -1237,7 +1237,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async fullHeal() {
-		this.hp = this.mhp;
+		if (this.system.type == "pc" || this.system.type == "shadow") {
+			this.hp = this.mhp;
+		}
 	}
 
 	async OnEnterMetaverse(this: PC) {

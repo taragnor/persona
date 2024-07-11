@@ -228,7 +228,7 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 			if (!tok.actor) {
 				throw new Error(`No actor on Token Id ${tokenId}`);
 			}
-			return tok.object as any;
+			return tok as any;
 		}
 		const sc = game.scenes.find(x=> x.tokens.get(tokenId) != null);
 		if (!sc)
@@ -237,13 +237,13 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 		if (!tok.actor) {
 			throw new Error(`No actor on Token Id ${tokenId}`);
 		}
-		return tok.object as any;
+		return tok as any;
 	}
 
 	findActor<T extends Actor<any>>(accessor: UniversalActorAccessor<T>) : T {
 		if (accessor.token != undefined) {
 			const token =  this.findToken(accessor.token);
-			return token.actor;
+			return token.actor as T;
 		}
 		return this.getActorById(accessor.actorId) as unknown as T;
 	}
@@ -263,12 +263,23 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 
 	}
 
-	getUniversalTokenAccessor<T extends Token<any>>(tok: T) : UniversalTokenAccessor<T> {
+
+	getUniversalTokenAccessor<T extends Token<any>>(tok: T) : UniversalTokenAccessor<T["document"]> ;
+	getUniversalTokenAccessor<T extends TokenDocument<any>>(tok: T) : UniversalTokenAccessor<T>;
+	getUniversalTokenAccessor(tok: Token<any> | TokenDocument<any>) : UniversalTokenAccessor<any> {
+		if (tok instanceof Token) tok = tok.document;
 		return {
-			scene: tok.scene.id,
+			scene: tok.parent.id,
 			tokenId: tok.id,
 		};
 	}
+
+	// getUniversalTokenAccessor<T extends Token<any>>(tok: T) : UniversalTokenAccessor<T> {
+	// 	return {
+	// 		scene: tok.scene.id,
+	// 		tokenId: tok.id,
+	// 	};
+	// }
 
 	accessorEq<T extends UniversalTokenAccessor<any> | UniversalItemAccessor<any> | UniversalActorAccessor<any>> ( a: T, b: T) : boolean {
 		if ("tokenId" in a && "tokenId" in b) {
@@ -286,13 +297,13 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 } //End of class
 
 
-export type UniversalTokenAccessor<_T extends Token<any>> = {
+export type UniversalTokenAccessor<_T extends TokenDocument<any>> = {
 	scene?: string,
 	tokenId : string,
 };
 
 export type UniversalActorAccessor<T extends Actor<any, any, any>> = {
-	token ?: UniversalTokenAccessor<Token<T>>,
+	token ?: UniversalTokenAccessor<TokenDocument<T>>,
 	actorId : string,
 }
 

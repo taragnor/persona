@@ -228,7 +228,7 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 
 			}
 			const combat = PersonaCombat.ensureCombatExists();
-			const subjectToken = subject instanceof Token ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken(subject.accessor);
+			const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken(subject.accessor);
 			if (!subjectToken) {
 				PersonaError.softFail(`Can't find token for ${subject?.name}`);
 				return undefined;
@@ -246,7 +246,7 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 			}
 
 			const combat = PersonaCombat.ensureCombatExists();
-			const subjectToken = subject instanceof Token ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken(subject.accessor);
+			const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken(subject.accessor);
 			if (!subjectToken) {
 				PersonaError.softFail(`Can't find token for ${subject?.name}`);
 				return undefined;
@@ -412,20 +412,20 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 	switch (condTarget) {
 		case "owner":
 			if (situation.user.token)
-				return PersonaDB.findToken(situation.user.token);
+				return PersonaDB.findToken(situation.user.token) as PToken | undefined;
 			else return PersonaDB.findActor(situation.user);
 		case "attacker":
 			if (situation.attacker?.token)
-				return PersonaDB.findToken(situation.attacker.token);
+				return PersonaDB.findToken(situation.attacker.token) as PToken | undefined;
 			else return situation.attacker ? PersonaDB.findActor(situation.attacker): undefined;
 		case "target":
 			if (situation.target?.token)
-				return PersonaDB.findToken(situation.target.token);
+				return PersonaDB.findToken(situation.target.token) as PToken | undefined;
 			else return situation.target ? PersonaDB.findActor(situation.target): undefined;
 		default:
 			condTarget satisfies undefined;
 			if (situation.target?.token)
-				return PersonaDB.findToken(situation.target.token);
+				return PersonaDB.findToken(situation.target.token) as PToken | undefined;
 			else return PersonaDB.findActor(situation.user);
 	}
 }

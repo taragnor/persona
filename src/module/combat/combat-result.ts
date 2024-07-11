@@ -120,7 +120,7 @@ export class CombatResult  {
 				if (atkResult && cons.statusName == "burn") {
 					const power= PersonaDB.findItem(atkResult.power);
 					const attacker = PersonaDB.findToken(atkResult.attacker).actor;
-					status_damage = power.getDamage(attacker, "low");
+					status_damage = attacker ? power.getDamage(attacker, "low"): 0;
 
 				}
 				const id = cons.statusName!;
@@ -328,7 +328,7 @@ export class CombatResult  {
 		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attackerName, effectName,  attacks, escalation: this.escalationMod, result: this, costs: this.costs, manualApply});
 		const chatMsg = await ChatMessage.create( {
 			speaker: {
-				scene: initiator?.token?.object.scene.id,
+				scene: initiator?.token?.parent.id,
 				actor: initiator.id,
 				token:  initiator.token?.id ,
 				alias: undefined,
@@ -388,9 +388,9 @@ export class CombatResult  {
 			for (const change of changes) {
 				await this.applyChange(change);
 				if (change.actor.token)
-					token = PersonaDB.findToken(change.actor.token);
+					token = PersonaDB.findToken(change.actor.token) as PToken;
 			}
-			if (token && !token.actor.isAlive()) {
+			if (token && token.actor && !token.actor.isAlive()) {
 				// const attacker = PersonaDB.findToken(result.attacker);
 				const actingActor = PersonaDB.findToken(result.attacker)?.actor;
 				if (!actingActor) break;
@@ -485,7 +485,7 @@ export class CombatResult  {
 
 	async applyChange(change: ActorChange<PC | Shadow>) {
 		const actor = PersonaDB.findActor(change.actor);
-		const token  = change.actor.token ? PersonaDB.findToken(change.actor.token): undefined;
+		const token  = change.actor.token ? PersonaDB.findToken(change.actor.token) as PToken: undefined;
 		if (change.hpchange != 0) {
 			if (change.hpchange < 0) {
 				setTimeout( () => {
@@ -503,7 +503,7 @@ export class CombatResult  {
 		}
 		for (const status of change.addStatus) {
 			if (status.id == "curse" || status.id == "expel") {
-				if (!token || Math.abs(change.hpchange) < (token.actor.mhp * 0.2)) {
+				if (!token || Math.abs(change.hpchange) < (token.actor!.mhp * 0.2)) {
 					continue;
 				}
 			}

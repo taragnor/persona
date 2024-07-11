@@ -97,10 +97,10 @@ export class PersonaHandleBarsHelpers {
 
 			if ("actorId" in tokenAcc) {
 				const token = PersonaDB.findToken(tokenAcc.token);
-				return token?.document?.name ?? PersonaDB.findActor(tokenAcc).name ?? "Unknown Token";
+				return token?.name ?? PersonaDB.findActor(tokenAcc).name ?? "Unknown Token";
 			}
 			const token = PersonaDB.findToken(tokenAcc);
-			return token.document.name;
+			return token.name;
 		},
 
 		'canUsePower': (actor:PC | Shadow, power: Power) => {

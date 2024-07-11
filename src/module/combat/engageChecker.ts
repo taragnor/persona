@@ -3,11 +3,11 @@ import { PersonaCombat } from "./persona-combat";
 
 export class EngagementChecker {
 	static isEngaged(subject: PToken, combat: PersonaCombat): boolean {
-		const myAllegiance = subject.actor.getAllegiance();
+		const myAllegiance = subject.actor!.getAllegiance();
 		const engageArray = Array.from(this.getEngagedList(subject, combat));
-		const output = engageArray. map ( x=> `${x.name}: ${x.actor.getAllegiance()} ${x.actor.isCapableOfAction()}` );
+		// const output = engageArray. map ( x=> `${x.name}: ${x.actor!.getAllegiance()} ${x.actor!.isCapableOfAction()}` );
 		return engageArray.some( tok =>
-			tok.actor.getAllegiance() != myAllegiance && tok.actor.isCapableOfAction()
+			tok.actor!.getAllegiance() != myAllegiance && tok.actor!.isCapableOfAction()
 		)
 	}
 
@@ -23,10 +23,10 @@ export class EngagementChecker {
 			const checkedToken = checkList.pop()!;
 			for (const comb of combat.combatants.contents) {
 				if (!comb.token) continue;
-				const token  = comb.token.object as PToken;
+				const token  = comb.token as PToken;
 				if ( this.isWithinEngagedRange(checkedToken, token)
 					&& !engagedList.has(token)
-					&& token.actor.isCapableOfAction()
+					&& token.actor!.isCapableOfAction()
 				) {
 
 					if (token != subject)  {
@@ -40,7 +40,7 @@ export class EngagementChecker {
 	}
 
 	static isWithinEngagedRange(subject: PToken, target:PToken) : boolean {
-		const mapUnits = subject.scene.dimensions.distance;
+		const mapUnits = subject.parent.dimensions.distance;
 		if (canvas?.grid?.measurePath) {
 			//V12
 			return canvas.grid.measurePath([subject, target]).distance <= mapUnits;
