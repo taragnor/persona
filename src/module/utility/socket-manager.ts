@@ -93,7 +93,6 @@ export class SocketManager {
 
 }
 
-
 export type SocketPayload<T extends keyof SocketMessage> = {
 	code: T,
 	data: SocketMessage[T],
@@ -106,7 +105,6 @@ export type SocketPayload<T extends keyof SocketMessage> = {
 
 type DataHandlerFn<T extends keyof SocketMessage> =
 	(data: SocketMessage[T], payload: SocketPayload<T>) => any;
-
 
 type SessionInfo = {};
 
