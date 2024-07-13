@@ -1,3 +1,4 @@
+import { SocketPayload } from "../utility/socket-manager.js";
 import { PersonaCalendar } from "./persona-calendar.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { ArrayCorrector } from "../item/persona-item.js";
@@ -36,6 +37,10 @@ import { StudentSkillExt } from "../../config/student-skills.js";
 export class PersonaSocial {
 	static allowMetaverse: boolean = true;
 	static metaverseChoosers = 0;
+	static cardDrawPromise: null | {
+		res: (str: string) => void,
+		rej: (x: any) => void,
+	}
 
 	static #drawnCardIds: string[] = [];
 	static rollState: null |
@@ -183,10 +188,7 @@ export class PersonaSocial {
 
 	}
 
-	static validSocialCards(actor: PC, activity: Activity | SocialLink) : SocialCard[] {
-		if (activity instanceof PersonaItem) {
-			return [activity];
-		}
+	static validSocialCards(actor: PC, activity: SocialLink) : SocialCard[] {
 		const link = this.lookupSocialLink(actor, activity.id)
 		const situation : Situation= {
 			user: actor.accessor,
@@ -209,7 +211,12 @@ export class PersonaSocial {
 			});
 	}
 
-	static #drawSocialCard(actor: PC, link : Activity | SocialLink) : SocialCard {
+	static async #drawSocialCard(actor: PC, link : Activity | SocialLink) : Promise<SocialCard> {
+		if (!game.user.isGM)
+			return await this.#sendGMCardRequest(actor, link);
+		if (link instanceof PersonaItem) {
+			return link;
+		}
 		const cards = this.validSocialCards(actor, link);
 
 		let undrawn = cards.filter( card=> !this.#drawnCardIds.includes(card.id));
@@ -233,7 +240,7 @@ export class PersonaSocial {
 				//TODO: Finish later
 			}
 		}
-		const card = this.#drawSocialCard(actor, activity);
+		const card = await this.#drawSocialCard(actor, activity);
 		const cameos = this.#getCameos(card, actor, activity.id);
 		const perk = this.#getPerk(card, actor, activity, cameos);
 		const situation : Situation = {
@@ -519,6 +526,13 @@ export class PersonaSocial {
 		.map(x=> `spend ${x.amount} progress tokens to ${x.text}.`)
 		.map(x=> `<li class="token-spend"> ${x} </li>`);
 
+		const finale = (cardData.card.system.finale?.trim()) ? `
+		<h2> Finale </h2>
+		<span class="finale">
+		${cardData.card.system.finale.trim()}
+		</span>
+		` : "";
+		html += finale;
 
 		html += `<div class="token-spends">
 		<h3>Token Spends:</h3>
@@ -778,7 +792,48 @@ export class PersonaSocial {
 	}
 
 
+static async #sendGMCardRequest(actor: PC, link: SocialLink | Activity) : Promise<SocialCard> {
+	const gms = game.users.filter(x=> x.isGM);
+	if (this.cardDrawPromise) {
+		this.cardDrawPromise.rej("Second Draw");
+		this.cardDrawPromise = null;
+	}
+	const promise : Promise<string> = new Promise( (res, rej) => {
+		this.cardDrawPromise = { res, rej};
+	});
+	PersonaSockets.simpleSend("DRAW_CARD", {actorId: actor.id, linkId: link.id}, gms.map( x=> x.id));
+	const cardId = await promise;
+	const card = game.items.get(cardId) as SocialCard | undefined;
+	if (!card) throw new PersonaError(`No card found for ${link.name}`);
+	return card;
+}
+
+static async answerCardRequest(req: SocketMessage["DRAW_CARD"], socketPayload: SocketPayload<"DRAW_CARD">) {
+	const actor = game.actors.get(req.actorId) as PC;
+	const activity = (game.actors.get(req.linkId) ?? game.items.get(req.linkId)) as SocialLink | SocialCard;
+	//typescript was being fussy and needed me to define a concrete type despuite it being legal to call set availability on either
+	if (activity instanceof PersonaItem && activity.system.cardType == "job") {
+		await activity.setAvailability(false);
+	}
+	if (activity instanceof PersonaActor) {
+		await activity.setAvailability(false);
+	}
+	const card = await this.#drawSocialCard(actor, activity)
+	const sendBack = [socketPayload.sender];
+	// console.log(`Send back ${card.name}`);
+	PersonaSockets.simpleSend("CARD_REPLY", {cardId: card.id}, sendBack);
+}
+
+static async getCardReply(req: SocketMessage["CARD_REPLY"]) {
+	console.log(`got reply ${req.cardId}`);
+	if (!this.cardDrawPromise) return;
+	if (req.cardId) {
+		this.cardDrawPromise.res(req.cardId);
+	}
+}
+
 } //end of class
+
 
 type ActivityOptions = {
 	noDegrade ?: boolean;
@@ -787,9 +842,22 @@ type ActivityOptions = {
 
 declare global {
 	interface SocketMessage {
-		"DEC_AVAILABILITY": string,
+		"DEC_AVAILABILITY": string;
+		"DRAW_CARD": {
+			actorId: string,
+			linkId: string
+		};
+		"CARD_REPLY": {
+			cardId: string
+		}
 	}
 }
+
+Hooks.on("socketsReady", () => {
+	console.log("Sockets set handler");
+	PersonaSockets.setHandler("DRAW_CARD", PersonaSocial.answerCardRequest.bind(PersonaSocial));
+	PersonaSockets.setHandler("CARD_REPLY", PersonaSocial.getCardReply.bind(PersonaSocial));
+});
 
 Hooks.on("socketsReady" , () => {PersonaSockets.setHandler("DEC_AVAILABILITY", ( task_id: string) => {
 	if (!game.user.isGM) return;

@@ -201,6 +201,7 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 			opportunity_list: new arr(new obj<Opportunity>()),
 			bane: new txt(),
 			boon: new txt(),
+			finale: new txt(),
 			globalModifiers: new arr( new obj<ConditionalEffect>()),
 			active: new bool({initial: false}),
 			tokenSpends:new arr(new obj<TokenSpend>()),

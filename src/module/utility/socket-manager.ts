@@ -94,7 +94,7 @@ export class SocketManager {
 }
 
 
-type SocketPayload<T extends keyof SocketMessage> = {
+export type SocketPayload<T extends keyof SocketMessage> = {
 	code: T,
 	data: SocketMessage[T],
 	/** userId of sender*/
