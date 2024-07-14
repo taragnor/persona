@@ -1097,7 +1097,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	turnCheck(token: PToken): boolean {
 		if (!this.enemiesRemaining(token)) return true;
 		if (!this.combatant) return true;
-		return (this.combatant.token == token)
+		return (this.combatant.token.id == token.id)
 	}
 
 	async preSaveEffect( total: number, effect: PersonaAE, actor: PersonaActor) : Promise<string[]> {
