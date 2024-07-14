@@ -116,7 +116,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		'newlineConversion': function (txt: string) : SafeString {
-			return new Handlebars.SafeString(txt.replaceAll("\n", "<br>"));
+			return new Handlebars.SafeString(txt?.replaceAll("\n", "<br>") ?? "");
 		},
 
 		'isHighestLinker': (pc: PC, linkData:SocialLinkData ) => {
