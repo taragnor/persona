@@ -221,7 +221,7 @@ export class PersonaSocial {
 
 		let undrawn = cards.filter( card=> !this.#drawnCardIds.includes(card.id));
 
-		if (undrawn.length < 4) {
+		if (undrawn.length < 1) {
 			undrawn = cards;
 			this.#drawnCardIds = this.#drawnCardIds
 				.filter(cardId=> !cards.find(card => card.id == cardId));
@@ -768,7 +768,7 @@ export class PersonaSocial {
 			throw new PersonaError(`Can't find card ${cardId}`);
 		}
 		const cardEvent = card.system.events[eventIndex];
-		const choice= cardEvent.choices[choiceIndex];
+		const choice = cardEvent.choices[choiceIndex];
 		await this.handleCardRoll(this.rollState.cardData, choice.roll);
 		const content = $(message.content);
 		content
