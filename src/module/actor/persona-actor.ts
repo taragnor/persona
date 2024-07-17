@@ -771,7 +771,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					break;
 			}
 		}
-		const resLevel = Math.clamp(resval(baseResist) + resBonus + resPenalty, 0 , RESIST_STRENGTH_LIST.length-1);
+		const resLevel = Math.clamped(resval(baseResist) + resBonus + resPenalty, 0 , RESIST_STRENGTH_LIST.length-1);
 		return RESIST_STRENGTH_LIST[resLevel];
 	}
 
