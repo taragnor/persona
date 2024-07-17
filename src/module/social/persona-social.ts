@@ -218,7 +218,6 @@ export class PersonaSocial {
 			return link;
 		}
 		const cards = this.validSocialCards(actor, link);
-
 		let undrawn = cards.filter( card=> !this.#drawnCardIds.includes(card.id));
 
 		if (undrawn.length < 1) {
