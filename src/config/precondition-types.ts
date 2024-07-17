@@ -1,3 +1,5 @@
+import { ResistType } from "../config/damage-types.js";
+import { ResistStrength } from "../config/damage-types.js";
 import { DAYS_LIST } from "./days.js";
 import { WeatherType } from "./weather-types.js";
 import { Power } from "../module/item/persona-item.js";
@@ -63,13 +65,26 @@ type onTarotPerk = {
 }
 
 
-type NumericComparisonPC = {
+type NumericComparisonBase = {
 	type: "numeric",
 	comparator : Comparator;
 	comparisonTarget : NumericComparisonTarget,
+}
+
+type NumericComparisonPC = GenericNumericComparison | ResistanceComparison;
+
+type GenericNumericComparison = NumericComparisonBase & {
+	comparisonTarget : Exclude<NumericComparisonTarget, "resistance-level">,
 	studentSkill ?: SocialStat;
 	num ?: number,
 	socialLinkIdOrTarot ?: TarotCard | string;
+}
+
+type ResistanceComparison = NumericComparisonBase & {
+	comparisonTarget: "resistance-level"
+	element: ResistType,
+	resistLevel : ResistStrength
+	conditionTarget : ConditionTarget,
 }
 
 export type BooleanComparisonPC = {
@@ -194,7 +209,8 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"social-link-level",
 	"student-skill",
 	"character-level",
-	"has-resources"
+	"has-resources",
+	"resistance-level"
 ] as const;
 
 export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];

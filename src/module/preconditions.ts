@@ -1,3 +1,4 @@
+import { RESIST_STRENGTH_LIST } from "../config/damage-types.js";
 import { PersonaCalendar } from "./social/persona-calendar.js";
 import { ArrayCorrector } from "./item/persona-item.js";
 import { BooleanComparisonPC } from "../config/precondition-types.js";
@@ -66,6 +67,7 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 function numericComparison(condition: Precondition, situation: Situation, source:Option<PowerContainer>) : boolean {
 	if (condition.type != "numeric") throw new PersonaError("Not a numeric comparison");
 	let target: number;
+	let testCase = ("num" in condition) ? condition.num : 0;
 	switch (condition.comparisonTarget) {
 		case "natural-roll":
 			if (situation.naturalAttackRoll == undefined)
@@ -176,12 +178,19 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			target = actor.system.money;
 			break;
 		}
+		case "resistance-level" : {
+			const subject = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!subject) return false;
+			testCase = RESIST_STRENGTH_LIST.indexOf(condition.resistLevel);
+		const targetResist = subject.system.combat.resists[condition.element] ?? "normal";
+			target = RESIST_STRENGTH_LIST.indexOf(targetResist);
+			break;
+		}
 		default:
-			condition.comparisonTarget satisfies undefined;
-			PersonaError.softFail(`Unknwon numeric comparison type ${condition.comparisonTarget}`)
+			condition satisfies never;
+			PersonaError.softFail(`Unknwon numeric comparison type ${condition["comparisonTarget"]}`)
 			return false;
 	}
-	const testCase = condition.num;
 	switch (condition.comparator) {
 		case "!=" : return target != testCase;
 		case "==" : return target == testCase;
@@ -405,6 +414,14 @@ function booleanComparison(condition: Precondition, situation: Situation, source
 	if (testState === undefined) return false;
 	const targetState = condition.booleanState ?? false;
 	return targetState == testState;
+}
+
+function getSubjectActor<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K): PC | Shadow | undefined {
+	let subject = getSubject(cond, situation, source, field);
+	if (subject instanceof TokenDocument) {
+		subject = subject.actor;
+	}
+	return subject;
 }
 
 function getSubject<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K) : PToken | PC| Shadow | undefined {

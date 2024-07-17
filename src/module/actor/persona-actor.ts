@@ -1,12 +1,10 @@
+import { RESIST_STRENGTH_LIST } from "../../config/damage-types.js";
 import { Activity } from "../item/persona-item.js";
 import { RecoverSlotEffect } from "../combat/combat-result.js";
-import { UniversalModifier } from "../item/persona-item.js";
 import { getActiveConsequences } from "../preconditions.js";
-import { ResistanceShiftEffect } from "../combat/combat-result.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { Metaverse } from "../metaverse.js";
 import { PersonaActorSheetBase } from "./sheets/actor-sheet.base.js";
-import { Availability } from "../../config/availability-types.js";
 import { Logger } from "../utility/logger.js";
 import { Situation } from "../preconditions.js";
 import { STUDENT_SKILLS } from "../../config/student-skills.js";
@@ -739,7 +737,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return "absorb";
 		}
 
-		let resist= this.system.combat.resists[type] ?? "normal";
+		const baseResist= this.system.combat.resists[type] ?? "normal";
+		let resist = baseResist;
 		const effectChangers=  this.mainModifiers().filter( x=> x.getEffects()
 			.some(x=> x.consequences
 				.some( cons=>cons.type == "raise-resistance" || cons.type == "lower-resistance")));
@@ -751,23 +750,29 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				getActiveConsequences(eff, situation, item)
 			)
 		);
+		const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
+		let resBonus = 0;
+		let resPenalty = 0;
 		for (const cons of consequences) {
 			switch (cons.type) {
 				case "raise-resistance":
-					if (cons.resistType == type && (resist == "weakness" || resist == "normal")) {
-						resist = "resist";
+					if (cons.resistType == type &&
+						resval(cons.resistanceLevel!) > resval(baseResist)) {
+						resBonus = Math.max(resBonus, resval(cons.resistanceLevel!) - resval(baseResist))
 					}
 					break;
 				case "lower-resistance":
-					if (cons.resistType == type && resist != "weakness" ) {
-						resist = "normal";
+					if (cons.resistType == type &&
+						resval (cons.resistanceLevel!) < resval(baseResist))  {
+						resPenalty = Math.min(resPenalty, resval(cons.resistanceLevel!) - resval(baseResist))
 					}
-					break;
+						break;
 				default:
 					break;
 			}
 		}
-		return resist;
+		const resLevel = Math.clamp(resval(baseResist) + resBonus + resPenalty, 0 , RESIST_STRENGTH_LIST.length-1);
+		return RESIST_STRENGTH_LIST[resLevel];
 	}
 
 	wpnMult( this: PC | Shadow) : number {

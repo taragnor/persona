@@ -54,6 +54,18 @@
 		</select>
 	{{/if}}
 
+	{{#if (eq cond.comparisonTarget "resistance-level")}}
+	<select name="{{strcat namePrefix 'conditionTarget'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+	</select>
+	<select name="{{strcat namePrefix 'element'}}">
+		{{selectOptions POWERSTUFF.DAMAGETYPES localize=true selected=cond.element}}
+	</select>
+	<select name="{{strcat namePrefix 'resistLevel'}}">
+		{{selectOptions POWERSTUFF.RESIST_STRENGTHS localize=true selected=cond.resistLevel}}
+	</select>
+	{{/if}}
+
 	{{/if}}
 
 
