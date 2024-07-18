@@ -1,9 +1,12 @@
+import { ProgressClock } from "../utility/progress-clock.js";
 import { WEATHER_TYPE_LIST } from "../../config/weather-types.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { WeatherType } from "../../config/weather-types.js";
 import { PersonaError } from "../persona-error.js";
 
 export class PersonaCalendar {
+	static DoomsdayClock = new ProgressClock("Doomsday Clock", 30);
+
 	static weekday() : SimpleCalendar.WeekdayName {
 		if (!window.SimpleCalendar)
 			throw new PersonaError("Simple Calendar isn't enabled!");
@@ -16,13 +19,17 @@ export class PersonaCalendar {
 		if (!window.SimpleCalendar)
 			throw new PersonaError("Simple Calendar isn't enabled!");
 		await window.SimpleCalendar.api.changeDate({day:1});
-		await DoomsdayClock.inc();
+		if (this.DoomsdayClock.isMaxed()) {
+			await this.DoomsdayClock.clear();
+		} else {
+			await this.DoomsdayClock.inc();
+		}
 		rolls.push(await this.randomizeWeather());
 		const weather = this.getWeather();
 		const date = window.SimpleCalendar.api.currentDateTimeDisplay().date;
 		const weekday = window.SimpleCalendar.api.getCurrentWeekday().name;
-		let doomsdayMsg = `<hr> <div class="doomsday"> <b>Doomsday</b>  ${DoomsdayClock.val} / ${DoomsdayClock.max} </div>`;
-		if (DoomsdayClock.isFull()) {
+		let doomsdayMsg = `<hr> <div class="doomsday"> <b>Doomsday</b>  ${this.DoomsdayClock.amt} / ${this.DoomsdayClock.max} </div>`;
+		if (this.DoomsdayClock.isMaxed()) {
 			doomsdayMsg = `<hr><div class="doomsday"><h2> Doomsday</h2> Doomsday is here! Succeed or Something horrible happens!</div>`;
 		}
 		extraMsgs = extraMsgs
@@ -94,56 +101,57 @@ export class PersonaCalendar {
 
 }
 
-export class DoomsdayClock {
-	static MAX_TICKS: number = 30;
 
-	static isFull() :boolean {
-		const clock = this.#getClock();
-		if (!clock) return false;
-		return (clock.value == clock.max)
-	}
+// export class DoomsdayClock {
+// 	static MAX_TICKS: number = 30;
 
-	static async inc(): Promise<void> {
-		const clock = this.#getClock();
-		if (!clock) return;
-		clock.value += 1;
-		if (clock.value > clock.max) {
-			clock.value = 0;
-		}
-		await window.clockDatabase!.update(clock);
-	}
+// 	static isFull() :boolean {
+// 		const clock = this.#getClock();
+// 		if (!clock) return false;
+// 		return (clock.value == clock.max)
+// 	}
 
-	static #getClock(): undefined |  GlobalProgressClocks.ProgressClock {
-		if (!window.clockDatabase) {
-			PersonaError.softFail("No clock database, is Global Progress Clocks enabled?");
-			return undefined;
-		}
+// 	static async inc(): Promise<void> {
+// 		const clock = this.#getClock();
+// 		if (!clock) return;
+// 		clock.value += 1;
+// 		if (clock.value > clock.max) {
+// 			clock.value = 0;
+// 		}
+// 		await window.clockDatabase!.update(clock);
+// 	}
 
-		let clock = window.clockDatabase.getName("Doomsday Clock");
-		if (!clock) {
-			window.clockDatabase.addClock({
-				name: "Doomsday Clock",
-				value: 0,
-				max: this.MAX_TICKS,
-			});
-			clock = window.clockDatabase.getName("Doomsday Clock");
-		}
-		return clock;
-	}
+// 	static #getClock(): undefined |  GlobalProgressClocks.ProgressClock {
+// 		if (!window.clockDatabase) {
+// 			PersonaError.softFail("No clock database, is Global Progress Clocks enabled?");
+// 			return undefined;
+// 		}
 
-	static get val(): number {
-		const clock = this.#getClock();
-		return clock?.value ?? -1;
-	}
+// 		let clock = window.clockDatabase.getName("Doomsday Clock");
+// 		if (!clock) {
+// 			window.clockDatabase.addClock({
+// 				name: "Doomsday Clock",
+// 				value: 0,
+// 				max: this.MAX_TICKS,
+// 			});
+// 			clock = window.clockDatabase.getName("Doomsday Clock");
+// 		}
+// 		return clock;
+// 	}
 
-	static get max(): number {
-		const clock = this.#getClock();
-		return clock?.max ?? -1;
-	}
+// 	static get val(): number {
+// 		const clock = this.#getClock();
+// 		return clock?.value ?? -1;
+// 	}
 
-	static clockStatus(): number {
-		const clock = this.#getClock();
-		return clock?.value ?? -1;
-	}
+// 	static get max(): number {
+// 		const clock = this.#getClock();
+// 		return clock?.max ?? -1;
+// 	}
 
-}
+// 	static clockStatus(): number {
+// 		const clock = this.#getClock();
+// 		return clock?.value ?? -1;
+// 	}
+
+// }
