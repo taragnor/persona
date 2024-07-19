@@ -1,6 +1,7 @@
+import { PersonaError } from "../persona-error.js";
+
 export  class ProgressClock {
 	clockName:string;
-	private _amt: number;
 	default_max: number;
 
 	constructor(name: string, max: number) {
@@ -9,26 +10,28 @@ export  class ProgressClock {
 	}
 
 	get amt() : number {
-		if (window.clockDatabase) {
-			const clock = window.clockDatabase.getName(this.clockName);
-			if (clock) {
-				this._amt = clock.value;
-				return clock.value;
-			}
-		}
-		return this._amt;
+		const clock= this.#getClock()
+		if (!clock) return -1;
+		return clock.value;
+	}
+
+	get visible() : boolean {
+		const clock= this.#getClock()
+		if (!clock) return false;
+		return !clock.private;
+
 	}
 
 	async clear() : Promise< void> {
-		this._amt = 0;
-		await this.refreshValue(this._amt);
+		await this.refreshValue(0);
 	}
 
 	protected async refreshValue(amt: number) {
+		const clock = this.#getClock();
+		if (!clock) return;
+		clock.value = amt;
 		if (window.clockDatabase) {
-			const clock = window.clockDatabase.getName(this.clockName);
-			if (!clock) return;
-			await window.clockDatabase.update( {id: clock.id, value: amt})
+			await window.clockDatabase.update(clock);
 		}
 	}
 
@@ -36,12 +39,24 @@ export  class ProgressClock {
 		return this.amt >= this.max;
 	}
 
+	async hide() {
+		const clock = this.#getClock();
+		if (!clock) return;
+		clock.private = true;
+		window.clockDatabase!.update(clock);
+	}
+
+	async show() {
+		const clock = this.#getClock();
+		if (!clock) return;
+		clock.private = false;
+		window.clockDatabase!.update(clock);
+	}
+
 	get max(): number {
-		if (window.clockDatabase) {
-			const clock = window.clockDatabase.getName(this.clockName);
-			if (clock)  {
-				return clock.max;
-			}
+		const clock = this.#getClock();
+		if (clock)  {
+			return clock.max;
 		}
 		return this.default_max;
 	}
@@ -53,9 +68,27 @@ export  class ProgressClock {
 	}
 
 	async add(mod : number): Promise<number> {
-		this._amt = Math.min(this.max, Math.max(0, this.amt + mod));
-		await this.refreshValue(this._amt);
+		const amt = Math.min(this.max, Math.max(0, this.amt + mod));
+		await this.refreshValue(amt);
 		return this.amt;
+	}
+
+	#getClock(): undefined |  GlobalProgressClocks.ProgressClock {
+		if (!window.clockDatabase) {
+			PersonaError.softFail("No clock database, is Global Progress Clocks enabled?");
+			return undefined;
+		}
+
+		let clock = window.clockDatabase.getName(this.clockName);
+		if (!clock) {
+			window.clockDatabase.addClock({
+				name: this.clockName,
+				value: 0,
+				max: this.default_max,
+			});
+			clock = window.clockDatabase.getName("Doomsday Clock");
+		}
+		return clock;
 	}
 
 }

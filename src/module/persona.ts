@@ -13,6 +13,7 @@ declare global {
 }
 
 
+import { Darkness } from "./exploration/darkness-clock.js";
 import { DebugTools } from "./utility/debug.js";
 import { ErrorScanner } from "./deprecated_scan.js";
 import { SocketManager } from "./utility/socket-manager.js";
@@ -77,6 +78,8 @@ function registerSheetApplications() {
 	Items.registerSheet("persona", PersonaSocialCardSheet, {types: ["socialCard"], makeDefault: true});
 
 }
+
+Hooks.once("ready", () => {Darkness.init()});
 
 Hooks.once("init", async function() {
 	console.log("*** PERSONA SYSTEM INIT START ***");
