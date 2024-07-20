@@ -373,7 +373,6 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 			return power.system.type == "consumable";
 		}
 		case "target-owner-comparison":
-			debugger;
 			const target = getSubject(condition, situation, source, "conditionTarget");
 			const target2 = getSubject(condition, situation, source, "conditionTarget2");
 			if (!target || !target2) return undefined;
