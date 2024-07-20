@@ -453,8 +453,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		};
 		const element = power.system.dmg_type;
 		const resist = target.actor.elementalResist(element);
-		const attackbonus= this.getAttackBonus(attacker, power).concat(modifiers);
+		let attackbonus= this.getAttackBonus(attacker, power).concat(modifiers);
 		attackbonus.add("Custom modifier", this.customAtkBonus);
+		const defense = new ModifierList(
+			target.actor.defensivePowers()
+			.flatMap (item => item.getModifier("allAtk"))
+		);
+		attackbonus = attackbonus.concat(defense);
 		const r = await new Roll("1d20").roll();
 		const rollName =  `${target.name} (vs ${power.system.defense})`;
 		const roll = new RollBundle(rollName, r, attackbonus, situation);
@@ -1116,7 +1121,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	async setEscalationDie(val: number) : Promise<void> {
-		await this.setFlag("persona", "escalation", val);
+		const clamped = Math.clamped(val,0,6);
+		await this.setFlag("persona", "escalation", clamped);
 	}
 
 	async setSocialEncounter(isSocial: boolean) {

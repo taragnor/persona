@@ -666,7 +666,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	getBonuses (type : ModifierTarget): ModifierList {
 		if (this.system.type == "npc")  return new ModifierList();
 		let modList = new ModifierList( this.mainModifiers().flatMap( item => item.getModifier(type)
-			.filter( mod => mod.modifier > 0 || mod.variableModifier.size > 0)
+			.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
 		));
 		return modList;
 	}
@@ -685,10 +685,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		].filter( x => x.getEffects().length > 0);
 	}
 
-	getSourcedDefensivePowers(this: PC | Shadow) {
-		const defensive = this.powers
+	defensivePowers() : Power [] {
+		return  this.powers
 			.filter(x=> x.system.subtype == "defensive");
-		return defensive.flatMap( x=> x.getSourcedEffects(this));
+	}
+
+	getSourcedDefensivePowers(this: PC | Shadow) {
+		return this.defensivePowers().flatMap( x=> x.getSourcedEffects(this));
 	}
 
 	wpnAtkBonus(this: PC | Shadow) : ModifierList {
