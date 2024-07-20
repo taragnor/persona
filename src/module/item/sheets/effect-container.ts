@@ -1,3 +1,4 @@
+import { CONS_TARGETS } from "../../combat/combat-result.js";
 import { DAYS_LIST } from "../../../config/days.js";
 import { RESIST_STRENGTHS } from "../../../config/damage-types.js";
 import { TAROT_DECK } from "../../../config/tarot.js";
@@ -91,6 +92,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			WEATHER_TYPES: WEATHER_TYPES,
 			SOCIAL_LINK_OR_TAROT,
 			STUDENT_SKILLS,
+			CONS_TARGETS,
 		};
 		return this._powerStuffBase;
 	}

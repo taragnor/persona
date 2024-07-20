@@ -284,6 +284,7 @@
 	"persona.effecttypes.lower-resistance": "Lower Damage Resistance",
 	"persona.effecttypes.inspiration-cost": "Pay Inspiration",
 	"persona.effecttypes.display-msg": "Print Message",
+	"persona.effecttypes.use-power": "Activate Power",
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",

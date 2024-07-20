@@ -27,8 +27,11 @@ export const CONSQUENCELIST = [
 	"lower-resistance",
 	"inspiration-cost",
 	"display-msg",
+	"use-power"
 ] as const;
 
+
+export type ConsequenceType = typeof CONSQUENCELIST[number];
 
 export  const MODIFIER_VARIABLES = [
 	"escalationDie" //Escalation Die

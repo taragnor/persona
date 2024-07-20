@@ -31,15 +31,20 @@ export class Darkness {
 		if (clockVal != this.lastLight) {
 			this.lastLight = clockVal;
 			const bright = clockVal * 0.5;
-			const dim = clockVal * 0.5 + 5;
-			const lightObj = {
-				bright,
-				dim,
-				animation: {
+			const dim = clockVal * 0.5 + 6;
+			const torch = {
 					type: "flame",
 					speed: 2,
 					intensity:3,
-				}
+			};
+			const noLight = {
+				type: null,
+			}
+			const animation = clockVal > 0 ? torch : noLight;
+			const lightObj = {
+				bright,
+				dim,
+				animation,
 			};
 			game.scenes.active.tokens.forEach( tok => {
 				if (tok.actor && tok.actor.type == "pc") {

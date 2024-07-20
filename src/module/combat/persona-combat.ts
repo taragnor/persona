@@ -639,7 +639,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	static processConsequence( power: ModifierContainer, situation: Situation, cons: Consequence, attacker: ValidAttackers, atkresult ?: Partial<AttackResult>) : ConsequenceProcessed["consequences"] {
 		let x : ConsequenceProcessed["consequences"];
 		let damageMult = 1;
-		const applyToSelf = cons.applyToSelf ?? false;
+		const applyToSelf = cons?.applyToSelf ?? false;
 		const absorb = situation.isAbsorbed && !applyToSelf;
 		const block = atkresult && atkresult.result == "block" && !applyToSelf;
 		damageMult *= situation.resisted ? 0.5 : 1;
@@ -752,9 +752,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "lower-resistance":
 			case "inspiration-cost":
 			case "display-msg":
+			case "use-power":
 				return [{applyToSelf,cons}];
 			default:
-				cons.type satisfies never;
+				cons satisfies never;
 				break;
 		}
 		return [];

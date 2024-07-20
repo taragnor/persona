@@ -1,3 +1,5 @@
+import { ConsequenceType } from "../../config/effect-types.js";
+import { CONDITION_TARGETS_LIST } from "../../config/precondition-types.js";
 import { ResistStrength } from "../../config/damage-types.js";
 import { ResistType } from "../../config/damage-types.js";
 import { Shadow } from "../actor/persona-actor.js";
@@ -13,7 +15,6 @@ import { PersonaSettings } from "../../config/persona-settings.js";
 import { SlotType } from "../../config/slot-types.js";
 import { PersonaError } from "../persona-error.js";
 import { STATUS_EFFECT_DURATIONS_LIST } from "../../config/status-effects.js";
-import { CONSQUENCELIST } from "../../config/effect-types.js";
 import { StatusDuration } from "../../config/status-effects.js";
 import { Situation } from "../preconditions.js";
 import { Usable } from "../item/persona-item.js";
@@ -230,9 +231,16 @@ export class CombatResult  {
 					msg: cons.msg ?? "",
 				});
 				break;
-
+			case "use-power":  {
+					effect.otherEffects.push( {
+					type: cons.type,
+					powerId : cons.powerId,
+					target: cons.target,
+				});
+				break;
+			}
 			default: {
-				cons.type satisfies never;
+				cons satisfies never;
 				throw new Error("Should be unreachable");
 			}
 		}
@@ -475,6 +483,8 @@ export class CombatResult  {
 				case "hp-loss":
 				case "extra-attack":
 					break;
+				case "use-power":
+					break;
 				default:
 					otherEffect satisfies never;
 			}
@@ -552,6 +562,8 @@ export class CombatResult  {
 					await actor.modifyHP(-otherEffect.amount);
 					break;
 				case "extra-attack":
+					break;
+				case "use-power":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -643,7 +655,13 @@ export type ExtraAttackEffect = {
 	iterativePenalty: number,
 }
 
-export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect;
+type ExecPowerEffect = {
+	type: "use-power",
+	powerId: string,
+	target: ConsTarget,
+}
+
+export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect;
 
 export type StatusEffect = {
 	id: StatusEffectId,
@@ -651,25 +669,51 @@ export type StatusEffect = {
 	duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
 };
 
-export type Consequence = {
-	type: typeof CONSQUENCELIST[number],
-	amount?: number,
-	iterativePenalty?: number,
-	modifiedField?: ModifierTarget,
-	statusName?: StatusEffectId,
-	statusDuration?: StatusDuration,
-	applyToSelf?: boolean,
-	itemAcc?: UniversalItemAccessor<Usable>,
-	slotType?: SlotType,
-	id?: string,
-	otherEffect?: OtherConsequence,
-	flagName?: string,
-	flagId?: string,
-	flagState?: boolean,
-	resistType?: ResistType,
-	resistanceLevel?: ResistStrength,
-	msg?: string,
+
+export type Consequence =
+	{applyToSelf ?: boolean} & (
+		GenericConsequence
+		| UsePowerConsequence
+	);
+
+type GenericConsequence = {
+	type: Exclude<ConsequenceType, "use-power">,
+	amount ?: number,
+	iterativePenalty ?: number,
+	modifiedField ?: ModifierTarget,
+	statusName ?: StatusEffectId,
+	statusDuration ?: StatusDuration,
+	itemAcc ?: UniversalItemAccessor<Usable>,
+	slotType ?: SlotType,
+	id ?: string,
+	otherEffect ?: OtherConsequence,
+	flagName ?: string,
+	flagId ?: string,
+	flagState ?: boolean,
+	resistType ?: ResistType,
+	resistanceLevel ?: ResistStrength,
+	msg ?: string,
 }
+
+type UsePowerConsequence = {
+	type: "use-power",
+	powerId: string,
+	target: ConsTarget,
+}
+
+export const CONS_TARGET_LIST = [
+	...CONDITION_TARGETS_LIST,
+	"all-enemies",
+	"all-allies",
+	"all-combatants",
+] as const;
+
+export type ConsTarget = typeof CONS_TARGET_LIST[number];
+
+export const CONS_TARGETS = Object.fromEntries(
+	CONS_TARGET_LIST.map( x=> [x, `persona.consequence.targets.${x}`])
+);
+
 
 export type AttackResult = {
 	result: "hit" | "miss" | "crit" | "reflect" | "block" | "absorb",

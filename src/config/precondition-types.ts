@@ -219,8 +219,6 @@ export const NUMERIC_COMPARISON_TARGET = Object.fromEntries(
 	NUMERIC_COMPARISON_TARGET_LIST.map( x=> [x, `persona.preconditions.comparison.${x}`])
 );
 
-
-
 const COMPARATORS_LIST = [
 	"==",
 	"!=",
@@ -234,11 +232,11 @@ const COMPARATORS_LIST = [
 
 type Comparator = typeof COMPARATORS_LIST[number];
 
-export const COMPARATORS = Object.fromEntries ( 
+export const COMPARATORS = Object.fromEntries (
 	COMPARATORS_LIST.map( x=> [x, x])
 );
 
-const CONDITION_TARGETS_LIST = [
+export const CONDITION_TARGETS_LIST = [
 	"target",
 	"owner",
 	"attacker",

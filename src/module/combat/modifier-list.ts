@@ -9,7 +9,6 @@ import { UniversalItemAccessor } from "../utility/db-accessor.js";
 import { PersonaDB } from "../persona-db.js";
 import { Precondition } from "../../config/precondition-types.js";
 import { Situation } from "../preconditions.js"
-import { testPrecondition } from "../preconditions.js";
 import { ModifierVariable } from "../../config/effect-types.js";
 
 export type ModifierListItem = {
@@ -62,7 +61,7 @@ export class ModifierList {
 
 	static getVariableModifiers(consequences: Consequence[], targetMods: ModifierTarget[]): ModifierList["_data"][number]["variableModifier"] {
 		return new Set(ArrayCorrector(consequences).flatMap ( c=> {
-			if (!c.modifiedField) return [];
+			if (!("modifiedField" in c) || !c.modifiedField) return [];
 			if (!targetMods.includes(c.modifiedField)) return [];
 			if (c.type == "add-escalation") return ["escalationDie"];
 			return [];
@@ -73,7 +72,7 @@ export class ModifierList {
 		targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
 		return (ArrayCorrector(consequences) ?? [])
 			.reduce( (acc,x)=> {
-				if (x.modifiedField && targetMods.includes(x.modifiedField)) {
+				if ("modifiedField" in x && x.modifiedField && targetMods.includes(x.modifiedField)) {
 					if (x.amount) return acc + x.amount;
 				}
 				return acc;
