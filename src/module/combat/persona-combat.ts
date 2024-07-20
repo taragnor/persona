@@ -460,7 +460,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		);
 		attackbonus = attackbonus.concat(defense);
 		const r = await new Roll("1d20").roll();
-		const rollName =  `${target.name} (vs ${power.system.defense})`;
+		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} (vs ${power.system.defense})`;
 		const roll = new RollBundle(rollName, r, attackbonus, situation);
 		const naturalAttackRoll = roll.dice[0].total;
 		situation.naturalAttackRoll = naturalAttackRoll;
