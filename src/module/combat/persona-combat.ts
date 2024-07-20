@@ -402,9 +402,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 			const usePower = this_result.findEffect("use-power");
 			if (usePower) {
-				const newAttacker : PToken= this.getPTokenFromActorAccessor(usePower.newAttacker);
+				const newAttacker = this.getPTokenFromActorAccessor(usePower.newAttacker);
 				const execPower = PersonaDB.allPowers().find( x=> x.id == usePower.powerId);
-				if (execPower) {
+				if (execPower && newAttacker) {
 					const altTargets= this.getAltTargets(newAttacker, atkResult.situation, usePower.target );
 					const newTargets = await this.getTargets(newAttacker, execPower, altTargets)
 					const extraPower = await this.#usePowerOn(newAttacker, execPower, newTargets, "standard");
@@ -418,7 +418,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return result;
 	}
 
-	static getPTokenFromActorAccessor(acc: UniversalActorAccessor<ValidAttackers>) : PToken {
+	static getPTokenFromActorAccessor(acc: UniversalActorAccessor<ValidAttackers>) : PToken | undefined {
 		const combat = game.combat;
 		if (acc.token) {
 			return PersonaDB.findToken(acc.token) as PToken;
@@ -430,7 +430,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		const tok = game.scenes.current.tokens.contents.find( tok => tok.actor == actor);
 		if (tok) return tok as PToken;
-		throw new PersonaError(`Can't find token for actor ${actor.name}`)
+		return undefined;
+		// throw new PersonaError(`Can't find token for actor ${actor.name}`)
 	}
 
 	static computeResultBasedEffects(result: CombatResult) {
@@ -633,7 +634,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					const x = this.ProcessConsequences(power, situation, consequences, attacker.actor!, atkResult);
 					CombatRes.escalationMod += x.escalationMod;
 					for (const cons of x.consequences) {
-						let effectiveTarget : PToken;
+						let effectiveTarget : PToken | undefined;
 						switch (cons.applyTo) {
 							case "target" :
 								effectiveTarget = target;
@@ -657,7 +658,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 								cons.applyTo satisfies never;
 								continue;
 						}
-						CombatRes.addEffect(atkResult, effectiveTarget.actor!, cons.cons, power.system.dmg_type);
+						if (effectiveTarget) {
+							CombatRes.addEffect(atkResult, effectiveTarget.actor!, cons.cons, power.system.dmg_type);
+						}
 					}
 				}
 			}
@@ -952,14 +955,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "target": {
 				if (!situation.target) return [];
 				const token = this.getPTokenFromActorAccessor(situation.target);
-				return [token];
+				if (token) return [token]; else return [];
 			}
 			case "owner":
 				return [attacker];
 			case "attacker": {
 				if (!situation.attacker) return [];
 				const token = this.getPTokenFromActorAccessor(situation.attacker);
-				return [token];
+				if (token) return [token]; else return [];
 			}
 			case "all-enemies": {
 				const combat= this.ensureCombatExists();
@@ -979,7 +982,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return combat.combatants.contents.flatMap( c=> c.actor ? [c.token as PToken] : []);
 			}
 			case "user":
-				return [this.getPTokenFromActorAccessor(situation.user)];
+				const token = this.getPTokenFromActorAccessor(situation.user);
+				if (token) return [token]; else return [];
 			default:
 				targettingType satisfies never;
 				return [];
