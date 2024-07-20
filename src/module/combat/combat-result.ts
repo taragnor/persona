@@ -1,3 +1,4 @@
+import { ConditionTarget } from "../../config/precondition-types.js";
 import { ConsequenceType } from "../../config/effect-types.js";
 import { CONDITION_TARGETS_LIST } from "../../config/precondition-types.js";
 import { ResistStrength } from "../../config/damage-types.js";
@@ -232,7 +233,12 @@ export class CombatResult  {
 				});
 				break;
 			case "use-power":  {
-					effect.otherEffects.push( {
+				if (!cons.actorOwner) {
+					PersonaError.softFail("No actor owner for usepower ability");
+					break;
+				}
+				effect.otherEffects.push( {
+					newAttacker:  cons.actorOwner,
 					type: cons.type,
 					powerId : cons.powerId,
 					target: cons.target,
@@ -657,6 +663,7 @@ export type ExtraAttackEffect = {
 
 type ExecPowerEffect = {
 	type: "use-power",
+	newAttacker: UniversalActorAccessor<PC | Shadow>
 	powerId: string,
 	target: ConsTarget,
 }
@@ -671,7 +678,11 @@ export type StatusEffect = {
 
 
 export type Consequence =
-	{applyToSelf ?: boolean} & (
+	{
+		applyToSelf ?: boolean,
+		applyTo ?: ConditionTarget
+		actorOwner ?: UniversalActorAccessor<PC | Shadow>,
+	} & (
 		GenericConsequence
 		| UsePowerConsequence
 	);

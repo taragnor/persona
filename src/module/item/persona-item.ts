@@ -138,6 +138,7 @@ const power = PersonaDB.getBasicPower(powerName);
 			case "passive":
 			case "none":
 			case "standalone":
+			case "defensive":
 				break;
 			default:
 				this.system.subtype satisfies never;
@@ -655,18 +656,24 @@ const power = PersonaDB.getBasicPower(powerName);
 		}
 	}
 
-	getSourcedEffects(this: ModifierContainer): {source: ModifierContainer, effects: ConditionalEffect[]} {
-		return {source: this,
-			effects: this.getEffects()
+	getSourcedEffects(this: ModifierContainer, sourceActor: PC | Shadow): {source: ModifierContainer, effects: ConditionalEffect[]} {
+		return {
+			source: this,
+			effects: this.getEffects(sourceActor)
 		};
 	}
 
-	getEffects(this: ModifierContainer): ConditionalEffect[] {
+	getEffects(this: ModifierContainer, sourceActor ?: PC | Shadow): ConditionalEffect[] {
 		return this.system.effects.map( eff=> {
-			return {
-				conditions: ArrayCorrector(eff.conditions),
-				consequences: ArrayCorrector(eff.consequences)
-			}
+			const conditions= ArrayCorrector(eff.conditions)
+				.map (x=> ({ ...x, actorOwner: sourceActor? sourceActor.accessor : undefined
+				})
+				);
+			const consequences= ArrayCorrector(eff.consequences)
+				.map (x=> ({ ...x, actorOwner: sourceActor? sourceActor.accessor : undefined
+				})
+				);
+			return {conditions, consequences};
 		});
 	}
 

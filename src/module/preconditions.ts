@@ -373,6 +373,7 @@ function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, 
 			return power.system.type == "consumable";
 		}
 		case "target-owner-comparison":
+			debugger;
 			const target = getSubject(condition, situation, source, "conditionTarget");
 			const target2 = getSubject(condition, situation, source, "conditionTarget2");
 			if (!target || !target2) return undefined;
@@ -432,9 +433,9 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 	const condTarget = cond[field];
 	switch (condTarget) {
 		case "owner":
-			if (situation.user.token)
-				return PersonaDB.findToken(situation.user.token) as PToken | undefined;
-			else return PersonaDB.findActor(situation.user);
+			if ("actorOwner" in cond && cond.actorOwner) {
+				return 	PersonaCombat.getPTokenFromActorAccessor(cond.actorOwner as NonNullable<Precondition["actorOwner"]>);
+			}
 		case "attacker":
 			if (situation.attacker?.token)
 				return PersonaDB.findToken(situation.attacker.token) as PToken | undefined;
@@ -443,6 +444,10 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 			if (situation.target?.token)
 				return PersonaDB.findToken(situation.target.token) as PToken | undefined;
 			else return situation.target ? PersonaDB.findActor(situation.target): undefined;
+		case "user":
+			if (situation.user.token)
+				return PersonaDB.findToken(situation.user.token) as PToken | undefined;
+			else return PersonaDB.findActor(situation.user);
 		default:
 			condTarget satisfies undefined;
 			if (situation.target?.token)

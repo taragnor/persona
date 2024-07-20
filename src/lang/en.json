@@ -197,6 +197,7 @@
 	"persona.power.types.weapon": "Weapon",
 	"persona.power.types.magic": "Magic Skill",
 	"persona.power.types.other": "Other",
+	"persona.power.types.defensive": "Defensive",
 	"persona.power.types.passive": "Passive",
 	"persona.power.types.none": "None",
 	"persona.power.types.standalone": "Standalone",
@@ -338,6 +339,7 @@
 
 	"persona.preconditions.targets.owner": "Owner of Power" ,
 	"persona.preconditions.targets.target": "Target of Attack" ,
+	"persona.preconditions.targets.user": "User of Main Power" ,
 	"persona.preconditions.targets.attacker": "Attacker" ,
 	"persona.preconditions.dice.escalation": "Escalation DIe" ,
 	"persona.preconditions.dice.activation": "Activation Roll" ,
@@ -442,6 +444,15 @@
 	"persona.social.card.thresholdType.static": "Static",
 	"persona.social.card.thresholdType.levelScaled": "Level Scaled",
 	"persona.social.card.thresholdType.statScaled": "10 + social stat",
+
+	"persona.consequence.targets.target" : "Target",
+	"persona.consequence.targets.owner" : "Owner of Power",
+	"persona.consequence.targets.user" : "User of Initial Power",
+	"persona.consequence.targets.attacker" : "Attacker",
+	"persona.consequence.targets.all-enemies" : "All Enemies",
+	"persona.consequence.targets.all-allies" : "All Allies",
+	"persona.consequence.targets.all-combatants" : "All Combatants",
+
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",

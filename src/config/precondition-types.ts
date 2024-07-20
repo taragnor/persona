@@ -1,3 +1,6 @@
+import { UniversalActorAccessor } from "../module/utility/db-accessor.js";
+import { PC } from "../module/actor/persona-actor.js";
+import { Shadow } from "../module/actor/persona-actor.js";
 import { ResistType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";
 import { DAYS_LIST } from "./days.js";
@@ -25,7 +28,11 @@ export type PreconditionType = typeof PRECONDITIONLIST[number];
 export const PRECONDITIONTYPES = Object.fromEntries( PRECONDITIONLIST.map(x=> [x, `persona.preconditions.${x}`]));
 
 
-export type Precondition = GenericPC | NumericComparisonPC | BooleanComparisonPC | SaveVersus | Triggered;
+export type Precondition =
+	{actorOwner ?: UniversalActorAccessor<PC | Shadow>}
+	& (
+	GenericPC | NumericComparisonPC | BooleanComparisonPC | SaveVersus | Triggered
+	);
 
 type GenericPC = {
 	type: Exclude<PreconditionType, "numeric" | "boolean" | 'save-versus' | "on-trigger">;
@@ -240,6 +247,7 @@ export const CONDITION_TARGETS_LIST = [
 	"target",
 	"owner",
 	"attacker",
+	"user",
 ] as const;
 
 export type ConditionTarget= typeof CONDITION_TARGETS_LIST[number];

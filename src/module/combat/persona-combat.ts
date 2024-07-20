@@ -1,3 +1,5 @@
+import { ConditionTarget } from "../../config/precondition-types.js";
+import { ConsTarget } from "./combat-result.js";
 import { PersonaSocial } from "../social/persona-social.js"
 import { testPreconditions } from "../preconditions.js"
 import { UniversalModifier } from "../item/persona-item.js";
@@ -399,11 +401,37 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					result.merge(extra);
 				}
 			}
+			const usePower = this_result.findEffect("use-power");
+			if (usePower) {
+				const newAttacker : PToken= this.getPTokenFromActorAccessor(usePower.newAttacker);
+				const execPower = PersonaDB.allPowers().find( x=> x.id == usePower.powerId);
+				if (execPower) {
+					const altTargets= this.getAltTargets(newAttacker, atkResult.situation, usePower.target );
+					const newTargets = await this.getTargets(newAttacker, execPower, altTargets)
+					const extraPower = await this.#usePowerOn(newAttacker, execPower, newTargets, "standard");
+					result.merge(extraPower);
+				}
+			}
 			Hooks.callAll("onUsePower", power, attacker, target);
 			i++;
 		}
 		this.computeResultBasedEffects(result);
 		return result;
+	}
+
+	static getPTokenFromActorAccessor(acc: UniversalActorAccessor<ValidAttackers>) : PToken {
+		const combat = game.combat;
+		if (acc.token) {
+			return PersonaDB.findToken(acc.token) as PToken;
+		}
+		const actor = PersonaDB.findActor(acc);
+		if (combat)  {
+			const comb = combat.combatants.find( c=> c.actor == actor);
+			if (comb) {return comb.token as PToken;}
+		}
+		const tok = game.scenes.current.tokens.contents.find( tok => tok.actor == actor);
+		if (tok) return tok as PToken;
+		throw new PersonaError(`Can't find token for actor ${actor.name}`)
 	}
 
 	static computeResultBasedEffects(result: CombatResult) {
@@ -592,7 +620,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const power = PersonaDB.findItem(atkResult.power);
 		const attacker = PersonaDB.findToken(atkResult.attacker);
 		const target = PersonaDB.findToken(atkResult.target);
-		const sourcedEffects = [power.getSourcedEffects()].concat(attacker.actor!.getSourcedEffects());
+		const sourcedEffects = [power.getSourcedEffects( PersonaDB.findToken(atkResult.attacker).actor)].concat(attacker.actor!.getSourcedEffects()).concat(target.actor.getSourcedDefensivePowers());
 		const CombatRes = new CombatResult(atkResult);
 		for (const {source, effects} of sourcedEffects){
 			for (let effect of effects) {
@@ -601,7 +629,30 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					const x = this.ProcessConsequences(power, situation, consequences, attacker.actor!, atkResult);
 					CombatRes.escalationMod += x.escalationMod;
 					for (const cons of x.consequences) {
-						const effectiveTarget = cons.applyToSelf ? attacker : target;
+						let effectiveTarget : PToken;
+						switch (cons.applyTo) {
+							case "target" :
+								effectiveTarget = target;
+								break;
+							case "attacker":
+								effectiveTarget = attacker;
+								break;
+							case "owner":
+								if (cons.cons.actorOwner) {
+									effectiveTarget = this.getPTokenFromActorAccessor(cons.cons.actorOwner);
+									break;
+								}
+								ui.notifications.notify("Can't find Owner of Consequnece");
+								Debug(cons);
+								continue;
+							case "user":
+								const userToken  = this.getPTokenFromActorAccessor(situation.user);
+								effectiveTarget = userToken;
+								break;
+							default:
+								cons.applyTo satisfies never;
+								continue;
+						}
 						CombatRes.addEffect(atkResult, effectiveTarget.actor!, cons.cons, power.system.dmg_type);
 					}
 				}
@@ -609,6 +660,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		return CombatRes;
 	}
+
 
 	static ProcessConsequences_simple(consequence_list: Consequence[]): ConsequenceProcessed {
 		let consequences : ConsequenceProcessed["consequences"] = [];
@@ -637,21 +689,22 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	static processConsequence( power: ModifierContainer, situation: Situation, cons: Consequence, attacker: ValidAttackers, atkresult ?: Partial<AttackResult>) : ConsequenceProcessed["consequences"] {
-		let x : ConsequenceProcessed["consequences"];
+		// let x : ConsequenceProcessed["consequences"];
 		let damageMult = 1;
-		const applyToSelf = cons?.applyToSelf ?? false;
+		const applyToSelf = cons.applyToSelf ?? false;
 		const absorb = situation.isAbsorbed && !applyToSelf;
 		const block = atkresult && atkresult.result == "block" && !applyToSelf;
 		damageMult *= situation.resisted ? 0.5 : 1;
+		const applyTo = cons.applyTo ? cons.applyTo : (applyToSelf ? "owner" : "target");
 		switch (cons.type) {
 			case "dmg-mult":
 				return [{
-					applyToSelf,
+					applyTo,
 					cons
 				}];
 			case "dmg-high":
 				return [{
-					applyToSelf,
+					applyTo,
 					cons: {
 						type: cons.type,
 						amount: power.getDamage(attacker, "high", situation) * (absorb ? -1 : damageMult),
@@ -659,7 +712,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				}];
 			case "dmg-low":
 				return [{
-					applyToSelf,
+					applyTo,
 					cons: {
 						type: cons.type,
 						amount: power.getDamage(attacker, "low", situation) * (absorb ? -1 : damageMult),
@@ -674,7 +727,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				}
 				const userToken = PersonaDB.findToken(userTokenAcc);
 				return [{
-					applyToSelf,
+					applyTo,
 					cons : {
 						type: cons.type,
 						amount: PersonaCombat.calculateAllOutAttackDamage(userToken, situation).low * (absorb ? -1 : damageMult),
@@ -690,7 +743,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				}
 				const userToken = PersonaDB.findToken(userTokenAcc);
 				return [{
-					applyToSelf,
+					applyTo,
 					cons : {
 						type: cons.type,
 						amount: PersonaCombat.calculateAllOutAttackDamage(userToken, situation).high * (absorb ? -1 : damageMult),
@@ -703,15 +756,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				break;
 			case "addStatus": case "removeStatus":
 				if (!applyToSelf && (absorb || block)) {return [];}
-				return  [{applyToSelf,cons}];
+				return  [{applyTo,cons}];
 			default:
 				return this.processConsequence_simple(cons);
-	}
+		}
 		return [];
 	}
 
 	static processConsequence_simple( cons: Consequence) :ConsequenceProcessed["consequences"] {
 		const applyToSelf = cons.applyToSelf ?? false;
+		const applyTo = cons.applyTo ? cons.applyTo : (applyToSelf ? "owner" : "target");
 		switch (cons.type) {
 			case "dmg-low":
 			case "dmg-high":
@@ -722,7 +776,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return [];
 			case "hp-loss":
 				return [{
-					applyToSelf,
+					applyTo,
 					cons: {
 						type: "hp-loss",
 						amount: cons.amount ?? 0,
@@ -730,7 +784,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				}];
 			case "addStatus":
 			case "removeStatus":
-				return  [{applyToSelf,cons}];
+				return  [{applyTo,cons}];
 			case "none":
 			case "modifier":
 			case "escalationManipulation": //since this is no llonger handled here we do nothing
@@ -753,7 +807,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "inspiration-cost":
 			case "display-msg":
 			case "use-power":
-				return [{applyToSelf,cons}];
+				return [{applyTo,cons}];
 			default:
 				cons satisfies never;
 				break;
@@ -888,8 +942,81 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return new ModifierList();
 	}
 
-	static async getTargets(attacker: PToken, power: Usable): Promise<PToken[]> {
-		const selected = Array.from(game.user.targets).map(x=> x.document) as PToken[];
+	static getAltTargets ( attacker: PToken, situation : Situation, targettingType :  ConsTarget) : PToken[] {
+		const attackerType = attacker.actor.getAllegiance();
+		switch (targettingType) {
+			case "target": {
+				if (!situation.target) return [];
+				const token = this.getPTokenFromActorAccessor(situation.target);
+				return [token];
+			}
+			case "owner":
+				return [attacker];
+			case "attacker": {
+				if (!situation.attacker) return [];
+				const token = this.getPTokenFromActorAccessor(situation.attacker);
+				return [token];
+			}
+			case "all-enemies": {
+				const combat= this.ensureCombatExists();
+				const targets= combat.combatants.filter( x => {
+					const actor = x.actor;
+					if (!actor || !(actor as ValidAttackers).isAlive())  return false;
+					return ((x.actor as ValidAttackers).getAllegiance() != attackerType)
+				});
+				return targets.map( x=> x.token as PToken);
+			}
+			case "all-allies": {
+				return this.getAllAlliesOf(attacker);
+			}
+			case "all-combatants": {
+				const combat = game.combat;
+				if (!combat) return [];
+				return combat.combatants.contents.flatMap( c=> c.actor ? [c.token as PToken] : []);
+			}
+			case "user":
+				return [this.getPTokenFromActorAccessor(situation.user)];
+			default:
+				targettingType satisfies never;
+				return [];
+		}
+	}
+
+	static getAllEnemiesOf(token: PToken) : PToken [] {
+		const attackerType = token.actor.getAllegiance();
+		const combat= this.ensureCombatExists();
+		const targets= combat.combatants.filter( x => {
+			const actor = x.actor;
+			if (!actor || !(actor as ValidAttackers).isAlive())  return false;
+			return ((x.actor as ValidAttackers).getAllegiance() != attackerType)
+		});
+		return targets.map( x=> x.token as PToken);
+	}
+
+	static getAllAlliesOf(token: PToken) : PToken[] {
+		const attackerType = token.actor.getAllegiance();
+		const combat= game.combat;
+		const tokens = combat
+			? combat.combatants.contents
+			.filter( x=> x.actor)
+			.map(x=> x.token)
+			: game.scenes.current.tokens
+			.filter( x=> !!x.actor && (x.actor as PersonaActor).system.type == "pc");
+		const targets= tokens.filter( x => {
+			const actor = x.actor;
+			if (!actor)  return false;
+			if (!(actor as ValidAttackers).isAlive()) return false;
+			if ((actor as ValidAttackers).isFullyFaded()) return false;
+			return ((x.actor as ValidAttackers).getAllegiance() == attackerType)
+		});
+		return targets.map( x=> x as PToken);
+
+	}
+
+
+	static async getTargets(attacker: PToken, power: Usable, altTargets?: PToken[]): Promise<PToken[]> {
+		const selected = altTargets != undefined ? altTargets : Array.from(game.user.targets).map(x=> x.document) as PToken[];
+
 		const attackerType = attacker.actor.getAllegiance();
 		switch (power.system.targets) {
 			case "1-engaged":
@@ -902,13 +1029,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				this.checkTargets(1,1, false);
 				return selected;
 			case "all-enemies": {
-				const combat= this.ensureCombatExists();
-				const targets= combat.combatants.filter( x => {
-					const actor = x.actor;
-					if (!actor || !(actor as ValidAttackers).isAlive())  return false;
-					return ((x.actor as ValidAttackers).getAllegiance() != attackerType)
-				});
-				return targets.map( x=> x.token as PToken);
+				return this.getAllEnemiesOf(attacker);
 			}
 			case "all-dead-allies": {
 				const combat= this.ensureCombatExists();
@@ -922,21 +1043,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return targets.map( x=> x.token as PToken);
 			}
 			case "all-allies": {
-				const combat= game.combat;
-				const tokens = combat
-				? combat.combatants.contents
-				.filter( x=> x.actor)
-				.map(x=> x.token)
-				: game.scenes.current.tokens
-				.filter( x=> !!x.actor && (x.actor as PersonaActor).system.type == "pc");
-				const targets= tokens.filter( x => {
-					const actor = x.actor;
-					if (!actor)  return false;
-					if (!(actor as ValidAttackers).isAlive()) return false;
-					if ((actor as ValidAttackers).isFullyFaded()) return false;
-					return ((x.actor as ValidAttackers).getAllegiance() == attackerType)
-				});
-				return targets.map( x=> x as PToken);
+				return this.getAllAlliesOf(attacker);
 			}
 			case "self": {
 				return [attacker];
@@ -1392,8 +1499,9 @@ type SaveOptions = {
 
 export type ConsequenceProcessed = {
 	consequences: {
-		applyToSelf: boolean,
-		cons: Consequence
+		applyTo: ConditionTarget,
+		// applyToSelf: boolean,
+		cons: Consequence,
 	}[],
 	escalationMod: number
 }

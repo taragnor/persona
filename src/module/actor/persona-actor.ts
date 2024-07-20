@@ -685,6 +685,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		].filter( x => x.getEffects().length > 0);
 	}
 
+	getSourcedDefensivePowers(this: PC | Shadow) {
+		const defensive = this.powers
+			.filter(x=> x.system.subtype == "defensive");
+		return defensive.flatMap( x=> x.getSourcedEffects(this));
+	}
+
 	wpnAtkBonus(this: PC | Shadow) : ModifierList {
 		const mods = this.getBonuses("allAtk");
 		const lvl = this.system.combat.classData.level;
@@ -1147,8 +1153,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		});
 	}
 
-	getSourcedEffects(): {source: ModifierContainer, effects: ConditionalEffect[]} []{
-		return this.mainModifiers().flatMap( x=> x.getSourcedEffects());
+	getSourcedEffects(this: PC | Shadow): {source: ModifierContainer, effects: ConditionalEffect[]} []{
+		return this.mainModifiers().flatMap( x=> x.getSourcedEffects(this));
 	}
 
 	getEffects() : ConditionalEffect[] {
