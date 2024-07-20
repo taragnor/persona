@@ -595,31 +595,18 @@ const power = PersonaDB.getBasicPower(powerName);
 		await this.update({"system.effects": this.system.effects});
 	}
 
-	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget) : ModifierListItem[] {
+	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow) : ModifierListItem[] {
 		bonusTypes = Array.isArray(bonusTypes) ? bonusTypes: [bonusTypes];
-		return this.getEffects()
+		return this.getEffects(sourceActor)
 			.map(x =>
 				({
 					name: this.name,
 					source: PersonaDB.getUniversalItemAccessor(this),
 					conditions: ArrayCorrector(x.conditions),
 					modifier: ModifierList.getModifierAmount(x.consequences, bonusTypes),
-					// modifier: ArrayCorrector(x.consequences)
-					// .reduce( (acc,x)=> {
-					// 	if ( x.modifiedField == type) {
-					// 		if (x.amount != 0) return acc + (x.amount ?? 0);
-					// 	}
-					// 	return acc;
-					// }, 0),
 					variableModifier: ModifierList.getVariableModifiers(x.consequences, bonusTypes),
-					// variableModifier: new Set(ArrayCorrector(x.consequences).flatMap ( x=> {
-					// 	if (x.modifiedField != type) return [];
-					// 	if (x.type == "add-escalation") return ["escalationDie"];
-					// 	return [];
-					// }))
 				})
 			);
-		// return this.system.modifiers[type];
 	}
 
 	getDamage(this:ModifierContainer , user: PC | Shadow, type: "high" | "low", situation: Situation = {user: user.accessor , usedPower: this.accessor}) : number {

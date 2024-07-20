@@ -50,7 +50,6 @@ declare global {
 	}
 }
 
-
 type AttackRollType = "activation" | "standard" | "reflect" | number; //number is used for bonus attacks
 
 export class PersonaCombat extends Combat<PersonaActor> {
@@ -457,7 +456,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		attackbonus.add("Custom modifier", this.customAtkBonus);
 		const defense = new ModifierList(
 			target.actor.defensivePowers()
-			.flatMap (item => item.getModifier("allAtk"))
+			.flatMap (item => item.getModifier("allAtk", target.actor))
 		);
 		attackbonus = attackbonus.concat(defense);
 		const r = await new Roll("1d20").roll();
@@ -937,12 +936,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (power.system.subtype == "weapon") {
 			const mod = actor.wpnAtkBonus();
 			mod.add("Power attack modifier", power.system.atk_bonus);
-			return mod.concat(new ModifierList(power.getModifier("wpnAtk")));
+			return mod.concat(new ModifierList(power.getModifier("wpnAtk", actor)));
 		}
 		if (power.system.subtype == "magic") {
 			const mod = actor.magAtkBonus();
 			mod.add("Power attack modifier", power.system.atk_bonus);
-			return mod.concat(new ModifierList(power.getModifier("magAtk")));
+			return mod.concat(new ModifierList(power.getModifier("magAtk", actor)));
 		}
 		return new ModifierList();
 	}

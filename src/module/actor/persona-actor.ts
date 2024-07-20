@@ -663,9 +663,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	getBonuses (type : ModifierTarget): ModifierList {
-		if (this.system.type == "npc")  return new ModifierList();
-		let modList = new ModifierList( this.mainModifiers().flatMap( item => item.getModifier(type)
+	getBonuses (modnames : ModifierTarget | ModifierTarget[]): ModifierList {
+		if (this.system.type == "npc" || this.system.type == "tarot")  return new ModifierList();
+		let modList = new ModifierList( this.mainModifiers().flatMap( item => item.getModifier(modnames, this as Shadow | PC)
 			.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
 		));
 		return modList;
@@ -695,32 +695,31 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	wpnAtkBonus(this: PC | Shadow) : ModifierList {
-		const mods = this.getBonuses("allAtk");
+		const mods = this.getBonuses(["allAtk", "wpnAtk"]);
 		const lvl = this.system.combat.classData.level;
 		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
 		const wpnAtk = this.system.combat.wpnatk;
 		mods.add("Base Weapon Attack Bonus", wpnAtk);
 		mods.add("Level Bonus", lvl + inc);
-		const itemBonus = this.getBonuses("wpnAtk");
-		return mods.concat(itemBonus);
+		// const itemBonus = this.getBonuses("wpnAtk");
+		return mods;
 	}
 
 	magAtkBonus(this:PC | Shadow) : ModifierList {
-		const mods = this.getBonuses("allAtk");
+		const mods = this.getBonuses(["allAtk", "magAtk"]);
 		const lvl = this.system.combat.classData.level ?? 0;
 		const magAtk = this.system.combat.magatk ?? 0;
 		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
 		mods.add("Base Magic Attack Bonus", magAtk);
 		mods.add("Level Bonus", lvl + inc);
-		const itemBonus = this.getBonuses("magAtk");
-		return mods.concat(itemBonus);
+		// const itemBonus = this.getBonuses("magAtk");
+		return mods;
 	}
 
 	itemAtkBonus(this: PC | Shadow, item :Consumable) : ModifierList {
-		const mm = this.getBonuses("itemAtk");
-		mm.concat(this.getBonuses("allAtk"));
+		const mm = this.getBonuses(["itemAtk", "allAtk"]);
+		// mm.concat(this.getBonuses("allAtk"));
 		mm.add("Item Base Bonus", item.system.atk_bonus);
-
 		return mm;
 	}
 
@@ -800,7 +799,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	critBoost(this: PC | Shadow) : ModifierList {
-		const mods = this.mainModifiers().flatMap( item => item.getModifier("criticalBoost"));
+		const mods = this.mainModifiers().flatMap( item => item.getModifier("criticalBoost", this));
 		return new ModifierList(mods);
 	}
 
@@ -825,7 +824,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const ret = new ModifierList();
 		ret.add("Base Modifier", modifier);
 
-		const mods = this.mainModifiers().flatMap( item => item.getModifier("critResist"));
+		const mods = this.mainModifiers().flatMap( item => item.getModifier("critResist", this));
 		return ret.concat(new ModifierList(mods));
 	}
 
@@ -1194,14 +1193,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.talents": this.system.talents});
 	}
 
-	getSaveBonus() : ModifierList {
-		const mods = this.mainModifiers().flatMap( item => item.getModifier("save"));
+	getSaveBonus( this: Shadow | PC) : ModifierList {
+		const mods = this.mainModifiers().flatMap( item => item.getModifier("save", this));
 		// const x = this.getActiveTokens()[0]
 		return new ModifierList(mods);
 	}
 
-	getDisengageBonus() : ModifierList {
-		const mods = this.mainModifiers().flatMap( item => item.getModifier("disengage"));
+	getDisengageBonus( this: Shadow | PC) : ModifierList {
+		const mods = this.mainModifiers().flatMap( item => item.getModifier("disengage", this));
 		return new ModifierList(mods);
 	}
 

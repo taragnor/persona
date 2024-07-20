@@ -228,7 +228,7 @@ function triggerComparison(condition: Triggered, situation: Situation, _source:O
 }
 
 /** returns undefined in case of a state that just shouldn't be analzyed at all*/
-function getBoolTestState(condition: BooleanComparisonPC, situation: Situation, source: Option<PowerContainer>): boolean | undefined {
+function getBoolTestState(condition: Precondition & BooleanComparisonPC, situation: Situation, source: Option<PowerContainer>): boolean | undefined {
 	switch(condition.boolComparisonTarget) {
 		case "engaged": {
 			if (!situation.activeCombat){
