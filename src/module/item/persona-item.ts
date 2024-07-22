@@ -75,12 +75,6 @@ const power = PersonaDB.getBasicPower(powerName);
 		}
 	}
 
-	get conditional_effects() : ConditionalEffect[] {
-		if (! ("effects" in this.system)) return [];
-		return (this as ModifierContainer).getEffects();
-
-	}
-
 	powerCostString(this: Power) : string {
 		if (!this.parent || this.parent.type == "pc")
 			return this.powerCostString_PC();
@@ -91,7 +85,7 @@ const power = PersonaDB.getBasicPower(powerName);
 
 	grantsPowers(this: ModifierContainer): boolean {
 		try{
-		return this.conditional_effects.some(
+		return this.getEffects(null).some(
 			eff => eff.consequences.some(
 				cons => cons.type == "add-power-to-list"
 			));
@@ -108,7 +102,7 @@ const power = PersonaDB.getBasicPower(powerName);
 				user: user.accessor
 			};
 		}
-		return this.conditional_effects
+		return this.getEffects(user)
 			.filter(
 				eff => eff.consequences.some(
 					cons => cons.type == "add-power-to-list"
@@ -650,7 +644,7 @@ const power = PersonaDB.getBasicPower(powerName);
 		};
 	}
 
-	getEffects(this: ModifierContainer, sourceActor ?: PC | Shadow): ConditionalEffect[] {
+	getEffects(this: ModifierContainer, sourceActor : PC | Shadow | null): ConditionalEffect[] {
 		return this.system.effects.map( eff=> {
 			const conditions= ArrayCorrector(eff.conditions)
 				.map (x=> ({ ...x,
@@ -670,7 +664,7 @@ const power = PersonaDB.getBasicPower(powerName);
 
 	requiredLinkLevel(this: Focus) : number  {
 		let requirement = 0;
-		for (const eff of this.getEffects()) {
+		for (const eff of this.getEffects( null)) {
 			for (const cond of eff.conditions) {
 				if (cond.type == "numeric" && cond.comparisonTarget == "social-link-level")
 				{

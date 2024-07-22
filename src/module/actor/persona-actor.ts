@@ -454,7 +454,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					return (i ? [i as Power] : []);
 				});
 				const bonusPowers : Power[] =
-					this.mainModifiers({omitPowers:true})
+					(this as PC).mainModifiers({omitPowers:true})
 					.filter(x=> x.grantsPowers())
 					.flatMap(x=> x.getGrantedPowers(this as PC ));
 				return basicPowers.concat(pcPowers).concat(bonusPowers);
@@ -675,13 +675,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	getBonuses (modnames : ModifierTarget | ModifierTarget[]): ModifierList {
 		if (this.system.type == "npc" || this.system.type == "tarot")  return new ModifierList();
-		let modList = new ModifierList( this.mainModifiers().flatMap( item => item.getModifier(modnames, this as Shadow | PC)
+		let modList = new ModifierList( (this as Shadow | PC).mainModifiers().flatMap( item => item.getModifier(modnames, this as Shadow | PC)
 			.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
 		));
 		return modList;
 	}
 
-	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
+	mainModifiers(this: PC | Shadow, options?: {omitPowers?: boolean} ): ModifierContainer[] {
 		const passivePowers = (options && options.omitPowers) ? [] : this.getPassivePowers();
 		return [
 			...this.equippedItems(),
@@ -692,7 +692,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.getAllSocialFocii(),
 			...this.roomModifiers(),
 			...PersonaDB.getGlobalModifiers(),
-		].filter( x => x.getEffects().length > 0);
+		].filter( x => x.getEffects(this).length > 0);
 	}
 
 	defensivePowers() : Power [] {
@@ -757,14 +757,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 		const baseResist= this.system.combat.resists[type] ?? "normal";
 		let resist = baseResist;
-		const effectChangers=  this.mainModifiers().filter( x=> x.getEffects()
+		const effectChangers=  this.mainModifiers().filter( x=> x.getEffects(this)
 			.some(x=> x.consequences
 				.some( cons=>cons.type == "raise-resistance" || cons.type == "lower-resistance")));
 		const situation : Situation = {
 			user: this.accessor,
 		};
 		const consequences = effectChangers.flatMap(
-			item => item.getEffects().flatMap(eff =>
+			item => item.getEffects(this).flatMap(eff =>
 				getActiveConsequences(eff, situation, item)
 			)
 		);
@@ -1169,8 +1169,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.mainModifiers().flatMap( x=> x.getSourcedEffects(this));
 	}
 
-	getEffects() : ConditionalEffect[] {
-		return this.mainModifiers().flatMap( x=> x.getEffects());
+	getEffects(this: Shadow  | PC) : ConditionalEffect[] {
+		return this.mainModifiers().flatMap( x=> x.getEffects(this));
 	}
 
 	getPassivePowers(): Power[] {
@@ -1338,12 +1338,22 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get triggers() : ModifierContainer[] {
-		if (this.system.type == "npc") return [];
-		return this.mainModifiers().filter( x=>
-			x.getEffects().some( eff =>
-				eff.conditions.some( cond => cond.type == "on-trigger")
-			)
-		);
+		switch (this.system.type ) {
+			case "npc":
+			case "tarot":
+				return []
+			case "pc":
+			case "shadow":
+				return (this as PC | Shadow).mainModifiers().filter( x=>
+					x.getEffects(this as PC | Shadow).some( eff =>
+						eff.conditions.some( cond => cond.type == "on-trigger")
+					)
+				);
+			default:
+				this.system satisfies never;
+				return [];
+
+		}
 	}
 
 	async setFadingState (this: PC | Shadow, state: number) {

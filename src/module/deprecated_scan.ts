@@ -52,7 +52,7 @@ export class ErrorScanner {
 	}
 
 	static effectsAreDep(container: ModifierContainer) {
-		return container.getEffects().some( eff =>
+		return container.getEffects(null).some( eff =>
 			eff.conditions.some( cond => {
 				switch (cond.type as any) {
 					case "natural+":
@@ -107,7 +107,7 @@ export class ErrorScanner {
 	}
 
 	static async fixupItem(item: ModifierContainer) {
-		const effects= item.getEffects();
+		const effects= item.getEffects(null);
 		for (const effect of effects) {
 			effect.conditions = effect.conditions.map( cond=> this.fixupConditional(cond));
 		}

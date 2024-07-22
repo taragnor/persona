@@ -852,7 +852,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			trigger
 		} ; //copy the object so it doesn't permanently change it
 		for (const trig of actor.triggers) {
-			for (const eff of trig.getEffects()) {
+			for (const eff of trig.getEffects(actor)) {
 				if (!ModifierList.testPreconditions(eff.conditions, situation, trig)) { continue; }
 				const cons = this.ProcessConsequences(trig, situation, eff.consequences, actor)
 				result.escalationMod+= cons.escalationMod;
