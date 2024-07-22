@@ -534,11 +534,20 @@ export class CombatResult  {
 		for (const otherEffect of change.otherEffects) {
 			switch (otherEffect.type) {
 				case "expend-item":
-					const item = PersonaDB.findItem(otherEffect.itemAcc);
-					if ( item.parent) {
-						await (item.parent as PersonaActor).expendConsumable(item);
-					} else  {
-						PersonaError.softFail("Can't find item's parent to execute consume item");
+					if (!otherEffect.itemAcc) {
+						PersonaError.softFail("Can't find item to expend");
+						continue;
+					}
+					try {
+						const item = PersonaDB.findItem(otherEffect.itemAcc);
+						if ( item.parent) {
+							await (item.parent as PersonaActor).expendConsumable(item);
+						} else  {
+							PersonaError.softFail("Can't find item's parent to execute consume item");
+						}
+					} catch (e) {
+						PersonaError.softFail("Can't find item to expend");
+						continue;
 					}
 					break;
 				case "save-slot":
@@ -549,7 +558,7 @@ export class CombatResult  {
 					break;
 				case "recover-slot":
 					if (actor.system.type == "pc") {
-					await (actor as PC).recoverSlot(otherEffect.slot, otherEffect.amt)
+						await (actor as PC).recoverSlot(otherEffect.slot, otherEffect.amt)
 					}
 					break;
 				case "set-flag":
@@ -682,6 +691,7 @@ export type Consequence =
 		applyToSelf ?: boolean,
 		applyTo ?: ConditionTarget
 		actorOwner ?: UniversalActorAccessor<PC | Shadow>,
+		sourceItem ?: UniversalItemAccessor<Usable>,
 	} & (
 		GenericConsequence
 		| UsePowerConsequence

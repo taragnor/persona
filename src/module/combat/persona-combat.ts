@@ -803,7 +803,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "save-slot":
 			case "revive":
 			case "extraTurn":
-			case "expend-item":
 			case "recover-slot":
 			case "half-hp-cost":
 			case "other-effect":
@@ -815,6 +814,18 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "display-msg":
 			case "use-power":
 				return [{applyTo,cons}];
+			case "expend-item":
+				if (cons.sourceItem) {
+					return [{applyTo,
+						cons: {
+							type: "expend-item",
+							itemAcc: cons.sourceItem
+						}
+					}];
+				} else {
+					console.log("Warning: can't expend item, no sourceItem");
+					return [];
+				}
 			default:
 				cons satisfies never;
 				break;

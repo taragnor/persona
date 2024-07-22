@@ -93,6 +93,24 @@
 				</a>
 				{{/if}}
 				<span class="itemName">
+					{{#if (eq item.system.slot "weapon")}}
+					(Weapon)
+					{{/if}}
+					{{#if (eq item.system.slot "body")}}
+					(Outfit)
+					{{/if}}
+					{{#if (eq item.system.slot "accessory")}}
+					(Accessory)
+					{{/if}}
+					{{#if (eq item.system.slot "none")}}
+					(Misc)
+					{{/if}}
+					{{#if (eq item.system.slot "weapon_crystal")}}
+					(Weapon Crystal)
+					{{/if}}
+					{{#if (eq item.system.slot "key-item")}}
+					(Key Item)
+					{{/if}}
 					{{item.name}}
 					( {{item.amount}} )
 					{{#if (eq item.system.type "consumable")}}

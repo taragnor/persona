@@ -70,11 +70,21 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get consumables(): Consumable[] {
-		return this.items.filter( x=> x.system.type == "consumable") as Consumable[];
+		const consumables =  this.items.filter( x=> x.system.type == "consumable") as Consumable[];
+		return consumables.sort( (a,b) => a.name.localeCompare(b.name));
 	}
 
 	get nonUsableInventory() : (InvItem | Weapon)[] {
-		return this.items.filter( i=> i.system.type == "item" || i.system.type == "weapon") as (InvItem | Weapon)[];
+		const inventory = this.items.filter( i=> i.system.type == "item" || i.system.type == "weapon") as (InvItem | Weapon)[];
+		return inventory.sort( (a,b) =>  {
+			const typesort = a.system.type.localeCompare(b.system.type);
+			if (typesort != 0) return typesort;
+			if (a.system.type == "item" && b.system.type == "item") {
+				const slotSort = a.system.slot.localeCompare(b.system.slot);
+				if (slotSort != 0) return slotSort;
+			}
+			return a.name.localeCompare(b.name);
+		});
 	}
 
 	get displayedName() : string {

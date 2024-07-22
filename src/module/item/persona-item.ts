@@ -653,11 +653,15 @@ const power = PersonaDB.getBasicPower(powerName);
 	getEffects(this: ModifierContainer, sourceActor ?: PC | Shadow): ConditionalEffect[] {
 		return this.system.effects.map( eff=> {
 			const conditions= ArrayCorrector(eff.conditions)
-				.map (x=> ({ ...x, actorOwner: sourceActor? sourceActor.accessor : undefined
+				.map (x=> ({ ...x,
+					actorOwner: sourceActor? sourceActor.accessor : undefined,
+					sourceItem: PersonaDB.getUniversalItemAccessor(this),
 				})
 				);
 			const consequences= ArrayCorrector(eff.consequences)
-				.map (x=> ({ ...x, actorOwner: sourceActor? sourceActor.accessor : undefined
+				.map (x=> ({ ...x,
+					actorOwner: sourceActor? sourceActor.accessor : undefined,
+					sourceItem: PersonaDB.getUniversalItemAccessor(this),
 				})
 				);
 			return {conditions, consequences};
