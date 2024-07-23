@@ -21,8 +21,6 @@ export class ShadowSheet extends CombatantSheetBase {
 		data.SHADOW_ROLE = SHADOW_ROLE;
 		return data;
 
-
-
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {

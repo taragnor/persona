@@ -1567,6 +1567,52 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
+	async setDefaultShadowCosts(this: Shadow, power: Power) {
+		if (!this.items.get(power.id)) {
+			ui.notifications.warn("Shadow can't edit power it doesn't own");
+			return;
+		}
+		const userLevel = this.system.combat.classData.level + (this.system.combat.classData.incremental.powers ? 1 : 0);
+		const powerLevel = power.powerEffectLevel();
+		const diff = userLevel - powerLevel;
+		let charge = power.system.reqCharge;
+		let esc = power.system.reqEscalation;
+		//TODO: Balance and apply this algorithm
+		switch (true) {
+			case diff > 0 :
+				charge= "none";
+				esc =0;
+				break;
+			case diff == 0:
+				charge="charged-req";
+				esc =0;
+				break;
+			case diff == -1:
+				charge= "always";
+				esc = 1;
+			case diff == -2:
+				charge= "amp-req";
+				esc = 1;
+			case diff == -3:
+				charge= "supercharged";
+				esc = 2;
+			case diff == -4:
+				charge= "supercharged";
+				esc = 3;
+			case diff <= -5:
+				charge ="amp-fulldep";
+				esc = Math.clamped(Math.abs(diff), 0, 6 );
+			default:
+				PersonaError.softFail(`Unhandled difference value ${diff}`);
+				return;
+		}
+		await power.update({
+			"system.charge": charge,
+			"system.esc": esc
+		});
+	}
+
+
 }
 
 Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) => {

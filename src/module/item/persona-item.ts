@@ -774,6 +774,63 @@ const power = PersonaDB.getBasicPower(powerName);
 		}
 	}
 
+	isMultiTarget(this: Usable) : boolean {
+		switch (this.system.targets) {
+			case "1-nearby-dead":
+			case "1-nearby":
+			case "1-engaged":
+			case "self":
+				return false;
+			case "1d4-random":
+			case "1d4-random-rep":
+			case "1d3-random":
+			case "1d3-random-rep":
+			case "all-enemies":
+			case "all-allies":
+			case "all-dead-allies":
+			case "all-others":
+			case "everyone":
+				return true;
+			default:
+				this.system.targets satisfies never;
+				PersonaError.softFail(`Unknown target type: ${this.system.targets}`);
+				return false;
+		}
+	}
+
+	isAoE(this: Usable) : boolean {
+		switch (this.system.targets) {
+			case "1-nearby-dead":
+			case "1-nearby":
+			case "1-engaged":
+			case "self":
+			case "1d4-random":
+			case "1d4-random-rep":
+			case "1d3-random":
+			case "1d3-random-rep":
+				return false;
+			case "all-enemies":
+			case "all-allies":
+			case "all-dead-allies":
+			case "all-others":
+			case "everyone":
+				return true;
+			default:
+				this.system.targets satisfies never;
+				PersonaError.softFail(`Unknown target type: ${this.system.targets}`);
+				return false;
+		}
+	}
+
+	/** used for determining shadows usage limits
+	*/
+	powerEffectLevel(this: Power) : number {
+		const base = this.system.slot * 2;
+		const multiMod = this.isMultiTarget() ? 1 : 0;
+		const areaMod = this.isAoE() ? 1 : 0;
+		return base + multiMod + areaMod;
+	}
+
 }
 
 
