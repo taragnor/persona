@@ -3,6 +3,8 @@
 		{{roll.name}}
 	</h2>
 	<div class="roll-body tooltip">
+		{{#each roll.dice as |die|}}
+		<div class="dice">
 			<span>{{die.number}}d{{die.faces}} </span>
 			<i class="fa-solid fa-arrow-right"></i>
 			<span class="die-total">

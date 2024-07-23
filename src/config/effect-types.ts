@@ -77,7 +77,7 @@ export const TARGETINGLIST = [
 
 export const TARGETING= Object.fromEntries( TARGETINGLIST.map(x=> [x, `persona.power.targets.${x}`]));
 
-export const SHADOW_CHANGE_REQ_LIST= [
+export const SHADOW_CHANGE_REQ_LIST_FULL= [
 	"none",
 	"always",
 	"not-enhanced", //deprecated
@@ -85,6 +85,15 @@ export const SHADOW_CHANGE_REQ_LIST= [
 	"supercharged",
 	"supercharged-not-enhanced", //deprecated
 	"amp-req",
+	"amp-fulldep",
+] as const;
+
+export const SHADOW_CHANGE_REQ_LIST= [
+	"none",
+	"charged-req",
+	"always",
+	"amp-req",
+	"supercharged",
 	"amp-fulldep",
 ] as const;
 

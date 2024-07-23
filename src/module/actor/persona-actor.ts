@@ -1474,7 +1474,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const flag = flags.find(flag => flag.flagId == flagId);
 			if (!flag) return;
 			const eff  =this.effects.find(eff => eff.id == flag.AEId);
-			eff!.setDuration(duration);
+			eff?.setDuration(duration);
 			return;
 		}
 
