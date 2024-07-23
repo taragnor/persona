@@ -119,14 +119,15 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (combatant.actor.isCapableOfAction()) {
 			const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token);
 			if (this.isEngaged(accessor)) {
-				const DC = undefined;
-				const {total, rollBundle} = await PersonaCombat.disengageRoll(actor, DC);
+				const DC = this.getDisengageDC(combatant);
+				const {total, rollBundle, success} = await PersonaCombat.disengageRoll(actor, DC);
 				rolls.push(rollBundle);
 				let disengageResult = "failed";
 
+
 				if (total >= 11) disengageResult = "normal";
 				if (total >= 16) disengageResult = "hard";
-				startTurnMsg.push("<br>"+ await renderTemplate("systems/persona/parts/disengage-check.hbs", {rollBundle, disengageResult}));
+				startTurnMsg.push("<br>"+ await renderTemplate("systems/persona/parts/disengage-check.hbs", {roll: rollBundle, disengageResult, success}));
 			}
 		}
 		const speaker = ChatMessage.getSpeaker({alias: actor.name});
@@ -141,6 +142,15 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		ChatMessage.create(messageData, {});
 	}
 
+
+	getDisengageDC(combatant: Combatant<ValidAttackers>) : number {
+		if (!combatant.token) return 11;
+		const list = EngagementChecker.getEngagedList(combatant.token as PToken, this);
+		for (const item of list) {
+			if (item.actor.isSticky()) return 16;
+		}
+		return 11;
+	}
 
 	async skipBox(msg: string) {
 		if (await HTMLTools.confirmBox(msg, msg)) {
@@ -665,6 +675,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 								const userToken  = this.getPTokenFromActorAccessor(situation.user);
 								effectiveTarget = userToken;
 								break;
+							case "triggering-character":
+								const triggerer = situation.triggeringCharacter;
+								if (!triggerer) {
+									PersonaError.softFail("Can't target triggering character for this");
+									effectiveTarget = undefined;
+									break;
+								}
+								const token = this.getPTokenFromActorAccessor(triggerer);
+								effectiveTarget = token;
+								break;
 							default:
 								cons.applyTo satisfies never;
 								continue;
@@ -1018,9 +1038,15 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				if (!combat) return [];
 				return combat.combatants.contents.flatMap( c=> c.actor ? [c.token as PToken] : []);
 			}
-			case "user":
+			case "user": {
 				const token = this.getPTokenFromActorAccessor(situation.user);
 				if (token) return [token]; else return [];
+			}
+			case "triggering-character": {
+				if (!situation.triggeringCharacter) return [];
+				const token = this.getPTokenFromActorAccessor(situation.triggeringCharacter);
+				if (token) return [token]; else return [];
+			}
 			default:
 				targettingType satisfies never;
 				return [];
@@ -1226,7 +1252,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	};
 
-	static async disengageRoll( actor: ValidAttackers, _DC = 11) : Promise<{total: number, rollBundle: RollBundle}> {
+	static async disengageRoll( actor: ValidAttackers, DC = 11) : Promise<{total: number, rollBundle: RollBundle, success: boolean}> {
 		const situation : Situation = {
 			user: PersonaDB.getUniversalActorAccessor(actor),
 		}
@@ -1236,8 +1262,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		await roll.roll();
 		const rollBundle = new RollBundle(labelTxt, roll, mods, situation);
 		return {
-			total: roll.total,
-			rollBundle
+			total: rollBundle.total,
+			rollBundle,
+			success: rollBundle.total >= DC,
 		}
 	}
 
@@ -1459,7 +1486,8 @@ Hooks.on("combatStart", async (combat: PersonaCombat) => {
 		if (!comb.actor) continue;
 		const situation : Situation = {
 			activeCombat : true,
-			user: comb.actor.accessor
+			user: comb.actor.accessor,
+			triggeringCharacter: comb.actor.accessor,
 		};
 		const token = comb.token as PToken;
 		await PersonaCombat

@@ -97,6 +97,10 @@ export const STATUS_EFFECT_LIST = [
 		id: "exhausted",
 		icon:  "icons/svg/unconscious.svg",
 	},
+	{
+		id: "sticky",
+		icon:   "icons/svg/anchor.svg"
+	}
 
 
 ] as const;

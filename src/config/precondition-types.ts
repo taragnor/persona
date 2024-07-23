@@ -256,6 +256,7 @@ export const CONDITION_TARGETS_LIST = [
 	"owner",
 	"attacker",
 	"user",
+	"triggering-character",
 ] as const;
 
 export type ConditionTarget= typeof CONDITION_TARGETS_LIST[number];

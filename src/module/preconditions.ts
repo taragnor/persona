@@ -453,6 +453,13 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 			if (situation.user.token)
 				return PersonaDB.findToken(situation.user.token) as PToken | undefined;
 			else return PersonaDB.findActor(situation.user);
+		case "triggering-character":
+			if (!situation.triggeringCharacter) return undefined;
+			if (situation.triggeringCharacter.token) {
+				return PersonaDB.findToken(situation.triggeringCharacter.token) as PToken | undefined;
+			} else {
+				return PersonaDB.findActor(situation.triggeringCharacter);
+			}
 		default:
 			condTarget satisfies undefined;
 			if (situation.target?.token)
@@ -464,6 +471,7 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 export type Situation = {
 	//more things can be added here all should be optional
 	user: UniversalActorAccessor<PC | Shadow>;
+	triggeringCharacter?:  UniversalActorAccessor<PC | Shadow>;
 	usedPower ?: UniversalItemAccessor<Usable>;
 	usedSkill ?: SocialStat;
 	activeCombat ?: boolean ;

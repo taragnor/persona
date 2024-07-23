@@ -2,9 +2,17 @@
 	<b>Disengage Opportunity:</b>
 	<span>
 		{{disengageResult}}
-	(
+		(
 		{{> "systems/persona/parts/condensed-roll.hbs" roll=roll}}
-	)
-</span>
+		)
+	</span>
+	<hr>
+	<h3>{{#if success}}
+		Success
+		{{else}}
+		Can't Disengage
+		{{/if}}
+	</h3>
+
 </div>
 

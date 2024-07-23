@@ -117,6 +117,7 @@
 	"persona.status.crippled" : "Crippled",
 	"persona.status.exhausted" : "Exhausted",
 	"persona.status.jailed" : "Imprisoned",
+	"persona.status.sticky" : "Defender",
 
 	"persona.damage.low": "Low",
 	"persona.damage.high": "High",
@@ -355,6 +356,7 @@
 	"persona.preconditions.targets.target": "Target of Attack" ,
 	"persona.preconditions.targets.user": "User of Main Power" ,
 	"persona.preconditions.targets.attacker": "Attacker" ,
+	"persona.preconditions.targets.triggering-character": "Triggering Character" ,
 	"persona.preconditions.dice.escalation": "Escalation DIe" ,
 	"persona.preconditions.dice.activation": "Activation Roll" ,
 	"persona.preconditions.dice.save": "Saving Throw" ,

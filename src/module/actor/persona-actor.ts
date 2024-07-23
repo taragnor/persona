@@ -1567,6 +1567,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
+	/** return true if target is harder to disengage from (hard diff)
+	 */
+	isSticky() : boolean {
+		return this.hasStatus("sticky");
+	}
+
 	async setDefaultShadowCosts(this: Shadow, power: Power) {
 		if (!this.items.get(power.id)) {
 			ui.notifications.warn("Shadow can't edit power it doesn't own");
