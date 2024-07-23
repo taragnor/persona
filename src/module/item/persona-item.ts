@@ -610,7 +610,7 @@ const power = PersonaDB.getBasicPower(powerName);
 			);
 	}
 
-	getDamage(this:ModifierContainer , user: PC | Shadow, type: "high" | "low", situation: Situation = {user: user.accessor , usedPower: this.accessor}) : number {
+	getDamage(this:ModifierContainer , user: PC | Shadow, type: "high" | "low", situation: Situation = {user: user.accessor , usedPower: this.accessor, attacker: user.accessor}) : number {
 		if (!("dmg_type" in this.system)) return 0;
 		if (this.system.dmg_type == "none") return 0;
 		const subtype : PowerType  = this.system.type == "power" ? this.system.subtype : "standalone";

@@ -85,6 +85,7 @@ export class PersonaHandleBarsHelpers {
 		},
 		"getDamage": (actor: PersonaActor, usable: Usable) => {
 			switch (actor.system.type) {
+				case "tarot":
 				case "npc":
 					return "0/0";
 				case "pc": case"shadow":
@@ -92,6 +93,9 @@ export class PersonaHandleBarsHelpers {
 					const low = usable.getDamage(combatant, "low");
 					const high = usable.getDamage(combatant, "high");
 					return low + " / " + high;
+				default:
+					actor.system satisfies never;
+					return "0/0";
 			}
 		},
 
