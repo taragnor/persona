@@ -460,8 +460,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			.flatMap (item => item.getModifier("allAtk", target.actor))
 		);
 		attackbonus = attackbonus.concat(defense);
+		const def = power.system.defense;
+		const defenseVal = def != "none" ? target.actor.getDefense(def).total(situation): 0;
+		const validDefModifiers= def != "none" ? target.actor.getDefense(def).list(situation): [];
+
 		const r = await new Roll("1d20").roll();
-		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} (vs ${power.system.defense})`;
+		let defenseStr = "";
+		if (PersonaSettings.debugMode()) {
+			defenseStr =`(${defenseVal})`;
+		}
+		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} (vs ${power.system.defense} ${defenseStr})`;
 		const roll = new RollBundle(rollName, r, attackbonus, situation);
 		const naturalAttackRoll = roll.dice[0].total;
 		situation.naturalAttackRoll = naturalAttackRoll;
@@ -525,7 +533,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 		}
 		const total = roll.total;
-		const def = power.system.defense;
 		const validAtkModifiers = attackbonus.list(situation);
 		const printableModifiers = attackbonus.printable(situation);
 		if (def == "none") {
@@ -548,9 +555,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		situation.resisted = resist == "resist";
 		situation.struckWeakness = resist == "weakness";
 
-		const defenseVal = target.actor.getDefense(def).total(situation);
-		const validDefModifiers= target.actor.getDefense(def).list(situation);
-
 		if (naturalAttackRoll == 1
 			|| total < defenseVal
 		) {
@@ -558,6 +562,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			situation.criticalHit = false;
 			return {
 				result: "miss",
+				defenseValue: defenseVal,
 				hitWeakness: situation.struckWeakness ?? false,
 				hitResistance: situation.resisted ?? false,
 				printableModifiers,
@@ -573,6 +578,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			situation.criticalHit  = true;
 			return {
 				result: "crit",
+				defenseValue: defenseVal,
 				hitWeakness: situation.struckWeakness ?? false,
 				hitResistance: situation.resisted ?? false,
 				validAtkModifiers,
@@ -587,6 +593,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			situation.criticalHit = false;
 			return {
 				result: "hit",
+				defenseValue: defenseVal,
 				hitWeakness: situation.struckWeakness ?? false,
 				hitResistance: situation.resisted ?? false,
 				validAtkModifiers,
@@ -917,10 +924,25 @@ export class PersonaCombat extends Combat<PersonaActor> {
 							statusDuration:"combat",
 						});
 						break;
+						case "charged-req":
+						break;
+					case "amp-req":
+						break;
 					case "supercharged":
 						res.addEffect(null, attacker.actor, {
 							type: "removeStatus",
 							statusName: "supercharged",
+						});
+						break;
+					case "amp-fulldep":
+						res.addEffect(null, attacker.actor, {
+							type: "removeStatus",
+							statusName: "supercharged",
+						});
+						res.addEffect(null, attacker.actor, {
+							type: "addStatus",
+							statusName: "depleted",
+							statusDuration:"combat",
 						});
 						break;
 					case "supercharged-not-enhanced":

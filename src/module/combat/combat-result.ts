@@ -738,6 +738,7 @@ export const CONS_TARGETS = Object.fromEntries(
 
 export type AttackResult = {
 	result: "hit" | "miss" | "crit" | "reflect" | "block" | "absorb",
+	defenseValue?: number,
 	hitWeakness?: boolean,
 	hitResistance?: boolean,
 	validAtkModifiers?: [number, string][],

@@ -250,10 +250,13 @@
 	"persona.power.tag.amped": "Amped",
 
 	"persona.power.shadowcosts.none": "Any",
-	"persona.power.shadowcosts.always": "Charged (always)",
-	"persona.power.shadowcosts.not-enhanced": "Charged (normal Meta only)",
-	"persona.power.shadowcosts.supercharged": "Amped (always)",
-	"persona.power.shadowcosts.supercharged-not-enhanced": "Amped (Charged in Enhanced Meta)",
+	"persona.power.shadowcosts.always": "Charged (Depleting)",
+	"persona.power.shadowcosts.charged-req": "Charged (Req Only)",
+	"persona.power.shadowcosts.supercharged": "Amped (lose Amp)",
+	"persona.power.shadowcosts.amp-req": "Amped (Req Only)",
+	"persona.power.shadowcosts.amp-fulldep": "Amped (Fully Deplete)",
+	"persona.power.shadowcosts.supercharged-not-enhanced": "Deprecated",
+	"persona.power.shadowcosts.not-enhanced": "Deprecated",
 
 	"persona.slottypes.0.name": "Basic",
 	"persona.slottypes.1.name": "Moderate",

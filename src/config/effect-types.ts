@@ -80,9 +80,12 @@ export const TARGETING= Object.fromEntries( TARGETINGLIST.map(x=> [x, `persona.p
 export const SHADOW_CHANGE_REQ_LIST= [
 	"none",
 	"always",
-	"not-enhanced",
+	"not-enhanced", //deprecated
+	"charged-req",
 	"supercharged",
-	"supercharged-not-enhanced",
+	"supercharged-not-enhanced", //deprecated
+	"amp-req",
+	"amp-fulldep",
 ] as const;
 
 export type ShadowChargeReq = typeof SHADOW_CHANGE_REQ_LIST[number];

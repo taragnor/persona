@@ -755,7 +755,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 
 		const baseResist= this.system.combat.resists[type] ?? "normal";
-		let resist = baseResist;
+		// let resist = baseResist;
 		const effectChangers=  this.mainModifiers().filter( x=> x.getEffects(this)
 			.some(x=> x.consequences
 				.some( cons=>cons.type == "raise-resistance" || cons.type == "lower-resistance")));
@@ -966,8 +966,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			}
 			switch (usable.system.reqCharge) {
 				case "none": return true;
+				case "charged-req":
 				case "always": return !this.statuses.has("depleted");
 				case "not-enhanced": return (enhanced || !this.statuses.has("depleted"));
+				case "amp-fulldep":
+				case "amp-req":
 				case "supercharged":
 					return this.statuses.has("supercharged");
 				case "supercharged-not-enhanced":

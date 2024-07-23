@@ -8,8 +8,6 @@ import { Precondition } from "../../config/precondition-types.js";
 import { BASIC_POWER_NAMES } from "../../config/basic-powers.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { getActiveConsequences } from "../preconditions.js";
-import { testPrecondition } from "../preconditions.js";
-import { Availability } from "../../config/availability-types.js";
 import { PersonaError } from "../persona-error.js";
 import { Metaverse } from "../metaverse.js"
 import { PersonaActor } from "../actor/persona-actor.js";
@@ -152,13 +150,13 @@ const power = PersonaDB.getBasicPower(powerName);
 			case "none":
 				break;
 			case "always":
-				costs.push("Charged");
+				costs.push("Charged-");
 				break;
 			case "not-enhanced":
 				if (!Metaverse.isEnhanced()) {costs.push("Charged")}
 				break;
 			case "supercharged":
-				costs.push("AMPED");
+				costs.push("AMPED-");
 				break;
 			case "supercharged-not-enhanced":
 				if (!Metaverse.isEnhanced()) {
@@ -166,6 +164,15 @@ const power = PersonaDB.getBasicPower(powerName);
 				} else {
 					costs.push("Charged");
 				}
+				break;
+			case "charged-req":
+				costs.push("Charged");
+				break;
+			case "amp-req":
+				costs.push("AMPED");
+				break;
+			case "amp-fulldep":
+				costs.push("AMPED--");
 				break;
 			default:
 				this.system.reqCharge satisfies never;

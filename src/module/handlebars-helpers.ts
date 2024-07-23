@@ -39,7 +39,8 @@ export class PersonaHandleBarsHelpers {
 			return actor.critResist().total({user: actor.accessor});
 		},
 		"getDefense" : (actor: PC | Shadow, defense: keyof typeof actor["system"]["combat"]["defenses"]) => {
-			return actor.getDefense(defense).total({user: PersonaDB.getUniversalActorAccessor(actor) });
+			const acc = actor.accessor;
+			return actor.getDefense(defense).total({user: acc, target: acc});
 
 		},
 

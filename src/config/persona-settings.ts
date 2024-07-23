@@ -28,6 +28,10 @@ export class PersonaSettings {
 		return this.get("metaverseState").valueOf();
 	}
 
+	static debugMode() : boolean {
+		return this.get("debugMode").valueOf();
+	}
+
 	static autoApplyCombatResults(): boolean {
 		return this.get("autoApplyCombatResults").valueOf();
 	}
@@ -54,6 +58,16 @@ const SETTINGS = {
 				);
 			}
 		}
+	},
+
+	"debugMode" : {
+		name: "Debug Mode",
+		hint: "Show more debug stats (like defenses in atk)",
+		scope: "world",
+		restricted: true,
+		config: true,
+		type :Boolean,
+		default: false,
 	},
 
 	"autoApplyCombatResults" : {
