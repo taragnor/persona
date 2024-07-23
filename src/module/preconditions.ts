@@ -402,6 +402,12 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			const target = getSubject(condition, situation, source, "conditionTarget");
 			return target == desiredActor;
 		}
+		case "shadow-role-is": {
+			const target = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!target) {return undefined;}
+			if (target.system.type != "shadow") {return undefined;}
+			return condition.shadowRole == target.system.role;
+		}
 		default :
 				condition satisfies never;
 			return undefined;

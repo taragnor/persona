@@ -1,5 +1,6 @@
 const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
 import { TokenSpend } from "../../config/social-card-config.js";
+import { SHADOW_ROLE_LIST } from "../../config/shadow-types.js";
 import { Precondition } from "../../config/precondition-types.js";
 import { ResistType } from "../../config/damage-types.js";
 import { INCREMENTAL_ADVANCE_TYPES } from "../../config/incremental-advance-types.js";
@@ -210,6 +211,7 @@ export class ShadowSchema extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		const ret = {
 			...BaseStuff.defineSchema(),
+			role: new txt({choices: SHADOW_ROLE_LIST, initial: "base"}),
 			tarot: tarot(),
 			...sharedAbilities(),
 			combat: new sch({

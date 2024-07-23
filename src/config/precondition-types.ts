@@ -1,3 +1,4 @@
+import { ShadowRole } from "./shadow-types.js";
 import { UniversalActorAccessor } from "../module/utility/db-accessor.js";
 import { PC } from "../module/actor/persona-actor.js";
 import { Shadow } from "../module/actor/persona-actor.js";
@@ -98,14 +99,20 @@ export type BooleanComparisonPC = {
 	type : "boolean",
 	booleanState : boolean,
 	boolComparisonTarget: BooleanComparisonTarget,
-} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison);
+} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison);
 
 	type BasicBComparisonPC ={
 	boolComparisonTarget: Exclude<BooleanComparisonTarget,
-	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "weekday-is" | "flag-state" | "is-resistant-to" | "social-target-is" | TargettedBComparisonPC["boolComparisonTarget"] | "power-target-type-is" | "weather-is">,
+	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "weekday-is" | "flag-state" | "is-resistant-to" | "social-target-is" | TargettedBComparisonPC["boolComparisonTarget"] | "power-target-type-is" | "weather-is" | "shadow-role-is">,
 }
 
 export type TargettedBComparisonPC = SingleTargetComparison | TwoTargetComparison;
+
+type ShadowRoleComparison = {
+	boolComparisonTarget: "shadow-role-is",
+	conditionTarget: ConditionTarget,
+	shadowRole: ShadowRole,
+}
 
 export type SingleTargetComparison = {
 	boolComparisonTarget: "engaged" | "engaged-with" | "is-dead" | "struck-weakness" | "is-shadow" | "is-pc" | "is-same-arcana";
@@ -198,6 +205,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"weather-is",
 	"weekday-is",
 	"social-target-is",
+	"shadow-role-is",
 ] as const;
 
 

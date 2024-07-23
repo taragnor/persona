@@ -12,6 +12,9 @@
 			<select name="system.tarot">
 				{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
 			</select>
+			<select name="system.role">
+				{{selectOptions SHADOW_ROLE localize=true selected=actor.system.role}}
+			</select>
 		</div>
 	</header>
 	{{> "systems/persona/parts/combat-section.hbs" actor=actor}}

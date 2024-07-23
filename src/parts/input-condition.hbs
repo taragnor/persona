@@ -165,6 +165,14 @@
 	</select>
 	{{/if}}
 
+	{{#if (eq cond.boolComparisonTarget  "shadow-role-is")}}
+	<select name="{{strcat namePrefix 'conditionTarget'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+	</select>
+	<select name="{{strcat namePrefix 'shadowRole'}}">
+		{{selectOptions POWERSTUFF.SHADOW_ROLE localize=true selected=cond.shadowRole}}
+	</select>
+	{{/if}}
 
 	{{/if}}
 

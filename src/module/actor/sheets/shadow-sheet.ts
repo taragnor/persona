@@ -1,3 +1,4 @@
+import { SHADOW_ROLE } from "../../../config/shadow-types.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { PersonaActor } from "../persona-actor.js";
 import { CombatantSheetBase } from "./combatant-sheet.js";
@@ -15,8 +16,13 @@ export class ShadowSheet extends CombatantSheetBase {
 		});
 	}
 
-	override getData() {
-		return super.getData();
+	override async getData() {
+		const data = await super.getData();
+		data.SHADOW_ROLE = SHADOW_ROLE;
+		return data;
+
+
+
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {

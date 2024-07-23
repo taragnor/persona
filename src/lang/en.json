@@ -19,6 +19,16 @@
 	"persona.term.primary": "Primary",
 	"persona.term.secondary": "Secondary",
 
+	"persona.shadow.role.base": "Base",
+	"persona.shadow.role.soldier": "Soldier",
+	"persona.shadow.role.lurker": "Lurker",
+	"persona.shadow.role.support": "Support",
+	"persona.shadow.role.tank": "Tank",
+	"persona.shadow.role.brute": "Brute",
+	"persona.shadow.role.elite": "Elite",
+	"persona.shadow.role.miniboss": "Miniboss",
+	"persona.shadow.role.boss": "Boss",
+
 	"persona.sheet.tabs.inventory.tabname" : "Inventory",
 	"persona.sheet.tabs.social.tabname" : "Social",
 
@@ -381,6 +391,7 @@
 	"persona.preconditions.comparison.target-social-link-is": "Target Social Link is",
 	"persona.preconditions.comparison.weekday-is": "Weekday is",
 	"persona.preconditions.comparison.social-target-is": "Social Target Is",
+	"persona.preconditions.comparison.shadow-role-is": "Shadow Role is",
 
 	"persona.triggers.on-damage": "Character Takes Damage",
 	"persona.triggers.on-kill-target": "Character kills a target",
