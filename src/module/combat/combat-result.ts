@@ -738,6 +738,8 @@ export const CONS_TARGETS = Object.fromEntries(
 
 export type AttackResult = {
 	result: "hit" | "miss" | "crit" | "reflect" | "block" | "absorb",
+	hitWeakness?: boolean,
+	hitResistance?: boolean,
 	validAtkModifiers?: [number, string][],
 	validDefModifiers?: [number, string][],
 	target: UniversalTokenAccessor<PToken>,

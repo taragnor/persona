@@ -741,9 +741,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		mods.add("Base", 10);
 		mods.add("Base Defense Bonus", baseDef);
 		mods.add("Level Bonus", lvl + inc);
-		const itemBonus = this.getBonuses(type);
-		const universalDefenseType = this.getBonuses("allDefenses");
-		return mods.concat(itemBonus).concat(universalDefenseType);
+		const otherBonuses = this.getBonuses([type, "allDefenses"]);
+		return mods.concat(otherBonuses);
 	}
 
 	elementalResist(this: PC | Shadow, type: typeof DAMAGETYPESLIST[number]) : ResistStrength  {

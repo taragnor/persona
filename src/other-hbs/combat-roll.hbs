@@ -26,7 +26,7 @@
 		{{/if}}
 		<hr>
 		<div class="attack-result">
-			{{atk.attackResult.result}}
+			{{prettyAtkResult atk.attackResult}}
 		</div>
 		{{#each atk.changes as |change|}}
 		{{> "systems/persona/parts/display-token-change.hbs" change=change attack=atk}}

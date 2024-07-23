@@ -547,6 +547,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const critBoost = critBoostMod.total(situation);
 		situation.resisted = resist == "resist";
 		situation.struckWeakness = resist == "weakness";
+
 		const defenseVal = target.actor.getDefense(def).total(situation);
 		const validDefModifiers= target.actor.getDefense(def).list(situation);
 
@@ -557,6 +558,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			situation.criticalHit = false;
 			return {
 				result: "miss",
+				hitWeakness: situation.struckWeakness ?? false,
+				hitResistance: situation.resisted ?? false,
 				printableModifiers,
 				validAtkModifiers,
 				validDefModifiers,
@@ -570,6 +573,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			situation.criticalHit  = true;
 			return {
 				result: "crit",
+				hitWeakness: situation.struckWeakness ?? false,
+				hitResistance: situation.resisted ?? false,
 				validAtkModifiers,
 				validDefModifiers,
 				printableModifiers,
@@ -582,6 +587,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			situation.criticalHit = false;
 			return {
 				result: "hit",
+				hitWeakness: situation.struckWeakness ?? false,
+				hitResistance: situation.resisted ?? false,
 				validAtkModifiers,
 				validDefModifiers,
 				printableModifiers,
@@ -595,8 +602,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	static async processEffects(atkResult: AttackResult) : Promise<CombatResult> {
 		const CombatRes = new CombatResult();
 		const {result } = atkResult;
-		// const attacker = PersonaDB.findToken(atkResult.attacker);
-		// const power = PersonaDB.findItem(atkResult.power);
 		switch (result) {
 			case "reflect":
 				const reflectRes = new CombatResult(atkResult);
@@ -648,7 +653,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 									break;
 								}
 								ui.notifications.notify("Can't find Owner of Consequnece");
-								Debug(cons);
 								continue;
 							case "user":
 								const userToken  = this.getPTokenFromActorAccessor(situation.user);

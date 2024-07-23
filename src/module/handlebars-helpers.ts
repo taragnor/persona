@@ -1,3 +1,4 @@
+import { AttackResult } from "./combat/combat-result.js";
 import { Situation } from "./preconditions.js";
 import { Activity } from "./item/persona-item.js";
 import { CardData } from "./social/persona-social.js";
@@ -194,6 +195,37 @@ export class PersonaHandleBarsHelpers {
 			}
 			return 0;
 		},
+
+		"prettyAtkResult": function (result: AttackResult) : string {
+			switch (result.result) {
+				case "crit":
+					let str = "CRITICAL";
+					if (result.hitResistance)
+						return str  + " (RESIST)";
+					if (result.hitWeakness)
+						return str + " (WEAK)";
+					return str;
+				case "hit":
+					if (result.hitResistance)
+						return "RESIST";
+					if (result.hitWeakness)
+						return "WEAK";
+					return result.result;
+				case "miss":
+					return "MISS";
+				case "reflect":
+					return "REFLECT";
+				case "block":
+					return "BLOCK";
+				case "absorb":
+					return "ABSORB";
+				default:
+					result.result satisfies never;
+					return "ERROR";
+
+			}
+
+		}
 
 	}
 
