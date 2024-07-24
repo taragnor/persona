@@ -1618,6 +1618,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				if (tags.includes("healing")) {
 					diff -= 1;
 				}
+				break;
 			case "soldier":
 				diff -= 1;
 				if (tags.includes("healing")) {
@@ -1666,7 +1667,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				diff -= 1 ;
 				break;
 		}
-		diff-=1;
+		// diff-=1;
 		switch (true) {
 			case diff > 0 :
 				return "none";
@@ -1691,7 +1692,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			return 0;
 		switch (role) {
 			case "lurker":
-				diff -= 2;
 				break;
 			default:
 				diff += 2;
