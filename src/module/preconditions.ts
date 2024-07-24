@@ -350,13 +350,13 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			return actor.getFlagState(condition.flagId) == condition.booleanState;
 		}
 		case "is-same-arcana": {
-			const actor = PersonaDB.findActor(situation.user);
+			if (!situation.attacker) return undefined;
+			const actor = PersonaDB.findActor(situation.attacker);
 			if(!situation.target) {
 				return undefined;
 			}
-			const target = getSubject(condition, situation, source,  "conditionTarget");
-			if (!target) return undefined;
-			const targetActor = target instanceof PersonaActor ? target : target.actor;
+			const targetActor = getSubjectActor(condition, situation, source,  "conditionTarget");
+			if (!targetActor) return undefined;
 			return actor.system.tarot == targetActor.system.tarot;
 		}
 		case "is-dead": {

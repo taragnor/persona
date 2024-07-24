@@ -365,7 +365,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (!npc) return [];
 			relationshipType = relationshipType ? relationshipType : npc.baseRelationship;
 			if (npc.system.type =="npc") {
-				const allFocii = (npc as NPC).getSocialFocii(npc as SocialLink);
+				const allFocii = (npc as NPC).getSocialFocii_NPC(npc as SocialLink);
 				const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
 				return [{
 					currentProgress,
@@ -374,7 +374,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					relationshipType,
 					actor:npc as SocialLink,
 					linkBenefits: npc as SocialLink,
-					allFocii: (npc as NPC).getSocialFocii(npc as SocialLink),
+					allFocii,
 					available: npc.isAvailable(),
 					focii: qualifiedFocii,
 				}];
@@ -384,7 +384,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					if (!personalLink)  {
 						return [];
 					}
-					const allFocii = (personalLink as NPC).getSocialFocii(personalLink as SocialLink);
+					const allFocii = (personalLink as NPC).getSocialFocii_PC(personalLink as SocialLink, npc as PC);
 					const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
 					return [{
 						currentProgress,
@@ -402,7 +402,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					if (!teammate)  {
 						return [];
 					}
-					const allFocii = (teammate as NPC).getSocialFocii(teammate as SocialLink);
+					const allFocii = (teammate as NPC).getSocialFocii_PC(teammate as SocialLink, npc as PC);
 					const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
 					return [{
 						currentProgress,
@@ -1146,7 +1146,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.social": this.system.social});
 	}
 
-	getSocialFocii(this: NPC, linkHolder: SocialLink) : Focus[] {
+	getSocialFocii_PC(this: NPC, linkHolder: SocialLink, targetPC: PC) : Focus[] {
+		const sortFn = function (a: Focus, b: Focus) {
+			return a.requiredLinkLevel() - b.requiredLinkLevel();
+		};
+		const tarot = targetPC.tarot;
+		if (!tarot) {
+			console.log(`No tarot found for ${this.name} or ${linkHolder.name}`);
+			return this.focii.sort( sortFn);
+		}
+		return this.focii.concat(tarot.focii).sort(sortFn);
+	}
+
+	getSocialFocii_NPC(this: NPC, linkHolder: SocialLink) : Focus[] {
 		const sortFn = function (a: Focus, b: Focus) {
 			return a.requiredLinkLevel() - b.requiredLinkLevel();
 		};
