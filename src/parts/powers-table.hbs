@@ -50,6 +50,11 @@
 				{{power.costString}}
 			</td>
 			<td>
+				{{#if (eq ../actor.system.type "shadow")}}
+				<a class="recost-power">
+					<i class="fa-solid fa-circle-dot"></i>
+				</a>
+				{{/if}}
 				<a class="delPower">
 					<i class="fa-solid fa-trash-can"></i>
 				</a>

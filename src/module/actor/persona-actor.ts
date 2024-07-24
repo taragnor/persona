@@ -443,24 +443,28 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get powers(): Power[] {
-		const basicPowers = PersonaItem.getBasicPowers();
+
 		switch (this.system.type) {
 			case "tarot": return [];
 			case "npc" : return [];
-			case "pc":
+			case "pc":{
+				const basicPowers = PersonaItem.getBasicPCPowers();
 				const powerIds = this.system.combat.powers;
 				const pcPowers : Power[] = powerIds.flatMap( id=> {
 					const i = PersonaDB.getItemById(id);
 					return (i ? [i as Power] : []);
 				});
 				const bonusPowers : Power[] =
-					(this as PC).mainModifiers({omitPowers:true})
-					.filter(x=> x.grantsPowers())
-					.flatMap(x=> x.getGrantedPowers(this as PC ));
+				(this as PC).mainModifiers({omitPowers:true})
+				.filter(x=> x.grantsPowers())
+				.flatMap(x=> x.getGrantedPowers(this as PC ));
 				return basicPowers.concat(pcPowers).concat(bonusPowers);
-			case "shadow":
+			}
+			case "shadow": {
+				const basicPowers = PersonaItem.getBasicShadowPowers();
 				const shadowPowers = this.items.filter( x=> x.system.type == "power") as Power[];
 				return basicPowers.concat(shadowPowers);
+			}
 			default:
 				this.system satisfies never;
 				throw new PersonaError("Something weird happened");
@@ -1590,44 +1594,112 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			ui.notifications.warn("Shadow can't edit power it doesn't own");
 			return;
 		}
-		const userLevel = this.system.combat.classData.level + (this.system.combat.classData.incremental.powers ? 1 : 0);
+		const role = this.system.role;
+		const userLevel = this.system.combat.classData.level
+			+ (this.system.combat.classData.incremental.powers ? 1 : 0)
 		const powerLevel = power.powerEffectLevel();
 		const diff = userLevel - powerLevel;
-		let charge = power.system.reqCharge;
-		let esc = power.system.reqEscalation;
-		//TODO: Balance and apply this algorithm
+		let charge = PersonaActor.calcCharge(role, power, diff);
+		let esc = PersonaActor.calcEscalationReq(role, power,  diff);
+		console.log(`Escalation Req: ${esc}`);
+		await power.update({
+			"system.reqCharge": charge,
+			"system.reqEscalation": esc
+		});
+	}
+
+	static calcCharge(role: Shadow["system"]["role"], power: Readonly<Power>,  diff: number) : Power["system"]["reqCharge"] {
+		if (power.system.tags.includes("basicatk"))
+			return "none";
+		const tags = power.system.tags;
+		switch (role) {
+			case "tank":
+				diff -= 1;
+				if (tags.includes("healing")) {
+					diff -= 1;
+				}
+			case "soldier":
+				diff -= 1;
+				if (tags.includes("healing")) {
+					diff -= 1;
+				}
+				break;
+			case "assassin": {
+				if (tags.includes("healing")) {
+					diff -= 2;
+				}
+				break;
+			}
+			case "artillery":
+				if (tags.includes("healing")) {
+					diff -= 2;
+				}
+				break;
+			case "lurker":
+				if (tags.includes("healing")) {
+					diff -= 1;
+				}
+				diff += 2;
+				break;
+			case "elite":
+				diff += 1;
+				break;
+			case "miniboss":
+				diff += 1;
+				break;
+			case "boss":
+				diff += 2;
+				break;
+			case "controller":
+				if (!tags.includes("debuff")) {
+					diff -= 2;
+				}
+				break;
+			case "support":
+				diff -=1;
+				if (!tags.includes("buff")
+					&& !tags.includes("healing")) {
+					diff -= 1;
+				}
+				break;
+			default:
+				diff -= 1 ;
+				break;
+		}
+		diff-=1;
 		switch (true) {
 			case diff > 0 :
-				charge= "none";
-				esc =0;
-				break;
+				return "none";
 			case diff == 0:
-				charge="charged-req";
-				esc =0;
-				break;
-			case diff == -1:
-				charge= "always";
-				esc = 1;
-			case diff == -2:
-				charge= "amp-req";
-				esc = 1;
-			case diff == -3:
-				charge= "supercharged";
-				esc = 2;
-			case diff == -4:
-				charge= "supercharged";
-				esc = 3;
-			case diff <= -5:
-				charge ="amp-fulldep";
-				esc = Math.clamped(Math.abs(diff), 0, 6 );
+				return "charged-req";
+			case diff >= -2:
+				return "always";
+			case diff >= -3:
+				return "supercharged";
+			case diff >= -4:
+				return "supercharged";
+			case diff < -4:
+				return "amp-fulldep";
 			default:
 				PersonaError.softFail(`Unhandled difference value ${diff}`);
-				return;
+				return "amp-fulldep";
 		}
-		await power.update({
-			"system.charge": charge,
-			"system.esc": esc
-		});
+	}
+
+	static calcEscalationReq(role: Shadow["system"]["role"], power: Readonly<Power>, diff: number) : Power["system"]["reqEscalation"] {
+		if (power.system.tags.includes("basicatk"))
+			return 0;
+		switch (role) {
+			case "lurker":
+				diff -= 2;
+				break;
+			default:
+				diff += 2;
+				break;
+		}
+		if (diff >= 0) return 0;
+		let esc = Math.round(Math.abs(diff) / 2);
+		return Math.clamped(esc, 0, 6);
 	}
 
 

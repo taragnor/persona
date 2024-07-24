@@ -5,7 +5,7 @@ import { testPreconditions } from "../preconditions.js"
 import { UniversalModifier } from "../item/persona-item.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { CombatTrigger } from "../../config/triggers.js";
-import { BASIC_POWER_NAMES } from "../../config/basic-powers.js";
+import { BASIC_PC_POWER_NAMES } from "../../config/basic-powers.js";
 import { PersonaSFX } from "./persona-sfx.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaSockets } from "../persona.js";
@@ -369,7 +369,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 			this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
 			const result = new CombatResult();
-			if (power.name == BASIC_POWER_NAMES[2]) {
+			if (power.name == BASIC_PC_POWER_NAMES[1]) {
 				PersonaSFX.play("all-out");
 			}
 			result.merge(await  this.#usePowerOn(attacker, power, targets, "standard"));

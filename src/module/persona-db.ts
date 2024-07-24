@@ -9,7 +9,8 @@ import { DBAccessor } from "./utility/db-accessor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { ModifierContainer } from "./item/persona-item.js";
 import { Power } from "./item/persona-item.js";
-import { BASIC_POWER_NAMES } from "../config/basic-powers.js";
+import { BASIC_PC_POWER_NAMES } from "../config/basic-powers.js";
+import { BASIC_SHADOW_POWER_NAMES } from "../config/basic-powers.js";
 import { SocialCard } from "./item/persona-item.js";
 
 
@@ -42,7 +43,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		.filter( x=> x.system.type == "power") as Power[];
 	}
 
-	getBasicPower( name: typeof BASIC_POWER_NAMES[number]) : Power | undefined {
+	getBasicPower( name: typeof BASIC_SHADOW_POWER_NAMES[number] | typeof BASIC_PC_POWER_NAMES[number]) : Power | undefined {
 		return PersonaDB.getItemByName(name) as Power | undefined;
 	}
 

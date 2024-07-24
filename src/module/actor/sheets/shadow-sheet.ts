@@ -1,3 +1,4 @@
+import { HTMLTools } from "../../utility/HTMLTools.js";
 import { SHADOW_ROLE } from "../../../config/shadow-types.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { PersonaActor } from "../persona-actor.js";
@@ -27,6 +28,7 @@ export class ShadowSheet extends CombatantSheetBase {
 		super.activateListeners(html);
 		html.find('.addShadowPower').on("click", this.onAddPower.bind(this));
 		html.find('.addShadowFocus').on("click", this.onAddFocus.bind(this));
+		html.find(".recost-power").on("click", this.onRecostPower.bind(this));
 
 	}
 
@@ -42,6 +44,13 @@ export class ShadowSheet extends CombatantSheetBase {
 			name: "New Focus",
 			type: "focus",
 		}]);
+	}
+
+	async onRecostPower(event: JQuery.ClickEvent) {
+		const powerId = HTMLTools.getClosestData(event, "powerId");
+		const power = this.actor.powers.find(power => power.id == powerId);
+		if (!power) return;
+		this.actor.setDefaultShadowCosts(power);
 	}
 
 }

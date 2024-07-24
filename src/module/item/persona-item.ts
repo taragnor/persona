@@ -5,7 +5,8 @@ import { CardChoice } from "../../config/social-card-config.js";
 import { CardEvent } from "../../config/social-card-config.js";
 import { Consequence } from "../combat/combat-result.js";
 import { Precondition } from "../../config/precondition-types.js";
-import { BASIC_POWER_NAMES } from "../../config/basic-powers.js";
+import { BASIC_PC_POWER_NAMES } from "../../config/basic-powers.js";
+import { BASIC_SHADOW_POWER_NAMES } from "../../config/basic-powers.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { getActiveConsequences } from "../preconditions.js";
 import { PersonaError } from "../persona-error.js";
@@ -38,8 +39,17 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		return PersonaDB.getUniversalItemAccessor(this);
 	}
 
-	static getBasicPowers() : Power[] {
-const basic = BASIC_POWER_NAMES;
+	static getBasicPCPowers() : Power[] {
+const basic = BASIC_PC_POWER_NAMES;
+		return basic.flatMap( powerName =>  {
+const power = PersonaDB.getBasicPower(powerName);
+			if (!power) return [];
+			return [power as Power];
+		});
+	}
+
+	static getBasicShadowPowers() : Power[] {
+const basic = BASIC_SHADOW_POWER_NAMES;
 		return basic.flatMap( powerName =>  {
 const power = PersonaDB.getBasicPower(powerName);
 			if (!power) return [];
@@ -826,9 +836,15 @@ const power = PersonaDB.getBasicPower(powerName);
 	*/
 	powerEffectLevel(this: Power) : number {
 		const base = this.system.slot * 2;
-		const multiMod = this.isMultiTarget() ? 1 : 0;
-		const areaMod = this.isAoE() ? 1 : 0;
-		return base + multiMod + areaMod;
+		let mod = 0;
+		// const multiMod = this.isMultiTarget() ? 1 : 0;
+		if (this.isAoE()) {
+			const dmgtype = this.system.dmg_type;
+			if (dmgtype == "dark" || dmgtype == "light")
+				mod +=1;
+			else mod +=2;
+		}
+		return base + mod;
 	}
 
 }
