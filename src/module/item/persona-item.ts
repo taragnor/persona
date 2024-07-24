@@ -32,7 +32,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	declare parent : PersonaActor | undefined;
 
 	getClassProperty<T extends keyof CClass["system"]["leveling_table"][number]> (this: CClass,lvl: number, property:T)  : CClass["system"]["leveling_table"][number][T] {
-		return this.system.leveling_table[lvl][property];
+		const adjustedLvl = Math.clamped(lvl, 0, 11);
+		return this.system.leveling_table[adjustedLvl][property];
 	}
 
 	get accessor() : UniversalItemAccessor<typeof this> {

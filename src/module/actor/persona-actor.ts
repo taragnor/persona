@@ -807,7 +807,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	magDmg (this: PC | Shadow, situation: Situation) : {low: number, high:number} {
 		const lvl = this.system.combat.classData.level;
 		const inc = this.system.combat.classData.incremental.mag_dmg ? 1 : 0;
-		const magDmg = this.class.getClassProperty(lvl + inc, "magic_damage") ?? 0;
+		const shadowMod = this.system.type == "shadow" ? -1 : 0;
+		const magDmg = this.class.getClassProperty(lvl + inc + shadowMod, "magic_damage") ?? 0;
 		return magDmg;
 	}
 
@@ -916,6 +917,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	canPayActivationCost_pc(this: PC, usable: Usable, _outputReason: boolean) : boolean {
 		switch (usable.system.type) {
 			case "power": {
+				if (this.hasStatus("depleted") && !usable.system.tags.includes("basicatk")) {
+					return false;
+				}
 				switch (usable.system.subtype) {
 					case "weapon":
 						return  this.hp > usable.system.hpcost;
@@ -1643,13 +1647,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				diff += 2;
 				break;
 			case "elite":
-				diff += 1;
 				break;
 			case "miniboss":
-				diff += 1;
 				break;
 			case "boss":
-				diff += 2;
+				diff += 1;
 				break;
 			case "controller":
 				if (!tags.includes("debuff")) {
@@ -1669,9 +1671,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		// diff-=1;
 		switch (true) {
-			case diff > 0 :
+			case diff >= 2 :
 				return "none";
-			case diff == 0:
+			case diff >= 0:
 				return "charged-req";
 			case diff >= -2:
 				return "always";

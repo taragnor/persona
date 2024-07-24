@@ -393,7 +393,6 @@ export class PersonaSocial {
 
 	static defaultDatePerk() : string {
 		return "Gain 2 social progress tokens with the target character";
-
 	}
 
 	static getCharInInitiativeList( offset: number) : SocialLink | undefined {
@@ -518,7 +517,16 @@ export class PersonaSocial {
 
 
 	static async #finalizeCard( cardData: CardData) : Promise<ChatMessage<Roll>> {
+
 		let html = "";
+		let pcImproveSpend = "";
+		if (cardData.card.system.cardType == "social") {
+			const link = this.lookupLink(cardData) as SocialLinkData;
+
+			if (link.actor.type == "pc") {
+				pcImproveSpend = `<li class="token-spend"> spend 4 progress tokens to raise link with ${link.actor.name}</li>`;
+			}
+		}
 		const tokenSpends = (cardData.card.system.tokenSpends ?? [])
 		.concat(cardData.activity != cardData.card ?  cardData.activity.system.tokenSpends ?? [] : [])
 		.filter( spend => testPreconditions(spend.conditions ?? [], cardData.situation, null))
@@ -536,6 +544,7 @@ export class PersonaSocial {
 		html += `<div class="token-spends">
 		<h3>Token Spends:</h3>
 		<ul>
+		${pcImproveSpend}
 		${tokenSpends.join("")}
 		</ul>
 		</div>
