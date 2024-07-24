@@ -1,3 +1,5 @@
+import { PToken } from "./combat/persona-combat.js";
+import { PersonaCombat } from "./combat/persona-combat.js";
 import { PersonaError } from "./persona-error.js";
 import { ResolvedModifierList } from "./combat/modifier-list.js";
 import { ModifierList } from "./combat/modifier-list.js";
@@ -79,8 +81,12 @@ export class RollBundle {
 	async toModifiedMessage() : Promise<ChatMessage> {
 		const html = await this.getHTML();
 		const actor  = PersonaDB.findActor((this.modList as ResolvedMods).actor);
+		let token : PToken | undefined;
+		token = PersonaCombat.getPTokenFromActorAccessor(actor.accessor);
 		const speaker : ChatSpeakerObject = {
-			actor: actor.id,
+			actor: token?.actor?.id ?? actor.id,
+			token: token?.id,
+			alias: token?.name,
 		};
 		const msg = await ChatMessage.create({
 			speaker,

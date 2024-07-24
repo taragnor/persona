@@ -330,6 +330,11 @@ export class CombatResult  {
 
 
 	async toMessage( effectName: string, initiator: PersonaActor) : Promise<ChatMessage> {
+		let InitiatorToken : PToken | undefined;
+		if (game.combat) {
+			 InitiatorToken = PersonaCombat.getPTokenFromActorAccessor(initiator.accessor);
+
+		}
 		const rolls : RollBundle[] = Array.from(this.attacks.entries()).map( ([attackResult]) => attackResult.roll);
 		const attacks = Array.from(this.attacks.entries()).map( ([attackResult, changes])=> {
 			return {
@@ -342,10 +347,10 @@ export class CombatResult  {
 		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attackerName, effectName,  attacks, escalation: this.escalationMod, result: this, costs: this.costs, manualApply});
 		const chatMsg = await ChatMessage.create( {
 			speaker: {
-				scene: initiator?.token?.parent.id,
-				actor: initiator.id,
-				token:  initiator.token?.id ,
-				alias: undefined,
+				scene: InitiatorToken?.parent?.id ?? initiator?.token?.parent.id,
+				actor: InitiatorToken?.actor?.id ?? initiator.id,
+				token:  InitiatorToken?.id,
+				alias: InitiatorToken?.name ?? undefined,
 			},
 			rolls: rolls.map( rb=> rb.roll),
 			content: html,
