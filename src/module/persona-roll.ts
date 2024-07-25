@@ -134,7 +134,6 @@ Hooks.on("renderChatMessage", async (_msg, html) => {
 	if (!game.user.isGM) {
 		html.find(".gm-only").hide();
 	}
-	console.log("Render Fn activate");
 });
 
 
