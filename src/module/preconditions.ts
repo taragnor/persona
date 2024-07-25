@@ -1,3 +1,4 @@
+import { DamageType } from "../config/damage-types.js";
 import { RESIST_STRENGTH_LIST } from "../config/damage-types.js";
 import { PersonaCalendar } from "./social/persona-calendar.js";
 import { ArrayCorrector } from "./item/persona-item.js";
@@ -182,7 +183,15 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			const subject = getSubjectActor(condition, situation, source, "conditionTarget");
 			if (!subject) return false;
 			testCase = RESIST_STRENGTH_LIST.indexOf(condition.resistLevel);
-		const targetResist = subject.system.combat.resists[condition.element] ?? "normal";
+			let element : DamageType | "by-power" = condition.element;
+			if (element == "by-power") {
+				if (!situation.usedPower) {return false;}
+				const power = PersonaDB.findItem(situation.usedPower);
+				element = power.system.dmg_type;
+				if (element == "healing" || element == "untyped" || element == "all-out" || element =="none" ) return false;
+
+			}
+		const targetResist = subject.system.combat.resists[element] ?? "normal";
 			target = RESIST_STRENGTH_LIST.indexOf(targetResist);
 			break;
 		}
@@ -337,10 +346,8 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
 			let dtype = condition.powerDamageType;
-			if (!situation.usedPower) {
-				return undefined;
-			}
 			if (dtype == "by-power") {
+			if (!situation.usedPower) { return undefined; }
 				const power = PersonaDB.findItem(situation.usedPower);
 				dtype = power.system.dmg_type;
 			}

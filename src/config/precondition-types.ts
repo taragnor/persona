@@ -40,7 +40,7 @@ type GenericPC = {
 	status ?: StatusEffectId,
 	powerTag ?: PowerTag,
 	powerType ?: PowerType,
-	powerDamageType ?: DamageType,
+	powerDamageType ?: DamageType | "by-power",
 	num ?: number,
 	flagId ?: string
 	booleanState ?: boolean,
@@ -90,7 +90,7 @@ type GenericNumericComparison = NumericComparisonBase & {
 
 type ResistanceComparison = NumericComparisonBase & {
 	comparisonTarget: "resistance-level"
-	element: ResistType,
+	element: ResistType | "by-power",
 	resistLevel : ResistStrength
 	conditionTarget : ConditionTarget,
 }
@@ -155,7 +155,7 @@ type TagComparisonPC = {
 
 type DamageTypeComparisonPC= {
 	boolComparisonTarget: "damage-type-is" ,
-	powerDamageType : DamageType,
+	powerDamageType : DamageType | "by-power",
 }
 
 type ResistanceCheck = {
