@@ -556,12 +556,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			};
 		}
 		const critBoostMod = attacker.actor.critBoost();
+		situation.resisted = resist == "resist";
+		situation.struckWeakness = resist == "weakness";
 		critBoostMod.add("Power Modifier", power.system.crit_boost);
 		const critResist = target.actor.critResist().total(situation);
 		critBoostMod.add("Enemy Critical Resistance", -critResist);
 		const critBoost = critBoostMod.total(situation);
-		situation.resisted = resist == "resist";
-		situation.struckWeakness = resist == "weakness";
+
 
 		if (naturalAttackRoll == 1
 			|| total < defenseVal

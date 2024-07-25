@@ -336,7 +336,15 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			const target = getSubject(condition, situation, source,  "conditionTarget");
 			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
-			const resist = targetActor.elementalResist(condition.powerDamageType);
+			let dtype = condition.powerDamageType;
+			if (!situation.usedPower) {
+				return undefined;
+			}
+			if (dtype == "by-power") {
+				const power = PersonaDB.findItem(situation.usedPower);
+				dtype = power.system.dmg_type;
+			}
+				const resist = targetActor.elementalResist(dtype);
 			switch (resist) {
 				case "resist": case "block": case "absorb": case "reflect": return true;
 				case "weakness": case "normal": return  false;
@@ -344,79 +352,79 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 					resist satisfies never;
 					return false;
 			}
-		}
-		case "flag-state": {
-			let actor = PersonaDB.findActor(situation.user);
-			return actor.getFlagState(condition.flagId) == condition.booleanState;
-		}
-		case "is-same-arcana": {
-			if (!situation.attacker) return undefined;
-			const actor = PersonaDB.findActor(situation.attacker);
-			if(!situation.target) {
-				return undefined;
-			}
-			const targetActor = getSubjectActor(condition, situation, source,  "conditionTarget");
-			if (!targetActor) return undefined;
-			return actor.system.tarot == targetActor.system.tarot;
-		}
-		case "is-dead": {
-			const target = getSubject(condition, situation, source,  "conditionTarget");
-			if (!target) return undefined;
-			const targetActor = target instanceof PersonaActor ? target : target.actor;
-			return targetActor.hp <= 0;
-		}
-		case "is-consumable": {
-			if (!situation.usedPower) {
-				return undefined;
-			}
-			const power = PersonaDB.findItem(situation.usedPower);
-			return power.system.type == "consumable";
-		}
-		case "target-owner-comparison":
-			const target = getSubject(condition, situation, source, "conditionTarget");
-			const target2 = getSubject(condition, situation, source, "conditionTarget2");
-			if (!target || !target2) return undefined;
-			return target == target2;
-		case "power-target-type-is":
-			if (!situation.usedPower) return undefined;
-			const power = PersonaDB.findItem(situation.usedPower);
-			if (!power) {
-				PersonaError.softFail(`Can't find power in conditional`);
-				return undefined;
-			}
-			return power.system.targets == condition.powerTargetType;
-		case "weather-is":
-			const weather = PersonaCalendar.getWeather();
-			return condition.weatherComparison == weather;
-		case "weekday-is":
-			const weekday = PersonaCalendar.weekday();
-			return condition.days[weekday];
-		case "social-target-is": {
-			if (!condition.socialLinkIdOrTarot) {
-				return undefined;
-			}
-			const desiredActor  = PersonaDB.allActors()
-				.find( x=> x.id == condition.socialLinkIdOrTarot)
-				?? PersonaDB.allActors()
-				.find(x=> x.tarot == condition.socialLinkIdOrTarot);
-			const target = getSubject(condition, situation, source, "conditionTarget");
-			return target == desiredActor;
-		}
-		case "shadow-role-is": {
-			const target = getSubjectActor(condition, situation, source, "conditionTarget");
-			if (!target) {return undefined;}
-			if (target.system.type != "shadow") {return false;}
-			return condition.shadowRole == target.system.role;
-		}
-		case "is-distracted": {
-			const target = getSubjectActor(condition, situation, source, "conditionTarget");
-			if (!target) {return undefined;}
-			return target.isDistracted();
-		}
-		default :
-				condition satisfies never;
-			return undefined;
 	}
+	case "flag-state": {
+		let actor = PersonaDB.findActor(situation.user);
+		return actor.getFlagState(condition.flagId) == condition.booleanState;
+	}
+	case "is-same-arcana": {
+		if (!situation.attacker) return undefined;
+		const actor = PersonaDB.findActor(situation.attacker);
+		if(!situation.target) {
+			return undefined;
+		}
+		const targetActor = getSubjectActor(condition, situation, source,  "conditionTarget");
+		if (!targetActor) return undefined;
+		return actor.system.tarot == targetActor.system.tarot;
+	}
+	case "is-dead": {
+		const target = getSubject(condition, situation, source,  "conditionTarget");
+		if (!target) return undefined;
+		const targetActor = target instanceof PersonaActor ? target : target.actor;
+		return targetActor.hp <= 0;
+	}
+	case "is-consumable": {
+		if (!situation.usedPower) {
+			return undefined;
+		}
+		const power = PersonaDB.findItem(situation.usedPower);
+		return power.system.type == "consumable";
+	}
+	case "target-owner-comparison":
+	const target = getSubject(condition, situation, source, "conditionTarget");
+	const target2 = getSubject(condition, situation, source, "conditionTarget2");
+	if (!target || !target2) return undefined;
+	return target == target2;
+	case "power-target-type-is":
+	if (!situation.usedPower) return undefined;
+	const power = PersonaDB.findItem(situation.usedPower);
+	if (!power) {
+		PersonaError.softFail(`Can't find power in conditional`);
+		return undefined;
+	}
+	return power.system.targets == condition.powerTargetType;
+	case "weather-is":
+	const weather = PersonaCalendar.getWeather();
+	return condition.weatherComparison == weather;
+	case "weekday-is":
+	const weekday = PersonaCalendar.weekday();
+	return condition.days[weekday];
+	case "social-target-is": {
+		if (!condition.socialLinkIdOrTarot) {
+			return undefined;
+		}
+		const desiredActor  = PersonaDB.allActors()
+		.find( x=> x.id == condition.socialLinkIdOrTarot)
+		?? PersonaDB.allActors()
+		.find(x=> x.tarot == condition.socialLinkIdOrTarot);
+		const target = getSubject(condition, situation, source, "conditionTarget");
+		return target == desiredActor;
+	}
+	case "shadow-role-is": {
+		const target = getSubjectActor(condition, situation, source, "conditionTarget");
+		if (!target) {return undefined;}
+		if (target.system.type != "shadow") {return false;}
+		return condition.shadowRole == target.system.role;
+	}
+	case "is-distracted": {
+		const target = getSubjectActor(condition, situation, source, "conditionTarget");
+		if (!target) {return undefined;}
+		return target.isDistracted();
+	}
+	default :
+	condition satisfies never;
+	return undefined;
+}
 }
 
 function booleanComparison(condition: Precondition, situation: Situation, source:Option<PowerContainer>): boolean {

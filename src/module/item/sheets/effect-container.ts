@@ -65,6 +65,10 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			"" : "current Social Target",
 		};
 
+		const DAMAGETYPESPLUS = {
+			...DAMAGETYPES,
+"by-power": 	"persona.damage.types.by-power",
+		};
 
 		this._powerStuffBase = {
 			DAYS_LIST,
@@ -81,6 +85,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			PRECONDITIONTYPES: PRECONDITIONTYPES,
 			CONSTYPES: CONSQUENCETYPES,
 			DAMAGETYPES : DAMAGETYPES,
+			DAMAGETYPESPLUS,
 			STATUSEFFECTS: STATUS_EFFECT_TRANSLATION_TABLE,
 			STATUSDURATIONS : STATUS_EFFECT_DURATIONS,
 			TARGETING : TARGETING,

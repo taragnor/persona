@@ -112,7 +112,7 @@
 	{{/if}}
 	{{#if (strIncludes cond.boolComparisonTarget "resistant")}}
 	<select name="{{strcat namePrefix 'powerDamageType'}}">
-		{{selectOptions POWERSTUFF.DAMAGETYPES localize=true selected=cond.powerDamageType}}
+		{{selectOptions POWERSTUFF.DAMAGETYPESPLUS localize=true selected=cond.powerDamageType}}
 	</select>
 	{{/if}}
 	{{#if (strIncludes cond.boolComparisonTarget "tag")}}

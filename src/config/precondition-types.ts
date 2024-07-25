@@ -160,7 +160,7 @@ type DamageTypeComparisonPC= {
 
 type ResistanceCheck = {
 	boolComparisonTarget:  "is-resistant-to",
-	powerDamageType : DamageType,
+	powerDamageType : DamageType | "by-power",
 	conditionTarget : ConditionTarget,
 }
 
