@@ -7,6 +7,7 @@ export const POWER_TAGS_LIST = [
 	"wind",
 	"light",
 	"dark",
+	"almighty",
 	"buff",
 	"debuff",
 	"weapon",

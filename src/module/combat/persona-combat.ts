@@ -1,3 +1,5 @@
+import { POWER_TAGS } from "../../config/power-tags.js";
+import { PowerTag } from "../../config/power-tags.js";
 import { ConditionTarget } from "../../config/precondition-types.js";
 import { ConsTarget } from "./combat-result.js";
 import { PersonaSocial } from "../social/persona-social.js"
@@ -563,7 +565,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		critBoostMod.add("Enemy Critical Resistance", -critResist);
 		const critBoost = critBoostMod.total(situation);
 
-
 		if (naturalAttackRoll == 1
 			|| total < defenseVal
 		) {
@@ -986,7 +987,50 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return res;
 	}
 
-	static getAttackBonus(attacker: PToken, power:Usable): ModifierList {
+	static getAttackBonus(attacker: PToken, power:Usable) : ModifierList {
+		let atkbonus = this.getBaseAttackBonus(attacker, power);
+		if (attacker.actor.type == "shadow") {
+			let tag : PowerTag | undefined;
+			switch (power.system.dmg_type) {
+				case "fire": case "wind":
+				case "light": case "dark":
+				case "healing":
+					tag = power.system.dmg_type;
+					break;
+				case "lightning":
+					tag = "elec";
+					break;
+				case "physical":
+					tag ="weapon";
+					break;
+				case "cold":
+					tag = "ice";
+					break;
+				case "untyped":
+					tag = "almighty";
+					break;
+				case "none":
+					if (power.system.tags.includes("buff")) {
+						tag = "buff"
+						break;
+					}
+					if (power.system.tags.includes("debuff")) {
+						tag = "debuff";
+						break;
+					}
+				case "all-out":
+					break;
+			}
+			if (tag) {
+				const bonus = attacker.actor.powers.filter(x=> x.system.tags.includes(tag)).length;
+				const localized = game.i18n.localize(POWER_TAGS[tag]);
+				atkbonus.add(`${localized} Power bonus`, bonus);
+			}
+		}
+		return atkbonus;
+	}
+
+	static getBaseAttackBonus(attacker: PToken, power:Usable): ModifierList {
 		const actor = attacker.actor;
 		if (power.system.type == "consumable") {
 			const l = actor.itemAtkBonus(power as Consumable);
@@ -1002,6 +1046,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			mod.add("Power attack modifier", power.system.atk_bonus);
 			return mod.concat(new ModifierList(power.getModifier("magAtk", actor)));
 		}
+
 		return new ModifierList();
 	}
 
