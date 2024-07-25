@@ -581,7 +581,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				...baseData,
 			};
 		}
-		if (resist != "resist" && naturalAttackRoll + critBoost >= 20) {
+		if (naturalAttackRoll + critBoost >= 20) {
 			situation.hit = true;
 			situation.criticalHit  = true;
 			return {
