@@ -1593,6 +1593,21 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.hasStatus("sticky");
 	}
 
+	isDistracted() : boolean {
+		const distractingStatuses :StatusEffectId[] = [
+			"confused",
+			"down",
+			"fading",
+			"fear",
+			"frozen",
+			"sleep",
+			"shock",
+			"dizzy",
+			"burn",
+		];
+		return distractingStatuses.some( status => this.hasStatus(status));
+	}
+
 	async setDefaultShadowCosts(this: Shadow, power: Power) {
 		if (!this.items.get(power.id)) {
 			ui.notifications.warn("Shadow can't edit power it doesn't own");

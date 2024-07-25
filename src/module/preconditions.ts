@@ -405,8 +405,13 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 		case "shadow-role-is": {
 			const target = getSubjectActor(condition, situation, source, "conditionTarget");
 			if (!target) {return undefined;}
-			if (target.system.type != "shadow") {return undefined;}
+			if (target.system.type != "shadow") {return false;}
 			return condition.shadowRole == target.system.role;
+		}
+		case "is-distracted": {
+			const target = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!target) {return undefined;}
+			return target.isDistracted();
 		}
 		default :
 				condition satisfies never;

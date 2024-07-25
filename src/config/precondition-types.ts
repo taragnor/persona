@@ -115,7 +115,7 @@ type ShadowRoleComparison = {
 }
 
 export type SingleTargetComparison = {
-	boolComparisonTarget: "engaged" | "engaged-with" | "is-dead" | "struck-weakness" | "is-shadow" | "is-pc" | "is-same-arcana";
+	boolComparisonTarget: "engaged" | "engaged-with" | "is-dead" | "struck-weakness" | "is-shadow" | "is-pc" | "is-same-arcana" | "is-distracted";
 	conditionTarget : ConditionTarget,
 };
 
@@ -206,6 +206,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"weekday-is",
 	"social-target-is",
 	"shadow-role-is",
+	"is-distracted",
 ] as const;
 
 

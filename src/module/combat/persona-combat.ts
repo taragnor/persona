@@ -123,8 +123,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				const {total, rollBundle, success} = await PersonaCombat.disengageRoll(actor, DC);
 				rolls.push(rollBundle);
 				let disengageResult = "failed";
-
-
 				if (total >= 11) disengageResult = "normal";
 				if (total >= 16) disengageResult = "hard";
 				startTurnMsg.push("<br>"+ await renderTemplate("systems/persona/parts/disengage-check.hbs", {roll: rollBundle, disengageResult, success}));
@@ -402,6 +400,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			{
 				const bonusRollType = typeof rollType != "number" ? 0: rollType+1;
 				const mods = new ModifierList();
+				//TODO BUG: Extra attacks keep the main inputted modifier
 				if (extraAttack.iterativePenalty) {
 					mods.add("Iterative Penalty", (bonusRollType + 1) * extraAttack.iterativePenalty);
 				}
@@ -412,6 +411,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 			const usePower = this_result.findEffect("use-power");
 			if (usePower) {
+				//TODO BUG: Extra attacks keep the main inputted modifier
 				const newAttacker = this.getPTokenFromActorAccessor(usePower.newAttacker);
 				const execPower = PersonaDB.allPowers().find( x=> x.id == usePower.powerId);
 				if (execPower && newAttacker) {

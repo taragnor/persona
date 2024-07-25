@@ -400,6 +400,7 @@
 	"persona.preconditions.comparison.weekday-is": "Weekday is",
 	"persona.preconditions.comparison.social-target-is": "Social Target Is",
 	"persona.preconditions.comparison.shadow-role-is": "Shadow Role is",
+	"persona.preconditions.comparison.is-distracted": "Is Distracted",
 
 	"persona.triggers.on-damage": "Character Takes Damage",
 	"persona.triggers.on-kill-target": "Character kills a target",
