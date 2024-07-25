@@ -475,12 +475,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const validDefModifiers= def != "none" ? target.actor.getDefense(def).list(situation): [];
 
 		const r = await new Roll("1d20").roll();
-		let defenseStr = "";
-		if (PersonaSettings.debugMode()) {
-			defenseStr =`(${defenseVal})`;
-		}
-		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} (vs ${power.system.defense} ${defenseStr})`;
-		const roll = new RollBundle(rollName, r, attackbonus, situation);
+		const cssClass=  (target.actor.type != "pc") ? "gm-only" : "";
+		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
+		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.system.defense} ${defenseStr}`;
+		const roll = new RollBundle(rollName, r, attacker.actor.system.type == "pc", attackbonus, situation);
 		const naturalAttackRoll = roll.dice[0].total;
 		situation.naturalAttackRoll = naturalAttackRoll;
 		const baseData = {
@@ -1244,7 +1242,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const difficultyTxt = DC == 11 ? "normal" : DC == 16 ? "hard" : DC == 6 ? "easy" : "unknown difficulty";
 		const labelTxt = `Saving Throw (${label ? label + " " + difficultyTxt : ""})`;
 		const r = await new Roll("1d20").roll();
-		const roll = new RollBundle(labelTxt, r, mods, situation);
+		const roll = new RollBundle(labelTxt, r, actor.system.type == "pc", mods, situation);
 		await roll.toModifiedMessage();
 		return {
 			success: roll.total >= difficulty,
@@ -1260,7 +1258,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const labelTxt = `Disengage Check`;
 		const roll = new Roll("1d20");
 		await roll.roll();
-		const rollBundle = new RollBundle(labelTxt, roll, mods, situation);
+		const rollBundle = new RollBundle(labelTxt, roll, actor.system.type == "pc", mods, situation);
 		return {
 			total: rollBundle.total,
 			rollBundle,

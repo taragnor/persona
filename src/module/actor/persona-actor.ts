@@ -961,7 +961,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return false;
 			}
 			const combat = game.combat;
-			if (combat && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
+			if (combat && usable.system.reqEscalation > 0 && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
 				if (outputReason) {
 					ui.notifications.notify(`Escalation die must be ${usable.system.reqEscalation} or higher to use this pwoer`);
 				}

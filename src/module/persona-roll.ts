@@ -12,9 +12,11 @@ import { Shadow } from "./actor/persona-actor.js";
 export class RollBundle {
 	roll: Roll;
 	modList: UnresolvedMods | ResolvedMods;
-	name: string
+	name: string;
+	_playerRoll: boolean;
 
-	constructor (rollName: string,roll : Roll, modList ?: ModifierList, situation ?: Situation) {
+	constructor (rollName: string,roll : Roll, playerRoll : boolean,  modList ?: ModifierList, situation ?: Situation) {
+		this._playerRoll = playerRoll;
 		if (!roll._evaluated)
 			throw new Error("Can't construct a Roll bundle with unevaluated roll");
 		this.roll = roll;
@@ -38,6 +40,10 @@ export class RollBundle {
 			actor: situation.user,
 		} satisfies ResolvedMods;
 		return this.modList;
+	}
+
+	get gmRoll() : boolean {
+		return !this._playerRoll;
 	}
 
 	set situation(sit: Situation) {
@@ -124,5 +130,11 @@ type ResolvedMods = {
 	actor: UniversalActorAccessor<PC | Shadow>,
 };
 
+Hooks.on("renderChatMessage", async (_msg, html) => {
+	if (!game.user.isGM) {
+		html.find(".gm-only").hide();
+	}
+	console.log("Render Fn activate");
+});
 
 

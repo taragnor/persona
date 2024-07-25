@@ -1,6 +1,6 @@
 <section class="simple-roll">
 	<h2>
-		{{roll.name}}
+		{{{roll.name}}}
 	</h2>
 	<div class="roll-body tooltip">
 		{{#each roll.dice as |die|}}
@@ -12,7 +12,7 @@
 			</span>
 		</div>
 		{{/each}}
-		<div class="mods-section tooltiptext">
+		<div class="mods-section tooltiptext {{#if roll.gmRoll}} gm-only {{/if}}">
 			{{#each roll.printableMods as |mod|}}
 			<div class="mod-item">
 				<span class="mod-name">

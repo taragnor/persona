@@ -116,7 +116,7 @@ export class PersonaSocial {
 			attacker: pc.accessor,
 		};
 		const r = await new Roll("1d20").roll();
-		const dice = new RollBundle(rollName, r,  mods, sit);
+		const dice = new RollBundle(rollName, r, true,  mods, sit);
 		return dice;
 	}
 
