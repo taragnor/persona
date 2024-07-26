@@ -98,10 +98,10 @@ class PowerSchema extends foundry.abstract.DataModel {
 			const dmglow = itemData.damage.low;
 			switch (true) {
 				case dmglow == 0: dmult = 0; break;
-				case	dmglow <= 5: dmult =1;   break;
-				case dmglow <=10: dmult =3; break;
-				case dmglow <=25: dmult =5; break;
-				case dmglow >25: dmult= 8; break;
+				case	dmglow <= 5: dmult = 2;   break;
+				case dmglow <=10: dmult = 4; break;
+				case dmglow <=25: dmult = 7; break;
+				case dmglow >25: dmult= 10; break;
 				default: break;
 			}
 			itemData.melee_extra_mult = dmult;
@@ -131,10 +131,10 @@ class ConsumableSchema extends foundry.abstract.DataModel {
 			const dmglow = itemData.damage.low;
 			switch (true) {
 				case dmglow == 0: dmult = 0; break;
-				case	dmglow <= 5: dmult =1;   break;
-				case dmglow <=10: dmult =3; break;
-				case dmglow <=25: dmult =5; break;
-				case dmglow >25: dmult= 8; break;
+				case	dmglow <= 5: dmult = 2;   break;
+				case dmglow <=10: dmult = 4; break;
+				case dmglow <=25: dmult = 7; break;
+				case dmglow >25: dmult= 10; break;
 				default: break;
 			}
 			itemData.melee_extra_mult = dmult;
