@@ -627,13 +627,18 @@ const power = PersonaDB.getBasicPower(powerName);
 		const subtype : PowerType  = this.system.type == "power" ? this.system.subtype : "standalone";
 		switch(subtype) {
 			case "weapon" : {
-				const dmg = user.wpnDamage(true, situation);
-				const bonus = this.system.damage;
-				const modified = {
-					low: dmg.low + bonus.low,
-					high: dmg.high + bonus.high
-				}
-				return modified[type];
+				const dmg = user.wpnDamage();
+				// const bonus = this.system.damage;
+				// const modified = {
+				// 	low: dmg.low + bonus.low,
+				// 	high: dmg.high + bonus.high
+				// }
+				const mult = user.wpnMult() + (this.system.melee_extra_mult ?? 0);
+				const bonusDamage = user.getBonusWpnDamage();
+				return {
+					low: dmg.low * mult + bonusDamage.low.total(situation),
+					high: dmg.high * mult + bonusDamage.high.total(situation),
+				}[type];
 			}
 			case "magic": {
 				const dmg = user.magDmg(situation);

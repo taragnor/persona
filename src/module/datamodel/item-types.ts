@@ -1,3 +1,5 @@
+import { Power } from "../item/persona-item.js";
+import { Consumable } from "../item/persona-item.js";
 import { TokenSpend } from "../../config/social-card-config.js";
 import { ConditionalEffect } from "./power-dm.js";
 import { Precondition } from "../../config/precondition-types.js";
@@ -42,7 +44,7 @@ function weeklyAvailability() {
 	});
 }
 
- class Weapon extends foundry.abstract.DataModel {
+class Weapon extends foundry.abstract.DataModel {
 	get type() { return "weapon" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -54,7 +56,7 @@ function weeklyAvailability() {
 	}
 }
 
- class Focus extends foundry.abstract.DataModel {
+class Focus extends foundry.abstract.DataModel {
 	get type() { return "focus" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -65,7 +67,7 @@ function weeklyAvailability() {
 	}
 }
 
- class UniversalModifier extends foundry.abstract.DataModel {
+class UniversalModifier extends foundry.abstract.DataModel {
 	get type() { return "universalModifier" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -77,7 +79,7 @@ function weeklyAvailability() {
 	}
 }
 
-class Power extends foundry.abstract.DataModel {
+class PowerSchema extends foundry.abstract.DataModel {
 	get type() {return "power" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -88,9 +90,28 @@ class Power extends foundry.abstract.DataModel {
 		};
 		return ret;
 	}
+
+	static override migrateData(data: any)  {
+		const itemData = data as (Power["system"] | Consumable["system"]);
+		let dmult = 0;
+		if (itemData.melee_extra_mult == undefined && data.damage.low) {
+			const dmglow = itemData.damage.low;
+			switch (true) {
+				case dmglow == 0: dmult = 0; break;
+				case	dmglow <= 5: dmult =1;   break;
+				case dmglow <=10: dmult =2; break;
+				case dmglow <=25: dmult =4; break;
+				case dmglow >25: dmult= 6; break;
+				default: break;
+			}
+			itemData.melee_extra_mult = dmult;
+		}
+		return data;
+	}
+
 }
 
- class Consumable extends foundry.abstract.DataModel {
+class ConsumableSchema extends foundry.abstract.DataModel {
 	get type() {return "consumable" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -102,10 +123,28 @@ class Power extends foundry.abstract.DataModel {
 		};
 		return ret;
 	}
+
+	static override migrateData(data: any)  {
+		const itemData = data as (Power["system"] | Consumable["system"]);
+		let dmult = 0;
+		if (itemData.melee_extra_mult == undefined && data.damage.low) {
+			const dmglow = itemData.damage.low;
+			switch (true) {
+				case dmglow == 0: dmult = 0; break;
+				case	dmglow <= 5: dmult =1;   break;
+				case dmglow <=10: dmult =2; break;
+				case dmglow <=25: dmult =4; break;
+				case dmglow >25: dmult= 6; break;
+				default: break;
+			}
+			itemData.melee_extra_mult = dmult;
+		}
+		return data;
+	}
 }
 
 
- class Talent extends foundry.abstract.DataModel {
+class Talent extends foundry.abstract.DataModel {
 	get type() { return "talent" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -117,7 +156,7 @@ class Power extends foundry.abstract.DataModel {
 }
 
 
- class InventoryItemSchema extends foundry.abstract.DataModel {
+class InventoryItemSchema extends foundry.abstract.DataModel {
 	get type() { return "item" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -211,9 +250,9 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 }
 
 export const ITEMMODELS = {
-	consumable: Consumable,
+	consumable: ConsumableSchema,
 	item: InventoryItemSchema,
-	power: Power,
+	power: PowerSchema,
 	characterClass: CharacterClassDM,
 	focus: Focus,
 	talent: Talent,
@@ -226,5 +265,5 @@ export const ITEMMODELS = {
 
 //testing the types, purely for debug purposes
 type CClass = SystemDataObjectFromDM<typeof CharacterClassDM>;
-type PowerSO= SystemDataObjectFromDM<typeof Power>;
+type PowerSO= SystemDataObjectFromDM<typeof PowerSchema>;
 

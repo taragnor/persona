@@ -648,7 +648,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return inv.filter( item => item.system.type == "item" && item.system.slot == "none") as InvItem[];
 	}
 
-	wpnDamage(this: PC | Shadow, multiplier_factored: boolean = true, situation: Situation = { user: this.accessor}) : {low: number, high:number} {
+	wpnDamage(this: PC | Shadow) : {low: number, high:number} {
 		let basedmg: {low: number, high:number};
 		if (this.system.type == "pc") {
 			const wpn = this.weapon;
@@ -659,17 +659,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		} else {
 			basedmg = this.system.combat.wpndmg;
 		}
-		if (!multiplier_factored)
 			return basedmg;
-		const mult = this.wpnMult();
-		const bonusDamage = this.getBonusWpnDamage(situation);
-		return {
-			low: basedmg.low * mult + bonusDamage.low.total(situation),
-			high: basedmg.high * mult + bonusDamage.high.total(situation),
-		}
 	}
 
-	getBonusWpnDamage(_situation: Situation) : {low: ModifierList, high: ModifierList} {
+	getBonusWpnDamage() : {low: ModifierList, high: ModifierList} {
 		const total = this.getBonuses("wpnDmg");
 		const low = this.getBonuses("wpnDmg_low");
 		const high = this.getBonuses("wpnDmg_high");

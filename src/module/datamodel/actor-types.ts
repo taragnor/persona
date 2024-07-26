@@ -254,9 +254,9 @@ export class ShadowSchema extends foundry.abstract.DataModel {
 		const system= data as PC["system"];
 		const convert = function (x: number) {
 			switch (true) {
-				case x  >=5: return "ultimate";
-				case x  >=2: return "strong";
-				case x >  -2: return "normal";
+				case x >= 5: return "ultimate";
+				case x >= 2: return "strong";
+				case x > -2: return "normal";
 				case x >= -5: return "weak";
 				case x >= -10 : return "pathetic";
 				default: return "normal";

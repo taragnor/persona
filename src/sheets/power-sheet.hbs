@@ -42,15 +42,12 @@
 		{{numberInput item.system.hpcost class="short" name="system.hpcost" step=1 min=0 max=100}}
 	</div>
 	<div class="damage">
-		<label class="dmg-low">
-			Low
+		<label class="dmg-mult">
+			Extra Damage Mult
 		</label>
-		{{numberInput item.system.damage.low class="short" name="system.damage.low" step=1 min=0 max=900}}
-		<label class="dmg-high">
-			High
-		</label>
-		{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=900}}
+		{{numberInput item.system.melee_extra_mult class="short" name="system.melee_extra_mult" step=1 min=0 max=100}}
 	</div>
+	<hr>
 	{{/if}}
 	{{#if (eq item.system.subtype "magic")}}
 	<div class="mag-mult">
@@ -88,30 +85,24 @@
 
 	{{#if (eq item.parent.type "shadow")}}
 	<hr>
-	<section = "shadow-costs">
+	<section class="shadow-costs">
 		<label>
 			Requires Charge Depletion
 		</label>
 		<select name="system.reqCharge">
 			{{selectOptions POWERSTUFF.SHADOW_CHARGE_REQ localize=true selected=item.system.reqCharge}}
 		</select>
-
 		<label>
-			Requires Enhanced Metaverse
-			</label>
-<input type="checkbox" name="system.reqEnhancedMultiverse" {{checked item.system.reqEnhancedMultiverse}}>
-			<label>
-				ESC requirement
-			</label>
+			ESC requirement
+		</label>
 		{{numberInput item.system.reqEscalation class="short" name="system.reqEscalation" step=1 min=0 max=6}}
 	</section>
-			<label>
-				Health
-			</label>
-		{{numberInput item.system.reqHealthPercentage class="short" name="system.reqHealthPercentage" step=1 min=1 max=100}} %
+	<label>
+		Health
+	</label>
+	{{numberInput item.system.reqHealthPercentage class="short" name="system.reqHealthPercentage" step=1 min=1 max=100}} %
 	</section>
 	{{/if}}
-
 
 	<hr>
 	{{> "systems/persona/parts/power-effects.hbs" item=item POWERSTUFF=POWERSTUFF}}

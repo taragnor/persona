@@ -566,7 +566,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const critBoost = critBoostMod.total(situation);
 
 		if (naturalAttackRoll == 1
-			|| total < defenseVal
+				|| total < defenseVal
 		) {
 			situation.hit = false;
 			situation.criticalHit = false;
@@ -1401,9 +1401,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			...combat.getAllies(attackerComb)
 		].flatMap (c=>c.actor?  [c.actor] : []);
 		for (const actor of attackers) {
-			const wpndmg = actor.wpnDamage(true, situation);
-			dmg.high+= wpndmg.high;
-			dmg.low += wpndmg.low;
+			const wpndmg = actor.wpnDamage();
+			const mult = actor.wpnMult();
+			const bonusdmg = actor.getBonusWpnDamage();
+
+			dmg.high+= wpndmg.high * mult + bonusdmg.high.total(situation) ;
+			dmg.low += wpndmg.low * mult + bonusdmg.low.total(situation);
 		}
 		dmg.high /= 3;
 		dmg.low /= 3;
