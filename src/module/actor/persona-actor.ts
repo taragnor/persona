@@ -1,3 +1,5 @@
+import { ELEMENTAL_DEFENSE_LINK } from "../../config/damage-types.js";
+import { ResistType } from "../../config/damage-types.js";
 import { RESIST_STRENGTH_LIST } from "../../config/damage-types.js";
 import { Activity } from "../item/persona-item.js";
 import { RecoverSlotEffect } from "../combat/combat-result.js";
@@ -740,13 +742,32 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	getDefense(this: PC | Shadow,  type : keyof PC["system"]["combat"]["defenses"]) : ModifierList {
 		const mods = new ModifierList();
 		const lvl = this.system.combat.classData.level;
-		const baseDef = this.system.combat.defenses[type];
+		const baseDef = this.#translateDefenseString(type, this.system.combat.defenses[type]);
 		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
 		mods.add("Base", 10);
 		mods.add("Base Defense Bonus", baseDef);
 		mods.add("Level Bonus", lvl + inc);
 		const otherBonuses = this.getBonuses([type, "allDefenses"]);
 		return mods.concat(otherBonuses);
+	}
+
+	#translateDefenseString(this: PC | Shadow, defType: keyof PC["system"]["combat"]["defenses"], val: PC["system"]["combat"]["defenses"]["fort"],): number {
+		const weaknesses= this.#getWeaknessesInCategory(defType);
+		switch (val) {
+			case "pathetic": return -6 + 2 * weaknesses ;
+			case "weak": return -3 + 1 * weaknesses;
+			case "normal": return 0;
+			case "strong": return 3 - 1 * weaknesses;
+			case "ultimate": return 6 - 2 * weaknesses;
+			default:
+				PersonaError.softFail(`Bad defense tsring ${val} for ${defType}`);
+				return -999;
+		}
+	}
+	#getWeaknessesInCategory(this: PC | Shadow, defType: keyof PC["system"]["combat"]["defenses"]): number {
+		const damageTypes = ELEMENTAL_DEFENSE_LINK[defType];
+		const weaknesses= damageTypes.filter( dt => this.system.combat.resists[dt] == "weakness")
+		return weaknesses.length;
 	}
 
 	elementalResist(this: PC | Shadow, type: typeof DAMAGETYPESLIST[number]) : ResistStrength  {

@@ -1,3 +1,4 @@
+import { DEFENSE_CATEGORY } from "../../../config/defense-categories.js";
 import { RESIST_STRENGTHS } from "../../../config/damage-types.js";
 import { PersonaActor } from "../persona-actor.js";
 import { TAROT_DECK } from "../../../config/tarot.js";
@@ -26,6 +27,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 			DAYS,
 			STUDENT_SKILLS,
 			AVAILABILITY,
+			DEFENSE_CATEGORY,
 			TAROT  : TAROT_DECK,
 			RESIST_STRENGTHS : RESIST_STRENGTHS,
 			DAMAGETYPES : DAMAGETYPES,
@@ -35,6 +37,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 				val: this.getIncAdvanceValue(x),
 			}))
 		};
+		Debug(data);
 		return data;
 	}
 

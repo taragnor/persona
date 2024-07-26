@@ -72,6 +72,7 @@
 	"persona.damage.resist.absorb": "Absorb",
 	"persona.damage.resist.reflect": "Reflect",
 
+
 	"persona.statistic.level": "Level",
 	"persona.statistic.powerslots": "Power Slots",
 	"persona.statistic.powers": "Powers",
@@ -81,6 +82,13 @@
 	"persona.defense.ref": "Reflex",
 	"persona.defense.will": "Will",
 	"persona.defense.fort": "Fortitude",
+
+	"persona.defense.category.pathetic": "Pathetic",
+	"persona.defense.category.weak": "Weak",
+	"persona.defense.category.normal": "Normal",
+	"persona.defense.category.strong": "Strong",
+	"persona.defense.category.ultimate": "Ultimate",
+
 
 	"persona.incremental.type.hp": "Hit Points",
 	"persona.incremental.type.lvl_bonus": "Attack and Defense Bonus",

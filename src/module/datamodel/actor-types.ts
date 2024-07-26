@@ -1,4 +1,6 @@
 const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
+import { PC } from "../actor/persona-actor.js";
+import { DEFENSE_CATEGORY_LIST } from "../../config/defense-categories.js";
 import { TokenSpend } from "../../config/social-card-config.js";
 import { SHADOW_ROLE_LIST } from "../../config/shadow-types.js";
 import { Precondition } from "../../config/precondition-types.js";
@@ -123,9 +125,12 @@ const combatCommonStats = function () {
 		magatk: new num( {integer:true, initial: 0}),
 		defenses :
 		new sch({
-			ref: new num( {integer:true, initial: 0}),
-			will: new num( {integer:true, initial: 0}),
-			fort: new num( {integer:true, initial: 0}),
+			// ref: new num( {integer:true, initial: 0}),
+			// will: new num( {integer:true, initial: 0}),
+			// fort: new num( {integer:true, initial: 0}),
+			ref: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
+			will: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
+			fort: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 		}),
 		focuses: new arr( new id(), {initial: []}),
 		powers: new arr( new id()),
@@ -203,6 +208,26 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 		return ret;
 	}
 
+	static override migrateData(data: any) {
+		const system= data as PC["system"];
+		const convert = function (x: number) {
+			switch (true) {
+				case x  >=5: return "ultimate";
+				case x  >=2: return "strong";
+				case x >  -2: return "normal";
+				case x >= -5: return "weak";
+				case x >= -10 : return "pathetic";
+				default: return "normal";
+			}
+		};
+		if (typeof system.combat.defenses.fort == "number") {
+			system.combat.defenses.fort = convert(data.combat.defenses.fort);
+			system.combat.defenses.ref = convert(data.combat.defenses.ref);
+			system.combat.defenses.will = convert(data.combat.defenses.will);
+		}
+		return data;
+	}
+
 }
 
 export class ShadowSchema extends foundry.abstract.DataModel {
@@ -224,6 +249,27 @@ export class ShadowSchema extends foundry.abstract.DataModel {
 		} as const;
 		return ret;
 	}
+
+	static override migrateData(data: any) {
+		const system= data as PC["system"];
+		const convert = function (x: number) {
+			switch (true) {
+				case x  >=5: return "ultimate";
+				case x  >=2: return "strong";
+				case x >  -2: return "normal";
+				case x >= -5: return "weak";
+				case x >= -10 : return "pathetic";
+				default: return "normal";
+			}
+		};
+		if (typeof system.combat.defenses.fort == "number") {
+			system.combat.defenses.fort = convert(data.combat.defenses.fort);
+			system.combat.defenses.ref = convert(data.combat.defenses.ref);
+			system.combat.defenses.will = convert(data.combat.defenses.will);
+		}
+		return data;
+	}
+
 }
 
 export class NPCSchema extends foundry.abstract.DataModel {
