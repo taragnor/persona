@@ -362,7 +362,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 	}
 	case "flag-state": {
 		let actor = PersonaDB.findActor(situation.user);
-		return actor.getFlagState(condition.flagId) == condition.booleanState;
+		return actor.getFlagState(condition.flagId);
 	}
 	case "is-same-arcana": {
 		if (!situation.attacker) return undefined;

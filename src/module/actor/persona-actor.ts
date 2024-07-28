@@ -1659,13 +1659,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const tags = power.system.tags;
 		switch (role) {
 			case "tank":
-				diff -= 1;
+				diff -= 2;
 				if (tags.includes("healing")) {
 					diff -= 1;
 				}
 				break;
 			case "soldier":
-				diff -= 1;
+				diff -= 2;
 				if (tags.includes("healing")) {
 					diff -= 1;
 				}
@@ -1677,6 +1677,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				break;
 			}
 			case "artillery":
+				diff -=1;
 				if (tags.includes("healing")) {
 					diff -= 2;
 				}
@@ -1685,7 +1686,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				if (tags.includes("healing")) {
 					diff -= 1;
 				}
-				diff += 2;
+				diff += 1;
 				break;
 			case "elite":
 				break;
@@ -1695,6 +1696,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				diff += 1;
 				break;
 			case "controller":
+				diff -= 1;
 				if (!tags.includes("debuff")) {
 					diff -= 2;
 				}
@@ -1785,7 +1787,7 @@ Hooks.on("updateActor", async (actor: PersonaActor, _changes: {system: any}) => 
 });
 
 Hooks.on("createToken", async function (token: TokenDocument<PersonaActor>)  {
-	if (token.actor) {
+	if (token.actor && game.user.isGM) {
 		token.actor.fullHeal();
 	}
 });
