@@ -1100,22 +1100,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		link.currentProgress = Math.max(0,progress + link.currentProgress);
 		if (progress > 0) {
 			link.inspiration = link.linkLevel;
+		} else if (progress <0) {
+			link.inspiration = 0;
 		}
-		const linkActor = game.actors.get(link.linkId);
-		if (progress < 0) {
-			// PersonaSounds.socialLinkReverse();
-		}
-		switch (progress) {
-			case 1: PersonaSounds.socialBoostJingle(1);
-				break;
-			case 2: PersonaSounds.socialBoostJingle(2);
-				break;
-			case 3: PersonaSounds.socialBoostJingle(3);
-				break;
-		}
-		await this.update({"system.social": this.system.social});
-		await Logger.sendToChat(`${this.name} added ${progress} progress tokens to link ${linkActor?.name} (original Value: ${orig})` , this);
+	const linkActor = game.actors.get(link.linkId);
+	if (progress < 0) {
+		// PersonaSounds.socialLinkReverse();
 	}
+	switch (progress) {
+		case 1: PersonaSounds.socialBoostJingle(1);
+			break;
+		case 2: PersonaSounds.socialBoostJingle(2);
+			break;
+		case 3: PersonaSounds.socialBoostJingle(3);
+			break;
+	}
+	await this.update({"system.social": this.system.social});
+	await Logger.sendToChat(`${this.name} added ${progress} progress tokens to link ${linkActor?.name} (original Value: ${orig})` , this);
+}
 
 	async activityProgress(this: PC, activityId :string, progress: number) {
 		const activityData = this.system.activities.find( x=> x.linkId == activityId);
