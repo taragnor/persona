@@ -247,6 +247,7 @@ export class ErrorScanner {
 					type :"boolean",
 					booleanState: true,
 					boolComparisonTarget: "engaged-with",
+					conditionTarget2: "attacker",
 					conditionTarget: "target",
 				}
 			case "is-not-engaged-with-target":
@@ -254,6 +255,7 @@ export class ErrorScanner {
 					type :"boolean",
 					booleanState: false,
 					boolComparisonTarget: "engaged-with",
+					conditionTarget2: "attacker",
 					conditionTarget: "target",
 				}
 

@@ -2,21 +2,45 @@ import { PToken } from "./persona-combat";
 import { PersonaCombat } from "./persona-combat";
 
 export class EngagementChecker {
-	static isEngaged(subject: PToken, combat: PersonaCombat): boolean {
+	// static isEngaged(subject: PToken, combat: PersonaCombat): boolean {
+	// 	const myAllegiance = subject.actor!.getAllegiance();
+	// 	const engageArray = Array.from(this.getEngagedList(subject, combat));
+	// 	// const output = engageArray. map ( x=> `${x.name}: ${x.actor!.getAllegiance()} ${x.actor!.isCapableOfAction()}` );
+	// 	return engageArray.some( tok =>
+	// 		tok.actor!.getAllegiance() != myAllegiance && tok.actor!.isCapableOfAction()
+	// 	)
+	// }
+
+	// static isEngagedWith(subject: PToken, target: PToken, combat: PersonaCombat) : boolean {
+	// 	if (subject == target) return true;
+	// 	return this.getEngagedList(subject, combat).has(target);
+	// }
+
+	static isEngagedByAnyFoe(subject: PToken, combat: PersonaCombat) : boolean {
+		return this.getAllEngagedEnemies(subject, combat).length > 0;
+	}
+
+	static isEngaging(subject: PToken, target: PToken, combat: PersonaCombat) : boolean {
+		if (subject == target) return false;
+		if (!subject.actor.canEngage()) return false;
+		const inMelee = this.getTokensInMelee(subject, combat);
+		return inMelee.has(target);
+	}
+
+	static isEngagedBy(subject: PToken, target: PToken, combat: PersonaCombat) : boolean {
+		return this.isEngaging(target, subject, combat);
+	}
+
+	static getAllEngagedEnemies(subject: PToken, combat: PersonaCombat) : PToken[] {
 		const myAllegiance = subject.actor!.getAllegiance();
-		const engageArray = Array.from(this.getEngagedList(subject, combat));
-		// const output = engageArray. map ( x=> `${x.name}: ${x.actor!.getAllegiance()} ${x.actor!.isCapableOfAction()}` );
-		return engageArray.some( tok =>
-			tok.actor!.getAllegiance() != myAllegiance && tok.actor!.isCapableOfAction()
-		)
+		const meleeList = Array.from(this.getTokensInMelee(subject, combat));
+		return meleeList.filter( tok =>
+			tok.actor.getAllegiance() != myAllegiance
+			&& tok.actor.canEngage() == true
+		);
 	}
 
-	static isEngagedWith(subject: PToken, target: PToken, combat: PersonaCombat) : boolean {
-		if (subject == target) return true;
-		return this.getEngagedList(subject, combat).has(target);
-	}
-
-	static getEngagedList(subject: PToken, combat: PersonaCombat) : Set<PToken> {
+	static getTokensInMelee(subject: PToken, combat: PersonaCombat) : Set<PToken> {
 		const engagedList : Set<PToken>= new Set();
 		const checkList = [subject];
 		while (checkList.length > 0) {

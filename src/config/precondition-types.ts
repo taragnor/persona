@@ -115,12 +115,12 @@ type ShadowRoleComparison = {
 }
 
 export type SingleTargetComparison = {
-	boolComparisonTarget: "engaged" | "engaged-with" | "is-dead" | "struck-weakness" | "is-shadow" | "is-pc" | "is-same-arcana" | "is-distracted";
+	boolComparisonTarget: "engaged" | "is-dead" | "struck-weakness" | "is-shadow" | "is-pc" | "is-same-arcana" | "is-distracted";
 	conditionTarget : ConditionTarget,
 };
 
 type TwoTargetComparison = {
-	boolComparisonTarget:	"target-owner-comparison" ,
+	boolComparisonTarget:	"target-owner-comparison" | "engaged-with"
 	conditionTarget : ConditionTarget,
 	conditionTarget2: ConditionTarget,
 }

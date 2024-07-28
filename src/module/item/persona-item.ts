@@ -839,7 +839,7 @@ const power = PersonaDB.getBasicPower(powerName);
 	}
 
 	/** used for determining shadows usage limits
-	*/
+	 */
 	powerEffectLevel(this: Power) : number {
 		const base = this.system.slot * 3;
 		let mod = 0;
@@ -847,8 +847,9 @@ const power = PersonaDB.getBasicPower(powerName);
 		if (this.isAoE()) {
 			const dmgtype = this.system.dmg_type;
 			if (dmgtype == "dark" || dmgtype == "light")
-				mod +=1;
-			else mod +=2;
+				mod+=2;
+			// mod +=1;
+			// else mod +=2;
 		}
 		return base + mod;
 	}

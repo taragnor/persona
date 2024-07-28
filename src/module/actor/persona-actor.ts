@@ -1227,7 +1227,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	canEngage() :boolean {
-		return true; //placeholder
+		return !this.isDistracted() && this.isCapableOfAction();
 	}
 
 	getLevelOfTalent(this: PC, talent: Talent) : number {

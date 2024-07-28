@@ -120,7 +120,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		startTurnMsg = startTurnMsg.concat(await this.handleStartTurnEffects(combatant));
 		if (combatant.actor.isCapableOfAction()) {
 			const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token);
-			if (this.isEngaged(accessor)) {
+			if (this.isEngagedByAnyFoe(accessor)) {
 				const DC = this.getDisengageDC(combatant);
 				const {total, rollBundle, success} = await PersonaCombat.disengageRoll(actor, DC);
 				rolls.push(rollBundle);
@@ -145,7 +145,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	getDisengageDC(combatant: Combatant<ValidAttackers>) : number {
 		if (!combatant.token) return 11;
-		const list = EngagementChecker.getEngagedList(combatant.token as PToken, this);
+		const list = EngagementChecker.getAllEngagedEnemies(combatant.token as PToken, this);
 		for (const item of list) {
 			if (item.actor.isSticky()) return 16;
 		}
@@ -1243,16 +1243,21 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return this.getFlag("persona", "isSocial") ?? false;
 	}
 
-	isEngaged(subject: UniversalTokenAccessor<PToken>) : boolean {
-
+	isEngagedByAnyFoe(subject: UniversalTokenAccessor<PToken>) : boolean {
 		const tok = PersonaDB.findToken(subject);
-		return EngagementChecker.isEngaged(tok, this);
+		return EngagementChecker.isEngagedByAnyFoe(tok, this);
 	}
 
-	isEngagedWith(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
+	isEngaging(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
 		const t1 = PersonaDB.findToken(token1);
 		const t2 = PersonaDB.findToken(token2);
-		return EngagementChecker.isEngagedWith(t1, t2, this);
+		return EngagementChecker.isEngaging(t1, t2, this);
+	}
+
+	isEngagedBy(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
+		const t1 = PersonaDB.findToken(token1);
+		const t2 = PersonaDB.findToken(token2);
+		return EngagementChecker.isEngagedBy(t1, t2, this);
 	}
 
 	getCombatantFromTokenAcc(acc: UniversalTokenAccessor<PToken>): Combatant<PersonaActor> {
