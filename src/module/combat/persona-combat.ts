@@ -1401,6 +1401,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			...combat.getAllies(attackerComb)
 		].flatMap (c=>c.actor?  [c.actor] : []);
 		for (const actor of attackers) {
+			if (actor.isDistracted() || !actor.isCapableOfAction())
+				continue;
 			const wpndmg = actor.wpnDamage();
 			const mult = actor.wpnMult();
 			const bonusdmg = actor.getBonusWpnDamage();
