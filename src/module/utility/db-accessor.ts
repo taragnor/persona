@@ -298,7 +298,7 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 
 
 export type UniversalTokenAccessor<_T extends TokenDocument<any>> = {
-	scene?: string,
+	scene: string,
 	tokenId : string,
 };
 

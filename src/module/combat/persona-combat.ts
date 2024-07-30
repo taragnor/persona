@@ -1490,6 +1490,24 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		});
 	}
 
+	debug_engageList() {
+		let list = [] as string[];
+		const combs= this.combatants;
+		for (const comb of combs) {
+			const combAcc = PersonaDB.getUniversalTokenAccessor(comb.token);
+			const foeEng = this.isEngagedByAnyFoe(combAcc) ? "*" : "";
+			const engagedBy = combs
+				.filter( c => this.isEngagedBy(combAcc, PersonaDB.getUniversalTokenAccessor(c.token)))
+				.map(c=> c.name);
+			list.push(`${comb.name}${foeEng} Engaged By: ${engagedBy.join(" , ")}`);
+			const engaging = combs
+				.filter( c=> this.isEngaging(combAcc, PersonaDB.getUniversalTokenAccessor(c.token)))
+				.map( c=> c.name);
+			list.push(`${comb.name}${foeEng} is Engaging: ${engaging.join(" , ")}`);
+		}
+		console.log(list.join("\n"));
+	}
+
 } // end of class
 
 
