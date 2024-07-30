@@ -116,7 +116,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				await effect.delete();
 			}
 		}
-		let startTurnMsg=[ `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`];
+		let startTurnMsg = [ `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`];
 		startTurnMsg = startTurnMsg.concat(await this.handleStartTurnEffects(combatant));
 		if (combatant.actor.isCapableOfAction()) {
 			const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token);

@@ -256,11 +256,23 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 	}
 
 	getUniversalActorAccessor<T extends Actor<any>> (actor: T) : UniversalActorAccessor<T> {
+		if (actor.token && actor.token.object) {
+			return {
+				actorId: actor.id,
+				token: this.getUniversalTokenAccessor(actor.token.object),
+			};
+		}
+		for (const comb of game.combat?.combatants ?? [])
+		if (comb.actor == actor && comb.token.actorLink) {
+			return  {
+				actorId: actor.id,
+				token: this.getUniversalTokenAccessor(comb.token),
+			};
+		}
 		return {
 			actorId: actor.id,
-			token: (actor.token && actor.token.object) ? this.getUniversalTokenAccessor(actor.token.object)  : undefined,
+			token: undefined
 		}
-
 	}
 
 

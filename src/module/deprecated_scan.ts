@@ -258,7 +258,6 @@ export class ErrorScanner {
 					conditionTarget2: "attacker",
 					conditionTarget: "target",
 				}
-
 			case "target-is-resistant-to":
 				return {
 					type :"boolean",
