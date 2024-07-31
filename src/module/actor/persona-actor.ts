@@ -452,33 +452,88 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.modifyHP(healing);
 	}
 
-	get powers(): Power[] {
-
+	get mainPowers() : Power[] {
 		switch (this.system.type) {
-			case "tarot": return [];
-			case "npc" : return [];
-			case "pc":{
-				const basicPowers = PersonaItem.getBasicPCPowers();
+			case "npc": case "tarot": return [];
+			case "pc":
 				const powerIds = this.system.combat.powers;
 				const pcPowers : Power[] = powerIds.flatMap( id=> {
 					const i = PersonaDB.getItemById(id);
 					return (i ? [i as Power] : []);
 				});
-				const bonusPowers : Power[] =
-				(this as PC).mainModifiers({omitPowers:true})
-				.filter(x=> x.grantsPowers())
-				.flatMap(x=> x.getGrantedPowers(this as PC ));
-				return basicPowers.concat(pcPowers).concat(bonusPowers);
-			}
-			case "shadow": {
-				const basicPowers = PersonaItem.getBasicShadowPowers();
+				return pcPowers;
+			case "shadow":
 				const shadowPowers = this.items.filter( x=> x.system.type == "power") as Power[];
-				return basicPowers.concat(shadowPowers);
-			}
+				return shadowPowers;
 			default:
 				this.system satisfies never;
-				throw new PersonaError("Something weird happened");
+				return [];
 		}
+	}
+
+	get bonusPowers() : Power[] {
+		switch (this.type) {
+			case "npc": case "tarot": 
+				return [];
+			case "shadow":
+			case "pc":
+				const bonusPowers : Power[] =
+					(this as PC | Shadow).mainModifiers({omitPowers:true})
+					.filter(x=> x.grantsPowers())
+					.flatMap(x=> x.getGrantedPowers(this as PC ));
+				return bonusPowers;
+			default:
+				this.type satisfies never;
+				return [];
+		}
+	}
+
+	get basicPowers() : Power [] {
+		switch (this.type) {
+			case "npc": case "tarot": 
+				return [];
+			case "shadow":
+				return PersonaItem.getBasicShadowPowers();
+			case "pc":
+				return PersonaItem.getBasicPCPowers();
+			default:
+				this.type satisfies never;
+				return [];
+		}
+
+	}
+
+	get powers(): Power[] {
+		return [
+			...this.basicPowers,
+			...this.mainPowers,
+			...this.bonusPowers,
+		].flat();
+		// switch (this.system.type) {
+		// 	case "tarot": return [];
+		// 	case "npc" : return [];
+		// 	case "pc":{
+		// 		const basicPowers = PersonaItem.getBasicPCPowers();
+		// 		const powerIds = this.system.combat.powers;
+		// 		const pcPowers : Power[] = powerIds.flatMap( id=> {
+		// 			const i = PersonaDB.getItemById(id);
+		// 			return (i ? [i as Power] : []);
+		// 		});
+		// 		const bonusPowers : Power[] =
+		// 		(this as PC).mainModifiers({omitPowers:true})
+		// 		.filter(x=> x.grantsPowers())
+		// 		.flatMap(x=> x.getGrantedPowers(this as PC ));
+		// 		return basicPowers.concat(pcPowers).concat(bonusPowers);
+		// 	}
+		// 	case "shadow": {
+		// 		const basicPowers = PersonaItem.getBasicShadowPowers();
+		// 		const shadowPowers = this.items.filter( x=> x.system.type == "power") as Power[];
+		// 		return basicPowers.concat(shadowPowers);
+		// 	}
+		// 	default:
+		// 		this.system satisfies never;
+		// 		throw new PersonaError("Something weird happened");
+		// }
 	}
 
 	get weapon() : Option<Weapon> {

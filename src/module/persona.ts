@@ -130,3 +130,8 @@ Hooks.on("init", async () => {
 
 	};
 });
+
+export function localize(...args: Parameters<typeof game.i18n.localize>): ReturnType<typeof game.i18n.localize> {
+	return game.i18n.localize(...args);
+
+}

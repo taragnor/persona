@@ -1,3 +1,4 @@
+import { localize } from "../persona.js";
 import { POWER_TAGS } from "../../config/power-tags.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { testPreconditions } from "../preconditions.js";
@@ -61,7 +62,7 @@ const power = PersonaDB.getBasicPower(powerName);
 
 	get tags() : string {
 		if ("tags" in this.system) {
-			const tags= this.system.tags.map(tag => POWER_TAGS[tag]);
+			const tags= this.system.tags.map(tag => localize(POWER_TAGS[tag]));
 			return tags.join(", ");
 		}
 		return "";
