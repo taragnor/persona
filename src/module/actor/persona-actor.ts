@@ -256,11 +256,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	async recoverSlot(this: PC, slottype: RecoverSlotEffect["slot"], amt: number = 1) {
+	async recoverSlot(this: PC, slottype: RecoverSlotEffect["slot"], amt: number = 1) : Promise<boolean> {
 		let slotNum: keyof typeof this.system.slots;
+		let canUpgrade= true;
+		let worked = false;
 		switch (slottype) {
 			case "lowest":
 				slotNum = this.getWeakestSlot();
+				canUpgrade = false;
 				break;
 			case "0":
 			case "1":
@@ -270,15 +273,28 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				break;
 			case "highest":
 				PersonaError.softFail("Recover slot for highest is not yet implemented");
-				return;
+				return false;
 			default:
 				slottype satisfies never;
 				PersonaError.softFail(`Unexpected slottype : ${slottype}`);
-				return;
+				return false;
 		}
-		const maxSlots = this.getMaxSlotsAt(slotNum);
-		this.system.slots[slotNum] = Math.min (this.system.slots[slotNum] + amt, maxSlots);
+		while (slotNum <= 3 && amt > 0) {
+			const maxSlots = this.getMaxSlotsAt(slotNum);
+			if (this.system.slots[slotNum] +1 <= maxSlots) {
+				this.system.slots[slotNum] = Math.min (this.system.slots[slotNum] + 1, maxSlots);
+				worked = true;
+			} else if (canUpgrade && slotNum +1 <= 3)  {
+				if (await this.recoverSlot( String(slotNum+1) as RecoverSlotEffect["slot"], 1)) {
+					worked = true;
+					this.system.slots[slotNum]-= 1;
+				}
+				break;
+			}
+			amt -= 1;
+		}
 		await this.update( {"system.slots": this.system.slots});
+		return worked;
 	}
 
 	get socialBenefits() : SocialBenefit[] {
@@ -1009,8 +1025,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async  setClass(this: PC | Shadow, cClass: CClass) {
 		await this.update( {"this.system.combat.classData.classId": cClass.id});
-
-
 	}
 
 	canPayActivationCost(this: PC | Shadow, usable: Usable, outputReason: boolean = true) : boolean {
