@@ -275,7 +275,6 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 		}
 	}
 
-
 	getUniversalTokenAccessor<T extends Token<any>>(tok: T) : UniversalTokenAccessor<T["document"]> ;
 	getUniversalTokenAccessor<T extends TokenDocument<any>>(tok: T) : UniversalTokenAccessor<T>;
 	getUniversalTokenAccessor(tok: Token<any> | TokenDocument<any>) : UniversalTokenAccessor<any> {
