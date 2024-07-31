@@ -490,7 +490,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get basicPowers() : Power [] {
 		switch (this.type) {
-			case "npc": case "tarot": 
+			case "npc": case "tarot":
 				return [];
 			case "shadow":
 				return PersonaItem.getBasicShadowPowers();
@@ -501,6 +501,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return [];
 		}
 
+	}
+
+	get maxPowers() : number {
+		const extraMaxPowers = this.getBonuses("extraMaxPowers");
+		return 8 + extraMaxPowers.total ( {user: this.accessor});
 	}
 
 	get powers(): Power[] {
@@ -550,7 +555,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get talents() : Talent[] {
 		if (this.system.type == "shadow") {
-			return [];
+			return this.items.filter( x=> x.system.type == "talent") as Talent[];
 			// return this.items.filter( x=> x.system.type == "talent") as Talent[];
 		}
 		if (this.system.type != "pc") return [];
@@ -565,18 +570,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get focii(): Focus[] {
-		if (this.system.type != "pc") {
-			return this.items.filter( x=> x.system.type == "focus") as Focus[];
-		}
-		const fIds = this.system.combat.focuses;
-		const focii = fIds.flatMap( id => {
-			const focus = PersonaDB.getItemById(id);
-			if (!focus) return [];
-			if (focus.system.type != "focus") return [];
-			return [focus as Focus];
-		});
-		const itemFocii = this.items.filter ( x => x.system.type == "focus") as Focus[];
-		return focii.concat(itemFocii);
+		if (this.system.type == "pc")
+			return [];
+		// if (this.system.type != "pc") {
+		return this.items.filter( x=> x.system.type == "focus") as Focus[];
+		// }
+		// const fIds = this.system.combat.focuses;
+		// const focii = fIds.flatMap( id => {
+		// 	const focus = PersonaDB.getItemById(id);
+		// 	if (!focus) return [];
+		// 	if (focus.system.type != "focus") return [];
+		// 	return [focus as Focus];
+		// });
+		// const itemFocii = this.items.filter ( x => x.system.type == "focus") as Focus[];
+		// return focii.concat(itemFocii);
 	}
 
 	async modifyHP( this: Shadow | PC, delta: number) {

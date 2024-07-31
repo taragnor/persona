@@ -1,8 +1,12 @@
 <form class="power-sheet">
-	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Power Name" placeholder="Power Name">
-	<select name="system.subtype">
-		{{selectOptions POWERSTUFF.POWERTYPES localize=true selected=item.system.subtype}}
-	</select>
+	<header>
+		<div class="flexrow">
+			<img class="profile-img" src="{{item.img}}" data-edit="img"/>
+			<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Power Name" placeholder="Power Name">
+			<select name="system.subtype">
+				{{selectOptions POWERSTUFF.POWERTYPES localize=true selected=item.system.subtype}}
+			</select>
+		</div>
 
 	<div class="tags">
 		<h2>
@@ -105,5 +109,6 @@
 	{{/if}}
 
 	<hr>
+	</header>
 	{{> "systems/persona/parts/power-effects.hbs" item=item POWERSTUFF=POWERSTUFF}}
 </form>

@@ -7,6 +7,45 @@
 		</a>
 		{{/if}}
 	</h2>
+	<div class="basic-powers">
+		{{#each actor.basicPowers as |power|}}
+		<div>
+			<button class="rollPower basic-power {{#if (not (canUsePower ../actor power))}} faded {{/if}}" data-power-id="{{power.id}}">
+				<img class="power-img" src="{{power.img}}" title='{{> "systems/persona/parts/power-tooltip.hbs" actor=../actor CONST=CONST power=power}}'>
+			</button>
+		</div>
+		{{/each}}
+	</div>
+
+	<div class="main-powers">
+		{{#each actor.mainPowers as |power i|}}
+		<div class="main-power" data-power-id="{{power.id}}">
+			<div class="power-name-block {{#if (lte ../actor.maxPowers i)}} over-max-power {{/if}} ">
+				{{#if (canUsePower ../actor power)}}
+				<a class="rollPower" >
+					<img src="icons/dice/d20black.svg">
+				</a>
+				{{/if}}
+				<a class="powerName" title='{{> "systems/persona/parts/power-tooltip.hbs" actor=../actor CONST=CONST power=power}}'>
+					{{power.name}}
+				</a>
+			</div>
+			<div class="power-operations">
+				{{#if (eq ../actor.system.type "shadow")}}
+				<a class="recost-power">
+					<i class="fa-solid fa-circle-dot"></i>
+				</a>
+				{{/if}}
+				<a class="delPower">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</div>
+		</div>
+		{{/each}}
+	</div>
+
+	{{#if actor.bonusPowers}}
+	Bonus Powers
 	<table class="powers-table">
 		<tr>
 			<th>
@@ -23,10 +62,8 @@
 			<th>
 				Cost
 			</th>
-			<th>
-			</th>
 		</tr>
-		{{#each actor.powers as |power|}}
+		{{#each actor.bonusPowers as |power|}}
 		<tr class="power-row {{#if (not (canUsePower ../actor power))}} faded {{/if}}" data-power-id="{{power.id}}">
 			<td>
 				{{#if (canUsePower ../actor power)}}
@@ -49,18 +86,9 @@
 			<td>
 				{{power.costString}}
 			</td>
-			<td>
-				{{#if (eq ../actor.system.type "shadow")}}
-				<a class="recost-power">
-					<i class="fa-solid fa-circle-dot"></i>
-				</a>
-				{{/if}}
-				<a class="delPower">
-					<i class="fa-solid fa-trash-can"></i>
-				</a>
-			</td>
 		</tr>
 		{{/each}}
 	</table>
+	{{/if}}
 </div>
 

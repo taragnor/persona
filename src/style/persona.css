@@ -423,3 +423,65 @@ div.job {
 	margin-left: 8px;
 }
 
+.basic-powers {
+	display:flex;
+	flex-direction: row;
+	justify-content: flex-start;
+}
+
+.basic-powers img.power-img {
+	height: 80px;
+	width: 80px;
+	min-height: 80px;
+	min-width: 80px;
+	padding: 5px;
+}
+
+.basic-power button.rollPower {
+	display: inline-block;
+	max-height: 90px;
+	max-width: 90px;
+	flex: 1;
+	flex-grow:0;
+}
+
+div.main-powers {
+	display: flex;
+	flex-direction: row;
+	/* justify-content: flex-start; */
+	flex-wrap: wrap;
+}
+
+div.main-power {
+	flex: 1 1 50%;
+	max-width: 45%;
+	/* box-sizing: border-box; */
+	padding: 1px;
+	border: 1px solid #000000;
+	text-align: center;
+	flex-direction: row;
+	display: flex;
+	flex-wrap: nowrap;
+	overflow: hidden;
+	max-height: 2.5em;
+}
+
+div.power-operations,
+div.power-name-block {
+	flex: 5 5 5%;
+	max-width: 100%;
+}
+
+div.power-operations {
+	max-width: 40px;
+}
+
+.main-power .powerName {
+	font-size: 1.5em;
+	font-weight: bold;
+}
+
+.over-max-power {
+	background-color: red;
+
+}

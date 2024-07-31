@@ -8,6 +8,6 @@ export const DEFENSE_CATEGORY_LIST = [
 
 export type DefenseCategory = typeof DEFENSE_CATEGORY_LIST[number];
 
-export const DEFENSE_CATEGORY = Object.fromEntries( 
+export const DEFENSE_CATEGORY = Object.fromEntries(
 	DEFENSE_CATEGORY_LIST.map(x=> [x,`persona.defense.category.${x}`])
 );
