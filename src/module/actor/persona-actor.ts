@@ -856,11 +856,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	#translateDefenseString(this: PC | Shadow, defType: keyof PC["system"]["combat"]["defenses"], val: PC["system"]["combat"]["defenses"]["fort"],): number {
 		const weaknesses= this.#getWeaknessesInCategory(defType);
 		switch (val) {
-			case "pathetic": return -6 + 2 * weaknesses ;
-			case "weak": return -3 + 1 * weaknesses;
+			case "pathetic": return -8 + 2 * weaknesses ;
+			case "weak": return -4 + 1 * weaknesses;
 			case "normal": return 0;
-			case "strong": return 3 - 1 * weaknesses;
-			case "ultimate": return 6 - 2 * weaknesses;
+			case "strong": return 4 - 1 * weaknesses;
+			case "ultimate": return 8 - 2 * weaknesses;
 			default:
 				PersonaError.softFail(`Bad defense tsring ${val} for ${defType}`);
 				return -999;

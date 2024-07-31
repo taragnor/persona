@@ -465,7 +465,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		};
 		const element = power.system.dmg_type;
 		const resist = target.actor.elementalResist(element);
-		let attackbonus= this.getAttackBonus(attacker, power).concat(modifiers);
+		let attackbonus = this.getAttackBonus(attacker, power).concat(modifiers);
 		attackbonus.add("Custom modifier", this.customAtkBonus);
 		const defense = new ModifierList(
 			target.actor.defensivePowers()
@@ -1024,7 +1024,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					break;
 			}
 			if (tag) {
-				const bonus = attacker.actor.powers.filter(x=> x.system.tags.includes(tag)).length;
+				const bonus = attacker.actor.powers.filter(x=> x.system.tags.includes(tag)).length * 2;
 				const localized = game.i18n.localize(POWER_TAGS[tag]);
 				atkbonus.add(`${localized} Power bonus`, bonus);
 			}
