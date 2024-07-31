@@ -645,7 +645,7 @@ const power = PersonaDB.getBasicPower(powerName);
 				}[type];
 			}
 			case "magic": {
-				const dmg = user.magDmg(situation);
+				const dmg = user.magDmg();
 				const mult = this.system.mag_mult;
 				const bonuses=  user.getBonuses("magDmg");
 				const bonus = bonuses.total(situation);

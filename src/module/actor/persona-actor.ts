@@ -882,15 +882,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	wpnMult( this: PC | Shadow) : number {
 		const lvl = this.system.combat.classData.level;
-		const inc = this.system.combat.classData.incremental.wpn_mult ? 1 : 0;
+		const inc = this.system.combat.classData.incremental.damage ? 1 : 0;
 		const mult = this.class.getClassProperty(lvl + inc, "wpn_mult") ?? 0;
 		return mult;
-
 	}
 
-	magDmg (this: PC | Shadow, situation: Situation) : {low: number, high:number} {
+	magDmg (this: PC | Shadow) : {low: number, high:number} {
 		const lvl = this.system.combat.classData.level;
-		const inc = this.system.combat.classData.incremental.mag_dmg ? 1 : 0;
+		const inc = this.system.combat.classData.incremental.damage ? 1 : 0;
 		const shadowMod = this.system.type == "shadow" ? -1 : 0;
 		const magDmg = this.class.getClassProperty(lvl + inc + shadowMod, "magic_damage") ?? 0;
 		return magDmg;

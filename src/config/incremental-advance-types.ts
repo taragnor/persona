@@ -1,10 +1,8 @@
 export const INCREMENTAL_ADVANCE_TYPES = [
 	"hp",
 	"lvl_bonus",
-	"talents",
 	"powers",
-	"wpn_mult",
-	"mag_dmg",
+	"damage",
 ] as const;
 
 export type INCREMENTAL_ADVANCE_TYPES = typeof INCREMENTAL_ADVANCE_TYPES[number];

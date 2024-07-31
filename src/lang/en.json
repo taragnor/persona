@@ -91,11 +91,9 @@
 
 
 	"persona.incremental.type.hp": "Hit Points",
-	"persona.incremental.type.lvl_bonus": "Attack and Defense Bonus",
-	"persona.incremental.type.talents": "Talents",
+	"persona.incremental.type.lvl_bonus": "Attack and Defense Bonus / Talents",
 	"persona.incremental.type.powers": "Powers",
-	"persona.incremental.type.wpn_mult": "Weapon Multiplier",
-	"persona.incremental.type.mag_dmg": "Magic Damage",
+	"persona.incremental.type.damage": "Damage",
 
 	"persona.status.burn" : "Burn",
 	"persona.status.charmed" : "Charmed",

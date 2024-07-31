@@ -144,11 +144,6 @@ export class CombatResult  {
 				this.escalationMod += Number(cons.amount ?? 0);
 				break;
 			}
-			// case "hp-loss": {
-			// 	this is applying the damage modifier so I have to change this
-			// 	 effect.hpchange -= Math.floor(cons.amount ?? 0);
-			// 	break;
-			// }
 
 			case "extraAttack":
 				effect.otherEffects.push({
