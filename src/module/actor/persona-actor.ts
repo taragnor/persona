@@ -694,10 +694,33 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return promises.length > 0;
 	}
 
+	async downGradeSlot(this: PC, slot: number ): Promise<boolean> {
+		if (slot >= 3 || slot <= 0) return false;
+		const slots = this.system.slots;
+		const s = slot as (1 | 2 |3);
+		if (slots[s] == 0) {
+			const expend = await this.downGradeSlot(s +1);
+			if (!expend) return false;
+		}
+		slots[s] -= 1;
+		slots[(s-1) as (0 | 1 | 2 |3)] += 2;
+		await this.update( {"system.slots" : slots});
+		return true;
+	}
+
 	async expendSlot(this: PC,  slot: number, amount = 1) {
 		if (slot < 0 && slot >= 4) return;
 		const slots = this.system.slots;
-		slots[slot as (0 | 1 | 2 | 3)] -= amount;
+		while (amount > 0) {
+			if (slots[slot as (0 | 1 | 2 | 3)] < 1) {
+				if (!(await this.downGradeSlot(slot +1 ))) {
+					PersonaError.softFail(`Can't afford Slot for slot ${slot}`);
+					break;
+				}
+			}
+			slots[slot as (0 | 1 | 2 | 3)] -= 1;
+			amount --;
+		}
 		await this.update( {"system.slots" : slots});
 	}
 
