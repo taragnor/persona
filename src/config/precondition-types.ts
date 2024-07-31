@@ -37,8 +37,8 @@ export type Precondition =
 
 type GenericPC = {
 	type: Exclude<PreconditionType, "numeric" | "boolean" | 'save-versus' | "on-trigger">;
-	status ?: StatusEffectId,
-	powerTag ?: PowerTag,
+	status ?: StatusEffectId | Record<StatusEffectId, boolean>,
+	powerTag ?: PowerTag | Record<PowerTag, boolean>,
 	powerType ?: PowerType,
 	powerDamageType ?: DamageType | "by-power",
 	num ?: number,
@@ -48,7 +48,7 @@ type GenericPC = {
 
 type SaveVersus = {
 	type : "save-versus",
-	status ?: StatusEffectId,
+	status ?: StatusEffectId | Record<StatusEffectId, boolean>,
 };
 
 export type Triggered = { type: "on-trigger"} & TriggeredEvents;
@@ -64,7 +64,7 @@ type SimpleTrigger = {
 
 type onInflictStatus = {
 	trigger: "on-inflict-status",
-	status : StatusEffectId,
+	status : StatusEffectId | Record<StatusEffectId, boolean>,
 }
 
 type onTarotPerk = {
@@ -144,13 +144,13 @@ type PowerTypeComparison = {
 
 type StatusComparisonPC = {
 	boolComparisonTarget: "has-status",
-	status : StatusEffectId,
+	status : StatusEffectId | Record<StatusEffectId, boolean>,
 	conditionTarget : ConditionTarget,
 }
 
 type TagComparisonPC = {
 	boolComparisonTarget: "has-tag",
-	powerTag : PowerTag,
+	powerTag : PowerTag | Record<PowerTag, boolean>,
 }
 
 type DamageTypeComparisonPC= {

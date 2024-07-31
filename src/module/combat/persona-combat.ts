@@ -583,7 +583,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				...baseData,
 			};
 		}
-		if (naturalAttackRoll + critBoost >= 20) {
+		if (naturalAttackRoll + critBoost >= 20
+			&& (!power.isMultiTarget() || naturalAttackRoll % 2 == 0)
+		) {
 			situation.hit = true;
 			situation.criticalHit  = true;
 			return {

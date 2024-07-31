@@ -1,3 +1,4 @@
+import { localize } from "./persona.js";
 import { AttackResult } from "./combat/combat-result.js";
 import { Situation } from "./preconditions.js";
 import { Activity } from "./item/persona-item.js";
@@ -230,7 +231,26 @@ export class PersonaHandleBarsHelpers {
 
 			}
 
-		}
+		},
+
+		"multicheck": function (name: string, list: Record<string, string>, options: {hash: {localize: boolean, checked: Record<string, boolean>}}) : SafeString {
+			let html = "";
+			const hash = options?.hash ?? undefined;
+			for (const [key, val] of Object.entries(list)) {
+				const valName = hash?.localize ? localize(val) : val;
+				html += `<span class="small-box">`;
+				html += `<label class="micro-text">  ${valName} </label>`;
+				let checked = false;
+				if (hash?.checked) {
+					if (typeof hash.checked == "object") {
+						checked = hash.checked[key] ?? false;
+					}
+				}
+				html += `<input type="checkbox" name="${name}.${key}" ${ (checked) ? 'checked' : ""} >`;
+				html += `</span>`;
+			}
+			return new Handlebars.SafeString(html);
+		},
 
 	}
 

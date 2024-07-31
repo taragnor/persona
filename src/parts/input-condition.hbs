@@ -15,17 +15,6 @@
 	</select>
 	{{/if}}
 
-	{{#if (strIncludes cond.type "has-tag")}}
-	<select name="{{strcat namePrefix 'powerTag'}}">
-		{{selectOptions POWERSTUFF.TAGS localize=true selected=cond.powerTag}}
-	</select>
-	{{/if}}
-
-	{{#if (strIncludes cond.type "not-tag")}}
-	<select name="{{strcat namePrefix 'powerTag'}}">
-		{{selectOptions POWERSTUFF.TAGS localize=true selected=cond.powerTag}}
-	</select>
-	{{/if}}
 	{{#if (strIncludes cond.type "numeric")}}
 	<div>
 		<label for="comparison-target">
@@ -101,9 +90,9 @@
 		<input type="checkbox" id="flagState" name="{{strcat namePrefix 'booleanState'}}" {{checked cond.booleanState}}>
 	</div>
 	{{#if (strIncludes cond.boolComparisonTarget "status")}}
-	<select name="{{strcat namePrefix 'status'}}">
-		{{selectOptions POWERSTUFF.STATUSEFFECTS localize=true selected=cond.status}}
-	</select>
+	<div>
+		{{multicheck (strcat namePrefix 'status') POWERSTUFF.STATUSEFFECTS checked=cond.status localize=true}}
+	</div>
 	{{/if}}
 	{{#if (strIncludes cond.boolComparisonTarget "damage")}}
 	<select name="{{strcat namePrefix 'powerDamageType'}}">
@@ -116,9 +105,7 @@
 	</select>
 	{{/if}}
 	{{#if (strIncludes cond.boolComparisonTarget "tag")}}
-	<select name="{{strcat namePrefix 'powerTag'}}">
-		{{selectOptions POWERSTUFF.TAGS localize=true selected=cond.powerTag}}
-	</select>
+		{{multicheck (strcat namePrefix 'powerTag') POWERSTUFF.TAGS checked=cond.powerTag localize=true}}
 	{{/if}}
 	{{#if (eq cond.boolComparisonTarget	"power-type-is")}}
 	<select name="{{strcat namePrefix 'powerType'}}">

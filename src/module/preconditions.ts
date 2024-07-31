@@ -1,3 +1,4 @@
+import { PowerTag } from "../config/power-tags.js";
 import { DamageType } from "../config/damage-types.js";
 import { RESIST_STRENGTH_LIST } from "../config/damage-types.js";
 import { PersonaCalendar } from "./social/persona-calendar.js";
@@ -291,7 +292,13 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 				return undefined;
 			}
 			const power = PersonaDB.findItem(situation.usedPower);
-			return power.system.tags.includes(condition.powerTag!);
+			if (typeof condition.powerTag == "string") {
+				return power.system.tags.includes(condition.powerTag!);
+			}
+			debugger;
+			return Object.entries(condition.powerTag)
+			.filter( ([_, val]) => val == true)
+			.some (([tag, _]) => power.system.tags.includes(tag as PowerTag));
 		}
 		case "power-type-is": {
 			if (!situation.usedPower) {
@@ -320,7 +327,13 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			const target = getSubject(condition, situation, source,  "conditionTarget");
 			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
-			return targetActor.statuses.has(condition.status);
+			if (typeof condition.status == "string") {
+				return targetActor.statuses.has(condition.status);
+			} else {
+				return Object.entries(condition.status)
+					.filter( ([_, val]) => val== true)
+					.some( ([sname,_]) => targetActor.statuses.has(sname as StatusEffectId));
+			}
 		}
 		case  "struck-weakness": {
 			if (!situation.usedPower) {
