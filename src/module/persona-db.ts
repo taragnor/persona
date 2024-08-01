@@ -1,5 +1,5 @@
+import { PersonaError } from "./persona-error.js";
 import { Activity } from "./item/persona-item.js";
-import { PC } from "./actor/persona-actor.js";
 import { NPC } from "./actor/persona-actor.js";
 import { UniversalModifier } from "./item/persona-item.js";
 import { Job } from "./item/persona-item.js";
@@ -7,7 +7,6 @@ import { Tarot } from "./actor/persona-actor.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { DBAccessor } from "./utility/db-accessor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
-import { ModifierContainer } from "./item/persona-item.js";
 import { Power } from "./item/persona-item.js";
 import { BASIC_PC_POWER_NAMES } from "../config/basic-powers.js";
 import { BASIC_SHADOW_POWER_NAMES } from "../config/basic-powers.js";
@@ -44,7 +43,11 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	getBasicPower( name: typeof BASIC_SHADOW_POWER_NAMES[number] | typeof BASIC_PC_POWER_NAMES[number]) : Power | undefined {
-		return PersonaDB.getItemByName(name) as Power | undefined;
+		const power = PersonaDB.getItemByName(name) as Power | undefined;
+		if (!power)  {
+			PersonaError.softFail(`Can't get basic power ${name}`);
+		}
+		return power;
 	}
 
 	tarotCards(): Tarot[] {

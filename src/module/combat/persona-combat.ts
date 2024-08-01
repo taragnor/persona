@@ -3,7 +3,6 @@ import { PowerTag } from "../../config/power-tags.js";
 import { ConditionTarget } from "../../config/precondition-types.js";
 import { ConsTarget } from "./combat-result.js";
 import { PersonaSocial } from "../social/persona-social.js"
-import { testPreconditions } from "../preconditions.js"
 import { UniversalModifier } from "../item/persona-item.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { CombatTrigger } from "../../config/triggers.js";
@@ -23,7 +22,6 @@ import { StatusEffectId } from "../../config/status-effects.js";
 import { HTMLTools } from "../utility/HTMLTools.js";
 
 import { PersonaError } from "../persona-error.js";
-import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { CombatResult } from "./combat-result.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { ModifierList } from "./modifier-list.js";
@@ -991,43 +989,43 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	static getAttackBonus(attacker: PToken, power:Usable) : ModifierList {
 		let atkbonus = this.getBaseAttackBonus(attacker, power);
-		if (attacker.actor.type == "shadow") {
-			let tag : PowerTag | undefined;
-			switch (power.system.dmg_type) {
-				case "fire": case "wind":
-				case "light": case "dark":
-				case "healing":
-					tag = power.system.dmg_type;
+		let tag : PowerTag | undefined;
+		switch (power.system.dmg_type) {
+			case "fire": case "wind":
+			case "light": case "dark":
+			case "healing":
+				tag = power.system.dmg_type;
+				break;
+			case "lightning":
+				tag = "elec";
+				break;
+			case "physical":
+				tag ="weapon";
+				break;
+			case "cold":
+				tag = "ice";
+				break;
+			case "untyped":
+				tag = "almighty";
+				break;
+			case "none":
+				if (power.system.tags.includes("buff")) {
+					tag = "buff"
 					break;
-				case "lightning":
-					tag = "elec";
+				}
+				if (power.system.tags.includes("debuff")) {
+					tag = "debuff";
 					break;
-				case "physical":
-					tag ="weapon";
-					break;
-				case "cold":
-					tag = "ice";
-					break;
-				case "untyped":
-					tag = "almighty";
-					break;
-				case "none":
-					if (power.system.tags.includes("buff")) {
-						tag = "buff"
-						break;
-					}
-					if (power.system.tags.includes("debuff")) {
-						tag = "debuff";
-						break;
-					}
-				case "all-out":
-					break;
-			}
-			if (tag) {
-				const bonus = attacker.actor.powers.filter(x=> x.system.tags.includes(tag)).length * 2;
-				const localized = game.i18n.localize(POWER_TAGS[tag]);
-				atkbonus.add(`${localized} Power bonus`, bonus);
-			}
+				}
+			case "all-out":
+				break;
+		}
+		if (tag) {
+			const bonusPowers = attacker.actor.mainPowers.concat(attacker.actor.bonusPowers)
+				.filter(x=> x.system.tags.includes(tag));
+			const bonus = bonusPowers.length * 2;
+			const localized = game.i18n.localize(POWER_TAGS[tag]);
+			atkbonus.add(`${localized} Power bonus`, bonus);
 		}
 		return atkbonus;
 	}

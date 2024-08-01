@@ -3,6 +3,8 @@ type filterFN<I> = (item: I) => boolean;
 
 type ValidDBTypes = "Actor" | "Item";
 
+import { sleep } from "./async-wait.js";
+
 export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extends Item<any>> {
 
 	private comp_items: ItemType[] = [];
@@ -14,7 +16,7 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 			this._loadPacks();
 			this._initHooks();
 			console.log("Database initialized");
-			this._loaded=true;
+			this._loaded = true;
 		});
 	}
 
@@ -24,14 +26,15 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 
 	async waitUntilLoaded(): Promise<void> {
 		if (this.isLoaded) return;
-		return await new Promise( (conf) => {
+		await new Promise( (conf) => {
 			const interval = setInterval( () => {
 				if (this.isLoaded) {
 					window.clearInterval(interval);
-					conf();
+					conf(true);
 				}
 			});
 		});
+		await sleep(1000);
 	}
 
 	 _initHooks() : void {

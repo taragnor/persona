@@ -819,7 +819,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const wpnAtk = this.system.combat.wpnatk;
 		mods.add("Base Weapon Attack Bonus", wpnAtk);
 		mods.add("Level Bonus", lvl + inc);
-		// const itemBonus = this.getBonuses("wpnAtk");
 		return mods;
 	}
 
@@ -830,7 +829,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
 		mods.add("Base Magic Attack Bonus", magAtk);
 		mods.add("Level Bonus", lvl + inc);
-		// const itemBonus = this.getBonuses("magAtk");
 		return mods;
 	}
 
