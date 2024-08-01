@@ -12,7 +12,7 @@ declare global {
 
 }
 
-
+import { ScanDialog } from "./combat/scan-dialog.js";
 import { Darkness } from "./exploration/darkness-clock.js";
 import { DebugTools } from "./utility/debug.js";
 import { ErrorScanner } from "./deprecated_scan.js";
@@ -103,7 +103,7 @@ Hooks.once("init", async function() {
 	registerHandlebarsHelpers();
 	PersonaSettings.registerSettings();
 	preloadHandlebarsTemplates();
-	ErrorScanner.check();
+	// ErrorScanner.check();
 	Heartbeat.start();
 });
 
@@ -135,3 +135,7 @@ export function localize(...args: Parameters<typeof game.i18n.localize>): Return
 	return game.i18n.localize(...args);
 
 }
+
+//@ts-ignore
+window.ScanDialog = ScanDialog;
+

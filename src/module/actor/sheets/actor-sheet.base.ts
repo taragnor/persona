@@ -24,6 +24,18 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 			.map(x=> ([x,x]))
 		);
 		data.CONST = {
+			...PersonaActorSheetBase.CONST(),
+			INC: INCREMENTAL_ADVANCE_TYPES.map(x=> ({
+				local: INCREMENTAL_ADVANCES[x],
+				varname: x,
+				val: this.getIncAdvanceValue(x),
+			}))
+		};
+		return data;
+	}
+
+	static CONST() {
+		return {
 			DAYS,
 			STUDENT_SKILLS,
 			AVAILABILITY,
@@ -31,14 +43,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 			TAROT  : TAROT_DECK,
 			RESIST_STRENGTHS : RESIST_STRENGTHS,
 			DAMAGETYPES : DAMAGETYPES,
-			INC: INCREMENTAL_ADVANCE_TYPES.map(x=> ({
-				local: INCREMENTAL_ADVANCES[x],
-				varname: x,
-				val: this.getIncAdvanceValue(x),
-			}))
-		};
-		Debug(data);
-		return data;
+		} as const;
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {

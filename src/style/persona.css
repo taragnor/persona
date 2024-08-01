@@ -494,3 +494,7 @@ div.power-operations {
 	border : 1px solid #000000;
 	display: inline-block;
 }
+
+.scan-dialog label {
+	font-weight: bold;
+}

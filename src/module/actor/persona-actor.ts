@@ -1563,7 +1563,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				const PC = this as PC;
 				return PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
 			case "shadow":
-				return undefined;
+				const shadow = this as Shadow;
+				return PersonaDB.tarotCards().find(x=> x.name == shadow.system.tarot);
 			case "npc":
 				const NPC = this as NPC;
 				if (NPC == PersonaDB.personalSocialLink()

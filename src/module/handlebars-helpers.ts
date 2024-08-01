@@ -252,6 +252,11 @@ export class PersonaHandleBarsHelpers {
 			return new Handlebars.SafeString(html);
 		},
 
+		"inCombat": function() : boolean {
+			if (!game.combat) return false;
+			return (game.combat.combatants.contents.some( x=> x?.actor?.type == "shadow"));
+		}
+
 	}
 
 } //end of class
