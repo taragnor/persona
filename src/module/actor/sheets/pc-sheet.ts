@@ -1,3 +1,4 @@
+import { localize } from "../../persona.js";
 import { PersonaSounds } from "../../persona-sounds.js";
 import { Logger } from "../../utility/logger.js";
 import { PersonaError } from "../../persona-error.js";
@@ -105,6 +106,7 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".relationship-type").on("change", this.relationshipTypeChange.bind(this))
 		html.find(".add-strike").on("click", this.addStrike.bind(this));
 		html.find(".rem-strike").on("click", this.removeStrike.bind(this));
+		html.find(".equips select").on("change", this.equipmentChange.bind(this));
 		super.activateListeners(html);
 	}
 
@@ -207,12 +209,12 @@ export class PCSheet extends CombatantSheetBase {
 		}, {default: 1, title: "Add Social Boost"});
 		if (choice == null) return;
 		if ($(event.currentTarget).closest(".social-link").length > 0) {
-		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
-		await this.actor.socialLinkProgress(linkId, Number(choice));
+			const linkId= String(HTMLTools.getClosestData(event, "linkId"));
+			await this.actor.socialLinkProgress(linkId, Number(choice));
 			return;
 		}
 		if ($(event.currentTarget).closest(".job").length > 0) {
-		const activityId= String(HTMLTools.getClosestData(event, "activityId"));
+			const activityId= String(HTMLTools.getClosestData(event, "activityId"));
 			await this.actor.activityProgress(activityId, Number(choice));
 		}
 	}
@@ -231,7 +233,7 @@ export class PCSheet extends CombatantSheetBase {
 			await this.actor.socialLinkProgress(linkId, -Number(choice));
 		}
 		if ($(event.currentTarget).closest(".job").length > 0) {
-		const activityId= String(HTMLTools.getClosestData(event, "activityId"));
+			const activityId= String(HTMLTools.getClosestData(event, "activityId"));
 			await this.actor.activityProgress(activityId, -Number(choice));
 		}
 	}
@@ -242,7 +244,7 @@ export class PCSheet extends CombatantSheetBase {
 			await this.actor.activityStrikes(linkId, amt);
 		}
 		if ($(event.currentTarget).closest(".job").length > 0) {
-		const activityId= String(HTMLTools.getClosestData(event, "activityId"));
+			const activityId= String(HTMLTools.getClosestData(event, "activityId"));
 			await this.actor.activityStrikes(activityId, amt);
 		}
 
@@ -262,7 +264,7 @@ export class PCSheet extends CombatantSheetBase {
 		const newval = $(event.currentTarget).find(":selected").val();
 		if (!newval) return;
 		this.actor.setRelationshipType(linkId, String(newval));
-}
+	}
 
 	#addItem(_ev: JQuery<Event>) {
 		this.actor.createNewItem();
@@ -314,14 +316,14 @@ export class PCSheet extends CombatantSheetBase {
 		await Logger.sendToChat(`${this.actor.name} Spent ${x} resource points`);
 	}
 
-async drawActivityCard (event: JQuery.ClickEvent) {
-	const activityId= String(HTMLTools.getClosestData(event, "activityId"));
-	const activity = PersonaDB.allActivities().find(x => x.id == activityId);
-	if (activity &&
-		await HTMLTools.confirmBox("Social Card", "Draw Activity Card?")) {
-		await PersonaSocial.chooseActivity(this.actor, activity, {noDegrade:true})
+	async drawActivityCard (event: JQuery.ClickEvent) {
+		const activityId= String(HTMLTools.getClosestData(event, "activityId"));
+		const activity = PersonaDB.allActivities().find(x => x.id == activityId);
+		if (activity &&
+			await HTMLTools.confirmBox("Social Card", "Draw Activity Card?")) {
+			await PersonaSocial.chooseActivity(this.actor, activity, {noDegrade:true})
+		}
 	}
-}
 	async drawSocialCard(event: JQuery.ClickEvent) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
 		const link = PersonaSocial.lookupSocialLink(this.actor, linkId);
@@ -329,6 +331,29 @@ async drawActivityCard (event: JQuery.ClickEvent) {
 			await HTMLTools.confirmBox("Social Card", "Draw Social Card?")) {
 			await PersonaSocial.chooseActivity(this.actor, link.actor, {noDegrade:true})
 		}
+	}
+
+	async equipmentChange(event: JQuery.ChangeEvent) {
+		const div =$(event.currentTarget).parent();
+		let itemType = "unknown";
+		const itemId = $(event.currentTarget).find(":selected").val();
+
+		if (!itemId) return false;
+		const item = this.actor.items.find(x=> x.id == itemId);
+
+		const typeTable = {
+			"weapon": "persona.equipslots.weapon",
+			"armor": "persona.equipslots.body",
+			"accessory":	"persona.equipslots.accessory",
+			"weapon-crystal":		"persona.equipslots.weapon_crystal",
+		} as const;
+
+		for (const [k,v] of Object.entries(typeTable)) {
+			if (div.hasClass(k)) {
+				itemType = localize(v);
+			}
+		}
+		await Logger.sendToChat(`${this.actor.name} changed ${itemType} ${item?.name ?? "ERROR"}` , this.actor);
 	}
 
 
