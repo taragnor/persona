@@ -1756,60 +1756,44 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const tags = power.system.tags;
 		switch (role) {
 			case "tank":
-				diff -= 2;
-				if (tags.includes("healing")) {
-					diff -= 1;
-				}
+				diff -= 1;
 				break;
 			case "soldier":
-				diff -= 2;
-				if (tags.includes("healing")) {
-					diff -= 1;
-				}
+				diff -= 1;
 				break;
 			case "assassin": {
-				if (tags.includes("healing")) {
-					diff -= 2;
-				}
 				break;
 			}
 			case "artillery":
-				diff -=1;
-				if (tags.includes("healing")) {
-					diff -= 2;
-				}
 				break;
 			case "lurker":
-				if (tags.includes("healing")) {
-					diff -= 1;
-				}
-				diff += 1;
+				// diff += 1;
 				break;
 			case "elite":
-				break;
-			case "miniboss":
-				break;
-			case "boss":
 				diff += 1;
 				break;
+			case "miniboss":
+				diff += 1;
+				break;
+			case "boss":
+				diff += 2;
+				break;
 			case "controller":
-				diff -= 1;
 				if (!tags.includes("debuff")) {
 					diff -= 2;
 				}
 				break;
 			case "support":
-				diff -=1;
-				if (!tags.includes("buff")
-					&& !tags.includes("healing")) {
-					diff -= 1;
+				diff -= 1;
+				if (tags.includes("buff")
+					|| tags.includes("healing")) {
+					diff += 1;
 				}
 				break;
 			default:
-				diff -= 1 ;
 				break;
 		}
-		// diff-=1;
+		diff -= 1;
 		switch (true) {
 			case diff >= 2 :
 				return "none";
@@ -1817,11 +1801,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return "charged-req";
 			case diff >= -2:
 				return "always";
-			case diff >= -3:
-				return "supercharged";
 			case diff >= -4:
 				return "supercharged";
-			case diff < -4:
+			case diff >= -5:
+				return "supercharged";
+			case diff < -7 :
 				return "amp-fulldep";
 			default:
 				PersonaError.softFail(`Unhandled difference value ${diff}`);
@@ -1829,20 +1813,21 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	static calcEscalationReq(role: Shadow["system"]["role"], power: Readonly<Power>, diff: number) : Power["system"]["reqEscalation"] {
-		if (power.system.tags.includes("basicatk"))
-			return 0;
-		switch (role) {
-			case "lurker":
-				break;
-			default:
-				diff += 2;
-				break;
-		}
-		if (diff >= 0) return 0;
-		let esc = Math.round(Math.abs(diff) / 2);
-		return Math.clamped(esc, 0, 6);
+static calcEscalationReq(role: Shadow["system"]["role"], power: Readonly<Power>, diff: number) : Power["system"]["reqEscalation"] {
+	if (power.system.tags.includes("basicatk"))
+		return 0;
+	switch (role) {
+		case "lurker":
+			diff -= 1;
+			break;
+		default:
+			diff += 1;
+			break;
 	}
+	if (diff >= 0) return 0;
+	let esc = Math.round(Math.abs(diff) / 2);
+	return Math.clamped(esc, 0, 6);
+}
 
 
 }

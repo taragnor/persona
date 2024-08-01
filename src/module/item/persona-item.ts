@@ -847,14 +847,17 @@ const power = PersonaDB.getBasicPower(powerName);
 	 */
 	powerEffectLevel(this: Power) : number {
 		const base = this.system.slot * 3;
+		const tags = this.system.tags;
 		let mod = 0;
+		if (tags.includes("healing")) {
+			mod += 1;
+		}
 		// const multiMod = this.isMultiTarget() ? 1 : 0;
+		const dmgtype = this.system.dmg_type;
+		if (dmgtype == "dark" || dmgtype == "light")
+			mod+= 1;
 		if (this.isAoE()) {
-			const dmgtype = this.system.dmg_type;
-			if (dmgtype == "dark" || dmgtype == "light")
-				mod+=2;
-			// mod +=1;
-			// else mod +=2;
+			mod += 2;
 		}
 		return base + mod;
 	}
