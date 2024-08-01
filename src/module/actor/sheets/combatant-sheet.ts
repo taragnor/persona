@@ -46,18 +46,24 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				return undefined;
 			case "consumable":
 				return super._onDropItem(_event, itemD);
-			case "power":
-				if (this.actor.system.type == "shadow") {
-					return super._onDropItem(_event, itemD);
-				} else {
-					this.actor.addPower(item as Power);
-					return item ;
+			case "power": {
+				const actorType = this.actor.system.type;
+				switch (actorType) {
+					case "shadow": return super._onDropItem(_event, itemD);
+						case "pc":
+
+						(this.actor as PC).addPower(item as Power);
+						return item ;
+					default:
+						actorType satisfies never;
+						throw new PersonaError(`Unsupported Type ${actorType}`);
 				}
+			}
 			case "focus":
-				if (this.actor.system.type == "shadow") {
+				if (this.actor.system.type != "pc") {
 					return super._onDropItem(_event, itemD);
 				} else {
-					this.actor.addFocus(item as Focus);
+					(this.actor as PC).addFocus(item as Focus);
 					return item;
 				}
 			case "item":

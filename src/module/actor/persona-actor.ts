@@ -942,7 +942,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			ui.notifications.warn("Shadows can't use talents");
 			return;
 		}
-
 		const talents = this.system.talents;
 		if (talents.find(x => x.talentId == talent.id)) return;
 		talents.push( {
@@ -950,6 +949,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			talentId: talent.id
 		});
 		await this.update( {"system.talents": talents});
+		await Logger.sendToChat(`${this.name} added ${talent.name} Talent` , this);
 	}
 
 	critResist(this: PC | Shadow) : ModifierList {
@@ -974,11 +974,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update( {"system.talents": talents});
 	}
 
-	async addPower(this: PC | Shadow, power: Power) {
+	async addPower(this: PC, power: Power) {
 		const powers = this.system.combat.powers;
 		if (powers.includes(power.id)) return;
 		powers.push(power.id);
 		await this.update( {"system.combat.powers": powers});
+		await Logger.sendToChat(`${this.name} added ${power.name}` , this);
 	}
 
 	async deletePower(this: PC | Shadow, id: string ) {
@@ -991,14 +992,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!powers.includes(id)) return;
 		powers = powers.filter( x=> x != id);
 		await this.update( {"system.combat.powers": powers});
-
 	}
 
-	async addFocus(this: PC | Shadow, focus: Focus) {
-		const foci = this.system.combat.focuses;
-		if (foci.includes(focus.id)) return;
-		foci.push(focus.id);
-		await this.update( {"system.combat.focuses": foci});
+	async addFocus(this: PC, focus: Focus) {
+		PersonaError.softFail(`Can't drop ${focus.name}. Focii are no longer supported on PCs`);
+		return;
+		// const foci = this.system.combat.focuses;
+		// if (foci.includes(focus.id)) return;
+		// foci.push(focus.id);
+		// await this.update( {"system.combat.focuses": foci});
 	}
 
 	async deleteFocus(focusId: string) {

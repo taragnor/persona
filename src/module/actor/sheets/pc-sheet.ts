@@ -1,4 +1,3 @@
-import { testPreconditions } from "../../preconditions.js";
 import { PersonaSounds } from "../../persona-sounds.js";
 import { Logger } from "../../utility/logger.js";
 import { PersonaError } from "../../persona-error.js";
@@ -38,7 +37,7 @@ export class PCSheet extends CombatantSheetBase {
 			}
 			case "shadow":
 				return;
-				case "tarot":
+			case "tarot":
 				return;
 			case "npc":
 				//create a social link
