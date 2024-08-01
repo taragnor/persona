@@ -22,6 +22,13 @@
 				<span>{{actor.system.role}} </span>
 			</div>
 
+			{{#if (gt scanLevel 1)}}
+			<div>
+				<label> HP </label>
+				<span> {{actor.hp}} / {{actor.mhp}} </span>
+			</div>
+			{{/if}}
+
 		</div>
 	</header>
 
@@ -102,8 +109,8 @@
 				</select>
 			</div>
 			<div class="resistance-item">
-				<img src="systems/persona/img/icon/dark.webp" disabled>
-				<select name="system.combat.resists.dark">
+				<img src="systems/persona/img/icon/dark.webp">
+				<select name="system.combat.resists.dark" disabled>
 					{{selectOptions CONST.RESIST_STRENGTHS localize=true selected=actor.system.combat.resists.dark}}
 				</select>
 			</div>
