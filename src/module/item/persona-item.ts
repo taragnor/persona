@@ -696,7 +696,8 @@ const power = PersonaDB.getBasicPower(powerName);
 				if (cond.type == "numeric" && cond.comparisonTarget == "social-link-level")
 				{
 					if (cond.num)
-						requirement = Math.max(requirement, cond.num);
+						return cond.num;
+						// requirement = Math.max(requirement, cond.num);
 				}
 			}
 		}

@@ -1,23 +1,33 @@
 <div class="scan-dialog">
-	<div>
-		<label> Identifier: </label> {{token.name}}
-	</div>
-	{{#if (ne actor.prototypeToken.name token.baseActor.name)}}
-	<div>
-		<label> Actual Name: </label> {{token.baseActor.name}}
-	</div>
-	{{/if}}
-	<hr>
-	<div>
-		<label>Tarot </label>
-		<span> {{actor.tarot.name}} </span>
-	</div>
-	<div>
-		<label>Role</label>
-		<span>{{actor.system.role}} </span>
-	</div>
+	<header>
+		<div>
+			<image src="{{token.baseActor.img}}"></image>
+		</div>
+		<div>
+			<div>
+				<label> Identifier: </label> {{token.name}}
+			</div>
+			{{#if (ne actor.prototypeToken.name token.baseActor.name)}}
+			<div>
+				<label> Actual Name: </label> {{token.baseActor.name}}
+			</div>
+			{{/if}}
+			<br>
+			<div>
+				<label>Tarot </label>
+				<span> {{actor.tarot.name}} </span>
+			</div>
+			<div>
+				<label>Role</label>
+				<span>{{actor.system.role}} </span>
+			</div>
 
-	<section>
+		</div>
+	</header>
+
+	<hr>
+
+	<section class="defenses">
 		<div>
 			<label>
 				{{localize "persona.defense.fort"}}
@@ -111,9 +121,9 @@
 					<img src="icons/dice/d20black.svg">
 				</a>
 					{{/if}}
-					<a class="powerName" title='{{> "systems/persona/parts/power-tooltip.hbs" actor=../actor CONST=../CONST power=power}}'>
+					<div class="power-name">
 						{{power.name}}
-					</a>
+					</div>
 			</div>
 			<div class="power-operations">
 			</div>

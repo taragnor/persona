@@ -2,7 +2,7 @@ import { PersonaActorSheetBase } from "../actor/sheets/actor-sheet.base.js";
 import { Shadow } from "../actor/persona-actor.js";
 
 export class ScanDialog extends Dialog {
-	constructor(html: string, scanLevel = 1) {
+	constructor(html: string) {
 		const dialogData : DialogOptions = {
 			title: "Scan",
 			content: html,
@@ -19,12 +19,13 @@ export class ScanDialog extends Dialog {
 
 	}
 
-	static async create(shadow: Combatant<Shadow>, scanLevel: number) {
+	static async create(shadow: Combatant<Shadow>, scanLevel: number) : Promise<ScanDialog> {
 		const CONST = PersonaActorSheetBase.CONST();
 		const templateData = {token: shadow.token, actor: shadow.actor, scanLevel, CONST};
 		const html = await renderTemplate("systems/persona/sheets/dialogs/scan-dialog.hbs" , templateData);
-		const dialog = new ScanDialog(html, scanLevel);
+		const dialog = new ScanDialog(html);
 		dialog.render(true);
+		return dialog;
 	}
 
 }

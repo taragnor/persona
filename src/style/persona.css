@@ -498,3 +498,20 @@ div.power-operations {
 .scan-dialog label {
 	font-weight: bold;
 }
+
+.scan-dialog header {
+	display: flex;
+	flex-direction: row;
+}
+
+.scan-dialog header img {
+	height: 120px;
+	width: 120px;
+}
+
+.scan-dialog .defenses {
+	display: flex;
+	flex-direction: row;
+	row-gap: 20px;
+	column-gap: 20px;
+}
