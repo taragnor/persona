@@ -844,6 +844,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "inspiration-cost":
 			case "display-msg":
 			case "use-power":
+			case "scan":
 				return [{applyTo,cons}];
 			case "expend-item":
 				if (cons.sourceItem) {

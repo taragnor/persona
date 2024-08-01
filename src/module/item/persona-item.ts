@@ -130,7 +130,7 @@ const power = PersonaDB.getBasicPower(powerName);
 		switch (this.system.subtype) {
 
 			case "weapon":
-				if (this.system.hpcost) 
+				if (this.system.hpcost)
 					return `${this.system.hpcost} HP`;
 				else return "free";
 			case "magic":

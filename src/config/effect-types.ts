@@ -27,7 +27,8 @@ export const CONSQUENCELIST = [
 	"lower-resistance",
 	"inspiration-cost",
 	"display-msg",
-	"use-power"
+	"use-power",
+	"scan",
 ] as const;
 
 

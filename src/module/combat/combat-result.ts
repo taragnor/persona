@@ -1,3 +1,4 @@
+import { ScanDialog } from "./scan-dialog.js";
 import { ConditionTarget } from "../../config/precondition-types.js";
 import { ConsequenceType } from "../../config/effect-types.js";
 import { CONDITION_TARGETS_LIST } from "../../config/precondition-types.js";
@@ -240,6 +241,12 @@ export class CombatResult  {
 				});
 				break;
 			}
+			case "scan":
+				effect.otherEffects.push( {
+					type: cons.type,
+					level: cons.amount ?? 1,
+				})
+				break;
 			default: {
 				cons satisfies never;
 				throw new Error("Should be unreachable");
@@ -491,6 +498,12 @@ export class CombatResult  {
 					break;
 				case "use-power":
 					break;
+				case "scan":
+					const combatant = game?.combat?.combatants?.find(x=> x.actor == actor) as Combatant<PersonaActor> | undefined;
+					if (combatant && combatant?.actor?.type == "shadow") {
+						ScanDialog.create(combatant as Combatant<Shadow>, otherEffect.level)
+					}
+					break;
 				default:
 					otherEffect satisfies never;
 			}
@@ -580,6 +593,8 @@ export class CombatResult  {
 					break;
 				case "use-power":
 					break;
+				case "scan":
+					break; // done elsewhere for local player
 				default:
 					otherEffect satisfies never;
 			}
@@ -677,7 +692,12 @@ type ExecPowerEffect = {
 	target: ConsTarget,
 }
 
-export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect;
+type ScanEffect = {
+	type: "scan",
+	level: number,
+}
+
+export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect;
 
 export type StatusEffect = {
 	id: StatusEffectId,

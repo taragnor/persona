@@ -15,11 +15,9 @@ export class ScanDialog extends Dialog {
 
 	}
 
-	static onRender(html: string) {
-
+	static onRender(_html: string) {
 
 	}
-
 
 	static async create(shadow: Combatant<Shadow>, scanLevel: number) {
 		const CONST = PersonaActorSheetBase.CONST();

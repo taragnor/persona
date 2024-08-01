@@ -314,6 +314,7 @@
 	"persona.effecttypes.inspiration-cost": "Pay Inspiration",
 	"persona.effecttypes.display-msg": "Print Message",
 	"persona.effecttypes.use-power": "Activate Power",
+	"persona.effecttypes.scan": "Scan Target",
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",
