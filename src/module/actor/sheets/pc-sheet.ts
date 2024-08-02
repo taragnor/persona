@@ -334,7 +334,7 @@ export class PCSheet extends CombatantSheetBase {
 	}
 
 	async equipmentChange(event: JQuery.ChangeEvent) {
-		const div =$(event.currentTarget).parent();
+		const div = $(event.currentTarget).parent();
 		let itemType = "unknown";
 		const itemId = $(event.currentTarget).find(":selected").val();
 
