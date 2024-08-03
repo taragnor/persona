@@ -214,16 +214,16 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			switch (true) {
 				case x  >=5: return "ultimate";
 				case x  >=2: return "strong";
-				case x >  -2: return "normal";
+				case x > -2: return "normal";
 				case x >= -5: return "weak";
 				case x >= -10 : return "pathetic";
 				default: return "normal";
 			}
 		};
-		if (typeof system.combat.defenses.fort == "number") {
-			system.combat.defenses.fort = convert(data.combat.defenses.fort);
-			system.combat.defenses.ref = convert(data.combat.defenses.ref);
-			system.combat.defenses.will = convert(data.combat.defenses.will);
+		for (const def of ["fort", "ref", "will"] as const) {
+			if (typeof system.combat.defenses[def] == "number") {
+				system.combat.defenses[def] = convert(data.combat.defenses[def]);
+			}
 		}
 		return data;
 	}
