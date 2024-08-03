@@ -65,14 +65,19 @@ export class CombatResult  {
 		return json;
 	}
 
-	findEffect<T extends OtherEffect["type"]>(effectType: T): (OtherEffect & {type:T}) | undefined {
+	findEffects<T extends OtherEffect["type"]>(effectType: T): (OtherEffect & {type:T})[] {
+		let arr = [] as (OtherEffect & {type:T})[];
 		for (const v of this.attacks.values()) {
 			for (const eff of v.flatMap(chg => chg.otherEffects) ) {
 				if (eff.type == effectType)
-					return eff as OtherEffect & {type:T};
+					arr.push( eff as OtherEffect & {type:T});
 			}
 		}
-		return undefined;
+		for (const eff of this.costs.flatMap(chg => chg.otherEffects) ) {
+			if (eff.type == effectType)
+				arr.push( eff as OtherEffect & {type:T});
+		}
+		return arr;
 	}
 
 	static fromJSON(json: string) : CombatResult {

@@ -230,6 +230,8 @@ function triggerComparison(condition: Triggered, situation: Situation, _source:O
 		case "on-combat-start":
 		case "on-kill-target":
 		case "on-damage":
+		case "start-turn":
+		case "end-turn":
 			return true;
 		default:
 			condition.trigger satisfies never;

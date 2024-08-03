@@ -420,6 +420,8 @@
 	"persona.triggers.on-combat-end": "Combat Ends",
 	"persona.triggers.enter-metaverse": "Enter the Metaverse",
 	"persona.triggers.exit-metaverse": "Exit the Metaverse",
+	"persona.triggers.start-turn": "Start Turn",
+	"persona.triggers.end-turn": "End Turn",
 	"persona.triggers.on-inflict-status": "Inflict a Status",
 	"persona.triggers.on-attain-tarot-perk": "Attain a Tarot Perk",
 

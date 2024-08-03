@@ -9,6 +9,8 @@ export const COMBAT_TRIGGER_LIST = [
 	"on-inflict-status",
 	"enter-metaverse",
 	"exit-metaverse",
+	"start-turn",
+	"end-turn",
 ] as const;
 
 export const NONCOMBAT_TRIGGER_LIST = [

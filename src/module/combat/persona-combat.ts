@@ -99,6 +99,18 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	async startCombatantTurn( combatant: Combatant<ValidAttackers> ){
+		const triggeringCharacter  = (combatant as Combatant<PersonaActor>)?.token?.actor?.accessor;
+		if (triggeringCharacter) {
+			for (const user of this.combatants) {
+				if (user.token.actor == undefined) {continue;}
+			const situation : Situation = {
+				triggeringCharacter,
+				user: user.token.actor.accessor,
+				activeCombat: true,
+			}
+			await PersonaCombat.execTrigger("start-turn", user.token.actor as ValidAttackers, situation);
+			}
+		}
 		const rolls :RollBundle[] = [];
 		const actor = combatant.actor;
 		if (!actor) return;
@@ -157,6 +169,19 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	async endCombatantTurn(combatant: Combatant<ValidAttackers>) {
+		const triggeringCharacter  = (combatant as Combatant<PersonaActor>)?.token?.actor?.accessor;
+		if (triggeringCharacter) {
+			for (const user of this.combatants) {
+				if (user.token.actor == undefined) {continue;}
+			const situation : Situation = {
+				triggeringCharacter,
+				user: user.token.actor.accessor,
+				activeCombat: true,
+			}
+			await PersonaCombat.execTrigger("end-turn", user.token.actor as ValidAttackers, situation);
+			}
+		}
+
 		const actor = combatant.actor;
 		if (!actor) return;
 		if (!game.user.isOwner) return;
@@ -395,8 +420,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			if (atkResult.result == "reflect") {
 				result.merge(await this.#usePowerOn(attacker, power, [attacker], "reflect"));
 			}
-			const extraAttack = this_result.findEffect("extra-attack");
-			if (extraAttack)
+			const extraAttacks = this_result.findEffects("extra-attack");
+			for (const extraAttack of extraAttacks)
 			{
 				const bonusRollType = typeof rollType != "number" ? 0: rollType+1;
 				const mods = new ModifierList();
@@ -409,8 +434,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					result.merge(extra);
 				}
 			}
-			const usePower = this_result.findEffect("use-power");
-			if (usePower) {
+			const execPowers = this_result.findEffects("use-power");
+			for (const usePower of execPowers) {
 				//TODO BUG: Extra attacks keep the main inputted modifier
 				const newAttacker = this.getPTokenFromActorAccessor(usePower.newAttacker);
 				const execPower = PersonaDB.allPowers().find( x=> x.id == usePower.powerId);
@@ -464,7 +489,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const element = power.system.dmg_type;
 		const resist = target.actor.elementalResist(element);
 		let attackbonus = this.getAttackBonus(attacker, power).concat(modifiers);
-		attackbonus.add("Custom modifier", this.customAtkBonus);
+		attackbonus.add("Custom modifier", this.customAtkBonus ?? 0);
 		const defense = new ModifierList(
 			target.actor.defensivePowers()
 			.flatMap (item => item.getModifier("allAtk", target.actor))
@@ -866,9 +891,27 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	static async execTrigger(trigger: CombatTrigger, actor: ValidAttackers, situation?: Situation) : Promise<void> {
-		await this.onTrigger(trigger, actor, situation)
-		.emptyCheck()
-		?.toMessage("Triggered Effect", actor);
+		const triggerResult = this.onTrigger(trigger, actor, situation)
+		.emptyCheck();
+		if (!triggerResult) return;
+		const usePowers = triggerResult.findEffects("use-power");
+		situation = situation ? situation : {
+			attacker: actor.accessor,
+			user: actor.accessor,
+		};
+		for (const usePower of usePowers) {
+			//TODO BUG: Extra attacks keep the main inputted modifier
+			const newAttacker = this.getPTokenFromActorAccessor(usePower.newAttacker);
+			const execPower = PersonaDB.allPowers().find( x=> x.id == usePower.powerId);
+			if (execPower && newAttacker) {
+				const altTargets= this.getAltTargets(newAttacker, situation, usePower.target );
+				const newTargets = await this.getTargets(newAttacker, execPower, altTargets)
+				const extraPower = await this.#usePowerOn(newAttacker, execPower, newTargets, "standard");
+				triggerResult.merge(extraPower);
+
+			}
+		}
+		await triggerResult?.toMessage("Triggered Effect", actor);
 	}
 
 	static onTrigger(trigger: CombatTrigger, actor : ValidAttackers, situation ?: Situation) : CombatResult {
@@ -1136,10 +1179,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const attackerType = attacker.actor.getAllegiance();
 		switch (power.system.targets) {
 			case "1-engaged":
-				this.checkTargets(1,1);
+				this.checkTargets(1,1, true, altTargets);
 				return selected;
 			case "1-nearby":
-				this.checkTargets(1,1);
+				this.checkTargets(1,1, true, altTargets);
 				return selected;
 			case "1-nearby-dead":
 				this.checkTargets(1,1, false);
@@ -1189,8 +1232,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
-	static checkTargets(min: number, max: number, aliveTargets= true) {
-		const selected : Array<Token<PersonaActor>> = Array.from(game.user.targets)
+	static checkTargets(min: number, max: number, aliveTargets= true, altTargets?: PToken[]) {
+		const selected: PToken[] = (altTargets ? altTargets :  Array.from(game.user.targets).map( x=> x.document))
 			.filter(x=> aliveTargets ? x.actor.isAlive() : (!x.actor.isAlive() && !x.actor.isFullyFaded()));
 		if (selected.length == 0)  {
 			const error = "Requires Target to be selected";

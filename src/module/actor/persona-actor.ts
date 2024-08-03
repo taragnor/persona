@@ -655,8 +655,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
 			await newEffect.setPotency(potency ?? 0);
 			await newEffect.setDuration(duration);
-			// await newEffect.setFlag("persona", "duration", duration);
-			// await newEffect.setFlag("persona", "potency", potency);
 			if (duration == "3-rounds") {
 				await newEffect.update({"duration.rounds": 3});
 			}
@@ -665,6 +663,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (potency && eff.potency < potency) {
 				await eff.setPotency(potency);
 			}
+			eff.duration.startRound = game?.combat?.round ?? 0;
+			await eff.update({"duration": eff.duration});
 			if (duration && eff.durationLessThanOrEqualTo(duration)) {
 				await eff.setDuration(duration);
 			}
