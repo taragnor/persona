@@ -18,6 +18,7 @@ export const POWER_TAGS_LIST = [
 	"fear",
 	"sleep",
 	"confusion",
+	"exotic",
 ] as const;
 
 export type PowerTag = typeof POWER_TAGS_LIST[number];

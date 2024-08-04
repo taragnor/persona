@@ -1807,7 +1807,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return "supercharged";
 			case diff >= -5:
 				return "supercharged";
-			case diff < -7 :
+			case diff < -5 :
 				return "amp-fulldep";
 			default:
 				PersonaError.softFail(`Unhandled difference value ${diff}`);
