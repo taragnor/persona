@@ -258,7 +258,7 @@ export class SearchMenu {
 			return (game.scenes.active.tokens.contents as TokenDocument<PersonaActor>[])
 				.filter( x=> x.actor
 					&& x.actor.system.type == "pc"
-					&& x.actor.focii.length > 0 //check to eliminate crunched party token
+					&& x.actor.talents.length > 0 //check to eliminate crunched party token
 				)
 				.flatMap( tok=> {
 					const actor = tok.actor! as PC;
@@ -266,7 +266,7 @@ export class SearchMenu {
 						.filter( user => user.active && !user.isGM);
 					const owner = activePlayers
 						.find( user => user.character == actor)
-						?? activePlayers.find( user=> actor.testUserPermission(user, "OWNER")) 
+						?? activePlayers.find( user=> actor.testUserPermission(user, "OWNER"))
 						?? game.users.find(x=> x.isGM && x.active);
 					if (!owner) return [];
 					const ret : SearchResult = {
