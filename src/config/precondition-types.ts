@@ -107,7 +107,7 @@ export type BooleanComparisonPC = {
 	boolComparisonTarget: BooleanComparisonTarget,
 } & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison);
 
-	type BasicBComparisonPC ={
+	type BasicBComparisonPC = {
 	boolComparisonTarget: Exclude<BooleanComparisonTarget,
 	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "weekday-is" | "flag-state" | "is-resistant-to" | "social-target-is" | TargettedBComparisonPC["boolComparisonTarget"] | "power-target-type-is" | "weather-is" | "shadow-role-is">,
 }

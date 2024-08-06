@@ -415,18 +415,11 @@ export class CombatResult  {
 				await this.applyChange(change);
 				if (change.actor.token)
 					token = PersonaDB.findToken(change.actor.token) as PToken;
-			}
-			if (token && token.actor && !token.actor.isAlive()) {
-				// const attacker = PersonaDB.findToken(result.attacker);
-				const actingActor = PersonaDB.findToken(result.attacker)?.actor;
-				if (!actingActor) break;
-				if (token.actor.system.type == "shadow") {
-					const shadow= game.combat?.getCombatantByToken(token.id);
-					if (shadow) {
-						await shadow.update( {defeated: true});
-					}
+				debugger;
+				if (token && token.actor && !token.actor.isAlive()) {
+					const attacker = PersonaDB.findToken(result.attacker);
+					await this.onDefeatOpponent(token, attacker);
 				}
-				PersonaCombat.execTrigger("on-kill-target", actingActor);
 			}
 		}
 		for (const cost of this.costs) {
@@ -436,6 +429,23 @@ export class CombatResult  {
 			}
 			await this.applyChange(cost);
 		}
+	}
+
+	async onDefeatOpponent(target: PToken, attacker ?: PToken) {
+		if (target.actor.system.type == "shadow") {
+			const shadow = game.combat?.combatants.find( c=> c.token.id == target.id) as Combatant<PersonaActor> | undefined;
+			if (shadow) {
+				console.log(`Setting shadow ${shadow.name} to defeated`);
+				await shadow.update( {defeated: true});
+			} else {
+				ui.notifications.warn(`Can't find combatant for ${target.name}`);
+			}
+		}
+		const actingActor = attacker?.actor;
+		if (actingActor) {
+			PersonaCombat.execTrigger("on-kill-target", actingActor);
+		}
+
 	}
 
 	clearFlags() {

@@ -270,7 +270,6 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (!situation.activeCombat){
 				return undefined;
 			}
-			debugger;
 			const target = getSubjectToken(condition, situation, source, "conditionTarget");
 			const target2 = getSubjectToken(condition, situation, source, "conditionTarget2");
 			if (!target || !target2) return undefined;
@@ -302,7 +301,6 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (typeof condition.powerTag == "string") {
 				return power.system.tags.includes(condition.powerTag!);
 			}
-			debugger;
 			return Object.entries(condition.powerTag)
 			.filter( ([_, val]) => val == true)
 			.some (([tag, _]) => power.system.tags.includes(tag as PowerTag));

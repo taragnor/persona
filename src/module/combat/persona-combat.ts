@@ -84,7 +84,23 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			};
 			ChatMessage.create(messageData, {});
 		}
+		this.refreshActorSheets();
 		return await super.startCombat();
+	}
+
+	override async delete() : Promise<void> {
+		this.refreshActorSheets();
+		await super.delete()
+	}
+
+	async refreshActorSheets(): Promise<void> {
+		for (const comb of this.combatants) {
+			const actor= comb.token?.actor;
+			if (!actor) continue;
+			if (actor.sheet._state > 0) {
+				actor.sheet?.render(true);
+			}
+		}
 	}
 
 	get validCombatants() : Combatant<ValidAttackers>[] {
@@ -1533,6 +1549,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			dialog.render(true);
 		});
 	}
+
+
 
 	debug_engageList() {
 		let list = [] as string[];
