@@ -337,17 +337,14 @@ export class PCSheet extends CombatantSheetBase {
 		const div = $(event.currentTarget).parent();
 		let itemType = "unknown";
 		const itemId = $(event.currentTarget).find(":selected").val();
-
 		if (!itemId) return false;
 		const item = this.actor.items.find(x=> x.id == itemId);
-
 		const typeTable = {
 			"weapon": "persona.equipslots.weapon",
 			"armor": "persona.equipslots.body",
 			"accessory":	"persona.equipslots.accessory",
 			"weapon-crystal":		"persona.equipslots.weapon_crystal",
 		} as const;
-
 		for (const [k,v] of Object.entries(typeTable)) {
 			if (div.hasClass(k)) {
 				itemType = localize(v);
