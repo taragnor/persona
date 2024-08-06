@@ -386,6 +386,7 @@
 	"persona.preconditions.comparison.character-level": "Character Level",
 	"persona.preconditions.comparison.has-resources": "Resouce Points",
 	"persona.preconditions.comparison.resistance-level": "Resistance Level",
+	"persona.preconditions.comparison.health-percentage": "Health Percentage (0-100)",
 	"persona.preconditions.comparison.student-skill": "Rank in Student Skill",
 	"persona.preconditions.comparison.engaged": "Is Being Engaged By Any Foe",
 	"persona.preconditions.comparison.engaged-with": "X is Engaging Y",

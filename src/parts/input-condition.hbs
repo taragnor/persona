@@ -43,6 +43,12 @@
 		</select>
 	{{/if}}
 
+	{{#if (eq cond.comparisonTarget "health-percentage")}}
+	<select name="{{strcat namePrefix 'conditionTarget'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+	</select>
+	{{/if}}
+
 	{{#if (eq cond.comparisonTarget "resistance-level")}}
 	<select name="{{strcat namePrefix 'conditionTarget'}}">
 		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}

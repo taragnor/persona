@@ -196,6 +196,11 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			target = RESIST_STRENGTH_LIST.indexOf(targetResist);
 			break;
 		}
+		case "health-percentage":
+			const subject = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!subject) return false;
+			target = (subject.hp / subject.mhp) * 100;
+			break;
 		default:
 			condition satisfies never;
 			PersonaError.softFail(`Unknwon numeric comparison type ${condition["comparisonTarget"]}`)

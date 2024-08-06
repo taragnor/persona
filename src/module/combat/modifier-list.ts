@@ -1,3 +1,4 @@
+import { PersonaCombat } from "./persona-combat.js";
 import { Consequence } from "./combat-result.js";
 import { ArrayCorrector } from "../item/persona-item.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
@@ -113,7 +114,8 @@ export class ModifierList {
 		return Array.from(variableMods).reduce( (acc, varmod) => {
 			switch (varmod) {
 				case "escalationDie":
-					return acc + (situation.escalationDie ?? 0);
+					if (!game.combat) return acc;
+					return acc + ((game?.combat as PersonaCombat )?.getEscalationDie() ?? 0);
 				default:
 						varmod satisfies never;
 			}
