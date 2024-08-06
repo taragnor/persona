@@ -445,7 +445,6 @@ export class CombatResult  {
 		if (actingActor) {
 			PersonaCombat.execTrigger("on-kill-target", actingActor);
 		}
-
 	}
 
 	clearFlags() {
