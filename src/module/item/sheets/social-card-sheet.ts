@@ -1,3 +1,4 @@
+import { FREQUENCY } from "../../../config/frequency.js";
 import { THRESHOLD_TYPE } from "../../../config/social-card-config.js";
 import { PersonaSocialSheetBase } from "./social-sheet-base.js";
 import { Opportunity } from "../../../config/social-card-config.js";
@@ -73,7 +74,9 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 			STUDENT_SKILLS_EXT,
 			SAVE_DIFFICULTY: SAVE_TYPES_LOCALIZED,
 			ROLL_DC_TYPES: {"base": "Base", "static": "Static DC"},
+			FREQUENCY: FREQUENCY,
 		};
+		// data.FREQUENCY = FREQUENCY;
 		data.SOCIAL_CARD_TYPES = SOCIAL_CARD_TYPES;
 		data.CAMEO_TYPES = CAMEO_TYPES;
 		data.PERK_TYPES = PERK_TYPES;

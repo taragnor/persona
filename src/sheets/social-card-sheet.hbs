@@ -19,6 +19,14 @@
 		{{selectOptions SOCIAL_CARD_TYPES localize=true selected=item.system.cardType}}
 	 </select>
 	</div>
+	<div>
+		<label>
+			Frequency
+		</label>
+		<select name="system.frequency">
+		{{selectOptions SOCIAL_DATA.FREQUENCY localize=false selected=item.system.frequency}}
+		</select>
+	</div>
 
 	{{#if (eq item.system.cardType "social")}}
 	<section class="qualifiers">

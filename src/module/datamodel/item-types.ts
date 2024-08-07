@@ -202,6 +202,7 @@ class SocialCardSchema extends foundry.abstract.DataModel {
 			cardType: new txt({initial: "social", choices: SOCIAL_CARD_TYPES_LIST}),
 			//for social cards
 
+			frequency: new num({initial: 1, integer: false}),
 			qualifiers: new arr( new obj<{
 				relationshipName: string,
 				min: number,

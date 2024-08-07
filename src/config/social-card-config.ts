@@ -42,6 +42,7 @@ export type CardChoice = {
 export type CardEvent = {
 	name: string,
 	frequency: number, //defaults to 1
+	placement?: {starter: boolean, middle: boolean, finale: boolean},
 	text: string,
 	conditions: Precondition[],
 	choices: CardChoice[]

@@ -13,15 +13,38 @@
 				<i class="fa-solid fa-trash-can"></i>
 			</a>
 		</h3>
-		<label> Frequency</label>
-		<input class="short" type=number name="system.events.{{i}}.frequency" value="{{event.frequency}}">
-
-		<h5> Event Conditions
-			<a class="add-condition">
-				<i class="fa-solid fa-plus"> </i>
-			</a>
-		</h5>
-		{{#each event.conditions as |cond j|}}
+		<div class="placement">
+			<div>
+				<label> Frequency</label>
+				<select name="system.events.{{i}}.frequency">
+					{{selectOptions ../SOCIAL_DATA.FREQUENCY localize=false selected=event.frequency}}
+				</select>
+			</div>
+			<div>
+				<label>
+					Starter
+				</label>
+				<input type="checkbox" name="system.events.{{i}}.placement.starter" {{checked event.placement.starter}}>
+			</div>
+			<div>
+				<label>
+					Middle
+				</label>
+				<input type="checkbox" name="system.events.{{i}}.placement.middle" {{checked event.placement.middle}}>
+			</div>
+			<div>
+				<label>
+					Finale
+				</label>
+				<input type="checkbox" name="system.events.{{i}}.placement.finale" {{checked event.placement.finale}}>
+			</div>
+		</div>
+	<h5> Event Conditions
+		<a class="add-condition">
+			<i class="fa-solid fa-plus"> </i>
+		</a>
+	</h5>
+	{{#each event.conditions as |cond j|}}
 
 		{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat "system.events." i ".conditions." j ".")  cond=cond POWERSTUFF=../../POWERSTUFF condition_index=j}}
 

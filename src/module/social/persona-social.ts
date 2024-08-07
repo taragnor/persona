@@ -1,3 +1,4 @@
+import { weightedChoice } from "../utility/weightedChoice.js";
 import { SocketPayload } from "../utility/socket-manager.js";
 import { PersonaCalendar } from "./persona-calendar.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
@@ -225,8 +226,14 @@ export class PersonaSocial {
 			this.#drawnCardIds = this.#drawnCardIds
 				.filter(cardId=> !cards.find(card => card.id == cardId));
 		}
-		const draw  = Math.floor(Math.random() * undrawn.length) ;
-		const chosenCard =  undrawn[draw];
+		// const draw  = Math.floor(Math.random() * undrawn.length) ;
+		// const chosenCard =  undrawn[draw];
+		const chosenCard = weightedChoice(
+			undrawn.map( card=> ({
+				item: card,
+				weight: card.system.frequency ?? 1,
+			}))
+		);
 		if (!chosenCard) throw new PersonaError("Can't find valid social card!");
 		this.#drawnCardIds.push(chosenCard.id);
 		return chosenCard;
@@ -447,21 +454,26 @@ export class PersonaSocial {
 	static #getCardEvent(cardData:CardData) : CardEvent | undefined  {
 		const eventList = cardData.card.system.events
 		.filter( (ev, i) => !cardData.eventsChosen.includes(i) && testPreconditions(ev.conditions, cardData.situation, null));
-		const eventScaled = eventList.map( ev=> [ev, ev.frequency * 1000] as [typeof ev, number]);
-		const eventTotal = eventScaled.reduce ( (acc, [_x, score])=> acc+score, 0);
-		if (eventList.length == 0)
-			return undefined;
-		let choice = Math.floor(Math.random() * eventTotal);
-		let ev : CardEvent;
-		do {
-			const entry = eventScaled.pop()!;
-			choice -= entry[1];
-			ev = entry[0];
-		} while (choice > 0);
-		if (!ev) {
-			PersonaError.softFail("Somehow got no event");
-			return ev;
-		}
+		const ev = weightedChoice(eventList.map( event => ({
+			item: event,
+			weight: event.frequency ?? 1
+		})));
+		if (!ev) return undefined;
+		// const eventScaled = eventList.map( ev=> [ev, ev.frequency * 1000] as [typeof ev, number]);
+		// const eventTotal = eventScaled.reduce ( (acc, [_x, score])=> acc+score, 0);
+		// if (eventList.length == 0)
+		// 	return undefined;
+		// let choice = Math.floor(Math.random() * eventTotal);
+		// let ev : CardEvent;
+		// do {
+		// 	const entry = eventScaled.pop()!;
+		// 	choice -= entry[1];
+		// 	ev = entry[0];
+		// } while (choice > 0);
+		// if (!ev) {
+		// 	PersonaError.softFail("Somehow got no event");
+		// 	return ev;
+		// }
 		cardData.eventsChosen.push(cardData.card.system.events.indexOf(ev));
 		return ev;
 	}
@@ -928,5 +940,6 @@ export type CardData = {
 	eventsRemaining: number,
 	situation: Situation
 };
+
 
 
