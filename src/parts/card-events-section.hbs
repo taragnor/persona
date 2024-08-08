@@ -38,13 +38,19 @@
 				</label>
 				<input type="checkbox" name="system.events.{{i}}.placement.finale" {{checked event.placement.finale}}>
 			</div>
+			<div>
+				<label>
+					Label
+				</label>
+			<input type="string" name="system.events.{{i}}.label" value="{{event.label}}">
+			</div>
 		</div>
-	<h5> Event Conditions
-		<a class="add-condition">
-			<i class="fa-solid fa-plus"> </i>
-		</a>
-	</h5>
-	{{#each event.conditions as |cond j|}}
+		<h5> Event Conditions
+			<a class="add-condition">
+				<i class="fa-solid fa-plus"> </i>
+			</a>
+		</h5>
+		{{#each event.conditions as |cond j|}}
 
 		{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat "system.events." i ".conditions." j ".")  cond=cond POWERSTUFF=../../POWERSTUFF condition_index=j}}
 

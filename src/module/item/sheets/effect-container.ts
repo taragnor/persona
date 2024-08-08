@@ -1,3 +1,4 @@
+import { SOCIAL_CARD_ACTIONS } from "../../../config/effect-types.js";
 import { SHADOW_ROLE } from "../../../config/shadow-types.js";
 import { CONS_TARGETS } from "../../combat/combat-result.js";
 import { DAYS_LIST } from "../../../config/days.js";
@@ -100,6 +101,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			STUDENT_SKILLS,
 			CONS_TARGETS,
 			SHADOW_ROLE,
+			SOCIAL_CARD_ACTIONS,
 		};
 		return this._powerStuffBase;
 	}

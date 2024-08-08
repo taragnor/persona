@@ -30,7 +30,7 @@ type CardLocationTypes = [
 		opportunityIndex: number,
 	},
 	{
-		name: "event-choice-roll",
+		name: "event-choice-effects",
 		eventIndex: number,
 		choiceIndex: number
 	},
@@ -51,7 +51,6 @@ type CardLocationTypes = [
 import { STUDENT_SKILLS_EXT } from "../../../config/student-skills.js";
 
 export type CardEffectLocation = CardLocationTypes[number];
-
 
 const PRIMARY_SECONDARY = {
 	"primary": "persona.term.primary",
@@ -132,6 +131,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 			//TODO: Add this to the actual opportunity sheet, right now doesn't have a conditions entry section
 			conditions: [],
 			text: "",
+			postEffects: { effects: []},
 			roll: {
 				rollType: "none",
 			}
@@ -188,21 +188,21 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 			}
 		} else if (evTarget.closest(".card-event").length > 0) {
 			const eventIndex= Number(HTMLTools.getClosestData(ev, "eventIndex"));
-			if (evTarget.closest(".card-roll").length > 0) {
-				const choiceIndex= Number(HTMLTools.getClosestData(ev, "choiceIndex"));
-				return {
-					name: "event-choice-roll",
-					eventIndex,
-					choiceIndex,
-				};
-			}
 			if (evTarget.closest(".choice").length > 0) {
 				const choiceIndex= Number(HTMLTools.getClosestData(ev, "choiceIndex"));
-				return {
-					name: "event-choice-conditions",
-					eventIndex,
-					choiceIndex
-				};
+				if (evTarget.closest(".effects-list").length> 0) {
+					return {
+						name: "event-choice-effects",
+						eventIndex,
+						choiceIndex,
+					};
+				} else {
+					return {
+						name: "event-choice-conditions",
+						eventIndex,
+						choiceIndex,
+					};
+				}
 			}
 			if (evTarget.closest(".card-event").length > 0) {
 				return {
@@ -230,13 +230,13 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		return await card.addCondition( effectIndex, location);
 	}
 
-async deleteConditional(ev: JQuery.ClickEvent) {
-	const card = this.item;
-	const location = this.getEffectLocation(ev);
-	const effectIndex = Number(HTMLTools.getClosestDataSafe(ev, "effectIndex", -1));
-	const conditionIndex = Number(HTMLTools.getClosestData(ev, "preconditionIndex"));
-	return await card.deleteCondition(effectIndex, conditionIndex, location);
-}
+	async deleteConditional(ev: JQuery.ClickEvent) {
+		const card = this.item;
+		const location = this.getEffectLocation(ev);
+		const effectIndex = Number(HTMLTools.getClosestDataSafe(ev, "effectIndex", -1));
+		const conditionIndex = Number(HTMLTools.getClosestData(ev, "preconditionIndex"));
+		return await card.deleteCondition(effectIndex, conditionIndex, location);
+	}
 
 	async addConsequence(ev: JQuery.ClickEvent) {
 		const card = this.item;
@@ -295,7 +295,4 @@ async deleteConditional(ev: JQuery.ClickEvent) {
 		await this.item.update({"system.qualifiers": qual});
 	}
 
-
-
-
-}
+} // end of class

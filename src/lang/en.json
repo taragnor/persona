@@ -316,6 +316,11 @@
 	"persona.effecttypes.display-msg": "Print Message",
 	"persona.effecttypes.use-power": "Activate Power",
 	"persona.effecttypes.scan": "Scan Target",
+	"persona.effecttypes.social-card-action": "Social Card Action",
+
+	"persona.effecttypes.social-card.stop-execution": "Stop Card Execution",
+	"persona.effecttypes.social-card.exec-event": "Execute Event",
+	"persona.effecttypes.social-card.inc-events": "Have Extra Event Happen",
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",

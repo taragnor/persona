@@ -498,7 +498,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			usedPower: PersonaDB.getUniversalItemAccessor(power),
 			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
 			attacker: attacker.actor.accessor,
-			escalationDie,
+			// escalationDie,
 			activationRoll: rollType == "activation",
 			activeCombat:combat ? !!combat.combatants.find( x=> x.actor?.type != attacker.actor.type): false ,
 		};
@@ -885,6 +885,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "inspiration-cost":
 			case "display-msg":
 			case "use-power":
+			case "social-card-action":
 			case "scan":
 				return [{applyTo,cons}];
 			case "expend-item":

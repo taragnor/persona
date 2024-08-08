@@ -82,9 +82,10 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			target = situation.naturalAttackRoll!;
 			break;
 		case "escalation":
-			if (situation.escalationDie == undefined)
-				return false;
-			target = situation.escalationDie;
+			const combat = game.combat as PersonaCombat | undefined;
+			if (!combat) return false;
+			const die = combat.getEscalationDie();
+			target = die;
 			break;
 		case "total-roll":
 			if (situation.rollTotal == undefined)
@@ -521,7 +522,7 @@ export type Situation = {
 	resisted ?: boolean;
 	struckWeakness ?: boolean;
 	isAbsorbed ?: boolean;
-	escalationDie ?: number;
+	// escalationDie ?: number;
 	activationRoll ?: boolean;
 	target ?: UniversalActorAccessor<PC | Shadow>;
 	attacker ?:UniversalActorAccessor<PC | Shadow>;

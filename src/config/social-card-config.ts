@@ -37,10 +37,12 @@ export type CardChoice = {
 	conditions: Precondition[],
 	text: string,
 	roll: CardRoll, //defaults to "none"
+	postEffects: { effects: ConditionalEffect[]}
 };
 
 export type CardEvent = {
 	name: string,
+	label: string,
 	frequency: number, //defaults to 1
 	placement?: {starter: boolean, middle: boolean, finale: boolean},
 	text: string,
@@ -58,7 +60,6 @@ type CardRollList = {
 		rollType: "studentSkillCheck",
 		studentSkill: StudentSkillExt,
 		modifier: number,
-		effects: ConditionalEffect[],
 		DC: CardRollDC,
 	}
 	"save" : {
@@ -66,7 +67,6 @@ type CardRollList = {
 		saveType: SaveType,
 		modifier: number,
 		disallow_other_modifiers: boolean,
-		effects: ConditionalEffect[],
 	},
 	"waitForGM" : {
 		rollType: "gmspecial"

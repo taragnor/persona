@@ -29,6 +29,7 @@ export const CONSQUENCELIST = [
 	"display-msg",
 	"use-power",
 	"scan",
+	"social-card-action",
 ] as const;
 
 
@@ -102,4 +103,14 @@ export type ShadowChargeReq = typeof SHADOW_CHANGE_REQ_LIST[number];
 
 export const SHADOW_CHARGE_REQ = Object.fromEntries( SHADOW_CHANGE_REQ_LIST.map( x=> [x, `persona.power.shadowcosts.${x}`]));
 
+export const SOCIAL_CARD_ACTION_LIST = [
+	"stop-execution",
+	"exec-event",
+	"inc-events",
+] as const;
 
+export type SocialCardAction = typeof SOCIAL_CARD_ACTION_LIST[number];
+
+export const SOCIAL_CARD_ACTIONS = Object.fromEntries(
+	SOCIAL_CARD_ACTION_LIST.map( x=> [x, `persona.effecttypes.social-card.${x}`])
+);

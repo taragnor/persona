@@ -264,15 +264,15 @@ const power = PersonaDB.getBasicPower(powerName);
 		switch (location.name) {
 			case "opportunity-roll": {
 				const list = this.system.opportunity_list;
-				const roll = list[location.opportunityIndex].roll;
-				if (!("effects" in roll)) {
-					(roll as any)["effects"] = [];
+				const opp = list[location.opportunityIndex];
+				if (!("effects" in opp)) {
+					(opp as any)["effects"] = [];
 				}
-				if (!("effects" in roll)) {
+				if (!("effects" in opp)) {
 					throw new PersonaError("something weird happened");
 				}
 				return {
-					array: roll,
+					array: opp,
 					updater :
 					async () => await this.update({"system.opportunity_list": list})
 				};
@@ -306,21 +306,15 @@ const power = PersonaDB.getBasicPower(powerName);
 					updater: async () => await this.update({"system.opportunity_list": array})
 				}
 			}
-			case "event-choice-roll": {
+			case "event-choice-effects": {
 				const list = this.system.events;
 				const event = list[location.eventIndex];
 				event.choices = ArrayCorrector(event.choices  ?? []);
 				const choice = event.choices[location.choiceIndex];
-				const roll = choice.roll;
-				(roll as any).effects = (roll as any).effects ?? [];
-				if (!("effects" in roll)) {
-					(roll as any)["effects"] = [];
-				}
-				if (!("effects" in roll)) {
-					throw new PersonaError("something weird happened");
-				}
+				choice.postEffects = choice.postEffects ?? {effects: []};
+				choice.postEffects.effects = ArrayCorrector(choice.postEffects.effects);
 				return {
-					array: roll,
+					array: choice.postEffects,
 					updater: async () => {
 						await this.update({"system.events": list});
 					}
@@ -328,7 +322,7 @@ const power = PersonaDB.getBasicPower(powerName);
 			}
 			case "event-choice-conditions": {
 				const list = this.system.events;
-				const choice  =this.system.events[location.eventIndex!].choices[location.choiceIndex];
+				const choice = this.system.events[location.eventIndex!].choices[location.choiceIndex];
 				if (choice.conditions == undefined) {
 					choice.conditions = [];
 				}
@@ -719,6 +713,12 @@ const power = PersonaDB.getBasicPower(powerName);
 	async addCardEvent(this: SocialCard) {
 		const newEv : CardEvent = {
 			text: "",
+			placement: {
+				starter: true,
+				middle: true,
+				finale: true
+			},
+			label: "",
 			name: "Unnamed Event",
 			frequency: 1,
 			choices: [],
@@ -740,6 +740,7 @@ const power = PersonaDB.getBasicPower(powerName);
 			name: "Unnamed Choice",
 			conditions: [],
 			text: "",
+			postEffects: {effects:[]},
 			roll: {rollType: "none"},
 		};
 		event.choices.push( newChoice);

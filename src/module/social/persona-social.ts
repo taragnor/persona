@@ -1,3 +1,5 @@
+import { CardChoice } from "../../config/social-card-config.js";
+import { SocialCardActionEffect } from "../combat/combat-result.js";
 import { weightedChoice } from "../utility/weightedChoice.js";
 import { SocketPayload } from "../utility/socket-manager.js";
 import { PersonaCalendar } from "./persona-calendar.js";
@@ -264,8 +266,9 @@ export class PersonaSocial {
 			cameos,
 			perk,
 			eventsChosen: [],
-			eventsRemaining : card.system.num_of_events,
-			situation
+			eventsRemaining: card.system.num_of_events,
+			situation,
+			forceEventLabel: null
 		};
 		return await this.#execCardSequence(cardData);
 
@@ -452,28 +455,47 @@ export class PersonaSocial {
 	}
 
 	static #getCardEvent(cardData:CardData) : CardEvent | undefined  {
-		const eventList = cardData.card.system.events
-		.filter( (ev, i) => !cardData.eventsChosen.includes(i) && testPreconditions(ev.conditions, cardData.situation, null));
+		if (cardData.forceEventLabel) {
+			const gotoEvent = cardData.card.system.events.find( x=> x.label  == cardData.forceEventLabel);
+			cardData.forceEventLabel = null;
+			if (gotoEvent) {
+				return gotoEvent;
+			}
+			PersonaError.softFail (`Can't find event label ${cardData.forceEventLabel} on card ${cardData.card.name}`);
+		}
+		let eventList = cardData.card.system.events
+			.filter( (ev, i) => !cardData.eventsChosen.includes(i) && testPreconditions(ev.conditions, cardData.situation, null));
+		const isEvType = function (ev: CardEvent, evType: keyof NonNullable<CardEvent["placement"]>) {
+			let placement = ev.placement ?? {
+				starter: true,
+				middle: true,
+				finale: true,
+			};
+			if (Object.values(placement).every( x=> x == false)) {
+				placement ={
+					starter: true,
+					middle: true,
+					finale: true,
+				};
+			}
+			return placement[evType];
+		};
+		switch (true) {
+			case cardData.eventsChosen.length == 0:
+				eventList = eventList.filter( ev => isEvType(ev, "starter"));
+				break;
+			case cardData.eventsRemaining > 1:
+				eventList = eventList.filter( ev => isEvType(ev, "middle"));
+				break;
+			case cardData.eventsRemaining <= 1:
+				eventList = eventList.filter( ev => isEvType(ev, "finale"));
+				break;
+		}
 		const ev = weightedChoice(eventList.map( event => ({
 			item: event,
 			weight: event.frequency ?? 1
 		})));
 		if (!ev) return undefined;
-		// const eventScaled = eventList.map( ev=> [ev, ev.frequency * 1000] as [typeof ev, number]);
-		// const eventTotal = eventScaled.reduce ( (acc, [_x, score])=> acc+score, 0);
-		// if (eventList.length == 0)
-		// 	return undefined;
-		// let choice = Math.floor(Math.random() * eventTotal);
-		// let ev : CardEvent;
-		// do {
-		// 	const entry = eventScaled.pop()!;
-		// 	choice -= entry[1];
-		// 	ev = entry[0];
-		// } while (choice > 0);
-		// if (!ev) {
-		// 	PersonaError.softFail("Somehow got no event");
-		// 	return ev;
-		// }
 		cardData.eventsChosen.push(cardData.card.system.events.indexOf(ev));
 		return ev;
 	}
@@ -718,10 +740,16 @@ export class PersonaSocial {
 		}
 	}
 
-	static async handleCardRoll(cardData: CardData, cardRoll:CardRoll) {
+	static async handleCardChoice(cardData: CardData, cardChoice: CardChoice) {
+		const cardRoll = cardChoice.roll;
+		const effectList  = cardChoice?.postEffects?.effects ?? [];
 		switch (cardRoll.rollType) {
-			case "none":
+			case "none": {
+				await this.applyEffects(effectList,cardData.situation, cardData.actor);
+				break;
+			}
 			case "gmspecial":
+				await this.applyEffects(effectList,cardData.situation, cardData.actor);
 				break;
 			case "studentSkillCheck": {
 				const modifiers = this.getCardModifiers(cardData);
@@ -739,7 +767,7 @@ export class PersonaSocial {
 					naturalSkillRoll: roll.natural,
 					rollTotal: roll.total
 				};
-				this.applyEffects(cardRoll.effects,situation, cardData.actor);
+				await this.applyEffects(effectList, situation, cardData.actor);
 				break;
 			}
 			case "save": {
@@ -752,7 +780,7 @@ export class PersonaSocial {
 					hit: saveResult.success,
 					rollTotal: saveResult.total
 				};
-				this.applyEffects(cardRoll.effects,situation, cardData.actor);
+				await this.applyEffects(effectList,situation, cardData.actor);
 				break;
 			}
 			default:
@@ -789,7 +817,7 @@ export class PersonaSocial {
 		}
 		const cardEvent = card.system.events[eventIndex];
 		const choice = cardEvent.choices[choiceIndex];
-		await this.handleCardRoll(this.rollState.cardData, choice.roll);
+		await this.handleCardChoice(this.rollState.cardData, choice);
 		const content = $(message.content);
 		content
 			.closest(".social-card-event")
@@ -812,45 +840,92 @@ export class PersonaSocial {
 	}
 
 
-static async #sendGMCardRequest(actor: PC, link: SocialLink | Activity) : Promise<SocialCard> {
-	const gms = game.users.filter(x=> x.isGM);
-	if (this.cardDrawPromise) {
-		this.cardDrawPromise.rej("Second Draw");
-		this.cardDrawPromise = null;
+	static async #sendGMCardRequest(actor: PC, link: SocialLink | Activity) : Promise<SocialCard> {
+		const gms = game.users.filter(x=> x.isGM);
+		if (this.cardDrawPromise) {
+			this.cardDrawPromise.rej("Second Draw");
+			this.cardDrawPromise = null;
+		}
+		const promise : Promise<string> = new Promise( (res, rej) => {
+			this.cardDrawPromise = { res, rej};
+		});
+		PersonaSockets.simpleSend("DRAW_CARD", {actorId: actor.id, linkId: link.id}, gms.map( x=> x.id));
+		const cardId = await promise;
+		const card = game.items.get(cardId) as SocialCard | undefined;
+		if (!card) throw new PersonaError(`No card found for ${link.name}`);
+		return card;
 	}
-	const promise : Promise<string> = new Promise( (res, rej) => {
-		this.cardDrawPromise = { res, rej};
-	});
-	PersonaSockets.simpleSend("DRAW_CARD", {actorId: actor.id, linkId: link.id}, gms.map( x=> x.id));
-	const cardId = await promise;
-	const card = game.items.get(cardId) as SocialCard | undefined;
-	if (!card) throw new PersonaError(`No card found for ${link.name}`);
-	return card;
-}
 
-static async answerCardRequest(req: SocketMessage["DRAW_CARD"], socketPayload: SocketPayload<"DRAW_CARD">) {
-	const actor = game.actors.get(req.actorId) as PC;
-	const activity = (game.actors.get(req.linkId) ?? game.items.get(req.linkId)) as SocialLink | SocialCard;
-	//typescript was being fussy and needed me to define a concrete type despuite it being legal to call set availability on either
-	if (activity instanceof PersonaItem && activity.system.cardType == "job") {
-		await activity.setAvailability(false);
+	static async answerCardRequest(req: SocketMessage["DRAW_CARD"], socketPayload: SocketPayload<"DRAW_CARD">) {
+		const actor = game.actors.get(req.actorId) as PC;
+		const activity = (game.actors.get(req.linkId) ?? game.items.get(req.linkId)) as SocialLink | SocialCard;
+		//typescript was being fussy and needed me to define a concrete type despuite it being legal to call set availability on either
+		if (activity instanceof PersonaItem && activity.system.cardType == "job") {
+			await activity.setAvailability(false);
+		}
+		if (activity instanceof PersonaActor) {
+			await activity.setAvailability(false);
+		}
+		const card = await this.#drawSocialCard(actor, activity)
+		const sendBack = [socketPayload.sender];
+		// console.log(`Send back ${card.name}`);
+		PersonaSockets.simpleSend("CARD_REPLY", {cardId: card.id}, sendBack);
 	}
-	if (activity instanceof PersonaActor) {
-		await activity.setAvailability(false);
-	}
-	const card = await this.#drawSocialCard(actor, activity)
-	const sendBack = [socketPayload.sender];
-	// console.log(`Send back ${card.name}`);
-	PersonaSockets.simpleSend("CARD_REPLY", {cardId: card.id}, sendBack);
-}
 
-static async getCardReply(req: SocketMessage["CARD_REPLY"]) {
-	console.log(`got reply ${req.cardId}`);
-	if (!this.cardDrawPromise) return;
-	if (req.cardId) {
-		this.cardDrawPromise.res(req.cardId);
+	static async getCardReply(req: SocketMessage["CARD_REPLY"]) {
+		console.log(`got reply ${req.cardId}`);
+		if (!this.cardDrawPromise) return;
+		if (req.cardId) {
+			this.cardDrawPromise.res(req.cardId);
+		}
 	}
-}
+
+	static async execSocialCardAction(eff: SocialCardActionEffect) {
+		if (!this.rollState) {
+			PersonaError.softFail("Can't execute card action. No roll state");
+			return;
+		}
+		switch (eff.action) {
+			case "stop-execution":
+				this.stopCardExecution();
+				return;
+			case "exec-event":
+				this.forceEvent(eff.eventLabel);
+				return;
+			case "inc-events":
+				this.addExtraEvent();
+				return;
+			default:
+				eff.action satisfies never;
+				return;
+		}
+
+	}
+
+	static addExtraEvent() {
+		console.log("Adding extra event remaining");
+		if (!this.rollState) {
+			PersonaError.softFail(`Can't create more events as there is no RollState`);
+			return;
+		}
+		this.rollState.cardData.eventsRemaining += 1;
+	}
+
+	static stopCardExecution() {
+		this.rollState = null;
+		this.cardDrawPromise= null;
+	}
+
+	static forceEvent(evLabel?: string) {
+		console.log(`Entering Force Event : ${evLabel}`);
+		if (!evLabel) return;
+		if (!this.rollState) {
+			PersonaError.softFail(`Can't force event ${evLabel} as there is no rollstate`);
+			return;
+		}
+		console.log(`Forcing Event : ${evLabel}`);
+		this.rollState.cardData.forceEventLabel = evLabel;
+	}
 
 } //end of class
 
@@ -936,6 +1011,7 @@ export type CardData = {
 	activity: Activity | SocialLink,
 	cameos: SocialLink[],
 	perk: string,
+	forceEventLabel: null | string,
 	eventsChosen: number[],
 	eventsRemaining: number,
 	situation: Situation

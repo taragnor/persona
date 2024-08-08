@@ -9,7 +9,6 @@ import { CardEvent } from "../../config/social-card-config.js";
 const {StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 
 import { SOCIAL_CARD_TYPES_LIST } from "../../config/social-card-config.js";
-import { AVAILABILITY_LIST } from "../../config/availability-types.js";
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
 import { CharacterClassDM } from "./character-class-dm.js";
 import { UsablePowerProps } from "./power-dm.js";

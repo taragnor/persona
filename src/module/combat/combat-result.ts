@@ -1,3 +1,5 @@
+import { PersonaSocial } from "../social/persona-social.js";
+import { SocialCardAction } from "../../config/effect-types.js";
 import { ScanDialog } from "./scan-dialog.js";
 import { ConditionTarget } from "../../config/precondition-types.js";
 import { ConsequenceType } from "../../config/effect-types.js";
@@ -251,6 +253,17 @@ export class CombatResult  {
 					type: cons.type,
 					level: cons.amount ?? 1,
 				})
+				break;
+			case "social-card-action":
+				//must be executed playerside as event execution is a player thing
+				console.log("Executing social card action");
+				const otherEffect = {
+					type: cons.type,
+					action: cons.cardAction,
+					eventLabel: cons.eventLabel,
+				};
+				PersonaSocial.execSocialCardAction(otherEffect);
+				effect.otherEffects.push( otherEffect);
 				break;
 			default: {
 				cons satisfies never;
@@ -528,6 +541,9 @@ export class CombatResult  {
 						ScanDialog.create(combatant as Combatant<Shadow>, otherEffect.level)
 					}
 					break;
+				case "social-card-action":
+					break;
+
 				default:
 					otherEffect satisfies never;
 			}
@@ -619,6 +635,9 @@ export class CombatResult  {
 					break;
 				case "scan":
 					break; // done elsewhere for local player
+				case "social-card-action":
+					break;
+
 				default:
 					otherEffect satisfies never;
 			}
@@ -641,7 +660,7 @@ export class CombatResult  {
 			addStatus : initial.addStatus.concat(other.addStatus),
 			removeStatus : initial.removeStatus.concat(other.removeStatus),
 			expendSlot : initial.expendSlot.map( (x,i)=> x + other.expendSlot[i]) as [number, number, number, number],
-			otherEffects: initial.otherEffects.concat(other.otherEffects)
+				otherEffects: initial.otherEffects.concat(other.otherEffects)
 		};
 	}
 }
@@ -721,7 +740,14 @@ type ScanEffect = {
 	level: number,
 }
 
-export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect;
+export type SocialCardActionEffect = {
+	type: "social-card-action",
+	action: SocialCardAction,
+	eventLabel?: string,
+	// socialActor: UniversalActorAccessor<PC | Shadow>,
+}
+
+export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionEffect;
 
 export type StatusEffect = {
 	id: StatusEffectId,
@@ -737,12 +763,12 @@ export type Consequence =
 		actorOwner ?: UniversalActorAccessor<PC | Shadow>,
 		sourceItem ?: UniversalItemAccessor<Usable>,
 	} & (
-		GenericConsequence
-		| UsePowerConsequence
+		GenericConsequence | NonGenericConsequences
+
 	);
 
 type GenericConsequence = {
-	type: Exclude<ConsequenceType, "use-power">,
+	type: Exclude<ConsequenceType, NonGenericConsequences["type"]>,
 	amount ?: number,
 	iterativePenalty ?: number,
 	modifiedField ?: ModifierTarget,
@@ -758,6 +784,15 @@ type GenericConsequence = {
 	resistType ?: ResistType,
 	resistanceLevel ?: ResistStrength,
 	msg ?: string,
+}
+
+type NonGenericConsequences = UsePowerConsequence
+		| CardActionConsequence
+
+type CardActionConsequence = {
+	type: "social-card-action",
+	cardAction: SocialCardAction,
+	eventLabel?: string,
 }
 
 type UsePowerConsequence = {

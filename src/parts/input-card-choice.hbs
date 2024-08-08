@@ -21,6 +21,8 @@
 
 	{{> "systems/persona/parts/card-roll-section.hbs" CONST=CONST namePrefix=(strcat namePrefix "roll.") roll=choice.roll item=item}}
 
+{{> "systems/persona/parts/effects-section-adaptable.hbs" namePrefix=(strcat namePrefix "postEffects.effects.") effects=choice.postEffects.effects POWERSTUFF=item.sheet.powerStuff item=item}}
+
 	<textarea name="{{strcat namePrefix "text"}}">
 		{{trim choice.text}}
 	</textarea>

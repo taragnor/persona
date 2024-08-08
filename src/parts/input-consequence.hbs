@@ -116,6 +116,20 @@
 	</div>
 	{{/if}}
 
+	{{#if (eq cons.type "social-card-action")}}
+	<select name="{{strcat namePrefix 'cardAction'}}">
+		{{selectOptions POWERSTUFF.SOCIAL_CARD_ACTIONS localize=true selected=cons.cardAction}}
+	</select>
+
+	{{#if (eq cons.cardAction "exec-event")}}
+	<div>
+		<label for="event-label"> Event Label </label>
+		<input class="flag-name" id="event-label" type="text" name="{{strcat namePrefix 'eventLabel'}}" value="{{cons.eventLabel}}">
+	</div>
+	{{/if}}
+
+	{{/if}}
+
 	<a class="del-consequence">
 		<i class="fa-solid fa-trash-can"></i>
 	</a>
