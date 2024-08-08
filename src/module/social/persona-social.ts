@@ -893,7 +893,7 @@ export class PersonaSocial {
 				this.forceEvent(eff.eventLabel);
 				return;
 			case "inc-events":
-				this.addExtraEvent();
+				this.addExtraEvent(eff.amount ?? 0);
 				return;
 			case "gain-money":
 				await this.gainMoney(eff.amount ?? 0)
@@ -943,12 +943,12 @@ export class PersonaSocial {
 
 	}
 
-	static addExtraEvent() {
+	static addExtraEvent(amount: number) {
 		if (!this.rollState) {
 			PersonaError.softFail(`Can't create more events as there is no RollState`);
 			return;
 		}
-		this.rollState.cardData.eventsRemaining += 1;
+		this.rollState.cardData.eventsRemaining += amount;
 	}
 
 	static stopCardExecution() {
