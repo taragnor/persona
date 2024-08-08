@@ -379,21 +379,39 @@ export class CombatResult  {
 			// style: CONST?.CHAT_MESSAGE_STYLES?.OOC,
 			type: CONST.CHAT_MESSAGE_TYPES.ROLL,
 		}, {})
-		if (!manualApply) {
-			if (game.user.isGM) {
-				await this.apply();
-			} else  {
-				const gmTarget = game.users.find(x=> x.isGM && x.active);
-				if (gmTarget)  {
-					PersonaSockets.simpleSend("COMBAT_RESULT_APPLY", this.toJSON(), [gmTarget.id])
-				} else {
-					await chatMsg.setFlag("persona", "atkResult", this.toJSON());
-				}
-			}
-		} else {
+		if (manualApply) {
 			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
+			return chatMsg;
 		}
+		try {
+			await this.autoApplyResult();
+		} catch (e) {
+			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
+
+			}
+			// if (game.user.isGM) {
+			// 	await this.#apply();
+			// } else  {
+			// 	const gmTarget = game.users.find(x=> x.isGM && x.active);
+			// 	if (gmTarget)  {
+			// 		PersonaSockets.simpleSend("COMBAT_RESULT_APPLY", this.toJSON(), [gmTarget.id])
+			// 	} else {
+					// await chatMsg.setFlag("persona", "atkResult", this.toJSON());
 		return chatMsg;
+	}
+
+	async autoApplyResult() {
+		if (game.user.isGM) {
+			await this.#apply();
+			return;
+		}
+		const gmTarget = game.users.find(x=> x.isGM && x.active);
+		if (gmTarget)  {
+			PersonaSockets.simpleSend("COMBAT_RESULT_APPLY", this.toJSON(), [gmTarget.id])
+			return;
+		} else {
+			throw new Error("Can't apply no GM connected");
+		}
 	}
 
 	async print(): Promise<void> {
@@ -406,10 +424,14 @@ export class CombatResult  {
 
 	static async applyHandler(x: SocketMessage["COMBAT_RESULT_APPLY"]) : Promise<void> {
 		const result = CombatResult.fromJSON(x);
-		await result.apply();
+		await result.#apply();
 	}
 
-	async apply(): Promise<void> {
+	async applyButton() {
+		return this.#apply();
+	}
+
+	async #apply(): Promise<void> {
 		await this.#processEscalationChange();
 		await this.#processAttacks();
 		await this.#applyCosts();
@@ -852,7 +874,7 @@ Hooks.on("renderChatMessage", async (msg: ChatMessage, html: JQuery<HTMLElement>
 			throw new PersonaError("Only GM can click this");
 		}
 		const res = CombatResult.fromJSON(flag);
-		await res.apply();
+		await res.applyButton();
 		await msg.unsetFlag("persona", "atkResult");
 	});
 });

@@ -789,13 +789,15 @@ export class PersonaSocial {
 	}
 
 	static async applyEffects(effects: ConditionalEffect[], situation: Situation, actor: PC) {
-				const results = ArrayCorrector(effects ?? []).flatMap( eff=> getActiveConsequences(eff, situation, null));
-				const processed= PersonaCombat.ProcessConsequences_simple(results);
-				const result = new CombatResult();
-				for (const c of processed.consequences) {
-					result.addEffect(null, actor, c.cons);
-				}
-				await result.emptyCheck()?.toMessage("Social Roll Effects", actor);
+		const results = ArrayCorrector(effects ?? []).flatMap( eff=> getActiveConsequences(eff, situation, null));
+		const processed= PersonaCombat.ProcessConsequences_simple(results);
+		const result = new CombatResult();
+		for (const c of processed.consequences) {
+			result.addEffect(null, actor, c.cons);
+		}
+		await result.emptyCheck()
+			?.autoApplyResult();
+		// .toMessage("Social Roll Effects", actor);
 
 	}
 
