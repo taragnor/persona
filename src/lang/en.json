@@ -321,6 +321,9 @@
 	"persona.effecttypes.social-card.stop-execution": "Stop Card Execution",
 	"persona.effecttypes.social-card.exec-event": "Execute Event",
 	"persona.effecttypes.social-card.inc-events": "Have Extra Event Happen",
+	"persona.effecttypes.social-card.gain-money": "Alter Money",
+	"persona.effecttypes.social-card.modify-progress-tokens": "Modify Progress Tokens",
+	"persona.effecttypes.social-card.alter-student-skill": "Alter Student Skill",
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",

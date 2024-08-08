@@ -1,3 +1,4 @@
+import { StudentSkill } from "../../config/student-skills.js";
 import { PersonaSocial } from "../social/persona-social.js";
 import { SocialCardAction } from "../../config/effect-types.js";
 import { ScanDialog } from "./scan-dialog.js";
@@ -257,10 +258,12 @@ export class CombatResult  {
 			case "social-card-action":
 				//must be executed playerside as event execution is a player thing
 				console.log("Executing social card action");
-				const otherEffect = {
+				const otherEffect : SocialCardActionEffect = {
 					type: cons.type,
 					action: cons.cardAction,
 					eventLabel: cons.eventLabel,
+					amount: cons.amount ?? 0,
+					studentSkill: cons.studentSkill,
 				};
 				PersonaSocial.execSocialCardAction(otherEffect);
 				effect.otherEffects.push( otherEffect);
@@ -765,7 +768,9 @@ type ScanEffect = {
 export type SocialCardActionEffect = {
 	type: "social-card-action",
 	action: SocialCardAction,
-	eventLabel?: string,
+	eventLabel: string | undefined,
+	amount: number | undefined,
+	studentSkill : StudentSkill | undefined,
 	// socialActor: UniversalActorAccessor<PC | Shadow>,
 }
 
@@ -815,7 +820,10 @@ type CardActionConsequence = {
 	type: "social-card-action",
 	cardAction: SocialCardAction,
 	eventLabel?: string,
+	amount ?: number,
+	studentSkill?: StudentSkill,
 }
+
 
 type UsePowerConsequence = {
 	type: "use-power",

@@ -304,9 +304,7 @@ export class PCSheet extends CombatantSheetBase {
 	async gainMoney(_ev: Event) {
 		const x = await HTMLTools.getNumber("Amount to gain");
 		if (x <= 0) return;
-		await this.actor.gainMoney(x);
-		await Logger.sendToChat(`${this.actor.name} Gained ${x} resource points`);
-		await PersonaSounds.ching();
+		await this.actor.gainMoney(x, true);
 	}
 
 	async spendMoney(_ev: Event) {

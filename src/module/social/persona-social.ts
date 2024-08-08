@@ -125,9 +125,7 @@ export class PersonaSocial {
 
 	static async boostSocialSkill(pc: PC, socialStat: SocialStat) {
 		const amount = await HTMLTools.numberButtons("Amount", 1, 3) as 1 | 2| 3;
-		await pc.raiseSocialSkill(socialStat, amount);
-		await PersonaSounds.skillBoost(amount);
-		await Logger.sendToChat(`<b>${pc.name}:</b> Raised ${socialStat} by ${amount}`, pc);
+		await pc.alterSocialSkill(socialStat, amount);
 	}
 
 	static resolvePrimarySecondarySocialStat(choice: StudentSkillExt, link: SocialLink | Activity) : StudentSkill {
@@ -153,7 +151,7 @@ export class PersonaSocial {
 				"secondary":"persona.term.secondary"
 			} ,
 			STUDENT_SKILLS);
-			const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/dialogs/social-skill-selector.hbs`, {skillList, defaultChoice} );
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/dialogs/social-skill-selector.hbs`, {skillList, defaultChoice} );
 		return await new Promise( (conf, reject) => {
 			const dialog = new Dialog({
 				title: `Prompt`,
@@ -216,7 +214,7 @@ export class PersonaSocial {
 
 	static async #drawSocialCard(actor: PC, link : Activity | SocialLink) : Promise<SocialCard> {
 		if (!game.user.isGM)
-			return await this.#sendGMCardRequest(actor, link);
+		return await this.#sendGMCardRequest(actor, link);
 		if (link instanceof PersonaItem) {
 			return link;
 		}
@@ -315,28 +313,28 @@ export class PersonaSocial {
 				break;
 			case "student": {
 				const students = (game.actors.contents as PersonaActor[])
-					.filter( x=>
-						(x.system.type == "npc" || x.system.type == "pc")
-						&& x.baseRelationship == "PEER"
-						&& x != actor && x.id != linkId
-						&& x.isAvailable()
-					) as SocialLink[];
+				.filter( x=>
+					(x.system.type == "npc" || x.system.type == "pc")
+					&& x.baseRelationship == "PEER"
+					&& x != actor && x.id != linkId
+					&& x.isAvailable()
+				) as SocialLink[];
 				const randomPick = students[Math.floor(Math.random() * students.length)];
 				if (!randomPick)
-					throw new PersonaError("Random student select failed");
+				throw new PersonaError("Random student select failed");
 				return [randomPick];
 			}
 			case "any": {
 				const anyLink = (game.actors.contents as PersonaActor[])
-					.filter( x=>
-						(x.system.type == "npc" || x.system.type == "pc")
-						&& x.baseRelationship != "SHADOW"
-						&& x != actor && x.id != linkId
-						&& x.isAvailable()
-					) as SocialLink[];
+				.filter( x=>
+					(x.system.type == "npc" || x.system.type == "pc")
+					&& x.baseRelationship != "SHADOW"
+					&& x != actor && x.id != linkId
+					&& x.isAvailable()
+				) as SocialLink[];
 				const randomPick = anyLink[Math.floor(Math.random() * anyLink.length)];
 				if (!randomPick)
-					throw new PersonaError("Random any link select failed");
+				throw new PersonaError("Random any link select failed");
 				return [randomPick];
 			}
 			case "invite-sl4":
@@ -374,8 +372,8 @@ export class PersonaSocial {
 			case "standard-or-custom":
 				return "Choose One: <br>" +
 					[link.perk, card.perk]
-				.map( x=> `* ${x}`)
-				.join("<br>");
+					.map( x=> `* ${x}`)
+					.join("<br>");
 			case "standard-or-date":
 				let datePerk : string;
 				switch (link.system.type) {
@@ -391,8 +389,8 @@ export class PersonaSocial {
 				}
 				return "Choose One: <br>" +
 					[actor.perk, datePerk]
-				.map( x=> `* ${x}`)
-				.join("<br>");
+					.map( x=> `* ${x}`)
+					.join("<br>");
 			case "none":
 				return "";
 			default:
@@ -407,13 +405,13 @@ export class PersonaSocial {
 
 	static getCharInInitiativeList( offset: number) : SocialLink | undefined {
 		if (!game.combat || !game.combat.combatant) return undefined;
-			const initList = game.combat.turns;
-			const index = initList.indexOf(game.combat.combatant);
-			let modOffset = (index + offset) % initList.length;
-			while(modOffset < 0) {
-				modOffset += initList.length;
-			}
-			return initList[modOffset].actor as SocialLink;
+		const initList = game.combat.turns;
+		const index = initList.indexOf(game.combat.combatant);
+		let modOffset = (index + offset) % initList.length;
+		while(modOffset < 0) {
+			modOffset += initList.length;
+		}
+		return initList[modOffset].actor as SocialLink;
 	}
 
 	static async #execCardSequence(cardData: CardData): Promise<ChatMessage[]> {
@@ -658,9 +656,9 @@ export class PersonaSocial {
 			}
 		}
 		situation = {
-				...situation,
-				trigger
-			} ; //copy the object so it doesn't permanently change it
+			...situation,
+			trigger
+		} ; //copy the object so it doesn't permanently change it
 		for (const trig of actor.triggers) {
 			for (const eff of trig.getEffects(actor)) {
 				if (ModifierList.testPreconditions(eff.conditions, situation, trig)) { continue;}
@@ -707,7 +705,7 @@ export class PersonaSocial {
 						const stat = cardData.card.system.dc.stat;
 						return 10 + (cardData.actor.system.skills[stat] ?? -999);
 					default:
-						cardData.card.system.dc satisfies never;
+							cardData.card.system.dc satisfies never;
 						return 20;
 				}
 			default:
@@ -771,10 +769,10 @@ export class PersonaSocial {
 				break;
 			}
 			case "save": {
-					const saveResult = await PersonaCombat.rollSave(cardData.actor, {
-						DC: this.getCardRollDC(cardData, cardRoll),
-						label: "Card Roll (Saving Throw)",
-					});
+				const saveResult = await PersonaCombat.rollSave(cardData.actor, {
+					DC: this.getCardRollDC(cardData, cardRoll),
+					label: "Card Roll (Saving Throw)",
+				});
 				const situation : Situation = {
 					...cardData.situation,
 					hit: saveResult.success,
@@ -832,7 +830,7 @@ export class PersonaSocial {
 					$(this).find("button").remove();
 					$(this).find(".event-choice").addClass("chosen");
 				}
-		});
+			});
 		const html = content.html();
 		await message.update( {"content": html});
 		if (!this.rollState.continuation) {
@@ -884,7 +882,7 @@ export class PersonaSocial {
 
 	static async execSocialCardAction(eff: SocialCardActionEffect) {
 		if (!this.rollState) {
-			PersonaError.softFail("Can't execute card action. No roll state");
+			PersonaError.softFail(`Can't execute card action ${eff.action}. No roll state`);
 			return;
 		}
 		switch (eff.action) {
@@ -897,15 +895,55 @@ export class PersonaSocial {
 			case "inc-events":
 				this.addExtraEvent();
 				return;
+			case "gain-money":
+				await this.gainMoney(eff.amount ?? 0)
+				return;
+			case "modify-progress-tokens":
+					await this.modifyProgress(eff.amount ?? 0);
+				return;
+			case "alter-student-skill":
+					if (!eff.studentSkill) {
+						PersonaError.softFail("No student skill given");
+						return;
+					}
+				await this.alterStudentSkill( eff.studentSkill, eff.amount ?? 0);
+				return;
 			default:
-				eff.action satisfies never;
+					eff.action satisfies never;
 				return;
 		}
 
 	}
 
+	static async modifyProgress(amt: number) {
+		if (!this.checkRollState("modify Progress tokens")) return;
+		const linkId = this.rollState!.cardData.linkId;
+		await this.rollState!.cardData.actor.socialLinkProgress(linkId, amt);
+	}
+
+	static checkRollState(operation: string = "perform Social Roll Operation") {
+		if (this.rollState) {
+			return true;
+		}
+		PersonaError.softFail(`Roll state doesn't exist can't ${operation}`);
+		return false;
+	}
+
+	static async alterStudentSkill(skill: StudentSkill, amt: number) {
+		if (!this.checkRollState("alter student skill")) return;
+		await this.rollState!.cardData.actor.alterSocialSkill(skill, amt);
+	}
+
+	static async gainMoney(amt: number) {
+		if (!this.rollState) {
+			PersonaError.softFail(`Can't grant money. No Rollstate`);
+			return;
+		}
+		await this.rollState.cardData.actor.gainMoney(amt, true);
+
+	}
+
 	static addExtraEvent() {
-		console.log("Adding extra event remaining");
 		if (!this.rollState) {
 			PersonaError.softFail(`Can't create more events as there is no RollState`);
 			return;
@@ -983,8 +1021,8 @@ Hooks.on("updateActor", async (_actor: PersonaActor, changes) => {
 	if ((changes as any)?.system?.weeklyAvailability) {
 		(game.actors.contents as PersonaActor[])
 			.filter(x=> x.system.type =="pc"
-			&& x.sheet._state > 0)
-		.forEach(x=> x.sheet.render(true));
+				&& x.sheet._state > 0)
+			.forEach(x=> x.sheet.render(true));
 	}
 });
 
@@ -992,8 +1030,8 @@ Hooks.on("updateItem", async (_item: PersonaItem, changes) => {
 	if ((changes as any)?.system?.weeklyAvailability) {
 		(game.actors.contents as PersonaActor[])
 			.filter(x=> x.system.type =="pc"
-			&& x.sheet._state > 0)
-		.forEach(x=> x.sheet.render(true));
+				&& x.sheet._state > 0)
+			.forEach(x=> x.sheet.render(true));
 	}
 });
 

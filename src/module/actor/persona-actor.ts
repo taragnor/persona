@@ -344,7 +344,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				.find( link=> link.actor == this)
 				?.linkLevel ?? 0
 			}))
-		.sort ( (a,b) => b.highest - a.highest);
+			.sort ( (a,b) => b.highest - a.highest);
 		const highest = listOfLinkers[0];
 		if (!highest || highest.highest == 0) {
 			return {pc: null, linkLevel: 0};
@@ -368,17 +368,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get activityLinks() : ActivityLink[] {
 		if (this.system.type != "pc") return [];
 		return this.system.activities
-		.flatMap( aData => {
-			const activity = PersonaDB.allActivities().find(x=> x.id == aData.linkId);
-			if (!activity) return [];
-			const aLink : ActivityLink = {
-				strikes: aData.strikes ?? 0,
-				available: activity.isAvailable(this as PC),
-				currentProgress: aData.currentProgress,
-				activity,
-			}
-			return aLink;
-		});
+			.flatMap( aData => {
+				const activity = PersonaDB.allActivities().find(x=> x.id == aData.linkId);
+				if (!activity) return [];
+				const aLink : ActivityLink = {
+					strikes: aData.strikes ?? 0,
+					available: activity.isAvailable(this as PC),
+					currentProgress: aData.currentProgress,
+					activity,
+				}
+				return aLink;
+			});
 	}
 
 	get socialLinks() : SocialLinkData[] {
@@ -768,7 +768,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		} else {
 			basedmg = this.system.combat.wpndmg;
 		}
-			return basedmg;
+		return basedmg;
 	}
 
 	getBonusWpnDamage() : {low: ModifierList, high: ModifierList} {
@@ -908,7 +908,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						resval (cons.resistanceLevel!) < resval(baseResist))  {
 						resPenalty = Math.min(resPenalty, resval(cons.resistanceLevel!) - resval(baseResist))
 					}
-						break;
+					break;
 				default:
 					break;
 			}
@@ -1143,7 +1143,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		switch (this.system.type) {
 			case "pc":
 				return "PEER";
-				 case "npc":
+			case "npc":
 				return this.system.baseRelationship;
 			default:
 				return "NONE";
@@ -1201,21 +1201,21 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		} else if (progress <0) {
 			link.inspiration = 0;
 		}
-	const linkActor = game.actors.get(link.linkId);
-	if (progress < 0) {
-		// PersonaSounds.socialLinkReverse();
+		const linkActor = game.actors.get(link.linkId);
+		if (progress < 0) {
+			// PersonaSounds.socialLinkReverse();
+		}
+		switch (progress) {
+			case 1: PersonaSounds.socialBoostJingle(1);
+				break;
+			case 2: PersonaSounds.socialBoostJingle(2);
+				break;
+			case 3: PersonaSounds.socialBoostJingle(3);
+				break;
+		}
+		await this.update({"system.social": this.system.social});
+		await Logger.sendToChat(`${this.name} added ${progress} progress tokens to link ${linkActor?.name} (original Value: ${orig})` , this);
 	}
-	switch (progress) {
-		case 1: PersonaSounds.socialBoostJingle(1);
-			break;
-		case 2: PersonaSounds.socialBoostJingle(2);
-			break;
-		case 3: PersonaSounds.socialBoostJingle(3);
-			break;
-	}
-	await this.update({"system.social": this.system.social});
-	await Logger.sendToChat(`${this.name} added ${progress} progress tokens to link ${linkActor?.name} (original Value: ${orig})` , this);
-}
 
 	async activityProgress(this: PC, activityId :string, progress: number) {
 		const activityData = this.system.activities.find( x=> x.linkId == activityId);
@@ -1526,20 +1526,32 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.refreshHpStatus();
 	}
 
-	async raiseSocialSkill (this: PC, socialStat: SocialStat, amt: number) {
+	async alterSocialSkill (this: PC, socialStat: SocialStat, amt: number, logger = true) {
 		const newval = this.system.skills[socialStat] + amt;
 		const upgradeObj : Record<string, any> = {};
 		const skillLoc = `system.skills.${socialStat}`;
 		upgradeObj[skillLoc] = newval;
 		await this.update(upgradeObj);
+		if (logger) {
+			switch (amt) {
+				case 1: case 2: case 3:
+					await PersonaSounds.skillBoost(amt);
+			}
+			const verb = amt >= 0 ? "raised" : "lowered";
+			await Logger.sendToChat(`<b>${this.name}:</b> ${verb} ${socialStat} by ${amt}`, this);
+		}
 	}
 
-	async gainMoney(this: PC, amt: number) {
+	async gainMoney(this: PC, amt: number, log :boolean) {
 		if (amt > 200) {
 			throw new PersonaError("Can't get this much money at once!");
 		}
 		const resources = this.system.money + amt;
 		await this.update({ "system.money": resources});
+		if (log) {
+			await Logger.sendToChat(`${this.name} Gained ${amt} resource points`);
+			await PersonaSounds.ching();
+		}
 	}
 
 	async spendMoney(this: PC, amt: number) {
@@ -1601,11 +1613,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	getEffectFlag(flagId: string) : this["system"]["flags"][number] | undefined {
-		 return this.system.flags.find(flag=> flag.flagId == flagId.toLowerCase());
+		return this.system.flags.find(flag=> flag.flagId == flagId.toLowerCase());
 	}
-	 getFlagState(flagName: string) : boolean {
-		 return !!this.getEffectFlag(flagName);
-	 }
+	getFlagState(flagName: string) : boolean {
+		return !!this.getEffectFlag(flagName);
+	}
 
 	getFlagDuration(flagName: string) : StatusDuration | undefined {
 		return this.getEffectFlag(flagName)?.duration;
@@ -1815,21 +1827,21 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-static calcEscalationReq(role: Shadow["system"]["role"], power: Readonly<Power>, diff: number) : Power["system"]["reqEscalation"] {
-	if (power.system.tags.includes("basicatk"))
-		return 0;
-	switch (role) {
-		case "lurker":
-			diff -= 1;
-			break;
-		default:
-			diff += 1;
-			break;
+	static calcEscalationReq(role: Shadow["system"]["role"], power: Readonly<Power>, diff: number) : Power["system"]["reqEscalation"] {
+		if (power.system.tags.includes("basicatk"))
+			return 0;
+		switch (role) {
+			case "lurker":
+				diff -= 1;
+				break;
+			default:
+				diff += 1;
+				break;
+		}
+		if (diff >= 0) return 0;
+		let esc = Math.round(Math.abs(diff) / 2);
+		return Math.clamped(esc, 0, 6);
 	}
-	if (diff >= 0) return 0;
-	let esc = Math.round(Math.abs(diff) / 2);
-	return Math.clamped(esc, 0, 6);
-}
 
 
 }

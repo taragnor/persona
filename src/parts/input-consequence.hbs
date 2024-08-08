@@ -128,6 +128,16 @@
 	</div>
 	{{/if}}
 
+	{{#if (eqAny cons.cardAction "alter-student-skill")}}
+		<select name="{{strcat namePrefix 'studentSkill'}}">
+			{{selectOptions POWERSTUFF.STUDENT_SKILLS localize=true selected=cons.studentSkill}}
+		</select>
+	{{/if}}
+
+	{{#if (eqAny cons.cardAction "gain-money" "modify-progress-tokens" "alter-student-skill")}}
+	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+	{{/if}}
+
 	{{/if}}
 
 	<a class="del-consequence">

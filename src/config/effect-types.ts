@@ -107,6 +107,10 @@ export const SOCIAL_CARD_ACTION_LIST = [
 	"stop-execution",
 	"exec-event",
 	"inc-events",
+	"gain-money",
+	"modify-progress-tokens",
+	"alter-student-skill",
+
 ] as const;
 
 export type SocialCardAction = typeof SOCIAL_CARD_ACTION_LIST[number];
