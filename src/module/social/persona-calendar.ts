@@ -13,6 +13,23 @@ export class PersonaCalendar {
 		return window.SimpleCalendar.api.getCurrentWeekday().name;
 	}
 
+	static isStormy() : boolean {
+		const weather = this.getWeather();
+		switch (weather) {
+			case "cloudy":
+			case "sunny":
+			case "windy":
+				return false;
+			case "lightning":
+			case "rain":
+			case "snow":
+				return true;
+			default:
+				weather satisfies never;
+				return false;
+		}
+	}
+
 	static async nextDay(extraMsgs : string[] = []) {
 		if(!game.user.isGM) return;
 		const rolls: Roll[] = [];

@@ -1571,6 +1571,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		console.log(list.join("\n"));
 	}
 
+	async generateTreasure() {
+		const shadows = this.combatants
+					.contents.flatMap( x=> x?.actor ? [x.actor] : [] )
+		.filter (x => x.system.type == "shadow");
+		return await Metaverse.generateTreasure(shadows);
+	}
+
 } // end of class
 
 

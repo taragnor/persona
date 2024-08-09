@@ -1,5 +1,6 @@
 input.short{
 	width: 3em;
+	max-width: 3em;
 }
 
 div.short{
@@ -533,6 +534,7 @@ div.power-operations {
 
 input.short-number {
 	width: 1.5em;
+	max-width: 1.5em;
 }
 
 .encounter-column label {

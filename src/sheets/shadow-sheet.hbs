@@ -39,19 +39,20 @@
 					{{/each}}
 					<div>
 						<div class="flexrow">
-							<label> Money</label>
-							<input class="short-number" type="number" name="system.encounter.treasure.money" value="{{actor.system.encounter.treasure.money}}">
+							<label> Money </label>
+							<input class="short" type="number" name="system.encounter.treasure.moneyLow" value="{{actor.system.encounter.treasure.moneyLow}}">-
+							<input class="short" type="number" name="system.encounter.treasure.moneyHigh" value="{{actor.system.encounter.treasure.moneyHigh}}">
 						</div>
 						<div class="flexrow">
 							<label> Item 1</label>
-							<input class="short-number" type="number" name="system.encounter.treasure.item1prob" value="{{actor.system.encounter.treasure.item1prob}}">%
+							<input class="short" type="number" name="system.encounter.treasure.item1prob" value="{{actor.system.encounter.treasure.item1prob}}">%
 							<select name="system.encounter.treasure.item1">
 								{{selectOptions TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item1}}
 							</select>
 						</div>
 						<div class="flexrow">
 							<label> Item 2</label>
-							<input class="short-number" type="number" name="system.encounter.treasure.item2prob" value="{{actor.system.encounter.treasure.item2prob}}">%
+							<input class="short" type="number" name="system.encounter.treasure.item2prob" value="{{actor.system.encounter.treasure.item2prob}}">%
 							<select name="system.encounter.treasure.item2">
 								{{selectOptions TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item2}}
 							</select>

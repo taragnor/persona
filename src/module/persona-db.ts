@@ -1,3 +1,4 @@
+import { Shadow } from "./actor/persona-actor.js";
 import { InvItem } from "./item/persona-item.js";
 import { Consumable } from "./item/persona-item.js";
 import { PersonaError } from "./persona-error.js";
@@ -50,6 +51,12 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			PersonaError.softFail(`Can't get basic power ${name}`);
 		}
 		return power;
+	}
+
+	shadows(): Shadow[] {
+		const actors = this.allActors();
+		return actors.filter( act=> act.system.type == "shadow") as Shadow[];
+
 	}
 
 	tarotCards(): Tarot[] {
