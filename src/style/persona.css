@@ -525,3 +525,16 @@ div.power-operations {
 	border : 1px solid #000000;
 	margin: 10px;
 }
+
+.shadow-sheet .dungeon-section {
+	flex-grow: 10;
+	flex-shrink: 10;
+}
+
+input.short-number {
+	width: 1.5em;
+}
+
+.encounter-column label {
+	font-weight: bold;
+}

@@ -1,3 +1,5 @@
+import { InvItem } from "./item/persona-item.js";
+import { Consumable } from "./item/persona-item.js";
 import { PersonaError } from "./persona-error.js";
 import { Activity } from "./item/persona-item.js";
 import { NPC } from "./actor/persona-actor.js";
@@ -53,6 +55,18 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	tarotCards(): Tarot[] {
 		const actors = this.allActors();
 		return actors.filter( actor=> actor.system.type == "tarot") as Tarot[];
+	}
+
+	treasureItems(): (InvItem | Consumable)[] {
+		const items = this.allItems();
+		return  items.filter ( item =>
+			item.system.type == "consumable"
+			|| item.system.type == "item"
+		) as (InvItem | Consumable)[];
+	}
+
+	dungeonScenes(): Scene[] {
+		return game.scenes.contents;
 	}
 
 	allSocialCards() :SocialCard[] {

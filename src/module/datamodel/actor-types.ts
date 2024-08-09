@@ -237,6 +237,17 @@ export class ShadowSchema extends foundry.abstract.DataModel {
 		const ret = {
 			...BaseStuff.defineSchema(),
 			role: new txt({choices: SHADOW_ROLE_LIST, initial: "base"}),
+			encounter: new sch( {
+				rareShadow: new bool( {initial: false}),
+				dungeons: new arr( new id()),
+				treasure: new sch( {
+					money: new num( {initial: 0, integer: true}),
+					item1: new id(),
+					item1prob: new num( {initial: 0, integer: false}),
+					item2: new id(),
+					item2prob: new num( {initial: 0, integer: false}),
+				}),
+			}),
 			tarot: tarot(),
 			...sharedAbilities(),
 			combat: new sch({

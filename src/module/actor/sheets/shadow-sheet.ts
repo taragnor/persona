@@ -1,3 +1,4 @@
+import { PersonaDB } from "../../persona-db.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { SHADOW_ROLE } from "../../../config/shadow-types.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
@@ -20,6 +21,17 @@ export class ShadowSheet extends CombatantSheetBase {
 	override async getData() {
 		const data = await super.getData();
 		data.SHADOW_ROLE = SHADOW_ROLE;
+		data.TREASURE_LIST = Object.fromEntries(
+			PersonaDB.treasureItems()
+			.sort( (a, b) => a.name.localeCompare(b.name))
+			.map( x=> [x.id, x.name])
+		);
+		data.SCENE_LIST = Object.fromEntries(
+			PersonaDB.dungeonScenes()
+			.sort( (a, b) => a.name.localeCompare(b.name))
+			.map(x=> [x.id, x.name])
+		);
+
 		return data;
 
 	}
@@ -29,6 +41,8 @@ export class ShadowSheet extends CombatantSheetBase {
 		html.find('.addShadowPower').on("click", this.onAddPower.bind(this));
 		html.find('.addShadowFocus').on("click", this.onAddFocus.bind(this));
 		html.find(".recost-power").on("click", this.onRecostPower.bind(this));
+		html.find(".add-dungeon").on("click", this.addDungeon.bind(this));
+		html.find(".del-dungeon").on("click", this.deleteDungeon.bind(this));
 
 	}
 
@@ -51,6 +65,19 @@ export class ShadowSheet extends CombatantSheetBase {
 		const power = this.actor.powers.find(power => power.id == powerId);
 		if (!power) return;
 		this.actor.setDefaultShadowCosts(power);
+	}
+
+	async addDungeon(_event: JQuery.ClickEvent) {
+		const arr= this.actor.system.encounter.dungeons;
+		arr.push("");
+		await this.actor.update({"system.encounter.dungeons": arr});
+	}
+
+	async deleteDungeon(event: JQuery.ClickEvent) {
+		const index = Number(HTMLTools.getClosestData(event,"dungeonIndex"));
+		const arr= this.actor.system.encounter.dungeons;
+		arr.splice(index, 1);
+		await this.actor.update({"system.encounter.dungeons": arr});
 	}
 
 }

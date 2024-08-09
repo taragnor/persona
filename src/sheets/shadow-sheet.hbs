@@ -1,20 +1,65 @@
 <form class="shadow-sheet">
 	<header class="flexcol">
 		<div class="flexrow">
-				<img class="profile-img" src="{{actor.img}}" data-edit="img"/>
-			<input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
-		</div>
-		<textarea name="system.short_desc"> {{actor.system.short_desc}} </textarea>
-		<div class="flexrow">
-			<label>
-				{{localize "persona.tarot.cardname"}}
-			</label>
-			<select name="system.tarot">
-				{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
-			</select>
-			<select name="system.role">
-				{{selectOptions SHADOW_ROLE localize=true selected=actor.system.role}}
-			</select>
+			<img class="profile-img" src="{{actor.img}}" data-edit="img"/>
+			<div>
+				<input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
+				<div class="flexrow">
+					<label>
+						{{localize "persona.tarot.cardname"}}
+					</label>
+					<select name="system.tarot">
+						{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
+					</select>
+					<select name="system.role">
+						{{selectOptions SHADOW_ROLE localize=true selected=actor.system.role}}
+					</select>
+				</div>
+			</div>
+			<div class="flexcol encounter-column">
+				<div>
+					<label> Rare Shadow</label>
+					<input type="checkbox" name="system.encounter.rareShadow" {{checked actor.system.encounter.rareShadow}}>
+				</div>
+				<div class="dungeon-section">
+					<h3> Dungeons
+						<a class="add-dungeon">
+							<i class="fa-solid fa-plus"> </i>
+						</a>
+					</h3>
+					{{#each actor.system.encounter.dungeons as |dungeon i|}}
+					<div class="dungeon" data-dungeon-index="{{i}}">
+						<select name="system.encounter.dungeons.{{i}}">
+							{{selectOptions ../SCENE_LIST localize=false selected=dungeon}}
+						</select>
+						<a class="del-dungeon">
+							<i class="fa-solid fa-trash-can"></i>
+						</a>
+					</div>
+					{{/each}}
+					<div>
+						<div class="flexrow">
+							<label> Money</label>
+							<input class="short-number" type="number" name="system.encounter.treasure.money" value="{{actor.system.encounter.treasure.money}}">
+						</div>
+						<div class="flexrow">
+							<label> Item 1</label>
+							<input class="short-number" type="number" name="system.encounter.treasure.item1prob" value="{{actor.system.encounter.treasure.item1prob}}">%
+							<select name="system.encounter.treasure.item1">
+								{{selectOptions TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item1}}
+							</select>
+						</div>
+						<div class="flexrow">
+							<label> Item 2</label>
+							<input class="short-number" type="number" name="system.encounter.treasure.item2prob" value="{{actor.system.encounter.treasure.item2prob}}">%
+							<select name="system.encounter.treasure.item2">
+								{{selectOptions TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item2}}
+							</select>
+						</div>
+
+					</div>
+				</div>
+			</div>
 		</div>
 	</header>
 	<nav class="sheet-tabs tabs" data-group="primary">
