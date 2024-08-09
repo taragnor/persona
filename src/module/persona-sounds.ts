@@ -1,3 +1,4 @@
+import { waitUntilTrue } from "./utility/async-wait.js";
 import { Helpers } from "./utility/helpers.js";
 
 const SOUNDS = {
@@ -30,15 +31,23 @@ export type ValidSound = keyof typeof SOUNDS;
 
 export class PersonaSounds {
 
-	static async play(filename: string, volume = 1.0, recipients:string[] | false =[]) {
+	static async play(filename: string, volume = 1.0, recipients:string[] | false =[]) : Promise<void> {
 		if (!filename) return;
 		const socketOpts = (recipients && recipients.length) ? { recipients} : false;
 		const src  = `systems/persona/sound/${filename}`;
-		return await AudioHelper.play( {
+		try {
+		const sound = await AudioHelper.play( {
 			src,
 			volume,
 			loop: false
 		}, socketOpts);
+		if (sound) {
+				await waitUntilTrue( () => !sound.playing);
+		}
+		} catch (e) {
+			ui.notifications.error(`Trouble playing sound ${filename}`);
+
+		}
 	}
 
 	static isValidSound(s: string): s is ValidSound {

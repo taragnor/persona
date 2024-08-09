@@ -304,14 +304,7 @@ export class PersonaSFX {
 	}
 
 	static async play(snd: Parameters<typeof PersonaSounds["playBattleSound"]>[0], volume = 1.0) {
-		try {
-			const sound= await PersonaSounds.playBattleSound(snd, volume);
-			if (sound) {
-				await waitUntilTrue( () => !sound.playing);
-			}
-		} catch(e) {
-			ui.notifications.error("Trouble playing sounds ${snd}");
-		}
+		await PersonaSounds.playBattleSound(snd, volume);
 	}
 
 }

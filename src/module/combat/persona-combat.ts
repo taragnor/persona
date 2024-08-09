@@ -1580,6 +1580,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					.contents.flatMap( x=> x?.actor ? [x.actor] : [] );
 		const shadows= actors
 			.filter (x => x.system.type == "shadow");
+		if (shadows.some(x=> x.hp > 0)) {
+			return;
+		}
 		const pcs = actors.filter( x => x.system.type == "pc");
 		return await Metaverse.generateTreasure(shadows, pcs);
 	}
