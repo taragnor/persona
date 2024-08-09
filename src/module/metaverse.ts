@@ -73,30 +73,38 @@ export class Metaverse {
 			"boss",
 		];
 		let encounterList = PersonaDB.shadows()
-			.filter ( shadow=> shadow.system.encounter.dungeons.includes(sceneId)
+		.filter ( shadow=> shadow.system.encounter.dungeons.includes(sceneId)
 			&& !disAllowedRoles.includes(shadow.system.role)
-			);
-	if (!PersonaCalendar.isStormy()) {
-		encounterList = encounterList.filter( shadow => shadow.system.encounter.rareShadow != true);
-	}
+		);
+		if (!PersonaCalendar.isStormy()) {
+			encounterList = encounterList.filter( shadow => shadow.system.encounter.rareShadow != true);
+		}
 		if (encounterList.length == 0) {
 			throw new PersonaError(`Encounter List is empty for ${scene.name}`);
 		}
-		let encounterVal = 0;
+		let encounterSize = 0;
+		const sizeRoll = Math.floor((Math.random() * 10) +1);
+		switch (sizeRoll) {
+			case 1: case 2:
+				encounterSize = 3;
+				break;
+			case 10:
+				encounterSize = 5;
+				break;
+			default:
+				encounterSize = 4;
+				break;
+		}
 		const encounter : Shadow[] = [];
-		while (encounterVal < 5) {
-		const dice = Math.floor(Math.random() * encounterList.length);
+		while (encounterSize > 0) {
+			const dice = Math.floor(Math.random() * encounterList.length);
 			const pick = encounterList[dice];
 			if (!pick) {continue;}
 			if (pick.system.role == "elite") {
-				++encounterVal ;
+				--encounterSize ;
 			}
-			++encounterVal;
+			--encounterSize;
 			encounter.push(pick);
-			if (encounterVal >= 3) {
-				const abort = Math.floor(Math.random() * 10);
-				if (abort <= 2) break;
-			}
 		}
 		const speaker = ChatMessage.getSpeaker({alias: "Encounter Generator"});
 		const enchtml = encounter.map( shadow =>
