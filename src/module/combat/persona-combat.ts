@@ -1576,10 +1576,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	async generateTreasure() {
-		const shadows = this.combatants
-					.contents.flatMap( x=> x?.actor ? [x.actor] : [] )
-		.filter (x => x.system.type == "shadow");
-		return await Metaverse.generateTreasure(shadows);
+		const actors = this.combatants
+					.contents.flatMap( x=> x?.actor ? [x.actor] : [] );
+		const shadows= actors
+			.filter (x => x.system.type == "shadow");
+		const pcs = actors.filter( x => x.system.type == "pc");
+		return await Metaverse.generateTreasure(shadows, pcs);
 	}
 
 } // end of class

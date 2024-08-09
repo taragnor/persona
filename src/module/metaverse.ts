@@ -1,3 +1,4 @@
+import { shuffle } from "./utility/array-tools.js";
 import { InvItem } from "./item/persona-item.js";
 import { Consumable } from "./item/persona-item.js";
 import { ShadowRole } from "../config/shadow-types.js";
@@ -25,8 +26,8 @@ export class Metaverse {
 			.forEach( scene => scene.tokens.contents
 				.forEach( tok => {
 					try {
-					(tok.actor as PersonaActor | undefined)?.fullHeal();
-					PersonaCombat.onTrigger("enter-metaverse", tok.actor as PC | Shadow);
+						(tok.actor as PersonaActor | undefined)?.fullHeal();
+						PersonaCombat.onTrigger("enter-metaverse", tok.actor as PC | Shadow);
 					} catch (e) {console.log(e)}
 				})
 			);
@@ -48,7 +49,7 @@ export class Metaverse {
 						switch (actorType) {
 							case "pc":
 							case "shadow":
-							PersonaCombat.onTrigger("exit-metaverse", tok.actor as PC | Shadow);
+								PersonaCombat.onTrigger("exit-metaverse", tok.actor as PC | Shadow);
 								break;
 							case "npc":
 							case "tarot":
@@ -125,7 +126,7 @@ export class Metaverse {
 		return encounter;
 	}
 
-	static async generateTreasure(shadows: PersonaActor[]): Promise<(InvItem | Consumable) []> {
+	static async generateTreasure(shadows: PersonaActor[], players: PersonaActor[]): Promise<(InvItem | Consumable) []> {
 		let items : (InvItem | Consumable)[] = [];
 		let money = 0;
 		const considerItem= function (itemId: string, prob: number) {
@@ -166,6 +167,25 @@ export class Metaverse {
 			type: CONST.CHAT_MESSAGE_TYPES.WHISPER
 		};
 		await ChatMessage.create(messageData, {});
+		if (players.length > 0) {
+			const moneyShare = Math.floor(money / players.length)
+			const shareDist =
+				players.map( x=> ({
+					pc: x,
+					share: moneyShare
+				}));
+			shuffle(shareDist);
+			let moneyOverflow = money - (moneyShare * players.length);
+			for (const entry of shareDist) {
+				if (moneyOverflow > 0) {
+					entry.share += 1;
+					moneyOverflow--;
+				}
+				if (entry.pc.system.type == "pc") {
+					await (entry.pc as PC).gainMoney(entry.share, true);
+				}
+			}
+		}
 		return items;
 	}
 }

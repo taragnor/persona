@@ -1,3 +1,13 @@
+export function shuffle<T>(array: T[]) : void {
+  let currentIndex = array.length;
+  while (currentIndex != 0) {
+    let randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+};
+
 export function weightedChoice<T>( array: WeightedChoiceItem<T>[]) : T | undefined {
 	if (array.length == 0) return undefined;
 	const weightSum = array.reduce(
@@ -21,7 +31,7 @@ type WeightedChoiceItem<T>= {
 }
 
 //PURE TESTING FUNCTION no real usage
-function test() {
+function test_weightedChoice() {
 	const items : WeightedChoiceItem<"A" | "B" | "C">[] = [
 		{
 			item: "A", weight: 5
@@ -52,5 +62,6 @@ function test() {
 	console.log( `B: ${x["B"]}`);
 	console.log( `C: ${x["C"]}`);
 }
+
 
 

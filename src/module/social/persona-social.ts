@@ -1,6 +1,6 @@
 import { CardChoice } from "../../config/social-card-config.js";
 import { SocialCardActionEffect } from "../combat/combat-result.js";
-import { weightedChoice } from "../utility/weightedChoice.js";
+import { weightedChoice } from "../utility/array-tools.js";
 import { SocketPayload } from "../utility/socket-manager.js";
 import { PersonaCalendar } from "./persona-calendar.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
