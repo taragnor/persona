@@ -1,3 +1,4 @@
+import { Metaverse } from "../metaverse.js";
 import { PersonaError } from "../persona-error.js";
 import { HTMLTools } from "../utility/HTMLTools.js";
 import { SEARCH_ACTIONS } from "../../config/search-actions.js";
@@ -154,7 +155,14 @@ export class SearchMenu {
 		})
 		if (result != "none") {
 			this.suspend(true);
-			return;
+			if (result == "ambush" || result =="battle") {
+				try {
+					await Metaverse.generateEncounter();
+				} catch (e) {
+					console.log(e);
+				}
+			}
+			return msg;
 		}
 		return msg;
 	}

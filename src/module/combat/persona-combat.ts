@@ -66,6 +66,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const combatInit = await this.roomEffectsDialog(assumeSocial);
 		this.setSocialEncounter(combatInit.isSocialScene);
 		if (combatInit.isSocialScene) {
+			await Metaverse.exitMetaverse();
 			await PersonaSocial.startSocialCombatTurn(combatInit.disallowMetaverse, combatInit.advanceCalendar);
 		}
 		const mods = combatInit.roomModifiers;
@@ -91,7 +92,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	override async delete() : Promise<void> {
 		this.refreshActorSheets();
 		await this.generateTreasure();
-		await super.delete()
+		if (this.isSocial && await HTMLTools.confirmBox("Enter Meta", "Enter Metaverse?", true)) {
+			await Metaverse.enterMetaverse();
+		}
+		return await super.delete()
 	}
 
 	async refreshActorSheets(): Promise<void> {
