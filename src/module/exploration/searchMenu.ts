@@ -162,7 +162,7 @@ export class SearchMenu {
 					console.log(e);
 				}
 			}
-			return msg;
+			return;
 		}
 		return msg;
 	}
