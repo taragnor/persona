@@ -28,9 +28,10 @@
 
 	<div class="damage">
 		<label class="dmg-mult">
-			Extra Damage Mult
+			Damage
 		</label>
-		{{numberInput item.system.melee_extra_mult class="short" name="system.melee_extra_mult" step=1 min=0 max=100}}
+		{{numberInput item.system.damage.low class="short" name="system.damage.low" step=1 min=0 max=100}} /
+		{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=100}}
 	</div>
 	<hr>
 

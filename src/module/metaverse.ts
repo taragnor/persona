@@ -136,7 +136,7 @@ export class Metaverse {
 			const variability = moneyHigh - moneyLow;
 			if (variability >= 0) {
 				const bonus = Math.floor(Math.random() * (variability +1));
-				money += moneyLow + bonus;
+				money += Math.floor(moneyLow + bonus);
 			}
 			considerItem(treasure.item1, treasure.item1prob);
 			considerItem(treasure.item2, treasure.item2prob);
