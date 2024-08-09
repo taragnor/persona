@@ -497,7 +497,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	static async processAttackRoll( attacker: PToken, power: Usable, target: PToken, modifiers: ModifierList, rollType: AttackRollType) : Promise<AttackResult> {
 		const combat = game.combat as PersonaCombat | undefined;
-		const escalationDie = combat  ? combat.getEscalationDie(): 0;
 		const situation : Situation = {
 			target: target.actor.accessor,
 			usedPower: PersonaDB.getUniversalItemAccessor(power),
