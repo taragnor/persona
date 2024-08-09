@@ -90,6 +90,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	override async delete() : Promise<void> {
 		this.refreshActorSheets();
+		await this.generateTreasure();
 		await super.delete()
 	}
 

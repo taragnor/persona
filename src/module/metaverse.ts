@@ -124,7 +124,7 @@ export class Metaverse {
 			const item = PersonaDB.treasureItems().find(x=> x.id == itemId);
 			if (!item) {return;}
 			const rnd = Math.random();
-			if (rnd < prob / 100) {
+			if (rnd < (prob ?? 0) / 100) {
 				items.push(item);
 			}
 		};
