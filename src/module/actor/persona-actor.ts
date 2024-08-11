@@ -280,6 +280,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return false;
 		}
 		while (slotNum <= 3 && amt > 0) {
+			//TODO: look into why slot restore doesn't work properly, seems to leave 1 slot unfilled at each level
 			const maxSlots = this.getMaxSlotsAt(slotNum);
 			if (this.system.slots[slotNum] +1 <= maxSlots) {
 				this.system.slots[slotNum] = Math.min (this.system.slots[slotNum] + 1, maxSlots);
@@ -296,6 +297,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update( {"system.slots": this.system.slots});
 		return worked;
 	}
+
 
 	get socialBenefits() : SocialBenefit[] {
 		let focuses : Focus[] = [];
@@ -879,7 +881,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return "absorb";
 		}
 
-		const baseResist= this.system.combat.resists[type] ?? "normal";
+		const baseResist = this.system.combat.resists[type] ?? "normal";
 		// let resist = baseResist;
 		const effectChangers=  this.mainModifiers().filter( x=> x.getEffects(this)
 			.some(x=> x.consequences
@@ -1389,6 +1391,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			.filter(combat => combat.combatants.contents
 				.some( comb => comb.actor == this)
 			).flatMap( combat=> combat.getRoomEffects())
+	}
+
+	/** used for determining all out attack viability*/
+	isStanding() : boolean {
+		return (this.hp > 0 && !this.statuses.has("down"))
 	}
 
 	isCapableOfAction() : boolean {

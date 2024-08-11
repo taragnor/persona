@@ -1433,7 +1433,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const actor = comb?.actor as ValidAttackers | undefined;
 		if (!comb || !actor) return;
 		if (!actor.isCapableOfAction()) return;
-		const numOfAllies = combat.getAllies(comb).length;
+		const allies = combat.getAllies(comb)
+			.filter(comb=> comb.actor && comb.actor.isCapableOfAction() && !comb.actor.isDistracted());
+		const numOfAllies = allies.length;
 		if (numOfAllies < 1) {
 			ui.notifications.notify("Not enough allies to all out attack!");
 			return;
@@ -1696,10 +1698,10 @@ Hooks.on("onAddStatus", async function (token: PToken, status: StatusEffect)  {
 		const standingAllies = game.combat.combatants.contents.some(comb => {
 			if (!comb.token) return false;
 			const actor = comb.actor as ValidAttackers;
-			return actor.isCapableOfAction() && actor.getAllegiance() == allegiance;
+			return actor.isStanding() && actor.getAllegiance() == allegiance;
 		})
 		if (!standingAllies) {
-			const currentTurnCharacter =game.combat.combatant?.actor;
+			const currentTurnCharacter = game.combat.combatant?.actor;
 			if (!currentTurnCharacter) return;
 			const currentTurnType = currentTurnCharacter.system.type;
 			if (currentTurnType == "shadow") {
