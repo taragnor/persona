@@ -46,7 +46,6 @@ export class PersonaSounds {
 		}
 		} catch (e) {
 			ui.notifications.error(`Trouble playing sound ${filename}`);
-
 		}
 	}
 

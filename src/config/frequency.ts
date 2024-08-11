@@ -1,4 +1,5 @@
 export const FREQUENCY = {
+	0: "Never",
 	0.2: "Rare",
 	0.5: "Low",
 	1: "Normal",
