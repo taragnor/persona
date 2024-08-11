@@ -886,6 +886,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				.some( cons=>cons.type == "raise-resistance" || cons.type == "lower-resistance")));
 		const situation : Situation = {
 			user: this.accessor,
+			target: this.accessor,
 		};
 		const consequences = effectChangers.flatMap(
 			item => item.getEffects(this).flatMap(eff =>
@@ -1615,6 +1616,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	getEffectFlag(flagId: string) : this["system"]["flags"][number] | undefined {
 		return this.system.flags.find(flag=> flag.flagId == flagId.toLowerCase());
 	}
+
 	getFlagState(flagName: string) : boolean {
 		return !!this.getEffectFlag(flagName);
 	}
