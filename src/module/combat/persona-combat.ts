@@ -91,7 +91,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	override async delete() : Promise<void> {
 		this.refreshActorSheets();
-		await this.generateTreasure();
+		if (!this.isSocial) {
+			await this.generateTreasure();
+		}
 		if (this.isSocial && await HTMLTools.confirmBox("Enter Meta", "Enter Metaverse?", true)) {
 			await Metaverse.enterMetaverse();
 		}
