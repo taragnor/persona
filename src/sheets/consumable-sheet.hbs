@@ -1,8 +1,18 @@
-<form class="weapon-sheet">
-	<input type="text" class="borderless item-name" name="name" value="{{item.name}}" title="Conusmable Name" placeholder="Consumable Name">
-	<textarea name="system.description">
-		{{item.system.description}}
-	</textarea>
+<form class="consumable-sheet">
+	<header>
+		<div class="flexrow">
+			<div>
+				<img class="profile-img" src="{{item.img}}" data-edit="img"/>
+			</div>
+			<div>
+				<h2> Consumable</h2>
+				<input type="text" class="borderless item-name" name="name" value="{{item.name}}" title="Conusmable Name" placeholder="Consumable Name">
+				<textarea name="system.description">
+					{{item.system.description}}
+				</textarea>
+			</div>
+		</div>
+	</header>
 	<hr>
 
 	<div class="tags">
