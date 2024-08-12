@@ -3,46 +3,55 @@
 		Events
 	</h2>
 	<label> Number of Events</label>
-	Event: <input class="short" type="number" name="system.num_of_events" value="{{item.system.num_of_events}}">
+	<input class="short" type="number" name="system.num_of_events" value="{{item.system.num_of_events}}">
 
 	{{#each item.system.events as |event i|}}
 	<div class="card-event" data-event-index="{{i}}">
-		<h3>
-			<input class="event-name" type="string" name="system.events.{{i}}.name" value="{{event.name}}">
-			<a class="del-event">
-				<i class="fa-solid fa-trash-can"></i>
-			</a>
-		</h3>
-		<div class="placement">
+		<div class="flexrow">
 			<div>
-				<label> Frequency</label>
-				<select name="system.events.{{i}}.frequency">
-					{{selectOptions ../SOCIAL_DATA.FREQUENCY localize=false selected=event.frequency}}
-				</select>
+				{{filePicker type="image" target=(strcat "system.events." i ".img")}}
+				<input class="img" type="hidden" name="system.events.{{i}}.img" value="{{event.img}}">
+				<img class="event-img" src="{{event.img}}">
 			</div>
 			<div>
-				<label>
-					Starter
-				</label>
-				<input type="checkbox" name="system.events.{{i}}.placement.starter" {{checked event.placement.starter}}>
-			</div>
-			<div>
-				<label>
-					Middle
-				</label>
-				<input type="checkbox" name="system.events.{{i}}.placement.middle" {{checked event.placement.middle}}>
-			</div>
-			<div>
-				<label>
-					Finale
-				</label>
-				<input type="checkbox" name="system.events.{{i}}.placement.finale" {{checked event.placement.finale}}>
-			</div>
-			<div>
-				<label>
-					Label
-				</label>
-			<input type="string" name="system.events.{{i}}.label" value="{{event.label}}">
+				<h3>
+					<input class="event-name" type="string" name="system.events.{{i}}.name" value="{{event.name}}">
+					<a class="del-event">
+						<i class="fa-solid fa-trash-can"></i>
+					</a>
+				</h3>
+				<div class="placement">
+					<div>
+						<label> Frequency</label>
+						<select name="system.events.{{i}}.frequency">
+							{{selectOptions ../SOCIAL_DATA.FREQUENCY localize=false selected=event.frequency}}
+						</select>
+					</div>
+					<div>
+						<label>
+							Starter
+						</label>
+						<input type="checkbox" name="system.events.{{i}}.placement.starter" {{checked event.placement.starter}}>
+					</div>
+					<div>
+						<label>
+							Middle
+						</label>
+						<input type="checkbox" name="system.events.{{i}}.placement.middle" {{checked event.placement.middle}}>
+					</div>
+					<div>
+						<label>
+							Finale
+						</label>
+						<input type="checkbox" name="system.events.{{i}}.placement.finale" {{checked event.placement.finale}}>
+					</div>
+					<div>
+						<label>
+							Label
+						</label>
+						<input type="string" name="system.events.{{i}}.label" value="{{event.label}}">
+					</div>
+				</div>
 			</div>
 		</div>
 		<h5> Event Conditions
@@ -75,11 +84,13 @@
 
 	{{/each}}
 	<div>
+		{{#if (gt item.system.num_of_events 0)}}
 		<h4>Add Event
 			<a class="add-event">
 				<i class="fa-solid fa-plus"> </i>
 			</a>
 		</h4>
+		{{/if}}
 	</div>
 
 </section>

@@ -713,6 +713,7 @@ const power = PersonaDB.getBasicPower(powerName);
 	async addCardEvent(this: SocialCard) {
 		const newEv : CardEvent = {
 			text: "",
+			img: "",
 			placement: {
 				starter: true,
 				middle: true,

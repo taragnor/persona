@@ -545,3 +545,12 @@ header .flexrow * {
 	flex: 2;
 	flex-basis: 5%;
 }
+
+img.event-img {
+	min-width: 80px;
+	min-height: 80px;
+	max-width: 80px;
+	max-height: 80px;
+	height: 80px;
+	width: 80px;
+}
