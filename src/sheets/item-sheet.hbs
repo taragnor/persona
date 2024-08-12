@@ -1,5 +1,11 @@
 <form class="item-sheet">
-	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Power Name" placeholder="Power Name">
+	<header>
+		<div class="flexrow">
+			<div>
+				<img class="profile-img" src="{{item.img}}" data-edit="img"/>
+			</div>
+			<div>
+				<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Power Name" placeholder="Power Name">
 
 	<div class="equip-slot">
 		<label>
@@ -25,6 +31,8 @@
 	<b> Can't trade</b>
 	{{/if}}
 	{{/if}}
+			</div>
+	</header>
 
 	{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
 </form>

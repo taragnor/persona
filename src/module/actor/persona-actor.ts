@@ -866,6 +866,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return -999;
 		}
 	}
+
 	#getWeaknessesInCategory(this: PC | Shadow, defType: keyof PC["system"]["combat"]["defenses"]): number {
 		const damageTypes = ELEMENTAL_DEFENSE_LINK[defType];
 		const weaknesses= damageTypes.filter( dt => this.system.combat.resists[dt] == "weakness")
@@ -1691,7 +1692,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	isSpecialEvent(this:SocialLink, numberToCheck: number) : boolean {
 		if (this.system.type == "pc") return false;
-		const peices = (this.system.specialEvents ?? "").split(",", 20).map(x=> Number(x));
+		const peices = (this.system.specialEvents ?? "").split(",", 20).map(x=> Number(x?.trim() ?? ""));
 		return peices.includes(numberToCheck);
 	}
 

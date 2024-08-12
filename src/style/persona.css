@@ -540,3 +540,8 @@ input.short-number {
 .encounter-column label {
 	font-weight: bold;
 }
+
+header .flexrow * {
+	flex: 2;
+	flex-basis: 5%;
+}

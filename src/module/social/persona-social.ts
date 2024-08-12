@@ -198,7 +198,7 @@ export class PersonaSocial {
 			isSocial: true,
 			target: link? link.actor.accessor : undefined,
 		};
-		const preconditionPass=  PersonaDB.allSocialCards()
+		const preconditionPass =  PersonaDB.allSocialCards()
 			.filter( card => testPreconditions(card.system.conditions, situation, null));
 		if (!link) return preconditionPass;
 		else return  preconditionPass
@@ -226,8 +226,6 @@ export class PersonaSocial {
 			this.#drawnCardIds = this.#drawnCardIds
 				.filter(cardId=> !cards.find(card => card.id == cardId));
 		}
-		// const draw  = Math.floor(Math.random() * undrawn.length) ;
-		// const chosenCard =  undrawn[draw];
 		const chosenCard = weightedChoice(
 			undrawn.map( card=> ({
 				item: card,
@@ -243,7 +241,8 @@ export class PersonaSocial {
 		if (activity instanceof PersonaActor) {
 			const link = this.lookupSocialLink(actor, activity.id);
 			if (link.actor.isSpecialEvent(link.linkLevel+1)) {
-				//TODO: Finish later
+				const msg = await this.specialEvent(actor, activity)
+				return [msg];
 			}
 		}
 		const card = await this.#drawSocialCard(actor, activity);
@@ -273,6 +272,21 @@ export class PersonaSocial {
 		// return await this.#printSocialCard(card, actor, linkId, cameos, perk);
 	}
 
+
+	static async specialEvent(actor: PC, link: SocialLink) : Promise<ChatMessage> {
+		const html = `
+		<div>${actor.name} social action choice </div>
+		<h2> ${link.name} Special Event </h2>
+<div> GM should lower avaiability manually</div>
+		`;
+		const speaker = ChatMessage.getSpeaker();
+		const msgData : MessageData = {
+			speaker,
+			content: html,
+			type: CONST.CHAT_MESSAGE_TYPES.OOC
+		};
+		return await ChatMessage.create(msgData,{} );
+	}
 
 	static lookupLink(cardData: CardData): ActivityLink | SocialLinkData {
 		switch (cardData.card.system.cardType) {
@@ -891,6 +905,7 @@ export class PersonaSocial {
 				return;
 			case "exec-event":
 				this.forceEvent(eff.eventLabel);
+				this.addExtraEvent(1);
 				return;
 			case "inc-events":
 				this.addExtraEvent(eff.amount ?? 0);
