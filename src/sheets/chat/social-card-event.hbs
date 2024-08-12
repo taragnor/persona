@@ -1,23 +1,30 @@
 
-	<div class="social-card-event" data-event-index="{{eventIndex}}" data-card-id="{{cardData.card.id}}">
+<div class="social-card-event" data-event-index="{{eventIndex}}" data-card-id="{{cardData.card.id}}">
+	<div class="flexrow">
+		{{#if event.img}}
+		<div>
+			<img class="event-img" src="{{event.img}}">
+		</div>
+		{{/if}}
 		<h4>
 			Event {{eventNumber}}:
 			{{event.name}}
 		</h4>
-		<div class="event-text">
-			{{event.text}}
-		</div>
-		{{#each event.choices as |choice i|}}
-		{{#if (meetsConditions ../cardData choice.conditions)}}
-		<div class="event-choice" data-choice-index="{{i}}">
-			<h3>
-				Choice : {{choice.name}}
-			</h3>
-			<div class="choice-text">
-				{{newlineConversion choice.text}}
-			</div>
-			{{> "systems/persona/parts/social-card-roll.hbs" roll=choice.roll cardData=cardData situation=situation }}
-		</div>
-		{{/if}}
-		{{/each}}
 	</div>
+	<div class="event-text">
+		{{event.text}}
+	</div>
+	{{#each event.choices as |choice i|}}
+	{{#if (meetsConditions ../cardData choice.conditions)}}
+	<div class="event-choice" data-choice-index="{{i}}">
+		<h3>
+			Choice : {{choice.name}}
+		</h3>
+		<div class="choice-text">
+			{{newlineConversion choice.text}}
+		</div>
+		{{> "systems/persona/parts/social-card-roll.hbs" roll=choice.roll cardData=cardData situation=situation }}
+	</div>
+	{{/if}}
+	{{/each}}
+</div>
