@@ -125,9 +125,7 @@
 	{{/if}}
 	{{#if (eq cond.boolComparisonTarget "weather-is")}}
 	<label>Weather </label>
-	<select name="{{strcat namePrefix 'weatherComparison'}}">
-		{{selectOptions POWERSTUFF.WEATHER_TYPES localize=true selected=cond.weatherComparison}}
-	</select>
+		{{multicheck (strcat namePrefix 'weatherComparison') POWERSTUFF.WEATHER_TYPES checked=cond.weatherComparison localize=true}}
 	{{/if}}
 	{{#if (eq cond.boolComparisonTarget  "power-target-type-is")}}
 	<div>

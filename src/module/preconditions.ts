@@ -414,9 +414,13 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			return power.system.targets == condition.powerTargetType;
 		case "weather-is":
 			const weather = PersonaCalendar.getWeather();
-			return condition.weatherComparison == weather;
+			const comparison = condition.weatherComparison;
+			if (typeof comparison == "string") {
+				return condition.weatherComparison == weather;
+			}
+			return comparison[weather] ?? false;
 		case "weekday-is":
-			const weekday = PersonaCalendar.weekday();
+				const weekday = PersonaCalendar.weekday();
 			return condition.days[weekday];
 		case "social-target-is": {
 			if (!condition.socialLinkIdOrTarot) {

@@ -183,7 +183,7 @@ type FlagComparisonPC = {
 
 type WeatherComparison = {
 	boolComparisonTarget: "weather-is",
-	weatherComparison: WeatherType,
+	weatherComparison: WeatherType | Record<WeatherType, boolean>,
 };
 
 
