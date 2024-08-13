@@ -186,7 +186,6 @@ type WeatherComparison = {
 	weatherComparison: WeatherType | Record<WeatherType, boolean>,
 };
 
-
 const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"engaged",
 	"engaged-with",
