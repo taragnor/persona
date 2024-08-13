@@ -72,14 +72,14 @@ function numericComparison(condition: Precondition, situation: Situation, source
 	let testCase = ("num" in condition) ? condition.num : 0;
 	switch (condition.comparisonTarget) {
 		case "natural-roll":
-			if (situation.naturalAttackRoll == undefined)
+			if (situation.naturalRoll == undefined)
 				return false;
-			target = situation.naturalAttackRoll;
+			target = situation.naturalRoll;
 			break;
 		case "activation-roll":
 			if (!situation.activationRoll)
 				return false;
-			target = situation.naturalAttackRoll!;
+			target = situation.naturalRoll!;
 			break;
 		case "escalation":
 			const combat = game.combat as PersonaCombat | undefined;
@@ -519,8 +519,7 @@ export type Situation = {
 	usedPower ?: UniversalItemAccessor<Usable>;
 	usedSkill ?: SocialStat;
 	activeCombat ?: boolean ;
-	naturalAttackRoll ?: number;
-	naturalSkillRoll ?: number;
+	naturalRoll ?: number;
 	rollTotal ?: number;
 	criticalHit ?: boolean;
 	hit?: boolean;

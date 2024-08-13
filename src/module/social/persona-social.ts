@@ -363,7 +363,7 @@ export class PersonaSocial {
 			default:
 				card.system.cameoType satisfies never;
 		}
-		return targets.filter( x=> x != undefined 
+		return targets.filter( x=> x != undefined
 			&& x != actor
 			&& x.id != linkId) as SocialLink[];
 	}
@@ -779,7 +779,7 @@ export class PersonaSocial {
 					...cardData.situation,
 					hit: roll.total >= DC,
 					criticalHit: roll.total >= DC + 10,
-					naturalSkillRoll: roll.natural,
+					naturalRoll: roll.natural,
 					rollTotal: roll.total
 				};
 				await this.applyEffects(effectList, situation, cardData.actor);
@@ -790,10 +790,11 @@ export class PersonaSocial {
 					DC: this.getCardRollDC(cardData, cardRoll),
 					label: "Card Roll (Saving Throw)",
 				});
-				const situation : Situation = {
+					const situation : Situation = {
 					...cardData.situation,
 					hit: saveResult.success,
-					rollTotal: saveResult.total
+					rollTotal: saveResult.total,
+					naturalRoll: saveResult.natural
 				};
 				await this.applyEffects(effectList,situation, cardData.actor);
 				break;

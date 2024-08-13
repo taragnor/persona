@@ -527,7 +527,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.system.defense} ${defenseStr}`;
 		const roll = new RollBundle(rollName, r, attacker.actor.system.type == "pc", attackbonus, situation);
 		const naturalAttackRoll = roll.dice[0].total;
-		situation.naturalAttackRoll = naturalAttackRoll;
+		situation.naturalRoll = naturalAttackRoll;
 		const baseData = {
 			roll,
 			attacker: PersonaDB.getUniversalTokenAccessor(attacker) ,
@@ -547,7 +547,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						hit: false,
 						criticalHit: false,
 						...situation,
-						naturalAttackRoll,
+						naturalRoll: naturalAttackRoll,
 					},
 					...baseData,
 				};
@@ -563,7 +563,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						hit: false,
 						criticalHit: false,
 						...situation,
-						naturalAttackRoll,
+						naturalRoll: naturalAttackRoll,
 					},
 					...baseData,
 				};
@@ -577,7 +577,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					critBoost: 0,
 					situation: {
 						...situation,
-						naturalAttackRoll,
+						naturalRoll: naturalAttackRoll,
 						hit: true,
 						criticalHit: false,
 						isAbsorbed: true,
@@ -1343,7 +1343,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	/** returns pass or fail */
-	static async rollSave (actor: ValidAttackers, {DC, label, askForModifier, saveVersus, modifier} :SaveOptions) : Promise<{success:boolean, total:number}> {
+	static async rollSave (actor: ValidAttackers, {DC, label, askForModifier, saveVersus, modifier} :SaveOptions) : Promise<{success:boolean, total:number, natural: number}> {
 		const difficulty = DC ? DC : 11;
 		const mods = actor.getSaveBonus();
 		if (modifier) {
@@ -1365,6 +1365,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return {
 			success: roll.total >= difficulty,
 			total: roll.total,
+			natural: roll.natural,
 		}
 	};
 
