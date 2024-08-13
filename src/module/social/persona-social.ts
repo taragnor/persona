@@ -468,10 +468,13 @@ export class PersonaSocial {
 
 	static #getCardEvent(cardData:CardData) : CardEvent | undefined  {
 		if (cardData.forceEventLabel) {
-			const gotoEvent = cardData.card.system.events.find( x=> x.label  == cardData.forceEventLabel);
+			const gotoEvent = cardData.card.system.events.filter( x=> x.label  == cardData.forceEventLabel);
 			cardData.forceEventLabel = null;
-			if (gotoEvent) {
-				return gotoEvent;
+			if (gotoEvent.length > 0) {
+				return weightedChoice(gotoEvent.map( event => ({
+					item: event,
+					weight: event.frequency ?? 1
+				})));
 			}
 			PersonaError.softFail (`Can't find event label ${cardData.forceEventLabel} on card ${cardData.card.name}`);
 		}
