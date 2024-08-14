@@ -97,6 +97,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (this.isSocial && await HTMLTools.confirmBox("Enter Meta", "Enter Metaverse?", true)) {
 			await Metaverse.enterMetaverse();
 		}
+		await PersonaCombat.onTrigger("on-combat-end-global").emptyCheck()?.toMessage("Triggered Effect", undefined);
 		return await super.delete()
 	}
 
@@ -171,7 +172,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			type: CONST.CHAT_MESSAGE_TYPES.OOC,
 			rolls: rolls.map(r=> r.roll),
 			sound: rolls.length > 0 ? CONFIG.sounds.dice : undefined
-
 		};
 		ChatMessage.create(messageData, {});
 	}
@@ -761,13 +761,18 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 
-	static ProcessConsequences(power: ModifierContainer, situation: Situation, relevantConsequences: Consequence[], attacker: ValidAttackers, atkresult ?: Partial<AttackResult>)
+	static ProcessConsequences(power: ModifierContainer, situation: Situation, relevantConsequences: Consequence[], attacker: ValidAttackers | undefined, atkresult ?: Partial<AttackResult>)
 	: ConsequenceProcessed {
 		let escalationMod = 0;
 		let consequences : ConsequenceProcessed["consequences"]= [];
 		for (const cons of relevantConsequences) {
-			const newCons = this.processConsequence(power, situation, cons, attacker, atkresult);
-			consequences = consequences.concat(newCons);
+			if (attacker) {
+				const newCons = this.processConsequence(power, situation, cons, attacker, atkresult);
+				consequences = consequences.concat(newCons);
+			} else {
+				const newCons = this.processConsequence_simple( cons);
+				consequences = newCons;
+			}
 			if (cons.type == "escalationManipulation") {
 				escalationMod += (cons.amount ?? 0);
 			}
@@ -956,9 +961,18 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			...situation,
 			trigger
 		} ; //copy the object so it doesn't permanently change it
-		if (!actor) return result;
-		for (const trig of actor.triggers) {
-			for (const eff of trig.getEffects(actor)) {
+		let triggers : ModifierContainer[];
+		if (actor) {
+			triggers = actor.triggers;
+		} else {
+			const roomEffects= (game?.combat as PersonaCombat)?.getRoomEffects() ?? [];
+			triggers = [
+				...PersonaDB.getGlobalModifiers(), //testin only
+				...roomEffects,
+			];
+		}
+		for (const trig of triggers) {
+			for (const eff of trig.getEffects(actor ?? null)) {
 				if (!ModifierList.testPreconditions(eff.conditions, situation, trig)) { continue; }
 				const cons = this.ProcessConsequences(trig, situation, eff.consequences, actor)
 				result.escalationMod+= cons.escalationMod;
@@ -1668,7 +1682,6 @@ Hooks.on("combatStart", async (combat: PersonaCombat) => {
 });
 
 Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
-	await PersonaCombat.onTrigger("on-combat-end-global").emptyCheck()?.toMessage("Triggered Effect", undefined);
 	for (const combatant of combat.combatants) {
 		const actor = combatant.actor as ValidAttackers  | undefined;
 		if (!actor) continue;

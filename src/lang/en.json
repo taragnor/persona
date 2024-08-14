@@ -432,7 +432,7 @@
 	"persona.triggers.on-combat-start": "Combat Starts",
 	"persona.triggers.on-use-power": "Character uses a power",
 	"persona.triggers.on-combat-end": "Combat Ends (each combatant)",
-	"persona.triggers.on-combat-end-global": "Combat Ends(Run once)",
+	"persona.triggers.on-combat-end-global": "Combat Ends (Run once)",
 	"persona.triggers.enter-metaverse": "Enter the Metaverse",
 	"persona.triggers.exit-metaverse": "Exit the Metaverse",
 	"persona.triggers.start-turn": "Start Turn",

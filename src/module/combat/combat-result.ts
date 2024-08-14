@@ -41,6 +41,7 @@ export class CombatResult  {
 	escalationMod: number = 0;
 	costs: ActorChange<PC | Shadow>[] = [];
 	sounds: {sound: ValidSound, timing: "pre" | "post"}[] = [];
+	globalOtherEffects: OtherEffect[] = [];
 
 	constructor(atkResult ?: AttackResult) {
 		if (atkResult) {
@@ -55,6 +56,7 @@ export class CombatResult  {
 			escalationMod: this.escalationMod,
 			costs: this.costs,
 			tokenFlags: this.tokenFlags,
+			globalOtherEffects : this.globalOtherEffects,
 		}
 		const json = JSON.stringify(obj);
 		return json;
@@ -82,6 +84,7 @@ export class CombatResult  {
 		ret.escalationMod = x.escalationMod;
 		ret.costs = x.costs;
 		ret.tokenFlags = x.tokenFlags;
+		ret.globalOtherEffects = x.globalOtherEffects;
 		return ret;
 	}
 
@@ -89,36 +92,43 @@ export class CombatResult  {
 		this.sounds.push({sound, timing});
 	}
 
-	addEffect(atkResult: AttackResult | null, target: PC | Shadow, cons: Consequence, damageType ?: DamageType) {
-		const effect : ActorChange<PC | Shadow>= {
-			actor: target.accessor,
-			otherEffects: [],
-			hpchange: 0,
+	addEffect(atkResult: AttackResult | null, target: PC | Shadow | undefined, cons: Consequence, damageType ?: DamageType) {
+		let effect: ActorChange<PC | Shadow> | undefined = undefined;
+		if (target) {
+			effect = {
+				actor: target.accessor,
+				otherEffects: [],
+				hpchange: 0,
 				damageType: "none",
-			hpchangemult: 1,
-			addStatus: [],
-			removeStatus: [],
-			expendSlot: [0, 0, 0, 0],
-		};
+				hpchangemult: 1,
+				addStatus: [],
+				removeStatus: [],
+				expendSlot: [0, 0, 0, 0],
+			};
+		}
 		switch (cons.type) {
 			case "none":
 				break;
 			case "absorb":
+				if (!effect) break;
 				effect.hpchangemult = Math.abs(effect.hpchangemult) * -1;
 				break;
 			case "dmg-mult":
+				if (!effect) break;
 				effect.hpchangemult *= cons.amount ?? 0;
 				break;
 			case "dmg-high":
 			case "dmg-low":
 			case "dmg-allout-high":
 			case "dmg-allout-low":
-					if (damageType) {
-						effect.damageType = damageType;
-					}
+				if (!effect) break;
+				if (damageType) {
+					effect.damageType = damageType;
+				}
 				effect.hpchange = -(cons.amount ?? 0);
 				break;
 			case "addStatus": {
+				if (!effect) break;
 				let status_damage : number | undefined = undefined;
 				if (atkResult && cons.statusName == "burn") {
 					const power= PersonaDB.findItem(atkResult.power);
@@ -135,6 +145,7 @@ export class CombatResult  {
 				break;
 			}
 			case "removeStatus" : {
+				if (!effect) break;
 				const id = cons.statusName!;
 				effect.removeStatus.push({
 					id,
@@ -147,6 +158,7 @@ export class CombatResult  {
 			}
 
 			case "extraAttack":
+				if (!effect) break;
 				effect.otherEffects.push({
 					type: "extra-attack",
 					maxChain: cons.amount ?? 1,
@@ -155,6 +167,7 @@ export class CombatResult  {
 				break;
 
 			case "expend-slot": {
+				if (!effect) break;
 				const slot = cons.amount;
 				if (slot == undefined) {
 					const err= "Slot is undefined";
@@ -172,30 +185,37 @@ export class CombatResult  {
 			case "add-escalation":
 				break;
 			case "save-slot":
+				if (!effect) break;
 				effect.otherEffects.push({ type: "save-slot"});
 				break;
 			case "hp-loss":
+				if (!effect) break;
 				effect.otherEffects.push({ type: "hp-loss", amount: Math.floor(cons.amount ?? 0)});
 				break;
 			case "half-hp-cost":
+				if (!effect) break;
 				effect.otherEffects.push({type: "half-hp-cost"});
 				break;
 
 			case "revive":
+				if (!effect || !target) break;
 				effect.removeStatus.push({ id: "fading"});
 				effect.hpchange = Math.round(target.mhp * (cons.amount ?? 0.01));
 				effect.hpchangemult = 1;
 				break;
 			case "extraTurn":
-					effect.otherEffects.push({ type: "extraTurn"});
+					if (!effect) break;
+				effect.otherEffects.push({ type: "extraTurn"});
 				break;
 			case "expend-item":
-					effect.otherEffects.push({
-						type: 	"expend-item",
-						itemAcc: cons.itemAcc!
-					});
+					if (!effect) break;
+				effect.otherEffects.push({
+					type: 	"expend-item",
+					itemAcc: cons.itemAcc!
+				});
 				break;
 			case "recover-slot":
+				if (!effect) break;
 				effect.otherEffects.push( {
 					type: "recover-slot",
 					slot: cons.slotType!,
@@ -207,6 +227,7 @@ export class CombatResult  {
 			case "other-effect":
 				break;
 			case "set-flag":
+				if (!effect) break;
 				effect.otherEffects.push( {
 					type: "set-flag",
 					flagId: cons.flagId ?? "",
@@ -216,6 +237,7 @@ export class CombatResult  {
 				});
 				break;
 			case "inspiration-cost":
+				if (!effect) break;
 				effect.otherEffects.push( {
 					type: "Inspiration",
 					amount: cons.amount ?? 1,
@@ -223,12 +245,20 @@ export class CombatResult  {
 				});
 				break;
 			case "display-msg":
-				effect.otherEffects.push( {
-					type: "display-message",
-					msg: cons.msg ?? "",
-				});
+				if (effect) {
+					effect.otherEffects.push( {
+						type: "display-message",
+						msg: cons.msg ?? "",
+					});
+				} else {
+					this.globalOtherEffects.push({
+						type: "display-message",
+						msg: cons.msg ?? "",
+					});
+				}
 				break;
 			case "use-power":  {
+				if (!effect) break;
 				if (!cons.actorOwner) {
 					PersonaError.softFail("No actor owner for usepower ability");
 					break;
@@ -242,6 +272,7 @@ export class CombatResult  {
 				break;
 			}
 			case "scan":
+				if (!effect) break;
 				effect.otherEffects.push( {
 					type: cons.type,
 					level: cons.amount ?? 1,
@@ -249,6 +280,7 @@ export class CombatResult  {
 				break;
 			case "social-card-action":
 				//must be executed playerside as event execution is a player thing
+				if (!effect) break;
 				console.log("Executing social card action");
 				const otherEffect : SocialCardActionEffect = {
 					type: cons.type,
@@ -261,7 +293,7 @@ export class CombatResult  {
 				effect.otherEffects.push( otherEffect);
 				break;
 			case "dungeon-action":
-				effect.otherEffects.push( {
+				this.globalOtherEffects.push( {
 					type: cons.type,
 					dungeonAction: cons.dungeonAction,
 					amount: cons.amount,
@@ -272,6 +304,7 @@ export class CombatResult  {
 				throw new Error("Should be unreachable");
 			}
 		}
+		if (!effect) return;
 		if (atkResult == null) {
 			CombatResult.mergeChanges(this.costs, [effect]);
 			return;
@@ -346,7 +379,7 @@ export class CombatResult  {
 
 	emptyCheck() : this | undefined {
 		const attacks = Array.from(this.attacks.entries());
-		if (this.escalationMod == 0 && this.costs.length == 0 && attacks.length ==0) return undefined;
+		if (this.escalationMod == 0 && this.costs.length == 0 && attacks.length ==0 && this.globalOtherEffects.length == 0) return undefined;
 		return this;
 	}
 
@@ -355,11 +388,16 @@ export class CombatResult  {
 		let InitiatorToken : PToken | undefined;
 		if (!initiator) {
 			const speaker = ChatMessage.getSpeaker();
-			return await ChatMessage.create( {
+			const msg = await ChatMessage.create( {
 				speaker,
 				content: "Userless triggered action PLACEHOLDER" ,
-
 			});
+			try {
+				await this.autoApplyResult();
+			} catch (e) {
+				await msg.setFlag("persona", "atkResult", this.toJSON());
+			}
+			return msg;
 		}
 		if (game.combat) {
 			InitiatorToken = PersonaCombat.getPTokenFromActorAccessor(initiator.accessor);
@@ -397,16 +435,7 @@ export class CombatResult  {
 			await this.autoApplyResult();
 		} catch (e) {
 			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
-
 			}
-			// if (game.user.isGM) {
-			// 	await this.#apply();
-			// } else  {
-			// 	const gmTarget = game.users.find(x=> x.isGM && x.active);
-			// 	if (gmTarget)  {
-			// 		PersonaSockets.simpleSend("COMBAT_RESULT_APPLY", this.toJSON(), [gmTarget.id])
-			// 	} else {
-					// await chatMsg.setFlag("persona", "atkResult", this.toJSON());
 		return chatMsg;
 	}
 
@@ -445,6 +474,7 @@ export class CombatResult  {
 		await this.#processEscalationChange();
 		await this.#processAttacks();
 		await this.#applyCosts();
+		await this.#applyGlobalOtherEffects();
 	}
 
 	async #processEscalationChange() {
@@ -499,8 +529,20 @@ export class CombatResult  {
 				cost.hpchangemult *= 0.5;
 			}
 			await this.applyChange(cost);
+
 		}
 	}
+
+	async #applyGlobalOtherEffects() {
+		for (const eff of this.globalOtherEffects) {
+			switch (eff.type) {
+				case "dungeon-action":
+					await Metaverse.executeDungeonAction(eff);
+					break;
+			}
+		}
+	}
+
 
 	clearFlags() {
 		this.tokenFlags = [];
