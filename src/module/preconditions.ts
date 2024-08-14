@@ -238,6 +238,7 @@ function triggerComparison(condition: Triggered, situation: Situation, _source:O
 		case "on-damage":
 		case "start-turn":
 		case "end-turn":
+		case "on-combat-end-global":
 			return true;
 		default:
 			condition.trigger satisfies never;
@@ -494,7 +495,8 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 				return PersonaDB.findToken(situation.target.token) as PToken | undefined;
 			else return situation.target ? PersonaDB.findActor(situation.target): undefined;
 		case "user":
-			if (situation.user.token)
+			if (!situation.user) return undefined;
+			if (situation?.user?.token)
 				return PersonaDB.findToken(situation.user.token) as PToken | undefined;
 			else return PersonaDB.findActor(situation.user);
 		case "triggering-character":
@@ -506,15 +508,31 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 			}
 		default:
 			condTarget satisfies undefined;
-			if (situation.target?.token)
+			if (situation.target?.token) {
 				return PersonaDB.findToken(situation.target.token) as PToken | undefined;
-			else return PersonaDB.findActor(situation.user);
+			}
+			if (!situation.user) {
+				return undefined;
+			}
+			return PersonaDB.findActor(situation.user);
 	}
 }
 
-export type Situation = {
-	//more things can be added here all should be optional
+type UserSituation = {
 	user: UniversalActorAccessor<PC | Shadow>;
+};
+
+type TriggerSituation = {
+	trigger : Trigger,
+};
+
+export type Situation = SituationUniversal & (
+	TriggerSituation  |UserSituation);
+
+
+type SituationUniversal = {
+	//more things can be added here all should be optional
+	user?: UniversalActorAccessor<PC | Shadow>;
 	triggeringCharacter?:  UniversalActorAccessor<PC | Shadow>;
 	usedPower ?: UniversalItemAccessor<Usable>;
 	usedSkill ?: SocialStat;

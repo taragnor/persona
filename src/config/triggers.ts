@@ -6,6 +6,7 @@ export const COMBAT_TRIGGER_LIST = [
 	"on-combat-start",
 	"on-use-power",
 	"on-combat-end",
+	"on-combat-end-global",
 	"on-inflict-status",
 	"enter-metaverse",
 	"exit-metaverse",

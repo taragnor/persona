@@ -86,14 +86,20 @@ export class RollBundle {
 
 	async toModifiedMessage() : Promise<ChatMessage> {
 		const html = await this.getHTML();
-		const actor  = PersonaDB.findActor((this.modList as ResolvedMods).actor);
-		let token : PToken | undefined;
-		token = PersonaCombat.getPTokenFromActorAccessor(actor.accessor);
-		const speaker : ChatSpeakerObject = {
-			actor: token?.actor?.id ?? actor.id,
-			token: token?.id,
-			alias: token?.name,
-		};
+		const actorAcc = (this.modList as ResolvedMods).actor;
+		let speaker: ChatSpeakerObject;
+		if (actorAcc) {
+			const actor  = PersonaDB.findActor(actorAcc);
+			let token : PToken | undefined;
+			token = PersonaCombat.getPTokenFromActorAccessor(actor.accessor);
+			speaker = {
+				actor: token?.actor?.id ?? actor.id,
+				token: token?.id,
+				alias: token?.name,
+			};
+		} else {
+			speaker = {alias: "System"};
+		}
 		const msg = await ChatMessage.create({
 			speaker,
 			content: html,
@@ -127,7 +133,7 @@ type UnresolvedMods = {
 type ResolvedMods = {
 	mods: ResolvedModifierList,
 	modtotal : number,
-	actor: UniversalActorAccessor<PC | Shadow>,
+	actor: UniversalActorAccessor<PC | Shadow> | undefined,
 };
 
 Hooks.on("renderChatMessage", async (_msg, html) => {

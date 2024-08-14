@@ -351,10 +351,18 @@ export class CombatResult  {
 	}
 
 
-	async toMessage( effectName: string, initiator: PersonaActor) : Promise<ChatMessage> {
+	async toMessage( effectName: string, initiator: PersonaActor | undefined) : Promise<ChatMessage> {
 		let InitiatorToken : PToken | undefined;
+		if (!initiator) {
+			const speaker = ChatMessage.getSpeaker();
+			return await ChatMessage.create( {
+				speaker,
+				content: "Userless triggered action PLACEHOLDER" ,
+
+			});
+		}
 		if (game.combat) {
-			 InitiatorToken = PersonaCombat.getPTokenFromActorAccessor(initiator.accessor);
+			InitiatorToken = PersonaCombat.getPTokenFromActorAccessor(initiator.accessor);
 
 		}
 		const rolls : RollBundle[] = Array.from(this.attacks.entries()).map( ([attackResult]) => attackResult.roll);

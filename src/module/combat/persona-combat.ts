@@ -122,24 +122,25 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	async startCombatantTurn( combatant: Combatant<ValidAttackers> ){
-		const triggeringCharacter  = (combatant as Combatant<PersonaActor>)?.token?.actor?.accessor;
-		if (triggeringCharacter) {
-			for (const user of this.combatants) {
-				if (user.token.actor == undefined) {continue;}
-			const situation : Situation = {
-				triggeringCharacter,
-				user: user.token.actor.accessor,
-				activeCombat: true,
-			}
-			await PersonaCombat.execTrigger("start-turn", user.token.actor as ValidAttackers, situation);
-			}
-		}
 		const rolls :RollBundle[] = [];
 		const actor = combatant.actor;
 		if (!actor) return;
 		if (actor.isOwner && !game.user.isGM)
 			TurnAlert.alert();
 		if (!game.user.isGM) return;
+		const triggeringCharacter  = (combatant as Combatant<PersonaActor>)?.token?.actor?.accessor;
+		if (triggeringCharacter) {
+			for (const user of this.combatants) {
+				if (user.token.actor == undefined) {continue;}
+				const situation : Situation = {
+					triggeringCharacter,
+					user: user.token.actor.accessor,
+					activeCombat: true,
+				}
+				await PersonaCombat.execTrigger("start-turn", user.token.actor as ValidAttackers, situation);
+			}
+		}
+
 		for (const effect of actor.effects) {
 			if (effect.statuses.has("blocking")) {
 				await effect.delete();
@@ -719,6 +720,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 								ui.notifications.notify("Can't find Owner of Consequnece");
 								continue;
 							case "user":
+								if (!situation.user) {continue;}
 								const userToken  = this.getPTokenFromActorAccessor(situation.user);
 								effectiveTarget = userToken;
 								break;
@@ -807,7 +809,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				const combat =this.ensureCombatExists();
 				const userTokenAcc = combat.getToken(situation.user);
 				if (!userTokenAcc) {
-					PersonaError.softFail(`Can't calculate All out damage - no token for ${situation.user.actorId}`);
+					PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId ?? "Null user"}`);
 					break;
 				}
 				const userToken = PersonaDB.findToken(userTokenAcc);
@@ -823,7 +825,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				const combat =this.ensureCombatExists();
 				const userTokenAcc = combat.getToken(situation.user);
 				if (!userTokenAcc) {
-					PersonaError.softFail(`Can't calculate All out damage - no token for ${situation.user.actorId}`);
+					PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId}`);
 					break;
 				}
 				const userToken = PersonaDB.findToken(userTokenAcc);
@@ -938,18 +940,23 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		await triggerResult?.toMessage("Triggered Effect", actor);
 	}
 
-	static onTrigger(trigger: CombatTrigger, actor : ValidAttackers, situation ?: Situation) : CombatResult {
+	static onTrigger(trigger: CombatTrigger, actor ?: ValidAttackers, situation ?: Situation) : CombatResult {
 		const result = new CombatResult();
 		if (!situation) {
-			situation = {
-				user: actor.accessor,
-				target: actor.accessor
+			const newSit: Situation = {
+				trigger,
+			};
+			if (actor) {
+				newSit.user = actor.accessor;
+				newSit.target = actor.accessor;
 			}
+			situation = newSit;
 		}
 		situation = {
 			...situation,
 			trigger
 		} ; //copy the object so it doesn't permanently change it
+		if (!actor) return result;
 		for (const trig of actor.triggers) {
 			for (const eff of trig.getEffects(actor)) {
 				if (!ModifierList.testPreconditions(eff.conditions, situation, trig)) { continue; }
@@ -1151,6 +1158,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return combat.combatants.contents.flatMap( c=> c.actor ? [c.token as PToken] : []);
 			}
 			case "user": {
+				if (!situation.user) return [];
 				const token = this.getPTokenFromActorAccessor(situation.user);
 				if (token) return [token]; else return [];
 			}
@@ -1493,7 +1501,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return dmg;
 	}
 
-	getToken( acc: UniversalActorAccessor<ValidAttackers> ): UniversalTokenAccessor<PToken> | undefined {
+	getToken( acc: UniversalActorAccessor<ValidAttackers>  | undefined): UniversalTokenAccessor<PToken> | undefined {
+		if (!acc) return undefined;
 		if (acc.token) return acc.token;
 		const token = this.combatants.find( comb=> comb?.actor?.id == acc.actorId && comb.actor.token == undefined)?.token;
 		if (token) return PersonaDB.getUniversalTokenAccessor(token);
@@ -1659,6 +1668,7 @@ Hooks.on("combatStart", async (combat: PersonaCombat) => {
 });
 
 Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
+	await PersonaCombat.onTrigger("on-combat-end-global").emptyCheck()?.toMessage("Triggered Effect", undefined);
 	for (const combatant of combat.combatants) {
 		const actor = combatant.actor as ValidAttackers  | undefined;
 		if (!actor) continue;
