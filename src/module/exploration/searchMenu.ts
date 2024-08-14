@@ -24,6 +24,7 @@ export class SearchMenu {
 		isSecret: {initial: false, label: "Secret in Room"},
 		incTension: {initial: 1, label: "Increase Tension By"},
 		rollTension: {initial: true, label: "Roll Tension Pool after search"},
+		hazardOnTwo: {initial: false, label: "Hazard on 2s"},
 	} as const;
 
 	static options: SearchOptions<typeof this["template"]>;
@@ -81,14 +82,14 @@ export class SearchMenu {
 	static endSearch() {
 		let html = "";
 		const progress = this.progress;
-		if (this.progress.treasuresFound) {
+		if (progress.treasuresFound) {
 			html += `<div> Treasures Found  ${this.progress.treasuresFound}</div> `;
 			html += `<div> Treasures Left  ${this.options.treasureRemaining}</div> `;
 		}
-		if (this.progress.secretFound && this.options.isSecret){
+		if (progress.secretFound && this.options.isSecret){
 			html += "<div>Secret Found</div>";
 		}
-		if (this.progress.hazardFound && this.options.isHazard) {
+		if (progress.hazardFound && this.options.isHazard) {
 			html += "<div>Hazard Found</div>";
 		}
 
@@ -198,7 +199,7 @@ export class SearchMenu {
 					result = options.isHazard ? "hazard" : "nothing";
 					break;
 				case 2:
-					result = "nothing";
+					result = (options.hazardOnTwo && options.isHazard) ? "hazard" : "nothing";
 					break;
 				case 3:
 					result = options.isSecret ? "secret" : "nothing";
