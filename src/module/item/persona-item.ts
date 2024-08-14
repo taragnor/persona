@@ -5,7 +5,7 @@ import { testPreconditions } from "../preconditions.js";
 import { CardEffectLocation } from "./sheets/social-card-sheet.js";
 import { CardChoice } from "../../config/social-card-config.js";
 import { CardEvent } from "../../config/social-card-config.js";
-import { Consequence } from "../combat/combat-result.js";
+import { Consequence } from "../../config/consequence-types.js";
 import { Precondition } from "../../config/precondition-types.js";
 import { BASIC_PC_POWER_NAMES } from "../../config/basic-powers.js";
 import { BASIC_SHADOW_POWER_NAMES } from "../../config/basic-powers.js";

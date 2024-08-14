@@ -6,7 +6,7 @@ import { CardData } from "./social/persona-social.js";
 import { testPreconditions } from "./preconditions.js";
 import { Precondition } from "../config/precondition-types.js";
 import { Focus } from "./item/persona-item.js";
-import { SetFlagEffect } from "./combat/combat-result.js";
+import { SetFlagEffect } from "../config/consequence-types.js";
 import { SocialLinkData } from "./actor/persona-actor.js";
 import { UniversalActorAccessor } from "./utility/db-accessor.js";
 import { Power } from "./item/persona-item.js";

@@ -1,6 +1,3 @@
-import { ResistanceShiftEffect } from "./combat/combat-result.js";
-import { ResistStrength } from "../config/damage-types.js";
-import { ResistType } from "../config/damage-types.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaError } from "./persona-error.js";

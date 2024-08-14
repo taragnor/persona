@@ -1,6 +1,7 @@
+import { DUNGEON_ACTIONS } from "../../../config/effect-types.js";
 import { SOCIAL_CARD_ACTIONS } from "../../../config/effect-types.js";
 import { SHADOW_ROLE } from "../../../config/shadow-types.js";
-import { CONS_TARGETS } from "../../combat/combat-result.js";
+import { CONS_TARGETS } from "../../../config/consequence-types.js";
 import { DAYS_LIST } from "../../../config/days.js";
 import { RESIST_STRENGTHS } from "../../../config/damage-types.js";
 import { TAROT_DECK } from "../../../config/tarot.js";
@@ -102,6 +103,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			CONS_TARGETS,
 			SHADOW_ROLE,
 			SOCIAL_CARD_ACTIONS,
+			DUNGEON_ACTIONS,
 		};
 		return this._powerStuffBase;
 	}

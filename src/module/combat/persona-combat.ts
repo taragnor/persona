@@ -1,7 +1,7 @@
 import { POWER_TAGS } from "../../config/power-tags.js";
 import { PowerTag } from "../../config/power-tags.js";
 import { ConditionTarget } from "../../config/precondition-types.js";
-import { ConsTarget } from "./combat-result.js";
+import { ConsTarget } from "../../config/consequence-types.js";
 import { PersonaSocial } from "../social/persona-social.js"
 import { UniversalModifier } from "../item/persona-item.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
@@ -10,10 +10,10 @@ import { BASIC_PC_POWER_NAMES } from "../../config/basic-powers.js";
 import { PersonaSFX } from "./persona-sfx.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaSockets } from "../persona.js";
-import { StatusEffect } from "./combat-result.js";
+import { StatusEffect } from "../../config/consequence-types.js";
 import { DamageType } from "../../config/damage-types.js";
 import { ModifierContainer } from "../item/persona-item.js";
-import { Consequence } from "./combat-result.js";
+import { Consequence } from "../../config/consequence-types.js";
 import { TurnAlert } from "../utility/turnAlert.js";
 import { PersonaAE } from "../active-effect.js";
 import { EngagementChecker } from "./engageChecker.js";
@@ -33,7 +33,7 @@ import { RollBundle } from "../persona-roll.js";
 import { UniversalTokenAccessor } from "../utility/db-accessor.js";
 import { EngagementList } from "./engagementList.js";
 import { Logger } from "../utility/logger.js";
-import { OtherEffect } from "./combat-result.js";
+import { OtherEffect } from "../../config/consequence-types.js";
 import { Consumable } from "../item/persona-item.js";
 
 declare global {
@@ -893,6 +893,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "use-power":
 			case "social-card-action":
 			case "scan":
+			case "dungeon-action":
 				return [{applyTo,cons}];
 			case "expend-item":
 				if (cons.sourceItem) {

@@ -1,3 +1,4 @@
+import { TensionPoolResult } from "./tension-pool.js";
 import { Metaverse } from "../metaverse.js";
 import { PersonaError } from "../persona-error.js";
 import { HTMLTools } from "../utility/HTMLTools.js";
@@ -163,11 +164,11 @@ export class SearchMenu {
 					searcher.result satisfies never;
 			}
 		}
-		const [roll, result] = await this.tensionPool(guards, options);
+		const {roll, result} = await this.tensionPool(guards, options);
 		if (roll) {
 			rolls.push(roll);
 		}
-		const html  =await renderTemplate(`${HBS_TEMPLATES_DIR}/search-result.hbs`, {tensionRoll : roll? roll.dice[0].values: [], results, options, tensionResult: result} );
+		const html  = await renderTemplate(`${HBS_TEMPLATES_DIR}/search-result.hbs`, {tensionRoll : roll? roll.dice[0].values: [], results, options, tensionResult: result} );
 		const msg = ChatMessage.create({
 			speaker: {
 				scene: undefined,
@@ -181,13 +182,6 @@ export class SearchMenu {
 		})
 		if (result != "none") {
 			this.suspend(true);
-			if (result == "ambush" || result =="battle") {
-				try {
-					await Metaverse.generateEncounter();
-				} catch (e) {
-					console.log(e);
-				}
-			}
 			return;
 		}
 		return msg;
@@ -224,23 +218,21 @@ export class SearchMenu {
 			return [result, val];
 		}
 
-	static async tensionPool(guards: number, options: SearchOptions<typeof SearchMenu["template"]>) : Promise<[Roll | undefined, "ambush" | "battle" |"reaper" | "none"]> {
-		let tensionPool = TensionPool.amt;
+	static async tensionPool(guards: number, options: SearchOptions<typeof SearchMenu["template"]>) : Promise<TensionPoolResult> {
 		let inc = options.incTension;
 		while (inc--) {
-			tensionPool= await TensionPool.inc();
+			await TensionPool.inc();
 		}
-		if (!options.rollTension) return [undefined, "none"];
-		const roll = new Roll(`${tensionPool}d6`);
-		roll.roll();
-		if (!roll.dice.some(dice => dice.values.some(v => v == 1)))
-		return [roll, "none"];
-		if (TensionPool.isMaxed() && roll.dice[0].values.filter( v=> v == 1 || v== 2))  {
-			return [roll, "reaper"];
-		}
-		if (roll.dice[0].values.filter( x=> x == 1 || x== 2).length > guards)
-		return [roll, "ambush"];
-		return [roll, "battle"];
+		if (!options.rollTension) return TensionPool.nullResult();
+		return await TensionPool.roll(guards);
+		// if (!roll.dice.some(dice => dice.values.some(v => v == 1)))
+		// return [roll, "none"];
+		// if (TensionPool.isMaxed() && roll.dice[0].values.filter( v=> v == 1 || v== 2))  {
+		// 	return [roll, "reaper"];
+		// }
+		// if (roll.dice[0].values.filter( x=> x == 1 || x== 2).length > guards)
+		// return [roll, "ambush"];
+		// return [roll, "battle"];
 	}
 
 	static async searchOptionsDialog<T extends SearchPromptConfigObject>(optionsToFill: T) : Promise<SearchOptions<T>> {

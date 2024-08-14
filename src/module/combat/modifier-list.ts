@@ -1,5 +1,5 @@
 import { PersonaCombat } from "./persona-combat.js";
-import { Consequence } from "./combat-result.js";
+import { Consequence } from "../../config/consequence-types.js";
 import { ArrayCorrector } from "../item/persona-item.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { testPreconditions } from "../preconditions.js";

@@ -129,9 +129,9 @@
 	{{/if}}
 
 	{{#if (eqAny cons.cardAction "alter-student-skill")}}
-		<select name="{{strcat namePrefix 'studentSkill'}}">
-			{{selectOptions POWERSTUFF.STUDENT_SKILLS localize=true selected=cons.studentSkill}}
-		</select>
+	<select name="{{strcat namePrefix 'studentSkill'}}">
+		{{selectOptions POWERSTUFF.STUDENT_SKILLS localize=true selected=cons.studentSkill}}
+	</select>
 	{{/if}}
 
 	{{#if (eqAny cons.cardAction "gain-money" "modify-progress-tokens" "alter-student-skill" "inc-events")}}
@@ -140,6 +140,16 @@
 
 	{{/if}}
 
+	{{#if (eq cons.type "dungeon-action")}}
+	<select name="{{strcat namePrefix 'dungeonAction'}}">
+		{{selectOptions POWERSTUFF.DUNGEON_ACTIONS localize=true selected=cons.dungeonAction}}
+	</select>
+
+	{{#if (eqAny cons.dungeonAction "modify-tension-pool")}}
+	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+	{{/if}}
+
+	{{/if}}
 	<a class="del-consequence">
 		<i class="fa-solid fa-trash-can"></i>
 	</a>

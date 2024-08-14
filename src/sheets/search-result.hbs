@@ -1,19 +1,12 @@
-<h2> Search Rolls </h2>
-<section class= "search-result">
-	{{#each results as |res|}}
-	<div class="result">
-		{{res.searcher.name}} ({{res.declaration}}) : {{res.roll}} --- <b>{{res.result}}</b>
-	</div>
-	{{/each}}
-	<hr>
-	<b> Tension Pool:</b>
-	<div class="tension-rolls">
-		{{#each tensionRoll as |val|}}
-		<span>
-			{{val}}
-		</span>
+<div class="search-rolls">
+	<h2> Search Rolls </h2>
+	<section class= "search-result">
+		{{#each results as |res|}}
+		<div class="result">
+			{{res.searcher.name}} ({{res.declaration}}) : {{res.roll}} --- <b>{{res.result}}</b>
+		</div>
 		{{/each}}
-	</div>
-	<br>
-	{{tensionResult}}
-</section>
+		{{> "systems/persona/parts/tension-pool.hbs" tensionRoll=tensionRoll tensionResult=tensionResult}}
+	</section>
+</div>
+

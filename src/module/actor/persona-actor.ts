@@ -1,8 +1,7 @@
 import { ELEMENTAL_DEFENSE_LINK } from "../../config/damage-types.js";
-import { ResistType } from "../../config/damage-types.js";
 import { RESIST_STRENGTH_LIST } from "../../config/damage-types.js";
 import { Activity } from "../item/persona-item.js";
-import { RecoverSlotEffect } from "../combat/combat-result.js";
+import { RecoverSlotEffect } from "../../config/consequence-types.js";
 import { getActiveConsequences } from "../preconditions.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { Metaverse } from "../metaverse.js";
@@ -22,7 +21,7 @@ import { ModifierTarget } from "../../config/item-modifiers.js";
 import { StatusEffectId } from "../../config/status-effects.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { ResistStrength } from "../../config/damage-types.js";
-import { StatusEffect } from "../combat/combat-result.js";
+import { StatusEffect } from "../../config/consequence-types.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { Talent } from "../item/persona-item.js";
 import { Focus } from "../item/persona-item.js";

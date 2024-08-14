@@ -1,5 +1,5 @@
+import { SocialCardActionEffect } from "../../config/consequence-types.js";
 import { CardChoice } from "../../config/social-card-config.js";
-import { SocialCardActionEffect } from "../combat/combat-result.js";
 import { weightedChoice } from "../utility/array-tools.js";
 import { SocketPayload } from "../utility/socket-manager.js";
 import { PersonaCalendar } from "./persona-calendar.js";
@@ -24,8 +24,6 @@ import { PersonaItem } from "../item/persona-item.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../config/persona-settings.js";
 import { SocialCard } from "../item/persona-item.js";
-import { PersonaSounds } from "../persona-sounds.js";
-import { Logger } from "../utility/logger.js";
 import { PersonaError } from "../persona-error.js";
 import { PC } from "../actor/persona-actor.js";
 import { SocialStat } from "../../config/student-skills.js";

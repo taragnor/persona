@@ -1,31 +1,23 @@
-import { StudentSkill } from "../../config/student-skills.js";
+import { Metaverse } from "../metaverse.js";
+import { Consequence } from "../../config/consequence-types.js";
+import { SocialCardActionEffect } from "../../config/consequence-types.js";
+import { OtherEffect } from "../../config/consequence-types.js";
+import { StatusEffect } from "../../config/consequence-types.js";
 import { PersonaSocial } from "../social/persona-social.js";
-import { SocialCardAction } from "../../config/effect-types.js";
 import { ScanDialog } from "./scan-dialog.js";
-import { ConditionTarget } from "../../config/precondition-types.js";
-import { ConsequenceType } from "../../config/effect-types.js";
-import { CONDITION_TARGETS_LIST } from "../../config/precondition-types.js";
-import { ResistStrength } from "../../config/damage-types.js";
-import { ResistType } from "../../config/damage-types.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
-import { OtherConsequence } from "../datamodel/other-effects.js";
-import { ModifierTarget } from "../../config/item-modifiers.js";
 import { ValidSound } from "../persona-sounds.js";
 import { PersonaSFX } from "./persona-sfx.js";
 import { DamageType } from "../../config/damage-types.js";
 
 import { PersonaSockets } from "../persona.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
-import { SlotType } from "../../config/slot-types.js";
 import { PersonaError } from "../persona-error.js";
-import { STATUS_EFFECT_DURATIONS_LIST } from "../../config/status-effects.js";
-import { StatusDuration } from "../../config/status-effects.js";
 import { Situation } from "../preconditions.js";
 import { Usable } from "../item/persona-item.js";
 import { PC } from "../actor/persona-actor.js";
 import { PToken } from "./persona-combat.js";
-import { StatusEffectId } from "../../config/status-effects.js";
 import { RollBundle } from "../persona-roll.js";
 import { UniversalTokenAccessor } from "../utility/db-accessor.js";
 import { UniversalItemAccessor } from "../utility/db-accessor.js";
@@ -253,7 +245,7 @@ export class CombatResult  {
 				effect.otherEffects.push( {
 					type: cons.type,
 					level: cons.amount ?? 1,
-				})
+				});
 				break;
 			case "social-card-action":
 				//must be executed playerside as event execution is a player thing
@@ -267,6 +259,13 @@ export class CombatResult  {
 				};
 				PersonaSocial.execSocialCardAction(otherEffect);
 				effect.otherEffects.push( otherEffect);
+				break;
+			case "dungeon-action":
+				effect.otherEffects.push( {
+					type: cons.type,
+					dungeonAction: cons.dungeonAction,
+					amount: cons.amount,
+				});
 				break;
 			default: {
 				cons satisfies never;
@@ -568,7 +567,8 @@ export class CombatResult  {
 					break;
 				case "social-card-action":
 					break;
-
+				case "dungeon-action":
+					break;
 				default:
 					otherEffect satisfies never;
 			}
@@ -662,7 +662,9 @@ export class CombatResult  {
 					break; // done elsewhere for local player
 				case "social-card-action":
 					break;
-
+				case "dungeon-action":
+					await Metaverse.executeDungeonAction(otherEffect);
+					break;
 				default:
 					otherEffect satisfies never;
 			}
@@ -700,150 +702,6 @@ export interface ActorChange<T extends PersonaActor> {
 	removeStatus: Pick<StatusEffect, "id">[],
 	expendSlot: [number, number, number, number];
 }
-
-type ExpendOtherEffect= {
-	type: "expend-item";
-	itemAcc: UniversalItemAccessor<Usable>;
-}
-
-export type RecoverSlotEffect = {
-	type: "recover-slot",
-	slot: SlotType;
-	amt: number;
-}
-
-type SimpleOtherEffect = {
-	type: "save-slot" | "half-hp-cost" | "extraTurn";
-}
-
-export type SetFlagEffect = {
-	type: "set-flag",
-	flagId: string,
-	flagName: string,
-	state: boolean,
-	duration: StatusDuration
-}
-
-export type ResistanceShiftEffect= {
-	type: "raise-resistance" | "lower-resistance",
-	element: keyof PC["system"]["combat"]["resists"],
-	level: PC["system"]["combat"]["resists"]["physical"],
-	duration: StatusDuration,
-}
-
-export type InspirationChange = {
-	type: "Inspiration",
-	linkId: string,
-	amount: number,
-}
-
-export type DisplayMessage = {
-	type : "display-message",
-	msg: string,
-}
-
-export type HPLossEffect = {
-	type: "hp-loss",
-	amount: number,
-}
-
-export type ExtraAttackEffect = {
-	type : "extra-attack",
-	maxChain: number,
-	iterativePenalty: number,
-}
-
-type ExecPowerEffect = {
-	type: "use-power",
-	newAttacker: UniversalActorAccessor<PC | Shadow>
-	powerId: string,
-	target: ConsTarget,
-}
-
-type ScanEffect = {
-	type: "scan",
-	level: number,
-}
-
-export type SocialCardActionEffect = {
-	type: "social-card-action",
-	action: SocialCardAction,
-	eventLabel: string | undefined,
-	amount: number | undefined,
-	studentSkill : StudentSkill | undefined,
-	// socialActor: UniversalActorAccessor<PC | Shadow>,
-}
-
-export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionEffect;
-
-export type StatusEffect = {
-	id: StatusEffectId,
-	potency ?: number,
-	duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
-};
-
-
-export type Consequence =
-	{
-		applyToSelf ?: boolean,
-		applyTo ?: ConditionTarget
-		actorOwner ?: UniversalActorAccessor<PC | Shadow>,
-		sourceItem ?: UniversalItemAccessor<Usable>,
-	} & (
-		GenericConsequence | NonGenericConsequences
-
-	);
-
-type GenericConsequence = {
-	type: Exclude<ConsequenceType, NonGenericConsequences["type"]>,
-	amount ?: number,
-	iterativePenalty ?: number,
-	modifiedField ?: ModifierTarget,
-	statusName ?: StatusEffectId,
-	statusDuration ?: StatusDuration,
-	itemAcc ?: UniversalItemAccessor<Usable>,
-	slotType ?: SlotType,
-	id ?: string,
-	otherEffect ?: OtherConsequence,
-	flagName ?: string,
-	flagId ?: string,
-	flagState ?: boolean,
-	resistType ?: ResistType,
-	resistanceLevel ?: ResistStrength,
-	msg ?: string,
-}
-
-type NonGenericConsequences = UsePowerConsequence
-		| CardActionConsequence
-
-type CardActionConsequence = {
-	type: "social-card-action",
-	cardAction: SocialCardAction,
-	eventLabel?: string,
-	amount ?: number,
-	studentSkill?: StudentSkill,
-}
-
-
-type UsePowerConsequence = {
-	type: "use-power",
-	powerId: string,
-	target: ConsTarget,
-}
-
-export const CONS_TARGET_LIST = [
-	...CONDITION_TARGETS_LIST,
-	"all-enemies",
-	"all-allies",
-	"all-combatants",
-] as const;
-
-export type ConsTarget = typeof CONS_TARGET_LIST[number];
-
-export const CONS_TARGETS = Object.fromEntries(
-	CONS_TARGET_LIST.map( x=> [x, `persona.consequence.targets.${x}`])
-);
-
 
 export type AttackResult = {
 	result: "hit" | "miss" | "crit" | "reflect" | "block" | "absorb",

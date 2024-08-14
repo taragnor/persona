@@ -317,6 +317,7 @@
 	"persona.effecttypes.use-power": "Activate Power",
 	"persona.effecttypes.scan": "Scan Target",
 	"persona.effecttypes.social-card-action": "Social Card Action",
+	"persona.effecttypes.dungeon-action": "Dungeon Action",
 
 	"persona.effecttypes.social-card.stop-execution": "Stop Card Execution",
 	"persona.effecttypes.social-card.exec-event": "Execute Event",
@@ -324,6 +325,9 @@
 	"persona.effecttypes.social-card.gain-money": "Alter Money",
 	"persona.effecttypes.social-card.modify-progress-tokens": "Modify Progress Tokens",
 	"persona.effecttypes.social-card.alter-student-skill": "Alter Student Skill",
+	"persona.effecttypes.dungeonAction.roll-tension-pool": "Roll Tension Pool",
+	"persona.effecttypes.dungeonAction.modify-tension-pool": "Modify Tension Pool",
+
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",

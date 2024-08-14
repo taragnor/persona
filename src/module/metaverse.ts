@@ -1,3 +1,4 @@
+import { DungeonActionConsequence } from "../config/consequence-types.js";
 import { shuffle } from "./utility/array-tools.js";
 import { InvItem } from "./item/persona-item.js";
 import { Consumable } from "./item/persona-item.js";
@@ -187,6 +188,21 @@ export class Metaverse {
 			}
 		}
 		return items;
+	}
+
+	static async executeDungeonAction( action: DungeonActionConsequence) : Promise<void> {
+		switch (action.dungeonAction) {
+			case "roll-tension-pool":
+				const result = await TensionPool
+					.roll(66);
+				await result.print();
+				break;
+			case "modify-tension-pool":
+				await TensionPool.add(action.amount);
+				break;
+			default:
+				action.dungeonAction satisfies never;
+		}
 	}
 }
 

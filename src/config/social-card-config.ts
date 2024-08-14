@@ -1,4 +1,4 @@
-import { Consequence } from "../module/combat/combat-result.js";
+import { Consequence } from "./consequence-types.js";
 import { StudentSkillExt } from "./student-skills.js";
 import { Precondition } from "./precondition-types.js";
 import { SaveType } from "./save-types.js";

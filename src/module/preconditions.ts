@@ -27,7 +27,7 @@ import { Shadow } from "./actor/persona-actor.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { ConditionalEffect } from "./datamodel/power-dm.js";
-import { Consequence } from "./combat/combat-result.js";
+import { Consequence } from "../config/consequence-types.js";
 
 export function getActiveConsequences(condEffect: ConditionalEffect, situation: Situation, source: PowerContainer | null) : Consequence[] {
 	if (ArrayCorrector(condEffect.conditions).some(
