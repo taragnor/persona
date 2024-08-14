@@ -15,7 +15,18 @@ import { sleep } from "../utility/async-wait.js";
 
 export class SearchMenu {
 	private static dialog: Dialog | undefined = undefined;
-	static options: SearchOptions;
+
+	static template = {
+		"treasureRemaining": { initial: 3, label: "Treasures Remaining" },
+		stopOnHazard: {initial: false, label: "Stop On Hazard"},
+		isHazard: {initial: false, label: "Hazard in Room"},
+		isSecret: {initial: false, label: "Secret in Room"},
+		incTension: {initial: 1, label: "Increase Tension By"},
+		rollTension: {initial: true, label: "Roll Tension Pool after search"},
+	} as const;
+
+	static options: SearchOptions<typeof this["template"]>;
+
 	static progress = {
 		treasuresFound: 0,
 		hazardFound: false,
@@ -38,7 +49,7 @@ export class SearchMenu {
 			hazardFound: false,
 			secretFound: false
 		}
-		const searchOptions =  await this.searchOptionsDialog();
+		const searchOptions =  await this.searchOptionsDialog(this.template);
 		this.options = searchOptions;
 		await this.mainLoop();
 	}
@@ -52,9 +63,7 @@ export class SearchMenu {
 			this.data.suspended = false;
 			await this.mainLoop();
 		}
-
 	}
-
 
 	private static async mainLoop() {
 		while (true) {
@@ -95,7 +104,7 @@ export class SearchMenu {
 
 	}
 
-	static async execSearch(results : SearchResult[], options: SearchOptions) {
+	static async execSearch(results : SearchResult[], options: SearchOptions<typeof SearchMenu["template"]>) {
 		let rolls : Roll[] = [];
 		const guards = results.filter( x=> x.declaration == "guard").length;
 		exitFor: for (const searcher of results) {
@@ -120,6 +129,17 @@ export class SearchMenu {
 				case "guard":
 					searcher.result = "nothing";
 					break;
+				case "undecided":
+				case "leave":
+				case "other":
+					searcher.result = "nothing";
+					break;
+				case "disconnected":
+					searcher.result = undefined;
+					break;
+				default:
+					searcher.declaration satisfies never;
+
 			}
 			switch (searcher.result) {
 				case "hazard":
@@ -133,15 +153,21 @@ export class SearchMenu {
 					this.progress.secretFound = true;
 					break;
 				case "treasure":
-					options.treasureRemaining-= 1;
+					options.treasureRemaining -= 1;
 					this.progress.treasuresFound +=1 ;
 					break;
-
+				case undefined:
+				case "nothing":
+					break;
+				default:
+					searcher.result satisfies never;
 			}
 		}
-		const [roll, result] = await this.tensionPool(guards);
-		rolls.push(roll);
-		const html  =await renderTemplate(`${HBS_TEMPLATES_DIR}/search-result.hbs`, {tensionRoll : roll.dice[0].values, results, options, tensionResult: result} );
+		const [roll, result] = await this.tensionPool(guards, options);
+		if (roll) {
+			rolls.push(roll);
+		}
+		const html  =await renderTemplate(`${HBS_TEMPLATES_DIR}/search-result.hbs`, {tensionRoll : roll? roll.dice[0].values: [], results, options, tensionResult: result} );
 		const msg = ChatMessage.create({
 			speaker: {
 				scene: undefined,
@@ -167,7 +193,7 @@ export class SearchMenu {
 		return msg;
 	}
 
-		static async processSearchRoll(rolls: Roll[], options: SearchOptions) : Promise<[result: NonNullable<SearchResult["result"]>, rollamt: number]> {
+		static async processSearchRoll(rolls: Roll[], options: SearchOptions<typeof this["template"]>) : Promise<[result: NonNullable<SearchResult["result"]>, rollamt: number]> {
 			for (const roll of rolls) {
 				await roll.roll();
 			}
@@ -198,52 +224,89 @@ export class SearchMenu {
 			return [result, val];
 		}
 
-		static async tensionPool(guards: number) : Promise<[Roll, "ambush" | "battle" |"reaper" | "none"]> {
-			const tensionPool= await TensionPool.inc();
-
-			const roll = new Roll(`${tensionPool}d6`);
-			roll.roll();
-			if (!roll.dice.some(dice => dice.values.some(v => v == 1)))
-			return [roll, "none"];
-			if (TensionPool.isMaxed() && roll.dice[0].values.filter( v=> v == 1 || v== 2))  {
-				return [roll, "reaper"];
-			}
-			if (roll.dice[0].values.filter( x=> x == 1 || x== 2).length > guards)
-			return [roll, "ambush"];
-			return [roll, "battle"];
+	static async tensionPool(guards: number, options: SearchOptions<typeof SearchMenu["template"]>) : Promise<[Roll | undefined, "ambush" | "battle" |"reaper" | "none"]> {
+		let tensionPool = TensionPool.amt;
+		let inc = options.incTension;
+		while (inc--) {
+			tensionPool= await TensionPool.inc();
 		}
+		if (!options.rollTension) return [undefined, "none"];
+		const roll = new Roll(`${tensionPool}d6`);
+		roll.roll();
+		if (!roll.dice.some(dice => dice.values.some(v => v == 1)))
+		return [roll, "none"];
+		if (TensionPool.isMaxed() && roll.dice[0].values.filter( v=> v == 1 || v== 2))  {
+			return [roll, "reaper"];
+		}
+		if (roll.dice[0].values.filter( x=> x == 1 || x== 2).length > guards)
+		return [roll, "ambush"];
+		return [roll, "battle"];
+	}
 
-		static async searchOptionsDialog() : Promise<SearchOptions> {
-			let options = {
-				treasureRemaining: 3,
-				stopOnHazard: false,
-				isHazard: false,
-				isSecret: false
-			};
-			const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/dialogs/searchOptions.hbs`, {options});
-			return await new Promise( (res , rej) => {
-				const dialog = new Dialog( {
-					title: "Search Options",
-					content: html,
-					close: () => rej ("Closed"),
-					buttons: {
-						submit: {
-							label: "Submit",
-							callback: (html: string) => {
-								options.isSecret = $(html).find("#isSecret").is(":checked");
-								options.isHazard = $(html).find("#isHazard").is(":checked");
-								options.stopOnHazard = $(html).find("#stopOnHazard").is(":checked");
-								options.treasureRemaining = Number($(html).find(".treasureRemaining").val());
-								res(options);
-							}
+	static async searchOptionsDialog<T extends SearchPromptConfigObject>(optionsToFill: T) : Promise<SearchOptions<T>> {
+		let ret: Partial<SearchOptions<T>> = {};
+		const inputs: string[] = [];
+		for ( const [k,v] of Object.entries(optionsToFill)) {
+			(ret as any)[k] = v.initial;
+			switch(typeof v.initial) {
+				case "string":
+					inputs.push(`<label> ${v.label}</label> <input id="${k}" type="text" value="${v.initial}">`);
+					break;
+				case "number":
+					inputs.push(`<label> ${v.label}</label> <input id="${k}" type="number" value="${v.initial}">`);
+					break;
+				case "boolean":
+					inputs.push(`<label> ${v.label}</label> <input id="${k}" type="checkbox" ${v.initial ? "checked" : ""}> `);
+					break;
+				default:
+					PersonaError.softFail(`Unknown type ${typeof v.initial}`);
+					break;
+			}
+		}
+		const inputsDiv= inputs
+		.map(x=> `<div> ${x} </div>`)
+		.join("");
+		const html = `
+			<section class="search-options">
+		${inputsDiv}
+		</section>
+			`;
+		// const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/dialogs/searchOptions.hbs`, {options});
+		return await new Promise( (res , rej) => {
+			const dialog = new Dialog( {
+				title: "Search Options",
+				content: html,
+				close: () => rej ("Closed"),
+				buttons: {
+					submit: {
+						label: "Submit",
+						callback: (html: string) => {
+		for ( const [k,v] of Object.entries(optionsToFill)) {
+			switch(typeof v.initial) {
+				case "string":
+							(ret as any)[k] = String($(html).find(`#${k}`).val());
+					break;
+				case "number":
+							(ret as any)[k] = Number($(html).find(`#${k}`).val());
+					break;
+				case "boolean":
+							(ret as any)[k] = ($(html).find(`#${k}`).is(":checked"));
+					break;
+				default:
+					break;
+			}
+		}
+							console.log(ret);
+							res(ret as SearchOptions<T> );
 						}
 					}
-				}, {});
-				dialog.render(true);
-			});
-		}
+				}
+			}, {});
+			dialog.render(true);
+		});
+	}
 
-		static async openSearchWindow(options: SearchOptions): Promise<SearchResult[]> {
+		static async openSearchWindow(options: SearchOptions<typeof this["template"]>): Promise<SearchResult[]> {
 			if (!game.user.isGM){
 				ui.notifications.error("Only the GM can call this function");
 				return [];
@@ -445,19 +508,16 @@ export class SearchMenu {
 		}
 	});
 
-	type SearchOptions = {
-		treasureRemaining: number;
-		stopOnHazard?: boolean;
-		isHazard: boolean;
-		isSecret: boolean;
-	};
+	type SearchOptions<T extends SearchPromptConfigObject> =Writeable<{[K in keyof T]: T[K]["initial"] }>;
 
-	type SearchResult = {
-		searcher : SearcherData;
-		result?: "nothing" | "treasure" | "hazard" | "secret";
-		roll?: number;
-		declaration: SearchAction ;
-	};
+type Writeable<T> = { -readonly [P in keyof T]: T[P] }
+
+type SearchResult = {
+	searcher : SearcherData;
+	result?: "nothing" | "treasure" | "hazard" | "secret";
+	roll?: number;
+	declaration: SearchAction ;
+};
 
 	type SearcherData = {
 		actor: UniversalActorAccessor<PersonaActor>;
@@ -469,7 +529,7 @@ export class SearchMenu {
 	type SearchUpdate = {
 		suspended: boolean;
 		results: SearchResult[];
-		options: SearchOptions;
+		options: SearchOptions<typeof SearchMenu["template"]>;
 	};
 
 	Hooks.on("socketsReady", () => PersonaSockets.setHandler("SEARCH_UPDATE", (x: SearchUpdate) => SearchMenu.onSearchUpdate( x, false))
@@ -481,4 +541,12 @@ export class SearchMenu {
 			"SEARCH_UPDATE": SearchUpdate;
 		}
 	}
+
+
+
+	type SearchPromptConfigObject = Record< string,  {
+		initial: number | string | boolean,
+		label: string,
+	}>;
+
 

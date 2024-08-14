@@ -4,7 +4,8 @@ export const SEARCH_ACTIONS_LIST = [
 	"careful-search",
 	"guard",
 	"leave",
-	"disconnected"
+	"disconnected",
+	"other",
 ] as const;
 
 export type SearchAction = typeof SEARCH_ACTIONS_LIST[number];

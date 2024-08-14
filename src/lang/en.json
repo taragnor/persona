@@ -444,6 +444,7 @@
 	"persona.search.actions.guard": "Guard",
 	"persona.search.actions.leave": "Leave Room",
 	"persona.search.actions.disconnected": "Player Disconnected",
+	"persona.search.actions.other": "Other / Do Nothing",
 
 	"persona.social.perk-type.standard": "Tarot Perk (Target)",
 	"persona.social.perk-type.standard-or-cameo": "Tarot Perk (Target or Cameo)",

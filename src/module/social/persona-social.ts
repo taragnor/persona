@@ -473,7 +473,7 @@ export class PersonaSocial {
 			if (gotoEvent.length > 0) {
 				return weightedChoice(gotoEvent.map( event => ({
 					item: event,
-					weight: event.frequency ?? 1
+					weight: event.frequency > 0 ? (event.frequency ?? 1) : 1,
 				})));
 			}
 			PersonaError.softFail (`Can't find event label ${cardData.forceEventLabel} on card ${cardData.card.name}`);
