@@ -33,7 +33,6 @@ export const CONSQUENCELIST = [
 	"dungeon-action",
 ] as const;
 
-
 export type ConsequenceType = typeof CONSQUENCELIST[number];
 
 export  const MODIFIER_VARIABLES = [

@@ -24,6 +24,7 @@ export const MODIFIERLIST = [
 	"weakestSlot",
 	"pay",
 	"extraMaxPowers",
+	"initiative",
 ] as const;
 
 export const MODIFIERS_TABLE = Object.fromEntries(

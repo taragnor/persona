@@ -111,16 +111,26 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get combatInit(): number {
 		const situation = {user: (this as PC | Shadow).accessor};
+		const initBonus = this
+			.getBonuses("initiative")
+			.total(situation);
 		switch (this.system.type) {
 			case "npc":
 				return -5;
 			case "shadow": {
 				const actor = this as (Shadow | PC);
-				return  -50 + actor.getDefense("ref").total(situation) +(actor.getDefense("will").total(situation)* 0.01);
+				const SHADOW_INIT_PENALTY = -50;
+				return  SHADOW_INIT_PENALTY
+				+ initBonus
+				+ actor.getDefense("ref").total(situation)
+				+ (actor.getDefense("will").total(situation)* 0.01);
 			}
 			case "pc":{
 				const actor = this as (Shadow | PC);
-				return actor.getDefense("ref").total( {user:actor.accessor}) + 0.1 * actor.getDefense("fort").total(situation) + 0.01 * actor.getDefense("will").total(situation);
+				return initBonus
+				+ actor.getDefense("ref").total( {user:actor.accessor})
+				+ 0.1 * actor.getDefense("fort").total(situation)
+				+ 0.01 * actor.getDefense("will").total(situation);
 			}
 			case "tarot" :{
 				return -5;
