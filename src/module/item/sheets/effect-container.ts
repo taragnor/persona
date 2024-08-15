@@ -71,8 +71,8 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 		};
 
 		const DAMAGETYPESPLUS = {
-			...DAMAGETYPES,
 "by-power": 	"persona.damage.types.by-power",
+			...DAMAGETYPES,
 		};
 
 		this._powerStuffBase = {

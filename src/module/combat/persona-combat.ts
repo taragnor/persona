@@ -812,7 +812,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 							break;
 						}
 						const userToken = PersonaDB.findToken(userTokenAcc);
-						const dmg =PersonaCombat.calculateAllOutAttackDamage(userToken, situation);
+						const dmg = PersonaCombat.calculateAllOutAttackDamage(userToken, situation);
 						dmgAmt = cons.damageSubtype == "allout-high"? dmg.high: dmg.low;
 						break;
 					}
@@ -880,7 +880,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						type: cons.type,
 						amount: PersonaCombat.calculateAllOutAttackDamage(userToken, situation).high * (absorb ? -1 : damageMult),
 					}
-				}];
+					}];
 			}
 			case "none":
 			case "modifier":
