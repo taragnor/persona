@@ -411,7 +411,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		try {
 			const targets = await this.getTargets(attacker, power);
-			if (targets.some( target => target.actor.system.type == "shadow" ) ) {
+			if (targets.some( target => target.actor.system.type == "shadow" ) && power.system.targets != "self" ) {
 				this.ensureCombatExists();
 			}
 			this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
