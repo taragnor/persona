@@ -626,11 +626,6 @@ const power = PersonaDB.getBasicPower(powerName);
 		switch(subtype) {
 			case "weapon" : {
 				const dmg = user.wpnDamage();
-				// const bonus = this.system.damage;
-				// const modified = {
-				// 	low: dmg.low + bonus.low,
-				// 	high: dmg.high + bonus.high
-				// }
 				const mult = user.wpnMult() + (this.system.melee_extra_mult ?? 0);
 				const bonusDamage = user.getBonusWpnDamage();
 				return {
@@ -656,6 +651,18 @@ const power = PersonaDB.getBasicPower(powerName);
 			default:
 				return 0;
 		}
+	}
+
+	/** used for damage calculation estaimate for char sheet*/
+	getDamageMultSimple(this: ModifierContainer, user: PC |Shadow, situation: Situation = {user: user.accessor , usedPower: this.accessor, attacker: user.accessor} ) {
+		const multCons = this.getEffects(user)
+		.map ( eff => getActiveConsequences(eff,situation, this))
+		.flat()
+		.filter( x=> x.type == "dmg-mult" || ( x.type == "damage-new" && x.damageSubtype == "multiplier"));
+		return multCons.reduce( (acc, cons) =>
+			acc * ("amount" in cons ? cons.amount ?? 1: 1)
+,1);
+
 	}
 
 	getSourcedEffects(this: ModifierContainer, sourceActor: PC | Shadow): {source: ModifierContainer, effects: ConditionalEffect[]} {

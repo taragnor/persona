@@ -1,3 +1,5 @@
+import { DamageSubtype } from "./effect-types.js";
+import { DamageType } from "./damage-types.js";
 import { ModifierVariable } from "./effect-types.js";
 import { ModifierConsType } from "./effect-types.js";
 import { DungeonAction } from "./effect-types.js";
@@ -136,7 +138,37 @@ type GenericConsequence = {
 type NonGenericConsequences = UsePowerConsequence
 	| CardActionConsequence
 	| DungeonActionConsequence
-	| ModifierConsequence;
+	| ModifierConsequence
+	| DamageConsequence
+;
+
+type DamageConsequenceShared = {
+	type : "damage-new",
+	damageSubtype: DamageSubtype
+	amount ?: number; //only added later for effects
+};
+
+type DamageConsequence = DamageConsequenceShared & (
+	SimpleDamageCons
+	| ConstantDamageCons
+	| DamageMultiplierCons
+);
+
+type SimpleDamageCons = {
+	damageSubtype: "high" | "low" | "allout-high" | "allout-low",
+	damageType: DamageType | "by-power",
+}
+
+type ConstantDamageCons = {
+	damageSubtype: "constant";
+	damageType: DamageType | "by-power",
+	amount: number;
+}
+
+type DamageMultiplierCons = {
+	damageSubtype: "multiplier";
+	amount: number;
+}
 
 type ModifierConsequence = {
 	type: "modifier-new",

@@ -38,7 +38,9 @@ const evenDmg :ConditionalEffect = {
 	],
 	consequences: [
 		{
-			type: "dmg-high"
+			type: "damage-new",
+			damageSubtype: "high",
+			damageType: "by-power",
 		}
 	]
 }
@@ -58,7 +60,9 @@ const oddDmg :ConditionalEffect = {
 	],
 	consequences: [
 		{
-			type: "dmg-low"
+			type: "damage-new",
+			damageSubtype: "low",
+			damageType: "by-power",
 		}
 	]
 }

@@ -91,8 +91,9 @@ export class PersonaHandleBarsHelpers {
 					return "0/0";
 				case "pc": case"shadow":
 					const combatant = actor as PC | Shadow;
-					const low = usable.getDamage(combatant, "low");
-					const high = usable.getDamage(combatant, "high");
+					const mult = usable.getDamageMultSimple(combatant);
+					const low = usable.getDamage(combatant, "low") * mult;
+					const high = usable.getDamage(combatant, "high") * mult;
 					return low + " / " + high;
 				default:
 					actor.system satisfies never;

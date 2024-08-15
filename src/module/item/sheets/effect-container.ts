@@ -1,3 +1,4 @@
+import { DAMAGE_SUBTYPES } from "../../../config/effect-types.js";
 import { MODIFIER_VARIABLES } from "../../../config/effect-types.js";
 import { MODIFIER_CONS_TYPES } from "../../../config/effect-types.js";
 import { DUNGEON_ACTIONS } from "../../../config/effect-types.js";
@@ -108,6 +109,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			DUNGEON_ACTIONS,
 			MODIFIER_CONS_TYPES,
 			MODIFIER_VARIABLES,
+			DAMAGE_SUBTYPES,
 		};
 		return this._powerStuffBase;
 	}

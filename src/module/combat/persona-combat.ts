@@ -789,6 +789,46 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		damageMult *= situation.resisted ? 0.5 : 1;
 		const applyTo = cons.applyTo ? cons.applyTo : (applyToSelf ? "owner" : "target");
 		switch (cons.type) {
+			case "damage-new":
+				let dmgAmt : number = 0;
+				switch (cons.damageSubtype) {
+					case "multiplier":
+						return [{
+							applyTo,
+							cons
+						}];
+					case "high":
+						dmgAmt = power.getDamage(attacker, "high", situation);
+						break;
+					case "low":
+						dmgAmt = power.getDamage(attacker, "low", situation);
+						break;
+					case "allout-low":
+					case "allout-high": {
+						const combat =this.ensureCombatExists();
+						const userTokenAcc = combat.getToken(situation.user);
+						if (!userTokenAcc) {
+							PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId ?? "Null user"}`);
+							break;
+						}
+						const userToken = PersonaDB.findToken(userTokenAcc);
+						const dmg =PersonaCombat.calculateAllOutAttackDamage(userToken, situation);
+						dmgAmt = cons.damageSubtype == "allout-high"? dmg.high: dmg.low;
+						break;
+					}
+					case "constant":
+						dmgAmt = cons.amount;
+						break;
+					default:
+						cons satisfies never;
+				}
+				return [{
+					applyTo,
+					cons: {
+						...cons,
+						amount: dmgAmt * (absorb ? -1 : damageMult),
+					}
+				}];
 			case "dmg-mult":
 				return [{
 					applyTo,
@@ -864,6 +904,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "dmg-allout-low":
 			case "dmg-allout-high":
 			case "dmg-mult":
+			case "damage-new":
 				PersonaError.softFail(`Process Consequnec Simple does not handle ${cons.type}`);
 				return [];
 			case "hp-loss":

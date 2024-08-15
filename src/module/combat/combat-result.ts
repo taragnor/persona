@@ -113,6 +113,28 @@ export class CombatResult  {
 				if (!effect) break;
 				effect.hpchangemult = Math.abs(effect.hpchangemult) * -1;
 				break;
+			case "damage-new": {
+				if (!effect) break;
+				switch (cons.damageSubtype) {
+					case "multiplier":
+						effect.hpchangemult *= cons.amount ?? 0;
+						break;
+					case "high":
+					case "low":
+					case "allout-low":
+					case "allout-high":
+					case "constant":
+						if (cons.damageType != "by-power") {
+							effect.damageType = cons.damageType;
+						}
+						effect.hpchange = -(cons.amount ?? 0);
+						break;
+					default:
+						cons satisfies never;
+						break;
+				}
+				break;
+			}
 			case "dmg-mult":
 				if (!effect) break;
 				effect.hpchangemult *= cons.amount ?? 0;

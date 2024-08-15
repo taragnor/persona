@@ -1,13 +1,8 @@
 export const CONSQUENCELIST = [
 	"none",
 	"absorb",
-	"hp-loss",
 	"modifier-new",
-	"dmg-low",
-	"dmg-high",
-	"dmg-allout-low",
-	"dmg-allout-high",
-	"dmg-mult",
+	"damage-new",
 	"addStatus",
 	"removeStatus",
 	"escalationManipulation",
@@ -32,6 +27,12 @@ export const CONSQUENCELIST = [
 	"dungeon-action",
 	"modifier", // deprecated
 	"add-escalation", // deprecated
+	"dmg-low", //deprecated
+	"dmg-high", //deprecated
+	"dmg-allout-low", //deprecated
+	"dmg-allout-high", //deprecated
+	"dmg-mult", //deprecated
+	"hp-loss", //deprecated
 ] as const;
 
 export type ConsequenceType = typeof CONSQUENCELIST[number];
@@ -145,4 +146,20 @@ export const MODIFIER_CONS_TYPE_LIST =  [
 
 export const MODIFIER_CONS_TYPES = Object.fromEntries( 
 	MODIFIER_CONS_TYPE_LIST.map( x=> [x, `persona.effecttypes.modifierType.${x}`])
+);
+
+export const DAMAGE_SUBTYPE_LIST = [
+	"high",
+	"low",
+	"allout-high",
+	"allout-low",
+	"constant",
+	"multiplier",
+] as const;
+
+export type DamageSubtype = typeof DAMAGE_SUBTYPE_LIST[number];
+
+
+export const DAMAGE_SUBTYPES = Object.fromEntries( 
+	DAMAGE_SUBTYPE_LIST.map( x=> [x, `persona.damage-subtype.${x}`])
 );
