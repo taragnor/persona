@@ -79,10 +79,14 @@ type NumericComparisonBase = {
 	comparisonTarget : NumericComparisonTarget,
 }
 
-type NumericComparisonPC = GenericNumericComparison | ResistanceComparison | TargettedNumericComparison;
+type NumericComparisonPC = GenericNumericComparison 
+	| ResistanceComparison
+	| TargettedNumericComparison
+	| ClockNumericComparison
+;
 
 type GenericNumericComparison = NumericComparisonBase & {
-	comparisonTarget : Exclude<NumericComparisonTarget, "resistance-level" | "health-percentage">,
+	comparisonTarget : Exclude<NumericComparisonTarget, "resistance-level" | "health-percentage" | "clock-comparison" >,
 	studentSkill ?: SocialStat;
 	num ?: number,
 	socialLinkIdOrTarot ?: TarotCard | string;
@@ -99,6 +103,11 @@ type TargettedNumericComparison = NumericComparisonBase & {
 	comparisonTarget: "health-percentage",
 	conditionTarget: ConditionTarget,
 	num : number
+}
+
+type ClockNumericComparison = NumericComparisonBase & {
+	comparisonTarget:"clock-comparison",
+	clockId: string,
 }
 
 export type BooleanComparisonPC = {
@@ -233,6 +242,7 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"has-resources",
 	"resistance-level",
 	"health-percentage",
+	"clock-comparison",
 ] as const;
 
 export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];

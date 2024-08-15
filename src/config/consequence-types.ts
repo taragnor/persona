@@ -198,9 +198,23 @@ type CardActionConsequence = {
 	studentSkill?: StudentSkill,
 }
 
+
 export type DungeonActionConsequence = {
 	type: "dungeon-action",
 	dungeonAction: DungeonAction,
+} & (
+	GenericDungeonAction
+	| ClockDungeonActionCons
+);
+
+type GenericDungeonAction = {
+	amount: number,
+	dungeonAction: "roll-tension-pool" | "modify-tension-pool",
+}
+
+type ClockDungeonActionCons = {
+	dungeonAction: "modify-clock",
+	clockId: string,
 	amount: number,
 }
 

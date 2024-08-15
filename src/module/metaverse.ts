@@ -1,3 +1,4 @@
+import { ProgressClock } from "./utility/progress-clock.js";
 import { DungeonActionConsequence } from "../config/consequence-types.js";
 import { shuffle } from "./utility/array-tools.js";
 import { InvItem } from "./item/persona-item.js";
@@ -200,8 +201,16 @@ export class Metaverse {
 			case "modify-tension-pool":
 				await TensionPool.add(action.amount);
 				break;
+			case "modify-clock":
+				const clock = ProgressClock.getClock(action.clockId);
+				if (!clock) {
+					PersonaError.softFail(`Can't find clock id ${action.clockId}`);
+					return;
+				}
+				await clock.add(action.amount);
+				break;
 			default:
-				action.dungeonAction satisfies never;
+				action satisfies never;
 		}
 	}
 }

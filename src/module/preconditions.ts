@@ -1,3 +1,4 @@
+import { ProgressClock } from "./utility/progress-clock.js";
 import { PowerTag } from "../config/power-tags.js";
 import { DamageType } from "../config/damage-types.js";
 import { RESIST_STRENGTH_LIST } from "../config/damage-types.js";
@@ -201,6 +202,11 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			const subject = getSubjectActor(condition, situation, source, "conditionTarget");
 			if (!subject) return false;
 			target = (subject.hp / subject.mhp) * 100;
+			break;
+		case "clock-comparison":
+			const clock = ProgressClock.getClock(condition.clockId);
+			if (!clock) return false;
+			target = clock.amt;
 			break;
 		default:
 			condition satisfies never;

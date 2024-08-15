@@ -61,6 +61,12 @@
 	</select>
 	{{/if}}
 
+	{{#if (eq cond.comparisonTarget "clock-comparison")}}
+	<select name="{{strcat namePrefix 'clockId'}}">
+		{{selectOptions POWERSTUFF.CLOCKS localize=true selected=cond.clockId}}
+	</select>
+	{{/if}}
+
 	{{/if}}
 
 

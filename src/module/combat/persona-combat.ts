@@ -781,7 +781,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	static processConsequence( power: ModifierContainer, situation: Situation, cons: Consequence, attacker: ValidAttackers, atkresult ?: Partial<AttackResult>) : ConsequenceProcessed["consequences"] {
-		// let x : ConsequenceProcessed["consequences"];
 		let damageMult = 1;
 		const applyToSelf = cons.applyToSelf ?? false;
 		const absorb = situation.isAbsorbed && !applyToSelf;

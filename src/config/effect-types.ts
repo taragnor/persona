@@ -127,6 +127,7 @@ export const SOCIAL_CARD_ACTIONS = Object.fromEntries(
 export const DUNGEON_ACTION_LIST = [
 	"roll-tension-pool",
 	"modify-tension-pool",
+	"modify-clock",
 ] as const;
 
 

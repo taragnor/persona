@@ -94,7 +94,7 @@ class PowerSchema extends foundry.abstract.DataModel {
 		const itemData = data as (Power["system"] | Consumable["system"]);
 		let dmult = 0;
 		if (itemData.melee_extra_mult == undefined && data.damage.low) {
-			const dmglow = itemData.damage.low;
+			const dmglow = itemData?.damage?.low;
 			switch (true) {
 				case dmglow == 0: dmult = 0; break;
 				case	dmglow <= 5: dmult = 2;   break;

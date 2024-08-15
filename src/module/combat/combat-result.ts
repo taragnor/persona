@@ -317,9 +317,7 @@ export class CombatResult  {
 				break;
 			case "dungeon-action":
 				this.globalOtherEffects.push( {
-					type: cons.type,
-					dungeonAction: cons.dungeonAction,
-					amount: cons.amount,
+					...cons
 				});
 				break;
 			default: {
@@ -350,6 +348,8 @@ export class CombatResult  {
 				this.attacks.set(atkResult, changeArr);
 			}
 		}
+		this.costs = this.costs.concat(other.costs);
+		this.globalOtherEffects = this.globalOtherEffects.concat(other.globalOtherEffects);
 	}
 
 	static mergeChanges(mainEffects: ActorChange<PC | Shadow>[], newEffects: ActorChange<PC | Shadow>[]) {
@@ -552,7 +552,6 @@ export class CombatResult  {
 				cost.hpchangemult *= 0.5;
 			}
 			await this.applyChange(cost);
-
 		}
 	}
 

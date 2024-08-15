@@ -9,6 +9,21 @@ export  class ProgressClock {
 		this.default_max = max;
 	}
 
+
+	static allClocks() : GlobalProgressClocks.ProgressClock[]{
+		if (!window.clockDatabase) return [];
+		const db = window.clockDatabase;
+		return db.contents;
+	}
+
+	static getClock(id: string) : ProgressClock | undefined {
+		if (!window.clockDatabase) return undefined;
+		const db = window.clockDatabase;
+		const clock = db.get(id);
+		if (!clock) return undefined;
+		else return new ProgressClock(clock.name, clock.max);
+	}
+
 	get amt() : number {
 		const clock= this.#getClock()
 		if (!clock) return -1;

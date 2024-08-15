@@ -1,3 +1,4 @@
+import { ProgressClock } from "../../utility/progress-clock.js";
 import { DAMAGE_SUBTYPES } from "../../../config/effect-types.js";
 import { MODIFIER_VARIABLES } from "../../../config/effect-types.js";
 import { MODIFIER_CONS_TYPES } from "../../../config/effect-types.js";
@@ -120,6 +121,10 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			PersonaDB.socialLinks().map(actor => [actor.id, actor.name])
 		);
 		SOCIAL_LINKS[""] = "-";
+		const CLOCKS = Object.fromEntries(
+			ProgressClock.allClocks()
+			.map(clock => [clock.id, clock.name])
+		) ;
 		return {
 			...this.powerStuffBase,
 			SOCIAL_LINKS,
@@ -128,6 +133,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 				.sort((a,b) => a.name.localeCompare(b.name))
 				.map(pwr=> ([pwr.id, pwr.name]))
 			),
+			CLOCKS,
 		};
 	}
 
