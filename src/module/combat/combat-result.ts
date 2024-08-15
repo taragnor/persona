@@ -179,6 +179,7 @@ export class CombatResult  {
 			}
 
 			case "modifier":
+			case "modifier-new":
 			case "raise-resistance":
 			case "lower-resistance":
 				break;

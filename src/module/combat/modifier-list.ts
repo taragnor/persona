@@ -1,3 +1,4 @@
+import { TensionPool } from "../exploration/tension-pool.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { ArrayCorrector } from "../item/persona-item.js";
@@ -17,7 +18,7 @@ export type ModifierListItem = {
 	source: Option<UniversalItemAccessor<PowerContainer>>;
 	conditions: Precondition[];
 	modifier: number;
-	variableModifier: Set<ModifierVariable>;
+	variableModifier: Set<{variable: ModifierVariable, makeNegative: boolean}>;
 }
 
 export class ModifierList {
@@ -62,9 +63,14 @@ export class ModifierList {
 
 	static getVariableModifiers(consequences: Consequence[], targetMods: ModifierTarget[]): ModifierList["_data"][number]["variableModifier"] {
 		return new Set(ArrayCorrector(consequences).flatMap ( c=> {
+			if ("modifiedFields" in c
+				&& targetMods.some( f => c.modifiedFields[f] == true)
+				&& c.modifierType == "system-variable") {
+				return [{variable: c.varName, makeNegative: c.makeNegative}];
+			}
 			if (!("modifiedField" in c) || !c.modifiedField) return [];
 			if (!targetMods.includes(c.modifiedField)) return [];
-			if (c.type == "add-escalation") return ["escalationDie"];
+			if (c.type == "add-escalation") return [{variable: "escalationDie", makeNegative: false}];
 			return [];
 		}))
 	}
@@ -73,6 +79,11 @@ export class ModifierList {
 		targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
 		return (ArrayCorrector(consequences) ?? [])
 			.reduce( (acc,x)=> {
+				if ("modifiedFields" in x
+					&& targetMods.some( f => x.modifiedFields[f] == true)
+					&& x.modifierType == "constant") {
+					return acc + (x.amount ?? 0);
+				}
 				if ("modifiedField" in x && x.modifiedField && targetMods.includes(x.modifiedField)) {
 					if (x.amount) return acc + x.amount;
 				}
@@ -110,14 +121,17 @@ export class ModifierList {
 		return testPreconditions( ...args);
 	}
 
-	static resolveVariableModifiers( variableMods:Set<ModifierVariable> , situation: Situation) : number {
+	static resolveVariableModifiers( variableMods: ModifierListItem["variableModifier"], _situation: Situation) : number {
 		return Array.from(variableMods).reduce( (acc, varmod) => {
-			switch (varmod) {
+			const sign = varmod.makeNegative ? -1 : 1;
+			switch (varmod.variable) {
 				case "escalationDie":
 					if (!game.combat) return acc;
-					return acc + ((game?.combat as PersonaCombat )?.getEscalationDie() ?? 0);
+					return acc + (((game?.combat as PersonaCombat )?.getEscalationDie() ?? 0) * sign);
+				case "tensionPool":
+						return (TensionPool.amt ?? 0) * sign;
 				default:
-						varmod satisfies never;
+						varmod.variable satisfies never;
 			}
 			return acc;
 		},0);

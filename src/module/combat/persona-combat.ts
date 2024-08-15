@@ -879,6 +879,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return  [{applyTo,cons}];
 			case "none":
 			case "modifier":
+			case "modifier-new":
 			case "escalationManipulation": //since this is no llonger handled here we do nothing
 				break;
 			case "extraAttack" :

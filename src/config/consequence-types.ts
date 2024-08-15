@@ -1,3 +1,5 @@
+import { ModifierVariable } from "./effect-types.js";
+import { ModifierConsType } from "./effect-types.js";
 import { DungeonAction } from "./effect-types.js";
 import { SlotType } from "./slot-types.js";
 import { CONDITION_TARGETS_LIST } from "./precondition-types.js";
@@ -132,8 +134,29 @@ type GenericConsequence = {
 }
 
 type NonGenericConsequences = UsePowerConsequence
-		| CardActionConsequence
-|   DungeonActionConsequence;
+	| CardActionConsequence
+	| DungeonActionConsequence
+	| ModifierConsequence;
+
+type ModifierConsequence = {
+	type: "modifier-new",
+	modifiedFields : Record<ModifierTarget,boolean>,
+	modifierType: ModifierConsType
+} & ModifierData;
+
+type ModifierData = ConstantModifier
+	| SystemVariableModifier;
+
+type ConstantModifier = {
+	modifierType: "constant",
+	amount: number
+}
+
+type SystemVariableModifier = {
+	modifierType : "system-variable",
+	varName : ModifierVariable,
+	makeNegative: boolean,
+}
 
 type CardActionConsequence = {
 	type: "social-card-action",
@@ -167,4 +190,5 @@ export type ConsTarget = typeof CONS_TARGET_LIST[number];
 export const CONS_TARGETS = Object.fromEntries(
 	CONS_TARGET_LIST.map( x=> [x, `persona.consequence.targets.${x}`])
 );
+
 

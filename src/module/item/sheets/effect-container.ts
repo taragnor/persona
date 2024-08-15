@@ -1,3 +1,5 @@
+import { MODIFIER_VARIABLES } from "../../../config/effect-types.js";
+import { MODIFIER_CONS_TYPES } from "../../../config/effect-types.js";
 import { DUNGEON_ACTIONS } from "../../../config/effect-types.js";
 import { SOCIAL_CARD_ACTIONS } from "../../../config/effect-types.js";
 import { SHADOW_ROLE } from "../../../config/shadow-types.js";
@@ -104,6 +106,8 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			SHADOW_ROLE,
 			SOCIAL_CARD_ACTIONS,
 			DUNGEON_ACTIONS,
+			MODIFIER_CONS_TYPES,
+			MODIFIER_VARIABLES,
 		};
 		return this._powerStuffBase;
 	}

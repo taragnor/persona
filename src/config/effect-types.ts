@@ -2,6 +2,7 @@ export const CONSQUENCELIST = [
 	"none",
 	"absorb",
 	"hp-loss",
+	"modifier-new",
 	"dmg-low",
 	"dmg-high",
 	"dmg-allout-low",
@@ -12,8 +13,6 @@ export const CONSQUENCELIST = [
 	"escalationManipulation",
 	"extraAttack",
 	"expend-slot",
-	"modifier",
-	"add-escalation",
 	"save-slot", //don't expend slot you normally would
 	"half-hp-cost", //half hp cost of weapon skills
 	"revive",
@@ -31,16 +30,22 @@ export const CONSQUENCELIST = [
 	"scan",
 	"social-card-action",
 	"dungeon-action",
+	"modifier", // deprecated
+	"add-escalation", // deprecated
 ] as const;
 
 export type ConsequenceType = typeof CONSQUENCELIST[number];
 
-export  const MODIFIER_VARIABLES = [
-	"escalationDie" //Escalation Die
+export  const MODIFIER_VARIABLE_LIST= [
+	"escalationDie", //Escalation Die
+	"tensionPool"
 ] as const;
 
+export type ModifierVariable = typeof MODIFIER_VARIABLE_LIST[number];
 
-export type ModifierVariable = typeof MODIFIER_VARIABLES[number];
+export const MODIFIER_VARIABLES = Object.fromEntries(
+	MODIFIER_VARIABLE_LIST.map( x=> [x, `persona.modifier-variable.${x}`])
+);
 
 export const CONSQUENCETYPES = Object.fromEntries(
 CONSQUENCELIST.map( x=> [x, `persona.effecttypes.${x}`])
@@ -128,4 +133,16 @@ export type DungeonAction = typeof DUNGEON_ACTION_LIST[number];
 
 export const DUNGEON_ACTIONS = Object.fromEntries(
 	DUNGEON_ACTION_LIST.map(x => [x, `persona.effecttypes.dungeonAction.${x}`])
+);
+
+export const MODIFIER_CONS_TYPE_LIST =  [
+	"constant",
+	"system-variable",
+] as const;
+
+
+	export type ModifierConsType = typeof MODIFIER_CONS_TYPE_LIST[number];
+
+export const MODIFIER_CONS_TYPES = Object.fromEntries( 
+	MODIFIER_CONS_TYPE_LIST.map( x=> [x, `persona.effecttypes.modifierType.${x}`])
 );
