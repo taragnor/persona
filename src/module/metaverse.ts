@@ -209,8 +209,20 @@ export class Metaverse {
 				}
 				await clock.add(action.amount);
 				break;
+			case "close-all-doors":
+				await this.closeAllDoors();
+				break;
 			default:
 				action satisfies never;
+		}
+	}
+
+	static async closeAllDoors() {
+		const scene = game.scenes.current;
+		const openDoors = scene.walls
+			.filter(w=> w.door > 0 && w.ds == 1);
+		for (const door of openDoors) {
+			door.update( {ds: 0});
 		}
 	}
 }

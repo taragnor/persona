@@ -209,7 +209,9 @@ export type DungeonActionConsequence = {
 
 type GenericDungeonAction = {
 	amount: number,
-	dungeonAction: "roll-tension-pool" | "modify-tension-pool",
+	dungeonAction: "roll-tension-pool"
+	| "modify-tension-pool"
+	| "close-all-doors"
 }
 
 type ClockDungeonActionCons = {
