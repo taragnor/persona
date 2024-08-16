@@ -1,3 +1,4 @@
+import { TriggerSituation } from "./preconditions.js";
 import { ProgressClock } from "./utility/progress-clock.js";
 import { DungeonActionConsequence } from "../config/consequence-types.js";
 import { shuffle } from "./utility/array-tools.js";
@@ -234,6 +235,20 @@ declare global {
 	}
 }
 
+Hooks.on("updateWall", (updateItem: WallDocument, changes: Record<string, unknown>, diff: unknown, userId: string) => {
+	if (changes.ds == 1 && game.user.isGM) {
+
+		const situation : TriggerSituation = {
+			trigger: "on-open-door",
+			triggeringUser: game.users.get(userId),
+		}
+		PersonaCombat.onTrigger("on-open-door", undefined, situation)
+		.emptyCheck()
+		?.autoApplyResult();
+		;
+	}
+
+});
 
 
 //@ts-ignore

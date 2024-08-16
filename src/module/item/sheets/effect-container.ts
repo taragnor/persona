@@ -1,3 +1,4 @@
+import { USER_COMPARISON_TARGETS } from "../../../config/precondition-types.js";
 import { ProgressClock } from "../../utility/progress-clock.js";
 import { DAMAGE_SUBTYPES } from "../../../config/effect-types.js";
 import { MODIFIER_VARIABLES } from "../../../config/effect-types.js";
@@ -111,6 +112,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			MODIFIER_CONS_TYPES,
 			MODIFIER_VARIABLES,
 			DAMAGE_SUBTYPES,
+			USER_COMPARISON_TARGETS,
 		};
 		return this._powerStuffBase;
 	}

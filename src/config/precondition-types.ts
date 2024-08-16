@@ -114,11 +114,11 @@ export type BooleanComparisonPC = {
 	type : "boolean",
 	booleanState : boolean,
 	boolComparisonTarget: BooleanComparisonTarget,
-} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison);
+} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison);
 
 	type BasicBComparisonPC = {
 	boolComparisonTarget: Exclude<BooleanComparisonTarget,
-	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "weekday-is" | "flag-state" | "is-resistant-to" | "social-target-is" | TargettedBComparisonPC["boolComparisonTarget"] | "power-target-type-is" | "weather-is" | "shadow-role-is" | "active-scene-is">,
+	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "weekday-is" | "flag-state" | "is-resistant-to" | "social-target-is" | TargettedBComparisonPC["boolComparisonTarget"] | "power-target-type-is" | "weather-is" | "shadow-role-is" | "active-scene-is" | "is-gm" >,
 }
 
 export type TargettedBComparisonPC = SingleTargetComparison | TwoTargetComparison;
@@ -200,6 +200,11 @@ type SceneComparison = {
 	sceneId: string,
 }
 
+type PlayerTypeCheckComparison = {
+	boolComparisonTarget: "is-gm",
+	userComparisonTarget: UserComparisonTarget,
+}
+
 const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"engaged",
 	"engaged-with",
@@ -227,6 +232,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"shadow-role-is",
 	"is-distracted",
 	"active-scene-is",
+	"is-gm",
 ] as const;
 
 
@@ -300,5 +306,18 @@ export type ConditionDice = typeof CONDITION_TARGETS_LIST[number];
 
 export const CONDITION_DICE = Object.fromEntries(
 	CONDITION_DICE_LIST.map( x=> [x, `persona.preconditions.dice.${x}`])
+);
+
+
+const USER_COMPARISON_TARGET_LIST = [
+	"triggering-user",
+	"current-user",
+] as const;
+
+export type UserComparisonTarget = typeof USER_COMPARISON_TARGET_LIST[number];
+
+export const USER_COMPARISON_TARGETS = Object.fromEntries(
+	USER_COMPARISON_TARGET_LIST.map( x=> [x, `persona.preconditions.userComparison.${x}`])
+
 );
 

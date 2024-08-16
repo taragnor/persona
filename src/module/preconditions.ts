@@ -1,3 +1,4 @@
+import { UserComparisonTarget } from "../config/precondition-types.js";
 import { ProgressClock } from "./utility/progress-clock.js";
 import { PowerTag } from "../config/power-tags.js";
 import { DamageType } from "../config/damage-types.js";
@@ -455,7 +456,10 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			const scene = game.scenes.active;
 			if (!scene) return false;
 			return scene.id == condition.sceneId;
-
+		}
+		case "is-gm": {
+			const user = getUser(condition.userComparisonTarget, situation);
+			return user?.isGM ?? undefined;
 		}
 		default :
 			condition satisfies never;
@@ -463,12 +467,28 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 	}
 }
 
-function booleanComparison(condition: Precondition, situation: Situation, source:Option<PowerContainer>): boolean {
+function booleanComparison(condition : Precondition , situation: Situation, source:Option<PowerContainer>): boolean {
 	if (condition.type != "boolean") throw new PersonaError("Not a boolean comparison");
 	const testState = getBoolTestState(condition, situation, source);
 	if (testState === undefined) return false;
 	const targetState = condition.booleanState ?? false;
 	return targetState == testState;
+}
+
+function getUser (target: UserComparisonTarget, situation : Situation) : FoundryUser | undefined {
+	switch (target) {
+		case "triggering-user":
+			if ("triggeringUser" in situation) {
+				const userId = situation.triggeringUser?.id ?? "";
+				return game.users.get(userId);
+			}
+			break;
+		case "current-user":
+			return game.user;
+		default:
+			target satisfies never;
+	}
+	return undefined;
 }
 
 function getSubjectToken<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K): PToken | undefined {
@@ -530,12 +550,13 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 	}
 }
 
-type UserSituation = {
+export type UserSituation = {
 	user: UniversalActorAccessor<PC | Shadow>;
 };
 
-type TriggerSituation = {
+export type TriggerSituation = {
 	trigger : Trigger,
+	triggeringUser ?: FoundryUser,
 };
 
 export type Situation = SituationUniversal & (

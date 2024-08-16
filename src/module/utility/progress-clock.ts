@@ -105,7 +105,6 @@ export  class ProgressClock {
 	}
 
 	async add(mod : number): Promise<number> {
-		debugger;
 		if (!this.isCyclical()) {
 			const amt = Math.min(this.max, Math.max(0, this.amt + mod));
 			await this.refreshValue(amt);

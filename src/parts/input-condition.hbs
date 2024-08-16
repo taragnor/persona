@@ -177,8 +177,15 @@
 	</select>
 	{{/if}}
 
+	{{#if (eq cond.boolComparisonTarget  "is-gm")}}
+	<select name="{{strcat namePrefix 'userComparisonTarget'}}">
+		{{selectOptions POWERSTUFF.USER_COMPARISON_TARGETS localize=true selected=cond.userComparisonTarget}}
+	</select>
 
 	{{/if}}
+
+	{{/if}}
+
 
 	{{#if (strIncludes cond.type "resistant")}}
 	<select name="{{strcat namePrefix 'powerDamageType'}}">
