@@ -339,10 +339,9 @@
 	"persona.effecttypes.dungeonAction.roll-tension-pool": "Roll Tension Pool",
 	"persona.effecttypes.dungeonAction.modify-tension-pool": "Modify Tension Pool",
 	"persona.effecttypes.dungeonAction.modify-clock": "Modify Clock",
+	"persona.effecttypes.dungeonAction.close-all-doors": "Close all Doors",
 	"persona.effecttypes.modifierType.constant" : "Constant",
 	"persona.effecttypes.modifierType.system-variable" : "System Variable",
-
-
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",
