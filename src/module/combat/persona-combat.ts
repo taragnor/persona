@@ -725,7 +725,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 								effectiveTarget = userToken;
 								break;
 							case "triggering-character":
-								const triggerer = situation.triggeringCharacter;
+								const triggerer = "triggeringCharacter" in situation? situation.triggeringCharacter: undefined;
 								if (!triggerer) {
 									PersonaError.softFail("Can't target triggering character for this");
 									effectiveTarget = undefined;
@@ -1218,6 +1218,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				if (token) return [token]; else return [];
 			}
 			case "triggering-character": {
+				if (!("triggeringCharacter" in  situation)) return [];
 				if (!situation.triggeringCharacter) return [];
 				const token = this.getPTokenFromActorAccessor(situation.triggeringCharacter);
 				if (token) return [token]; else return [];

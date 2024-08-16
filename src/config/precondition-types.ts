@@ -54,13 +54,18 @@ type SaveVersus = {
 export type Triggered = { type: "on-trigger"} & TriggeredEvents;
 
 type  TriggeredEvents = SimpleTrigger
-| onInflictStatus
-| onTarotPerk
+| NonSimpleTrigger;
 ;
 
 type SimpleTrigger = {
-	trigger ?: Exclude<Trigger, "on-attain-tarot-perk" |  "on-inflict-status" >,
+	trigger ?: Exclude<Trigger, NonSimpleTrigger["trigger"]>,
 }
+
+type NonSimpleTrigger =
+	onInflictStatus
+	| onTarotPerk
+	| ClockTickTrigger
+	;
 
 type onInflictStatus = {
 	trigger: "on-inflict-status",
@@ -70,6 +75,12 @@ type onInflictStatus = {
 type onTarotPerk = {
 	trigger: "on-attain-tarot-perk";
 	tarot: TarotCard,
+}
+
+type ClockTickTrigger = {
+	trigger: "on-clock-tick";
+	triggeringClockId: string;
+
 }
 
 

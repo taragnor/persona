@@ -207,12 +207,19 @@
 	<select name="{{strcat namePrefix 'trigger'}}">
 		{{selectOptions POWERSTUFF.TRIGGERS localize=true selected=cond.trigger}}
 	</select>
+
 	{{#if (eq cond.trigger "on-attain-tarot-perk")}}
 	<select name="{{strcat namePrefix 'tarot'}}">
 		{{selectOptions POWERSTUFF.TAROT_DECK localize=true selected=cond.tarot}}
 	</select>
 	{{/if}}
 
+
+	{{#if (eq cond.trigger "on-clock-tick")}}
+	<select name="{{strcat namePrefix 'triggeringClockId'}}">
+		{{selectOptions POWERSTUFF.CLOCKS localize=true selected=cond.triggeringClockId}}
+	</select>
+	{{/if}}
 
 	{{/if}}
 

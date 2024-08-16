@@ -248,6 +248,11 @@ function triggerComparison(condition: Triggered, situation: Situation, _source:O
 		case "on-combat-end-global":
 		case "on-open-door":
 			return true;
+		case "on-clock-tick":
+			if (!("triggeringClockId" in situation)) {
+				return false;
+			}
+			return situation.triggeringClockId == condition.triggeringClockId;
 		default:
 			condition.trigger satisfies never;
 			return false;
@@ -532,7 +537,7 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 				return PersonaDB.findToken(situation.user.token) as PToken | undefined;
 			else return PersonaDB.findActor(situation.user);
 		case "triggering-character":
-			if (!situation.triggeringCharacter) return undefined;
+			if ( !("triggeringCharacter" in situation)|| !situation.triggeringCharacter) return undefined;
 			if (situation.triggeringCharacter.token) {
 				return PersonaDB.findToken(situation.triggeringCharacter.token) as PToken | undefined;
 			} else {
@@ -557,16 +562,17 @@ export type UserSituation = {
 export type TriggerSituation = {
 	trigger : Trigger,
 	triggeringUser ?: FoundryUser,
+	triggeringCharacter?:  UniversalActorAccessor<PC | Shadow>;
+	triggeringClockId?: string,
 };
 
 export type Situation = SituationUniversal & (
-	TriggerSituation  |UserSituation);
+	TriggerSituation  | UserSituation);
 
 
 type SituationUniversal = {
 	//more things can be added here all should be optional
 	user?: UniversalActorAccessor<PC | Shadow>;
-	triggeringCharacter?:  UniversalActorAccessor<PC | Shadow>;
 	usedPower ?: UniversalItemAccessor<Usable>;
 	usedSkill ?: SocialStat;
 	activeCombat ?: boolean ;

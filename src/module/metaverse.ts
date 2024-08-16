@@ -235,9 +235,8 @@ declare global {
 	}
 }
 
-Hooks.on("updateWall", (updateItem: WallDocument, changes: Record<string, unknown>, diff: unknown, userId: string) => {
+Hooks.on("updateWall", function (_updateItem: WallDocument, changes: Record<string, unknown>, _diff: unknown, userId: string) {
 	if (changes.ds == 1 && game.user.isGM) {
-
 		const situation : TriggerSituation = {
 			trigger: "on-open-door",
 			triggeringUser: game.users.get(userId),
@@ -247,9 +246,18 @@ Hooks.on("updateWall", (updateItem: WallDocument, changes: Record<string, unknow
 		?.autoApplyResult();
 		;
 	}
-
 });
 
+Hooks.on("clockTick", function (clock: ProgressClock, _newAmt: number) {
+	const situation : TriggerSituation = {
+		trigger: "on-damage",
+		triggeringClockId: clock.id,
+	};
+	console.log("Triggering ClockTick");
+	PersonaCombat.onTrigger("on-clock-tick", undefined, situation)
+	.emptyCheck()
+	?.autoApplyResult();
+});
 
 //@ts-ignore
 window.Metaverse = Metaverse;

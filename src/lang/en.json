@@ -413,7 +413,7 @@
 	"persona.preconditions.comparison.has-resources": "Resouce Points",
 	"persona.preconditions.comparison.resistance-level": "Resistance Level",
 	"persona.preconditions.comparison.health-percentage": "Health Percentage (0-100)",
-	"persona.preconditions.comparison.clock-comparison": "Clock alue",
+	"persona.preconditions.comparison.clock-comparison": "Clock Value",
 	"persona.preconditions.comparison.student-skill": "Rank in Student Skill",
 	"persona.preconditions.comparison.engaged": "Is Being Engaged By Any Foe",
 	"persona.preconditions.comparison.engaged-with": "X is Engaging Y",
@@ -460,6 +460,7 @@
 	"persona.triggers.on-open-door": "A door opens",
 	"persona.triggers.on-inflict-status": "Inflict a Status",
 	"persona.triggers.on-attain-tarot-perk": "Attain a Tarot Perk",
+	"persona.triggers.on-clock-tick": "On Clock Tick",
 
 	"persona.othereffect.search-twice": "Search Twice",
 	"persona.othereffect.ignore-surprise": "Act during surprise rounds",

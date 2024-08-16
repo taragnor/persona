@@ -1,6 +1,13 @@
 import { sleep } from "./async-wait.js";
 import { PersonaError } from "../persona-error.js";
 
+declare global {
+	interface HOOKS {
+		"clockTick": (clock: ProgressClock, newAmt: number) => unknown,
+	}
+
+}
+
 export  class ProgressClock {
 	static _clocks: Map<string, ProgressClock> = new Map();
 	static _ready = false;
@@ -24,6 +31,10 @@ export  class ProgressClock {
 		if (!clock) return;
 		ProgressClock._clocks.set(clock.id, this);
 
+	}
+
+	get id(): string {
+		return this.#getClock()!.id;
 	}
 
 	static allClocks() : GlobalProgressClocks.ProgressClock[]{
@@ -54,7 +65,7 @@ export  class ProgressClock {
 	}
 
 	get visible() : boolean {
-		const clock= this.#getClock()
+		const clock = this.#getClock()
 		if (!clock) return false;
 		return !clock.private;
 	}
@@ -66,6 +77,7 @@ export  class ProgressClock {
 	protected async refreshValue(amt: number) {
 		const clock = this.#getClock();
 		if (!clock) return;
+		if (clock.value == amt) return;
 		clock.value = amt;
 		if (window.clockDatabase) {
 			await window.clockDatabase.update(clock);
@@ -104,10 +116,16 @@ export  class ProgressClock {
 		return this.amt;
 	}
 
+	async reportTick(newAmt: number) : Promise<void> {
+		Hooks.callAll("clockTick", this, newAmt);
+	}
+
 	async add(mod : number): Promise<number> {
 		if (!this.isCyclical()) {
 			const amt = Math.min(this.max, Math.max(0, this.amt + mod));
+
 			await this.refreshValue(amt);
+			if (mod == 1) { this.reportTick(amt); }
 			return this.amt;
 		}
 		let modAmt = this.amt + mod;
@@ -118,6 +136,7 @@ export  class ProgressClock {
 			modAmt = modAmt + (this.max +1);
 		}
 		this.refreshValue(modAmt);
+		if (mod == 1) { this.reportTick(modAmt); }
 		return this.amt;
 	}
 
