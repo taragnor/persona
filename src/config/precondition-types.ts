@@ -114,11 +114,11 @@ export type BooleanComparisonPC = {
 	type : "boolean",
 	booleanState : boolean,
 	boolComparisonTarget: BooleanComparisonTarget,
-} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison);
+} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison);
 
 	type BasicBComparisonPC = {
 	boolComparisonTarget: Exclude<BooleanComparisonTarget,
-	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "weekday-is" | "flag-state" | "is-resistant-to" | "social-target-is" | TargettedBComparisonPC["boolComparisonTarget"] | "power-target-type-is" | "weather-is" | "shadow-role-is">,
+	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "weekday-is" | "flag-state" | "is-resistant-to" | "social-target-is" | TargettedBComparisonPC["boolComparisonTarget"] | "power-target-type-is" | "weather-is" | "shadow-role-is" | "active-scene-is">,
 }
 
 export type TargettedBComparisonPC = SingleTargetComparison | TwoTargetComparison;
@@ -195,6 +195,11 @@ type WeatherComparison = {
 	weatherComparison: WeatherType | Record<WeatherType, boolean>,
 };
 
+type SceneComparison = {
+	boolComparisonTarget: "active-scene-is",
+	sceneId: string,
+}
+
 const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"engaged",
 	"engaged-with",
@@ -221,6 +226,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"social-target-is",
 	"shadow-role-is",
 	"is-distracted",
+	"active-scene-is",
 ] as const;
 
 

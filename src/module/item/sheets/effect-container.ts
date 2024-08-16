@@ -121,6 +121,10 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			PersonaDB.socialLinks().map(actor => [actor.id, actor.name])
 		);
 		SOCIAL_LINKS[""] = "-";
+		const SCENES = Object.fromEntries(
+			game.scenes.contents
+			.map( sc => [sc.id, sc.name])
+		);
 		const CLOCKS = Object.fromEntries(
 			ProgressClock.allClocks()
 			.map(clock => [clock.id, clock.name])
@@ -134,6 +138,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 				.map(pwr=> ([pwr.id, pwr.name]))
 			),
 			CLOCKS,
+			SCENES,
 		};
 	}
 
@@ -145,13 +150,6 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 		html.find(".del-consequence").on("click", this.deleteConsequence.bind(this));
 		html.find(".del-condition").on("click", this.deletePrecondition.bind(this));
 		html.find(".del-effect").on("click", this.deletePowerEffect.bind(this));
-
-		// html.find(".add-PowerEffect").on("click", this.addPowerEffect.bind(this));
-		// html.find(".addCondition").on("click", this.addPrecondition.bind(this));
-		// html.find(".addConsequence").on("click", this.addConsequence.bind(this));
-		// html.find(".delConsequence").on("click", this.deleteConsequence.bind(this));
-		// html.find(".delCondition").on("click", this.deletePrecondition.bind(this));
-		// html.find(".delEffect").on("click", this.deletePowerEffect.bind(this));
 	}
 
 	async addPowerEffect() {

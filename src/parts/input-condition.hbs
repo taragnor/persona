@@ -171,6 +171,13 @@
 	</select>
 	{{/if}}
 
+	{{#if (eq cond.boolComparisonTarget  "active-scene-is")}}
+	<select name="{{strcat namePrefix 'sceneId'}}">
+		{{selectOptions POWERSTUFF.SCENES localize=true selected=cond.sceneId}}
+	</select>
+	{{/if}}
+
+
 	{{/if}}
 
 	{{#if (strIncludes cond.type "resistant")}}

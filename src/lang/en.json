@@ -441,6 +441,7 @@
 	"persona.preconditions.comparison.social-target-is": "Social Target Is",
 	"persona.preconditions.comparison.shadow-role-is": "Shadow Role is",
 	"persona.preconditions.comparison.is-distracted": "Is Distracted",
+	"persona.preconditions.comparison.active-scene-is": "Active Scene Is",
 
 	"persona.triggers.on-damage": "Character Takes Damage",
 	"persona.triggers.on-kill-target": "Character kills a target",
@@ -452,6 +453,7 @@
 	"persona.triggers.exit-metaverse": "Exit the Metaverse",
 	"persona.triggers.start-turn": "Start Turn",
 	"persona.triggers.end-turn": "End Turn",
+	"persona.triggers.on-open-door": "A door opens",
 	"persona.triggers.on-inflict-status": "Inflict a Status",
 	"persona.triggers.on-attain-tarot-perk": "Attain a Tarot Perk",
 

@@ -245,6 +245,7 @@ function triggerComparison(condition: Triggered, situation: Situation, _source:O
 		case "start-turn":
 		case "end-turn":
 		case "on-combat-end-global":
+		case "on-open-door":
 			return true;
 		default:
 			condition.trigger satisfies never;
@@ -296,10 +297,9 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			return  targetActor.system.type == "shadow";
 		}
 		case "is-pc": {
-			const target = getSubject(condition, situation, source,  "conditionTarget");
+			const target = getSubjectActor(condition, situation, source,  "conditionTarget");
 			if (!target) return undefined;
-			const targetActor = target instanceof PersonaActor ? target : target.actor;
-			return targetActor.system.type == "pc";
+			return target.system.type == "pc";
 		}
 		case "has-tag": {
 			if (!situation.usedPower) {
@@ -450,6 +450,12 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			const target = getSubjectActor(condition, situation, source, "conditionTarget");
 			if (!target) {return undefined;}
 			return target.isDistracted();
+		}
+		case "active-scene-is": {
+			const scene = game.scenes.active;
+			if (!scene) return false;
+			return scene.id == condition.sceneId;
+
 		}
 		default :
 			condition satisfies never;

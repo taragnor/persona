@@ -12,6 +12,7 @@ export const COMBAT_TRIGGER_LIST = [
 	"exit-metaverse",
 	"start-turn",
 	"end-turn",
+	"on-open-door",
 ] as const;
 
 export const NONCOMBAT_TRIGGER_LIST = [
