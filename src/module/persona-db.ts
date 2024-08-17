@@ -1,3 +1,4 @@
+import { Weapon } from "./item/persona-item.js"
 import { Shadow } from "./actor/persona-actor.js";
 import { InvItem } from "./item/persona-item.js";
 import { Consumable } from "./item/persona-item.js";
@@ -64,12 +65,13 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return actors.filter( actor=> actor.system.type == "tarot") as Tarot[];
 	}
 
-	treasureItems(): (InvItem | Consumable)[] {
+	treasureItems(): (Weapon | InvItem | Consumable)[] {
 		const items = this.allItems();
 		return  items.filter ( item =>
-			item.system.type == "consumable"
+			item.system.type == "weapon"
+			|| item.system.type == "consumable"
 			|| item.system.type == "item"
-		) as (InvItem | Consumable)[];
+		) as (Weapon | InvItem | Consumable)[];
 	}
 
 	dungeonScenes(): Scene[] {

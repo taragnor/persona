@@ -1,3 +1,4 @@
+import { Weapon } from "./item/persona-item.js";
 import { TriggerSituation } from "./preconditions.js";
 import { ProgressClock } from "./utility/progress-clock.js";
 import { DungeonActionConsequence } from "../config/consequence-types.js";
@@ -129,8 +130,8 @@ export class Metaverse {
 		return encounter;
 	}
 
-	static async generateTreasure(shadows: PersonaActor[], players: PersonaActor[]): Promise<(InvItem | Consumable) []> {
-		let items : (InvItem | Consumable)[] = [];
+	static async generateTreasure(shadows: PersonaActor[], players: PersonaActor[]): Promise<(Weapon | InvItem | Consumable) []> {
+		let items : (Weapon | InvItem | Consumable)[] = [];
 		let money = 0;
 		const considerItem= function (itemId: string, prob: number) {
 			const item = PersonaDB.treasureItems().find(x=> x.id == itemId);
