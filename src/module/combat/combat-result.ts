@@ -579,7 +579,6 @@ export class CombatResult  {
 		}
 	}
 
-
 	clearFlags() {
 		this.tokenFlags = [];
 	}
