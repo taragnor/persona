@@ -92,6 +92,11 @@
 
 	{{#if (eq cons.type	"display-msg")}}
 	<div>
+		<label> Separate Msg </label>
+		<input type="checkbox" name="{{strcat namePrefix 'newChatMsg'}}" {{checked cons.newChatMsg}}>
+	</div>
+
+	<div>
 		<label for="text-msg"> Message </label>
 		<textarea class="text-msg" id="text-msg" name="{{strcat namePrefix 'msg'}}">
 			{{cons.msg}}

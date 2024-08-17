@@ -62,6 +62,7 @@ export type InspirationChange = {
 export type DisplayMessage = {
 	type : "display-message",
 	msg: string,
+	newChatMsg: boolean,
 }
 
 export type HPLossEffect = {
@@ -140,7 +141,9 @@ type NonGenericConsequences = UsePowerConsequence
 	| DungeonActionConsequence
 	| ModifierConsequence
 	| DamageConsequence
+	| DisplayMessageConsequence
 ;
+
 
 type DamageConsequenceShared = {
 	type : "damage-new",
@@ -219,6 +222,12 @@ type ClockDungeonActionCons = {
 	clockId: string,
 	amount: number,
 }
+
+type DisplayMessageConsequence = {
+	type: "display-msg",
+	msg: string,
+	newChatMsg: boolean,
+};
 
 type UsePowerConsequence = {
 	type: "use-power",

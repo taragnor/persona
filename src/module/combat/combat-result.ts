@@ -271,11 +271,13 @@ export class CombatResult  {
 				if (effect) {
 					effect.otherEffects.push( {
 						type: "display-message",
+						newChatMsg: cons.newChatMsg ?? false,
 						msg: cons.msg ?? "",
 					});
 				} else {
 					this.globalOtherEffects.push({
 						type: "display-message",
+						newChatMsg: cons.newChatMsg ?? false,
 						msg: cons.msg ?? "",
 					});
 				}
@@ -560,6 +562,18 @@ export class CombatResult  {
 			switch (eff.type) {
 				case "dungeon-action":
 					await Metaverse.executeDungeonAction(eff);
+					break;
+				case "display-message":
+					if (!eff.newChatMsg) break;
+					const html = eff.msg;
+					const speaker :ChatSpeakerObject = {
+						alias: "System"
+					};
+					await ChatMessage.create( {
+						speaker,
+						content: html,
+						type: CONST.CHAT_MESSAGE_TYPES.OOC,
+					});
 					break;
 			}
 		}
