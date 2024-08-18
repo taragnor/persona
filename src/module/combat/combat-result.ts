@@ -350,7 +350,6 @@ export class CombatResult  {
 				this.attacks.set(atkResult, changeArr);
 			}
 		}
-		this.costs = this.costs.concat(other.costs);
 		this.globalOtherEffects = this.globalOtherEffects.concat(other.globalOtherEffects);
 	}
 

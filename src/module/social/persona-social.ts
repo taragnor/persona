@@ -1063,7 +1063,6 @@ Hooks.on("renderChatMessage", async (message: ChatMessage, html: JQuery ) => {
 	}
 });
 
-
 export type CardData = {
 	card: SocialCard,
 	actor: PC,
@@ -1076,6 +1075,4 @@ export type CardData = {
 	eventsRemaining: number,
 	situation: Situation
 };
-
-
 
