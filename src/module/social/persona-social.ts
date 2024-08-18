@@ -485,7 +485,7 @@ export class PersonaSocial {
 				finale: true,
 			};
 			if (Object.values(placement).every( x=> x == false)) {
-				placement ={
+				placement = {
 					starter: true,
 					middle: true,
 					finale: true,
@@ -504,10 +504,13 @@ export class PersonaSocial {
 				eventList = eventList.filter( ev => isEvType(ev, "finale"));
 				break;
 		}
-		const ev = weightedChoice(eventList.map( event => ({
-			item: event,
-			weight: event.frequency ?? 1
-		})));
+		const eventWeights = eventList.map( event => ({
+						item: event,
+						weight: Number(event.frequency) ?? 1
+					})
+		);
+		Debug(eventWeights);
+		const ev = weightedChoice(eventWeights);
 		if (!ev) return undefined;
 		cardData.eventsChosen.push(cardData.card.system.events.indexOf(ev));
 		return ev;

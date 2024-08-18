@@ -34,7 +34,7 @@ type WeightedChoiceItem<T>= {
 function test_weightedChoice() {
 	const items : WeightedChoiceItem<"A" | "B" | "C">[] = [
 		{
-			item: "A", weight: 5
+			item: "A", weight: 2
 		},
 		{
 			item: "B", weight: 1
@@ -50,6 +50,7 @@ function test_weightedChoice() {
 	};
 	const times = 100000;
 	for (let i = 0; i< times; i++) {
+		shuffle(items);
 		const result = weightedChoice(items);
 		if (result == undefined) continue;
 		x[result] += 1;
@@ -65,3 +66,7 @@ function test_weightedChoice() {
 
 
 
+//@ts-ignore
+window.weightedChoice = weightedChoice;
+//@ts-ignore
+window.test_weightedChoice = test_weightedChoice;
