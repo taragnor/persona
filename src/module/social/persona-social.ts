@@ -227,7 +227,7 @@ export class PersonaSocial {
 		const chosenCard = weightedChoice(
 			undrawn.map( card=> ({
 				item: card,
-				weight: card.system.frequency ?? 1,
+				weight: Number(card.system.frequency) ?? 1,
 			}))
 		);
 		if (!chosenCard) throw new PersonaError("Can't find valid social card!");
@@ -471,7 +471,7 @@ export class PersonaSocial {
 			if (gotoEvent.length > 0) {
 				return weightedChoice(gotoEvent.map( event => ({
 					item: event,
-					weight: event.frequency > 0 ? (event.frequency ?? 1) : 1,
+					weight: Number(event.frequency) > 0 ? (Number(event.frequency) ?? 1) : 1,
 				})));
 			}
 			PersonaError.softFail (`Can't find event label ${cardData.forceEventLabel} on card ${cardData.card.name}`);

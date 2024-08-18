@@ -10,6 +10,9 @@ export function shuffle<T>(array: T[]) : void {
 
 export function weightedChoice<T>( array: WeightedChoiceItem<T>[]) : T | undefined {
 	if (array.length == 0) return undefined;
+	if (array.some(x=> typeof x.weight != "number")) {
+		array.forEach( x=> x.weight = Number(x.weight));
+	}
 	const weightSum = array.reduce(
 		(acc, {weight}) => acc + (weight ?? 1)
 		, 0);
