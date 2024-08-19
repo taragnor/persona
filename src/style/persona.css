@@ -554,3 +554,14 @@ img.event-img {
 	height: 80px;
 	width: 80px;
 }
+
+div.weather-icon{
+	min-height: 1.5em;
+
+}
+
+.day-weather.flexrow div {
+	flex: 10 10 auto;
+	min-width: 5%;
+	max-width: 95%;
+}

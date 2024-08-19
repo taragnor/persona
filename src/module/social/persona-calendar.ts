@@ -116,59 +116,16 @@ export class PersonaCalendar {
 		await PersonaSettings.set("weather", weather);
 	}
 
+	static getDateString() : string {
+		const calendar = window.SimpleCalendar;
+		if (!calendar) return "ERROR";
+		const day = calendar.api.currentDateTimeDisplay();
+		let daystr = day.date;
+		daystr = daystr.substring(0, daystr.length -6);
+		daystr =`${this.weekday()}, ${daystr}`;
+		return daystr;
+	}
+
 }
 
 
-// export class DoomsdayClock {
-// 	static MAX_TICKS: number = 30;
-
-// 	static isFull() :boolean {
-// 		const clock = this.#getClock();
-// 		if (!clock) return false;
-// 		return (clock.value == clock.max)
-// 	}
-
-// 	static async inc(): Promise<void> {
-// 		const clock = this.#getClock();
-// 		if (!clock) return;
-// 		clock.value += 1;
-// 		if (clock.value > clock.max) {
-// 			clock.value = 0;
-// 		}
-// 		await window.clockDatabase!.update(clock);
-// 	}
-
-// 	static #getClock(): undefined |  GlobalProgressClocks.ProgressClock {
-// 		if (!window.clockDatabase) {
-// 			PersonaError.softFail("No clock database, is Global Progress Clocks enabled?");
-// 			return undefined;
-// 		}
-
-// 		let clock = window.clockDatabase.getName("Doomsday Clock");
-// 		if (!clock) {
-// 			window.clockDatabase.addClock({
-// 				name: "Doomsday Clock",
-// 				value: 0,
-// 				max: this.MAX_TICKS,
-// 			});
-// 			clock = window.clockDatabase.getName("Doomsday Clock");
-// 		}
-// 		return clock;
-// 	}
-
-// 	static get val(): number {
-// 		const clock = this.#getClock();
-// 		return clock?.value ?? -1;
-// 	}
-
-// 	static get max(): number {
-// 		const clock = this.#getClock();
-// 		return clock?.max ?? -1;
-// 	}
-
-// 	static clockStatus(): number {
-// 		const clock = this.#getClock();
-// 		return clock?.value ?? -1;
-// 	}
-
-// }

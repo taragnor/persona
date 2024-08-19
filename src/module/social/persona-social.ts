@@ -1,3 +1,5 @@
+import { localize } from "../persona.js";
+import { WEATHER_TYPES } from "../../config/weather-types.js";
 import { SocialCardActionEffect } from "../../config/consequence-types.js";
 import { CardChoice } from "../../config/social-card-config.js";
 import { weightedChoice } from "../utility/array-tools.js";
@@ -985,6 +987,56 @@ export class PersonaSocial {
 		}
 		console.log(`Forcing Event : ${evLabel}`);
 		this.rollState.cardData.forceEventLabel = evLabel;
+	}
+
+	static displaySocialPanel( tracker: JQuery) {
+		if (tracker.find(".social-section").length == 0) {
+			const socialTracker = `
+				<section class="social-section">
+				<div class="day-weather flexrow">
+				<div class="day"> ---- </span>
+				</div>
+				<div class="weather-icon">
+				</div>
+				</div>
+				<div class="doomsday-clock">
+				<span class="title"> Doomsday: </span>
+				<span class="doomsday"> 0/0 </span>
+				</div>
+				</section>
+				`;
+			tracker.find(".combat-tracker-header").append(socialTracker);
+		}
+
+		const weatherIcon = this.getWeatherIcon();
+		tracker.find("div.weather-icon").append(weatherIcon);
+		const doom = PersonaCalendar.DoomsdayClock;
+		const doomtxt = `${doom.amt} / ${doom.max}`
+		tracker.find("span.doomsday").text(doomtxt);
+		const weekday = PersonaCalendar.getDateString();
+		tracker.find(".day").text(weekday);
+	}
+
+	static getWeatherIcon() : JQuery {
+		const weather = PersonaCalendar.getWeather();
+		const weatherLoc = localize(WEATHER_TYPES[weather]);
+		switch (weather) {
+			case "cloudy":
+				return $(`<i title="${weatherLoc}" class="fa-solid fa-cloud"></i>`);
+			case "sunny":
+				return $(`<i title="${weatherLoc}" class="fa-solid fa-sun"></i>)`);
+			case "lightning":
+				return $(`<i title="${weatherLoc}" class="fa-solid fa-cloud-bolt"></i>`);
+			case "rain":
+				return $(`<i title="${weatherLoc}" class="fa-solid fa-cloud-rain"></i>`);
+			case "snow":
+				return $(`<i title="${weatherLoc}" class="fa-solid fa-snowflake"></i>`);
+			case "windy":
+				return $(`<i title="${weatherLoc}" class="fa-solid fa-wind"></i>`);
+			default:
+				weather satisfies never;
+		}
+		throw new PersonaError(`Unknwon weather type ${weather}`);
 	}
 
 } //end of class

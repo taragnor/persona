@@ -8,7 +8,7 @@ import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { CombatTrigger } from "../../config/triggers.js";
 import { BASIC_PC_POWER_NAMES } from "../../config/basic-powers.js";
 import { PersonaSFX } from "./persona-sfx.js";
-import { PersonaSettings } from "../../config/persona-settings.js";
+	import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaSockets } from "../persona.js";
 import { StatusEffect } from "../../config/consequence-types.js";
 import { DamageType } from "../../config/damage-types.js";
@@ -1658,6 +1658,15 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return await Metaverse.generateTreasure(shadows, pcs);
 	}
 
+	displayEscalation(element : JQuery<HTMLElement>) {
+		if (element.find(".escalation-die").length == 0) {
+			const escalationTracker = `<div class="escalation-tracker"><span class="title"> Escalation Die: </span><span class="escalation-die">N/A</div>`;
+			element.find(".combat-tracker-header").append(escalationTracker);
+		}
+		const escalationDie = String(this.getEscalationDie());
+		element.find(".escalation-die").text(escalationDie);
+	}
+
 } // end of class
 
 
@@ -1746,13 +1755,19 @@ Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
 
 
 Hooks.on("renderCombatTracker", async (_item: CombatTracker, element: JQuery<HTMLElement>, _options: RenderCombatTabOptions) => {
-	if (element.find(".escalation-die").length == 0) {
-		const escalationTracker = `<div class="escalation-tracker"><span class="title"> Escalation Die: </span><span class="escalation-die">N/A</div>`;
-		element.find(".combat-tracker-header").append(escalationTracker);
+	const combat = (game.combat as (PersonaCombat | undefined));
+	if (!combat) return;
+	if (combat.isSocial) {
+		PersonaSocial.displaySocialPanel(element);
+	} else {
+		combat.displayEscalation(element);
+		// if (element.find(".escalation-die").length == 0) {
+		// 	const escalationTracker = `<div class="escalation-tracker"><span class="title"> Escalation Die: </span><span class="escalation-die">N/A</div>`;
+		// 	element.find(".combat-tracker-header").append(escalationTracker);
+		// }
+		// const escalationDie = combat ? String(combat.getEscalationDie()): "N\A";
+		// element.find(".escalation-die").text(escalationDie);
 	}
-	const combat = (game.combat as PersonaCombat);
-	const escalationDie = combat ? String(combat.getEscalationDie()): "N\A";
-	element.find(".escalation-die").text(escalationDie);
 });
 
 Hooks.on("onAddStatus", async function (token: PToken, status: StatusEffect)  {
