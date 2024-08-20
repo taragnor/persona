@@ -1008,7 +1008,7 @@ export class PersonaSocial {
 			tracker.find(".combat-tracker-header").append(socialTracker);
 		}
 
-		const weatherIcon = this.getWeatherIcon();
+		const weatherIcon = PersonaCalendar.getWeatherIcon();
 		tracker.find("div.weather-icon").append(weatherIcon);
 		const doom = PersonaCalendar.DoomsdayClock;
 		const doomtxt = `${doom.amt} / ${doom.max}`
@@ -1017,27 +1017,6 @@ export class PersonaSocial {
 		tracker.find(".day").text(weekday);
 	}
 
-	static getWeatherIcon() : JQuery {
-		const weather = PersonaCalendar.getWeather();
-		const weatherLoc = localize(WEATHER_TYPES[weather]);
-		switch (weather) {
-			case "cloudy":
-				return $(`<i title="${weatherLoc}" class="fa-solid fa-cloud"></i>`);
-			case "sunny":
-				return $(`<i title="${weatherLoc}" class="fa-solid fa-sun"></i>)`);
-			case "lightning":
-				return $(`<i title="${weatherLoc}" class="fa-solid fa-cloud-bolt"></i>`);
-			case "rain":
-				return $(`<i title="${weatherLoc}" class="fa-solid fa-cloud-rain"></i>`);
-			case "snow":
-				return $(`<i title="${weatherLoc}" class="fa-solid fa-snowflake"></i>`);
-			case "windy":
-				return $(`<i title="${weatherLoc}" class="fa-solid fa-wind"></i>`);
-			default:
-				weather satisfies never;
-		}
-		throw new PersonaError(`Unknwon weather type ${weather}`);
-	}
 
 } //end of class
 

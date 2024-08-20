@@ -1,3 +1,5 @@
+import { localize } from "../persona.js";
+import { WEATHER_TYPES } from "../../config/weather-types.js";
 import { ProgressClock } from "../utility/progress-clock.js";
 import { WEATHER_TYPE_LIST } from "../../config/weather-types.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
@@ -124,6 +126,28 @@ export class PersonaCalendar {
 		daystr = daystr.substring(0, daystr.length -6);
 		daystr =`${this.weekday()}, ${daystr}`;
 		return daystr;
+	}
+
+	static getWeatherIcon() : JQuery {
+		const weather = PersonaCalendar.getWeather();
+		const weatherLoc = localize(WEATHER_TYPES[weather]);
+		switch (weather) {
+			case "cloudy":
+				return $(`<i title="${weatherLoc}" class="fa-solid fa-cloud"></i>`);
+			case "sunny":
+				return $(`<i title="${weatherLoc}" class="fa-solid fa-sun"></i>)`);
+			case "lightning":
+				return $(`<i title="${weatherLoc}" class="fa-solid fa-cloud-bolt"></i>`);
+			case "rain":
+				return $(`<i title="${weatherLoc}" class="fa-solid fa-cloud-rain"></i>`);
+			case "snow":
+				return $(`<i title="${weatherLoc}" class="fa-solid fa-snowflake"></i>`);
+			case "windy":
+				return $(`<i title="${weatherLoc}" class="fa-solid fa-wind"></i>`);
+			default:
+				weather satisfies never;
+		}
+		throw new PersonaError(`Unknwon weather type ${weather}`);
 	}
 
 }

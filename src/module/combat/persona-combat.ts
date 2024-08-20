@@ -1,3 +1,4 @@
+import { PersonaCalendar } from "../social/persona-calendar.js";
 import { POWER_TAGS } from "../../config/power-tags.js";
 import { PowerTag } from "../../config/power-tags.js";
 import { ConditionTarget } from "../../config/precondition-types.js";
@@ -1660,9 +1661,20 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	displayEscalation(element : JQuery<HTMLElement>) {
 		if (element.find(".escalation-die").length == 0) {
-			const escalationTracker = `<div class="escalation-tracker"><span class="title"> Escalation Die: </span><span class="escalation-die">N/A</div>`;
+			const escalationTracker = `
+			<div class="combat-info flexrow">
+				<div class="escalation-tracker">
+					<span class="title"> Escalation Die: </span>
+					<span class="escalation-die">N/A
+				</div>
+				<div class="weather-icon">
+				</div>
+			</div>
+				`;
 			element.find(".combat-tracker-header").append(escalationTracker);
 		}
+		const weatherIcon = PersonaCalendar.getWeatherIcon();
+		element.find("div.weather-icon").append(weatherIcon);
 		const escalationDie = String(this.getEscalationDie());
 		element.find(".escalation-die").text(escalationDie);
 	}
@@ -1761,12 +1773,6 @@ Hooks.on("renderCombatTracker", async (_item: CombatTracker, element: JQuery<HTM
 		PersonaSocial.displaySocialPanel(element);
 	} else {
 		combat.displayEscalation(element);
-		// if (element.find(".escalation-die").length == 0) {
-		// 	const escalationTracker = `<div class="escalation-tracker"><span class="title"> Escalation Die: </span><span class="escalation-die">N/A</div>`;
-		// 	element.find(".combat-tracker-header").append(escalationTracker);
-		// }
-		// const escalationDie = combat ? String(combat.getEscalationDie()): "N\A";
-		// element.find(".escalation-die").text(escalationDie);
 	}
 });
 
