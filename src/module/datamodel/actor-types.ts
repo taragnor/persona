@@ -1,4 +1,5 @@
 const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
+import { StatusEffectId } from "../../config/status-effects.js";
 import { PC } from "../actor/persona-actor.js";
 import { DEFENSE_CATEGORY_LIST } from "../../config/defense-categories.js";
 import { TokenSpend } from "../../config/social-card-config.js";
@@ -7,6 +8,7 @@ import { Precondition } from "../../config/precondition-types.js";
 import { ResistType } from "../../config/damage-types.js";
 import { INCREMENTAL_ADVANCE_TYPES } from "../../config/incremental-advance-types.js";
 
+import { RESIST_STRENGTH_LIST } from "../../config/damage-types.js";
 import { ResistStrength } from "../../config/damage-types.js";
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
 import { StatusDuration } from "../../config/status-effects.js";
@@ -81,6 +83,25 @@ function elementalResists() {
 		initial });
 }
 
+function statusResists() {
+	return new sch( {
+		burn: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
+		charmed:new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
+		curse: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
+		confused: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
+		dizzy: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
+		expel: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
+		fear: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
+		vulnerable: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
+		forgetful: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
+		frozen: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
+		sleep: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
+		shock: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
+
+	});
+
+}
+
 function equipslots() {
 	return new sch( {
 		weapon: new id(),
@@ -125,9 +146,6 @@ const combatCommonStats = function () {
 		magatk: new num( {integer:true, initial: 0}),
 		defenses :
 		new sch({
-			// ref: new num( {integer:true, initial: 0}),
-			// will: new num( {integer:true, initial: 0}),
-			// fort: new num( {integer:true, initial: 0}),
 			ref: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 			will: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 			fort: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
@@ -253,6 +271,7 @@ export class ShadowSchema extends foundry.abstract.DataModel {
 			...sharedAbilities(),
 			combat: new sch({
 				...combatCommonStats(),
+				statusResists: statusResists(),
 				wpndmg: new sch({
 					low: new num({integer:true, min:0, initial:1}),
 					high: new num({integer:true, min:0, initial:2}),

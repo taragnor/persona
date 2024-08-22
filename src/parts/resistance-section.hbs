@@ -43,5 +43,19 @@
 			</select>
 		</div>
 	</div>
+
+	{{#if (isShadow actor)}}
+	<div class="resistance-block">
+		{{#each actor.statusResists as |sr|}}
+		<div class="resistance-item">
+			<img src="{{sr.img}}" title="{{sr.local}}">
+			<select name='{{strcat "system.combat.statusResists." sr.id}}'>
+				{{selectOptions ../CONST.RESIST_STRENGTHS localize=true selected=sr.val}}
+			</select>
+		</div>
+		{{/each}}
+	</div>
+	{{/if}}
+
 </section>
 

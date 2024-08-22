@@ -1,3 +1,6 @@
+import { localize } from "../persona.js";
+import { STATUS_EFFECT_LIST } from "../../config/status-effects.js";
+import { STATUS_EFFECT_TRANSLATION_TABLE } from "../../config/status-effects.js";
 import { ELEMENTAL_DEFENSE_LINK } from "../../config/damage-types.js";
 import { RESIST_STRENGTH_LIST } from "../../config/damage-types.js";
 import { Activity } from "../item/persona-item.js";
@@ -650,6 +653,29 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	/** returns true if status is added*/
 	async addStatus({id, potency, duration}: StatusEffect): Promise<boolean> {
+		const resist = this.statusResist(id);
+		switch (resist) {
+			case "absorb":
+			case "reflect":
+			case "weakness":
+			case "normal":
+				break;
+			case "block":
+				return false;
+			case "resist":
+				const DC = duration.includes("hard") ? 16 : 11;
+				const save = await PersonaCombat.rollSave(this as Shadow, {
+					DC,
+					label:`Resist status ${id}`,
+					askForModifier: false,
+					saveVersus: id,
+					modifier: 0,
+				});
+				if (save.success) return false;
+				break;
+			default:
+				resist satisfies never;
+		}
 		const eff = this.effects.find( eff => eff.statuses.has(id));
 		const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
 		if (!stateData) {
@@ -928,6 +954,30 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		const resLevel = Math.clamped(resval(baseResist) + resBonus + resPenalty, 0 , RESIST_STRENGTH_LIST.length-1);
 		return RESIST_STRENGTH_LIST[resLevel];
+	}
+
+	statusResist(status: StatusEffectId) : ResistStrength {
+		if (this.system.type != "shadow")
+			return "normal";
+		const statusResist = this.system.combat.statusResists;
+		if (status in statusResist) {
+			return statusResist[status as keyof typeof statusResist];
+		}
+		return "normal";
+	}
+
+	get statusResists() : {id: string, img: string, local: string, val: string}[] {
+		let arr: {id: string, img: string, local: string, val: string}[]   = [];
+		if (this.system.type != "shadow") return [];
+		for (const [k, v] of Object.entries(this.system.combat.statusResists)) {
+			arr.push( {
+				id: k,
+				val: v,
+				local: localize(STATUS_EFFECT_TRANSLATION_TABLE[k]),
+				img: STATUS_EFFECT_LIST.find(x=> x.id == k)?.icon ?? "",
+			});
+		}
+		return arr;
 	}
 
 	wpnMult( this: PC | Shadow) : number {

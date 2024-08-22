@@ -107,7 +107,6 @@ class PowerSchema extends foundry.abstract.DataModel {
 		}
 		return data;
 	}
-
 }
 
 class ConsumableSchema extends foundry.abstract.DataModel {

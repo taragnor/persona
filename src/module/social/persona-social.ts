@@ -511,7 +511,6 @@ export class PersonaSocial {
 						weight: Number(event.frequency) ?? 1
 					})
 		);
-		Debug(eventWeights);
 		const ev = weightedChoice(eventWeights);
 		if (!ev) return undefined;
 		cardData.eventsChosen.push(cardData.card.system.events.indexOf(ev));
@@ -993,21 +992,18 @@ export class PersonaSocial {
 		if (tracker.find(".social-section").length == 0) {
 			const socialTracker = `
 				<section class="social-section">
-				<div class="day-weather flexrow">
-				<div class="day"> ---- </span>
-				</div>
-				<div class="weather-icon">
-				</div>
-				</div>
-				<div class="doomsday-clock">
-				<span class="title"> Doomsday: </span>
-				<span class="doomsday"> 0/0 </span>
-				</div>
+					<div class="day-weather flexrow">
+						<div class="day"> ---- </div>
+						<div class="weather-icon"> </div>
+					</div>
+					<div class="doomsday-clock">
+						<span class="title"> Doomsday: </span>
+						<span class="doomsday"> 0/0 </span>
+					</div>
 				</section>
 				`;
 			tracker.find(".combat-tracker-header").append(socialTracker);
 		}
-
 		const weatherIcon = PersonaCalendar.getWeatherIcon();
 		tracker.find("div.weather-icon").append(weatherIcon);
 		const doom = PersonaCalendar.DoomsdayClock;
@@ -1017,13 +1013,11 @@ export class PersonaSocial {
 		tracker.find(".day").text(weekday);
 	}
 
-
 } //end of class
 
 
 type ActivityOptions = {
 	noDegrade ?: boolean;
-
 }
 
 declare global {
@@ -1045,24 +1039,24 @@ Hooks.on("socketsReady", () => {
 	PersonaSockets.setHandler("CARD_REPLY", PersonaSocial.getCardReply.bind(PersonaSocial));
 });
 
-Hooks.on("socketsReady" , () => {PersonaSockets.setHandler("DEC_AVAILABILITY", ( task_id: string) => {
-	if (!game.user.isGM) return;
-	const link = game.actors.find(x=> x.id == task_id);
-	if (link) {
-		const actor = link as PersonaActor;
-		if (actor.system.type == "npc" || actor.system.type == "pc") {
-			(actor as SocialLink).setAvailability(false);
+Hooks.on("socketsReady" , () => {
+	PersonaSockets.setHandler("DEC_AVAILABILITY", ( task_id: string) => {
+		if (!game.user.isGM) return;
+		const link = game.actors.find(x=> x.id == task_id);
+		if (link) {
+			const actor = link as PersonaActor;
+			if (actor.system.type == "npc" || actor.system.type == "pc") {
+				(actor as SocialLink).setAvailability(false);
+			}
+			return;
 		}
-		return;
-	}
-	const job = PersonaDB.allJobs().find( x=> x.id == task_id);
-	if (job){
-		//TODO: Degrade this if it's a job and not something else
-		return;
-	}
-	throw new PersonaError(`Can't find Task ${task_id} to decremetn availability`);
-
-});
+		const job = PersonaDB.allJobs().find( x=> x.id == task_id);
+		if (job){
+			//TODO: Degrade this if it's a job and not something else
+			return;
+		}
+		throw new PersonaError(`Can't find Task ${task_id} to decremetn availability`);
+	});
 });
 
 //@ts-ignore
@@ -1088,7 +1082,6 @@ Hooks.on("updateItem", async (_item: PersonaItem, changes) => {
 
 Hooks.on("renderChatMessage", async (message: ChatMessage, html: JQuery ) => {
 	if ((message?.author ?? message?.user) == game.user) {
-		// html.find("button.social-roll").on ("click", PersonaSocial.execSocialCard.bind(PersonaSocial));
 		html.find(".social-card-roll .make-roll").on("click", PersonaSocial.makeCardRoll.bind(PersonaSocial));
 		html.find(".social-card-roll .next").on("click", PersonaSocial.makeCardRoll.bind(PersonaSocial));
 	}
