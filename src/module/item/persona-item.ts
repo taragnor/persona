@@ -724,7 +724,8 @@ const power = PersonaDB.getBasicPower(powerName);
 			placement: {
 				starter: true,
 				middle: true,
-				finale: true
+				finale: true,
+				special: false,
 			},
 			label: "",
 			name: "Unnamed Event",

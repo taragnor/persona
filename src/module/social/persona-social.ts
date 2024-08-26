@@ -1,5 +1,3 @@
-import { localize } from "../persona.js";
-import { WEATHER_TYPES } from "../../config/weather-types.js";
 import { SocialCardActionEffect } from "../../config/consequence-types.js";
 import { CardChoice } from "../../config/social-card-config.js";
 import { weightedChoice } from "../utility/array-tools.js";
@@ -485,12 +483,14 @@ export class PersonaSocial {
 				starter: true,
 				middle: true,
 				finale: true,
+				special: false,
 			};
 			if (Object.values(placement).every( x=> x == false)) {
 				placement = {
 					starter: true,
 					middle: true,
 					finale: true,
+					special: false,
 				};
 			}
 			return placement[evType];

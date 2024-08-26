@@ -45,7 +45,7 @@ export type CardEvent = {
 	img: string,
 	label: string,
 	frequency: number, //defaults to 1
-	placement?: {starter: boolean, middle: boolean, finale: boolean},
+	placement?: {starter: boolean, middle: boolean, finale: boolean, special: boolean},
 	text: string,
 	conditions: Precondition[],
 	choices: CardChoice[]
@@ -142,5 +142,3 @@ export type TokenSpend = {
 	text: string,
 	consequences: Consequence[]
 }
-
-
