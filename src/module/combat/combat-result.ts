@@ -57,7 +57,7 @@ export class CombatResult  {
 			costs: this.costs,
 			tokenFlags: this.tokenFlags,
 			globalOtherEffects : this.globalOtherEffects,
-		}
+		};
 		const json = JSON.stringify(obj);
 		return json;
 	}

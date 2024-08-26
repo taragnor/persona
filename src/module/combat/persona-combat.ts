@@ -772,7 +772,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				consequences = consequences.concat(newCons);
 			} else {
 				const newCons = this.processConsequence_simple( cons);
-				consequences = newCons;
+				consequences = consequences.concat(newCons);
 			}
 			if (cons.type == "escalationManipulation") {
 				escalationMod += (cons.amount ?? 0);
