@@ -130,9 +130,15 @@
 
   <div class="cameo">
 	  <h4> Cameo</h4>
-	  <select name="system.cameoType">
-		  {{selectOptions CAMEO_TYPES localize=true selected=item.system.cameoType}}
-	  </select>
+	  <div class="flexrow">
+		  <select name="system.cameoType">
+			  {{selectOptions CAMEO_TYPES localize=true selected=item.system.cameoType}}
+		  </select>
+		  <div>
+			  <label> Standard Cameo Benefit</label>
+			  <input type="checkbox" id="flagState" name="system.cameoStdPerk" {{checked item.system.cameoStdPerk}}>
+		  </div>
+	  </div>
 	  <textarea name="system.cameo">
 		  {{trim item.system.cameo}}
 	  </textarea>

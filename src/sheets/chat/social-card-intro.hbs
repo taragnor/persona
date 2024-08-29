@@ -42,6 +42,11 @@
 				{{/each}}
 			</ul>
 		</div>
+		{{#if card.system.cameoStdPerk}}
+		<div>
+			{{localize	"persona.card.cameo.defaultBenefits"}}
+		</div>
+		{{/if}}
 		{{#if card.system.cameo}}
 		<div>
 			{{newlineConversion card.system.cameo}}

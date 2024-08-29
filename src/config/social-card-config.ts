@@ -62,7 +62,7 @@ type CardRollList = {
 		studentSkill: StudentSkillExt,
 		modifier: number,
 		DC: CardRollDC,
-	}
+	},
 	"save" : {
 		rollType: "save",
 		saveType: SaveType,

@@ -528,6 +528,8 @@
 	"persona.modifier-variable.escalationDie": "Escalation Die",
 	"persona.modifier-variable.tensionPool": "Tension Pool",
 
+	"persona.card.cameo.defaultBenefits": "The Cameo gains one social progress token with  a character in the scene of their choice.",
+
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",
 	"persona.availability.-": "Normal (-)",
