@@ -288,13 +288,6 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 		};
 	}
 
-	// getUniversalTokenAccessor<T extends Token<any>>(tok: T) : UniversalTokenAccessor<T> {
-	// 	return {
-	// 		scene: tok.scene.id,
-	// 		tokenId: tok.id,
-	// 	};
-	// }
-
 	accessorEq<T extends UniversalTokenAccessor<any> | UniversalItemAccessor<any> | UniversalActorAccessor<any>> ( a: T, b: T) : boolean {
 		if ("tokenId" in a && "tokenId" in b) {
 			return a.tokenId == b.tokenId
