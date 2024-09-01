@@ -31,10 +31,13 @@ interface DialogOptions {
 
 }
 
-interface ButtonOptions {
+type ButtonOptions = ({icon: string} | {label: string}) &
+	ButtonOptionsI;
+
+interface ButtonOptionsI {
 
 	icon?: string;
-	label: string;
+	label?: string;
 	callback?: (html: string) => void;
 
 }
