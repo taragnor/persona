@@ -63,6 +63,7 @@ export class PersonaSFX {
 	static async addTMFilters(statusId: StatusEffectId, token: TokenDocument<any>) {
 		//@ts-ignore
 		if (!window.TokenMagic) return;
+		if (!token.isOwner) return;
 		let params;
 		switch (statusId) {
 			case "burn":
@@ -311,6 +312,7 @@ export class PersonaSFX {
 
 Hooks.on("createActiveEffect",(eff: PersonaAE) => {
 	console.log(`Create Active effect ${eff.name}`);
+	if (!eff.isOwner && !game.user.isGM) return;
 	eff.statuses.forEach( statusId => {
 		if (eff.parent instanceof PersonaActor)  {
 			PersonaSFX.onAddStatus(statusId, eff.parent);
@@ -319,6 +321,7 @@ Hooks.on("createActiveEffect",(eff: PersonaAE) => {
 });
 
 Hooks.on("deleteActiveEffect", (eff: PersonaAE) => {
+	if (!game.user.isGM)
 	eff.statuses.forEach( statusId => {
 		if (eff.parent instanceof PersonaActor)  {
 			PersonaSFX.onRemoveStatus(statusId, eff.parent);

@@ -9,7 +9,7 @@ import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { CombatTrigger } from "../../config/triggers.js";
 import { BASIC_PC_POWER_NAMES } from "../../config/basic-powers.js";
 import { PersonaSFX } from "./persona-sfx.js";
-	import { PersonaSettings } from "../../config/persona-settings.js";
+import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaSockets } from "../persona.js";
 import { StatusEffect } from "../../config/consequence-types.js";
 import { DamageType } from "../../config/damage-types.js";
@@ -447,6 +447,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			await result.finalize();
 			await attacker.actor.removeStatus("bonus-action");
 			await result.toMessage(power.name, attacker.actor);
+			if (power == PersonaDB.getBasicPower("All-out Attack")) {
+				if (game.combat) {
+					await game.combat.nextTurn();
+				}
+			}
 			return result;
 		} catch(e) {
 			console.log(e);

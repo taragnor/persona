@@ -686,7 +686,7 @@ export class CombatResult  {
 				}
 			}
 			if (await actor.addStatus(status) && token) {
-				Hooks.call("onAddStatus", token, status);
+				Hooks.callAll("onAddStatus", token, status);
 				await PersonaSFX.onStatus(token, status.id);
 			}
 		}

@@ -1,5 +1,5 @@
-import { PToken } from "./persona-combat";
-import { PersonaCombat } from "./persona-combat";
+import { PToken } from "./persona-combat.js";
+import { PersonaCombat } from "./persona-combat.js";
 
 export class EngagementChecker {
 
@@ -39,7 +39,6 @@ export class EngagementChecker {
 				if ( this.isWithinEngagedRange(checkedToken, token)
 					&& !engagedList.has(token)
 				) {
-
 					if (token != subject)  {
 						engagedList.add(token);
 						checkList.push(token);
