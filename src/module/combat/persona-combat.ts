@@ -1303,7 +1303,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				const combat= this.ensureCombatExists();
 				const targets= combat.combatants.filter( x => {
 					const actor = x.actor;
-					if (!actor)  return false;
+					if (!actor) return false;
 					if ((actor as ValidAttackers).isAlive()) return false;
 					if ((actor as ValidAttackers).isFullyFaded()) return false;
 					return ((x.actor as ValidAttackers).getAllegiance() == attackerType)

@@ -1424,7 +1424,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	/** returns current team (taking into account charm)*/
-	getAllegiance(this: PC | Shadow)  : "PCs" | "Shadows" {
+	getAllegiance(this: PC | Shadow)  : "PCs" | "Shadows" | "Neutral" {
+		if (this.system.type == "pc") {
+			if (!this.hasPlayerOwner) return "Neutral";
+		}
 		const base = this.system.type == "pc" ? "PCs" : "Shadows";
 		if (!this.statuses.has("charmed")) return base;
 		return base == "PCs" ? "Shadows" : "PCs";
