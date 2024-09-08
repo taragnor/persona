@@ -157,6 +157,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (combatant.actor.isCapableOfAction()) {
 			const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token);
 			if (this.isEngagedByAnyFoe(accessor)) {
+				const alliedDefenders = this.getAlliedEngagedDefenders(accessor);
+				if (alliedDefenders.length == 0) {
 				const DC = this.getDisengageDC(combatant);
 				const {total, rollBundle, success} = await PersonaCombat.disengageRoll(actor, DC);
 				rolls.push(rollBundle);
@@ -164,6 +166,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				if (total >= 11) disengageResult = "normal";
 				if (total >= 16) disengageResult = "hard";
 				startTurnMsg.push("<br>"+ await renderTemplate("systems/persona/parts/disengage-check.hbs", {roll: rollBundle, disengageResult, success}));
+				} else {
+				startTurnMsg.push(`<br>Can Freely disengage thanks to ${alliedDefenders.map(x=> x.name).join(", ")}`);
+				}
 			}
 		}
 		const speaker = ChatMessage.getSpeaker({alias: actor.name});
@@ -177,6 +182,21 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		ChatMessage.create(messageData, {});
 	}
 
+
+	static isSameTeam( token1: PToken, token2: PToken) : boolean {
+			return token1.actor.getAllegiance() == token2.actor.getAllegiance();
+	}
+
+
+	getAlliedEngagedDefenders(Tacc: UniversalTokenAccessor<PToken>) : PToken[] {
+		const token = PersonaDB.findToken(Tacc);
+		const meleeTokens = EngagementChecker.getTokensInMelee(token, this);
+		return Array.from(meleeTokens)
+		.filter( x=> x.actor.statuses.has("sticky")
+			&& PersonaCombat.isSameTeam(token,x )
+			&& x.actor.canEngage()
+		);
+	}
 
 	getDisengageDC(combatant: Combatant<ValidAttackers>) : number {
 		if (!combatant.token) return 11;
