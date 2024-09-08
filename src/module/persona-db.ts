@@ -102,7 +102,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	socialLinks(): PersonaActor[] {
-		return game.actors.filter( (actor :PersonaActor)=> 
+		return game.actors.filter( (actor :PersonaActor)=>
 			(actor.system.type == "npc"
 			|| actor.system.type == "pc" )
 			&& !!actor.system.tarot
