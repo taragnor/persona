@@ -87,11 +87,15 @@ export function powerCost() {
 	return {
 		hpcost: new num( {integer:true}),
 		slot: new num( {integer: true, min:0, max:20, initial: 0}),
+		energy: new sch({
+			required: new num({initial: 0, min:0, max:10, integer: true}),
+			cost: new num({initial: 0, min:0, max:10, integer: true}),
+		}),
 		reqCharge: new txt( {choices: SHADOW_CHANGE_REQ_LIST_FULL , initial: "none"}),
 		reqEscalation: new num( {initial: 0, integer: true, min: 0, max: 6}),
 		inspirationId: new id(),
 		inspirationCost: new num({initial: 0, max: 10, min:0, integer: true}),
-		reqEnhancedMultiverse: new bool( {initial:false}),
+		// reqEnhancedMultiverse: new bool( {initial:false}),
 		reqHealthPercentage: new num( {initial: 100, min : 1, max: 100}),
 	}
 }

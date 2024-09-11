@@ -24,6 +24,7 @@ export const CONSQUENCELIST = [
 	"use-power",
 	"scan",
 	"social-card-action",
+	"expend-energy",
 	"dungeon-action",
 	"modifier", // deprecated
 	"add-escalation", // deprecated

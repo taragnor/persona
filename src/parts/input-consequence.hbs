@@ -127,6 +127,9 @@
 	</div>
 	{{/if}}
 
+	{{#if (eq cons.type "expend-energy")}}
+	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+	{{/if}}
 	{{#if (eq cons.type "social-card-action")}}
 	<select name="{{strcat namePrefix 'cardAction'}}">
 		{{selectOptions POWERSTUFF.SOCIAL_CARD_ACTIONS localize=true selected=cons.cardAction}}

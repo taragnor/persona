@@ -164,42 +164,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 
 	powerCostString_Shadow(this: Power) : string {
 		let costs : string[] = [];
-		if (this.system.reqEnhancedMultiverse) {
-			costs.push("ENH");
+		if (this.system.energy.required > 0) {
+			costs.push(`EN>=${this.system.energy.required}`);
 		}
-		if (this.system.reqEscalation) {
-			costs.push(`ESC${this.system.reqEscalation}+`);
-		}
-		switch (this.system.reqCharge) {
-			case "none":
-				break;
-			case "always":
-				costs.push("Charged-");
-				break;
-			case "not-enhanced":
-				if (!Metaverse.isEnhanced()) {costs.push("Charged")}
-				break;
-			case "supercharged":
-				costs.push("AMPED-");
-				break;
-			case "supercharged-not-enhanced":
-				if (!Metaverse.isEnhanced()) {
-					costs.push("AMPED")
-				} else {
-					costs.push("Charged");
-				}
-				break;
-			case "charged-req":
-				costs.push("Charged");
-				break;
-			case "amp-req":
-				costs.push("AMPED");
-				break;
-			case "amp-fulldep":
-				costs.push("AMPED--");
-				break;
-			default:
-				this.system.reqCharge satisfies never;
+		if (this.system.energy.cost > 0) {
+			costs.push(`EN-${this.system.energy.cost}`);
 		}
 		return costs.join(", ");
 	}
@@ -380,46 +349,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 			this.#deleteEffect(array, effectIndex)
 			await updater();
 		}
-
-		// const loc = location;
-		// switch (loc.name) {
-		// 	case "event-choice-conditions":
-		// 		throw new PersonaError("This location only has conditions");
-		// 	case "event-choice-roll" : {
-		// 		const list = this.system.events;
-		// 		const event = list[loc.eventIndex];
-		// 		event.choices = ArrayCorrector(event.choices);
-		// 		const choice = event.choices[loc.choiceIndex];
-		// 		const roll = choice.roll;
-		// 		(roll as any).effects = (roll as any).effects ?? [];
-		// 		if ("effects" in roll) {
-		// 			this.#deleteEffect(roll, effectIndex);
-		// 			await this.update({"system.events": list});
-		// 		}
-		// 		break;
-		// 	}
-
-		// 	case "card-modifiers":
-		// 		const list = this.system.globalModifiers;
-		// 		this.#deleteEffect(list, effectIndex!);
-		// 		await this.update({"system.globalModifiers": list});
-		// 		break;
-		// 	case "opportunity-condition": {
-		// 		throw new PersonaError("This location doesn't have effects");
-		// 	}
-		// 	case "opportunity-roll":{
-		// 		const list = this.system.opportunity_list;
-		// 		const roll = list[loc.opportunityIndex].roll;
-		// 		if (("effects" in roll)) {
-		// 			this.#deleteEffect(roll, effectIndex);
-		// 			await this.update({"system.opportunity_list": list});
-		// 		}
-		// 		break;
-		// 	}
-		// 	default:
-		// 		loc satisfies never;
-		// 		throw new PersonaError(`invalid location: ${loc}`);
-		// }
 	}
 
 	async addNewPowerPrecondition(this: PowerContainer, index:number) {
@@ -455,8 +384,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 			effectHolder.splice(effectIndex, 1);
 		}
 	}
-
-
 
 	#appendNewPrecondition(effectArr:{effects:ConditionalEffect[]} , effectIndex:number): void
 	#appendNewPrecondition(preconditionArr:{conditions:Precondition[]}): void

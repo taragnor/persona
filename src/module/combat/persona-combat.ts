@@ -226,7 +226,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			user: triggeringCharacter!,
 			activeCombat: true,
 		}
-			const bonusEnergy = 1+ triggeringActor.getBonuses("energy-per-turn").total(situation);
+			const bonusEnergy = 1 + triggeringActor.getBonuses("energy-per-turn").total(situation);
 			await (triggeringActor as Shadow).alterEnergy(bonusEnergy);
 		}
 
@@ -980,6 +980,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "use-power":
 			case "social-card-action":
 			case "scan":
+			case "expend-energy":
 			case "dungeon-action":
 				return [{applyTo,cons}];
 			case "expend-item":
@@ -1105,58 +1106,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				}
 			}
 			if (attacker.actor.system.type == "shadow") {
-				switch(power.system.reqCharge) {
-					case "none":
-						break;
-					case "always":
-						res.addEffect(null, attacker.actor, {
-							type: "addStatus",
-							statusName: "depleted",
-							statusDuration:"combat",
-						});
-						break;
-					case "not-enhanced":
-						if (Metaverse.isEnhanced()) {
-							break;
-						}
-						res.addEffect(null, attacker.actor, {
-							type: "addStatus",
-							statusName: "depleted",
-							statusDuration:"combat",
-						});
-						break;
-					case "charged-req":
-						break;
-					case "amp-req":
-						break;
-					case "supercharged":
-						res.addEffect(null, attacker.actor, {
-							type: "removeStatus",
-							statusName: "supercharged",
-						});
-						break;
-					case "amp-fulldep":
-						res.addEffect(null, attacker.actor, {
-							type: "removeStatus",
-							statusName: "supercharged",
-						});
-						res.addEffect(null, attacker.actor, {
-							type: "addStatus",
-							statusName: "depleted",
-							statusDuration:"combat",
-						});
-						break;
-					case "supercharged-not-enhanced":
-						res.addEffect(null, attacker.actor, {
-							type: "addStatus",
-							statusName: "depleted",
-							statusDuration:"combat",
-						});
-						break;
-
-					default:
-						power.system.reqCharge satisfies never;
+				if (power.system.energy.cost > 0) {
+					res.addEffect(null, attacker.actor, {
+						type: "expend-energy",
+						amount: power.system.energy.cost
+					});
 				}
+
 			}
 		}
 		if (power.system.type == "consumable") {

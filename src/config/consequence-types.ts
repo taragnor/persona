@@ -29,6 +29,7 @@ type ExpendOtherEffect= {
 	itemId: string;
 }
 
+
 export type RecoverSlotEffect = {
 	type: "recover-slot",
 	slot: SlotType;
@@ -98,7 +99,12 @@ export type SocialCardActionEffect = {
 	// socialActor: UniversalActorAccessor<PC | Shadow>,
 }
 
-export type OtherEffect =  ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionEffect | DungeonActionConsequence;
+export type ExpendEnergyEffect = {
+	type: "expend-energy",
+	amount: number,
+}
+
+export type OtherEffect =  ExpendEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionEffect | DungeonActionConsequence;
 
 export type StatusEffect = {
 	id: StatusEffectId,

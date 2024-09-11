@@ -1125,42 +1125,45 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	canPayActivationCost_shadow(this: Shadow, usable: Usable, outputReason: boolean) : boolean {
 		if (usable.system.type == "power") {
-			if (usable.system.reqEnhancedMultiverse && !Metaverse.isEnhanced()) {
-				if (outputReason) {
-					ui.notifications.notify(`only usable in enhanced multiverse`);
-				}
-				return false;
-			}
 			const combat = game.combat;
-			if (combat && usable.system.reqEscalation > 0 && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
+			// if (combat && usable.system.reqEscalation > 0 && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
+			const energyRequired = usable.system.energy.required;
+			const energyCost = usable.system.energy.cost;
+			const currentEnergy = this.system.combat.energy.value;
+			if (combat && energyRequired > currentEnergy) {
 				if (outputReason) {
-					ui.notifications.notify(`Escalation die must be ${usable.system.reqEscalation} or higher to use this pwoer`);
+					ui.notifications.notify(`Requires ${energyRequired} energy and you only have ${currentEnergy}`);
 				}
 				return false;
 			}
-			const enhanced= Metaverse.isEnhanced();
+			if (combat && energyCost > currentEnergy) {
+				if (outputReason) {
+					ui.notifications.notify(`Costs ${energyCost} energy and you only have ${currentEnergy}`);
+				}
+				return false;
+			}
 			if (usable.system.reqHealthPercentage < 100) {
 				const reqHp = (usable.system.reqHealthPercentage / 100) * this.mhp ;
 				if (this.hp > reqHp) return false;
 			}
-			switch (usable.system.reqCharge) {
-				case "none": return true;
-				case "charged-req":
-				case "always": return !this.statuses.has("depleted");
-				case "not-enhanced": return (enhanced || !this.statuses.has("depleted"));
-				case "amp-fulldep":
-				case "amp-req":
-				case "supercharged":
-					return this.statuses.has("supercharged");
-				case "supercharged-not-enhanced":
-					return enhanced
-						? !this.statuses.has("depleted")
-						: this.statuses.has("supercharged");
+			// switch (usable.system.reqCharge) {
+			// 	case "none": return true;
+			// 	case "charged-req":
+			// 	case "always": return !this.statuses.has("depleted");
+			// 	case "not-enhanced": return (enhanced || !this.statuses.has("depleted"));
+			// 	case "amp-fulldep":
+			// 	case "amp-req":
+			// 	case "supercharged":
+			// 		return this.statuses.has("supercharged");
+			// 	case "supercharged-not-enhanced":
+			// 		return enhanced
+			// 			? !this.statuses.has("depleted")
+			// 			: this.statuses.has("supercharged");
 
-				default:
-					usable.system.reqCharge satisfies never;
-					throw new PersonaError(`Unknown REquirement${usable.system.reqCharge}`);
-			}
+			// 	default:
+			// 		usable.system.reqCharge satisfies never;
+			// 		throw new PersonaError(`Unknown REquirement${usable.system.reqCharge}`);
+			// }
 		}
 		return true; //placeholder
 	}

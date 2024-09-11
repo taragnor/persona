@@ -309,6 +309,7 @@
 	"persona.effecttypes.addStatus": "Add Status",
 	"persona.effecttypes.removeStatus": "Remove Status",
 	"persona.effecttypes.expend-slot": "Expend Slot",
+	"persona.effecttypes.expend-energy": "Expend Energy",
 	"persona.effecttypes.escalationManipulation": "Change Escalation",
 	"persona.effecttypes.extraAttack": "Extra Attack",
 	"persona.effecttypes.modifier-new": "Apply Modifier",

@@ -324,6 +324,13 @@ export class CombatResult  {
 					...cons
 				});
 				break;
+			case "expend-energy":
+				if (!effect) break;
+				effect.otherEffects.push( {
+					type: cons.type,
+					amount: cons.amount ?? 0,
+				});
+				break;
 			default: {
 				cons satisfies never;
 				throw new Error("Should be unreachable");
@@ -646,14 +653,12 @@ export class CombatResult  {
 				case "use-power":
 					break;
 				case "scan":
-					// const combatant = game?.combat?.combatants?.find(x=> x.actor == actor) as Combatant<PersonaActor> | undefined;
-					// if (combatant && combatant?.actor?.type == "shadow") {
-					// 	ScanDialog.create(combatant as Combatant<Shadow>, otherEffect.level)
-					// }
 					break;
 				case "social-card-action":
 					break;
 				case "dungeon-action":
+					break;
+				case "expend-energy":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -767,6 +772,11 @@ export class CombatResult  {
 					break;
 				case "dungeon-action":
 					await Metaverse.executeDungeonAction(otherEffect);
+					break;
+				case "expend-energy":
+					if (actor.system.type == "shadow") {
+						await (actor as Shadow).alterEnergy(-otherEffect.amount);
+					}
 					break;
 				default:
 					otherEffect satisfies never;

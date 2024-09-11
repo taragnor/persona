@@ -566,3 +566,7 @@ div.weather-icon{
 	min-width: 5%;
 	max-width: 95%;
 }
+
+.deprecated {
+	opacity: 50%;
+}

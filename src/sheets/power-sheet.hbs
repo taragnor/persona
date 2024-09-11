@@ -90,23 +90,32 @@
 	{{#if (eq item.parent.type "shadow")}}
 	<hr>
 	<section class="shadow-costs">
-		<label>
-			Requires Charge Depletion
-		</label>
-		<select name="system.reqCharge">
-			{{selectOptions POWERSTUFF.SHADOW_CHARGE_REQ localize=true selected=item.system.reqCharge}}
-		</select>
-		<label>
-			ESC requirement
-		</label>
-		{{numberInput item.system.reqEscalation class="short" name="system.reqEscalation" step=1 min=0 max=6}}
+		<div>
+			<label> Energy Req</label>
+			{{numberInput item.system.energy.required class="short" name="system.energy.required" step=1 min=0 max=6}}
+			<label> Energy Cost</label>
+			{{numberInput item.system.energy.cost class="short" name="system.energy.cost" step=1 min=0 max=6}}
+
+		</div>
+		<div class="deprecated">
+			<label>
+				Requires Charge Depletion
+			</label>
+			<select name="system.reqCharge">
+				{{selectOptions POWERSTUFF.SHADOW_CHARGE_REQ localize=true selected=item.system.reqCharge}}
+			</select>
+			<label>
+				ESC requirement
+			</label>
+			{{numberInput item.system.reqEscalation class="short" name="system.reqEscalation" step=1 min=0 max=6}}
 	</section>
-	<label>
-		Health
-	</label>
-	{{numberInput item.system.reqHealthPercentage class="short" name="system.reqHealthPercentage" step=1 min=1 max=100}} %
-	</section>
-	{{/if}}
+		</div>
+		<label>
+			Health
+		</label>
+		{{numberInput item.system.reqHealthPercentage class="short" name="system.reqHealthPercentage" step=1 min=1 max=100}} %
+		</section>
+		{{/if}}
 
 	<hr>
 	</header>
