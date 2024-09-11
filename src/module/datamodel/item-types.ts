@@ -93,7 +93,7 @@ class PowerSchema extends foundry.abstract.DataModel {
 	static override migrateData(data: any)  {
 		const itemData = data as (Power["system"] | Consumable["system"]);
 		let dmult = 0;
-		if (itemData.melee_extra_mult == undefined && data.damage.low) {
+		if (itemData?.melee_extra_mult == undefined && data?.damage?.low) {
 			const dmglow = itemData?.damage?.low;
 			switch (true) {
 				case dmglow == 0: dmult = 0; break;

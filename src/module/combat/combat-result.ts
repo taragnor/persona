@@ -1,3 +1,4 @@
+import { Consumable } from "../item/persona-item.js";
 import { Metaverse } from "../metaverse.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { SocialCardActionEffect } from "../../config/consequence-types.js";
@@ -233,6 +234,7 @@ export class CombatResult  {
 			case "expend-item":
 					if (!effect) break;
 				effect.otherEffects.push({
+					itemId: cons.itemId,
 					type: 	"expend-item",
 					itemAcc: cons.itemAcc!
 				});
@@ -696,6 +698,20 @@ export class CombatResult  {
 		for (const otherEffect of change.otherEffects) {
 			switch (otherEffect.type) {
 				case "expend-item":
+					if (otherEffect.itemId) {
+						const item = game.items.get(otherEffect.itemId);
+						if (!item) {
+							PersonaError.softFail(`Couldn't find personal Item to expend ${otherEffect.itemId}`);
+							continue;
+						}
+						const playerItem = actor.items.getName(item.name) as Consumable;
+						if (!playerItem) {
+							PersonaError.softFail(`Couldn't find personal Item to expend ${item.name}`);
+							continue;
+						}
+						await actor.expendConsumable(playerItem);
+						continue;
+					}
 					if (!otherEffect.itemAcc) {
 						PersonaError.softFail("Can't find item to expend");
 						continue;

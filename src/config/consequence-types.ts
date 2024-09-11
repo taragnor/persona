@@ -26,6 +26,7 @@ import { UniversalItemAccessor } from "../module/utility/db-accessor.js";
 type ExpendOtherEffect= {
 	type: "expend-item";
 	itemAcc: UniversalItemAccessor<Usable>;
+	itemId: string;
 }
 
 export type RecoverSlotEffect = {

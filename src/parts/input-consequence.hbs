@@ -116,7 +116,7 @@
 
 	{{#if (eq cons.type	"expend-item")}}
 	<select name="{{strcat namePrefix 'itemId'}}">
-		{{selectOptions POWERSTUFF.ITEMS_PLUS_NULL localize=true selected=cond.itemId}}
+		{{selectOptions POWERSTUFF.ITEMS_PLUS_NULL localize=false selected=cons.itemId}}
 	</select>
 	{{/if}}
 

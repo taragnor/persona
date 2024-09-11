@@ -517,7 +517,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const tok = game.scenes.current.tokens.contents.find( tok => tok.actor == actor);
 		if (tok) return tok as PToken;
 		return undefined;
-		// throw new PersonaError(`Can't find token for actor ${actor.name}`)
 	}
 
 	static computeResultBasedEffects(result: CombatResult) {

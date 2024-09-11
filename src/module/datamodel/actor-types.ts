@@ -227,7 +227,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 	}
 
 	static override migrateData(data: any) {
-		const system= data as PC["system"];
+		const system = data as PC["system"];
 		const convert = function (x: number) {
 			switch (true) {
 				case x  >=5: return "ultimate";
@@ -239,7 +239,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			}
 		};
 		for (const def of ["fort", "ref", "will"] as const) {
-			if (typeof system.combat.defenses[def] == "number") {
+			if (typeof system?.combat?.defenses[def] == "number") {
 				system.combat.defenses[def] = convert(data.combat.defenses[def]);
 			}
 		}
