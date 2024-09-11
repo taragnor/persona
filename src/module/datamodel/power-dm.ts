@@ -95,7 +95,6 @@ export function powerCost() {
 		reqEscalation: new num( {initial: 0, integer: true, min: 0, max: 6}),
 		inspirationId: new id(),
 		inspirationCost: new num({initial: 0, max: 10, min:0, integer: true}),
-		// reqEnhancedMultiverse: new bool( {initial:false}),
 		reqHealthPercentage: new num( {initial: 100, min : 1, max: 100}),
 	}
 }

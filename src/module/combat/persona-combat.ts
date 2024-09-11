@@ -943,7 +943,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "dmg-allout-high":
 			case "dmg-mult":
 			case "damage-new":
-				PersonaError.softFail(`Process Consequnec Simple does not handle ${cons.type}`);
+				PersonaError.softFail(`Process Consequence Simple does not handle ${cons.type}`);
 				return [];
 			case "hp-loss":
 				return [{

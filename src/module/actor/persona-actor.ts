@@ -1146,24 +1146,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				const reqHp = (usable.system.reqHealthPercentage / 100) * this.mhp ;
 				if (this.hp > reqHp) return false;
 			}
-			// switch (usable.system.reqCharge) {
-			// 	case "none": return true;
-			// 	case "charged-req":
-			// 	case "always": return !this.statuses.has("depleted");
-			// 	case "not-enhanced": return (enhanced || !this.statuses.has("depleted"));
-			// 	case "amp-fulldep":
-			// 	case "amp-req":
-			// 	case "supercharged":
-			// 		return this.statuses.has("supercharged");
-			// 	case "supercharged-not-enhanced":
-			// 		return enhanced
-			// 			? !this.statuses.has("depleted")
-			// 			: this.statuses.has("supercharged");
-
-			// 	default:
-			// 		usable.system.reqCharge satisfies never;
-			// 		throw new PersonaError(`Unknown REquirement${usable.system.reqCharge}`);
-			// }
 		}
 		return true; //placeholder
 	}
@@ -1817,51 +1799,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const userLevel = this.system.combat.classData.level
 			+ (this.system.combat.classData.incremental.powers ? 1 : 0)
 		const powerLevel = power.powerEffectLevel();
-		const diff = userLevel - powerLevel;
-		let charge = PersonaActor.calcCharge(role, power, diff);
-		let esc = PersonaActor.calcEscalationReq(role, power,  diff);
-		console.log(`Escalation Req: ${esc}`);
+		const diff = powerLevel - userLevel;
+		const cost = PersonaActor.calcPowerCost(role, power, diff);
+		const energyReq = PersonaActor.calcPowerRequirement(role, power,  diff);
 		await power.update({
-			"system.reqCharge": charge,
-			"system.reqEscalation": esc
+			"system.energy.required": energyReq,
+			"system.energy.cost": cost
 		});
 	}
 
-	static calcCharge(role: Shadow["system"]["role"], power: Readonly<Power>,  diff: number) : Power["system"]["reqCharge"] {
+	static calcPowerRequirement(role: Shadow["system"]["role"], power: Readonly<Power>,  diff: number) : number {
 		if (power.system.tags.includes("basicatk"))
-			return "none";
+			return 0;
 		const tags = power.system.tags;
 		switch (role) {
-			case "tank":
-				diff -= 1;
-				break;
-			case "soldier":
-				diff -= 1;
-				break;
-			case "assassin": {
-				break;
-			}
-			case "artillery":
-				break;
-			case "lurker":
-				// diff += 1;
-				break;
-			case "elite":
-				diff += 1;
-				break;
-			case "miniboss":
-				diff += 1;
-				break;
-			case "boss":
-				diff += 2;
-				break;
-			case "controller":
+			case "support":
 				if (!tags.includes("debuff")) {
 					diff -= 2;
 				}
-				break;
-			case "support":
-				diff -= 1;
 				if (tags.includes("buff")
 					|| tags.includes("healing")) {
 					diff += 1;
@@ -1870,38 +1825,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			default:
 				break;
 		}
-		diff -= 1;
-		switch (true) {
-			case diff >= 2 :
-				return "none";
-			case diff >= 0:
-				return "charged-req";
-			case diff >= -2:
-				return "always";
-			case diff >= -4:
-				return "supercharged";
-			case diff >= -5:
-				return "supercharged";
-			case diff < -5 :
-				return "amp-fulldep";
-			default:
-				PersonaError.softFail(`Unhandled difference value ${diff}`);
-				return "amp-fulldep";
-		}
+		return Math.clamped(diff, 0, 4);
 	}
 
-	static calcEscalationReq(role: Shadow["system"]["role"], power: Readonly<Power>, diff: number) : Power["system"]["reqEscalation"] {
+	static calcPowerCost(role: Shadow["system"]["role"], power: Readonly<Power>, diff: number) : Power["system"]["reqEscalation"] {
 		if (power.system.tags.includes("basicatk"))
 			return 0;
-		switch (role) {
-			case "lurker":
-				diff -= 1;
-				break;
-			default:
-				diff += 1;
-				break;
-		}
-		if (diff >= 0) return 0;
+		if (diff <= 0) return 0;
 		let esc = Math.round(Math.abs(diff) / 2);
 		return Math.clamped(esc, 0, 6);
 	}
