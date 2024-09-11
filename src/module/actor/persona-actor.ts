@@ -1916,6 +1916,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 
+	async increaseScanLevel(this: Shadow, amt :number) {
+		const scanLevel = this.system.scanLevel ?? 0;
+		if (scanLevel >= amt) return;
+		if (this.token) {
+			await this.token.baseActor.increaseScanLevel(amt);
+		}
+		await this.update({"system.scanLevel": amt});
+		if (amt > 0) {
+			this.ownership.default = CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED;
+			await this.update({"ownership": this.ownership});
+		}
+	}
+
 }
 
 Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) => {

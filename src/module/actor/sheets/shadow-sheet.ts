@@ -36,6 +36,15 @@ export class ShadowSheet extends CombatantSheetBase {
 
 	}
 
+	override get template() {
+		if ( !game.user.isGM && this.actor.limited) {
+			return `${HBS_TEMPLATES_DIR}/shadow-limited.hbs`;
+		}
+		if (!game.user.isGM) return "";
+		return this.options.template;
+	}
+
+
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 		html.find('.addShadowPower').on("click", this.onAddPower.bind(this));

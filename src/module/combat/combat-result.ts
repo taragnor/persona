@@ -646,10 +646,10 @@ export class CombatResult  {
 				case "use-power":
 					break;
 				case "scan":
-					const combatant = game?.combat?.combatants?.find(x=> x.actor == actor) as Combatant<PersonaActor> | undefined;
-					if (combatant && combatant?.actor?.type == "shadow") {
-						ScanDialog.create(combatant as Combatant<Shadow>, otherEffect.level)
-					}
+					// const combatant = game?.combat?.combatants?.find(x=> x.actor == actor) as Combatant<PersonaActor> | undefined;
+					// if (combatant && combatant?.actor?.type == "shadow") {
+					// 	ScanDialog.create(combatant as Combatant<Shadow>, otherEffect.level)
+					// }
 					break;
 				case "social-card-action":
 					break;
@@ -759,6 +759,9 @@ export class CombatResult  {
 				case "use-power":
 					break;
 				case "scan":
+					if (actor.system.type == "shadow") {
+						await (actor as Shadow).increaseScanLevel(otherEffect.level);
+					}
 					break; // done elsewhere for local player
 				case "social-card-action":
 					break;
@@ -849,4 +852,13 @@ Hooks.on("socketsReady", async () => {
 	PersonaSockets.setHandler("COMBAT_RESULT_APPLY", CombatResult.applyHandler.bind(CombatResult));
 });
 
+Hooks.on("updateActor", async (updatedActor : PersonaActor, changes) => {
+	//open scan prompt for all players on scan
+	if (game.user.isGM) return;
+	if (updatedActor.system.type == "shadow") {
+		if (changes?.system?.scanLevel && updatedActor.token) {
+			updatedActor.sheet.render(true);
+		}
+	}
+});
 

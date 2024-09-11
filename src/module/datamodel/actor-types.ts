@@ -269,6 +269,7 @@ export class ShadowSchema extends foundry.abstract.DataModel {
 			}),
 			tarot: tarot(),
 			...sharedAbilities(),
+			scanLevel: new num({initial: 0, integer: true}),
 			combat: new sch({
 				...combatCommonStats(),
 				statusResists: statusResists(),
