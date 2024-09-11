@@ -124,7 +124,7 @@ Hooks.on("init", async () => {
 			value: []
 		},
 		shadow: {
-			bar: ["combat.hpTracker"],
+			bar: ["combat.hpTracker", "combat.energy"],
 			value: []
 		}
 

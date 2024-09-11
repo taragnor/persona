@@ -1,9 +1,10 @@
+import { Shadow } from "../actor/persona-actor.js";
 import { PersonaItem } from "../item/persona-item.js";
 import { PersonaCalendar } from "../social/persona-calendar.js";
 import { POWER_TAGS } from "../../config/power-tags.js";
 import { PowerTag } from "../../config/power-tags.js";
 import { ConditionTarget } from "../../config/precondition-types.js";
-import { ConsTarget } from "../../config/consequence-types.js";
+	import { ConsTarget } from "../../config/consequence-types.js";
 import { PersonaSocial } from "../social/persona-social.js"
 import { UniversalModifier } from "../item/persona-item.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
@@ -87,6 +88,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			};
 			ChatMessage.create(messageData, {});
 		}
+		const starters = this.combatants.contents.map( comb => comb?.actor?.onCombatStart());
+		await Promise.all(starters);
 		this.refreshActorSheets();
 		return await super.startCombat();
 	}
@@ -216,6 +219,17 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	async endCombatantTurn(combatant: Combatant<ValidAttackers>) {
 		const triggeringCharacter  = (combatant as Combatant<PersonaActor>)?.token?.actor?.accessor;
+		const triggeringActor = combatant?.token?.actor;
+
+		if (triggeringActor && triggeringActor.system.type == "shadow") {
+		const situation : Situation = {
+			user: triggeringCharacter!,
+			activeCombat: true,
+		}
+			const bonusEnergy = 1+ triggeringActor.getBonuses("energy-per-turn").total(situation);
+			await (triggeringActor as Shadow).alterEnergy(bonusEnergy);
+		}
+
 		if (triggeringCharacter) {
 			for (const user of this.combatants) {
 				if (user.token.actor == undefined) {continue;}
@@ -227,7 +241,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				await PersonaCombat.execTrigger("end-turn", user.token.actor as ValidAttackers, situation);
 			}
 		}
-
 		const actor = combatant.actor;
 		if (!actor) return;
 		if (!game.user.isOwner) return;

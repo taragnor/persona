@@ -273,6 +273,10 @@ export class ShadowSchema extends foundry.abstract.DataModel {
 			combat: new sch({
 				...combatCommonStats(),
 				statusResists: statusResists(),
+				energy: new sch({
+					value: new num({initial: 0, integer: true, min: 0, max: 10}),
+					max: new num({initial: 4, integer: true, min:1, max:10}),
+				}),
 				wpndmg: new sch({
 					low: new num({integer:true, min:0, initial:1}),
 					high: new num({integer:true, min:0, initial:2}),

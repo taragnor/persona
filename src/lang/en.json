@@ -185,6 +185,8 @@
 	"persona.modifier.pay": "Job Pay",
 	"persona.modifier.extraMaxPowers": "Extra Powers Known",
 	"persona.modifier.initiative": "Initiative",
+	"persona.modifier.starting-energy": "Shadow Starting Energy",
+	"persona.modifier.energy-per-turn": "Energy Gained at end of Turn",
 
 	"persona.equipslots.weapon": "Weapon",
 	"persona.equipslots.body": "Outfit",

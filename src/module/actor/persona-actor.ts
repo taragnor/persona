@@ -52,8 +52,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 
 	async refreshHpTracker(this:PC | Shadow)  {
-		if (!game.user.isGM) return;//attempt at fixing lag hopefully won't lead to inaccurate bar
-		// if (!this.isOwner) return; //old code lagged maybe
+		if (!game.user.isGM) return;
 		if (this.hp > this.mhp) {
 			this.update({"system.combat.hp": this.mhp});
 		}
@@ -602,18 +601,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get focii(): Focus[] {
 		if (this.system.type == "pc")
 			return [];
-		// if (this.system.type != "pc") {
 		return this.items.filter( x=> x.system.type == "focus") as Focus[];
-		// }
-		// const fIds = this.system.combat.focuses;
-		// const focii = fIds.flatMap( id => {
-		// 	const focus = PersonaDB.getItemById(id);
-		// 	if (!focus) return [];
-		// 	if (focus.system.type != "focus") return [];
-		// 	return [focus as Focus];
-		// });
-		// const itemFocii = this.items.filter ( x => x.system.type == "focus") as Focus[];
-		// return focii.concat(itemFocii);
 	}
 
 	async modifyHP( this: Shadow | PC, delta: number) {
@@ -1915,7 +1903,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return Math.clamped(esc, 0, 6);
 	}
 
-
 	async increaseScanLevel(this: Shadow, amt :number) {
 		const scanLevel = this.system.scanLevel ?? 0;
 		if (scanLevel >= amt) return;
@@ -1926,6 +1913,31 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (amt > 0) {
 			this.ownership.default = CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED;
 			await this.update({"ownership": this.ownership});
+		}
+	}
+
+	async setEnergy(this: Shadow, amt: number) {
+		amt = Math.clamped(amt, 0, this.system.combat.energy.max);
+		await this.update({"system.combat.energy.value": amt});
+	}
+
+	async alterEnergy(this: Shadow, amt: number) {
+		await this.setEnergy(this.system.combat.energy.value + amt);
+	}
+
+	async onCombatStart() {
+		switch (this.system.type) {
+			case "shadow":
+				const sit : Situation = {
+					user: this.accessor,
+				}
+				const startingEnergy = 1 + this.getBonuses("starting-energy").total(sit);
+				await (this as Shadow).setEnergy(startingEnergy);
+				break;
+			case "pc":
+			case "npc":
+			case "tarot":
+				break;
 		}
 	}
 
@@ -2004,5 +2016,4 @@ export type SocialLinkData = {
 	relationshipType: string,
 	available: boolean,
 }
-
 
