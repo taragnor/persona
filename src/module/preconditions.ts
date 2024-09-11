@@ -466,6 +466,13 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			const user = getUser(condition.userComparisonTarget, situation);
 			return user?.isGM ?? undefined;
 		}
+		case "has-item-in-inventory": {
+			const item = game.items.get(condition.itemId);
+			if (!item) return undefined;
+			const target = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!target) return undefined;
+			return target.items.contents.some(x=> x.name == item.name && (("amount" in x.system)? x.system.amount > 0 : true ));
+		}
 		default :
 			condition satisfies never;
 			return undefined;

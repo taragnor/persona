@@ -77,14 +77,23 @@ const power = PersonaDB.getBasicPower(powerName);
 
 	get costString() : string {
 		switch (this.system.type) {
-
 			case "power":
 				return (this as Power).powerCostString();
 			case "consumable":
 				return "consumable";
-
 			default:
 				return "free";
+		}
+	}
+
+	isAnyItemType() : this is (InvItem | Weapon | Consumable) {
+		switch (this.system.type) {
+			case "consumable":
+			case "item":
+			case "weapon":
+				return true;
+			default:
+				return false;
 		}
 	}
 

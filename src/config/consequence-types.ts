@@ -201,7 +201,6 @@ type CardActionConsequence = {
 	studentSkill?: StudentSkill,
 }
 
-
 export type DungeonActionConsequence = {
 	type: "dungeon-action",
 	dungeonAction: DungeonAction,

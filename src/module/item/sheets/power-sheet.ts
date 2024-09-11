@@ -2,7 +2,7 @@ import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { Power } from "../persona-item.js";
 import { PersonaPowerLikeBaseSheet } from "./powerlike-base-sheet.js";
 
-export class PersonaPowerSheet  extends PersonaPowerLikeBaseSheet {
+export class PersonaPowerSheet extends PersonaPowerLikeBaseSheet {
 	override item: Power;
 
 	static override get defaultOptions() {

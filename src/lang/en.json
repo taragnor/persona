@@ -434,6 +434,7 @@
 	"persona.preconditions.comparison.is-dead": "Is Dead",
 	"persona.preconditions.comparison.is-consumable": "Is Consumable Item",
 	"persona.preconditions.comparison.target-owner-comparison": "Target/Attacker/Owner comparison",
+	"persona.preconditions.comparison.has-item-in-inventory": "Has Item in Inventory",
 	"persona.preconditions.comparison.power-target-type-is": "Power's targets are",
 	"persona.preconditions.comparison.weather-is": "Current Weather is",
 	"persona.preconditions.comparison.target-social-link-is": "Target Social Link is",

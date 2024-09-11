@@ -1,3 +1,4 @@
+import { PersonaItem } from "../persona-item.js";
 import { USER_COMPARISON_TARGETS } from "../../../config/precondition-types.js";
 import { ProgressClock } from "../../utility/progress-clock.js";
 import { DAMAGE_SUBTYPES } from "../../../config/effect-types.js";
@@ -131,6 +132,10 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			ProgressClock.allClocks()
 			.map(clock => [clock.id, clock.name])
 		) ;
+		const ITEMS = Object.fromEntries( (game.items.contents as PersonaItem[])
+			.filter( item => item.isAnyItemType())
+			.map (item => [item.id, item.name])
+		);
 		return {
 			...this.powerStuffBase,
 			SOCIAL_LINKS,
@@ -141,6 +146,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			),
 			CLOCKS,
 			SCENES,
+			ITEMS,
 		};
 	}
 

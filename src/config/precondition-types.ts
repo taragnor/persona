@@ -125,12 +125,16 @@ export type BooleanComparisonPC = {
 	type : "boolean",
 	booleanState : boolean,
 	boolComparisonTarget: BooleanComparisonTarget,
-} & (StatusComparisonPC | TagComparisonPC |  BasicBComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison);
+} & (BasicBComparisonPC | NonBasicBoolComparison);
 
 	type BasicBComparisonPC = {
 	boolComparisonTarget: Exclude<BooleanComparisonTarget,
-	"has-status" | "has-tag" | "damage-type-is" | "power-type-is" | "weekday-is" | "flag-state" | "is-resistant-to" | "social-target-is" | TargettedBComparisonPC["boolComparisonTarget"] | "power-target-type-is" | "weather-is" | "shadow-role-is" | "active-scene-is" | "is-gm" >,
+	NonBasicBoolComparison["boolComparisonTarget"]>
 }
+
+type NonBasicBoolComparison =
+StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison
+;
 
 export type TargettedBComparisonPC = SingleTargetComparison | TwoTargetComparison;
 
@@ -149,6 +153,12 @@ type TwoTargetComparison = {
 	boolComparisonTarget:	"target-owner-comparison" | "engaged-with"
 	conditionTarget : ConditionTarget,
 	conditionTarget2: ConditionTarget,
+}
+
+type HasItemCheckComparison = {
+	boolComparisonTarget: "has-item-in-inventory",
+	itemId: string,
+	conditionTarget: ConditionTarget,
 }
 
 type SocialTargetIsComparison = {
@@ -244,6 +254,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"is-distracted",
 	"active-scene-is",
 	"is-gm",
+	"has-item-in-inventory"
 ] as const;
 
 

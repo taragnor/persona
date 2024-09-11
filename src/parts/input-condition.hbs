@@ -181,7 +181,15 @@
 	<select name="{{strcat namePrefix 'userComparisonTarget'}}">
 		{{selectOptions POWERSTUFF.USER_COMPARISON_TARGETS localize=true selected=cond.userComparisonTarget}}
 	</select>
+	{{/if}}
 
+	{{#if (eq cond.boolComparisonTarget  "has-item-in-inventory")}}
+	<select name="{{strcat namePrefix 'conditionTarget'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+	</select>
+	<select name="{{strcat namePrefix 'itemId'}}">
+		{{selectOptions POWERSTUFF.ITEMS localize=true selected=cond.itemId}}
+	</select>
 	{{/if}}
 
 	{{/if}}
