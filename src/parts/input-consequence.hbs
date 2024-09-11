@@ -114,6 +114,12 @@
 
 	{{/if}}
 
+	{{#if (eq cons.type	"expend-item")}}
+	<select name="{{strcat namePrefix 'itemId'}}">
+		{{selectOptions POWERSTUFF.ITEMS_PLUS_NULL localize=true selected=cond.itemId}}
+	</select>
+	{{/if}}
+
 	{{#if (eq cons.type "scan")}}
 	<div>
 		<label> Scan Level</label>

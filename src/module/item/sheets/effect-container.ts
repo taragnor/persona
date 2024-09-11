@@ -136,6 +136,10 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			.filter( item => item.isAnyItemType())
 			.map (item => [item.id, item.name])
 		);
+		const ITEMS_PLUS_NULL = {
+			"": "usedItem",
+			...ITEMS
+		};
 		return {
 			...this.powerStuffBase,
 			SOCIAL_LINKS,
@@ -147,6 +151,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			CLOCKS,
 			SCENES,
 			ITEMS,
+			ITEMS_PLUS_NULL,
 		};
 	}
 

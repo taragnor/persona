@@ -1,3 +1,4 @@
+import { PersonaItem } from "../item/persona-item.js";
 import { PersonaCalendar } from "../social/persona-calendar.js";
 import { POWER_TAGS } from "../../config/power-tags.js";
 import { PowerTag } from "../../config/power-tags.js";
@@ -970,10 +971,22 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "dungeon-action":
 				return [{applyTo,cons}];
 			case "expend-item":
+				if (cons.itemId) {
+					const item = game.items.get(cons.itemId) as PersonaItem;
+					if (!item) return [];
+					return [{applyTo,
+						cons: {
+							type: "expend-item",
+							itemId: item.id,
+							itemAcc: item.accessor,
+						}
+					}];
+				}
 				if (cons.sourceItem) {
 					return [{applyTo,
 						cons: {
 							type: "expend-item",
+							itemId: "",
 							itemAcc: cons.sourceItem
 						}
 					}];
@@ -1137,6 +1150,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (power.system.type == "consumable") {
 			res.addEffect(null, attacker.actor, {
 				type: "expend-item",
+				itemId: "",
 				itemAcc: PersonaDB.getUniversalItemAccessor(power),
 			});
 		}

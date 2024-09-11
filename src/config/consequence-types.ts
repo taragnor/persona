@@ -142,8 +142,14 @@ type NonGenericConsequences = UsePowerConsequence
 	| ModifierConsequence
 	| DamageConsequence
 	| DisplayMessageConsequence
+	| ExpendItemConsequence
 ;
 
+type ExpendItemConsequence = {
+	type : "expend-item",
+	itemId: string,
+	itemAcc ?: UniversalItemAccessor<Usable>,
+}
 
 type DamageConsequenceShared = {
 	type : "damage-new",
