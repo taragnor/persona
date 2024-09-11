@@ -43,18 +43,18 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	}
 
 	static getBasicPCPowers() : Power[] {
-const basic = BASIC_PC_POWER_NAMES;
+		const basic = BASIC_PC_POWER_NAMES;
 		return basic.flatMap( powerName =>  {
-const power = PersonaDB.getBasicPower(powerName);
+			const power = PersonaDB.getBasicPower(powerName);
 			if (!power) return [];
 			return [power as Power];
 		});
 	}
 
 	static getBasicShadowPowers() : Power[] {
-const basic = BASIC_SHADOW_POWER_NAMES;
+		const basic = BASIC_SHADOW_POWER_NAMES;
 		return basic.flatMap( powerName =>  {
-const power = PersonaDB.getBasicPower(powerName);
+			const power = PersonaDB.getBasicPower(powerName);
 			if (!power) return [];
 			return [power as Power];
 		});
@@ -107,10 +107,10 @@ const power = PersonaDB.getBasicPower(powerName);
 
 	grantsPowers(this: ModifierContainer): boolean {
 		try{
-		return this.getEffects(null).some(
-			eff => eff.consequences.some(
-				cons => cons.type == "add-power-to-list"
-			));
+			return this.getEffects(null).some(
+				eff => eff.consequences.some(
+					cons => cons.type == "add-power-to-list"
+				));
 		} catch (e) {
 			console.log(this);
 			return false;
@@ -449,8 +449,8 @@ const power = PersonaDB.getBasicPower(powerName);
 
 	#deleteEffect(effectHolder:{effects:ConditionalEffect[]} | ConditionalEffect[], effectIndex:number): void {
 		if ("effects" in effectHolder) {
-		effectHolder.effects = ArrayCorrector(effectHolder.effects);
-		effectHolder.effects.splice(effectIndex,1);
+			effectHolder.effects = ArrayCorrector(effectHolder.effects);
+			effectHolder.effects.splice(effectIndex,1);
 		} else {
 			effectHolder.splice(effectIndex, 1);
 		}
@@ -665,12 +665,12 @@ const power = PersonaDB.getBasicPower(powerName);
 	/** used for damage calculation estaimate for char sheet*/
 	getDamageMultSimple(this: ModifierContainer, user: PC |Shadow, situation: Situation = {user: user.accessor , usedPower: this.accessor, hit: true, attacker: user.accessor} ) {
 		const multCons = this.getEffects(user)
-		.map ( eff => getActiveConsequences(eff,situation, this))
-		.flat()
-		.filter( x=> x.type == "dmg-mult" || ( x.type == "damage-new" && x.damageSubtype == "multiplier"));
+			.map ( eff => getActiveConsequences(eff,situation, this))
+			.flat()
+			.filter( x=> x.type == "dmg-mult" || ( x.type == "damage-new" && x.damageSubtype == "multiplier"));
 		return multCons.reduce( (acc, cons) =>
 			acc * ("amount" in cons ? cons.amount ?? 1: 1)
-,1);
+			,1);
 
 	}
 
@@ -707,7 +707,7 @@ const power = PersonaDB.getBasicPower(powerName);
 				{
 					if (cond.num)
 						return cond.num;
-						// requirement = Math.max(requirement, cond.num);
+					// requirement = Math.max(requirement, cond.num);
 				}
 			}
 		}

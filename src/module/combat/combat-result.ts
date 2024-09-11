@@ -37,7 +37,7 @@ export class CombatResult  {
 	tokenFlags: {
 		actor: UniversalActorAccessor<PC |Shadow>,
 			effects: OtherEffect[]
-		}[] = [] ;
+	}[] = [] ;
 	attacks: Map<AttackResult, ActorChange<PC | Shadow>[]> = new Map();
 	escalationMod: number = 0;
 	costs: ActorChange<PC | Shadow>[] = [];
@@ -131,7 +131,7 @@ export class CombatResult  {
 						effect.hpchange = -(cons.amount ?? 0);
 						break;
 					default:
-						cons satisfies never;
+							cons satisfies never;
 						break;
 				}
 				break;
@@ -461,7 +461,7 @@ export class CombatResult  {
 			await this.autoApplyResult();
 		} catch (e) {
 			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
-			}
+		}
 		return chatMsg;
 	}
 
@@ -787,7 +787,7 @@ export class CombatResult  {
 			addStatus : initial.addStatus.concat(other.addStatus),
 			removeStatus : initial.removeStatus.concat(other.removeStatus),
 			expendSlot : initial.expendSlot.map( (x,i)=> x + other.expendSlot[i]) as [number, number, number, number],
-				otherEffects: initial.otherEffects.concat(other.otherEffects)
+			otherEffects: initial.otherEffects.concat(other.otherEffects)
 		};
 	}
 }

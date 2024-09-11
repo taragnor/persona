@@ -160,15 +160,15 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			if (this.isEngagedByAnyFoe(accessor)) {
 				const alliedDefenders = this.getAlliedEngagedDefenders(accessor);
 				if (alliedDefenders.length == 0) {
-				const DC = this.getDisengageDC(combatant);
-				const {total, rollBundle, success} = await PersonaCombat.disengageRoll(actor, DC);
-				rolls.push(rollBundle);
-				let disengageResult = "failed";
-				if (total >= 11) disengageResult = "normal";
-				if (total >= 16) disengageResult = "hard";
-				startTurnMsg.push("<br>"+ await renderTemplate("systems/persona/parts/disengage-check.hbs", {roll: rollBundle, disengageResult, success}));
+					const DC = this.getDisengageDC(combatant);
+					const {total, rollBundle, success} = await PersonaCombat.disengageRoll(actor, DC);
+					rolls.push(rollBundle);
+					let disengageResult = "failed";
+					if (total >= 11) disengageResult = "normal";
+					if (total >= 16) disengageResult = "hard";
+					startTurnMsg.push("<br>"+ await renderTemplate("systems/persona/parts/disengage-check.hbs", {roll: rollBundle, disengageResult, success}));
 				} else {
-				startTurnMsg.push(`<br>Can Freely disengage thanks to ${alliedDefenders.map(x=> x.name).join(", ")}`);
+					startTurnMsg.push(`<br>Can Freely disengage thanks to ${alliedDefenders.map(x=> x.name).join(", ")}`);
 				}
 			}
 		}
@@ -185,7 +185,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 
 	static isSameTeam( token1: PToken, token2: PToken) : boolean {
-			return token1.actor.getAllegiance() == token2.actor.getAllegiance();
+		return token1.actor.getAllegiance() == token2.actor.getAllegiance();
 	}
 
 
@@ -193,10 +193,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const token = PersonaDB.findToken(Tacc);
 		const meleeTokens = EngagementChecker.getTokensInMelee(token, this);
 		return Array.from(meleeTokens)
-		.filter( x=> x.actor.statuses.has("sticky")
-			&& PersonaCombat.isSameTeam(token,x )
-			&& x.actor.canEngage()
-		);
+			.filter( x=> x.actor.statuses.has("sticky")
+				&& PersonaCombat.isSameTeam(token,x )
+				&& x.actor.canEngage()
+			);
 	}
 
 	getDisengageDC(combatant: Combatant<ValidAttackers>) : number {
@@ -219,12 +219,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (triggeringCharacter) {
 			for (const user of this.combatants) {
 				if (user.token.actor == undefined) {continue;}
-			const situation : Situation = {
-				triggeringCharacter,
-				user: user.token.actor.accessor,
-				activeCombat: true,
-			}
-			await PersonaCombat.execTrigger("end-turn", user.token.actor as ValidAttackers, situation);
+				const situation : Situation = {
+					triggeringCharacter,
+					user: user.token.actor.accessor,
+					activeCombat: true,
+				}
+				await PersonaCombat.execTrigger("end-turn", user.token.actor as ValidAttackers, situation);
 			}
 		}
 
@@ -638,7 +638,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const critBoost = critBoostMod.total(situation);
 
 		if (naturalAttackRoll == 1
-				|| total < defenseVal
+			|| total < defenseVal
 		) {
 			situation.hit = false;
 			situation.criticalHit = false;
@@ -905,7 +905,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						type: cons.type,
 						amount: PersonaCombat.calculateAllOutAttackDamage(userToken, situation).high * (absorb ? -1 : damageMult),
 					}
-					}];
+				}];
 			}
 			case "none":
 			case "modifier":
@@ -1112,7 +1112,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 							statusDuration:"combat",
 						});
 						break;
-						case "charged-req":
+					case "charged-req":
 						break;
 					case "amp-req":
 						break;
@@ -1687,7 +1687,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	async generateTreasure() {
 		const actors = this.combatants
-					.contents.flatMap( x=> x?.actor ? [x.actor] : [] );
+			.contents.flatMap( x=> x?.actor ? [x.actor] : [] );
 		const shadows= actors
 			.filter (x => x.system.type == "shadow");
 		if (shadows.some(x=> x.hp > 0)) {
