@@ -1,3 +1,4 @@
+import { CreatureType } from "./shadow-types.js";
 import { ShadowRole } from "./shadow-types.js";
 import { UniversalActorAccessor } from "../module/utility/db-accessor.js";
 import { PC } from "../module/actor/persona-actor.js";
@@ -133,7 +134,7 @@ export type BooleanComparisonPC = {
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison
+StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion
 ;
 
 export type TargettedBComparisonPC = SingleTargetComparison | TwoTargetComparison;
@@ -142,6 +143,12 @@ type ShadowRoleComparison = {
 	boolComparisonTarget: "shadow-role-is",
 	conditionTarget: ConditionTarget,
 	shadowRole: ShadowRole,
+}
+
+type CreatureTypeCheckComparion = {
+	boolComparisonTarget : "creature-type-is",
+	conditionTarget: ConditionTarget,
+	creatureType: CreatureType,
 }
 
 export type SingleTargetComparison = {
@@ -254,7 +261,8 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"is-distracted",
 	"active-scene-is",
 	"is-gm",
-	"has-item-in-inventory"
+	"has-item-in-inventory",
+	"creature-type-is",
 ] as const;
 
 

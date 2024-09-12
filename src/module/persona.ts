@@ -134,6 +134,3 @@ export function localize(...args: Parameters<typeof game.i18n.localize>): Return
 	return game.i18n.localize(...args);
 }
 
-//@ts-ignore
-window.ScanDialog = ScanDialog;
-

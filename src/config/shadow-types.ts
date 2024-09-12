@@ -18,3 +18,30 @@ export type ShadowRole = typeof SHADOW_ROLE_LIST[number];
 export const SHADOW_ROLE= Object.fromEntries(
 	SHADOW_ROLE_LIST.map( x=> [x, `persona.shadow.role.${x}`])
 );
+
+
+export const SHADOW_CREATURE_TYPE_LIST = [
+	"shadow",
+	"daemon",
+	"demon"
+] as const;
+
+
+
+export const SHADOW_CREATURE_TYPE =  Object.fromEntries(
+	SHADOW_CREATURE_TYPE_LIST.map( x=> [x, `persona.foe.type.${x}`])
+);
+
+
+export const CREATURE_TYPE_LIST = [
+	...SHADOW_CREATURE_TYPE_LIST,
+	"pc",
+	"npc"
+] as const;
+
+export type CreatureType = null | typeof CREATURE_TYPE_LIST[number];
+
+export const CREATURE_TYPE =  Object.fromEntries(
+	CREATURE_TYPE_LIST.map( x=> [x, `persona.foe.type.${x}`])
+);
+

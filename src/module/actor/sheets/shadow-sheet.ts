@@ -1,3 +1,4 @@
+import { SHADOW_CREATURE_TYPE } from "../../../config/shadow-types.js";
 import { PersonaDB } from "../../persona-db.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { SHADOW_ROLE } from "../../../config/shadow-types.js";
@@ -20,6 +21,7 @@ export class ShadowSheet extends CombatantSheetBase {
 
 	override async getData() {
 		const data = await super.getData();
+		data.SHADOW_CREATURE_TYPE= SHADOW_CREATURE_TYPE;
 		data.SHADOW_ROLE = SHADOW_ROLE;
 		data.TREASURE_LIST = Object.fromEntries(
 			PersonaDB.treasureItems()

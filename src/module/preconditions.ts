@@ -473,6 +473,12 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (!target) return undefined;
 			return target.items.contents.some(x=> x.name == item.name && (("amount" in x.system)? x.system.amount > 0 : true ));
 		}
+		case "creature-type-is": {
+			const target = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!target) return undefined;
+			return target.system.creatureType == condition.creatureType;
+
+		}
 		default :
 			condition satisfies never;
 			return undefined;

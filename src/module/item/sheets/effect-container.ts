@@ -1,3 +1,4 @@
+import { CREATURE_TYPE } from "../../../config/shadow-types.js";
 import { PersonaItem } from "../persona-item.js";
 import { USER_COMPARISON_TARGETS } from "../../../config/precondition-types.js";
 import { ProgressClock } from "../../utility/progress-clock.js";
@@ -114,6 +115,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			MODIFIER_VARIABLES,
 			DAMAGE_SUBTYPES,
 			USER_COMPARISON_TARGETS,
+			CREATURE_TYPE,
 		};
 		return this._powerStuffBase;
 	}

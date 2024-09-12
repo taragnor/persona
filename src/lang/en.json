@@ -32,6 +32,12 @@
 	"persona.shadow.role.miniboss": "Miniboss",
 	"persona.shadow.role.boss": "Boss",
 
+	"persona.foe.type.shadow": "Shadow",
+	"persona.foe.type.daemon": "Daemon",
+	"persona.foe.type.demon": "Demon",
+	"persona.foe.type.pc": "PC",
+	"persona.foe.type.npc": "NPC",
+
 	"persona.sheet.tabs.inventory.tabname" : "Inventory",
 	"persona.sheet.tabs.social.tabname" : "Social",
 
@@ -438,6 +444,7 @@
 	"persona.preconditions.comparison.is-consumable": "Is Consumable Item",
 	"persona.preconditions.comparison.target-owner-comparison": "Target/Attacker/Owner comparison",
 	"persona.preconditions.comparison.has-item-in-inventory": "Has Item in Inventory",
+	"persona.preconditions.comparison.creature-type-is": "Creature Type Is",
 	"persona.preconditions.comparison.power-target-type-is": "Power's targets are",
 	"persona.preconditions.comparison.weather-is": "Current Weather is",
 	"persona.preconditions.comparison.target-social-link-is": "Target Social Link is",

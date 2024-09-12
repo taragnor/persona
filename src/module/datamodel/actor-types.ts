@@ -1,5 +1,5 @@
 const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
-import { StatusEffectId } from "../../config/status-effects.js";
+import { SHADOW_CREATURE_TYPE_LIST } from "../../config/shadow-types.js";
 import { PC } from "../actor/persona-actor.js";
 import { DEFENSE_CATEGORY_LIST } from "../../config/defense-categories.js";
 import { TokenSpend } from "../../config/social-card-config.js";
@@ -210,6 +210,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 			weeklyAvailability: weeklyAvailability(),
 			equipped: equipslots(),
 			money: new num({integer: true, min: 0, initial:1}),
+			creatureType: new txt({ choices: ["pc"] , initial: "pc"}),
 			tarot: tarot(),
 			combat: new sch( {
 				...combatCommonStats(),
@@ -267,6 +268,7 @@ export class ShadowSchema extends foundry.abstract.DataModel {
 					item2prob: new num( {initial: 0, integer: false}),
 				}),
 			}),
+			creatureType: new txt({ choices: SHADOW_CREATURE_TYPE_LIST, initial: "shadow"}),
 			tarot: tarot(),
 			...sharedAbilities(),
 			scanLevel: new num({initial: 0, integer: true}),
@@ -315,6 +317,7 @@ export class NPCSchema extends foundry.abstract.DataModel {
 			...BaseStuff.defineSchema(),
 			weeklyAvailability: weeklyAvailability(),
 			conditions: new arr(new obj<Precondition>()),
+			creatureType: new txt({ choices: ["npc"] , initial: "npc"}),
 			tarot: tarot(),
 			bio: personalBio(),
 			keyskill: keySkills(),
