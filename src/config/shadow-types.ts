@@ -39,7 +39,7 @@ export const CREATURE_TYPE_LIST = [
 	"npc"
 ] as const;
 
-export type CreatureType = null | typeof CREATURE_TYPE_LIST[number];
+export type CreatureType = typeof CREATURE_TYPE_LIST[number];
 
 export const CREATURE_TYPE =  Object.fromEntries(
 	CREATURE_TYPE_LIST.map( x=> [x, `persona.foe.type.${x}`])

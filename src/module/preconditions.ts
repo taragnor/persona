@@ -1,3 +1,4 @@
+import { MultiCheck } from "../config/precondition-types.js";
 import { UserComparisonTarget } from "../config/precondition-types.js";
 import { ProgressClock } from "./utility/progress-clock.js";
 import { PowerTag } from "../config/power-tags.js";
@@ -476,7 +477,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 		case "creature-type-is": {
 			const target = getSubjectActor(condition, situation, source, "conditionTarget");
 			if (!target) return undefined;
-			return target.system.creatureType == condition.creatureType;
+			return multiCheckContains(condition.creatureType, [target.system.creatureType]);
 
 		}
 		default :
@@ -566,6 +567,12 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 			}
 			return PersonaDB.findActor(situation.user);
 	}
+}
+
+function multiCheckContains<T extends string>(multiCheck: MultiCheck<T>, arr: T[]) : boolean {
+			return Object.entries(multiCheck)
+			.filter( ([_, val]) => val == true)
+			.some (([item, _]) => arr.includes(item as T));
 }
 
 export type UserSituation = {

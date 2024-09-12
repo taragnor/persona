@@ -148,7 +148,7 @@ type ShadowRoleComparison = {
 type CreatureTypeCheckComparion = {
 	boolComparisonTarget : "creature-type-is",
 	conditionTarget: ConditionTarget,
-	creatureType: CreatureType,
+	creatureType: MultiCheck<CreatureType>,
 }
 
 export type SingleTargetComparison = {
@@ -351,3 +351,4 @@ export const USER_COMPARISON_TARGETS = Object.fromEntries(
 
 );
 
+export type MultiCheck<T extends string> = Record<T, boolean> ;

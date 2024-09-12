@@ -49,6 +49,9 @@
 		{{#if (eq effect.type "expend-energy")}}
 		Energy -{{effect.amount}}
 		{{/if}}
+		{{#if (eq effect.type "scan")}}
+		Scan Lvl. {{effect.level}}
+		{{/if}}
 		{{#if (eq effect.type "hp-loss")}}
 		Power HP Cost: {{effect.amount}}
 		{{/if}}

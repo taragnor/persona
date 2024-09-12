@@ -196,10 +196,7 @@
 	<select name="{{strcat namePrefix 'conditionTarget'}}">
 		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
 	</select>
-	<select name="{{strcat namePrefix 'creatureType'}}">
-		{{selectOptions POWERSTUFF.CREATURE_TYPE localize=true selected=cond.creatureType}}
-	</select>
-
+	{{multicheck (strcat namePrefix 'creatureType') POWERSTUFF.CREATURE_TYPE checked=cond.creatureType localize=true}}
 	{{/if}}
 
 	{{/if}}
