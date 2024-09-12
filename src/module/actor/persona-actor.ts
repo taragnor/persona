@@ -1147,13 +1147,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const energyRequired = usable.system.energy.required;
 			const energyCost = usable.system.energy.cost;
 			const currentEnergy = this.system.combat.energy.value;
-			if (combat && energyRequired > currentEnergy) {
+			if (combat && energyRequired > 0 && energyRequired > currentEnergy) {
 				if (outputReason) {
 					ui.notifications.notify(`Requires ${energyRequired} energy and you only have ${currentEnergy}`);
 				}
 				return false;
 			}
-			if (combat && energyCost > currentEnergy) {
+			if (combat && energyCost > (currentEnergy + 1)) {
 				if (outputReason) {
 					ui.notifications.notify(`Costs ${energyCost} energy and you only have ${currentEnergy}`);
 				}
