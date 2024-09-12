@@ -276,7 +276,7 @@ export class ShadowSchema extends foundry.abstract.DataModel {
 				...combatCommonStats(),
 				statusResists: statusResists(),
 				energy: new sch({
-					value: new num({initial: 0, integer: true, min: 0, max: 10}),
+					value: new num({initial: 0, integer: true, min: -1, max: 10}),
 					max: new num({initial: 4, integer: true, min:1, max:10}),
 				}),
 				wpndmg: new sch({

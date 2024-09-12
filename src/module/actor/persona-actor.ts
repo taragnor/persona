@@ -1867,7 +1867,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async setEnergy(this: Shadow, amt: number) {
-		amt = Math.clamped(amt, 0, this.system.combat.energy.max);
+		amt = Math.clamped(amt, -1, this.system.combat.energy.max);
 		await this.update({"system.combat.energy.value": amt});
 	}
 
