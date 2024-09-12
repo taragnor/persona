@@ -420,7 +420,4 @@ declare global {
 interface TokenMagic {
 	deleteFilters(token :Token<any>, filterId: string): Promise<unknown>;
 	addUpdateFilters(token: Token<any>, filterData: {}): Promise<unknown>;
-
-
-
 }

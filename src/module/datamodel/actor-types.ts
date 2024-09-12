@@ -300,7 +300,7 @@ export class ShadowSchema extends foundry.abstract.DataModel {
 				default: return "normal";
 			}
 		};
-		if (typeof system.combat.defenses.fort == "number") {
+		if (typeof system?.combat?.defenses?.fort == "number") {
 			system.combat.defenses.fort = convert(data.combat.defenses.fort);
 			system.combat.defenses.ref = convert(data.combat.defenses.ref);
 			system.combat.defenses.will = convert(data.combat.defenses.will);

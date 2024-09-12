@@ -32,7 +32,6 @@ declare global {
 	}
 }
 
-
 export class CombatResult  {
 	tokenFlags: {
 		actor: UniversalActorAccessor<PC |Shadow>,

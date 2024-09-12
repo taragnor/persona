@@ -94,7 +94,7 @@ export class PersonaHandleBarsHelpers {
 					const mult = usable.getDamageMultSimple(combatant);
 					const low = usable.getDamage(combatant, "low") * mult;
 					const high = usable.getDamage(combatant, "high") * mult;
-					return low + " / " + high;
+					return Math.round(low) + " / " + Math.round(high);
 				default:
 					actor.system satisfies never;
 					return "0/0";

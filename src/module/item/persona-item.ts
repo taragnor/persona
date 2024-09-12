@@ -591,7 +591,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 
 	/** used for damage calculation estaimate for char sheet*/
 	getDamageMultSimple(this: ModifierContainer, user: PC |Shadow, situation: Situation = {user: user.accessor , usedPower: this.accessor, hit: true, attacker: user.accessor} ) {
+		const mainMods = user.getEffects();
+
 		const multCons = this.getEffects(user)
+			.concat(mainMods)
 			.map ( eff => getActiveConsequences(eff,situation, this))
 			.flat()
 			.filter( x=> x.type == "dmg-mult" || ( x.type == "damage-new" && x.damageSubtype == "multiplier"));

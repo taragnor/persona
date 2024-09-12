@@ -35,7 +35,6 @@ export class ShadowSheet extends CombatantSheetBase {
 		);
 
 		return data;
-
 	}
 
 	override get template() {
@@ -54,7 +53,6 @@ export class ShadowSheet extends CombatantSheetBase {
 		html.find(".recost-power").on("click", this.onRecostPower.bind(this));
 		html.find(".add-dungeon").on("click", this.addDungeon.bind(this));
 		html.find(".del-dungeon").on("click", this.deleteDungeon.bind(this));
-
 	}
 
 	async onAddPower( _ev: Event) {
