@@ -687,14 +687,8 @@ export class CombatResult  {
 			await actor.modifyHP(change.hpchange * change.hpchangemult);
 		}
 		for (const status of change.addStatus) {
-			if (status.id == "curse" || status.id == "expel") {
-				if (!token || Math.abs(change.hpchange) < (token.actor!.mhp * 0.2)) {
-					continue;
-				}
-			}
 			if (await actor.addStatus(status) && token) {
 				Hooks.callAll("onAddStatus", token, status);
-				await PersonaSFX.onStatus(token, status.id);
 			}
 		}
 		for (const status of change.removeStatus) {
@@ -766,6 +760,7 @@ export class CombatResult  {
 				case "scan":
 					if (actor.system.type == "shadow") {
 						await (actor as Shadow).increaseScanLevel(otherEffect.level);
+						PersonaSFX.onScan(token, otherEffect.level);
 					}
 					break; // done elsewhere for local player
 				case "social-card-action":

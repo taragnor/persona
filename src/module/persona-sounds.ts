@@ -24,6 +24,7 @@ const SOUNDS = {
 	"defense-nerf": "atk-debuff.mp3",
 	"attack-nerf": "atk-debuff.mp3",
 	"damage-nerf": "atk-debuff.mp3",
+	"scan": "scan.mp3",
 } as const;
 
 export type ValidSound = keyof typeof SOUNDS;

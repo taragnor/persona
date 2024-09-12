@@ -5,7 +5,6 @@ import { StatusEffectId } from "../../config/status-effects.js";
 import { DamageType } from "../../config/damage-types.js";
 import { PToken } from "./persona-combat.js";
 import { PersonaSounds } from "../persona-sounds.js";
-import { waitUntilTrue } from "../utility/async-wait.js";
 
 
 export class PersonaSFX {
@@ -37,6 +36,14 @@ export class PersonaSFX {
 		}
 	}
 
+	static async onScan(token: PToken | undefined, level: number) {
+		if (!token) return;
+		await this.addTMFiltersSpecial("scan", token);
+		await PersonaSFX.play("scan");
+		await this.removeTMFiltersSpecial("scan", token)
+
+	}
+
 	static async onDefend( token: PToken | undefined, defenseType: "block" | "absorb" | "miss" | "reflect") {
 		const s = await this.play(defenseType);
 	}
@@ -48,20 +55,58 @@ export class PersonaSFX {
 	}
 
 	static async onAddStatus(statusId: StatusEffectId, actor: PersonaActor) {
-		let token;
-		if (game.combat && game.combat.active) {
-			token = (game.combat as PersonaCombat).combatants.find( x=> x.actor == actor)?.token;
-			if (!token) return;
+		const tokens = actor.tokens;
+		for (const token of tokens) {
 			try {
-				this.addTMFilters(statusId, token);
+				this.addTMFiltersStatus(statusId, token);
 			} catch (e)  {
 				console.error(e);
 			}
 		}
+		// let token;
+		// if (game.combat && game.combat.active) {
+		// 	token = (game.combat as PersonaCombat).combatants.find( x=> x.actor == actor)?.token;
+		// 	if (!token) return;
+		// 	try {
+		// 		this.addTMFiltersStatus(statusId, token);
+		// 	} catch (e)  {
+		// 		console.error(e);
+		// 	}
+		// }
 	}
 
-	static async addTMFilters(statusId: StatusEffectId, token: TokenDocument<any>) {
+	static async onRemoveStatus(statusId: StatusEffectId, actor: PersonaActor) {
+		const tokens = actor.tokens;
+		for (const token of tokens) {
+			try {
+				this.removeTMFiltersStatus(statusId, token);
+			} catch (e)  {
+				console.error(e);
+			}
+		}
+		// let token;
+		// if (game.combat && game.combat.active) {
+		// 	token = (game.combat as PersonaCombat).combatants.find( x=> x.actor == actor)?.token;
+		// 	if (!token) return;
+		// 	try {
+		// 		await this.removeTMFiltersStatus(statusId, token);
+		// 	} catch (e)  {
+		// 		console.error(e);
+		// 	}
+		// }
+
+	}
+
+	static getTokens (actor: PersonaActor) : TokenDocument<PersonaActor>[] {
+		if (actor.token) {
+			return [actor.token];
+		}
 		//@ts-ignore
+		const dependentTokens : TokenDocument<PersonaActor>[] = Array.from(actor._dependentTokens.values()).flatMap(x=> Array.from(x.values()));
+		return dependentTokens.filter( x=> x.actorLink == true);
+	}
+
+	static async addTMFiltersStatus(statusId: StatusEffectId, token: TokenDocument<any>) {
 		if (!window.TokenMagic) return;
 		if (!token.isOwner) return;
 		let params;
@@ -256,27 +301,64 @@ export class PersonaSFX {
 			default:
 				return;
 		}
-
-		//@ts-ignore
-		await TokenMagic.addUpdateFilters(token.object, params);
+		await window.TokenMagic.addUpdateFilters(token.object!, params);
 	}
 
-	static async onRemoveStatus(statusId: StatusEffectId, actor: PersonaActor) {
-		let token;
-		if (game.combat && game.combat.active) {
-			token = (game.combat as PersonaCombat).combatants.find( x=> x.actor == actor)?.token;
-			if (!token) return;
-			try {
-				await this.removeTMFilters(statusId, token);
-			} catch (e)  {
-				console.error(e);
+	static async addTMFiltersSpecial(filterType: "scan", token: TokenDocument<any>) {
+		if (!window.TokenMagic) return;
+		if (!token.isOwner) return;
+		let params;
+		switch (filterType) {
+			case "scan": {
+				params =
+				[{
+					filterType: "xray",
+					filterId: "myXrayScan",
+					time: 0,
+					color: 0xFFFFFF,
+					blend: 5,
+					dimX: 20,
+					dimY: 20,
+					anchorX: 0.5,
+					anchorY: 0,
+					divisor: 8,
+					intensity: 1,
+					animated :
+					{
+						time :
+						{
+							active: true,
+							speed: 0.00038,
+							animType: "move"
+						}
+					}
+				}];
+				break;
 			}
+		}
+
+		await window.TokenMagic.addUpdateFilters(token.object!, params);
+	}
+
+	static async removeTMFiltersSpecial(filterType: "scan", token: TokenDocument<any>) {
+		if (!window.TokenMagic) return;
+		if (!token.isOwner) return;
+		let filters = [];
+		switch (filterType) {
+			case "scan" :{
+				filters = ["myXrayScan"];
+				break;
+			}
+		}
+		for (const filterId of filters) {
+			await window.TokenMagic?.deleteFilters(token.object!, filterId);
 		}
 
 	}
 
-	static async removeTMFilters(statusId: StatusEffectId, token: TokenDocument<any>) {
-		//@ts-ignore
+
+
+	static async removeTMFiltersStatus(statusId: StatusEffectId, token: TokenDocument<any>) {
 		if (!window.TokenMagic) return;
 		let filters : string[] = [];
 		switch (statusId) {
@@ -299,8 +381,7 @@ export class PersonaSFX {
 				return;
 		}
 		for (const filterId of filters) {
-				//@ts-ignore
-				await TokenMagic?.deleteFilters(token.object, filterId);
+				await window.TokenMagic?.deleteFilters(token.object!, filterId);
 		}
 	}
 
@@ -312,7 +393,7 @@ export class PersonaSFX {
 
 Hooks.on("createActiveEffect",(eff: PersonaAE) => {
 	console.log(`Create Active effect ${eff.name}`);
-	if (!eff.isOwner && !game.user.isGM) return;
+	if (!game.user.isGM) return;
 	eff.statuses.forEach( statusId => {
 		if (eff.parent instanceof PersonaActor)  {
 			PersonaSFX.onAddStatus(statusId, eff.parent);
@@ -321,7 +402,7 @@ Hooks.on("createActiveEffect",(eff: PersonaAE) => {
 });
 
 Hooks.on("deleteActiveEffect", (eff: PersonaAE) => {
-	if (!game.user.isGM)
+	if (!game.user.isGM) return;
 	eff.statuses.forEach( statusId => {
 		if (eff.parent instanceof PersonaActor)  {
 			PersonaSFX.onRemoveStatus(statusId, eff.parent);
@@ -329,3 +410,17 @@ Hooks.on("deleteActiveEffect", (eff: PersonaAE) => {
 	});
 });
 
+
+declare global {
+	interface Window {
+		TokenMagic ?: TokenMagic;
+	}
+}
+
+interface TokenMagic {
+	deleteFilters(token :Token<any>, filterId: string): Promise<unknown>;
+	addUpdateFilters(token: Token<any>, filterData: {}): Promise<unknown>;
+
+
+
+}

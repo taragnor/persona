@@ -1,3 +1,4 @@
+import { PersonaSFX } from "../combat/persona-sfx.js";
 import { localize } from "../persona.js";
 import { STATUS_EFFECT_LIST } from "../../config/status-effects.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../../config/status-effects.js";
@@ -178,6 +179,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	set hp(newval: number) {
 		if (this.system.type == "npc"
 			|| this.system.type == "tarot") return;
+		newval = Math.clamped(newval, 0, this.mhp);
 		this.update({"system.combat.hp": newval});
 		(this as PC | Shadow).refreshHpStatus(newval);
 	}
@@ -669,6 +671,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!stateData) {
 			throw new Error(`Couldn't find status effect Id: ${id}`);
 		}
+		if (id == "curse" || id == "expel") {
+			if (this.system.type == "pc" || this.system.type == "shadow") {
+				this.hp -= 9999;
+			}
+		}
 		if (!eff) {
 			const s = [id];
 			const newState = {
@@ -701,8 +708,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	hasStatus (id: StatusEffectId) : boolean {
 		return this.effects.contents.some( eff => eff.statuses.has(id));
+
 	}
 
+	get tokens() : TokenDocument<this>[] {
+		const actor = this;
+		if (actor.token) {
+			return [actor.token];
+		}
+		//@ts-ignore
+		const dependentTokens : TokenDocument<PersonaActor>[] = Array.from(actor._dependentTokens.values()).flatMap(x=> Array.from(x.values()));
+		return dependentTokens.filter( x=> x.actorLink == true) as TokenDocument<this>[];
+	}
 
 	/** returns status id of nullified status otherwise return undefined */
 	async checkStatusNullificaton(statusId: StatusEffectId) : Promise<StatusEffectId  | undefined> {
