@@ -106,6 +106,7 @@
 	"persona.status.blocking" : "Blocking",
 	"persona.status.curse" : "Cursed",
 	"persona.status.confused" : "Confused",
+	"persona.status.poison" : "Poisoned",
 	"persona.status.down" : "Down",
 	"persona.status.depleted" : "Depleted",
 	"persona.status.dizzy" : "Dizzy",

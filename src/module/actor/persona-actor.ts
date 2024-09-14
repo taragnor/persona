@@ -297,6 +297,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async recoverSlot(this: PC, slottype: RecoverSlotEffect["slot"], amt: number = 1) : Promise<boolean> {
+		const mpval = PersonaActor.convertSlotToMP(Number(slottype)) * amt;
+		await this.modifyMP(mpval);
 		let slotNum: keyof typeof this.system.slots;
 		let canUpgrade= true;
 		let worked = false;
@@ -644,6 +646,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		await this.update( {"system.combat.hp": hp});
 		// await this.refreshHpStatus();
+	}
+
+	async modifyMP( this: PC, delta: number) {
+		let mp = this.system.combat.mp.value;
+		mp += delta;
+		mp = Math.clamped(mp, 0, this.mmp);
+		await this.update( {"system.combat.mp.value": mp});
 	}
 
 	async refreshHpStatus(this: Shadow | PC, newval?: number) {

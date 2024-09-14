@@ -33,6 +33,9 @@ export const STATUS_EFFECT_LIST = [
 		id: "fear",
 		icon:  "icons/svg/terror.svg",
 	}, {
+		id: "poison",
+		icon:  "icons/svg/poison.svg",
+	}, {
 		id: "vulnerable",
 		icon:  "icons/svg/paralysis.svg",
 	}, {
@@ -100,7 +103,8 @@ export const STATUS_EFFECT_LIST = [
 	{
 		id: "sticky",
 		icon:   "icons/svg/anchor.svg"
-	}
+	},
+
 
 
 ] as const;
