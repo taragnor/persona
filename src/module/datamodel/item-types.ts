@@ -91,8 +91,29 @@ class PowerSchema extends foundry.abstract.DataModel {
 	}
 
 	static override migrateData(data: any)  {
-		const itemData = data as (Power["system"] | Consumable["system"]);
+		const itemData = data as (Power["system"]);
 		let dmult = 0;
+		debugger;
+		if (itemData.subtype == "magic" && (itemData.mpcost == undefined || itemData.mpcost >= 0)) {
+			const slot = (itemData as Power["system"]).slot;
+			const isArea = itemData.targets == "all-enemies" || itemData.targets == "all-allies";
+			const isExpensive = itemData.dmg_type == "light" || itemData.dmg_type == "dark" || itemData.dmg_type =="untyped";
+			const statusEffectTags : typeof itemData["tags"] =["charm", "sleep", "fear", "confusion",   ];
+			const isStatusEffect = itemData.tags.some( x=> statusEffectTags.includes(x));
+			const isBuff = (itemData.tags.includes("buff") || itemData.tags.includes("debuff")) && !isStatusEffect;
+			// const resurrection = itemData.targets == "1-nearby-dead" || itemData.targets == "all-dead-allies";
+			const areaMult = 1.5 + (isStatusEffect ? 1.0 : 0);
+			const mult = (1 + (isExpensive ? 1 : 0) + (isBuff ? 0.5 : 0)) * (isArea ? areaMult : 1);
+			let mpCost : number;
+			switch (slot) {
+				case 0: mpCost = 4 * mult; break;
+				case 1: mpCost = 8 * mult; break;
+				case 2: mpCost = 12 * mult; break;
+				case 3: mpCost = 24 * mult; break;
+				default: mpCost = 48 * mult; break;
+			}
+			itemData.mpcost = Math.round(mpCost);
+		}
 		if (itemData?.melee_extra_mult == undefined && data?.damage?.low) {
 			const dmglow = itemData?.damage?.low;
 			switch (true) {

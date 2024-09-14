@@ -120,7 +120,7 @@ Hooks.on("init", async () => {
 	//@ts-ignore
 	CONFIG.Actor.trackableAttributes = {
 		pc: {
-			bar: ["combat.hpTracker"],
+			bar: ["combat.hpTracker", "combat.mp"],
 			value: []
 		},
 		shadow: {

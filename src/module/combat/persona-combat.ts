@@ -1,3 +1,4 @@
+import { STATUS_POWER_TAGS } from "../../config/power-tags.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { PersonaItem } from "../item/persona-item.js";
 import { PersonaCalendar } from "../social/persona-calendar.js";
@@ -1147,14 +1148,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				tag = "almighty";
 				break;
 			case "none":
-				if (power.system.tags.includes("buff")) {
-					tag = "buff"
-					break;
-				}
-				if (power.system.tags.includes("debuff")) {
-					tag = "debuff";
-					break;
-				}
+				tag = power.system.tags.find(x=> STATUS_POWER_TAGS.includes(x as any));
+				break;
+				// if (power.system.tags.includes("buff")) {
+				// 	tag = "buff";
+				// 	break;
+				// }
+				// if (power.system.tags.includes("debuff")) {
+				// 	tag = "debuff";
+				// 	break;
+				// }
 			case "all-out":
 				break;
 		}

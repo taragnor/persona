@@ -85,6 +85,7 @@ export function powerSpecific () {
 
 export function powerCost() {
 	return {
+		mpcost: new num( {initial: 1, integer:true}),
 		hpcost: new num( {integer:true}),
 		slot: new num( {integer: true, min:0, max:20, initial: 0}),
 		energy: new sch({

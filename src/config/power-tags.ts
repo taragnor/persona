@@ -1,3 +1,11 @@
+export const STATUS_POWER_TAGS  = [
+	"charm",
+	"fear",
+	"sleep",
+	"confusion",
+	"poison",
+] as const;
+
 export const POWER_TAGS_LIST = [
 	"amped",
 	"fire",
@@ -14,10 +22,7 @@ export const POWER_TAGS_LIST = [
 	"healing",
 	"mobile",
 	"basicatk",
-	"charm",
-	"fear",
-	"sleep",
-	"confusion",
+	...STATUS_POWER_TAGS,
 	"exotic",
 ] as const;
 
