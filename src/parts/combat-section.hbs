@@ -42,12 +42,23 @@
 					Damage
 				</label>
 				<span>
-				{{numberInput actor.system.combat.wpndmg.low class="short" name="system.combat.wpndmg.low" step=1 min=0 max=100}}
-				{{numberInput actor.system.combat.wpndmg.high class="short" name="system.combat.wpndmg.high" step=1 min=0 max=100}}
+					{{numberInput actor.system.combat.wpndmg.low class="short" name="system.combat.wpndmg.low" step=1 min=0 max=100}}
+					{{numberInput actor.system.combat.wpndmg.high class="short" name="system.combat.wpndmg.high" step=1 min=0 max=100}}
 				</span>
 			</div>
 			{{/if}}
 		</div>
+		{{#if (eq actor.type "pc")}}
+		<div class="mp">
+			<label> MP </label>
+			<span>
+				<input class="short" type="number" name="system.combat.mp.value" value="{{actor.system.combat.mp.value}}">
+			</span>
+			<span>
+				/ {{actor.system.combat.mp.max}}
+			</span>
+		</div>
+		{{/if}}
 		{{> "systems/persona/parts/defenses-section.hbs" actor=actor CONST=CONST}}
 		{{> "systems/persona/parts/resistance-section.hbs" actor=actor CONST=CONST}}
 		{{#if (isPC actor)}}

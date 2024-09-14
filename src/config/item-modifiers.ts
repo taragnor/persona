@@ -27,6 +27,7 @@ export const MODIFIERLIST = [
 	"initiative",
 	"starting-energy",
 	"energy-per-turn",
+	"maxmp",
 ] as const;
 
 export const MODIFIERS_TABLE = Object.fromEntries(

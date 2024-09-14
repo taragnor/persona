@@ -163,6 +163,7 @@
 	"persona.status.duration.instant": "Instant",
 
 	"persona.modifier.maxhp": "Maximum HP",
+	"persona.modifier.maxmp": "Maximum MP",
 	"persona.modifier.wpnAtk": "Weapon Attack Bonus",
 	"persona.modifier.magAtk": "Magic Attack Bonus",
 	"persona.modifier.wpnDmg": "Weapon Damage",

@@ -1,3 +1,4 @@
+import { PersonaActor } from "../actor/persona-actor.js";
 import { Power } from "../item/persona-item.js";
 import { Consumable } from "../item/persona-item.js";
 import { TokenSpend } from "../../config/social-card-config.js";
@@ -93,7 +94,6 @@ class PowerSchema extends foundry.abstract.DataModel {
 	static override migrateData(data: any)  {
 		const itemData = data as (Power["system"]);
 		let dmult = 0;
-		debugger;
 		if (itemData.subtype == "magic" && (itemData.mpcost == undefined || itemData.mpcost >= 0)) {
 			const slot = (itemData as Power["system"]).slot;
 			const isArea = itemData.targets == "all-enemies" || itemData.targets == "all-allies";
@@ -104,14 +104,8 @@ class PowerSchema extends foundry.abstract.DataModel {
 			// const resurrection = itemData.targets == "1-nearby-dead" || itemData.targets == "all-dead-allies";
 			const areaMult = 1.5 + (isStatusEffect ? 1.0 : 0);
 			const mult = (1 + (isExpensive ? 1 : 0) + (isBuff ? 0.5 : 0)) * (isArea ? areaMult : 1);
-			let mpCost : number;
-			switch (slot) {
-				case 0: mpCost = 4 * mult; break;
-				case 1: mpCost = 8 * mult; break;
-				case 2: mpCost = 12 * mult; break;
-				case 3: mpCost = 24 * mult; break;
-				default: mpCost = 48 * mult; break;
-			}
+			const baseCost = PersonaActor.convertSlotToMP(slot);
+			const mpCost = baseCost * mult;
 			itemData.mpcost = Math.round(mpCost);
 		}
 		if (itemData?.melee_extra_mult == undefined && data?.damage?.low) {

@@ -51,9 +51,36 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		super.prepareBaseData();
 	}
 
+	get mmp() : number {
+		switch (this.system.type) {
+			case "pc": break;
+			default: return 0;
+		}
+		const inc = this.hasIncremental("powers")? 1: 0;
+		const lvl = this.system.combat.classData.level;
+		const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
+		const bonuses = this.getBonuses("maxmp");
+		const slots = this.class.getClassProperty(lvl + inc, "slots");
+		const lvlmaxMP = slots.reduce( (acc, slots, slotType) => {
+			const val= PersonaActor.convertSlotToMP(slotType) * slots;
+			return acc+ val;
+		}, 0);
+		const val =  lvlmaxMP + bonuses.total(sit);
+		(this as PC).refreshMaxMP(val);
+		return val;
+	}
+
+	async refreshMaxMP(this: PC, amt = this.mmp) {
+		if (amt == this.system.combat.mp.max) return;
+		// this.system.combat.mp.max = amt;
+		await this.update( { "system.combat.mp.max": amt});
+	}
 
 	async refreshHpTracker(this:PC | Shadow)  {
 		if (!game.user.isGM) return;
+		if (this.system.type == "pc") {
+			await (this as PC).refreshMaxMP();
+		}
 		if (this.hp > this.mhp) {
 			this.update({"system.combat.hp": this.mhp});
 		}
@@ -1470,6 +1497,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async fullHeal() {
 		if (this.system.type == "pc" || this.system.type == "shadow") {
 			this.hp = this.mhp;
+			if (this.system.type == "pc") {
+				this.update({"system.combat.mp.value" : this.mmp});
+			}
+			(this as PC | Shadow).refreshHpTracker();
 		}
 	}
 
@@ -1889,6 +1920,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "tarot":
 				break;
 		}
+	}
+
+	static convertSlotToMP(slotLevel: number) {
+			switch (slotLevel) {
+				case 0: return 4;
+				case 1: return 8;
+				case 2: return 12;
+				case 3: return 24;
+				default: return 48;
+			}
+
 	}
 
 }
