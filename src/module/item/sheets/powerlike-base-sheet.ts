@@ -6,7 +6,6 @@ import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 export abstract class PersonaPowerLikeBaseSheet extends PersonaEffectContainerBaseSheet {
 	override item: Usable;
 
-
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 		html.find(".addTag").on("click", this.addTag.bind(this));

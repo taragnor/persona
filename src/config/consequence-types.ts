@@ -1,3 +1,5 @@
+import { AlterMPSubtype } from "./effect-types.js";
+import { ConsequenceTarget } from "./precondition-types.js";
 import { DamageSubtype } from "./effect-types.js";
 import { DamageType } from "./damage-types.js";
 import { ModifierVariable } from "./effect-types.js";
@@ -23,12 +25,11 @@ import { STATUS_EFFECT_DURATIONS_LIST } from "./status-effects.js";
 import { ConditionTarget } from "./precondition-types.js";
 import { UniversalItemAccessor } from "../module/utility/db-accessor.js";
 
-type ExpendOtherEffect= {
+type ExpendOtherEffect = {
 	type: "expend-item";
 	itemAcc: UniversalItemAccessor<Usable>;
 	itemId: string;
 }
-
 
 export type RecoverSlotEffect = {
 	type: "recover-slot",
@@ -48,7 +49,7 @@ export type SetFlagEffect = {
 	duration: StatusDuration
 }
 
-export type ResistanceShiftEffect= {
+export type ResistanceShiftEffect = {
 	type: "raise-resistance" | "lower-resistance",
 	element: keyof PC["system"]["combat"]["resists"],
 	level: PC["system"]["combat"]["resists"]["physical"],
@@ -99,12 +100,18 @@ export type SocialCardActionEffect = {
 	// socialActor: UniversalActorAccessor<PC | Shadow>,
 }
 
-export type ExpendEnergyEffect = {
-	type: "expend-energy",
+export type AlterEnergyEffect = {
+	type: "alter-energy",
 	amount: number,
 }
 
-export type OtherEffect =  ExpendEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionEffect | DungeonActionConsequence;
+export type AlterMPEffect = {
+	type: "alter-mp",
+	subtype: AlterMPSubtype,
+	amount: number,
+}
+
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionEffect | DungeonActionConsequence | AlterMPEffect;
 
 export type StatusEffect = {
 	id: StatusEffectId,
@@ -116,7 +123,7 @@ export type StatusEffect = {
 export type Consequence =
 	{
 		applyToSelf ?: boolean,
-		applyTo ?: ConditionTarget
+		applyTo ?: ConsequenceTarget,
 		actorOwner ?: UniversalActorAccessor<PC | Shadow>,
 		sourceItem ?: UniversalItemAccessor<Usable>,
 	} & (
@@ -150,7 +157,14 @@ type NonGenericConsequences = UsePowerConsequence
 	| DamageConsequence
 	| DisplayMessageConsequence
 	| ExpendItemConsequence
+	| AlterMPConsequence
 ;
+
+type AlterMPConsequence = {
+	type: "alter-mp",
+	subtype: AlterMPSubtype,
+	amount: number,
+}
 
 type ExpendItemConsequence = {
 	type : "expend-item",

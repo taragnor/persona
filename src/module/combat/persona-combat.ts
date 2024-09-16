@@ -82,10 +82,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			msg += "</ul>";
 		}
 		if (msg.length > 0) {
-			const messageData = {
+			const messageData: MessageData = {
 				speaker: {alias: "Combat Start"},
 				content: msg,
-				type: CONST.CHAT_MESSAGE_TYPES.OOC,
+				style: CONST.CHAT_MESSAGE_STYLES.OOC,
+				// type: CONST.CHAT_MESSAGE_TYPES.OOC,
 			};
 			ChatMessage.create(messageData, {});
 		}
@@ -180,7 +181,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		let messageData = {
 			speaker: speaker,
 			content: startTurnMsg.join("<br>"),
-			type: CONST.CHAT_MESSAGE_TYPES.OOC,
+			// type: CONST.CHAT_MESSAGE_TYPES.OOC,
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 			rolls: rolls.map(r=> r.roll),
 			sound: rolls.length > 0 ? CONFIG.sounds.dice : undefined
 		};
@@ -981,8 +983,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "use-power":
 			case "social-card-action":
 			case "scan":
-			case "expend-energy":
+			case "alter-energy":
 			case "dungeon-action":
+			case "alter-mp":
 				return [{applyTo,cons}];
 			case "expend-item":
 				if (cons.itemId) {
@@ -1098,19 +1101,26 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					amount: power.system.hpcost * hpcostmod
 				});
 			}
-			if (attacker.actor!.system.type == "pc" && power.system.subtype == "magic" && power.system.slot >= 0){
-				if (!costModifiers.find(x=> x.type == "save-slot")) {
-					res.addEffect(null, attacker.actor!, {
-						type: "expend-slot",
-						amount: power.system.slot,
-					});
-				}
+			// if (attacker.actor!.system.type == "pc" && power.system.subtype == "magic" && power.system.slot >= 0){
+			// 	if (!costModifiers.find(x=> x.type == "save-slot")) {
+			// 		res.addEffect(null, attacker.actor!, {
+			// 			type: "expend-slot",
+			// 			amount: power.system.slot,
+			// 		});
+			// 	}
+			// }
+			if (attacker.actor.system.type == "pc" && power.system.subtype == "magic" && power.system.mpcost > 0) {
+				res.addEffect(null, attacker.actor, {
+					type: "alter-mp",
+					subtype: "direct",
+					amount: -power.system.mpcost,
+				});
 			}
 			if (attacker.actor.system.type == "shadow") {
 				if (power.system.energy.cost > 0) {
 					res.addEffect(null, attacker.actor, {
-						type: "expend-energy",
-						amount: power.system.energy.cost
+						type: "alter-energy",
+						amount: -power.system.energy.cost
 					});
 				}
 
@@ -1150,14 +1160,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "none":
 				tag = power.system.tags.find(x=> STATUS_POWER_TAGS.includes(x as any));
 				break;
-				// if (power.system.tags.includes("buff")) {
-				// 	tag = "buff";
-				// 	break;
-				// }
-				// if (power.system.tags.includes("debuff")) {
-				// 	tag = "debuff";
-				// 	break;
-				// }
 			case "all-out":
 				break;
 		}
@@ -1374,7 +1376,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	async setEscalationDie(val: number) : Promise<void> {
-		const clamped = Math.clamped(val,0,6);
+		const clamped = Math.clamp(val,0,6);
 		await this.setFlag("persona", "escalation", clamped);
 	}
 

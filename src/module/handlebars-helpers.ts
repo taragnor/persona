@@ -256,7 +256,13 @@ export class PersonaHandleBarsHelpers {
 		"inCombat": function() : boolean {
 			if (!game.combat) return false;
 			return (game.combat.combatants.contents.some( x=> x?.actor?.type == "shadow"));
-		}
+		},
+
+		"signed" : function(num: string | number) : SafeString {
+			num = Number(num);
+			if (num >=0) return new Handlebars.SafeString(`+${num}`);
+			else return new Handlebars.SafeString(`${num}`);
+		},
 
 	}
 

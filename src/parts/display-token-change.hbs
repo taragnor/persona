@@ -46,8 +46,11 @@
 		{{#if (eq effect.type "display-message")}}
 		{{effect.msg}}
 		{{/if}}
-		{{#if (eq effect.type "expend-energy")}}
-		Energy -{{effect.amount}}
+		{{#if (eq effect.type "alter-energy")}}
+		Energy {{effect.amount}}
+		{{/if}}
+		{{#if (eq effect.type "alter-mp")}}
+		MP {{effect.amount}}
 		{{/if}}
 		{{#if (eq effect.type "scan")}}
 		Scan Lvl. {{effect.level}}

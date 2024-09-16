@@ -5,7 +5,6 @@ import { SocialCardActionEffect } from "../../config/consequence-types.js";
 import { OtherEffect } from "../../config/consequence-types.js";
 import { StatusEffect } from "../../config/consequence-types.js";
 import { PersonaSocial } from "../social/persona-social.js";
-import { ScanDialog } from "./scan-dialog.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { ValidSound } from "../persona-sounds.js";
@@ -323,11 +322,19 @@ export class CombatResult  {
 					...cons
 				});
 				break;
-			case "expend-energy":
+			case "alter-energy":
 				if (!effect) break;
 				effect.otherEffects.push( {
 					type: cons.type,
 					amount: cons.amount ?? 0,
+				});
+				break;
+			case "alter-mp":
+				if (!effect) break;
+				effect.otherEffects.push( {
+					type: cons.type,
+					amount: cons.amount ?? 0,
+					subtype: cons.subtype
 				});
 				break;
 			default: {
@@ -455,9 +462,8 @@ export class CombatResult  {
 			rolls: rolls.map( rb=> rb.roll),
 			content: html,
 			user: game.user,
-			// V12 compatibility, causes error if combined with type though
-			// style: CONST?.CHAT_MESSAGE_STYLES?.OOC,
-			type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+			style: CONST?.CHAT_MESSAGE_STYLES.OOC,
+			// type: CONST.CHAT_MESSAGE_TYPES.ROLL,
 		}, {})
 		if (manualApply) {
 			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
@@ -579,7 +585,8 @@ export class CombatResult  {
 					await ChatMessage.create( {
 						speaker,
 						content: html,
-						type: CONST.CHAT_MESSAGE_TYPES.OOC,
+						style: CONST?.CHAT_MESSAGE_STYLES.OOC,
+						// type: CONST.CHAT_MESSAGE_TYPES.OOC,
 					});
 					break;
 			}
@@ -647,17 +654,13 @@ export class CombatResult  {
 				case "display-message":
 				case "Inspiration":
 				case "hp-loss":
+				case "alter-energy":
 				case "extra-attack":
-					break;
-				case "use-power":
-					break;
-				case "scan":
-					break;
-				case "social-card-action":
-					break;
 				case "dungeon-action":
-					break;
-				case "expend-energy":
+				case "use-power":
+				case "scan":
+				case "social-card-action":
+				case "alter-mp":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -693,6 +696,8 @@ export class CombatResult  {
 		for (const status of change.removeStatus) {
 			await actor.removeStatus(status);
 		}
+		let mpcost = 0;
+		let mpmult = 1;
 		for (const otherEffect of change.otherEffects) {
 			switch (otherEffect.type) {
 				case "expend-item":
@@ -767,9 +772,21 @@ export class CombatResult  {
 				case "dungeon-action":
 					await Metaverse.executeDungeonAction(otherEffect);
 					break;
-				case "expend-energy":
+				case "alter-energy":
 					if (actor.system.type == "shadow") {
-						await (actor as Shadow).alterEnergy(-otherEffect.amount);
+						await (actor as Shadow).alterEnergy(otherEffect.amount);
+					}
+					break;
+				case "alter-mp":
+					switch (otherEffect.subtype) {
+						case "direct":
+							mpcost += otherEffect.amount;
+							break;
+						case "cost-reduction":
+							mpmult *= otherEffect.amount;
+							break;
+						default:
+							PersonaError.softFail("No subtype for Alter MP effect");
 					}
 					break;
 				default:
@@ -782,6 +799,11 @@ export class CombatResult  {
 				await (actor as PC).expendSlot(i, val);
 			});
 		}
+		if (mpcost != 0 && actor.system.type == "pc") {
+			mpcost *= mpmult;
+			await (actor as PC).modifyMP(mpcost);
+		}
+
 	}
 
 	/** combines other's data into initial*/

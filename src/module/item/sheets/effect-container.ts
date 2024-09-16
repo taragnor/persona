@@ -1,3 +1,5 @@
+
+import { ALTER_MP_SUBTYPES } from "../../../config/effect-types.js";
 import { CREATURE_TYPE } from "../../../config/shadow-types.js";
 import { PersonaItem } from "../persona-item.js";
 import { USER_COMPARISON_TARGETS } from "../../../config/precondition-types.js";
@@ -116,6 +118,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			DAMAGE_SUBTYPES,
 			USER_COMPARISON_TARGETS,
 			CREATURE_TYPE,
+			ALTER_MP_SUBTYPES,
 		};
 		return this._powerStuffBase;
 	}

@@ -320,7 +320,9 @@ export const CONDITION_TARGETS_LIST = [
 
 export type ConditionTarget= typeof CONDITION_TARGETS_LIST[number];
 
-export const CONDITION_TARGETS = Object.fromEntries( 
+export type ConsequenceTarget = ConditionTarget;
+
+export const CONDITION_TARGETS = Object.fromEntries(
 	CONDITION_TARGETS_LIST.map( x=> [x, `persona.preconditions.targets.${x}`])
 );
 

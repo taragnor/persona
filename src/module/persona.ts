@@ -12,10 +12,8 @@ declare global {
 
 }
 
-import { ScanDialog } from "./combat/scan-dialog.js";
 import { Darkness } from "./exploration/darkness-clock.js";
 import { DebugTools } from "./utility/debug.js";
-import { ErrorScanner } from "./deprecated_scan.js";
 import { SocketManager } from "./utility/socket-manager.js";
 import { templatePaths } from "../config/handlebars-templates.js";
 import { PersonaClassSheet } from "./item/sheets/class-sheet.js";

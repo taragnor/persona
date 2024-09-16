@@ -2,10 +2,10 @@
 	"id": "persona",
 	"title": "Persona d20 system",
 	"description": "Foundry VTT version of Persona homebrew system",
-	"version": "0.6.2",
+	"version": "0.7.2",
 	"compatibility": {
-		"minimum": 11,
-		"verified": 11
+		"minimum": 12,
+		"verified": 12
 	},
 	"url": "https://github.com/taragnor/persona",
 	"manifest": "https://raw.githubusercontent.com/taragnor/persona/src/system.json",

@@ -1,4 +1,3 @@
-import { PersonaSFX } from "../combat/persona-sfx.js";
 import { localize } from "../persona.js";
 import { STATUS_EFFECT_LIST } from "../../config/status-effects.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../../config/status-effects.js";
@@ -8,7 +7,6 @@ import { Activity } from "../item/persona-item.js";
 import { RecoverSlotEffect } from "../../config/consequence-types.js";
 import { getActiveConsequences } from "../preconditions.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
-import { Metaverse } from "../metaverse.js";
 import { PersonaActorSheetBase } from "./sheets/actor-sheet.base.js";
 import { Logger } from "../utility/logger.js";
 import { Situation } from "../preconditions.js";
@@ -51,6 +49,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		super.prepareBaseData();
 	}
 
+	get mp() : number {
+		switch (this.system.type) {
+			case "pc": break;
+			default: return 0;
+		}
+		return this.system.combat.mp.value;
+	}
 	get mmp() : number {
 		switch (this.system.type) {
 			case "pc": break;
@@ -206,7 +211,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	set hp(newval: number) {
 		if (this.system.type == "npc"
 			|| this.system.type == "tarot") return;
-		newval = Math.clamped(newval, 0, this.mhp);
+		newval = Math.clamp(newval, 0, this.mhp);
 		this.update({"system.combat.hp": newval});
 		(this as PC | Shadow).refreshHpStatus(newval);
 	}
@@ -651,7 +656,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async modifyMP( this: PC, delta: number) {
 		let mp = this.system.combat.mp.value;
 		mp += delta;
-		mp = Math.clamped(mp, 0, this.mmp);
+		mp = Math.clamp(mp, 0, this.mmp);
 		await this.update( {"system.combat.mp.value": mp});
 	}
 
@@ -993,7 +998,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					break;
 			}
 		}
-		const resLevel = Math.clamped(resval(baseResist) + resBonus + resPenalty, 0 , RESIST_STRENGTH_LIST.length-1);
+		const resLevel = Math.clamp(resval(baseResist) + resBonus + resPenalty, 0 , RESIST_STRENGTH_LIST.length-1);
 		return RESIST_STRENGTH_LIST[resLevel];
 	}
 
@@ -1148,14 +1153,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					case "weapon":
 						return  this.hp > usable.system.hpcost;
 					case "magic":
-						let x = usable.system.slot as keyof typeof this["system"]["slots"];
-						while (x <= 3) {
-							if (this.system.slots[x] > 0) {
-								return true;
-							}
-							else x += 1;
+						if (usable.system.mpcost > 0) {
+							return this.mp > usable.system.mpcost;
 						}
-						return false;
+						// let x = usable.system.slot as keyof typeof this["system"]["slots"];
+						// while (x <= 3) {
+						// 	if (this.system.slots[x] > 0) {
+						// 		return true;
+						// 	}
+						// 	else x += 1;
+						// }
+						// return false;
 					case "social-link":
 						const inspirationId = usable.system.inspirationId;
 						if (inspirationId) {
@@ -1882,15 +1890,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			default:
 				break;
 		}
-		return Math.clamped(diff, 0, 4);
+		return Math.clamp(diff, 0, 4);
 	}
 
-	static calcPowerCost(role: Shadow["system"]["role"], power: Readonly<Power>, diff: number) : Power["system"]["reqEscalation"] {
+	static calcPowerCost(_role: Shadow["system"]["role"], power: Readonly<Power>, diff: number) : Power["system"]["reqEscalation"] {
 		if (power.system.tags.includes("basicatk"))
 			return 0;
 		if (diff <= 0) return 0;
 		let esc = Math.round(Math.abs(diff) / 2);
-		return Math.clamped(esc, 0, 6);
+		return Math.clamp(esc, 0, 6);
 	}
 
 	async increaseScanLevel(this: Shadow, amt :number) {
@@ -1907,7 +1915,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async setEnergy(this: Shadow, amt: number) {
-		amt = Math.clamped(amt, -1, this.system.combat.energy.max);
+		amt = Math.clamp(amt, -1, this.system.combat.energy.max);
 		await this.update({"system.combat.energy.value": amt});
 	}
 

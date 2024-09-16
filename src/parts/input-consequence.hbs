@@ -1,10 +1,21 @@
 <div class="consequence-block" data-consequence-index="{{consequence_index}}">
+	{{#if (ne cons.applyToSelf undefined)}}
 	<div>
 		<label>
 			Apply to Self
 		</label>
 		<input type="checkbox" name="{{strcat namePrefix 'applyToSelf'}}" {{checked cons.applyToSelf}}>
 	</div>
+	{{else}}
+	<div>
+		<label>
+			Apply To
+		</label>
+		<select name="{{strcat namePrefix 'applyTo'}}">
+			{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.applyTo}}
+		</select>
+	</div>
+	{{/if}}
 	<div class="type-select">
 		<select name="{{strcat namePrefix 'type'}}">
 			{{selectOptions POWERSTUFF.CONSTYPES localize=true selected=cons.type}}
@@ -127,7 +138,7 @@
 	</div>
 	{{/if}}
 
-	{{#if (eq cons.type "expend-energy")}}
+	{{#if (eq cons.type "alter-energy")}}
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 	{{/if}}
 	{{#if (eq cons.type "social-card-action")}}
@@ -201,6 +212,15 @@
 	</div>
 
 	{{/if}}
+
+	{{#if (eq cons.type "alter-mp")}}
+	<select name="{{strcat namePrefix 'subtype'}}">
+		{{selectOptions POWERSTUFF.ALTER_MP_SUBTYPES localize=true selected=cons.subtype}}
+	</select>
+	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+
+	{{/if}}
+
 
 	{{#if (eq cons.type "damage-new")}}
 	<select name="{{strcat namePrefix 'damageSubtype'}}">

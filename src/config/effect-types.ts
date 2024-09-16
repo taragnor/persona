@@ -8,24 +8,25 @@ export const CONSQUENCELIST = [
 	"escalationManipulation",
 	"extraAttack",
 	"expend-slot",
-	"save-slot", //don't expend slot you normally would
 	"half-hp-cost", //half hp cost of weapon skills
 	"revive",
 	"extraTurn",
 	"expend-item",
-	"recover-slot",
 	"add-power-to-list",
 	"other-effect",
 	"set-flag",
-	"raise-resistance",
-	"lower-resistance",
 	"inspiration-cost",
 	"display-msg",
-	"use-power",
 	"scan",
 	"social-card-action",
-	"expend-energy",
+	"alter-energy",
 	"dungeon-action",
+	"raise-resistance",
+	"lower-resistance",
+	"use-power",
+	"alter-mp",
+	"save-slot", //deprecated, don't expend slot you normally would
+	"recover-slot", // deprecated
 	"modifier", // deprecated
 	"add-escalation", // deprecated
 	"dmg-low", //deprecated
@@ -165,4 +166,15 @@ export type DamageSubtype = typeof DAMAGE_SUBTYPE_LIST[number];
 
 export const DAMAGE_SUBTYPES = Object.fromEntries( 
 	DAMAGE_SUBTYPE_LIST.map( x=> [x, `persona.damage-subtype.${x}`])
+);
+
+export const ALTER_MP_SUBTYPES_LIST = [
+	"direct",
+	"cost-reduction",
+] as const;
+
+export type AlterMPSubtype = typeof ALTER_MP_SUBTYPES_LIST[number];
+
+export const ALTER_MP_SUBTYPES = Object.fromEntries(
+	ALTER_MP_SUBTYPES_LIST.map( x=> [x, `persona.alter-mp-subtypes.${x}`])
 );

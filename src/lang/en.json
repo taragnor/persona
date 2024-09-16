@@ -319,6 +319,8 @@
 	"persona.effecttypes.removeStatus": "Remove Status",
 	"persona.effecttypes.expend-slot": "Expend Slot",
 	"persona.effecttypes.expend-energy": "Expend Energy",
+	"persona.effecttypes.alter-energy": "Alter Energy",
+	"persona.effecttypes.alter-mp": "Alter MP",
 	"persona.effecttypes.escalationManipulation": "Change Escalation",
 	"persona.effecttypes.extraAttack": "Extra Attack",
 	"persona.effecttypes.modifier-new": "Apply Modifier",
@@ -354,6 +356,11 @@
 	"persona.effecttypes.dungeonAction.close-all-doors": "Close all Doors",
 	"persona.effecttypes.modifierType.constant" : "Constant",
 	"persona.effecttypes.modifierType.system-variable" : "System Variable",
+
+	"persona.alter-mp-subtypes.direct": "Direct",
+	"persona.alter-mp-subtypes.cost-reduction": "Cost Multiplier",
+
+
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",
