@@ -29,6 +29,7 @@ export const MODIFIERLIST = [
 	"energy-per-turn",
 	"maxmp",
 	"maxmpMult",
+	"mpCostMult",
 ] as const;
 
 export const MODIFIERS_TABLE = Object.fromEntries(

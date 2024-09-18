@@ -545,7 +545,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			usedPower: PersonaDB.getUniversalItemAccessor(power),
 			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
 			attacker: attacker.actor.accessor,
-			// escalationDie,
 			activationRoll: rollType == "activation",
 			activeCombat:combat ? !!combat.combatants.find( x=> x.actor?.type != attacker.actor.type): false ,
 		};
@@ -643,13 +642,19 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				...baseData,
 			};
 		}
-		const critBoostMod = attacker.actor.critBoost();
+		const critBoostMod = power.critBoost(attacker.actor);
+		if (power.system.type == "power" && !power.isBasicPower()) {
+			const powerLevel = power.baseCritSlotBonus();
+			const targetResist = target.actor.basePowerCritResist();
+			const diff = powerLevel - targetResist;
+			const mod = Math.max(0, diff);
+			critBoostMod.add("Power Level Difference", mod);
+		}
 		situation.resisted = resist == "resist";
 		situation.struckWeakness = resist == "weakness";
-		critBoostMod.add("Power Modifier", power.system.crit_boost);
 		const critResist = target.actor.critResist().total(situation);
 		critBoostMod.add("Enemy Critical Resistance", -critResist);
-		const critBoost = critBoostMod.total(situation);
+		const critBoost = Math.max(0, critBoostMod.total(situation));
 
 		if (naturalAttackRoll == 1
 			|| total < defenseVal
@@ -1099,19 +1104,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					amount: power.system.hpcost * hpcostmod
 				});
 			}
-			// if (attacker.actor!.system.type == "pc" && power.system.subtype == "magic" && power.system.slot >= 0){
-			// 	if (!costModifiers.find(x=> x.type == "save-slot")) {
-			// 		res.addEffect(null, attacker.actor!, {
-			// 			type: "expend-slot",
-			// 			amount: power.system.slot,
-			// 		});
-			// 	}
-			// }
 			if (attacker.actor.system.type == "pc" && power.system.subtype == "magic" && power.system.mpcost > 0) {
 				res.addEffect(null, attacker.actor, {
 					type: "alter-mp",
 					subtype: "direct",
-					amount: -power.system.mpcost,
+					amount: -power.mpCost(attacker.actor),
 				});
 			}
 			if (attacker.actor.system.type == "shadow") {

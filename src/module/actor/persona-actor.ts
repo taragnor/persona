@@ -581,31 +581,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.mainPowers,
 			...this.bonusPowers,
 		].flat();
-		// switch (this.system.type) {
-		// 	case "tarot": return [];
-		// 	case "npc" : return [];
-		// 	case "pc":{
-		// 		const basicPowers = PersonaItem.getBasicPCPowers();
-		// 		const powerIds = this.system.combat.powers;
-		// 		const pcPowers : Power[] = powerIds.flatMap( id=> {
-		// 			const i = PersonaDB.getItemById(id);
-		// 			return (i ? [i as Power] : []);
-		// 		});
-		// 		const bonusPowers : Power[] =
-		// 		(this as PC).mainModifiers({omitPowers:true})
-		// 		.filter(x=> x.grantsPowers())
-		// 		.flatMap(x=> x.getGrantedPowers(this as PC ));
-		// 		return basicPowers.concat(pcPowers).concat(bonusPowers);
-		// 	}
-		// 	case "shadow": {
-		// 		const basicPowers = PersonaItem.getBasicShadowPowers();
-		// 		const shadowPowers = this.items.filter( x=> x.system.type == "power") as Power[];
-		// 		return basicPowers.concat(shadowPowers);
-		// 	}
-		// 	default:
-		// 		this.system satisfies never;
-		// 		throw new PersonaError("Something weird happened");
-		// }
 	}
 
 	get weapon() : Option<Weapon> {
@@ -874,6 +849,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return modList;
 	}
 
+	basePowerCritResist(this: PC |Shadow): number {
+		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
+		const level = this.system.combat.classData.level + inc;
+		return Math.floor(level /2);
+	}
+
 	mainModifiers(this: PC | Shadow, options?: {omitPowers?: boolean} ): ModifierContainer[] {
 		const passivePowers = (options && options.omitPowers) ? [] : this.getPassivePowers();
 		return [
@@ -1064,11 +1045,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	critResist(this: PC | Shadow) : ModifierList {
-		const adjustedLevel = this.system.combat.classData.level + (this.system.combat.classData.incremental.lvl_bonus ? 1 : 0) ;
-		const modifier  = Math.floor(adjustedLevel /4);
+		// const adjustedLevel = this.system.combat.classData.level + (this.system.combat.classData.incremental.lvl_bonus ? 1 : 0) ;
+		// const modifier  = Math.floor(adjustedLevel /4);
 		const ret = new ModifierList();
-		ret.add("Base Modifier", modifier);
-
+		// ret.add("Base Modifier", modifier);
 		const mods = this.mainModifiers().flatMap( item => item.getModifier("critResist", this));
 		return ret.concat(new ModifierList(mods));
 	}
@@ -1155,17 +1135,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					case "weapon":
 						return  this.hp > usable.system.hpcost;
 					case "magic":
-						if (usable.system.mpcost > 0) {
-							return this.mp > usable.system.mpcost;
+						const mpcost = usable.mpCost(this);
+						if (mpcost > 0) {
+							return this.mp >= mpcost;
 						}
-						// let x = usable.system.slot as keyof typeof this["system"]["slots"];
-						// while (x <= 3) {
-						// 	if (this.system.slots[x] > 0) {
-						// 		return true;
-						// 	}
-						// 	else x += 1;
-						// }
-						// return false;
 					case "social-link":
 						const inspirationId = usable.system.inspirationId;
 						if (inspirationId) {

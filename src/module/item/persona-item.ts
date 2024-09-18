@@ -603,7 +603,51 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		return multCons.reduce( (acc, cons) =>
 			acc * ("amount" in cons ? cons.amount ?? 1: 1)
 			,1);
+	}
 
+	critBoost(this: Usable, user: PC | Shadow) : ModifierList {
+		const x = this.getModifier("criticalBoost", user);
+		let list = new ModifierList(x);
+		list = list.concat(user.critBoost());
+		// list.add("Power Slot Modifier", this.baseCritSlotBonus());
+		list.add("Power Modifier", this.system.crit_boost ?? 0);
+		return list;
+	}
+
+	isBasicPower(this: Usable) : boolean {
+		 if (this.system.type == "consumable") {return false;}
+		const basics = [
+			...PersonaItem.getBasicPCPowers(),
+			...PersonaItem.getBasicShadowPowers()
+		];
+		return basics.includes(this as Power);
+	}
+
+	 baseCritSlotBonus(this: Usable) : number {
+		 if (this.system.type == "consumable") {return 0;}
+		 if (this.isBasicPower()) return 0;
+		 switch (this.system.slot) {
+			 case 0: return 2;
+			 case 1: return 4;
+			 case 2: return 6;
+			 case 3: return 9;
+			 default:
+				 PersonaError.softFail(`Unknwon Slot Type :${this.system.slot}`);
+				 return 0;
+		 }
+	 }
+
+	mpCost(this: Usable, user: PC | Shadow) {
+		if (this.system.type == "consumable") return 0;
+		const sit : Situation = {
+			user: user.accessor,
+			usedPower: this.accessor,
+		}
+		let list = user.getBonuses("mpCostMult");
+		const bonuses = this.getModifier("mpCostMult", user);
+		list = list.concat(new ModifierList(bonuses));
+		const mult = 1 + list.total(sit);
+		return Math.round(this.system.mpcost * mult);
 	}
 
 	getSourcedEffects(this: ModifierContainer, sourceActor: PC | Shadow): {source: ModifierContainer, effects: ConditionalEffect[]} {
