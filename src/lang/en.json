@@ -180,6 +180,7 @@
 	"persona.modifier.courage": "Courage",
 	"persona.modifier.knowledge": "Knowledge",
 	"persona.modifier.maxhpMult": "Max Hp Multiplier",
+	"persona.modifier.maxmpMult": "Max MP Multiplier",
 	"persona.modifier.critResist": "Critical Resistance",
 	"persona.modifier.save": "Saving Throws",
 	"persona.modifier.recovery": "Recovery Amount",

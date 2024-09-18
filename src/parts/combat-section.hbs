@@ -55,13 +55,13 @@
 				<input class="short" type="number" name="system.combat.mp.value" value="{{actor.system.combat.mp.value}}">
 			</span>
 			<span>
-				/ {{actor.system.combat.mp.max}}
+				/ {{actor.mmp}}
 			</span>
 		</div>
 		{{/if}}
 		{{> "systems/persona/parts/defenses-section.hbs" actor=actor CONST=CONST}}
 		{{> "systems/persona/parts/resistance-section.hbs" actor=actor CONST=CONST}}
-		{{#if (isPC actor)}}
+		{{#if (and false (isPC actor)) }}
 		<div class="slots">
 			<h2>
 				{{localize	"persona.statistic.powerslots"}}

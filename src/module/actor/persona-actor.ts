@@ -65,12 +65,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const lvl = this.system.combat.classData.level;
 		const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
 		const bonuses = this.getBonuses("maxmp");
+		const mult = 1.6666 + this.getBonuses("maxmpMult").total(sit);
 		const slots = this.class.getClassProperty(lvl + inc, "slots");
 		const lvlmaxMP = slots.reduce( (acc, slots, slotType) => {
 			const val= PersonaActor.convertSlotToMP(slotType) * slots;
 			return acc+ val;
 		}, 0);
-		const val =  lvlmaxMP + bonuses.total(sit);
+		const val = Math.round((mult * lvlmaxMP) + bonuses.total(sit));
 		(this as PC).refreshMaxMP(val);
 		return val;
 	}
