@@ -124,7 +124,7 @@ export class Metaverse {
 			speaker: speaker,
 			content: text,
 			whisper: game.users.filter(usr => usr.isGM),
-			type: CONST.CHAT_MESSAGE_TYPES.WHISPER
+			style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
 		};
 		await ChatMessage.create(messageData, {});
 		return encounter;
@@ -168,7 +168,7 @@ export class Metaverse {
 			speaker: speaker,
 			content: text,
 			whisper: game.users.filter(usr => usr.isGM),
-			type: CONST.CHAT_MESSAGE_TYPES.WHISPER
+			style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
 		};
 		await ChatMessage.create(messageData, {});
 		if (players.length > 0) {

@@ -1,5 +1,3 @@
-
-
 export const COMBAT_TRIGGER_LIST = [
 	"on-damage",
 	"on-kill-target",
@@ -26,7 +24,6 @@ export const TRIGGER_LIST = [
 	...COMBAT_TRIGGER_LIST,
 	...NONCOMBAT_TRIGGER_LIST,
 ] as const;
-
 
 export const TRIGGERS = Object.fromEntries(
 	TRIGGER_LIST.map( x=> [x, `persona.triggers.${x}`])

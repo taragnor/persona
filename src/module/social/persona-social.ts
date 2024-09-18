@@ -281,7 +281,7 @@ export class PersonaSocial {
 		const msgData : MessageData = {
 			speaker,
 			content: html,
-			type: CONST.CHAT_MESSAGE_TYPES.OOC
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 		};
 		return await ChatMessage.create(msgData,{} );
 	}
@@ -459,7 +459,7 @@ export class PersonaSocial {
 		const msgData : MessageData = {
 			speaker,
 			content: html,
-			type: CONST.CHAT_MESSAGE_TYPES.OOC
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 		};
 		return await ChatMessage.create(msgData,{} );
 	}
@@ -529,7 +529,7 @@ export class PersonaSocial {
 		const msgData : MessageData = {
 			speaker,
 			content: html,
-			type: CONST.CHAT_MESSAGE_TYPES.OOC
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 		};
 		return await ChatMessage.create(msgData,{} );
 	}
@@ -542,7 +542,7 @@ export class PersonaSocial {
 		const msgData : MessageData = {
 			speaker,
 			content: html,
-			type: CONST.CHAT_MESSAGE_TYPES.OOC
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 		};
 		const msg = await ChatMessage.create(msgData,{} );
 		if (ArrayCorrector(event.choices).length > 0) {
@@ -604,7 +604,7 @@ export class PersonaSocial {
 		const msgData : MessageData = {
 			speaker,
 			content: html,
-			type: CONST.CHAT_MESSAGE_TYPES.OOC
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 		};
 		const msg= await ChatMessage.create(msgData,{} );
 		return msg;

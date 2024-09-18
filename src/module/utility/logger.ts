@@ -11,7 +11,7 @@ export class Logger {
 		let messageData = {
 			speaker: speaker,
 			content: text,
-			type: CONST.CHAT_MESSAGE_TYPES.WHISPER,
+			style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
 			whisper: gmIds
 		};
 		await ChatMessage.create(messageData, {});
@@ -23,7 +23,7 @@ export class Logger {
 		let messageData = {
 			speaker: speaker,
 			content: text,
-			type: CONST.CHAT_MESSAGE_TYPES.OOC
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 		};
 		ChatMessage.create(messageData, {});
 		return messageData;

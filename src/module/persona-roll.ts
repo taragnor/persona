@@ -105,7 +105,6 @@ export class RollBundle {
 			content: html,
 			user: game.user,
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
-			// type:CONST.CHAT_MESSAGE_TYPES.ROLL,
 			rolls: [this.roll],
 			sound: CONFIG.sounds.dice
 		}, {});

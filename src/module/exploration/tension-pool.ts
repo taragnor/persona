@@ -60,7 +60,7 @@ export class TensionPoolResult {
 				alias: "Tension Pool Roll"
 			},
 			content: html,
-			type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 			rolls: [this.roll],
 		});
 	}

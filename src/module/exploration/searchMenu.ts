@@ -101,7 +101,6 @@ export class SearchMenu {
 			},
 			content: html,
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
-			// type: CONST.CHAT_MESSAGE_TYPES.OOC,
 		})
 	}
 
@@ -181,7 +180,6 @@ export class SearchMenu {
 			},
 			content: html,
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
-			// type: CONST.CHAT_MESSAGE_TYPES.ROLL,
 			rolls,
 		})
 		if (result != "none") {

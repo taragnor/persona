@@ -463,7 +463,6 @@ export class CombatResult  {
 			content: html,
 			user: game.user,
 			style: CONST?.CHAT_MESSAGE_STYLES.OOC,
-			// type: CONST.CHAT_MESSAGE_TYPES.ROLL,
 		}, {})
 		if (manualApply) {
 			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
@@ -586,7 +585,6 @@ export class CombatResult  {
 						speaker,
 						content: html,
 						style: CONST?.CHAT_MESSAGE_STYLES.OOC,
-						// type: CONST.CHAT_MESSAGE_TYPES.OOC,
 					});
 					break;
 			}

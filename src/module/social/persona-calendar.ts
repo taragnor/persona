@@ -69,7 +69,7 @@ export class PersonaCalendar {
 		const msgData : MessageData = {
 			speaker,
 			content: html,
-			type: CONST.CHAT_MESSAGE_TYPES.OOC,
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 			rolls,
 		};
 		await ChatMessage.create(msgData,{} );

@@ -86,7 +86,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				speaker: {alias: "Combat Start"},
 				content: msg,
 				style: CONST.CHAT_MESSAGE_STYLES.OOC,
-				// type: CONST.CHAT_MESSAGE_TYPES.OOC,
 			};
 			ChatMessage.create(messageData, {});
 		}
@@ -181,7 +180,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		let messageData = {
 			speaker: speaker,
 			content: startTurnMsg.join("<br>"),
-			// type: CONST.CHAT_MESSAGE_TYPES.OOC,
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 			rolls: rolls.map(r=> r.roll),
 			sound: rolls.length > 0 ? CONFIG.sounds.dice : undefined
