@@ -627,10 +627,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		 if (this.system.type == "consumable") {return 0;}
 		 if (this.isBasicPower()) return 0;
 		 switch (this.system.slot) {
-			 case 0: return 2;
-			 case 1: return 4;
-			 case 2: return 6;
-			 case 3: return 9;
+			 case 0: return 0;
+			 case 1: return 2;
+			 case 2: return 4;
+			 case 3: return 7;
 			 default:
 				 PersonaError.softFail(`Unknwon Slot Type :${this.system.slot}`);
 				 return 0;

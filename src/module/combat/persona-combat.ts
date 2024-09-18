@@ -647,14 +647,15 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const powerLevel = power.baseCritSlotBonus();
 			const targetResist = target.actor.basePowerCritResist();
 			const diff = powerLevel - targetResist;
-			const mod = Math.max(0, diff);
-			critBoostMod.add("Power Level Difference", mod);
+			critBoostMod.add("Power Level Difference", diff);
 		}
 		situation.resisted = resist == "resist";
 		situation.struckWeakness = resist == "weakness";
 		const critResist = target.actor.critResist().total(situation);
 		critBoostMod.add("Enemy Critical Resistance", -critResist);
 		const critBoost = Math.max(0, critBoostMod.total(situation));
+		const validMods = critBoostMod.validModifiers(situation);
+		debugger;
 
 		if (naturalAttackRoll == 1
 			|| total < defenseVal

@@ -852,7 +852,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	basePowerCritResist(this: PC |Shadow): number {
 		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
 		const level = this.system.combat.classData.level + inc;
-		return Math.floor(level /2);
+		return Math.round(level /2);
 	}
 
 	mainModifiers(this: PC | Shadow, options?: {omitPowers?: boolean} ): ModifierContainer[] {
@@ -1088,10 +1088,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async addFocus(this: PC, focus: Focus) {
 		PersonaError.softFail(`Can't drop ${focus.name}. Focii are no longer supported on PCs`);
 		return;
-		// const foci = this.system.combat.focuses;
-		// if (foci.includes(focus.id)) return;
-		// foci.push(focus.id);
-		// await this.update( {"system.combat.focuses": foci});
 	}
 
 	async deleteFocus(focusId: string) {
