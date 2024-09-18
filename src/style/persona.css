@@ -567,6 +567,10 @@ div.weather-icon{
 	max-width: 95%;
 }
 
+.power-name-block .cost-string{
+	font-size: smaller;
+}
+
 .deprecated {
 	opacity: 50%;
 }

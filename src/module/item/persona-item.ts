@@ -145,8 +145,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 					return `${this.system.hpcost} HP`;
 				else return "free";
 			case "magic":
-				const slotName = PersonaItem.getSlotName(this.system.slot);
-				return `${slotName} slot`;
+				const mpcost = this.system.mpcost;
+				return `${mpcost} MP`;
 			case "social-link":
 				if (this.system.inspirationCost > 0) {
 					return `${this.system.inspirationCost} Inspiration`;

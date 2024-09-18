@@ -25,10 +25,13 @@
 				<a class="rollPower" >
 					<img src="icons/dice/d20black.svg">
 				</a>
-				{{/if}}
-				<a class="powerName" title='{{> "systems/persona/parts/power-tooltip.hbs" actor=../actor CONST=../CONST power=power}}'>
-					{{power.name}}
-				</a>
+					{{/if}}
+					<a class="powerName" title='{{> "systems/persona/parts/power-tooltip.hbs" actor=../actor CONST=../CONST power=power}}'>
+						{{power.name}}
+						<span class="cost-string">
+							({{power.costString}})
+						</span>
+					</a>
 			</div>
 			<div class="power-operations">
 				{{#if (eq ../actor.system.type "shadow")}}
