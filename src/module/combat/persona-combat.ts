@@ -1374,8 +1374,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	async setEscalationDie(val: number) : Promise<void> {
-		const clamped = Math.clamp(val,0,6);
-		await this.setFlag("persona", "escalation", clamped);
+		const clamp = Math.clamp(val,0,6);
+		await this.setFlag("persona", "escalation", clamp);
 	}
 
 	async setSocialEncounter(isSocial: boolean) {

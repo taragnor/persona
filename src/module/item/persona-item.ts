@@ -34,7 +34,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	declare parent : PersonaActor | undefined;
 
 	getClassProperty<T extends keyof CClass["system"]["leveling_table"][number]> (this: CClass,lvl: number, property:T)  : CClass["system"]["leveling_table"][number][T] {
-		const adjustedLvl = Math.clamped(lvl, 0, 11);
+		const adjustedLvl = Math.clamp(lvl, 0, 11);
 		const data = this.system.leveling_table[adjustedLvl][property];
 		if (property == "slots") return ArrayCorrector(data as any) as any;
 		return data;
