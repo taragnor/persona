@@ -1,5 +1,5 @@
+import { PersonaCombat } from "../combat/persona-combat.js";
 import { TensionPoolResult } from "./tension-pool.js";
-import { Metaverse } from "../metaverse.js";
 import { PersonaError } from "../persona-error.js";
 import { HTMLTools } from "../utility/HTMLTools.js";
 import { SEARCH_ACTIONS } from "../../config/search-actions.js";
@@ -79,7 +79,7 @@ export class SearchMenu {
 		}
 	}
 
-	static endSearch() {
+	static async endSearch() {
 		let html = "";
 		const progress = this.progress;
 		if (progress.treasuresFound) {
@@ -92,8 +92,7 @@ export class SearchMenu {
 		if (progress.hazardFound && this.options.isHazard) {
 			html += "<div>Hazard Found</div>";
 		}
-
-		const msg = ChatMessage.create({
+		await ChatMessage.create({
 			speaker: {
 				scene: undefined,
 				actor: undefined,
@@ -101,9 +100,9 @@ export class SearchMenu {
 				alias: "Search Results"
 			},
 			content: html,
-			type: CONST.CHAT_MESSAGE_TYPES.OOC,
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			// type: CONST.CHAT_MESSAGE_TYPES.OOC,
 		})
-
 	}
 
 	static async execSearch(results : SearchResult[], options: SearchOptions<typeof SearchMenu["template"]>) {
@@ -165,6 +164,9 @@ export class SearchMenu {
 					searcher.result satisfies never;
 			}
 		}
+		await PersonaCombat.onTrigger("on-search-end")
+		.emptyCheck()
+		?.autoApplyResult();
 		const {roll, result} = await this.tensionPool(guards, options);
 		if (roll) {
 			rolls.push(roll);
@@ -178,7 +180,8 @@ export class SearchMenu {
 				alias: "Search Results"
 			},
 			content: html,
-			type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			// type: CONST.CHAT_MESSAGE_TYPES.ROLL,
 			rolls,
 		})
 		if (result != "none") {
@@ -226,14 +229,6 @@ export class SearchMenu {
 		}
 		if (!options.rollTension) return TensionPool.nullResult();
 		return await TensionPool.roll(guards);
-		// if (!roll.dice.some(dice => dice.values.some(v => v == 1)))
-		// return [roll, "none"];
-		// if (TensionPool.isMaxed() && roll.dice[0].values.filter( v=> v == 1 || v== 2))  {
-		// 	return [roll, "reaper"];
-		// }
-		// if (roll.dice[0].values.filter( x=> x == 1 || x== 2).length > guards)
-		// return [roll, "ambush"];
-		// return [roll, "battle"];
 	}
 
 	static async searchOptionsDialog<T extends SearchPromptConfigObject>(optionsToFill: T) : Promise<SearchOptions<T>> {

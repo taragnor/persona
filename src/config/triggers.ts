@@ -14,6 +14,7 @@ export const COMBAT_TRIGGER_LIST = [
 	"end-turn",
 	"on-open-door",
 	"on-clock-tick",
+	"on-search-end",
 ] as const;
 
 export const NONCOMBAT_TRIGGER_LIST = [

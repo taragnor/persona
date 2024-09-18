@@ -247,6 +247,7 @@ function triggerComparison(condition: Triggered, situation: Situation, _source:O
 		case "start-turn":
 		case "end-turn":
 		case "on-combat-end-global":
+		case "on-search-end":
 		case "on-open-door":
 			return true;
 		case "on-clock-tick":
