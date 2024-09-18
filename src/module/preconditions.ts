@@ -481,6 +481,13 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			return multiCheckContains(condition.creatureType, [target.system.creatureType]);
 
 		}
+		case "power-slot-is": {
+			if (!situation.usedPower) return undefined;
+			const power = PersonaDB.findItem(situation.usedPower);
+			if (power.system.type == "consumable") {return undefined;}
+			const slot = condition.slotType;
+			return slot[String(power.system.slot)];
+		}
 		default :
 			condition satisfies never;
 			return undefined;

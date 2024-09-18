@@ -199,6 +199,11 @@
 	{{multicheck (strcat namePrefix 'creatureType') POWERSTUFF.CREATURE_TYPE checked=cond.creatureType localize=true}}
 	{{/if}}
 
+
+	{{#if (eq cond.boolComparisonTarget  "power-slot-is")}}
+	{{multicheck (strcat namePrefix 'slotType') POWERSTUFF.SLOTTYPES checked=cond.slotType localize=true}}
+	{{/if}}
+
 	{{/if}}
 
 

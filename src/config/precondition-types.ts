@@ -134,10 +134,17 @@ export type BooleanComparisonPC = {
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion
+StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison
 ;
 
+
+
 export type TargettedBComparisonPC = SingleTargetComparison | TwoTargetComparison;
+
+type SlotTypeComparison = {
+	boolComparisonTarget: "power-slot-is",
+	slotType: MultiCheck<string>,
+}
 
 type ShadowRoleComparison = {
 	boolComparisonTarget: "shadow-role-is",
@@ -263,6 +270,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"is-gm",
 	"has-item-in-inventory",
 	"creature-type-is",
+	"power-slot-is",
 ] as const;
 
 

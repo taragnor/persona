@@ -21,11 +21,15 @@ export type ModifierListItem = {
 	variableModifier: Set<{variable: ModifierVariable, makeNegative: boolean}>;
 }
 
+type MLListType = "standard" | "percentage";
+
 export class ModifierList {
 	_data: ModifierListItem[];
+	listType: MLListType;
 
-	constructor ( list: ModifierListItem[] = []) {
+	constructor ( list: ModifierListItem[] = [], listType: MLListType = "standard") {
 		this._data = list;
+		this.listType = listType;
 	}
 
 	add(name: string, modifier: number, sourceItem: Option<ModifierContainer> = null, conditions: Precondition[] = []) {
@@ -46,7 +50,7 @@ export class ModifierList {
 
 	concat (this: Readonly<ModifierList>, other: Readonly<ModifierList>) : ModifierList {
 		const list = this._data.concat(other._data);
-		return new ModifierList(list);
+		return new ModifierList(list, this.listType);
 	}
 
 	validModifiers (situation: Situation) : ModifierListItem[]  {
@@ -110,11 +114,18 @@ export class ModifierList {
 
 	total(situation: Situation ) : number {
 		const mods = this.validModifiers(situation);
-		const base =  mods.reduce( (acc, item) => acc + item.modifier , 0);
-		const vartotal = mods.reduce((acc, item) => {
-			return acc + ModifierList.resolveVariableModifiers(item.variableModifier, situation);
-		}, 0);
-		return base + vartotal;
+		switch (this.listType) {
+			case "standard":
+				const base =  mods.reduce( (acc, item) => acc + item.modifier , 0);
+				const vartotal = mods.reduce((acc, item) => {
+					return acc + ModifierList.resolveVariableModifiers(item.variableModifier, situation);
+				}, 0);
+				return base + vartotal;
+			case "percentage": {
+				const base =  mods.reduce( (acc, item) => acc * item.modifier , 1);
+				return base;
+			}
+		}
 	}
 
 	static testPreconditions (...args: Parameters<typeof testPreconditions>) : boolean {
