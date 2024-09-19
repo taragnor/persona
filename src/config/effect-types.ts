@@ -171,6 +171,7 @@ export const DAMAGE_SUBTYPES = Object.fromEntries(
 export const ALTER_MP_SUBTYPES_LIST = [
 	"direct",
 	"cost-reduction",
+	"percent-of-total",
 ] as const;
 
 export type AlterMPSubtype = typeof ALTER_MP_SUBTYPES_LIST[number];

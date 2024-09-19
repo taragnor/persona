@@ -361,6 +361,7 @@
 
 	"persona.alter-mp-subtypes.direct": "Direct",
 	"persona.alter-mp-subtypes.cost-reduction": "Cost Multiplier",
+	"persona.alter-mp-subtypes.percent-of-total": "% of total",
 
 
 

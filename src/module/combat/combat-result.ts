@@ -783,7 +783,12 @@ export class CombatResult  {
 						case "cost-reduction":
 							mpmult *= otherEffect.amount;
 							break;
+						case "percent-of-total":
+							mpcost += actor.mmp * (otherEffect.amount / 100);
+							break;
+
 						default:
+							otherEffect.subtype satisfies never;
 							PersonaError.softFail("No subtype for Alter MP effect");
 					}
 					break;

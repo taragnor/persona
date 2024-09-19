@@ -633,7 +633,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async modifyMP( this: PC, delta: number) {
 		let mp = this.system.combat.mp.value;
 		mp += delta;
-		mp = Math.clamp(mp, 0, this.mmp);
+		mp = Math.clamp(Math.round(mp), 0, this.mmp);
 		await this.update( {"system.combat.mp.value": mp});
 	}
 

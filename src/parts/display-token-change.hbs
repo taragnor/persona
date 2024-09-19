@@ -49,9 +49,18 @@
 		{{#if (eq effect.type "alter-energy")}}
 		Energy {{effect.amount}}
 		{{/if}}
+
 		{{#if (eq effect.type "alter-mp")}}
+
+		{{#if (eq effect.subtype "direct")}}
 		MP {{effect.amount}}
 		{{/if}}
+		{{#if (eq effect.subtype "percent-of-total")}}
+		MP {{effect.amount}}%
+		{{/if}}
+
+		{{/if}}
+
 		{{#if (eq effect.type "scan")}}
 		Scan Lvl. {{effect.level}}
 		{{/if}}
