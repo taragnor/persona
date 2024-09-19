@@ -424,9 +424,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const combat = game.combat as PersonaCombat;
 		if (combat && !combat.turnCheck(attacker)) {
 			if (!game.user.isGM) {
-				if (!await HTMLTools.confirmBox("Out of turn Action", "It's not your turn, act anyway?")) {
-					return false;
-				}
+				ui.notifications.warn("It's not your turn!");
+				return false;
+				// if (!await HTMLTools.confirmBox("Out of turn Action", "It's not your turn, act anyway?")) {
+				// return false;
+				// }
 			}
 			else {
 				if (!await HTMLTools.confirmBox("Out of turn Action", "It's not your turn, act anyway?")) {
