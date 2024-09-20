@@ -250,6 +250,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const damage = burnStatus.potency;
 			await actor.modifyHP(-damage);
 		}
+
+		const poisonStatus = actor.effects.find( eff=> eff.statuses.has("poison"));
+		if (poisonStatus) {
+			const damage = actor.getPoisonDamage();
+			await actor.modifyHP(-damage);
+		}
+
 		for (const effect of actor.effects) {
 			switch (effect.statusDuration) {
 				case "UEoNT":
@@ -351,12 +358,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					await effect.delete();
 					break;
 				case "3-rounds":
-					if (effect.statuses.has("confused")) {
-						const {success, total} = await PersonaCombat.rollSave(actor, { DC, label:effect.name, saveVersus:effect.statusId})
-						if (!success) {
-							Msg = Msg.concat( await this.preSaveEffect(total, effect, actor));
-						}
-					}
 					const rounds = effect.duration.rounds ?? 0;
 					if (rounds<= 0) {
 						Msg.push(`<br>${effect.displayedName} has expired.`);
@@ -371,6 +372,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						effect.statusDuration satisfies never;
 			}
 
+		}
+		const confused = actor.effects.find( eff=> eff.statuses.has("confused"));
+		if (confused) {
+			const {success, total} = await PersonaCombat.rollSave(actor, { DC: 11, label: "Confusion", saveVersus:confused.statusId})
+			if (!success) {
+				const msg = await this.preSaveEffect(total, confused, actor);
+				Msg = Msg.concat(msg);
+			}
 		}
 		const debilitatingStatuses :StatusEffectId[] = [
 			"sleep",
@@ -389,6 +398,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (burnStatus) {
 			const damage = burnStatus.potency;
 			Msg.push(`${combatant.name} is burning and will take ${damage} damage at end of turn. (original Hp: ${actor.hp}`);
+		}
+		const poisonStatus = actor.effects.find( eff=> eff.statuses.has("poison"));
+		if (poisonStatus) {
+			const damage = actor.getPoisonDamage();
+			Msg.push(`${combatant.name} is poisoned and will take ${damage} damage at end of turn. (original Hp: ${actor.hp}`);
 		}
 
 		return Msg;
@@ -1479,7 +1493,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const statuses = Array.from(effect.statuses)
 		for (const status of statuses) {
 			switch (status) {
-					//need to fix the save DC on confused so its can be set properly
 				case "confused":
 					retstr.push(`<b>${actor.name} is confused and can't take actions this turn!`);
 					break;

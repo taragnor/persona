@@ -1844,6 +1844,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		});
 	}
 
+	getPoisonDamage(this: PC | Shadow): number {
+		const base = Math.round(this.mhp * 0.15);
+		if (this.system.type == "pc") return base;
+		switch (this.system.role) {
+			case "miniboss":
+			case "boss":
+				return Math.round(base / 4);
+			default:
+				return base;
+		}
+	}
+
 	static calcPowerRequirement(role: Shadow["system"]["role"], power: Readonly<Power>,  diff: number) : number {
 		if (power.system.tags.includes("basicatk"))
 			return 0;
