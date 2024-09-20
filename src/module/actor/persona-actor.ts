@@ -75,12 +75,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const inc = this.hasIncremental("powers")? 1: 0;
 		const lvl = this.system.combat.classData.level + inc;
 		return MPAtLevel1 * Math.pow(1.222, lvl -1);
-		// const slots = this.class.getClassProperty(lvl, "slots");
-		// const baseMult = 1.666;
-		// return baseMult * slots.reduce( (acc, slots, slotType) => {
-		// 	const val= PersonaActor.convertSlotToMP(slotType) * slots;
-		// 	return acc+ val;
-		// }, 0);
 	}
 
 	async refreshMaxMP(this: PC, amt = this.mmp) {
