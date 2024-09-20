@@ -379,6 +379,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			if (!success) {
 				const msg = await this.preSaveEffect(total, confused, actor);
 				Msg = Msg.concat(msg);
+				if (actor.system.type == "shadow") {
+					this.skipBox(`${msg}. <br> Skip turn?`); //don't await this so it processes the rest of the code
+				}
 			}
 		}
 		const debilitatingStatuses :StatusEffectId[] = [
@@ -397,12 +400,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const burnStatus = actor.effects.find( eff=> eff.statuses.has("burn"));
 		if (burnStatus) {
 			const damage = burnStatus.potency;
-			Msg.push(`${combatant.name} is burning and will take ${damage} damage at end of turn. (original Hp: ${actor.hp}`);
+			Msg.push(`${combatant.name} is burning and will take ${damage} damage at end of turn. (original Hp: ${actor.hp})`);
 		}
 		const poisonStatus = actor.effects.find( eff=> eff.statuses.has("poison"));
 		if (poisonStatus) {
 			const damage = actor.getPoisonDamage();
-			Msg.push(`${combatant.name} is poisoned and will take ${damage} damage at end of turn. (original Hp: ${actor.hp}`);
+			Msg.push(`${combatant.name} is poisoned and will take ${damage} damage at end of turn. (original Hp: ${actor.hp})`);
 		}
 
 		return Msg;
@@ -669,9 +672,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		situation.struckWeakness = resist == "weakness";
 		const critResist = target.actor.critResist().total(situation);
 		critBoostMod.add("Enemy Critical Resistance", -critResist);
-		const critBoost = Math.max(0, critBoostMod.total(situation));
+		const floor = situation.resisted ? -999 : 0;
+		const critBoost = Math.max(floor, critBoostMod.total(situation));
 		const validMods = critBoostMod.validModifiers(situation);
-		debugger;
 
 		if (naturalAttackRoll == 1
 			|| total < defenseVal

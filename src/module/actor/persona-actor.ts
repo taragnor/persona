@@ -852,7 +852,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	basePowerCritResist(this: PC |Shadow): number {
 		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
 		const level = this.system.combat.classData.level + inc;
-		return Math.round(level /2);
+		return Math.floor(level /2);
 	}
 
 	mainModifiers(this: PC | Shadow, options?: {omitPowers?: boolean} ): ModifierContainer[] {
