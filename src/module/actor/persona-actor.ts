@@ -61,20 +61,26 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "pc": break;
 			default: return 0;
 		}
-		const inc = this.hasIncremental("powers")? 1: 0;
-		const lvl = this.system.combat.classData.level;
 		const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
 		const bonuses = this.getBonuses("maxmp");
-		const baseMult = 1.666;
 		const mult = 1 + this.getBonuses("maxmpMult").total(sit);
-		const slots = this.class.getClassProperty(lvl + inc, "slots");
-		const lvlmaxMP = slots.reduce( (acc, slots, slotType) => {
-			const val= PersonaActor.convertSlotToMP(slotType) * slots;
-			return acc+ val;
-		}, 0);
-		const val = Math.round((mult * (lvlmaxMP * baseMult)) + bonuses.total(sit));
+		const lvlmaxMP = (this as PC).calcBaseClassMMP();
+		const val = Math.round((mult * (lvlmaxMP)) + bonuses.total(sit));
 		(this as PC).refreshMaxMP(val);
 		return val;
+	}
+
+	calcBaseClassMMP(this: PC) {
+		const MPAtLevel1 = 65;
+		const inc = this.hasIncremental("powers")? 1: 0;
+		const lvl = this.system.combat.classData.level + inc;
+		return MPAtLevel1 * Math.pow(1.222, lvl -1);
+		// const slots = this.class.getClassProperty(lvl, "slots");
+		// const baseMult = 1.666;
+		// return baseMult * slots.reduce( (acc, slots, slotType) => {
+		// 	const val= PersonaActor.convertSlotToMP(slotType) * slots;
+		// 	return acc+ val;
+		// }, 0);
 	}
 
 	async refreshMaxMP(this: PC, amt = this.mmp) {
