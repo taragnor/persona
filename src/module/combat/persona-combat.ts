@@ -1074,6 +1074,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			if (actor) {
 				newSit.user = actor.accessor;
 				newSit.target = actor.accessor;
+				newSit.triggeringCharacter = actor.accessor;
 			}
 			situation = newSit;
 		}

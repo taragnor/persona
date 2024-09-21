@@ -1145,7 +1145,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 							const inspiration = this.system.social.reduce( (acc, item) => acc + item.inspiration , 0)
 							return inspiration >= usable.system.inspirationCost;
 						}
-
+					case "downtime":
+						const combat = game.combat as PersonaCombat;
+						if (!combat) return false;
+						return combat.isSocial;
 					default:
 						return true;
 				}

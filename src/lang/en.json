@@ -234,6 +234,7 @@
 	"persona.power.subtype.other": "Other",
 	"persona.power.subtype.passive": "Passive",
 	"persona.power.subtype.defensive": "Defensive",
+	"persona.power.subtype.downtime": "Downtime",
 	"persona.power.subtype.none": "None",
 	"persona.power.hpcost": "Hp Cost",
 	"persona.power.slotcost": "Slot Cost",

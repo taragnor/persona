@@ -555,7 +555,14 @@ export class CombatResult  {
 		}
 		const actingActor = attacker?.actor;
 		if (actingActor) {
-			PersonaCombat.execTrigger("on-kill-target", actingActor);
+			const situation: Situation = {
+				trigger: "on-kill-target",
+				triggeringCharacter: actingActor.accessor,
+				target: target.actor.accessor,
+				user: actingActor.accessor,
+			}
+			//TODO: make this work for all characters triggers Reaper and others(like justice heal)
+			PersonaCombat.execTrigger("on-kill-target", actingActor, situation);
 		}
 	}
 

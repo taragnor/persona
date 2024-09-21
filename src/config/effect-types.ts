@@ -63,6 +63,7 @@ export const POWERTYPESLIST = [
 	"none",
 	"standalone",
 	"defensive",
+	"downtime",
 ] as const;
 
 export type PowerType = typeof POWERTYPESLIST[number];
