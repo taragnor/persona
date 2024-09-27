@@ -1,3 +1,6 @@
+import { DamageConsequence } from "../../config/consequence-types.js";
+import { TriggeredEffect } from "../triggered-effect.js";
+import { NonCombatTrigger } from "../../config/triggers.js";
 import { STATUS_POWER_TAGS } from "../../config/power-tags.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { PersonaItem } from "../item/persona-item.js";
@@ -474,7 +477,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			if (power.name == BASIC_PC_POWER_NAMES[1]) {
 				PersonaSFX.play("all-out");
 			}
-			result.merge(await  this.#usePowerOn(attacker, power, targets, "standard"));
+			result.merge(await  this.usePowerOn(attacker, power, targets, "standard"));
 			const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
 			result.merge(costs);
 
@@ -494,7 +497,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 
-	static async #usePowerOn(attacker: PToken, power: Usable, targets: PToken[], rollType : AttackRollType, modifiers: ModifierList = new ModifierList()) : Promise<CombatResult> {
+	static async usePowerOn(attacker: PToken, power: Usable, targets: PToken[], rollType : AttackRollType, modifiers: ModifierList = new ModifierList()) : Promise<CombatResult> {
 		let i = 0;
 		const result = new CombatResult();
 		for (const target of targets) {
@@ -502,7 +505,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const this_result = await this.processEffects(atkResult);
 			result.merge(this_result);
 			if (atkResult.result == "reflect") {
-				result.merge(await this.#usePowerOn(attacker, power, [attacker], "reflect"));
+				result.merge(await this.usePowerOn(attacker, power, [attacker], "reflect"));
 			}
 			const extraAttacks = this_result.findEffects("extra-attack");
 			for (const extraAttack of extraAttacks)
@@ -514,7 +517,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					mods.add("Iterative Penalty", (bonusRollType + 1) * extraAttack.iterativePenalty);
 				}
 				if (bonusRollType < extraAttack.maxChain) {
-					const extra = await this.#usePowerOn(attacker, power, [target], bonusRollType, mods);
+					const extra = await this.usePowerOn(attacker, power, [target], bonusRollType, mods);
 					result.merge(extra);
 				}
 			}
@@ -526,7 +529,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				if (execPower && newAttacker) {
 					const altTargets= this.getAltTargets(newAttacker, atkResult.situation, usePower.target );
 					const newTargets = await this.getTargets(newAttacker, execPower, altTargets)
-					const extraPower = await this.#usePowerOn(newAttacker, execPower, newTargets, "standard");
+					const extraPower = await this.usePowerOn(newAttacker, execPower, newTargets, "standard");
 					result.merge(extraPower);
 				}
 			}
@@ -848,51 +851,52 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	static processConsequence( power: ModifierContainer, situation: Situation, cons: Consequence, attacker: ValidAttackers, atkresult ?: Partial<AttackResult>) : ConsequenceProcessed["consequences"] {
 		let damageMult = 1;
 		const applyToSelf = cons.applyToSelf ?? false;
-		const absorb = situation.isAbsorbed && !applyToSelf;
+		const absorb = (situation.isAbsorbed && !applyToSelf) ?? false;
 		const block = atkresult && atkresult.result == "block" && !applyToSelf;
 		damageMult *= situation.resisted ? 0.5 : 1;
 		const applyTo = cons.applyTo ? cons.applyTo : (applyToSelf ? "owner" : "target");
 		switch (cons.type) {
 			case "damage-new":
-				let dmgAmt : number = 0;
-				switch (cons.damageSubtype) {
-					case "multiplier":
-						return [{
-							applyTo,
-							cons
-						}];
-					case "high":
-						dmgAmt = power.getDamage(attacker, "high", situation);
-						break;
-					case "low":
-						dmgAmt = power.getDamage(attacker, "low", situation);
-						break;
-					case "allout-low":
-					case "allout-high": {
-						const combat =this.ensureCombatExists();
-						const userTokenAcc = combat.getToken(situation.user);
-						if (!userTokenAcc) {
-							PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId ?? "Null user"}`);
-							break;
-						}
-						const userToken = PersonaDB.findToken(userTokenAcc);
-						const dmg = PersonaCombat.calculateAllOutAttackDamage(userToken, situation);
-						dmgAmt = cons.damageSubtype == "allout-high"? dmg.high: dmg.low;
-						break;
-					}
-					case "constant":
-						dmgAmt = cons.amount;
-						break;
-					default:
-						cons satisfies never;
-				}
-				return [{
-					applyTo,
-					cons: {
-						...cons,
-						amount: dmgAmt * (absorb ? -1 : damageMult),
-					}
-				}];
+				return this.processConsequence_damage(cons, applyTo, attacker, power, situation, absorb, damageMult);
+				// let dmgAmt : number = 0;
+				// switch (cons.damageSubtype) {
+				// 	case "multiplier":
+				// 		return [{
+				// 			applyTo,
+				// 			cons
+				// 		}];
+				// 	case "high":
+				// 		dmgAmt = power.getDamage(attacker, "high", situation);
+				// 		break;
+				// 	case "low":
+				// 		dmgAmt = power.getDamage(attacker, "low", situation);
+				// 		break;
+				// 	case "allout-low":
+				// 	case "allout-high": {
+				// 		const combat =this.ensureCombatExists();
+				// 		const userTokenAcc = combat.getToken(situation.user);
+				// 		if (!userTokenAcc) {
+				// 			PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId ?? "Null user"}`);
+				// 			break;
+				// 		}
+				// 		const userToken = PersonaDB.findToken(userTokenAcc);
+				// 		const dmg = PersonaCombat.calculateAllOutAttackDamage(userToken, situation);
+				// 		dmgAmt = cons.damageSubtype == "allout-high"? dmg.high: dmg.low;
+				// 		break;
+				// 	}
+				// 	case "constant":
+				// 		dmgAmt = cons.amount;
+				// 		break;
+				// 	default:
+				// 		cons satisfies never;
+				// }
+				// return [{
+				// 	applyTo,
+				// 	cons: {
+				// 		...cons,
+				// 		amount: dmgAmt * (absorb ? -1 : damageMult),
+				// 	}
+				// }];
 			case "dmg-mult":
 				return [{
 					applyTo,
@@ -957,6 +961,51 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return this.processConsequence_simple(cons);
 		}
 		return [];
+	}
+
+	static processConsequence_damage( cons: DamageConsequence, applyTo: ConsequenceProcessed["consequences"][number]["applyTo"], attacker: ValidAttackers, power: ModifierContainer, situation: Situation, absorb: boolean, damageMult: number) : ConsequenceProcessed["consequences"] {
+		let dmgAmt : number = 0;
+		switch (cons.damageSubtype) {
+			case "multiplier":
+				return [{
+					applyTo,
+					cons
+				}];
+			case "high":
+				dmgAmt = power.getDamage(attacker, "high", situation);
+				break;
+			case "low":
+				dmgAmt = power.getDamage(attacker, "low", situation);
+				break;
+			case "allout-low":
+			case "allout-high": {
+				const combat =this.ensureCombatExists();
+				const userTokenAcc = combat.getToken(situation.user);
+				if (!userTokenAcc) {
+					PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId ?? "Null user"}`);
+					break;
+				}
+				const userToken = PersonaDB.findToken(userTokenAcc);
+				const dmg = PersonaCombat.calculateAllOutAttackDamage(userToken, situation);
+				dmgAmt = cons.damageSubtype == "allout-high"? dmg.high: dmg.low;
+				break;
+			}
+			case "constant":
+				dmgAmt = cons.amount;
+				break;
+			case "percentage":
+				dmgAmt = cons.amount;
+				break;
+			default:
+				cons satisfies never;
+		}
+		return [{
+			applyTo,
+			cons: {
+				...cons,
+				amount: dmgAmt * (absorb ? -1 : damageMult),
+			}
+		}];
 	}
 
 	static processConsequence_simple( cons: Consequence) :ConsequenceProcessed["consequences"] {
@@ -1042,67 +1091,69 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	static async execTrigger(trigger: CombatTrigger, actor: ValidAttackers, situation?: Situation) : Promise<void> {
-		const triggerResult = this.onTrigger(trigger, actor, situation)
-		.emptyCheck();
-		if (!triggerResult) return;
-		const usePowers = triggerResult.findEffects("use-power");
-		situation = situation ? situation : {
-			attacker: actor.accessor,
-			user: actor.accessor,
-		};
-		for (const usePower of usePowers) {
-			//TODO BUG: Extra attacks keep the main inputted modifier
-			const newAttacker = this.getPTokenFromActorAccessor(usePower.newAttacker);
-			const execPower = PersonaDB.allPowers().find( x=> x.id == usePower.powerId);
-			if (execPower && newAttacker) {
-				const altTargets= this.getAltTargets(newAttacker, situation, usePower.target );
-				const newTargets = await this.getTargets(newAttacker, execPower, altTargets)
-				const extraPower = await this.#usePowerOn(newAttacker, execPower, newTargets, "standard");
-				triggerResult.merge(extraPower);
+		return await TriggeredEffect.execCombatTrigger(trigger, actor, situation);
+		//const triggerResult = this.onTrigger(trigger, actor, situation)
+		//.emptyCheck();
+		//if (!triggerResult) return;
+		//const usePowers = triggerResult.findEffects("use-power");
+		//situation = situation ? situation : {
+		//	attacker: actor.accessor,
+		//	user: actor.accessor,
+		//};
+		//for (const usePower of usePowers) {
+		//	//TODO BUG: Extra attacks keep the main inputted modifier
+		//	const newAttacker = this.getPTokenFromActorAccessor(usePower.newAttacker);
+		//	const execPower = PersonaDB.allPowers().find( x=> x.id == usePower.powerId);
+		//	if (execPower && newAttacker) {
+		//		const altTargets= this.getAltTargets(newAttacker, situation, usePower.target );
+		//		const newTargets = await this.getTargets(newAttacker, execPower, altTargets)
+		//		const extraPower = await this.usePowerOn(newAttacker, execPower, newTargets, "standard");
+		//		triggerResult.merge(extraPower);
 
-			}
-		}
-		await triggerResult?.toMessage("Triggered Effect", actor);
+		//	}
+		//}
+		//await triggerResult?.toMessage("Triggered Effect", actor);
 	}
 
-	static onTrigger(trigger: CombatTrigger, actor ?: ValidAttackers, situation ?: Situation) : CombatResult {
-		const result = new CombatResult();
-		if (!situation) {
-			const newSit: Situation = {
-				trigger,
-			};
-			if (actor) {
-				newSit.user = actor.accessor;
-				newSit.target = actor.accessor;
-				newSit.triggeringCharacter = actor.accessor;
-			}
-			situation = newSit;
-		}
-		situation = {
-			...situation,
-			trigger
-		} ; //copy the object so it doesn't permanently change it
-		let triggers : ModifierContainer[];
-		if (actor) {
-			triggers = actor.triggers;
-		} else {
-			const roomEffects= (game?.combat as PersonaCombat)?.getRoomEffects() ?? [];
-			triggers = [
-				...PersonaDB.getGlobalModifiers(), //testin only
-				...roomEffects,
-			];
-		}
-		for (const trig of triggers) {
-			for (const eff of trig.getEffects(actor ?? null)) {
-				if (!ModifierList.testPreconditions(eff.conditions, situation, trig)) { continue; }
-				const cons = this.ProcessConsequences(trig, situation, eff.consequences, actor)
-				result.escalationMod+= cons.escalationMod;
-				for (const c of cons.consequences) {
-					result.addEffect(null, actor, c.cons);
-				}
-			}
-		}
-		return result;
+	static onTrigger(trigger: CombatTrigger | NonCombatTrigger, actor ?: ValidAttackers, situation ?: Situation) : CombatResult {
+		return TriggeredEffect.onTrigger(trigger, actor, situation);
+		// const result = new CombatResult();
+		// if (!situation) {
+		// 	const newSit: Situation = {
+		// 		trigger,
+		// 	};
+		// 	if (actor) {
+		// 		newSit.user = actor.accessor;
+		// 		newSit.target = actor.accessor;
+		// 		newSit.triggeringCharacter = actor.accessor;
+		// 	}
+		// 	situation = newSit;
+		// }
+		// situation = {
+		// 	...situation,
+		// 	trigger
+		// } ; //copy the object so it doesn't permanently change it
+		// let triggers : ModifierContainer[];
+		// if (actor) {
+		// 	triggers = actor.triggers;
+		// } else {
+		// 	const roomEffects= (game?.combat as PersonaCombat)?.getRoomEffects() ?? [];
+		// 	triggers = [
+		// 		...PersonaDB.getGlobalModifiers(), //testin only
+		// 		...roomEffects,
+		// 	];
+		// }
+		// for (const trig of triggers) {
+		// 	for (const eff of trig.getEffects(actor ?? null)) {
+		// 		if (!ModifierList.testPreconditions(eff.conditions, situation, trig)) { continue; }
+		// 		const cons = this.ProcessConsequences(trig, situation, eff.consequences, actor)
+		// 		result.escalationMod+= cons.escalationMod;
+		// 		for (const c of cons.consequences) {
+		// 			result.addEffect(null, actor, c.cons);
+		// 		}
+		// 	}
+		// }
+		// return result;
 	}
 
 	static async #processCosts(attacker: PToken , power: Usable, costModifiers: OtherEffect[]) : Promise<CombatResult>
@@ -1709,7 +1760,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 } // end of class
 
 
-type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shadow">;
+export type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shadow">;
 
 export type PToken = TokenDocument<ValidAttackers> & {get actor(): ValidAttackers};
 

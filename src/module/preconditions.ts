@@ -237,10 +237,10 @@ function triggerComparison(condition: Triggered, situation: Situation, _source:O
 			return condition.tarot == situation.tarot;
 		case "on-inflict-status":
 			return condition.status == situation.statusEffect;
+		case "on-combat-end":
 		case "exit-metaverse":
 		case "enter-metaverse":
 		case "on-use-power":
-		case "on-combat-end":
 		case "on-combat-start":
 		case "on-kill-target":
 		case "on-damage":

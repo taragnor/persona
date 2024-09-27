@@ -145,6 +145,7 @@
 	"persona.damage-subtype.allout-low" : "All Out (Low)",
 	"persona.damage-subtype.constant" : "Constant",
 	"persona.damage-subtype.multiplier" : "Damage Multiplier",
+	"persona.damage-subtype.percentage" : "% of Total HP",
 
 
 	"persona.status.duration.permanent": "Permanent",

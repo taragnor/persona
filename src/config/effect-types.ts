@@ -160,12 +160,13 @@ export const DAMAGE_SUBTYPE_LIST = [
 	"allout-low",
 	"constant",
 	"multiplier",
+	"percentage",
 ] as const;
 
 export type DamageSubtype = typeof DAMAGE_SUBTYPE_LIST[number];
 
 
-export const DAMAGE_SUBTYPES = Object.fromEntries( 
+export const DAMAGE_SUBTYPES = Object.fromEntries(
 	DAMAGE_SUBTYPE_LIST.map( x=> [x, `persona.damage-subtype.${x}`])
 );
 

@@ -178,7 +178,7 @@ type DamageConsequenceShared = {
 	amount ?: number; //only added later for effects
 };
 
-type DamageConsequence = DamageConsequenceShared & (
+export type DamageConsequence = DamageConsequenceShared & (
 	SimpleDamageCons
 	| ConstantDamageCons
 	| DamageMultiplierCons
@@ -190,7 +190,7 @@ type SimpleDamageCons = {
 }
 
 type ConstantDamageCons = {
-	damageSubtype: "constant";
+	damageSubtype: "constant" | "percentage";
 	damageType: DamageType | "by-power",
 	amount: number;
 }

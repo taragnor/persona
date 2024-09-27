@@ -1,4 +1,4 @@
-class Sheet<T extends Document> extends FormApplication {
+class Sheet<T extends FoundryDocument<any>> extends FormApplication {
 	options: SheetOptions;
 	getData(): SheetData | Promise<SheetData>;
 	activateListeners(html: JQuery<HTMLElement>): void;

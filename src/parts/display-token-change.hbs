@@ -3,16 +3,28 @@
 		{{getTokenAccName change.actor}}:
 	</span>
 	{{#if change.hpchange}}
-	{{abs change.hpchange}} damage ({{change.damageType}})
-	{{#if attack.attackResult.situation.resisted}}
-	<span class="resisted">(Resist)</span>
-	{{/if}}
-	{{#if attack.attackResult.situation.struckWeakness}}
-	<span class="resisted">(Weak)</span>
-	{{/if}}
-	{{#if attack.attackResult.situation.isAbsorbed}}
-	<span class="resisted">(Absorbed)</span>
-	{{/if}}
+	<span>
+		{{#if (lt change.hpchange 0)}}
+		{{abs change.hpchange}} damage ({{change.damageType}})
+		{{else}}
+		{{abs change.hpchange}} healing ({{change.damageType}})
+		{{/if}}
+	</span>
+	<span>
+		{{#if attack.attackResult.situation.resisted}}
+		<span class="resisted">(Resist)</span>
+		{{/if}}
+	</span>
+	<span>
+		{{#if attack.attackResult.situation.struckWeakness}}
+		<span class="resisted">(Weak)</span>
+		{{/if}}
+	</span>
+	<span>
+		{{#if attack.attackResult.situation.isAbsorbed}}
+		<span class="resisted">(Absorbed)</span>
+		{{/if}}
+	</span>
 	{{/if}}
 	{{#each change.addStatus as |status|}}
 	+{{localize (concat "persona.status." status.id)}}

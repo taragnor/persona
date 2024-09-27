@@ -128,6 +128,18 @@ export class CombatResult  {
 						}
 						effect.hpchange = -(cons.amount ?? 0);
 						break;
+					case "percentage":
+							debugger;
+						if (!target) {
+							PersonaError.softFail("No target for percentage HP");
+							break;
+						}
+						const amt = Math.abs(Math.round(target.mhp * cons.amount * 0.01));
+						effect.hpchange = cons.damageType == "healing" ? amt : -amt;
+						if (cons.damageType != "by-power") {
+							effect.damageType = cons.damageType;
+						}
+						break;
 					default:
 							cons satisfies never;
 						break;

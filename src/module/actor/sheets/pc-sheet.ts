@@ -1,5 +1,4 @@
 import { localize } from "../../persona.js";
-import { PersonaSounds } from "../../persona-sounds.js";
 import { Logger } from "../../utility/logger.js";
 import { PersonaError } from "../../persona-error.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";

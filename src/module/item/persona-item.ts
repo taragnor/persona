@@ -157,6 +157,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 			case "none":
 			case "standalone":
 			case "defensive":
+			case "downtime":
 				break;
 			default:
 				this.system.subtype satisfies never;

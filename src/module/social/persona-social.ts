@@ -1,3 +1,4 @@
+import { TriggeredEffect } from "../triggered-effect.js";
 import { SocialCardActionEffect } from "../../config/consequence-types.js";
 import { CardChoice } from "../../config/social-card-config.js";
 import { weightedChoice } from "../utility/array-tools.js";
@@ -661,33 +662,12 @@ export class PersonaSocial {
 		return this.#drawnCardIds;
 	}
 
-	static async execTrigger( trigger: NonCombatTrigger, actor: PC, situation ?: Situation, msg = "Triggered Effect") {
-		await this.onTrigger(trigger, actor, situation)
-			.emptyCheck()
-			?.toMessage(msg, actor);
-
+	static async execTrigger( trigger: NonCombatTrigger, actor: PC, situation ?: Situation, msg = "Triggered Effect"): Promise<void> {
+		return await TriggeredEffect.execNonCombatTrigger(trigger, actor, situation, msg);
 	}
+
 	static onTrigger(trigger: NonCombatTrigger, actor: PC, situation ?: Situation) : CombatResult {
-		const result = new CombatResult();
-		if (!situation) {
-			situation = {
-				user: actor.accessor,
-			}
-		}
-		situation = {
-			...situation,
-			trigger
-		} ; //copy the object so it doesn't permanently change it
-		for (const trig of actor.triggers) {
-			for (const eff of trig.getEffects(actor)) {
-				if (ModifierList.testPreconditions(eff.conditions, situation, trig)) { continue;}
-				const cons = PersonaCombat.ProcessConsequences(trig, situation, eff.consequences, actor)
-				for (const c of cons.consequences) {
-					result.addEffect(null, actor, c.cons);
-				}
-			}
-		}
-		return result;
+		return TriggeredEffect.onTrigger(trigger, actor, situation);
 	}
 
 	static async awardPerk(target: PC, socialLink: SocialLink) {
@@ -697,7 +677,7 @@ export class PersonaSocial {
 			target: target.accessor,
 			socialTarget: target.accessor,
 		}
-		console.log(situation);
+		// console.log(situation);
 		await this.execTrigger("on-attain-tarot-perk", target, situation, `Gains Perk (${socialLink.tarot?.name})`) ;
 	}
 
