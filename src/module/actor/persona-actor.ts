@@ -1061,8 +1061,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		let talents = this.system.talents;
 		if (!talents.find(x => x.talentId == id)) return;
+		const talent = PersonaDB.getItemById(id) as Talent;
 		talents = talents.filter( x=> x.talentId != id);
 		await this.update( {"system.talents": talents});
+		await Logger.sendToChat(`${this.name} deleted talent ${talent.name}` , this);
 	}
 
 	async addPower(this: PC, power: Power) {
@@ -1082,7 +1084,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		let powers = this.system.combat.powers;
 		if (!powers.includes(id)) return;
 		powers = powers.filter( x=> x != id);
+		const power = PersonaDB.getItemById(id) as Power;
 		await this.update( {"system.combat.powers": powers});
+		await Logger.sendToChat(`${this.name} deleted power ${power.name}` , this);
 	}
 
 	async addFocus(this: PC, focus: Focus) {
