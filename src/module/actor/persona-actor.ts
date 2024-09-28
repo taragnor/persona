@@ -1912,6 +1912,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async onCombatStart() {
+	}
+
+	async onAddToCombat() {
 		switch (this.system.type) {
 			case "shadow":
 				const sit : Situation = {
@@ -1925,7 +1928,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "tarot":
 				break;
 		}
+
 	}
+
 
 	static convertSlotToMP(slotLevel: number) {
 			switch (slotLevel) {
