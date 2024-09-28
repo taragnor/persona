@@ -15,7 +15,7 @@ export class PersonaSettings {
 		}
 	}
 
-	static get<T extends SETTINGKEYS>(settingName: T) : InstanceType<typeof SETTINGS[T]["type"]> {
+	static get<T extends SETTINGKEYS, IT extends InstanceType<typeof SETTINGS[T]["type"]>>(settingName: T) : IT extends Boolean ? boolean: IT {
 		return game.settings.get("persona", settingName);
 	}
 
@@ -109,8 +109,17 @@ const SETTINGS = {
 		choices: WEATHER_TYPES,
 		default: "cloudy",
 		type: String,
-	}
+	},
 
+	"searchReminder": {
+		name: "Search Reminder",
+		hint: "Beeps annoyingly at the last person to pick in search actions",
+		scope: "world",
+		restricted: true,
+		config: true,
+		type: Boolean,
+		default: true,
+	},
 
 } as const;
 

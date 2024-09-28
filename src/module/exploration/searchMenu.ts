@@ -1,3 +1,4 @@
+import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaSFX } from "../combat/persona-sfx.js";
 import { PersonaDB } from "../persona-db.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
@@ -461,7 +462,9 @@ export class SearchMenu {
 				if (!actor.isOwner) {
 					return;
 				}
-				PersonaSFX.playerAlert();
+				if (PersonaSettings.get("searchReminder")) {
+					PersonaSFX.playerAlert();
+				}
 			}, 2000);
 		}
 	}
