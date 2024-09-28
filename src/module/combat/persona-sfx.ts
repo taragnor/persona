@@ -9,7 +9,7 @@ import { PersonaSounds } from "../persona-sounds.js";
 
 
 export class PersonaSFX {
-	static async onDamage( token: PToken | undefined, hpchange: number, damageType: DamageType) {
+	static async onDamage( _token: PToken | undefined, hpchange: number, damageType: DamageType) {
 		if (hpchange == 0) return;
 		if (hpchange > 0) {
 			if (damageType == "healing") {
@@ -47,20 +47,20 @@ export class PersonaSFX {
 		}
 	}
 
-	static async onScan(token: PToken | undefined, level: number) {
+	static async onScan(token: PToken | undefined, _level: number) {
 		if (!token) return;
 		await this.addTMFiltersSpecial("scan", token);
 		await PersonaSFX.play("scan");
 		await this.removeTMFiltersSpecial("scan", token)
 	}
 
-	static async onDefend( token: PToken | undefined, defenseType: "block" | "absorb" | "miss" | "reflect") {
-		const s = await this.play(defenseType);
+	static async onDefend( _token: PToken | undefined, defenseType: "block" | "absorb" | "miss" | "reflect") {
+		await this.play(defenseType);
 	}
 
-	static async onStatus( token : PToken | undefined, statusEffect: StatusEffectId) {
+	static async onStatus( _token : PToken | undefined, statusEffect: StatusEffectId) {
 		if (PersonaSounds.isValidSound(statusEffect)) {
-			const s = await this.play(statusEffect);
+			 await this.play(statusEffect);
 		}
 	}
 
