@@ -145,6 +145,15 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			"": "usedItem",
 			...ITEMS
 		};
+		const RELATIONSHIP_TYPES_LIST = PersonaDB.allSocialCards()
+			.flatMap(card => card.system.qualifiers)
+			.map(qual=> qual.relationshipName)
+			.filter( (val, i, arr) => arr.indexOf(val) == i);
+		const RELATIONSHIP_TYPE_OBJECT  = Object.fromEntries(
+			(RELATIONSHIP_TYPES_LIST as string[])
+			.map(x=> ([x,x]))
+		);
+
 		return {
 			...this.powerStuffBase,
 			SOCIAL_LINKS,
@@ -157,6 +166,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			SCENES,
 			ITEMS,
 			ITEMS_PLUS_NULL,
+			RELATIONSHIP_TYPE_OBJECT,
 		};
 	}
 

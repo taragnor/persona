@@ -199,9 +199,14 @@
 	{{multicheck (strcat namePrefix 'creatureType') POWERSTUFF.CREATURE_TYPE checked=cond.creatureType localize=true}}
 	{{/if}}
 
-
 	{{#if (eq cond.boolComparisonTarget  "power-slot-is")}}
 	{{multicheck (strcat namePrefix 'slotType') POWERSTUFF.SLOTTYPES checked=cond.slotType localize=true}}
+	{{/if}}
+
+	{{#if (eq cond.boolComparisonTarget  "relationship-type-is")}}
+	<select name="{{strcat namePrefix 'relationshipType'}}">
+		{{selectOptions POWERSTUFF.RELATIONSHIP_TYPE_OBJECT localize=false selected=cond.relationshipType}}
+	</select>
 	{{/if}}
 
 	{{/if}}

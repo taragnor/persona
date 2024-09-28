@@ -488,6 +488,17 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			const slot = condition.slotType;
 			return slot[String(power.system.slot)];
 		}
+		case "relationship-type-is": {
+			const socialTarget = situation.socialTarget ?? situation.target;
+			if (!socialTarget) return undefined;
+			if (!situation.user) return undefined;
+			const user = PersonaDB.findActor(situation.user);
+			const target = PersonaDB.findActor(socialTarget);
+			if (user.system.type == "shadow") return undefined;
+			const link = (user as PC).socialLinks.find(x=>x.actor == target);
+			if (!link) return undefined;
+			return link.relationshipType.toUpperCase() == condition.relationshipType.toUpperCase();
+		}
 		default :
 			condition satisfies never;
 			return undefined;

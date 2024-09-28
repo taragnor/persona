@@ -461,6 +461,7 @@
 	"persona.preconditions.comparison.has-item-in-inventory": "Has Item in Inventory",
 	"persona.preconditions.comparison.creature-type-is": "Creature Type Is",
 	"persona.preconditions.comparison.power-slot-is": "Power Slot Is",
+	"persona.preconditions.comparison.relationship-type-is": "Relationship Type is",
 	"persona.preconditions.comparison.power-target-type-is": "Power's targets are",
 	"persona.preconditions.comparison.weather-is": "Current Weather is",
 	"persona.preconditions.comparison.target-social-link-is": "Target Social Link is",

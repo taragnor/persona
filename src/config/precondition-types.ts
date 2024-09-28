@@ -134,10 +134,15 @@ export type BooleanComparisonPC = {
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison
+StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | RelationshipTypeComparison
 ;
 
 
+
+export type RelationshipTypeComparison = {
+	boolComparisonTarget: "relationship-type-is",
+	relationshipType: string;
+}
 
 export type TargettedBComparisonPC = SingleTargetComparison | TwoTargetComparison;
 
@@ -271,6 +276,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"has-item-in-inventory",
 	"creature-type-is",
 	"power-slot-is",
+	"relationship-type-is",
 ] as const;
 
 
