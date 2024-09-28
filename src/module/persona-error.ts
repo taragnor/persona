@@ -9,6 +9,7 @@ export class PersonaError extends Error {
 	static softFail(errortxt: string) {
 		ui.notifications.error(errortxt);
 		console.error(errortxt);
+		console.trace();
 	}
 
 }
