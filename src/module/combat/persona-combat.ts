@@ -477,6 +477,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			if (power.name == BASIC_PC_POWER_NAMES[1]) {
 				PersonaSFX.play("all-out");
 			}
+			PersonaSFX.onUsePower(power);
 			result.merge(await  this.usePowerOn(attacker, power, targets, "standard"));
 			const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
 			result.merge(costs);

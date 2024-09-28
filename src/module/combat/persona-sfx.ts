@@ -1,3 +1,4 @@
+import { Usable } from "../item/persona-item.js";
 import { TurnAlert } from "../utility/turnAlert.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaAE } from "../active-effect.js";
@@ -36,12 +37,21 @@ export class PersonaSFX {
 		}
 	}
 
+	static async onUsePower(power: Usable) {
+		if (!power.isAoE()) return;
+		const damageType = power.system.dmg_type;
+		switch (damageType) {
+			case "untyped":
+				await this.play(damageType);
+			default:
+		}
+	}
+
 	static async onScan(token: PToken | undefined, level: number) {
 		if (!token) return;
 		await this.addTMFiltersSpecial("scan", token);
 		await PersonaSFX.play("scan");
 		await this.removeTMFiltersSpecial("scan", token)
-
 	}
 
 	static async onDefend( token: PToken | undefined, defenseType: "block" | "absorb" | "miss" | "reflect") {
@@ -63,16 +73,6 @@ export class PersonaSFX {
 				console.error(e);
 			}
 		}
-		// let token;
-		// if (game.combat && game.combat.active) {
-		// 	token = (game.combat as PersonaCombat).combatants.find( x=> x.actor == actor)?.token;
-		// 	if (!token) return;
-		// 	try {
-		// 		this.addTMFiltersStatus(statusId, token);
-		// 	} catch (e)  {
-		// 		console.error(e);
-		// 	}
-		// }
 	}
 
 	static playerAlert() {
@@ -89,17 +89,6 @@ export class PersonaSFX {
 				console.error(e);
 			}
 		}
-		// let token;
-		// if (game.combat && game.combat.active) {
-		// 	token = (game.combat as PersonaCombat).combatants.find( x=> x.actor == actor)?.token;
-		// 	if (!token) return;
-		// 	try {
-		// 		await this.removeTMFiltersStatus(statusId, token);
-		// 	} catch (e)  {
-		// 		console.error(e);
-		// 	}
-		// }
-
 	}
 
 	static getTokens (actor: PersonaActor) : TokenDocument<PersonaActor>[] {
