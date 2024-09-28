@@ -1,4 +1,5 @@
 export class PersonaError extends Error {
+
 	constructor (errortxt: string) {
 		super(errortxt);
 		ui.notifications.error(errortxt);
@@ -9,7 +10,5 @@ export class PersonaError extends Error {
 		ui.notifications.error(errortxt);
 		console.error(errortxt);
 	}
-
-
 
 }

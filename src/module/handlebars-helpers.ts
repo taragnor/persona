@@ -37,7 +37,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"getCritResist": (actor: PC | Shadow) => {
-			return actor.critResist().total({user: actor.accessor});
+			return actor.critResist().total({user: actor.accessor, target:actor.accessor});
 		},
 		"getDefense" : (actor: PC | Shadow, defense: keyof typeof actor["system"]["combat"]["defenses"]) => {
 			const acc = actor.accessor;

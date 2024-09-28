@@ -1846,8 +1846,7 @@ Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
 
 
 Hooks.on("createCombatant", async (combatant: Combatant<PersonaActor>) => {
-	combatant?.token?.actor?.onAddToCombat();
-
+	await combatant?.token?.actor?.onAddToCombat();
 });
 
 Hooks.on("renderCombatTracker", async (_item: CombatTracker, element: JQuery<HTMLElement>, _options: RenderCombatTabOptions) => {
