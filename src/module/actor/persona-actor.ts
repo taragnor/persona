@@ -1269,8 +1269,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		link.currentProgress = Math.max(0,progress + link.currentProgress);
 		if (progress > 0) {
 			link.inspiration = link.linkLevel;
-		} else if (progress <0) {
-			link.inspiration = 0;
 		}
 		const linkActor = game.actors.get(link.linkId);
 		if (progress < 0) {

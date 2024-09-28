@@ -414,7 +414,7 @@ export class SearchMenu {
 		private static checkResolution() : boolean{
 			if (!this.data) return false;
 			const results = this.data.results;
-			if (results.some (res => res.declaration == "undecided" || res.declaration == "disconnected")){ 
+			if (results.some (res => res.declaration == "undecided" || res.declaration == "disconnected")) {
 				return false;
 			}
 			const leavers = results.filter(res => res.declaration == "leave");
