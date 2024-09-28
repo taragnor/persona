@@ -1,3 +1,5 @@
+import { PersonaSFX } from "../combat/persona-sfx.js";
+import { PersonaDB } from "../persona-db.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { TensionPoolResult } from "./tension-pool.js";
 import { PersonaError } from "../persona-error.js";
@@ -16,6 +18,7 @@ import { sleep } from "../utility/async-wait.js";
 
 export class SearchMenu {
 	private static dialog: Dialog | undefined = undefined;
+	private static timer: number | null = null; // return of set interval
 
 	static template = {
 		"treasureRemaining": { initial: 3, label: "Treasures Remaining" },
@@ -432,6 +435,7 @@ export class SearchMenu {
 			}
 			const dialog = this.dialog;
 			this.dialog = undefined;
+			this.clearTimer();
 			if (dialog)
 				dialog.close();
 		}
@@ -442,7 +446,34 @@ export class SearchMenu {
 			return html;
 		}
 
+	private static initTimer() {
+		if (!this.timer && !game.user.isGM) {
+			this.timer = setInterval( () => {
+				if (!this.data) {
+					this.clearTimer();
+					return;
+				}
+				const results = this.data.results;
+				const unchosenList = results.filter( x=> x.declaration == "undecided");
+				if (unchosenList.length != 1) return;
+				const unchosen = unchosenList[0];
+				const actor = PersonaDB.findActor(unchosen.searcher.actor);
+				if (!actor.isOwner) {
+					return;
+				}
+				PersonaSFX.playerAlert();
+			}, 2000);
+		}
+	}
+
+	private static clearTimer() {
+		if (!this.timer) return;
+		clearInterval(this.timer);
+		this.timer = null;
+	}
+
 		private static setListeners(html: string | JQuery<HTMLElement>) {
+			this.initTimer();
 			if (typeof html == "string")
 				html = $(html);
 			html.find(".action-choice").on("change", ev=> {

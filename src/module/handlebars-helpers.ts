@@ -117,6 +117,9 @@ export class PersonaHandleBarsHelpers {
 
 		'canModifySearchChoice': (ownerId : string) => {
 			const user = game.users.get(ownerId);
+			if (game.user.isGM) {
+				return true;
+			}
 			if (user && user.active) {
 				return game.user == user;
 			}

@@ -1,4 +1,4 @@
-import { PersonaCombat } from "./persona-combat.js";
+import { TurnAlert } from "../utility/turnAlert.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaAE } from "../active-effect.js";
 import { StatusEffectId } from "../../config/status-effects.js";
@@ -73,6 +73,11 @@ export class PersonaSFX {
 		// 		console.error(e);
 		// 	}
 		// }
+	}
+
+	static playerAlert() {
+		TurnAlert.alert();
+
 	}
 
 	static async onRemoveStatus(statusId: StatusEffectId, actor: PersonaActor) {
