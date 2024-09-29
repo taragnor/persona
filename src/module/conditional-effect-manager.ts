@@ -134,6 +134,19 @@ export class EMAccessor<T> {
 		await this.update(rawData);
 	}
 
+	delve<const P extends string, Prop extends GetProperty<T,P>>(path: P) : Prop extends Record<any, any> ? EMAccessor<Prop> : never;
+	delve<I extends Record<number, any>> (this: EMAccessor<I>, index: number) : T extends Record<number, any> ? EMAccessor<T[number]> : never;
+	delve(search: number | string) : EMAccessor<any> {
+
+		if (typeof search == "number") {
+			const newPath = `${this._path}.${search}`;
+			return new EMAccessor(this._owner, newPath, this) as any;
+		} else {
+			const newPath = `${this._path}.${search}`;
+			return new EMAccessor(this._owner, newPath, this) as any;
+		}
+	}
+
 	conditions(this: EMAccessor<DeepNoArray<ConditionalEffect[]>>, effectIndex: number): EMAccessor<DeepNoArray<ConditionalEffect["conditions"]>> {
 		const newPath = `${this._path}.${effectIndex}.conditions`;
 		return new EMAccessor(this._owner, newPath, this);
@@ -154,8 +167,10 @@ export class EMAccessor<T> {
 		await this.update(data as any);
 	}
 
-	deleteConditionalEffect(this: EMAccessor<ConditionalEffect[]>) {
-
+	async deleteConditionalEffect(this: EMAccessor<ConditionalEffect[]>, effectIndex: number) {
+		const data = this.data;
+		data.splice(effectIndex, 1);
+		await this.update(data);
 	}
 
 	async addNewConsequence<I extends DeepNoArray<ConditionalEffect["consequences"]>>( this: EMAccessor<I>) : Promise<void>;
