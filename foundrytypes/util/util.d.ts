@@ -1,5 +1,6 @@
 interface FoundryUtil {
-		getProperty<T extends unknown>(doc: FoundryDocument, keystring: string): T,
+		// getProperty<T extends unknown>(doc: {}, keystring: string): T,
+		getProperty<T extends {}, const S extends string>(doc: T, keystring: S): GetProperty<T,S>,
 			/**
 			 * Return whether a target version (v1) is more advanced than some other reference version (v0).
 			 * Supports either numeric or string version comparison with version parts separated by periods.
@@ -77,3 +78,20 @@ type MergeOptions = {
 	 */
 	performDeletions?: boolean,
 }
+
+type Split<S extends string, D extends string> = 
+  S extends `${infer T}${D}${infer U}` ? [T, ...Split<U, D>] : [S];
+
+type GetProperty<Obj, Path extends string> = 
+  Split<Path, "."> extends [infer First extends keyof Obj, ...infer Rest]
+    ? Rest extends []
+      ? Obj[First]
+      : GetProperty<Obj[First], RestToString<Rest>>
+    : never;
+
+type RestToString<T extends unknown[]> = T extends [infer F extends string, ...infer R]
+  ? F extends string
+    ? `${F}${R extends [] ? '' : '.'}${RestToString<R>}`
+    : never
+  : '';
+

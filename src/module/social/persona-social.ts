@@ -1,3 +1,4 @@
+import { ConditionalEffectManager } from "../conditional-effect-manager.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { SocialCardActionEffect } from "../../config/consequence-types.js";
 import { CardChoice } from "../../config/social-card-config.js";
@@ -478,7 +479,9 @@ export class PersonaSocial {
 			PersonaError.softFail (`Can't find event label ${cardData.forceEventLabel} on card ${cardData.card.name}`);
 		}
 		let eventList = cardData.card.system.events
-			.filter( (ev, i) => !cardData.eventsChosen.includes(i) && testPreconditions(ev.conditions, cardData.situation, null));
+			.filter( (ev, i) => !cardData.eventsChosen.includes(i) && testPreconditions(
+				ConditionalEffectManager.getConditionals( ev.conditions, null, null),
+				cardData.situation, null));
 		const isEvType = function (ev: CardEvent, evType: keyof NonNullable<CardEvent["placement"]>) {
 			let placement = ev.placement ?? {
 				starter: true,
@@ -508,9 +511,9 @@ export class PersonaSocial {
 				break;
 		}
 		const eventWeights = eventList.map( event => ({
-						item: event,
-						weight: Number(event.frequency) ?? 1
-					})
+			item: event,
+			weight: Number(event.frequency) ?? 1
+		})
 		);
 		const ev = weightedChoice(eventWeights);
 		if (!ev) return undefined;
@@ -560,7 +563,8 @@ export class PersonaSocial {
 	static getCardModifiers(cardData: CardData) : ModifierList {
 		const card= cardData.card;
 		let effects : ConditionalEffect[] = [];
-		effects = effects.concat(card.system.globalModifiers);
+		const globalMods = ConditionalEffectManager.getEffects(card.system.globalModifiers, null, null);
+		effects = effects.concat(globalMods);
 		const retList = new ModifierList();
 		retList.addConditionalEffects(effects, "Card Modifier",["socialRoll"]);
 		return retList;
@@ -737,9 +741,10 @@ export class PersonaSocial {
 		}
 	}
 
-	static async handleCardChoice(cardData: CardData, cardChoice: CardChoice) {
+	static async handleCardChoice(cardData: CardData, cardChoice: DeepNoArray<CardChoice>) {
 		const cardRoll = cardChoice.roll;
-		const effectList  = cardChoice?.postEffects?.effects ?? [];
+		// const effectList  = cardChoice?.postEffects?.effects ?? [];
+		const effectList = ConditionalEffectManager.getEffects(cardChoice?.postEffects?.effects ?? [], null, null);
 		switch (cardRoll.rollType) {
 			case "none": {
 				await this.applyEffects(effectList,cardData.situation, cardData.actor);

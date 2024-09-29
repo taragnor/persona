@@ -40,7 +40,7 @@ export type CardChoice = {
 	postEffects: { effects: ConditionalEffect[]}
 };
 
-export type CardEvent = {
+export type CardEvent = DeepNoArray<{
 	name: string,
 	img: string,
 	label: string,
@@ -49,7 +49,7 @@ export type CardEvent = {
 	text: string,
 	conditions: Precondition[],
 	choices: CardChoice[]
-};
+}>;
 
 export type CardRoll = {rollType: typeof SOCIAL_CARD_ROLL_TYPES_LIST[number]} & CardRollList[keyof CardRollList];
 

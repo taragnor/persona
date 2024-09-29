@@ -68,7 +68,7 @@ class FilePathField extends StringFieldClass {
 class HTMLField extends StringFieldClass{
 }
 
-class ObjectField<T extends object> extends FoundryDMField<T>{
+class ObjectField<T extends object> extends FoundryDMField<DeepNoArray<T>>{
 }
 
 class SetField<T> extends  ArrayFieldClass<T> {
@@ -113,3 +113,12 @@ declare interface StringFieldOptions<const T extends string> extends DataFieldOp
 }
 
 type NoInfer<A>= [A][A extends any ? 0 : never]
+
+
+type NoArray<I>= I extends Array<infer T> ? Record<number, T> : I;
+type DeepNoArray<I>=
+	I extends Array<infer J> ? NoArray<Array<DeepNoArray<J>>> :
+	I extends Object ? { [k in keyof I]: DeepNoArray<I[k]>} :
+	I;
+
+

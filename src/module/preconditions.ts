@@ -1,3 +1,4 @@
+import { ConditionalEffectManager } from "./conditional-effect-manager.js";
 import { MultiCheck } from "../config/precondition-types.js";
 import { UserComparisonTarget } from "../config/precondition-types.js";
 import { ProgressClock } from "./utility/progress-clock.js";
@@ -39,9 +40,11 @@ export function getActiveConsequences(condEffect: ConditionalEffect, situation: 
 	return ArrayCorrector(condEffect.consequences);
 }
 
-export function testPreconditions(conditionArr: Precondition[], situation: Situation, source : PowerContainer | null) : boolean {
-	return ArrayCorrector(conditionArr ?? [])
+export function testPreconditions(conditionArr: Precondition[] | DeepNoArray<Precondition[]>, situation: Situation, source : PowerContainer | null) : boolean {
+	return ConditionalEffectManager.getConditionals(conditionArr,source, null)
 		.every( cond => testPrecondition(cond, situation, source));
+	// return ArrayCorrector(conditionArr ?? [])
+		// .every( cond => testPrecondition(cond, situation, source));
 }
 
 

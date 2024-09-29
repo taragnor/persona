@@ -1,3 +1,5 @@
+import { EMAccessor } from "../conditional-effect-manager.js";
+import { ConditionalEffectManager } from "../conditional-effect-manager.js";
 import { localize } from "../persona.js";
 import { POWER_TAGS } from "../../config/power-tags.js";
 import { ModifierList } from "../combat/modifier-list.js";
@@ -12,7 +14,6 @@ import { BASIC_SHADOW_POWER_NAMES } from "../../config/basic-powers.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { getActiveConsequences } from "../preconditions.js";
 import { PersonaError } from "../persona-error.js";
-import { Metaverse } from "../metaverse.js"
 import { PersonaActor } from "../actor/persona-actor.js";
 import { UniversalItemAccessor } from "../utility/db-accessor.js";
 import { Situation } from "../preconditions.js";
@@ -253,7 +254,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 					throw new PersonaError("something weird happened");
 				}
 				return {
-					array: opp,
+					array: opp as ConditionalEffectObjectContainer,
 					updater :
 					async () => await this.update({"system.opportunity_list": list})
 				};
@@ -264,7 +265,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 					effects: array
 				};
 				return {
-					array: newObj,
+					array: newObj as ConditionalEffectObjectContainer,
 					updater: async () =>
 					await this.update({"system.globalModifiers": newObj.effects})
 				}
@@ -282,8 +283,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 				if (opportunity.conditions== undefined) {
 					opportunity.conditions = [];
 				}
+				opportunity.conditions= ArrayCorrector(opportunity.conditions);
 				return {
-					array: opportunity,
+					array: opportunity as any,
 					updater: async () => await this.update({"system.opportunity_list": array})
 				}
 			}
@@ -295,7 +297,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 				choice.postEffects = choice.postEffects ?? {effects: []};
 				choice.postEffects.effects = ArrayCorrector(choice.postEffects.effects);
 				return {
-					array: choice.postEffects,
+					array: choice.postEffects as ConditionalEffectObjectContainer,
 					updater: async () => {
 						await this.update({"system.events": list});
 					}
@@ -308,7 +310,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 					choice.conditions = [];
 				}
 				return {
-					array: choice,
+					array: choice as any,
 					updater: async () => {
 						await this.update({"system.events": list});
 					},
@@ -321,7 +323,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 					event.conditions = [];
 				}
 				return {
-					array: event,
+					array: event as any,
 					updater: async () => {
 						await this.update({"system.events": list});
 					},
@@ -355,12 +357,17 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	}
 
 	async addNewPowerPrecondition(this: PowerContainer, index:number) {
-		const x = this.system.effects[index];
-		x.conditions = ArrayCorrector(x.conditions);
-		x.conditions.push( {
-			type: "always"
-		});
-		await this.update({"system.effects": this.system.effects});
+		const acc = EMAccessor.create(this, "system.effects");
+		await acc.addNewCondition(index);
+
+		//OLDC ODE
+		// const x = this.system.effects[index];
+		// const conditionsArr = ArrayCorrector(x.conditions);
+		// conditionsArr.push( {
+		// 	type: "always"
+		// });
+		// x.conditions= conditionsArr;
+		// await this.update({"system.effects": this.system.effects});
 	}
 
 	#appendNewEffect(effectHolder:{effects:ConditionalEffect[]} | ConditionalEffect[]): void {
@@ -464,10 +471,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	}
 
 	async deletePowerPrecondition( this: PowerContainer, effectIndex: number, condIndex: number) {
-		const x = this.system.effects[effectIndex];
-		x.conditions = ArrayCorrector(x.conditions);
-		x.conditions.splice(condIndex, 1);
-		await this.update({"system.effects": this.system.effects});
+		await EMAccessor.create(this, "system.effects")
+			.deleteCondition(condIndex, effectIndex);
+		// const x = this.system.effects[effectIndex];
+		// const arr = ArrayCorrector(x.conditions);
+		// arr.splice(condIndex, 1);
+		// x.conditions = arr;
+		// await this.update({"system.effects": this.system.effects});
 	}
 
 	async deleteCondition(this: PowerContainer, effectIndex: number, condIndex: number): Promise<void>;
@@ -487,14 +497,17 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	}
 
 
-	async addNewPowerConsequence(this: PowerContainer, index:number) {
-		const x = this.system.effects[index];
-		x.consequences = ArrayCorrector(x.consequences);
-		x.consequences.push( {
-			type: "none",
-			amount: 0,
-		});
-		await this.update({"system.effects": this.system.effects});
+	async addNewPowerConsequence(this: PowerContainer, effectIndex:number) {
+		await EMAccessor.create(this, "system.effects")
+			.addNewConsequence(effectIndex);
+		// const x = this.system.effects[index];
+		// const arr = ArrayCorrector(x.consequences);
+		// arr.push( {
+		// 	type: "none",
+		// 	amount: 0,
+		// });
+		// x.consequences = arr;
+		// await this.update({"system.effects": this.system.effects});
 	}
 
 	async addConsequence(this: PowerContainer, effectIndex: number): Promise<void>;
@@ -538,10 +551,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 
 
 	async deletePowerConsequence (this: PowerContainer, effectIndex: number, consIndex: number) {
-		const x = this.system.effects[effectIndex];
-		x.consequences = ArrayCorrector(x.consequences);
-		x.consequences.splice(consIndex, 1);
-		await this.update({"system.effects": this.system.effects});
+		await EMAccessor.create(this, "system.effects")
+			.deleteConsequence(consIndex, effectIndex);
+
+// 		const x = this.system.effects[effectIndex];
+// 		const arr = ArrayCorrector(x.consequences);
+// 		arr.splice(consIndex, 1);
+// 		x.consequences = arr;
+// 		await this.update({"system.effects": this.system.effects});
 	}
 
 	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow) : ModifierListItem[] {
@@ -659,21 +676,22 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	}
 
 	getEffects(this: ModifierContainer, sourceActor : PC | Shadow | null): ConditionalEffect[] {
-		return this.system.effects.map( eff=> {
-			const conditions= ArrayCorrector(eff.conditions)
-				.map (x=> ({ ...x,
-					actorOwner: sourceActor? sourceActor.accessor : undefined,
-					sourceItem: PersonaDB.getUniversalItemAccessor(this),
-				})
-				);
-			const consequences= ArrayCorrector(eff.consequences)
-				.map (x=> ({ ...x,
-					actorOwner: sourceActor? sourceActor.accessor : undefined,
-					sourceItem: PersonaDB.getUniversalItemAccessor(this),
-				})
-				);
-			return {conditions, consequences};
-		});
+		return ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
+		// return this.system.effects.map( eff=> {
+		// 	const conditions= ArrayCorrector(eff.conditions)
+		// 		.map (x=> ({ ...x,
+		// 			actorOwner: sourceActor? sourceActor.accessor : undefined,
+		// 			sourceItem: PersonaDB.getUniversalItemAccessor(this),
+		// 		})
+		// 		);
+		// 	const consequences= ArrayCorrector(eff.consequences)
+		// 		.map (x=> ({ ...x,
+		// 			actorOwner: sourceActor? sourceActor.accessor : undefined,
+		// 			sourceItem: PersonaDB.getUniversalItemAccessor(this),
+		// 		})
+		// 		);
+		// 	return {conditions, consequences};
+		// });
 	}
 
 	requiredLinkLevel(this: Focus) : number  {
@@ -730,7 +748,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 
 	async addEventChoice(this: SocialCard, eventIndex: number) {
 		const event = this.system.events[eventIndex];
-		event.choices = ArrayCorrector(event.choices);
+		const arr = ArrayCorrector(event.choices);
 		const newChoice: CardChoice = {
 			name: "Unnamed Choice",
 			conditions: [],
@@ -738,14 +756,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 			postEffects: {effects:[]},
 			roll: {rollType: "none"},
 		};
-		event.choices.push( newChoice);
+		arr.push( newChoice);
+		event.choices = arr;
 		await this.update({"system.events": this.system.events});
 	}
 
 	async deleteEventChoice(this: SocialCard, eventIndex: number, choiceIndex: number) {
 		const event = this.system.events[eventIndex];
-		event.choices = ArrayCorrector(event.choices);
-		event.choices.splice(choiceIndex, 1);
+		const arr = ArrayCorrector(event.choices);
+		arr.splice(choiceIndex, 1);
+		event.choices = arr;
 		await this.update({"system.events": this.system.events});
 	}
 
@@ -902,3 +922,5 @@ type ConditionalEffectObjectContainer =
 	{effects: ConditionalEffect[]}
 	| {consequences: Consequence[]}
 	| {conditions: Precondition[]};
+
+

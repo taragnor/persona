@@ -1,5 +1,5 @@
  class FoundryDocument <Embedded extends (FoundryDocument | never) = never> {
-	get parent(): FoundryDocument | null;
+	get parent(): FoundryDocument<any> | undefined;
 
 	async update<T extends updateObj> (updateData: AllowedUpdateKeys<T>): Promise<this>;
 	 // async update(updateData: RecursivePartial< typeof this>): Promise<this>
