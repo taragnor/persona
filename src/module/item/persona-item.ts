@@ -220,12 +220,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	async addNewPowerEffect(this: PowerContainer) {
 		await EMAccessor.create(this, "system.effects")
 			.addConditionalEffect();
-
-// 		const arr= this.system.effects ?? [];
-// 		arr.push(
-// 			PersonaItem.newConditionalEffectsObject()
-// 		);
-// 		await this.update({ "system.effects": arr});
 	}
 
 	async addConditionalEffect(this: PowerContainer): Promise<void>;
@@ -340,10 +334,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	async deletePowerEffect(this: PowerContainer, effectIndex: number) : Promise<void> {
 		await EMAccessor.create(this, "system.effects")
 			.deleteConditionalEffect(effectIndex);
-
-		// let arr =this.system.effects ?? [];
-		// arr.splice(index, 1);
-		// await this.update({ "system.effects": arr});
 	}
 
 	async deleteConditionalEffect(this: PowerContainer, effect_index: number): Promise<void>;
@@ -364,17 +354,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 
 	async addNewPowerPrecondition(this: PowerContainer, index:number) {
 		const acc = EMAccessor.create(this, "system.effects");
-		// await acc.addNewCondition(index);
 		await acc.delve(index).delve("conditions").addNewCondition()
 
-		//OLDC ODE
-		// const x = this.system.effects[index];
-		// const conditionsArr = ArrayCorrector(x.conditions);
-		// conditionsArr.push( {
-		// 	type: "always"
-		// });
-		// x.conditions= conditionsArr;
-		// await this.update({"system.effects": this.system.effects});
 	}
 
 	#appendNewEffect(effectHolder:{effects:ConditionalEffect[]} | ConditionalEffect[]): void {
@@ -480,11 +461,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	async deletePowerPrecondition( this: PowerContainer, effectIndex: number, condIndex: number) {
 		await EMAccessor.create(this, "system.effects")
 			.deleteCondition(condIndex, effectIndex);
-		// const x = this.system.effects[effectIndex];
-		// const arr = ArrayCorrector(x.conditions);
-		// arr.splice(condIndex, 1);
-		// x.conditions = arr;
-		// await this.update({"system.effects": this.system.effects});
 	}
 
 	async deleteCondition(this: PowerContainer, effectIndex: number, condIndex: number): Promise<void>;
@@ -507,14 +483,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	async addNewPowerConsequence(this: PowerContainer, effectIndex:number) {
 		await EMAccessor.create(this, "system.effects")
 			.addNewConsequence(effectIndex);
-		// const x = this.system.effects[index];
-		// const arr = ArrayCorrector(x.consequences);
-		// arr.push( {
-		// 	type: "none",
-		// 	amount: 0,
-		// });
-		// x.consequences = arr;
-		// await this.update({"system.effects": this.system.effects});
 	}
 
 	async addConsequence(this: PowerContainer, effectIndex: number): Promise<void>;
@@ -560,12 +528,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	async deletePowerConsequence (this: PowerContainer, effectIndex: number, consIndex: number) {
 		await EMAccessor.create(this, "system.effects")
 			.deleteConsequence(consIndex, effectIndex);
-
-// 		const x = this.system.effects[effectIndex];
-// 		const arr = ArrayCorrector(x.consequences);
-// 		arr.splice(consIndex, 1);
-// 		x.consequences = arr;
-// 		await this.update({"system.effects": this.system.effects});
 	}
 
 	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow) : ModifierListItem[] {
