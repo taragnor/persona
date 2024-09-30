@@ -142,8 +142,6 @@ export class PersonaSocial {
 		}
 	}
 
-
-
 	static async getPrimarySecondary(defaultChoice: "primary" | "secondary" | SocialStat = "primary") :Promise<"primary" | "secondary" | SocialStat> {
 		const skillList = foundry.utils.mergeObject(
 			{

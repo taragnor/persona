@@ -1,3 +1,4 @@
+import { HTMLTools } from "./utility/HTMLTools.js";
 import { PersonaError } from "./persona-error.js";
 import { PreconditionType } from "../config/precondition-types.js";
 import { ConsequenceType } from "../config/effect-types.js";
@@ -7,6 +8,131 @@ import { ConditionalEffect } from "./datamodel/power-dm.js";
 import { PersonaDB } from "./persona-db.js";
 
 export class ConditionalEffectManager {
+
+	static async alterConditionalEffect<const TP extends string, const P extends string,const  D extends FoundryDocument<any>, Data extends GetProperty<D, P>>(topPath: TP, dataPath: P, action: CEAction, owner: D) {
+		const master  = topPath as string != dataPath as string ? new EMAccessor<Data>(owner, topPath) : undefined;
+		const acc = new EMAccessor<Data>(owner, dataPath, master);
+		switch (action.type) {
+			case "create-effect":
+				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).addConditionalEffect();
+			case "delete-effect":
+				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).deleteConditionalEffect(action.effectIndex);
+			case "create-conditional" :
+				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).addNewCondition(action.effectIndex);
+			case "create-consequence":
+				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).addNewConsequence(action.effectIndex);
+			case "delete-conditional":
+				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).deleteCondition(action.condIndex, action.effectIndex);
+			case "delete-consequence":
+				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).deleteCondition(action.consIndex, action.effectIndex);
+			default:
+				throw new PersonaError(`Unknown Action Type: ${(action as any)?.type}`);
+		}
+	}
+
+	static #getPaths(ev: JQuery.ClickEvent) {
+		let topPath = HTMLTools.getClosestData(ev, "topPath").trim();
+		if (topPath.endsWith(".")) {
+			topPath = topPath.slice(0, -1);
+		}
+		if (!topPath) {
+			throw new PersonaError("No Top Path Given!");
+		}
+		let dataPath = HTMLTools.getClosestData(ev, "path").trim();
+		const removeTrail = 	function removeTrailingNumber(input: string): string {
+			const regex = /^(.*?)(\d+)$/;
+			const match = input.match(regex);
+			if (match) {
+				return match[1];
+			}
+			return input;
+		}
+		if (dataPath.endsWith(".")) {
+			dataPath = dataPath.slice(0,-1);
+		}
+		dataPath = removeTrail(dataPath);
+		if (dataPath.endsWith(".")) {
+			dataPath = dataPath.slice(0,-1);
+		}
+		if (!dataPath) {
+			throw new PersonaError("No Data Path Given!");
+		}
+		return { topPath, dataPath };
+	}
+
+	static async handler_addPowerEffect<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
+		const action : CEAction= {
+			type: "create-effect",
+		}
+		const {topPath, dataPath} = this.#getPaths(ev);
+		await this.alterConditionalEffect(topPath, dataPath, action, item);
+	}
+
+	static async handler_deletePowerEffect<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
+		const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+		const action : CEAction= {
+			type: "delete-effect",
+			effectIndex
+		}
+		const {topPath, dataPath} = this.#getPaths(ev);
+		await this.alterConditionalEffect(topPath, dataPath, action, item);
+	}
+
+	static async handler_addPrecondition<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
+		const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+		const action : CEAction= {
+			type: "create-conditional",
+			effectIndex
+		}
+		const {topPath, dataPath} = this.#getPaths(ev);
+		await this.alterConditionalEffect(topPath, dataPath, action, item);
+	}
+
+	static async handler_addConsequence<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
+		const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+		const action : CEAction= {
+			type: "create-consequence",
+			effectIndex
+		}
+		const {topPath, dataPath} = this.#getPaths(ev);
+		await this.alterConditionalEffect(topPath, dataPath, action, item);
+	}
+
+	static async handler_deleteConsequence<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
+		const consIndex = Number(HTMLTools.getClosestData(ev, "consequenceIndex"));
+		const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+		const action : CEAction= {
+			type: "delete-consequence",
+			effectIndex,
+			consIndex,
+		}
+		const {topPath, dataPath} = this.#getPaths(ev);
+		await this.alterConditionalEffect(topPath, dataPath, action, item);
+	}
+
+	static async handler_deletePrecondition<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
+		const condIndex = Number(HTMLTools.getClosestData(ev,
+			"preconditionIndex"));
+		const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+		const action : CEAction= {
+			type: "delete-conditional",
+			effectIndex,
+			condIndex,
+		}
+		const {topPath, dataPath} = this.#getPaths(ev);
+		await this.alterConditionalEffect(topPath, dataPath, action, item);
+	}
+
+	static applyHandlers<D extends FoundryDocument<any>>(html: JQuery, doc: D) {
+		html.find(".add-effect").on("click", async (ev) => await this.handler_addPowerEffect(ev, doc));
+		html.find(".del-effect").on("click", async (ev) => await this.handler_deletePowerEffect(ev, doc));
+		html.find(".add-condition").on("click", async (ev) => this.handler_addPrecondition(ev, doc));
+		html.find(".add-consequence").on("click", async (ev)=> this.handler_addConsequence(ev,doc));
+		html.find(".del-consequence").on("click", async (ev) => this.handler_deleteConsequence(ev, doc));
+		html.find(".del-condition").on("click", async(ev) => this.handler_deletePrecondition(ev,doc));
+
+
+	}
 
 	static getEffects<T extends Actor<any>, I extends Item<any>>(CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null) : ConditionalEffect[] {
 		const Arr = this.ArrayCorrector;
@@ -88,8 +214,8 @@ export class EMAccessor<T> {
 		this._master = master;
 	}
 
-		static create<const O extends FoundryDocument<any>, const P extends string, T extends NoArray<GetProperty<O, P>>> ( owner: O, path: P): EMAccessor<T> {
-			return new EMAccessor(owner, path) as unknown as EMAccessor<T>;
+		static create<const O extends FoundryDocument<any>, const P extends string, T extends NoArray<GetProperty<O, P>>> ( owner: O, path: P, master?: EMAccessor<any>): EMAccessor<T> {
+			return new EMAccessor(owner, path, master) as unknown as EMAccessor<T>;
 
 		}
 		get data(): T extends Record<number, any> ? T[number][] : never {
@@ -148,13 +274,24 @@ export class EMAccessor<T> {
 	}
 
 	conditions(this: EMAccessor<DeepNoArray<ConditionalEffect[]>>, effectIndex: number): EMAccessor<DeepNoArray<ConditionalEffect["conditions"]>> {
-		const newPath = `${this._path}.${effectIndex}.conditions`;
-		return new EMAccessor(this._owner, newPath, this);
+		const x = this.data[effectIndex];
+		if (x && x.conditions) {
+			const newPath = `${this._path}.${effectIndex}.conditions`;
+			return new EMAccessor(this._owner, newPath, this);
+		} else {
+			return this as any;
+		}
+
 	}
 
 	consequences(this: EMAccessor<DeepNoArray<ConditionalEffect[]>>, effectIndex: number) : EMAccessor<DeepNoArray<ConditionalEffect["consequences"]>> {
+		const x = this.data[effectIndex];
+		if (x && x.conditions) {
 		const newPath = `${this._path}.${effectIndex}.consequences`;
 		return new EMAccessor(this._owner, newPath, this);
+		} else {
+			return this as any;
+		}
 	}
 
 	async addConditionalEffect<I extends DeepNoArray<ConditionalEffect[]>>(this: EMAccessor<I>) {
@@ -243,5 +380,28 @@ type ExpectNever<X extends never> = X;
 
 //if this ever errors, it means there's an intersectio of Precondition and Conseuqence type which could lead to errors.
 let x: ExpectNever<x>;
+
+export type CEAction = {
+	type: "create-effect",
+} | {
+	type: "delete-effect",
+	effectIndex:number,
+} | {
+	type: "create-conditional",
+	effectIndex:number,
+} | {
+	type: "create-consequence",
+	effectIndex:number,
+} |  {
+	type: "delete-conditional",
+	effectIndex:number,
+	condIndex: number
+} |  {
+	type: "delete-consequence",
+	effectIndex:number,
+	consIndex: number
+};
+
+
 
 

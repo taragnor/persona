@@ -479,7 +479,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		await updater();
 	}
 
-
 	async addNewPowerConsequence(this: PowerContainer, effectIndex:number) {
 		await EMAccessor.create(this, "system.effects")
 			.addNewConsequence(effectIndex);

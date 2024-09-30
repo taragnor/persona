@@ -1,3 +1,5 @@
+import { CEAction } from "../../conditional-effect-manager.js";
+	import { ConditionalEffectManager } from "../../conditional-effect-manager.js";
 
 import { ALTER_MP_SUBTYPES } from "../../../config/effect-types.js";
 import { CREATURE_TYPE } from "../../../config/shadow-types.js";
@@ -172,47 +174,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
-		html.find(".add-effect").on("click", this.addPowerEffect.bind(this));
-		html.find(".add-condition").on("click", this.addPrecondition.bind(this));
-		html.find(".add-consequence").on("click", this.addConsequence.bind(this));
-		html.find(".del-consequence").on("click", this.deleteConsequence.bind(this));
-		html.find(".del-condition").on("click", this.deletePrecondition.bind(this));
-		html.find(".del-effect").on("click", this.deletePowerEffect.bind(this));
-	}
-
-	async addPowerEffect() {
-			await this.item.addNewPowerEffect();
-	}
-
-	async addPrecondition(event: Event) {
-		const index= Number(HTMLTools.getClosestData(event, "effectIndex"));
-		await this.item.addNewPowerPrecondition(index);
-	}
-
-	async addConsequence(event: Event) {
-		const index= Number(HTMLTools.getClosestData(event, "effectIndex"));
-		await this.item.addNewPowerConsequence(index);
-	}
-
-
-	async deletePowerEffect(ev: Event) {
-		const index = Number(HTMLTools.getClosestData(ev, "effectIndex"));
-		this.item.deletePowerEffect(index);
-	}
-
-	async deleteConsequence(ev: Event) {
-		const effindex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
-		const conindex = HTMLTools.getClosestData(ev,
-			"consequenceIndex");
-		this.item.deletePowerConsequence(effindex, Number(conindex));
-	}
-
-	async deletePrecondition(ev: Event) {
-		const effIndex = HTMLTools.getClosestData(ev, "effectIndex");
-		const condIndex = HTMLTools.getClosestData(ev,
-			"preconditionIndex");
-		this.item.deletePowerPrecondition(Number(effIndex), Number(condIndex));
-
+		ConditionalEffectManager.applyHandlers(html, this.item);
 	}
 
 
