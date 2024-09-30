@@ -1,6 +1,4 @@
-import { CEAction } from "../../conditional-effect-manager.js";
-	import { ConditionalEffectManager } from "../../conditional-effect-manager.js";
-
+import { ConditionalEffectManager } from "../../conditional-effect-manager.js";
 import { ALTER_MP_SUBTYPES } from "../../../config/effect-types.js";
 import { CREATURE_TYPE } from "../../../config/shadow-types.js";
 import { PersonaItem } from "../persona-item.js";

@@ -18,12 +18,16 @@ export class ConditionalEffectManager {
 			case "delete-effect":
 				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).deleteConditionalEffect(action.effectIndex);
 			case "create-conditional" :
-				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).addNewCondition(action.effectIndex);
+				//@ts-ignore
+				return await acc.addNewCondition(action.effectIndex);
 			case "create-consequence":
+				//@ts-ignore
 				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).addNewConsequence(action.effectIndex);
 			case "delete-conditional":
+				//@ts-ignore
 				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).deleteCondition(action.condIndex, action.effectIndex);
 			case "delete-consequence":
+				//@ts-ignore
 				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).deleteCondition(action.consIndex, action.effectIndex);
 			default:
 				throw new PersonaError(`Unknown Action Type: ${(action as any)?.type}`);
@@ -60,6 +64,11 @@ export class ConditionalEffectManager {
 		return { topPath, dataPath };
 	}
 
+	static #getEffectIndex(ev: JQuery.ClickEvent) {
+		const effectIndex = Number(HTMLTools.getClosestDataSafe(ev, "effectIndex", -1));
+		return effectIndex >= 0 ? effectIndex: undefined;
+	}
+
 	static async handler_addPowerEffect<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
 		const action : CEAction= {
 			type: "create-effect",
@@ -69,7 +78,8 @@ export class ConditionalEffectManager {
 	}
 
 	static async handler_deletePowerEffect<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
-		const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+		const effectIndex = this.#getEffectIndex(ev);
+		if (effectIndex == undefined) throw new PersonaError("Can't get effect Index");
 		const action : CEAction= {
 			type: "delete-effect",
 			effectIndex
@@ -79,7 +89,7 @@ export class ConditionalEffectManager {
 	}
 
 	static async handler_addPrecondition<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
-		const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+		const effectIndex = this.#getEffectIndex(ev);
 		const action : CEAction= {
 			type: "create-conditional",
 			effectIndex
@@ -89,7 +99,7 @@ export class ConditionalEffectManager {
 	}
 
 	static async handler_addConsequence<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
-		const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+		const effectIndex = this.#getEffectIndex(ev);
 		const action : CEAction= {
 			type: "create-consequence",
 			effectIndex
@@ -100,7 +110,7 @@ export class ConditionalEffectManager {
 
 	static async handler_deleteConsequence<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
 		const consIndex = Number(HTMLTools.getClosestData(ev, "consequenceIndex"));
-		const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+		const effectIndex = this.#getEffectIndex(ev);
 		const action : CEAction= {
 			type: "delete-consequence",
 			effectIndex,
@@ -113,7 +123,7 @@ export class ConditionalEffectManager {
 	static async handler_deletePrecondition<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
 		const condIndex = Number(HTMLTools.getClosestData(ev,
 			"preconditionIndex"));
-		const effectIndex = Number(HTMLTools.getClosestData(ev, "effectIndex"));
+		const effectIndex = this.#getEffectIndex(ev);
 		const action : CEAction= {
 			type: "delete-conditional",
 			effectIndex,
@@ -388,17 +398,17 @@ export type CEAction = {
 	effectIndex:number,
 } | {
 	type: "create-conditional",
-	effectIndex:number,
+	effectIndex?:number,
 } | {
 	type: "create-consequence",
-	effectIndex:number,
+	effectIndex?:number,
 } |  {
 	type: "delete-conditional",
-	effectIndex:number,
+	effectIndex?:number,
 	condIndex: number
 } |  {
 	type: "delete-consequence",
-	effectIndex:number,
+	effectIndex?:number,
 	consIndex: number
 };
 
