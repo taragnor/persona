@@ -111,12 +111,6 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		html.find(".add-opportunity").on("click", this.addOpportunity.bind(this));
 		html.find(".del-opportunity").on("click", this.deleteOpportunity.bind(this));
 		ConditionalEffectManager.applyHandlers(html, this.item);
-		// html.find(".add-effect").on("click", this.addCardEffect.bind(this));
-		// html.find(".del-effect").on("click", this.deleteCardEffect.bind(this));
-		// html.find(".add-condition").on("click", this.addConditional.bind(this));
-		// html.find(".del-condition").on("click", this.deleteConditional.bind(this));
-		// html.find(".add-consequence").on("click", this.addConsequence.bind(this));
-		// html.find(".del-consequence").on("click", this.deleteConsequence.bind(this));
 		html.find(".add-event").on("click", this.addCardEvent.bind(this));
 		html.find(".del-event").on("click", this.deleteCardEvent.bind(this));
 		html.find(".add-choice").on("click", this.addChoice.bind(this));

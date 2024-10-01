@@ -7,17 +7,7 @@
 
 	</h5>
 
-	<h5> Conditions
-		<a class="add-condition">
-			<i class="fa-solid fa-plus"> </i>
-		</a>
-	</h5>
-	{{#each choice.conditions as |cond i|}}
-
-	{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat ../namePrefix "conditions." i ".")  cond=cond POWERSTUFF=../POWERSTUFF condition_index=i}}
-
-	{{/each}}
-
+	{{> "systems/persona/parts/conditions-section.hbs" namePrefix=(strcat namePrefix "conditions.")  POWERSTUFF=POWERSTUFF}}
 
 	{{> "systems/persona/parts/card-roll-section.hbs" CONST=CONST namePrefix=(strcat namePrefix "roll.") roll=choice.roll item=item}}
 

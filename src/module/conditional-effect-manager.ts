@@ -188,6 +188,7 @@ export class ConditionalEffectManager {
 	}
 
 	static getVariableEffects<T extends ConditionalEffect[] | ConditionalEffect["conditions"] | ConditionalEffect["consequences"]>(data: DeepNoArray<T>): T{
+		if (!data) {return [] as any;}
 		const element = data[0];
 		if (!element) {return [] as any;}
 		if ("consequences" in element || "effects" in element) {
@@ -200,8 +201,7 @@ export class ConditionalEffectManager {
 		if (CONSQUENCELIST.includes(etype as any)) {
 			return this.getConsequences(data as ConditionalEffect["consequences"], null, null) as any;
 		}
-		Debug(data);
-		throw new PersonaError("Cna't recognize type of data");
+		return data as any;
 	}
 
 }
