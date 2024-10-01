@@ -1,14 +1,11 @@
-import { ArrayCorrector } from "../../item/persona-item.js";
-import { PersonaError } from "../../persona-error.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaSocial } from "../../social/persona-social.js";
 import { PersonaActor } from "../persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { NoncombatantSheet } from "./noncombatant-sheet.js";
-import { PersonaDB } from "../../persona-db.js";
 
 export class NPCSheet extends NoncombatantSheet  {
-	override actor: Subtype<PersonaActor, "npc">;
+	declare actor: Subtype<PersonaActor, "npc">;
 
 	static override get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {

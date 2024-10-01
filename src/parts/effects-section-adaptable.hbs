@@ -8,26 +8,8 @@
 	{{#each effects as |effect i|}}
 	<div class="flexrow" data-effect-index="{{i}}">
 		<div class="power-effect" >
-			<section class="conditions-section">
-				<h5> Conditions
-					<a class="add-condition">
-						<i class="fa-solid fa-plus"> </i>
-					</a>
-				</h5>
-				{{#each effect.conditions as |cond j|}}
-				{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat ../../namePrefix i ".conditions." j ".")  cond=cond POWERSTUFF=../../POWERSTUFF i=../i condition_index=j}}
-				{{/each}}
-			</section>
-			<section class="consequences-section">
-				<h5> Consequences
-					<a class="add-consequence">
-						<i class="fa-solid fa-plus"> </i>
-					</a>
-				</h5>
-				{{#each effect.consequences as |cons j|}}
-				{{> "systems/persona/parts/input-consequence.hbs" namePrefix=(strcat ../../namePrefix i ".consequences." j ".") cons=cons POWERSTUFF=../../POWERSTUFF i=../i consequence_index=j}}
-				{{/each}}
-			</section>
+			{{> "systems/persona/parts/conditions-section.hbs" namePrefix=(strcat ../namePrefix i ".conditions.")  POWERSTUFF=../POWERSTUFF i=i}}
+			{{> "systems/persona/parts/consequences-section.hbs" namePrefix=(strcat ../namePrefix i ".consequences.")  POWERSTUFF=../POWERSTUFF i=i}}
 			<div class="short">
 				<a class="del-effect">
 					<i class="fa-solid fa-trash-can"></i>

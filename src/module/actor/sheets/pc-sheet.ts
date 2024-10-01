@@ -14,7 +14,7 @@ import { PC } from "../persona-actor.js";
 
 
 export class PCSheet extends CombatantSheetBase {
-	override actor: Subtype<PersonaActor, "pc">;
+	declare actor: Subtype<PersonaActor, "pc">;
 	static override get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {
 			classes: ["persona", "sheet", "actor"],

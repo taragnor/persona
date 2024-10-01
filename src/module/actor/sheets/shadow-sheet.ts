@@ -7,7 +7,7 @@ import { PersonaActor } from "../persona-actor.js";
 import { CombatantSheetBase } from "./combatant-sheet.js";
 
 export class ShadowSheet extends CombatantSheetBase {
-	override actor: Subtype<PersonaActor, "shadow">;
+	declare actor: Subtype<PersonaActor, "shadow">;
 
 	static override get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {

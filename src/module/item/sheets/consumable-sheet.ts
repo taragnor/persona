@@ -1,11 +1,10 @@
 import { Consumable } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { EQUIP_SLOTS } from "../../../config/equip-slots.js";
-import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 import { PersonaPowerLikeBaseSheet } from "./powerlike-base-sheet.js";
 
 export class ConsumableSheet extends PersonaPowerLikeBaseSheet {
-	override item: Consumable;
+	declare item: Consumable;
 
 	static override get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {

@@ -43,7 +43,7 @@ import { STUDENT_SKILLS } from "../../../config/student-skills.js"
 
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
-	override item: PowerContainer;
+	declare item: PowerContainer;
 	static _powerStuffBase?: Record<string, any>;
 
 	override async getData() {

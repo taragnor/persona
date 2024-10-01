@@ -3,10 +3,10 @@ import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { PersonaItem } from "../persona-item.js";
 
 export class PersonaClassSheet  extends PersonaItemSheetBase {
-	override item: Subtype<PersonaItem, "characterClass">;
+	declare item: Subtype<PersonaItem, "characterClass">;
 
 	static override get defaultOptions() {
-		return mergeObject(super.defaultOptions, {
+		return foundry.utils.mergeObject(super.defaultOptions, {
 			classes: ["persona", "sheet", "item"],
 			template: `${HBS_TEMPLATES_DIR}/class-sheet.hbs`,
 			width: 800,

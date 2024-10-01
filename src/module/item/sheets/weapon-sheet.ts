@@ -3,7 +3,7 @@ import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 
 export class PersonaWeaponSheet extends PersonaEffectContainerBaseSheet {
-	override item: Weapon;
+	declare item: Weapon;
 
 	static override get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {

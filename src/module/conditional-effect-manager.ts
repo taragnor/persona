@@ -55,9 +55,9 @@ export class ConditionalEffectManager {
 			dataPath = dataPath.slice(0,-1);
 		}
 		dataPath = removeTrail(dataPath);
-		if (dataPath.endsWith(".")) {
+		while (dataPath.endsWith(".")) {
 			dataPath = dataPath.slice(0,-1);
-		}
+		};
 		if (!dataPath) {
 			throw new PersonaError("No Data Path Given!");
 		}
@@ -190,7 +190,7 @@ export class ConditionalEffectManager {
 	static getVariableEffects<T extends ConditionalEffect[] | ConditionalEffect["conditions"] | ConditionalEffect["consequences"]>(data: DeepNoArray<T>): T{
 		const element = data[0];
 		if (!element) {return [] as any;}
-		if ("consequences" in element) {
+		if ("consequences" in element || "effects" in element) {
 			return this.getEffects(data as ConditionalEffect[], null, null) as any;
 		}
 		const etype = element.type;
@@ -221,6 +221,9 @@ export class EMAccessor<T> {
 	constructor(owner: FoundryDocument<any>, writePath: string, master: EMAccessor<any> | null = null) {
 		this._owner = owner;
 		this._path = writePath;
+		if (this._path.endsWith(".")) {
+			throw new PersonaError("What fuckhole put a period here?");
+		}
 		this._master = master;
 	}
 
@@ -234,40 +237,32 @@ export class EMAccessor<T> {
 		}
 
 	async update(newData: DeepNoArray<T>) {
-		const updateObj : Record<string, any>= {};
-		updateObj[this._path] = newData;
 		if (!this._master) {
+			const updateObj : Record<string, any>= {};
+			updateObj[this._path] = newData;
 			await this._owner.update(updateObj);
 			return this;
 		}
-		const rawData = foundry.utils.getProperty(this._owner, this._path);
-		await this._master.#patchUpdate(rawData, newData);
+		await this._master.#patchUpdate(newData, this._path);
 		return this;
 	}
 
-	async #patchUpdate(oldData: unknown, newData: unknown) {
+	async #patchUpdate(newData: unknown, updatePath: string) {
 		if (this._master) {
-			this._master.#patchUpdate(oldData, newData);
+			this._master.#patchUpdate(newData, updatePath);
 			return;
 		}
-		const patchUpdateSub = function (obj: Record<string, any>, targetData: unknown, writeData: unknown) {
-			for (const [k,v] of Object.entries(obj)) {
-				if (v == targetData) {
-					obj[k] = writeData;
-					return true;
-				}
-				if (typeof v == "object") {
-					if (patchUpdateSub(v, targetData, writeData)) {
-						return true;
-					}
-				}
-			}
-			return false;
+		const data = this.data;
+		let datapart : any = data;
+		const pathdiff = updatePath.slice(this._path.length).split(".");
+		while (pathdiff.length > 1) {
+			const path = pathdiff.shift();
+			if (!path) continue;
+			datapart = datapart[path];
 		}
-		const rawData = foundry.utils.getProperty(this._owner, this._path);
-		const x = patchUpdateSub(rawData, oldData, newData);
-		if (!x) throw new PersonaError("Couldn't find roperty for data replace");
-		await this.update(rawData);
+		const lastPath = pathdiff.shift()!;
+		datapart[lastPath] = newData;
+		await this.update(data as any);
 	}
 
 	delve<const P extends string, Prop extends GetProperty<T,P>>(path: P) : Prop extends Record<any, any> ? EMAccessor<Prop> : never;
@@ -323,60 +318,66 @@ export class EMAccessor<T> {
 	async addNewConsequence<I extends DeepNoArray<ConditionalEffect["consequences"]>>( this: EMAccessor<I>) : Promise<void>;
 	async addNewConsequence<I extends DeepNoArray<ConditionalEffect[]>>( this: EMAccessor<I>, effectIndex: number): Promise<void>;
 	async addNewConsequence<I extends DeepNoArray<ConditionalEffect[]> | DeepNoArray<ConditionalEffect["consequences"]>>( this: EMAccessor<I>, effectIndex?: number) : Promise<void> {
-		if (effectIndex == undefined) {
-			const item : ConditionalEffect["consequences"][number] = {
-				type: "none",
-				amount: 0,
-			};
-			const that = this as EMAccessor<DeepNoArray<ConditionalEffect["consequences"]>>;
-			const newData = that.data;
-			newData.push(item);
-			await that.update(newData);
-		} else {
-			await (this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).consequences(effectIndex).addNewConsequence();
+		if (this.#effectIndexChecker(effectIndex)) {
+			return await (this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).consequences(effectIndex).addNewConsequence();
 		}
+		const item : ConditionalEffect["consequences"][number] = {
+			type: "none",
+			amount: 0,
+		};
+		const that = this as EMAccessor<DeepNoArray<ConditionalEffect["consequences"]>>;
+		const newData = that.data;
+		newData.push(item);
+		await that.update(newData);
 	}
 
 	async addNewCondition<I extends DeepNoArray<ConditionalEffect["conditions"]>>( this: EMAccessor<I>) : Promise<void>;
 	async addNewCondition<I extends DeepNoArray<ConditionalEffect[]>>( this: EMAccessor<I>, effectIndex: number): Promise<void>;
 	async addNewCondition<I extends DeepNoArray<ConditionalEffect[]> | DeepNoArray<ConditionalEffect["conditions"]>> ( this: EMAccessor<I>, effectIndex?: number) : Promise<void> {
-		if (effectIndex == undefined) {
-			const item : ConditionalEffect["conditions"][number] = {
-				type: "always",
-			};
-			const that = this as EMAccessor<DeepNoArray<ConditionalEffect["conditions"]>>;
-			const newData = that.data;
-			newData.push(item);
-			await that.update(newData);
-		} else {
-			await (this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).conditions(effectIndex).addNewCondition();
+		if (this.#effectIndexChecker(effectIndex)) {
+			return await (this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).conditions(effectIndex).addNewCondition();
 		}
+		const item : ConditionalEffect["conditions"][number] = {
+			type: "always",
+		};
+		const that = this as EMAccessor<DeepNoArray<ConditionalEffect["conditions"]>>;
+		const newData = that.data;
+		newData.push(item);
+		await that.update(newData);
 	}
 
 	async deleteCondition<I extends DeepNoArray<ConditionalEffect["conditions"]>>( this: EMAccessor<I>, condIndex: number) : Promise<void>;
 	async deleteCondition<I extends DeepNoArray<ConditionalEffect[]>>( this: EMAccessor<I>, condIndex: number, effectIndex: number): Promise<void>;
 	async deleteCondition<I extends DeepNoArray<ConditionalEffect[]> | DeepNoArray<ConditionalEffect["conditions"]>>( this: EMAccessor<I>, condIndex: number, effectIndex?: number) : Promise<void> {
-		if (effectIndex == undefined) {
-			const that = this as EMAccessor<DeepNoArray<ConditionalEffect["conditions"]>>;
-			const d = that.data;
-			d.splice(condIndex, 1);
-			await that.update(d);
-		} else {
-			(this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).conditions(effectIndex).deleteCondition(condIndex);
+		if (this.#effectIndexChecker(effectIndex)) {
+			return (this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).conditions(effectIndex!).deleteCondition(condIndex);
 		}
+		const that = this as EMAccessor<DeepNoArray<ConditionalEffect["conditions"]>>;
+		const d = that.data;
+		d.splice(condIndex, 1);
+		await that.update(d);
 	}
 
 	async deleteConsequence<I extends DeepNoArray<ConditionalEffect["consequences"]>>( this: EMAccessor<I>, consIndex: number) : Promise<void>;
 	async deleteConsequence<I extends DeepNoArray<ConditionalEffect[]>>( this: EMAccessor<I>, consIndex: number, effectIndex: number): Promise<void>;
 	async deleteConsequence<I extends DeepNoArray<ConditionalEffect[]> | DeepNoArray<ConditionalEffect["consequences"]>>( this: EMAccessor<I>, consIndex: number, effectIndex?: number) : Promise<void> {
-		if (effectIndex == undefined) {
-			const that = this as EMAccessor<DeepNoArray<ConditionalEffect["consequences"]>>;
-			const d = that.data;
-			d.splice(consIndex, 1);
-			await that.update(d);
-		} else {
+		if (this.#effectIndexChecker(effectIndex)) {
 			(this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).consequences(effectIndex).deleteConsequence(consIndex);
 		}
+		const that = this as EMAccessor<DeepNoArray<ConditionalEffect["consequences"]>>;
+		const d = that.data;
+		d.splice(consIndex, 1);
+		await that.update(d);
+	}
+
+	#effectIndexChecker(effectIndex: number | undefined): effectIndex is number {
+		if (effectIndex != undefined) {
+			const item = this.data[effectIndex];
+			if (item && "conditions" in item) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
 

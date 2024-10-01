@@ -6,7 +6,7 @@ import { NPC } from "../persona-actor.js";
 import { Tarot } from "../persona-actor.js";
 
 export class NoncombatantSheet extends PersonaActorSheetBase {
-	override actor: NPC | Tarot;
+	declare actor: NPC | Tarot;
 
 	override getData() {
 		return super.getData();

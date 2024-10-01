@@ -12,7 +12,7 @@ import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaItemSheetBase } from "./base-item-sheet.js";
 
 export class PersonaJobSheet extends PersonaItemSheetBase {
-	override item: Job;
+	declare item: Job;
 
 	override async getData() {
 		const data = await super.getData();

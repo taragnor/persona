@@ -6,9 +6,7 @@ import { Usable } from "../../item/persona-item.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { CClass } from "../../item/persona-item.js";
 
-import { PersonaDB } from "../../persona-db.js";
 import { PersonaItem } from "../../item/persona-item.js";
-import { PersonaActor } from "../persona-actor.js";
 import { PersonaActorSheetBase } from "./actor-sheet.base.js";
 import { PC } from "../persona-actor.js";
 import { Shadow } from "../persona-actor.js";
@@ -17,7 +15,7 @@ import { Power } from "../../item/persona-item.js";
 import { Focus } from "../../item/persona-item.js";
 
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
-	override actor: PC | Shadow;
+	declare actor: PC | Shadow;
 
 	override async getData () {
 		return super.getData();
@@ -223,7 +221,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		await item.sheet.render(true);
 	}
 
-	async rollSave(event: Event) {
+	async rollSave(_event: Event) {
 		await PersonaCombat.rollSave(this.actor, {
 			DC:11, label:"Manual Save", askForModifier:true});
 	}

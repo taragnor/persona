@@ -1,0 +1,12 @@
+<section class="consequences-section" data-path="{{namePrefix}}">
+	<h5> Consequences
+		<a class="add-consequence">
+			<i class="fa-solid fa-plus"> </i>
+		</a>
+	</h5>
+	{{#each consequences as |cons j|}}
+	{{> "systems/persona/parts/input-consequence.hbs" namePrefix=(strcat ../namePrefix j ".")  cons=cons POWERSTUFF=../POWERSTUFF i=../i consequence_index=j}}
+	{{/each}}
+</section>
+
+

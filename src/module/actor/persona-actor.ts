@@ -42,8 +42,8 @@ declare global {
 }
 
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
-	override statuses: Set<StatusEffectId>;
-	override sheet: PersonaActorSheetBase;
+	declare statuses: Set<StatusEffectId>;
+	declare sheet: PersonaActorSheetBase;
 
 	override prepareBaseData() {
 		super.prepareBaseData();

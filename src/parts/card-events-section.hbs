@@ -53,18 +53,17 @@
 					</div>
 				</div>
 			</div>
+		</div >
+		<div class="card-event-conditions" data-path="{{strcat "system.events." i ".conditions"}}">
+			<h5> Event Conditions
+				<a class="add-condition">
+					<i class="fa-solid fa-plus"> </i>
+				</a>
+			</h5>
+			{{#each event.conditions as |cond j|}}
+			{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat "system.events." i ".conditions." j ".")  cond=cond POWERSTUFF=../../POWERSTUFF condition_index=j}}
+			{{/each}}
 		</div>
-		<h5> Event Conditions
-			<a class="add-condition">
-				<i class="fa-solid fa-plus"> </i>
-			</a>
-		</h5>
-		{{#each event.conditions as |cond j|}}
-
-		{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat "system.events." i ".conditions." j ".")  cond=cond POWERSTUFF=../../POWERSTUFF condition_index=j}}
-
-		{{/each}}
-
 		<label> Event Setup</label>
 		<textarea name="system.events.{{i}}.text">
 			{{trim event.text}}
@@ -81,7 +80,6 @@
 			</label>
 		</div>
 	</div>
-
 	{{/each}}
 	<div>
 		{{#if (gt item.system.num_of_events 0)}}

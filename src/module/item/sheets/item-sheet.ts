@@ -5,7 +5,7 @@ import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 import { PersonaDB } from "../../persona-db.js";
 
 export class PersonaItemSheet extends PersonaEffectContainerBaseSheet {
-	override item: InvItem;
+	declare item: InvItem;
 
 	static override get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {

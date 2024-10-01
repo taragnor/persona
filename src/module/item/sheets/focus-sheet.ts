@@ -3,7 +3,7 @@ import { Focus } from "../persona-item.js";
 import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 
 export class PersonaFocusSheet extends PersonaEffectContainerBaseSheet {
-	override item: Focus;
+	declare item: Focus;
 
 	static override get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {

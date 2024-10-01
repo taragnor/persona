@@ -59,7 +59,7 @@ const PRIMARY_SECONDARY = {
 };
 
 export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
-	override item: SocialCard;
+	declare item: SocialCard;
 
 	override async getData() {
 		const data = await super.getData();

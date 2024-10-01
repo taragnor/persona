@@ -1,0 +1,11 @@
+<section class="conditions-section" data-path="{{namePrefix}}">
+	<h5> Conditions
+		<a class="add-condition">
+			<i class="fa-solid fa-plus"> </i>
+		</a>
+	</h5>
+	{{#each conditions as |cond j|}}
+	{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat ../namePrefix j ".")  cond=cond POWERSTUFF=../POWERSTUFF i=../i condition_index=j}}
+	{{/each}}
+</section>
+

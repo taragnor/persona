@@ -3,7 +3,7 @@ import { UniversalModifier } from "../persona-item.js";
 import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 
 export class UniversalModifierSheet extends PersonaEffectContainerBaseSheet {
-	override item: UniversalModifier;
+	declare item: UniversalModifier;
 
 	static override get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {

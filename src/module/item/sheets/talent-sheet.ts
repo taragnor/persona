@@ -3,7 +3,7 @@ import { Talent } from "../persona-item.js";
 import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 
 export class PersonaTalentSheet extends PersonaEffectContainerBaseSheet {
-	override item: Talent;
+	declare item: Talent;
 
 	static override get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {

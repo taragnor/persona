@@ -3,7 +3,7 @@ import { Power } from "../persona-item.js";
 import { PersonaPowerLikeBaseSheet } from "./powerlike-base-sheet.js";
 
 export class PersonaPowerSheet extends PersonaPowerLikeBaseSheet {
-	override item: Power;
+	declare item: Power;
 
 	static override get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {

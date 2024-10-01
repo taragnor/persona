@@ -32,6 +32,8 @@ const templateFileNames : string[] =[
 	"weekly-availability.hbs",
 	"power-tooltip.hbs",
 	"tension-pool.hbs",
+	"conditions-section.hbs",
+	"consequences-section.hbs",
 ];
 
 export const templatePaths = templateFileNames.

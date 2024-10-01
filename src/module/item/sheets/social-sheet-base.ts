@@ -3,7 +3,7 @@ import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { SocialCard } from "../persona-item.js";
 
 export class PersonaSocialSheetBase extends PersonaItemSheetBase {
-	override item: SocialCard;
+	declare item: SocialCard;
 
 
 	override activateListeners(html: JQuery<HTMLElement>) {

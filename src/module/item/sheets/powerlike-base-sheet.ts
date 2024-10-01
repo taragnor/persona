@@ -4,7 +4,7 @@ import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 
 export abstract class PersonaPowerLikeBaseSheet extends PersonaEffectContainerBaseSheet {
-	override item: Usable;
+	declare item: Usable;
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
