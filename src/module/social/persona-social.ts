@@ -1002,8 +1002,18 @@ export class PersonaSocial {
 		if (!target) {
 			throw new PersonaError(`Couldn't find target ${targetId}`);
 		}
-		if (game.combat?.combatant?.actor != initiator) {
+		const combat = game.combat as PersonaCombat;
+		if (!combat) {
 			ui.notifications.warn("Can only do this on your turn.");
+			return;
+		}
+		if (!combat.isSocial) {
+			ui.notifications.warn("Not in Downtime");
+			return;
+		}
+		if (combat.combatant?.actor != initiator) {
+			ui.notifications.warn("Can only do this on your turn.");
+			return;
 		}
 		const situation: Situation = {
 			user: initiator.accessor,
@@ -1013,6 +1023,7 @@ export class PersonaSocial {
 		};
 		if (!testPreconditions(target.system.type == "npc" ? target.system.conditions : [], situation, null)) {
 			ui.notifications.warn("You don't meet the prerequisites to start a relationship with this Link");
+			return;
 		}
 		if (!(await HTMLTools.confirmBox("Start new Link", `Start a new Link with ${target.displayedName}`))) {
 			return;
