@@ -195,6 +195,7 @@ type ConstantDamageCons = {
 	amount: number;
 }
 
+
 type DamageMultiplierCons = {
 	damageSubtype: "multiplier";
 	amount: number;

@@ -5,9 +5,9 @@
 	{{#if change.hpchange}}
 	<span>
 		{{#if (lt change.hpchange 0)}}
-		{{abs change.hpchange}} damage ({{change.damageType}})
+		{{abs change.hpchange}} damage ({{localizeDamageType change.damageType}})
 		{{else}}
-		{{abs change.hpchange}} healing ({{change.damageType}})
+		{{abs change.hpchange}} healing ({{localizeDamageType change.damageType}})
 		{{/if}}
 	</span>
 	<span>

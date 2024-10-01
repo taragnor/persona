@@ -645,21 +645,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 
 	getEffects(this: ModifierContainer, sourceActor : PC | Shadow | null): ConditionalEffect[] {
 		return ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
-		// return this.system.effects.map( eff=> {
-		// 	const conditions= ArrayCorrector(eff.conditions)
-		// 		.map (x=> ({ ...x,
-		// 			actorOwner: sourceActor? sourceActor.accessor : undefined,
-		// 			sourceItem: PersonaDB.getUniversalItemAccessor(this),
-		// 		})
-		// 		);
-		// 	const consequences= ArrayCorrector(eff.consequences)
-		// 		.map (x=> ({ ...x,
-		// 			actorOwner: sourceActor? sourceActor.accessor : undefined,
-		// 			sourceItem: PersonaDB.getUniversalItemAccessor(this),
-		// 		})
-		// 		);
-		// 	return {conditions, consequences};
-		// });
 	}
 
 	requiredLinkLevel(this: Focus) : number  {
@@ -670,7 +655,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 				{
 					if (cond.num)
 						return cond.num;
-					// requirement = Math.max(requirement, cond.num);
 				}
 			}
 		}

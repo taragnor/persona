@@ -808,7 +808,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 								continue;
 						}
 						if (effectiveTarget) {
-							CombatRes.addEffect(atkResult, effectiveTarget.actor!, cons.cons, power.system.dmg_type);
+							CombatRes.addEffect(atkResult, effectiveTarget.actor!, cons.cons);
 						}
 					}
 				}
@@ -859,64 +859,32 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		switch (cons.type) {
 			case "damage-new":
 				return this.processConsequence_damage(cons, applyTo, attacker, power, situation, absorb, damageMult);
-				// let dmgAmt : number = 0;
-				// switch (cons.damageSubtype) {
-				// 	case "multiplier":
-				// 		return [{
-				// 			applyTo,
-				// 			cons
-				// 		}];
-				// 	case "high":
-				// 		dmgAmt = power.getDamage(attacker, "high", situation);
-				// 		break;
-				// 	case "low":
-				// 		dmgAmt = power.getDamage(attacker, "low", situation);
-				// 		break;
-				// 	case "allout-low":
-				// 	case "allout-high": {
-				// 		const combat =this.ensureCombatExists();
-				// 		const userTokenAcc = combat.getToken(situation.user);
-				// 		if (!userTokenAcc) {
-				// 			PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId ?? "Null user"}`);
-				// 			break;
-				// 		}
-				// 		const userToken = PersonaDB.findToken(userTokenAcc);
-				// 		const dmg = PersonaCombat.calculateAllOutAttackDamage(userToken, situation);
-				// 		dmgAmt = cons.damageSubtype == "allout-high"? dmg.high: dmg.low;
-				// 		break;
-				// 	}
-				// 	case "constant":
-				// 		dmgAmt = cons.amount;
-				// 		break;
-				// 	default:
-				// 		cons satisfies never;
-				// }
-				// return [{
-				// 	applyTo,
-				// 	cons: {
-				// 		...cons,
-				// 		amount: dmgAmt * (absorb ? -1 : damageMult),
-				// 	}
-				// }];
 			case "dmg-mult":
 				return [{
 					applyTo,
-					cons
+					cons: {type: "damage-new",
+					damageSubtype: "multiplier",
+					amount: cons.amount ?? 1,
+					}
 				}];
 			case "dmg-high":
 				return [{
 					applyTo,
 					cons: {
-						type: cons.type,
+						type: "damage-new",
+						damageSubtype: "high",
 						amount: power.getDamage(attacker, "high", situation) * (absorb ? -1 : damageMult),
+						damageType: (power as Usable).system.dmg_type,
 					}
 				}];
 			case "dmg-low":
 				return [{
 					applyTo,
 					cons: {
-						type: cons.type,
+						type: "damage-new",
+						damageSubtype: "low",
 						amount: power.getDamage(attacker, "low", situation) * (absorb ? -1 : damageMult),
+						damageType: (power as Usable).system.dmg_type,
 					}
 				}];
 			case "dmg-allout-low": {
@@ -930,8 +898,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return [{
 					applyTo,
 					cons : {
-						type: cons.type,
+						type: "damage-new",
+						damageSubtype: "allout-low",
 						amount: PersonaCombat.calculateAllOutAttackDamage(userToken, situation).low * (absorb ? -1 : damageMult),
+						damageType: "all-out",
 					}
 				}];
 			}
@@ -946,8 +916,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return [{
 					applyTo,
 					cons : {
-						type: cons.type,
+						type: "damage-new",
+						damageSubtype: "allout-high",
 						amount: PersonaCombat.calculateAllOutAttackDamage(userToken, situation).high * (absorb ? -1 : damageMult),
+						damageType: "all-out",
 					}
 				}];
 			}

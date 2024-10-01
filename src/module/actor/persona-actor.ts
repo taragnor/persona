@@ -79,7 +79,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async refreshMaxMP(this: PC, amt = this.mmp) {
 		if (amt == this.system.combat.mp.max) return;
-		// this.system.combat.mp.max = amt;
 		await this.update( { "system.combat.mp.max": amt});
 	}
 

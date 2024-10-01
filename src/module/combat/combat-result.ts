@@ -91,7 +91,7 @@ export class CombatResult  {
 		this.sounds.push({sound, timing});
 	}
 
-	addEffect(atkResult: AttackResult | null, target: PC | Shadow | undefined, cons: Consequence, damageType ?: DamageType) {
+	addEffect(atkResult: AttackResult | null, target: PC | Shadow | undefined, cons: Consequence) {
 		let effect: ActorChange<PC | Shadow> | undefined = undefined;
 		if (target) {
 			effect = {
@@ -129,7 +129,6 @@ export class CombatResult  {
 						effect.hpchange = -(cons.amount ?? 0);
 						break;
 					case "percentage":
-							debugger;
 						if (!target) {
 							PersonaError.softFail("No target for percentage HP");
 							break;
@@ -155,9 +154,6 @@ export class CombatResult  {
 			case "dmg-allout-high":
 			case "dmg-allout-low":
 				if (!effect) break;
-				if (damageType) {
-					effect.damageType = damageType;
-				}
 				effect.hpchange = -(cons.amount ?? 0);
 				break;
 			case "addStatus": {
@@ -418,7 +414,6 @@ export class CombatResult  {
 		for (const cost of this.costs) {
 			const actor = PersonaDB.findActor(cost.actor);
 			if (this.hasFlag(actor, "half-hp-cost")) {
-				// cost.hpchangemult *= 0.5;
 				cost.hpchangemult *= 0.666;
 			}
 			if (this.hasFlag(actor, "save-slot")) {
@@ -833,7 +828,7 @@ export class CombatResult  {
 		return {
 			actor: initial.actor,
 			hpchange: absMax(initial.hpchange, other.hpchange),
-			damageType : initial.damageType == "untyped" || initial.damageType == "none" ? other.damageType : initial.damageType,
+			damageType : initial.damageType == "none" ? other.damageType : initial.damageType,
 			hpchangemult: initial.hpchangemult * other.hpchangemult,
 			addStatus : initial.addStatus.concat(other.addStatus),
 			removeStatus : initial.removeStatus.concat(other.removeStatus),

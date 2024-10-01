@@ -1,3 +1,5 @@
+import { DamageType } from "../config/damage-types.js";
+import { DAMAGETYPES } from "../config/damage-types.js";
 import { localize } from "./persona.js";
 import { AttackResult } from "./combat/combat-result.js";
 import { Situation } from "./preconditions.js";
@@ -267,6 +269,10 @@ export class PersonaHandleBarsHelpers {
 			if (num >=0) return new Handlebars.SafeString(`+${num}`);
 			else return new Handlebars.SafeString(`${num}`);
 		},
+
+		"localizeDamageType": function (dtype:DamageType ) : string {
+			return game.i18n.localize(DAMAGETYPES[dtype]);
+		}
 
 	}
 
