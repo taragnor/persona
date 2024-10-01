@@ -54,8 +54,8 @@
 				</div>
 			</div>
 		</div >
-		<div class="card-event-conditions" data-path="{{strcat "system.events." i ".conditions"}}">
-			{{> "systems/persona/parts/conditions-section.hbs" namePrefix=(strcat "system.events." i ".conditions.")  POWERSTUFF=../POWERSTUFF i=i}}
+		<div class="card-event-conditions">
+			{{> "systems/persona/parts/conditions-section.hbs" namePrefix=(strcat "system.events." i ".conditions.")  POWERSTUFF=../POWERSTUFF i=i owner=../item}}
 		</div>
 		<label> Event Setup</label>
 		<textarea name="system.events.{{i}}.text">

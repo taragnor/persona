@@ -4,8 +4,8 @@
 			<i class="fa-solid fa-plus"> </i>
 		</a>
 	</h5>
-	{{#each conditions as |cond j|}}
-	{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat ../namePrefix j ".")  cond=cond POWERSTUFF=../POWERSTUFF i=../i condition_index=j}}
+	{{#each (getProp owner namePrefix) as |cond j|}}
+	{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat ../namePrefix j ".")  cond=cond POWERSTUFF=(powerStuff) i=../i condition_index=j}}
 	{{/each}}
 </section>
 

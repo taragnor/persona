@@ -2,33 +2,18 @@
 	<img class="profile-img" src="{{item.img}}" data-edit="img"/>
 	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Job Name" placeholder="Job Name">
 
-  {{> "systems/persona/parts/weekly-availability.hbs" item=item CONST=CONST}}
-	<div class="card-conditions">
-		<h5> Conditions
-			<a class="add-condition">
-				<i class="fa-solid fa-plus"> </i>
-			</a>
-		</h5>
-		{{#each item.system.conditions as |cond i|}}
-		{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat "system.conditions." i  ".")  cond=cond POWERSTUFF=../item.sheet.powerStuff condition_index=i}}
-		{{/each}}
+	{{> "systems/persona/parts/weekly-availability.hbs" item=item CONST=CONST}}
+	<div data-top-path="system.conditions">
+		{{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.conditions."  POWERSTUFF=POWERSTUFF owner=item}}
 	</div>
-	<div>
-	 <select name="system.subtype">
-		{{selectOptions SOCIAL_CARD_TYPES localize=true selected=item.system.subtype}}
-	 </select>
+	<div class="base-relationship">
+		<label>
+			Card specifier
+		</label>
+		<select name="system.baseRelationship">
+			{{selectOptions RELATIONSHIP_TYPES localize=false selected=item.system.baseRelationship}}
+		</select>
 	</div>
-
-
-		<div class="base-relationship">
-			<label>
-				Card specifier
-			</label>
-			<select name="system.baseRelationship">
-				{{selectOptions RELATIONSHIP_TYPES localize=false selected=item.system.baseRelationship}}
-			</select>
-		</div>
-
 
 	<div class="primary">
 		<label>
@@ -84,7 +69,7 @@
 	<textarea name="system.bane">
 		{{item.system.bane}}
 	</textarea>
-  {{> "systems/persona/parts/token-spends-section.hbs" item=item}}
+	{{> "systems/persona/parts/token-spends-section.hbs" item=item}}
 
 </form>
 

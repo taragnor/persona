@@ -1,5 +1,6 @@
 import { PersonaItem } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
+import { ConditionalEffectManager } from "../../conditional-effect-manager.js";
 
 export class PersonaItemSheetBase extends ItemSheet<PersonaItem> {
 
@@ -19,6 +20,7 @@ export class PersonaItemSheetBase extends ItemSheet<PersonaItem> {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
+		ConditionalEffectManager.applyHandlers(html, this.item);
 	}
 
 

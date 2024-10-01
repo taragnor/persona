@@ -4,8 +4,8 @@
 			<i class="fa-solid fa-plus"> </i>
 		</a>
 	</h5>
-	{{#each consequences as |cons j|}}
-	{{> "systems/persona/parts/input-consequence.hbs" namePrefix=(strcat ../namePrefix j ".")  cons=cons POWERSTUFF=../POWERSTUFF i=../i consequence_index=j}}
+	{{#each (getProp owner namePrefix) as |cons j|}}
+	{{> "systems/persona/parts/input-consequence.hbs" namePrefix=(strcat ../namePrefix j ".")  cons=cons POWERSTUFF=(powerStuff) i=../i consequence_index=j}}
 	{{/each}}
 </section>
 

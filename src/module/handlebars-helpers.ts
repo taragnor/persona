@@ -1,3 +1,4 @@
+import { PersonaEffectContainerBaseSheet } from "./item/sheets/effect-container.js";
 import { DamageType } from "../config/damage-types.js";
 import { DAMAGETYPES } from "../config/damage-types.js";
 import { localize } from "./persona.js";
@@ -272,6 +273,23 @@ export class PersonaHandleBarsHelpers {
 
 		"localizeDamageType": function (dtype:DamageType ) : string {
 			return game.i18n.localize(DAMAGETYPES[dtype]);
+		},
+		"getProp": function (object: {}, path: string) : unknown {
+			while (path.endsWith(".")) {
+				path = path.slice(0, -1);
+			}
+			try {
+			return foundry.utils.getProperty(object, path);
+			}
+			catch (e) {
+				console.trace()
+				console.error(e);
+				Debug(object);
+				console.log(`Error on path ${path}`);
+			}
+		},
+		"powerStuff" : function () : Object {
+			return PersonaEffectContainerBaseSheet.powerStuff;
 		}
 
 	}

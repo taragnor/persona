@@ -1,3 +1,5 @@
+import { PersonaEffectContainerBaseSheet } from "../../item/sheets/effect-container.js";
+import { ConditionalEffectManager } from "../../conditional-effect-manager.js";
 import { DEFENSE_CATEGORY } from "../../../config/defense-categories.js";
 import { RESIST_STRENGTHS } from "../../../config/damage-types.js";
 import { PersonaActor } from "../persona-actor.js";
@@ -23,6 +25,8 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 			(data.RELATIONSHIP_TYPES_LIST as string[])
 			.map(x=> ([x,x]))
 		);
+		data.POWERSTUFF = PersonaEffectContainerBaseSheet.powerStuff;
+
 		data.CONST = {
 			...PersonaActorSheetBase.CONST(),
 			INC: INCREMENTAL_ADVANCE_TYPES.map(x=> ({
@@ -48,6 +52,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
+		ConditionalEffectManager.applyHandlers(html, this.actor);
 	}
 
 

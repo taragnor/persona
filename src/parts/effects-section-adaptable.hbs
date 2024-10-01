@@ -5,11 +5,11 @@
 			<i class="fa-solid fa-plus"> </i>
 		</a>
 	</h4>
-	{{#each effects as |effect i|}}
+	{{#each (getProp owner namePrefix) as |effect i|}}
 	<div class="flexrow" data-effect-index="{{i}}">
 		<div class="power-effect" >
-			{{> "systems/persona/parts/conditions-section.hbs" namePrefix=(strcat ../namePrefix i ".conditions.")  POWERSTUFF=../POWERSTUFF i=i}}
-			{{> "systems/persona/parts/consequences-section.hbs" namePrefix=(strcat ../namePrefix i ".consequences.")  POWERSTUFF=../POWERSTUFF i=i}}
+			{{> "systems/persona/parts/conditions-section.hbs" namePrefix=(strcat ../namePrefix i ".conditions.")  POWERSTUFF=../POWERSTUFF owner=../owner}}
+			{{> "systems/persona/parts/consequences-section.hbs" namePrefix=(strcat ../namePrefix i ".consequences.")  POWERSTUFF=../POWERSTUFF owner=../owner}}
 			<div class="short">
 				<a class="del-effect">
 					<i class="fa-solid fa-trash-can"></i>
