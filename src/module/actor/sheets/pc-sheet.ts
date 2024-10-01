@@ -106,6 +106,7 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".add-strike").on("click", this.addStrike.bind(this));
 		html.find(".rem-strike").on("click", this.removeStrike.bind(this));
 		html.find(".equips select").on("change", this.equipmentChange.bind(this));
+		html.find(".init-social-link").on("click", this.startSocialLink.bind(this));
 		super.activateListeners(html);
 	}
 
@@ -348,6 +349,12 @@ export class PCSheet extends CombatantSheetBase {
 			}
 		}
 		await Logger.sendToChat(`${this.actor.name} changed ${itemType} ${item?.name ?? "ERROR"}` , this.actor);
+	}
+
+	async startSocialLink(event: JQuery.ClickEvent) {
+		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
+		await PersonaSocial.startSocialLink(this.actor, linkId);
+
 	}
 
 

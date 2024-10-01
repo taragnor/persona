@@ -1,3 +1,4 @@
+import { NPC } from "../actor/persona-actor.js";
 import { ConditionalEffectManager } from "../conditional-effect-manager.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { SocialCardActionEffect } from "../../config/consequence-types.js";
@@ -994,6 +995,29 @@ export class PersonaSocial {
 		tracker.find("span.doomsday").text(doomtxt);
 		const weekday = PersonaCalendar.getDateString();
 		tracker.find(".day").text(weekday);
+	}
+
+	static async startSocialLink(initiator: PC, targetId: string) {
+		const target = game.actors.get(targetId) as (NPC | PC);
+		if (!target) {
+			throw new PersonaError(`Couldn't find target ${targetId}`);
+		}
+		if (game.combat?.combatant?.actor != initiator) {
+			ui.notifications.warn("Can only do this on your turn.");
+		}
+		const situation: Situation = {
+			user: initiator.accessor,
+			attacker: initiator.accessor,
+			isSocial: true,
+			socialTarget: target.accessor,
+		};
+		if (!testPreconditions(target.system.type == "npc" ? target.system.conditions : [], situation, null)) {
+			ui.notifications.warn("You don't meet the prerequisites to start a relationship with this Link");
+		}
+		if (!(await HTMLTools.confirmBox("Start new Link", `Start a new Link with ${target.displayedName}`))) {
+			return;
+		}
+		await initiator.createSocialLink(target);
 	}
 
 } //end of class

@@ -496,6 +496,27 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		});
 	}
 
+	get unrealizedSocialLinks() : (NPC | PC)[] {
+		switch (this.system.type) {
+			case "shadow":
+			case "npc":
+			case "tarot":
+				return [];
+			case "pc":
+				break;
+			default:
+				this.system satisfies never;
+				throw new PersonaError("Something weird happened");
+		}
+		const currentLinks = this.system.social.map(x=> x.linkId);
+		const list = game.actors
+			.filter( x=> x.system.type == "npc" || x.system.type =="pc")
+			.filter( x=> !currentLinks.includes(x.id))
+			.filter( (x : PC | NPC)=> Object.values(x.system.weeklyAvailability).some(x=> x == true))
+			.filter( (x : PC | NPC)=> !!x.system.tarot)
+		return list as (PC | NPC)[];
+	}
+
 	async spendRecovery(this: PC, socialLinkId: string) {
 		const link = this.system.social.find( x=> x.linkId == socialLinkId);
 		if (!link) {
@@ -1208,6 +1229,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		);
 		PersonaSounds.newSocialLink();
 		await this.update({"system.social": this.system.social});
+		await Logger.sendToChat(`${this.name} forged new social link with ${npc.displayedName} (${npc.tarot?.name}).` , this);
 	}
 
 	get baseRelationship(): string {
@@ -1238,6 +1260,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			PersonaSounds.socialLinkUp();
 		}
 		await this.update({"system.social": this.system.social});
+		const target = game.actors.get(link.linkId) as NPC | PC;
+		if (target) {
+			await Logger.sendToChat(`${this.name} increased Social Link with ${target.displayedName} (${target.tarot?.name}) to SL ${link.linkLevel}.` , this);
+		}
 	}
 
 	async decreaseSocialLink(this: PC, linkId: string) {

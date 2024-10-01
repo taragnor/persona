@@ -43,8 +43,6 @@ export function getActiveConsequences(condEffect: ConditionalEffect, situation: 
 export function testPreconditions(conditionArr: Precondition[] | DeepNoArray<Precondition[]>, situation: Situation, source : PowerContainer | null) : boolean {
 	return ConditionalEffectManager.getConditionals(conditionArr,source, null)
 		.every( cond => testPrecondition(cond, situation, source));
-	// return ArrayCorrector(conditionArr ?? [])
-		// .every( cond => testPrecondition(cond, situation, source));
 }
 
 
@@ -636,7 +634,6 @@ type SituationUniversal = {
 	socialTarget ?: UniversalActorAccessor<PC | NPC>,
 	eventCard ?: UniversalItemAccessor<Job | SocialCard>,
 	isSocial?: boolean,
-	socialId?: string,
 	tarot ?: TarotCard,
 }
 
