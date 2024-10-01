@@ -206,13 +206,6 @@ export class ConditionalEffectManager {
 
 }
 
-
-// export class EMAccessor<Owner extends FoundryDocument<any>,  const P extends string,T extends GetProperty<Owner, P> & Record<number, any>>  {
-
-// export class EMAccessor<const O extends FoundryDocument<any>,
-// 	const P extends string,
-// 	const T extends NoArray<GetProperty<O, P>> & Record<number, any>
-// 	>{
 export class EMAccessor<T> {
 		private _path : string;
 		private _owner: FoundryDocument<any>;
@@ -412,7 +405,4 @@ export type CEAction = {
 	effectIndex?:number,
 	consIndex: number
 };
-
-
-
 

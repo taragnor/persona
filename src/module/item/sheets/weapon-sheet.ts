@@ -24,5 +24,4 @@ export class PersonaWeaponSheet extends PersonaEffectContainerBaseSheet {
 		super.activateListeners(html);
 	}
 
-
 }
