@@ -1,3 +1,20 @@
+import { SLOTTYPES } from "../config/slot-types.js";
+import { CREATURE_TYPE } from "../config/shadow-types.js";
+import { SHADOW_ROLE } from "../config/shadow-types.js";
+import { PersonaActor } from "./actor/persona-actor.js";
+import { DAYS } from "../config/days.js";
+import { WEATHER_TYPES } from "../config/weather-types.js";
+import { TARGETING } from "../config/effect-types.js";
+import { POWERTYPES } from "../config/effect-types.js";
+import { DAMAGETYPES } from "../config/damage-types.js";
+import { POWER_TAGS } from "../config/power-tags.js";
+import { BOOLEAN_COMPARISON_TARGET } from "../config/precondition-types.js";
+import { CONDITION_TARGETS } from "../config/precondition-types.js";
+import { NUMERIC_COMPARISON_TARGET } from "../config/precondition-types.js";
+import { TRIGGERS } from "../config/triggers.js";
+import { MultiCheck } from "../config/precondition-types.js";
+import { STATUS_EFFECT_TRANSLATION_TABLE } from "../config/status-effects.js";
+import { Precondition } from "../config/precondition-types.js";
 import { HTMLTools } from "./utility/HTMLTools.js";
 import { PersonaError } from "./persona-error.js";
 import { PreconditionType } from "../config/precondition-types.js";
@@ -372,7 +389,137 @@ export class EMAccessor<T> {
 		}
 		return false;
 	}
+
+	static printConditional(cond: Precondition) : string {
+		switch (cond.type) {
+			case "boolean":
+				return printBooleanCond(cond);
+			case "numeric":
+				return printNumericCond(cond);
+			case "always":
+				return "always";
+			case "miss-all-targets":
+				return "Miss All Targets"
+			case "save-versus":
+				const saveType = this.translate(cond.status!, STATUS_EFFECT_TRANSLATION_TABLE);
+				return `on save versus ${saveType}`;
+			case "on-trigger":
+				const trig = this.translate(cond.trigger!, TRIGGERS);
+				return `trigger: ${trig}`
+			default:
+				cond satisfies never;
+				PersonaError.softFail(`Unknown type ${(cond as any)?.type}`);
+		}
+
+	}
+
+	static translate<const T extends string>(items: MultiCheck<T> | T, translationTable?: Record<string, string>) : string {
+		if (typeof items == "string")  {
+			return translationTable ? translationTable[items] : items;
+		}
+		return Object.entries(items)
+			.flatMap( ([k,v]) => v ? [k] : [])
+			.map( x=> translationTable ? translationTable[x] : x)
+			.join(", ");
+	}
+
+	static printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
+		const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, CONDITION_TARGETS) : "";
+		const target2 = ("conditionTarget2" in cond) ? this.translate(cond.conditionTarget2, CONDITION_TARGETS): "" ;
+		const boolComparison = this.translate (cond.boolComparisonTarget, BOOLEAN_COMPARISON_TARGET);
+		const not =  !boolComparison  ? "not" : "";
+		switch (cond.boolComparisonTarget) {
+			case "engaged":
+				return `${target1} is ${not} engaged with anyone`
+			case "engaged-with":
+				return `${target1} is ${not} engaged with ${target2}`
+			case "metaverse-enhanced":
+				return `metaverse is ${not} enhanced`;
+			case "is-shadow":
+				return `${target1} is ${not} enemy type`;
+			case "is-pc":
+				return `${target1} is ${not} PC type`;
+			case "has-tag":
+				const powerTag = this.translate(cond.powerTag, POWER_TAGS);
+				return `used power ${not} has tag: ${powerTag}`;
+			case "in-combat":
+				return `is ${not} in combat`;
+			case "is-critical":
+				return `${not} critical hit/success`;
+			case "is-hit":
+				return `${not} a hit/success`;
+			case "is-dead":
+				return `${target1} is ${not} dead`;
+			case "target-owner-comparison";
+				return `${target1} is ${not} equal to ${target2}`;
+			case "damage-type-is":
+				const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
+				return `Power Damage Type is ${not} ${damageType}`;
+			case "power-type-is":
+				const powerType = this.translate(cond.powerType, POWERTYPES);
+				return `Power Type is ${not} ${powerType}`;
+			case "has-status":
+				const status = this.translate(cond.status, STATUS_EFFECT_TRANSLATION_TABLE);
+				return `${target1} ${not} has status: ${status}`;
+			case "struck-weakness":
+				return `attack ${not} targets a weakness`;
+			case "is-resistant-to": {
+				const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
+				return `${target1} is ${not} resistant to ${damageType}`;
+			}  case "is-same-arcana": 
+				return `${target1} is ${not} the same arcana as attacker`; 
+			case "flag-state":
+				return `${target1} flag ${cond.flagId} is ${not} true`;
+			case "is-consumable":
+				return `used power/item is ${not} a consumable item`;
+			case "power-target-type-is":
+				const targetType = this.translate(cond.powerTargetType, TARGETING);
+				return `used power targets type is ${not}: ${targetType}`; 
+			case "weather-is":
+				const weather = this.translate(cond.weatherComparison, WEATHER_TYPES);
+				return `weather is ${not}: ${weather}`;
+			case "weekday-is":
+				const weekday = this.translate(cond.days, DAYS);
+				return `weekday is ${not} : ${weekday}`;
+			case "social-target-is":
+				const link = cond.socialLinkIdOrTarot ? (game.actors.get(cond.socialLinkIdOrTarot) as PersonaActor)?.displayedName : "ERROR";
+				return `social Target is ${not} ${link}`;
+			case "shadow-role-is":
+				const shadowRole = this.translate(cond.shadowRole, SHADOW_ROLE);
+				return `${target1} role is is ${not} ${shadowRole}`;
+			case "is-distracted":
+				return `${target1} is ${not} distracted`;
+			case "active-scene-is":
+				return `Active Scene is ${not} ${cond.sceneId}`;
+			case "is-gm":
+				return `User is ${not} GM`;
+			case "has-item-in-inventory":
+				return `${target1} ${not} has ${cond.itemId} in Inventory`;
+			case "creature-type-is":
+				const creatureType = this.translate(cond.creatureType, CREATURE_TYPE);
+				return `${target1} is ${not} of creature type: ${creatureType}`;
+			case "power-slot-is":
+				const slot = this.translate(cond.slotType, SLOTTYPES);
+				return `Power is ${not} of slot type: ${slot}`;
+			case "relationship-type-is":
+				return `${target1} is of relationship Type ${cond.relationshipType}`;
+			default:
+				cond satisfies never
+				return "";
+		}
+	}
+
+	static  printNumericCond(cond: Precondition & {type: "numeric"}) : string {
+		switch (cond.comparisonTarget) {
+			case "natural-roll":
+
+		}
+
+	}
+
+
 }
+
 
 // **************************************************
 // **********   error checking code  *********** ****

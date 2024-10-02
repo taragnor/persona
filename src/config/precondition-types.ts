@@ -49,7 +49,7 @@ type GenericPC = {
 
 type SaveVersus = {
 	type : "save-versus",
-	status ?: StatusEffectId | Record<StatusEffectId, boolean>,
+	status ?: StatusEffectId | MultiCheck<StatusEffectId>,
 };
 
 export type Triggered = { type: "on-trigger"} & TriggeredEvents;
