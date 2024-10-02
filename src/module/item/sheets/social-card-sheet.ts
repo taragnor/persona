@@ -1,4 +1,3 @@
-import { ConditionalEffectManager } from "../../conditional-effect-manager.js";
 import { FREQUENCY } from "../../../config/frequency.js";
 import { THRESHOLD_TYPE } from "../../../config/social-card-config.js";
 import { PersonaSocialSheetBase } from "./social-sheet-base.js";

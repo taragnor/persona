@@ -135,17 +135,31 @@ input.single-digit {
 }
 
 .consequence-block {
-	margin: 10px;
+	font-size: smaller;
+	margin: 5px;
 	display:block;
 }
 
 .condition-block {
-	margin: 10px;
+	font-size: smaller;
+	margin: 5px;
 	display:block;
+}
+
+.condition-block input,
+.consequence-block input,
+.condition-block select,
+.consequence-block select {
+	height: 20px;
 }
 
 .change-target {
 	font-weight: bold;
+}
+
+.small-box input {
+	height: 10px !important;
+	margin: 0px;
 }
 
 .profile-img {
@@ -233,10 +247,6 @@ input.flag-name {
 
 }
 
-.social-card-sheet textarea {
-	text-align:left;
-	text-indent: 10px;
-}
 
 div.social-card {
 	border-radius: 25px;
@@ -343,35 +353,49 @@ section.qualifiers {
 }
 
 .social-card-sheet textarea {
+	font-size: smaller;
 	display: inline-block;
-	height: 8em;
-	min-height: 4em;
-	max-height: 12em;
+	height: 3em;
+	min-height: 2em;
+	max-height: 10em;
+	text-align: left;
+	text-indent: 10px;
 }
 
 .social-card-sheet .opportunity-section {
 	border: 2px solid blue;
-	padding: 0.5rem;
+	padding: 0.2rem;
 }
 .social-card-sheet .opportunity {
 	border: 1px solid black;
-	padding: 0.5rem;
+	padding: 0.2rem;
+}
+
+.social-card-sheet .profile-img {
+	max-height: 90px !important;
+	max-width: 90px !important;
 }
 
 .social-card-sheet .card-event {
 	border: 3px solid green;
-	padding: 0.5rem;
+	padding: 0.2rem;
 }
 
 .event-choice {
 	border: 1px solid green;
-	padding: 0.5rem;
+	padding: 0.2rem;
 }
 
 .card-event .choice{
 	border: 2px solid red;
-	padding: 0.5rem;
+	padding: 0.1rem;
 
+}
+
+.card-roll select,
+.card-roll input {
+	font-size: smaller;
+	height: 20px;
 }
 
 .event-choice .chosen {
@@ -574,3 +598,16 @@ div.weather-icon{
 .deprecated {
 	opacity: 50%;
 }
+
+form h4 {
+	margin-block-start: 0px;
+	margin-block-end: 0px;
+	margin-top: 0px;
+}
+
+form h5 {
+	margin-block-start: 0px;
+	margin-block-end: 0px;
+	margin-top: 0px;
+}
+

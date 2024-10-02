@@ -1,10 +1,17 @@
 <section class="consequences-section" data-path="{{namePrefix}}">
-	<h5> Consequences
+
+{{#if (isGM)}}
+	<h4> Consequences
 		<a class="add-consequence">
 			<i class="fa-solid fa-plus"> </i>
 		</a>
-	</h5>
+	</h4>
 	{{#each (getProp owner namePrefix) as |cons j|}}
 	{{> "systems/persona/parts/input-consequence.hbs" namePrefix=(strcat ../namePrefix j ".")  cons=cons POWERSTUFF=(powerStuff) i=../i consequence_index=j}}
 	{{/each}}
+{{else}}
+	{{printConsequences (getProp owner namePrefix)}}
+{{/if}}
+
 </section>
+

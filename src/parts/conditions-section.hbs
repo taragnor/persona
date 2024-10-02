@@ -1,11 +1,18 @@
 <section class="conditions-section" data-path="{{namePrefix}}">
-	<h5> Conditions
+
+{{#if (isGM)}}
+	<div> Conditions
 		<a class="add-condition">
 			<i class="fa-solid fa-plus"> </i>
 		</a>
-	</h5>
+	</div>
 	{{#each (getProp owner namePrefix) as |cond j|}}
 	{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat ../namePrefix j ".")  cond=cond POWERSTUFF=(powerStuff) i=../i condition_index=j}}
 	{{/each}}
+
+{{else}}
+	{{printConditionals (getProp owner namePrefix)}}
+{{/if}}
+
 </section>
 

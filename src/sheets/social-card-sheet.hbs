@@ -4,6 +4,7 @@
 	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Job Name" placeholder="Job Name">
 
 	<div class="card-conditions" data-top-path="system.conditions" data-path="system.conditions">
+		<h3>Prereqs to Draw Card </h3>
 	{{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.conditions." POWERSTUFF=POWERSTUFF owner=item}}
 	</div>
 
@@ -145,7 +146,7 @@
 
   {{> "systems/persona/parts/card-events-section.hbs" item=item SOCIAL_DATA=SOCIAL_DATA}}
 
-  {{#if (isGM)}}
+  {{#if (and (isGM) item.system.opportunity)}}
   <div>
 	  <label> Opoortunity (Deprecated)</label>
 	  <textarea name="system.opportunity">

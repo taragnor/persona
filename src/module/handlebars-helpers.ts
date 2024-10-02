@@ -1,3 +1,4 @@
+import { Consequence } from "../config/consequence-types.js";
 import { ConditionalEffect } from "./datamodel/power-dm.js";
 import { ConditionalEffectManager } from "./conditional-effect-manager.js";
 import { PersonaEffectContainerBaseSheet } from "./item/sheets/effect-container.js";
@@ -298,6 +299,15 @@ export class PersonaHandleBarsHelpers {
 			return new Handlebars.SafeString(ConditionalEffectManager.printEffects(effects)
 				.map( x=> `<div class="printed-effect"> ${x} </div>`)
 				.join("")
+			);
+		},
+
+		"printConditionals": function (cond: Precondition[]) {
+			return new Handlebars.SafeString(ConditionalEffectManager.printConditions(cond));
+		},
+		"printConsequences": function (cons: Consequence[]) {
+			return new Handlebars.SafeString(
+				ConditionalEffectManager.printConsequences(cons)
 			);
 		},
 

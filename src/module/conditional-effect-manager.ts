@@ -236,11 +236,11 @@ export class ConditionalEffectManager {
 	}
 	static printConditions(cond: Precondition[]) : string {
 		return this.getConditionals(cond, null, null)
-			.map( x=> this.#printConditional(x))
+			.map( x=> this.printConditional(x))
 			.join (", ");
 	}
 
-	static #printConditional(cond: Precondition) : string {
+	static printConditional(cond: Precondition) : string {
 		switch (cond.type) {
 			case "boolean":
 				return this.#printBooleanCond(cond);
@@ -383,7 +383,12 @@ export class ConditionalEffectManager {
 			case "talent-level":
 				return `Talent Level ${endString(cond.num)}`;
 			case "social-link-level":
-				return `SL ${endString(cond.num)}`;
+				const socialTarget  = PersonaDB.allActors()
+					.find( x=> x.id == cond.socialLinkIdOrTarot)
+					?? PersonaDB.socialLinks()
+					.find(x=> x.tarot?.name  == cond.socialLinkIdOrTarot);
+				const name = socialTarget ? socialTarget.displayedName : "Unknown";
+				return `${name} SL ${endString(cond.num)}`;
 			case "student-skill":
 				const skill = this.translate(cond.studentSkill!, STUDENT_SKILLS);
 				return `${skill} ${endString(cond.num)}`;

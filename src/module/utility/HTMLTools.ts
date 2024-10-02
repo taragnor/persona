@@ -205,6 +205,7 @@ export class HTMLTools {
 			}
 		}
 	}
+
 } // end of class
 
 // Jquery Addons
