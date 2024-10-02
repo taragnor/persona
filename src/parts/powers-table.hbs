@@ -34,12 +34,14 @@
 					</a>
 			</div>
 			<div class="power-operations">
+				{{#if (eq ../actor.system.type "pc")}}
 				<a class="sort-up">
 					<i class="fa-solid fa-sort-up"></i>
 				</a>
 				<a class="sort-down">
 					<i class="fa-solid fa-sort-down"></i>
 				</a>
+				{{/if}}
 
 				{{#if (eq ../actor.system.type "shadow")}}
 				<a class="recost-power">
