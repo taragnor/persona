@@ -109,6 +109,11 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		) as PersonaActor[];
 	}
 
+	getPower(id: string) : Power | undefined {
+		return this.getItemById(id) as Power | undefined;
+
+	}
+
 }
 
 export const PersonaDB = new PersonaDatabase();

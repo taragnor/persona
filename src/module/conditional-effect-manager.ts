@@ -1,3 +1,9 @@
+import { STATUS_EFFECT_DURATIONS } from "../config/status-effects.js";
+import { MODIFIER_VARIABLES } from "../config/effect-types.js";
+import { MODIFIERS_TABLE } from "../config/item-modifiers.js";
+import { Consequence } from "../config/consequence-types.js";
+import { RESIST_STRENGTHS } from "../config/damage-types.js";
+import { STUDENT_SKILLS } from "../config/student-skills.js";
 import { SLOTTYPES } from "../config/slot-types.js";
 import { CREATURE_TYPE } from "../config/shadow-types.js";
 import { SHADOW_ROLE } from "../config/shadow-types.js";
@@ -10,7 +16,6 @@ import { DAMAGETYPES } from "../config/damage-types.js";
 import { POWER_TAGS } from "../config/power-tags.js";
 import { BOOLEAN_COMPARISON_TARGET } from "../config/precondition-types.js";
 import { CONDITION_TARGETS } from "../config/precondition-types.js";
-import { NUMERIC_COMPARISON_TARGET } from "../config/precondition-types.js";
 import { TRIGGERS } from "../config/triggers.js";
 import { MultiCheck } from "../config/precondition-types.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../config/status-effects.js";
@@ -221,11 +226,382 @@ export class ConditionalEffectManager {
 		return data as any;
 	}
 
+	static printConditions(cond: Precondition[]) : string {
+		return cond.map( x=> this.#printConditional(x))
+			.join (", ");
+	}
+
+	static #printConditional(cond: Precondition) : string {
+		switch (cond.type) {
+			case "boolean":
+				return this.#printBooleanCond(cond);
+			case "numeric":
+				return this.#printNumericCond(cond);
+			case "always":
+				return "always";
+			case "miss-all-targets":
+				return "Miss All Targets"
+			case "save-versus":
+				const saveType = this.translate(cond.status!, STATUS_EFFECT_TRANSLATION_TABLE);
+				return `on save versus ${saveType}`;
+			case "on-trigger":
+				const trig = this.translate(cond.trigger!, TRIGGERS);
+				return `trigger: ${trig}`
+			default:
+				cond satisfies never;
+				PersonaError.softFail(`Unknown type ${(cond as any)?.type}`);
+				return "ERROR";
+		}
+
+	}
+
+	static translate<const T extends string>(items: MultiCheck<T> | T, translationTable?: Record<string, string>) : string {
+		if (typeof items == "string")  {
+			return translationTable ? translationTable[items] : items;
+		}
+		return Object.entries(items)
+			.flatMap( ([k,v]) => v ? [k] : [])
+			.map( x=> translationTable ? translationTable[x] : x)
+			.join(", ");
+	}
+
+	static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
+		const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, CONDITION_TARGETS) : "";
+		const target2 = ("conditionTarget2" in cond) ? this.translate(cond.conditionTarget2, CONDITION_TARGETS): "" ;
+		const boolComparison = this.translate (cond.boolComparisonTarget, BOOLEAN_COMPARISON_TARGET);
+		const not =  !boolComparison  ? "not" : "";
+		switch (cond.boolComparisonTarget) {
+			case "engaged":
+				return `${target1} is ${not} engaged with anyone`
+			case "engaged-with":
+				return `${target1} is ${not} engaged with ${target2}`
+			case "metaverse-enhanced":
+				return `metaverse is ${not} enhanced`;
+			case "is-shadow":
+				return `${target1} is ${not} enemy type`;
+			case "is-pc":
+				return `${target1} is ${not} PC type`;
+			case "has-tag":
+				const powerTag = this.translate(cond.powerTag, POWER_TAGS);
+				return `used power ${not} has tag: ${powerTag}`;
+			case "in-combat":
+				return `is ${not} in combat`;
+			case "is-critical":
+				return `${not} critical hit/success`;
+			case "is-hit":
+				return `${not} a hit/success`;
+			case "is-dead":
+				return `${target1} is ${not} dead`;
+			case "target-owner-comparison":
+				return `${target1} is ${not} equal to ${target2}`;
+			case "damage-type-is":
+				const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
+				return `Power Damage Type is ${not} ${damageType}`;
+			case "power-type-is":
+				const powerType = this.translate(cond.powerType, POWERTYPES);
+				return `Power Type is ${not} ${powerType}`;
+			case "has-status":
+				const status = this.translate(cond.status, STATUS_EFFECT_TRANSLATION_TABLE);
+				return `${target1} ${not} has status: ${status}`;
+			case "struck-weakness":
+				return `attack ${not} targets a weakness`;
+			case "is-resistant-to": {
+				const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
+				return `${target1} is ${not} resistant to ${damageType}`;
+			}  case "is-same-arcana": 
+				return `${target1} is ${not} the same arcana as attacker`; 
+			case "flag-state":
+				return `${target1} flag ${cond.flagId} is ${not} true`;
+			case "is-consumable":
+				return `used power/item is ${not} a consumable item`;
+			case "power-target-type-is":
+				const targetType = this.translate(cond.powerTargetType, TARGETING);
+				return `used power targets type is ${not}: ${targetType}`; 
+			case "weather-is":
+				const weather = this.translate(cond.weatherComparison, WEATHER_TYPES);
+				return `weather is ${not}: ${weather}`;
+			case "weekday-is":
+				const weekday = this.translate(cond.days, DAYS);
+				return `weekday is ${not} : ${weekday}`;
+			case "social-target-is":
+				const link = cond.socialLinkIdOrTarot ? (game.actors.get(cond.socialLinkIdOrTarot) as PersonaActor)?.displayedName : "ERROR";
+				return `social Target is ${not} ${link}`;
+			case "shadow-role-is":
+				const shadowRole = this.translate(cond.shadowRole, SHADOW_ROLE);
+				return `${target1} role is is ${not} ${shadowRole}`;
+			case "is-distracted":
+				return `${target1} is ${not} distracted`;
+			case "active-scene-is":
+				return `Active Scene is ${not} ${cond.sceneId}`;
+			case "is-gm":
+				return `User is ${not} GM`;
+			case "has-item-in-inventory":
+				return `${target1} ${not} has ${cond.itemId} in Inventory`;
+			case "creature-type-is":
+				const creatureType = this.translate(cond.creatureType, CREATURE_TYPE);
+				return `${target1} is ${not} of creature type: ${creatureType}`;
+			case "power-slot-is":
+				const slot = this.translate(cond.slotType, SLOTTYPES);
+				return `Power is ${not} of slot type: ${slot}`;
+			case "relationship-type-is":
+				return `${target1} is of relationship Type ${cond.relationshipType}`;
+			default:
+				cond satisfies never
+				return "";
+		}
+	}
+
+	static  #printNumericCond(cond: Precondition & {type: "numeric"}) : string {
+		const endString = function(val?:number | string) {
+			switch (cond.comparator) {
+				case "odd":
+					return "is Odd";
+				case "even":
+					return "is Even";
+				default:
+					return `${cond.comparator} ${val}`;
+			}
+		};
+		switch (cond.comparisonTarget) {
+			case "natural-roll":
+				return `natural roll ${endString(cond.num)}`;
+			case "activation-roll":
+				return `activation Roll ${endString(cond.num)}`;
+			case "escalation":
+				return `Escalation Die ${endString(cond.num)}`;
+			case "total-roll":
+				return `Roll Total ${endString(cond.num)}`;
+			case "talent-level":
+				return `Talent Level ${endString(cond.num)}`;
+			case "social-link-level":
+				return `SL ${endString(cond.num)}`;
+			case "student-skill":
+				const skill = this.translate(cond.studentSkill!, STUDENT_SKILLS);
+				return `${skill} ${endString(cond.num)}`;
+			case "character-level":
+				return `Character Level ${endString(cond.num)}`;
+			case "has-resources":
+				return `Resources ${endString(cond.num)}`;
+			case "resistance-level":
+				const resist = this.translate(cond.resistLevel, RESIST_STRENGTHS);
+				const damage = this.translate(cond.element, DAMAGETYPES);
+				return `${damage} resistance ${endString(resist)}`;
+			case "health-percentage":
+				return `Health Percentage ${endString(cond.num)}`;
+			case "clock-comparison":
+				return `Clock ${cond.clockId} ${endString(cond.num)}`;
+			default:
+				cond satisfies never;
+				return "UNKNOWN CONDITION"
+		}
+	}
+
+	static printConsequence (cons: Consequence) : string {
+		switch (cons.type) {
+			case "none":
+				return "";
+			case "absorb":
+				return "Absorb";
+			case "modifier-new":
+				const modifiers = this.translate(cons.modifiedFields, MODIFIERS_TABLE);
+				let amt: string;
+				switch (cons.modifierType) {
+
+					case "constant":
+						amt = String(cons.amount);
+						break;
+					case"system-variable":
+						amt = cons.makeNegative? "-" : "" + this.translate(cons.varName, MODIFIER_VARIABLES);
+						break;
+					default:
+						cons satisfies never;
+						amt = "error";
+				}
+				return `${modifiers}: ${amt}`;
+			case "damage-new":
+				return this.printDamageConsequence(cons);
+			case "addStatus": {
+				const status = this.translate(cons.statusName!, STATUS_EFFECT_TRANSLATION_TABLE);
+				const duration = this.translate(cons.statusDuration!, STATUS_EFFECT_DURATIONS);
+				return `Add Status ${status} (${duration})`;
+			} case "removeStatus": {
+				const status = this.translate(cons.statusName!, STATUS_EFFECT_TRANSLATION_TABLE);
+				return `Remove Status ${status}`;
+			} case "escalationManipulation":
+				return `Modify Escalation Die ${cons.amount}`;
+			case "extraAttack":
+				return `extra attack`;
+			case "expend-slot":
+				return `expend Slot`;
+			case "half-hp-cost":
+				return `halve hp costs`;
+			case "revive":
+				return `heal percentage of health ${cons.amount}`;
+			case "extraTurn":
+				return `Take an extra turn`;
+			case "expend-item":
+				return `expend item`;
+			case "add-power-to-list":
+				return `Add power to list ${cons.id}`
+			case "other-effect":
+				return this.#printOtherEffect(cons);
+			case "set-flag":
+				return `${cons.flagState ? "set" : "clear"} Flag ${cons.flagId}`;
+			case "inspiration-cost":
+				return `Inpsiration Cost : ${cons.amount}`;
+			case "display-msg":
+				return `Display Msg: ${cons.msg?.trim()}`;
+			case "scan":
+				return `Scan Target Level ${cons.amount}`;
+			case "social-card-action":
+				return this.#printSocialCardAction(cons);
+			case "alter-energy":
+				return `Energy ${cons.amount}`;
+			case "dungeon-action":
+				return this.#printDungeonAction(cons);
+			case "raise-resistance": {
+				const resistType =this.translate(cons.resistType, DAMAGETYPES);
+				const resistLevel = this.translate(cons.resistanceLevel, RESIST_STRENGTHS);;
+				return `Raise ${resistType} Resistance ${resistLevel}` ; }
+			case "lower-resistance" : {
+				const resistType =this.translate(cons.resistType, DAMAGETYPES);
+				const resistLevel = this.translate(cons.resistanceLevel!, RESIST_STRENGTHS);;
+				return `Lower ${resistType} Resistance ${resistLevel}` ;
+			} case "use-power":
+				const power = PersonaDB.getPower(cons.powerId);
+				return `Use Power ${power?.name}`;
+			case "alter-mp":
+				return this.#printMPAlter(cons);
+			case "save-slot":
+				return "";
+			case "recover-slot":
+				return "";
+			case "modifier": {
+				const modified = this.translate(cons.modifiedField!, MODIFIERS_TABLE);
+				return `${modified} ${cons.amount}`;
+			} case "add-escalation": {
+				const modified = this.translate(cons.modifiedField!, MODIFIERS_TABLE);
+				return `add escalation to ${modified}`;
+			}
+			case "dmg-low":
+				return "Low Damage";
+			case "dmg-high":
+				return "High Damage"
+			case "dmg-allout-low":
+			case "dmg-allout-high":
+				return "";
+			case "dmg-mult":
+				return `damage multiplier: ${cons.amount}`;
+			case "hp-loss":
+				return `HP loss: ${cons.amount}`;
+			default:
+				cons satisfies never;
+				return "ERROR";
+		}
+
+	}
+
+	static #printOtherEffect(cons: Consequence & {type:"other-effect"}) : string {
+		switch (cons.otherEffect) {
+			case "search-twice":
+				return "search Twice";
+			case "ignore-surprise":
+				return "Ignore Surprise";
+			default:
+				cons.otherEffect satisfies never;
+				return "ERROR";
+		}
+	}
+
+	static #printSocialCardAction(cons: Consequence & {type:"social-card-action"}) : string {
+		const signedAmount = this.signedAmount(cons.amount);
+		switch (cons.cardAction) {
+			case "stop-execution":
+				return `stop card execution`;
+			case "exec-event":
+				return `Execute Event Chain ${cons.eventLabel}`;
+			case "inc-events":
+				return `Remaining events ${signedAmount}`
+			case "gain-money":
+				return `Resources ${signedAmount}`;
+			case "modify-progress-tokens":
+				return `Progress Tokens ${signedAmount}`;
+			case "alter-student-skill":
+				const skill = this.translate(cons.studentSkill!, STUDENT_SKILLS);
+				return `${skill} ${signedAmount}`;
+			default:
+				cons.cardAction satisfies never;
+				return "ERROR";
+		}
+	}
+
+	static #printDungeonAction(cons: Consequence & {type :"dungeon-action"}) : string {
+		const signedAmount = this.signedAmount(cons.amount);
+		switch (cons.dungeonAction) {
+			case "roll-tension-pool":
+				return "Roll Tension pool";
+			case "modify-tension-pool":
+				return "Modify Tension Pool";
+			case "modify-clock":
+				const clock = cons.clockId;
+				return `${clock} ticks ${signedAmount}`;
+			case "close-all-doors":
+				return `Close All Doors`;
+			default:
+				cons satisfies never;
+				return "ERROR";
+		}
+	}
+
+	static #printMPAlter(cons: Consequence & {type: "alter-mp"}): string {
+		const signedAmount = this.signedAmount(cons.amount);
+		switch (cons.subtype) {
+			case "direct":
+				return `MP ${signedAmount}`;
+			case "cost-reduction":
+				return `MP Cost * ${cons.amount}`;
+			case "percent-of-total":
+				return `MP Cost ${signedAmount} % of total`;
+			default:
+				cons.subtype satisfies never;
+				return "ERROR";
+		}
+	}
+
+	static signedAmount(amt?: number): string {
+		if (!amt) return "";
+		return amt! > 0 ?`+${amt}` : `${amt}`
+	}
+
+
+	static printDamageConsequence(cons: Consequence & {type: "damage-new"}) : string {
+		const damageType = "damageType" in cons ? this.translate(cons.damageSubtype, DAMAGETYPES): "";
+		switch (cons.damageSubtype) {
+			case "constant":
+				return `${cons.amount} ${damageType} damage`;
+			case "high":
+				return `High Damage`;
+			case "low":
+				return `Low Damage`;
+			case "allout-high":
+				return `AoA high`;
+			case "allout-low":
+				return `AoA Low`;
+			case "multiplier":
+				return `Damage Multiplier ${cons.amount}`;
+			case "percentage":
+				return `${cons.amount}% of target HP`;
+			default:
+				cons satisfies never;
+				return "ERROR";
+		}
+	}
+
 }
 
 export class EMAccessor<T> {
-		private _path : string;
-		private _owner: FoundryDocument<any>;
+	private _path : string;
+	private _owner: FoundryDocument<any>;
 	_master: EMAccessor<any> | null;
 
 	constructor(owner: FoundryDocument<any>, writePath: string, master: EMAccessor<any> | null = null) {
@@ -237,14 +613,14 @@ export class EMAccessor<T> {
 		this._master = master;
 	}
 
-		static create<const O extends FoundryDocument<any>, const P extends string, T extends NoArray<GetProperty<O, P>>> ( owner: O, path: P, master?: EMAccessor<any>): EMAccessor<T> {
-			return new EMAccessor(owner, path, master) as unknown as EMAccessor<T>;
+	static create<const O extends FoundryDocument<any>, const P extends string, T extends NoArray<GetProperty<O, P>>> ( owner: O, path: P, master?: EMAccessor<any>): EMAccessor<T> {
+		return new EMAccessor(owner, path, master) as unknown as EMAccessor<T>;
 
-		}
-		get data(): T extends Record<number, any> ? T[number][] : never {
-			const data = foundry.utils.getProperty(this._owner, this._path) as T;
-			return ConditionalEffectManager.getVariableEffects(data as any);
-		}
+	}
+	get data(): T extends Record<number, any> ? T[number][] : never {
+		const data = foundry.utils.getProperty(this._owner, this._path) as T;
+		return ConditionalEffectManager.getVariableEffects(data as any);
+	}
 
 	async update(newData: DeepNoArray<T>) {
 		if (!this._master) {
@@ -302,8 +678,8 @@ export class EMAccessor<T> {
 	consequences(this: EMAccessor<DeepNoArray<ConditionalEffect[]>>, effectIndex: number) : EMAccessor<DeepNoArray<ConditionalEffect["consequences"]>> {
 		const x = this.data[effectIndex];
 		if (x && x.conditions) {
-		const newPath = `${this._path}.${effectIndex}.consequences`;
-		return new EMAccessor(this._owner, newPath, this);
+			const newPath = `${this._path}.${effectIndex}.consequences`;
+			return new EMAccessor(this._owner, newPath, this);
 		} else {
 			return this as any;
 		}
@@ -388,133 +764,6 @@ export class EMAccessor<T> {
 			}
 		}
 		return false;
-	}
-
-	static printConditional(cond: Precondition) : string {
-		switch (cond.type) {
-			case "boolean":
-				return printBooleanCond(cond);
-			case "numeric":
-				return printNumericCond(cond);
-			case "always":
-				return "always";
-			case "miss-all-targets":
-				return "Miss All Targets"
-			case "save-versus":
-				const saveType = this.translate(cond.status!, STATUS_EFFECT_TRANSLATION_TABLE);
-				return `on save versus ${saveType}`;
-			case "on-trigger":
-				const trig = this.translate(cond.trigger!, TRIGGERS);
-				return `trigger: ${trig}`
-			default:
-				cond satisfies never;
-				PersonaError.softFail(`Unknown type ${(cond as any)?.type}`);
-		}
-
-	}
-
-	static translate<const T extends string>(items: MultiCheck<T> | T, translationTable?: Record<string, string>) : string {
-		if (typeof items == "string")  {
-			return translationTable ? translationTable[items] : items;
-		}
-		return Object.entries(items)
-			.flatMap( ([k,v]) => v ? [k] : [])
-			.map( x=> translationTable ? translationTable[x] : x)
-			.join(", ");
-	}
-
-	static printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
-		const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, CONDITION_TARGETS) : "";
-		const target2 = ("conditionTarget2" in cond) ? this.translate(cond.conditionTarget2, CONDITION_TARGETS): "" ;
-		const boolComparison = this.translate (cond.boolComparisonTarget, BOOLEAN_COMPARISON_TARGET);
-		const not =  !boolComparison  ? "not" : "";
-		switch (cond.boolComparisonTarget) {
-			case "engaged":
-				return `${target1} is ${not} engaged with anyone`
-			case "engaged-with":
-				return `${target1} is ${not} engaged with ${target2}`
-			case "metaverse-enhanced":
-				return `metaverse is ${not} enhanced`;
-			case "is-shadow":
-				return `${target1} is ${not} enemy type`;
-			case "is-pc":
-				return `${target1} is ${not} PC type`;
-			case "has-tag":
-				const powerTag = this.translate(cond.powerTag, POWER_TAGS);
-				return `used power ${not} has tag: ${powerTag}`;
-			case "in-combat":
-				return `is ${not} in combat`;
-			case "is-critical":
-				return `${not} critical hit/success`;
-			case "is-hit":
-				return `${not} a hit/success`;
-			case "is-dead":
-				return `${target1} is ${not} dead`;
-			case "target-owner-comparison";
-				return `${target1} is ${not} equal to ${target2}`;
-			case "damage-type-is":
-				const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
-				return `Power Damage Type is ${not} ${damageType}`;
-			case "power-type-is":
-				const powerType = this.translate(cond.powerType, POWERTYPES);
-				return `Power Type is ${not} ${powerType}`;
-			case "has-status":
-				const status = this.translate(cond.status, STATUS_EFFECT_TRANSLATION_TABLE);
-				return `${target1} ${not} has status: ${status}`;
-			case "struck-weakness":
-				return `attack ${not} targets a weakness`;
-			case "is-resistant-to": {
-				const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
-				return `${target1} is ${not} resistant to ${damageType}`;
-			}  case "is-same-arcana": 
-				return `${target1} is ${not} the same arcana as attacker`; 
-			case "flag-state":
-				return `${target1} flag ${cond.flagId} is ${not} true`;
-			case "is-consumable":
-				return `used power/item is ${not} a consumable item`;
-			case "power-target-type-is":
-				const targetType = this.translate(cond.powerTargetType, TARGETING);
-				return `used power targets type is ${not}: ${targetType}`; 
-			case "weather-is":
-				const weather = this.translate(cond.weatherComparison, WEATHER_TYPES);
-				return `weather is ${not}: ${weather}`;
-			case "weekday-is":
-				const weekday = this.translate(cond.days, DAYS);
-				return `weekday is ${not} : ${weekday}`;
-			case "social-target-is":
-				const link = cond.socialLinkIdOrTarot ? (game.actors.get(cond.socialLinkIdOrTarot) as PersonaActor)?.displayedName : "ERROR";
-				return `social Target is ${not} ${link}`;
-			case "shadow-role-is":
-				const shadowRole = this.translate(cond.shadowRole, SHADOW_ROLE);
-				return `${target1} role is is ${not} ${shadowRole}`;
-			case "is-distracted":
-				return `${target1} is ${not} distracted`;
-			case "active-scene-is":
-				return `Active Scene is ${not} ${cond.sceneId}`;
-			case "is-gm":
-				return `User is ${not} GM`;
-			case "has-item-in-inventory":
-				return `${target1} ${not} has ${cond.itemId} in Inventory`;
-			case "creature-type-is":
-				const creatureType = this.translate(cond.creatureType, CREATURE_TYPE);
-				return `${target1} is ${not} of creature type: ${creatureType}`;
-			case "power-slot-is":
-				const slot = this.translate(cond.slotType, SLOTTYPES);
-				return `Power is ${not} of slot type: ${slot}`;
-			case "relationship-type-is":
-				return `${target1} is of relationship Type ${cond.relationshipType}`;
-			default:
-				cond satisfies never
-				return "";
-		}
-	}
-
-	static  printNumericCond(cond: Precondition & {type: "numeric"}) : string {
-		switch (cond.comparisonTarget) {
-			case "natural-roll":
-
-		}
-
 	}
 
 

@@ -114,12 +114,13 @@ type ResistanceComparison = NumericComparisonBase & {
 type TargettedNumericComparison = NumericComparisonBase & {
 	comparisonTarget: "health-percentage",
 	conditionTarget: ConditionTarget,
-	num : number
+	num : number,
 }
 
 type ClockNumericComparison = NumericComparisonBase & {
 	comparisonTarget:"clock-comparison",
 	clockId: string,
+	num: number,
 }
 
 export type BooleanComparisonPC = {

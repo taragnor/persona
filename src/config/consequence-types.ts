@@ -158,7 +158,19 @@ type NonGenericConsequences = UsePowerConsequence
 	| DisplayMessageConsequence
 	| ExpendItemConsequence
 	| AlterMPConsequence
+	| ResistanceAlterConsequence
+| OtherEffectConsequence
 ;
+type OtherEffectConsequence = {
+	type: "other-effect",
+	otherEffect : OtherConsequence,
+}
+
+type ResistanceAlterConsequence = {
+	type: "raise-resistance" | "lower-resistance";
+	resistType : ResistType,
+	resistanceLevel : ResistStrength,
+}
 
 type AlterMPConsequence = {
 	type: "alter-mp",
