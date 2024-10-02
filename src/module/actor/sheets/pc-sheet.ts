@@ -368,9 +368,6 @@ export class PCSheet extends CombatantSheetBase {
 		powers[index] = powers[index-1];
 		powers[index-1] = powerId;
 		await this.actor.update({"system.combat.powers": powers});
-
-
-
 	}
 
 	async reorderPowerDown (event: JQuery.ClickEvent) {
@@ -384,6 +381,5 @@ export class PCSheet extends CombatantSheetBase {
 		powers[index+1] = powerId;
 		await this.actor.update({"system.combat.powers": powers});
 	}
-
 
 }

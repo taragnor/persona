@@ -611,3 +611,12 @@ form h5 {
 	margin-top: 0px;
 }
 
+.social-card-event .missing-conditions {
+	color: red;
+}
+
+.social-card-event button:disabled{
+	cursor: not-allowed !important;
+	opacity: 75%;
+}
+

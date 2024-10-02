@@ -12,19 +12,19 @@
 		</h4>
 	</div>
 	<div class="event-text">
-		{{event.text}}
+		{{choice.name}}: {{event.text}}
 	</div>
 	{{#each event.choices as |choice i|}}
-	{{#if (meetsConditions ../cardData choice.conditions)}}
 	<div class="event-choice" data-choice-index="{{i}}">
-		<h3>
-			Choice : {{choice.name}}
-		</h3>
+		{{> "systems/persona/parts/social-card-roll.hbs" roll=choice.roll cardData=cardData situation=situation enabled=(meetsConditions ../cardData choice.conditions) label=choice.name }}
+		{{#if (not (meetsConditions ../cardData choice.conditions))}}
+		<div class="missing-conditions">
+		Requires: {{printConditionals choice.conditions}}
+		</div>
+		{{/if}}
 		<div class="choice-text">
 			{{newlineConversion choice.text}}
 		</div>
-		{{> "systems/persona/parts/social-card-roll.hbs" roll=choice.roll cardData=cardData situation=situation }}
 	</div>
-	{{/if}}
 	{{/each}}
 </div>
