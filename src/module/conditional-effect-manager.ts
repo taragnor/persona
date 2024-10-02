@@ -226,6 +226,10 @@ export class ConditionalEffectManager {
 		return data as any;
 	}
 
+	static printEffects(effects: ConditionalEffect[]) : string[] {
+		return effects.map( x=> this.printEffect(x));
+	}
+
 	static printEffect(effect: ConditionalEffect): string {
 		return `${this.printConditions(effect.conditions)} : ${this.printConsequences(effect.consequences)}`;
 

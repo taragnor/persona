@@ -1,3 +1,5 @@
+import { ConditionalEffect } from "./datamodel/power-dm.js";
+import { ConditionalEffectManager } from "./conditional-effect-manager.js";
 import { PersonaEffectContainerBaseSheet } from "./item/sheets/effect-container.js";
 import { DamageType } from "../config/damage-types.js";
 import { DAMAGETYPES } from "../config/damage-types.js";
@@ -188,9 +190,9 @@ export class PersonaHandleBarsHelpers {
 			const situation : Situation=  {
 				user: pc.accessor,
 				attacker: pc.accessor,
-		};
+			};
 			return testPreconditions(activity.system.conditions, situation, null);
-	},
+		},
 		"getActivityProgress": function( actor: PersonaActor, activity: Activity): number {
 			if (actor.system.type == "pc") {
 				const act = actor.system.activities.find(act=> act.linkId  == activity.id);
@@ -279,7 +281,7 @@ export class PersonaHandleBarsHelpers {
 				path = path.slice(0, -1);
 			}
 			try {
-			return foundry.utils.getProperty(object, path);
+				return foundry.utils.getProperty(object, path);
 			}
 			catch (e) {
 				console.trace()
@@ -290,9 +292,14 @@ export class PersonaHandleBarsHelpers {
 		},
 		"powerStuff" : function () : Object {
 			return PersonaEffectContainerBaseSheet.powerStuff;
-		}
+		},
+
+		"printEffects": function(effects: ConditionalEffect[]) : SafeString {
+			return new Handlebars.SafeString(ConditionalEffectManager.printEffects(effects)
+				.map( x=> `<div class="printed-effect"> ${x} </div>`)
+				.join("")
+			);
+		},
 
 	}
-
 } //end of class
-
