@@ -226,8 +226,13 @@ export class ConditionalEffectManager {
 		return data as any;
 	}
 
+	static printEffect(effect: ConditionalEffect): string {
+		return `${this.printConditions(effect.conditions)} : ${this.printConsequences(effect.consequences)}`;
+
+	}
 	static printConditions(cond: Precondition[]) : string {
-		return cond.map( x=> this.#printConditional(x))
+		return this.getConditionals(cond, null, null)
+			.map( x=> this.#printConditional(x))
 			.join (", ");
 	}
 
@@ -289,7 +294,7 @@ export class ConditionalEffectManager {
 			case "is-critical":
 				return `${not} critical hit/success`;
 			case "is-hit":
-				return `${not} a hit/success`;
+				return `${not} hit/success`;
 			case "is-dead":
 				return `${target1} is ${not} dead`;
 			case "target-owner-comparison":
@@ -394,6 +399,15 @@ export class ConditionalEffectManager {
 				cond satisfies never;
 				return "UNKNOWN CONDITION"
 		}
+	}
+
+	static printConsequences(cons: Consequence[]) : string {
+		return this.getConsequences(cons, null , null)
+			.map(x=> this.printConsequence(x))
+			.filter(x => x)
+			.join (", ");
+		;
+
 	}
 
 	static printConsequence (cons: Consequence) : string {
@@ -572,7 +586,6 @@ export class ConditionalEffectManager {
 		if (!amt) return "";
 		return amt! > 0 ?`+${amt}` : `${amt}`
 	}
-
 
 	static printDamageConsequence(cons: Consequence & {type: "damage-new"}) : string {
 		const damageType = "damageType" in cons ? this.translate(cons.damageSubtype, DAMAGETYPES): "";
@@ -802,3 +815,6 @@ export type CEAction = {
 	consIndex: number
 };
 
+
+//@ts-ignore
+window.CEManager  =ConditionalEffectManager;
