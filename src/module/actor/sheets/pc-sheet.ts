@@ -81,6 +81,7 @@ export class PCSheet extends CombatantSheetBase {
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {
+		super.activateListeners(html);
 		html.find(".delItem").on("click", this.delItem.bind(this));
 		html.find(".refreshLink").on("click", this.refreshLink.bind(this));
 		html.find(".useInspiration").on("click", this.useInspiration.bind(this));
@@ -107,7 +108,8 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".rem-strike").on("click", this.removeStrike.bind(this));
 		html.find(".equips select").on("change", this.equipmentChange.bind(this));
 		html.find(".init-social-link").on("click", this.startSocialLink.bind(this));
-		super.activateListeners(html);
+		html.find(".sort-up").on("click", this.reorderPowerUp.bind(this));
+		html.find(".sort-down").on("click", this.reorderPowerDown.bind(this));
 	}
 
 	async rollSocial (ev: JQuery.Event) {
@@ -355,6 +357,32 @@ export class PCSheet extends CombatantSheetBase {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
 		await PersonaSocial.startSocialLink(this.actor, linkId);
 
+	}
+
+	async reorderPowerUp (event: JQuery.ClickEvent) {
+		const powerId = HTMLTools.getClosestData(event, "powerId");
+		const powers = this.actor.system.combat.powers;
+		const index = powers.indexOf(powerId);
+		if (index == -1) return;
+		if (index == 0) return;
+		powers[index] = powers[index-1];
+		powers[index-1] = powerId;
+		await this.actor.update({"system.combat.powers": powers});
+
+
+
+	}
+
+	async reorderPowerDown (event: JQuery.ClickEvent) {
+		const powerId = HTMLTools.getClosestData(event, "powerId");
+		const powers = this.actor.system.combat.powers;
+		const index = powers.indexOf(powerId);
+		if (index == -1) return;
+		if (index >= powers.length-1)
+			return;
+		powers[index] = powers[index+1];
+		powers[index+1] = powerId;
+		await this.actor.update({"system.combat.powers": powers});
 	}
 
 

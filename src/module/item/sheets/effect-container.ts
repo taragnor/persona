@@ -20,7 +20,6 @@ import { SLOTTYPES } from "../../../config/slot-types.js";
 import { POWERTYPES } from "../../../config/effect-types.js";
 import { PRECONDITIONTYPES } from "../../../config/precondition-types.js";
 import { CONSQUENCETYPES } from "../../../config/effect-types.js";
-import { HTMLTools } from "../../utility/HTMLTools.js";
 import { DAMAGETYPES } from "../../../config/damage-types.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../../../config/status-effects.js";
 import { STATUS_EFFECT_DURATIONS } from "../../../config/status-effects.js";
