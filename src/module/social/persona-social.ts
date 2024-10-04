@@ -1019,10 +1019,12 @@ export class PersonaSocial {
 			user: initiator.accessor,
 			attacker: initiator.accessor,
 			isSocial: true,
+			target: target.accessor,
 			socialTarget: target.accessor,
 		};
 		if (!testPreconditions(target.system.type == "npc" ? target.system.conditions : [], situation, null)) {
-			ui.notifications.warn("You don't meet the prerequisites to start a relationship with this Link");
+			const requirements = ConditionalEffectManager.printConditions((target as NPC).system?.conditions ?? []);
+			ui.notifications.warn(`You don't meet the prerequisites to start a relationship with this Link: ${requirements}`);
 			return;
 		}
 		if (!(await HTMLTools.confirmBox("Start new Link", `Start a new Link with ${target.displayedName}`))) {
