@@ -101,6 +101,9 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			const user = PersonaDB.findActor(situation.user);
 
 			const id = source ? source.id! : "";
+			if (!id) {
+				return false;
+			}
 			const talent = user.system.talents.find( x=> x.talentId == id);
 			if (!talent) {
 				console.log(`COuldn't find Talent ${id}`);

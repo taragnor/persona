@@ -1789,13 +1789,15 @@ Hooks.on("combatStart", async (combat: PersonaCombat) => {
 			.emptyCheck()
 			?.toMessage("Triggered Effect", token.actor);
 	}
-	const x =combat.turns[0];
+	const x = combat.turns[0];
 	if (x.actor) {
 		await combat.startCombatantTurn(x as Combatant<ValidAttackers>);
 	}
 });
 
 Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
+	if (!game.user.isGM)
+		return;
 	for (const combatant of combat.combatants) {
 		const actor = combatant.actor as ValidAttackers  | undefined;
 		if (!actor) continue;
@@ -1804,7 +1806,6 @@ Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
 			.onTrigger("on-combat-end", token.actor)
 			.emptyCheck()
 			?.toMessage("Triggered Effect", token.actor );
-
 		for (const effect of actor.effects) {
 			if (effect.durationLessThanOrEqualTo("combat")) {
 				await effect.delete();

@@ -1656,12 +1656,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async gainMoney(this: PC, amt: number, log :boolean) {
+		if (amt < 0) {
+			return this.spendMoney(amt);
+		}
 		if (amt > 200) {
 			throw new PersonaError("Can't get this much money at once!");
 		}
 		const resources = this.system.money + amt;
 		await this.update({ "system.money": resources});
-		if (log) {
+		if (log && amt >= 0) {
 			await Logger.sendToChat(`${this.name} Gained ${amt} resource points`);
 			await PersonaSounds.ching();
 		}
