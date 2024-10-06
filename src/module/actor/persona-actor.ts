@@ -1,3 +1,4 @@
+import { TAROT_DECK } from "../../config/tarot.js";
 import { localize } from "../persona.js";
 import { STATUS_EFFECT_LIST } from "../../config/status-effects.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../../config/status-effects.js";
@@ -125,7 +126,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get displayedName() : string {
-		return this.name;
+		switch (this.system.type) {
+			case "tarot":
+				return game.i18n.localize(TAROT_DECK[this.name as keyof typeof TAROT_DECK] ?? "-");
+			default:
+					return this.name;
+		}
 	}
 
 	get init() : number {
