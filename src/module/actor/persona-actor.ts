@@ -1,3 +1,4 @@
+import { PersonaSocial } from "../social/persona-social.js";
 import { TAROT_DECK } from "../../config/tarot.js";
 import { localize } from "../persona.js";
 import { STATUS_EFFECT_LIST } from "../../config/status-effects.js";
@@ -1684,7 +1685,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async setAvailability(this: SocialLink, bool: boolean) {
+		if (this.isOwner) {
 		await	this.update( {"system.weeklyAvailability.available": bool});
+		} else {
+			PersonaSocial.requestAvailabilitySet(this.id, bool);
+
+		}
 	}
 
 	get tarot() : Tarot | undefined {

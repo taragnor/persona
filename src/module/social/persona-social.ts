@@ -1011,6 +1011,10 @@ export class PersonaSocial {
 			ui.notifications.warn("Not in Downtime");
 			return;
 		}
+		if (!target.isAvailable()) {
+			ui.notifications.warn("Target isn't available today!");
+			return;
+		}
 		if (combat.combatant?.actor != initiator) {
 			ui.notifications.warn("Can only do this on your turn.");
 			return;
@@ -1030,7 +1034,19 @@ export class PersonaSocial {
 		if (!(await HTMLTools.confirmBox("Start new Link", `Start a new Link with ${target.displayedName}`))) {
 			return;
 		}
+		await target.setAvailability(false);
 		await initiator.createSocialLink(target);
+	}
+
+	static async requestAvailabilitySet(targetId: string, newValue: boolean) {
+		if (newValue == true) {
+			throw new PersonaError("Doesn't support positive setting");
+		}
+		const gmId = game.users.find(x=>x.isGM && x.active)?.id;
+		if (!gmId) {
+			throw new PersonaError("No GM logged in!");
+		}
+		PersonaSockets.simpleSend("DEC_AVAILABILITY", targetId,[ gmId ]);
 	}
 
 } //end of class
