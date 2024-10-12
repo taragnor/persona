@@ -12,6 +12,8 @@ class Combatant<T extends Actor<any, any> = Actor<any,any>> extends FoundryDocum
 	get isEmbedded(): boolean;
 	get isNPC(): boolean;
 	get token(): TokenDocument<T>;
+	getInitiativeRoll(formula: string | null): Roll;
+	get initiative(): number | undefined | null;
 
 
 }

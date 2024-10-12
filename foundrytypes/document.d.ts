@@ -4,9 +4,10 @@
 	async update<T extends updateObj> (updateData: AllowedUpdateKeys<T>): Promise<this>;
 	 // async update(updateData: RecursivePartial< typeof this>): Promise<this>
 
-	name: string;
-	id: string;
-	async createEmbeddedDocuments(type: string, objData: Record<string, any>[], context?: unknown): Promise<Embedded[]>;
+	 name: string;
+	 id: string;
+	 async updateEmbeddedDocuments(type: string, updates: unknown): Promise<unknown>;
+	 async createEmbeddedDocuments(type: string, objData: Record<string, any>[], context?: unknown): Promise<Embedded[]>;
 	 sheet: Sheet<this>
 
 	 async delete(): Promise<void>;

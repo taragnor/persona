@@ -20,6 +20,8 @@ declare class Combat<T extends Actor<any, any> = Actor<any, any>> extends Foundr
 	nextTurn(): Promise<this>;
 	previousTurn(): Promise<this>;
 	setInitiative(combatantId: string, number: number): Promise<void>;
+	async rollInitiative(ids: string[], options: Partial<CombatOptions> ={}): Promise<this>;
+	async rollAll(options?: CombatOptions): Promise<Combat>;
 	/** call dialog to end combat */
 	async endCombat(): Promise<boolean>;
   /**
@@ -40,4 +42,14 @@ type CombatUpdateData = {
 	round: number,
 	/** The new turn number*/
 	turn: number,
+}
+
+type CombatOptions = {
+	/** A non-default initiative formula to roll. Otherwise, the system default is used.*/
+	formula: null | string,
+	/**
+Update the Combat turn after adding new initiative scores to keep the turn on the same Combatant.
+	*/
+	updateTurn: boolean,
+	messageOptions: Partial<MessageOptions>,
 }

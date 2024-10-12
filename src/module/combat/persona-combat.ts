@@ -1,3 +1,4 @@
+import { CombatHooks } from "./combat-hooks.js";
 import { DamageConsequence } from "../../config/consequence-types.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { NonCombatTrigger } from "../../config/triggers.js";
@@ -8,7 +9,7 @@ import { PersonaCalendar } from "../social/persona-calendar.js";
 import { POWER_TAGS } from "../../config/power-tags.js";
 import { PowerTag } from "../../config/power-tags.js";
 import { ConditionTarget } from "../../config/precondition-types.js";
-	import { ConsTarget } from "../../config/consequence-types.js";
+import { ConsTarget } from "../../config/consequence-types.js";
 import { PersonaSocial } from "../social/persona-social.js"
 import { UniversalModifier } from "../item/persona-item.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
@@ -95,6 +96,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const starters = this.combatants.contents.map( comb => comb?.actor?.onCombatStart());
 		await Promise.all(starters);
 		this.refreshActorSheets();
+		const unrolledInit = this.combatants
+			.filter( x=>x.initiative == undefined)
+			.map( c=> c.id);
+		if (unrolledInit.length > 0) {
+			await this.rollInitiative(unrolledInit);
+		}
 		return await super.startCombat();
 	}
 
@@ -226,10 +233,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const triggeringActor = combatant?.token?.actor;
 
 		if (triggeringActor && triggeringActor.system.type == "shadow") {
-		const situation : Situation = {
-			user: triggeringCharacter!,
-			activeCombat: true,
-		}
+			const situation : Situation = {
+				user: triggeringCharacter!,
+				activeCombat: true,
+			}
 			const bonusEnergy = 1 + triggeringActor.getBonuses("energy-per-turn").total(situation);
 			await (triggeringActor as Shadow).alterEnergy(bonusEnergy);
 		}
@@ -863,8 +870,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return [{
 					applyTo,
 					cons: {type: "damage-new",
-					damageSubtype: "multiplier",
-					amount: cons.amount ?? 1,
+						damageSubtype: "multiplier",
+						amount: cons.amount ?? 1,
 					}
 				}];
 			case "dmg-high":
@@ -1730,6 +1737,78 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		element.find(".escalation-die").text(escalationDie);
 	}
 
+	override async rollInitiative(ids: string[], {formula=null, updateTurn=true, messageOptions={}}={}) {
+
+		// Structure input data
+		ids = typeof ids === "string" ? [ids] : ids;
+		const currentId = this.combatant?.id;
+		const chatRollMode = game.settings.get("core", "rollMode");
+
+		// Iterate over Combatants, performing an initiative roll for each
+		const updates = [];
+		const messages = [];
+		const rolls :{ combatant: Combatant, roll: Roll}[]= [];
+		for ( let [i, id] of ids.entries() ) {
+
+			// Get Combatant data (non-strictly)
+			const combatant = this.combatants.get(id);
+			if ( !combatant?.isOwner ) continue;
+
+			// Produce an initiative roll for the Combatant
+			const roll = combatant.getInitiativeRoll(formula);
+			await roll.evaluate();
+			rolls.push({combatant, roll});
+			updates.push({_id: id, initiative: roll.total});
+
+			// Construct chat message data
+			// let messageData = foundry.utils.mergeObject({
+			//   speaker: ChatMessage.getSpeaker({
+			//     actor: combatant.actor,
+			//     token: combatant.token,
+			//     alias: combatant.name
+			//   }),
+			//   flavor: game.i18n.format("COMBAT.RollsInitiative", {name: combatant.name}),
+			//   flags: {"core.initiativeRoll": true}
+			// }, messageOptions);
+			// const chatData = await roll.toMessage(messageData, {create: false});
+
+			// If the combatant is hidden, use a private roll unless an alternative rollMode was explicitly requested
+			// chatData.rollMode = "rollMode" in messageOptions ? messageOptions.rollMode
+			//   : (combatant.hidden ? CONST.DICE_ROLL_MODES.PRIVATE : chatRollMode );
+
+			// Play 1 sound for the whole rolled set
+			// if ( i > 0 ) chatData.sound = null;
+			// messages.push(chatData);
+		}
+		if ( !updates.length ) return this;
+
+		// Update multiple combatants
+		await this.updateEmbeddedDocuments("Combatant", updates);
+
+		// Ensure the turn order remains with the same combatant
+		if ( updateTurn && currentId ) {
+			await this.update({turn: this.turns.findIndex(t => t.id === currentId)});
+		}
+
+		await this.generateInitRollMessage(rolls, messageOptions);
+		// Create multiple chat messages
+		// await ChatMessage.implementation.create(messages);
+		return this;
+	}
+
+	async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll: R}[], messageOptions: MessageOptions = {}): Promise<ChatMessage<R>> {
+		const rolltxt = rolls
+		.map(({roll, combatant}) => `<div class="init-roll"> ${combatant.name}: ${roll.total} </div>`)
+		.join("");
+		const html = `<h3 class="init-rolls"> Initiative Rolls </h3> ${rolltxt}`;
+		const chatMessage: MessageData<R> = {
+			speaker: {},
+			content: html,
+			rolls: rolls.map(x=> x.roll),
+		}
+		return await ChatMessage.create(chatMessage, messageOptions)
+	}
+
 } // end of class
 
 
@@ -1738,128 +1817,16 @@ export type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor,
 export type PToken = TokenDocument<ValidAttackers> & {get actor(): ValidAttackers};
 
 CONFIG.Combat.initiative = {
-	formula : "1d6 + @parent.init",
+	formula : "1d10 + @parent.init",
 	decimals: 2
+};
+
+type DialogReturn = {
+	roomModifiers: UniversalModifier[],
+	isSocialScene: boolean,
+	advanceCalendar: boolean,
+	disallowMetaverse: boolean,
 }
-
-Hooks.on("preUpdateCombat" , async (combat: PersonaCombat, _changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
-	const prevActor = combat?.combatant?.actor
-	if (prevActor && diffObject.direction && diffObject.direction > 0) {
-		await combat.endCombatantTurn(combat.combatant)
-	}
-
-});
-
-Hooks.on("updateCombat" , async (combat: PersonaCombat, changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
-	if (changes.turn == undefined && changes.round == undefined) {
-		return;
-	}
-	if (diffObject.direction && diffObject.direction != 0) {
-		const currentActor = combat?.combatant?.actor
-		if (currentActor && diffObject.direction > 0) {
-			await combat.startCombatantTurn(combat.combatant)
-		}
-		//new turn
-		if (changes.round != undefined) {
-			//new round
-			if (diffObject.direction > 0 && game.user.isGM) {
-				if (combat.isSocial) {
-					PersonaSocial.startSocialCombatTurn();
-				}
-				await combat.incEscalationDie();
-			}
-			if (diffObject.direction < 0 && game.user.isGM) {
-				await combat.decEscalationDie();
-			}
-		}
-	}
-});
-
-Hooks.on("combatStart", async (combat: PersonaCombat) => {
-	for (const comb of combat.combatants) {
-		if (!comb.actor) continue;
-		const situation : Situation = {
-			activeCombat : true,
-			user: comb.actor.accessor,
-			triggeringCharacter: comb.actor.accessor,
-		};
-		const token = comb.token as PToken;
-		await PersonaCombat
-			.onTrigger("on-combat-start", token.actor, situation)
-			.emptyCheck()
-			?.toMessage("Triggered Effect", token.actor);
-	}
-	const x = combat.turns[0];
-	if (x.actor) {
-		await combat.startCombatantTurn(x as Combatant<ValidAttackers>);
-	}
-});
-
-Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
-	if (!game.user.isGM)
-		return;
-	for (const combatant of combat.combatants) {
-		const actor = combatant.actor as ValidAttackers  | undefined;
-		if (!actor) continue;
-		const token = combatant.token as PToken;
-		await PersonaCombat
-			.onTrigger("on-combat-end", token.actor)
-			.emptyCheck()
-			?.toMessage("Triggered Effect", token.actor );
-		for (const effect of actor.effects) {
-			if (effect.durationLessThanOrEqualTo("combat")) {
-				await effect.delete();
-			}
-		}
-		if (actor.isFading()) {
-			await actor.modifyHP(1);
-		}
-	}
-});
-
-
-Hooks.on("createCombatant", async (combatant: Combatant<PersonaActor>) => {
-	await combatant?.token?.actor?.onAddToCombat();
-});
-
-Hooks.on("renderCombatTracker", async (_item: CombatTracker, element: JQuery<HTMLElement>, _options: RenderCombatTabOptions) => {
-	const combat = (game.combat as (PersonaCombat | undefined));
-	if (!combat) return;
-	if (combat.isSocial) {
-		PersonaSocial.displaySocialPanel(element);
-	} else {
-		combat.displayEscalation(element);
-	}
-});
-
-Hooks.on("onAddStatus", async function (token: PToken, status: StatusEffect)  {
-	if (status.id != "down") return;
-	if (!game.user.isGM) {
-		throw new PersonaError("Somehow isn't GM executing this");
-	}
-	if (game.combat) {
-		const allegiance = token.actor.getAllegiance();
-		const standingAllies = game.combat.combatants.contents.some(comb => {
-			if (!comb.token) return false;
-			const actor = comb.actor as ValidAttackers;
-			return actor.isStanding() && actor.getAllegiance() == allegiance;
-		})
-		if (!standingAllies) {
-			const currentTurnCharacter = game.combat.combatant?.actor;
-			if (!currentTurnCharacter) return;
-			const currentTurnType = currentTurnCharacter.system.type;
-			if (currentTurnType == "shadow") {
-				return await PersonaCombat.allOutAttackPrompt();
-			} else {
-				PersonaSockets.simpleSend("QUERY_ALL_OUT_ATTACK", {}, game.users
-					.filter( user=> currentTurnCharacter.testUserPermission(user, "OWNER") && !user.isGM )
-					.map( usr=> usr.id)
-				);
-			}
-		}
-	}
-
-});
 
 type SaveOptions = {
 	label?: string,
@@ -1879,18 +1846,4 @@ export type ConsequenceProcessed = {
 	escalationMod: number
 }
 
-Hooks.on("socketsReady", async () => {
-	PersonaSockets.setHandler("QUERY_ALL_OUT_ATTACK", () => {
-		PersonaCombat.allOutAttackPrompt();
-	});
-});
-
-
-type DialogReturn = {
-	roomModifiers: UniversalModifier[],
-	isSocialScene: boolean,
-	advanceCalendar: boolean,
-	disallowMetaverse: boolean,
-}
-
-
+CombatHooks.init();
