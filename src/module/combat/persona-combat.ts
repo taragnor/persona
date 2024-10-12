@@ -1797,8 +1797,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll: R}[], messageOptions: MessageOptions = {}): Promise<ChatMessage<R>> {
+		const rollTransformer = function (roll: Roll) {
+			const total = roll.total;
+			if (total <= 0) return "last";
+			else return Math.round(total);
+		}
 		const rolltxt = rolls
-		.map(({roll, combatant}) => `<div class="init-roll"> ${combatant.name}: ${roll.total} </div>`)
+		.sort( (a, b) => b.roll.total - a.roll.total)
+		.map(({roll, combatant}) => `<div class="init-roll"> ${combatant.name}: ${rollTransformer(roll)} </div>`)
 		.join("");
 		const html = `<h3 class="init-rolls"> Initiative Rolls </h3> ${rolltxt}`;
 		const chatMessage: MessageData<R> = {
