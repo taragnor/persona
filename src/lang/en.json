@@ -135,6 +135,7 @@
 	"persona.status.exhausted" : "Exhausted",
 	"persona.status.jailed" : "Imprisoned",
 	"persona.status.sticky" : "Defender",
+	"persona.status.baton-pass" : "Baton Pass",
 
 	"persona.damage.low": "Low",
 	"persona.damage.high": "High",

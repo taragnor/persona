@@ -104,8 +104,11 @@ export const STATUS_EFFECT_LIST = [
 		id: "sticky",
 		icon:   "icons/svg/anchor.svg"
 	},
+	{
+		id: "baton-pass",
+		icon: "icons/weapons/staves/staff-orb-red.webp",
 
-
+	},
 
 ] as const;
 

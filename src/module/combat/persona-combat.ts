@@ -456,8 +456,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				// if (!await HTMLTools.confirmBox("Out of turn Action", "It's not your turn, act anyway?")) {
 				// return false;
 				// }
-			}
-			else {
+			} else {
 				if (!await HTMLTools.confirmBox("Out of turn Action", "It's not your turn, act anyway?")) {
 					return false;
 				}
@@ -491,6 +490,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 			await result.finalize();
 			await attacker.actor.removeStatus("bonus-action");
+			await attacker.actor.removeStatus("baton-pass");
 			await result.toMessage(power.name, attacker.actor);
 			if (power == PersonaDB.getBasicPower("All-out Attack")) {
 				if (game.combat) {
@@ -1520,6 +1520,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	turnCheck(token: PToken): boolean {
 		if (!this.enemiesRemaining(token)) return true;
 		if (!this.combatant) return true;
+		if (token.actor.hasStatus("baton-pass"))
+			return true;
 		return (this.combatant.token.id == token.id)
 	}
 
