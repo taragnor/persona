@@ -74,6 +74,8 @@ export class Metaverse {
 		const scene = game.scenes.current;
 		const sceneId = scene.id;
 		const disAllowedRoles: ShadowRole[] = [
+			"miniboss-lord",
+			"boss-lord",
 			"miniboss",
 			"boss",
 		];

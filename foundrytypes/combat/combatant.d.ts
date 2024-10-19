@@ -1,4 +1,5 @@
 class Combatant<T extends Actor<any, any> = Actor<any,any>> extends FoundryDocument<never> {
+	parent?: Combat<T>;
 	actorId: string;
 	defeated: boolean;
 	name: string;

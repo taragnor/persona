@@ -1072,68 +1072,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	static async execTrigger(trigger: CombatTrigger, actor: ValidAttackers, situation?: Situation) : Promise<void> {
 		return await TriggeredEffect.execCombatTrigger(trigger, actor, situation);
-		//const triggerResult = this.onTrigger(trigger, actor, situation)
-		//.emptyCheck();
-		//if (!triggerResult) return;
-		//const usePowers = triggerResult.findEffects("use-power");
-		//situation = situation ? situation : {
-		//	attacker: actor.accessor,
-		//	user: actor.accessor,
-		//};
-		//for (const usePower of usePowers) {
-		//	//TODO BUG: Extra attacks keep the main inputted modifier
-		//	const newAttacker = this.getPTokenFromActorAccessor(usePower.newAttacker);
-		//	const execPower = PersonaDB.allPowers().find( x=> x.id == usePower.powerId);
-		//	if (execPower && newAttacker) {
-		//		const altTargets= this.getAltTargets(newAttacker, situation, usePower.target );
-		//		const newTargets = await this.getTargets(newAttacker, execPower, altTargets)
-		//		const extraPower = await this.usePowerOn(newAttacker, execPower, newTargets, "standard");
-		//		triggerResult.merge(extraPower);
-
-		//	}
-		//}
-		//await triggerResult?.toMessage("Triggered Effect", actor);
 	}
 
 	static onTrigger(trigger: CombatTrigger | NonCombatTrigger, actor ?: ValidAttackers, situation ?: Situation) : CombatResult {
 		return TriggeredEffect.onTrigger(trigger, actor, situation);
-		// const result = new CombatResult();
-		// if (!situation) {
-		// 	const newSit: Situation = {
-		// 		trigger,
-		// 	};
-		// 	if (actor) {
-		// 		newSit.user = actor.accessor;
-		// 		newSit.target = actor.accessor;
-		// 		newSit.triggeringCharacter = actor.accessor;
-		// 	}
-		// 	situation = newSit;
-		// }
-		// situation = {
-		// 	...situation,
-		// 	trigger
-		// } ; //copy the object so it doesn't permanently change it
-		// let triggers : ModifierContainer[];
-		// if (actor) {
-		// 	triggers = actor.triggers;
-		// } else {
-		// 	const roomEffects= (game?.combat as PersonaCombat)?.getRoomEffects() ?? [];
-		// 	triggers = [
-		// 		...PersonaDB.getGlobalModifiers(), //testin only
-		// 		...roomEffects,
-		// 	];
-		// }
-		// for (const trig of triggers) {
-		// 	for (const eff of trig.getEffects(actor ?? null)) {
-		// 		if (!ModifierList.testPreconditions(eff.conditions, situation, trig)) { continue; }
-		// 		const cons = this.ProcessConsequences(trig, situation, eff.consequences, actor)
-		// 		result.escalationMod+= cons.escalationMod;
-		// 		for (const c of cons.consequences) {
-		// 			result.addEffect(null, actor, c.cons);
-		// 		}
-		// 	}
-		// }
-		// return result;
 	}
 
 	static async #processCosts(attacker: PToken , power: Usable, costModifiers: OtherEffect[]) : Promise<CombatResult>

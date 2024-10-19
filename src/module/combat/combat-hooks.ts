@@ -91,6 +91,9 @@ export class CombatHooks {
 
 		Hooks.on("createCombatant", async (combatant: Combatant<PersonaActor>) => {
 			await combatant?.token?.actor?.onAddToCombat();
+			if (combatant.parent?.started && combatant.actor) {
+				await PersonaCombat.execTrigger("on-combat-start", combatant.actor as ValidAttackers);
+			}
 		});
 
 		Hooks.on("renderCombatTracker", async (_item: CombatTracker, element: JQuery<HTMLElement>, _options: RenderCombatTabOptions) => {

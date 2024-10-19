@@ -440,7 +440,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get socialLinks() : SocialLinkData[] {
 		const meetsSL = function (linkLevel: number, focus:Focus) {
-			return	linkLevel >= focus.requiredLinkLevel();
+			return linkLevel >= focus.requiredLinkLevel();
 		};
 		if (this.system.type != "pc") return [];
 		return this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
@@ -1891,6 +1891,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (this.system.type == "pc") return base;
 		switch (this.system.role) {
 			case "miniboss":
+			case "miniboss-lord":
+			case "boss-lord":
 			case "boss":
 				return Math.round(base / 4);
 			default:

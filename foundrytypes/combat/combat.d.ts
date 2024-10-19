@@ -9,6 +9,7 @@ declare class Combat<T extends Actor<any, any> = Actor<any, any>> extends Foundr
 		tokenId: string,
 		turn: 0
 	}
+	started: boolean;
 	combatants: Collection<Combatant<T>>;
 	turns: Combatant<T>[];
 	static defineSchema(): SchemaReturnObject;

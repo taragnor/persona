@@ -11,6 +11,8 @@ export const SHADOW_ROLE_LIST = [
 	"elite",
 	"miniboss",
 	"boss",
+	"miniboss-lord",
+	"boss-lord",
 ] as const;
 
 export type ShadowRole = typeof SHADOW_ROLE_LIST[number];
@@ -23,7 +25,8 @@ export const SHADOW_ROLE= Object.fromEntries(
 export const SHADOW_CREATURE_TYPE_LIST = [
 	"shadow",
 	"daemon",
-	"demon"
+	"demon",
+	"enemy-metaverse-user",
 ] as const;
 
 
