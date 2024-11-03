@@ -6,6 +6,8 @@ export const MODIFIERLIST = [
 	"magAtk",
 	"wpnDmg",
 	"magDmg",
+	"magLow",
+	"magHigh",
 	"criticalBoost",
 	"allDefenses",
 	"ref",
