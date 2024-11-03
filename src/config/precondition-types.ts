@@ -118,7 +118,7 @@ type TargettedNumericComparison = NumericComparisonBase & {
 }
 
 type ClockNumericComparison = NumericComparisonBase & {
-	comparisonTarget:"clock-comparison",
+	comparisonTarget: "clock-comparison",
 	clockId: string,
 	num: number,
 }
@@ -135,15 +135,37 @@ export type BooleanComparisonPC = {
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | RelationshipTypeComparison
+StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison
 ;
 
+export const SOCIAL_CHECKS_LIST = [
+	"relationship-type-check",
+	"is-social-disabled",
+	"is-available",
+] as const;
 
+export type SocialCheck = typeof SOCIAL_CHECKS_LIST[number];
+
+export const SOCIAL_CHECKS = Object.fromEntries(
+	SOCIAL_CHECKS_LIST.map( x=> [x, `persona.preconditions.socialChecks.${x}`])
+);
+
+export type SocialComparisonBase = {
+	boolComparisonTarget : "social-availability",
+	socialCheckType: SocialCheck,
+};
+
+export type SocialComparison = (SocialComparisonBase) &
+	(RelationshipTypeComparison | SimpleSocialComparison);
+
+export type SimpleSocialComparison = {
+	socialCheckType : "is-social-disabled" | "is-available",
+};
 
 export type RelationshipTypeComparison = {
-	boolComparisonTarget: "relationship-type-is",
+	socialCheckType: "relationship-type-check",
 	relationshipType: string;
-}
+};
 
 export type TargettedBComparisonPC = SingleTargetComparison | TwoTargetComparison;
 
@@ -277,7 +299,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"has-item-in-inventory",
 	"creature-type-is",
 	"power-slot-is",
-	"relationship-type-is",
+	"social-availability",
 ] as const;
 
 

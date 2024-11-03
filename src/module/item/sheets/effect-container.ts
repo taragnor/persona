@@ -1,3 +1,4 @@
+import { SOCIAL_CHECKS } from "../../../config/precondition-types.js";
 import { ALTER_MP_SUBTYPES } from "../../../config/effect-types.js";
 import { CREATURE_TYPE } from "../../../config/shadow-types.js";
 import { PersonaItem } from "../persona-item.js";
@@ -117,6 +118,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			USER_COMPARISON_TARGETS,
 			CREATURE_TYPE,
 			ALTER_MP_SUBTYPES,
+			SOCIAL_CHECKS,
 		};
 		return this._powerStuffBase;
 	}

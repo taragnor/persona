@@ -10,7 +10,9 @@
 {{#if (isGM)}}
 <div>
 	<label>Available</label>
-	<input type="checkbox" name="system.weeklyAvailability.available"}} {{checked item.system.weeklyAvailability.available }}>
+	<input type="checkbox" name="system.weeklyAvailability.available" {{checked item.system.weeklyAvailability.available }}>
+	<label> Disabled </label>
+	<input type="checkbox" name="system.weeklyAvailability.disabled" {{checked item.system.weeklyAvailability.disabled }}>
 </div>
 {{/if}}
 

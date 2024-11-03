@@ -1829,7 +1829,26 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	isAvailable() : boolean {
 		if (this.system.type == "shadow" || this.system.type == "tarot") return false;
-		return this.system.weeklyAvailability.available;
+		const availability = this.system.weeklyAvailability;
+		if (this.isSociallyDisabled()) return false;
+		return availability?.available ?? false;
+	}
+
+	isSociallyDisabled(): boolean {
+		switch (this.system.type) {
+			case "shadow":
+			case "tarot":
+				return true;
+			case "pc":
+				const statuses : StatusEffectId[] = ["jailed", "exhausted", "crippled", "injured"];
+				return statuses.some( x=> this.hasStatus(x));
+
+			case "npc":
+				return this.system.weeklyAvailability.disabled || this.tarot != undefined;
+			default:
+				this.system satisfies never;
+				throw new PersonaError("Unknown type");
+		}
 	}
 
 	canTakeNormalDowntimeActions(): boolean {

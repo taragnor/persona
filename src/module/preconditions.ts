@@ -492,16 +492,27 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			const slot = condition.slotType;
 			return slot[String(power.system.slot)];
 		}
-		case "relationship-type-is": {
+		case "social-availability": {
 			const socialTarget = situation.socialTarget ?? situation.target;
 			if (!socialTarget) return undefined;
 			if (!situation.user) return undefined;
 			const user = PersonaDB.findActor(situation.user);
 			const target = PersonaDB.findActor(socialTarget);
 			if (user.system.type == "shadow") return undefined;
-			const link = (user as PC).socialLinks.find(x=>x.actor == target);
-			if (!link) return undefined;
-			return link.relationshipType.toUpperCase() == condition.relationshipType.toUpperCase();
+			switch (condition.socialCheckType) {
+				case "relationship-type-check":
+					const link = (user as PC).socialLinks.find(x=>x.actor == target);
+					if (!link) return undefined;
+					return link.relationshipType.toUpperCase() == condition.relationshipType.toUpperCase();
+				case "is-social-disabled":
+					return target.isSociallyDisabled();
+				case "is-available":
+					return target.isAvailable();
+				default:
+					condition satisfies never;
+					PersonaError.softFail(`UNexpected social check ${(condition as any)?.socialTypeCheck}`);
+					return undefined;
+			}
 		}
 		default :
 			condition satisfies never;

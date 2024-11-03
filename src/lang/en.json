@@ -469,6 +469,7 @@
 	"persona.preconditions.comparison.power-slot-is": "Power Slot Is",
 	"persona.preconditions.comparison.relationship-type-is": "Relationship Type is",
 	"persona.preconditions.comparison.power-target-type-is": "Power's targets are",
+	"persona.preconditions.comparison.social-availability": "Social Availability",
 	"persona.preconditions.comparison.weather-is": "Current Weather is",
 	"persona.preconditions.comparison.target-social-link-is": "Target Social Link is",
 	"persona.preconditions.comparison.weekday-is": "Weekday is",
@@ -477,6 +478,10 @@
 	"persona.preconditions.comparison.is-distracted": "Is Distracted",
 	"persona.preconditions.comparison.active-scene-is": "Active Scene Is",
 	"persona.preconditions.comparison.is-gm": "Foundry User is GM",
+
+	"persona.preconditions.socialChecks.relationship-type-check": "Relationship Type is",
+	"persona.preconditions.socialChecks.is-social-disabled": "Is Socially Disabled",
+	"persona.preconditions.socialChecks.is-available": "Is Currently Available",
 
 	"persona.preconditions.userComparison.triggering-user": "Triggering User",
 	"persona.preconditions.userComparison.current-user": "Current User",

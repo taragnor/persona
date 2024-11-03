@@ -247,7 +247,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 				const modified = {
 					low: ( (dmg.low + low_bonus)  * mult) + bonus,
 					high: ((dmg.high + high_bonus) * mult) + bonus,
-				}
+				};
 				return modified[type];
 			}
 			case "standalone": {
