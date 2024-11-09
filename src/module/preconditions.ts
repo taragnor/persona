@@ -456,7 +456,10 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			const target = getSubjectActor(condition, situation, source, "conditionTarget");
 			if (!target) {return undefined;}
 			if (target.system.type != "shadow") {return false;}
-			return condition.shadowRole == target.system.role;
+			if (typeof condition.shadowRole == "string") {
+				return condition.shadowRole == target.system.role;
+			}
+			return multiCheckContains(condition.shadowRole, [target.system.role]);
 		}
 		case "is-distracted": {
 			const target = getSubjectActor(condition, situation, source, "conditionTarget");

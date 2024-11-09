@@ -177,7 +177,7 @@ type SlotTypeComparison = {
 type ShadowRoleComparison = {
 	boolComparisonTarget: "shadow-role-is",
 	conditionTarget: ConditionTarget,
-	shadowRole: ShadowRole,
+	shadowRole: ShadowRole | MultiCheck<ShadowRole>,
 }
 
 type CreatureTypeCheckComparion = {

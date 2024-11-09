@@ -1,7 +1,8 @@
 export const CONSQUENCELIST = [
 	"none",
 	"absorb",
-	"modifier-new",
+	"modifier", //singular-mod
+	"modifier-new", //multi-mod
 	"damage-new",
 	"addStatus",
 	"removeStatus",
@@ -27,7 +28,6 @@ export const CONSQUENCELIST = [
 	"alter-mp",
 	"save-slot", //deprecated, don't expend slot you normally would
 	"recover-slot", // deprecated
-	"modifier", // deprecated
 	"add-escalation", // deprecated
 	"dmg-low", //deprecated
 	"dmg-high", //deprecated

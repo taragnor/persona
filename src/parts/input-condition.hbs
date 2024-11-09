@@ -166,9 +166,7 @@
 	<select name="{{strcat namePrefix 'conditionTarget'}}">
 		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
 	</select>
-	<select name="{{strcat namePrefix 'shadowRole'}}">
-		{{selectOptions POWERSTUFF.SHADOW_ROLE localize=true selected=cond.shadowRole}}
-	</select>
+		{{multicheck (strcat namePrefix 'shadowRole') POWERSTUFF.SHADOW_ROLE checked=cond.shadowRole localize=true}}
 	{{/if}}
 
 	{{#if (eq cond.boolComparisonTarget  "active-scene-is")}}
