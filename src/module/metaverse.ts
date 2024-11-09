@@ -91,11 +91,12 @@ export class Metaverse {
 		}
 		let encounterSize = 0;
 		const sizeRoll = Math.floor((Math.random() * 10) +1);
+		let enemyType : Shadow["system"]["creatureType"] | undefined = undefined;
 		switch (sizeRoll) {
-			case 1: case 2:
+			case 1:
 				encounterSize = 3;
 				break;
-			case 10:
+			case 9: case 10:
 				encounterSize = 5;
 				break;
 			default:
@@ -106,9 +107,16 @@ export class Metaverse {
 		while (encounterSize > 0) {
 			const dice = Math.floor(Math.random() * encounterList.length);
 			const pick = encounterList[dice];
+			if (enemyType == undefined) {
+				enemyType == pick.system.creatureType;
+			}
+			if (pick.system.creatureType != enemyType) {
+				continue;
+			}
 			if (!pick) {continue;}
 			if (pick.system.role == "elite") {
-				--encounterSize ;
+				if (encounterSize <= 1) {continue;}
+				--encounterSize;
 			}
 			--encounterSize;
 			encounter.push(pick);
