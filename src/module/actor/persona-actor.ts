@@ -162,9 +162,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return -5;
 			case "shadow": {
 				const actor = this as (Shadow | PC);
-				const SHADOW_INIT_PENALTY = -50;
-				return  SHADOW_INIT_PENALTY
-				+ initBonus
+				// const SHADOW_INIT_PENALTY = -50;
+				// return  SHADOW_INIT_PENALTY
+				return initBonus
 				+ actor.getDefense("ref").total(situation)
 				+ (actor.getDefense("will").total(situation)* 0.01);
 			}
