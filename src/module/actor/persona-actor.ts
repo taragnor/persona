@@ -165,15 +165,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				// const SHADOW_INIT_PENALTY = -50;
 				// return  SHADOW_INIT_PENALTY
 				return initBonus
-				+ actor.getDefense("ref").total(situation)
-				+ (actor.getDefense("will").total(situation)* 0.01);
+				+ actor.system.combat.classData.level + 15;
+				// + actor.getDefense("ref").total(situation)
+				// + (actor.getDefense("will").total(situation)* 0.01);
 			}
 			case "pc":{
 				const actor = this as (Shadow | PC);
 				return initBonus
 				+ actor.getDefense("ref").total( {user:actor.accessor})
-				+ 0.1 * actor.getDefense("fort").total(situation)
-				+ 0.01 * actor.getDefense("will").total(situation);
 			}
 			case "tarot" :{
 				return -5;
