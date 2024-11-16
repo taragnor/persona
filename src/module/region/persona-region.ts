@@ -353,4 +353,18 @@ async function updateRegionDisplay (region: PersonaRegion) {
 	}
 	infoPanel.empty();
 	infoPanel.html(html);
+	infoPanel.find(".search-button").on("click", searchButton);
+}
+
+async function searchButton(ev: JQuery.ClickEvent) {
+	//temporary implementation
+	const html = `<h2>${game.user.name} wants to search the room</h2>`;
+	const speaker = ChatMessage.getSpeaker();
+	let messageData = {
+		speaker: speaker,
+		content: html,
+		style: CONST.CHAT_MESSAGE_STYLES.OOC,
+	};
+	ChatMessage.create(messageData, {});
+
 }

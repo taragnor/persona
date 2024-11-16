@@ -186,7 +186,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				}
 			}
 		}
-		const speaker = ChatMessage.getSpeaker({alias: actor.name});
+		const speaker = ChatMessage.getSpeaker({alias: combatant?.token?.name ?? "Unknown"});
 		let messageData = {
 			speaker: speaker,
 			content: startTurnMsg.join("<br>"),
