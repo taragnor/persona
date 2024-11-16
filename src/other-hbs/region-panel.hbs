@@ -55,8 +55,12 @@
 {{/if}}
 
 {{#if (isGM) }}
-Secret: {{region.secret}}
-Hazard: {{region.hazard}}
+<div class="secret">
+	Secret: {{data.secretDetails}} ({{region.secret}})
+</div>
+<div class="hazard">
+	Hazard: {{data.hazardDetails}} ({{region.hazard}})
+</div>
 {{/if}}
 
 {{#if (not (isGM))}}

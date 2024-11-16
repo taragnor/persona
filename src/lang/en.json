@@ -581,6 +581,10 @@
 	"persona.secretChoices.found-repeatable": "Found (repeatable)",
 	"persona.secretChoices.hidden-repeatable": "Hidden (repeatable)",
 
+
+	"persona.roomAttribute.ignore": "Ignore this Region",
+	"persona.roomAttribute.secretDetails": "Secret Description",
+	"persona.roomAttribute.hazardDetails": "Hazard Description",
 	"persona.roomAttribute.secret": "Room Secret",
 	"persona.roomAttribute.hazard": "Room Hazard",
 	"persona.roomAttribute.treasures": "Room Treasures",

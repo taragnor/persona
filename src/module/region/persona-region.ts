@@ -1,3 +1,4 @@
+import { localize } from "../persona.js"
 import { UniversalModifier } from "../item/persona-item.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
@@ -35,6 +36,8 @@ type RegionData = {
 	ignore: boolean,
 	secret: SecretChoice,
 	hazard: SecretChoice,
+	secretDetails: string,
+	hazardDetails: string,
 	treasures: {
 		found: number,
 		max: number,
@@ -52,6 +55,8 @@ export class PersonaRegion extends RegionDocument {
 			ignore: false,
 			secret: "none",
 			hazard: "none",
+			secretDetails: "",
+			hazardDetails: "",
 			treasures : {
 				found: 0,
 				max: 1,
@@ -67,12 +72,16 @@ export class PersonaRegion extends RegionDocument {
 		return this.getFlag("persona", "RegionData") ?? this.defaultRegionData();
 	}
 
-	get secret(): SecretChoice {
-		return this.regionData.secret ?? "none";
+	get secret(): string {
+		return localize(
+			SECRET_CHOICES[ this.regionData.secret ?? "none"]
+		);
 	}
 
-	get hazard(): SecretChoice {
-		return this.regionData.hazard ?? "none";
+	get hazard(): string {
+		return localize(
+			SECRET_CHOICES[ this.regionData.hazard ?? "none"]
+		);
 	}
 
 	get concordiaPresence(): number {
@@ -122,6 +131,14 @@ export class PersonaRegion extends RegionDocument {
 				.addClass(fieldClass)
 				.on("change", this.#refreshRegionData.bind(this))
 				element.append(check);
+				break;
+			}
+			case "secretDetails":
+			case "hazardDetails": {
+				const val = this.regionData[field];
+				const input = $(`<input type="text">`).val(val ?? "").addClass(fieldClass)
+				.on("change", this.#refreshRegionData.bind(this))
+				element.append(input);
 				break;
 			}
 			case "secret":
@@ -238,6 +255,8 @@ export class PersonaRegion extends RegionDocument {
 					const input = topLevel.find(`.${fieldClass}`).prop("checked");
 					(data[k] as any) = input;
 					break;
+				case "secretDetails":
+				case "hazardDetails":
 				case "secret":
 				case "hazard":
 				case "concordiaPresence": {

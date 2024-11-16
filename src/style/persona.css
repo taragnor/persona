@@ -627,4 +627,7 @@ form h5 {
 	min-width: 15%;
 	width: 15%;
 	z-index: 30;
+	margin: 10px;
+	color: white;
+	padding: 10px;
 }
