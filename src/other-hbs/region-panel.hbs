@@ -54,4 +54,15 @@
 </div>
 {{/if}}
 
+{{#if (isGM) }}
+Secret: {{region.secret}}
+Hazard: {{region.hazard}}
+{{/if}}
+
+{{#if (not (isGM))}}
+<button class="search-button">
+	Search Room
+</button>
+{{/if}}
+
 

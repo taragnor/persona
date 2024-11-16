@@ -316,7 +316,7 @@ Hooks.on("updateToken", (token, changes) => {
 	const scene = token.parent;
 	if (!scene) return;
 	const region = scene.regions.find( (region : PersonaRegion) => region.tokens.has(token) && !region?.regionData?.ignore)
-	if (!region) {
+	if (!region || game?.combat?.active) {
 		clearRegionDisplay();
 		// if (game.user.isGM) {
 		// 	PersonaSettings.set("lastRegionExplored", "");
