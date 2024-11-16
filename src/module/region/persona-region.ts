@@ -1,3 +1,6 @@
+import { UniversalModifier } from "../item/persona-item.js";
+import { PersonaActor } from "../actor/persona-actor.js";
+import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaDB } from "../persona-db.js";
 import { PersonaItem } from "../item/persona-item.js";
 
@@ -29,6 +32,7 @@ const SECRET_CHOICES = Object.fromEntries(
 );
 
 type RegionData = {
+	ignore: boolean,
 	secret: SecretChoice,
 	hazard: SecretChoice,
 	treasures: {
@@ -45,6 +49,7 @@ export class PersonaRegion extends RegionDocument {
 
 	defaultRegionData() : RegionData {
 		return {
+			ignore: false,
 			secret: "none",
 			hazard: "none",
 			treasures : {
@@ -74,6 +79,21 @@ export class PersonaRegion extends RegionDocument {
 		return this.regionData.concordiaPresence ?? 0;
 	}
 
+	get roomEffects(): UniversalModifier[] {
+		return this.regionData.roomEffects.flatMap ( id=> {
+			if (!id) return [];
+			const mod = PersonaDB.getRoomModifiers().find(x=> x.id == id);
+			if (mod) return [mod];
+			else return [];
+		});
+
+
+	}
+
+	onEnterRegion(token: TokenDocument<PersonaActor>) {
+
+	}
+
 	async setRegionData(data: RegionData) {
 		await this.setFlag("persona", "RegionData", data);
 	}
@@ -85,6 +105,15 @@ export class PersonaRegion extends RegionDocument {
 		));
 		const fieldClass = `field-${field}`;
 		switch (field) {
+			case "ignore":{
+				const val = this.regionData[field];
+				let check = $(`<input type="checkbox">`)
+				.prop("checked", val)
+				.addClass(fieldClass)
+				.on("change", this.#refreshRegionData.bind(this))
+				element.append(check);
+				break;
+			}
 			case "secret":
 			case "hazard": {
 				const val = this.regionData[field];
@@ -195,6 +224,10 @@ export class PersonaRegion extends RegionDocument {
 			const k = key as keyof RegionData;
 			const fieldClass = `field-${k}`;
 			switch (k) {
+				case "ignore":
+					const input = topLevel.find(`.${fieldClass}`).prop("checked");
+					(data[k] as any) = input;
+					break;
 				case "secret":
 				case "hazard":
 				case "concordiaPresence": {
@@ -246,9 +279,8 @@ export class PersonaRegion extends RegionDocument {
 
 }
 
+//Append Region Configuraton dialog
 Hooks.on("renderRegionConfig", async (app, html) => {
-	// console.log(app, html);
-	// Debug(html);
 	let appendPoint = $(html).find(".tab.region-identity");
 	if (appendPoint.length != 1) {
 		throw new Error(`Append Point Length equals ${appendPoint.length}`);
@@ -259,6 +291,55 @@ Hooks.on("renderRegionConfig", async (app, html) => {
 
 	//@ts-ignore
 	app.setPosition({ height: 'auto' });
+});
+
+
+Hooks.on("updateToken", (token, changes) => {
+	const actor = token.actor as PersonaActor;
+	if (!actor) return;
+	if (actor.system.type != "pc" || !actor.hasPlayerOwner) {
+		return;
+	}
+	if ((changes.x ?? changes.y) == undefined)
+		return;
+	const scene = token.parent;
+	if (!scene) return;
+	const region = scene.regions.find( (region : PersonaRegion) => region.tokens.has(token) && !region?.regionData?.ignore)
+	if (!region) {
+		clearRegionDisplay();
+		if (game.user.isGM) {
+			PersonaSettings.set("lastRegionExplored", "");
+		}
+		return;
+	}
+	updateRegionDisplay(region as PersonaRegion);
+	const lastRegion = PersonaSettings.get("lastRegionExplored");
+	if (lastRegion != region.id) {
+		if (game.user.isGM) {
+			PersonaSettings.set("lastRegionExplored", region.id);
+			(region as PersonaRegion).onEnterRegion(token);
+		}
+	}
 
 });
 
+
+
+async function clearRegionDisplay() {
+	const infoPanel = $(document).find(".region-info-panel");
+	if (infoPanel.length) {
+		infoPanel.remove();
+	}
+}
+
+async function updateRegionDisplay (region: PersonaRegion) {
+	const html = await renderTemplate("systems/persona/other-hbs/region-panel.hbs", {region, data: region.regionData});
+	let infoPanel = $(document).find(".region-info-panel");
+	if (infoPanel.length ==0) {
+		infoPanel = $("<section>").addClass("region-info-panel");
+		infoPanel.insertAfter("#interface #ui-middle");
+		// $(document).find("#ui-right").prepend(infoPanel);
+	}
+	infoPanel.empty();
+	infoPanel.html(html);
+}

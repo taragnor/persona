@@ -121,6 +121,16 @@ const SETTINGS = {
 		default: true,
 	},
 
+	"lastRegionExplored": {
+		name: "Last Region",
+		hint: "The Last Region a PC went into",
+		scope: "world",
+		restricted: true,
+		config: false,
+		type: String,
+		default: ""
+	}
+
 } as const;
 
 type SETTINGKEYS = keyof typeof SETTINGS;

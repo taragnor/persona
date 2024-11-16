@@ -1,0 +1,33 @@
+<h2>
+	{{region.name}}
+</h2>
+
+{{#if region.regionData.concordiaPresence}}
+<div class="concordia-presence">
+	<label> Concordia Presence: </label>
+	region.regionData.concordiaPresence
+</div>
+{{/if}}
+
+<div class="treasures">
+	<h4>
+		Treasures Found
+	</h4>
+	{{data.treasures.found}}/ {{data.treasures.max}}
+</div>
+
+<div class="room-effects">
+	{{#if region.roomEffects}}
+	<h4>
+		Room Modifiers
+	</h4>
+	<ul>
+		{{#each region.roomEffects as |mod|}}
+		<b>{{mod.name}}</b> : {{mod.system.description}}
+		{{/each}}
+
+	</ul>
+	{{/if}}
+</div>
+
+
