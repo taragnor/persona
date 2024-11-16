@@ -1,9 +1,9 @@
+import { PersonaError } from "../persona-error.js";
 import { localize } from "../persona.js"
 import { UniversalModifier } from "../item/persona-item.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaDB } from "../persona-db.js";
-import { PersonaItem } from "../item/persona-item.js";
 
 const SPECIAL_MOD_LIST = [
 	"treasure-poor", //1d10 treasure
@@ -86,6 +86,44 @@ export class PersonaRegion extends RegionDocument {
 
 	get concordiaPresence(): number {
 		return this.regionData.concordiaPresence ?? 0;
+	}
+
+	async treasureFound(): Promise<Roll | undefined> {
+		const regionData = this.regionData;
+		if (this.treasuresRemaining <= 0) {
+			PersonaError.softFail("Can't find a treasure in room with no treasure left");
+			return undefined;
+		}
+		regionData.treasures.found += 1;
+		await this.setRegionData(regionData);
+		return this.#treasureRoll();
+	}
+
+	async #treasureRoll() : Promise<Roll> {
+		const mods = this.regionData.specialMods;
+		let expr : string;
+		switch (true) {
+			case mods.includes("treasure-poor"): 
+				expr = "1d10";
+				break;
+			case mods.includes("treasure-rich"):
+				expr = "1d20+5";
+				break;
+			case mods.includes("treasure-ultra"):
+				expr = "1d10+15";
+				break;
+			default:
+				expr = "1d20";
+				break;
+		}
+		const roll = new Roll(expr);
+		await roll.evaluate();
+		return roll;
+	}
+
+	get treasuresRemaining(): number {
+		const t= this.regionData.treasures;
+		return t.max - t.found;
 	}
 
 	get roomEffects(): UniversalModifier[] {
