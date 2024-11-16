@@ -77,6 +77,7 @@ class SetField<T> extends  ArrayFieldClass<T> {
 
 class SchemaField<T> extends FoundryDMField<T> {
 	constructor(DataSchema: T, options?: DataFieldOptions);
+	fields: FoundryDMField<any>[];
 
 }
 

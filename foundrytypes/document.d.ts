@@ -9,7 +9,7 @@
 	 async updateEmbeddedDocuments(type: string, updates: unknown): Promise<unknown>;
 	 async createEmbeddedDocuments(type: string, objData: Record<string, any>[], context?: unknown): Promise<Embedded[]>;
 	 sheet: Sheet<this>
-
+	 get schema(): SchemaField<unknown>;
 	 async delete(): Promise<void>;
 	 async deleteEmbeddedDocuments( embeddedName: string, ids: unknown, context: Record<string, any> = {}): Promise<void>;
 	 get isOwner(): boolean;
@@ -28,6 +28,7 @@
 	 migrateSystemData(sourceMaybe?: unknown): unknown;
 	 async updateSource(updateData: Record<string, unknown>): Promise<unknown>;
 	 get folder(): Folder;
+	 static defineSchema(): Record<string, FoundryDMField<any>>;
 
 }
 

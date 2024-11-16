@@ -1843,7 +1843,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return statuses.some( x=> this.hasStatus(x));
 
 			case "npc":
-				return this.system.weeklyAvailability.disabled || this.tarot != undefined;
+				return this.system.weeklyAvailability.disabled || this.tarot == undefined;
 			default:
 				this.system satisfies never;
 				throw new PersonaError("Unknown type");

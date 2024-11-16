@@ -48,6 +48,8 @@ declare interface HOOKS {
 	"renderCombatTracker": RenderCombatTabFn;
 	"renderApplication": Function;
 	"renderChatMessage": (msg: ChatMessage, htmlElement: JQuery<HTMLElement>, data: unknown) => Promise<unknown>;
+	"renderSceneConfig": (app: unknown, html: JQuery, options: unknown) => unknown;
+	"renderRegionConfig": (app: ConfigApp<RegionDocument>, html: JQuery, options: unknown) => unknown;
 	"canvasReady": Function;
 	"hoverToken" : (token: Token<any>, hover:boolean) => unknown;
 	/**hook boolean value is true on connect, false on disconnect*/
@@ -69,6 +71,10 @@ type PreDeleteHook<T extends FoundryDocument> = DeleteHook<T>;
 type DiffObject = {
 	diff: boolean,
 	render: boolean
+}
+
+type ConfigApp<T extends FoundryDocument> = {
+	get document(): T;
 }
 
 type CombatUpdateOptions = {

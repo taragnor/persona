@@ -104,16 +104,23 @@ export class Metaverse {
 				break;
 		}
 		const encounter : Shadow[] = [];
+		let bailout = 0;
 		while (encounterSize > 0) {
+			if (bailout > 500) {
+				throw new PersonaError(`Had to bail out, couldn't find match for ${scene.name}`);
+			}
 			const dice = Math.floor(Math.random() * encounterList.length);
 			const pick = encounterList[dice];
 			if (enemyType == undefined) {
-				enemyType == pick.system.creatureType;
+				enemyType = pick.system.creatureType;
 			}
 			if (pick.system.creatureType != enemyType) {
+				bailout++; //escape hatch for if it keeps screwing up
 				continue;
 			}
-			if (!pick) {continue;}
+			if (!pick) {
+				throw new PersonaError(`Can't get a pick for random encounters for ${scene.name}`);
+			}
 			if (pick.system.role == "elite") {
 				if (encounterSize <= 1) {continue;}
 				--encounterSize;
