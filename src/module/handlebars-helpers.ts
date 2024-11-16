@@ -268,6 +268,12 @@ export class PersonaHandleBarsHelpers {
 			return (game.combat.combatants.contents.some( x=> x?.actor?.type == "shadow"));
 		},
 
+		"canChangeInventory": function() : boolean {
+			if (game.user.isGM) return true;
+			if (!game.combat) return false;
+			return (game.combat.combatants.contents.some( x=> x?.actor?.type == "shadow"));
+		},
+
 		"signed" : function(num: string | number) : SafeString {
 			num = Number(num);
 			if (num >=0) return new Handlebars.SafeString(`+${num}`);
