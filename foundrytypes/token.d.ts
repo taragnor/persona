@@ -16,7 +16,7 @@ class TokenDocument<T extends Actor<any, any>> extends FoundryDocument<never>
 		x: number;
 		y: number;
 		img: string
-
+		visible: boolean;
 		hidden: boolean;
 }
 

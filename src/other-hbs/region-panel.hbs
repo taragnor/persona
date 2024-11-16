@@ -2,6 +2,18 @@
 	{{region.name}}
 </h2>
 
+{{#if region.pointsOfInterest}}
+<div class="points-of-interest">
+<h4>Points of Interest</h4>
+{{#each region.pointsOfInterest as |poi|}}
+<li>
+	{{poi}}
+</li>
+{{/each}}
+</div>
+{{/if}}
+
+
 {{#if region.regionData.concordiaPresence}}
 <div class="concordia-presence">
 	<label> Concordia Presence: </label>
@@ -16,8 +28,8 @@
 	{{data.treasures.found}}/ {{data.treasures.max}}
 </div>
 
-<div class="room-effects">
 	{{#if region.roomEffects}}
+<div class="room-effects">
 	<h4>
 		Room Modifiers
 	</h4>
@@ -25,9 +37,21 @@
 		{{#each region.roomEffects as |mod|}}
 		<b>{{mod.name}}</b> : {{mod.system.description}}
 		{{/each}}
-
 	</ul>
-	{{/if}}
 </div>
+	{{/if}}
+
+{{#if region.specialMods}}
+<div class="special-mods">
+	<h4> Special Modifiers</h4>
+	<ul>
+		{{#each region.specialMods as |mod|}}
+		<li>
+			{{mod}}
+		</li>
+		{{/each}}
+	</ul>
+</div>
+{{/if}}
 
 

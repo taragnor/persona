@@ -86,8 +86,18 @@ export class PersonaRegion extends RegionDocument {
 			if (mod) return [mod];
 			else return [];
 		});
+	}
 
+	get specialMods() : string[] {
+		return this.regionData.specialMods
+			.filter( x=> x)
+			.map( x=> game.i18n.localize(SPECIAL_MODS[x]));
 
+	}
+
+	get pointsOfInterest(): string[] {
+		return this.regionData.pointsOfInterest
+		.filter(x=> x);
 	}
 
 	onEnterRegion(token: TokenDocument<PersonaActor>) {
@@ -297,6 +307,7 @@ Hooks.on("renderRegionConfig", async (app, html) => {
 Hooks.on("updateToken", (token, changes) => {
 	const actor = token.actor as PersonaActor;
 	if (!actor) return;
+	if (token.hidden) return;
 	if (actor.system.type != "pc" || !actor.hasPlayerOwner) {
 		return;
 	}
@@ -307,9 +318,9 @@ Hooks.on("updateToken", (token, changes) => {
 	const region = scene.regions.find( (region : PersonaRegion) => region.tokens.has(token) && !region?.regionData?.ignore)
 	if (!region) {
 		clearRegionDisplay();
-		if (game.user.isGM) {
-			PersonaSettings.set("lastRegionExplored", "");
-		}
+		// if (game.user.isGM) {
+		// 	PersonaSettings.set("lastRegionExplored", "");
+		// }
 		return;
 	}
 	updateRegionDisplay(region as PersonaRegion);
