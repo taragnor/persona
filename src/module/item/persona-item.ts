@@ -242,8 +242,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 				const mult = this.system.mag_mult;
 				const bonuses =  user.getBonuses("magDmg");
 				const bonus = bonuses.total(situation);
-				const high_bonus = user.getBonuses("magLow").total(situation);
-				const low_bonus = user.getBonuses("magHigh").total(situation);
+				const high_bonus = user.getBonuses("magHigh").total(situation);
+				const low_bonus = user.getBonuses("magLow").total(situation);
 				const modified = {
 					low: ( (dmg.low + low_bonus)  * mult) + bonus,
 					high: ((dmg.high + high_bonus) * mult) + bonus,

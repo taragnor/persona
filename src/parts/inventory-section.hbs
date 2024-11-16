@@ -3,21 +3,21 @@
 		<label>
 			Weapon
 		</label>
-		<select name="system.equipped.weapon" {{#if (canChangeInventory)}} disabled{{/if}} >
+		<select name="system.equipped.weapon" {{#if (inventoryLocked)}} disabled{{/if}} >
 			{{selectOptions equips.weapons localize=true selected=actor.system.equipped.weapon}}
 		</select>
 	</div>
 	<div class="armor"> <label>
 			Clothing
 		</label>
-		<select name="system.equipped.body" {{#if (canChangeInventory)}} disabled{{/if}}>
+		<select name="system.equipped.body" {{#if (inventoryLocked)}} disabled{{/if}}>
 			{{selectOptions equips.body localize=true selected=actor.system.equipped.body}}
 		</select>
 	</div>
 	<div class="accessory"> <label>
 			Accessory
 		</label>
-		<select name="system.equipped.accessory" {{#if ( canChangeInventory )}} disabled{{/if}}>
+		<select name="system.equipped.accessory" {{#if ( inventoryLocked )}} disabled{{/if}}>
 			{{selectOptions equips.accessory localize=true selected=actor.system.equipped.accessory}}
 		</select>
 	</div>
@@ -25,7 +25,7 @@
 	<div class="weapon-crystal"> <label>
 			Weapon Attachment
 		</label>
-		<select name="system.equipped.weapon_crystal" {{#if ( canChangeInventory )}} disabled{{/if}}>
+		<select name="system.equipped.weapon_crystal" {{#if ( inventoryLocked )}} disabled{{/if}}>
 			{{selectOptions equips.attachment localize=true selected=actor.system.equipped.weapon_crystal}}
 		</select>
 	</div>
