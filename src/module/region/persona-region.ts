@@ -202,7 +202,6 @@ export class PersonaRegion extends RegionDocument {
 			await Metaverse.concordiaPresenceRoll(presence, this.name);
 
 		}
-
 	}
 
 	async setRegionData(data: RegionData) {
