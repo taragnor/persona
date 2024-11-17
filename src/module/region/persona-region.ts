@@ -184,7 +184,7 @@ export class PersonaRegion extends RegionDocument {
 
 	get specialMods() : string[] {
 		return this.regionData.specialMods
-			.filter( x=> x)
+			.filter( x=> x && (game.user.isGM || PLAYER_VISIBLE_MOD_LIST.includes(x as any)))
 			.map( x=> game.i18n.localize(SPECIAL_MODS[x]));
 
 	}
@@ -302,7 +302,7 @@ export class PersonaRegion extends RegionDocument {
 			case "concordiaPresence": {
 				const val = this.regionData[field];
 				element.append(
-					$(`<input type="number">`).addClass(`${fieldClass}-found`).val(val ?? 0)
+					$(`<input type="number">`).addClass(`${fieldClass}`).val(val ?? 0)
 					.on("change", this.#refreshRegionData.bind(this))
 				);
 				break;
