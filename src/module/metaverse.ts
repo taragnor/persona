@@ -282,6 +282,14 @@ export class Metaverse {
 					break;
 				case "hazard":
 					await region.hazardFound();
+					break;
+				case "secret":
+					await region.secretFound();
+					break;
+				case "other":
+					break;
+				default:
+					result.result satisfies undefined;
 			}
 		}
 		if (treasureRolls.length) {
@@ -325,6 +333,23 @@ export class Metaverse {
 			throw new PersonaError("Couldn't find searchable Region");
 		}
 		return region as PersonaRegion;
+	}
+
+	static async concordiaPresenceRoll(presenceValue: number): Promise<Roll> {
+		const roll = new Roll("1d6");
+		await roll.roll();
+			let html = `<h2>Concordia Presence</h2>`;
+			html += `<div> Roll: ${roll.total} </div>`;
+			html += roll.total <= presenceValue ? `<div> Concordia Attacks!</div>` : `<div> Safe </div>`;
+		await ChatMessage.create({
+			speaker: {
+				alias: "Concordia Presence"
+			},
+			content: html,
+			rolls: [roll],
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+		});
+		return roll;
 	}
 
 }

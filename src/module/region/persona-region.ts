@@ -13,7 +13,6 @@ declare global {
 	}
 }
 
-
 const PLAYER_VISIBLE_MOD_LIST = [
 	"treasure-poor", //1d10 treasure
 	"treasure-rich", //1d20+5 treasure
@@ -29,7 +28,7 @@ const SPECIAL_MOD_LIST = [
 
 type SpecialMod = typeof SPECIAL_MOD_LIST[number];
 
-const SPECIAL_MODS = Object.fromEntries( 
+const SPECIAL_MODS = Object.fromEntries(
 	SPECIAL_MOD_LIST.map( x=> [x, `persona.specialRoomMods.${x}`])
 );
 
@@ -104,11 +103,11 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	async secretFound() {
-		return this.secretHazardFound("secret");
+		return await this.secretHazardFound("secret");
 	}
 
 	async hazardFound() {
-		return this.secretHazardFound("hazard");
+		return await this.secretHazardFound("hazard");
 	}
 
 	async secretHazardFound(field: "secret" | "hazard") {
@@ -186,7 +185,6 @@ export class PersonaRegion extends RegionDocument {
 		return this.regionData.specialMods
 			.filter( x=> x && (game.user.isGM || PLAYER_VISIBLE_MOD_LIST.includes(x as any)))
 			.map( x=> game.i18n.localize(SPECIAL_MODS[x]));
-
 	}
 
 	get pointsOfInterest(): string[] {
@@ -194,7 +192,16 @@ export class PersonaRegion extends RegionDocument {
 			.filter(x=> x);
 	}
 
-	onEnterRegion(token: TokenDocument<PersonaActor>) {
+	async onEnterRegion(token: TokenDocument<PersonaActor>) {
+		console.log(`Region Entered: ${this.name}`);
+		if (token.actor?.type != "pc") return;
+		const tokens = Array.from(this.tokens);
+		if (tokens.some(t => t.actor?.system.type == "shadow")) return;
+		const presence = this.regionData.concordiaPresence ?? 0;
+		if (presence > 0) {
+			await Metaverse.concordiaPresenceRoll(presence);
+
+		}
 
 	}
 
@@ -209,7 +216,7 @@ export class PersonaRegion extends RegionDocument {
 		));
 		const fieldClass = `field-${field}`;
 		switch (field) {
-			case "ignore":{
+			case "ignore": {
 				const val = this.regionData[field];
 				let check = $(`<input type="checkbox">`)
 				.prop("checked", val)

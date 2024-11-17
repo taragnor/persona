@@ -574,6 +574,8 @@
 	"persona.specialRoomMods.treasure-rich": "Treasure Rich (1d20+5 treasure roll)",
 	"persona.specialRoomMods.treasure-ultra": "Great Treasure (1d10+15 treasure roll)",
 	"persona.specialRoomMods.hazard-on-2": "Hazard on natural 2",
+	"persona.specialRoomMods.no-tension-roll": "No tension roll",
+	"persona.specialRoomMods.stop-on-hazard": "Stop on Hazard",
 
 	"persona.secretChoices.found": "Found",
 	"persona.secretChoices.none": "None",
