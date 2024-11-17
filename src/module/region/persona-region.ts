@@ -193,10 +193,10 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	async onEnterRegion(token: TokenDocument<PersonaActor>) {
-		console.log(`Region Entered: ${this.name}`);
+		console.debug(`Region Entered: ${this.name}`);
 		if (token.actor?.type != "pc") return;
 		const tokens = Array.from(this.tokens);
-		if (tokens.some(t => t.actor?.system.type == "shadow")) return;
+		if (tokens.some(t => t.actor?.system.type == "shadow" && !t.hidden) ) return;
 		const presence = this.regionData.concordiaPresence ?? 0;
 		if (presence > 0) {
 			await Metaverse.concordiaPresenceRoll(presence);
