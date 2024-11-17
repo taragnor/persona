@@ -67,8 +67,4 @@ class PrototypeToken<Act extends Actor<any, any>> {
 	texture: {src: string, scaleX: number, scaleY: number, offsetX: number, offsetY: number, rotation: number, tint?: unknown};
 	width: number;
 	get parent(): Act;
-
-
-
-
 }

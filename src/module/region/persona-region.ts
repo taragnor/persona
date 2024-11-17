@@ -1,3 +1,5 @@
+import { PersonaSockets } from "../persona.js";
+import { Metaverse } from "../metaverse.js";
 import { PersonaError } from "../persona-error.js";
 import { localize } from "../persona.js"
 import { UniversalModifier } from "../item/persona-item.js";
@@ -5,11 +7,24 @@ import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaDB } from "../persona-db.js";
 
-const SPECIAL_MOD_LIST = [
+declare global {
+	interface SocketMessage {
+"SEARCH_REQUEST" : {regionId: string};
+	}
+}
+
+
+const PLAYER_VISIBLE_MOD_LIST = [
 	"treasure-poor", //1d10 treasure
 	"treasure-rich", //1d20+5 treasure
 	"treasure-ultra", //1d10+15 treasure
 	"hazard-on-2",
+	"no-tension-roll",// don't roll tension after
+] as const;
+
+const SPECIAL_MOD_LIST = [
+	...PLAYER_VISIBLE_MOD_LIST,
+	"stop-on-hazard",
 ] as const;
 
 type SpecialMod = typeof SPECIAL_MOD_LIST[number];
@@ -88,7 +103,39 @@ export class PersonaRegion extends RegionDocument {
 		return this.regionData.concordiaPresence ?? 0;
 	}
 
-	async treasureFound(): Promise<Roll | undefined> {
+	async secretFound() {
+		return this.secretHazardFound("secret");
+	}
+
+	async hazardFound() {
+		return this.secretHazardFound("hazard");
+	}
+
+	async secretHazardFound(field: "secret" | "hazard") {
+		const regionData = this.regionData;
+		const fieldValue = regionData[field];
+		switch (fieldValue) {
+			case "found":
+				return;
+			case "hidden":
+				regionData[field] = "found";
+				break;
+			case "none":
+				PersonaError.softFail("Found hazard but there is none to find?");
+				return;
+			case "found-repeatable":
+				break;
+			case "hidden-repeatable":
+				regionData[field] = "found-repeatable";
+				break;
+			default:
+				fieldValue satisfies never;
+				return;
+		}
+		await this.setRegionData(regionData);
+	}
+
+	async treasureFound(searchRoll: number): Promise<Roll | undefined> {
 		const regionData = this.regionData;
 		if (this.treasuresRemaining <= 0) {
 			PersonaError.softFail("Can't find a treasure in room with no treasure left");
@@ -96,10 +143,10 @@ export class PersonaRegion extends RegionDocument {
 		}
 		regionData.treasures.found += 1;
 		await this.setRegionData(regionData);
-		return this.#treasureRoll();
+		return this.#treasureRoll(searchRoll);
 	}
 
-	async #treasureRoll() : Promise<Roll> {
+	async #treasureRoll(searchRoll: number) : Promise<Roll> {
 		const mods = this.regionData.specialMods;
 		let expr : string;
 		switch (true) {
@@ -144,7 +191,7 @@ export class PersonaRegion extends RegionDocument {
 
 	get pointsOfInterest(): string[] {
 		return this.regionData.pointsOfInterest
-		.filter(x=> x);
+			.filter(x=> x);
 	}
 
 	onEnterRegion(token: TokenDocument<PersonaActor>) {
@@ -360,6 +407,12 @@ Hooks.on("renderRegionConfig", async (app, html) => {
 	app.setPosition({ height: 'auto' });
 });
 
+Hooks.on("updateRegion", async (region) => {
+	const lastRegion = PersonaSettings.get("lastRegionExplored");
+	if (region.id == lastRegion) {
+		updateRegionDisplay(region as PersonaRegion);
+	}
+});
 
 Hooks.on("updateToken", (token, changes) => {
 	const actor = token.actor as PersonaActor;
@@ -391,6 +444,9 @@ Hooks.on("updateToken", (token, changes) => {
 
 });
 
+Hooks.on("updateCombat", (_combat) => {
+	clearRegionDisplay();
+});
 
 
 async function clearRegionDisplay() {
@@ -414,14 +470,23 @@ async function updateRegionDisplay (region: PersonaRegion) {
 }
 
 async function searchButton(ev: JQuery.ClickEvent) {
-	//temporary implementation
-	const html = `<h2>${game.user.name} wants to search the room</h2>`;
-	const speaker = ChatMessage.getSpeaker();
-	let messageData = {
-		speaker: speaker,
-		content: html,
-		style: CONST.CHAT_MESSAGE_STYLES.OOC,
-	};
-	ChatMessage.create(messageData, {});
+	if (game.user.isGM) {
+		await Metaverse.searchRoom();
+		return;
+	}
+	const region = Metaverse.getRegion();
+	if (region) {
+		const data = {regionId: region.id};
+		PersonaSockets.simpleSend("SEARCH_REQUEST", data, game.users.filter(x=> x.isGM && x.active).map(x=> x.id));
+	}
 
 }
+
+Hooks.on("socketsReady", () => {
+	PersonaSockets.setHandler("SEARCH_REQUEST", async function (data) {
+		const region = game.scenes.current.regions.find( r=> data.regionId == r.id);
+		if (!region) throw new PersonaError(`Can't find region ${data.regionId}`);
+		await Metaverse.searchRegion(region as PersonaRegion);
+	});
+
+});

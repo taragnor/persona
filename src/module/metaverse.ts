@@ -1,3 +1,5 @@
+import { SearchMenu } from "./exploration/searchMenu.js";
+import { PersonaRegion } from "./region/persona-region.js";
 import { Weapon } from "./item/persona-item.js";
 import { TriggerSituation } from "./preconditions.js";
 import { ProgressClock } from "./utility/progress-clock.js";
@@ -244,6 +246,87 @@ export class Metaverse {
 			door.update( {ds: 0});
 		}
 	}
+
+	static async searchRoom() {
+		const region = this.getRegion();
+		await this.searchRegion(region);
+	}
+
+	static async searchRegion(region: PersonaRegion) {
+		const data = region.regionData;
+		const searchOptions :typeof SearchMenu["options"] = {
+			treasureRemaining: region.treasuresRemaining,
+			stopOnHazard: data.specialMods.includes("stop-on-hazard"),
+			isHazard: data.hazard != "none" && data.hazard != "found",
+			isSecret: data.secret != "none" && data.secret != "found",
+			incTension: 1,
+			rollTension: data.specialMods.includes("no-tension-roll"),
+			hazardOnTwo: data.specialMods.includes("hazard-on-2"),
+			cycle: false,
+		};
+		const results = await SearchMenu.start(searchOptions);
+		let treasureRolls : Roll[] = [];
+		for (const result of results) {
+			switch (result.result) {
+				case "nothing":
+					break;
+				case "treasure":
+					if (!result.roll) {
+						PersonaError.softFail("Treasure Found but no roll given");
+						break;
+					}
+					const treasureRoll = await region.treasureFound(result.roll)
+					if (treasureRoll) {
+						treasureRolls.push(treasureRoll);
+					}
+					break;
+				case "hazard":
+					await region.hazardFound();
+			}
+		}
+		if (treasureRolls.length) {
+			await this.handleTreasureRolls(treasureRolls);
+		}
+	}
+
+	static async handleTreasureRolls( rolls: Roll[]) {
+		let html = `<h2> Treasure Rolls </h2>`;
+		const rollstring = rolls.map( r => `<li>${r.formula} (${r.total})</li>`).join("");
+		html += `<ul> ${rollstring} </ul>`;
+		html = `<div class="treasure-rolls"> ${html} </div>`;
+		return await ChatMessage.create({
+			speaker: {
+				alias: "Treasure Rolls"
+			},
+			content: html,
+			rolls,
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+		});
+	}
+
+	static getRegion() : PersonaRegion {
+		if (game.user.isGM) {
+			const id = PersonaSettings.get("lastRegionExplored");
+			const region = game.scenes.current.regions.find( r=> r.id == id);
+			if (!region) {
+				throw new PersonaError("No Region found matching ID ${id}");
+			}
+			return region as PersonaRegion;
+		}
+		const actor = game.user.character;
+		if (!actor) {
+			throw new PersonaError("No controlled Character");
+		}
+		const region = game.scenes.current.regions.find( region => {
+			const arr =Array.from(region.tokens);
+			return arr.some( tok => tok.actor?.id == actor.id)
+		});
+		if (!region) {
+			throw new PersonaError("Couldn't find searchable Region");
+		}
+		return region as PersonaRegion;
+	}
+
 }
 
 declare global {

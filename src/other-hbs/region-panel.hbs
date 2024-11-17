@@ -63,10 +63,8 @@
 </div>
 {{/if}}
 
-{{#if (not (isGM))}}
-<button class="search-button">
+<button class="search-button" {{#if (inCombat)}} disabled {{/if}}>
 	Search Room
 </button>
-{{/if}}
 
 

@@ -29,7 +29,8 @@ export class SearchMenu {
 		incTension: {initial: 1, label: "Increase Tension By"},
 		rollTension: {initial: true, label: "Roll Tension Pool after search"},
 		hazardOnTwo: {initial: false, label: "Hazard on 2s"},
-	} as const;
+		cycle: {initial: true, label: "allow multiple searches in a row"},
+	};
 
 	static options: SearchOptions<typeof this["template"]>;
 
@@ -48,16 +49,16 @@ export class SearchMenu {
 		return !!this.dialog && !(this.data && this.data.suspended);
 	}
 
-	static async start() : Promise<void> {
+	static async start(searchOptions?: typeof this.options) : Promise<SearchResult[]> {
 		this.data = null;
 		this.progress = {
 			treasuresFound: 0,
 			hazardFound: false,
 			secretFound: false
-		}
-		const searchOptions =  await this.searchOptionsDialog(this.template);
+		};
+		searchOptions = !searchOptions ? await this.searchOptionsDialog(this.template) : searchOptions;
 		this.options = searchOptions;
-		await this.mainLoop();
+		return await this.mainLoop();
 	}
 
 	static async resume() : Promise<void> {
@@ -71,16 +72,23 @@ export class SearchMenu {
 		}
 	}
 
-	private static async mainLoop() {
+	private static async mainLoop(): Promise<SearchResult[]> {
+		let allResults : SearchResult[] = [];
 		while (true) {
 			const results = await this.openSearchWindow(this.options!);
+			allResults = allResults.concat(results);
 			if (results.some( res => res.declaration == "leave")) {
 				this.endSearch();
 				break;
 			}
 			const ret = await this.execSearch(results, this.options);
-			if (!ret) {this.endSearch(); break;}
+			if (this.options.stopOnHazard && results.some(r => r.result == "hazard")) {
+				this.endSearch();
+				break;
+			}
+			if (!ret || !this.options.cycle) {this.endSearch(); break;}
 		}
+		return allResults;
 	}
 
 	static async endSearch() {
@@ -161,6 +169,7 @@ export class SearchMenu {
 					this.progress.treasuresFound +=1 ;
 					break;
 				case undefined:
+				case "other":
 				case "nothing":
 					break;
 				default:
@@ -534,7 +543,7 @@ type Writeable<T> = { -readonly [P in keyof T]: T[P] }
 
 type SearchResult = {
 	searcher : SearcherData;
-	result?: "nothing" | "treasure" | "hazard" | "secret";
+	result?: "nothing" | "treasure" | "hazard" | "secret" | "other";
 	roll?: number;
 	declaration: SearchAction ;
 };
@@ -568,5 +577,6 @@ type SearchResult = {
 		initial: number | string | boolean,
 		label: string,
 	}>;
+
 
 

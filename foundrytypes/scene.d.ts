@@ -16,7 +16,7 @@ class WallDocument extends FoundryDocument {
 	c: number[];
 }
 
-class RegionDocument extends FoundryDocument {
-	get tokens(): Set<TokenDocument>;
+class RegionDocument extends FoundryDocument<never> {
+	get tokens(): Set<TokenDocument<Actor<any>>>;
 
 }

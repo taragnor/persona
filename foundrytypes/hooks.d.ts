@@ -43,6 +43,7 @@ declare interface HOOKS {
 	"updateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>;
 	"updateActor": UpdateHook<Actor>;
 	"updateWall": UpdateHook<WallDocument>;
+	"updateRegion": UpdateHook<RegionDocument>;
 	"getSceneControlButtons": Function;
 	"renderJournalDirectory": Function;
 	"renderCombatTracker": RenderCombatTabFn;

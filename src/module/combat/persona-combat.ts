@@ -17,7 +17,6 @@ import { CombatTrigger } from "../../config/triggers.js";
 import { BASIC_PC_POWER_NAMES } from "../../config/basic-powers.js";
 import { PersonaSFX } from "./persona-sfx.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
-import { PersonaSockets } from "../persona.js";
 import { StatusEffect } from "../../config/consequence-types.js";
 import { DamageType } from "../../config/damage-types.js";
 import { ModifierContainer } from "../item/persona-item.js";
@@ -1628,8 +1627,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			dialog.render(true);
 		});
 	}
-
-
 
 	debug_engageList() {
 		let list = [] as string[];
