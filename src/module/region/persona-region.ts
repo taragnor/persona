@@ -199,7 +199,7 @@ export class PersonaRegion extends RegionDocument {
 		if (tokens.some(t => t.actor?.system.type == "shadow" && !t.hidden) ) return;
 		const presence = this.regionData.concordiaPresence ?? 0;
 		if (presence > 0) {
-			await Metaverse.concordiaPresenceRoll(presence);
+			await Metaverse.concordiaPresenceRoll(presence, this.name);
 
 		}
 

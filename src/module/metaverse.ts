@@ -335,12 +335,12 @@ export class Metaverse {
 		return region as PersonaRegion;
 	}
 
-	static async concordiaPresenceRoll(presenceValue: number): Promise<Roll> {
+	static async concordiaPresenceRoll( presenceValue: number, regionName: string = ""): Promise<Roll> {
 		const roll = new Roll("1d6");
 		await roll.roll();
-			let html = `<h2>Concordia Presence</h2>`;
-			html += `<div> Roll: ${roll.total} </div>`;
-			html += roll.total <= presenceValue ? `<div> Concordia Attacks!</div>` : `<div> Safe </div>`;
+		let html = `<h2> ${regionName} Concordia Presence</h2>`;
+		html += `<div> Roll vs Presence ${presenceValue}: ${roll.total} </div>`;
+		html += roll.total <= presenceValue ? `<div> Concordia Attacks!</div>` : `<div> Safe </div>`;
 		await ChatMessage.create({
 			speaker: {
 				alias: "Concordia Presence"
