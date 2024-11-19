@@ -158,18 +158,25 @@ type NonGenericConsequences = UsePowerConsequence
 	| DisplayMessageConsequence
 	| ExpendItemConsequence
 	| AlterMPConsequence
-	| ResistanceAlterConsequence
-| OtherEffectConsequence
+	| ElementalResistanceAlterConsequence
+	| StatusResistanceAlterConsequence
+	| OtherEffectConsequence
 ;
 type OtherEffectConsequence = {
 	type: "other-effect",
 	otherEffect : OtherConsequence,
 }
 
-type ResistanceAlterConsequence = {
+type ElementalResistanceAlterConsequence = {
 	type: "raise-resistance" | "lower-resistance";
 	resistType : ResistType,
 	resistanceLevel : ResistStrength,
+}
+
+type StatusResistanceAlterConsequence = {
+	type: "raise-status-resistance",
+	statusName: StatusEffectId,
+	resistanceLevel: ResistStrength,
 }
 
 type AlterMPConsequence = {

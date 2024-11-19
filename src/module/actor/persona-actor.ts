@@ -1012,13 +1012,50 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	statusResist(status: StatusEffectId) : ResistStrength {
-		if (this.system.type != "shadow")
-			return "normal";
-		const statusResist = this.system.combat.statusResists;
-		if (status in statusResist) {
-			return statusResist[status as keyof typeof statusResist];
+		switch (this.system.type) {
+			case "tarot":
+			case "npc":
+				return "normal";
+			case "pc":
+			case "shadow":
+				break;
+			default:
+				this.system satisfies never;
+				PersonaError.softFail("Unknwon Type");
+				return "normal";
 		}
-		return "normal";
+		debugger;
+		const actor = this as PC | Shadow;
+		const effectChangers=  actor.mainModifiers().filter( x=> x.getEffects(actor)
+			.some(x=> x.consequences
+				.some( cons=>cons.type == "raise-status-resistance" && cons.statusName == status)));
+		const situation : Situation = {
+			user: this.accessor,
+			target: this.accessor,
+		};
+		const consequences = effectChangers.flatMap(
+			item => item.getEffects(actor).flatMap(eff =>
+				getActiveConsequences(eff, situation, item)
+			)
+		);
+		let baseStatusResist : ResistStrength = "normal";
+		if ("statusResists" in actor.system.combat) {
+			const statusResist =actor.system.combat.statusResists;
+			if (status in statusResist) {
+				baseStatusResist = statusResist[status as keyof typeof statusResist];
+			}
+		}
+		const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
+		let resist= baseStatusResist;
+		for (const cons of consequences) {
+			if (cons.type == "raise-status-resistance"
+				&& cons.statusName == status) {
+				if (resval(cons.resistanceLevel) > resval(resist)) {
+					resist = cons.resistanceLevel;
+				}
+			}
+		}
+		return resist;
 	}
 
 	get statusResists() : {id: string, img: string, local: string, val: string}[] {

@@ -82,6 +82,16 @@
 	</div>
 	{{/if}}
 
+	{{#if (eqAny cons.type "raise-status-resistance")}}
+	<select name="{{strcat namePrefix 'statusName' }}">
+		{{selectOptions POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
+	</select>
+	<select name="{{strcat namePrefix 'resistanceLevel'}}">
+		{{selectOptions POWERSTUFF.RESIST_STRENGTHS localize=true selected=cons.resistanceLevel}}
+	</select>
+
+	{{/if}}
+
 	{{#if (eq cons.type	"set-flag")}}
 	<div>
 		<label for="flag-id"> Flag Id</label>

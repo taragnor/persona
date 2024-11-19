@@ -527,6 +527,8 @@ export class ConditionalEffectManager {
 				return `damage multiplier: ${cons.amount}`;
 			case "hp-loss":
 				return `HP loss: ${cons.amount}`;
+			case "raise-status-resistance":
+				return `${this.translate(cons.resistanceLevel, RESIST_STRENGTHS)} status ${this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE)}`;
 			default:
 				cons satisfies never;
 				return "ERROR";

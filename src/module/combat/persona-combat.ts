@@ -1029,6 +1029,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "add-power-to-list":
 			case "raise-resistance":
 			case "lower-resistance":
+			case "raise-status-resistance":
 			case "inspiration-cost":
 			case "display-msg":
 			case "use-power":

@@ -211,6 +211,7 @@ export class CombatResult  {
 			case "modifier-new":
 			case "raise-resistance":
 			case "lower-resistance":
+			case "raise-status-resistance":
 				break;
 			case "add-escalation":
 				break;
@@ -345,6 +346,7 @@ export class CombatResult  {
 					subtype: cons.subtype
 				});
 				break;
+
 			default: {
 				cons satisfies never;
 				throw new Error("Should be unreachable");

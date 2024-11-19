@@ -22,6 +22,7 @@ export const CONSQUENCELIST = [
 	"social-card-action",
 	"alter-energy",
 	"dungeon-action",
+	"raise-status-resistance",
 	"raise-resistance",
 	"lower-resistance",
 	"use-power",
