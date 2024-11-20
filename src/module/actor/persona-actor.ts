@@ -1024,7 +1024,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				PersonaError.softFail("Unknwon Type");
 				return "normal";
 		}
-		debugger;
 		const actor = this as PC | Shadow;
 		const effectChangers=  actor.mainModifiers().filter( x=> x.getEffects(actor)
 			.some(x=> x.consequences
