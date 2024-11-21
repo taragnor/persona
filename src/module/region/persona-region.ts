@@ -536,5 +536,8 @@ Hooks.on("socketsReady", () => {
 		if (!region) throw new PersonaError(`Can't find region ${data.regionId}`);
 		await Metaverse.searchRegion(region as PersonaRegion);
 	});
+});
 
+Hooks.on("canvasInit", () => {
+	clearRegionDisplay();
 });

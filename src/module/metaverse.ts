@@ -354,7 +354,8 @@ export class Metaverse {
 		await roll.roll();
 		let html = `<h2> ${regionName} Concordia Presence</h2>`;
 		html += `<div> Roll vs Presence ${presenceValue}: ${roll.total} </div>`;
-		html += roll.total <= presenceValue ? `<div> Concordia Attacks!</div>` : `<div> Safe </div>`;
+		const result = roll.total <= presenceValue ? `Concordia Attacks!` : `Safe`;
+		html += `<div class="action-result">${result}</div>`;
 		await ChatMessage.create({
 			speaker: {
 				alias: "Concordia Presence"

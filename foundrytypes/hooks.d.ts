@@ -53,6 +53,7 @@ declare interface HOOKS {
 	"renderRegionConfig": (app: ConfigApp<RegionDocument>, html: JQuery, options: unknown) => unknown;
 	"closeRegionConfig": (app: ConfigApp<RegionDocument>) => unknown,
 	"canvasReady": Function;
+	"canvasInit": Function;
 	"hoverToken" : (token: Token<any>, hover:boolean) => unknown;
 	/**hook boolean value is true on connect, false on disconnect*/
 	"userConnected": (user: FoundryUser, isConnectionEvent : boolean) => unknown;
