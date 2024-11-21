@@ -17,6 +17,7 @@ export class PersonaSFX {
 			}
 			return;
 		}
+		console.log("Playing Personal Power sounds");
 		switch (damageType) {
 			case "physical":
 			case "fire":
@@ -39,6 +40,7 @@ export class PersonaSFX {
 
 	static async onUsePower(power: Usable) {
 		if (!power.isAoE()) return;
+		console.log("Playing AoE Power sounds");
 		const damageType = power.system.dmg_type;
 		switch (damageType) {
 			case "fire":

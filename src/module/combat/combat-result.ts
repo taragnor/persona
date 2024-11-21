@@ -709,6 +709,7 @@ export class CombatResult  {
 			if (token) {
 				const power = this.power;
 				if (power && !power.isAoE()) {
+					console.log("Playing Personal Sound");
 					await PersonaSFX.onDamage(token, change.hpchange, change.damageType);
 				}
 				Hooks.callAll("onTakeDamage", token, change.hpchange, change.damageType);

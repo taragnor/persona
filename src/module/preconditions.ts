@@ -97,10 +97,11 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			target = situation.rollTotal;
 			break;
 		case "talent-level": {
-			if (!situation.user) return false
+			if (!situation.user) return false;
 			const user = PersonaDB.findActor(situation.user);
-
-			const id = source ? source.id! : "";
+			//@ts-ignore
+			const sourceItem = "sourceItem" in condition ? PersonaDB.findItem(condition.sourceItem) : "";
+			const id = sourceItem ? sourceItem.id : undefined;
 			if (!id) {
 				return false;
 			}
