@@ -67,6 +67,8 @@ type RegionData = {
 
 export class PersonaRegion extends RegionDocument {
 
+	#changeBuffer : RegionData | undefined = undefined;
+
 	defaultRegionData() : RegionData {
 		return {
 			ignore: false,
@@ -409,9 +411,16 @@ export class PersonaRegion extends RegionDocument {
 					k satisfies never;
 			}
 		}
-		this.setRegionData(data);
+		this.#changeBuffer = data;
+		// this.setRegionData(data);
 	}
 
+	async processInputBuffer() : Promise<void> {
+		const buffer = this.#changeBuffer;
+		if (buffer == undefined) return;
+		await this.setRegionData(buffer);
+		this.#changeBuffer = undefined;
+	}
 
 	formFields() {
 		const data = this.regionData;
@@ -425,6 +434,11 @@ export class PersonaRegion extends RegionDocument {
 
 }
 
+Hooks.on("closeRegionConfig", async (app) => {
+	const region = app.document as PersonaRegion;
+	await region.processInputBuffer();
+});
+
 //Append Region Configuraton dialog
 Hooks.on("renderRegionConfig", async (app, html) => {
 	let appendPoint = $(html).find(".tab.region-identity");
@@ -432,6 +446,7 @@ Hooks.on("renderRegionConfig", async (app, html) => {
 		throw new Error(`Append Point Length equals ${appendPoint.length}`);
 	}
 	const region = app.document as PersonaRegion;
+	await region.processInputBuffer();
 	appendPoint.append($("<hr>"))
 		.append(region.formFields());
 

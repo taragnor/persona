@@ -51,6 +51,7 @@ declare interface HOOKS {
 	"renderChatMessage": (msg: ChatMessage, htmlElement: JQuery<HTMLElement>, data: unknown) => Promise<unknown>;
 	"renderSceneConfig": (app: unknown, html: JQuery, options: unknown) => unknown;
 	"renderRegionConfig": (app: ConfigApp<RegionDocument>, html: JQuery, options: unknown) => unknown;
+	"closeRegionConfig": (app: ConfigApp<RegionDocument>) => unknown,
 	"canvasReady": Function;
 	"hoverToken" : (token: Token<any>, hover:boolean) => unknown;
 	/**hook boolean value is true on connect, false on disconnect*/

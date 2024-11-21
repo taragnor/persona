@@ -250,7 +250,10 @@ export class Metaverse {
 	static async searchRoom() {
 		const region = this.getRegion();
 		if (!region) {
-			throw new Error("Can't find region");
+			throw new PersonaError("Can't find region");
+		}
+		if (region.isSafe) {
+			throw new PersonaError("Room is safe can't be searched");
 		}
 		await this.searchRegion(region);
 	}
