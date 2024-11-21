@@ -34,10 +34,11 @@ export class PersonaSounds {
 
 	static async play(filename: string, volume = 1.0, recipients:string[] | false =[]) : Promise<void> {
 		if (!filename) return;
+		console.debug(`playing ${filename}`);
 		const socketOpts = (recipients && recipients.length) ? { recipients} : false;
 		const src  = `systems/persona/sound/${filename}`;
 		try {
-		const sound = await AudioHelper.play( {
+		const sound = await foundry.audio.AudioHelper.play( {
 			src,
 			volume,
 			loop: false

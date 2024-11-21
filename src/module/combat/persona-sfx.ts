@@ -13,11 +13,10 @@ export class PersonaSFX {
 		if (hpchange == 0) return;
 		if (hpchange > 0) {
 			if (damageType == "healing") {
-				await this.play("heal");
+				await this.#play("heal");
 			}
 			return;
 		}
-		console.log("Playing Personal Power sounds");
 		switch (damageType) {
 			case "physical":
 			case "fire":
@@ -27,7 +26,7 @@ export class PersonaSFX {
 			case "light":
 			case "dark":
 			case "untyped":
-				await this.play(damageType);
+				await this.#play(damageType);
 			case "healing":
 				return;
 			case "all-out": //silent since AoA plays earlier
@@ -40,7 +39,6 @@ export class PersonaSFX {
 
 	static async onUsePower(power: Usable) {
 		if (!power.isAoE()) return;
-		console.log("Playing AoE Power sounds");
 		const damageType = power.system.dmg_type;
 		switch (damageType) {
 			case "fire":
@@ -51,10 +49,10 @@ export class PersonaSFX {
 			case "dark":
 			case "cold":
 			case "lightning":
-				await this.play(damageType);
+				await this.#play(damageType);
 				break;
 			case "healing":
-				await this.play("heal");
+				await this.#play("heal");
 				break;
 			default:
 				return;
@@ -62,20 +60,28 @@ export class PersonaSFX {
 		return;
 	}
 
+	static async onAllOutAttack() {
+		await this.#play("all-out");
+	}
+
+	static async onAllOutPrompt() {
+		this.#play("all-out prompt");
+	}
+
 	static async onScan(token: PToken | undefined, _level: number) {
 		if (!token) return;
 		await this.addTMFiltersSpecial("scan", token);
-		await PersonaSFX.play("scan");
+		await PersonaSFX.#play("scan");
 		await this.removeTMFiltersSpecial("scan", token)
 	}
 
 	static async onDefend( _token: PToken | undefined, defenseType: "block" | "absorb" | "miss" | "reflect") {
-		await this.play(defenseType);
+		await this.#play(defenseType);
 	}
 
 	static async onStatus( _token : PToken | undefined, statusEffect: StatusEffectId) {
 		if (PersonaSounds.isValidSound(statusEffect)) {
-			 await this.play(statusEffect);
+			 await this.#play(statusEffect);
 		}
 	}
 
@@ -366,7 +372,6 @@ export class PersonaSFX {
 	}
 
 
-
 	static async removeTMFiltersStatus(statusId: StatusEffectId, token: TokenDocument<any>) {
 		if (!window.TokenMagic) return;
 		let filters : string[] = [];
@@ -394,7 +399,7 @@ export class PersonaSFX {
 		}
 	}
 
-	static async play(snd: Parameters<typeof PersonaSounds["playBattleSound"]>[0], volume = 1.0) {
+	static async #play(snd: Parameters<typeof PersonaSounds["playBattleSound"]>[0], volume = 1.0) {
 		await PersonaSounds.playBattleSound(snd, volume);
 	}
 

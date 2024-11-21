@@ -480,10 +480,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
 			const result = new CombatResult();
 			if (power.name == BASIC_PC_POWER_NAMES[1]) {
-				PersonaSFX.play("all-out");
+				PersonaSFX.onAllOutAttack();
 			}
 			PersonaSFX.onUsePower(power);
-			result.merge(await  this.usePowerOn(attacker, power, targets, "standard"));
+			result.merge(await this.usePowerOn(attacker, power, targets, "standard"));
 			const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
 			result.merge(costs);
 
@@ -1510,7 +1510,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			return;
 		}
 		if (!comb || !actor?.isOwner) return;
-		PersonaSFX.play("all-out prompt");
+		PersonaSFX.onAllOutPrompt();
 		if (!await HTMLTools.confirmBox("All out attack!", `All out attack is available, would you like to do it? <br> (active Party members: ${numOfAllies})`)
 		) return;
 		if (!actor.hasStatus("bonus-action")) ui.notifications.warn("No bonus action");

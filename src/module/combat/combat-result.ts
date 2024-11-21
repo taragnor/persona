@@ -539,7 +539,10 @@ export class CombatResult  {
 				case "absorb":
 				case "block":
 				case "reflect":
-					await PersonaSFX.onDefend(PersonaDB.findToken(result.target), result.result);
+					const power = PersonaDB.findItem(result.power);
+					if (power.system.dmg_type != "healing") {
+						await PersonaSFX.onDefend(PersonaDB.findToken(result.target), result.result);
+					}
 			}
 			let token: PToken | undefined;
 			for (const change of changes) {
@@ -709,7 +712,6 @@ export class CombatResult  {
 			if (token) {
 				const power = this.power;
 				if (power && !power.isAoE()) {
-					console.log("Playing Personal Sound");
 					await PersonaSFX.onDamage(token, change.hpchange, change.damageType);
 				}
 				Hooks.callAll("onTakeDamage", token, change.hpchange, change.damageType);
