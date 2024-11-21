@@ -70,7 +70,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		this._engagedList = new EngagementList(this);
 		await this._engagedList.flushData();
 		const assumeSocial = !(this.combatants.contents.some(comb=> comb.actor && comb.actor.system.type == "shadow"));
-		const combatInit = await this.roomEffectsDialog(assumeSocial);
+		const regionMods = Metaverse.getRegion()?.roomEffects.map(x=> x.id) ?? [];
+		const combatInit = await this.roomEffectsDialog(regionMods, assumeSocial);
 		this.setSocialEncounter(combatInit.isSocialScene);
 		if (combatInit.isSocialScene) {
 			await Metaverse.exitMetaverse();
@@ -79,11 +80,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const mods = combatInit.roomModifiers;
 		this.setRoomEffects(mods);
 		await this.setEscalationDie(0);
-		if (mods.length > 0) {
-			msg += "<u><h2>Room Effects</h2></u><ul>";
-			msg += mods.map( x=> `<li><b>${x.name}</b> : ${x.system.description}</li>`).join("");
-			msg += "</ul>";
-		}
+
+		msg += this.roomEffectsMsg();
+// 		if (mods.length > 0) {
+// 			msg += "<u><h2>Room Effects</h2></u><ul>";
+// 			msg += mods.map( x=> `<li><b>${x.name}</b> : ${x.system.description}</li>`).join("");
+// 			msg += "</ul>";
+// 		}
 		if (msg.length > 0) {
 			const messageData: MessageData = {
 				speaker: {alias: "Combat Start"},
@@ -452,9 +455,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			if (!game.user.isGM) {
 				ui.notifications.warn("It's not your turn!");
 				return false;
-				// if (!await HTMLTools.confirmBox("Out of turn Action", "It's not your turn, act anyway?")) {
-				// return false;
-				// }
 			} else {
 				if (!await HTMLTools.confirmBox("Out of turn Action", "It's not your turn, act anyway?")) {
 					return false;
@@ -1568,26 +1568,54 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return undefined;
 	}
 
-	getRoomEffects() : ModifierContainer[] {
+	getRoomEffects() : UniversalModifier[] {
 		const effectIds= this.getFlag<string[]>("persona", "roomEffects")
-		const allRoomEffects=  PersonaDB.getRoomModifiers();
+		const allRoomEffects = PersonaDB.getRoomModifiers();
 		if (!effectIds) return [];
 		return effectIds.flatMap(id=> {
 			const effect = allRoomEffects.find(eff => eff.id == id);
 			return effect ? [effect] : [];
-		})
+		});
+	}
+
+	async alterRoomEffects() {
+		const initial = this.getRoomEffects().map( x=> x.id);
+		const result = await this.roomEffectsDialog(initial, false);
+		await this.setRoomEffects(result.roomModifiers);
+		const msg = this.roomEffectsMsg();
+		const messageData: MessageData = {
+			speaker: {alias: "Room Effects Update"},
+			content: msg,
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+		};
+		ChatMessage.create(messageData, {});
+	}
+
+	roomEffectsMsg(): string {
+		const mods = this.getRoomEffects();
+		if (mods.length == 0) {
+			return "";
+		}
+		let msg = "";
+		msg += "<u><h2>Room Effects</h2></u><ul>";
+		msg += mods.map( x=> `<li><b>${x.name}</b> : ${x.system.description}</li>`).join("");
+		msg += "</ul>";
+		return msg;
 	}
 
 	async setRoomEffects(effects: ModifierContainer[]) {
 		await this.setFlag("persona", "roomEffects", effects.map(eff=> eff.id));
 	}
 
-	async roomEffectsDialog(startSocial: boolean) : Promise<DialogReturn>{
+	async roomEffectsDialog(initialRoomModsIds: string[] = [], startSocial: boolean) : Promise<DialogReturn> {
 		const roomMods = PersonaDB.getRoomModifiers();
-		const ROOMMODS =Object.fromEntries(roomMods.map( mod => [mod.id, mod.name]));
+		const ROOMMODS = Object.fromEntries(roomMods.map( mod => [mod.id, mod.name]));
 		const html = await renderTemplate("systems/persona/sheets/dialogs/room-effects.hbs", {
-			ROOMMODS : {"": "-",
-				...ROOMMODS},
+			ROOMMODS : {
+				"": "-",
+				...ROOMMODS
+			},
+			roomMods: initialRoomModsIds,
 			startSocial,
 		});
 		return new Promise( (conf, rej) => {
@@ -1677,6 +1705,19 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		element.find("div.weather-icon").append(weatherIcon);
 		const escalationDie = String(this.getEscalationDie());
 		element.find(".escalation-die").text(escalationDie);
+	}
+
+	displayRoomEffectChanger(element: JQuery<HTMLElement>) {
+		if (!game.user.isGM) return;
+		if (element.find(".room-effects-button").length == 0) {
+			const button = $( `
+			<button>
+			<i class="fa-solid fa-wand-magic-sparkles"></i>
+			</button>
+`).addClass("room-effects-button")
+			.on("click", this.alterRoomEffects.bind(this));
+			element.find(".combat-info").append(button);
+		}
 	}
 
 	override async rollInitiative(ids: string[], {formula=null, updateTurn=true, messageOptions={}}={}) {

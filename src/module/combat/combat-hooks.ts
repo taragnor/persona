@@ -103,6 +103,7 @@ export class CombatHooks {
 				PersonaSocial.displaySocialPanel(element);
 			} else {
 				combat.displayEscalation(element);
+				combat.displayRoomEffectChanger(element);
 			}
 		});
 
