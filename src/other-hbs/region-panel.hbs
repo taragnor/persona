@@ -1,78 +1,83 @@
-<h2>
-	{{region.name}}
-</h2>
+<section class="region-panel">
+	<h2>
+		{{region.name}}
+	</h2>
 
-{{#if region.pointsOfInterest}}
-<div class="points-of-interest">
-<h4>Points of Interest</h4>
-{{#each region.pointsOfInterest as |poi|}}
-<li>
-	{{poi}}
-</li>
-{{/each}}
-</div>
-{{/if}}
-
-
-{{#if region.regionData.concordiaPresence}}
-<div class="concordia-presence">
-	<label> Concordia Presence: </label>
-	{{region.regionData.concordiaPresence}}
-</div>
-{{/if}}
-
-<div class="treasures">
-	<h4>
-		Treasures Found
-	</h4>
-	{{data.treasures.found}}/ {{data.treasures.max}}
-</div>
-
-	{{#if region.roomEffects}}
-<div class="room-effects">
-	<h4>
-		Room Modifiers
-	</h4>
-	<ul>
-		{{#each region.roomEffects as |mod|}}
-		<b>{{mod.name}}</b> : {{mod.system.description}}
-		{{/each}}
-	</ul>
-</div>
-	{{/if}}
-
-{{#if region.specialMods}}
-<div class="special-mods">
-	<h4> Special Modifiers</h4>
-	<ul>
-		{{#each region.specialMods as |mod|}}
+	{{#if region.pointsOfInterest}}
+	<div class="points-of-interest">
+		<h3>Points of Interest</h3>
+		{{#each region.pointsOfInterest as |poi|}}
 		<li>
-			{{mod}}
+			{{poi}}
 		</li>
 		{{/each}}
-	</ul>
-</div>
-{{/if}}
-
-{{#if (isGM) }}
-<div class="secret">
-	Secret: {{data.secretDetails}} ({{region.secret}})
-</div>
-<div class="hazard">
-	Hazard: {{data.hazardDetails}} ({{region.hazard}})
-</div>
-{{/if}}
-
-{{#if (isGM) }}
-<textarea class="secretNotes">
-	{{data.secretNotes}}
-</textarea>
-{{/if}}
+	</div>
+	{{/if}}
 
 
+	{{#if region.regionData.concordiaPresence}}
+	<div class="concordia-presence">
+		<label> Concordia Presence: </label>
+		{{region.regionData.concordiaPresence}}
+	</div>
+	{{/if}}
 
-<button class="search-button" {{#if (or region.isSafe (inCombat))}} disabled {{/if}}>
-	Search Room
-</button>
+	<div class="treasures">
+		<h4>
+			Treasures Found
+		</h4>
+		{{data.treasures.found}}/ {{data.treasures.max}}
+	</div>
+
+	{{#if region.roomEffects}}
+	<div class="room-effects">
+		<h4>
+			Room Modifiers
+		</h4>
+		<ul>
+			{{#each region.roomEffects as |mod|}}
+			<b>{{mod.name}}</b> : {{mod.system.description}}
+			{{/each}}
+		</ul>
+	</div>
+	{{/if}}
+
+	{{#if region.specialMods}}
+	<div class="special-mods">
+		<h4> Special Modifiers</h4>
+		<ul>
+			{{#each region.specialMods as |mod|}}
+			<li>
+				{{mod}}
+			</li>
+			{{/each}}
+		</ul>
+	</div>
+	{{/if}}
+
+	{{#if (isGM) }}
+	<div class="secret">
+		Secret: {{data.secretDetails}} ({{region.secret}})
+	</div>
+	<div class="hazard">
+		Hazard: {{data.hazardDetails}} ({{region.hazard}})
+	</div>
+	{{/if}}
+
+	{{#if (isGM) }}
+	<hr>
+	<div class="secret-notes">
+		<label>GM Notes</label> 
+		<div>
+			{{data.secretNotes}}
+		</div>
+	</div>
+	{{/if}}
 
 
+
+	<button class="search-button" {{#if (or region.isSafe (inCombat))}} disabled {{/if}}>
+		Search Room
+	</button>
+
+</section>

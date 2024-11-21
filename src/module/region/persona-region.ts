@@ -85,11 +85,15 @@ export class PersonaRegion extends RegionDocument {
 			specialMods: [],
 			concordiaPresence: 0,
 			secretNotes: "",
-		}
-
+		} as const;
 	}
+
 	get regionData(): RegionData {
-		return this.getFlag("persona", "RegionData") ?? this.defaultRegionData();
+		const regionData = this.getFlag("persona", "RegionData") as RegionData | undefined;
+		const defaultRegion = this.defaultRegionData();
+		if (!regionData) return defaultRegion;
+			foundry.utils.mergeObject(regionData, defaultRegion, {insertKeys: true, overwrite: false});
+		return regionData;
 	}
 
 

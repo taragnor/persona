@@ -631,3 +631,14 @@ form h5 {
 	color: white;
 	padding: 10px;
 }
+
+.region-panel .points-of-interest h3 {
+	font-size: larger;
+}
+
+.region-panel label {
+	text-decoration: underline;
+	font-size: larger;
+}
+
+
