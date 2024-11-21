@@ -576,7 +576,9 @@
 	"persona.specialRoomMods.treasure-ultra": "Great Treasure (1d10+15 treasure roll)",
 	"persona.specialRoomMods.hazard-on-2": "Hazard on natural 2",
 	"persona.specialRoomMods.no-tension-roll": "No tension roll",
+	"persona.specialRoomMods.safe": "Safe (can't search, no tension/concordia roll)",
 	"persona.specialRoomMods.stop-on-hazard": "Stop on Hazard",
+	"persona.specialRoomMods.bonus-on-6": "+5 treasure on 6 search roll",
 
 	"persona.secretChoices.found": "Found",
 	"persona.secretChoices.none": "None",
@@ -595,6 +597,7 @@
 	"persona.roomAttribute.pointsOfInterest": "Points of Interest",
 	"persona.roomAttribute.specialMods": "Special Modifiers",
 	"persona.roomAttribute.concordiaPresence": "Concordia Presence",
+	"persona.roomAttribute.secretNotes": "GM Notes",
 
 
 

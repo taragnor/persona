@@ -63,7 +63,15 @@
 </div>
 {{/if}}
 
-<button class="search-button" {{#if (inCombat)}} disabled {{/if}}>
+{{#if (isGM) }}
+<textarea class="secretNotes">
+	{{data.secretNotes}}
+</textarea>
+{{/if}}
+
+
+
+<button class="search-button" {{#if (or region.isSafe (inCombat))}} disabled {{/if}}>
 	Search Room
 </button>
 

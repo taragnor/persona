@@ -19,6 +19,8 @@ const PLAYER_VISIBLE_MOD_LIST = [
 	"treasure-ultra", //1d10+15 treasure
 	"hazard-on-2",
 	"no-tension-roll",// don't roll tension after
+	"safe",//can't search and no random encounter rolls
+	"bonus-on-6" //+5 treasure on 6 search
 ] as const;
 
 const SPECIAL_MOD_LIST = [
@@ -60,6 +62,7 @@ type RegionData = {
 	pointsOfInterest: string[],
 	specialMods: SpecialMod[],
 	concordiaPresence: number,
+	secretNotes: string,
 }
 
 export class PersonaRegion extends RegionDocument {
@@ -79,11 +82,17 @@ export class PersonaRegion extends RegionDocument {
 			pointsOfInterest: [],
 			specialMods: [],
 			concordiaPresence: 0,
+			secretNotes: "",
 		}
 
 	}
 	get regionData(): RegionData {
 		return this.getFlag("persona", "RegionData") ?? this.defaultRegionData();
+	}
+
+
+	hasModifier(mod: SpecialMod) : boolean {
+		return this.regionData.specialMods.includes(mod);
 	}
 
 	get secret(): string {
@@ -100,6 +109,10 @@ export class PersonaRegion extends RegionDocument {
 
 	get concordiaPresence(): number {
 		return this.regionData.concordiaPresence ?? 0;
+	}
+
+	get isSafe() : boolean {
+		return this.hasModifier("safe");
 	}
 
 	async secretFound() {
@@ -149,7 +162,7 @@ export class PersonaRegion extends RegionDocument {
 		const mods = this.regionData.specialMods;
 		let expr : string;
 		switch (true) {
-			case mods.includes("treasure-poor"): 
+			case mods.includes("treasure-poor"):
 				expr = "1d10";
 				break;
 			case mods.includes("treasure-rich"):
@@ -157,6 +170,9 @@ export class PersonaRegion extends RegionDocument {
 				break;
 			case mods.includes("treasure-ultra"):
 				expr = "1d10+15";
+				break;
+			case mods.includes("bonus-on-6") && searchRoll == 6:
+				expr = "1d20+5";
 				break;
 			default:
 				expr = "1d20";
@@ -313,6 +329,15 @@ export class PersonaRegion extends RegionDocument {
 				);
 				break;
 			}
+			case "secretNotes": {
+				const val = this.regionData[field];
+				element.append(
+					$(`<textarea>`).addClass(`${fieldClass}`)
+					.val(val ?? "")
+					.on("change", this.#refreshRegionData.bind(this))
+				);
+				break;
+			}
 			default:
 				field satisfies never;
 				return $("<div>").text("ERROR");
@@ -350,6 +375,7 @@ export class PersonaRegion extends RegionDocument {
 				case "hazardDetails":
 				case "secret":
 				case "hazard":
+				case "secretNotes":
 				case "concordiaPresence": {
 					const input = topLevel.find(`.${fieldClass}`).val();
 					if (input != undefined) {
@@ -434,9 +460,6 @@ Hooks.on("updateToken", (token, changes) => {
 	const region = scene.regions.find( (region : PersonaRegion) => region.tokens.has(token) && !region?.regionData?.ignore)
 	if (!region || game?.combat?.active) {
 		clearRegionDisplay();
-		// if (game.user.isGM) {
-		// 	PersonaSettings.set("lastRegionExplored", "");
-		// }
 		return;
 	}
 	updateRegionDisplay(region as PersonaRegion);
@@ -475,17 +498,17 @@ async function updateRegionDisplay (region: PersonaRegion) {
 	infoPanel.find(".search-button").on("click", searchButton);
 }
 
-async function searchButton(ev: JQuery.ClickEvent) {
+async function searchButton(_ev: JQuery.ClickEvent) {
 	if (game.user.isGM) {
 		await Metaverse.searchRoom();
 		return;
 	}
 	const region = Metaverse.getRegion();
-	if (region) {
-		const data = {regionId: region.id};
-		PersonaSockets.simpleSend("SEARCH_REQUEST", data, game.users.filter(x=> x.isGM && x.active).map(x=> x.id));
+	if (!region) {
+		throw new PersonaError("Can't find region");
 	}
-
+	const data = {regionId: region.id};
+	PersonaSockets.simpleSend("SEARCH_REQUEST", data, game.users.filter(x=> x.isGM && x.active).map(x=> x.id));
 }
 
 Hooks.on("socketsReady", () => {

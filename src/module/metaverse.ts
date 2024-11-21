@@ -249,6 +249,9 @@ export class Metaverse {
 
 	static async searchRoom() {
 		const region = this.getRegion();
+		if (!region) {
+			throw new Error("Can't find region");
+		}
 		await this.searchRegion(region);
 	}
 
@@ -312,12 +315,12 @@ export class Metaverse {
 		});
 	}
 
-	static getRegion() : PersonaRegion {
+	static getRegion() : PersonaRegion | undefined {
 		if (game.user.isGM) {
 			const id = PersonaSettings.get("lastRegionExplored");
 			const region = game.scenes.current.regions.find( r=> r.id == id);
 			if (!region) {
-				throw new PersonaError("No Region found matching ID ${id}");
+				throw new PersonaError(`No Region found matching ID ${id}`);
 			}
 			return region as PersonaRegion;
 		}
@@ -325,12 +328,20 @@ export class Metaverse {
 		if (!actor) {
 			throw new PersonaError("No controlled Character");
 		}
-		const region = game.scenes.current.regions.find( region => {
+		let region = game.scenes.current.regions.find( region => {
 			const arr =Array.from(region.tokens);
 			return arr.some( tok => tok.actor?.id == actor.id)
 		});
 		if (!region) {
-			throw new PersonaError("Couldn't find searchable Region");
+			//Search for party token
+			region = game.scenes.current.regions.find(
+				region => {
+					const arr = Array.from(region.tokens);
+					return arr.some(token => token.actor?.isOwner);
+				});
+			if (!region) {
+				return undefined;
+			}
 		}
 		return region as PersonaRegion;
 	}
