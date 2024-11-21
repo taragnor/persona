@@ -1,3 +1,4 @@
+import { Power } from "../item/persona-item.js";
 import { Consumable } from "../item/persona-item.js";
 import { Metaverse } from "../metaverse.js";
 import { Consequence } from "../../config/consequence-types.js";
@@ -684,6 +685,15 @@ export class CombatResult  {
 		CombatResult.normalizeChange(change);
 	}
 
+	get power() : Usable | undefined {
+		for (const key of this.attacks.keys()) {
+			if (key.power) {
+				return PersonaDB.findItem(key.power);
+			}
+		}
+		return undefined;
+	}
+
 	async applyChange(change: ActorChange<PC | Shadow>) {
 		const actor = PersonaDB.findActor(change.actor);
 		const token  = change.actor.token ? PersonaDB.findToken(change.actor.token) as PToken: undefined;
@@ -697,7 +707,10 @@ export class CombatResult  {
 				});
 			}
 			if (token) {
-				await PersonaSFX.onDamage(token, change.hpchange, change.damageType);
+				const power = this.power;
+				if (power && !power.isAoE()) {
+					await PersonaSFX.onDamage(token, change.hpchange, change.damageType);
+				}
 				Hooks.callAll("onTakeDamage", token, change.hpchange, change.damageType);
 			}
 			await actor.modifyHP(change.hpchange * change.hpchangemult);

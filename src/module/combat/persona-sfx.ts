@@ -41,10 +41,23 @@ export class PersonaSFX {
 		if (!power.isAoE()) return;
 		const damageType = power.system.dmg_type;
 		switch (damageType) {
+			case "fire":
 			case "untyped":
+			case "wind":
+			case "light":
+			case "physical":
+			case "dark":
+			case "cold":
+			case "lightning":
 				await this.play(damageType);
+				break;
+			case "healing":
+				await this.play("heal");
+				break;
 			default:
+				return;
 		}
+		return;
 	}
 
 	static async onScan(token: PToken | undefined, _level: number) {
