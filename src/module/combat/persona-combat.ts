@@ -188,7 +188,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				}
 			}
 		}
-		const speaker = ChatMessage.getSpeaker({alias: combatant?.token?.name ?? "Unknown"});
+		const speaker = {alias: combatant?.token?.name ?? "Unknown"};
 		let messageData = {
 			speaker: speaker,
 			content: startTurnMsg.join("<br>"),
@@ -1743,25 +1743,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			rolls.push({combatant, roll});
 			updates.push({_id: id, initiative: roll.total});
 
-			// Construct chat message data
-			// let messageData = foundry.utils.mergeObject({
-			//   speaker: ChatMessage.getSpeaker({
-			//     actor: combatant.actor,
-			//     token: combatant.token,
-			//     alias: combatant.name
-			//   }),
-			//   flavor: game.i18n.format("COMBAT.RollsInitiative", {name: combatant.name}),
-			//   flags: {"core.initiativeRoll": true}
-			// }, messageOptions);
-			// const chatData = await roll.toMessage(messageData, {create: false});
-
-			// If the combatant is hidden, use a private roll unless an alternative rollMode was explicitly requested
-			// chatData.rollMode = "rollMode" in messageOptions ? messageOptions.rollMode
-			//   : (combatant.hidden ? CONST.DICE_ROLL_MODES.PRIVATE : chatRollMode );
-
-			// Play 1 sound for the whole rolled set
-			// if ( i > 0 ) chatData.sound = null;
-			// messages.push(chatData);
 		}
 		if ( !updates.length ) return this;
 

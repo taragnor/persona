@@ -323,7 +323,7 @@ export class Metaverse {
 			const id = PersonaSettings.get("lastRegionExplored");
 			const region = game.scenes.current.regions.find( r=> r.id == id);
 			if (!region) {
-				throw new PersonaError(`No Region found matching ID ${id}`);
+				return undefined;
 			}
 			return region as PersonaRegion;
 		}
