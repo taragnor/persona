@@ -118,7 +118,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		'canUsePower': (actor:PC | Shadow, power: Power) => {
-			return actor.isAlive() && actor.canPayActivationCost(power, false) && power.system?.subtype != "passive" && power.system?.subtype != "defensive" ;
+			return actor.isAlive() && actor.canUsePower(power, false) && power.system?.subtype != "passive" && power.system?.subtype != "defensive" ;
 		},
 
 		'canModifySearchChoice': (ownerId : string) => {

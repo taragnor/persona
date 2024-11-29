@@ -1177,6 +1177,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update( {"this.system.combat.classData.classId": cClass.id});
 	}
 
+	canUsePower (this: PC | Shadow, usable: Usable, outputReason: boolean = true) : boolean {
+		if (this.hasStatus("rage") && usable != PersonaDB.getBasicPower("Basic Attack")) {
+			if (outputReason) {
+				ui.notifications.warn("Can't only use basic attacks when raging");
+			}
+			return false;
+		}
+		return this.canPayActivationCost(usable, outputReason);
+
+	}
+
 	canPayActivationCost(this: PC | Shadow, usable: Usable, outputReason: boolean = true) : boolean {
 		if (this.system.type == "pc") {
 			return (this as PC).canPayActivationCost_pc(usable, outputReason);

@@ -70,7 +70,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		this._engagedList = new EngagementList(this);
 		await this._engagedList.flushData();
 		const assumeSocial = !(this.combatants.contents.some(comb=> comb.actor && comb.actor.system.type == "shadow"));
-		const regionMods = Metaverse.getRegion()?.roomEffects.map(x=> x.id) ?? [];
+			const regionMods = Metaverse.getRegion()?.roomEffects.map(x=> x.id) ?? [];
 		const combatInit = await this.roomEffectsDialog(regionMods, assumeSocial);
 		this.setSocialEncounter(combatInit.isSocialScene);
 		if (combatInit.isSocialScene) {
@@ -465,6 +465,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			ui.notifications.notify("You can't pay the activation cost for this power");
 			return false;
 		}
+		if (!attacker.actor.canUsePower(power)) {
+			ui.notifications.notify("You can't Use this power");
+			return false;
+		}
 		return true;
 	}
 
@@ -688,6 +692,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 		if (naturalAttackRoll == 1
 			|| total < defenseVal
+			|| (attacker.actor.hasStatus("rage") && naturalAttackRoll % 2 == 1)
 		) {
 			situation.hit = false;
 			situation.criticalHit = false;
@@ -706,6 +711,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		if (naturalAttackRoll + critBoost >= 20
 			&& (!power.isMultiTarget() || naturalAttackRoll % 2 == 0)
+			&& !target.actor.hasStatus("blocking")
 		) {
 			situation.hit = true;
 			situation.criticalHit  = true;
@@ -1237,10 +1243,15 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const targets= combat.combatants.filter( x => {
 			const actor = x.actor;
 			if (!actor || !(actor as ValidAttackers).isAlive())  return false;
-			return ((x.actor as ValidAttackers).getAllegiance() != attackerType)
-		});
-		return targets.map( x=> x.token as PToken);
-	}
+			if (actor.hasStatus("challenged") || token.actor.hasStatus("challenged")) {
+				if (!combat.isEngaging(PersonaDB.getUniversalTokenAccessor(token), PersonaDB.getUniversalTokenAccessor(x.token))) {
+					return false;
+				}
+			}
+				return ((x.actor as ValidAttackers).getAllegiance() != attackerType)
+			});
+			return targets.map( x=> x.token as PToken);
+		}
 
 	static getAllAlliesOf(token: PToken) : PToken[] {
 		const attackerType = token.actor.getAllegiance();
@@ -1266,6 +1277,21 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	static async getTargets(attacker: PToken, power: Usable, altTargets?: PToken[]): Promise<PToken[]> {
 		const selected = altTargets != undefined ? altTargets : Array.from(game.user.targets).map(x=> x.document) as PToken[];
 
+		const combat = game.combat as PersonaCombat | undefined;
+		if (combat) {
+			const attackerActor = attacker.actor;
+			for (const target of selected) {
+				const targetActor = target.actor;
+				const engagingTarget  = combat.isEngaging(PersonaDB.getUniversalTokenAccessor(attacker), PersonaDB.getUniversalTokenAccessor(target));
+				if (attackerActor.hasStatus("challenged") && !engagingTarget) {
+					throw new PersonaError("Can't target non-engaged when challenged");
+				}
+				if (targetActor.hasStatus("challenged") && !engagingTarget) {
+					throw new PersonaError("Can't target a challenged target you're not engaged with");
+				}
+			}
+		}
+
 		const attackerType = attacker.actor.getAllegiance();
 		switch (power.system.targets) {
 			case "1-engaged":
@@ -1281,8 +1307,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return this.getAllEnemiesOf(attacker);
 			}
 			case "all-dead-allies": {
-				const combat= this.ensureCombatExists();
-				const targets= combat.combatants.filter( x => {
+				const combat = this.ensureCombatExists();
+				const targets = combat.combatants.filter( x => {
 					const actor = x.actor;
 					if (!actor) return false;
 					if ((actor as ValidAttackers).isAlive()) return false;

@@ -35,6 +35,7 @@ export class EngagementChecker {
 			const checkedToken = checkList.pop()!;
 			for (const comb of combat.combatants.contents) {
 				if (!comb.token) continue;
+				if (!comb.token.actor?.isAlive()) continue;
 				const token  = comb.token as PToken;
 				if ( this.isWithinEngagedRange(checkedToken, token)
 					&& !engagedList.has(token)
@@ -51,11 +52,11 @@ export class EngagementChecker {
 
 	static isWithinEngagedRange(subject: PToken, target:PToken) : boolean {
 		const mapUnits = subject.parent.dimensions.distance;
-		if (canvas?.grid?.measurePath) {
-			//V12
-			return canvas.grid.measurePath([subject, target]).distance <= mapUnits;
-		}
-		return canvas.grid.measureDistance(subject, target, {gridSpaces:true}) <= mapUnits;
+		// if (canvas?.grid?.measurePath) {
+		//V12
+		return canvas.grid.measurePath([subject, target]).distance <= mapUnits;
+		// }
+		// return canvas.grid.measureDistance(subject, target, {gridSpaces:true}) <= mapUnits;
 	}
 
 }

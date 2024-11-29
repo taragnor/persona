@@ -139,6 +139,8 @@
 	"persona.status.jailed" : "Imprisoned",
 	"persona.status.sticky" : "Defender",
 	"persona.status.baton-pass" : "Baton Pass",
+	"persona.status.challenged" : "Challenged",
+	"persona.status.rage" : "Rage",
 
 	"persona.damage.low": "Low",
 	"persona.damage.high": "High",
