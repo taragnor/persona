@@ -129,11 +129,21 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
-	get validCombatants() : Combatant<ValidAttackers>[] {
-		return this.combatants.contents
-			.filter( x=> x.actor != undefined
-				&& x.actor.system.type != "npc"
-			) as Combatant<ValidAttackers>[];
+	validCombatants(attacker?: PToken): Combatant<ValidAttackers>[] {
+		const challenged = attacker?.actor.hasStatus("challenged");
+		return this.combatants.contents.filter( x=> {
+			if (!x.actor) {return false;}
+			const type = x.actor.system.type;
+			if (type == "npc" || type == "tarot") return false;
+			if (attacker == x.token) {return true;}
+			if (challenged || x.actor.hasStatus("challenged")) {
+				if (!this.isEngaging(PersonaDB.getUniversalTokenAccessor(attacker!), PersonaDB.getUniversalTokenAccessor(x.token))) {
+					return false;
+				}
+			}
+			return true;
+		}) as Combatant<ValidAttackers>[];
+
 	}
 
 	override get combatant() : Option<Combatant<ValidAttackers>>{
@@ -1237,21 +1247,17 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
+
 	static getAllEnemiesOf(token: PToken) : PToken [] {
 		const attackerType = token.actor.getAllegiance();
 		const combat= this.ensureCombatExists();
-		const targets= combat.combatants.filter( x => {
+		const targets = combat.validCombatants(token).filter( x => {
 			const actor = x.actor;
-			if (!actor || !(actor as ValidAttackers).isAlive())  return false;
-			if (actor.hasStatus("challenged") || token.actor.hasStatus("challenged")) {
-				if (!combat.isEngaging(PersonaDB.getUniversalTokenAccessor(token), PersonaDB.getUniversalTokenAccessor(x.token))) {
-					return false;
-				}
-			}
-				return ((x.actor as ValidAttackers).getAllegiance() != attackerType)
-			});
-			return targets.map( x=> x.token as PToken);
-		}
+			if (!actor || !actor.isAlive())  return false;
+			return (x.actor.getAllegiance() != attackerType)
+		});
+		return targets.map( x=> x.token as PToken);
+	}
 
 	static getAllAlliesOf(token: PToken) : PToken[] {
 		const attackerType = token.actor.getAllegiance();
@@ -1546,13 +1552,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	findCombatant(token :PToken) : Combatant<ValidAttackers> | undefined {
-		return this.validCombatants.find( comb=> comb.token == token);
+		return this.validCombatants().find( comb=> comb.token == token);
 	}
 
 	getAllies(comb: Combatant<ValidAttackers>) : Combatant<ValidAttackers>[] {
 		const allegiance = comb.actor?.getAllegiance();
 		if (!allegiance) return [];
-		return this.validCombatants.filter( c => c.actor != null
+		return this.validCombatants().filter( c => c.actor != null
 			&& (c.actor.getAllegiance() == allegiance)
 			&& c != comb);
 	}
