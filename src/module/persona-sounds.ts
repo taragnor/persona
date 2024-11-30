@@ -3,11 +3,11 @@ import { Helpers } from "./utility/helpers.js";
 
 const SOUNDS = {
 
-	"fire": "",
+	"fire": "atk-fire.mp3",
 	"absorb": "atk-absorb.m4a.mp3",
 	"dark": "atk-dark.m4a.mp3",
 	"heal": "atk-heal.m4a.mp3",
-	"cold": "atk-ice.m4a.mp3",
+	"cold": "atk-ice.mp3",
 	"light": "atk-light.m4a.mp3",
 	"debuff": "atk-debuff.mp3",
 	"block": "atk-block.m4a.mp3",
@@ -15,7 +15,8 @@ const SOUNDS = {
 	"buff": "atk-buff.m4a.mp3",
 	"raise": "atk-raise-dead.m4a.mp3",
 	"reflect": "atk-reflect.m4a.mp3",
-	"lightning": "atk-thunder.m4a.mp3",
+	"lightning": "atk-lightning.mp3",
+	// "lightning": "atk-thunder.m4a.mp3",
 	"wind": "atk-wind.m4a.mp3",
 	"miss": "",
 	"all-out prompt": "atk-all-out-prompt.mp3",
@@ -34,9 +35,9 @@ export class PersonaSounds {
 
 	static async play(filename: string, volume = 1.0, recipients:string[] | false =[]) : Promise<void> {
 		if (!filename) return;
-		console.debug(`playing ${filename}`);
 		const socketOpts = (recipients && recipients.length) ? { recipients} : false;
 		const src  = `systems/persona/sound/${filename}`;
+		console.debug(`playing ${src}`);
 		try {
 		const sound = await foundry.audio.AudioHelper.play( {
 			src,
@@ -47,7 +48,9 @@ export class PersonaSounds {
 				await waitUntilTrue( () => !sound.playing);
 		}
 		} catch (e) {
-			ui.notifications.error(`Trouble playing sound ${filename}`);
+			const msg =`Trouble playing sound ${filename}`;
+			ui.notifications.error(msg);
+			console.warn(msg);
 		}
 	}
 

@@ -1247,7 +1247,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
-
 	static getAllEnemiesOf(token: PToken) : PToken [] {
 		const attackerType = token.actor.getAllegiance();
 		const combat= this.ensureCombatExists();
@@ -1311,7 +1310,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 			case "all-dead-allies": {
 				const combat = this.ensureCombatExists();
-				const targets = combat.combatants.filter( x => {
+				const targets = combat.validCombatants(attacker)
+				.filter( x => {
 					const actor = x.actor;
 					if (!actor) return false;
 					if ((actor as ValidAttackers).isAlive()) return false;
@@ -1333,14 +1333,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				throw new PersonaError("Targetting type not yet implemented");
 			case "all-others": {
 				const combat= this.ensureCombatExists();
-				return combat.combatants.contents
+				return combat.validCombatants(attacker)
 				.filter( x=> x.actorId != attacker.actor.id
 					&& x?.actor?.isAlive())
 				.map( x=> x.token as PToken);
 			}
 			case "everyone":{
 				const combat= this.ensureCombatExists();
-				return combat.combatants.contents
+				return combat.validCombatants(attacker)
 				.filter( x=> x?.actor?.isAlive())
 				.map( x=> x.token as PToken);
 			}
