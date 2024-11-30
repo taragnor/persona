@@ -1226,9 +1226,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return this.getAllAlliesOf(attacker);
 			}
 			case "all-combatants": {
-				const combat = game.combat;
+				const combat = game.combat as PersonaCombat;
 				if (!combat) return [];
-				return combat.combatants.contents.flatMap( c=> c.actor ? [c.token as PToken] : []);
+				return combat.validCombatants(attacker).flatMap( c=> c.actor ? [c.token as PToken] : []);
 			}
 			case "user": {
 				if (!situation.user) return [];
@@ -1261,9 +1261,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	static getAllAlliesOf(token: PToken) : PToken[] {
 		const attackerType = token.actor.getAllegiance();
-		const combat= game.combat;
+		const combat= game.combat as PersonaCombat;
 		const tokens = combat
-			? combat.combatants.contents
+			? combat.validCombatants(token)
 			.filter( x=> x.actor)
 			.map(x=> x.token)
 			: game.scenes.current.tokens
@@ -1276,13 +1276,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			return ((x.actor as ValidAttackers).getAllegiance() == attackerType)
 		});
 		return targets.map( x=> x as PToken);
-
 	}
-
 
 	static async getTargets(attacker: PToken, power: Usable, altTargets?: PToken[]): Promise<PToken[]> {
 		const selected = altTargets != undefined ? altTargets : Array.from(game.user.targets).map(x=> x.document) as PToken[];
-
 		const combat = game.combat as PersonaCombat | undefined;
 		if (combat) {
 			const attackerActor = attacker.actor;
