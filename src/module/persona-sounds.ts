@@ -39,14 +39,14 @@ export class PersonaSounds {
 		const src  = `systems/persona/sound/${filename}`;
 		console.debug(`playing ${src}`);
 		try {
-		const sound = await foundry.audio.AudioHelper.play( {
-			src,
-			volume,
-			loop: false
-		}, socketOpts);
-		if (sound) {
+			const sound = await foundry.audio.AudioHelper.play( {
+				src,
+				volume,
+				loop: false
+			}, socketOpts);
+			if (sound) {
 				await waitUntilTrue( () => !sound.playing);
-		}
+			}
 		} catch (e) {
 			const msg =`Trouble playing sound ${filename}`;
 			ui.notifications.error(msg);
