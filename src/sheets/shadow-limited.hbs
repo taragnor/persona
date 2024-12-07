@@ -36,7 +36,7 @@
 					<label>
 						Tags:
 					</label>
-					{{#each actor.system.creatureTags |tag|}}
+					{{#each actor.system.creatureTags as |tag|}}
 					{{localize (lookup ../CREATURE_TAGS tag)}}
 					{{/each}}
 				</div>
