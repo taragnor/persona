@@ -343,7 +343,6 @@ export class TarotSchema extends foundry.abstract.DataModel {
 			...BaseStuff.defineSchema(),
 			studentAbility: new txt(),
 			perk: new txt(),
-			//include
 		} as const;
 		return ret;
 	}
