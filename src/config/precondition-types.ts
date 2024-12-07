@@ -1,3 +1,4 @@
+import { CreatureTag } from "./creature-tags.js";
 import { CreatureType } from "./shadow-types.js";
 import { ShadowRole } from "./shadow-types.js";
 import { UniversalActorAccessor } from "../module/utility/db-accessor.js";
@@ -226,9 +227,17 @@ type StatusComparisonPC = {
 	conditionTarget : ConditionTarget,
 }
 
-type TagComparisonPC = {
+type TagComparisonPC = PowerTagComparison | CreatureTagComparison;
+
+type PowerTagComparison = {
 	boolComparisonTarget: "has-tag",
 	powerTag : PowerTag | Record<PowerTag, boolean>,
+}
+
+type CreatureTagComparison = {
+	boolComparisonTarget: "has-creature-tag",
+	creatureTag : CreatureTag | Record<CreatureTag, boolean>,
+	conditionTarget : ConditionTarget,
 }
 
 type DamageTypeComparisonPC= {
@@ -274,7 +283,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"metaverse-enhanced",
 	"is-shadow",
 	"is-pc",
-	"has-tag",
+	"has-tag",//power-has-tag
 	"in-combat",
 	"is-critical",
 	"is-hit",
@@ -300,6 +309,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"creature-type-is",
 	"power-slot-is",
 	"social-availability",
+	"has-creature-tag",
 ] as const;
 
 

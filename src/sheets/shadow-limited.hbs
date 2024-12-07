@@ -31,6 +31,17 @@
 					<label> HP </label>
 					<span> {{actor.hp}} / {{actor.mhp}} </span>
 				</div>
+				{{#if actor.system.creatureTags}}
+				<div>
+					<label>
+						Tags:
+					</label>
+					{{#each actor.system.creatureTags |tag|}}
+					{{localize (lookup ../CREATURE_TAGS tag)}}
+					{{/each}}
+				</div>
+				{{/if}}
+
 				{{/if}}
 
 			</div>

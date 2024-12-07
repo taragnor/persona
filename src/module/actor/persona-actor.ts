@@ -1,3 +1,4 @@
+import { CreatureTag } from "../../config/creature-tags.js";
 import { PersonaSocial } from "../social/persona-social.js";
 import { TAROT_DECK } from "../../config/tarot.js";
 import { localize } from "../persona.js";
@@ -2016,6 +2017,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async onCombatStart() {
+	}
+
+	hasCreatureTag(tag: CreatureTag) : boolean{
+		return this.system.creatureTags.includes(tag);
+	}
+
+	async deleteCreatureTag(index: number) : Promise<void> {
+		console.log("Delete creature tag");
+		const tags = this.system.creatureTags;
+		tags.splice(index, 1);
+		await this.update( {"system.creatureTags": tags});
+	}
+
+	async addCreatureTag() : Promise<void> {
+		console.log("Adding creature tag");
+		const tags = this.system.creatureTags;
+		tags.push("neko");
+		await this.update( {"system.creatureTags": tags});
 	}
 
 	async onAddToCombat() {

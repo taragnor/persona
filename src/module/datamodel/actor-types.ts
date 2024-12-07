@@ -1,3 +1,4 @@
+import { CREATURE_TAG_LIST } from "../../config/creature-tags.js";
 const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
 import { SHADOW_CREATURE_TYPE_LIST } from "../../config/shadow-types.js";
 import { PC } from "../actor/persona-actor.js";
@@ -198,6 +199,7 @@ abstract class BaseStuff extends window.foundry.abstract.DataModel {
 			locked: new bool( { initial: false}),
 			short_desc: new txt(),
 			flags: new arr(new obj<FlagData>()),
+			creatureTags: new arr(new txt({choices:CREATURE_TAG_LIST})),
 		}
 	}
 

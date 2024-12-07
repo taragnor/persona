@@ -518,6 +518,11 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 					return undefined;
 			}
 		}
+		case "has-creature-tag":  {
+			const target = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!target) return undefined;
+			return multiCheckTest(condition.creatureTag, x => target.hasCreatureTag(x));
+		}
 		default :
 			condition satisfies never;
 			return undefined;
@@ -607,10 +612,23 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 	}
 }
 
-function multiCheckContains<T extends string>(multiCheck: MultiCheck<T>, arr: T[]) : boolean {
-			return Object.entries(multiCheck)
-			.filter( ([_, val]) => val == true)
-			.some (([item, _]) => arr.includes(item as T));
+function multiCheckContains<T extends string>(multiCheck: MultiCheck<T> | T, arr: T[]) : boolean {
+	if (typeof multiCheck != "object") {
+		return arr.includes(multiCheck);
+	}
+	return Object.entries(multiCheck)
+		.filter( ([_, val]) => val == true)
+		.some (([item, _]) => arr.includes(item as T));
+}
+
+function multiCheckTest<T extends string>(multiCheck: MultiCheck<T> | T, testFn: (x: T) => boolean) : boolean {
+	if (typeof multiCheck != "object") {
+		return testFn(multiCheck)
+	}
+	return Object.entries(multiCheck)
+		.filter( ([_, val]) => val == true)
+		.some (([item, _]) => testFn(item as T));
+
 }
 
 export type UserSituation = {

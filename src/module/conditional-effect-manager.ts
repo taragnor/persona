@@ -1,3 +1,4 @@
+import { CREATURE_TAGS } from "../config/creature-tags.js";
 import { STATUS_EFFECT_DURATIONS } from "../config/status-effects.js";
 import { MODIFIER_VARIABLES } from "../config/effect-types.js";
 import { MODIFIERS_TABLE } from "../config/item-modifiers.js";
@@ -364,6 +365,10 @@ export class ConditionalEffectManager {
 						cond satisfies never;
 						return `ERROR`;
 				}
+			case "has-creature-tag": {
+				const tags = this.translate(cond.creatureTag, CREATURE_TAGS);
+				return `${target1} ${not} has Tag: ${tags}`;
+			}
 			default:
 				cond satisfies never
 				return "";
@@ -400,10 +405,10 @@ export class ConditionalEffectManager {
 				const name = socialTarget ? socialTarget.displayedName : "Unknown";
 				return `${name} SL ${endString(cond.num)}`;
 			case "student-skill":
-				const skill = this.translate(cond.studentSkill!, STUDENT_SKILLS);
+					const skill = this.translate(cond.studentSkill!, STUDENT_SKILLS);
 				return `${skill} ${endString(cond.num)}`;
 			case "character-level":
-				return `Character Level ${endString(cond.num)}`;
+					return `Character Level ${endString(cond.num)}`;
 			case "has-resources":
 				return `Resources ${endString(cond.num)}`;
 			case "resistance-level":

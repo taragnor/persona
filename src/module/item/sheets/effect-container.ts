@@ -1,3 +1,4 @@
+import { CREATURE_TAGS } from "../../../config/creature-tags.js";
 import { SOCIAL_CHECKS } from "../../../config/precondition-types.js";
 import { ALTER_MP_SUBTYPES } from "../../../config/effect-types.js";
 import { CREATURE_TYPE } from "../../../config/shadow-types.js";
@@ -119,6 +120,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			CREATURE_TYPE,
 			ALTER_MP_SUBTYPES,
 			SOCIAL_CHECKS,
+			CREATURE_TAGS,
 		};
 		return this._powerStuffBase;
 	}

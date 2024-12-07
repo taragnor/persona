@@ -1,3 +1,4 @@
+import { CREATURE_TAGS } from "../../../config/creature-tags.js";
 import { SHADOW_CREATURE_TYPE } from "../../../config/shadow-types.js";
 import { PersonaDB } from "../../persona-db.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
@@ -21,6 +22,7 @@ export class ShadowSheet extends CombatantSheetBase {
 
 	override async getData() {
 		const data = await super.getData();
+		data.CREATURE_TAGS = CREATURE_TAGS;
 		data.SHADOW_CREATURE_TYPE= SHADOW_CREATURE_TYPE;
 		data.SHADOW_ROLE = SHADOW_ROLE;
 		data.TREASURE_LIST = Object.fromEntries(
@@ -48,11 +50,23 @@ export class ShadowSheet extends CombatantSheetBase {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
+		html.find(".creatureTags .delTag").on("click", this.deleteCreatureTag.bind(this));
+		html.find('.addCreatureTag').on("click", this.onAddCreatureTag.bind(this));
 		html.find('.addShadowPower').on("click", this.onAddPower.bind(this));
 		html.find('.addShadowFocus').on("click", this.onAddFocus.bind(this));
 		html.find(".recost-power").on("click", this.onRecostPower.bind(this));
 		html.find(".add-dungeon").on("click", this.addDungeon.bind(this));
 		html.find(".del-dungeon").on("click", this.deleteDungeon.bind(this));
+	}
+
+	async onAddCreatureTag( _ev: JQuery.ClickEvent) {
+		await this.actor.addCreatureTag();
+	}
+
+	async deleteCreatureTag(ev: JQuery.ClickEvent) {
+		const index = HTMLTools.getClosestData(ev, "tagIndex");
+		await this.actor.deleteCreatureTag(Number(index));
+
 	}
 
 	async onAddPower( _ev: Event) {

@@ -116,8 +116,14 @@
 		{{selectOptions POWERSTUFF.DAMAGETYPESPLUS localize=true selected=cond.powerDamageType}}
 	</select>
 	{{/if}}
-	{{#if (strIncludes cond.boolComparisonTarget "tag")}}
-		{{multicheck (strcat namePrefix 'powerTag') POWERSTUFF.TAGS checked=cond.powerTag localize=true}}
+	{{#if (eqAny cond.boolComparisonTarget "has-tag" "not-has-tag")}}
+	{{multicheck (strcat namePrefix 'powerTag') POWERSTUFF.TAGS checked=cond.powerTag localize=true}}
+	{{/if}}
+	{{#if (eqAny cond.boolComparisonTarget "has-creature-tag")}}
+	<select name="{{strcat namePrefix 'conditionTarget'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+	</select>
+	{{multicheck (strcat namePrefix 'creatureTag') POWERSTUFF.CREATURE_TAGS checked=cond.creatureTag localize=true}}
 	{{/if}}
 	{{#if (eq cond.boolComparisonTarget	"power-type-is")}}
 	<select name="{{strcat namePrefix 'powerType'}}">
@@ -131,7 +137,7 @@
 	{{/if}}
 	{{#if (eq cond.boolComparisonTarget "weather-is")}}
 	<label>Weather </label>
-		{{multicheck (strcat namePrefix 'weatherComparison') POWERSTUFF.WEATHER_TYPES checked=cond.weatherComparison localize=true}}
+	{{multicheck (strcat namePrefix 'weatherComparison') POWERSTUFF.WEATHER_TYPES checked=cond.weatherComparison localize=true}}
 	{{/if}}
 	{{#if (eq cond.boolComparisonTarget  "power-target-type-is")}}
 	<div>
