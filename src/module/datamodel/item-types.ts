@@ -44,7 +44,7 @@ function weeklyAvailability() {
 	});
 }
 
-class Weapon extends foundry.abstract.DataModel {
+class Weapon extends foundry.abstract.TypeDataModel {
 	get type() { return "weapon" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -56,7 +56,7 @@ class Weapon extends foundry.abstract.DataModel {
 	}
 }
 
-class Focus extends foundry.abstract.DataModel {
+class Focus extends foundry.abstract.TypeDataModel {
 	get type() { return "focus" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -67,7 +67,7 @@ class Focus extends foundry.abstract.DataModel {
 	}
 }
 
-class UniversalModifier extends foundry.abstract.DataModel {
+class UniversalModifier extends foundry.abstract.TypeDataModel {
 	get type() { return "universalModifier" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -79,7 +79,7 @@ class UniversalModifier extends foundry.abstract.DataModel {
 	}
 }
 
-class PowerSchema extends foundry.abstract.DataModel {
+class PowerSchema extends foundry.abstract.TypeDataModel {
 	get type() {return "power" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -124,7 +124,7 @@ class PowerSchema extends foundry.abstract.DataModel {
 	}
 }
 
-class ConsumableSchema extends foundry.abstract.DataModel {
+class ConsumableSchema extends foundry.abstract.TypeDataModel {
 	get type() {return "consumable" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -157,7 +157,7 @@ class ConsumableSchema extends foundry.abstract.DataModel {
 }
 
 
-class Talent extends foundry.abstract.DataModel {
+class Talent extends foundry.abstract.TypeDataModel {
 	get type() { return "talent" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -169,7 +169,7 @@ class Talent extends foundry.abstract.DataModel {
 }
 
 
-class InventoryItemSchema extends foundry.abstract.DataModel {
+class InventoryItemSchema extends foundry.abstract.TypeDataModel {
 	get type() { return "item" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -181,7 +181,7 @@ class InventoryItemSchema extends foundry.abstract.DataModel {
 	}
 }
 
-class JobItemSchema extends foundry.abstract.DataModel {
+class JobItemSchema extends foundry.abstract.TypeDataModel {
 	get type() { return "job" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -208,7 +208,7 @@ class JobItemSchema extends foundry.abstract.DataModel {
 	}
 }
 
-class SocialCardSchema extends foundry.abstract.DataModel {
+class SocialCardSchema extends foundry.abstract.TypeDataModel {
 	get type() { return "socialCard" as const;}
 	static override defineSchema() {
 		const ret = {

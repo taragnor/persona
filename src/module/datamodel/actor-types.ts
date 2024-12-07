@@ -203,7 +203,7 @@ abstract class BaseStuff extends window.foundry.abstract.DataModel {
 
 }
 
-export class PCSchema extends window.foundry.abstract.DataModel {
+export class PCSchema extends window.foundry.abstract.TypeDataModel {
 	get type() { return "pc" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -254,7 +254,7 @@ export class PCSchema extends window.foundry.abstract.DataModel {
 
 }
 
-export class ShadowSchema extends foundry.abstract.DataModel {
+export class ShadowSchema extends foundry.abstract.TypeDataModel {
 	get type() { return "shadow" as const;}
 	get shadowstuff() {return "thing";}
 	static override defineSchema() {
@@ -315,7 +315,7 @@ export class ShadowSchema extends foundry.abstract.DataModel {
 
 }
 
-export class NPCSchema extends foundry.abstract.DataModel {
+export class NPCSchema extends foundry.abstract.TypeDataModel {
 	get type() { return "npc" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -336,7 +336,7 @@ export class NPCSchema extends foundry.abstract.DataModel {
 	}
 }
 
-export class TarotSchema extends foundry.abstract.DataModel {
+export class TarotSchema extends foundry.abstract.TypeDataModel {
 	get type() { return "tarot" as const;}
 	static override defineSchema() {
 		const ret = {
