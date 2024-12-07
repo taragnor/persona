@@ -482,6 +482,8 @@
 	"persona.preconditions.comparison.is-distracted": "Is Distracted",
 	"persona.preconditions.comparison.active-scene-is": "Active Scene Is",
 	"persona.preconditions.comparison.is-gm": "Foundry User is GM",
+	"persona.preconditions.comparison.percentage-of-hp": "Percentage of HP",
+	"persona.preconditions.comparison.percentage-of-mp": "Percentage of MP",
 
 	"persona.preconditions.socialChecks.relationship-type-check": "Relationship Type is",
 	"persona.preconditions.socialChecks.is-social-disabled": "Is Socially Disabled",

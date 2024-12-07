@@ -215,6 +215,18 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (!clock) return false;
 			target = clock.amt;
 			break;
+		case "percentage-of-hp": {
+			const subject = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!subject) return false;
+			target = subject.hp / subject.mhp;
+			break;
+		}
+		case "percentage-of-mp": {
+			const subject = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!subject) return false;
+			target = subject.mp / subject.mmp;
+			break;
+		}
 		default:
 			condition satisfies never;
 			PersonaError.softFail(`Unknwon numeric comparison type ${condition["comparisonTarget"]}`)

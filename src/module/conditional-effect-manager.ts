@@ -419,6 +419,10 @@ export class ConditionalEffectManager {
 				return `Health Percentage ${endString(cond.num)}`;
 			case "clock-comparison":
 				return `Clock ${cond.clockId} ${endString(cond.num)}`;
+			case "percentage-of-mp":
+				return `Percentage of MP ${endString(cond.num)}`;
+			case "percentage-of-hp":
+				return `Percentage of MP ${endString(cond.num)}`;
 			default:
 				cond satisfies never;
 				return "UNKNOWN CONDITION"
