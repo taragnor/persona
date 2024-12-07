@@ -99,6 +99,7 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".social-links .roll-icon img").on("click", this.rollSL.bind(this));
 		html.find(`.social-stat .roll-icon`).on("click", this.rollSocial.bind(this));
 		html.find(`.social-stat .social-boost`).on("click", this.socialBoost.bind(this));
+		html.find(`.social-stat .social-minus`).on("click", this.socialMinus.bind(this));
 		html.find(`.spend-money`).on('click', this.spendMoney.bind(this));
 		html.find(`.gain-money`).on('click', this.gainMoney.bind(this));
 		html.find(".draw-social-card").on("click", this.drawSocialCard.bind(this))
@@ -127,6 +128,14 @@ export class PCSheet extends CombatantSheetBase {
 			throw new PersonaError(`Invalid student skill: ${socialStat}.`);
 		}
 		PersonaSocial.boostSocialSkill(this.actor, socialStat)
+	}
+
+	async socialMinus (ev: JQuery.Event) {
+		const socialStat = HTMLTools.getClosestData(ev, "socialSkill") as SocialStat;
+		if (!STUDENT_SKILLS_LIST.includes(socialStat)) {
+			throw new PersonaError(`Invalid student skill: ${socialStat}.`);
+		}
+		PersonaSocial.lowerSocialSkill(this.actor, socialStat)
 	}
 
 	async delItem (event : Event) {
@@ -159,7 +168,7 @@ export class PCSheet extends CombatantSheetBase {
 	async useInspiration(event: Event) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
 		const npc = this.actor.socialLinks.find(x=> x.actor.id == linkId)?.actor;
-		if (!npc || npc.system.type != "npc") {
+		if (!npc) {
 			throw new PersonaError(`COuldn't find NPC with Id ${linkId}`);
 		}
 		await this.actor.spendInspiration(npc, 1);
@@ -208,6 +217,7 @@ export class PCSheet extends CombatantSheetBase {
 			1: "1",
 			2: "2",
 			3: "3",
+			4: "4",
 		}, {default: 1, title: "Add Social Boost"});
 		if (choice == null) return;
 		if ($(event.currentTarget).closest(".social-link").length > 0) {
@@ -221,12 +231,13 @@ export class PCSheet extends CombatantSheetBase {
 		}
 	}
 
-
 	async removeProgressTokens(event: JQuery.ClickEvent) {
 		const choice = await HTMLTools.singleChoiceBox({
 			1: "1",
 			2: "2",
 			3: "3",
+			4: "4",
+			5: "5",
 			9999: "All",
 		}, {default: 1, title: "Remove Social Boosts"});
 		if (choice == null) return;
