@@ -119,7 +119,7 @@ type NoInfer<A>= [A][A extends any ? 0 : never]
 type NoArray<I>= I extends Array<infer T> ? Record<number, T> : I;
 type DeepNoArray<I>=
 	I extends Array<infer J> ? NoArray<Array<DeepNoArray<J>>> :
-	I extends Object ? { [k in keyof I]: DeepNoArray<I[k]>} :
+	I extends object ? { [k in keyof I]: DeepNoArray<I[k]>} :
 	I;
 
 

@@ -20,7 +20,7 @@ class Roll {
 	options: RollOptions;
 	toJSON(): string;
 	static fromJSON<T extends Roll= Roll>(json: string): T;
-	static fromData<T extends Roll= Roll>(obj: Object): T;
+	static fromData<T extends Roll= Roll>(obj: object): T;
 	toAnchor(...stuff : unknown[]): HTMLElement;
 	_evaluated: boolean;
 }

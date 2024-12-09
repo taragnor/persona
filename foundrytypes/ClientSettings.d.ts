@@ -9,7 +9,7 @@ declare class ClientSettings {
 
 }
 
-interface SettingConfig<T extends typeof String | typeof Number | typeof Boolean | typeof Object> {
+interface SettingConfig<T extends typeof String | typeof Number | typeof Boolean | typeof object> {
 	name: string;
 	hint: string;
 	scope: "client" | "world";
