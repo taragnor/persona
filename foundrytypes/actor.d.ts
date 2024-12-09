@@ -13,7 +13,7 @@ declare class Actor<const T extends SchemaDict = any, ItemType extends Item<J> =
 	type: keyof T;
 	system: TotalConvert<T>;
 	get items(): Collection<ItemType>;
-	getRollData(): TotalConvert<T>;
+	getRollData(): object;
 	sheet: ActorSheet<Actor<T, ItemType, AEType>>;
 	statuses: Set<string>;
 	prototypeToken: PrototypeToken<typeof this>;
