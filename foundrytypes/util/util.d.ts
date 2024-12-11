@@ -17,11 +17,11 @@ interface FoundryUtil {
 			lineLineIntersection(a: Point, b: Point, c: Point,d: Point, options:unknown): unknown,
 			lineSegmentIntersection(...args: unknown[]): unknown,
 			lineSegmentIntersects(...args: unknown[]): unknown,
-			mergeObject<A extends Object, B extends Object>(original: A, other: B={}, {insertKeys=true, insertValues=true, overwrite=true, recursive=true, inplace=true, enforceTypes=false,
+			mergeObject<A extends object, B extends object>(original: A, other: B={}, {insertKeys=true, insertValues=true, overwrite=true, recursive=true, inplace=true, enforceTypes=false,
 
 				      performDeletions=false}: MergeOptions = {}): A&B,
 		randomId(length =16) : string,
-		expandObject(obj : Object): Object;
+		expandObject(obj : object): object;
 
 	/**
  * Wrap a callback in a debounced timeout.
