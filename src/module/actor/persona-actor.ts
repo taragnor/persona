@@ -48,10 +48,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	declare statuses: Set<StatusEffectId>;
 	declare sheet: PersonaActorSheetBase;
 
-	override prepareBaseData() {
-		super.prepareBaseData();
-	}
-
 	get mp() : number {
 		switch (this.system.type) {
 			case "pc": break;

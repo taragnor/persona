@@ -348,6 +348,10 @@ export class TarotSchema extends foundry.abstract.TypeDataModel {
 		} as const;
 		return ret;
 	}
+
+	override prepareBaseData() : void {
+
+	}
 }
 
 
@@ -362,3 +366,4 @@ export class TarotSchema extends foundry.abstract.TypeDataModel {
 type testPC = SystemDataObjectFromDM<typeof PCSchema>;
 type testNPC = SystemDataObjectFromDM<typeof NPCSchema>;
 type testShadow =SystemDataObjectFromDM<typeof ShadowSchema>;
+

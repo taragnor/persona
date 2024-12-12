@@ -1,5 +1,6 @@
 
-declare class DataModelClass {
+declare class DataModelClass  {
+	get parent(): DataModelClass | undefined;
 	constructor ();
 	static defineSchema() : SchemaReturnObject;
 	/** invoked when object is read from disk, can be used to update older fields,
@@ -11,7 +12,8 @@ declare class DataModelClass {
 type SchemaReturnObject = Record<string, FoundryDMField<any>>;
 
 declare class TypeDataModelClass extends DataModelClass {
-    prepareBaseData(): void;
-    prepareDerivedData(): void;
+	prepareBaseData(): void;
+	prepareDerivedData(): void;
+	static defineSchema() : T;
 }
 
