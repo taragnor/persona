@@ -109,8 +109,7 @@ interface NumberDataFieldOptions extends DataFieldOptions<number> {
 declare interface StringFieldOptions<const T extends string> extends DataFieldOptions<T> {
 	blank ?: boolean;
 	trim ?: boolean;
-	choices?: readonly T[] | Record < string, string> | (()=> string[]);
-
+	choices?: readonly T[] | Record < T, string> | (()=> T[]);
 }
 
 type NoInfer<A>= [A][A extends any ? 0 : never]
