@@ -1578,9 +1578,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const wpndmg = actor.wpnDamage();
 			const mult = actor.wpnMult();
 			const bonusdmg = actor.getBonusWpnDamage();
+			const lvlMult = 1 + (0.1 * actor.system.combat.classData.level);
 
-			dmg.high+= wpndmg.high * mult + bonusdmg.high.total(situation) ;
-			dmg.low += wpndmg.low * mult + bonusdmg.low.total(situation);
+			dmg.high+= (wpndmg.high * mult * lvlMult) + bonusdmg.high.total(situation) ;
+			dmg.low += (wpndmg.low * mult * lvlMult) + bonusdmg.low.total(situation);
 		}
 		dmg.high /= 3;
 		dmg.low /= 3;
