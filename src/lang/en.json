@@ -294,6 +294,7 @@
 	"persona.power.tag.poison": "Poison",
 	"persona.power.tag.charged": "Charged",
 	"persona.power.tag.amped": "Amped",
+	"persona.power.tag.rage": "Rage",
 
 	"persona.power.shadowcosts.none": "Any",
 	"persona.power.shadowcosts.always": "Charged (Depleting)",

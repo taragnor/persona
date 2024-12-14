@@ -113,12 +113,6 @@
 	{{#if (eq cond.boolComparisonTarget "damage-type-is")}}
 	{{multicheck (strcat namePrefix 'powerDamageType') POWERSTUFF.DAMAGETYPES checked=cond.powerDamageType localize=true}}
 	{{/if}}
-	{{#if (eq cond.boolComparisonTarget "is-resistant-to")}}
-	{{selectOptions POWERSTUFF.DAMAGETYPES localize=true selected=cond.powerDamageType}}
-	<select name="{{strcat namePrefix 'powerDamageType'}}">
-		{{selectOptions POWERSTUFF.DAMAGETYPES localize=true selected=cond.powerDamageType}}
-	</select>
-	{{/if}}
 	{{#if (strIncludes cond.boolComparisonTarget "resistant")}}
 	<select name="{{strcat namePrefix 'powerDamageType'}}">
 		{{selectOptions POWERSTUFF.DAMAGETYPESPLUS localize=true selected=cond.powerDamageType}}
