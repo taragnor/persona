@@ -484,6 +484,7 @@
 	"persona.preconditions.comparison.is-gm": "Foundry User is GM",
 	"persona.preconditions.comparison.percentage-of-hp": "Percentage of HP",
 	"persona.preconditions.comparison.percentage-of-mp": "Percentage of MP",
+	"persona.preconditions.comparison.energy": "Shadow Energy",
 
 	"persona.preconditions.socialChecks.relationship-type-check": "Relationship Type is",
 	"persona.preconditions.socialChecks.is-social-disabled": "Is Socially Disabled",

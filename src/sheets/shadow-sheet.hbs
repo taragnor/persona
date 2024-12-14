@@ -39,7 +39,7 @@
 					<div class="tag-list">
 						{{#each actor.system.creatureTags as |tag i|}}
 						<div class="tag-item", data-tag-index="{{i}}">
-							<select name="system.tags.{{i}}">
+							<select name="system.creatureTags.{{i}}">
 								{{selectOptions ../POWERSTUFF.CREATURE_TAGS localize=true selected=tag}}
 							</select>
 							<a class="delTag">

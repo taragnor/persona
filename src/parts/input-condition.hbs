@@ -9,10 +9,8 @@
 		</select>
 	</div>
 
-	{{#if (eq cond.type	"power-damage-type-is")}}
-	<select name="{{strcat namePrefix 'powerDamageType'}}">
-		{{selectOptions POWERSTUFF.DAMAGETYPES localize=true selected=cond.powerDamageType}}
-	</select>
+	{{#if (eq cond.type	"damage-type-is")}}
+		{{multicheck (strcat namePrefix 'powerDamageType') POWERSTUFF.DAMAGETYPES checked=cond.powerDamageType localize=true}}
 	{{/if}}
 
 	{{#if (strIncludes cond.type "numeric")}}
@@ -67,6 +65,12 @@
 	</select>
 	{{/if}}
 
+	{{#if (eq cond.comparisonTarget "energy")}}
+	<select name="{{strcat namePrefix 'conditionTarget'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+	</select>
+	{{/if}}
+
 	{{/if}}
 
 
@@ -106,7 +110,11 @@
 		{{multicheck (strcat namePrefix 'status') POWERSTUFF.STATUSEFFECTS checked=cond.status localize=true}}
 	</div>
 	{{/if}}
-	{{#if (strIncludes cond.boolComparisonTarget "damage")}}
+	{{#if (eq cond.boolComparisonTarget "damage-type-is")}}
+	{{multicheck (strcat namePrefix 'powerDamageType') POWERSTUFF.DAMAGETYPES checked=cond.powerDamageType localize=true}}
+	{{/if}}
+	{{#if (eq cond.boolComparisonTarget "is-resistant-to")}}
+	{{selectOptions POWERSTUFF.DAMAGETYPES localize=true selected=cond.powerDamageType}}
 	<select name="{{strcat namePrefix 'powerDamageType'}}">
 		{{selectOptions POWERSTUFF.DAMAGETYPES localize=true selected=cond.powerDamageType}}
 	</select>

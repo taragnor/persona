@@ -423,6 +423,9 @@ export class ConditionalEffectManager {
 				return `Percentage of MP ${endString(cond.num)}`;
 			case "percentage-of-hp":
 				return `Percentage of MP ${endString(cond.num)}`;
+			case "energy":
+				return `Shadow Energy ${endString(cond.num)}`;
+
 			default:
 				cond satisfies never;
 				return "UNKNOWN CONDITION"

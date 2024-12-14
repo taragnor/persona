@@ -227,6 +227,13 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			target = subject.mp / subject.mmp;
 			break;
 		}
+		case "energy": {
+			const subject = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!subject) return false;
+			if (subject.system.type != "shadow") return false;
+			target = subject.system.combat.energy.value;
+			break;
+		}
 		default:
 			condition satisfies never;
 			PersonaError.softFail(`Unknwon numeric comparison type ${condition["comparisonTarget"]}`)
@@ -359,7 +366,8 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 				return undefined;
 			}
 			const power = PersonaDB.findItem(situation.usedPower);
-			return condition.powerDamageType == power.system.dmg_type;
+			return multiCheckContains(condition.powerDamageType, [power.system.dmg_type]);
+			// return condition.powerDamageType == power.system.dmg_type;
 		}
 		case "has-status" : {
 			const target = getSubject(condition, situation, source,  "conditionTarget");

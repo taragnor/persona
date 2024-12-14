@@ -42,7 +42,7 @@ type GenericPC = {
 	status ?: StatusEffectId | Record<StatusEffectId, boolean>,
 	powerTag ?: PowerTag | Record<PowerTag, boolean>,
 	powerType ?: PowerType,
-	powerDamageType ?: DamageType | "by-power",
+	powerDamageType ?: (DamageType | "by-power"),
 	num ?: number,
 	flagId ?: string
 	booleanState ?: boolean,
@@ -98,10 +98,17 @@ type NumericComparisonPC =
 	| TargettedNumericComparison
 	| ClockNumericComparison
 	| HPMPComparison
+| EnergyComparison
 ;
 
+type EnergyComparison = NumericComparisonBase & {
+	comparisonTarget : "energy",
+	num: number,
+	conditionTarget : ConditionTarget,
+}
+
 type GenericNumericComparison = NumericComparisonBase & {
-	comparisonTarget : Exclude<NumericComparisonTarget, "resistance-level" | "health-percentage" | "clock-comparison" | "percentage-of-mp" | "percentage-of-hp" >,
+	comparisonTarget : Exclude<NumericComparisonTarget, "resistance-level" | "health-percentage" | "clock-comparison" | "percentage-of-mp" | "percentage-of-hp" | "energy" >,
 	studentSkill ?: SocialStat;
 	num ?: number,
 	socialLinkIdOrTarot ?: TarotCard | string;
@@ -250,12 +257,12 @@ type CreatureTagComparison = {
 
 type DamageTypeComparisonPC= {
 	boolComparisonTarget: "damage-type-is" ,
-	powerDamageType : DamageType | "by-power",
+	powerDamageType : (DamageType | "by-power") | MultiCheck<DamageType | "by-power">,
 }
 
 type ResistanceCheck = {
 	boolComparisonTarget:  "is-resistant-to",
-	powerDamageType : DamageType | "by-power",
+	powerDamageType : (DamageType | "by-power"),
 	conditionTarget : ConditionTarget,
 }
 
@@ -342,6 +349,7 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"clock-comparison",
 	"percentage-of-mp",
 	"percentage-of-hp",
+	"energy",
 ] as const;
 
 export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];
