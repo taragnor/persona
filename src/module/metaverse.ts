@@ -1,3 +1,4 @@
+import { PersonaScene } from "./persona-scene.js";
 import { SearchMenu } from "./exploration/searchMenu.js";
 import { PersonaRegion } from "./region/persona-region.js";
 import { Weapon } from "./item/persona-item.js";
@@ -74,20 +75,7 @@ export class Metaverse {
 
 	static async generateEncounter(): Promise<Shadow[]> {
 		const scene = game.scenes.current;
-		const sceneId = scene.id;
-		const disAllowedRoles: ShadowRole[] = [
-			"miniboss-lord",
-			"boss-lord",
-			"miniboss",
-			"boss",
-		];
-		let encounterList = PersonaDB.shadows()
-		.filter ( shadow=> shadow.system.encounter.dungeons.includes(sceneId)
-			&& !disAllowedRoles.includes(shadow.system.role)
-		);
-		if (!PersonaCalendar.isStormy()) {
-			encounterList = encounterList.filter( shadow => shadow.system.encounter.rareShadow != true);
-		}
+		const encounterList  = (scene as PersonaScene).encounterList();
 		if (encounterList.length == 0) {
 			throw new PersonaError(`Encounter List is empty for ${scene.name}`);
 		}
