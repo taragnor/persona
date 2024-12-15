@@ -1285,6 +1285,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			for (const target of selected) {
 				const targetActor = target.actor;
 				const engagingTarget  = combat.isEngaging(PersonaDB.getUniversalTokenAccessor(attacker), PersonaDB.getUniversalTokenAccessor(target));
+				if (attacker.id == target.id) continue;
 				if (attackerActor.hasStatus("challenged") && !engagingTarget) {
 					throw new PersonaError("Can't target non-engaged when challenged");
 				}
