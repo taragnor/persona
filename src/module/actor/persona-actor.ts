@@ -1684,7 +1684,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async alterSocialSkill (this: PC, socialStat: SocialStat, amt: number, logger = true) {
-		const newval = this.system.skills[socialStat] + amt;
+		const oldval = this.system.skills[socialStat];
+		const newval = oldval + amt;
 		const upgradeObj : Record<string, any> = {};
 		const skillLoc = `system.skills.${socialStat}`;
 		upgradeObj[skillLoc] = newval;
@@ -1695,7 +1696,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					await PersonaSounds.skillBoost(amt);
 			}
 			const verb = amt >= 0 ? "raised" : "lowered";
-			await Logger.sendToChat(`<b>${this.name}:</b> ${verb} ${socialStat} by ${amt}`, this);
+			await Logger.sendToChat(`<b>${this.name}:</b> ${verb} ${socialStat} by ${amt} (previously ${oldval})`, this);
 		}
 	}
 

@@ -34,6 +34,10 @@ declare interface CONFIG {
 		sidebar: string;
 		documentClass: typeof ChatMessage;
 	};
+	Scene: {
+		documentClass: typeof Scene;
+
+	}
 }
 
 type StatusEffectObject = {

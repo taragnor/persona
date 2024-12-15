@@ -12,6 +12,7 @@ declare global {
 
 }
 
+import { PersonaScene } from "./persona-scene.js";
 import { PersonaRegion } from "./region/persona-region.js";
 import { Darkness } from "./exploration/darkness-clock.js";
 import { DebugTools } from "./utility/debug.js";
@@ -56,6 +57,7 @@ function registerDocumentClasses() {
 	// CONFIG.Dice.rolls.push(PersonaRoll);
 	CONFIG.Combat.documentClass = PersonaCombat;
 	CONFIG.Region.documentClass = PersonaRegion;
+	CONFIG.Scene.documentClass = PersonaScene;
 }
 
 function registerSheetApplications() {

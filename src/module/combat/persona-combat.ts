@@ -1284,7 +1284,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const attackerActor = attacker.actor;
 			for (const target of selected) {
 				const targetActor = target.actor;
-				const engagingTarget  = combat.isEngaging(PersonaDB.getUniversalTokenAccessor(attacker), PersonaDB.getUniversalTokenAccessor(target));
+				const engagingTarget  = combat.isInMeleeWith(PersonaDB.getUniversalTokenAccessor(attacker), PersonaDB.getUniversalTokenAccessor(target));
 				if (attacker.id == target.id) continue;
 				if (attackerActor.hasStatus("challenged") && !engagingTarget) {
 					throw new PersonaError("Can't target non-engaged when challenged");
@@ -1410,6 +1410,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	isEngagedByAnyFoe(subject: UniversalTokenAccessor<PToken>) : boolean {
 		const tok = PersonaDB.findToken(subject);
 		return EngagementChecker.isEngagedByAnyFoe(tok, this);
+	}
+
+	isInMeleeWith (token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
+		const t1 = PersonaDB.findToken(token1);
+		const t2 = PersonaDB.findToken(token2);
+		const melee = EngagementChecker.getTokensInMelee(t1, this);
+		return melee.has(t2);
 	}
 
 	isEngaging(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {

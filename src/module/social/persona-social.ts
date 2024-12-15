@@ -131,7 +131,7 @@ export class PersonaSocial {
 
 	static async lowerSocialSkill(pc: PC, socialStat: SocialStat) {
 		const amount = await HTMLTools.numberButtons("Amount", -3, -1) as -3 | -2| -1;
-		await pc.alterSocialSkill(socialStat, amount);
+		await pc.alterSocialSkill(socialStat, -Math.abs(amount));
 	}
 
 	static resolvePrimarySecondarySocialStat(choice: StudentSkillExt, link: SocialLink | Activity) : StudentSkill {
