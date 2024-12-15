@@ -304,18 +304,21 @@ export class PersonaHandleBarsHelpers {
 		"printEffects": function(effects: ConditionalEffect[]) : SafeString {
 			return new Handlebars.SafeString(ConditionalEffectManager.printEffects(effects)
 				.map( x=> `<div class="printed-effect"> ${x} </div>`)
-				.join("")
+				.join("<br>")
 			);
 		},
 
 		"printConditionals": function (cond: Precondition[]) {
-			return new Handlebars.SafeString(ConditionalEffectManager.printConditions(cond));
-		},
-		"printConsequences": function (cons: Consequence[]) {
-			return new Handlebars.SafeString(
-				ConditionalEffectManager.printConsequences(cons)
+			const str=ConditionalEffectManager.printConditions(cond);
+			return new Handlebars.SafeString( `<div class="printed-conditional">${str}</div>`
 			);
 		},
+
+		"printConsequences": function (cons: Consequence[]) {
+			const str= ConditionalEffectManager.printConsequences(cons);
+			return new Handlebars.SafeString( `<div class="printed-consequence">${str}</div>`
+			);
+		}
 
 	}
 } //end of class

@@ -664,3 +664,16 @@ form h5 {
 .action-result {
 	font-size: 1.5em;
 }
+
+.printed-effect {
+	font-weight: bold;
+}
+
+.printed-conditional {
+	font-style: italic;
+}
+
+.printed-consequence {
+	font-weight: bold;
+}
+

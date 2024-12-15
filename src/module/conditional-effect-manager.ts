@@ -1,3 +1,4 @@
+import { localize } from "./persona.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
 import { STATUS_EFFECT_DURATIONS } from "../config/status-effects.js";
 import { MODIFIER_VARIABLES } from "../config/effect-types.js";
@@ -232,7 +233,7 @@ export class ConditionalEffectManager {
 	}
 
 	static printEffect(effect: ConditionalEffect): string {
-		return `${this.printConditions(effect.conditions)} : ${this.printConsequences(effect.consequences)}`;
+		return `${this.printConditions(effect.conditions)} ---- ${this.printConsequences(effect.consequences)}`;
 
 	}
 	static printConditions(cond: Precondition[]) : string {
@@ -267,11 +268,11 @@ export class ConditionalEffectManager {
 
 	static translate<const T extends string>(items: MultiCheck<T> | T, translationTable?: Record<string, string>) : string {
 		if (typeof items == "string")  {
-			return translationTable ? translationTable[items] : items;
+			return translationTable ? localize(translationTable[items]) : items;
 		}
 		return Object.entries(items)
 			.flatMap( ([k,v]) => v ? [k] : [])
-			.map( x=> translationTable ? translationTable[x] : x)
+			.map( x=> translationTable ? localize(translationTable[x]) : x)
 			.join(", ");
 	}
 
@@ -279,7 +280,7 @@ export class ConditionalEffectManager {
 		const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, CONDITION_TARGETS) : "";
 		const target2 = ("conditionTarget2" in cond) ? this.translate(cond.conditionTarget2, CONDITION_TARGETS): "" ;
 		const boolComparison = this.translate (cond.boolComparisonTarget, BOOLEAN_COMPARISON_TARGET);
-		const not =  !boolComparison  ? "not" : "";
+		const not =  !cond.booleanState ? "not" : "";
 		switch (cond.boolComparisonTarget) {
 			case "engaged":
 				return `${target1} is ${not} engaged with anyone`
