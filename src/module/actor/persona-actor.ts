@@ -2100,7 +2100,7 @@ Hooks.on("updateActor", async (actor: PersonaActor, _changes: {system: any}) => 
 });
 
 Hooks.on("createToken", async function (token: TokenDocument<PersonaActor>)  {
-	if (token.actor && game.user.isGM) {
+	if (token.actor && game.user.isGM && token.actor.system.type == "shadow") {
 		token.actor.fullHeal();
 	}
 });
