@@ -133,6 +133,10 @@
 			  <input type="checkbox" id="flagState" name="system.cameoStdPerk" {{checked item.system.cameoStdPerk}}>
 		  </div>
 	  </div>
+	  <div class="cameo-conditions" data-top-path="system.cameoConditions" data-path="system.cameoConditions">
+		  {{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.cameoConditions." POWERSTUFF=POWERSTUFF owner=item}}
+	  </div>
+
 	  <textarea name="system.cameo">
 		  {{trim item.system.cameo}}
 	  </textarea>

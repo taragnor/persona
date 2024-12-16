@@ -698,7 +698,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		critBoostMod.add("Enemy Critical Resistance", -critResist);
 		const floor = situation.resisted ? -999 : 0;
 		const critBoost = Math.max(floor, critBoostMod.total(situation));
-		const validMods = critBoostMod.validModifiers(situation);
 
 		if (naturalAttackRoll == 1
 			|| total < defenseVal
@@ -824,6 +823,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 								}
 								const token = this.getPTokenFromActorAccessor(triggerer);
 								effectiveTarget = token;
+								break;
+							case "cameo":
+								effectiveTarget = undefined;
 								break;
 							default:
 								cons.applyTo satisfies never;
@@ -1240,6 +1242,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				if (!situation.triggeringCharacter) return [];
 				const token = this.getPTokenFromActorAccessor(situation.triggeringCharacter);
 				if (token) return [token]; else return [];
+			}
+			case "cameo": {
+				return [];
 			}
 			default:
 				targettingType satisfies never;
@@ -1762,11 +1767,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		// Structure input data
 		ids = typeof ids === "string" ? [ids] : ids;
 		const currentId = this.combatant?.id;
-		const chatRollMode = game.settings.get("core", "rollMode");
 
 		// Iterate over Combatants, performing an initiative roll for each
 		const updates = [];
-		const messages = [];
 		const rolls :{ combatant: Combatant, roll: Roll}[]= [];
 		for ( let [i, id] of ids.entries() ) {
 

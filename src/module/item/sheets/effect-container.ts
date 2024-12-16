@@ -74,6 +74,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			...TAROT_DECK,
 			...SocialLinks,
 			"" : "current Social Target",
+			"cameo": "Cameo",
 		};
 
 		const DAMAGETYPESPLUS = {

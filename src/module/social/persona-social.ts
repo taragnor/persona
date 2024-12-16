@@ -260,6 +260,7 @@ export class PersonaSocial {
 			target: activity instanceof PersonaActor ?  activity.accessor: undefined,
 			isSocial: true,
 			socialRandom : Math.floor(Math.random() * 20) + 1,
+			cameo: cameos ? cameos[0].accessor : undefined,
 		};
 		const cardData : CardData = {
 			card,
@@ -318,19 +319,47 @@ export class PersonaSocial {
 	}
 
 	static #getCameos(card: SocialCard, actor: PC, linkId: string) : SocialLink[] {
-		let targets : (undefined | SocialLink)[] = [];
+		let targets : (SocialLink)[] = [];
+		const testCameo = (cameo: SocialLink) => {
+			const acc = cameo.accessor;
+			const target = game.actors.get(linkId) as PersonaActor | undefined;
+			const targetAcc = target?.accessor;
+			const situation: Situation = {
+				cameo: acc,
+				isSocial: true,
+				user: actor.accessor,
+				attacker: actor.accessor,
+				socialTarget: targetAcc,
+				target: targetAcc,
+			};
+			return testPreconditions(card.system.cameoConditions , situation, null);
+		}
 		switch (card.system.cameoType) {
 			case "none": return [];
-			case "above":
-				targets.push(this.getCharInInitiativeList(-1));
+			case "above": {
+				const initChar = this.getCharInInitiativeList(-1);
+				if (initChar) {
+					targets.push(initChar);
+				}
+				targets = targets.filter( x=> testCameo(x));
 				break;
-			case "below":
-				targets.push(this.getCharInInitiativeList(1));
+			}
+			case "below": {
+				const initChar = this.getCharInInitiativeList(1);
+				if (initChar) {
+					targets.push(initChar);
+				}
+				targets = targets.filter( x=> testCameo(x));
 				break;
-			case "above+below":
-				targets.push(this.getCharInInitiativeList(-1));
-				targets.push(this.getCharInInitiativeList(1));
+			}
+			case "above+below": {
+				const initChar1 = this.getCharInInitiativeList(1);
+				const initChar2 = this.getCharInInitiativeList(-1);
+				if (initChar1) { targets.push(initChar1);}
+				if (initChar2) {targets.push(initChar2);}
+				targets = targets.filter( x=> testCameo(x));
 				break;
+			}
 			case "student": {
 				const students = (game.actors.contents as PersonaActor[])
 				.filter( x=>
@@ -338,6 +367,7 @@ export class PersonaSocial {
 					&& x.baseRelationship == "PEER"
 					&& x != actor && x.id != linkId
 					&& x.isAvailable()
+					&& testCameo(x as SocialLink)
 				) as SocialLink[];
 				const randomPick = students[Math.floor(Math.random() * students.length)];
 				if (!randomPick)
@@ -351,6 +381,7 @@ export class PersonaSocial {
 					&& x.baseRelationship != "SHADOW"
 					&& x != actor && x.id != linkId
 					&& x.isAvailable()
+					&& testCameo(x as SocialLink)
 				) as SocialLink[];
 				const randomPick = anyLink[Math.floor(Math.random() * anyLink.length)];
 				if (!randomPick)

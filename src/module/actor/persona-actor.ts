@@ -349,6 +349,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return worked;
 	}
 
+	getSocialSLWith(this: PC, sl : SocialLink | UniversalActorAccessor<SocialLink>) : number {
+		if ("actorId" in sl) {
+			sl = PersonaDB.findActor(sl);
+
+		}
+		const linkData= this.system.social.find( x=> x.linkId == sl.id)
+		if (!linkData) return 0;
+		return linkData.linkLevel;
+	}
 
 	get socialBenefits() : SocialBenefit[] {
 		let focuses : Focus[] = [];

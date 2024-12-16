@@ -279,7 +279,7 @@ export class ConditionalEffectManager {
 	static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 		const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, CONDITION_TARGETS) : "";
 		const target2 = ("conditionTarget2" in cond) ? this.translate(cond.conditionTarget2, CONDITION_TARGETS): "" ;
-		const boolComparison = this.translate (cond.boolComparisonTarget, BOOLEAN_COMPARISON_TARGET);
+		// const boolComparison = this.translate (cond.boolComparisonTarget, BOOLEAN_COMPARISON_TARGET);
 		const not =  !cond.booleanState ? "not" : "";
 		switch (cond.boolComparisonTarget) {
 			case "engaged":
@@ -369,6 +369,9 @@ export class ConditionalEffectManager {
 			case "has-creature-tag": {
 				const tags = this.translate(cond.creatureTag, CREATURE_TAGS);
 				return `${target1} ${not} has Tag: ${tags}`;
+			}
+			case "cameo-in-scene": {
+				return `Scene ${not} has a cameo `;
 			}
 			default:
 				cond satisfies never

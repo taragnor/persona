@@ -244,6 +244,7 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 			automatic: new txt(),
 			skill: new txt<"primary" | "secondary">({initial: "primary"}),
 			cameoType: new txt({initial: "none", choices: CAMEO_TYPES_LIST}),
+			cameoConditions: new arr(new obj<Precondition>()),
 			cameo: new txt(),
 			cameoStdPerk: new bool({initial: false}),
 			perkType: new txt({choices: PERK_TYPES_LIST, initial: "standard"}),

@@ -111,7 +111,7 @@ type GenericNumericComparison = NumericComparisonBase & {
 	comparisonTarget : Exclude<NumericComparisonTarget, "resistance-level" | "health-percentage" | "clock-comparison" | "percentage-of-mp" | "percentage-of-hp" | "energy" >,
 	studentSkill ?: SocialStat;
 	num ?: number,
-	socialLinkIdOrTarot ?: TarotCard | string;
+	socialLinkIdOrTarot ?: TarotCard | "cameo" | string;
 }
 
 type ResistanceComparison = NumericComparisonBase & {
@@ -325,6 +325,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"power-slot-is",
 	"social-availability",
 	"has-creature-tag",
+	"cameo-in-scene",
 ] as const;
 
 
@@ -382,6 +383,7 @@ export const CONDITION_TARGETS_LIST = [
 	"attacker",
 	"user",
 	"triggering-character",
+	"cameo",
 ] as const;
 
 export type ConditionTarget= typeof CONDITION_TARGETS_LIST[number];

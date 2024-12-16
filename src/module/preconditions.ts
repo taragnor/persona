@@ -120,6 +120,11 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (!actor  || actor.system.type =="shadow") return false;
 
 			let specifiedTarget : PersonaActor | null = null;
+			if (condition.socialLinkIdOrTarot == "cameo") {
+				if (!situation.cameo)  return false;
+				target = (actor as PC).getSocialSLWith(situation.cameo);
+				break;
+			}
 			if (condition.socialLinkIdOrTarot) {
 				const targetActor  = PersonaDB.allActors()
 					.find( x=> x.id == condition.socialLinkIdOrTarot)
@@ -202,6 +207,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 				if (element == "healing" || element == "untyped" || element == "all-out" || element =="none" ) return false;
 
 			}
+			if (subject.system.type == "npc") return false;
 			const targetResist = subject.system.combat.resists[element] ?? "normal";
 			target = RESIST_STRENGTH_LIST.indexOf(targetResist);
 			break;
@@ -397,7 +403,8 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (!target) return undefined;
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
 			const power = PersonaDB.findItem(situation.usedPower);
-			const resist = targetActor.elementalResist(power.system.dmg_type);
+			if (targetActor.system.type == "npc") return undefined;
+			const resist = (targetActor as PC | Shadow).elementalResist(power.system.dmg_type);
 			return resist == "weakness";
 		}
 		case "is-resistant-to": {
@@ -410,7 +417,8 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 				const power = PersonaDB.findItem(situation.usedPower);
 				dtype = power.system.dmg_type;
 			}
-			const resist = targetActor.elementalResist(dtype);
+			if (targetActor.system.type == "npc") return undefined;
+			const resist = (targetActor as PC | Shadow).elementalResist(dtype);
 			switch (resist) {
 				case "resist": case "block": case "absorb": case "reflect": return true;
 				case "weakness": case "normal": return  false;
@@ -551,6 +559,9 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (!target) return undefined;
 			return multiCheckTest(condition.creatureTag, x => target.hasCreatureTag(x));
 		}
+		case "cameo-in-scene": {
+			return !!situation.cameo;
+		}
 		default :
 			condition satisfies never;
 			return undefined;
@@ -589,7 +600,7 @@ function getSubjectToken<K extends string, T extends Record<K, ConditionTarget>>
 	return undefined;
 }
 
-function getSubjectActor<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K): PC | Shadow | undefined {
+function getSubjectActor<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K): PC | Shadow | NPC| undefined {
 	let subject = getSubject(cond, situation, source, field);
 	if (subject instanceof TokenDocument) {
 		subject = subject.actor;
@@ -597,7 +608,7 @@ function getSubjectActor<K extends string, T extends Record<K, ConditionTarget>>
 	return subject;
 }
 
-function getSubject<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K) : PToken | PC| Shadow | undefined {
+function getSubject<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K) : PToken | PC| Shadow | NPC | undefined {
 	if (!(field in cond)) {
 		PersonaError.softFail(`No conditon target in ${source?.name} of ${source?.parent?.name}`)
 		return undefined;
@@ -627,6 +638,13 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 				return PersonaDB.findToken(situation.triggeringCharacter.token) as PToken | undefined;
 			} else {
 				return PersonaDB.findActor(situation.triggeringCharacter);
+			}
+		case "cameo":
+			if (!situation.cameo) return undefined;
+			if (situation.cameo.token) {
+				return PersonaDB.findToken(situation.cameo.token) as PToken | undefined;
+			} else {
+				return PersonaDB.findActor(situation.cameo);
 			}
 		default:
 			condTarget satisfies undefined;
@@ -679,6 +697,7 @@ export type SocialCardSituation = UserSituation & {
 	socialTarget ?: UniversalActorAccessor<PC | NPC>;
 	target ?: UniversalActorAccessor<PC | Shadow>;
 	isSocial: true;
+	cameo : UniversalActorAccessor<PC | NPC> | undefined;
 };
 
 
@@ -706,6 +725,7 @@ type SituationUniversal = {
 	tarot ?: TarotCard,
 	socialTarget ?: UniversalActorAccessor<PC | NPC>;
 	socialRandom ?: number;
+	cameo ?: UniversalActorAccessor<PC | NPC>;
 }
 
 
