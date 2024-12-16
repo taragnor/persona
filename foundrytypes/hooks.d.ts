@@ -15,6 +15,8 @@ declare interface HOOKS {
 	"combatTurn": (combat: Combat, updateData: CombatUpdateData, updateOptions: CombatUpdateOptions) => unknown;
 	"combatRound": (combat: Combat, updateData: CombatUpdateData, updateOptions: CombatUpdateOptions) => unknown;
 	"chatMessage": (chatLog: ChatLog, contents: string, chatMsgData: unknown) => unknown;
+	"preCreateActor": PreCreateHook<Actor>;
+	"preCreateItem": PreCreateHook<Item>;
 	"preCreateChatMessage": PreCreateHook<ChatMessage>;
 	"createChatMessage": CreateHook<ChatMessage>;
 	"preUpdateActor": UpdateHook<Actor>;
