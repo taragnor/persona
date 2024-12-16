@@ -7,19 +7,18 @@ interface FoundryUtil {
 			 */
 			isNewerVersion(v1: string | number, v0: string | number): boolean,
 
-			/**
-			 * Wrap a callback in a throttled timeout.
-			 * Delay execution of the callback function when the last time the function was called was delay milliseconds ago
-			 */
-			throttle<F extends (...args: any[])=> any>(callback: F, delay: number) : F,
+		/**
+		 * Wrap a callback in a throttled timeout.
+		 * Delay execution of the callback function when the last time the function was called was delay milliseconds ago
+		 */
+		throttle<F extends (...args: any[])=> any>(callback: F, delay: number) : F,
 
-			lineCircleIntersection(a: Point, b: Point, center: Point, radius: number, epsilon?: number): unknown,
-			lineLineIntersection(a: Point, b: Point, c: Point,d: Point, options:unknown): unknown,
-			lineSegmentIntersection(...args: unknown[]): unknown,
-			lineSegmentIntersects(...args: unknown[]): unknown,
-			mergeObject<A extends object, B extends object>(original: A, other: B={}, {insertKeys=true, insertValues=true, overwrite=true, recursive=true, inplace=true, enforceTypes=false,
-
-				      performDeletions=false}: MergeOptions = {}): A&B,
+		lineCircleIntersection(a: Point, b: Point, center: Point, radius: number, epsilon?: number): unknown,
+		lineLineIntersection(a: Point, b: Point, c: Point,d: Point, options:unknown): unknown,
+		lineSegmentIntersection(...args: unknown[]): unknown,
+		lineSegmentIntersects(...args: unknown[]): unknown,
+		mergeObject<A extends object, B extends object>(original: A, other: B={}, {insertKeys=true, insertValues=true, overwrite=true, recursive=true, inplace=true, enforceTypes=false,
+			performDeletions=false}: MergeOptions = {}): A&B,
 		randomId(length =16) : string,
 		expandObject(obj : object): object;
 
@@ -28,8 +27,19 @@ interface FoundryUtil {
    * Delay execution of the callback function until the function has not been called for delay milliseconds
 	*/
 	debounce<T extends (...args:any[]) => any>(callback: T, delayMs: number) : T;
+
+	/**
+Quickly clone a simple piece of data, returning a copy which can be mutated safely. This method DOES support recursive data structures containing inner objects or arrays. This method DOES NOT support advanced object types like Set, Map, or other specialized classes.
+	 */
+	deepClone<T extends object>(original: T, options : DeepCloneOptions = {}) : T;
 }
 
+
+type DeepCloneOptions = {
+	/** throws an error if Throw an Error if deepClone is unable to clone something instead of returning the original
+	*/
+	strict: boolean;
+}
 
 type MergeOptions = {
 
