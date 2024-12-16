@@ -1,3 +1,4 @@
+import { SocialCardSituation } from "../preconditions.js";
 import { NPC } from "../actor/persona-actor.js";
 import { ConditionalEffectManager } from "../conditional-effect-manager.js";
 import { TriggeredEffect } from "../triggered-effect.js";
@@ -252,12 +253,13 @@ export class PersonaSocial {
 		const card = await this.#drawSocialCard(actor, activity);
 		const cameos = this.#getCameos(card, actor, activity.id);
 		const perk = this.#getPerk(card, actor, activity, cameos);
-		const situation : Situation = {
+		const situation : CardData["situation"] = {
 			user: actor.accessor,
 			socialTarget: activity instanceof PersonaActor ?  activity.accessor: undefined,
 			attacker: actor.accessor,
 			target: activity instanceof PersonaActor ?  activity.accessor: undefined,
 			isSocial: true,
+			socialRandom : Math.floor(Math.random() * 20) + 1,
 		};
 		const cardData : CardData = {
 			card,
@@ -1138,6 +1140,6 @@ export type CardData = {
 	forceEventLabel: null | string,
 	eventsChosen: number[],
 	eventsRemaining: number,
-	situation: Situation
+	situation: SocialCardSituation;
 };
 

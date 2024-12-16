@@ -427,6 +427,8 @@ export class ConditionalEffectManager {
 			case "energy":
 				return `Shadow Energy ${endString(cond.num)}`;
 
+			case "socialRandom":
+				return `Social Card d20 ${endString(cond.num)}`;
 			default:
 				cond satisfies never;
 				return "UNKNOWN CONDITION"
@@ -691,11 +693,23 @@ export class EMAccessor<T> {
 		while (pathdiff.length > 1) {
 			const path = pathdiff.shift();
 			if (!path) continue;
+			if (datapart[path] == undefined) {
+				datapart[path] = {};
+				console.log(`Had to create path for ${updatePath}`);
+			}
 			datapart = datapart[path];
 		}
 		const lastPath = pathdiff.shift()!;
+		try {
 		datapart[lastPath] = newData;
 		await this.update(data as any);
+		} catch (e) {
+			Debug(updatePath);
+			Debug(newData);
+			PersonaError.softFail(`Problem patching :${updatePath}`);
+			console.error(e);
+			throw e;
+		}
 	}
 
 	delve<const P extends string, Prop extends GetProperty<T,P>>(path: P) : Prop extends Record<any, any> ? EMAccessor<Prop> : never;
@@ -734,7 +748,9 @@ export class EMAccessor<T> {
 
 	async addConditionalEffect<I extends DeepNoArray<ConditionalEffect[]>>(this: EMAccessor<I>) {
 		const item :ConditionalEffect= {
-			conditions: [],
+			conditions: [ {
+			type: "always"
+			}],
 			consequences: []
 		};
 		const data = this.data;

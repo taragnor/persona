@@ -350,6 +350,7 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"percentage-of-mp",
 	"percentage-of-hp",
 	"energy",
+	"socialRandom",
 ] as const;
 
 export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];

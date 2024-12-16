@@ -133,6 +133,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 					break;
 				}
 			}
+			if (!("socialTarget" in situation)) return false;
 			if (!source && !situation.socialTarget)  return false;
 			const socialTarget = specifiedTarget ??
 			source?.parent
@@ -201,7 +202,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 				if (element == "healing" || element == "untyped" || element == "all-out" || element =="none" ) return false;
 
 			}
-		const targetResist = subject.system.combat.resists[element] ?? "normal";
+			const targetResist = subject.system.combat.resists[element] ?? "normal";
 			target = RESIST_STRENGTH_LIST.indexOf(targetResist);
 			break;
 		}
@@ -232,6 +233,13 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (!subject) return false;
 			if (subject.system.type != "shadow") return false;
 			target = subject.system.combat.energy.value;
+			break;
+		}
+		case "socialRandom": {
+			if (situation.socialRandom == undefined) {
+				return false;
+			}
+			target = situation.socialRandom;
 			break;
 		}
 		default:
@@ -663,7 +671,15 @@ export type TriggerSituation = {
 };
 
 export type Situation = SituationUniversal & (
-	TriggerSituation  | UserSituation);
+	TriggerSituation  | UserSituation | SocialCardSituation);
+
+export type SocialCardSituation = UserSituation & {
+	attacker : UniversalActorAccessor<PC | Shadow>;
+	socialRandom :number;
+	socialTarget ?: UniversalActorAccessor<PC | NPC>;
+	target ?: UniversalActorAccessor<PC | Shadow>;
+	isSocial: true;
+};
 
 
 type SituationUniversal = {
@@ -679,18 +695,17 @@ type SituationUniversal = {
 	resisted ?: boolean;
 	struckWeakness ?: boolean;
 	isAbsorbed ?: boolean;
-	// escalationDie ?: number;
 	activationRoll ?: boolean;
 	target ?: UniversalActorAccessor<PC | Shadow>;
 	attacker ?:UniversalActorAccessor<PC | Shadow>;
-	// userToken ?: UniversalTokenAccessor<PToken>;
 	saveVersus ?: StatusEffectId;
 	statusEffect ?: StatusEffectId;
 	trigger ?: Trigger,
-	socialTarget ?: UniversalActorAccessor<PC | NPC>,
 	eventCard ?: UniversalItemAccessor<Job | SocialCard>,
 	isSocial?: boolean,
 	tarot ?: TarotCard,
+	socialTarget ?: UniversalActorAccessor<PC | NPC>;
+	socialRandom ?: number;
 }
 
 

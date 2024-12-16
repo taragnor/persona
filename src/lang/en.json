@@ -486,6 +486,7 @@
 	"persona.preconditions.comparison.percentage-of-hp": "Percentage of HP",
 	"persona.preconditions.comparison.percentage-of-mp": "Percentage of MP",
 	"persona.preconditions.comparison.energy": "Shadow Energy",
+	"persona.preconditions.comparison.socialRandom": "Social Card Random Number (1d20)",
 
 	"persona.preconditions.socialChecks.relationship-type-check": "Relationship Type is",
 	"persona.preconditions.socialChecks.is-social-disabled": "Is Socially Disabled",
