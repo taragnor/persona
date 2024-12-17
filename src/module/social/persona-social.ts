@@ -253,14 +253,15 @@ export class PersonaSocial {
 		const card = await this.#drawSocialCard(actor, activity);
 		const cameos = this.#getCameos(card, actor, activity.id);
 		const perk = this.#getPerk(card, actor, activity, cameos);
+		const cameo = cameos.length > 0 ? cameos[0].accessor : undefined;
 		const situation : CardData["situation"] = {
 			user: actor.accessor,
 			socialTarget: activity instanceof PersonaActor ?  activity.accessor: undefined,
 			attacker: actor.accessor,
 			target: activity instanceof PersonaActor ?  activity.accessor: undefined,
+			cameo,
 			isSocial: true,
 			socialRandom : Math.floor(Math.random() * 20) + 1,
-			cameo: cameos ? cameos[0].accessor : undefined,
 		};
 		const cardData : CardData = {
 			card,
@@ -331,6 +332,7 @@ export class PersonaSocial {
 				attacker: actor.accessor,
 				socialTarget: targetAcc,
 				target: targetAcc,
+				socialRandom : Math.floor(Math.random() * 20) + 1,
 			};
 			return testPreconditions(card.system.cameoConditions , situation, null);
 		}
