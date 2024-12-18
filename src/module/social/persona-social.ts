@@ -968,7 +968,6 @@ export class PersonaSocial {
 					eff.action satisfies never;
 				return;
 		}
-
 	}
 
 	static async modifyProgress(amt: number) {
