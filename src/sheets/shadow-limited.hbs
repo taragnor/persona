@@ -145,6 +145,11 @@
 						{{/if}}
 						<div class="power-name">
 							{{power.name}}
+							{{#if (gt ../actor.system.scanLevel 1)}}
+							<span class="cost-string">
+								({{power.costString}})
+							</span>
+							{{/if}}
 						</div>
 				</div>
 				<div class="power-operations">

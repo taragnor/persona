@@ -175,6 +175,7 @@
 	"persona.modifier.wpnAtk": "Weapon Attack Bonus",
 	"persona.modifier.magAtk": "Magic Attack Bonus",
 	"persona.modifier.wpnDmg": "Weapon Damage",
+	"persona.modifier.wpnMult": "Weapon Multiplier",
 	"persona.modifier.magDmg": "Magic Damage",
 	"persona.modifier.magLow": "Magic Damage Base (Low)",
 	"persona.modifier.magHigh": "Magic Damage Base (High)",

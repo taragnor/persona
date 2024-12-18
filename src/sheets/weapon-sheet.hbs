@@ -1,24 +1,27 @@
 <form class="weapon-sheet">
 	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Power Name" placeholder="Power Name">
 
-	<div class="editor description">
-{{editor item.system.description target="system.description" button=false engine="prosemirror" collaborate=false}}
+	<textarea name="system.description"> {{item.system.description}} </textarea>
+	{{#if (isGM)}}
+	<label> Price </label>
+	{{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}
+	{{/if}}
 	</div>
-
+	<hr>
 	<div class="dmg">
 		<div class="dmg-low">
-		<label>
-			{{localize	"persona.damage.low"}}
-		</label>
-		{{numberInput item.system.damage.low class="short" name="system.damage.low" step=1 min=0 max=900}}
+			<label>
+				{{localize	"persona.damage.low"}}
+			</label>
+			{{numberInput item.system.damage.low class="short" name="system.damage.low" step=1 min=0 max=900}}
 		</div>
 	</div>
 	<div class="dmg">
 		<div class="dmg-high">
-		<label>
-			{{localize	"persona.damage.high"}}
-		</label>
-		{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=900}}
+			<label>
+				{{localize	"persona.damage.high"}}
+			</label>
+			{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=900}}
 		</div>
 	</div>
 	{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}

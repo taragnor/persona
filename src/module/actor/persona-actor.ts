@@ -70,10 +70,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	calcBaseClassMMP(this: PC) {
-		const MPAtLevel1 = 65;
+		const MPAtLevel1 = 56;
 		const inc = this.hasIncremental("powers")? 1: 0;
 		const lvl = this.system.combat.classData.level + inc;
-		return MPAtLevel1 * Math.pow(1.222, lvl -1);
+		return MPAtLevel1 * Math.pow(1.2, lvl -1);
 	}
 
 	async refreshMaxMP(this: PC, amt = this.mmp) {

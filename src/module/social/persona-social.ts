@@ -931,7 +931,7 @@ export class PersonaSocial {
 		}
 		switch (eff.action) {
 			case "stop-execution":
-				this.stopCardExecution();
+				await this.stopCardExecution();
 				return;
 			case "exec-event":
 				this.forceEvent(eff.eventLabel);
@@ -1006,7 +1006,7 @@ export class PersonaSocial {
 		this.rollState.cardData.eventsRemaining += amount;
 	}
 
-	static stopCardExecution() {
+	static async stopCardExecution() {
 		this.rollState = null;
 		this.cardDrawPromise= null;
 	}

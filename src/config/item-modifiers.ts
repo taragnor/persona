@@ -5,6 +5,7 @@ export const MODIFIERLIST = [
 	"wpnAtk",
 	"magAtk",
 	"wpnDmg",
+	"wpnMult",
 	"magDmg",
 	"magLow",
 	"magHigh",
