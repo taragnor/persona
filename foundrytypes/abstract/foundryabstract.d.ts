@@ -6,19 +6,13 @@ interface FoundryAbstract {
 interface DatabaseCreateOperation {
 	broadcast?: boolean;
 	data?: object[];
-	// Default: false
-	keepId?: boolean;
-	// Default: true
-	keepEmbeddedIds?: boolean;
+	keepId?: boolean; // Default: false
+	keepEmbeddedIds?: boolean; // Default: true
 	modifiedTime?: number;
-	// Default: false
-	noHook?: boolean;
-	// Default: true
-	render?: boolean;
-	// Default: false
-	renderSheet?: boolean;
-	// Default: null
-	parent?: any;
+	noHook?: boolean; // Default: false
+	render?: boolean; // Default: true
+	renderSheet?: boolean; // Default: false
+	parent?: any; // Default: null
 	pack?: string | null;
 	parentUuid?: string | null;
 	_result?: (string | object)[];
