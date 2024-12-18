@@ -582,6 +582,8 @@ export class ConditionalEffectManager {
 			case "alter-student-skill":
 				const skill = this.translate(cons.studentSkill!, STUDENT_SKILLS);
 				return `${skill} ${signedAmount}`;
+			case "modify-progress-tokens-cameo":
+				return `Cameo Progress Tokens ${signedAmount}`;
 			default:
 				cons.cardAction satisfies never;
 				return "ERROR";

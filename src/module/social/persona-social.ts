@@ -924,7 +924,7 @@ export class PersonaSocial {
 		}
 	}
 
-	static async execSocialCardAction(eff: SocialCardActionEffect) {
+	static async execSocialCardAction(eff: SocialCardActionEffect) : Promise<void> {
 		if (!this.rollState) {
 			PersonaError.softFail(`Can't execute card action ${eff.action}. No roll state`);
 			return;
@@ -941,7 +941,7 @@ export class PersonaSocial {
 				this.addExtraEvent(eff.amount ?? 0);
 				return;
 			case "gain-money":
-				await this.gainMoney(eff.amount ?? 0)
+					await this.gainMoney(eff.amount ?? 0)
 				return;
 			case "modify-progress-tokens":
 					await this.modifyProgress(eff.amount ?? 0);
@@ -953,6 +953,17 @@ export class PersonaSocial {
 					}
 				await this.alterStudentSkill( eff.studentSkill, eff.amount ?? 0);
 				return;
+			case "modify-progress-tokens-cameo": {
+				const cameos = this.rollState.cardData.cameos
+				const actor  = this.rollState.cardData.actor;
+				if (!cameos || cameos.length < 1) {
+					return;
+				}
+				for(const cameo of cameos) {
+					await actor.socialLinkProgress(cameo.id, eff.amount ?? 0);
+				}
+				return;
+			}
 			default:
 					eff.action satisfies never;
 				return;

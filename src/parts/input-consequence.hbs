@@ -169,7 +169,7 @@
 	</select>
 	{{/if}}
 
-	{{#if (eqAny cons.cardAction "gain-money" "modify-progress-tokens" "alter-student-skill" "inc-events")}}
+	{{#if (eqAny cons.cardAction "gain-money" "modify-progress-tokens" "modify-progress-tokens-cameo" "alter-student-skill" "inc-events")}}
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 	{{/if}}
 
