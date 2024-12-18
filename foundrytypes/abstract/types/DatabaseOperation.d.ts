@@ -6,7 +6,7 @@ interface DatabaseGetOperation {
 	index?: boolean;
 	indexFields?: string[];
 	pack?: string; // Default: null
-	parent?: FoundryAbstract["Document"] | null;
+	parent?: InstanceType<FoundryAbstract["Document"]> | null;
 	parentUuid?: string;
 }
 
@@ -19,7 +19,7 @@ interface DatabaseCreateOperation {
 	noHook?: boolean; // Default: false
 	render?: boolean; // Default: true
 	renderSheet?: boolean; // Default: false
-	parent?: FoundryAbstract["Document"] | null;
+	parent?: InstanceType<FoundryAbstract["Document"]> | null;
 	pack?: string | null;
 	parentUuid?: string | null;
 	_result?: (string | object)[];
@@ -34,7 +34,7 @@ interface DatabaseUpdateOperation {
 	noHook?: boolean; // Default: false
 	render?: boolean; // Default: true
 	renderSheet?: boolean // Default: false
-	parent?: FoundryAbstract["Document"] | null;
+	parent?: InstanceType<FoundryAbstract["Document"]> | null;
 	pack?: string | null;
 	parentUuid?: string | null;
 	_result: (string | object)[];
@@ -47,7 +47,7 @@ interface DatabaseDeleteOperation {
 	modifiedTime?: number;
 	noHook?: boolean; // Default: false
 	render?: boolean; // Default: true
-	parent?: FoundryAbstract["Document"] | null;
+	parent?: InstanceType<FoundryAbstract["Document"]> | null;
 	pack?: string | null;
 	parentUuid?: string | null;
 	_result?: (string | object)[];
