@@ -1,3 +1,4 @@
+import { TAROT_DECK } from "../config/tarot.js";
 import { localize } from "./persona.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
 import { STATUS_EFFECT_DURATIONS } from "../config/status-effects.js";
@@ -372,6 +373,10 @@ export class ConditionalEffectManager {
 			}
 			case "cameo-in-scene": {
 				return `Scene ${not} has a cameo `;
+			}
+			case "arcana-is": {
+				const arcana = this.translate(cond.tarot, TAROT_DECK);
+				return `Arcana is ${not} ${arcana}`;
 			}
 			default:
 				cond satisfies never

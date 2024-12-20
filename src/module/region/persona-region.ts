@@ -20,7 +20,8 @@ const PLAYER_VISIBLE_MOD_LIST = [
 	"hazard-on-2",
 	"no-tension-roll",// don't roll tension after
 	"safe",//can't search and no random encounter rolls
-	"bonus-on-6" //+5 treasure on 6 search
+	"bonus-on-6", //+5 treasure on 6 search
+	"fixed-treasure" // Tresure is static
 ] as const;
 
 const SPECIAL_MOD_LIST = [

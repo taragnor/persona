@@ -151,7 +151,7 @@ export type BooleanComparisonPC = {
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison
+StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison
 ;
 
 export const SOCIAL_CHECKS_LIST = [
@@ -255,6 +255,12 @@ type CreatureTagComparison = {
 	conditionTarget : ConditionTarget,
 }
 
+type ArcanaComparison = {
+	boolComparisonTarget: "arcana-is",
+	conditionTarget: ConditionTarget,
+	tarot: TarotCard;
+}
+
 type DamageTypeComparisonPC= {
 	boolComparisonTarget: "damage-type-is" ,
 	powerDamageType : (DamageType | "by-power") | MultiCheck<DamageType | "by-power">,
@@ -326,6 +332,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"social-availability",
 	"has-creature-tag",
 	"cameo-in-scene",
+	"arcana-is",
 ] as const;
 
 

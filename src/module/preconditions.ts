@@ -562,6 +562,13 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 		case "cameo-in-scene": {
 			return !!situation.cameo;
 		}
+		case "arcana-is": {
+			const target = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!target) return undefined;
+			const tarot = target.system.tarot;
+			if (!tarot) return undefined;
+			return target.system.tarot == condition.tarot;
+		}
 		default :
 			condition satisfies never;
 			return undefined;

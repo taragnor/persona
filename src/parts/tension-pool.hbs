@@ -8,7 +8,7 @@
 		{{/each}}
 	</div>
 	<br>
-	<div class="tension-result">
+	<div class="tension-result {{#if (ne tensionResult 'none')}} battle {{/if}}" >
 		{{tensionResult}}
 	</div>
 </div>

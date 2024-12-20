@@ -209,6 +209,15 @@
 	{{multicheck (strcat namePrefix 'slotType') POWERSTUFF.SLOTTYPES checked=cond.slotType localize=true}}
 	{{/if}}
 
+	{{#if (eq cond.boolComparisonTarget  "arcana-is")}}
+	<select name="{{strcat namePrefix 'conditionTarget'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+	</select>
+	<select name="{{strcat namePrefix 'tarot'}}">
+		{{selectOptions POWERSTUFF.TAROT_DECK localize=true selected=cond.tarot}}
+	</select>
+	{{/if}}
+
 	{{#if (eq cond.boolComparisonTarget  "relationship-type-is")}}
 	<select name="{{strcat namePrefix 'relationshipType'}}">
 		{{selectOptions POWERSTUFF.RELATIONSHIP_TYPE_OBJECT localize=false selected=cond.relationshipType}}

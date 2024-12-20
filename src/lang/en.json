@@ -461,6 +461,7 @@
 	"persona.preconditions.comparison.has-tag": "Power Has Power Tag",
 	"persona.preconditions.comparison.has-creature-tag": "Has Creature Tag",
 	"persona.preconditions.comparison.cameo-in-scene": "Card has a Cameo",
+	"persona.preconditions.comparison.arcana-is": "Arcana is",
 	"persona.preconditions.comparison.in-combat": "In Combat",
 	"persona.preconditions.comparison.is-critical": "Critical Hit",
 	"persona.preconditions.comparison.is-hit": "Hit",
@@ -592,6 +593,7 @@
 	"persona.specialRoomMods.safe": "Safe (can't search, no tension/concordia roll)",
 	"persona.specialRoomMods.stop-on-hazard": "Stop on Hazard",
 	"persona.specialRoomMods.bonus-on-6": "+5 treasure on 6 search roll",
+	"persona.specialRoomMods.fixed-treasure": "Treasure isn't random",
 
 	"persona.secretChoices.found": "Found",
 	"persona.secretChoices.none": "None",
