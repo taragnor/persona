@@ -348,7 +348,8 @@ export class ConditionalEffectManager {
 			case "is-gm":
 				return `User is ${not} GM`;
 			case "has-item-in-inventory":
-				return `${target1} ${not} has ${cond.itemId} in Inventory`;
+				const item = game.items.get(cond.itemId);
+				return `${target1} ${not} has ${item?.name ?? "Unknown Item"} in Inventory`;
 			case "creature-type-is":
 				const creatureType = this.translate(cond.creatureType, CREATURE_TYPE);
 				return `${target1} is ${not} of creature type: ${creatureType}`;
