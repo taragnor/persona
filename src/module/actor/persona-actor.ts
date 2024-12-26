@@ -44,9 +44,25 @@ declare global {
 	type ActorSub<X extends PersonaActor["system"]["type"]> = Subtype<PersonaActor, X>;
 }
 
+const EMPTYARR :any[] = [] as const; //to speed up things by not needing to create new empty arrays for immutables;
+
+Object.seal(EMPTYARR);
+
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
 	declare statuses: Set<StatusEffectId>;
 	declare sheet: PersonaActorSheetBase;
+
+	cache: {
+		tarot: Tarot | undefined;
+	};
+
+	constructor(...arr: any[]) {
+		//@ts-ignore
+		super(...arr);
+		this.cache = {
+			tarot: undefined,
+		}
+	}
 
 	get mp() : number {
 		switch (this.system.type) {
@@ -448,7 +464,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const meetsSL = function (linkLevel: number, focus:Focus) {
 			return linkLevel >= focus.requiredLinkLevel();
 		};
-		if (this.system.type != "pc") return [];
+		if (this.system.type != "pc") {
+			return EMPTYARR;
+		}
 		return this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
 			const npc = PersonaDB.getActor(linkId);
 			if (!npc) return [];
@@ -550,11 +568,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			throw new PersonaError("Can't spend recovery!");
 		}
 		link.inspiration -= 1;
-		// const rec_bonuses = this.getBonuses("recovery");
-		// rec_bonuses.add("Base", 10);
-		// const situation : Situation = {
-		// 	user: PersonaDB.getUniversalActorAccessor(this)
-		// };
 		const healing = this.recoveryAmt;
 		const linkActor = game.actors.get(socialLinkId);
 
@@ -1769,26 +1782,45 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get tarot() : Tarot | undefined {
 		switch (this.system.type) {
 			case "pc":
+				if (this.cache.tarot?.name == this.system.tarot)
+					break;
+				if (this.system.tarot == "")
+					return undefined;
+				console.log("cached value no good (pc)");
 				const PC = this as PC;
-				return PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
+				this.cache.tarot = PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
+				break;
 			case "shadow":
+				if (this.cache.tarot?.name == this.system.tarot)
+					break;
+				if (this.system.tarot == "")
+					return undefined;
+				console.log("cached value no good(Shadow)");
 				const shadow = this as Shadow;
-				return PersonaDB.tarotCards().find(x=> x.name == shadow.system.tarot);
+				this.cache.tarot =  PersonaDB.tarotCards().find(x=> x.name == shadow.system.tarot);
+				break;
 			case "npc":
+				if (this.cache.tarot?.name == this.system.tarot)
+					break;
+				if (this.system.tarot == "")
+					return undefined;
+				console.log("cached value no good (NPC)");
 				const NPC = this as NPC;
-				if (NPC == PersonaDB.personalSocialLink()
+				if (
+					NPC == PersonaDB.personalSocialLink()
 					|| NPC == PersonaDB.teammateSocialLink()
 				) {
 					return undefined;
 				}
-				return PersonaDB.tarotCards().find(x=> x.name == NPC.system.tarot);
+				this.cache.tarot =  PersonaDB.tarotCards().find(x=> x.name == NPC.system.tarot);
+				break;
 			case "tarot":
 				return this as Tarot;
 			default:
 				this.system satisfies never;
 				return undefined;
 		}
-
+		return this.cache.tarot;
 	}
 
 	get perk() : string {

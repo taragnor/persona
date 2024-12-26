@@ -33,6 +33,24 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 
 	declare parent : PersonaActor | undefined;
 
+	cache: {
+		effectsNull: ConditionalEffect[] | undefined;
+		effectsMap: WeakMap<PC |Shadow, ConditionalEffect[]>;
+	}
+
+	constructor(...args: any[]) {
+		//@ts-ignore
+		super (...args)
+		this.clearCache();
+	}
+
+	clearCache() {
+		this.cache = {
+			effectsNull: undefined,
+			effectsMap: new WeakMap(),
+		};
+	}
+
 	getClassProperty<T extends keyof CClass["system"]["leveling_table"][number]> (this: CClass,lvl: number, property:T)  : CClass["system"]["leveling_table"][number][T] {
 		const adjustedLvl = Math.clamp(lvl, 0, 11);
 		const data = this.system.leveling_table[adjustedLvl][property];
@@ -327,7 +345,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	}
 
 	getEffects(this: ModifierContainer, sourceActor : PC | Shadow | null): ConditionalEffect[] {
-		return ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
+		if (sourceActor == null) {
+			if (!this.cache.effectsNull) {
+				console.log(`refersing Cached effect for ${this.name}`);
+				this.cache.effectsNull = ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
+			}
+			return this.cache.effectsNull;
+		} else {
+			const data = this.cache.effectsMap.get(sourceActor);
+			if (data) return data;
+				console.log(`refersing Cached effect for ${this.name} with source ${sourceActor.name}`);
+			const newData=  ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
+			this.cache.effectsMap.set(sourceActor, newData);
+			return newData;
+		}
 	}
 
 	requiredLinkLevel(this: Focus) : number  {
@@ -340,7 +371,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 				) {
 					continue;
 				}
-				debugger;
 				if (
 					cond.socialLinkIdOrTarot == "SLSource"
 					|| cond.socialLinkIdOrTarot == this.parent?.id
@@ -568,4 +598,6 @@ type ConditionalEffectObjectContainer =
 	| {consequences: Consequence[]}
 	| {conditions: Precondition[]};
 
-
+Hooks.on("updateItem", (item :PersonaItem) => {
+	item.clearCache();
+});
