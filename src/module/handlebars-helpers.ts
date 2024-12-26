@@ -93,6 +93,13 @@ export class PersonaHandleBarsHelpers {
 			return (pc as PC).meetsSLRequirement(benefit.focus);
 		},
 		"getDamage": (actor: PersonaActor, usable: Usable) => {
+			if (usable == PersonaDB.getBasicPower("All-out Attack")) {
+				if (actor.system.type != "pc" && actor.system.type != "shadow") {
+					return "0 / 0";
+				}
+				const {high, low} = (actor as PC | Shadow).allOutAttackDamage();
+				return Math.round(low) + " / " + Math.round(high);
+			}
 			switch (actor.system.type) {
 				case "tarot":
 				case "npc":

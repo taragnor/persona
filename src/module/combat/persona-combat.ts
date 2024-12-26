@@ -1586,14 +1586,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			...combat.getAllies(attackerComb)
 		].flatMap (c=>c.actor?  [c.actor] : []);
 		for (const actor of attackers) {
-			if (actor.isDistracted() || !actor.isCapableOfAction())
-				continue;
-			const wpndmg = actor.wpnDamage();
-			const mult = actor.wpnMult() + (actor.system.combat.classData.level / 3) + actor.getBonuses("allOutDmgMult").total(situation);
-			const bonusdmg = actor.getBonusWpnDamage();
-
-			dmg.high += (wpndmg.high * mult) + bonusdmg.high.total(situation) ;
-			dmg.low += (wpndmg.low * mult) + bonusdmg.low.total(situation);
+			const atkDmg = actor.allOutAttackDamage(situation);
+			dmg.high += atkDmg.high;
+			dmg.low += atkDmg.low;
+			// if (actor.isDistracted() || !actor.isCapableOfAction())
+			// 	continue;
+			// const wpndmg = actor.wpnDamage();
+			// const mult = actor.wpnMult() + (actor.system.combat.classData.level / 3) + actor.getBonuses("allOutDmgMult").total(situation);
+			// const bonusdmg = actor.getBonusWpnDamage();
+			// dmg.high += (wpndmg.high * mult) + bonusdmg.high.total(situation) ;
+			// dmg.low += (wpndmg.low * mult) + bonusdmg.low.total(situation);
 		}
 		dmg.high /= 2;
 		dmg.low /= 2;

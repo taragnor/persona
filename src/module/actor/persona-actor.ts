@@ -2021,6 +2021,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		});
 	}
 
+	allOutAttackDamage(this: PC | Shadow, situation?: Situation) : { high: number, low: number } {
+		let high = 0, low = 0;
+		if (this.isDistracted() || !this.isCapableOfAction()) {
+			return {high, low};
+		}
+		if (!situation) {
+			situation = {
+				user: this.accessor
+			};
+		}
+		const wpndmg = this.wpnDamage();
+		const mult = this.wpnMult() + (this.system.combat.classData.level / 3) + this.getBonuses("allOutDmgMult").total(situation);
+		const bonusdmg = this.getBonusWpnDamage();
+		high += (wpndmg.high * mult) + bonusdmg.high.total(situation) ;
+		low += (wpndmg.low * mult) + bonusdmg.low.total(situation);
+		return {high, low};
+	}
+
 	getPoisonDamage(this: PC | Shadow): number {
 		const base = Math.round(this.mhp * 0.15);
 		if (this.system.type == "pc") return base;
