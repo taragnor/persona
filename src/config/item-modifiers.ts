@@ -10,6 +10,7 @@ export const MODIFIERLIST = [
 	"magLow",
 	"magHigh",
 	"criticalBoost",
+	"allOutDmgMult",
 	"allDefenses",
 	"ref",
 	"fort",

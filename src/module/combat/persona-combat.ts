@@ -1589,14 +1589,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			if (actor.isDistracted() || !actor.isCapableOfAction())
 				continue;
 			const wpndmg = actor.wpnDamage();
-			const mult = actor.wpnMult() + (actor.system.combat.classData.level / 3);
+			const mult = actor.wpnMult() + (actor.system.combat.classData.level / 3) + actor.getBonuses("allOutDmgMult").total(situation);
 			const bonusdmg = actor.getBonusWpnDamage();
 
-			dmg.high+= (wpndmg.high * mult) + bonusdmg.high.total(situation) ;
+			dmg.high += (wpndmg.high * mult) + bonusdmg.high.total(situation) ;
 			dmg.low += (wpndmg.low * mult) + bonusdmg.low.total(situation);
 		}
-		dmg.high /= 3;
-		dmg.low /= 3;
+		dmg.high /= 2;
+		dmg.low /= 2;
 		dmg.high = Math.round(dmg.high);
 		dmg.low = Math.round(dmg.low);
 		return dmg;
