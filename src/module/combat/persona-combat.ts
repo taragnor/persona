@@ -1578,6 +1578,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			high: 0,
 			low:0
 		};
+		const attackLeader = PersonaDB.findActor(situation.attacker!);
 		const combat = this.ensureCombatExists();
 		const attackerComb = combat.findCombatant(attacker);
 		if (!attackerComb) return dmg;
@@ -1587,18 +1588,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		].flatMap (c=>c.actor?  [c.actor] : []);
 		for (const actor of attackers) {
 			const atkDmg = actor.allOutAttackDamage(situation);
-			dmg.high += atkDmg.high;
-			dmg.low += atkDmg.low;
-			// if (actor.isDistracted() || !actor.isCapableOfAction())
-			// 	continue;
-			// const wpndmg = actor.wpnDamage();
-			// const mult = actor.wpnMult() + (actor.system.combat.classData.level / 3) + actor.getBonuses("allOutDmgMult").total(situation);
-			// const bonusdmg = actor.getBonusWpnDamage();
-			// dmg.high += (wpndmg.high * mult) + bonusdmg.high.total(situation) ;
-			// dmg.low += (wpndmg.low * mult) + bonusdmg.low.total(situation);
+			const mult = actor == attackLeader ? 1 : (1/3);
+			debugger;
+			dmg.high += atkDmg.high * mult;
+			dmg.low += atkDmg.low * mult;
 		}
-		dmg.high /= 2;
-		dmg.low /= 2;
 		dmg.high = Math.round(dmg.high);
 		dmg.low = Math.round(dmg.low);
 		return dmg;
