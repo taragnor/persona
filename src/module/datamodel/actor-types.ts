@@ -324,6 +324,7 @@ export class NPCSchema extends foundry.abstract.TypeDataModel {
 			...BaseStuff.defineSchema(),
 			weeklyAvailability: weeklyAvailability(),
 			conditions: new arr(new obj<Precondition>()),
+			availabilityConditions: new arr(new obj<Precondition>()),
 			creatureType: new txt({ choices: ["npc"] , initial: "npc"}),
 			tarot: tarot(),
 			bio: personalBio(),

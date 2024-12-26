@@ -169,7 +169,6 @@ export class PersonaSocial {
 						icon: `<i class="fas fa-check"></i>`,
 						label: "Confirm",
 						callback: (htm: string) => {
-							// const value =$('select[name="PorS"]:checked').val() as "primary" | "secondary" | undefined;
 							const value = $(htm).find(".social-skill-choice").find(":selected").val() as "primary" | "secondary" | SocialStat | undefined;
 							if (value) {
 								conf(value);
@@ -368,7 +367,7 @@ export class PersonaSocial {
 					(x.system.type == "npc" || x.system.type == "pc")
 					&& x.baseRelationship == "PEER"
 					&& x != actor && x.id != linkId
-					&& x.isAvailable()
+					&& x.isAvailable(actor)
 					&& testCameo(x as SocialLink)
 				) as SocialLink[];
 				const randomPick = students[Math.floor(Math.random() * students.length)];
@@ -382,7 +381,7 @@ export class PersonaSocial {
 					(x.system.type == "npc" || x.system.type == "pc")
 					&& x.baseRelationship != "SHADOW"
 					&& x != actor && x.id != linkId
-					&& x.isAvailable()
+					&& x.isAvailable(actor)
 					&& testCameo(x as SocialLink)
 				) as SocialLink[];
 				const randomPick = anyLink[Math.floor(Math.random() * anyLink.length)];
@@ -1061,7 +1060,7 @@ export class PersonaSocial {
 			ui.notifications.warn("Not in Downtime");
 			return;
 		}
-		if (!target.isAvailable()) {
+		if (!target.isAvailable(initiator)) {
 			ui.notifications.warn("Target isn't available today!");
 			return;
 		}

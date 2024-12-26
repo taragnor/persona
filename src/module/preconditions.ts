@@ -573,7 +573,10 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 				case "is-social-disabled":
 					return target.isSociallyDisabled();
 				case "is-available":
-					return target.isAvailable();
+					if (user.system.type != "pc") {
+						return undefined;
+					}
+					return target.isAvailable(user as PC);
 				default:
 					condition satisfies never;
 					PersonaError.softFail(`UNexpected social check ${(condition as any)?.socialTypeCheck}`);

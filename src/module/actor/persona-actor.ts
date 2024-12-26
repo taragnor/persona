@@ -1,3 +1,4 @@
+import { testPreconditions } from "../preconditions.js";
 import { CreatureTag } from "../../config/creature-tags.js";
 import { PersonaSocial } from "../social/persona-social.js";
 import { TAROT_DECK } from "../../config/tarot.js";
@@ -482,7 +483,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					actor:npc as SocialLink,
 					linkBenefits: npc as SocialLink,
 					allFocii,
-					available: npc.isAvailable(),
+					available: npc.isAvailable(this as PC),
 					focii: qualifiedFocii,
 				}];
 			} else {
@@ -502,7 +503,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						linkBenefits: personalLink,
 						allFocii: allFocii,
 						focii: qualifiedFocii,
-						available: (npc as SocialLink).isAvailable(),
+						available: (npc as SocialLink).isAvailable(this as PC),
 					}];
 				} else {
 					const teammate = PersonaDB.teammateSocialLink();
@@ -520,7 +521,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						linkBenefits: teammate,
 						allFocii: allFocii,
 						focii: qualifiedFocii,
-						available: (npc as SocialLink).isAvailable()
+						available: (npc as SocialLink).isAvailable(this as PC)
 					}];
 				}
 			}
@@ -1932,10 +1933,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.tokenSpends":list});
 	}
 
-	isAvailable() : boolean {
+	isAvailable(pc: PC) : boolean {
 		if (this.system.type == "shadow" || this.system.type == "tarot") return false;
 		const availability = this.system.weeklyAvailability;
 		if (this.isSociallyDisabled()) return false;
+		if (this.system.type == "npc") {
+			const sit: Situation = {
+				user: pc.accessor,
+				socialTarget: this.accessor,
+				target: this.accessor,
+			};
+			if(!testPreconditions(this.system.availabilityConditions,sit, null)) {
+				return false;
+			}
+		}
 		return availability?.available ?? false;
 	}
 
