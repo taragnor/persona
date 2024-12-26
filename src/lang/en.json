@@ -493,6 +493,8 @@
 	"persona.preconditions.comparison.percentage-of-mp": "Percentage of MP",
 	"persona.preconditions.comparison.energy": "Shadow Energy",
 	"persona.preconditions.comparison.socialRandom": "Social Card Random Number (1d20)",
+	"persona.preconditions.comparison.inspirationWith": "Inspiration Points",
+	"persona.preconditions.comparison.itemCount": "Amount of Item",
 
 	"persona.preconditions.socialChecks.relationship-type-check": "Relationship Type is",
 	"persona.preconditions.socialChecks.is-social-disabled": "Is Socially Disabled",
@@ -628,6 +630,11 @@
 	"persona.creatureType.avian": "Avian",
 	"persona.creatureType.dragon": "Dragon",
 	"persona.creatureType.evil-spirit": "Evil Spirit",
+	"persona.creatureType.student": "Student",
+	"persona.creatureType.professor": "Professor",
+	"persona.creatureType.social-shadow": "Shadow Social Link",
+	"persona.creatureType.teammate": "Teammate",
+	"persona.creatureType.npc-ally": "NPC-Ally",
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",

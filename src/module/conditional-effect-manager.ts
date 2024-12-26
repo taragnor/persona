@@ -17,7 +17,6 @@ import { TARGETING } from "../config/effect-types.js";
 import { POWERTYPES } from "../config/effect-types.js";
 import { DAMAGETYPES } from "../config/damage-types.js";
 import { POWER_TAGS } from "../config/power-tags.js";
-import { BOOLEAN_COMPARISON_TARGET } from "../config/precondition-types.js";
 import { CONDITION_TARGETS } from "../config/precondition-types.js";
 import { TRIGGERS } from "../config/triggers.js";
 import { MultiCheck } from "../config/precondition-types.js";
@@ -182,7 +181,7 @@ export class ConditionalEffectManager {
 	static getConditionals<T extends Actor<any>, I extends Item<any>>(condObject: DeepNoArray<ConditionalEffect["conditions"]>, sourceItem: I | null, sourceActor: T | null): ConditionalEffect["conditions"] {
 		const Arr = this.ArrayCorrector;
 		const conditionalEffects = Arr(condObject);
-		return  conditionalEffects.map( eff=> ({
+		return conditionalEffects.map( eff=> ({
 			...eff,
 			actorOwner: sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner,
 			sourceItem: sourceItem ? PersonaDB.getUniversalItemAccessor(sourceItem): (eff as any).sourceItem,
@@ -438,6 +437,11 @@ export class ConditionalEffectManager {
 
 			case "socialRandom":
 				return `Social Card d20 ${endString(cond.num)}`;
+			case "inspirationWith":
+				return `Has Inspiration With Link ??? ${endString(cond.num)}`;
+			case "itemCount":
+				const item = game.items.get(cond.itemId);
+				return `Has Amount of ${item?.name ?? "UNKNOWN"} ${endString(cond.num)}`;
 			default:
 				cond satisfies never;
 				return "UNKNOWN CONDITION"

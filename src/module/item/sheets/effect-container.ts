@@ -75,6 +75,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			...SocialLinks,
 			"" : "current Social Target",
 			"cameo": "Cameo",
+			"SLSource": "Social Link Source",
 		};
 
 		const DAMAGETYPESPLUS = {

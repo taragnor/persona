@@ -98,7 +98,10 @@ type NumericComparisonPC =
 	| TargettedNumericComparison
 	| ClockNumericComparison
 	| HPMPComparison
-| EnergyComparison
+	| EnergyComparison
+	| InspirationNumericComparison
+	| AmountOfItemComparison
+	| SocialLinkLevelComparison
 ;
 
 type EnergyComparison = NumericComparisonBase & {
@@ -108,16 +111,36 @@ type EnergyComparison = NumericComparisonBase & {
 }
 
 type GenericNumericComparison = NumericComparisonBase & {
-	comparisonTarget : Exclude<NumericComparisonTarget, "resistance-level" | "health-percentage" | "clock-comparison" | "percentage-of-mp" | "percentage-of-hp" | "energy" >,
+	comparisonTarget : Exclude<NumericComparisonTarget, "resistance-level" | "health-percentage" | "clock-comparison" | "percentage-of-mp" | "percentage-of-hp" | "energy" | "inspirationWith" | "itemCount" | "social-link-level" >,
 	studentSkill ?: SocialStat;
 	num ?: number,
-	socialLinkIdOrTarot ?: TarotCard | "cameo" | string;
+	// socialLinkIdOrTarot ?: SocialLinkIdOrTarot,
+}
+
+type SocialLinkLevelComparison = NumericComparisonBase & {
+	comparisonTarget: "social-link-level",
+	socialLinkIdOrTarot : SocialLinkIdOrTarot,
+	num: number,
+}
+
+type InspirationNumericComparison = NumericComparisonBase & {
+	conditionTarget : ConditionTarget,
+	comparisonTarget: "inspirationWith",
+	socialLinkIdOrTarot : SocialLinkIdOrTarot,
+	num: number,
+}
+
+type AmountOfItemComparison = NumericComparisonBase & {
+	conditionTarget : ConditionTarget,
+	comparisonTarget: "itemCount",
+	itemId: string,
+	num: number,
 }
 
 type ResistanceComparison = NumericComparisonBase & {
 	comparisonTarget: "resistance-level"
 	element: ResistType | "by-power",
-	resistLevel : ResistStrength
+	resistLevel : ResistStrength,
 	conditionTarget : ConditionTarget,
 }
 
@@ -222,7 +245,7 @@ type HasItemCheckComparison = {
 type SocialTargetIsComparison = {
 	boolComparisonTarget: "social-target-is",
 	conditionTarget : ConditionTarget,
-	socialLinkIdOrTarot ?: TarotCard | string;
+	socialLinkIdOrTarot : SocialLinkIdOrTarot,
 }
 
 type WeekdayComparison = {
@@ -359,6 +382,8 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"percentage-of-hp",
 	"energy",
 	"socialRandom",
+	"inspirationWith",
+	"itemCount",
 ] as const;
 
 export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];
@@ -429,3 +454,8 @@ export const USER_COMPARISON_TARGETS = Object.fromEntries(
 );
 
 export type MultiCheck<T extends string> = Record<T, boolean> ;
+
+
+export type SocialLinkIdOrTarot = TarotCard | "" | "cameo" | "SLSource" | string;
+//NOTE: TS can't do a satsifies here so have to be careufl adding new types
+

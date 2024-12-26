@@ -11,7 +11,11 @@ export const CREATURE_TAG_LIST = [
 	"avian",
 	"dragon",
 	"evil-spirit",
-
+	"student",
+	"professor",
+	"social-shadow",
+	"teammate",
+	"npc-ally",
 ] as const;
 
 export type CreatureTag = typeof CREATURE_TAG_LIST[number];

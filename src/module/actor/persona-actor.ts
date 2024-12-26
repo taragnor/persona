@@ -443,6 +443,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			});
 	}
 
+
 	get socialLinks() : SocialLinkData[] {
 		const meetsSL = function (linkLevel: number, focus:Focus) {
 			return linkLevel >= focus.requiredLinkLevel();
@@ -529,6 +530,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return list as (PC | NPC)[];
 	}
 
+	get recoveryAmt(): number {
+		if (this.system.type != "pc") return 0;
+		const rec_bonuses = this.getBonuses("recovery");
+		rec_bonuses.add("Base", 10);
+		const situation : Situation = {
+			user: PersonaDB.getUniversalActorAccessor(this)
+		};
+		const healing = rec_bonuses.total(situation);
+		return healing;
+	}
+
 	async spendRecovery(this: PC, socialLinkId: string) {
 		const link = this.system.social.find( x=> x.linkId == socialLinkId);
 		if (!link) {
@@ -538,12 +550,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			throw new PersonaError("Can't spend recovery!");
 		}
 		link.inspiration -= 1;
-		const rec_bonuses = this.getBonuses("recovery");
-		rec_bonuses.add("Base", 10);
-		const situation : Situation = {
-			user: PersonaDB.getUniversalActorAccessor(this)
-		};
-		const healing = rec_bonuses.total(situation);
+		// const rec_bonuses = this.getBonuses("recovery");
+		// rec_bonuses.add("Base", 10);
+		// const situation : Situation = {
+		// 	user: PersonaDB.getUniversalActorAccessor(this)
+		// };
+		const healing = this.recoveryAmt;
 		const linkActor = game.actors.get(socialLinkId);
 
 		await Logger.sendToChat(`${this.name} used inspiration from link ${linkActor?.name} to heal ${healing} hit points (original HP: ${this.hp})` , this);
@@ -1419,6 +1431,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		link.inspiration -= amt;
 		await this.update({"system.social": this.system.social});
+	}
+
+
+	getInspirationWith(linkId: SocialLink["id"]): number {
+		if (this.system.type != "pc") return 0;
+		const link = this.system.social.find( x=> x.linkId == linkId);
+		if (!link) return 0;
+		return link.inspiration;
 	}
 
 

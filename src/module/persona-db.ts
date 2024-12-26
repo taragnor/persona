@@ -1,3 +1,4 @@
+import { SocialLink } from "./actor/persona-actor.js";
 import { Weapon } from "./item/persona-item.js"
 import { Shadow } from "./actor/persona-actor.js";
 import { InvItem } from "./item/persona-item.js";
@@ -38,6 +39,11 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		const items = this.getAllByType("Item") as PersonaItem[];
 		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
 		return UMs.filter(um=> um.system.room_effect);
+	}
+
+	allSocialLinks() : SocialLink[] {
+		return this.allActors()
+		.filter( actor=> actor.system.type == "pc" || actor.system.type == "npc") as SocialLink[];
 	}
 
 	allPowers() : Power[] {

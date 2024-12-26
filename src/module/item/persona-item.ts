@@ -334,10 +334,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		let requirement = 0;
 		for (const eff of this.getEffects( null)) {
 			for (const cond of eff.conditions) {
-				if (cond.type == "numeric" && cond.comparisonTarget == "social-link-level")
-				{
-					if (cond.num)
-						return cond.num;
+				if (
+					cond.type != "numeric"
+					|| cond.comparisonTarget != "social-link-level"
+				) {
+					continue;
+				}
+				debugger;
+				if (
+					cond.socialLinkIdOrTarot == "SLSource"
+					|| cond.socialLinkIdOrTarot == this.parent?.id
+					|| cond.socialLinkIdOrTarot == this.parent?.name
+					|| cond.socialLinkIdOrTarot == this.parent?.tarot?.name
+				) {
+					return cond.num ?? 0;
 				}
 			}
 		}

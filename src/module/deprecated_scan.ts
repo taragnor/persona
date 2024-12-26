@@ -411,13 +411,6 @@ export class ErrorScanner {
 					comparisonTarget: "activation-roll",
 					num: cond.num!,
 					}
-			case "requires-social-link-level":
-				return {
-					type: "numeric",
-					comparator: ">=",
-					comparisonTarget: "social-link-level",
-					num: cond.num!,
-					}
 			case "talent-level+":
 				return {
 					type: "numeric",
