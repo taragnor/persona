@@ -198,7 +198,7 @@
 
 		{{#each actor.unrealizedSocialLinks as |link|}}
 		<div class="social-link unrealized-social-link" data-link-id="{{link.id}}">
-			{{#if link.system.weeklyAvailability.available}}
+			{{#if (canForgeSocialLink ../actor link)}}
 			<span class="social-command social-card">
 				<a class="init-social-link" title="Forge Social Link">
 					<i class="fa-solid fa-person-circle-plus"></i>

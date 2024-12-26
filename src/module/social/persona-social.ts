@@ -162,7 +162,7 @@ export class PersonaSocial {
 				title: `Prompt`,
 				content: html,
 				render: async (html: string) => {
-					$(html).find(".numInput").focus();
+					$(html).find(".numInput").trigger("focus");
 				},
 				buttons: {
 					one: {
@@ -1075,7 +1075,8 @@ export class PersonaSocial {
 			target: target.accessor,
 			socialTarget: target.accessor,
 		};
-		if (!testPreconditions(target.system.type == "npc" ? target.system.conditions : [], situation, null)) {
+		if (!this.meetsConditionsToStartLink(initiator, target)) {
+		// if (!testPreconditions(target.system.type == "npc" ? target.system.conditions : [], situation, null)) {
 			const requirements = ConditionalEffectManager.printConditions((target as NPC).system?.conditions ?? []);
 			ui.notifications.warn(`You don't meet the prerequisites to start a relationship with this Link: ${requirements}`);
 			return;
@@ -1096,6 +1097,17 @@ export class PersonaSocial {
 			throw new PersonaError("No GM logged in!");
 		}
 		PersonaSockets.simpleSend("DEC_AVAILABILITY", targetId,[ gmId ]);
+	}
+
+	static meetsConditionsToStartLink(pc: PC, target: SocialLink): boolean {
+		const situation: Situation = {
+			user: pc.accessor,
+			attacker: pc.accessor,
+			isSocial: true,
+			target: target.accessor,
+			socialTarget: target.accessor,
+		};
+		return testPreconditions(target.system.type == "npc" ? target.system.conditions : [], situation, null);
 	}
 
 } //end of class

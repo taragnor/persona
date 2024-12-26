@@ -1,3 +1,5 @@
+import { PersonaSocial } from "./social/persona-social.js";
+import { SocialLink } from "./actor/persona-actor.js";
 import { Consequence } from "../config/consequence-types.js";
 import { ConditionalEffect } from "./datamodel/power-dm.js";
 import { ConditionalEffectManager } from "./conditional-effect-manager.js";
@@ -318,6 +320,11 @@ export class PersonaHandleBarsHelpers {
 			const str= ConditionalEffectManager.printConsequences(cons);
 			return new Handlebars.SafeString( `<div class="printed-consequence">${str}</div>`
 			);
+		},
+
+		"canForgeSocialLink": function (pc: PC, target: SocialLink) : boolean {
+			if (pc.system.type != "pc") return false;
+			return PersonaSocial.meetsConditionsToStartLink(pc, target);
 		}
 
 	}
