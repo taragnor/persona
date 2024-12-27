@@ -2144,7 +2144,7 @@ get tagList() : CreatureTag[] {
 
 }
 	hasCreatureTag(tag: CreatureTag) : boolean{
-		return this.system.creatureTags.includes(tag);
+		return this.tagList.includes(tag);
 	}
 
 	async deleteCreatureTag(index: number) : Promise<void> {

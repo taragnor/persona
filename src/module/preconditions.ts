@@ -1,3 +1,4 @@
+import { Power } from "./item/persona-item.js";
 import { SocialLinkIdOrTarot } from "../config/precondition-types.js";
 import { SocialLink } from "./actor/persona-actor.js";
 import { ConditionalEffectManager } from "./conditional-effect-manager.js";
@@ -394,7 +395,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			}
 			return Object.entries(condition.powerTag)
 			.filter( ([_, val]) => val == true)
-			.some (([tag, _]) => power.system.tags.includes(tag as PowerTag));
+			.some (([tag, _]) => (power as Power).tagList().includes(tag as PowerTag));
 		}
 		case "power-type-is": {
 			if (!situation.usedPower) {
