@@ -1689,9 +1689,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			link.linkId == focus.parent?.id
 			&& link.linkLevel >= focus.requiredLinkLevel()
 		);
-		// return this.socialLinks.some( link=> {
-		// 	return	link.focii.includes(focus) && link.linkLevel >= focus.requiredLinkLevel();
-		// });
 	}
 
 	isFullyFaded(this: PC | Shadow, newhp?:number) : boolean {
@@ -1809,7 +1806,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					break;
 				if (this.system.tarot == "")
 					return undefined;
-				console.log("cached value no good (pc)");
+				console.debug("cached value no good (pc)");
 				const PC = this as PC;
 				this.cache.tarot = PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
 				break;
@@ -1818,7 +1815,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					break;
 				if (this.system.tarot == "")
 					return undefined;
-				console.log("cached value no good(Shadow)");
+				console.debug("cached value no good(Shadow)");
 				const shadow = this as Shadow;
 				this.cache.tarot =  PersonaDB.tarotCards().find(x=> x.name == shadow.system.tarot);
 				break;
@@ -1827,7 +1824,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					break;
 				if (this.system.tarot == "")
 					return undefined;
-				console.log("cached value no good (NPC)");
+				console.debug("cached value no good (NPC)");
 				const NPC = this as NPC;
 				if (
 					NPC == PersonaDB.personalSocialLink()
@@ -2129,19 +2126,34 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async onCombatStart() {
 	}
 
+get tagList() : CreatureTag[] {
+	if (this.system.type == "tarot") return [];
+	let list = this.system.creatureTags.slice();
+	switch (this.system.type) {
+		case "pc":
+			if (!list.includes("pc")) {
+			list.push("pc");
+			}
+			return list;
+		case "npc": return list;
+		case "shadow": return list;
+		default:
+			this.system satisfies never;
+			return [];
+	}
+
+}
 	hasCreatureTag(tag: CreatureTag) : boolean{
 		return this.system.creatureTags.includes(tag);
 	}
 
 	async deleteCreatureTag(index: number) : Promise<void> {
-		console.log("Delete creature tag");
 		const tags = this.system.creatureTags;
 		tags.splice(index, 1);
 		await this.update( {"system.creatureTags": tags});
 	}
 
 	async addCreatureTag() : Promise<void> {
-		console.log("Adding creature tag");
 		const tags = this.system.creatureTags;
 		tags.push("neko");
 		await this.update( {"system.creatureTags": tags});

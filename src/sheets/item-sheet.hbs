@@ -17,7 +17,7 @@
 			{{selectOptions EQUIP_SLOTS localize=true selected=item.system.slot}}
 		</select>
 	</div>
-
+	{{> "systems/persona/parts/itemTags.hbs" item=item POWERSTUFF=POWERSTUFF}}
 	<textarea name="system.description">
 		{{item.system.description}}
 	</textarea>

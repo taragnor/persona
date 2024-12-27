@@ -8,8 +8,8 @@ export abstract class PersonaPowerLikeBaseSheet extends PersonaEffectContainerBa
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
-		html.find(".addTag").on("click", this.addTag.bind(this));
-		html.find(".delTag").on("click", this.deleteTag.bind(this));
+		html.find(".power-tags .addTag").on("click", this.addTag.bind(this));
+		html.find(".power-tags .delTag").on("click", this.deleteTag.bind(this));
 
 	}
 

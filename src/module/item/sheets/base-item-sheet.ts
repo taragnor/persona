@@ -1,3 +1,5 @@
+import { HTMLTools } from "../../utility/HTMLTools.js";
+import { Consumable } from "../persona-item.js";
 import { PersonaItem } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { ConditionalEffectManager } from "../../conditional-effect-manager.js";
@@ -21,6 +23,18 @@ export class PersonaItemSheetBase extends ItemSheet<PersonaItem> {
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 		ConditionalEffectManager.applyHandlers(html, this.item);
+		html.find(".itemTags .addItemTag").on("click", this.addItemTag.bind(this));
+		html.find(".itemTags .delTag").on("click", this.deleteItemTag.bind(this));
+	}
+
+	async addItemTag(_ev: JQuery.ClickEvent) {
+		await (this.item as Consumable).addItemTag();
+	}
+
+	async deleteItemTag(ev: JQuery.ClickEvent) {
+		const index = HTMLTools.getClosestData(ev, "tagIndex");
+		await (this.item as Consumable).deleteItemTag(Number(index));
+
 	}
 
 

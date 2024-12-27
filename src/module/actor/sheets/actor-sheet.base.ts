@@ -1,3 +1,4 @@
+import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaEffectContainerBaseSheet } from "../../item/sheets/effect-container.js";
 import { ConditionalEffectManager } from "../../conditional-effect-manager.js";
 import { DEFENSE_CATEGORY } from "../../../config/defense-categories.js";
@@ -53,6 +54,18 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 		ConditionalEffectManager.applyHandlers(html, this.actor);
+		html.find(".creatureTags .delTag").on("click", this.deleteCreatureTag.bind(this));
+		html.find('.addCreatureTag').on("click", this.onAddCreatureTag.bind(this));
+	}
+
+	async onAddCreatureTag( _ev: JQuery.ClickEvent) {
+		await this.actor.addCreatureTag();
+	}
+
+	async deleteCreatureTag(ev: JQuery.ClickEvent) {
+		const index = HTMLTools.getClosestData(ev, "tagIndex");
+		await this.actor.deleteCreatureTag(Number(index));
+
 	}
 
 

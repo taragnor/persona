@@ -1,3 +1,4 @@
+import { EQUIPMENT_TAGS } from "../../../config/equipment-tags.js";
 import { CREATURE_TAGS } from "../../../config/creature-tags.js";
 import { SOCIAL_CHECKS } from "../../../config/precondition-types.js";
 import { ALTER_MP_SUBTYPES } from "../../../config/effect-types.js";
@@ -123,10 +124,10 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			ALTER_MP_SUBTYPES,
 			SOCIAL_CHECKS,
 			CREATURE_TAGS,
+			EQUIPMENT_TAGS,
 		};
 		return this._powerStuffBase;
 	}
-
 
 	static get powerStuff(): Record<string, any> {
 		const SOCIAL_LINKS = Object.fromEntries(

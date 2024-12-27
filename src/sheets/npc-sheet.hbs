@@ -12,6 +12,7 @@
 				{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
 			</select>
 		</div>
+		{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
 		<div class="relationship-conditions" data-top-path="system.conditions">
 			<label> Requirements to initiate Link</label>
 			{{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.conditions." owner=actor}}

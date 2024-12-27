@@ -1,4 +1,5 @@
 export const EQUIPMENT_TAGS_LIST = [
+	"nil",
 	"metaverse",
 	"mundane",
 	"consumable",
@@ -8,6 +9,8 @@ export const EQUIPMENT_TAGS_LIST = [
 	"accessory",
 	"weapon_crystal",
 	"non-equippable",
+	"incriminating",
+	"skill-card",
 ] as const;
 
 export type EquipmentTag = typeof EQUIPMENT_TAGS_LIST[number];

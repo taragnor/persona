@@ -29,27 +29,7 @@
 					<label> Scan Level</label>
 					<input class="short" type="number" name="system.scanLevel" value="{{actor.system.scanLevel}}">
 				</div>
-				<div class="creatureTags">
-					<h2>
-						<span>Tags</span>
-						<a class="addCreatureTag">
-							<i class="fa-solid fa-plus"> </i>
-						</a>
-					</h2>
-					<div class="tag-list">
-						{{#each actor.system.creatureTags as |tag i|}}
-						<div class="tag-item", data-tag-index="{{i}}">
-							<select name="system.creatureTags.{{i}}">
-								{{selectOptions ../POWERSTUFF.CREATURE_TAGS localize=true selected=tag}}
-							</select>
-							<a class="delTag">
-								<i class="fa-solid fa-trash-can"></i>
-							</a>
-						</div>
-						{{/each}}
-					</div>
-				</div>
-
+				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
 			</div>
 			<div class="flexcol encounter-column">
 				<div>

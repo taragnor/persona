@@ -1,3 +1,7 @@
+import { CREATURE_TAGS } from "../config/creature-tags.js";
+import { EQUIPMENT_TAGS } from "../config/equipment-tags.js";
+import { InvItem } from "./item/persona-item.js";
+import { Weapon } from "./item/persona-item.js";
 import { PersonaSocial } from "./social/persona-social.js";
 import { SocialLink } from "./actor/persona-actor.js";
 import { Consequence } from "../config/consequence-types.js";
@@ -332,7 +336,13 @@ export class PersonaHandleBarsHelpers {
 		"canForgeSocialLink": function (pc: PC, target: SocialLink) : boolean {
 			if (pc.system.type != "pc") return false;
 			return PersonaSocial.meetsConditionsToStartLink(pc, target);
-		}
+		},
+		"getItemTagList": function (item: Usable | InvItem | Weapon) : string[] {
+			return (item as Power).tagList().map(tag=> localize(EQUIPMENT_TAGS[tag]));
+		},
+		"getCreatureTagList": function (actor: PersonaActor) : string[] {
+			return actor.tagList.map(tag=> localize(CREATURE_TAGS[tag]));
+		},
 
 	}
 } //end of class

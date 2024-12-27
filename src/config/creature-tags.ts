@@ -16,6 +16,7 @@ export const CREATURE_TAG_LIST = [
 	"social-shadow",
 	"teammate",
 	"npc-ally",
+	"pc",
 ] as const;
 
 export type CreatureTag = typeof CREATURE_TAG_LIST[number];

@@ -89,14 +89,29 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		return "";
 	}
 
+	async addItemTag(this: Consumable | InvItem | Weapon): Promise<void> {
+		const tags = this.system.itemTags;
+		tags.push("nil");
+		await this.update( {"system.itemTags": tags});
+		}
+
+	async deleteItemTag(this: Consumable | InvItem | Weapon, index: number) : Promise<void> {
+		const tags = this.system.itemTags;
+		tags.splice(index, 1);
+		await this.update( {"system.itemTags": tags});
+
+	}
+
 	hasTag(this: Usable, tag: PowerTag) : boolean;
 	hasTag(this: InvItem | Weapon, tag: EquipmentTag): boolean
 	hasTag(this: Usable | InvItem | Weapon, tag: PowerTag | EquipmentTag) : boolean {
 		let list : (PowerTag | EquipmentTag)[];
 		switch (this.system.type) {
 			case "power":
+				list = (this as Power).tagList();
+				break;
 			case "consumable":
-				list = (this as Usable).tagList();
+				list = (this as Consumable).tagList();
 				break;
 			case "item":
 			case "weapon":
@@ -110,20 +125,26 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		return list.includes(tag);
 	}
 
-	tagList(this : Usable): PowerTag[];
+	tagList(this : Power): PowerTag[];
+	tagList(this : Consumable): (PowerTag | EquipmentTag)[];
 	tagList(this : InvItem | Weapon): EquipmentTag[];
 	tagList(this: Usable | InvItem | Weapon) : (PowerTag | EquipmentTag)[] {
 		const itype = this.system.type;
 		switch (itype) {
-			case "power":
-			case "consumable": {
+			case "power": {
 				const list= this.system.tags.slice();
 				if (!list.includes(itype))
 				list.push(itype);
 				return list;
 			}
+			case "consumable": {
+				const list : (PowerTag | EquipmentTag)[]= (this.system.tags as (PowerTag | EquipmentTag)[]).concat(this.system.itemTags);
+				if (!list.includes(itype))
+				list.push(itype);
+				return list;
+			}
 			case "item": {
-				const list= this.system.tags.slice();
+				const list= this.system.itemTags.slice();
 				const subtype = this.system.slot;
 				if (subtype != "none") {
 					if (!list.includes(subtype))
@@ -135,7 +156,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 				return list;
 			}
 			case "weapon": {
-				const list= this.system.tags.slice();
+				const list= this.system.itemTags.slice();
 				if (!list.includes(itype))
 					list.push(itype);
 				return list;
@@ -422,14 +443,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	getEffects(this: ModifierContainer, sourceActor : PC | Shadow | null): ConditionalEffect[] {
 		if (sourceActor == null) {
 			if (!this.cache.effectsNull) {
-				console.log(`refersing Cached effect for ${this.name}`);
+				console.debug(`refreshing Cached effect for ${this.name}`);
 				this.cache.effectsNull = ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
 			}
 			return this.cache.effectsNull;
 		} else {
 			const data = this.cache.effectsMap.get(sourceActor);
 			if (data) return data;
-				console.log(`refersing Cached effect for ${this.name} with source ${sourceActor.name}`);
+				console.debug(`refreshing Cached effect for ${this.name} with source ${sourceActor.name}`);
 			const newData=  ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
 			this.cache.effectsMap.set(sourceActor, newData);
 			return newData;

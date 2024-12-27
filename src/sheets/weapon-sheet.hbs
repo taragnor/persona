@@ -2,6 +2,8 @@
 	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Power Name" placeholder="Power Name">
 
 	<textarea name="system.description"> {{item.system.description}} </textarea>
+
+	{{> "systems/persona/parts/itemTags.hbs" item=item POWERSTUFF=POWERSTUFF}}
 	{{#if (isGM)}}
 	<label> Price </label>
 	{{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}

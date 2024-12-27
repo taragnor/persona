@@ -301,6 +301,23 @@
 	"persona.power.tag.opener": "Opener",
 	"persona.power.tag.downtime": "Downtime",
 	"persona.power.tag.teamwork": "Teamwork",
+	"persona.power.tag.power": "Metaverse Power",
+	"persona.power.tag.consumable": "Consumable Item",
+
+	"persona.equipment.tag.nil" : "-",
+	"persona.equipment.tag.metaverse" : "Metaverse Item",
+	"persona.equipment.tag.mundane" : "Mundane Item",
+	"persona.equipment.tag.consumable" : "Consumable Item",
+	"persona.equipment.tag.weapon" : "Weapon",
+	"persona.equipment.tag.key-item" : "Key Item",
+	"persona.equipment.tag.body" : "Outfit",
+	"persona.equipment.tag.accessory" : "Accessory",
+	"persona.equipment.tag.weapon_crystal" : "Weapon Crystal",
+	"persona.equipment.tag.non-equippable" : "Non-equippable",
+	"persona.equipment.tag.incriminating" : "Incriminating",
+	"persona.equipment.tag.skill-card" : "Skill Card",
+
+
 
 	"persona.power.shadowcosts.none": "Any",
 	"persona.power.shadowcosts.always": "Charged (Depleting)",
@@ -641,6 +658,7 @@
 	"persona.creatureType.social-shadow": "Shadow Social Link",
 	"persona.creatureType.teammate": "Teammate",
 	"persona.creatureType.npc-ally": "NPC-Ally",
+	"persona.creatureType.pc": "PC",
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",

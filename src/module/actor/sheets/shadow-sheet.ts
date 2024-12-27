@@ -50,23 +50,11 @@ export class ShadowSheet extends CombatantSheetBase {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
-		html.find(".creatureTags .delTag").on("click", this.deleteCreatureTag.bind(this));
-		html.find('.addCreatureTag').on("click", this.onAddCreatureTag.bind(this));
 		html.find('.addShadowPower').on("click", this.onAddPower.bind(this));
 		html.find('.addShadowFocus').on("click", this.onAddFocus.bind(this));
 		html.find(".recost-power").on("click", this.onRecostPower.bind(this));
 		html.find(".add-dungeon").on("click", this.addDungeon.bind(this));
 		html.find(".del-dungeon").on("click", this.deleteDungeon.bind(this));
-	}
-
-	async onAddCreatureTag( _ev: JQuery.ClickEvent) {
-		await this.actor.addCreatureTag();
-	}
-
-	async deleteCreatureTag(ev: JQuery.ClickEvent) {
-		const index = HTMLTools.getClosestData(ev, "tagIndex");
-		await this.actor.deleteCreatureTag(Number(index));
-
 	}
 
 	async onAddPower( _ev: Event) {

@@ -26,6 +26,7 @@ export class PersonaItemSheet extends PersonaEffectContainerBaseSheet {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
+
 	}
 
 }
