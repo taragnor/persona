@@ -108,6 +108,7 @@ export function UsablePowerProps() {
 		melee_extra_mult: new num( {integer: true, min: 0, max:50, initial: 0}),
 		defense: new txt<(typeof DEFENSECHOICES[number]) >( {choices: DEFENSECHOICES, initial: "ref"}),
 		targets: new txt<typeof TARGETINGLIST[number]> ( {choices: TARGETINGLIST, initial: "1-engaged"}),
+		validTargetConditions: new arr( new obj<Precondition>()),
 		dmg_type: new txt<typeof DAMAGETYPESLIST[number]>( {choices: DAMAGETYPESLIST, initial:"physical"}),
 		crit_boost: new num( {min: -20, max:20, initial: 0, integer:true}),
 		atk_bonus: new num({initial: 0, integer: true}),

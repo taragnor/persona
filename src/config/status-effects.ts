@@ -10,7 +10,7 @@ export const STATUS_EFFECT_LIST = [
 		icon:  "icons/svg/shield.svg",
 	}, {
 		id: "curse",
-		icon:  "",
+		icon:  "icons/magic/unholy/strike-body-life-soul-purple.webp",
 	}, {
 		id: "confused",
 		icon:  "icons/svg/stoned.svg",
@@ -24,8 +24,11 @@ export const STATUS_EFFECT_LIST = [
 		id: "dizzy",
 		icon:  "icons/svg/daze.svg",
 	}, {
+		id: "despair",
+		icon:  "icons/svg/cave.svg",
+	}, {
 		id: "expel",
-		icon:  "",
+		icon:  "icons/magic/light/explosion-star-glow-silhouette.webp",
 	}, {
 		id: "fading",
 		icon:  "icons/svg/invisible.svg",

@@ -628,6 +628,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		return base + mod;
 	}
 
+	targetMeetsConditions(this: Usable, user: PC | Shadow, target: PC | Shadow, situation?: Situation) : boolean {
+		if (!this.system.validTargetConditions) return true;
+		const conditions  = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user);
+		if (!situation) {
+			situation = {
+				attacker : user.accessor,
+				user: user.accessor,
+				target: target.accessor,
+				usedPower: this.accessor,
+			};
+		}
+		return testPreconditions(conditions, situation, this);
+	}
+
 }
 
 

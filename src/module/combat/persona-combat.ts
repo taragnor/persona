@@ -82,11 +82,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		await this.setEscalationDie(0);
 
 		msg += this.roomEffectsMsg();
-// 		if (mods.length > 0) {
-// 			msg += "<u><h2>Room Effects</h2></u><ul>";
-// 			msg += mods.map( x=> `<li><b>${x.name}</b> : ${x.system.description}</li>`).join("");
-// 			msg += "</ul>";
-// 		}
 		if (msg.length > 0) {
 			const messageData: MessageData = {
 				speaker: {alias: "Combat Start"},
@@ -151,6 +146,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	async startCombatantTurn( combatant: Combatant<ValidAttackers> ){
+		let baseRolls : Roll[] = [];
 		const rolls :RollBundle[] = [];
 		const actor = combatant.actor;
 		if (!actor) return;
@@ -181,6 +177,22 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		let startTurnMsg = [ `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`];
 		startTurnMsg = startTurnMsg.concat(await this.handleStartTurnEffects(combatant));
 		const openingReturn = await this.execOpeningRoll(combatant);
+		if (openingReturn) {
+			const {data, roll} = openingReturn;
+			const initialMsg = `<h3> Opening Roll -> ${roll.total}</h3>`;
+			startTurnMsg.push(initialMsg);
+			startTurnMsg = startTurnMsg.concat(
+				data.map( ret => {
+					const optionsMap = ret.options.map( opt=> {
+						const mandatoryStr = opt.mandatory ? "<b>(Mandatory)</b>": "";
+						return `<li> ${mandatoryStr} ${opt.optionTxt}  </li>`;
+					});
+					const list = optionsMap.length ? `<ul>${optionsMap}</ul>`: "";
+					return `${ret.msg.join("")} ${list}`;
+				})
+			);
+			baseRolls.push(roll);
+		}
 		// if (combatant.actor.isCapableOfAction()) {
 		// 	const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token);
 		// 	if (this.isEngagedByAnyFoe(accessor)) {
@@ -198,32 +210,22 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		// 		}
 		// 	}
 		// }
-		startTurnMsg = startTurnMsg.concat(
-			openingReturn.map( ret => {
-				const optionsMap = ret.options.map( opt=> {
-					const mandatoryStr = opt.mandatory ? "<b>(Mandatory)</b>": "";
-					return `<li> ${mandatoryStr} ${opt.optionTxt}  </li>`;
-				});
-				const list = optionsMap.length ? `<ul>${optionsMap}</ul>`: "";
-			return `${ret.msg} ${list}`;
-			})
-		);
 		const speaker = {alias: combatant?.token?.name ?? "Unknown"};
 		let messageData = {
 			speaker: speaker,
 			content: startTurnMsg.join("<br>"),
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
-			rolls: rolls.map(r=> r.roll),
-			sound: rolls.length > 0 ? CONFIG.sounds.dice : undefined
+			rolls: rolls.map(r=> r.roll).concat(baseRolls),
+			sound: rolls.length + baseRolls.length > 0 ? CONFIG.sounds.dice : undefined
 		};
 		ChatMessage.create(messageData, {});
 	}
 
-	async execOpeningRoll( combatant: Combatant<ValidAttackers> ) : Promise<OpenerOptionsReturn[]> {
-		const returns :OpenerOptionsReturn[]= [];
+	async execOpeningRoll( combatant: Combatant<ValidAttackers> ) : Promise<{data: OpenerOptionsReturn[], roll: Roll} | null> {
+		let returns :OpenerOptionsReturn[]= [];
 		// const tokenAccessor = PersonaDB.getUniversalTokenAccessor(combatant.token);
 		const actor = combatant.actor;
-		if (!actor) return [];
+		if (!actor) return null;
 		const openingRoll = new Roll("1d20");
 		await openingRoll.roll()
 		const rollValue = openingRoll.total;
@@ -231,51 +233,57 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			user: actor.accessor,
 			openingRoll: rollValue,
 		}
-		const saveVsFear = this.saveVsFear(combatant, situation);
-		returns.push(saveVsFear);
-		const saveVsCharm = this.saveVsCharm(combatant, situation);
-		returns.push(saveVsCharm);
-		const disengageReturn = this.disengageOpener(combatant, situation);
-		returns.push(disengageReturn);
-		const otherOpeners = this.otherOpeners(combatant, situation);
-		returns.push(otherOpeners);
+		returns.push(
+			this.saveVsFear(combatant, situation),
+			this.saveVsDespair(combatant, situation),
+			this.saveVsConfusion(combatant, situation),
+			this.saveVsCharm(combatant, situation),
+			this.disengageOpener(combatant, situation),
+			this.otherOpeners(combatant, situation),
+		);
+
 		const mandatory = returns.find(r => r.options.some( o=> o.mandatory));
 		if (mandatory) {
-			return [{
-				msg: mandatory.msg,
-				options: [mandatory.options.find(x=> x.mandatory)!],
-			}];
+			return  {
+				roll: openingRoll,
+				data: [{
+					msg: mandatory.msg,
+					options: [mandatory.options.find(x=> x.mandatory)!],
+				}]
+			};
 		};
-		return returns
-		.filter(x=> x.msg.length > 0)
+		return {
+			roll: openingRoll,
+			data: returns
+			.filter(x=> x.msg.length > 0)
+		};
+	}
+
+	mockOpeningSaveTotal( combatant: Combatant<ValidAttackers> , situation: Situation, status: StatusEffectId) : number | undefined {
+		const rollValue = situation.openingRoll ?? -999;
+		if (!combatant.actor) return undefined;
+		const statusEffect = combatant.actor.getStatus(status);
+		if (!statusEffect) return undefined;
+		// const saveDC = statusEffect.statusSaveDC;
+		const saveSituation : Situation = {
+			...situation,
+			saveVersus: status
+		};
+		const saveBonus = combatant.actor.getBonuses("save").total(saveSituation);
+		return saveBonus + rollValue;
 	}
 
 	saveVsCharm ( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsReturn {
 		let options : OpenerOptionsReturn["options"] = [];
 		let msg : string[] = [];
-		const rollValue = situation.openingRoll ?? -999;
-		const status = "charmed";
-		if (!combatant.actor) return { msg, options};
-		const charmStatus = combatant.actor.getStatus(status);
-		if (!charmStatus) {
+		const saveTotal = this.mockOpeningSaveTotal(combatant, situation, "charmed");
+		if (saveTotal == undefined) {
 			return {msg, options};
 		}
-		const saveDC = charmStatus.statusSaveDC;
-		const saveSituation : Situation = {
-			...situation,
-			saveVersus: status
-		};
-		const saveBonus = combatant.actor.getBonuses("disengage").total(saveSituation);
-		const saveTotal = saveBonus + rollValue;
-		msg.push(`Save vs Charm (DC ${saveDC}) ---> ${saveTotal}`);
+		msg.push(`Resisting Charm (${saveTotal}) -->`);
 		switch (true) {
-			case (saveTotal >= saveDC):{
+			case (saveTotal >= 11):{
 				msg.push(`Success`);
-				options.push({
-					optionTxt: "remove Charm",
-					mandatory: true,
-					optionEffects: [],
-				});
 				break;
 			}
 			case (saveTotal < 6) : {
@@ -298,32 +306,65 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return {msg, options};
 	}
 
-	saveVsFear( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsReturn {
+	saveVsConfusion ( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsReturn {
 		let options : OpenerOptionsReturn["options"] = [];
 		let msg : string[] = [];
-		const rollValue = situation.openingRoll ?? -999;
-		if (!combatant.actor) return { msg, options};
-		const status = "charmed";
-		const fearStatus = combatant.actor.getStatus(status);
-		if (!fearStatus) {
+		const saveTotal = this.mockOpeningSaveTotal(combatant, situation, "confused");
+		if (saveTotal == undefined) {
 			return {msg, options};
 		}
-		const saveDC = fearStatus.statusSaveDC;
-		const saveSituation : Situation = {
-			...situation,
-			saveVersus: status
-		};
-		const saveBonus = combatant.actor.getBonuses("disengage").total(saveSituation);
-		const saveTotal = saveBonus + rollValue;
-		msg.push(`Save vs Fear (DC ${saveDC}) ---> ${saveTotal}`);
+		msg.push(`Resisting Confusion (${saveTotal}) -->`);
 		switch (true) {
-			case (saveTotal >= saveDC):{
+			case (saveTotal >= 11):{
 				msg.push(`Success`);
+				break;
+			}
+			default:
+				msg.push(`Failure (Miss Turn)`);
 				options.push({
-					optionTxt: "Remove Fear",
+					optionTxt: "Stand around confused (Miss Turn)",
 					mandatory: true,
 					optionEffects: [],
 				});
+		}
+		return {msg, options};
+	}
+
+	saveVsDespair ( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsReturn {
+		let options : OpenerOptionsReturn["options"] = [];
+		let msg : string[] = [];
+		const saveTotal = this.mockOpeningSaveTotal(combatant, situation, "despair");
+		if (saveTotal == undefined) {
+			return {msg, options};
+		}
+		msg.push(`Resisting Despair (${saveTotal}) -->`);
+		switch (true) {
+			case (saveTotal >= 11):{
+				msg.push(`Success`);
+				break;
+			}
+			default:
+				msg.push(`Failure (Miss Turn)`);
+				options.push({
+					optionTxt: "Wallow in Despair (Miss Turn)",
+					mandatory: true,
+					optionEffects: [],
+				});
+		}
+		return {msg, options};
+	}
+
+	saveVsFear( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsReturn {
+		let options : OpenerOptionsReturn["options"] = [];
+		let msg : string[] = [];
+		const saveTotal = this.mockOpeningSaveTotal(combatant, situation, "fear");
+		if (saveTotal == undefined) {
+			return {msg, options};
+		}
+		msg.push(`Resisting Fear (${saveTotal}) -->`);
+		switch (true) {
+			case (saveTotal >= 11):{
+				msg.push(`Success`);
 				break;
 			}
 			case (saveTotal <= 2) : {
@@ -493,6 +534,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						await effect.delete();
 					}
 					break;
+				case "presave-easy":
+				case "presave-hard":
+				case "presave-normal":
 				case "save-hard":
 				case "save-easy":
 				case "save-normal":
@@ -512,9 +556,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case "instant":
 					await effect.delete();
 					break;
-				case"presave-easy":
-				case"presave-hard":
-				case"presave-normal":
 				case "USoNT":
 				case "expedition":
 				case "permanent":
@@ -1484,6 +1525,17 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				if (targetActor.hasStatus("challenged") && !engagingTarget) {
 					throw new PersonaError("Can't target a challenged target you're not engaged with");
 				}
+				const situation : Situation = {
+					user: attacker.actor.accessor,
+					attacker: attacker.actor.accessor,
+					target: target.actor.accessor,
+					usedPower: power.accessor,
+					activeCombat: true,
+				}
+				const canUse = power.targetMeetsConditions(attacker.actor, target.actor, situation)
+				if (!canUse) {
+					throw new PersonaError(`Target doesn't meet custom Power conditions to target`);
+				}
 			}
 		}
 
@@ -1499,7 +1551,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				this.checkTargets(1,1, false);
 				return selected;
 			case "all-enemies": {
-				return this.getAllEnemiesOf(attacker);
+				return this.getAllEnemiesOf(attacker)
+				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
 			}
 			case "all-dead-allies": {
 				const combat = this.ensureCombatExists();
@@ -1514,10 +1567,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return targets.map( x=> x.token as PToken);
 			}
 			case "all-allies": {
-				return this.getAllAlliesOf(attacker);
+				return this.getAllAlliesOf(attacker)
+				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
 			}
 			case "self": {
-				return [attacker];
+				return [attacker]
+				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
 			}
 			case "1d4-random":
 			case "1d4-random-rep":
@@ -1529,13 +1584,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return combat.validCombatants(attacker)
 				.filter( x=> x.actorId != attacker.actor.id
 					&& x?.actor?.isAlive())
-				.map( x=> x.token as PToken);
+				.map( x=> x.token as PToken)
+				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+				;
 			}
 			case "everyone":{
 				const combat= this.ensureCombatExists();
 				return combat.validCombatants(attacker)
 				.filter( x=> x?.actor?.isAlive())
-				.map( x=> x.token as PToken);
+				.map( x=> x.token as PToken)
+				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
 			}
 
 			default:
