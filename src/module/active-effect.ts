@@ -117,6 +117,26 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		}
 	}
 
+	get statusSaveDC(): number {
+		switch (this.statusDuration) {
+			case "save-hard":
+				return 16;
+			case "save-normal":
+				return 11;
+			case "save-easy":
+				return 6;
+			case "presave-hard":
+				return 16;
+			case "presave-normal":
+				return 11;
+			case "presave-easy":
+				return 6;
+			default:
+				return 2000;
+		}
+
+	}
+
 	AEtestEffect() {
 		let changes= this.changes;
 		changes = [

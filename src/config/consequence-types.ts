@@ -161,7 +161,14 @@ type NonGenericConsequences = UsePowerConsequence
 	| ElementalResistanceAlterConsequence
 	| StatusResistanceAlterConsequence
 	| OtherEffectConsequence
+	| AddPowerConsequence
 ;
+
+type AddPowerConsequence = {
+	type: "add-power-to-list",
+	id: string, // id of power
+}
+
 type OtherEffectConsequence = {
 	type: "other-effect",
 	otherEffect : OtherConsequence,

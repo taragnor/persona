@@ -1,4 +1,5 @@
-import { EMAccessor } from "../conditional-effect-manager.js";
+import { EquipmentTag } from "../../config/equipment-tags.js";
+import { PowerTag } from "../../config/power-tags.js";
 import { ConditionalEffectManager } from "../conditional-effect-manager.js";
 import { localize } from "../persona.js";
 import { POWER_TAGS } from "../../config/power-tags.js";
@@ -88,6 +89,64 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		return "";
 	}
 
+	hasTag(this: Usable, tag: PowerTag) : boolean;
+	hasTag(this: InvItem | Weapon, tag: EquipmentTag): boolean
+	hasTag(this: Usable | InvItem | Weapon, tag: PowerTag | EquipmentTag) : boolean {
+		let list : (PowerTag | EquipmentTag)[];
+		switch (this.system.type) {
+			case "power":
+			case "consumable":
+				list = (this as Usable).tagList();
+				break;
+			case "item":
+			case "weapon":
+				list = (this as Weapon | InvItem).tagList();
+				break;
+			default:
+				this.system satisfies never;
+				PersonaError.softFail(`Can't check tag list for ${this.system["type"]}`);
+				return false;
+		}
+		return list.includes(tag);
+	}
+
+	tagList(this : Usable): PowerTag[];
+	tagList(this : InvItem | Weapon): EquipmentTag[];
+	tagList(this: Usable | InvItem | Weapon) : (PowerTag | EquipmentTag)[] {
+		const itype = this.system.type;
+		switch (itype) {
+			case "power":
+			case "consumable": {
+				const list= this.system.tags.slice();
+				if (!list.includes(itype))
+				list.push(itype);
+				return list;
+			}
+			case "item": {
+				const list= this.system.tags.slice();
+				const subtype = this.system.slot;
+				if (subtype != "none") {
+					if (!list.includes(subtype))
+						list.push(subtype);
+				} else {
+					if (!list.includes("non-equippable"))
+						list.push("non-equippable");
+				}
+				return list;
+			}
+			case "weapon": {
+				const list= this.system.tags.slice();
+				if (!list.includes(itype))
+					list.push(itype);
+				return list;
+			}
+			default:
+				itype satisfies never;
+				PersonaError.softFail(`Can't get tag list for ${itype}`);
+				return [];
+		}
+	}
+
 	get amount() : number {
 		if (this.system.type != "consumable") {
 			return 1;
@@ -137,7 +196,23 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		}
 	}
 
+	testOpenerPrereqs (this: Usable, situation: Situation, user: PersonaActor) : boolean {
+		const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this,user );
+
+		return testPreconditions(conditions, situation, this);
+	}
+
 	getGrantedPowers(this: ModifierContainer, user: PC | Shadow, situation?: Situation): Power[] {
+		return this.getAllGrantedPowers(user, situation)
+			.filter(pwr => !pwr.hasTag("opener"));
+	}
+
+	getOpenerPowers(this: ModifierContainer, user: PC | Shadow, situation?: Situation): Power[] {
+		return this.getAllGrantedPowers(user, situation)
+			.filter (pwr=> pwr.hasTag("opener"));
+	}
+
+	getAllGrantedPowers(this: ModifierContainer, user: PC | Shadow, situation?: Situation): Power[] {
 		if (!this.grantsPowers()) return [];
 		if (!situation) {
 			situation = {

@@ -1,3 +1,4 @@
+import { EQUIPMENT_TAGS_LIST } from "../../config/equipment-tags.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { Power } from "../item/persona-item.js";
 import { Consumable } from "../item/persona-item.js";
@@ -28,6 +29,7 @@ function itemBase() {
 		amount: new num({ integer: true, initial: 1, min: 0}),
 		price: new num({ integer: true, initial: 0, min:0}),
 		noTrade: new bool({initial: false}),
+		tags: new arr(new txt({choices: EQUIPMENT_TAGS_LIST}))
 	};
 }
 

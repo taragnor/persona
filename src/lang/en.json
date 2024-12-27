@@ -297,6 +297,9 @@
 	"persona.power.tag.charged": "Charged",
 	"persona.power.tag.amped": "Amped",
 	"persona.power.tag.rage": "Rage",
+	"persona.power.tag.opener": "Opener",
+	"persona.power.tag.downtime": "Downtime",
+	"persona.power.tag.teamwork": "Teamwork",
 
 	"persona.power.shadowcosts.none": "Any",
 	"persona.power.shadowcosts.always": "Charged (Depleting)",
@@ -446,6 +449,7 @@
 	"persona.preconditions.comparison.activation-roll": "Activation Roll",
 	"persona.preconditions.comparison.natural-roll": "Natural Roll",
 	"persona.preconditions.comparison.total-roll": "Total Roll",
+	"persona.preconditions.comparison.opening-roll": "Opening Roll",
 	"persona.preconditions.comparison.talent-level": "Talent Level",
 	"persona.preconditions.comparison.social-link-level": "Social Link Level",
 	"persona.preconditions.comparison.character-level": "Character Level",

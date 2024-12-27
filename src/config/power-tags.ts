@@ -8,6 +8,8 @@ export const STATUS_POWER_TAGS  = [
 ] as const;
 
 export const POWER_TAGS_LIST = [
+	"power",
+	"consumable",
 	"amped",
 	"fire",
 	"charged",
@@ -25,6 +27,9 @@ export const POWER_TAGS_LIST = [
 	"basicatk",
 	...STATUS_POWER_TAGS,
 	"exotic",
+	"teamwork",
+	"opener",
+	"downtime"
 ] as const;
 
 export type PowerTag = typeof POWER_TAGS_LIST[number];

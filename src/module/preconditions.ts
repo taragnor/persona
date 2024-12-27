@@ -280,6 +280,11 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			target = subject.getInspirationWith(link.id)
 			break;
 		}
+		case "opening-roll": {
+			if(situation.openingRoll == undefined) return false;
+			target = situation.openingRoll;
+			break;
+		}
 		default:
 			condition satisfies never;
 			PersonaError.softFail(`Unknwon numeric comparison type ${condition["comparisonTarget"]}`)
@@ -781,6 +786,7 @@ type SituationUniversal = {
 	usedPower ?: UniversalItemAccessor<Usable>;
 	usedSkill ?: SocialStat;
 	activeCombat ?: boolean ;
+	openingRoll ?: number;
 	naturalRoll ?: number;
 	rollTotal ?: number;
 	criticalHit ?: boolean;

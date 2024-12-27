@@ -442,6 +442,8 @@ export class ConditionalEffectManager {
 			case "itemCount":
 				const item = game.items.get(cond.itemId);
 				return `Has Amount of ${item?.name ?? "UNKNOWN"} ${endString(cond.num)}`;
+			case "opening-roll":
+				return `Opening Roll natural value ${endString(cond.num)}`;
 			default:
 				cond satisfies never;
 				return "UNKNOWN CONDITION"

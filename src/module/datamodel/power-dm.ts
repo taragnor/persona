@@ -111,6 +111,7 @@ export function UsablePowerProps() {
 		dmg_type: new txt<typeof DAMAGETYPESLIST[number]>( {choices: DAMAGETYPESLIST, initial:"physical"}),
 		crit_boost: new num( {min: -20, max:20, initial: 0, integer:true}),
 		atk_bonus: new num({initial: 0, integer: true}),
+		openerConditions: new arr(new obj<Precondition>()),
 	};
 	//TODO: add shadow type requirements (charged, uncharged)
 }

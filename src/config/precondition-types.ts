@@ -85,7 +85,6 @@ type ClockTickTrigger = {
 
 }
 
-
 type NumericComparisonBase = {
 	type: "numeric",
 	comparator : Comparator;
@@ -369,6 +368,7 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"natural-roll",
 	"activation-roll",
 	"escalation",
+	"opening-roll",
 	"total-roll",
 	"talent-level",
 	"social-link-level",

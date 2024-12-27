@@ -169,7 +169,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				await PersonaCombat.execTrigger("start-turn", user.token.actor as ValidAttackers, situation);
 			}
 		}
-
 		for (const effect of actor.effects) {
 			if (effect.statuses.has("blocking")) {
 				await effect.delete();
@@ -181,23 +180,34 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		let startTurnMsg = [ `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`];
 		startTurnMsg = startTurnMsg.concat(await this.handleStartTurnEffects(combatant));
-		if (combatant.actor.isCapableOfAction()) {
-			const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token);
-			if (this.isEngagedByAnyFoe(accessor)) {
-				const alliedDefenders = this.getAlliedEngagedDefenders(accessor);
-				if (alliedDefenders.length == 0) {
-					const DC = this.getDisengageDC(combatant);
-					const {total, rollBundle, success} = await PersonaCombat.disengageRoll(actor, DC);
-					rolls.push(rollBundle);
-					let disengageResult = "failed";
-					if (total >= 11) disengageResult = "normal";
-					if (total >= 16) disengageResult = "hard";
-					startTurnMsg.push("<br>"+ await renderTemplate("systems/persona/parts/disengage-check.hbs", {roll: rollBundle, disengageResult, success}));
-				} else {
-					startTurnMsg.push(`<br>Can Freely disengage thanks to ${alliedDefenders.map(x=> x.name).join(", ")}`);
-				}
-			}
-		}
+		const openingReturn = await this.execOpeningRoll(combatant);
+		// if (combatant.actor.isCapableOfAction()) {
+		// 	const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token);
+		// 	if (this.isEngagedByAnyFoe(accessor)) {
+		// 		const alliedDefenders = this.getAlliedEngagedDefenders(accessor);
+		// 		if (alliedDefenders.length == 0) {
+		// 			const DC = this.getDisengageDC(combatant);
+		// 			const {total, rollBundle, success} = await PersonaCombat.disengageRoll(actor, DC);
+		// 			rolls.push(rollBundle);
+		// 			let disengageResult = "failed";
+		// 			if (total >= 11) disengageResult = "normal";
+		// 			if (total >= 16) disengageResult = "hard";
+		// 			startTurnMsg.push("<br>"+ await renderTemplate("systems/persona/parts/disengage-check.hbs", {roll: rollBundle, disengageResult, success}));
+		// 		} else {
+		// 			startTurnMsg.push(`<br>Can Freely disengage thanks to ${alliedDefenders.map(x=> x.name).join(", ")}`);
+		// 		}
+		// 	}
+		// }
+		startTurnMsg = startTurnMsg.concat(
+			openingReturn.map( ret => {
+				const optionsMap = ret.options.map( opt=> {
+					const mandatoryStr = opt.mandatory ? "<b>(Mandatory)</b>": "";
+					return `<li> ${mandatoryStr} ${opt.optionTxt}  </li>`;
+				});
+				const list = optionsMap.length ? `<ul>${optionsMap}</ul>`: "";
+			return `${ret.msg} ${list}`;
+			})
+		);
 		const speaker = {alias: combatant?.token?.name ?? "Unknown"};
 		let messageData = {
 			speaker: speaker,
@@ -209,11 +219,207 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		ChatMessage.create(messageData, {});
 	}
 
+	async execOpeningRoll( combatant: Combatant<ValidAttackers> ) : Promise<OpenerOptionsReturn[]> {
+		const returns :OpenerOptionsReturn[]= [];
+		// const tokenAccessor = PersonaDB.getUniversalTokenAccessor(combatant.token);
+		const actor = combatant.actor;
+		if (!actor) return [];
+		const openingRoll = new Roll("1d20");
+		await openingRoll.roll()
+		const rollValue = openingRoll.total;
+		const situation : Situation = {
+			user: actor.accessor,
+			openingRoll: rollValue,
+		}
+		const saveVsFear = this.saveVsFear(combatant, situation);
+		returns.push(saveVsFear);
+		const saveVsCharm = this.saveVsCharm(combatant, situation);
+		returns.push(saveVsCharm);
+		const disengageReturn = this.disengageOpener(combatant, situation);
+		returns.push(disengageReturn);
+		const otherOpeners = this.otherOpeners(combatant, situation);
+		returns.push(otherOpeners);
+		const mandatory = returns.find(r => r.options.some( o=> o.mandatory));
+		if (mandatory) {
+			return [{
+				msg: mandatory.msg,
+				options: [mandatory.options.find(x=> x.mandatory)!],
+			}];
+		};
+		return returns
+		.filter(x=> x.msg.length > 0)
+	}
+
+	saveVsCharm ( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsReturn {
+		let options : OpenerOptionsReturn["options"] = [];
+		let msg : string[] = [];
+		const rollValue = situation.openingRoll ?? -999;
+		const status = "charmed";
+		if (!combatant.actor) return { msg, options};
+		const charmStatus = combatant.actor.getStatus(status);
+		if (!charmStatus) {
+			return {msg, options};
+		}
+		const saveDC = charmStatus.statusSaveDC;
+		const saveSituation : Situation = {
+			...situation,
+			saveVersus: status
+		};
+		const saveBonus = combatant.actor.getBonuses("disengage").total(saveSituation);
+		const saveTotal = saveBonus + rollValue;
+		msg.push(`Save vs Charm (DC ${saveDC}) ---> ${saveTotal}`);
+		switch (true) {
+			case (saveTotal >= saveDC):{
+				msg.push(`Success`);
+				options.push({
+					optionTxt: "remove Charm",
+					mandatory: true,
+					optionEffects: [],
+				});
+				break;
+			}
+			case (saveTotal < 6) : {
+				msg.push(`Failure (Mind Controlled)`);
+				options.push({
+					optionTxt: "The enemy chooses your action",
+					mandatory: true,
+					optionEffects: [],
+				});
+				break;
+			}
+			default:
+				msg.push(`Failure (Basic Attack)`);
+				options.push({
+					optionTxt: "Basic Attack against nearest ally",
+					mandatory: true,
+					optionEffects: [],
+				});
+		}
+		return {msg, options};
+	}
+
+	saveVsFear( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsReturn {
+		let options : OpenerOptionsReturn["options"] = [];
+		let msg : string[] = [];
+		const rollValue = situation.openingRoll ?? -999;
+		if (!combatant.actor) return { msg, options};
+		const status = "charmed";
+		const fearStatus = combatant.actor.getStatus(status);
+		if (!fearStatus) {
+			return {msg, options};
+		}
+		const saveDC = fearStatus.statusSaveDC;
+		const saveSituation : Situation = {
+			...situation,
+			saveVersus: status
+		};
+		const saveBonus = combatant.actor.getBonuses("disengage").total(saveSituation);
+		const saveTotal = saveBonus + rollValue;
+		msg.push(`Save vs Fear (DC ${saveDC}) ---> ${saveTotal}`);
+		switch (true) {
+			case (saveTotal >= saveDC):{
+				msg.push(`Success`);
+				options.push({
+					optionTxt: "Remove Fear",
+					mandatory: true,
+					optionEffects: [],
+				});
+				break;
+			}
+			case (saveTotal <= 2) : {
+				msg.push(`Failure (Flee)`);
+				options.push({
+					optionTxt: "Flee from Combat",
+					mandatory: true,
+					optionEffects: [],
+				});
+				break;
+			}
+			default:
+				msg.push(`Failure (Miss Turn)`);
+				options.push({
+					optionTxt: "Cower in Fear (Miss Turn)",
+					mandatory: true,
+					optionEffects: [],
+				});
+		}
+		return {msg, options};
+	}
+
+	disengageOpener( combatant: Combatant<ValidAttackers> , situation: Situation) :OpenerOptionsReturn {
+		let options : OpenerOptionsReturn["options"] = [];
+		const rollValue = situation.openingRoll ?? -999;
+		let msg : string[] = [];
+		if (!combatant.actor?.isCapableOfAction()) {
+			return {msg, options};
+		}
+		const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token);
+		if (!this.isEngagedByAnyFoe(accessor)) {
+			const ret : OpenerOptionsReturn = {
+				msg, options
+			};
+			return ret;
+		}
+		const alliedDefenders = this.getAlliedEngagedDefenders(accessor);
+		if (alliedDefenders.length > 0) {
+			msg.push(`<br>Can Freely disengage thanks to ${alliedDefenders.map(x=> x.name).join(", ")}`);
+			return {msg, options};
+		}
+		if (!combatant.actor) return { msg, options};
+		const disengageBonus = combatant.actor.getBonuses("disengage").total(situation);
+		const disengageTotal = disengageBonus + rollValue;
+		msg.push( `Disengage Total: ${disengageTotal}`);
+		switch (true) {
+			case disengageTotal > 16 :
+				options.push( {
+					optionTxt: "Expert Disengage",
+					optionEffects: [],
+					mandatory: false,
+				});
+				break;
+			case disengageTotal > 11:
+				options.push( {
+					optionTxt: "Standard Disengage",
+					optionEffects: [],
+					mandatory: false,
+				});
+				break;
+		}
+		return { msg, options};
+	}
+
+	otherOpeners( combatant: Combatant<ValidAttackers> , situation: Situation): OpenerOptionsReturn {
+		let options : OpenerOptionsReturn["options"] = [];
+		let msg : string[] = [];
+		if (!combatant.actor) return { msg, options};
+		if (!combatant.actor.isCapableOfAction()) {
+			return {msg, options};
+		}
+		const openerActions = combatant.actor.openerActions;
+		const usableActions = openerActions
+			.filter( action => {
+				const useSituation : Situation = {
+					...situation,
+					usedPower: action.accessor,
+				}
+				return action.testOpenerPrereqs(useSituation, combatant.actor!);
+			});
+		options = usableActions
+			.map( action => ({
+				mandatory: false,
+				optionTxt: action.name,
+				optionEffects: []
+			})
+			);
+		if (options.length > 0) {
+			msg.push(`Other Available Options`);
+		}
+		return {msg, options};
+	}
 
 	static isSameTeam( token1: PToken, token2: PToken) : boolean {
 		return token1.actor.getAllegiance() == token2.actor.getAllegiance();
 	}
-
 
 	getAlliedEngagedDefenders(Tacc: UniversalTokenAccessor<PToken>) : PToken[] {
 		const token = PersonaDB.findToken(Tacc);
@@ -290,7 +496,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case "save-hard":
 				case "save-easy":
 				case "save-normal":
-					const DC = this.getStatusSaveDC(effect);
+					const DC = effect.statusSaveDC;
 					const {success} = await PersonaCombat.rollSave(actor, { DC, label:effect.name, saveVersus:effect.statusId })
 					if (success) {
 						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
@@ -352,7 +558,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		let Msg: string[] = [];
 		Msg = Msg.concat(await this.handleFading(combatant));
 		for (const effect of actor.effects) {
-			let DC = this.getStatusSaveDC(effect);
+			let DC = effect.statusSaveDC;
 			switch (effect.statusDuration) {
 				case "presave-easy":
 				case "presave-normal":
@@ -431,25 +637,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 
 		return Msg;
-	}
-
-	getStatusSaveDC(effect: PersonaAE) {
-		switch (effect.statusDuration) {
-			case "save-hard":
-				return 16;
-			case "save-normal":
-				return 11;
-			case "save-easy":
-				return 6;
-			case "presave-hard":
-				return 16;
-			case "presave-normal":
-				return 11;
-			case "presave-easy":
-				return 6;
-			default:
-				return 2000;
-		}
 	}
 
 	get engagedList() : EngagementList {
@@ -1767,7 +1954,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		// Iterate over Combatants, performing an initiative roll for each
 		const updates = [];
 		const rolls :{ combatant: Combatant, roll: Roll}[]= [];
-		for ( let [i, id] of ids.entries() ) {
+		for ( let [_i, id] of ids.entries() ) {
 
 			// Get Combatant data (non-strictly)
 			const combatant = this.combatants.get(id);
@@ -1853,3 +2040,14 @@ export type ConsequenceProcessed = {
 }
 
 CombatHooks.init();
+
+type OpenerOptionsReturn = {
+	msg: string[],
+	options: OpenerOption[]
+}
+
+type OpenerOption = {
+	mandatory: boolean,
+	optionTxt: string,
+	optionEffects: unknown[]
+}

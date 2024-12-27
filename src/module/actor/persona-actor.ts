@@ -782,8 +782,30 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
+	get openerActions() : Usable[] {
+		if (this.system.type == "npc" || this.system.type == "tarot")
+			return [];
+		return (this as PC | Shadow).mainModifiers({omitPowers:true})
+			.filter(x=> x.grantsPowers())
+			.flatMap(x=> x.getOpenerPowers(this as PC ));
+	}
+
+	get teamworkMove() : Power | undefined {
+		if (this.system.type != "pc")
+			return undefined;
+		const id = this.system.combat.teamworkMove;
+		if (!id)
+			return undefined;
+		return PersonaDB.allPowers().find(pwr => pwr.id == id);
+	}
+
 	hasStatus (id: StatusEffectId) : boolean {
 		return this.effects.contents.some( eff => eff.statuses.has(id));
+
+	}
+
+	getStatus( id: StatusEffectId) : PersonaAE | undefined {
+		return this.effects.contents.find( eff => eff.statuses.has(id));
 
 	}
 
