@@ -29,9 +29,8 @@ type EffectDuration = {
 }
 
 type AEChange = {
-	effect: ActiveEffect<any>;
 	key: string; //keys to one of the system values
-	mode: typeof CONST["ACTIVE_EFFECT_MODES"][keyof typeof CONST["ACTIVE_EFFECT_MODES"]],
-	priority: number,
-	value: string,
-}
+	mode: (typeof CONST)["ACTIVE_EFFECT_MODES"][keyof (typeof CONST)["ACTIVE_EFFECT_MODES"]];
+	priority?: number;
+	value: string;
+};
