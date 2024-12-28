@@ -325,6 +325,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		}
 	}
 
+	get displayedName() : string {
+		return this.name;
+	}
+
 	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow) : ModifierListItem[] {
 		bonusTypes = Array.isArray(bonusTypes) ? bonusTypes: [bonusTypes];
 		return this.getEffects(sourceActor)

@@ -791,6 +791,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			.flatMap(x=> x.getOpenerPowers(this as PC ));
 	}
 
+	async setTeamworkMove(this: PC, power: Power) {
+		const id = power.id;
+		const oldTW = this.teamworkMove;
+		await this.update( {"system.combat.teamworkMove": id});
+		if (oldTW) {
+			await Logger.sendToChat(`${this.name} replaced Teamwork ${oldTW.displayedName} with ${power.displayedName}` , this);
+		} else {
+			await Logger.sendToChat(`${this.name} set Teamwork Move to ${power.displayedName}` , this);
+		}
+
+	}
+
 	get teamworkMove() : Power | undefined {
 		if (this.system.type != "pc")
 			return undefined;

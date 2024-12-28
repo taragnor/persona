@@ -47,10 +47,15 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			case "power": {
 				const actorType = this.actor.system.type;
 				switch (actorType) {
-					case "shadow": return super._onDropItem(_event, itemD);
+					case "shadow":
+						return super._onDropItem(_event, itemD);
 					case "pc":
 
-						(this.actor as PC).addPower(item as Power);
+						if ((item as Power).isTeamwork) {
+							await (this.actor as PC).setTeamworkMove(item as Power);
+							return item;
+						}
+						await (this.actor as PC).addPower(item as Power);
 						return item ;
 					default:
 						actorType satisfies never;
