@@ -1,3 +1,5 @@
+import { SOCIAL_LINK_OR_TAROT_OTHER } from "../config/precondition-types.js";
+import { AnyStringObject } from "../config/precondition-types.js";
 import { Power } from "./item/persona-item.js";
 import { SocialLinkIdOrTarot } from "../config/precondition-types.js";
 import { SocialLink } from "./actor/persona-actor.js";
@@ -129,57 +131,6 @@ function numericComparison(condition: Precondition, situation: Situation, source
 				target = 0;
 				break;
 			}
-			// if (condition.socialLinkIdOrTarot == "cameo") {
-			// 	if (!situation.cameo)  return false;
-			// 	target = (actor as PC).getSocialSLWith(situation.cameo);
-			// 	break;
-			// }
-			// if (condition.socialLinkIdOrTarot) {
-			// 	const targetActor  = PersonaDB.allActors()
-			// 		.find( x=> x.id == condition.socialLinkIdOrTarot)
-			// 		?? PersonaDB.socialLinks()
-			// 		.find(x=> x.tarot?.name  == condition.socialLinkIdOrTarot);
-			// 	if (targetActor) {
-			// 		target = actor.system.social.find(x=> x.linkId == targetActor.id)?.linkLevel ?? 0;
-			// 		break;
-			// 	} else {
-			// 		target =  0;
-			// 		break;
-			// 	}
-			// }
-			// if (!("socialTarget" in situation)) return false;
-			// if (!source && !situation.socialTarget)  return false;
-			// const socialTarget = specifiedTarget ??
-			// source?.parent
-			// ?? (
-			// 	situation.socialTarget
-			// 	? PersonaDB.findActor(situation?.socialTarget)
-			// 	: null
-			// );
-			// if (!socialTarget) return false;
-			// let targetId: string;
-			// if (socialTarget.type == "tarot") {
-			// 	const tarotName = socialTarget.name;
-			// 	if (!tarotName)  {
-			// 		PersonaError.softFail("Can't find tarot card for ${source.name}");
-			// 		return false;
-			// 	}
-			// 	const sourceActor =
-			// 		(game.actors.contents as PersonaActor[])
-			// 		.find( x=>
-			// 			(x.system.type == "npc" || x.system.type == "pc") && x.system.tarot == tarotName);
-			// 	if (!sourceActor) {
-			// 		PersonaError.softFail("No one holds tarot ${tarotName}");
-			// 		return false;
-			// 	}
-			// targetId = sourceActor.id;
-			//} else if (socialTarget.id == PersonaDB.personalSocialLink().id) {
-			//	//personal link
-			//	targetId = actor.id;
-			//} else {
-			//	//NPCs
-			//	targetId = socialTarget.id;
-			//}
 			const link = actor.system.social.find(data=> data.linkId == socialLink.id);
 			if (link) {
 				target = link.linkLevel;
@@ -650,33 +601,47 @@ function getSubjectActor<K extends string, T extends Record<K, ConditionTarget>>
 	return subject;
 }
 
-function getSocialLinkTarget(cond: Precondition & {socialLinkIdOrTarot: string}, situation: Situation, source: Option<PowerContainer>): SocialLink | undefined {
+export function getSocialLinkTarget(cond: {socialLinkIdOrTarot: SocialLinkIdOrTarot}, situation: Situation, source: Option<PowerContainer>): SocialLink | undefined {
 	if (cond.socialLinkIdOrTarot == undefined ) return undefined;
 	let targetIdOrTarot : SocialLinkIdOrTarot | undefined = cond.socialLinkIdOrTarot as SocialLinkIdOrTarot;
-	switch (targetIdOrTarot) {
-		case "target" :
+	const test = targetIdOrTarot as keyof typeof SOCIAL_LINK_OR_TAROT_OTHER;
+	switch (test) {
+		case "target":
 		case "": {
-			targetIdOrTarot = situation.socialTarget?.actorId
-			?? situation.target?.actorId
+			targetIdOrTarot = situation.socialTarget?.actorId as unknown as AnyStringObject
+			?? situation.target?.actorId as unknown as AnyStringObject
 			?? undefined;
 			break;
 		}
+		case "attacker": {
+			targetIdOrTarot = situation.attacker?.actorId as unknown as AnyStringObject ?? undefined;
+			break;
+
+		}
+		case "user": {
+			targetIdOrTarot = situation.user?.actorId as unknown as AnyStringObject ?? undefined;
+			break;
+
+		}
 		case "cameo": {
-			targetIdOrTarot = situation.cameo?.actorId ?? undefined;
+			targetIdOrTarot = situation.cameo?.actorId as unknown as AnyStringObject
+			?? undefined;
 			break;
 		}
-		case "SLsource": {
-			targetIdOrTarot = source?.parent?.id ?? undefined;
-			if (targetIdOrTarot == PersonaDB.personalSocialLink().id) {
+		case "SLSource": {
+			targetIdOrTarot = source?.parent?.id as unknown as AnyStringObject
+			?? undefined;
+			if (targetIdOrTarot as unknown as string == PersonaDB.personalSocialLink().id) {
 				PersonaError.softFail("Using Personal Link");
 				return undefined;
-			} else if (targetIdOrTarot == PersonaDB.teammateSocialLink().id) {
+			} else if (targetIdOrTarot as unknown as string == PersonaDB.teammateSocialLink().id) {
 				PersonaError.softFail("Using Teammate link as source");
 				return undefined;
 			}
 			break;
 		}
 		default:
+			test satisfies never;
 			//NOTE: TS can't do a satsifies here so have to be careufl adding new types
 			break;
 	}

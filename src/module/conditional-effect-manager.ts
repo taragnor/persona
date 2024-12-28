@@ -335,7 +335,7 @@ export class ConditionalEffectManager {
 				const weekday = this.translate(cond.days, DAYS);
 				return `weekday is ${not} : ${weekday}`;
 			case "social-target-is":
-				const link = cond.socialLinkIdOrTarot ? (game.actors.get(cond.socialLinkIdOrTarot) as PersonaActor)?.displayedName : "ERROR";
+				const link = cond.socialLinkIdOrTarot ? (game.actors.get(cond.socialLinkIdOrTarot as string) as PersonaActor)?.displayedName : "ERROR";
 				return `social Target is ${not} ${link}`;
 			case "shadow-role-is":
 				const shadowRole = this.translate(cond.shadowRole, SHADOW_ROLE);

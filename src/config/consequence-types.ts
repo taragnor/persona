@@ -1,3 +1,4 @@
+import { SocialLinkIdOrTarot } from "./precondition-types.js";
 import { AlterMPSubtype } from "./effect-types.js";
 import { ConsequenceTarget } from "./precondition-types.js";
 import { DamageSubtype } from "./effect-types.js";
@@ -57,8 +58,8 @@ export type ResistanceShiftEffect = {
 }
 
 export type InspirationChange = {
-	type: "Inspiration",
-	linkId: string,
+	type: "inspiration-cost",
+	linkId : string,
 	amount: number,
 }
 
@@ -162,7 +163,14 @@ type NonGenericConsequences = UsePowerConsequence
 	| StatusResistanceAlterConsequence
 	| OtherEffectConsequence
 	| AddPowerConsequence
+	| InspirationChangeConsequence
 ;
+
+type InspirationChangeConsequence = {
+	type: "inspiration-cost",
+	socialLinkIdOrTarot : SocialLinkIdOrTarot,
+	amount: number,
+}
 
 type AddPowerConsequence = {
 	type: "add-power-to-list",

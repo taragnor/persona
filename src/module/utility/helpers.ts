@@ -6,8 +6,6 @@ export class Helpers {
 		});
 	}
 
-	static randomSelect<T extends any>(arr: T[]) : T {
-		return arr[Math.floor(Math.random() * arr.length)];
-	}
+
 
 }

@@ -175,6 +175,13 @@
 
 	{{/if}}
 
+	{{#if (eq cons.type "inspiration-cost")}}
+	<select name="{{strcat namePrefix 'socialLinkIdOrTarot'}}">
+		{{selectOptions POWERSTUFF.SOCIAL_LINK_OR_TAROT localize=true selected=cons.socialLinkIdOrTarot}}
+	</select>
+	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+	{{/if}}
+
 	{{#if (eq cons.type "dungeon-action")}}
 	<select name="{{strcat namePrefix 'dungeonAction'}}">
 		{{selectOptions POWERSTUFF.DUNGEON_ACTIONS localize=true selected=cons.dungeonAction}}

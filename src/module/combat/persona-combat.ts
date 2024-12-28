@@ -1,4 +1,5 @@
-import { Helpers } from "../utility/helpers.js";
+import { AnyStringObject } from "../../config/precondition-types.js";
+import { randomSelect } from "../utility/array-tools.js";
 import { CombatHooks } from "./combat-hooks.js";
 import { DamageConsequence } from "../../config/consequence-types.js";
 import { TriggeredEffect } from "../triggered-effect.js";
@@ -1334,7 +1335,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					res.addEffect(null, attacker.actor, {
 						type:"inspiration-cost",
 						amount: power.system.inspirationCost,
-						id: power.system.inspirationId
+						socialLinkIdOrTarot: power.system.inspirationId as unknown as AnyStringObject
 					});
 				}
 			}
@@ -1545,7 +1546,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "1-random-enemy":
 				const list = this.getAllEnemiesOf(attacker)
 				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
-				return [Helpers.randomSelect(list)];
+				return [randomSelect(list)];
 			case "1-engaged":
 			case "1-nearby":
 				this.checkTargets(1,1, true, altTargets);

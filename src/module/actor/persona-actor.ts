@@ -1,3 +1,4 @@
+import { removeDuplicates } from "../utility/array-tools.js";
 import { testPreconditions } from "../preconditions.js";
 import { CreatureTag } from "../../config/creature-tags.js";
 import { PersonaSocial } from "../social/persona-social.js";
@@ -605,8 +606,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				const bonusPowers : Power[] =
 					(this as PC | Shadow).mainModifiers({omitPowers:true})
 					.filter(x=> x.grantsPowers())
-					.flatMap(x=> x.getGrantedPowers(this as PC ));
-				return bonusPowers;
+					.flatMap(x=> x.getGrantedPowers(this as PC )) ;
+				return removeDuplicates(bonusPowers);
 			default:
 				this.type satisfies never;
 				return [];

@@ -1,3 +1,4 @@
+import { removeDuplicates } from "../utility/array-tools.js";
 import { EquipmentTag } from "../../config/equipment-tags.js";
 import { PowerTag } from "../../config/power-tags.js";
 import { ConditionalEffectManager } from "../conditional-effect-manager.js";
@@ -224,8 +225,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 	}
 
 	getGrantedPowers(this: ModifierContainer, user: PC | Shadow, situation?: Situation): Power[] {
-		return this.getAllGrantedPowers(user, situation)
-			.filter(pwr => !pwr.hasTag("opener"));
+		return this.getAllGrantedPowers(user, situation);
+			// .filter(pwr => !pwr.hasTag("opener"));
 	}
 
 	getOpenerPowers(this: ModifierContainer, user: PC | Shadow, situation?: Situation): Power[] {
@@ -240,7 +241,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 				user: user.accessor
 			};
 		}
-		return this.getEffects(user)
+		const powers=  this.getEffects(user)
 			.filter(
 				eff => eff.consequences.some(
 					cons => cons.type == "add-power-to-list"
@@ -249,6 +250,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 			.flatMap(x=> x.type == "add-power-to-list" ? [x.id] : [])
 			.map(id=> PersonaDB.allPowers().find( x=>x.id == id))
 			.flatMap( pwr=> pwr? [pwr]: []);
+		return removeDuplicates(powers);
 	}
 
 	powerCostString_PC(this: Power) : string {

@@ -1,4 +1,4 @@
-import { Power } from "../item/persona-item.js";
+import { getSocialLinkTarget } from "../preconditions.js";
 import { Consumable } from "../item/persona-item.js";
 import { Metaverse } from "../metaverse.js";
 import { Consequence } from "../../config/consequence-types.js";
@@ -130,10 +130,10 @@ export class CombatResult  {
 						effect.hpchange = -(cons.amount ?? 0);
 						break;
 					case "percentage":
-						if (!target) {
-							PersonaError.softFail("No target for percentage HP");
-							break;
-						}
+							if (!target) {
+								PersonaError.softFail("No target for percentage HP");
+								break;
+							}
 						const amt = Math.abs(Math.round(target.mhp * cons.amount * 0.01));
 						effect.hpchange = cons.damageType == "healing" ? amt : -amt;
 						if (cons.damageType != "by-power") {
@@ -164,7 +164,6 @@ export class CombatResult  {
 					const power= PersonaDB.findItem(atkResult.power);
 					const attacker = PersonaDB.findToken(atkResult.attacker).actor;
 					status_damage = attacker ? power.getDamage(attacker, "low"): 0;
-
 				}
 				const id = cons.statusName!;
 				effect.addStatus.push({
@@ -186,7 +185,6 @@ export class CombatResult  {
 				this.escalationMod += Number(cons.amount ?? 0);
 				break;
 			}
-
 			case "extraAttack":
 				if (!effect) break;
 				effect.otherEffects.push({
@@ -195,7 +193,6 @@ export class CombatResult  {
 					iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
 				});
 				break;
-
 			case "expend-slot": {
 				if (!effect) break;
 				const slot = cons.amount;
@@ -207,7 +204,6 @@ export class CombatResult  {
 				effect.expendSlot[slot]+= 1;
 				break;
 			}
-
 			case "modifier":
 			case "modifier-new":
 			case "raise-resistance":
@@ -228,7 +224,6 @@ export class CombatResult  {
 				if (!effect) break;
 				effect.otherEffects.push({type: "half-hp-cost"});
 				break;
-
 			case "revive":
 				if (!effect || !target) break;
 				effect.removeStatus.push({ id: "fading"});
@@ -271,10 +266,13 @@ export class CombatResult  {
 				break;
 			case "inspiration-cost":
 				if (!effect) break;
+				if (!atkResult) break;
+				const socialTarget = getSocialLinkTarget(cons, atkResult.situation, null);
+				if (!socialTarget) break;
 				effect.otherEffects.push( {
-					type: "Inspiration",
+					type: "inspiration-cost",
 					amount: cons.amount ?? 1,
-					linkId: cons.id ?? "",
+					linkId: socialTarget.id,
 				});
 				break;
 			case "display-msg":
@@ -670,7 +668,7 @@ export class CombatResult  {
 				case "raise-resistance":
 				case "lower-resistance":
 				case "display-message":
-				case "Inspiration":
+				case "inspiration-cost":
 				case "hp-loss":
 				case "alter-energy":
 				case "extra-attack":
@@ -779,7 +777,7 @@ export class CombatResult  {
 				case "raise-resistance":
 				case "display-message":
 					break;
-				case "Inspiration":
+				case "inspiration-cost":
 					if (actor.system.type == "pc") {
 						await (actor as PC).spendInspiration(otherEffect.linkId, otherEffect.amount)
 					}

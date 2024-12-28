@@ -27,6 +27,13 @@ export function weightedChoice<T>( array: WeightedChoiceItem<T>[]) : T | undefin
 	return array[array.length-1].item;
 }
 
+export function randomSelect<T extends any>(arr: T[]) : T {
+	return arr[Math.floor(Math.random() * arr.length)];
+}
+
+export function removeDuplicates<T extends any>(arr: T[]) : T[] {
+	return [...new Set(arr)];
+}
 
 type WeightedChoiceItem<T>= {
 	item: T,

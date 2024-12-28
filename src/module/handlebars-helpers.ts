@@ -1,3 +1,4 @@
+import { PersonaItem } from "./item/persona-item.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
 import { EQUIPMENT_TAGS } from "../config/equipment-tags.js";
 import { InvItem } from "./item/persona-item.js";
@@ -340,9 +341,23 @@ export class PersonaHandleBarsHelpers {
 		"getItemTagList": function (item: Usable | InvItem | Weapon) : string[] {
 			return (item as Power).tagList().map(tag=> localize(EQUIPMENT_TAGS[tag]));
 		},
+
 		"getCreatureTagList": function (actor: PersonaActor) : string[] {
 			return actor.tagList.map(tag=> localize(CREATURE_TAGS[tag]));
 		},
+		"hasTag": function (source: PersonaActor | PersonaItem, tagName: string) : boolean {
+			switch (true) {
+				case source instanceof PersonaActor :{
+					return source.tagList.includes(tagName as any);
+				}
+				case source instanceof PersonaItem: {
+					const list = (source as Power).tagList()
+					return list.includes (tagName as any);
+				}
+				default:
+					return false;
+			}
+		}
 
 	}
 } //end of class

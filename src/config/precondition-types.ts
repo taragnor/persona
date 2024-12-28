@@ -455,7 +455,18 @@ export const USER_COMPARISON_TARGETS = Object.fromEntries(
 
 export type MultiCheck<T extends string> = Record<T, boolean> ;
 
+export const SOCIAL_LINK_OR_TAROT_OTHER = {
+			"target": "current Social Target / Current Target",
+			"" : "current Social Target (Deprecated)",
+			"cameo": "Cameo",
+			"SLSource": "Social Link Source",
+			"attacker": "Attacker",
+			"user": "User of Original Power",
 
-export type SocialLinkIdOrTarot = TarotCard | "" | "cameo" | "target" | "SLSource" | string;
-//NOTE: TS can't do a satsifies here so have to be careufl adding new types
+} as const;
 
+export type SocialLinkIdOrTarot = TarotCard
+	| keyof typeof SOCIAL_LINK_OR_TAROT_OTHER
+	|  AnyStringObject;
+
+export type AnyStringObject = object; // a placehodler to allow typescript to handle satisfies cases better, it represents any string without having the entire type turn to string

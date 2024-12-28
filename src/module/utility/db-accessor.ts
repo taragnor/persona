@@ -39,7 +39,21 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 
 	 _initHooks() : void {
 		Hooks.on("updateCompendium", this.onUpdateCompendium.bind(this));
+		Hooks.on("updateItem", this.onUpdateItem.bind(this));
+		Hooks.on("updateActor", this.onUpdateActor.bind(this));
 		this.initHooks();
+	}
+
+
+	onUpdateItem(item: Item) {
+		if (item.parent instanceof Actor)
+			this.onUpdateActor(item.parent);
+	}
+
+	async onUpdateActor(actor: Actor) {
+		if (actor.pack) {
+			await this.loadPacks();
+		}
 	}
 
 	 initHooks() {

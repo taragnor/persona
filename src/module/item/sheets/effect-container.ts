@@ -1,3 +1,4 @@
+import { SOCIAL_LINK_OR_TAROT_OTHER } from "../../../config/precondition-types.js";
 import { EQUIPMENT_TAGS } from "../../../config/equipment-tags.js";
 import { CREATURE_TAGS } from "../../../config/creature-tags.js";
 import { SOCIAL_CHECKS } from "../../../config/precondition-types.js";
@@ -72,12 +73,9 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 
 		const SOCIAL_LINK_OR_TAROT =
 		{
-			"target": "current Social Target / Current Target",
+			...SOCIAL_LINK_OR_TAROT_OTHER,
 			...TAROT_DECK,
 			...SocialLinks,
-			"" : "current Social Target",
-			"cameo": "Cameo",
-			"SLSource": "Social Link Source",
 		};
 
 		const DAMAGETYPESPLUS = {
