@@ -75,6 +75,7 @@ export const TARGETINGLIST = [
 	"1-engaged",
 	"1-nearby",
 	"1-nearby-dead",
+	"1-random-enemy",
 	"1d4-random",
 	"1d4-random-rep",
 	"1d3-random",

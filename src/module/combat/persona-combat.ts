@@ -1,3 +1,4 @@
+import { Helpers } from "../utility/helpers.js";
 import { CombatHooks } from "./combat-hooks.js";
 import { DamageConsequence } from "../../config/consequence-types.js";
 import { TriggeredEffect } from "../triggered-effect.js";
@@ -1541,9 +1542,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 		const attackerType = attacker.actor.getAllegiance();
 		switch (power.system.targets) {
+			case "1-random-enemy":
+				const list = this.getAllEnemiesOf(attacker)
+				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+				return [Helpers.randomSelect(list)];
 			case "1-engaged":
-				this.checkTargets(1,1, true, altTargets);
-				return selected;
 			case "1-nearby":
 				this.checkTargets(1,1, true, altTargets);
 				return selected;
@@ -1595,7 +1598,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				.map( x=> x.token as PToken)
 				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
 			}
-
 			default:
 				power.system.targets satisfies never;
 				throw new PersonaError(`targets ${power.system.targets} Not yet implemented`);

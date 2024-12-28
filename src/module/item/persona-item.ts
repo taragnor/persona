@@ -587,6 +587,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 			case "1-nearby-dead":
 			case "1-nearby":
 			case "1-engaged":
+			case "1-random-enemy":
 			case "self":
 				return false;
 			case "1d4-random":
@@ -616,6 +617,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 			case "1d4-random-rep":
 			case "1d3-random":
 			case "1d3-random-rep":
+			case "1-random-enemy":
 				return false;
 			case "all-enemies":
 			case "all-allies":

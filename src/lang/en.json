@@ -263,6 +263,7 @@
 	"persona.power.targets.1-engaged": "1 Engaged Target",
 	"persona.power.targets.1-nearby-dead": "1 Nearby dying Target",
 	"persona.power.targets.1-nearby": "1 Nearby Target",
+	"persona.power.targets.1-random-enemy": "1 Random Enemy",
 	"persona.power.targets.1d4-random": "1d4 random targets",
 	"persona.power.targets.1d4-random-rep": "1d4 random targets (repeats allowed)",
 	"persona.power.targets.1d3-random": "1d3 random targets",
