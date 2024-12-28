@@ -158,6 +158,8 @@ const combatCommonStats = function () {
 		resists: elementalResists(),
 		hpTracker: new obj<HPTracking>(),
 		fadingState: new num( {integer:true, initial:0}),
+		statusResists: statusResists(),
+
 	};
 };
 
@@ -283,7 +285,6 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 			scanLevel: new num({initial: 0, integer: true}),
 			combat: new sch({
 				...combatCommonStats(),
-				statusResists: statusResists(),
 				energy: new sch({
 					value: new num({initial: 0, integer: true, min: -1, max: 10}),
 					max: new num({initial: 4, integer: true, min:1, max:10}),

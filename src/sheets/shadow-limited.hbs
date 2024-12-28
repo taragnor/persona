@@ -134,6 +134,14 @@
 
 		{{#if (gt actor.system.scanLevel 1)}}
 
+		{{#if actor.printableResistanceString}}
+		<div class="status-resists">
+			<span> <b>Status Resistances: </b></span>
+			<span>
+				{{actor.printableResistanceString}}
+			</span>
+		</div>
+		{{/if}}
 		<div class="main-powers">
 			{{#each actor.mainPowers as |power i|}}
 			<div class="main-power" data-power-id="{{power.id}}">

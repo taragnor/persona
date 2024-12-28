@@ -166,6 +166,28 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return (this as PC).getSocialStat("courage").total({user:(this as PC).accessor});
 	}
 
+	get printableResistanceString() : string {
+		switch (this.system.type) {
+			case "tarot":
+			case "npc":
+				return "";
+		}
+		const resists= this.system.combat.statusResists;
+		const retdata = Object.entries(resists)
+			.map(([statusRaw, level]) => {
+				const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[statusRaw]);
+			switch (level) {
+				case "resist": return `Resist ${statusTrans}`;
+				case "absorb":
+				case "reflect":
+				case "block": return `Block ${statusTrans}`;
+				default: return "";
+			}
+		})
+		.filter( x=> x.length > 0)
+		.join(", ");
+		return retdata;
+	}
 
 	get combatInit(): number {
 		const situation = {user: (this as PC | Shadow).accessor};
