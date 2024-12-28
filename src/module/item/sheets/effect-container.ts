@@ -72,6 +72,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 
 		const SOCIAL_LINK_OR_TAROT =
 		{
+			"target": "current Social Target / Current Target",
 			...TAROT_DECK,
 			...SocialLinks,
 			"" : "current Social Target",

@@ -456,6 +456,6 @@ export const USER_COMPARISON_TARGETS = Object.fromEntries(
 export type MultiCheck<T extends string> = Record<T, boolean> ;
 
 
-export type SocialLinkIdOrTarot = TarotCard | "" | "cameo" | "SLSource" | string;
+export type SocialLinkIdOrTarot = TarotCard | "" | "cameo" | "target" | "SLSource" | string;
 //NOTE: TS can't do a satsifies here so have to be careufl adding new types
 

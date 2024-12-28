@@ -654,6 +654,7 @@ function getSocialLinkTarget(cond: Precondition & {socialLinkIdOrTarot: string},
 	if (cond.socialLinkIdOrTarot == undefined ) return undefined;
 	let targetIdOrTarot : SocialLinkIdOrTarot | undefined = cond.socialLinkIdOrTarot as SocialLinkIdOrTarot;
 	switch (targetIdOrTarot) {
+		case "target" :
 		case "": {
 			targetIdOrTarot = situation.socialTarget?.actorId
 			?? situation.target?.actorId
