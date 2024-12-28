@@ -71,7 +71,6 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 	}
 
 	checkReload() {
-		if (!this._requiresReload) return;
 		if ( this._editedItems.some(
 			i => i.sheet._state > 0)
 			|| this._edited.some(

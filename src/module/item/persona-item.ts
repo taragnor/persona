@@ -394,7 +394,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		const x = this.getModifier("criticalBoost", user);
 		let list = new ModifierList(x);
 		list = list.concat(user.critBoost());
-		// list.add("Power Slot Modifier", this.baseCritSlotBonus());
 		list.add("Power Modifier", this.system.crit_boost ?? 0);
 		return list;
 	}
@@ -415,7 +414,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 			 case 0: return 0;
 			 case 1: return 2;
 			 case 2: return 4;
-			 case 3: return 7;
+			 case 3: return 6;
 			 default:
 				 PersonaError.softFail(`Unknwon Slot Type :${this.system.slot}`);
 				 return 0;

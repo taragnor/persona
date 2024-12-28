@@ -832,7 +832,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		attackbonus = attackbonus.concat(defense);
 		const def = power.system.defense;
 		const defenseVal = def != "none" ? target.actor.getDefense(def).total(situation): 0;
-		const validDefModifiers= def != "none" ? target.actor.getDefense(def).list(situation): [];
+		const validDefModifiers = def != "none" ? target.actor.getDefense(def).list(situation): [];
 
 		const r = await new Roll("1d20").roll();
 		const cssClass=  (target.actor.type != "pc") ? "gm-only" : "";

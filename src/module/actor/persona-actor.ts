@@ -2053,7 +2053,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		};
 		// }
 		const wpndmg = this.wpnDamage();
-		const mult = this.wpnMult() + (this.system.combat.classData.level / 3) + this.getBonuses("allOutDmgMult").total(situation);
+		//temporarily removed to see about increasing damage base instead
+		// const levelBasedScaling = this.system.combat.classData.level / 3;
+		const mult = this.wpnMult() + this.getBonuses("allOutDmgMult").total(situation);
 		const bonusdmg = this.getBonusWpnDamage();
 		high += (wpndmg.high * mult) + bonusdmg.high.total(situation) ;
 		low += (wpndmg.low * mult) + bonusdmg.low.total(situation);

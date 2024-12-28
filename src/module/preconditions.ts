@@ -456,7 +456,8 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 				PersonaError.softFail(`Can't find power in conditional`);
 				return undefined;
 			}
-			return power.system.targets == condition.powerTargetType;
+			return multiCheckContains(condition.powerTargetType, [power.system.targets]);
+			// return power.system.targets == condition.powerTargetType;
 		case "weather-is":
 			const weather = PersonaCalendar.getWeather();
 			const comparison = condition.weatherComparison;

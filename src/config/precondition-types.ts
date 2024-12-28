@@ -255,7 +255,7 @@ type WeekdayComparison = {
 
 type PowerTypeComparison = {
 	boolComparisonTarget:  "power-target-type-is",
-	powerTargetType: Power["system"]["targets"],
+	powerTargetType: MultiCheck<Power["system"]["targets"]>,
 }
 
 type StatusComparisonPC = {

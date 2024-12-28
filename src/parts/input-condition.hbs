@@ -161,9 +161,7 @@
 	{{/if}}
 	{{#if (eq cond.boolComparisonTarget  "power-target-type-is")}}
 	<div>
-		<select name="{{strcat namePrefix 'powerTargetType'}}">
-			{{selectOptions POWERSTUFF.TARGETING localize=true selected=cond.powerTargetType}}
-		</select>
+	{{multicheck (strcat namePrefix 'powerTargetType') POWERSTUFF.TARGETING checked=cond.powerTargetType localize=true}}
 	</div>
 	{{/if}}
 
