@@ -1269,7 +1269,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "add-escalation":
 			case "save-slot":
 			case "revive":
-			case "extraTurn":
 			case "recover-slot":
 			case "half-hp-cost":
 			case "other-effect":
@@ -1286,6 +1285,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "alter-energy":
 			case "dungeon-action":
 			case "alter-mp":
+			case "extraTurn":
 				return [{applyTo,cons}];
 			case "expend-item":
 				if (cons.itemId) {

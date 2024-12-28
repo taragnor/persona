@@ -621,7 +621,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "shadow":
 				return PersonaItem.getBasicShadowPowers();
 			case "pc":
-				return PersonaItem.getBasicPCPowers();
+				const arr =  PersonaItem.getBasicPCPowers();
+				if (this.teamworkMove) {
+					arr.push(this.teamworkMove);
+				}
+				return arr;
 			default:
 				this.type satisfies never;
 				return [];

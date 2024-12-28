@@ -309,11 +309,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 			effects.forEach( ({conditions, consequences}, i) => {
 				if (!isArray(conditions)) {
 					effects[i].conditions = ArrayCorrector(conditions);
-					update=  true;
+					update = true;
 				}
 				if (!isArray(consequences)) {
 					effects[i].consequences = ArrayCorrector(consequences);
-					update=  true;
+					update = true;
 				}
 			});
 		} catch (e) {

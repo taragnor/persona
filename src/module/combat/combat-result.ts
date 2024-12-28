@@ -230,10 +230,14 @@ export class CombatResult  {
 				effect.hpchange = Math.round(target.mhp * (cons.amount ?? 0.01));
 				effect.hpchangemult = 1;
 				break;
-			case "extraTurn":
-					if (!effect) break;
+			case "extraTurn": {
+				if (!atkResult) break;
+				const power = PersonaDB.findItem(atkResult.power);
+				if (power.isOpener()) break;
+				if (!effect) break;
 				effect.otherEffects.push({ type: "extraTurn"});
 				break;
+			}
 			case "expend-item":
 					if (!effect) break;
 				effect.otherEffects.push({
@@ -645,6 +649,10 @@ export class CombatResult  {
 					this.addFlag(actor, otherEffect);
 					break;
 				case "extraTurn":
+					if (actor.hasStatus("baton-pass")) {
+						//can't get bonus actions from baton pass
+						break;
+					}
 					const bonusAction : StatusEffect = {
 						id: "bonus-action",
 						duration: "UEoT"
