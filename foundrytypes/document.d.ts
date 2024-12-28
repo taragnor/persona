@@ -6,6 +6,7 @@
 
 	 name: string;
 	 id: string;
+	 get pack(): string | null;
 	 async updateEmbeddedDocuments(type: string, updates: unknown): Promise<unknown>;
 	 async createEmbeddedDocuments(type: string, objData: Record<string, any>[], context?: unknown): Promise<Embedded[]>;
 	 sheet: Sheet<this>

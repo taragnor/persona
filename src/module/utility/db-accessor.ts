@@ -10,10 +10,13 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 	private comp_items: ItemType[] = [];
 	private comp_actors: ActorType[] = [];
 	private _loaded= false;
+	private _requiresReload = true;
+	private _edited: Actor[] = [];
+	private _editedItems: Item[] = [];
 
 	constructor() {
 		Hooks.once("ready", async () => {
-			this._loadPacks();
+			this.loadPacks();
 			this._initHooks();
 			console.log("Database initialized");
 			this._loaded = true;
@@ -46,14 +49,41 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 
 
 	onUpdateItem(item: Item) {
-		if (item.parent instanceof Actor)
-			this.onUpdateActor(item.parent);
+		if (item.pack ||  item.parent instanceof Actor && item.parent.pack) {
+			console.log(`${item.name} curerntly beign edited`);
+			this._editedItems.push(item);
+		}
 	}
 
 	async onUpdateActor(actor: Actor) {
 		if (actor.pack) {
-			await this.loadPacks();
+			console.log(`${actor.name} curerntly beign edited`);
+			this._edited.push(actor);
+			this.queueLoad();
 		}
+	}
+
+	queueLoad() {
+		if (this._requiresReload)
+			return;
+		this._requiresReload = true;
+		setTimeout(() => this.checkReload(), 1000);
+	}
+
+	checkReload() {
+		if (!this._requiresReload) return;
+		if ( this._editedItems.some(
+			i => i.sheet._state > 0)
+			|| this._edited.some(
+				x=> x.sheet._state > 0
+				|| x.items.contents.some(x=> x.sheet._state >0
+				))
+		) {
+			// console.log("reload blocked");
+			setTimeout(() => this.checkReload(), 1000);
+			return;
+		}
+		this.loadPacks();
 	}
 
 	 initHooks() {
@@ -171,11 +201,14 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 		console.log("Loading Packs");
 		this.comp_items = await this.getCompendiumDataByType("Item") as ItemType[];
 		this.comp_actors = await this.getCompendiumDataByType("Actor") as ActorType[];
-		this.loadPacks();
 	}
 
 	 async loadPacks() : Promise<void> {
-		//virtual, designed to be extended
+		 await this._loadPacks();
+		 this._requiresReload = false;
+		 this._edited = [];
+		 this._editedItems = [];
+
 	}
 
 	 getElementById(id: string, supertype :ValidDBTypes) {
@@ -207,7 +240,7 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 		switch (compendium.documentName) {
 			case "Actor":
 			case "Item":
-				await this.loadPacks();
+				this.queueLoad();
 			default:
 				return;
 		}
