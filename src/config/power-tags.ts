@@ -29,7 +29,8 @@ export const POWER_TAGS_LIST = [
 	"exotic",
 	"teamwork",
 	"opener",
-	"downtime"
+	"downtime",
+	"follow-up",
 ] as const;
 
 export type PowerTag = typeof POWER_TAGS_LIST[number];

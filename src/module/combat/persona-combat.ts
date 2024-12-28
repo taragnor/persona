@@ -691,7 +691,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	static async checkPowerPreqs(attacker: PToken, power: Usable) : Promise<boolean> {
 		const combat = game.combat as PersonaCombat;
-		if (combat && !combat.turnCheck(attacker)) {
+		if (combat && !combat.turnCheck(attacker, power)) {
 			if (!game.user.isGM) {
 				ui.notifications.warn("It's not your turn!");
 				return false;
@@ -746,7 +746,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			throw e;
 		}
 	}
-
 
 	static async usePowerOn(attacker: PToken, power: Usable, targets: PToken[], rollType : AttackRollType, modifiers: ModifierList = new ModifierList()) : Promise<CombatResult> {
 		let i = 0;
@@ -1747,13 +1746,20 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return this.combatants.contents.some(x=> x.token.actor && x.token.actor.system.type != token.actor.system.type);
 	}
 
-	/**return true if it is the token's turn
+	/**return true if the target is eligible to use the power based on whose turn it is
 	 */
-	turnCheck(token: PToken): boolean {
+	turnCheck(token: PToken, power: Usable): boolean {
 		if (!this.enemiesRemaining(token)) return true;
 		if (!this.combatant) return true;
 		if (token.actor.hasStatus("baton-pass"))
 			return true;
+		if (power.isTeamwork() ) {
+			if ( this.combatant.actor?.hasStatus("bonus-action") && this.combatant.token.id != token.id) {
+				return true;
+			}
+			ui.notifications.warn("Can't use a teamwork move here.");
+			return false;
+		}
 		return (this.combatant.token.id == token.id)
 	}
 

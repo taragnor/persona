@@ -152,6 +152,7 @@ const combatCommonStats = function () {
 			will: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 			fort: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 		}),
+		initiative: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 		focuses: new arr( new id(), {initial: []}),
 		powers: new arr( new id()),
 		resists: elementalResists(),

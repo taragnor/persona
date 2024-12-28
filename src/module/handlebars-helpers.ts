@@ -57,6 +57,10 @@ export class PersonaHandleBarsHelpers {
 			return actor.getDefense(defense).total({user: acc, target: acc});
 
 		},
+		"getInit" : (actor: PC | Shadow) => {
+			return actor.combatInit;
+		},
+
 
 		"isGM" : () => {
 			return game.user.isGM;
@@ -100,7 +104,7 @@ export class PersonaHandleBarsHelpers {
 		"getDamage": (actor: PersonaActor, usable: Usable) => {
 			if (usable == PersonaDB.getBasicPower("All-out Attack")) {
 				if (actor.system.type != "pc" && actor.system.type != "shadow") {
-					return "0 / 0";
+					return "- / -";
 				}
 				const {high, low} = (actor as PC | Shadow).allOutAttackDamage();
 				return Math.round(low) + " / " + Math.round(high);
@@ -108,7 +112,7 @@ export class PersonaHandleBarsHelpers {
 			switch (actor.system.type) {
 				case "tarot":
 				case "npc":
-					return "0/0";
+					return "-/-";
 				case "pc": case"shadow":
 					const combatant = actor as PC | Shadow;
 					const mult = usable.getDamageMultSimple(combatant);
@@ -117,7 +121,7 @@ export class PersonaHandleBarsHelpers {
 					return Math.round(low) + " / " + Math.round(high);
 				default:
 					actor.system satisfies never;
-					return "0/0";
+					return "-/-";
 			}
 		},
 

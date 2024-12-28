@@ -38,6 +38,19 @@
 			{{getDefense actor "will"}}
 		</span>
 	</div>
+	<div class="initiative">
+		<label>
+			{{localize "persona.statistic.initiative"}}
+		</label>
+		<span class="manual-boost">
+			<select name="system.combat.initiative">
+				{{selectOptions CONST.DEFENSE_CATEGORY localize=true selected=actor.system.combat.initiative}}
+			</select>
+		</span>
+		<span>
+			{{getInit actor}}
+		</span>
+	</div>
 	<div class="defense">
 		<label>
 			{{localize	"persona.modifier.critResist"}}

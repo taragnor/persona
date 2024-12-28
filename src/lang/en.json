@@ -87,10 +87,13 @@
 	"persona.statistic.powers": "Powers",
 	"persona.statistic.focii": "Focii",
 	"persona.statistic.talents": "Talents",
+	"persona.statistic.initiative": "Initiative",
+
 
 	"persona.defense.ref": "Reflex",
 	"persona.defense.will": "Will",
 	"persona.defense.fort": "Fortitude",
+
 
 	"persona.defense.category.pathetic": "Pathetic",
 	"persona.defense.category.weak": "Weak",
@@ -304,6 +307,7 @@
 	"persona.power.tag.teamwork": "Teamwork",
 	"persona.power.tag.power": "Metaverse Power",
 	"persona.power.tag.consumable": "Consumable Item",
+	"persona.power.tag.follow-up": "Follow-Up",
 
 	"persona.equipment.tag.nil" : "-",
 	"persona.equipment.tag.metaverse" : "Metaverse Item",

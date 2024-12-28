@@ -176,18 +176,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "npc":
 				return -5;
 			case "shadow": {
-				const actor = this as (Shadow | PC);
-				// const SHADOW_INIT_PENALTY = -50;
-				// return  SHADOW_INIT_PENALTY
-				return initBonus
-				+ actor.system.combat.classData.level + 15;
-				// + actor.getDefense("ref").total(situation)
-				// + (actor.getDefense("will").total(situation)* 0.01);
+				const initRating = this.system.combat.initiative;
+				const initScore = this.#translateInitString(initRating);
+				// const actor = this as (Shadow | PC);
+				return initBonus + (this.system.combat.classData.level * 2) + initScore;
 			}
 			case "pc":{
-				const actor = this as (Shadow | PC);
-				return initBonus
-				+ actor.getDefense("ref").total( {user:actor.accessor})
+				const initRating = this.system.combat.initiative;
+				const initScore = this.#translateInitString(initRating);
+				// const actor = this as (Shadow | PC);
+				return initBonus + (this.system.combat.classData.level * 2) + initScore;
 			}
 			case "tarot" :{
 				return -5;
@@ -197,6 +195,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				throw new PersonaError(`Unepxected Type : ${this.type}`);
 		}
 	}
+
+	#translateInitString(initString: PC["system"]["combat"]["initiative"]): number {
+		switch (initString) {
+			case "pathetic": return -6;
+			case "weak": return -3;
+			case "normal": return 0;
+			case "strong": return 3;
+			case "ultimate": return 6;
+			default:
+				initString satisfies never;
+				return -999;
+		}
+	}
+
 
 	get accessor() : UniversalActorAccessor<typeof this> {
 		return PersonaDB.getUniversalActorAccessor(this);

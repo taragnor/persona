@@ -353,10 +353,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 				const bonus = user.getBonuses("wpnMult");
 				const mult = user.wpnMult() + (this.system.melee_extra_mult ?? 0) + bonus.total(situation);
 				const bonusDamage = user.getBonusWpnDamage();
-				return {
+				const dmgamt =  {
 					low: dmg.low * mult + bonusDamage.low.total(situation),
 					high: dmg.high * mult + bonusDamage.high.total(situation),
 				}[type];
+				return dmgamt;
 			}
 			case "magic": {
 				const dmg = user.magDmg();
