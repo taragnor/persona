@@ -660,6 +660,7 @@
 	"persona.creatureType.teammate": "Teammate",
 	"persona.creatureType.npc-ally": "NPC-Ally",
 	"persona.creatureType.pc": "PC",
+	"persona.creatureType.child": "Child",
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",

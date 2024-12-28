@@ -17,6 +17,7 @@ export const CREATURE_TAG_LIST = [
 	"teammate",
 	"npc-ally",
 	"pc",
+	"child",
 ] as const;
 
 export type CreatureTag = typeof CREATURE_TAG_LIST[number];
