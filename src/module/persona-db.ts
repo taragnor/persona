@@ -20,6 +20,37 @@ import { SocialCard } from "./item/persona-item.js";
 
 class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
+	#cache: PersonaDBCache;
+
+	constructor() {
+		super();
+		this.#resetCache();
+	}
+
+	#resetCache() : PersonaDBCache {
+		return this.#cache = {
+			powers: undefined,
+			shadows: undefined,
+			socialLinks: undefined,
+			treasureItems: undefined,
+			tarot: undefined,
+		};
+	}
+
+	override async onLoadPacks() {
+		super.onLoadPacks();
+		this.#resetCache();
+	}
+
+	onCreateActor(actor :PersonaActor) {
+		this.#resetCache();
+	}
+
+	onCreateItem(item: PersonaItem) {
+		this.#resetCache();
+	}
+
+
 	getClassById(id: string): Option<ItemSub<"characterClass">> {
 		const item = this.getItemById(id);
 		if (!item) return null;
@@ -47,8 +78,9 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	allPowers() : Power[] {
+		if (this.#cache.powers) return this.#cache.powers;
 		const items = this.allItems();
-		return items
+		return this.#cache.powers = items
 		.filter( x=> x.system.type == "power") as Power[];
 	}
 
@@ -61,19 +93,25 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	shadows(): Shadow[] {
+		if (this.#cache.shadows) return this.#cache.shadows;
 		const actors = this.allActors();
-		return actors.filter( act=> act.system.type == "shadow") as Shadow[];
+		return this.#cache.shadows = actors
+			.filter( act=> act.system.type == "shadow") as Shadow[];
 
 	}
 
 	tarotCards(): Tarot[] {
+		if (this.#cache.tarot) return this.#cache.tarot;
 		const actors = this.allActors();
-		return actors.filter( actor=> actor.system.type == "tarot") as Tarot[];
+		return this.#cache.tarot = actors
+			.filter( actor=> actor.system.type == "tarot") as Tarot[];
 	}
 
 	treasureItems(): (Weapon | InvItem | Consumable)[] {
+		if (this.#cache.treasureItems) return this.#cache.treasureItems;
 		const items = this.allItems();
-		return  items.filter ( item =>
+		return  this.#cache.treasureItems = items
+			.filter ( item =>
 			item.system.type == "weapon"
 			|| item.system.type == "consumable"
 			|| item.system.type == "item"
@@ -108,7 +146,8 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	socialLinks(): PersonaActor[] {
-		return game.actors.filter( (actor :PersonaActor) =>
+		if (this.#cache.socialLinks) return this.#cache.socialLinks;
+		return this.#cache.socialLinks = game.actors.filter( (actor :PersonaActor) =>
 			(actor.system.type == "npc"
 			|| actor.system.type == "pc" )
 			&& !!actor.system.tarot
@@ -117,7 +156,6 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	getPower(id: string) : Power | undefined {
 		return this.getItemById(id) as Power | undefined;
-
 	}
 
 }
@@ -126,4 +164,21 @@ export const PersonaDB = new PersonaDatabase();
 
 //@ts-ignore
 window.PersonaDB =PersonaDB;
+
+Hooks.on("createItem", (item: PersonaItem) => {
+	PersonaDB.onCreateItem(item);
+
+});
+
+Hooks.on("createActor", (actor : PersonaActor) => {
+	PersonaDB.onCreateActor(actor);
+});
+
+type PersonaDBCache =	{
+	powers: Power[] | undefined,
+	shadows: Shadow[] | undefined;
+	socialLinks: PersonaActor[] | undefined;
+	treasureItems: (Weapon | InvItem | Consumable)[] | undefined;
+	tarot: Tarot[] | undefined;
+};
 

@@ -398,6 +398,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 		return list;
 	}
 
+	isOpener(this: Usable) : boolean {
+		return this.hasTag("opener");
+
+	}
+
+	isTeamwork(this: Usable): boolean {
+		return this.hasTag("teamwork");
+	}
+
 	isBasicPower(this: Usable) : boolean {
 		 if (this.system.type == "consumable") {return false;}
 		const basics = [

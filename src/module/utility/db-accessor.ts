@@ -16,7 +16,7 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 
 	constructor() {
 		Hooks.once("ready", async () => {
-			this.loadPacks();
+			this.#loadPacks();
 			this._initHooks();
 			console.log("Database initialized");
 			this._loaded = true;
@@ -82,7 +82,7 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 			setTimeout(() => this.checkReload(), 1000);
 			return;
 		}
-		this.loadPacks();
+		this.#loadPacks();
 	}
 
 	 initHooks() {
@@ -196,18 +196,20 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 		}
 	}
 
-	async _loadPacks() : Promise<void> {
+	async #_loadPacks() : Promise<void> {
 		console.log("Loading Packs");
 		this.comp_items = await this.getCompendiumDataByType("Item") as ItemType[];
 		this.comp_actors = await this.getCompendiumDataByType("Actor") as ActorType[];
 	}
 
-	 async loadPacks() : Promise<void> {
-		 await this._loadPacks();
+	 async onLoadPacks(): Promise<void> { }
+
+	 async #loadPacks() : Promise<void> {
+		 await this.#_loadPacks();
 		 this._requiresReload = false;
 		 this._edited = [];
 		 this._editedItems = [];
-
+		 await this.onLoadPacks();
 	}
 
 	 getElementById(id: string, supertype :ValidDBTypes) {
