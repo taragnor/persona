@@ -189,7 +189,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						const mandatoryStr = opt.mandatory ? "<b>(Mandatory)</b>": "";
 						return `<li> ${mandatoryStr} ${opt.optionTxt}  </li>`;
 					});
-					const list = optionsMap.length ? `<ul>${optionsMap}</ul>`: "";
+					const list = optionsMap.length ? `<ul>${optionsMap.join("")}</ul>`: "";
 					return `${ret.msg.join("")} ${list}`;
 				})
 			);

@@ -37,8 +37,9 @@
 			</h3>
 			<ul>
 				{{#each region.roomEffects as |mod|}}
-				<b>{{mod.name}}</b> : {{mod.system.description}}
-				{{/each}}
+				<li>
+					<b>{{mod.name}}</b> : {{mod.system.description}}
+				</li> {{/each}}
 			</ul>
 		</div>
 		{{/if}}

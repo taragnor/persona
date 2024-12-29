@@ -50,8 +50,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 					case "shadow":
 						return super._onDropItem(_event, itemD);
 					case "pc":
-
-						if ((item as Power).isTeamwork) {
+						if ((item as Power).isTeamwork()) {
 							await (this.actor as PC).setTeamworkMove(item as Power);
 							return item;
 						}
