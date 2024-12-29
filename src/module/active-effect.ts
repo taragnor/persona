@@ -141,7 +141,6 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		let changes= this.changes;
 		changes = [
 			{
-				effect: undefined,
 				key: "",
 				mode: CONST.ACTIVE_EFFECT_MODES.ADD,
 				priority: 0,

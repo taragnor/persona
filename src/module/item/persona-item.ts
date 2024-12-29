@@ -1,3 +1,4 @@
+import { PersonaCombat } from "../combat/persona-combat.js";
 import { removeDuplicates } from "../utility/array-tools.js";
 import { EquipmentTag } from "../../config/equipment-tags.js";
 import { PowerTag } from "../../config/power-tags.js";
@@ -410,6 +411,53 @@ export class PersonaItem extends Item<typeof ITEMMODELS> {
 
 	isTeamwork(this: Usable): boolean {
 		return this.hasTag("teamwork");
+	}
+
+	isValidTargetFor(this: Usable, user: PC|Shadow, target: PC | Shadow): boolean {
+		const situation :Situation = {
+			user : user.accessor,
+			target: target.accessor,
+		};
+		switch (this.system.targets) {
+			case "1-engaged":
+			case "1-nearby":
+			case "1d4-random":
+			case "1d4-random-rep":
+			case "1d3-random":
+			case "1d3-random-rep":
+				if (!target.isAlive()) return false;
+				break;
+			case "1-nearby-dead":
+				if (target.isAlive()) return false;
+				break;
+			case "self":
+				if (user != target) return false;
+				break;
+			case "1-random-enemy":
+			case "all-enemies":
+				if (PersonaCombat.isSameTeam(user, target)) return false;
+				if (!target.isAlive()) return false;
+				break;
+			case "all-allies":
+				if (!PersonaCombat.isSameTeam(user, target)) return false;
+				if (!target.isAlive()) return false;
+			case "all-dead-allies":
+				if (!PersonaCombat.isSameTeam(user, target)) return false;
+				if (target.isAlive()) return false;
+			case "all-others":
+				if (user == target) return false;
+				if (target.isAlive()) return false;
+				break;
+			case "everyone":
+				break;
+			default:
+				this.system.targets satisfies never;
+		}
+		if (this.isOpener()) {
+			const conditions = this.system.openerConditions;
+			if (!testPreconditions(conditions, situation, this)) return false;
+		}
+		return testPreconditions(this.system.validTargetConditions, situation, this);
 	}
 
 	isBasicPower(this: Usable) : boolean {

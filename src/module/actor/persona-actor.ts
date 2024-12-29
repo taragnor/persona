@@ -824,9 +824,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get openerActions() : Usable[] {
 		if (this.system.type == "npc" || this.system.type == "tarot")
 			return [];
-		return (this as PC | Shadow).mainModifiers({omitPowers:true})
+		const arr = (this as PC | Shadow).mainModifiers({omitPowers:true})
 			.filter(x=> x.grantsPowers())
 			.flatMap(x=> x.getOpenerPowers(this as PC ));
+		return removeDuplicates(arr);
 	}
 
 	async setTeamworkMove(this: PC, power: Power) {

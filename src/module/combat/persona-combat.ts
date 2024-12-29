@@ -63,6 +63,7 @@ type AttackRollType = "activation" | "standard" | "reflect" | number; //number i
 
 export class PersonaCombat extends Combat<PersonaActor> {
 
+	declare combatants: Collection<Combatant<ValidAttackers>>;
 	// engagedList: Combatant<PersonaActor>[][] = [];
 	_engagedList: EngagementList;
 	static customAtkBonus: number
@@ -130,8 +131,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const challenged = attacker?.actor.hasStatus("challenged");
 		return this.combatants.contents.filter( x=> {
 			if (!x.actor) {return false;}
-			const type = x.actor.system.type;
-			if (type == "npc" || type == "tarot") return false;
 			if (attacker == x.token) {return true;}
 			if (challenged || x.actor.hasStatus("challenged")) {
 				if (!this.isEngaging(PersonaDB.getUniversalTokenAccessor(attacker!), PersonaDB.getUniversalTokenAccessor(x.token))) {
@@ -432,6 +431,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return { msg, options};
 	}
 
+	getOpenerPrintableName(usable: Usable, user: Combatant<ValidAttackers>) : string  | undefined {
+		const targets= this.getValidTargetsFor(usable, user)
+			.map( target=> target.name);
+		if (targets.length == 0) return undefined;
+		return `${usable.displayedName} (${targets.join()})`
+	}
+
 	otherOpeners( combatant: Combatant<ValidAttackers> , situation: Situation): OpenerOptionsReturn {
 		let options : OpenerOptionsReturn["options"] = [];
 		let msg : string[] = [];
@@ -445,24 +451,30 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				const useSituation : Situation = {
 					...situation,
 					usedPower: action.accessor,
-				}
+				};
 				return action.testOpenerPrereqs(useSituation, combatant.actor!);
-			});
-		options = usableActions
-			.map( action => ({
-				mandatory: false,
-				optionTxt: action.name,
-				optionEffects: []
 			})
-			);
+		options = usableActions
+		.flatMap( action =>  {
+			const printableName = this.getOpenerPrintableName(action, combatant);
+			if (!printableName) return [];
+			return [{
+				mandatory: false,
+				optionTxt: printableName,
+				optionEffects: []
+			}];
+		});
 		if (options.length > 0) {
 			msg.push(`Other Available Options`);
 		}
 		return {msg, options};
 	}
 
-	static isSameTeam( token1: PToken, token2: PToken) : boolean {
-		return token1.actor.getAllegiance() == token2.actor.getAllegiance();
+	static isSameTeam( one: PToken | Combatant<ValidAttackers> | ValidAttackers, two: PToken | Combatant<ValidAttackers> | ValidAttackers) : boolean {
+		const actor1 = one instanceof PersonaActor ? one: one.actor;
+		const actor2 = two instanceof PersonaActor ? two: two.actor;
+		if (!actor1 || !actor2) return false;
+		return actor1.getAllegiance() == actor2.getAllegiance();
 	}
 
 	getAlliedEngagedDefenders(Tacc: UniversalTokenAccessor<PToken>) : PToken[] {
@@ -473,6 +485,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				&& PersonaCombat.isSameTeam(token,x )
 				&& x.actor.canEngage()
 			);
+	}
+
+	getValidTargetsFor(usable: Usable, user: Combatant<ValidAttackers>): Combatant<ValidAttackers>[]  {
+		const userActor = user.token.actor;
+		if (!userActor) return [];
+		return this.combatants.filter( comb =>  {
+			const targetActor = comb.token.actor;
+			if (!targetActor) return false;
+			return usable.isValidTargetFor( userActor, targetActor)
+		});
 	}
 
 	getDisengageDC(combatant: Combatant<ValidAttackers>) : number {
