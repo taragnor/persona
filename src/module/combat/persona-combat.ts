@@ -522,11 +522,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			await actor.modifyHP(-damage);
 		}
 
-		const poisonStatus = actor.effects.find( eff=> eff.statuses.has("poison"));
-		if (poisonStatus) {
-			const damage = actor.getPoisonDamage();
-			await actor.modifyHP(-damage);
-		}
+		//this is now done after each action
+		// const poisonStatus = actor.effects.find( eff=> eff.statuses.has("poison"));
+		// if (poisonStatus) {
+		// 	const damage = actor.getPoisonDamage();
+		// 	await actor.modifyHP(-damage);
+		// }
 
 		for (const effect of actor.effects) {
 			switch (effect.statusDuration) {
@@ -606,14 +607,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case "presave-easy":
 				case "presave-normal":
 				case "presave-hard":
-					const {success, total} = await PersonaCombat.rollSave(actor, { DC, label:effect.name, saveVersus:effect.statusId})
-					if (success) {
-						Msg.push(`Removed condition: ${effect.displayedName} from saving throw`);
-						await effect.delete();
-						break;
-					}
-					Msg = Msg.concat( await this.preSaveEffect(total, effect, actor));
+					//presave no longer done here
 					break;
+					// const {success, total} = await PersonaCombat.rollSave(actor, { DC, label:effect.name, saveVersus:effect.statusId})
+					// if (success) {
+					// 	Msg.push(`Removed condition: ${effect.displayedName} from saving throw`);
+					// 	await effect.delete();
+					// 	break;
+					// }
+					// Msg = Msg.concat( await this.preSaveEffect(total, effect, actor));
+					// break;
 				case "expedition":
 				case "combat":
 				case "save-normal":
@@ -644,17 +647,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 
 		}
-		const confused = actor.effects.find( eff=> eff.statuses.has("confused"));
-		if (confused) {
-			const {success, total} = await PersonaCombat.rollSave(actor, { DC: 11, label: "Confusion", saveVersus:confused.statusId})
-			if (!success) {
-				const msg = await this.preSaveEffect(total, confused, actor);
-				Msg = Msg.concat(msg);
-				if (actor.system.type == "shadow") {
-					this.skipBox(`${msg}. <br> Skip turn?`); //don't await this so it processes the rest of the code
-				}
-			}
-		}
 		const debilitatingStatuses :StatusEffectId[] = [
 			"sleep",
 			"frozen",
@@ -676,9 +668,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const poisonStatus = actor.effects.find( eff=> eff.statuses.has("poison"));
 		if (poisonStatus) {
 			const damage = actor.getPoisonDamage();
-			Msg.push(`${combatant.name} is poisoned and will take ${damage} damage at end of turn. (original Hp: ${actor.hp})`);
+			Msg.push(`${combatant.name} is poisoned and will take ${damage} damage on each action. (original Hp: ${actor.hp})`);
 		}
-
 		return Msg;
 	}
 
