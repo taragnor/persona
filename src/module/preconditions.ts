@@ -125,7 +125,10 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (!actor  || actor.system.type =="shadow") return false;
 
 			// let specifiedTarget : PersonaActor | null = null;
-			if (condition.socialLinkIdOrTarot == "SLSource") return true; //in theory these should be preverified so we're automatically letting them through
+			if (condition.socialLinkIdOrTarot == "SLSource"){
+				return true;
+			}
+			//in theory these should be preverified so we're automatically letting them through
 			const socialLink = getSocialLinkTarget(condition, situation, source);
 			if (!socialLink) {
 				target = 0;
@@ -651,7 +654,8 @@ export function getSocialLinkTarget(cond: {socialLinkIdOrTarot: SocialLinkIdOrTa
 	const desiredActor  = allLinks
 		.find( x=> x.id == targetIdOrTarot)
 		?? allLinks
-		.find(x=> x.tarot?.id == targetIdOrTarot);
+		.find(x=> x.tarot?.id == targetIdOrTarot
+		|| x.tarot?.name == targetIdOrTarot);
 	return desiredActor;
 }
 

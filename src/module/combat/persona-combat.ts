@@ -226,6 +226,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	async execOpeningRoll( combatant: Combatant<ValidAttackers> ) : Promise<{data: OpenerOptionsReturn[], roll: Roll} | null> {
 		let returns :OpenerOptionsReturn[]= [];
 		// const tokenAccessor = PersonaDB.getUniversalTokenAccessor(combatant.token);
+		if (this.isSocial) {return null;}
 		const actor = combatant.actor;
 		if (!actor) return null;
 		const openingRoll = new Roll("1d20");

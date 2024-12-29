@@ -564,7 +564,11 @@ export class CombatResult  {
 			const shadow = game.combat?.combatants.find( c=> c.token.id == target.id) as Combatant<PersonaActor> | undefined;
 			if (shadow) {
 				if (!shadow.defeated) {
-					await shadow.update( {defeated: true});
+					try {
+						await shadow.update( {defeated: true});
+					} catch (e) {
+						console.error(e);
+					}
 				}
 			}
 		}
@@ -585,7 +589,7 @@ export class CombatResult  {
 		for (const cost of this.costs) {
 			const actor = PersonaDB.findActor(cost.actor);
 			if (this.hasFlag(actor, "half-hp-cost")) {
-				cost.hpchangemult *= 0.5;
+				cost.hpchangemult *= 0.666;
 			}
 			await this.applyChange(cost);
 		}

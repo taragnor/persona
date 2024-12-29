@@ -683,3 +683,11 @@ form h5 {
 	font-size:2em;
 	font-weight: bold;
 }
+
+.region-panel {
+	font-size: 0.9rem;
+}
+
+room-effects {
+	font-size: smaller;
+}
