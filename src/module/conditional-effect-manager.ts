@@ -1,3 +1,4 @@
+import { multiCheckToArray } from "./preconditions.js";
 import { TAROT_DECK } from "../config/tarot.js";
 import { localize } from "./persona.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
@@ -337,6 +338,10 @@ export class ConditionalEffectManager {
 			case "social-target-is":
 				const link = cond.socialLinkIdOrTarot ? (game.actors.get(cond.socialLinkIdOrTarot as string) as PersonaActor)?.displayedName : "ERROR";
 				return `social Target is ${not} ${link}`;
+			case "social-target-is-multi":
+				const actors = multiCheckToArray(cond.socialLinkIdOrTarot)
+					.map( x=> x ? (game.actors.get(x as string) as PersonaActor)?.displayedName ?? x : "ERROR");
+				return `social Target is ${not} ${actors.join(", ")}`;
 			case "shadow-role-is":
 				const shadowRole = this.translate(cond.shadowRole, SHADOW_ROLE);
 				return `${target1} role is is ${not} ${shadowRole}`;

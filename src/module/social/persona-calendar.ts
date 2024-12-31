@@ -21,6 +21,7 @@ export class PersonaCalendar {
 			case "cloudy":
 			case "sunny":
 			case "windy":
+			case "fog":
 				return false;
 			case "lightning":
 			case "rain":
@@ -81,6 +82,7 @@ export class PersonaCalendar {
 		await roll.roll();
 		const season = window.SimpleCalendar!.api.getCurrentSeason().name;
 		let weather : WeatherType;
+		const currentWeather = this.getWeather();
 		switch (roll.total) {
 			case 2: weather = "lightning"; break;
 			case 3: weather = "rain"; break;
@@ -91,8 +93,12 @@ export class PersonaCalendar {
 			case 8: weather = "cloudy"; break;
 			case 9: weather = "cloudy"; break;
 			case 10: weather = "cloudy"; break;
-			case 11: weather = "windy"; break;
-			case 12: weather = "windy"; break;
+			case 11:
+				weather = currentWeather == "rain" || currentWeather == "lightning" ? "fog" : "windy";
+				break;
+			case 12:
+				weather = currentWeather == "rain" || currentWeather == "lightning" ? "fog" : "windy";
+				break;
 			default:
 				PersonaError.softFail(`Odd Weather Result ${roll.total}`);
 				weather = "cloudy";
@@ -144,6 +150,8 @@ export class PersonaCalendar {
 				return $(`<i title="${weatherLoc}" class="fa-solid fa-snowflake"></i>`);
 			case "windy":
 				return $(`<i title="${weatherLoc}" class="fa-solid fa-wind"></i>`);
+			case "fog":
+				return $(`<i title="${weatherLoc}" class="fa-solid fa-smog"></i>`);
 			default:
 				weather satisfies never;
 		}

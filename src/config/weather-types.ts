@@ -5,6 +5,7 @@ export const WEATHER_TYPE_LIST = [
 	"rain",
 	"snow",
 	"windy",
+	"fog",
 ] as const;
 
 export type WeatherType = typeof WEATHER_TYPE_LIST[number];

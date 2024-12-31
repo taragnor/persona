@@ -129,7 +129,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 				return true;
 			}
 			//in theory these should be preverified so we're automatically letting them through
-			const socialLink = getSocialLinkTarget(condition, situation, source);
+			const socialLink = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
 			if (!socialLink) {
 				target = 0;
 				break;
@@ -230,7 +230,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 		case "inspirationWith": {
 			const subject = getSubjectActor(condition, situation, source, "conditionTarget");
 			if (!subject) return false;
-			const link = getSocialLinkTarget(condition, situation, source);
+			const link = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
 			if (!link) return false;
 			target = subject.getInspirationWith(link.id)
 			break;
@@ -473,8 +473,13 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			return condition.days[weekday];
 		case "social-target-is": {
 			const target = getSubject(condition, situation, source, "conditionTarget");
-			const desiredActor = getSocialLinkTarget(condition, situation, source);
+			const desiredActor = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
 			return target == desiredActor;
+		}
+		case "social-target-is-multi": {
+			const target = getSubjectActor(condition, situation, source, "conditionTarget");
+			const actors= multiCheckToArray(condition.socialLinkIdOrTarot) as SocialLinkIdOrTarot[];
+			return actors.some(actor => getSocialLinkTarget(actor, situation, source) == target);
 		}
 		case "shadow-role-is": {
 			const target = getSubjectActor(condition, situation, source, "conditionTarget");
@@ -605,9 +610,9 @@ function getSubjectActor<K extends string, T extends Record<K, ConditionTarget>>
 	return subject;
 }
 
-export function getSocialLinkTarget(cond: {socialLinkIdOrTarot: SocialLinkIdOrTarot}, situation: Situation, source: Option<PowerContainer>): SocialLink | undefined {
-	if (cond.socialLinkIdOrTarot == undefined ) return undefined;
-	let targetIdOrTarot : SocialLinkIdOrTarot | undefined = cond.socialLinkIdOrTarot as SocialLinkIdOrTarot;
+export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, situation: Situation, source: Option<PowerContainer>): SocialLink | undefined {
+	if (socialLinkIdOrTarot == undefined ) return undefined;
+	let targetIdOrTarot : SocialLinkIdOrTarot | undefined = socialLinkIdOrTarot as SocialLinkIdOrTarot;
 	const test = targetIdOrTarot as keyof typeof SOCIAL_LINK_OR_TAROT_OTHER;
 	switch (test) {
 		case "target":
@@ -709,6 +714,12 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 	}
 }
 
+export function multiCheckToArray<T extends string>(multiCheck: MultiCheck<T>) : T[] {
+	return Object.entries(multiCheck)
+		.filter( ([_, val]) => val == true)
+		.map( ([k,_v]) => k as T) ;
+}
+
 function multiCheckContains<T extends string>(multiCheck: MultiCheck<T> | T, arr: T[]) : boolean {
 	if (typeof multiCheck != "object") {
 		return arr.includes(multiCheck);
@@ -779,6 +790,7 @@ type SituationUniversal = {
 	socialRandom ?: number;
 	cameo ?: UniversalActorAccessor<PC | NPC>;
 }
+
 
 
 

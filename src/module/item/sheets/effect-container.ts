@@ -158,7 +158,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			.map(x=> ([x,x]))
 		);
 
-		return {
+		const data = {
 			...this.powerStuffBase,
 			SOCIAL_LINKS,
 			COMPENDIUM_POWERS: Object.fromEntries(
@@ -172,6 +172,9 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			ITEMS_PLUS_NULL,
 			RELATIONSHIP_TYPE_OBJECT,
 		};
+		console.log("Computed powerStuff");
+		Debug(data);
+		return data;
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {

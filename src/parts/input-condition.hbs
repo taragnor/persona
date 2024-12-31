@@ -180,6 +180,10 @@
 	</div>
 	{{/if}}
 
+	{{#if (eq cond.boolComparisonTarget  "social-target-is-multi")}}
+	{{multicheck (strcat namePrefix 'socialLinkIdOrTarot') POWERSTUFF.SOCIAL_LINKS checked=cond.socialLinkIdOrTarot localize=true}}
+	{{/if}}
+
 	{{#if (eq cond.boolComparisonTarget  "social-target-is")}}
 	<select name="{{strcat namePrefix 'socialLinkIdOrTarot'}}">
 		{{selectOptions POWERSTUFF.SOCIAL_LINK_OR_TAROT localize=true selected=cond.socialLinkIdOrTarot}}

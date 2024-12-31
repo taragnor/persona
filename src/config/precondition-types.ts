@@ -173,7 +173,7 @@ export type BooleanComparisonPC = {
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison
+StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison
 ;
 
 export const SOCIAL_CHECKS_LIST = [
@@ -187,6 +187,7 @@ export type SocialCheck = typeof SOCIAL_CHECKS_LIST[number];
 export const SOCIAL_CHECKS = Object.fromEntries(
 	SOCIAL_CHECKS_LIST.map( x=> [x, `persona.preconditions.socialChecks.${x}`])
 );
+
 
 export type SocialComparisonBase = {
 	boolComparisonTarget : "social-availability",
@@ -239,6 +240,12 @@ type HasItemCheckComparison = {
 	boolComparisonTarget: "has-item-in-inventory",
 	itemId: string,
 	conditionTarget: ConditionTarget,
+}
+
+type SocialTargetIsComparisonMulti = {
+	boolComparisonTarget: "social-target-is-multi",
+	conditionTarget : ConditionTarget,
+	socialLinkIdOrTarot : MultiCheck<string>,
 }
 
 type SocialTargetIsComparison = {
@@ -344,6 +351,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"weather-is",
 	"weekday-is",
 	"social-target-is",
+	"social-target-is-multi", //can have multiple
 	"shadow-role-is",
 	"is-distracted",
 	"active-scene-is",
@@ -469,4 +477,4 @@ export type SocialLinkIdOrTarot = TarotCard
 	| keyof typeof SOCIAL_LINK_OR_TAROT_OTHER
 	|  AnyStringObject;
 
-export type AnyStringObject = object; // a placehodler to allow typescript to handle satisfies cases better, it represents any string without having the entire type turn to string
+export type AnyStringObject = {__nonsensePhantomData: number}; // a placehodler to allow typescript to handle satisfies cases better, it represents any string without having the entire type turn to string

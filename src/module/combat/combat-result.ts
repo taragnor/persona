@@ -271,7 +271,7 @@ export class CombatResult  {
 			case "inspiration-cost":
 				if (!effect) break;
 				if (!atkResult) break;
-				const socialTarget = getSocialLinkTarget(cons, atkResult.situation, null);
+				const socialTarget = getSocialLinkTarget(cons.socialLinkIdOrTarot, atkResult.situation, null);
 				if (!socialTarget) break;
 				effect.otherEffects.push( {
 					type: "inspiration-cost",

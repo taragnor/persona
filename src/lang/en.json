@@ -513,6 +513,7 @@
 	"persona.preconditions.comparison.target-social-link-is": "Target Social Link is",
 	"persona.preconditions.comparison.weekday-is": "Weekday is",
 	"persona.preconditions.comparison.social-target-is": "Social Target Is",
+	"persona.preconditions.comparison.social-target-is-multi": "Social Target Is (multiple choice)",
 	"persona.preconditions.comparison.shadow-role-is": "Shadow Role is",
 	"persona.preconditions.comparison.is-distracted": "Is Distracted",
 	"persona.preconditions.comparison.active-scene-is": "Active Scene Is",
@@ -597,6 +598,7 @@
 	"persona.weather.rain": "Rainy",
 	"persona.weather.windy": "Windy",
 	"persona.weather.snow": "Snow",
+	"persona.weather.fog": "Foggy",
 
 	"persona.social.card.thresholdType.static": "Static",
 	"persona.social.card.thresholdType.levelScaled": "Level Scaled",
