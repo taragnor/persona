@@ -1,3 +1,4 @@
+import { TarotCard } from "../../config/tarot.js";
 import { removeDuplicates } from "../utility/array-tools.js";
 import { testPreconditions } from "../preconditions.js";
 import { CreatureTag } from "../../config/creature-tags.js";
@@ -399,6 +400,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		await this.update( {"system.slots": this.system.slots});
 		return worked;
+	}
+
+	getSocialSLWithTarot(this: PC, tarot: TarotCard) : number {
+		const link= this.socialLinks.find(
+			link => link.actor.tarot?.name == tarot);
+		if (!link) return 0;
+		return link.linkLevel;
 	}
 
 	getSocialSLWith(this: PC, sl : SocialLink | UniversalActorAccessor<SocialLink>) : number {

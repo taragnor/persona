@@ -1,3 +1,4 @@
+import { PC } from "../actor/persona-actor.js";
 import { AnyStringObject } from "../../config/precondition-types.js";
 import { randomSelect } from "../utility/array-tools.js";
 import { CombatHooks } from "./combat-hooks.js";
@@ -106,6 +107,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	override async delete() : Promise<void> {
+		const combatants = this.combatants;
 		this.refreshActorSheets();
 		if (!this.isSocial) {
 			await this.generateTreasure();
@@ -114,7 +116,18 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			await Metaverse.enterMetaverse();
 		}
 		await PersonaCombat.onTrigger("on-combat-end-global").emptyCheck()?.toMessage("Triggered Effect", undefined);
-		return await super.delete()
+		const ret = await super.delete()
+		if (!this.isSocial) {
+			const combatantsToDelete = combatants
+				.filter(x => x.token != undefined
+					&& x.actor != undefined
+					&& !x.actor.isAlive()
+					&& x.actor.system.type == "shadow"
+					&& !x.token.isLinked)
+				.map(x=> x.token.id);
+			await game.scenes.current.deleteEmbeddedDocuments("Token", combatantsToDelete);
+		}
+		return ret;
 	}
 
 	async refreshActorSheets(): Promise<void> {
@@ -619,11 +632,15 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
-	 async fadingRoll( combatant: Combatant<ValidAttackers> , situation: Situation) : Promise<OpenerOptionsReturn> {
+	async fadingRoll( combatant: Combatant<ValidAttackers> , situation: Situation) : Promise<OpenerOptionsReturn> {
 		let options : OpenerOptionsReturn["options"] = [];
 		let msg : string[] = [];
 		const actor = combatant.actor;
-		if (!actor || actor.hp > 0) {return  {msg, options}; }
+		if (
+			!actor
+			|| actor.hp > 0
+			|| actor.system.type != "pc"
+		) {return  {msg, options}; }
 		const fadingState = actor.system.combat.fadingState;
 		if (fadingState >= 2) {
 			msg.push(`${combatant.name} is fading...`);
@@ -640,6 +657,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		msg.push(`Resisting Fading (${saveTotal}) -->`);
 		switch (true) {
+			case situation.openingRoll == 20
+					&& (actor as PC).getSocialSLWithTarot("Star") >= 3: {
+						msg.push(`Critical Success`);
+						options.push({
+							optionTxt: `Star Benefit ( get up at 1 HP)`,
+							mandatory: true,
+							optionEffects: [],
+						});
+						break;
+					}
 			case (saveTotal >= 11):{
 				msg.push(`Success`);
 				options.push({
@@ -694,7 +721,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const actor= combatant.actor;
 		if (!actor) return [];
 		let Msg: string[] = [];
-		Msg = Msg.concat(await this.handleFading(combatant));
 		for (const effect of actor.effects) {
 			let DC = effect.statusSaveDC;
 			switch (effect.statusDuration) {
