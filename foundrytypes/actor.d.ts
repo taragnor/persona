@@ -53,10 +53,6 @@ type MakeSchemaData<T extends typeof foundry.abstract.DataModel> = T & SystemDat
 
 type MakeSchemaDataList<T extends Record<string | number | symbol, typeof foundry.abstract.DataModel>> = {[K in keyof T]: MakeSchemaData<T[K]>};
 
-type DefineActor<T extends typeof CONFIG.Actor.dataModels> = typeof Actor & {new () : DefineActorInstance<T>};
-
-type DefineActorInstance<T extends typeof CONFIG.Actor.dataModels> = Actor & X<MakeSchemaDataList<T>>;
-
 type TransformToRealData<T extends SchemaDict> = {
   [K in keyof T]: SystemDataObjectFromDM<T[K]> & InstanceType<T[K]>;
 };
