@@ -895,7 +895,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async removeStatus(status: Pick<StatusEffect, "id"> | StatusEffectId) : Promise<boolean>{
 		const id = typeof status == "object" ? status.id : status;
-		const promises =this.effects
+		const promises = this.effects
 		.filter( eff => eff.statuses.has(id))
 		.map( eff => eff.delete());
 		await Promise.all(promises);

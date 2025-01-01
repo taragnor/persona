@@ -154,29 +154,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (actor.isOwner && !game.user.isGM)
 			TurnAlert.alert();
 		if (!game.user.isGM) return;
-		const triggeringCharacter  = (combatant as Combatant<PersonaActor>)?.token?.actor?.accessor;
-		if (triggeringCharacter) {
-			for (const user of this.combatants) {
-				if (user.token.actor == undefined) {continue;}
-				const situation : Situation = {
-					triggeringCharacter,
-					user: user.token.actor.accessor,
-					activeCombat: true,
-				}
-				await PersonaCombat.execTrigger("start-turn", user.token.actor as ValidAttackers, situation);
-			}
-		}
-		for (const effect of actor.effects) {
-			if (effect.statuses.has("blocking")) {
-				await effect.delete();
-			}
-			if (effect.statusDuration == "USoNT")  {
-				await Logger.sendToChat(`Removed condition: ${effect.displayedName} at start of turn`, actor);
-				await effect.delete();
-			}
-		}
+		await this.execStartingTrigger(combatant);
+		await this.clearStartTurnEffects(combatant);
 		let startTurnMsg = [ `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`];
-		startTurnMsg = startTurnMsg.concat(await this.handleStartTurnEffects(combatant));
+		startTurnMsg = startTurnMsg.concat(
+			// await this.handleFading(combatant),
+			await this.handleStartTurnEffects(combatant)
+		);
 		const openingReturn = await this.execOpeningRoll(combatant);
 		if (openingReturn) {
 			const {data, roll} = openingReturn;
@@ -194,23 +178,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			);
 			baseRolls.push(roll);
 		}
-		// if (combatant.actor.isCapableOfAction()) {
-		// 	const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token);
-		// 	if (this.isEngagedByAnyFoe(accessor)) {
-		// 		const alliedDefenders = this.getAlliedEngagedDefenders(accessor);
-		// 		if (alliedDefenders.length == 0) {
-		// 			const DC = this.getDisengageDC(combatant);
-		// 			const {total, rollBundle, success} = await PersonaCombat.disengageRoll(actor, DC);
-		// 			rolls.push(rollBundle);
-		// 			let disengageResult = "failed";
-		// 			if (total >= 11) disengageResult = "normal";
-		// 			if (total >= 16) disengageResult = "hard";
-		// 			startTurnMsg.push("<br>"+ await renderTemplate("systems/persona/parts/disengage-check.hbs", {roll: rollBundle, disengageResult, success}));
-		// 		} else {
-		// 			startTurnMsg.push(`<br>Can Freely disengage thanks to ${alliedDefenders.map(x=> x.name).join(", ")}`);
-		// 		}
-		// 	}
-		// }
 		const speaker = {alias: combatant?.token?.name ?? "Unknown"};
 		let messageData = {
 			speaker: speaker,
@@ -222,9 +189,36 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		ChatMessage.create(messageData, {});
 	}
 
+	async	execStartingTrigger(combatant: PersonaCombat["combatant"]) {
+		const triggeringCharacter  = (combatant as Combatant<PersonaActor>)?.token?.actor?.accessor;
+		if (triggeringCharacter) {
+			for (const user of this.combatants) {
+				if (user.token.actor == undefined) {continue;}
+				const situation : Situation = {
+					triggeringCharacter,
+					user: user.token.actor.accessor,
+					activeCombat: true,
+				}
+				await PersonaCombat.execTrigger("start-turn", user.token.actor as ValidAttackers, situation);
+			}
+		}
+	}
+
+	async clearStartTurnEffects(combatant: PersonaCombat["combatant"]) {
+		const actor = combatant?.actor;
+		if (!actor) return;
+		for (const effect of actor.effects) {
+			await actor.removeStatus("blocking");
+			if (effect.statusDuration == "USoNT")  {
+				await Logger.sendToChat(`Removed condition: ${effect.displayedName} at start of turn`, actor);
+				await effect.delete();
+			}
+		}
+	}
+
+
 	async execOpeningRoll( combatant: Combatant<ValidAttackers> ) : Promise<{data: OpenerOptionsReturn[], roll: Roll} | null> {
 		let returns :OpenerOptionsReturn[]= [];
-		// const tokenAccessor = PersonaDB.getUniversalTokenAccessor(combatant.token);
 		if (this.isSocial) {return null;}
 		const actor = combatant.actor;
 		if (!actor) return null;
@@ -236,6 +230,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			openingRoll: rollValue,
 		}
 		returns.push(
+			await this.fadingRoll(combatant, situation),
 			this.saveVsFear(combatant, situation),
 			this.saveVsDespair(combatant, situation),
 			this.saveVsConfusion(combatant, situation),
@@ -265,8 +260,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const rollValue = situation.openingRoll ?? -999;
 		if (!combatant.actor) return undefined;
 		const statusEffect = combatant.actor.getStatus(status);
-		if (!statusEffect) return undefined;
-		// const saveDC = statusEffect.statusSaveDC;
+		if (!statusEffect && status != "fading") return undefined;
 		const saveSituation : Situation = {
 			...situation,
 			saveVersus: status
@@ -393,7 +387,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		let options : OpenerOptionsReturn["options"] = [];
 		const rollValue = situation.openingRoll ?? -999;
 		let msg : string[] = [];
-		if (!combatant.actor?.isCapableOfAction()) {
+		if (!combatant.actor?.isCapableOfAction()
+			|| combatant.actor?.hasStatus("challenged")
+		) {
 			return {msg, options};
 		}
 		const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token);
@@ -493,8 +489,38 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return this.combatants.filter( comb =>  {
 			const targetActor = comb.token.actor;
 			if (!targetActor) return false;
-			return usable.isValidTargetFor( userActor, targetActor)
+			return this.isValidTargetFor( usable, user, comb);
 		});
+	}
+
+	isValidTargetFor(usable: Usable, user: Combatant<ValidAttackers>, target: Combatant<ValidAttackers>): boolean {
+		const userActor = user.token.actor;
+		const targetActor = target.token.actor;
+		if (!userActor || !targetActor) return false;
+		if (!usable.isValidTargetFor(userActor, targetActor))
+			return false;
+		const targetChallenged = targetActor.hasStatus("challenged");
+		const userChallenged = userActor.hasStatus("challenged");
+		if (userChallenged) {
+			if (!targetChallenged) return false;
+			if (!this.isInChallengeWith(user, target))
+				return false;
+		} else {
+			if (targetChallenged) return false;
+		}
+		return true;
+	}
+
+	isInChallengeWith(user: Combatant<ValidAttackers>, target: Combatant<ValidAttackers>) : boolean {
+		const userActor = user.token.actor;
+		const targetActor = target.token.actor;
+		if (!userActor || !targetActor) return false;
+		if (!userActor.hasStatus("challenged"))
+			return false;
+		if (!targetActor.hasStatus("challenged"))
+			return false;
+		return EngagementChecker.isWithinEngagedRange(user.token as PToken, target.token as PToken);
+
 	}
 
 	getDisengageDC(combatant: Combatant<ValidAttackers>) : number {
@@ -593,6 +619,51 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
+	 async fadingRoll( combatant: Combatant<ValidAttackers> , situation: Situation) : Promise<OpenerOptionsReturn> {
+		let options : OpenerOptionsReturn["options"] = [];
+		let msg : string[] = [];
+		const actor = combatant.actor;
+		if (!actor || actor.hp > 0) {return  {msg, options}; }
+		const fadingState = actor.system.combat.fadingState;
+		if (fadingState >= 2) {
+			msg.push(`${combatant.name} is fading...`);
+			options.push({
+				optionTxt: "Completely Faded (Help in Spirit only)",
+				mandatory: true,
+				optionEffects: [],
+			});
+			return { msg, options};
+		}
+		const saveTotal = this.mockOpeningSaveTotal(combatant, situation, "fading");
+		if (saveTotal == undefined) {
+			return {msg, options};
+		}
+		msg.push(`Resisting Fading (${saveTotal}) -->`);
+		switch (true) {
+			case (saveTotal >= 11):{
+				msg.push(`Success`);
+				options.push({
+					optionTxt: `${fadingState ? "Barely " : ""}Hanging On (Help in Spirit Only)`,
+					mandatory: true,
+					optionEffects: [],
+				});
+				break;
+			}
+			default: {
+				msg.push(`Failure`);
+				await actor.setFadingState(fadingState+1);
+				const fadeState = fadingState ? "Starting to Fade Away" : "Fade Away";
+				options.push({
+					optionTxt: `${fadeState} (Help in Spirit Only)`,
+					mandatory: true,
+					optionEffects: [],
+				});
+				break;
+			}
+		}
+		return { msg, options};
+	}
+
 	async handleFading(combatant: Combatant<ValidAttackers>): Promise<string[]> {
 		let Msg :string[] = [];
 		const actor= combatant.actor;
@@ -630,16 +701,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				case "presave-easy":
 				case "presave-normal":
 				case "presave-hard":
-					//presave no longer done here
+					//presave no longer exists as a mechanic
 					break;
-					// const {success, total} = await PersonaCombat.rollSave(actor, { DC, label:effect.name, saveVersus:effect.statusId})
-					// if (success) {
-					// 	Msg.push(`Removed condition: ${effect.displayedName} from saving throw`);
-					// 	await effect.delete();
-					// 	break;
-					// }
-					// Msg = Msg.concat( await this.preSaveEffect(total, effect, actor));
-					// break;
 				case "expedition":
 				case "combat":
 				case "save-normal":
@@ -668,7 +731,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				default:
 						effect.statusDuration satisfies never;
 			}
-
 		}
 		const debilitatingStatuses :StatusEffectId[] = [
 			"sleep",
