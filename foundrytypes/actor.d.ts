@@ -49,9 +49,6 @@ type SchemaConvert<F> = F extends FoundryDMField<infer T>
 
 
 //Components to help with converting
-type MakeSchemaData<T extends typeof foundry.abstract.DataModel> = T & SystemDataObjectFromDM<T>;
-
-type MakeSchemaDataList<T extends Record<string | number | symbol, typeof foundry.abstract.DataModel>> = {[K in keyof T]: MakeSchemaData<T[K]>};
 
 type TransformToRealData<T extends SchemaDict> = {
   [K in keyof T]: SystemDataObjectFromDM<T[K]> & InstanceType<T[K]>;
