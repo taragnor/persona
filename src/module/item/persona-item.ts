@@ -412,11 +412,18 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.hasTag("teamwork");
 	}
 
-	isValidTargetFor(this: Usable, user: PC|Shadow, target: PC | Shadow): boolean {
-		const situation :Situation = {
-			user : user.accessor,
-			target: target.accessor,
-		};
+	isValidTargetFor(this: Usable, user: PC|Shadow, target: PC | Shadow, situation?: Situation): boolean {
+		if (!situation) {
+			situation = {
+				user : user.accessor,
+				target: target.accessor,
+			};
+		} else {
+			situation = {
+				...situation,
+				target: target.accessor
+			};
+		}
 		switch (this.system.targets) {
 			case "1-engaged":
 			case "1-nearby":
@@ -453,6 +460,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				this.system.targets satisfies never;
 		}
 		if (this.isOpener()) {
+			// if (this.name.includes("Helping") && target.name.includes("Anya")) {
+			// 	debugger;
+			// }
 			const conditions = this.system.openerConditions;
 			if (!testPreconditions(conditions, situation, this)) return false;
 		}

@@ -177,8 +177,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (openingReturn) {
 			const {data, roll} = openingReturn;
 			const initialMsg = `<h3> Opening Roll -> ${roll.total}</h3>`;
-			startTurnMsg.push(initialMsg);
-			startTurnMsg = startTurnMsg.concat(
+			const concatData =
 				data.map( ret => {
 					const optionsMap = ret.options.map( opt=> {
 						const mandatoryStr = opt.mandatory ? "<b>(Mandatory)</b>": "";
@@ -186,8 +185,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					});
 					const list = optionsMap.length ? `<ul>${optionsMap.join("")}</ul>`: "";
 					return `${ret.msg.join("")} ${list}`;
-				})
-			);
+				});
+			startTurnMsg.push(initialMsg);
+			startTurnMsg = startTurnMsg.concat(concatData);
 			baseRolls.push(roll);
 		}
 		const speaker = {alias: combatant?.token?.name ?? "Unknown"};
@@ -240,6 +240,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const situation : Situation = {
 			user: actor.accessor,
 			openingRoll: rollValue,
+			activeCombat: true,
 		}
 		returns.push(
 			await this.fadingRoll(combatant, situation),
@@ -250,7 +251,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			this.disengageOpener(combatant, situation),
 			this.otherOpeners(combatant, situation),
 		);
-
 		const mandatory = returns.find(r => r.options.some( o=> o.mandatory));
 		if (mandatory) {
 			return  {
@@ -261,10 +261,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				}]
 			};
 		};
+		const data = returns.filter(x=> x.msg.length > 0);
 		return {
 			roll: openingRoll,
-			data: returns
-			.filter(x=> x.msg.length > 0)
+			data,
 		};
 	}
 
@@ -439,11 +439,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return { msg, options};
 	}
 
-	getOpenerPrintableName(usable: Usable, user: Combatant<ValidAttackers>) : string  | undefined {
-		const targets= this.getValidTargetsFor(usable, user)
+	getOpenerPrintableName(usable: Usable, user: Combatant<ValidAttackers>, situation: Situation) : string  | undefined {
+		const targets= this.getValidTargetsFor(usable, user, situation)
 			.map( target=> target.name);
 		if (targets.length == 0) return undefined;
-		return `${usable.displayedName} (${targets.join()})`
+		return `${usable.displayedName} (${targets.join()}): ${usable.system.description}`;
 	}
 
 	otherOpeners( combatant: Combatant<ValidAttackers> , situation: Situation): OpenerOptionsReturn {
@@ -462,9 +462,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				};
 				return action.testOpenerPrereqs(useSituation, combatant.actor!);
 			})
+		if (usableActions.length) {
+			console.log(usableActions.map(x=> x.name));
+		} else {
+			console.log("No usable openers");
+		}
 		options = usableActions
 		.flatMap( action =>  {
-			const printableName = this.getOpenerPrintableName(action, combatant);
+			const printableName = this.getOpenerPrintableName(action, combatant, situation);
 			if (!printableName) return [];
 			return [{
 				mandatory: false,
@@ -495,21 +500,22 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			);
 	}
 
-	getValidTargetsFor(usable: Usable, user: Combatant<ValidAttackers>): Combatant<ValidAttackers>[]  {
+	getValidTargetsFor(usable: Usable, user: Combatant<ValidAttackers>, situation: Situation): Combatant<ValidAttackers>[]  {
 		const userActor = user.token.actor;
 		if (!userActor) return [];
 		return this.combatants.filter( comb =>  {
 			const targetActor = comb.token.actor;
 			if (!targetActor) return false;
-			return this.isValidTargetFor( usable, user, comb);
+			return this.isValidTargetFor( usable, user, comb, situation);
 		});
 	}
 
-	isValidTargetFor(usable: Usable, user: Combatant<ValidAttackers>, target: Combatant<ValidAttackers>): boolean {
+	isValidTargetFor(usable: Usable, user: Combatant<ValidAttackers>, target: Combatant<ValidAttackers>, situation: Situation): boolean {
+
 		const userActor = user.token.actor;
 		const targetActor = target.token.actor;
 		if (!userActor || !targetActor) return false;
-		if (!usable.isValidTargetFor(userActor, targetActor))
+		if (!usable.isValidTargetFor(userActor, targetActor, situation))
 			return false;
 		const targetChallenged = targetActor.hasStatus("challenged");
 		const userChallenged = userActor.hasStatus("challenged");
@@ -582,14 +588,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const damage = burnStatus.potency;
 			await actor.modifyHP(-damage);
 		}
-
-		//this is now done after each action
-		// const poisonStatus = actor.effects.find( eff=> eff.statuses.has("poison"));
-		// if (poisonStatus) {
-		// 	const damage = actor.getPoisonDamage();
-		// 	await actor.modifyHP(-damage);
-		// }
-
 		for (const effect of actor.effects) {
 			switch (effect.statusDuration) {
 				case "UEoNT":
@@ -1944,7 +1942,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		for (const actor of attackers) {
 			const atkDmg = actor.allOutAttackDamage(situation);
 			const mult = actor == attackLeader ? 1 : (1/3);
-			debugger;
 			dmg.high += atkDmg.high * mult;
 			dmg.low += atkDmg.low * mult;
 		}
