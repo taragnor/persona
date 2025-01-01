@@ -79,6 +79,7 @@ const powerEffects = function (fillBaseAttack: boolean) {
 
 export function powerSpecific () {
 	return {
+		description: new txt(),
 		subtype: new txt<typeof POWERTYPESLIST[number]>( {choices: POWERTYPESLIST, initial: "none"} ),
 	}
 }

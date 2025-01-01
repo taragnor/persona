@@ -1,11 +1,18 @@
 <form class="power-sheet">
 	<header>
 		<div class="flexrow">
-			<img class="profile-img" src="{{item.img}}" data-edit="img"/>
-			<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Power Name" placeholder="Power Name">
-			<select name="system.subtype">
-				{{selectOptions POWERSTUFF.POWERTYPES localize=true selected=item.system.subtype}}
-			</select>
+			<div>
+				<img class="profile-img" src="{{item.img}}" data-edit="img"/>
+			</div>
+			<div>
+				<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Power Name" placeholder="Power Name">
+				<select name="system.subtype">
+					{{selectOptions POWERSTUFF.POWERTYPES localize=true selected=item.system.subtype}}
+				</select>
+				<textarea name="system.description">
+					{{item.system.description}}
+				</textarea>
+			</div>
 		</div>
 
 	<div class="power-tags">

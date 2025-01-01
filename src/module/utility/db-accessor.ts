@@ -44,6 +44,8 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 		Hooks.on("updateCompendium", this.onUpdateCompendium.bind(this));
 		Hooks.on("updateItem", this.onUpdateItem.bind(this));
 		Hooks.on("updateActor", this.onUpdateActor.bind(this));
+		Hooks.on("createActor", this.onUpdateActor.bind(this));
+		Hooks.on("createItem", this.onUpdateItem.bind(this));
 		this.initHooks();
 	}
 
@@ -75,10 +77,10 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 			i => i.sheet._state > 0)
 			|| this._edited.some(
 				x=> x.sheet._state > 0
-				|| x.items.contents.some(x=> x.sheet._state >0
+				|| (x.items?.contents?.some(x=> x.sheet._state >0)
 				))
 		) {
-			// console.log("reload blocked");
+			console.debug("reload blocked");
 			setTimeout(() => this.checkReload(), 1000);
 			return;
 		}

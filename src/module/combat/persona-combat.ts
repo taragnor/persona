@@ -152,7 +152,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 			return true;
 		}) as Combatant<ValidAttackers>[];
-
 	}
 
 	override get combatant() : Option<Combatant<ValidAttackers>>{
