@@ -1,3 +1,4 @@
+import { PersonaAE } from "../active-effect.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { removeDuplicates } from "../utility/array-tools.js";
 import { EquipmentTag } from "../../config/equipment-tags.js";
@@ -32,9 +33,7 @@ declare global {
 	type ItemSub<X extends PersonaItem["system"]["type"]> = Subtype<PersonaItem, X>;
 }
 
-export class PersonaItem extends Item<typeof ITEMMODELS> {
-
-	declare parent : PersonaActor | undefined;
+export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE> {
 
 	cache: {
 		effectsNull: ConditionalEffect[] | undefined;
