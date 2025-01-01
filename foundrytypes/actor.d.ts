@@ -9,7 +9,7 @@
 
 
 // declare class Actor<T extends {[key:string]: foundry.abstract.DataModel}, U extends X<T>> {
-declare class Actor<const T extends SchemaDict = any, ItemType extends Item<J> = Item, AEType extends ActiveEffect<this, ItemType> = ActiveEffect> extends FoundryDocument<ItemType | AEType>{
+declare class Actor<const T extends SchemaDict = any, ItemType extends Item<any, this, any> = Item<any, this>, AEType extends ActiveEffect<this, ItemType> = ActiveEffect<this, ItemType>> extends FoundryDocument<ItemType | AEType>{
 	type: keyof T;
 	system: TotalConvert<T>;
 	get items(): Collection<ItemType>;

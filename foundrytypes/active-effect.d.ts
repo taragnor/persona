@@ -1,4 +1,4 @@
-declare class ActiveEffect<A extends Actor<any,I>, I extends Item<any>> extends FoundryDocument<never>  {
+declare class ActiveEffect<A extends Actor<any,I>, I extends Item<any, A>> extends FoundryDocument<never>  {
 	/** returns if effect is active, by default is !disabled && !isSuppressed() */
 	get active(): boolean
 
