@@ -13,6 +13,7 @@ declare class ActiveEffect<A extends Actor<any,I>, I extends Item<any, A>> exten
 	description: string;
 	duration: EffectDuration;
 	transfer: boolean;
+	get isTemporary(): boolean;
 }
 
 
