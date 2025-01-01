@@ -80,7 +80,6 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 				|| (x.items?.contents?.some(x=> x.sheet._state >0)
 				))
 		) {
-			console.debug("reload blocked");
 			setTimeout(() => this.checkReload(), 1000);
 			return;
 		}
