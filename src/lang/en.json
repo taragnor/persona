@@ -308,6 +308,7 @@
 	"persona.power.tag.power": "Metaverse Power",
 	"persona.power.tag.consumable": "Consumable Item",
 	"persona.power.tag.follow-up": "Follow-Up",
+	"persona.power.tag.mandatory": "Mandatory",
 
 	"persona.equipment.tag.nil" : "-",
 	"persona.equipment.tag.metaverse" : "Metaverse Item",

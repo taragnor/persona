@@ -460,9 +460,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				this.system.targets satisfies never;
 		}
 		if (this.isOpener()) {
-			// if (this.name.includes("Helping") && target.name.includes("Anya")) {
-			// 	debugger;
-			// }
 			const conditions = this.system.openerConditions;
 			if (!testPreconditions(conditions, situation, this)) return false;
 		}

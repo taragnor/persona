@@ -31,6 +31,7 @@ export const POWER_TAGS_LIST = [
 	"opener",
 	"downtime",
 	"follow-up",
+	"mandatory",
 ] as const;
 
 export type PowerTag = typeof POWER_TAGS_LIST[number];

@@ -834,7 +834,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			return [];
 		const arr = (this as PC | Shadow).mainModifiers({omitPowers:true})
 			.filter(x=> x.grantsPowers())
-			.flatMap(x=> x.getOpenerPowers(this as PC ));
+			.flatMap(x=> x.getOpenerPowers(this as PC ))
+			.concat( this.system.type == "shadow" ? this.mainPowers.filter(x=> x.isOpener()) : []);
 		return removeDuplicates(arr);
 	}
 
@@ -1135,7 +1136,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				break;
 			default:
 				this.system satisfies never;
-				PersonaError.softFail("Unknwon Type");
+				PersonaError.softFail("Unknown Type");
 				return "normal";
 		}
 		const actor = this as PC | Shadow;
@@ -1153,7 +1154,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		);
 		let baseStatusResist : ResistStrength = "normal";
 		if ("statusResists" in actor.system.combat) {
-			const statusResist =actor.system.combat.statusResists;
+			const statusResist = actor.system.combat.statusResists;
 			if (status in statusResist) {
 				baseStatusResist = statusResist[status as keyof typeof statusResist];
 			}

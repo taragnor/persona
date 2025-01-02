@@ -6,6 +6,8 @@ import { SHADOW_ROLE } from "../../../config/shadow-types.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { PersonaActor } from "../persona-actor.js";
 import { CombatantSheetBase } from "./combatant-sheet.js";
+import { PersonaError } from "../../persona-error.js";
+import { PersonaItem } from "../../item/persona-item.js";
 
 export class ShadowSheet extends CombatantSheetBase {
 	declare actor: Subtype<PersonaActor, "shadow">;
@@ -18,6 +20,33 @@ export class ShadowSheet extends CombatantSheetBase {
 			height: 800,
 			tabs: [{navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "main"}]
 		});
+	}
+
+	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) {
+		//@ts-ignore
+		const item: PersonaItem = await Item.implementation.fromDropData(itemD);
+		switch (item.system.type) {
+			case "talent":
+				return super._onDropItem(_event, itemD);
+			case "consumable":
+				return super._onDropItem(_event, itemD);
+			case "power":
+				return super._onDropItem(_event, itemD);
+			case "focus":
+				return super._onDropItem(_event, itemD);
+			case "characterClass":
+				return super._onDropItem(_event, itemD);
+			case "universalModifier":
+				throw new PersonaError("Universal Modifiers can't be added to sheets");
+			case "item":
+			case "weapon":
+			case "job":
+			case "socialCard":
+				throw new PersonaError("Invalid Item Type to apply to Shadows");
+			default:
+				item.system satisfies never;
+				throw new Error(`Unknown supported type ${item.type}`);
+		}
 	}
 
 	override async getData() {

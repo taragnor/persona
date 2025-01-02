@@ -99,6 +99,7 @@ function statusResists() {
 		frozen: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
 		sleep: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
 		shock: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
+		rage: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
 
 	});
 

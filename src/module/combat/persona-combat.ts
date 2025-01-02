@@ -244,6 +244,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		returns.push(
 			await this.fadingRoll(combatant, situation),
+			this.mandatoryOtherOpeners(combatant, situation),
 			this.saveVsFear(combatant, situation),
 			this.saveVsDespair(combatant, situation),
 			this.saveVsConfusion(combatant, situation),
@@ -446,6 +447,35 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return `${usable.displayedName} (${targets.join()}): ${usable.system.description}`;
 	}
 
+	mandatoryOtherOpeners( combatant: Combatant<ValidAttackers> , situation: Situation): OpenerOptionsReturn {
+		let options : OpenerOptionsReturn["options"] = [];
+		let msg : string[] = [];
+		if (!combatant.actor) return { msg, options};
+		const mandatoryActions = combatant.actor.openerActions.filter( x=> x.hasTag("mandatory"));
+		const usableActions = mandatoryActions
+			.filter( action => {
+				const useSituation : Situation = {
+					...situation,
+					usedPower: action.accessor,
+				};
+				return action.testOpenerPrereqs(useSituation, combatant.actor!);
+			});
+		options = usableActions
+		.flatMap( action =>  {
+			const printableName = this.getOpenerPrintableName(action, combatant, situation);
+			if (!printableName) return [];
+			return [{
+				mandatory: action.hasTag("mandatory"),
+				optionTxt: printableName,
+				optionEffects: []
+			}];
+		});
+		if (options.length > 0) {
+			msg.push(`Special Actions`);
+		}
+		return {msg, options};
+	}
+
 	otherOpeners( combatant: Combatant<ValidAttackers> , situation: Situation): OpenerOptionsReturn {
 		let options : OpenerOptionsReturn["options"] = [];
 		let msg : string[] = [];
@@ -461,18 +491,19 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					usedPower: action.accessor,
 				};
 				return action.testOpenerPrereqs(useSituation, combatant.actor!);
-			})
-		if (usableActions.length) {
-			console.log(usableActions.map(x=> x.name));
-		} else {
-			console.log("No usable openers");
-		}
+			});
+		//Debug code
+		// if (usableActions.length) {
+		// 	console.log(usableActions.map(x=> x.name));
+		// } else {
+		// 	console.log("No usable openers");
+		// }
 		options = usableActions
 		.flatMap( action =>  {
 			const printableName = this.getOpenerPrintableName(action, combatant, situation);
 			if (!printableName) return [];
 			return [{
-				mandatory: false,
+				mandatory: action.hasTag("mandatory"),
 				optionTxt: printableName,
 				optionEffects: []
 			}];
@@ -719,7 +750,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (!actor) return [];
 		let Msg: string[] = [];
 		for (const effect of actor.effects) {
-			let DC = effect.statusSaveDC;
 			switch (effect.statusDuration) {
 				case "presave-easy":
 				case "presave-normal":
