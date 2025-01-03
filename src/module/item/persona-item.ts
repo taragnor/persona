@@ -403,9 +403,33 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return list;
 	}
 
+	canBeReflectedByPhyiscalShield(this: Usable): boolean {
+			return this.system.dmg_type == "physical";
+	}
+
+	canBeReflectedByMagicShield(this: Usable) : boolean {
+		switch (this.system.dmg_type) {
+			case "fire":
+			case "wind":
+			case "light":
+			case "dark":
+			case "cold":
+			case "lightning":
+				return true;
+			case "none":
+			case "healing":
+			case "physical":
+			case "untyped":
+			case "all-out":
+				break;
+			default:
+				this.system.dmg_type satisfies never;
+		}
+		return false;
+
+	}
 	isOpener(this: Usable) : boolean {
 		return this.hasTag("opener");
-
 	}
 
 	isTeamwork(this: Usable): boolean {

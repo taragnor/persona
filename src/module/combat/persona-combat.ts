@@ -1026,7 +1026,38 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					...baseData,
 				};
 			}
-
+		}
+		if (target.actor.hasStatus("phys-shield") && power.canBeReflectedByPhyiscalShield()) {
+			return {
+				result: rollType != "reflect" ? "reflect": "block",
+				printableModifiers: [],
+				validAtkModifiers: [],
+				validDefModifiers: [],
+				critBoost: 0,
+				situation: {
+					hit: false,
+					criticalHit: false,
+					...situation,
+					naturalRoll: naturalAttackRoll,
+				},
+				...baseData,
+			};
+		}
+		if (target.actor.hasStatus("magic-shield") && power.canBeReflectedByMagicShield()) {
+			return {
+				result: rollType != "reflect" ? "reflect": "block",
+				printableModifiers: [],
+				validAtkModifiers: [],
+				validDefModifiers: [],
+				critBoost: 0,
+				situation: {
+					hit: false,
+					criticalHit: false,
+					...situation,
+					naturalRoll: naturalAttackRoll,
+				},
+				...baseData,
+			};
 		}
 		const total = roll.total;
 		const validAtkModifiers = attackbonus.list(situation);
@@ -1118,6 +1149,22 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		switch (result) {
 			case "reflect":
 				const reflectRes = new CombatResult(atkResult);
+				const targetActor = PersonaDB.findToken(atkResult.target).actor;
+				const power = PersonaDB.findItem(atkResult.power);
+				if ( targetActor.hasStatus("magic-shield") && power.canBeReflectedByMagicShield()) {
+					const cons : Consequence = {
+						type: "removeStatus",
+						statusName: "magic-shield",
+					};
+					reflectRes.addEffect(atkResult, targetActor, cons);
+				}
+				if (targetActor.hasStatus("phys-shield") && power.canBeReflectedByPhyiscalShield()) {
+					const cons : Consequence = {
+						type: "removeStatus",
+						statusName: "phys-shield",
+					};
+					reflectRes.addEffect(atkResult, targetActor, cons);
+				}
 				CombatRes.merge(reflectRes);
 				return CombatRes;
 			case "block":

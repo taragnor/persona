@@ -119,7 +119,16 @@ export const STATUS_EFFECT_LIST = [
 	{
 		id:"rage",
 		icon: "icons/skills/melee/unarmed-punch-fist.webp",
-	}
+	},
+	{
+		id:"phys-shield",
+		icon: "icons/equipment/shield/heater-steel-grey.webp",
+	},
+	{
+		id:"magic-shield",
+		icon: "icons/equipment/shield/heater-steel-segmented-purple.webp",
+	},
+
 ] as const;
 
 CONFIG.statusEffects= STATUS_EFFECT_LIST
