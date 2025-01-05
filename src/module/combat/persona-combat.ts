@@ -63,7 +63,6 @@ declare global {
 type AttackRollType = "activation" | "standard" | "reflect" | number; //number is used for bonus attacks
 
 export class PersonaCombat extends Combat<PersonaActor> {
-
 	declare combatants: Collection<Combatant<ValidAttackers>>;
 	// engagedList: Combatant<PersonaActor>[][] = [];
 	_engagedList: EngagementList;

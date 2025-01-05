@@ -234,12 +234,14 @@ export class SearchMenu {
 		}
 
 	static async tensionPool(guards: number, options: SearchOptions<typeof SearchMenu["template"]>) : Promise<TensionPoolResult> {
+		if (!options.rollTension) return TensionPool.nullResult();
+		const tensionRoll =  await TensionPool.roll(guards);
 		let inc = options.incTension;
 		while (inc--) {
 			await TensionPool.inc();
 		}
-		if (!options.rollTension) return TensionPool.nullResult();
-		return await TensionPool.roll(guards);
+		return tensionRoll;
+
 	}
 
 	static async searchOptionsDialog<T extends SearchPromptConfigObject>(optionsToFill: T) : Promise<SearchOptions<T>> {
