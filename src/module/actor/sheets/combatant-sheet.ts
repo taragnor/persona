@@ -1,3 +1,4 @@
+import { Helpers } from "../../utility/helpers.js";
 import { PersonaError } from "../../persona-error.js";
 import { PersonaCombat } from "../../combat/persona-combat.js";
 import { PToken } from "../../combat/persona-combat.js";
@@ -99,6 +100,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	async #useItemOrPower(power : Usable) {
+		Helpers.pauseCheck();
 		const actor = this.actor;
 		let token : PToken | undefined;
 		if (actor.token) {

@@ -50,6 +50,7 @@ declare interface Game {
 	combats: Collection<Combat>;
 	journal: Collection<JournalEntry>;
 	world: World;
+	get paused(): boolean;
 }
 
 
