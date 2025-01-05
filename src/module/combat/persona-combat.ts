@@ -107,7 +107,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	override async delete() : Promise<void> {
-		const combatants = this.combatants;
 		this.refreshActorSheets();
 		if (!this.isSocial) {
 			await this.generateTreasure();
@@ -117,16 +116,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		await PersonaCombat.onTrigger("on-combat-end-global").emptyCheck()?.toMessage("Triggered Effect", undefined);
 		const ret = await super.delete()
-		if (!this.isSocial) {
-			const combatantsToDelete = combatants
-				.filter(x => x.token != undefined
-					&& x.actor != undefined
-					&& !x.actor.isAlive()
-					&& x.actor.system.type == "shadow"
-					&& !x.token.isLinked)
-				.map(x=> x.token.id);
-			await game.scenes.current.deleteEmbeddedDocuments("Token", combatantsToDelete);
-		}
 		return ret;
 	}
 

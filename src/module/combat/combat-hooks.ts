@@ -85,6 +85,17 @@ export class CombatHooks {
 				if (actor.isFading()) {
 					await actor.modifyHP(1);
 				}
+				if (!combat.isSocial) {
+					const combatantsToDelete = combat.combatants
+						.filter(x => x.token != undefined
+							&& x.actor != undefined
+							&& !x.actor.isAlive()
+							&& x.actor.system.type == "shadow"
+							&& !x.token.isLinked)
+						.map(x=> x.token.id);
+					await game.scenes.current.deleteEmbeddedDocuments("Token", combatantsToDelete);
+				}
+
 			}
 		});
 
