@@ -4,6 +4,7 @@
 	async update<T extends updateObj> (updateData: AllowedUpdateKeys<T>): Promise<this>;
 	 // async update(updateData: RecursivePartial< typeof this>): Promise<this>
 
+	 get uuid(): string;
 	 name: string;
 	 id: string;
 	 get pack(): string | null;
