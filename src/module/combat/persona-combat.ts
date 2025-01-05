@@ -2162,18 +2162,32 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		element.find(".escalation-die").text(escalationDie);
 	}
 
-	displayRoomEffectChanger(element: JQuery<HTMLElement>) {
-		if (!game.user.isGM) return;
-		if (element.find(".room-effects-button").length == 0) {
-			const button = $( `
+displayRoomEffectChanger(element: JQuery<HTMLElement>) {
+	if (element.find(".room-effects-button").length == 0) {
+		const button = $( `
 			<button>
 			<i class="fa-solid fa-wand-magic-sparkles"></i>
 			</button>
-`).addClass("room-effects-button")
-			.on("click", this.alterRoomEffects.bind(this));
-			element.find(".combat-info").append(button);
+`).addClass("room-effects-button");
+		if (game.user.isGM) {
+			button.on("click", this.alterRoomEffects.bind(this));
+		} else {
+			button.on("click", this.showRoomEffects.bind(this));
 		}
+		element.find(".combat-info").append(button);
 	}
+}
+
+async showRoomEffects() {
+	const msg = this.roomEffectsMsg();
+	const messageData: MessageData = {
+		speaker: {alias: "Room Effects"},
+		whisper: [game.user],
+		content: msg,
+		style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
+	};
+	ChatMessage.create(messageData, {});
+}
 
 	override async rollInitiative(ids: string[], {formula=null, updateTurn=true, messageOptions={}}={}) {
 
