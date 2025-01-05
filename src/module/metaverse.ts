@@ -254,7 +254,7 @@ export class Metaverse {
 			isHazard: data.hazard != "none" && data.hazard != "found",
 			isSecret: data.secret != "none" && data.secret != "found",
 			incTension: 1,
-			rollTension: data.specialMods.includes("no-tension-roll"),
+			rollTension: !data.specialMods.includes("no-tension-roll"),
 			hazardOnTwo: data.specialMods.includes("hazard-on-2"),
 			cycle: false,
 		};

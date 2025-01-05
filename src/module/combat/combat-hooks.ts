@@ -73,10 +73,12 @@ export class CombatHooks {
 				const actor = combatant.actor as ValidAttackers  | undefined;
 				if (!actor) continue;
 				const token = combatant.token as PToken;
+				if (token.actor) {
 				await PersonaCombat
 					.onTrigger("on-combat-end", token.actor)
 					.emptyCheck()
 					?.toMessage("Triggered Effect", token.actor );
+				}
 				for (const effect of actor.effects) {
 					if (effect.durationLessThanOrEqualTo("combat")) {
 						await effect.delete();
