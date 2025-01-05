@@ -147,6 +147,8 @@
 	"persona.status.rage" : "Rage",
 	"persona.status.phys-shield" : "Tetrakarn",
 	"persona.status.magic-shield" : "Makarakarn",
+	"persona.status.fight-in-spirit-attack" : "Fight in Spirit (Attack)",
+	"persona.status.fight-in-spirit-defense" : "Fight in Spirit (Defend)",
 
 	"persona.damage.low": "Low",
 	"persona.damage.high": "High",

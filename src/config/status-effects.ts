@@ -128,6 +128,14 @@ export const STATUS_EFFECT_LIST = [
 		id:"magic-shield",
 		icon: "icons/equipment/shield/heater-steel-segmented-purple.webp",
 	},
+	{
+		id:"fight-in-spirit-attack",
+		icon: "icons/skills/melee/strike-polearm-light-orange.webp",
+	},
+	{
+		id:"fight-in-spirit-defense",
+		icon: "icons/skills/melee/shield-block-gray-yellow.webp",
+	},
 
 ] as const;
 
