@@ -72,8 +72,8 @@ export class CombatHooks {
 			for (const combatant of combat.combatants) {
 				const actor = combatant.actor as ValidAttackers  | undefined;
 				if (!actor) continue;
-				const token = combatant.token as PToken;
-				if (token.actor) {
+				const token = combatant.token as PToken | undefined;
+				if (token && token.actor) {
 				await PersonaCombat
 					.onTrigger("on-combat-end", token.actor)
 					.emptyCheck()
