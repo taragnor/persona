@@ -4,6 +4,9 @@
 		<a class="add-effect">
 			<i class="fa-solid fa-plus"> </i>
 		</a>
+		<a class="paste-effect">
+			<i class="fa-solid fa-paste"></i>
+		</a>
 	</h4>
 	{{#each (getProp owner namePrefix) as |effect i|}}
 	<div class="flexrow" data-effect-index="{{i}}">
@@ -11,6 +14,9 @@
 			{{> "systems/persona/parts/conditions-section.hbs" namePrefix=(strcat ../namePrefix i ".conditions.")  POWERSTUFF=../POWERSTUFF owner=../owner}}
 			{{> "systems/persona/parts/consequences-section.hbs" namePrefix=(strcat ../namePrefix i ".consequences.")  POWERSTUFF=../POWERSTUFF owner=../owner}}
 			<div class="short">
+				<a class="copy-effect">
+					<i class="fa-solid fa-copy"></i>
+				</a>
 				<a class="del-effect">
 					<i class="fa-solid fa-trash-can"></i>
 				</a>

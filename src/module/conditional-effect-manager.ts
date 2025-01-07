@@ -174,6 +174,19 @@ export class ConditionalEffectManager {
 		await this.alterConditionalEffect(topPath, dataPath, action, item);
 	}
 
+	static async handler_pasteEffect<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
+		const data = this.clipboard.effect;
+		if (!data) {
+			throw new PersonaError("Can't paste no data");
+		}
+		const action : CEAction= {
+			type: "create-effect",
+			effect:data,
+		}
+		const {topPath, dataPath} = this.#getPaths(ev);
+		await this.alterConditionalEffect(topPath, dataPath, action, item);
+	}
+
 	static async handler_pasteCondition<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
 		const data = this.clipboard.condition;
 		if (!data) {
@@ -207,6 +220,17 @@ export class ConditionalEffectManager {
 
 	}
 
+	static async handler_copyEffect<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item:D) {
+		const effectIndex = this.#getEffectIndex(ev);
+		if (effectIndex == undefined ) {
+			throw new PersonaError("Can't get effect index");
+		}
+		const {topPath, dataPath} = this.#getPaths(ev);
+		const master  = topPath as string != dataPath as string ? new EMAccessor<D>(item, topPath) : undefined;
+		const acc = new EMAccessor<D>(item, dataPath, master);
+		this.clipboard.effect = acc.data[effectIndex];
+	}
+
 	static async handler_copyCondition<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item:D) {
 		const condIndex = Number(HTMLTools.getClosestData(ev,
 			"preconditionIndex"));
@@ -234,8 +258,10 @@ export class ConditionalEffectManager {
 		html.find(".add-consequence").on("click", async (ev)=> this.handler_addConsequence(ev,doc));
 		html.find(".del-consequence").on("click", async (ev) => this.handler_deleteConsequence(ev, doc));
 		html.find(".del-condition").on("click", async(ev) => this.handler_deletePrecondition(ev,doc));
+		html.find(".paste-effect").on("click", async(ev) => this.handler_pasteEffect(ev, doc))
 		html.find(".paste-consequence").on("click", async(ev) => this.handler_pasteConsequence(ev, doc))
 		html.find(".paste-condition").on("click", async(ev) => this.handler_pasteCondition(ev, doc))
+		html.find(".copy-effect").on("click", async(ev) => this.handler_copyEffect(ev, doc))
 		html.find(".copy-consequence").on("click", async(ev) => this.handler_copyConsequence(ev, doc))
 		html.find(".copy-condition").on("click", async(ev) => this.handler_copyCondition(ev, doc))
 
