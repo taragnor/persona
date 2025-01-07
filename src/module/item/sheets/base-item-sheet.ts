@@ -1,3 +1,4 @@
+import { ConditionalEffect } from "../../datamodel/power-dm.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { Consumable } from "../persona-item.js";
 import { PersonaItem } from "../persona-item.js";
@@ -37,6 +38,16 @@ export class PersonaItemSheetBase extends ItemSheet<PersonaItem> {
 
 	}
 
-
+	defaultConditionalEffect(_ev: JQuery.ClickEvent): ConditionalEffect {
+		const effect : ConditionalEffect = {
+			conditions: [{
+				type: "always",
+			}],
+			consequences: [ {
+				type: "none"
+			}]
+		};
+		return effect;
+	}
 
 }

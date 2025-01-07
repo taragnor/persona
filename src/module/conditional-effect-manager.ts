@@ -34,20 +34,30 @@ import { PersonaDB } from "./persona-db.js";
 
 export class ConditionalEffectManager {
 
+	static clipboard: {
+		condition ?: Precondition;
+		consequence ?: Consequence;
+		effect ?: ConditionalEffect;
+	} = {
+		condition : undefined,
+		consequence: undefined,
+		effect: undefined,
+	};
+
 	static async alterConditionalEffect<const TP extends string, const P extends string,const  D extends FoundryDocument<any>, Data extends GetProperty<D, P>>(topPath: TP, dataPath: P, action: CEAction, owner: D) {
 		const master  = topPath as string != dataPath as string ? new EMAccessor<Data>(owner, topPath) : undefined;
 		const acc = new EMAccessor<Data>(owner, dataPath, master);
 		switch (action.type) {
 			case "create-effect":
-				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).addConditionalEffect();
+				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).addConditionalEffect(action.effect);
 			case "delete-effect":
 				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).deleteConditionalEffect(action.effectIndex);
 			case "create-conditional" :
-				//@ts-ignore
-				return await acc.addNewCondition(action.effectIndex);
+				// @ts-ignore
+				return await acc.addNewCondition(action.conditional, action.effectIndex);
 			case "create-consequence":
 				//@ts-ignore
-				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).addNewConsequence(action.effectIndex);
+				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).addNewConsequence(action.consequence, action.effectIndex);
 			case "delete-conditional":
 				//@ts-ignore
 				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).deleteCondition(action.condIndex, action.effectIndex);
@@ -95,8 +105,14 @@ export class ConditionalEffectManager {
 	}
 
 	static async handler_addPowerEffect<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
+		let effect : ConditionalEffect  | undefined = undefined;
+		if ("defaultConditionalEffect" in item.sheet && typeof item.sheet.defaultConditionalEffect == "function") {
+			effect = item.sheet.defaultConditionalEffect(ev) as ConditionalEffect;
+		}
+
 		const action : CEAction= {
 			type: "create-effect",
+			effect
 		}
 		const {topPath, dataPath} = this.#getPaths(ev);
 		await this.alterConditionalEffect(topPath, dataPath, action, item);
@@ -158,6 +174,59 @@ export class ConditionalEffectManager {
 		await this.alterConditionalEffect(topPath, dataPath, action, item);
 	}
 
+	static async handler_pasteCondition<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
+		const data = this.clipboard.condition;
+		if (!data) {
+			throw new PersonaError("Can't paste no data");
+		}
+		const effectIndex = this.#getEffectIndex(ev);
+		const action : CEAction= {
+			type: "create-conditional",
+			effectIndex,
+			conditional: data,
+		}
+		const {topPath, dataPath} = this.#getPaths(ev);
+		await this.alterConditionalEffect(topPath, dataPath, action, item);
+
+	}
+
+	static async handler_pasteConsequence<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
+		const data = this.clipboard.consequence;
+		if (!data) {
+			throw new PersonaError("Can't paste no data");
+		}
+		const effectIndex = this.#getEffectIndex(ev);
+		const action : CEAction= {
+			type: "create-consequence",
+			effectIndex,
+			consequence: data,
+		}
+		const {topPath, dataPath} = this.#getPaths(ev);
+		await this.alterConditionalEffect(topPath, dataPath, action, item);
+
+
+	}
+
+	static async handler_copyCondition<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item:D) {
+		const condIndex = Number(HTMLTools.getClosestData(ev,
+			"preconditionIndex"));
+		// const effectIndex = this.#getEffectIndex(ev);
+		const {topPath, dataPath} = this.#getPaths(ev);
+		const master  = topPath as string != dataPath as string ? new EMAccessor<D>(item, topPath) : undefined;
+		const acc = new EMAccessor<D>(item, dataPath, master);
+		this.clipboard.condition = acc.data[condIndex];
+	}
+
+	static async handler_copyConsequence<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item:D) {
+		const consIndex = Number(HTMLTools.getClosestData(ev, "consequenceIndex"));
+		// const effectIndex = this.#getEffectIndex(ev);
+		const {topPath, dataPath} = this.#getPaths(ev);
+
+		const master  = topPath as string != dataPath as string ? new EMAccessor<D>(item, topPath) : undefined;
+		const acc = new EMAccessor<D>(item, dataPath, master);
+		this.clipboard.consequence = acc.data[consIndex];
+	}
+
 	static applyHandlers<D extends FoundryDocument<any>>(html: JQuery, doc: D) {
 		html.find(".add-effect").on("click", async (ev) => await this.handler_addPowerEffect(ev, doc));
 		html.find(".del-effect").on("click", async (ev) => await this.handler_deletePowerEffect(ev, doc));
@@ -165,6 +234,10 @@ export class ConditionalEffectManager {
 		html.find(".add-consequence").on("click", async (ev)=> this.handler_addConsequence(ev,doc));
 		html.find(".del-consequence").on("click", async (ev) => this.handler_deleteConsequence(ev, doc));
 		html.find(".del-condition").on("click", async(ev) => this.handler_deletePrecondition(ev,doc));
+		html.find(".paste-consequence").on("click", async(ev) => this.handler_pasteConsequence(ev, doc))
+		html.find(".paste-condition").on("click", async(ev) => this.handler_pasteCondition(ev, doc))
+		html.find(".copy-consequence").on("click", async(ev) => this.handler_copyConsequence(ev, doc))
+		html.find(".copy-condition").on("click", async(ev) => this.handler_copyCondition(ev, doc))
 
 
 	}
@@ -784,15 +857,17 @@ export class EMAccessor<T> {
 		}
 	}
 
-	async addConditionalEffect<I extends DeepNoArray<ConditionalEffect[]>>(this: EMAccessor<I>) {
-		const item :ConditionalEffect= {
-			conditions: [ {
-			type: "always"
-			}],
-			consequences: []
-		};
+	async addConditionalEffect<I extends DeepNoArray<ConditionalEffect[]>>(this: EMAccessor<I>, effect ?: ConditionalEffect) {
+		if (!effect) {
+			effect= {
+				conditions: [ {
+					type: "always"
+				}],
+				consequences: []
+			};
+		}
 		const data = this.data;
-		data.push(item);
+		data.push(effect);
 		await this.update(data as any);
 	}
 
@@ -802,13 +877,13 @@ export class EMAccessor<T> {
 		await this.update(data);
 	}
 
-	async addNewConsequence<I extends DeepNoArray<ConditionalEffect["consequences"]>>( this: EMAccessor<I>) : Promise<void>;
-	async addNewConsequence<I extends DeepNoArray<ConditionalEffect[]>>( this: EMAccessor<I>, effectIndex: number): Promise<void>;
-	async addNewConsequence<I extends DeepNoArray<ConditionalEffect[]> | DeepNoArray<ConditionalEffect["consequences"]>>( this: EMAccessor<I>, effectIndex?: number) : Promise<void> {
+	async addNewConsequence<I extends DeepNoArray<ConditionalEffect["consequences"]>>( this: EMAccessor<I>, cons: Consequence | undefined) : Promise<void>;
+	async addNewConsequence<I extends DeepNoArray<ConditionalEffect[]>>( this: EMAccessor<I>, cons: Consequence | undefined, effectIndex: number): Promise<void>;
+	async addNewConsequence<I extends DeepNoArray<ConditionalEffect[]> | DeepNoArray<ConditionalEffect["consequences"]>>( this: EMAccessor<I>, cons: Consequence | undefined, effectIndex?: number) : Promise<void> {
 		if (this.#effectIndexChecker(effectIndex)) {
-			return await (this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).consequences(effectIndex).addNewConsequence();
+			return await (this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).consequences(effectIndex).addNewConsequence(cons);
 		}
-		const item : ConditionalEffect["consequences"][number] = {
+		const item : ConditionalEffect["consequences"][number] = cons ? cons : {
 			type: "none",
 			amount: 0,
 		};
@@ -818,13 +893,14 @@ export class EMAccessor<T> {
 		await that.update(newData);
 	}
 
-	async addNewCondition<I extends DeepNoArray<ConditionalEffect["conditions"]>>( this: EMAccessor<I>) : Promise<void>;
-	async addNewCondition<I extends DeepNoArray<ConditionalEffect[]>>( this: EMAccessor<I>, effectIndex: number): Promise<void>;
-	async addNewCondition<I extends DeepNoArray<ConditionalEffect[]> | DeepNoArray<ConditionalEffect["conditions"]>> ( this: EMAccessor<I>, effectIndex?: number) : Promise<void> {
+	async addNewCondition<I extends DeepNoArray<ConditionalEffect["conditions"]>>( this: EMAccessor<I>, cond ?: Precondition | undefined ) : Promise<void>;
+	async addNewCondition<I extends DeepNoArray<ConditionalEffect[]>>( this: EMAccessor<I>, cond: Precondition | undefined, effectIndex: number): Promise<void>;
+	async addNewCondition<I extends DeepNoArray<ConditionalEffect[]>>( this: EMAccessor<I>, cond: Precondition | undefined, effectIndex: number): Promise<void>;
+	async addNewCondition<I extends DeepNoArray<ConditionalEffect[]> | DeepNoArray<ConditionalEffect["conditions"]>> ( this: EMAccessor<I>, cond:Precondition | undefined, effectIndex?: number) : Promise<void> {
 		if (this.#effectIndexChecker(effectIndex)) {
-			return await (this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).conditions(effectIndex).addNewCondition();
+			return await (this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).conditions(effectIndex).addNewCondition(cond);
 		}
-		const item : ConditionalEffect["conditions"][number] = {
+		const item : ConditionalEffect["conditions"][number] = cond ? cond : {
 			type: "always",
 		};
 		const that = this as EMAccessor<DeepNoArray<ConditionalEffect["conditions"]>>;
@@ -884,15 +960,18 @@ let x: ExpectNever<x>;
 
 export type CEAction = {
 	type: "create-effect",
+	effect?: ConditionalEffect
 } | {
 	type: "delete-effect",
 	effectIndex:number,
 } | {
 	type: "create-conditional",
 	effectIndex?:number,
+	conditional?: Precondition,
 } | {
 	type: "create-consequence",
 	effectIndex?:number,
+	consequence?: Consequence,
 } |  {
 	type: "delete-conditional",
 	effectIndex?:number,

@@ -1,3 +1,4 @@
+import { ConditionalEffect } from "../../datamodel/power-dm.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaEffectContainerBaseSheet } from "../../item/sheets/effect-container.js";
 import { ConditionalEffectManager } from "../../conditional-effect-manager.js";
@@ -66,6 +67,18 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 		const index = HTMLTools.getClosestData(ev, "tagIndex");
 		await this.actor.deleteCreatureTag(Number(index));
 
+	}
+
+	defaultConditionalEffect(_ev: JQuery.ClickEvent): ConditionalEffect {
+		const effect : ConditionalEffect = {
+			conditions: [{
+				type: "always",
+			}],
+			consequences: [ {
+				type: "none"
+			}]
+		};
+		return effect;
 	}
 
 

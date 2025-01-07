@@ -5,6 +5,9 @@
 		<a class="add-consequence">
 			<i class="fa-solid fa-plus"> </i>
 		</a>
+		<a class="paste-consequence">
+			<i class="fa-solid fa-paste"></i>
+		</a>
 	</h4>
 	{{#each (getProp owner namePrefix) as |cons j|}}
 	{{> "systems/persona/parts/input-consequence.hbs" namePrefix=(strcat ../namePrefix j ".")  cons=cons POWERSTUFF=(powerStuff) i=../i consequence_index=j}}

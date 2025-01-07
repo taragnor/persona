@@ -5,6 +5,9 @@
 		<a class="add-condition">
 			<i class="fa-solid fa-plus"> </i>
 		</a>
+		<a class="paste-condition">
+			<i class="fa-solid fa-paste"></i>
+		</a>
 	</div>
 	{{#each (getProp owner namePrefix) as |cond j|}}
 	{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat ../namePrefix j ".")  cond=cond POWERSTUFF=(powerStuff) i=../i condition_index=j}}
