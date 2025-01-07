@@ -1,4 +1,5 @@
 import { SocialLink } from "./actor/persona-actor.js";
+import { PC } from "./actor/persona-actor.js";
 import { Weapon } from "./item/persona-item.js"
 import { Shadow } from "./actor/persona-actor.js";
 import { InvItem } from "./item/persona-item.js";
@@ -145,13 +146,13 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 					return PersonaDB.getActorByName("Teammate Social Link") as NPC;
 	}
 
-	socialLinks(): PersonaActor[] {
+	socialLinks(): (PC | NPC)[] {
 		if (this.#cache.socialLinks) return this.#cache.socialLinks;
 		return this.#cache.socialLinks = game.actors.filter( (actor :PersonaActor) =>
 			(actor.system.type == "npc"
 			|| actor.system.type == "pc" )
 			&& !!actor.system.tarot
-		) as PersonaActor[];
+		) as (PC | NPC)[];
 	}
 
 	getPower(id: string) : Power | undefined {
@@ -177,7 +178,7 @@ Hooks.on("createActor", (actor : PersonaActor) => {
 type PersonaDBCache =	{
 	powers: Power[] | undefined,
 	shadows: Shadow[] | undefined;
-	socialLinks: PersonaActor[] | undefined;
+	socialLinks: (PC | NPC)[] | undefined;
 	treasureItems: (Weapon | InvItem | Consumable)[] | undefined;
 	tarot: Tarot[] | undefined;
 };

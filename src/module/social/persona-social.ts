@@ -1,3 +1,4 @@
+import { randomSelect } from "../utility/array-tools.js";
 import { SocialCardSituation } from "../preconditions.js";
 import { NPC } from "../actor/persona-actor.js";
 import { ConditionalEffectManager } from "../conditional-effect-manager.js";
@@ -362,7 +363,7 @@ export class PersonaSocial {
 				break;
 			}
 			case "student": {
-				const students = (game.actors.contents as PersonaActor[])
+				const students = PersonaDB.socialLinks()
 				.filter( x=>
 					(x.system.type == "npc" || x.system.type == "pc")
 					&& x.baseRelationship == "PEER"
@@ -398,6 +399,19 @@ export class PersonaSocial {
 			case "buy-in-2":
 				PersonaError.softFail("Buy in 2 not yet implemented");
 				return [];
+			case "date-default":
+				//TODO: exception for devil multidate
+				return [];
+			case "cockblocker": {
+				const otherDates = PersonaDB.socialLinks()
+				.filter( x=> x.isAvailable(actor)
+					&& actor.isDating(x)
+					&& x != actor && x.id != linkId
+					&& testCameo(x)
+				);
+				if (otherDates.length ==0) return [];
+				return [randomSelect(otherDates)];
+			}
 			default:
 				card.system.cameoType satisfies never;
 		}

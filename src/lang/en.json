@@ -582,6 +582,8 @@
 	"persona.social.cameo-type.invite-sl4": "Invite another (SL4+)",
 	"persona.social.cameo-type.invite-couple": "Invite a dating couple (SL 5+)",
 	"persona.social.cameo-type.buy-in-2": "Any # (buy-in 2)",
+	"persona.social.cameo-type.date-default": "Cameo as in any date card",
+	"persona.social.cameo-type.cockblocker": "Any other date (blocker)",
 
 	"persona.social.card.types.social": "Social",
 	"persona.social.card.types.job": "Job",

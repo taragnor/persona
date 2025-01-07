@@ -503,6 +503,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			});
 	}
 
+	isDating(linkId: string) : boolean;
+	isDating(link: SocialLink) : boolean;
+
+	isDating(this: PC, sl: SocialLink | string) : boolean {
+		const id = sl instanceof PersonaActor ? sl.id: sl;
+		const link =  this.system.social.find(x=> x.linkId == id);
+		if (!link) return false;
+		return link.isDating || link.relationshipType == "DATE";
+	}
+
 
 	get socialLinks() : SocialLinkData[] {
 		const meetsSL = function (linkLevel: number, focus:Focus) {

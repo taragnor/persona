@@ -8,6 +8,8 @@ export const CAMEO_TYPES_LIST = [
 	"invite-sl4",
 	"invite-couple",
 	"buy-in-2",
+	"date-default",
+	"cockblocker"
 ] as const;
 
 
