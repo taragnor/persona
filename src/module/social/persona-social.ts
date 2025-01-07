@@ -520,7 +520,7 @@ export class PersonaSocial {
 
 	static #getCardEvent(cardData:CardData) : CardEvent | undefined  {
 		if (cardData.forceEventLabel) {
-			const gotoEvent = cardData.card.system.events.filter( x=> x.label  == cardData.forceEventLabel);
+			const gotoEvent = cardData.card.cardEvents().filter( x=> x.label  == cardData.forceEventLabel);
 			cardData.forceEventLabel = null;
 			if (gotoEvent.length > 0) {
 				return weightedChoice(gotoEvent.map( event => ({
@@ -530,7 +530,7 @@ export class PersonaSocial {
 			}
 			PersonaError.softFail (`Can't find event label ${cardData.forceEventLabel} on card ${cardData.card.name}`);
 		}
-		let eventList = cardData.card.system.events
+		let eventList = cardData.card.cardEvents()
 			.filter( (ev, i) => !cardData.eventsChosen.includes(i) && testPreconditions(
 				ConditionalEffectManager.getConditionals( ev.conditions, null, null),
 				cardData.situation, null));
@@ -569,7 +569,7 @@ export class PersonaSocial {
 		);
 		const ev = weightedChoice(eventWeights);
 		if (!ev) return undefined;
-		cardData.eventsChosen.push(cardData.card.system.events.indexOf(ev));
+		cardData.eventsChosen.push(cardData.card.cardEvents().indexOf(ev));
 		return ev;
 	}
 
@@ -592,7 +592,7 @@ export class PersonaSocial {
 
 	static async #execEvent(event: CardEvent, cardData: CardData) {
 		const eventNumber = cardData.eventsChosen.length;
-		const eventIndex = cardData.card.system.events.indexOf(event);
+		const eventIndex = cardData.card.cardEvents().indexOf(event);
 		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event,eventNumber, cardData, situation : cardData.situation, eventIndex});
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
@@ -872,7 +872,7 @@ export class PersonaSocial {
 		if (!card) {
 			throw new PersonaError(`Can't find card ${cardId}`);
 		}
-		const cardEvent = card.system.events[eventIndex];
+		const cardEvent = card.cardEvents()[eventIndex];
 		const choice = cardEvent.choices[choiceIndex];
 		await this.handleCardChoice(this.rollState.cardData, choice);
 		const content = $(message.content);

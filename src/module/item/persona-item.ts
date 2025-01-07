@@ -1,3 +1,4 @@
+import { CardEvent } from "../../config/social-card-config.js";
 import { PersonaAE } from "../active-effect.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { removeDuplicates } from "../utility/array-tools.js";
@@ -571,6 +572,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			}
 		}
 		return requirement;
+	}
+
+	cardEvents(this: SocialCard) : CardEvent[] {
+		return this.system.events;
 	}
 
 	isAvailable(this: Activity, pc: PC): boolean {
