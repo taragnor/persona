@@ -514,8 +514,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
 			const npc = PersonaDB.getActor(linkId);
 			if (!npc) return [];
+			const isDating = relationshipType == "DATE";
 			relationshipType = relationshipType ? relationshipType : npc.baseRelationship;
-			if (npc.system.type =="npc") {
+			if (npc.system.type == "npc") {
 				const allFocii = (npc as NPC).getSocialFocii_NPC(npc as SocialLink);
 				const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
 				return [{
@@ -528,6 +529,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					allFocii,
 					available: npc.isAvailable(this as PC),
 					focii: qualifiedFocii,
+					isDating,
 				}];
 			} else {
 				if (npc == this) {
@@ -547,6 +549,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						allFocii: allFocii,
 						focii: qualifiedFocii,
 						available: (npc as SocialLink).isAvailable(this as PC),
+						isDating,
 					}];
 				} else {
 					const teammate = PersonaDB.teammateSocialLink();
@@ -564,7 +567,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						linkBenefits: teammate,
 						allFocii: allFocii,
 						focii: qualifiedFocii,
-						available: (npc as SocialLink).isAvailable(this as PC)
+						available: (npc as SocialLink).isAvailable(this as PC),
+						isDating,
 					}];
 				}
 			}
@@ -1393,6 +1397,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				inspiration: 1,
 				currentProgress: 0,
 				relationshipType: npc.system.type == "pc"? "PEER" : npc.system.baseRelationship,
+				isDating: false,
 			}
 		);
 		PersonaSounds.newSocialLink();
@@ -2324,5 +2329,6 @@ export type SocialLinkData = {
 	currentProgress:number,
 	relationshipType: string,
 	available: boolean,
+	isDating: boolean,
 }
 

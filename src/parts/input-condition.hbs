@@ -26,7 +26,12 @@
 		<select id="comparator" name="{{strcat namePrefix 'comparator'}}">
 			{{selectOptions POWERSTUFF.COMPARATORS localize=false selected=cond.comparator}}
 		</select>
+		{{#if (neq-m cond.comparator "odd" "even")}}
 		<input class="short" type=number name="{{strcat namePrefix 'num'}}" value="{{cond.num}}">
+		{{/if}}
+		{{#if (eq cond.comparator "range")}}
+		<input class="short" type=number name="{{strcat namePrefix 'high'}}" value="{{cond.high}}">
+		{{/if}}
 	</div>
 
 	{{#if (eq cond.comparisonTarget "social-link-level")}}

@@ -1,7 +1,7 @@
 import { SOCIAL_LINK_OR_TAROT_OTHER } from "../../../config/precondition-types.js";
 import { EQUIPMENT_TAGS } from "../../../config/equipment-tags.js";
 import { CREATURE_TAGS } from "../../../config/creature-tags.js";
-import { SOCIAL_CHECKS } from "../../../config/precondition-types.js";
+import { SOCIAL_CHECKS } from "../../../config/boolean-comparison.js";
 import { ALTER_MP_SUBTYPES } from "../../../config/effect-types.js";
 import { CREATURE_TYPE } from "../../../config/shadow-types.js";
 import { PersonaItem } from "../persona-item.js";
@@ -36,9 +36,9 @@ import { PersonaDB } from "../../persona-db.js";
 import { TRIGGERS } from "../../../config/triggers.js";
 import { OTHER_CONSEQUENCES } from "../../datamodel/other-effects.js";
 import { CONDITION_TARGETS } from "../../../config/precondition-types.js";
-import { NUMERIC_COMPARISON_TARGET } from "../../../config/precondition-types.js";
-import { BOOLEAN_COMPARISON_TARGET } from "../../../config/precondition-types.js";
-import { COMPARATORS } from "../../../config/precondition-types.js";
+import { NUMERIC_COMPARISON_TARGET } from "../../../config/numeric-comparison.js";
+import { BOOLEAN_COMPARISON_TARGET } from "../../../config/boolean-comparison.js";
+import { COMPARATORS } from "../../../config/numeric-comparison.js";
 import { SAVE_TYPES_LOCALIZED } from "../../../config/save-types.js";
 import { WEATHER_TYPES } from "../../../config/weather-types.js";
 import { STUDENT_SKILLS } from "../../../config/student-skills.js"

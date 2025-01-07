@@ -12,7 +12,7 @@ import { DamageType } from "../config/damage-types.js";
 import { RESIST_STRENGTH_LIST } from "../config/damage-types.js";
 import { PersonaCalendar } from "./social/persona-calendar.js";
 import { ArrayCorrector } from "./item/persona-item.js";
-import { BooleanComparisonPC } from "../config/precondition-types.js";
+import { BooleanComparisonPC } from "../config/boolean-comparison.js";
 import { Triggered } from "../config/precondition-types.js";
 import { PToken } from "./combat/persona-combat.js";
 import { TarotCard } from "../config/tarot.js";
@@ -240,6 +240,15 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			target = situation.openingRoll;
 			break;
 		}
+		case "links-dating": {
+			const subject = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!subject) return false;
+			if ( subject.system.type != "pc") {target= 0; break;}
+			target= subject.system.social
+			.filter( x=> x.isDating || x.relationshipType == "DATE")
+			.length;
+			break;
+		}
 		default:
 			condition satisfies never;
 			PersonaError.softFail(`Unknwon numeric comparison type ${condition["comparisonTarget"]}`)
@@ -254,8 +263,9 @@ function numericComparison(condition: Precondition, situation: Situation, source
 		case "<=": return target <= (testCase ?? -Infinity);
 		case "odd": return target %2 != 0;
 		case "even": return target %2 == 0;
+		case "range": return target >= testCase && target <= condition.high;
 		default:
-				condition.comparator satisfies undefined;
+				condition satisfies undefined;
 	}
 	return false;
 }

@@ -36,7 +36,6 @@ declare interface CONFIG {
 	};
 	Scene: {
 		documentClass: typeof Scene;
-
 	}
 }
 

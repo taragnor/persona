@@ -390,65 +390,81 @@ export class ConditionalEffectManager {
 	}
 
 	static  #printNumericCond(cond: Precondition & {type: "numeric"}) : string {
-		const endString = function(val?:number | string) {
+		const endString = function(cond: Precondition & {type: "numeric"}, derivedVar?: string) {
 			switch (cond.comparator) {
 				case "odd":
 					return "is Odd";
 				case "even":
 					return "is Even";
+				case "==":
+				case "!=":
+				case ">=":
+				case ">":
+				case "<":
+				case "<=":
+					if ("num" in cond) {
+						return `${cond.comparator} ${cond.num}`;
+					} else {
+						return `${cond.comparator} ${derivedVar}`;
+					}
+				case "range":
+					return `between ${cond.num} and ${cond.high}`;
 				default:
-					return `${cond.comparator} ${val}`;
+					cond satisfies never;
+					return "ERROR";
 			}
 		};
 		switch (cond.comparisonTarget) {
 			case "natural-roll":
-				return `natural roll ${endString(cond.num)}`;
+				return `natural roll ${endString(cond)}`;
 			case "activation-roll":
-				return `activation Roll ${endString(cond.num)}`;
+				return `activation Roll ${endString(cond)}`;
 			case "escalation":
-				return `Escalation Die ${endString(cond.num)}`;
+				return `Escalation Die ${endString(cond)}`;
 			case "total-roll":
-				return `Roll Total ${endString(cond.num)}`;
+				return `Roll Total ${endString(cond)}`;
 			case "talent-level":
-				return `Talent Level ${endString(cond.num)}`;
+				return `Talent Level ${endString(cond)}`;
 			case "social-link-level":
 				const socialTarget  = PersonaDB.allActors()
 					.find( x=> x.id == cond.socialLinkIdOrTarot)
 					?? PersonaDB.socialLinks()
 					.find(x=> x.tarot?.name  == cond.socialLinkIdOrTarot);
 				const name = socialTarget ? socialTarget.displayedName : "Unknown";
-				return `${name} SL ${endString(cond.num)}`;
+				return `${name} SL ${endString(cond)}`;
 			case "student-skill":
 					const skill = this.translate(cond.studentSkill!, STUDENT_SKILLS);
-				return `${skill} ${endString(cond.num)}`;
+				return `${skill} ${endString(cond)}`;
 			case "character-level":
-					return `Character Level ${endString(cond.num)}`;
+					return `Character Level ${endString(cond)}`;
 			case "has-resources":
-				return `Resources ${endString(cond.num)}`;
+				return `Resources ${endString(cond)}`;
 			case "resistance-level":
 				const resist = this.translate(cond.resistLevel, RESIST_STRENGTHS);
 				const damage = this.translate(cond.element, DAMAGETYPES);
-				return `${damage} resistance ${endString(resist)}`;
+				return `${damage} resistance ${endString(cond, resist)}`;
 			case "health-percentage":
-				return `Health Percentage ${endString(cond.num)}`;
+				return `Health Percentage ${endString(cond)}`;
 			case "clock-comparison":
-				return `Clock ${cond.clockId} ${endString(cond.num)}`;
+				return `Clock ${cond.clockId} ${endString(cond)}`;
 			case "percentage-of-mp":
-				return `Percentage of MP ${endString(cond.num)}`;
+				return `Percentage of MP ${endString(cond)}`;
 			case "percentage-of-hp":
-				return `Percentage of MP ${endString(cond.num)}`;
+				return `Percentage of MP ${endString(cond)}`;
 			case "energy":
-				return `Shadow Energy ${endString(cond.num)}`;
+				return `Shadow Energy ${endString(cond)}`;
 
 			case "socialRandom":
-				return `Social Card d20 ${endString(cond.num)}`;
+				return `Social Card d20 ${endString(cond)}`;
 			case "inspirationWith":
-				return `Has Inspiration With Link ??? ${endString(cond.num)}`;
+				return `Has Inspiration With Link ??? ${endString(cond)}`;
 			case "itemCount":
 				const item = game.items.get(cond.itemId);
-				return `Has Amount of ${item?.name ?? "UNKNOWN"} ${endString(cond.num)}`;
+				return `Has Amount of ${item?.name ?? "UNKNOWN"} ${endString(cond)}`;
 			case "opening-roll":
-				return `Opening Roll natural value ${endString(cond.num)}`;
+				return `Opening Roll natural value ${endString(cond)}`;
+			case "links-dating":
+				return `Amount of people being dated ${endString(cond)}`;
 			default:
 				cond satisfies never;
 				return "UNKNOWN CONDITION"

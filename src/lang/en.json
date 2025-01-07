@@ -529,6 +529,7 @@
 	"persona.preconditions.comparison.socialRandom": "Social Card Random Number (1d20)",
 	"persona.preconditions.comparison.inspirationWith": "Inspiration Points",
 	"persona.preconditions.comparison.itemCount": "Amount of Item",
+	"persona.preconditions.comparison.links-dating": "Amount of People being Dated",
 
 	"persona.preconditions.socialChecks.relationship-type-check": "Relationship Type is",
 	"persona.preconditions.socialChecks.is-social-disabled": "Is Socially Disabled",

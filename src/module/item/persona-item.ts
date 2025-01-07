@@ -566,7 +566,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					|| cond.socialLinkIdOrTarot == this.parent?.name
 					|| cond.socialLinkIdOrTarot == this.parent?.tarot?.name
 				) {
-					return cond.num ?? 0;
+					return "num" in cond ? cond.num ?? 0 : 0;
 				}
 			}
 		}

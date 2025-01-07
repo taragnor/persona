@@ -361,6 +361,12 @@ export class PersonaHandleBarsHelpers {
 				default:
 					return false;
 			}
+		},
+		"eq-m": function<T extends any> (comparisonOne:T, ...compArr: T[]) {
+			return compArr.some(x=> x == comparisonOne);
+		},
+		"neq-m": function<T extends any> (comparisonOne:T, ...compArr: T[]) {
+			return compArr.every(x=> x != comparisonOne);
 		}
 
 	}

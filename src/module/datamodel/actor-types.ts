@@ -63,6 +63,7 @@ export type SocialData = {
 	inspiration: number,
 	currentProgress: number,
 	relationshipType: string,
+	isDating: boolean,
 };
 
 export type ActivityData = {

@@ -139,7 +139,7 @@ export const STATUS_EFFECT_LIST = [
 
 ] as const;
 
-CONFIG.statusEffects= STATUS_EFFECT_LIST
+CONFIG.statusEffects = STATUS_EFFECT_LIST
 	.map( ({id, icon})=> {
 	return {id, icon, name:`persona.status.${id}`};
 });
