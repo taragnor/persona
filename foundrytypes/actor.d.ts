@@ -48,7 +48,7 @@ type SystemDataObject<T extends SchemaReturnObject> = {[name in keyof T]: Schema
 // 	:F;
 
 type SchemaConvert<F> = F extends FoundryDMField<infer T>
-	? T extends typeof DataModelClass ? SchemaConvert<T["defineSchema"]>
+	? T extends typeof DataModelClass ? SchemaConvert<ReturnType<T["defineSchema"]>>
 	: T extends object ? {[K in keyof T] : SchemaConvert<T[K]>} : T
 	:F;
 

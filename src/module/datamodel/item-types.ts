@@ -299,7 +299,8 @@ class CEContainer extends foundry.abstract.DataModel {
 	}
 }
 
-type CEConatiner = SystemDataObjectFromDM<typeof CEContainer>;
+
+type CEContType = SystemDataObjectFromDM<typeof CEContainer>;
 
 type CEDM = SystemDataObjectFromDM<typeof ConditionalEffectDM>;
 
