@@ -1,3 +1,4 @@
+import { Consequence } from "../../config/consequence-types.js";
 import { EQUIPMENT_TAGS_LIST } from "../../config/equipment-tags.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { Power } from "../item/persona-item.js";
@@ -8,7 +9,7 @@ import { Precondition } from "../../config/precondition-types.js";
 import { ThresholdOrDC } from "../../config/social-card-config.js";
 import { Opportunity } from "../../config/social-card-config.js";
 import { CardEvent } from "../../config/social-card-config.js";
-const {StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
+const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 
 import { SOCIAL_CARD_TYPES_LIST } from "../../config/social-card-config.js";
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
@@ -281,6 +282,26 @@ export const ITEMMODELS = {
 	socialCard: SocialCardSchema,
 } as const;
 
+class ConditionalEffectDM extends foundry.abstract.DataModel {
+	static override defineSchema() {
+		return {
+			conditions: new arr(new obj<Precondition>()),
+			consequences: new arr(new obj<Consequence>()),
+		};
+	}
+}
+
+class CEContainer extends foundry.abstract.DataModel {
+	static override defineSchema() {
+		return {
+			emb: new embedded(ConditionalEffectDM),
+		}
+	}
+}
+
+type CEConatiner = SystemDataObjectFromDM<typeof CEContainer>;
+
+type CEDM = SystemDataObjectFromDM<typeof ConditionalEffectDM>;
 
 //testing the types, purely for debug purposes
 type CClass = SystemDataObjectFromDM<typeof CharacterClassDM>;
