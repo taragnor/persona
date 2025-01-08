@@ -762,6 +762,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return testPreconditions(conditions, situation, this);
 	}
 
+	//temporary function to test weapons with embedded
+	embeddedTest(this: Weapon) {
+
+	}
 }
 
 

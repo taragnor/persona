@@ -1,3 +1,4 @@
+import { ArrayCorrector } from "../item/persona-item.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { EQUIPMENT_TAGS_LIST } from "../../config/equipment-tags.js";
 import { PersonaActor } from "../actor/persona-actor.js";
@@ -53,7 +54,9 @@ class Weapon extends foundry.abstract.TypeDataModel {
 		const ret = {
 			...itemBase(),
 			damage: damage(),
-			...effects (false),
+			//Embedded test code
+			effects: new arr(new embedded(ConditionalEffectDM)),
+			// ...effects (false),
 		};
 		return ret;
 	}
@@ -206,6 +209,7 @@ class JobItemSchema extends foundry.abstract.TypeDataModel {
 			active: new bool({initial: false}),
 			bane: new txt(),
 			tokenSpends:new arr(new obj<TokenSpend>()),
+			test: new embedded(ConditionalEffectDM),
 		}
 		return ret;
 	}
@@ -289,22 +293,39 @@ class ConditionalEffectDM extends foundry.abstract.DataModel {
 			consequences: new arr(new obj<Consequence>()),
 		};
 	}
+
+	static override migrateData(data: ConditionalEffect) : ConditionalEffect {
+		console.log("Called Migrate Data for ConditionalEffectDM");
+		if (data.conditions == undefined)  {
+			data.conditions = [];
+		}
+		if (data.consequences == undefined) {
+			data.consequences = [];
+		}
+		if ( !Array.isArray(data.conditions)
+			|| !Array.isArray(data.consequences)) {
+			data.conditions = ArrayCorrector(data.conditions);
+			data.consequences = ArrayCorrector(data.consequences);
+		}
+		return data;
+	}
+
 }
 
 class CEContainer extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		return {
-			emb: new embedded(ConditionalEffectDM),
+			emb: new arr(new embedded(ConditionalEffectDM)),
 		}
 	}
+
 }
 
 
-type CEContType = SystemDataObjectFromDM<typeof CEContainer>;
-
-type CEDM = SystemDataObjectFromDM<typeof ConditionalEffectDM>;
 
 //testing the types, purely for debug purposes
+type CECon = SystemDataObjectFromDM<typeof CEContainer>;
+type CEDM = SystemDataObjectFromDM<typeof ConditionalEffectDM>;
 type CClass = SystemDataObjectFromDM<typeof CharacterClassDM>;
 type PowerSO= SystemDataObjectFromDM<typeof PowerSchema>;
 
