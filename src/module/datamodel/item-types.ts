@@ -265,6 +265,7 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 		}
 		return ret;
 	}
+
 }
 
 export const ITEMMODELS = {

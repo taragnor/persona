@@ -363,7 +363,6 @@ export class ConditionalEffectManager {
 				PersonaError.softFail(`Unknown type ${(cond as any)?.type}`);
 				return "ERROR";
 		}
-
 	}
 
 	static translate<const T extends string>(items: MultiCheck<T> | T, translationTable?: Record<string, string>) : string {
