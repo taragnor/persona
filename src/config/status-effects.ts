@@ -135,8 +135,14 @@ export const STATUS_EFFECT_LIST = [
 	{
 		id:"fight-in-spirit-defense",
 		icon: "icons/skills/melee/shield-block-gray-yellow.webp",
+		changes: [
+			{
+				key: "system.autoFailThreshold",
+				value: "25",
+				mode: 1,
+			},
+		],
 	},
-
 ] as const;
 
 CONFIG.statusEffects = STATUS_EFFECT_LIST

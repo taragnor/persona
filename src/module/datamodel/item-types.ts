@@ -55,8 +55,8 @@ class Weapon extends foundry.abstract.TypeDataModel {
 			...itemBase(),
 			damage: damage(),
 			//Embedded test code
-			effects: new arr(new embedded(ConditionalEffectDM)),
-			// ...effects (false),
+			// effects: new arr(new embedded(ConditionalEffectDM)),
+			...effects (false),
 		};
 		return ret;
 	}
@@ -286,7 +286,7 @@ export const ITEMMODELS = {
 	socialCard: SocialCardSchema,
 } as const;
 
-class ConditionalEffectDM extends foundry.abstract.DataModel {
+export class ConditionalEffectDM extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		return {
 			conditions: new arr(new obj<Precondition>()),

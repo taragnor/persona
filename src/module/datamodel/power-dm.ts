@@ -1,5 +1,6 @@
-const {StringField:txt, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, BooleanField: bool } = foundry.data.fields;
+const {StringField:txt, EmbeddedDataField: embedded, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, BooleanField: bool } = foundry.data.fields;
 
+import { ConditionalEffectDM } from "./item-types.js";
 
 import { POWERTYPESLIST } from "../../config/effect-types.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
@@ -69,6 +70,7 @@ const oddDmg :ConditionalEffect = {
 
 
 
+//no longer used need new way to set initial values for created
 const powerEffects = function (fillBaseAttack: boolean) {
 	const initial = fillBaseAttack ? [evenDmg, oddDmg] : [];
 	return new arr( new obj<ConditionalEffect>()
@@ -118,9 +120,10 @@ export function UsablePowerProps() {
 	//TODO: add shadow type requirements (charged, uncharged)
 }
 
-export function effects(baseattack: boolean) {
+export function effects(_baseattack: boolean) {
 	return {
-		effects: powerEffects(baseattack),
+			effects: new arr(new embedded(ConditionalEffectDM)),
+		// effects: powerEffects(baseattack),
 	}
 }
 
