@@ -1,3 +1,4 @@
+import { PersonaSounds } from "../persona-sounds.js";
 import { randomSelect } from "../utility/array-tools.js";
 import { SocialCardSituation } from "../preconditions.js";
 import { NPC } from "../actor/persona-actor.js";
@@ -601,6 +602,9 @@ export class PersonaSocial {
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 		};
 		const msg = await ChatMessage.create(msgData,{} );
+		if (event.sound && event.sound.length > 0) {
+			PersonaSounds.playFree(event.sound, event.volume ?? 1.0);
+		}
 		if (ArrayCorrector(event.choices).length > 0) {
 			await new Promise( (conf, _rej) => {
 				this.rollState = {

@@ -35,10 +35,16 @@ export class PersonaSounds {
 
 	static async play(filename: string, volume = 1.0, recipients:string[] | false =[]) : Promise<void> {
 		if (!filename) return;
-		const socketOpts = (recipients && recipients.length) ? { recipients} : false;
 		const src  = `systems/persona/sound/${filename}`;
-		console.debug(`playing ${src}`);
+		await this.playFree(src, volume, recipients);
+	}
+
+	static async playFree(filename: string, volume = 1.0, recipients:string[] | false =[]): Promise<void> {
 		try {
+			if (!filename) return;
+			const socketOpts = (recipients && recipients.length) ? { recipients} : false;
+			const src = filename;
+			console.debug(`playing ${src}`);
 			const sound = await foundry.audio.AudioHelper.play( {
 				src,
 				volume,
@@ -52,6 +58,7 @@ export class PersonaSounds {
 			ui.notifications.error(msg);
 			console.warn(msg);
 		}
+
 	}
 
 	static isValidSound(s: string): s is ValidSound {

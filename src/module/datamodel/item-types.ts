@@ -334,6 +334,8 @@ class SocialCardEventDM extends foundry.abstract.DataModel {
 		return {
 			name: new txt({initial: "New Event"}),
 			img: new file({categories: ["IMAGE"]}),
+			sound: new file ({categories: ["AUDIO"] }),
+			volume: new num({initial: 1.0, integer:false, max: 1.0, min: 0}),
 			label: new txt(),
 			text: new txt(),
 			frequency: new num({initial: 1.0, integer: false}),

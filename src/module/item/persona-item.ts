@@ -594,8 +594,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 
 		const newEv : SocialCard["system"]["events"][number] = {
+			sound: "",
 			text: "",
 			img: "",
+			volume: 1.0,
 			placement: {
 				starter: true,
 				middle: true,

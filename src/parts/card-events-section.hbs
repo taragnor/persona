@@ -12,6 +12,17 @@
 				{{filePicker type="image" target=(strcat "system.events." i ".img")}}
 				<input class="img" type="hidden" name="system.events.{{i}}.img" value="{{event.img}}">
 				<img class="event-img" src="{{event.img}}">
+				<div>
+					<label>
+						Sound
+					</label>
+					{{filePicker type="audio" target=(strcat "system.events." i ".sound")}}
+				<input class="img" type="hidden" name="system.events.{{i}}.sound" value="{{event.sound}}">
+					{{#if (strcat "system.events." i ".sound")}}
+					<span>{{event.sound}}</span>
+					{{/if}}
+
+				</div>
 			</div>
 			<div>
 				<h3>
