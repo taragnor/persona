@@ -1,3 +1,4 @@
+import { Helpers } from "../utility/helpers.js";
 import { PersonaAE } from "../active-effect.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { removeDuplicates } from "../utility/array-tools.js";
@@ -628,7 +629,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		};
 		arr.push( newChoice);
 		event.choices = arr;
-		await this.update({"system.events": this.system.events.slice()});
+		await this.update({"system.events": Helpers.expandObject(this.system.events)});
 	}
 
 	async deleteEventChoice(this: SocialCard, eventIndex: number, choiceIndex: number) {
@@ -636,7 +637,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const arr = ArrayCorrector(event.choices);
 		arr.splice(choiceIndex, 1);
 		event.choices = arr;
-		await this.update({"system.events": this.system.events});
+		await this.update({"system.events": Helpers.expandObject(this.system.events)});
 	}
 
 
