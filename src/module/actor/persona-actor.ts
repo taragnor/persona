@@ -1022,6 +1022,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.getAllSocialFocii(),
 			...this.roomModifiers(),
 			...PersonaDB.getGlobalModifiers(),
+			...PersonaDB.navigatorModifiers(),
 		].filter( x => x.getEffects(this).length > 0);
 	}
 

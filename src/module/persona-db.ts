@@ -1,3 +1,4 @@
+import { ModifierContainer } from "./item/persona-item.js";
 import { SocialLink } from "./actor/persona-actor.js";
 import { PC } from "./actor/persona-actor.js";
 import { Weapon } from "./item/persona-item.js"
@@ -157,6 +158,10 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	getPower(id: string) : Power | undefined {
 		return this.getItemById(id) as Power | undefined;
+	}
+
+	navigatorModifiers(): ModifierContainer[] {
+		return [];
 	}
 
 }
