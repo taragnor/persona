@@ -1,3 +1,4 @@
+import { FlagData } from "../datamodel/actor-types.js";
 import { TarotCard } from "../../config/tarot.js";
 import { removeDuplicates } from "../utility/array-tools.js";
 import { testPreconditions } from "../preconditions.js";
@@ -1935,7 +1936,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	getEffectFlag(flagId: string) : this["system"]["flags"][number] | undefined {
+	getEffectFlag(flagId: string) : FlagData | undefined {
 		const flag= this.effects.find(eff=> eff.flagId == flagId);
 		if (flag) return {
 			flagId,
@@ -1943,7 +1944,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			flagName: flag.name,
 			AEId: flag.id,
 		};
-		return this.system.flags.find(flag=> flag.flagId == flagId.toLowerCase());
 	}
 
 	getFlagState(flagName: string) : boolean {
@@ -1960,7 +1960,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		} else {
 			await this.clearEffectFlag(flagId);
 		}
-		return;
 	}
 
 
@@ -1972,65 +1971,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		};
 		if (eff) {
 			eff.setDuration(duration);
-			return;
+		} else {
+			const AE = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
+			await AE.setDuration(duration);
+			await AE.markAsFlag(flagId);
 		}
-		const AE = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
-		await AE.setDuration(duration);
-		await AE.markAsFlag(flagId);
 	}
 
 	async clearEffectFlag(flagId: string) {
 		const eff = this.effects.find(x=> x.isFlag(flagId))
 		if (eff) {await eff.delete();}
-		if (!eff) await this.oldSetEffectFlag(flagId, false, "instant", "irrelevant")
 	}
 
-	async oldSetEffectFlag(flagId: string, setting: boolean, duration: StatusDuration = "instant", flagName ?: string) {
-		flagId = flagId.toLowerCase();
-		let flags = this.system.flags;
-		const current = this.getFlagState(flagId);
-		if (setting == current) {
-			const flag = flags.find(flag => flag.flagId == flagId);
-			if (!flag) return;
-			const eff  =this.effects.find(eff => eff.id == flag.AEId);
-			eff?.setDuration(duration);
-			return;
-		}
-
-		if (setting == true) {
-			const newAE = {
-				name: flagName,
-			};
-			const AE = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
-			flags.push({
-				flagId: flagId.toLowerCase(),
-				flagName: flagName,
-				duration,
-				AEId: AE.id,
-			});
-			await AE.setDuration(duration);
-			await AE.linkToEffectFlag(flagId);
-		} else {
-			const flag = flags.find(flag => flag.flagId == flagId);
-			if (flag) {
-				try {
-					const effects =  this.effects
-						.filter(eff=> eff.linkedFlagId == flagId);
-					for (const eff of effects) {
-						if ("_flaggedDeletion" in eff && eff._flaggedDeletion){ continue;}
-						if (eff.linkedFlagId) {
-							await eff.unsetFlag("persona", "LinkedEffectFlag");
-							await eff.delete();
-						}
-					}
-				} catch(e) {
-					console.log(e);
-				}
-			}
-			flags = flags.filter(flag=> flag.flagId.toLowerCase() != flagId.toLowerCase());
-		}
-		await this.update({"system.flags": flags});
-	}
 
 	async setRelationshipType(this: PC, socialLinkId: string, newRelationshipType: string) {
 		const link = this.system.social.find(x=> x.linkId == socialLinkId);

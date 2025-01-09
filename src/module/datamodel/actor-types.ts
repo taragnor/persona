@@ -203,7 +203,7 @@ abstract class BaseStuff extends window.foundry.abstract.DataModel {
 		return {
 			locked: new bool( { initial: false}),
 			short_desc: new txt(),
-			flags: new arr(new obj<FlagData>()),
+			// flags: new arr(new obj<FlagData>()),
 			creatureTags: new arr(new txt({choices:CREATURE_TAG_LIST})),
 		}
 	}
