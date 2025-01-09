@@ -121,30 +121,47 @@ export class CombatHooks {
 		});
 
 		Hooks.on("onAddStatus", async function (token: PToken, status: StatusEffect)  {
-			if (status.id != "down") return;
-			if (!game.user.isGM) {
-				throw new PersonaError("Somehow isn't GM executing this");
-			}
-			if (game.combat) {
-				const allegiance = token.actor.getAllegiance();
-				const standingAllies = game.combat.combatants.contents.some(comb => {
-					if (!comb.token) return false;
-					const actor = comb.actor as ValidAttackers;
-					return actor.isStanding() && actor.getAllegiance() == allegiance;
-				})
-				if (!standingAllies) {
-					const currentTurnCharacter = game.combat.combatant?.actor;
-					if (!currentTurnCharacter) return;
-					const currentTurnType = currentTurnCharacter.system.type;
-					if (currentTurnType == "shadow") {
-						return await PersonaCombat.allOutAttackPrompt();
-					} else {
-						PersonaSockets.simpleSend("QUERY_ALL_OUT_ATTACK", {}, game.users
-							.filter( user=> currentTurnCharacter.testUserPermission(user, "OWNER") && !user.isGM )
-							.map( usr=> usr.id)
-						);
+			switch (status.id) {
+				case "down":
+					if (status.id != "down") return;
+					if (!game.user.isGM) {
+						throw new PersonaError("Somehow isn't GM executing this");
 					}
-				}
+					if (game.combat) {
+						const allegiance = token.actor.getAllegiance();
+						const standingAllies = game.combat.combatants.contents
+							.some(comb => {
+								if (!comb.token) return false;
+								const actor = comb.actor as ValidAttackers;
+								return actor.isStanding()
+									&& actor.getAllegiance() == allegiance;
+							});
+						if (!standingAllies) {
+							const currentTurnCharacter = game.combat.combatant?.actor;
+							if (!currentTurnCharacter) return;
+							const currentTurnType = currentTurnCharacter.system.type;
+							if (currentTurnType == "shadow") {
+								await PersonaCombat.allOutAttackPrompt();
+								break;
+							} else {
+								PersonaSockets.simpleSend("QUERY_ALL_OUT_ATTACK", {}, game.users
+									.filter( user=> currentTurnCharacter.testUserPermission(user, "OWNER") && !user.isGM )
+									.map( usr=> usr.id)
+								);
+							}
+						}
+					}
+					break;
+				case "bonus-action":
+					const combat = game.combat as PersonaCombat;
+					if (combat && !combat.isSocial) {
+						await combat.onFollowUpAction(token, status.activationRoll);
+					}
+
+					break;
+				default:
+
+
 			}
 
 		});

@@ -66,7 +66,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	declare combatants: Collection<Combatant<ValidAttackers>>;
 	// engagedList: Combatant<PersonaActor>[][] = [];
 	_engagedList: EngagementList;
-	static customAtkBonus: number
+	static customAtkBonus: number;
+	lastActivationRoll: number;
 
 	override async startCombat() {
 		let msg = "";
@@ -480,12 +481,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				};
 				return action.testOpenerPrereqs(useSituation, combatant.actor!);
 			});
-		//Debug code
-		// if (usableActions.length) {
-		// 	console.log(usableActions.map(x=> x.name));
-		// } else {
-		// 	console.log("No usable openers");
-		// }
 		options = usableActions
 		.flatMap( action =>  {
 			const printableName = this.getOpenerPrintableName(action, combatant, situation);
@@ -951,6 +946,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const validDefModifiers = def != "none" ? target.actor.getDefense(def).list(situation): [];
 
 		const r = await new Roll("1d20").roll();
+		if (situation.activationRoll) {
+			const combat = game.combat as PersonaCombat;
+			if (combat && !combat.isSocial) {
+				combat.lastActivationRoll = r.total;
+			}
+		}
 		const cssClass=  (target.actor.type != "pc") ? "gm-only" : "";
 		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
 		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.system.defense} ${defenseStr}`;
@@ -1645,15 +1646,20 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
-	static getAllEnemiesOf(token: PToken) : PToken [] {
+	getAllEnemiesOf(token: PToken) : PToken [] {
 		const attackerType = token.actor.getAllegiance();
-		const combat= this.ensureCombatExists();
-		const targets = combat.validCombatants(token).filter( x => {
+		const targets = this.validCombatants(token).filter( x => {
 			const actor = x.actor;
 			if (!actor || !actor.isAlive())  return false;
 			return (x.actor.getAllegiance() != attackerType)
 		});
 		return targets.map( x=> x.token as PToken);
+
+	}
+
+	static getAllEnemiesOf(token: PToken) : PToken [] {
+		const combat= this.ensureCombatExists();
+		return combat.getAllEnemiesOf(token);
 	}
 
 	static getAllAlliesOf(token: PToken) : PToken[] {
@@ -2227,6 +2233,50 @@ async showRoomEffects() {
 		return this;
 	}
 
+async onFollowUpAction(token: PToken, activationRoll: number) {
+	const combatant = token.object ? this.getCombatantByToken(token.object): null;
+	if (!combatant) return;
+	if (combatant.actor && combatant.actor.hasStatus("down")) return;
+	const combat = combatant.parent as PersonaCombat | undefined;
+	if (!combat) return;
+	const allies = this.getAllies(combatant as Combatant<ValidAttackers>);
+	const validTeamworkAllies = allies
+		.flatMap( ally => {
+			if (ally == combatant) return [];
+			const actor = ally.actor;
+			if (!actor || !actor.teamworkMove ) return [];
+			if (!actor.canUsePower(actor.teamworkMove, false)) return [];
+			const situation = {
+				naturalRoll: activationRoll,
+				activationRoll: activationRoll != undefined,
+				user: ally.actor.accessor
+			};
+			if (!actor.teamworkMove.testTeamworkPrereqs(situation, ally.actor)) return [];
+			const targets = combat.getValidTargetsFor(actor.teamworkMove, combatant as Combatant<ValidAttackers>, situation);
+			if (targets.length == 0) return [];
+			return [ally];
+		});
+	const allout = combat.getAllEnemiesOf(token).every(enemy => enemy.actor.hasStatus("down")) ? "<li> All out attack </li>" : "";
+	const listItems = validTeamworkAllies
+	.map( ally => {
+		const power = ally.actor!.teamworkMove!;
+		return `<li>${power.name} (${ally.name})</li>`;
+	}).join("");
+	const msg = `<h2> Valid Follow Up Actions </h2>
+<ul>
+		<li> Act again </li>
+		${allout}
+		${listItems}
+		</ul>
+`;
+		const messageData: MessageData = {
+			speaker: {alias: "Follow Up Action"},
+			content: msg,
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+		};
+		ChatMessage.create(messageData, {});
+}
+
 	async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll: R}[], messageOptions: MessageOptions = {}): Promise<ChatMessage<R>> {
 		const rollTransformer = function (roll: Roll) {
 			const total = roll.total;
@@ -2295,3 +2345,4 @@ type OpenerOption = {
 	optionTxt: string,
 	optionEffects: unknown[]
 }
+

@@ -221,7 +221,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	testOpenerPrereqs (this: Usable, situation: Situation, user: PersonaActor) : boolean {
 		const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this,user );
+		return testPreconditions(conditions, situation, this);
+	}
 
+	testTeamworkPrereqs (this: Usable, situation: Situation, user: PersonaActor) : boolean {
+		const conditions = ConditionalEffectManager.getConditionals(this.system.teamworkConditions, this,user );
 		return testPreconditions(conditions, situation, this);
 	}
 

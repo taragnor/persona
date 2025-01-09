@@ -24,60 +24,50 @@ export type ConditionalEffect  = {
 	consequences: Consequence[]
 };
 
-const evenDmg :ConditionalEffect = {
-	conditions: [
-		{
-			type: "boolean",
-			booleanState: true,
-			boolComparisonTarget: "is-hit",
-		},
-		{
-			type: "numeric",
-			comparisonTarget:"natural-roll",
-			comparator: "even",
-		},
-	],
-	consequences: [
-		{
-			type: "damage-new",
-			damageSubtype: "high",
-			damageType: "by-power",
-		}
-	]
-}
+// const evenDmg :ConditionalEffect = {
+// 	conditions: [
+// 		{
+// 			type: "boolean",
+// 			booleanState: true,
+// 			boolComparisonTarget: "is-hit",
+// 		},
+// 		{
+// 			type: "numeric",
+// 			comparisonTarget:"natural-roll",
+// 			comparator: "even",
+// 		},
+// 	],
+// 	consequences: [
+// 		{
+// 			type: "damage-new",
+// 			damageSubtype: "high",
+// 			damageType: "by-power",
+// 		}
+// 	]
+// }
 
-const oddDmg :ConditionalEffect = {
-	conditions: [
-		{
-			type: "boolean",
-			booleanState: true,
-			boolComparisonTarget: "is-hit",
-		},
-		{
-			type: "numeric",
-			comparisonTarget:"natural-roll",
-			comparator: "odd",
-		},
-	],
-	consequences: [
-		{
-			type: "damage-new",
-			damageSubtype: "low",
-			damageType: "by-power",
-		}
-	]
-}
+// const oddDmg :ConditionalEffect = {
+// 	conditions: [
+// 		{
+// 			type: "boolean",
+// 			booleanState: true,
+// 			boolComparisonTarget: "is-hit",
+// 		},
+// 		{
+// 			type: "numeric",
+// 			comparisonTarget:"natural-roll",
+// 			comparator: "odd",
+// 		},
+// 	],
+// 	consequences: [
+// 		{
+// 			type: "damage-new",
+// 			damageSubtype: "low",
+// 			damageType: "by-power",
+// 		}
+// 	]
+// }
 
-
-
-//no longer used need new way to set initial values for created
-const powerEffects = function (fillBaseAttack: boolean) {
-	const initial = fillBaseAttack ? [evenDmg, oddDmg] : [];
-	return new arr( new obj<ConditionalEffect>()
-		,{
-			initial
-		});
-}
 
 export function powerSpecific () {
 	return {
@@ -116,6 +106,7 @@ export function UsablePowerProps() {
 		crit_boost: new num( {min: -20, max:20, initial: 0, integer:true}),
 		atk_bonus: new num({initial: 0, integer: true}),
 		openerConditions: new arr(new obj<Precondition>()),
+		teamworkConditions: new arr(new obj<Precondition>()),
 	};
 	//TODO: add shadow type requirements (charged, uncharged)
 }
@@ -123,7 +114,6 @@ export function UsablePowerProps() {
 export function effects(_baseattack: boolean) {
 	return {
 			effects: new arr(new embedded(ConditionalEffectDM)),
-		// effects: powerEffects(baseattack),
 	}
 }
 

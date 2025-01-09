@@ -166,11 +166,13 @@ export class CombatResult  {
 					status_damage = attacker ? power.getDamage(attacker, "low"): 0;
 				}
 				const id = cons.statusName!;
-				effect.addStatus.push({
-					id,
-					potency: status_damage ?? cons.amount ?? 0,
-					duration: cons.statusDuration ?? "instant",
-				});
+				if (id != "bonus-action") {
+					effect.addStatus.push({
+						id,
+						potency: status_damage ?? cons.amount ?? 0,
+						duration: cons.statusDuration ?? "instant",
+					});
+				}
 				break;
 			}
 			case "removeStatus" : {
@@ -235,7 +237,12 @@ export class CombatResult  {
 				const power = PersonaDB.findItem(atkResult.power);
 				if (power.isOpener()) break;
 				if (!effect) break;
-				effect.otherEffects.push({ type: "extraTurn"});
+				const combat = game.combat as PersonaCombat;
+				if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) break;
+				effect.otherEffects.push({
+					type: "extraTurn",
+					activation: combat.lastActivationRoll
+				});
 				break;
 			}
 			case "expend-item":
@@ -659,7 +666,8 @@ export class CombatResult  {
 					}
 					const bonusAction : StatusEffect = {
 						id: "bonus-action",
-						duration: "UEoT"
+						duration: "UEoT",
+						activationRoll: otherEffect.activation,
 					};
 					const extraTurnChange : ActorChange<PC | Shadow> = {
 						actor:change.actor,

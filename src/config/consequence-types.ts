@@ -23,7 +23,6 @@ import { PC } from "../module/actor/persona-actor.js";
 import { UniversalActorAccessor } from "../module/utility/db-accessor.js";
 import { Shadow } from "../module/actor/persona-actor.js";
 import { STATUS_EFFECT_DURATIONS_LIST } from "./status-effects.js";
-import { ConditionTarget } from "./precondition-types.js";
 import { UniversalItemAccessor } from "../module/utility/db-accessor.js";
 
 type ExpendOtherEffect = {
@@ -39,7 +38,7 @@ export type RecoverSlotEffect = {
 }
 
 type SimpleOtherEffect = {
-	type: "save-slot" | "half-hp-cost" | "extraTurn";
+	type: "save-slot" | "half-hp-cost";
 }
 
 export type SetFlagEffect = {
@@ -112,14 +111,37 @@ export type AlterMPEffect = {
 	amount: number,
 }
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionEffect | DungeonActionConsequence | AlterMPEffect;
-
-export type StatusEffect = {
-	id: StatusEffectId,
-	potency ?: number,
-	duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
+export type ExtraTurnEffect = {
+	type: "extraTurn",
+	activation: number,
 };
 
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionEffect | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect;
+
+export type StatusEffect = StatusEffect_Basic | StatusEffect_NonBasic;
+// export type StatusEffect = {
+// 	id: StatusEffectId,
+// 	potency ?: number,
+// 	duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
+// 	other ?: any;
+// };
+
+type StatusEffect_Basic = {
+	id: Exclude<StatusEffectId, StatusEffect_NonBasic["id"] >,
+	potency ?: number,
+	duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
+}
+
+type StatusEffect_NonBasic =
+StatusEffect_FollowUp
+;
+
+type StatusEffect_FollowUp = {
+	id: Extract<StatusEffectId, "bonus-action">;
+	potency ?: undefined,
+	duration: "UEoT";
+	activationRoll: number;
+}
 
 export type Consequence =
 	{
