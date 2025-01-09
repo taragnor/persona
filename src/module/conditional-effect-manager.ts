@@ -304,6 +304,7 @@ export class ConditionalEffectManager {
 		try {
 			if (obj == null) return[];
 			if (!Array.isArray(obj)) {
+				console.debug("Array Correction Required");
 				return Object.keys(obj).map(function(k) { return obj[k] });
 			}
 		} catch (e) {
