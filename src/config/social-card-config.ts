@@ -1,3 +1,4 @@
+import { SocialCard } from "../module/item/persona-item.js";
 import { Consequence } from "./consequence-types.js";
 import { StudentSkillExt } from "./student-skills.js";
 import { Precondition } from "./precondition-types.js";
@@ -40,18 +41,30 @@ export type CardChoice = {
 	postEffects: { effects: ConditionalEffect[]}
 };
 
-export type CardEvent = DeepNoArray<{
-	name: string,
-	img: string,
-	label: string,
-	frequency: number, //defaults to 1
-	placement?: {starter: boolean, middle: boolean, finale: boolean, special: boolean},
-	text: string,
-	conditions: Precondition[],
-	choices: CardChoice[]
-}>;
+// export type CardEvent = DeepNoArray<{
+// 	name: string,
+// 	img: string,
+// 	label: string,
+// 	text: string,
+// 	frequency: number, //defaults to 1
+// 	placement: EventPlacement,
+// 	conditions: Precondition[],
+// 	choices: CardChoice[]
+// }>;
 
-export type CardRoll = {rollType: typeof SOCIAL_CARD_ROLL_TYPES_LIST[number]} & CardRollList[keyof CardRollList];
+export type CardEvent = SocialCard["system"]["events"][number];
+
+export type EventPlacement = {
+	starter: boolean,
+	middle: boolean,
+	finale: boolean,
+	special: boolean
+};
+
+export type CardRoll = {
+	rollType: typeof SOCIAL_CARD_ROLL_TYPES_LIST[number]} 
+	&
+	CardRollList[keyof CardRollList];
 
 type CardRollList = {
 	"none": {

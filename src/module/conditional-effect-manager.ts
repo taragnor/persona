@@ -807,7 +807,9 @@ export class EMAccessor<T> {
 		return ConditionalEffectManager.getVariableEffects(data as any);
 	}
 
+	//before datamodel but this doesn't work with embedded
 	async update(newData: DeepNoArray<T>) {
+		debugger;
 		if (!this._master) {
 			const updateObj : Record<string, any>= {};
 			updateObj[this._path] = newData;
@@ -818,12 +820,56 @@ export class EMAccessor<T> {
 		return this;
 	}
 
+	static expandObject<T extends unknown>(data: T) :T  {
+		switch (typeof data) {
+			case "string":
+			case "number":
+			case "bigint":
+			case "boolean":
+			case "symbol":
+			case "undefined":
+				return data;
+			case "function":
+				throw new Error("Doesn't handle functions");
+			case "object":
+				if (data  == null) return data;
+				if (Array.isArray(data)) {
+					return data.map( x=> this.expandObject(x)) as T;
+				}
+				return Object.fromEntries(
+					Object.entries(data)
+					.map (([k,v])=> {
+						switch (typeof v) {
+							case "string":
+							case "number":
+							case "bigint":
+							case "boolean":
+							case "symbol":
+							case "undefined":
+								return [k,v];
+							case "function":
+								return [];
+							case "object":
+								if (v == null) return [k,v];
+								if ("schema" in v && "toObject" in v && typeof v.toObject == "function") return this.expandObject(v.toObject());
+								if (Array.isArray(v))
+									return [k,
+										v.map( x=> this.expandObject(x))];
+								else return [k, this.expandObject(v)];
+						}
+					})
+					.filter(x=> x.length > 0 )
+				) as T;
+		}
+	}
+
 	async #patchUpdate(newData: unknown, updatePath: string) {
 		if (this._master) {
 			this._master.#patchUpdate(newData, updatePath);
 			return;
 		}
-		const data = this.data;
+		debugger;
+		const data = EMAccessor.expandObject(this.data);
 		let datapart : any = data;
 		const pathdiff = updatePath.slice(this._path.length).split(".");
 		while (pathdiff.length > 1) {

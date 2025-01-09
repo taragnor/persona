@@ -1,3 +1,4 @@
+import { CardRoll } from "../../config/social-card-config.js"
 import { ArrayCorrector } from "../item/persona-item.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { EQUIPMENT_TAGS_LIST } from "../../config/equipment-tags.js";
@@ -9,8 +10,7 @@ import { ConditionalEffect } from "./power-dm.js";
 import { Precondition } from "../../config/precondition-types.js";
 import { ThresholdOrDC } from "../../config/social-card-config.js";
 import { Opportunity } from "../../config/social-card-config.js";
-import { CardEvent } from "../../config/social-card-config.js";
-const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
+const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, FilePathField: file } = foundry.data.fields;
 
 import { SOCIAL_CARD_TYPES_LIST } from "../../config/social-card-config.js";
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
@@ -209,7 +209,6 @@ class JobItemSchema extends foundry.abstract.TypeDataModel {
 			active: new bool({initial: false}),
 			bane: new txt(),
 			tokenSpends:new arr(new obj<TokenSpend>()),
-			test: new embedded(ConditionalEffectDM),
 		}
 		return ret;
 	}
@@ -247,7 +246,9 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 			conditions: new arr(new obj<Precondition>()),
 			availabilityConditions: new arr(new obj<Precondition>()),
 			num_of_events: new num({initial: 0, min:0, max: 5, integer:true}),
-			events: new arr( new obj<CardEvent>()),
+			//old event type
+			// events: new arr( new obj<CardEvent>()),
+			events: new arr( new embedded(SocialCardEventDM)),
 			automatic: new txt(),
 			skill: new txt<"primary" | "secondary">({initial: "primary"}),
 			cameoType: new txt({initial: "none", choices: CAMEO_TYPES_LIST}),
@@ -264,7 +265,8 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 			bane: new txt(),
 			boon: new txt(),
 			finale: new txt(),
-			globalModifiers: new arr( new obj<ConditionalEffect>()),
+			globalModifiers: new arr(new embedded(ConditionalEffectDM)),
+			// globalModifiers: new arr( new obj<ConditionalEffect>()),
 			active: new bool({initial: false}),
 			tokenSpends:new arr(new obj<TokenSpend>()),
 		}
@@ -289,23 +291,29 @@ export const ITEMMODELS = {
 export class ConditionalEffectDM extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		return {
-			conditions: new arr(new obj<Precondition>()),
-			consequences: new arr(new obj<Consequence>()),
+			conditions: new arr(new obj<Precondition>({required: true, initial: [] as any})),
+			consequences: new arr(new obj<Consequence>({required: true, initial: [] as any})),
 		};
 	}
 
 	static override migrateData(data: ConditionalEffect) : ConditionalEffect {
-		console.log("Called Migrate Data for ConditionalEffectDM");
+		let change= false;
 		if (data.conditions == undefined)  {
+			change = true;
 			data.conditions = [];
 		}
 		if (data.consequences == undefined) {
+			change = true;
 			data.consequences = [];
 		}
 		if ( !Array.isArray(data.conditions)
 			|| !Array.isArray(data.consequences)) {
+			change = true;
 			data.conditions = ArrayCorrector(data.conditions);
 			data.consequences = ArrayCorrector(data.consequences);
+		}
+		if (change) {
+			console.debug("Migrate Dagae for ConditionalEffectDM making changes");
 		}
 		return data;
 	}
@@ -321,7 +329,75 @@ class CEContainer extends foundry.abstract.DataModel {
 
 }
 
+class SocialCardEventDM extends foundry.abstract.DataModel {
+	static override defineSchema() {
+		return {
+			name: new txt({initial: "New Event"}),
+			img: new file({categories: ["IMAGE"]}),
+			label: new txt(),
+			text: new txt(),
+			frequency: new num({initial: 1.0, integer: false}),
+			placement: new sch({
+				starter: new bool({initial: true}),
+				middle: new bool({initial: true}),
+				finale: new bool({initial: true}),
+				special: new bool({initial: false}),
+			}),
+			conditions: new arr(new obj<Precondition>()),
+			choices: new arr(new embedded(CardChoiceDM)),
+		};
+	}
 
+	static override migrateData(source: Record<string, any>) : typeof source {
+		const data = source as SystemDataObjectFromDM<typeof SocialCardEventDM>;
+		if (data.conditions == undefined) {
+			data.conditions = [];
+		}
+		if (!Array.isArray(data.conditions)) {
+			data.conditions = ArrayCorrector(data.conditions);
+		}
+		if (data.choices == undefined)
+			data.choices = [];
+		return source;
+	}
+
+}
+
+class CardChoiceDM extends foundry.abstract.DataModel {
+	static override defineSchema() {
+		return {
+			name: new txt({initial: "New Choice"}),
+			conditions: new arr(new obj<Precondition>()),
+			text: new txt(),
+			roll: new obj<CardRoll>(),
+			postEffects: new sch({
+				effects: new arr(new embedded(ConditionalEffectDM)),
+			}),
+		};
+	}
+	static override migrateData(source: Record<string, any>) : typeof source {
+		const  data = source as SystemDataObjectFromDM<typeof CardChoiceDM>;
+		if (data.conditions == undefined) {
+			data.conditions = [];
+		}
+		if (!Array.isArray(data.conditions)) {
+			data.conditions = ArrayCorrector(data.conditions);
+		}
+		if (data.postEffects.effects == undefined) {
+			data.postEffects.effects = [];
+		}
+		if (!Array.isArray(data.postEffects.effects)) {
+			data.postEffects.effects = ArrayCorrector(data.postEffects.effects);
+		}
+		return source;
+	}
+
+}
+type CardSChema = SystemDataObjectFromDM<typeof SocialCardSchema>;
+
+type CCEDM = SystemDataObjectFromDM<typeof SocialCardEventDM>;
+
+type CCDM = SystemDataObjectFromDM<typeof CardChoiceDM>;
 
 //testing the types, purely for debug purposes
 type CECon = SystemDataObjectFromDM<typeof CEContainer>;

@@ -590,7 +590,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	async addCardEvent(this: SocialCard) {
-		const newEv : CardEvent = {
+
+
+		const newEv : SocialCard["system"]["events"][number] = {
 			text: "",
 			img: "",
 			placement: {
@@ -626,7 +628,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		};
 		arr.push( newChoice);
 		event.choices = arr;
-		await this.update({"system.events": this.system.events});
+		await this.update({"system.events": this.system.events.slice()});
 	}
 
 	async deleteEventChoice(this: SocialCard, eventIndex: number, choiceIndex: number) {

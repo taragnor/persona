@@ -64,8 +64,8 @@ declare class StringFieldClass<const T extends string= string> extends FoundryDM
 
 }
 
-class FilePathField extends StringFieldClass {
-	contructor (options?: FilePathFieldOptions);
+class FilePathField<T extends string = string> extends StringFieldClass<T> {
+	constructor (options?: FilePathFieldOptions);
 
 }
 
@@ -86,7 +86,7 @@ class SchemaField<T> extends FoundryDMField<T> {
 }
 
 interface FilePathFieldOptions extends StringFieldOptions<string> {
-	categories?: string[];
+	categories: (keyof typeof CONST.FILE_CATEGORIES)[];
 	base64?: boolean;
 	wildcard?: boolean;
 }

@@ -1,7 +1,7 @@
  class FoundryDocument <Embedded extends (FoundryDocument | never) = never> {
 	get parent(): FoundryDocument<any> | undefined;
 
-	async update<T extends updateObj> (updateData: AllowedUpdateKeys<T>): Promise<this>;
+	async update<T extends updateObj> (updateData: AllowedUpdateKeys<T>, databaseOperation ?: Partial<DatabaseUpdateOperation>): Promise<this>;
 	 // async update(updateData: RecursivePartial< typeof this>): Promise<this>
 
 	 get uuid(): string;
@@ -48,3 +48,9 @@ type updateObj = {[k:string] : any};
 type DisallowKey<O extends updateObj , key extends string> = { [K in keyof O]: K extends AllStringsStartingWith<key, K> ? undefined : O[K]};
 type AllowedUpdateKeys<O extends updateObj> = DisallowKey<O, "data">;
 
+
+type DatabaseUpdateOperation = {
+	broadcast: boolean;
+   diff: boolean; //defaults to true
+	updates: unknown[];
+}
