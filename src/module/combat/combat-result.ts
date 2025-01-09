@@ -236,6 +236,7 @@ export class CombatResult  {
 				if (!atkResult) break;
 				const power = PersonaDB.findItem(atkResult.power);
 				if (power.isOpener()) break;
+				if (power.isTeamwork()) break;
 				if (!effect) break;
 				const combat = game.combat as PersonaCombat;
 				if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) break;
