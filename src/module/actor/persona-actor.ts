@@ -1936,6 +1936,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	getEffectFlag(flagId: string) : this["system"]["flags"][number] | undefined {
+		const flag= this.effects.find(eff=> eff.flagId == flagId);
+		if (flag) return {
+			flagId,
+			duration: flag.statusDuration,
+			flagName: flag.name,
+			AEId: flag.id,
+		};
 		return this.system.flags.find(flag=> flag.flagId == flagId.toLowerCase());
 	}
 
@@ -1948,6 +1955,37 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async setEffectFlag(flagId: string, setting: boolean, duration: StatusDuration = "instant", flagName ?: string) {
+		if (setting) {
+			await this.createEffectFlag(flagId, duration, flagName);
+		} else {
+			await this.clearEffectFlag(flagId);
+		}
+		return;
+	}
+
+
+	async createEffectFlag(flagId: string, duration: StatusDuration = "instant", flagName ?: string) {
+		flagId = flagId.toLowerCase();
+		const eff = this.effects.find(x=> x.isFlag(flagId))
+		const newAE = {
+			name: flagName,
+		};
+		if (eff) {
+			eff.setDuration(duration);
+			return;
+		}
+		const AE = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
+		await AE.setDuration(duration);
+		await AE.markAsFlag(flagId);
+	}
+
+	async clearEffectFlag(flagId: string) {
+		const eff = this.effects.find(x=> x.isFlag(flagId))
+		if (eff) {await eff.delete();}
+		if (!eff) await this.oldSetEffectFlag(flagId, false, "instant", "irrelevant")
+	}
+
+	async oldSetEffectFlag(flagId: string, setting: boolean, duration: StatusDuration = "instant", flagName ?: string) {
 		flagId = flagId.toLowerCase();
 		let flags = this.system.flags;
 		const current = this.getFlagState(flagId);

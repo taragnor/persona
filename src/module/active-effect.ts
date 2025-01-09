@@ -137,6 +137,26 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 
 	}
 
+	async markAsFlag(id: string) {
+		await this.setFlag("persona", "flagId", id);
+	}
+
+	get flagId() : string | undefined {
+		const flag = this.getFlag<string>("persona", "flagId");
+		if (flag == undefined) return flag;
+		return flag.toLowerCase();
+	}
+
+	isFlag(flagId ? : string) : boolean {
+		if (
+			this.getFlag<string>("persona", "linkedEffectFlag") == undefined
+			&& this.flagId == undefined
+		)
+			return false;
+		if (!flagId)  return true;
+		return flagId.toLowerCase() == this.flagId;
+	}
+
 	AEtestEffect() {
 		let changes= this.changes;
 		changes = [

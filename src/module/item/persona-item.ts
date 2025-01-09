@@ -775,15 +775,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 /** Handlebars keeps turning my arrays inside an object into an object with numeric keys, this fixes that */
 export function ArrayCorrector<T extends any>(obj: (T[] | Record<string | number, T>)): T[] {
 	return ConditionalEffectManager.ArrayCorrector(obj);
-	// try {
-	// 	if (obj == null) return[];
-	// 	if (!Array.isArray(obj)) {
-	// 		return Object.keys(obj).map(function(k) { return obj[k] });
-	// 	}
-	// } catch (e) {
-	// 	throw e;
-	// }
-	// return obj;
 }
 
 export type CClass = Subtype<PersonaItem, "characterClass">;
