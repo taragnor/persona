@@ -48,6 +48,7 @@ export class PersonaSocial {
 		res: (str: string) => void,
 		rej: (x: any) => void,
 	}
+	static sound: FOUNDRY.AUDIO.Sound | null = null;
 
 	static #drawnCardIds: string[] = [];
 	static rollState: null |
@@ -498,9 +499,9 @@ export class PersonaSocial {
 		if (opp) {
 			chatMessages.push(opp);
 		}
-		const final = await this.#finalizeCard(cardData);
-		chatMessages.push(final);
-		this.rollState = null;
+		const finale = await this.#finalizeCard(cardData);
+		chatMessages.push(finale);
+		this.stopCardExecution();
 		return chatMessages;
 	}
 
@@ -603,7 +604,7 @@ export class PersonaSocial {
 		};
 		const msg = await ChatMessage.create(msgData,{} );
 		if (event.sound && event.sound.length > 0) {
-			PersonaSounds.playFree(event.sound, event.volume ?? 1.0);
+			cardData.sound = await PersonaSounds.playFree(event.sound, event.volume ?? 1.0);
 		}
 		if (ArrayCorrector(event.choices).length > 0) {
 			await new Promise( (conf, _rej) => {
@@ -1024,6 +1025,8 @@ export class PersonaSocial {
 	}
 
 	static async stopCardExecution() {
+		if (this.sound) this.sound.stop();
+		this.sound = null;
 		this.rollState = null;
 		this.cardDrawPromise= null;
 	}
@@ -1213,5 +1216,6 @@ export type CardData = {
 	eventsChosen: number[],
 	eventsRemaining: number,
 	situation: SocialCardSituation;
+	sound?: FOUNDRY.AUDIO.Sound
 };
 

@@ -36,10 +36,13 @@ export class PersonaSounds {
 	static async play(filename: string, volume = 1.0, recipients:string[] | false =[]) : Promise<void> {
 		if (!filename) return;
 		const src  = `systems/persona/sound/${filename}`;
-		await this.playFree(src, volume, recipients);
+		const sound = await this.playFree(src, volume, recipients);
+		if (sound) {
+			await waitUntilTrue( () => !sound.playing);
+		}
 	}
 
-	static async playFree(filename: string, volume = 1.0, recipients:string[] | false =[]): Promise<void> {
+	static async playFree(filename: string, volume = 1.0, recipients:string[] | false =[]): Promise<FOUNDRY.AUDIO.Sound | undefined> {
 		try {
 			if (!filename) return;
 			const socketOpts = (recipients && recipients.length) ? { recipients} : false;
@@ -50,9 +53,7 @@ export class PersonaSounds {
 				volume,
 				loop: false
 			}, socketOpts);
-			if (sound) {
-				await waitUntilTrue( () => !sound.playing);
-			}
+			return sound;
 		} catch (e) {
 			const msg =`Trouble playing sound ${filename}`;
 			ui.notifications.error(msg);

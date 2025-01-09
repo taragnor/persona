@@ -811,7 +811,6 @@ export class EMAccessor<T> {
 
 	//before datamodel but this doesn't work with embedded
 	async update(newData: DeepNoArray<T>) {
-		debugger;
 		if (!this._master) {
 			const updateObj : Record<string, any>= {};
 			updateObj[this._path] = newData;
@@ -831,7 +830,6 @@ export class EMAccessor<T> {
 			this._master.#patchUpdate(newData, updatePath);
 			return;
 		}
-		debugger;
 		const data = EMAccessor.expandObject(this.data);
 		let datapart : any = data;
 		const pathdiff = updatePath.slice(this._path.length).split(".");
