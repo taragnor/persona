@@ -78,6 +78,7 @@ export const SOCIAL_CHECKS_LIST = [
 	"relationship-type-check",
 	"is-social-disabled",
 	"is-available",
+	"is-dating",
 ] as const;
 
 export type SocialCheck = typeof SOCIAL_CHECKS_LIST[number];
@@ -96,7 +97,7 @@ export type SocialComparison = (SocialComparisonBase) &
 	(RelationshipTypeComparison | SimpleSocialComparison);
 
 export type SimpleSocialComparison = {
-	socialCheckType : "is-social-disabled" | "is-available",
+	socialCheckType : "is-social-disabled" | "is-available" | "is-dating",
 };
 
 export type RelationshipTypeComparison = {

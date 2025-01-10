@@ -504,8 +504,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			});
 	}
 
-	isDating(linkId: string) : boolean;
-	isDating(link: SocialLink) : boolean;
+	isDating(this: PC, linkId: string) : boolean;
+	isDating(this: PC, link: SocialLink) : boolean;
 
 	isDating(this: PC, sl: SocialLink | string) : boolean {
 		const id = sl instanceof PersonaActor ? sl.id: sl;

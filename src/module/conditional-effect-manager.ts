@@ -468,6 +468,8 @@ export class ConditionalEffectManager {
 						return `${target1} is ${not} socially Disabled`;
 					case "is-available":
 						return `${target1} is ${not} socially available`;
+					case "is-dating":
+						return `initiator is ${not} dating ${target1}`;
 					default:
 						cond satisfies never;
 						return `ERROR`;

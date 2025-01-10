@@ -538,6 +538,7 @@
 	"persona.preconditions.socialChecks.relationship-type-check": "Relationship Type is",
 	"persona.preconditions.socialChecks.is-social-disabled": "Is Socially Disabled",
 	"persona.preconditions.socialChecks.is-available": "Is Currently Available",
+	"persona.preconditions.socialChecks.is-dating": "Is Dating",
 
 	"persona.preconditions.userComparison.triggering-user": "Triggering User",
 	"persona.preconditions.userComparison.current-user": "Current User",

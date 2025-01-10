@@ -75,9 +75,7 @@ type onTarotPerk = {
 type ClockTickTrigger = {
 	trigger: "on-clock-tick";
 	triggeringClockId: string;
-
 }
-
 
 export const CONDITION_TARGETS_LIST = [
 	"target",

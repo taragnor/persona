@@ -553,6 +553,8 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 						return undefined;
 					}
 					return target.isAvailable(user as PC);
+				case "is-dating":
+					return (user as PC).isDating(target.id);
 				default:
 					condition satisfies never;
 					PersonaError.softFail(`UNexpected social check ${(condition as any)?.socialTypeCheck}`);
