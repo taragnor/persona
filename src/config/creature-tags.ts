@@ -1,3 +1,14 @@
+export const PERSON_TAG_LIST = [
+	"student",
+	"professor",
+	"social-shadow",
+	"teammate",
+	"npc-ally",
+	"pc",
+	"child",
+	"tech-enthusiast",
+] as const;
+
 export const CREATURE_TAG_LIST = [
 	"neko",
 	"cu",
@@ -11,14 +22,9 @@ export const CREATURE_TAG_LIST = [
 	"avian",
 	"dragon",
 	"evil-spirit",
-	"student",
-	"professor",
-	"social-shadow",
-	"teammate",
-	"npc-ally",
-	"pc",
-	"child",
+	...PERSON_TAG_LIST,
 ] as const;
+
 
 export type CreatureTag = typeof CREATURE_TAG_LIST[number];
 

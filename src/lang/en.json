@@ -680,6 +680,7 @@
 	"persona.creatureType.npc-ally": "NPC-Ally",
 	"persona.creatureType.pc": "PC",
 	"persona.creatureType.child": "Child",
+	"persona.creatureType.tech-enthusiast": "Tech enthusiast",
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",
