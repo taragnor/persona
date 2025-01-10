@@ -72,6 +72,3 @@ export class Helpers {
 		return input.replace(pattern, match => replacements[match]);
 	}
 }
-
-//@ts-ignore
-window.Helpers = Helpers;

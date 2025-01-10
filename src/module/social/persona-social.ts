@@ -210,12 +210,13 @@ export class PersonaSocial {
 		if (!link) return preconditionPass;
 		else return  preconditionPass
 			.filter( item => {
-				const relationshipName : string = link.relationshipType;
-				return item.system.qualifiers
-					.some(x=> x.relationshipName == relationshipName
-						&& link.linkLevel >= x.min
-						&& link.linkLevel <= x.max
-					)
+				return true;
+				// const relationshipName : string = link.relationshipType;
+				// return item.system.qualifiers
+				// 	.some(x=> x.relationshipName == relationshipName
+				// 		&& link.linkLevel >= x.min
+				// 		&& link.linkLevel <= x.max
+				// 	)
 			});
 	}
 
@@ -285,8 +286,6 @@ export class PersonaSocial {
 			replaceSet,
 		};
 		return await this.#execCardSequence(cardData);
-
-		// return await this.#printSocialCard(card, actor, linkId, cameos, perk);
 	}
 
 

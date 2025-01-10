@@ -23,8 +23,9 @@
 	</div>
 
 	{{#if (eq item.system.cardType "social")}}
+	{{#if item.system.qualifiers}}
 	<section class="qualifiers">
-		<div class="header"> Qualifiers
+		<div class="header"> Qualifiers (Deprecated)
 			<a class="add-qualifier">
 				<i class="fa-solid fa-square-plus"></i>
 			</a>
@@ -48,6 +49,7 @@
 		</div>
 		{{/each}}
 	</section>
+	{{/if}}
 	{{/if}}
 	{{#if (ne item.system.cardType "social")}}
 	<section class="non-social-attributes">
