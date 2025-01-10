@@ -1,3 +1,4 @@
+import { Helpers } from "./utility/helpers.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
 import { EQUIPMENT_TAGS } from "../config/equipment-tags.js";
@@ -367,7 +368,10 @@ export class PersonaHandleBarsHelpers {
 		},
 		"neq-m": function<T extends any> (comparisonOne:T, ...compArr: T[]) {
 			return compArr.every(x=> x != comparisonOne);
-		}
+		},
+		"replace": function(originalString: string = "ERROR", replacementSet: Record<string, string> = {}): string {
+			return Helpers.replaceAll(originalString, replacementSet);
+		},
 
 	}
 } //end of class

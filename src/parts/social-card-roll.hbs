@@ -3,20 +3,20 @@
 		{{#if (eqAny roll.rollType "studentSkillCheck" "save")}}
 		<button class="make-roll" {{#if (not enabled)}} disabled {{/if}}>
 			{{#if (eq roll.rollType "save")}}
-			{{label}}. Roll {{roll.saveType}} Save
+			{{replace label cardData.replaceSet}}. Roll {{roll.saveType}} Save
 			{{else}}
-			{{label}}. Roll {{roll.studentSkill}}
+			{{replace label cardData.replaceSet}}. Roll {{roll.studentSkill}}
 			{{/if}}
 		</button>
 		{{else}}
 		<button class="next" {{#if (not enabled)}} disabled {{/if}}>
-			{{label}} (Custom Roll)
+			{{replace label cardData.replaceSet}} (Custom Roll)
 		</button>
 		{{/if}}
 	</div>
 	{{else}}
 	<button class="next" {{#if (not enabled)}} disabled {{/if}}>
-		{{label}}
+		{{replace label cardData.replaceSet}}
 	</button>
 	{{/if}}
 </div>

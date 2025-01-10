@@ -2,7 +2,7 @@ import { getSocialLinkTarget } from "../preconditions.js";
 import { Consumable } from "../item/persona-item.js";
 import { Metaverse } from "../metaverse.js";
 import { Consequence } from "../../config/consequence-types.js";
-import { SocialCardActionEffect } from "../../config/consequence-types.js";
+import { SocialCardActionConsequence } from "../../config/consequence-types.js";
 import { OtherEffect } from "../../config/consequence-types.js";
 import { StatusEffect } from "../../config/consequence-types.js";
 import { PersonaSocial } from "../social/persona-social.js";
@@ -327,12 +327,13 @@ export class CombatResult  {
 				//must be executed playerside as event execution is a player thing
 				if (!effect) break;
 				console.log("Executing social card action");
-				const otherEffect : SocialCardActionEffect = {
-					type: cons.type,
-					action: cons.cardAction,
-					eventLabel: cons.eventLabel,
-					amount: cons.amount ?? 0,
-					studentSkill: cons.studentSkill,
+				const otherEffect : SocialCardActionConsequence = {
+					...cons
+					// type: cons.type,
+					// action: cons.cardAction,
+					// eventLabel: cons.eventLabel,
+					// amount: cons.amount ?? 0,
+					// studentSkill: cons.studentSkill,
 				};
 				PersonaSocial.execSocialCardAction(otherEffect);
 				effect.otherEffects.push( otherEffect);

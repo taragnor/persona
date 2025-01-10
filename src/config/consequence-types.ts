@@ -91,14 +91,14 @@ type ScanEffect = {
 	level: number,
 }
 
-export type SocialCardActionEffect = {
-	type: "social-card-action",
-	action: SocialCardAction,
-	eventLabel: string | undefined,
-	amount: number | undefined,
-	studentSkill : StudentSkill | undefined,
-	// socialActor: UniversalActorAccessor<PC | Shadow>,
-}
+// export type SocialCardActionEffect = {
+// 	type: "social-card-action",
+// 	action: SocialCardAction,
+// 	eventLabel: string | undefined,
+// 	amount: number | undefined,
+// 	studentSkill : StudentSkill | undefined,
+// 	// socialActor: UniversalActorAccessor<PC | Shadow>,
+// }
 
 export type AlterEnergyEffect = {
 	type: "alter-energy",
@@ -116,7 +116,7 @@ export type ExtraTurnEffect = {
 	activation: number,
 };
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionEffect | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect;
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect;
 
 export type StatusEffect = StatusEffect_Basic | StatusEffect_NonBasic;
 // export type StatusEffect = {
@@ -174,7 +174,7 @@ type GenericConsequence = {
 }
 
 type NonGenericConsequences = UsePowerConsequence
-	| CardActionConsequence
+	| SocialCardActionConsequence
 	| DungeonActionConsequence
 	| ModifierConsequence
 	| DamageConsequence
@@ -277,13 +277,28 @@ type SystemVariableModifier = {
 	makeNegative: boolean,
 }
 
-type CardActionConsequence = {
-	type: "social-card-action",
-	cardAction: SocialCardAction,
-	eventLabel?: string,
-	amount ?: number,
-	studentSkill?: StudentSkill,
-}
+export type SocialCardActionConsequence =
+	{ type: "social-card-action" } & CardActionTypes[number];
+
+type CardActionTypes = [
+	{
+		cardAction: "stop-execution"
+	}, {
+		cardAction: "exec-event",
+		eventLabel: string,
+	}, {
+		cardAction: "inc-events" | "gain-money" | "modify-progress-tokens-cameo" | "modify-progress-tokens",
+		amount: number,
+	},{
+		cardAction: "alter-student-skill",
+		studentSkill: StudentSkill,
+		amount : number,
+	}, {
+		cardAction:	"replace-card-events" | "add-card-events-to-list",
+		cardId : string,
+	}
+];
+
 
 export type DungeonActionConsequence = {
 	type: "dungeon-action",

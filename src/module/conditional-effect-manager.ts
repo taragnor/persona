@@ -700,7 +700,10 @@ export class ConditionalEffectManager {
 	}
 
 	static #printSocialCardAction(cons: Consequence & {type:"social-card-action"}) : string {
-		const signedAmount = this.signedAmount(cons.amount);
+		let signedAmount;
+		if ("amount" in cons){
+			signedAmount = this.signedAmount(cons.amount);
+		}
 		switch (cons.cardAction) {
 			case "stop-execution":
 				return `stop card execution`;
@@ -717,8 +720,12 @@ export class ConditionalEffectManager {
 				return `${skill} ${signedAmount}`;
 			case "modify-progress-tokens-cameo":
 				return `Cameo Progress Tokens ${signedAmount}`;
+			case "replace-card-events":
+				return `Replace Card Events with events of card ${cons.cardId}`;
+			case "add-card-events-to-list":
+				return `Add Card Events card ${cons.cardId}`;
 			default:
-				cons.cardAction satisfies never;
+				cons satisfies never;
 				return "ERROR";
 		}
 	}

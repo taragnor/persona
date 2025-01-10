@@ -133,6 +133,10 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			PersonaDB.socialLinks().map(actor => [actor.id, actor.name])
 		);
 		SOCIAL_LINKS[""] = "-";
+		const SOCIAL_CARDS = Object.fromEntries(
+			PersonaDB.allSocialCards()
+			.map(card=> [card.id, card.name])
+		);
 		const SCENES = Object.fromEntries(
 			game.scenes.contents
 			.map( sc => [sc.id, sc.name])
@@ -150,9 +154,9 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			...ITEMS
 		};
 		const RELATIONSHIP_TYPES_LIST = PersonaDB.allSocialCards()
-			.flatMap(card => card.system.qualifiers)
-			.map(qual=> qual.relationshipName)
-			.filter( (val, i, arr) => arr.indexOf(val) == i);
+		.flatMap(card => card.system.qualifiers)
+		.map(qual=> qual.relationshipName)
+		.filter( (val, i, arr) => arr.indexOf(val) == i);
 		const RELATIONSHIP_TYPE_OBJECT  = Object.fromEntries(
 			(RELATIONSHIP_TYPES_LIST as string[])
 			.map(x=> ([x,x]))
@@ -171,6 +175,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			ITEMS,
 			ITEMS_PLUS_NULL,
 			RELATIONSHIP_TYPE_OBJECT,
+			SOCIAL_CARDS,
 		};
 		console.log("Computed powerStuff");
 		Debug(data);

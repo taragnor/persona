@@ -99,12 +99,15 @@
 	</section>
 	{{/if}}
 
-  <div class="automatic">
-	  <h4>Automatic</h4>
-	  <textarea name="system.automatic">
-		  {{trim item.system.automatic}}
-	  </textarea>
-  </div>
+	<div class="automatic">
+		<h4>Automatic</h4>
+		<textarea name="system.automatic">
+			{{trim item.system.automatic}}
+		</textarea>
+		<div class="immediate-effects" data-top-path="system.immediateEffects" data-path="system.immediateEffects">
+			{{> "systems/persona/parts/effects-section-adaptable.hbs" namePrefix=(strcat "system.immediateEffects.") POWERSTUFF=item.sheet.powerStuff owner=item}}
+		</div>
+	</div>
 
   <div class="perk">
 	  <h4>

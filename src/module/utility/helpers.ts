@@ -62,4 +62,16 @@ export class Helpers {
 		}
 	}
 
+	static replaceAll(input: string, replacements: Record<string, string>): string {
+		const escapeRegExp = function escapeRegExp(str: string): string {
+			return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		};
+		const keys = Object.keys(replacements).map(key => escapeRegExp(key));
+		if (keys.length == 0) return input;
+		const pattern = new RegExp(keys.join('|'), 'g');
+		return input.replace(pattern, match => replacements[match]);
+	}
 }
+
+//@ts-ignore
+window.Helpers = Helpers;

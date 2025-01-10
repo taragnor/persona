@@ -11,7 +11,7 @@
 			({{opp.choices}}) :
 			{{/if}}
 			{{opp.name}} -
-			{{newlineConversion opp.text}}
+			{{newlineConversion (replace opp.text ../cardData.replaceSet)}}
 		</li>
 
 			{{/if}}

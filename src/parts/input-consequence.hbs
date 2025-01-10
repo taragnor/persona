@@ -173,6 +173,12 @@
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 	{{/if}}
 
+	{{#if (eqAny cons.cardAction "add-card-events-to-list"  "replace-card-events")}}
+	<select name="{{strcat namePrefix 'cardId'}}">
+		{{selectOptions POWERSTUFF.SOCIAL_CARDS localize=false selected=cons.cardId}}
+	</select>
+	{{/if}}
+
 	{{/if}}
 
 	{{#if (eq cons.type "inspiration-cost")}}

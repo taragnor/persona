@@ -1,10 +1,10 @@
+import { SocialCardActionConsequence } from "../../config/consequence-types.js";
 import { PersonaSounds } from "../persona-sounds.js";
 import { randomSelect } from "../utility/array-tools.js";
 import { SocialCardSituation } from "../preconditions.js";
 import { NPC } from "../actor/persona-actor.js";
 import { ConditionalEffectManager } from "../conditional-effect-manager.js";
 import { TriggeredEffect } from "../triggered-effect.js";
-import { SocialCardActionEffect } from "../../config/consequence-types.js";
 import { CardChoice } from "../../config/social-card-config.js";
 import { weightedChoice } from "../utility/array-tools.js";
 import { SocketPayload } from "../utility/socket-manager.js";
@@ -245,8 +245,10 @@ export class PersonaSocial {
 	}
 
 	static async #socialEncounter(actor: PC, activity: SocialLink | Activity) : Promise<ChatMessage[]> {
+		let replaceSet : Record<string, string> = {};
 		if (activity instanceof PersonaActor) {
 			const link = this.lookupSocialLink(actor, activity.id);
+			replaceSet["$TARGET"] = link.actor.name;
 			if (link.actor.isSpecialEvent(link.linkLevel+1)) {
 				const msg = await this.specialEvent(actor, activity)
 				return [msg];
@@ -265,6 +267,9 @@ export class PersonaSocial {
 			isSocial: true,
 			socialRandom : Math.floor(Math.random() * 20) + 1,
 		};
+		if (cameos[0]) {
+			replaceSet["$CAMEO"] = cameos[0].name;
+		}
 		const cardData : CardData = {
 			card,
 			actor,
@@ -275,7 +280,9 @@ export class PersonaSocial {
 			eventsChosen: [],
 			eventsRemaining: card.system.num_of_events,
 			situation,
-			forceEventLabel: null
+			forceEventLabel: null,
+			eventList: card.cardEvents().slice(),
+			replaceSet,
 		};
 		return await this.#execCardSequence(cardData);
 
@@ -485,6 +492,12 @@ export class PersonaSocial {
 	static async #execCardSequence(cardData: CardData): Promise<ChatMessage[]> {
 		let chatMessages: ChatMessage[] = [];
 		await this.#printCardIntro(cardData);
+		this.rollState = {
+			continuation: () => {},
+			cardData
+		};
+		const effectList = ConditionalEffectManager.getEffects(cardData.card.system.immediateEffects ?? [], null, null);
+		await this.applyEffects(effectList,cardData.situation, cardData.actor);
 		while (cardData.eventsRemaining > 0) {
 			const ev = this.#getCardEvent(cardData);
 			if (!ev) {
@@ -521,8 +534,9 @@ export class PersonaSocial {
 	}
 
 	static #getCardEvent(cardData:CardData) : CardEvent | undefined  {
+		const cardEventList = cardData.eventList;
 		if (cardData.forceEventLabel) {
-			const gotoEvent = cardData.card.cardEvents().filter( x=> x.label  == cardData.forceEventLabel);
+			const gotoEvent = cardEventList.filter( x=> x.label  == cardData.forceEventLabel);
 			cardData.forceEventLabel = null;
 			if (gotoEvent.length > 0) {
 				return weightedChoice(gotoEvent.map( event => ({
@@ -532,7 +546,7 @@ export class PersonaSocial {
 			}
 			PersonaError.softFail (`Can't find event label ${cardData.forceEventLabel} on card ${cardData.card.name}`);
 		}
-		let eventList = cardData.card.cardEvents()
+		let eventList = cardEventList
 			.filter( (ev, i) => !cardData.eventsChosen.includes(i) && testPreconditions(
 				ConditionalEffectManager.getConditionals( ev.conditions, null, null),
 				cardData.situation, null));
@@ -571,7 +585,7 @@ export class PersonaSocial {
 		);
 		const ev = weightedChoice(eventWeights);
 		if (!ev) return undefined;
-		cardData.eventsChosen.push(cardData.card.cardEvents().indexOf(ev));
+		cardData.eventsChosen.push(cardEventList.indexOf(ev));
 		return ev;
 	}
 
@@ -594,7 +608,7 @@ export class PersonaSocial {
 
 	static async #execEvent(event: CardEvent, cardData: CardData) {
 		const eventNumber = cardData.eventsChosen.length;
-		const eventIndex = cardData.card.cardEvents().indexOf(event);
+		const eventIndex = cardData.eventList.indexOf(event);
 		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event,eventNumber, cardData, situation : cardData.situation, eventIndex});
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
@@ -877,7 +891,7 @@ export class PersonaSocial {
 		if (!card) {
 			throw new PersonaError(`Can't find card ${cardId}`);
 		}
-		const cardEvent = card.cardEvents()[eventIndex];
+		const cardEvent = this.rollState.cardData.eventList[eventIndex];
 		const choice = cardEvent.choices[choiceIndex];
 		await this.handleCardChoice(this.rollState.cardData, choice);
 		const content = $(message.content);
@@ -942,12 +956,12 @@ export class PersonaSocial {
 		}
 	}
 
-	static async execSocialCardAction(eff: SocialCardActionEffect) : Promise<void> {
+	static async execSocialCardAction(eff: SocialCardActionConsequence) : Promise<void> {
 		if (!this.rollState) {
-			PersonaError.softFail(`Can't execute card action ${eff.action}. No roll state`);
+			PersonaError.softFail(`Can't execute card action ${eff.cardAction}. No roll state`);
 			return;
 		}
-		switch (eff.action) {
+		switch (eff.cardAction) {
 			case "stop-execution":
 				await this.stopCardExecution();
 				return;
@@ -977,15 +991,54 @@ export class PersonaSocial {
 				if (!cameos || cameos.length < 1) {
 					return;
 				}
-				for(const cameo of cameos) {
+				for (const cameo of cameos) {
 					await actor.socialLinkProgress(cameo.id, eff.amount ?? 0);
 				}
 				return;
 			}
+			case "add-card-events-to-list":
+					await this.addCardEvents(eff.cardId);
+					return;
+			case "replace-card-events":
+					await this.replaceCardEvents(eff.cardId);
+					return;
 			default:
-					eff.action satisfies never;
+					eff satisfies never;
 				return;
 		}
+	}
+
+	static async addCardEvents(cardId: string) {
+		if (!cardId) throw new PersonaError("No card ID given to addCardEvent");
+		if (!this.rollState) {
+			PersonaError.softFail(`Can't create more events as there is no RollState`);
+			return;
+		}
+		const newCard = PersonaDB.allSocialCards().find(x=> x.id == cardId);
+		if (!newCard) {
+			PersonaError.softFail(`Can't find Social Card id ${cardId} `);
+			return;
+		}
+		this.rollState.cardData.eventList.push(...newCard.cardEvents().slice());
+	}
+
+	static async replaceCardEvents(cardId: string) {
+		if (!cardId) {
+			PersonaError.softFail("No card ID given to addCardEvent");
+			return;
+		}
+		if (!this.rollState) {
+			PersonaError.softFail(`Can't create more events as there is no RollState`);
+			return;
+		}
+		const newCard = PersonaDB.allSocialCards().find(x=> x.id == cardId);
+		if (!newCard) {
+			PersonaError.softFail(`Can't find Social Card id ${cardId} `);
+			return;
+		}
+		console.log(`Replacing Card Event list wtih ${newCard.name}`);
+		this.rollState.cardData.eventsChosen = [];
+		this.rollState.cardData.eventList = newCard.cardEvents().slice();
 	}
 
 	static async modifyProgress(amt: number) {
@@ -1213,9 +1266,11 @@ export type CardData = {
 	cameos: SocialLink[],
 	perk: string,
 	forceEventLabel: null | string,
+	eventList: SocialCard["system"]["events"];
 	eventsChosen: number[],
 	eventsRemaining: number,
 	situation: SocialCardSituation;
+	replaceSet: Record<string, string>;
 	sound?: FOUNDRY.AUDIO.Sound
 };
 

@@ -246,8 +246,6 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 			conditions: new arr(new obj<Precondition>()),
 			availabilityConditions: new arr(new obj<Precondition>()),
 			num_of_events: new num({initial: 0, min:0, max: 5, integer:true}),
-			//old event type
-			// events: new arr( new obj<CardEvent>()),
 			events: new arr( new embedded(SocialCardEventDM)),
 			automatic: new txt(),
 			skill: new txt<"primary" | "secondary">({initial: "primary"}),
@@ -269,6 +267,7 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 			// globalModifiers: new arr( new obj<ConditionalEffect>()),
 			active: new bool({initial: false}),
 			tokenSpends:new arr(new obj<TokenSpend>()),
+			immediateEffects: new arr(new embedded(ConditionalEffectDM)),
 		}
 		return ret;
 	}
