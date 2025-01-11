@@ -525,7 +525,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	isValidTargetFor(usable: Usable, user: Combatant<ValidAttackers>, target: Combatant<ValidAttackers>, situation: Situation): boolean {
-
 		const userActor = user.token.actor;
 		const targetActor = target.token.actor;
 		if (!userActor || !targetActor) return false;
@@ -2006,7 +2005,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const combat = this.ensureCombatExists();
 		const attackerComb = combat.findCombatant(attacker);
 		if (!attackerComb) return dmg;
-		const attackers=  [
+		const attackers = [
 			attackerComb,
 			...combat.getAllies(attackerComb)
 		].flatMap (c=>c.actor?  [c.actor] : []);
@@ -2234,7 +2233,9 @@ async showRoomEffects() {
 	}
 
 async onFollowUpAction(token: PToken, activationRoll: number) {
-	const combatant = token.object ? this.getCombatantByToken(token.object): null;
+	console.log("Calling On Follow Up Action");
+	debugger;
+	const combatant = token.object ? this.getCombatantByToken(token): null;
 	if (!combatant) return;
 	if (combatant.actor && combatant.actor.hasStatus("down")) return;
 	const combat = combatant.parent as PersonaCombat | undefined;

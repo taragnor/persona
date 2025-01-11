@@ -171,8 +171,6 @@ export class CombatHooks {
 
 					break;
 				default:
-
-
 			}
 
 		});
