@@ -2234,7 +2234,6 @@ async showRoomEffects() {
 
 async onFollowUpAction(token: PToken, activationRoll: number) {
 	console.log("Calling On Follow Up Action");
-	debugger;
 	const combatant = token.object ? this.getCombatantByToken(token): null;
 	if (!combatant) return;
 	if (combatant.actor && combatant.actor.hasStatus("down")) return;
