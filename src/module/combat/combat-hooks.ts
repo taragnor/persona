@@ -47,10 +47,10 @@ export class CombatHooks {
 				if (currentActor && diffObject.direction > 0) {
 					if (combat.isSocial) {
 						if (currentActor.system.type == "pc") {
-							await PersonaSocial.startSocialTurn(currentActor as PC)
+							await PersonaSocial.startSocialTurn(currentActor as PC);
 						}
 					} else {
-						await combat.startCombatantTurn(combat.combatant)
+						await combat.startCombatantTurn(combat.combatant);
 					}
 				}
 

@@ -82,7 +82,7 @@ export class PersonaSocial {
 			TurnAlert.alert();
 		if (!game.user.isGM) {return;}
 		//only GM access beyond this point
-		let startTurnMsg = [ `<u><h2> Start of ${pc.name}'s turn</h2></u><hr>`];
+		let startTurnMsg = [ `<u><h2> ${pc.name}'s Social Turn</h2></u><hr>`];
 		if (pc.hasStatus("injured")) {
 			startTurnMsg.push(`<b> ${pc.name} </b>: is injured and should probably take the rest action`);
 		}

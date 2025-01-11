@@ -179,7 +179,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			startTurnMsg = startTurnMsg.concat(concatData);
 			baseRolls.push(roll);
 		}
-		// const speaker = {alias: combatant?.token?.name ?? "Unknown"};
 		const speaker = {alias: "Combat Turn Start"};
 		let messageData = {
 			speaker: speaker,
