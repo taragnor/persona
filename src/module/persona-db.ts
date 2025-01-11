@@ -135,8 +135,8 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	allActivities(): Activity[] {
-		return this.allItems()
-		.filter( x=> x.system.type == "socialCard" && (x.system.cardType == "job" || x.system.cardType =="training" || x.system.cardType == "recovery" || x.system.cardType == "other") ) as Activity[];
+		return this.allSocialCards()
+		.filter( x=> (x.system.cardType == "job" || x.system.cardType =="training" || x.system.cardType == "recovery" || x.system.cardType == "other") ) as Activity[];
 	}
 
 	personalSocialLink(): NPC {

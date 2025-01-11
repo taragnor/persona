@@ -1,3 +1,4 @@
+import { TurnAlert } from "../utility/turnAlert.js";
 import { VariableAction } from "../../config/consequence-types.js";
 import { SocialCardActionConsequence } from "../../config/consequence-types.js";
 import { PersonaSounds } from "../persona-sounds.js";
@@ -59,7 +60,7 @@ export class PersonaSocial {
 		};
 
 
-	static async startSocialCombatTurn(disallowMetaverse = false, advanceCalendar = true) {
+	static async startSocialCombatRound(disallowMetaverse = false, advanceCalendar = true) {
 		this.allowMetaverse = !disallowMetaverse;
 		this.metaverseChoosers = 0;
 		if (!game.user.isGM) {
@@ -67,21 +68,6 @@ export class PersonaSocial {
 			return;
 		}
 		const extraMsgs : string [] = [];
-		const actingCharacter = game?.combat?.combatant?.actor as PersonaActor | undefined;
-		if (actingCharacter && actingCharacter.system.type == "pc") {
-			if (actingCharacter.hasStatus("injured")) {
-				extraMsgs.push(`<b> ${actingCharacter.name} </b>: is injured and should probably take the rest action`);
-			}
-			if (actingCharacter.hasStatus("jailed")) {
-				extraMsgs.push(`<b> ${actingCharacter.name} </b>: is jailed and must either pay their bail or take the jail action`);
-			}
-			if (actingCharacter.hasStatus("crippled")) {
-				extraMsgs.push(`<b> ${actingCharacter.name} </b>: is crippled and must take the hospital action.`);
-			}
-			if (actingCharacter.hasStatus("exhausted")) {
-				extraMsgs.push(`<b> ${actingCharacter.name} </b>: is exhausted and should probably take the rest action.`);
-			}
-		}
 		if (this.allowMetaverse) {
 			extraMsgs.push("<b>Metaverse</b>: You may opt to go to the metaverse, though you must decide to now before taking any actions");
 		}
@@ -89,16 +75,48 @@ export class PersonaSocial {
 		if (advanceCalendar) {
 			await this.advanceCalendar(true, extraMsgs);
 		}
+	}
 
+	static async startSocialTurn( pc: PC) {
+		if (pc.isOwner && !game.user.isGM)
+			TurnAlert.alert();
+		if (!game.user.isGM) {return;}
+		//only GM access beyond this point
+		let startTurnMsg = [ `<u><h2> Start of ${pc.name}'s turn</h2></u><hr>`];
+		if (pc.hasStatus("injured")) {
+			startTurnMsg.push(`<b> ${pc.name} </b>: is injured and should probably take the rest action`);
+		}
+		if (pc.hasStatus("jailed")) {
+			startTurnMsg.push(`<b> ${pc.name} </b>: is jailed and must either pay their bail or take the jail action`);
+		}
+		if (pc.hasStatus("crippled")) {
+			startTurnMsg.push(`<b> ${pc.name} </b>: is crippled and must take the hospital action.`);
+		}
+		if (pc.hasStatus("exhausted")) {
+			startTurnMsg.push(`<b> ${pc.name} </b>: is exhausted and should probably take the rest action.`);
+		}
+		for (const activity of PersonaDB.allActivities()) {
+			if (activity.announce(pc)) {
+				startTurnMsg.push(` <b>${activity.displayedName}</b> is available today.`);
+			}
+		}
+		const speaker = {alias: "Social Turn Start"};
+		let messageData = {
+			speaker: speaker,
+			content: startTurnMsg.join("<br>"),
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+		};
+		ChatMessage.create(messageData, {});
 	}
 
 	static async advanceCalendar(force = false, extraMsgs : string [] = []) {
 		if (!force && !(await HTMLTools.confirmBox( "Advance Date", "Advnace Date?", true)))
 			return;
 		await PersonaCalendar.nextDay(extraMsgs);
-		const day = PersonaCalendar.weekday();
-		const socialLinks = (game.actors.contents as PersonaActor[]).filter( actor=> actor.system.type == "pc" || actor.system.type == "npc" && actor.tarot).map(x=> x as SocialLink);
-		for (const link of socialLinks){
+	}
+
+	static async updateLinkAvailability(day: SimpleCalendar.WeekdayName) {
+		for (const link of PersonaDB.socialLinks()) {
 			const avail = link.system.weeklyAvailability[day];
 			await link.setAvailability(avail);
 		}
@@ -106,7 +124,6 @@ export class PersonaSocial {
 			const avail = activity.system.weeklyAvailability[day];
 			await activity.setAvailability(avail);
 		}
-
 	}
 
 	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation) : Promise<RollBundle> {

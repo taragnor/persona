@@ -222,6 +222,7 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 			//for social cards
 
 			frequency: new num({initial: 1, integer: false}),
+			announceWhenAvailable: new bool({initial : false}),
 			qualifiers: new arr( new obj<{
 				relationshipName: string,
 				min: number,

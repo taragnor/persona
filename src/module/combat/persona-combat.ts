@@ -79,7 +79,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		this.setSocialEncounter(combatInit.isSocialScene);
 		if (combatInit.isSocialScene) {
 			await Metaverse.exitMetaverse();
-			await PersonaSocial.startSocialCombatTurn(combatInit.disallowMetaverse, combatInit.advanceCalendar);
+			await PersonaSocial.startSocialCombatRound(combatInit.disallowMetaverse, combatInit.advanceCalendar);
 		}
 		const mods = combatInit.roomModifiers;
 		this.setRoomEffects(mods);
@@ -179,7 +179,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			startTurnMsg = startTurnMsg.concat(concatData);
 			baseRolls.push(roll);
 		}
-		const speaker = {alias: combatant?.token?.name ?? "Unknown"};
+		// const speaker = {alias: combatant?.token?.name ?? "Unknown"};
+		const speaker = {alias: "Combat Turn Start"};
 		let messageData = {
 			speaker: speaker,
 			content: startTurnMsg.join("<br>"),

@@ -1,3 +1,4 @@
+import { PC } from "../actor/persona-actor.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { PersonaSocial } from "../social/persona-social.js";
 import { Situation } from "../preconditions.js";
@@ -21,28 +22,38 @@ export class CombatHooks {
 		});
 
 		Hooks.on("updateCombat" , async (combat: PersonaCombat, changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
-			if (changes.turn == undefined && changes.round == undefined) {
+			if (changes.turn == undefined && changes.round == undefined
+				|| diffObject.direction == undefined) {
 				return;
+			}
+			//new turn
+			if (changes.round != undefined) {
+				//new round
+				if (diffObject.direction > 0 && game.user.isGM) {
+					if (combat.isSocial) {
+						await PersonaSocial.startSocialCombatRound();
+					} else {
+						await combat.incEscalationDie();
+					}
+				}
+				if (diffObject.direction < 0 && game.user.isGM) {
+					if (!combat.isSocial) {
+						await combat.decEscalationDie();
+					}
+				}
 			}
 			if (diffObject.direction && diffObject.direction != 0) {
 				const currentActor = combat?.combatant?.actor
 				if (currentActor && diffObject.direction > 0) {
-					await combat.startCombatantTurn(combat.combatant)
+					if (combat.isSocial) {
+						if (currentActor.system.type == "pc") {
+							await PersonaSocial.startSocialTurn(currentActor as PC)
+						}
+					} else {
+						await combat.startCombatantTurn(combat.combatant)
+					}
 				}
 
-				//new turn
-				if (changes.round != undefined) {
-					//new round
-					if (diffObject.direction > 0 && game.user.isGM) {
-						if (combat.isSocial) {
-							PersonaSocial.startSocialCombatTurn();
-						}
-						await combat.incEscalationDie();
-					}
-					if (diffObject.direction < 0 && game.user.isGM) {
-						await combat.decEscalationDie();
-					}
-				}
 			}
 		});
 

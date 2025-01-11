@@ -590,6 +590,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.system.weeklyAvailability.available;
 	}
 
+	announce(this: SocialCard, pc: PC): boolean {
+		if (!this.system.announceWhenAvailable) {
+			return false;
+		}
+		return this.isAvailable(pc);
+	}
+
 	async setAvailability(this: SocialCard, bool: boolean) {
 		await	this.update( {"system.weeklyAvailability.available": bool});
 	}

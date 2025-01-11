@@ -9,17 +9,24 @@
 	</div>
 
 	<div>
-	 <select name="system.cardType">
-		{{selectOptions SOCIAL_CARD_TYPES localize=true selected=item.system.cardType}}
-	 </select>
+		<select name="system.cardType">
+			{{selectOptions SOCIAL_CARD_TYPES localize=true selected=item.system.cardType}}
+		</select>
 	</div>
 	<div>
 		<label>
 			Frequency
 		</label>
 		<select name="system.frequency">
-		{{selectOptions SOCIAL_DATA.FREQUENCY localize=false selected=item.system.frequency}}
+			{{selectOptions SOCIAL_DATA.FREQUENCY localize=false selected=item.system.frequency}}
 		</select>
+		<div class="announce-availability">
+			<label>
+				Announce when avaiable
+			</label>
+			<input type="checkbox" id="AnnounceWhenAvailable" name="system.announceWhenAvailable" {{checked item.system.announceWhenAvailable}}>
+		</div>
+
 	</div>
 
 	{{#if (eq item.system.cardType "social")}}
