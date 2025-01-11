@@ -586,6 +586,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const sit: Situation = {
 			user: pc.accessor
 		};
+		if (this.system.weeklyAvailability.disabled) return false;
 		if(!testPreconditions(this.system.conditions,sit, null)) return false;
 		return this.system.weeklyAvailability.available;
 	}

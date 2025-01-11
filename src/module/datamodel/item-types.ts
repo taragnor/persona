@@ -44,7 +44,8 @@ function weeklyAvailability() {
 		Friday: new bool(),
 		Saturday: new bool(),
 		Sunday: new bool(),
-		available: new bool()
+		available: new bool(),
+		disabled: new bool()
 	});
 }
 
