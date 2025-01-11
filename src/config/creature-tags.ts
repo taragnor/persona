@@ -6,7 +6,15 @@ export const PERSON_TAG_LIST = [
 	"npc-ally",
 	"pc",
 	"child",
+] as const;
+
+export const PERSONALITY_TAG_LIST = [
+	"adventurous",
+	"musician",
+	"gamer",
+	"timid",
 	"tech-enthusiast",
+	"artist",
 ] as const;
 
 export const CREATURE_TAG_LIST = [
@@ -23,6 +31,7 @@ export const CREATURE_TAG_LIST = [
 	"dragon",
 	"evil-spirit",
 	...PERSON_TAG_LIST,
+	...PERSONALITY_TAG_LIST,
 ] as const;
 
 

@@ -179,6 +179,14 @@
 	</select>
 	{{/if}}
 
+	{{#if (eqAny cons.cardAction "set-temporary-variable")}}
+	<select name="{{strcat namePrefix 'operator'}}">
+		{{selectOptions POWERSTUFF.VARIABLE_ACTIONS localize=true selected=cons.operator}}
+	</select>
+	<input type=string name="{{strcat namePrefix 'variableId'}}" value="{{cons.variableId}}">
+	<input class="short" type=number name="{{strcat namePrefix 'value'}}" value="{{cons.value}}">
+	{{/if}}
+
 	{{/if}}
 
 	{{#if (eq cons.type "inspiration-cost")}}

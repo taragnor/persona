@@ -94,6 +94,13 @@
 	</select>
 	{{/if}}
 
+	{{#if (eq cond.comparisonTarget "social-variable")}}
+	<div>
+		<label> varname</label>
+		<input class="var-id" type="text" width=2 name="{{strcat namePrefix 'variableId'}}" value="{{cond.variableId}}">
+	</div>
+	{{/if}}
+
 	{{/if}}
 
 

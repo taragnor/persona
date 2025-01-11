@@ -25,7 +25,8 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"socialRandom",
 	"inspirationWith",
 	"itemCount",
-	"links-dating"
+	"links-dating",
+	"social-variable",
 ] as const;
 
 export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];
@@ -78,7 +79,13 @@ type NonGenericNumericComparison = ResistanceComparison
 	| InspirationNumericComparison
 	| AmountOfItemComparison
 	| SocialLinkLevelComparison
+	| SocialVariableComparison
 ;
+
+type SocialVariableComparison = NumericComparisonBase & {
+	comparisonTarget:	"social-variable",
+	variableId: string,
+}
 
 type EnergyComparison = NumericComparisonBase & {
 	comparisonTarget : "energy",

@@ -124,6 +124,7 @@ export const SOCIAL_CARD_ACTION_LIST = [
 	"modify-progress-tokens-cameo",
 	"add-card-events-to-list",
 	"replace-card-events",
+	"set-temporary-variable",
 ] as const;
 
 export type SocialCardAction = typeof SOCIAL_CARD_ACTION_LIST[number];

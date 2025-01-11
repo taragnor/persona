@@ -567,6 +567,8 @@ export class ConditionalEffectManager {
 				return `Opening Roll natural value ${endString(cond)}`;
 			case "links-dating":
 				return `Amount of people being dated ${endString(cond)}`;
+			case "social-variable":
+				return `Value of Social variable ${cond.variableId} ${endString(cond)}`;
 			default:
 				cond satisfies never;
 				return "UNKNOWN CONDITION"
@@ -726,6 +728,8 @@ export class ConditionalEffectManager {
 				return `Replace Card Events with events of card ${cons.cardId}`;
 			case "add-card-events-to-list":
 				return `Add Card Events card ${cons.cardId}`;
+			case "set-temporary-variable":
+				return `${cons.operator} ${cons.value} to social variable ${cons.variableId}`;
 			default:
 				cons satisfies never;
 				return "ERROR";

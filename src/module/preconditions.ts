@@ -1,3 +1,4 @@
+import { PersonaSocial } from "./social/persona-social.js";
 import { SOCIAL_LINK_OR_TAROT_OTHER } from "../config/precondition-types.js";
 import { AnyStringObject } from "../config/precondition-types.js";
 import { Power } from "./item/persona-item.js";
@@ -247,6 +248,12 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			target= subject.system.social
 			.filter( x=> x.isDating || x.relationshipType == "DATE")
 			.length;
+			break;
+		}
+		case "social-variable": {
+			if (!PersonaSocial.rollState) return false;
+			target = PersonaSocial.rollState.cardData.variables[condition.variableId] ;
+			if (target == undefined) return false;
 			break;
 		}
 		default:

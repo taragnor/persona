@@ -400,6 +400,7 @@
 	"persona.effecttypes.social-card.alter-student-skill": "Alter Student Skill",
 	"persona.effecttypes.social-card.add-card-events-to-list": "Add Card events to List",
 	"persona.effecttypes.social-card.replace-card-events": "Replace Card events",
+	"persona.effecttypes.social-card.set-temporary-variable": "Set Temporary Variable",
 
 
 	"persona.effecttypes.dungeonAction.roll-tension-pool": "Roll Tension Pool",
@@ -408,6 +409,10 @@
 	"persona.effecttypes.dungeonAction.close-all-doors": "Close all Doors",
 	"persona.effecttypes.modifierType.constant" : "Constant",
 	"persona.effecttypes.modifierType.system-variable" : "System Variable",
+
+"persona.effecttypes.variableActions.set": "Set",
+"persona.effecttypes.variableActions.add": "Add",
+"persona.effecttypes.variableActions.multiply": "Multiply",
 
 	"persona.alter-mp-subtypes.direct": "Direct",
 	"persona.alter-mp-subtypes.cost-reduction": "Cost Multiplier",
@@ -534,6 +539,7 @@
 	"persona.preconditions.comparison.inspirationWith": "Inspiration Points",
 	"persona.preconditions.comparison.itemCount": "Amount of Item",
 	"persona.preconditions.comparison.links-dating": "Amount of People being Dated",
+	"persona.preconditions.comparison.social-variable": "Value of a Social Variable",
 
 	"persona.preconditions.socialChecks.relationship-type-check": "Relationship Type is",
 	"persona.preconditions.socialChecks.is-social-disabled": "Is Socially Disabled",
@@ -680,7 +686,14 @@
 	"persona.creatureType.npc-ally": "NPC-Ally",
 	"persona.creatureType.pc": "PC",
 	"persona.creatureType.child": "Child",
+	"persona.creatureType.adventurous": "Adventurous",
+	"persona.creatureType.musician": "Musician",
+	"persona.creatureType.gamer": "Gamer",
+	"persona.creatureType.timid": "Timid",
+	"persona.creatureType.artist": "Artist",
 	"persona.creatureType.tech-enthusiast": "Tech enthusiast",
+
+
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",

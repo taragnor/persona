@@ -133,7 +133,7 @@ type StatusEffect_Basic = {
 }
 
 type StatusEffect_NonBasic =
-StatusEffect_FollowUp
+	StatusEffect_FollowUp
 ;
 
 type StatusEffect_FollowUp = {
@@ -296,8 +296,25 @@ type CardActionTypes = [
 	}, {
 		cardAction:	"replace-card-events" | "add-card-events-to-list",
 		cardId : string,
+	}, {
+		cardAction:	"set-temporary-variable",
+		operator: VariableAction,
+		variableId: string,
+		value: number,
 	}
 ];
+
+export const VARIABLE_ACTION_LIST =  [
+	"set",
+	"add",
+	"multiply",
+] as const;
+
+export type VariableAction = typeof VARIABLE_ACTION_LIST[number];
+
+export const VARIABLE_ACTIONS = Object.fromEntries(
+	VARIABLE_ACTION_LIST.map( x=> [x, `persona.effecttypes.variableActions.${x}`])
+);
 
 
 export type DungeonActionConsequence = {

@@ -1,3 +1,4 @@
+import { VARIABLE_ACTIONS } from "../../../config/consequence-types.js";
 import { SOCIAL_LINK_OR_TAROT_OTHER } from "../../../config/precondition-types.js";
 import { EQUIPMENT_TAGS } from "../../../config/equipment-tags.js";
 import { CREATURE_TAGS } from "../../../config/creature-tags.js";
@@ -124,6 +125,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			SOCIAL_CHECKS,
 			CREATURE_TAGS,
 			EQUIPMENT_TAGS,
+			VARIABLE_ACTIONS,
 		};
 		return this._powerStuffBase;
 	}

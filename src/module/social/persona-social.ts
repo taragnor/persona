@@ -1,3 +1,4 @@
+import { VariableAction } from "../../config/consequence-types.js";
 import { SocialCardActionConsequence } from "../../config/consequence-types.js";
 import { PersonaSounds } from "../persona-sounds.js";
 import { randomSelect } from "../utility/array-tools.js";
@@ -209,15 +210,14 @@ export class PersonaSocial {
 			.filter( card => testPreconditions(card.system.conditions, situation, null));
 		if (!link) return preconditionPass;
 		else return  preconditionPass
-			.filter( item => {
-				return true;
+			.filter( _item => true);
 				// const relationshipName : string = link.relationshipType;
 				// return item.system.qualifiers
 				// 	.some(x=> x.relationshipName == relationshipName
 				// 		&& link.linkLevel >= x.min
 				// 		&& link.linkLevel <= x.max
 				// 	)
-			});
+			// });
 	}
 
 	static async #drawSocialCard(actor: PC, link : Activity | SocialLink) : Promise<SocialCard> {
@@ -284,6 +284,7 @@ export class PersonaSocial {
 			forceEventLabel: null,
 			eventList: card.cardEvents().slice(),
 			replaceSet,
+			variables: {},
 		};
 		return await this.#execCardSequence(cardData);
 	}
@@ -997,13 +998,45 @@ export class PersonaSocial {
 			}
 			case "add-card-events-to-list":
 					await this.addCardEvents(eff.cardId);
-					return;
+				return;
 			case "replace-card-events":
 					await this.replaceCardEvents(eff.cardId);
-					return;
+				return;
+			case "set-temporary-variable":
+					await this.variableAction(eff.operator, eff.variableId, eff.value);
+				return;
 			default:
 					eff satisfies never;
 				return;
+		}
+	}
+
+	static async variableAction(operator: VariableAction, variableName: string, amount: number) {
+		if (!this.rollState) {
+			PersonaError.softFail(`Can't create more events as there is no RollState`);
+			return;
+		}
+		const varData = this.rollState.cardData.variables;
+		switch (operator) {
+			case "set":
+				varData[variableName] = amount;
+				break;
+			case "add":
+				if ( varData[variableName] == undefined) {
+					PersonaError.softFail(`Social Variable ${variableName} doesn't exist`);
+					break;
+				}
+				varData[variableName] += amount;
+				break;
+			case "multiply":
+				if ( varData[variableName] == undefined) {
+					PersonaError.softFail(`Social Variable ${variableName} doesn't exist`);
+					break;
+				}
+				varData[variableName] *= amount;
+				break;
+			default:
+				operator satisfies never;
 		}
 	}
 
@@ -1141,13 +1174,13 @@ export class PersonaSocial {
 			ui.notifications.warn("Can only do this on your turn.");
 			return;
 		}
-		const situation: Situation = {
-			user: initiator.accessor,
-			attacker: initiator.accessor,
-			isSocial: true,
-			target: target.accessor,
-			socialTarget: target.accessor,
-		};
+		// const situation: Situation = {
+		// 	user: initiator.accessor,
+		// 	attacker: initiator.accessor,
+		// 	isSocial: true,
+		// 	target: target.accessor,
+		// 	socialTarget: target.accessor,
+		// };
 		if (!this.meetsConditionsToStartLink(initiator, target)) {
 		// if (!testPreconditions(target.system.type == "npc" ? target.system.conditions : [], situation, null)) {
 			const requirements = ConditionalEffectManager.printConditions((target as NPC).system?.conditions ?? []);
@@ -1271,5 +1304,6 @@ export type CardData = {
 	situation: SocialCardSituation;
 	replaceSet: Record<string, string>;
 	sound?: FOUNDRY.AUDIO.Sound
+	variables: Record<string, number>;
 };
 
