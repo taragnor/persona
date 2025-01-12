@@ -179,8 +179,6 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			RELATIONSHIP_TYPE_OBJECT,
 			SOCIAL_CARDS,
 		};
-		console.log("Computed powerStuff");
-		Debug(data);
 		return data;
 	}
 

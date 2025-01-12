@@ -360,6 +360,8 @@ export class ConditionalEffectManager {
 			case "on-trigger":
 				const trig = this.translate(cond.trigger!, TRIGGERS);
 				return `trigger: ${trig}`
+			case "never":
+				return "Never";
 			default:
 				cond satisfies never;
 				PersonaError.softFail(`Unknown type ${(cond as any)?.type}`);

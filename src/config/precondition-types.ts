@@ -17,6 +17,7 @@ export const PRECONDITIONLIST = [
 	"miss-all-targets",
 	"save-versus",
 	"on-trigger",
+	"never",
 ] as const;
 
 export type PreconditionType = typeof PRECONDITIONLIST[number];

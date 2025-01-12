@@ -50,12 +50,12 @@ export class PersonaCalendar {
 		const weather = this.getWeather();
 		const date = window.SimpleCalendar.api.currentDateTimeDisplay().date;
 		const weekday = window.SimpleCalendar.api.getCurrentWeekday().name;
-		PersonaSocial.updateLinkAvailability(weekday);
 		let doomsdayMsg = `<hr> <div class="doomsday"> <b>Doomsday</b>  ${this.DoomsdayClock.amt} / ${this.DoomsdayClock.max} </div>`;
 
 		if (this.DoomsdayClock.isMaxed()) {
 			doomsdayMsg = `<hr><div class="doomsday"><h2> Doomsday</h2> Doomsday is here! Succeed or Something horrible happens!</div>`;
 		}
+		await PersonaSocial.updateLinkAvailability(weekday);
 		extraMsgs = extraMsgs
 			.map( x=> `<div> ${x} </div>`);
 		const html = `

@@ -2202,7 +2202,7 @@ get tagList() : CreatureTag[] {
 	switch (this.system.type) {
 		case "pc":
 			if (!list.includes("pc")) {
-			list.push("pc");
+				list.push("pc");
 			}
 			return list;
 		case "npc": return list;

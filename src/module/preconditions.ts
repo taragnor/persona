@@ -69,6 +69,8 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 		case "boolean": {
 			return booleanComparison(condition, situation, source);
 		}
+		case "never":
+			return false;
 		default:
 			condition satisfies never;
 			PersonaError.softFail(`Unexpected Condition: ${(condition as any)?.type}`);
@@ -682,7 +684,7 @@ export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, si
 			break;
 	}
 	if (!targetIdOrTarot) return undefined;
-	const allLinks = PersonaDB.allSocialLinks();
+	const allLinks = PersonaDB.socialLinks();
 	const desiredActor  = allLinks
 		.find( x=> x.id == targetIdOrTarot)
 		?? allLinks

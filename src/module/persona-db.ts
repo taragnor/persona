@@ -74,11 +74,6 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return UMs.filter(um=> um.system.room_effect);
 	}
 
-	allSocialLinks() : SocialLink[] {
-		return this.allActors()
-		.filter( actor=> actor.system.type == "pc" || actor.system.type == "npc") as SocialLink[];
-	}
-
 	allPowers() : Power[] {
 		if (this.#cache.powers) return this.#cache.powers;
 		const items = this.allItems();
@@ -152,7 +147,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.socialLinks = game.actors.filter( (actor :PersonaActor) =>
 			(actor.system.type == "npc"
 			|| actor.system.type == "pc" )
-			&& !!actor.system.tarot
+			&& !!actor.tarot
 		) as (PC | NPC)[];
 	}
 
