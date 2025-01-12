@@ -1,3 +1,4 @@
+import { SocialEncounterCard } from "./social/persona-social.js";
 import { ModifierContainer } from "./item/persona-item.js";
 import { SocialLink } from "./actor/persona-actor.js";
 import { PC } from "./actor/persona-actor.js";
@@ -122,6 +123,11 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	allSocialCards() :SocialCard[] {
 		return this.allItems()
 			.filter( x=> x.system.type == "socialCard") as SocialCard[];
+	}
+
+	socialEncounterCards(): SocialEncounterCard[] {
+		return this.allSocialCards()
+		.filter( x=> x.system.cardType == "social") as SocialEncounterCard[]
 	}
 
 	allJobs(): Job[] {

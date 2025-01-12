@@ -216,7 +216,7 @@ export class PersonaSocial {
 
 	}
 
-	static validSocialCards(actor: PC, activity: SocialLink) : SocialCard[] {
+	static validSocialCards(actor: PC, activity: SocialLink) : SocialEncounterCard[] {
 		const link = this.lookupSocialLink(actor, activity.id)
 		const situation : Situation= {
 			user: actor.accessor,
@@ -225,18 +225,9 @@ export class PersonaSocial {
 			isSocial: true,
 			target: link? link.actor.accessor : undefined,
 		};
-		const preconditionPass =  PersonaDB.allSocialCards()
+		const preconditionPass =  PersonaDB.socialEncounterCards()
 			.filter( card => testPreconditions(card.system.conditions, situation, null));
-		if (!link) return preconditionPass;
-		else return  preconditionPass
-			.filter( _item => true);
-				// const relationshipName : string = link.relationshipType;
-				// return item.system.qualifiers
-				// 	.some(x=> x.relationshipName == relationshipName
-				// 		&& link.linkLevel >= x.min
-				// 		&& link.linkLevel <= x.max
-				// 	)
-			// });
+		return preconditionPass;
 	}
 
 	static async #drawSocialCard(actor: PC, link : Activity | SocialLink) : Promise<SocialCard> {
@@ -394,11 +385,12 @@ export class PersonaSocial {
 				const students = PersonaDB.socialLinks()
 				.filter( x=>
 					(x.system.type == "npc" || x.system.type == "pc")
-					&& x.baseRelationship == "PEER"
+					&& x.hasCreatureTag("student")
 					&& x != actor && x.id != linkId
 					&& x.isAvailable(actor)
 					&& testCameo(x as SocialLink)
 				) as SocialLink[];
+				if (students.length == 0) return [];
 				const randomPick = students[Math.floor(Math.random() * students.length)];
 				if (!randomPick)
 				throw new PersonaError("Random student select failed");
@@ -1326,3 +1318,5 @@ export type CardData = {
 	variables: Record<string, number>;
 };
 
+
+export type SocialEncounterCard = SocialCard & {system: {cardType: "social"}};
