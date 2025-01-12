@@ -18,6 +18,7 @@ export const PRECONDITIONLIST = [
 	"save-versus",
 	"on-trigger",
 	"never",
+	"disable-on-debug",
 ] as const;
 
 export type PreconditionType = typeof PRECONDITIONLIST[number];

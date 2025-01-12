@@ -1,3 +1,4 @@
+import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaSocial } from "./social/persona-social.js";
 import { SOCIAL_LINK_OR_TAROT_OTHER } from "../config/precondition-types.js";
 import { AnyStringObject } from "../config/precondition-types.js";
@@ -71,6 +72,10 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 		}
 		case "never":
 			return false;
+		case "disable-on-debug":
+			if (PersonaSettings.debugMode()) {
+				return false;
+			} else return true;
 		default:
 			condition satisfies never;
 			PersonaError.softFail(`Unexpected Condition: ${(condition as any)?.type}`);

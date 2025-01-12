@@ -43,7 +43,6 @@ export class PersonaError extends Error {
 		const user = game.users.get(userId);
 		console.warn(`Player Error (${user?.name}): ${errorMsg}\n\n ${trace}`);
 	}
-
 }
 
 Hooks.on("socketsReady", () => {

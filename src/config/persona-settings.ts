@@ -129,7 +129,7 @@ const SETTINGS = {
 		config: false,
 		type: String,
 		default: ""
-	}
+	},
 
 } as const;
 

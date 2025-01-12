@@ -467,6 +467,7 @@
 	"persona.preconditions.target-is-dead": "Target is dead" ,
 	"persona.preconditions.on-trigger": "On Trigger" ,
 	"persona.preconditions.never": "Never" ,
+	"persona.preconditions.disable-on-debug": "Disable on Debug Mode" ,
 
 	"persona.preconditions.is-a-consumable": "Using a consumable Item" ,
 	"persona.preconditions.target-is-same-arcana": "Target is the same arcana as attacker" ,

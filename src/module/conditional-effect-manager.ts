@@ -362,6 +362,8 @@ export class ConditionalEffectManager {
 				return `trigger: ${trig}`
 			case "never":
 				return "Never";
+			case "disable-on-debug":
+				return "Disabled on Debug Mode"
 			default:
 				cond satisfies never;
 				PersonaError.softFail(`Unknown type ${(cond as any)?.type}`);
