@@ -461,7 +461,7 @@ export class ConditionalEffectManager {
 				const slot = this.translate(cond.slotType, SLOTTYPES);
 				return `Power is ${not} of slot type: ${slot}`;
 			case "social-availability":
-				switch (cond.socialCheckType) {
+				switch (cond.socialTypeCheck) {
 					case "relationship-type-check":
 						return `Relationship Type with ${target1} is ${not} ${cond.relationshipType}`;
 					case "is-social-disabled":

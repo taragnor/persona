@@ -193,6 +193,9 @@
 	{{/if}}
 
 	{{#if (eq cond.boolComparisonTarget  "social-target-is-multi")}}
+	<select name="{{strcat namePrefix 'conditionTarget'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+	</select>
 	{{multicheck (strcat namePrefix 'socialLinkIdOrTarot') POWERSTUFF.SOCIAL_LINKS checked=cond.socialLinkIdOrTarot localize=true}}
 	{{/if}}
 

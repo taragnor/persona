@@ -508,6 +508,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	isDating(this: PC, link: SocialLink) : boolean;
 
 	isDating(this: PC, sl: SocialLink | string) : boolean {
+		if (this.system.type != "pc") return false;
 		const id = sl instanceof PersonaActor ? sl.id: sl;
 		const link =  this.system.social.find(x=> x.linkId == id);
 		if (!link) return false;

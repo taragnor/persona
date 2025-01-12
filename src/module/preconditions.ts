@@ -490,11 +490,13 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			return condition.days[weekday];
 		case "social-target-is": {
 			const target = getSubject(condition, situation, source, "conditionTarget");
+			if (!target) { return undefined; }
 			const desiredActor = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
 			return target == desiredActor;
 		}
 		case "social-target-is-multi": {
 			const target = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!target) { return undefined; }
 			const actors= multiCheckToArray(condition.socialLinkIdOrTarot) as SocialLinkIdOrTarot[];
 			return actors.some(actor => getSocialLinkTarget(actor, situation, source) == target);
 		}
@@ -547,8 +549,9 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (!situation.user) return undefined;
 			const user = PersonaDB.findActor(situation.user);
 			const target = PersonaDB.findActor(socialTarget);
+			if (!user) return undefined;
 			if (user.system.type == "shadow") return undefined;
-			switch (condition.socialCheckType) {
+			switch (condition.socialTypeCheck) {
 				case "relationship-type-check":
 					const link = (user as PC).socialLinks.find(x=>x.actor == target);
 					if (!link) return undefined;
@@ -561,10 +564,15 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 					}
 					return target.isAvailable(user as PC);
 				case "is-dating":
+					if (user.system.type != "pc") {
+						return undefined;
+					}
 					return (user as PC).isDating(target.id);
 				default:
 					condition satisfies never;
-					PersonaError.softFail(`UNexpected social check ${(condition as any)?.socialTypeCheck}`);
+					PersonaError.softFail(`Unexpected social check ${(condition as any)?.socialTypeCheck}`);
+					Debug(condition);
+					Debug(situation);
 					return undefined;
 			}
 		}
