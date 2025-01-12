@@ -73,7 +73,7 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 		case "never":
 			return false;
 		case "disable-on-debug":
-			if (PersonaSettings.debugMode()) {
+			if (PersonaSettings.debugMode() == true) {
 				return false;
 			} else return true;
 		default:

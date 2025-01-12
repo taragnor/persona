@@ -74,11 +74,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		this._engagedList = new EngagementList(this);
 		await this._engagedList.flushData();
 		const assumeSocial = !(this.combatants.contents.some(comb=> comb.actor && comb.actor.system.type == "shadow"));
-			const regionMods = Metaverse.getRegion()?.roomEffects.map(x=> x.id) ?? [];
+		const regionMods = Metaverse.getRegion()?.roomEffects.map(x=> x.id) ?? [];
 		const combatInit = await this.roomEffectsDialog(regionMods, assumeSocial);
 		this.setSocialEncounter(combatInit.isSocialScene);
 		if (combatInit.isSocialScene) {
-			await Metaverse.exitMetaverse();
+			if (PersonaSettings.debugMode() == false) {
+				await Metaverse.exitMetaverse();
+			}
 			await PersonaSocial.startSocialCombatRound(combatInit.disallowMetaverse, combatInit.advanceCalendar);
 		}
 		const mods = combatInit.roomModifiers;
