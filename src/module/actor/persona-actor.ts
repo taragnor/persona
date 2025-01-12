@@ -1475,7 +1475,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async socialLinkProgress(this: PC, linkId: string, progress: number) {
 		const link = this.system.social.find( x=> x.linkId == linkId);
 		if (!link) {
-			throw new PersonaError("Trying to increase social link you don't have");
+			PersonaError.softFail("Trying to increase social link you don't have");
+			return;
 		}
 		const orig = link.currentProgress;
 		link.currentProgress = Math.max(0,progress + link.currentProgress);
@@ -1483,9 +1484,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			link.inspiration = link.linkLevel;
 		}
 		const linkActor = game.actors.get(link.linkId);
-		if (progress < 0) {
-			// PersonaSounds.socialLinkReverse();
-		}
+		// if (progress < 0) {
+		// PersonaSounds.socialLinkReverse();
+		// }
 		switch (progress) {
 			case 1: PersonaSounds.socialBoostJingle(1);
 				break;
@@ -1501,7 +1502,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async activityProgress(this: PC, activityId :string, progress: number) {
 		const activityData = this.system.activities.find( x=> x.linkId == activityId);
 		if (!activityData) {
-			throw new PersonaError("Trying to increase activty you don't have");
+			PersonaError.softFail("Trying to increase activty you don't have");
+			return;
 		}
 		const orig = activityData.currentProgress;
 		activityData.currentProgress = Math.max(0,progress + activityData.currentProgress);

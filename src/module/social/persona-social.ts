@@ -1085,22 +1085,30 @@ export class PersonaSocial {
 	}
 
 	static async modifyProgress(amt: number) {
-		if (!this.checkRollState("modify Progress tokens")) return;
-		const linkId = this.rollState!.cardData.linkId;
-		await this.rollState!.cardData.actor.socialLinkProgress(linkId, amt);
+		const  rs = this.checkRollState("modify Progress tokens");
+		if (!rs) return;
+		const actor = rs.cardData.actor;
+		if (rs.cardData.situation.socialTarget) {
+			const linkId = rs.cardData.linkId;
+			await actor.socialLinkProgress(linkId, amt);
+		} else {
+			const id = rs.cardData.card.id
+			await actor.activityProgress(id, amt);
+		}
 	}
 
-	static checkRollState(operation: string = "perform Social Roll Operation") {
+	static checkRollState(operation: string = "perform Social Roll Operation") : typeof PersonaSocial["rollState"]  | undefined {
 		if (this.rollState) {
-			return true;
+			return this.rollState;
 		}
 		PersonaError.softFail(`Roll state doesn't exist can't ${operation}`);
-		return false;
+		return undefined;
 	}
 
 	static async alterStudentSkill(skill: StudentSkill, amt: number) {
-		if (!this.checkRollState("alter student skill")) return;
-		await this.rollState!.cardData.actor.alterSocialSkill(skill, amt);
+		const rs = this.checkRollState("alter student skill");
+		if (!rs) return;
+		await rs.cardData.actor.alterSocialSkill(skill, amt);
 	}
 
 	static async gainMoney(amt: number) {
