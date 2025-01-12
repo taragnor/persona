@@ -842,7 +842,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
 			result.merge(costs);
 
-			await result.finalize();
+			result.finalize();
 			await attacker.actor.removeStatus("bonus-action");
 			await attacker.actor.removeStatus("baton-pass");
 			await result.toMessage(power.name, attacker.actor);
@@ -2233,7 +2233,7 @@ async showRoomEffects() {
 	}
 
 async onFollowUpAction(token: PToken, activationRoll: number) {
-	console.log("Calling On Follow Up Action");
+	console.debug("Calling On Follow Up Action");
 	const combatant = token.object ? this.getCombatantByToken(token): null;
 	if (!combatant) return;
 	if (combatant.actor && combatant.actor.hasStatus("down")) return;

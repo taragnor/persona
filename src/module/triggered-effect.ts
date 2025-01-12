@@ -79,6 +79,6 @@ export class TriggeredEffect {
 
 			}
 		}
-		await triggerResult?.toMessage("Triggered Effect", actor);
+		await triggerResult?.finalize().toMessage("Triggered Effect", actor);
 	}
 }

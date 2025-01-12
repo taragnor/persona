@@ -1,4 +1,4 @@
-import { PersonaSockets } from "./persona";
+import { PersonaSockets } from "./persona.js";
 
 export class PersonaError extends Error {
 
@@ -56,7 +56,6 @@ declare global {
 		"ERROR_REPORT": RemoteErrorInfo
 	}
 }
-
 
 type RemoteErrorInfo = {
 	errorMsg:string,

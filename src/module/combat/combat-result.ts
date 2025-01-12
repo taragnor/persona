@@ -33,6 +33,7 @@ declare global {
 }
 
 export class CombatResult  {
+	_finalized : boolean = false;
 	tokenFlags: {
 		actor: UniversalActorAccessor<PC |Shadow>,
 			effects: OtherEffect[]
@@ -233,10 +234,11 @@ export class CombatResult  {
 				effect.hpchangemult = 1;
 				break;
 			case "extraTurn": {
-				if (!atkResult) break;
-				const power = PersonaDB.findItem(atkResult.power);
-				if (power.isOpener()) break;
-				if (power.isTeamwork()) break;
+				if (atkResult) {
+					const power = PersonaDB.findItem(atkResult.power);
+					if (power.isOpener()) break;
+					if (power.isTeamwork()) break;
+				}
 				if (!effect) break;
 				const combat = game.combat as PersonaCombat;
 				if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) break;
@@ -418,11 +420,11 @@ export class CombatResult  {
 			.flatMap( x=> x.otherEffects)
 	}
 
-	async finalize() {
+	finalize(): this {
 		this.clearFlags();
 		for (const changes of this.attacks.values()) {
 			for (const change of changes) {
-				await this.finalizeChange(change);
+				this.finalizeChange(change);
 			}
 		}
 		for (const cost of this.costs) {
@@ -433,11 +435,14 @@ export class CombatResult  {
 			if (this.hasFlag(actor, "save-slot")) {
 				cost.expendSlot = [0, 0, 0, 0];
 			}
-			await this.finalizeChange(cost);
+			this.finalizeChange(cost);
 		}
+		this._finalized = true;
+		return this;
 	}
 
 	emptyCheck() : this | undefined {
+		if (!this._finalized) this.finalize();
 		const attacks = Array.from(this.attacks.entries());
 		if (this.escalationMod == 0 && this.costs.length == 0 && attacks.length ==0 && this.globalOtherEffects.length == 0) return undefined;
 		return this;
@@ -445,6 +450,7 @@ export class CombatResult  {
 
 
 	async toMessage( effectName: string, initiator: PersonaActor | undefined) : Promise<ChatMessage> {
+		if (!this._finalized) this.finalize();
 		let InitiatorToken : PToken | undefined;
 		if (!initiator) {
 			const speaker = ChatMessage.getSpeaker();
@@ -648,7 +654,7 @@ export class CombatResult  {
 
 	}
 
-	async finalizeChange(change: ActorChange<PC | Shadow>) {
+	finalizeChange(change: ActorChange<PC | Shadow>) {
 		const actor = PersonaDB.findActor(change.actor);
 
 		for (const otherEffect of change.otherEffects) {
