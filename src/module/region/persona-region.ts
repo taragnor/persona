@@ -1,3 +1,4 @@
+import { Shadow } from "../actor/persona-actor.js";
 import { PersonaSockets } from "../persona.js";
 import { Metaverse } from "../metaverse.js";
 import { PersonaError } from "../persona-error.js";
@@ -228,15 +229,28 @@ export class PersonaRegion extends RegionDocument {
 		if (token.actor?.type != "pc") return;
 		const tokens = Array.from(this.tokens);
 		if (tokens.some(t => t.actor?.system.type == "shadow" && !t.hidden) ) return;
-		const sPresence = this.shadowPresence;
-		if (sPresence > 0) {
-			await Metaverse.shadowPresenceRoll(sPresence, this.name);
+		this.presenceCheck();
 
+	}
+
+	async presenceCheck() {
+		const presence = await Metaverse.presenceCheck(this);
+		if (!presence) return;
+		let shadowType : Shadow["system"]["creatureType"] | undefined = undefined;
+		switch (presence) {
+			case "shadows":
+				shadowType = "shadow";
+				break;
+			case "daemons":
+				shadowType = "daemon";
+				break;
+			case "any":
+				break;
+			default:
+				presence satisfies never;
 		}
-		const cPresence = this.concordiaPresence;
-		if (cPresence > 0) {
-			await Metaverse.concordiaPresenceRoll(cPresence, this.name);
-		}
+		const shadows = Metaverse.generateEncounter(shadowType);
+		await Metaverse.printRandomEncounterList(shadows);
 	}
 
 	async setRegionData(data: RegionData) {

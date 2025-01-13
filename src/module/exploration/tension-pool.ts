@@ -31,7 +31,8 @@ import { ProgressClock } from "../utility/progress-clock.js";
 
 	 async generateEncounter() {
 		 try {
-			 await Metaverse.generateEncounter();
+			 const enc = Metaverse.generateEncounter();
+			 await Metaverse.printRandomEncounterList(enc);
 		 } catch (e) {
 			 console.log(e);
 		 }

@@ -73,11 +73,13 @@ export class Metaverse {
 		await Logger.sendToChat(`Exiting Metaverse...`);
 	}
 
-	static async generateEncounter(): Promise<Shadow[]> {
+	static generateEncounter(shadowType ?: Shadow["system"]["creatureType"]): Shadow[] {
 		const scene = game.scenes.current;
-		const encounterList  = (scene as PersonaScene).encounterList();
+		const encounterList  = (scene as PersonaScene).encounterList()
+		.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
 		if (encounterList.length == 0) {
-			throw new PersonaError(`Encounter List is empty for ${scene.name}`);
+			PersonaError.softFail(`Encounter List is empty for ${scene.name} ${shadowType ? "(" + shadowType+ ")"  :""}`);
+			return [];
 		}
 		let encounterSize = 0;
 		const sizeRoll = Math.floor((Math.random() * 10) +1);
@@ -97,7 +99,8 @@ export class Metaverse {
 		let bailout = 0;
 		while (encounterSize > 0) {
 			if (bailout > 500) {
-				throw new PersonaError(`Had to bail out, couldn't find match for ${scene.name}`);
+				PersonaError.softFail(`Had to bail out, couldn't find match for ${scene.name}`);
+				return [];
 			}
 			const dice = Math.floor(Math.random() * encounterList.length);
 			const pick = encounterList[dice];
@@ -109,7 +112,8 @@ export class Metaverse {
 				continue;
 			}
 			if (!pick) {
-				throw new PersonaError(`Can't get a pick for random encounters for ${scene.name}`);
+				PersonaError.softFail(`Can't get a pick for random encounters for ${scene.name}`);
+				return [];
 			}
 			if (pick.system.role == "elite") {
 				if (encounterSize <= 1) {continue;}
@@ -118,6 +122,10 @@ export class Metaverse {
 			--encounterSize;
 			encounter.push(pick);
 		}
+		return encounter;
+	}
+
+	static async printRandomEncounterList(encounter: Shadow[]) {
 		const speaker = ChatMessage.getSpeaker({alias: "Encounter Generator"});
 		const enchtml = encounter.map( shadow =>
 			`<li class="shadow"> ${shadow.name} </div>`
@@ -134,7 +142,6 @@ export class Metaverse {
 			style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
 		};
 		await ChatMessage.create(messageData, {});
-		return encounter;
 	}
 
 	static async generateTreasure(shadows: PersonaActor[], players: PersonaActor[]): Promise<(Weapon | InvItem | Consumable) []> {
@@ -337,8 +344,30 @@ export class Metaverse {
 		return region as PersonaRegion;
 	}
 
-	static async concordiaPresenceRoll( presenceValue: number, regionName: string = ""): Promise<Roll> {
-		return await this.presenceRoll({
+	static async presenceCheck(region ?: PersonaRegion) : Promise<PresenceCheckResult> {
+		if (!region) {
+			region= this.getRegion();
+			if (!region) return null;
+		}
+		const sPresence = region.shadowPresence;
+		if (sPresence > 0) {
+			if( await this.#shadowPresenceRoll(sPresence, this.name) == true) {
+				return "shadows";
+			}
+
+		}
+		const cPresence = region.concordiaPresence;
+		if (cPresence > 0) {
+			if ( await this.#concordiaPresenceRoll(cPresence, this.name) == true)  {
+				return "daemons";
+			}
+		}
+		return null;
+	}
+
+
+	static async #concordiaPresenceRoll( presenceValue: number, regionName: string = ""): Promise<boolean> {
+		return await this.#presenceRoll({
 			presenceValue,
 			regionName,
 			label: "Concordia Presence",
@@ -347,8 +376,8 @@ export class Metaverse {
 		});
 	}
 
-	static async shadowPresenceRoll ( presenceValue:number, regionName: string = ""): Promise<Roll> {
-		return await this.presenceRoll({
+	static async #shadowPresenceRoll ( presenceValue:number, regionName: string = ""): Promise<boolean> {
+		return await this.#presenceRoll({
 			presenceValue,
 			regionName,
 			label: "Shadow Presence",
@@ -357,7 +386,7 @@ export class Metaverse {
 		});
 	}
 
-	static async presenceRoll (data: PresenceRollData)  {
+	static async #presenceRoll (data: PresenceRollData) : Promise<boolean> {
 		const roll = new Roll(data.rollString);
 		await roll.roll();
 		let html = `<h2> ${data.label} (${data.regionName})</h2>`;
@@ -372,7 +401,7 @@ export class Metaverse {
 			rolls: [roll],
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 		});
-		return roll;
+		return roll.total <= data.presenceValue;
 	}
 }
 
@@ -418,3 +447,8 @@ Hooks.on("clockTick", function (clock: ProgressClock, _newAmt: number) {
 
 //@ts-ignore
 window.Metaverse = Metaverse;
+
+export type PresenceCheckResult = null
+	| "shadows"
+	| "daemons"
+	| "any";
