@@ -63,6 +63,7 @@ type RegionData = {
 	pointsOfInterest: string[],
 	specialMods: SpecialMod[],
 	concordiaPresence: number,
+	shadowPresence: number,
 	secretNotes: string,
 }
 
@@ -85,6 +86,7 @@ export class PersonaRegion extends RegionDocument {
 			pointsOfInterest: [],
 			specialMods: [],
 			concordiaPresence: 0,
+			shadowPresence: 0,
 			secretNotes: "",
 		} as const;
 	}
@@ -93,7 +95,7 @@ export class PersonaRegion extends RegionDocument {
 		const regionData = this.getFlag("persona", "RegionData") as RegionData | undefined;
 		const defaultRegion = this.defaultRegionData();
 		if (!regionData) return defaultRegion;
-			foundry.utils.mergeObject(regionData, defaultRegion, {insertKeys: true, overwrite: false});
+		foundry.utils.mergeObject(regionData, defaultRegion, {insertKeys: true, overwrite: false});
 		return regionData;
 	}
 
@@ -115,7 +117,13 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	get concordiaPresence(): number {
-		return this.regionData.concordiaPresence ?? 0;
+		return Number(this.regionData.concordiaPresence) ?? 0;
+	}
+
+	get shadowPresence(): number {
+		if (this.regionData.shadowPresence)
+			return Number(this.regionData.shadowPresence);
+		else return 0;
 	}
 
 	get isSafe() : boolean {
@@ -220,10 +228,14 @@ export class PersonaRegion extends RegionDocument {
 		if (token.actor?.type != "pc") return;
 		const tokens = Array.from(this.tokens);
 		if (tokens.some(t => t.actor?.system.type == "shadow" && !t.hidden) ) return;
-		const presence = this.regionData.concordiaPresence ?? 0;
-		if (presence > 0) {
-			await Metaverse.concordiaPresenceRoll(presence, this.name);
+		const sPresence = this.shadowPresence;
+		if (sPresence > 0) {
+			await Metaverse.shadowPresenceRoll(sPresence, this.name);
 
+		}
+		const cPresence = this.concordiaPresence;
+		if (cPresence > 0) {
+			await Metaverse.concordiaPresenceRoll(cPresence, this.name);
 		}
 	}
 
@@ -336,7 +348,15 @@ export class PersonaRegion extends RegionDocument {
 				);
 				break;
 			}
-			case "secretNotes": {
+			case "shadowPresence": {
+				const val = this.regionData[field];
+				element.append(
+					$(`<input type="number">`).addClass(`${fieldClass}`).val(val ?? 0)
+					.on("change", this.#refreshRegionData.bind(this))
+				);
+				break;
+			}
+				case "secretNotes": {
 				const val = this.regionData[field];
 				element.append(
 					$(`<textarea>`).addClass(`${fieldClass}`)
@@ -382,11 +402,18 @@ export class PersonaRegion extends RegionDocument {
 				case "hazardDetails":
 				case "secret":
 				case "hazard":
-				case "secretNotes":
-				case "concordiaPresence": {
+				case "secretNotes":{
 					const input = topLevel.find(`.${fieldClass}`).val();
 					if (input != undefined) {
 						(data[k] as any) = input;
+					}
+					break;
+				}
+				case "shadowPresence":
+				case "concordiaPresence": {
+					const input = topLevel.find(`.${fieldClass}`).val();
+					if (input != undefined) {
+						(data[k] as any) = Number(input) ?? 0;
 					}
 					break;
 				}

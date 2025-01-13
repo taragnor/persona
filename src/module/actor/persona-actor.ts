@@ -1849,7 +1849,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		const resources = this.system.money + amt;
 		await this.update({ "system.money": resources});
-		if (log && amt >= 0) {
+		if (log && amt > 0) {
 			await Logger.sendToChat(`${this.name} Gained ${amt} resource points`);
 			await PersonaSounds.ching();
 		}

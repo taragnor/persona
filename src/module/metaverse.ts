@@ -338,15 +338,35 @@ export class Metaverse {
 	}
 
 	static async concordiaPresenceRoll( presenceValue: number, regionName: string = ""): Promise<Roll> {
-		const roll = new Roll("1d6");
+		return await this.presenceRoll({
+			presenceValue,
+			regionName,
+			label: "Concordia Presence",
+			rollString: "1d6",
+			atkText: "Daemons Attack!",
+		});
+	}
+
+	static async shadowPresenceRoll ( presenceValue:number, regionName: string = ""): Promise<Roll> {
+		return await this.presenceRoll({
+			presenceValue,
+			regionName,
+			label: "Shadow Presence",
+			rollString: "1d10",
+			atkText: "Shadows Attack!",
+		});
+	}
+
+	static async presenceRoll (data: PresenceRollData)  {
+		const roll = new Roll(data.rollString);
 		await roll.roll();
-		let html = `<h2> ${regionName} Concordia Presence</h2>`;
-		html += `<div> Roll vs Presence ${presenceValue}: ${roll.total} </div>`;
-		const result = roll.total <= presenceValue ? `Concordia Attacks!` : `Safe`;
+		let html = `<h2> ${data.label} (${data.regionName})</h2>`;
+		html += `<div> Roll vs ${data.label} ${data.presenceValue}: ${roll.total} </div>`;
+		const result = roll.total <= data.presenceValue ? data.atkText ?? `Danger`: data.safeText ?? `Safe`;
 		html += `<div class="action-result">${result}</div>`;
 		await ChatMessage.create({
 			speaker: {
-				alias: "Concordia Presence"
+				alias: data.label
 			},
 			content: html,
 			rolls: [roll],
@@ -354,7 +374,15 @@ export class Metaverse {
 		});
 		return roll;
 	}
+}
 
+type PresenceRollData = {
+	presenceValue: number,
+	rollString: string,
+	regionName: string,
+	label: string,
+	atkText?: string,
+	safeText?: string,
 }
 
 declare global {

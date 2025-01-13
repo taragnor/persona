@@ -16,10 +16,16 @@
 
 	<section class="data-block">
 
-		{{#if region.regionData.concordiaPresence}}
+		{{#if region.shadowPresence}}
+		<div class="shadow-presence">
+			<label> Shadow Presence: </label>
+			{{region.shadowPresence}}
+		</div>
+		{{/if}}
+		{{#if region.concordiaPresence}}
 		<div class="concordia-presence">
 			<label> Concordia Presence: </label>
-			{{region.regionData.concordiaPresence}}
+			{{region.concordiaPresence}}
 		</div>
 		{{/if}}
 

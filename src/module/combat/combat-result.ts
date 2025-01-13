@@ -451,7 +451,6 @@ export class CombatResult  {
 		return this;
 	}
 
-
 	async toMessage( effectName: string, initiator: PersonaActor | undefined) : Promise<ChatMessage> {
 		if (!this._finalized) this.finalize();
 		let InitiatorToken : PToken | undefined;
