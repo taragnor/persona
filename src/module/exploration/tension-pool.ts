@@ -52,7 +52,7 @@ export class TensionPoolResult {
 	}
 
 	async print(): Promise<ChatMessage> {
-		const html =await renderTemplate(`${HBS_TEMPLATES_DIR}/search-result.hbs`, {tensionRoll : this.roll? this.roll.dice[0].values: [], tensionResult: this.result} );
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/search-result.hbs`, {tensionRoll : this.roll? this.roll.dice[0].values: [], tensionResult: this.result} );
 		return await ChatMessage.create({
 			speaker: {
 				scene: undefined,

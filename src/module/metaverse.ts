@@ -8,8 +8,6 @@ import { DungeonActionConsequence } from "../config/consequence-types.js";
 import { shuffle } from "./utility/array-tools.js";
 import { InvItem } from "./item/persona-item.js";
 import { Consumable } from "./item/persona-item.js";
-import { ShadowRole } from "../config/shadow-types.js";
-import { PersonaCalendar } from "./social/persona-calendar.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaError } from "./persona-error.js";
 import { TensionPool } from "./exploration/tension-pool.js";
@@ -46,7 +44,7 @@ export class Metaverse {
 	static async exitMetaverse() {
 		(game.actors as Collection<PersonaActor>)
 			.filter( (x: PersonaActor)=> x.system.type == "pc" && x.tarot != undefined)
-			.forEach( (x: PC)=> x.OnExitMetaverse());
+			.forEach( (x: PC) => x.OnExitMetaverse());
 		game.scenes
 			.forEach( scene => scene.tokens.contents
 				.forEach( tok => {
@@ -76,7 +74,7 @@ export class Metaverse {
 	static generateEncounter(shadowType ?: Shadow["system"]["creatureType"]): Shadow[] {
 		const scene = game.scenes.current;
 		const encounterList  = (scene as PersonaScene).encounterList()
-		.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
+			.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
 		if (encounterList.length == 0) {
 			PersonaError.softFail(`Encounter List is empty for ${scene.name} ${shadowType ? "(" + shadowType+ ")"  :""}`);
 			return [];
