@@ -129,6 +129,9 @@ export class CombatResult  {
 							effect.damageType = cons.damageType;
 						}
 						effect.hpchange = -(cons.amount ?? 0);
+						if (effect.damageType == "healing") {
+							effect.hpchange = Math.abs(effect.hpchange);
+						}
 						break;
 					case "percentage":
 							if (!target) {

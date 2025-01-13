@@ -78,7 +78,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const combatInit = await this.roomEffectsDialog(regionMods, assumeSocial);
 		this.setSocialEncounter(combatInit.isSocialScene);
 		if (combatInit.isSocialScene) {
-			if (PersonaSettings.debugMode() == false) {
+				if (PersonaSettings.debugMode() == false) {
 				await Metaverse.exitMetaverse();
 			}
 			await PersonaSocial.startSocialCombatRound(combatInit.disallowMetaverse, combatInit.advanceCalendar);
@@ -1364,10 +1364,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					cons
 				}];
 			case "high":
-				dmgAmt = power.getDamage(attacker, "high", situation);
+				dmgAmt = power.getDamage(attacker, "high", situation, cons.damageType);
 				break;
 			case "low":
-				dmgAmt = power.getDamage(attacker, "low", situation);
+				dmgAmt = power.getDamage(attacker, "low", situation, cons.damageType);
 				break;
 			case "allout-low":
 			case "allout-high": {

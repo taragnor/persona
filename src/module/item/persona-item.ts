@@ -1,3 +1,5 @@
+import { SimpleDamageCons } from "../../config/consequence-types.js";
+import { DamageType } from "../../config/damage-types.js";
 import { Helpers } from "../utility/helpers.js";
 import { PersonaAE } from "../active-effect.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
@@ -348,9 +350,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			);
 	}
 
-	getDamage(this:ModifierContainer , user: PC | Shadow, type: "high" | "low", situation: Situation = {user: user.accessor , usedPower: this.accessor, hit: true,  attacker: user.accessor}) : number {
+	getDamage(this:ModifierContainer , user: PC | Shadow, type: "high" | "low", situation: Situation = {user: user.accessor , usedPower: this.accessor, hit: true,  attacker: user.accessor}, typeOverride : SimpleDamageCons["damageType"] = "none") : number {
+		//TODO: handle type override check to see if power damage is by-power or has other type
 		if (!("dmg_type" in this.system)) return 0;
-		if (this.system.dmg_type == "none") return 0;
+		if (!typeOverride || typeOverride == "by-power") {
+			if (this.system.dmg_type == "none") return 0;
+		}
 		const subtype : PowerType  = this.system.type == "power" ? this.system.subtype : "standalone";
 		switch(subtype) {
 			case "weapon" : {

@@ -240,7 +240,7 @@ export type DamageConsequence = DamageConsequenceShared & (
 	| DamageMultiplierCons
 );
 
-type SimpleDamageCons = {
+export type SimpleDamageCons = {
 	damageSubtype: "high" | "low" | "allout-high" | "allout-low",
 	damageType: DamageType | "by-power",
 }

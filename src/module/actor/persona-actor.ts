@@ -1484,9 +1484,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			link.inspiration = link.linkLevel;
 		}
 		const linkActor = game.actors.get(link.linkId);
-		// if (progress < 0) {
-		// PersonaSounds.socialLinkReverse();
-		// }
 		switch (progress) {
 			case 1: PersonaSounds.socialBoostJingle(1);
 				break;
