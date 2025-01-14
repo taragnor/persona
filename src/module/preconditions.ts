@@ -554,30 +554,35 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			return slot[String(power.system.slot)];
 		}
 		case "social-availability": {
-			const socialTarget = situation.socialTarget ?? situation.target;
-			if (!socialTarget) return undefined;
-			if (!situation.user) return undefined;
-			const user = PersonaDB.findActor(situation.user);
-			const target = PersonaDB.findActor<PersonaActor>(socialTarget);
-			if (!user) return undefined;
-			if (user.system.type == "shadow") return undefined;
+			let target1 = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!target1) {
+				if (!situation.user) return undefined;
+				target1 = PersonaDB.findActor(situation.user);
+				if (!target1) return undefined;
+			}
+			if (target1.system.type == "shadow") return undefined;
+			// const target2 = situation.socialTarget ?? situation.target;
+			// const target = PersonaDB.findActor<PersonaActor>(socialTarget);
 			switch (condition.socialTypeCheck) {
 				case "relationship-type-check":
-					const link = (user as PC).socialLinks.find(x=>x.actor == target);
+					const link = target1.socialLinks.find(x=>x.actor == target);
 					if (!link) return undefined;
 					return link.relationshipType.toUpperCase() == condition.relationshipType.toUpperCase();
 				case "is-social-disabled":
-					return target.isSociallyDisabled();
-				case "is-available":
-					if (user.system.type != "pc") {
+					return target1.isSociallyDisabled();
+				case "is-available": {
+					if (target1.system.type != "pc") {
 						return undefined;
 					}
-					return target.isAvailable(user as PC);
-				case "is-dating":
-					if (user.system.type != "pc") {
-						return undefined;
-					}
-					return (user as PC).isDating(target.id);
+					const target2 = getSubjectActor(condition, situation, source, "conditionTarget2");
+					if (!target2) return undefined;
+					return target1.isAvailable(target2);
+				}
+				case "is-dating": {
+					const target2 = getSubjectActor(condition, situation, source, "conditionTarget2");
+					if (!target2) return undefined;
+					return target1.isDating(target2);
+				}
 				default:
 					condition satisfies never;
 					PersonaError.softFail(`Unexpected social check ${(condition as any)?.socialTypeCheck}`);

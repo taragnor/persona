@@ -90,18 +90,25 @@ export const SOCIAL_CHECKS = Object.fromEntries(
 
 export type SocialComparisonBase = {
 	boolComparisonTarget : "social-availability",
+	conditionTarget: ConditionTarget,
 	socialTypeCheck: SocialCheck,
 };
 
 export type SocialComparison = (SocialComparisonBase) &
-	(RelationshipTypeComparison | SimpleSocialComparison);
+	(RelationshipTypeComparison | SimpleSocialComparison | TwoPartSocialComparison);
+
+export type TwoPartSocialComparison = {
+	socialTypeCheck : "is-available" | "is-dating",
+	conditionTarget2: ConditionTarget,
+};
 
 export type SimpleSocialComparison = {
-	socialTypeCheck : "is-social-disabled" | "is-available" | "is-dating",
+	socialTypeCheck : "is-social-disabled",
 };
 
 export type RelationshipTypeComparison = {
 	socialTypeCheck: "relationship-type-check",
+	conditionTarget2: ConditionTarget,
 	relationshipType: string;
 };
 

@@ -230,7 +230,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 	}
 
 	static getStatusValue (duration : StatusDuration) : number {
-		switch (duration.dtype) {
+		switch (duration?.dtype) {
 			case "permanent":
 			case undefined: //custom statuses player added
 			case "anchored":

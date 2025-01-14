@@ -504,10 +504,29 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			});
 	}
 
-	isDating(this: PC, linkId: string) : boolean;
-	isDating(this: PC, link: SocialLink) : boolean;
+	isDating(linkId: string) : boolean;
+	isDating( link: PersonaActor) : boolean;
 
-	isDating(this: PC, sl: SocialLink | string) : boolean {
+	isDating( sl: PersonaActor | string) : boolean {
+		switch (this.system.type) {
+			case "shadow":
+			case "tarot":
+				return false;
+			case "npc": {
+				const id = sl instanceof PersonaActor ? sl.id: sl;
+				const target =PersonaDB.allActors().find( x=> x.id == id);
+				if (!target || target.system.type != "pc")  {
+					return false;
+				}
+				return target.isDating(this as NPC);
+			}
+			case "pc":
+				break;
+			default:
+				this.system satisfies never;
+				PersonaError.softFail(`Unexpected Date type: ${this.system["type"]}`);
+				return false;
+		}
 		if (this.system.type != "pc") return false;
 		const id = sl instanceof PersonaActor ? sl.id: sl;
 		const link =  this.system.social.find(x=> x.linkId == id);
@@ -2061,14 +2080,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.tokenSpends":list});
 	}
 
-	isAvailable(pc: PC) : boolean {
+	isAvailable(pc: PersonaActor) : boolean {
 		if (this.system.type == "shadow" || this.system.type == "tarot") return false;
+		if (pc.system.type != "pc") return false;
 		const availability = this.system.weeklyAvailability;
 		if (this.isSociallyDisabled()) return false;
 		if (this.system.type == "npc") {
 			const npc = this as NPC;
 			const sit: Situation = {
-				user: pc.accessor,
+				user: (pc as PC).accessor,
 				socialTarget: npc.accessor,
 			};
 			if(!testPreconditions(this.system.availabilityConditions,sit, null)) {

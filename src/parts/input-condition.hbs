@@ -260,9 +260,18 @@
 	{{/if}}
 
 	{{#if (eq cond.boolComparisonTarget  "social-availability")}}
+	<select name="{{strcat namePrefix 'conditionTarget'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+	</select>
 	<select name="{{strcat namePrefix 'socialTypeCheck'}}">
 		{{selectOptions POWERSTUFF.SOCIAL_CHECKS localize=true selected=cond.socialTypeCheck}}
 	</select>
+	{{#if (eqAny cond.socialTypeCheck "is-dating" "is-available" "relationship-type-check")}}
+	<select name="{{strcat namePrefix 'conditionTarget2'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget2}}
+	</select>
+	{{/if}}
+
 
 	{{#if (eq cond.socialTypeCheck "relationship-type-check")}}
 	<select name="{{strcat namePrefix 'relationshipType'}}">
