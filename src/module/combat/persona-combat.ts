@@ -591,7 +591,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const actor = combatant.actor;
 		if (!actor) return;
 		if (!game.user.isOwner) return;
-		const notes =await combatant.actor.onEndCombatTurn();
+		const notes = await combatant.actor.onEndCombatTurn();
 		if (notes.length > 0) {
 		const messageData: MessageData = {
 			speaker: {alias: "End of Turn"},

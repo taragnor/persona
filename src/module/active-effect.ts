@@ -138,11 +138,11 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		switch (duration.dtype) {
 			case "X-rounds":
 			case "3-rounds":
-				duration.amount -= 1;
 				if (duration.amount <= 0) {
 					await this.delete();
 					return true;
 				}
+				duration.amount -= 1;
 				await this.setDuration(duration);
 				return false;
 			case "USoNT":
