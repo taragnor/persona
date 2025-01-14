@@ -1230,8 +1230,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "cameo":
 				return undefined;
 			case undefined:
-					PersonaError.softFail("cons.applyTo is undefined");
-				return undefined;
+				return target; //default to target since this is old material
+				// PersonaError.softFail("cons.applyTo is undefined");
 			default:
 				applyTo satisfies never;
 				return undefined;

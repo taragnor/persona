@@ -171,7 +171,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 			case "USoNT":
 			case "UEoNT":
 			case "UEoT":
-				const acc =duration.anchorStatus; 
+				const acc = duration.anchorStatus;
 				if (!acc) break;
 				const anchorStatus = PersonaDB.findAE(acc);
 				await anchorStatus?.delete();
@@ -231,8 +231,12 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 
 	static getStatusValue (duration : StatusDuration) : number {
 		switch (duration.dtype) {
+			case "permanent":
+			case undefined: //custom statuses player added
+			case "anchored":
+				return Infinity;
 			case "X-days":
-				return 1000 + (duration.amount);
+				return duration.amount * 100;
 			case "expedition":
 				return 100;
 			case "combat":
@@ -255,16 +259,12 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				}
 			case "UEoNT":
 				return 3;
-			case "anchored":
 			case "USoNT":
 				return 2;
 			case "UEoT":
 				return 1;
 			case "instant":
 				return 1;
-			case "permanent":
-			case undefined: //custom statuses player added
-				return 11;
 			default:
 				duration satisfies never;
 				PersonaError.softFail(`Unknwon duration ${duration}`);
