@@ -71,6 +71,8 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
+		html.find(".addCardTag").on("click", this.addCardTag.bind(this));
+		html.find(".cardTags .delTag").on("click", this.deleteCardTag.bind(this));
 		html.find(".add-qualifier").on("click", this.addQualifier.bind(this));
 		html.find(".delete-qualifier").on("click", this.deleteQualifier.bind(this));
 
@@ -80,6 +82,16 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		html.find(".del-event").on("click", this.deleteCardEvent.bind(this));
 		html.find(".add-choice").on("click", this.addChoice.bind(this));
 		html.find(".del-choice").on("click", this.deleteChoice.bind(this));
+
+	}
+
+	async addCardTag(_ev: JQuery.ClickEvent) {
+		await this.item.addCardTag();
+	}
+
+	async deleteCardTag(ev: JQuery.ClickEvent) {
+		const index = HTMLTools.getClosestData(ev, "tagIndex");
+		await this.item.deleteCardTag(Number(index));
 
 	}
 

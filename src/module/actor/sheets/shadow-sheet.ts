@@ -40,7 +40,6 @@ export class ShadowSheet extends CombatantSheetBase {
 				throw new PersonaError("Universal Modifiers can't be added to sheets");
 			case "item":
 			case "weapon":
-			case "job":
 			case "socialCard":
 				throw new PersonaError("Invalid Item Type to apply to Shadows");
 			default:

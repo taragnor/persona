@@ -1,4 +1,5 @@
 import { VARIABLE_ACTIONS } from "../../../config/consequence-types.js";
+import { CARD_TAGS } from "../../../config/card-tags.js";
 import { SOCIAL_LINK_OR_TAROT_OTHER } from "../../../config/precondition-types.js";
 import { EQUIPMENT_TAGS } from "../../../config/equipment-tags.js";
 import { CREATURE_TAGS } from "../../../config/creature-tags.js";
@@ -124,6 +125,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			ALTER_MP_SUBTYPES,
 			SOCIAL_CHECKS,
 			CREATURE_TAGS,
+			CARD_TAGS,
 			EQUIPMENT_TAGS,
 			VARIABLE_ACTIONS,
 		};

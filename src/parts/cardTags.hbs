@@ -1,0 +1,25 @@
+<div class="cardTags">
+	{{#if (isGM)}}
+	<h2>
+		<span>Tags</span>
+		<a class="addCardTag">
+			<i class="fa-solid fa-plus"> </i>
+		</a>
+	</h2>
+	<div class="tag-list">
+		{{#each item.system.cardTags as |tag i|}}
+		<div class="tag-item", data-tag-index="{{i}}">
+			<select name="system.cardTags.{{i}}">
+				{{selectOptions ../POWERSTUFF.CARD_TAGS localize=true selected=tag}}
+			</select>
+			<a class="delTag">
+				<i class="fa-solid fa-trash-can"></i>
+			</a>
+		</div>
+		{{/each}}
+	</div>
+	{{else}}
+	<span>Tags: </span> <span>{{getSocialCardTagList item}}</span>
+	{{/if}}
+</div>
+

@@ -99,7 +99,7 @@ export type SocialComparison = (SocialComparisonBase) &
 
 export type TwoPartSocialComparison = {
 	socialTypeCheck : "is-available" | "is-dating",
-	conditionTarget2: ConditionTarget,
+	socialLinkIdOrTarot : SocialLinkIdOrTarot,
 };
 
 export type SimpleSocialComparison = {
@@ -108,7 +108,7 @@ export type SimpleSocialComparison = {
 
 export type RelationshipTypeComparison = {
 	socialTypeCheck: "relationship-type-check",
-	conditionTarget2: ConditionTarget,
+	socialLinkIdOrTarot : SocialLinkIdOrTarot,
 	relationshipType: string;
 };
 

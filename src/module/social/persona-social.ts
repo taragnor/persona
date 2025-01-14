@@ -175,8 +175,8 @@ export class PersonaSocial {
 	static async getPrimarySecondary(defaultChoice: "primary" | "secondary" | SocialStat = "primary") :Promise<"primary" | "secondary" | SocialStat> {
 		const skillList = foundry.utils.mergeObject(
 			{
-				"primary":		"persona.term.primary",
-				"secondary":"persona.term.secondary"
+				"primary" :		"persona.term.primary",
+				"secondary" : "persona.term.secondary"
 			} ,
 			STUDENT_SKILLS);
 		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/dialogs/social-skill-selector.hbs`, {skillList, defaultChoice} );
@@ -1270,11 +1270,6 @@ Hooks.on("socketsReady" , () => {
 			if (actor.system.type == "npc" || actor.system.type == "pc") {
 				(actor as SocialLink).setAvailability(false);
 			}
-			return;
-		}
-		const job = PersonaDB.allJobs().find( x=> x.id == task_id);
-		if (job){
-			//TODO: Degrade this if it's a job and not something else
 			return;
 		}
 		throw new PersonaError(`Can't find Task ${task_id} to decremetn availability`);

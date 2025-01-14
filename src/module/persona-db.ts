@@ -1,6 +1,5 @@
 import { SocialEncounterCard } from "./social/persona-social.js";
 import { ModifierContainer } from "./item/persona-item.js";
-import { SocialLink } from "./actor/persona-actor.js";
 import { PC } from "./actor/persona-actor.js";
 import { Weapon } from "./item/persona-item.js"
 import { Shadow } from "./actor/persona-actor.js";
@@ -10,7 +9,6 @@ import { PersonaError } from "./persona-error.js";
 import { Activity } from "./item/persona-item.js";
 import { NPC } from "./actor/persona-actor.js";
 import { UniversalModifier } from "./item/persona-item.js";
-import { Job } from "./item/persona-item.js";
 import { Tarot } from "./actor/persona-actor.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { DBAccessor } from "./utility/db-accessor.js";
@@ -45,11 +43,11 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		this.#resetCache();
 	}
 
-	onCreateActor(actor :PersonaActor) {
+	onCreateActor(_actor :PersonaActor) {
 		this.#resetCache();
 	}
 
-	onCreateItem(item: PersonaItem) {
+	onCreateItem(_item: PersonaItem) {
 		this.#resetCache();
 	}
 
@@ -128,11 +126,6 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	socialEncounterCards(): SocialEncounterCard[] {
 		return this.allSocialCards()
 		.filter( x=> x.system.cardType == "social") as SocialEncounterCard[]
-	}
-
-	allJobs(): Job[] {
-		return this.allItems()
-		.filter( x=> x.system.type == "job") as Job[];
 	}
 
 	allActivities(): Activity[] {

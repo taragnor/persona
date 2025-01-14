@@ -21,7 +21,6 @@ import { TarotCard } from "../config/tarot.js";
 import { ConditionTarget } from "../config/precondition-types.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { SocialCard } from "./item/persona-item.js";
-import { Job } from "./item/persona-item.js";
 import { NPC } from "./actor/persona-actor.js";
 import { SocialStat } from "../config/student-skills.js";
 import { Trigger } from "../config/triggers.js";
@@ -474,11 +473,12 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			const power = PersonaDB.findItem(situation.usedPower);
 			return power.system.type == "consumable";
 		}
-		case "target-owner-comparison":
+		case "target-owner-comparison": {
 			const target = getSubject(condition, situation, source, "conditionTarget");
 			const target2 = getSubject(condition, situation, source, "conditionTarget2");
 			if (!target || !target2) return undefined;
 			return target == target2;
+		}
 		case "power-target-type-is":
 			if (!situation.usedPower) return undefined;
 			const power = PersonaDB.findItem(situation.usedPower);
@@ -565,7 +565,8 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			// const target = PersonaDB.findActor<PersonaActor>(socialTarget);
 			switch (condition.socialTypeCheck) {
 				case "relationship-type-check":
-					const link = target1.socialLinks.find(x=>x.actor == target);
+					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
+					const link = target1.socialLinks.find(x=>x.actor == target2);
 					if (!link) return undefined;
 					return link.relationshipType.toUpperCase() == condition.relationshipType.toUpperCase();
 				case "is-social-disabled":
@@ -574,12 +575,12 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 					if (target1.system.type != "pc") {
 						return undefined;
 					}
-					const target2 = getSubjectActor(condition, situation, source, "conditionTarget2");
+					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
 					if (!target2) return undefined;
 					return target1.isAvailable(target2);
 				}
 				case "is-dating": {
-					const target2 = getSubjectActor(condition, situation, source, "conditionTarget2");
+					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
 					if (!target2) return undefined;
 					return target1.isDating(target2);
 				}
@@ -825,7 +826,7 @@ type SituationUniversal = {
 	saveVersus ?: StatusEffectId;
 	statusEffect ?: StatusEffectId;
 	trigger ?: Trigger,
-	eventCard ?: UniversalItemAccessor<Job | SocialCard>,
+	eventCard ?: UniversalItemAccessor<SocialCard>,
 	isSocial?: boolean,
 	tarot ?: TarotCard,
 	socialTarget ?: UniversalActorAccessor<PC | NPC>;

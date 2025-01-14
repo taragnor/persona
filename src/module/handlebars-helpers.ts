@@ -1,4 +1,4 @@
-import { StatusDuration } from "./active-effect.js";
+import { SocialCard } from "./item/persona-item.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaItem } from "./item/persona-item.js";
@@ -373,6 +373,9 @@ export class PersonaHandleBarsHelpers {
 
 		"getCreatureTagList": function (actor: PersonaActor) : string[] {
 			return actor.tagList.map(tag=> localize(CREATURE_TAGS[tag]));
+		},
+		"getSocialCardTagList": function (card: SocialCard) : string {
+			return card.cardTags;
 		},
 		"hasTag": function (source: PersonaActor | PersonaItem, tagName: string) : boolean {
 			switch (true) {

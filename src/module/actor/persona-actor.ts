@@ -1905,7 +1905,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await	this.update( {"system.weeklyAvailability.available": bool});
 		} else {
 			PersonaSocial.requestAvailabilitySet(this.id, bool);
-
 		}
 	}
 

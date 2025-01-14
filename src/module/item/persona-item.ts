@@ -1,3 +1,5 @@
+import { Precondition } from "../../config/precondition-types.js";
+import { CARD_TAGS } from "../../config/card-tags.js";
 import { SimpleDamageCons } from "../../config/consequence-types.js";
 import { Helpers } from "../utility/helpers.js";
 import { PersonaAE } from "../active-effect.js";
@@ -12,8 +14,6 @@ import { ModifierList } from "../combat/modifier-list.js";
 import { testPreconditions } from "../preconditions.js";
 import { CardChoice } from "../../config/social-card-config.js";
 import { CardEvent } from "../../config/social-card-config.js";
-import { Consequence } from "../../config/consequence-types.js";
-import { Precondition } from "../../config/precondition-types.js";
 import { BASIC_PC_POWER_NAMES } from "../../config/basic-powers.js";
 import { BASIC_SHADOW_POWER_NAMES } from "../../config/basic-powers.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
@@ -92,17 +92,36 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return "";
 	}
 
+	get cardTags() : string {
+		if ("cardTags" in this.system) {
+			const tags= this.system.cardTags.map(tag => localize(CARD_TAGS[tag]));
+			return tags.join(", ");
+		}
+		return "";
+	}
+
 	async addItemTag(this: Consumable | InvItem | Weapon): Promise<void> {
 		const tags = this.system.itemTags;
 		tags.push("nil");
 		await this.update( {"system.itemTags": tags});
-		}
+	}
+
+	async addCardTag(this: SocialCard): Promise<void> {
+		const tags = this.system.cardTags;
+		tags.push("");
+		await this.update( {"system.cardTags": tags});
+	}
 
 	async deleteItemTag(this: Consumable | InvItem | Weapon, index: number) : Promise<void> {
 		const tags = this.system.itemTags;
 		tags.splice(index, 1);
 		await this.update( {"system.itemTags": tags});
+	}
 
+	async deleteCardTag(this: SocialCard, index: number) : Promise<void> {
+		const tags = this.system.cardTags;
+		tags.splice(index, 1);
+		await this.update( {"system.cardTags": tags});
 	}
 
 	hasTag(this: Usable, tag: PowerTag) : boolean;
@@ -161,7 +180,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "weapon": {
 				const list= this.system.itemTags.slice();
 				if (!list.includes(itype))
-					list.push(itype);
+				list.push(itype);
 				return list;
 			}
 			default:
@@ -232,7 +251,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	getGrantedPowers(this: ModifierContainer, user: PC | Shadow, situation?: Situation): Power[] {
 		return this.getAllGrantedPowers(user, situation);
-			// .filter(pwr => !pwr.hasTag("opener"));
+		// .filter(pwr => !pwr.hasTag("opener"));
 	}
 
 	getOpenerPowers(this: ModifierContainer, user: PC | Shadow, situation?: Situation): Power[] {
@@ -413,7 +432,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	canBeReflectedByPhyiscalShield(this: Usable): boolean {
-			return this.system.dmg_type == "physical";
+		return this.system.dmg_type == "physical";
 	}
 
 	canBeReflectedByMagicShield(this: Usable) : boolean {
@@ -500,7 +519,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	isBasicPower(this: Usable) : boolean {
-		 if (this.system.type == "consumable") {return false;}
+		if (this.system.type == "consumable") {return false;}
 		const basics = [
 			...PersonaItem.getBasicPCPowers(),
 			...PersonaItem.getBasicShadowPowers()
@@ -508,19 +527,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return basics.includes(this as Power);
 	}
 
-	 baseCritSlotBonus(this: Usable) : number {
-		 if (this.system.type == "consumable") {return 0;}
-		 if (this.isBasicPower()) return 0;
-		 switch (this.system.slot) {
-			 case 0: return 0;
-			 case 1: return 2;
-			 case 2: return 4;
-			 case 3: return 6;
-			 default:
-				 PersonaError.softFail(`Unknwon Slot Type :${this.system.slot}`);
-				 return 0;
-		 }
-	 }
+	baseCritSlotBonus(this: Usable) : number {
+		if (this.system.type == "consumable") {return 0;}
+		if (this.isBasicPower()) return 0;
+		switch (this.system.slot) {
+			case 0: return 0;
+			case 1: return 2;
+			case 2: return 4;
+			case 3: return 6;
+			default:
+				PersonaError.softFail(`Unknwon Slot Type :${this.system.slot}`);
+				return 0;
+		}
+	}
 
 	mpCost(this: Usable, user: PC | Shadow) {
 		if (this.system.type == "consumable") return 0;
@@ -552,7 +571,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		} else {
 			const data = this.cache.effectsMap.get(sourceActor);
 			if (data) return data;
-				console.debug(`refreshing Cached effect for ${this.name} with source ${sourceActor.name}`);
+			console.debug(`refreshing Cached effect for ${this.name} with source ${sourceActor.name}`);
 			const newData=  ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
 			this.cache.effectsMap.set(sourceActor, newData);
 			return newData;
@@ -661,8 +680,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	get perk() : string {
 		switch (this.system.type) {
-			case "job":
-				return this.system.perk;
 			case "socialCard":
 				return this.system.perk;
 			default:
@@ -783,9 +800,63 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return testPreconditions(conditions, situation, this);
 	}
 
-	//temporary function to test weapons with embedded
-	embeddedTest(this: Weapon) {
+	cardConditionsToSelect( this: SocialCard) : SocialCard["system"]["conditions"] {
+		const extraConditionsFromTags = this.extraConditionsFromTags();
+		if (extraConditionsFromTags.length == 0) {
+			return this.system.conditions;
+		}
+		return this.system.conditions.concat(extraConditionsFromTags);
+	}
 
+	extraConditionsFromTags( this: SocialCard) : SocialCard["system"]["conditions"] {
+		const SLCheck = function (low:number, high:number) : Precondition {
+			const SLcheck: Precondition = {
+				type: "numeric",
+				comparator: "range",
+				comparisonTarget: "social-link-level",
+				num: low,
+				high: high,
+				socialLinkIdOrTarot: "target",
+			};
+			return SLcheck;
+		};
+		return this.system.cardTags.flatMap( tag => {
+			switch (tag) {
+				case "date":
+				case "friends":
+					const isDating : Precondition = {
+						type: "boolean",
+						boolComparisonTarget: "social-availability",
+						booleanState: tag == "date",
+						conditionTarget: "user",
+						socialTypeCheck: "is-dating",
+						socialLinkIdOrTarot: "target",
+					};
+					return [ isDating ]
+				case "student-stuff": {
+					const isStudent: Precondition = {
+						type: "boolean",
+						boolComparisonTarget: "has-creature-tag",
+						booleanState: true,
+						conditionTarget: "target",
+						creatureTag: "student",
+					};
+					return [isStudent];
+				}
+				case "middle-range":
+					return [SLCheck(3,8)];
+				case "trusted":
+					return [SLCheck(7,10)];
+				case "introductory":
+					return [SLCheck(1,3)];
+				case "":
+					return [];
+				default:
+					tag satisfies never;
+					break;
+			}
+			return [];
+		});
 	}
 }
 
@@ -802,7 +873,6 @@ export type InvItem = Subtype<PersonaItem, "item">;
 export type Talent = Subtype<PersonaItem, "talent">;
 export type Focus = Subtype<PersonaItem, "focus">;
 export type Consumable = Subtype<PersonaItem, "consumable">;
-export type Job = Subtype<PersonaItem, "job">;
 export type Activity = SocialCard;
 export type SocialCard = Subtype<PersonaItem, "socialCard">;
 
@@ -812,17 +882,6 @@ export type ModifierContainer = Weapon | InvItem | Focus | Talent | Power | Cons
 
 export type PowerContainer = Consumable | Power | ModifierContainer;
 export type Usable = Power | Consumable;
-
-
-// type ConditionalEffectUpdater<T extends ConditionalEffectObjectContainer> = {
-// 	array: T,
-// 	updater : () => Promise<unknown>;
-// };
-
-// type ConditionalEffectObjectContainer =
-// 	{effects: ConditionalEffect[]}
-// 	| {consequences: Consequence[]}
-// 	| {conditions: Precondition[]};
 
 Hooks.on("updateItem", (item :PersonaItem) => {
 	item.clearCache();

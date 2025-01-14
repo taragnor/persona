@@ -78,7 +78,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				return item;
 			case "universalModifier":
 				throw new PersonaError("Universal Modifiers can't be added to sheets");
-			case "job":
 			case "socialCard":
 				return undefined;
 			default:
@@ -118,7 +117,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` )
 		}
 		try {
-			const results  = await PersonaCombat.usePower(token, power as Usable);
+			await PersonaCombat.usePower(token, power as Usable);
 		} catch (e) {
 			console.error(e);
 			throw e;

@@ -1,3 +1,4 @@
+import { CARD_TAG_LIST } from "../../config/card-tags.js";
 import { CardRoll } from "../../config/social-card-config.js"
 import { ArrayCorrector } from "../item/persona-item.js";
 import { Consequence } from "../../config/consequence-types.js";
@@ -108,7 +109,6 @@ class PowerSchema extends foundry.abstract.TypeDataModel {
 			const statusEffectTags : typeof itemData["tags"] =["charm", "sleep", "fear", "confusion",   ];
 			const isStatusEffect = itemData.tags.some( x=> statusEffectTags.includes(x));
 			const isBuff = (itemData.tags.includes("buff") || itemData.tags.includes("debuff")) && !isStatusEffect;
-			// const resurrection = itemData.targets == "1-nearby-dead" || itemData.targets == "all-dead-allies";
 			const areaMult = 1.5 + (isStatusEffect ? 1.0 : 0);
 			const mult = (1 + (isExpensive ? 1 : 0) + (isBuff ? 0.5 : 0)) * (isArea ? areaMult : 1);
 			const baseCost = PersonaActor.convertSlotToMP(slot);
@@ -188,32 +188,32 @@ class InventoryItemSchema extends foundry.abstract.TypeDataModel {
 	}
 }
 
-class JobItemSchema extends foundry.abstract.TypeDataModel {
-	get type() { return "job" as const;}
-	static override defineSchema() {
-		const ret = {
-			baseRelationship: new txt(),
-			weeklyAvailability: weeklyAvailability(),
-			conditions: new arr(new obj<Precondition>()),
-			subtype: new txt({initial: "job", choices: SOCIAL_CARD_TYPES_LIST}),
-			keyskill: new sch({
-				primary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
-				secondary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
-			}),
-			dc: new num({integer: true, initial: 0}),
-			pay:new sch( {
-				high: new num({initial: 0, min: 0, integer:true, max: 20}),
-				low: new num({initial: 0, min: 0, integer:true, max: 20}),
-			}),
-			perk: new txt(),
-			critical: new txt(),
-			active: new bool({initial: false}),
-			bane: new txt(),
-			tokenSpends:new arr(new obj<TokenSpend>()),
-		}
-		return ret;
-	}
-}
+// class JobItemSchema extends foundry.abstract.TypeDataModel {
+// 	get type() { return "job" as const;}
+// 	static override defineSchema() {
+// 		const ret = {
+// 			baseRelationship: new txt(),
+// 			weeklyAvailability: weeklyAvailability(),
+// 			conditions: new arr(new obj<Precondition>()),
+// 			subtype: new txt({initial: "job", choices: SOCIAL_CARD_TYPES_LIST}),
+// 			keyskill: new sch({
+// 				primary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
+// 				secondary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
+// 			}),
+// 			dc: new num({integer: true, initial: 0}),
+// 			pay:new sch( {
+// 				high: new num({initial: 0, min: 0, integer:true, max: 20}),
+// 				low: new num({initial: 0, min: 0, integer:true, max: 20}),
+// 			}),
+// 			perk: new txt(),
+// 			critical: new txt(),
+// 			active: new bool({initial: false}),
+// 			bane: new txt(),
+// 			tokenSpends:new arr(new obj<TokenSpend>()),
+// 		}
+// 		return ret;
+// 	}
+// }
 
 class SocialCardSchema extends foundry.abstract.TypeDataModel {
 	get type() { return "socialCard" as const;}
@@ -221,7 +221,7 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 		const ret = {
 			cardType: new txt({initial: "social", choices: SOCIAL_CARD_TYPES_LIST}),
 			//for social cards
-
+			cardTags: new arr( new txt({choices: CARD_TAG_LIST})),
 			frequency: new num({initial: 1, integer: false}),
 			announceWhenAvailable: new bool({initial : false}),
 			qualifiers: new arr( new obj<{
@@ -285,7 +285,7 @@ export const ITEMMODELS = {
 	talent: Talent,
 	weapon: Weapon,
 	universalModifier: UniversalModifier,
-	job: JobItemSchema,
+	// job: JobItemSchema,
 	socialCard: SocialCardSchema,
 } as const;
 
