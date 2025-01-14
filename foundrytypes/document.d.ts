@@ -19,7 +19,7 @@
 	 get hasPlayerOwner(): boolean;
 	 get documentName(): string;
 	 ownership : { default: number} & Record<FoundryUser["id"], number>;
-	 getFlag<T = unknown>(scope: string, key: string): T;
+	 getFlag<T = unknown>(scope: string, key: string): T | undefined;
 	 async setFlag(scope:string, key:string, value: any): Promise<void>;
 	 async unsetFlag(scope:string, key:string): Promise<void>;
 	 prepareEmbeddedDocuments(): void;

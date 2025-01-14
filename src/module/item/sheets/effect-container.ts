@@ -27,7 +27,7 @@ import { PRECONDITIONTYPES } from "../../../config/precondition-types.js";
 import { CONSQUENCETYPES } from "../../../config/effect-types.js";
 import { DAMAGETYPES } from "../../../config/damage-types.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../../../config/status-effects.js";
-import { STATUS_EFFECT_DURATIONS } from "../../../config/status-effects.js";
+import { STATUS_EFFECT_DURATION_TYPES } from "../../../config/status-effects.js";
 import { TARGETING } from "../../../config/effect-types.js";
 import { POWER_TAGS } from "../../../config/power-tags.js";
 import { MODIFIERS_TABLE } from "../../../config/item-modifiers.js";
@@ -101,7 +101,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			DAMAGETYPES : DAMAGETYPES,
 			DAMAGETYPESPLUS,
 			STATUSEFFECTS: STATUS_EFFECT_TRANSLATION_TABLE,
-			STATUSDURATIONS : STATUS_EFFECT_DURATIONS,
+			STATUSDURATIONS : STATUS_EFFECT_DURATION_TYPES,
 			TARGETING : TARGETING,
 			TAGS: POWER_TAGS,
 			MODIFIER_TARGETS: MODIFIERS_TABLE,

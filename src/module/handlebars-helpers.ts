@@ -1,3 +1,5 @@
+import { StatusDuration } from "./active-effect.js";
+import { PersonaCombat } from "./combat/persona-combat.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
@@ -107,8 +109,30 @@ export class PersonaHandleBarsHelpers {
 				if (actor.system.type != "pc" && actor.system.type != "shadow") {
 					return "- / -";
 				}
-				const {high, low} = (actor as PC | Shadow).allOutAttackDamage();
-				return Math.round(low) + " / " + Math.round(high);
+				const combat = game.combat as PersonaCombat;
+				if (!combat) {
+					return "- / -";
+				}
+				const tokenAcc = combat.getToken(actor.accessor);
+				if (!tokenAcc) {
+					return "No token?";
+				}
+				const usable = PersonaDB.getBasicPower("All-out Attack");
+				const token = PersonaDB.findToken(tokenAcc);
+				if (!token || !usable) {
+					return "No token or no power?";
+				}
+				const situation :Situation = {
+					user: (actor as PC | Shadow).accessor,
+					attacker: (actor as PC | Shadow).accessor,
+					usedPower: usable?.accessor,
+				};
+				const dmg = PersonaCombat.calculateAllOutAttackDamage(token, situation);
+				const mult = usable.getDamageMultSimple(actor as PC | Shadow);
+
+				const {high, low} = dmg;
+				// const {high, low} = (actor as PC | Shadow).allOutAttackDamage();
+				return Math.round(low * mult) + " / " + Math.round(high * mult);
 			}
 			switch (actor.system.type) {
 				case "tarot":
@@ -155,7 +179,7 @@ export class PersonaHandleBarsHelpers {
 			return new Handlebars.SafeString(txt?.replaceAll("\n", "<br>") ?? "");
 		},
 
-		'isHighestLinker': (pc: PC, linkData:SocialLinkData ) => {
+		'isHighestLinker': (_pc: PC, linkData:SocialLinkData ) => {
 			if (!linkData) return false;
 			const highest = linkData.actor.highestLinker();
 			return highest.linkLevel == linkData.linkLevel;
@@ -372,6 +396,5 @@ export class PersonaHandleBarsHelpers {
 		"replace": function(originalString: string = "ERROR", replacementSet: Record<string, string> = {}): string {
 			return Helpers.replaceAll(originalString, replacementSet);
 		},
-
 	}
 } //end of class

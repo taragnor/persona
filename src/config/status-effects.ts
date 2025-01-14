@@ -156,26 +156,32 @@ export const STATUS_EFFECT_TRANSLATION_TABLE = Object.fromEntries(
 	CONFIG.statusEffects.map( ({id, name}) => [id, name])
 );
 
-export const STATUS_EFFECT_DURATIONS_LIST = [
+export const STATUS_EFFECT_DURATIONS_TYPE_LIST = [
 	"permanent",
 	"expedition",
 	"combat",
-	"presave-easy",
-	"presave-normal",
-	"presave-hard",
-	"save-normal",
-	"save-easy",
-	"save-hard",
-	"3-rounds",
+	"save",
+	"X-rounds",
+	"X-days",
 	"UEoNT",
 	"USoNT",
 	"UEoT",
 	"instant",
+	"3-rounds", // deprecated
+	"save-normal", //deprecated
+	"save-easy", //deprecated
+	"save-hard", //deprected
+	"presave-easy", //deprecated
+	"presave-normal", //deprecated
+	"presave-hard", //deprecated
+	"anchored" //special
 ] as const;
 
-export type StatusDuration = typeof STATUS_EFFECT_DURATIONS_LIST[number];
+export type StatusDurationType = typeof STATUS_EFFECT_DURATIONS_TYPE_LIST[number];
 
-export const STATUS_EFFECT_DURATIONS = Object.fromEntries(
-	STATUS_EFFECT_DURATIONS_LIST.map( x=> [x, `persona.status.duration.${x}`]
+export const STATUS_EFFECT_DURATION_TYPES = Object.fromEntries(
+	STATUS_EFFECT_DURATIONS_TYPE_LIST.map( x=> [x, `persona.status.duration.${x}`]
 	)
 );
+
+

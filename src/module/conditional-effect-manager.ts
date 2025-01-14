@@ -1,9 +1,9 @@
+import { STATUS_EFFECT_DURATION_TYPES } from "../config/status-effects.js";
 import { Helpers } from "./utility/helpers.js";
 import { multiCheckToArray } from "./preconditions.js";
 import { TAROT_DECK } from "../config/tarot.js";
 import { localize } from "./persona.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
-import { STATUS_EFFECT_DURATIONS } from "../config/status-effects.js";
 import { MODIFIER_VARIABLES } from "../config/effect-types.js";
 import { MODIFIERS_TABLE } from "../config/item-modifiers.js";
 import { Consequence } from "../config/consequence-types.js";
@@ -614,7 +614,9 @@ export class ConditionalEffectManager {
 				return this.printDamageConsequence(cons);
 			case "addStatus": {
 				const status = this.translate(cons.statusName!, STATUS_EFFECT_TRANSLATION_TABLE);
-				const duration = this.translate(cons.statusDuration!, STATUS_EFFECT_DURATIONS);
+				let dur = cons.statusDuration;
+				if (!dur) return `ERROR`;
+				const duration = this.translate(dur, STATUS_EFFECT_DURATION_TYPES);
 				return `Add Status ${status} (${duration})`;
 			} case "removeStatus": {
 				const status = this.translate(cons.statusName!, STATUS_EFFECT_TRANSLATION_TABLE);

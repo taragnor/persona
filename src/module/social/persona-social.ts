@@ -223,7 +223,7 @@ export class PersonaSocial {
 			attacker: actor.accessor,
 			socialTarget: link? link.actor.accessor : undefined,
 			isSocial: true,
-			target: link? link.actor.accessor : undefined,
+			// target: link ? link.actor.accessor : undefined,
 		};
 		const preconditionPass =  PersonaDB.socialEncounterCards()
 			.filter( card => testPreconditions(card.system.conditions, situation, null));
@@ -273,7 +273,7 @@ export class PersonaSocial {
 			user: actor.accessor,
 			socialTarget: activity instanceof PersonaActor ?  activity.accessor: undefined,
 			attacker: actor.accessor,
-			target: activity instanceof PersonaActor ?  activity.accessor: undefined,
+			// target: activity instanceof PersonaActor ?  activity.accessor: undefined,
 			cameo,
 			isSocial: true,
 			socialRandom : Math.floor(Math.random() * 20) + 1,
@@ -342,7 +342,7 @@ export class PersonaSocial {
 		let targets : (SocialLink)[] = [];
 		const testCameo = (cameo: SocialLink) => {
 			const acc = cameo.accessor;
-			const target = game.actors.get(linkId) as PersonaActor | undefined;
+			const target = game.actors.get(linkId) as SocialLink | undefined;
 			const targetAcc = target?.accessor;
 			const situation: Situation = {
 				cameo: acc,
@@ -350,7 +350,7 @@ export class PersonaSocial {
 				user: actor.accessor,
 				attacker: actor.accessor,
 				socialTarget: targetAcc,
-				target: targetAcc,
+				// target: targetAcc,
 				socialRandom : Math.floor(Math.random() * 20) + 1,
 			};
 			return testPreconditions(card.system.cameoConditions , situation, null);
@@ -1229,7 +1229,7 @@ export class PersonaSocial {
 			user: pc.accessor,
 			attacker: pc.accessor,
 			isSocial: true,
-			target: target.accessor,
+			// target: target.accessor,
 			socialTarget: target.accessor,
 		};
 		return testPreconditions(target.system.type == "npc" ? target.system.conditions : [], situation, null);

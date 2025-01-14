@@ -300,6 +300,15 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 		return this.getActorById(accessor.actorId) as unknown as T;
 	}
 
+	findAE<T extends ActiveEffect<any,any>>(accessor: UniversalAEAccessor<T>) : T | undefined {
+		if ("actor" in accessor) {
+			const actor = this.findActor(accessor.actor);
+			return actor.effects.get(accessor.effectId) as T;
+		}
+		const item = this.findItem(accessor.item);
+		return item.effects.get(accessor.effectId) as T;
+	}
+
 	getUniversalItemAccessor<T extends Item<any>>(item: T) : UniversalItemAccessor<T> {
 		return {
 			actor: (item.parent) ? this.getUniversalActorAccessor(item.parent): undefined,
@@ -319,12 +328,29 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 			return  {
 				actorId: actor.id,
 				token: this.getUniversalTokenAccessor(comb.token),
-			};
+			} as UniversalActorAccessor<T>;
 		}
 		return {
 			actorId: actor.id,
 			token: undefined
 		}
+	}
+
+	getUniversalAEAccessor<T extends ActiveEffect<any, any> & {parent: Actor<any> | Item<any>}> (effect: T): UniversalAEAccessor<T> {
+		const parent = effect.parent;
+		if (parent instanceof Actor) {
+			return {
+				actor: this.getUniversalActorAccessor(parent),
+				effectId: effect.id,
+			};
+		}
+		if (parent instanceof Item) {
+			return {
+				item: this.getUniversalItemAccessor(parent),
+				effectId: effect.id,
+			};
+		}
+		else throw new Error("Active Effect doesn't have a pvalid parent");
 	}
 
 	getUniversalTokenAccessor<T extends Token<any>>(tok: T) : UniversalTokenAccessor<T["document"]> ;
@@ -353,18 +379,27 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 } //End of class
 
 
-export type UniversalTokenAccessor<_T extends TokenDocument<any>> = {
+export type UniversalTokenAccessor<T extends TokenDocument<any>> = {
 	scene: string,
-	tokenId : string,
+	tokenId : T["id"],
 };
 
 export type UniversalActorAccessor<T extends Actor<any, any, any>> = {
 	token ?: UniversalTokenAccessor<TokenDocument<T>>,
-	actorId : string,
+	actorId : T["id"],
 }
 
-export type UniversalItemAccessor<_T extends Item<any>> = {
-	actor?: UniversalActorAccessor<Actor<any, any>>
-	itemId: string,
+export type UniversalItemAccessor<T extends Item<any>> = {
+	actor?: UniversalActorAccessor<Actor<any, any>>,
+	itemId: T["id"],
 }
 
+
+export type UniversalAEAccessor<T extends ActiveEffect<any,any>> =
+	{
+		effectId: T["id"],
+	} &
+	(
+		{ actor: UniversalActorAccessor<any>}
+		| { item: UniversalItemAccessor<any>}
+	);

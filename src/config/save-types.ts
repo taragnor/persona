@@ -10,4 +10,3 @@ export const SAVE_TYPES_LOCALIZED = Object.fromEntries(
 	Object.keys(SAVE_TYPES).map(a=> [a, `persona.saves.types.${a}`])
 );
 
-

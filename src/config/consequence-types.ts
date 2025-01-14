@@ -1,3 +1,5 @@
+import { SaveType } from "./save-types.js";
+import { StatusDurationType } from "./status-effects.js";
 import { SocialLinkIdOrTarot } from "./precondition-types.js";
 import { AlterMPSubtype } from "./effect-types.js";
 import { ConsequenceTarget } from "./precondition-types.js";
@@ -9,20 +11,18 @@ import { DungeonAction } from "./effect-types.js";
 import { SlotType } from "./slot-types.js";
 import { CONDITION_TARGETS_LIST } from "./precondition-types.js";
 
-import { SocialCardAction } from "./effect-types.js";
 import { StudentSkill } from "./student-skills.js";
 import { ResistType } from "./damage-types.js";
 import { ResistStrength } from "./damage-types.js";
 import { Usable } from "../module/item/persona-item.js";
 import { OtherConsequence } from "../module/datamodel/other-effects.js";
-import { StatusDuration } from "./status-effects.js";
+import { StatusDuration } from "../module/active-effect.js";
 import { ConsequenceType } from "./effect-types.js";
 import { StatusEffectId } from "./status-effects.js";
 import { ModifierTarget } from "./item-modifiers.js";
 import { PC } from "../module/actor/persona-actor.js";
 import { UniversalActorAccessor } from "../module/utility/db-accessor.js";
 import { Shadow } from "../module/actor/persona-actor.js";
-import { STATUS_EFFECT_DURATIONS_LIST } from "./status-effects.js";
 import { UniversalItemAccessor } from "../module/utility/db-accessor.js";
 
 type ExpendOtherEffect = {
@@ -119,18 +119,12 @@ export type ExtraTurnEffect = {
 export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect;
 
 export type StatusEffect = StatusEffect_Basic | StatusEffect_NonBasic;
-// export type StatusEffect = {
-// 	id: StatusEffectId,
-// 	potency ?: number,
-// 	duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
-// 	other ?: any;
-// };
 
 type StatusEffect_Basic = {
 	id: Exclude<StatusEffectId, StatusEffect_NonBasic["id"] >,
 	potency ?: number,
-	duration : typeof STATUS_EFFECT_DURATIONS_LIST[number],
-}
+	duration: StatusDuration,
+};
 
 type StatusEffect_NonBasic =
 	StatusEffect_FollowUp
@@ -139,8 +133,10 @@ type StatusEffect_NonBasic =
 type StatusEffect_FollowUp = {
 	id: Extract<StatusEffectId, "bonus-action">;
 	potency ?: undefined,
-	duration: "UEoT";
-	activationRoll: number;
+	duration: StatusDuration & {
+		dtype: "UEoT";
+	},
+	activationRoll: number,
 }
 
 export type Consequence =
@@ -159,15 +155,10 @@ type GenericConsequence = {
 	amount ?: number,
 	iterativePenalty ?: number,
 	modifiedField ?: ModifierTarget,
-	statusName ?: StatusEffectId,
-	statusDuration ?: StatusDuration,
 	itemAcc ?: UniversalItemAccessor<Usable>,
 	slotType ?: SlotType,
 	id ?: string,
 	otherEffect ?: OtherConsequence,
-	flagName ?: string,
-	flagId ?: string,
-	flagState ?: boolean,
 	resistType ?: ResistType,
 	resistanceLevel ?: ResistStrength,
 	msg ?: string,
@@ -186,7 +177,34 @@ type NonGenericConsequences = UsePowerConsequence
 	| OtherEffectConsequence
 	| AddPowerConsequence
 	| InspirationChangeConsequence
+	| AddStatusConsequence
+	| RemoveStatusConsequence
+	| SetFlagConsequence
 ;
+
+type SetFlagConsequence = {
+	type: "set-flag",
+	flagName : string,
+	flagId : string,
+	flagState : boolean,
+} & DurationComponent;
+
+type AddStatusConsequence = {
+	type : "addStatus",
+	statusName: StatusEffect["id"],
+} & DurationComponent;
+
+type DurationComponent = {
+	amount ?: number,
+	durationApplyTo ?: ConsequenceTarget,
+	statusDuration: StatusDurationType,
+	saveType ?: SaveType,
+}
+
+type RemoveStatusConsequence = {
+	type: "removeStatus",
+	statusName: StatusEffect["id"],
+};
 
 type InspirationChangeConsequence = {
 	type: "inspiration-cost",

@@ -329,7 +329,10 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 
 			}
 			const combat = PersonaCombat.ensureCombatExists();
-			const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken(subject.accessor);
+			if (subject instanceof Actor) {
+				if (subject.system.type == "npc") return undefined;
+			}
+			const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken((subject as PC | Shadow).accessor);
 			if (!subjectToken) {
 				PersonaError.softFail(`Can't find token for ${subject?.name}`);
 				return undefined;
@@ -555,7 +558,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (!socialTarget) return undefined;
 			if (!situation.user) return undefined;
 			const user = PersonaDB.findActor(situation.user);
-			const target = PersonaDB.findActor(socialTarget);
+			const target = PersonaDB.findActor<PersonaActor>(socialTarget);
 			if (!user) return undefined;
 			if (user.system.type == "shadow") return undefined;
 			switch (condition.socialTypeCheck) {

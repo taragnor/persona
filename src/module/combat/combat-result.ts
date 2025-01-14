@@ -1,3 +1,4 @@
+import { StatusDuration } from "../active-effect.js";
 import { getSocialLinkTarget } from "../preconditions.js";
 import { Consumable } from "../item/persona-item.js";
 import { Metaverse } from "../metaverse.js";
@@ -35,7 +36,7 @@ declare global {
 export class CombatResult  {
 	_finalized : boolean = false;
 	tokenFlags: {
-		actor: UniversalActorAccessor<PC |Shadow>,
+		actor: UniversalActorAccessor<PersonaActor>,
 			effects: OtherEffect[]
 	}[] = [] ;
 	attacks: Map<AttackResult, ActorChange<PC | Shadow>[]> = new Map();
@@ -165,16 +166,20 @@ export class CombatResult  {
 				if (!effect) break;
 				let status_damage : number | undefined = undefined;
 				if (atkResult && cons.statusName == "burn") {
-					const power= PersonaDB.findItem(atkResult.power);
+					const power = PersonaDB.findItem(atkResult.power);
 					const attacker = PersonaDB.findToken(atkResult.attacker).actor;
 					status_damage = attacker ? power.getDamage(attacker, "low"): 0;
 				}
 				const id = cons.statusName!;
 				if (id != "bonus-action") {
+					if (!target) {
+						PersonaError.softFail(`No Target for ${id}`);
+						break;
+					}
 					effect.addStatus.push({
 						id,
 						potency: status_damage ?? cons.amount ?? 0,
-						duration: cons.statusDuration ?? "instant",
+						duration: convertConsToStatusDuration(cons, atkResult ?? target),
 					});
 				}
 				break;
@@ -273,12 +278,13 @@ export class CombatResult  {
 				break;
 			case "set-flag":
 				if (!effect) break;
+				const dur = convertConsToStatusDuration(cons, atkResult ?? target!);
 				effect.otherEffects.push( {
 					type: "set-flag",
 					flagId: cons.flagId ?? "",
 					flagName: cons.flagName ?? "",
 					state: cons.flagState ?? true,
-					duration: cons.statusDuration ?? "permanent",
+					duration: dur,
 				});
 				break;
 			case "inspiration-cost":
@@ -676,7 +682,7 @@ export class CombatResult  {
 					}
 					const bonusAction : StatusEffect = {
 						id: "bonus-action",
-						duration: "UEoT",
+						duration: { dtype:  "UEoT"},
 						activationRoll: otherEffect.activation,
 					};
 					const extraTurnChange : ActorChange<PC | Shadow> = {
@@ -951,3 +957,72 @@ Hooks.on("updateActor", async (updatedActor : PersonaActor, changes) => {
 	}
 });
 
+function convertConsToStatusDuration(cons: Consequence & {type : "addStatus" | "set-flag"}, atkResultOrActor: AttackResult | (PC | Shadow)) : StatusDuration {
+	const dur = cons.statusDuration;
+	switch (dur) {
+		case "X-rounds":
+		case "X-days":
+		case "3-rounds":
+			return {
+				dtype: dur,
+				amount: cons.amount ?? 3,
+			};
+		case "expedition":
+		case "combat":
+		case "permanent":
+		case "instant":
+			return {
+				dtype: dur,
+			};
+		case "save":
+			return {
+				dtype: "save",
+				saveType: cons.saveType ?? "normal",
+			}
+		case "save-easy":
+		case "presave-easy":
+			return {
+				dtype: "save",
+				saveType: "easy",
+			};
+		case "save-normal":
+		case "presave-normal":
+			return {
+				dtype: "save",
+				saveType: "normal",
+			};
+		case "save-hard":
+		case "presave-hard":
+			return {
+				dtype: "save",
+				saveType: "hard",
+			};
+		case "UEoNT":
+		case "USoNT":
+		case "UEoT":
+			if (atkResultOrActor instanceof PersonaActor) {
+				return {
+					dtype: dur,
+					actorTurn: atkResultOrActor.accessor
+				};
+			}
+			const applyTarget = PersonaCombat.resolveEffectiveTarget(cons.durationApplyTo, atkResultOrActor, cons);
+			if (!applyTarget) {
+				PersonaError.softFail(`Can't get applyTarget for status ${cons.type}`);
+				return {dtype: "instant"};
+			}
+			return {
+				dtype: dur,
+				actorTurn: applyTarget.actor.accessor,
+			}
+		case "anchored":
+			PersonaError.softFail("Anchored shouldn't happen here");
+			return {
+				dtype: "instant",
+			};
+		default:
+			dur satisfies never;
+			PersonaError.softFail(`Invaliud Duration ${dur}`);
+			return {dtype: "instant"};
+	}
+}

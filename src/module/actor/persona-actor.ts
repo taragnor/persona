@@ -42,7 +42,7 @@ import { PersonaDB } from "../persona-db.js";
 import { ACTORMODELS } from "../datamodel/actor-types.js"
 import { PersonaItem } from "../item/persona-item.js"
 import { PersonaAE } from "../active-effect.js";
-import { StatusDuration } from "../../config/status-effects.js";
+import { StatusDuration } from "../active-effect.js";
 
 declare global {
 	type ActorSub<X extends PersonaActor["system"]["type"]> = Subtype<PersonaActor, X>;
@@ -613,7 +613,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const rec_bonuses = this.getBonuses("recovery");
 		rec_bonuses.add("Base", 10);
 		const situation : Situation = {
-			user: PersonaDB.getUniversalActorAccessor(this)
+			user: (this as PC).accessor
 		};
 		const healing = rec_bonuses.total(situation);
 		return healing;
@@ -692,8 +692,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get maxPowers() : number {
-		const extraMaxPowers = this.getBonuses("extraMaxPowers");
-		return 8 + extraMaxPowers.total ( {user: this.accessor});
+		switch (this.system.type) {
+			case "npc":
+			case "tarot":
+				return 0;
+			case "pc":
+			case "shadow":
+				const extraMaxPowers = this.getBonuses("extraMaxPowers");
+				return 8 + extraMaxPowers.total ( {user: (this as PC | Shadow).accessor});
+			default:
+				this.system satisfies never;
+				return -1;
+		}
 	}
 
 	get powers(): Power[] {
@@ -780,8 +790,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	/** returns true if status is added*/
-	async addStatus({id, potency, duration}: StatusEffect): Promise<boolean> {
+	async isStatusResisted( id : StatusEffect["id"]) : Promise<boolean> {
 		const resist = this.statusResist(id);
 		switch (resist) {
 			case "absorb":
@@ -790,21 +799,26 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "normal":
 				break;
 			case "block":
-				return false;
+				return true;
 			case "resist":
-				const DC = duration.includes("hard") ? 16 : 11;
 				const save = await PersonaCombat.rollSave(this as Shadow, {
-					DC,
+					DC: 11,
 					label:`Resist status ${id}`,
 					askForModifier: false,
 					saveVersus: id,
 					modifier: 0,
 				});
-				if (save.success) return false;
+				if (save.success) return true;
 				break;
 			default:
 				resist satisfies never;
 		}
+		return false;
+	}
+
+	/** returns true if status is added*/
+	async addStatus({id, potency, duration}: StatusEffect): Promise<boolean> {
+		if (await this.isStatusResisted(id)) return false;
 		const eff = this.effects.find( eff => eff.statuses.has(id));
 		const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
 		if (!stateData) {
@@ -826,9 +840,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
 			await newEffect.setPotency(potency ?? 0);
 			await newEffect.setDuration(duration);
-			if (duration == "3-rounds") {
-				await newEffect.update({"duration.rounds": 3});
-			}
 			return true;
 		} else  {
 			if (potency && eff.potency < potency) {
@@ -836,7 +847,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			}
 			eff.duration.startRound = game?.combat?.round ?? 0;
 			await eff.update({"duration": eff.duration});
-			if (duration && eff.durationLessThanOrEqualTo(duration)) {
+			if (typeof duration != "string" && eff.durationLessThanOrEqualTo(duration)) {
 				await eff.setDuration(duration);
 			}
 			//TODO: update the effect
@@ -1161,8 +1172,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			.some(x=> x.consequences
 				.some( cons=>cons.type == "raise-status-resistance" && cons.statusName == status)));
 		const situation : Situation = {
-			user: this.accessor,
-			target: this.accessor,
+			user: actor.accessor,
+			target: actor.accessor,
 		};
 		const consequences = effectChangers.flatMap(
 			item => item.getEffects(actor).flatMap(eff =>
@@ -1572,7 +1583,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		};
 		const tarot = targetPC.tarot;
 		if (!tarot) {
-			console.log(`No tarot found for ${this.name} or ${linkHolder.name}`);
+			console.debug(`No tarot found for ${this.name} or ${linkHolder.name}`);
 			return this.focii.sort( sortFn);
 		}
 		return this.focii.concat(tarot.focii).sort(sortFn);
@@ -1584,7 +1595,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		};
 		const tarot = this.tarot ?? linkHolder.tarot;
 		if (!tarot) {
-			console.log(`No tarot found for ${this.name} or ${linkHolder.name}`);
+			console.debug(`No tarot found for ${this.name} or ${linkHolder.name}`);
 			return this.focii.sort( sortFn);
 		}
 		return this.focii.concat(tarot.focii).sort(sortFn);
@@ -1732,7 +1743,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		try {
 			this.fullHeal();
 			for (const eff of this.effects) {
-				if (eff.durationLessThanOrEqualTo("expedition")) {
+				if (eff.durationLessThanOrEqualTo({ dtype: "expedition"})) {
 					await eff.delete();
 				}
 			}
@@ -1811,7 +1822,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					return;
 				await this.addStatus({
 					id:"fading",
-					duration: "expedition",
+					duration: {
+						dtype: "expedition"
+					},
 				});
 				break;
 			case 2:
@@ -1884,7 +1897,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					break;
 				if (this.system.tarot == "")
 					return undefined;
-				console.debug("cached value no good (pc)");
+				// console.debug("cached value no good (pc)");
 				const PC = this as PC;
 				this.cache.tarot = PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
 				break;
@@ -1893,7 +1906,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					break;
 				if (this.system.tarot == "")
 					return undefined;
-				console.debug("cached value no good(Shadow)");
+				// console.debug("cached value no good(Shadow)");
 				const shadow = this as Shadow;
 				this.cache.tarot =  PersonaDB.tarotCards().find(x=> x.name == shadow.system.tarot);
 				break;
@@ -1902,7 +1915,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					break;
 				if (this.system.tarot == "")
 					return undefined;
-				console.debug("cached value no good (NPC)");
+				// console.debug("cached value no good (NPC)");
 				const NPC = this as NPC;
 				if (
 					NPC == PersonaDB.personalSocialLink()
@@ -1947,6 +1960,35 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		};
 	}
 
+	async onStartCombatTurn(this: PC | Shadow): Promise<string[]> {
+		console.log(`${this.name} on Start turn`);
+		await this.removeStatus("blocking");
+		let ret = [] as string[];
+		for (const eff of this.effects) {
+			console.log(`${this.name} has Effect ${eff.name}`);
+			Debug(eff);
+			if ( await eff.onStartCombatTurn()) {
+				ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
+			}
+		}
+		return ret;
+	}
+
+	async onEndCombatTurn(this : PC | Shadow) : Promise<string[]> {
+		const burnStatus = this.effects.find( eff=> eff.statuses.has("burn"));
+		if (burnStatus) {
+			const damage = burnStatus.potency;
+			await this.modifyHP(-damage);
+		}
+		let ret = [] as string[];
+		for (const eff of this.effects) {
+			if (await eff.onEndCombatTurn()) {
+				ret.push(`Removed Condition ${eff.displayedName} at end of turn`);
+			}
+		}
+		return ret;
+	}
+
 	getFlagState(flagName: string) : boolean {
 		return !!this.getEffectFlag(flagName);
 	}
@@ -1955,7 +1997,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.getEffectFlag(flagName)?.duration;
 	}
 
-	async setEffectFlag(flagId: string, setting: boolean, duration: StatusDuration = "instant", flagName ?: string) {
+	async setEffectFlag(flagId: string, setting: boolean, duration: StatusDuration = {dtype: "instant"}, flagName ?: string) {
 		if (setting) {
 			await this.createEffectFlag(flagId, duration, flagName);
 		} else {
@@ -1964,7 +2006,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 
-	async createEffectFlag(flagId: string, duration: StatusDuration = "instant", flagName ?: string) {
+	async createEffectFlag(flagId: string, duration: StatusDuration = {dtype: "instant"}, flagName ?: string) {
 		flagId = flagId.toLowerCase();
 		const eff = this.effects.find(x=> x.isFlag(flagId))
 		const newAE = {
@@ -2024,10 +2066,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const availability = this.system.weeklyAvailability;
 		if (this.isSociallyDisabled()) return false;
 		if (this.system.type == "npc") {
+			const npc = this as NPC;
 			const sit: Situation = {
 				user: pc.accessor,
-				socialTarget: this.accessor,
-				target: this.accessor,
+				socialTarget: npc.accessor,
 			};
 			if(!testPreconditions(this.system.availabilityConditions,sit, null)) {
 				return false;
@@ -2107,26 +2149,26 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		});
 	}
 
-	allOutAttackDamage(this: PC | Shadow, situation?: Situation) : { high: number, low: number } {
-		let high = 0, low = 0;
-		if (this.isDistracted() || !this.isCapableOfAction()) {
-			return {high, low};
-		}
-		// if (!situation) {
-		situation = {
-			user: this.accessor,
-			attacker: this.accessor
-		};
-		// }
-		const wpndmg = this.wpnDamage();
-		//temporarily removed to see about increasing damage base instead
-		// const levelBasedScaling = this.system.combat.classData.level / 3;
-		const mult = this.wpnMult() + this.getBonuses("allOutDmgMult").total(situation);
-		const bonusdmg = this.getBonusWpnDamage();
-		high += (wpndmg.high * mult) + bonusdmg.high.total(situation) ;
-		low += (wpndmg.low * mult) + bonusdmg.low.total(situation);
+allOutAttackDamage(this: PC | Shadow, situation?: Situation) : { high: number, low: number } {
+	let high = 0, low = 0;
+	if (this.isDistracted() || !this.isCapableOfAction()) {
 		return {high, low};
 	}
+	if (!situation) {
+		situation = {
+			user: this.accessor,
+			attacker: this.accessor,
+		};
+	}
+	const wpndmg = this.wpnDamage();
+	//temporarily removed to see about increasing damage base instead
+	// const levelBasedScaling = this.system.combat.classData.level / 3;
+	const mult = this.wpnMult();
+	const bonusdmg = this.getBonusWpnDamage();
+	high += (wpndmg.high * mult) + bonusdmg.high.total(situation) ;
+	low += (wpndmg.low * mult) + bonusdmg.low.total(situation);
+	return {high, low};
+}
 
 	getPoisonDamage(this: PC | Shadow): number {
 		const base = Math.round(this.mhp * 0.15);
@@ -2232,7 +2274,7 @@ get tagList() : CreatureTag[] {
 		switch (this.system.type) {
 			case "shadow":
 				const sit : Situation = {
-					user: this.accessor,
+					user: (this as Shadow).accessor,
 				}
 				const startingEnergy = 1 + this.getBonuses("starting-energy").total(sit);
 				await (this as Shadow).setEnergy(startingEnergy);

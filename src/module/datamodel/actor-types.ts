@@ -12,7 +12,7 @@ import { INCREMENTAL_ADVANCE_TYPES } from "../../config/incremental-advance-type
 import { RESIST_STRENGTH_LIST } from "../../config/damage-types.js";
 import { ResistStrength } from "../../config/damage-types.js";
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
-import { StatusDuration } from "../../config/status-effects.js";
+import { StatusDuration } from "../active-effect.js";
 import { TarotCard } from "../../config/tarot.js";
 import { TAROT_DECK } from "../../config/tarot.js";
 

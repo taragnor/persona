@@ -172,6 +172,10 @@
 	"persona.status.duration.save-normal": "Save Ends (normal)",
 	"persona.status.duration.save-hard": "Save Ends (hard)",
 	"persona.status.duration.3-rounds": "3 rounds",
+	"persona.status.duration.X-rounds": "X rounds",
+	"persona.status.duration.X-days": "X days",
+	"persona.status.duration.save": "Save Ends",
+	"persona.status.duration.anchored": "Anchored (Special)",
 
 	"persona.status.duration.UEoNT": "Until End of Your Next Turn",
 	"persona.status.duration.USoNT": "Until Start of Your Next Turn",

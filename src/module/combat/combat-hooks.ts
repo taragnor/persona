@@ -91,7 +91,7 @@ export class CombatHooks {
 					?.toMessage("Triggered Effect", token.actor );
 				}
 				for (const effect of actor.effects) {
-					if (effect.durationLessThanOrEqualTo("combat")) {
+					if (effect.durationLessThanOrEqualTo({dtype: "combat"})) {
 						await effect.delete();
 					}
 				}

@@ -7,7 +7,6 @@ import { TriggeredEffect } from "../triggered-effect.js";
 import { NonCombatTrigger } from "../../config/triggers.js";
 import { STATUS_POWER_TAGS } from "../../config/power-tags.js";
 import { Shadow } from "../actor/persona-actor.js";
-import { PersonaItem } from "../item/persona-item.js";
 import { PersonaCalendar } from "../social/persona-calendar.js";
 import { POWER_TAGS } from "../../config/power-tags.js";
 import { PowerTag } from "../../config/power-tags.js";
@@ -94,7 +93,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				content: msg,
 				style: CONST.CHAT_MESSAGE_STYLES.OOC,
 			};
-			ChatMessage.create(messageData, {});
+			await ChatMessage.create(messageData, {});
 		}
 		const starters = this.combatants.contents.map( comb => comb?.actor?.onCombatStart());
 		await Promise.all(starters);
@@ -137,7 +136,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			if (!x.actor) {return false;}
 			if (attacker == x.token) {return true;}
 			if (challenged || x.actor.hasStatus("challenged")) {
-				if (!this.isEngaging(PersonaDB.getUniversalTokenAccessor(attacker!), PersonaDB.getUniversalTokenAccessor(x.token))) {
+				if (!this.isEngaging(PersonaDB.getUniversalTokenAccessor(attacker!), PersonaDB.getUniversalTokenAccessor(x.token as PToken))) {
 					return false;
 				}
 			}
@@ -159,9 +158,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (!game.user.isGM) return;
 		await this.execStartingTrigger(combatant);
 		await this.clearStartTurnEffects(combatant);
+
 		let startTurnMsg = [ `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`];
 		startTurnMsg = startTurnMsg.concat(
-			// await this.handleFading(combatant),
+		   await (actor as PC | Shadow).onStartCombatTurn(),
 			await this.handleStartTurnEffects(combatant)
 		);
 		const openingReturn = await this.execOpeningRoll(combatant);
@@ -189,11 +189,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			rolls: rolls.map(r=> r.roll).concat(baseRolls),
 			sound: rolls.length + baseRolls.length > 0 ? CONFIG.sounds.dice : undefined
 		};
-		ChatMessage.create(messageData, {});
+		await ChatMessage.create(messageData, {});
 	}
 
 	async	execStartingTrigger(combatant: PersonaCombat["combatant"]) {
-		const triggeringCharacter  = (combatant as Combatant<PersonaActor>)?.token?.actor?.accessor;
+		const triggeringCharacter  = (combatant as Combatant<ValidAttackers>)?.token?.actor?.accessor;
 		if (triggeringCharacter) {
 			for (const user of this.combatants) {
 				if (user.token.actor == undefined) {continue;}
@@ -207,18 +207,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
-	async clearStartTurnEffects(combatant: PersonaCombat["combatant"]) {
-		const actor = combatant?.actor;
-		if (!actor) return;
-		for (const effect of actor.effects) {
-			await actor.removeStatus("blocking");
-			if (effect.statusDuration == "USoNT")  {
-				await Logger.sendToChat(`Removed condition: ${effect.displayedName} at start of turn`, actor);
-				await effect.delete();
-			}
+		async clearStartTurnEffects(combatant: PersonaCombat["combatant"]) {
+			const actor = combatant?.actor as PersonaActor;
+			if (!actor) return;
+			if (actor.system.type != "pc" && actor.system.type != "shadow") {return;}
 		}
-	}
-
 
 	async execOpeningRoll( combatant: Combatant<ValidAttackers> ) : Promise<{data: OpenerOptionsReturn[], roll: Roll} | null> {
 		let returns :OpenerOptionsReturn[]= [];
@@ -396,7 +389,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		) {
 			return {msg, options};
 		}
-		const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token);
+		const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token as PToken);
 		if (!this.isEngagedByAnyFoe(accessor)) {
 			const ret : OpenerOptionsReturn = {
 				msg, options
@@ -572,7 +565,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	async endCombatantTurn(combatant: Combatant<ValidAttackers>) {
-		const triggeringCharacter  = (combatant as Combatant<PersonaActor>)?.token?.actor?.accessor;
+		const triggeringCharacter  = (combatant as Combatant<ValidAttackers>)?.token?.actor?.accessor;
 		const triggeringActor = combatant?.token?.actor;
 
 		if (triggeringActor && triggeringActor.system.type == "shadow") {
@@ -598,49 +591,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const actor = combatant.actor;
 		if (!actor) return;
 		if (!game.user.isOwner) return;
-		const burnStatus = actor.effects.find( eff=> eff.statuses.has("burn"));
-		if (burnStatus) {
-			const damage = burnStatus.potency;
-			await actor.modifyHP(-damage);
-		}
-		for (const effect of actor.effects) {
-			switch (effect.statusDuration) {
-				case "UEoNT":
-					if (effect.duration.startRound != this.round) {
-						await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
-						await effect.delete();
-					}
-					break;
-				case "presave-easy":
-				case "presave-hard":
-				case "presave-normal":
-				case "save-hard":
-				case "save-easy":
-				case "save-normal":
-					const DC = effect.statusSaveDC;
-					const {success} = await PersonaCombat.rollSave(actor, { DC, label:effect.name, saveVersus:effect.statusId })
-					if (success) {
-						await Logger.sendToChat(`Removed condition: ${effect.displayedName} from saving throw`, actor);
-						await effect.delete();
-					}
-					break;
-				case "3-rounds":
-					break;
-				case "UEoT":
-					await Logger.sendToChat(`Removed condition: ${effect.displayedName} at end of turn`, actor);
-					await effect.delete();
-					break;
-				case "instant":
-					await effect.delete();
-					break;
-				case "USoNT":
-				case "expedition":
-				case "permanent":
-				case "combat":
-					break;
-				default:
-					effect.statusDuration satisfies never;
-			}
+		const notes =await combatant.actor.onEndCombatTurn();
+		if (notes.length > 0) {
+		const messageData: MessageData = {
+			speaker: {alias: "End of Turn"},
+			content: notes.join("<br>"),
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+		};
+		await ChatMessage.create(messageData, {});
 		}
 	}
 
@@ -703,72 +661,76 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return { msg, options};
 	}
 
-	async handleFading(combatant: Combatant<ValidAttackers>): Promise<string[]> {
-		let Msg :string[] = [];
-		const actor= combatant.actor;
-		if (!actor) return [];
-		if (actor.hp <= 0 && actor.system.type == "pc") {
-			if (actor.system.combat.fadingState < 2) {
-				Msg.push(`${combatant.name} is fading...`);
-				const {success} = await PersonaCombat.rollSave(actor, { DC:11, label: "Fading Roll", saveVersus:"fading"});
-				if (!success) {
-					const newval = actor.system.combat.fadingState +1;
-					await actor.setFadingState(newval);
-					if (newval >= 2) {
-						Msg.push(`<b>${combatant.name} is compeltely faded!`);
-					}
-				}
-			} else {
+	// async handleFading(combatant: Combatant<ValidAttackers>): Promise<string[]> {
+	// 	let Msg :string[] = [];
+	// 	const actor= combatant.actor;
+	// 	if (!actor) return [];
+	// 	if (actor.hp <= 0 && actor.system.type == "pc") {
+	// 		if (actor.system.combat.fadingState < 2) {
+	// 			Msg.push(`${combatant.name} is fading...`);
+	// 			const {success} = await PersonaCombat.rollSave(actor, { DC:11, label: "Fading Roll", saveVersus:"fading"});
+	// 			if (!success) {
+	// 				const newval = actor.system.combat.fadingState +1;
+	// 				await actor.setFadingState(newval);
+	// 				if (newval >= 2) {
+	// 					Msg.push(`<b>${combatant.name} is compeltely faded!`);
+	// 				}
+	// 			}
+	// 		} else {
 
-				Msg.push(`${combatant.name} is totally faded!`);
+	// 			Msg.push(`${combatant.name} is totally faded!`);
 
-			}
-			Msg.push( `${combatant.name} can fight in spirit!`);
-		}
-		return Msg;
+	// 		}
+	// 		Msg.push( `${combatant.name} can fight in spirit!`);
+	// 	}
+	// 	return Msg;
 
-	}
+	// }
 
 	async handleStartTurnEffects(combatant: Combatant<ValidAttackers>): Promise<string[]> {
 		const actor= combatant.actor;
 		if (!actor) return [];
 		let Msg: string[] = [];
-		for (const effect of actor.effects) {
-			switch (effect.statusDuration) {
-				case "presave-easy":
-				case "presave-normal":
-				case "presave-hard":
-					//presave no longer exists as a mechanic
-					break;
-				case "expedition":
-				case "combat":
-				case "save-normal":
-				case "save-easy":
-				case "save-hard":
-				case "UEoNT":
-				case "UEoT":
-				case "permanent":
-					break;
-				case "instant":
-				case "USoNT":
-					Msg.push( `<br> ${effect.displayedName} has expired`);
-					await effect.delete();
-					break;
-				case "3-rounds":
-					const rounds = effect.duration.rounds ?? 0;
-					if (rounds<= 0) {
-						Msg.push(`<br>${effect.displayedName} has expired.`);
-						await effect.delete();
-						break;
-					}
-					else  {
-						await effect.update({"duration.rounds" : rounds-1});
-						break;
-					}
-				default:
-						effect.statusDuration satisfies never;
-			}
-		}
+		//TODO: this system should be derpecated
+		//for (const effect of actor.effects) {
+		//	switch (effect.statusDuration.dtype) {
+		//		case "presave-easy":
+		//		case "presave-normal":
+		//		case "presave-hard":
+		//			//presave no longer exists as a mechanic
+		//			break;
+		//		case "expedition":
+		//		case "combat":
+		//		case "save-normal":
+		//		case "save-easy":
+		//		case "save-hard":
+		//		case "UEoNT":
+		//		case "UEoT":
+		//		case "permanent":
+		//			break;
+		//		case "instant":
+		//		case "USoNT":
+		//			Msg.push( `<br> ${effect.displayedName} has expired`);
+		//			await effect.delete();
+		//			break;
+		//		case "3-rounds":
+		//			const rounds = effect.duration.rounds ?? 0;
+		//			if (rounds<= 0) {
+		//				Msg.push(`<br>${effect.displayedName} has expired.`);
+		//				await effect.delete();
+		//				break;
+		//			}
+		//			else  {
+		//				await effect.update({"duration.rounds" : rounds-1});
+		//				break;
+		//			}
+		//		case "X-rounds":
+		//		case "X-days":
+		//			break;
+		//		default:
+		//				effect.statusDuration satisfies never;
+		//	}
+		//}
 		const debilitatingStatuses :StatusEffectId[] = [
 			"sleep",
 			"frozen",
@@ -903,7 +865,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return result;
 	}
 
-	static getPTokenFromActorAccessor(acc: UniversalActorAccessor<ValidAttackers>) : PToken | undefined {
+	static getPTokenFromActorAccessor(acc: UniversalActorAccessor<PersonaActor>) : PToken | undefined {
 		const combat = game.combat;
 		if (acc.token) {
 			return PersonaDB.findToken(acc.token) as PToken;
@@ -1189,43 +1151,44 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					const x = this.ProcessConsequences(power, situation, consequences, attacker.actor!, atkResult);
 					CombatRes.escalationMod += x.escalationMod;
 					for (const cons of x.consequences) {
-						let effectiveTarget : PToken | undefined;
-						switch (cons.applyTo) {
-							case "target" :
-								effectiveTarget = target;
-								break;
-							case "attacker":
-								effectiveTarget = attacker;
-								break;
-							case "owner":
-								if (cons.cons.actorOwner) {
-									effectiveTarget = this.getPTokenFromActorAccessor(cons.cons.actorOwner);
-									break;
-								}
-								ui.notifications.notify("Can't find Owner of Consequnece");
-								continue;
-							case "user":
-								if (!situation.user) {continue;}
-								const userToken  = this.getPTokenFromActorAccessor(situation.user);
-								effectiveTarget = userToken;
-								break;
-							case "triggering-character":
-								const triggerer = "triggeringCharacter" in situation? situation.triggeringCharacter: undefined;
-								if (!triggerer) {
-									PersonaError.softFail("Can't target triggering character for this");
-									effectiveTarget = undefined;
-									break;
-								}
-								const token = this.getPTokenFromActorAccessor(triggerer);
-								effectiveTarget = token;
-								break;
-							case "cameo":
-								effectiveTarget = undefined;
-								break;
-							default:
-								cons.applyTo satisfies never;
-								continue;
-						}
+						const effectiveTarget = PersonaCombat.resolveEffectiveTarget(cons.applyTo, atkResult, cons.cons);
+					// 	let effectiveTarget : PToken | undefined;
+					// 	switch (cons.applyTo) {
+					// 		case "target" :
+					// 			effectiveTarget = target;
+					// 			break;
+					// 		case "attacker":
+					// 			effectiveTarget = attacker;
+					// 			break;
+					// 		case "owner":
+					// 			if (cons.cons.actorOwner) {
+					// 				effectiveTarget = this.getPTokenFromActorAccessor(cons.cons.actorOwner);
+					// 				break;
+					// 			}
+					// 			ui.notifications.notify("Can't find Owner of Consequnece");
+					// 			continue;
+					// 		case "user":
+					// 			if (!situation.user) {continue;}
+					// 			const userToken  = this.getPTokenFromActorAccessor(situation.user);
+					// 			effectiveTarget = userToken;
+					// 			break;
+					// 		case "triggering-character":
+					// 			const triggerer = "triggeringCharacter" in situation? situation.triggeringCharacter: undefined;
+					// 			if (!triggerer) {
+					// 				PersonaError.softFail("Can't target triggering character for this");
+					// 				effectiveTarget = undefined;
+					// 				break;
+					// 			}
+					// 			const token = this.getPTokenFromActorAccessor(triggerer);
+					// 			effectiveTarget = token;
+					// 			break;
+					// 		case "cameo":
+					// 			effectiveTarget = undefined;
+					// 			break;
+					// 		default:
+					// 			cons.applyTo satisfies never;
+					// 			continue;
+					// 	}
 						if (effectiveTarget) {
 							CombatRes.addEffect(atkResult, effectiveTarget.actor!, cons.cons);
 						}
@@ -1236,6 +1199,44 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return CombatRes;
 	}
 
+	static resolveEffectiveTarget(applyTo :Consequence["applyTo"], atkResult: AttackResult, cons?: Consequence) : PToken | undefined {
+		const situation = atkResult.situation;
+		const power = PersonaDB.findItem(atkResult.power);
+		const attacker = PersonaDB.findToken(atkResult.attacker);
+		const target = PersonaDB.findToken(atkResult.target);
+		switch (applyTo) {
+			case "target" :
+				return target;
+			case "attacker":
+				return attacker;
+			case "owner":
+				if (cons && cons.actorOwner) {
+					return this.getPTokenFromActorAccessor(cons.actorOwner);
+				}
+				ui.notifications.notify("Can't find Owner of Consequnece");
+				return undefined;
+			case "user":
+				if (!situation.user) {return undefined;}
+				const userToken  = this.getPTokenFromActorAccessor(situation.user);
+				return userToken;
+			case "triggering-character":
+				const triggerer = "triggeringCharacter" in situation? situation.triggeringCharacter: undefined;
+				if (!triggerer) {
+					PersonaError.softFail("Can't target triggering character for this");
+					return undefined;
+				}
+				const token = this.getPTokenFromActorAccessor(triggerer);
+				return token;
+			case "cameo":
+				return undefined;
+			case undefined:
+					PersonaError.softFail("cons.applyTo is undefined");
+				return undefined;
+			default:
+				applyTo satisfies never;
+				return undefined;
+		}
+	}
 
 	static ProcessConsequences_simple(consequence_list: Consequence[]): ConsequenceProcessed {
 		let consequences : ConsequenceProcessed["consequences"] = [];
@@ -1454,7 +1455,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return [{applyTo,cons}];
 			case "expend-item":
 				if (cons.itemId) {
-					const item = game.items.get(cons.itemId) as PersonaItem;
+					const item = game.items.get(cons.itemId) as Usable;
 					if (!item) return [];
 					return [{applyTo,
 						cons: {
@@ -2004,7 +2005,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			low:0
 		};
 		const attackLeader = PersonaDB.findActor(situation.attacker!);
-		const combat = this.ensureCombatExists();
+		const combat = game.combat as PersonaCombat | undefined;
+		if (!combat)
+			return {high: -1, low: -1};
 		const attackerComb = combat.findCombatant(attacker);
 		if (!attackerComb) return dmg;
 		const attackers = [
@@ -2022,11 +2025,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return dmg;
 	}
 
-	getToken( acc: UniversalActorAccessor<ValidAttackers>  | undefined): UniversalTokenAccessor<PToken> | undefined {
+	getToken( acc: UniversalActorAccessor<PersonaActor>  | undefined): UniversalTokenAccessor<PToken> | undefined {
 		if (!acc) return undefined;
-		if (acc.token) return acc.token;
+		if (acc.token) return acc.token as UniversalTokenAccessor<PToken>;
 		const token = this.combatants.find( comb=> comb?.actor?.id == acc.actorId && comb.actor.token == undefined)?.token;
-		if (token) return PersonaDB.getUniversalTokenAccessor(token);
+		if (token && token.actor) return PersonaDB.getUniversalTokenAccessor(token as PToken);
 		return undefined;
 	}
 
@@ -2050,7 +2053,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			content: msg,
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 		};
-		ChatMessage.create(messageData, {});
+		await ChatMessage.create(messageData, {});
 	}
 
 	roomEffectsMsg(): string {
@@ -2123,14 +2126,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		let list = [] as string[];
 		const combs= this.combatants;
 		for (const comb of combs) {
-			const combAcc = PersonaDB.getUniversalTokenAccessor(comb.token);
+			const combAcc = PersonaDB.getUniversalTokenAccessor(comb.token as PToken);
 			const foeEng = this.isEngagedByAnyFoe(combAcc) ? "*" : "";
 			const engagedBy = combs
-				.filter( c => this.isEngagedBy(combAcc, PersonaDB.getUniversalTokenAccessor(c.token)))
+				.filter( c => this.isEngagedBy(combAcc, PersonaDB.getUniversalTokenAccessor(c.token as PToken)))
 				.map(c=> c.name);
 			list.push(`${comb.name}${foeEng} Engaged By: ${engagedBy.join(" , ")}`);
 			const engaging = combs
-				.filter( c=> this.isEngaging(combAcc, PersonaDB.getUniversalTokenAccessor(c.token)))
+				.filter( c=> this.isEngaging(combAcc, PersonaDB.getUniversalTokenAccessor(c.token as PToken)))
 				.map( c=> c.name);
 			list.push(`${comb.name}${foeEng} is Engaging: ${engaging.join(" , ")}`);
 		}
@@ -2193,7 +2196,7 @@ async showRoomEffects() {
 		content: msg,
 		style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
 	};
-	ChatMessage.create(messageData, {});
+	await ChatMessage.create(messageData, {});
 }
 
 	override async rollInitiative(ids: string[], {formula=null, updateTurn=true, messageOptions={}}={}) {
@@ -2276,7 +2279,7 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 			content: msg,
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 		};
-		ChatMessage.create(messageData, {});
+		await ChatMessage.create(messageData, {});
 }
 
 	async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll: R}[], messageOptions: MessageOptions = {}): Promise<ChatMessage<R>> {

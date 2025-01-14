@@ -1,14 +1,20 @@
+import { PersonaDB } from "./persona-db.js";
+import { PC } from "./actor/persona-actor.js";
+import { Shadow } from "./actor/persona-actor.js";
+import { PersonaCombat } from "./combat/persona-combat.js";
+import { UniversalAEAccessor } from "./utility/db-accessor.js";
+import { UniversalActorAccessor } from "./utility/db-accessor.js";
+import { StatusDurationType } from "../config/status-effects.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaError } from "./persona-error.js";
-import { StatusDuration } from "../config/status-effects.js";
 import { StatusEffectId } from "../config/status-effects.js";
 
 export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 
 	declare statuses: Set<StatusEffectId>;
 
-	static async applyHook (actor: PersonaActor, change: AEChange, current: any, delta: any, changes: Record<string, any> ) {
+	static async applyHook (_actor: PersonaActor, _change: AEChange, _current: any, _delta: any, _changes: Record<string, any> ) {
 		//*changes object is a record of valeus taht may get changed by applying the AE;
 		// example: changes["system.hp"] = 25
 	}
@@ -28,27 +34,189 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 	}
 
 	get statusDuration() : StatusDuration {
-		for (const status of this.statuses) {
-			switch (status) {
-				case "depleted":
-					return "UEoNT";
-				default:
-					break;
-			}
+		const duration =  this.getFlag<StatusDuration | StatusDuration["dtype"]>("persona", "duration");
+		if (!duration) {
+			return {
+				dtype: "permanent"
+			};
 		}
-		return this.getFlag<StatusDuration>("persona", "duration");
+		if (typeof duration == "string") {
+			return {
+				dtype: duration
+			} as any;
+		}
+		return duration;
 	}
 
 	async setPotency(potency: number) : Promise<void> {
 		await this.setFlag("persona", "potency", potency);
 	}
 
-	async setDuration(duration: StatusDuration) : Promise<void> {
-		await this.setFlag("persona", "duration", duration);
-		if (duration == "3-rounds") {
-			await this.update({"duration.rounds": 3});
+	durationFix(duration: TurnEndDuration) : void {
+		if (duration.anchorStatus) return;
+		const owner = duration.actorTurn ? PersonaDB.findActor(duration.actorTurn) : this.parent;
+		if (!(owner instanceof PersonaActor)) { return;}
+		const combat = game.combat;
+		if (!combat) {
+			duration.dtype = "UEoT";
+			return;
+		}
+		if (combat.combatant?.actor != owner) {
+			duration.dtype = "UEoT";
 		}
 	}
+
+	async setDuration(duration: StatusDuration) : Promise<void> {
+		if (duration.dtype == "UEoNT") {
+			this.durationFix(duration);
+		}
+		switch (duration.dtype) {
+			case "UEoNT":
+			case "USoNT":
+			case "UEoT":
+				if (duration.anchorStatus) {break;}
+				if (!duration.actorTurn) {break;}
+				const actorTurn = PersonaDB.findActor(duration.actorTurn);
+				if (actorTurn == this.parent) {break;}
+				const anchor = await this.createAnchoredHolder(duration);
+				if (!anchor) {break;}
+				const newDuration : StatusDuration = {
+					dtype: "anchored",
+					anchor: anchor.accessor,
+				}
+				await this.setFlag("persona", "duration", newDuration);
+				return;
+			default:
+				break;
+
+		}
+		await this.setFlag("persona", "duration", duration);
+	}
+
+	get accessor() {
+		return PersonaDB.getUniversalAEAccessor(this);
+	}
+
+	async createAnchoredHolder(duration: StatusDuration) : Promise<PersonaAE | null> {
+		const origDuration = duration;
+		switch (origDuration.dtype) {
+			case "UEoNT":
+			case "USoNT":
+			case "UEoT":
+				const anchorHolderAcc = origDuration.actorTurn;
+				if (!anchorHolderAcc) return null;
+				const anchorHolder = PersonaDB.findActor(anchorHolderAcc);
+				if (anchorHolder == this.parent) return null;
+				const duration :StatusDuration = {
+					dtype: origDuration.dtype,
+					anchorStatus: this.accessor,
+				}
+				const anchored = {
+					name: `Anchor for ${this.name}`,
+				};
+				try {
+					const newEffect = (await  anchorHolder.createEmbeddedDocuments("ActiveEffect", [anchored]))[0] as PersonaAE;
+					await newEffect.setDuration(duration);
+					return newEffect;
+				} catch (e) {
+					if (!game.user.isGM) {
+						PersonaError.softFail("Problems creating Anchor status, probably ownership issues");
+					} else {
+						PersonaError.softFail(`Unknown Error: ${e.toString()}`)
+					}
+					return null;
+				}
+			default:
+				PersonaError.softFail(`Wrong Duraton Type, can't create Anchored : ${origDuration.dtype}`);
+				return null;
+		}
+	}
+
+	/** returns true if the status expires*/
+	async onStartCombatTurn() : Promise<boolean> {
+		const duration = this.statusDuration;
+		switch (duration.dtype) {
+			case "X-rounds":
+			case "3-rounds":
+				duration.amount -= 1;
+				if (duration.amount <= 0) {
+					await this.delete();
+					return true;
+				}
+				await this.setDuration(duration);
+				return false;
+			case "USoNT":
+				await this.delete();
+				return true;
+			case "save":
+			case "permanent":
+			case "expedition":
+			case "combat":
+			case "X-rounds":
+			case "X-days":
+			case "instant":
+			case "anchored":
+			case "UEoNT":
+			case "UEoT":
+				return false;
+			default:
+				duration satisfies never;
+				return false;
+		}
+	}
+
+	override async delete() {
+		const duration = this.statusDuration;
+		switch (duration.dtype) {
+			case "USoNT":
+			case "UEoNT":
+			case "UEoT":
+				const acc =duration.anchorStatus; 
+				if (!acc) break;
+				const anchorStatus = PersonaDB.findAE(acc);
+				await anchorStatus?.delete();
+				break;
+			default:
+				break;
+		}
+		super.delete();
+	}
+
+	/** returns true if the status expires*/
+	async onEndCombatTurn() : Promise<boolean> {
+		const duration = this.statusDuration;
+		switch (duration.dtype) {
+			case "UEoNT":
+				duration.dtype = "UEoT";
+				await this.setDuration(duration);
+				return false;
+			case "UEoT":
+				await this.delete();
+				return true;
+			case "save":
+				const actor = this.parent instanceof PersonaActor ? this.parent : null;
+				if (!actor) return false;
+				if (actor.system.type != "shadow" && actor.system.type != "pc") {return false;}
+				const DC = this.statusSaveDC;
+				const {success} = await PersonaCombat.rollSave(actor as (PC | Shadow), { DC, label: this.name, saveVersus: this.statusId })
+				if (success) { await this.delete();}
+				return success;
+			case "permanent":
+			case "expedition":
+			case "combat":
+			case "X-rounds":
+			case "X-days":
+			case "USoNT":
+			case "instant":
+			case "3-rounds":
+			case "anchored":
+				return false;
+			default:
+				duration satisfies never;
+				return false;
+		}
+	}
+
 
 	durationLessThanOrEqualTo(x : StatusDuration): boolean {
 		return  PersonaAE.getStatusValue(this.statusDuration) <= PersonaAE.getStatusValue(x);
@@ -62,24 +230,32 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 	}
 
 	static getStatusValue (duration : StatusDuration) : number {
-		switch (duration) {
+		switch (duration.dtype) {
+			case "X-days":
+				return 1000 + (duration.amount);
 			case "expedition":
-				return 10;
+				return 100;
 			case "combat":
-				return 9;
+				return 50;
 			case "3-rounds":
-				return 8
-			case "presave-hard":
-			case "save-hard":
-				return 6;
-			case "presave-normal":
-			case "save-normal":
-				return 5;
-			case "presave-easy":
-			case "save-easy":
-				return 4;
+			case "X-rounds":
+				return 8 + (duration.amount * .01);
+			case "save":
+				switch (duration.saveType) {
+					case "hard":
+						return 6;
+					case "normal":
+						return 5;
+					case "easy":
+						return 4;
+					default:
+						duration.saveType satisfies never;
+						PersonaError.softFail(`Unknown duration type ${duration.saveType}`);
+						return 4;
+				}
 			case "UEoNT":
 				return 3;
+			case "anchored":
 			case "USoNT":
 				return 2;
 			case "UEoT":
@@ -118,23 +294,20 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 	}
 
 	get statusSaveDC(): number {
-		switch (this.statusDuration) {
-			case "save-hard":
+		if (this.statusDuration.dtype != "save") {
+			return 2000;
+		}
+		switch (this.statusDuration.saveType) {
+			case "hard":
 				return 16;
-			case "save-normal":
+			case "normal":
 				return 11;
-			case "save-easy":
-				return 6;
-			case "presave-hard":
-				return 16;
-			case "presave-normal":
-				return 11;
-			case "presave-easy":
+			case "easy":
 				return 6;
 			default:
-				return 2000;
+				this.statusDuration.saveType satisfies never;
+				return 1000;
 		}
-
 	}
 
 	async markAsFlag(id: string) {
@@ -179,4 +352,41 @@ Hooks.on("applyActiveEffect", PersonaAE.applyHook);
 //Sachi told me to disable this because it sucks apparently
 CONFIG.ActiveEffect.legacyTransferral = false;
 
+export type StatusDuration = StatusDuration_Basic | StatusDuration_NonBasic;
+
+type StatusDuration_Basic = {
+	dtype: Exclude<StatusDurationType, StatusDuration_NonBasic["dtype"] | DeprecatedDurations["dtype"]>;
+};
+
+type StatusDuration_NonBasic = Numeric_Duration
+	|  TurnEndDuration
+	| SaveDuration
+	| AnchoredStatus
+
+type Numeric_Duration = {
+	dtype : Extract<StatusDurationType, "3-rounds" | "X-rounds" | "X-days">
+	amount: number,
+}
+
+export type TurnEndDuration = {
+	dtype : Extract<StatusDurationType, "UEoNT" | "USoNT" | "UEoT">,
+	actorTurn ?: UniversalActorAccessor<PersonaActor>,
+	anchorStatus ?: UniversalAEAccessor<PersonaAE>,
+};
+
+type SaveDuration = {
+	dtype: "save",
+	saveType : "easy" | "normal" | "hard",
+};
+
+
+
+type DeprecatedDurations = {
+	dtype: Extract<StatusDurationType, "presave-easy" | "presave-hard" | "presave-normal" | "save-normal" | "save-easy" | "save-hard">
+}
+
+type AnchoredStatus = {
+	dtype: Extract<StatusDurationType, "anchored">,
+	anchor : UniversalAEAccessor<PersonaAE>,
+}
 
