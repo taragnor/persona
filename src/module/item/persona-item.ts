@@ -851,6 +851,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					return [SLCheck(1,3)];
 				case "":
 					return [];
+				case "disabled":
+					const neverHappen: Precondition = {
+						type: "never",
+					};
+					return [neverHappen];
 				default:
 					tag satisfies never;
 					break;

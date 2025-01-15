@@ -564,8 +564,6 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 				if (!target1) return undefined;
 			}
 			if (target1.system.type == "shadow") return undefined;
-			// const target2 = situation.socialTarget ?? situation.target;
-			// const target = PersonaDB.findActor<PersonaActor>(socialTarget);
 			switch (condition.socialTypeCheck) {
 				case "relationship-type-check":
 					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, source);
