@@ -554,6 +554,9 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			return slot[String(power.system.slot)];
 		}
 		case "social-availability": {
+			if (!condition.conditionTarget) {
+				condition.conditionTarget = "user";
+			}
 			let target1 = getSubjectActor(condition, situation, source, "conditionTarget");
 			if (!target1) {
 				if (!situation.user) return undefined;
@@ -565,7 +568,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			// const target = PersonaDB.findActor<PersonaActor>(socialTarget);
 			switch (condition.socialTypeCheck) {
 				case "relationship-type-check":
-					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
+					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, source);
 					const link = target1.socialLinks.find(x=>x.actor == target2);
 					if (!link) return undefined;
 					return link.relationshipType.toUpperCase() == condition.relationshipType.toUpperCase();
@@ -575,12 +578,12 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 					if (target1.system.type != "pc") {
 						return undefined;
 					}
-					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
+					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, source);
 					if (!target2) return undefined;
 					return target1.isAvailable(target2);
 				}
 				case "is-dating": {
-					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
+					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, source);
 					if (!target2) return undefined;
 					return target1.isDating(target2);
 				}
@@ -709,7 +712,10 @@ export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, si
 
 function getSubject<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K) : PToken | PC| Shadow | NPC | undefined {
 	if (!(field in cond)) {
-		PersonaError.softFail(`No conditon target in ${source?.name} of ${source?.parent?.name}`)
+		Debug(cond);
+		Debug(situation);
+		const printCondition = ConditionalEffectManager.printConditional(cond as unknown as Precondition);
+		PersonaError.softFail(`No field ${field} in ${printCondition} ${source?.name} of ${source?.parent?.name}`)
 		return undefined;
 	}
 	const condTarget = cond[field];
@@ -725,7 +731,8 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 		case "target":
 			if (situation.target?.token)
 				return PersonaDB.findToken(situation.target.token) as PToken | undefined;
-			else return situation.target ? PersonaDB.findActor(situation.target): undefined;
+			const target : UniversalActorAccessor<NPC | Shadow | PC> | undefined = situation.target ?? situation.socialTarget;
+			return target ? PersonaDB.findActor(target): undefined;
 		case "user":
 			if (!situation.user) return undefined;
 			if (situation?.user?.token)

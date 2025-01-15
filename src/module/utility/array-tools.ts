@@ -9,6 +9,7 @@ export function shuffle<T>(array: T[]) : void {
 };
 
 export function weightedChoice<T>( array: WeightedChoiceItem<T>[]) : T | undefined {
+	array = array.filter( x=>x.weight > 0);
 	if (array.length == 0) return undefined;
 	if (array.some(x=> typeof x.weight != "number")) {
 		array.forEach( x=> x.weight = Number(x.weight));

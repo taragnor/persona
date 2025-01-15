@@ -1,3 +1,4 @@
+import { PersonaSettings } from "../../config/persona-settings.js";
 import { TurnAlert } from "../utility/turnAlert.js";
 import { VariableAction } from "../../config/consequence-types.js";
 import { SocialCardActionConsequence } from "../../config/consequence-types.js";
@@ -226,7 +227,11 @@ export class PersonaSocial {
 			// target: link ? link.actor.accessor : undefined,
 		};
 		const preconditionPass =  PersonaDB.socialEncounterCards()
-			.filter( card => testPreconditions(card.system.conditions, situation, null));
+			.filter( card => card.system.frequency > 0)
+			.filter( card => testPreconditions(card.cardConditionsToSelect(), situation, null));
+		if (PersonaSettings.debugMode() == true) {
+			console.log(`Valid Cards: ${preconditionPass.map(x=> x.name).join(", ")}`);
+		}
 		return preconditionPass;
 	}
 
@@ -698,8 +703,13 @@ export class PersonaSocial {
 	}
 
 	static async chooseActivity(actor: PC, activity: SocialLink | Activity, _options: ActivityOptions = {}) {
-		if (!game.combat
-			|| !(game.combat.combatant?.actor == actor)) {
+		const debug = PersonaSettings.debugMode();
+		if (!debug &&
+			(
+				!game.combat
+				|| !(game.combat.combatant?.actor == actor)
+			)
+		) {
 			ui.notifications.warn("It's not your turn");
 			return;
 		}
