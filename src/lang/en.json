@@ -561,6 +561,7 @@
 	"persona.preconditions.comparison.itemCount": "Amount of Item",
 	"persona.preconditions.comparison.links-dating": "Amount of People being Dated",
 	"persona.preconditions.comparison.social-variable": "Value of a Social Variable",
+	"persona.preconditions.comparison.round-count": "Combat Round Count",
 
 	"persona.preconditions.socialChecks.relationship-type-check": "Relationship Type is",
 	"persona.preconditions.socialChecks.is-social-disabled": "Is Socially Disabled",
@@ -687,8 +688,6 @@
 	"persona.roomAttribute.shadowPresence": "Shadow Presence",
 	"persona.roomAttribute.secretNotes": "GM Notes",
 
-
-
 	"persona.creatureType.neko": "Neko",
 	"persona.creatureType.cu": "Cu",
 	"persona.creatureType.fairy": "Fey",
@@ -700,6 +699,7 @@
 	"persona.creatureType.god": "God",
 	"persona.creatureType.avian": "Avian",
 	"persona.creatureType.dragon": "Dragon",
+	"persona.creatureType.card-soldier": "Card Soldier",
 	"persona.creatureType.evil-spirit": "Evil Spirit",
 	"persona.creatureType.student": "Student",
 	"persona.creatureType.professor": "Professor",
@@ -714,8 +714,6 @@
 	"persona.creatureType.timid": "Timid",
 	"persona.creatureType.artist": "Artist",
 	"persona.creatureType.tech-enthusiast": "Tech enthusiast",
-
-
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",

@@ -573,6 +573,8 @@ export class ConditionalEffectManager {
 				return `Amount of people being dated ${endString(cond)}`;
 			case "social-variable":
 				return `Value of Social variable ${cond.variableId} ${endString(cond)}`;
+			case "round-count":
+				return `Round Count ${endString(cond)}`;
 			default:
 				cond satisfies never;
 				return "UNKNOWN CONDITION"

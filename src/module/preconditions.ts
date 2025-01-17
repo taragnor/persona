@@ -262,6 +262,11 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (target == undefined) return false;
 			break;
 		}
+		case "round-count": {
+			if (!game.combat) return false;
+			target = game.combat.round ?? -1;
+			break;
+		}
 		default:
 			condition satisfies never;
 			PersonaError.softFail(`Unknwon numeric comparison type ${condition["comparisonTarget"]}`)
@@ -274,8 +279,8 @@ function numericComparison(condition: Precondition, situation: Situation, source
 		case ">": return target > (testCase ?? Infinity) ;
 		case "<": return target < (testCase ?? -Infinity);
 		case "<=": return target <= (testCase ?? -Infinity);
-		case "odd": return target %2 != 0;
-		case "even": return target %2 == 0;
+		case "odd": return target % 2 != 0;
+		case "even": return target % 2 == 0;
 		case "range": return target >= testCase && target <= condition.high;
 		default:
 				condition satisfies undefined;
@@ -726,7 +731,6 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 	switch (condTarget) {
 			//owner of the power in question
 		case "owner":
-			debugger;
 			if (source && source.parent) {
 				const parent = source.parent;
 				switch (parent.system.type) {

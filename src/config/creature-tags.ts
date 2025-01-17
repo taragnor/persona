@@ -29,6 +29,7 @@ export const CREATURE_TAG_LIST = [
 	"god",
 	"avian",
 	"dragon",
+	"card-soldier",
 	"evil-spirit",
 	...PERSON_TAG_LIST,
 	...PERSONALITY_TAG_LIST,
