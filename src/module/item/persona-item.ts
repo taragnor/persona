@@ -46,6 +46,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	static cacheStats = {
 		miss: 0,
 		total: 0,
+		modifierSkip: 0,
+		modifierRead: 0,
 	};
 
 	constructor(...args: any[]) {
@@ -363,7 +365,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow) : ModifierListItem[] {
 		bonusTypes = Array.isArray(bonusTypes) ? bonusTypes: [bonusTypes];
+			PersonaItem.cacheStats.modifierRead++;
 		if (this.cache.containsModifier === false) {
+			PersonaItem.cacheStats.modifierSkip++;
 			return [];
 		}
 		const filteredEffects = this.getEffects(sourceActor)
@@ -920,3 +924,15 @@ export type Usable = Power | Consumable;
 Hooks.on("updateItem", (item :PersonaItem) => {
 	item.clearCache();
 });
+
+function cacheStats() {
+	const {miss, total, modifierSkip, modifierRead} = PersonaItem.cacheStats;
+	const missPercent = Math.round(miss/total * 100);
+	const skipPercent = Math.round(100 * modifierSkip / modifierRead);
+	console.log(`Effects Cache : ${missPercent}% misses`);
+	console.log(`Effects Cache : ${skipPercent}% modifierSkip Rate`);
+
+}
+
+//@ts-ignore
+window.cacheStats = cacheStats;
