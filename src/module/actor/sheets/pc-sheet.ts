@@ -110,9 +110,6 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".init-social-link").on("click", this.startSocialLink.bind(this));
 		html.find(".sort-up").on("click", this.reorderPowerUp.bind(this));
 		html.find(".sort-down").on("click", this.reorderPowerDown.bind(this));
-		html.find(".incremental-advance-block .hp .add").on("click", this.addIncremental_HP.bind(this));
-		html.find(".incremental-advance-block .mp .add").on("click", this.addIncremental_MP.bind(this));
-		html.find(".incremental-advance-block .wpnDamage .add").on("click", this.addIncremental_wpnDamage.bind(this));
 	}
 
 	async rollSocial (ev: JQuery.Event) {
@@ -387,35 +384,5 @@ export class PCSheet extends CombatantSheetBase {
 		await this.actor.update({"system.combat.powers": powers});
 	}
 
-	async addIncremental_HP(_ev: JQuery.ClickEvent) {
-		const target = "hp";
-		const current = this.actor.system.combat.classData.incremental[target];
-		if (current <3) {
-			await this.actor.update({
-				"system.combat.classData.incremental.hp" : current +1});
-			Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
-		}
-	}
-
-	async addIncremental_MP(_ev: JQuery.ClickEvent) {
-		const target = "mp";
-		const current = this.actor.system.combat.classData.incremental[target];
-		if (current <3) {
-			await this.actor.update({
-				"system.combat.classData.incremental.mp" : current +1});
-			Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
-		}
-	}
-
-
-	async addIncremental_wpnDamage(_ev: JQuery.ClickEvent) {
-		const target = "wpnDamage";
-		const current = this.actor.system.combat.classData.incremental[target];
-		if (current <3) {
-			await this.actor.update({
-				"system.combat.classData.incremental.wpnDamage" : current +1});
-			Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
-		}
-	}
 
 }

@@ -1,3 +1,4 @@
+import { Logger } from "../../utility/logger.js";
 import { Helpers } from "../../utility/helpers.js";
 import { PersonaError } from "../../persona-error.js";
 import { PersonaCombat } from "../../combat/persona-combat.js";
@@ -34,6 +35,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".focusName").on("click", this.openFocus.bind(this));
 		html.find(".itemName").on("click", this.openItem.bind(this));
 		html.find(".rollSave").on("click", this.rollSave.bind(this));
+		html.find(".incremental-advance-block .hp .add").on("click", this.addIncremental_HP.bind(this));
+		html.find(".incremental-advance-block .mp .add").on("click", this.addIncremental_MP.bind(this));
+		html.find(".incremental-advance-block .wpnDamage .add").on("click", this.addIncremental_wpnDamage.bind(this));
 	}
 
 	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) {
@@ -229,6 +233,37 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async rollSave(_event: Event) {
 		await PersonaCombat.rollSave(this.actor, {
 			DC:11, label:"Manual Save", askForModifier:true});
+	}
+
+	async addIncremental_HP(_ev: JQuery.ClickEvent) {
+		const target = "hp";
+		const current = this.actor.system.combat.classData.incremental[target];
+		if (current <3) {
+			await this.actor.update({
+				"system.combat.classData.incremental.hp" : current +1});
+			Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
+		}
+	}
+
+	async addIncremental_MP(_ev: JQuery.ClickEvent) {
+		const target = "mp";
+		const current = this.actor.system.combat.classData.incremental[target];
+		if (current <3) {
+			await this.actor.update({
+				"system.combat.classData.incremental.mp" : current +1});
+			Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
+		}
+	}
+
+
+	async addIncremental_wpnDamage(_ev: JQuery.ClickEvent) {
+		const target = "wpnDamage";
+		const current = this.actor.system.combat.classData.incremental[target];
+		if (current <3) {
+			await this.actor.update({
+				"system.combat.classData.incremental.wpnDamage" : current +1});
+			Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
+		}
 	}
 
 }

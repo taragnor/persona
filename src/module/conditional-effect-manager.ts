@@ -586,8 +586,6 @@ export class ConditionalEffectManager {
 			.map(x=> this.printConsequence(x))
 			.filter(x => x)
 			.join (", ");
-		;
-
 	}
 
 	static printConsequence (cons: Consequence) : string {
@@ -879,7 +877,6 @@ export class EMAccessor<T> {
 	delve<const P extends string, Prop extends GetProperty<T,P>>(path: P) : Prop extends Record<any, any> ? EMAccessor<Prop> : never;
 	delve<I extends Record<number, any>> (this: EMAccessor<I>, index: number) : T extends Record<number, any> ? EMAccessor<T[number]> : never;
 	delve(search: number | string) : EMAccessor<any> {
-
 		if (typeof search == "number") {
 			const newPath = `${this._path}.${search}`;
 			return new EMAccessor(this._owner, newPath, this) as any;
@@ -897,7 +894,6 @@ export class EMAccessor<T> {
 		} else {
 			return this as any;
 		}
-
 	}
 
 	consequences(this: EMAccessor<DeepNoArray<ConditionalEffect[]>>, effectIndex: number) : EMAccessor<DeepNoArray<ConditionalEffect["consequences"]>> {
@@ -996,7 +992,6 @@ export class EMAccessor<T> {
 		return false;
 	}
 
-
 }
 
 
@@ -1035,6 +1030,5 @@ export type CEAction = {
 	consIndex: number
 };
 
-
 //@ts-ignore
-window.CEManager  =ConditionalEffectManager;
+window.CEManager = ConditionalEffectManager;
