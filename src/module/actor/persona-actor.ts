@@ -987,7 +987,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	getBonuses (modnames : ModifierTarget | ModifierTarget[], sources: ModifierContainer[] = this.mainModifiers() ): ModifierList {
-		// if (this.system.type == "npc" || this.system.type == "tarot")  return new ModifierList();
 		let modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this as Shadow | PC)
 			.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
 		));
@@ -2146,9 +2145,6 @@ allOutAttackDamage(this: PC | Shadow, situation?: Situation) : { high: number, l
 			attacker: this.accessor,
 		};
 	}
-	const wpndmg = this.wpnDamage();
-	//temporarily removed to see about increasing damage base instead
-	// const levelBasedScaling = this.system.combat.classData.level / 3;
 	const basicAttack = PersonaDB.getBasicPower("Basic Attack");
 	if (!basicAttack) {
 		PersonaError.softFail("Can't find Basic attack power");
@@ -2157,9 +2153,6 @@ allOutAttackDamage(this: PC | Shadow, situation?: Situation) : { high: number, l
 	const mult = basicAttack.getDamageMultSimple(this, situation);
 	low = basicAttack.getDamage(this, "low") * mult;
 	high = basicAttack.getDamage(this, "high") * mult;
-	// const bonusdmg = this.getBonusWpnDamage();
-	// high += (wpndmg.high * mult) + bonusdmg.high.total(situation) ;
-	// low += (wpndmg.low * mult) + bonusdmg.low.total(situation);
 	return {high, low};
 }
 
