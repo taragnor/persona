@@ -40,6 +40,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	cache: {
 		effectsNull: ConditionalEffect[] | undefined;
 		effectsMap: WeakMap<PC |Shadow, ConditionalEffect[]>;
+		containsModifier: boolean | undefined;
 	}
 
 	static cacheStats = {
@@ -57,6 +58,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		this.cache = {
 			effectsNull: undefined,
 			effectsMap: new WeakMap(),
+			containsModifier: undefined,
 		};
 	}
 
@@ -361,7 +363,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow) : ModifierListItem[] {
 		bonusTypes = Array.isArray(bonusTypes) ? bonusTypes: [bonusTypes];
-		return this.getEffects(sourceActor)
+		if (this.cache.containsModifier === false) {
+			return [];
+		}
+		const filteredEffects = this.getEffects(sourceActor)
+			.filter( eff => eff.consequences.some( cons => "modifiedFields" in cons || "modifiedField" in cons))
+		;
+		this.cache.containsModifier = filteredEffects.length > 0;
+		return filteredEffects
 			.map(x =>
 				({
 					name: this.name,
@@ -585,7 +594,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (sourceActor == null) {
 			if (!this.cache.effectsNull) {
 				PersonaItem.cacheStats.miss++;
-				// console.debug(`refreshing Cached effect for ${this.name}`);
 				this.cache.effectsNull = ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
 			}
 			return this.cache.effectsNull;
@@ -593,7 +601,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			const data = this.cache.effectsMap.get(sourceActor);
 			if (data) return data;
 			PersonaItem.cacheStats.miss++;
-			// console.debug(`refreshing Cached effect for ${this.name} with source ${sourceActor.name}`);
 			const newData=  ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
 			this.cache.effectsMap.set(sourceActor, newData);
 			return newData;
