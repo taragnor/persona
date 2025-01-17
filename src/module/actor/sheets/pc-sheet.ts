@@ -393,7 +393,7 @@ export class PCSheet extends CombatantSheetBase {
 		if (current <3) {
 			await this.actor.update({
 				"system.combat.classData.incremental.hp" : current +1});
-			Logger.log(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`);
+			Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 		}
 	}
 
@@ -403,7 +403,7 @@ export class PCSheet extends CombatantSheetBase {
 		if (current <3) {
 			await this.actor.update({
 				"system.combat.classData.incremental.mp" : current +1});
-			Logger.log(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`);
+			Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 		}
 	}
 
@@ -414,7 +414,7 @@ export class PCSheet extends CombatantSheetBase {
 		if (current <3) {
 			await this.actor.update({
 				"system.combat.classData.incremental.wpnDamage" : current +1});
-			Logger.log(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`);
+			Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 		}
 	}
 

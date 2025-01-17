@@ -323,15 +323,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const multmods = this.getBonuses("maxhpMult")
 			if (weaknesses > 1) {
 				const bonus = (weaknesses -1 ) * 0.25;
-				// console.log(`HP Bonus: ${bonus}`);
 				multmods.add("weaknesses mod", bonus)
 			}
 			bonuses.add("incremental bonus hp", incBonus)
 			const mult = multmods.total(sit) + 1;
-			// console.log(`Multiplier: ${mult}`);
 			const mhp = (mult * lvlbase) + bonuses.total(sit);
 			return Math.round(mhp);
-			// return (this.class.getClassProperty(lvl + inc, "maxhp") + bonuses.total(sit)) * mult ;
 		} catch (e) {
 			console.log(e);
 			console.warn(`Can't get Hp for ${this.name} (${this.id})`);
