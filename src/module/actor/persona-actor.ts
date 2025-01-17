@@ -1693,7 +1693,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			"down",
 			"fading",
 			"fear",
-			"frozen",
+			// "frozen",
 			"sleep",
 			"shock",
 		];
