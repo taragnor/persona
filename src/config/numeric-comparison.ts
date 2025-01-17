@@ -27,6 +27,7 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"itemCount",
 	"links-dating",
 	"social-variable",
+	"round-count",
 ] as const;
 
 export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];
