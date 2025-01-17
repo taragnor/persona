@@ -40,6 +40,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	cache: {
 		effectsNull: ConditionalEffect[] | undefined;
 		effectsMap: WeakMap<PC |Shadow, ConditionalEffect[]>;
+		miss: number,
+		total: number,
 	}
 
 	constructor(...args: any[]) {
@@ -52,6 +54,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		this.cache = {
 			effectsNull: undefined,
 			effectsMap: new WeakMap(),
+			miss: this.cache ? this.cache.miss : 0,
+			total: this.cache ? this.cache.total : 0,
 		};
 	}
 
@@ -562,16 +566,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	getEffects(this: ModifierContainer, sourceActor : PC | Shadow | null): ConditionalEffect[] {
+		this.cache.total++;
 		if (sourceActor == null) {
 			if (!this.cache.effectsNull) {
-				console.debug(`refreshing Cached effect for ${this.name}`);
+				this.cache.miss++;
+				// console.debug(`refreshing Cached effect for ${this.name}`);
 				this.cache.effectsNull = ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
 			}
 			return this.cache.effectsNull;
 		} else {
 			const data = this.cache.effectsMap.get(sourceActor);
 			if (data) return data;
-			console.debug(`refreshing Cached effect for ${this.name} with source ${sourceActor.name}`);
+			this.cache.miss++;
+			// console.debug(`refreshing Cached effect for ${this.name} with source ${sourceActor.name}`);
 			const newData=  ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
 			this.cache.effectsMap.set(sourceActor, newData);
 			return newData;

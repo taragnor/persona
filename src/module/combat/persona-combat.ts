@@ -2019,11 +2019,19 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			attackerComb,
 			...combat.getAllies(attackerComb)
 		].flatMap (c=>c.actor?  [c.actor] : []);
+		if (PersonaSettings.debugMode()) {
+			console.debug(`All out attack leader ${attacker.name}`);
+		}
 		for (const actor of attackers) {
+			if (actor.isDistracted() || !actor.isCapableOfAction()) continue;
 			const atkDmg = actor.allOutAttackDamage(situation);
-			const mult = actor == attackLeader ? 1 : (1/3);
+			const mult = actor == attackLeader ? 1 : (1/4);
 			dmg.high += atkDmg.high * mult;
 			dmg.low += atkDmg.low * mult;
+			if (PersonaSettings.debugMode()) {
+				console.debug(`${actor.name}:
+		${atkDmg.low * mult} 	/	${atkDmg.high * mult}`);
+			}
 		}
 		dmg.high = Math.round(dmg.high);
 		dmg.low = Math.round(dmg.low);

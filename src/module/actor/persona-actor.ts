@@ -2149,10 +2149,17 @@ allOutAttackDamage(this: PC | Shadow, situation?: Situation) : { high: number, l
 	const wpndmg = this.wpnDamage();
 	//temporarily removed to see about increasing damage base instead
 	// const levelBasedScaling = this.system.combat.classData.level / 3;
-	const mult = this.wpnMult();
-	const bonusdmg = this.getBonusWpnDamage();
-	high += (wpndmg.high * mult) + bonusdmg.high.total(situation) ;
-	low += (wpndmg.low * mult) + bonusdmg.low.total(situation);
+	const basicAttack = PersonaDB.getBasicPower("Basic Attack");
+	if (!basicAttack) {
+		PersonaError.softFail("Can't find Basic attack power");
+		return {high, low};
+	}
+	const mult = basicAttack.getDamageMultSimple(this, situation);
+	low = basicAttack.getDamage(this, "low") * mult;
+	high = basicAttack.getDamage(this, "high") * mult;
+	// const bonusdmg = this.getBonusWpnDamage();
+	// high += (wpndmg.high * mult) + bonusdmg.high.total(situation) ;
+	// low += (wpndmg.low * mult) + bonusdmg.low.total(situation);
 	return {high, low};
 }
 
