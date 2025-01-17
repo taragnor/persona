@@ -2,6 +2,37 @@
 	{{localize "persona.sheet.tabs.incremental.header"}}
 </h2>
 <div class="incremental-advance-block">
+	<div class="hp">
+		<label>
+			HP {{actor.system.combat.classData.incremental.hp}}
+		</label>
+		{{#if (lt actor.system.combat.classData.incremental.hp 3)}}
+		<a class="add">
+		<i class="fa-solid fa-square-plus"></i>
+</a>
+		{{/if}}
+	</div>
+	<div class="mp">
+		<label>
+			MP {{actor.system.combat.classData.incremental.mp}}
+		</label>
+		{{#if (lt actor.system.combat.classData.incremental.mp 3)}}
+		<a class="add">
+		<i class="fa-solid fa-square-plus"></i>
+		</a>
+		{{/if}}
+	</div>
+	<div class="wpnDamage">
+		<label>
+			Weapon Damage {{actor.system.combat.classData.incremental.wpnDamage}}
+		</label>
+		{{#if (lt actor.system.combat.classData.incremental.wpnDamage 2)}}
+		<a class="add">
+		<i class="fa-solid fa-square-plus"></i>
+		</a>
+		{{/if}}
+	</div>
+
 	{{#each CONST.INC as |inc i|}}
 	<div class="incremental-advance">
 		<label>

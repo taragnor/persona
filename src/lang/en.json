@@ -106,6 +106,11 @@
 	"persona.incremental.type.lvl_bonus": "Attack and Defense Bonus / Talents",
 	"persona.incremental.type.powers": "Powers",
 	"persona.incremental.type.damage": "Damage",
+	"persona.incremental.type.attack": "Attack Bonuses",
+	"persona.incremental.type.defenses": "Defense Bonuses",
+	"persona.incremental.type.magicLow": "Magic Low Damage",
+	"persona.incremental.type.magicHigh": "Magic High Damage",
+	"persona.incremental.type.talent": "Talent",
 
 	"persona.status.burn" : "Burn",
 	"persona.status.charmed" : "Charmed",

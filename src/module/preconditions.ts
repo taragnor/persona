@@ -474,8 +474,14 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			return power.system.type == "consumable";
 		}
 		case "target-owner-comparison": {
-			const target = getSubject(condition, situation, source, "conditionTarget");
-			const target2 = getSubject(condition, situation, source, "conditionTarget2");
+			let target = getSubject(condition, situation, source, "conditionTarget");
+			let target2 = getSubject(condition, situation, source, "conditionTarget2");
+			if (target instanceof TokenDocument) {
+				target = target.actor;
+			}
+			if (target2 instanceof TokenDocument) {
+				target2= target2.actor;
+			}
 			if (!target || !target2) return undefined;
 			return target == target2;
 		}
@@ -718,7 +724,19 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 	}
 	const condTarget = cond[field];
 	switch (condTarget) {
+			//owner of the power in question
 		case "owner":
+			debugger;
+			if (source && source.parent) {
+				const parent = source.parent;
+				switch (parent.system.type) {
+					case "pc":
+					case "shadow":
+						return parent as PC | Shadow;
+					default:
+						break;
+				}
+			}
 			if ("actorOwner" in cond && cond.actorOwner) {
 				return 	PersonaCombat.getPTokenFromActorAccessor(cond.actorOwner as NonNullable<Precondition["actorOwner"]>);
 			}
@@ -732,12 +750,12 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 			const target : UniversalActorAccessor<NPC | Shadow | PC> | undefined = situation.target ?? situation.socialTarget;
 			return target ? PersonaDB.findActor(target): undefined;
 		case "user":
-			if (!situation.user) return undefined;
+				if (!situation.user) return undefined;
 			if (situation?.user?.token)
 				return PersonaDB.findToken(situation.user.token) as PToken | undefined;
 			else return PersonaDB.findActor(situation.user);
 		case "triggering-character":
-			if ( !("triggeringCharacter" in situation)|| !situation.triggeringCharacter) return undefined;
+				if ( !("triggeringCharacter" in situation)|| !situation.triggeringCharacter) return undefined;
 			if (situation.triggeringCharacter.token) {
 				return PersonaDB.findToken(situation.triggeringCharacter.token) as PToken | undefined;
 			} else {

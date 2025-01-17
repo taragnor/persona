@@ -3,7 +3,7 @@
   "display": "Node 16",
 
   "compilerOptions": {
-    "target": "esnext",
+    "target": "es2022",
     "moduleResolution": "node",
 
     "outDir": "dist",

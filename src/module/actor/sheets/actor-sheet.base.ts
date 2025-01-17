@@ -1,3 +1,4 @@
+import { PC } from "../persona-actor.js";
 import { ConditionalEffect } from "../../datamodel/power-dm.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaEffectContainerBaseSheet } from "../../item/sheets/effect-container.js";
@@ -31,6 +32,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
 		data.CONST = {
 			...PersonaActorSheetBase.CONST(),
+			//checkbox types only
 			INC: INCREMENTAL_ADVANCE_TYPES.map(x=> ({
 				local: INCREMENTAL_ADVANCES[x],
 				varname: x,
@@ -82,7 +84,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 	}
 
 
-	getIncAdvanceValue(val: INCREMENTAL_ADVANCE_TYPES) {
+	getIncAdvanceValue(val: keyof PC["system"]["combat"]["classData"]["incremental"]) {
 		const actor = this.actor
 		switch (actor.system.type) {
 			case "npc":

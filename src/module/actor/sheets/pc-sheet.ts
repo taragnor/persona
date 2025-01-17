@@ -73,9 +73,9 @@ export class PCSheet extends CombatantSheetBase {
 				else return [];
 			})),
 		};
-		const situation = {
-			user: this.actor.accessor
-		};
+		// const situation = {
+		// 	user: this.actor.accessor
+		// };
 		data.jobs = PersonaDB.allActivities().filter( activity=> Object.values(activity.system.weeklyAvailability).some (val => val));
 		return data;
 	}
@@ -96,7 +96,6 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".social-link .name").on("click", this.openSL.bind(this));
 		html.find(".job .name").on("click", this.openJob.bind(this));
 		html.find(".rem-progress-token").on("click", this.removeProgressTokens.bind(this));
-		html.find(".social-links .roll-icon img").on("click", this.rollSL.bind(this));
 		html.find(`.social-stat .roll-icon`).on("click", this.rollSocial.bind(this));
 		html.find(`.social-stat .social-boost`).on("click", this.socialBoost.bind(this));
 		html.find(`.social-stat .social-minus`).on("click", this.socialMinus.bind(this));
@@ -111,6 +110,9 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".init-social-link").on("click", this.startSocialLink.bind(this));
 		html.find(".sort-up").on("click", this.reorderPowerUp.bind(this));
 		html.find(".sort-down").on("click", this.reorderPowerDown.bind(this));
+		html.find(".incremental-advance-block .hp .add").on("click", this.addIncremental_HP.bind(this));
+		html.find(".incremental-advance-block .mp .add").on("click", this.addIncremental_MP.bind(this));
+		html.find(".incremental-advance-block .wpnDamage .add").on("click", this.addIncremental_wpnDamage.bind(this));
 	}
 
 	async rollSocial (ev: JQuery.Event) {
@@ -306,14 +308,6 @@ export class PCSheet extends CombatantSheetBase {
 		}
 	}
 
-
-	async rollSL(event: Event) {
-		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
-		PersonaError.softFail("This button no longer works");
-		// await PersonaSocial.makeUpgradeLinkRoll(this.actor, linkId)
-	}
-
-
 	async gainMoney(_ev: Event) {
 		const x = await HTMLTools.getNumber("Amount to gain");
 		if (x <= 0) return;
@@ -391,6 +385,37 @@ export class PCSheet extends CombatantSheetBase {
 		powers[index] = powers[index+1];
 		powers[index+1] = powerId;
 		await this.actor.update({"system.combat.powers": powers});
+	}
+
+	async addIncremental_HP(_ev: JQuery.ClickEvent) {
+		const target = "hp";
+		const current = this.actor.system.combat.classData.incremental[target];
+		if (current <3) {
+			await this.actor.update({
+				"system.combat.classData.incremental.hp" : current +1});
+			Logger.log(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`);
+		}
+	}
+
+	async addIncremental_MP(_ev: JQuery.ClickEvent) {
+		const target = "mp";
+		const current = this.actor.system.combat.classData.incremental[target];
+		if (current <3) {
+			await this.actor.update({
+				"system.combat.classData.incremental.mp" : current +1});
+			Logger.log(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`);
+		}
+	}
+
+
+	async addIncremental_wpnDamage(_ev: JQuery.ClickEvent) {
+		const target = "wpnDamage";
+		const current = this.actor.system.combat.classData.incremental[target];
+		if (current <3) {
+			await this.actor.update({
+				"system.combat.classData.incremental.wpnDamage" : current +1});
+			Logger.log(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`);
+		}
 	}
 
 }

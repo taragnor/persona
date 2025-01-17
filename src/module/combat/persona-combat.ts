@@ -41,7 +41,6 @@ import { PersonaDB } from "../persona-db.js";
 import { RollBundle } from "../persona-roll.js";
 import { UniversalTokenAccessor } from "../utility/db-accessor.js";
 import { EngagementList } from "./engagementList.js";
-import { Logger } from "../utility/logger.js";
 import { OtherEffect } from "../../config/consequence-types.js";
 import { Consumable } from "../item/persona-item.js";
 
@@ -1561,9 +1560,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				tag = "almighty";
 				break;
 			case "none":
-				tag = power.system.tags.find(x=> STATUS_POWER_TAGS.includes(x as any));
 				break;
+				// tag = power.system.tags.find(x=> STATUS_POWER_TAGS.includes(x as any));
 			case "all-out":
+				break;
+			default:
+				power.system.dmg_type satisfies never;
 				break;
 		}
 		if (tag) {
@@ -1572,6 +1574,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const bonus = bonusPowers.length * 2;
 			const localized = game.i18n.localize(POWER_TAGS[tag]);
 			atkbonus.add(`${localized} Power bonus`, bonus);
+			if (power.isMultiTarget()) {
+				atkbonus.add(`Multitarget attack penalty`, -3);
+			}
 		}
 		return atkbonus;
 	}

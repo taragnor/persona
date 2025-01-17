@@ -7,7 +7,6 @@ import { TokenSpend } from "../../config/social-card-config.js";
 import { SHADOW_ROLE_LIST } from "../../config/shadow-types.js";
 import { Precondition } from "../../config/precondition-types.js";
 import { ResistType } from "../../config/damage-types.js";
-import { INCREMENTAL_ADVANCE_TYPES } from "../../config/incremental-advance-types.js";
 
 import { RESIST_STRENGTH_LIST } from "../../config/damage-types.js";
 import { ResistStrength } from "../../config/damage-types.js";
@@ -126,18 +125,24 @@ function skillSlots() {
 	);
 }
 
-type IncAdvanceObject = Required<Record<INCREMENTAL_ADVANCE_TYPES, boolean>>;
-
-
 const tarot = function () { return new txt<TarotCard>( { choices: Object.keys(TAROT_DECK) as (TarotCard)[], blank: true, initial:""});}
 
 const classData = function () {
-	const initial : IncAdvanceObject =  Object.fromEntries( INCREMENTAL_ADVANCE_TYPES.map (x=> ([x, false]))
-	) as IncAdvanceObject;
 	return  new sch( {
 		level: new num({min: 0, max: 10, initial: 1, integer:true}),
 		classId: new id(),
-		incremental: new obj<IncAdvanceObject>({initial}),
+		incremental: new sch ({
+			hp: new num({integer: true, initial: 0, max: 3}),
+			mp: new num({integer: true, initial: 0, max: 3}),
+			attack: new bool(),
+			defenses: new bool(),
+			magicLow: new bool(),
+			magicHigh: new bool(),
+			talent: new bool(),
+			wpnDamage: new num({integer: true, initial: 0, max: 2}),
+
+		}),
+		// incremental: new obj<IncAdvanceObject>({initial}),
 		incremental_progress: new num({initial:0, min:0, integer:true}),
 	});
 }

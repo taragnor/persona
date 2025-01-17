@@ -48,6 +48,7 @@ declare global {
 	type ActorSub<X extends PersonaActor["system"]["type"]> = Subtype<PersonaActor, X>;
 }
 
+
 const EMPTYARR :any[] = [] as const; //to speed up things by not needing to create new empty arrays for immutables;
 
 Object.seal(EMPTYARR);
@@ -55,6 +56,8 @@ Object.seal(EMPTYARR);
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
 	declare statuses: Set<StatusEffectId>;
 	declare sheet: PersonaActorSheetBase;
+
+	static MPMap = new Map<number, number>;
 
 	cache: {
 		tarot: Tarot | undefined;
@@ -89,11 +92,26 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return val;
 	}
 
-	calcBaseClassMMP(this: PC) {
-		const MPAtLevel1 = 56;
-		const inc = this.hasIncremental("powers")? 1: 0;
-		const lvl = this.system.combat.classData.level + inc;
-		return MPAtLevel1 * Math.pow(1.2, lvl -1);
+	calcBaseClassMMP(this: PC): number {
+		const lvl = this.system.combat.classData.level;
+
+		const inc = this.system.combat.classData.incremental.mp;
+		const mpBase = Math.round(PersonaActor.calcMP(lvl));
+		const mpNext = Math.round(PersonaActor.calcMP(lvl + 1));
+		const diff = mpNext - mpBase;
+		return mpBase + Math.round((inc/3 * diff));
+	}
+
+	static calcMP (level: number) : number {
+		const mapVal = this.MPMap.get(level);
+		if (mapVal != undefined) {
+			return mapVal;
+		}
+		if (level <= 1) return 50;
+		const prevMP = this.calcMP(level -1);
+		const MP = prevMP + (prevMP * (0.35 - ((level - 2) * .02)));
+		this.MPMap.set(level, MP);
+		return MP;
 	}
 
 	async refreshMaxMP(this: PC, amt = this.mmp) {
@@ -106,6 +124,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (this.system.type == "pc") {
 			await (this as PC).refreshMaxMP();
 		}
+
 		if (this.hp > this.mhp) {
 			this.update({"system.combat.hp": this.mhp});
 		}
@@ -292,11 +311,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (this.system.type == "tarot") return 0;
 		try {
 			const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
-			const inc = this.hasIncremental("hp")? 1: 0;
+			const inc = this.system.combat.classData.incremental.hp ?? 0;
 			const lvl = this.system.combat.classData.level;
 			const bonuses = this.getBonuses("maxhp");
 			const lvlbase = this.class.getClassProperty(lvl, "maxhp");
-			const incbonus = this.class.getClassProperty(lvl+inc, "maxhp") - lvlbase;
+			const diff = this.class.getClassProperty(lvl+1, "maxhp") - lvlbase;
+			const incBonus = Math.round(inc / 3 * diff);
 			const weaknesses = Object.values(this.system.combat.resists)
 				.filter(x=> x == "weakness")
 				.length;
@@ -306,7 +326,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				// console.log(`HP Bonus: ${bonus}`);
 				multmods.add("weaknesses mod", bonus)
 			}
-			bonuses.add("incremental bonus hp", incbonus)
+			bonuses.add("incremental bonus hp", incBonus)
 			const mult = multmods.total(sit) + 1;
 			// console.log(`Multiplier: ${mult}`);
 			const mhp = (mult * lvlbase) + bonuses.total(sit);
@@ -329,78 +349,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	getWeakestSlot(): 0 | 1 | 2 | 3 {
-		if (this.system.type != "pc") return 0;
-		for (let slot_lvl = 0 ; slot_lvl <= 4; slot_lvl++) {
-			const inc = this.hasIncremental("powers") ? 1 : 0;
-			const lvl = this.system.combat.classData.level;
-			if ( this.class.getClassProperty(lvl + inc, "slots")[slot_lvl] ?? -999 > 0) return slot_lvl as 0 | 1 | 2 | 3;
-		}
-		PersonaError.softFail(`Can't get weakest slot for ${this.name}`);
-		return 0;
+	/** @deprecated */
+	getWeakestSlot(): void {
+		PersonaError.softFail("Thios function is deprecated and shouldn't be called anymore");
 	}
 
-	getMaxSlotsAt(slot_lvl: number) : number {
-		if (this.system.type != "pc") return 0;
-		try {
-			const inc = this.hasIncremental("powers") ? 1 : 0;
-			const lvl = this.system.combat.classData.level;
-			let baseSlots =  this.class.getClassProperty(lvl + inc, "slots")[slot_lvl] ?? -999;
-			const sit : Situation = {
-				user: (this as PC).accessor
-			}
-			const bonusWeak = this.getBonuses("weakestSlot").total(sit);
-			if (bonusWeak > 0 && slot_lvl == this.getWeakestSlot()) {
-				baseSlots += bonusWeak;
-			}
-			return baseSlots;
-		} catch (e) {
-			return -999;
-		}
+	/** @deprecated */
+	getMaxSlotsAt(_slot_lvl: number) : void {
+		return;
 	}
 
-	async recoverSlot(this: PC, slottype: RecoverSlotEffect["slot"], amt: number = 1) : Promise<boolean> {
-		const mpval = PersonaActor.convertSlotToMP(Number(slottype)) * amt;
-		await this.modifyMP(mpval);
-		let slotNum: keyof typeof this.system.slots;
-		let canUpgrade= true;
-		let worked = false;
-		switch (slottype) {
-			case "lowest":
-				slotNum = this.getWeakestSlot();
-				canUpgrade = false;
-				break;
-			case "0":
-			case "1":
-			case "2":
-			case "3":
-				slotNum = Number(slottype) as 0 | 1 | 2 | 3;
-				break;
-			case "highest":
-				PersonaError.softFail("Recover slot for highest is not yet implemented");
-				return false;
-			default:
-				slottype satisfies never;
-				PersonaError.softFail(`Unexpected slottype : ${slottype}`);
-				return false;
-		}
-		while (slotNum <= 3 && amt > 0) {
-			//TODO: look into why slot restore doesn't work properly, seems to leave 1 slot unfilled at each level
-			const maxSlots = this.getMaxSlotsAt(slotNum);
-			if (this.system.slots[slotNum] +1 <= maxSlots) {
-				this.system.slots[slotNum] = Math.min (this.system.slots[slotNum] + 1, maxSlots);
-				worked = true;
-			} else if (canUpgrade && slotNum +1 <= 3)  {
-				if (await this.recoverSlot( String(slotNum+1) as RecoverSlotEffect["slot"], 1)) {
-					worked = true;
-					this.system.slots[slotNum]-= 1;
-				}
-				break;
-			}
-			amt -= 1;
-		}
-		await this.update( {"system.slots": this.system.slots});
-		return worked;
+	/** @deprecated */
+	async recoverSlot(this: PC, _slottype: RecoverSlotEffect["slot"], _amt: number = 1) : Promise<never> {
+		throw new Error("Deprecated Crap, do not call");
 	}
 
 	getSocialSLWithTarot(this: PC, tarot: TarotCard) : number {
@@ -1028,21 +989,30 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	getBonuses (modnames : ModifierTarget | ModifierTarget[]): ModifierList {
-		if (this.system.type == "npc" || this.system.type == "tarot")  return new ModifierList();
-		let modList = new ModifierList( (this as Shadow | PC).mainModifiers().flatMap( item => item.getModifier(modnames, this as Shadow | PC)
+	getBonuses (modnames : ModifierTarget | ModifierTarget[], sources: ModifierContainer[] = this.mainModifiers() ): ModifierList {
+		// if (this.system.type == "npc" || this.system.type == "tarot")  return new ModifierList();
+		let modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this as Shadow | PC)
 			.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
 		));
 		return modList;
 	}
 
 	basePowerCritResist(this: PC |Shadow): number {
-		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
+		const inc = this.system.combat.classData.incremental.defenses ? 1 : 0;
 		const level = this.system.combat.classData.level + inc;
 		return Math.floor(level /2);
 	}
 
-	mainModifiers(this: PC | Shadow, options?: {omitPowers?: boolean} ): ModifierContainer[] {
+	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
+		switch (this.system.type) {
+			case "npc": case "tarot":
+				return [];
+			case "pc":
+			case "shadow":
+				break;
+			default:
+				this.system satisfies never;
+		}
 		const passivePowers = (options && options.omitPowers) ? [] : this.getPassivePowers();
 		return [
 			...this.equippedItems(),
@@ -1054,7 +1024,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.roomModifiers(),
 			...PersonaDB.getGlobalModifiers(),
 			...PersonaDB.navigatorModifiers(),
-		].filter( x => x.getEffects(this).length > 0);
+		].filter( x => x.getEffects(this as PC | Shadow).length > 0);
 	}
 
 	defensivePowers() : Power [] {
@@ -1069,7 +1039,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	wpnAtkBonus(this: PC | Shadow) : ModifierList {
 		const mods = this.getBonuses(["allAtk", "wpnAtk"]);
 		const lvl = this.system.combat.classData.level;
-		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
+		const inc = this.system.combat.classData.incremental.attack ? 1 : 0;
 		const wpnAtk = this.system.combat.wpnatk;
 		mods.add("Base Weapon Attack Bonus", wpnAtk);
 		mods.add("Level Bonus", lvl + inc);
@@ -1080,7 +1050,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const mods = this.getBonuses(["allAtk", "magAtk"]);
 		const lvl = this.system.combat.classData.level ?? 0;
 		const magAtk = this.system.combat.magatk ?? 0;
-		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
+		const inc = this.system.combat.classData.incremental.attack ? 1 : 0;
 		mods.add("Base Magic Attack Bonus", magAtk);
 		mods.add("Level Bonus", lvl + inc);
 		return mods;
@@ -1097,22 +1067,23 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const mods = new ModifierList();
 		const lvl = this.system.combat.classData.level;
 		const baseDef = this.#translateDefenseString(type, this.system.combat.defenses[type]);
-		const inc = this.system.combat.classData.incremental.lvl_bonus ? 1 : 0;
+		const inc = this.system.combat.classData.incremental.defenses ? 1 : 0;
 		mods.add("Base", 10);
 		mods.add("Base Defense Bonus", baseDef);
 		mods.add("Level Bonus", lvl + inc);
 		const otherBonuses = this.getBonuses([type, "allDefenses"]);
-		return mods.concat(otherBonuses);
+		const defenseMods = this.getBonuses([type, "allDefenses"], this.defensivePowers());
+		return mods.concat(otherBonuses).concat(defenseMods);
 	}
 
 	#translateDefenseString(this: PC | Shadow, defType: keyof PC["system"]["combat"]["defenses"], val: PC["system"]["combat"]["defenses"]["fort"],): number {
 		const weaknesses= this.#getWeaknessesInCategory(defType);
 		switch (val) {
-			case "pathetic": return -8 + 2 * weaknesses ;
-			case "weak": return -4 + 1 * weaknesses;
+			case "pathetic": return Math.min(-6 + 2 * weaknesses,-2) ;
+			case "weak": return Math.min(-3 + 1 * weaknesses, -1);
 			case "normal": return 0;
-			case "strong": return 4 - 1 * weaknesses;
-			case "ultimate": return 8 - 2 * weaknesses;
+			case "strong": return Math.max(3 - 1 * weaknesses, 1);
+			case "ultimate": return Math.max(6 - 2 * weaknesses, 2);
 			default:
 				PersonaError.softFail(`Bad defense tsring ${val} for ${defType}`);
 				return -999;
@@ -1235,17 +1206,21 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	wpnMult( this: PC | Shadow) : number {
 		const lvl = this.system.combat.classData.level;
-		const inc = this.system.combat.classData.incremental.damage ? 1 : 0;
-		const mult = this.class.getClassProperty(lvl + inc, "wpn_mult") ?? 0;
+		const inc = this.system.combat.classData.incremental.wpnDamage * 0.5 ;
+		const mult = ((this.class.getClassProperty(lvl, "wpn_mult") ?? 0)  + inc);
 		return mult;
 	}
 
 	magDmg (this: PC | Shadow) : {low: number, high:number} {
 		const lvl = this.system.combat.classData.level;
-		const inc = this.system.combat.classData.incremental.damage ? 1 : 0;
-		const shadowMod = this.system.type == "shadow" ? -1 : 0;
-		const magDmg = this.class.getClassProperty(lvl + inc + shadowMod, "magic_damage") ?? 0;
-		return magDmg;
+		const incLow = this.system.combat.classData.incremental.magicLow ? 1 : 0;
+		const incHigh = this.system.combat.classData.incremental.magicHigh ? 1 : 0;
+		const baseDmg = this.class.getClassProperty(lvl, "magic_damage") ?? 0;
+		const nextLvl = this.class.getClassProperty(lvl+1, "magic_damage") ?? 0;
+		return {
+			low: incLow ? nextLvl.low : baseDmg.low,
+			high: incHigh ? nextLvl.high : baseDmg.high,
+		}
 	}
 
 	critBoost(this: PC | Shadow) : ModifierList {
@@ -1745,12 +1720,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async OnEnterMetaverse(this: PC) {
 		try {
 			this.fullHeal();
-			await this.update( {"system.slots" : {
-				0: this.getMaxSlotsAt(0),
-				1: this.getMaxSlotsAt(1),
-				2: this.getMaxSlotsAt(2),
-				3: this.getMaxSlotsAt(3),
-			}});
 			await this.refreshSocialLink(this);
 		} catch (e) {
 			console.log(e);
@@ -1766,12 +1735,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					await eff.delete();
 				}
 			}
-			await this.update( {"system.slots" : {
-				0: this.getMaxSlotsAt(0),
-				1: this.getMaxSlotsAt(1),
-				2: this.getMaxSlotsAt(2),
-				3: this.getMaxSlotsAt(3),
-			}});
 			await this.refreshSocialLink(this);
 		} catch (e) {
 			console.log(e);
@@ -1781,10 +1744,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async levelUp(this: PC) : Promise<void> {
 		const newlevel  = this.system.combat.classData.level+1 ;
-		const incremental = this.system.combat.classData.incremental;
-		for (const [k, _v] of Object.entries(incremental)){
-			incremental[k as keyof typeof incremental]= false;
-		}
+		// const incremental = this.system.combat.classData.incremental;
+		const incremental : PC["system"]["combat"]["classData"]["incremental"] = {
+			hp: 0,
+			mp: 0,
+			attack: false,
+			defenses: false,
+			magicLow: false,
+			magicHigh: false,
+			talent: false,
+			wpnDamage: 0
+		};
 		await this.update({
 			"system.combat.classData.level": newlevel,
 			"system.combat.classData.incremental": incremental,
@@ -2157,7 +2127,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		const role = this.system.role;
 		const userLevel = this.system.combat.classData.level
-			+ (this.system.combat.classData.incremental.powers ? 1 : 0)
+			+ (this.system.combat.classData.incremental.talent ? 1 : 0)
 		const powerLevel = power.powerEffectLevel();
 		const diff = powerLevel - userLevel;
 		const cost = PersonaActor.calcPowerCost(role, power, diff);
@@ -2295,7 +2265,7 @@ get tagList() : CreatureTag[] {
 				const sit : Situation = {
 					user: (this as Shadow).accessor,
 				}
-				const startingEnergy = 1 + this.getBonuses("starting-energy").total(sit);
+				const startingEnergy = 1 + (this as Shadow).getBonuses("starting-energy").total(sit);
 				await (this as Shadow).setEnergy(startingEnergy);
 				break;
 			case "pc":
