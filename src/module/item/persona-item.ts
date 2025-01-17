@@ -541,16 +541,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 		switch (this.system.slot) {
 			case 0:
-				bonus+= 0;
-				break;
-			case 1:
 				bonus+= 2;
 				break;
-			case 2:
+			case 1:
 				bonus+= 4;
 				break;
-			case 3:
+			case 2:
 				bonus+= 6;
+				break;
+			case 3:
+				bonus+= 8;
 				break;
 			default:
 				PersonaError.softFail(`Unknwon Slot Type :${this.system.slot}`);

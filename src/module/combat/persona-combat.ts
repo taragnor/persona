@@ -1027,6 +1027,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		const critBoostMod = power.critBoost(attacker.actor);
 		if (power.system.type == "power" && !power.isBasicPower()) {
+			debugger;
 			const powerLevel = power.baseCritSlotBonus();
 			const targetResist = target.actor.basePowerCritResist();
 			const diff = powerLevel - targetResist;
