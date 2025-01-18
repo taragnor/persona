@@ -904,9 +904,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		);
 		attackbonus = attackbonus.concat(defense);
 		const def = power.system.defense;
-		const defenseVal = def != "none" ? target.actor.getDefense(def).total(situation): 0;
-		const validDefModifiers = def != "none" ? target.actor.getDefense(def).list(situation): [];
-
 		const r = await new Roll("1d20").roll();
 		if (situation.activationRoll) {
 			const combat = game.combat as PersonaCombat;
@@ -915,11 +912,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 		}
 		const cssClass=  (target.actor.type != "pc") ? "gm-only" : "";
-		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
-		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.system.defense} ${defenseStr}`;
-		const roll = new RollBundle(rollName, r, attacker.actor.system.type == "pc", attackbonus, situation);
+		const roll = new RollBundle("Temp", r, attacker.actor.system.type == "pc", attackbonus, situation);
 		const naturalAttackRoll = roll.dice[0].total;
 		situation.naturalRoll = naturalAttackRoll;
+		const defenseVal = def != "none" ? target.actor.getDefense(def).total(situation): 0;
+		const validDefModifiers = def != "none" ? target.actor.getDefense(def).list(situation): [];
+		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
+		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.system.defense} ${defenseStr}`;
+		roll.setName(rollName);
 		const baseData = {
 			roll,
 			attacker: PersonaDB.getUniversalTokenAccessor(attacker) ,
@@ -1027,7 +1027,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		const critBoostMod = power.critBoost(attacker.actor);
 		if (power.system.type == "power" && !power.isBasicPower()) {
-			debugger;
 			const powerLevel = power.baseCritSlotBonus();
 			const targetResist = target.actor.basePowerCritResist();
 			const diff = powerLevel - targetResist;
@@ -1201,7 +1200,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	static resolveEffectiveTarget(applyTo :Consequence["applyTo"], atkResult: AttackResult, cons?: Consequence) : PToken | undefined {
 		const situation = atkResult.situation;
-		const power = PersonaDB.findItem(atkResult.power);
+		// const power = PersonaDB.findItem(atkResult.power);
 		const attacker = PersonaDB.findToken(atkResult.attacker);
 		const target = PersonaDB.findToken(atkResult.target);
 		switch (applyTo) {
@@ -1452,6 +1451,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "dungeon-action":
 			case "alter-mp":
 			case "extraTurn":
+			case "teach-power":
 				return [{applyTo,cons}];
 			case "expend-item":
 				if (cons.itemId) {

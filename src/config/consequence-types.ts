@@ -116,7 +116,8 @@ export type ExtraTurnEffect = {
 	activation: number,
 };
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect;
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence
+;
 
 export type StatusEffect = StatusEffect_Basic | StatusEffect_NonBasic;
 
@@ -213,9 +214,10 @@ type InspirationChangeConsequence = {
 }
 
 type AddPowerConsequence = {
-	type: "add-power-to-list",
+	type: "add-power-to-list" | "teach-power",
 	id: string, // id of power
 }
+
 
 type OtherEffectConsequence = {
 	type: "other-effect",

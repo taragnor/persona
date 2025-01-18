@@ -369,7 +369,12 @@ export class CombatResult  {
 					subtype: cons.subtype
 				});
 				break;
-
+			case "teach-power":
+				if (!effect) break;
+				effect.otherEffects.push( {
+					...cons
+				});
+				break;
 			default: {
 				cons satisfies never;
 				throw new Error("Should be unreachable");
@@ -712,6 +717,8 @@ export class CombatResult  {
 				case "use-power":
 				case "scan":
 				case "social-card-action":
+				case "add-power-to-list":
+				case "teach-power":
 				case "alter-mp":
 					break;
 				default:
@@ -802,15 +809,20 @@ export class CombatResult  {
 				case "extraTurn":
 					break;
 				case "recover-slot":
-					if (actor.system.type == "pc") {
-						await (actor as PC).recoverSlot(otherEffect.slot, otherEffect.amt)
-					}
+					PersonaError.softFail("Recover slot is deprecated as an effect");
 					break;
 				case "set-flag":
 					await actor.setEffectFlag(otherEffect.flagId, otherEffect.state, otherEffect.duration, otherEffect.flagName);
 					break;
+				case "teach-power":
+					const power = PersonaDB.allPowers().find(power => power.id == otherEffect.id);
+					if (power && actor.system.type == "pc") {
+						await (actor as PC).addPower(power);
+					}
+					break;
 				case "lower-resistance":
 				case "raise-resistance":
+				case "add-power-to-list":
 				case "display-message":
 					break;
 				case "inspiration-cost":

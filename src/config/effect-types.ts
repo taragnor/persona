@@ -14,6 +14,7 @@ export const CONSQUENCELIST = [
 	"extraTurn",
 	"expend-item",
 	"add-power-to-list",
+	"teach-power",
 	"other-effect",
 	"set-flag",
 	"inspiration-cost",

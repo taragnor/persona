@@ -1263,8 +1263,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const powers = this.system.combat.powers;
 		if (powers.includes(power.id)) return;
 		powers.push(power.id);
+		let maxMsg = "";
+
 		await this.update( {"system.combat.powers": powers});
-		await Logger.sendToChat(`${this.name} added ${power.name}` , this);
+		if (powers.length > this.maxPowers) {
+			maxMsg = `<br>${this.name} has exceeded their allowed number of powers and must forget one or more powers.`;
+		}
+		await Logger.sendToChat(`${this.name} learned ${power.name} ${maxMsg}` , this);
 	}
 
 	async deletePower(this: PC | Shadow, id: string ) {

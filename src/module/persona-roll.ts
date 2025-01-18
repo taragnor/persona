@@ -27,6 +27,10 @@ export class RollBundle {
 		this.name = rollName;
 	}
 
+	setName(newName: string): void {
+		this.name = newName;
+	}
+
 	resolveMods() : ResolvedMods {
 		if ("modtotal" in this.modList) {
 			return this.modList;

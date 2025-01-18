@@ -17,6 +17,11 @@ export const PERSONALITY_TAG_LIST = [
 	"artist",
 ] as const;
 
+
+export const TRAIT_TAG_LIST = [
+	"unscannable",
+] as const;
+
 export const CREATURE_TAG_LIST = [
 	"neko",
 	"cu",
@@ -33,6 +38,7 @@ export const CREATURE_TAG_LIST = [
 	"evil-spirit",
 	...PERSON_TAG_LIST,
 	...PERSONALITY_TAG_LIST,
+	...TRAIT_TAG_LIST,
 ] as const;
 
 

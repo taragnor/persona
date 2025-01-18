@@ -80,7 +80,7 @@
 		{{selectOptions POWERSTUFF.SLOT_TYPES_EXPANDED localize=true selected=cons.slotType}}
 	</select>
 	{{/if}}
-	{{#if (eq cons.type	"add-power-to-list")}}
+	{{#if (eqAny cons.type	"add-power-to-list" "teach-power")}}
 	<select name="{{strcat namePrefix 'id'}}">
 		{{selectOptions POWERSTUFF.COMPENDIUM_POWERS localize=false selected=cons.id}}
 	</select>

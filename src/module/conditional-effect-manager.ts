@@ -688,6 +688,10 @@ export class ConditionalEffectManager {
 				return `damage multiplier: ${cons.amount}`;
 			case "hp-loss":
 				return `HP loss: ${cons.amount}`;
+			case "teach-power": {
+				const power = PersonaDB.getPower(cons.id);
+				return `Teach Power ${power?.displayedName ?? "ERROR"}`;
+			}
 			case "raise-status-resistance":
 				return `${this.translate(cons.resistanceLevel, RESIST_STRENGTHS)} status ${this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE)}`;
 			default:

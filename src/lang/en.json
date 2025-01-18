@@ -397,6 +397,7 @@
 	"persona.effecttypes.expend-item": "Expend Item",
 	"persona.effecttypes.recover-slot": "Recover Power Slot",
 	"persona.effecttypes.add-power-to-list": "Add a power to the list",
+	"persona.effecttypes.teach-power": "Permanently Teach power",
 	"persona.effecttypes.other-effect": "Other Effects",
 	"persona.effecttypes.set-flag": "Set Flag",
 	"persona.effecttypes.raise-resistance": "Raise Damage Resistance",
@@ -714,6 +715,7 @@
 	"persona.creatureType.timid": "Timid",
 	"persona.creatureType.artist": "Artist",
 	"persona.creatureType.tech-enthusiast": "Tech enthusiast",
+	"persona.creatureType.unscannable": "Unscannable",
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",
