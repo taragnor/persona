@@ -1940,7 +1940,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	getEffectFlag(flagId: string) : FlagData | undefined {
-		const flag= this.effects.find(eff=> eff.flagId == flagId);
+		const flag= this.effects.find(eff=> eff.flagId?.toLowerCase() == flagId.toLowerCase());
 		if (flag) return {
 			flagId,
 			duration: flag.statusDuration,
