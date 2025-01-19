@@ -112,7 +112,7 @@ export class ModifierList {
 
 	}
 
-	total(situation: Situation ) : number {
+	total(situation: Situation , style = this.listType) : number {
 		const mods = this.validModifiers(situation);
 		switch (this.listType) {
 			case "standard":

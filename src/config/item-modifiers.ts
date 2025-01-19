@@ -1,15 +1,16 @@
 import { STUDENT_SKILLS_LIST } from "./student-skills.js";
 export const MODIFIERLIST = [
-	"maxhp",
 	"allAtk",
 	"wpnAtk",
 	"magAtk",
+	"itemAtk",
 	"wpnDmg",
 	"wpnMult",
 	"magDmg",
 	"magLow",
 	"magHigh",
 	"criticalBoost",
+	"critResist",
 	"allOutDmgMult", //adds to weapon multiplier on AoA
 	"allDefenses",
 	"ref",
@@ -18,11 +19,14 @@ export const MODIFIERLIST = [
 	...STUDENT_SKILLS_LIST,
 	"save",
 	"recovery",
+	"recovery-mult",
+	"maxhp",
 	"maxhpMult",
-	"critResist",
+	"maxmp",
+	"maxmpMult",
+	"mpCostMult",
 	"wpnDmg_low",
 	"wpnDmg_high",
-	"itemAtk",
 	"disengage",
 	"socialRoll",
 	"weakestSlot",
@@ -31,9 +35,6 @@ export const MODIFIERLIST = [
 	"initiative",
 	"starting-energy",
 	"energy-per-turn",
-	"maxmp",
-	"maxmpMult",
-	"mpCostMult",
 ] as const;
 
 export const MODIFIERS_TABLE = Object.fromEntries(
