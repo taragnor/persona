@@ -1267,7 +1267,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 		await this.update( {"system.combat.powers": powers});
 		if (powers.length > this.maxPowers) {
-			maxMsg = `<br>${this.name} has exceeded their allowed number of powers and must forget one or more powers.`;
+			maxMsg = `<br>${this.name} has exceeded their allowed number of powers (${this.maxPowers})  and must forget one or more powers.`;
 		}
 		await Logger.sendToChat(`${this.name} learned ${power.name} ${maxMsg}` , this);
 	}

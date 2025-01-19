@@ -689,49 +689,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const actor= combatant.actor;
 		if (!actor) return [];
 		let Msg: string[] = [];
-		//TODO: this system should be derpecated
-		//for (const effect of actor.effects) {
-		//	switch (effect.statusDuration.dtype) {
-		//		case "presave-easy":
-		//		case "presave-normal":
-		//		case "presave-hard":
-		//			//presave no longer exists as a mechanic
-		//			break;
-		//		case "expedition":
-		//		case "combat":
-		//		case "save-normal":
-		//		case "save-easy":
-		//		case "save-hard":
-		//		case "UEoNT":
-		//		case "UEoT":
-		//		case "permanent":
-		//			break;
-		//		case "instant":
-		//		case "USoNT":
-		//			Msg.push( `<br> ${effect.displayedName} has expired`);
-		//			await effect.delete();
-		//			break;
-		//		case "3-rounds":
-		//			const rounds = effect.duration.rounds ?? 0;
-		//			if (rounds<= 0) {
-		//				Msg.push(`<br>${effect.displayedName} has expired.`);
-		//				await effect.delete();
-		//				break;
-		//			}
-		//			else  {
-		//				await effect.update({"duration.rounds" : rounds-1});
-		//				break;
-		//			}
-		//		case "X-rounds":
-		//		case "X-days":
-		//			break;
-		//		default:
-		//				effect.statusDuration satisfies never;
-		//	}
-		//}
 		const debilitatingStatuses :StatusEffectId[] = [
 			"sleep",
-			"frozen",
 			"shock"
 		];
 		const debilitatingStatus = actor.effects.find( eff=> debilitatingStatuses.some( debil => eff.statuses.has(debil)));
@@ -1572,7 +1531,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (tag) {
 			const bonusPowers = attacker.actor.mainPowers.concat(attacker.actor.bonusPowers)
 				.filter(x=> x.system.tags.includes(tag));
-			const bonus = bonusPowers.length * 2;
+			const bonus = bonusPowers.length * 3;
 			const localized = game.i18n.localize(POWER_TAGS[tag]);
 			atkbonus.add(`${localized} Power bonus`, bonus);
 			if (power.isMultiTarget()) {

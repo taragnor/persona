@@ -320,7 +320,7 @@ export class Metaverse {
 	static getRegion() : PersonaRegion | undefined {
 		if (game.user.isGM) {
 			const id = PersonaSettings.get("lastRegionExplored");
-			const region = game.scenes.current.regions.find( r=> r.id == id);
+			const region = game.scenes.current.regions.find( (r: PersonaRegion) => r.id == id && !r?.regionData?.ignore);
 			if (!region) {
 				return undefined;
 			}
@@ -337,7 +337,8 @@ export class Metaverse {
 		if (!region) {
 			//Search for party token
 			region = game.scenes.current.regions.find(
-				region => {
+				(region : PersonaRegion) => {
+					if (region?.regionData?.ignore) return false;
 					const arr = Array.from(region.tokens);
 					return arr.some(token => token.actor?.isOwner);
 				});
