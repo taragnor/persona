@@ -287,10 +287,16 @@ export class CombatResult  {
 					duration: dur,
 				});
 				break;
-			case "inspiration-cost":
+			case "inspiration-cost": {
+				let situation = atkResult?.situation;
 				if (!effect) break;
-				if (!atkResult) break;
-				const socialTarget = getSocialLinkTarget(cons.socialLinkIdOrTarot, atkResult.situation, null);
+				if (!situation) {
+					situation = {
+						user: effect.actor,
+						target: effect.actor,
+					};
+				}
+				const socialTarget = getSocialLinkTarget(cons.socialLinkIdOrTarot, situation, null);
 				if (!socialTarget) break;
 				effect.otherEffects.push( {
 					type: "inspiration-cost",
@@ -298,6 +304,7 @@ export class CombatResult  {
 					linkId: socialTarget.id,
 				});
 				break;
+			}
 			case "display-msg":
 				if (effect) {
 					effect.otherEffects.push( {
