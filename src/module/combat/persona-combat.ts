@@ -227,6 +227,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		returns.push(
 			await this.fadingRoll(combatant, situation),
 			this.mandatoryOtherOpeners(combatant, situation),
+			this.sleepEffect(combatant),
 			this.saveVsFear(combatant, situation),
 			this.saveVsDespair(combatant, situation),
 			this.saveVsConfusion(combatant, situation),
@@ -262,6 +263,21 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		};
 		const saveBonus = combatant.actor.getBonuses("save").total(saveSituation);
 		return saveBonus + rollValue;
+	}
+
+	sleepEffect( combatant: Combatant<ValidAttackers>) : OpenerOptionsReturn {
+		let options : OpenerOptionsReturn["options"] = [];
+		let msg : string[] = [];
+		if (!combatant?.actor?.hasStatus("sleep"))  {
+			return {msg, options};
+		}
+		msg.push(`Sleeping`);
+		options.push({
+			optionTxt: "Sleep Soundly",
+			mandatory: true,
+			optionEffects: [],
+		});
+		return {msg, options};
 	}
 
 	saveVsCharm ( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsReturn {

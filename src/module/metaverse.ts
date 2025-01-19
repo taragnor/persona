@@ -330,8 +330,9 @@ export class Metaverse {
 		if (!actor) {
 			throw new PersonaError("No controlled Character");
 		}
-		let region = game.scenes.current.regions.find( region => {
-			const arr =Array.from(region.tokens);
+		let region = game.scenes.current.regions.find( (region : PersonaRegion) => {
+			if (region?.regionData?.ignore) return false;
+			const arr = Array.from(region.tokens);
 			return arr.some( tok => tok.actor?.id == actor.id)
 		});
 		if (!region) {
@@ -345,6 +346,10 @@ export class Metaverse {
 			if (!region) {
 				return undefined;
 			}
+		}
+		if ((region as PersonaRegion)?.regionData?.ignore == true) {
+			throw new PersonaError("Region is ignore!");
+
 		}
 		return region as PersonaRegion;
 	}
