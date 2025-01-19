@@ -375,6 +375,8 @@ export class CombatResult  {
 					...cons
 				});
 				break;
+			case "add-creature-tag":
+				break;
 			default: {
 				cons satisfies never;
 				throw new Error("Should be unreachable");

@@ -86,6 +86,12 @@
 	</select>
 	{{/if}}
 
+	{{#if (eq cons.type "add-creature-tag")}}
+	<select name="{{strcat namePrefix 'creatureTag'}}">
+		{{selectOptions POWERSTUFF.CREATURE_TAGS localize=true selected=cons.creatureTag}}
+	</select>
+	{{/if}}
+
 	{{#if (eq cons.type	"other-effect")}}
 	<select name="{{strcat namePrefix 'otherEffect'}}">
 		{{selectOptions POWERSTUFF.OTHER_CONSEQUENCES localize=true selected=cons.otherEffect}}

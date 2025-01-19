@@ -5,7 +5,6 @@ import { CombatHooks } from "./combat-hooks.js";
 import { DamageConsequence } from "../../config/consequence-types.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { NonCombatTrigger } from "../../config/triggers.js";
-import { STATUS_POWER_TAGS } from "../../config/power-tags.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { PersonaCalendar } from "../social/persona-calendar.js";
 import { POWER_TAGS } from "../../config/power-tags.js";
@@ -1426,6 +1425,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "none":
 			case "modifier":
 			case "modifier-new":
+			case "add-creature-tag":
 			case "escalationManipulation": //since this is no llonger handled here we do nothing
 				break;
 			case "extraAttack" :

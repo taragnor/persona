@@ -2229,13 +2229,22 @@ allOutAttackDamage(this: PC | Shadow, situation?: Situation) : { high: number, l
 	}
 
 get tagList() : CreatureTag[] {
+	//NOTE: THis is a candidate for caching
 	if (this.system.type == "tarot") return [];
 	let list = this.system.creatureTags.slice();
+	if (this.system.type == "pc" || this.system.type == "shadow") {
+		const extraTags = this.mainModifiers().flatMap( x=> x.getConferredTags(this as PC | Shadow));
+		for (const tag of extraTags) {
+			if (!list.includes(tag))
+				list.push(tag);
+		}
+	}
 	switch (this.system.type) {
 		case "pc":
 			if (!list.includes("pc")) {
 				list.push("pc");
 			}
+
 			return list;
 		case "npc": return list;
 		case "shadow": return list;

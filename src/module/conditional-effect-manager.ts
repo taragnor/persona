@@ -1,3 +1,6 @@
+import { getActiveConsequences } from "./preconditions.js";
+import { PowerContainer } from "./item/persona-item.js";
+import { Situation } from "./preconditions.js";
 import { STATUS_EFFECT_DURATION_TYPES } from "../config/status-effects.js";
 import { Helpers } from "./utility/helpers.js";
 import { multiCheckToArray } from "./preconditions.js";
@@ -98,6 +101,10 @@ export class ConditionalEffectManager {
 			throw new PersonaError("No Data Path Given!");
 		}
 		return { topPath, dataPath };
+	}
+
+	static getAllActiveConsequences(condEffects: ConditionalEffect[], situation: Situation, source: PowerContainer | null) : Consequence[] {
+		return condEffects.flatMap( effect=> getActiveConsequences(effect, situation, source));
 	}
 
 	static #getEffectIndex(ev: JQuery.ClickEvent) {
@@ -694,6 +701,9 @@ export class ConditionalEffectManager {
 			}
 			case "raise-status-resistance":
 				return `${this.translate(cons.resistanceLevel, RESIST_STRENGTHS)} status ${this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE)}`;
+			case "add-creature-tag":
+				const tag = this.translate(cons.creatureTag, CREATURE_TAGS);
+				return `Add ${tag} tag`;
 			default:
 				cons satisfies never;
 				return "ERROR";

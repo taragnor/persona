@@ -142,6 +142,12 @@ export class Metaverse {
 		await ChatMessage.create(messageData, {});
 	}
 
+	/** for use by macro */
+	static async randomEncounter() {
+		const encounter = Metaverse.generateEncounter();
+		await Metaverse.printRandomEncounterList(encounter);
+	}
+
 	static async generateTreasure(shadows: PersonaActor[], players: PersonaActor[]): Promise<(Weapon | InvItem | Consumable) []> {
 		let items : (Weapon | InvItem | Consumable)[] = [];
 		let money = 0;

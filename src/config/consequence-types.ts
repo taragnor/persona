@@ -1,3 +1,5 @@
+import { ConsequenceType } from "./effect-types.js";
+import { CreatureTag } from "./creature-tags.js";
 import { SaveType } from "./save-types.js";
 import { StatusDurationType } from "./status-effects.js";
 import { SocialLinkIdOrTarot } from "./precondition-types.js";
@@ -17,7 +19,6 @@ import { ResistStrength } from "./damage-types.js";
 import { Usable } from "../module/item/persona-item.js";
 import { OtherConsequence } from "../module/datamodel/other-effects.js";
 import { StatusDuration } from "../module/active-effect.js";
-import { ConsequenceType } from "./effect-types.js";
 import { StatusEffectId } from "./status-effects.js";
 import { ModifierTarget } from "./item-modifiers.js";
 import { PC } from "../module/actor/persona-actor.js";
@@ -181,7 +182,13 @@ type NonGenericConsequences = UsePowerConsequence
 	| AddStatusConsequence
 	| RemoveStatusConsequence
 	| SetFlagConsequence
+	| AddTagConsequence
 ;
+
+type AddTagConsequence = {
+	type: "add-creature-tag",
+	creatureTag: CreatureTag;
+}
 
 type SetFlagConsequence = {
 	type: "set-flag",

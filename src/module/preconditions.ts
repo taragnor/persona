@@ -375,12 +375,14 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 				return undefined;
 			}
 			const power = PersonaDB.findItem(situation.usedPower);
+			if (!power) return undefined;
+			const powerTags = power.tagList();
 			if (typeof condition.powerTag == "string") {
 				return power.system.tags.includes(condition.powerTag!);
 			}
 			return Object.entries(condition.powerTag)
 			.filter( ([_, val]) => val == true)
-			.some (([tag, _]) => (power as Power).tagList().includes(tag as PowerTag));
+			.some (([tag, _]) => powerTags.includes(tag as PowerTag));
 		}
 		case "power-type-is": {
 			if (!situation.usedPower) {

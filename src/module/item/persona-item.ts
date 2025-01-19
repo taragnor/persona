@@ -1,3 +1,5 @@
+import { Consequence } from "../../config/consequence-types.js";
+import { CreatureTag } from "../../config/creature-tags.js";
 import { Precondition } from "../../config/precondition-types.js";
 import { CARD_TAGS } from "../../config/card-tags.js";
 import { SimpleDamageCons } from "../../config/consequence-types.js";
@@ -41,6 +43,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		effectsNull: ConditionalEffect[] | undefined;
 		effectsMap: WeakMap<PC |Shadow, ConditionalEffect[]>;
 		containsModifier: boolean | undefined;
+		containsTagAdd: boolean | undefined;
 	}
 
 	static cacheStats = {
@@ -61,6 +64,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			effectsNull: undefined,
 			effectsMap: new WeakMap(),
 			containsModifier: undefined,
+			containsTagAdd: undefined,
 		};
 	}
 
@@ -158,6 +162,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	tagList(this : Power): PowerTag[];
 	tagList(this : Consumable): (PowerTag | EquipmentTag)[];
+	tagList(this: Usable) : PowerTag[];
 	tagList(this : InvItem | Weapon): EquipmentTag[];
 	tagList(this: Usable | InvItem | Weapon) : (PowerTag | EquipmentTag)[] {
 		const itype = this.system.type;
@@ -364,12 +369,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow) : ModifierListItem[] {
-		bonusTypes = Array.isArray(bonusTypes) ? bonusTypes: [bonusTypes];
-			PersonaItem.cacheStats.modifierRead++;
+		PersonaItem.cacheStats.modifierRead++;
 		if (this.cache.containsModifier === false) {
 			PersonaItem.cacheStats.modifierSkip++;
 			return [];
 		}
+		bonusTypes = Array.isArray(bonusTypes) ? bonusTypes: [bonusTypes];
 		const filteredEffects = this.getEffects(sourceActor)
 			.filter( eff => eff.consequences.some( cons => "modifiedFields" in cons || "modifiedField" in cons))
 		;
@@ -384,6 +389,25 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					variableModifier: ModifierList.getVariableModifiers(x.consequences, bonusTypes),
 				})
 			);
+	}
+
+	getConferredTags(this: ModifierContainer, actor: PC | Shadow) : CreatureTag[] {
+		if (this.cache.containsTagAdd === false) {
+			return [];
+		}
+		const effects= this.getEffects(actor);
+
+		if (!effects.some( e => e.consequences.some( cons => 
+			cons.type == "add-creature-tag"))) {
+			this.cache.containsTagAdd = false;
+			return [];
+		}
+		const situation = {
+			user: actor.accessor,
+		};
+		const cons : (Consequence & {type : "add-creature-tag"})[] = ConditionalEffectManager.getAllActiveConsequences(effects, situation, this)
+			.filter( c=> c.type == "add-creature-tag") as any ;
+		return cons.map( c => c.creatureTag);
 	}
 
 	getDamage(this:ModifierContainer , user: PC | Shadow, type: "high" | "low", situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: user.accessor}, typeOverride : SimpleDamageCons["damageType"] = "none") : number {
@@ -931,7 +955,6 @@ function cacheStats() {
 	const skipPercent = Math.round(100 * modifierSkip / modifierRead);
 	console.log(`Effects Cache : ${missPercent}% misses`);
 	console.log(`Effects Cache : ${skipPercent}% modifierSkip Rate`);
-
 }
 
 //@ts-ignore
