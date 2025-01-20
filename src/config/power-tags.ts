@@ -7,9 +7,19 @@ export const STATUS_POWER_TAGS  = [
 	"rage",
 ] as const;
 
-export const POWER_TAGS_LIST = [
+export const POWER_TYPE_TAGS = [
 	"power",
 	"consumable",
+	"exotic",
+	"shadow-only",
+	"teamwork",
+	"opener",
+	"downtime",
+	"follow-up",
+	"mandatory",
+] as const;
+
+export const POWER_TAGS_LIST = [
 	"amped",
 	"fire",
 	"charged",
@@ -26,13 +36,9 @@ export const POWER_TAGS_LIST = [
 	"mobile",
 	"basicatk",
 	...STATUS_POWER_TAGS,
-	"exotic",
-	"teamwork",
-	"opener",
-	"downtime",
-	"follow-up",
-	"mandatory",
+	...POWER_TYPE_TAGS,
 ] as const;
+
 
 export type PowerTag = typeof POWER_TAGS_LIST[number];
 

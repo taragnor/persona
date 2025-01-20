@@ -1,3 +1,4 @@
+import { ModifierTarget } from "../config/item-modifiers.js";
 import { getActiveConsequences } from "./preconditions.js";
 import { PowerContainer } from "./item/persona-item.js";
 import { Situation } from "./preconditions.js";
@@ -101,6 +102,20 @@ export class ConditionalEffectManager {
 			throw new PersonaError("No Data Path Given!");
 		}
 		return { topPath, dataPath };
+	}
+
+	static canModifyStat (effects: ConditionalEffect[], stat: ModifierTarget): boolean {
+		return effects.some( eff => eff.consequences.some( c=> {
+			if ( "modifiedField" in c ) {
+				if (c.modifiedField == stat) return true;
+			}
+				if ( "modifiedFields" in c) {
+					if (c.modifiedFields[stat] == true)
+						return true;
+				}
+			return false;
+		})
+		);
 	}
 
 	static getAllActiveConsequences(condEffects: ConditionalEffect[], situation: Situation, source: PowerContainer | null) : Consequence[] {

@@ -59,6 +59,15 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 							await (this.actor as PC).setTeamworkMove(item as Power);
 							return item;
 						}
+						if ((item as Power).hasTag("shadow-only")) {
+							ui.notifications.warn(`Can't take Shadow only power ${item.name}`);
+							return;
+						}
+						if (!game.user.isGM && (item as Power).hasTag("exotic")) {
+							ui.notifications.warn(`Can't directly take exotic power : ${item.name}`);
+							return;
+						}
+
 						await (this.actor as PC).addPower(item as Power);
 						return item ;
 					default:

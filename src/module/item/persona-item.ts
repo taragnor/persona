@@ -44,6 +44,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		effectsMap: WeakMap<PC |Shadow, ConditionalEffect[]>;
 		containsModifier: boolean | undefined;
 		containsTagAdd: boolean | undefined;
+		statsModified: Map<ModifierTarget, boolean>,
 	}
 
 	static cacheStats = {
@@ -65,6 +66,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			effectsMap: new WeakMap(),
 			containsModifier: undefined,
 			containsTagAdd: undefined,
+			statsModified: new Map(),
 		};
 	}
 
@@ -374,7 +376,22 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			PersonaItem.cacheStats.modifierSkip++;
 			return [];
 		}
-		bonusTypes = Array.isArray(bonusTypes) ? bonusTypes: [bonusTypes];
+		bonusTypes = Array.isArray(bonusTypes) ? bonusTypes : [bonusTypes];
+		let found = false;
+		for (const modifier of bonusTypes) {
+			let hasBonus = this.cache.statsModified.get(modifier);
+			if (hasBonus === undefined) {
+				hasBonus = ConditionalEffectManager.canModifyStat(this.getEffects(sourceActor), modifier);
+				this.cache.statsModified.set(modifier, hasBonus);
+			}
+			if (hasBonus === true) {
+				found = true;
+			}
+		}
+		if (!found) {
+			PersonaItem.cacheStats.modifierSkip++;
+			return [];
+		}
 		const filteredEffects = this.getEffects(sourceActor)
 			.filter( eff => eff.consequences.some( cons => "modifiedFields" in cons || "modifiedField" in cons))
 		;
@@ -395,8 +412,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (this.cache.containsTagAdd === false) {
 			return [];
 		}
-		const effects= this.getEffects(actor);
-
+		const effects = this.getEffects(actor);
 		if (!effects.some( e => e.consequences.some( cons => 
 			cons.type == "add-creature-tag"))) {
 			this.cache.containsTagAdd = false;
