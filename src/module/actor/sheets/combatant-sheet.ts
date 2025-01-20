@@ -83,8 +83,16 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 					return item;
 				}
 			case "item":
+				if (!game.user.isGM) {
+					ui.notifications.warn("Use Item Piles functionality to move items.");
+					return;
+				}
 				return super._onDropItem(_event, itemD);
 			case "weapon":
+				if (!game.user.isGM) {
+					ui.notifications.warn("Use Item Piles functionality to move items.");
+					return;
+				}
 				return super._onDropItem(_event, itemD);
 			case "characterClass":
 				this.actor.setClass(item as CClass);
