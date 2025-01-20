@@ -148,7 +148,16 @@ export class PersonaHandleBarsHelpers {
 					return "-/-";
 			}
 		},
-
+		"getCriticalBoostEstimate" : function (actor: PC | Shadow, power: Usable) : number {
+			const situation : Situation = {
+				usedPower: power.accessor,
+				attacker: actor.accessor,
+				user: actor.accessor,
+			}
+			const critBoostMod = power.critBoost(actor).total(situation);
+			const targetDiffAdjust = PersonaCombat.calcPowerCritBoostTargetAdjust(actor, power, true);
+			return critBoostMod + targetDiffAdjust;
+		},
 		"getTokenAccName" : (tokenAcc: UniversalTokenAccessor<PToken> | UniversalActorAccessor<PC | Shadow>) =>  {
 
 			if ("actorId" in tokenAcc) {

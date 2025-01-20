@@ -1000,12 +1000,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			};
 		}
 		const critBoostMod = power.critBoost(attacker.actor);
-		if (power.system.type == "power" && !power.isBasicPower()) {
-			const powerLevel = power.baseCritSlotBonus();
-			const targetResist = target.actor.basePowerCritResist();
-			const diff = powerLevel - targetResist;
-			critBoostMod.add("Power Level Difference", diff);
-		}
+		const powerDiff = this.calcPowerCritBoostTargetAdjust(target.actor, power);
+		critBoostMod.add("Power Level Difference", powerDiff);
 		situation.resisted = resist == "resist";
 		situation.struckWeakness = resist == "weakness";
 		const critResist = target.actor.critResist().total(situation);
@@ -1066,6 +1062,18 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				...baseData,
 			}
 		}
+	}
+
+	static calcPowerCritBoostTargetAdjust(target: PC | Shadow, power: Usable, disallowIncremental = false) {
+		if (power.system.type != "power" || power.isBasicPower()) {
+			return 0;
+		}
+		const powerLevel = power.baseCritSlotBonus();
+		const targetResist = target.basePowerCritResist(power, disallowIncremental);
+		const dmgtype = power.system.dmg_type;
+		const mult = (dmgtype == "dark" || dmgtype == "light") ? 2 : 1;
+		const diff = Math.max(0, powerLevel - targetResist);
+		return diff * mult;
 	}
 
 	static async processEffects(atkResult: AttackResult) : Promise<CombatResult> {

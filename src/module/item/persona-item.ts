@@ -587,24 +587,25 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	baseCritSlotBonus(this: Usable) : number {
 		if (this.system.type == "consumable") {return 0;}
+		if (this.hasTag("basicatk")) return 0;
 		if (this.isBasicPower()) return 0;
 		let bonus = 0;
-		const dtype = this.system.dmg_type;
-		if (dtype == "light" || dtype == "dark") {
-			bonus += 2;
-		}
+		// const dtype = this.system.dmg_type;
+		// if (dtype == "light" || dtype == "dark") {
+		// 	bonus += 1;
+		// }
 		switch (this.system.slot) {
 			case 0:
-				bonus+= 2;
+				bonus += 2;
 				break;
 			case 1:
-				bonus+= 4;
+				bonus += 3;
 				break;
 			case 2:
-				bonus+= 6;
+				bonus += 4;
 				break;
 			case 3:
-				bonus+= 8;
+				bonus += 5;
 				break;
 			default:
 				PersonaError.softFail(`Unknwon Slot Type :${this.system.slot}`);

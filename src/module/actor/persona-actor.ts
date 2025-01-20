@@ -109,7 +109,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		if (level <= 1) return 50;
 		const prevMP = this.calcMP(level -1);
-		const MP = prevMP + (prevMP * (0.35 - ((level - 2) * .02)));
+		const MP = prevMP + (prevMP * (0.33 - ((level - 2) * .02)));
 		this.MPMap.set(level, MP);
 		return MP;
 	}
@@ -994,10 +994,30 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return modList;
 	}
 
-	basePowerCritResist(this: PC |Shadow): number {
+	basePowerCritResist(this: PC | Shadow, power: Usable, disallowIncremental = false): number {
+		switch (power.system.subtype) {
+			case "consumable":
+			case "social-link":
+			case "other":
+			case "passive":
+			case "none":
+			case "standalone":
+			case "defensive":
+			case "downtime":
+				return 0;
+			case "magic":
+				break;
+			case "weapon":
+				if (power.hasTag("basicatk"))
+					return 0;
+				break;
+			default:
+				power.system satisfies never;
+				return 0;
+		}
 		const inc = this.system.combat.classData.incremental.defenses ? 1 : 0;
-		const level = this.system.combat.classData.level + inc;
-		return Math.floor(level /2);
+		const level = this.system.combat.classData.level + (disallowIncremental ? 0 : inc);
+		return Math.floor(level / 3);
 	}
 
 	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
