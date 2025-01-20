@@ -43,12 +43,11 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) {
 		//@ts-ignore
 		const item: PersonaItem = await Item.implementation.fromDropData(itemD);
+		console.debug(`${item.system.type} dropped on sheet of ${this.actor}`);
 		switch (item.system.type) {
 			case "talent":
 				this.actor.addTalent(item as Talent);
 				return undefined;
-			case "consumable":
-				return super._onDropItem(_event, itemD);
 			case "power": {
 				const actorType = this.actor.system.type;
 				switch (actorType) {
@@ -82,16 +81,12 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 					(this.actor as PC).addFocus(item as Focus);
 					return item;
 				}
+			case "consumable":
 			case "item":
-				if (!game.user.isGM) {
-					ui.notifications.warn("Use Item Piles functionality to move items.");
-					return;
-				}
-				return super._onDropItem(_event, itemD);
 			case "weapon":
 				if (!game.user.isGM) {
 					ui.notifications.warn("Use Item Piles functionality to move items.");
-					return;
+					return undefined;
 				}
 				return super._onDropItem(_event, itemD);
 			case "characterClass":
