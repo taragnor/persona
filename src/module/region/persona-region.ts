@@ -233,6 +233,24 @@ export class PersonaRegion extends RegionDocument {
 
 	}
 
+	/** for batch_adding */
+	async addRoomModifier(mod: UniversalModifier) {
+		if (mod?.system?.type != "universalModifier") throw new PersonaError("Not a modifier");
+		if (!mod.system.room_effect)  throw new PersonaError("Not a Room Effect");
+		const data = this.regionData;
+		if (data.roomEffects.includes( mod.id)) {
+			return false;
+		}
+		data.roomEffects = data.roomEffects.filter(x=> x);
+		if (data.roomEffects.length >= 4) {
+			ui.notifications.warn("${this.name} ${this.id} Effects full");
+			return false;
+		}
+		data.roomEffects.push(mod.id);
+		await this.setRegionData(data);
+		return true;
+	}
+
 	async presenceCheck() {
 		const presence = await Metaverse.presenceCheck(this);
 		if (!presence) return;

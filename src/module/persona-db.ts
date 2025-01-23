@@ -70,7 +70,9 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	getRoomModifiers() : UniversalModifier [] {
 		const items = this.getAllByType("Item") as PersonaItem[];
 		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
-		return UMs.filter(um=> um.system.room_effect);
+		return UMs
+			.filter(um=> um.system.room_effect)
+			.sort ( (a,b) => a.name.localeCompare(b.name));
 	}
 
 	allPowers() : Power[] {

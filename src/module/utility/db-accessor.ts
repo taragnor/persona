@@ -183,8 +183,8 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 
 	 getBaseItemsByType (type: ValidDBTypes) : (ActorType | ItemType)[] {
 		switch (type) {
-			case "Actor": return Array.from(game.actors) as ActorType[];
-			case "Item": return Array.from(game.items) as ItemType[];
+			case "Actor": return game.actors.contents as ActorType[];
+			case "Item": return game.items.contents as ItemType[];
 			default: throw new Error(`Unsupported Type ${type}`);
 		}
 	}
