@@ -1,3 +1,5 @@
+	import { Metaverse } from "../metaverse.js";
+import { PersonaRegion } from "../region/persona-region.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaSFX } from "../combat/persona-sfx.js";
 import { PersonaDB } from "../persona-db.js";
@@ -49,30 +51,38 @@ export class SearchMenu {
 		return !!this.dialog && !(this.data && this.data.suspended);
 	}
 
-	static async start(searchOptions?: typeof this.options) : Promise<SearchResult[]> {
+	static async start(searchOptions?: typeof this.options, region ?: PersonaRegion) : Promise<SearchResult[]> {
 		this.data = null;
 		this.progress = {
 			treasuresFound: 0,
 			hazardFound: false,
 			secretFound: false
 		};
+		if (!region) {
+			region = Metaverse.getRegion();
+			if (!region) throw new PersonaError("Can't find region!");
+		}
 		searchOptions = !searchOptions ? await this.searchOptionsDialog(this.template) : searchOptions;
 		this.options = searchOptions;
-		return await this.mainLoop();
+		return await this.mainLoop(region);
 	}
 
-	static async resume() : Promise<void> {
+	static async resume(region ?: PersonaRegion) : Promise<void> {
 		if (!this.data) {
 			ui.notifications.warn("Can't resume as there is no data");
 			return;
 		}
+		if (!region) {
+			region = Metaverse.getRegion();
+			if (!region) throw new PersonaError("Can't find region!");
+		}
 		if (this.data?.suspended) {
 			this.data.suspended = false;
-			await this.mainLoop();
+			await this.mainLoop(region);
 		}
 	}
 
-	private static async mainLoop(): Promise<SearchResult[]> {
+	private static async mainLoop(region: PersonaRegion): Promise<SearchResult[]> {
 		let allResults : SearchResult[] = [];
 		while (true) {
 			const results = await this.openSearchWindow(this.options!);
@@ -81,7 +91,7 @@ export class SearchMenu {
 				this.endSearch();
 				break;
 			}
-			const ret = await this.execSearch(results, this.options);
+			const ret = await this.execSearch(results, this.options, region);
 			if (this.options.stopOnHazard && results.some(r => r.result == "hazard")) {
 				this.endSearch();
 				break;
@@ -116,7 +126,7 @@ export class SearchMenu {
 		})
 	}
 
-	static async execSearch(results : SearchResult[], options: SearchOptions<typeof SearchMenu["template"]>) {
+	static async execSearch(results : SearchResult[], options: SearchOptions<typeof SearchMenu["template"]>, region: PersonaRegion) {
 		let rolls : Roll[] = [];
 		const guards = results.filter( x=> x.declaration == "guard").length;
 		exitFor: for (const searcher of results) {
@@ -179,7 +189,8 @@ export class SearchMenu {
 		await PersonaCombat.onTrigger("on-search-end")
 		.emptyCheck()
 		?.autoApplyResult();
-		const {roll, result} = await this.tensionPool(guards, options);
+		// const {roll, result} = await this.tensionPool(guards, options);
+		const {roll, result} = TensionPool.nullResult();
 		if (roll) {
 			rolls.push(roll);
 		}
@@ -195,7 +206,14 @@ export class SearchMenu {
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 			rolls,
 		})
-		if (result != "none") {
+		let inc = options.incTension;
+		while (inc--) {
+			await TensionPool.inc();
+		}
+		if (!options.rollTension) return msg;
+		const isEncounter = await region.presenceCheck();
+		// if (result != "none") {
+		if (isEncounter) {
 			this.suspend(true);
 			return;
 		}
@@ -235,7 +253,7 @@ export class SearchMenu {
 
 	static async tensionPool(guards: number, options: SearchOptions<typeof SearchMenu["template"]>) : Promise<TensionPoolResult> {
 		if (!options.rollTension) return TensionPool.nullResult();
-		const tensionRoll =  await TensionPool.roll(guards);
+		const tensionRoll =  await TensionPool.roll();
 		let inc = options.incTension;
 		while (inc--) {
 			await TensionPool.inc();

@@ -8,19 +8,24 @@ import { ProgressClock } from "../utility/progress-clock.js";
 		 super ("Tension Pool", 6);
 	 }
 
-	 async roll(PCsOnGuard: number) : Promise<TensionPoolResult> {
+	 async rollAuto() {
+		 const result = await this.roll();
+		 await result.print();
+	 }
+
+	 async roll() : Promise<TensionPoolResult> {
 		 const roll = new Roll(`${this.amt}d6`);
 		 await roll.roll();
-		 if (!roll.dice.some(dice => dice.values.some(v => v == 1)))
-		 return new TensionPoolResult(roll, "none");
-		 if (TensionPool.isMaxed() && roll.dice[0].values.filter( v=> v == 1 || v== 2))  {
+		 if (!roll.dice.some(dice => dice.values.some(v => v == 1))) {
+			 return new TensionPoolResult(roll, "none");
+		 }
+		 if (TensionPool.isMaxed())  {
 			 return new TensionPoolResult(roll, "reaper");
 		 }
-		 await TensionPool.add(-2);
-		 if (roll.dice[0].values.filter( x=> x == 1 || x== 2).length > PCsOnGuard) {
-			 this.generateEncounter();
-			 return new TensionPoolResult( roll, "ambush");
-		 }
+		 const sixes = roll.dice
+		 .flatMap( die=> die.total == 6 ? [die] : [])
+		 .length;
+		 await TensionPool.add(-sixes);
 		 this.generateEncounter();
 		 return new TensionPoolResult (roll, "battle");
 	 }

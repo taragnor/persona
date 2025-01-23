@@ -251,9 +251,9 @@ export class PersonaRegion extends RegionDocument {
 		return true;
 	}
 
-	async presenceCheck() {
+	async presenceCheck() : Promise<boolean> {
 		const presence = await Metaverse.presenceCheck(this);
-		if (!presence) return;
+		if (!presence) return false;
 		let shadowType : Shadow["system"]["creatureType"] | undefined = undefined;
 		switch (presence) {
 			case "shadows":
@@ -269,6 +269,7 @@ export class PersonaRegion extends RegionDocument {
 		}
 		const shadows = Metaverse.generateEncounter(shadowType);
 		await Metaverse.printRandomEncounterList(shadows);
+		return true;
 	}
 
 	async setRegionData(data: RegionData) {

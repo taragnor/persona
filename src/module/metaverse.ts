@@ -214,9 +214,8 @@ export class Metaverse {
 	static async executeDungeonAction( action: DungeonActionConsequence) : Promise<void> {
 		switch (action.dungeonAction) {
 			case "roll-tension-pool":
-				const result = await TensionPool
-					.roll(66);
-				await result.print();
+				await TensionPool
+					.rollAuto();
 				break;
 			case "modify-tension-pool":
 				await TensionPool.add(action.amount);
@@ -269,7 +268,7 @@ export class Metaverse {
 			hazardOnTwo: data.specialMods.includes("hazard-on-2"),
 			cycle: false,
 		};
-		const results = await SearchMenu.start(searchOptions);
+		const results = await SearchMenu.start(searchOptions, region);
 		let treasureRolls : Roll[] = [];
 		for (const result of results) {
 			switch (result.result) {
@@ -399,10 +398,15 @@ export class Metaverse {
 	static async #presenceRoll (data: PresenceRollData) : Promise<boolean> {
 		const roll = new Roll(data.rollString);
 		await roll.roll();
+		const isEncounter = roll.total <= data.presenceValue;
 		let html = `<h2> ${data.label} (${data.regionName})</h2>`;
 		html += `<div> Roll vs ${data.label} ${data.presenceValue}: ${roll.total} </div>`;
-		const result = roll.total <= data.presenceValue ? data.atkText ?? `Danger`: data.safeText ?? `Safe`;
+		const result = isEncounter ? data.atkText ?? `Danger`: data.safeText ?? `Safe`;
 		html += `<div class="action-result">${result}</div>`;
+		if (isEncounter) {
+			html += `<br><hr><div>Will you?</div>`
+			html += `<ul> <li> fight</li><li> evade </li><li> try to sneak past</li></ul> `;
+		}
 		await ChatMessage.create({
 			speaker: {
 				alias: data.label
