@@ -1,3 +1,4 @@
+import { PersonaError } from "../persona-error.js";
 import { Metaverse } from "../metaverse.js";
 import { HBS_TEMPLATES_DIR } from "../../config/persona-settings.js";
 import { ProgressClock } from "../utility/progress-clock.js";
@@ -9,11 +10,15 @@ import { ProgressClock } from "../utility/progress-clock.js";
 	 }
 
 	 async rollAuto() {
+		 if (!game.user.isGM)
+			 throw new PersonaError("Can't roll tension pool as non-GM");
 		 const result = await this.roll();
 		 await result.print();
 	 }
 
 	 async roll() : Promise<TensionPoolResult> {
+		 if (!game.user.isGM)
+			 throw new PersonaError("Can't roll tension pool as non-GM");
 		 const roll = new Roll(`${this.amt}d6`);
 		 await roll.roll();
 		 if (!roll.dice.some(dice => dice.values.some(v => v == 1))) {
