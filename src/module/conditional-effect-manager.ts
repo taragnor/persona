@@ -778,13 +778,18 @@ export class ConditionalEffectManager {
 				return "Roll Tension pool";
 			case "modify-tension-pool":
 				return "Modify Tension Pool";
-			case "modify-clock":
+			case "modify-clock": {
 				const clock = cons.clockId;
 				return `${clock} ticks ${signedAmount}`;
+			}
 			case "close-all-doors":
 				return `Close All Doors`;
 			case "change-scene-weather":
 				return `Change Scene Weather to ${cons.sceneWeatherType}`;
+			case "set-clock": {
+				const clock = cons.clockId;
+				return `${clock} set to ${signedAmount}`;
+			}
 			default:
 				cons satisfies never;
 				return "ERROR";

@@ -224,7 +224,7 @@
 		{{selectOptions POWERSTUFF.DUNGEON_ACTIONS localize=true selected=cons.dungeonAction}}
 	</select>
 
-	{{#if (eqAny cons.dungeonAction "modify-clock")}}
+	{{#if (eqAny cons.dungeonAction "modify-clock" "set-clock")}}
 	<select name="{{strcat namePrefix 'clockId'}}">
 		{{selectOptions POWERSTUFF.CLOCKS localize=true selected=cons.clockId}}
 	</select>
@@ -236,7 +236,7 @@
 	</select>
 	{{/if}}
 
-	{{#if (eqAny cons.dungeonAction "modify-tension-pool" "modify-clock")}}
+	{{#if (eqAny cons.dungeonAction "modify-tension-pool" "modify-clock" "set-clock")}}
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 	{{/if}}
 

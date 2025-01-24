@@ -120,6 +120,17 @@ export  class ProgressClock {
 		Hooks.callAll("clockTick", this, newAmt);
 	}
 
+	async set(amt: number) : Promise<number> {
+		const tick = Math.abs(this.amt - amt);
+		amt = Math.clamp(amt, 0, this.max);
+		this.refreshValue(amt);
+		if (tick != 0) {
+			this.reportTick(tick);
+		}
+
+		return this.amt;
+	}
+
 	async add(mod : number): Promise<number> {
 		if (!this.isCyclical()) {
 			const amt = Math.min(this.max, Math.max(0, this.amt + mod));

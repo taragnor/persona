@@ -361,7 +361,7 @@ type GenericDungeonAction = {
 }
 
 type ClockDungeonActionCons = {
-	dungeonAction: "modify-clock",
+	dungeonAction: "modify-clock" | "set-clock",
 	clockId: string,
 	amount: number,
 }

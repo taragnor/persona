@@ -221,13 +221,14 @@ export class Metaverse {
 			case "modify-tension-pool":
 				await TensionPool.add(action.amount);
 				break;
-			case "modify-clock":
+			case "modify-clock": {
 				const clock = ProgressClock.getClock(action.clockId);
 				if (!clock) {
 					PersonaError.softFail(`Can't find clock id ${action.clockId}`);
 					return;
 				}
 				await clock.add(action.amount);
+			}
 				break;
 			case "close-all-doors":
 				await this.closeAllDoors();
@@ -235,6 +236,15 @@ export class Metaverse {
 			case "change-scene-weather":
 				await (game.scenes.active as PersonaScene).changeWeather(action.sceneWeatherType);
 				break;
+			case "set-clock": {
+				const clock = ProgressClock.getClock(action.clockId);
+				if (!clock) {
+					PersonaError.softFail(`Can't find clock id ${action.clockId}`);
+					return;
+				}
+				await clock.set(action.amount);
+				break;
+			}
 			default:
 				action satisfies never;
 		}

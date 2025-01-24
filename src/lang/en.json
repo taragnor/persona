@@ -432,6 +432,7 @@
 	"persona.effecttypes.dungeonAction.roll-tension-pool": "Roll Tension Pool",
 	"persona.effecttypes.dungeonAction.modify-tension-pool": "Modify Tension Pool",
 	"persona.effecttypes.dungeonAction.modify-clock": "Modify Clock",
+	"persona.effecttypes.dungeonAction.set-clock": "Set Clock",
 	"persona.effecttypes.dungeonAction.close-all-doors": "Close all Doors",
 	"persona.effecttypes.dungeonAction.change-scene-weather": "Change Scene Weather",
 
