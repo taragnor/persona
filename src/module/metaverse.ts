@@ -72,7 +72,7 @@ export class Metaverse {
 		await Logger.sendToChat(`Exiting Metaverse...`);
 	}
 
-	static generateEncounter(shadowType ?: Shadow["system"]["creatureType"]): Shadow[] {
+	static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod = 0): Shadow[] {
 		const scene = game.scenes.current;
 		const encounterList  = (scene as PersonaScene).encounterList()
 			.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
@@ -80,18 +80,18 @@ export class Metaverse {
 			PersonaError.softFail(`Encounter List is empty for ${scene.name} ${shadowType ? "(" + shadowType+ ")"  :""}`);
 			return [];
 		}
-		let encounterSize = 0;
+		let encounterSize = sizeMod;
 		const sizeRoll = Math.floor((Math.random() * 10) +1);
 		let enemyType : Shadow["system"]["creatureType"] | undefined = undefined;
 		switch (sizeRoll) {
 			case 1:
-				encounterSize = 3;
+				encounterSize += 3;
 				break;
 			case 9: case 10:
-				encounterSize = 5;
+				encounterSize += 5;
 				break;
 			default:
-				encounterSize = 4;
+				encounterSize += 4;
 				break;
 		}
 		const encounter : Shadow[] = [];

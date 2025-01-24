@@ -1,5 +1,5 @@
+import { ModifierList } from "../combat/modifier-list.js";
 import { TriggeredEffect } from "../triggered-effect.js";
-import { PersonaSocial } from "../social/persona-social.js";
 import { PC } from "../actor/persona-actor.js";
 import { Situation } from "../preconditions.js";
 import { Shadow } from "../actor/persona-actor.js";
@@ -289,7 +289,17 @@ export class PersonaRegion extends RegionDocument {
 			default:
 				presence satisfies never;
 		}
-		const shadows = Metaverse.generateEncounter(shadowType);
+		const situation : Situation = {
+			trigger: "on-presence-check",
+			triggeringUser: game.user,
+			triggeringRegionId : this.id,
+		}
+		const sizeMod = new ModifierList([
+			...PersonaDB.getGlobalModifiers(),
+			...this.roomEffects
+		].flatMap( x=> x.getModifier("encounterSize", null))
+		).total(situation);;
+		const shadows = Metaverse.generateEncounter(shadowType, sizeMod);
 		await Metaverse.printRandomEncounterList(shadows);
 		return true;
 	}
