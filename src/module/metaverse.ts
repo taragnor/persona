@@ -102,7 +102,13 @@ export class Metaverse {
 				return [];
 			}
 			const dice = Math.floor(Math.random() * encounterList.length);
-			const pick = encounterList[dice];
+			const pick1 = encounterList[dice];
+			const pick2 = encounterList[dice];
+			const p1score = encounterList
+				.reduce ( (acc, shadow) => acc + shadow.complementRating(pick1), 0);
+			const p2score = encounterList
+				.reduce ( (acc, shadow) => acc + shadow.complementRating(pick2), 0);
+			const pick = p2score > p1score ? pick1 : pick2;
 			if (enemyType == undefined) {
 				enemyType = pick.system.creatureType;
 			}
@@ -114,8 +120,12 @@ export class Metaverse {
 				PersonaError.softFail(`Can't get a pick for random encounters for ${scene.name}`);
 				return [];
 			}
+			if (pick.system.role == "miniboss" || pick.system.role == "miniboss-lord") {
+				if (encounterSize < 4) {continue;}
+				encounterSize -= 3;
+			}
 			if (pick.system.role == "elite") {
-				if (encounterSize <= 1) {continue;}
+				if (encounterSize < 2) {continue;}
 				--encounterSize;
 			}
 			--encounterSize;

@@ -994,6 +994,54 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return modList;
 	}
 
+	complementRating (this: Shadow, other: Shadow) : number {
+		return this.#complementRating(other) + other.#complementRating(this);
+	}
+
+	#complementRating (this: Shadow, other: Shadow) : number {
+		let rating = 0;
+		if (this == other) return 3; //baseline
+		const role1 = this.system.role;
+		const role2 = other.system.role;
+		if (role1 == role2) {
+			if (role1 == "support") rating -= 2;
+			if (role1 == "soldier") rating -= 2;
+			if (role1 == "lurker") rating -= 2;
+		}
+		const weaknesses = DAMAGETYPESLIST
+		.filter( dmg => this.elementalResist(dmg) == "weakness");
+		for (const w of weaknesses) {
+			const res = other.elementalResist(w);
+			switch (res)  {
+				case "block":
+					rating += 2;
+					break;
+				case "absorb":
+				case "reflect":
+					rating += 3;
+					break;
+				case "resist":
+					rating += 1;
+					break;
+				default:
+					break;
+			}
+		}
+		const attacks = new Set(
+			this.powers
+			.map(x=> x.system.dmg_type)
+			.filter (dmgType => dmgType != "untyped" && dmgType != "none")
+		);
+		const otherAttacks =
+			other.powers
+			.map(x=> x.system.dmg_type)
+			.filter (dmgType => dmgType != "healing" && dmgType != "untyped" && dmgType != "none")
+		rating += otherAttacks.reduce( (acc, dmg) =>
+			acc + (!attacks.has(dmg) ? 1 : 0)
+		, 0 );
+		return rating;
+	}
+
 	basePowerCritResist(this: PC | Shadow, power: Usable, disallowIncremental = false): number {
 		switch (power.system.subtype) {
 			case "consumable":

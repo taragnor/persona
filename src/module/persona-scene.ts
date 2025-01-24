@@ -14,9 +14,9 @@ export class PersonaScene extends Scene {
 	encounterList() : Shadow[] {
 		const disAllowedRoles: ShadowRole[] = [
 			"miniboss-lord",
-			"boss-lord",
+			// "boss-lord",
 			"miniboss",
-			"boss",
+			// "boss",
 		];
 		let encounterList =
 			this.allFoes().filter( shadow =>
