@@ -361,9 +361,10 @@
 	"persona.equipment.tag.male" : "For Men",
 	"persona.equipment.tag.music" : "Music-related",
 	"persona.equipment.tag.child" : "Childish",
-	"persona.equipment.tag.drink" : "Beverage",
+	"persona.equipment.tag.drink" : "Drink / Beverage",
 	"persona.equipment.tag.food" : "Food",
 	"persona.equipment.tag.expensive" : "Expensive",
+	"persona.equipment.tag.expensive-very" : "Expensive (Very)",
 	"persona.equipment.tag.trinket" : "Trinket",
 	"persona.equipment.tag.luxury" : "Luxury Item",
 	"persona.equipment.tag.fashion" : "Fashion Related",
@@ -371,6 +372,11 @@
 	"persona.equipment.tag.fairy" : "Fairy",
 	"persona.equipment.tag.health" : "Health Related",
 	"persona.equipment.tag.cute" : "Cute",
+	"persona.equipment.tag.student" : "Student Supplies",
+	"persona.equipment.tag.romantic" : "Romantic",
+	"persona.equipment.tag.medical" : "Medical",
+	"persona.equipment.tag.sexual" : "Sexual",
+	"persona.equipment.tag.drug" : "drug",
 
 
 	"persona.power.shadowcosts.none": "Any",

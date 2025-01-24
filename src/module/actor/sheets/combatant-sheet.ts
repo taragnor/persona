@@ -1,3 +1,4 @@
+import { Consumable } from "../../item/persona-item.js";
 import { Logger } from "../../utility/logger.js";
 import { Helpers } from "../../utility/helpers.js";
 import { PersonaError } from "../../persona-error.js";
@@ -82,6 +83,17 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 					return item;
 				}
 			case "consumable":
+				if (!game.user.isGM) {
+					ui.notifications.warn("Use Item Piles functionality to move items.");
+					return undefined;
+				}
+				const existing = this.actor.items.find( x=> x.system.type == item.system.type && ("amount" in x.system) && x.name == item.name);
+				if (existing != undefined && existing.system.type == 'consumable') {
+					console.log("Adding to existing amount");
+						await (existing as Consumable).addItem(1);
+						return existing;
+					}
+				return super._onDropItem(_event, itemD);
 			case "item":
 			case "weapon":
 				if (!game.user.isGM) {

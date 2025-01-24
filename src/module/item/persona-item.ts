@@ -1,3 +1,4 @@
+import { EQUIPMENT_TAGS } from "../../config/equipment-tags.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { CreatureTag } from "../../config/creature-tags.js";
 import { Precondition } from "../../config/precondition-types.js";
@@ -100,11 +101,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	get tags() : string {
-		if ("tags" in this.system) {
-			const tags= this.system.tags.map(tag => localize(POWER_TAGS[tag]));
-			return tags.join(", ");
+		let tags : string[] = [];
+		if ("itemTags" in this.system) {
+			tags = tags.concat(
+				this.system.itemTags
+				.map(tag => localize(EQUIPMENT_TAGS[tag]))
+			);
 		}
-		return "";
+		if ("tags" in this.system) {
+			tags = tags.concat(
+				this.system.tags
+				.map(tag => localize(POWER_TAGS[tag]))
+			)
+		}
+		return tags.join(", ");
 	}
 
 	get cardTags() : string {
@@ -211,6 +221,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			return 1;
 		}
 		return this.system.amount;
+	}
+
+	async addItem(this: Consumable, amt: number) : Promise<typeof this> {
+		console.log("Adding 1 to amunt");
+		const newAmt = this.system.amount += amt;
+		await this.update({"system.amount": newAmt});
+		return this;
 	}
 
 	get costString() : string {

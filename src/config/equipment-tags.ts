@@ -32,6 +32,12 @@ export const EQUIPMENT_TAGS_LIST = [
 	"fairy",
 	"health",
 	"cute",
+	"student",
+	"romantic",
+	"medical",
+	"expensive-very",
+	"sexual",
+	"drug",
 ] as const;
 
 export type EquipmentTag = typeof EQUIPMENT_TAGS_LIST[number];
