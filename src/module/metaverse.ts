@@ -1,8 +1,9 @@
+import { Situation } from "./preconditions.js";
+import { ModifierList } from "./combat/modifier-list.js";
 import { PersonaScene } from "./persona-scene.js";
 import { SearchMenu } from "./exploration/searchMenu.js";
 import { PersonaRegion } from "./region/persona-region.js";
 import { Weapon } from "./item/persona-item.js";
-import { TriggerSituation } from "./preconditions.js";
 import { ProgressClock } from "./utility/progress-clock.js";
 import { DungeonActionConsequence } from "../config/consequence-types.js";
 import { shuffle } from "./utility/array-tools.js";
@@ -231,6 +232,9 @@ export class Metaverse {
 			case "close-all-doors":
 				await this.closeAllDoors();
 				break;
+			case "change-scene-weather":
+				await (game.scenes.active as PersonaScene).changeWeather(action.sceneWeatherType);
+				break;
 			default:
 				action satisfies never;
 		}
@@ -353,19 +357,35 @@ export class Metaverse {
 		return region as PersonaRegion;
 	}
 
-	static async presenceCheck(region ?: PersonaRegion) : Promise<PresenceCheckResult> {
+	static async presenceCheck(region ?: PersonaRegion, situation ?: Situation) : Promise<PresenceCheckResult> {
 		if (!region) {
-			region= this.getRegion();
+			region = this.getRegion();
 			if (!region) return null;
 		}
-		const sPresence = region.shadowPresence;
+		if  (!situation) {
+			situation = {
+				trigger: "on-presence-check",
+				triggeringRegionId : region.id,
+				triggeringUser: game.user,
+			};
+		}
+		const sModifiers = new ModifierList(
+			PersonaDB.getGlobalModifiers()
+			.concat(region.roomEffects)
+			.flatMap(x=> x.getModifier("shadowPresence", null))
+		);
+		const sPresence = region.shadowPresence + sModifiers.total(situation);
 		if (sPresence > 0) {
 			if( await this.#shadowPresenceRoll(sPresence, this.name) == true) {
 				return "shadows";
 			}
-
 		}
-		const cPresence = region.concordiaPresence;
+		const cModifiers = new ModifierList(
+			PersonaDB.getGlobalModifiers()
+			.concat(region.roomEffects)
+			.flatMap(x=> x.getModifier("concordiaPresence", null))
+		);
+		const cPresence = region.concordiaPresence + cModifiers.total(situation);
 		if (cPresence > 0) {
 			if ( await this.#concordiaPresenceRoll(cPresence, this.name) == true)  {
 				return "daemons";
@@ -437,21 +457,21 @@ declare global {
 
 Hooks.on("updateWall", function (_updateItem: WallDocument, changes: Record<string, unknown>, _diff: unknown, userId: string) {
 	if (changes.ds == 1 && game.user.isGM) {
-		const situation : TriggerSituation = {
+		const situation : Situation = {
 			trigger: "on-open-door",
-			triggeringUser: game.users.get(userId),
+			triggeringUser: game.users.get(userId)!,
 		}
 		PersonaCombat.onTrigger("on-open-door", undefined, situation)
 		.emptyCheck()
 		?.autoApplyResult();
-		;
 	}
 });
 
 Hooks.on("clockTick", function (clock: ProgressClock, _newAmt: number) {
-	const situation : TriggerSituation = {
-		trigger: "on-damage",
+	const situation : Situation = {
+		trigger: "on-clock-tick",
 		triggeringClockId: clock.id,
+		triggeringUser: game.user,
 	};
 	console.log("Triggering ClockTick");
 	PersonaCombat.onTrigger("on-clock-tick", undefined, situation)

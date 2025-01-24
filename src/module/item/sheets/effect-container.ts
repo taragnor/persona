@@ -128,7 +128,11 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			CARD_TAGS,
 			EQUIPMENT_TAGS,
 			VARIABLE_ACTIONS,
+			SCENE_WEATHER_TYPES: Object.fromEntries(
+				([""].concat(Object.keys(CONFIG.weatherEffects))).map( x=> [x,x])
+			),
 		};
+		Debug(this._powerStuffBase.SCENE_WEATHER_TYPES);
 		return this._powerStuffBase;
 	}
 

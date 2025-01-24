@@ -37,6 +37,14 @@ declare interface CONFIG {
 	Scene: {
 		documentClass: typeof Scene;
 	}
+	weatherEffects: {
+		"blizzard": WeatherEffectData;
+		"fog": WeatherEffectData;
+		"leaves": WeatherEffectData;
+		"rain": WeatherEffectData;
+		"rainstorm": WeatherEffectData;
+		"snow": WeatherEffectData;
+	}
 }
 
 type StatusEffectObject = {
@@ -45,3 +53,5 @@ type StatusEffectObject = {
 	icon: string,
 	changes ?: readonly AEChange[],
 }
+
+type WeatherEffectData = unknown;

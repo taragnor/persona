@@ -370,7 +370,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.name;
 	}
 
-	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow) : ModifierListItem[] {
+	toModifierList(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow | null): ModifierList {
+		const modifiers = this.getModifier(bonusTypes, sourceActor);
+		return new ModifierList(modifiers);
+	}
+
+	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow | null) : ModifierListItem[] {
 		PersonaItem.cacheStats.modifierRead++;
 		if (this.cache.containsModifier === false) {
 			PersonaItem.cacheStats.modifierSkip++;
@@ -448,13 +453,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "magic": {
 				const dmg = user.magDmg();
 				const mult = this.system.mag_mult;
-				const bonuses =  user.getBonuses("magDmg");
-				const bonus = bonuses.total(situation);
+				const finalBonus =  user.getBonuses("magDmg").total(situation);
 				const high_bonus = user.getBonuses("magHigh").total(situation);
 				const low_bonus = user.getBonuses("magLow").total(situation);
 				const modified = {
-					low: ( (dmg.low + low_bonus)  * mult) + bonus,
-					high: ((dmg.high + high_bonus) * mult) + bonus,
+					low: ( (dmg.low + low_bonus)  * mult) + finalBonus,
+					high: ((dmg.high + high_bonus) * mult) + finalBonus,
 				};
 				return modified[type];
 			}

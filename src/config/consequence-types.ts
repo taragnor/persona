@@ -350,6 +350,7 @@ export type DungeonActionConsequence = {
 } & (
 	GenericDungeonAction
 	| ClockDungeonActionCons
+	| WeatherChangeDungeonEvent
 );
 
 type GenericDungeonAction = {
@@ -363,6 +364,11 @@ type ClockDungeonActionCons = {
 	dungeonAction: "modify-clock",
 	clockId: string,
 	amount: number,
+}
+
+type WeatherChangeDungeonEvent = {
+	dungeonAction: "change-scene-weather",
+	sceneWeatherType: Scene["weather"],
 }
 
 type DisplayMessageConsequence = {

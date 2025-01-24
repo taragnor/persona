@@ -772,7 +772,7 @@ export class ConditionalEffectManager {
 	}
 
 	static #printDungeonAction(cons: Consequence & {type :"dungeon-action"}) : string {
-		const signedAmount = this.signedAmount(cons.amount);
+		const signedAmount = "amount" in cons ? this.signedAmount(cons.amount) : 0;
 		switch (cons.dungeonAction) {
 			case "roll-tension-pool":
 				return "Roll Tension pool";
@@ -783,6 +783,8 @@ export class ConditionalEffectManager {
 				return `${clock} ticks ${signedAmount}`;
 			case "close-all-doors":
 				return `Close All Doors`;
+			case "change-scene-weather":
+				return `Change Scene Weather to ${cons.sceneWeatherType}`;
 			default:
 				cons satisfies never;
 				return "ERROR";

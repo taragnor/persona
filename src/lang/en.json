@@ -226,6 +226,10 @@
 	"persona.modifier.initiative": "Initiative",
 	"persona.modifier.starting-energy": "Shadow Starting Energy",
 	"persona.modifier.energy-per-turn": "Energy Gained at end of Turn",
+	"persona.modifier.shadowPresence": "Shadow Presence",
+	"persona.modifier.concordiaPresence": "Concordia Presence",
+	"persona.modifier.encounterSize": "Encounter Size",
+	"persona.modifier.numberOfSearches": "Number of Searches",
 
 	"persona.equipslots.weapon": "Weapon",
 	"persona.equipslots.body": "Outfit",
@@ -429,6 +433,8 @@
 	"persona.effecttypes.dungeonAction.modify-tension-pool": "Modify Tension Pool",
 	"persona.effecttypes.dungeonAction.modify-clock": "Modify Clock",
 	"persona.effecttypes.dungeonAction.close-all-doors": "Close all Doors",
+	"persona.effecttypes.dungeonAction.change-scene-weather": "Change Scene Weather",
+
 	"persona.effecttypes.modifierType.constant" : "Constant",
 	"persona.effecttypes.modifierType.system-variable" : "System Variable",
 
@@ -590,6 +596,8 @@
 	"persona.triggers.on-attain-tarot-perk": "Attain a Tarot Perk",
 	"persona.triggers.on-clock-tick": "On Clock Tick",
 	"persona.triggers.on-search-end": "On End of Search",
+	"persona.triggers.on-presence-check": "On Presence Check",
+	"persona.triggers.on-enter-region": "On Enter Region",
 
 	"persona.othereffect.search-twice": "Search Twice",
 	"persona.othereffect.ignore-surprise": "Act during surprise rounds",

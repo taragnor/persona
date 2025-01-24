@@ -4,7 +4,7 @@ import { randomSelect } from "../utility/array-tools.js";
 import { CombatHooks } from "./combat-hooks.js";
 import { DamageConsequence } from "../../config/consequence-types.js";
 import { TriggeredEffect } from "../triggered-effect.js";
-import { NonCombatTrigger } from "../../config/triggers.js";
+import { NonCombatTriggerTypes } from "../../config/triggers.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { PersonaCalendar } from "../social/persona-calendar.js";
 import { POWER_TAGS } from "../../config/power-tags.js";
@@ -14,7 +14,7 @@ import { ConsTarget } from "../../config/consequence-types.js";
 import { PersonaSocial } from "../social/persona-social.js"
 import { UniversalModifier } from "../item/persona-item.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
-import { CombatTrigger } from "../../config/triggers.js";
+import { CombatTriggerTypes } from "../../config/triggers.js";
 import { BASIC_PC_POWER_NAMES } from "../../config/basic-powers.js";
 import { PersonaSFX } from "./persona-sfx.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
@@ -23,7 +23,6 @@ import { DamageType } from "../../config/damage-types.js";
 import { ModifierContainer } from "../item/persona-item.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { TurnAlert } from "../utility/turnAlert.js";
-import { PersonaAE } from "../active-effect.js";
 import { EngagementChecker } from "./engageChecker.js";
 import { Metaverse } from "../metaverse.js";
 import { StatusEffectId } from "../../config/status-effects.js";
@@ -1467,11 +1466,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return [];
 	}
 
-	static async execTrigger(trigger: CombatTrigger, actor: ValidAttackers, situation?: Situation) : Promise<void> {
+	static async execTrigger(trigger: CombatTriggerTypes, actor: ValidAttackers, situation?: Situation) : Promise<void> {
 		return await TriggeredEffect.execCombatTrigger(trigger, actor, situation);
 	}
 
-	static onTrigger(trigger: CombatTrigger | NonCombatTrigger, actor ?: ValidAttackers, situation ?: Situation) : CombatResult {
+	static onTrigger(trigger: CombatTriggerTypes | NonCombatTriggerTypes, actor ?: ValidAttackers, situation ?: Situation) : CombatResult {
 		return TriggeredEffect.onTrigger(trigger, actor, situation);
 	}
 
@@ -1924,32 +1923,32 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return (this.combatant.token.id == token.id)
 	}
 
-	async preSaveEffect( total: number, effect: PersonaAE, actor: PersonaActor) : Promise<string[]> {
-		let retstr: string[] = [];
-		const statuses = Array.from(effect.statuses)
-		for (const status of statuses) {
-			switch (status) {
-				case "confused":
-					retstr.push(`<b>${actor.name} is confused and can't take actions this turn!`);
-					break;
-				case "fear":
-					if (total <= 2) {
-						retstr.push(`(<b>${actor.name} flees from combat!</b>`);
-					} else {
-						retstr.push(`(<b>${actor.name} is paralyzed with fear and can't act this turn</b>`);
-					}
-					break;
-				case "charmed":
-					if (total <= 5) {
-						retstr.push(`<b>${actor.name} is under full enemy control</b>`);
-					} else {
-						retstr.push(`<b>${actor.name} is charmed and makes a basic attack against a random possible target</b>`);
-					}
-					break;
-			}
-		}
-		return retstr;
-	}
+	// async preSaveEffect( total: number, effect: PersonaAE, actor: PersonaActor) : Promise<string[]> {
+	// 	let retstr: string[] = [];
+	// 	const statuses = Array.from(effect.statuses)
+	// 	for (const status of statuses) {
+	// 		switch (status) {
+	// 			case "confused":
+	// 				retstr.push(`<b>${actor.name} is confused and can't take actions this turn!`);
+	// 				break;
+	// 			case "fear":
+	// 				if (total <= 2) {
+	// 					retstr.push(`(<b>${actor.name} flees from combat!</b>`);
+	// 				} else {
+	// 					retstr.push(`(<b>${actor.name} is paralyzed with fear and can't act this turn</b>`);
+	// 				}
+	// 				break;
+	// 			case "charmed":
+	// 				if (total <= 5) {
+	// 					retstr.push(`<b>${actor.name} is under full enemy control</b>`);
+	// 				} else {
+	// 					retstr.push(`<b>${actor.name} is charmed and makes a basic attack against a random possible target</b>`);
+	// 				}
+	// 				break;
+	// 		}
+	// 	}
+	// 	return retstr;
+	// }
 
 	static async allOutAttackPrompt() {
 		if (!PersonaSettings.get("allOutAttackPrompt"))

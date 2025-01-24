@@ -6,18 +6,19 @@ export const COMBAT_TRIGGER_LIST = [
 	"on-combat-end",
 	"on-combat-end-global",
 	"on-inflict-status",
-	"enter-metaverse",
-	"exit-metaverse",
 	"start-turn",
 	"end-turn",
-	"on-open-door",
-	"on-clock-tick",
-	"on-search-end",
 ] as const;
 
 export const NONCOMBAT_TRIGGER_LIST = [
 	"on-attain-tarot-perk",
-
+	"on-enter-region",
+	"on-search-end",
+	"on-presence-check",
+	"on-clock-tick",
+	"on-open-door",
+	"enter-metaverse",
+	"exit-metaverse",
 ] as const;
 
 export const TRIGGER_LIST = [
@@ -31,7 +32,7 @@ export const TRIGGERS = Object.fromEntries(
 
 export type Trigger = typeof TRIGGER_LIST[number];
 
-export type CombatTrigger = typeof COMBAT_TRIGGER_LIST[number];
+export type CombatTriggerTypes = typeof COMBAT_TRIGGER_LIST[number];
 
-export type NonCombatTrigger = typeof NONCOMBAT_TRIGGER_LIST[number];
+export type NonCombatTriggerTypes = typeof NONCOMBAT_TRIGGER_LIST[number];
 

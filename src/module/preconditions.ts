@@ -1,8 +1,8 @@
+import { CombatTriggerTypes } from "../config/triggers.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaSocial } from "./social/persona-social.js";
 import { SOCIAL_LINK_OR_TAROT_OTHER } from "../config/precondition-types.js";
 import { AnyStringObject } from "../config/precondition-types.js";
-import { Power } from "./item/persona-item.js";
 import { SocialLinkIdOrTarot } from "../config/precondition-types.js";
 import { SocialLink } from "./actor/persona-actor.js";
 import { ConditionalEffectManager } from "./conditional-effect-manager.js";
@@ -23,7 +23,6 @@ import { PersonaActor } from "./actor/persona-actor.js";
 import { SocialCard } from "./item/persona-item.js";
 import { NPC } from "./actor/persona-actor.js";
 import { SocialStat } from "../config/student-skills.js";
-import { Trigger } from "../config/triggers.js";
 import {Metaverse} from "./metaverse.js";
 import { PowerContainer } from "./item/persona-item.js";
 import { UniversalItemAccessor } from "./utility/db-accessor.js";
@@ -288,12 +287,14 @@ function numericComparison(condition: Precondition, situation: Situation, source
 	return false;
 }
 function triggerComparison(condition: Triggered, situation: Situation, _source:Option<PowerContainer>) : boolean {
-	if (!situation.trigger) return false;
+	if (!("trigger" in situation)) return false;
 	if (condition.trigger != situation.trigger) return false;
 	switch (condition.trigger) {
 		case "on-attain-tarot-perk":
+			if (!("tarot" in situation)) return false;
 			return condition.tarot == situation.tarot;
 		case "on-inflict-status":
+			if (!("statusEffect" in situation)) return false;
 			return condition.status == situation.statusEffect;
 		case "on-combat-end":
 		case "exit-metaverse":
@@ -313,6 +314,12 @@ function triggerComparison(condition: Triggered, situation: Situation, _source:O
 				return false;
 			}
 			return situation.triggeringClockId == condition.triggeringClockId;
+		case "on-enter-region":
+		case "on-presence-check":
+			if (!("triggeringRegionId" in situation)) {
+				return false;
+			}
+			return true;
 		default:
 			condition.trigger satisfies never;
 			return false;
@@ -811,16 +818,68 @@ function multiCheckTest<T extends string>(multiCheck: MultiCheck<T> | T, testFn:
 
 }
 
-export type UserSituation = {
+type UserSituation = {
 	user: UniversalActorAccessor<PC | Shadow>;
 };
 
-export type TriggerSituation = {
-	trigger : Trigger,
-	triggeringUser ?: FoundryUser,
+type TriggerSituation = TriggerSituation_base & (
+	CombatTrigger
+	| PresenceCheckTrigger
+	| EnterRegionTrigger
+	| ExplorationTrigger
+	| ClockTrigger
+);
+
+type ExplorationTrigger = {
+	trigger: "on-open-door" | "on-search-end" | "on-attain-tarot-perk" | "enter-metaverse" | "exit-metaverse";
 	triggeringCharacter?:  UniversalActorAccessor<PC | Shadow>;
-	triggeringClockId?: string,
-};
+}
+
+type ClockTrigger = {
+	trigger: "on-clock-tick",
+	triggeringClockId: string,
+}
+
+type CombatTrigger = (
+	GenericCombatTrigger
+	| NonGenericCombatTrigger
+);
+
+
+type GenericCombatTrigger = UserSituation & {
+	trigger: Exclude<CombatTriggerTypes, NonGenericCombatTrigger["trigger"]>;
+	triggeringCharacter?:  UniversalActorAccessor<PC | Shadow>;
+}
+
+type NonGenericCombatTrigger =
+	InflictStatusTrigger
+	| CombatGlobalTrigger
+;
+
+type InflictStatusTrigger = UserSituation & {
+	trigger: "on-inflict-status",
+	statusEffect: StatusEffectId,
+}
+
+type CombatGlobalTrigger = {
+	trigger: "on-combat-end-global",
+}
+
+type TriggerSituation_base = {
+	triggeringUser : FoundryUser,
+}
+
+type PresenceCheckTrigger = {
+	trigger: "on-presence-check",
+	triggeringRegionId : string,
+}
+
+type EnterRegionTrigger = {
+	trigger: "on-enter-region",
+	triggeringRegionId : string,
+	triggeringCharacter ?:  UniversalActorAccessor<PC | Shadow>;
+
+}
 
 export type Situation = SituationUniversal & (
 	TriggerSituation  | UserSituation | SocialCardSituation);
@@ -854,7 +913,6 @@ type SituationUniversal = {
 	attacker ?:UniversalActorAccessor<PC | Shadow>;
 	saveVersus ?: StatusEffectId;
 	statusEffect ?: StatusEffectId;
-	trigger ?: Trigger,
 	eventCard ?: UniversalItemAccessor<SocialCard>,
 	isSocial?: boolean,
 	tarot ?: TarotCard,

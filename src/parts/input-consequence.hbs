@@ -230,6 +230,12 @@
 	</select>
 	{{/if}}
 
+	{{#if (eqAny cons.dungeonAction "change-scene-weather")}}
+	<select name="{{strcat namePrefix 'sceneWeatherType'}}">
+		{{selectOptions POWERSTUFF.SCENE_WEATHER_TYPES localize=false selected=cons.sceneWeatherType}}
+	</select>
+	{{/if}}
+
 	{{#if (eqAny cons.dungeonAction "modify-tension-pool" "modify-clock")}}
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 	{{/if}}

@@ -1,3 +1,7 @@
+import { TriggeredEffect } from "../triggered-effect.js";
+import { PersonaSocial } from "../social/persona-social.js";
+import { PC } from "../actor/persona-actor.js";
+import { Situation } from "../preconditions.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { PersonaSockets } from "../persona.js";
 import { Metaverse } from "../metaverse.js";
@@ -228,9 +232,15 @@ export class PersonaRegion extends RegionDocument {
 		console.debug(`Region Entered: ${this.name}`);
 		if (token.actor?.type != "pc") return;
 		const tokens = Array.from(this.tokens);
+		const situation : Situation = {
+			trigger: "on-enter-region",
+			triggeringRegionId: this.id,
+			triggeringCharacter: (token.actor as PC).accessor,
+			triggeringUser: game.user,
+		}
+		await TriggeredEffect.onTrigger("on-enter-region", token.actor as PC, situation).emptyCheck()?.autoApplyResult();
 		if (tokens.some(t => t.actor?.system.type == "shadow" && !t.hidden) ) return;
 		this.presenceCheck();
-
 	}
 
 	/** for batch_adding */
@@ -247,6 +257,18 @@ export class PersonaRegion extends RegionDocument {
 			return false;
 		}
 		data.roomEffects.push(mod.id);
+		await this.setRegionData(data);
+		return true;
+	}
+
+	async removeRoomModifier(mod: UniversalModifier) {
+		if (mod?.system?.type != "universalModifier") throw new PersonaError("Not a modifier");
+		if (!mod.system.room_effect)  throw new PersonaError("Not a Room Effect");
+		const data = this.regionData;
+		if (!data.roomEffects.includes( mod.id)) {
+			return false;
+		}
+		data.roomEffects = data.roomEffects.filter(x=> x != mod.id);
 		await this.setRegionData(data);
 		return true;
 	}

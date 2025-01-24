@@ -489,7 +489,6 @@ export class CombatResult  {
 		}
 		if (game.combat) {
 			InitiatorToken = PersonaCombat.getPTokenFromActorAccessor(initiator.accessor);
-
 		}
 		const rolls : RollBundle[] = Array.from(this.attacks.entries()).map( ([attackResult]) => attackResult.roll);
 		const attacks = Array.from(this.attacks.entries()).map( ([attackResult, changes])=> {

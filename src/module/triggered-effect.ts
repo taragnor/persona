@@ -1,6 +1,7 @@
+import { PersonaError } from "./persona-error.js";
 import { PC } from "./actor/persona-actor.js";
-import { NonCombatTrigger } from "../config/triggers.js";
-import { CombatTrigger } from "../config/triggers.js";
+import { NonCombatTriggerTypes } from "../config/triggers.js";
+import { CombatTriggerTypes } from "../config/triggers.js";
 import { Trigger } from "../config/triggers.js";
 import { CombatResult } from "./combat/combat-result.js";
 import { Situation } from "./preconditions.js";
@@ -15,20 +16,61 @@ export class TriggeredEffect {
 	static onTrigger(trigger: Trigger, actor ?: ValidAttackers, situation ?: Situation) : CombatResult {
 		const result = new CombatResult();
 		if (!situation) {
-			const newSit: Situation = {
-				trigger,
-			};
-			if (actor) {
-				newSit.user = actor.accessor;
-				newSit.target = actor.accessor;
-				newSit.triggeringCharacter = actor.accessor;
+			switch (trigger) {
+				case "on-damage":
+				case "on-kill-target":
+				case "on-combat-start":
+				case "on-use-power":
+				case "on-inflict-status":
+				case "start-turn":
+				case "end-turn":
+				case "on-combat-end": {
+					if (!actor) {
+						PersonaError.softFail("NO Actor givent o trigger ${trigger}");
+						return result;
+					}
+					const newSit: Situation = {
+						trigger: trigger,
+						triggeringUser: game.user,
+						user : actor.accessor,
+						target : actor.accessor,
+						triggeringCharacter : actor.accessor,
+					};
+					situation = newSit;
+					break;
+				}
+				case "on-combat-end-global": {
+					const newSit : Situation = {
+						trigger: trigger,
+						triggeringUser: game.user,
+					}
+					situation = newSit;
+					break;
+				}
+				case "on-attain-tarot-perk":
+					const newSit : Situation = {
+						trigger: trigger,
+						triggeringUser: game.user,
+					};
+					situation = newSit;
+					break;
+				case "on-enter-region":
+				case "on-search-end":
+				case "on-presence-check":
+				case "on-clock-tick":
+				case "on-open-door":
+				case "enter-metaverse":
+				case "exit-metaverse":
+						PersonaError.softFail("Must proivide a situation with this trigger");
+					return result;
+				default:
+					trigger satisfies never;
+						PersonaError.softFail(`Bad TRigger ${trigger}`);
+					return result;
 			}
-			situation = newSit;
 		}
-		situation = {
-			...situation,
-			trigger
-		} ; //copy the object so it doesn't permanently change it
+		//@ts-ignore
+		situation = { ...situation, trigger }  as Situation; //copy the object so it doesn't permanently change it
 		let triggers : ModifierContainer[];
 		if (actor) {
 			triggers = actor.triggers;
@@ -52,13 +94,13 @@ export class TriggeredEffect {
 		return result;
 	}
 
-	static async execNonCombatTrigger( trigger: NonCombatTrigger, actor: PC, situation ?: Situation, msg = "Triggered Effect") : Promise<void> {
+	static async execNonCombatTrigger( trigger: NonCombatTriggerTypes, actor: PC, situation ?: Situation, msg = "Triggered Effect") : Promise<void> {
 		await this.onTrigger(trigger, actor, situation)
 			.emptyCheck()
 			?.toMessage(msg, actor);
 	}
 
-	static async execCombatTrigger(trigger: CombatTrigger, actor: ValidAttackers, situation?: Situation) : Promise<void> {
+	static async execCombatTrigger(trigger: CombatTriggerTypes, actor: ValidAttackers, situation?: Situation) : Promise<void> {
 		const triggerResult = this.onTrigger(trigger, actor, situation)
 		.emptyCheck();
 		if (!triggerResult) return;

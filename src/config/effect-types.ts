@@ -140,6 +140,7 @@ export const DUNGEON_ACTION_LIST = [
 	"modify-tension-pool",
 	"modify-clock",
 	"close-all-doors",
+	"change-scene-weather",
 ] as const;
 
 

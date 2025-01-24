@@ -1,4 +1,12 @@
 import { STUDENT_SKILLS_LIST } from "./student-skills.js";
+
+export const ENVIRONMENTAL_MODIFIERS = [
+	"shadowPresence",
+	"concordiaPresence",
+	"encounterSize",
+	"numberOfSearches",
+] as const;
+
 export const MODIFIERLIST = [
 	"allAtk",
 	"wpnAtk",
@@ -35,7 +43,9 @@ export const MODIFIERLIST = [
 	"initiative",
 	"starting-energy",
 	"energy-per-turn",
+	...ENVIRONMENTAL_MODIFIERS,
 ] as const;
+
 
 export const MODIFIERS_TABLE = Object.fromEntries(
 	MODIFIERLIST.map ( x=> [x, `persona.modifier.${x}`])

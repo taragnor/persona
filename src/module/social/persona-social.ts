@@ -27,7 +27,7 @@ import { SocialLinkData } from "../actor/persona-actor.js";
 import { TarotCard } from "../../config/tarot.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { CombatResult } from "../combat/combat-result.js";
-import { NonCombatTrigger } from "../../config/triggers.js";
+import { NonCombatTriggerTypes } from "../../config/triggers.js";
 import { SocialLink } from "../actor/persona-actor.js";
 import { PersonaItem } from "../item/persona-item.js";
 import { PersonaActor } from "../actor/persona-actor.js";
@@ -758,11 +758,11 @@ export class PersonaSocial {
 		return this.#drawnCardIds;
 	}
 
-	static async execTrigger( trigger: NonCombatTrigger, actor: PC, situation ?: Situation, msg = "Triggered Effect"): Promise<void> {
+	static async execTrigger( trigger: NonCombatTriggerTypes, actor: PC, situation ?: Situation, msg = "Triggered Effect"): Promise<void> {
 		return await TriggeredEffect.execNonCombatTrigger(trigger, actor, situation, msg);
 	}
 
-	static onTrigger(trigger: NonCombatTrigger, actor: PC, situation ?: Situation) : CombatResult {
+	static onTrigger(trigger: NonCombatTriggerTypes, actor: PC, situation ?: Situation) : CombatResult {
 		return TriggeredEffect.onTrigger(trigger, actor, situation);
 	}
 
