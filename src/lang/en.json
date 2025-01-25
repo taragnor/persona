@@ -328,6 +328,7 @@
 	"persona.power.tag.consumable": "Consumable Item",
 	"persona.power.tag.follow-up": "Follow-Up",
 	"persona.power.tag.mandatory": "Mandatory",
+	"persona.power.tag.summon": "Summoning",
 
 	"persona.card.tag.": "-",
 	"persona.card.tag.date": "Date",
@@ -376,7 +377,7 @@
 	"persona.equipment.tag.romantic" : "Romantic",
 	"persona.equipment.tag.medical" : "Medical",
 	"persona.equipment.tag.sexual" : "Sexual",
-	"persona.equipment.tag.drug" : "drug",
+	"persona.equipment.tag.drug" : "Drug",
 
 
 	"persona.power.shadowcosts.none": "Any",

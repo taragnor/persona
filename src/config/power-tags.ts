@@ -17,6 +17,7 @@ export const POWER_TYPE_TAGS = [
 	"downtime",
 	"follow-up",
 	"mandatory",
+	"summon",
 ] as const;
 
 export const POWER_TAGS_LIST = [
