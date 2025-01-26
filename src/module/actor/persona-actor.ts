@@ -595,7 +595,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const situation : Situation = {
 			user: (this as PC).accessor
 		};
-			const rec_mult = this.getBonuses("recovery-mult").total(situation, "percentage");
+			const rec_mult = 1+ this.getBonuses("recovery-mult").total(situation, "percentage");
 		const healing = rec_bonuses.total(situation);
 		return healing * rec_mult;
 	}

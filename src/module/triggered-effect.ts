@@ -47,6 +47,8 @@ export class TriggeredEffect {
 					situation = newSit;
 					break;
 				}
+				case "enter-metaverse":
+				case "exit-metaverse":
 				case "on-attain-tarot-perk":
 					const newSit : Situation = {
 						trigger: trigger,
@@ -59,8 +61,6 @@ export class TriggeredEffect {
 				case "on-presence-check":
 				case "on-clock-tick":
 				case "on-open-door":
-				case "enter-metaverse":
-				case "exit-metaverse":
 						PersonaError.softFail("Must proivide a situation with this trigger");
 					return result;
 				default:

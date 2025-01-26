@@ -122,7 +122,7 @@ export class ModifierList {
 				}, 0);
 				return base + vartotal;
 			case "percentage": {
-				const base =  mods.reduce( (acc, item) => acc * item.modifier , 1);
+				const base =  mods.reduce( (acc, item) => acc * (item.modifier ?? 1) , 1);
 				return base;
 			}
 		}

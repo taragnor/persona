@@ -12,8 +12,8 @@ export class PersonaError extends Error {
 	static softFail(errortxt: string) {
 		this.notifyGM(errortxt);
 		ui.notifications.error(errortxt);
-		console.error(errortxt);
-		console.trace();
+		const trace = this.getTrace();
+		console.error(`${errortxt} \n ${trace}`);
 	}
 
 	static getTrace() : string {
