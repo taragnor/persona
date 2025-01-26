@@ -470,12 +470,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "magic": {
 				const dmg = user.magDmg();
 				const mult = this.system.mag_mult;
-				const finalBonus =  user.getBonuses("magDmg").total(situation);
 				const high_bonus = user.getBonuses("magHigh").total(situation);
 				const low_bonus = user.getBonuses("magLow").total(situation);
+				const baseLow =  (dmg.low + low_bonus)  * mult;
+				const baseHigh =  (dmg.high + high_bonus) * mult;
+				const finalBonus =  user.getBonuses("magDmg").total(situation);
 				const modified = {
-					low: ( (dmg.low + low_bonus)  * mult) + finalBonus,
-					high: ((dmg.high + high_bonus) * mult) + finalBonus,
+					low: baseLow + (baseLow > 0 ? finalBonus: 0),
+					high: baseHigh + (baseHigh > 0 ? finalBonus: 0),
 				};
 				return modified[type];
 			}

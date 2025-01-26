@@ -6,6 +6,7 @@ export const INCREMENTAL_ADVANCE_TYPES = [
 	"magicLow",
 	"magicHigh",
 	"talent",
+	"initiative",
 ] as const satisfies (keyof PC["system"]["combat"]["classData"]["incremental"])[];
 
 export type INCREMENTAL_ADVANCE_TYPES = typeof INCREMENTAL_ADVANCE_TYPES[number];

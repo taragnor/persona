@@ -111,6 +111,7 @@
 	"persona.incremental.type.magicLow": "Magic Low Damage",
 	"persona.incremental.type.magicHigh": "Magic High Damage",
 	"persona.incremental.type.talent": "Talent",
+	"persona.incremental.type.initiative": "Initiative",
 
 	"persona.status.burn" : "Burn",
 	"persona.status.charmed" : "Charmed",
