@@ -140,6 +140,7 @@ const classData = function () {
 			magicHigh: new bool(),
 			talent: new bool(),
 			wpnDamage: new num({integer: true, initial: 0, max: 2}),
+			initiative: new bool(),
 
 		}),
 		// incremental: new obj<IncAdvanceObject>({initial}),

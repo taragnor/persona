@@ -20,7 +20,7 @@
 	<div class="main-powers">
 		{{#each actor.mainPowers as |power i|}}
 		<div class="main-power" data-power-id="{{power.id}}">
-			<div class="power-name-block {{#if (lte ../actor.maxPowers i)}} over-max-power {{/if}} ">
+			<div class="power-name-block {{#if (lte ../actor.maxPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../actor power)}} illegal-level {{/if}}">
 				{{#if (canUsePower ../actor power)}}
 				<a class="rollPower" >
 					<img src="icons/dice/d20black.svg">
@@ -42,7 +42,6 @@
 					<i class="fa-solid fa-sort-down"></i>
 				</a>
 				{{/if}}
-
 				{{#if (eq ../actor.system.type "shadow")}}
 				<a class="recost-power">
 					<i class="fa-solid fa-circle-dot"></i>

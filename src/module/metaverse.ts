@@ -91,6 +91,10 @@ export class Metaverse {
 				encounterSize += 5;
 				break;
 			default:
+				console.debug(`Encounter Size Roll (1-10): ${sizeRoll}`);
+				if (sizeRoll > 10) {
+					PersonaError.softFail(`Encounter number is ${sizeRoll}`);
+				}
 				encounterSize += 4;
 				break;
 		}

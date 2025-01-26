@@ -696,5 +696,8 @@ form h5 {
 	margin: 3px;
 	padding: 5px;
 	border : 1px solid #000000;
+}
 
+.illegal-level {
+	background-color: pink;
 }

@@ -219,16 +219,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "npc":
 				return -5;
 			case "shadow": {
+				const inc = this.system.combat.classData.incremental.initiative ? 1 : 0;
+				const level  = this.system.combat.classData.level + inc;
 				const initRating = this.system.combat.initiative;
 				const initScore = this.#translateInitString(initRating);
 				// const actor = this as (Shadow | PC);
-				return initBonus + (this.system.combat.classData.level * 2) + initScore;
+				return initBonus + (level * 3) + initScore;
 			}
 			case "pc":{
+				const inc = this.system.combat.classData.incremental.initiative ? 1 : 0;
+				const level  = this.system.combat.classData.level + inc;
 				const initRating = this.system.combat.initiative;
 				const initScore = this.#translateInitString(initRating);
-				// const actor = this as (Shadow | PC);
-				return initBonus + (this.system.combat.classData.level * 2) + initScore;
+				return initBonus + (level * 3) + initScore;
 			}
 			case "tarot" :{
 				return -5;
@@ -1823,13 +1826,34 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			magicLow: false,
 			magicHigh: false,
 			talent: false,
-			wpnDamage: 0
+			wpnDamage: 0,
+			initiative: false,
 		};
 		await this.update({
 			"system.combat.classData.level": newlevel,
 			"system.combat.classData.incremental": incremental,
 			"system.combat.classData.incremental_progress": 0,
 		});
+	}
+
+	maxSlot() : number {
+		switch (this.system.type) {
+			case "shadow": return 99;
+			case "npc": return -1;
+			case "tarot": return -1;
+			case "pc":
+				break;
+			default:
+				this.system satisfies never;
+		}
+		const level = this.system.combat.classData.level;
+		switch (true) {
+			case level >= 9: return 3;
+			case level >= 6: return 2;
+			case level >= 5: return 2; // SPECIAL CASE
+			case level >= 3: return 1;
+			default: return 0;
+		}
 	}
 
 	meetsSLRequirement (this: PC, focus: Focus) {

@@ -55,15 +55,20 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 					case "shadow":
 						return super._onDropItem(_event, itemD);
 					case "pc":
-						if ((item as Power).isTeamwork()) {
+						const power = item as Power;
+						if (power.isTeamwork()) {
 							await (this.actor as PC).setTeamworkMove(item as Power);
 							return item;
 						}
-						if ((item as Power).hasTag("shadow-only")) {
+						if (power.hasTag("shadow-only")) {
 							ui.notifications.warn(`Can't take Shadow only power ${item.name}`);
 							return;
 						}
-						if (!game.user.isGM && (item as Power).hasTag("exotic")) {
+						if (power.system.slot > this.actor.maxSlot()) {
+							ui.notifications.warn(`Power is too strong for you`);
+							return;
+						}
+						if (!game.user.isGM && power.hasTag("exotic")) {
 							ui.notifications.warn(`Can't directly take exotic power : ${item.name}`);
 							return;
 						}

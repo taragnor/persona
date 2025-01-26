@@ -219,7 +219,7 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 	}
 
 	async getCompendiumDataByType(DBtype: ValidDBTypes) : Promise<(ActorType | ItemType)[]> {
-		const pack_finder = ((e: FoundryCompendium<any>) => e.documentName == DBtype);
+		const pack_finder = ((e: FoundryCompendium<any>) => e.documentName == DBtype && !e.metadata?.name?.includes("item-piles"));
 		const packs = game.packs.filter(pack_finder);
 		let compendium_content : (ActorType | ItemType)[] = [];
 		for (const pack of packs) {
