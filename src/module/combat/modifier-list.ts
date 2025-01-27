@@ -114,7 +114,7 @@ export class ModifierList {
 
 	total(situation: Situation , style = this.listType) : number {
 		const mods = this.validModifiers(situation);
-		switch (this.listType) {
+		switch (style) {
 			case "standard":
 				const base =  mods.reduce( (acc, item) => acc + item.modifier , 0);
 				const vartotal = mods.reduce((acc, item) => {

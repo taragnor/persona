@@ -472,12 +472,15 @@ div.job {
 	flex-grow:0;
 }
 
-div.main-powers {
+div.main-powers,
+div.power-sideboard {
 	display: flex;
 	flex-direction: row;
 	/* justify-content: flex-start; */
 	flex-wrap: wrap;
 }
+
+
 
 div.main-power {
 	flex: 1 1 50%;
@@ -493,14 +496,30 @@ div.main-power {
 	max-height: 2.5em;
 }
 
+div.sideboard-power {
+	flex: 1 1 50%;
+	max-width: 45%;
+	/* box-sizing: border-box; */
+	padding: 1px;
+	border: 1px solid #000000;
+	text-align: center;
+	flex-direction: row;
+	display: flex;
+	flex-wrap: nowrap;
+	overflow: hidden;
+	max-height: 2.0em;
+	/* font-size: 1.5em; */
+}
+
 div.power-operations,
 div.power-name-block {
-	flex: 5 5 5%;
+	flex: 5 5 7%;
 	max-width: 100%;
 }
 
 div.power-operations {
-	max-width: 40px;
+	max-width: 60px;
+	font-size: 0.9em;
 }
 
 .main-power .powerName {
@@ -508,9 +527,12 @@ div.power-operations {
 	font-weight: bold;
 }
 
+.sideboard-power .powerName {
+	font-size: 1.2em;
+}
+
 .over-max-power {
 	background-color: red;
-
 }
 
 .micro-text {

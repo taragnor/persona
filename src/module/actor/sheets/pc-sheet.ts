@@ -110,6 +110,8 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".init-social-link").on("click", this.startSocialLink.bind(this));
 		html.find(".sort-up").on("click", this.reorderPowerUp.bind(this));
 		html.find(".sort-down").on("click", this.reorderPowerDown.bind(this));
+		html.find(".move-to-sideboard").on("click", this.movePowerToSideboard.bind(this));
+		html.find(".move-to-main").on("click", this.movePowerToMain.bind(this));
 	}
 
 	async rollSocial (ev: JQuery.Event) {
@@ -384,5 +386,14 @@ export class PCSheet extends CombatantSheetBase {
 		await this.actor.update({"system.combat.powers": powers});
 	}
 
+	async movePowerToSideboard( event: JQuery.ClickEvent) {
+		const powerId = HTMLTools.getClosestData(event, "powerId");
+		await this.actor.movePowerToSideboard(powerId);
+	}
+
+	async movePowerToMain( event: JQuery.ClickEvent) {
+		const powerId = HTMLTools.getClosestData(event, "powerId");
+		await this.actor.retrievePowerFromSideboard(powerId);
+	}
 
 }

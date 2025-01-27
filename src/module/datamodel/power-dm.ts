@@ -24,51 +24,6 @@ export type ConditionalEffect  = {
 	consequences: Consequence[]
 };
 
-// const evenDmg :ConditionalEffect = {
-// 	conditions: [
-// 		{
-// 			type: "boolean",
-// 			booleanState: true,
-// 			boolComparisonTarget: "is-hit",
-// 		},
-// 		{
-// 			type: "numeric",
-// 			comparisonTarget:"natural-roll",
-// 			comparator: "even",
-// 		},
-// 	],
-// 	consequences: [
-// 		{
-// 			type: "damage-new",
-// 			damageSubtype: "high",
-// 			damageType: "by-power",
-// 		}
-// 	]
-// }
-
-// const oddDmg :ConditionalEffect = {
-// 	conditions: [
-// 		{
-// 			type: "boolean",
-// 			booleanState: true,
-// 			boolComparisonTarget: "is-hit",
-// 		},
-// 		{
-// 			type: "numeric",
-// 			comparisonTarget:"natural-roll",
-// 			comparator: "odd",
-// 		},
-// 	],
-// 	consequences: [
-// 		{
-// 			type: "damage-new",
-// 			damageSubtype: "low",
-// 			damageType: "by-power",
-// 		}
-// 	]
-// }
-
-
 export function powerSpecific () {
 	return {
 		description: new txt(),

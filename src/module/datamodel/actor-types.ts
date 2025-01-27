@@ -143,7 +143,6 @@ const classData = function () {
 			initiative: new bool(),
 
 		}),
-		// incremental: new obj<IncAdvanceObject>({initial}),
 		incremental_progress: new num({initial:0, min:0, integer:true}),
 	});
 }
@@ -163,6 +162,7 @@ const combatCommonStats = function () {
 		initiative: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 		focuses: new arr( new id(), {initial: []}),
 		powers: new arr( new id()),
+		powers_sideboard: new arr( new id()),
 		resists: elementalResists(),
 		hpTracker: new obj<HPTracking>(),
 		fadingState: new num( {integer:true, initial:0}),
@@ -362,7 +362,6 @@ export class TarotSchema extends foundry.abstract.TypeDataModel {
 	}
 
 	override prepareBaseData() : void {
-
 	}
 }
 

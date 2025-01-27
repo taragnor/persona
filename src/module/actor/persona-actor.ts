@@ -595,10 +595,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const situation : Situation = {
 			user: (this as PC).accessor
 		};
-			const rec_mult = 1+ this.getBonuses("recovery-mult").total(situation, "percentage");
+		const rec_mult = this.getBonuses("recovery-mult").total(situation, "percentage");
 		const healing = rec_bonuses.total(situation);
 		return healing * rec_mult;
 	}
+
 
 	async spendRecovery(this: PC, socialLinkId: string) {
 		const link = this.system.social.find( x=> x.linkId == socialLinkId);
@@ -634,6 +635,25 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				this.system satisfies never;
 				return [];
 		}
+	}
+
+	get sideboardPowers() : Power [] {
+		switch (this.system.type) {
+			case "shadow":
+			case "npc":
+			case "tarot":
+				return [];
+			case "pc":
+				break;
+			default:
+				this.system satisfies never;
+		}
+		const powerIds = this.system.combat.powers_sideboard;
+		const pcPowers : Power[] = powerIds.flatMap( id=> {
+			const i = PersonaDB.getItemById(id);
+			return (i ? [i as Power] : []);
+		});
+		return pcPowers;
 	}
 
 	get bonusPowers() : Power[] {
@@ -681,6 +701,35 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "shadow":
 				const extraMaxPowers = this.getBonuses("extraMaxPowers");
 				return 8 + extraMaxPowers.total ( {user: (this as PC | Shadow).accessor});
+			default:
+				this.system satisfies never;
+				return -1;
+		}
+	}
+
+	get maxMainPowers() : number {
+		switch (this.system.type) {
+			case "npc":
+			case "tarot":
+				return 0;
+			case "pc":
+			case "shadow":
+				return 8;
+			default:
+				this.system satisfies never;
+				return -1;
+		}
+	}
+
+	get maxSideboardPowers() : number {
+		switch (this.system.type) {
+			case "npc":
+			case "tarot":
+				return 0;
+			case "pc":
+			case "shadow":
+				const extraMaxPowers = this.getBonuses("extraMaxPowers");
+				return extraMaxPowers.total ( {user: (this as PC | Shadow).accessor});
 			default:
 				this.system satisfies never;
 				return -1;
@@ -1334,11 +1383,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async addPower(this: PC, power: Power) {
 		const powers = this.system.combat.powers;
 		if (powers.includes(power.id)) return;
-		powers.push(power.id);
+		if (powers.length < this.maxMainPowers) {
+			powers.push(power.id);
+			await this.update( {"system.combat.powers": powers});
+		} else {
+			const sideboard =  this.system.combat.powers_sideboard;
+			if (sideboard.includes(power.id)) return;
+			sideboard.push(power.id);
+			await this.update( {"system.combat.powers_sideboard": sideboard});
+		}
+		const totalPowers = this.mainPowers.length + this.sideboardPowers.length;
 		let maxMsg = "";
-
-		await this.update( {"system.combat.powers": powers});
-		if (powers.length > this.maxPowers) {
+		if (totalPowers > this.maxPowers) {
 			maxMsg = `<br>${this.name} has exceeded their allowed number of powers (${this.maxPowers})  and must forget one or more powers.`;
 		}
 		await Logger.sendToChat(`${this.name} learned ${power.name} ${maxMsg}` , this);
@@ -1351,11 +1407,44 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			return;
 		}
 		let powers = this.system.combat.powers;
-		if (!powers.includes(id)) return;
-		powers = powers.filter( x=> x != id);
 		const power = PersonaDB.getItemById(id) as Power;
-		await this.update( {"system.combat.powers": powers});
-		await Logger.sendToChat(`${this.name} deleted power ${power.name}` , this);
+		if (powers.includes(id)) {
+			powers = powers.filter( x=> x != id);
+			await this.update( {"system.combat.powers": powers});
+			await Logger.sendToChat(`${this.name} deleted power ${power.name}` , this);
+		}
+		let sideboard = this.system.combat.powers_sideboard;
+		if (sideboard.includes(id)) {
+			sideboard = sideboard.filter( x=> x != id);
+			await this.update( {"system.combat.powers_sideboard": sideboard});
+			await Logger.sendToChat(`${this.name} deleted sideboard power ${power.name}` , this);
+		}
+	}
+
+	async movePowerToSideboard(this: PC, powerId: Power["id"]) {
+		const newPowers = this.system.combat.powers
+		.filter( id => id != powerId);
+		await this.update({"system.combat.powers": newPowers});
+		const sideboard = this.system.combat.powers_sideboard;
+		sideboard.push(powerId);
+		await this.update({"system.combat.powers_sideboard": sideboard});
+		const power = PersonaDB.getItemById(powerId) as Power;
+		await Logger.sendToChat(`${this.name} moved power ${power.name} to sideboard` , this);
+	}
+
+	async retrievePowerFromSideboard(this: PC, powerId: Power["id"]) {
+		if (this.mainPowers.length >= this.maxMainPowers) {
+			ui.notifications.warn(`Can't have more than ${this.maxMainPowers} main powers.`);
+			return;
+		}
+		const newSideboard = this.system.combat.powers_sideboard
+		.filter( id => id != powerId);
+		await this.update({"system.combat.powers_sideboard": newSideboard});
+		const powers = this.system.combat.powers;
+		powers.push(powerId);
+		await this.update({"system.combat.powers": powers});
+		const power = PersonaDB.getItemById(powerId) as Power;
+		await Logger.sendToChat(`${this.name} moved power ${power.name} out of sideboard` , this);
 	}
 
 	async addFocus(this: PC, focus: Focus) {

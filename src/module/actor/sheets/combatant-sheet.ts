@@ -72,7 +72,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 							ui.notifications.warn(`Can't directly take exotic power : ${item.name}`);
 							return;
 						}
-
 						await (this.actor as PC).addPower(item as Power);
 						return item ;
 					default:
@@ -95,9 +94,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				const existing = this.actor.items.find( x=> x.system.type == item.system.type && ("amount" in x.system) && x.name == item.name);
 				if (existing != undefined && existing.system.type == 'consumable') {
 					console.log("Adding to existing amount");
-						await (existing as Consumable).addItem(1);
-						return existing;
-					}
+					await (existing as Consumable).addItem(1);
+					return existing;
+				}
 				return super._onDropItem(_event, itemD);
 			case "item":
 			case "weapon":
