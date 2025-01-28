@@ -167,6 +167,7 @@ const combatCommonStats = function () {
 		hpTracker: new obj<HPTracking>(),
 		fadingState: new num( {integer:true, initial:0}),
 		statusResists: statusResists(),
+		navigatorSkill: new txt(),
 
 	};
 };

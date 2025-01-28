@@ -19,7 +19,7 @@ export class SocketSharedState<T> implements SharedState<T> {
 	async #setUpSockets(): Promise<void> {
 		// const socketData : this["socketData"]  = something
 		//TODO: setup socket stuff here
-		this.socketData = socketData;
+		// this.socketData = socketData;
 
 	}
 

@@ -130,7 +130,6 @@ export class PersonaHandleBarsHelpers {
 				const dmg = PersonaCombat.calculateAllOutAttackDamage(token, situation);
 				const mult = usable.getDamageMultSimple(actor as PC | Shadow);
 				const {high, low} = dmg;
-				// const {high, low} = (actor as PC | Shadow).allOutAttackDamage();
 				return Math.round(low * mult) + " / " + Math.round(high * mult);
 			}
 			switch (actor.system.type) {

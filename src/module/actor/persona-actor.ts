@@ -681,15 +681,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return PersonaItem.getBasicShadowPowers();
 			case "pc":
 				const arr =  PersonaItem.getBasicPCPowers();
-				if (this.teamworkMove) {
-					arr.push(this.teamworkMove);
-				}
+				const extraSkills = [
+					this.teamworkMove,
+					this.navigatorSkill
+				].flatMap( x=> x != undefined ? [x] : []);
+				arr.push (...extraSkills);
 				return arr;
 			default:
 				this.type satisfies never;
 				return [];
 		}
-
 	}
 
 	get maxPowers() : number {
@@ -718,6 +719,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			default:
 				this.system satisfies never;
 				return -1;
+		}
+	}
+
+	async setNavigatorSkill(this: PC, pwr: Power) {
+		this.system.combat.navigatorSkill = pwr.id;
+		await this.update( {"system.combat.navigatorSkill" : pwr.id});
+	}
+
+	get navigatorSkill(): Power | undefined {
+		switch (this.system.type) {
+			case "shadow":
+			case "npc":
+			case "tarot":
+				return undefined;
+			case "pc":
+				const id = this.system.combat.navigatorSkill;
+				const power = PersonaDB.allPowers().find(x=> x.id == id);
+				return power;
 		}
 	}
 

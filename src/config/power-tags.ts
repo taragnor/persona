@@ -14,6 +14,7 @@ export const POWER_TYPE_TAGS = [
 	"shadow-only",
 	"teamwork",
 	"opener",
+	"navigator",
 	"downtime",
 	"follow-up",
 	"mandatory",

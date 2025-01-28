@@ -5,10 +5,8 @@ import { PersonaError } from "../../persona-error.js";
 import { PersonaCombat } from "../../combat/persona-combat.js";
 import { PToken } from "../../combat/persona-combat.js";
 import { Usable } from "../../item/persona-item.js";
-
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { CClass } from "../../item/persona-item.js";
-
 import { PersonaItem } from "../../item/persona-item.js";
 import { PersonaActorSheetBase } from "./actor-sheet.base.js";
 import { PC } from "../persona-actor.js";
@@ -58,6 +56,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 						const power = item as Power;
 						if (power.isTeamwork()) {
 							await (this.actor as PC).setTeamworkMove(item as Power);
+						if (power.isNavigator()) {
+							await (this.actor as PC).setNavigatorSkill(item as Power);
+						}
 							return item;
 						}
 						if (power.hasTag("shadow-only")) {

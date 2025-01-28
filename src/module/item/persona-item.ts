@@ -545,6 +545,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.hasTag("teamwork");
 	}
 
+	isNavigator(this: Usable): boolean {
+		return this.hasTag("navigator");
+	}
+
 	isValidTargetFor(this: Usable, user: PC|Shadow, target: PC | Shadow, situation?: Situation): boolean {
 		if (!situation) {
 			situation = {
@@ -603,7 +607,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (this.system.type == "consumable") {return false;}
 		const basics = [
 			...PersonaItem.getBasicPCPowers(),
-			...PersonaItem.getBasicShadowPowers()
+			...PersonaItem.getBasicShadowPowers(),
 		];
 		return basics.includes(this as Power);
 	}
