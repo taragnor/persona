@@ -22,6 +22,7 @@ import { SocialCard } from "./item/persona-item.js";
 class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	#cache: PersonaDBCache;
+	navigator: NPC | PC;
 
 	constructor() {
 		super();

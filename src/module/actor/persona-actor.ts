@@ -1,4 +1,4 @@
-import { FlagData } from "../datamodel/actor-types.js";
+import { FlagData } from "../../config/actor-parts.js";
 import { TarotCard } from "../../config/tarot.js";
 import { removeDuplicates } from "../utility/array-tools.js";
 import { testPreconditions } from "../preconditions.js";
@@ -987,36 +987,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return promises.length > 0;
 	}
 
-	async downGradeSlot(this: PC, slot: number ): Promise<boolean> {
-		if (slot >= 3 || slot <= 0) return false;
-		const slots = this.system.slots;
-		const s = slot as (1 | 2 |3);
-		if (slots[s] == 0) {
-			const expend = await this.downGradeSlot(s +1);
-			if (!expend) return false;
-		}
-		slots[s] -= 1;
-		slots[(s-1) as (0 | 1 | 2 |3)] += 2;
-		await this.update( {"system.slots" : slots});
-		return true;
-	}
-
-	async expendSlot(this: PC,  slot: number, amount = 1) {
-		if (slot < 0 && slot >= 4) return;
-		const slots = this.system.slots;
-		while (amount > 0) {
-			if (slots[slot as (0 | 1 | 2 | 3)] < 1) {
-				if (!(await this.downGradeSlot(slot +1 ))) {
-					PersonaError.softFail(`Can't afford Slot for slot ${slot}`);
-					break;
-				}
-			}
-			slots[slot as (0 | 1 | 2 | 3)] -= 1;
-			amount --;
-		}
-		await this.update( {"system.slots" : slots});
-	}
-
 	equippedItems() : (InvItem | Weapon)[]  {
 		if (this.system.type != "pc") return [];
 		const inv = this.inventory;
@@ -1595,7 +1565,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				linkLevel: 1,
 				inspiration: 1,
 				currentProgress: 0,
-				relationshipType: npc.system.type == "pc"? "PEER" : npc.system.baseRelationship,
+				relationshipType: "PEER",
 				isDating: false,
 			}
 		);
@@ -1609,10 +1579,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "pc":
 				return "PEER";
 			case "npc":
-				return this.system.baseRelationship;
+				return "PEER";
+			case "shadow":
+			case "tarot":
+				break;
 			default:
-				return "NONE";
+				this.system satisfies never;
 		}
+		return "NONE";
 	}
 
 	async increaseSocialLink(this: PC, linkId: string) {

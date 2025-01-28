@@ -882,12 +882,6 @@ export class CombatResult  {
 					otherEffect satisfies never;
 			}
 		}
-		const saveSlot = this.hasFlag(actor, "save-slot");
-		if (!saveSlot && actor.system.type == "pc") {
-			change.expendSlot.forEach(async (val, i) => {
-				await (actor as PC).expendSlot(i, val);
-			});
-		}
 		if (mpcost != 0 && actor.system.type == "pc") {
 			mpcost *= mpmult;
 			await (actor as PC).modifyMP(mpcost);
