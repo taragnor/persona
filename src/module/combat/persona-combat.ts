@@ -231,6 +231,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			this.saveVsDespair(combatant, situation),
 			this.saveVsConfusion(combatant, situation),
 			this.saveVsCharm(combatant, situation),
+			this.rageOpener(combatant, situation),
 			this.disengageOpener(combatant, situation),
 			this.otherOpeners(combatant, situation),
 		);
@@ -389,6 +390,20 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					mandatory: true,
 					optionEffects: [],
 				});
+		}
+		return {msg, options};
+	}
+
+	rageOpener( combatant: Combatant<ValidAttackers> , _situation: Situation) : OpenerOptionsReturn {
+		let msg : string[] = [];
+		let options : OpenerOptionsReturn["options"] = [];
+		if (combatant?.actor?.hasStatus("rage")) {
+			msg.push(`Battle Rage`);
+			options.push({
+				optionTxt: "Attack nearest random enemy",
+				mandatory: true,
+				optionEffects: [],
+			});
 		}
 		return {msg, options};
 	}

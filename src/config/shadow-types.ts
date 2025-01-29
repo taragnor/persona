@@ -13,6 +13,7 @@ export const SHADOW_ROLE_LIST = [
 	"boss",
 	"miniboss-lord",
 	"boss-lord",
+	"treasure-shadow",
 ] as const;
 
 export type ShadowRole = typeof SHADOW_ROLE_LIST[number];

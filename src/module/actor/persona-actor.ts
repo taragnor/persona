@@ -197,16 +197,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const retdata = Object.entries(resists)
 			.map(([statusRaw, level]) => {
 				const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[statusRaw]);
-			switch (level) {
-				case "resist": return `Resist ${statusTrans}`;
-				case "absorb":
-				case "reflect":
-				case "block": return `Block ${statusTrans}`;
-				default: return "";
-			}
-		})
-		.filter( x=> x.length > 0)
-		.join(", ");
+				switch (level) {
+					case "resist": return `Resist ${statusTrans}`;
+					case "absorb":
+					case "reflect":
+					case "block": return `Block ${statusTrans}`;
+					default: return "";
+				}
+			})
+			.filter( x=> x.length > 0)
+			.join(", ");
 		return retdata;
 	}
 
@@ -1050,7 +1050,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (role1 == "lurker") rating -= 2;
 		}
 		const weaknesses = DAMAGETYPESLIST
-		.filter( dmg => this.elementalResist(dmg) == "weakness");
+			.filter( dmg => this.elementalResist(dmg) == "weakness");
 		for (const w of weaknesses) {
 			const res = other.elementalResist(w);
 			switch (res)  {
@@ -1079,7 +1079,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			.filter (dmgType => dmgType != "healing" && dmgType != "untyped" && dmgType != "none")
 		rating += otherAttacks.reduce( (acc, dmg) =>
 			acc + (!attacks.has(dmg) ? 1 : 0)
-		, 0 );
+			, 0 );
 		return rating;
 	}
 
@@ -1412,7 +1412,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async movePowerToSideboard(this: PC, powerId: Power["id"]) {
 		const newPowers = this.system.combat.powers
-		.filter( id => id != powerId);
+			.filter( id => id != powerId);
 		await this.update({"system.combat.powers": newPowers});
 		const sideboard = this.system.combat.powers_sideboard;
 		sideboard.push(powerId);
@@ -1427,7 +1427,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			return;
 		}
 		const newSideboard = this.system.combat.powers_sideboard
-		.filter( id => id != powerId);
+			.filter( id => id != powerId);
 		await this.update({"system.combat.powers_sideboard": newSideboard});
 		const powers = this.system.combat.powers;
 		powers.push(powerId);
@@ -2048,13 +2048,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async setAvailability(this: SocialLink, bool: boolean) {
 		if (this.isOwner) {
-		await	this.update( {"system.weeklyAvailability.available": bool});
+			await	this.update( {"system.weeklyAvailability.available": bool});
 		} else {
 			PersonaSocial.requestAvailabilitySet(this.id, bool);
 		}
 	}
-
-	get tarot() : Tarot | undefined {
+	get tarot() : (Tarot | undefined) {
 		switch (this.system.type) {
 			case "pc":
 				if (this.cache.tarot?.name == this.system.tarot)
@@ -2098,139 +2097,140 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.cache.tarot;
 	}
 
-	get perk() : string {
-		switch (this.system.type) {
-			case "pc":
-				return this.tarot?.perk ?? "";
-			case "shadow":
-					return "";
-			case "npc":
-					return this.tarot?.perk ?? "";
-			case "tarot":
-					return this.system.perk;
-			default:
-					this.system satisfies never;
+get perk() : string {
+	switch (this.system.type) {
+		case "pc":
+			return this.tarot?.perk ?? "";
+		case "shadow":
 				return "";
+		case "npc":
+				return this.tarot?.perk ?? "";
+		case "tarot":
+				return this.system.perk;
+		default: {
+			this.system satisfies never;
+			return "";
 		}
 	}
+}
 
-	getEffectFlag(flagId: string) : FlagData | undefined {
-		const flag= this.effects.find(eff=> eff.flagId?.toLowerCase() == flagId.toLowerCase());
-		if (flag) return {
-			flagId,
-			duration: flag.statusDuration,
-			flagName: flag.name,
-			AEId: flag.id,
-		};
-	}
+getEffectFlag(flagId: string) : FlagData | undefined {
+	const flag= this.effects.find(eff=> eff.flagId?.toLowerCase() == flagId.toLowerCase());
+	if (flag) return {
+		flagId,
+		duration: flag.statusDuration,
+		flagName: flag.name,
+		AEId: flag.id,
+	};
+}
 
-	async onStartCombatTurn(this: PC | Shadow): Promise<string[]> {
-		console.log(`${this.name} on Start turn`);
-		await this.removeStatus("blocking");
-		let ret = [] as string[];
-		for (const eff of this.effects) {
-			console.log(`${this.name} has Effect ${eff.name}`);
-			Debug(eff);
-			if ( await eff.onStartCombatTurn()) {
-				ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
-			}
-		}
-		return ret;
-	}
-
-	async onEndCombatTurn(this : PC | Shadow) : Promise<string[]> {
-		const burnStatus = this.effects.find( eff=> eff.statuses.has("burn"));
-		if (burnStatus) {
-			const damage = burnStatus.potency;
-			await this.modifyHP(-damage);
-		}
-		let ret = [] as string[];
-		for (const eff of this.effects) {
-			if (await eff.onEndCombatTurn()) {
-				ret.push(`Removed Condition ${eff.displayedName} at end of turn`);
-			}
-		}
-		return ret;
-	}
-
-	getFlagState(flagName: string) : boolean {
-		return !!this.getEffectFlag(flagName);
-	}
-
-	getFlagDuration(flagName: string) : StatusDuration | undefined {
-		return this.getEffectFlag(flagName)?.duration;
-	}
-
-	async setEffectFlag(flagId: string, setting: boolean, duration: StatusDuration = {dtype: "instant"}, flagName ?: string) {
-		if (setting) {
-			await this.createEffectFlag(flagId, duration, flagName);
-		} else {
-			await this.clearEffectFlag(flagId);
+async onStartCombatTurn(this: PC | Shadow): Promise<string[]> {
+	console.log(`${this.name} on Start turn`);
+	await this.removeStatus("blocking");
+	let ret = [] as string[];
+	for (const eff of this.effects) {
+		console.log(`${this.name} has Effect ${eff.name}`);
+		Debug(eff);
+		if ( await eff.onStartCombatTurn()) {
+			ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
 		}
 	}
+	return ret;
+}
 
-
-	async createEffectFlag(flagId: string, duration: StatusDuration = {dtype: "instant"}, flagName ?: string) {
-		flagId = flagId.toLowerCase();
-		const eff = this.effects.find(x=> x.isFlag(flagId))
-		const newAE = {
-			name: flagName,
-		};
-		if (eff) {
-			eff.setDuration(duration);
-		} else {
-			const AE = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
-			await AE.setDuration(duration);
-			await AE.markAsFlag(flagId);
+async onEndCombatTurn(this : PC | Shadow) : Promise<string[]> {
+	const burnStatus = this.effects.find( eff=> eff.statuses.has("burn"));
+	if (burnStatus) {
+		const damage = burnStatus.potency;
+		await this.modifyHP(-damage);
+	}
+	let ret = [] as string[];
+	for (const eff of this.effects) {
+		if (await eff.onEndCombatTurn()) {
+			ret.push(`Removed Condition ${eff.displayedName} at end of turn`);
 		}
 	}
+	return ret;
+}
 
-	async clearEffectFlag(flagId: string) {
-		const eff = this.effects.find(x=> x.isFlag(flagId))
-		if (eff) {await eff.delete();}
+getFlagState(flagName: string) : boolean {
+	return !!this.getEffectFlag(flagName);
+}
+
+getFlagDuration(flagName: string) : StatusDuration | undefined {
+	return this.getEffectFlag(flagName)?.duration;
+}
+
+async setEffectFlag(flagId: string, setting: boolean, duration: StatusDuration = {dtype: "instant"}, flagName ?: string) {
+	if (setting) {
+		await this.createEffectFlag(flagId, duration, flagName);
+	} else {
+		await this.clearEffectFlag(flagId);
 	}
+}
 
 
-	async setRelationshipType(this: PC, socialLinkId: string, newRelationshipType: string) {
-		const link = this.system.social.find(x=> x.linkId == socialLinkId);
-
-		if (!link) {
-			throw new PersonaError(`Can't find link for Id ${socialLinkId}`);
-		}
-		link.relationshipType = newRelationshipType;
-		await this.update({"system.social": this.system.social});
+async createEffectFlag(flagId: string, duration: StatusDuration = {dtype: "instant"}, flagName ?: string) {
+	flagId = flagId.toLowerCase();
+	const eff = this.effects.find(x=> x.isFlag(flagId))
+	const newAE = {
+		name: flagName,
+	};
+	if (eff) {
+		eff.setDuration(duration);
+	} else {
+		const AE = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
+		await AE.setDuration(duration);
+		await AE.markAsFlag(flagId);
 	}
+}
 
-	isSpecialEvent(this:SocialLink, numberToCheck: number) : boolean {
-		if (this.system.type == "pc") return false;
-		const peices = (this.system.specialEvents ?? "").split(",", 20).map(x=> Number(x?.trim() ?? ""));
-		return peices.includes(numberToCheck);
+async clearEffectFlag(flagId: string) {
+	const eff = this.effects.find(x=> x.isFlag(flagId))
+	if (eff) {await eff.delete();}
+}
+
+
+async setRelationshipType(this: PC, socialLinkId: string, newRelationshipType: string) {
+	const link = this.system.social.find(x=> x.linkId == socialLinkId);
+
+	if (!link) {
+		throw new PersonaError(`Can't find link for Id ${socialLinkId}`);
 	}
+	link.relationshipType = newRelationshipType;
+	await this.update({"system.social": this.system.social});
+}
 
-	async createNewTokenSpend(this: SocialLink) {
-		const list = this.system.tokenSpends;
-		const newItem : typeof list[number] = {
-			conditions: [],
-			amount: 1,
-			text: "",
-			consequences: []
-		};
-		list.push(newItem);
-		await this.update({"system.tokenSpends":list});
-	}
+isSpecialEvent(this:SocialLink, numberToCheck: number) : boolean {
+	if (this.system.type == "pc") return false;
+	const peices = (this.system.specialEvents ?? "").split(",", 20).map(x=> Number(x?.trim() ?? ""));
+	return peices.includes(numberToCheck);
+}
 
-	async deleteTokenSpend(this: SocialLink, deleteIndex:number) {
-		const list = this.system.tokenSpends;
-		list.splice(deleteIndex,1);
-		await this.update({"system.tokenSpends":list});
-	}
+async createNewTokenSpend(this: SocialLink) {
+	const list = this.system.tokenSpends;
+	const newItem : typeof list[number] = {
+		conditions: [],
+		amount: 1,
+		text: "",
+		consequences: []
+	};
+	list.push(newItem);
+	await this.update({"system.tokenSpends":list});
+}
 
-	isAvailable(pc: PersonaActor) : boolean {
-		if (this.system.type == "shadow" || this.system.type == "tarot") return false;
-		if (pc.system.type != "pc") return false;
-		const availability = this.system.weeklyAvailability;
-		if (this.isSociallyDisabled()) return false;
-		if (this.system.type == "npc") {
+async deleteTokenSpend(this: SocialLink, deleteIndex:number) {
+	const list = this.system.tokenSpends;
+	list.splice(deleteIndex,1);
+	await this.update({"system.tokenSpends":list});
+}
+
+isAvailable(pc: PersonaActor) : boolean {
+	switch (this.system.type) {
+		case "shadow":
+		case "tarot":
+			return false;
+		case "npc":
 			const npc = this as NPC;
 			const sit: Situation = {
 				user: (pc as PC).accessor,
@@ -2239,80 +2239,90 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if(!testPreconditions(this.system.availabilityConditions,sit, null)) {
 				return false;
 			}
-		}
-		return availability?.available ?? false;
+			break;
+		case "pc":
+			break;
+		default:
+			this.system satisfies never;
 	}
-
-	isSociallyDisabled(): boolean {
-		switch (this.system.type) {
-			case "shadow":
-			case "tarot":
-				return true;
-			case "pc":
-				const statuses : StatusEffectId[] = ["jailed", "exhausted", "crippled", "injured"];
-				return statuses.some( x=> this.hasStatus(x));
-
-			case "npc":
-				return this.system.weeklyAvailability.disabled || this.tarot == undefined;
-			default:
-				this.system satisfies never;
-				throw new PersonaError("Unknown type");
-		}
+	if (PersonaSocial.disqualifierStatuses.some (st=> this.hasStatus(st))) {return false;}
+	const availability = this.system.weeklyAvailability;
+	if (this.isSociallyDisabled())  {
+		return false;
 	}
+	return availability?.available ?? false;
+}
 
-	canTakeNormalDowntimeActions(): boolean {
-		return !this.hasStatus("jailed") && !this.hasStatus("crippled");
+isSociallyDisabled(): boolean {
+	switch (this.system.type) {
+		case "shadow":
+		case "tarot":
+			return true;
+		case "pc":
+			const statuses : StatusEffectId[] = ["jailed", "exhausted", "crippled", "injured"];
+			return statuses.some( x=> this.hasStatus(x));
+
+		case "npc":
+			return this.system.weeklyAvailability.disabled || this.tarot == undefined;
+		default:
+			this.system satisfies never;
+			throw new PersonaError("Unknown type");
 	}
+}
 
-	async moneyFix() {
-		//updates money to new x10 total
-		switch (this.system.type) {
-			case "pc":
-				const money = this.system.money * 10;
-				await this.update({"system.money": money});
-			default:
-				return;
-		}
-	}
+canTakeNormalDowntimeActions(): boolean {
+	return !this.hasStatus("jailed") && !this.hasStatus("crippled");
+}
 
-	/** return true if target is harder to disengage from (hard diff)
-	 */
-	isSticky() : boolean {
-		return this.hasStatus("sticky");
-	}
-
-	isDistracted() : boolean {
-		const distractingStatuses :StatusEffectId[] = [
-			"confused",
-			"down",
-			"fading",
-			"fear",
-			"frozen",
-			"sleep",
-			"shock",
-			"dizzy",
-			"burn",
-		];
-		return distractingStatuses.some( status => this.hasStatus(status));
-	}
-
-	async setDefaultShadowCosts(this: Shadow, power: Power) {
-		if (!this.items.get(power.id)) {
-			ui.notifications.warn("Shadow can't edit power it doesn't own");
+async moneyFix() {
+	//updates money to new x10 total
+	switch (this.system.type) {
+		case "pc":
+			const money = this.system.money * 10;
+			await this.update({"system.money": money});
+		default:
 			return;
-		}
-		const role = this.system.role;
-		const userLevel = this.system.combat.classData.level
-			+ (this.system.combat.classData.incremental.talent ? 1 : 0)
-		const powerLevel = power.powerEffectLevel();
-		const diff = powerLevel - userLevel;
-		const cost = PersonaActor.calcPowerCost(role, power, diff);
-		const energyReq = PersonaActor.calcPowerRequirement(role, power,  diff);
-		await power.update({
-			"system.energy.required": energyReq,
-			"system.energy.cost": cost
-		});
 	}
+}
+
+/** return true if target is harder to disengage from (hard diff)
+ */
+isSticky() : boolean {
+	return this.hasStatus("sticky");
+}
+
+isDistracted() : boolean {
+	const distractingStatuses :StatusEffectId[] = [
+		"confused",
+		"down",
+		"fading",
+		"fear",
+		"frozen",
+		"sleep",
+		"shock",
+		"dizzy",
+		"burn",
+	];
+	return distractingStatuses.some( status => this.hasStatus(status));
+}
+
+async setDefaultShadowCosts(this: Shadow, power: Power) {
+	if (!this.items.get(power.id)) {
+		ui.notifications.warn("Shadow can't edit power it doesn't own");
+		return;
+	}
+	const role = this.system.role;
+	const userLevel = this.system.combat.classData.level
+		+ (this.system.combat.classData.incremental.talent ? 1 : 0)
+	const powerLevel = power.powerEffectLevel();
+	const diff = powerLevel - userLevel;
+	const cost = PersonaActor.calcPowerCost(role, power, diff);
+	const energyReq = PersonaActor.calcPowerRequirement(role, power,  diff);
+	await power.update({
+		"system.energy.required": energyReq,
+		"system.energy.cost": cost
+	});
+}
 
 allOutAttackDamage(this: PC | Shadow, situation?: Situation) : { high: number, low: number } {
 	let high = 0, low = 0;
@@ -2336,72 +2346,72 @@ allOutAttackDamage(this: PC | Shadow, situation?: Situation) : { high: number, l
 	return {high, low};
 }
 
-	getPoisonDamage(this: PC | Shadow): number {
-		const base = Math.round(this.mhp * 0.15);
-		if (this.system.type == "pc") return base;
-		switch (this.system.role) {
-			case "miniboss":
-			case "miniboss-lord":
-			case "boss-lord":
-			case "boss":
-				return Math.round(base / 4);
-			default:
-				return base;
-		}
+getPoisonDamage(this: PC | Shadow): number {
+	const base = Math.round(this.mhp * 0.15);
+	if (this.system.type == "pc") return base;
+	switch (this.system.role) {
+		case "miniboss":
+		case "miniboss-lord":
+		case "boss-lord":
+		case "boss":
+			return Math.round(base / 4);
+		default:
+			return base;
 	}
+}
 
-	static calcPowerRequirement(role: Shadow["system"]["role"], power: Readonly<Power>,  diff: number) : number {
-		if (power.system.tags.includes("basicatk"))
-			return 0;
-		const tags = power.system.tags;
-		switch (role) {
-			case "support":
-				if (!tags.includes("debuff")) {
-					diff -= 2;
-				}
-				if (tags.includes("buff")
-					|| tags.includes("healing")) {
-					diff += 1;
-				}
-				break;
-			default:
-				break;
-		}
-		return Math.clamp(diff, 0, 4);
+static calcPowerRequirement(role: Shadow["system"]["role"], power: Readonly<Power>,  diff: number) : number {
+	if (power.system.tags.includes("basicatk"))
+		return 0;
+	const tags = power.system.tags;
+	switch (role) {
+		case "support":
+			if (!tags.includes("debuff")) {
+				diff -= 2;
+			}
+			if (tags.includes("buff")
+				|| tags.includes("healing")) {
+				diff += 1;
+			}
+			break;
+		default:
+			break;
 	}
+	return Math.clamp(diff, 0, 4);
+}
 
-	static calcPowerCost(_role: Shadow["system"]["role"], power: Readonly<Power>, diff: number) : Power["system"]["reqEscalation"] {
-		if (power.system.tags.includes("basicatk"))
-			return 0;
-		if (diff <= 0) return 0;
-		let esc = Math.round(Math.abs(diff) / 2);
-		return Math.clamp(esc, 0, 6);
-	}
+static calcPowerCost(_role: Shadow["system"]["role"], power: Readonly<Power>, diff: number) : Power["system"]["reqEscalation"] {
+	if (power.system.tags.includes("basicatk"))
+		return 0;
+	if (diff <= 0) return 0;
+	let esc = Math.round(Math.abs(diff) / 2);
+	return Math.clamp(esc, 0, 6);
+}
 
-	async increaseScanLevel(this: Shadow, amt :number) {
-		const scanLevel = this.system.scanLevel ?? 0;
-		if (scanLevel >= amt) return;
-		if (this.token) {
-			await this.token.baseActor.increaseScanLevel(amt);
-		}
-		await this.update({"system.scanLevel": amt});
-		if (amt > 0) {
-			this.ownership.default = CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED;
-			await this.update({"ownership": this.ownership});
-		}
+async increaseScanLevel(this: Shadow, amt :number) {
+	const scanLevel = this.system.scanLevel ?? 0;
+	if (scanLevel >= amt) return;
+	if (this.token) {
+		await this.token.baseActor.increaseScanLevel(amt);
 	}
+	await this.update({"system.scanLevel": amt});
+	if (amt > 0) {
+		this.ownership.default = CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED;
+		await this.update({"ownership": this.ownership});
+	}
+}
 
-	async setEnergy(this: Shadow, amt: number) {
-		amt = Math.clamp(amt, -1, this.system.combat.energy.max);
-		await this.update({"system.combat.energy.value": amt});
-	}
+async setEnergy(this: Shadow, amt: number) {
+	amt = Math.clamp(amt, -1, this.system.combat.energy.max);
+	await this.update({"system.combat.energy.value": amt});
+}
 
-	async alterEnergy(this: Shadow, amt: number) {
-		await this.setEnergy(this.system.combat.energy.value + amt);
-	}
+async alterEnergy(this: Shadow, amt: number) {
+	await this.setEnergy(this.system.combat.energy.value + amt);
+}
 
-	async onCombatStart() {
-	}
+async onCombatStart() {
+}
 
 get tagList() : CreatureTag[] {
 	//NOTE: THis is a candidate for caching
@@ -2429,49 +2439,49 @@ get tagList() : CreatureTag[] {
 	}
 
 }
-	hasCreatureTag(tag: CreatureTag) : boolean{
-		return this.tagList.includes(tag);
-	}
+hasCreatureTag(tag: CreatureTag) : boolean{
+	return this.tagList.includes(tag);
+}
 
-	async deleteCreatureTag(index: number) : Promise<void> {
-		const tags = this.system.creatureTags;
-		tags.splice(index, 1);
-		await this.update( {"system.creatureTags": tags});
-	}
+async deleteCreatureTag(index: number) : Promise<void> {
+	const tags = this.system.creatureTags;
+	tags.splice(index, 1);
+	await this.update( {"system.creatureTags": tags});
+}
 
-	async addCreatureTag() : Promise<void> {
-		const tags = this.system.creatureTags;
-		tags.push("neko");
-		await this.update( {"system.creatureTags": tags});
-	}
+async addCreatureTag() : Promise<void> {
+	const tags = this.system.creatureTags;
+	tags.push("neko");
+	await this.update( {"system.creatureTags": tags});
+}
 
-	async onAddToCombat() {
-		switch (this.system.type) {
-			case "shadow":
-				const sit : Situation = {
-					user: (this as Shadow).accessor,
-				}
-				const startingEnergy = 1 + (this as Shadow).getBonuses("starting-energy").total(sit);
-				await (this as Shadow).setEnergy(startingEnergy);
-				break;
-			case "pc":
-			case "npc":
-			case "tarot":
-				break;
-		}
-
-	}
-
-
-	static convertSlotToMP(slotLevel: number) {
-			switch (slotLevel) {
-				case 0: return 4;
-				case 1: return 8;
-				case 2: return 12;
-				case 3: return 24;
-				default: return 48;
+async onAddToCombat() {
+	switch (this.system.type) {
+		case "shadow":
+			const sit : Situation = {
+				user: (this as Shadow).accessor,
 			}
+			const startingEnergy = 1 + (this as Shadow).getBonuses("starting-energy").total(sit);
+			await (this as Shadow).setEnergy(startingEnergy);
+			break;
+		case "pc":
+		case "npc":
+		case "tarot":
+			break;
 	}
+
+}
+
+
+static convertSlotToMP(slotLevel: number) {
+	switch (slotLevel) {
+		case 0: return 4;
+		case 1: return 8;
+		case 2: return 12;
+		case 3: return 24;
+		default: return 48;
+	}
+}
 
 }
 

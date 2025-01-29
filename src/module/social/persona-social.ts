@@ -1,3 +1,4 @@
+import { StatusEffectId } from "../../config/status-effects.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { TurnAlert } from "../utility/turnAlert.js";
 import { VariableAction } from "../../config/consequence-types.js";
@@ -52,6 +53,13 @@ export class PersonaSocial {
 		rej: (x: any) => void,
 	}
 	static sound: FOUNDRY.AUDIO.Sound | null = null;
+
+	static disqualifierStatuses : StatusEffectId[] = [
+		"jailed",
+		"exhausted",
+		"crippled",
+		"injured",
+	];
 
 	static #drawnCardIds: string[] = [];
 	static rollState: null |
@@ -358,6 +366,7 @@ export class PersonaSocial {
 				// target: targetAcc,
 				socialRandom : Math.floor(Math.random() * 20) + 1,
 			};
+			if (this.disqualifierStatuses.some( st => cameo.hasStatus(st))) { return false;}
 			return testPreconditions(card.system.cameoConditions , situation, null);
 		}
 		switch (card.system.cameoType) {

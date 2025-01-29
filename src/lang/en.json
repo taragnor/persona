@@ -33,6 +33,7 @@
 	"persona.shadow.role.boss": "Boss (Solo)",
 	"persona.shadow.role.miniboss-lord": "MiniBoss (with Minions)",
 	"persona.shadow.role.boss-lord": "Boss (with Minions)",
+	"persona.shadow.role.treasure-shadow": "Treasure",
 
 	"persona.foe.type.shadow": "Shadow",
 	"persona.foe.type.daemon": "Daemon",

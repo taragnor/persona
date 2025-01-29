@@ -886,7 +886,6 @@ export class CombatResult  {
 			mpcost *= mpmult;
 			await (actor as PC).modifyMP(mpcost);
 		}
-
 	}
 
 	/** combines other's data into initial*/
