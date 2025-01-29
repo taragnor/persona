@@ -19,6 +19,7 @@ import { Logger } from "./utility/logger.js";
 import { PC } from "./actor/persona-actor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaSettings } from "../config/persona-settings.js";
+import { NPCAlly } from "./actor/persona-actor.js";
 
 export class Metaverse {
 	static isEnhanced() : boolean {
@@ -27,8 +28,8 @@ export class Metaverse {
 
 	static async enterMetaverse() {
 		(game.actors as Collection<PersonaActor>)
-			.filter( (x: PersonaActor)=> x.system.type == "pc" && x.tarot != undefined)
-			.forEach( (x: PC)=> x.OnEnterMetaverse());
+			.filter( (x: PersonaActor)=> (x.system.type == "pc" && x.tarot != undefined) || x.system.type == "npcAlly")
+			.forEach( (x: PC | NPCAlly)=> x.OnEnterMetaverse());
 		game.scenes
 			.forEach( scene => scene.tokens.contents
 				.forEach( tok => {
@@ -45,8 +46,8 @@ export class Metaverse {
 
 	static async exitMetaverse() {
 		(game.actors as Collection<PersonaActor>)
-			.filter( (x: PersonaActor)=> x.system.type == "pc" && x.tarot != undefined)
-			.forEach( (x: PC) => x.OnExitMetaverse());
+			.filter( (x: PersonaActor)=> (x.system.type == "pc" && x.tarot != undefined) || x.system.type == "npcAlly")
+			.forEach( (x: PC | NPCAlly) => x.OnExitMetaverse());
 		game.scenes
 			.forEach( scene => scene.tokens.contents
 				.forEach( tok => {
