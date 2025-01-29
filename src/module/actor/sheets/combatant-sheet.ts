@@ -38,6 +38,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".incremental-advance-block .hp .add").on("click", this.addIncremental_HP.bind(this));
 		html.find(".incremental-advance-block .mp .add").on("click", this.addIncremental_MP.bind(this));
 		html.find(".incremental-advance-block .wpnDamage .add").on("click", this.addIncremental_wpnDamage.bind(this));
+
 	}
 
 	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) {
@@ -188,19 +189,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	}
 
-	// async deleteFocus(event: Event) {
-	// 	const focusId = HTMLTools.getClosestData(event, "focusId");
-	// 	if (focusId == undefined) {
-	// 		const err = `Can't find talent at index $focusId}`;
-	// 		console.error(err);
-	// 		ui.notifications.error(err);
-	// 		throw new Error(err);
-	// 	}
-	// 	if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this Focus?")) {
-	// 		this.actor.deleteFocus(focusId);
-	// 	}
-	// }
-
 	async deletePower(event: Event) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		if (powerId == undefined) {
@@ -238,19 +226,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 		await talent.sheet.render(true);
 	}
-
-	// async openFocus(event: Event) {
-	// 	const itemType = "Focus";
-	// 	const focusId = HTMLTools.getClosestData(event, "focusId");
-	// 	if (focusId == undefined) {
-	// 		throw new PersonaError(`Can't find ${itemType}`);
-	// 	}
-	// 	const focus = this.actor.focii.find(x=> x.id == focusId);
-	// 	if (!focus) {
-	// 		throw new PersonaError(`Can't find ${itemType} id ${focusId}`);
-	// 	}
-	// 	await focus.sheet.render(true);
-	// }
 
 	async openItem(event: Event) {
 		const itemType = "Inventory Item";

@@ -87,12 +87,16 @@ export class PersonaHandleBarsHelpers {
 			return testStr.includes(substr);
 		},
 
-		"getTalentLevel": (actor: PersonaActor, talent: Talent) => {
-			if (actor.system.type == "pc") {
-				const numLevel = (actor as PC).getLevelOfTalent(talent);
-				return game.i18n.localize(`persona.talentLevels.${numLevel}.name`);
+		"getTalentLevel": (actor: PersonaActor, talent: Talent) : string => {
+			switch (actor.system.type) {
+				case "shadow": case "npc": case "tarot": return "-";
+				case "pc": case "npcAlly":
+					break;
+				default:
+					actor.system satisfies never;
 			}
-			else return 0;
+			const numLevel = (actor as PC).getLevelOfTalent(talent);
+			return game.i18n.localize(`persona.talentLevels.${numLevel}.name`);
 		},
 
 		"meetsSLRequirement": ( owner: PC, focus: Focus) => {
@@ -409,5 +413,46 @@ export class PersonaHandleBarsHelpers {
 		"isPowerIllegal":  function (actor: PersonaActor, power: Power): boolean {
 			return power.system.slot > actor.maxSlot();
 		},
+		"canUseTalents": function (actor: PersonaActor) : boolean {
+			switch (actor.system.type) {
+				case "tarot":
+				case "npc":
+				case "shadow":
+					return false;
+				case "pc":
+				case "npcAlly":
+					return true;
+				default:
+					actor.system satisfies never;
+					return false;
+			}
+		},
+		"canUseCustomFocii": function (actor: PersonaActor) : boolean {
+			switch (actor.system.type) {
+				case "tarot":
+				case "pc":
+				case "npc":
+				case "npcAlly":
+					return false;
+				case "shadow":
+					return true;
+				default:
+					actor.system satisfies never;
+					return false;
+			}
+		},
+		"hasMP": function (actor: PersonaActor) : boolean {
+			switch (actor.system.type) {
+				case "pc":
+				case "npcAlly":
+					return true;
+				case "shadow":
+				case "npc":
+				case"tarot":
+					return false;
+				default: actor.system satisfies never;
+					return false;
+			}
+		}
 	}
 } //end of class

@@ -54,8 +54,6 @@ export class PCSheet extends PCLikeSheet {
 		html.find(".refreshLink").on("click", this.refreshLink.bind(this));
 		html.find(".useInspiration").on("click", this.useInspiration.bind(this));
 		html.find(".useRecovery").on("click", this.useRecovery.bind(this));
-		html.find(".incTalent").on("click", this.incTalent.bind(this));
-		html.find(".decTalent").on("click", this.decTalent.bind(this));
 		html.find(".addSocialRank").on("click", this.addSocialRank.bind(this));
 		html.find(".removeSocialRank").on("click", this.reduceSocialRank.bind(this));
 		html.find(".add-progress-token").on("click", this.addProgressTokens.bind(this));
@@ -136,15 +134,6 @@ export class PCSheet extends PCLikeSheet {
 		await this.actor.spendRecovery(linkId);
 	}
 
-	async incTalent(event: Event) {
-		const talentId= String(HTMLTools.getClosestData(event, "talentId"));
-		await this.actor.incrementTalent(talentId);
-	}
-
-	async decTalent(event: Event) {
-		const talentId= String(HTMLTools.getClosestData(event, "talentId"));
-		await this.actor.decrementTalent(talentId);
-	}
 
 	async addSocialRank(event: Event) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));

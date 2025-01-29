@@ -75,26 +75,38 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get mp() : number {
 		switch (this.system.type) {
+			case "npcAlly":
 			case "pc": break;
-			default: return 0;
+			case "shadow":
+			case "npc":
+			case "tarot":
+				return 0;
+			default: this.system satisfies never;
+				return 0;
 		}
 		return this.system.combat.mp.value;
 	}
+
 	get mmp() : number {
 		switch (this.system.type) {
-			case "pc": break;
-			default: return 0;
+			case "npcAlly": case "pc":
+				break;
+			case "shadow": case "npc": case "tarot":
+				return 0;
+			default:
+				this.system satisfies never;
+				return 0;
 		}
 		const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
 		const bonuses = this.getBonuses("maxmp");
 		const mult = 1 + this.getBonuses("maxmpMult").total(sit);
-		const lvlmaxMP = (this as PC).calcBaseClassMMP();
+		const lvlmaxMP = (this as PC | NPCAlly).calcBaseClassMMP();
 		const val = Math.round((mult * (lvlmaxMP)) + bonuses.total(sit));
-		(this as PC).refreshMaxMP(val);
+		(this as PC | NPCAlly).refreshMaxMP(val);
 		return val;
 	}
 
-	calcBaseClassMMP(this: PC): number {
+	calcBaseClassMMP(this: PC | NPCAlly): number {
 		const lvl = this.system.combat.classData.level;
 
 		const inc = this.system.combat.classData.incremental.mp;
@@ -116,7 +128,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return MP;
 	}
 
-	async refreshMaxMP(this: PC, amt = this.mmp) {
+	async refreshMaxMP(this: PC | NPCAlly, amt = this.mmp) {
 		if (amt == this.system.combat.mp.max) return;
 		await this.update( { "system.combat.mp.max": amt});
 	}
@@ -801,10 +813,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get talents() : Talent[] {
-		if (this.system.type == "shadow") {
-			return this.items.filter( x=> x.system.type == "talent") as Talent[];
+		switch (this.system.type) {
+			case "tarot":
+			case "npc":
+				return [];
+			case "shadow":
+				return this.items.filter( x=> x.system.type == "talent") as Talent[];
+			case "pc":
+			case "npcAlly":
+				break;
+			default:
+				this.system satisfies never;
+				return [];
 		}
-		if (this.system.type != "pc") return [];
 		const extTalents = this.system.talents.flatMap( ({talentId}) => {
 			const tal= PersonaDB.getItemById(talentId);
 			if (!tal) return [];
@@ -1377,9 +1398,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async addTalent(this: ValidAttackers, talent: Talent) {
-		if (this.system.type == "shadow") {
-			ui.notifications.warn("Shadows can't use talents");
-			return;
+		switch (this.system.type) {
+			case "shadow":
+				ui.notifications.warn("Shadows can't use talents");
+				return;
+			case "pc":
+			case "npcAlly":
+				break;
+			default:
+				this.system satisfies never;
+				return;
 		}
 		const talents = this.system.talents;
 		if (talents.find(x => x.talentId == talent.id)) return;
@@ -1839,19 +1867,22 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return x.talentLevel;
 	}
 
-	async incrementTalent(this:PC, talentId: string) {
+	async incrementTalent(this: PC | NPCAlly, talentId: string) {
 		const x = this.system.talents.find( x => x.talentId == talentId);
 		if (!x) return;
 		x.talentLevel = Math.min(3, x.talentLevel+1);
 		await this.update({"system.talents": this.system.talents});
+		const talent = PersonaDB.allItems().find( item => item.id == talentId);
+		await Logger.sendToChat(`<b>${this.name}:</b> raised talent ${talent?.name} to level ${x.talentLevel}`, this);
 	}
 
-	async decrementTalent(this:PC, talentId :string) {
+	async decrementTalent(this:PC | NPCAlly, talentId :string) {
 		const x = this.system.talents.find( x => x.talentId == talentId);
-
 		if (!x) return;
 		x.talentLevel = Math.max(0, x.talentLevel-1);
 		await this.update({"system.talents": this.system.talents});
+		const talent = PersonaDB.allItems().find( item => item.id == talentId);
+		await Logger.sendToChat(`<b>${this.name}:</b> reduced talent ${talent?.name} to level ${x.talentLevel}`, this);
 	}
 
 	getSaveBonus( this: ValidAttackers) : ModifierList {
@@ -1938,17 +1969,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	async OnEnterMetaverse(this: PC) {
+	async OnEnterMetaverse(this: ValidAttackers) {
 		try {
 			this.fullHeal();
-			await this.refreshSocialLink(this);
+			if (this.system.type == "pc") {
+				await (this as PC).refreshSocialLink(this as PC);
+			}
 		} catch (e) {
 			console.log(e);
 			ui.notifications.error(`problem with Onentermetaverse for ${this.name}`);
 		}
 	}
 
-	async OnExitMetaverse(this: PC ) {
+	async OnExitMetaverse(this: ValidAttackers ) {
 		try {
 			this.fullHeal();
 			for (const eff of this.effects) {
@@ -1956,7 +1989,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					await eff.delete();
 				}
 			}
-			await this.refreshSocialLink(this);
+			if (this.system.type == "pc") {
+				const pc = this as PC;
+				await pc.refreshSocialLink(pc);
+			}
 		} catch (e) {
 			console.log(e);
 			ui.notifications.error(`problem with OnExitMetaverse for ${this.name}`);

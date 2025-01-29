@@ -48,7 +48,7 @@
 			</div>
 			{{/if}}
 		</div>
-		{{#if (eq actor.type "pc")}}
+		{{#if (hasMP actor)}}
 		<div class="mp">
 			<label> MP </label>
 			<span>
@@ -85,7 +85,7 @@
 		</button>
 
 		{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST}}
-		{{#if (eq actor.type "pc")}}
+		{{#if (canUseTalents actor)}}
 		{{> "systems/persona/parts/talents-table.hbs" actor=actor CONST=CONST}}
 		{{/if}}
 		<hr>

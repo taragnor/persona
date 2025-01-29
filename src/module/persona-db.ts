@@ -23,10 +23,12 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	#cache: PersonaDBCache;
 	navigator: NPC | PC;
+	failLog: Map<string, string>;
 
 	constructor() {
 		super();
 		this.#resetCache();
+		this.failLog = new Map();
 	}
 
 	#resetCache() : PersonaDBCache {
@@ -85,8 +87,10 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	getBasicPower( name: typeof BASIC_SHADOW_POWER_NAMES[number] | typeof BASIC_PC_POWER_NAMES[number]) : Power | undefined {
 		const power = PersonaDB.getItemByName(name) as Power | undefined;
-		if (!power)  {
-			PersonaError.softFail(`Can't get basic power ${name}`);
+		if (!power && !this.failLog.has(name))  {
+			const msg =`Can't get basic power ${name}`; 
+			this.failLog.set("name", msg);
+			PersonaError.softFail(msg);
 		}
 		return power;
 	}
@@ -96,7 +100,6 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		const actors = this.allActors();
 		return this.#cache.shadows = actors
 			.filter( act=> act.system.type == "shadow") as Shadow[];
-
 	}
 
 	tarotCards(): Tarot[] {
