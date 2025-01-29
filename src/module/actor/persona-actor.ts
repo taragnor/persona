@@ -801,8 +801,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get weapon() : Option<Weapon> {
-		if (this.system.type != "pc") {
-			return null;
+		switch (this.system.type) {
+			case "shadow":
+			case "npc":
+			case "tarot":
+				return null;
+			case "pc":
+			case "npcAlly":
+				break;
+			default:
+				this.system satisfies never;
 		}
 		const id = this.system.equipped.weapon;
 		const item = this.items.find( x=> x.id == id);
