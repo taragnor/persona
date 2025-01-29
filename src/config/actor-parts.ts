@@ -237,7 +237,6 @@ export function SocialTargetBlockData() {
 		specialEvents: new txt(),
 		datePerk: new txt(),
 	}
-
 }
 
 export function encounterDataSchema() {

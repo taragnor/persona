@@ -21,7 +21,9 @@ export type ModifierListItem = {
 	variableModifier: Set<{variable: ModifierVariable, makeNegative: boolean}>;
 }
 
-type MLListType = "standard" | "percentage";
+type MLListType = "standard"
+	| "percentage"
+	| "percentage-special" //presented in additive format +.35 instad of +135%;
 
 export class ModifierList {
 	_data: ModifierListItem[];
@@ -125,6 +127,20 @@ export class ModifierList {
 				const base =  mods.reduce( (acc, item) => acc * (item.modifier ?? 1) , 1);
 				return base;
 			}
+			case "percentage-special": {
+				return mods
+				.map( x => {
+					const mod = x.modifier ?? 1;
+					if (mod < 0)  {
+						return 1 + mod;
+					}
+					return 1 + mod;
+				})
+				.reduce( (acc, mod) => acc * (mod ?? 1) , 1);
+			}
+			default:
+				style satisfies never;
+				return 0;
 		}
 	}
 

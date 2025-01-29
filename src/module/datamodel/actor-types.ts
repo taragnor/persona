@@ -56,8 +56,8 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 		const system = data as PC["system"];
 		const convert = function (x: number) {
 			switch (true) {
-				case x  >=5: return "ultimate";
-				case x  >=2: return "strong";
+				case x >= 5: return "ultimate";
+				case x >= 2: return "strong";
 				case x > -2: return "normal";
 				case x >= -5: return "weak";
 				case x >= -10 : return "pathetic";
@@ -80,6 +80,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 		const ret = {
 			...BaseStuff.defineSchema(),
 			role: new txt({choices: SHADOW_ROLE_LIST, initial: "base"}),
+			role2: new txt({choices: SHADOW_ROLE_LIST, initial: "base"}),
 			scanLevel: new num({initial: 0, integer: true}),
 			encounter: encounterDataSchema(),
 			creatureType: new txt({ choices: SHADOW_CREATURE_TYPE_LIST, initial: "shadow"}),

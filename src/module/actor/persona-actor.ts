@@ -329,7 +329,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				multmods.add("weaknesses mod", bonus)
 			}
 			bonuses.add("incremental bonus hp", incBonus)
-			const mult = multmods.total(sit) + 1;
+			const mult = multmods.total(sit, "percentage-special");
 			const mhp = (mult * lvlbase) + bonuses.total(sit);
 			return Math.round(mhp);
 		} catch (e) {

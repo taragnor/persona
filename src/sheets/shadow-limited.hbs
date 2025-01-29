@@ -24,6 +24,12 @@
 				<div>
 					<label>Role</label>
 					<span>{{actor.system.role}} </span>
+					{{#if actor.system.role2}}
+					<span>
+						{{actor.system.role2}}
+					</span>
+					{{/if}}
+
 				</div>
 
 				{{#if (gt actor.system.scanLevel 1)}}
