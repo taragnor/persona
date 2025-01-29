@@ -1043,7 +1043,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	equippedItems() : (InvItem | Weapon)[]  {
-		if (this.system.type != "pc") return [];
+		switch (this.system.type) {
+			case "shadow":
+			case "npc":
+			case "tarot":
+				return [];
+			case "pc":
+			case "npcAlly":
+				break;
+			default:
+				this.system satisfies never;
+				return [];
+		}
 		const inv = this.inventory;
 		const slots : (keyof typeof this.system.equipped)[]=  ["weapon", "body", "accessory", "weapon_crystal"]
 		const ret = slots
@@ -1054,7 +1065,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	passiveItems(): InvItem[] {
-		if (this.system.type != "pc") return [];
+		switch (this.system.type) {
+			case "shadow":
+			case "npc":
+			case "tarot":
+				return [];
+			case "pc":
+			case "npcAlly":
+				break;
+			default:
+				this.system satisfies never;
+				return [];
+		}
 		const inv = this.inventory;
 		return inv.filter( item => item.system.type == "item" && item.system.slot == "none") as InvItem[];
 	}
@@ -1192,7 +1214,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.roomModifiers(),
 			...PersonaDB.getGlobalModifiers(),
 			...PersonaDB.navigatorModifiers(),
-		].filter( x => x.getEffects(this as PC | Shadow).length > 0);
+		].filter( x => x.getEffects(this as ValidAttackers).length > 0);
 	}
 
 	defensivePowers() : Power [] {

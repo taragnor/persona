@@ -4,10 +4,19 @@
 	<textarea name="system.description"> {{item.system.description}} </textarea>
 
 	{{> "systems/persona/parts/itemTags.hbs" item=item POWERSTUFF=POWERSTUFF}}
-	{{#if (isGM)}}
-	<label> Price </label>
-	{{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}
-	{{/if}}
+	<div>
+		{{#if (isGM)}}
+		<label> Price </label>
+		{{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}
+		<label> No Trade </label>
+		<input type="checkbox" name="system.noTrade" {{checked item.system.noTrade}}>
+		{{else}}
+		<label> Price </label>
+		{{item.system.price}}
+		{{#if item.system.noTrade}}
+		<b> Can't trade</b>
+		{{/if}}
+		{{/if}}
 	</div>
 	<hr>
 	<div class="dmg">

@@ -3,7 +3,12 @@
 	<section class= "search-result">
 		{{#each results as |res|}}
 		<div class="result">
-			{{res.searcher.name}} ({{res.declaration}}) : {{res.roll}} --- <b>{{res.result}}</b>
+			{{res.searcher.name}} ({{res.declaration}}) : 
+			{{#each res.results as |attempt|}}
+			<span class="search-attempt">
+				<b>{{attempt.result}} ({{attempt.roll}})</b>
+			</span>
+			{{/each}}
 		</div>
 		{{/each}}
 		{{> "systems/persona/parts/tension-pool.hbs" tensionRoll=tensionRoll tensionResult=tensionResult}}

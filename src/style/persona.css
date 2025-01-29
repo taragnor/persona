@@ -723,3 +723,7 @@ form h5 {
 .illegal-level {
 	background-color: pink;
 }
+
+.search-attempt {
+	margin-left: 5px;
+}

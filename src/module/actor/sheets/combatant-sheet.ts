@@ -99,7 +99,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				const existing = this.actor.items.find( x=> x.system.type == item.system.type && ("amount" in x.system) && x.name == item.name);
 				if (existing != undefined && existing.system.type == 'consumable') {
 					console.log("Adding to existing amount");
-					await (existing as Consumable).addItem(1);
+					await (existing as Consumable).addItem(item.system.amount ?? 1);
 					return existing;
 				}
 				return super._onDropItem(_event, itemD);

@@ -1,3 +1,5 @@
+import { NPCAlly } from "../actor/persona-actor.js";
+import { Situation } from "../preconditions.js";
 	import { Metaverse } from "../metaverse.js";
 import { PersonaRegion } from "../region/persona-region.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
@@ -92,7 +94,7 @@ export class SearchMenu {
 				break;
 			}
 			const ret = await this.execSearch(results, this.options, region);
-			if (this.options.stopOnHazard && results.some(r => r.result == "hazard")) {
+			if (this.options.stopOnHazard && results.some(r => r.results.find(res => res.result == "hazard"))) {
 				this.endSearch();
 				break;
 			}
@@ -128,67 +130,88 @@ export class SearchMenu {
 
 	static async execSearch(results : SearchResult[], options: SearchOptions<typeof SearchMenu["template"]>, region: PersonaRegion) {
 		let rolls : Roll[] = [];
-		const guards = results.filter( x=> x.declaration == "guard").length;
+		// const guards = results.filter( x=> x.declaration == "guard").length;
 		exitFor: for (const searcher of results) {
 			switch (searcher.declaration) {
 				case "search": {
-					const roll = new Roll("1d6");
-					const [result, total] = await this.processSearchRoll([roll], options);
-					searcher.result = result;
-					searcher.roll = total;
-					rolls.push(roll);
+					const actor = PersonaDB.findActor(searcher.searcher.actor) as PC | NPCAlly;
+					const situation : Situation = {
+						user: actor.accessor,
+					}
+					const numberOfSearches = 1 + actor.getBonuses("numberOfSearches").total(situation);
+					for (let searches = 0; searches < numberOfSearches; ++searches) {
+						const roll = new Roll("1d6");
+						const [result, total] = await this.processSearchRoll([roll], options);
+						searcher.results.push({
+							roll: total,
+							result
+						});
+						rolls.push(roll);
+					}
 					break;
 				}
 				case "careful-search": {
-					const roll = new Roll("1d6");
-					const roll2 = new Roll("1d10");
-					const [result, total]= await this.processSearchRoll([roll, roll2], options);
-					searcher.result = result;
-					searcher.roll = total;
-					rolls.push(roll, roll2);
+					const actor = PersonaDB.findActor(searcher.searcher.actor) as PC | NPCAlly;
+					const situation : Situation = {
+						user: actor.accessor,
+					}
+					const numberOfSearches = 1 + actor.getBonuses("numberOfSearches").total(situation);
+					for (let searches = 0; searches < numberOfSearches; ++searches) {
+						const roll = new Roll("1d6");
+						const roll2 = new Roll("1d10");
+						const [result, total]= await this.processSearchRoll([roll, roll2], options);
+						searcher.results.push({
+							roll: total,
+							result
+						});
+						rolls.push(roll, roll2);
+					}
 					break;
 				}
 				case "guard":
-					searcher.result = "nothing";
+					searcher.results.push( {result: "nothing"});
 					break;
 				case "undecided":
 				case "leave":
 				case "other":
-					searcher.result = "nothing";
+					searcher.results.push( {result: "nothing"});
 					break;
 				case "disconnected":
-					searcher.result = undefined;
+					searcher.results.push( {result: "disconnected"});
 					break;
 				default:
 					searcher.declaration satisfies never;
 
 			}
-			switch (searcher.result) {
-				case "hazard":
-					this.progress.hazardFound = true;
-					if (options.stopOnHazard) {
-						this.suspend(true);
-						break exitFor;
-					}
-					break;
-				case "secret":
-					this.progress.secretFound = true;
-					break;
-				case "treasure":
-					options.treasureRemaining -= 1;
-					this.progress.treasuresFound +=1 ;
-					break;
-				case undefined:
-				case "other":
-				case "nothing":
-					break;
-				default:
-					searcher.result satisfies never;
+			for (const result of searcher.results) {
+				switch (result.result) {
+					case "hazard":
+						this.progress.hazardFound = true;
+						if (options.stopOnHazard) {
+							this.suspend(true);
+							break exitFor;
+						}
+						break;
+					case "secret":
+						this.progress.secretFound = true;
+						break;
+					case "treasure":
+						options.treasureRemaining -= 1;
+						this.progress.treasuresFound +=1 ;
+						break;
+					case undefined:
+					case "other":
+					case "nothing":
+					case "disconnected":
+						break;
+					default:
+						result.result satisfies never;
+				}
 			}
 		}
 		await PersonaCombat.onTrigger("on-search-end")
-		.emptyCheck()
-		?.autoApplyResult();
+			.emptyCheck()
+			?.autoApplyResult();
 		// const {roll, result} = await this.tensionPool(guards, options);
 		const {roll, result} = TensionPool.nullResult();
 		if (roll) {
@@ -220,12 +243,12 @@ export class SearchMenu {
 		return msg;
 	}
 
-		static async processSearchRoll(rolls: Roll[], options: SearchOptions<typeof this["template"]>) : Promise<[result: NonNullable<SearchResult["result"]>, rollamt: number]> {
+		static async processSearchRoll(rolls: Roll[], options: SearchOptions<typeof this["template"]>) : Promise<[result: NonNullable<SearchAttempt["result"]>, rollamt: number]> {
 			for (const roll of rolls) {
 				await roll.roll();
 			}
 			const val = Math.max( ...rolls.map (x=> x.total))
-			let result : SearchResult["result"];
+			let result : SearchAttempt["result"];
 			switch (val) {
 				case 1:
 					result = options.isHazard ? "hazard" : "nothing";
@@ -251,7 +274,7 @@ export class SearchMenu {
 			return [result, val];
 		}
 
-	static async tensionPool(guards: number, options: SearchOptions<typeof SearchMenu["template"]>) : Promise<TensionPoolResult> {
+	static async tensionPool(_guards: number, options: SearchOptions<typeof SearchMenu["template"]>) : Promise<TensionPoolResult> {
 		if (!options.rollTension) return TensionPool.nullResult();
 		const tensionRoll =  await TensionPool.roll();
 		let inc = options.incTension;
@@ -345,9 +368,9 @@ export class SearchMenu {
 		}
 
 		private static generateOriginalSearchResults() : SearchResult[] {
-			return (game.scenes.active.tokens.contents as TokenDocument<PersonaActor>[])
+			return (game.scenes.current.tokens.contents as TokenDocument<PersonaActor>[])
 				.filter( x=> x.actor
-					&& x.actor.system.type == "pc"
+					&& (x.actor.system.type == "pc" || x.actor.system.type == "npcAlly")
 					&& x.actor.talents.length > 0 //check to eliminate crunched party token
 				)
 				.flatMap( tok=> {
@@ -369,7 +392,8 @@ export class SearchMenu {
 							ownerId: owner.id,
 							ownerName: owner.name,
 						},
-						declaration: "undecided"
+						declaration: "undecided",
+						results: [],
 					}
 					return [ret];
 				});
@@ -563,10 +587,14 @@ type Writeable<T> = { -readonly [P in keyof T]: T[P] }
 
 type SearchResult = {
 	searcher : SearcherData;
-	result?: "nothing" | "treasure" | "hazard" | "secret" | "other";
-	roll?: number;
+	results: SearchAttempt[];
 	declaration: SearchAction ;
 };
+
+type SearchAttempt = {
+	result: "nothing" | "treasure" | "hazard" | "secret" | "other" | "disconnected";
+	roll?: number
+}
 
 	type SearcherData = {
 		actor: UniversalActorAccessor<PersonaActor>;

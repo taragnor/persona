@@ -301,30 +301,33 @@ export class Metaverse {
 		};
 		const results = await SearchMenu.start(searchOptions, region);
 		let treasureRolls : Roll[] = [];
-		for (const result of results) {
-			switch (result.result) {
-				case "nothing":
-					break;
-				case "treasure":
-					if (!result.roll) {
-						PersonaError.softFail("Treasure Found but no roll given");
+		for (const resultSet of results) {
+			for (const result of resultSet.results) {
+				switch (result.result) {
+					case "nothing":
 						break;
-					}
-					const treasureRoll = await region.treasureFound(result.roll)
-					if (treasureRoll) {
-						treasureRolls.push(treasureRoll);
-					}
-					break;
-				case "hazard":
-					await region.hazardFound();
-					break;
-				case "secret":
-					await region.secretFound();
-					break;
-				case "other":
-					break;
-				default:
-					result.result satisfies undefined;
+					case "treasure":
+						if (!result.roll) {
+							PersonaError.softFail("Treasure Found but no roll given");
+							break;
+						}
+						const treasureRoll = await region.treasureFound(result.roll)
+						if (treasureRoll) {
+							treasureRolls.push(treasureRoll);
+						}
+						break;
+					case "hazard":
+						await region.hazardFound();
+						break;
+					case "secret":
+						await region.secretFound();
+						break;
+					case "other":
+					case "disconnected":
+						break;
+					default:
+						result.result satisfies undefined;
+				}
 			}
 		}
 		if (treasureRolls.length) {
