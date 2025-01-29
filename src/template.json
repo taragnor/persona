@@ -1,6 +1,6 @@
 {
 	"Actor": {
-		"types": ["shadow", "pc", "npc", "tarot"],
+		"types": ["shadow", "pc", "npc", "tarot", "npcAlly"],
 		"htmlFields": ["description"],
 		"pc": {},
 		"shadow": {},

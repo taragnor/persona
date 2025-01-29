@@ -127,11 +127,13 @@ export function skillSlots() {
 }
 
 export function tarotFields() {
-	return new txt<TarotCard>( {
-		choices: Object.keys(TAROT_DECK) as (TarotCard)[],
-		blank: true,
-		initial:""
-	});
+	return {
+		tarot: new txt<TarotCard>( {
+			choices: Object.keys(TAROT_DECK) as (TarotCard)[],
+			blank: true,
+			initial:""
+		}),
+	}
 }
 
 export const classData = function () {
@@ -154,7 +156,7 @@ export const classData = function () {
 	});
 }
 
-export const combatCommonStats = function () {
+export function combatCommonStats() {
 	return {
 		classData: classData(),
 		hp: new num( {integer:true, initial: 1}),
@@ -167,16 +169,27 @@ export const combatCommonStats = function () {
 			fort: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 		}),
 		initiative: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
-		focuses: new arr( new id(), {initial: []}),
-		powers: new arr( new id()),
-		powers_sideboard: new arr( new id()),
 		resists: elementalResists(),
 		hpTracker: new obj<HPTracking>(),
 		fadingState: new num( {integer:true, initial:0}),
 		statusResists: statusResists(),
-		navigatorSkill: new txt(),
+		focuses: new arr( new id(), {initial: []}),
 	};
 };
+
+export function PCAndNPCAllyCombatStats() {
+	return {
+		...combatCommonStats(),
+		navigatorSkill: new id(),
+		powers: new arr( new id()),
+		teamworkMove: new id(),
+		mp: new sch({
+			value: new num({initial: 0, integer: true, min: 0, max: 1000}),
+			max: new num({initial: 1, integer: true, min:1, max:1000}),
+		}),
+
+	};
+}
 
 
 export function socialLinks() {
@@ -199,7 +212,6 @@ export function studentSkills() {
 
 export function sharedAbilities() {
 	return {
-		talents: new arr( new obj<TalentData>(), {initial: []}),
 	}
 
 };
@@ -219,10 +231,11 @@ export function shadowOnlyCombatAbilities() {
 
 export function PCSpecificStuff() {
 	return {
-			social: socialLinks(),
-			activities: activityLinks(),
-			skills: studentSkills(),
-			// slots: skillSlots(),
+		social: socialLinks(),
+		activities: activityLinks(),
+		skills: studentSkills(),
+		talents: new arr( new obj<TalentData>(), {initial: []}),
+		// slots: skillSlots(),
 	}
 }
 

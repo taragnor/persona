@@ -1,0 +1,72 @@
+<div class="relationship-conditions" data-top-path="system.conditions">
+	<label> Requirements to initiate Link</label>
+	{{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.conditions." owner=actor}}
+</div>
+<div class="relationship-conditions" data-top-path="system.availabilityConditions">
+	<label> Requirements to be available</label>
+	{{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.availabilityConditions." owner=actor}}
+</div>
+{{> "systems/persona/parts/weekly-availability.hbs" item=actor CONST=CONST}}
+
+<div class="key-skills flexrow">
+	<div class="primary">
+		<label>
+			Primary Skill
+		</label>
+		<select name="system.keyskill.primary">
+			{{selectOptions CONST.STUDENT_SKILLS localize=true selected=actor.system.keyskill.primary}}
+		</select>
+	</div>
+	<div class="secondary">
+		<label>
+			Secondary Skill
+		</label>
+		<select name="system.keyskill.secondary">
+			{{selectOptions CONST.STUDENT_SKILLS localize=true selected=actor.system.keyskill.secondary}}
+		</select>
+	</div>
+</div>
+{{#if (isGM)}}
+<div class="base-relationship">
+	<label>
+		Base relationship
+	</label>
+	<select name="system.baseRelationship">
+		{{selectOptions RELATIONSHIP_TYPES localize=false selected=actor.system.baseRelationship}}
+	</select>
+</div>
+<div class="specialEvents">
+	<label>
+		Special Events
+	</label>
+	<input class="short", type="text" name="system.specialEvents" value="{{actor.system.specialEvents}}" title="Special Events (enter in numbers separted by commas)">
+</div>
+{{/if}}
+</header>
+
+<div class="perk">
+	<span>
+		<b>Tarot Perk:</b>
+	</span>
+	<span>
+		{{actor.tarot.system.perk}}
+	</span>
+	<button class="award-perk">
+		Award Perk
+	</button>
+</div>
+<label> Date Perk</label>
+{{#if (isGM)}}
+<textarea name="system.datePerk">
+	{{actor.system.datePerk}}
+</textarea>
+{{else}}
+<div>
+	{{actor.system.datePerk}}
+</div>
+{{/if}}
+
+{{#if (isGM)}}
+{{> "systems/persona/parts/token-spends-section.hbs" item=actor}}
+{{/if}}
+

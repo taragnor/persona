@@ -1,3 +1,4 @@
+import { PersonaError } from "../../persona-error.js";
 import { PC } from "../persona-actor.js";
 import { ConditionalEffect } from "../../datamodel/power-dm.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
@@ -59,6 +60,9 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 		ConditionalEffectManager.applyHandlers(html, this.actor);
 		html.find(".creatureTags .delTag").on("click", this.deleteCreatureTag.bind(this));
 		html.find('.addCreatureTag').on("click", this.onAddCreatureTag.bind(this));
+		html.find(".delFocus").on("click", this.deleteFocus.bind(this));
+		html.find(".addFocus").on("click", this.onAddFocus.bind(this));
+		html.find(".focusName").on("click", this.openFocus.bind(this));
 	}
 
 	async onAddCreatureTag( _ev: JQuery.ClickEvent) {
@@ -69,6 +73,40 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 		const index = HTMLTools.getClosestData(ev, "tagIndex");
 		await this.actor.deleteCreatureTag(Number(index));
 
+	}
+
+	async deleteFocus(event: Event) {
+		const focusId = HTMLTools.getClosestData(event, "focusId");
+		if (focusId == undefined) {
+			const err = `Can't find talent at index $focusId}`;
+			throw new PersonaError(err);
+		}
+		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this Focus?")) {
+			this.actor.deleteFocus(focusId);
+		}
+	}
+
+	async onAddFocus(_ev: Event) {
+		await this.actor.createEmbeddedDocuments( "Item", [{
+			name: "New Social Link Benefit",
+			type: "focus",
+		}]);
+	}
+
+	async openFocus(event: Event) {
+		const itemType = "Focus";
+		const focusId = HTMLTools.getClosestData(event, "focusId");
+		if (focusId == undefined) {
+			throw new PersonaError(`Can't find ${itemType}`);
+		}
+		const focus = this.actor.focii
+			.find(x=> x.id == focusId)
+			?? PersonaDB.tarotCards().find(x=> x.items.find(x=> x.id == focusId))
+				?.items.find(x=> x.id == focusId) ;
+		if (!focus) {
+			throw new PersonaError(`Can't find ${itemType} id ${focusId}`);
+		}
+		await focus.sheet.render(true);
 	}
 
 	defaultConditionalEffect(_ev: JQuery.ClickEvent): ConditionalEffect {

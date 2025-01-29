@@ -4,6 +4,7 @@
 	"TYPES.Actor.pc": "Player Character",
 	"TYPES.Actor.npc": "NPC",
 	"TYPES.Actor.tarot": "Tarot Card",
+	"TYPES.Actor.npcAlly": "NPC Ally",
 
 	"TYPES.Item.weapon": "Weapon",
 	"TYPES.Item.item": "Item (Equippable)",
@@ -50,6 +51,8 @@
 
 	"persona.sheet.tabs.social-benefits.tabname" : "Social Benefits",
 	"persona.sheet.tabs.social-benefits.header" : "Social Benefits",
+	"persona.sheet.tabs.social-section.header" : "Relationship Info",
+	"persona.sheet.tabs.social-section.tabname" : "Relationship Info",
 
 	"persona.sheet.tabs.incremental.tabname" : "Incremental Advances",
 	"persona.sheet.tabs.incremental.header" : "Incremental Advances",

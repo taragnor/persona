@@ -1,3 +1,4 @@
+import { ValidAttackers } from "./combat/persona-combat.js";
 import { PToken } from "./combat/persona-combat.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { PersonaError } from "./persona-error.js";
@@ -137,7 +138,7 @@ type UnresolvedMods = {
 type ResolvedMods = {
 	mods: ResolvedModifierList,
 	modtotal : number,
-	actor: UniversalActorAccessor<PC | Shadow> | undefined,
+	actor: UniversalActorAccessor<ValidAttackers> | undefined,
 };
 
 Hooks.on("renderChatMessage", async (_msg, html) => {

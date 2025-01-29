@@ -1,3 +1,4 @@
+import { ValidAttackers } from "../combat/persona-combat.js";
 import { EQUIPMENT_TAGS } from "../../config/equipment-tags.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { CreatureTag } from "../../config/creature-tags.js";
@@ -42,7 +43,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	cache: {
 		effectsNull: ConditionalEffect[] | undefined;
-		effectsMap: WeakMap<PC |Shadow, ConditionalEffect[]>;
+		effectsMap: WeakMap<ValidAttackers, ConditionalEffect[]>;
 		containsModifier: boolean | undefined;
 		containsTagAdd: boolean | undefined;
 		statsModified: Map<ModifierTarget, boolean>,
@@ -392,7 +393,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return new ModifierList(modifiers);
 	}
 
-	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow | null) : ModifierListItem[] {
+	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: ValidAttackers | null) : ModifierListItem[] {
 		PersonaItem.cacheStats.modifierRead++;
 		if (this.cache.containsModifier === false) {
 			PersonaItem.cacheStats.modifierSkip++;
@@ -448,7 +449,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return cons.map( c => c.creatureTag);
 	}
 
-	getDamage(this:ModifierContainer , user: PC | Shadow, type: "high" | "low", situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: user.accessor}, typeOverride : SimpleDamageCons["damageType"] = "none") : number {
+	getDamage(this:ModifierContainer , user: ValidAttackers, type: "high" | "low", situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: user.accessor}, typeOverride : SimpleDamageCons["damageType"] = "none") : number {
 		//TODO: handle type override check to see if power damage is by-power or has other type
 		if (!("dmg_type" in this.system)) return 0;
 		if (!typeOverride || typeOverride == "by-power") {
@@ -491,7 +492,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	/** used for damage calculation estaimate for char sheet*/
-	getDamageMultSimple(this: ModifierContainer, user: PC |Shadow, situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true, attacker: user.accessor} ) {
+	getDamageMultSimple(this: ModifierContainer, user: ValidAttackers, situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true, attacker: user.accessor} ) {
 		const mainMods = user.getEffects();
 
 		const multCons = this.getEffects(user)
@@ -504,7 +505,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			,1);
 	}
 
-	critBoost(this: Usable, user: PC | Shadow) : ModifierList {
+	critBoost(this: Usable, user: ValidAttackers) : ModifierList {
 		const x = this.getModifier("criticalBoost", user);
 		let list = new ModifierList(x);
 		list = list.concat(user.critBoost());
@@ -549,7 +550,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.hasTag("navigator");
 	}
 
-	isValidTargetFor(this: Usable, user: PC|Shadow, target: PC | Shadow, situation?: Situation): boolean {
+	isValidTargetFor(this: Usable, user: ValidAttackers, target: ValidAttackers, situation?: Situation): boolean {
 		if (!situation) {
 			situation = {
 				user : user.accessor,
@@ -641,7 +642,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return bonus;
 	}
 
-	mpCost(this: Usable, user: PC | Shadow) {
+	mpCost(this: Usable, user: ValidAttackers) {
 		if (this.system.type == "consumable") return 0;
 		const sit : Situation = {
 			user: user.accessor,
@@ -654,14 +655,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return Math.round(this.system.mpcost * mult);
 	}
 
-	getSourcedEffects(this: ModifierContainer, sourceActor: PC | Shadow): {source: ModifierContainer, effects: ConditionalEffect[]} {
+	getSourcedEffects(this: ModifierContainer, sourceActor: ValidAttackers): {source: ModifierContainer, effects: ConditionalEffect[]} {
 		return {
 			source: this,
 			effects: this.getEffects(sourceActor)
 		};
 	}
 
-	getEffects(this: ModifierContainer, sourceActor : PC | Shadow | null): ConditionalEffect[] {
+	getEffects(this: ModifierContainer, sourceActor : ValidAttackers | null): ConditionalEffect[] {
 		PersonaItem.cacheStats.total++;
 		if (sourceActor == null) {
 			if (!this.cache.effectsNull) {
@@ -887,7 +888,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return base + mod;
 	}
 
-	targetMeetsConditions(this: Usable, user: PC | Shadow, target: PC | Shadow, situation?: Situation) : boolean {
+	targetMeetsConditions(this: Usable, user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
 		if (!this.system.validTargetConditions) return true;
 		const conditions  = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user);
 		if (!situation) {

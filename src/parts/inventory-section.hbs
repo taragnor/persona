@@ -32,6 +32,8 @@
 
 </div>
 <hr>
+
+{{#if (eq actor.type "pc")}}
 <section class="money">
 	<h2>
 		Money
@@ -52,8 +54,9 @@
 		</a>
 		{{/if}}
 	</div>
-
 </section>
+{{/if}}
+
 <hr>
 <section class="items">
 	<h2>Items

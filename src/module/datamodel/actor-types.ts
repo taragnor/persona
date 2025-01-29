@@ -1,3 +1,4 @@
+import { PCAndNPCAllyCombatStats } from "../../config/actor-parts.js";
 import { PCSpecificStuff } from "../../config/actor-parts.js";
 import { SocialTargetBlockData } from "../../config/actor-parts.js";
 import { shadowOnlyCombatAbilities } from "../../config/actor-parts.js";
@@ -34,15 +35,11 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 			...SocialTargetBlockData(),
 			equipped: equipslots(),
 			money: new num({integer: true, min: 0, initial:1}),
-			creatureType: new txt({ choices: ["pc"] , initial: "pc"}),
-			tarot: tarotFields(),
+			creatureType: new txt({ choices: SHADOW_CREATURE_TYPE_LIST, initial: "npc-ally"}),
+			...tarotFields(),
 			combat: new sch( {
-				...combatCommonStats(),
-				teamworkMove: new id(),
-				mp: new sch({
-					value: new num({initial: 0, integer: true, min: 0, max: 1000}),
-					max: new num({initial: 1, integer: true, min:1, max:1000}),
-				}),
+				...PCAndNPCAllyCombatStats(),
+				powers_sideboard: new arr( new id()),
 			}),
 			bio: personalBio(),
 			...PCSpecificStuff(),
@@ -84,7 +81,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 			scanLevel: new num({initial: 0, integer: true}),
 			encounter: encounterDataSchema(),
 			creatureType: new txt({ choices: SHADOW_CREATURE_TYPE_LIST, initial: "shadow"}),
-			tarot: tarotFields(),
+			...tarotFields(),
 			...sharedAbilities(),
 			combat: new sch({
 				...combatCommonStats(),
@@ -124,16 +121,10 @@ class NPCAllySchema extends foundry.abstract.TypeDataModel {
 			...BaseStuff.defineSchema(),
 			...SocialTargetBlockData(),
 			equipped: equipslots(),
-			money: new num({integer: true, min: 0, initial:1}),
-			creatureType: new txt({ choices: ["pc"] , initial: "pc"}),
-			tarot: tarotFields(),
+			creatureType: new txt({ choices: ["npc-ally"] , initial: "npc-ally"}),
+			...tarotFields(),
 			combat: new sch( {
-				...combatCommonStats(),
-				teamworkMove: new id(),
-				mp: new sch({
-					value: new num({initial: 0, integer: true, min: 0, max: 1000}),
-					max: new num({initial: 1, integer: true, min:1, max:1000}),
-				}),
+				...PCAndNPCAllyCombatStats(),
 			}),
 			...PCSpecificStuff(),
 			bio: personalBio(),
@@ -150,7 +141,7 @@ export class NPCSchema extends foundry.abstract.TypeDataModel {
 			...BaseStuff.defineSchema(),
 			...SocialTargetBlockData(),
 			creatureType: new txt({ choices: ["npc"] , initial: "npc"}),
-			tarot: tarotFields(),
+			...tarotFields(),
 			bio: personalBio(),
 			//include
 		} as const;
@@ -181,7 +172,7 @@ export class TarotSchema extends foundry.abstract.TypeDataModel {
 	 shadow: ShadowSchema,
 	 npc: NPCSchema,
 	 tarot: TarotSchema,
-	 // npcAlly: NPCAllySchema,
+	 npcAlly: NPCAllySchema,
  } as const;
 
 //testing the types, purely for debug purposes

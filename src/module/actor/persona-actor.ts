@@ -1,3 +1,5 @@
+import { ValidSocialTarget } from "../social/persona-social.js";
+import { ValidAttackers } from "../combat/persona-combat.js";
 import { FlagData } from "../../config/actor-parts.js";
 import { TarotCard } from "../../config/tarot.js";
 import { removeDuplicates } from "../utility/array-tools.js";
@@ -226,7 +228,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				// const actor = this as (Shadow | PC);
 				return initBonus + (level * 3) + initScore;
 			}
-			case "pc":{
+			case "pc":  case "npcAlly": {
 				const inc = this.system.combat.classData.incremental.initiative ? 1 : 0;
 				const level  = this.system.combat.classData.level + inc;
 				const initRating = this.system.combat.initiative;
@@ -263,6 +265,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get class() : Subtype<PersonaItem, "characterClass"> {
 		let classNameDefault;
 		switch (this.system.type) {
+			case "npcAlly":
+				classNameDefault = "Persona User";
+				break;
 			case "pc":
 				classNameDefault = "Persona User";
 				break;
@@ -270,8 +275,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				classNameDefault = "Persona User";
 				// classNameDefault = "Shadow";
 				break;
-			default:
+			case "npc":
 				throw new Error("NPCs have no classes");
+			case "tarot":
+				throw new Error("Tarot cards have no classes");
+			default:
+				this.system satisfies never;
+				throw new Error("Undefined type");
 		}
 		const id = this.system.combat.classData.classId;
 		let cl = PersonaDB.getClassById(id);
@@ -302,6 +312,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "tarot": return 0;
 			case "pc":
 			case "shadow":
+			case "npcAlly":
 				return this.system.combat.hp;
 			default:
 				this.system satisfies never;
@@ -389,7 +400,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "tarot":
 				focuses = this.focii;
 				break;
-			case "npc":
+			case "npc": case "npcAlly":
 				focuses = this.focii
 					.concat(this.tarot?.focii ?? []);
 				break;
@@ -407,7 +418,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	getSocialStatToRaiseLink(this: NPC | PC, classification: "primary" | "secondary") : SocialStat {
+	getSocialStatToRaiseLink(this: ValidSocialTarget, classification: "primary" | "secondary") : SocialStat {
 		switch (classification) {
 			case "primary":
 				return this.system.keyskill.primary;
@@ -473,6 +484,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "shadow":
 			case "tarot":
 				return false;
+			case "npcAlly":
 			case "npc": {
 				const id = sl instanceof PersonaActor ? sl.id: sl;
 				const target =PersonaDB.allActors().find( x=> x.id == id);
@@ -572,6 +584,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "shadow":
 			case "npc":
 			case "tarot":
+			case "npcAlly":
 				return [];
 			case "pc":
 				break;
@@ -621,6 +634,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get mainPowers() : Power[] {
 		switch (this.system.type) {
 			case "npc": case "tarot": return [];
+			case "npcAlly":
 			case "pc":
 				const powerIds = this.system.combat.powers;
 				const pcPowers : Power[] = powerIds.flatMap( id=> {
@@ -642,6 +656,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "shadow":
 			case "npc":
 			case "tarot":
+			case "npcAlly":
 				return [];
 			case "pc":
 				break;
@@ -662,6 +677,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return [];
 			case "shadow":
 			case "pc":
+			case "npcAlly":
 				const bonusPowers : Power[] =
 					(this as PC | Shadow).mainModifiers({omitPowers:true})
 					.filter(x=> x.grantsPowers())
@@ -680,6 +696,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "shadow":
 				return PersonaItem.getBasicShadowPowers();
 			case "pc":
+			case "npcAlly":
 				const arr =  PersonaItem.getBasicPCPowers();
 				const extraSkills = [
 					this.teamworkMove,
@@ -698,6 +715,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "npc":
 			case "tarot":
 				return 0;
+			case "npcAlly":
+				return 8;
 			case "pc":
 			case "shadow":
 				const extraMaxPowers = this.getBonuses("extraMaxPowers");
@@ -714,6 +733,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "tarot":
 				return 0;
 			case "pc":
+			case "npcAlly":
 			case "shadow":
 				return 8;
 			default:
@@ -722,7 +742,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	async setNavigatorSkill(this: PC, pwr: Power) {
+	async setNavigatorSkill(this: PC | NPCAlly, pwr: Power) {
 		this.system.combat.navigatorSkill = pwr.id;
 		await this.update( {"system.combat.navigatorSkill" : pwr.id});
 	}
@@ -733,16 +753,21 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "npc":
 			case "tarot":
 				return undefined;
+			case "npcAlly":
 			case "pc":
 				const id = this.system.combat.navigatorSkill;
 				const power = PersonaDB.allPowers().find(x=> x.id == id);
 				return power;
+			default:
+				this.system satisfies never;
+				return undefined;
 		}
 	}
 
 	get maxSideboardPowers() : number {
 		switch (this.system.type) {
 			case "npc":
+			case "npcAlly":
 			case "tarot":
 				return 0;
 			case "pc":
@@ -778,7 +803,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get talents() : Talent[] {
 		if (this.system.type == "shadow") {
 			return this.items.filter( x=> x.system.type == "talent") as Talent[];
-			// return this.items.filter( x=> x.system.type == "talent") as Talent[];
 		}
 		if (this.system.type != "pc") return [];
 		const extTalents = this.system.talents.flatMap( ({talentId}) => {
@@ -797,7 +821,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.items.filter( x=> x.system.type == "focus") as Focus[];
 	}
 
-	async modifyHP( this: Shadow | PC, delta: number) {
+	async modifyHP( this: ValidAttackers, delta: number) {
 		let hp = this.system.combat.hp;
 		hp += delta;
 		if (hp < 0 ) {
@@ -817,7 +841,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update( {"system.combat.mp.value": mp});
 	}
 
-	async refreshHpStatus(this: Shadow | PC, newval?: number) {
+	async refreshHpStatus(this: ValidAttackers, newval?: number) {
 		const hp = newval ?? this.system.combat.hp;
 		if (hp > 0) {
 			await this.setFadingState(0);
@@ -908,14 +932,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get openerActions() : Usable[] {
 		if (this.system.type == "npc" || this.system.type == "tarot")
 			return [];
-		const arr = (this as PC | Shadow).mainModifiers({omitPowers:true})
+		const arr = (this as ValidAttackers).mainModifiers({omitPowers:true})
 			.filter(x=> x.grantsPowers())
 			.flatMap(x=> x.getOpenerPowers(this as PC ))
 			.concat( this.system.type == "shadow" ? this.mainPowers.filter(x=> x.isOpener()) : []);
 		return removeDuplicates(arr);
 	}
 
-	async setTeamworkMove(this: PC, power: Power) {
+	async setTeamworkMove(this: ValidAttackers, power: Power) {
 		const id = power.id;
 		const oldTW = this.teamworkMove;
 		await this.update( {"system.combat.teamworkMove": id});
@@ -928,8 +952,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get teamworkMove() : Power | undefined {
-		if (this.system.type != "pc")
-			return undefined;
+		switch (this.system.type) {
+			case "pc":
+			case "npcAlly":
+				break;
+			case "shadow":
+			case "tarot":
+			case "npc":
+				return undefined;
+			default:
+				this.system satisfies never;
+				return undefined;
+		}
 		const id = this.system.combat.teamworkMove;
 		if (!id)
 			return undefined;
@@ -1004,16 +1038,22 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return inv.filter( item => item.system.type == "item" && item.system.slot == "none") as InvItem[];
 	}
 
-	wpnDamage(this: PC | Shadow) : {low: number, high:number} {
+	wpnDamage(this: ValidAttackers) : {low: number, high:number} {
 		let basedmg: {low: number, high:number};
-		if (this.system.type == "pc") {
-			const wpn = this.weapon;
-			if (!wpn) {
-				return  {low: 1, high:2};
-			}
-			basedmg =  wpn.system.damage;
-		} else {
-			basedmg = this.system.combat.wpndmg;
+		switch (this.system.type) {
+			case "pc": case "npcAlly":
+				const wpn = this.weapon;
+				if (!wpn) {
+					return  {low: 1, high:2};
+				}
+				basedmg =  wpn.system.damage;
+				break;
+			case "shadow":
+				basedmg = this.system.combat.wpndmg;
+				break;
+			default:
+				this.system satisfies never;
+				return {low: 0, high: 0};
 		}
 		return basedmg;
 	}
@@ -1083,7 +1123,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return rating;
 	}
 
-	basePowerCritResist(this: PC | Shadow, power: Usable, disallowIncremental = false): number {
+	basePowerCritResist(this: ValidAttackers, power: Usable, disallowIncremental = false): number {
 		switch (power.system.subtype) {
 			case "consumable":
 			case "social-link":
@@ -1115,6 +1155,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return [];
 			case "pc":
 			case "shadow":
+			case "npcAlly":
 				break;
 			default:
 				this.system satisfies never;
@@ -1138,11 +1179,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			.filter(x=> x.system.subtype == "defensive");
 	}
 
-	getSourcedDefensivePowers(this: PC | Shadow) {
+	getSourcedDefensivePowers(this: ValidAttackers) {
 		return this.defensivePowers().flatMap( x=> x.getSourcedEffects(this));
 	}
 
-	wpnAtkBonus(this: PC | Shadow) : ModifierList {
+		wpnAtkBonus(this: ValidAttackers) : ModifierList {
 		const mods = this.getBonuses(["allAtk", "wpnAtk"]);
 		const lvl = this.system.combat.classData.level;
 		const inc = this.system.combat.classData.incremental.attack ? 1 : 0;
@@ -1152,7 +1193,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return mods;
 	}
 
-	magAtkBonus(this:PC | Shadow) : ModifierList {
+	magAtkBonus(this: ValidAttackers) : ModifierList {
 		const mods = this.getBonuses(["allAtk", "magAtk"]);
 		const lvl = this.system.combat.classData.level ?? 0;
 		const magAtk = this.system.combat.magatk ?? 0;
@@ -1162,14 +1203,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return mods;
 	}
 
-	itemAtkBonus(this: PC | Shadow, item :Consumable) : ModifierList {
+	itemAtkBonus(this: ValidAttackers, item :Consumable) : ModifierList {
 		const mm = this.getBonuses(["itemAtk", "allAtk"]);
 		// mm.concat(this.getBonuses("allAtk"));
 		mm.add("Item Base Bonus", item.system.atk_bonus);
 		return mm;
 	}
 
-	getDefense(this: PC | Shadow,  type : keyof PC["system"]["combat"]["defenses"]) : ModifierList {
+	getDefense(this: ValidAttackers,  type : keyof PC["system"]["combat"]["defenses"]) : ModifierList {
 		const mods = new ModifierList();
 		const lvl = this.system.combat.classData.level;
 		const baseDef = this.#translateDefenseString(type, this.system.combat.defenses[type]);
@@ -1182,7 +1223,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return mods.concat(otherBonuses).concat(defenseMods);
 	}
 
-	#translateDefenseString(this: PC | Shadow, defType: keyof PC["system"]["combat"]["defenses"], val: PC["system"]["combat"]["defenses"]["fort"],): number {
+	#translateDefenseString(this: ValidAttackers, defType: keyof PC["system"]["combat"]["defenses"], val: PC["system"]["combat"]["defenses"]["fort"],): number {
 		const weaknesses= this.#getWeaknessesInCategory(defType);
 		switch (val) {
 			case "pathetic": return Math.min(-6 + 2 * weaknesses,-2) ;
@@ -1196,13 +1237,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	#getWeaknessesInCategory(this: PC | Shadow, defType: keyof PC["system"]["combat"]["defenses"]): number {
+	#getWeaknessesInCategory(this: ValidAttackers, defType: keyof PC["system"]["combat"]["defenses"]): number {
 		const damageTypes = ELEMENTAL_DEFENSE_LINK[defType];
 		const weaknesses= damageTypes.filter( dt => this.system.combat.resists[dt] == "weakness")
 		return weaknesses.length;
 	}
 
-	elementalResist(this: PC | Shadow, type: typeof DAMAGETYPESLIST[number]) : ResistStrength  {
+	elementalResist(this: ValidAttackers, type: typeof DAMAGETYPESLIST[number]) : ResistStrength  {
 		switch (type) {
 			case "untyped":  case "none":
 			case "all-out":
@@ -1257,6 +1298,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return "normal";
 			case "pc":
 			case "shadow":
+			case "npcAlly":
 				break;
 			default:
 				this.system satisfies never;
@@ -1310,14 +1352,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return arr;
 	}
 
-	wpnMult( this: PC | Shadow) : number {
+	wpnMult( this: ValidAttackers) : number {
 		const lvl = this.system.combat.classData.level;
 		const inc = this.system.combat.classData.incremental.wpnDamage * 0.5 ;
 		const mult = ((this.class.getClassProperty(lvl, "wpn_mult") ?? 0)  + inc);
 		return mult;
 	}
 
-	magDmg (this: PC | Shadow) : {low: number, high:number} {
+	magDmg (this: ValidAttackers) : {low: number, high:number} {
 		const lvl = this.system.combat.classData.level;
 		const incLow = this.system.combat.classData.incremental.magicLow ? 1 : 0;
 		const incHigh = this.system.combat.classData.incremental.magicHigh ? 1 : 0;
@@ -1329,12 +1371,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	critBoost(this: PC | Shadow) : ModifierList {
+	critBoost(this: ValidAttackers) : ModifierList {
 		const mods = this.mainModifiers().flatMap( item => item.getModifier("criticalBoost", this));
 		return new ModifierList(mods);
 	}
 
-	async addTalent(this: PC | Shadow, talent: Talent) {
+	async addTalent(this: ValidAttackers, talent: Talent) {
 		if (this.system.type == "shadow") {
 			ui.notifications.warn("Shadows can't use talents");
 			return;
@@ -1349,18 +1391,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await Logger.sendToChat(`${this.name} added ${talent.name} Talent` , this);
 	}
 
-	critResist(this: PC | Shadow) : ModifierList {
+	critResist(this: ValidAttackers) : ModifierList {
 		const ret = new ModifierList();
 		const mods = this.mainModifiers().flatMap( item => item.getModifier("critResist", this));
 		return ret.concat(new ModifierList(mods));
 	}
 
-	async deleteTalent(this: PC | Shadow, id: string) {
+	async deleteTalent(this: ValidAttackers, id: string) {
 		const item = this.items.find(x => x.id == id);
 		if (item) {
 			await item.delete();
 			return;
 		}
+		if (!("talents" in this.system)) {return;}
 		let talents = this.system.talents;
 		if (!talents.find(x => x.talentId == id)) return;
 		const talent = PersonaDB.getItemById(id) as Talent;
@@ -1369,13 +1412,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await Logger.sendToChat(`${this.name} deleted talent ${talent.name}` , this);
 	}
 
-	async addPower(this: PC, power: Power) {
+	async addPower(this: PC | NPCAlly, power: Power) {
 		const powers = this.system.combat.powers;
 		if (powers.includes(power.id)) return;
 		if (powers.length < this.maxMainPowers) {
 			powers.push(power.id);
 			await this.update( {"system.combat.powers": powers});
 		} else {
+			if (this.system.type == "npcAlly") {
+				ui.notifications.notify("Can't learn another power");
+				return;
+			}
 			const sideboard =  this.system.combat.powers_sideboard;
 			if (sideboard.includes(power.id)) return;
 			sideboard.push(power.id);
@@ -1389,11 +1436,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await Logger.sendToChat(`${this.name} learned ${power.name} ${maxMsg}` , this);
 	}
 
-	async deletePower(this: PC | Shadow, id: string ) {
+	async deletePower(this: ValidAttackers, id: string ) {
 		const item = this.items.find(x => x.id == id);
 		if (item) {
 			await item.delete();
 			return;
+		}
+		if (! ("talents" in this.system)) {
+			return false;
 		}
 		let powers = this.system.combat.powers;
 		const power = PersonaDB.getItemById(id) as Power;
@@ -1402,6 +1452,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			await this.update( {"system.combat.powers": powers});
 			await Logger.sendToChat(`${this.name} deleted power ${power.name}` , this);
 		}
+		if (this.system.type == "npcAlly") {return;}
 		let sideboard = this.system.combat.powers_sideboard;
 		if (sideboard.includes(id)) {
 			sideboard = sideboard.filter( x=> x != id);
@@ -1451,7 +1502,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		switch (actorType) {
 			case "npc": return;
 			case "tarot": return;
-			case "pc": case "shadow":
+			case "pc": case "shadow": case "npcAlly":
 				let foci = this.system.combat.focuses;
 				if (!foci.includes(focusId)) return;
 				foci = foci.filter( x=> x != focusId);
@@ -1461,11 +1512,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	async  setClass(this: PC | Shadow, cClass: CClass) {
+	async  setClass(this: ValidAttackers, cClass: CClass) {
 		await this.update( {"this.system.combat.classData.classId": cClass.id});
 	}
 
-	canUsePower (this: PC | Shadow, usable: Usable, outputReason: boolean = true) : boolean {
+	canUsePower (this: ValidAttackers, usable: Usable, outputReason: boolean = true) : boolean {
 		if (this.hasStatus("rage") && usable != PersonaDB.getBasicPower("Basic Attack")) {
 			if (outputReason) {
 				ui.notifications.warn("Can't only use basic attacks when raging");
@@ -1476,14 +1527,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	canPayActivationCost(this: PC | Shadow, usable: Usable, outputReason: boolean = true) : boolean {
-		if (this.system.type == "pc") {
-			return (this as PC).canPayActivationCost_pc(usable, outputReason);
+	canPayActivationCost(this: ValidAttackers, usable: Usable, outputReason: boolean = true) : boolean {
+		switch (this.system.type) {
+			case "npcAlly":
+			case "pc":
+				return (this as PC | NPCAlly).canPayActivationCost_pc(usable, outputReason);
+			case "shadow":
+				return (this as Shadow).canPayActivationCost_shadow(usable, outputReason);
+			default:
+				this.system satisfies never;
+				throw new PersonaError("Unknown Type");
 		}
-		else return (this as Shadow).canPayActivationCost_shadow(usable, outputReason);
 	}
 
-	canPayActivationCost_pc(this: PC, usable: Usable, _outputReason: boolean) : boolean {
+	canPayActivationCost_pc(this: PC | NPCAlly, usable: Usable, _outputReason: boolean) : boolean {
 		switch (usable.system.type) {
 			case "power": {
 				if (this.hasStatus("depleted") && !usable.system.tags.includes("basicatk")) {
@@ -1578,7 +1635,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		switch (this.system.type) {
 			case "pc":
 				return "PEER";
-			case "npc":
+			case "npc": case "npcAlly":
 				return "PEER";
 			case "shadow":
 			case "tarot":
@@ -1759,11 +1816,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		});
 	}
 
-	getSourcedEffects(this: PC | Shadow): {source: ModifierContainer, effects: ConditionalEffect[]} []{
+	getSourcedEffects(this: ValidAttackers): {source: ModifierContainer, effects: ConditionalEffect[]} []{
 		return this.mainModifiers().flatMap( x=> x.getSourcedEffects(this));
 	}
 
-	getEffects(this: Shadow  | PC) : ConditionalEffect[] {
+	getEffects(this: ValidAttackers) : ConditionalEffect[] {
 		return this.mainModifiers().flatMap( x=> x.getEffects(this));
 	}
 
@@ -1797,23 +1854,32 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.talents": this.system.talents});
 	}
 
-	getSaveBonus( this: Shadow | PC) : ModifierList {
+	getSaveBonus( this: ValidAttackers) : ModifierList {
 		const mods = this.mainModifiers().flatMap( item => item.getModifier("save", this));
 		// const x = this.getActiveTokens()[0]
 		return new ModifierList(mods);
 	}
 
-	getDisengageBonus( this: Shadow | PC) : ModifierList {
+	getDisengageBonus( this: ValidAttackers) : ModifierList {
 		const mods = this.mainModifiers().flatMap( item => item.getModifier("disengage", this));
 		return new ModifierList(mods);
 	}
 
 	/** returns current team (taking into account charm)*/
-	getAllegiance(this: PC | Shadow)  : "PCs" | "Shadows" | "Neutral" {
-		if (this.system.type == "pc") {
+	getAllegiance(this: ValidAttackers)  : Team {
+		let base: Team;
+		switch (this.system.type) {
+			case "pc":
 			if (!this.hasPlayerOwner) return "Neutral";
+				base = "PCs";
+				break;
+			case "shadow":
+				base = "Shadows";
+				break;
+			case "npcAlly":
+				base = "PCs";
+				break;
 		}
-		const base = this.system.type == "pc" ? "PCs" : "Shadows";
 		if (!this.statuses.has("charmed")) return base;
 		return base == "PCs" ? "Shadows" : "PCs";
 	}
@@ -1897,7 +1963,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	async levelUp(this: PC) : Promise<void> {
+	async levelUp(this: PC | NPCAlly) : Promise<void> {
 		const newlevel  = this.system.combat.classData.level+1 ;
 		// const incremental = this.system.combat.classData.incremental;
 		const incremental : PC["system"]["combat"]["classData"]["incremental"] = {
@@ -1924,6 +1990,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "npc": return -1;
 			case "tarot": return -1;
 			case "pc":
+			case "npcAlly":
 				break;
 			default:
 				this.system satisfies never;
@@ -1945,13 +2012,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		);
 	}
 
-	isFullyFaded(this: PC | Shadow, newhp?:number) : boolean {
-		if (this.system.type== "shadow")
-			return (newhp ?? this.hp) <= 0;
-		else return this.system.combat.fadingState >= 2;
+	isFullyFaded(this: ValidAttackers, newhp?:number) : boolean {
+		switch (this.system.type) {
+			case "shadow":
+				return (newhp ?? this.hp) <= 0;
+			case "pc":
+			case "npcAlly":
+				return this.system.combat.fadingState >= 2;
+			default:
+				this.system satisfies never;
+				return true;
+		}
 	}
 
-	isFading(this:PC | Shadow): boolean {
+	isFading(this: ValidAttackers): boolean {
 		if (this.system.type == "shadow") return false;
 		return this.hp <= 0 && this.system.combat.fadingState < 2;
 	}
@@ -1963,8 +2037,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return []
 			case "pc":
 			case "shadow":
-				return (this as PC | Shadow).mainModifiers().filter( x=>
-					x.getEffects(this as PC | Shadow).some( eff =>
+			case "npcAlly":
+				return (this as ValidAttackers).mainModifiers().filter( x=>
+					x.getEffects(this as ValidAttackers).some( eff =>
 						eff.conditions.some( cond => cond.type == "on-trigger")
 					)
 				);
@@ -1975,7 +2050,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	async setFadingState (this: PC | Shadow, state: number) {
+	async setFadingState (this: ValidAttackers, state: number) {
 		switch (state) {
 			case 0:
 				await this.removeStatus({
@@ -2074,6 +2149,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				this.cache.tarot =  PersonaDB.tarotCards().find(x=> x.name == shadow.system.tarot);
 				break;
 			case "npc":
+			case "npcAlly":
 				if (this.cache.tarot?.name == this.system.tarot)
 					break;
 				if (this.system.tarot == "")
@@ -2104,6 +2180,7 @@ get perk() : string {
 		case "shadow":
 				return "";
 		case "npc":
+		case "npcAlly":
 				return this.tarot?.perk ?? "";
 		case "tarot":
 				return this.system.perk;
@@ -2138,7 +2215,7 @@ async onStartCombatTurn(this: PC | Shadow): Promise<string[]> {
 	return ret;
 }
 
-async onEndCombatTurn(this : PC | Shadow) : Promise<string[]> {
+async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 	const burnStatus = this.effects.find( eff=> eff.statuses.has("burn"));
 	if (burnStatus) {
 		const damage = burnStatus.potency;
@@ -2230,7 +2307,7 @@ isAvailable(pc: PersonaActor) : boolean {
 		case "shadow":
 		case "tarot":
 			return false;
-		case "npc":
+		case "npc": case "npcAlly":
 			const npc = this as NPC;
 			const sit: Situation = {
 				user: (pc as PC).accessor,
@@ -2262,6 +2339,7 @@ isSociallyDisabled(): boolean {
 			const statuses : StatusEffectId[] = ["jailed", "exhausted", "crippled", "injured"];
 			return statuses.some( x=> this.hasStatus(x));
 
+		case "npcAlly":
 		case "npc":
 			return this.system.weeklyAvailability.disabled || this.tarot == undefined;
 		default:
@@ -2324,7 +2402,7 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 	});
 }
 
-allOutAttackDamage(this: PC | Shadow, situation?: Situation) : { high: number, low: number } {
+allOutAttackDamage(this: ValidAttackers, situation?: Situation) : { high: number, low: number } {
 	let high = 0, low = 0;
 	if (this.isDistracted() || !this.isCapableOfAction()) {
 		return {high, low};
@@ -2346,9 +2424,17 @@ allOutAttackDamage(this: PC | Shadow, situation?: Situation) : { high: number, l
 	return {high, low};
 }
 
-getPoisonDamage(this: PC | Shadow): number {
+getPoisonDamage(this: ValidAttackers): number {
 	const base = Math.round(this.mhp * 0.15);
-	if (this.system.type == "pc") return base;
+	switch (this.system.type) {
+		case "pc":
+		case "npcAlly":
+			return base;
+		case "shadow":
+			break;
+		default:
+			this.system satisfies never;
+	}
 	switch (this.system.role) {
 		case "miniboss":
 		case "miniboss-lord":
@@ -2429,7 +2515,11 @@ get tagList() : CreatureTag[] {
 			if (!list.includes("pc")) {
 				list.push("pc");
 			}
-
+			return list;
+		case "npcAlly":
+			if (!list.includes("npc-ally")) {
+				list.push("npc-ally");
+			}
 			return list;
 		case "npc": return list;
 		case "shadow": return list;
@@ -2489,19 +2579,14 @@ Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) =
 	switch (actor.system.type) {
 		case "npc": return;
 		case "tarot": return;
-		case "pc": {
+		case "pc":
+		case "npcAlly":
+		case "shadow":  {
 			const newHp = changes?.system?.combat?.hp;
 			if (newHp == undefined)
 			return;
-			await (actor as PC | Shadow).refreshHpStatus(newHp);
+			await (actor as ValidAttackers).refreshHpStatus(newHp);
 			return ;
-		}
-		case "shadow": {
-			const newHp = changes?.system?.combat?.hp;
-			if (newHp == undefined)
-			return;
-			await (actor as PC | Shadow).refreshHpStatus(newHp);
-			return;
 		}
 		default:
 			actor.system satisfies never;
@@ -2511,7 +2596,7 @@ Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) =
 
 Hooks.on("updateActor", async (actor: PersonaActor, _changes: {system: any}) => {
 	switch (actor.system.type) {
-		case "pc": case "shadow":
+		case "pc": case "shadow": case "npcAlly":
 			await	(actor as PC | Shadow).refreshHpTracker();
 			break;
 		case "npc": case "tarot":
@@ -2537,8 +2622,9 @@ export type SocialBenefit = {
 export type PC = Subtype<PersonaActor, "pc">;
 export type Shadow = Subtype<PersonaActor, "shadow">;
 export type NPC = Subtype<PersonaActor, "npc">;
+export type NPCAlly =Subtype<PersonaActor, "npcAlly">;
 export type Tarot = Subtype<PersonaActor, "tarot">;
-export type SocialLink = PC | NPC;
+export type SocialLink = PC | NPC | NPCAlly;
 
 
 export type ActivityLink = {
@@ -2560,3 +2646,5 @@ export type SocialLinkData = {
 	isDating: boolean,
 }
 
+
+type Team = "PCs" | "Shadows" | "Neutral" ;

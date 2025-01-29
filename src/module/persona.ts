@@ -12,6 +12,7 @@ declare global {
 
 }
 
+import { NPCAllySheet } from "./actor/sheets/npc-ally-sheet.js";
 import { PersonaScene } from "./persona-scene.js";
 import { PersonaRegion } from "./region/persona-region.js";
 import { Darkness } from "./exploration/darkness-clock.js";
@@ -67,6 +68,7 @@ function registerSheetApplications() {
 	Actors.registerSheet("persona", NPCSheet, {types: ["npc"], makeDefault: true});
 	Actors.registerSheet("persona", ShadowSheet, {types: ["shadow"], makeDefault: true});
 	Actors.registerSheet("persona", TarotSheet, {types: ["tarot"], makeDefault: true});
+	Actors.registerSheet("persona", NPCAllySheet, {types: ["npcAlly"], makeDefault: true});
 	Items.registerSheet("persona", PersonaClassSheet, {types: ["characterClass"], makeDefault: true});
 	Items.registerSheet("persona", PersonaPowerSheet, {types: ["power"], makeDefault: true});
 	Items.registerSheet("persona", PersonaWeaponSheet, {types: ["weapon"], makeDefault: true});

@@ -1,3 +1,4 @@
+import { NPCAlly } from "../actor/persona-actor.js";
 import { StatusEffectId } from "../../config/status-effects.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { TurnAlert } from "../utility/turnAlert.js";
@@ -1334,7 +1335,7 @@ export type CardData = {
 	eventList: SocialCard["system"]["events"];
 	eventsChosen: number[],
 	eventsRemaining: number,
-	situation: SocialCardSituation;
+	situation: Situation & SocialCardSituation;
 	replaceSet: Record<string, string>;
 	sound?: FOUNDRY.AUDIO.Sound
 	variables: Record<string, number>;
@@ -1342,3 +1343,6 @@ export type CardData = {
 
 
 export type SocialEncounterCard = SocialCard & {system: {cardType: "social"}};
+
+export type ValidSocialTarget = NPC | PC | NPCAlly
+

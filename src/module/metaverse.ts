@@ -1,3 +1,4 @@
+import { ValidAttackers } from "./combat/persona-combat.js";
 import { Situation } from "./preconditions.js";
 import { ModifierList } from "./combat/modifier-list.js";
 import { PersonaScene } from "./persona-scene.js";
@@ -55,7 +56,8 @@ export class Metaverse {
 						switch (actorType) {
 							case "pc":
 							case "shadow":
-								PersonaCombat.onTrigger("exit-metaverse", tok.actor as PC | Shadow);
+							case "npcAlly":
+								PersonaCombat.onTrigger("exit-metaverse", tok.actor as ValidAttackers);
 								break;
 							case "npc":
 							case "tarot":

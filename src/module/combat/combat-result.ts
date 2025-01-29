@@ -1,3 +1,4 @@
+import { ValidAttackers } from "./persona-combat.js";
 import { StatusDuration } from "../active-effect.js";
 import { getSocialLinkTarget } from "../preconditions.js";
 import { Consumable } from "../item/persona-item.js";
@@ -39,9 +40,9 @@ export class CombatResult  {
 		actor: UniversalActorAccessor<PersonaActor>,
 			effects: OtherEffect[]
 	}[] = [] ;
-	attacks: Map<AttackResult, ActorChange<PC | Shadow>[]> = new Map();
+	attacks: Map<AttackResult, ActorChange<ValidAttackers>[]> = new Map();
 	escalationMod: number = 0;
-	costs: ActorChange<PC | Shadow>[] = [];
+	costs: ActorChange<ValidAttackers>[] = [];
 	sounds: {sound: ValidSound, timing: "pre" | "post"}[] = [];
 	globalOtherEffects: OtherEffect[] = [];
 
@@ -94,8 +95,8 @@ export class CombatResult  {
 		this.sounds.push({sound, timing});
 	}
 
-	addEffect(atkResult: AttackResult | null, target: PC | Shadow | undefined, cons: Consequence) {
-		let effect: ActorChange<PC | Shadow> | undefined = undefined;
+	addEffect(atkResult: AttackResult | null, target: ValidAttackers | undefined, cons: Consequence) {
+		let effect: ActorChange<ValidAttackers> | undefined = undefined;
 		if (target) {
 			effect = {
 				actor: target.accessor,
@@ -415,7 +416,7 @@ export class CombatResult  {
 		this.globalOtherEffects = this.globalOtherEffects.concat(other.globalOtherEffects);
 	}
 
-	static mergeChanges(mainEffects: ActorChange<PC | Shadow>[], newEffects: ActorChange<PC | Shadow>[]) {
+	static mergeChanges(mainEffects: ActorChange<ValidAttackers>[], newEffects: ActorChange<ValidAttackers>[]) {
 		for (const newEffect of newEffects) {
 			const entry = mainEffects.find( change => PersonaDB.accessorEq(change.actor, newEffect.actor));
 			if (!entry) {
@@ -427,19 +428,19 @@ export class CombatResult  {
 		}
 	}
 
-	static normalizeChange(change: ActorChange<PC | Shadow>) {
+	static normalizeChange(change: ActorChange<ValidAttackers>) {
 		change.hpchange *= change.hpchangemult;
 		change.hpchangemult = 1;
 		change.hpchange = Math.trunc(change.hpchange);
 
 	}
 
-	getOtherEffects(actor : PC | Shadow): OtherEffect[] {
+	getOtherEffects(actor : ValidAttackers): OtherEffect[] {
 		const acc = actor.accessor;
 		return Array
 			.from(this.attacks.values())
 			.flat()
-			.filter(x => PersonaDB.accessorEq(x.actor,acc) && x.otherEffects.length > 0)
+			.filter(x => PersonaDB.accessorEq(x.actor, acc) && x.otherEffects.length > 0)
 			.flatMap( x=> x.otherEffects)
 	}
 
@@ -675,7 +676,7 @@ export class CombatResult  {
 
 	}
 
-	finalizeChange(change: ActorChange<PC | Shadow>) {
+	finalizeChange(change: ActorChange<ValidAttackers>) {
 		const actor = PersonaDB.findActor(change.actor);
 
 		for (const otherEffect of change.otherEffects) {
@@ -698,7 +699,7 @@ export class CombatResult  {
 						duration: { dtype:  "UEoT"},
 						activationRoll: otherEffect.activation,
 					};
-					const extraTurnChange : ActorChange<PC | Shadow> = {
+					const extraTurnChange : ActorChange<ValidAttackers> = {
 						actor:change.actor,
 						hpchange: 0,
 						damageType: "none",
@@ -746,7 +747,7 @@ export class CombatResult  {
 		return undefined;
 	}
 
-	async applyChange(change: ActorChange<PC | Shadow>) {
+	async applyChange(change: ActorChange<ValidAttackers>) {
 		const actor = PersonaDB.findActor(change.actor);
 		const token  = change.actor.token ? PersonaDB.findToken(change.actor.token) as PToken: undefined;
 		if (change.hpchange != 0) {
@@ -889,7 +890,7 @@ export class CombatResult  {
 	}
 
 	/** combines other's data into initial*/
-	static combineChanges (initial: ActorChange<PC | Shadow>, other: ActorChange<PC | Shadow>) : ActorChange<PC | Shadow> {
+	static combineChanges (initial: ActorChange<ValidAttackers>, other: ActorChange<ValidAttackers>) : ActorChange<ValidAttackers> {
 		return {
 			actor: initial.actor,
 			hpchange: absMax(initial.hpchange, other.hpchange),
@@ -970,7 +971,7 @@ Hooks.on("updateActor", async (updatedActor : PersonaActor, changes) => {
 	}
 });
 
-function convertConsToStatusDuration(cons: Consequence & {type : "addStatus" | "set-flag"}, atkResultOrActor: AttackResult | (PC | Shadow)) : StatusDuration {
+function convertConsToStatusDuration(cons: Consequence & {type : "addStatus" | "set-flag"}, atkResultOrActor: AttackResult | ValidAttackers) : StatusDuration {
 	const dur = cons.statusDuration;
 	switch (dur) {
 		case "X-rounds":

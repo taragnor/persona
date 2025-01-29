@@ -1,3 +1,5 @@
+import { ValidSocialTarget } from "./social/persona-social.js";
+import { ValidAttackers } from "./combat/persona-combat.js";
 import { CombatTriggerTypes } from "../config/triggers.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaSocial } from "./social/persona-social.js";
@@ -114,6 +116,9 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			const sourceItem = "sourceItem" in condition ? PersonaDB.findItem(condition.sourceItem) : "";
 			const id = sourceItem ? sourceItem.id : undefined;
 			if (!id) {
+				return false;
+			}
+			if (! ("talents" in user.system)) {
 				return false;
 			}
 			const talent = user.system.talents.find( x=> x.talentId == id);
@@ -666,7 +671,7 @@ function getSubjectToken<K extends string, T extends Record<K, ConditionTarget>>
 	return undefined;
 }
 
-function getSubjectActor<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K): PC | Shadow | NPC| undefined {
+function getSubjectActor<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K): ValidAttackers | NPC| undefined {
 	let subject = getSubject(cond, situation, source, field);
 	if (subject instanceof TokenDocument) {
 		subject = subject.actor;
@@ -728,7 +733,7 @@ export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, si
 	return desiredActor;
 }
 
-function getSubject<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K) : PToken | PC| Shadow | NPC | undefined {
+function getSubject<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K) : PToken | ValidAttackers | NPC | undefined {
 	if (!(field in cond)) {
 		Debug(cond);
 		Debug(situation);
@@ -760,7 +765,7 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 		case "target":
 			if (situation.target?.token)
 				return PersonaDB.findToken(situation.target.token) as PToken | undefined;
-			const target : UniversalActorAccessor<NPC | Shadow | PC> | undefined = situation.target ?? situation.socialTarget;
+			const target : UniversalActorAccessor<ValidAttackers | ValidSocialTarget> | undefined = situation.target ?? situation.socialTarget;
 			return target ? PersonaDB.findActor(target): undefined;
 		case "user":
 				if (!situation.user) return undefined;
@@ -819,7 +824,7 @@ function multiCheckTest<T extends string>(multiCheck: MultiCheck<T> | T, testFn:
 }
 
 type UserSituation = {
-	user: UniversalActorAccessor<PC | Shadow>;
+	user: UniversalActorAccessor<ValidAttackers>;
 };
 
 type TriggerSituation = TriggerSituation_base & (
@@ -832,7 +837,7 @@ type TriggerSituation = TriggerSituation_base & (
 
 type ExplorationTrigger = {
 	trigger: "on-open-door" | "on-search-end" | "on-attain-tarot-perk" | "enter-metaverse" | "exit-metaverse";
-	triggeringCharacter?:  UniversalActorAccessor<PC | Shadow>;
+	triggeringCharacter?:  UniversalActorAccessor<ValidAttackers>;
 }
 
 type ClockTrigger = {
@@ -848,7 +853,7 @@ type CombatTrigger = (
 
 type GenericCombatTrigger = UserSituation & {
 	trigger: Exclude<CombatTriggerTypes, NonGenericCombatTrigger["trigger"]>;
-	triggeringCharacter?:  UniversalActorAccessor<PC | Shadow>;
+	triggeringCharacter?:  UniversalActorAccessor<ValidAttackers>;
 }
 
 type NonGenericCombatTrigger =
@@ -877,7 +882,7 @@ type PresenceCheckTrigger = {
 type EnterRegionTrigger = {
 	trigger: "on-enter-region",
 	triggeringRegionId : string,
-	triggeringCharacter ?:  UniversalActorAccessor<PC | Shadow>;
+	triggeringCharacter ?:  UniversalActorAccessor<ValidAttackers>;
 
 }
 
@@ -885,18 +890,18 @@ export type Situation = SituationUniversal & (
 	TriggerSituation  | UserSituation | SocialCardSituation);
 
 export type SocialCardSituation = UserSituation & {
-	attacker : UniversalActorAccessor<PC | Shadow>;
+	attacker : UniversalActorAccessor<ValidSocialTarget>;
 	socialRandom :number;
-	socialTarget ?: UniversalActorAccessor<PC | NPC>;
-	target ?: UniversalActorAccessor<PC | Shadow>;
+	socialTarget ?: UniversalActorAccessor<ValidSocialTarget>;
+	target ?: UniversalActorAccessor<ValidSocialTarget>;
 	isSocial: true;
-	cameo : UniversalActorAccessor<PC | NPC> | undefined;
+	cameo : UniversalActorAccessor<ValidSocialTarget> | undefined;
 };
 
 
 type SituationUniversal = {
 	//more things can be added here all should be optional
-	user?: UniversalActorAccessor<PC | Shadow>;
+	user?: UniversalActorAccessor<ValidAttackers>;
 	usedPower ?: UniversalItemAccessor<Usable>;
 	usedSkill ?: SocialStat;
 	activeCombat ?: boolean ;
@@ -909,16 +914,16 @@ type SituationUniversal = {
 	struckWeakness ?: boolean;
 	isAbsorbed ?: boolean;
 	activationRoll ?: boolean;
-	target ?: UniversalActorAccessor<PC | Shadow>;
-	attacker ?:UniversalActorAccessor<PC | Shadow>;
+	target ?: UniversalActorAccessor<ValidAttackers>;
+	attacker ?:UniversalActorAccessor<ValidAttackers>;
 	saveVersus ?: StatusEffectId;
 	statusEffect ?: StatusEffectId;
 	eventCard ?: UniversalItemAccessor<SocialCard>,
 	isSocial?: boolean,
 	tarot ?: TarotCard,
-	socialTarget ?: UniversalActorAccessor<PC | NPC>;
+	socialTarget ?: UniversalActorAccessor<ValidSocialTarget>;
 	socialRandom ?: number;
-	cameo ?: UniversalActorAccessor<PC | NPC>;
+	cameo ?: UniversalActorAccessor<ValidSocialTarget>;
 }
 
 

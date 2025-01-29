@@ -2,7 +2,6 @@ import { localize } from "../../persona.js";
 import { Logger } from "../../utility/logger.js";
 import { PersonaError } from "../../persona-error.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
-import { CombatantSheetBase } from "./combatant-sheet.js";
 import { PersonaActor } from "../persona-actor.js";
 import { PersonaSocial } from "../../social/persona-social.js";
 import { SocialStat } from "../../../config/student-skills.js";
@@ -11,9 +10,9 @@ import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaDB } from "../../persona-db.js"
 import { NPC } from "../persona-actor.js";
 import { PC } from "../persona-actor.js";
+import { PCLikeSheet } from "./pc-like-sheet.js";
 
-
-export class PCSheet extends CombatantSheetBase {
+export class PCSheet extends PCLikeSheet {
 	declare actor: Subtype<PersonaActor, "pc">;
 	static override get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {
@@ -39,6 +38,7 @@ export class PCSheet extends CombatantSheetBase {
 				return;
 			case "tarot":
 				return;
+			case "npcAlly":
 			case "npc":
 				//create a social link
 				await this.actor.createSocialLink(actor as NPC)
@@ -49,40 +49,8 @@ export class PCSheet extends CombatantSheetBase {
 		}
 	}
 
-	override async getData() {
-		const data = await super.getData();
-		data.equips = {
-			weapons: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
-				if (x.system.type == "weapon")
-					return [[ x.id, x.name]];
-				else return [];
-			})),
-			body: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
-				if (x.system.type == "item" && x.system.slot =="body")
-					return [[ x.id, x.name]];
-				else return [];
-			})),
-			accessory: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
-				if (x.system.type == "item" && x.system.slot =="accessory")
-					return [[ x.id, x.name]];
-				else return [];
-			})),
-			attachment: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
-				if (x.system.type == "item" && x.system.slot =="weapon_crystal")
-					return [[ x.id, x.name]];
-				else return [];
-			})),
-		};
-		// const situation = {
-		// 	user: this.actor.accessor
-		// };
-		data.jobs = PersonaDB.allActivities().filter( activity=> Object.values(activity.system.weeklyAvailability).some (val => val));
-		return data;
-	}
-
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
-		html.find(".delItem").on("click", this.delItem.bind(this));
 		html.find(".refreshLink").on("click", this.refreshLink.bind(this));
 		html.find(".useInspiration").on("click", this.useInspiration.bind(this));
 		html.find(".useRecovery").on("click", this.useRecovery.bind(this));
@@ -91,8 +59,6 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".addSocialRank").on("click", this.addSocialRank.bind(this));
 		html.find(".removeSocialRank").on("click", this.reduceSocialRank.bind(this));
 		html.find(".add-progress-token").on("click", this.addProgressTokens.bind(this));
-		html.find(".addItem").on("click", this.#addItem.bind(this));
-		html.find(".levelUp").on("click", this.levelUp.bind(this));
 		html.find(".social-link .name").on("click", this.openSL.bind(this));
 		html.find(".job .name").on("click", this.openJob.bind(this));
 		html.find(".rem-progress-token").on("click", this.removeProgressTokens.bind(this));
@@ -106,10 +72,7 @@ export class PCSheet extends CombatantSheetBase {
 		html.find(".relationship-type").on("change", this.relationshipTypeChange.bind(this))
 		html.find(".add-strike").on("click", this.addStrike.bind(this));
 		html.find(".rem-strike").on("click", this.removeStrike.bind(this));
-		html.find(".equips select").on("change", this.equipmentChange.bind(this));
 		html.find(".init-social-link").on("click", this.startSocialLink.bind(this));
-		html.find(".sort-up").on("click", this.reorderPowerUp.bind(this));
-		html.find(".sort-down").on("click", this.reorderPowerDown.bind(this));
 		html.find(".move-to-sideboard").on("click", this.movePowerToSideboard.bind(this));
 		html.find(".move-to-main").on("click", this.movePowerToMain.bind(this));
 	}
@@ -137,14 +100,6 @@ export class PCSheet extends CombatantSheetBase {
 			throw new PersonaError(`Invalid student skill: ${socialStat}.`);
 		}
 		PersonaSocial.lowerSocialSkill(this.actor, socialStat)
-	}
-
-	async delItem (event : Event) {
-		const item_id= String(HTMLTools.getClosestData(event, "itemId"));
-		const item = this.actor.items.find(x=> x.id == item_id);
-		if (item && await HTMLTools.confirmBox("Confirm", "Really delete?")) {
-			item.delete();
-		}
 	}
 
 	async refreshLink(event: Event) {
@@ -280,16 +235,7 @@ export class PCSheet extends CombatantSheetBase {
 		this.actor.setRelationshipType(linkId, String(newval));
 	}
 
-	#addItem(_ev: JQuery<Event>) {
-		this.actor.createNewItem();
-	}
 
-	async levelUp(_event: Event) {
-		if (await HTMLTools.confirmBox("Level Up", "Level Up Character")) {
-			await this.actor.levelUp();
-		}
-
-	}
 
 	async openSL(ev: Event) {
 		const linkId= String(HTMLTools.getClosestData(ev, "linkId"));
@@ -337,53 +283,11 @@ export class PCSheet extends CombatantSheetBase {
 		}
 	}
 
-	async equipmentChange(event: JQuery.ChangeEvent) {
-		const div = $(event.currentTarget).parent();
-		let itemType = "unknown";
-		const itemId = $(event.currentTarget).find(":selected").val();
-		if (!itemId) return false;
-		const item = this.actor.items.find(x=> x.id == itemId);
-		const typeTable = {
-			"weapon": "persona.equipslots.weapon",
-			"armor": "persona.equipslots.body",
-			"accessory":	"persona.equipslots.accessory",
-			"weapon-crystal":		"persona.equipslots.weapon_crystal",
-		} as const;
-		for (const [k,v] of Object.entries(typeTable)) {
-			if (div.hasClass(k)) {
-				itemType = localize(v);
-			}
-		}
-		await Logger.sendToChat(`${this.actor.name} changed ${itemType} ${item?.name ?? "ERROR"}` , this.actor);
-	}
 
 	async startSocialLink(event: JQuery.ClickEvent) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
 		await PersonaSocial.startSocialLink(this.actor, linkId);
 
-	}
-
-	async reorderPowerUp (event: JQuery.ClickEvent) {
-		const powerId = HTMLTools.getClosestData(event, "powerId");
-		const powers = this.actor.system.combat.powers;
-		const index = powers.indexOf(powerId);
-		if (index == -1) return;
-		if (index == 0) return;
-		powers[index] = powers[index-1];
-		powers[index-1] = powerId;
-		await this.actor.update({"system.combat.powers": powers});
-	}
-
-	async reorderPowerDown (event: JQuery.ClickEvent) {
-		const powerId = HTMLTools.getClosestData(event, "powerId");
-		const powers = this.actor.system.combat.powers;
-		const index = powers.indexOf(powerId);
-		if (index == -1) return;
-		if (index >= powers.length-1)
-			return;
-		powers[index] = powers[index+1];
-		powers[index+1] = powerId;
-		await this.actor.update({"system.combat.powers": powers});
 	}
 
 	async movePowerToSideboard( event: JQuery.ClickEvent) {

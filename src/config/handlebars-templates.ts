@@ -37,6 +37,8 @@ const templateFileNames : string[] =[
 	"creatureTags.hbs",
 	"itemTags.hbs",
 	"cardTags.hbs",
+	"npc-social-section.hbs",
+	"npc-social-focii.hbs",
 ];
 
 export const templatePaths = templateFileNames.

@@ -1,3 +1,4 @@
+import { NPCAlly } from "../actor/persona-actor.js";
 import { PC } from "../actor/persona-actor.js";
 import { AnyStringObject } from "../../config/precondition-types.js";
 import { randomSelect } from "../utility/array-tools.js";
@@ -1078,7 +1079,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
-	static calcPowerCritBoostTargetAdjust(target: PC | Shadow, power: Usable, disallowIncremental = false) {
+	static calcPowerCritBoostTargetAdjust(target: ValidAttackers, power: Usable, disallowIncremental = false) {
 		if (power.system.type != "power" || power.isBasicPower()) {
 			return 0;
 		}
@@ -1708,7 +1709,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					usedPower: power.accessor,
 					activeCombat: true,
 				}
-				const canUse = power.targetMeetsConditions(attacker.actor, target.actor, situation)
+				const canUse = power.targetMeetsConditions(attacker.actor, targetActor, situation)
 				if (!canUse) {
 					throw new PersonaError(`Target doesn't meet custom Power conditions to target`);
 				}
@@ -2315,7 +2316,7 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 } // end of class
 
 
-export type ValidAttackers = Subtype<PersonaActor, "pc"> | Subtype<PersonaActor, "shadow">;
+export type ValidAttackers = PC | Shadow | NPCAlly;
 
 export type PToken = TokenDocument<ValidAttackers> & {get actor(): ValidAttackers};
 

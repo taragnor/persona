@@ -1,3 +1,4 @@
+import { ValidAttackers } from "./combat/persona-combat.js";
 import { SocialCard } from "./item/persona-item.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { Helpers } from "./utility/helpers.js";
@@ -48,8 +49,8 @@ export class PersonaHandleBarsHelpers {
 	static helpers : Record<string, (...args: any[])=> any>  = {
 		"caps" : (str) => str.toUpperCase?.() || str,
 
-		"getMaxSlotsAt": (actor: PersonaActor, lvl:number) => {
-			return actor.getMaxSlotsAt(lvl);
+		"getMaxSlotsAt": (_actor: PersonaActor, _lvl:number) => {
+			return 0;
 		},
 
 		"getCritResist": (actor: PC | Shadow) => {
@@ -136,8 +137,7 @@ export class PersonaHandleBarsHelpers {
 				case "tarot":
 				case "npc":
 					return "-/-";
-				case "pc": case"shadow":
-					const combatant = actor as PC | Shadow;
+				case "npcAlly": case "pc": case"shadow": const combatant = actor as ValidAttackers;
 					const mult = usable.getDamageMultSimple(combatant);
 					const low = usable.getDamage(combatant, "low") * mult;
 					const high = usable.getDamage(combatant, "high") * mult;

@@ -1,3 +1,4 @@
+import { NPCAlly } from "../persona-actor.js";
 import { Consumable } from "../../item/persona-item.js";
 import { Logger } from "../../utility/logger.js";
 import { Helpers } from "../../utility/helpers.js";
@@ -10,13 +11,13 @@ import { CClass } from "../../item/persona-item.js";
 import { PersonaItem } from "../../item/persona-item.js";
 import { PersonaActorSheetBase } from "./actor-sheet.base.js";
 import { PC } from "../persona-actor.js";
-import { Shadow } from "../persona-actor.js";
+import { ValidAttackers } from "../../combat/persona-combat.js";
 import { Talent } from "../../item/persona-item.js";
 import { Power } from "../../item/persona-item.js";
 import { Focus } from "../../item/persona-item.js";
 
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
-	declare actor: PC | Shadow;
+	declare actor: ValidAttackers;
 
 	override async getData () {
 		return super.getData();
@@ -53,13 +54,15 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 					case "shadow":
 						return super._onDropItem(_event, itemD);
 					case "pc":
+					case "npcAlly":
 						const power = item as Power;
+						const actor = this.actor as PC | NPCAlly;
 						if (power.isTeamwork()) {
-							await (this.actor as PC).setTeamworkMove(item as Power);
+							await actor.setTeamworkMove(power);
 						if (power.isNavigator()) {
-							await (this.actor as PC).setNavigatorSkill(item as Power);
+							await actor.setNavigatorSkill(power);
 						}
-							return item;
+							return power;
 						}
 						if (power.hasTag("shadow-only")) {
 							ui.notifications.warn(`Can't take Shadow only power ${item.name}`);
@@ -73,7 +76,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 							ui.notifications.warn(`Can't directly take exotic power : ${item.name}`);
 							return;
 						}
-						await (this.actor as PC).addPower(item as Power);
+						await actor.addPower(item as Power);
 						return item ;
 					default:
 						actorType satisfies never;
@@ -185,18 +188,18 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	}
 
-	async deleteFocus(event: Event) {
-		const focusId = HTMLTools.getClosestData(event, "focusId");
-		if (focusId == undefined) {
-			const err = `Can't find talent at index $focusId}`;
-			console.error(err);
-			ui.notifications.error(err);
-			throw new Error(err);
-		}
-		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this Focus?")) {
-			this.actor.deleteFocus(focusId);
-		}
-	}
+	// async deleteFocus(event: Event) {
+	// 	const focusId = HTMLTools.getClosestData(event, "focusId");
+	// 	if (focusId == undefined) {
+	// 		const err = `Can't find talent at index $focusId}`;
+	// 		console.error(err);
+	// 		ui.notifications.error(err);
+	// 		throw new Error(err);
+	// 	}
+	// 	if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this Focus?")) {
+	// 		this.actor.deleteFocus(focusId);
+	// 	}
+	// }
 
 	async deletePower(event: Event) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
@@ -236,18 +239,18 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		await talent.sheet.render(true);
 	}
 
-	async openFocus(event: Event) {
-		const itemType = "Focus";
-		const focusId = HTMLTools.getClosestData(event, "focusId");
-		if (focusId == undefined) {
-			throw new PersonaError(`Can't find ${itemType}`);
-		}
-		const focus = this.actor.focii.find(x=> x.id == focusId);
-		if (!focus) {
-			throw new PersonaError(`Can't find ${itemType} id ${focusId}`);
-		}
-		await focus.sheet.render(true);
-	}
+	// async openFocus(event: Event) {
+	// 	const itemType = "Focus";
+	// 	const focusId = HTMLTools.getClosestData(event, "focusId");
+	// 	if (focusId == undefined) {
+	// 		throw new PersonaError(`Can't find ${itemType}`);
+	// 	}
+	// 	const focus = this.actor.focii.find(x=> x.id == focusId);
+	// 	if (!focus) {
+	// 		throw new PersonaError(`Can't find ${itemType} id ${focusId}`);
+	// 	}
+	// 	await focus.sheet.render(true);
+	// }
 
 	async openItem(event: Event) {
 		const itemType = "Inventory Item";

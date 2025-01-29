@@ -92,7 +92,7 @@ export class ShadowSheet extends CombatantSheetBase {
 		}]);
 	}
 
-	async onAddFocus(_ev: Event) {
+	override async onAddFocus(_ev: Event) {
 		await this.actor.createEmbeddedDocuments( "Item", [{
 			name: "New Focus",
 			type: "focus",

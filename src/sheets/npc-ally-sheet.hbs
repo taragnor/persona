@@ -1,4 +1,4 @@
-<form class="pc-sheet {{#if actor.system.locked}} locked {{else}} unlocked {{/if}}">
+<form class="npc-ally-sheet">
 	<header class="flexcol">
 		<div class="flexrow">
 			<img class="profile-img" src="{{actor.img}}" data-edit="img"/>
@@ -15,18 +15,10 @@
 				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
 			</div>
 		</div>
-
-		<textarea name="system.short_desc"> {{actor.system.short_desc}} </textarea>
 	</header>
 	<nav class="sheet-tabs tabs" data-group="primary">
 		<a class="item" data-tab="combat">
 			{{localize "persona.sheet.tabs.combat.tabname" }}
-		</a>
-		<a class="item" data-tab="social">
-			{{localize "persona.sheet.tabs.social.tabname" }}
-		</a>
-		<a class="item" data-tab="soc-benefits">
-			{{localize "persona.sheet.tabs.social-benefits.tabname" }}
 		</a>
 		<a class="item" data-tab="inv">
 			{{localize "persona.sheet.tabs.inventory.tabname" }}
@@ -34,17 +26,19 @@
 		<a class="item" data-tab="inc">
 			{{localize "persona.sheet.tabs.incremental.tabname" }}
 		</a>
+		<a class="item" data-tab="social">
+			{{localize "persona.sheet.tabs.social-benefits.tabname" }}
+		</a>
+		{{#if (isGM)}}
+		<a class="item" data-tab="npc-data">
+			{{localize "persona.sheet.tabs.social-section.tabname" }}
+		</a>
+		{{/if}}
 	</nav>
-	<section class="sheet-body">
-		<section class="tab tab-content social-section flexcol" data-group="primary" data-tab="social">
-			{{> "systems/persona/parts/social-section.hbs" actor=actor}}
-		</section>
-		<section class="tab tab-content combat-section flexcol" data-group="primary" data-tab="combat">
 
+	<section class="sheet-body">
+		<section class="tab tab-content combat-section flexcol" data-group="primary" data-tab="combat">
 			{{> "systems/persona/parts/combat-section.hbs" actor=actor}}
-		</section>
-		<section class="tab tab-content inventory-section flexcol" data-group="primary" data-tab="soc-benefits">
-			{{> "systems/persona/parts/social-benefits-section.hbs" actor=actor CONST=CONST equips=equips}}
 		</section>
 		<section class="tab tab-content inventory-section flexcol" data-group="primary" data-tab="inv">
 			{{> "systems/persona/parts/inventory-section.hbs" actor=actor CONST=CONST equips=equips}}
@@ -52,5 +46,12 @@
 		<section class="tab tab-content incremental-section flexcol" data-group="primary" data-tab="inc">
 			{{> "systems/persona/parts/incremental-section.hbs" actor=actor CONST=CONST}}
 		</section>
+		<section class="tab tab-content incremental-section flexcol" data-group="primary" data-tab="social">
+			{{> "systems/persona/parts/npc-social-focii.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
+		</section>
+		<section class="tab tab-content incremental-section flexcol" data-group="primary" data-tab="npc-data">
+			{{> "systems/persona/parts/npc-social-section.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
+		</section>
 	</section>
+
 </form>

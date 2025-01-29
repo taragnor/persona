@@ -28,6 +28,7 @@ export const SHADOW_CREATURE_TYPE_LIST = [
 	"daemon",
 	"demon",
 	"enemy-metaverse-user",
+	"npc-ally",
 ] as const;
 
 
