@@ -102,7 +102,7 @@ class PowerSchema extends foundry.abstract.TypeDataModel {
 	static override migrateData(data: any)  {
 		const itemData = data as (Power["system"]);
 		let dmult = 0;
-		if (itemData.subtype == "magic" && (itemData.mpcost == undefined || itemData.mpcost == 0)) {
+		if (itemData.subtype == "magic" && (itemData.mpcost == undefined || itemData.mpcost == -1)) {
 			const slot = (itemData as Power["system"]).slot;
 			const isArea = itemData.targets == "all-enemies" || itemData.targets == "all-allies";
 			const isExpensive = itemData.dmg_type == "light" || itemData.dmg_type == "dark" || itemData.dmg_type =="untyped";
