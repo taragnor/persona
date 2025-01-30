@@ -5,12 +5,21 @@
 			<div>
 				<input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
 				<div class="flexrow">
-					<label>
-						{{localize "persona.tarot.cardname"}}
-					</label>
-					<select name="system.tarot">
-						{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
-					</select>
+					<div>
+						<label>
+							{{localize "persona.tarot.cardname"}}
+						</label>
+						<select name="system.tarot">
+							{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
+						</select>
+					</div>
+					<div>
+						<label>
+							Navigator
+						</label>
+						<input class="navigator-check" type="checkbox" name="system.combat.isNavigator" {{checked actor.system.combat.isNavigator}}>
+					</div>
+
 				</div>
 				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
 			</div>

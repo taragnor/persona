@@ -34,6 +34,7 @@ export class SearchMenu {
 		rollTension: {initial: true, label: "Roll Tension Pool after search"},
 		hazardOnTwo: {initial: false, label: "Hazard on 2s"},
 		cycle: {initial: true, label: "allow multiple searches in a row"},
+		treasureFindBonus: {initial: 0, label: "Treasure Find Bonus"},
 	};
 
 	static options: SearchOptions<typeof this["template"]>;
@@ -132,12 +133,13 @@ export class SearchMenu {
 		let rolls : Roll[] = [];
 		// const guards = results.filter( x=> x.declaration == "guard").length;
 		exitFor: for (const searcher of results) {
+			const actor = PersonaDB.findActor(searcher.searcher.actor) as PC | NPCAlly;
+			const situation : Situation = {
+				user: actor.accessor,
+			}
+			options.treasureFindBonus = actor.getBonuses("treasureFind").total(situation);
 			switch (searcher.declaration) {
 				case "search": {
-					const actor = PersonaDB.findActor(searcher.searcher.actor) as PC | NPCAlly;
-					const situation : Situation = {
-						user: actor.accessor,
-					}
 					const numberOfSearches = 1 + actor.getBonuses("numberOfSearches").total(situation);
 					for (let searches = 0; searches < numberOfSearches; ++searches) {
 						const roll = new Roll("1d6");
@@ -212,7 +214,6 @@ export class SearchMenu {
 		await PersonaCombat.onTrigger("on-search-end")
 			.emptyCheck()
 			?.autoApplyResult();
-		// const {roll, result} = await this.tensionPool(guards, options);
 		const {roll, result} = TensionPool.nullResult();
 		if (roll) {
 			rolls.push(roll);
@@ -247,7 +248,7 @@ export class SearchMenu {
 			for (const roll of rolls) {
 				await roll.roll();
 			}
-			const val = Math.max( ...rolls.map (x=> x.total))
+			let val = Math.max( ...rolls.map (x=> x.total))
 			let result : SearchAttempt["result"];
 			switch (val) {
 				case 1:
@@ -260,13 +261,10 @@ export class SearchMenu {
 					result = options.isSecret ? "secret" : "nothing";
 					break;
 				case 4:
-					result= options.treasureRemaining >= 3 ? "treasure" : "nothing";
-					break;
 				case 5:
-					result = options.treasureRemaining >= 2 ? "treasure" : "nothing";
-					break;
+					val = Math.min(6, val + (options.treasureFindBonus ?? 0));
 				case 6:
-					result= options.treasureRemaining >= 1 ? "treasure" : "nothing";
+					result= options.treasureRemaining <= 7 - val ? "treasure" : "nothing";
 					break;
 				default:
 					result = "nothing";

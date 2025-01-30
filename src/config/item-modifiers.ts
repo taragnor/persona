@@ -5,6 +5,7 @@ export const ENVIRONMENTAL_MODIFIERS = [
 	"concordiaPresence",
 	"encounterSize",
 	"numberOfSearches",
+	"treasureFind", // adds to search rolls of 4 or better
 ] as const;
 
 export const MODIFIERLIST = [

@@ -50,7 +50,6 @@ declare global {
 	type ActorSub<X extends PersonaActor["system"]["type"]> = Subtype<PersonaActor, X>;
 }
 
-
 const EMPTYARR :any[] = [] as const; //to speed up things by not needing to create new empty arrays for immutables;
 
 Object.seal(EMPTYARR);
@@ -85,6 +84,25 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return 0;
 		}
 		return this.system.combat.mp.value;
+	}
+
+	async setAsNavigator(this: NPCAlly) {
+		for (const ally of PersonaDB.NPCAllies()) {
+			if (ally == this) continue;
+			if (!ally.system.combat.isNavigator) continue;
+			if (!ally.isOwner) {
+				PersonaError.softFail(`Can't change navigator status on ${ally.name}, no ownership`);
+				continue;
+			}
+			await ally.update({ "system.combat.isNavigator": false});
+		}
+		// await this.update({ "system.combat.isNavigator": true});
+		PersonaDB.clearCache();
+		if (PersonaDB.getNavigator() != this) {
+			PersonaError.softFail("Navigator was set improperly");
+			return;
+		}
+		await Logger.sendToChat(`${this.name} set to party navigator`, this);
 	}
 
 	get mmp() : number {
@@ -133,7 +151,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update( { "system.combat.mp.max": amt});
 	}
 
-	async refreshHpTracker(this:PC | Shadow)  {
+	async refreshHpTracker(this:ValidAttackers)  {
 		if (!game.user.isGM) return;
 		if (this.system.type == "pc") {
 			await (this as PC).refreshMaxMP();
@@ -754,9 +772,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	async setNavigatorSkill(this: PC | NPCAlly, pwr: Power) {
-		this.system.combat.navigatorSkill = pwr.id;
+	async setNavigatorSkill(this: NPCAlly, pwr: Power) {
 		await this.update( {"system.combat.navigatorSkill" : pwr.id});
+			await Logger.sendToChat(`${this.name} set Navigator skill to ${pwr.name}` , this);
 	}
 
 	get navigatorSkill(): Power | undefined {
@@ -764,9 +782,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "shadow":
 			case "npc":
 			case "tarot":
+			case "pc":
 				return undefined;
 			case "npcAlly":
-			case "pc":
 				const id = this.system.combat.navigatorSkill;
 				const power = PersonaDB.allPowers().find(x=> x.id == id);
 				return power;
@@ -2660,9 +2678,15 @@ Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) =
 	}
 });
 
-Hooks.on("updateActor", async (actor: PersonaActor, _changes: {system: any}) => {
+Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
 	switch (actor.system.type) {
-		case "pc": case "shadow": case "npcAlly":
+		case "npcAlly":
+			if (changes?.system?.combat?.isNavigator == true) {
+				await (actor as NPCAlly).setAsNavigator();
+			}
+			await	(actor as NPCAlly).refreshHpTracker();
+			break;
+		case "pc": case "shadow":
 			await	(actor as PC | Shadow).refreshHpTracker();
 			break;
 		case "npc": case "tarot":

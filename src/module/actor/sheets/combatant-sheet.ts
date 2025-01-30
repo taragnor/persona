@@ -61,7 +61,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 						if (power.isTeamwork()) {
 							await actor.setTeamworkMove(power);
 						if (power.isNavigator()) {
-							await actor.setNavigatorSkill(power);
+							ui.notifications.warn("This cahracter can't use a navigator skill");
+							return undefined;
 						}
 							return power;
 						}

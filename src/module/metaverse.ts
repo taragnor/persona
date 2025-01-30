@@ -298,6 +298,7 @@ export class Metaverse {
 			rollTension: !data.specialMods.includes("no-tension-roll"),
 			hazardOnTwo: data.specialMods.includes("hazard-on-2"),
 			cycle: false,
+			treasureFindBonus: 0,
 		};
 		const results = await SearchMenu.start(searchOptions, region);
 		let treasureRolls : Roll[] = [];

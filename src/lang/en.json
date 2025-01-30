@@ -235,6 +235,7 @@
 	"persona.modifier.concordiaPresence": "Concordia Presence",
 	"persona.modifier.encounterSize": "Encounter Size",
 	"persona.modifier.numberOfSearches": "Number of Searches",
+	"persona.modifier.treasureFind": "Bonus to d6 to find treasure",
 
 	"persona.equipslots.weapon": "Weapon",
 	"persona.equipslots.body": "Outfit",

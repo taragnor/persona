@@ -1,3 +1,4 @@
+import { NPCAlly } from "./actor/persona-actor.js";
 import { SocialEncounterCard } from "./social/persona-social.js";
 import { ModifierContainer } from "./item/persona-item.js";
 import { PC } from "./actor/persona-actor.js";
@@ -38,7 +39,12 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			socialLinks: undefined,
 			treasureItems: undefined,
 			tarot: undefined,
+			navigator: undefined,
 		};
+	}
+
+	clearCache() {
+		this.#resetCache();
 	}
 
 	override async onLoadPacks() {
@@ -160,8 +166,25 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.getItemById(id) as Power | undefined;
 	}
 
+	NPCAllies() : NPCAlly[] {
+		return this.allActors().filter( x=> 
+			x.system.type == "npcAlly") as NPCAlly[];
+	}
+
+	getNavigator() : NPCAlly | undefined {
+		if (!this.#cache.navigator) {
+			const navigator = this.NPCAllies().find( ally => ally.system.combat.isNavigator);
+			this.#cache.navigator = navigator;
+		}
+		return this.#cache.navigator;
+	}
+
 	navigatorModifiers(): ModifierContainer[] {
-		return [];
+		const navigator = this.getNavigator();
+		if (!navigator) return [];
+		const skill = navigator.navigatorSkill;
+		if (!skill) return [];
+		return [skill];
 	}
 
 }
@@ -186,5 +209,6 @@ type PersonaDBCache =	{
 	socialLinks: (PC | NPC)[] | undefined;
 	treasureItems: (Weapon | InvItem | Consumable)[] | undefined;
 	tarot: Tarot[] | undefined;
+	navigator: NPCAlly | undefined;
 };
 

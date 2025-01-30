@@ -180,14 +180,12 @@ export function combatCommonStats() {
 export function PCAndNPCAllyCombatStats() {
 	return {
 		...combatCommonStats(),
-		navigatorSkill: new id(),
 		powers: new arr( new id()),
 		teamworkMove: new id(),
 		mp: new sch({
 			value: new num({initial: 0, integer: true, min: 0, max: 1000}),
 			max: new num({initial: 1, integer: true, min:1, max:1000}),
 		}),
-
 	};
 }
 

@@ -125,6 +125,8 @@ class NPCAllySchema extends foundry.abstract.TypeDataModel {
 			...tarotFields(),
 			combat: new sch( {
 				...PCAndNPCAllyCombatStats(),
+				navigatorSkill: new id(),
+				isNavigator: new bool(),
 			}),
 			...PCSpecificStuff(),
 			bio: personalBio(),
