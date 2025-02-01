@@ -20,6 +20,7 @@ export const MODIFIERLIST = [
 	"magHigh",
 	"criticalBoost",
 	"critResist",
+	"instantDeathResistanceMult",
 	"allOutDmgMult", //adds to weapon multiplier on AoA
 	"allDefenses",
 	"ref",

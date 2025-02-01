@@ -1153,12 +1153,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (power.system.type != "power" || power.isBasicPower()) {
 			return 0;
 		}
+		if (!power.isInstantDeathAttack()) {
+			return 0;
+		}
 		const powerLevel = power.baseCritSlotBonus();
 		const targetResist = target.basePowerCritResist(power, disallowIncremental);
 		const dmgtype = power.system.dmg_type;
-		const mult = (dmgtype == "dark" || dmgtype == "light") ? 2 : 1;
+		// const mult = (dmgtype == "dark" || dmgtype == "light") ? 2 : 1;
 		const diff = Math.max(0, powerLevel - targetResist);
-		return diff * mult;
+		const mult = target.instantKillResistanceMultiplier();
+		return Math.floor(diff * mult);
 	}
 
 	static async processEffects(atkResult: AttackResult) : Promise<CombatResult> {

@@ -629,16 +629,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		// }
 		switch (this.system.slot) {
 			case 0:
-				bonus += 2;
+				bonus += 5;
 				break;
 			case 1:
-				bonus += 3;
+				bonus += 7;
 				break;
 			case 2:
-				bonus += 4;
+				bonus += 9;
 				break;
 			case 3:
-				bonus += 5;
+				bonus += 11;
 				break;
 			default:
 				PersonaError.softFail(`Unknwon Slot Type :${this.system.slot}`);
@@ -913,6 +913,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			return this.system.conditions;
 		}
 		return this.system.conditions.concat(extraConditionsFromTags);
+	}
+
+	isInstantDeathAttack(this: Usable) : boolean {
+		switch (this.system.dmg_type) {
+			case "dark":
+			case "light": return true;
+			default: break; 
+		}
+		return this.hasTag("instantKill");
+
 	}
 
 	extraConditionsFromTags( this: SocialCard) : SocialCard["system"]["conditions"] {

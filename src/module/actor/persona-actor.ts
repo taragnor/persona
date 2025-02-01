@@ -1226,7 +1226,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		const inc = this.system.combat.classData.incremental.defenses ? 1 : 0;
 		const level = this.system.combat.classData.level + (disallowIncremental ? 0 : inc);
-		return Math.floor(level / 3);
+		return Math.floor(level / 2);
+	}
+
+	instantKillResistanceMultiplier(this: ValidAttackers) : number {
+		const situation : Situation = {
+			user: this.accessor,
+			target: this.accessor,
+		}
+		return this.getBonuses("instantDeathResistanceMult").total(situation, "percentage");
 	}
 
 	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
