@@ -19,6 +19,8 @@ export const POWER_TYPE_TAGS = [
 	"follow-up",
 	"mandatory",
 	"summon",
+	"passive",
+	"defensive",
 ] as const;
 
 export const POWER_TAGS_LIST = [

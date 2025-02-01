@@ -542,6 +542,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.hasTag("opener");
 	}
 
+	isPassive(this: Usable) : boolean {
+		return this.system.subtype == "passive" || 
+			this.hasTag("passive");;
+	}
+
 	isTeamwork(this: Usable): boolean {
 		return this.hasTag("teamwork");
 	}

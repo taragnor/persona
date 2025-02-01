@@ -457,7 +457,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const targets= this.getValidTargetsFor(usable, user, situation)
 			.map( target=> target.name);
 		if (targets.length == 0) return undefined;
-		return `${usable.displayedName} (${targets.join()}): ${usable.system.description}`;
+		return `${usable.displayedName} (${targets.join(", ")}): ${usable.system.description}`;
 	}
 
 	mandatoryOtherOpeners( combatant: Combatant<ValidAttackers> , situation: Situation): OpenerOptionsReturn {

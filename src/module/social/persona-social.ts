@@ -355,8 +355,11 @@ export class PersonaSocial {
 	static #getCameos(card: SocialCard, actor: PC, linkId: string) : SocialLink[] {
 		let targets : (SocialLink)[] = [];
 		const testCameo = (cameo: SocialLink) => {
+			if (cameo.id == actor.id) return false;
+			if (cameo.id == linkId) return false;
 			const acc = cameo.accessor;
-			const target = game.actors.get(linkId) as SocialLink | undefined;
+			if (!cameo.isAvailable(actor)) return false;
+			const target = PersonaDB.socialLinks().find(link => link.id == linkId) as SocialLink | undefined;
 			const targetAcc = target?.accessor;
 			const situation: Situation = {
 				cameo: acc,
@@ -364,12 +367,13 @@ export class PersonaSocial {
 				user: actor.accessor,
 				attacker: actor.accessor,
 				socialTarget: targetAcc,
-				// target: targetAcc,
 				socialRandom : Math.floor(Math.random() * 20) + 1,
 			};
 			if (this.disqualifierStatuses.some( st => cameo.hasStatus(st))) { return false;}
 			return testPreconditions(card.system.cameoConditions , situation, null);
 		}
+		const allCameos = PersonaDB.socialLinks().
+			filter (link => testCameo(link));
 		switch (card.system.cameoType) {
 			case "none": return [];
 			case "above": {
@@ -397,14 +401,8 @@ export class PersonaSocial {
 				break;
 			}
 			case "student": {
-				const students = PersonaDB.socialLinks()
-				.filter( x=>
-					(x.system.type == "npc" || x.system.type == "pc")
-					&& x.hasCreatureTag("student")
-					&& x != actor && x.id != linkId
-					&& x.isAvailable(actor)
-					&& testCameo(x as SocialLink)
-				) as SocialLink[];
+				const students = allCameos
+				.filter( x=> x.hasCreatureTag("student"));
 				if (students.length == 0) return [];
 				const randomPick = students[Math.floor(Math.random() * students.length)];
 				if (!randomPick)
@@ -412,14 +410,7 @@ export class PersonaSocial {
 				return [randomPick];
 			}
 			case "any": {
-				const anyLink = (game.actors.contents as PersonaActor[])
-				.filter( x=>
-					(x.system.type == "npc" || x.system.type == "pc")
-					&& x.baseRelationship != "SHADOW"
-					&& x != actor && x.id != linkId
-					&& x.isAvailable(actor)
-					&& testCameo(x as SocialLink)
-				) as SocialLink[];
+				const anyLink = allCameos;
 				const randomPick = anyLink[Math.floor(Math.random() * anyLink.length)];
 				if (!randomPick)
 				throw new PersonaError("Random any link select failed");
@@ -438,12 +429,8 @@ export class PersonaSocial {
 				//TODO: exception for devil multidate
 				return [];
 			case "cockblocker": {
-				const otherDates = PersonaDB.socialLinks()
-				.filter( x=> x.isAvailable(actor)
-					&& actor.isDating(x)
-					&& x != actor && x.id != linkId
-					&& testCameo(x)
-				);
+				const otherDates = allCameos
+				.filter( x =>  actor.isDating(x));
 				if (otherDates.length ==0) return [];
 				return [randomSelect(otherDates)];
 			}

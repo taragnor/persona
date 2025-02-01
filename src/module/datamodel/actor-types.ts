@@ -131,6 +131,7 @@ class NPCAllySchema extends foundry.abstract.TypeDataModel {
 			...PCSpecificStuff(),
 			bio: personalBio(),
 			...sharedAbilities(),
+			NPCSocialProxyId: new id(),
 		} as const;
 		return ret;
 	}

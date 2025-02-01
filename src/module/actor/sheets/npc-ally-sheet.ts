@@ -1,8 +1,11 @@
 import { PersonaItem } from "../../item/persona-item.js";
+import { PersonaActor } from "../persona-actor.js";
 import { NPCAlly } from "../persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { PCLikeSheet } from "./pc-like-sheet.js";
 import { Power } from "../../item/persona-item.js";
+import { Logger } from "../../utility/logger.js";
+
 
 export class NPCAllySheet extends PCLikeSheet {
 
@@ -36,4 +39,28 @@ export class NPCAllySheet extends PCLikeSheet {
 		}
 		return super._onDropItem(_event, itemD);
 	}
+
+	override async _onDropActor(_event: Event, actorD: unknown) {
+		//@ts-ignore
+		const actor : PersonaActor = await Actor.implementation.fromDropData(actorD);
+		switch (actor.system.type) {
+			case "npc":
+			case "pc" :{
+				await this.actor.update({ "system.NPCSocialProxyId" : actor.id});
+				await Logger.sendToChat(`${this.actor.name} designaties social Proxy ${actor.name}`, this.actor);
+				return undefined;
+			}
+			case "shadow":
+			case "tarot":
+			case "npcAlly":
+				//create a social link
+				return undefined;
+			default:
+				actor.system satisfies never;
+				throw new Error(`Unknown unsupported type ${actor.type}`);
+		}
+
+	}
 }
+
+

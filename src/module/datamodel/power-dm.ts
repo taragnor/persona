@@ -72,5 +72,3 @@ export function effects(_baseattack: boolean) {
 	}
 }
 
-
-

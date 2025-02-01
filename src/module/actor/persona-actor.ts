@@ -219,6 +219,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return (this as PC).getSocialStat("courage").total({user:(this as PC).accessor});
 	}
 
+	getNPCProxyActor(this: NPCAlly) : NPC | PC | undefined {
+		const proxyId = this.system.NPCSocialProxyId;
+		if (!proxyId)
+			return undefined;
+		const npc = PersonaDB.socialLinks()
+			.find( x=> x.id == proxyId);
+		if (!npc || npc.system.type != "npc" && npc.system.type != "pc") {
+			PersonaError.softFail(`Can't find Proxy actor for: ${this.name}`);
+		}
+		return npc as NPC | PC;
+	}
+
 	get printableResistanceString() : string {
 		switch (this.system.type) {
 			case "tarot":
@@ -623,12 +635,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				throw new PersonaError("Something weird happened");
 		}
 		const currentLinks = this.system.social.map(x=> x.linkId);
-		const list = game.actors
-			.filter( x=> x.system.type == "npc" || x.system.type =="pc")
+		const list = PersonaDB.socialLinks()
 			.filter( x=> !currentLinks.includes(x.id))
 			.filter( (x : PC | NPC)=> Object.values(x.system.weeklyAvailability).some(x=> x == true))
 			.filter( (x : PC | NPC)=> !!x.system.tarot)
-		return list as (PC | NPC)[];
+		return list;
 	}
 
 	get recoveryAmt(): number {

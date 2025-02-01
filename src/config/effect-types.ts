@@ -144,7 +144,6 @@ export const DUNGEON_ACTION_LIST = [
 	"change-scene-weather",
 ] as const;
 
-
 export type DungeonAction = typeof DUNGEON_ACTION_LIST[number];
 
 export const DUNGEON_ACTIONS = Object.fromEntries(
@@ -155,7 +154,6 @@ export const MODIFIER_CONS_TYPE_LIST =  [
 	"constant",
 	"system-variable",
 ] as const;
-
 
 	export type ModifierConsType = typeof MODIFIER_CONS_TYPE_LIST[number];
 
@@ -174,7 +172,6 @@ export const DAMAGE_SUBTYPE_LIST = [
 ] as const;
 
 export type DamageSubtype = typeof DAMAGE_SUBTYPE_LIST[number];
-
 
 export const DAMAGE_SUBTYPES = Object.fromEntries(
 	DAMAGE_SUBTYPE_LIST.map( x=> [x, `persona.damage-subtype.${x}`])

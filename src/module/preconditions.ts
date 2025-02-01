@@ -135,11 +135,13 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			const actor = PersonaDB.findActor(situation.user);
 			if (!actor  || actor.system.type =="shadow") return false;
 
-			// let specifiedTarget : PersonaActor | null = null;
 			if (condition.socialLinkIdOrTarot == "SLSource"){
 				return true;
 			}
 			//in theory these should be preverified so we're automatically letting them through
+			if (situation.openingRoll) {
+				debugger;
+			}
 			const socialLink = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
 			if (!socialLink) {
 				target = 0;
@@ -679,7 +681,7 @@ function getSubjectActor<K extends string, T extends Record<K, ConditionTarget>>
 	return subject;
 }
 
-export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, situation: Situation, source: Option<PowerContainer>): SocialLink | undefined {
+export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, situation: Situation, source: Option<PowerContainer>): NPC | PC | undefined {
 	if (socialLinkIdOrTarot == undefined ) return undefined;
 	let targetIdOrTarot : SocialLinkIdOrTarot | undefined = socialLinkIdOrTarot as SocialLinkIdOrTarot;
 	const test = targetIdOrTarot as keyof typeof SOCIAL_LINK_OR_TAROT_OTHER;
@@ -725,6 +727,11 @@ export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, si
 	}
 	if (!targetIdOrTarot) return undefined;
 	const allLinks = PersonaDB.socialLinks();
+	const allyCheck = PersonaDB.NPCAllies()
+		.find( ally => ally.id == targetIdOrTarot);
+	if (allyCheck) {
+		return allyCheck.getNPCProxyActor();
+	}
 	const desiredActor  = allLinks
 		.find( x=> x.id == targetIdOrTarot)
 		?? allLinks
@@ -750,7 +757,8 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 				switch (parent.system.type) {
 					case "pc":
 					case "shadow":
-						return parent as PC | Shadow;
+					case "npcAlly":
+						return parent as ValidAttackers;
 					default:
 						break;
 				}
@@ -883,7 +891,6 @@ type EnterRegionTrigger = {
 	trigger: "on-enter-region",
 	triggeringRegionId : string,
 	triggeringCharacter ?:  UniversalActorAccessor<ValidAttackers>;
-
 }
 
 export type Situation = SituationUniversal & (
@@ -897,7 +904,6 @@ export type SocialCardSituation = UserSituation & {
 	isSocial: true;
 	cameo : UniversalActorAccessor<ValidSocialTarget> | undefined;
 };
-
 
 type SituationUniversal = {
 	//more things can be added here all should be optional
