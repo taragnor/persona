@@ -1,4 +1,5 @@
  class FoundryDocument <Embedded extends (FoundryDocument | never) = never> {
+	 constructor (...args: unknown[]);
 	get parent(): FoundryDocument<any> | undefined;
 
 	async update<T extends updateObj> (updateData: AllowedUpdateKeys<T>, databaseOperation ?: Partial<DatabaseUpdateOperation>): Promise<this>;

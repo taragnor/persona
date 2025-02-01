@@ -136,11 +136,8 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (!actor  || actor.system.type =="shadow") return false;
 
 			if (condition.socialLinkIdOrTarot == "SLSource"){
+				//in theory these should be preverified so we're automatically letting them through
 				return true;
-			}
-			//in theory these should be preverified so we're automatically letting them through
-			if (situation.openingRoll) {
-				debugger;
 			}
 			const socialLink = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
 			if (!socialLink) {

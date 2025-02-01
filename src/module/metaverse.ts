@@ -388,7 +388,7 @@ export class Metaverse {
 		return region as PersonaRegion;
 	}
 
-	static async presenceCheck(region ?: PersonaRegion, situation ?: Situation) : Promise<PresenceCheckResult> {
+	static async presenceCheck(region ?: PersonaRegion, situation ?: Situation, modifier = 0) : Promise<PresenceCheckResult> {
 		if (!region) {
 			region = this.getRegion();
 			if (!region) return null;
@@ -407,7 +407,7 @@ export class Metaverse {
 		);
 		const sPresence = region.shadowPresence + sModifiers.total(situation);
 		if (sPresence > 0) {
-			if( await this.#shadowPresenceRoll(sPresence, this.name) == true) {
+			if( await this.#shadowPresenceRoll(sPresence + modifier, this.name) == true) {
 				return "shadows";
 			}
 		}
@@ -418,7 +418,7 @@ export class Metaverse {
 		);
 		const cPresence = region.concordiaPresence + cModifiers.total(situation);
 		if (cPresence > 0) {
-			if ( await this.#concordiaPresenceRoll(cPresence, this.name) == true)  {
+			if ( await this.#concordiaPresenceRoll(cPresence + modifier, this.name) == true)  {
 				return "daemons";
 			}
 		}

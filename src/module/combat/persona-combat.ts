@@ -64,7 +64,15 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	// engagedList: Combatant<PersonaActor>[][] = [];
 	_engagedList: EngagementList;
 	static customAtkBonus: number;
+	consecutiveCombat: number =0;
+	defeatedFoes : PersonaActor[] = [];
 	lastActivationRoll: number;
+
+	constructor (...args: unknown[]) {
+		super(...args);
+		this.consecutiveCombat = 0;
+		this.defeatedFoes = [];
+	}
 
 	override async startCombat() {
 		let msg = "";
@@ -106,6 +114,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	}
 
 	override async delete() : Promise<void> {
+		if (!game.user.isGM) return;
 		this.refreshActorSheets();
 		if (!this.isSocial) {
 			await this.generateTreasure();
@@ -114,8 +123,24 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			await Metaverse.enterMetaverse();
 		}
 		await PersonaCombat.onTrigger("on-combat-end-global").emptyCheck()?.toMessage("Triggered Effect", undefined);
-		const ret = await super.delete()
-		return ret;
+		return await super.delete()
+	}
+
+	async checkEndCombat() : Promise<boolean> {
+		if (this.isSocial) return false;
+		const winner = this.combatants.find(x=>
+			x.actor != undefined
+			&& x.actor.isAlive()
+			&& this.getFoes(x)
+			.filter(f => !f.isDefeated)
+			.length == 0
+		);
+		if (winner) {
+			if (await this.endCombat()) {
+				return true;
+			}
+		}
+		return true;
 	}
 
 	async refreshActorSheets(): Promise<void> {
@@ -126,6 +151,48 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				actor.sheet?.render(true);
 			}
 		}
+	}
+
+	override async endCombat() : Promise<boolean> {
+		const dialog = await HTMLTools.confirmBox("End Combat", "End Combat?");
+		if (dialog == false) return false;
+		const nextCombat = await this.checkForConsecutiveCombat();
+		if (!nextCombat) {
+			this.delete();
+			return true;
+		}
+		await this.prepareForNextCombat();
+		return true;
+	}
+
+	async prepareForNextCombat() {
+		const actors = await this.clearFoes();
+		this.defeatedFoes = this.defeatedFoes.concat(actors);
+		await this.update({ "round": 0, });
+	}
+
+	async clearFoes() : Promise<PersonaActor[]> {
+		const combatantsToDelete = this.combatants
+		.filter(x => x.token != undefined
+			&& x.actor != undefined
+			&& !x.actor.isAlive()
+			&& x.actor.system.type == "shadow"
+			&& !x.token.isLinked);
+		const tokensToDelete = combatantsToDelete.map( x=> x.token.id);
+		await game.scenes.current.deleteEmbeddedDocuments("Token", tokensToDelete);
+		return combatantsToDelete.flatMap(x=> x.actor ? [x.actor] : []);
+	}
+
+	async checkForConsecutiveCombat() : Promise<boolean> {
+		const region = Metaverse.getRegion();
+		if (!region)  return false;
+		this.consecutiveCombat += 1;
+		const check = await region.presenceCheck(-this.consecutiveCombat);
+		if (!check) {
+			this.consecutiveCombat = 0;
+			return false;
+		}
+		return true;
 	}
 
 	validCombatants(attacker?: PToken): Combatant<ValidAttackers>[] {
@@ -154,6 +221,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (actor.isOwner && !game.user.isGM)
 			TurnAlert.alert();
 		if (!game.user.isGM) return;
+		if (await this.checkEndCombat()) {
+			return;
+		}
 		await this.execStartingTrigger(combatant);
 		await this.clearStartTurnEffects(combatant);
 
@@ -1925,8 +1995,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	/**return true if the target is eligible to use the power based on whose turn it is
 	 */
 	turnCheck(token: PToken, power: Usable): boolean {
-		if (!this.enemiesRemaining(token)) return true;
-		if (!this.combatant) return true;
+		if (this.isSocial) return true;
+		// if (!this.enemiesRemaining(token)) return true;
+		if (!this.combatant) return false;
 		if (token.actor.hasStatus("baton-pass"))
 			return true;
 		if (power.isTeamwork() ) {
@@ -1938,33 +2009,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		return (this.combatant.token.id == token.id)
 	}
-
-	// async preSaveEffect( total: number, effect: PersonaAE, actor: PersonaActor) : Promise<string[]> {
-	// 	let retstr: string[] = [];
-	// 	const statuses = Array.from(effect.statuses)
-	// 	for (const status of statuses) {
-	// 		switch (status) {
-	// 			case "confused":
-	// 				retstr.push(`<b>${actor.name} is confused and can't take actions this turn!`);
-	// 				break;
-	// 			case "fear":
-	// 				if (total <= 2) {
-	// 					retstr.push(`(<b>${actor.name} flees from combat!</b>`);
-	// 				} else {
-	// 					retstr.push(`(<b>${actor.name} is paralyzed with fear and can't act this turn</b>`);
-	// 				}
-	// 				break;
-	// 			case "charmed":
-	// 				if (total <= 5) {
-	// 					retstr.push(`<b>${actor.name} is under full enemy control</b>`);
-	// 				} else {
-	// 					retstr.push(`<b>${actor.name} is charmed and makes a basic attack against a random possible target</b>`);
-	// 				}
-	// 				break;
-	// 		}
-	// 	}
-	// 	return retstr;
-	// }
 
 	static async allOutAttackPrompt() {
 		if (!PersonaSettings.get("allOutAttackPrompt"))
@@ -2000,6 +2044,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (!allegiance) return [];
 		return this.validCombatants().filter( c => c.actor != null
 			&& (c.actor.getAllegiance() == allegiance)
+			&& c != comb);
+	}
+
+	getFoes(comb: Combatant<ValidAttackers>) : Combatant<ValidAttackers>[] {
+		const allegiance = comb.actor?.getAllegiance();
+		if (!allegiance) return [];
+		return this.validCombatants().filter( c => c.actor != null
+			&& (c.actor.getAllegiance() != allegiance)
 			&& c != comb);
 	}
 
@@ -2160,8 +2212,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (shadows.some(x=> x.hp > 0)) {
 			return;
 		}
+		const defeatedFoes = this.defeatedFoes.concat(shadows);
+		this.defeatedFoes = [];
 		const pcs = actors.filter( x => x.system.type == "pc");
-		return await Metaverse.generateTreasure(shadows, pcs);
+		return await Metaverse.generateTreasure(defeatedFoes, pcs);
 	}
 
 	displayEscalation(element : JQuery<HTMLElement>) {

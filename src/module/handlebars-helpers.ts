@@ -325,7 +325,7 @@ export class PersonaHandleBarsHelpers {
 		"inventoryLocked": function() : boolean {
 			if (game.user.isGM) return false;
 			if (!game.combat) return false;
-			return (game.combat.combatants.contents.some( x=> x?.actor?.type == "shadow"));
+			return (!(game.combat as PersonaCombat).isSocial);
 		},
 
 		"signed" : function(num: string | number) : SafeString {

@@ -273,8 +273,8 @@ export class PersonaRegion extends RegionDocument {
 		return true;
 	}
 
-	async presenceCheck() : Promise<boolean> {
-		const presence = await Metaverse.presenceCheck(this);
+	async presenceCheck(modifier = 0) : Promise<boolean> {
+		const presence = await Metaverse.presenceCheck(this, undefined, modifier);
 		if (!presence) return false;
 		let shadowType : Shadow["system"]["creatureType"] | undefined = undefined;
 		switch (presence) {
