@@ -236,7 +236,6 @@ export class SearchMenu {
 		}
 		if (!options.rollTension) return msg;
 		const isEncounter = await region.presenceCheck();
-		// if (result != "none") {
 		if (isEncounter) {
 			this.suspend(true);
 			return;
@@ -264,7 +263,7 @@ export class SearchMenu {
 				case 5:
 					val = Math.min(6, val + (options.treasureFindBonus ?? 0));
 				case 6:
-					result= options.treasureRemaining <= 7 - val ? "treasure" : "nothing";
+					result= (7 - options.treasureRemaining <= val) ? "treasure" : "nothing";
 					break;
 				default:
 					result = "nothing";

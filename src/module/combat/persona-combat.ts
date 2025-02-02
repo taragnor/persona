@@ -140,7 +140,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 
 	async refreshActorSheets(): Promise<void> {
@@ -221,12 +221,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (actor.isOwner && !game.user.isGM)
 			TurnAlert.alert();
 		if (!game.user.isGM) return;
-		if (await this.checkEndCombat()) {
+		if (await this.checkEndCombat() == true) {
 			return;
 		}
 		await this.execStartingTrigger(combatant);
 		await this.clearStartTurnEffects(combatant);
-
 		let startTurnMsg = [ `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`];
 		startTurnMsg = startTurnMsg.concat(
 		   await (actor as PC | Shadow).onStartCombatTurn(),
