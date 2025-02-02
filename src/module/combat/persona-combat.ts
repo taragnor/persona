@@ -1749,11 +1749,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const attackerType = token.actor.getAllegiance();
 		const combat= game.combat as PersonaCombat;
 		const tokens = combat
-			? combat.validCombatants(token)
-			.filter( x=> x.actor)
-			.map(x=> x.token)
-			: game.scenes.current.tokens
-			.filter( x=> !!x.actor && (x.actor as PersonaActor).system.type == "pc");
+			? ( combat.validCombatants(token)
+				.filter( x=> x.actor)
+				.map(x=> x.token))
+			: (game.scenes.current.tokens
+				.filter( (x : TokenDocument<PersonaActor>) => !!x.actor && (x.actor.system.type == "pc" || x.actor.system.type =="npcAlly"))
+			);
 		const targets= tokens.filter( x => {
 			const actor = x.actor;
 			if (!actor)  return false;
