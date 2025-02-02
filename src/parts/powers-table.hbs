@@ -59,7 +59,7 @@
 	</div>
 
 	{{#if actor.sideboardPowers}}
-	<h3> Sideboarded Powers </h3>
+	<h3> Sideboarded Powers (max {{actor.maxSideboardPowers}}) </h3>
 	<div class="power-sideboard">
 		{{#each actor.sideboardPowers as |power i|}}
 		<div class="sideboard-power" data-power-id="{{power.id}}">

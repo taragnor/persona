@@ -1229,8 +1229,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return Math.floor(level / 2);
 	}
 
-	instantKillResistanceMultiplier(this: ValidAttackers) : number {
+	instantKillResistanceMultiplier(this: ValidAttackers, attacker: ValidAttackers) : number {
 		const situation : Situation = {
+			attacker: attacker.accessor,
 			user: this.accessor,
 			target: this.accessor,
 		}

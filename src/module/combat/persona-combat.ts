@@ -1085,7 +1085,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			};
 		}
 		const critBoostMod = power.critBoost(attacker.actor);
-		const powerDiff = this.calcPowerCritBoostTargetAdjust(target.actor, power);
+		const powerDiff = this.calcPowerCritBoostTargetAdjust(attacker.actor, target.actor, power);
 		critBoostMod.add("Power Level Difference", powerDiff);
 		situation.resisted = resist == "resist";
 		situation.struckWeakness = resist == "weakness";
@@ -1093,7 +1093,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		critBoostMod.add("Enemy Critical Resistance", -critResist);
 		const floor = situation.resisted ? -999 : 0;
 		const critBoost = Math.max(floor, critBoostMod.total(situation));
-
+		// console.debug(`
+		// CritBoost ${critBoost}
+		// Power Diff: ${powerDiff}
+		// Enemy Crit Resist ${-critResist}
+		// 	`);
 		if (naturalAttackRoll == 1
 			|| total < defenseVal
 			|| (attacker.actor.hasStatus("rage") && naturalAttackRoll % 2 == 1)
@@ -1149,19 +1153,19 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
-	static calcPowerCritBoostTargetAdjust(target: ValidAttackers, power: Usable, disallowIncremental = false) {
+	static calcPowerCritBoostTargetAdjust(attacker: ValidAttackers, target: ValidAttackers, power: Usable, disallowIncremental = false) {
 		if (power.system.type != "power" || power.isBasicPower()) {
 			return 0;
 		}
 		if (!power.isInstantDeathAttack()) {
-			return 0;
+			return 1;
 		}
 		const powerLevel = power.baseCritSlotBonus();
 		const targetResist = target.basePowerCritResist(power, disallowIncremental);
 		const dmgtype = power.system.dmg_type;
 		// const mult = (dmgtype == "dark" || dmgtype == "light") ? 2 : 1;
 		const diff = Math.max(0, powerLevel - targetResist);
-		const mult = target.instantKillResistanceMultiplier();
+		const mult = target.instantKillResistanceMultiplier(attacker);
 		return Math.floor(diff * mult);
 	}
 
