@@ -1580,14 +1580,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					});
 				}
 			}
-			if (attacker.actor!.system.type == "pc" && power.system.hpcost) {
+			if (attacker.actor!.system.type != "shadow" && power.system.hpcost) {
 				const hpcostmod = costModifiers.find(x=> x.type== "half-hp-cost") ? 0.5 : 1;
 				res.addEffect(null, attacker.actor!, {
 					type: "hp-loss",
 					amount: power.system.hpcost * hpcostmod
 				});
 			}
-			if (attacker.actor.system.type == "pc" && power.system.subtype == "magic" && power.system.mpcost > 0) {
+			if (attacker.actor.system.type != "shadow" && power.system.subtype == "magic" && power.system.mpcost > 0) {
 				res.addEffect(null, attacker.actor, {
 					type: "alter-mp",
 					subtype: "direct",

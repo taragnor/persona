@@ -1,3 +1,4 @@
+import { NPCAlly } from "../actor/persona-actor.js";
 import { ValidAttackers } from "./persona-combat.js";
 import { StatusDuration } from "../active-effect.js";
 import { getSocialLinkTarget } from "../preconditions.js";
@@ -825,8 +826,8 @@ export class CombatResult  {
 					break;
 				case "teach-power":
 					const power = PersonaDB.allPowers().find(power => power.id == otherEffect.id);
-					if (power && actor.system.type == "pc") {
-						await (actor as PC).addPower(power);
+					if (power && (actor.system.type == "pc" || actor.system.type == "npcAlly")) {
+						await (actor as PC | NPCAlly).addPower(power);
 					}
 					break;
 				case "lower-resistance":
@@ -883,7 +884,7 @@ export class CombatResult  {
 					otherEffect satisfies never;
 			}
 		}
-		if (mpcost != 0 && actor.system.type == "pc") {
+		if (mpcost != 0 && actor.system.type != "shadow") {
 			mpcost *= mpmult;
 			await (actor as PC).modifyMP(mpcost);
 		}

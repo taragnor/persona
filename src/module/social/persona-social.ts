@@ -123,8 +123,6 @@ export class PersonaSocial {
 		if (!force && !(await HTMLTools.confirmBox( "Advance Date", "Advnace Date?", true)))
 			return;
 		await PersonaCalendar.nextDay(extraMsgs);
-
-
 	}
 
 	static async updateLinkAvailability(day: SimpleCalendar.WeekdayName) {
