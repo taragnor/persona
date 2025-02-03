@@ -2239,7 +2239,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					break;
 				if (this.system.tarot == "")
 					return undefined;
-				// console.debug("cached value no good (pc)");
 				const PC = this as PC;
 				this.cache.tarot = PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
 				break;
@@ -2248,12 +2247,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					break;
 				if (this.system.tarot == "")
 					return undefined;
-				// console.debug("cached value no good(Shadow)");
 				const shadow = this as Shadow;
 				this.cache.tarot =  PersonaDB.tarotCards().find(x=> x.name == shadow.system.tarot);
 				break;
-			case "npc":
 			case "npcAlly":
+				if (this.system.NPCSocialProxyId) {
+					const actor = PersonaDB.socialLinks().find( x=> x.id == (this as NPCAlly).system.NPCSocialProxyId);
+					if (actor) return actor.tarot;
+				}
+				//switch fallthrough is deliberate here
+			case "npc":
 				if (this.cache.tarot?.name == this.system.tarot)
 					break;
 				if (this.system.tarot == "")

@@ -53,7 +53,6 @@ export class NPCAllySheet extends PCLikeSheet {
 			case "shadow":
 			case "tarot":
 			case "npcAlly":
-				//create a social link
 				return undefined;
 			default:
 				actor.system satisfies never;
