@@ -26,9 +26,11 @@ const PRIMARY_SECONDARY = {
 
 export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 	declare item: SocialCard;
+	focusedEvent: number | undefined = undefined;
 
 	override async getData() {
 		const data = await super.getData();
+		data.focusedEvent = this.focusedEvent;
 		data.THRESHOLD_TYPE = THRESHOLD_TYPE;
 		data.POWERSTUFF =  PersonaEffectContainerBaseSheet.powerStuff;
 		data.CONST = {
@@ -65,7 +67,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 			template: `${HBS_TEMPLATES_DIR}/social-card-sheet.hbs`,
 			width: 800,
 			height: 800,
-			tabs: [{navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "combat"}]
+			tabs: [{navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "events"}]
 		});
 	}
 
@@ -82,7 +84,8 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		html.find(".del-event").on("click", this.deleteCardEvent.bind(this));
 		html.find(".add-choice").on("click", this.addChoice.bind(this));
 		html.find(".del-choice").on("click", this.deleteChoice.bind(this));
-
+		html.find(".event-index li .name").on("click", this.loadCardEvent.bind(this));
+		html.find(".card-event .go-back").on("click", this.goBackEventList.bind(this));
 	}
 
 	async addCardTag(_ev: JQuery.ClickEvent) {
@@ -130,8 +133,10 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 	}
 	async deleteCardEvent( ev: JQuery.ClickEvent) {
 		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
+		this.focusedEvent = undefined;
+		this.element.find(".event-index").show();
+		this.element.find(".card-event").hide();
 		await this.item.deleteCardEvent(eventIndex);
-
 	}
 
 	async addChoice(ev: JQuery.ClickEvent) {
@@ -165,6 +170,24 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		const qual = ArrayCorrector(this.item.system.qualifiers);
 		qual.splice(index, 1);
 		await this.item.update({"system.qualifiers": qual});
+	}
+
+	async loadCardEvent(ev: JQuery.ClickEvent) {
+		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
+		this.focusedEvent = eventIndex;
+
+		this.element.find(".event-index").hide();
+		this.element.find(".card-event").each( function () {
+			const elem = $(this);
+			const index = Number(HTMLTools.getClosestData(elem, "eventIndex"));
+			if (index != eventIndex) {elem.hide();} else {elem.show();}
+		});
+	}
+
+	async goBackEventList(_ev: JQuery.ClickEvent) {
+		this.focusedEvent = undefined;
+		this.element.find(".event-index").show();
+		this.element.find(".card-event").hide();
 	}
 
 } // end of class

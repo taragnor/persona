@@ -1,202 +1,235 @@
 <form class="social-card-sheet">
+	<header>
+		<img class="profile-img" src="{{item.img}}" data-edit="img"/>
+		<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Job Name" placeholder="Job Name">
+	</header>
 
-	<img class="profile-img" src="{{item.img}}" data-edit="img"/>
-	<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Job Name" placeholder="Job Name">
+	<nav class="sheet-tabs tabs" data-group="primary">
+		<a class="item" data-tab="draw-conditions">
+			Draw Condition
+		</a>
+		<a class="item" data-tab="cameo">
+			Cameo
+		</a>
+		<a class="item" data-tab="universal">
+			Universal Effects
+		</a>
+		<a class="item" data-tab="events">
+			Events
+		</a>
+		<a class="item" data-tab="opportunities">
+			Opportunities
+		</a>
+		<a class="item" data-tab="finale">
+			Final
+		</a>
+	</nav>
 
-	<div class="card-conditions" data-top-path="system.conditions" data-path="system.conditions">
-		<h3>Prereqs to Draw Card </h3>
-		{{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.conditions." POWERSTUFF=POWERSTUFF owner=item}}
-	</div>
-	{{> "systems/persona/parts/cardTags.hbs" item=item POWERSTUFF=POWERSTUFF}}
-	<div>
-		<select name="system.cardType">
-			{{selectOptions SOCIAL_CARD_TYPES localize=true selected=item.system.cardType}}
-		</select>
-	</div>
-	<div>
-		<label>
-			Frequency
-		</label>
-		<select name="system.frequency">
-			{{selectOptions SOCIAL_DATA.FREQUENCY localize=false selected=item.system.frequency}}
-		</select>
-		<div class="announce-availability">
-			<label>
-				Announce when avaiable
-			</label>
-			<input type="checkbox" id="AnnounceWhenAvailable" name="system.announceWhenAvailable" {{checked item.system.announceWhenAvailable}}>
-		</div>
-
-	</div>
-
-	{{#if (eq item.system.cardType "social")}}
-	{{#if item.system.qualifiers}}
-	<section class="qualifiers">
-		<div class="header"> Qualifiers (Deprecated)
-			<a class="add-qualifier">
-				<i class="fa-solid fa-square-plus"></i>
-			</a>
-		</div>
-		{{#each item.system.qualifiers as |qual i|}}
-		<div class="qualifier" data-qualifier-index="{{i}}">
-			<label for="qualname-{{i}}">
-				Name
-			</label>
-			<input id="qualname-{{i}}" class="name" name="system.qualifiers.{{i}}.relationshipName" type="text" list="qualifiers-{{i}}" value="{{qual.relationshipName}}">
-			<datalist id="qualifiers-{{i}}">
-				{{#each ../QUALIFIERS_NAME_LIST as |item|}}
-				<option> {{item}}</option>
+	<section class="sheet-body">
+		<section class="tab tab-content draw-conditions flexcol" data-group="primary" data-tab="draw-conditions">
+			<div class="card-conditions" data-top-path="system.conditions" data-path="system.conditions">
+				<h3>Prereqs to Draw Card </h3>
+				{{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.conditions." POWERSTUFF=POWERSTUFF owner=item}}
+			</div>
+			{{> "systems/persona/parts/cardTags.hbs" item=item POWERSTUFF=POWERSTUFF}}
+			<div>
+				<select name="system.cardType">
+					{{selectOptions SOCIAL_CARD_TYPES localize=true selected=item.system.cardType}}
+				</select>
+			</div>
+			<div>
+				<label>
+					Frequency
+				</label>
+				<select name="system.frequency">
+					{{selectOptions SOCIAL_DATA.FREQUENCY localize=false selected=item.system.frequency}}
+				</select>
+				<div class="announce-availability">
+					<label>
+						Announce when avaiable
+					</label>
+					<input type="checkbox" id="AnnounceWhenAvailable" name="system.announceWhenAvailable" {{checked item.system.announceWhenAvailable}}>
+				</div>
+			</div>
+			{{#if (eq item.system.cardType "social")}}
+			{{#if item.system.qualifiers}}
+			<section class="qualifiers">
+				<div class="header"> Qualifiers (Deprecated)
+					<a class="add-qualifier">
+						<i class="fa-solid fa-square-plus"></i>
+					</a>
+				</div>
+				{{#each item.system.qualifiers as |qual i|}}
+				<div class="qualifier" data-qualifier-index="{{i}}">
+					<label for="qualname-{{i}}">
+						Name
+					</label>
+					<input id="qualname-{{i}}" class="name" name="system.qualifiers.{{i}}.relationshipName" type="text" list="qualifiers-{{i}}" value="{{qual.relationshipName}}">
+					<datalist id="qualifiers-{{i}}">
+						{{#each ../QUALIFIERS_NAME_LIST as |item|}}
+						<option> {{item}}</option>
+						{{/each}}
+					</datalist>
+					<input class="short" type="number" name="system.qualifiers.{{i}}.min" value="{{qual.min}}">
+					<input class="short" type="number" name="system.qualifiers.{{i}}.max" value="{{qual.max}}">
+					<a class="delete-qualifier">
+						<i class="fa-solid fa-trash"></i>
+					</a>
+				</div>
 				{{/each}}
-			</datalist>
-			<input class="short" type="number" name="system.qualifiers.{{i}}.min" value="{{qual.min}}">
-			<input class="short" type="number" name="system.qualifiers.{{i}}.max" value="{{qual.max}}">
-			<a class="delete-qualifier">
-				<i class="fa-solid fa-trash"></i>
-			</a>
-		</div>
-		{{/each}}
+			</section>
+			{{/if}}
+			{{/if}}
+			{{#if (ne item.system.cardType "social")}}
+			<section class="non-social-attributes">
+				{{> "systems/persona/parts/weekly-availability.hbs" item=item CONST=CONST}}
+				<div class="primary">
+					<label>
+						Primary Skill
+					</label>
+					<select name="system.keyskill.primary">
+						{{selectOptions SOCIAL_DATA.STUDENT_SKILLS localize=true selected=item.system.keyskill.primary}}
+					</select>
+				</div>
+				<div class="secondary">
+					<label>
+						Secondary Skill
+					</label>
+					<select name="system.keyskill.secondary">
+						{{selectOptions SOCIAL_DATA.STUDENT_SKILLS localize=true selected=item.system.keyskill.secondary}}
+					</select>
+				</div>
+				<div class="dc">
+					<label>
+						DC
+					</label>
+					<select name="system.dc.thresholdType">
+						{{selectOptions THRESHOLD_TYPE localize=true selected=item.system.dc.thresholdType}}
+					</select>
+					{{#if (eq item.system.dc.thresholdType "static")}}
+					{{numberInput item.system.dc.num class="short" name="system.dc.num" step=1 min=10 max=50}}
+					{{/if}}
+					{{#if (eq item.system.dc.thresholdType "levelScaled")}}
+					<label>
+						Starting Value
+					</label>
+					{{numberInput item.system.dc.startingVal class="short" name="system.dc.startingVal" step=1 min=10 max=50}}
+					<label>
+						Level Multiplier
+					</label>
+					{{numberInput item.system.dc.multiplier class="short" name="system.dc.multiplier" step=1 min=1 max=10}}
+					{{/if}}
+
+					{{#if (eq item.system.dc.thresholdType "statScaled")}}
+					<select name="system.dc.stat">
+						{{selectOptions SOCIAL_DATA.STUDENT_SKILLS localize=true selected=item.system.dc.stat}}
+					</select>
+					{{/if}}
+				</div>
+			</section>
+			{{/if}}
+		</section>
+
+		<section class="tab tab-content draw-conditions flexcol" data-group="primary" data-tab="universal">
+			<div class="automatic">
+				<h4>Automatic</h4>
+				<textarea name="system.automatic">
+					{{trim item.system.automatic}}
+				</textarea>
+				<div class="immediate-effects" data-top-path="system.immediateEffects" data-path="system.immediateEffects">
+					{{> "systems/persona/parts/effects-section-adaptable.hbs" namePrefix=(strcat "system.immediateEffects.") POWERSTUFF=item.sheet.powerStuff owner=item}}
+				</div>
+			</div>
+			<div class="perk">
+				<h4>
+					Perk
+				</h4>
+				<select name="system.perkType">
+					{{selectOptions PERK_TYPES localize=true selected=item.system.perkType}}
+				</select>
+				<span>
+					<label> Starts Disabled</label>
+					<input type="checkbox" id="flagState" name="system.perkDisabled" {{checked item.system.perkDisabled}}>
+				</span>
+				<textarea name="system.perk">
+					{{trim item.system.perk}}
+				</textarea>
+			</div>
+			<div class="boon">
+				<label>Boon</label>
+				<textarea name="system.boon">
+					{{trim item.system.boon}}
+				</textarea>
+			</div>
+			<div class="bane">
+				<label>Bane</label>
+				<textarea name="system.bane">
+					{{trim item.system.bane}}
+				</textarea>
+			</div>
+			<div class="event-modifiers" data-top-path="system.globalModifiers">
+				<h4> Universal Event Modifiers </h4>
+
+				{{> "systems/persona/parts/effects-section-adaptable.hbs" namePrefix=(strcat "system.globalModifiers.") POWERSTUFF=item.sheet.powerStuff owner=item}}
+			</div>
+
+		</section>
+
+		<section class="tab tab-content cameo-section flexcol" data-group="primary" data-tab="cameo">
+			<div class="cameo">
+				<h4> Cameo</h4>
+				<div class="flexrow">
+					<select name="system.cameoType">
+						{{selectOptions CAMEO_TYPES localize=true selected=item.system.cameoType}}
+					</select>
+					<div>
+						<label> Standard Cameo Benefit</label>
+						<input type="checkbox" id="flagState" name="system.cameoStdPerk" {{checked item.system.cameoStdPerk}}>
+					</div>
+				</div>
+				<div class="cameo-conditions" data-top-path="system.cameoConditions" data-path="system.cameoConditions">
+					{{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.cameoConditions." POWERSTUFF=POWERSTUFF owner=item}}
+				</div>
+				<textarea name="system.cameo">
+					{{trim item.system.cameo}}
+				</textarea>
+				<label> Cameo Opportunity</label>
+				<textarea name="system.cameoOpportunity">
+					{{trim item.system.cameoOpportunity}}
+				</textarea>
+			</div>
+		</section>
+
+		<section class="tab tab-content events-section flexcol" data-group="primary" data-tab="events">
+			{{> "systems/persona/parts/card-events-section.hbs" item=item SOCIAL_DATA=SOCIAL_DATA}}
+		</section>
+
+		<section class="tab tab-content opportunities-section flexcol" data-group="primary" data-tab="opportunities">
+
+			{{#if (and (isGM) item.system.opportunity)}}
+			<div>
+				<label> Opoortunity (Deprecated)</label>
+				<textarea name="system.opportunity">
+					{{trim item.system.opportunity}}
+				</textarea>
+			</div>
+
+			{{/if}}
+
+			{{> "systems/persona/parts/card-opportunity-section.hbs" item=item SOCIAL_DATA=SOCIAL_DATA}}
+		</section>
+
+
+		<section class="tab tab-content finale-section flexcol" data-group="primary" data-tab="finale">
+			<div class="finale">
+				<label>Finale</label>
+				<textarea name="system.finale">
+					{{trim item.system.finale}}
+				</textarea>
+			</div>
+
+			{{> "systems/persona/parts/token-spends-section.hbs" item=item}}
+		</section>
 	</section>
-	{{/if}}
-	{{/if}}
-	{{#if (ne item.system.cardType "social")}}
-	<section class="non-social-attributes">
-		{{> "systems/persona/parts/weekly-availability.hbs" item=item CONST=CONST}}
-		<div class="primary">
-			<label>
-				Primary Skill
-			</label>
-			<select name="system.keyskill.primary">
-				{{selectOptions SOCIAL_DATA.STUDENT_SKILLS localize=true selected=item.system.keyskill.primary}}
-			</select>
-		</div>
-		<div class="secondary">
-			<label>
-				Secondary Skill
-			</label>
-			<select name="system.keyskill.secondary">
-				{{selectOptions SOCIAL_DATA.STUDENT_SKILLS localize=true selected=item.system.keyskill.secondary}}
-			</select>
-		</div>
-		<div class="dc">
-			<label>
-				DC
-			</label>
-			<select name="system.dc.thresholdType">
-				{{selectOptions THRESHOLD_TYPE localize=true selected=item.system.dc.thresholdType}}
-			</select>
-			{{#if (eq item.system.dc.thresholdType "static")}}
-			{{numberInput item.system.dc.num class="short" name="system.dc.num" step=1 min=10 max=50}}
-			{{/if}}
-			{{#if (eq item.system.dc.thresholdType "levelScaled")}}
-			<label>
-				Starting Value
-			</label>
-			{{numberInput item.system.dc.startingVal class="short" name="system.dc.startingVal" step=1 min=10 max=50}}
-			<label>
-				Level Multiplier
-			</label>
-			{{numberInput item.system.dc.multiplier class="short" name="system.dc.multiplier" step=1 min=1 max=10}}
-			{{/if}}
-
-			{{#if (eq item.system.dc.thresholdType "statScaled")}}
-			<select name="system.dc.stat">
-				{{selectOptions SOCIAL_DATA.STUDENT_SKILLS localize=true selected=item.system.dc.stat}}
-			</select>
-
-			{{/if}}
-		</div>
-	</section>
-	{{/if}}
-
-	<div class="automatic">
-		<h4>Automatic</h4>
-		<textarea name="system.automatic">
-			{{trim item.system.automatic}}
-		</textarea>
-		<div class="immediate-effects" data-top-path="system.immediateEffects" data-path="system.immediateEffects">
-			{{> "systems/persona/parts/effects-section-adaptable.hbs" namePrefix=(strcat "system.immediateEffects.") POWERSTUFF=item.sheet.powerStuff owner=item}}
-		</div>
-	</div>
-
-  <div class="perk">
-	  <h4>
-		  Perk
-	  </h4>
-	  <select name="system.perkType">
-		  {{selectOptions PERK_TYPES localize=true selected=item.system.perkType}}
-	  </select>
-	  <span>
-		  <label> Starts Disabled</label>
-		  <input type="checkbox" id="flagState" name="system.perkDisabled" {{checked item.system.perkDisabled}}>
-	  </span>
-	  <textarea name="system.perk">
-		  {{trim item.system.perk}}
-	  </textarea>
-  </div>
-
-  <div class="cameo">
-	  <h4> Cameo</h4>
-	  <div class="flexrow">
-		  <select name="system.cameoType">
-			  {{selectOptions CAMEO_TYPES localize=true selected=item.system.cameoType}}
-		  </select>
-		  <div>
-			  <label> Standard Cameo Benefit</label>
-			  <input type="checkbox" id="flagState" name="system.cameoStdPerk" {{checked item.system.cameoStdPerk}}>
-		  </div>
-	  </div>
-	  <div class="cameo-conditions" data-top-path="system.cameoConditions" data-path="system.cameoConditions">
-		  {{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.cameoConditions." POWERSTUFF=POWERSTUFF owner=item}}
-	  </div>
-
-	  <textarea name="system.cameo">
-		  {{trim item.system.cameo}}
-	  </textarea>
-	  <label> Cameo Opportunity</label>
-	  <textarea name="system.cameoOpportunity">
-		  {{trim item.system.cameoOpportunity}}
-	  </textarea>
-  </div>
-
-  {{> "systems/persona/parts/card-events-section.hbs" item=item SOCIAL_DATA=SOCIAL_DATA}}
-
-  {{#if (and (isGM) item.system.opportunity)}}
-  <div>
-	  <label> Opoortunity (Deprecated)</label>
-	  <textarea name="system.opportunity">
-		  {{trim item.system.opportunity}}
-	  </textarea>
-  </div>
-
-  {{/if}}
-
-  {{> "systems/persona/parts/card-opportunity-section.hbs" item=item SOCIAL_DATA=SOCIAL_DATA}}
-
-  <div class="boon">
-	  <label>Boon</label>
-	  <textarea name="system.boon">
-		  {{trim item.system.boon}}
-	  </textarea>
-  </div>
-  <div class="bane">
-	  <label>Bane</label>
-	  <textarea name="system.bane">
-		  {{trim item.system.bane}}
-	  </textarea>
-  </div>
-  <div class="finale">
-	  <label>Finale</label>
-	  <textarea name="system.finale">
-		  {{trim item.system.finale}}
-	  </textarea>
-  </div>
-
-  <div class="event-modifiers" data-top-path="system.globalModifiers">
-  <h4> Universal Event Modifiers </h4>
-
-  {{> "systems/persona/parts/effects-section-adaptable.hbs" namePrefix=(strcat "system.globalModifiers.") POWERSTUFF=item.sheet.powerStuff owner=item}}
-  </div>
-
-  {{> "systems/persona/parts/token-spends-section.hbs" item=item}}
 
 </form>

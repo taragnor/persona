@@ -4,9 +4,25 @@
 	</h2>
 	<label> Number of Events</label>
 	<input class="short" type="number" name="system.num_of_events" value="{{item.system.num_of_events}}">
+	<section class="event-index {{#if (ne focusedEvent undefined)}} hidden {{/if}}">
+		<ul>
+			{{#each item.system.events as |event i|}}
+			<li data-event-index="{{i}}">
+				<span class="name"> {{event.name}} </span>
+				<span> ({{getEventType event}}) </span>
+				</span>
+				<a class="del-event">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</li>
 
+		{{/each}}
+		</ul>
+
+	</section>
 	{{#each item.system.events as |event i|}}
-	<div class="card-event" data-event-index="{{i}}">
+	<div class="card-event {{#if (ne ../focusedEvent i)}} hidden {{/if}}" data-event-index='{{i}}'>
+		<a class="go-back"> Back </a>
 		<div class="flexrow">
 			<div>
 				{{filePicker type="image" target=(strcat "system.events." i ".img")}}
@@ -17,7 +33,7 @@
 						Sound
 					</label>
 					{{filePicker type="audio" target=(strcat "system.events." i ".sound")}}
-				<input class="img" type="hidden" name="system.events.{{i}}.sound" value="{{event.sound}}">
+					<input class="img" type="hidden" name="system.events.{{i}}.sound" value="{{event.sound}}">
 					{{#if (strcat "system.events." i ".sound")}}
 					<span>{{event.sound}}</span>
 					{{/if}}
@@ -27,9 +43,6 @@
 			<div>
 				<h3>
 					<input class="event-name" type="string" name="system.events.{{i}}.name" value="{{event.name}}">
-					<a class="del-event">
-						<i class="fa-solid fa-trash-can"></i>
-					</a>
 				</h3>
 				<div class="placement">
 					<div>

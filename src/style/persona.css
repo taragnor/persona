@@ -727,3 +727,12 @@ form h5 {
 .search-attempt {
 	margin-left: 5px;
 }
+
+.hidden {
+	display: none;
+}
+
+.event-index .name {
+	font-weight: bold;
+	font-size: larger;
+};

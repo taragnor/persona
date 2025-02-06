@@ -1,3 +1,5 @@
+import { FREQUENCY } from "../config/frequency.js";
+import { CardEvent } from "../config/social-card-config.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
 import { SocialCard } from "./item/persona-item.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
@@ -453,6 +455,15 @@ export class PersonaHandleBarsHelpers {
 				default: actor.system satisfies never;
 					return false;
 			}
-		}
+		},
+		"getEventType": function (ev: CardEvent) : string {
+			const {frequency, placement} = ev;
+			const frequencyStr = FREQUENCY[frequency as keyof typeof FREQUENCY];
+			const placementStr = Object.entries(placement)
+				.flatMap ( ([k,v]) => v == true ? [k] : [])
+				.join(", ");
+			return `${frequencyStr} -- ${placementStr}`;
+		},
+
 	}
 } //end of class
