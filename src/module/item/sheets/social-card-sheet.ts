@@ -77,7 +77,6 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		html.find(".cardTags .delTag").on("click", this.deleteCardTag.bind(this));
 		html.find(".add-qualifier").on("click", this.addQualifier.bind(this));
 		html.find(".delete-qualifier").on("click", this.deleteQualifier.bind(this));
-
 		html.find(".add-opportunity").on("click", this.addOpportunity.bind(this));
 		html.find(".del-opportunity").on("click", this.deleteOpportunity.bind(this));
 		html.find(".add-event").on("click", this.addCardEvent.bind(this));
