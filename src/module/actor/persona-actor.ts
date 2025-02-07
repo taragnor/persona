@@ -2280,6 +2280,21 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.cache.tarot;
 	}
 
+
+/** returns true on level up */
+async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
+	//TODO: activate this when ready
+	return false; //bailout due to not being ready yet
+	let levelUp = false;
+	let newxp = this.system.combat.xp + amt;
+	while (newxp > 100) {
+		newxp -= 100;
+		levelUp = true;
+	}
+	await this.update({"system.combat.xp" : newxp});
+	return levelUp;
+}
+
 get perk() : string {
 	switch (this.system.type) {
 		case "pc":

@@ -117,7 +117,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (!game.user.isGM) return;
 		this.refreshActorSheets();
 		if (!this.isSocial) {
-			await this.generateTreasure();
+			await this.generateTreasureAndXP();
 		}
 		if (this.isSocial && await HTMLTools.confirmBox("Enter Meta", "Enter Metaverse?", true)) {
 			await Metaverse.enterMetaverse();
@@ -1161,7 +1161,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		const powerLevel = power.baseCritSlotBonus();
 		const targetResist = target.basePowerCritResist(power, disallowIncremental);
-		const dmgtype = power.system.dmg_type;
+		// const dmgtype = power.system.dmg_type;
 		// const mult = (dmgtype == "dark" || dmgtype == "light") ? 2 : 1;
 		const diff = Math.max(0, powerLevel - targetResist);
 		const mult = target.instantKillResistanceMultiplier(attacker);
@@ -2212,7 +2212,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		console.log(list.join("\n"));
 	}
 
-	async generateTreasure() {
+	async generateTreasureAndXP() {
 		const actors = this.combatants
 			.contents.flatMap( x=> x?.actor ? [x.actor] : [] );
 		const shadows= actors
@@ -2222,7 +2222,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		const defeatedFoes = this.defeatedFoes.concat(shadows);
 		this.defeatedFoes = [];
-		const pcs = actors.filter( x => x.system.type == "pc");
+		const pcs = actors.filter( x => x.system.type == "pc") as PC[];
+		const party = actors.filter( x=> x.system.type == "pc" || x.system.type == "npcAlly") as (PC | NPCAlly)[];
+		await Metaverse.awardXP(defeatedFoes as Shadow[], party);
 		return await Metaverse.generateTreasure(defeatedFoes, pcs);
 	}
 

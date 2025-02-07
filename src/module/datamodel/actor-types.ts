@@ -167,16 +167,13 @@ export class TarotSchema extends foundry.abstract.TypeDataModel {
 	}
 }
 
-
-
-
- export const ACTORMODELS = {
-	 pc: PCSchema,
-	 shadow: ShadowSchema,
-	 npc: NPCSchema,
-	 tarot: TarotSchema,
-	 npcAlly: NPCAllySchema,
- } as const;
+export const ACTORMODELS = {
+	pc: PCSchema,
+	shadow: ShadowSchema,
+	npc: NPCSchema,
+	tarot: TarotSchema,
+	npcAlly: NPCAllySchema,
+} as const;
 
 //testing the types, purely for debug purposes
 type testPC = SystemDataObjectFromDM<typeof PCSchema>;
