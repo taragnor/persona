@@ -125,7 +125,7 @@ type ResistanceComparison = DerivedComparator & {
 }
 
 type TargettedNumericComparison = NumericComparisonBase & {
-	comparisonTarget: "health-percentage" | "links-dating",
+	comparisonTarget: "health-percentage",
 	conditionTarget: ConditionTarget,
 }
 

@@ -251,7 +251,9 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			break;
 		}
 		case "links-dating": {
-			const subject = getSubjectActor(condition, situation, source, "conditionTarget");
+			const subjectAcc = situation.user ?? situation.attacker;
+			if (!subjectAcc) return false;
+			const subject = PersonaDB.findActor(subjectAcc);
 			if (!subject) return false;
 			if ( subject.system.type != "pc") {target= 0; break;}
 			target= subject.system.social
