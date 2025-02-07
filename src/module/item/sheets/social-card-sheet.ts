@@ -1,3 +1,4 @@
+import { CARD_DC_TYPES } from "../../../config/social-card-config.js";
 import { FREQUENCY } from "../../../config/frequency.js";
 import { THRESHOLD_TYPE } from "../../../config/social-card-config.js";
 import { PersonaSocialSheetBase } from "./social-sheet-base.js";
@@ -41,7 +42,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 			STUDENT_SKILLS,
 			STUDENT_SKILLS_EXT,
 			SAVE_DIFFICULTY: SAVE_TYPES_LOCALIZED,
-			ROLL_DC_TYPES: {"base": "Base", "static": "Static DC"},
+			ROLL_DC_TYPES: CARD_DC_TYPES,
 			FREQUENCY: FREQUENCY,
 		};
 		// data.FREQUENCY = FREQUENCY;

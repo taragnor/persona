@@ -249,13 +249,14 @@ export class PersonaSocial {
 			return link;
 		}
 		const cards = this.validSocialCards(actor, link);
-		let undrawn = cards.filter( card=> !this.#drawnCardIds.includes(card.id));
+		// let undrawn = cards.filter( card=> !this.#drawnCardIds.includes(card.id));
+		const undrawn = cards;
 
-		if (undrawn.length < 1) {
-			undrawn = cards;
-			this.#drawnCardIds = this.#drawnCardIds
-				.filter(cardId=> !cards.find(card => card.id == cardId));
-		}
+		// if (undrawn.length < 1) {
+		// 	undrawn = cards;
+			// this.#drawnCardIds = this.#drawnCardIds
+			// 	.filter(cardId=> !cards.find(card => card.id == cardId));
+		// }
 		const chosenCard = weightedChoice(
 			undrawn.map( card=> ({
 				item: card,
@@ -263,7 +264,7 @@ export class PersonaSocial {
 			}))
 		);
 		if (!chosenCard) throw new PersonaError("Can't find valid social card!");
-		this.#drawnCardIds.push(chosenCard.id);
+		// this.#drawnCardIds.push(chosenCard.id);
 		return chosenCard;
 	}
 
@@ -292,6 +293,8 @@ export class PersonaSocial {
 		};
 		if (cameos[0]) {
 			replaceSet["$CAMEO"] = cameos[0].name;
+		} else {
+			replaceSet["$CAMEO"] = "NULL CAMEO";
 		}
 		const cardData : CardData = {
 			card,
@@ -409,6 +412,7 @@ export class PersonaSocial {
 			}
 			case "any": {
 				const anyLink = allCameos;
+				if (allCameos.length == 0) return [];
 				const randomPick = anyLink[Math.floor(Math.random() * anyLink.length)];
 				if (!randomPick)
 				throw new PersonaError("Random any link select failed");
@@ -776,12 +780,27 @@ export class PersonaSocial {
 		return this.getBaseSkillDC(cardData) - 5;
 	}
 
+
+	static getSocialLinkDC (cardData: CardData, type: "cameo" | "target" = "target") : number | undefined {
+		switch (type) {
+			case "cameo": {
+				const cameoId = cardData.cameos[0]?.id;
+				if (!cameoId) return undefined;
+				const link = this.lookupSocialLink(cardData.actor, cameoId);
+				return 10 + link.linkLevel * 2;
+			}
+			case "target": {
+				const link = this.lookupSocialLink(cardData.actor, cardData.linkId);
+				return 10 + link.linkLevel * 2;
+			}
+		}
+	}
+
 	static getBaseSkillDC (cardData: CardData) : number {
 		const ctype = cardData.card.system.cardType;
 		switch (ctype) {
 			case "social":
-				const link = this.lookupSocialLink(cardData.actor, cardData.linkId);
-				return 10 + link.linkLevel * 2;
+				return this.getSocialLinkDC(cardData, "target") ?? -1;
 			case "training":
 			case "other":
 			case "job":
@@ -820,6 +839,8 @@ export class PersonaSocial {
 						return roll.DC.staticDC;
 					case "base":
 						return this.getBaseSkillDC(cardData);
+					case "cameoSocial":
+						return this.getSocialLinkDC(cardData, "cameo") ?? -1;
 					default:
 						roll.DC.subtype satisfies never;
 
@@ -1016,7 +1037,7 @@ export class PersonaSocial {
 					await this.addCardEvents(eff.cardId);
 				return;
 			case "replace-card-events":
-					await this.replaceCardEvents(eff.cardId);
+					await this.replaceCardEvents(eff.cardId, eff.keepEventChain);
 				return;
 			case "set-temporary-variable":
 					await this.variableAction(eff.operator, eff.variableId, eff.value);
@@ -1070,7 +1091,7 @@ export class PersonaSocial {
 		this.rollState.cardData.eventList.push(...newCard.cardEvents().slice());
 	}
 
-	static async replaceCardEvents(cardId: string) {
+	static async replaceCardEvents(cardId: string, keepEventChain = false) {
 		if (!cardId) {
 			PersonaError.softFail("No card ID given to addCardEvent");
 			return;
@@ -1085,7 +1106,10 @@ export class PersonaSocial {
 			return;
 		}
 		console.log(`Replacing Card Event list wtih ${newCard.name}`);
-		this.rollState.cardData.eventsChosen = [];
+		if (!keepEventChain) {
+			this.rollState.cardData.eventsRemaining = newCard.system.num_of_events;
+		}
+			this.rollState.cardData.eventsChosen = [];
 		this.rollState.cardData.eventList = newCard.cardEvents().slice();
 	}
 

@@ -321,8 +321,12 @@ type CardActionTypes = [
 		studentSkill: StudentSkill,
 		amount : number,
 	}, {
-		cardAction:	"replace-card-events" | "add-card-events-to-list",
+		cardAction:	"add-card-events-to-list",
 		cardId : string,
+	}, {
+		cardAction:	"replace-card-events",
+		cardId : string,
+		keepEventChain: boolean,
 	}, {
 		cardAction:	"set-temporary-variable",
 		operator: VariableAction,

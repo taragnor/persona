@@ -202,6 +202,13 @@
 	</select>
 	{{/if}}
 
+	{{#if (eqAny cons.cardAction "replace-card-events")}}
+	<div>
+		<label>Keep Event Chain</label>
+		<input type="checkbox" name="{{strcat namePrefix 'keepEventChain'}}" {{checked cons.keepEventChain}}>
+	</div>
+	{{/if}}
+
 	{{#if (eqAny cons.cardAction "set-temporary-variable")}}
 	<select name="{{strcat namePrefix 'operator'}}">
 		{{selectOptions POWERSTUFF.VARIABLE_ACTIONS localize=true selected=cons.operator}}

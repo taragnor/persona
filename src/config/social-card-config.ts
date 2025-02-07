@@ -87,8 +87,14 @@ type CardRollList = {
 	}
 }
 
+export const CARD_DC_TYPES = {
+	"base": "Base",
+	"static": "Static DC",
+	"cameoSocial" : "Cameo Social DC",
+} as const;
+
 type CardRollDC = {
-	subtype: "static" | "base",
+	subtype: keyof typeof CARD_DC_TYPES,
 	staticDC: number,
 };
 
