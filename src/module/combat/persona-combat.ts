@@ -2212,21 +2212,25 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		console.log(list.join("\n"));
 	}
 
-	async generateTreasureAndXP() {
-		const actors = this.combatants
-			.contents.flatMap( x=> x?.actor ? [x.actor] : [] );
-		const shadows= actors
-			.filter (x => x.system.type == "shadow");
-		if (shadows.some(x=> x.hp > 0)) {
-			return;
-		}
-		const defeatedFoes = this.defeatedFoes.concat(shadows);
-		this.defeatedFoes = [];
-		const pcs = actors.filter( x => x.system.type == "pc") as PC[];
-		const party = actors.filter( x=> x.system.type == "pc" || x.system.type == "npcAlly") as (PC | NPCAlly)[];
-		await Metaverse.awardXP(defeatedFoes as Shadow[], party);
-		return await Metaverse.generateTreasure(defeatedFoes, pcs);
+async generateTreasureAndXP() {
+	const actors = this.combatants
+		.contents.flatMap( x=> x?.actor ? [x.actor] : [] );
+	const shadows= actors
+		.filter (x => x.system.type == "shadow");
+	if (shadows.some(x=> x.hp > 0)) {
+		return;
 	}
+	const defeatedFoes = this.defeatedFoes.concat(shadows);
+	this.defeatedFoes = [];
+	const pcs = actors.filter( x => x.system.type == "pc") as PC[];
+	const party = actors.filter( x=> x.system.type == "pc" || x.system.type == "npcAlly") as (PC | NPCAlly)[];
+	try {
+		await Metaverse.awardXP(defeatedFoes as Shadow[], party);
+	} catch (e) {
+		PersonaError.softFail("Problem with awarding XP");
+	}
+	return await Metaverse.generateTreasure(defeatedFoes, pcs);
+}
 
 	displayEscalation(element : JQuery<HTMLElement>) {
 		if (element.find(".escalation-die").length == 0) {
