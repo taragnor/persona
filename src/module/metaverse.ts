@@ -271,6 +271,7 @@ export class Metaverse {
 				const bonus = Math.floor(Math.random() * (variability +1));
 				money += Math.floor(moneyLow + bonus);
 			}
+			considerItem(treasure.item0, treasure.item0prob);
 			considerItem(treasure.item1, treasure.item1prob);
 			considerItem(treasure.item2, treasure.item2prob);
 			considerSkillCard(treasure.cardPowerId, treasure.cardProb);
