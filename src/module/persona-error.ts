@@ -2,18 +2,20 @@ import { PersonaSockets } from "./persona.js";
 
 export class PersonaError extends Error {
 
-	constructor (errortxt: string) {
+	constructor (errortxt: string, ...debugArgs: any[]) {
 		super(errortxt);
 		PersonaError.notifyGM(errortxt, this.stack);
 		ui.notifications.error(errortxt);
 		console.error(errortxt);
+		debugArgs.forEach(x=> Debug(x));
 	}
 
-	static softFail(errortxt: string) {
+	static softFail(errortxt: string, ...debugArgs: any[]) {
 		this.notifyGM(errortxt);
 		ui.notifications.error(errortxt);
 		const trace = this.getTrace();
 		console.error(`${errortxt} \n ${trace}`);
+		debugArgs.forEach( arg=> Debug(arg));
 	}
 
 	static getTrace() : string {

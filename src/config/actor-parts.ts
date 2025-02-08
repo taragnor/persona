@@ -235,7 +235,6 @@ export function PCSpecificStuff() {
 		activities: activityLinks(),
 		skills: studentSkills(),
 		talents: new arr( new obj<TalentData>(), {initial: []}),
-		// slots: skillSlots(),
 	}
 }
 

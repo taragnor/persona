@@ -341,15 +341,14 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			}
 			const subject = getSubject(condition, situation, source, "conditionTarget");
 			if (!subject) {
-				PersonaError.softFail(`Can't find Subject of ${source?.name} check for: ${condition.boolComparisonTarget}`);
+				PersonaError.softFail(`Can't find Subject of ${source?.name} check for: ${condition.boolComparisonTarget}`, condition, situation);
 				return undefined;
-
 			}
 			const combat = PersonaCombat.ensureCombatExists();
-			if (subject instanceof Actor) {
+			if (subject instanceof PersonaActor) {
 				if (subject.system.type == "npc") return undefined;
 			}
-			const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken((subject as PC | Shadow).accessor);
+			const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken((subject as ValidAttackers).accessor);
 			if (!subjectToken) {
 				PersonaError.softFail(`Can't find token for ${subject?.name}`);
 				return undefined;

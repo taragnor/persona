@@ -1019,6 +1019,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	}
 
+
 	extraConditionsFromTags( this: SocialCard) : SocialCard["system"]["conditions"] {
 		const SLCheck = function (low:number, high:number) : Precondition {
 			const SLcheck: Precondition = {
