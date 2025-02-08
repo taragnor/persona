@@ -73,7 +73,7 @@ export class ShadowSheet extends CombatantSheetBase {
 			.filter( x=> x != undefined) as Power[];
 		data.CARD_CANDIDATES = Object.fromEntries(
 			[["", "-"]].concat(
-				databasePowers.map( pwr => [pwr.id, pwr.displayedName])
+				databasePowers.map( pwr => [pwr.id, pwr.displayedName.toString()])
 			));
 		data.COMMON_TREASURE_LIST = Object.fromEntries(
 			[["", "-"]].concat(

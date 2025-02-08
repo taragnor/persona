@@ -128,12 +128,15 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	treasureItems(): TreasureItem[] {
 		if (this.#cache.treasureItems) return this.#cache.treasureItems;
 		const items = this.allItems();
-		return  this.#cache.treasureItems = items
+		this.#cache.treasureItems =
+			this.#cache.treasureItems = items
 			.filter ( item =>
-			item.system.type == "weapon"
-			|| item.system.type == "consumable"
-			|| item.system.type == "item"
-		) as (Weapon | InvItem | Consumable)[];
+				item.system.type == "weapon"
+				|| item.system.type == "consumable"
+				|| item.system.type == "item"
+			)
+			.filter( (x : TreasureItem)=> !x.hasTag("key-item") && !x.hasTag("mundane")) as TreasureItem[];
+		return this.#cache.treasureItems;
 	}
 
 	dungeonScenes(): Scene[] {
@@ -220,7 +223,7 @@ type PersonaDBCache =	{
 	powers: Power[] | undefined,
 	shadows: Shadow[] | undefined;
 	socialLinks: (PC | NPC)[] | undefined;
-	treasureItems: (Weapon | InvItem | Consumable)[] | undefined;
+	treasureItems: TreasureItem[] | undefined;
 	tarot: Tarot[] | undefined;
 	navigator: NPCAlly | undefined;
 };

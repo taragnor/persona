@@ -444,13 +444,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	get displayedName() : string {
+	get displayedName() : string | SafeString {
 		switch (this.system.type) {
 			case "skillCard": {
 				const skillId = this.system.skillId;
 				const power = PersonaDB.allItems().find(x=> x.id == skillId);
+				const cardPath = "systems/persona/img/icon/persona-card.png";
+				const cardImg = `<span class="skill-card"> <img class="name-icon" src="${cardPath}">`;
 				if (power && power.system.type == "power") {
-					return `${power.displayedName} Card`;
+					return new Handlebars.SafeString(`${cardImg} ${power.displayedName} Card </span>`);
 				}
 				else return "Unlinked Skill Card";
 			}

@@ -735,4 +735,17 @@ form h5 {
 .event-index .name {
 	font-weight: bold;
 	font-size: larger;
-};
+}
+
+span.skill-card {
+	max-height: 1em;
+	min-height: 1em;
+	height: 1em;
+}
+
+span.skill-card img {
+	max-height: 1em;
+	min-height: 1em;
+	height: 1em;
+}
+
