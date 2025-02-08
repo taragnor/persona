@@ -1,3 +1,5 @@
+import { Consumable } from "../module/item/persona-item.js";
+import { SkillCard } from "../module/item/persona-item.js";
 import { ConsequenceType } from "./effect-types.js";
 import { CreatureTag } from "./creature-tags.js";
 import { SaveType } from "./save-types.js";
@@ -28,7 +30,7 @@ import { UniversalItemAccessor } from "../module/utility/db-accessor.js";
 
 type ExpendOtherEffect = {
 	type: "expend-item";
-	itemAcc: UniversalItemAccessor<Usable>;
+	itemAcc: UniversalItemAccessor<Consumable | SkillCard>;
 	itemId: string;
 }
 
@@ -146,7 +148,6 @@ export type Consequence =
 		applyToSelf ?: boolean,
 		applyTo ?: ConsequenceTarget,
 		actorOwner ?: UniversalActorAccessor<PC | Shadow>,
-		sourceItem ?: UniversalItemAccessor<Usable>,
 	} & (
 		GenericConsequence | NonGenericConsequences
 
@@ -252,7 +253,8 @@ type AlterMPConsequence = {
 type ExpendItemConsequence = {
 	type : "expend-item",
 	itemId: string,
-	itemAcc ?: UniversalItemAccessor<Usable>,
+	itemAcc ?: UniversalItemAccessor<Consumable | SkillCard>,
+	sourceItem ?: UniversalItemAccessor<Consumable | SkillCard>,
 }
 
 type DamageConsequenceShared = {

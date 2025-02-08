@@ -1,3 +1,4 @@
+import { UsableAndCard } from "./item/persona-item.js";
 import { ValidSocialTarget } from "./social/persona-social.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
 import { CombatTriggerTypes } from "../config/triggers.js";
@@ -6,7 +7,6 @@ import { PersonaSocial } from "./social/persona-social.js";
 import { SOCIAL_LINK_OR_TAROT_OTHER } from "../config/precondition-types.js";
 import { AnyStringObject } from "../config/precondition-types.js";
 import { SocialLinkIdOrTarot } from "../config/precondition-types.js";
-import { SocialLink } from "./actor/persona-actor.js";
 import { ConditionalEffectManager } from "./conditional-effect-manager.js";
 import { MultiCheck } from "../config/precondition-types.js";
 import { UserComparisonTarget } from "../config/precondition-types.js";
@@ -32,7 +32,6 @@ import { Precondition } from "../config/precondition-types.js";
 import { UniversalActorAccessor } from "./utility/db-accessor.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaError } from "./persona-error.js";
-import { Usable } from "./item/persona-item.js";
 import { PC } from "./actor/persona-actor.js";
 import { Shadow } from "./actor/persona-actor.js";
 import { StatusEffectId } from "../config/status-effects.js";
@@ -180,6 +179,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (element == "by-power") {
 				if (!situation.usedPower) {return false;}
 				const power = PersonaDB.findItem(situation.usedPower);
+				if (power.system.type == "skillCard") return false;
 				element = power.system.dmg_type;
 				if (element == "healing" || element == "untyped" || element == "all-out" || element =="none" ) return false;
 
@@ -391,7 +391,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (!power) return undefined;
 			const powerTags = power.tagList();
 			if (typeof condition.powerTag == "string") {
-				return power.system.tags.includes(condition.powerTag!);
+				return powerTags.includes(condition.powerTag!);
 			}
 			return Object.entries(condition.powerTag)
 			.filter( ([_, val]) => val == true)
@@ -418,6 +418,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 				return undefined;
 			}
 			const power = PersonaDB.findItem(situation.usedPower);
+			if (power.system.type == "skillCard") return undefined;
 			return multiCheckContains(condition.powerDamageType, [power.system.dmg_type]);
 			// return condition.powerDamageType == power.system.dmg_type;
 		}
@@ -442,6 +443,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			const targetActor = target instanceof PersonaActor ? target : target.actor;
 			const power = PersonaDB.findItem(situation.usedPower);
 			if (targetActor.system.type == "npc") return undefined;
+			if (power.system.type == "skillCard") return undefined;
 			const resist = (targetActor as PC | Shadow).elementalResist(power.system.dmg_type);
 			return resist == "weakness";
 		}
@@ -453,6 +455,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (dtype == "by-power") {
 				if (!situation.usedPower) { return undefined; }
 				const power = PersonaDB.findItem(situation.usedPower);
+				if (power.system.type == "skillCard") return undefined;
 				dtype = power.system.dmg_type;
 			}
 			if (targetActor.system.type == "npc") return undefined;
@@ -512,7 +515,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 				PersonaError.softFail(`Can't find power in conditional`);
 				return undefined;
 			}
-			return multiCheckContains(condition.powerTargetType, [power.system.targets]);
+			return multiCheckContains(condition.powerTargetType, [power.targets()]);
 			// return power.system.targets == condition.powerTargetType;
 		case "weather-is":
 			const weather = PersonaCalendar.getWeather();
@@ -576,6 +579,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (!situation.usedPower) return undefined;
 			const power = PersonaDB.findItem(situation.usedPower);
 			if (power.system.type == "consumable") {return undefined;}
+			if (power.system.type == "skillCard") {return undefined;}
 			const slot = condition.slotType;
 			return slot[String(power.system.slot)];
 		}
@@ -907,7 +911,7 @@ export type SocialCardSituation = UserSituation & {
 type SituationUniversal = {
 	//more things can be added here all should be optional
 	user?: UniversalActorAccessor<ValidAttackers>;
-	usedPower ?: UniversalItemAccessor<Usable>;
+	usedPower ?: UniversalItemAccessor<UsableAndCard>;
 	usedSkill ?: SocialStat;
 	activeCombat ?: boolean ;
 	openingRoll ?: number;

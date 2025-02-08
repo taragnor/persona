@@ -1,3 +1,4 @@
+import { SkillCard } from "./item/persona-item.js";
 import { NPCAlly } from "./actor/persona-actor.js";
 import { SocialEncounterCard } from "./social/persona-social.js";
 import { ModifierContainer } from "./item/persona-item.js";
@@ -20,6 +21,12 @@ import { BASIC_SHADOW_POWER_NAMES } from "../config/basic-powers.js";
 import { SocialCard } from "./item/persona-item.js";
 
 
+declare global {
+	interface HOOKS {
+		"DBrefresh": () => unknown,
+	}
+}
+
 class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	#cache: PersonaDBCache;
@@ -33,7 +40,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	#resetCache() : PersonaDBCache {
-		return this.#cache = {
+		const newCache =  this.#cache = {
 			powers: undefined,
 			shadows: undefined,
 			socialLinks: undefined,
@@ -41,6 +48,8 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			tarot: undefined,
 			navigator: undefined,
 		};
+		Hooks.callAll("DBrefresh");
+		return newCache;
 	}
 
 	clearCache() {
@@ -162,6 +171,10 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		) as (PC | NPC)[];
 	}
 
+	skillCards(): SkillCard[] {
+		return this.allItems().filter( item => item.system.type == "skillCard") as SkillCard[];
+	}
+
 	getPower(id: string) : Power | undefined {
 		return this.getItemById(id) as Power | undefined;
 	}
@@ -196,7 +209,6 @@ window.PersonaDB =PersonaDB;
 
 Hooks.on("createItem", (item: PersonaItem) => {
 	PersonaDB.onCreateItem(item);
-
 });
 
 Hooks.on("createActor", (actor : PersonaActor) => {

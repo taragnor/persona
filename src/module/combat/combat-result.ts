@@ -1,3 +1,4 @@
+import { UsableAndCard } from "../item/persona-item.js";
 import { NPCAlly } from "../actor/persona-actor.js";
 import { ValidAttackers } from "./persona-combat.js";
 import { StatusDuration } from "../active-effect.js";
@@ -169,8 +170,12 @@ export class CombatResult  {
 				let status_damage : number | undefined = undefined;
 				if (atkResult && cons.statusName == "burn") {
 					const power = PersonaDB.findItem(atkResult.power);
+					if (power.system.type == "skillCard") {
+						PersonaError.softFail("Skill Card shouldn't be here");
+						break;
+					}
 					const attacker = PersonaDB.findToken(atkResult.attacker).actor;
-					status_damage = attacker ? power.getDamage(attacker, "low"): 0;
+					status_damage = attacker ? (power as Usable).getDamage(attacker, "low"): 0;
 				}
 				const id = cons.statusName!;
 				if (id != "bonus-action") {
@@ -580,7 +585,7 @@ export class CombatResult  {
 				case "block":
 				case "reflect":
 					const power = PersonaDB.findItem(result.power);
-					if (power.system.dmg_type != "healing") {
+					if (power.system.type != "skillCard" && power.system.dmg_type != "healing") {
 						await PersonaSFX.onDefend(PersonaDB.findToken(result.target), result.result);
 					}
 			}
@@ -739,7 +744,7 @@ export class CombatResult  {
 		CombatResult.normalizeChange(change);
 	}
 
-	get power() : Usable | undefined {
+	get power() : UsableAndCard | undefined {
 		for (const key of this.attacks.keys()) {
 			if (key.power) {
 				return PersonaDB.findItem(key.power);
@@ -925,7 +930,7 @@ export type AttackResult = {
 	validDefModifiers?: [number, string][],
 	target: UniversalTokenAccessor<PToken>,
 	attacker: UniversalTokenAccessor<PToken>,
-	power: UniversalItemAccessor<Usable>,
+	power: UniversalItemAccessor<UsableAndCard>,
 	situation: Situation,
 	roll: RollBundle,
 	critBoost: number,

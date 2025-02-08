@@ -1,3 +1,6 @@
+import { Power } from "../item/persona-item.js";
+import { SkillCard } from "../item/persona-item.js";
+import { UsableAndCard } from "../item/persona-item.js";
 import { NPCAlly } from "../actor/persona-actor.js";
 import { PC } from "../actor/persona-actor.js";
 import { AnyStringObject } from "../../config/precondition-types.js";
@@ -51,7 +54,7 @@ declare global {
 
 declare global {
 	interface HOOKS {
-		"onUsePower": (power: Usable, user: PToken, defender: PToken) => any;
+		"onUsePower": (power: UsableAndCard, user: PToken, defender: PToken) => any;
 		"onTakeDamage": (token: PToken, amount: number, damageType: DamageType)=> any;
 		"onAddStatus": (token: PToken, status: StatusEffect) => any;
 	}
@@ -821,7 +824,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return this._engagedList;
 	}
 
-	static async checkPowerPreqs(attacker: PToken, power: Usable) : Promise<boolean> {
+	static async checkPowerPreqs(attacker: PToken, power: UsableAndCard) : Promise<boolean> {
 		const combat = game.combat as PersonaCombat;
 		if (combat && !combat.turnCheck(attacker, power)) {
 			if (!game.user.isGM) {
@@ -844,13 +847,14 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return true;
 	}
 
-	static async usePower(attacker: PToken, power: Usable) : Promise<CombatResult> {
+	static async usePower(attacker: PToken, power: UsableAndCard) : Promise<CombatResult> {
 		if (!await this.checkPowerPreqs(attacker, power)) {
 			return new CombatResult();
 		}
 		try {
+			const isCard = power.system.type == "skillCard";
 			const targets = await this.getTargets(attacker, power);
-			if (targets.some( target => target.actor.system.type == "shadow" ) && power.system.targets != "self" ) {
+			if (!isCard && targets.some( target => target.actor.system.type == "shadow" ) && (power as Usable).system.targets != "self" ) {
 				this.ensureCombatExists();
 			}
 			this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
@@ -879,7 +883,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
-	static async usePowerOn(attacker: PToken, power: Usable, targets: PToken[], rollType : AttackRollType, modifiers: ModifierList = new ModifierList()) : Promise<CombatResult> {
+	static async usePowerOn(attacker: PToken, power: UsableAndCard, targets: PToken[], rollType : AttackRollType, modifiers: ModifierList = new ModifierList()) : Promise<CombatResult> {
 		let i = 0;
 		const result = new CombatResult();
 		for (const target of targets) {
@@ -942,16 +946,33 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return result;
 	}
 
-	static async processAttackRoll( attacker: PToken, power: Usable, target: PToken, modifiers: ModifierList, rollType: AttackRollType) : Promise<AttackResult> {
+	static async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, modifiers: ModifierList, rollType: AttackRollType) : Promise<AttackResult> {
 		const combat = game.combat as PersonaCombat | undefined;
 		const situation : Situation = {
 			target: target.actor.accessor,
-			usedPower: PersonaDB.getUniversalItemAccessor(power),
+			usedPower: PersonaDB.getUniversalItemAccessor(usableOrCard),
 			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
 			attacker: attacker.actor.accessor,
 			activationRoll: rollType == "activation",
 			activeCombat:combat ? !!combat.combatants.find( x=> x.actor?.type != attacker.actor.type): false ,
 		};
+		if (usableOrCard.system.type == "skillCard") {
+			const r = await new Roll("1d20").roll();
+			const emptyList = new ModifierList();
+			const roll = new RollBundle("Activation Roll Skiill Card", r, attacker.actor.system.type == "pc", emptyList, situation);
+			const res : AttackResult = {
+				result: "hit",
+				target: PersonaDB.getUniversalTokenAccessor(target),
+				attacker: PersonaDB.getUniversalTokenAccessor(attacker),
+				power: usableOrCard.accessor,
+				situation,
+				roll,
+				critBoost: 0,
+				printableModifiers: []
+			};
+			return res;
+		}
+		const power = usableOrCard as Usable;
 		const element = power.system.dmg_type;
 		const resist = target.actor.elementalResist(element);
 		let attackbonus = this.getAttackBonus(attacker, power).concat(modifiers);
@@ -1536,7 +1557,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						cons: {
 							type: "expend-item",
 							itemId: item.id,
-							itemAcc: item.accessor,
+							itemAcc: (item as Consumable | SkillCard).accessor,
 						}
 					}];
 				}
@@ -1567,10 +1588,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return TriggeredEffect.onTrigger(trigger, actor, situation);
 	}
 
-	static async #processCosts(attacker: PToken , power: Usable, costModifiers: OtherEffect[]) : Promise<CombatResult>
+	static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, costModifiers: OtherEffect[]) : Promise<CombatResult>
 	{
 		const res = new CombatResult();
-		if (power.system.type == "power") {
+		switch (usableOrCard.system.type) {
+		case "power": {
+			const power  = usableOrCard as Power;
 			if (power.system.subtype == "social-link") {
 				if (power.system.inspirationId) {
 					res.addEffect(null, attacker.actor, {
@@ -1604,15 +1627,17 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 			}
 		}
-		if (power.system.type == "consumable") {
+		case "skillCard":
+		case "consumable" :{
 			res.addEffect(null, attacker.actor, {
 				type: "expend-item",
 				itemId: "",
-				itemAcc: PersonaDB.getUniversalItemAccessor(power),
+				itemAcc: PersonaDB.getUniversalItemAccessor(usableOrCard as SkillCard | Consumable),
 			});
 		}
-		return res;
 	}
+	return res;
+}
 
 	static getAttackBonus(attacker: PToken, power:Usable) : ModifierList {
 		let atkbonus = this.getBaseAttackBonus(attacker, power);
@@ -1765,7 +1790,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return targets.map( x=> x as PToken);
 	}
 
-	static async getTargets(attacker: PToken, power: Usable, altTargets?: PToken[]): Promise<PToken[]> {
+	static async getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[]): Promise<PToken[]> {
 		const selected = altTargets != undefined ? altTargets : Array.from(game.user.targets).map(x=> x.document) as PToken[];
 		const combat = game.combat as PersonaCombat | undefined;
 		if (combat) {
@@ -1795,7 +1820,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 
 		const attackerType = attacker.actor.getAllegiance();
-		switch (power.system.targets) {
+		const targets = "targets" in power.system ? power.system.targets : "self";
+		switch (targets) {
 			case "1-random-enemy":
 				const list = this.getAllEnemiesOf(attacker)
 				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
@@ -1853,8 +1879,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
 			}
 			default:
-				power.system.targets satisfies never;
-				throw new PersonaError(`targets ${power.system.targets} Not yet implemented`);
+				targets satisfies never;
+				throw new PersonaError(`targets ${targets} Not yet implemented`);
 		}
 	}
 
@@ -2002,9 +2028,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	/**return true if the target is eligible to use the power based on whose turn it is
 	 */
-	turnCheck(token: PToken, power: Usable): boolean {
+	turnCheck(token: PToken, power: UsableAndCard): boolean {
 		if (this.isSocial) return true;
-		// if (!this.enemiesRemaining(token)) return true;
 		if (!this.combatant) return false;
 		if (token.actor.hasStatus("baton-pass"))
 			return true;

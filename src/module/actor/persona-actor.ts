@@ -1,3 +1,4 @@
+import { UsableAndCard } from "../item/persona-item.js";
 import { ValidSocialTarget } from "../social/persona-social.js";
 import { ValidAttackers } from "../combat/persona-combat.js";
 import { FlagData } from "../../config/actor-parts.js";
@@ -1612,7 +1613,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update( {"this.system.combat.classData.classId": cClass.id});
 	}
 
-	canUsePower (this: ValidAttackers, usable: Usable, outputReason: boolean = true) : boolean {
+	canUsePower (this: ValidAttackers, usable: UsableAndCard, outputReason: boolean = true) : boolean {
 		if (this.hasStatus("rage") && usable != PersonaDB.getBasicPower("Basic Attack")) {
 			if (outputReason) {
 				ui.notifications.warn("Can't only use basic attacks when raging");
@@ -1623,7 +1624,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	canPayActivationCost(this: ValidAttackers, usable: Usable, outputReason: boolean = true) : boolean {
+	canPayActivationCost(this: ValidAttackers, usable: UsableAndCard, outputReason: boolean = true) : boolean {
 		switch (this.system.type) {
 			case "npcAlly":
 			case "pc":
@@ -1636,7 +1637,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	canPayActivationCost_pc(this: PC | NPCAlly, usable: Usable, _outputReason: boolean) : boolean {
+	canPayActivationCost_pc(this: PC | NPCAlly, usable: UsableAndCard, _outputReason: boolean) : boolean {
 		switch (usable.system.type) {
 			case "power": {
 				if (this.hasStatus("depleted") && !usable.system.tags.includes("basicatk")) {
@@ -1646,7 +1647,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					case "weapon":
 						return  this.hp > usable.system.hpcost;
 					case "magic":
-						const mpcost = usable.mpCost(this);
+						const mpcost = (usable as Power).mpCost(this);
 						if (mpcost > 0) {
 							return this.mp >= mpcost;
 						}
@@ -1670,10 +1671,30 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			}
 			case "consumable":
 				return usable.system.amount > 0;
+			case "skillCard":
+				return this.canLearnNewSkill();
 		}
 	}
 
-	canPayActivationCost_shadow(this: Shadow, usable: Usable, outputReason: boolean) : boolean {
+	canLearnNewSkill() : boolean {
+		switch (this.system.type) {
+			case "shadow":
+			case "npc":
+			case "tarot":
+				return false;
+			case "npcAlly":
+			case "pc":
+				return !!this.system.combat.overflowPower;
+			default:
+				this.system satisfies never;
+				return false;
+		}
+	}
+
+	canPayActivationCost_shadow(this: Shadow, usable: UsableAndCard, outputReason: boolean) : boolean {
+		if (usable.system.type == "skillCard") {
+			return false;
+		}
 		if (usable.system.type == "power") {
 			const combat = game.combat;
 			// if (combat && usable.system.reqEscalation > 0 && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
@@ -1983,7 +2004,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return base == "PCs" ? "Shadows" : "PCs";
 	}
 
-	async expendConsumable(item: Usable) {
+	async expendConsumable(item: UsableAndCard) {
 		if (item.system.type == "power") {
 			PersonaError.softFail("Can't expend a power, this function requires an item");
 			return;

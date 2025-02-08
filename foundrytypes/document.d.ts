@@ -28,17 +28,16 @@
 	 // prepareBaseData(): void;
 	 // prepareDerivedData(): void;
 	 testUserPermission(user: FoundryUser, permissionLevel: "NONE" | "LIMITED" | "OWNER" | "OBSERVER", options: {exact?: boolean} = {}): boolean;
-	 static async create<T>(this: T, data: CreationData):Promise<InstanceType<T>>;
+	 static async create<T extends typeof FoundryDocument>(this: T, data: CreationData<T>):Promise<InstanceType<T>>;
 	 migrateSystemData(sourceMaybe?: unknown): unknown;
 	 async updateSource(updateData: Record<string, unknown>): Promise<unknown>;
 	 get folder(): Folder;
 	 static defineSchema(): Record<string, FoundryDMField<any>>;
 }
 
-type CreationData = Record<string, unknown>  & {
+type CreationData<T extends typeof FoundryDocument> = {
 	name: string;
-	type: string;
-}
+} & DeepPartial<InstanceType<T>>;
 
 interface Folder {
 };

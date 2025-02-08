@@ -1,3 +1,4 @@
+import { UsableAndCard } from "../item/persona-item.js";
 import { Usable } from "../item/persona-item.js";
 import { TurnAlert } from "../utility/turnAlert.js";
 import { PersonaActor } from "../actor/persona-actor.js";
@@ -37,7 +38,11 @@ export class PersonaSFX {
 		}
 	}
 
-	static async onUsePower(power: Usable) {
+	static async onUsePower(usableOrCard: UsableAndCard) {
+		if (usableOrCard.system.type == "skillCard") {
+			return;
+		}
+		const power = usableOrCard as Usable;
 		if (!power.isAoE()) return;
 		const damageType = power.system.dmg_type;
 		switch (damageType) {

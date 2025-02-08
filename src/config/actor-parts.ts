@@ -182,6 +182,7 @@ export function PCAndNPCAllyCombatStats() {
 		...combatCommonStats(),
 		xp: new num( {integer: true, initial: 0, min: 0, max: 100}),
 		powers: new arr( new id()),
+		overflowPower: new id(),
 		teamworkMove: new id(),
 		mp: new sch({
 			value: new num({initial: 0, integer: true, min: 0, max: 1000}),
@@ -258,6 +259,8 @@ export function encounterDataSchema() {
 		treasure: new sch( {
 			moneyLow: new num( {initial: 0, integer: true}),
 			moneyHigh: new num( {initial: 0, integer: true}),
+			cardPowerId: new id(), //Power Id
+			cardProb: new num( {initial: 0, integer: false}),
 			item1: new id(),
 			item1prob: new num( {initial: 0, integer: false}),
 			item2: new id(),

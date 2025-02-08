@@ -1,4 +1,5 @@
-import { CreatureTag } from "../config/creature-tags.js";
+import { PersonaItem } from "./item/persona-item.js";
+import { SkillCard } from "./item/persona-item.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
 import { Situation } from "./preconditions.js";
 import { ModifierList } from "./combat/modifier-list.js";
@@ -234,16 +235,29 @@ export class Metaverse {
 		});
 	}
 
-	static async generateTreasure(shadows: PersonaActor[], players: PersonaActor[]): Promise<(Weapon | InvItem | Consumable) []> {
-		let items : (Weapon | InvItem | Consumable)[] = [];
+	static async generateTreasure(shadows: PersonaActor[], players: PersonaActor[]): Promise<TreasureItem[]> {
+		let items : TreasureItem[] = [];
 		let money = 0;
+		const considerSkillCard = async function (powerId: string, prob: number) {
+			if (Math.random() > (prob ?? 0) / 100) {return;}
+			const existingCard = PersonaDB.skillCards().find( x=> x.system.skillId  ==  powerId);
+			if (existingCard) {
+				items.push(existingCard);
+				return;
+			}
+			const power = PersonaDB.allPowers().find( x=> x.id == powerId);
+			if (!power) {
+				PersonaError.softFail(`Can't fiund Power Id ${power} for treasure`);
+				return;
+			}
+			const newCard = await PersonaItem.createSkillCardFromPower(power);
+			items.push(newCard);
+		};
 		const considerItem= function (itemId: string, prob: number) {
 			const item = PersonaDB.treasureItems().find(x=> x.id == itemId);
 			if (!item) {return;}
-			const rnd = Math.random();
-			if (rnd < (prob ?? 0) / 100) {
-				items.push(item);
-			}
+			if (Math.random() > (prob ?? 0) / 100) {return;}
+			items.push(item);
 		};
 		for (const shadow of shadows) {
 			if (shadow.system.type != "shadow") {continue;}
@@ -257,10 +271,11 @@ export class Metaverse {
 			}
 			considerItem(treasure.item1, treasure.item1prob);
 			considerItem(treasure.item2, treasure.item2prob);
+			considerSkillCard(treasure.cardPowerId, treasure.cardProb);
 		}
 		const speaker = ChatMessage.getSpeaker({alias: "Treasure Generator"});
 		const treasureListHTML = items
-		.map( item => `<li> ${item.name} </li>`)
+		.map( item => `<li> ${item.displayedName} </li>`)
 		.join("");
 		const text = `
 		<b>Money:</b> ${money} <br>
@@ -585,3 +600,6 @@ export type PresenceCheckResult = null
 	| "shadows"
 	| "daemons"
 	| "any";
+
+
+type TreasureItem = Weapon | InvItem | Consumable | SkillCard;

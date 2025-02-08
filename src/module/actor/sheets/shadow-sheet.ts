@@ -1,3 +1,4 @@
+import { Power } from "../../item/persona-item.js";
 import { CREATURE_TAGS } from "../../../config/creature-tags.js";
 import { SHADOW_CREATURE_TYPE } from "../../../config/shadow-types.js";
 import { PersonaDB } from "../../persona-db.js";
@@ -41,6 +42,7 @@ export class ShadowSheet extends CombatantSheetBase {
 			case "item":
 			case "weapon":
 			case "socialCard":
+			case "skillCard":
 				throw new PersonaError("Invalid Item Type to apply to Shadows");
 			default:
 				item.system satisfies never;
@@ -63,7 +65,13 @@ export class ShadowSheet extends CombatantSheetBase {
 			.sort( (a, b) => a.name.localeCompare(b.name))
 			.map(x=> [x.id, x.name])
 		);
-
+		const databasePowers = this.actor.powers
+			.map( x=> PersonaDB.allPowers().find(pwr => pwr.name == x.name))
+			.filter( x=> x != undefined) as Power[];
+		data.CARD_CANDIDATES = Object.fromEntries(
+			[["", "-"]].concat(
+			databasePowers.map( pwr => [pwr.id, pwr.displayedName])
+			));
 		return data;
 	}
 
@@ -118,6 +126,6 @@ export class ShadowSheet extends CombatantSheetBase {
 		arr.splice(index, 1);
 		await this.actor.update({"system.encounter.dungeons": arr});
 	}
-
 }
+
 

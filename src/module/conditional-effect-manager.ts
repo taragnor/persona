@@ -317,7 +317,7 @@ export class ConditionalEffectManager {
 		return  consequences.map( eff=> ({
 			...eff,
 			actorOwner: sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner,
-			sourceItem: sourceItem ? PersonaDB.getUniversalItemAccessor(sourceItem): eff.sourceItem,
+			sourceItem: sourceItem ? PersonaDB.getUniversalItemAccessor(sourceItem): (("sourceItem" in eff) ? eff.sourceItem : undefined),
 		}));
 
 	}

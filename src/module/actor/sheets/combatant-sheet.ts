@@ -1,3 +1,4 @@
+import { UsableAndCard } from "../../item/persona-item.js";
 import { NPCAlly } from "../persona-actor.js";
 import { Consumable } from "../../item/persona-item.js";
 import { Logger } from "../../utility/logger.js";
@@ -92,6 +93,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 					(this.actor as PC).addFocus(item as Focus);
 					return item;
 				}
+			case "skillCard":
 			case "consumable":
 				if (!game.user.isGM) {
 					ui.notifications.warn("Use Item Piles functionality to move items.");
@@ -136,7 +138,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		this.#useItemOrPower(power);
 	}
 
-	async #useItemOrPower(power : Usable) {
+	async #useItemOrPower(power : UsableAndCard) {
 		Helpers.pauseCheck();
 		const actor = this.actor;
 		let token : PToken | undefined;
@@ -155,7 +157,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` )
 		}
 		try {
-			await PersonaCombat.usePower(token, power as Usable);
+			await PersonaCombat.usePower(token, power );
 		} catch (e) {
 			console.error(e);
 			throw e;

@@ -87,6 +87,16 @@ class UniversalModifier extends foundry.abstract.TypeDataModel {
 	}
 }
 
+class SkillCardSchema extends foundry.abstract.TypeDataModel {
+	get type() {return "skillCard" as const;}
+	static override defineSchema() {
+		return {
+			...itemBase(),
+			skillId: new id(),
+		};
+	}
+}
+
 class PowerSchema extends foundry.abstract.TypeDataModel {
 	get type() {return "power" as const;}
 	static override defineSchema() {
@@ -285,6 +295,7 @@ export const ITEMMODELS = {
 	talent: Talent,
 	weapon: Weapon,
 	universalModifier: UniversalModifier,
+	skillCard: SkillCardSchema,
 	// job: JobItemSchema,
 	socialCard: SocialCardSchema,
 } as const;

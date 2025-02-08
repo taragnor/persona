@@ -151,8 +151,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	hasTag(this: Usable, tag: PowerTag) : boolean;
-	hasTag(this: InvItem | Weapon, tag: EquipmentTag): boolean
-	hasTag(this: Usable | InvItem | Weapon, tag: PowerTag | EquipmentTag) : boolean {
+	hasTag(this: InvItem | Weapon | SkillCard, tag: EquipmentTag): boolean;
+	hasTag(this: UsableAndCard, tag: PowerTag | EquipmentTag) : boolean;
+	hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag) : boolean {
 		let list : (PowerTag | EquipmentTag)[];
 		switch (this.system.type) {
 			case "power":
@@ -165,6 +166,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "weapon":
 				list = (this as Weapon | InvItem).tagList();
 				break;
+			case "skillCard":
+				list = (this as SkillCard).tagList();
+				break;
 			default:
 				this.system satisfies never;
 				PersonaError.softFail(`Can't check tag list for ${this.system["type"]}`);
@@ -175,9 +179,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	tagList(this : Power): PowerTag[];
 	tagList(this : Consumable): (PowerTag | EquipmentTag)[];
-	tagList(this: Usable) : PowerTag[];
+	tagList(this: UsableAndCard) : PowerTag[];
 	tagList(this : InvItem | Weapon): EquipmentTag[];
-	tagList(this: Usable | InvItem | Weapon) : (PowerTag | EquipmentTag)[] {
+	tagList(this: SkillCard | Usable | InvItem | Weapon) : (PowerTag | EquipmentTag)[] {
 		const itype = this.system.type;
 		switch (itype) {
 			case "power": {
@@ -205,10 +209,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				return list;
 			}
 			case "weapon": {
-				const list= this.system.itemTags.slice();
+				const list = this.system.itemTags.slice();
 				if (!list.includes(itype))
 				list.push(itype);
 				return list;
+			}
+			case "skillCard": {
+				return [
+					"skill-card"
+				];
 			}
 			default:
 				itype satisfies never;
@@ -273,14 +282,28 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	testOpenerPrereqs (this: Usable, situation: Situation, user: PersonaActor) : boolean {
+	testOpenerPrereqs (this: UsableAndCard, situation: Situation, user: PersonaActor) : boolean {
+		switch (this.system.type) {
+			case "skillCard": return false;
+			case "power": case "consumable":
+				break;
+			default:
+				this.system satisfies never;
+		}
 		const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this,user );
-		return testPreconditions(conditions, situation, this);
+		return testPreconditions(conditions, situation, this as Usable);
 	}
 
-	testTeamworkPrereqs (this: Usable, situation: Situation, user: PersonaActor) : boolean {
+	testTeamworkPrereqs (this: UsableAndCard, situation: Situation, user: PersonaActor) : boolean {
+		switch (this.system.type) {
+			case "skillCard": return false;
+			case "power": case "consumable":
+				break;
+			default:
+				this.system satisfies never;
+		}
 		const conditions = ConditionalEffectManager.getConditionals(this.system.teamworkConditions, this,user );
-		return testPreconditions(conditions, situation, this);
+		return testPreconditions(conditions, situation, this as Usable);
 	}
 
 	getGrantedPowers(this: ModifierContainer, user: PC | Shadow, situation?: Situation): Power[] {
@@ -355,8 +378,24 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return game.i18n.localize(SLOTTYPES[num]);
 	}
 
+	targets(this: UsableAndCard): Power["system"]["targets"] {
+		if (this.system.type == "skillCard") return "self";
+		return this.system.targets;
+	}
+
+	static async createSkillCardFromPower(power: Power) : Promise<SkillCard> {
+		return await PersonaItem.create( {
+			name: `${power.name} card`,
+			type: "skillCard",
+			system: {
+				skillId: power.id,
+			}
+		}) as SkillCard;
+	}
+
 	/** required because foundry input hates arrays*/
 	async sanitizeEffectsData(this: PowerContainer) {
+		if (this.system.type == "skillCard") return;
 		const isArray = Array.isArray;
 		let update = false;
 		let effects = this.system.effects;
@@ -385,6 +424,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	get displayedName() : string {
+		switch (this.system.type) {
+			case "skillCard": {
+				const skillId = this.system.skillId;
+				const power = PersonaDB.allItems().find(x=> x.id == skillId);
+				if (power && power.system.type == "power") {
+					return `${power.displayedName} Card`;
+				}
+				else return "Unlinked Skill Card";
+			}
+		}
 		return this.name;
 	}
 
@@ -513,11 +562,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return list;
 	}
 
-	canBeReflectedByPhyiscalShield(this: Usable): boolean {
+	canBeReflectedByPhyiscalShield(this: UsableAndCard): boolean {
+		if (this.system.type == "skillCard") return false;
 		return this.system.dmg_type == "physical";
 	}
 
-	canBeReflectedByMagicShield(this: Usable) : boolean {
+	canBeReflectedByMagicShield(this: UsableAndCard) : boolean {
+		if (this.system.type == "skillCard") return false;
 		switch (this.system.dmg_type) {
 			case "fire":
 			case "wind":
@@ -538,20 +589,22 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return false;
 
 	}
-	isOpener(this: Usable) : boolean {
+	isOpener(this: UsableAndCard) : boolean {
 		return this.hasTag("opener");
 	}
 
-	isPassive(this: Usable) : boolean {
-		return this.system.subtype == "passive" || 
-			this.hasTag("passive");;
+	isPassive(this: UsableAndCard) : boolean {
+		if (this.system.type == "skillCard") {return false;}
+		const item = this as Usable;
+		return item.system.subtype == "passive" ||
+			item.hasTag("passive");;
 	}
 
-	isTeamwork(this: Usable): boolean {
+	isTeamwork(this: UsableAndCard): boolean {
 		return this.hasTag("teamwork");
 	}
 
-	isNavigator(this: Usable): boolean {
+	isNavigator(this: UsableAndCard): boolean {
 		return this.hasTag("navigator");
 	}
 
@@ -657,7 +710,31 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		};
 	}
 
+	generateSkillCardTeach(this: SkillCard): ConditionalEffect {
+		if (!this.system.skillId) {
+			return {
+				conditions: [],
+				consequences: []
+			};
+		}
+		const cardEffect: ConditionalEffect = {
+			conditions: [
+				{type: "always"}
+			],
+			consequences: [{
+				type: "teach-power",
+				id: this.system.skillId,
+			}]
+		};
+		return cardEffect;
+	}
+
 	getEffects(this: ModifierContainer, sourceActor : ValidAttackers | null): ConditionalEffect[] {
+		if (this.system.type == "skillCard") {
+			return [
+				(this as SkillCard).generateSkillCardTeach()
+			];
+		}
 		PersonaItem.cacheStats.total++;
 		if (sourceActor == null) {
 			if (!this.cache.effectsNull) {
@@ -814,7 +891,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	isMultiTarget(this: Usable) : boolean {
+	isMultiTarget(this: UsableAndCard) : boolean {
+		if (this.system.type == "skillCard") return false;
 		switch (this.system.targets) {
 			case "1-nearby-dead":
 			case "1-nearby":
@@ -839,7 +917,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	isAoE(this: Usable) : boolean {
+	isAoE(this: UsableAndCard) : boolean {
+		if (this.system.type == "skillCard") return false;
 		switch (this.system.targets) {
 			case "1-nearby-dead":
 			case "1-nearby":
@@ -883,18 +962,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return base + mod;
 	}
 
-	targetMeetsConditions(this: Usable, user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
-		if (!this.system.validTargetConditions) return true;
+	targetMeetsConditions(this: UsableAndCard, user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
+		if (this.system.type == "skillCard") return target.canLearnNewSkill();
+		const usable = this as Usable;
+		if (!usable.system.validTargetConditions) return true;
 		const conditions  = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user);
 		if (!situation) {
 			situation = {
 				attacker : user.accessor,
 				user: user.accessor,
 				target: target.accessor,
-				usedPower: this.accessor,
+				usedPower: usable.accessor,
 			};
 		}
-		return testPreconditions(conditions, situation, this);
+		return testPreconditions(conditions, situation, usable);
 	}
 
 	cardConditionsToSelect( this: SocialCard) : SocialCard["system"]["conditions"] {
@@ -987,13 +1068,15 @@ export type Focus = Subtype<PersonaItem, "focus">;
 export type Consumable = Subtype<PersonaItem, "consumable">;
 export type Activity = SocialCard;
 export type SocialCard = Subtype<PersonaItem, "socialCard">;
+export type SkillCard = Subtype<PersonaItem, "skillCard">;
 
 export type UniversalModifier = Subtype<PersonaItem, "universalModifier">;
 
-export type ModifierContainer = Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier;
+export type ModifierContainer = Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier | SkillCard;
 
 export type PowerContainer = Consumable | Power | ModifierContainer;
-export type Usable = Power | Consumable;
+export type Usable = Power | Consumable ;
+export type UsableAndCard = Usable | SkillCard; 
 
 Hooks.on("updateItem", (item :PersonaItem) => {
 	item.clearCache();

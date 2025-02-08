@@ -353,6 +353,7 @@
 	"persona.equipment.tag.nil" : "-",
 	"persona.equipment.tag.metaverse" : "Metaverse Item",
 	"persona.equipment.tag.mundane" : "Mundane Item",
+	"persona.equipment.tag.common-loot" : "Common Loot",
 	"persona.equipment.tag.consumable" : "Consumable Item",
 	"persona.equipment.tag.weapon" : "Weapon",
 	"persona.equipment.tag.key-item" : "Key Item",

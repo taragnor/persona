@@ -75,6 +75,13 @@
 								{{selectOptions TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item2}}
 							</select>
 						</div>
+						<div class="flexrow">
+							<label> Card</label>
+							<input class="short" type="number" name="system.encounter.treasure.cardProb" value="{{actor.system.encounter.treasure.cardProb}}">%
+							<select name="system.encounter.treasure.cardPowerId">
+								{{selectOptions CARD_CANDIDATES  localize=false selected=actor.system.encounter.treasure.cardPowerId}}
+							</select>
+						</div>
 
 					</div>
 				</div>

@@ -2,6 +2,7 @@ export const EQUIPMENT_TAGS_LIST = [
 	"nil",
 	"metaverse",
 	"mundane",
+	"common-loot",
 	"consumable",
 	"weapon",
 	"key-item",
