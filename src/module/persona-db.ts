@@ -104,7 +104,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		const power = PersonaDB.getItemByName(name) as Power | undefined;
 		if (!power && !this.failLog.has(name))  {
 			const msg =`Can't get basic power ${name}`; 
-			this.failLog.set("name", msg);
+			this.failLog.set(name, msg);
 			PersonaError.softFail(msg);
 		}
 		return power;

@@ -70,7 +70,7 @@
 		<div class="item-list flexcol">
 			{{#each actor.consumables as |item|}}
 			<div class="{{#if (ne item.system.noTrade true)}} item item-entry {{/if}} inventory-item" data-item-id="{{item.id}}">
-				{{#if (eq item.system.type "consumable")}}
+				{{#if (isItemUsable item)}}
 				<a class="rollItem">
 					<img src="icons/dice/d20black.svg">
 				</a>

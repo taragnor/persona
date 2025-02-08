@@ -1,3 +1,4 @@
+import { SkillCard } from "../item/persona-item.js";
 import { UsableAndCard } from "../item/persona-item.js";
 import { ValidSocialTarget } from "../social/persona-social.js";
 import { ValidAttackers } from "../combat/persona-combat.js";
@@ -173,17 +174,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return (await this.createEmbeddedDocuments("Item", [{"name": "Unnamed Item", type: "item"}]))[0];
 	}
 
-	get inventory() : (Consumable | InvItem | Weapon)[] {
-		return this.items.filter( x=> x.system.type == "item" || x.system.type == "weapon" || x.system.type == "consumable") as (Consumable | InvItem | Weapon)[];
+	get inventory() : (Consumable | InvItem | Weapon | SkillCard)[] {
+		return this.items.filter( x=> x.system.type == "item" || x.system.type == "weapon" || x.system.type == "consumable" || x.system.type == "skillCard") as (Consumable | InvItem | Weapon)[];
 	}
 
 	get consumables(): Consumable[] {
-		const consumables =  this.items.filter( x=> x.system.type == "consumable") as Consumable[];
+		const consumables =  this.items.filter( x=> x.system.type == "consumable" || x.system.type == "skillCard") as Consumable[];
 		return consumables.sort( (a,b) => a.name.localeCompare(b.name));
 	}
 
-	get nonUsableInventory() : (InvItem | Weapon)[] {
-		const inventory = this.items.filter( i=> i.system.type == "item" || i.system.type == "weapon") as (InvItem | Weapon)[];
+	get nonUsableInventory() : (SkillCard | InvItem | Weapon)[] {
+		const inventory = this.items.filter( i=> i.system.type == "item" || i.system.type == "weapon" || i.system.type == "skillCard") as (InvItem | Weapon)[];
 		return inventory.sort( (a,b) =>  {
 			const typesort = a.system.type.localeCompare(b.system.type);
 			if (typesort != 0) return typesort;
@@ -1515,16 +1516,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (powers.length < this.maxMainPowers) {
 			powers.push(power.id);
 			await this.update( {"system.combat.powers": powers});
-		} else {
-			if (this.system.type == "npcAlly") {
-				ui.notifications.notify("Can't learn another power");
-				return;
-			}
-			const sideboard =  this.system.combat.powers_sideboard;
-			if (sideboard.includes(power.id)) return;
-			sideboard.push(power.id);
-			await this.update( {"system.combat.powers_sideboard": sideboard});
 		}
+		const sideboard =  this.system.combat.powers_sideboard;
+		if (sideboard.includes(power.id)) return;
+		sideboard.push(power.id);
+		await this.update( {"system.combat.powers_sideboard": sideboard});
 		const totalPowers = this.mainPowers.length + this.sideboardPowers.length;
 		let maxMsg = "";
 		if (totalPowers > this.maxPowers) {
@@ -1684,7 +1680,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return false;
 			case "npcAlly":
 			case "pc":
-				return !!this.system.combat.overflowPower;
+				return this.maxPowers - this.mainPowers.length - this.sideboardPowers.length >= 0;
 			default:
 				this.system satisfies never;
 				return false;

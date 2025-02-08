@@ -1,3 +1,4 @@
+import { PersonaDB } from "../../persona-db.js";
 import { UsableAndCard } from "../../item/persona-item.js";
 import { NPCAlly } from "../persona-actor.js";
 import { Consumable } from "../../item/persona-item.js";
@@ -6,7 +7,6 @@ import { Helpers } from "../../utility/helpers.js";
 import { PersonaError } from "../../persona-error.js";
 import { PersonaCombat } from "../../combat/persona-combat.js";
 import { PToken } from "../../combat/persona-combat.js";
-import { Usable } from "../../item/persona-item.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { CClass } from "../../item/persona-item.js";
 import { PersonaItem } from "../../item/persona-item.js";
@@ -171,11 +171,10 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!item) {
 			throw new PersonaError(`Can't find Item Id:${itemId}`);
 		}
-		const itype = item.system.type;
-		if (itype != "consumable") {
-			throw new PersonaError(`itemId pointed to unsualbe power ${itemId}`);
+		if (item.isUsable() == false) {
+			throw new PersonaError(`item ${item.name} isn't usable`);
 		}
-		this.#useItemOrPower(item as Usable);
+		this.#useItemOrPower(item);
 	}
 
 	async deleteTalent(event: Event) {
@@ -210,7 +209,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (powerId == undefined) {
 			throw new PersonaError(`Can't find power`);
 		}
-		const power = this.actor.powers.find(x=> x.id == powerId);
+		const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.allPowers().find(pwr => pwr.id == powerId);
 		if (!power) {
 			throw new PersonaError(`Can't find power id ${powerId}`);
 		}

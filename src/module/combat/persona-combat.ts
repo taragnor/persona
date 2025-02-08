@@ -1627,17 +1627,21 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 			}
 		}
-		case "skillCard":
-		case "consumable" :{
-			res.addEffect(null, attacker.actor, {
-				type: "expend-item",
-				itemId: "",
-				itemAcc: PersonaDB.getUniversalItemAccessor(usableOrCard as SkillCard | Consumable),
-			});
+				break;
+			case "skillCard":
+			case "consumable" :{
+				res.addEffect(null, attacker.actor, {
+					type: "expend-item",
+					itemId: "",
+					itemAcc: PersonaDB.getUniversalItemAccessor(usableOrCard as SkillCard | Consumable),
+				});
+				break;
+			}
+			default:
+				usableOrCard.system satisfies never;
 		}
+		return res;
 	}
-	return res;
-}
 
 	static getAttackBonus(attacker: PToken, power:Usable) : ModifierList {
 		let atkbonus = this.getBaseAttackBonus(attacker, power);
@@ -2254,7 +2258,14 @@ async generateTreasureAndXP() {
 	} catch (e) {
 		PersonaError.softFail("Problem with awarding XP");
 	}
-	return await Metaverse.generateTreasure(defeatedFoes, pcs);
+	try{
+		const treasure = await Metaverse.generateTreasure(defeatedFoes);
+		await Metaverse.printTreasure(treasure);
+		await Metaverse.distributeMoney(treasure.money, pcs);
+	} catch (e) {
+		PersonaError.softFail("Problem with generating treasure");
+	}
+
 }
 
 	displayEscalation(element : JQuery<HTMLElement>) {

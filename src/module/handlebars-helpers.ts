@@ -464,6 +464,9 @@ export class PersonaHandleBarsHelpers {
 				.join(", ");
 			return `${frequencyStr} -- ${placementStr}`;
 		},
+		"isItemUsable": function (item: PersonaItem) : boolean {
+			return item.isUsable();
+		}
 
 	}
 } //end of class

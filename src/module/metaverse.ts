@@ -235,7 +235,7 @@ export class Metaverse {
 		});
 	}
 
-	static async generateTreasure(shadows: PersonaActor[], players: PersonaActor[]): Promise<TreasureItem[]> {
+	static async generateTreasure(shadows: PersonaActor[]): Promise<Treasure> {
 		let items : TreasureItem[] = [];
 		let money = 0;
 		const considerSkillCard = async function (powerId: string, prob: number) {
@@ -250,6 +250,7 @@ export class Metaverse {
 				PersonaError.softFail(`Can't fiund Power Id ${power} for treasure`);
 				return;
 			}
+			ui.notifications.notify(`Skill Card created for ${power.name}`);
 			const newCard = await PersonaItem.createSkillCardFromPower(power);
 			items.push(newCard);
 		};
@@ -273,10 +274,19 @@ export class Metaverse {
 			considerItem(treasure.item2, treasure.item2prob);
 			considerSkillCard(treasure.cardPowerId, treasure.cardProb);
 		}
+		const treasure : Treasure = {
+			money,
+			items
+		};
+		return treasure;
+	}
+
+	static async printTreasure(treasure : Treasure) {
+		const {money, items} = treasure;
 		const speaker = ChatMessage.getSpeaker({alias: "Treasure Generator"});
 		const treasureListHTML = items
-		.map( item => `<li> ${item.displayedName} </li>`)
-		.join("");
+			.map( item => `<li> ${item.displayedName} </li>`)
+			.join("");
 		const text = `
 		<b>Money:</b> ${money} <br>
 		<ul class="treasure-list">
@@ -290,6 +300,9 @@ export class Metaverse {
 			style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
 		};
 		await ChatMessage.create(messageData, {});
+	}
+
+	static async distributeMoney(money: number, players: PersonaActor[]) {
 		if (players.length > 0) {
 			const moneyShare = Math.floor(money / players.length)
 			const shareDist =
@@ -309,7 +322,6 @@ export class Metaverse {
 				}
 			}
 		}
-		return items;
 	}
 
 	static async executeDungeonAction( action: DungeonActionConsequence) : Promise<void> {
@@ -603,3 +615,8 @@ export type PresenceCheckResult = null
 
 
 type TreasureItem = Weapon | InvItem | Consumable | SkillCard;
+
+type Treasure = {
+	money : number,
+	items: TreasureItem[],
+};

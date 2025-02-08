@@ -39,7 +39,6 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 			...tarotFields(),
 			combat: new sch( {
 				...PCAndNPCAllyCombatStats(),
-				powers_sideboard: new arr( new id()),
 			}),
 			bio: personalBio(),
 			...PCSpecificStuff(),

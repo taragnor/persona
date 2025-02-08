@@ -182,7 +182,7 @@ export function PCAndNPCAllyCombatStats() {
 		...combatCommonStats(),
 		xp: new num( {integer: true, initial: 0, min: 0, max: 100}),
 		powers: new arr( new id()),
-		overflowPower: new id(),
+		powers_sideboard: new arr( new id()),
 		teamworkMove: new id(),
 		mp: new sch({
 			value: new num({initial: 0, integer: true, min: 0, max: 1000}),

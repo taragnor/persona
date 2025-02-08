@@ -65,12 +65,13 @@ export class ShadowSheet extends CombatantSheetBase {
 			.sort( (a, b) => a.name.localeCompare(b.name))
 			.map(x=> [x.id, x.name])
 		);
-		const databasePowers = this.actor.powers
+		const databasePowers = this.actor.mainPowers
+			.filter (pwr => !pwr.hasTag("shadow-only"))
 			.map( x=> PersonaDB.allPowers().find(pwr => pwr.name == x.name))
 			.filter( x=> x != undefined) as Power[];
 		data.CARD_CANDIDATES = Object.fromEntries(
 			[["", "-"]].concat(
-			databasePowers.map( pwr => [pwr.id, pwr.displayedName])
+				databasePowers.map( pwr => [pwr.id, pwr.displayedName])
 			));
 		return data;
 	}

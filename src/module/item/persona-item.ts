@@ -101,6 +101,26 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		});
 	}
 
+	isUsable() : this is UsableAndCard  {
+		switch (this.system.type) {
+			case "power":
+			case "skillCard":
+			case "consumable":
+				return true;
+			case "characterClass":
+			case "focus":
+			case "talent":
+			case "universalModifier":
+			case "socialCard":
+			case "item":
+			case "weapon":
+				return false;
+			default:
+				this.system satisfies never;
+				return false;
+		}
+	}
+
 	get tags() : string {
 		let tags : string[] = [];
 		if ("itemTags" in this.system) {
