@@ -73,6 +73,14 @@ export class ShadowSheet extends CombatantSheetBase {
 			[["", "-"]].concat(
 				databasePowers.map( pwr => [pwr.id, pwr.displayedName])
 			));
+		data.COMMON_TREASURE_LIST = Object.fromEntries(
+			[["", "-"]].concat(
+			PersonaDB.treasureItems()
+			.filter( item => item.hasTag("common-loot"))
+			.sort( (a, b) => a.name.localeCompare(b.name))
+			.map( x=> [x.id, x.name])
+			)
+		);
 		return data;
 	}
 

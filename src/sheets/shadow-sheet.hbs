@@ -62,6 +62,13 @@
 							<input class="short" type="number" name="system.encounter.treasure.moneyHigh" value="{{actor.system.encounter.treasure.moneyHigh}}">
 						</div>
 						<div class="flexrow">
+							<label> Common Item</label>
+							<input class="short" type="number" name="system.encounter.treasure.item0prob" value="{{actor.system.encounter.treasure.item0prob}}">%
+							<select name="system.encounter.treasure.item0">
+								{{selectOptions COMMON_TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item0}}
+							</select>
+						</div>
+						<div class="flexrow">
 							<label> Item 1</label>
 							<input class="short" type="number" name="system.encounter.treasure.item1prob" value="{{actor.system.encounter.treasure.item1prob}}">%
 							<select name="system.encounter.treasure.item1">

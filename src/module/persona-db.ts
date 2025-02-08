@@ -1,3 +1,4 @@
+import { TreasureItem } from "./metaverse.js";
 import { SkillCard } from "./item/persona-item.js";
 import { NPCAlly } from "./actor/persona-actor.js";
 import { SocialEncounterCard } from "./social/persona-social.js";
@@ -124,7 +125,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			.filter( actor=> actor.system.type == "tarot") as Tarot[];
 	}
 
-	treasureItems(): (Weapon | InvItem | Consumable)[] {
+	treasureItems(): TreasureItem[] {
 		if (this.#cache.treasureItems) return this.#cache.treasureItems;
 		const items = this.allItems();
 		return  this.#cache.treasureItems = items

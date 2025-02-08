@@ -27,7 +27,6 @@ import { PERK_TYPES_LIST } from "../../config/perk-types.js";
 
 function itemBase() {
 	return {
-		// itemCost: new num({ integer: true, min:0, initial: 0}),
 		description: new txt(),
 		amount: new num({ integer: true, initial: 1, min: 0}),
 		price: new num({ integer: true, initial: 0, min:0}),
@@ -56,8 +55,6 @@ class Weapon extends foundry.abstract.TypeDataModel {
 		const ret = {
 			...itemBase(),
 			damage: damage(),
-			//Embedded test code
-			// effects: new arr(new embedded(ConditionalEffectDM)),
 			...effects (false),
 		};
 		return ret;
@@ -374,7 +371,6 @@ class SocialCardEventDM extends foundry.abstract.DataModel {
 			data.choices = [];
 		return source;
 	}
-
 }
 
 class CardChoiceDM extends foundry.abstract.DataModel {

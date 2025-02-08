@@ -239,6 +239,7 @@ export class Metaverse {
 		let items : TreasureItem[] = [];
 		let money = 0;
 		const considerSkillCard = async function (powerId: string, prob: number) {
+			if (!powerId) return;
 			if (Math.random() > (prob ?? 0) / 100) {return;}
 			const existingCard = PersonaDB.skillCards().find( x=> x.system.skillId  ==  powerId);
 			if (existingCard) {
@@ -614,7 +615,7 @@ export type PresenceCheckResult = null
 	| "any";
 
 
-type TreasureItem = Weapon | InvItem | Consumable | SkillCard;
+export type TreasureItem = Weapon | InvItem | Consumable | SkillCard;
 
 type Treasure = {
 	money : number,

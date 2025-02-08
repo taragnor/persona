@@ -246,7 +246,6 @@ export function SocialTargetBlockData() {
 		tokenSpends:new arr(new obj<TokenSpend>()),
 		conditions: new arr(new obj<Precondition>()),
 		availabilityConditions: new arr(new obj<Precondition>()),
-		// baseRelationship: new txt(),
 		specialEvents: new txt(),
 		datePerk: new txt(),
 	}
@@ -260,11 +259,13 @@ export function encounterDataSchema() {
 			moneyLow: new num( {initial: 0, integer: true}),
 			moneyHigh: new num( {initial: 0, integer: true}),
 			cardPowerId: new id(), //Power Id
-			cardProb: new num( {initial: 0, integer: false}),
+			cardProb: new num( {initial: 10, integer: false, min: 0, max: 100}),
+			item0: new id(),
+			item0prob: new num( {initial: 15, integer: false, min: 0, max: 100}),
 			item1: new id(),
-			item1prob: new num( {initial: 0, integer: false}),
+			item1prob: new num( {initial: 10, integer: false, min: 0, max: 100}),
 			item2: new id(),
-			item2prob: new num( {initial: 0, integer: false}),
+			item2prob: new num( {initial: 5, integer: false, min: 0, max: 100}),
 		}),
 	});
 }

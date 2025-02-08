@@ -173,6 +173,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	hasTag(this: Usable, tag: PowerTag) : boolean;
 	hasTag(this: InvItem | Weapon | SkillCard, tag: EquipmentTag): boolean;
 	hasTag(this: UsableAndCard, tag: PowerTag | EquipmentTag) : boolean;
+	hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag) : boolean;
 	hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag) : boolean {
 		let list : (PowerTag | EquipmentTag)[];
 		switch (this.system.type) {
