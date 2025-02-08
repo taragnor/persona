@@ -56,9 +56,11 @@ export class ShadowSheet extends CombatantSheetBase {
 		data.SHADOW_CREATURE_TYPE= SHADOW_CREATURE_TYPE;
 		data.SHADOW_ROLE = SHADOW_ROLE;
 		data.TREASURE_LIST = Object.fromEntries(
+			[["", "-"]].concat(
 			PersonaDB.treasureItems()
 			.sort( (a, b) => a.name.localeCompare(b.name))
 			.map( x=> [x.id, x.name])
+			)
 		);
 		data.SCENE_LIST = Object.fromEntries(
 			PersonaDB.dungeonScenes()
