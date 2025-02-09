@@ -4,9 +4,11 @@ import { HBS_TEMPLATES_DIR } from "../../config/persona-settings.js";
 import { ProgressClock } from "../utility/progress-clock.js";
 
 
+const TENSION_POOL_MAX = 8 as const;
+
  class TensionPoolClass extends ProgressClock {
 	 constructor() {
-		 super ("Tension Pool", 6);
+		 super ("Tension Pool", TENSION_POOL_MAX);
 	 }
 
 	 async rollAuto() {

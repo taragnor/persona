@@ -251,7 +251,9 @@ export class Metaverse {
 				PersonaError.softFail(`Can't fiund Power Id ${power} for treasure`);
 				return;
 			}
-			ui.notifications.notify(`Skill Card created for ${power.name}`);
+			const msg = `Skill Card created for ${power.name}`;
+			ui.notifications.notify(msg);
+			console.log(msg);
 			const newCard = await PersonaItem.createSkillCardFromPower(power);
 			items.push(newCard);
 		};
@@ -274,7 +276,7 @@ export class Metaverse {
 			considerItem(treasure.item0, treasure.item0prob);
 			considerItem(treasure.item1, treasure.item1prob);
 			considerItem(treasure.item2, treasure.item2prob);
-			considerSkillCard(treasure.cardPowerId, treasure.cardProb);
+			await considerSkillCard(treasure.cardPowerId, treasure.cardProb);
 		}
 		const treasure : Treasure = {
 			money,
