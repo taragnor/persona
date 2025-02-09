@@ -258,13 +258,13 @@ export function encounterDataSchema() {
 			moneyLow: new num( {initial: 0, integer: true}),
 			moneyHigh: new num( {initial: 0, integer: true}),
 			cardPowerId: new id(), //Power Id
-			cardProb: new num( {initial: 5, integer: false, min: 0, max: 100}),
+			cardProb: new num( {initial: 2, integer: false, min: 0, max: 100}),
 			item0: new id(),
-			item0prob: new num( {initial: 20, integer: false, min: 0, max: 100}),
+			item0prob: new num( {initial: 15, integer: false, min: 0, max: 100}),
 			item1: new id(),
-			item1prob: new num( {initial: 10, integer: false, min: 0, max: 100}),
+			item1prob: new num( {initial: 7, integer: false, min: 0, max: 100}),
 			item2: new id(),
-			item2prob: new num( {initial: 5, integer: false, min: 0, max: 100}),
+			item2prob: new num( {initial: 2, integer: false, min: 0, max: 100}),
 		}),
 	});
 }
