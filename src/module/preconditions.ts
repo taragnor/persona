@@ -1,3 +1,5 @@
+import { SocialLink } from "./actor/persona-actor.js";
+import { NPCAlly } from "./actor/persona-actor.js";
 import { UsableAndCard } from "./item/persona-item.js";
 import { ValidSocialTarget } from "./social/persona-social.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
@@ -272,6 +274,32 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			target = game.combat.round ?? -1;
 			break;
 		}
+		case "total-SL-levels": {
+			const subject : PersonaActor | undefined = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!subject) return false;
+			let targetActor : SocialLink | undefined = undefined;
+			switch (subject.system.type) {
+				case "tarot":
+				case "shadow":
+					break;
+				case "npcAlly":
+					const proxy = (subject as NPCAlly).getNPCProxyActor();
+					if (!proxy) {break;}
+					targetActor = proxy;
+					break;
+				case "pc": case "npc":
+					targetActor = subject as PC | NPC;
+					break;
+				default:
+					subject.system satisfies never;
+					return false;
+			}
+			if (!targetActor) {target =0; break;}
+			target = PersonaDB.PCs()
+			.reduce( (acc, pc) => acc + pc.getSocialSLWith(targetActor), 0)
+			break;
+		}
+
 		default:
 			condition satisfies never;
 			PersonaError.softFail(`Unknwon numeric comparison type ${condition["comparisonTarget"]}`)

@@ -40,6 +40,12 @@
 		</select>
 	{{/if}}
 
+	{{#if (eq cond.comparisonTarget "total-SL-levels")}}
+	<select name="{{strcat namePrefix 'conditionTarget'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+	</select>
+	{{/if}}
+
 	{{#if (eq cond.comparisonTarget "inspirationWith")}}
 	<select name="{{strcat namePrefix 'conditionTarget'}}">
 		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}

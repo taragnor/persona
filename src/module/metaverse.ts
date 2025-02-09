@@ -257,7 +257,7 @@ export class Metaverse {
 			const newCard = await PersonaItem.createSkillCardFromPower(power);
 			items.push(newCard);
 		};
-		const considerItem= function (itemId: string, prob: number) {
+		const considerItem = function (itemId: string, prob: number) {
 			const item = PersonaDB.treasureItems().find(x=> x.id == itemId);
 			if (!item) {return;}
 			if (Math.random() > (prob ?? 0) / 100) {return;}

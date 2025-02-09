@@ -13,6 +13,7 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"total-roll",
 	"talent-level",
 	"social-link-level",
+	"total-SL-levels",
 	"student-skill",
 	"character-level",
 	"has-resources",
@@ -81,6 +82,7 @@ type NonGenericNumericComparison = ResistanceComparison
 	| AmountOfItemComparison
 	| SocialLinkLevelComparison
 	| SocialVariableComparison
+	| totalSLComparison
 ;
 
 type SocialVariableComparison = NumericComparisonBase & {
@@ -156,4 +158,9 @@ type Comparator = typeof COMPARATORS_LIST[number];
 export const COMPARATORS = Object.fromEntries (
 	COMPARATORS_LIST.map( x=> [x, x])
 );
+
+type totalSLComparison = NumericComparisonBase & {
+	comparisonTarget:		"total-SL-levels",
+	conditionTarget: ConditionTarget,
+}
 

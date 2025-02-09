@@ -48,6 +48,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			treasureItems: undefined,
 			tarot: undefined,
 			navigator: undefined,
+			pcs: undefined,
 		};
 		Hooks.callAll("DBrefresh");
 		return newCache;
@@ -153,6 +154,12 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		.filter( x=> x.system.cardType == "social") as SocialEncounterCard[]
 	}
 
+	PCs() : PC[] {
+		if (this.#cache.pcs) return this.#cache.pcs;
+		this.#cache.pcs=  this.allActors().filter( actor => actor.system.type == "pc") as PC[];
+		return this.#cache.pcs;
+	}
+
 	allActivities(): Activity[] {
 		return this.allSocialCards()
 		.filter( x=> (x.system.cardType == "job" || x.system.cardType =="training" || x.system.cardType == "recovery" || x.system.cardType == "other") ) as Activity[];
@@ -226,5 +233,6 @@ type PersonaDBCache =	{
 	treasureItems: TreasureItem[] | undefined;
 	tarot: Tarot[] | undefined;
 	navigator: NPCAlly | undefined;
+	pcs: PC[] | undefined;
 };
 

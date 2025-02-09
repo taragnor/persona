@@ -597,6 +597,8 @@ export class ConditionalEffectManager {
 				return `Value of Social variable ${cond.variableId} ${endString(cond)}`;
 			case "round-count":
 				return `Round Count ${endString(cond)}`;
+			case "total-SL-levels":
+				return `Total SL levels among all PCs ${endString(cond)}`;
 			default:
 				cond satisfies never;
 				return "UNKNOWN CONDITION"
