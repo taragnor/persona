@@ -39,6 +39,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".incremental-advance-block .hp .add").on("click", this.addIncremental_HP.bind(this));
 		html.find(".incremental-advance-block .mp .add").on("click", this.addIncremental_MP.bind(this));
 		html.find(".incremental-advance-block .wpnDamage .add").on("click", this.addIncremental_wpnDamage.bind(this));
+		html.find(".incremental-advance-block .attack .add").on("click", this.addIncremental_attack.bind(this));
+		html.find(".incremental-advance-block .defense .add").on("click", this.addIncremental_defense.bind(this));
+		html.find(".incremental-advance-block .initiative .add").on("click", this.addIncremental_initiative.bind(this));
 
 	}
 
@@ -275,6 +278,40 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (current <3) {
 			await this.actor.update({
 				"system.combat.classData.incremental.wpnDamage" : current +1});
+			if (this.actor.system.type == "pc") {
+				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
+			}
+		}
+	}
+
+	async addIncremental_attack(_ev: JQuery.ClickEvent) {
+		const target = "attack";
+		const current = this.actor.system.combat.classData.incremental[target];
+		if (current <2) {
+			await this.actor.update({
+				"system.combat.classData.incremental.attack" : current +1});
+			if (this.actor.system.type == "pc") {
+				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
+			}
+		}
+	}
+	async addIncremental_defense(_ev: JQuery.ClickEvent) {
+		const target = "defense";
+		const current = this.actor.system.combat.classData.incremental[target];
+		if (current <2) {
+			await this.actor.update({
+				"system.combat.classData.incremental.defense" : current +1});
+			if (this.actor.system.type == "pc") {
+				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
+			}
+		}
+	}
+	async addIncremental_initiative(_ev: JQuery.ClickEvent) {
+		const target = "initiative";
+		const current = this.actor.system.combat.classData.incremental[target];
+		if (current <3) {
+			await this.actor.update({
+				"system.combat.classData.incremental.initiative" : current +1});
 			if (this.actor.system.type == "pc") {
 				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 			}

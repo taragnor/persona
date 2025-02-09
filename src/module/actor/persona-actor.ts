@@ -257,19 +257,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
          case "npc":
             return -5;
          case "shadow": {
-            const inc = this.system.combat.classData.incremental.initiative ? 1 : 0;
-            const level  = this.system.combat.classData.level + inc;
+            const inc = this.system.combat.classData.incremental.initiative;
+            const level  = this.system.combat.classData.level;
             const initRating = this.system.combat.initiative;
             const initScore = this.#translateInitString(initRating);
-            // const actor = this as (Shadow | PC);
-            return initBonus + (level * 3) + initScore;
+            return initBonus + (inc * 2) + (level * 3) + initScore;
          }
          case "pc":  case "npcAlly": {
-            const inc = this.system.combat.classData.incremental.initiative ? 1 : 0;
-            const level  = this.system.combat.classData.level + inc;
+            const inc = this.system.combat.classData.incremental.initiative;
+            const level  = this.system.combat.classData.level;
             const initRating = this.system.combat.initiative;
             const initScore = this.#translateInitString(initRating);
-            return initBonus + (level * 3) + initScore;
+            return initBonus + (inc * 2) +  (level * 3) + initScore;
          }
          case "tarot" :{
             return -5;
@@ -1197,7 +1196,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       return rating;
    }
 
-   basePowerCritResist(this: ValidAttackers, power: Usable, disallowIncremental = false): number {
+   basePowerCritResist(this: ValidAttackers, power: Usable): number {
       switch (power.system.subtype) {
          case "consumable":
          case "social-link":
@@ -1218,8 +1217,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
             power.system satisfies never;
             return 0;
       }
-      const inc = this.system.combat.classData.incremental.defenses ? 1 : 0;
-      const level = this.system.combat.classData.level + (disallowIncremental ? 0 : inc);
+      // const inc = this.system.combat.classData.incremental.defense;
+      const level = this.system.combat.classData.level;
       return Math.floor(level / 2);
    }
 
@@ -1269,10 +1268,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
    wpnAtkBonus(this: ValidAttackers) : ModifierList {
       const mods = this.getBonuses(["allAtk", "wpnAtk"]);
       const lvl = this.system.combat.classData.level;
-      const inc = this.system.combat.classData.incremental.attack ? 1 : 0;
+      const inc = this.system.combat.classData.incremental.attack;
       const wpnAtk = this.system.combat.wpnatk;
       mods.add("Base Weapon Attack Bonus", wpnAtk);
-      mods.add("Level Bonus", lvl + inc);
+      mods.add("Level Bonus (x2)", lvl * 2);
+		mods.add("Incremental Advance" , inc);
       return mods;
    }
 
@@ -1280,9 +1280,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       const mods = this.getBonuses(["allAtk", "magAtk"]);
       const lvl = this.system.combat.classData.level ?? 0;
       const magAtk = this.system.combat.magatk ?? 0;
-      const inc = this.system.combat.classData.incremental.attack ? 1 : 0;
+      const inc = this.system.combat.classData.incremental.attack;
       mods.add("Base Magic Attack Bonus", magAtk);
-      mods.add("Level Bonus", lvl + inc);
+      mods.add("Level Bonus (x2)", lvl * 2);
+		mods.add("Incremental Advance" , inc);
       return mods;
    }
 
@@ -1297,10 +1298,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       const mods = new ModifierList();
       const lvl = this.system.combat.classData.level;
       const baseDef = this.#translateDefenseString(type, this.system.combat.defenses[type]);
-      const inc = this.system.combat.classData.incremental.defenses ? 1 : 0;
+      const inc = this.system.combat.classData.incremental.defense;
       mods.add("Base", 10);
       mods.add("Base Defense Bonus", baseDef);
-      mods.add("Level Bonus", lvl + inc);
+      mods.add("Level Bonus (x2)", lvl * 2);
+		mods.add("Incremental Advance" , inc);
       const otherBonuses = this.getBonuses([type, "allDefenses"]);
       const defenseMods = this.getBonuses([type, "allDefenses"], this.defensivePowers());
       return mods.concat(otherBonuses).concat(defenseMods);
@@ -2090,13 +2092,13 @@ async levelUp(this: PC | NPCAlly) : Promise<void> {
    const incremental : PC["system"]["combat"]["classData"]["incremental"] = {
       hp: 0,
       mp: 0,
-      attack: false,
-      defenses: false,
+      attack: 0,
+      defense: 0,
       magicLow: false,
       magicHigh: false,
       talent: false,
       wpnDamage: 0,
-      initiative: false,
+      initiative: 0,
    };
    await this.update({
       "system.combat.classData.level": newlevel,

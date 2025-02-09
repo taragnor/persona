@@ -33,6 +33,37 @@
 		{{/if}}
 	</div>
 
+	<div class="initiative">
+		<label>
+			Initiative Bonus {{actor.system.combat.classData.incremental.initiative}}
+		</label>
+		{{#if (lt actor.system.combat.classData.incremental.initiative 3)}}
+		<a class="add">
+		<i class="fa-solid fa-square-plus"></i>
+		</a>
+		{{/if}}
+	</div>
+	<div class="attack">
+		<label>
+			Attack Bonus {{actor.system.combat.classData.incremental.attack}}
+		</label>
+		{{#if (lt actor.system.combat.classData.incremental.attack 2)}}
+		<a class="add">
+		<i class="fa-solid fa-square-plus"></i>
+		</a>
+		{{/if}}
+	</div>
+	<div class="defense">
+		<label>
+			Defense Bonus {{actor.system.combat.classData.incremental.defense}}
+		</label>
+		{{#if (lt actor.system.combat.classData.incremental.defense 2)}}
+		<a class="add">
+		<i class="fa-solid fa-square-plus"></i>
+		</a>
+		{{/if}}
+	</div>
+
 	{{#each CONST.INC as |inc i|}}
 	<div class="incremental-advance">
 		<label>

@@ -160,7 +160,7 @@ export class PersonaHandleBarsHelpers {
 				user: actor.accessor,
 			}
 			const critBoostMod = power.critBoost(actor).total(situation);
-			const targetDiffAdjust = PersonaCombat.calcPowerCritBoostTargetAdjust(actor, actor, power, true);
+			const targetDiffAdjust = PersonaCombat.calcPowerCritBoostTargetAdjust(actor, actor, power);
 			return critBoostMod + targetDiffAdjust;
 		},
 		"getTokenAccName" : (tokenAcc: UniversalTokenAccessor<PToken> | UniversalActorAccessor<PC | Shadow>) =>  {

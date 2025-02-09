@@ -98,7 +98,6 @@ type EnergyComparison = NumericComparisonBase & {
 type GenericNumericComparison = NumericComparisonBase & {
 	comparisonTarget : Exclude<NumericComparisonTarget, NonGenericNumericComparison["comparisonTarget"]>,
 	studentSkill ?: SocialStat;
-	// socialLinkIdOrTarot ?: SocialLinkIdOrTarot,
 }
 
 type SocialLinkLevelComparison = NumericComparisonBase & {

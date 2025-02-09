@@ -1173,7 +1173,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
-	static calcPowerCritBoostTargetAdjust(attacker: ValidAttackers, target: ValidAttackers, power: Usable, disallowIncremental = false) {
+	static calcPowerCritBoostTargetAdjust(attacker: ValidAttackers, target: ValidAttackers, power: Usable) {
 		if (power.system.type != "power" || power.isBasicPower()) {
 			return 0;
 		}
@@ -1181,7 +1181,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			return 1;
 		}
 		const powerLevel = power.baseCritSlotBonus();
-		const targetResist = target.basePowerCritResist(power, disallowIncremental);
+		const targetResist = target.basePowerCritResist(power);
 		// const dmgtype = power.system.dmg_type;
 		// const mult = (dmgtype == "dark" || dmgtype == "light") ? 2 : 1;
 		const diff = Math.max(0, powerLevel - targetResist);

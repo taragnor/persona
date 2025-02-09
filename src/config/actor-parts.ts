@@ -143,14 +143,13 @@ export const classData = function () {
 		incremental: new sch ({
 			hp: new num({integer: true, initial: 0, max: 3}),
 			mp: new num({integer: true, initial: 0, max: 3}),
-			attack: new bool(),
-			defenses: new bool(),
+			attack: new num({integer: true, initial: 0, max: 2}),
+			defense: new num({integer: true, initial: 0, max: 2}),
 			magicLow: new bool(),
 			magicHigh: new bool(),
 			talent: new bool(),
 			wpnDamage: new num({integer: true, initial: 0, max: 2}),
-			initiative: new bool(),
-
+			initiative: new num({integer: true, initial: 0, max: 3}),
 		}),
 		incremental_progress: new num({initial:0, min:0, integer:true}),
 	});
