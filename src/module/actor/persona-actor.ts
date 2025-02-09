@@ -1268,7 +1268,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
    wpnAtkBonus(this: ValidAttackers) : ModifierList {
       const mods = this.getBonuses(["allAtk", "wpnAtk"]);
       const lvl = this.system.combat.classData.level;
-      const inc = this.system.combat.classData.incremental.attack;
+      const inc = this.system.combat.classData.incremental.attack ?? 0;
       const wpnAtk = this.system.combat.wpnatk;
       mods.add("Base Weapon Attack Bonus", wpnAtk);
       mods.add("Level Bonus (x2)", lvl * 2);
@@ -1280,7 +1280,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       const mods = this.getBonuses(["allAtk", "magAtk"]);
       const lvl = this.system.combat.classData.level ?? 0;
       const magAtk = this.system.combat.magatk ?? 0;
-      const inc = this.system.combat.classData.incremental.attack;
+      const inc = this.system.combat.classData.incremental.attack ?? 0;
       mods.add("Base Magic Attack Bonus", magAtk);
       mods.add("Level Bonus (x2)", lvl * 2);
 		mods.add("Incremental Advance" , inc);
