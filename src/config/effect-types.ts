@@ -162,6 +162,7 @@ export const MODIFIER_CONS_TYPES = Object.fromEntries(
 );
 
 export const DAMAGE_SUBTYPE_LIST = [
+	"odd-even",
 	"high",
 	"low",
 	"allout-high",

@@ -825,6 +825,8 @@ export class ConditionalEffectManager {
 				return `${cons.amount} ${damageType} damage`;
 			case "high":
 				return `High Damage`;
+			case "odd-even":
+				`Odd/Even Damage`;
 			case "low":
 				return `Low Damage`;
 			case "allout-high":

@@ -1,3 +1,4 @@
+import { DamageType } from "../../config/damage-types.js";
 import { ValidAttackers } from "../combat/persona-combat.js";
 import { EQUIPMENT_TAGS } from "../../config/equipment-tags.js";
 import { Consequence } from "../../config/consequence-types.js";
@@ -521,9 +522,33 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return cons.map( c => c.creatureTag);
 	}
 
+	getDamageType(this: Usable | Weapon, attacker: ValidAttackers): Exclude<DamageType, "by-power"> {
+		switch (this.system.dmg_type) {
+			case "fire":
+			case "wind":
+			case "light":
+			case "dark":
+			case "none":
+			case "healing":
+			case "physical":
+			case "gun":
+			case "cold":
+			case "lightning":
+			case "untyped":
+			case "all-out":
+				return this.system.dmg_type;
+			case "by-power":
+				return attacker.weapon?.getDamageType(attacker) ?? "physical";
+			default:
+					this.system satisfies never;
+				PersonaError.softFail(`Can't find damag etype for ${(this.system as any).dmg_type}`);
+				return "none";
+		}
+	}
+
 	getDamage(this:ModifierContainer , user: ValidAttackers, type: "high" | "low", situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: user.accessor}, typeOverride : SimpleDamageCons["damageType"] = "none") : number {
 		//TODO: handle type override check to see if power damage is by-power or has other type
-		if (!("dmg_type" in this.system)) return 0;
+		if (!("dmg_type" in this.system) || !("subtype" in this.system)) return 0;
 		if (!typeOverride || typeOverride == "by-power") {
 			if (this.system.dmg_type == "none") return 0;
 		}
@@ -585,14 +610,22 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return list;
 	}
 
-	canBeReflectedByPhyiscalShield(this: UsableAndCard): boolean {
+	canBeReflectedByPhyiscalShield(this: UsableAndCard, attacker: ValidAttackers): boolean {
 		if (this.system.type == "skillCard") return false;
-		return this.system.dmg_type == "physical";
+		const dtype = (this as Usable).getDamageType(attacker);
+		switch (dtype) {
+			case "physical":
+			case "gun":
+				return true;
+			default:
+				return false;
+		}
 	}
 
-	canBeReflectedByMagicShield(this: UsableAndCard) : boolean {
+	canBeReflectedByMagicShield(this: UsableAndCard, attacker: ValidAttackers) : boolean {
 		if (this.system.type == "skillCard") return false;
-		switch (this.system.dmg_type) {
+		const dtype = (this as Usable).getDamageType(attacker);
+		switch (dtype) {
 			case "fire":
 			case "wind":
 			case "light":
@@ -600,6 +633,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "cold":
 			case "lightning":
 				return true;
+			case "gun":
 			case "none":
 			case "healing":
 			case "physical":
@@ -607,7 +641,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "all-out":
 				break;
 			default:
-				this.system.dmg_type satisfies never;
+				dtype satisfies never;
 		}
 		return false;
 

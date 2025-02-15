@@ -1,3 +1,4 @@
+import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
 import { CARD_TAG_LIST } from "../../config/card-tags.js";
 import { CardRoll } from "../../config/social-card-config.js"
 import { ArrayCorrector } from "../item/persona-item.js";
@@ -49,13 +50,14 @@ function weeklyAvailability() {
 	});
 }
 
-class Weapon extends foundry.abstract.TypeDataModel {
+class WeaponDM extends foundry.abstract.TypeDataModel {
 	get type() { return "weapon" as const;}
 	static override defineSchema() {
 		const ret = {
 			...itemBase(),
 			damage: damage(),
 			...effects (false),
+			dmg_type: new txt( {choices: REALDAMAGETYPESLIST, initial:"physical"}),
 		};
 		return ret;
 	}
@@ -290,7 +292,7 @@ export const ITEMMODELS = {
 	characterClass: CharacterClassDM,
 	focus: Focus,
 	talent: Talent,
-	weapon: Weapon,
+	weapon: WeaponDM,
 	universalModifier: UniversalModifier,
 	skillCard: SkillCardSchema,
 	// job: JobItemSchema,

@@ -66,6 +66,7 @@
 	"persona.skills.secondary.name": "Secondary",
 
 	"persona.damage.types.physical": "Physical",
+	"persona.damage.types.gun": "Gun",
 	"persona.damage.types.fire": "Fire",
 	"persona.damage.types.cold": "Cold",
 	"persona.damage.types.wind": "Wind",
@@ -76,7 +77,7 @@
 	"persona.damage.types.healing": "Healing",
 	"persona.damage.types.none": "None",
 	"persona.damage.types.all-out": "All-out attack",
-	"persona.damage.types.by-power": "By Power",
+	"persona.damage.types.by-power": "By Power/Weapon",
 
 	"persona.damage.resist.weakness": "Weak",
 	"persona.damage.resist.normal": "Normal",
@@ -163,6 +164,7 @@
 	"persona.damage.low": "Low",
 	"persona.damage.high": "High",
 
+	"persona.damage-subtype.odd-even" : "Odd/Even",
 	"persona.damage-subtype.high" : "High",
 	"persona.damage-subtype.low" : "Low",
 	"persona.damage-subtype.allout-high" : "All Out (High)",

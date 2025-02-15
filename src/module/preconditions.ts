@@ -1,3 +1,4 @@
+import { Usable } from "./item/persona-item.js";
 import { SocialLink } from "./actor/persona-actor.js";
 import { NPCAlly } from "./actor/persona-actor.js";
 import { UsableAndCard } from "./item/persona-item.js";
@@ -182,9 +183,11 @@ function numericComparison(condition: Precondition, situation: Situation, source
 				if (!situation.usedPower) {return false;}
 				const power = PersonaDB.findItem(situation.usedPower);
 				if (power.system.type == "skillCard") return false;
-				element = power.system.dmg_type;
+				if (!situation.attacker) return false;
+				const attacker = PersonaDB.findActor(situation?.attacker);
+				element = (power as Usable).getDamageType(attacker);
+				// element = power.system.dmg_type;
 				if (element == "healing" || element == "untyped" || element == "all-out" || element =="none" ) return false;
-
 			}
 			if (subject.system.type == "npc") return false;
 			const targetResist = subject.system.combat.resists[element] ?? "normal";
@@ -471,7 +474,9 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			const power = PersonaDB.findItem(situation.usedPower);
 			if (targetActor.system.type == "npc") return undefined;
 			if (power.system.type == "skillCard") return undefined;
-			const resist = (targetActor as PC | Shadow).elementalResist(power.system.dmg_type);
+			if (!situation.attacker) return undefined;
+			const attacker = PersonaDB.findActor(situation?.attacker);
+			const resist = (targetActor as PC | Shadow).elementalResist((power as Usable).getDamageType(attacker));
 			return resist == "weakness";
 		}
 		case "is-resistant-to": {
@@ -483,7 +488,9 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 				if (!situation.usedPower) { return undefined; }
 				const power = PersonaDB.findItem(situation.usedPower);
 				if (power.system.type == "skillCard") return undefined;
-				dtype = power.system.dmg_type;
+				if (!situation.attacker) return undefined;
+				const attacker = PersonaDB.findActor(situation?.attacker);
+				dtype = (power as Usable).getDamageType(attacker);
 			}
 			if (targetActor.system.type == "npc") return undefined;
 			const resist = (targetActor as PC | Shadow).elementalResist(dtype);

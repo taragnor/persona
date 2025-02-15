@@ -1,3 +1,4 @@
+import { RealDamageType } from "../../config/damage-types.js";
 import { UsableAndCard } from "../item/persona-item.js";
 import { NPCAlly } from "../actor/persona-actor.js";
 import { ValidAttackers } from "./persona-combat.js";
@@ -14,7 +15,6 @@ import { Shadow } from "../actor/persona-actor.js";
 import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { ValidSound } from "../persona-sounds.js";
 import { PersonaSFX } from "./persona-sfx.js";
-import { DamageType } from "../../config/damage-types.js";
 
 import { PersonaSockets } from "../persona.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
@@ -124,6 +124,7 @@ export class CombatResult  {
 					case "multiplier":
 						effect.hpchangemult *= cons.amount ?? 0;
 						break;
+					case "odd-even":
 					case "high":
 					case "low":
 					case "allout-low":
@@ -913,7 +914,7 @@ export class CombatResult  {
 export interface ActorChange<T extends PersonaActor> {
 	actor: UniversalActorAccessor<T>;
 	hpchange: number;
-	damageType: DamageType;
+	damageType: RealDamageType;
 	hpchangemult: number;
 	addStatus: StatusEffect[],
 	otherEffects: OtherEffect[]

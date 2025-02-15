@@ -4,13 +4,13 @@ import { TurnAlert } from "../utility/turnAlert.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaAE } from "../active-effect.js";
 import { StatusEffectId } from "../../config/status-effects.js";
-import { DamageType } from "../../config/damage-types.js";
 import { PToken } from "./persona-combat.js";
 import { PersonaSounds } from "../persona-sounds.js";
+import { RealDamageType } from "../../config/damage-types.js";
 
 
 export class PersonaSFX {
-	static async onDamage( _token: PToken | undefined, hpchange: number, damageType: DamageType) {
+	static async onDamage( _token: PToken | undefined, hpchange: number, damageType: RealDamageType) {
 		if (hpchange == 0) return;
 		if (hpchange > 0) {
 			if (damageType == "healing") {
@@ -27,6 +27,7 @@ export class PersonaSFX {
 			case "light":
 			case "dark":
 			case "untyped":
+			case "gun":
 				await this.#play(damageType);
 			case "healing":
 				return;

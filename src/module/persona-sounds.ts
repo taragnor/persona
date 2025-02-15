@@ -16,7 +16,7 @@ const SOUNDS = {
 	"raise": "atk-raise-dead.m4a.mp3",
 	"reflect": "atk-reflect.m4a.mp3",
 	"lightning": "atk-lightning.mp3",
-	// "lightning": "atk-thunder.m4a.mp3",
+	"gun": "",
 	"wind": "atk-wind.m4a.mp3",
 	"miss": "",
 	"all-out prompt": "atk-all-out-prompt.mp3",

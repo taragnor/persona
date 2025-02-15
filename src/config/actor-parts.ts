@@ -38,6 +38,7 @@ type HPTracking = {
 export function elementalResists() {
 	const initial :Record< ResistType, ResistStrength>  = {
 		physical: "normal",
+		gun: "normal",
 		fire: "normal",
 		cold: "normal",
 		lightning: "normal",

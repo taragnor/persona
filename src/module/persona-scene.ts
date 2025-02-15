@@ -1,4 +1,3 @@
-import { sleep } from "./utility/async-wait.js";
 import { DamageType } from "../config/damage-types.js";
 import { ShadowRole } from "../config/shadow-types.js";
 import { Shadow } from "./actor/persona-actor.js";
@@ -30,9 +29,10 @@ export class PersonaScene extends Scene {
 
 	stats() : void {
 		if (!game.user.isGM) return;
-		type RelevantDamageTypes = Exclude<DamageType, "none"| "healing"| "all-out"| "untyped"> ;
+		type RelevantDamageTypes = Exclude<DamageType, "none"| "healing"| "all-out"| "untyped" | "by-power"> ;
 		const stats : Record<RelevantDamageTypes, number> = {
 			physical: 0,
+			gun: 0,
 			fire: 0,
 			cold: 0,
 			wind: 0,

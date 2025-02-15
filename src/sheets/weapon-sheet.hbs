@@ -20,6 +20,9 @@
 	</div>
 	<hr>
 	<div class="dmg">
+		<select name="system.dmg_type">
+			{{selectOptions POWERSTUFF.REALDAMAGETYPES localize=true selected=item.system.dmg_type}}
+		</select>
 		<div class="dmg-low">
 			<label>
 				{{localize	"persona.damage.low"}}

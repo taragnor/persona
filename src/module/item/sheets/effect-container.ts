@@ -1,3 +1,4 @@
+import { REALDAMAGETYPES } from "../../../config/damage-types.js";
 import { VARIABLE_ACTIONS } from "../../../config/consequence-types.js";
 import { CARD_TAGS } from "../../../config/card-tags.js";
 import { SOCIAL_LINK_OR_TAROT_OTHER } from "../../../config/precondition-types.js";
@@ -100,6 +101,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			PRECONDITIONTYPES: PRECONDITIONTYPES,
 			CONSTYPES: CONSQUENCETYPES,
 			DAMAGETYPES : DAMAGETYPES,
+			REALDAMAGETYPES: REALDAMAGETYPES,
 			DAMAGETYPESPLUS,
 			STATUSEFFECTS: STATUS_EFFECT_TRANSLATION_TABLE,
 			STATUSDURATIONS : STATUS_EFFECT_DURATION_TYPES,

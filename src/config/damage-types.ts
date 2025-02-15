@@ -1,7 +1,8 @@
 import { PC } from "../module/actor/persona-actor";
 
-export const DAMAGETYPESLIST = [
+export const REALDAMAGETYPESLIST = [
 	"physical",
+	"gun",
 	"fire",
 	"cold",
 	"wind",
@@ -14,13 +15,23 @@ export const DAMAGETYPESLIST = [
 	"none",
 ] as const;
 
+export const DAMAGETYPESLIST = [
+	...REALDAMAGETYPESLIST,
+	"by-power", //by power or weapon
+] as const;
+
 export const DAMAGETYPES = Object.fromEntries(
 	DAMAGETYPESLIST.map( x=> [x, `persona.damage.types.${x}`])
 );
+export const REALDAMAGETYPES = Object.fromEntries(
+	REALDAMAGETYPESLIST.map( x=> [x, `persona.damage.types.${x}`])
+);
 
-export type DamageType = ((typeof DAMAGETYPESLIST)[number]);
+export type DamageType = ( (typeof DAMAGETYPESLIST)[number]);
 
-export type ResistType = Exclude<DamageType, "none" | "healing" | "untyped" | "all-out">;
+export type RealDamageType = ( (typeof REALDAMAGETYPESLIST)[number])
+
+export type ResistType = Exclude<DamageType, "none" | "healing" | "untyped" | "all-out" | "by-power">;
 
 export const RESIST_STRENGTH_LIST = [
 	"weakness",
@@ -42,5 +53,4 @@ export const ELEMENTAL_DEFENSE_LINK : Record<keyof PC["system"]["combat"]["defen
 	"fort": ["cold", "wind", "lightning"],
 	"will": ["dark", "light"],
 };
-
 

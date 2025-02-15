@@ -973,7 +973,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			return res;
 		}
 		const power = usableOrCard as Usable;
-		const element = power.system.dmg_type;
+		const element = power.getDamageType(attacker.actor);
 		const resist = target.actor.elementalResist(element);
 		let attackbonus = this.getAttackBonus(attacker, power).concat(modifiers);
 		attackbonus.add("Custom modifier", this.customAtkBonus ?? 0);
@@ -1057,7 +1057,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				};
 			}
 		}
-		if (target.actor.hasStatus("phys-shield") && power.canBeReflectedByPhyiscalShield()) {
+		if (target.actor.hasStatus("phys-shield") && power.canBeReflectedByPhyiscalShield(attacker.actor)) {
 			return {
 				result: rollType != "reflect" ? "reflect": "block",
 				printableModifiers: [],
@@ -1073,7 +1073,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				...baseData,
 			};
 		}
-		if (target.actor.hasStatus("magic-shield") && power.canBeReflectedByMagicShield()) {
+		if (target.actor.hasStatus("magic-shield") && power.canBeReflectedByMagicShield(attacker.actor)) {
 			return {
 				result: rollType != "reflect" ? "reflect": "block",
 				printableModifiers: [],
@@ -1182,8 +1182,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 		const powerLevel = power.baseCritSlotBonus();
 		const targetResist = target.basePowerCritResist(power);
-		// const dmgtype = power.system.dmg_type;
-		// const mult = (dmgtype == "dark" || dmgtype == "light") ? 2 : 1;
 		const diff = Math.max(0, powerLevel - targetResist);
 		const mult = target.instantKillResistanceMultiplier(attacker);
 		return Math.floor(diff * mult);
@@ -1197,14 +1195,15 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				const reflectRes = new CombatResult(atkResult);
 				const targetActor = PersonaDB.findToken(atkResult.target).actor;
 				const power = PersonaDB.findItem(atkResult.power);
-				if ( targetActor.hasStatus("magic-shield") && power.canBeReflectedByMagicShield()) {
+				const attacker = PersonaDB.findToken(atkResult.attacker);
+				if ( targetActor.hasStatus("magic-shield") && power.canBeReflectedByMagicShield(attacker.actor)) {
 					const cons : Consequence = {
 						type: "removeStatus",
 						statusName: "magic-shield",
 					};
 					reflectRes.addEffect(atkResult, targetActor, cons);
 				}
-				if (targetActor.hasStatus("phys-shield") && power.canBeReflectedByPhyiscalShield()) {
+				if (targetActor.hasStatus("phys-shield") && power.canBeReflectedByPhyiscalShield(attacker.actor)) {
 					const cons : Consequence = {
 						type: "removeStatus",
 						statusName: "phys-shield",
@@ -1388,7 +1387,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						type: "damage-new",
 						damageSubtype: "high",
 						amount: power.getDamage(attacker, "high", situation) * (absorb ? -1 : damageMult),
-						damageType: (power as Usable).system.dmg_type,
+						damageType: (power as Usable).getDamageType(attacker),
 					}
 				}];
 			case "dmg-low":
@@ -1398,7 +1397,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 						type: "damage-new",
 						damageSubtype: "low",
 						amount: power.getDamage(attacker, "low", situation) * (absorb ? -1 : damageMult),
-						damageType: (power as Usable).system.dmg_type,
+						damageType: (power as Usable).getDamageType(attacker),
 					}
 				}];
 			case "dmg-allout-low": {
@@ -1453,13 +1452,25 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	static processConsequence_damage( cons: DamageConsequence, applyTo: ConsequenceProcessed["consequences"][number]["applyTo"], attacker: ValidAttackers, power: ModifierContainer, situation: Situation, absorb: boolean, damageMult: number) : ConsequenceProcessed["consequences"] {
 		let dmgAmt : number = 0;
 		switch (cons.damageSubtype) {
+			case "odd-even":
+				if (situation.naturalRoll == undefined) {
+					dmgAmt = 0;
+					PersonaError.softFail(`Can't get odd even for damage of ${power.displayedName }` );
+					break;
+				}
+				if ( (situation.naturalRoll ?? 0) % 2 == 0) {
+					dmgAmt = power.getDamage(attacker, "high", situation, cons.damageType);
+				} else {
+					dmgAmt = power.getDamage(attacker, "low", situation, cons.damageType);
+				}
+				break;
 			case "multiplier":
-				return [{
-					applyTo,
-					cons
-				}];
+					return [{
+						applyTo,
+						cons
+					}];
 			case "high":
-				dmgAmt = power.getDamage(attacker, "high", situation, cons.damageType);
+					dmgAmt = power.getDamage(attacker, "high", situation, cons.damageType);
 				break;
 			case "low":
 				dmgAmt = power.getDamage(attacker, "low", situation, cons.damageType);
@@ -1486,11 +1497,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			default:
 				cons satisfies never;
 		}
+		const damageType = cons.damageType != "by-power" ? cons.damageType : (power as Usable).getDamageType(attacker);
 		return [{
 			applyTo,
 			cons: {
 				...cons,
 				amount: dmgAmt * (absorb ? -1 : damageMult),
+				damageType,
 			}
 		}];
 	}
@@ -1645,34 +1658,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	static getAttackBonus(attacker: PToken, power:Usable) : ModifierList {
 		let atkbonus = this.getBaseAttackBonus(attacker, power);
-		let tag : PowerTag | undefined;
-		switch (power.system.dmg_type) {
-			case "fire": case "wind":
-			case "light": case "dark":
-			case "healing":
-				tag = power.system.dmg_type;
-				break;
-			case "lightning":
-				tag = "elec";
-				break;
-			case "physical":
-				tag ="weapon";
-				break;
-			case "cold":
-				tag = "ice";
-				break;
-			case "untyped":
-				tag = "almighty";
-				break;
-			case "none":
-				break;
-				// tag = power.system.tags.find(x=> STATUS_POWER_TAGS.includes(x as any));
-			case "all-out":
-				break;
-			default:
-				power.system.dmg_type satisfies never;
-				break;
-		}
+		let tag = this.getRelevantAttackTag(attacker, power.getDamageType(attacker.actor));
 		if (tag) {
 			const bonusPowers = attacker.actor.mainPowers.concat(attacker.actor.bonusPowers)
 				.filter(x=> x.system.tags.includes(tag));
@@ -1684,6 +1670,35 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 		}
 		return atkbonus;
+	}
+
+	static getRelevantAttackTag(_attacker: PToken, dmgType : DamageType) : PowerTag | undefined  {
+		switch (dmgType) {
+			case "fire": case "wind":
+			case "light": case "dark":
+			case "healing":
+				return dmgType;
+			case "lightning":
+				return "elec";
+			case "gun":
+			case "physical":
+				return "weapon";
+			case "by-power": //read as by-weapon here
+				return "weapon";
+			case "cold":
+				return "ice";
+			case "untyped":
+				return "almighty";
+			case "none":
+				break;
+				// tag = power.system.tags.find(x=> STATUS_POWER_TAGS.includes(x as any));
+			case "all-out":
+				break;
+			default:
+				dmgType satisfies never;
+				break;
+		}
+
 	}
 
 	static getBaseAttackBonus(attacker: PToken, power:Usable): ModifierList {

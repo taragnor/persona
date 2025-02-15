@@ -1,3 +1,5 @@
+import { RealDamageType } from "../../config/damage-types.js";
+import { DamageType } from "../../config/damage-types.js";
 import { SkillCard } from "../item/persona-item.js";
 import { UsableAndCard } from "../item/persona-item.js";
 import { ValidSocialTarget } from "../social/persona-social.js";
@@ -1163,7 +1165,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
          if (role1 == "lurker") rating -= 2;
       }
       const weaknesses = DAMAGETYPESLIST
-         .filter( dmg => this.elementalResist(dmg) == "weakness");
+         .filter( dmg => dmg != "by-power" && this.elementalResist(dmg) == "weakness") as RealDamageType[];
       for (const w of weaknesses) {
          const res = other.elementalResist(w);
          switch (res)  {
@@ -1328,7 +1330,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       return weaknesses.length;
    }
 
-   elementalResist(this: ValidAttackers, type: typeof DAMAGETYPESLIST[number]) : ResistStrength  {
+   elementalResist(this: ValidAttackers, type: Exclude<DamageType, "by-power">) : ResistStrength  {
       switch (type) {
          case "untyped":  case "none":
          case "all-out":
