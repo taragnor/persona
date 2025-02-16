@@ -942,6 +942,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       return false;
    }
 
+		/**error catch wrapper for this funciton as Monks's statuses was throwing here and may have been breaking hooks when it failed.*/
+	override async toggleStatusEffect(statusId: StatusEffectId, options?: ToggleStatusOptions) {
+		try {
+			const ret = super.toggleStatusEffect(statusId, options);
+			return ret;
+		} catch (error ) {
+			const e= error as Error;
+			console.log(`${e.toString()} \n ${e.stack});
+			return undefined;
+		}
+	}
+
    /** returns true if status is added*/
    async addStatus({id, potency, duration}: StatusEffect): Promise<boolean> {
       if (await this.isStatusResisted(id)) return false;

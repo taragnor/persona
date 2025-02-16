@@ -32,11 +32,17 @@ declare class Actor<const T extends SchemaDict = any, ItemType extends Item<any,
   */
 	allApplicableEffects() : Generator<AEType>
 	getActiveTokens(linked?: boolean, document?: boolean) : Token<Actor<T, ItemType, AEType>>[];
+	async toggleStatusEffect(statusId: string, options: ToggleStatusOptions = {}): Promise<AEType | boolean | undefined>;
 
 // Get a list of all effects that are actually applied to the actor.
 	get appliedEffects(): AEType[];
 }
 
+
+type ToggleStatusOptions = {
+	active?: boolean, //**Force the effect to be active or inactive regardless of its current state*/
+	overlay: boolean, //**defaults to false*/
+}
 
 
 type SystemDataObjectFromDM<T extends typeof foundry.abstract.DataModel> =
