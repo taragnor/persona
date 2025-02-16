@@ -466,7 +466,10 @@ export class PersonaHandleBarsHelpers {
 		},
 		"isItemUsable": function (item: PersonaItem) : boolean {
 			return item.isUsable();
-		}
+		},
+		"hpCost": function (item: Power) : number {
+			return item.hpCost();
+		},
 
 	}
 } //end of class

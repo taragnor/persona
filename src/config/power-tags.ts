@@ -40,6 +40,7 @@ export const POWER_TAGS_LIST = [
 	"healing",
 	"mobile",
 	"basicatk",
+	"high-cost",
 	...STATUS_POWER_TAGS,
 	...POWER_TYPE_TAGS,
 ] as const;

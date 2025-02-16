@@ -1616,11 +1616,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 					});
 				}
 			}
-			if (attacker.actor!.system.type != "shadow" && power.system.hpcost) {
-				const hpcostmod = costModifiers.find(x=> x.type== "half-hp-cost") ? 0.5 : 1;
+			if (attacker.actor!.system.type != "shadow" && power.hpCost()) {
+				const hpcostmod = costModifiers.find(x=> x.type== "half-hp-cost") ? 0.75 : 1;
 				res.addEffect(null, attacker.actor!, {
 					type: "hp-loss",
-					amount: power.system.hpcost * hpcostmod
+					amount: power.hpCost() * hpcostmod
 				});
 			}
 			if (attacker.actor.system.type != "shadow" && power.system.subtype == "magic" && power.system.mpcost > 0) {

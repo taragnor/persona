@@ -1637,7 +1637,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
             }
             switch (usable.system.subtype) {
                case "weapon":
-                  return  this.hp > usable.system.hpcost;
+                  return  this.hp > (usable as Power).hpCost();
                case "magic":
                   const mpcost = (usable as Power).mpCost(this);
                   if (mpcost > 0) {

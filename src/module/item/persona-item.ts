@@ -359,10 +359,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	powerCostString_PC(this: Power) : string {
 		switch (this.system.subtype) {
-
 			case "weapon":
-				if (this.system.hpcost)
-					return `${this.system.hpcost} HP`;
+				if (this.hpCost())
+					return `${this.hpCost()} HP`;
 				else return "free";
 			case "magic":
 				const mpcost = this.system.mpcost;
@@ -619,6 +618,24 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				return true;
 			default:
 				return false;
+		}
+	}
+
+	hpCost(this: Power): number {
+		if (this.system.subtype != "weapon")
+			return 0;
+		let mult = 1;
+			if (this.hasTag("high-cost")) {
+				mult *= 2;
+			}
+		switch (this.system.slot) {
+			case 0: return mult * 6;
+			case 1: return mult * 12;
+			case 2: return mult * 25;
+			case 3: return mult * 50;
+			default:
+				PersonaError.softFail(`Unknwon slot ${ this.system.slot}`);
+				return 100;
 		}
 	}
 
