@@ -31,8 +31,6 @@ export class NPCSheet extends NoncombatantSheet  {
 			console.log(`Awarding Perk to ${target?.name}`)
 			PersonaSocial.awardPerk(target.actor, this.actor);
 		}
-
-
 	}
 
 	async addTokenSpend(_ev: JQuery.ClickEvent) {

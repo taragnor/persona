@@ -2234,11 +2234,14 @@ async gainMoney(this: PC, amt: number, log :boolean) {
 }
 
 async spendMoney(this: PC, amt: number) {
-   if (amt > this.system.money) {
-      throw new PersonaError("You don't have that much money!");
-   }
-   const resources = this.system.money - amt;
-   await this.update({ "system.money": resources});
+	if (amt > this.system.money) {
+		throw new PersonaError("You don't have that much money!");
+	}
+	const amount = Math.abs(amt);
+	const resources = this.system.money - amount;
+	await this.update({ "system.money": resources});
+	await Logger.sendToChat(`${this.name} spent ${amount} resource points`);
+	await PersonaSounds.ching();
 }
 
 isAlive(): boolean {

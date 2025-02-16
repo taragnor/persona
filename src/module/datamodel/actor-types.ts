@@ -102,6 +102,9 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 				default: return "normal";
 			}
 		};
+		if (system.combat.resists.gun == undefined) {
+			system.combat.resists.gun = "normal";
+		}
 		if (typeof system?.combat?.defenses?.fort == "number") {
 			system.combat.defenses.fort = convert(data.combat.defenses.fort);
 			system.combat.defenses.ref = convert(data.combat.defenses.ref);
