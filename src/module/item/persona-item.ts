@@ -965,6 +965,17 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
+	isStatusEffect(this: UsableAndCard) : boolean {
+		if (this.system.type == "skillCard") return false;
+		const statusTags : PowerTag[] = [
+			"sleep",
+			"charm",
+			"rage",
+			"fear",
+		];
+		return statusTags.some( st => this.hasTag(st));
+	}
+
 	isMultiTarget(this: UsableAndCard) : boolean {
 		if (this.system.type == "skillCard") return false;
 		switch (this.system.targets) {

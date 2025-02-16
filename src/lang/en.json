@@ -393,6 +393,7 @@
 	"persona.equipment.tag.medical" : "Medical",
 	"persona.equipment.tag.sexual" : "Sexual",
 	"persona.equipment.tag.drug" : "Drug",
+	"persona.equipment.tag.defensive" : "Defensive",
 
 
 	"persona.power.shadowcosts.none": "Any",

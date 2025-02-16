@@ -1258,9 +1258,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       ].filter( x => x.getEffects(this as ValidAttackers).length > 0);
    }
 
-   defensivePowers() : Power [] {
-      return  this.powers
-         .filter(x=> x.system.subtype == "defensive");
+	defensivePowers() : ModifierContainer [] {
+		const defensiveItems = this.equippedItems().filter( item => item.hasTag("defensive"));
+		return  [
+			...defensiveItems,
+			...this.powers
+			.filter(x=> x.system.subtype == "defensive")
+		];
+
    }
 
    getSourcedDefensivePowers(this: ValidAttackers) {

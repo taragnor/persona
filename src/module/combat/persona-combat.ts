@@ -1665,9 +1665,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const bonus = bonusPowers.length * 3;
 			const localized = game.i18n.localize(POWER_TAGS[tag]);
 			atkbonus.add(`${localized} Power bonus`, bonus);
-			if (power.isMultiTarget()) {
-				atkbonus.add(`Multitarget attack penalty`, -3);
-			}
+		}
+		if (power.isStatusEffect()) {
+			atkbonus.add(`Status Effect Modifier`, -3);
+		}
+		if (power.isMultiTarget()) {
+			atkbonus.add(`Multitarget attack penalty`, -3);
 		}
 		return atkbonus;
 	}
