@@ -948,8 +948,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const ret = super.toggleStatusEffect(statusId, options);
 			return ret;
 		} catch (error ) {
-			const e= error as Error;
-			console.log(`${e.toString()} \n ${e.stack});
+			const e = error as Error;
+			console.warn(`${e.toString()} \n ${e.stack}`);
 			return undefined;
 		}
 	}

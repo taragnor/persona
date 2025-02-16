@@ -71,12 +71,12 @@ export class PersonaSocial {
 
 
 	static async startSocialCombatRound(disallowMetaverse = false, advanceCalendar = true) {
-		this.allowMetaverse = !disallowMetaverse;
-		this.metaverseChoosers = 0;
 		if (!game.user.isGM) {
 			ui.notifications.error("Only GM can start new social combat turn");
 			return;
 		}
+		this.allowMetaverse = !disallowMetaverse;
+		this.metaverseChoosers = 0;
 		const extraMsgs : string [] = [];
 		if (this.allowMetaverse) {
 			extraMsgs.push("<b>Metaverse</b>: You may opt to go to the metaverse, though you must decide to now before taking any actions");
@@ -120,8 +120,10 @@ export class PersonaSocial {
 	}
 
 	static async advanceCalendar(force = false, extraMsgs : string [] = []) {
-		if (!force && !(await HTMLTools.confirmBox( "Advance Date", "Advnace Date?", true)))
+		if (!force && !(await HTMLTools.confirmBox( "Advance Date", "Advnace Date?", true))) {
+			ui.notifications.notify("Date not advanced due to advanceCalendar being rejected");
 			return;
+		}
 		await PersonaCalendar.nextDay(extraMsgs);
 	}
 

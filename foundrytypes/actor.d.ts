@@ -38,7 +38,6 @@ declare class Actor<const T extends SchemaDict = any, ItemType extends Item<any,
 	get appliedEffects(): AEType[];
 }
 
-
 type ToggleStatusOptions = {
 	active?: boolean, //**Force the effect to be active or inactive regardless of its current state*/
 	overlay: boolean, //**defaults to false*/

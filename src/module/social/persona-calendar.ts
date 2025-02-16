@@ -38,9 +38,18 @@ export class PersonaCalendar {
 	static async nextDay(extraMsgs : string[] = []) {
 		if(!game.user.isGM) return;
 		const rolls: Roll[] = [];
-		if (!window.SimpleCalendar)
+		if (!window.SimpleCalendar) {
 			throw new PersonaError("Simple Calendar isn't enabled!");
-		await window.SimpleCalendar.api.changeDate({day:1});
+		}
+		try {
+			const ret = await window.SimpleCalendar.api.changeDate({day:1});
+			if (ret == false) {
+				throw new PersonaError("Calendar function returned false for some reason");
+			}
+		} catch (e) {
+			PersonaError.softFail("Error Updating Calendar with ChangeDate");
+			Debug(e);
+		}
 		if (this.DoomsdayClock.isMaxed()) {
 			await this.DoomsdayClock.clear();
 		} else {
