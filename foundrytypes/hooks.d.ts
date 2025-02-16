@@ -46,6 +46,7 @@ declare interface HOOKS {
 	"updateActor": UpdateHook<Actor>;
 	"updateWall": UpdateHook<WallDocument>;
 	"updateRegion": UpdateHook<RegionDocument>;
+	"updateSetting": UpdateHook<Setting<unknown>>;
 	"getSceneControlButtons": Function;
 	"renderJournalDirectory": Function;
 	"renderCombatTracker": RenderCombatTabFn;

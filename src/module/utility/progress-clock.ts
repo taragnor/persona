@@ -3,7 +3,8 @@ import { PersonaError } from "../persona-error.js";
 
 declare global {
 	interface HOOKS {
-		"clockTick": (clock: ProgressClock, newAmt: number) => unknown,
+		"clockTick": (clock: ProgressClock, newAmt: number) => unknown;
+		"updateClock": (clock: ProgressClock, newAmt: number, delta : number) => unknown;
 	}
 
 }
@@ -11,9 +12,10 @@ declare global {
 export  class ProgressClock {
 	static _clocks: Map<string, ProgressClock> = new Map();
 	static _ready = false;
-	clockName:string;
+	clockName: string;
 	default_max: number;
 	#cyclic: boolean = false;
+	#lastKnown: number;
 
 	constructor(name: string, max: number) {
 		this.clockName = name;
@@ -30,11 +32,21 @@ export  class ProgressClock {
 		const clock = this.#getClock();
 		if (!clock) return;
 		ProgressClock._clocks.set(clock.id, this);
-
+		this.#lastKnown = this.amt;
 	}
 
 	get id(): string {
 		return this.#getClock()!.id;
+	}
+
+	static async checkForUpdate() : Promise<void> {
+		for (const cl of this._clocks.values()) {
+			const amt = cl.amt;
+			if (amt != cl.#lastKnown) {
+				await cl.reportChange(amt, cl.#lastKnown);
+				cl.#lastKnown = amt;
+			}
+		}
 	}
 
 	static allClocks() : GlobalProgressClocks.ProgressClock[]{
@@ -82,6 +94,7 @@ export  class ProgressClock {
 		if (window.clockDatabase) {
 			await window.clockDatabase.update(clock);
 		}
+		this.#lastKnown = amt;
 	}
 
 	isMaxed() : boolean {
@@ -120,23 +133,32 @@ export  class ProgressClock {
 		Hooks.callAll("clockTick", this, newAmt);
 	}
 
+	async reportChange(newAmt: number, oldAmt: number) : Promise<void> {
+		const delta = newAmt - oldAmt;
+		if (delta != 0) {
+			Hooks.callAll("updateClock", this, newAmt, delta);
+		}
+	}
+
 	async set(amt: number) : Promise<number> {
+		const oldVal = this.amt;
 		const tick = Math.abs(this.amt - amt);
 		amt = Math.clamp(amt, 0, this.max);
 		this.refreshValue(amt);
 		if (tick != 0) {
-			this.reportTick(tick);
+			await this.reportTick(tick);
 		}
-
+		await this.reportChange(amt, oldVal);
 		return this.amt;
 	}
 
 	async add(mod : number): Promise<number> {
 		if (!this.isCyclical()) {
+			const oldVal = this.amt;
 			const amt = Math.min(this.max, Math.max(0, this.amt + mod));
-
 			await this.refreshValue(amt);
-			if (mod == 1) { this.reportTick(amt); }
+			if (mod == 1) {await  this.reportTick(amt); }
+			await this.reportChange(amt, oldVal);
 			return this.amt;
 		}
 		let modAmt = this.amt + mod;
@@ -146,8 +168,10 @@ export  class ProgressClock {
 		while (modAmt < 0) {
 			modAmt = modAmt + (this.max +1);
 		}
+		const oldVal = this.amt;
 		this.refreshValue(modAmt);
-		if (mod == 1) { this.reportTick(modAmt); }
+		if (mod == 1) { await this.reportTick(modAmt); }
+		await this.reportChange(modAmt, oldVal);
 		return this.amt;
 	}
 
@@ -172,3 +196,7 @@ export  class ProgressClock {
 }
 
 Hooks.on("ready", ()=> ProgressClock._ready = true);
+
+Hooks.on("updateSetting", async () => {
+	await ProgressClock.checkForUpdate();
+});

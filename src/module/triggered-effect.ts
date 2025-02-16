@@ -60,6 +60,7 @@ export class TriggeredEffect {
 				case "on-enter-region":
 				case "on-presence-check":
 				case "on-clock-tick":
+				case "on-clock-change":
 				case "on-open-door":
 						PersonaError.softFail(`Must proivide a situation with this trigger:  ${trigger}`);
 					return result;

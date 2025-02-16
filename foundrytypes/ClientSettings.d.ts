@@ -37,3 +37,9 @@ interface SettingSubmenuConfig<C extends typeof FormApplication> {
 	/** Restrict this submenu to gamemaster only? */
 	restricted: boolean
 }
+
+class Setting<T extends unknown = unknown> extends FoundryDocument {
+	get key(): string;
+	get value(): Record<string, T>
+}
+

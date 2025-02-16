@@ -640,6 +640,7 @@
 	"persona.triggers.on-inflict-status": "Inflict a Status",
 	"persona.triggers.on-attain-tarot-perk": "Attain a Tarot Perk",
 	"persona.triggers.on-clock-tick": "On Clock Tick",
+	"persona.triggers.on-clock-change": "On Clock Change",
 	"persona.triggers.on-search-end": "On End of Search",
 	"persona.triggers.on-presence-check": "On Presence Check",
 	"persona.triggers.on-enter-region": "On Enter Region",

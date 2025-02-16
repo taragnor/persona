@@ -11,11 +11,16 @@ export class PersonaError extends Error {
 	}
 
 	static softFail(errortxt: string, ...debugArgs: any[]) {
-		this.notifyGM(errortxt);
-		ui.notifications.error(errortxt);
-		const trace = this.getTrace();
-		console.error(`${errortxt} \n ${trace}`);
-		debugArgs.forEach( arg=> Debug(arg));
+		try {
+			this.notifyGM(errortxt);
+			ui.notifications.error(errortxt);
+			const trace = this.getTrace();
+			console.error(`${errortxt} \n ${trace}`);
+			debugArgs.forEach( arg=> Debug(arg));
+		} catch (e) {
+			debugArgs.forEach( arg=> Debug(arg));
+			throw new Error(errortxt);
+		}
 	}
 
 	static getTrace() : string {
@@ -28,7 +33,7 @@ export class PersonaError extends Error {
 	}
 
 	static notifyGM(errorMsg: string, stack ?: string) {
-		if (game.user.isGM) return;
+		if (!game || !game.user || game.user.isGM) return;
 		const trace = stack ? stack : this.getTrace();
 		const userId = game.user.id;
 		const gmIds = game.users

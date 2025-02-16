@@ -609,6 +609,18 @@ Hooks.on("clockTick", function (clock: ProgressClock, _newAmt: number) {
 	?.autoApplyResult();
 });
 
+Hooks.on("updateClock", async function (clock: ProgressClock, _newAmt: number, _delta: number) {
+	const situation : Situation = {
+		trigger: "on-clock-change",
+		triggeringClockId: clock.id,
+		triggeringUser: game.user,
+	};
+	console.log("Triggering Clock Change");
+	await PersonaCombat.onTrigger("on-clock-change", undefined, situation)
+	.emptyCheck()
+	?.autoApplyResult();
+});
+
 //@ts-ignore
 window.Metaverse = Metaverse;
 

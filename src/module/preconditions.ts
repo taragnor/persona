@@ -346,6 +346,7 @@ function triggerComparison(condition: Triggered, situation: Situation, _source:O
 		case "on-search-end":
 		case "on-open-door":
 			return true;
+		case "on-clock-change":
 		case "on-clock-tick":
 			if (!("triggeringClockId" in situation)) {
 				return false;
@@ -886,7 +887,7 @@ type ExplorationTrigger = {
 }
 
 type ClockTrigger = {
-	trigger: "on-clock-tick",
+	trigger: "on-clock-tick" | "on-clock-change",
 	triggeringClockId: string,
 }
 

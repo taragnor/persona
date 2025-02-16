@@ -75,7 +75,7 @@ type onTarotPerk = {
 }
 
 type ClockTickTrigger = {
-	trigger: "on-clock-tick";
+	trigger: "on-clock-tick" | "on-clock-change";
 	triggeringClockId: string;
 }
 
