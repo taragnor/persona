@@ -954,43 +954,42 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-   /** returns true if status is added*/
-   async addStatus({id, potency, duration}: StatusEffect): Promise<boolean> {
-      if (await this.isStatusResisted(id)) return false;
-      const eff = this.effects.find( eff => eff.statuses.has(id));
-      const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
-      if (!stateData) {
-         throw new Error(`Couldn't find status effect Id: ${id}`);
-      }
-      if (id == "curse" || id == "expel") {
-         if (this.system.type == "pc" || this.system.type == "shadow") {
-            this.hp -= 9999;
-         }
-      }
-      if (!eff) {
-         const s = [id];
-         const newState = {
-            ...stateData,
-            name: game.i18n.localize(stateData.name),
-            statuses: s
-         };
-         if (await this.checkStatusNullificaton(id)) return false;
-         const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
-         await newEffect.setPotency(potency ?? 0);
-         await newEffect.setDuration(duration);
-         return true;
-      } else  {
-         if (potency && eff.potency < potency) {
-            await eff.setPotency(potency);
-         }
-         eff.duration.startRound = game?.combat?.round ?? 0;
-         await eff.update({"duration": eff.duration});
-         if (typeof duration != "string" && eff.durationLessThanOrEqualTo(duration)) {
-            await eff.setDuration(duration);
-         }
-         //TODO: update the effect
-         return false;
-      }
+	/** returns true if status is added*/
+	async addStatus({id, potency, duration}: StatusEffect): Promise<boolean> {
+		if (await this.isStatusResisted(id)) return false;
+		const eff = this.effects.find( eff => eff.statuses.has(id));
+		const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
+		if (!stateData) {
+			throw new Error(`Couldn't find status effect Id: ${id}`);
+		}
+		const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
+		if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
+			this.hp -= 9999;
+		}
+		if (!eff) {
+			const s = [id];
+			const newState = {
+				...stateData,
+				name: game.i18n.localize(stateData.name),
+				statuses: s
+			};
+			if (await this.checkStatusNullificaton(id)) return false;
+			const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
+			await newEffect.setPotency(potency ?? 0);
+			await newEffect.setDuration(duration);
+			return true;
+		} else  {
+			if (potency && eff.potency < potency) {
+				await eff.setPotency(potency);
+			}
+			eff.duration.startRound = game?.combat?.round ?? 0;
+			await eff.update({"duration": eff.duration});
+			if (typeof duration != "string" && eff.durationLessThanOrEqualTo(duration)) {
+				await eff.setDuration(duration);
+			}
+			//TODO: update the effect
+			return false;
+		}
 
    }
 
@@ -1067,6 +1066,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
             remList.push("power-charge");
             remList.push("magic-charge");
             break;
+			case "defense-boost":
+            remList.push("defense-nerf");
+				break;
+			case "defense-nerf":
+            remList.push("defense-boost");
+				break;
+			case "attack-boost":
+            remList.push("attack-nerf");
+				break;
+			case "attack-nerf":
+            remList.push("attack-boost");
+				break;
+			case "damage-boost":
+            remList.push("damage-nerf");
+				break;
+			case "damage-nerf":
+            remList.push("damage-boost");
+				break;
       }
       for (const id of remList) {
          if (await this.removeStatus(id)) {
@@ -2049,6 +2066,21 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
    isStanding() : boolean {
       return (this.hp > 0 && !this.statuses.has("down"))
    }
+
+	isValidCombatant(): this is ValidAttackers {
+		switch (this.system.type) {
+			case "pc":
+			case "shadow":
+			case "npcAlly":
+				return true;
+			case "npc":
+			case "tarot":
+				return false;
+			default:
+				this.system satisfies never;
+				return false;
+		}
+	}
 
    isCapableOfAction() : boolean {
       const deblitatingStatuses :StatusEffectId[] = [
