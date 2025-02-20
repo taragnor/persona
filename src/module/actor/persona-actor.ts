@@ -1,3 +1,4 @@
+import { BANEFUL_STATUSES_MAP } from "../../config/status-effects.js";
 import { RealDamageType } from "../../config/damage-types.js";
 import { DamageType } from "../../config/damage-types.js";
 import { SkillCard } from "../item/persona-item.js";
@@ -1964,6 +1965,25 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
    canEngage() :boolean {
       return !this.isDistracted() && this.isCapableOfAction();
    }
+
+	canAllOutAttack(): boolean {
+		if (this.hp < 0) return false;
+		if (this.isDistracted()) return false;
+		if (!this.isCapableOfAction()) return false;
+		if (this.hasBanefulStatus()) return false;
+		return true;
+	}
+
+	hasBanefulStatus(): boolean {
+		for (const st of this.effects.contents) {
+			for (const statusId of st.statuses.keys()) {
+				if (BANEFUL_STATUSES_MAP.has(statusId as any)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
    getLevelOfTalent(this: PC, talent: Talent) : number {
       const x= this.system.talents.find( x=> x.talentId == talent.id);

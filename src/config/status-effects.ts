@@ -184,4 +184,24 @@ export const STATUS_EFFECT_DURATION_TYPES = Object.fromEntries(
 	)
 );
 
+export const BANEFUL_STATUSES = [
+			"burn",
+			"charmed",
+			"down",
+			"confused",
+			"dizzy",
+			"despair",
+			"fading",
+			"fear",
+			"poison",
+			"vulnerable",
+			"frozen",
+			"sleep",
+			"shock",
+			"crippled",
+			"injured",
+			"exhausted",
+			"rage",
+] as const satisfies StatusEffectId[];
 
+export const BANEFUL_STATUSES_MAP = new Set(BANEFUL_STATUSES);

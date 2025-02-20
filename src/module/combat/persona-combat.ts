@@ -2096,7 +2096,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const comb = combat?.combatant as Combatant<ValidAttackers> | undefined;
 		const actor = comb?.actor as ValidAttackers | undefined;
 		if (!comb || !actor) return;
-		if (!actor.isCapableOfAction()) return;
+		if (!actor.canAllOutAttack()) return;
 		const allies = combat.getAllies(comb)
 			.filter(comb=> comb.actor && comb.actor.isCapableOfAction() && !comb.actor.isDistracted());
 		const numOfAllies = allies.length;
@@ -2153,7 +2153,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			console.debug(`All out attack leader ${attacker.name}`);
 		}
 		for (const actor of attackers) {
-			if (actor.isDistracted() || !actor.isCapableOfAction()) continue;
+			if (!actor.canAllOutAttack()) continue;
 			const atkDmg = actor.allOutAttackDamage(situation);
 			const mult = actor == attackLeader ? 1 : (1/4);
 			dmg.high += atkDmg.high * mult;
