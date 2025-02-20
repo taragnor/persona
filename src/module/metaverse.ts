@@ -168,27 +168,8 @@ export class Metaverse {
 		await Metaverse.printRandomEncounterList(encounter);
 	}
 
-	static shadowRoleMultiplier (role: Shadow["system"]["role"]) : number{
-		switch (role) {
-			case "elite":
-				return 2;
-			case "miniboss":
-				return 6;
-			case "miniboss-lord":
-				return 3;
-			case "boss":
-				return 7;
-			case "boss-lord":
-				return 4;
-			case "treasure-shadow":
-				return 4;
-			default:
-				return 1;
-		}
-	}
 
 	static getXPFor(shadow: Shadow, partyLevel: number): number {
-		let base = this.shadowRoleMultiplier(shadow.system.role) * this.shadowRoleMultiplier(shadow.system.role2);
 		const levelDiff = partyLevel - shadow.system.combat.classData.level;
 		let levelMult = 1;
 		switch (true) {
@@ -198,12 +179,8 @@ export class Metaverse {
 			case (levelDiff == 0): levelMult =  1;break;
 			default: levelMult = 1;
 		}
-		const incrementals = Object.entries(shadow.system.combat.classData.incremental).reduce ( (acc, i) => {
-			if (typeof i == "number") return acc+i;
-			if (typeof i == "boolean") return acc + (i ? 1 : 0);
-			return acc;
-		}, 0);
-		return levelMult * base * (1 + incrementals * 0.05);
+		const XPValue = shadow.XPValue();
+		return levelMult * XPValue;
 	}
 
 	static async awardXP(shadows: Shadow[], party: (PC | NPCAlly)[]) : Promise<void> {

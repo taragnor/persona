@@ -1,3 +1,4 @@
+import { shadowRoleMultiplier } from "../../config/shadow-types.js";
 import { BANEFUL_STATUSES_MAP } from "../../config/status-effects.js";
 import { RealDamageType } from "../../config/damage-types.js";
 import { DamageType } from "../../config/damage-types.js";
@@ -2358,8 +2359,6 @@ get tarot() : (Tarot | undefined) {
 
 /** returns true on level up */
 async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
-   //TODO: activate this when ready
-   return false; //bailout due to not being ready yet
    let levelUp = false;
    let newxp = this.system.combat.xp + amt;
    while (newxp > 100) {
@@ -2368,6 +2367,19 @@ async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
    }
    await this.update({"system.combat.xp" : newxp});
    return levelUp;
+}
+
+XPValue(this: Shadow) : number {
+	const SHADOWS_TO_LEVEL = 20;
+	const baseXP = 100/SHADOWS_TO_LEVEL;
+		const role = shadowRoleMultiplier(this.system.role) * shadowRoleMultiplier(this.system.role2);
+		const incrementals = Object.entries(this.system.combat.classData.incremental).reduce ( (acc, i) => {
+			if (typeof i == "number") return acc+i;
+			if (typeof i == "boolean") return acc + (i ? 1 : 0);
+			return acc;
+		}, 0);
+	return baseXP * role * (1 + (incrementals * 0.05));
+
 }
 
 get perk() : string {

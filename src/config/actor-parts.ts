@@ -180,7 +180,7 @@ export function combatCommonStats() {
 export function PCAndNPCAllyCombatStats() {
 	return {
 		...combatCommonStats(),
-		xp: new num( {integer: true, initial: 0, min: 0, max: 100}),
+		xp: new num( {integer: false, initial: 0, min: 0, max: 100}),
 		powers: new arr( new id()),
 		powers_sideboard: new arr( new id()),
 		teamworkMove: new id(),

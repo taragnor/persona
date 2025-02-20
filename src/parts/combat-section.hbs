@@ -11,10 +11,15 @@
 			<span>
 				{{actor.system.combat.classData.level}}
 			</span>
+			{{#if (isGM)}}
 			<span>
 				<a class="levelUp">
 					<i class="fa-solid fa-circle-plus"></i>
 				</a>
+			</span>
+			{{/if}}
+			<span>
+				<progress id="progressBar" max="100" value="{{actor.system.combat.xp}}"></progress>
 			</span>
 			{{else}}
 			<span>

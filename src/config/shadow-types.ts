@@ -50,3 +50,23 @@ export const CREATURE_TYPE =  Object.fromEntries(
 	CREATURE_TYPE_LIST.map( x=> [x, `persona.foe.type.${x}`])
 );
 
+export function shadowRoleMultiplier (role: ShadowRole) : number{
+	switch (role) {
+		case "elite":
+			return 2;
+		case "miniboss":
+			return 6;
+		case "miniboss-lord":
+			return 3;
+		case "boss":
+			return 7;
+		case "boss-lord":
+			return 4;
+		case "treasure-shadow":
+			return 4;
+		default:
+			return 1;
+	}
+}
+
+
