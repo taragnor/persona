@@ -2709,7 +2709,7 @@ async onCombatStart() {
 }
 
 get tagList() : CreatureTag[] {
-   //NOTE: THis is a candidate for caching
+   //NOTE: This is a candidate for caching
    if (this.system.type == "tarot") return [];
    let list = this.system.creatureTags.slice();
    if (this.system.type == "pc" || this.system.type == "shadow") {

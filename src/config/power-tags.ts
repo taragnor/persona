@@ -37,6 +37,7 @@ export const POWER_TAGS_LIST = [
 	"buff",
 	"debuff",
 	"weapon",
+	"gun",
 	"healing",
 	"mobile",
 	"basicatk",

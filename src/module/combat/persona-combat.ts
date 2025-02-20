@@ -1723,6 +1723,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			case "lightning":
 				return "elec";
 			case "gun":
+				return "gun";
 			case "physical":
 				return "weapon";
 			case "by-power": //read as by-weapon here
@@ -2413,7 +2414,7 @@ async showRoomEffects() {
 async onFollowUpAction(token: PToken, activationRoll: number) {
 	console.debug("Calling On Follow Up Action");
 	const combatant = token.object ? this.getCombatantByToken(token): null;
-	if (!combatant) return;
+	if (!combatant || !combatant.actor) return;
 	if (combatant.actor && combatant.actor.hasStatus("down")) return;
 	const combat = combatant.parent as PersonaCombat | undefined;
 	if (!combat) return;
@@ -2434,17 +2435,22 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 			if (targets.length == 0) return [];
 			return [ally];
 		});
-	const allout = combat.getAllEnemiesOf(token).every(enemy => enemy.actor.hasStatus("down")) ? "<li> All out attack </li>" : "";
+	const allout = (combat.getAllEnemiesOf(token)
+		.every(enemy => enemy.actor.hasStatus("down"))
+		&& combatant.actor.canAllOutAttack())
+		? "<li> All out attack </li>"
+		: "";
 	const listItems = validTeamworkAllies
 	.map( ally => {
 		const power = ally.actor!.teamworkMove!;
 		return `<li>${power.name} (${ally.name})</li>`;
 	}).join("");
+	const teamworkList = !combatant.actor.isDistracted() ? listItems: "";
 	const msg = `<h2> Valid Follow Up Actions </h2>
 <ul>
 		<li> Act again </li>
 		${allout}
-		${listItems}
+		${teamworkList}
 		</ul>
 `;
 		const messageData: MessageData = {
