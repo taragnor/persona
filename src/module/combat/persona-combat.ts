@@ -946,17 +946,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return result;
 	}
 
-	static async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, modifiers: ModifierList, rollType: AttackRollType) : Promise<AttackResult> {
-		const combat = game.combat as PersonaCombat | undefined;
-		const situation : Situation = {
-			target: target.actor.accessor,
-			usedPower: PersonaDB.getUniversalItemAccessor(usableOrCard),
-			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
-			attacker: attacker.actor.accessor,
-			activationRoll: rollType == "activation",
-			activeCombat:combat ? !!combat.combatants.find( x=> x.actor?.type != attacker.actor.type): false ,
-		};
-		if (usableOrCard.system.type == "skillCard") {
+	static async processSkillCard( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, situation: Situation) : Promise<AttackResult | null> {
+		if (usableOrCard.system.type != "skillCard") {
+			return null;
+		}
 			const r = await new Roll("1d20").roll();
 			const emptyList = new ModifierList();
 			const roll = new RollBundle("Activation Roll Skiill Card", r, attacker.actor.system.type == "pc", emptyList, situation);
@@ -971,41 +964,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				printableModifiers: []
 			};
 			return res;
+	}
+
+	static processAttackNullifiers(attacker : PToken , power :Usable, target: PToken, baseData: Pick<AttackResult, "attacker" | "target"  | "power" | "roll">, situation: Situation, rollType: AttackRollType): AttackResult | null
+	{
+		const naturalAttackRoll = situation.naturalRoll;
+		if (!naturalAttackRoll) {
+			PersonaError.softFail("No natural attack roll passed to siutuation in processAttackNullifiers");
 		}
-		const power = usableOrCard as Usable;
 		const element = power.getDamageType(attacker.actor);
 		const resist = target.actor.elementalResist(element);
-		let attackbonus = this.getAttackBonus(attacker, power).concat(modifiers);
-		attackbonus.add("Custom modifier", this.customAtkBonus ?? 0);
-		const defense = new ModifierList(
-			target.actor.defensivePowers()
-			.flatMap (item => item.getModifier("allAtk", target.actor))
-		);
-		attackbonus = attackbonus.concat(defense);
-		const def = power.system.defense;
-		const r = await new Roll("1d20").roll();
-		if (situation.activationRoll) {
-			const combat = game.combat as PersonaCombat;
-			if (combat && !combat.isSocial) {
-				combat.lastActivationRoll = r.total;
-			}
-		}
-		const cssClass=  (target.actor.type != "pc") ? "gm-only" : "";
-		const roll = new RollBundle("Temp", r, attacker.actor.system.type == "pc", attackbonus, situation);
-		const naturalAttackRoll = roll.dice[0].total;
-		situation.naturalRoll = naturalAttackRoll;
-		const defenseVal = def != "none" ? target.actor.getDefense(def).total(situation): 0;
-		const validDefModifiers = def != "none" ? target.actor.getDefense(def).list(situation): [];
-		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
-		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.system.defense} ${defenseStr}`;
-		roll.setName(rollName);
-		const baseData = {
-			roll,
-			attacker: PersonaDB.getUniversalTokenAccessor(attacker) ,
-			target: PersonaDB.getUniversalTokenAccessor(target),
-			power: PersonaDB.getUniversalItemAccessor(power)
-		} satisfies Pick<AttackResult, "attacker" | "target"  | "power" | "roll">;
-
 		switch (resist) {
 			case "reflect": {
 				return {
@@ -1088,6 +1056,53 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				},
 				...baseData,
 			};
+		}
+		return null;
+	}
+
+
+	static async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, modifiers: ModifierList, rollType: AttackRollType) : Promise<AttackResult> {
+		const combat = game.combat as PersonaCombat | undefined;
+		const situation : Situation = {
+			target: target.actor.accessor,
+			usedPower: PersonaDB.getUniversalItemAccessor(usableOrCard),
+			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
+			attacker: attacker.actor.accessor,
+			activationRoll: rollType == "activation",
+			activeCombat:combat ? !!combat.combatants.find( x=> x.actor?.type != attacker.actor.type): false ,
+		};
+		const cardReturn = await this.processSkillCard(attacker, usableOrCard, target, situation);
+		if (cardReturn) return cardReturn;
+		const power = usableOrCard as Usable;
+		const element = power.getDamageType(attacker.actor);
+		const resist = target.actor.elementalResist(element);
+		const def = power.system.defense;
+		const r = await new Roll("1d20").roll();
+		if (situation.activationRoll) {
+			const combat = game.combat as PersonaCombat;
+			if (combat && !combat.isSocial) {
+				combat.lastActivationRoll = r.total;
+			}
+		}
+		const attackbonus = this.getAttackBonus(attacker, power, target, modifiers);
+		const cssClass=  (target.actor.type != "pc") ? "gm-only" : "";
+		const roll = new RollBundle("Temp", r, attacker.actor.system.type == "pc", attackbonus, situation);
+		const naturalAttackRoll = roll.dice[0].total;
+		situation.naturalRoll = naturalAttackRoll;
+		const defenseVal = def != "none" ? target.actor.getDefense(def).total(situation): 0;
+		const validDefModifiers = def != "none" ? target.actor.getDefense(def).list(situation): [];
+		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
+		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.system.defense} ${defenseStr}`;
+		roll.setName(rollName);
+		const baseData = {
+			roll,
+			attacker: PersonaDB.getUniversalTokenAccessor(attacker) ,
+			target: PersonaDB.getUniversalTokenAccessor(target),
+			power: PersonaDB.getUniversalItemAccessor(power)
+		} satisfies Pick<AttackResult, "attacker" | "target"  | "power" | "roll">;
+		const testNullify = this.processAttackNullifiers(attacker, power, target, baseData, situation, rollType);
+		if (testNullify)  {
+			return testNullify;
 		}
 		const total = roll.total;
 		const validAtkModifiers = attackbonus.list(situation);
@@ -1178,7 +1193,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			return 0;
 		}
 		if (!power.isInstantDeathAttack()) {
-			return 1;
+			return 0;
 		}
 		const powerLevel = power.baseCritSlotBonus();
 		const targetResist = target.basePowerCritResist(power);
@@ -1656,23 +1671,32 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return res;
 	}
 
-	static getAttackBonus(attacker: PToken, power:Usable) : ModifierList {
-		let atkbonus = this.getBaseAttackBonus(attacker, power);
+	static getAttackBonus(attacker: PToken, power:Usable, target: PToken, modifiers ?: ModifierList) : ModifierList {
+		let attackBonus = this.getBaseAttackBonus(attacker, power);
 		let tag = this.getRelevantAttackTag(attacker, power.getDamageType(attacker.actor));
 		if (tag) {
 			const bonusPowers = attacker.actor.mainPowers.concat(attacker.actor.bonusPowers)
 				.filter(x=> x.system.tags.includes(tag));
 			const bonus = bonusPowers.length * 3;
 			const localized = game.i18n.localize(POWER_TAGS[tag]);
-			atkbonus.add(`${localized} Power bonus`, bonus);
+			attackBonus.add(`${localized} Power bonus`, bonus);
 		}
 		if (power.isStatusEffect()) {
-			atkbonus.add(`Status Effect Modifier`, -3);
+			attackBonus.add(`Status Effect Modifier`, -3);
 		}
 		if (power.isMultiTarget()) {
-			atkbonus.add(`Multitarget attack penalty`, -3);
+			attackBonus.add(`Multitarget attack penalty`, -3);
 		}
-		return atkbonus;
+		attackBonus.add("Custom modifier", this.customAtkBonus ?? 0);
+		const defense = new ModifierList(
+			target.actor.defensivePowers()
+			.flatMap (item => item.getModifier("allAtk", target.actor))
+		);
+		attackBonus = attackBonus.concat(defense);
+		if (modifiers) {
+			attackBonus = attackBonus.concat(modifiers);
+		}
+		return attackBonus;
 	}
 
 	static getRelevantAttackTag(_attacker: PToken, dmgType : DamageType) : PowerTag | undefined  {

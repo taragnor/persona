@@ -1228,27 +1228,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
    }
 
    basePowerCritResist(this: ValidAttackers, power: Usable): number {
-      switch (power.system.subtype) {
-         case "consumable":
-         case "social-link":
-         case "other":
-         case "passive":
-         case "none":
-         case "standalone":
-         case "defensive":
-         case "downtime":
-            return 0;
-         case "magic":
-            break;
-         case "weapon":
-            if (power.hasTag("basicatk"))
-               return 0;
-            break;
-         default:
-            power.system satisfies never;
-            return 0;
-      }
-      // const inc = this.system.combat.classData.incremental.defense;
+		if (!power.isInstantDeathAttack()) return 0;
       const level = this.system.combat.classData.level;
       return Math.floor(level / 2);
    }

@@ -624,6 +624,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	hpCost(this: Power): number {
 		if (this.system.subtype != "weapon")
 			return 0;
+		if (this.isBasicPower()) {return 0;}
 		let mult = 1;
 			if (this.hasTag("high-cost")) {
 				mult *= 2;
@@ -747,8 +748,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	baseCritSlotBonus(this: Usable) : number {
 		if (this.system.type == "consumable") {return 0;}
-		if (this.hasTag("basicatk")) return 0;
 		if (this.isBasicPower()) return 0;
+		if (!this.isInstantDeathAttack()) return 0;
 		switch (this.system.slot) {
 			case 0:
 				return 5;

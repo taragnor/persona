@@ -1,5 +1,4 @@
 import { PersonaSocial } from "./persona-social.js";
-import { PersonaDB } from "../persona-db.js";
 import { localize } from "../persona.js";
 import { WEATHER_TYPES } from "../../config/weather-types.js";
 import { ProgressClock } from "../utility/progress-clock.js";
@@ -38,11 +37,13 @@ export class PersonaCalendar {
 	static async nextDay(extraMsgs : string[] = []) {
 		if(!game.user.isGM) return;
 		const rolls: Roll[] = [];
-		if (!window.SimpleCalendar) {
+		const calendar = window?.SimpleCalendar?.api;
+		if (!calendar) {
 			throw new PersonaError("Simple Calendar isn't enabled!");
 		}
+		const original_Weekday = calendar.getCurrentWeekday().name;
 		try {
-			const ret = await window.SimpleCalendar.api.changeDate({day:1});
+			const ret = await calendar.changeDate({day:1});
 			if (ret == false) {
 				throw new PersonaError("Calendar function returned false for some reason");
 			}
@@ -50,17 +51,19 @@ export class PersonaCalendar {
 			PersonaError.softFail("Error Updating Calendar with ChangeDate");
 			Debug(e);
 		}
+		const date = calendar.currentDateTimeDisplay().date;
+		const weekday = calendar.getCurrentWeekday().name;
+		if (weekday == original_Weekday) {
+			throw new PersonaError("Date change not registering");
+		}
+		rolls.push(await this.randomizeWeather());
+		const weather = this.getWeather();
 		if (this.DoomsdayClock.isMaxed()) {
 			await this.DoomsdayClock.clear();
 		} else {
 			await this.DoomsdayClock.inc();
 		}
-		rolls.push(await this.randomizeWeather());
-		const weather = this.getWeather();
-		const date = window.SimpleCalendar.api.currentDateTimeDisplay().date;
-		const weekday = window.SimpleCalendar.api.getCurrentWeekday().name;
 		let doomsdayMsg = `<hr> <div class="doomsday"> <b>Doomsday</b>  ${this.DoomsdayClock.amt} / ${this.DoomsdayClock.max} </div>`;
-
 		if (this.DoomsdayClock.isMaxed()) {
 			doomsdayMsg = `<hr><div class="doomsday"><h2> Doomsday</h2> Doomsday is here! Succeed or Something horrible happens!</div>`;
 		}
