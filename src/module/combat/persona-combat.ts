@@ -135,7 +135,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			x.actor != undefined
 			&& x.actor.isAlive()
 			&& !this.getAllies(x)
-			.some( ally=> ally.actor.hasStatus("charmed"))
+			.some( ally => ally.actor && ally.actor.hasStatus("charmed"))
 			&& !this.getFoes(x)
 			.some(f => !f.isDefeated)
 		);
@@ -217,6 +217,17 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return super.combatant as Option<Combatant<ValidAttackers>>;
 	}
 
+	async ensureSheetOpen(combatant: Combatant<ValidAttackers>) {
+		if (!combatant.actor) return;
+		for (const comb of this.combatants) {
+			if (comb != combatant && comb.actor && comb.actor.sheet._state > 0)
+				comb.actor.sheet.close();
+		}
+		if (combatant.actor.sheet._state <= 0) {
+			combatant.actor.sheet.render(true);
+		}
+	}
+
 	async startCombatantTurn( combatant: Combatant<ValidAttackers> ){
 		let baseRolls : Roll[] = [];
 		const rolls :RollBundle[] = [];
@@ -227,6 +238,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (!game.user.isGM) return;
 		if (await this.checkEndCombat() == true) {
 			return;
+		}
+		if (!combatant.actor.hasPlayerOwner) {
+			await this.ensureSheetOpen(combatant);
 		}
 		await this.execStartingTrigger(combatant);
 		await this.clearStartTurnEffects(combatant);

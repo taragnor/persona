@@ -994,15 +994,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
    }
 
-   get openerActions() : Usable[] {
-      if (this.system.type == "npc" || this.system.type == "tarot")
-         return [];
-      const arr = (this as ValidAttackers).mainModifiers({omitPowers:true})
-         .filter(x=> x.grantsPowers())
-         .flatMap(x=> x.getOpenerPowers(this as PC ))
-         .concat( this.system.type == "shadow" ? this.mainPowers.filter(x=> x.isOpener()) : []);
-      return removeDuplicates(arr);
-   }
+	get openerActions() : Usable[] {
+		if (this.system.type == "npc" || this.system.type == "tarot")
+			return [];
+		const powerBased = (this.system.type == "shadow" ? this.mainPowers : this.consumables)
+			.filter( power => power.isOpener());
+		const arr : Usable[] = (this as ValidAttackers).mainModifiers({omitPowers:true})
+			.filter(x=> x.grantsPowers())
+			.flatMap(x=> x.getOpenerPowers(this as PC ) as Usable[])
+			.concat(powerBased);
+		return removeDuplicates(arr);
+	}
 
    async setTeamworkMove(this: ValidAttackers, power: Power) {
       const id = power.id;

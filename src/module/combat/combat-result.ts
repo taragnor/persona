@@ -439,7 +439,6 @@ export class CombatResult  {
 		change.hpchange *= change.hpchangemult;
 		change.hpchangemult = 1;
 		change.hpchange = Math.trunc(change.hpchange);
-
 	}
 
 	getOtherEffects(actor : ValidAttackers): OtherEffect[] {
