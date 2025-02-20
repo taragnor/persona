@@ -134,9 +134,10 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const winner = this.combatants.find(x=>
 			x.actor != undefined
 			&& x.actor.isAlive()
-			&& this.getFoes(x)
-			.filter(f => !f.isDefeated)
-			.length == 0
+			&& !this.getAllies(x)
+			.some( ally=> ally.actor.hasStatus("charmed"))
+			&& !this.getFoes(x)
+			.some(f => !f.isDefeated)
 		);
 		if (winner) {
 			if (await this.endCombat()) {
