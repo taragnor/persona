@@ -1688,7 +1688,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	static getAttackBonus(attacker: ValidAttackers, power: Usable, target: PToken | undefined, modifiers ?: ModifierList) : ModifierList {
 		let attackBonus = this.getBaseAttackBonus(attacker, power);
-		debugger;
 		let tag = this.getRelevantAttackTag(attacker, power.getDamageType(attacker));
 		if (tag) {
 			const bonusPowers = attacker.mainPowers.concat(attacker.bonusPowers)
