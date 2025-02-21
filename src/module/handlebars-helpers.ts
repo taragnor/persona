@@ -471,5 +471,14 @@ export class PersonaHandleBarsHelpers {
 			return item.hpCost();
 		},
 
+		"getAttackBonus": function (actor: ValidAttackers, power: Usable) : number {
+			const situation : Situation = {
+				attacker: actor.accessor,
+				user: actor.accessor,
+				usedPower: power.accessor,
+			};
+			return PersonaCombat.getAttackBonus(actor, power, undefined).total(situation);
+		},
+
 	}
 } //end of class

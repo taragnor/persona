@@ -1099,7 +1099,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 				combat.lastActivationRoll = r.total;
 			}
 		}
-		const attackbonus = this.getAttackBonus(attacker, power, target, modifiers);
+		const attackbonus = this.getAttackBonus(attacker.actor, power, target, modifiers);
 		const cssClass=  (target.actor.type != "pc") ? "gm-only" : "";
 		const roll = new RollBundle("Temp", r, attacker.actor.system.type == "pc", attackbonus, situation);
 		const naturalAttackRoll = roll.dice[0].total;
@@ -1686,12 +1686,13 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return res;
 	}
 
-	static getAttackBonus(attacker: PToken, power:Usable, target: PToken, modifiers ?: ModifierList) : ModifierList {
+	static getAttackBonus(attacker: ValidAttackers, power: Usable, target: PToken | undefined, modifiers ?: ModifierList) : ModifierList {
 		let attackBonus = this.getBaseAttackBonus(attacker, power);
-		let tag = this.getRelevantAttackTag(attacker, power.getDamageType(attacker.actor));
+		debugger;
+		let tag = this.getRelevantAttackTag(attacker, power.getDamageType(attacker));
 		if (tag) {
-			const bonusPowers = attacker.actor.mainPowers.concat(attacker.actor.bonusPowers)
-				.filter(x=> x.system.tags.includes(tag));
+			const bonusPowers = attacker.mainPowers.concat(attacker.bonusPowers)
+				.filter(x => x.system.tags.includes(tag));
 			const bonus = bonusPowers.length * 3;
 			const localized = game.i18n.localize(POWER_TAGS[tag]);
 			attackBonus.add(`${localized} Power bonus`, bonus);
@@ -1703,10 +1704,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			attackBonus.add(`Multitarget attack penalty`, -3);
 		}
 		attackBonus.add("Custom modifier", this.customAtkBonus ?? 0);
-		const defense = new ModifierList(
-			target.actor.defensivePowers()
-			.flatMap (item => item.getModifier("allAtk", target.actor))
-		);
+		const defense = this.getDefenderAttackModifiers(target);
 		attackBonus = attackBonus.concat(defense);
 		if (modifiers) {
 			attackBonus = attackBonus.concat(modifiers);
@@ -1714,7 +1712,16 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return attackBonus;
 	}
 
-	static getRelevantAttackTag(_attacker: PToken, dmgType : DamageType) : PowerTag | undefined  {
+	static getDefenderAttackModifiers(target: PToken | undefined) : ModifierList {
+		if (!target) {return new ModifierList();}
+		const defense = new ModifierList(
+			target.actor.defensivePowers()
+			.flatMap (item => item.getModifier("allAtk", target.actor))
+		);
+		return defense;
+	}
+
+	static getRelevantAttackTag(_attacker: ValidAttackers, dmgType : DamageType) : PowerTag | undefined  {
 		switch (dmgType) {
 			case "fire": case "wind":
 			case "light": case "dark":
@@ -1744,8 +1751,8 @@ export class PersonaCombat extends Combat<PersonaActor> {
 
 	}
 
-	static getBaseAttackBonus(attacker: PToken, power:Usable): ModifierList {
-		const actor = attacker.actor;
+	static getBaseAttackBonus(attacker: ValidAttackers, power:Usable): ModifierList {
+		const actor = attacker;
 		if (power.system.type == "consumable") {
 			const l = actor.itemAtkBonus(power as Consumable);
 			return l;
