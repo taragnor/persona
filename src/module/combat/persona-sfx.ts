@@ -379,7 +379,13 @@ export class PersonaSFX {
 			}
 		}
 		for (const filterId of filters) {
-			await window.TokenMagic?.deleteFilters(token.object!, filterId);
+			try {
+				await window.TokenMagic?.deleteFilters(token.object!, filterId);
+			} catch (e) {
+				if (e instanceof Error) {
+					console.warn(`${e.message}\n${e.stack}`);
+				}
+			}
 		}
 
 	}
