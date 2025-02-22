@@ -108,12 +108,12 @@ export class PersonaCalendar {
 			case 7: weather = "cloudy"; break;
 			case 8: weather = "cloudy"; break;
 			case 9: weather = "cloudy"; break;
-			case 10: weather = "cloudy"; break;
+			case 10: weather = "rain"; break;
 			case 11:
 				weather = currentWeather == "rain" || currentWeather == "lightning" ? "fog" : "windy";
 				break;
 			case 12:
-				weather = currentWeather == "rain" || currentWeather == "lightning" ? "fog" : "windy";
+				weather = currentWeather == "rain" || currentWeather == "lightning" ? "fog" : "lightning";
 				break;
 			default:
 				PersonaError.softFail(`Odd Weather Result ${roll.total}`);

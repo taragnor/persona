@@ -1,3 +1,4 @@
+import { PersonaError } from "../persona-error.js";
 import { UsableAndCard } from "../item/persona-item.js";
 import { Usable } from "../item/persona-item.js";
 import { TurnAlert } from "../utility/turnAlert.js";
@@ -358,7 +359,13 @@ export class PersonaSFX {
 			}
 		}
 
-		await window.TokenMagic.addUpdateFilters(token.object!, params);
+		try {
+			await window.TokenMagic.addUpdateFilters(token.object!, params);
+		} catch (e) {
+			if (e instanceof Error) {
+				console.warn(`${e.message}\n${e.stack}`);
+			}
+		}
 	}
 
 	static async removeTMFiltersSpecial(filterType: "scan", token: TokenDocument<any>) {

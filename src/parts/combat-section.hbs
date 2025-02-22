@@ -47,6 +47,11 @@
 					Damage
 				</label>
 				<span>
+					<select name="system.combat.baseDamageType">
+						{{selectOptions CONST.DAMAGETYPES  localize=true selected=actor.system.combat.baseDamageType }}
+					</select>
+				</span>
+				<span>
 					{{numberInput actor.system.combat.wpndmg.low class="short" name="system.combat.wpndmg.low" step=1 min=0 max=100}}
 					{{numberInput actor.system.combat.wpndmg.high class="short" name="system.combat.wpndmg.high" step=1 min=0 max=100}}
 				</span>

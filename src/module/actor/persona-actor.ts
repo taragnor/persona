@@ -1187,6 +1187,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       return this.#complementRating(other) + other.#complementRating(this);
    }
 
+	getUnarmedDamageType(): RealDamageType {
+		if (this.system.type == "shadow") return this.system.combat.baseDamageType ?? "physical";
+		return "physical";
+	}
+
    #complementRating (this: Shadow, other: Shadow) : number {
       let rating = 0;
       if (this == other) return 3; //baseline

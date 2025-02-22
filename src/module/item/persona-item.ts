@@ -508,8 +508,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			return [];
 		}
 		const effects = this.getEffects(actor);
-		if (!effects.some( e => e.consequences.some( cons => 
-			cons.type == "add-creature-tag"))) {
+		if (!effects.some( e => e.consequences
+			.some( cons => cons.type == "add-creature-tag"))) {
 			this.cache.containsTagAdd = false;
 			return [];
 		}
@@ -537,7 +537,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "all-out":
 				return this.system.dmg_type;
 			case "by-power":
-				return attacker.weapon?.getDamageType(attacker) ?? "physical";
+				return attacker.weapon?.getDamageType(attacker) ?? attacker.getUnarmedDamageType();
 			default:
 					this.system satisfies never;
 				PersonaError.softFail(`Can't find damag etype for ${(this.system as any).dmg_type}`);

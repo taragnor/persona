@@ -1,3 +1,4 @@
+import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
 import { PCAndNPCAllyCombatStats } from "../../config/actor-parts.js";
 import { PCSpecificStuff } from "../../config/actor-parts.js";
 import { SocialTargetBlockData } from "../../config/actor-parts.js";
@@ -67,7 +68,6 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 		}
 		return data;
 	}
-
 }
 
 export class ShadowSchema extends foundry.abstract.TypeDataModel {
@@ -85,6 +85,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 			combat: new sch({
 				...combatCommonStats(),
 				...shadowOnlyCombatAbilities(),
+				baseDamageType: new txt( {choices: REALDAMAGETYPESLIST, initial :"physical"} ),
 			}),
 		} as const;
 		return ret;
