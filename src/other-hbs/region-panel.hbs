@@ -28,6 +28,14 @@
 			{{region.concordiaPresence}}
 		</div>
 		{{/if}}
+		{{#if (isGM)}}
+		{{#if (or region.concordiaPresence region.shadowPresence)}}
+		<div class="challenge-Level">
+			<label>Challenge Level: </label>
+			{{region.challengeLevel}}
+		</div>
+		{{/if}}
+		{{/if}}
 
 		<div class="treasures">
 			<label>

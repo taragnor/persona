@@ -251,14 +251,7 @@ export class PersonaSocial {
 			return link;
 		}
 		const cards = this.validSocialCards(actor, link);
-		// let undrawn = cards.filter( card=> !this.#drawnCardIds.includes(card.id));
 		const undrawn = cards;
-
-		// if (undrawn.length < 1) {
-		// 	undrawn = cards;
-			// this.#drawnCardIds = this.#drawnCardIds
-			// 	.filter(cardId=> !cards.find(card => card.id == cardId));
-		// }
 		const chosenCard = weightedChoice(
 			undrawn.map( card=> ({
 				item: card,
@@ -266,7 +259,6 @@ export class PersonaSocial {
 			}))
 		);
 		if (!chosenCard) throw new PersonaError("Can't find valid social card!");
-		// this.#drawnCardIds.push(chosenCard.id);
 		return chosenCard;
 	}
 

@@ -1,0 +1,80 @@
+<section class="encounter-section">
+	<div class="requirements-block">
+		<div>
+			<label> Rainy Shadow</label>
+			<input type="checkbox" name="system.encounter.rareShadow" {{checked actor.system.encounter.rareShadow}}>
+		</div>
+		<div class="dungeon-section">
+			<h3> Dungeons
+				<a class="add-dungeon">
+					<i class="fa-solid fa-plus"> </i>
+				</a>
+			</h3>
+			{{#each actor.system.encounter.dungeons as |dungeon i|}}
+			<div class="dungeon" data-dungeon-index="{{i}}">
+				<select name="system.encounter.dungeons.{{i}}">
+					{{selectOptions ../SHADOW_STUFF.SCENE_LIST localize=false selected=dungeon}}
+				</select>
+				<a class="del-dungeon">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</div>
+			{{/each}}
+		</div>
+		<div>
+			<label>
+				Slider
+			</label>
+			{{rangePicker name="system.encounter.CR" value=actor.system.encounter.CR min=1 max=10 step=1}}
+		</div>
+		<div>
+			<label>
+				Frequency
+			</label>
+			<select name="system.encounter.frequency">
+				{{selectOptions SHADOW_STUFF.FREQUENCY localize=false selected=actor.system.encounter.frequency}}
+			</select>
+		</div>
+		<div data-top-path="system.encounter.conditions" data-path="system.encounter.conditions">
+			{{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.encounter.conditions." POWERSTUFF=POWERSTUFF owner=actor}}
+		</div>
+	</div>
+	<div class="treasure-section">
+		<div class="flexrow">
+			<label> Money </label>
+			<input class="short" type="number" name="system.encounter.treasure.moneyLow" value="{{actor.system.encounter.treasure.moneyLow}}">-
+			<input class="short" type="number" name="system.encounter.treasure.moneyHigh" value="{{actor.system.encounter.treasure.moneyHigh}}">
+		</div>
+		<div class="flexrow">
+			<label> Common Item</label>
+			<input class="short" type="number" name="system.encounter.treasure.item0prob" value="{{actor.system.encounter.treasure.item0prob}}">%
+			<select name="system.encounter.treasure.item0">
+				{{selectOptions SHADOW_STUFF.COMMON_TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item0}}
+			</select>
+		</div>
+		<div class="flexrow">
+			<label> Item 1</label>
+			<input class="short" type="number" name="system.encounter.treasure.item1prob" value="{{actor.system.encounter.treasure.item1prob}}">%
+			<select name="system.encounter.treasure.item1">
+				{{selectOptions SHADOW_STUFF.TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item1}}
+			</select>
+		</div>
+		<div class="flexrow">
+			<label> Item 2</label>
+			<input class="short" type="number" name="system.encounter.treasure.item2prob" value="{{actor.system.encounter.treasure.item2prob}}">%
+			<select name="system.encounter.treasure.item2">
+				{{selectOptions SHADOW_STUFF.TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item2}}
+			</select>
+		</div>
+		<div class="flexrow">
+			<label> Card</label>
+			<input class="short" type="number" name="system.encounter.treasure.cardProb" value="{{actor.system.encounter.treasure.cardProb}}">%
+			<select name="system.encounter.treasure.cardPowerId">
+				{{selectOptions SHADOW_STUFF.CARD_CANDIDATES  localize=false selected=actor.system.encounter.treasure.cardPowerId}}
+			</select>
+		</div>
+
+	</div>
+
+</section>
+

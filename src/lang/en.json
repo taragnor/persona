@@ -43,6 +43,7 @@
 	"persona.foe.type.pc": "PC",
 	"persona.foe.type.npc": "NPC",
 
+	"persona.sheet.tabs.encounter.tabname" : "Encounter",
 	"persona.sheet.tabs.inventory.tabname" : "Inventory",
 	"persona.sheet.tabs.social.tabname" : "Social",
 
@@ -235,6 +236,7 @@
 	"persona.modifier.starting-energy": "Shadow Starting Energy",
 	"persona.modifier.energy-per-turn": "Energy Gained at end of Turn",
 	"persona.modifier.shadowPresence": "Shadow Presence",
+	"persona.modifier.challengeLevel": "Challenge Level",
 	"persona.modifier.concordiaPresence": "Concordia Presence",
 	"persona.modifier.encounterSize": "Encounter Size",
 	"persona.modifier.numberOfSearches": "Number of Searches",
@@ -745,6 +747,7 @@
 	"persona.roomAttribute.specialMods": "Special Modifiers",
 	"persona.roomAttribute.concordiaPresence": "Concordia Presence",
 	"persona.roomAttribute.shadowPresence": "Shadow Presence",
+	"persona.roomAttribute.challengeLevel": "Encounter Level",
 	"persona.roomAttribute.secretNotes": "GM Notes",
 
 	"persona.creatureType.neko": "Neko",

@@ -1,3 +1,4 @@
+import { testPreconditions } from "./preconditions.js";
 import { DamageType } from "../config/damage-types.js";
 import { ShadowRole } from "../config/shadow-types.js";
 import { Shadow } from "./actor/persona-actor.js";
@@ -12,15 +13,23 @@ export class PersonaScene extends Scene {
 
 	encounterList() : Shadow[] {
 		const disAllowedRoles: ShadowRole[] = [
-			"miniboss-lord",
-			// "boss-lord",
-			"miniboss",
-			// "boss",
+			// "miniboss-lord",
+			"boss-lord",
+			// "miniboss",
+			"boss",
 		];
 		let encounterList =
-			this.allFoes().filter( shadow =>
-			!disAllowedRoles.includes(shadow.system.role)
-		);
+			this.allFoes()
+			.filter( shadow => !disAllowedRoles.includes(shadow.system.role)
+				&& shadow.system.encounter.frequency > 0
+			)
+			.filter( shadow => {
+				const situation = {
+					user: shadow.accessor,
+					target: shadow.accessor,
+				};
+				return testPreconditions(shadow.system.encounter.conditions, situation, null);
+			});
 		if (!PersonaCalendar.isStormy()) {
 			encounterList = encounterList.filter( shadow => shadow.system.encounter.rareShadow != true);
 		}

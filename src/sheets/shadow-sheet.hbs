@@ -12,13 +12,13 @@
 						{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
 					</select>
 					<select name="system.role">
-						{{selectOptions SHADOW_ROLE localize=true selected=actor.system.role}}
+						{{selectOptions SHADOW_STUFF.SHADOW_ROLE localize=true selected=actor.system.role}}
 					</select>
 					<select name="system.role2">
-						{{selectOptions SHADOW_ROLE localize=true selected=actor.system.role2}}
+						{{selectOptions SHADOW_STUFF.SHADOW_ROLE localize=true selected=actor.system.role2}}
 					</select>
 					<select name="system.creatureType">
-						{{selectOptions SHADOW_CREATURE_TYPE localize=true selected=actor.system.creatureType}}
+						{{selectOptions SHADOW_STUFF.SHADOW_CREATURE_TYPE localize=true selected=actor.system.creatureType}}
 					</select>
 				</div>
 				<div>
@@ -35,63 +35,6 @@
 				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
 			</div>
 			<div class="flexcol encounter-column">
-				<div>
-					<label> Rare Shadow</label>
-					<input type="checkbox" name="system.encounter.rareShadow" {{checked actor.system.encounter.rareShadow}}>
-				</div>
-				<div class="dungeon-section">
-					<h3> Dungeons
-						<a class="add-dungeon">
-							<i class="fa-solid fa-plus"> </i>
-						</a>
-					</h3>
-					{{#each actor.system.encounter.dungeons as |dungeon i|}}
-					<div class="dungeon" data-dungeon-index="{{i}}">
-						<select name="system.encounter.dungeons.{{i}}">
-							{{selectOptions ../SCENE_LIST localize=false selected=dungeon}}
-						</select>
-						<a class="del-dungeon">
-							<i class="fa-solid fa-trash-can"></i>
-						</a>
-					</div>
-					{{/each}}
-					<div>
-						<div class="flexrow">
-							<label> Money </label>
-							<input class="short" type="number" name="system.encounter.treasure.moneyLow" value="{{actor.system.encounter.treasure.moneyLow}}">-
-							<input class="short" type="number" name="system.encounter.treasure.moneyHigh" value="{{actor.system.encounter.treasure.moneyHigh}}">
-						</div>
-						<div class="flexrow">
-							<label> Common Item</label>
-							<input class="short" type="number" name="system.encounter.treasure.item0prob" value="{{actor.system.encounter.treasure.item0prob}}">%
-							<select name="system.encounter.treasure.item0">
-								{{selectOptions COMMON_TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item0}}
-							</select>
-						</div>
-						<div class="flexrow">
-							<label> Item 1</label>
-							<input class="short" type="number" name="system.encounter.treasure.item1prob" value="{{actor.system.encounter.treasure.item1prob}}">%
-							<select name="system.encounter.treasure.item1">
-								{{selectOptions TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item1}}
-							</select>
-						</div>
-						<div class="flexrow">
-							<label> Item 2</label>
-							<input class="short" type="number" name="system.encounter.treasure.item2prob" value="{{actor.system.encounter.treasure.item2prob}}">%
-							<select name="system.encounter.treasure.item2">
-								{{selectOptions TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item2}}
-							</select>
-						</div>
-						<div class="flexrow">
-							<label> Card</label>
-							<input class="short" type="number" name="system.encounter.treasure.cardProb" value="{{actor.system.encounter.treasure.cardProb}}">%
-							<select name="system.encounter.treasure.cardPowerId">
-								{{selectOptions CARD_CANDIDATES  localize=false selected=actor.system.encounter.treasure.cardPowerId}}
-							</select>
-						</div>
-
-					</div>
-				</div>
 			</div>
 		</div>
 	</header>
@@ -102,6 +45,9 @@
 		<a class="item" data-tab="inc">
 			{{localize "persona.sheet.tabs.incremental.tabname" }}
 		</a>
+		<a  class="item" data-tab="encounter">
+			{{localize "persona.sheet.tabs.encounter.tabname" }}
+		</a>
 	</nav>
 	<section class="sheet-body">
 		<section class="tab tab-content combat-section flexcol" data-group="primary" data-tab="combat">
@@ -110,6 +56,9 @@
 		</section>
 		<section class="tab tab-content incremental-section flexcol" data-group="primary" data-tab="inc">
 			{{> "systems/persona/parts/incremental-section.hbs" actor=actor CONST=CONST}}
+		</section>
+		<section class="tab tab-content encounter-section flexcol" data-group="primary" data-tab="encounter">
+			{{> "systems/persona/parts/encounter-section.hbs" actor=actor CONST=CONST SHADOW_STUFF=SHADOW_STUFF POWERSTUFF=POWERSTUFF}}
 		</section>
 	</section>
 </form>

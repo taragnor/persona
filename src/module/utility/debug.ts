@@ -35,3 +35,16 @@ declare global {
 		DLog(num ?: unknown) : void;
 	}
 }
+
+const oldSO = Handlebars.helpers["selectOptions"] ;
+Handlebars.helpers["selectOptions"] = function (...x : any[]) {
+	try {
+		return oldSO(...x);
+	} catch (e) {
+		ui.notifications.error("Error in selectOptions");
+		Debug(x);
+		return "ERROR";
+	}
+
+}
+

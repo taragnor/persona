@@ -1,3 +1,4 @@
+import { FREQUENCY } from "../../../config/frequency.js";
 import { Power } from "../../item/persona-item.js";
 import { CREATURE_TAGS } from "../../../config/creature-tags.js";
 import { SHADOW_CREATURE_TYPE } from "../../../config/shadow-types.js";
@@ -53,16 +54,14 @@ export class ShadowSheet extends CombatantSheetBase {
 	override async getData() {
 		const data = await super.getData();
 		data.CREATURE_TAGS = CREATURE_TAGS;
-		data.SHADOW_CREATURE_TYPE= SHADOW_CREATURE_TYPE;
-		data.SHADOW_ROLE = SHADOW_ROLE;
-		data.TREASURE_LIST = Object.fromEntries(
+		const TREASURE_LIST = Object.fromEntries(
 			[["", "-"]].concat(
-			PersonaDB.treasureItems()
-			.sort( (a, b) => a.name.localeCompare(b.name))
-			.map( x=> [x.id, x.name])
+				PersonaDB.treasureItems()
+				.sort( (a, b) => a.name.localeCompare(b.name))
+				.map( x=> [x.id, x.name])
 			)
 		);
-		data.SCENE_LIST = Object.fromEntries(
+		const SCENE_LIST = Object.fromEntries(
 			PersonaDB.dungeonScenes()
 			.sort( (a, b) => a.name.localeCompare(b.name))
 			.map(x=> [x.id, x.name])
@@ -71,18 +70,30 @@ export class ShadowSheet extends CombatantSheetBase {
 			.filter (pwr => !pwr.hasTag("shadow-only"))
 			.map( x=> PersonaDB.allPowers().find(pwr => pwr.name == x.name))
 			.filter( x=> x != undefined) as Power[];
-		data.CARD_CANDIDATES = Object.fromEntries(
+		const CARD_CANDIDATES = Object.fromEntries(
 			[["", "-"]].concat(
 				databasePowers.map( pwr => [pwr.id, pwr.displayedName.toString()])
 			));
-		data.COMMON_TREASURE_LIST = Object.fromEntries(
+		const COMMON_TREASURE_LIST = Object.fromEntries(
 			[["", "-"]].concat(
-			PersonaDB.treasureItems()
-			.filter( item => item.hasTag("common-loot"))
-			.sort( (a, b) => a.name.localeCompare(b.name))
-			.map( x=> [x.id, x.name])
+				PersonaDB.treasureItems()
+				.filter( item => item.hasTag("common-loot"))
+				.sort( (a, b) => a.name.localeCompare(b.name))
+				.map( x=> [x.id, x.name])
 			)
 		);
+		data.SHADOW_STUFF =  {
+			CREATURE_TAGS : CREATURE_TAGS,
+			SHADOW_CREATURE_TYPE: SHADOW_CREATURE_TYPE,
+			SHADOW_ROLE,
+			TREASURE_LIST,
+			SCENE_LIST,
+			CARD_CANDIDATES,
+			COMMON_TREASURE_LIST,
+			FREQUENCY,
+		};
+
+
 		return data;
 	}
 

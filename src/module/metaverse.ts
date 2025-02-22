@@ -1,3 +1,4 @@
+import { weightedChoice } from "./utility/array-tools.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { SkillCard } from "./item/persona-item.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
@@ -81,6 +82,11 @@ export class Metaverse {
 		const scene = game.scenes.current;
 		const encounterList  = (scene as PersonaScene).encounterList()
 			.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
+		const weightedList = encounterList
+			.map (shadow => ({
+				item: shadow,
+				weight: shadow.system.encounter.frequency ?? 1,
+			}));
 		if (encounterList.length == 0) {
 			PersonaError.softFail(`Encounter List is empty for ${scene.name} ${shadowType ? "(" + shadowType+ ")"  :""}`);
 			return [];
@@ -110,9 +116,12 @@ export class Metaverse {
 				PersonaError.softFail(`Had to bail out, couldn't find match for ${scene.name}`);
 				return [];
 			}
-			const dice = Math.floor(Math.random() * encounterList.length);
-			const pick1 = encounterList[dice];
-			const pick2 = encounterList[dice];
+			const pick1 = weightedChoice(weightedList);
+			const pick2 = weightedChoice(weightedList);
+			if (!pick1 || !pick2) {
+				PersonaError.softFail("Couldn't get a pick from choice list");
+				break;
+			}
 			const p1score = encounterList
 				.reduce ( (acc, shadow) => acc + shadow.complementRating(pick1), 0);
 			const p2score = encounterList

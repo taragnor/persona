@@ -70,6 +70,7 @@ type RegionData = {
 	concordiaPresence: number,
 	shadowPresence: number,
 	secretNotes: string,
+	challengeLevel: number,
 }
 
 export class PersonaRegion extends RegionDocument {
@@ -93,6 +94,7 @@ export class PersonaRegion extends RegionDocument {
 			concordiaPresence: 0,
 			shadowPresence: 0,
 			secretNotes: "",
+			challengeLevel: 1,
 		} as const;
 	}
 
@@ -104,6 +106,11 @@ export class PersonaRegion extends RegionDocument {
 		return regionData;
 	}
 
+
+	get challengeLevel(): number {
+		return this.regionData.challengeLevel ?? 1;
+
+	}
 
 	hasModifier(mod: SpecialMod) : boolean {
 		return this.regionData.specialMods.includes(mod);
@@ -421,7 +428,15 @@ export class PersonaRegion extends RegionDocument {
 				);
 				break;
 			}
-				case "secretNotes": {
+			case "challengeLevel": {
+				const val = this.regionData[field];
+				element.append(
+					$(`<input type="number">`).addClass(`${fieldClass}`).val(val ?? 0)
+					.on("change", this.#refreshRegionData.bind(this))
+				);
+				break;
+			}
+			case "secretNotes": {
 				const val = this.regionData[field];
 				element.append(
 					$(`<textarea>`).addClass(`${fieldClass}`)
@@ -474,6 +489,7 @@ export class PersonaRegion extends RegionDocument {
 					}
 					break;
 				}
+				case "challengeLevel":
 				case "shadowPresence":
 				case "concordiaPresence": {
 					const input = topLevel.find(`.${fieldClass}`).val();
