@@ -368,7 +368,7 @@ export class PersonaSFX {
 		}
 	}
 
-	static async removeTMFiltersSpecial(filterType: "scan", token: TokenDocument<any>) {
+	static async removeTMFiltersSpecial(filterType: "scan", token: TokenDocument) {
 		if (!window.TokenMagic) return;
 		if (!token.isOwner) return;
 		let filters = [];
@@ -387,9 +387,7 @@ export class PersonaSFX {
 				}
 			}
 		}
-
 	}
-
 
 	static async removeTMFiltersStatus(statusId: StatusEffectId, token: TokenDocument<any>) {
 		if (!window.TokenMagic) return;

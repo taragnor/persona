@@ -1,4 +1,4 @@
-class TokenDocument<T extends Actor<any, any>> extends FoundryDocument<never>
+class TokenDocument<T extends Actor<any, any, any> = Actor<any>> extends FoundryDocument<never>
 	{
 		actorId: string;
 		actorLink: boolean;
