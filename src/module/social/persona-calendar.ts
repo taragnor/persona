@@ -1,3 +1,4 @@
+import { sleep } from "../utility/async-wait.js";
 import { PersonaSocial } from "./persona-social.js";
 import { localize } from "../persona.js";
 import { WEATHER_TYPES } from "../../config/weather-types.js";
@@ -34,16 +35,16 @@ export class PersonaCalendar {
 		}
 	}
 
-	static async nextDay(extraMsgs : string[] = []) {
-		if(!game.user.isGM) return;
-		const rolls: Roll[] = [];
+	static async advanceCalendar() {
 		const calendar = window?.SimpleCalendar?.api;
 		if (!calendar) {
 			throw new PersonaError("Simple Calendar isn't enabled!");
 		}
 		const original_Weekday = calendar.getCurrentWeekday().name;
 		try {
+			await sleep(1000);
 			const ret = await calendar.changeDate({day:1});
+			await sleep(3000);
 			if (ret == false) {
 				throw new PersonaError("Calendar function returned false for some reason");
 			}
@@ -51,11 +52,26 @@ export class PersonaCalendar {
 			PersonaError.softFail("Error Updating Calendar with ChangeDate");
 			Debug(e);
 		}
-		const date = calendar.currentDateTimeDisplay().date;
+		await sleep(1000);
 		const weekday = calendar.getCurrentWeekday().name;
 		if (weekday == original_Weekday) {
-			throw new PersonaError("Date change not registering");
+			ui.notifications.warn("Calendar didn't update!");
+			return false;
+			// throw new PersonaError("Date change not registering");
 		}
+		return true;
+	}
+
+	static async nextDay(extraMsgs : string[] = []) {
+		if(!game.user.isGM) return;
+		const rolls: Roll[] = [];
+		const calendar = window?.SimpleCalendar?.api;
+		if (!calendar) {
+			throw new PersonaError("Simple Calendar isn't enabled!");
+		}
+		const requireManual = !(await this.advanceCalendar());
+		const date = calendar.currentDateTimeDisplay().date;
+		const weekday = calendar.getCurrentWeekday().name;
 		rolls.push(await this.randomizeWeather());
 		const weather = this.getWeather();
 		if (this.DoomsdayClock.isMaxed()) {
@@ -67,11 +83,13 @@ export class PersonaCalendar {
 		if (this.DoomsdayClock.isMaxed()) {
 			doomsdayMsg = `<hr><div class="doomsday"><h2> Doomsday</h2> Doomsday is here! Succeed or Something horrible happens!</div>`;
 		}
+		const manualUpdate = requireManual ? `<h2> Requires Manaul date update </h2>`: "";
 		await PersonaSocial.updateLinkAvailability(weekday);
 		extraMsgs = extraMsgs
 			.map( x=> `<div> ${x} </div>`);
 		const html = `
 		<div class="date">
+		${manualUpdate}
 		<h2> ${date} (${weekday}) </h2>
 		<div class="weather">
 		Weather: ${weather}

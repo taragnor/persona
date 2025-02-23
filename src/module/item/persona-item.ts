@@ -1099,6 +1099,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		};
 		return this.system.cardTags.flatMap( tag => {
 			switch (tag) {
+				case "real-world":
+					const realWorld : Precondition = {
+						type: "boolean",
+						boolComparisonTarget: "has-creature-tag",
+						conditionTarget: "target",
+						creatureTag: "stuck-in-metaverse",
+						booleanState: false,
+					};
+					return [ realWorld ];
 				case "date":
 				case "friends":
 					const isDating : Precondition = {

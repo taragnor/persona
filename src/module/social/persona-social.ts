@@ -354,6 +354,7 @@ export class PersonaSocial {
 			if (cameo.id == linkId) return false;
 			const acc = cameo.accessor;
 			if (!cameo.isAvailable(actor)) return false;
+			if (cameo.hasCreatureTag("stuck-in-metaverse")) return false;
 			const target = PersonaDB.socialLinks().find(link => link.id == linkId) as SocialLink | undefined;
 			const targetAcc = target?.accessor;
 			const situation: Situation = {

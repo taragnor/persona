@@ -577,11 +577,11 @@ export class Metaverse {
 			PersonaSockets.simpleSend("CRUNCH_TOGGLE", {}, gms.map( x=> x.id));
 	}
 
-	static onCrunchRequest() {
+	static async onCrunchRequest() {
 		if (game.user.isGM) {
 			const currTime = Date.now()
 			if (currTime - this.lastCrunch > 8000) {
-				this.toggleCrunchParty();
+				await this.toggleCrunchParty();
 			}
 		} else {
 			PersonaError.softFail("Crunch request recieved by non-GM, this is in error");

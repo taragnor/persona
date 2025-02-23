@@ -252,7 +252,7 @@ export class PCSheet extends PCLikeSheet {
 		const x = await HTMLTools.getNumber("Amount to spend");
 		if (x <= 0) return;
 		await this.actor.spendMoney(x);
-		await Logger.sendToChat(`${this.actor.name} Spent ${x} resource points`);
+		// await Logger.sendToChat(`${this.actor.name} Spent ${x} resource points`);
 	}
 
 	async drawActivityCard (event: JQuery.ClickEvent) {

@@ -6,6 +6,7 @@ export const PERSON_TAG_LIST = [
 	"npc-ally",
 	"pc",
 	"child",
+	"stuck-in-metaverse",
 ] as const;
 
 export const PERSONALITY_TAG_LIST = [

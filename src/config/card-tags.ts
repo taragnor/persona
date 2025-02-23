@@ -7,6 +7,7 @@ export const CARD_TAG_LIST = [
 	"middle-range",
 	"trusted",
 	"disabled",
+	"real-world",
 ] as const;
 
 export type CardTag = typeof CARD_TAG_LIST[number];

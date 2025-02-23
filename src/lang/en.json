@@ -766,6 +766,7 @@
 	"persona.creatureType.student": "Student",
 	"persona.creatureType.professor": "Professor",
 	"persona.creatureType.social-shadow": "Shadow Social Link",
+	"persona.creatureType.stuck-in-metaverse": "Stuck in the Metaverse",
 	"persona.creatureType.teammate": "Teammate",
 	"persona.creatureType.npc-ally": "NPC-Ally",
 	"persona.creatureType.pc": "PC",
