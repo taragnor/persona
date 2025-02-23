@@ -624,6 +624,7 @@ async function updateRegionDisplay (region: PersonaRegion) {
 	infoPanel.empty();
 	infoPanel.html(html);
 	infoPanel.find(".search-button").on("click", searchButton);
+	infoPanel.find(".crunch-button").on("click", Metaverse.toggleCrunchParty.bind(Metaverse));
 }
 
 async function searchButton(_ev: JQuery.ClickEvent) {

@@ -1,3 +1,4 @@
+import { PersonaSockets } from "./persona.js";
 import { weightedChoice } from "./utility/array-tools.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { SkillCard } from "./item/persona-item.js";
@@ -25,6 +26,8 @@ import { PersonaSettings } from "../config/persona-settings.js";
 import { NPCAlly } from "./actor/persona-actor.js";
 
 export class Metaverse {
+	static lastCrunch : number = 0;
+
 	static isEnhanced() : boolean {
 		return PersonaSettings.isMetaverseEnhanced(); //placeholder
 	}
@@ -552,6 +555,47 @@ export class Metaverse {
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 		});
 		return roll.total <= data.presenceValue;
+	}
+
+	static async toggleCrunchParty () : Promise<void> {
+		if (game.user.isGM) {
+			if ("PartyCruncher" in window) {
+				this.lastCrunch = Date.now();
+				//@ts-ignore
+				await window.PartyCruncher.toggleParty(1);
+			}
+		} else {
+			await this.sendPartyCrunchRequest();
+		}
+	}
+
+	static async sendPartyCrunchRequest() {
+			const gms = game.users.filter(x=> x.isGM);
+			PersonaSockets.simpleSend("CRUNCH_TOGGLE", {}, gms.map( x=> x.id));
+	}
+
+	static onCrunchRequest() {
+		if (game.user.isGM) {
+			const currTime = Date.now()
+			if (currTime - this.lastCrunch > 8000) {
+				this.toggleCrunchParty();
+			}
+		} else {
+			PersonaError.softFail("Crunch request recieved by non-GM, this is in error");
+		}
+
+	}
+}
+
+Hooks.on("socketsReady", () => {
+	console.log("Sockets set handler");
+	PersonaSockets.setHandler("CRUNCH_TOGGLE", Metaverse.onCrunchRequest.bind(Metaverse));
+});
+
+declare global {
+	interface SocketMessage {
+		"CRUNCH_TOGGLE": {
+		};
 	}
 }
 
