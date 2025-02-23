@@ -57,7 +57,7 @@ export class PersonaScene extends Scene {
 					case "normal":
 						break;
 					case "weakness":
-						stats[dtype] += 1;
+						stats[dtype] += 2;
 						break;
 					case "resist":
 						stats[dtype] -= 1;
