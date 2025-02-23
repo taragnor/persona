@@ -2175,6 +2175,7 @@ async levelUp(this: PC | NPCAlly) : Promise<void> {
       "system.combat.classData.level": newlevel,
       "system.combat.classData.incremental": incremental,
       "system.combat.classData.incremental_progress": 0,
+		"system.combat.xp" : 0,
    });
 }
 
