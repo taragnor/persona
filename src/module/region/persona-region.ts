@@ -545,6 +545,23 @@ export class PersonaRegion extends RegionDocument {
 		return div;
 	}
 
+	static updateRegionDisplay(token: TokenDocument<PersonaActor>, tokenMove: boolean = true) {
+		const scene = token.parent;
+		const region = scene.regions.find( (region : PersonaRegion) => region.tokens.has(token) && !region?.regionData?.ignore)
+		if (!region || game?.combat?.active) {
+			clearRegionDisplay();
+			return;
+		}
+		//TODO: refactor into onMove, onSelect and actual updateRegion functions
+		updateRegionDisplay(region as PersonaRegion);
+		const lastRegion = PersonaSettings.get("lastRegionExplored");
+		if (tokenMove && lastRegion != region.id) {
+			if (game.user.isGM) {
+				PersonaSettings.set("lastRegionExplored", region.id);
+				(region as PersonaRegion).onEnterRegion(token);
+			}
+		}
+	}
 }
 
 Hooks.on("closeRegionConfig", async (app) => {
@@ -585,20 +602,7 @@ Hooks.on("updateToken", (token, changes) => {
 		return;
 	const scene = token.parent;
 	if (!scene) return;
-	const region = scene.regions.find( (region : PersonaRegion) => region.tokens.has(token) && !region?.regionData?.ignore)
-	if (!region || game?.combat?.active) {
-		clearRegionDisplay();
-		return;
-	}
-	updateRegionDisplay(region as PersonaRegion);
-	const lastRegion = PersonaSettings.get("lastRegionExplored");
-	if (lastRegion != region.id) {
-		if (game.user.isGM) {
-			PersonaSettings.set("lastRegionExplored", region.id);
-			(region as PersonaRegion).onEnterRegion(token);
-		}
-	}
-
+	PersonaRegion.updateRegionDisplay(token);
 });
 
 Hooks.on("updateCombat", (_combat) => {
@@ -650,4 +654,13 @@ Hooks.on("socketsReady", () => {
 
 Hooks.on("canvasInit", () => {
 	clearRegionDisplay();
+});
+
+Hooks.on("controlToken", (token : Token<PersonaActor>) => {
+	const actor = token?.document?.actor;
+	if (!actor) return;
+	if (actor.system.type == "pc") {
+		PersonaRegion.updateRegionDisplay(token.document, false);
+	}
+
 });

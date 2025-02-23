@@ -60,6 +60,7 @@ declare interface HOOKS {
 	"hoverToken" : (token: Token<any>, hover:boolean) => unknown;
 	/**hook boolean value is true on connect, false on disconnect*/
 	"userConnected": (user: FoundryUser, isConnectionEvent : boolean) => unknown;
+	"controlToken": (token: Token, unknownBool: boolean) => unknown;
 };
 
 type PreCreateHook<T extends FoundryDocument> = (document: T, documentData: {name:string, type:string} & Record<string, unknown>, metaData: Record<string, unknown>, id:string) => unknown;

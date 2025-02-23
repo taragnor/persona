@@ -1,3 +1,4 @@
+import { TriggeredEffect } from "../triggered-effect.js";
 import { shadowRoleMultiplier } from "../../config/shadow-types.js";
 import { BANEFUL_STATUSES_MAP } from "../../config/status-effects.js";
 import { RealDamageType } from "../../config/damage-types.js";
@@ -2116,16 +2117,27 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       }
    }
 
-async OnEnterMetaverse(this: ValidAttackers) {
-   try {
-      this.fullHeal();
-      if (this.system.type == "pc") {
-         await (this as PC).refreshSocialLink(this as PC);
-      }
-   } catch (e) {
-      console.log(e);
-      ui.notifications.error(`problem with Onentermetaverse for ${this.name}`);
-   }
+async onEnterMetaverse() {
+	if (!this.isValidCombatant()) return;
+	try {
+		await this.fullHeal();
+		if (this.system.type == "pc") {
+			await (this as PC).refreshSocialLink(this as PC);
+		}
+		const situation : Situation = {
+			trigger: "enter-metaverse",
+			triggeringUser: game.user,
+			triggeringCharacter: this.accessor,
+			user: this.accessor,
+		};
+		await TriggeredEffect
+			.onTrigger("enter-metaverse", this, situation)
+			.emptyCheck()
+			?.autoApplyResult();
+	} catch (e) {
+		console.log(e);
+		PersonaError.softFail(`problem with onEnterMetaverse for ${this.name}`, e);
+	}
 }
 
 async OnExitMetaverse(this: ValidAttackers ) {

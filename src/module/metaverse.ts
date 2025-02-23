@@ -1,3 +1,4 @@
+import { TriggeredEffect } from "./triggered-effect.js";
 import { PersonaSockets } from "./persona.js";
 import { weightedChoice } from "./utility/array-tools.js";
 import { PersonaItem } from "./item/persona-item.js";
@@ -35,13 +36,14 @@ export class Metaverse {
 	static async enterMetaverse() {
 		(game.actors as Collection<PersonaActor>)
 			.filter( (x: PersonaActor)=> (x.system.type == "pc" && x.tarot != undefined) || x.system.type == "npcAlly")
-			.forEach( (x: PC | NPCAlly)=> x.OnEnterMetaverse());
+			.forEach( (pc: PC | NPCAlly)=> pc.onEnterMetaverse());
 		game.scenes
 			.forEach( scene => scene.tokens.contents
 				.forEach( tok => {
 					try {
-						(tok.actor as PersonaActor | undefined)?.fullHeal();
-						PersonaCombat.onTrigger("enter-metaverse", tok.actor as PC | Shadow);
+						if (!tok.actor) return;
+						const actor = tok.actor as PersonaActor;
+						actor.onEnterMetaverse();
 					} catch (e) {console.log(e)}
 				})
 			);
@@ -583,6 +585,7 @@ export class Metaverse {
 		} else {
 			PersonaError.softFail("Crunch request recieved by non-GM, this is in error");
 		}
+		Hooks
 
 	}
 }
