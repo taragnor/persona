@@ -72,3 +72,4 @@ export class Helpers {
 		return input.replace(pattern, match => replacements[match]);
 	}
 }
+

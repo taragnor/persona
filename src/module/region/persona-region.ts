@@ -1,3 +1,4 @@
+import { Helpers } from "../utility/helpers.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { PC } from "../actor/persona-actor.js";
@@ -636,6 +637,7 @@ async function searchButton(_ev: JQuery.ClickEvent) {
 		await Metaverse.searchRoom();
 		return;
 	}
+	Helpers.pauseCheck();
 	const region = Metaverse.getRegion();
 	if (!region) {
 		throw new PersonaError("Can't find region");

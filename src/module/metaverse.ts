@@ -1,4 +1,4 @@
-import { TriggeredEffect } from "./triggered-effect.js";
+import { Helpers } from "./utility/helpers.js";
 import { PersonaSockets } from "./persona.js";
 import { weightedChoice } from "./utility/array-tools.js";
 import { PersonaItem } from "./item/persona-item.js";
@@ -567,6 +567,7 @@ export class Metaverse {
 				await window.PartyCruncher.toggleParty(1);
 			}
 		} else {
+			Helpers.pauseCheck();
 			await this.sendPartyCrunchRequest();
 		}
 	}
