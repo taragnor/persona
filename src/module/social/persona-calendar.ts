@@ -41,23 +41,29 @@ export class PersonaCalendar {
 			throw new PersonaError("Simple Calendar isn't enabled!");
 		}
 		const original_Weekday = calendar.getCurrentWeekday().name;
+		let weekday = original_Weekday;
+		let sleepMult = 1;
 		try {
-			await sleep(1000);
-			const ret = await calendar.changeDate({day:1});
-			await sleep(3000);
-			if (ret == false) {
-				throw new PersonaError("Calendar function returned false for some reason");
+			while (weekday == original_Weekday) {
+				await sleep(500 * sleepMult);
+				const ret = await calendar.changeDate({day:1});
+				await sleep(2000 * sleepMult);
+				if (ret == false) {
+					throw new PersonaError("Calendar function returned false for some reason");
+				}
+				await sleep(500 * sleepMult);
+				weekday = calendar.getCurrentWeekday().name;
+				if (weekday == original_Weekday) {
+					if (sleepMult >= 5) {
+						throw new PersonaError("Date won't update");
+					}
+					sleepMult +=1 ;
+					console.warn(`Date change fail, mult ${sleepMult}`);
+				}
 			}
 		} catch (e) {
-			PersonaError.softFail("Error Updating Calendar with ChangeDate");
-			Debug(e);
-		}
-		await sleep(1000);
-		const weekday = calendar.getCurrentWeekday().name;
-		if (weekday == original_Weekday) {
-			ui.notifications.warn("Calendar didn't update!");
+			PersonaError.softFail("Error Updating Calendar with ChangeDate", e);
 			return false;
-			// throw new PersonaError("Date change not registering");
 		}
 		return true;
 	}

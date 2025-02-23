@@ -81,7 +81,6 @@ export class PersonaSocial {
 		if (this.allowMetaverse) {
 			extraMsgs.push("<b>Metaverse</b>: You may opt to go to the metaverse, though you must decide to now before taking any actions");
 		}
-
 		if (advanceCalendar) {
 			await this.advanceCalendar(true, extraMsgs);
 		}
