@@ -761,4 +761,7 @@ span.skill-card img {
 	min-height: 1em;
 	height: 1em;
 }
+.region-panel button {
+	margin-top: 20px;
+}
 
