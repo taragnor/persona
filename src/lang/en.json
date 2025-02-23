@@ -355,6 +355,7 @@
 	"persona.card.tag.middle-range": "Mid-range SL",
 	"persona.card.tag.trusted": "Trusted Relationship only",
 	"persona.card.tag.disabled": "Disabled",
+	"persona.card.tag.real-world": "Real World",
 
 	"persona.equipment.tag.nil" : "-",
 	"persona.equipment.tag.metaverse" : "Metaverse Item",
