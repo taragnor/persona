@@ -725,11 +725,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (
 			!actor
 			|| actor.hp > 0
-			|| actor.system.type != "pc"
+			|| actor.system.type == "shadow"
 		) {return  {msg, options}; }
 		const fadingState = actor.system.combat.fadingState;
 		if (fadingState >= 2) {
-			msg.push(`${combatant.name} is fading...`);
+			msg.push(`${combatant.name} is completely faded...`);
 			options.push({
 				optionTxt: "Completely Faded (Help in Spirit only)",
 				mandatory: true,

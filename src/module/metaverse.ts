@@ -608,8 +608,8 @@ type PresenceRollData = {
 	rollString: string,
 	regionName: string,
 	label: string,
-	atkText?: string,
-	safeText?: string,
+	atkText ?: string,
+	safeText ?: string,
 }
 
 declare global {

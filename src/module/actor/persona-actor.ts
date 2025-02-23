@@ -2241,7 +2241,6 @@ get triggers() : ModifierContainer[] {
       default:
          this.system satisfies never;
          return [];
-
    }
 }
 
