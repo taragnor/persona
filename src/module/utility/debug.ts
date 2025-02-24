@@ -2,9 +2,10 @@
 	static DEBUG = true;
 	static _DList: unknown[] = [];
 
-	static Debug(str :unknown ) {
+	static Debug(args :unknown[] ) {
 		if (this._DList == null)
 			this._DList= [];
+		for (const str of args)
 		this._DList.unshift(str);
 		// console.warn("Added to Debug");
 	}
@@ -23,13 +24,12 @@
 	}
 }
 
-
-	window.Debug = DebugTools.Debug.bind(DebugTools);
-	window.DLog = DebugTools.DLog.bind(DebugTools);
+window.Debug = DebugTools.Debug.bind(DebugTools);
+window.DLog = DebugTools.DLog.bind(DebugTools);
 
 
 declare global {
-	const Debug  : (item: any) => void;
+	const Debug  : (...item: unknown[]) => void;
 	interface Window {
 		Debug(str: any) : void;
 		DLog(num ?: unknown) : void;

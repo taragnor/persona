@@ -200,4 +200,30 @@ export class PersonaCalendar {
 
 }
 
+// **************************************************
+// ******   Calendar Date check debug code  ******* *
+// **************************************************
+
+Hooks.on("preUpdateSetting", function (updateItem, changes) {
+	if (updateItem.key == "smalltime.current-date" && changes.value != undefined) {
+		console.log(`SmallTime PreUpdate: ${updateItem.value}`);
+		Debug(updateItem, changes);
+	}
+	if (updateItem.key == "foundryvtt-simple-calendar.calendar-configuration" && changes.value != undefined) {
+		console.log(`SimpleCalendar Preupdate`);
+		Debug(updateItem, changes);
+	}
+
+})
+
+Hooks.on("updateSetting", function (updateItem, changes) {
+	if (updateItem.key == "smalltime.current-date" && changes.value != undefined) {
+		console.log(`SmallTime Update: ${updateItem.value}`);
+		Debug(updateItem, changes);
+	}
+	if (updateItem.key == "foundryvtt-simple-calendar.calendar-configuration" && changes.value != undefined) {
+		console.log(`SimpleCalendar Update:`);
+		Debug(updateItem, changes);
+	}
+});
 
