@@ -1,5 +1,5 @@
-import { PersonaItem } from "../item/persona-item.js";
 import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
+import { PersonaItem } from "../item/persona-item.js";
 import { CARD_TAG_LIST } from "../../config/card-tags.js";
 import { CardRoll } from "../../config/social-card-config.js"
 import { ArrayCorrector } from "../item/persona-item.js";
@@ -64,7 +64,7 @@ class WeaponDM extends foundry.abstract.TypeDataModel {
 	}
 }
 
-class Focus extends foundry.abstract.TypeDataModel {
+class FocusDM extends foundry.abstract.TypeDataModel {
 	get type() { return "focus" as const;}
 	static override defineSchema() {
 		const ret = {
@@ -174,10 +174,9 @@ class ConsumableSchema extends foundry.abstract.TypeDataModel {
 }
 
 
-class Talent extends foundry.abstract.TypeDataModel {
+class TalentDM extends foundry.abstract.TypeDataModel {
 	get type() { return "talent" as const;}
 	get _systemData() { return this as DataModelSystemData<this, PersonaItem>;}
-
 
 		override prepareBaseData() {
 			const d = this._systemData;
@@ -298,8 +297,8 @@ export const ITEMMODELS = {
 	item: InventoryItemSchema,
 	power: PowerSchema,
 	characterClass: CharacterClassDM,
-	focus: Focus,
-	talent: Talent,
+	focus: FocusDM,
+	talent: TalentDM,
 	weapon: WeaponDM,
 	universalModifier: UniversalModifier,
 	skillCard: SkillCardSchema,
