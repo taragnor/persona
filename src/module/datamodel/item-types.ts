@@ -1,3 +1,4 @@
+import { PersonaItem } from "../item/persona-item.js";
 import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
 import { CARD_TAG_LIST } from "../../config/card-tags.js";
 import { CardRoll } from "../../config/social-card-config.js"
@@ -172,9 +173,19 @@ class ConsumableSchema extends foundry.abstract.TypeDataModel {
 	}
 }
 
+// type Creator<X extends InstanceType<typeof foundry.abstract.TypeDataModel>  = X["constructor"]
+
+
 
 class Talent extends foundry.abstract.TypeDataModel {
 	get type() { return "talent" as const;}
+	get _systemData() { return this as DataModelSystemData<this, PersonaItem>;}
+
+
+		override prepareBaseData() {
+			const d = this._systemData;
+		}
+
 	static override defineSchema() {
 		const ret = {
 			desciption: new html(),
@@ -387,6 +398,9 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 			}),
 		};
 	}
+
+
+
 	static override migrateData(source: Record<string, any>) : typeof source {
 		const  data = source as SystemDataObjectFromDM<typeof CardChoiceDM>;
 		if (data.conditions == undefined) {

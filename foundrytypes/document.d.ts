@@ -28,7 +28,7 @@
 	 // prepareBaseData(): void;
 	 // prepareDerivedData(): void;
 	 testUserPermission(user: FoundryUser, permissionLevel: "NONE" | "LIMITED" | "OWNER" | "OBSERVER", options: {exact?: boolean} = {}): boolean;
-	 static async create<T extends typeof FoundryDocument>(this: T, data: CreationData<T>):Promise<InstanceType<T>>;
+	 static async create<T>(this: T, data: CreationData<T>):Promise<InstanceType<T>>;
 	 migrateSystemData(sourceMaybe?: unknown): unknown;
 	 async updateSource(updateData: Record<string, unknown>): Promise<unknown>;
 	 get folder(): Folder;
