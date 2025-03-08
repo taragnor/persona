@@ -184,7 +184,7 @@ class TalentDM extends foundry.abstract.TypeDataModel {
 
 	static override defineSchema() {
 		const ret = {
-			desciption: new html(),
+			description: new html(),
 			...effects(false),
 		}
 		return ret;
@@ -203,33 +203,6 @@ class InventoryItemSchema extends foundry.abstract.TypeDataModel {
 		return ret;
 	}
 }
-
-// class JobItemSchema extends foundry.abstract.TypeDataModel {
-// 	get type() { return "job" as const;}
-// 	static override defineSchema() {
-// 		const ret = {
-// 			baseRelationship: new txt(),
-// 			weeklyAvailability: weeklyAvailability(),
-// 			conditions: new arr(new obj<Precondition>()),
-// 			subtype: new txt({initial: "job", choices: SOCIAL_CARD_TYPES_LIST}),
-// 			keyskill: new sch({
-// 				primary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
-// 				secondary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
-// 			}),
-// 			dc: new num({integer: true, initial: 0}),
-// 			pay:new sch( {
-// 				high: new num({initial: 0, min: 0, integer:true, max: 20}),
-// 				low: new num({initial: 0, min: 0, integer:true, max: 20}),
-// 			}),
-// 			perk: new txt(),
-// 			critical: new txt(),
-// 			active: new bool({initial: false}),
-// 			bane: new txt(),
-// 			tokenSpends:new arr(new obj<TokenSpend>()),
-// 		}
-// 		return ret;
-// 	}
-// }
 
 class SocialCardSchema extends foundry.abstract.TypeDataModel {
 	get type() { return "socialCard" as const;}
@@ -282,7 +255,6 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 			boon: new txt(),
 			finale: new txt(),
 			globalModifiers: new arr(new embedded(ConditionalEffectDM)),
-			// globalModifiers: new arr( new obj<ConditionalEffect>()),
 			active: new bool({initial: false}),
 			tokenSpends:new arr(new obj<TokenSpend>()),
 			immediateEffects: new arr(new embedded(ConditionalEffectDM)),
