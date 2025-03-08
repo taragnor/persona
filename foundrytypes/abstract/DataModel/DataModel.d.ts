@@ -16,6 +16,6 @@ declare abstract class TypeDataModelClass extends DataModelClass {
 	prepareBaseData(): void;
 	prepareDerivedData(): void;
 	static defineSchema() : SchemaReturnObject;
-	abstract type: T;
+	abstract type: string;
 }
 

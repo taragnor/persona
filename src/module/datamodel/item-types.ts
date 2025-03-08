@@ -173,9 +173,6 @@ class ConsumableSchema extends foundry.abstract.TypeDataModel {
 	}
 }
 
-// type Creator<X extends InstanceType<typeof foundry.abstract.TypeDataModel>  = X["constructor"]
-
-
 
 class Talent extends foundry.abstract.TypeDataModel {
 	get type() { return "talent" as const;}
