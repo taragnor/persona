@@ -113,6 +113,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (unrolledInit.length > 0) {
 			await this.rollInitiative(unrolledInit);
 		}
+		// await PersonaCombat.execTrigger("on-combat-start", combatant.actor as ValidAttackers);
 		return await super.startCombat();
 	}
 

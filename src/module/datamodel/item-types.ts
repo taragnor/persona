@@ -176,11 +176,16 @@ class ConsumableSchema extends foundry.abstract.TypeDataModel {
 
 class TalentDM extends foundry.abstract.TypeDataModel {
 	get type() { return "talent" as const;}
-	get _systemData() { return this as DataModelSystemData<this, PersonaItem>;}
+	get _systemData() { return this as DataModelSystemData<typeof TalentDM>
+			;}
 
 		override prepareBaseData() {
 			const d = this._systemData;
+			const test = this._systemData.test!;
+			const test2 = this._systemData.description;
 		}
+
+	get test() {return 5 as const;}
 
 	static override defineSchema() {
 		const ret = {
@@ -338,7 +343,10 @@ class SocialCardEventDM extends foundry.abstract.DataModel {
 			conditions: new arr(new obj<Precondition>()),
 			choices: new arr(new embedded(CardChoiceDM)),
 		};
+
 	}
+
+	get x(): number {return 5}
 
 	static override migrateData(source: Record<string, any>) : typeof source {
 		const data = source as SystemDataObjectFromDM<typeof SocialCardEventDM>;
@@ -398,4 +406,5 @@ type CECon = SystemDataObjectFromDM<typeof CEContainer>;
 type CEDM = SystemDataObjectFromDM<typeof ConditionalEffectDM>;
 type CClass = SystemDataObjectFromDM<typeof CharacterClassDM>;
 type PowerSO= SystemDataObjectFromDM<typeof PowerSchema>;
+type SC = SystemDataObjectFromDM<typeof SkillCardSchema>;
 

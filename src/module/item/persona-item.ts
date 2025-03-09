@@ -875,8 +875,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	async addCardEvent(this: SocialCard) {
-
-
 		const newEv : SocialCard["system"]["events"][number] = {
 			sound: "",
 			text: "",

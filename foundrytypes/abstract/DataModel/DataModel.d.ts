@@ -1,5 +1,5 @@
 
-declare class DataModelClass  {
+declare abstract class DataModelClass  {
 	get parent(): DataModelClass | undefined;
 	constructor ();
 	static defineSchema() : SchemaReturnObject;

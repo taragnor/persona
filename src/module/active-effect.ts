@@ -93,7 +93,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		await this.setFlag("persona", "duration", duration);
 	}
 
-	get accessor() {
+	get accessor() : UniversalAEAccessor<this> {
 		return PersonaDB.getUniversalAEAccessor(this);
 	}
 

@@ -1,3 +1,4 @@
+import { TriggeredEffect } from "../triggered-effect.js";
 import { PC } from "../actor/persona-actor.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { PersonaSocial } from "../social/persona-social.js";
@@ -66,7 +67,7 @@ export class CombatHooks {
 					triggeringCharacter: comb.actor.accessor,
 				};
 				const token = comb.token as PToken;
-				await PersonaCombat
+				await TriggeredEffect
 					.onTrigger("on-combat-start", token.actor, situation)
 					.emptyCheck()
 					?.toMessage("Triggered Effect", token.actor);
