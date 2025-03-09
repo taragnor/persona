@@ -41,17 +41,6 @@ export type CardChoice = {
 	postEffects: { effects: ConditionalEffect[]}
 };
 
-// export type CardEvent = DeepNoArray<{
-// 	name: string,
-// 	img: string,
-// 	label: string,
-// 	text: string,
-// 	frequency: number, //defaults to 1
-// 	placement: EventPlacement,
-// 	conditions: Precondition[],
-// 	choices: CardChoice[]
-// }>;
-
 export type CardEvent = SocialCard["system"]["events"][number];
 
 export type EventPlacement = {

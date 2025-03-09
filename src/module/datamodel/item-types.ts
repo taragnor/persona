@@ -346,8 +346,6 @@ class SocialCardEventDM extends foundry.abstract.DataModel {
 
 	}
 
-	get x(): number {return 5}
-
 	static override migrateData(source: Record<string, any>) : typeof source {
 		const data = source as SystemDataObjectFromDM<typeof SocialCardEventDM>;
 		if (data.conditions == undefined) {
