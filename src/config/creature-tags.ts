@@ -37,6 +37,7 @@ export const CREATURE_TAG_LIST = [
 	"dragon",
 	"card-soldier",
 	"evil-spirit",
+	"rat",
 	...PERSON_TAG_LIST,
 	...PERSONALITY_TAG_LIST,
 	...TRAIT_TAG_LIST,

@@ -54,6 +54,14 @@ export const STATUS_EFFECT_LIST = [
 		id: "shock",
 		icon:  "icons/svg/lightning.svg",
 	}, {
+		id: "blind",
+		icon: "icons/svg/blind.svg",
+	},
+	{
+		id: "mouse",
+		icon: "icons/creatures/mammals/rodent-rat-green.webp",
+	},
+	{
 		id: "supercharged",
 		icon:  "icons/svg/aura.svg",
 	}, {
