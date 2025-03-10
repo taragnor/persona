@@ -173,6 +173,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 	async prepareForNextCombat() {
 		const actors = await this.clearFoes();
 		this.defeatedFoes = this.defeatedFoes.concat(actors);
+		for (const comb of this.combatants) {
+			await comb.update({"initiative": null});
+		}
 		await this.update({ "round": 0, });
 	}
 
@@ -1144,6 +1147,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		critBoostMod.add("Enemy Critical Resistance", -critResist);
 		const floor = situation.resisted ? -999 : 0;
 		const critBoost = Math.max(floor, critBoostMod.total(situation));
+		const rageOrBlind = attacker.actor.hasStatus("rage") || attacker.actor.hasStatus("blind");
 		// console.debug(`
 		// CritBoost ${critBoost}
 		// Power Diff: ${powerDiff}
@@ -1151,7 +1155,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		// 	`);
 		if (naturalAttackRoll == 1
 			|| total < defenseVal
-			|| (attacker.actor.hasStatus("rage") && naturalAttackRoll % 2 == 1)
+			|| (rageOrBlind && naturalAttackRoll % 2 == 1)
 		) {
 			situation.hit = false;
 			situation.criticalHit = false;
