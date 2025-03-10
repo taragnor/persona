@@ -174,7 +174,11 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		const actors = await this.clearFoes();
 		this.defeatedFoes = this.defeatedFoes.concat(actors);
 		for (const comb of this.combatants) {
-			await comb.update({"initiative": null});
+			try {
+				await comb.update({"initiative": null});
+			} catch(e) {
+				PersonaError.softFail(`Error resetting initiative for ${comb?.name}`);
+			}
 		}
 		await this.update({ "round": 0, });
 	}
