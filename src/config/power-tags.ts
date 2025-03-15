@@ -5,6 +5,7 @@ export const STATUS_POWER_TAGS  = [
 	"confusion",
 	"poison",
 	"rage",
+	"blind",
 ] as const;
 
 export const POWER_TYPE_TAGS = [

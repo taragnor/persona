@@ -2427,18 +2427,35 @@ getEffectFlag(flagId: string) : FlagData | undefined {
    };
 }
 
+hasRole( role: Shadow["system"]["role"]): boolean {
+	if (this.system.type != "shadow") return false;
+	return this.system.role == role
+	|| this.system.role2 == role;
+}
+
+isBossOrMiniBossType() : boolean {
+	if (this.system.type != "shadow") return false;
+	const bossRoles : Shadow["system"]["role"][] = [
+		"miniboss", "miniboss-lord" , "boss" , "boss-lord"
+	];
+	return bossRoles.some( role => this.hasRole(role));
+}
+
 async onStartCombatTurn(this: PC | Shadow): Promise<string[]> {
    console.log(`${this.name} on Start turn`);
    await this.removeStatus("blocking");
    let ret = [] as string[];
    for (const eff of this.effects) {
-      console.log(`${this.name} has Effect ${eff.name}`);
-      Debug(eff);
+      // console.log(`${this.name} has Effect ${eff.name}`);
       if ( await eff.onStartCombatTurn()) {
          ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
       }
    }
-   return ret;
+	if (this.isBossOrMiniBossType()) {
+		//TODO: experimental boss save
+		// ret.push(...await this.endTurnSaves());
+	}
+	return ret;
 }
 
 async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
@@ -2447,13 +2464,18 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
       const damage = burnStatus.potency;
       await this.modifyHP(-damage);
    }
+   let ret = await this.onEndCombatTurn();
+   return ret;
+}
+
+async endTurnSaves(this: ValidAttackers) : Promise<string[]> {
    let ret = [] as string[];
    for (const eff of this.effects) {
       if (await eff.onEndCombatTurn()) {
          ret.push(`Removed Condition ${eff.displayedName} at end of turn`);
       }
    }
-   return ret;
+	return ret;
 }
 
 getFlagState(flagName: string) : boolean {

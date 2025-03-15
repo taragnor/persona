@@ -16,8 +16,8 @@ export class CombatHooks {
 
 		Hooks.on("preUpdateCombat" , async (combat: PersonaCombat, _changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
 			const prevActor = combat?.combatant?.actor
-			if (prevActor && diffObject.direction && diffObject.direction > 0) {
-				await combat.endCombatantTurn(combat.combatant)
+			if (prevActor && (diffObject?.direction ?? 0) > 0) {
+				await combat.endTurn(combat.combatant)
 			}
 
 		});

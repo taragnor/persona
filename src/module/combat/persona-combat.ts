@@ -688,10 +688,9 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		}
 	}
 
-	async endCombatantTurn(combatant: Combatant<ValidAttackers>) {
+	async endTurn(combatant: Combatant<ValidAttackers>) {
 		const triggeringCharacter  = (combatant as Combatant<ValidAttackers>)?.token?.actor?.accessor;
 		const triggeringActor = combatant?.token?.actor;
-
 		if (triggeringActor && triggeringActor.system.type == "shadow") {
 			const situation : Situation = {
 				user: triggeringCharacter!,
@@ -700,7 +699,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			const bonusEnergy = 1 + triggeringActor.getBonuses("energy-per-turn").total(situation);
 			await (triggeringActor as Shadow).alterEnergy(bonusEnergy);
 		}
-
 		if (triggeringCharacter) {
 			for (const user of this.combatants) {
 				if (user.token.actor == undefined) {continue;}
@@ -717,12 +715,12 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		if (!game.user.isOwner) return;
 		const notes = await combatant.actor.onEndCombatTurn();
 		if (notes.length > 0) {
-		const messageData: MessageData = {
-			speaker: {alias: "End of Turn"},
-			content: notes.join("<br>"),
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
-		};
-		await ChatMessage.create(messageData, {});
+			const messageData: MessageData = {
+				speaker: {alias: "End of Turn"},
+				content: notes.join("<br>"),
+				style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			};
+			await ChatMessage.create(messageData, {});
 		}
 	}
 
