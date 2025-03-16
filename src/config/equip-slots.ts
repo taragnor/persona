@@ -3,7 +3,8 @@ export const EQUIP_SLOTS_LIST = [
 	"accessory",
 	"weapon_crystal",
 	"none",
-	"key-item"
+	"key-item",
+	"crafting",
 ] as const;
 
 

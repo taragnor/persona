@@ -130,6 +130,10 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	async usePower(event: Event) {
+		if (this.actor.isOwner) {
+			ui.notifications.warn("Can't use power, you don't own this actor.");
+			return;
+		}
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		const power = this.actor.powers.find(power => power.id == powerId);
 		if (!power) {
