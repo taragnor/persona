@@ -10,11 +10,12 @@ import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaError } from "./persona-error.js";
 import { StatusEffectId } from "../config/status-effects.js";
 
+
 export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 
 	declare statuses: Set<StatusEffectId>;
 
-	static async applyHook (_actor: PersonaActor, _change: AEChange, _current: any, _delta: any, _changes: Record<string, any> ) {
+	static async applyHook (_actor: PersonaActor, _change: Foundry.AEChange, _current: any, _delta: any, _changes: Record<string, any> ) {
 		//*changes object is a record of valeus taht may get changed by applying the AE;
 		// example: changes["system.hp"] = 25
 	}

@@ -70,6 +70,7 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 	}
 }
 
+
 export class ShadowSchema extends foundry.abstract.TypeDataModel {
 	get type() { return "shadow" as const;}
 	static override defineSchema() {
@@ -179,7 +180,24 @@ export const ACTORMODELS = {
 } as const;
 
 //testing the types, purely for debug purposes
-type testPC = SystemDataObjectFromDM<typeof PCSchema>;
-type testNPC = SystemDataObjectFromDM<typeof NPCSchema>;
-type testShadow =SystemDataObjectFromDM<typeof ShadowSchema>;
+type testPC = Foundry.SystemDataObjectFromDM<typeof PCSchema>;
+type testNPC = Foundry.SystemDataObjectFromDM<typeof NPCSchema>;
+type testShadow =Foundry.SystemDataObjectFromDM<typeof ShadowSchema>;
+
+
+type test = Foundry.TCSplit<typeof ACTORMODELS>;
+
+
+type AT = Foundry.FullActorType<typeof ACTORMODELS>;
+declare const x : AT;
+declare const y : Subtype<AT, "shadow">;
+
+
+
+// declare const y : InstanceType<typeof Actor<typeof ACTORMODELS>>;
+
+// declare class X extends Actor<typeof ACTORMODELS> {}
+
+// declare const z : X;
+
 

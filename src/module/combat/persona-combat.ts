@@ -63,6 +63,7 @@ declare global {
 type AttackRollType = "activation" | "standard" | "reflect" | number; //number is used for bonus attacks
 
 export class PersonaCombat extends Combat<PersonaActor> {
+
 	declare combatants: Collection<Combatant<ValidAttackers>>;
 	// engagedList: Combatant<PersonaActor>[][] = [];
 	_engagedList: EngagementList;
@@ -2474,7 +2475,7 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 		await ChatMessage.create(messageData, {});
 }
 
-	async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll: R}[], messageOptions: MessageOptions = {}): Promise<ChatMessage<R>> {
+	async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll: R}[], messageOptions: Foundry.MessageOptions = {}): Promise<ChatMessage<R>> {
 		const rollTransformer = function (roll: Roll) {
 			const total = roll.total;
 			if (total <= 0) return "last";

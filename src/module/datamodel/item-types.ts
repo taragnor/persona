@@ -347,7 +347,7 @@ class SocialCardEventDM extends foundry.abstract.DataModel {
 	}
 
 	static override migrateData(source: Record<string, any>) : typeof source {
-		const data = source as SystemDataObjectFromDM<typeof SocialCardEventDM>;
+		const data = source as Foundry.SystemDataObjectFromDM<typeof SocialCardEventDM>;
 		if (data.conditions == undefined) {
 			data.conditions = [];
 		}
@@ -376,7 +376,7 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 
 
 	static override migrateData(source: Record<string, any>) : typeof source {
-		const  data = source as SystemDataObjectFromDM<typeof CardChoiceDM>;
+		const  data = source as Foundry.SystemDataObjectFromDM<typeof CardChoiceDM>;
 		if (data.conditions == undefined) {
 			data.conditions = [];
 		}
@@ -393,16 +393,17 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 	}
 
 }
-type CardSChema = SystemDataObjectFromDM<typeof SocialCardSchema>;
 
-type CCEDM = SystemDataObjectFromDM<typeof SocialCardEventDM>;
+namespace Test{
+	type CardSChema = Foundry.SystemDataObjectFromDM<typeof SocialCardSchema>;
+	type CCEDM = Foundry.SystemDataObjectFromDM<typeof SocialCardEventDM>;
+	type CCDM = Foundry.SystemDataObjectFromDM<typeof CardChoiceDM>;
 
-type CCDM = SystemDataObjectFromDM<typeof CardChoiceDM>;
+	//testing the types, purely for debug purposes
+	type CECon = Foundry.SystemDataObjectFromDM<typeof CEContainer>;
+	type CEDM = Foundry.SystemDataObjectFromDM<typeof ConditionalEffectDM>;
+	type CClass = Foundry.SystemDataObjectFromDM<typeof CharacterClassDM>;
+	type PowerSO= Foundry.SystemDataObjectFromDM<typeof PowerSchema>;
+	type SC = Foundry.SystemDataObjectFromDM<typeof SkillCardSchema>;
 
-//testing the types, purely for debug purposes
-type CECon = SystemDataObjectFromDM<typeof CEContainer>;
-type CEDM = SystemDataObjectFromDM<typeof ConditionalEffectDM>;
-type CClass = SystemDataObjectFromDM<typeof CharacterClassDM>;
-type PowerSO= SystemDataObjectFromDM<typeof PowerSchema>;
-type SC = SystemDataObjectFromDM<typeof SkillCardSchema>;
-
+}

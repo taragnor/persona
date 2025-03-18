@@ -1,15 +1,17 @@
-// declare class Actor<T extends typeof foundry.abstract.DataModel> {
-// 	name: string;
-// 	id: string;
-// 	type: string;
-// 	system: SystemDataObject<ReturnType<T['defineSchema']>>;
+namespace Foundry {
+
+interface ActorConstructor extends DocumentConstructor {
+	new<const T extends SchemaDict = any, ItemType extends Item<any, InstanceType<this>, any> = Item<any, InstanceType<this>>, AEType extends ActiveEffect<InstanceType<this>, ItemType> = ActiveEffect<InstanceType<this>, ItemType>>
+		(...args: unknown[]): FullActorType<T, ItemType, AEType>;
+}
 
 
-// }
+type FullActorType<const T extends SchemaDict = any, ItemType extends Item<any, any, any> = Item<any, any>, AEType extends ActiveEffect<any, ItemType> = ActiveEffect<any, ItemType>> = Actor<T, ItemType, AEType>
+	//TODO: this si broken and needs fixing
+	// & UnionizeTCSplit<T>;
+// declare class Actor<const T extends SchemaDict = any, ItemType extends Item<any, this, any> = Item<any, this>, AEType extends ActiveEffect<this, ItemType> = ActiveEffect<this, ItemType>> extends FoundryDocument<ItemType | AEType>{
 
-
-// declare class Actor<T extends {[key:string]: foundry.abstract.DataModel}, U extends X<T>> {
-declare class Actor<const T extends SchemaDict = any, ItemType extends Item<any, this, any> = Item<any, this>, AEType extends ActiveEffect<this, ItemType> = ActiveEffect<this, ItemType>> extends FoundryDocument<ItemType | AEType>{
+interface Actor<const T extends SchemaDict = any, ItemType extends Item<any, this, any> = Item<any, this>, AEType extends ActiveEffect<this, ItemType> = ActiveEffect<this, ItemType>> extends Document<ItemType | AEType>{
 	type: keyof T;
 	system: TotalConvert<T>;
 	get items(): Collection<ItemType>;
@@ -69,3 +71,11 @@ type SchemaDict = Record<string, typeof foundry["abstract"]["DataModel"]>;
 
 
 
+//another failed attempt to get type narrowing from Actor.type
+type TCSplit<T extends SchemaDict> = {[K in keyof T]: {system: SystemDataObjectFromDM<T[K]>, type: K}};
+
+type UnionizeTCSplit<T extends SchemaDict> = UnionizeRecords<TCSplit<T>>;
+}
+
+declare let Actor: Foundry.ActorConstructor;
+type Actor<const T extends SchemaDict = any, ItemType extends Item<any, this, any> = Item<any, this>, AEType extends ActiveEffect<this, ItemType> = ActiveEffect<this, ItemType>> = Foundry.Actor<T, ItemType, AEType>;

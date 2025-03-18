@@ -42,6 +42,8 @@ declare global {
 
 export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE> {
 
+	declare parent: PersonaActor | undefined;
+
 	cache: {
 		effectsNull: ConditionalEffect[] | undefined;
 		effectsMap: WeakMap<ValidAttackers, ConditionalEffect[]>;
@@ -58,7 +60,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	};
 
 	constructor(...args: any[]) {
-		//@ts-ignore
 		super (...args)
 		this.clearCache();
 	}
@@ -221,12 +222,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "item": {
 				const list= this.system.itemTags.slice();
 				const subtype = this.system.slot;
-				if (subtype != "none") {
-					if (!list.includes(subtype))
-						list.push(subtype);
-				} else {
-					if (!list.includes("non-equippable"))
+				switch (subtype) {
+					case "body":
+					case "accessory":
+					case "weapon_crystal":
+					case "key-item":
+						if (!list.includes(subtype))
+							list.push(subtype);
+						break;
+					case "none":
+					case "crafting":
 						list.push("non-equippable");
+						break;
+					default:
+						subtype satisfies never;
 				}
 				return list;
 			}

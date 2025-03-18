@@ -647,7 +647,7 @@ export class CombatResult  {
 				case "display-message":
 					if (!eff.newChatMsg) break;
 					const html = eff.msg;
-					const speaker :ChatSpeakerObject = {
+					const speaker : Foundry.ChatSpeakerObject = {
 						alias: "System"
 					};
 					await ChatMessage.create( {

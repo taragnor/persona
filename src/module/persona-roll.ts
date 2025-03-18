@@ -92,7 +92,7 @@ export class RollBundle {
 	async toModifiedMessage() : Promise<ChatMessage> {
 		const html = await this.getHTML();
 		const actorAcc = (this.modList as ResolvedMods).actor;
-		let speaker: ChatSpeakerObject;
+		let speaker: Foundry.ChatSpeakerObject;
 		if (actorAcc) {
 			const actor  = PersonaDB.findActor(actorAcc);
 			let token : PToken | undefined;

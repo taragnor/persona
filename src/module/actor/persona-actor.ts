@@ -64,7 +64,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
    };
 
    constructor(...arr: any[]) {
-      //@ts-ignore
       super(...arr);
       this.cache = {
          tarot: undefined,
@@ -946,7 +945,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
    }
 
 		/**error catch wrapper for this funciton as Monks's statuses was throwing here and may have been breaking hooks when it failed.*/
-	override async toggleStatusEffect(statusId: StatusEffectId, options?: ToggleStatusOptions) {
+	override async toggleStatusEffect(statusId: StatusEffectId, options?: Foundry.ToggleStatusOptions) {
 		try {
 			const ret = super.toggleStatusEffect(statusId, options);
 			return ret;
@@ -2446,7 +2445,6 @@ async onStartCombatTurn(this: PC | Shadow): Promise<string[]> {
    await this.removeStatus("blocking");
    let ret = [] as string[];
    for (const eff of this.effects) {
-      // console.log(`${this.name} has Effect ${eff.name}`);
       if ( await eff.onStartCombatTurn()) {
          ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
       }

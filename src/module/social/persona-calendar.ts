@@ -104,7 +104,7 @@ export class PersonaCalendar {
 		${doomsdayMsg}
 		</div>
 			`;
-		const speaker: ChatSpeakerObject = {
+		const speaker: Foundry.ChatSpeakerObject = {
 			alias: "Calendar"
 		};
 		const msgData : MessageData = {
