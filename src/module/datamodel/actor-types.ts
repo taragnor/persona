@@ -200,4 +200,3 @@ declare const y : Subtype<AT, "shadow">;
 
 // declare const z : X;
 
-

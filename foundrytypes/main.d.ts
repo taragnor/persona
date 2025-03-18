@@ -45,7 +45,7 @@ declare interface Game {
 	system: FoundrySystem;
 	user: User;
 	scenes: SceneCollection;
-	combat?: Combat;
+	combat?: Foundry.Combat;
 	settings: ClientSettings;
 	socket: Socket;
 	messages: Collection<ChatMessage>;
