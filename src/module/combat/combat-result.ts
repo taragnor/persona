@@ -592,10 +592,12 @@ export class CombatResult  {
 			}
 			let token: PToken | undefined;
 			for (const change of changes) {
-				await this.applyChange(change);
 				if (change.actor.token)
 					token = PersonaDB.findToken(change.actor.token) as PToken;
-				if (token && token.actor && !token.actor.isAlive()) {
+				const priorHP = token ?  token.actor.hp : 0;
+				await this.applyChange(change);
+				if (!token) continue;
+				if (token.actor && !token.actor.isAlive() && priorHP > 0) {
 					const attacker = PersonaDB.findToken(result.attacker);
 					await this.#onDefeatOpponent(token, attacker);
 				}

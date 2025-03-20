@@ -241,11 +241,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	async ensureSheetOpen(combatant: Combatant<ValidAttackers>) {
 		if (!combatant.actor) return;
 		for (const comb of this.combatants) {
-			if (comb != combatant && comb.actor && comb.actor.sheet._state > 0)
+			if (comb != combatant && comb.actor && comb.actor.sheet._state >= 0)
 				comb.actor.sheet.close();
 		}
 		if (combatant.actor.sheet._state <= 0) {
-			combatant.actor.sheet.render(true);
+			await combatant.actor.sheet.render(true);
 		}
 	}
 
@@ -260,7 +260,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (await this.checkEndCombat() == true) {
 			return;
 		}
-		if (!combatant.actor.hasPlayerOwner) {
+		if (!combatant.actor?.hasPlayerOwner) {
 			await this.ensureSheetOpen(combatant);
 		}
 		await this.execStartingTrigger(combatant);
@@ -726,7 +726,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const actor = combatant.actor;
 		if (!actor) return;
 		if (!game.user.isOwner) return;
-		const notes = await combatant.actor.onEndCombatTurn();
+		const notes = await combatant.actor?.onEndCombatTurn() ?? [];
 		if (notes.length > 0) {
 			const messageData: MessageData = {
 				speaker: {alias: "End of Turn"},
@@ -1847,7 +1847,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const targets = this.validCombatants(token).filter( x => {
 			const actor = x.actor;
 			if (!actor || !actor.isAlive())  return false;
-			return (x.actor.getAllegiance() != attackerType)
+			return (x.actor && x.actor.getAllegiance() != attackerType)
 		});
 		return targets.map( x=> x.token as PToken);
 
@@ -2454,9 +2454,9 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 			const situation = {
 				naturalRoll: activationRoll,
 				activationRoll: activationRoll != undefined,
-				user: ally.actor.accessor
+				user: actor.accessor
 			};
-			if (!actor.teamworkMove.testTeamworkPrereqs(situation, ally.actor)) return [];
+			if (!actor.teamworkMove.testTeamworkPrereqs(situation, actor)) return [];
 			const targets = combat.getValidTargetsFor(actor.teamworkMove, combatant as Combatant<ValidAttackers>, situation);
 			if (targets.length == 0) return [];
 			return [ally];
