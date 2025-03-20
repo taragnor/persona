@@ -1670,8 +1670,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	canPayActivationCost_pc(this: PC | NPCAlly, usable: UsableAndCard, _outputReason: boolean) : boolean {
 		switch (usable.system.type) {
 			case "power": {
-				if (!usable.system.tags.includes("basicatk")) {
-					return false;
+				if (usable.system.tags.includes("basicatk")) {
+					return true;
 				}
 				switch (usable.system.subtype) {
 					case "weapon":

@@ -141,7 +141,7 @@ export const STATUS_EFFECT_LIST = [
 	},
 	{
 		id: "tired",
-		icon:   "icons/svg/unconscious.svg",
+		icon:   "icons/svg/down.svg",
 		tags: ["downtime"],
 	},
 	{
