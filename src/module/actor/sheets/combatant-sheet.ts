@@ -46,6 +46,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) {
+		Helpers.ownerCheck(this.actor);
 		//@ts-ignore
 		const item: PersonaItem = await Item.implementation.fromDropData(itemD);
 		console.debug(`${item.system.type} dropped on sheet of ${this.actor}`);
@@ -130,10 +131,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	async usePower(event: Event) {
-		if (this.actor.isOwner) {
-			ui.notifications.warn("Can't use power, you don't own this actor.");
-			return;
-		}
+		Helpers.ownerCheck(this.actor);
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		const power = this.actor.powers.find(power => power.id == powerId);
 		if (!power) {
@@ -147,6 +145,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async #useItemOrPower(power : UsableAndCard) {
 		Helpers.pauseCheck();
+		Helpers.ownerCheck(this.actor);
 		const actor = this.actor;
 		let token : PToken | undefined;
 		if (actor.token) {

@@ -6,6 +6,16 @@ export class Helpers {
 		});
 	}
 
+	/** returns true or throws an error*/
+	static ownerCheck(doc: FoundryDocument<any>): true {
+		if (doc.isOwner) {
+			return true;
+		}
+		const msg = `Can't perform this action as you are not the owner of ${doc.name}`;
+		ui.notifications.warn(msg);
+		throw new Error(msg);
+	}
+
 	/** errors if the game is paused and the user isn't a GM, else returns true */
 	static pauseCheck(errorMsg?: string): true {
 		if (game.paused && !game.user.isGM) {
