@@ -2107,9 +2107,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
    }
 
    async fullHeal() {
-      if (this.system.type == "pc" || this.system.type == "shadow" || this.system.type == "npcAlly") {
+		if (this.isValidCombatant()) {
          this.hp = this.mhp;
-         if (this.system.type == "pc") {
+         if (this.system.type == "pc" || this.system.type == "npcAlly") {
             this.update({"system.combat.mp.value" : this.mmp});
          }
          (this as PC | Shadow).refreshHpTracker();

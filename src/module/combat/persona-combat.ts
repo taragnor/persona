@@ -177,7 +177,22 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		this.defeatedFoes = this.defeatedFoes.concat(actors);
 		for (const comb of this.combatants) {
 			try {
-				await comb.update({"initiative": null});
+				const actorType = comb.actor?.system?.type;
+
+				switch (actorType) {
+					case "pc":
+					case"npcAlly":
+						await comb.update({"initiative": null});
+						break;
+					case "shadow":
+						break;
+					case undefined:
+						break;
+					default:
+						actorType satisfies never;
+						PersonaError.softFail(`${actorType} is an invalid Actor type for a combatant`);
+						break;
+				}
 			} catch(e) {
 				PersonaError.softFail(`Error resetting initiative for ${comb?.name}`);
 			}
@@ -1108,7 +1123,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const roll = new RollBundle("Temp", r, attacker.actor.system.type == "pc", attackbonus, situation);
 		const naturalAttackRoll = roll.dice[0].total;
 		situation.naturalRoll = naturalAttackRoll;
-		const defenseVal = def != "none" ? target.actor.getDefense(def).total(situation): 0;
+			const defenseVal = def != "none" ? target.actor.getDefense(def).total(situation): 0;
 		const validDefModifiers = def != "none" ? target.actor.getDefense(def).list(situation): [];
 		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
 		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.system.defense} ${defenseStr}`;
