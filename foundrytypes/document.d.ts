@@ -33,7 +33,7 @@ namespace Foundry {
 		setFlag(scope:string, key:string, value: any): Promise<void>;
 		unsetFlag(scope:string, key:string): Promise<void>;
 		prepareEmbeddedDocuments(): void;
-		testUserPermission(user: FoundryUser, permissionLevel: "NONE" | "LIMITED" | "OWNER" | "OBSERVER", options: {exact?: boolean} = {}): boolean;
+		testUserPermission(user: FoundryUser, permissionLevel: keyof DOCUMENT_OWNERSHIP_LEVELS, options: {exact?: boolean} = {}): boolean;
 		migrateSystemData(sourceMaybe?: unknown): unknown;
 		updateSource(updateData: Record<string, unknown>): Promise<unknown>;
 		get folder(): Folder;
