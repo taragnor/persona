@@ -2055,21 +2055,21 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return base == "PCs" ? "Shadows" : "PCs";
 	}
 
-	async expendConsumable(item: UsableAndCard) {
-		if (item.system.type == "power") {
-			PersonaError.softFail("Can't expend a power, this function requires an item");
-			return;
-		}
-		const amount = item.system.amount;
-		if (amount <= 1) {
-			await item.delete();
-			return;
-		}
-		if (amount > 1) {
-			await item.update({"system.amount": amount-1});
-			return;
-		}
+async expendConsumable(item: UsableAndCard) {
+	if (item.system.type == "power") {
+		PersonaError.softFail("Can't expend a power, this function requires an item");
+		return;
 	}
+	const amount = item.system.amount;
+	if (amount <= 1) {
+		await item.delete();
+		return;
+	}
+	if (amount > 1) {
+		await item.update({"system.amount": amount-1});
+		return;
+	}
+}
 
 roomModifiers() : ModifierContainer[] {
 	return (game.combats.contents as PersonaCombat[])
