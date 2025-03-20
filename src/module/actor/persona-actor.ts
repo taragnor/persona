@@ -53,6 +53,7 @@ import { PersonaItem } from "../item/persona-item.js"
 import { PersonaAE } from "../active-effect.js";
 import { StatusDuration } from "../active-effect.js";
 
+
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
    declare statuses: Set<StatusEffectId>;
    declare sheet: PersonaActorSheetBase;
@@ -94,7 +95,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
          }
          await ally.update({ "system.combat.isNavigator": false});
       }
-      // await this.update({ "system.combat.isNavigator": true});
       PersonaDB.clearCache();
       if (PersonaDB.getNavigator() != this) {
          PersonaError.softFail("Navigator was set improperly");
@@ -279,7 +279,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
          }
          default:
             this.system satisfies never;
-            throw new PersonaError(`Unepxected Type : ${this.type}`);
+            throw new PersonaError(`Unepxected Type`);
       }
    }
 
@@ -709,26 +709,26 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       return pcPowers;
    }
 
-   get bonusPowers() : Power[] {
-      switch (this.type) {
-         case "npc": case "tarot": 
-            return [];
-         case "shadow":
-         case "pc":
-         case "npcAlly":
-            const bonusPowers : Power[] =
-               (this as PC | Shadow).mainModifiers({omitPowers:true})
-               .filter(x=> x.grantsPowers())
-               .flatMap(x=> x.getGrantedPowers(this as PC )) ;
-            return removeDuplicates(bonusPowers);
-         default:
-            this.type satisfies never;
-            return [];
-      }
-   }
+	get bonusPowers() : Power[] {
+		switch (this.system.type) {
+			case "npc": case "tarot":
+				return [];
+			case "shadow":
+			case "pc":
+			case "npcAlly":
+				const bonusPowers : Power[] =
+					this.mainModifiers({omitPowers:true})
+					.filter(x=> x.grantsPowers())
+					.flatMap(x=> x.getGrantedPowers(this as PC )) ;
+				return removeDuplicates(bonusPowers);
+			default:
+				this.system satisfies never;
+				return [];
+		}
+	}
 
    get basicPowers() : Power [] {
-      switch (this.type) {
+      switch (this.system.type) {
          case "npc": case "tarot":
             return [];
          case "shadow":
@@ -743,7 +743,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
             arr.push (...extraSkills);
             return arr;
          default:
-            this.type satisfies never;
+            this.system satisfies never;
             return [];
       }
    }
@@ -2847,7 +2847,7 @@ Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) =
       }
       default:
          actor.system satisfies never;
-         throw new PersonaError(`Unknown Type ${actor.type}`);
+         throw new PersonaError(`Unknown Type`);
    }
 });
 

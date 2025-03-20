@@ -1,3 +1,4 @@
+import { SocialCard } from "../persona-item.js";
 import { REALDAMAGETYPES } from "../../../config/damage-types.js";
 import { VARIABLE_ACTIONS } from "../../../config/consequence-types.js";
 import { CARD_TAGS } from "../../../config/card-tags.js";
@@ -48,11 +49,11 @@ import { STUDENT_SKILLS } from "../../../config/student-skills.js"
 
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
-	declare item: PowerContainer;
+	declare item: PowerContainer | SocialCard;
 	static _powerStuffBase?: Record<string, any>;
 
 	override async getData() {
-		if (this.item.isOwner && this.item.type != "socialCard") {
+		if (this.item.isOwner && this.item.system.type != "socialCard") {
 			await (this.item as PowerContainer).sanitizeEffectsData();//required becuase foundry input hates arrays;
 		}
 		const data = await super.getData();

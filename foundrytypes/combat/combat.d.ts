@@ -1,14 +1,14 @@
 namespace Foundry {
 
 	interface CombatConstructor extends DocumentConstructor {
-		new<T extends Actor<any, any> = Actor<any, any>>(...args: unknown[]): Combat<T>;
+		new<T extends Actor, CType extends Combatant<T> = Combatant<T>>(...args: unknown[]): Combat<T>;
 
 		defineSchema(): SchemaReturnObject;
 
 	}
 
 	// declare class Combat<T extends Actor<any, any> = Actor<any, any>> extends FoundryDocument {
-	interface Combat<T extends Actor<any, any> = Actor<any, any>> extends Document<never> {
+	interface Combat<T extends Actor, CType extends Combatant<T> = Combatant<T>> extends Document<never> {
 		active: boolean;
 		round: number;
 		turn: number;
@@ -21,7 +21,7 @@ namespace Foundry {
 		}
 		started: boolean;
 		combatants: Collection<Combatant<T>>;
-		turns: Combatant<T>[];
+		turns: CType[];
 		getCombatantByToken(tokenIdOrToken: string | TokenDocument<T>) : Combatant<T>;
 		getCombatantByActor(actorIdOrActor: string | Actor<T>): Combatant<T>;
 		startCombat(): Promise<this>;
@@ -30,10 +30,10 @@ namespace Foundry {
 		nextTurn(): Promise<this>;
 		previousTurn(): Promise<this>;
 		setInitiative(combatantId: string, number: number): Promise<void>;
-		async rollInitiative(ids: string[], options: Partial<CombatOptions> ={}): Promise<this>;
-		async rollAll(options?: CombatOptions): Promise<this>;
+		rollInitiative(ids: string[], options: Partial<CombatOptions> ={}): Promise<this>;
+		rollAll(options?: CombatOptions): Promise<this>;
 		/** call dialog to end combat */
-		async endCombat(): Promise<boolean>;
+		endCombat(): Promise<boolean>;
 		/**
 		 * Update active effect durations for all actors present in this Combat encounter.
 		 */
@@ -43,7 +43,7 @@ namespace Foundry {
 		 */
 		setupTurns: Combatant<T>[];
 		/** current combatant whose turn it is */
-		get combatant(): Option<Combatant<T>>
+		combatant: undefined | Combatant<T>;
 
 	}
 

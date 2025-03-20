@@ -62,9 +62,10 @@ declare global {
 
 type AttackRollType = "activation" | "standard" | "reflect" | number; //number is used for bonus attacks
 
-export class PersonaCombat extends Combat<PersonaActor> {
 
-	declare combatants: Collection<Combatant<ValidAttackers>>;
+export class PersonaCombat extends Combat<ValidAttackers> {
+
+	// declare combatants: Collection<Combatant<ValidAttackers>>;
 	// engagedList: Combatant<PersonaActor>[][] = [];
 	_engagedList: EngagementList;
 	static customAtkBonus: number;
@@ -220,10 +221,6 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 			return true;
 		}) as Combatant<ValidAttackers>[];
-	}
-
-	override get combatant() : Option<Combatant<ValidAttackers>>{
-		return super.combatant as Option<Combatant<ValidAttackers>>;
 	}
 
 	async ensureSheetOpen(combatant: Combatant<ValidAttackers>) {
@@ -1091,7 +1088,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
 			attacker: attacker.actor.accessor,
 			activationRoll: rollType == "activation",
-			activeCombat:combat ? !!combat.combatants.find( x=> x.actor?.type != attacker.actor.type): false ,
+			activeCombat:combat ? !!combat.combatants.find( x=> x.actor?.system.type != attacker.actor.system.type): false ,
 		};
 		const cardReturn = await this.processSkillCard(attacker, usableOrCard, target, situation);
 		if (cardReturn) return cardReturn;
@@ -1107,7 +1104,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 			}
 		}
 		const attackbonus = this.getAttackBonus(attacker.actor, power, target, modifiers);
-		const cssClass=  (target.actor.type != "pc") ? "gm-only" : "";
+		const cssClass=  (target.actor.system.type != "pc") ? "gm-only" : "";
 		const roll = new RollBundle("Temp", r, attacker.actor.system.type == "pc", attackbonus, situation);
 		const naturalAttackRoll = roll.dice[0].total;
 		situation.naturalRoll = naturalAttackRoll;
@@ -2039,7 +2036,7 @@ export class PersonaCombat extends Combat<PersonaActor> {
 		return EngagementChecker.isEngagedBy(t1, t2, this);
 	}
 
-	getCombatantFromTokenAcc(acc: UniversalTokenAccessor<PToken>): Combatant<PersonaActor> {
+	getCombatantFromTokenAcc(acc: UniversalTokenAccessor<PToken>): Combatant<ValidAttackers> {
 		const token = PersonaDB.findToken(acc);
 		const combatant = this.combatants.find( x=> x?.actor?.id == token.actor.id);
 		if (!combatant) {
@@ -2395,7 +2392,7 @@ async showRoomEffects() {
 
 		// Iterate over Combatants, performing an initiative roll for each
 		const updates = [];
-		const rolls :{ combatant: Combatant, roll: Roll}[]= [];
+		const rolls :{ combatant: Combatant<any>, roll: Roll}[]= [];
 		for ( let [_i, id] of ids.entries() ) {
 
 			// Get Combatant data (non-strictly)

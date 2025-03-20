@@ -61,6 +61,6 @@ namespace Foundry {
 
 }
 
-type FoundryDocument<Embedded extends (FoundryDocument | never) = never> = Foundry.Document<Embedded>;
+type FoundryDocument<Embedded extends (FoundryDocument | never) = any> = Foundry.Document<Embedded>;
 	const Document: Foundry.DocumentConstructor;
 

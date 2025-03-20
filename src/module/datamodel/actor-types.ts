@@ -188,9 +188,9 @@ type testShadow =Foundry.SystemDataObjectFromDM<typeof ShadowSchema>;
 type test = Foundry.TCSplit<typeof ACTORMODELS>;
 
 
-type AT = Foundry.FullActorType<typeof ACTORMODELS>;
-declare const x : AT;
-declare const y : Subtype<AT, "shadow">;
+// type AT = Foundry.FullActorType<typeof ACTORMODELS>;
+// declare const x : AT;
+// declare const y : Subtype<AT, "shadow">;
 
 
 

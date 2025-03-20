@@ -1,5 +1,4 @@
 import { PersonaCombat } from "./persona-combat.js";
-import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaError } from "../persona-error.js";
 
 export class EngagementList {
@@ -29,7 +28,7 @@ export class EngagementList {
 		await this.storeData(data);
 	}
 
-	getCombatant(id: CombatantId) : Combatant<PersonaActor> {
+	getCombatant(id: CombatantId) : NonNullable<PersonaCombat["combatant"]> {
 		const comb =  this.parent.combatants.get(id);
 		if (!comb) {
 			throw new PersonaError(`Can't find combanat for id ${id}`);
@@ -41,7 +40,7 @@ export class EngagementList {
 		await this.parent.setFlag("persona", "engageList", data);
 	}
 
-	findEngagement( combatant: Combatant<PersonaActor>) : CombatantId[] {
+	findEngagement( combatant: NonNullable<PersonaCombat["combatant"]>) : CombatantId[] {
 		const engagement = this.data.find( x=> x.includes(combatant.id));
 		if (!engagement)  {
 			return [combatant.id];
@@ -49,7 +48,7 @@ export class EngagementList {
 		return engagement;
 	}
 
-	async addToEngagedList(combatant: Combatant<PersonaActor>) : Promise<void> {
+	async addToEngagedList(combatant: NonNullable<PersonaCombat["combatant"]>) : Promise<void> {
 		const engageBattle = this.data.find( x=> x.includes(combatant.id));
 		if (!engageBattle)  {
 			const x = this.data;
@@ -58,7 +57,7 @@ export class EngagementList {
 		}
 	}
 
-	async setEngageWith(combatant1: Combatant<PersonaActor>, combatant2: Combatant<PersonaActor>) {
+	async setEngageWith(combatant1: NonNullable<PersonaCombat["combatant"]>, combatant2: NonNullable<PersonaCombat["combatant"]>) {
 		const engagement = this.findEngagement(combatant2);
 		if (!engagement.includes(combatant1.id)) {
 			engagement.push(combatant1.id);
@@ -68,7 +67,7 @@ export class EngagementList {
 		}
 	}
 
-	async breakOffEngagement(combatant: Combatant<PersonaActor>) {
+	async breakOffEngagement(combatant: NonNullable<PersonaCombat["combatant"]>) {
 		const engagement = this.findEngagement(combatant);
 		if (engagement.length > 1) {
 			engagement.splice(engagement.indexOf( combatant.id ), 1);

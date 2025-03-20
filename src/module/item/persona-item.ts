@@ -294,9 +294,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	powerCostString(this: Power) : string {
-		if (!this.parent || this.parent.type == "pc")
+		if (!this.parent || this.parent.system.type == "pc")
 			return this.powerCostString_PC();
-		if (this.parent.type == "shadow")
+		if (this.parent.system.type == "shadow")
 			return this.powerCostString_Shadow();
 		else return "";
 	}
