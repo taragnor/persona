@@ -62,7 +62,11 @@
 		<div class="mp">
 			<label> MP </label>
 			<span>
+				{{#if (isGM)}}
 				<input class="short" type="number" name="system.combat.mp.value" value="{{actor.system.combat.mp.value}}">
+				{{else}}
+				{{actor.system.combat.mp.value}}
+				{{/if}}
 			</span>
 			<span>
 				/ {{actor.mmp}}
