@@ -14,14 +14,14 @@ namespace Foundry {
 		sceneId: string;
 		tokenId: string;
 		img: string;
-		get actor(): T  | undefined;
-		get combat(): Combat<T>;
-		get isDefeated(): boolean;
-		get isEmbedded(): boolean;
-		get isNPC(): boolean;
-		get token(): TokenDocument<T>;
+		actor: T  | undefined;
+		combat: Combat<T>;
+		isDefeated(): boolean;
+		isEmbedded(): boolean;
+		isNPC: boolean;
+		token: TokenDocument<T>;
 		getInitiativeRoll(formula: string | null): Roll;
-		get initiative(): number | undefined | null;
+		initiative: number | undefined | null;
 	}
 }
 

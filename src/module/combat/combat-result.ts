@@ -1,3 +1,4 @@
+import { TriggeredEffect } from "../triggered-effect.js";
 import { RealDamageType } from "../../config/damage-types.js";
 import { UsableAndCard } from "../item/persona-item.js";
 import { NPCAlly } from "../actor/persona-actor.js";
@@ -615,16 +616,22 @@ export class CombatResult  {
 				}
 			}
 		}
-		const actingActor = attacker?.actor;
-		if (actingActor) {
+		const attackerActor = attacker?.actor;
+		if (attackerActor) {
 			const situation: Situation = {
 				trigger: "on-kill-target",
-				triggeringCharacter: actingActor.accessor,
+				triggeringCharacter: attackerActor.accessor,
+				attacker: attacker.actor.accessor,
 				target: target.actor.accessor,
-				user: actingActor.accessor,
+				user: attackerActor.accessor,
 			}
-			//TODO: make this work for all characters triggers Reaper and others(like justice heal)
-			PersonaCombat.execTrigger("on-kill-target", actingActor, situation);
+			const combat = game.combat as PersonaCombat;
+			if (combat)
+				for (const comb of combat.combatants) {
+					if (!comb.actor) continue;
+					situation.user = comb.actor.accessor;
+					await TriggeredEffect.execCombatTrigger("on-kill-target", comb.actor, situation);
+				}
 		}
 	}
 
