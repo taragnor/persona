@@ -47,11 +47,11 @@ declare interface CONFIG {
 	}
 }
 
-type StatusEffectObject = {
+interface StatusEffectObject {
 	id: string,
 	name: string,
 	icon: string,
 	changes ?: readonly AEChange[],
 }
 
-type WeatherEffectData = unknown;
+interface WeatherEffectData {}

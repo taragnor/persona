@@ -1,3 +1,4 @@
+import { statusMap } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
 import { PC } from "./actor/persona-actor.js";
 import { Shadow } from "./actor/persona-actor.js";
@@ -47,6 +48,29 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 			} as any;
 		}
 		return duration;
+	}
+
+	statusHasTag(tag: StatusEffectObject["tags"][number]): boolean {
+		for (const status of this.statuses) {
+			const stData = statusMap.get(status);
+			if (!stData) continue;
+			const tags = stData.tags;
+			if (tags.includes(tag))
+				return true;
+		}
+		return false;
+	}
+
+	get isDistracting() : boolean {
+		return this.statusHasTag("distracting");
+	}
+
+	get isIncapacitating() : boolean {
+		return this.statusHasTag("incapacitating");
+	}
+
+	get isBaneful() :boolean {
+		return this.statusHasTag("baneful");
 	}
 
 	async setPotency(potency: number) : Promise<void> {
