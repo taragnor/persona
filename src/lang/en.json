@@ -322,6 +322,7 @@
 	"persona.power.tag.almighty": "Almighty",
 	"persona.power.tag.buff": "Enhancing",
 	"persona.power.tag.debuff": "Debilitating",
+	"persona.power.tag.ailment": "Ailment",
 	"persona.power.tag.weapon": "Weapon",
 	"persona.power.tag.gun": "Gun",
 	"persona.power.tag.healing": "Healing",
@@ -339,6 +340,7 @@
 	"persona.power.tag.amped": "Amped",
 	"persona.power.tag.rage": "Rage",
 	"persona.power.tag.blind": "Blind",
+	"persona.power.tag.Mouse": "Mouse",
 	"persona.power.tag.opener": "Opener",
 	"persona.power.tag.navigator": "Navigator",
 	"persona.power.tag.downtime": "Downtime",
@@ -736,6 +738,7 @@
 	"persona.specialRoomMods.bonus-on-6": "+5 treasure on 6 search roll",
 	"persona.specialRoomMods.fixed-treasure": "Treasure isn't random",
 	"persona.specialRoomMods.treasure-refresh": "Treasure refreshes on each visit",
+	"persona.specialRoomMods.no-tension-increase": "No tension increase after search",
 
 	"persona.secretChoices.found": "Found",
 	"persona.secretChoices.none": "None",

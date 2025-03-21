@@ -31,7 +31,6 @@ export class SearchMenu {
 		isHazard: {initial: false, label: "Hazard in Room"},
 		isSecret: {initial: false, label: "Secret in Room"},
 		incTension: {initial: 1, label: "Increase Tension By"},
-		rollTension: {initial: true, label: "Roll Tension Pool after search"},
 		hazardOnTwo: {initial: false, label: "Hazard on 2s"},
 		cycle: {initial: true, label: "allow multiple searches in a row"},
 		treasureFindBonus: {initial: 0, label: "Treasure Find Bonus"},
@@ -234,7 +233,7 @@ export class SearchMenu {
 		while (inc--) {
 			await TensionPool.inc();
 		}
-		if (!options.rollTension) return msg;
+		// if (!options.rollTension) return msg;
 		const isEncounter = await region.presenceCheck();
 		if (isEncounter) {
 			this.suspend(true);
@@ -272,7 +271,7 @@ export class SearchMenu {
 		}
 
 	static async tensionPool(_guards: number, options: SearchOptions<typeof SearchMenu["template"]>) : Promise<TensionPoolResult> {
-		if (!options.rollTension) return TensionPool.nullResult();
+		// if (!options.rollTension) return TensionPool.nullResult();
 		const tensionRoll =  await TensionPool.roll();
 		let inc = options.incTension;
 		while (inc--) {

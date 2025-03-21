@@ -1,3 +1,4 @@
+import { Shadow } from "../actor/persona-actor.js";
 import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
 import { PCAndNPCAllyCombatStats } from "../../config/actor-parts.js";
 import { PCSpecificStuff } from "../../config/actor-parts.js";
@@ -93,7 +94,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 	}
 
 	static override migrateData(data: any) {
-		const system= data as PC["system"];
+		const system= data as Shadow["system"];
 		const convert = function (x: number) {
 			switch (true) {
 				case x >= 5: return "ultimate";
@@ -104,8 +105,13 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 				default: return "normal";
 			}
 		};
-		if (system.combat.resists.gun == undefined) {
-			system.combat.resists.gun = "normal";
+		try {
+			if (system.combat.resists?.gun == undefined) {
+				system.combat.resists.gun = "normal";
+			}
+		} catch (e) {
+			Debug(system);
+			ui.notifications.warn("Error on Shadow Schema Convert");
 		}
 		if (typeof system?.combat?.defenses?.fort == "number") {
 			system.combat.defenses.fort = convert(data.combat.defenses.fort);

@@ -6,6 +6,7 @@ export const STATUS_POWER_TAGS  = [
 	"poison",
 	"rage",
 	"blind",
+	"mouse",
 ] as const;
 
 export const POWER_TYPE_TAGS = [
@@ -15,6 +16,7 @@ export const POWER_TYPE_TAGS = [
 	"shadow-only",
 	"teamwork",
 	"opener",
+	"ailment",
 	"navigator",
 	"downtime",
 	"follow-up",

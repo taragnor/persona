@@ -1,3 +1,4 @@
+import { STATUS_POWER_TAGS } from "../../config/power-tags.js";
 import { DamageType } from "../../config/damage-types.js";
 import { ValidAttackers } from "../combat/persona-combat.js";
 import { EQUIPMENT_TAGS } from "../../config/equipment-tags.js";
@@ -216,14 +217,21 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		switch (itype) {
 			case "power": {
 				const list= this.system.tags.slice();
-				if (!list.includes(itype))
-				list.push(itype);
+				if (!list.includes(itype)) {
+					list.push(itype);
+				}
+				if (STATUS_POWER_TAGS.some(tag=> list.includes(tag))) {
+					if (!list.includes("ailment")) {
+						list.push("ailment");
+					}
+				}
 				return list;
 			}
 			case "consumable": {
 				const list : (PowerTag | EquipmentTag)[]= (this.system.tags as (PowerTag | EquipmentTag)[]).concat(this.system.itemTags);
-				if (!list.includes(itype))
-				list.push(itype);
+				if (!list.includes(itype)) {
+					list.push(itype);
+				}
 				return list;
 			}
 			case "item": {

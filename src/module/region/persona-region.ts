@@ -24,11 +24,12 @@ const PLAYER_VISIBLE_MOD_LIST = [
 	"treasure-rich", //1d20+5 treasure
 	"treasure-ultra", //1d10+15 treasure
 	"hazard-on-2",
-	"no-tension-roll",// don't roll tension after
+	// "no-tension-roll",// don't roll tension after
 	"safe",//can't search and no random encounter rolls
 	"bonus-on-6", //+5 treasure on 6 search
 	"fixed-treasure", // Treasure is static
 	"treasure-refresh", // Treasure refreshes on enter metaverse
+	"no-tension-increase", //no tension increase after search
 
 ] as const;
 
