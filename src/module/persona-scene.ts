@@ -4,8 +4,13 @@ import { ShadowRole } from "../config/shadow-types.js";
 import { Shadow } from "./actor/persona-actor.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaCalendar } from "./social/persona-calendar.js";
+import { PersonaRegion } from "./region/persona-region.js";
+import { PersonaActor } from "./actor/persona-actor.js";
 
 export class PersonaScene extends Scene {
+	declare regions: Collection<PersonaRegion>;
+	declare tokens: Collection<TokenDocument<PersonaActor>>;
+
 	allFoes() : Shadow[] {
 		return PersonaDB.shadows()
 		.filter ( shadow=> shadow.system.encounter.dungeons.includes(this.id));
@@ -34,6 +39,50 @@ export class PersonaScene extends Scene {
 			encounterList = encounterList.filter( shadow => shadow.system.encounter.rareShadow != true);
 		}
 		return encounterList;
+	}
+
+	async onEnterMetaverse() : Promise<void> {
+		const regionActions =
+			this.regions.contents
+			.map( region => region.onEnterMetaverse())
+		const actorActions =
+			this.tokens.contents
+			.map( tok => {
+				try {
+					if (!tok.actor) return Promise.resolve();
+					const actor = tok.actor as PersonaActor;
+					return actor.onEnterMetaverse();
+				} catch (e) {
+					console.log(e);
+				}
+				return Promise.reject("Error in token metaverse action");
+			});
+		const promises : Promise<any>[] = [
+			...regionActions,
+			...actorActions,
+		];
+		await Promise.allSettled(promises);
+	}
+
+	async onExitMetaverse(): Promise<void> {
+		const regionPromises : Promise<any>[] = this.regions.contents.map( reg => reg.onExitMetaverse());
+		const tokenPromises : Promise<any>[] = this.tokens.contents
+		.map( tok => {
+			try {
+				const actor = (tok.actor as PersonaActor);
+				if (!actor
+					|| !actor.isValidCombatant()
+					|| tok.actorLink == true
+				) return Promise.resolve();
+				return actor.onExitMetaverse();
+			} catch (e) {console.log(e)}
+			return Promise.reject("Error on running Actor triggers for exit-metaverse");
+		})
+		const promises = [
+			...regionPromises,
+			...tokenPromises,
+		];
+		await Promise.allSettled(promises);
 	}
 
 	stats() : void {

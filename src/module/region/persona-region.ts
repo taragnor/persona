@@ -27,12 +27,18 @@ const PLAYER_VISIBLE_MOD_LIST = [
 	"no-tension-roll",// don't roll tension after
 	"safe",//can't search and no random encounter rolls
 	"bonus-on-6", //+5 treasure on 6 search
-	"fixed-treasure" // Tresure is static
+	"fixed-treasure", // Treasure is static
+	"treasure-refresh", // Treasure refreshes on enter metaverse
+
+] as const;
+
+const PLAYER_HIDDEN_MOD_LIST = [
+	"stop-on-hazard",
 ] as const;
 
 const SPECIAL_MOD_LIST = [
 	...PLAYER_VISIBLE_MOD_LIST,
-	"stop-on-hazard",
+	...PLAYER_HIDDEN_MOD_LIST,
 ] as const;
 
 type SpecialMod = typeof SPECIAL_MOD_LIST[number];
@@ -77,6 +83,7 @@ type RegionData = {
 export class PersonaRegion extends RegionDocument {
 
 	#changeBuffer : RegionData | undefined = undefined;
+	declare tokens: Set<TokenDocument<PersonaActor>>;
 
 	defaultRegionData() : RegionData {
 		return {
@@ -406,7 +413,7 @@ export class PersonaRegion extends RegionDocument {
 					const emptyOption = $("<option>").val("").text("-");
 					select.append(emptyOption);
 					for (const [k,v] of Object.entries(SPECIAL_MODS)) {
-						const mod = $("<option>").val(k).text(v).prop("selected", val.at(i) == k);
+						const mod = $("<option>").val(k).text(localize(v)).prop("selected", val.at(i) == k);
 						select.append(mod);
 					}
 					element.append(select);
@@ -563,7 +570,24 @@ export class PersonaRegion extends RegionDocument {
 			}
 		}
 	}
-}
+
+	async onEnterMetaverse() : Promise<void> {
+		const data = this.regionData;
+		const refresh = data.specialMods.includes("treasure-refresh")
+		if (!refresh) return;
+		if (data.treasures.found > 0) {
+			data.treasures.found = 0;
+			await this.setRegionData(data);
+			console.debug(`Refreshing Treasures for : ${this.name}`);
+		}
+	}
+
+	async onExitMetaverse() : Promise<void> {
+
+	}
+
+} //end of class
+
 
 Hooks.on("closeRegionConfig", async (app) => {
 	const region = app.document as PersonaRegion;

@@ -6,7 +6,6 @@ import { SkillCard } from "./item/persona-item.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
 import { Situation } from "./preconditions.js";
 import { ModifierList } from "./combat/modifier-list.js";
-import { PersonaScene } from "./persona-scene.js";
 import { SearchMenu } from "./exploration/searchMenu.js";
 import { PersonaRegion } from "./region/persona-region.js";
 import { Weapon } from "./item/persona-item.js";
@@ -25,6 +24,7 @@ import { PC } from "./actor/persona-actor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { NPCAlly } from "./actor/persona-actor.js";
+import { PersonaScene } from "./persona-scene.js";
 
 export class Metaverse {
 	static lastCrunch : number = 0;
@@ -34,19 +34,12 @@ export class Metaverse {
 	}
 
 	static async enterMetaverse() {
+		if (!game.user.isGM) return;
 		(game.actors as Collection<PersonaActor>)
 			.filter( (x: PersonaActor)=> (x.system.type == "pc" && x.tarot != undefined) || x.system.type == "npcAlly")
 			.forEach( (pc: PC | NPCAlly)=> pc.onEnterMetaverse());
-		game.scenes
-			.forEach( scene => scene.tokens.contents
-				.forEach( tok => {
-					try {
-						if (!tok.actor) return;
-						const actor = tok.actor as PersonaActor;
-						actor.onEnterMetaverse();
-					} catch (e) {console.log(e)}
-				})
-			);
+		(game.scenes.contents as PersonaScene[])
+			.forEach( sc => sc.onEnterMetaverse());
 		await TensionPool.clear();
 		Hooks.callAll("enterMetaverse");
 		await Logger.sendToChat(`Entering Metaverse...`);
@@ -55,29 +48,9 @@ export class Metaverse {
 	static async exitMetaverse() {
 		(game.actors as Collection<PersonaActor>)
 			.filter( (x: PersonaActor)=> (x.system.type == "pc" && x.tarot != undefined) || x.system.type == "npcAlly")
-			.forEach( (x: PC | NPCAlly) => x.OnExitMetaverse());
-		game.scenes
-			.forEach( scene => scene.tokens.contents
-				.forEach( tok => {
-					try {
-						const actorType = (tok.actor as PersonaActor)?.system.type;
-						if (!actorType) return;
-						switch (actorType) {
-							case "pc":
-							case "shadow":
-							case "npcAlly":
-								PersonaCombat.onTrigger("exit-metaverse", tok.actor as ValidAttackers);
-								break;
-							case "npc":
-							case "tarot":
-								return;
-							default:
-								actorType satisfies never;
-								throw new PersonaError("Unknown Actor Type");
-						}
-					} catch (e) {console.log(e)}
-				})
-			);
+			.forEach( (x: PC | NPCAlly) => x.onExitMetaverse());
+		const promises = game.scenes.contents.map(sc => (sc as PersonaScene).onExitMetaverse());
+		await Promise.allSettled(promises);
 		await TensionPool.clear();
 		Hooks.callAll("exitMetaverse");
 		await Logger.sendToChat(`Exiting Metaverse...`);

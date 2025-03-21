@@ -734,6 +734,7 @@
 	"persona.specialRoomMods.stop-on-hazard": "Stop on Hazard",
 	"persona.specialRoomMods.bonus-on-6": "+5 treasure on 6 search roll",
 	"persona.specialRoomMods.fixed-treasure": "Treasure isn't random",
+	"persona.specialRoomMods.treasure-refresh": "Treasure refreshes on each visit",
 
 	"persona.secretChoices.found": "Found",
 	"persona.secretChoices.none": "None",

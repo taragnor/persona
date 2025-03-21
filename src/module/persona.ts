@@ -12,6 +12,7 @@ declare global {
 
 }
 
+import { AmongUs } from "./exploration/among-us.js";
 import { NPCAllySheet } from "./actor/sheets/npc-ally-sheet.js";
 import { PersonaScene } from "./persona-scene.js";
 import { PersonaRegion } from "./region/persona-region.js";
@@ -136,4 +137,7 @@ Hooks.on("init", async () => {
 export function localize(...args: Parameters<typeof game.i18n.localize>): ReturnType<typeof game.i18n.localize> {
 	return game.i18n.localize(...args);
 }
+
+//@ts-ignore
+window.AmongUs = AmongUs
 

@@ -2117,7 +2117,7 @@ async fullHeal() {
 	}
 }
 
-async onEnterMetaverse() {
+async onEnterMetaverse()  : Promise<void> {
 	if (!this.isValidCombatant()) return;
 	try {
 		await this.fullHeal();
@@ -2140,9 +2140,10 @@ async onEnterMetaverse() {
 	}
 }
 
-async OnExitMetaverse(this: ValidAttackers ) {
+async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 	try {
-		this.fullHeal();
+		if (this.system.type == "pc" && this.tarot == undefined) {return;} //skip fake PCs like itempiles and the party token
+		await this.fullHeal();
 		for (const eff of this.effects) {
 			if (eff.durationLessThanOrEqualTo({ dtype: "expedition"})) {
 				await eff.delete();
@@ -2151,6 +2152,15 @@ async OnExitMetaverse(this: ValidAttackers ) {
 		if (this.system.type == "pc") {
 			const pc = this as PC;
 			await pc.refreshSocialLink(pc);
+		}
+		switch (this.system.type) {
+			case "pc":
+			case "shadow":
+			case "npcAlly":
+				 await TriggeredEffect.onTrigger("exit-metaverse", this).emptyCheck()?.autoApplyResult() ?? Promise.resolve();
+				break;
+			default:
+					this.system satisfies never;
 		}
 	} catch (e) {
 		console.log(e);
