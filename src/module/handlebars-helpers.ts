@@ -1,3 +1,4 @@
+import { Consumable } from "./item/persona-item.js";
 import { FREQUENCY } from "../config/frequency.js";
 import { CardEvent } from "../config/social-card-config.js";
 import { ValidAttackers } from "./combat/persona-combat.js";

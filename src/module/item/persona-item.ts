@@ -127,7 +127,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		let tags : string[] = [];
 		if ("itemTags" in this.system) {
 			tags = tags.concat(
-				this.system.itemTags
+				// this.system.itemTags
+				(this as InvItem).tagList()
 				.map(tag => localize(EQUIPMENT_TAGS[tag]))
 			);
 		}
@@ -231,8 +232,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 							list.push(subtype);
 						break;
 					case "none":
+						list.push("non-equippable");
+						break;
 					case "crafting":
 						list.push("non-equippable");
+						list.push("crafting");
 						break;
 					default:
 						subtype satisfies never;
@@ -258,10 +262,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	get amount() : number {
-		if (this.system.type != "consumable") {
-			return 1;
+		if ("amount" in this.system) {
+			return this.system.amount ?? 1;
 		}
-		return this.system.amount;
+		return 1;
 	}
 
 	async addItem(this: Consumable, amt: number) : Promise<typeof this> {
@@ -269,6 +273,21 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const newAmt = this.system.amount += amt;
 		await this.update({"system.amount": newAmt});
 		return this;
+	}
+
+	get isCraftingItem() : boolean {
+		switch (this.system.type) {
+			case "consumable":
+			case "item":
+				if ((this as Consumable | InvItem).hasTag("crafting"))
+					return true;
+				if (this.system.type == "item" && this.system.slot == "crafting")
+					return true;
+				break;
+			default:
+				break;
+		}
+		return false;
 	}
 
 	get costString() : string {

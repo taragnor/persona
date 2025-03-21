@@ -76,8 +76,13 @@
 				</a>
 				{{/if}}
 				<span class="itemName">
+					{{#if item.isCraftingItem}}
+					<i class="fa-solid fa-hammer"></i>
+					{{/if}}
 					{{item.displayedName}}
+					{{#if (gt item.amount 1)}}
 					( {{item.amount}} )
+					{{/if}}
 					{{#if (eq item.system.type "consumable")}}
 					{{/if}}
 				</span>
@@ -114,9 +119,12 @@
 					{{#if (eq item.system.slot "key-item")}}
 					(Key Item)
 					{{/if}}
+					{{#if (eq item.system.slot "crafting")}}
+					<i class="fa-solid fa-hammer"></i>
+					{{/if}}
 					{{item.name}}
+					{{#if (gt item.amount 1)}}
 					( {{item.amount}} )
-					{{#if (eq item.system.type "consumable")}}
 					{{/if}}
 				</span>
 				<a class="delItem">

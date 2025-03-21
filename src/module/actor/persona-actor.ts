@@ -175,7 +175,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get consumables(): Consumable[] {
 		const consumables =  this.items.filter( x=> x.system.type == "consumable" || x.system.type == "skillCard") as Consumable[];
-		return consumables.sort( (a,b) => a.name.localeCompare(b.name));
+		return consumables.sort( (a,b) => {
+			if (!a.isCraftingItem && b.isCraftingItem ) return -1;
+			if (!b.isCraftingItem && a.isCraftingItem ) return 1;
+			return a.name.localeCompare(b.name)
+		}
+		);
 	}
 
 	get nonUsableInventory() : (SkillCard | InvItem | Weapon)[] {

@@ -41,13 +41,14 @@ export class AmongUs {
 	static gamePlayers(shipScene : PersonaScene) : TokenDocument<PersonaActor>[] {
 		const colors = [
 			"White",
-"Blue",
-"Orange",
-"Purple",
-"Black",
-"Green",
-"Red",
-"Pink",
+			"Blue",
+			"Orange",
+			"Purple",
+			"Black",
+			"Green",
+			"Red",
+			"Pink",
+			"Yellow",
 		] as const;
 		const tokens = colors.map( color => shipScene.tokens.find( x=> x.name.includes(color)))
 			.filter(x=> x != undefined);
@@ -136,17 +137,17 @@ export class AmongUs {
 
 	}
 
-static translateAction(action: AmongUsAction, scene: PersonaScene) : string {
-	switch (action.action) {
-		case "Do Task":
-			return `Do Task (${action.timeRemaining} remaining)`;
-		case "Do Nothing":
-			return "Do Nothing";
-		case "Move To":
-			const target = scene.regions.get(action.regionId);
-			return `Go To ${target?.name ?? "Region Not found"}`;
+	static translateAction(action: AmongUsAction, scene: PersonaScene) : string {
+		switch (action.action) {
+			case "Do Task":
+				return `Do Task (${action.timeRemaining} remaining)`;
+			case "Do Nothing":
+				return "Do Nothing";
+			case "Move To":
+				const target = scene.regions.get(action.regionId);
+				return `Go To ${target?.name ?? "Region Not found"}`;
+		}
 	}
-}
 
 }// end of class
 
