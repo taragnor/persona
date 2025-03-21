@@ -1190,6 +1190,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (naturalAttackRoll + critBoost >= 20
 			&& (!power.isMultiTarget() || naturalAttackRoll % 2 == 0)
 			&& !target.actor.hasStatus("blocking")
+			&& !power.hasTag("no-crit")
 		) {
 			situation.hit = true;
 			situation.criticalHit  = true;
