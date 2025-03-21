@@ -101,23 +101,23 @@
 				</a>
 				{{/if}}
 				<span class="itemName">
-					{{#if (eq item.system.slot "weapon")}}
-					(Weapon)
+					{{#if (eq item.system.type "weapon")}}
+					<i class="fa-solid fa-baseball-bat-ball"></i>
 					{{/if}}
 					{{#if (eq item.system.slot "body")}}
-					(Outfit)
+					<i class="fa-solid fa-shirt"></i>
 					{{/if}}
 					{{#if (eq item.system.slot "accessory")}}
-					(Accessory)
+					<i class="fa-solid fa-ring"></i>
 					{{/if}}
 					{{#if (eq item.system.slot "none")}}
-					(Misc)
+					<i class="fa-solid fa-circle-question"></i>
 					{{/if}}
 					{{#if (eq item.system.slot "weapon_crystal")}}
-					(Weapon Crystal)
+					<i class="fa-solid fa-gem"></i>
 					{{/if}}
 					{{#if (eq item.system.slot "key-item")}}
-					(Key Item)
+					<i class="fa-solid fa-key"></i>
 					{{/if}}
 					{{#if (eq item.system.slot "crafting")}}
 					<i class="fa-solid fa-hammer"></i>

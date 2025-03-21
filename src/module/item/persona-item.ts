@@ -106,8 +106,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	isUsable() : this is UsableAndCard  {
 		switch (this.system.type) {
 			case "power":
+				const sub = this.system.subtype;
+				if ( sub == "passive"  || sub == "defensive")
+					return false;
+				return true;
 			case "skillCard":
+				return true;
 			case "consumable":
+				if (this.isCraftingItem) {return false;}
 				return true;
 			case "characterClass":
 			case "focus":
