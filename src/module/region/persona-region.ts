@@ -260,7 +260,12 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	/** for batch_adding */
-	async addRoomModifier(mod: UniversalModifier) {
+	async addRoomModifier(mod: UniversalModifier | string) {
+		if (typeof mod == "string") {
+			const item = PersonaDB.allItems().find( x=> x.name == mod);
+			if (!mod) {throw new Error("Modifier Not found");}
+			mod = item as UniversalModifier;
+		}
 		if (mod?.system?.type != "universalModifier") throw new PersonaError("Not a modifier");
 		if (!mod.system.room_effect)  throw new PersonaError("Not a Room Effect");
 		const data = this.regionData;

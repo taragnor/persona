@@ -431,8 +431,17 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		msg.push(`Resisting Confusion (${saveTotal}) -->`);
 		switch (true) {
-			case (saveTotal >= 11):{
+			case (saveTotal >= 16):{
 				msg.push(`Success`);
+				break;
+			}
+			case (saveTotal <= 5):{
+				msg.push(`Failure (Miss Turn + lose 10% Resources)`);
+				options.push({
+					optionTxt: "Throw Away Money (Miss Turn + lose 10% Resources)",
+					mandatory: true,
+					optionEffects: [],
+				});
 				break;
 			}
 			default:

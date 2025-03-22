@@ -1,3 +1,4 @@
+import { PersonaSettings } from "../../config/persona-settings.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
 import { PCAndNPCAllyCombatStats } from "../../config/actor-parts.js";
@@ -110,8 +111,10 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 				system.combat.resists.gun = "normal";
 			}
 		} catch (e) {
-			Debug(system);
-			ui.notifications.warn("Error on Shadow Schema Convert");
+			if (game.user.isGM && PersonaSettings) {
+				Debug(system);
+				ui.notifications.warn("Error on Shadow Schema Convert");
+			}
 		}
 		if (typeof system?.combat?.defenses?.fort == "number") {
 			system.combat.defenses.fort = convert(data.combat.defenses.fort);

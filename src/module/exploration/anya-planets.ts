@@ -23,7 +23,7 @@ export class AnyaPlanets {
 		this.untethered = [];
 		this.inner.createPlanet("start", 0);
 		this.inner.createPlanet("Battleground Neko", 1);
-		this.inner.createPlanet("Fleetwood Badass", 2);
+		const industrial = this.inner.createPlanet("Burning Industrial Asteroid", 2 );
 		this.inner.createPlanet("BattleGround Nezumi", 3);
 		this.middle.createPlanet("Crimson Glow Asteroid Field(Sini)", 0);
 		this.middle.createPlanet("Desolate Asteroid (marines)", 2);
@@ -34,14 +34,18 @@ export class AnyaPlanets {
 
 		this.outer.createPlanet("Satellite A", 5 );
 		this.outer.createPlanet("Anarchy City", 6 );
-		this.outer.createPlanet("Burning Industrial Asteroid", 9 );
+		const gundam = this.outer.createPlanet("Orbital Military Installation", 9 );
 		this.outer.createPlanet("Satellite B", 10 );
-		this.outer.createPlanet("CIty of the Iron Fist", 13 );
+		this.outer.createPlanet("City of the Iron Fist", 13 );
 		this.outer.createPlanet("Satellite C", 14 );
 		// this.outer.createPlanet("outer F", 15 );
 		const PB= this.periphery.createPlanet("Satellite Control Station", 2 );
 		const PA= this.periphery.createPlanet("GateWay To M", 20 );
 		const asteroidM = { name: "Asteroid M", hardLinks: [PA]};
+		const Fleetwood = { name: "Fleetwood School for the Badass (shadow Anya)", hardLinks: [asteroidM]};
+		const paintedWorld = {name: "Digitized World 41234", hardLinks: [industrial]}
+		industrial.hardLinks.push(paintedWorld);
+		asteroidM.hardLinks.push(Fleetwood);
 		PA.hardLinks.push(asteroidM);
 		this.untethered.push(asteroidM);
 	}
