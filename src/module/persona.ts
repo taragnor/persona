@@ -12,6 +12,7 @@ declare global {
 
 }
 
+import { AnyaPlanets } from "./exploration/anya-planets.js";
 import { AmongUs } from "./exploration/among-us.js";
 import { NPCAllySheet } from "./actor/sheets/npc-ally-sheet.js";
 import { PersonaScene } from "./persona-scene.js";
@@ -140,4 +141,8 @@ export function localize(...args: Parameters<typeof game.i18n.localize>): Return
 
 //@ts-ignore
 window.AmongUs = AmongUs
+
+//@ts-ignore
+window.AnyaPlanets = new AnyaPlanets();
+
 
