@@ -16,29 +16,31 @@ export class AnyaPlanets {
 	}
 
 	reset() {
-		this.inner= new Orbit(INNER_SIZE, 1);
-		this.middle= new Orbit(MIDDLE_SIZE, -2);
-		this.outer= new Orbit(OUTER_SIZE, 4);
-		this.periphery= new Orbit(PERIPHERY_SIZE, -4);
+		this.inner= new Orbit(INNER_SIZE, 0);
+		this.middle= new Orbit(MIDDLE_SIZE, -1);
+		this.outer= new Orbit(OUTER_SIZE, -2);
+		this.periphery= new Orbit(PERIPHERY_SIZE, 4);
 		this.untethered = [];
 		this.inner.createPlanet("start", 0);
-		this.inner.createPlanet("Inner A", 1);
-		this.inner.createPlanet("Inner B", 2);
-		this.inner.createPlanet("Inner C", 3);
-		this.middle.createPlanet("middle A", 0);
-		this.middle.createPlanet("middle B", 2);
-		this.middle.createPlanet("middle C", 4);
-		this.middle.createPlanet("middle D", 6);
-		// this.middle.createPlanet("middle E", 8);
-		// this.middle.createPlanet("middle F", 11);
-		this.outer.createPlanet("outer A", 0);
-		// this.outer.createPlanet("outer B", 3 );
-		this.outer.createPlanet("outer C", 6 );
-		this.outer.createPlanet("outer D", 9 );
-		this.outer.createPlanet("outer E", 12 );
+		this.inner.createPlanet("Battleground Neko", 1);
+		this.inner.createPlanet("Fleetwood Badass", 2);
+		this.inner.createPlanet("BattleGround Nezumi", 3);
+		this.middle.createPlanet("Crimson Glow Asteroid Field(Sini)", 0);
+		this.middle.createPlanet("Desolate Asteroid (marines)", 2);
+		this.middle.createPlanet("Alestone Asteroid Field(Sini-R)", 4);
+		this.middle.createPlanet("Infernal Asteroid (demons)", 6);
+		this.outer.createPlanet("Fantastic Biodome (DW basic)", 1);
+		this.outer.createPlanet("Odd Biodome (DW Rev)", 2 );
+
+		this.outer.createPlanet("Satellite A", 5 );
+		this.outer.createPlanet("Anarchy City", 6 );
+		this.outer.createPlanet("Burning Industrial Asteroid", 9 );
+		this.outer.createPlanet("Satellite B", 10 );
+		this.outer.createPlanet("CIty of the Iron Fist", 13 );
+		this.outer.createPlanet("Satellite C", 14 );
 		// this.outer.createPlanet("outer F", 15 );
-		const PA= this.periphery.createPlanet("Periphery A", 0 );
-		this.periphery.createPlanet("Periphery B", 20 );
+		const PB= this.periphery.createPlanet("Satellite Control Station", 2 );
+		const PA= this.periphery.createPlanet("GateWay To M", 20 );
 		const asteroidM = { name: "Asteroid M", hardLinks: [PA]};
 		PA.hardLinks.push(asteroidM);
 		this.untethered.push(asteroidM);
@@ -54,6 +56,7 @@ export class AnyaPlanets {
 	}
 
 	reachabilityTest(tests = 60) {
+		this.reset();
 		let orbits = 0;
 		const start = this.getPlanetByName("start");
 		while (orbits <= tests) {
@@ -71,14 +74,25 @@ export class AnyaPlanets {
 		return true;
 	}
 
-	visitTest() {
-		const planets = this.allPlanets();
+	visitTest1 () {
 		const start = this.getPlanetByName("start")!;
 		const asteroidM = this.getPlanetByName("Asteroid M")!;
-		if (!start || !asteroidM) throw new Error("Couldn't initialize");
+		return this.#visitTest(start, asteroidM);
+	}
+
+	visitTest2 () {
+		const start = this.getPlanetByName("start")!;
+		const PeripheryB = this.getPlanetByName("Satellite Control Station")!;
+		return this.#visitTest(start, PeripheryB);
+	}
+
+
+	#visitTest(start: Planet, destination: Planet) {
+		const planets = this.allPlanets();
+		if (!start || !destination) throw new Error("Couldn't initialize");
 		const map = new Map<Planet, number>(planets.map(x=> [x, 0] ));
 			for (let orbit = 0; orbit < 60; orbit++) {
-				const path = this.getPathTo(start, asteroidM);
+				const path = this.getPathTo(start, destination);
 				for (const planet of planets) {
 					if (path && path.includes(planet)) {
 						const count = map.get(planet) ?? 0;
@@ -90,6 +104,7 @@ export class AnyaPlanets {
 		for (const [planet,count] of map.entries()) {
 			console.log(`${planet.name}: ${count}`);
 		}
+		this.reset();
 	}
 
 	allPlanets() : Planet [] {
@@ -154,10 +169,7 @@ export class AnyaPlanets {
 		const paths = start.hardLinks.slice();
 		let [orbit, index] = this.findPlanet(start.name);
 		if (orbit) {
-			if (orbit == this.inner) {
-				paths.push(...this.inner.adjacent(index));
-			}
-
+			paths.push(...orbit.adjacent(index));
 			const outer = this.getOuterOrbit(orbit);
 			const inner = this.getInnerOrbit(orbit);
 			const [innerR, outerR] = orbit?.getRanges(index);
@@ -223,8 +235,9 @@ export class Orbit {
 			case MIDDLE_SIZE:
 				const myblock = Math.floor(index / this.blockSize);
 				const innerBlockSize = Math.floor(this.blockSize / GROWTH_FACTOR);
-				const low= myblock * innerBlockSize;
-				return {low, high: low + innerBlockSize};
+				// const low= myblock * innerBlockSize;
+				const low= Math.floor(index / GROWTH_FACTOR);
+				return {low, high: low + GROWTH_FACTOR};
 				default:
 				throw new Error(`Unknown size: ${this.planets.length}`);
 		}
@@ -237,10 +250,11 @@ export class Orbit {
 			case INNER_SIZE:
 			case OUTER_SIZE:
 			case MIDDLE_SIZE:
-				const myblock = Math.floor(index / this.blockSize);
+				// const myblock = Math.floor(index / this.blockSize);
 				const outerBlockSize = Math.floor(this.blockSize * GROWTH_FACTOR);
-				const low= myblock * outerBlockSize;
-				return {low, high: low + outerBlockSize}
+				// const low= myblock * outerBlockSize;
+				const low = index * GROWTH_FACTOR;
+				return {low, high: low + GROWTH_FACTOR}
 		}
 	}
 
