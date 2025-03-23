@@ -73,7 +73,7 @@ export class AmongUs {
 				} else {
 					const task : AmongUsAction = {
 						action: "Do Task",
-						timeRemaining: Math.floor(Math.random() * 3 + 2),
+						timeRemaining: Math.floor(Math.random() * 4 +1 ),
 					};
 					return await this.setAction(token, task);
 				}

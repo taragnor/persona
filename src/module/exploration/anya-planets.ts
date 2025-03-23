@@ -39,8 +39,8 @@ export class AnyaPlanets {
 		this.outer.createPlanet("City of the Iron Fist", 13 );
 		this.outer.createPlanet("Satellite C", 14 );
 		// this.outer.createPlanet("outer F", 15 );
-		const PB= this.periphery.createPlanet("Satellite Control Station", 2 );
-		const PA= this.periphery.createPlanet("GateWay To M", 20 );
+		const PB = this.periphery.createPlanet("Satellite Control Station", 2 );
+		const PA = this.periphery.createPlanet("GateWay To M", 20 );
 		const asteroidM = { name: "Asteroid M", hardLinks: [PA]};
 		const Fleetwood = { name: "Fleetwood School for the Badass (shadow Anya)", hardLinks: [asteroidM]};
 		const paintedWorld = {name: "Digitized World 41234", hardLinks: [industrial]}

@@ -111,7 +111,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 				system.combat.resists.gun = "normal";
 			}
 		} catch (e) {
-			if (game.user.isGM && PersonaSettings) {
+			if (game.user.isGM && PersonaSettings.debugMode()) {
 				Debug(system);
 				ui.notifications.warn("Error on Shadow Schema Convert");
 			}

@@ -41,6 +41,12 @@ export class PersonaScene extends Scene {
 		return encounterList;
 	}
 
+	async setAllDoorSound(snd: string) {
+		const doors = this.walls.filter( wall => wall.door != 0);
+		doors.forEach( door => door.update({doorSound: snd}));
+
+	}
+
 	async onEnterMetaverse() : Promise<void> {
 		const regionActions =
 			this.regions.contents
