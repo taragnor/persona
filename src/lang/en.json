@@ -244,6 +244,7 @@
 	"persona.modifier.encounterSize": "Encounter Size",
 	"persona.modifier.numberOfSearches": "Number of Searches",
 	"persona.modifier.treasureFind": "Bonus to d6 to find treasure",
+	"persona.modifier.actions-per-turn": "Actions per turn",
 
 	"persona.equipslots.weapon": "Weapon",
 	"persona.equipslots.body": "Outfit",

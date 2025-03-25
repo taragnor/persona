@@ -152,8 +152,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			token = actor.token as PToken;
 		} else {
 			const tokens = this.actor._dependentTokens.get(game.scenes.current)!;
+			//THIS IS PROBABLY A bad idea to iterate over weakset
 			//@ts-ignore
-			token = Array.from(tokens)[0].object;
+			token = Array.from(tokens)[0];
 		}
 		if (!token) {
 			token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;

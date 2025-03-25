@@ -33,16 +33,20 @@ import { PersonaActor } from "../actor/persona-actor.js";
 
 declare global {
 	interface SocketMessage {
-"COMBAT_RESULT_APPLY" : string;
+		"COMBAT_RESULT_APPLY" : {resultObj : string; sender: User["id"];}
+		"COMBAT_RESULT_APPLIED": CombatResult["id"];
 	}
 }
 
 export class CombatResult  {
 	_finalized : boolean = false;
+	static pendingPromises: Map< CombatResult["id"], Function> = new Map();
 	tokenFlags: {
 		actor: UniversalActorAccessor<PersonaActor>,
 			effects: OtherEffect[]
 	}[] = [] ;
+	static lastId = 0;
+	id : number;
 	attacks: Map<AttackResult, ActorChange<ValidAttackers>[]> = new Map();
 	escalationMod: number = 0;
 	costs: ActorChange<ValidAttackers>[] = [];
@@ -50,10 +54,31 @@ export class CombatResult  {
 	globalOtherEffects: OtherEffect[] = [];
 
 	constructor(atkResult ?: AttackResult) {
+		this.id = ++CombatResult.lastId;
 		if (atkResult) {
 			this.attacks.set(atkResult, []);
 			// this.attackResults.push(atkResult);
 		}
+	}
+
+	static addPending(res: CombatResult): Promise<unknown> {
+		const promise = new Promise(
+			(resolve, reject) => {
+				this.pendingPromises.set(res.id, resolve);
+				setTimeout( () => {
+					reject("Timeout");
+					this.pendingPromises.delete(res.id);
+				}	, 16000);
+			});
+		return promise;
+
+	}
+
+	static resolvePending( resId: CombatResult["id"]) {
+		const resolver = this.pendingPromises.get(resId);
+		if (!resolver) throw new Error(`No Resolver for ${resId}`);
+		resolver();
+		this.pendingPromises.delete(resId);
 	}
 
 	toJSON() : string {
@@ -63,6 +88,7 @@ export class CombatResult  {
 			costs: this.costs,
 			tokenFlags: this.tokenFlags,
 			globalOtherEffects : this.globalOtherEffects,
+			id: this.id,
 		};
 		const json = JSON.stringify(obj);
 		return json;
@@ -91,6 +117,7 @@ export class CombatResult  {
 		ret.costs = x.costs;
 		ret.tokenFlags = x.tokenFlags;
 		ret.globalOtherEffects = x.globalOtherEffects;
+		ret.id = x.id;
 		return ret;
 	}
 
@@ -528,6 +555,7 @@ export class CombatResult  {
 			await this.autoApplyResult();
 		} catch (e) {
 			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
+			PersonaError.softFail("Error with automatic result application");
 		}
 		return chatMsg;
 	}
@@ -539,7 +567,16 @@ export class CombatResult  {
 		}
 		const gmTarget = game.users.find(x=> x.isGM && x.active);
 		if (gmTarget)  {
-			PersonaSockets.simpleSend("COMBAT_RESULT_APPLY", this.toJSON(), [gmTarget.id])
+			const sendObj = {
+				resultObj : this.toJSON(),
+				sender: game.user.id,
+			}
+			PersonaSockets.simpleSend("COMBAT_RESULT_APPLY", sendObj, [gmTarget.id])
+			try {
+				await CombatResult.addPending(this);
+			} catch (e) {
+				PersonaError.softFail("Error Autoapplying Effect");
+			}
 			return;
 		} else {
 			throw new Error("Can't apply no GM connected");
@@ -555,8 +592,14 @@ export class CombatResult  {
 	}
 
 	static async applyHandler(x: SocketMessage["COMBAT_RESULT_APPLY"]) : Promise<void> {
-		const result = CombatResult.fromJSON(x);
+		const {resultObj, sender} = x;
+		const result = CombatResult.fromJSON(resultObj);
 		await result.#apply();
+		PersonaSockets.simpleSend("COMBAT_RESULT_APPLIED", result.id, [sender])
+	}
+
+	static async resolvedHandler(replyId: SocketMessage["COMBAT_RESULT_APPLIED"]) : Promise<void> {
+		CombatResult.resolvePending(replyId);
 	}
 
 	async applyButton() {
@@ -974,6 +1017,7 @@ Hooks.on("renderChatMessage", async (msg: ChatMessage, html: JQuery<HTMLElement>
 
 Hooks.on("socketsReady", async () => {
 	PersonaSockets.setHandler("COMBAT_RESULT_APPLY", CombatResult.applyHandler.bind(CombatResult));
+	PersonaSockets.setHandler("COMBAT_RESULT_APPLIED", CombatResult.resolvedHandler.bind(CombatResult));
 });
 
 Hooks.on("updateActor", async (updatedActor : PersonaActor, changes) => {

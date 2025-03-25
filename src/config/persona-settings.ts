@@ -32,6 +32,10 @@ export class PersonaSettings {
 		return this.get("debugMode").valueOf();
 	}
 
+	static autoEndTurn() : boolean {
+		return this.get("autoEndTurn").valueOf();
+	}
+
 	static autoApplyCombatResults(): boolean {
 		return this.get("autoApplyCombatResults").valueOf();
 	}
@@ -88,6 +92,16 @@ const SETTINGS = {
 		config: true,
 		type: Boolean,
 		default: false,
+	},
+
+	"autoEndTurn" : {
+		name: "Auto End Turn",
+		hint: "End Creatures turn when it's out of actions",
+		scope: "world",
+		restricted: true,
+		config: true,
+		type: Boolean,
+		default: true,
 	},
 
 	"heartbeatOn": {

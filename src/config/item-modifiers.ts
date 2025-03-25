@@ -45,6 +45,7 @@ export const MODIFIERLIST = [
 	"initiative",
 	"starting-energy",
 	"energy-per-turn",
+	"actions-per-turn",
 	...ENVIRONMENTAL_MODIFIERS,
 ] as const;
 

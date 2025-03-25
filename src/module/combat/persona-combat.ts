@@ -306,6 +306,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			rolls: rolls.map(r=> r.roll).concat(baseRolls),
 			sound: rolls.length + baseRolls.length > 0 ? CONFIG.sounds.dice : undefined
 		};
+		await actor.refreshActions();
 		await ChatMessage.create(messageData, {});
 	}
 
@@ -902,6 +903,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	static async usePower(attacker: PToken, power: UsableAndCard) : Promise<CombatResult> {
+		if (attacker instanceof Token) {
+			throw new Error("Actual token found instead of token document");
+		}
 		if (!await this.checkPowerPreqs(attacker, power)) {
 			return new CombatResult();
 		}
@@ -922,18 +926,29 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			result.merge(costs);
 
 			result.finalize();
-			await attacker.actor.removeStatus("bonus-action");
+			if (!power.hasTag("opener"))  {
+				await attacker.actor.expendAction();
+			}
+			// await attacker.actor.removeStatus("bonus-action");
 			await attacker.actor.removeStatus("baton-pass");
 			await result.toMessage(power.name, attacker.actor);
-			if (power == PersonaDB.getBasicPower("All-out Attack")) {
-				if (game.combat) {
-					await game.combat.nextTurn();
-				}
-			}
+			await this.postAction(attacker, result);
 			return result;
 		} catch(e) {
 			console.log(e);
 			throw e;
+		}
+	}
+
+	static async postAction(attacker: PToken, result: CombatResult ) {
+		const power = result.power;
+		if (!power) return;
+		const moreActions = attacker.actor.actionsRemaining || attacker.actor.hasStatus("bonus-action");
+		const autoEndTurn= !moreActions && PersonaSettings.autoEndTurn();
+		if (power == PersonaDB.getBasicPower("All-out Attack") || autoEndTurn) {
+			if (game.combat && game.combat.combatant?.token == attacker) {
+				await game.combat.nextTurn();
+			}
 		}
 	}
 
@@ -1316,43 +1331,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					CombatRes.escalationMod += x.escalationMod;
 					for (const cons of x.consequences) {
 						const effectiveTarget = PersonaCombat.resolveEffectiveTarget(cons.applyTo, atkResult, cons.cons);
-					// 	let effectiveTarget : PToken | undefined;
-					// 	switch (cons.applyTo) {
-					// 		case "target" :
-					// 			effectiveTarget = target;
-					// 			break;
-					// 		case "attacker":
-					// 			effectiveTarget = attacker;
-					// 			break;
-					// 		case "owner":
-					// 			if (cons.cons.actorOwner) {
-					// 				effectiveTarget = this.getPTokenFromActorAccessor(cons.cons.actorOwner);
-					// 				break;
-					// 			}
-					// 			ui.notifications.notify("Can't find Owner of Consequnece");
-					// 			continue;
-					// 		case "user":
-					// 			if (!situation.user) {continue;}
-					// 			const userToken  = this.getPTokenFromActorAccessor(situation.user);
-					// 			effectiveTarget = userToken;
-					// 			break;
-					// 		case "triggering-character":
-					// 			const triggerer = "triggeringCharacter" in situation? situation.triggeringCharacter: undefined;
-					// 			if (!triggerer) {
-					// 				PersonaError.softFail("Can't target triggering character for this");
-					// 				effectiveTarget = undefined;
-					// 				break;
-					// 			}
-					// 			const token = this.getPTokenFromActorAccessor(triggerer);
-					// 			effectiveTarget = token;
-					// 			break;
-					// 		case "cameo":
-					// 			effectiveTarget = undefined;
-					// 			break;
-					// 		default:
-					// 			cons.applyTo satisfies never;
-					// 			continue;
-					// 	}
 						if (effectiveTarget) {
 							CombatRes.addEffect(atkResult, effectiveTarget.actor!, cons.cons);
 						}
@@ -1365,7 +1343,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	static resolveEffectiveTarget(applyTo :Consequence["applyTo"], atkResult: AttackResult, cons?: Consequence) : PToken | undefined {
 		const situation = atkResult.situation;
-		// const power = PersonaDB.findItem(atkResult.power);
 		const attacker = PersonaDB.findToken(atkResult.attacker);
 		const target = PersonaDB.findToken(atkResult.target);
 		switch (applyTo) {

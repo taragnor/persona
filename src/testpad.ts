@@ -22,4 +22,6 @@ interface Y extends X  {
 let x: Y = window;
 
 
-//interesting develpment here
+
+
+

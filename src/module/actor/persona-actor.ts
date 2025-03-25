@@ -2414,6 +2414,45 @@ XPValue(this: Shadow) : number {
 
 }
 
+maxActions(this: ValidAttackers): number  {
+	return Math.max(0, 1 + this.getBonuses("actions-per-turn").total( {user: this.accessor}));
+}
+
+async refreshActions(): Promise<number> {
+	switch (this.system.type) {
+		case "tarot":
+		case "npc":
+			return 0;
+		case "pc":
+		case "shadow":
+		case "npcAlly":
+			break;
+		default:
+			this.system satisfies never;
+	}
+	const maxActions = (this as ValidAttackers).maxActions();
+	await this.update({"system.combat.actionsRemaining": maxActions});
+	return maxActions;
+}
+
+async expendAction(this: ValidAttackers): Promise<number> {
+
+	let actions = this.system.combat.actionsRemaining ?? 1;
+	if (this.hasStatus("bonus-action")) {this.removeStatus("bonus-action");
+		return actions;
+	}
+	actions = Math.max(0, actions-1);
+	await this.update({"system.combat.actionsRemaining": actions});
+	return actions;
+}
+
+get actionsRemaining(): number {
+	if (this.isValidCombatant()) {
+		return this.system.combat.actionsRemaining;
+	}
+	else return 0;
+}
+
 get perk() : string {
 	switch (this.system.type) {
 		case "pc":

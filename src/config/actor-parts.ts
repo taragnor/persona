@@ -175,6 +175,7 @@ export function combatCommonStats() {
 		fadingState: new num( {integer:true, initial:0}),
 		statusResists: statusResists(),
 		focuses: new arr( new id(), {initial: []}),
+		actionsRemaining: new num( {initial: 1, integer:true, min:0, max: 20}),
 	};
 };
 
