@@ -23,7 +23,7 @@ import { SocketManager } from "./utility/socket-manager.js";
 import { templatePaths } from "../config/handlebars-templates.js";
 import { PersonaClassSheet } from "./item/sheets/class-sheet.js";
 import { ACTORMODELS } from "./datamodel/actor-types.js";
-import { ITEMMODELS} from "./datamodel/item-types.js";
+import { ITEMMODELS } from "./datamodel/item-types.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { PersonaAE } from "./active-effect.js";
@@ -48,8 +48,8 @@ import { Heartbeat } from "./utility/heartbeat.js";
 export const PersonaSockets = new SocketManager ("persona", true);
 
 function registerDataModels() {
-	CONFIG.Actor.dataModels= ACTORMODELS;
-	CONFIG.Item.dataModels= ITEMMODELS;
+	CONFIG.Actor.dataModels = ACTORMODELS;
+	CONFIG.Item.dataModels = ITEMMODELS;
 }
 
 function registerDocumentClasses() {

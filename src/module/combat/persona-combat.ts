@@ -79,6 +79,17 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		this.defeatedFoes = [];
 	}
 
+	get validEngagementCombatants(): (Combatant <ValidAttackers> & {actor: ValidAttackers})[] {
+		return this.combatants.contents.filter( comb => {
+			const actor = comb.token.actor;
+			if (!actor) return false;
+			if (actor.hasStatus("charmed")) return false;
+			if (!actor.isAlive()) return false;
+			return true;
+		}) as (Combatant <ValidAttackers> & {actor: ValidAttackers})[];
+
+	}
+
 	override async startCombat() {
 		let msg = "";
 		this._engagedList = new EngagementList(this);

@@ -2651,10 +2651,10 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 }
 
 allOutAttackDamage(this: ValidAttackers, situation?: Situation) : { high: number, low: number } {
-	let high = 0, low = 0;
 	if (!this.canAllOutAttack()) {
-		return {high, low};
+		return {high: 0, low: 0};
 	}
+	let high = 0, low = 0;
 	if (!situation) {
 		situation = {
 			user: this.accessor,

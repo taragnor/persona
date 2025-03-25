@@ -3,6 +3,7 @@ import { PersonaCombat } from "./persona-combat.js";
 
 export class EngagementChecker {
 
+
 	static isEngagedByAnyFoe(subject: PToken, combat: PersonaCombat) : boolean {
 		return this.getAllEngagedEnemies(subject, combat).length > 0;
 	}
@@ -19,7 +20,6 @@ export class EngagementChecker {
 	}
 
 	static getAllEngagedEnemies(subject: PToken, combat: PersonaCombat) : PToken[] {
-		// const myAllegiance = subject.actor!.getAllegiance();
 		const meleeList = Array.from(this.getTokensInMelee(subject, combat));
 		return meleeList.filter( tok =>
 			!PersonaCombat.isSameTeam(tok, subject)
@@ -33,8 +33,7 @@ export class EngagementChecker {
 		const checkList = [subject];
 		while (checkList.length > 0) {
 			const checkedToken = checkList.pop()!;
-			for (const comb of combat.combatants.contents) {
-				if (!comb.token) continue;
+			for (const comb of combat.validEngagementCombatants) {
 				if (!comb.token.actor?.isAlive()) continue;
 				const token  = comb.token as PToken;
 				if ( this.isWithinEngagedRange(checkedToken, token)
