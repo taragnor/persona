@@ -2512,18 +2512,13 @@ async onStartCombatTurn(this: PC | Shadow): Promise<string[]> {
 }
 
 async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
+	let ret: string[]= [];
 	const burnStatus = this.effects.find( eff=> eff.statuses.has("burn"));
 	if (burnStatus) {
 		const damage = burnStatus.potency;
 		await this.modifyHP(-damage);
 	}
-	let ret: string[]= [];
-	for (const eff of this.effects) {
-		let expired = await eff.onEndCombatTurn();
-		if (expired) {
-			ret.push(`${eff.name} expired `);
-		}
-	}
+	ret.push(...await this.endTurnSaves())
 	return ret;
 }
 
