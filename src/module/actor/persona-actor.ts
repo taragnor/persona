@@ -2517,7 +2517,13 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 		const damage = burnStatus.potency;
 		await this.modifyHP(-damage);
 	}
-	let ret = await this.onEndCombatTurn();
+	let ret: string[]= [];
+	for (const eff of this.effects) {
+		let expired = await eff.onEndCombatTurn();
+		if (expired) {
+			ret.push(`${eff.name} expired `);
+		}
+	}
 	return ret;
 }
 

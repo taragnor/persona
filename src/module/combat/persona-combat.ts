@@ -262,7 +262,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	async startCombatantTurn( combatant: Combatant<ValidAttackers> ){
 		let baseRolls : Roll[] = [];
-		const rolls :RollBundle[] = [];
+		const rolls : RollBundle[] = [];
 		const actor = combatant.actor;
 		if (!actor) return;
 		if (actor.isOwner && !game.user.isGM)
@@ -271,6 +271,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (await this.checkEndCombat() == true) {
 			return;
 		}
+		await actor.refreshActions();
 		if (!combatant.actor?.hasPlayerOwner) {
 			await this.ensureSheetOpen(combatant);
 		}
@@ -306,7 +307,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			rolls: rolls.map(r=> r.roll).concat(baseRolls),
 			sound: rolls.length + baseRolls.length > 0 ? CONFIG.sounds.dice : undefined
 		};
-		await actor.refreshActions();
 		await ChatMessage.create(messageData, {});
 	}
 
