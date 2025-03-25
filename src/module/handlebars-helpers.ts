@@ -81,6 +81,10 @@ export class PersonaHandleBarsHelpers {
 			return actor.system.type == "pc";
 		},
 
+		"isPCOrNPCAlly": function (actor: PersonaActor): boolean {
+			return actor.system.type == "pc" || actor.system.type == "npcAlly";
+
+		},
 		"isShadow" : (actor: PersonaActor) => {
 			return actor.system.type == "shadow";
 		},

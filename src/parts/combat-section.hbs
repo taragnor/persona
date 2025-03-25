@@ -7,7 +7,7 @@
 			<span>
 				{{localize "persona.statistic.level"}}:
 			</span>
-			{{#if (isPC actor)}}
+			{{#if (isPCOrNPCAlly actor)}}
 			<span>
 				{{actor.system.combat.classData.level}}
 			</span>

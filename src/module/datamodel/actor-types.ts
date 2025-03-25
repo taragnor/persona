@@ -95,7 +95,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 	}
 
 	static override migrateData(data: any) {
-		const system= data as Shadow["system"];
+		const system = data as Shadow["system"];
 		const convert = function (x: number) {
 			switch (true) {
 				case x >= 5: return "ultimate";
