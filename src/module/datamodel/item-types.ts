@@ -1,3 +1,5 @@
+import { frequencyConvert } from "../../config/frequency.js";
+import { FREQUENCY } from "../../config/frequency.js";
 import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
 import { PersonaItem } from "../item/persona-item.js";
 import { CARD_TAG_LIST } from "../../config/card-tags.js";
@@ -343,7 +345,6 @@ class SocialCardEventDM extends foundry.abstract.DataModel {
 			conditions: new arr(new obj<Precondition>()),
 			choices: new arr(new embedded(CardChoiceDM)),
 		};
-
 	}
 
 	static override migrateData(source: Record<string, any>) : typeof source {
@@ -356,6 +357,9 @@ class SocialCardEventDM extends foundry.abstract.DataModel {
 		}
 		if (data.choices == undefined)
 			data.choices = [];
+		if (FREQUENCY[data.frequency as keyof typeof FREQUENCY] == undefined) {
+			data.frequency = frequencyConvert(data.frequency);
+		}
 		return source;
 	}
 }
