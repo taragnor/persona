@@ -116,15 +116,9 @@ export class Metaverse {
 				PersonaError.softFail(`Can't get a pick for random encounters for ${scene.name}`);
 				return [];
 			}
-			if (pick.system.role == "miniboss" || pick.system.role == "miniboss-lord") {
-				if (encounterSize < 4) {continue;}
-				encounterSize -= 3;
-			}
-			if (pick.system.role == "elite") {
-				if (encounterSize < 2) {continue;}
-				--encounterSize;
-			}
-			--encounterSize;
+			const sizeVal = pick.encounterSizeValue();
+			if (encounterSize < sizeVal) {continue;}
+			encounterSize -= sizeVal;
 			encounter.push(pick);
 		}
 		return encounter;

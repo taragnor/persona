@@ -1,3 +1,4 @@
+import { poisonDamageMultiplier } from "../../config/shadow-types.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { shadowRoleMultiplier } from "../../config/shadow-types.js";
 import { RealDamageType } from "../../config/damage-types.js";
@@ -78,7 +79,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "npc":
 			case "tarot":
 				return 0;
-			default: this.system satisfies never;
+			default:
+				this.system satisfies never;
 				return 0;
 		}
 		return this.system.combat.mp.value;
@@ -2056,8 +2058,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				base = "PCs";
 				break;
 		}
-		if (!this.statuses.has("charmed")) return base;
-		return base == "PCs" ? "Shadows" : "PCs";
+		return base;
+		//OLD charm code
+		// if (!this.statuses.has("charmed")) return base;
+		// return base == "PCs" ? "Shadows" : "PCs";
 	}
 
 async expendConsumable(item: UsableAndCard) {
@@ -2490,7 +2494,7 @@ hasRole( role: Shadow["system"]["role"]): boolean {
 isBossOrMiniBossType() : boolean {
 	if (this.system.type != "shadow") return false;
 	const bossRoles : Shadow["system"]["role"][] = [
-		"miniboss", "miniboss-lord" , "boss" , "boss-lord"
+		"miniboss", "boss"
 	];
 	return bossRoles.some( role => this.hasRole(role));
 }
@@ -2520,6 +2524,15 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 	}
 	ret.push(...await this.endTurnSaves())
 	return ret;
+}
+
+encounterSizeValue() : number {
+	let val = 1;
+	if (this.hasRole("solo")) val *=4;
+	if (this.hasRole("duo")) val*= 2;
+	if (this.hasRole("elite")) val*= 1.5;
+	if (this.hasRole("summoner")) val *= 2;
+	return val;
 }
 
 async endTurnSaves(this: ValidAttackers) : Promise<string[]> {
@@ -2723,15 +2736,7 @@ getPoisonDamage(this: ValidAttackers): number {
 		default:
 			this.system satisfies never;
 	}
-	switch (this.system.role) {
-		case "miniboss":
-		case "miniboss-lord":
-		case "boss-lord":
-		case "boss":
-			return Math.round(base / 4);
-		default:
-			return base;
-	}
+	return Math.round(base * poisonDamageMultiplier(this.system.role) * poisonDamageMultiplier(this.system.role2));
 }
 
 static calcPowerRequirement(role: Shadow["system"]["role"], power: Readonly<Power>,  diff: number) : number {

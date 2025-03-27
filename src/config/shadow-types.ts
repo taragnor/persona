@@ -11,9 +11,10 @@ export const SHADOW_ROLE_LIST = [
 	"elite",
 	"miniboss",
 	"boss",
-	"miniboss-lord",
-	"boss-lord",
 	"treasure-shadow",
+	"solo",
+	"summoner",
+	"duo",
 ] as const;
 
 export type ShadowRole = typeof SHADOW_ROLE_LIST[number];
@@ -53,15 +54,15 @@ export const CREATURE_TYPE =  Object.fromEntries(
 export function shadowRoleMultiplier (role: ShadowRole) : number{
 	switch (role) {
 		case "elite":
-			return 2;
+			return 1.5;
 		case "miniboss":
-			return 6;
-		case "miniboss-lord":
 			return 3;
 		case "boss":
-			return 7;
-		case "boss-lord":
 			return 4;
+		case "solo":
+			return 4;
+		case "duo":
+			return 2;
 		case "treasure-shadow":
 			return 4;
 		default:
@@ -69,4 +70,19 @@ export function shadowRoleMultiplier (role: ShadowRole) : number{
 	}
 }
 
+export function poisonDamageMultiplier (role: ShadowRole) : number {
+	switch (role) {
+		case "solo":
+			return 0.2;
+		case "duo":
+			return 0.5;
+		case "elite":
+			return 0.75;
+		case "summoner":
+			return 0.75;
+		default:
+			return 1;
+	}
 
+
+}

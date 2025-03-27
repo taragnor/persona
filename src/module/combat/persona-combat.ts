@@ -941,6 +941,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	static async postAction(attacker: PToken, result: CombatResult ) {
+		await this.afterActionTriggered(attacker, result);
 		const power = result.power;
 		if (!power) return;
 		const moreActions = attacker.actor.actionsRemaining || attacker.actor.hasStatus("bonus-action");
@@ -950,6 +951,19 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				await game.combat.nextTurn();
 			}
 		}
+	}
+
+	static async afterActionTriggered(attacker: PToken, result: CombatResult) {
+		debugger;
+		const situation : Situation = {
+			trigger: "on-use-power",
+			user: attacker.actor.accessor,
+			usedPower: result.power?.accessor,
+			triggeringCharacter : attacker.actor.accessor,
+			triggeringUser: game.user,
+		}
+		await TriggeredEffect.execCombatTrigger("on-use-power", attacker.actor, situation);
+
 	}
 
 	static async usePowerOn(attacker: PToken, power: UsableAndCard, targets: PToken[], rollType : AttackRollType, modifiers: ModifierList = new ModifierList()) : Promise<CombatResult> {

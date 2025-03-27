@@ -669,6 +669,7 @@ export class CombatResult  {
 				attacker: attacker.actor.accessor,
 				target: target.actor.accessor,
 				user: attackerActor.accessor,
+				triggeringUser: game.user,
 			}
 			const combat = game.combat as PersonaCombat;
 			if (combat)

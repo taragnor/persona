@@ -17,14 +17,13 @@ export class TriggeredEffect {
 		const result = new CombatResult();
 		if (!situation) {
 			switch (trigger) {
+				case "on-combat-end":
 				case "on-damage":
 				case "on-kill-target":
 				case "on-combat-start":
 				case "on-use-power":
-				case "on-inflict-status":
 				case "start-turn":
-				case "end-turn":
-				case "on-combat-end": {
+				case "end-turn": {
 					if (!actor) {
 						PersonaError.softFail("NO Actor givent o trigger ${trigger}");
 						return result;
@@ -57,6 +56,7 @@ export class TriggeredEffect {
 					};
 					situation = newSit;
 					break;
+				case "on-inflict-status":
 				case "on-enter-region":
 				case "on-presence-check":
 				case "on-clock-tick":

@@ -325,6 +325,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 }
 function triggerComparison(condition: Triggered, situation: Situation, _source:Option<PowerContainer>) : boolean {
 	if (!("trigger" in situation)) return false;
+	if (!condition.trigger) return false;
 	if (condition.trigger != situation.trigger) return false;
 	switch (condition.trigger) {
 		case "on-attain-tarot-perk":
@@ -905,7 +906,20 @@ type GenericCombatTrigger = UserSituation & {
 type NonGenericCombatTrigger =
 	InflictStatusTrigger
 	| CombatGlobalTrigger
+	| UsePowerTrigger
+	| KillTargetTrigger
 ;
+
+type KillTargetTrigger = UserSituation & {
+	trigger: "on-kill-target",
+	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,
+}
+
+
+type UsePowerTrigger = UserSituation & {
+	trigger: "on-use-power",
+	triggeringCharacter: UniversalActorAccessor<ValidAttackers>;
+}
 
 type InflictStatusTrigger = UserSituation & {
 	trigger: "on-inflict-status",
@@ -932,7 +946,9 @@ type EnterRegionTrigger = {
 }
 
 export type Situation = SituationUniversal & (
-	TriggerSituation  | UserSituation | SocialCardSituation);
+	TriggerSituation  | NonTriggerUserSituation | SocialCardSituation);
+
+type NonTriggerUserSituation = UserSituation & {trigger ?: never};
 
 export type SocialCardSituation = UserSituation & {
 	attacker : UniversalActorAccessor<ValidSocialTarget>;
@@ -941,6 +957,7 @@ export type SocialCardSituation = UserSituation & {
 	target ?: UniversalActorAccessor<ValidSocialTarget>;
 	isSocial: true;
 	cameo : UniversalActorAccessor<ValidSocialTarget> | undefined;
+	trigger ?: never;
 };
 
 type SituationUniversal = {
