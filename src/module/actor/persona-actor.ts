@@ -2395,6 +2395,13 @@ get tarot() : (Tarot | undefined) {
 
 /** returns true on level up */
 async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
+	if (!amt) {
+		return false;
+	}
+	if (Number.isNaN(amt)) {
+		PersonaError.softFail(`Attempting to add NaN XP to ${this.name}, aborted`);
+		return false;
+	}
 	let levelUp = false;
 	let newxp = this.system.combat.xp + amt;
 	while (newxp > 100) {

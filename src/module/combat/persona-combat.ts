@@ -954,7 +954,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	static async afterActionTriggered(attacker: PToken, result: CombatResult) {
-		debugger;
 		const situation : Situation = {
 			trigger: "on-use-power",
 			user: attacker.actor.accessor,

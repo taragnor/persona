@@ -1,3 +1,4 @@
+import { sleep } from "./utility/async-wait.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaSockets } from "./persona.js";
 import { weightedChoice } from "./utility/array-tools.js";
@@ -90,9 +91,12 @@ export class Metaverse {
 		const encounter : Shadow[] = [];
 		let bailout = 0;
 		while (encounterSize > 0) {
-			if (bailout > 500) {
+			if (bailout > 200) {
 				PersonaError.softFail(`Had to bail out, couldn't find match for ${scene.name}`);
 				return [];
+			}
+			if (bailout == 20) {
+				ui.notifications.warn("Over 20 fail attempts getting random encounter");
 			}
 			const pick1 = weightedChoice(weightedList);
 			const pick2 = weightedChoice(weightedList);
@@ -117,10 +121,14 @@ export class Metaverse {
 				return [];
 			}
 			const sizeVal = pick.encounterSizeValue();
-			if (encounterSize < sizeVal) {continue;}
+			if (Math.max(1, encounterSize) < sizeVal) {
+				bailout++;
+				continue;
+			}
 			encounterSize -= sizeVal;
 			encounter.push(pick);
 		}
+		encounter.sort( (a,b) => a.name.localeCompare(b.name));
 		return encounter;
 	}
 
@@ -165,6 +173,7 @@ export class Metaverse {
 	}
 
 	static async awardXP(shadows: Shadow[], party: (PC | NPCAlly)[]) : Promise<void> {
+		if (party.length == 0) return;
 		const partyLvl = Math.max(...party.map(x=> x.system.combat.classData.level));
 		const totalXP = shadows.reduce( (acc,shadow) => {
 			const xp = this.getXPFor(shadow, partyLvl) ;
@@ -222,7 +231,7 @@ export class Metaverse {
 			items.push(item);
 		};
 		for (const shadow of shadows) {
-			if (shadow.system.type != "shadow") {continue;}
+			if (shadow.system.type != "shadow") { continue;}
 			const treasure = shadow.system.encounter.treasure;
 			const moneyLow = treasure.moneyLow ?? 0;
 			const moneyHigh = treasure.moneyHigh ?? 0;
