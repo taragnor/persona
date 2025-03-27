@@ -1,3 +1,5 @@
+import { RESULT_SUBTYPE_COMPARISON } from "../../../config/numeric-comparison.js";
+import { COMBAT_EFFECTS } from "../../../config/effect-types.js";
 import { SocialCard } from "../persona-item.js";
 import { REALDAMAGETYPES } from "../../../config/damage-types.js";
 import { VARIABLE_ACTIONS } from "../../../config/consequence-types.js";
@@ -131,6 +133,8 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			CARD_TAGS,
 			EQUIPMENT_TAGS,
 			VARIABLE_ACTIONS,
+			COMBAT_EFFECTS,
+			RESULT_SUBTYPE_COMPARISON,
 			SCENE_WEATHER_TYPES: Object.fromEntries(
 				([""].concat(Object.keys(CONFIG.weatherEffects))).map( x=> [x,x])
 			),

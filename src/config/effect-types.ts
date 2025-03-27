@@ -29,6 +29,7 @@ export const CONSQUENCELIST = [
 	"lower-resistance",
 	"use-power",
 	"alter-mp",
+	"combat-effect",
 	"save-slot", //deprecated, don't expend slot you normally would
 	"recover-slot", // deprecated
 	"add-escalation", // deprecated
@@ -188,4 +189,14 @@ export type AlterMPSubtype = typeof ALTER_MP_SUBTYPES_LIST[number];
 
 export const ALTER_MP_SUBTYPES = Object.fromEntries(
 	ALTER_MP_SUBTYPES_LIST.map( x=> [x, `persona.alter-mp-subtypes.${x}`])
+);
+
+export const COMBAT_EFFECTS_LIST = [
+	"auto-end-turn"
+] as const;
+
+export type CombatEffect = typeof COMBAT_EFFECTS_LIST[number];
+
+export const COMBAT_EFFECTS = Object.fromEntries(
+	COMBAT_EFFECTS_LIST.map( x=> [x, `persona.combat-effects-subtypes.${x}`])
 );

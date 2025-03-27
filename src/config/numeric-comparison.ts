@@ -29,6 +29,7 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"links-dating",
 	"social-variable",
 	"round-count",
+	"combat-result-based",
 ] as const;
 
 export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];
@@ -83,6 +84,7 @@ type NonGenericNumericComparison = ResistanceComparison
 	| SocialLinkLevelComparison
 	| SocialVariableComparison
 	| totalSLComparison
+	| CombatResultComparison
 ;
 
 type SocialVariableComparison = NumericComparisonBase & {
@@ -163,3 +165,21 @@ type totalSLComparison = NumericComparisonBase & {
 	conditionTarget: ConditionTarget,
 }
 
+
+type CombatResultComparison = NumericComparisonBase & {
+	comparisonTarget:	"combat-result-based",
+	resultSubtypeComparison: CombatResultSubtypeComparison,
+	invertComparison: boolean,
+}
+
+const RESULT_SUBTYPE_COMPARISON_LIST = [
+	"total-hits",
+	"total-knocks-down",
+] as const;
+
+type CombatResultSubtypeComparison = typeof RESULT_SUBTYPE_COMPARISON_LIST[number];
+
+
+export const RESULT_SUBTYPE_COMPARISON = Object.fromEntries(
+	RESULT_SUBTYPE_COMPARISON_LIST.map( x=> [x, `persona.preconditions.combat-result-subtype.${x}`])
+);

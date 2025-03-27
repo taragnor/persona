@@ -287,8 +287,6 @@ export class ConditionalEffectManager {
 		html.find(".copy-effect").on("click", async(ev) => this.handler_copyEffect(ev, doc))
 		html.find(".copy-consequence").on("click", async(ev) => this.handler_copyConsequence(ev, doc))
 		html.find(".copy-condition").on("click", async(ev) => this.handler_copyCondition(ev, doc))
-
-
 	}
 
 	static getEffects<T extends Actor<any>, I extends Item<any>>(CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null) : ConditionalEffect[] {
@@ -599,9 +597,25 @@ export class ConditionalEffectManager {
 				return `Round Count ${endString(cond)}`;
 			case "total-SL-levels":
 				return `Total SL levels among all PCs ${endString(cond)}`;
+			case "combat-result-based":
+				const combatResult = this.#printCombatResultString(cond);
+				return `${combatResult} ${endString(cond)}`;
 			default:
 				cond satisfies never;
 				return "UNKNOWN CONDITION"
+		}
+	}
+
+	static #printCombatResultString(cons : Precondition & {type: "numeric", comparisonTarget: "combat-result-based"}): string {
+		const non = cons.invertComparison ? "non-" : "";
+		switch (cons.resultSubtypeComparison) {
+			case "total-hits":
+				return `Number of ${non}Misses`;
+			case "total-knocks-down":
+				return `Number of ${non}Knockdowns`;
+			default:
+				cons.resultSubtypeComparison satisfies never;
+				return "ERROR";
 		}
 	}
 
@@ -721,8 +735,21 @@ export class ConditionalEffectManager {
 			case "add-creature-tag":
 				const tag = this.translate(cons.creatureTag, CREATURE_TAGS);
 				return `Add ${tag} tag`;
+			case "combat-effect":
+				return this.#printCombatEffect(cons)
 			default:
 				cons satisfies never;
+				return "ERROR";
+		}
+
+	}
+
+	static #printCombatEffect( cons: Consequence & {type: "combat-effect"}) : string {
+		switch (cons.combatEffect) {
+			case "auto-end-turn":
+				return `Automatically End Turn`;
+			default:
+				cons.combatEffect satisfies never;
 				return "ERROR";
 		}
 

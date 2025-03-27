@@ -1,3 +1,6 @@
+import { ActorChange } from "./combat/combat-result.js";
+import { AttackResult } from "./combat/combat-result.js";
+import { CombatResult } from "./combat/combat-result.js";
 import { Usable } from "./item/persona-item.js";
 import { SocialLink } from "./actor/persona-actor.js";
 import { NPCAlly } from "./actor/persona-actor.js";
@@ -302,7 +305,11 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			.reduce( (acc, pc) => acc + pc.getSocialSLWith(targetActor), 0)
 			break;
 		}
-
+		case "combat-result-based":
+			const res = combatResultBasedNumericTarget(condition, situation, source) ;
+			if (typeof res == "boolean") return res;
+			target= res;
+			break;
 		default:
 			condition satisfies never;
 			PersonaError.softFail(`Unknwon numeric comparison type ${condition["comparisonTarget"]}`)
@@ -323,6 +330,44 @@ function numericComparison(condition: Precondition, situation: Situation, source
 	}
 	return false;
 }
+
+function combatResultBasedNumericTarget(condition: Precondition & {type: "numeric", comparisonTarget: "combat-result-based"}, situation: Situation, _source:Option<PowerContainer>): number | boolean {
+	const invert = condition.invertComparison ?? false;
+	let resultCompFn : (atk: AttackResult) => boolean = (_atk) => true;
+	let changeCompFn: (  changes: ActorChange<ValidAttackers>) => boolean = () => true;
+	switch (condition.resultSubtypeComparison) {
+		case "total-hits":
+			resultCompFn = function(atk: AttackResult) {
+				return atk.result == "hit" || atk.result == "crit";
+			}
+			break;
+		case "total-knocks-down":
+			changeCompFn = function(change) {
+				return !!change.addStatus.find( x=> x.id == "down");
+			}
+			break;
+		default:
+			condition.resultSubtypeComparison satisfies never;
+			return false
+	}
+	if (!("combatResult" in situation)) {
+		return false;
+	}
+	let count = 0;
+	for (const [atkRes, changes] of situation.combatResult.attacks.entries()) {
+		const target = PersonaDB.findToken(atkRes.target);
+		const targetChanges = changes.filter( c=> {
+			const changed = PersonaDB.findActor(c.actor);
+			return changed == target.actor;
+		});
+		const changePass = targetChanges.some( change=>changeCompFn (change));
+		let res = resultCompFn(atkRes) && changePass;
+		res = invert ? !res : res;
+		if (res) {count += 1;}
+	}
+	return count;
+}
+
 function triggerComparison(condition: Triggered, situation: Situation, _source:Option<PowerContainer>) : boolean {
 	if (!("trigger" in situation)) return false;
 	if (!condition.trigger) return false;
@@ -919,6 +964,7 @@ type KillTargetTrigger = UserSituation & {
 type UsePowerTrigger = UserSituation & {
 	trigger: "on-use-power",
 	triggeringCharacter: UniversalActorAccessor<ValidAttackers>;
+	combatResult: CombatResult,
 }
 
 type InflictStatusTrigger = UserSituation & {

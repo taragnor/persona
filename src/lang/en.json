@@ -450,6 +450,7 @@
 	"persona.effecttypes.alter-energy": "Alter Energy",
 	"persona.effecttypes.add-creature-tag": "Add a creature tag",
 	"persona.effecttypes.alter-mp": "Alter MP",
+	"persona.effecttypes.combat-effect": "Combat Effect",
 	"persona.effecttypes.escalationManipulation": "Change Escalation",
 	"persona.effecttypes.extraAttack": "Extra Attack",
 	"persona.effecttypes.modifier-new": "Apply Modifier (multi)",
@@ -505,7 +506,7 @@
 	"persona.alter-mp-subtypes.cost-reduction": "Cost Multiplier",
 	"persona.alter-mp-subtypes.percent-of-total": "% of total",
 
-
+"persona.combat-effects-subtypes.auto-end-turn": "Automatically End Turn",
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",
@@ -632,6 +633,7 @@
 	"persona.preconditions.comparison.links-dating": "Amount of People being Dated",
 	"persona.preconditions.comparison.social-variable": "Value of a Social Variable",
 	"persona.preconditions.comparison.round-count": "Combat Round Count",
+	"persona.preconditions.comparison.combat-result-based": "Combat Result Data",
 
 	"persona.preconditions.socialChecks.relationship-type-check": "Relationship Type is",
 	"persona.preconditions.socialChecks.is-social-disabled": "Is Socially Disabled",
@@ -640,6 +642,9 @@
 
 	"persona.preconditions.userComparison.triggering-user": "Triggering User",
 	"persona.preconditions.userComparison.current-user": "Current User",
+
+	"persona.preconditions.combat-result-subtype.total-hits": "total Hits",
+	"persona.preconditions.combat-result-subtype.total-knocks-down": "Total Knock downs",
 
 	"persona.triggers.on-damage": "Character Takes Damage",
 	"persona.triggers.on-kill-target": "Character kills a target",

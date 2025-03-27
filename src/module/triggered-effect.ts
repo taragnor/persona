@@ -21,7 +21,6 @@ export class TriggeredEffect {
 				case "on-damage":
 				case "on-kill-target":
 				case "on-combat-start":
-				case "on-use-power":
 				case "start-turn":
 				case "end-turn": {
 					if (!actor) {
@@ -61,6 +60,7 @@ export class TriggeredEffect {
 				case "on-presence-check":
 				case "on-clock-tick":
 				case "on-clock-change":
+				case "on-use-power":
 				case "on-open-door":
 						PersonaError.softFail(`Must proivide a situation with this trigger:  ${trigger}`);
 					return result;

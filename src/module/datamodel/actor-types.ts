@@ -113,7 +113,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 		} catch (e) {
 			if (game.user.isGM && PersonaSettings.debugMode()) {
 				Debug(system);
-				ui.notifications.warn("Error on Shadow Schema Convert");
+				console.log("Error on Shadow Schema Convert");
 			}
 		}
 		if (typeof system?.combat?.defenses?.fort == "number") {

@@ -107,6 +107,20 @@
 	</div>
 	{{/if}}
 
+	{{#if (eq cond.comparisonTarget "combat-result-based")}}
+	<div>
+		<span>
+			<select name="{{strcat namePrefix 'resultSubtypeComparison'}}">
+				{{selectOptions POWERSTUFF.RESULT_SUBTYPE_COMPARISON localize=true selected=cond.resultSubtypeComparison}}
+			</select>
+			<span>
+				<label> invert comparison</label>
+				<input type="checkbox" id="invert" name="{{strcat namePrefix 'invertComparison'}}" {{checked cond.invertComparison}}>
+			</span>
+		</span>
+	</div>
+	{{/if}}
+
 	{{/if}}
 
 

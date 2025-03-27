@@ -945,21 +945,38 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const power = result.power;
 		if (!power) return;
 		const moreActions = attacker.actor.actionsRemaining || attacker.actor.hasStatus("bonus-action");
-		const autoEndTurn= !moreActions && PersonaSettings.autoEndTurn();
+		const combat= game.combat as PersonaCombat | undefined;
+		const autoEndTurn= PersonaSettings.autoEndTurn()
+			&& (
+				!moreActions
+				|| combat?.forceAdvanceTurn
+			) ;
 		if (power == PersonaDB.getBasicPower("All-out Attack") || autoEndTurn) {
-			if (game.combat && game.combat.combatant?.token == attacker) {
-				await game.combat.nextTurn();
+			if (combat && combat.combatant?.token == attacker) {
+				if (combat.forceAdvanceTurn) {
+					await combat.setForceEndTurn(false);
+				}
+				await combat.nextTurn();
 			}
 		}
 	}
 
-	static async afterActionTriggered(attacker: PToken, result: CombatResult) {
+	get forceAdvanceTurn() : boolean {
+		return this.getFlag<boolean>("persona", "autoEndTurn") ?? false;
+	}
+
+	async setForceEndTurn(val = true): Promise<void> {
+		await this.setFlag("persona", "autoEndTurn", val);
+	}
+
+	static async afterActionTriggered(attacker: PToken, combatResult: CombatResult) {
 		const situation : Situation = {
 			trigger: "on-use-power",
 			user: attacker.actor.accessor,
-			usedPower: result.power?.accessor,
+			usedPower: combatResult.power?.accessor,
 			triggeringCharacter : attacker.actor.accessor,
 			triggeringUser: game.user,
+			combatResult,
 		}
 		await TriggeredEffect.execCombatTrigger("on-use-power", attacker.actor, situation);
 
@@ -1622,6 +1639,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "alter-mp":
 			case "extraTurn":
 			case "teach-power":
+			case "combat-effect":
 				return [{applyTo,cons}];
 			case "expend-item":
 				if (cons.itemId) {

@@ -1,3 +1,4 @@
+import { CombatEffect } from "./effect-types.js";
 import { Consumable } from "../module/item/persona-item.js";
 import { SkillCard } from "../module/item/persona-item.js";
 import { ConsequenceType } from "./effect-types.js";
@@ -119,7 +120,7 @@ export type ExtraTurnEffect = {
 	activation: number,
 };
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence;
 ;
 
 export type StatusEffect = StatusEffect_Basic | StatusEffect_NonBasic;
@@ -184,7 +185,13 @@ type NonGenericConsequences = UsePowerConsequence
 	| RemoveStatusConsequence
 	| SetFlagConsequence
 	| AddTagConsequence
+	| CombatEffectConsequence
 ;
+
+type CombatEffectConsequence = {
+	type: "combat-effect";
+	combatEffect: CombatEffect
+};
 
 type AddTagConsequence = {
 	type: "add-creature-tag",
@@ -249,6 +256,7 @@ type AlterMPConsequence = {
 	subtype: AlterMPSubtype,
 	amount: number,
 }
+
 
 type ExpendItemConsequence = {
 	type : "expend-item",

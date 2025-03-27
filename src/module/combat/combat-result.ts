@@ -420,6 +420,10 @@ export class CombatResult  {
 				break;
 			case "add-creature-tag":
 				break;
+			case "combat-effect":
+				if (!effect) break;
+				effect.otherEffects.push(cons);
+				break;
 			default: {
 				cons satisfies never;
 				throw new Error("Should be unreachable");
@@ -788,6 +792,7 @@ export class CombatResult  {
 				case "add-power-to-list":
 				case "teach-power":
 				case "alter-mp":
+				case "combat-effect":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -936,6 +941,11 @@ export class CombatResult  {
 						default:
 							otherEffect.subtype satisfies never;
 							PersonaError.softFail("No subtype for Alter MP effect");
+					}
+					break;
+				case "combat-effect":
+					if (game.combat && otherEffect.combatEffect == "auto-end-turn" && actor == game.combat?.combatant?.actor) {
+						await (game.combat as PersonaCombat).setForceEndTurn(true);
 					}
 					break;
 				default:
