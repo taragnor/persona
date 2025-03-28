@@ -10,10 +10,13 @@
 					<i class="fa-solid fa-plus"> </i>
 				</a>
 			</h3>
-			{{#each actor.system.encounter.dungeons as |dungeon i|}}
+			{{#each actor.system.encounter.dungeonEncounters as |dungeon i|}}
 			<div class="dungeon" data-dungeon-index="{{i}}">
-				<select name="system.encounter.dungeons.{{i}}">
-					{{selectOptions ../SHADOW_STUFF.SCENE_LIST localize=false selected=dungeon}}
+				<select name="system.encounter.dungeonEncounters.{{i}}.dungeonId">
+					{{selectOptions ../SHADOW_STUFF.SCENE_LIST localize=false selected=dungeon.dungeonId}}
+				</select>
+				<select name="system.encounter.dungeonEncounters.{{i}}.frequency">
+					{{selectOptions ../SHADOW_STUFF.FREQUENCY localize=false selected=dungeon.frequency}}
 				</select>
 				<a class="del-dungeon">
 					<i class="fa-solid fa-trash-can"></i>
@@ -27,18 +30,10 @@
 			</label>
 			{{rangePicker name="system.encounter.CR" value=actor.system.encounter.CR min=1 max=10 step=1}}
 		</div>
-		<div>
-			<label>
-				Frequency
-			</label>
-			<select name="system.encounter.frequency">
-				{{selectOptions SHADOW_STUFF.FREQUENCY localize=false selected=actor.system.encounter.frequency}}
-			</select>
-		</div>
 		<div data-top-path="system.encounter.conditions" data-path="system.encounter.conditions">
 			{{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.encounter.conditions." POWERSTUFF=POWERSTUFF owner=actor}}
 		</div>
-		</div>
+	</div>
 	<div class="treasure-section">
 		<div class="flexrow">
 			<label> Money </label>

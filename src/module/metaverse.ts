@@ -57,22 +57,64 @@ export class Metaverse {
 		await Logger.sendToChat(`Exiting Metaverse...`);
 	}
 
-	static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod = 0): Shadow[] {
-		const scene = game.scenes.current;
-		const encounterList  = (scene as PersonaScene).encounterList()
-			.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
-		const weightedList = encounterList
+	static weightedTest2() {
+		const map = new Map<Shadow["name"], number>();
+		const encounterList = this.getEncounterList(game.scenes.current as PersonaScene, "shadow");
+		const weightedList = this.weightedEncounterList(encounterList);
+		for (let tries =0; tries< 5000; tries++) {
+			const shadow = weightedChoice(weightedList);
+			if (!shadow) {
+				console.warn("No choice was selected")
+				continue;
+			}
+			const current = map.get(shadow.name) ?? 0;
+			map.set(shadow.name, current +1);
+		}
+		return this.#averageMap(map);
+	}
+
+	static weightedTest() {
+		const map = new Map<Shadow["name"], number>();
+		for (let tries =0; tries< 1000; tries++) {
+			const encounter = this.generateEncounter("shadow");
+			for (const shadow of encounter) {
+				const current = map.get(shadow.name) ?? 0;
+				map.set(shadow.name, current +1);
+			}
+		}
+		return this.#averageMap(map);
+	}
+
+	static #averageMap(map: Map<string, number>) : string[] {
+		let total = 0;
+		let ret = [] as string[];
+		for (const [_data, amt] of map.entries()) {
+			total += amt;
+		}
+		const sorted = Array.from(map.entries()).sort( (a,b) => b[1] - a[1]);
+		for (const [data, amt] of sorted) {
+			const avg = Math.round(amt/total * 100)/100;
+			ret.push( `${data}: ${avg}`);
+		}
+		return ret;
+	}
+
+	static weightedEncounterList(arr: Shadow[], scene: PersonaScene = game.scenes.current as PersonaScene) {
+		return arr
 			.map (shadow => ({
 				item: shadow,
-				weight: shadow.system.encounter.frequency ?? 1,
+				weight: shadow.getEncounterWeight(scene) ?? 1,
 			}));
-		if (encounterList.length == 0) {
-			PersonaError.softFail(`Encounter List is empty for ${scene.name} ${shadowType ? "(" + shadowType+ ")"  :""}`);
-			return [];
-		}
+	}
+
+	static getEncounterList(scene: PersonaScene, shadowType ?: Shadow["system"]["creatureType"]): Shadow[] {
+		return scene.encounterList()
+			.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
+}
+
+static #getEncounterSize(sizeMod = 0) : number {
 		let encounterSize = sizeMod;
 		const sizeRoll = Math.floor((Math.random() * 10) +1);
-		let enemyType : Shadow["system"]["creatureType"] | undefined = undefined;
 		switch (sizeRoll) {
 			case 1:
 				encounterSize += 3;
@@ -81,15 +123,41 @@ export class Metaverse {
 				encounterSize += 5;
 				break;
 			default:
-				console.debug(`Encounter Size Roll (1-10): ${sizeRoll}`);
 				if (sizeRoll > 10) {
 					PersonaError.softFail(`Encounter number is ${sizeRoll}`);
 				}
 				encounterSize += 4;
 				break;
 		}
+	return encounterSize;
+}
+
+static choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encounterList: Shadow[]): Shadow | undefined {
+	if (!pick1 || !pick2) {
+		PersonaError.softFail("Couldn't get a pick from choice list");
+		return undefined;
+	}
+	if (Math.random() < .4) return pick1; //favor weights less heavily
+	const p1score = encounterList
+		.reduce ( (acc, shadow) => acc + shadow.complementRating(pick1), 0);
+	const p2score = encounterList
+		.reduce ( (acc, shadow) => acc + shadow.complementRating(pick2), 0);
+	const pick = p2score < p1score ? pick1 : pick2;
+	return pick;
+}
+
+	static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod = 0): Shadow[] {
+		const scene = game.scenes.current as PersonaScene;
+		const encounterList  = this.getEncounterList(scene, shadowType);
+		const weightedList = this.weightedEncounterList(encounterList, scene);
+		if (encounterList.length == 0) {
+			PersonaError.softFail(`Encounter List is empty for ${scene.name} ${shadowType ? "(" + shadowType+ ")"  :""}`);
+			return [];
+		}
+		let enemyType : Shadow["system"]["creatureType"] | undefined = undefined;
 		const encounter : Shadow[] = [];
 		let bailout = 0;
+		let encounterSize = this.#getEncounterSize(sizeMod);
 		while (encounterSize > 0) {
 			if (bailout > 200) {
 				PersonaError.softFail(`Had to bail out, couldn't find match for ${scene.name}`);
@@ -100,25 +168,16 @@ export class Metaverse {
 			}
 			const pick1 = weightedChoice(weightedList);
 			const pick2 = weightedChoice(weightedList);
-			if (!pick1 || !pick2) {
-				PersonaError.softFail("Couldn't get a pick from choice list");
-				break;
+			const pick  = this.choosePick(pick1, pick2, encounterList);
+			if (!pick) {
+				continue;
 			}
-			const p1score = encounterList
-				.reduce ( (acc, shadow) => acc + shadow.complementRating(pick1), 0);
-			const p2score = encounterList
-				.reduce ( (acc, shadow) => acc + shadow.complementRating(pick2), 0);
-			const pick = p2score > p1score ? pick1 : pick2;
 			if (enemyType == undefined) {
 				enemyType = pick.system.creatureType;
 			}
 			if (pick.system.creatureType != enemyType) {
 				bailout++; //escape hatch for if it keeps screwing up
 				continue;
-			}
-			if (!pick) {
-				PersonaError.softFail(`Can't get a pick for random encounters for ${scene.name}`);
-				return [];
 			}
 			const sizeVal = pick.encounterSizeValue();
 			if (Math.max(1, encounterSize) < sizeVal) {

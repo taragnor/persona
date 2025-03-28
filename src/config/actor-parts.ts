@@ -4,7 +4,7 @@ import { TAROT_DECK } from "./tarot.js";
 import { DEFENSE_CATEGORY_LIST } from "./defense-categories.js";
 import { TarotCard } from "./tarot.js";
 import { StatusDuration } from "../module/active-effect.js";
-const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
+const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, FilePathField: file } = foundry.data.fields;
 import { ResistType } from "./damage-types.js";
 import { RESIST_STRENGTH_LIST } from "./damage-types.js";
 import { ResistStrength } from "./damage-types.js";
@@ -252,13 +252,15 @@ export function SocialTargetBlockData() {
 	}
 }
 
+
 export function encounterDataSchema() {
 	return new sch( {
 		CR: new num({integer: true, initial: 1, max: 10, min:1 }),
-		frequency: new num({integer: false, initial: 1.0}),
 		conditions: new arr(new obj<Precondition>()),
 		rareShadow: new bool( {initial: false}),
-		dungeons: new arr( new id()),
+		dungeonEncounters: new arr( new embedded(EncounterDataDM)),
+		dungeons: new arr( new id()), //deprecated but left for conversion purposes
+		frequency: new num({integer: false, initial: 1.0}), ///deprecated but left for conversion purposes
 		treasure: new sch( {
 			moneyLow: new num( {initial: 0, integer: true}),
 			moneyHigh: new num( {initial: 0, integer: true}),
@@ -272,4 +274,16 @@ export function encounterDataSchema() {
 			item2prob: new num( {initial: 2, integer: false, min: 0, max: 100}),
 		}),
 	});
+
+
 }
+
+class EncounterDataDM extends foundry.abstract.DataModel {
+	static override defineSchema() {
+		return {
+			dungeonId: new txt(),
+			frequency: new num({initial: 1})
+		}
+	}
+}
+

@@ -1,3 +1,4 @@
+import { frequencyConvert } from "../../config/frequency.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
@@ -115,6 +116,21 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 				Debug(system);
 				console.log("Error on Shadow Schema Convert");
 			}
+		}
+		try {
+			if (data.encounter.dungeons && system.encounter.dungeonEncounters.length == 0) {
+				const dungeonIds : string[] = data.encounter.dungeons;
+				for (const dungeonId of dungeonIds) {
+					system.encounter.dungeonEncounters.push({
+						dungeonId,
+						frequency: frequencyConvert(system.encounter.frequency),
+					});
+				}
+				data.encounter.dungeons = [];
+			}
+		} catch (e) {
+			console.log("Something went wrong with migrating dungeondata.");
+			Debug(data.encounter);
 		}
 		if (typeof system?.combat?.defenses?.fort == "number") {
 			system.combat.defenses.fort = convert(data.combat.defenses.fort);

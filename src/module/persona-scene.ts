@@ -13,7 +13,7 @@ export class PersonaScene extends Scene {
 
 	allFoes() : Shadow[] {
 		return PersonaDB.shadows()
-		.filter ( shadow=> shadow.system.encounter.dungeons.includes(this.id));
+			.filter ( shadow=> shadow.system.encounter.dungeonEncounters.some( x=> x.dungeonId == this.id)) ;
 	}
 
 	encounterList() : Shadow[] {
@@ -23,7 +23,7 @@ export class PersonaScene extends Scene {
 		let encounterList =
 			this.allFoes()
 			.filter( shadow => !disAllowedRoles.includes(shadow.system.role)
-				&& shadow.system.encounter.frequency > 0
+				&& shadow.getEncounterWeight(this) > 0
 			)
 			.filter( shadow => {
 				const situation = {

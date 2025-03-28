@@ -1,3 +1,4 @@
+import { PersonaScene } from "../persona-scene.js";
 import { poisonDamageMultiplier } from "../../config/shadow-types.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { shadowRoleMultiplier } from "../../config/shadow-types.js";
@@ -62,12 +63,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	cache: {
 		tarot: Tarot | undefined;
+		complementRating: Map<Shadow["id"], number>;
 	};
 
 	constructor(...arr: any[]) {
 		super(...arr);
 		this.cache = {
 			tarot: undefined,
+			complementRating: new Map(),
 		}
 	}
 
@@ -1205,27 +1208,47 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return modList;
 	}
 
-	complementRating (this: Shadow, other: Shadow) : number {
-		return this.#complementRating(other) + other.#complementRating(this);
-	}
 
 	getUnarmedDamageType(): RealDamageType {
 		if (this.system.type == "shadow") return this.system.combat.baseDamageType ?? "physical";
 		return "physical";
 	}
 
+	listComplementRatings(this: Shadow, list: Shadow[]) : string[] {
+		return list.map( shadow => {
+			const rating = Math.round(this.complementRating(shadow) * 10) / 10;
+			return {rating, name: shadow.name};
+		})
+			.sort( (a,b) => b.rating - a.rating)
+			.map(x => `${x.name}: ${x.rating}`)
+
+	}
+
+	complementRating (this: Shadow, other: Shadow) : number {
+		const cachedRating = this.cache.complementRating.get(other.id);
+		if (cachedRating != undefined) {
+			return cachedRating;
+		}
+		const rating = this.#complementRating(other) + other.#complementRating(this);
+		this.cache.complementRating.set(other.id, rating);
+		return rating;
+	}
+
 	#complementRating (this: Shadow, other: Shadow) : number {
 		let rating = 0;
-		if (this == other) return 3; //baseline
+		if (this == other) return 2; //baseline
 		const role1 = this.system.role;
 		const role2 = other.system.role;
 		if (role1 == role2) {
-			if (role1 == "support") rating -= 2;
-			if (role1 == "soldier") rating -= 2;
-			if (role1 == "lurker") rating -= 2;
+			if (role1 == "support") rating -= 0.5;
+			if (role1 == "soldier") rating -= 0.5;
+			if (role1 == "lurker") rating -= 0.5;
 		}
 		const weaknesses = DAMAGETYPESLIST
 			.filter( dmg => dmg != "by-power" && this.elementalResist(dmg) == "weakness") as RealDamageType[];
+		rating -= 0.5 * weaknesses.length;
+		const normalR = DAMAGETYPESLIST
+			.filter( dmg => dmg != "by-power" && this.elementalResist(dmg) == "normal") as RealDamageType[];
 		for (const w of weaknesses) {
 			const res = other.elementalResist(w);
 			switch (res)  {
@@ -1237,12 +1260,35 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					rating += 3;
 					break;
 				case "resist":
-					rating += 1;
+					rating += 0.5;
+					break;
+				case "normal":
+					rating -= 1;
+					break;
+				case "weakness":
+					rating -= 2;
 					break;
 				default:
 					break;
 			}
 		}
+		for (const n of normalR) {
+			const res = other.elementalResist(n);
+			switch (res) {
+				case "resist":
+					rating += 0.1;
+					break;
+				case "absorb":
+				case "reflect":
+				case "block":
+					rating += 1;
+					break;
+				case "weakness":
+					rating -= 1;
+					break;
+			}
+		}
+
 		const attacks = new Set(
 			this.powers
 			.map(x=> x.system.dmg_type)
@@ -2554,6 +2600,12 @@ async endTurnSaves(this: ValidAttackers) : Promise<string[]> {
 
 getFlagState(flagName: string) : boolean {
 	return !!this.getEffectFlag(flagName);
+}
+
+getEncounterWeight(this: Shadow, scene: PersonaScene): number {
+	const encounterData= this.system.encounter.dungeonEncounters.find(x=> x.dungeonId == scene.id);
+	if (!encounterData) return 0;
+	return encounterData.frequency ?? 1;
 }
 
 getFlagDuration(flagName: string) : StatusDuration | undefined {

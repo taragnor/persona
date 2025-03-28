@@ -137,16 +137,19 @@ export class ShadowSheet extends CombatantSheetBase {
 	}
 
 	async addDungeon(_event: JQuery.ClickEvent) {
-		const arr= this.actor.system.encounter.dungeons;
-		arr.push("");
-		await this.actor.update({"system.encounter.dungeons": arr});
+		const arr= this.actor.system.encounter.dungeonEncounters;
+		arr.push({
+			dungeonId: game.scenes.current.id,
+			frequency: 1,
+		});
+		await this.actor.update({"system.encounter.dungeonEncounters": arr});
 	}
 
 	async deleteDungeon(event: JQuery.ClickEvent) {
 		const index = Number(HTMLTools.getClosestData(event,"dungeonIndex"));
-		const arr= this.actor.system.encounter.dungeons;
+		const arr= this.actor.system.encounter.dungeonEncounters;
 		arr.splice(index, 1);
-		await this.actor.update({"system.encounter.dungeons": arr});
+		await this.actor.update({"system.encounter.dungeonEncounters": arr});
 	}
 }
 
