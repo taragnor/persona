@@ -1,4 +1,3 @@
-import { sleep } from "./utility/async-wait.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaSockets } from "./persona.js";
 import { weightedChoice } from "./utility/array-tools.js";
@@ -57,6 +56,18 @@ export class Metaverse {
 		await Logger.sendToChat(`Exiting Metaverse...`);
 	}
 
+	static weightedTest() {
+		const map = new Map<Shadow["name"], number>();
+		for (let tries =0; tries< 2000; tries++) {
+			const encounter = this.generateEncounter("shadow");
+			for (const shadow of encounter) {
+				const current = map.get(shadow.name) ?? 0;
+				map.set(shadow.name, current +1);
+			}
+		}
+		return this.#averageMap(map);
+	}
+
 	static weightedTest2() {
 		const map = new Map<Shadow["name"], number>();
 		const encounterList = this.getEncounterList(game.scenes.current as PersonaScene, "shadow");
@@ -73,17 +84,6 @@ export class Metaverse {
 		return this.#averageMap(map);
 	}
 
-	static weightedTest() {
-		const map = new Map<Shadow["name"], number>();
-		for (let tries =0; tries< 1000; tries++) {
-			const encounter = this.generateEncounter("shadow");
-			for (const shadow of encounter) {
-				const current = map.get(shadow.name) ?? 0;
-				map.set(shadow.name, current +1);
-			}
-		}
-		return this.#averageMap(map);
-	}
 
 	static #averageMap(map: Map<string, number>) : string[] {
 		let total = 0;
@@ -119,7 +119,10 @@ static #getEncounterSize(sizeMod = 0) : number {
 			case 1:
 				encounterSize += 3;
 				break;
-			case 9: case 10:
+			case 2: case 3: case 4: case 5: case 6: case 7:
+				encounterSize += 4;
+				break;
+			case 8: case 9: case 10:
 				encounterSize += 5;
 				break;
 			default:
@@ -137,7 +140,7 @@ static choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encount
 		PersonaError.softFail("Couldn't get a pick from choice list");
 		return undefined;
 	}
-	if (Math.random() < .4) return pick1; //favor weights less heavily
+	if (Math.random() < 0.3333) return pick1; //favor weights less heavily
 	const p1score = encounterList
 		.reduce ( (acc, shadow) => acc + shadow.complementRating(pick1), 0);
 	const p2score = encounterList

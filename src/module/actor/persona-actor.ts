@@ -1237,12 +1237,23 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	#complementRating (this: Shadow, other: Shadow) : number {
 		let rating = 0;
 		if (this == other) return 2; //baseline
-		const role1 = this.system.role;
-		const role2 = other.system.role;
-		if (role1 == role2) {
-			if (role1 == "support") rating -= 0.5;
-			if (role1 == "soldier") rating -= 0.5;
-			if (role1 == "lurker") rating -= 0.5;
+		const scaledPairs : [Shadow["system"]["role"], Shadow["system"]["role"], number][] = [
+			["soldier", "lurker", 1],
+			["soldier", "support", 1],
+			["soldier", "artillery", 1],
+			["brute", "support", 1],
+			["brute", "controller", 1],
+			["assassin", "lurker", -1],
+			["lurker", "support", -1],
+			["lurker", "controller", 1],
+			["lurker", "lurker", -0.5],
+			["soldier", "soldier", -0.5],
+			["support", "support", -0.5],
+		] as const;
+		for (const [r1,r2, amt] of scaledPairs) {
+			if (this.hasRole(r1) && other.hasRole(r2)) {
+				rating += amt
+			}
 		}
 		const weaknesses = DAMAGETYPESLIST
 			.filter( dmg => dmg != "by-power" && this.elementalResist(dmg) == "weakness") as RealDamageType[];

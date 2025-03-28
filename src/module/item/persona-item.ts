@@ -132,18 +132,28 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	get tags() : string {
 		let tags : string[] = [];
-		if ("itemTags" in this.system) {
-			tags = tags.concat(
-				// this.system.itemTags
-				(this as InvItem).tagList()
-				.map(tag => localize(EQUIPMENT_TAGS[tag]))
-			);
-		}
-		if ("tags" in this.system) {
-			tags = tags.concat(
-				this.system.tags
-				.map(tag => localize(POWER_TAGS[tag]))
-			)
+		const localizeTable  =  {
+			...EQUIPMENT_TAGS,
+			...POWER_TAGS
+		};
+		switch (true) {
+			case ("itemTags" in this.system): {
+				tags = tags.concat(
+					// this.system.itemTags
+					(this as InvItem).tagList()
+					.map(tag => localize(localizeTable[tag]))
+				);
+				break;
+			}
+			case ("tags" in this.system): {
+				tags = tags.concat(
+					(this as Power).tagList()
+					.map(tag => localize(localizeTable[tag]))
+					// this.system.tags
+					// .map(tag => localize(POWER_TAGS[tag]))
+				);
+				break;
+			}
 		}
 		return tags.join(", ");
 	}
