@@ -1,3 +1,4 @@
+import { PersonaSettings } from "../config/persona-settings.js";
 import { ModifierTarget } from "../config/item-modifiers.js";
 import { getActiveConsequences } from "./preconditions.js";
 import { PowerContainer } from "./item/persona-item.js";
@@ -324,7 +325,9 @@ export class ConditionalEffectManager {
 		try {
 			if (obj == null) return[];
 			if (!Array.isArray(obj)) {
-				console.debug("Array Correction Required");
+				if (PersonaSettings.debugMode()) {
+					console.debug("Array Correction Required");
+				}
 				return Object.keys(obj).map(function(k) { return obj[k] });
 			}
 		} catch (e) {
@@ -509,6 +512,8 @@ export class ConditionalEffectManager {
 				const arcana = this.translate(cond.tarot, TAROT_DECK);
 				return `Arcana is ${not} ${arcana}`;
 			}
+			case "is-enemy":
+				return `${target1} is ${not} enemy of ${target2}`;
 			default:
 				cond satisfies never
 				return "";

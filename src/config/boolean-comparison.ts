@@ -20,6 +20,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"metaverse-enhanced",
 	"is-shadow",
 	"is-pc",
+	"is-enemy",
 	"has-tag",//power-has-tag
 	"in-combat",
 	"is-critical",
@@ -71,8 +72,19 @@ export type BooleanComparisonPC = {
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison
+StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison;
 ;
+
+type GeneralActorComparison = {
+	boolComparisonTarget: "is-PC" | "is-shadow",
+	conditionTarget: ConditionTarget,
+}
+
+type IsEnemyComparison = {
+	boolComparisonTarget: "is-enemy",
+	conditionTarget: ConditionTarget,
+	conditionTarget2: ConditionTarget,
+}
 
 export const SOCIAL_CHECKS_LIST = [
 	"relationship-type-check",

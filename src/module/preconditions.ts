@@ -719,6 +719,16 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (!tarot) return undefined;
 			return target.system.tarot == condition.tarot;
 		}
+		case "is-enemy": {
+			const target = getSubjectToken(condition, situation, source,  "conditionTarget");
+			const target2 = getSubjectToken(condition, situation, source, "conditionTarget2");
+			if (!target || !target2) return undefined;
+			const combat = game.combat as PersonaCombat;
+			if (!combat) return undefined;
+			const enemies = combat.getAllEnemiesOf(target);
+			return enemies.includes(target2);
+		}
+
 		default :
 			condition satisfies never;
 			return undefined;

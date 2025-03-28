@@ -137,10 +137,18 @@
 		</select>
 	</div>
 	{{/if}}
-	{{#if (eqAny cond.boolComparisonTarget "engaged" "is-pc" "is-shadow" "is-dead" "is-same-arcana" "struck-weakness" "has-status" "flag-state" "is-resistant-to" "social-target-is" "is-distracted")}}
+	{{#if (eqAny cond.boolComparisonTarget "engaged" "is-pc" "is-shadow" "is-dead" "is-same-arcana" "struck-weakness" "has-status" "flag-state" "is-resistant-to" "social-target-is" "is-distracted" "is-enemy")}}
 	<div>
 		<select name="{{strcat namePrefix 'conditionTarget'}}">
 			{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+		</select>
+	</div>
+	{{/if}}
+
+	{{#if (eqAny cond.boolComparisonTarget "is-enemy")}}
+	<div>
+		<select name="{{strcat namePrefix 'conditionTarget2'}}">
+			{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget2}}
 		</select>
 	</div>
 	{{/if}}

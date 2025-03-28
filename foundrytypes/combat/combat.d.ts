@@ -22,8 +22,8 @@ namespace Foundry {
 		started: boolean;
 		combatants: Collection<Combatant<T>>;
 		turns: CType[];
-		getCombatantByToken(tokenIdOrToken: string | TokenDocument<T>) : Combatant<T>;
-		getCombatantByActor(actorIdOrActor: string | Actor<T>): Combatant<T>;
+		getCombatantByToken(tokenIdOrToken: string | TokenDocument<T>) : Combatant<T> | undefined;
+		getCombatantByActor(actorIdOrActor: string | T): Combatant<T> | undefined;
 		startCombat(): Promise<this>;
 		nextRound(): Promise<this>;
 		previousRound(): Promise<this>;
