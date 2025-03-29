@@ -988,7 +988,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (await this.checkStatusNullificaton(id)) return false;
 			const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
 			await newEffect.setPotency(potency ?? 0);
-			await newEffect.setDuration(duration);
+			const adjustedDuration = this.getAdjustedDuration(duration, id);
+			await newEffect.setDuration(adjustedDuration);
 			return true;
 		} else  {
 			if (potency && eff.potency < potency) {
@@ -996,13 +997,38 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			}
 			eff.duration.startRound = game?.combat?.round ?? 0;
 			await eff.update({"duration": eff.duration});
-			if (typeof duration != "string" && eff.durationLessThanOrEqualTo(duration)) {
-				await eff.setDuration(duration);
+			const adjustedDuration = this.getAdjustedDuration(duration, id);
+			if (typeof duration != "string" && eff.durationLessThanOrEqualTo(adjustedDuration)) {
+				await eff.setDuration(adjustedDuration);
 			}
 			//TODO: update the effect
 			return false;
 		}
 
+	}
+
+	getAdjustedDuration(duration: StatusDuration, id: StatusEffect["id"]) : StatusDuration {
+		switch (duration.dtype)  {
+			case "X-rounds":
+			case "3-rounds":
+				const tags = CONFIG.statusEffects[id as any].tags;
+				if (!tags.includes("baneful") || tags.includes("downtime"))  {
+					return duration;
+				}
+				const situation : Situation = {
+					user: (this as ValidAttackers).accessor,
+					target: (this as ValidAttackers).accessor,
+					statusEffect: id,
+				};
+				const modifier = this.getBonuses("baleful-status-duration").total(situation);
+				const reducedAmt = Math.max(0, duration.amount + modifier);
+				return {
+					...duration,
+					amount: reducedAmt,
+				};
+			default:
+				return duration;
+		}
 	}
 
 	get openerActions() : Usable[] {

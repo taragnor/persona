@@ -46,6 +46,7 @@ export const MODIFIERLIST = [
 	"starting-energy",
 	"energy-per-turn",
 	"actions-per-turn",
+	"baleful-status-duration",
 	...ENVIRONMENTAL_MODIFIERS,
 ] as const;
 
