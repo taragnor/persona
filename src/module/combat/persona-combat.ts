@@ -410,14 +410,28 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		msg.push(`Resisting Charm (${saveTotal}) -->`);
 		switch (true) {
-			case (saveTotal >= 11):{
-				msg.push(`Success`);
+			case (saveTotal >= 16): {
+				msg.push(`Success (Remove Charm)`);
+				options.push({
+					optionTxt: "Clear Charm and act normally (Lose opening action)",
+					mandatory: true,
+					optionEffects: [],
+				});
+				break;
+			}
+			case (saveTotal >= 11): {
+				msg.push(`Success (Dazed)`);
+				options.push({
+					optionTxt: "You stand around and do nothing",
+					mandatory: true,
+					optionEffects: [],
+				});
 				break;
 			}
 			case (saveTotal < 6) : {
-				msg.push(`Failure (Mind Controlled)`);
+				msg.push(`Failure (Buff, Heal or attack)`);
 				options.push({
-					optionTxt: "The enemy chooses your action",
+					optionTxt: "The enemy chooses your action , causing you to cast a single target healing or buffing effect on an enemy or making a basic attack against an ally",
 					mandatory: true,
 					optionEffects: [],
 				});
@@ -426,7 +440,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			default:
 				msg.push(`Failure (Basic Attack)`);
 				options.push({
-					optionTxt: "Basic Attack against nearest ally",
+					optionTxt: "Basic Attack against an ally of the enemy's choice",
 					mandatory: true,
 					optionEffects: [],
 				});
