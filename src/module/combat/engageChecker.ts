@@ -10,6 +10,7 @@ export class EngagementChecker {
 
 	static isEngaging(subject: PToken, target: PToken, combat: PersonaCombat) : boolean {
 		if (subject == target) return false;
+		if (target.actor.hasStatus("charmed")) return false;
 		if (!subject.actor.canEngage()) return false;
 		const inMelee = this.getTokensInMelee(subject, combat);
 		return inMelee.has(target);
