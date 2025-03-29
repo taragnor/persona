@@ -2558,7 +2558,7 @@ hasRole( role: Shadow["system"]["role"]): boolean {
 isBossOrMiniBossType() : boolean {
 	if (this.system.type != "shadow") return false;
 	const bossRoles : Shadow["system"]["role"][] = [
-		"miniboss", "boss"
+		"miniboss", "boss", "solo",
 	];
 	return bossRoles.some( role => this.hasRole(role));
 }
@@ -2571,10 +2571,6 @@ async onStartCombatTurn(this: PC | Shadow): Promise<string[]> {
 		if ( await eff.onStartCombatTurn()) {
 			ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
 		}
-	}
-	if (this.isBossOrMiniBossType()) {
-		//TODO: experimental boss save
-		// ret.push(...await this.endTurnSaves());
 	}
 	return ret;
 }

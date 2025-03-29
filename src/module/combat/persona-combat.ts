@@ -275,13 +275,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (!combatant.actor?.hasPlayerOwner) {
 			await this.ensureSheetOpen(combatant);
 		}
-		await this.execStartingTrigger(combatant);
-		await this.clearStartTurnEffects(combatant);
 		let startTurnMsg = [ `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`];
 		startTurnMsg = startTurnMsg.concat(
 		   await (actor as PC | Shadow).onStartCombatTurn(),
-			await this.handleStartTurnEffects(combatant)
+			await this.handleStartTurnEffects(combatant),
 		);
+		await this.execStartingTrigger(combatant);
 		const openingReturn = await this.execOpeningRoll(combatant);
 		if (openingReturn) {
 			const {data, roll} = openingReturn;
@@ -325,11 +324,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 	}
 
-		async clearStartTurnEffects(combatant: PersonaCombat["combatant"]) {
-			const actor = combatant?.actor as PersonaActor;
-			if (!actor) return;
-			if (actor.system.type != "pc" && actor.system.type != "shadow") {return;}
-		}
 
 	async execOpeningRoll( combatant: Combatant<ValidAttackers> ) : Promise<{data: OpenerOptionsReturn[], roll: Roll} | null> {
 		let returns :OpenerOptionsReturn[]= [];

@@ -174,6 +174,11 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				await this.delete();
 				return true;
 			case "save":
+				const owner = this.parent;
+				if (owner instanceof PersonaActor && owner.isBossOrMiniBossType()) {
+					return await this.saveVsSaveEffects();
+				}
+				return false;
 			case "permanent":
 			case "expedition":
 			case "combat":
@@ -188,6 +193,19 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				duration satisfies never;
 				return false;
 		}
+	}
+
+	async saveVsSaveEffects(): Promise<boolean> {
+		const duration = this.statusDuration;
+		if (duration.dtype != "save") {return false;}
+		if (this.statuses.has("charmed")) return false;
+		const actor = this.parent instanceof PersonaActor ? this.parent : null;
+		if (!actor) return false;
+		if (actor.isValidCombatant()) {return false;}
+		const DC = this.statusSaveDC;
+		const {success} = await PersonaCombat.rollSave(actor as (PC | Shadow), { DC, label: this.name, saveVersus: this.statusId })
+		if (success) { await this.delete();}
+		return success;
 	}
 
 	override async delete() {
@@ -219,14 +237,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				await this.delete();
 				return true;
 			case "save":
-				if (this.statuses.has("charmed")) return false;
-				const actor = this.parent instanceof PersonaActor ? this.parent : null;
-				if (!actor) return false;
-				if (actor.isValidCombatant()) {return false;}
-				const DC = this.statusSaveDC;
-				const {success} = await PersonaCombat.rollSave(actor as (PC | Shadow), { DC, label: this.name, saveVersus: this.statusId })
-				if (success) { await this.delete();}
-				return success;
+				return await this.saveVsSaveEffects();
 			case "permanent":
 			case "expedition":
 			case "combat":
