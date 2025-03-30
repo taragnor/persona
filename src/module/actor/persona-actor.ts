@@ -2623,7 +2623,7 @@ encounterSizeValue() : number {
 	let val = 1;
 	if (this.hasRole("solo")) val *=4;
 	if (this.hasRole("duo")) val*= 2;
-	if (this.hasRole("elite")) val*= 1.5;
+	if (this.hasRole("elite")) val*= 1.75;
 	if (this.hasRole("summoner")) val *= 2;
 	return val;
 }
