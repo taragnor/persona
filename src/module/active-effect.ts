@@ -274,6 +274,17 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		return undefined;
 	}
 
+	get isStatus() : boolean {
+		return this.statuses.size > 0;
+	}
+
+
+	get isDowntimeStatus(): boolean {
+		if (this.statuses.size < 1) return false;
+		const downtime = CONFIG.statusEffects.filter(x => x.tags.includes("downtime"));
+		return downtime.some( st => this.statuses.has(st.id as StatusEffectId) );
+	}
+
 	static getStatusValue (duration : StatusDuration) : number {
 		switch (duration?.dtype) {
 			case "permanent":

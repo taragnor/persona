@@ -245,6 +245,7 @@
 	"persona.modifier.encounterSize": "Encounter Size",
 	"persona.modifier.numberOfSearches": "Number of Searches",
 	"persona.modifier.treasureFind": "Bonus to d6 to find treasure",
+	"persona.modifier.shadowMoneyBoostPercent": "Bonus % to Money found",
 	"persona.modifier.actions-per-turn": "Actions per turn",
 	"persona.modifier.baleful-status-duration": "Baleful Status Duration",
 

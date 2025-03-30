@@ -1094,8 +1094,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return dependentTokens.filter( x=> x.actorLink == true) as TokenDocument<this>[];
 	}
 
-	/** returns status id of nullified status otherwise return undefined */
-	async checkStatusNullificaton(statusId: StatusEffectId) : Promise<StatusEffectId  | undefined> {
+	/** returns true if nullfied **/
+	async checkStatusNullificaton(statusId: StatusEffectId) : Promise<boolean> {
+		let cont = false;
 		let remList : StatusEffectId[] = [];
 		switch (statusId) {
 			case "defense-boost":
@@ -1116,13 +1117,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "damage-nerf":
 				remList.push("damage-boost");
 				break;
+			case "down":
+				const allNonDowntimeStatus = this.effects.filter( x=> x.isStatus && !x.isDowntimeStatus)
+				const list = allNonDowntimeStatus.flatMap( x=> Array.from(x.statuses));
+				remList.push(...list)
+				cont = true;
+				break;
 		}
 		for (const id of remList) {
-			if (await this.removeStatus(id)) {
-				return id;
-			}
+			await this.removeStatus(id);
 		}
-		return undefined;
+		return remList.length > 0 && !cont;
 	}
 
 	/** returns new status to escalate if needed  */
@@ -2212,6 +2217,7 @@ async fullHeal() {
 
 async onEnterMetaverse()  : Promise<void> {
 	if (!this.isValidCombatant()) return;
+	if (this.system.type == "pc" && !this.hasPlayerOwner) return; //deal with removing item piles and such
 	try {
 		await this.fullHeal();
 		if (this.system.type == "pc") {

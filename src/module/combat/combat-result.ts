@@ -566,7 +566,14 @@ export class CombatResult  {
 
 	async autoApplyResult() {
 		if (game.user.isGM) {
-			await this.#apply();
+			try {
+				await this.#apply();
+			} catch (e) {
+				PersonaError.softFail("Problem with GM apply");
+				Debug(e);
+				Debug(this);
+				throw e;
+			}
 			return;
 		}
 		const gmTarget = game.users.find(x=> x.isGM && x.active);

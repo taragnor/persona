@@ -1,3 +1,5 @@
+import { PersonaCalendar } from "../social/persona-calendar.js";
+
 const GROWTH_FACTOR = 2;
 const INNER_SIZE = 4;
 const MIDDLE_SIZE = INNER_SIZE * GROWTH_FACTOR;
@@ -10,6 +12,7 @@ export class AnyaPlanets {
 	outer: Orbit ;
 	periphery: Orbit;
 	untethered : Planet[];
+	start: Planet;
 
 	constructor() {
 		this.reset();
@@ -21,7 +24,7 @@ export class AnyaPlanets {
 		this.outer= new Orbit(OUTER_SIZE, -2);
 		this.periphery= new Orbit(PERIPHERY_SIZE, 4);
 		this.untethered = [];
-		this.inner.createPlanet("start", 0);
+		this.start = this.inner.createPlanet("start", 0);
 		this.inner.createPlanet("Battleground Neko", 1);
 		const industrial = this.inner.createPlanet("Burning Industrial Asteroid", 2 );
 		this.inner.createPlanet("BattleGround Nezumi", 3);
@@ -48,9 +51,14 @@ export class AnyaPlanets {
 		asteroidM.hardLinks.push(Fleetwood);
 		PA.hardLinks.push(asteroidM);
 		this.untethered.push(asteroidM);
+		this.untethered.push(paintedWorld);
+		this.untethered.push(Fleetwood);
 	}
 
 	orbit(amt= 1) {
+		if (typeof amt != "number" || Number.isNaN(amt)) {
+			throw new Error("Passed amount for Orbit is not valid number");
+		}
 		while (amt-- > 0) {
 			this.inner.orbit();
 			this.middle.orbit();
@@ -58,6 +66,25 @@ export class AnyaPlanets {
 			this.periphery.orbit();
 		}
 	}
+
+	printOrbits() : void {
+		this.viewOrbitOnDay();
+	}
+
+	viewOrbitOnDay(days?: number) : void {
+		if (days == undefined) {
+			days = PersonaCalendar.DoomsdayClock.amt;
+			console.log(`Orbits for day ${days}`);
+		}
+		this.reset();
+		this.orbit(days)
+		this.inner.print();
+		this.middle.print();
+		this.outer.print();
+		this.periphery.print();
+
+	}
+
 
 	reachabilityTest(tests = 60) {
 		this.reset();
@@ -247,6 +274,14 @@ export class Orbit {
 		}
 	}
 
+	print() : void {
+		const planetStr = this.planets
+		.map( (pl, i) => pl ?`${pl.name} (${i})`: "")
+		.filter (x=> x.length > 0);
+		const str = planetStr.join("\n");
+		console.log(str);
+	}
+
 	outerPathRanges(index: number): LocationRange | undefined {
 		switch (this.planets.length) {
 			case PERIPHERY_SIZE:
@@ -254,9 +289,7 @@ export class Orbit {
 			case INNER_SIZE:
 			case OUTER_SIZE:
 			case MIDDLE_SIZE:
-				// const myblock = Math.floor(index / this.blockSize);
 				const outerBlockSize = Math.floor(this.blockSize * GROWTH_FACTOR);
-				// const low= myblock * outerBlockSize;
 				const low = index * GROWTH_FACTOR;
 				return {low, high: low + GROWTH_FACTOR}
 		}
