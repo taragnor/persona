@@ -337,11 +337,11 @@ static choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encount
 
 	static async distributeMoney(money: number, players: PersonaActor[]) {
 		if (players.length > 0) {
-			const moneyShare = Math.floor(money / players.length)
+			const moneyShare = Math.floor(money / players.length);
 			const shareDist =
-				players.map( x=> ({
-					pc: x,
-					share: moneyShare
+				players.map( actor => ({
+					pc: actor,
+					share: Math.round(moneyShare * actor.treasureMultiplier)
 				}));
 			shuffle(shareDist);
 			let moneyOverflow = money - (moneyShare * players.length);

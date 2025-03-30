@@ -1239,6 +1239,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return modList;
 	}
 
+	get treasureMultiplier () : number {
+		switch (this.system.type) {
+			case "pc": case "npcAlly":
+				const situation :Situation = {
+					user: (this as PC | NPCAlly).accessor
+				};
+				const bonus= this.getBonuses("shadowMoneyBoostPercent").total(situation, "percentage");
+				return !Number.isNaN(bonus) ? bonus : 1;
+			default:
+				return 1;
+		}
+	}
+
 
 	getUnarmedDamageType(): RealDamageType {
 		if (this.system.type == "shadow") return this.system.combat.baseDamageType ?? "physical";
