@@ -1,3 +1,5 @@
+import { Metaverse } from "./metaverse.js";
+import { UniversalModifier } from "./item/persona-item.js";
 import { testPreconditions } from "./preconditions.js";
 import { DamageType } from "../config/damage-types.js";
 import { ShadowRole } from "../config/shadow-types.js";
@@ -43,6 +45,13 @@ export class PersonaScene extends Scene {
 		doors.forEach( door => door.update({doorSound: snd}));
 
 	}
+
+	getRoomEffects() : (UniversalModifier["id"])[] {
+		const regionMods = Metaverse.getRegion()?.roomEffects.map(x=> x.id) ?? [];
+		//TODO: get global effects from the scene
+		return regionMods;
+	}
+
 
 	async onEnterMetaverse() : Promise<void> {
 		const regionActions =

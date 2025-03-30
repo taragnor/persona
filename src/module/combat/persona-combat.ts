@@ -1,3 +1,4 @@
+import { PersonaScene } from "../persona-scene.js";
 import { Power } from "../item/persona-item.js";
 import { SkillCard } from "../item/persona-item.js";
 import { UsableAndCard } from "../item/persona-item.js";
@@ -95,7 +96,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		this._engagedList = new EngagementList(this);
 		await this._engagedList.flushData();
 		const assumeSocial = !(this.combatants.contents.some(comb=> comb.actor && comb.actor.system.type == "shadow"));
-		const regionMods = Metaverse.getRegion()?.roomEffects.map(x=> x.id) ?? [];
+		const regionMods = (game.scenes.current as PersonaScene).getRoomEffects();
+		// const regionMods = Metaverse.getRegion()?.roomEffects.map(x=> x.id) ?? [];
 		const combatInit = await this.roomEffectsDialog(regionMods, assumeSocial);
 		this.setSocialEncounter(combatInit.isSocialScene);
 		if (combatInit.isSocialScene) {
