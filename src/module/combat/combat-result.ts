@@ -579,6 +579,7 @@ export class CombatResult  {
 			try {
 				await CombatResult.addPending(this);
 			} catch (e) {
+				Debug(this);
 				PersonaError.softFail("Error Autoapplying Effect");
 			}
 			return;

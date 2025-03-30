@@ -254,6 +254,14 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		}
 	}
 
+	async onEndCombat() : Promise<void> {
+		const dur: StatusDuration = {
+			dtype: "combat"
+		};
+		if (this.durationLessThanOrEqualTo(dur))
+			this.delete();
+	}
+
 
 	durationLessThanOrEqualTo(x : StatusDuration): boolean {
 		return  PersonaAE.getStatusValue(this.statusDuration) <= PersonaAE.getStatusValue(x);

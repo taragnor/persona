@@ -1421,6 +1421,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const mm = this.getBonuses(["itemAtk", "allAtk"]);
 		// mm.concat(this.getBonuses("allAtk"));
 		mm.add("Item Base Bonus", item.system.atk_bonus);
+		mm.add("Hotfix for older items", item.system.atk_bonus);
 		return mm;
 	}
 
@@ -2610,6 +2611,12 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 	}
 	ret.push(...await this.endTurnSaves())
 	return ret;
+}
+
+async onEndCombat(this: ValidAttackers) : Promise<void> {
+	for (const eff of this.effects) {
+		await eff.onEndCombat();
+	}
 }
 
 encounterSizeValue() : number {

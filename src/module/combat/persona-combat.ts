@@ -142,6 +142,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			await Metaverse.enterMetaverse();
 		}
 		await PersonaCombat.onTrigger("on-combat-end-global").emptyCheck()?.toMessage("Triggered Effect", undefined);
+		for (const c of this.combatants) {
+			try {
+				await c.actor?.onEndCombat()
+			} catch (e) {
+				PersonaError.softFail(e);
+				console.warn(e);
+			}
+		}
 		return await super.delete()
 	}
 
