@@ -1,3 +1,4 @@
+import { PersonaScene } from "../persona-scene.js";
 import { Helpers } from "../utility/helpers.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { TriggeredEffect } from "../triggered-effect.js";
@@ -82,6 +83,8 @@ type RegionData = {
 }
 
 export class PersonaRegion extends RegionDocument {
+
+	declare parent: PersonaScene;
 
 	#changeBuffer : RegionData | undefined = undefined;
 	declare tokens: Set<TokenDocument<PersonaActor>>;
@@ -224,6 +227,10 @@ export class PersonaRegion extends RegionDocument {
 		return t.max - t.found;
 	}
 
+	get allRoomEffects() : UniversalModifier[] {
+		return this.parent.sceneEffects.concat(this.roomEffects);
+	}
+
 	get roomEffects(): UniversalModifier[] {
 		return this.regionData.roomEffects.flatMap ( id=> {
 			if (!id) return [];
@@ -267,7 +274,7 @@ export class PersonaRegion extends RegionDocument {
 			mod = item as UniversalModifier;
 		}
 		if (mod?.system?.type != "universalModifier") throw new PersonaError("Not a modifier");
-		if (!mod.system.room_effect)  throw new PersonaError("Not a Room Effect");
+		if (mod.system.scope != "room")  throw new PersonaError("Not a Room Effect");
 		const data = this.regionData;
 		if (data.roomEffects.includes( mod.id)) {
 			return false;
@@ -284,7 +291,7 @@ export class PersonaRegion extends RegionDocument {
 
 	async removeRoomModifier(mod: UniversalModifier) {
 		if (mod?.system?.type != "universalModifier") throw new PersonaError("Not a modifier");
-		if (!mod.system.room_effect)  throw new PersonaError("Not a Room Effect");
+		if (mod.system.scope != "room")  throw new PersonaError("Not a Room Effect");
 		const data = this.regionData;
 		if (!data.roomEffects.includes( mod.id)) {
 			return false;

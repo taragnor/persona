@@ -6,15 +6,35 @@
 		<b>Universal Modifier</b>
 	</header>
 	<div>
-		<label> Room Effect? </label>
-		<input type="checkbox" name="system.room_effect" {{checked item.system.room_effect}}>
-	</div>
+		<label> Scope </label>
+		<div class="scope-select">
+			<select name="system.scope">
+				{{selectOptions POWERSTUFF.UNIVERSAL_MODIFIERS_TYPE localize=true selected=item.system.scope}}
+			</select>
+		</div>
+		{{#if (eq item.system.scope "scene")}}
+		<h3> Scenes
+			<a class="add-scene">
+				<i class="fa-solid fa-plus"> </i>
+			</a>
+		</h3>
+		{{#each item.system.sceneList as |sceneId i|}}
+		<div class="scene" data-scene-index="{{i}}">
+			<select name="system.sceneList.{{i}}">
+				{{selectOptions ../POWERSTUFF.SCENES localize=false selected=sceneId}}
+			</select>
+			<a class="del-scene">
+				<i class="fa-solid fa-trash-can"></i>
+			</a>
+		</div>
+		{{/each}}
+		{{/if}}
 		<textarea name="system.description">
 			{{item.system.description}}
 		</textarea>
-	<body>
-		{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
-	</body>
+		<body>
+			{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
+		</body>
 </form>
 
 

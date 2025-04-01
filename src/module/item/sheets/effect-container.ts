@@ -1,3 +1,4 @@
+import { UNIVERSAL_MODIFIERS_TYPE } from "../../datamodel/universal-modifiers-types.js";
 import { RESULT_SUBTYPE_COMPARISON } from "../../../config/numeric-comparison.js";
 import { COMBAT_EFFECTS } from "../../../config/effect-types.js";
 import { SocialCard } from "../persona-item.js";
@@ -135,6 +136,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			VARIABLE_ACTIONS,
 			COMBAT_EFFECTS,
 			RESULT_SUBTYPE_COMPARISON,
+			UNIVERSAL_MODIFIERS_TYPE,
 			SCENE_WEATHER_TYPES: Object.fromEntries(
 				([""].concat(Object.keys(CONFIG.weatherEffects))).map( x=> [x,x])
 			),
@@ -156,6 +158,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			game.scenes.contents
 			.map( sc => [sc.id, sc.name])
 		);
+		SCENES[""] = "-";
 		const CLOCKS = Object.fromEntries(
 			ProgressClock.allClocks()
 			.map(clock => [clock.id, clock.name])

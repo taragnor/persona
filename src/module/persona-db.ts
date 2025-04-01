@@ -4,10 +4,7 @@ import { NPCAlly } from "./actor/persona-actor.js";
 import { SocialEncounterCard } from "./social/persona-social.js";
 import { ModifierContainer } from "./item/persona-item.js";
 import { PC } from "./actor/persona-actor.js";
-import { Weapon } from "./item/persona-item.js"
 import { Shadow } from "./actor/persona-actor.js";
-import { InvItem } from "./item/persona-item.js";
-import { Consumable } from "./item/persona-item.js";
 import { PersonaError } from "./persona-error.js";
 import { Activity } from "./item/persona-item.js";
 import { NPC } from "./actor/persona-actor.js";
@@ -84,14 +81,22 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	getGlobalModifiers() : UniversalModifier [] {
 		const items = this.getAllByType("Item") as PersonaItem[];
 		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
-		return UMs.filter(um=> !um.system.room_effect);
+		return UMs.filter(um=> um.system.scope == "global");
 	}
 
 	getRoomModifiers() : UniversalModifier [] {
 		const items = this.getAllByType("Item") as PersonaItem[];
 		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
 		return UMs
-			.filter(um=> um.system.room_effect)
+			.filter(um=> um.system.scope == "room")
+			.sort ( (a,b) => a.name.localeCompare(b.name));
+	}
+
+	getSceneModifiers() : UniversalModifier [] {
+		const items = this.getAllByType("Item") as PersonaItem[];
+		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
+		return UMs
+			.filter(um=> um.system.scope == "scene")
 			.sort ( (a,b) => a.name.localeCompare(b.name));
 	}
 

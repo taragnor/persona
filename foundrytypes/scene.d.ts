@@ -35,6 +35,7 @@ namespace Foundry {
 
 	// declare class RegionDocument extends DocumentConstructor {
 	interface RegionDocument extends Document<never> {
+		parent: Scene;
 		get tokens(): Set<TokenDocument<Actor<any>>>;
 	}
 
@@ -47,6 +48,6 @@ type WallDocument = Foundry.WallDocument;
 
 
 declare const RegionDocument: Foundry.RegionDocumentConstructor;
-type RegionDocument = Foundry.RegionDocument;
+	type RegionDocument = Foundry.RegionDocument;
 
 

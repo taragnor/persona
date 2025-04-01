@@ -66,6 +66,7 @@ export class ShadowSheet extends CombatantSheetBase {
 			.sort( (a, b) => a.name.localeCompare(b.name))
 			.map(x=> [x.id, x.name])
 		);
+		// SCENE_LIST[""] = "-";
 		const databasePowers = this.actor.mainPowers
 			.filter (pwr => !pwr.hasTag("shadow-only"))
 			.map( x=> PersonaDB.allPowers().find(pwr => pwr.name == x.name))

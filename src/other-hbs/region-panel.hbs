@@ -44,15 +44,19 @@
 			{{data.treasures.found}}/ {{data.treasures.max}}
 		</div>
 
-		{{#if region.roomEffects}}
+		{{#if region.allRoomEffects}}
 		<div class="room-effects">
 			<h3>
 				Room Modifiers
 			</h3>
 			<ul>
-				{{#each region.roomEffects as |mod|}}
+				{{#each region.allRoomEffects as |mod|}}
 				<li>
-					<b>{{mod.name}}</b> : {{mod.system.description}}
+					<b>{{mod.name}}
+						{{#if (eq mod.system.scope "scene")}}
+						(Dungeon Effect)
+						{{/if}}
+					</b> : {{mod.system.description}}
 				</li> {{/each}}
 			</ul>
 		</div>

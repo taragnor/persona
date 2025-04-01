@@ -803,6 +803,10 @@
 	"persona.creatureType.tech-enthusiast": "Tech enthusiast",
 	"persona.creatureType.unscannable": "Unscannable",
 
+	"persona.universalModifier.global" : "World",
+	"persona.universalModifier.scene" : "Scene",
+	"persona.universalModifier.room" : "Room",
+
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",
 	"persona.availability.-": "Normal (-)",

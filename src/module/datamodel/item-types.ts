@@ -1,3 +1,5 @@
+import { UniversalModifier } from "../item/persona-item.js";
+import { UNIVERSAL_MODIFIERS_TYPE_LIST } from "./universal-modifiers-types.js";
 import { frequencyConvert } from "../../config/frequency.js";
 import { FREQUENCY } from "../../config/frequency.js";
 import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
@@ -77,15 +79,25 @@ class FocusDM extends foundry.abstract.TypeDataModel {
 	}
 }
 
-class UniversalModifier extends foundry.abstract.TypeDataModel {
+class UniversalModifierDM extends foundry.abstract.TypeDataModel {
 	get type() { return "universalModifier" as const;}
 	static override defineSchema() {
 		const ret = {
 			description: new html(),
-			room_effect: new bool({initial: false}),
+			room_effect: new bool({initial: false}), //deprecated in favor of scope
+			scope: new txt({choices: UNIVERSAL_MODIFIERS_TYPE_LIST, initial: "global"}),
+			sceneList: new arr( new id()),
 			...effects (false),
 		}
 		return ret;
+	}
+
+	static override migrateData(data: UniversalModifier["system"])  {
+		if (data.room_effect == true) {
+			data.scope = "room";
+		}
+		data.room_effect = false;
+		return data;
 	}
 }
 
@@ -279,7 +291,7 @@ export const ITEMMODELS = {
 	focus: FocusDM,
 	talent: TalentDM,
 	weapon: WeaponDM,
-	universalModifier: UniversalModifier,
+	universalModifier: UniversalModifierDM,
 	skillCard: SkillCardSchema,
 	// job: JobItemSchema,
 	socialCard: SocialCardSchema,
