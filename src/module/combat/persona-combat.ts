@@ -1008,7 +1008,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (actor.fatigueLevel() > 0 ) {
 			content = content  + pushMsg;
 		}
-		if (actor.canEngage() || !this.isEngagedByAnyFoe(PersonaDB.getUniversalTokenAccessor(token))) {
+		if (actor.canEngage() && !this.isEngagedByAnyFoe(PersonaDB.getUniversalTokenAccessor(token))) {
 			content += `<div> ${boldName} can choose target to engage</div>`;
 		}
 		content = `<div class="end-turn-msg"> ${content} </div>`;
