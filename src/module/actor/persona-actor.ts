@@ -2064,6 +2064,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			throw new PersonaError("You are trying to spend Inspiration you don't have");
 		}
 		link.inspiration -= amt;
+		link.inspiration = Math.max(0, link.inspiration);
+		link.inspiration = Math.min(link.linkLevel, link.inspiration);
 		await this.update({"system.social": this.system.social});
 	}
 
