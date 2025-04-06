@@ -1008,30 +1008,36 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	getAdjustedDuration(duration: StatusDuration, id: StatusEffect["id"]) : StatusDuration {
-		switch (duration.dtype)  {
-			case "X-rounds":
-			case "3-rounds":
-				const tags = CONFIG.statusEffects[id as any]?.tags;
-				if (!tags) {
-					PersonaError.softFail(`Bad status Id: ${id}`);
+		try {
+			switch (duration.dtype)  {
+				case "X-rounds":
+				case "3-rounds":
+					const tags = CONFIG.statusEffects.find(x=> x.id == id)?.tags;
+					if (!tags) {
+						PersonaError.softFail(`Bad status Id: ${id}`);
+						return duration;
+					}
+					if (!tags.includes("baneful") || tags.includes("downtime"))  {
+						return duration;
+					}
+					const situation : Situation = {
+						user: (this as ValidAttackers).accessor,
+						target: (this as ValidAttackers).accessor,
+						statusEffect: id,
+					};
+					const modifier = this.getBonuses("baleful-status-duration").total(situation);
+					const reducedAmt = Math.max(0, duration.amount + modifier);
+					return {
+						...duration,
+						amount: reducedAmt,
+					};
+				default:
 					return duration;
-				}
-				if (!tags.includes("baneful") || tags.includes("downtime"))  {
-					return duration;
-				}
-				const situation : Situation = {
-					user: (this as ValidAttackers).accessor,
-					target: (this as ValidAttackers).accessor,
-					statusEffect: id,
-				};
-				const modifier = this.getBonuses("baleful-status-duration").total(situation);
-				const reducedAmt = Math.max(0, duration.amount + modifier);
-				return {
-					...duration,
-					amount: reducedAmt,
-				};
-			default:
-				return duration;
+			}
+		} catch (e) {
+			PersonaError.softFail("Problem with getAdjusted Duration");
+			Debug(e);
+			return duration;
 		}
 	}
 
@@ -2642,6 +2648,10 @@ hasRole( role: Shadow["system"]["role"]): boolean {
 		|| this.system.role2 == role;
 }
 
+isSoloType() : boolean {
+	return this.hasRole("solo");
+}
+
 isBossOrMiniBossType() : boolean {
 	if (this.system.type != "shadow") return false;
 	const bossRoles : Shadow["system"]["role"][] = [
@@ -2955,8 +2965,8 @@ get tagList() : CreatureTag[] {
 	//NOTE: This is a candidate for caching
 	if (this.system.type == "tarot") return [];
 	let list = this.system.creatureTags.slice();
-	if (this.system.type == "pc" || this.system.type == "shadow") {
-		const extraTags = this.mainModifiers().flatMap( x=> x.getConferredTags(this as PC | Shadow));
+	if (this.isValidCombatant()) {
+		const extraTags = this.mainModifiers().flatMap( x=> x.getConferredTags(this as ValidAttackers));
 		for (const tag of extraTags) {
 			if (!list.includes(tag))
 				list.push(tag);

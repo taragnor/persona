@@ -175,7 +175,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				return true;
 			case "save":
 				const owner = this.parent;
-				if (owner instanceof PersonaActor && owner.isBossOrMiniBossType()) {
+				if (owner instanceof PersonaActor && owner.isSoloType()) {
 					return await this.saveVsSaveEffects();
 				}
 				return false;
@@ -258,8 +258,9 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		const dur: StatusDuration = {
 			dtype: "combat"
 		};
-		if (this.durationLessThanOrEqualTo(dur))
-			this.delete();
+		if (this.durationLessThanOrEqualTo(dur)) {
+			await this.delete();
+		}
 	}
 
 

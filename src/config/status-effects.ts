@@ -62,7 +62,7 @@ export const STATUS_EFFECT_LIST = [
 	}, {
 		id: "frozen",
 		icon:  "icons/svg/frozen.svg",
-		tags: ["baneful", "incapacitating", "distracting"],
+		tags: ["baneful", "distracting"],
 	}, {
 		id: "sleep",
 		icon:  "icons/svg/sleep.svg",

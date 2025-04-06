@@ -555,7 +555,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			);
 	}
 
-	getConferredTags(this: ModifierContainer, actor: PC | Shadow) : CreatureTag[] {
+	getConferredTags(this: ModifierContainer, actor: ValidAttackers) : CreatureTag[] {
 		if (this.cache.containsTagAdd === false) {
 			return [];
 		}
