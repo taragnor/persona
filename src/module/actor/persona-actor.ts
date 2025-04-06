@@ -1011,7 +1011,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		switch (duration.dtype)  {
 			case "X-rounds":
 			case "3-rounds":
-				const tags = CONFIG.statusEffects[id as any].tags;
+				const tags = CONFIG.statusEffects[id as any]?.tags;
+				if (!tags) {
+					PersonaError.softFail(`Bad status Id: ${id}`);
+					return duration;
+				}
 				if (!tags.includes("baneful") || tags.includes("downtime"))  {
 					return duration;
 				}
