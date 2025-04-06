@@ -32,6 +32,10 @@ export const STATUS_EFFECT_LIST = [
 		icon:  "icons/svg/cave.svg",
 		tags: ["distracting", "baneful"]
 	}, {
+		id: "sealed",
+		icon:  "icons/svg/silenced.svg",
+		tags: ["baneful"]
+	}, {
 		id: "expel",
 		icon:  "icons/magic/light/explosion-star-glow-silhouette.webp",
 		tags: ["lethal"]
@@ -130,6 +134,7 @@ export const STATUS_EFFECT_LIST = [
 		icon:  "icons/skills/wounds/injury-triple-slash-bleed.webp",
 		tags: ["downtime", "baneful"],
 	},
+
 	{
 		id: "jailed",
 		icon:  "icons/environment/traps/steel.webp",

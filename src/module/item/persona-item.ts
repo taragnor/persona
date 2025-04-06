@@ -789,7 +789,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return testPreconditions(this.system.validTargetConditions, situation, this);
 	}
 
-	isBasicPower(this: Usable) : boolean {
+	isBasicPower(this: UsableAndCard) : boolean {
+		if (this.system.type == "skillCard") {return false;}
 		if (this.system.type == "consumable") {return false;}
 		const basics = [
 			...PersonaItem.getBasicPCPowers(),

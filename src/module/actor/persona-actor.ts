@@ -968,7 +968,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	/** returns true if status is added*/
 	async addStatus({id, potency, duration}: StatusEffect): Promise<boolean> {
 		if (await this.isStatusResisted(id)) return false;
-		const eff = this.effects.find( eff => eff.statuses.has(id));
 		const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
 		if (!stateData) {
 			throw new Error(`Couldn't find status effect Id: ${id}`);
@@ -977,7 +976,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
 			this.hp -= 9999;
 		}
-		id = await this.checkStatusEscalation(id);
+		// id = await this.checkStatusEscalation(id);
+		const eff = this.effects.find( eff => eff.statuses.has(id));
 		if (!eff) {
 			const s = [id];
 			const newState = {
@@ -1117,17 +1117,22 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "damage-nerf":
 				remList.push("damage-boost");
 				break;
-			case "down":
-				const allNonDowntimeStatus = this.effects.filter( x=> x.isStatus && !x.isDowntimeStatus)
-				const list = allNonDowntimeStatus.flatMap( x=> Array.from(x.statuses));
-				remList.push(...list)
-				cont = true;
-				break;
 		}
+		if (this.hp <= 0) {
+			const allNonDowntimeStatus = this.effects.filter( x=> x.isStatus && !x.isDowntimeStatus && !x.statuses.has("fading"));
+			const list = allNonDowntimeStatus.flatMap( x=> Array.from(x.statuses));
+			remList.push(...list)
+			cont = true;
+		}
+		let removed =0;
+
 		for (const id of remList) {
-			await this.removeStatus(id);
+			if (this.hasStatus(id)) {
+				removed++;
+				await this.removeStatus(id);
+			}
 		}
-		return remList.length > 0 && !cont;
+		return removed > 0 && !cont;
 	}
 
 	/** returns new status to escalate if needed  */
@@ -1667,13 +1672,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async addPower(this: PC | NPCAlly, power: Power) {
 		const powers = this.system.combat.powers;
-		if (powers.includes(power.id)) return;
+		if (powers.includes(power.id)) {
+			ui.notifications.notify("You already know this power in main powers!");
+			return;
+		}
+		const sideboard =  this.system.combat.powers_sideboard;
+		if (sideboard.includes(power.id)) {
+			ui.notifications.notify("You already know this power in sideboard!");
+			return;
+		}
 		if (powers.length < this.maxMainPowers) {
 			powers.push(power.id);
 			await this.update( {"system.combat.powers": powers});
 		}
-		const sideboard =  this.system.combat.powers_sideboard;
-		if (sideboard.includes(power.id)) return;
 		sideboard.push(power.id);
 		await this.update( {"system.combat.powers_sideboard": sideboard});
 		const totalPowers = this.mainPowers.length + this.sideboardPowers.length;
@@ -1764,10 +1775,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update( {"this.system.combat.classData.classId": cClass.id});
 	}
 
+	hasPowerInhibitingStatus() : boolean {
+		switch (true) {
+			case this.hasStatus("rage"):
+			case this.hasStatus("sealed"):
+				return true;
+		}
+		return false;
+	}
 	canUsePower (this: ValidAttackers, usable: UsableAndCard, outputReason: boolean = true) : boolean {
 		if (this.hasStatus("rage") && usable != PersonaDB.getBasicPower("Basic Attack")) {
 			if (outputReason) {
 				ui.notifications.warn("Can't only use basic attacks when raging");
+			}
+			return false;
+		}
+		if (this.hasPowerInhibitingStatus() && usable.system.type == "power" && !usable.isBasicPower()) {
+			if (outputReason) {
+				ui.notifications.warn("Can't use that power due to a status");
 			}
 			return false;
 		}
