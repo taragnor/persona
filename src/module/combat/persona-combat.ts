@@ -962,21 +962,64 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		await this.afterActionTriggered(attacker, result);
 		const power = result.power;
 		if (!power) return;
-		const moreActions = attacker.actor.actionsRemaining || attacker.actor.hasStatus("bonus-action");
 		const combat= game.combat as PersonaCombat | undefined;
-		const autoEndTurn= PersonaSettings.autoEndTurn()
-			&& (
-				!moreActions
-				|| combat?.forceAdvanceTurn
-			) ;
-		if (power == PersonaDB.getBasicPower("All-out Attack") || autoEndTurn) {
-			if (combat && combat.combatant?.token == attacker) {
-				if (combat.forceAdvanceTurn) {
-					await combat.setForceEndTurn(false);
+		if (combat && combat.combatant?.token == attacker) {
+			const shouldEndTurn =
+				(
+					combat.hasRunOutOfActions(combat.combatant)
+					|| power == PersonaDB.getBasicPower("All-out Attack")
+				) ;
+			const autoEndTurn = PersonaSettings.autoEndTurn() && shouldEndTurn;
+			if (shouldEndTurn) {
+				if (autoEndTurn) {
+					if (combat.forceAdvanceTurn) {
+						await combat.setForceEndTurn(false);
+					}
+					await combat.nextTurn();
+					return;
 				}
-				await combat.nextTurn();
+				await combat.displayEndTurnMessage();
 			}
 		}
+	}
+
+	hasRunOutOfActions(combatant: Combatant<ValidAttackers>) : boolean {
+		if (!combatant.actor) return false;
+		const moreActions = combatant.actor.actionsRemaining || combatant.actor.hasStatus("bonus-action");
+			const shouldEndTurn =
+				(
+					!moreActions
+					|| this?.forceAdvanceTurn
+				);
+		return shouldEndTurn;
+	}
+
+	async displayEndTurnMessage(): Promise<ChatMessage | null>  {
+		const combatant = this.combatant;
+		const actor = combatant?.actor;
+		const token = combatant?.token as PToken;
+		if (!actor || !token)  {
+			PersonaError.softFail("No actor for endTurn Message");
+			return null;
+		}
+		const boldName = `<b>${actor.displayedName}</b>`;
+		let content = `<div>${boldName} has run out of actions.</div>`;
+		const pushMsg = `<div> ${boldName} can take an additional action by pushing themself, but this inflicts 1 fatigue level`;
+		if (actor.fatigueLevel() > 0 ) {
+			content = content  + pushMsg;
+		}
+		if (actor.canEngage() || !this.isEngagedByAnyFoe(PersonaDB.getUniversalTokenAccessor(token))) {
+			content += `<div> ${boldName} can choose target to engage</div>`;
+		}
+		content = `<div class="end-turn-msg"> ${content} </div>`;
+		const messageData: Foundry.MessageData = {
+			speaker: {
+				alias: actor.displayedName ?? "ERROR"
+			},
+			content,
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+		};
+		return await ChatMessage.create(messageData, {});
 	}
 
 	get forceAdvanceTurn() : boolean {

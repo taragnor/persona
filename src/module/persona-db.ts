@@ -110,7 +110,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	getBasicPower( name: typeof BASIC_SHADOW_POWER_NAMES[number] | typeof BASIC_PC_POWER_NAMES[number]) : Power | undefined {
 		const power = PersonaDB.getItemByName(name) as Power | undefined;
 		if (!power && !this.failLog.has(name))  {
-			const msg =`Can't get basic power ${name}`; 
+			const msg =`Can't get basic power ${name}`;
 			this.failLog.set(name, msg);
 			PersonaError.softFail(msg);
 		}

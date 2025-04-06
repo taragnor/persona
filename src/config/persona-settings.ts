@@ -29,7 +29,9 @@ export class PersonaSettings {
 	}
 
 	static debugMode() : boolean {
-		return this.get("debugMode").valueOf();
+		const debugMode  = this.get("debugMode").valueOf();
+		const realGame = game.users.filter( user => user.active).length > 3;
+		return !realGame && debugMode;
 	}
 
 	static autoEndTurn() : boolean {

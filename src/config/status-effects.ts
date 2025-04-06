@@ -135,16 +135,18 @@ export const STATUS_EFFECT_LIST = [
 		icon:  "icons/environment/traps/steel.webp",
 		tags: ["downtime", "distracting"],
 	}, {
+		id: "rested",
+		icon:  "icons/skills/social/thumbsup-approval-like.webp",
+		tags: ["downtime"],
+	}, {
 		id: "exhausted",
 		icon:  "icons/svg/unconscious.svg",
 		tags: ["downtime", "baneful"],
-	},
-	{
+	}, {
 		id: "tired",
 		icon:   "icons/svg/down.svg",
 		tags: ["downtime"],
-	},
-	{
+	}, {
 		id: "sticky",
 		icon:   "icons/svg/anchor.svg",
 		tags: [],

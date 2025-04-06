@@ -156,6 +156,7 @@
 	"persona.status.crippled" : "Crippled",
 	"persona.status.exhausted" : "Exhausted",
 	"persona.status.tired" : "Tired",
+	"persona.status.rested" : "Well Rested",
 	"persona.status.jailed" : "Imprisoned",
 	"persona.status.sticky" : "Defender",
 	"persona.status.baton-pass" : "Baton Pass",

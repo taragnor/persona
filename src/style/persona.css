@@ -765,3 +765,8 @@ span.skill-card img {
 	margin-top: 20px;
 }
 
+.end-turn-msg div {
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+

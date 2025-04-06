@@ -1252,6 +1252,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
+	fatigueLevel() : number {
+		if (this.system.type != "pc") return 0;
+		switch (true) {
+			case this.hasStatus("rested"): return 2;
+			case this.hasStatus("tired"): return 0;
+			case this.hasStatus("exhausted"): return -1;
+			default:
+				return 1;
+		}
+	}
+
+
 
 	getUnarmedDamageType(): RealDamageType {
 		if (this.system.type == "shadow") return this.system.combat.baseDamageType ?? "physical";
