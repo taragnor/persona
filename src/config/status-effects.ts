@@ -44,6 +44,10 @@ export const STATUS_EFFECT_LIST = [
 		icon:  "icons/svg/invisible.svg",
 		tags: ["incapacitating", "distracting", "baneful", "fade"],
 	}, {
+		id: "full-fade",
+		icon:  "icons/svg/door-exit.svg",
+		tags: ["incapacitating", "fade"],
+	}, {
 		id: "fear",
 		icon:  "icons/svg/terror.svg",
 		tags: ["distracting", "baneful"],

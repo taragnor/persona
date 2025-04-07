@@ -809,8 +809,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			|| actor.hp > 0
 			|| actor.system.type == "shadow"
 		) {return  {msg, options}; }
-		const fadingState = actor.system.combat.fadingState;
-		if (fadingState >= 2) {
+		if (actor.hasStatus("full-fade")) {
 			msg.push(`${combatant.name} is completely faded...`);
 			options.push({
 				optionTxt: "Completely Faded (Help in Spirit only)",
@@ -838,7 +837,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case (saveTotal >= 11):{
 				msg.push(`Success`);
 				options.push({
-					optionTxt: `${fadingState ? "Barely " : ""}Hanging On (Help in Spirit Only)`,
+					optionTxt: `${actor.hasStatus("fading") ? "Barely " : ""}Hanging On (Help in Spirit Only)`,
 					mandatory: true,
 					optionEffects: [],
 				});
@@ -846,8 +845,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			}
 			default: {
 				msg.push(`Failure`);
-				await actor.setFadingState(fadingState+1);
-				const fadeState = fadingState ? "Starting to Fade Away" : "Fade Away";
+				await actor.increaseFadeState();
+				const fadeState = actor.hasStatus("fading") ? "Starting to Fade Away" : "Fully Fade Away (Ejected from Metaverse)";
 				options.push({
 					optionTxt: `${fadeState} (Help in Spirit Only)`,
 					mandatory: true,
@@ -858,32 +857,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		return { msg, options};
 	}
-
-	// async handleFading(combatant: Combatant<ValidAttackers>): Promise<string[]> {
-	// 	let Msg :string[] = [];
-	// 	const actor= combatant.actor;
-	// 	if (!actor) return [];
-	// 	if (actor.hp <= 0 && actor.system.type == "pc") {
-	// 		if (actor.system.combat.fadingState < 2) {
-	// 			Msg.push(`${combatant.name} is fading...`);
-	// 			const {success} = await PersonaCombat.rollSave(actor, { DC:11, label: "Fading Roll", saveVersus:"fading"});
-	// 			if (!success) {
-	// 				const newval = actor.system.combat.fadingState +1;
-	// 				await actor.setFadingState(newval);
-	// 				if (newval >= 2) {
-	// 					Msg.push(`<b>${combatant.name} is compeltely faded!`);
-	// 				}
-	// 			}
-	// 		} else {
-
-	// 			Msg.push(`${combatant.name} is totally faded!`);
-
-	// 		}
-	// 		Msg.push( `${combatant.name} can fight in spirit!`);
-	// 	}
-	// 	return Msg;
-
-	// }
 
 	async handleStartTurnEffects(combatant: Combatant<ValidAttackers>): Promise<string[]> {
 		const actor= combatant.actor;

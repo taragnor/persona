@@ -661,7 +661,6 @@ export class CombatResult  {
 	}
 
 	async #onDefeatOpponent(target: PToken, attacker ?: PToken) {
-		await target.actor.onKO();
 		const combat = game.combat as PersonaCombat | undefined;
 		if (!combat) return;
 		if (target.actor.system.type == "shadow") {

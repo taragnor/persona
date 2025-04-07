@@ -895,7 +895,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			hp = this.mhp;
 		}
 		await this.update( {"system.combat.hp": hp});
-		// await this.refreshHpStatus();
 	}
 
 	async modifyMP( this: PC, delta: number) {
@@ -906,13 +905,26 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async refreshHpStatus(this: ValidAttackers, newval?: number) {
+		const startingHP = this.system.combat.hp;
 		const hp = newval ?? this.system.combat.hp;
 		if (hp > 0) {
-			await this.setFadingState(0);
+			await this.clearFadingState();
 		}
 		if (hp > this.mhp) {
 			await this.update( {"system.combat.hp": this.mhp});
 		}
+		if (newval != undefined) {
+			if (startingHP > 0  && newval <= 0) {
+				await this.onKO();
+			}
+			if (startingHP <= 0 && newval > 0) {
+				await this.onRevive();
+			}
+		}
+		await this.updateOpacity(hp);
+	}
+
+	async updateOpacity(this: ValidAttackers, hp: number) {
 		const opacity = hp > 0 ? 1.0 : (this.isFullyFaded(hp) ? 0.2 : 0.6);
 		if (this.token) {
 			await this.token.update({"alpha": opacity});
@@ -924,7 +936,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				}
 			}
 		}
-
 	}
 
 	async isStatusResisted( id : StatusEffect["id"]) : Promise<boolean> {
@@ -2302,15 +2313,22 @@ async onEnterMetaverse()  : Promise<void> {
 	}
 }
 
+async endEffectsOfDurationOrLess( duration: StatusDuration) : Promise<ActiveEffect[]> {
+	const removed : ActiveEffect[] = [];
+	for (const eff of this.effects) {
+		if (eff.durationLessThanOrEqualTo(duration)) {
+			removed.push(eff);
+			await eff.delete();
+		}
+	}
+	return removed;
+}
+
 async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 	try {
 		if (this.system.type == "pc" && this.tarot == undefined) {return;} //skip fake PCs like itempiles and the party token
 		await this.fullHeal();
-		for (const eff of this.effects) {
-			if (eff.durationLessThanOrEqualTo({ dtype: "expedition"})) {
-				await eff.delete();
-			}
-		}
+		await this.endEffectsOfDurationOrLess( {dtype :"expedition"});
 		if (this.system.type == "pc") {
 			const pc = this as PC;
 			await pc.refreshSocialLink(pc);
@@ -2385,7 +2403,8 @@ isFullyFaded(this: ValidAttackers, newhp?:number) : boolean {
 			return (newhp ?? this.hp) <= 0;
 		case "pc":
 		case "npcAlly":
-				return this.system.combat.fadingState >= 2;
+				return this.hasStatus("full-fade");
+				// return this.system.combat.fadingState >= 2;
 		default:
 			this.system satisfies never;
 			return true;
@@ -2394,7 +2413,8 @@ isFullyFaded(this: ValidAttackers, newhp?:number) : boolean {
 
 isFading(this: ValidAttackers): boolean {
 	if (this.system.type == "shadow") return false;
-	return this.hp <= 0 && this.system.combat.fadingState < 2;
+	return this.hp <= 0 && !this.hasStatus("full-fade");
+	// return this.hp <= 0 && this.system.combat.fadingState < 2;
 }
 
 get triggers() : ModifierContainer[] {
@@ -2416,31 +2436,55 @@ get triggers() : ModifierContainer[] {
 	}
 }
 
-async setFadingState (this: ValidAttackers, state: number) {
-	switch (state) {
-		case 0:
-			await this.removeStatus({
-				id: "fading"
+async increaseFadeState( this: ValidAttackers) {
+	switch (true) {
+		case this.hasStatus("full-fade"):
+			return "full-fade";
+		case this.hasStatus("fading"):
+			await this.removeStatus("fading");
+			await this.addStatus( {
+				id: "full-fade",
+				duration: {dtype: "expedition"}
 			});
-			break;
-		case 1:
-			if (state == this.system.combat.fadingState)
-				return;
-			await this.addStatus({
-				id:"fading",
-				duration: {
-					dtype: "expedition"
-				},
+			return "full-fade";
+		default :
+			await this.addStatus( {
+				id: "fading",
+				duration: {dtype: "combat"}
 			});
-			break;
-		case 2:
-			break;
 	}
-	if (state == this.system.combat.fadingState)
-		return;
-	await this.update( {"system.combat.fadingState": state});
-	await this.refreshHpStatus();
 }
+
+async clearFadingState( this: ValidAttackers) {
+	await this.removeStatus("fading");
+	await this.removeStatus("full-fade");
+}
+
+// async setFadingState (this: ValidAttackers, state: number) {
+// 	switch (state) {
+// 		case 0:
+// 			await this.removeStatus({
+// 				id: "fading"
+// 			});
+// 			break;
+// 		case 1:
+// 			if (state == this.system.combat.fadingState)
+// 				return;
+// 			await this.addStatus({
+// 				id:"fading",
+// 				duration: {
+// 					dtype: "expedition"
+// 				},
+// 			});
+// 			break;
+// 		case 2:
+// 			break;
+// 	}
+// 	if (state == this.system.combat.fadingState)
+// 		return;
+// 	await this.update( {"system.combat.fadingState": state});
+// 	await this.refreshHpStatus();
+// }
 
 async alterSocialSkill (this: PC, socialStat: SocialStat, amt: number, logger = true) {
 	const oldval = this.system.skills[socialStat];
@@ -2973,10 +3017,15 @@ async onCombatStart() {
 }
 
 async onKO() : Promise<void> {
+	console.log("Calling onKO");
 	await Promise.allSettled(this.effects
 		.filter( eff => eff.removesOnDown())
 		.map(eff => eff.delete())
 	);
+}
+
+async onRevive() : Promise<void> {
+	console.log("Calling onRevive");
 }
 
 get tagList() : CreatureTag[] {

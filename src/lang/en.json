@@ -133,6 +133,7 @@
 	"persona.status.sealed" : "Sealed",
 	"persona.status.expel" : "Expelled",
 	"persona.status.fading" : "Fading",
+	"persona.status.full-fade" : "Fully Faded",
 	"persona.status.fear" : "Fear",
 	"persona.status.vulnerable" : "Vulnerable",
 	"persona.status.forgetful" : "Forgetful",

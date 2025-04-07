@@ -172,7 +172,7 @@ export function combatCommonStats() {
 		initiative: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 		resists: elementalResists(),
 		hpTracker: new obj<HPTracking>(),
-		fadingState: new num( {integer:true, initial:0}),
+		// fadingState: new num( {integer:true, initial:0}),
 		statusResists: statusResists(),
 		focuses: new arr( new id(), {initial: []}),
 		actionsRemaining: new num( {initial: 1, integer:true, min:0, max: 20}),
