@@ -42,7 +42,7 @@ export const STATUS_EFFECT_LIST = [
 	}, {
 		id: "fading",
 		icon:  "icons/svg/invisible.svg",
-		tags: ["incapacitating", "distracting", "baneful"],
+		tags: ["incapacitating", "distracting", "baneful", "fade"],
 	}, {
 		id: "fear",
 		icon:  "icons/svg/terror.svg",
@@ -207,7 +207,7 @@ declare global {
 }
 
 
-type StatusTag = "distracting" | "baneful" | "incapacitating" | "debuff" | "buff" | "lethal" | "downtime" | "beneficial";
+type StatusTag = "distracting" | "baneful" | "incapacitating" | "debuff" | "buff" | "lethal" | "downtime" | "beneficial" | "fade";
 
 CONFIG.statusEffects = STATUS_EFFECT_LIST
 	.map( ({id, icon, tags})=> {

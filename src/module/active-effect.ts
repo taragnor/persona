@@ -161,6 +161,9 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 	async onStartCombatTurn() : Promise<boolean> {
 		const duration = this.statusDuration;
 		switch (duration.dtype) {
+			case "instant":
+				await this.delete();
+				return true;
 			case "X-rounds":
 			case "3-rounds":
 				if (duration.amount <= 0) {
@@ -184,7 +187,6 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 			case "combat":
 			case "X-rounds":
 			case "X-days":
-			case "instant":
 			case "anchored":
 			case "UEoNT":
 			case "UEoT":
@@ -193,6 +195,20 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				duration satisfies never;
 				return false;
 		}
+	}
+
+	removesOnDown() : boolean {
+		if (this.statuses.size == 0) return false;
+		if (this.statusDuration.dtype == "instant") return false;
+		if (!this.durationLessThanOrEqualTo({ dtype: "combat"})) return false;
+		return Array.from(this.statuses).some( st=> {
+			const status = CONFIG.statusEffects.find( x=> x.id == st)
+			const tags = status?.tags;
+			if (!status || !tags) return false;
+			if (tags.includes("fade")) return false;
+			if (tags.includes("downtime")) return false;
+			return true;
+		});
 	}
 
 	async saveVsSaveEffects(): Promise<boolean> {

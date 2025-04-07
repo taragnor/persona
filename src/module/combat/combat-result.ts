@@ -661,8 +661,12 @@ export class CombatResult  {
 	}
 
 	async #onDefeatOpponent(target: PToken, attacker ?: PToken) {
+		await target.actor.onKO();
+		const combat = game.combat as PersonaCombat | undefined;
+		if (!combat) return;
 		if (target.actor.system.type == "shadow") {
-			const shadow = game.combat?.combatants.find( c=> c.token.id == target.id) as Combatant<PersonaActor> | undefined;
+			// const shadow = combat?.combatants.find( c=> c.token.id == target.id) as Combatant<PersonaActor> | undefined;
+			const shadow = combat.findCombatant(target)
 			if (shadow) {
 				if (!shadow.defeated) {
 					try {
@@ -683,13 +687,11 @@ export class CombatResult  {
 				user: attackerActor.accessor,
 				triggeringUser: game.user,
 			}
-			const combat = game.combat as PersonaCombat;
-			if (combat)
-				for (const comb of combat.combatants) {
-					if (!comb.actor) continue;
-					situation.user = comb.actor.accessor;
-					await TriggeredEffect.execCombatTrigger("on-kill-target", comb.actor, situation);
-				}
+			for (const comb of combat.combatants) {
+				if (!comb.actor) continue;
+				situation.user = comb.actor.accessor;
+				await TriggeredEffect.execCombatTrigger("on-kill-target", comb.actor, situation);
+			}
 		}
 	}
 

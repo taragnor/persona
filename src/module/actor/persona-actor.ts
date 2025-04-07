@@ -2972,6 +2972,13 @@ async alterEnergy(this: Shadow, amt: number) {
 async onCombatStart() {
 }
 
+async onKO() : Promise<void> {
+	await Promise.allSettled(this.effects
+		.filter( eff => eff.removesOnDown())
+		.map(eff => eff.delete())
+	);
+}
+
 get tagList() : CreatureTag[] {
 	//NOTE: This is a candidate for caching
 	if (this.system.type == "tarot") return [];
