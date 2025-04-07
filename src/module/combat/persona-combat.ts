@@ -131,7 +131,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (unrolledInit.length > 0) {
 			await this.rollInitiative(unrolledInit);
 		}
-		// await PersonaCombat.execTrigger("on-combat-start", combatant.actor as ValidAttackers);
 		return await super.startCombat();
 	}
 
@@ -289,8 +288,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			await this.ensureSheetOpen(combatant);
 		}
 		let startTurnMsg = [ `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`];
+		const engaged = this.getAllEngagedEnemies(combatant);
+		if (engaged.length > 0) {
+			const engagedMsg  = `<div> <b>Engaged By:</b> ${engaged.map(x=> x.name).join(", ")}</div>`;
+			startTurnMsg.push(engagedMsg);
+		}
 		startTurnMsg = startTurnMsg.concat(
-		   await (actor as PC | Shadow).onStartCombatTurn(),
+			await (actor as PC | Shadow).onStartCombatTurn(),
 			await this.handleStartTurnEffects(combatant),
 		);
 		await this.execStartingTrigger(combatant);
@@ -678,15 +682,29 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return actor1.getAllegiance() == actor2.getAllegiance();
 	}
 
-	getAlliedEngagedDefenders(Tacc: UniversalTokenAccessor<PToken>) : PToken[] {
-		const token = PersonaDB.findToken(Tacc);
-		const meleeTokens = EngagementChecker.getTokensInMelee(token, this);
-		return Array.from(meleeTokens)
-			.filter( x=> x.actor.statuses.has("sticky")
-				&& PersonaCombat.isSameTeam(token,x )
-				&& x.actor.canEngage()
-			);
-	}
+	getAlliedEngagedDefenders(Tacc: UniversalTokenAccessor<PToken>) : PersonaCombatant[];
+	getAlliedEngagedDefenders(comb: PersonaCombatant  ) : PersonaCombatant[];
+	getAlliedEngagedDefenders(Tacc: UniversalTokenAccessor<PToken> | PersonaCombatant) : PersonaCombatant[] {
+		let comb : PersonaCombatant;
+		if (! (Tacc instanceof Combatant)) {
+			const token = PersonaDB.findToken(Tacc);
+			if (!token) return [];
+			const combTest =  this.findCombatant(token);
+			if (!combTest) return [];
+			comb = combTest;
+		} else {
+			if (!Tacc.token.actor) {
+				return [];
+			}
+			comb = Tacc;
+		}
+			const meleeCombatants = EngagementChecker.listOfCombatantsInMelee(comb, this);
+			return meleeCombatants
+				.filter( x=> x.actor && x.actor.statuses.has("sticky")
+					&& PersonaCombat.isSameTeam(comb,x )
+					&& x.actor.canEngage()
+				);
+		}
 
 	getValidTargetsFor(usable: Usable, user: Combatant<ValidAttackers>, situation: Situation): Combatant<ValidAttackers>[]  {
 		const userActor = user.token.actor;
@@ -728,11 +746,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	}
 
-	getDisengageDC(combatant: Combatant<ValidAttackers>) : number {
+	getAllEngagedEnemies(subject: PersonaCombatant): PersonaCombatant[] {
+		return EngagementChecker.getAllEngagedEnemies(subject, this);
+	}
+	getDisengageDC(combatant: PersonaCombatant) : number {
 		if (!combatant.token) return 11;
-		const list = EngagementChecker.getAllEngagedEnemies(combatant.token as PToken, this);
+		const list = EngagementChecker.getAllEngagedEnemies(combatant, this);
 		for (const item of list) {
-			if (item.actor.isSticky()) return 16;
+			if (item.actor && item.actor.isSticky()) return 16;
 		}
 		return 11;
 	}
@@ -2124,27 +2145,44 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	isEngagedByAnyFoe(subject: UniversalTokenAccessor<PToken>) : boolean {
-		const tok = PersonaDB.findToken(subject);
-		return EngagementChecker.isEngagedByAnyFoe(tok, this);
+		const comb = this.findCombatant(subject);
+		if (!comb) return false;
+		return EngagementChecker.isEngagedByAnyFoe(comb, this);
 	}
 
 	isInMeleeWith (token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
-		const t1 = PersonaDB.findToken(token1);
-		const t2 = PersonaDB.findToken(token2);
-		const melee = EngagementChecker.getTokensInMelee(t1, this);
-		return melee.has(t2);
+		const c1 = this.findCombatant(token1);
+		if (!c1) {
+			PersonaError.softFail("Can't find combatant");
+			return false;
+		}
+		const c2 = this.findCombatant(token2);
+		if (!c2) {
+			PersonaError.softFail("Can't find combatant");
+			return false;
+		}
+		const melee = EngagementChecker.listOfCombatantsInMelee(c1, this);
+		return melee.includes(c2);
 	}
 
 	isEngaging(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
-		const t1 = PersonaDB.findToken(token1);
-		const t2 = PersonaDB.findToken(token2);
-		return EngagementChecker.isEngaging(t1, t2, this);
+		const c1 = this.findCombatant(token1);
+		const c2 = this.findCombatant(token2);
+		if (!c2 || !c1) {
+			PersonaError.softFail("Can't find combatant");
+			return false;
+		}
+		return EngagementChecker.isEngaging(c1, c2, this);
 	}
 
 	isEngagedBy(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
-		const t1 = PersonaDB.findToken(token1);
-		const t2 = PersonaDB.findToken(token2);
-		return EngagementChecker.isEngagedBy(t1, t2, this);
+		const c1 = this.findCombatant(token1);
+		const c2 = this.findCombatant(token2);
+		if (!c2 || !c1) {
+			PersonaError.softFail("Can't find combatant");
+			return false;
+		}
+		return EngagementChecker.isEngagedBy(c1, c2, this);
 	}
 
 	getCombatantFromTokenAcc(acc: UniversalTokenAccessor<PToken>): Combatant<ValidAttackers> {
@@ -2252,8 +2290,22 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		await PersonaCombat.usePower(comb.token as PToken, allOutAttack);
 	}
 
-	findCombatant(token :PToken) : Combatant<ValidAttackers> | undefined {
-		return this.validCombatants().find( comb=> comb.token == token);
+findCombatant(acc :UniversalTokenAccessor<TokenDocument<ValidAttackers>>) : PersonaCombatant | undefined;
+findCombatant(comb :PersonaCombatant) : PersonaCombatant | undefined;
+findCombatant(token :PToken) : PersonaCombatant | undefined;
+findCombatant(token :PToken | PersonaCombatant | UniversalTokenAccessor<TokenDocument<ValidAttackers>>) : Combatant<ValidAttackers> | undefined {
+	const validCombatants = this.validCombatants();
+	switch (true) {
+		case token instanceof Combatant: {
+			return validCombatants.find( comb=> comb == token);
+		}
+		case token instanceof TokenDocument: {
+			return validCombatants.find( comb=> comb.token == token);
+		}
+		default:
+			const tokenDoc = PersonaDB.findToken(token);
+			return validCombatants.find( comb=> comb.token != undefined && comb.token == tokenDoc);
+		}
 	}
 
 	getAllies(comb: Combatant<ValidAttackers>) : Combatant<ValidAttackers>[] {
@@ -2651,4 +2703,6 @@ type OpenerOption = {
 	optionTxt: string,
 	optionEffects: unknown[]
 }
+
+export type PersonaCombatant = NonNullable<PersonaCombat["combatant"]>;
 
