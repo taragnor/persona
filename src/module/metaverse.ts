@@ -112,27 +112,68 @@ export class Metaverse {
 			.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
 }
 
-static #getEncounterSize(sizeMod = 0) : number {
+static #getEncounterType(sizeMod: number): {size: number, etype: EncounterType} {
+	let etype : EncounterType = "standard";
 		let encounterSize = sizeMod;
-		const sizeRoll = Math.floor((Math.random() * 10) +1);
+	const DIE_SIZE = 16;
+		const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
 		switch (sizeRoll) {
 			case 1:
 				encounterSize += 3;
 				break;
-			case 2: case 3: case 4: case 5: case 6: case 7:
+			case 2: case 3: case 4: case 5: case 6:
 				encounterSize += 4;
 				break;
-			case 8: case 9: case 10:
+			case 7: case 8: case 9:
 				encounterSize += 5;
 				break;
+			case 11: case 12: case 13:
+				encounterSize += 5;
+				etype = "tough";
+				break;
+			case 14:
+				encounterSize += Math.floor(Math.random() * 3+1);
+				etype = "treasure";
+				break;
+			case 15:
+				encounterSize += 5;
+				etype = "mixed";
+				break;
+			case 16:
+				const rnd = Math.floor(Math.random() * 2 + 5);
+				if (rnd >= 6) {
+				console.log("Mixed encounter size ${rnd}");
+				}
+				encounterSize += rnd;
+				etype = "mixed";
+				break;
 			default:
-				if (sizeRoll > 10) {
+				if (sizeRoll > DIE_SIZE) {
 					PersonaError.softFail(`Encounter number is ${sizeRoll}`);
 				}
 				encounterSize += 4;
 				break;
 		}
-	return encounterSize;
+	return {
+		size: encounterSize,
+		etype
+	};
+}
+
+static #filterByEncounterType(shadowList : Shadow[], etype : EncounterType) : Shadow[] {
+	switch (etype) {
+		case "standard":
+			return shadowList.filter( x=> !x.hasRole(["treasure-shadow", "duo", "solo"]));
+		case "tough":
+			return shadowList.filter( x=> x.hasRole(["duo", "solo", "elite"]));
+		case "treasure":
+			return shadowList.filter( x=> x.hasRole(["treasure-shadow"]));
+		case "mixed":
+			return shadowList;
+		default:
+			etype satisfies never;
+			return [];
+	}
 }
 
 static choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encounterList: Shadow[]): Shadow | undefined {
@@ -140,6 +181,7 @@ static choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encount
 		PersonaError.softFail("Couldn't get a pick from choice list");
 		return undefined;
 	}
+	if (encounterList.length <= 0) return pick1;
 	if (Math.random() < 0.3333) return pick1; //favor weights less heavily
 	const p1score = encounterList
 		.reduce ( (acc, shadow) => acc + shadow.complementRating(pick1), 0);
@@ -149,50 +191,103 @@ static choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encount
 	return pick;
 }
 
-	static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod = 0): Shadow[] {
-		const scene = game.scenes.current as PersonaScene;
-		const encounterList  = this.getEncounterList(scene, shadowType);
-		const weightedList = this.weightedEncounterList(encounterList, scene);
-		if (encounterList.length == 0) {
-			PersonaError.softFail(`Encounter List is empty for ${scene.name} ${shadowType ? "(" + shadowType+ ")"  :""}`);
-			return [];
-		}
-		let enemyType : Shadow["system"]["creatureType"] | undefined = undefined;
-		const encounter : Shadow[] = [];
-		let bailout = 0;
-		let encounterSize = this.#getEncounterSize(sizeMod);
-		while (encounterSize > 0) {
-			if (bailout > 200) {
-				PersonaError.softFail(`Had to bail out, couldn't find match for ${scene.name}`);
-				return [];
-			}
-			if (bailout == 20) {
-				ui.notifications.warn("Over 20 fail attempts getting random encounter");
-			}
-			const pick1 = weightedChoice(weightedList);
-			const pick2 = weightedChoice(weightedList);
-			const pick  = this.choosePick(pick1, pick2, encounterList);
-			if (!pick) {
-				continue;
-			}
-			if (enemyType == undefined) {
-				enemyType = pick.system.creatureType;
-			}
-			if (pick.system.creatureType != enemyType) {
-				bailout++; //escape hatch for if it keeps screwing up
-				continue;
-			}
-			const sizeVal = pick.encounterSizeValue();
-			if (Math.max(1, encounterSize) < sizeVal) {
-				bailout++;
-				continue;
-			}
-			encounterSize -= sizeVal;
-			encounter.push(pick);
-		}
-		encounter.sort( (a,b) => a.name.localeCompare(b.name));
-		return encounter;
+
+static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod = 0): Shadow[] {
+	const scene = game.scenes.current as PersonaScene;
+	const baseList  = this.getEncounterList(scene, shadowType);
+	let enemyType : Shadow["system"]["creatureType"] | undefined = undefined;
+	const encounter : Shadow[] = [];
+	let bailout = 0;
+	let encounterList = baseList;
+	let encounterSizeRemaining: number;
+	if (baseList.length == 0) {
+		PersonaError.softFail(`Base Encounter List is empty for ${scene.name} ${shadowType ? "(" + shadowType+ ")"  :""}`);
+		return [];
 	}
+	let etype : EncounterType;
+	do {
+		let { size, etype: encounterType} = this.#getEncounterType(sizeMod);
+		encounterSizeRemaining = size;
+		etype = encounterType;
+		encounterList = this.#filterByEncounterType(baseList, etype);
+	} while (encounterList.length <= 0);
+
+	console.log(`Encounter list : ${encounterList.map( x=> x.name).join(", ")}`);
+	const weightedList = this.weightedEncounterList(encounterList, scene);
+	const minSize = encounterList.reduce ( (a, x) => Math.min(a, x.encounterSizeValue()), 10);
+
+	while (encounterSizeRemaining > 0) {
+		if (bailout > 200) {
+			PersonaError.softFail(`Had to bail out, couldn't find match for ${scene.name}`);
+			debugger;
+			return encounter;
+		}
+		if (bailout == 20) {
+			ui.notifications.warn("Over 20 fail attempts getting random encounter");
+		}
+		const pick1 = weightedChoice(weightedList);
+		const pick2 = weightedChoice(weightedList);
+		const pick  = this.choosePick(pick1, pick2, encounter);
+		if (!pick) {
+			continue;
+		}
+		if (enemyType == undefined) {
+			enemyType = pick.system.creatureType;
+		}
+		if (pick.system.creatureType != enemyType) {
+			bailout++; //escape hatch for if it keeps screwing up
+			continue;
+		}
+		let amt = this.getSubgroupAmt(etype);
+		if (minSize > encounterSizeRemaining) {
+			break;
+		}
+		while (amt > 0) {
+			const sizeVal = pick.encounterSizeValue();
+			if (encounterSizeRemaining < 3 && minSize >= 3) break; //don't swamp them with solos
+			if (sizeVal > encounterSizeRemaining) {
+				break;
+			}
+
+			if (sizeVal < 1) {
+				console.warn(`Size value of ${pick.name} less than 1`);
+			}
+			encounterSizeRemaining -= sizeVal;
+			encounter.push(pick);
+			amt -= 1;
+		}
+	}
+	encounter.sort( (a,b) => a.name.localeCompare(b.name));
+	return encounter;
+}
+
+static getSubgroupAmt(etype :EncounterType) : number {
+	let subroll : number;
+	switch (etype) {
+		case "standard":
+			subroll = Math.floor(Math.random() * 3 + 1);
+			switch (subroll) {
+				case 1: return 1;
+				case 2: return 2;
+				case 3: return 2;
+				case 4: return 3;
+				default: return 2;
+			}
+		case "mixed":
+		case "tough":
+		case "treasure":
+			subroll = Math.floor(Math.random() * 2 + 1);
+			switch (subroll) {
+				case 1: return 1;
+				case 2: return 1;
+				case 3: return 2;
+				default: return 2;
+			}
+		default:
+			etype satisfies never;
+			return 1;
+	}
+}
 
 	static async printRandomEncounterList(encounter: Shadow[]) {
 		const speaker = ChatMessage.getSpeaker({alias: "Encounter Generator"});
@@ -707,3 +802,5 @@ type Treasure = {
 	money : number,
 	items: TreasureItem[],
 };
+
+type EncounterType = "standard" | "tough" | "treasure" | "mixed";

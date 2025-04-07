@@ -1318,7 +1318,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	#complementRating (this: Shadow, other: Shadow) : number {
 		let rating = 0;
-		if (this == other) return 2; //baseline
+		if (this == other) return 0; //baseline
 		const scaledPairs : [Shadow["system"]["role"], Shadow["system"]["role"], number][] = [
 			["soldier", "lurker", 1],
 			["soldier", "support", 1],
@@ -2697,10 +2697,17 @@ getEffectFlag(flagId: string) : FlagData | undefined {
 	};
 }
 
-hasRole( role: Shadow["system"]["role"]): boolean {
+//** returns true if shadow has one of the roles in the array */
+hasRole( roles: Shadow["system"]["role"] | Shadow["system"]["role"][]): boolean {
 	if (this.system.type != "shadow") return false;
-	return this.system.role == role
-		|| this.system.role2 == role;
+	if (!Array.isArray(roles)) {
+		roles = [roles];
+	}
+	const shadow = this as Shadow;
+	return roles.some( role => {
+		return shadow.system.role == role
+			|| shadow.system.role2 == role;
+	});
 }
 
 isSoloType() : boolean {
