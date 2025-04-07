@@ -254,3 +254,12 @@ export const STATUS_EFFECT_DURATION_TYPES = Object.fromEntries(
 	)
 );
 
+
+Hooks.on("ready", () => {
+	console.log("Sorting status effects");
+	CONFIG.statusEffects.sort( (a,b) =>  {
+		const la = game.i18n.localize(a.name);
+		const lb = game.i18n.localize(b.name);
+		return la.localeCompare(lb);
+	});
+});

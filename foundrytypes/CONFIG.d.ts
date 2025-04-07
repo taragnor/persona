@@ -7,7 +7,7 @@ declare interface CONFIG {
 		dataModels: Record<string, typeof foundry.abstract.DataModel>;
 		documentClass: typeof Item<any>;
 	};
-	statusEffects: readonly StatusEffectObject[];
+	statusEffects: StatusEffectObject[];
 	ActiveEffect: {
 		documentClass: typeof ActiveEffect<any, any>;
 		legacyTransferral: boolean;
