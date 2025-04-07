@@ -50,27 +50,6 @@ export class EngagementChecker {
 		return Array.from(engagedList);
 	}
 
-	// static getTokensInMelee(subject: PToken, combat: PersonaCombat) : Set<PToken> {
-	// 	const engagedList : Set<PToken>= new Set();
-	// 	const checkList = [subject];
-	// 	while (checkList.length > 0) {
-	// 		const checkedToken = checkList.pop()!;
-	// 		for (const comb of combat.validEngagementCombatants) {
-	// 			if (!comb.token.actor?.isAlive()) continue;
-	// 			const token  = comb.token as PToken;
-	// 			if ( this.isWithinEngagedRange(checkedToken, token)
-	// 				&& !engagedList.has(token)
-	// 			) {
-	// 				if (token != subject)  {
-	// 					engagedList.add(token);
-	// 					checkList.push(token);
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// 	return engagedList;
-	// }
-
 	static isWithinEngagedRange(subject: PToken, target:PToken) : boolean {
 		const mapUnits = subject.parent.dimensions.distance;
 		// if (canvas?.grid?.measurePath) {

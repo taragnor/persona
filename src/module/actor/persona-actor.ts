@@ -1463,11 +1463,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	itemAtkBonus(this: ValidAttackers, item :Consumable) : ModifierList {
-		const mm = this.getBonuses(["itemAtk", "allAtk"]);
-		// mm.concat(this.getBonuses("allAtk"));
-		mm.add("Item Base Bonus", item.system.atk_bonus);
-		mm.add("Hotfix for older items", item.system.atk_bonus);
-		return mm;
+		const mods = this.getBonuses(["itemAtk", "allAtk"]);
+		mods.add("Item Base Bonus", item.system.atk_bonus);
+		const lvl = this.system.combat.classData.level ?? 0;
+		const inc = this.system.combat.classData.incremental.attack ?? 0;
+		mods.add("Level Bonus (x1)", lvl);
+		mods.add("Incremental Advance" , inc);
+		return mods;
 	}
 
 	getDefense(this: ValidAttackers,  type : keyof PC["system"]["combat"]["defenses"]) : ModifierList {
