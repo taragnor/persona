@@ -99,9 +99,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const regionMods = (game.scenes.current as PersonaScene).getRoomEffects();
 		// const regionMods = Metaverse.getRegion()?.roomEffects.map(x=> x.id) ?? [];
 		const combatInit = await this.roomEffectsDialog(regionMods, assumeSocial);
-		this.setSocialEncounter(combatInit.isSocialScene);
+		await this.setSocialEncounter(combatInit.isSocialScene);
+		if (combatInit.isSocialScene != this.isSocial) {
+			throw new PersonaError("WTF Combat not updating!");
+		}
 		if (combatInit.isSocialScene) {
-				if (PersonaSettings.debugMode() == false) {
+			if (PersonaSettings.debugMode() == false) {
 				await Metaverse.exitMetaverse();
 			}
 			await PersonaSocial.startSocialCombatRound(combatInit.disallowMetaverse, combatInit.advanceCalendar);

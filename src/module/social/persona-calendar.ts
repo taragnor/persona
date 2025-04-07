@@ -70,6 +70,7 @@ export class PersonaCalendar {
 
 	static async nextDay(extraMsgs : string[] = []) {
 		if(!game.user.isGM) return;
+		console.debug("nextday Called");
 		const rolls: Roll[] = [];
 		const calendar = window?.SimpleCalendar?.api;
 		if (!calendar) {

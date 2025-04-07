@@ -2069,7 +2069,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.social": this.system.social});
 	}
 
-
 	getInspirationWith(linkId: SocialLink["id"]): number {
 		if (this.system.type != "pc") return 0;
 		const link = this.system.social.find( x=> x.linkId == linkId);
@@ -2489,8 +2488,16 @@ isAlive(): boolean {
 	return this.hp > 0;
 }
 
+async resetAvailability( this: SocialLink, day: SimpleCalendar.WeekdayName) {
+			const avail = this.system.weeklyAvailability[day];
+			await this.setAvailability(avail);
+}
+
 async setAvailability(this: SocialLink, bool: boolean) {
-	if (this.isOwner) {
+	if (this.system.weeklyAvailability.available == bool) return;
+	if (game.user.isGM || this.isOwner) {
+		//possible fix for the update seemingly not taking effect in time despite the await
+		this.system.weeklyAvailability.available = bool;
 		await	this.update( {"system.weeklyAvailability.available": bool});
 	} else {
 		PersonaSocial.requestAvailabilitySet(this.id, bool);

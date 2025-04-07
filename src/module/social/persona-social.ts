@@ -128,13 +128,12 @@ export class PersonaSocial {
 
 	static async updateLinkAvailability(day: SimpleCalendar.WeekdayName) {
 		for (const link of PersonaDB.socialLinks()) {
-			const avail = link.system.weeklyAvailability[day];
-			await link.setAvailability(avail);
+			await link.resetAvailability(day);
 		}
 		for (const activity of PersonaDB.allActivities()){
-			const avail = activity.system.weeklyAvailability[day];
-			await activity.setAvailability(avail);
+			await activity.resetAvailability(day);
 		}
+		console.debug(`NPC availability Reset: ${day}`);
 	}
 
 	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation) : Promise<RollBundle> {

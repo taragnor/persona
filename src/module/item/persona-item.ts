@@ -923,8 +923,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.isAvailable(pc);
 	}
 
-	async setAvailability(this: SocialCard, bool: boolean) {
-		await	this.update( {"system.weeklyAvailability.available": bool});
+	async resetAvailability (this: Activity, day: SimpleCalendar.WeekdayName) : Promise<void> {
+		const avail = this.system.weeklyAvailability[day];
+		await this.setAvailability(avail);
+	}
+
+	async setAvailability(this: SocialCard, bool: boolean) : Promise<void> {
+		if (this.system.weeklyAvailability.available == bool){ return; }
+		if (game.user.isGM || this.isOwner) {
+			//possible fix for the update seemingly not taking effect in time despite the await
+			this.system.weeklyAvailability.available = bool;
+			await	this.update( {"system.weeklyAvailability.available": bool});
+		} else {
+			PersonaError.softFail(`Can't update availability for ${this.name} as you are not an owner`);
+		}
 	}
 
 	async addCardEvent(this: SocialCard) {
