@@ -605,6 +605,9 @@ export class ConditionalEffectManager {
 			case "combat-result-based":
 				const combatResult = this.#printCombatResultString(cond);
 				return `${combatResult} ${endString(cond)}`;
+			case "num-of-others-with":
+				//TODO: put in special condition
+				return `Number of ${cond.group} that meet Special Condition ${endString(cond)}`;
 			default:
 				cond satisfies never;
 				return "UNKNOWN CONDITION"

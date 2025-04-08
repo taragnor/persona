@@ -1,3 +1,4 @@
+import { Precondition } from "./precondition-types.js";
 import { SocialLinkIdOrTarot } from "./precondition-types.js";
 import { ConditionTarget } from "./precondition-types.js";
 import { ResistType } from "../config/damage-types.js";
@@ -30,6 +31,7 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"social-variable",
 	"round-count",
 	"combat-result-based",
+	"num-of-others-with",
 ] as const;
 
 export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];
@@ -85,6 +87,7 @@ type NonGenericNumericComparison = ResistanceComparison
 	| SocialVariableComparison
 	| totalSLComparison
 	| CombatResultComparison
+	| NumberOfOthersWithComparison
 ;
 
 type SocialVariableComparison = NumericComparisonBase & {
@@ -178,6 +181,27 @@ const RESULT_SUBTYPE_COMPARISON_LIST = [
 ] as const;
 
 type CombatResultSubtypeComparison = typeof RESULT_SUBTYPE_COMPARISON_LIST[number];
+
+type NumberOfOthersWithComparison = NumericComparisonBase & {
+	comparisonTarget:		"num-of-others-with",
+	group: ComparisonGroup,
+	otherComparison: Precondition,
+	conditionTarget : ConditionTarget,
+}
+
+export const COMPARISON_GROUP_LIST = [
+	"allies",
+	"enemies",
+	"both",
+] as const;
+
+type ComparisonGroup = typeof COMPARISON_GROUP_LIST[number];
+
+export const COMPARISON_GROUPS = Object.fromEntries(
+	COMPARISON_GROUP_LIST.map( x => [x, `persona.preconditions.comparison.comparison-groups.${x}`])
+
+);
+
 
 
 export const RESULT_SUBTYPE_COMPARISON = Object.fromEntries(

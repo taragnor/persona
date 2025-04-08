@@ -25,6 +25,7 @@ const templateFileNames : string[] =[
 	"card-opportunity-section.hbs",
 	"card-roll-section.hbs",
 	"input-condition.hbs",
+	"input-condition-body.hbs",
 	"input-consequence.hbs",
 	"input-card-choice.hbs",
 	"social-card-roll.hbs",

@@ -1,3 +1,4 @@
+import { COMPARISON_GROUPS } from "../../../config/numeric-comparison.js";
 import { UNIVERSAL_MODIFIERS_TYPE } from "../../datamodel/universal-modifiers-types.js";
 import { RESULT_SUBTYPE_COMPARISON } from "../../../config/numeric-comparison.js";
 import { COMBAT_EFFECTS } from "../../../config/effect-types.js";
@@ -136,6 +137,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			VARIABLE_ACTIONS,
 			COMBAT_EFFECTS,
 			RESULT_SUBTYPE_COMPARISON,
+			COMPARISON_GROUPS,
 			UNIVERSAL_MODIFIERS_TYPE,
 			SCENE_WEATHER_TYPES: Object.fromEntries(
 				([""].concat(Object.keys(CONFIG.weatherEffects))).map( x=> [x,x])

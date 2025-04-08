@@ -641,11 +641,16 @@
 	"persona.preconditions.comparison.social-variable": "Value of a Social Variable",
 	"persona.preconditions.comparison.round-count": "Combat Round Count",
 	"persona.preconditions.comparison.combat-result-based": "Combat Result Data",
+	"persona.preconditions.comparison.num-of-others-with": "Number of Others meeting condition",
 
 	"persona.preconditions.socialChecks.relationship-type-check": "Relationship Type is",
 	"persona.preconditions.socialChecks.is-social-disabled": "Is Socially Disabled",
 	"persona.preconditions.socialChecks.is-available": "Is Currently Available",
 	"persona.preconditions.socialChecks.is-dating": "Is Dating",
+
+	"persona.preconditions.comparison.comparison-groups.allies": "Allies",
+	"persona.preconditions.comparison.comparison-groups.enemies": "Enemies",
+	"persona.preconditions.comparison.comparison-groups.both": "Both",
 
 	"persona.preconditions.userComparison.triggering-user": "Triggering User",
 	"persona.preconditions.userComparison.current-user": "Current User",

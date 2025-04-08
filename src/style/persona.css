@@ -770,3 +770,11 @@ span.skill-card img {
 	padding-bottom: 5px;
 }
 
+.sub-condition {
+	margin: 10px;
+	padding: 10px;
+	border: 2px;
+	border-style: dotted;
+	border-width: 2px;
+	border-radius:5px;
+}

@@ -1,3 +1,4 @@
+import { PersonaScene } from "./persona-scene.js";
 import { ActorChange } from "./combat/combat-result.js";
 import { AttackResult } from "./combat/combat-result.js";
 import { CombatResult } from "./combat/combat-result.js";
@@ -310,6 +311,71 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (typeof res == "boolean") return res;
 			target= res;
 			break;
+		case "num-of-others-with": {
+			const subject = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!subject) return false;
+			let targets : PersonaActor[];
+			const combat = game.combat as PersonaCombat | undefined;
+			switch (condition.group) {
+				case "allies": {
+					if (subject.isNPC()) return false;
+					if (combat) {
+						const comb = combat.getCombatantByActor(subject as ValidAttackers)
+						if (!comb) {return false;}
+						const allies = combat.getAllies(comb);
+						targets = allies
+							.map( x=> x.actor)
+							.filter (x=> x != undefined);
+					} else {
+						if (subject.getAllegiance() != "PCs") {
+							return false;
+						}
+						const token= (game.scenes.current as PersonaScene).findActorToken(subject);
+						if (!token) return false;
+						const allies = PersonaCombat.getAllAlliesOf(token as PToken);
+						targets= allies.map( x=> x.actor)
+							.filter (x=> x != undefined);
+					}
+					break;
+				}
+				case "enemies": {
+					if (!combat) return false;
+					const token= (game.scenes.current as PersonaScene).findActorToken(subject);
+					if (!token) return false;
+					const foes = PersonaCombat.getAllEnemiesOf(token as PToken);
+					targets= foes.map( x=> x.actor)
+					.filter (x=> x != undefined);
+					break;
+				}
+				case "both": {
+					if (!combat) {
+						const token = (game.scenes.current as PersonaScene).findActorToken(subject);
+						const allies = PersonaCombat.getAllAlliesOf(token as PToken);
+						targets= allies.map( x=> x.actor)
+							.filter (x=> x != undefined);
+					} else {
+						targets = combat.combatants.contents
+							.map( x=> x.actor)
+							.filter (x=> x != undefined);
+					}
+					break;
+				}
+				default:
+					condition.group satisfies never
+					return false;
+			}
+			target = targets.reduce(
+				function (a,act) {
+					const situation : Situation = {
+						user: (act as ValidAttackers).accessor ,
+					};
+				return	a + (testPrecondition(condition.otherComparison, situation, null) ? 1 : 0);
+				}
+			, 0);
+			break;
+
+
+		}
 		default:
 			condition satisfies never;
 			PersonaError.softFail(`Unknwon numeric comparison type ${condition["comparisonTarget"]}`)

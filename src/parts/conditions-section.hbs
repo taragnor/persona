@@ -10,7 +10,7 @@
 		</a>
 	</div>
 	{{#each (getProp owner namePrefix) as |cond j|}}
-	{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat ../namePrefix j ".")  cond=cond POWERSTUFF=(powerStuff) i=../i condition_index=j}}
+	{{> "systems/persona/parts/input-condition.hbs" namePrefix=(strcat ../namePrefix j ".")  cond=cond POWERSTUFF=(powerStuff) i=../i condition_index=j owner=owner}}
 	{{/each}}
 
 {{else}}

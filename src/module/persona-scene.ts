@@ -59,6 +59,9 @@ export class PersonaScene extends Scene {
 		return sceneEffects.concat(regionMods);
 	}
 
+	findActorToken <T extends PersonaActor>(actor: T) : undefined | TokenDocument<T> {
+		return this.tokens.find( t=> t.actor == actor) as TokenDocument<T> | undefined;
+	}
 
 	async onEnterMetaverse() : Promise<void> {
 		const regionActions =

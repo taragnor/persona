@@ -28,9 +28,11 @@ export const PRECONDITIONTYPES = Object.fromEntries( PRECONDITIONLIST.map(x=> [x
 
 export type Precondition =
 	{actorOwner ?: UniversalActorAccessor<PC | Shadow>}
-	& (
-	GenericPC | NumericComparisonPC | BooleanComparisonPC | SaveVersus | Triggered
-	);
+	& PreconditionComparison
+	;
+
+export type PreconditionComparison =
+	(GenericPC | NumericComparisonPC | BooleanComparisonPC | SaveVersus | Triggered);
 
 type GenericPC = {
 	type: Exclude<PreconditionType, "numeric" | "boolean" | 'save-versus' | "on-trigger">;

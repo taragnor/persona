@@ -89,6 +89,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.system.combat.mp.value;
 	}
 
+	isNPC(): this is NPC {
+		return this.system.type == "npc";
+	}
+
 	async setAsNavigator(this: NPCAlly) {
 		for (const ally of PersonaDB.NPCAllies()) {
 			if (ally == this) continue;
@@ -2207,7 +2211,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	/** returns current team (taking into account charm)*/
-	getAllegiance(this: ValidAttackers)  : Team {
+	getAllegiance()  : Team {
 		let base: Team;
 		switch (this.system.type) {
 			case "pc":
@@ -2220,6 +2224,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "npcAlly":
 				base = "PCs";
 				break;
+			default:
+				return "Neutral";
 		}
 		return base;
 		//OLD charm code
