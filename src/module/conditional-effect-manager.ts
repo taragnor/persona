@@ -318,7 +318,6 @@ export class ConditionalEffectManager {
 			actorOwner: sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner,
 			sourceItem: sourceItem ? PersonaDB.getUniversalItemAccessor(sourceItem): (("sourceItem" in eff) ? eff.sourceItem : undefined),
 		}));
-
 	}
 
 	static ArrayCorrector<T extends any>(obj: (T[] | Record<string | number, T>)): T[] {

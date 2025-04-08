@@ -366,8 +366,10 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			}
 			target = targets.reduce(
 				function (a,act) {
+					const acc = (act as ValidAttackers).accessor;
 					const situation : Situation = {
-						user: (act as ValidAttackers).accessor ,
+						user: acc,
+						target: acc,
 					};
 				return	a + (testPrecondition(condition.otherComparison, situation, null) ? 1 : 0);
 				}

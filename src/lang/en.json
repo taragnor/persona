@@ -641,7 +641,7 @@
 	"persona.preconditions.comparison.social-variable": "Value of a Social Variable",
 	"persona.preconditions.comparison.round-count": "Combat Round Count",
 	"persona.preconditions.comparison.combat-result-based": "Combat Result Data",
-	"persona.preconditions.comparison.num-of-others-with": "Number of Others meeting condition",
+	"persona.preconditions.comparison.num-of-others-with": "Number of Others Meeting Condition",
 
 	"persona.preconditions.socialChecks.relationship-type-check": "Relationship Type is",
 	"persona.preconditions.socialChecks.is-social-disabled": "Is Socially Disabled",
