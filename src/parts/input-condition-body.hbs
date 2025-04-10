@@ -141,6 +141,7 @@
 
 	{{#if (eq cond.type "boolean")}}
 
+
 	{{#if (eqAny cond.boolComparisonTarget "target-owner-comparison" "engaged-with" )}}
 	<div>
 		<select name="{{strcat namePrefix 'conditionTarget2'}}">
@@ -274,6 +275,15 @@
 	<select name="{{strcat namePrefix 'itemId'}}">
 		{{selectOptions POWERSTUFF.ITEMS localize=false selected=cond.itemId}}
 	</select>
+	{{/if}}
+
+	{{#if (eq cond.boolComparisonTarget "logical-or")}}
+	<div class="sub-condition">
+		{{> "systems/persona/parts/input-condition-body.hbs" namePrefix=(strcat namePrefix "comparison1.")  cond=cond.comparison1 POWERSTUFF=POWERSTUFF owner=owner}}
+	</div>
+	<div class="sub-condition">
+		{{> "systems/persona/parts/input-condition-body.hbs" namePrefix=(strcat namePrefix "comparison2.")  cond=cond.comparison2 POWERSTUFF=POWERSTUFF owner=owner}}
+	</div>
 	{{/if}}
 
 	{{#if (eq cond.boolComparisonTarget  "creature-type-is")}}

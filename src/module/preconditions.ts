@@ -482,35 +482,31 @@ function triggerComparison(condition: Triggered, situation: Situation, _source:O
 function getBoolTestState(condition: Precondition & BooleanComparisonPC, situation: Situation, source: Option<PowerContainer>): boolean | undefined {
 	switch(condition.boolComparisonTarget) {
 		case "engaged": {
-			if (!situation.activeCombat){
-				return undefined;
-			}
 			const subject = getSubject(condition, situation, source, "conditionTarget");
 			if (!subject) {
-				PersonaError.softFail(`Can't find Subject of ${source?.name} check for: ${condition.boolComparisonTarget}`, condition, situation);
+				// PersonaError.softFail(`Can't find Subject of ${source?.name} check for: ${condition.boolComparisonTarget}`, condition, situation);
 				return undefined;
 			}
-			const combat = PersonaCombat.ensureCombatExists();
+			const combat = game.combat as PersonaCombat;
+			if (!combat) return undefined;
 			if (subject instanceof PersonaActor) {
 				if (subject.system.type == "npc") return undefined;
 			}
 			const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken((subject as ValidAttackers).accessor);
 			if (!subjectToken) {
-				PersonaError.softFail(`Can't find token for ${subject?.name}`);
+				// PersonaError.softFail(`Can't find token for ${subject?.name}`);
 				return undefined;
 			}
 			return combat.isEngagedByAnyFoe(subjectToken);
 		}
 		case "engaged-with": {
 			//return true if X is engaging Y
-			if (!situation.activeCombat){
-				return undefined;
-			}
+			const combat = game.combat as PersonaCombat;
+			if (!combat) return undefined;
 			const target = getSubjectToken(condition, situation, source, "conditionTarget");
 			const target2 = getSubjectToken(condition, situation, source, "conditionTarget2");
 			if (!target || !target2) return undefined;
 
-			const combat = PersonaCombat.ensureCombatExists();
 			const tok1 = PersonaDB.getUniversalTokenAccessor(target);
 			const tok2 = PersonaDB.getUniversalTokenAccessor(target2);
 			return combat.isEngaging(tok1, tok2);
@@ -796,7 +792,8 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			const enemies = combat.getAllEnemiesOf(target);
 			return enemies.includes(target2);
 		}
-
+		case "logical-or":
+			return testPrecondition(condition.comparison1, situation, source) || testPrecondition(condition.comparison2, situation, source);
 		default :
 			condition satisfies never;
 			return undefined;

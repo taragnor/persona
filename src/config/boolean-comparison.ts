@@ -1,3 +1,4 @@
+import { Precondition } from "./precondition-types.js";
 import { UserComparisonTarget } from "./precondition-types.js";
 import { PowerType } from "./effect-types.js";
 import { DamageType } from "./damage-types.js";
@@ -51,6 +52,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"has-creature-tag",
 	"cameo-in-scene",
 	"arcana-is",
+	"logical-or",
 ] as const;
 
 
@@ -72,7 +74,7 @@ export type BooleanComparisonPC = {
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison;
+StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison;
 ;
 
 type GeneralActorComparison = {
@@ -245,4 +247,10 @@ type PlayerTypeCheckComparison = {
 	userComparisonTarget: UserComparisonTarget,
 }
 
+
+type OrComparison = {
+	boolComparisonTarget: "logical-or",
+	comparison1: Precondition,
+	comparison2: Precondition,
+}
 
