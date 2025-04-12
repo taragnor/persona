@@ -120,7 +120,7 @@ export type ExtraTurnEffect = {
 	activation: number,
 };
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence;
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence;
 ;
 
 export type StatusEffect = StatusEffect_Basic | StatusEffect_NonBasic;
@@ -186,7 +186,12 @@ type NonGenericConsequences = UsePowerConsequence
 	| SetFlagConsequence
 	| AddTagConsequence
 	| CombatEffectConsequence
+| FatigueConsequence
 ;
+type FatigueConsequence = {
+	type: "alter-fatigue-lvl",
+	amount:number,
+};
 
 type CombatEffectConsequence = {
 	type: "combat-effect";

@@ -486,8 +486,6 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"powerCostString": function (power: Power, actor: ValidAttackers) {
-			debugger;
-			console.log("Power Cost string called");
 			return power.costString1(actor);
 		},
 

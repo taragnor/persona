@@ -104,6 +104,12 @@ export class PersonaSocial {
 		if (pc.hasStatus("exhausted")) {
 			startTurnMsg.push(`<b> ${pc.name} </b>: is exhausted and should probably take the rest action.`);
 		}
+		if (pc.hasStatus("tired")) {
+			startTurnMsg.push(`<b> ${pc.name} </b>: is tired.`);
+		}
+		if (pc.hasStatus("rested")) {
+			startTurnMsg.push(`<b> ${pc.name} </b>: is Well-rested.`);
+		}
 		for (const activity of PersonaDB.allActivities()) {
 			if (activity.announce(pc)) {
 				startTurnMsg.push(` <b>${activity.displayedName}</b> is available today.`);

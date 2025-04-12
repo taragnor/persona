@@ -29,6 +29,7 @@ export const CONSQUENCELIST = [
 	"use-power",
 	"alter-mp",
 	"combat-effect",
+	"alter-fatigue-lvl",
 	"save-slot", //deprecated, don't expend slot you normally would
 	"recover-slot", // deprecated
 	"add-escalation", // deprecated

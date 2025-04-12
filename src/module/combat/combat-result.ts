@@ -424,6 +424,10 @@ export class CombatResult  {
 				if (!effect) break;
 				effect.otherEffects.push(cons);
 				break;
+			case "alter-fatigue-lvl":
+				if (!effect) break;
+				effect.otherEffects.push(cons);
+				break;
 			default: {
 				cons satisfies never;
 				throw new Error("Should be unreachable");
@@ -802,6 +806,7 @@ export class CombatResult  {
 				case "teach-power":
 				case "alter-mp":
 				case "combat-effect":
+				case "alter-fatigue-lvl":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -956,6 +961,9 @@ export class CombatResult  {
 					if (game.combat && otherEffect.combatEffect == "auto-end-turn" && actor == game.combat?.combatant?.actor) {
 						await (game.combat as PersonaCombat).setForceEndTurn(true);
 					}
+					break;
+				case "alter-fatigue-lvl":
+					await actor.alterFatigueLevel(otherEffect.amount);
 					break;
 				default:
 					otherEffect satisfies never;

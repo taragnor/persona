@@ -52,7 +52,7 @@
 	</span>
 	{{/if}}
 
-	{{#if (eqAny cons.type "dmg-mult" "revive" "escalationManipulation" "modifier" "recover-slot")}}
+	{{#if (eqAny cons.type "dmg-mult" "revive" "escalationManipulation" "modifier" "recover-slot" "alter-fatigue-lvl")}}
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 	{{/if}}
 	{{#if (eq cons.type "extraAttack")}}

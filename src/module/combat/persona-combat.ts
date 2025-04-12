@@ -628,15 +628,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				return action.testOpenerPrereqs(useSituation, combatant.actor!);
 			});
 		options = usableActions
-		.flatMap( action =>  {
-			const printableName = this.getOpenerPrintableName(action, combatant, situation);
-			if (!printableName) return [];
-			return [{
-				mandatory: action.hasTag("mandatory"),
-				optionTxt: printableName,
-				optionEffects: []
-			}];
-		});
+			.flatMap( action =>  {
+				const printableName = this.getOpenerPrintableName(action, combatant, situation);
+				if (!printableName) return [];
+				return [{
+					mandatory: action.hasTag("mandatory"),
+					optionTxt: printableName,
+					optionEffects: []
+				}];
+			});
 		if (options.length > 0) {
 			msg.push(`Special Actions`);
 		}
@@ -660,15 +660,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				return action.testOpenerPrereqs(useSituation, combatant.actor!);
 			});
 		options = usableActions
-		.flatMap( action =>  {
-			const printableName = this.getOpenerPrintableName(action, combatant, situation);
-			if (!printableName) return [];
-			return [{
-				mandatory: action.hasTag("mandatory"),
-				optionTxt: printableName,
-				optionEffects: []
-			}];
-		});
+			.flatMap( action =>  {
+				const printableName = this.getOpenerPrintableName(action, combatant, situation);
+				if (!printableName) return [];
+				return [{
+					mandatory: action.hasTag("mandatory"),
+					optionTxt: printableName,
+					optionEffects: []
+				}];
+			});
 		if (options.length > 0) {
 			msg.push(`Other Available Options`);
 		}
@@ -698,13 +698,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			}
 			comb = Tacc;
 		}
-			const meleeCombatants = EngagementChecker.listOfCombatantsInMelee(comb, this);
-			return meleeCombatants
-				.filter( x=> x.actor && x.actor.statuses.has("sticky")
-					&& PersonaCombat.isSameTeam(comb,x )
-					&& x.actor.canEngage()
-				);
-		}
+		const meleeCombatants = EngagementChecker.listOfCombatantsInMelee(comb, this);
+		return meleeCombatants
+			.filter( x=> x.actor && x.actor.statuses.has("sticky")
+				&& PersonaCombat.isSameTeam(comb,x )
+				&& x.actor.canEngage()
+			);
+	}
 
 	getValidTargetsFor(usable: Usable, user: Combatant<ValidAttackers>, situation: Situation): Combatant<ValidAttackers>[]  {
 		const userActor = user.token.actor;
@@ -983,11 +983,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	hasRunOutOfActions(combatant: Combatant<ValidAttackers>) : boolean {
 		if (!combatant.actor) return false;
 		const moreActions = combatant.actor.actionsRemaining || combatant.actor.hasStatus("bonus-action");
-			const shouldEndTurn =
-				(
-					!moreActions
-					|| this?.forceAdvanceTurn
-				);
+		const shouldEndTurn =
+			(
+				!moreActions
+				|| this?.forceAdvanceTurn
+			);
 		return shouldEndTurn;
 	}
 
@@ -1002,7 +1002,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const boldName = `<b>${actor.displayedName}</b>`;
 		let content = `<div>${boldName} has run out of actions.</div>`;
 		const pushMsg = `<div> ${boldName} can take an additional action by pushing themself, but this inflicts 1 fatigue level`;
-		if (actor.fatigueLevel() > 0 ) {
+		if (actor.fatigueLevel > 0 ) {
 			content = content  + pushMsg;
 		}
 		if (actor.canEngage() && !this.isEngagedByAnyFoe(PersonaDB.getUniversalTokenAccessor(token))) {
@@ -1107,20 +1107,20 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (usableOrCard.system.type != "skillCard") {
 			return null;
 		}
-			const r = await new Roll("1d20").roll();
-			const emptyList = new ModifierList();
-			const roll = new RollBundle("Activation Roll Skiill Card", r, attacker.actor.system.type == "pc", emptyList, situation);
-			const res : AttackResult = {
-				result: "hit",
-				target: PersonaDB.getUniversalTokenAccessor(target),
-				attacker: PersonaDB.getUniversalTokenAccessor(attacker),
-				power: usableOrCard.accessor,
-				situation,
-				roll,
-				critBoost: 0,
-				printableModifiers: []
-			};
-			return res;
+		const r = await new Roll("1d20").roll();
+		const emptyList = new ModifierList();
+		const roll = new RollBundle("Activation Roll Skiill Card", r, attacker.actor.system.type == "pc", emptyList, situation);
+		const res : AttackResult = {
+			result: "hit",
+			target: PersonaDB.getUniversalTokenAccessor(target),
+			attacker: PersonaDB.getUniversalTokenAccessor(attacker),
+			power: usableOrCard.accessor,
+			situation,
+			roll,
+			critBoost: 0,
+			printableModifiers: []
+		};
+		return res;
 	}
 
 	static processAttackNullifiers(attacker : PToken , power :Usable, target: PToken, baseData: Pick<AttackResult, "attacker" | "target"  | "power" | "roll">, situation: Situation, rollType: AttackRollType): AttackResult | null
@@ -1246,7 +1246,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const roll = new RollBundle("Temp", r, attacker.actor.system.type == "pc", attackbonus, situation);
 		const naturalAttackRoll = roll.dice[0].total;
 		situation.naturalRoll = naturalAttackRoll;
-			const defenseVal = def != "none" ? target.actor.getDefense(def).total(situation): 0;
+		const defenseVal = def != "none" ? target.actor.getDefense(def).total(situation): 0;
 		const validDefModifiers = def != "none" ? target.actor.getDefense(def).list(situation): [];
 		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
 		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.system.defense} ${defenseStr}`;
@@ -1698,6 +1698,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "extraTurn":
 			case "teach-power":
 			case "combat-effect":
+			case "alter-fatigue-lvl":
 				return [{applyTo,cons}];
 			case "expend-item":
 				if (cons.itemId) {
@@ -1742,45 +1743,39 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	{
 		const res = new CombatResult();
 		switch (usableOrCard.system.type) {
-		case "power": {
-			const power  = usableOrCard as Power;
-			if (power.system.subtype == "social-link") {
-				if (power.system.inspirationId) {
-					res.addEffect(null, attacker.actor, {
-						type:"inspiration-cost",
-						amount: power.system.inspirationCost,
-						socialLinkIdOrTarot: power.system.inspirationId as unknown as AnyStringObject
+			case "power": {
+				const power  = usableOrCard as Power;
+				if (power.system.subtype == "social-link") {
+					if (power.system.inspirationId) {
+						res.addEffect(null, attacker.actor, {
+							type:"inspiration-cost",
+							amount: power.system.inspirationCost,
+							socialLinkIdOrTarot: power.system.inspirationId as unknown as AnyStringObject
+						});
+					}
+				}
+				if (attacker.actor!.system.type != "shadow" && power.hpCost()) {
+					res.addEffect(null, attacker.actor!, {
+						type: "hp-loss",
+						amount: power.modifiedHpCost(attacker.actor)
 					});
 				}
-			}
-			if (attacker.actor!.system.type != "shadow" && power.hpCost()) {
-				// let hpcostmod = costModifiers.find(x=> x.type== "half-hp-cost") ? 0.75 : 1;
-				// hpcostmod *= attacker.actor.getBonuses("hpCostMult").total( {user: attacker.actor.accessor}, "percentage");
-				// if (attacker.actor.hasStatus("tired") || attacker.actor.hasStatus("exhausted")) {
-				// 	hpcostmod *= 1.333;
-				// }
-				res.addEffect(null, attacker.actor!, {
-					type: "hp-loss",
-					amount: power.modifiedHpCost(attacker.actor)
-				});
-			}
-			if (attacker.actor.system.type != "shadow" && power.system.subtype == "magic" && power.system.mpcost > 0) {
-				res.addEffect(null, attacker.actor, {
-					type: "alter-mp",
-					subtype: "direct",
-					amount: -power.mpCost(attacker.actor),
-				});
-			}
-			if (attacker.actor.system.type == "shadow") {
-				if (power.system.energy.cost > 0) {
+				if (attacker.actor.system.type != "shadow" && power.system.subtype == "magic" && power.system.mpcost > 0) {
 					res.addEffect(null, attacker.actor, {
-						type: "alter-energy",
-						amount: -power.system.energy.cost
+						type: "alter-mp",
+						subtype: "direct",
+						amount: -power.mpCost(attacker.actor),
 					});
 				}
-
+				if (attacker.actor.system.type == "shadow") {
+					if (power.system.energy.cost > 0) {
+						res.addEffect(null, attacker.actor, {
+							type: "alter-energy",
+							amount: -power.system.energy.cost
+						});
+					}
+				}
 			}
-		}
 				break;
 			case "skillCard":
 			case "consumable" :{
@@ -2003,7 +1998,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		switch (targets) {
 			case "1-random-enemy":
 				const list = this.getAllEnemiesOf(attacker)
-				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+					.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
 				return [randomSelect(list)];
 			case "1-engaged":
 			case "1-nearby":
@@ -2083,186 +2078,186 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 	}
 
-	static ensureCombatExists() : PersonaCombat {
-		const combat = game.combat;
-		if (!combat) {
-			const error = "No Combat";
-			throw new PersonaError(error);
-		}
-		return combat as PersonaCombat;
+static ensureCombatExists() : PersonaCombat {
+	const combat = game.combat;
+	if (!combat) {
+		const error = "No Combat";
+		throw new PersonaError(error);
 	}
+	return combat as PersonaCombat;
+}
 
-	getEscalationDie() : number {
-		return (this.getFlag("persona", "escalation") as number) ?? -1;
+getEscalationDie() : number {
+	return (this.getFlag("persona", "escalation") as number) ?? -1;
+}
+
+async incEscalationDie() : Promise<void> {
+	this.setEscalationDie(Math.min(this.getEscalationDie() +1, 6));
+}
+
+async decEscalationDie() : Promise<void> {
+	this.setEscalationDie(Math.max(this.getEscalationDie() - 1, 0));
+
+}
+
+async setEscalationDie(val: number) : Promise<void> {
+	const clamp = Math.clamp(val,0,6);
+	await this.setFlag("persona", "escalation", clamp);
+}
+
+async setSocialEncounter(isSocial: boolean) {
+	await this.setFlag("persona", "isSocial", isSocial);
+}
+
+get isSocial() : boolean {
+	return this.getFlag("persona", "isSocial") ?? false;
+}
+
+isEngagedByAnyFoe(subject: UniversalTokenAccessor<PToken>) : boolean {
+	const comb = this.findCombatant(subject);
+	if (!comb) return false;
+	return EngagementChecker.isEngagedByAnyFoe(comb, this);
+}
+
+isInMeleeWith (token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
+	const c1 = this.findCombatant(token1);
+	if (!c1) {
+		PersonaError.softFail("Can't find combatant");
+		return false;
 	}
-
-	async incEscalationDie() : Promise<void> {
-		this.setEscalationDie(Math.min(this.getEscalationDie() +1, 6));
+	const c2 = this.findCombatant(token2);
+	if (!c2) {
+		PersonaError.softFail("Can't find combatant");
+		return false;
 	}
+	const melee = EngagementChecker.listOfCombatantsInMelee(c1, this);
+	return melee.includes(c2);
+}
 
-	async decEscalationDie() : Promise<void> {
-		this.setEscalationDie(Math.max(this.getEscalationDie() - 1, 0));
-
+isEngaging(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
+	const c1 = this.findCombatant(token1);
+	const c2 = this.findCombatant(token2);
+	if (!c2 || !c1) {
+		PersonaError.softFail("Can't find combatant");
+		return false;
 	}
+	return EngagementChecker.isEngaging(c1, c2, this);
+}
 
-	async setEscalationDie(val: number) : Promise<void> {
-		const clamp = Math.clamp(val,0,6);
-		await this.setFlag("persona", "escalation", clamp);
+isEngagedBy(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
+	const c1 = this.findCombatant(token1);
+	const c2 = this.findCombatant(token2);
+	if (!c2 || !c1) {
+		PersonaError.softFail("Can't find combatant");
+		return false;
 	}
+	return EngagementChecker.isEngagedBy(c1, c2, this);
+}
 
-	async setSocialEncounter(isSocial: boolean) {
-		await this.setFlag("persona", "isSocial", isSocial);
+getCombatantFromTokenAcc(acc: UniversalTokenAccessor<PToken>): Combatant<ValidAttackers> {
+	const token = PersonaDB.findToken(acc);
+	const combatant = this.combatants.find( x=> x?.actor?.id == token.actor.id);
+	if (!combatant) {
+		throw new PersonaError(`Can't find combatant for ${token.name}. are you sure this token is in the fight? `);
 	}
+	return combatant;
+}
 
-	get isSocial() : boolean {
-		return this.getFlag("persona", "isSocial") ?? false;
+async setEngageWith(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) {
+	const c1 = this.getCombatantFromTokenAcc(token1);
+	const c2 = this.getCombatantFromTokenAcc(token2);
+	await this.engagedList.setEngageWith(c1, c2);
+}
+
+/** returns pass or fail */
+static async rollSave (actor: ValidAttackers, {DC, label, askForModifier, saveVersus, modifier} :SaveOptions) : Promise<{success:boolean, total:number, natural: number}> {
+	const difficulty = DC ? DC : 11;
+	const mods = actor.getSaveBonus();
+	if (modifier) {
+		mods.add("Modifier", modifier);
 	}
-
-	isEngagedByAnyFoe(subject: UniversalTokenAccessor<PToken>) : boolean {
-		const comb = this.findCombatant(subject);
-		if (!comb) return false;
-		return EngagementChecker.isEngagedByAnyFoe(comb, this);
+	if (askForModifier) {
+		const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
+		mods.add("Custom modifier", customMod);
 	}
-
-	isInMeleeWith (token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
-		const c1 = this.findCombatant(token1);
-		if (!c1) {
-			PersonaError.softFail("Can't find combatant");
-			return false;
-		}
-		const c2 = this.findCombatant(token2);
-		if (!c2) {
-			PersonaError.softFail("Can't find combatant");
-			return false;
-		}
-		const melee = EngagementChecker.listOfCombatantsInMelee(c1, this);
-		return melee.includes(c2);
+	const situation : Situation = {
+		user: PersonaDB.getUniversalActorAccessor(actor),
+		saveVersus: saveVersus ? saveVersus : undefined,
 	}
-
-	isEngaging(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
-		const c1 = this.findCombatant(token1);
-		const c2 = this.findCombatant(token2);
-		if (!c2 || !c1) {
-			PersonaError.softFail("Can't find combatant");
-			return false;
-		}
-		return EngagementChecker.isEngaging(c1, c2, this);
+	const difficultyTxt = DC == 11 ? "normal" : DC == 16 ? "hard" : DC == 6 ? "easy" : "unknown difficulty";
+	const labelTxt = `Saving Throw (${label ? label + " " + difficultyTxt : ""})`;
+	const r = await new Roll("1d20").roll();
+	const roll = new RollBundle(labelTxt, r, actor.system.type == "pc", mods, situation);
+	await roll.toModifiedMessage();
+	return {
+		success: roll.total >= difficulty,
+		total: roll.total,
+		natural: roll.natural,
 	}
+};
 
-	isEngagedBy(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
-		const c1 = this.findCombatant(token1);
-		const c2 = this.findCombatant(token2);
-		if (!c2 || !c1) {
-			PersonaError.softFail("Can't find combatant");
-			return false;
-		}
-		return EngagementChecker.isEngagedBy(c1, c2, this);
+static async disengageRoll( actor: ValidAttackers, DC = 11) : Promise<{total: number, rollBundle: RollBundle, success: boolean}> {
+	const situation : Situation = {
+		user: PersonaDB.getUniversalActorAccessor(actor),
 	}
-
-	getCombatantFromTokenAcc(acc: UniversalTokenAccessor<PToken>): Combatant<ValidAttackers> {
-		const token = PersonaDB.findToken(acc);
-		const combatant = this.combatants.find( x=> x?.actor?.id == token.actor.id);
-		if (!combatant) {
-			throw new PersonaError(`Can't find combatant for ${token.name}. are you sure this token is in the fight? `);
-		}
-		return combatant;
+	const mods = actor.getDisengageBonus();
+	const labelTxt = `Disengage Check`;
+	const roll = new Roll("1d20");
+	await roll.roll();
+	const rollBundle = new RollBundle(labelTxt, roll, actor.system.type == "pc", mods, situation);
+	return {
+		total: rollBundle.total,
+		rollBundle,
+		success: rollBundle.total >= DC,
 	}
+}
 
-	async setEngageWith(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) {
-		const c1 = this.getCombatantFromTokenAcc(token1);
-		const c2 = this.getCombatantFromTokenAcc(token2);
-		await this.engagedList.setEngageWith(c1, c2);
-	}
+/** return true if the token has any enemies remainig*/
+enemiesRemaining(token: PToken) : boolean{
+	return this.combatants.contents.some(x=> x.token.actor && x.token.actor.system.type != token.actor.system.type);
+}
 
-	/** returns pass or fail */
-	static async rollSave (actor: ValidAttackers, {DC, label, askForModifier, saveVersus, modifier} :SaveOptions) : Promise<{success:boolean, total:number, natural: number}> {
-		const difficulty = DC ? DC : 11;
-		const mods = actor.getSaveBonus();
-		if (modifier) {
-			mods.add("Modifier", modifier);
-		}
-		if (askForModifier) {
-			const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
-			mods.add("Custom modifier", customMod);
-		}
-		const situation : Situation = {
-			user: PersonaDB.getUniversalActorAccessor(actor),
-			saveVersus: saveVersus ? saveVersus : undefined,
-		}
-		const difficultyTxt = DC == 11 ? "normal" : DC == 16 ? "hard" : DC == 6 ? "easy" : "unknown difficulty";
-		const labelTxt = `Saving Throw (${label ? label + " " + difficultyTxt : ""})`;
-		const r = await new Roll("1d20").roll();
-		const roll = new RollBundle(labelTxt, r, actor.system.type == "pc", mods, situation);
-		await roll.toModifiedMessage();
-		return {
-			success: roll.total >= difficulty,
-			total: roll.total,
-			natural: roll.natural,
-		}
-	};
-
-	static async disengageRoll( actor: ValidAttackers, DC = 11) : Promise<{total: number, rollBundle: RollBundle, success: boolean}> {
-		const situation : Situation = {
-			user: PersonaDB.getUniversalActorAccessor(actor),
-		}
-		const mods = actor.getDisengageBonus();
-		const labelTxt = `Disengage Check`;
-		const roll = new Roll("1d20");
-		await roll.roll();
-		const rollBundle = new RollBundle(labelTxt, roll, actor.system.type == "pc", mods, situation);
-		return {
-			total: rollBundle.total,
-			rollBundle,
-			success: rollBundle.total >= DC,
-		}
-	}
-
-	/** return true if the token has any enemies remainig*/
-	enemiesRemaining(token: PToken) : boolean{
-		return this.combatants.contents.some(x=> x.token.actor && x.token.actor.system.type != token.actor.system.type);
-	}
-
-	/**return true if the target is eligible to use the power based on whose turn it is
-	 */
-	turnCheck(token: PToken, power: UsableAndCard): boolean {
-		if (this.isSocial) return true;
-		if (!this.combatant) return false;
-		if (token.actor.hasStatus("baton-pass"))
+/**return true if the target is eligible to use the power based on whose turn it is
+ */
+turnCheck(token: PToken, power: UsableAndCard): boolean {
+	if (this.isSocial) return true;
+	if (!this.combatant) return false;
+	if (token.actor.hasStatus("baton-pass"))
+		return true;
+	if (power.isTeamwork() ) {
+		if ( this.combatant.actor?.hasStatus("bonus-action") && this.combatant.token.id != token.id) {
 			return true;
-		if (power.isTeamwork() ) {
-			if ( this.combatant.actor?.hasStatus("bonus-action") && this.combatant.token.id != token.id) {
-				return true;
-			}
-			ui.notifications.warn("Can't use a teamwork move here.");
-			return false;
 		}
-		return (this.combatant.token.id == token.id)
+		ui.notifications.warn("Can't use a teamwork move here.");
+		return false;
 	}
+	return (this.combatant.token.id == token.id)
+}
 
-	static async allOutAttackPrompt() {
-		if (!PersonaSettings.get("allOutAttackPrompt"))
-			return;
-		const combat= this.ensureCombatExists();
-		const comb = combat?.combatant as Combatant<ValidAttackers> | undefined;
-		const actor = comb?.actor as ValidAttackers | undefined;
-		if (!comb || !actor) return;
-		if (!actor.canAllOutAttack()) return;
-		const allies = combat.getAllies(comb)
-			.filter(comb=> comb.actor && comb.actor.isCapableOfAction() && !comb.actor.isDistracted());
-		const numOfAllies = allies.length;
-		if (numOfAllies < 1) {
-			ui.notifications.notify("Not enough allies to all out attack!");
-			return;
-		}
-		if (!comb || !actor?.isOwner) return;
-		PersonaSFX.onAllOutPrompt();
-		if (!await HTMLTools.confirmBox("All out attack!", `All out attack is available, would you like to do it? <br> (active Party members: ${numOfAllies})`)
-		) return;
-		if (!actor.hasStatus("bonus-action")) ui.notifications.warn("No bonus action");
-		const allOutAttack = PersonaDB.getBasicPower("All-out Attack");
-		if (!allOutAttack) throw new PersonaError("Can't find all out attack in database");
-		await PersonaCombat.usePower(comb.token as PToken, allOutAttack);
+static async allOutAttackPrompt() {
+	if (!PersonaSettings.get("allOutAttackPrompt"))
+		return;
+	const combat= this.ensureCombatExists();
+	const comb = combat?.combatant as Combatant<ValidAttackers> | undefined;
+	const actor = comb?.actor as ValidAttackers | undefined;
+	if (!comb || !actor) return;
+	if (!actor.canAllOutAttack()) return;
+	const allies = combat.getAllies(comb)
+		.filter(comb=> comb.actor && comb.actor.isCapableOfAction() && !comb.actor.isDistracted());
+	const numOfAllies = allies.length;
+	if (numOfAllies < 1) {
+		ui.notifications.notify("Not enough allies to all out attack!");
+		return;
 	}
+	if (!comb || !actor?.isOwner) return;
+	PersonaSFX.onAllOutPrompt();
+	if (!await HTMLTools.confirmBox("All out attack!", `All out attack is available, would you like to do it? <br> (active Party members: ${numOfAllies})`)
+	) return;
+	if (!actor.hasStatus("bonus-action")) ui.notifications.warn("No bonus action");
+	const allOutAttack = PersonaDB.getBasicPower("All-out Attack");
+	if (!allOutAttack) throw new PersonaError("Can't find all out attack in database");
+	await PersonaCombat.usePower(comb.token as PToken, allOutAttack);
+}
 
 findCombatant(acc :UniversalTokenAccessor<TokenDocument<ValidAttackers>>) : PersonaCombatant | undefined;
 findCombatant(comb :PersonaCombatant) : PersonaCombatant | undefined;
@@ -2279,173 +2274,173 @@ findCombatant(token :PToken | PersonaCombatant | UniversalTokenAccessor<TokenDoc
 		default:
 			const tokenDoc = PersonaDB.findToken(token);
 			return validCombatants.find( comb=> comb.token != undefined && comb.token == tokenDoc);
-		}
 	}
+}
 
-	getAllies(comb: Combatant<ValidAttackers>) : Combatant<ValidAttackers>[] {
-		const allegiance = comb.actor?.getAllegiance();
-		if (!allegiance) return [];
-		return this.validCombatants().filter( c => c.actor != null
-			&& (c.actor.getAllegiance() == allegiance)
-			&& c != comb);
+getAllies(comb: Combatant<ValidAttackers>) : Combatant<ValidAttackers>[] {
+	const allegiance = comb.actor?.getAllegiance();
+	if (!allegiance) return [];
+	return this.validCombatants().filter( c => c.actor != null
+		&& (c.actor.getAllegiance() == allegiance)
+		&& c != comb);
+}
+
+getFoes(comb: Combatant<ValidAttackers>) : Combatant<ValidAttackers>[] {
+	const allegiance = comb.actor?.getAllegiance();
+	if (!allegiance) return [];
+	return this.validCombatants().filter( c => c.actor != null
+		&& (c.actor.getAllegiance() != allegiance)
+		&& c != comb);
+}
+
+static calculateAllOutAttackDamage(attacker: PToken, situation: Situation) : {high: number, low:number} {
+	let dmg = {
+		high: 0,
+		low:0
+	};
+	const attackLeader = PersonaDB.findActor(situation.attacker!);
+	const combat = game.combat as PersonaCombat | undefined;
+	if (!combat)
+		return {high: -1, low: -1};
+	const attackerComb = combat.findCombatant(attacker);
+	if (!attackerComb) return dmg;
+	const attackers = [
+		attackerComb,
+		...combat.getAllies(attackerComb)
+	].flatMap (c=>c.actor?  [c.actor] : []);
+	if (PersonaSettings.debugMode()) {
+		console.debug(`All out attack leader ${attacker.name}`);
 	}
-
-	getFoes(comb: Combatant<ValidAttackers>) : Combatant<ValidAttackers>[] {
-		const allegiance = comb.actor?.getAllegiance();
-		if (!allegiance) return [];
-		return this.validCombatants().filter( c => c.actor != null
-			&& (c.actor.getAllegiance() != allegiance)
-			&& c != comb);
-	}
-
-	static calculateAllOutAttackDamage(attacker: PToken, situation: Situation) : {high: number, low:number} {
-		let dmg = {
-			high: 0,
-			low:0
-		};
-		const attackLeader = PersonaDB.findActor(situation.attacker!);
-		const combat = game.combat as PersonaCombat | undefined;
-		if (!combat)
-			return {high: -1, low: -1};
-		const attackerComb = combat.findCombatant(attacker);
-		if (!attackerComb) return dmg;
-		const attackers = [
-			attackerComb,
-			...combat.getAllies(attackerComb)
-		].flatMap (c=>c.actor?  [c.actor] : []);
+	for (const actor of attackers) {
+		if (!actor.canAllOutAttack()) continue;
+		const atkDmg = actor.allOutAttackDamage(situation);
+		const mult = actor == attackLeader ? 1 : (1/4);
+		dmg.high += atkDmg.high * mult;
+		dmg.low += atkDmg.low * mult;
 		if (PersonaSettings.debugMode()) {
-			console.debug(`All out attack leader ${attacker.name}`);
-		}
-		for (const actor of attackers) {
-			if (!actor.canAllOutAttack()) continue;
-			const atkDmg = actor.allOutAttackDamage(situation);
-			const mult = actor == attackLeader ? 1 : (1/4);
-			dmg.high += atkDmg.high * mult;
-			dmg.low += atkDmg.low * mult;
-			if (PersonaSettings.debugMode()) {
-				console.debug(`${actor.name}:
+			console.debug(`${actor.name}:
 		${atkDmg.low * mult} 	/	${atkDmg.high * mult}`);
-			}
 		}
-		dmg.high = Math.round(dmg.high);
-		dmg.low = Math.round(dmg.low);
-		return dmg;
 	}
+	dmg.high = Math.round(dmg.high);
+	dmg.low = Math.round(dmg.low);
+	return dmg;
+}
 
-	getToken( acc: UniversalActorAccessor<PersonaActor>  | undefined): UniversalTokenAccessor<PToken> | undefined {
-		if (!acc) return undefined;
-		if (acc.token) return acc.token as UniversalTokenAccessor<PToken>;
-		const token = this.combatants.find( comb=> comb?.actor?.id == acc.actorId && comb.actor.token == undefined)?.token;
-		if (token && token.actor) return PersonaDB.getUniversalTokenAccessor(token as PToken);
-		return undefined;
+getToken( acc: UniversalActorAccessor<PersonaActor>  | undefined): UniversalTokenAccessor<PToken> | undefined {
+	if (!acc) return undefined;
+	if (acc.token) return acc.token as UniversalTokenAccessor<PToken>;
+	const token = this.combatants.find( comb=> comb?.actor?.id == acc.actorId && comb.actor.token == undefined)?.token;
+	if (token && token.actor) return PersonaDB.getUniversalTokenAccessor(token as PToken);
+	return undefined;
+}
+
+getRoomEffects() : UniversalModifier[] {
+	const effectIds= this.getFlag<string[]>("persona", "roomEffects")
+	const allRoomEffects = PersonaDB.getRoomModifiers();
+	if (!effectIds) return [];
+	return effectIds.flatMap(id=> {
+		const effect = allRoomEffects.find(eff => eff.id == id);
+		return effect ? [effect] : [];
+	});
+}
+
+async alterRoomEffects() {
+	const initial = this.getRoomEffects().map( x=> x.id);
+	const result = await this.roomEffectsDialog(initial, false);
+	await this.setRoomEffects(result.roomModifiers);
+	const msg = this.roomEffectsMsg();
+	const messageData: MessageData = {
+		speaker: {alias: "Room Effects Update"},
+		content: msg,
+		style: CONST.CHAT_MESSAGE_STYLES.OOC,
+	};
+	await ChatMessage.create(messageData, {});
+}
+
+roomEffectsMsg(): string {
+	const mods = this.getRoomEffects();
+	if (mods.length == 0) {
+		return "";
 	}
+	let msg = "";
+	msg += "<u><h2>Room Effects</h2></u><ul>";
+	msg += mods.map( x=> `<li><b>${x.name}</b> : ${x.system.description}</li>`).join("");
+	msg += "</ul>";
+	return msg;
+}
 
-	getRoomEffects() : UniversalModifier[] {
-		const effectIds= this.getFlag<string[]>("persona", "roomEffects")
-		const allRoomEffects = PersonaDB.getRoomModifiers();
-		if (!effectIds) return [];
-		return effectIds.flatMap(id=> {
-			const effect = allRoomEffects.find(eff => eff.id == id);
-			return effect ? [effect] : [];
-		});
-	}
+async setRoomEffects(effects: ModifierContainer[]) {
+	await this.setFlag("persona", "roomEffects", effects.map(eff=> eff.id));
+}
 
-	async alterRoomEffects() {
-		const initial = this.getRoomEffects().map( x=> x.id);
-		const result = await this.roomEffectsDialog(initial, false);
-		await this.setRoomEffects(result.roomModifiers);
-		const msg = this.roomEffectsMsg();
-		const messageData: MessageData = {
-			speaker: {alias: "Room Effects Update"},
-			content: msg,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
-		};
-		await ChatMessage.create(messageData, {});
-	}
-
-	roomEffectsMsg(): string {
-		const mods = this.getRoomEffects();
-		if (mods.length == 0) {
-			return "";
-		}
-		let msg = "";
-		msg += "<u><h2>Room Effects</h2></u><ul>";
-		msg += mods.map( x=> `<li><b>${x.name}</b> : ${x.system.description}</li>`).join("");
-		msg += "</ul>";
-		return msg;
-	}
-
-	async setRoomEffects(effects: ModifierContainer[]) {
-		await this.setFlag("persona", "roomEffects", effects.map(eff=> eff.id));
-	}
-
-	async roomEffectsDialog(initialRoomModsIds: string[] = [], startSocial: boolean) : Promise<DialogReturn> {
-		const roomMods = PersonaDB.getRoomModifiers();
-		const ROOMMODS = Object.fromEntries(roomMods.map( mod => [mod.id, mod.name]));
-		const html = await renderTemplate("systems/persona/sheets/dialogs/room-effects.hbs", {
-			ROOMMODS : {
-				"": "-",
-				...ROOMMODS
-			},
-			roomMods: initialRoomModsIds,
-			startSocial,
-		});
-		return new Promise( (conf, rej) => {
-			const dialogOptions : DialogOptions = {
-				title: "room Effects",
-				content: html,
-				close: () => rej("Closed"),
-				buttons: {
-					"ok": {
-						label: "ok",
-						callback: (html: string) => {
-							let mods : UniversalModifier[] = [];
-							$(html)
-								.find("select.room-mod")
-								.find(":selected")
-								.each( function ()  {
-									const id= String( $(this).val());
-									const mod = roomMods.find(x=> x.id == id);
-									if (mod) {
-										mods.push(mod);
-									}
-								})
-							const isSocialScene = $(html).find(".social-round").is(":checked");
-							const advanceCalendar = $(html).find(".advance-calendar").is(":checked");
-							const disallowMetaverse = $(html).find(".disallow-metaverse").is(":checked");
-							const ret : DialogReturn = {
-								roomModifiers: mods,
-								isSocialScene,
-								advanceCalendar,
-								disallowMetaverse,
-							}
-							conf(ret);
-						},
-					}
+async roomEffectsDialog(initialRoomModsIds: string[] = [], startSocial: boolean) : Promise<DialogReturn> {
+	const roomMods = PersonaDB.getRoomModifiers();
+	const ROOMMODS = Object.fromEntries(roomMods.map( mod => [mod.id, mod.name]));
+	const html = await renderTemplate("systems/persona/sheets/dialogs/room-effects.hbs", {
+		ROOMMODS : {
+			"": "-",
+			...ROOMMODS
+		},
+		roomMods: initialRoomModsIds,
+		startSocial,
+	});
+	return new Promise( (conf, rej) => {
+		const dialogOptions : DialogOptions = {
+			title: "room Effects",
+			content: html,
+			close: () => rej("Closed"),
+			buttons: {
+				"ok": {
+					label: "ok",
+					callback: (html: string) => {
+						let mods : UniversalModifier[] = [];
+						$(html)
+							.find("select.room-mod")
+							.find(":selected")
+							.each( function ()  {
+								const id= String( $(this).val());
+								const mod = roomMods.find(x=> x.id == id);
+								if (mod) {
+									mods.push(mod);
+								}
+							})
+						const isSocialScene = $(html).find(".social-round").is(":checked");
+						const advanceCalendar = $(html).find(".advance-calendar").is(":checked");
+						const disallowMetaverse = $(html).find(".disallow-metaverse").is(":checked");
+						const ret : DialogReturn = {
+							roomModifiers: mods,
+							isSocialScene,
+							advanceCalendar,
+							disallowMetaverse,
+						}
+						conf(ret);
+					},
 				}
 			}
-			const dialog = new Dialog( dialogOptions, {});
-			dialog.render(true);
-		});
-	}
-
-	debug_engageList() {
-		let list = [] as string[];
-		const combs= this.combatants;
-		for (const comb of combs) {
-			const combAcc = PersonaDB.getUniversalTokenAccessor(comb.token as PToken);
-			const foeEng = this.isEngagedByAnyFoe(combAcc) ? "*" : "";
-			const engagedBy = combs
-				.filter( c => this.isEngagedBy(combAcc, PersonaDB.getUniversalTokenAccessor(c.token as PToken)))
-				.map(c=> c.name);
-			list.push(`${comb.name}${foeEng} Engaged By: ${engagedBy.join(" , ")}`);
-			const engaging = combs
-				.filter( c=> this.isEngaging(combAcc, PersonaDB.getUniversalTokenAccessor(c.token as PToken)))
-				.map( c=> c.name);
-			list.push(`${comb.name}${foeEng} is Engaging: ${engaging.join(" , ")}`);
 		}
-		console.log(list.join("\n"));
+		const dialog = new Dialog( dialogOptions, {});
+		dialog.render(true);
+	});
+}
+
+debug_engageList() {
+	let list = [] as string[];
+	const combs= this.combatants;
+	for (const comb of combs) {
+		const combAcc = PersonaDB.getUniversalTokenAccessor(comb.token as PToken);
+		const foeEng = this.isEngagedByAnyFoe(combAcc) ? "*" : "";
+		const engagedBy = combs
+			.filter( c => this.isEngagedBy(combAcc, PersonaDB.getUniversalTokenAccessor(c.token as PToken)))
+			.map(c=> c.name);
+		list.push(`${comb.name}${foeEng} Engaged By: ${engagedBy.join(" , ")}`);
+		const engaging = combs
+			.filter( c=> this.isEngaging(combAcc, PersonaDB.getUniversalTokenAccessor(c.token as PToken)))
+			.map( c=> c.name);
+		list.push(`${comb.name}${foeEng} is Engaging: ${engaging.join(" , ")}`);
 	}
+	console.log(list.join("\n"));
+}
 
 async generateTreasureAndXP() {
 	const actors = this.combatants
@@ -2474,9 +2469,9 @@ async generateTreasureAndXP() {
 
 }
 
-	displayEscalation(element : JQuery<HTMLElement>) {
-		if (element.find(".escalation-die").length == 0) {
-			const escalationTracker = `
+displayEscalation(element : JQuery<HTMLElement>) {
+	if (element.find(".escalation-die").length == 0) {
+		const escalationTracker = `
 			<div class="combat-info flexrow">
 				<div class="escalation-tracker">
 					<span class="title"> Escalation Die: </span>
@@ -2486,13 +2481,13 @@ async generateTreasureAndXP() {
 				</div>
 			</div>
 				`;
-			element.find(".combat-tracker-header").append(escalationTracker);
-		}
-		const weatherIcon = PersonaCalendar.getWeatherIcon();
-		element.find("div.weather-icon").append(weatherIcon);
-		const escalationDie = String(this.getEscalationDie());
-		element.find(".escalation-die").text(escalationDie);
+		element.find(".combat-tracker-header").append(escalationTracker);
 	}
+	const weatherIcon = PersonaCalendar.getWeatherIcon();
+	element.find("div.weather-icon").append(weatherIcon);
+	const escalationDie = String(this.getEscalationDie());
+	element.find(".escalation-die").text(escalationDie);
+}
 
 displayRoomEffectChanger(element: JQuery<HTMLElement>) {
 	if (element.find(".room-effects-button").length == 0) {
@@ -2521,43 +2516,43 @@ async showRoomEffects() {
 	await ChatMessage.create(messageData, {});
 }
 
-	override async rollInitiative(ids: string[], {formula=null, updateTurn=true, messageOptions={}}={}) {
+override async rollInitiative(ids: string[], {formula=null, updateTurn=true, messageOptions={}}={}) {
 
-		// Structure input data
-		ids = typeof ids === "string" ? [ids] : ids;
-		const currentId = this.combatant?.id;
+	// Structure input data
+	ids = typeof ids === "string" ? [ids] : ids;
+	const currentId = this.combatant?.id;
 
-		// Iterate over Combatants, performing an initiative roll for each
-		const updates = [];
-		const rolls :{ combatant: Combatant<any>, roll: Roll}[]= [];
-		for ( let [_i, id] of ids.entries() ) {
+	// Iterate over Combatants, performing an initiative roll for each
+	const updates = [];
+	const rolls :{ combatant: Combatant<any>, roll: Roll}[]= [];
+	for ( let [_i, id] of ids.entries() ) {
 
-			// Get Combatant data (non-strictly)
-			const combatant = this.combatants.get(id);
-			if ( !combatant?.isOwner ) continue;
+		// Get Combatant data (non-strictly)
+		const combatant = this.combatants.get(id);
+		if ( !combatant?.isOwner ) continue;
 
-			// Produce an initiative roll for the Combatant
-			const roll = combatant.getInitiativeRoll(formula);
-			await roll.evaluate();
-			rolls.push({combatant, roll});
-			updates.push({_id: id, initiative: roll.total});
+		// Produce an initiative roll for the Combatant
+		const roll = combatant.getInitiativeRoll(formula);
+		await roll.evaluate();
+		rolls.push({combatant, roll});
+		updates.push({_id: id, initiative: roll.total});
 
-		}
-		if ( !updates.length ) return this;
-
-		// Update multiple combatants
-		await this.updateEmbeddedDocuments("Combatant", updates);
-
-		// Ensure the turn order remains with the same combatant
-		if ( updateTurn && currentId ) {
-			await this.update({turn: this.turns.findIndex(t => t.id === currentId)});
-		}
-
-		await this.generateInitRollMessage(rolls, messageOptions);
-		// Create multiple chat messages
-		// await ChatMessage.implementation.create(messages);
-		return this;
 	}
+	if ( !updates.length ) return this;
+
+	// Update multiple combatants
+	await this.updateEmbeddedDocuments("Combatant", updates);
+
+	// Ensure the turn order remains with the same combatant
+	if ( updateTurn && currentId ) {
+		await this.update({turn: this.turns.findIndex(t => t.id === currentId)});
+	}
+
+	await this.generateInitRollMessage(rolls, messageOptions);
+	// Create multiple chat messages
+	// await ChatMessage.implementation.create(messages);
+	return this;
+}
 
 async onFollowUpAction(token: PToken, activationRoll: number) {
 	console.debug("Calling On Follow Up Action");
@@ -2589,10 +2584,10 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 		? "<li> All out attack </li>"
 		: "";
 	const listItems = validTeamworkAllies
-	.map( ally => {
-		const power = ally.actor!.teamworkMove!;
-		return `<li>${power.name} (${ally.name})</li>`;
-	}).join("");
+		.map( ally => {
+			const power = ally.actor!.teamworkMove!;
+			return `<li>${power.name} (${ally.name})</li>`;
+		}).join("");
 	const teamworkList = !combatant.actor.isDistracted() ? listItems: "";
 	const msg = `<h2> Valid Follow Up Actions </h2>
 <ul>
@@ -2601,32 +2596,32 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 		${teamworkList}
 		</ul>
 `;
-		const messageData: MessageData = {
-			speaker: {alias: "Follow Up Action"},
-			content: msg,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
-		};
-		await ChatMessage.create(messageData, {});
+	const messageData: MessageData = {
+		speaker: {alias: "Follow Up Action"},
+		content: msg,
+		style: CONST.CHAT_MESSAGE_STYLES.OOC,
+	};
+	await ChatMessage.create(messageData, {});
 }
 
-	async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll: R}[], messageOptions: Foundry.MessageOptions = {}): Promise<ChatMessage<R>> {
-		const rollTransformer = function (roll: Roll) {
-			const total = roll.total;
-			if (total <= 0) return "last";
-			else return Math.round(total);
-		}
-		const rolltxt = rolls
-		.sort( (a, b) => b.roll.total - a.roll.total)
-		.map(({roll, combatant}) => `<div class="init-roll"> ${combatant.name}: ${rollTransformer(roll)} </div>`)
-		.join("");
-		const html = `<h3 class="init-rolls"> Initiative Rolls </h3> ${rolltxt}`;
-		const chatMessage: MessageData<R> = {
-			speaker: {},
-			content: html,
-			rolls: rolls.map(x=> x.roll),
-		}
-		return await ChatMessage.create(chatMessage, messageOptions)
+async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll: R}[], messageOptions: Foundry.MessageOptions = {}): Promise<ChatMessage<R>> {
+	const rollTransformer = function (roll: Roll) {
+		const total = roll.total;
+		if (total <= 0) return "last";
+		else return Math.round(total);
 	}
+	const rolltxt = rolls
+	.sort( (a, b) => b.roll.total - a.roll.total)
+	.map(({roll, combatant}) => `<div class="init-roll"> ${combatant.name}: ${rollTransformer(roll)} </div>`)
+	.join("");
+	const html = `<h3 class="init-rolls"> Initiative Rolls </h3> ${rolltxt}`;
+	const chatMessage: MessageData<R> = {
+		speaker: {},
+		content: html,
+		rolls: rolls.map(x=> x.roll),
+	}
+	return await ChatMessage.create(chatMessage, messageOptions)
+}
 
 } // end of class
 

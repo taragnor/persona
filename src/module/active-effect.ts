@@ -1,3 +1,4 @@
+import { FatigueStatusId } from "../config/status-effects.js";
 import { statusMap } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
 import { PC } from "./actor/persona-actor.js";
@@ -279,6 +280,18 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		}
 	}
 
+	get isFatigueStatus(): boolean {
+		return this.getFatigueStatus() != undefined;
+	}
+
+	getFatigueStatus() : FatigueStatusId | undefined {
+		for (const x of this.statuses.keys()) {
+			if (statusMap.get(x)?.tags?.includes("fatigue")) {
+				return x as FatigueStatusId;
+			}
+		}
+		return undefined;
+	}
 
 	durationLessThanOrEqualTo(x : StatusDuration): boolean {
 		return  PersonaAE.getStatusValue(this.statusDuration) <= PersonaAE.getStatusValue(x);

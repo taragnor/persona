@@ -1,3 +1,5 @@
+import { PersonaError } from "../module/persona-error.js";
+
 export const STATUS_EFFECT_LIST = [
 	{
 		id: "burn",
@@ -146,15 +148,15 @@ export const STATUS_EFFECT_LIST = [
 	}, {
 		id: "rested",
 		icon:  "icons/skills/social/thumbsup-approval-like.webp",
-		tags: ["downtime"],
+		tags: ["downtime", "fatigue"],
 	}, {
 		id: "exhausted",
 		icon:  "icons/svg/unconscious.svg",
-		tags: ["downtime", "baneful"],
+		tags: ["downtime", "baneful", "fatigue"],
 	}, {
 		id: "tired",
 		icon:   "icons/svg/down.svg",
-		tags: ["downtime"],
+		tags: ["downtime", "fatigue"],
 	}, {
 		id: "sticky",
 		icon:   "icons/svg/anchor.svg",
@@ -211,7 +213,10 @@ declare global {
 }
 
 
-type StatusTag = "distracting" | "baneful" | "incapacitating" | "debuff" | "buff" | "lethal" | "downtime" | "beneficial" | "fade";
+
+type StatusTag = "distracting" | "baneful" | "incapacitating" | "debuff" | "buff" | "lethal" | "downtime" | "beneficial" | "fade" | "fatigue";
+
+
 
 CONFIG.statusEffects = STATUS_EFFECT_LIST
 	.map( ({id, icon, tags})=> {
@@ -219,6 +224,8 @@ CONFIG.statusEffects = STATUS_EFFECT_LIST
 });
 
 export type StatusEffectId = typeof STATUS_EFFECT_LIST[number]["id"];
+
+export type FatigueStatusId = Extract<StatusEffectId, "tired" | "exhausted" | "rested">
 
 export const STATUS_EFFECT_TRANSLATION_TABLE = Object.fromEntries(
 	CONFIG.statusEffects.map( ({id, name}) => [id, name])
@@ -263,3 +270,26 @@ Hooks.on("ready", () => {
 		return la.localeCompare(lb);
 	});
 });
+
+export function statusToFatigueLevel(id: FatigueStatusId | undefined) :number {
+	switch (id) {
+		case undefined:return 1;
+		case "rested": return 2;
+		case "exhausted": return -1;
+		case "tired": return 0;
+	}
+}
+
+
+export function fatigueLevelToStatus(lvl: number): FatigueStatusId | undefined {
+	switch (true) {
+		case lvl <= -1: return "exhausted";
+		case lvl == 0: return "tired";
+		case lvl == 1: return undefined;
+		case lvl >= 2: return "rested";
+		default: 
+			throw new PersonaError(`Unknown Fatigue Level: ${lvl}`);
+
+	}
+
+}

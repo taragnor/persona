@@ -1,3 +1,7 @@
+import { fatigueLevelToStatus } from "../../config/status-effects.js";
+import { statusToFatigueLevel } from "../../config/status-effects.js";
+import { FatigueStatusId } from "../../config/status-effects.js";
+import { statusMap } from "../../config/status-effects.js";
 import { PersonaScene } from "../persona-scene.js";
 import { poisonDamageMultiplier } from "../../config/shadow-types.js";
 import { TriggeredEffect } from "../triggered-effect.js";
@@ -982,6 +986,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	/** returns true if status is added*/
 	async addStatus({id, potency, duration}: StatusEffect): Promise<boolean> {
+		if (statusMap?.get(id)?.tags.includes("fatigue")) {
+			const lvl = statusToFatigueLevel(id as FatigueStatusId);
+			const oldLvl = this.fatigueLevel;
+			await this.setFatigueLevel(lvl);
+			const newLvl = this.fatigueLevel;
+			return oldLvl != newLvl;
+		}
 		if (await this.isStatusResisted(id)) return false;
 		const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
 		if (!stateData) {
@@ -1286,18 +1297,48 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	fatigueLevel() : number {
-		if (this.system.type != "pc") return 0;
-		switch (true) {
-			case this.hasStatus("rested"): return 2;
-			case this.hasStatus("tired"): return 0;
-			case this.hasStatus("exhausted"): return -1;
-			default:
-				return 1;
-		}
+	getFatigueStatus() : FatigueStatusId | undefined {
+		const eff = this.effects.contents.find( x=> x.getFatigueStatus() != undefined);
+		return eff?.getFatigueStatus();
 	}
 
+	get fatigueLevel() : number {
+		if (this.system.type != "pc") return 0;
+		const st = this.getFatigueStatus();
+		return statusToFatigueLevel(st);
+	}
 
+	async setFatigueLevel(lvl: number) : Promise<FatigueStatusId | undefined> {
+		const oldLvl = this.fatigueLevel;
+		const oldId = fatigueLevelToStatus(oldLvl);
+		const newId = fatigueLevelToStatus(lvl);
+		for (const eff of this.effects.contents) {
+			if (eff.isFatigueStatus) {
+				await eff.delete();
+			}
+		}
+		if (newId) {
+			await this.addStatus( {
+				id: newId,
+				duration: {
+					dtype:"permanent",
+				}
+			});
+		}
+		// const newId = await this.setFatigueLevel(st);
+		if (oldId != newId) {
+			const oldName = oldId ? localize(statusMap.get(oldId)!.name) : "Normal";
+			const newName = newId ? localize(statusMap.get(newId)!.name): "Normal";
+			await Logger.sendToChat(`${this.displayedName}  fatigue changed from ${oldName} to ${newName}`);
+		}
+		return newId;
+	}
+
+	async alterFatigueLevel(amt: number) : Promise<void> {
+		const oldLvl = this.fatigueLevel;
+		const newLvl = oldLvl + amt;
+		await this.setFatigueLevel(newLvl);
+	}
 
 	getUnarmedDamageType(): RealDamageType {
 		if (this.system.type == "shadow") return this.system.combat.baseDamageType ?? "physical";

@@ -749,6 +749,8 @@ export class ConditionalEffectManager {
 				return `Add ${tag} tag`;
 			case "combat-effect":
 				return this.#printCombatEffect(cons)
+			case "alter-fatigue-lvl":
+				return `Alter Fatigue Level ${cons.amount}`;
 			default:
 				cons satisfies never;
 				return "ERROR";
