@@ -1754,13 +1754,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				}
 			}
 			if (attacker.actor!.system.type != "shadow" && power.hpCost()) {
-				let hpcostmod = costModifiers.find(x=> x.type== "half-hp-cost") ? 0.75 : 1;
-				if (attacker.actor.hasStatus("tired") || attacker.actor.hasStatus("exhausted")) {
-					hpcostmod *= 1.333;
-				}
+				// let hpcostmod = costModifiers.find(x=> x.type== "half-hp-cost") ? 0.75 : 1;
+				// hpcostmod *= attacker.actor.getBonuses("hpCostMult").total( {user: attacker.actor.accessor}, "percentage");
+				// if (attacker.actor.hasStatus("tired") || attacker.actor.hasStatus("exhausted")) {
+				// 	hpcostmod *= 1.333;
+				// }
 				res.addEffect(null, attacker.actor!, {
 					type: "hp-loss",
-					amount: power.hpCost() * hpcostmod
+					amount: power.modifiedHpCost(attacker.actor)
 				});
 			}
 			if (attacker.actor.system.type != "shadow" && power.system.subtype == "magic" && power.system.mpcost > 0) {

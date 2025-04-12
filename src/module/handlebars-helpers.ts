@@ -485,5 +485,15 @@ export class PersonaHandleBarsHelpers {
 			return PersonaCombat.getAttackBonus(actor, power, undefined).total(situation);
 		},
 
+		"powerCostString": function (power: Power, actor: ValidAttackers) {
+			debugger;
+			console.log("Power Cost string called");
+			return power.costString1(actor);
+		},
+
+		"costString": function () {
+			return "ERROR";
+		}
+
 	}
 } //end of class

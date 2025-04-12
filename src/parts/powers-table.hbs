@@ -29,7 +29,7 @@
 					<a class="powerName" title='{{> "systems/persona/parts/power-tooltip.hbs" actor=../actor CONST=../CONST power=power}}'>
 						{{power.name}}
 						<span class="cost-string">
-							({{power.costString}})
+							({{powerCostString power ../actor}})
 						</span>
 					</a>
 			</div>
@@ -67,7 +67,7 @@
 				<a class="powerName" title='{{> "systems/persona/parts/power-tooltip.hbs" actor=../actor CONST=../CONST power=power}}'>
 					{{power.name}}
 					<span class="cost-string">
-						({{power.costString}})
+						({{powerCostString power ../actor}})
 					</span>
 				</a>
 			</div>
@@ -126,7 +126,7 @@
 				{{getDamage ../actor power}}
 			</td>
 			<td>
-				{{power.costString}}
+				{{powerCostString power ../actor}}
 			</td>
 		</tr>
 		{{/each}}

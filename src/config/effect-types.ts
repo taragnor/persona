@@ -9,7 +9,6 @@ export const CONSQUENCELIST = [
 	"escalationManipulation",
 	"extraAttack",
 	"expend-slot",
-	"half-hp-cost", //half hp cost of weapon skills
 	"revive",
 	"extraTurn",
 	"expend-item",
@@ -39,6 +38,8 @@ export const CONSQUENCELIST = [
 	"dmg-allout-high", //deprecated
 	"dmg-mult", //deprecated
 	"hp-loss", //deprecated
+	"half-hp-cost", //deprecated
+
 ] as const;
 
 export type ConsequenceType = typeof CONSQUENCELIST[number];

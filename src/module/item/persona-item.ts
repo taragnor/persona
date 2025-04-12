@@ -314,10 +314,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return false;
 	}
 
-	get costString() : string {
+	/**@deprecated */
+	costString() : string {
+		return "ERROR";
+	}
+
+	costString1(actor: ValidAttackers) : string {
 		switch (this.system.type) {
 			case "power":
-				return (this as Power).powerCostString();
+				return (this as Power).powerCostString(actor);
 			case "consumable":
 				return "consumable";
 			default:
@@ -336,9 +341,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	powerCostString(this: Power) : string {
-		if (!this.parent || this.parent.system.type == "pc")
-			return this.powerCostString_PC();
+	powerCostString(this: Power, user: ValidAttackers) : string {
+		if (!this.parent || this.parent.system.type == "pc" || this.parent.system.type == "npcAlly")
+			return this.powerCostString_PC(user);
 		if (this.parent.system.type == "shadow")
 			return this.powerCostString_Shadow();
 		else return "";
@@ -409,14 +414,29 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return removeDuplicates(powers);
 	}
 
-	powerCostString_PC(this: Power) : string {
+	modifiedHpCost(this: Usable, user: ValidAttackers, situation ?: Situation) : number {
+		if (!situation) {
+			situation = {
+				user: user.accessor,
+				usedPower: this.accessor,
+			};
+		}
+		return Math.round(this.hpCost() * user.hpCostMod().total(situation, "percentage"));
+	}
+
+	powerCostString_PC(this: Power, actor: ValidAttackers) : string {
 		switch (this.system.subtype) {
 			case "weapon":
-				if (this.hpCost())
-					return `${this.hpCost()} HP`;
+				if (this.hpCost()) {
+					const modCost = this.modifiedHpCost(actor);
+					return `${modCost} HP`;
+				}
+
 				else return "free";
 			case "magic":
-				const mpcost = this.system.mpcost;
+
+				// const mpcost = this.system.mpcost;
+				const mpcost = this.mpCost(actor);
 				return `${mpcost} MP`;
 			case "social-link":
 				if (this.system.inspirationCost > 0) {
@@ -673,9 +693,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	hpCost(this: Power): number {
-		if (this.system.subtype != "weapon")
+	isPhysicalSkill(this: UsableAndCard): boolean{
+		if (this.system.type == "skillCard") return false;
+		switch (this.system.subtype) {
+			case "weapon":
+				return true;
+		}
+		return false;
+	}
+
+	hpCost(this: Usable): number {
+		if (!this.isPhysicalSkill()) {
 			return 0;
+		}
+		if (this.system.type == "consumable") return 0;
 		if (this.isBasicPower()) {return 0;}
 		let mult = 1;
 			if (this.hasTag("high-cost")) {
@@ -818,16 +849,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	mpCost(this: Usable, user: ValidAttackers) {
+	mpCost(this: Usable, user: ValidAttackers): number {
 		if (this.system.type == "consumable") return 0;
 		const sit : Situation = {
 			user: user.accessor,
 			usedPower: this.accessor,
 		}
 		let list = user.getBonuses("mpCostMult");
-		const bonuses = this.getModifier("mpCostMult", user);
-		list = list.concat(new ModifierList(bonuses));
-		const mult = 1 + list.total(sit);
+		// const bonuses = this.getModifier("mpCostMult", user);
+		// list = list.concat(new ModifierList(bonuses));
+		const mult = list.total(sit, "percentage");
 		return Math.round(this.system.mpcost * mult);
 	}
 

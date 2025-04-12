@@ -1269,6 +1269,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return modList;
 	}
 
+	hpCostMod(this: ValidAttackers) : ModifierList {
+		return this.getBonuses("hpCostMult");
+	}
+
 	get treasureMultiplier () : number {
 		switch (this.system.type) {
 			case "pc": case "npcAlly":
