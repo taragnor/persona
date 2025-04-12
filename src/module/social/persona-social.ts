@@ -652,7 +652,7 @@ export class PersonaSocial {
 		};
 		const msg = await ChatMessage.create(msgData,{} );
 		if (event.sound && event.sound.length > 0) {
-			cardData.sound = await PersonaSounds.playFree(event.sound, event.volume ?? 1.0);
+			cardData.sound = await PersonaSounds.playFree(event.sound, event.volume ?? 0.5);
 		}
 		if (ArrayCorrector(event.choices).length > 0) {
 			await new Promise( (conf, _rej) => {

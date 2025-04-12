@@ -253,7 +253,7 @@ export class PersonaRegion extends RegionDocument {
 
 	async onEnterRegion(token: TokenDocument<PersonaActor>) {
 		console.debug(`Region Entered: ${this.name}`);
-		if (token.actor?.type != "pc") return;
+		if (token.actor?.system.type != "pc") return;
 		const tokens = Array.from(this.tokens);
 		const situation : Situation = {
 			trigger: "on-enter-region",
@@ -327,8 +327,8 @@ export class PersonaRegion extends RegionDocument {
 			...this.roomEffects
 		].flatMap( x=> x.getModifier("encounterSize", null))
 		).total(situation);;
-		const shadows = Metaverse.generateEncounter(shadowType, sizeMod);
-		await Metaverse.printRandomEncounterList(shadows);
+		const {encounter, etype} = Metaverse.generateEncounter(shadowType, sizeMod);
+		await Metaverse.printRandomEncounterList(encounter, etype);
 		return true;
 	}
 

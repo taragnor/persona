@@ -16,7 +16,7 @@
 				</a>
 			</li>
 
-		{{/each}}
+			{{/each}}
 		</ul>
 
 	</section>
@@ -32,10 +32,18 @@
 					<label>
 						Sound
 					</label>
-					{{filePicker type="audio" target=(strcat "system.events." i ".sound")}}
-					<input class="img" type="hidden" name="system.events.{{i}}.sound" value="{{event.sound}}">
+					<div class="flexrow">
+						{{filePicker type="audio" target=(strcat "system.events." i ".sound")}}
+						<input class="img" type="hidden" name="system.events.{{i}}.sound" value="{{event.sound}}">
+
+
+					</div>
 					{{#if (strcat "system.events." i ".sound")}}
-					<span>{{event.sound}}</span>
+					<div>{{event.sound}}</div>
+					<div class="flexrow">
+						<label> Volume</label>
+						<input class="short" type="number" name="system.events.{{i}}.volume" value="{{event.volume}}">
+					</div>
 					{{/if}}
 
 				</div>

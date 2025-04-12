@@ -59,7 +59,7 @@ export class Metaverse {
 	static weightedTest() {
 		const map = new Map<Shadow["name"], number>();
 		for (let tries =0; tries< 2000; tries++) {
-			const encounter = this.generateEncounter("shadow");
+			const {encounter} = this.generateEncounter("shadow");
 			for (const shadow of encounter) {
 				const current = map.get(shadow.name) ?? 0;
 				map.set(shadow.name, current +1);
@@ -121,13 +121,13 @@ static #getEncounterType(sizeMod: number): {size: number, etype: EncounterType} 
 			case 1:
 				encounterSize += 3;
 				break;
-			case 2: case 3: case 4: case 5: case 6:
+			case 2: case 3: case 4: case 5: case 6: case 7:
 				encounterSize += 4;
 				break;
-			case 7: case 8: case 9:
+			case 8: case 9: case 10: case 11:
 				encounterSize += 5;
 				break;
-			case 11: case 12: case 13:
+			case 12: case 13:
 				encounterSize += 5;
 				etype = "tough";
 				break;
@@ -170,6 +170,8 @@ static #filterByEncounterType(shadowList : Shadow[], etype : EncounterType) : Sh
 			return shadowList.filter( x=> x.hasRole(["treasure-shadow"]));
 		case "mixed":
 			return shadowList;
+		case "error":
+			return [];
 		default:
 			etype satisfies never;
 			return [];
@@ -192,7 +194,7 @@ static choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encount
 }
 
 
-static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod = 0): Shadow[] {
+static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod = 0): {encounter:Shadow[], etype: EncounterType} {
 	const scene = game.scenes.current as PersonaScene;
 	const baseList  = this.getEncounterList(scene, shadowType);
 	let enemyType : Shadow["system"]["creatureType"] | undefined = undefined;
@@ -202,7 +204,10 @@ static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod
 	let encounterSizeRemaining: number;
 	if (baseList.length == 0) {
 		PersonaError.softFail(`Base Encounter List is empty for ${scene.name} ${shadowType ? "(" + shadowType+ ")"  :""}`);
-		return [];
+		return {
+			encounter: [],
+			etype: "error",
+		}
 	}
 	let etype : EncounterType;
 	do {
@@ -219,8 +224,10 @@ static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod
 	while (encounterSizeRemaining > 0) {
 		if (bailout > 200) {
 			PersonaError.softFail(`Had to bail out, couldn't find match for ${scene.name}`);
-			debugger;
-			return encounter;
+			return {
+				encounter,
+				etype: "error"
+			};
 		}
 		if (bailout == 20) {
 			ui.notifications.warn("Over 20 fail attempts getting random encounter");
@@ -258,7 +265,7 @@ static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod
 		}
 	}
 	encounter.sort( (a,b) => a.name.localeCompare(b.name));
-	return encounter;
+	return {encounter, etype};
 }
 
 static getSubgroupAmt(etype :EncounterType) : number {
@@ -283,18 +290,21 @@ static getSubgroupAmt(etype :EncounterType) : number {
 				case 3: return 2;
 				default: return 2;
 			}
+		case "error":
+			return 0;
 		default:
 			etype satisfies never;
 			return 1;
 	}
 }
 
-	static async printRandomEncounterList(encounter: Shadow[]) {
+	static async printRandomEncounterList(encounter: Shadow[], encounterType : EncounterType) {
 		const speaker = ChatMessage.getSpeaker({alias: "Encounter Generator"});
 		const enchtml = encounter.map( shadow =>
 			`<li class="shadow"> ${shadow.name} </div>`
 		).join("");
 		const text = `
+		<h2> ${encounterType} Encounter </h2>
 		<ul class="enc-list">
 		${enchtml}
 		</ul>
@@ -310,8 +320,8 @@ static getSubgroupAmt(etype :EncounterType) : number {
 
 	/** for use by macro */
 	static async randomEncounter() {
-		const encounter = Metaverse.generateEncounter();
-		await Metaverse.printRandomEncounterList(encounter);
+		const {encounter, etype} = Metaverse.generateEncounter();
+		await Metaverse.printRandomEncounterList(encounter, etype);
 	}
 
 
@@ -803,4 +813,4 @@ type Treasure = {
 	items: TreasureItem[],
 };
 
-type EncounterType = "standard" | "tough" | "treasure" | "mixed";
+type EncounterType = "standard" | "tough" | "treasure" | "mixed" | "error";

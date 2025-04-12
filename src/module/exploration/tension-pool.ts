@@ -43,8 +43,8 @@ const TENSION_POOL_MAX = 8 as const;
 
 	 async generateEncounter() {
 		 try {
-			 const enc = Metaverse.generateEncounter();
-			 await Metaverse.printRandomEncounterList(enc);
+			 const {encounter, etype} = Metaverse.generateEncounter();
+			 await Metaverse.printRandomEncounterList(encounter, etype);
 		 } catch (e) {
 			 console.log(e);
 		 }
