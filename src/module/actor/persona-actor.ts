@@ -1,3 +1,4 @@
+import { localizeStatusId } from "../../config/status-effects.js";
 import { fatigueLevelToStatus } from "../../config/status-effects.js";
 import { statusToFatigueLevel } from "../../config/status-effects.js";
 import { FatigueStatusId } from "../../config/status-effects.js";
@@ -95,6 +96,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	isNPC(): this is NPC {
 		return this.system.type == "npc";
+	}
+
+	isPC(): this is PC {
+		return this.system.type == "pc";
 	}
 
 	async setAsNavigator(this: NPCAlly) {
@@ -1308,7 +1313,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return statusToFatigueLevel(st);
 	}
 
-	async setFatigueLevel(lvl: number) : Promise<FatigueStatusId | undefined> {
+	hasAlteredFatigueToday(this:PC): boolean {
+		return this.system.hasAlteredFatigueToday ?? false;
+
+	}
+
+	async setAlteredFatigue(val = true) {
+		await this.update({"system.hasAlteredFatigueToday": val});
+	}
+
+	async setFatigueLevel(lvl: number,log = true) : Promise<FatigueStatusId | undefined> {
 		const oldLvl = this.fatigueLevel;
 		const oldId = fatigueLevelToStatus(oldLvl);
 		const newId = fatigueLevelToStatus(lvl);
@@ -1326,7 +1340,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			});
 		}
 		// const newId = await this.setFatigueLevel(st);
-		if (oldId != newId) {
+		if (log && oldId != newId) {
 			const oldName = oldId ? localize(statusMap.get(oldId)!.name) : "Normal";
 			const newName = newId ? localize(statusMap.get(newId)!.name): "Normal";
 			await Logger.sendToChat(`${this.displayedName}  fatigue changed from ${oldName} to ${newName}`);
@@ -1334,10 +1348,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return newId;
 	}
 
-	async alterFatigueLevel(amt: number) : Promise<void> {
+	async alterFatigueLevel(amt: number, log=true) : Promise<FatigueStatusId | undefined> {
 		const oldLvl = this.fatigueLevel;
 		const newLvl = oldLvl + amt;
-		await this.setFatigueLevel(newLvl);
+		return await this.setFatigueLevel(newLvl, log);
 	}
 
 	getUnarmedDamageType(): RealDamageType {
@@ -2793,6 +2807,46 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 		await this.modifyHP(-damage);
 	}
 	ret.push(...await this.endTurnSaves())
+	return ret;
+}
+
+async onEndSocialTurn(this: PC) : Promise<string[]> {
+	const fatigueStat = this.getFatigueStatus();
+	if (fatigueStat != undefined && !this.hasAlteredFatigueToday()) {
+		let DC = 11;
+		switch (fatigueStat) {
+			case "rested": DC =16; break;
+			case "exhausted": DC =11; break;
+			case "tired": DC= 11; break;
+		}
+		const {success} = await PersonaCombat.rollSave(this, {
+			DC,
+			label: `Save to end ${localizeStatusId(fatigueStat)}`,
+			saveVersus: fatigueStat
+		});
+		const locStat = localizeStatusId(fatigueStat);
+		const fatLevel = this.fatigueLevel;
+		if (success && fatLevel < 1) {
+			const newStat = await this.alterFatigueLevel(1);
+			if (newStat) {
+				await Logger.sendToChat(`${this.displayedName} is now ${localizeStatusId(newStat)}`);
+			} else {
+				await Logger.sendToChat(`${this.displayedName} is no longer ${locStat}`);
+			}
+		}
+		if (!success && fatLevel > 1) {
+			await this.alterFatigueLevel(-1);
+			await Logger.sendToChat(`${this.displayedName} is no longer ${locStat}`);
+		}
+	}
+	let ret = [] as string[];
+	for (const eff of this.effects) {
+		if (await eff.onEndSocialTurn())
+			ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
+	}
+	if (this.hasAlteredFatigueToday()) {
+		await this.update({"system.hasAlteredFatigueToday": false});
+	}
 	return ret;
 }
 

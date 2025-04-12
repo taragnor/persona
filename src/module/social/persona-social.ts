@@ -124,6 +124,26 @@ export class PersonaSocial {
 		ChatMessage.create(messageData, {});
 	}
 
+	static async endSocialTurn( pc: PC) {
+		let endTurnMsg = [] as string[];
+		//Check exhaustion statuses
+
+		try {
+			endTurnMsg.push(...await pc.onEndSocialTurn());
+		} catch (e) {
+			PersonaError.softFail(`Problem trying to end social turn on ${pc.name}`);
+		}
+		if (endTurnMsg.length) {
+			const speaker = {alias: "Social Turn End"};
+			let messageData = {
+				speaker: speaker,
+				content: endTurnMsg.join("<br>"),
+				style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			};
+			ChatMessage.create(messageData, {});
+		}
+	}
+
 	static async advanceCalendar(force = false, extraMsgs : string [] = []) {
 		if (!force && !(await HTMLTools.confirmBox( "Advance Date", "Advnace Date?", true))) {
 			ui.notifications.notify("Date not advanced due to advanceCalendar being rejected");

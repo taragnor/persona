@@ -765,6 +765,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	async endTurn(combatant: Combatant<ValidAttackers>) {
+		if (this.isSocial) {
+			const actor = combatant.actor;
+			if (!actor || !actor.isPC()) return;
+			await PersonaSocial.endSocialTurn(actor);
+			return;
+		}
 		const triggeringCharacter  = (combatant as Combatant<ValidAttackers>)?.token?.actor?.accessor;
 		const triggeringActor = combatant?.token?.actor;
 		if (triggeringActor && triggeringActor.system.type == "shadow") {

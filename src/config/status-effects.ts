@@ -280,6 +280,15 @@ export function statusToFatigueLevel(id: FatigueStatusId | undefined) :number {
 	}
 }
 
+export function localizeStatusId(id: StatusEffectId) : string {
+	const st = statusMap.get(id);
+	if (!st) {
+		PersonaError.softFail(`couldn't find statusId ${id}`);
+		return "ERROR";
+	}
+	return game.i18n.localize(st.name);
+}
+
 
 export function fatigueLevelToStatus(lvl: number): FatigueStatusId | undefined {
 	switch (true) {
@@ -289,7 +298,5 @@ export function fatigueLevelToStatus(lvl: number): FatigueStatusId | undefined {
 		case lvl >= 2: return "rested";
 		default: 
 			throw new PersonaError(`Unknown Fatigue Level: ${lvl}`);
-
 	}
-
 }

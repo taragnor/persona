@@ -271,6 +271,37 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		}
 	}
 
+	async onEndSocialTurn(): Promise<boolean> {
+		const duration = this.statusDuration;
+		switch (duration.dtype) {
+			case "X-days":
+				if (duration.amount <= 0) {
+					await this.delete();
+					return true;
+				}
+				duration.amount -= 1;
+				await this.setDuration(duration);
+				return false;
+			case "anchored":
+			case "permanent":
+				return false;
+			case "expedition":
+			case "combat":
+			case "X-rounds":
+			case "USoNT":
+			case "save":
+			case "UEoNT":
+			case "UEoT":
+			case "instant":
+			case "3-rounds":
+				await this.delete();
+				return true;
+			default:
+				duration satisfies never;
+				return false;
+		}
+	}
+
 	async onEndCombat() : Promise<void> {
 		const dur: StatusDuration = {
 			dtype: "combat"
@@ -465,8 +496,6 @@ type SaveDuration = {
 	saveType : "easy" | "normal" | "hard",
 };
 
-
-
 type DeprecatedDurations = {
 	dtype: Extract<StatusDurationType, "presave-easy" | "presave-hard" | "presave-normal" | "save-normal" | "save-easy" | "save-hard">
 }
@@ -475,4 +504,23 @@ type AnchoredStatus = {
 	dtype: Extract<StatusDurationType, "anchored">,
 	anchor : UniversalAEAccessor<PersonaAE>,
 }
+
+
+Hooks.on("createActiveEffect", async function (eff: PersonaAE) {
+	if (eff.isFatigueStatus) {
+		const parent = eff.parent;
+		if (parent instanceof PersonaActor) {
+			await parent.setAlteredFatigue();
+		}
+	}
+});
+
+Hooks.on("deleteActiveEffect", async function (eff: PersonaAE) {
+	if (eff.isFatigueStatus) {
+		const parent = eff.parent;
+		if (parent instanceof PersonaActor) {
+			await parent.setAlteredFatigue();
+		}
+	}
+});
 

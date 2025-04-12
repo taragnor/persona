@@ -37,6 +37,7 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 		const ret = {
 			...BaseStuff.defineSchema(),
 			...SocialTargetBlockData(),
+			hasAlteredFatigueToday: new bool({initial: false}),
 			equipped: equipslots(),
 			money: new num({integer: true, min: 0, initial:1}),
 			creatureType: new txt({ choices: SHADOW_CREATURE_TYPE_LIST, initial: "npc-ally"}),
