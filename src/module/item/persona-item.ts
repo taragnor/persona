@@ -1,3 +1,4 @@
+import { Logger } from "../utility/logger.js";
 import { STATUS_POWER_TAGS } from "../../config/power-tags.js";
 import { DamageType } from "../../config/damage-types.js";
 import { ValidAttackers } from "../combat/persona-combat.js";
@@ -63,6 +64,17 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	constructor(...args: any[]) {
 		super (...args)
 		this.clearCache();
+	}
+
+	isActualItem(): this is InvItem | Consumable | Weapon {
+		switch (this.system.type) {
+			case "item":
+			case "weapon":
+			case "consumable":
+				return true;
+			default:
+				return false;
+		}
 	}
 
 	clearCache() {
@@ -1270,7 +1282,7 @@ export type PowerContainer = Consumable | Power | ModifierContainer;
 export type Usable = Power | Consumable ;
 export type UsableAndCard = Usable | SkillCard; 
 
-Hooks.on("updateItem", (item :PersonaItem) => {
+Hooks.on("updateItem", (item :PersonaItem, diff: DeepPartial<typeof item>) => {
 	item.clearCache();
 });
 
@@ -1284,3 +1296,11 @@ function cacheStats() {
 
 //@ts-ignore
 window.cacheStats = cacheStats;
+
+
+Hooks.on("deleteItem", (item: PersonaItem) => {
+	if (item.parent instanceof PersonaActor && item.hasPlayerOwner) {
+		Logger.sendToChat(`${item.parent.displayedName} deletes ${item.name}(${item.amount})`, item.parent);
+	}
+
+});
