@@ -1,4 +1,4 @@
-const {StringField:txt, EmbeddedDataField: embedded, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, BooleanField: bool } = foundry.data.fields;
+const {StringField:txt, EmbeddedDataField: embedded, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, BooleanField: bool, FilePathField: file } = foundry.data.fields;
 
 import { ConditionalEffectDM } from "./item-types.js";
 
@@ -50,6 +50,7 @@ export function powerCost() {
 
 export function UsablePowerProps() {
 	return {
+		sound: new file ({categories: ["AUDIO"] }),
 		tags: new arr( new txt<typeof POWER_TAGS_LIST[number]>({choices: POWER_TAGS_LIST})),
 		damage: damage(),
 		mag_mult: new num( {integer:true, min:0, max: 100, initial:1}),

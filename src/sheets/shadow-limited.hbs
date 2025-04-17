@@ -161,7 +161,7 @@
                      {{power.name}}
                      {{#if (gt ../actor.system.scanLevel 1)}}
                      <span class="cost-string">
-                        ({{power.costString}})
+                        ({{powerCostString power ../actor}})
                      </span>
                      {{/if}}
                   </div>

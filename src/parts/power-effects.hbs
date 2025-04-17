@@ -1,4 +1,14 @@
 <section class="effect-section">
+	<label>
+		Sound
+	</label>
+	<div class="flexrow">
+		{{filePicker type="audio" target="system.sound"}}
+		<input class="img" type="hidden" name="system.sound" value="{{item.system.sound}}">
+		{{#if item.system.sound}}
+		<div>{{item.system.sound}}</div>
+		{{/if}}
+	</div>
 	{{#if (hasTag item "opener")}}
 	<div class="opening-conditions" data-top-path="system.openerConditions" data-path="system.openerConditions">
 		<h3> Prereqs to Open </h3>

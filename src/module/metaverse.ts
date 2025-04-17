@@ -343,8 +343,7 @@ static getSubgroupAmt(etype :EncounterType) : number {
 		if (party.length == 0) return;
 		const partyLvl = Math.max(...party.map(x=> x.system.combat.classData.level));
 		const totalXP = shadows.reduce( (acc,shadow) => {
-			const xp = this.getXPFor(shadow, partyLvl) ;
-			return acc + xp;
+			return acc + this.getXPFor(shadow, partyLvl) ;
 		}, 0);
 		const individualXP = Math.floor( totalXP / party.length);
 		const levelUps : ValidAttackers[] = [];

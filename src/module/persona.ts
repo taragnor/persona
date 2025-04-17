@@ -12,6 +12,7 @@ declare global {
 
 }
 
+import { Simulations } from "./exploration/simulations.js";
 import { AnyaPlanets } from "./exploration/anya-planets.js";
 import { AmongUs } from "./exploration/among-us.js";
 import { NPCAllySheet } from "./actor/sheets/npc-ally-sheet.js";
@@ -145,4 +146,5 @@ window.AmongUs = AmongUs
 //@ts-ignore
 window.AnyaPlanets = new AnyaPlanets();
 
-
+//@ts-ignore
+window.Simulations = Simulations;

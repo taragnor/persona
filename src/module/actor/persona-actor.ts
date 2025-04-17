@@ -2662,6 +2662,24 @@ get tarot() : (Tarot | undefined) {
 	return this.cache.tarot;
 }
 
+numOfIncAdvances(): number {
+	switch (this.system.type) {
+		case "npc":
+		case "tarot":
+			return 0;
+	}
+	const advances = this.system.combat.classData.incremental;
+	return Object.values(advances).reduce<number>( (a, x) => {
+		if (typeof x == "boolean" && x == true) {return a + 1;}
+		if (typeof x == "number") {return a + x;}
+		return a;
+	}, 0);
+}
+
+get XPForNextLevel() : number {
+	const incAdvances = this.numOfIncAdvances();
+	return 60 + 15 * incAdvances;
+}
 
 /** returns true on level up */
 async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
@@ -2674,7 +2692,7 @@ async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
 	}
 	let levelUp = false;
 	let newxp = this.system.combat.xp + amt;
-	while (newxp > 100) {
+	while (newxp > this.XPForNextLevel) {
 		newxp -= 100;
 		levelUp = true;
 	}
@@ -2683,7 +2701,7 @@ async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
 }
 
 XPValue(this: Shadow) : number {
-	const SHADOWS_TO_LEVEL = 20;
+	const SHADOWS_TO_LEVEL = 15;
 	const baseXP = 100/SHADOWS_TO_LEVEL;
 	const role = shadowRoleMultiplier(this.system.role) * shadowRoleMultiplier(this.system.role2);
 	const incrementals = Object.entries(this.system.combat.classData.incremental).reduce ( (acc, i) => {

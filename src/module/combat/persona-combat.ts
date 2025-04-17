@@ -765,8 +765,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	async endTurn(combatant: Combatant<ValidAttackers>) {
+		const actor = combatant.actor;
+		if (!actor) return;
+		if (!actor.isOwner) return;
 		if (this.isSocial) {
-			const actor = combatant.actor;
 			if (!actor || !actor.isPC()) return;
 			await PersonaSocial.endSocialTurn(actor);
 			return;
@@ -792,10 +794,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				await PersonaCombat.execTrigger("end-turn", user.token.actor as ValidAttackers, situation);
 			}
 		}
-		const actor = combatant.actor;
-		if (!actor) return;
-		if (!game.user.isOwner) return;
-		const notes = await combatant.actor?.onEndCombatTurn() ?? [];
+		const notes = await actor?.onEndCombatTurn() ?? [];
 		if (notes.length > 0) {
 			const messageData: MessageData = {
 				speaker: {alias: "End of Turn"},
@@ -938,10 +937,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			}
 			this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
 			const result = new CombatResult();
-			if (power.name == BASIC_PC_POWER_NAMES[1]) {
-				PersonaSFX.onAllOutAttack();
-			}
-			PersonaSFX.onUsePower(power);
+			// if (power.name == BASIC_PC_POWER_NAMES[1]) {
+			// 	PersonaSFX.onAllOutAttack();
+			// }
+			await PersonaSFX.onUsePower(power);
 			result.merge(await this.usePowerOn(attacker, power, targets, "standard"));
 			const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
 			result.merge(costs);

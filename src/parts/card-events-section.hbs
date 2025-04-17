@@ -35,8 +35,6 @@
 					<div class="flexrow">
 						{{filePicker type="audio" target=(strcat "system.events." i ".sound")}}
 						<input class="img" type="hidden" name="system.events.{{i}}.sound" value="{{event.sound}}">
-
-
 					</div>
 					{{#if (strcat "system.events." i ".sound")}}
 					<div>{{event.sound}}</div>

@@ -1,3 +1,4 @@
+import { BASIC_PC_POWER_NAMES } from "../../config/basic-powers.js";
 import { PersonaError } from "../persona-error.js";
 import { UsableAndCard } from "../item/persona-item.js";
 import { Usable } from "../item/persona-item.js";
@@ -40,11 +41,18 @@ export class PersonaSFX {
 		}
 	}
 
-	static async onUsePower(usableOrCard: UsableAndCard) {
+	static async onUsePower(usableOrCard: UsableAndCard) : Promise<void> {
 		if (usableOrCard.system.type == "skillCard") {
 			return;
 		}
+		if (usableOrCard.name == BASIC_PC_POWER_NAMES[1]) {
+				return PersonaSFX.onAllOutAttack();
+		}
 		const power = usableOrCard as Usable;
+		if (power.system.sound) {
+			const snd = PersonaSounds.playFile(power.system.sound, 0.5);
+			return snd;
+		}
 		if (!power.isAoE()) return;
 		const damageType = power.system.dmg_type;
 		switch (damageType) {

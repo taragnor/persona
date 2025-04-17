@@ -54,17 +54,17 @@ export const CREATURE_TYPE =  Object.fromEntries(
 export function shadowRoleMultiplier (role: ShadowRole) : number{
 	switch (role) {
 		case "elite":
-			return 1.5;
+			return 2.5;
 		case "miniboss":
-			return 3;
+			return 3.5;
 		case "boss":
-			return 4;
+			return 4.5;
 		case "solo":
-			return 4;
+			return 7;
 		case "duo":
-			return 2;
-		case "treasure-shadow":
 			return 4;
+		case "treasure-shadow":
+			return 8;
 		default:
 			return 1;
 	}
