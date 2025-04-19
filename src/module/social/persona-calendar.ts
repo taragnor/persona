@@ -1,3 +1,4 @@
+import { PersonaDB } from "../persona-db.js";
 import { sleep } from "../utility/async-wait.js";
 import { PersonaSocial } from "./persona-social.js";
 import { localize } from "../persona.js";
@@ -81,17 +82,10 @@ export class PersonaCalendar {
 		const weekday = calendar.getCurrentWeekday().name;
 		rolls.push(await this.randomizeWeather());
 		const weather = this.getWeather();
-		if (this.DoomsdayClock.isMaxed()) {
-			await this.DoomsdayClock.clear();
-		} else {
-			await this.DoomsdayClock.inc();
-		}
-		let doomsdayMsg = `<hr> <div class="doomsday"> <b>Doomsday</b>  ${this.DoomsdayClock.amt} / ${this.DoomsdayClock.max} </div>`;
-		if (this.DoomsdayClock.isMaxed()) {
-			doomsdayMsg = `<hr><div class="doomsday"><h2> Doomsday</h2> Doomsday is here! Succeed or Something horrible happens!</div>`;
-		}
 		const manualUpdate = requireManual ? `<h2> Requires Manaul date update </h2>`: "";
 		await PersonaSocial.updateLinkAvailability(weekday);
+		const doomsdayMsg = await this.advanceDoomsday();
+		extraMsgs.push(... await this.endDayForPCs());
 		extraMsgs = extraMsgs
 			.map( x=> `<div> ${x} </div>`);
 		const html = `
@@ -116,6 +110,40 @@ export class PersonaCalendar {
 		};
 		await ChatMessage.create(msgData,{} );
 		return date;
+	}
+
+	static async endDayForPCs(): Promise<string[]> {
+		let ret : string[] = [];
+		for (const pc of PersonaDB.realPCs()) {
+			try {
+				const changes = await pc.onEndDay();
+				if (changes.length == 0) continue;
+				ret.push(`<div class="pc-change end-day">`);
+				ret.push( `<div>${pc.displayedName} End of Day</div>`);
+				ret.push(`<ul>`);
+				ret.push( ...changes.map( chg => `<li> ${chg} </li>`));
+				ret.push(`</ul>`);
+				ret.push(`</div>`);
+			} catch (e) {
+				PersonaError.softFail(`End Day Error for ${pc.name}`, e);
+				continue;
+			}
+
+		}
+		return ret;
+	}
+
+	static async advanceDoomsday() : Promise<string> {
+		if (this.DoomsdayClock.isMaxed()) {
+			await this.DoomsdayClock.clear();
+		} else {
+			await this.DoomsdayClock.inc();
+		}
+		let doomsdayMsg = `<hr> <div class="doomsday"> <b>Doomsday</b>  ${this.DoomsdayClock.amt} / ${this.DoomsdayClock.max} </div>`;
+		if (this.DoomsdayClock.isMaxed()) {
+			doomsdayMsg = `<hr><div class="doomsday"><h2> Doomsday</h2> Doomsday is here! Succeed or Something horrible happens!</div>`;
+		}
+		return doomsdayMsg;
 	}
 
 	static async randomizeWeather() : Promise<Roll> {

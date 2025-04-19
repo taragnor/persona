@@ -102,6 +102,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.system.type == "pc";
 	}
 
+	isRealPC(): this is PC {
+		return this.system.type == "pc" && this.hasPlayerOwner && this.tarot != undefined;
+	}
+
 	async setAsNavigator(this: NPCAlly) {
 		for (const ally of PersonaDB.NPCAllies()) {
 			if (ally == this) continue;
@@ -2828,7 +2832,13 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 	return ret;
 }
 
-async onEndSocialTurn(this: PC) : Promise<string[]> {
+
+async onEndDay(this: PC): Promise<string[]> {
+	let ret = [] as string[];
+	for (const eff of this.effects) {
+		if (await eff.onEndSocialTurn())
+			ret.push(`Removed Condition ${eff.displayedName} at end of day.`);
+	}
 	const fatigueStat = this.getFatigueStatus();
 	if (fatigueStat != undefined && !this.hasAlteredFatigueToday()) {
 		let DC = 11;
@@ -2847,23 +2857,27 @@ async onEndSocialTurn(this: PC) : Promise<string[]> {
 		if (success && fatLevel < 1) {
 			const newStat = await this.alterFatigueLevel(1);
 			if (newStat) {
-				await Logger.sendToChat(`${this.displayedName} is now ${localizeStatusId(newStat)}`);
+				ret.push(`${this.displayedName} is now ${localizeStatusId(newStat)}`);
 			} else {
-				await Logger.sendToChat(`${this.displayedName} is no longer ${locStat}`);
+				ret.push(`${this.displayedName} is no longer ${locStat}`);
 			}
 		}
 		if (!success && fatLevel > 1) {
 			await this.alterFatigueLevel(-1);
-			await Logger.sendToChat(`${this.displayedName} is no longer ${locStat}`);
+			ret.push(`${this.displayedName} is no longer ${locStat}`);
 		}
-	}
-	let ret = [] as string[];
-	for (const eff of this.effects) {
-		if (await eff.onEndSocialTurn())
-			ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
 	}
 	if (this.hasAlteredFatigueToday()) {
 		await this.update({"system.hasAlteredFatigueToday": false});
+	}
+	return ret;
+}
+
+async onEndSocialTurn(this: PC) : Promise<string[]> {
+	let ret = [] as string[];
+	for (const eff of this.effects) {
+		if (await eff.onEndSocialTurn())
+			ret.push(`Removed Condition ${eff.displayedName} at end of social turn`);
 	}
 	return ret;
 }

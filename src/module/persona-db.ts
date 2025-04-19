@@ -159,9 +159,14 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		.filter( x=> x.system.cardType == "social") as SocialEncounterCard[]
 	}
 
+	/** Actual PCs not counting things with just PC type like item piles and party token*/
+	realPCs():  PC[] {
+		return this.PCs().filter( x=> x.isRealPC());
+	}
+
 	PCs() : PC[] {
 		if (this.#cache.pcs) return this.#cache.pcs;
-		this.#cache.pcs=  this.allActors().filter( actor => actor.system.type == "pc") as PC[];
+		this.#cache.pcs=  this.allActors().filter( actor => actor.isPC()) as PC[];
 		return this.#cache.pcs;
 	}
 

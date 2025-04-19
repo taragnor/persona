@@ -1004,7 +1004,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			PersonaError.softFail("No actor for endTurn Message");
 			return null;
 		}
-		const boldName = `<b>${actor.displayedName}</b>`;
+		const boldName = `<b>${token.name}</b>`;
 		let content = `<div>${boldName} has run out of actions.</div>`;
 		const pushMsg = `<div> ${boldName} can take an additional action by pushing themself, but this inflicts 1 fatigue level`;
 		if (actor.fatigueLevel > 0 ) {
