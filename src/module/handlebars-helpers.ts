@@ -1,3 +1,4 @@
+import { PersonaError } from "./persona-error.js";
 import { Consumable } from "./item/persona-item.js";
 import { FREQUENCY } from "../config/frequency.js";
 import { CardEvent } from "../config/social-card-config.js";
@@ -491,7 +492,17 @@ export class PersonaHandleBarsHelpers {
 
 		"costString": function () {
 			return "ERROR";
-		}
+		},
+
+		"ternIf": function (cond, r1, r2) {
+			if (r1 == undefined) {
+				PersonaError.softFail(`Ternif result 1 is undefined`);
+			}
+			if (r2 == undefined) {
+				PersonaError.softFail(`Ternif result 2 is undefined`);
+			}
+			return cond ? r1: r2;
+		},
 
 	}
 } //end of class

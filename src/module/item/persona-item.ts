@@ -1017,7 +1017,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			conditions: [],
 			text: "",
 			postEffects: {effects:[]},
-			roll: {rollType: "none"},
+			roll: {rollType: "none", progressSuccess:0, progressCrit: 0, progressFail: 0},
 		};
 		arr.push( newChoice);
 		event.choices = arr;

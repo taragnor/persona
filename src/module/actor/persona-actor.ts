@@ -2079,6 +2079,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update({"system.social": this.system.social});
 	}
 
+async alterSocialLinkProgress(this: PC, linkId: string, progress: number) {
+	return await this.socialLinkProgress(linkId, progress);
+}
+
 	async socialLinkProgress(this: PC, linkId: string, progress: number) {
 		const link = this.system.social.find( x=> x.linkId == linkId);
 		if (!link) {
@@ -2419,7 +2423,7 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 			case "pc":
 			case "shadow":
 			case "npcAlly":
-				 await TriggeredEffect.onTrigger("exit-metaverse", this).emptyCheck()?.autoApplyResult() ?? Promise.resolve();
+				await TriggeredEffect.onTrigger("exit-metaverse", this).emptyCheck()?.autoApplyResult() ?? Promise.resolve();
 				break;
 			default:
 					this.system satisfies never;

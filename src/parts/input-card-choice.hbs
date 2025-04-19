@@ -9,7 +9,7 @@
 
 	{{> "systems/persona/parts/conditions-section.hbs" namePrefix=(strcat namePrefix "conditions.")  POWERSTUFF=POWERSTUFF owner=item}}
 
-	{{> "systems/persona/parts/card-roll-section.hbs" CONST=CONST namePrefix=(strcat namePrefix "roll.") roll=choice.roll item=item}}
+	{{> "systems/persona/parts/card-roll-section.hbs" CONST=CONST namePrefix=(strcat namePrefix "roll.") roll=choice.roll item=item allowComplex=true}}
 
 {{> "systems/persona/parts/effects-section-adaptable.hbs" namePrefix=(strcat namePrefix "postEffects.effects.") effects=choice.postEffects.effects POWERSTUFF=item.sheet.powerStuff owner=item}}
 

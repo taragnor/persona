@@ -15,17 +15,26 @@ export const SOCIAL_CARD_TYPES_LIST = [
 	"other"
 ] as const;
 
-export const SOCIAL_CARD_ROLL_TYPES_LIST = [
+export const SIMPLE_SOCIAL_CARD_ROLL_TYPES_LIST = [
 	"none",
 	"studentSkillCheck",
 	"save",
+] as const;
+
+export const SOCIAL_CARD_ROLL_TYPES_LIST = [
+	...SIMPLE_SOCIAL_CARD_ROLL_TYPES_LIST,
 	"gmspecial",
-];
+	"dual",
+] as const;
+
 
 export const SOCIAL_CARD_ROLL_TYPES = Object.fromEntries(
 	SOCIAL_CARD_ROLL_TYPES_LIST.map(a=> [a, `persona.social.card.rolls.types.${a}`])
 );
 
+export const SIMPLE_SOCIAL_CARD_ROLL_TYPES = Object.fromEntries(
+	SIMPLE_SOCIAL_CARD_ROLL_TYPES_LIST.map(a=> [a, `persona.social.card.rolls.types.${a}`])
+);
 
 	export type SocialCardType = keyof typeof SOCIAL_CARD_TYPES_LIST;
 
@@ -52,8 +61,15 @@ export type EventPlacement = {
 
 export type CardRoll = {
 	rollType: typeof SOCIAL_CARD_ROLL_TYPES_LIST[number]} 
-	&
-	CardRollList[keyof CardRollList];
+	& CardRollList[keyof CardRollList]
+	& RollProgress
+;
+
+type RollProgress = {
+	progressSuccess: number,
+	progressFail: number,
+	progressCrit: number
+}
 
 type CardRollList = {
 	"none": {
@@ -61,12 +77,14 @@ type CardRollList = {
 	},
 	"studentSkillCheck": {
 		rollType: "studentSkillCheck",
+		simpleRoll: boolean,
 		studentSkill: StudentSkillExt,
 		modifier: number,
 		DC: CardRollDC,
 	},
 	"save" : {
 		rollType: "save",
+		simpleRoll: boolean,
 		saveType: SaveType,
 		modifier: number,
 		disallow_other_modifiers: boolean,
@@ -74,7 +92,14 @@ type CardRollList = {
 	"waitForGM" : {
 		rollType: "gmspecial"
 	}
+	"dual": {
+		rollType: "dual",
+		roll1: SimpleCardRoll,
+		roll2: CardRoll,
+	}
 }
+
+type SimpleCardRoll = CardRoll & {simpleRoll: true};
 
 export const CARD_DC_TYPES = {
 	"base": "Base",

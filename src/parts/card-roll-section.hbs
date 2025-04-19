@@ -1,7 +1,18 @@
 <div class="card-roll">
 	<select name='{{strcat namePrefix "rollType"}}'>
-		{{selectOptions CONST.ROLLTYPES localize=true selected=roll.rollType}}
+		{{selectOptions (ternIf allowComplex CONST.ROLLTYPES CONST.SIMPLE_ROLL_TYPES) localize=true selected=roll.rollType}}
 	</select>
+	<div class="simple-roll-stuff">
+		<span>
+			<input type="checkbox" id="invert" name="{{strcat namePrefix 'simpleRoll'}}" {{checked roll.simpleRoll}}>
+			<label> AutoProgress: </label>
+			<input class="short" type=number name='{{strcat namePrefix "progressSuccess"}}' value="{{roll.progressSuccess}}">
+			+
+			<input class="short" type=number name='{{strcat namePrefix "progressCrit"}}' value="{{roll.progressCrit}}">
+			(Fail: <input class="short" type=number name='{{strcat namePrefix "progressFail"}}' value="{{roll.progressFail}}">)
+		</span>
+	</div>
+
 	{{#if (eq roll.rollType "studentSkillCheck")}}
 	<select name='{{strcat namePrefix "studentSkill"}}'>
 		{{selectOptions CONST.STUDENT_SKILLS_EXT localize=true selected=roll.studentSkill}}

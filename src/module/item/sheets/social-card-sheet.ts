@@ -1,3 +1,4 @@
+import { SIMPLE_SOCIAL_CARD_ROLL_TYPES } from "../../../config/social-card-config.js";
 import { CARD_DC_TYPES } from "../../../config/social-card-config.js";
 import { FREQUENCY } from "../../../config/frequency.js";
 import { THRESHOLD_TYPE } from "../../../config/social-card-config.js";
@@ -39,6 +40,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		};
 		data.SOCIAL_DATA = {
 			ROLLTYPES : SOCIAL_CARD_ROLL_TYPES,
+			SIMPLE_ROLL_TYPES : SIMPLE_SOCIAL_CARD_ROLL_TYPES,
 			STUDENT_SKILLS,
 			STUDENT_SKILLS_EXT,
 			SAVE_DIFFICULTY: SAVE_TYPES_LOCALIZED,
@@ -110,6 +112,9 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 			postEffects: { effects: []},
 			roll: {
 				rollType: "none",
+				progressCrit: 0,
+				progressSuccess: 0,
+				progressFail: 0,
 			}
 		};
 		opList.push( newOpportunity);

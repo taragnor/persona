@@ -684,7 +684,7 @@ export class PersonaSocial {
 		if (cardData.card.system.cardType == "social") {
 			const link = this.lookupLink(cardData) as SocialLinkData;
 
-			if (link.actor.type == "pc") {
+			if (link.actor.isPC()) {
 				pcImproveSpend = `<li class="token-spend"> spend 4 progress tokens to raise link with ${link.actor.name}</li>`;
 			}
 		}
@@ -874,6 +874,7 @@ export class PersonaSocial {
 		const effectList = ConditionalEffectManager.getEffects(cardChoice?.postEffects?.effects ?? [], null, null);
 		switch (cardRoll.rollType) {
 			case "none": {
+				await this.processAutoProgress(cardData, cardRoll, true, false);
 				await this.applyEffects(effectList,cardData.situation, cardData.actor);
 				break;
 			}
@@ -889,13 +890,16 @@ export class PersonaSocial {
 				const skill = this.resolvePrimarySecondarySocialStat(cardRoll.studentSkill, activityOrActor);
 				const roll = await this.rollSocialStat(cardData.actor, skill, modifiers, `Card Roll (${skill} ${cardRoll.modifier || ""} vs DC ${DC})`,  cardData.situation);
 				await roll.toModifiedMessage();
+				const hit = roll.total >= DC;
+				const critical =roll.total >= DC + 10;
 				const situation : Situation = {
 					...cardData.situation,
-					hit: roll.total >= DC,
-					criticalHit: roll.total >= DC + 10,
+					hit,
+					criticalHit: critical,
 					naturalRoll: roll.natural,
 					rollTotal: roll.total
 				};
+				await this.processAutoProgress(cardData, cardRoll, hit, critical );
 				await this.applyEffects(effectList, situation, cardData.actor);
 				break;
 			}
@@ -910,11 +914,42 @@ export class PersonaSocial {
 					rollTotal: saveResult.total,
 					naturalRoll: saveResult.natural
 				};
+				await this.processAutoProgress(cardData, cardRoll, saveResult.success, false);
 				await this.applyEffects(effectList,situation, cardData.actor);
 				break;
 			}
+			case "dual":
+				//TODO: implement dual roll
+				PersonaError.softFail("Dual roll is not yet supported")
+				break;
 			default:
 				cardRoll satisfies never;
+		}
+	}
+
+	static async processAutoProgress( cardData: CardData, cardRoll: CardRoll, hit: boolean, critical: boolean) : Promise<void> {
+		let progress = 0;
+		progress += hit ? cardRoll.progressSuccess ?? 0 : 0;
+		progress += critical ? cardRoll.progressCrit ?? 0 : 0;
+		progress += !hit ? cardRoll.progressFail ?? 0 : 0;
+		if (progress > 0) {
+			await this.applyCardProgress(cardData, progress)
+		}
+	}
+
+	static async applyCardProgress(cardData: CardData, amount: number) {
+		const actor = cardData.actor;
+		switch (cardData.card.system.cardType) {
+			case "social":
+				return await actor.alterSocialLinkProgress(cardData.linkId, amount);
+			case "job":
+			case "training":
+			case "recovery":
+			case "other":
+				return await actor.activityProgress(cardData.card.id, amount);
+			default:
+				cardData.card.system.cardType satisfies never;
+				return;
 		}
 	}
 

@@ -1,3 +1,5 @@
+import { NumberTools } from "../utility/numberTools.js";
+import { SocialCard } from "../item/persona-item.js";
 import { UniversalModifier } from "../item/persona-item.js";
 import { UNIVERSAL_MODIFIERS_TYPE_LIST } from "./universal-modifiers-types.js";
 import { frequencyConvert } from "../../config/frequency.js";
@@ -387,6 +389,32 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 				effects: new arr(new embedded(ConditionalEffectDM)),
 			}),
 		};
+
+	}
+
+	get appendedText() : string {
+		const data = this as SocialCard["system"]["events"][number]["choices"][number];
+		let starterTxt = "";
+
+		const roll = data.roll;
+		switch (roll.rollType) {
+			case "studentSkillCheck":
+				if (roll.progressSuccess != 0 || roll.progressCrit != 0) {
+					const modifier = roll.modifier == 0 ? "" : `at ${NumberTools.signed(roll.modifier)}`;
+					starterTxt += ` ${roll.studentSkill} ${modifier} Check Success (${roll.progressSuccess} + ${roll.progressCrit}).`;
+				}
+				break;
+			case "save":
+					const modifier = (roll.modifier ?? 0) == 0 ? "" : `at ${NumberTools.signed(roll.modifier)}`;
+				if (roll.progressSuccess != 0) {
+					starterTxt += `${roll.saveType} Save Success ${modifier} (${roll.progressSuccess} + ${roll.progressCrit}).`;
+				}
+			default:
+		}
+		if ((roll.progressFail ?? 0) != 0) {
+			starterTxt += ` Gain ${roll.progressFail} on failure.`;
+		}
+		return starterTxt +  data.text
 	}
 
 
