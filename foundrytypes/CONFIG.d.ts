@@ -45,6 +45,11 @@ declare interface CONFIG {
 		"rainstorm": WeatherEffectData;
 		"snow": WeatherEffectData;
 	}
+	Wall: {
+		doorSounds: Record<string, DoorSound>;
+
+
+	}
 }
 
 interface StatusEffectObject {
@@ -55,3 +60,18 @@ interface StatusEffectObject {
 }
 
 interface WeatherEffectData {}
+
+
+interface DoorSound {
+	close: FileNameAndPath;
+	open: FileNameAndPath;
+	close: FileNameAndPath;
+	label: LocalizationString;
+	lock: FileNameAndPath;
+	test: FileNameAndPath;
+	unlock :FileNameAndPath;
+}
+
+type FileNameAndPath = string;
+
+type LocalizationString = string;

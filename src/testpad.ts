@@ -21,7 +21,7 @@ interface Y extends X  {
 //@ts-ignore
 let x: Y = window;
 
-
+CONFIG
 
 
 

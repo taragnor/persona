@@ -1,4 +1,5 @@
 {
+	"WALLS.DoorSound.doom": "Doom Door",
 
 	"TYPES.Actor.shadow": "Shadow",
 	"TYPES.Actor.pc": "Player Character",
@@ -797,6 +798,7 @@
 	"persona.creatureType.dragon": "Dragon",
 	"persona.creatureType.card-soldier": "Card Soldier",
 	"persona.creatureType.rat": "Nezumi",
+	"persona.creatureType.true-demon": "True Demon",
 	"persona.creatureType.evil-spirit": "Evil Spirit",
 	"persona.creatureType.student": "Student",
 	"persona.creatureType.professor": "Professor",

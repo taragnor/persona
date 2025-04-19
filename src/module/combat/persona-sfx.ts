@@ -10,6 +10,16 @@ import { PToken } from "./persona-combat.js";
 import { PersonaSounds } from "../persona-sounds.js";
 import { RealDamageType } from "../../config/damage-types.js";
 
+const DoomDoor : DoorSound= {
+	close: "systems/persona/sound/doom/dsdorcls.wav",
+	open: "systems/persona/sound/doom/dsdoropn.wav",
+	label: "WALLS.DoorSound.doom",
+	lock: "",
+	test: "systems/persona/sound/doom/dsnoway.wav",
+	unlock: ""
+} as const;
+
+CONFIG.Wall.doorSounds["doomDoor"] = DoomDoor;
 
 export class PersonaSFX {
 	static async onDamage( _token: PToken | undefined, hpchange: number, damageType: RealDamageType) {
