@@ -19,7 +19,7 @@
 			</span>
 			{{/if}}
 			<span>
-				<progress id="progressBar" max="{{actor.XPForNextLevel}}" value="{{actor.system.combat.xp}}"></progress>
+				<progress id="progressBar" max="{{actor.XPForNextLevel}}" value="{{actor.system.combat.xp}}" title="{{actor.system.combat.xp}} / {{actor.XPForNextLevel}}"></progress>
 			</span>
 			{{else}}
 			<span>

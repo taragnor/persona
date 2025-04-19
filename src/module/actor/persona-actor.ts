@@ -222,8 +222,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		switch (this.system.type) {
 			case "tarot":
 				return game.i18n.localize(TAROT_DECK[this.name as keyof typeof TAROT_DECK] ?? "-");
+			case "npcAlly":
+			case "shadow":
+					const combat = game.combat as PersonaCombat | undefined;
+				if (!combat) return this.name;
+				const token = combat.getCombatantByActor(this as ValidAttackers)?.token;
+				if (!token) return this.name;
+				return token.name;
 			default:
-					return this.name;
+				return this.name;
 		}
 	}
 
@@ -2395,7 +2402,13 @@ async endEffectsOfDurationOrLess( duration: StatusDuration) : Promise<ActiveEffe
 
 async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 	try {
-		if (this.system.type == "pc" && this.tarot == undefined) {return;} //skip fake PCs like itempiles and the party token
+		if (this.isPC() && !this.isRealPC()) {return;} //skip fake PCs like itempiles and the party token
+		if (this.isRealPC()) {
+			if (this.hasStatus("full-fade")) {
+				await this.removeStatus("full-fade");
+				await this.alterFatigueLevel(-2);
+			}
+		}
 		await this.fullHeal();
 		await this.endEffectsOfDurationOrLess( {dtype :"expedition"});
 		if (this.system.type == "pc") {
