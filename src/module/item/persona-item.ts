@@ -1299,7 +1299,7 @@ window.cacheStats = cacheStats;
 
 
 Hooks.on("deleteItem", (item: PersonaItem) => {
-	if (item.parent instanceof PersonaActor && item.hasPlayerOwner) {
+	if (item.parent instanceof PersonaActor && item.hasPlayerOwner && item.isOwner && !game.user.isGM) {
 		Logger.sendToChat(`${item.parent.displayedName} deletes ${item.name}(${item.amount})`, item.parent);
 	}
 
