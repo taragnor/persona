@@ -768,7 +768,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (!actor) return;
 		if (!actor.isOwner) return;
 		if (this.isSocial) {
-			if (!actor || !actor.isPC()) return;
+			if (!actor.isPC()) return;
 			await PersonaSocial.endSocialTurn(actor);
 			return;
 		}

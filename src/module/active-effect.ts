@@ -267,6 +267,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				return false;
 			default:
 				duration satisfies never;
+				PersonaError.softFail(`Weird Duration: ${(duration as any)?.dtype}`);
 				return false;
 		}
 	}

@@ -1001,8 +1001,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	/** returns true if status is added*/
-	async addStatus({id, potency, duration}: StatusEffect): Promise<boolean> {
-		if (statusMap?.get(id)?.tags.includes("fatigue")) {
+	async addStatus({id, potency, duration}: StatusEffect, ignoreFatigue= false): Promise<boolean> {
+		if (!ignoreFatigue && statusMap?.get(id)?.tags.includes("fatigue")) {
 			const lvl = statusToFatigueLevel(id as FatigueStatusId);
 			const oldLvl = this.fatigueLevel;
 			await this.setFatigueLevel(lvl);
@@ -1348,7 +1348,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				duration: {
 					dtype:"permanent",
 				}
-			});
+			}, true);
 		}
 		// const newId = await this.setFatigueLevel(st);
 		if (log && oldId != newId) {
@@ -2429,6 +2429,7 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 					this.system satisfies never;
 		}
 	} catch (e) {
+		Debug(e);
 		console.log(e);
 		ui.notifications.error(`problem with OnExitMetaverse for ${this.name}`);
 	}
