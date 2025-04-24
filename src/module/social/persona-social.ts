@@ -675,8 +675,6 @@ export class PersonaSocial {
 		return retList;
 	}
 
-
-
 	static async #finalizeCard( cardData: CardData) : Promise<ChatMessage<Roll>> {
 
 		let html = "";
@@ -693,7 +691,6 @@ export class PersonaSocial {
 		.filter( spend => testPreconditions(spend.conditions ?? [], cardData.situation, null))
 		.map(x=> `spend ${x.amount} progress tokens to ${x.text}.`)
 		.map(x=> `<li class="token-spend"> ${x} </li>`);
-
 		const finale = (cardData.card.system.finale?.trim()) ? `
 		<h2> Finale </h2>
 		<span class="finale">
@@ -701,7 +698,6 @@ export class PersonaSocial {
 		</span>
 		` : "";
 		html += finale;
-
 		html += `<div class="token-spends">
 		<h3>Token Spends:</h3>
 		<ul>
