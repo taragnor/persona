@@ -906,7 +906,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get focii(): Focus[] {
 		if (this.system.type == "pc")
 			return [];
-		return this.items.filter( x=> x.system.type == "focus") as Focus[];
+		return this.items.filter( x=> x.isFocus()) as Focus[];
+	}
+
+	get passiveFocii(): Focus[] {
+		return this.focii.filter( f=> !f.system.defensive);
+	}
+
+	get defensiveFocii(): Focus[] {
+		return this.focii.filter( f=> f.system.defensive);
 	}
 
 	async modifyHP( this: ValidAttackers, delta: number) {
@@ -1500,7 +1508,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const passivePowers = (options && options.omitPowers) ? [] : this.getPassivePowers();
 		return [
 			...this.equippedItems(),
-			...this.focii,
+			...this.passiveFocii,
 			...this.talents,
 			...passivePowers,
 			...this.passiveItems(),
@@ -1515,10 +1523,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const defensiveItems = this.equippedItems().filter( item => item.hasTag("defensive"));
 		return  [
 			...defensiveItems,
-			...this.powers
-			.filter(x=> x.system.subtype == "defensive")
-		];
-
+			...this.powers,
+			...this.defensiveFocii,
+		].filter(x=> x.isDefensive())
 	}
 
 	getSourcedDefensivePowers(this: ValidAttackers) {

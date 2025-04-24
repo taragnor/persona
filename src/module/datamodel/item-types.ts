@@ -75,6 +75,7 @@ class FocusDM extends foundry.abstract.TypeDataModel {
 	static override defineSchema() {
 		const ret = {
 			description: new txt(),
+			defensive: new bool(),
 			...effects (false),
 		}
 		return ret;
@@ -206,6 +207,7 @@ class TalentDM extends foundry.abstract.TypeDataModel {
 	static override defineSchema() {
 		const ret = {
 			description: new html(),
+			defensive: new bool(),
 			...effects(false),
 		}
 		return ret;

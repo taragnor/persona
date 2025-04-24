@@ -67,12 +67,8 @@ export class AnyaPlanets {
 		}
 	}
 
-	printCurrentOrbits() : void {
+	printOrbits() : void {
 		this.viewOrbitOnDay();
-	}
-
-	printOrbits(day: number) : void {
-		this.viewOrbitOnDay(day);
 	}
 
 	viewOrbitOnDay(days?: number) : void {

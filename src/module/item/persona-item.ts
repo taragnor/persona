@@ -1,3 +1,4 @@
+import { POWER_TYPE_TAGS } from "../../config/power-tags.js";
 import { Logger } from "../utility/logger.js";
 import { STATUS_POWER_TAGS } from "../../config/power-tags.js";
 import { DamageType } from "../../config/damage-types.js";
@@ -116,6 +117,30 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		});
 	}
 
+	isFocus(): this is Focus {
+		return this.system.type == "focus";
+	}
+
+	isDefensive(): boolean {
+		switch (this.system.type) {
+			case "power":
+			case "focus":
+			case "item":
+			case "talent":
+			case "weapon":
+			case "consumable":
+				return (this as Usable | Focus | InvItem | Talent | Weapon).tagList().includes("defensive");
+			case "universalModifier":
+			case "skillCard":
+			case "socialCard":
+			case "characterClass":
+				return false;
+			default:
+				this.system satisfies never;
+				return false;
+		}
+	}
+
 	isUsable() : this is UsableAndCard  {
 		switch (this.system.type) {
 			case "power":
@@ -142,6 +167,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
+	/** tags Localized */
 	get tags() : string {
 		let tags : string[] = [];
 		const localizeTable  =  {
@@ -233,8 +259,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	tagList(this : Power): PowerTag[];
 	tagList(this : Consumable): (PowerTag | EquipmentTag)[];
 	tagList(this: UsableAndCard) : PowerTag[];
-	tagList(this : InvItem | Weapon): EquipmentTag[];
-	tagList(this: SkillCard | Usable | InvItem | Weapon) : (PowerTag | EquipmentTag)[] {
+	tagList(this : Weapon ): EquipmentTag[];
+	tagList(this : InvItem ): EquipmentTag[];
+	tagList(this : Talent): PowerTag[];
+	tagList(this : Focus): PowerTag[];
+	tagList(this: Talent | Focus | SkillCard | Usable | InvItem | Weapon) : (PowerTag | EquipmentTag)[];
+	tagList(this: Talent | Focus | SkillCard | Usable | InvItem | Weapon) : (PowerTag | EquipmentTag)[] {
 		const itype = this.system.type;
 		switch (itype) {
 			case "power": {
@@ -247,6 +277,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 						list.push("ailment");
 					}
 				}
+				const subtype : typeof POWER_TYPE_TAGS[number]  = this.system.subtype as typeof POWER_TYPE_TAGS[number];
+				if (POWER_TYPE_TAGS.includes(subtype) && !list.includes(subtype)) { list.push(subtype);}
 				return list;
 			}
 			case "consumable": {
@@ -254,6 +286,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				if (!list.includes(itype)) {
 					list.push(itype);
 				}
+				const subtype = this.system.subtype;
+				if (!list.includes(subtype)) { list.push(subtype);}
 				return list;
 			}
 			case "item": {
@@ -290,6 +324,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					"skill-card"
 				];
 			}
+			case "talent":
+			case "focus" : {
+				const list : PowerTag[] = [];
+				if (this.system.defensive) {
+					list.push("defensive");
+				} else {
+					list.push("passive");
+				}
+				return list;
+			}
 			default:
 				itype satisfies never;
 				PersonaError.softFail(`Can't get tag list for ${itype}`);
@@ -305,7 +349,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	async addItem(this: Consumable, amt: number) : Promise<typeof this> {
-		console.log("Adding 1 to amunt");
 		const newAmt = this.system.amount += amt;
 		await this.update({"system.amount": newAmt});
 		return this;
