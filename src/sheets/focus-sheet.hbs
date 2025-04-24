@@ -6,13 +6,21 @@
 		<div>
 			<b> Focus </b>
 		</div>
+		<div class="defensive-checkbox">
+			<span>
+				<label>
+					Defensive
+				</label>
+				<input type="checkbox" id="defensive" name="system.defensive" {{checked item.system.defensive}}>
+			</span>
+		</div>
+
 		<textarea name="system.description">
 			{{item.system.description}}
 		</textarea>
-
 	</header>
 	<body>
-	{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
+		{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
 	</body>
 </form>
 

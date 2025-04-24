@@ -559,9 +559,12 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 				return undefined;
 			}
 			const power = PersonaDB.findItem(situation.usedPower);
-			if (power.system.type == "skillCard") return undefined;
-			return multiCheckContains(condition.powerDamageType, [power.system.dmg_type]);
-			// return condition.powerDamageType == power.system.dmg_type;
+			if (!power || power.isSkillCard()) return undefined;
+			if (!situation.attacker) return undefined;
+			const attacker = PersonaDB.findActor(situation.attacker);
+			if (!attacker) return undefined;
+			const dtype = power.getDamageType(attacker);
+			return multiCheckContains(condition.powerDamageType, [dtype]);
 		}
 		case "has-status" : {
 			const target = getSubject(condition, situation, source,  "conditionTarget");

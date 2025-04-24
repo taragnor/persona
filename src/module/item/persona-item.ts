@@ -141,6 +141,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
+	isSkillCard() : this is SkillCard {
+		return this.system.type == "skillCard";
+	}
+
 	isUsable() : this is UsableAndCard  {
 		switch (this.system.type) {
 			case "power":
