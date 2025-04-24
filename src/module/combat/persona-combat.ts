@@ -2379,7 +2379,7 @@ async setRoomEffects(effects: ModifierContainer[]) {
 }
 
 async roomEffectsDialog(initialRoomModsIds: string[] = [], startSocial: boolean) : Promise<DialogReturn> {
-	const roomMods = PersonaDB.getRoomModifiers();
+	const roomMods = PersonaDB.getRoomModifiers().concat(PersonaDB.getSceneModifiers());
 	const ROOMMODS = Object.fromEntries(roomMods.map( mod => [mod.id, mod.name]));
 	const html = await renderTemplate("systems/persona/sheets/dialogs/room-effects.hbs", {
 		ROOMMODS : {
