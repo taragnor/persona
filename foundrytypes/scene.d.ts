@@ -36,8 +36,18 @@ namespace Foundry {
 	// declare class RegionDocument extends DocumentConstructor {
 	interface RegionDocument extends Document<never> {
 		parent: Scene;
-		get tokens(): Set<TokenDocument<Actor<any>>>;
+		tokens: Set<TokenDocument<Actor<any>>>;
+		behaviors: Collection<RegionBehavior>;
 	}
+
+	interface RegionBehavior<T extends keyof RegionBehaviorType = keyof RegionBehaviorType> extends FoundryDocument<never>{
+		disabled: boolean;
+		parent: RegionDocument;
+		system: RegionBehaviorType[T];
+		type: T;
+	}
+
+	type RegionUUID = string;
 
 }
 declare const Scene: Foundry.SceneConstructor;
@@ -49,5 +59,14 @@ type WallDocument = Foundry.WallDocument;
 
 declare const RegionDocument: Foundry.RegionDocumentConstructor;
 	type RegionDocument = Foundry.RegionDocument;
+
+
+interface RegionBehaviorType {
+	"teleportToken":  {
+		choice: false,
+		destination: Foundry.RegionUUID,
+	}
+
+}
 
 
