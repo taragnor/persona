@@ -75,6 +75,19 @@ function test_weightedChoice() {
 	console.log( `C: ${x["C"]}`);
 }
 
+declare global {
+	interface Array<T> {
+		pushUnique<R extends T>(...x: R[]): number;
+	}
+}
+
+Array.prototype.pushUnique = function<T>(this: Array<T>, ...list: T[]) {
+	for (const x of list) {
+		if (this.includes(x)) continue;
+		this.push(x);
+	}
+	return this.length;
+}
 
 
 //@ts-ignore

@@ -530,7 +530,19 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			}
 			const power = PersonaDB.findItem(situation.usedPower);
 			if (!power) return undefined;
-			const powerTags = power.tagList();
+			let user: ValidAttackers | null;
+			switch (true) {
+				case situation.attacker != undefined:
+					user = PersonaDB.findActor(situation.attacker);
+					break;
+				case situation.user != undefined:
+					user = PersonaDB.findActor(situation.user);
+					break;
+				default:
+					user = null;
+					break;
+			}
+			const powerTags = power.tagList(user);
 			if (typeof condition.powerTag == "string") {
 				return powerTags.includes(condition.powerTag!);
 			}

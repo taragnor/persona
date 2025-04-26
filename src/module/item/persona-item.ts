@@ -1,3 +1,5 @@
+import { PersonaSettings } from "../../config/persona-settings.js";
+import { POWER_TAGS_LIST } from "../../config/power-tags.js";
 import { POWER_TYPE_TAGS } from "../../config/power-tags.js";
 import { Logger } from "../utility/logger.js";
 import { STATUS_POWER_TAGS } from "../../config/power-tags.js";
@@ -129,7 +131,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "talent":
 			case "weapon":
 			case "consumable":
-				return (this as Usable | Focus | InvItem | Talent | Weapon).tagList().includes("defensive");
+				return (this as Usable | Focus | InvItem | Talent | Weapon).tagList(null).includes("defensive");
 			case "universalModifier":
 			case "skillCard":
 			case "socialCard":
@@ -171,8 +173,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	/** tags Localized */
-	get tags() : string {
+	tagListLocalized(this: Weapon | UsableAndCard | InvItem | Weapon, user: null  | ValidAttackers) : string {
 		let tags : string[] = [];
 		const localizeTable  =  {
 			...EQUIPMENT_TAGS,
@@ -182,23 +183,74 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case ("itemTags" in this.system): {
 				tags = tags.concat(
 					// this.system.itemTags
-					(this as InvItem).tagList()
+					this.tagList(user)
 					.map(tag => localize(localizeTable[tag]))
 				);
 				break;
 			}
 			case ("tags" in this.system): {
 				tags = tags.concat(
-					(this as Power).tagList()
+					(this as Power).tagList(user)
 					.map(tag => localize(localizeTable[tag]))
-					// this.system.tags
-					// .map(tag => localize(POWER_TAGS[tag]))
 				);
 				break;
 			}
 		}
 		return tags.join(", ");
 	}
+
+
+	/** @deprecated
+	tags Localized */
+	get tags() : string {
+		if (PersonaSettings.debugMode()) {
+			PersonaError.softFail("tags getter is deprecated, tagListLocalized instead");
+		}
+		switch (this.system.type) {
+			case "consumable":
+			case "item":
+			case "power":
+			case "weapon":
+			case "skillCard":
+				return (this as UsableAndCard | Weapon | InvItem).tagListLocalized(null);
+			case "talent":
+			case "focus":
+			case "characterClass":
+			case "universalModifier":
+			case "socialCard":
+				return "ERROR";
+		}
+	}
+
+
+	/** tags Localized */
+	// get tags() : string {
+	// 	let tags : string[] = [];
+	// 	const localizeTable  =  {
+	// 		...EQUIPMENT_TAGS,
+	// 		...POWER_TAGS
+	// 	};
+	// 	switch (true) {
+	// 		case ("itemTags" in this.system): {
+	// 			tags = tags.concat(
+	// 				// this.system.itemTags
+	// 				(this as InvItem).tagList()
+	// 				.map(tag => localize(localizeTable[tag]))
+	// 			);
+	// 			break;
+	// 		}
+	// 		case ("tags" in this.system): {
+	// 			tags = tags.concat(
+	// 				(this as Power).tagList(null)
+	// 				.map(tag => localize(localizeTable[tag]))
+	// 				// this.system.tags
+	// 				// .map(tag => localize(POWER_TAGS[tag]))
+	// 			);
+	// 			break;
+	// 		}
+	// 	}
+	// 	return tags.join(", ");
+	// }
 
 	get cardTags() : string {
 		if ("cardTags" in this.system) {
@@ -232,15 +284,17 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		await this.update( {"system.cardTags": tags});
 	}
 
-	hasTag(this: Usable, tag: PowerTag) : boolean;
-	hasTag(this: InvItem | Weapon | SkillCard, tag: EquipmentTag): boolean;
-	hasTag(this: UsableAndCard, tag: PowerTag | EquipmentTag) : boolean;
-	hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag) : boolean;
-	hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag) : boolean {
+	hasTag(this: Power, tag: PowerTag, user : null | ValidAttackers) : boolean;
+	hasTag(this: Consumable, tag: PowerTag, user ?: null) : boolean;
+	hasTag(this: InvItem | Weapon | SkillCard, tag: EquipmentTag, user ?: null): boolean;
+	hasTag(this: UsableAndCard, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
+	hasTag(this: SkillCard | Consumable | InvItem | Weapon, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
+	hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user : null) : boolean;
+	hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user?: null | ValidAttackers) : boolean {
 		let list : (PowerTag | EquipmentTag)[];
 		switch (this.system.type) {
 			case "power":
-				list = (this as Power).tagList();
+				list = (this as Power).tagList(user ?? null);
 				break;
 			case "consumable":
 				list = (this as Consumable).tagList();
@@ -260,38 +314,48 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return list.includes(tag);
 	}
 
-	tagList(this : Power): PowerTag[];
-	tagList(this : Consumable): (PowerTag | EquipmentTag)[];
-	tagList(this: UsableAndCard) : PowerTag[];
-	tagList(this : Weapon ): EquipmentTag[];
-	tagList(this : InvItem ): EquipmentTag[];
-	tagList(this : Talent): PowerTag[];
-	tagList(this : Focus): PowerTag[];
-	tagList(this: Talent | Focus | SkillCard | Usable | InvItem | Weapon) : (PowerTag | EquipmentTag)[];
-	tagList(this: Talent | Focus | SkillCard | Usable | InvItem | Weapon) : (PowerTag | EquipmentTag)[] {
+	tagList(this : Power, user: ValidAttackers | null): (PowerTag | EquipmentTag)[];
+	tagList(this: UsableAndCard, user: ValidAttackers | null) : PowerTag[];
+	tagList(this : Weapon, user ?: null ): EquipmentTag[];
+	tagList(this : InvItem, user ?: null ): EquipmentTag[];
+	tagList(this : Talent, user ?: null): PowerTag[];
+	tagList(this : Focus, user ?: null): PowerTag[];
+	tagList(this: Consumable | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : (PowerTag | EquipmentTag)[];
+	tagList(this: UsableAndCard | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : (PowerTag | EquipmentTag)[];
+	tagList(this: Talent | Focus | UsableAndCard | InvItem | Weapon, user ?: ValidAttackers | null) : (PowerTag | EquipmentTag)[] {
 		const itype = this.system.type;
 		switch (itype) {
 			case "power": {
-				const list= this.system.tags.slice();
-				if (!list.includes(itype)) {
-					list.push(itype);
-				}
-				if (STATUS_POWER_TAGS.some(tag=> list.includes(tag))) {
-					if (!list.includes("ailment")) {
-						list.push("ailment");
+				const list : (PowerTag | EquipmentTag) [] = this.system.tags.slice();
+				list.pushUnique(itype);
+				if( list.includes("weapon") && this.system.dmg_type == "by-power" && user) {
+					const wpnList : (PowerTag | EquipmentTag)[] = user?.weapon?.tagList() ?? user.unarmedTagList();
+					list.pushUnique(...wpnList);
+				} else {
+					if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
+						list.pushUnique(this.system.dmg_type as any);
 					}
 				}
+				if (STATUS_POWER_TAGS.some(tag=> list.includes(tag))) {
+					list.pushUnique("ailment");
+				}
 				const subtype : typeof POWER_TYPE_TAGS[number]  = this.system.subtype as typeof POWER_TYPE_TAGS[number];
-				if (POWER_TYPE_TAGS.includes(subtype) && !list.includes(subtype)) { list.push(subtype);}
+				if (POWER_TYPE_TAGS.includes(subtype) && !list.includes(subtype)) { list.pushUnique(subtype);}
 				return list;
 			}
 			case "consumable": {
 				const list : (PowerTag | EquipmentTag)[]= (this.system.tags as (PowerTag | EquipmentTag)[]).concat(this.system.itemTags);
 				if (!list.includes(itype)) {
-					list.push(itype);
+					list.pushUnique(itype);
+				}
+				if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
+					list.pushUnique(this.system.dmg_type as any);
+				}
+				if (STATUS_POWER_TAGS.some(tag=> list.includes(tag))) {
+					list.pushUnique("ailment");
 				}
 				const subtype = this.system.subtype;
-				if (!list.includes(subtype)) { list.push(subtype);}
+				list.pushUnique(subtype);
 				return list;
 			}
 			case "item": {
@@ -319,8 +383,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			}
 			case "weapon": {
 				const list = this.system.itemTags.slice();
-				if (!list.includes(itype))
-				list.push(itype);
+				if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
+					list.pushUnique(this.system.dmg_type as any);
+				}
+				if (!list.includes(itype)) {
+					list.pushUnique(itype);
+				}
 				return list;
 			}
 			case "skillCard": {
@@ -1329,7 +1397,7 @@ export type PowerContainer = Consumable | Power | ModifierContainer;
 export type Usable = Power | Consumable ;
 export type UsableAndCard = Usable | SkillCard; 
 
-Hooks.on("updateItem", (item :PersonaItem, diff: DeepPartial<typeof item>) => {
+Hooks.on("updateItem", (item :PersonaItem, _diff: DeepPartial<typeof item>) => {
 	item.clearCache();
 });
 

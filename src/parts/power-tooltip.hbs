@@ -1,9 +1,9 @@
 {{power.name}}
 Attack Bonus: +{{getAttackBonus actor power}}
 Crit Boost (vs similar lvl): {{getCriticalBoostEstimate actor power}}
-Tags: {{power.tags}}
+Tags: {{getPowerTagsL actor power}}
 
-Damags: {{getDamage actor power}}
+Damage: {{getDamage actor power}} {{getDamageType actor power}}
 Cost: {{powerCostString power actor}}
 {{#if power.system.description}}
 {{power.system.description}}

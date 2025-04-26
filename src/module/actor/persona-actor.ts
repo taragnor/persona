@@ -1,3 +1,5 @@
+import { PowerTag } from "../../config/power-tags.js";
+import { POWER_TAGS_LIST } from "../../config/power-tags.js";
 import { localizeStatusId } from "../../config/status-effects.js";
 import { fatigueLevelToStatus } from "../../config/status-effects.js";
 import { statusToFatigueLevel } from "../../config/status-effects.js";
@@ -877,6 +879,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const dbitem = PersonaDB.getItemById(id);
 		if (dbitem) return dbitem as Weapon;
 		return null;
+	}
+
+	unarmedTagList() : PowerTag[] {
+		if (POWER_TAGS_LIST.includes (this.getUnarmedDamageType() as any)) {
+			return [this.getUnarmedDamageType()] as PowerTag[];
+		}
+		return [];
 	}
 
 	get talents() : Talent[] {

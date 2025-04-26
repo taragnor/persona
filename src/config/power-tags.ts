@@ -7,6 +7,8 @@ export const STATUS_POWER_TAGS  = [
 	"rage",
 	"blind",
 	"mouse",
+	"sealed",
+	"despair",
 ] as const;
 
 export const POWER_TYPE_TAGS = [
@@ -42,6 +44,7 @@ export const POWER_TAGS_LIST = [
 	"buff",
 	"debuff",
 	"weapon",
+	"physical",
 	"gun",
 	"healing",
 	"mobile",

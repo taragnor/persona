@@ -327,7 +327,7 @@ export class PersonaHandleBarsHelpers {
 
 		"inCombat": function() : boolean {
 			if (!game.combat) return false;
-			return (game.combat.combatants.contents.some( x=> x?.actor?.type == "shadow"));
+			return (game.combat.combatants.contents.some( x=> x?.actor?.system.type == "shadow"));
 		},
 
 		"inventoryLocked": function() : boolean {
@@ -387,7 +387,8 @@ export class PersonaHandleBarsHelpers {
 			return PersonaSocial.meetsConditionsToStartLink(pc, target);
 		},
 		"getItemTagList": function (item: Usable | InvItem | Weapon) : string[] {
-			return (item as Power).tagList().map(tag=> localize(EQUIPMENT_TAGS[tag]));
+			if (item.system.type == "power") {PersonaError.softFail("Calling Item Tag list on Power");}
+			return (item as Consumable | InvItem | Weapon).tagList().map(tag=> localize(EQUIPMENT_TAGS[tag]));
 		},
 
 		"getCreatureTagList": function (actor: PersonaActor) : string[] {
@@ -402,7 +403,7 @@ export class PersonaHandleBarsHelpers {
 					return source.tagList.includes(tagName as any);
 				}
 				case source instanceof PersonaItem: {
-					const list = (source as Power).tagList()
+					const list = (source as Usable).tagList(null)
 					return list.includes (tagName as any);
 				}
 				default:
@@ -503,6 +504,15 @@ export class PersonaHandleBarsHelpers {
 			}
 			return cond ? r1: r2;
 		},
+
+		"getDamageType" : function (actor: ValidAttackers, power: Usable) {
+			return power.getDamageType(actor);
+
+		},
+
+		"getPowerTagsL": function (actor: ValidAttackers, power: Usable) {
+			return power.tagListLocalized(actor);
+		}
 
 	}
 } //end of class
