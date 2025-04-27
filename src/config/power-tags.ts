@@ -29,6 +29,7 @@ export const POWER_TYPE_TAGS = [
 	"instantKill",
 	"no-crit",
 	"pierce",
+	"hack",
 ] as const;
 
 export const POWER_TAGS_LIST = [

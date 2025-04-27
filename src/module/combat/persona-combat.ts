@@ -136,13 +136,33 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	override async delete() : Promise<void> {
 		if (!game.user.isGM) return;
 		this.refreshActorSheets();
-		if (!this.isSocial) {
-			await this.generateTreasureAndXP();
-		}
+		await this.generateTreasureAndXP();
 		if (this.isSocial && await HTMLTools.confirmBox("Enter Meta", "Enter Metaverse?", true)) {
 			await Metaverse.enterMetaverse();
 		}
-		await PersonaCombat.onTrigger("on-combat-end-global").emptyCheck()?.toMessage("Triggered Effect", undefined);
+		await this.combatantsEndCombat();
+		// await PersonaCombat.onTrigger("on-combat-end-global").emptyCheck()?.toMessage("Triggered Effect", undefined);
+		if (this.didPCsWin()) {
+			await this.clearFoes();
+		}
+		return await super.delete()
+	}
+
+	didPCsWin(): boolean {
+		const actorList = this.combatants.contents
+		.map( x=> x?.actor)
+		.filter (x=> x!= undefined);
+		const isPCStanding = actorList
+		.some ( c=> c.isAlive() && c.getAllegiance() == "PCs")
+		const isShadowStanding = actorList
+		.some ( c=> c.isAlive() && c.getAllegiance() == "Shadows")
+		const PCsWin = isPCStanding && !isShadowStanding;
+		return PCsWin;
+	}
+
+	async combatantsEndCombat() : Promise<void> {
+		await this.endCombatTriggers();
+		await this.reviveFallenActors();
 		for (const c of this.combatants) {
 			try {
 				await c.actor?.onEndCombat()
@@ -151,7 +171,35 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				console.warn(e);
 			}
 		}
-		return await super.delete()
+	}
+
+	async reviveFallenActors(): Promise<void> {
+		for (const combatant of this.combatants) {
+			const actor = combatant.actor;
+			if (!actor) continue;
+			if (actor.isFading()) {
+				await actor.modifyHP(1);
+			}
+		}
+
+	}
+
+	async endCombatTriggers() : Promise<void> {
+		const PCsWin = this.didPCsWin();
+		for (const comb of this.combatants) {
+			if (!comb.actor) continue;
+			const situation : Situation = {
+				trigger: "on-combat-end",
+				triggeringUser: game.user,
+				hit: PCsWin,
+				user: comb.actor.accessor
+			};
+			await TriggeredEffect.onTrigger("on-combat-end", comb.actor, situation)
+				.emptyCheck()
+				?.toMessage("End Combat Triggered Effect", comb.actor);
+		}
+		await TriggeredEffect.onTrigger("on-combat-end-global").emptyCheck()?.toMessage("End Combat Global Trigger", undefined);
+
 	}
 
 	async checkEndCombat() : Promise<boolean> {
@@ -223,6 +271,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	async clearFoes() : Promise<PersonaActor[]> {
+		if (this.isSocial) return [];
 		const combatantsToDelete = this.combatants
 		.filter(x => x.token != undefined
 			&& x.actor != undefined
@@ -2447,6 +2496,8 @@ debug_engageList() {
 }
 
 async generateTreasureAndXP() {
+	if (this.isSocial) return;
+	if (this.didPCsWin() == false) return;
 	const actors = this.combatants
 		.contents.flatMap( x=> x?.actor ? [x.actor] : [] );
 	const shadows= actors

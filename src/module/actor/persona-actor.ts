@@ -408,10 +408,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const weaknesses = Object.values(this.system.combat.resists)
 				.filter(x=> x == "weakness")
 				.length;
+			const blocks = Object.values(this.system.combat.resists)
+				.filter(x=> x == "block" || x == "absorb" || x == "reflect")
+				.length;
 			const multmods = this.getBonuses("maxhpMult")
 			if (weaknesses > 1) {
 				const bonus = (weaknesses -1 ) * 0.25;
 				multmods.add("weaknesses mod", bonus)
+			}
+			if (blocks >= 2) {
+				const penalty = blocks * -0.07;
+				multmods.add("block mod", penalty);
+
 			}
 			bonuses.add("incremental bonus hp", incBonus)
 			const mult = multmods.total(sit, "percentage-special");
@@ -2716,7 +2724,8 @@ numOfIncAdvances(): number {
 
 get XPForNextLevel() : number {
 	const incAdvances = this.numOfIncAdvances();
-	return 60 + 15 * incAdvances;
+	const typeMult = this.system.type == "pc" ? 1.0 : 0.75;
+	return Math.floor( 60 + 15 * incAdvances * typeMult);
 }
 
 /** returns true on level up */

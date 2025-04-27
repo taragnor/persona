@@ -100,6 +100,12 @@
 					</select>
 				</div>
 				<div class="resistance-item">
+					<img src="systems/persona/img/icon/pierce.png">
+					<select name="system.combat.resists.gun" disabled>
+						{{selectOptions CONST.RESIST_STRENGTHS localize=true selected=actor.system.combat.resists.gun}}
+					</select>
+				</div>
+				<div class="resistance-item">
 					<img src="systems/persona/img/icon/fire.webp">
 					<select name="system.combat.resists.fire" disabled>
 						{{selectOptions CONST.RESIST_STRENGTHS localize=true selected=actor.system.combat.resists.fire}}

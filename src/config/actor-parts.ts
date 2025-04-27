@@ -67,6 +67,8 @@ export function statusResists() {
 		rage: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
 		poison: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
 		blind: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
+		sealed: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
+		despair: new txt( {choices: RESIST_STRENGTH_LIST, initial: "normal"}),
 	});
 
 }

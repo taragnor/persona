@@ -434,7 +434,7 @@ export class PersonaSFX {
 		}
 	}
 
-	static async #play(snd: Parameters<typeof PersonaSounds["playBattleSound"]>[0], volume = 1.0) {
+	static async #play(snd: Parameters<typeof PersonaSounds["playBattleSound"]>[0], volume = 0.5) {
 		await PersonaSounds.playBattleSound(snd, volume);
 	}
 

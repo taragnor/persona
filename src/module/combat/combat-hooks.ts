@@ -89,29 +89,6 @@ export class CombatHooks {
 		Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
 			if (!game.user.isGM)
 				return;
-			for (const combatant of combat.combatants) {
-				const actor = combatant.actor as ValidAttackers  | undefined;
-				if (!actor) continue;
-				const token = combatant.token as PToken | undefined;
-				if (token && token.actor) {
-					await PersonaCombat
-						.onTrigger("on-combat-end", token.actor)
-						.emptyCheck()
-						?.toMessage("Triggered Effect", token.actor );
-				}
-				for (const effect of actor.effects) {
-					if (effect.durationLessThanOrEqualTo({dtype: "combat"})) {
-						await effect.delete();
-					}
-				}
-				if (actor.isFading()) {
-					await actor.modifyHP(1);
-				}
-				if (!combat.isSocial) {
-					await combat.clearFoes();
-				}
-
-			}
 		});
 
 

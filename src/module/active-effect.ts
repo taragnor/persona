@@ -48,6 +48,10 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				dtype: duration
 			} as any;
 		}
+		if (duration && duration.dtype) {
+			return duration;
+		}
+		PersonaError.softFail(`Unable to convert DurationType ${duration}`);
 		return duration;
 	}
 
@@ -214,7 +218,26 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 
 	async saveVsSaveEffects(): Promise<boolean> {
 		const duration = this.statusDuration;
-		if (duration.dtype != "save") {return false;}
+		switch (duration.dtype) {
+			case "save":
+				break;
+			case "permanent":
+			case "expedition":
+			case "combat":
+			case "X-rounds":
+			case "X-days":
+			case "UEoNT":
+			case "USoNT":
+			case "UEoT":
+			case "instant":
+			case "3-rounds":
+			case "anchored":
+				return false;
+			default:
+				duration satisfies never;
+				PersonaError.softFail(`Bad Duration ${(duration as any).dtype}`);
+				return false;
+		}
 		if (this.statuses.has("charmed")) return false;
 		const actor = this.parent instanceof PersonaActor ? this.parent : null;
 		if (!actor) return false;
