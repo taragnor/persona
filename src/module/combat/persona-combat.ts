@@ -2395,7 +2395,7 @@ getToken( acc: UniversalActorAccessor<PersonaActor>  | undefined): UniversalToke
 
 getRoomEffects() : UniversalModifier[] {
 	const effectIds= this.getFlag<string[]>("persona", "roomEffects")
-	const allRoomEffects = PersonaDB.getRoomModifiers();
+	const allRoomEffects = PersonaDB.getRoomModifiers().concat(PersonaDB.getSceneModifiers());
 	if (!effectIds) return [];
 	return effectIds.flatMap(id=> {
 		const effect = allRoomEffects.find(eff => eff.id == id);
