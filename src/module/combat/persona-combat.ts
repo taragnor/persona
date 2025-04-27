@@ -134,6 +134,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	override async delete() : Promise<void> {
+		await this.onEndCombat();
+		return await super.delete()
+	}
+
+	async onEndCombat() : Promise<void> {
 		if (!game.user.isGM) return;
 		this.refreshActorSheets();
 		await this.generateTreasureAndXP();
@@ -145,7 +150,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (this.didPCsWin()) {
 			await this.clearFoes();
 		}
-		return await super.delete()
+
 	}
 
 	didPCsWin(): boolean {
