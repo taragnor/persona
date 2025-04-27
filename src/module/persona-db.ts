@@ -100,11 +100,20 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			.sort ( (a,b) => a.name.localeCompare(b.name));
 	}
 
+	getSceneAndRoomModifiers() : UniversalModifier[] {
+		const items = this.getAllByType("Item") as PersonaItem[];
+		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
+		return UMs
+			.filter(um=> um.system.scope == "scene" || um.system.scope == "room")
+			.sort ( (a,b) => a.name.localeCompare(b.name));
+	}
+
+
 	allPowers() : Power[] {
 		if (this.#cache.powers) return this.#cache.powers;
 		const items = this.allItems();
 		return this.#cache.powers = items
-		.filter( x=> x.system.type == "power") as Power[];
+			.filter( x=> x.system.type == "power") as Power[];
 	}
 
 	getBasicPower( name: typeof BASIC_SHADOW_POWER_NAMES[number] | typeof BASIC_PC_POWER_NAMES[number]) : Power | undefined {
@@ -156,7 +165,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	socialEncounterCards(): SocialEncounterCard[] {
 		return this.allSocialCards()
-		.filter( x=> x.system.cardType == "social") as SocialEncounterCard[]
+			.filter( x=> x.system.cardType == "social") as SocialEncounterCard[]
 	}
 
 	/** Actual PCs not counting things with just PC type like item piles and party token*/
@@ -172,7 +181,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	allActivities(): Activity[] {
 		return this.allSocialCards()
-		.filter( x=> (x.system.cardType == "job" || x.system.cardType =="training" || x.system.cardType == "recovery" || x.system.cardType == "other") ) as Activity[];
+			.filter( x=> (x.system.cardType == "job" || x.system.cardType =="training" || x.system.cardType == "recovery" || x.system.cardType == "other") ) as Activity[];
 	}
 
 	personalSocialLink(): NPC {
@@ -180,14 +189,14 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	teammateSocialLink(): NPC {
-					return PersonaDB.getActorByName("Teammate Social Link") as NPC;
+		return PersonaDB.getActorByName("Teammate Social Link") as NPC;
 	}
 
 	socialLinks(): (PC | NPC)[] {
 		if (this.#cache.socialLinks) return this.#cache.socialLinks;
 		return this.#cache.socialLinks = game.actors.filter( (actor :PersonaActor) =>
 			(actor.system.type == "npc"
-			|| actor.system.type == "pc" )
+				|| actor.system.type == "pc" )
 			&& !!actor.tarot
 		) as (PC | NPC)[];
 	}

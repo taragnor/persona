@@ -2395,7 +2395,7 @@ getToken( acc: UniversalActorAccessor<PersonaActor>  | undefined): UniversalToke
 
 getRoomEffects() : UniversalModifier[] {
 	const effectIds= this.getFlag<string[]>("persona", "roomEffects")
-	const allRoomEffects = PersonaDB.getRoomModifiers().concat(PersonaDB.getSceneModifiers());
+	const allRoomEffects = PersonaDB.getSceneAndRoomModifiers();
 	if (!effectIds) return [];
 	return effectIds.flatMap(id=> {
 		const effect = allRoomEffects.find(eff => eff.id == id);
@@ -2433,7 +2433,7 @@ async setRoomEffects(effects: ModifierContainer[]) {
 }
 
 async roomEffectsDialog(initialRoomModsIds: string[] = [], startSocial: boolean) : Promise<DialogReturn> {
-	const roomMods = PersonaDB.getRoomModifiers().concat(PersonaDB.getSceneModifiers());
+	const roomMods = PersonaDB.getSceneAndRoomModifiers();
 	const ROOMMODS = Object.fromEntries(roomMods.map( mod => [mod.id, mod.name]));
 	const html = await renderTemplate("systems/persona/sheets/dialogs/room-effects.hbs", {
 		ROOMMODS : {
