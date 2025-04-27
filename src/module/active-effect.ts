@@ -241,7 +241,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		if (this.statuses.has("charmed")) return false;
 		const actor = this.parent instanceof PersonaActor ? this.parent : null;
 		if (!actor) return false;
-		if (actor.isValidCombatant()) {return false;}
+		if (!actor.isValidCombatant()) {return false;}
 		const DC = this.statusSaveDC;
 		const {success} = await PersonaCombat.rollSave(actor as (PC | Shadow), { DC, label: this.name, saveVersus: this.statusId })
 		if (success) { await this.delete();}
