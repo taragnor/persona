@@ -23,6 +23,11 @@ export const TRAIT_TAG_LIST = [
 	"unscannable",
 ] as const;
 
+export const AI_TAGS = [
+	"stupid",
+	"smart",
+] as const;
+
 export const CREATURE_TAG_LIST = [
 	"neko",
 	"cu",
@@ -42,12 +47,7 @@ export const CREATURE_TAG_LIST = [
 	...PERSON_TAG_LIST,
 	...PERSONALITY_TAG_LIST,
 	...TRAIT_TAG_LIST,
-] as const;
-
-
-export const AI_TAGS = [
-	"stupid",
-	"smart",
+	...AI_TAGS,
 ] as const;
 
 export type CreatureTag = typeof CREATURE_TAG_LIST[number];
