@@ -820,8 +820,8 @@
 	"persona.creatureType.artist": "Artist",
 	"persona.creatureType.tech-enthusiast": "Tech enthusiast",
 	"persona.creatureType.unscannable": "Unscannable",
-	"persona.creatureType.stupid": "Poor Decision Maker",
-	"persona.creatureType.smart": "Tactical Mind",
+	"persona.creatureType.stupid": "Mindless",
+	"persona.creatureType.smart": "Tactical",
 
 	"persona.universalModifier.global" : "World",
 	"persona.universalModifier.scene" : "Scene",
