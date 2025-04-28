@@ -8,7 +8,7 @@ interface ItemConstructor extends DocumentConstructor {
 
 
 // declare class Item<T extends SchemaDict = any, ActorType extends Actor<any, this, any> = Actor<any,this,any>, AEType extends ActiveEffect<ActorType, this> = ActiveEffect<ActorType, this>> extends FoundryDocument<never> {
-interface Item<T extends SchemaDict = any, ActorType extends Actor<any, this, any> = Actor<any,this,any>, AEType extends ActiveEffect<ActorType, this> = ActiveEffect<ActorType, this>> extends Document<AEType>{
+interface Item<T extends SchemaDict = any, in ActorType extends Actor<any, this, any> = Actor<any,this,any>, in AEType extends ActiveEffect<ActorType, this> = ActiveEffect<ActorType, this>> extends Document<AEType>{
 	parent: ActorType | undefined;
 	name: string;
 	id: string;
@@ -24,4 +24,4 @@ interface Item<T extends SchemaDict = any, ActorType extends Actor<any, this, an
 }
 
 declare let Item: Foundry.ItemConstructor;
-type Item<T extends SchemaDict = any, ActorType extends Actor<any, this, any> = Actor<any,this,any>, AEType extends ActiveEffect<ActorType, this> = ActiveEffect<ActorType, this>> =  Foundry.Item<T, ActorType, AEType>;
+type Item<T extends SchemaDict = any, in ActorType extends Actor<any, this, any> = Actor<any,this,any>, in AEType extends ActiveEffect<ActorType, this> = ActiveEffect<ActorType, this>> =  Foundry.Item<T, ActorType, AEType>;

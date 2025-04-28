@@ -1852,14 +1852,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	static getAttackBonus(attacker: ValidAttackers, power: Usable, target: PToken | undefined, modifiers ?: ModifierList) : ModifierList {
 		let attackBonus = this.getBaseAttackBonus(attacker, power);
-		let tag = this.getRelevantAttackTag(attacker, power.getDamageType(attacker));
-		if (tag) {
-			const bonusPowers = attacker.mainPowers.concat(attacker.bonusPowers)
-				.filter(x => x.system.tags.includes(tag));
-			const bonus = bonusPowers.length * 3;
-			const localized = game.i18n.localize(POWER_TAGS[tag]);
-			attackBonus.add(`${localized} Power bonus`, bonus);
-		}
+		this.applyRelevantTagAttackBonus(attackBonus, attacker, power);
 		if (power.isStatusEffect()) {
 			attackBonus.add(`Status Effect Modifier`, -3);
 		}
@@ -1884,7 +1877,30 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return defense;
 	}
 
-	static getRelevantAttackTag(_attacker: ValidAttackers, dmgType : DamageType) : PowerTag | undefined  {
+	static applyRelevantTagAttackBonus(attackBonus: ModifierList, attacker: ValidAttackers, power: Usable) {
+		let tag = this.#getRelevantAttackTag(attacker, power.getDamageType(attacker));
+		if (!tag) return;
+		const isDarkLight = tag == "dark" || tag == "light";
+		if (isDarkLight && !power.hasTag("no-crit")) return;
+		const localized = game.i18n.localize(POWER_TAGS[tag]);
+		attackBonus.add(`Damage Power bonus`, +3);
+	}
+
+	/* old version
+	static old_applyRelevantTagAttackBonus(attackBonus: ModifierList, attacker: ValidAttackers, power: Usable) {
+		let tag = this.getRelevantAttackTag(attacker, power.getDamageType(attacker));
+		if (tag) {
+			const bonusPowers = attacker.mainPowers.concat(attacker.bonusPowers)
+				.filter(x => x.system.tags.includes(tag));
+			const bonus = bonusPowers.length * 3;
+			const localized = game.i18n.localize(POWER_TAGS[tag]);
+			attackBonus.add(`${localized} Power bonus`, bonus);
+		}
+
+	}
+*/
+
+	static #getRelevantAttackTag(_attacker: ValidAttackers, dmgType : DamageType) : PowerTag | undefined  {
 		switch (dmgType) {
 			case "fire": case "wind":
 			case "light": case "dark":

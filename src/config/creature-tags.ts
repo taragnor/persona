@@ -45,6 +45,11 @@ export const CREATURE_TAG_LIST = [
 ] as const;
 
 
+export const AI_TAGS = [
+	"stupid",
+	"smart",
+] as const;
+
 export type CreatureTag = typeof CREATURE_TAG_LIST[number];
 
 export const CREATURE_TAGS = Object.fromEntries(

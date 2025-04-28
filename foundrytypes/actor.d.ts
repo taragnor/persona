@@ -1,7 +1,7 @@
 namespace Foundry {
 
 	interface ActorConstructor extends DocumentConstructor {
-		new<const T extends SchemaDict = any, ItemType extends Item<any, InstanceType<this>, any> = Item<any, InstanceType<this>>, AEType extends ActiveEffect<InstanceType<this>, ItemType> = ActiveEffect<InstanceType<this>, ItemType>>
+		new<const T extends SchemaDict = any, in ItemType extends Item<any, InstanceType<this>, any> = Item<any, InstanceType<this>>, in AEType extends ActiveEffect<InstanceType<this>, ItemType> = ActiveEffect<InstanceType<this>, ItemType>>
 			(...args: unknown[]): Actor<T, ItemType, AEType>;
 	}
 
@@ -11,7 +11,7 @@ namespace Foundry {
 		// & UnionizeTCSplit<T>;
 		// declare class Actor<const T extends SchemaDict = any, ItemType extends Item<any, this, any> = Item<any, this>, AEType extends ActiveEffect<this, ItemType> = ActiveEffect<this, ItemType>> extends FoundryDocument<ItemType | AEType>{
 
-		interface Actor<const T extends SchemaDict = any, ItemType extends Item<any, this, any> = Item<any, this>, AEType extends ActiveEffect<this, ItemType> = ActiveEffect<this, ItemType>> extends Document<ItemType | AEType>{
+		interface Actor<const T extends SchemaDict = any, in ItemType extends Item<any, this, any> = Item<any, this>, in AEType extends ActiveEffect<this, ItemType> = ActiveEffect<this, ItemType>> extends Document<ItemType | AEType>{
 
 			/** @deprecated use system.type instead, as this will not promote TS narrowing */
 			type: keyof T;
@@ -80,5 +80,5 @@ namespace Foundry {
 }
 
 declare let Actor: Foundry.ActorConstructor;
-type Actor<const T extends SchemaDict = any, ItemType extends Item<any, this, any> = Item<any, this>, AEType extends ActiveEffect<this, ItemType> = ActiveEffect<this, ItemType>>
+type Actor<const T extends SchemaDict = any, in ItemType extends Item<any, this, any> = Item<any, this>, in AEType extends ActiveEffect<this, ItemType> = ActiveEffect<this, ItemType>>
 	= Foundry.Actor<T, ItemType, AEType>;
