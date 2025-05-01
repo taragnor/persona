@@ -990,19 +990,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			}
 			this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");
 			const result = new CombatResult();
-			// if (power.name == BASIC_PC_POWER_NAMES[1]) {
-			// 	PersonaSFX.onAllOutAttack();
-			// }
 			await PersonaSFX.onUsePower(power);
 			result.merge(await this.usePowerOn(attacker, power, targets, "standard"));
 			const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
 			result.merge(costs);
-
 			result.finalize();
 			if (!power.hasTag("opener"))  {
 				await attacker.actor.expendAction();
 			}
-			// await attacker.actor.removeStatus("bonus-action");
 			await attacker.actor.removeStatus("baton-pass");
 			await result.toMessage(power.name, attacker.actor);
 			await this.postAction(attacker, result);
@@ -1275,7 +1270,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return null;
 	}
 
-
 	static async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, modifiers: ModifierList, rollType: AttackRollType) : Promise<AttackResult> {
 		const combat = game.combat as PersonaCombat | undefined;
 		const situation : Situation = {
@@ -1368,10 +1362,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				...baseData,
 			};
 		}
+		const canCrit = typeof rollType == "number" ? false : true;
 		if (naturalAttackRoll + critBoost >= 20
 			&& (!power.isMultiTarget() || naturalAttackRoll % 2 == 0)
 			&& !target.actor.hasStatus("blocking")
 			&& !power.hasTag("no-crit")
+			&& canCrit
 		) {
 			situation.hit = true;
 			situation.criticalHit  = true;

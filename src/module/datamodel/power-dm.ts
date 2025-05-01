@@ -54,7 +54,7 @@ export function UsablePowerProps() {
 		tags: new arr( new txt<typeof POWER_TAGS_LIST[number]>({choices: POWER_TAGS_LIST})),
 		damage: damage(),
 		mag_mult: new num( {integer:true, min:0, max: 100, initial:1}),
-		melee_extra_mult: new num( {integer: true, min: 0, max:50, initial: 0}),
+		melee_extra_mult: new num( {integer: true, min: -10, max:50, initial: 0}),
 		defense: new txt<(typeof DEFENSECHOICES[number]) >( {choices: DEFENSECHOICES, initial: "ref"}),
 		targets: new txt<typeof TARGETINGLIST[number]> ( {choices: TARGETINGLIST, initial: "1-engaged"}),
 		validTargetConditions: new arr( new obj<Precondition>()),

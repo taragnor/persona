@@ -755,7 +755,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "weapon" : {
 				const dmg = user.wpnDamage();
 				const bonus = user.getBonuses("wpnMult");
-				const mult = user.wpnMult() + (this.system.melee_extra_mult ?? 0) + bonus.total(situation);
+				const mult = Math.max(1, user.wpnMult() + (this.system.melee_extra_mult ?? 0) + bonus.total(situation));
 				const bonusDamage = user.getBonusWpnDamage();
 				const dmgamt =  {
 					low: dmg.low * mult + bonusDamage.low.total(situation),
