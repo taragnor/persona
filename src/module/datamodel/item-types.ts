@@ -348,6 +348,7 @@ export class SocialQuestionDM extends foundry.abstract.DataModel {
 		return {
 			name: new txt({initial: "Unnamed Question"}),
 			label: new txt(),
+			text: new txt(),
 			conditions: new arr(new obj<Precondition>()),
 			choices: new arr(new embedded(CardChoiceDM)),
 			questionTags: new arr( new txt({choices: CARD_TAG_LIST})),
@@ -414,6 +415,7 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 
 			const roll = data.roll;
 		switch (roll.rollType) {
+			case "question": return "";
 			case "studentSkillCheck":
 				if (roll.progressSuccess || roll.progressCrit) {
 					const modifier = roll.modifier == 0 ? "" : `at ${NumberTools.signed(roll.modifier)}`;
@@ -428,7 +430,8 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 			default:
 		}
 		if ((roll.progressFail ?? 0) != 0) {
-			starterTxt += ` Gain ${roll.progressFail} on failure.`;
+			const gainLose = roll.progressFail > 0 ? "Gain" : "Lose";
+			starterTxt += ` ${gainLose} ${roll.progressFail} on failure.`;
 		}
 		return starterTxt +  data.text
 	}

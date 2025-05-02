@@ -1,3 +1,4 @@
+import { shuffle } from "../utility/array-tools.js";
 import { NPCAlly } from "../actor/persona-actor.js";
 import { StatusEffectId } from "../../config/status-effects.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
@@ -314,6 +315,11 @@ export class PersonaSocial {
 		} else {
 			replaceSet["$CAMEO"] = "NULL CAMEO";
 		}
+		const eventList = card.cardEvents().slice() ;
+		if (activity instanceof PersonaActor) {
+			const questionsAsEvents= this.questionsAsEvents(activity);
+			eventList.push(...questionsAsEvents);
+		}
 		const cardData : CardData = {
 			card,
 			actor,
@@ -325,11 +331,58 @@ export class PersonaSocial {
 			eventsRemaining: card.system.num_of_events,
 			situation,
 			forceEventLabel: null,
-			eventList: card.cardEvents().slice(),
+			eventList,
 			replaceSet,
 			variables: {},
 		};
 		return await this.#execCardSequence(cardData);
+	}
+
+	static questionsAsEvents( socialTarget: SocialLink) : SocialCard["system"]["events"] {
+		const questions = socialTarget.questions;
+		return questions.map(this.questionToEvent);
+	}
+
+	static questionToEvent(question: NPC["system"]["questions"][number]) : SocialCard["system"]["events"][number] {
+		const eventTags = question.questionTags.slice();
+		eventTags.pushUnique("question");
+		eventTags.pushUnique("one-shot");
+		const event : SocialCard["system"]["events"][number] = {
+			parent: question.parent,
+			label: "",
+			text: question.text,
+			img: (question?.parent?.parent as NPC)?.img ?? "",
+			eventTags,
+			sound: "",
+			volume: 0,
+			frequency: 1,
+			placement: {
+				starter: false,
+				middle: true,
+				finale: false,
+				special: false,
+			},
+			name: question.name,
+			conditions: question.conditions,
+			choices : shuffle( question.choices.map( this.convertQuestionChoiceToEventChoice)),
+		};
+		return event;
+
+	}
+
+
+	static convertQuestionChoiceToEventChoice( choice: NPC["system"]["questions"][number]["choices"][number]) : SocialCard["system"]["events"][number]["choices"][number] {
+		return  {
+			name: choice.name,
+			conditions: choice.conditions,
+			text: choice.text,
+			roll: {
+				...choice.roll,
+				rollType: "question"
+			},
+			postEffects: {effects: []},
+		};
+
 	}
 
 
@@ -896,6 +949,7 @@ export class PersonaSocial {
 		// const effectList  = cardChoice?.postEffects?.effects ?? [];
 		const effectList = ConditionalEffectManager.getEffects(cardChoice?.postEffects?.effects ?? [], null, null);
 		switch (cardRoll.rollType) {
+			case "question":
 			case "none": {
 				await this.processAutoProgress(cardData, cardRoll, true, false);
 				await this.applyEffects(effectList,cardData.situation, cardData.actor);

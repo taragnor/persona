@@ -25,6 +25,7 @@ export const SOCIAL_CARD_ROLL_TYPES_LIST = [
 	...SIMPLE_SOCIAL_CARD_ROLL_TYPES_LIST,
 	"gmspecial",
 	"dual",
+	"question",
 ] as const;
 
 
@@ -77,6 +78,9 @@ type CardRollList = {
 	"none": {
 		rollType: "none"
 	},
+	"question" : {
+		rollType: "question"
+	}
 	"studentSkillCheck": {
 		rollType: "studentSkillCheck",
 		simpleRoll: boolean,

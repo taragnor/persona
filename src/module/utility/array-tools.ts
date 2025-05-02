@@ -1,4 +1,4 @@
-export function shuffle<T>(array: T[]) : void {
+export function shuffle<T>(array: T[]) : Array<T> {
   let currentIndex = array.length;
   while (currentIndex != 0) {
     let randomIndex = Math.floor(Math.random() * currentIndex);
@@ -6,6 +6,7 @@ export function shuffle<T>(array: T[]) : void {
     [array[currentIndex], array[randomIndex]] = [
       array[randomIndex], array[currentIndex]];
   }
+	return array;
 };
 
 export function weightedChoice<T>( array: WeightedChoiceItem<T>[]) : T | undefined {

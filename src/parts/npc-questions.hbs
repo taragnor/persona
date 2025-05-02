@@ -28,6 +28,9 @@
 		<span class="question-name" >
 			Question: <input type=string name='{{strcat "system.questions." i ".name"}}' value="{{question.name}}">
 		</span>
+			<textarea name='{{strcat "system.questions." i ".text"}}'>
+				{{question.text}}
+			</textarea>
 		</h4>
 		<div class="choices-block">
 			{{#each question.choices as |choice c|}}

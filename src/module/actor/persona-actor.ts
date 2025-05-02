@@ -3299,7 +3299,7 @@ async addQuestion(this: NPC) {
 			conditions: [],
 			text: "",
 			roll:  {
-				rollType: "none",
+				rollType: "question",
 				progressSuccess: 0,
 				progressFail: 0,
 				progressCrit: 0,
@@ -3310,7 +3310,7 @@ async addQuestion(this: NPC) {
 			conditions: [],
 			text: "",
 			roll:  {
-				rollType: "none",
+				rollType: "question",
 				progressSuccess: 0,
 				progressFail: 0,
 				progressCrit: 0,
@@ -3321,7 +3321,7 @@ async addQuestion(this: NPC) {
 			conditions: [],
 			text: "",
 			roll:  {
-				rollType: "none",
+				rollType: "question",
 				progressSuccess: 0,
 				progressFail: 0,
 				progressCrit: 0,
@@ -3331,6 +3331,7 @@ async addQuestion(this: NPC) {
 	];
 	const question : NPC["system"]["questions"][number] = {
 		name: "Unnamed Question",
+		text: "",
 		label: "",
 		conditions: [],
 		choices,
