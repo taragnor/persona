@@ -7,6 +7,8 @@ declare abstract class DataModelClass  {
 		returns super.migrateData(source)
 	 */
 	static migrateData(source: Record<string, any>): Record<string,any>;
+	updateSource(updateObject: Record<string, unknown>);
+	toJSON(): unknown;
 }
 
 type SchemaReturnObject = Record<string, FoundryDMField<any>>;

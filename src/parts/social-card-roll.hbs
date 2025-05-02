@@ -1,11 +1,13 @@
 <div class="social-card-roll" data-roll-type="{{roll.type}}"> {{#if (ne roll.rollType "none")}}
 	<div>
-		{{#if (eqAny roll.rollType "studentSkillCheck" "save")}}
+		{{#if (eqAny roll.rollType "studentSkillCheck" "save" "question")}}
 		<button class="make-roll" {{#if (not enabled)}} disabled {{/if}}>
+			{{replace label cardData.replaceSet}}
 			{{#if (eq roll.rollType "save")}}
-			{{replace label cardData.replaceSet}}. Roll {{roll.saveType}} Save
-			{{else}}
-			{{replace label cardData.replaceSet}}. Roll {{roll.studentSkill}}
+			. Roll {{roll.saveType}} Save
+			{{/if}}
+			{{#if (eq roll.rollType "studentSkillCheck")}}
+			. Roll {{roll.studentSkill}}
 			{{/if}}
 		</button>
 		{{else}}

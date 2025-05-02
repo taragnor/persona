@@ -3292,11 +3292,21 @@ get questions(): NPC["system"]["questions"] {
 	}
 }
 
+async restoreAllQuestions(this:NPC) {
+	const questions = this.system.questions.map (x=> x.toJSON ? x.toJSON() as NPC["system"]["questions"][number] : x );
+	for (const question of questions) {
+		if (question.questionTags.includes("disabled")) {
+			question.questionTags = question.questionTags.filter( x=> x != "disabled");
+		}
+	}
+	await this.update({"system.questions": questions});
+}
+
 async markQuestionUsed(this: NPC, index: number) {
-	const question = this.system.questions[index];
-	question.questionTags.pushUnique("disabled");
-	const questionsArr= this.system.questions.map( x=> (x as any).toJSON());
-	await this.update({"system.questions": questionsArr});
+	const questions = this.system.questions.map( x=> (x as any).toJSON());
+	const arr = questions[index].questionTags;
+	arr.pushUnique("disabled");
+	await this.update({system: {questions}});
 }
 
 async addQuestion(this: NPC) {

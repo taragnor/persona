@@ -263,7 +263,6 @@ export class PersonaSocial {
 		const cardList = PersonaDB.socialEncounterCards();
 		if (cardList.length == 0) {
 			PersonaError.softFail("Card list in DB has length 0");
-			debugger;
 		}
 		const preconditionPass =  cardList
 			.filter( card => card.system.frequency > 0)
@@ -272,7 +271,6 @@ export class PersonaSocial {
 			console.log(`Valid Cards: ${preconditionPass.map(x=> x.name).join(", ")}`);
 		}
 		if (preconditionPass.length == 0) {
-			debugger;
 		}
 		return preconditionPass;
 	}
@@ -346,7 +344,8 @@ export class PersonaSocial {
 	}
 
 	static questionsAsEvents( socialTarget: SocialLink) : SocialCard["system"]["events"] {
-		const questions = socialTarget.questions;
+		const questions = socialTarget.questions
+		.filter( q=>!q.questionTags.includes("disabled"));
 		return questions.map(this.questionToEvent);
 	}
 
@@ -358,7 +357,7 @@ export class PersonaSocial {
 			parent: question.parent,
 			label: "",
 			text: question.text,
-			img: (question?.parent?.parent as NPC)?.img ?? "",
+			img: (question?.parent?.parent as unknown as NPC)?.img ?? "",
 			eventTags,
 			sound: "",
 			volume: 0,
@@ -1044,7 +1043,7 @@ export class PersonaSocial {
 		progress += hit ? cardRoll.progressSuccess ?? 0 : 0;
 		progress += critical ? cardRoll.progressCrit ?? 0 : 0;
 		progress += !hit ? cardRoll.progressFail ?? 0 : 0;
-		if (progress > 0) {
+		if (progress != 0) {
 			await this.applyCardProgress(cardData, progress)
 		}
 	}

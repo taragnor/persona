@@ -7,7 +7,7 @@
 	{{#each actor.system.questions as |question i|}}
 	<li class="flexrow" data-question-index="{{i}}">
 		<span class="question-name" >
-			{{question.name}}
+			{{question.name}} {{#if (arrIncludes question.questionTags "disabled")}} <b>(Expended)</b> {{/if}}
 		</span>
 			<span class="del-question">
 				<a class="del-question">
@@ -38,9 +38,6 @@
 				Choice: <input type=string name='{{strcat "system.questions." i ".choices." c ".name"}}' value="{{choice.name}}">
 			<input class="short" type=number name='{{strcat "system.questions." i ".choices." c ".roll.progressSuccess"}}' value="{{choice.roll.progressSuccess}}">
 			</h5>
-			<textarea name='{{strcat "system.questions." i ".choices." c ".text"}}'>
-				{{trim choice.text}}
-			</textarea>
 			{{/each}}
 		</div>
 	</div>

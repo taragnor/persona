@@ -91,6 +91,9 @@ export class PersonaHandleBarsHelpers {
 			return actor.system.type == "shadow";
 		},
 
+		"arrIncludes": function (arr: string[], value: string): boolean {
+			return arr.includes(value)
+		},
 		"strIncludes" : (testStr: string | undefined, substr: string) => {
 			if (!testStr) return false;
 			return testStr.includes(substr);
