@@ -1,3 +1,4 @@
+import { CARD_TAGS } from "../config/card-tags.js";
 import { PersonaError } from "./persona-error.js";
 import { Consumable } from "./item/persona-item.js";
 import { FREQUENCY } from "../config/frequency.js";
@@ -410,6 +411,11 @@ export class PersonaHandleBarsHelpers {
 					return false;
 			}
 		},
+		"getEventTagList": function (event: SocialCard["system"]["events"][number]) {
+			const tags= event.eventTags.map(tag => localize(CARD_TAGS[tag]));
+			return tags.join(", ");
+		},
+
 		"eq-m": function<T extends any> (comparisonOne:T, ...compArr: T[]) {
 			return compArr.some(x=> x == comparisonOne);
 		},

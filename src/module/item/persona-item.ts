@@ -272,6 +272,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		await this.update( {"system.cardTags": tags});
 	}
 
+	async addEventTag(this: SocialCard, eventIndex:number) : Promise<void> {
+		const data = this.system.events.map(x=> (x as any).toJSON());
+		const ev = data[eventIndex];
+		const newTags =  ev.eventTags.slice();
+		newTags.push("");
+		ev.eventTags = newTags;
+		await this.update( {"system.events": data});
+	}
+
 	async deleteItemTag(this: Consumable | InvItem | Weapon, index: number) : Promise<void> {
 		const tags = this.system.itemTags;
 		tags.splice(index, 1);
@@ -282,6 +291,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const tags = this.system.cardTags;
 		tags.splice(index, 1);
 		await this.update( {"system.cardTags": tags});
+	}
+
+	async deleteEventTag(this: SocialCard, eventIndex:number, tagIndex: number) {
+		const data = this.system.events.map(x=> (x as any).toJSON());
+		const ev= data[eventIndex];
+		ev.eventTags.splice(tagIndex, 1);
+		await this.update( {"system.events": data});
 	}
 
 	hasTag(this: Power, tag: PowerTag, user : null | ValidAttackers) : boolean;
@@ -1114,14 +1130,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			frequency: 1,
 			choices: [],
 			conditions: [],
+			eventTags: [],
 		};
 		this.system.events.push( newEv);
-		this.update({"system.events": this.system.events});
+		await this.update({"system.events": this.system.events});
 	}
 
 	async deleteCardEvent(this: SocialCard, eventIndex: number) {
 		this.system.events.splice(eventIndex, 1);
-		this.update({"system.events": this.system.events});
+		await this.update({"system.events": this.system.events});
 	}
 
 	async addEventChoice(this: SocialCard, eventIndex: number) {
@@ -1356,6 +1373,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					return [SLCheck(7,10)];
 				case "introductory":
 					return [SLCheck(1,3)];
+				case "one-shot":
+				case "question":
 				case "":
 					return [];
 				case "disabled":
@@ -1369,6 +1388,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			}
 			return [];
 		});
+	}
+
+	async markEventUsed(this: SocialCard, event: CardEvent) {
+		const ev = this.system.events.find(ev => ev == event);
+		if (!ev) {
+			PersonaError.softFail(`Can't find event ${event.name} on ${this.name}`);
+			return;
+		}
+		if (!ev.eventTags.includes("one-shot")) {
+			PersonaError.softFail(`Event ${ev.name} isnt a one shot event and thus can't be disabled!`);
+			return;
+		}
+		ev.eventTags.pushUnique("disabled");
+		return await this.update({"system.events": this.system.events});
 	}
 }
 

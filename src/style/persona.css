@@ -778,3 +778,8 @@ span.skill-card img {
 	border-width: 2px;
 	border-radius:5px;
 }
+
+.question-list .question-name {
+	min-width: 60%;
+	width: 60%;
+}

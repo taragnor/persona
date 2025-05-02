@@ -52,6 +52,8 @@ export type CardChoice = {
 
 export type CardEvent = SocialCard["system"]["events"][number];
 
+
+
 export type EventPlacement = {
 	starter: boolean,
 	middle: boolean,

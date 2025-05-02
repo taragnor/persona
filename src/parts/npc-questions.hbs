@@ -1,0 +1,47 @@
+<h2> Questions
+	<a class="add-question">
+		<i class="fa-solid fa-plus"> </i>
+	</a>
+</h2>
+<ul class="question-list">
+	{{#each actor.system.questions as |question i|}}
+	<li class="flexrow" data-question-index="{{i}}">
+		<span class="question-name" >
+			{{question.name}}
+		</span>
+			<span class="del-question">
+				<a class="del-question">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</span>
+	</li>
+	{{/each}}
+</ul>
+
+<div class="questions-breakdown">
+	<div class="back-button">
+		Back
+	</div>
+	{{#each actor.system.questions as |question i|}}
+	<div class="question" data-question-index="{{i}}">
+		<h4>
+		<span class="question-name" >
+			Question: <input type=string name='{{strcat "system.questions." i ".name"}}' value="{{question.name}}">
+		</span>
+		</h4>
+		<div class="choices-block">
+			{{#each question.choices as |choice c|}}
+			<h5>
+				Choice: <input type=string name='{{strcat "system.questions." i ".choices." c ".name"}}' value="{{choice.name}}">
+			<input class="short" type=number name='{{strcat "system.questions." i ".choices." c ".roll.progressSuccess"}}' value="{{choice.roll.progressSuccess}}">
+			</h5>
+			<textarea name='{{strcat "system.questions." i ".choices." c ".text"}}'>
+				{{trim choice.text}}
+			</textarea>
+			{{/each}}
+		</div>
+	</div>
+	{{/each}}
+
+</div>
+

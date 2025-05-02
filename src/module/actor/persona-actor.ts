@@ -252,6 +252,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return (this as PC).getSocialStat("courage").total({user:(this as PC).accessor});
 	}
 
+	/** gets the real NPC of an NPC Ally*/
 	getNPCProxyActor(this: NPCAlly) : NPC | PC | undefined {
 		const proxyId = this.system.NPCSocialProxyId;
 		if (!proxyId)
@@ -3276,6 +3277,72 @@ async onAddToCombat() {
 			break;
 	}
 
+}
+
+get questions(): NPC["system"]["questions"] {
+	switch (this.system.type) {
+		case "pc":
+		case "shadow":
+		case "tarot":
+			return [];
+		case "npcAlly":
+			return (this as NPCAlly).getNPCProxyActor()?.questions ?? [];
+		case "npc":
+				return this.system.questions;
+	}
+}
+
+async addQuestion(this: NPC) {
+	const choices : NPC["system"]["questions"][number]["choices"] = [
+		{
+			name: "A",
+			conditions: [],
+			text: "",
+			roll:  {
+				rollType: "none",
+				progressSuccess: 0,
+				progressFail: 0,
+				progressCrit: 0,
+			},
+			postEffects: { effects:[] },
+		}, {
+			name: "B",
+			conditions: [],
+			text: "",
+			roll:  {
+				rollType: "none",
+				progressSuccess: 0,
+				progressFail: 0,
+				progressCrit: 0,
+			},
+			postEffects: { effects:[] },
+		}, {
+			name: "C",
+			conditions: [],
+			text: "",
+			roll:  {
+				rollType: "none",
+				progressSuccess: 0,
+				progressFail: 0,
+				progressCrit: 0,
+			},
+			postEffects: { effects:[] },
+		}
+	];
+	const question : NPC["system"]["questions"][number] = {
+		name: "Unnamed Question",
+		label: "",
+		conditions: [],
+		choices,
+		questionTags: ["one-shot", "question"],
+	};
+	this.system.questions.push(question);
+	await this.update( { "system.questions": this.system.questions});
+}
+
+async deleteQuestion(this: NPC, index: number) {
+	this.system.questions.splice(index, 1);
+	await this.update( { "system.questions": this.system.questions});
 }
 
 get treasureString() : SafeString {

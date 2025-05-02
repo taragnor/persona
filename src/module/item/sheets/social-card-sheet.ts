@@ -77,7 +77,9 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 		html.find(".addCardTag").on("click", this.addCardTag.bind(this));
+		html.find(".eventTags .addTag").on("click", this.addEventTag.bind(this));
 		html.find(".cardTags .delTag").on("click", this.deleteCardTag.bind(this));
+		html.find(".eventTags .delTag").on("click", this.deleteEventTag.bind(this));
 		html.find(".add-qualifier").on("click", this.addQualifier.bind(this));
 		html.find(".delete-qualifier").on("click", this.deleteQualifier.bind(this));
 		html.find(".add-opportunity").on("click", this.addOpportunity.bind(this));
@@ -94,15 +96,26 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		await this.item.addCardTag();
 	}
 
+	async addEventTag(ev: JQuery.ClickEvent) {
+		const eventIndex = HTMLTools.getClosestDataNumber(ev, "eventIndex");
+		await this.item.addEventTag(eventIndex);
+	}
+
 	async deleteCardTag(ev: JQuery.ClickEvent) {
 		const index = HTMLTools.getClosestData(ev, "tagIndex");
 		await this.item.deleteCardTag(Number(index));
 
 	}
 
+	async deleteEventTag(ev: JQuery.ClickEvent) {
+		const eventIndex = HTMLTools.getClosestDataNumber(ev, "eventIndex");
+		const tagIndex = HTMLTools.getClosestDataNumber(ev, "tagIndex");
+		await this.item.deleteEventTag(eventIndex, tagIndex);
+	}
+
 	async addOpportunity(_ev: JQuery.ClickEvent) {
 		const card = this.item;
-		let opList =card.system.opportunity_list;
+		let opList = card.system.opportunity_list;
 		const newOpportunity : Opportunity = {
 			name: "Unnamed Choice",
 			choices: 1,

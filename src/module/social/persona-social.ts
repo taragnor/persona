@@ -484,20 +484,23 @@ export class PersonaSocial {
 					.map( x=> `* ${x}`)
 					.join("<br>");
 			case "standard-or-date":
-				let datePerk : string;
-				switch (link.system.type) {
-					case "pc":
-						datePerk = this.defaultDatePerk();
-						break;
-					case "npc":
-						datePerk = link.system.datePerk || this.defaultDatePerk();
-						break;
-					default:
-						PersonaError.softFail(`No datePerk type for ${link.system.type}`);
-						datePerk="";
+				let datePerk : string | undefined = undefined;
+				if (actor.isDating(link.id)) {
+					switch (link.system.type) {
+						case "pc":
+							datePerk = this.defaultDatePerk();
+							break;
+						case "npc":
+							datePerk = link.system.datePerk || this.defaultDatePerk();
+							break;
+						default:
+							PersonaError.softFail(`No datePerk type for ${link.system.type}`);
+							datePerk="";
+					}
 				}
 				return "Choose One: <br>" +
 					[actor.perk, datePerk]
+					.filter ( x=> x != undefined)
 					.map( x=> `* ${x}`)
 					.join("<br>");
 			case "none":
@@ -570,7 +573,10 @@ export class PersonaSocial {
 	static #getCardEvent(cardData:CardData) : CardEvent | undefined  {
 		const cardEventList = cardData.eventList;
 		if (cardData.forceEventLabel) {
-			const gotoEvent = cardEventList.filter( x=> x.label  == cardData.forceEventLabel);
+			const gotoEvent = cardEventList
+				.filter( x=> x.label  == cardData.forceEventLabel)
+				.filter( x=> !x.eventTags.includes("disabled"))
+			;
 			cardData.forceEventLabel = null;
 			if (gotoEvent.length > 0) {
 				return weightedChoice(gotoEvent.map( event => ({
@@ -581,6 +587,7 @@ export class PersonaSocial {
 			PersonaError.softFail (`Can't find event label ${cardData.forceEventLabel} on card ${cardData.card.name}`);
 		}
 		let eventList = cardEventList
+			.filter ( ev => !ev.eventTags.includes("disabled"))
 			.filter( (ev, i) => !cardData.eventsChosen.includes(i) && testPreconditions(
 				ConditionalEffectManager.getConditionals( ev.conditions, null, null),
 				cardData.situation, null));
@@ -643,6 +650,9 @@ export class PersonaSocial {
 	static async #execEvent(event: CardEvent, cardData: CardData) {
 		const eventNumber = cardData.eventsChosen.length;
 		const eventIndex = cardData.eventList.indexOf(event);
+		if (event.eventTags.includes("one-shot")) {
+			await this.markEventUsed(event);
+		}
 		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event,eventNumber, cardData, situation : cardData.situation, eventIndex});
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
@@ -663,6 +673,23 @@ export class PersonaSocial {
 			});
 		}
 		return msg;
+	}
+
+	static async markEventUsed(event: CardEvent) {
+		const mainCard = event?.parent?.parent as SocialCard;
+		if (!mainCard) {
+			PersonaError.softFail(`Can't find social card parent for ${event.name}`); return;
+		}
+		if (game.user.isGM) {
+			await mainCard.markEventUsed(event);
+			return;
+		}
+		const index  = mainCard.system.events.findIndex( x=> x == event);
+		if (index == -1) {
+			PersonaError.softFail(`Can't find event index for ${event.name}`); return;
+		}
+		const gms = game.users.filter(x=> x.isGM);
+		PersonaSockets.simpleSend("EXPEND_EVENT", {cardId: mainCard.id, eventIndex: index}, gms.map( x=> x.id));
 	}
 
 	static getCardModifiers(cardData: CardData) : ModifierList {
@@ -1324,6 +1351,10 @@ type ActivityOptions = {
 declare global {
 	interface SocketMessage {
 		"DEC_AVAILABILITY": string;
+		"EXPEND_EVENT": {
+			cardId: string;
+			eventIndex: number;
+		}
 		"DRAW_CARD": {
 			actorId: string,
 			linkId: string

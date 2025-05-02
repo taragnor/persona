@@ -19,6 +19,12 @@ export class HTMLTools {
 		}
 	}
 
+	static getClosestDataNumber <ReturnType extends number = number> ( eventOrJQObj: Event | JQuery<HTMLElement> | JQuery.Event, prop: string) : ReturnType {
+		const num = Number(this.getClosestData(eventOrJQObj, prop));
+		if (Number.isNaN(num)) throw new Error("NaN result");
+		return num as ReturnType;
+	}
+
 	static getClosestDataSafe<T extends string | number> (eventOrJQObj: Event | JQuery<HTMLElement> | JQuery.Event, prop: string, elseValue: T): T {
 		try {
 			return this.getClosestData(eventOrJQObj, prop);

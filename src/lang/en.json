@@ -57,6 +57,8 @@
 	"persona.sheet.tabs.social-section.header" : "Relationship Info",
 	"persona.sheet.tabs.social-section.tabname" : "Relationship Info",
 
+	"persona.sheet.tabs.questions.header": "Questions",
+	"persona.sheet.tabs.questions.tabname": "Questions",
 	"persona.sheet.tabs.incremental.tabname" : "Incremental Advances",
 	"persona.sheet.tabs.incremental.header" : "Incremental Advances",
 
@@ -370,6 +372,7 @@
 	"persona.power.tag.hack": "MV Hack",
 
 	"persona.card.tag.": "-",
+	"persona.card.tag.nil": "-",
 	"persona.card.tag.date": "Date",
 	"persona.card.tag.friends": "Friends",
 	"persona.card.tag.student-stuff": "Student Activity",
@@ -378,6 +381,8 @@
 	"persona.card.tag.trusted": "Trusted Relationship only",
 	"persona.card.tag.disabled": "Disabled",
 	"persona.card.tag.real-world": "Real World",
+	"persona.card.tag.one-shot": "One Time Event",
+	"persona.card.tag.question": "Question",
 
 	"persona.equipment.tag.nil" : "-",
 	"persona.equipment.tag.metaverse" : "Metaverse Item",
@@ -701,7 +706,7 @@
 	"persona.social.perk-type.card-or-cameo": "Card Perk or Cameo",
 	"persona.social.perk-type.custom-only": "Card perk",
 	"persona.social.perk-type.standard-or-custom": "Tarot Perk (Target) or Card Perk",
-	"persona.social.perk-type.standard-or-date": "Tarot Perk (Target) or target's date perk",
+	"persona.social.perk-type.standard-or-date": "Tarot Perk (Target) or Target's Date perk (if dating)",
 	"persona.social.perk-type.none": "None",
 
 	"persona.social.cameo-type.none": "No Cameo",

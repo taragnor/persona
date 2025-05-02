@@ -1,3 +1,4 @@
+import { SocialQuestionDM } from "./item-types.js";
 import { frequencyConvert } from "../../config/frequency.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { Shadow } from "../actor/persona-actor.js";
@@ -10,7 +11,7 @@ import { encounterDataSchema } from "../../config/actor-parts.js";
 import { sharedAbilities } from "../../config/actor-parts.js";
 import { personalBio } from "../../config/actor-parts.js";
 import { CREATURE_TAG_LIST } from "../../config/creature-tags.js";
-const {StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
+const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
 import { SHADOW_CREATURE_TYPE_LIST } from "../../config/shadow-types.js";
 import { PC } from "../actor/persona-actor.js";
 import { SHADOW_ROLE_LIST } from "../../config/shadow-types.js";
@@ -176,6 +177,7 @@ export class NPCSchema extends foundry.abstract.TypeDataModel {
 			creatureType: new txt({ choices: ["npc"] , initial: "npc"}),
 			...tarotFields(),
 			bio: personalBio(),
+			questions: new arr( new embedded(SocialQuestionDM)),
 			//include
 		} as const;
 		return ret;

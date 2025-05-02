@@ -89,6 +89,9 @@
 				</div>
 			</div>
 		</div >
+		<div class="event-tags">
+			{{> "systems/persona/parts/eventTags.hbs" item=../item event=event POWERSTUFF=../POWERSTUFF eventIndex=i}}
+		</div>
 		<div class="card-event-conditions">
 			{{> "systems/persona/parts/conditions-section.hbs" namePrefix=(strcat "system.events." i ".conditions.")  POWERSTUFF=../POWERSTUFF i=i owner=../item}}
 		</div>

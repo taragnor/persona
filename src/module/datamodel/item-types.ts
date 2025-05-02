@@ -342,6 +342,20 @@ class CEContainer extends foundry.abstract.DataModel {
 
 }
 
+export class SocialQuestionDM extends foundry.abstract.DataModel {
+
+	static override defineSchema() {
+		return {
+			name: new txt({initial: "Unnamed Question"}),
+			label: new txt(),
+			conditions: new arr(new obj<Precondition>()),
+			choices: new arr(new embedded(CardChoiceDM)),
+			questionTags: new arr( new txt({choices: CARD_TAG_LIST})),
+		}
+	}
+
+}
+
 class SocialCardEventDM extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		return {
@@ -351,6 +365,7 @@ class SocialCardEventDM extends foundry.abstract.DataModel {
 			volume: new num({initial: 0.5, integer:false, max: 1.0, min: 0}),
 			label: new txt(),
 			text: new txt(),
+			eventTags: new arr( new txt({choices: CARD_TAG_LIST })),
 			frequency: new num({initial: 1.0, integer: false}),
 			placement: new sch({
 				starter: new bool({initial: true}),
@@ -391,14 +406,13 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 				effects: new arr(new embedded(ConditionalEffectDM)),
 			}),
 		};
-
 	}
 
 	get appendedText() : string {
 		const data = this as SocialCard["system"]["events"][number]["choices"][number];
 		let starterTxt = "";
 
-		const roll = data.roll;
+			const roll = data.roll;
 		switch (roll.rollType) {
 			case "studentSkillCheck":
 				if (roll.progressSuccess || roll.progressCrit) {
