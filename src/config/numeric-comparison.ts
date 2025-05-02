@@ -15,6 +15,7 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"talent-level",
 	"social-link-level",
 	"total-SL-levels",
+	"progress-tokens-with",
 	"student-skill",
 	"character-level",
 	"has-resources",
@@ -84,6 +85,7 @@ type NonGenericNumericComparison = ResistanceComparison
 	| InspirationNumericComparison
 	| AmountOfItemComparison
 	| SocialLinkLevelComparison
+	| ProgressTokensComparison
 	| SocialVariableComparison
 	| totalSLComparison
 	| CombatResultComparison
@@ -168,6 +170,11 @@ type totalSLComparison = NumericComparisonBase & {
 	conditionTarget: ConditionTarget,
 }
 
+
+type ProgressTokensComparison = NumericComparisonBase & {
+	comparisonTarget: "progress-tokens-with",
+	conditionTarget: ConditionTarget,
+}
 
 type CombatResultComparison = NumericComparisonBase & {
 	comparisonTarget:	"combat-result-based",

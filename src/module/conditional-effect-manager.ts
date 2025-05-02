@@ -612,6 +612,8 @@ export class ConditionalEffectManager {
 			case "num-of-others-with":
 				//TODO: put in special condition
 				return `Number of ${cond.group} that meet Special Condition ${endString(cond)}`;
+			case "progress-tokens-with":
+				return `Progress tokens with ${cond.conditionTarget} is ${endString(cond)}`;
 			default:
 				cond satisfies never;
 				return "UNKNOWN CONDITION"

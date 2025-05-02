@@ -39,7 +39,7 @@
 	</select>
 	{{/if}}
 
-	{{#if (eq cond.comparisonTarget "total-SL-levels")}}
+	{{#if (eqAny cond.comparisonTarget "total-SL-levels" "progress-tokens-with")}}
 	<select name="{{strcat namePrefix 'conditionTarget'}}">
 		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
 	</select>

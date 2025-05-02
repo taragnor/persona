@@ -306,6 +306,19 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			.reduce( (acc, pc) => acc + pc.getSocialSLWith(targetActor), 0)
 			break;
 		}
+		case "progress-tokens-with": {
+			const targetActor = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!targetActor || !targetActor.isSocialLink()) {
+				return false;
+			}
+			const subjectAcc = situation.user ?? situation.attacker;
+			if (!subjectAcc) return false;
+			const subject = PersonaDB.findActor(subjectAcc);
+			if (!subject.isPC()) return false;
+			target = subject.getSocialLinkProgress(targetActor.id);
+			break;
+		}
+
 		case "combat-result-based":
 			const res = combatResultBasedNumericTarget(condition, situation, source) ;
 			if (typeof res == "boolean") return res;
