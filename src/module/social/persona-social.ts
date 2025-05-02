@@ -729,20 +729,46 @@ export class PersonaSocial {
 	}
 
 	static async markEventUsed(event: CardEvent) {
-		const mainCard = event?.parent?.parent as SocialCard;
-		if (!mainCard) {
-			PersonaError.softFail(`Can't find social card parent for ${event.name}`); return;
-		}
+		let parent = event.parent;
+		do {
+			if (parent == undefined) {
+				PersonaError.softFail("Can't trace parent to card or actor");
+				return;
+			}
+			if (parent instanceof PersonaItem && parent.system.type == "socialCard") {
+				this.markSocialCardEventUsed(parent as SocialCard, event);
+				return;
+			}
+			if (parent instanceof PersonaActor && parent.system.type == "npc") {
+				this.markQuestionUsed(parent as NPC, event);
+			}
+		} while (parent != undefined);
+	}
+
+	static async markSocialCardEventUsed (card: SocialCard, event: CardEvent) {
 		if (game.user.isGM) {
-			await mainCard.markEventUsed(event);
+			await card.markEventUsed(event);
 			return;
 		}
-		const index  = mainCard.system.events.findIndex( x=> x == event);
+		const index  = card.system.events.findIndex( x=> x == event);
 		if (index == -1) {
 			PersonaError.softFail(`Can't find event index for ${event.name}`); return;
 		}
 		const gms = game.users.filter(x=> x.isGM);
-		PersonaSockets.simpleSend("EXPEND_EVENT", {cardId: mainCard.id, eventIndex: index}, gms.map( x=> x.id));
+		PersonaSockets.simpleSend("EXPEND_EVENT", {cardId: card.id, eventIndex: index}, gms.map( x=> x.id));
+	}
+
+	static async markQuestionUsed(npc: NPC, event: CardEvent) {
+		const index= npc.questions.findIndex( q=> q.name == event.name);
+		if (index == -1) {
+			PersonaError.softFail(`Can't find event index for ${event.name}`); return;
+		}
+		if (game.user.isGM) {
+			await npc.markQuestionUsed(index);
+			return;
+		}
+		const gms = game.users.filter(x=> x.isGM);
+		PersonaSockets.simpleSend("EXPEND_QUESTION", {npcId: npc.id, eventIndex: index}, gms.map( x=> x.id));
 	}
 
 	static getCardModifiers(cardData: CardData) : ModifierList {
@@ -1405,6 +1431,10 @@ type ActivityOptions = {
 declare global {
 	interface SocketMessage {
 		"DEC_AVAILABILITY": string;
+		"EXPEND_QUESTION": {
+			npcId: string;
+			eventIndex: number;
+		}
 		"EXPEND_EVENT": {
 			cardId: string;
 			eventIndex: number;
