@@ -1401,7 +1401,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			return;
 		}
 		ev.eventTags.pushUnique("disabled");
-		return await this.update({"system.events": this.system.events});
+		const eventsArr= this.system.events.map( x=> (x as any).toJSON());
+		return await this.update({"system.events": eventsArr});
 	}
 }
 

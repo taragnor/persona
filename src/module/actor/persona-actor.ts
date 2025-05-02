@@ -3295,7 +3295,8 @@ get questions(): NPC["system"]["questions"] {
 async markQuestionUsed(this: NPC, index: number) {
 	const question = this.system.questions[index];
 	question.questionTags.pushUnique("disabled");
-	await this.update({"system.questions": this.system.questions});
+	const questionsArr= this.system.questions.map( x=> (x as any).toJSON());
+	await this.update({"system.questions": questionsArr});
 }
 
 async addQuestion(this: NPC) {

@@ -260,11 +260,19 @@ export class PersonaSocial {
 			isSocial: true,
 			// target: link ? link.actor.accessor : undefined,
 		};
-		const preconditionPass =  PersonaDB.socialEncounterCards()
+		const cardList = PersonaDB.socialEncounterCards();
+		if (cardList.length == 0) {
+			PersonaError.softFail("Card list in DB has length 0");
+			debugger;
+		}
+		const preconditionPass =  cardList
 			.filter( card => card.system.frequency > 0)
 			.filter( card => testPreconditions(card.cardConditionsToSelect(), situation, null));
 		if (PersonaSettings.debugMode() == true) {
 			console.log(`Valid Cards: ${preconditionPass.map(x=> x.name).join(", ")}`);
+		}
+		if (preconditionPass.length == 0) {
+			debugger;
 		}
 		return preconditionPass;
 	}
@@ -277,12 +285,11 @@ export class PersonaSocial {
 		}
 		const cards = this.validSocialCards(actor, link);
 		const undrawn = cards;
-		const chosenCard = weightedChoice(
-			undrawn.map( card=> ({
+		const weightedList = undrawn.map( card=> ({
 				item: card,
 				weight: Number(card.system.frequency) ?? 1,
 			}))
-		);
+		const chosenCard = weightedChoice(weightedList);
 		if (!chosenCard) throw new PersonaError("Can't find valid social card!");
 		return chosenCard;
 	}
@@ -343,11 +350,11 @@ export class PersonaSocial {
 		return questions.map(this.questionToEvent);
 	}
 
-	static questionToEvent(question: NPC["system"]["questions"][number]) : SocialCard["system"]["events"][number] {
+	static questionToEvent(question: NPC["system"]["questions"][number]) : SocialCard["system"]["events"][number] & {origName: string} {
 		const eventTags = question.questionTags.slice();
 		eventTags.pushUnique("question");
 		eventTags.pushUnique("one-shot");
-		const event : SocialCard["system"]["events"][number] = {
+		const event = {
 			parent: question.parent,
 			label: "",
 			text: question.text,
@@ -362,10 +369,11 @@ export class PersonaSocial {
 				finale: false,
 				special: false,
 			},
-			name: question.name,
+			name: "Question",
+			origName: question.name,
 			conditions: question.conditions,
-			choices : shuffle( question.choices.map( this.convertQuestionChoiceToEventChoice)),
-		};
+			choices : shuffle( question.choices.map(PersonaSocial.convertQuestionChoiceToEventChoice)),
+		} satisfies SocialCard["system"]["events"][number] & {origName: string};
 		return event;
 
 	}
@@ -375,7 +383,8 @@ export class PersonaSocial {
 		return  {
 			name: choice.name,
 			conditions: choice.conditions,
-			text: choice.text,
+			text: choice.name,
+			appendedText: choice.name,
 			roll: {
 				...choice.roll,
 				rollType: "question"
@@ -730,19 +739,21 @@ export class PersonaSocial {
 
 	static async markEventUsed(event: CardEvent) {
 		let parent = event.parent;
-		do {
+		while (true) {
 			if (parent == undefined) {
 				PersonaError.softFail("Can't trace parent to card or actor");
 				return;
 			}
 			if (parent instanceof PersonaItem && parent.system.type == "socialCard") {
-				this.markSocialCardEventUsed(parent as SocialCard, event);
+				await this.markSocialCardEventUsed(parent as SocialCard, event);
 				return;
 			}
 			if (parent instanceof PersonaActor && parent.system.type == "npc") {
-				this.markQuestionUsed(parent as NPC, event);
+				await this.markQuestionUsed(parent as NPC, event);
+				return;
 			}
-		} while (parent != undefined);
+			parent = parent.parent;
+		}
 	}
 
 	static async markSocialCardEventUsed (card: SocialCard, event: CardEvent) {
@@ -759,7 +770,7 @@ export class PersonaSocial {
 	}
 
 	static async markQuestionUsed(npc: NPC, event: CardEvent) {
-		const index= npc.questions.findIndex( q=> q.name == event.name);
+		const index= npc.questions.findIndex( q=> q.name == (event as any)?.origName);
 		if (index == -1) {
 			PersonaError.softFail(`Can't find event index for ${event.name}`); return;
 		}
@@ -782,12 +793,10 @@ export class PersonaSocial {
 	}
 
 	static async #finalizeCard( cardData: CardData) : Promise<ChatMessage<Roll>> {
-
 		let html = "";
 		let pcImproveSpend = "";
 		if (cardData.card.system.cardType == "social") {
 			const link = this.lookupLink(cardData) as SocialLinkData;
-
 			if (link.actor.isPC()) {
 				pcImproveSpend = `<li class="token-spend"> spend 4 progress tokens to raise link with ${link.actor.name}</li>`;
 			}
@@ -1421,6 +1430,34 @@ export class PersonaSocial {
 		return testPreconditions(target.system.type == "npc" ? target.system.conditions : [], situation, null);
 	}
 
+	static async getExpendQuestionRequest(msg : SocketMessage["EXPEND_QUESTION"], payload: SocketPayload<"EXPEND_QUESTION">) {
+		const npc = game.actors.get(msg.npcId) as PersonaActor;
+		if (!npc) {
+			PersonaError.softFail(`Can't fiund NPC Id ${msg.npcId}`, msg, payload);
+			return;
+		}
+		if (npc.system.type == "npc") {
+			await (npc as NPC).markQuestionUsed(msg.eventIndex);
+		} else {
+			PersonaError.softFail(`${npc.name} is not an NPC`, msg, payload);
+			return;
+		}
+	}
+
+	static async getExpendEventRequest(msg : SocketMessage["EXPEND_EVENT"], payload: SocketPayload<"EXPEND_EVENT">) {
+		const card = game.items.get(msg.cardId) as SocialCard;
+		if (!card) {
+			PersonaError.softFail(`Can't fiund Card Id ${msg.cardId}`, msg, payload);
+			return;
+		}
+		const event = card.system.events[msg.eventIndex];
+		if (!event) {
+			PersonaError.softFail(`No index at ${msg.eventIndex}`, msg, payload);
+			return;
+		}
+		await card.markEventUsed(event);
+	}
+
 } //end of class
 
 
@@ -1453,7 +1490,10 @@ Hooks.on("socketsReady", () => {
 	console.log("Sockets set handler");
 	PersonaSockets.setHandler("DRAW_CARD", PersonaSocial.answerCardRequest.bind(PersonaSocial));
 	PersonaSockets.setHandler("CARD_REPLY", PersonaSocial.getCardReply.bind(PersonaSocial));
+	PersonaSockets.setHandler("EXPEND_EVENT", PersonaSocial.getExpendEventRequest.bind(PersonaSocial));
+	PersonaSockets.setHandler("EXPEND_QUESTION", PersonaSocial.getExpendQuestionRequest.bind(PersonaSocial));
 });
+
 
 Hooks.on("socketsReady" , () => {
 	PersonaSockets.setHandler("DEC_AVAILABILITY", ( task_id: string) => {
