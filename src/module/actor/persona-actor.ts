@@ -796,8 +796,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				this.system satisfies never;
 				return [];
 		}
-
-
 	}
 
 	get sideboardPowers() : Power [] {

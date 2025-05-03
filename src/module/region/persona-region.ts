@@ -98,7 +98,7 @@ export class PersonaRegion extends RegionDocument {
 			hazardDetails: "",
 			treasures : {
 				found: 0,
-				max: 1,
+				max: 0,
 			},
 			roomEffects: [],
 			pointsOfInterest: [],
