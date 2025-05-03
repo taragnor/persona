@@ -540,6 +540,7 @@ export class PersonaHandleBarsHelpers {
 			const user = persona.user;
 			if (user.isOwner) return 3;
 			if (user.isPC() || user.isNPCAlly()) return 2;
+			if (user.hasCreatureTag("enigmatic")) return 0;
 			return user.system.scanLevel;
 
 		}

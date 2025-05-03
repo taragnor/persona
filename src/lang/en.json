@@ -825,7 +825,8 @@
 	"persona.creatureType.timid": "Timid",
 	"persona.creatureType.artist": "Artist",
 	"persona.creatureType.tech-enthusiast": "Tech enthusiast",
-	"persona.creatureType.unscannable": "Unscannable",
+	"persona.creatureType.unscannable": "Scan Jam",
+	"persona.creatureType.enigmatic": "Defies Analysis",
 	"persona.creatureType.stupid": "Mindless",
 	"persona.creatureType.smart": "Tactical",
 

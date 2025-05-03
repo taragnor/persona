@@ -315,7 +315,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return {
 					name: this.system.personaName,
 					...this.system.combat,
-					powers: this.mainPowers,
+					powers: this.#mainPowers(),
 					talents: this.talents,
 					focii: this.focii,
 					XPForNextLevel: this.XPForNextLevel,
@@ -327,7 +327,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					name: this.name,
 					...this.system.combat,
 					xp: 0,
-					powers: this.mainPowers,
+					powers: this.#mainPowers(),
 					talents: [],
 					focii: this.focii,
 					XPForNextLevel: this.XPForNextLevel,
@@ -765,7 +765,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.modifyHP(healing);
 	}
 
-	get mainPowers() : Power[] {
+	#mainPowers() : Power[] {
 		switch (this.system.type) {
 			case "npc": case "tarot": return [];
 			case "npcAlly":
@@ -783,6 +783,21 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				this.system satisfies never;
 				return [];
 		}
+	}
+
+	get mainPowers() : Power[] {
+		switch (this.system.type) {
+			case "npc": case "tarot": return [];
+			case "pc":
+			case "shadow":
+			case "npcAlly":
+				return (this as ValidAttackers).persona().powers;
+			default:
+				this.system satisfies never;
+				return [];
+		}
+
+
 	}
 
 	get sideboardPowers() : Power [] {

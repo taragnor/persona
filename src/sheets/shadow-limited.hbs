@@ -59,6 +59,7 @@
 
 		{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=(persona actor)}}
 
+   {{#if (gt (scanLevel (persona actor) 1))}}
       <div class="main-powers">
          {{#each actor.mainPowers as |power i|}}
          <div class="main-power" data-power-id="{{power.id}}">
@@ -84,7 +85,7 @@
       </div>
       {{/if}}
    </div>
-   {{#if (gt actor.system.scanLevel 1)}}
+   {{#if (gt (scanLevel (persona actor) 1))}}
    <div class="treasure">
       <span><b> Treasure: </b></span>
       <span>

@@ -21,6 +21,7 @@ export const PERSONALITY_TAG_LIST = [
 
 export const TRAIT_TAG_LIST = [
 	"unscannable",
+	"enigmatic",
 ] as const;
 
 export const AI_TAGS = [
