@@ -1,103 +1,60 @@
 <section class="combat-section">
 	<div class="combat-stats flexcol">
-		<h2>
-			{{localize "persona.sheet.tabs.combat.header" }}
-		</h2>
-		<div class="lvl">
-			<span>
-				{{localize "persona.statistic.level"}}:
-			</span>
-			{{#if (isPCOrNPCAlly actor)}}
-			<span>
-				{{actor.system.combat.classData.level}}
-			</span>
-			{{#if (isGM)}}
-			<span>
-				<a class="levelUp">
-					<i class="fa-solid fa-circle-plus"></i>
-				</a>
-			</span>
-			{{/if}}
-			<span>
-				<progress id="progressBar" max="{{actor.XPForNextLevel}}" value="{{actor.system.combat.xp}}" title="{{actor.system.combat.xp}} / {{actor.XPForNextLevel}}"></progress>
-			</span>
-			{{else}}
-			<span>
-				<input class="short" type="number" name="system.combat.classData.level" value="{{actor.system.combat.classData.level}}">
-			</span>
-			{{/if}}
-		</div>
-		<div class="hp">
-			<label>
-				HP:
-			</label>
-			<span>
-				{{#if (isGM)}}
-				<input class="short" type="number" name="system.combat.hp" value="{{actor.hp}}">
-				{{else}}
-				{{actor.hp}}
-				{{/if}}
-			</span>
-			<span>
-				/ {{actor.mhp}}
-			</span>
-			{{#if (isShadow actor)}}
-			<div class="shadow-dmg">
+		<div class="flexrow">
+			<div class="hp">
 				<label>
-					Damage
+					HP:
 				</label>
 				<span>
-					<select name="system.combat.baseDamageType">
-						{{selectOptions CONST.DAMAGETYPES  localize=true selected=actor.system.combat.baseDamageType }}
-					</select>
+					{{#if (isGM)}}
+					<input class="short" type="number" name="system.combat.hp" value="{{actor.hp}}">
+					{{else}}
+					{{actor.hp}}
+					{{/if}}
 				</span>
 				<span>
-					{{numberInput actor.system.combat.wpndmg.low class="short" name="system.combat.wpndmg.low" step=1 min=0 max=100}}
-					{{numberInput actor.system.combat.wpndmg.high class="short" name="system.combat.wpndmg.high" step=1 min=0 max=100}}
+					/ {{actor.mhp}}
+				</span>
+			</div>
+			{{#if (hasMP actor)}}
+			<div class="mp">
+				<label> MP </label>
+				<span>
+					{{#if (isGM)}}
+					<input class="short" type="number" name="system.combat.mp.value" value="{{actor.system.combat.mp.value}}">
+					{{else}}
+					{{actor.system.combat.mp.value}}
+					{{/if}}
+				</span>
+				<span>
+					/ {{actor.mmp}}
 				</span>
 			</div>
 			{{/if}}
 		</div>
-		{{#if (hasMP actor)}}
-		<div class="mp">
-			<label> MP </label>
+		{{#if (isShadow actor)}}
+		<div class="shadow-dmg">
+			<label>
+				Damage
+			</label>
 			<span>
-				{{#if (isGM)}}
-				<input class="short" type="number" name="system.combat.mp.value" value="{{actor.system.combat.mp.value}}">
-				{{else}}
-				{{actor.system.combat.mp.value}}
-				{{/if}}
+				<select name="system.combat.baseDamageType">
+					{{selectOptions CONST.DAMAGETYPES  localize=true selected=actor.system.combat.baseDamageType }}
+				</select>
 			</span>
 			<span>
-				/ {{actor.mmp}}
+				{{numberInput actor.system.combat.wpndmg.low class="short" name="system.combat.wpndmg.low" step=1 min=0 max=100}}
+				{{numberInput actor.system.combat.wpndmg.high class="short" name="system.combat.wpndmg.high" step=1 min=0 max=100}}
 			</span>
 		</div>
 		{{/if}}
-		{{> "systems/persona/parts/defenses-section.hbs" actor=actor CONST=CONST}}
-		{{> "systems/persona/parts/resistance-section.hbs" actor=actor CONST=CONST}}
-		{{#if (and false (isPC actor)) }}
-		<div class="slots">
-			<h2>
-				{{localize	"persona.statistic.powerslots"}}
-			</h2>
-			{{#each actor.system.slots as |slot lvl|}}
-			<div>
-				<span>
-					{{lvl}}:
-				</span>
-				{{#if (isGM)}}
-				<input class="short" type="number" name="system.slots.{{lvl}}" value="{{slot}}">
-				{{/if}}
-				{{lookup ../actor.system.slots lvl}}
-				/ {{getMaxSlotsAt ../actor lvl}}
-				{{/each}}
-			</div>
-		</div>
-		{{/if}}
+
+		{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=(persona actor)}}
+		{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=(persona actor)}}
 		<button class="rollSave">
 			Roll Save
 		</button>
-		{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST}}
+		{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST }}
 		{{#if (canUseTalents actor)}}
 		{{> "systems/persona/parts/talents-table.hbs" actor=actor CONST=CONST}}
 		{{/if}}

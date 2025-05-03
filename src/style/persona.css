@@ -54,10 +54,15 @@ div.defenses {
 	font-size: smaller;
 }
 
-div.defense {
+div.defenses div.defense {
 	margin-left: 10px;
 	margin-right: 10px;
 
+}
+
+div.resistance-item {
+	margin-left: 10px;
+	margin-right: 10px;
 }
 
 div.roll-body {

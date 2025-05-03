@@ -22,6 +22,9 @@
 		<a class="item" data-tab="combat">
 			{{localize "persona.sheet.tabs.combat.tabname" }}
 		</a>
+		<a class="item" data-tab="persona">
+			{{actor.system.personaName}}
+		</a>
 		<a class="item" data-tab="social">
 			{{localize "persona.sheet.tabs.social.tabname" }}
 		</a>
@@ -41,11 +44,14 @@
 		</section>
 		<section class="tab tab-content combat-section flexcol" data-group="primary" data-tab="combat">
 
-			{{> "systems/persona/parts/combat-section.hbs" actor=actor}}
+			{{> "systems/persona/parts/combat-section.hbs" actor=actor persona=(persona actor)}}
 		</section>
 		<section class="tab tab-content inventory-section flexcol" data-group="primary" data-tab="soc-benefits">
 			{{> "systems/persona/parts/social-benefits-section.hbs" actor=actor CONST=CONST equips=equips}}
 		</section>
+		<section class="tab tab-content inventory-section flexcol" data-group="primary" data-tab="persona">
+			{{> "systems/persona/parts/base-persona-section.hbs" actor=actor CONST=CONST persona=actor.basePersona}}
+			</section>
 		<section class="tab tab-content inventory-section flexcol" data-group="primary" data-tab="inv">
 			{{> "systems/persona/parts/inventory-section.hbs" actor=actor CONST=CONST equips=equips}}
 		</section>

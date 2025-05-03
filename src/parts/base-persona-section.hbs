@@ -1,0 +1,30 @@
+<input type="text" class="borderless character-name" name="system.personaName" value="{{actor.system.personaName}}" title="Persona Name" placeholder="Persona Name">
+{{> "systems/persona/parts/defenses-input.hbs" actor=actor persona=persona CONST=CONST}}
+<div class="lvl">
+	<span>
+		{{localize "persona.statistic.level"}}:
+	</span>
+	{{#if (isPCOrNPCAlly actor)}}
+	<span>
+		{{actor.basePersona.level}}
+	</span>
+	{{#if (isGM)}}
+	<span>
+		<a class="levelUp">
+			<i class="fa-solid fa-circle-plus"></i>
+		</a>
+	</span>
+	{{/if}}
+	<span>
+		<progress id="progressBar" max="{{persona.XPForNextLevel}}" value="{{persona.xp}}" title="{{persona.xp}} / {{persona.XPForNextLevel}}"></progress>
+	</span>
+	{{/if}}
+	{{#if (isShadow actor) }}
+	<span>
+		<input class="short" type="number" name="system.combat.classData.level" value="{{actor.system.combat.classData.level}}">
+	</span>
+	{{/if}}
+</div>
+{{> "systems/persona/parts/resistance-input.hbs" actor=actor CONST=CONST}}
+{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona}}
+

@@ -9,6 +9,8 @@ const templateFileNames : string[] =[
 	"power-effects.hbs",
 	"resistance-section.hbs",
 	"defenses-section.hbs",
+	"resistance-input.hbs",
+	"defenses-input.hbs",
 	"incremental-section.hbs",
 	"effects-section.hbs",
 	"effects-section-adaptable.hbs",
@@ -43,6 +45,7 @@ const templateFileNames : string[] =[
 	"npc-social-focii.hbs",
 	"encounter-section.hbs",
 	"npc-questions.hbs",
+	"base-persona-section.hbs",
 ];
 
 export const templatePaths = templateFileNames.

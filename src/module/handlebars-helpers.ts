@@ -1,3 +1,5 @@
+import { RESIST_STRENGTHS } from "../config/damage-types.js";
+import { PersonaI } from "../config/persona-interface.js";
 import { CARD_TAGS } from "../config/card-tags.js";
 import { PersonaError } from "./persona-error.js";
 import { Consumable } from "./item/persona-item.js";
@@ -61,14 +63,16 @@ export class PersonaHandleBarsHelpers {
 		"getCritResist": (actor: PC | Shadow) => {
 			return actor.critResist().total({user: actor.accessor, target:actor.accessor});
 		},
-		"getDefense" : (actor: PC | Shadow, defense: keyof typeof actor["system"]["combat"]["defenses"]) => {
-			const acc = actor.accessor;
-			return actor.getDefense(defense).total({user: acc, target: acc});
+		"getDefense" : (actorOrPersona: ValidAttackers | PersonaI, defense: keyof ValidAttackers["system"]["combat"]["defenses"]): number => {
+			const persona = (actorOrPersona instanceof PersonaActor) ? actorOrPersona.persona() : actorOrPersona;
+			const acc = persona.user.accessor;
+			return persona.user.getDefense(defense).total({user: acc, target: acc});
 
 		},
 		"getInit" : (actor: PC | Shadow) => {
 			return actor.combatInit;
 		},
+
 
 
 		"isGM" : () => {
@@ -521,7 +525,23 @@ export class PersonaHandleBarsHelpers {
 
 		"getPowerTagsL": function (actor: ValidAttackers, power: Usable) {
 			return power.tagListLocalized(actor);
-		}
+		},
+		"persona": function (actor: ValidAttackers) : PersonaI {
+			return actor.persona();
+		},
 
+		"elemResist": function (actorOrPersona: ValidAttackers | PersonaI, resistType: Exclude<DamageType, "by-power">) : string {
+			const persona = (actorOrPersona instanceof PersonaActor) ? actorOrPersona.persona() : actorOrPersona;
+			const resist= persona.user.elementalResist(resistType);
+			return game.i18n.localize(RESIST_STRENGTHS[resist]);
+		},
+
+		"scanLevel": function (persona: PersonaI) : number {
+			const user = persona.user;
+			if (user.isOwner) return 3;
+			if (user.isPC() || user.isNPCAlly()) return 2;
+			return user.system.scanLevel;
+
+		}
 	}
 } //end of class

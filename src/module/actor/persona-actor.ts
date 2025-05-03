@@ -1,3 +1,4 @@
+import { PersonaI } from "../../config/persona-interface.js";
 import { PowerTag } from "../../config/power-tags.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
 import { localizeStatusId } from "../../config/status-effects.js";
@@ -110,6 +111,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	isPC(): this is PC {
 		return this.system.type == "pc";
+	}
+
+	isNPCAlly(): this is NPCAlly {
+		return this.system.type == "npcAlly";
 	}
 
 	isRealPC(): this is PC {
@@ -279,7 +284,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "npc":
 				return "";
 		}
-		const resists= this.system.combat.statusResists;
+		const resists = this.system.combat.statusResists;
 		const retdata = Object.entries(resists)
 			.map(([statusRaw, level]) => {
 				const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[statusRaw]);
@@ -294,6 +299,45 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			.filter( x=> x.length > 0)
 			.join(", ");
 		return retdata;
+	}
+
+	basePersona() : PersonaI {
+		if (!this.isValidCombatant()) {
+			throw new PersonaError("Can't call basePersona getter on non combatant");
+		}
+		return this.persona();
+	}
+
+	persona(this: ValidAttackers): PersonaI {
+		switch (this.system.type) {
+			case "pc":
+			case "npcAlly":
+				return {
+					name: this.system.personaName,
+					...this.system.combat,
+					powers: this.mainPowers,
+					talents: this.talents,
+					focii: this.focii,
+					XPForNextLevel: this.XPForNextLevel,
+					level: this.system.combat.classData.level,
+					user: this,
+				}
+			case "shadow":
+				return {
+					name: this.name,
+					...this.system.combat,
+					xp: 0,
+					powers: this.mainPowers,
+					talents: [],
+					focii: this.focii,
+					XPForNextLevel: this.XPForNextLevel,
+					level: this.system.combat.classData.level,
+					user: this,
+				};
+			default:
+				this.system satisfies never;
+				throw new PersonaError(`Can't get persona for ${this.name}`);
+		}
 	}
 
 	get combatInit(): number {
@@ -935,12 +979,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.items.filter( x=> x.isFocus()) as Focus[];
 	}
 
-	get passiveFocii(): Focus[] {
-		return this.focii.filter( f=> !f.system.defensive);
+	passiveFocii(this: ValidAttackers): Focus[] {
+		return this.persona().focii.filter( f=> !f.system.defensive);
 	}
 
-	get defensiveFocii(): Focus[] {
-		return this.focii.filter( f=> f.system.defensive);
+	defensiveFocii(this: ValidAttackers): Focus[] {
+		return this.persona().focii.filter( f=> f.system.defensive);
 	}
 
 	async modifyHP( this: ValidAttackers, delta: number) {
@@ -1521,21 +1565,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
-		switch (this.system.type) {
-			case "npc": case "tarot":
-				return [];
-			case "pc":
-			case "shadow":
-			case "npcAlly":
-				break;
-			default:
-				this.system satisfies never;
-		}
+		if (!this.isValidCombatant()) return [];
+		const persona= this.persona();
 		const passivePowers = (options && options.omitPowers) ? [] : this.getPassivePowers();
 		return [
 			...this.equippedItems(),
-			...this.passiveFocii,
-			...this.talents,
+			...this.passiveFocii(),
+			...persona.talents,
 			...passivePowers,
 			...this.passiveItems(),
 			...this.getAllSocialFocii(),
@@ -1545,12 +1581,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		].filter( x => x.getEffects(this as ValidAttackers).length > 0);
 	}
 
-	defensivePowers() : ModifierContainer [] {
+	defensivePowers(this: ValidAttackers) : ModifierContainer [] {
+		if (!this.isValidCombatant()) return [];
+		const persona= this.persona();
 		const defensiveItems = this.equippedItems().filter( item => item.hasTag("defensive"));
 		return  [
 			...defensiveItems,
-			...this.powers,
-			...this.defensiveFocii,
+			...this.persona().powers,
+			...this.defensiveFocii(),
 		].filter(x=> x.isDefensive())
 	}
 
@@ -2269,8 +2307,8 @@ getEffects(this: ValidAttackers) : ConditionalEffect[] {
 	return this.mainModifiers().flatMap( x=> x.getEffects(this));
 }
 
-getPassivePowers(): Power[] {
-	return this.powers
+getPassivePowers(this: ValidAttackers): Power[] {
+	return this.persona().powers
 		.filter( power=> power.system.subtype == "passive");
 }
 

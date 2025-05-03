@@ -3,60 +3,31 @@
 		<label>
 			{{localize "persona.defense.fort"}}
 		</label>
-		<span class="manual-boost">
-			<select name="system.combat.defenses.fort">
-				{{selectOptions CONST.DEFENSE_CATEGORY localize=true selected=actor.system.combat.defenses.fort}}
-			</select>
-		</span>
-		<span>
-			{{getDefense actor "fort"}}
-		</span>
+		{{#if (lt (scanLevel persona) 2)}}
+		{{persona.defenses.fort}}
+		{{else}}
+		{{getDefense persona "fort"}}
+		{{/if}}
 	</div>
 	<div class="defense">
 		<label>
 			{{localize "persona.defense.ref"}}
 		</label>
-		<span class="manual-boost">
-			<select name="system.combat.defenses.ref">
-				{{selectOptions CONST.DEFENSE_CATEGORY localize=true selected=actor.system.combat.defenses.ref}}
-			</select>
-		</span>
-		<span>
-			{{getDefense actor "ref"}}
-		</span>
+		{{#if (lt (scanLevel persona) 2)}}
+		{{persona.defenses.ref}}
+		{{else}}
+		{{getDefense persona "ref"}}
+		{{/if}}
 	</div>
 	<div class="defense">
 		<label>
 			{{localize "persona.defense.will"}}
 		</label>
-		<span class="manual-boost">
-			<select name="system.combat.defenses.will">
-				{{selectOptions CONST.DEFENSE_CATEGORY localize=true selected=actor.system.combat.defenses.will}}
-			</select>
-		</span>
-		<span>
-			{{getDefense actor "will"}}
-		</span>
+		{{#if (lt (scanLevel persona) 2)}}
+		{{persona.defenses.will}}
+		{{else}}
+		{{getDefense persona "will"}}
+		{{/if}}
 	</div>
-	<div class="initiative">
-		<label>
-			{{localize "persona.statistic.initiative"}}
-		</label>
-		<span class="manual-boost">
-			<select name="system.combat.initiative">
-				{{selectOptions CONST.DEFENSE_CATEGORY localize=true selected=actor.system.combat.initiative}}
-			</select>
-		</span>
-		<span>
-			{{getInit actor}}
-		</span>
-	</div>
-	<div class="defense">
-		<label>
-			{{localize	"persona.modifier.critResist"}}
-		</label>
-		{{getCritResist actor }}
-	</div>
-
 </div>
 

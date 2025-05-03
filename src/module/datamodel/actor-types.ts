@@ -48,7 +48,7 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 			}),
 			bio: personalBio(),
 			...PCSpecificStuff(),
-			// slots: skillSlots(),
+			personaName: new txt({initial: "Persona"}),
 			...sharedAbilities(),
 		} as const;
 		return ret;
@@ -162,6 +162,7 @@ class NPCAllySchema extends foundry.abstract.TypeDataModel {
 			...PCSpecificStuff(),
 			bio: personalBio(),
 			...sharedAbilities(),
+			personaName: new txt({initial: "Persona"}),
 			NPCSocialProxyId: new id(),
 		} as const;
 		return ret;
