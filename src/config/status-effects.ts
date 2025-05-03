@@ -296,7 +296,7 @@ export function fatigueLevelToStatus(lvl: number): FatigueStatusId | undefined {
 		case lvl == 0: return "tired";
 		case lvl == 1: return undefined;
 		case lvl >= 2: return "rested";
-		default: 
+		default:
 			throw new PersonaError(`Unknown Fatigue Level: ${lvl}`);
 	}
 }

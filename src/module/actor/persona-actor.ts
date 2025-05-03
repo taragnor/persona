@@ -1437,7 +1437,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const newId = fatigueLevelToStatus(lvl);
 		for (const eff of this.effects.contents) {
 			if (eff.isFatigueStatus) {
-				await eff.delete();
+				if (!eff.statuses.has(newId!))
+					await eff.delete();
 			}
 		}
 		if (newId) {
@@ -1448,11 +1449,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				}
 			}, true);
 		}
+		if (lvl < -1) {
+			await this.addStatus( {
+				id: "crippled",
+				duration: {
+					dtype:"permanent",
+				}
+			}, true);
+		}
 		// const newId = await this.setFatigueLevel(st);
-		if (log && oldId != newId) {
+		if (log && (oldId != newId || lvl < -1)) {
 			const oldName = oldId ? localize(statusMap.get(oldId)!.name) : "Normal";
 			const newName = newId ? localize(statusMap.get(newId)!.name): "Normal";
-			await Logger.sendToChat(`${this.displayedName}  fatigue changed from ${oldName} to ${newName}`);
+			const hospital = lvl < -1 ? `${this.displayedName} is over-fatigued and need to be hospitalized!`: "";
+			await Logger.sendToChat(`${this.displayedName}  fatigue changed from ${oldName} to ${newName}. ${hospital}`);
 		}
 		return newId;
 	}
