@@ -461,6 +461,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const weaknesses = Object.values(this.system.combat.resists)
 				.filter(x=> x == "weakness")
 				.length;
+			const resists = Object.values(this.system.combat.resists)
+				.filter(x=> x == "resist")
+				.length;
 			const blocks = Object.values(this.system.combat.resists)
 				.filter(x=> x == "block" || x == "absorb" || x == "reflect")
 				.length;
@@ -469,14 +472,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				const bonus = (weaknesses -1 ) * 0.25;
 				multmods.add("weaknesses mod", bonus)
 			}
-			if (blocks >= 2) {
-				const penalty = blocks * -0.07;
-				multmods.add("block mod", penalty);
-
+			if (this.system.combat.resists.physical == "weakness") {
+				multmods.add("weak to Physical", 0.25);
+			}
+			const overResist = blocks + (0.5 * resists) - (weaknesses * 1);
+			if (overResist > 2.5) {
+				const penalty = overResist * -0.07;
+				multmods.add("overResist/Block Mod", penalty);
 			}
 			bonuses.add("incremental bonus hp", incBonus)
 			const mult = multmods.total(sit, "percentage-special");
-			const mhp = (mult * lvlbase) + bonuses.total(sit);
+			const newform = this.getBonuses("maxhpMult-new").total(sit, "percentage");
+			const mhp = ((mult * lvlbase) + bonuses.total(sit)) * newform;
 			return Math.round(mhp);
 		} catch (e) {
 			console.log(e);
@@ -3005,6 +3012,7 @@ encounterSizeValue() : number {
 	if (this.hasRole("duo")) val*= 2;
 	if (this.hasRole("elite")) val*= 1.75;
 	if (this.hasRole("summoner")) val *= 2;
+	if (this.hasRole("minion")) val *= 0.666;
 	return val;
 }
 

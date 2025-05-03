@@ -33,7 +33,8 @@ export const MODIFIERLIST = [
 	"recovery",
 	"recovery-mult",
 	"maxhp",
-	"maxhpMult",
+	"maxhpMult", //old weird new form, additive multiplier
+	"maxhpMult-new", //newform straight multiply
 	"maxmp",
 	"maxmpMult",
 	"hpCostMult",

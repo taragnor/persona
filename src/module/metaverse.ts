@@ -256,8 +256,8 @@ static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod
 				break;
 			}
 
-			if (sizeVal < 1) {
-				console.warn(`Size value of ${pick.name} less than 1`);
+			if (sizeVal < 0.25) {
+				console.warn(`Size value of ${pick.name} less than 0.25`);
 			}
 			encounterSizeRemaining -= sizeVal;
 			encounter.push(pick);

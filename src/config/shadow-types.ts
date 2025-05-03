@@ -5,6 +5,7 @@ export const SHADOW_ROLE_LIST = [
 	"support",
 	"tank",
 	"brute",
+	"minion",
 	"artillery",
 	"assassin",
 	"controller",
