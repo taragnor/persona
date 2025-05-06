@@ -1,3 +1,5 @@
+import { Shadow } from "../persona-actor.js";
+import { ValidAttackers } from "../../combat/persona-combat.js";
 import { localize } from "../../persona.js";
 import { Logger } from "../../utility/logger.js";
 import { PersonaError } from "../../persona-error.js";
@@ -25,6 +27,17 @@ export class PCSheet extends PCLikeSheet {
 	}
 
 
+	override async getData() {
+		const data = await super.getData();
+		const personas = this.actor.system.personaList.map( x=> game.actors.get(x) as ValidAttackers);
+		const PERSONA_LIST = Object.fromEntries(
+			personas.map( x=> [x.id, x.displayedName])
+		);
+		PERSONA_LIST[""] = this.actor.system.personaName;
+		data["PERSONA_LIST"]= PERSONA_LIST;
+		return data;
+	}
+
 	override async _onDropActor(_event: Event, actorD: unknown)
 	{
 		//@ts-ignore
@@ -35,6 +48,7 @@ export class PCSheet extends PCLikeSheet {
 				return undefined;
 			}
 			case "shadow":
+				await this.actor.addPersona(actor as Shadow);
 				return;
 			case "tarot":
 				return;

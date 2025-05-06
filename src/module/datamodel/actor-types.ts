@@ -40,6 +40,8 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 			...SocialTargetBlockData(),
 			hasAlteredFatigueToday: new bool({initial: false}),
 			equipped: equipslots(),
+			activePersona: new id(),
+			personaList: new arr(new id()),
 			money: new num({integer: true, min: 0, initial:1}),
 			creatureType: new txt({ choices: SHADOW_CREATURE_TYPE_LIST, initial: "npc-ally"}),
 			...tarotFields(),

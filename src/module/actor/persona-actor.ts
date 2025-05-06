@@ -1,4 +1,4 @@
-import { PersonaI } from "../../config/persona-interface.js";
+import { Persona } from "../persona-class.js";
 import { SHADOW_ROLE } from "../../config/shadow-types.js";
 import { PowerTag } from "../../config/power-tags.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
@@ -12,7 +12,6 @@ import { poisonDamageMultiplier } from "../../config/shadow-types.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { shadowRoleMultiplier } from "../../config/shadow-types.js";
 import { RealDamageType } from "../../config/damage-types.js";
-import { DamageType } from "../../config/damage-types.js";
 import { SkillCard } from "../item/persona-item.js";
 import { UsableAndCard } from "../item/persona-item.js";
 import { ValidSocialTarget } from "../social/persona-social.js";
@@ -283,68 +282,94 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return npc as NPC | PC;
 	}
 
-	get printableResistanceString() : string {
-		switch (this.system.type) {
-			case "tarot":
-			case "npc":
-				return "";
-		}
-		const resists = this.system.combat.statusResists;
-		const retdata = Object.entries(resists)
-			.map(([statusRaw, level]) => {
-				const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[statusRaw]);
-				switch (level) {
-					case "resist": return `Resist ${statusTrans}`;
-					case "absorb":
-					case "reflect":
-					case "block": return `Block ${statusTrans}`;
-					default: return "";
-				}
-			})
-			.filter( x=> x.length > 0)
-			.join(", ");
-		return retdata;
-	}
+	// get printableResistanceString() : string {
+	// 	switch (this.system.type) {
+	// 		case "tarot":
+	// 		case "npc":
+	// 			return "";
+	// 	}
+	// 	const resists = this.system.combat.statusResists;
+	// 	const retdata = Object.entries(resists)
+	// 		.map(([statusRaw, level]) => {
+	// 			const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[statusRaw]);
+	// 			switch (level) {
+	// 				case "resist": return `Resist ${statusTrans}`;
+	// 				case "absorb":
+	// 				case "reflect":
+	// 				case "block": return `Block ${statusTrans}`;
+	// 				default: return "";
+	// 			}
+	// 		})
+	// 		.filter( x=> x.length > 0)
+	// 		.join(", ");
+	// 	return retdata;
+	// }
 
-	get basePersona() : PersonaI {
+	get basePersona() : Persona<ValidAttackers> {
 		if (!this.isValidCombatant()) {
 			throw new PersonaError("Can't call basePersona getter on non combatant");
 		}
-		return this.persona();
+		return new Persona(this, this.#mainPowers());
+		// switch (this.system.type) {
+		// 	case "pc":
+		// 	case "npcAlly":
+		// 			return {
+		// 				name: this.system.personaName,
+		// 				...this.system.combat,
+		// 				powers: this.#mainPowers(),
+		// 				talents: this.talents,
+		// 				focii: this.focii,
+		// 				XPForNextLevel: this.XPForNextLevel,
+		// 				level: this.system.combat.classData.level,
+		// 				user: this,
+		// 				scanLevel: 3,
+		// 			}
+		// 	case "shadow":
+		// 		return new Persona(this)
+		// 			name: this.name,
+		// 			...this.system.combat,
+		// 			xp: 0,
+		// 			powers: this.#mainPowers(),
+		// 			talents: [],
+		// 			focii: this.focii,
+		// 			XPForNextLevel: this.XPForNextLevel,
+		// 			level: this.system.combat.classData.level,
+		// 			user: this,
+		// 			scanLevel: this.system.scanLevel ?? 0,
+		// 		};
+		// 	default:
+		// 		this.system satisfies never;
+		// 		throw new PersonaError(`Invalid type ${(this as any)?.system?.type}`);
+		// }
 	}
 
-	persona(this: ValidAttackers): PersonaI {
+	persona<T extends ValidAttackers>(this: T): Persona<T> {
 		switch (this.system.type) {
 			case "pc":
 			case "npcAlly":
-				return {
-					name: this.system.personaName,
-					...this.system.combat,
-					powers: this.#mainPowers(),
-					talents: this.talents,
-					focii: this.focii,
-					XPForNextLevel: this.XPForNextLevel,
-					level: this.system.combat.classData.level,
-					user: this,
-					scanLevel: 3,
+				if (this.isNPCAlly() || (this.isPC() && (this.system.activePersona == null || this.system.activePersona == this.id))) {
+					return this.basePersona as Persona<T>;
 				}
+				const activePersona = game.actors.get((this as PC).system.activePersona) as ValidAttackers;
+				if (!activePersona) {return this.basePersona as Persona<T>};
+				return Persona.combinedPersona(this.basePersona, activePersona.basePersona) as Persona<T>;
 			case "shadow":
-				return {
-					name: this.name,
-					...this.system.combat,
-					xp: 0,
-					powers: this.#mainPowers(),
-					talents: [],
-					focii: this.focii,
-					XPForNextLevel: this.XPForNextLevel,
-					level: this.system.combat.classData.level,
-					user: this,
-					scanLevel: this.system.scanLevel ?? 0,
-				};
+				return this.basePersona as Persona<T>;
 			default:
 				this.system satisfies never;
 				throw new PersonaError(`Can't get persona for ${this.name}`);
 		}
+	}
+
+
+	async addPersona(this: PC, shadow: Shadow) {
+		if (!shadow.hasPlayerOwner || !shadow.isOwner) {
+			PersonaError.softFail("Can't add this, doesn't have a player owner");
+		}
+		const arr = this.system.personaList.slice();
+		arr.push(shadow.id);
+		await this.update( {"system.personaList": arr});
+		ui.notifications.notify(`Persona ${shadow.displayedName} added`);
 	}
 
 	get combatInit(): number {
@@ -1526,13 +1551,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				rating += amt
 			}
 		}
+		const thisP= this.persona();
+		const otherP = other.persona();
 		const weaknesses = DAMAGETYPESLIST
-			.filter( dmg => dmg != "by-power" && this.elementalResist(dmg) == "weakness") as RealDamageType[];
+			.filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "weakness") as RealDamageType[];
 		rating -= 0.5 * weaknesses.length;
 		const normalR = DAMAGETYPESLIST
-			.filter( dmg => dmg != "by-power" && this.elementalResist(dmg) == "normal") as RealDamageType[];
+			.filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "normal") as RealDamageType[];
 		for (const w of weaknesses) {
-			const res = other.elementalResist(w);
+			const res = otherP.elemResist(w);
 			switch (res)  {
 				case "block":
 					rating += 2;
@@ -1555,7 +1582,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			}
 		}
 		for (const n of normalR) {
-			const res = other.elementalResist(n);
+			const res = otherP.elemResist(n);
 			switch (res) {
 				case "resist":
 					rating += 0.1;
@@ -1698,53 +1725,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return weaknesses.length;
 	}
 
-	elementalResist(this: ValidAttackers, type: Exclude<DamageType, "by-power">) : ResistStrength  {
-		switch (type) {
-			case "untyped":  case "none":
-			case "all-out":
-				return "normal";
-			case "healing":
-				return "absorb";
-		}
-
-		const baseResist = this.system.combat.resists[type] ?? "normal";
-		// let resist = baseResist;
-		const effectChangers=  this.mainModifiers().filter( x=> x.getEffects(this)
-			.some(x=> x.consequences
-				.some( cons=>cons.type == "raise-resistance" || cons.type == "lower-resistance")));
-		const situation : Situation = {
-			user: this.accessor,
-			target: this.accessor,
-		};
-		const consequences = effectChangers.flatMap(
-			item => item.getEffects(this).flatMap(eff =>
-				getActiveConsequences(eff, situation, item)
-			)
-		);
-		const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
-		let resBonus = 0;
-		let resPenalty = 0;
-		for (const cons of consequences) {
-			switch (cons.type) {
-				case "raise-resistance":
-					if (cons.resistType == type &&
-						resval(cons.resistanceLevel!) > resval(baseResist)) {
-						resBonus = Math.max(resBonus, resval(cons.resistanceLevel!) - resval(baseResist))
-					}
-					break;
-				case "lower-resistance":
-					if (cons.resistType == type &&
-						resval (cons.resistanceLevel!) < resval(baseResist))  {
-						resPenalty = Math.min(resPenalty, resval(cons.resistanceLevel!) - resval(baseResist))
-					}
-					break;
-				default:
-					break;
-			}
-		}
-		const resLevel = Math.clamp(resval(baseResist) + resBonus + resPenalty, 0 , RESIST_STRENGTH_LIST.length-1);
-		return RESIST_STRENGTH_LIST[resLevel];
-	}
+	// elementalResist(this: ValidAttackers, type: Exclude<DamageType, "by-power">) : ResistStrength  {
+	// 	return this.persona().elemResist(type);
+	// }
 
 	statusResist(status: StatusEffectId) : ResistStrength {
 		switch (this.system.type) {

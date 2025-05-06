@@ -1,3 +1,4 @@
+import { Persona } from "./persona-class.js";
 import { RESIST_STRENGTHS } from "../config/damage-types.js";
 import { PersonaI } from "../config/persona-interface.js";
 import { CARD_TAGS } from "../config/card-tags.js";
@@ -530,9 +531,9 @@ export class PersonaHandleBarsHelpers {
 			return actor.persona();
 		},
 
-		"elemResist": function (actorOrPersona: ValidAttackers | PersonaI, resistType: Exclude<DamageType, "by-power">) : string {
+		"elemResist": function (actorOrPersona: ValidAttackers | Persona, resistType: Exclude<DamageType, "by-power">) : string {
 			const persona = (actorOrPersona instanceof PersonaActor) ? actorOrPersona.persona() : actorOrPersona;
-			const resist= persona.user.elementalResist(resistType);
+			const resist= persona.elemResist(resistType);
 			return game.i18n.localize(RESIST_STRENGTHS[resist]);
 		},
 
@@ -550,7 +551,6 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"scanLevelgte": function (persona: PersonaI, val: number) : boolean {
-			debugger;
 			return persona.scanLevel >= val;
 		},
 

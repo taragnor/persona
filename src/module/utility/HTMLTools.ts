@@ -151,7 +151,6 @@ export class HTMLTools {
 			}, {});
 			dialog.render(true);
 		});
-
 	}
 
 	static async numberButtons(msg: string, min: number, max :number) : Promise<number> {
@@ -161,7 +160,7 @@ export class HTMLTools {
 			for (let i = min; i<= max; i++) {
 				buttons[`${i}`] = {
 					label: `${i}`,
-					callback: (htm: string) => conf(i),
+					callback: (_htm: string) => conf(i),
 				};
 			};
 			const dialog = new Dialog ( {
@@ -175,11 +174,11 @@ export class HTMLTools {
 		});
 	}
 
-	static createLocalizationObject<const T extends readonly string[]> ( array: T, localizationHeader: string) : Record<T[number], string> {
+	static createLocalizationObject<const T extends readonly string[]> ( array: T, localizationHeader: string) : Readonly<Record<T[number], string>> {
 		const obj = Object.fromEntries(
 			array.map( x=> [x, `${localizationHeader}.${x}`])
 		);
-		return obj as Record<T[number], string>;
+		return obj as Readonly<Record<T[number], string>>;
 	}
 
 // **************************************************

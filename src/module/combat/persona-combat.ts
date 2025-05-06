@@ -12,7 +12,6 @@ import { TriggeredEffect } from "../triggered-effect.js";
 import { NonCombatTriggerTypes } from "../../config/triggers.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { PersonaCalendar } from "../social/persona-calendar.js";
-import { POWER_TAGS } from "../../config/power-tags.js";
 import { PowerTag } from "../../config/power-tags.js";
 import { ConditionTarget } from "../../config/precondition-types.js";
 import { ConsTarget } from "../../config/consequence-types.js";
@@ -1183,7 +1182,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			PersonaError.softFail("No natural attack roll passed to siutuation in processAttackNullifiers");
 		}
 		const element = power.getDamageType(attacker.actor);
-		const resist = target.actor.elementalResist(element);
+		const targetP = target.actor.persona();
+		const resist = targetP.elemResist(element);
 		switch (resist) {
 			case "reflect": {
 				return {
@@ -1282,9 +1282,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		};
 		const cardReturn = await this.processSkillCard(attacker, usableOrCard, target, situation);
 		if (cardReturn) return cardReturn;
+		const targetP = target.actor.persona();
 		const power = usableOrCard as Usable;
 		const element = power.getDamageType(attacker.actor);
-		const resist = target.actor.elementalResist(element);
+		const resist = targetP.elemResist(element);
 		const def = power.system.defense;
 		const r = await new Roll("1d20").roll();
 		if (situation.activationRoll) {
@@ -1793,7 +1794,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return TriggeredEffect.onTrigger(trigger, actor, situation);
 	}
 
-	static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, costModifiers: OtherEffect[]) : Promise<CombatResult>
+	static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifiers: OtherEffect[]) : Promise<CombatResult>
 	{
 		const res = new CombatResult();
 		switch (usableOrCard.system.type) {
@@ -1878,7 +1879,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (!tag) return;
 		const isDarkLight = tag == "dark" || tag == "light";
 		if (isDarkLight && !power.hasTag("no-crit")) return;
-		const localized = game.i18n.localize(POWER_TAGS[tag]);
+		// const _localized = game.i18n.localize(POWER_TAGS[tag]);
 		attackBonus.add(`Damage Power bonus`, +3);
 	}
 

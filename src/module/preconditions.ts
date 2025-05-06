@@ -615,7 +615,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (power.system.type == "skillCard") return undefined;
 			if (!situation.attacker) return undefined;
 			const attacker = PersonaDB.findActor(situation?.attacker);
-			const resist = (targetActor as PC | Shadow).elementalResist((power as Usable).getDamageType(attacker));
+			const resist = (targetActor as PC | Shadow).persona().elemResist((power as Usable).getDamageType(attacker));
 			return resist == "weakness";
 		}
 		case "is-resistant-to": {
@@ -632,7 +632,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 				dtype = (power as Usable).getDamageType(attacker);
 			}
 			if (targetActor.system.type == "npc") return undefined;
-			const resist = (targetActor as PC | Shadow).elementalResist(dtype);
+			const resist = (targetActor as PC | Shadow).persona().elemResist(dtype);
 			switch (resist) {
 				case "resist": case "block": case "absorb": case "reflect": return true;
 				case "weakness": case "normal": return  false;

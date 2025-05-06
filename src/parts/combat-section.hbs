@@ -48,18 +48,30 @@
 			</span>
 		</div>
 		{{/if}}
+		{{#if (isPC actor) }}
+		{{#if (gte actor.system.personaList.length 1)}}
+		<div>
+			<span>
+				<label> Active Persona:</label>
+				<select name="system.activePersona">
+					{{selectOptions PERSONA_LIST localize=false selected=actor.system.activePersona}}
+				</select>
+			</span>
+		</div>
+		{{/if}}
+		{{/if}}
 
 		{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=(persona actor)}}
 		{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=(persona actor)}}
 		<button class="rollSave">
 			Roll Save
 		</button>
-		{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST }}
+		{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=(persona actor)}}
 		{{#if (canUseTalents actor)}}
-		{{> "systems/persona/parts/talents-table.hbs" actor=actor CONST=CONST}}
+		{{> "systems/persona/parts/talents-table.hbs" actor=actor CONST=CONST persona=(persona actor)}}
 		{{/if}}
 		<hr>
-		{{> "systems/persona/parts/focii-table.hbs" actor=actor CONST=CONST}}
+		{{> "systems/persona/parts/focii-table.hbs" actor=actor CONST=CONST persona=(persona actor)}}
 		<hr>
 	</div>
 </section>

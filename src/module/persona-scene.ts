@@ -123,7 +123,8 @@ export class PersonaScene extends Scene {
 		this.encounterList()
 		.forEach( shadow => {
 			Object.keys(stats).forEach ( (dtype: RelevantDamageTypes ) => {
-				const resist=  shadow.elementalResist(dtype);
+				const persona = shadow.persona();
+				const resist=  persona.elemResist(dtype);
 				switch (resist) {
 					case "normal":
 						break;
