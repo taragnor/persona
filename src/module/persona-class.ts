@@ -24,6 +24,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	focii: Focus[];
 	XPForNextLevel: number;
 	scanLevel: number;
+	actorId: string;
 
 	constructor (actor: T, powers: Power[]) {
 		this.user = actor;
@@ -36,6 +37,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		this.focii = actor.focii;
 		this.XPForNextLevel = actor.XPForNextLevel;
 		this.scanLevel = 3;
+		this.actorId = actor.id;
 		switch (actor.system.type) {
 			case "pc":
 			case "npcAlly":
@@ -119,6 +121,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		fusedPersona.user = basePersona.user;
 		fusedPersona.classData = basePersona.classData;
 		return fusedPersona;
+	}
+
+	get isBasePersona(): boolean {
+		return this.actorId == this.user.id;
 	}
 
 	get printableResistanceString() : string {

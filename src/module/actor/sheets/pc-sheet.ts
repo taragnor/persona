@@ -33,7 +33,7 @@ export class PCSheet extends PCLikeSheet {
 		const PERSONA_LIST = Object.fromEntries(
 			personas.map( x=> [x.id, x.displayedName])
 		);
-		PERSONA_LIST[""] = this.actor.system.personaName;
+		PERSONA_LIST[this.actor.id] = this.actor.system.personaName;
 		data["PERSONA_LIST"]= PERSONA_LIST;
 		return data;
 	}

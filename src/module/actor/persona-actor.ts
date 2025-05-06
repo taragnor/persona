@@ -282,66 +282,22 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return npc as NPC | PC;
 	}
 
-	// get printableResistanceString() : string {
-	// 	switch (this.system.type) {
-	// 		case "tarot":
-	// 		case "npc":
-	// 			return "";
-	// 	}
-	// 	const resists = this.system.combat.statusResists;
-	// 	const retdata = Object.entries(resists)
-	// 		.map(([statusRaw, level]) => {
-	// 			const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[statusRaw]);
-	// 			switch (level) {
-	// 				case "resist": return `Resist ${statusTrans}`;
-	// 				case "absorb":
-	// 				case "reflect":
-	// 				case "block": return `Block ${statusTrans}`;
-	// 				default: return "";
-	// 			}
-	// 		})
-	// 		.filter( x=> x.length > 0)
-	// 		.join(", ");
-	// 	return retdata;
-	// }
+
+	isUsingBasePersona(this: ValidAttackers) : boolean {
+		if ("activePersona" in this.system) {
+			const active = this.system.activePersona;
+			return !active  || active == this.id;
+		}
+		return true;
+	}
 
 	get basePersona() : Persona<ValidAttackers> {
 		if (!this.isValidCombatant()) {
 			throw new PersonaError("Can't call basePersona getter on non combatant");
 		}
 		return new Persona(this, this.#mainPowers());
-		// switch (this.system.type) {
-		// 	case "pc":
-		// 	case "npcAlly":
-		// 			return {
-		// 				name: this.system.personaName,
-		// 				...this.system.combat,
-		// 				powers: this.#mainPowers(),
-		// 				talents: this.talents,
-		// 				focii: this.focii,
-		// 				XPForNextLevel: this.XPForNextLevel,
-		// 				level: this.system.combat.classData.level,
-		// 				user: this,
-		// 				scanLevel: 3,
-		// 			}
-		// 	case "shadow":
-		// 		return new Persona(this)
-		// 			name: this.name,
-		// 			...this.system.combat,
-		// 			xp: 0,
-		// 			powers: this.#mainPowers(),
-		// 			talents: [],
-		// 			focii: this.focii,
-		// 			XPForNextLevel: this.XPForNextLevel,
-		// 			level: this.system.combat.classData.level,
-		// 			user: this,
-		// 			scanLevel: this.system.scanLevel ?? 0,
-		// 		};
-		// 	default:
-		// 		this.system satisfies never;
-		// 		throw new PersonaError(`Invalid type ${(this as any)?.system?.type}`);
-		// }
 	}
+
 
 	persona<T extends ValidAttackers>(this: T): Persona<T> {
 		switch (this.system.type) {

@@ -554,6 +554,17 @@ export class PersonaHandleBarsHelpers {
 			return persona.scanLevel >= val;
 		},
 
+		"usingBasePersona": function (actor: ValidAttackers) : boolean {
+			return actor.isUsingBasePersona();
+		 },
+
+		"canSideboardPowers": function (persona: Persona): boolean {
+			return persona.user.isPC() && persona.user.isOwner &&  persona.isBasePersona;
+		},
+
+		"canDeletePowers": function (persona: Persona): boolean {
+			return persona.user.isOwner && persona.isBasePersona;
+		},
 	}
 
 
