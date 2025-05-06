@@ -94,7 +94,7 @@ export class ShadowSheet extends CombatantSheetBase {
 			FREQUENCY,
 		};
 
-
+		data["persona"] = this.actor.persona();
 		return data;
 	}
 

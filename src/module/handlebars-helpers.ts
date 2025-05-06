@@ -541,8 +541,20 @@ export class PersonaHandleBarsHelpers {
 			if (user.isOwner) return 3;
 			if (user.isPC() || user.isNPCAlly()) return 2;
 			if (user.hasCreatureTag("enigmatic")) return 0;
-			return user.system.scanLevel;
+			const scanLevel= user.system.scanLevel;
+			if (typeof scanLevel != "number") {
+				PersonaError.softFail("Trouble reading scan level for Persona of ${user.name}");
+			}
+			console.log(`Scan level is :${scanLevel}`);
+			return scanLevel ?? 0;
+		},
 
-		}
+		"scanLevelgte": function (persona: PersonaI, val: number) : boolean {
+			debugger;
+			return persona.scanLevel >= val;
+		},
+
 	}
+
+
 } //end of class

@@ -1,3 +1,5 @@
+import { HTMLTools } from "../module/utility/HTMLTools.js";
+
 export const SHADOW_ROLE_LIST = [
 	"base",
 	"soldier",
@@ -20,9 +22,10 @@ export const SHADOW_ROLE_LIST = [
 
 export type ShadowRole = typeof SHADOW_ROLE_LIST[number];
 
-export const SHADOW_ROLE= Object.fromEntries(
-	SHADOW_ROLE_LIST.map( x=> [x, `persona.shadow.role.${x}`])
-);
+export const SHADOW_ROLE = HTMLTools.createLocalizationObject(SHADOW_ROLE_LIST, "persona.shadow.role");
+// export const SHADOW_ROLE= Object.fromEntries(
+// 	SHADOW_ROLE_LIST.map( x=> [x, `persona.shadow.role.${x}`])
+// );
 
 
 export const SHADOW_CREATURE_TYPE_LIST = [

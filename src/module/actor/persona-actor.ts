@@ -1,4 +1,5 @@
 import { PersonaI } from "../../config/persona-interface.js";
+import { SHADOW_ROLE } from "../../config/shadow-types.js";
 import { PowerTag } from "../../config/power-tags.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
 import { localizeStatusId } from "../../config/status-effects.js";
@@ -115,6 +116,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	isNPCAlly(): this is NPCAlly {
 		return this.system.type == "npcAlly";
+	}
+
+	isShadow(): this is Shadow {
+		return this.system.type == "shadow";
 	}
 
 	isRealPC(): this is PC {
@@ -301,7 +306,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return retdata;
 	}
 
-	basePersona() : PersonaI {
+	get basePersona() : PersonaI {
 		if (!this.isValidCombatant()) {
 			throw new PersonaError("Can't call basePersona getter on non combatant");
 		}
@@ -321,6 +326,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					XPForNextLevel: this.XPForNextLevel,
 					level: this.system.combat.classData.level,
 					user: this,
+					scanLevel: 3,
 				}
 			case "shadow":
 				return {
@@ -333,6 +339,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					XPForNextLevel: this.XPForNextLevel,
 					level: this.system.combat.classData.level,
 					user: this,
+					scanLevel: this.system.scanLevel ?? 0,
 				};
 			default:
 				this.system satisfies never;
@@ -1613,7 +1620,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	defensivePowers(this: ValidAttackers) : ModifierContainer [] {
 		if (!this.isValidCombatant()) return [];
-		const persona= this.persona();
 		const defensiveItems = this.equippedItems().filter( item => item.hasTag("defensive"));
 		return  [
 			...defensiveItems,
@@ -2824,8 +2830,9 @@ async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
 	}
 	let levelUp = false;
 	let newxp = this.system.combat.xp + amt;
-	while (newxp > this.XPForNextLevel) {
-		newxp -= 100;
+	const XPrequired= this.XPForNextLevel;
+	while (newxp > XPrequired) {
+		newxp -= XPrequired;
 		levelUp = true;
 	}
 	await this.update({"system.combat.xp" : newxp});
@@ -3446,6 +3453,18 @@ async addQuestion(this: NPC) {
 async deleteQuestion(this: NPC, index: number) {
 	this.system.questions.splice(index, 1);
 	await this.update( { "system.questions": this.system.questions});
+}
+
+get roleString() : SafeString {
+	if (!this.isShadow()) return "";
+	let roles: (typeof this.system.role)[] = [];
+	roles.push(this.system.role);
+	roles.push(this.system.role2);
+	const localized = roles
+		.filter( x=> x != undefined && x != "base")
+		.map( x=> localize(SHADOW_ROLE[x]))
+		.join(", ");
+	return localized;
 }
 
 get treasureString() : SafeString {

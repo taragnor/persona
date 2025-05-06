@@ -6,12 +6,12 @@
 			</div>
 			<div>
 				<div>
-					ScanLevel: {{actor.system.scanLevel}}
+					Scan Level: {{persona.scanLevel}}
 				</div>
 				<div>
 					<label> Identifier: </label> {{actor.prototypeToken.name}}
 				</div>
-				{{#if (ne actor.prototypeToken.name actor.name)}}
+				{{#if (and (ne actor.prototypeToken.name actor.name) (scanLevelgte persona 1))}}
 				<div>
 					<label> Actual Name: </label> {{actor.name}}
 				</div>
@@ -21,18 +21,14 @@
 					<label>Tarot </label>
 					<span> {{actor.tarot.name}} </span>
 				</div>
+				{{#if (scanLevelgte persona 1)}}
 				<div>
 					<label>Role</label>
-					<span>{{actor.system.role}} </span>
-					{{#if actor.system.role2}}
-					<span>
-						{{actor.system.role2}}
-					</span>
-					{{/if}}
-
+					<span>{{actor.roleString}} </span>
 				</div>
+				{{/if}}
 
-				{{#if (gt actor.system.scanLevel 1)}}
+				{{#if (scanLevelgte persona 1)}}
 				<div>
 					<label> HP </label>
 					<span> {{actor.hp}} / {{actor.mhp}} </span>
@@ -55,42 +51,45 @@
 
 		<hr>
 
+		{{#if (scanLevelgte persona 1)}}
 		{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=(persona actor)}}
 
 		{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=(persona actor)}}
+		{{/if}}
 
-   {{#if (gt (scanLevel (persona actor) 1))}}
-      <div class="main-powers">
-         {{#each actor.mainPowers as |power i|}}
-         <div class="main-power" data-power-id="{{power.id}}">
-            <div class="power-name-block {{#if (lte ../actor.maxPowers i)}} over-max-power {{/if}} ">
-               {{#if (false)}}
-               <a class="rollPower" >
-                  <img src="icons/dice/d20black.svg">
-               </a>
-                  {{/if}}
-                  <div class="power-name">
-                     {{power.name}}
-                     {{#if (gt ../actor.system.scanLevel 1)}}
-                     <span class="cost-string">
-                        ({{powerCostString power ../actor}})
-                     </span>
-                     {{/if}}
-                  </div>
-            </div>
-            <div class="power-operations">
-            </div>
-         </div>
-         {{/each}}
-      </div>
-      {{/if}}
-   </div>
-   {{#if (gt (scanLevel (persona actor) 1))}}
-   <div class="treasure">
-      <span><b> Treasure: </b></span>
-      <span>
+		{{#if (scanLevelgte persona 2)}}
+		<h3> Powers</h3>
+		<div class="main-powers">
+			{{#each actor.mainPowers as |power i|}}
+			<div class="main-power" data-power-id="{{power.id}}">
+				<div class="power-name-block {{#if (lte ../actor.maxPowers i)}} over-max-power {{/if}} ">
+					{{#if (false)}}
+					<a class="rollPower" >
+						<img src="icons/dice/d20black.svg">
+					</a>
+						{{/if}}
+						<div class="power-name">
+							{{power.name}}
+							{{#if (gt ../actor.system.scanLevel 1)}}
+							<span class="cost-string">
+								({{powerCostString power ../actor}})
+							</span>
+							{{/if}}
+						</div>
+				</div>
+				<div class="power-operations">
+				</div>
+			</div>
+			{{/each}}
+		</div>
+		{{/if}}
+	</div>
+	{{#if (scanLevelgte persona 2)}}
+	<div class="treasure">
+		<span><b> Treasure: </b></span>
+		<span>
 			{{actor.treasureString}}
-      </span>
-   </div>
-   {{/if}}
+		</span>
+	</div>
+	{{/if}}
 </form>

@@ -18,4 +18,5 @@ export interface PersonaI {
 	focii: Focus[];
 	XPForNextLevel: number;
 	level: number;
+	scanLevel: number;
 }

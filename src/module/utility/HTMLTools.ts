@@ -175,6 +175,13 @@ export class HTMLTools {
 		});
 	}
 
+	static createLocalizationObject<const T extends readonly string[]> ( array: T, localizationHeader: string) : Record<T[number], string> {
+		const obj = Object.fromEntries(
+			array.map( x=> [x, `${localizationHeader}.${x}`])
+		);
+		return obj as Record<T[number], string>;
+	}
+
 // **************************************************
 // **************   EventHandlers  *************** *
 // **************************************************
