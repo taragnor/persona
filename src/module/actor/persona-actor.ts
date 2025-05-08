@@ -2922,9 +2922,6 @@ async onMetaverseTimeAdvance(): Promise<string[]> {
 			ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
 		}
 	}
-
-
-
 	return ret;
 }
 

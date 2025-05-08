@@ -530,8 +530,19 @@ static async passMetaverseTurn() {
 
 static async #passMetaverseTurn() {
 	const pcs = game.scenes.active.tokens.contents.filter( tok => tok.actor && (tok.actor as PersonaActor).isPC());
+	const ret : string[] = [];
 	for (const pc of pcs) {
-		await (pc.actor as PersonaActor).onMetaverseTimeAdvance();
+		ret.push(...await (pc.actor as PersonaActor).onMetaverseTimeAdvance());
+	}
+	if (ret.length > 0) {
+		const changes = ret
+			.map( x=> `<li>${x}</li>`)
+			.join("");
+		await ChatMessage.create( {
+			speaker: {alias: "Metaverse Exploration"},
+			content: `<ul>${changes}</ul>`,
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+		});
 	}
 	await TriggeredEffect.onTrigger("on-metaverse-turn")
 		.emptyCheck()
