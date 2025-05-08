@@ -258,6 +258,7 @@ export function SocialTargetBlockData() {
 export function encounterDataSchema() {
 	return new sch( {
 		CR: new num({integer: true, initial: 1, max: 10, min:1 }),
+		timesDefeated: new num({integer: true, min:0, initial:0}),
 		conditions: new arr(new obj<Precondition>()),
 		rareShadow: new bool( {initial: false}),
 		dungeonEncounters: new arr( new embedded(EncounterDataDM)),

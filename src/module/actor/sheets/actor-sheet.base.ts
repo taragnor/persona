@@ -60,7 +60,6 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 		this.element.find("textarea").each(function () {
 			PersonaActorSheetBase.autoResize(this);
 		});
-
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {

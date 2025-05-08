@@ -36,7 +36,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		this.talents = actor.talents;
 		this.focii = actor.focii;
 		this.XPForNextLevel = actor.XPForNextLevel;
-		this.scanLevel = 3;
+		this.scanLevel = 0;
+		if (actor.isShadow()) {
+			this.scanLevel = actor.system.scanLevel ?? 0;
+		}
+		if (actor.hasPlayerOwner) {
+			this.scanLevel = 3;
+		}
 		this.actorId = actor.id;
 		switch (actor.system.type) {
 			case "pc":

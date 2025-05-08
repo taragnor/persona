@@ -69,7 +69,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	_engagedList: EngagementList;
 	static customAtkBonus: number;
 	consecutiveCombat: number =0;
-	defeatedFoes : PersonaActor[] = [];
+	defeatedFoes : ValidAttackers[] = [];
 	lastActivationRoll: number;
 
 	constructor (...args: unknown[]) {
@@ -274,7 +274,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		await this.update({ "round": 0, });
 	}
 
-	async clearFoes() : Promise<PersonaActor[]> {
+	async clearFoes() : Promise<ValidAttackers[]> {
 		if (this.isSocial) return [];
 		const combatantsToDelete = this.combatants
 		.filter(x => x.token != undefined
@@ -2524,6 +2524,10 @@ async generateTreasureAndXP() {
 		return;
 	}
 	const defeatedFoes = this.defeatedFoes.concat(shadows);
+	for (const foe of defeatedFoes) {
+		await foe.onDefeat();
+	}
+
 	this.defeatedFoes = [];
 	const pcs = actors.filter( x => x.system.type == "pc") as PC[];
 	const party = actors.filter( x=> x.system.type == "pc" || x.system.type == "npcAlly") as (PC | NPCAlly)[];

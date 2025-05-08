@@ -2961,12 +2961,26 @@ async onEndCombat(this: ValidAttackers) : Promise<void> {
 
 encounterSizeValue() : number {
 	let val = 1;
+	if (!this.isValidCombatant()) return 1;
 	if (this.hasRole("solo")) val *=4;
 	if (this.hasRole("duo")) val*= 2;
 	if (this.hasRole("elite")) val*= 1.75;
 	if (this.hasRole("summoner")) val *= 2;
 	if (this.hasRole("minion")) val *= 0.666;
+	if (this.isNewEnemy()) val *= 1.2;
 	return val;
+}
+
+isNewEnemy(): boolean {
+	if (!this.isShadow()) return false;
+	return this.system.encounter.timesDefeated == 0 && this.persona().scanLevel == 0;
+}
+
+async onDefeat(this: ValidAttackers) {
+	if (this.isShadow()) {
+		const defeat = this.system.encounter.timesDefeated+ 1;
+		await this.update( {"system.encounter.timesDefeated": defeat});
+	}
 }
 
 async endTurnSaves(this: ValidAttackers) : Promise<string[]> {
