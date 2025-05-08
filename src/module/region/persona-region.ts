@@ -264,6 +264,7 @@ export class PersonaRegion extends RegionDocument {
 		await TriggeredEffect.onTrigger("on-enter-region", token.actor as PC, situation).emptyCheck()?.autoApplyResult();
 		if (tokens.some(t => t.actor?.system.type == "shadow" && !t.hidden) ) return;
 		this.presenceCheck();
+		await Metaverse.passMetaverseTurn();
 	}
 
 	/** for batch_adding */

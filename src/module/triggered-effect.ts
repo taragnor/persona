@@ -46,6 +46,7 @@ export class TriggeredEffect {
 					break;
 				}
 				case "enter-metaverse":
+				case "on-metaverse-turn":
 				case "exit-metaverse":
 				case "on-attain-tarot-perk":
 				case "on-search-end":

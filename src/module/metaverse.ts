@@ -1,3 +1,4 @@
+import { TriggeredEffect } from "./triggered-effect.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaSockets } from "./persona.js";
 import { weightedChoice } from "./utility/array-tools.js";
@@ -517,7 +518,31 @@ static getSubgroupAmt(etype :EncounterType) : number {
 			throw new PersonaError("Room is safe can't be searched");
 		}
 		await this.searchRegion(region);
+		await this.passMetaverseTurn();
 	}
+
+static async passMetaverseTurn() {
+	if (game.user.isGM)
+		return await this.#passMetaverseTurn();
+	else
+		return await this.#sendPassTurnRequest();
+}
+
+static async #passMetaverseTurn() {
+	const pcs = game.scenes.active.tokens.contents.filter( tok => tok.actor && (tok.actor as PersonaActor).isPC());
+	for (const pc of pcs) {
+		await (pc.actor as PersonaActor).onMetaverseTimeAdvance();
+	}
+	await TriggeredEffect.onTrigger("on-metaverse-turn")
+		.emptyCheck()
+		?.autoApplyResult();
+	ui.notifications.notify("Passing Metaverse turn");
+}
+
+static async #sendPassTurnRequest() {
+	const gms = game.users.filter(x=> x.isGM).map (x=> x.id);
+	PersonaSockets.simpleSend("PASS_MV_TURN", {}, gms);
+}
 
 	static async searchRegion(region: PersonaRegion) {
 		const data = region.regionData;
@@ -735,12 +760,14 @@ static getSubgroupAmt(etype :EncounterType) : number {
 Hooks.on("socketsReady", () => {
 	console.log("Sockets set handler");
 	PersonaSockets.setHandler("CRUNCH_TOGGLE", Metaverse.onCrunchRequest.bind(Metaverse));
+	PersonaSockets.setHandler("PASS_MV_TURN", Metaverse.passMetaverseTurn.bind(Metaverse));
 });
 
 declare global {
 	interface SocketMessage {
 		"CRUNCH_TOGGLE": {
 		};
+		"PASS_MV_TURN" : {};
 	}
 }
 

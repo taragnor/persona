@@ -471,6 +471,7 @@ function triggerComparison(condition: Triggered, situation: Situation, _source:O
 		case "end-turn":
 		case "on-combat-end-global":
 		case "on-search-end":
+		case "on-metaverse-turn":
 		case "on-open-door":
 			return true;
 		case "on-clock-change":
@@ -1031,7 +1032,7 @@ type TriggerSituation = TriggerSituation_base & (
 );
 
 type ExplorationTrigger = {
-	trigger: "on-open-door" | "on-search-end" | "on-attain-tarot-perk" | "enter-metaverse" | "exit-metaverse";
+	trigger: "on-open-door" | "on-search-end" | "on-attain-tarot-perk" | "enter-metaverse" | "exit-metaverse" | "on-metaverse-turn";
 	triggeringCharacter?:  UniversalActorAccessor<ValidAttackers>;
 }
 

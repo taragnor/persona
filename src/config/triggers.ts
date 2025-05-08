@@ -20,6 +20,7 @@ export const NONCOMBAT_TRIGGER_LIST = [
 	"on-open-door",
 	"enter-metaverse",
 	"exit-metaverse",
+	"on-metaverse-turn",
 ] as const;
 
 export const TRIGGER_LIST = [
