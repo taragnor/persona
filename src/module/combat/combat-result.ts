@@ -1015,8 +1015,8 @@ export type AttackResult = {
 	roll: RollBundle,
 	critBoost: number,
 	printableModifiers: {name: string, modifier:string} [],
+	critPrintable?: {name: string, modifier:string} []
 };
-
 
 function absMax(...nums : number[]) {
 	const absnums = nums.map( x=> Math.abs(x));

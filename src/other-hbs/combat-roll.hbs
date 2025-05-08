@@ -16,12 +16,15 @@
 		{{> "systems/persona/parts/simple-roll.hbs" roll=atk.attackResult.roll }}
 		{{#if atk.attackResult.critBoost}}
 		<div class="crit-boost gm-only">
-			<span>
-				Critical Boost:
-			</span>
-			<span>
-				{{atk.attackResult.critBoost}}
-			</span>
+			<div class="tooltip">
+				<span>
+					Critical Boost:
+				</span>
+				<span>
+					{{atk.attackResult.critBoost}}
+				</span>
+				{{> "systems/persona/parts/printable-mods.hbs" mods=atk.attackResult.critPrintable gmOnly=atk.attackResult.roll.gmRoll}}
+			</div>
 		</div>
 		{{/if}}
 		<hr>

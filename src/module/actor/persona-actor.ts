@@ -305,7 +305,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					return this.basePersona as Persona<T>;
 				}
 				const activePersona = game.actors.get((this as PC).system.activePersona) as ValidAttackers;
-				if (!activePersona) {return this.basePersona as Persona<T>};
+				if (!activePersona) {
+					return this.basePersona as Persona<T>
+				};
 				return Persona.combinedPersona(this.basePersona, activePersona.basePersona) as Persona<T>;
 			case "shadow":
 				return this.basePersona as Persona<T>;

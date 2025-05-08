@@ -1,0 +1,15 @@
+{{#if mods}}
+<div class="mods-section tooltiptext {{#if gmOnly}} gm-only {{/if}}">
+	{{#each mods as |mod|}}
+	<div class="mod-item">
+		<span class="mod-name">
+			{{mod.name}}
+		</span>
+		<span class="mod-amt">
+			{{mod.modifier}}
+		</span>
+	</div>
+	{{/each}}
+</div
+{{/if}}
+

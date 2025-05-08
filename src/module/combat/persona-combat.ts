@@ -1329,16 +1329,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				...baseData,
 			};
 		}
-		const critBoostMod = power.critBoost(attacker.actor);
-		const powerDiff = this.calcPowerCritBoostTargetAdjust(attacker.actor, target.actor, power);
-		critBoostMod.add("Power Level Difference", powerDiff);
 		situation.resisted = resist == "resist";
 		situation.struckWeakness = resist == "weakness";
-		const critResist = target.actor.critResist().total(situation);
-		critBoostMod.add("Enemy Critical Resistance", -critResist);
+		const critBoostMod = this.calcCritModifier(attacker.actor, target.actor, power, situation);
+		const rageOrBlind = attacker.actor.hasStatus("rage") || attacker.actor.hasStatus("blind");
 		const floor = situation.resisted ? -999 : 0;
 		const critBoost = Math.max(floor, critBoostMod.total(situation));
-		const rageOrBlind = attacker.actor.hasStatus("rage") || attacker.actor.hasStatus("blind");
+		const critPrintable = critBoostMod.printable(situation);
 		// console.debug(`
 		// CritBoost ${critBoost}
 		// Power Diff: ${powerDiff}
@@ -1359,6 +1356,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				validAtkModifiers,
 				validDefModifiers,
 				critBoost,
+				critPrintable,
 				situation,
 				...baseData,
 			};
@@ -1381,6 +1379,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				validDefModifiers,
 				printableModifiers,
 				critBoost,
+				critPrintable,
 				situation,
 				...baseData,
 			};
@@ -1396,24 +1395,30 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				validDefModifiers,
 				printableModifiers,
 				critBoost,
+				critPrintable,
 				situation,
 				...baseData,
 			}
 		}
 	}
 
-	static calcPowerCritBoostTargetAdjust(attacker: ValidAttackers, target: ValidAttackers, power: Usable) {
-		if (power.system.type != "power" || power.isBasicPower()) {
-			return 0;
+	static calcCritModifier( attacker: ValidAttackers, target: ValidAttackers, power: Usable, situation: Situation, ignoreInstantKillMult = false) : ModifierList {
+		const critBoostMod = power.critBoost(attacker);
+		const critResist = target.critResist().total(situation);
+		critBoostMod.add("Enemy Critical Resistance", -critResist);
+		if (power.isInstantDeathAttack()) {
+			const powerLevel = power.baseCritSlotBonus();
+			const targetResist = target.basePowerCritResist(power);
+			critBoostMod.add("Slot-based Death Bonus", powerLevel);
+			critBoostMod.add("Level-based Instant Death Resist", -targetResist);
+			// const diff = Math.max(0, powerLevel - targetResist);
+			// critBoostMod.add("Instant Death Power Level Mod", diff);
+			const mult = ignoreInstantKillMult ? 1 : target.instantKillResistanceMultiplier(attacker);
+			const total = critBoostMod.total(situation);
+			const mod = total > 0 ? Math.round((total * mult) - total) : 0;
+			critBoostMod.add(`Instant Death Multiplier (${mult}) Adjust`, mod);
 		}
-		if (!power.isInstantDeathAttack()) {
-			return 0;
-		}
-		const powerLevel = power.baseCritSlotBonus();
-		const targetResist = target.basePowerCritResist(power);
-		const diff = Math.max(0, powerLevel - targetResist);
-		const mult = target.instantKillResistanceMultiplier(attacker);
-		return Math.floor(diff * mult);
+		return critBoostMod;
 	}
 
 	static async processEffects(atkResult: AttackResult) : Promise<CombatResult> {
@@ -2527,7 +2532,6 @@ async generateTreasureAndXP() {
 	for (const foe of defeatedFoes) {
 		await foe.onDefeat();
 	}
-
 	this.defeatedFoes = [];
 	const pcs = actors.filter( x => x.system.type == "pc") as PC[];
 	const party = actors.filter( x=> x.system.type == "pc" || x.system.type == "npcAlly") as (PC | NPCAlly)[];
@@ -2543,7 +2547,6 @@ async generateTreasureAndXP() {
 	} catch (e) {
 		PersonaError.softFail("Problem with generating treasure");
 	}
-
 }
 
 displayEscalation(element : JQuery<HTMLElement>) {
