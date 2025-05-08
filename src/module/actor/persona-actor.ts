@@ -1812,7 +1812,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await Logger.sendToChat(`${this.name} deleted talent ${talent.name}` , this);
 	}
 
-	async addPower(this: PC | NPCAlly, power: Power) {
+	async addPower(this: PC | NPCAlly | Shadow, power: Power) {
+		if (this.isShadow()) {
+			const pow = await this.createEmbeddedDocuments("Item", [power]);
+			await this.setDefaultShadowCosts(pow[0] as Power);
+			return;
+		}
 		const powers = this.system.combat.powers;
 		if (powers.includes(power.id)) {
 			ui.notifications.notify("You already know this power in main powers!");
@@ -3159,7 +3164,6 @@ isSticky() : boolean {
 	return this.hasStatus("sticky");
 }
 
-
 async setDefaultShadowCosts(this: Shadow, power: Power) {
 	if (!this.items.get(power.id)) {
 		ui.notifications.warn("Shadow can't edit power it doesn't own");
@@ -3168,8 +3172,14 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 	// const role = this.system.role;
 	const diff = this.comparativePowerRatingToUsePower(power);
 	let energyReq= 0, cost= 1;
-	const reqMin = power.hasTag("buff") || power.hasTag("debuff") || power.hasTag("status-removal") ? 0 : 1;
+	let reqMin = power.hasTag("buff") || power.hasTag("debuff") || power.hasTag("status-removal") ? 0 : 1;
 	switch (true) {
+		case (power.isDefensive() == true):
+		case (power.isPassive() == true):
+			energyReq = 0;
+			cost =0;
+			reqMin = 0;
+			break;
 		case (diff == 0):
 			energyReq +=3;
 			cost += 3;
@@ -3451,6 +3461,16 @@ get roleString() : SafeString {
 	return localized;
 }
 
+async setWeaponDamageByLevel(this: Shadow, lvl: number) {
+	const low = 3 + Math.floor(lvl /2);
+	const high = 5 + Math.floor((lvl +1) /2);
+	this.system.combat.wpndmg.low;
+	await this.update( {
+		"system.combat.wpndmg.low" : low,
+		"system.combat.wpndmg.high": high
+	});
+}
+
 get treasureString() : SafeString {
 	if (this.system.type != "shadow") return "";
 	const treasure = this.system.encounter.treasure;
@@ -3560,3 +3580,13 @@ const EMPTYARR :any[] = [] as const; //to speed up things by not needing to crea
 Object.seal(EMPTYARR);
 
 
+Hooks.on("createActor", async function (actor: PersonaActor) {
+	if (actor.isShadow()) {
+		const pcs = game.actors
+			.filter( (x: PersonaActor)=> x.isPC() && x.hasPlayerOwner && x.talents.length > 0)
+		const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.combat.classData.level, 0 );
+		const avgLevel = Math.round(totalLevels/ pcs.length);
+		await actor.update({ "system.combat.classData.level" : avgLevel});
+		await actor.setWeaponDamageByLevel(avgLevel);
+	}
+});

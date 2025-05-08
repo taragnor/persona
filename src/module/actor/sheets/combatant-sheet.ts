@@ -56,19 +56,20 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				return undefined;
 			case "power": {
 				const actorType = this.actor.system.type;
+				const power = item as Power;
 				switch (actorType) {
 					case "shadow":
-						return super._onDropItem(_event, itemD);
+						await this.actor.addPower(power);
+						return power;
 					case "pc":
 					case "npcAlly":
-						const power = item as Power;
 						const actor = this.actor as PC | NPCAlly;
 						if (power.isTeamwork()) {
 							await actor.setTeamworkMove(power);
-						if (power.isNavigator()) {
-							ui.notifications.warn("This cahracter can't use a navigator skill");
-							return undefined;
-						}
+							if (power.isNavigator()) {
+								ui.notifications.warn("This cahracter can't use a navigator skill");
+								return undefined;
+							}
 							return power;
 						}
 						if (power.hasTag("shadow-only")) {
