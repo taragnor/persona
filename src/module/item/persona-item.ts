@@ -1288,6 +1288,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return base + mod;
 	}
 
+	async setPowerCost(this: Power, required: number, cost: number) {
+		await this.update({
+			"system.energy.required": required,
+			"system.energy.cost": cost,
+			"system.energy.newForm": true,
+		});
+	}
+
 	targetMeetsConditions(this: UsableAndCard, user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
 		if (this.system.type == "skillCard") return target.canLearnNewSkill();
 		const usable = this as Usable;

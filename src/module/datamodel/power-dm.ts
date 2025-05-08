@@ -39,6 +39,7 @@ export function powerCost() {
 		energy: new sch({
 			required: new num({initial: 0, min:0, max:10, integer: true}),
 			cost: new num({initial: 0, min:0, max:10, integer: true}),
+			newForm: new bool(),
 		}),
 		reqCharge: new txt( {choices: SHADOW_CHANGE_REQ_LIST_FULL , initial: "none"}),
 		reqEscalation: new num( {initial: 0, integer: true, min: 0, max: 6}),

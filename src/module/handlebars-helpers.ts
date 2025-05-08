@@ -174,9 +174,6 @@ export class PersonaHandleBarsHelpers {
 				attacker: actor.accessor,
 				user: actor.accessor,
 			}
-			// const critBoostMod = power.critBoost(actor).total(situation);
-			// const targetDiffAdjust = PersonaCombat.calcPowerCritBoostTargetAdjust(actor, actor, power);
-			// return critBoostMod + targetDiffAdjust;
 			const critBonus = PersonaCombat.calcCritModifier(actor, actor, power, situation, true);
 			return critBonus.total(situation);
 		},

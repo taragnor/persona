@@ -1121,6 +1121,11 @@ function convertConsToStatusDuration(cons: Consequence & {type : "addStatus" | "
 			return {
 				dtype: "instant",
 			};
+		case "X-exploration-turns":
+			return {
+				dtype: "X-exploration-turns",
+				amount: cons.amount ?? 3,
+			};
 		default:
 			dur satisfies never;
 			PersonaError.softFail(`Invaliud Duration ${dur}`);

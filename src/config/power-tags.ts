@@ -51,6 +51,7 @@ export const POWER_TAGS_LIST = [
 	"mobile",
 	"basicatk",
 	"high-cost",
+	"status-removal",
 	...STATUS_POWER_TAGS,
 	...POWER_TYPE_TAGS,
 ] as const;

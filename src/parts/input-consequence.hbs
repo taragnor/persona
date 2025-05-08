@@ -36,7 +36,7 @@
 			{{selectOptions POWERSTUFF.SAVE_DIFFICULTY localize=true selected=cons.saveType}}
 		</select>
 		{{/if}}
-		{{#if (eqAny cons.statusDuration "X-days" "X-rounds") }}
+		{{#if (eqAny cons.statusDuration "X-days" "X-rounds" "X-exploration-turns") }}
 		<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 		{{/if}}
 		{{#if (eqAny cons.statusDuration "UEoNT" "USoNT" "UEoT") }}
@@ -142,9 +142,7 @@
 
 	<div>
 		<label for="text-msg"> Message </label>
-		<textarea class="text-msg" id="text-msg" name="{{strcat namePrefix 'msg'}}">
-			{{cons.msg}}
-		</textarea>
+		<textarea class="text-msg" id="text-msg" name="{{strcat namePrefix 'msg'}}">{{cons.msg}}</textarea>
 	</div>
 	{{/if}}
 

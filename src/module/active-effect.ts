@@ -188,6 +188,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				}
 				return false;
 			case "permanent":
+			case "X-exploration-turns":
 			case "expedition":
 			case "combat":
 			case "X-rounds":
@@ -224,6 +225,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 			case "permanent":
 			case "expedition":
 			case "combat":
+			case "X-exploration-turns":
 			case "X-rounds":
 			case "X-days":
 			case "UEoNT":
@@ -280,6 +282,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				return await this.saveVsSaveEffects();
 			case "permanent":
 			case "expedition":
+			case "X-exploration-turns":
 			case "combat":
 			case "X-rounds":
 			case "X-days":
@@ -312,6 +315,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 			case "expedition":
 			case "combat":
 			case "X-rounds":
+			case "X-exploration-turns":
 			case "USoNT":
 			case "save":
 			case "UEoNT":
@@ -333,6 +337,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 			case "anchored":
 			case "permanent":
 				return false;
+			case "X-exploration-turns":
 			case "expedition":
 			case "combat":
 			case "X-rounds":
@@ -357,6 +362,41 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		if (this.durationLessThanOrEqualTo(dur)) {
 			await this.delete();
 		}
+	}
+
+	async onMetaverseTimeAdvance() : Promise<boolean> {
+		const duration = this.statusDuration;
+		switch (duration.dtype) {
+			case "X-days":
+			case "anchored":
+			case "permanent":
+			case "expedition":
+				return false;
+			case "X-exploration-turns":
+				if (duration.amount <= 0) {
+					await this.delete();
+					return true;
+				}
+				duration.amount -= 1;
+				await this.setDuration(duration);
+				return false;
+			case "combat":
+			case "X-rounds":
+			case "USoNT":
+			case "save":
+			case "UEoNT":
+			case "UEoT":
+			case "instant":
+			case "3-rounds":
+				await this.delete();
+				return true;
+			default:
+				duration satisfies never;
+				return false;
+		}
+
+
+
 	}
 
 	get isFatigueStatus(): boolean {
@@ -404,6 +444,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				return duration.amount * 100;
 			case "expedition":
 				return 100;
+			case "X-exploration-turns":
+				return 51 + (duration.amount * .01);
 			case "combat":
 				return 50;
 			case "3-rounds":
@@ -529,7 +571,7 @@ type StatusDuration_NonBasic = Numeric_Duration
 	| AnchoredStatus
 
 type Numeric_Duration = {
-	dtype : Extract<StatusDurationType, "3-rounds" | "X-rounds" | "X-days">
+	dtype : Extract<StatusDurationType, "3-rounds" | "X-rounds" | "X-days" | "X-exploration-turns">
 	amount: number,
 }
 

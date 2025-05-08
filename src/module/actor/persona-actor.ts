@@ -2025,7 +2025,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				}
 				return false;
 			}
-			if (combat && energyCost > (currentEnergy + 1)) {
+			if (combat && energyCost > (currentEnergy + 3)) {
 				if (outputReason) {
 					ui.notifications.notify(`Costs ${energyCost} energy and you only have ${currentEnergy}`);
 				}
@@ -2901,10 +2901,32 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 		const damage = burnStatus.potency;
 		await this.modifyHP(-damage);
 	}
+	if (this.isShadow()) {
+		const situation : Situation = {
+			user: this.accessor,
+			activeCombat: true,
+		};
+		const bonusEnergy = 3 + this.getBonuses("energy-per-turn").total(situation);
+		await this.alterEnergy(bonusEnergy);
+	}
+
 	ret.push(...await this.endTurnSaves())
 	return ret;
 }
 
+/** should get called after a search action or after entering a new region*/
+async onMetaverseTimeAdvance(): Promise<string[]> {
+	const ret: string[] = [];
+	for (const eff of this.effects) {
+		if ( await eff.onMetaverseTimeAdvance()) {
+			ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
+		}
+	}
+
+
+
+	return ret;
+}
 
 async onEndDay(this: PC): Promise<string[]> {
 	let ret = [] as string[];
@@ -3146,17 +3168,46 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 		ui.notifications.warn("Shadow can't edit power it doesn't own");
 		return;
 	}
-	const role = this.system.role;
-	const userLevel = this.system.combat.classData.level
-		+ (this.system.combat.classData.incremental.talent ? 1 : 0)
-	const powerLevel = power.powerEffectLevel();
-	const diff = powerLevel - userLevel;
-	const cost = PersonaActor.calcPowerCost(role, power, diff);
-	const energyReq = PersonaActor.calcPowerRequirement(role, power,  diff);
-	await power.update({
-		"system.energy.required": energyReq,
-		"system.energy.cost": cost
-	});
+	// const role = this.system.role;
+	const diff = this.comparativePowerRatingToUsePower(power);
+	let energyReq= 0, cost= 1;
+	const reqMin = power.hasTag("buff") || power.hasTag("debuff") || power.hasTag("status-removal") ? 0 : 1;
+	switch (true) {
+		case (diff == 0):
+			energyReq +=3;
+			cost += 3;
+			break;
+		case (diff > 0):
+			energyReq += Math.max(reqMin, 3-diff);
+			cost += 2 - Math.floor(diff/2);
+			break;
+		case (diff < 0):
+			if (power.hasTag("debuff") || power.hasTag("buff")) {
+				energyReq += Math.min(3, 3-diff);
+			} else {
+				energyReq += Math.min(10, 3-diff);
+			}
+			const effectiveDiff = diff + 1;
+			cost += 3 - effectiveDiff;
+			break;
+	}
+	if (power.hasTag("high-cost") && cost > 0)  {
+		cost = Math.round(cost * 1.5);
+	}
+	cost = Math.clamp(cost, 0, 10);
+	energyReq= Math.clamp(energyReq, reqMin, 10);
+	return await power.setPowerCost(energyReq, cost);
+}
+
+comparativePowerRatingToUsePower(this: Shadow, power: Power) {
+	const userLevel = this.system.combat.classData.level;
+	const powerSlot = power.system.slot;
+
+	return userLevel - (powerSlot*3);
+}
+
+static highestPowerSlotUsableAtLvl(lvl: number) : number {
+	return Math.min(0, Math.floor(lvl / 3));
 }
 
 allOutAttackDamage(this: ValidAttackers, situation?: Situation) : { high: number, low: number } {
@@ -3237,7 +3288,11 @@ async increaseScanLevel(this: Shadow, amt :number) {
 }
 
 async setEnergy(this: Shadow, amt: number) {
-	amt = Math.clamp(amt, -1, this.system.combat.energy.max);
+	const maxEnergy = Math.min(10, this.system.combat.energy.max);
+	if (this.system.combat.energy.max < 10) {
+		await this.update( { "system.combat.energy.max": 10});
+	}
+	amt = Math.clamp(amt, -1, maxEnergy);
 	await this.update({"system.combat.energy.value": amt});
 }
 
@@ -3247,6 +3302,7 @@ async alterEnergy(this: Shadow, amt: number) {
 
 async onCombatStart() {
 }
+
 
 async onKO() : Promise<void> {
 	console.log("Calling onKO");
@@ -3259,6 +3315,7 @@ async onKO() : Promise<void> {
 async onRevive() : Promise<void> {
 	console.log("Calling onRevive");
 }
+
 
 get tagList() : CreatureTag[] {
 	//NOTE: This is a candidate for caching
@@ -3312,7 +3369,7 @@ async onAddToCombat() {
 			const sit : Situation = {
 				user: (this as Shadow).accessor,
 			}
-			const startingEnergy = 1 + (this as Shadow).getBonuses("starting-energy").total(sit);
+			const startingEnergy = 3 + (this as Shadow).getBonuses("starting-energy").total(sit);
 			await (this as Shadow).setEnergy(startingEnergy);
 			break;
 		case "pc":

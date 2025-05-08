@@ -236,6 +236,7 @@ export const statusMap = new Map(CONFIG.statusEffects.map( k => ([k.id, k])) );
 export const STATUS_EFFECT_DURATIONS_TYPE_LIST = [
 	"permanent",
 	"expedition",
+	"X-exploration-turns",
 	"combat",
 	"save",
 	"X-rounds",

@@ -223,8 +223,8 @@ export function sharedAbilities() {
 export function shadowOnlyCombatAbilities() {
 	return {
 		energy: new sch({
-			value: new num({initial: 0, integer: true, min: -1, max: 10}),
-			max: new num({initial: 4, integer: true, min:1, max:10}),
+			value: new num({initial: 0, integer: true, min: -3, max: 10}),
+			max: new num({initial: 10, integer: true, min:1, max:10}),
 		}),
 		wpndmg: new sch({
 			low: new num({integer:true, min:0, initial:1}),

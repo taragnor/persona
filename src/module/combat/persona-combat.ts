@@ -826,15 +826,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			return;
 		}
 		const triggeringCharacter  = (combatant as Combatant<ValidAttackers>)?.token?.actor?.accessor;
-		const triggeringActor = combatant?.token?.actor;
-		if (triggeringActor && triggeringActor.system.type == "shadow") {
-			const situation : Situation = {
-				user: triggeringCharacter!,
-				activeCombat: true,
-			}
-			const bonusEnergy = 1 + triggeringActor.getBonuses("energy-per-turn").total(situation);
-			await (triggeringActor as Shadow).alterEnergy(bonusEnergy);
-		}
 		if (triggeringCharacter) {
 			for (const user of this.combatants) {
 				if (user.token.actor == undefined) {continue;}
@@ -1411,8 +1402,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			const targetResist = target.basePowerCritResist(power);
 			critBoostMod.add("Slot-based Death Bonus", powerLevel);
 			critBoostMod.add("Level-based Instant Death Resist", -targetResist);
-			// const diff = Math.max(0, powerLevel - targetResist);
-			// critBoostMod.add("Instant Death Power Level Mod", diff);
 			const mult = ignoreInstantKillMult ? 1 : target.instantKillResistanceMultiplier(attacker);
 			const total = critBoostMod.total(situation);
 			const mod = total > 0 ? Math.round((total * mult) - total) : 0;
