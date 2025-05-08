@@ -7,7 +7,7 @@
 	{{#each actor.system.questions as |question i|}}
 	<li class="flexrow" data-question-index="{{i}}">
 		<span class="question-name" >
-			{{question.name}} {{#if (arrIncludes question.questionTags "disabled")}} <b>(Expended)</b> {{/if}}
+			{{question.name}} {{#if question.expended}} <b>(Expended)</b> {{/if}}
 		</span>
 			<span class="del-question">
 				<a class="del-question">
@@ -25,19 +25,47 @@
 	{{#each actor.system.questions as |question i|}}
 	<div class="question" data-question-index="{{i}}">
 		<h4>
-		<span class="question-name" >
-			Question: <input type=string name='{{strcat "system.questions." i ".name"}}' value="{{question.name}}">
-		</span>
-			<textarea name='{{strcat "system.questions." i ".text"}}'>
-				{{question.text}}
-			</textarea>
+			<span class="question-name" >
+				Question: <input type=string name='{{strcat "system.questions." i ".name"}}' value="{{question.name}}">
+				<span>
+					<label>
+						Expended
+					</label>
+				<input type="checkbox" name='{{strcat "system.questions." i ".expended"}}' {{checked question.expended}}>
+				</span>
+			</span>
+			<textarea name='{{strcat "system.questions." i ".text"}}'>{{question.text}}</textarea>
 		</h4>
+		<h5> Conditions </h5>
+		<div class="question-conditions">
+			<div class="sl-range">
+				<span>
+					<label>
+						SL Range
+					</label>
+					<input class="short" type=number name='{{strcat "system.questions." i ".SLmin"}}' value="{{question.SLmin}}">
+					-
+					<input class="short" type=number name='{{strcat "system.questions." i ".SLmax"}}' value="{{question.SLmax}}">
+				</span>
+			</div>
+			<div class="dating-restriction">
+				<span>
+					<label>
+						Dating only
+					</label>
+					<input type="checkbox" name='{{strcat "system.questions." i ".requiresDating"}}' {{checked question.requiresDating}}>
+				</span>
+
+			</div>
+		</div>
 		<div class="choices-block">
 			{{#each question.choices as |choice c|}}
 			<h5>
 				Choice: <input type=string name='{{strcat "system.questions." i ".choices." c ".name"}}' value="{{choice.name}}">
-			<input class="short" type=number name='{{strcat "system.questions." i ".choices." c ".roll.progressSuccess"}}' value="{{choice.roll.progressSuccess}}">
+				<input class="short" type=number name='{{strcat "system.questions." i ".choices." c ".progressSuccess"}}' value="{{choice.progressSuccess}}">
 			</h5>
+			<h5> Response</h5>
+			<textarea name='{{strcat "system.questions." i ".choices." c ".response"}}'>{{choice.response}}</textarea>
 			{{/each}}
 		</div>
 	</div>

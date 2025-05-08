@@ -57,9 +57,7 @@
 </div>
 <label> Date Perk</label>
 {{#if (isGM)}}
-<textarea name="system.datePerk">
-	{{actor.system.datePerk}}
-</textarea>
+<textarea name="system.datePerk" class="date-perk">{{actor.system.datePerk}}</textarea>
 {{else}}
 <div>
 	{{actor.system.datePerk}}

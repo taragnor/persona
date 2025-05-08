@@ -26,7 +26,6 @@ export class PCSheet extends PCLikeSheet {
 		});
 	}
 
-
 	override async getData() {
 		const data = await super.getData();
 		const personas = this.actor.system.personaList.map( x=> game.actors.get(x) as ValidAttackers);

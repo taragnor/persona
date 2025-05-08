@@ -55,6 +55,14 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 		} as const;
 	}
 
+	override _onChangeTab(event:unknown, x: unknown, y: unknown) {
+		super._onChangeTab(event, x, y);
+		this.element.find("textarea").each(function () {
+			PersonaActorSheetBase.autoResize(this);
+		});
+
+	}
+
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 		ConditionalEffectManager.applyHandlers(html, this.actor);
@@ -63,6 +71,19 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 		html.find(".delFocus").on("click", this.deleteFocus.bind(this));
 		html.find(".addFocus").on("click", this.onAddFocus.bind(this));
 		html.find(".focusName").on("click", this.openFocus.bind(this));
+		html.find("textarea").on("input", this.autoResize.bind(this));
+	}
+
+	static autoResize(el: HTMLElement) {
+		if (el.scrollHeight == 0) return;
+		el.style.height = 'auto'; // Reset to shrink if needed
+		el.style.height = el.scrollHeight + 'px'; // Set to actual content height
+		el.style.minHeight = el.scrollHeight + 'px'; // Set to actual content height
+	}
+
+	async autoResize( ev: JQuery.ClickEvent) {
+		console.log("Resizing Text area?!");
+		PersonaActorSheetBase.autoResize(ev.target);
 	}
 
 	async onAddCreatureTag( _ev: JQuery.ClickEvent) {
@@ -134,3 +155,12 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 	}
 
 }
+
+Hooks.on("renderActorSheet", (sheet: PersonaActorSheetBase) => {
+	sheet.element.find("textarea").each(function () {
+		if (this.scrollHeight != 0) {
+			debugger;
+		}
+		PersonaActorSheetBase.autoResize(this);
+	});
+});

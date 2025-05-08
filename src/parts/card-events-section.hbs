@@ -96,9 +96,7 @@
 			{{> "systems/persona/parts/conditions-section.hbs" namePrefix=(strcat "system.events." i ".conditions.")  POWERSTUFF=../POWERSTUFF i=i owner=../item}}
 		</div>
 		<label> Event Setup</label>
-		<textarea name="system.events.{{i}}.text">
-			{{trim event.text}}
-		</textarea>
+		<textarea name="system.events.{{i}}.text">{{trim event.text}}</textarea>
 		<h3> Choices </h3>
 		{{#each event.choices as |choice j|}}
 		{{> "systems/persona/parts/input-card-choice.hbs" CONST=../../SOCIAL_DATA POWERSTUFF=../../item.sheet.powerStuff namePrefix=(strcat "system.events." i ".choices." j ".") choiceIndex=j item=../../item choice=choice}}

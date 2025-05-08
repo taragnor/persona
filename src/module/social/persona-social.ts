@@ -1,3 +1,4 @@
+import { Precondition } from "../../config/precondition-types.js";
 import { shuffle } from "../utility/array-tools.js";
 import { NPCAlly } from "../actor/persona-actor.js";
 import { StatusEffectId } from "../../config/status-effects.js";
@@ -345,14 +346,44 @@ export class PersonaSocial {
 
 	static questionsAsEvents( socialTarget: SocialLink) : SocialCard["system"]["events"] {
 		const questions = socialTarget.questions
-		.filter( q=>!q.questionTags.includes("disabled"));
+		.filter( q=>!q.expended);
 		return questions.map(this.questionToEvent);
 	}
 
 	static questionToEvent(question: NPC["system"]["questions"][number]) : SocialCard["system"]["events"][number] & {origName: string} {
-		const eventTags = question.questionTags.slice();
-		eventTags.pushUnique("question");
-		eventTags.pushUnique("one-shot");
+		const eventTags  = ["question", "one-shot"] as SocialCard["system"]["events"][number]["eventTags"];
+		if (question.expended) {
+			eventTags.push("disabled");
+		}
+		const conditions= [] as Precondition[];
+		if (question.SLmax < 10) {
+			conditions.push( {
+				type: "numeric",
+				comparisonTarget:"social-link-level",
+				comparator: ">=",
+				num: question.SLmax,
+				socialLinkIdOrTarot: "target",
+			});
+		}
+		if (question.SLmin > 1) {
+			conditions.push( {
+				type: "numeric",
+				comparisonTarget:"social-link-level",
+				comparator: "<=",
+				num: question.SLmin,
+				socialLinkIdOrTarot: "target",
+			});
+		}
+		if (question.requiresDating) {
+			conditions.push( {
+				type: "boolean",
+				booleanState: true,
+				boolComparisonTarget: "social-availability",
+				conditionTarget: "user",
+				socialTypeCheck: "is-dating",
+				socialLinkIdOrTarot: "target",
+			});
+		}
 		const event = {
 			parent: question.parent,
 			label: "",
@@ -370,25 +401,39 @@ export class PersonaSocial {
 			},
 			name: "Question",
 			origName: question.name,
-			conditions: question.conditions,
+			conditions: conditions,
 			choices : shuffle( question.choices.map(PersonaSocial.convertQuestionChoiceToEventChoice)),
 		} satisfies SocialCard["system"]["events"][number] & {origName: string};
 		return event;
-
 	}
 
 
 	static convertQuestionChoiceToEventChoice( choice: NPC["system"]["questions"][number]["choices"][number]) : SocialCard["system"]["events"][number]["choices"][number] {
+		const responseText = (choice.response ?? "").trim();
+		const effects : SocialCard["system"]["events"][number]["choices"][number]["postEffects"]["effects"] = [];
+		if (responseText.length >0) {
+			const responseEffects = [{
+				type: "social-card-action",
+				cardAction: "card-response",
+				text: responseText,
+			}] satisfies typeof effects[number]["consequences"];
+			effects.push({
+				conditions: [{type: "always"}],
+				consequences: responseEffects,
+			});
+		}
 		return  {
 			name: choice.name,
-			conditions: choice.conditions,
+			conditions: [],
 			text: choice.name,
 			appendedText: choice.name,
 			roll: {
-				...choice.roll,
-				rollType: "question"
+				rollType: "question",
+				progressSuccess: choice.progressSuccess,
+				progressFail: 0,
+				progressCrit: 0,
 			},
-			postEffects: {effects: []},
+			postEffects: {effects},
 		};
 
 	}
@@ -1207,10 +1252,39 @@ export class PersonaSocial {
 			case "set-temporary-variable":
 					await this.variableAction(eff.operator, eff.variableId, eff.value);
 				return;
+			case "card-response":
+					await this.#applyCardResponse(eff.text);
+				return;
 			default:
 					eff satisfies never;
 				return;
 		}
+	}
+
+	static async #applyCardResponse(text: string) {
+		if (!this.rollState) {
+			PersonaError.softFail("Can't find Rollstate when trying to apply Card Response");
+			return;
+		}
+		const cardData = this.rollState.cardData;
+		const link = game.actors.get(cardData.linkId);
+		if (!link) {
+			PersonaError.softFail(`Can't get link for apply Card Response ${cardData.linkId}`, cardData.linkId);
+		}
+		const linkImg = link?.img ?? "";
+		const templateData= {
+			item: cardData.card,
+			cardData,
+			text,
+			linkImg
+		};
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-response.hbs`, templateData);
+		const messageData = {
+			speaker: {alias: "Question Response"},
+			content: html,
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+		};
+		await ChatMessage.create( messageData);
 	}
 
 	static async variableAction(operator: VariableAction, variableName: string, amount: number) {

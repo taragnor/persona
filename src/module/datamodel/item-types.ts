@@ -338,19 +338,29 @@ class CEContainer extends foundry.abstract.DataModel {
 			emb: new arr(new embedded(ConditionalEffectDM)),
 		}
 	}
-
 }
 
 export class SocialQuestionDM extends foundry.abstract.DataModel {
-
 	static override defineSchema() {
 		return {
 			name: new txt({initial: "Unnamed Question"}),
 			label: new txt(),
 			text: new txt(),
-			conditions: new arr(new obj<Precondition>()),
-			choices: new arr(new embedded(CardChoiceDM)),
-			questionTags: new arr( new txt({choices: CARD_TAG_LIST})),
+			choices: new arr(new embedded(QuestionChoiceDM)),
+			SLmin: new num({initial: 1, integer: true, max: 10, min:1}),
+			SLmax: new num({initial: 10, integer: true, max: 10, min:1}),
+			requiresDating: new bool({initial: false}),
+			expended: new bool({initial: false}),
+		}
+	}
+}
+
+class QuestionChoiceDM extends foundry.abstract.DataModel {
+	static override defineSchema() {
+		return {
+			name: new txt({initial: "New Choice"}),
+			response: new txt(),
+			progressSuccess: new num({initial: 0, integer: true}),
 		}
 	}
 

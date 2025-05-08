@@ -347,7 +347,10 @@ type CardActionTypes = [
 		operator: VariableAction,
 		variableId: string,
 		value: number,
-	}
+	}, {
+		cardAction: "card-response",
+		text: string,
+	},
 ];
 
 export const VARIABLE_ACTION_LIST =  [

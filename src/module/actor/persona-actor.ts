@@ -282,7 +282,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return npc as NPC | PC;
 	}
 
-
 	isUsingBasePersona(this: ValidAttackers) : boolean {
 		if ("activePersona" in this.system) {
 			const active = this.system.activePersona;
@@ -297,7 +296,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		return new Persona(this, this.#mainPowers());
 	}
-
 
 	persona<T extends ValidAttackers>(this: T): Persona<T> {
 		switch (this.system.type) {
@@ -316,7 +314,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				throw new PersonaError(`Can't get persona for ${this.name}`);
 		}
 	}
-
 
 	async addPersona(this: PC, shadow: Shadow) {
 		if (!shadow.hasPlayerOwner || !shadow.isOwner) {
@@ -3326,17 +3323,14 @@ get questions(): NPC["system"]["questions"] {
 async restoreAllQuestions(this:NPC) {
 	const questions = this.system.questions.map (x=> x.toJSON ? x.toJSON() as NPC["system"]["questions"][number] : x );
 	for (const question of questions) {
-		if (question.questionTags.includes("disabled")) {
-			question.questionTags = question.questionTags.filter( x=> x != "disabled");
-		}
+		question.expended = false;
 	}
 	await this.update({"system.questions": questions});
 }
 
 async markQuestionUsed(this: NPC, index: number) {
 	const questions = this.system.questions.map( x=> (x as any).toJSON());
-	const arr = questions[index].questionTags;
-	arr.pushUnique("disabled");
+	questions[index].expended = true;
 	await this.update({system: {questions}});
 }
 
@@ -3344,46 +3338,27 @@ async addQuestion(this: NPC) {
 	const choices : NPC["system"]["questions"][number]["choices"] = [
 		{
 			name: "A",
-			conditions: [],
-			text: "",
-			roll:  {
-				rollType: "question",
-				progressSuccess: 0,
-				progressFail: 0,
-				progressCrit: 0,
-			},
-			postEffects: { effects:[] },
+			response: "",
+			progressSuccess: 0,
 		}, {
 			name: "B",
-			conditions: [],
-			text: "",
-			roll:  {
-				rollType: "question",
-				progressSuccess: 0,
-				progressFail: 0,
-				progressCrit: 0,
-			},
-			postEffects: { effects:[] },
+			response: "",
+			progressSuccess: 0,
 		}, {
 			name: "C",
-			conditions: [],
-			text: "",
-			roll:  {
-				rollType: "question",
-				progressSuccess: 0,
-				progressFail: 0,
-				progressCrit: 0,
-			},
-			postEffects: { effects:[] },
+			response: "",
+			progressSuccess: 0,
 		}
 	];
 	const question : NPC["system"]["questions"][number] = {
 		name: "Unnamed Question",
 		text: "",
 		label: "",
-		conditions: [],
 		choices,
-		questionTags: ["one-shot", "question"],
+		expended: false,
+		requiresDating: false,
+		SLmin: 1,
+		SLmax: 10,
 	};
 	this.system.questions.push(question);
 	await this.update( { "system.questions": this.system.questions});

@@ -788,3 +788,24 @@ span.skill-card img {
 	min-width: 60%;
 	width: 60%;
 }
+
+.social-card-response {
+	overflow: hidden; /* to contain floated elements */
+}
+
+
+.social-card-response img.float-img {
+	float: left;
+	margin-right: 16px; /* spacing between image and text */
+	margin-bottom: 8px;  /* optional: spacing between image and text below */
+	max-width: 20%; /* optional: make it responsive */
+
+}
+
+textarea {
+	text-align: left;         /* horizontal alignment */
+	vertical-align: top;      /* affects how it's aligned inline—not the text inside */
+	display: block;           /* remove inline behavior if present */
+	padding: 8px;             /* ensure there's space for top-aligned text */
+	line-height: 1.4;         /* avoid vertical compression */
+}

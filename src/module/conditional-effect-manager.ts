@@ -810,6 +810,8 @@ export class ConditionalEffectManager {
 				return `Add Card Events card ${cons.cardId}`;
 			case "set-temporary-variable":
 				return `${cons.operator} ${cons.value} to social variable ${cons.variableId}`;
+			case "card-response":
+				return `Chat Response`;
 			default:
 				cons satisfies never;
 				return "ERROR";

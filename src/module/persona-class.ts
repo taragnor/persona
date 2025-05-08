@@ -104,20 +104,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			basePersona.powers);
 		fusedPowers.length = Math.min(6, fusedPowers.length);
 		const fusedPersona = new Persona(attachedPersona.user, fusedPowers);
-		// const fusedPersona : PersonaI = {
-		// 	user: basePersona.user,
-		// 	name: attachedPersona.name,
-		// 	powers: fusedPowers,
-		// 	xp: attachedPersona.xp,
-		// 	statusResists: attachedPersona.statusResists,
-		// 	resists: attachedPersona.resists,
-		// 	classData: basePersona.classData,
-		// 	talents: attachedPersona.talents,
-		// 	focii: attachedPersona.focii,
-		// 	XPForNextLevel: attachedPersona.XPForNextLevel,
-		// 	level: attachedPersona.level,
-		// 	scanLevel: attachedPersona.scanLevel,
-		// }
 		fusedPersona.user = basePersona.user;
 		fusedPersona.classData = basePersona.classData;
 		return fusedPersona;

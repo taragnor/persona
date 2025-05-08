@@ -76,10 +76,10 @@ type RollProgress = {
 
 type CardRollList = {
 	"none": {
-		rollType: "none"
+		rollType: "none",
 	},
 	"question" : {
-		rollType: "question"
+		rollType: "question",
 	}
 	"studentSkillCheck": {
 		rollType: "studentSkillCheck",
