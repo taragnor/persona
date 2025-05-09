@@ -1466,21 +1466,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				if (ModifierList.testPreconditions(conditions, situation, source)) {
 					const res = this.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult);
 					CombatRes.merge(res);
-					//second refactor
-					// const x = this.ProcessConsequences(power, situation, consequences, attacker.actor!, atkResult);
-					// CombatRes.escalationMod += x.escalationMod;
-					// const result = this.getCombatResultFromConsequences(x.consequences, situation, attacker.actor, target.actor, atkResult);
-					// CombatRes.merge(result);
-
-					// first refactor
-					// for (const cons of x.consequences) {
-					// 	const effectiveTargets = PersonaCombat.resolveEffectiveTargets(cons.applyTo, situation, attacker.actor, target.actor, cons.cons);
-					// 	for (const target of effectiveTargets) {
-					// 		if (target) {
-					// 			CombatRes.addEffect(atkResult, target, cons.cons);
-					// 		}
-					// 	}
-					// }
 				}
 			}
 		}

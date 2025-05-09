@@ -88,12 +88,6 @@ export class TriggeredEffect {
 				if (!ModifierList.testPreconditions(eff.conditions, situation, trig)) { continue; }
 				const res = PersonaCombat.consequencesToResult(eff.consequences,trig, situation, actor, actor, null);
 				result.merge(res);
-				// const cons = PersonaCombat.ProcessConsequences(trig, situation, eff.consequences, actor)
-				// result.escalationMod+= cons.escalationMod;
-				// for (const c of cons.consequences) {
-				//TODO: Consequences should be able to apply to more than the triggerer (auto-maraku)
-				// result.addEffect(null, actor, c.cons);
-				// }
 			}
 		}
 		return result;
