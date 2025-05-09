@@ -590,6 +590,8 @@
 	"persona.preconditions.targets.user": "User of Main Power" ,
 	"persona.preconditions.targets.attacker": "Attacker" ,
 	"persona.preconditions.targets.triggering-character": "Triggering Character" ,
+	"persona.preconditions.targets.all-allies": "All Allies" ,
+	"persona.preconditions.targets.all-foes": "All Foes" ,
 	"persona.preconditions.targets.cameo": "Cameo Character" ,
 
 	"persona.preconditions.dice.escalation": "Escalation DIe" ,

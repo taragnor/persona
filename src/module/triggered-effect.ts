@@ -63,11 +63,11 @@ export class TriggeredEffect {
 				case "on-clock-change":
 				case "on-use-power":
 				case "on-open-door":
-						PersonaError.softFail(`Must proivide a situation with this trigger:  ${trigger}`);
+					PersonaError.softFail(`Must proivide a situation with this trigger:  ${trigger}`);
 					return result;
 				default:
 					trigger satisfies never;
-						PersonaError.softFail(`Bad TRigger ${trigger}`);
+					PersonaError.softFail(`Bad TRigger ${trigger}`);
 					return result;
 			}
 		}
@@ -86,17 +86,21 @@ export class TriggeredEffect {
 		for (const trig of triggers) {
 			for (const eff of trig.getEffects(actor ?? null)) {
 				if (!ModifierList.testPreconditions(eff.conditions, situation, trig)) { continue; }
-				const cons = PersonaCombat.ProcessConsequences(trig, situation, eff.consequences, actor)
-				result.escalationMod+= cons.escalationMod;
-				for (const c of cons.consequences) {
-					//TODO: Consequences should be able to apply to more than the triggerer (auto-maraku)
-					result.addEffect(null, actor, c.cons);
-				}
+				const res = PersonaCombat.consequencesToResult(eff.consequences,trig, situation, actor, actor, null);
+				result.merge(res);
+				// const cons = PersonaCombat.ProcessConsequences(trig, situation, eff.consequences, actor)
+				// result.escalationMod+= cons.escalationMod;
+				// for (const c of cons.consequences) {
+				//TODO: Consequences should be able to apply to more than the triggerer (auto-maraku)
+				// result.addEffect(null, actor, c.cons);
+				// }
 			}
 		}
 		return result;
-		;
 	}
+
+
+
 
 	static async execNonCombatTrigger( trigger: NonCombatTriggerTypes, actor: PC, situation ?: Situation, msg = "Triggered Effect") : Promise<void> {
 		await this.onTrigger(trigger, actor, situation)

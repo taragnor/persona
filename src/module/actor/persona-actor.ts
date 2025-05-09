@@ -3177,7 +3177,7 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 		case (power.isDefensive() == true):
 		case (power.isPassive() == true):
 			energyReq = 0;
-			cost =0;
+			cost = 0;
 			reqMin = 0;
 			break;
 		case (diff == 0):
@@ -3200,9 +3200,10 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 	}
 	if (power.hasTag("high-cost") && cost > 0)  {
 		cost = Math.round(cost * 1.5);
+		energyReq = Math.round(energyReq * 1.5);
 	}
 	cost = Math.clamp(cost, 0, 10);
-	energyReq= Math.clamp(energyReq, reqMin, 10);
+	energyReq = Math.clamp(energyReq, reqMin, 10);
 	return await power.setPowerCost(energyReq, cost);
 }
 

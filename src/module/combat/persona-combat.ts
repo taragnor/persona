@@ -1464,55 +1464,98 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			for (let effect of effects) {
 				const {conditions, consequences}  = effect;
 				if (ModifierList.testPreconditions(conditions, situation, source)) {
-					const x = this.ProcessConsequences(power, situation, consequences, attacker.actor!, atkResult);
-					CombatRes.escalationMod += x.escalationMod;
-					for (const cons of x.consequences) {
-						const effectiveTarget = PersonaCombat.resolveEffectiveTarget(cons.applyTo, atkResult, cons.cons);
-						if (effectiveTarget) {
-							CombatRes.addEffect(atkResult, effectiveTarget.actor!, cons.cons);
-						}
-					}
+					const res = this.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult);
+					CombatRes.merge(res);
+					//second refactor
+					// const x = this.ProcessConsequences(power, situation, consequences, attacker.actor!, atkResult);
+					// CombatRes.escalationMod += x.escalationMod;
+					// const result = this.getCombatResultFromConsequences(x.consequences, situation, attacker.actor, target.actor, atkResult);
+					// CombatRes.merge(result);
+
+					// first refactor
+					// for (const cons of x.consequences) {
+					// 	const effectiveTargets = PersonaCombat.resolveEffectiveTargets(cons.applyTo, situation, attacker.actor, target.actor, cons.cons);
+					// 	for (const target of effectiveTargets) {
+					// 		if (target) {
+					// 			CombatRes.addEffect(atkResult, target, cons.cons);
+					// 		}
+					// 	}
+					// }
 				}
 			}
 		}
 		return CombatRes;
 	}
 
-	static resolveEffectiveTarget(applyTo :Consequence["applyTo"], atkResult: AttackResult, cons?: Consequence) : PToken | undefined {
-		const situation = atkResult.situation;
-		const attacker = PersonaDB.findToken(atkResult.attacker);
-		const target = PersonaDB.findToken(atkResult.target);
+	static consequencesToResult(cons: Consequence[], power: ModifierContainer, situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkResult: AttackResult | null): CombatResult {
+		const CombatRes = new CombatResult(atkResult);
+		const x = this.ProcessConsequences(power, situation, cons, attacker, atkResult);
+		CombatRes.escalationMod += x.escalationMod;
+		const result = this.getCombatResultFromConsequences(x.consequences, situation, attacker, target, atkResult);
+		CombatRes.merge(result);
+		return CombatRes;
+	}
+
+	static getCombatResultFromConsequences(consList: ConsequenceProcessed["consequences"], situation: Situation, attacker: ValidAttackers | undefined, target : ValidAttackers | undefined, atkResult ?: AttackResult | null ) : CombatResult {
+		const result = new CombatResult(atkResult);
+		for (const cons of consList) {
+			const effectiveTargets = PersonaCombat.resolveEffectiveTargets(cons.applyTo, situation, attacker, target, cons.cons);
+			for (const target of effectiveTargets) {
+				if (target) {
+					result.addEffect(atkResult, target, cons.cons);
+				}
+			}
+		}
+		return result;
+	}
+
+	static resolveEffectiveTargets(applyTo :Consequence["applyTo"], situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, cons?: Consequence) : ValidAttackers[] {
 		switch (applyTo) {
 			case "target" :
-				return target;
+				return target ? [target]: [];
 			case "attacker":
-				return attacker;
+				return attacker ? [attacker]: [];
 			case "owner":
 				if (cons && cons.actorOwner) {
-					return this.getPTokenFromActorAccessor(cons.actorOwner);
+					const pt =  this.getPTokenFromActorAccessor(cons.actorOwner);
+					if (pt) return [pt.actor];
+					else return [];
 				}
 				ui.notifications.notify("Can't find Owner of Consequnece");
-				return undefined;
+				return [];
 			case "user":
-				if (!situation.user) {return undefined;}
+				if (!situation.user) {return [];}
 				const userToken  = this.getPTokenFromActorAccessor(situation.user);
-				return userToken;
+				return userToken ? [userToken.actor] : [];
 			case "triggering-character":
 				const triggerer = "triggeringCharacter" in situation? situation.triggeringCharacter: undefined;
 				if (!triggerer) {
 					PersonaError.softFail("Can't target triggering character for this");
-					return undefined;
+					return [];
 				}
 				const token = this.getPTokenFromActorAccessor(triggerer);
-				return token;
+				return token ? [token.actor] : [];
 			case "cameo":
-				return undefined;
+				return [];
+			case "all-foes": {
+				if (!attacker) return [];
+				const attackerToken = this.getPTokenFromActorAccessor(attacker.accessor);
+				if (!attackerToken) return [];
+				return this.getAllEnemiesOf(attackerToken).map( x=> x.actor);
+			}
+			case "all-allies": {
+				if (!attacker) return [];
+				const attackerToken = this.getPTokenFromActorAccessor(attacker.accessor);
+				if (!attackerToken) return [];
+				return this.getAllAlliesOf(attackerToken)
+				.map( x=> x.actor);
+			}
 			case undefined:
-				return target; //default to target since this is old material
+				return target ? [target] : []; //default to target since this is old material
 				// PersonaError.softFail("cons.applyTo is undefined");
 			default:
 				applyTo satisfies never;
-				return undefined;
+				return [];
 		}
 	}
 
@@ -1528,7 +1571,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 
-	static ProcessConsequences(power: ModifierContainer, situation: Situation, relevantConsequences: Consequence[], attacker: ValidAttackers | undefined, atkresult ?: Partial<AttackResult>)
+	static ProcessConsequences(power: ModifierContainer, situation: Situation, relevantConsequences: Consequence[], attacker: ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null)
 	: ConsequenceProcessed {
 		let escalationMod = 0;
 		let consequences : ConsequenceProcessed["consequences"]= [];
@@ -1547,7 +1590,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return {consequences, escalationMod} satisfies ConsequenceProcessed;
 	}
 
-	static processConsequence( power: ModifierContainer, situation: Situation, cons: Consequence, attacker: ValidAttackers, atkresult ?: Partial<AttackResult>) : ConsequenceProcessed["consequences"] {
+	static processConsequence( power: ModifierContainer, situation: Situation, cons: Consequence, attacker: ValidAttackers, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed["consequences"] {
 		let damageMult = 1;
 		const applyToSelf = cons.applyToSelf ?? false;
 		const absorb = (situation.isAbsorbed && !applyToSelf) ?? false;
@@ -1968,6 +2011,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "all-allies": {
 				return this.getAllAlliesOf(attacker);
 			}
+			case "all-foes":{
+				return this.getAllEnemiesOf(attacker);
+			}
 			case "all-combatants": {
 				const combat = game.combat as PersonaCombat;
 				if (!combat) return [];
@@ -2009,6 +2055,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return combat.getAllEnemiesOf(token);
 	}
 
+	/** returns self and all allies */
 	static getAllAlliesOf(token: PToken) : PToken[] {
 		const attackerType = token.actor.getAllegiance();
 		const combat= game.combat as PersonaCombat;
@@ -2020,11 +2067,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				.filter( (x : TokenDocument<PersonaActor>) => !!x.actor && (x.actor.system.type == "pc" || x.actor.system.type =="npcAlly"))
 			);
 		const targets= tokens.filter( x => {
-			const actor = x.actor;
+			const actor = x.actor as ValidAttackers | undefined;
 			if (!actor)  return false;
-			if (!(actor as ValidAttackers).isAlive()) return false;
-			if ((actor as ValidAttackers).isFullyFaded()) return false;
-			return ((x.actor as ValidAttackers).getAllegiance() == attackerType)
+			if (!actor.isAlive()) return false;
+			if (actor.isFullyFaded()) return false;
+			return (actor.getAllegiance() == attackerType)
 		});
 		return targets.map( x=> x as PToken);
 	}

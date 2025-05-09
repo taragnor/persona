@@ -88,6 +88,8 @@ export const CONDITION_TARGETS_LIST = [
 	"user",
 	"triggering-character",
 	"cameo",
+	"all-allies",
+	"all-foes",
 ] as const;
 
 export type ConditionTarget= typeof CONDITION_TARGETS_LIST[number];

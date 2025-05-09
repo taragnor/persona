@@ -982,6 +982,11 @@ function getSubject<K extends string, T extends Record<K, ConditionTarget>>( con
 			} else {
 				return PersonaDB.findActor(situation.cameo);
 			}
+		case "all-foes":
+		case "all-allies": {
+			PersonaError.softFail("all-foes and all-allies not allowed as part of a conditional");
+			return undefined;
+		}
 		default:
 			condTarget satisfies undefined;
 			if (situation.target?.token) {

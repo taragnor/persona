@@ -53,7 +53,7 @@ export class CombatResult  {
 	sounds: {sound: ValidSound, timing: "pre" | "post"}[] = [];
 	globalOtherEffects: OtherEffect[] = [];
 
-	constructor(atkResult ?: AttackResult) {
+	constructor(atkResult ?: AttackResult | null) {
 		this.id = ++CombatResult.lastId;
 		if (atkResult) {
 			this.attacks.set(atkResult, []);
@@ -125,7 +125,7 @@ export class CombatResult  {
 		this.sounds.push({sound, timing});
 	}
 
-	addEffect(atkResult: AttackResult | null, target: ValidAttackers | undefined, cons: Consequence) {
+	addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Consequence) {
 		let effect: ActorChange<ValidAttackers> | undefined = undefined;
 		if (target) {
 			effect = {
@@ -1107,15 +1107,27 @@ function convertConsToStatusDuration(cons: Consequence & {type : "addStatus" | "
 					actorTurn: atkResultOrActor.accessor
 				};
 			}
-			const applyTarget = PersonaCombat.resolveEffectiveTarget(cons.durationApplyTo, atkResultOrActor, cons);
-			if (!applyTarget) {
-				PersonaError.softFail(`Can't get applyTarget for status ${cons.type}`);
-				return {dtype: "instant"};
+			const targetToken = PersonaDB.findToken(atkResultOrActor.target);
+			const target = targetToken?.actor;
+			if (target)  {
+				return {
+					dtype: dur,
+					actorTurn: target.accessor
+				};
 			}
-			return {
-				dtype: dur,
-				actorTurn: applyTarget.actor.accessor,
+			if (!target) {
+				PersonaError.softFail(`Can't coinvert consequence ${cons.type}`, atkResultOrActor);
 			}
+			//had to change this when all-allies/enemies selectors were introduced might break something
+			// const applyTarget = PersonaCombat.resolveEffectiveTarget(cons.durationApplyTo, atkResultOrActor, cons);
+			// if (!applyTarget) {
+			// 	PersonaError.softFail(`Can't get applyTarget for status ${cons.type}`);
+			// 	return {dtype: "instant"};
+			// }
+			// return {
+			// 	dtype: dur,
+			// 	actorTurn: applyTarget.actor.accessor,
+			// }
 		case "anchored":
 			PersonaError.softFail("Anchored shouldn't happen here");
 			return {

@@ -157,9 +157,6 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
 Hooks.on("renderActorSheet", (sheet: PersonaActorSheetBase) => {
 	sheet.element.find("textarea").each(function () {
-		if (this.scrollHeight != 0) {
-			debugger;
-		}
 		PersonaActorSheetBase.autoResize(this);
 	});
 });
