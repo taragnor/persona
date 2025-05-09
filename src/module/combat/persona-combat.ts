@@ -2073,7 +2073,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 static selectedPTokens(): PToken[] {
 	return Array.from(game.user.targets)
 		.map(x=> x.document)
-		.filter(x=> x.actor != undefined) as PToken[];
+		.filter(x=> x.actor != undefined && x.actor instanceof PersonaActor && x.actor.isValidCombatant()) as PToken[];
 }
 
 static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[]): PToken[] {
