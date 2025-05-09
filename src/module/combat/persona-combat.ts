@@ -1180,6 +1180,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const element = power.getDamageType(attacker.actor);
 		const targetP = target.actor.persona();
 		const resist = targetP.elemResist(element);
+		const pierce = power.hasTag("pierce");
 		switch (resist) {
 			case "reflect": {
 				return {
@@ -1198,6 +1199,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				};
 			}
 			case "block": {
+				if (pierce) return null;
 				return {
 					result: "block",
 					printableModifiers: [],
@@ -1214,6 +1216,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				};
 			}
 			case "absorb" : {
+				if (pierce) return null;
 				return {
 					result: "absorb",
 					printableModifiers: [],
@@ -1325,7 +1328,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				...baseData,
 			};
 		}
-		situation.resisted = resist == "resist";
+		situation.resisted = resist == "resist" && !power.hasTag("pierce");
 		situation.struckWeakness = resist == "weakness";
 		const critBoostMod = this.calcCritModifier(attacker.actor, target.actor, power, situation);
 		const rageOrBlind = attacker.actor.hasStatus("rage") || attacker.actor.hasStatus("blind");
