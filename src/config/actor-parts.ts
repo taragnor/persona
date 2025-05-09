@@ -162,6 +162,7 @@ export const classData = function () {
 export function combatCommonStats() {
 	return {
 		classData: classData(),
+		xp: new num( {integer: false, initial: 0, min: 0}),
 		hp: new num( {integer:true, initial: 1}),
 		wpnatk: new num( {integer:true, initial: 0}),
 		magatk: new num( {integer:true, initial: 0}),
@@ -184,7 +185,6 @@ export function combatCommonStats() {
 export function PCAndNPCAllyCombatStats() {
 	return {
 		...combatCommonStats(),
-		xp: new num( {integer: false, initial: 0, min: 0, max: 100}),
 		powers: new arr( new id()),
 		powers_sideboard: new arr( new id()),
 		teamworkMove: new id(),

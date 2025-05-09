@@ -1,3 +1,4 @@
+import { Persona } from "../persona-class.js";
 import { PersonaScene } from "../persona-scene.js";
 import { Power } from "../item/persona-item.js";
 import { SkillCard } from "../item/persona-item.js";
@@ -445,7 +446,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			...situation,
 			saveVersus: status
 		};
-		const saveBonus = combatant.actor.getBonuses("save").total(saveSituation);
+		const saveBonus = combatant.actor.persona().getBonuses("save").total(saveSituation);
 		return saveBonus + rollValue;
 	}
 
@@ -637,7 +638,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			return {msg, options};
 		}
 		if (!combatant.actor) return { msg, options};
-		const disengageBonus = combatant.actor.getBonuses("disengage").total(situation);
+		const disengageBonus = combatant.actor.persona().getBonuses("disengage").total(situation);
 		const disengageTotal = disengageBonus + rollValue;
 		msg.push( `Disengage Total: ${disengageTotal}`);
 		switch (true) {
@@ -2448,6 +2449,14 @@ getRoomEffects() : UniversalModifier[] {
 		const effect = allRoomEffects.find(eff => eff.id == id);
 		return effect ? [effect] : [];
 	});
+}
+
+static getRoomModifiers(persona: Persona) {
+	const user = persona.user;
+	return (game.combats.contents as PersonaCombat[])
+		.filter(combat => combat.combatants.contents
+			.some( comb => comb.actor == user)
+		).flatMap( combat=> combat.getRoomEffects())
 }
 
 async alterRoomEffects() {

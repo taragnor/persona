@@ -144,18 +144,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get mmp() : number {
+		if (!this.isValidCombatant()) return 0;
 		switch (this.system.type) {
 			case "npcAlly": case "pc":
 				break;
-			case "shadow": case "npc": case "tarot":
+			case "shadow":
 				return 0;
 			default:
 				this.system satisfies never;
 				return 0;
 		}
+		const persona = this.persona();
 		const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
-		const bonuses = this.getBonuses("maxmp");
-		const mult = 1 + this.getBonuses("maxmpMult").total(sit);
+		const bonuses = persona.getBonuses("maxmp");
+		const mult = 1 + persona.getBonuses("maxmpMult").total(sit);
 		const lvlmaxMP = (this as PC | NPCAlly).calcBaseClassMMP();
 		const val = Math.round((mult * (lvlmaxMP)) + bonuses.total(sit));
 		(this as PC | NPCAlly).refreshMaxMP(val);
@@ -294,7 +296,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!this.isValidCombatant()) {
 			throw new PersonaError("Can't call basePersona getter on non combatant");
 		}
-		return new Persona(this, this.#mainPowers());
+		return new Persona(this, this, this.#mainPowers());
 	}
 
 	persona<T extends ValidAttackers>(this: T): Persona<T> {
@@ -328,13 +330,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get combatInit(): number {
+		if (!this.isValidCombatant()) return -666;
 		const situation = {user: (this as PC | Shadow).accessor};
-		const initBonus = this
+		const initBonus = this.persona()
 			.getBonuses("initiative")
 			.total(situation);
 		switch (this.system.type) {
-			case "npc":
-				return -5;
 			case "shadow": {
 				const inc = this.system.combat.classData.incremental.initiative;
 				const level  = this.system.combat.classData.level;
@@ -348,9 +349,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				const initRating = this.system.combat.initiative;
 				const initScore = this.#translateInitString(initRating);
 				return initBonus + (inc * 2) +  (level * 3) + initScore;
-			}
-			case "tarot" :{
-				return -5;
 			}
 			default:
 				this.system satisfies never;
@@ -435,13 +433,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get mhp() : number {
-		if (this.system.type == "npc") return 0;
-		if (this.system.type == "tarot") return 0;
+		if (!this.isValidCombatant()) return 0;
 		try {
+			const persona = this.persona();
 			const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
 			const inc = this.system.combat.classData.incremental.hp ?? 0;
 			const lvl = this.system.combat.classData.level;
-			const bonuses = this.getBonuses("maxhp");
+			const bonuses = persona.getBonuses("maxhp");
 			const lvlbase = this.class.getClassProperty(lvl, "maxhp");
 			const diff = this.class.getClassProperty(lvl+1, "maxhp") - lvlbase;
 			const incBonus = Math.round(inc / 3 * diff);
@@ -454,7 +452,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const blocks = Object.values(this.system.combat.resists)
 				.filter(x=> x == "block" || x == "absorb" || x == "reflect")
 				.length;
-			const multmods = this.getBonuses("maxhpMult")
+			const multmods = persona.getBonuses("maxhpMult")
 			if (weaknesses > 1) {
 				const bonus = (weaknesses -1 ) * 0.25;
 				multmods.add("weaknesses mod", bonus)
@@ -469,7 +467,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			}
 			bonuses.add("incremental bonus hp", incBonus)
 			const mult = multmods.total(sit, "percentage-special");
-			const newform = this.getBonuses("maxhpMult-new").total(sit, "percentage");
+			const newform = persona.getBonuses("maxhpMult-new").total(sit, "percentage");
 			const mhp = ((mult * lvlbase) + bonuses.total(sit)) * newform;
 			return Math.round(mhp);
 		} catch (e) {
@@ -730,13 +728,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get recoveryAmt(): number {
-		if (this.system.type != "pc") return 0;
-		const rec_bonuses = this.getBonuses("recovery");
+		if (!this.isPC()) return 0;
+		const persona = this.persona();
+		const rec_bonuses = persona.getBonuses("recovery");
 		rec_bonuses.add("Base", 10);
 		const situation : Situation = {
 			user: (this as PC).accessor
 		};
-		const rec_mult = this.getBonuses("recovery-mult").total(situation, "percentage");
+		const rec_mult = persona.getBonuses("recovery-mult").total(situation, "percentage");
 		const healing = rec_bonuses.total(situation);
 		return healing * rec_mult;
 	}
@@ -852,15 +851,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get maxPowers() : number {
+		if (!this.isValidCombatant()) return 0;
 		switch (this.system.type) {
-			case "npc":
-			case "tarot":
-				return 0;
 			case "npcAlly":
 				return 8;
 			case "pc":
 			case "shadow":
-				const extraMaxPowers = this.getBonuses("extraMaxPowers");
+				const extraMaxPowers = this.persona().getBonuses("extraMaxPowers");
 				return 8 + extraMaxPowers.total ( {user: (this as PC | Shadow).accessor});
 			default:
 				this.system satisfies never;
@@ -906,14 +903,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get maxSideboardPowers() : number {
+		if (!this.isValidCombatant()) return 0;
 		switch (this.system.type) {
-			case "npc":
 			case "npcAlly":
-			case "tarot":
+			case "shadow":
 				return 0;
 			case "pc":
-			case "shadow":
-				const extraMaxPowers = this.getBonuses("extraMaxPowers");
+				const extraMaxPowers = this.persona().getBonuses("extraMaxPowers");
 				return extraMaxPowers.total ( {user: (this as PC | Shadow).accessor});
 			default:
 				this.system satisfies never;
@@ -987,11 +983,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	passiveFocii(this: ValidAttackers): Focus[] {
-		return this.persona().focii.filter( f=> !f.system.defensive);
+		return this.persona().passiveFocii();
 	}
 
 	defensiveFocii(this: ValidAttackers): Focus[] {
-		return this.persona().focii.filter( f=> f.system.defensive);
+		return this.persona().defensiveFocii();
 	}
 
 	async modifyHP( this: ValidAttackers, delta: number) {
@@ -1134,7 +1130,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	getAdjustedDuration(duration: StatusDuration, id: StatusEffect["id"]) : StatusDuration {
+	getAdjustedDuration( duration: StatusDuration, id: StatusEffect["id"]) : StatusDuration {
+		if (!this.isValidCombatant()) return duration;
 		try {
 			switch (duration.dtype)  {
 				case "X-rounds":
@@ -1152,7 +1149,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						target: (this as ValidAttackers).accessor,
 						statusEffect: id,
 					};
-					const modifier = this.getBonuses("baleful-status-duration").total(situation);
+					const modifier = this.persona().getBonuses("baleful-status-duration").total(situation);
 					const reducedAmt = Math.max(0, duration.amount + modifier);
 					return {
 						...duration,
@@ -1364,34 +1361,51 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return basedmg;
 	}
 
-	getBonusWpnDamage() : {low: ModifierList, high: ModifierList} {
-		const total = this.getBonuses("wpnDmg");
-		const low = this.getBonuses("wpnDmg_low");
-		const high = this.getBonuses("wpnDmg_high");
+	getBonusWpnDamage(this: ValidAttackers) : {low: ModifierList, high: ModifierList} {
+		const persona = this.persona();
+		const total = persona.getBonuses("wpnDmg");
+		const low = persona.getBonuses("wpnDmg_low");
+		const high = persona.getBonuses("wpnDmg_high");
 		return {
 			low: total.concat(low),
 			high: total.concat(high)
 		}
 	}
 
-	getBonuses (modnames : ModifierTarget | ModifierTarget[], sources: ModifierContainer[] = this.mainModifiers() ): ModifierList {
-		let modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this as Shadow | PC)
+	getPersonalBonuses(modnames : ModifierTarget | ModifierTarget[], sources: ModifierContainer[] = this.actorMainModifiers()) : ModifierList  {
+		let modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this)
 			.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
 		));
 		return modList;
 	}
+ 
+	// getBonuses (modnames : ModifierTarget | ModifierTarget[], sources: ModifierContainer[] = this.mainModifiers() ): ModifierList {
+	// 	let modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this as ValidAttackers)
+	// 		.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
+	// 	));
+	// 	return modList;
+	// }
+
+	actorMainModifiers(): ModifierContainer[] {
+		return [
+			...this.passiveItems(),
+			...this.getAllSocialFocii(),
+			...this.equippedItems(),
+		].filter (x=> x.getEffects(this).length > 0);
+	}
 
 	hpCostMod(this: ValidAttackers) : ModifierList {
-		return this.getBonuses("hpCostMult");
+		return this.persona().getBonuses("hpCostMult");
 	}
 
 	get treasureMultiplier () : number {
+		if (!this.isValidCombatant()) return 1;
 		switch (this.system.type) {
 			case "pc": case "npcAlly":
 				const situation :Situation = {
 					user: (this as PC | NPCAlly).accessor
 				};
-				const bonus= this.getBonuses("shadowMoneyBoostPercent").total(situation, "percentage");
+				const bonus= this.persona().getBonuses("shadowMoneyBoostPercent").total(situation, "percentage");
 				return !Number.isNaN(bonus) ? bonus : 1;
 			default:
 				return 1;
@@ -1580,7 +1594,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			user: this.accessor,
 			target: this.accessor,
 		}
-		return this.getBonuses("instantDeathResistanceMult").total(situation, "percentage");
+		return this.persona().getBonuses("instantDeathResistanceMult").total(situation, "percentage");
 	}
 
 	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
@@ -1615,7 +1629,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	wpnAtkBonus(this: ValidAttackers) : ModifierList {
-		const mods = this.getBonuses(["allAtk", "wpnAtk"]);
+		const mods = this.persona().getBonuses(["allAtk", "wpnAtk"]);
 		const lvl = this.system.combat.classData.level;
 		const inc = this.system.combat.classData.incremental.attack ?? 0;
 		const wpnAtk = this.system.combat.wpnatk;
@@ -1626,7 +1640,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	magAtkBonus(this: ValidAttackers) : ModifierList {
-		const mods = this.getBonuses(["allAtk", "magAtk"]);
+		const mods = this.persona().getBonuses(["allAtk", "magAtk"]);
 		const lvl = this.system.combat.classData.level ?? 0;
 		const magAtk = this.system.combat.magatk ?? 0;
 		const inc = this.system.combat.classData.incremental.attack ?? 0;
@@ -1637,7 +1651,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	itemAtkBonus(this: ValidAttackers, item :Consumable) : ModifierList {
-		const mods = this.getBonuses(["itemAtk", "allAtk"]);
+		const mods = this.persona().getBonuses(["itemAtk", "allAtk"]);
 		mods.add("Item Base Bonus", item.system.atk_bonus);
 		const lvl = this.system.combat.classData.level ?? 0;
 		const inc = this.system.combat.classData.incremental.attack ?? 0;
@@ -1655,8 +1669,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		mods.add("Base Defense Bonus", baseDef);
 		mods.add("Level Bonus (x2)", lvl * 2);
 		mods.add("Incremental Advance" , inc);
-		const otherBonuses = this.getBonuses([type, "allDefenses"]);
-		const defenseMods = this.getBonuses([type, "allDefenses"], this.defensivePowers());
+		const otherBonuses = this.persona().getBonuses([type, "allDefenses"]);
+		const defenseMods = this.persona().getBonuses([type, "allDefenses"], this.defensivePowers());
 		return mods.concat(otherBonuses).concat(defenseMods);
 	}
 
@@ -2049,7 +2063,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const mods = new ModifierList();
 		const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
 		mods.add(skillName, stat);
-		return mods.concat(this.getBonuses(socialStat));
+		return mods.concat(this.persona().getBonuses(socialStat));
 	}
 
 	async createSocialLink(this: PC, npc: SocialLink) {
@@ -2287,8 +2301,7 @@ getEffects(this: ValidAttackers) : ConditionalEffect[] {
 }
 
 getPassivePowers(this: ValidAttackers): Power[] {
-	return this.persona().powers
-		.filter( power=> power.system.subtype == "passive");
+	return this.persona().passivePowers();
 }
 
 canEngage() :boolean {
@@ -2344,25 +2357,21 @@ getDisengageBonus( this: ValidAttackers) : ModifierList {
 
 /** returns current team (taking into account charm)*/
 getAllegiance()  : Team {
-	let base: Team;
+	if (!this.isValidCombatant()) return "Neutral";
 	switch (this.system.type) {
 		case "pc":
 			if (!this.hasPlayerOwner) return "Neutral";
-			base = "PCs";
-			break;
+			return "PCs";
 		case "shadow":
-			base = "Shadows";
-			break;
+			if (this.hasPlayerOwner) return "PCs";
+			return "Shadows";
 		case "npcAlly":
-			base = "PCs";
-			break;
+			return "PCs";
 		default:
+			this.system satisfies never;
+			PersonaError.softFail(`Unknown type of actor, ${(this as any)?.system?.type}`);
 			return "Neutral";
 	}
-	return base;
-	//OLD charm code
-	// if (!this.statuses.has("charmed")) return base;
-	// return base == "PCs" ? "Shadows" : "PCs";
 }
 
 async expendConsumable(item: UsableAndCard) {
@@ -2771,6 +2780,14 @@ async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
 		PersonaError.softFail(`Attempting to add NaN XP to ${this.name}, aborted`);
 		return false;
 	}
+	const sit: Situation = {
+		user: this.accessor,
+	};
+	amt = amt * this.persona().getBonuses("xp-multiplier").total(sit, "percentage");
+	if (amt <= 0) {
+		PersonaError.softFail(`Could be an error as XP gained is now ${amt}`);
+		return false;
+	}
 	let levelUp = false;
 	let newxp = this.system.combat.xp + amt;
 	const XPrequired= this.XPForNextLevel;
@@ -2796,7 +2813,7 @@ XPValue(this: Shadow) : number {
 }
 
 maxActions(this: ValidAttackers): number  {
-	return Math.max(0, 1 + this.getBonuses("actions-per-turn").total( {user: this.accessor}));
+	return Math.max(0, 1 + this.persona().getBonuses("actions-per-turn").total( {user: this.accessor}));
 }
 
 async refreshActions(): Promise<number> {
@@ -2916,7 +2933,7 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 			user: this.accessor,
 			activeCombat: true,
 		};
-		let bonusEnergy = 3 + this.getBonuses("energy-per-turn").total(situation);
+		let bonusEnergy = 3 + this.persona().getBonuses("energy-per-turn").total(situation);
 		if (despair) {
 			bonusEnergy = Math.floor(bonusEnergy/2);
 		}
@@ -3388,7 +3405,7 @@ async onAddToCombat() {
 			const sit : Situation = {
 				user: (this as Shadow).accessor,
 			}
-			const startingEnergy = 3 + (this as Shadow).getBonuses("starting-energy").total(sit);
+			const startingEnergy = 3 + (this as Shadow).persona().getBonuses("starting-energy").total(sit);
 			await (this as Shadow).setEnergy(startingEnergy);
 			break;
 		case "pc":

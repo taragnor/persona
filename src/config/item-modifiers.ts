@@ -44,6 +44,7 @@ export const MODIFIERLIST = [
 	"disengage",
 	"weakestSlot",
 	"pay",
+	"xp-multiplier",
 	"extraMaxPowers",
 	"initiative",
 	"starting-energy",

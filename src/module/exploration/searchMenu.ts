@@ -136,10 +136,10 @@ export class SearchMenu {
 			const situation : Situation = {
 				user: actor.accessor,
 			}
-			options.treasureFindBonus = actor.getBonuses("treasureFind").total(situation);
+			options.treasureFindBonus = actor.persona().getBonuses("treasureFind").total(situation);
 			switch (searcher.declaration) {
 				case "search": {
-					const numberOfSearches = 1 + actor.getBonuses("numberOfSearches").total(situation);
+					const numberOfSearches = 1 + actor.persona().getBonuses("numberOfSearches").total(situation);
 					for (let searches = 0; searches < numberOfSearches; ++searches) {
 						const roll = new Roll("1d6");
 						const [result, total] = await this.processSearchRoll([roll], options);
@@ -156,7 +156,7 @@ export class SearchMenu {
 					const situation : Situation = {
 						user: actor.accessor,
 					}
-					const numberOfSearches = 1 + actor.getBonuses("numberOfSearches").total(situation);
+					const numberOfSearches = 1 + actor.persona().getBonuses("numberOfSearches").total(situation);
 					for (let searches = 0; searches < numberOfSearches; ++searches) {
 						const roll = new Roll("1d6");
 						const roll2 = new Roll("1d10");

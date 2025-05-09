@@ -1,3 +1,4 @@
+import { Persona } from "./persona-class.js";
 import { PersonaScene } from "./persona-scene.js";
 import { ActorChange } from "./combat/combat-result.js";
 import { AttackResult } from "./combat/combat-result.js";
@@ -1118,6 +1119,7 @@ export type SocialCardSituation = UserSituation & {
 type SituationUniversal = {
 	//more things can be added here all should be optional
 	user?: UniversalActorAccessor<ValidAttackers>;
+	persona?: Persona;
 	usedPower ?: UniversalItemAccessor<UsableAndCard>;
 	usedSkill ?: SocialStat;
 	activeCombat ?: boolean ;

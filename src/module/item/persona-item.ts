@@ -51,7 +51,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	cache: {
 		effectsNull: ConditionalEffect[] | undefined;
-		effectsMap: WeakMap<ValidAttackers, ConditionalEffect[]>;
+		effectsMap: WeakMap<PersonaActor, ConditionalEffect[]>;
 		containsModifier: boolean | undefined;
 		containsTagAdd: boolean | undefined;
 		statsModified: Map<ModifierTarget, boolean>,
@@ -313,7 +313,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				list = (this as Power).tagList(user ?? null);
 				break;
 			case "consumable":
-				list = (this as Consumable).tagList();
+					list = (this as Consumable).tagList();
 				break;
 			case "item":
 			case "weapon":
@@ -680,7 +680,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return new ModifierList(modifiers);
 	}
 
-	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: ValidAttackers | null) : ModifierListItem[] {
+	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null) : ModifierListItem[] {
 		PersonaItem.cacheStats.modifierRead++;
 		if (this.cache.containsModifier === false) {
 			PersonaItem.cacheStats.modifierSkip++;
@@ -769,8 +769,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const subtype : PowerType  = this.system.type == "power" ? this.system.subtype : "standalone";
 		switch(subtype) {
 			case "weapon" : {
+				const persona = user.persona();
 				const dmg = user.wpnDamage();
-				const bonus = user.getBonuses("wpnMult");
+				const bonus = persona.getBonuses("wpnMult");
 				const mult = Math.max(1, user.wpnMult() + (this.system.melee_extra_mult ?? 0) + bonus.total(situation));
 				const bonusDamage = user.getBonusWpnDamage();
 				const dmgamt =  {
@@ -780,13 +781,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				return dmgamt;
 			}
 			case "magic": {
+				const persona = user.persona();
 				const dmg = user.magDmg();
 				const mult = this.system.mag_mult;
-				const high_bonus = user.getBonuses("magHigh").total(situation);
-				const low_bonus = user.getBonuses("magLow").total(situation);
+				const high_bonus = persona.getBonuses("magHigh").total(situation);
+				const low_bonus = persona.getBonuses("magLow").total(situation);
 				const baseLow =  (dmg.low + low_bonus)  * mult;
 				const baseHigh =  (dmg.high + high_bonus) * mult;
-				const finalBonus =  user.getBonuses("magDmg").total(situation);
+				const finalBonus =  persona.getBonuses("magDmg").total(situation);
 				const modified = {
 					low: baseLow + (baseLow > 0 ? finalBonus: 0),
 					high: baseHigh + (baseHigh > 0 ? finalBonus: 0),
@@ -852,9 +854,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (this.system.type == "consumable") return 0;
 		if (this.isBasicPower()) {return 0;}
 		let mult = 1;
-			if (this.hasTag("high-cost")) {
-				mult *= 2;
-			}
+		if (this.hasTag("high-cost")) {
+			mult *= 2;
+		}
 		switch (this.system.slot) {
 			case 0: return mult * 6;
 			case 1: return mult * 12;
@@ -998,7 +1000,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			user: user.accessor,
 			usedPower: this.accessor,
 		}
-		let list = user.getBonuses("mpCostMult");
+		let list = user.persona().getBonuses("mpCostMult");
 		// const bonuses = this.getModifier("mpCostMult", user);
 		// list = list.concat(new ModifierList(bonuses));
 		const mult = list.total(sit, "percentage");
@@ -1031,7 +1033,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return cardEffect;
 	}
 
-	getEffects(this: ModifierContainer, sourceActor : ValidAttackers | null): ConditionalEffect[] {
+	getEffects(this: ModifierContainer, sourceActor : PersonaActor | null): ConditionalEffect[] {
 		if (this.system.type == "skillCard") {
 			return [
 				(this as SkillCard).generateSkillCardTeach()

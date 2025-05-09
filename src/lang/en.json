@@ -249,6 +249,7 @@
 	"persona.modifier.initiative": "Initiative",
 	"persona.modifier.starting-energy": "Shadow Starting Energy",
 	"persona.modifier.energy-per-turn": "Energy Gained at end of Turn",
+	"persona.modifier.xp-multiplier": "% change to XP gained",
 	"persona.modifier.shadowPresence": "Shadow Presence",
 	"persona.modifier.challengeLevel": "Challenge Level",
 	"persona.modifier.concordiaPresence": "Concordia Presence",

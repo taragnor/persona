@@ -1,61 +1,163 @@
+import { PersonaDB } from "./persona-db.js";
+import { PersonaCombat } from "./combat/persona-combat.js";
+import { ModifierList } from "./combat/modifier-list.js";
+import { ModifierContainer } from "./item/persona-item.js";
+import { ModifierTarget } from "../config/item-modifiers.js";
+import { PersonaError } from "./persona-error.js";
 import { localize } from "./persona.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../config/status-effects.js";
 import { RESIST_STRENGTH_LIST } from "../config/damage-types.js";
 import { getActiveConsequences } from "./preconditions.js";
 import { Situation } from "./preconditions.js";
-import { statusResists } from "../config/actor-parts.js";
 import { PersonaI } from "../config/persona-interface.js";
 import { DamageType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";
 import {ValidAttackers} from "./combat/persona-combat.js";
 import {Power, Talent, Focus} from "./item/persona-item.js";
-import { elementalResists } from "../config/actor-parts.js";
-import { classData } from "../config/actor-parts.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
 	user: T;
-	name: string;
+	source: ValidAttackers;
 	powers: Power[];
-	xp: number;
-	statusResists: Foundry.SchemaConvert<ReturnType<typeof statusResists>>;
-	resists: Foundry.SchemaConvert<ReturnType<typeof elementalResists>>;
-	classData: Foundry.SchemaConvert<ReturnType<typeof classData>>;
-	talents: Talent[];
-	focii: Focus[];
-	XPForNextLevel: number;
-	scanLevel: number;
-	actorId: string;
 
-	constructor (actor: T, powers: Power[]) {
-		this.user = actor;
-		const {statusResists, resists, classData} = actor.system.combat;
+	constructor (source: ValidAttackers, user: T, powers: Power[]) {
+		this.user = user;
+		this.source = source;
 		this.powers = powers;
-		this.statusResists = statusResists;
-		this.resists= resists;
-		this.classData = classData;
-		this.talents = actor.talents;
-		this.focii = actor.focii;
-		this.XPForNextLevel = actor.XPForNextLevel;
-		this.scanLevel = 0;
-		if (actor.isShadow()) {
-			this.scanLevel = actor.system.scanLevel ?? 0;
-		}
-		if (actor.hasPlayerOwner) {
-			this.scanLevel = 3;
-		}
-		this.actorId = actor.id;
-		switch (actor.system.type) {
+	}
+
+	get statusResists() : ValidAttackers["system"]["combat"]["statusResists"] {
+		return this.source.system.combat.statusResists;
+	}
+
+	get resists(): ValidAttackers["system"]["combat"]["resists"] {
+		return this.source.system.combat.resists;
+	}
+
+	get classData(): ValidAttackers["system"]["combat"]["classData"] {
+		return this.source.system.combat.classData;
+	}
+
+	get focii(): Focus[] {
+		return this.source.focii;
+	}
+
+	get talents(): Talent[] {
+		return this.source.talents;
+	}
+
+	get name(): string {
+		switch (this.source.system.type) {
 			case "pc":
 			case "npcAlly":
-				this.name = actor.system.personaName;
-				break;
+				return this.source.system.personaName;
 			case "shadow":
-				this.name = actor.name;
+				return this.source.name;
+			default:
+				this.source.system satisfies never;
+				return "ERROR";
 		}
+	}
+
+	get XPForNextLevel() : number {
+		return this.source.XPForNextLevel;
+	}
+
+	get scanLevel(): number {
+		const user = this.user;
+		const source = this.source;
+		if (user.hasPlayerOwner) {
+			return 3;
+		}
+		if (source.isShadow()) {
+			return source.system.scanLevel ?? 0;
+		}
+		return 0;
+	}
+
+	get xp(): number {
+		return this.source.system.combat.xp;
+	}
+
+
+	equals(other: Persona<any>) : boolean {
+		return this.source == other.source;
 	}
 
 	get level() : number {
 		return this.classData.level;
+	}
+
+	/** return true on level up*/
+	async awardXP(amt: number): Promise<boolean> {
+		if (!amt) {
+			return false;
+		}
+		if (Number.isNaN(amt)) {
+			PersonaError.softFail(`Attempting to add NaN XP to ${this.name}, aborted`);
+			return false;
+		}
+		const sit: Situation = {
+			...this.baseSituation,
+		};
+		amt = amt * this.getBonuses("xp-multiplier").total(sit, "percentage");
+
+		if (amt <= 0) {
+			PersonaError.softFail(`Could be an error as XP gained is now ${amt}`);
+			return false;
+		}
+		let levelUp = false;
+		const XPrequired= this.XPForNextLevel;
+		let newxp = this.xp + amt;
+		while (newxp > XPrequired) {
+			newxp -= XPrequired;
+			levelUp = true;
+		}
+		await this.source.update({"system.combat.xp" : newxp});
+		return levelUp;
+	}
+
+	get baseSituation() : Required<Pick<Situation, "user" | "persona">> {
+		return {
+			user: this.user.accessor,
+			persona: this,
+		}
+	}
+
+	getBonuses (modnames : ModifierTarget | ModifierTarget[], sources: ModifierContainer[] = this.mainModifiers() ): ModifierList {
+		let modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this.source)
+			.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
+		));
+		return modList;
+	}
+
+	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
+		const user = this.user;
+		// const source = this.source;
+		const roomModifiers = PersonaCombat.getRoomModifiers(this);
+		const passivePowers = (options && options.omitPowers) ? [] : this.passivePowers();
+		return [
+			...this.passiveFocii(),
+			...this.talents,
+			...passivePowers,
+			...user.actorMainModifiers(),
+			...roomModifiers,
+			...PersonaDB.getGlobalModifiers(),
+			...PersonaDB.navigatorModifiers(),
+		].filter( x => x.getEffects(this.user).length > 0);
+	}
+
+	passivePowers() : Power[] {
+	return this.powers
+		.filter( power=> power.system.subtype == "passive");
+	}
+
+	passiveFocii() : Focus[] {
+		return this.focii.filter( f=> !f.system.defensive);
+	}
+
+	defensiveFocii(): Focus[] {
+		return this.focii.filter( f=> f.system.defensive);
 	}
 
 	elemResist(type: Exclude<DamageType, "by-power">): ResistStrength {
@@ -109,14 +211,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const fusedPowers = attachedPersona.powers.concat(
 			basePersona.powers);
 		fusedPowers.length = Math.min(6, fusedPowers.length);
-		const fusedPersona = new Persona(attachedPersona.user, fusedPowers);
+		const fusedPersona = new Persona(attachedPersona.source, attachedPersona.user, fusedPowers);
 		fusedPersona.user = basePersona.user;
-		fusedPersona.classData = basePersona.classData;
+		fusedPersona.source = attachedPersona.source;
 		return fusedPersona;
 	}
 
 	get isBasePersona(): boolean {
-		return this.actorId == this.user.id;
+		return this.source == this.user;
 	}
 
 	get printableResistanceString() : string {
