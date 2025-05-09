@@ -3182,11 +3182,11 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 			break;
 		case (diff == 0):
 			energyReq +=3;
-			cost += 3;
+			cost += 2;
 			break;
 		case (diff > 0):
 			energyReq += Math.max(reqMin, 3-diff);
-			cost += 2 - Math.floor(diff/2);
+			cost += 2 - Math.floor((1+diff)/2);
 			break;
 		case (diff < 0):
 			if (power.hasTag("debuff") || power.hasTag("buff")) {
@@ -3194,8 +3194,7 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 			} else {
 				energyReq += Math.min(10, 3-diff);
 			}
-			const effectiveDiff = diff + 1;
-			cost += 3 - effectiveDiff;
+			cost += 2 - diff;
 			break;
 	}
 	if (power.hasTag("high-cost") && cost > 0)  {

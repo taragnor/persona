@@ -93,9 +93,6 @@ export class TriggeredEffect {
 		return result;
 	}
 
-
-
-
 	static async execNonCombatTrigger( trigger: NonCombatTriggerTypes, actor: PC, situation ?: Situation, msg = "Triggered Effect") : Promise<void> {
 		await this.onTrigger(trigger, actor, situation)
 			.emptyCheck()

@@ -1207,12 +1207,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	isStatusEffect(this: UsableAndCard) : boolean {
 		if (this.system.type == "skillCard") return false;
 		const statusTags : PowerTag[] = [
+			"ailment",
 			"sleep",
 			"charm",
 			"rage",
 			"fear",
 			"confusion",
 			"poison",
+			"sealed",
+			"mouse",
+			"despair",
 		];
 		return statusTags.some( st => this.hasTag(st));
 	}
