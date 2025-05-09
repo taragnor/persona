@@ -980,7 +980,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		try {
 			const isCard = power.system.type == "skillCard";
-			const targets = await this.getTargets(attacker, power);
+			const targets = this.getTargets(attacker, power);
 			if (!isCard && targets.some( target => target.actor.system.type == "shadow" ) && (power as Usable).system.targets != "self" ) {
 				this.ensureCombatExists();
 			}
@@ -1120,7 +1120,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				const execPower = PersonaDB.allPowers().find( x=> x.id == usePower.powerId);
 				if (execPower && newAttacker) {
 					const altTargets= this.getAltTargets(newAttacker, atkResult.situation, usePower.target );
-					const newTargets = await this.getTargets(newAttacker, execPower, altTargets)
+					const newTargets = this.getTargets(newAttacker, execPower, altTargets)
 					const extraPower = await this.usePowerOn(newAttacker, execPower, newTargets, "standard");
 					result.merge(extraPower);
 				}
@@ -2070,8 +2070,16 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return targets.map( x=> x as PToken);
 	}
 
-static async getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[]): Promise<PToken[]> {
-	const selected = altTargets != undefined ? altTargets : Array.from(game.user.targets).map(x=> x.document) as PToken[];
+static selectedPTokens(): PToken[] {
+	return Array.from(game.user.targets)
+		.map(x=> x.document)
+		.filter(x=> x.actor != undefined) as PToken[];
+}
+
+static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[]): PToken[] {
+	const selected = altTargets != undefined
+	? altTargets
+	: this.selectedPTokens();
 	const combat = game.combat as PersonaCombat | undefined;
 	if (combat) {
 		const attackerActor = attacker.actor;
@@ -2107,10 +2115,10 @@ static async getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PTo
 			return [randomSelect(list)];
 		case "1-engaged":
 		case "1-nearby":
-			this.checkTargets(1,1, true, selected);
+			this.checkTargets(1,1, selected, true);
 			return selected;
 		case "1-nearby-dead":
-			this.checkTargets(1,1, false, selected);
+			this.checkTargets(1,1, selected, false);
 			return selected;
 		case "all-enemies": {
 			return this.getAllEnemiesOf(attacker)
@@ -2167,9 +2175,7 @@ static canBeTargetted(token : PToken) : boolean {
 	return token.actor && !token.actor.hasStatus("protected");
 }
 
-static checkTargets(min: number, max: number, aliveTargets= true, targets: PToken[]) {
-	// const selectedRaw: PToken[] = (altTargets ? altTargets :  Array.from(game.user.targets).map( x=> x.document));
-
+static checkTargets(min: number, max: number, targets: PToken[], aliveTargets: boolean) {
 	if (!targets.every(x=> PersonaCombat.canBeTargetted(x))) {
 		const error = "Selection includes an untargettable target";
 		ui.notifications.warn(error);
