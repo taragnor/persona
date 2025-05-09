@@ -171,8 +171,12 @@ export const STATUS_EFFECT_LIST = [
 		id:"challenged",
 		icon: "icons/skills/melee/swords-parry-block-blue.webp",
 		tags: [],
-	},
-	{
+	},{
+		id:"protected",
+		icon: "icons/magic/holy/barrier-shield-winged-cross.webp",
+		tags: ["beneficial"],
+
+},{
 		id:"rage",
 		icon: "icons/skills/melee/unarmed-punch-fist.webp",
 		tags: ["baneful"],

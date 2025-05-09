@@ -2070,119 +2070,129 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return targets.map( x=> x as PToken);
 	}
 
-	static async getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[]): Promise<PToken[]> {
-		const selected = altTargets != undefined ? altTargets : Array.from(game.user.targets).map(x=> x.document) as PToken[];
-		const combat = game.combat as PersonaCombat | undefined;
-		if (combat) {
-			const attackerActor = attacker.actor;
-			for (const target of selected) {
-				const targetActor = target.actor;
-				const engagingTarget  = combat.isInMeleeWith(PersonaDB.getUniversalTokenAccessor(attacker), PersonaDB.getUniversalTokenAccessor(target));
-				if (attacker.id == target.id) continue;
-				if (attackerActor.hasStatus("challenged") && !engagingTarget) {
-					throw new PersonaError("Can't target non-engaged when challenged");
-				}
-				if (targetActor.hasStatus("challenged") && !engagingTarget) {
-					throw new PersonaError("Can't target a challenged target you're not engaged with");
-				}
-				const situation : Situation = {
-					user: attacker.actor.accessor,
-					attacker: attacker.actor.accessor,
-					target: target.actor.accessor,
-					usedPower: power.accessor,
-					activeCombat: true,
-				}
-				const canUse = power.targetMeetsConditions(attacker.actor, targetActor, situation)
-				if (!canUse) {
-					throw new PersonaError(`Target doesn't meet custom Power conditions to target`);
-				}
+static async getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[]): Promise<PToken[]> {
+	const selected = altTargets != undefined ? altTargets : Array.from(game.user.targets).map(x=> x.document) as PToken[];
+	const combat = game.combat as PersonaCombat | undefined;
+	if (combat) {
+		const attackerActor = attacker.actor;
+		for (const target of selected) {
+			const targetActor = target.actor;
+			const engagingTarget  = combat.isInMeleeWith(PersonaDB.getUniversalTokenAccessor(attacker), PersonaDB.getUniversalTokenAccessor(target));
+			if (attacker.id == target.id) continue;
+			if (attackerActor.hasStatus("challenged") && !engagingTarget) {
+				throw new PersonaError("Can't target non-engaged when challenged");
 			}
-		}
-
-		const attackerType = attacker.actor.getAllegiance();
-		const targets = "targets" in power.system ? power.system.targets : "self";
-		switch (targets) {
-			case "1-random-enemy":
-				const list = this.getAllEnemiesOf(attacker)
-					.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
-				return [randomSelect(list)];
-			case "1-engaged":
-			case "1-nearby":
-				this.checkTargets(1,1, true, altTargets);
-				return selected;
-			case "1-nearby-dead":
-				this.checkTargets(1,1, false);
-				return selected;
-			case "all-enemies": {
-				return this.getAllEnemiesOf(attacker)
-				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+			if (targetActor.hasStatus("challenged") && !engagingTarget) {
+				throw new PersonaError("Can't target a challenged target you're not engaged with");
 			}
-			case "all-dead-allies": {
-				const combat = this.ensureCombatExists();
-				const targets = combat.validCombatants(attacker)
-				.filter( x => {
-					const actor = x.actor;
-					if (!actor) return false;
-					if ((actor as ValidAttackers).isAlive()) return false;
-					if ((actor as ValidAttackers).isFullyFaded()) return false;
-					return ((x.actor as ValidAttackers).getAllegiance() == attackerType)
-				});
-				return targets.map( x=> x.token as PToken);
+			const situation : Situation = {
+				user: attacker.actor.accessor,
+				attacker: attacker.actor.accessor,
+				target: target.actor.accessor,
+				usedPower: power.accessor,
+				activeCombat: true,
 			}
-			case "all-allies": {
-				return this.getAllAlliesOf(attacker)
-				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+			const canUse = power.targetMeetsConditions(attacker.actor, targetActor, situation)
+			if (!canUse) {
+				throw new PersonaError(`Target doesn't meet custom Power conditions to target`);
 			}
-			case "self": {
-				return [attacker]
-				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
-			}
-			case "1d4-random":
-			case "1d4-random-rep":
-			case "1d3-random-rep":
-			case "1d3-random":
-				throw new PersonaError("Targetting type not yet implemented");
-			case "all-others": {
-				const combat= this.ensureCombatExists();
-				return combat.validCombatants(attacker)
-				.filter( x=> x.actorId != attacker.actor.id
-					&& x?.actor?.isAlive())
-				.map( x=> x.token as PToken)
-				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
-				;
-			}
-			case "everyone":{
-				const combat= this.ensureCombatExists();
-				return combat.validCombatants(attacker)
-				.filter( x=> x?.actor?.isAlive())
-				.map( x=> x.token as PToken)
-				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
-			}
-			default:
-				targets satisfies never;
-				throw new PersonaError(`targets ${targets} Not yet implemented`);
 		}
 	}
-
-	static checkTargets(min: number, max: number, aliveTargets= true, altTargets?: PToken[]) {
-		const selected: PToken[] = (altTargets ? altTargets :  Array.from(game.user.targets).map( x=> x.document))
-			.filter(x=> aliveTargets ? x.actor.isAlive() : (!x.actor.isAlive() && !x.actor.isFullyFaded()));
-		if (selected.length == 0)  {
-			const error = "Requires Target to be selected";
-			ui.notifications.warn(error);
-			throw new Error(error);
+	const attackerType = attacker.actor.getAllegiance();
+	const targets = "targets" in power.system ? power.system.targets : "self";
+	switch (targets) {
+		case "1-random-enemy":
+			const list = this.getAllEnemiesOf(attacker)
+				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+			return [randomSelect(list)];
+		case "1-engaged":
+		case "1-nearby":
+			this.checkTargets(1,1, true, selected);
+			return selected;
+		case "1-nearby-dead":
+			this.checkTargets(1,1, false, selected);
+			return selected;
+		case "all-enemies": {
+			return this.getAllEnemiesOf(attacker)
+			.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
 		}
-		if (selected.length < min) {
-			const error = "Too few targets selected";
-			ui.notifications.warn(error);
-			throw new Error(error);
+		case "all-dead-allies": {
+			const combat = this.ensureCombatExists();
+			const targets = combat.validCombatants(attacker)
+			.filter( x => {
+				const actor = x.actor;
+				if (!actor) return false;
+				if ((actor as ValidAttackers).isAlive()) return false;
+				if ((actor as ValidAttackers).isFullyFaded()) return false;
+				return ((x.actor as ValidAttackers).getAllegiance() == attackerType)
+			});
+			return targets.map( x=> x.token as PToken);
 		}
-		if (selected.length > max) {
-			const error = "Too many targets selected";
-			ui.notifications.warn(error);
-			throw new Error(error);
+		case "all-allies": {
+			return this.getAllAlliesOf(attacker)
+			.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
 		}
+		case "self": {
+			return [attacker]
+			.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+		}
+		case "1d4-random":
+		case "1d4-random-rep":
+		case "1d3-random-rep":
+		case "1d3-random":
+			throw new PersonaError("Targetting type not yet implemented");
+		case "all-others": {
+			const combat= this.ensureCombatExists();
+			return combat.validCombatants(attacker)
+			.filter( x=> x.actorId != attacker.actor.id
+				&& x?.actor?.isAlive())
+			.map( x=> x.token as PToken)
+			.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+			;
+		}
+		case "everyone":{
+			const combat= this.ensureCombatExists();
+			return combat.validCombatants(attacker)
+			.filter( x=> x?.actor?.isAlive())
+			.map( x=> x.token as PToken)
+			.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+		}
+		default:
+			targets satisfies never;
+			throw new PersonaError(`targets ${targets} Not yet implemented`);
 	}
+}
+
+static canBeTargetted(token : PToken) : boolean {
+	return token.actor && !token.actor.hasStatus("protected");
+}
+
+static checkTargets(min: number, max: number, aliveTargets= true, targets: PToken[]) {
+	// const selectedRaw: PToken[] = (altTargets ? altTargets :  Array.from(game.user.targets).map( x=> x.document));
+
+	if (!targets.every(x=> PersonaCombat.canBeTargetted(x))) {
+		const error = "Selection includes an untargettable target";
+		ui.notifications.warn(error);
+		throw new Error(error);
+	}
+	const selected = targets
+		.filter(x=> aliveTargets ? x.actor.isAlive() : (!x.actor.isAlive() && !x.actor.isFullyFaded()))
+	if (selected.length == 0)  {
+		const error = "Requires Target to be selected";
+		ui.notifications.warn(error);
+		throw new Error(error);
+	}
+	if (selected.length < min) {
+		const error = "Too few targets selected";
+		ui.notifications.warn(error);
+		throw new Error(error);
+	}
+	if (selected.length > max) {
+		const error = "Too many targets selected";
+		ui.notifications.warn(error);
+		throw new Error(error);
+	}
+}
 
 static ensureCombatExists() : PersonaCombat {
 	const combat = game.combat;

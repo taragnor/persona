@@ -1304,6 +1304,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	targetMeetsConditions(this: UsableAndCard, user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
+		if (target.hasStatus("protected") && user != target) return false;
 		if (this.system.type == "skillCard") return target.canLearnNewSkill();
 		const usable = this as Usable;
 		if (!usable.system.validTargetConditions) return true;

@@ -167,6 +167,7 @@
 	"persona.status.sticky" : "Defender",
 	"persona.status.baton-pass" : "Baton Pass",
 	"persona.status.challenged" : "Challenged",
+	"persona.status.protected" : "Protected",
 	"persona.status.rage" : "Rage",
 	"persona.status.phys-shield" : "Tetrakarn",
 	"persona.status.magic-shield" : "Makarakarn",
