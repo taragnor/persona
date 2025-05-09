@@ -922,10 +922,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				this.skipBox(`${msg}. <br> Skip turn?`); //don't await this so it processes the rest of the code
 			}
 		}
+		const despair = actor.hasStatus("despair");
 		const burnStatus = actor.effects.find( eff=> eff.statuses.has("burn"));
 		if (burnStatus) {
 			const damage = burnStatus.potency;
 			Msg.push(`${combatant.name} is burning and will take ${damage} damage at end of turn. (original Hp: ${actor.hp})`);
+		}
+		if (despair && actor.isPC()) {
+			const drain = actor.despairMPDamage();
+			Msg.push(`${combatant.name} is burning and will lose ${drain} MP at end of turn. (original MP: ${actor.mp}`);
 		}
 		const poisonStatus = actor.effects.find( eff=> eff.statuses.has("poison"));
 		if (poisonStatus) {

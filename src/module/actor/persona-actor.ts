@@ -1006,7 +1006,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update( {"system.combat.hp": hp});
 	}
 
-	async modifyMP( this: PC, delta: number) {
+	async modifyMP( this: PC | NPCAlly, delta: number) {
 		let mp = this.system.combat.mp.value;
 		mp += delta;
 		mp = Math.clamp(Math.round(mp), 0, this.mmp);
@@ -2906,17 +2906,29 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 		const damage = burnStatus.potency;
 		await this.modifyHP(-damage);
 	}
+	this.hasStatus("burn");
+	const despair = this.hasStatus("despair");
+	if (despair && !this.isShadow() ) {
+		await this.modifyMP(-this.despairMPDamage());
+	}
 	if (this.isShadow()) {
 		const situation : Situation = {
 			user: this.accessor,
 			activeCombat: true,
 		};
-		const bonusEnergy = 3 + this.getBonuses("energy-per-turn").total(situation);
+		let bonusEnergy = 3 + this.getBonuses("energy-per-turn").total(situation);
+		if (despair) {
+			bonusEnergy = Math.floor(bonusEnergy/2);
+		}
 		await this.alterEnergy(bonusEnergy);
 	}
 
 	ret.push(...await this.endTurnSaves())
 	return ret;
+}
+
+despairMPDamage(this: PC | NPCAlly): number {
+	return Math.floor(this.mmp * 0.15);
 }
 
 /** should get called after a search action or after entering a new region*/

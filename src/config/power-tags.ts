@@ -52,6 +52,7 @@ export const POWER_TAGS_LIST = [
 	"basicatk",
 	"high-cost",
 	"status-removal",
+	"resurrection",
 	...STATUS_POWER_TAGS,
 	...POWER_TYPE_TAGS,
 ] as const;

@@ -1217,6 +1217,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			"sealed",
 			"mouse",
 			"despair",
+			"blind",
 		];
 		return statusTags.some( st => this.hasTag(st));
 	}
