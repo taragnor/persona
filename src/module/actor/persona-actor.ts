@@ -3232,10 +3232,6 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 			cost += 2 - diff;
 			break;
 	}
-	if (power.hasTag("high-cost") && cost > 0)  {
-		cost = Math.round(cost * 1.5);
-		energyReq = Math.round(energyReq * 1.5);
-	}
 	cost = Math.clamp(cost, 0, 10);
 	energyReq = Math.clamp(energyReq, reqMin, 10);
 	return await power.setPowerCost(energyReq, cost);
