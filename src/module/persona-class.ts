@@ -228,7 +228,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const retdata = Object.entries(resists)
 			.map(([statusRaw, _level]) => {
 				const actual = this.statusResist(statusRaw as StatusEffectId);
-				const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[actual]);
+				const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[statusRaw]);
+				if (statusTrans == undefined) {
+					debugger;
+					return "";
+				}
 				switch (actual) {
 					case "resist": return `Resist ${statusTrans}`;
 					case "absorb":

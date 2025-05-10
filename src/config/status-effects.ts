@@ -1,3 +1,5 @@
+import { HTMLTools } from "../module/utility/HTMLTools.js";
+
 import { PersonaError } from "../module/persona-error.js";
 
 export const STATUS_EFFECT_LIST = [
