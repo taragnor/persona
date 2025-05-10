@@ -20,6 +20,7 @@ export const CONSQUENCELIST = [
 	"display-msg",
 	"scan",
 	"social-card-action",
+	"alter-variable",
 	"add-creature-tag",
 	"alter-energy",
 	"dungeon-action",

@@ -501,6 +501,7 @@
 	"persona.effecttypes.scan": "Scan Target",
 	"persona.effecttypes.social-card-action": "Social Card Action",
 	"persona.effecttypes.dungeon-action": "Dungeon Action",
+	"persona.effecttypes.alter-variable": "Alter Variable",
 
 	"persona.effecttypes.social-card.stop-execution": "Stop Card Execution",
 	"persona.effecttypes.social-card.exec-event": "Execute Event",
@@ -528,6 +529,11 @@
 "persona.effecttypes.variableActions.set": "Set",
 "persona.effecttypes.variableActions.add": "Add",
 "persona.effecttypes.variableActions.multiply": "Multiply",
+
+"persona.effecttypes.variableTypes.global": "Global",
+"persona.effecttypes.variableTypes.scene": "Scene",
+"persona.effecttypes.variableTypes.actor": "Actor",
+"persona.effecttypes.variableTypes.social-temp": "Temporary Social",
 
 	"persona.alter-mp-subtypes.direct": "Direct",
 	"persona.alter-mp-subtypes.cost-reduction": "Cost Multiplier",

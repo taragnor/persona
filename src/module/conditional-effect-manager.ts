@@ -753,6 +753,8 @@ export class ConditionalEffectManager {
 				return this.#printCombatEffect(cons)
 			case "alter-fatigue-lvl":
 				return `Alter Fatigue Level ${cons.amount}`;
+			case "alter-variable":
+				return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${cons.value}`;
 			default:
 				cons satisfies never;
 				return "ERROR";

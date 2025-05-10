@@ -1292,28 +1292,49 @@ export class PersonaSocial {
 			PersonaError.softFail(`Can't create more events as there is no RollState`);
 			return;
 		}
-		const varData = this.rollState.cardData.variables;
+		let varVal = await this.getSocialVariable(variableName);
 		switch (operator) {
 			case "set":
-				varData[variableName] = amount;
+				varVal = amount;
+				this.setSocialVariable(variableName, varVal);
 				break;
 			case "add":
-				if ( varData[variableName] == undefined) {
+				if ( varVal == undefined) {
 					PersonaError.softFail(`Social Variable ${variableName} doesn't exist`);
 					break;
 				}
-				varData[variableName] += amount;
+				varVal += amount;
+				this.setSocialVariable(variableName, varVal);
 				break;
 			case "multiply":
-				if ( varData[variableName] == undefined) {
+				if ( varVal == undefined) {
 					PersonaError.softFail(`Social Variable ${variableName} doesn't exist`);
 					break;
 				}
-				varData[variableName] *= amount;
+				varVal *= amount;
+				this.setSocialVariable(variableName, varVal);
 				break;
 			default:
 				operator satisfies never;
 		}
+	}
+
+	static async getSocialVariable(varId: string): Promise<number | undefined> {
+		if (!this.rollState) {
+			console.log(`No rollstate so couldn't get variable ${varId}`);
+			return undefined;
+		}
+		const varData = this.rollState.cardData.variables;
+		return varData[varId];
+	}
+
+	static async setSocialVariable(varId: string, value: number) {
+		if (!this.rollState) {
+			console.log(`No rollstate so couldn't alter variable ${varId} ${value}`);
+			return;
+		}
+		const varData = this.rollState.cardData.variables;
+		varData[varId] = value;
 	}
 
 	static async addCardEvents(cardId: string) {

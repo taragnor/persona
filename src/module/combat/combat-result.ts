@@ -1,3 +1,4 @@
+import { PersonaVariables } from "../persona-variables.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { RealDamageType } from "../../config/damage-types.js";
 import { UsableAndCard } from "../item/persona-item.js";
@@ -380,14 +381,8 @@ export class CombatResult  {
 			case "social-card-action":
 				//must be executed playerside as event execution is a player thing
 				if (!effect) break;
-				console.log("Executing social card action");
 				const otherEffect : SocialCardActionConsequence = {
 					...cons
-					// type: cons.type,
-					// action: cons.cardAction,
-					// eventLabel: cons.eventLabel,
-					// amount: cons.amount ?? 0,
-					// studentSkill: cons.studentSkill,
 				};
 				PersonaSocial.execSocialCardAction(otherEffect);
 				effect.otherEffects.push( otherEffect);
@@ -427,6 +422,9 @@ export class CombatResult  {
 			case "alter-fatigue-lvl":
 				if (!effect) break;
 				effect.otherEffects.push(cons);
+				break;
+			case "alter-variable":
+				effect?.otherEffects.push(cons);
 				break;
 			default: {
 				cons satisfies never;
@@ -807,6 +805,7 @@ export class CombatResult  {
 				case "alter-mp":
 				case "combat-effect":
 				case "alter-fatigue-lvl":
+				case "alter-variable":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -964,6 +963,9 @@ export class CombatResult  {
 					break;
 				case "alter-fatigue-lvl":
 					await actor.alterFatigueLevel(otherEffect.amount);
+					break;
+				case "alter-variable":
+					await PersonaVariables.alterVariable(otherEffect, actor);
 					break;
 				default:
 					otherEffect satisfies never;

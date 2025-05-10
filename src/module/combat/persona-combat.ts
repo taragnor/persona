@@ -1784,6 +1784,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "extraTurn":
 			case "teach-power":
 			case "combat-effect":
+			case "alter-variable":
 			case "alter-fatigue-lvl":
 				return [{applyTo,cons}];
 			case "expend-item":

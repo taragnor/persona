@@ -1,3 +1,4 @@
+import { VariableType } from "../module/persona-variables.js";
 import { CombatEffect } from "./effect-types.js";
 import { Consumable } from "../module/item/persona-item.js";
 import { SkillCard } from "../module/item/persona-item.js";
@@ -120,7 +121,7 @@ export type ExtraTurnEffect = {
 	activation: number,
 };
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence;
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence;
 ;
 
 export type StatusEffect = StatusEffect_Basic | StatusEffect_NonBasic;
@@ -187,7 +188,30 @@ type NonGenericConsequences = UsePowerConsequence
 	| AddTagConsequence
 	| CombatEffectConsequence
 | FatigueConsequence
+| AlterVariableConsequence
 ;
+
+export type AlterVariableConsequence = {
+	type: "alter-variable",
+	varType: VariableType,
+	variableId: string,
+	operator: VariableAction,
+	value: number,
+} &
+	AlterVariableConsequences;
+
+type AlterVariableConsequences = {
+	varType: "global",
+} | {
+	varType: "scene",
+	sceneId: string,
+} | {
+	varType: "actor",
+	applyTo : ConsequenceTarget,
+} | {
+	varType: "social-temp",
+};
+
 type FatigueConsequence = {
 	type: "alter-fatigue-lvl",
 	amount:number,
@@ -417,5 +441,3 @@ export type ConsTarget = typeof CONS_TARGET_LIST[number];
 export const CONS_TARGETS = Object.fromEntries(
 	CONS_TARGET_LIST.map( x=> [x, `persona.consequence.targets.${x}`])
 );
-
-
