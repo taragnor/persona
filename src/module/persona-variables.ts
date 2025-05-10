@@ -1,4 +1,3 @@
-import { PersonaDB } from "./persona-db.js";
 import { PersonaError } from "./persona-error.js";
 import { PersonaScene } from "./persona-scene.js";
 import { PersonaSocial } from "./social/persona-social.js";
@@ -8,18 +7,18 @@ import { AlterVariableConsequence } from "../config/consequence-types.js";
 
 export class PersonaVariables {
 	static async alterVariable (cons: AlterVariableConsequence, actor: PersonaActor) {
-		const variableLocation = this.convertConsequenceToLocation(cons, actor);
+		const variableLocation = this.#convertConsequenceToLocation(cons, actor);
 		if (!variableLocation) return;
-		const origValue = await this.getVariable(variableLocation);
-		const newValue = this.applyMutator( cons, origValue);
+		const origValue = await this.#get(variableLocation);
+		const newValue = this.#applyMutator( cons, origValue);
 		if (newValue == undefined) {
 			PersonaError.softFail(`Couldn't execute ${cons.operator} on ${cons.varType} variable ${cons.variableId}`);
 			return;
 		}
-		await this.setVariable(variableLocation, newValue);
+		await this.#set(variableLocation, newValue);
 	}
 
-	static convertConsequenceToLocation(cons: AlterVariableConsequence, actor: PersonaActor) : VariableData | undefined {
+	static #convertConsequenceToLocation(cons: AlterVariableConsequence, actor: PersonaActor) : VariableData | undefined {
 		const {varType, variableId} = cons;
 		switch (varType) {
 			case "global":
@@ -51,7 +50,7 @@ export class PersonaVariables {
 				}
 		}
 	}
-	static applyMutator( mutator: Pick<AlterVariableConsequence, "operator" | "value">, origValue :number | undefined) : number | undefined {
+	static #applyMutator( mutator: Pick<AlterVariableConsequence, "operator" | "value">, origValue :number | undefined) : number | undefined {
 		const {operator, value} = mutator;
 		if (Number.isNaN(origValue)) return undefined;
 		switch (operator) {
@@ -69,7 +68,7 @@ export class PersonaVariables {
 		}
 	}
 
-	static async setVariable(data: VariableData, value: number) {
+	static async #set(data: VariableData, value: number) {
 		switch (data.varType) {
 			case "global":
 				PersonaError.softFail("Setting global variable not yet implemented");
@@ -96,7 +95,7 @@ export class PersonaVariables {
 
 	}
 
-	static async getVariable(data: VariableData) : Promise<number | undefined> {
+	static async #get(data: VariableData) : Promise<number | undefined> {
 		switch (data.varType) {
 			case "global":
 				PersonaError.softFail("Setting global variable not yet implemented");
