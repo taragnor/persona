@@ -33,18 +33,13 @@
 			{{/if}}
 		</div>
 		{{#if (isShadow actor)}}
-		<div class="shadow-dmg">
-			<label>
-				Damage
-			</label>
+		<div class="basic-attack-type">
 			<span>
-				<select name="system.combat.baseDamageType">
-					{{selectOptions CONST.DAMAGETYPES  localize=true selected=actor.system.combat.baseDamageType }}
-				</select>
+				<label> Basic Attack Damage Type:</label>
 			</span>
 			<span>
-				{{numberInput actor.system.combat.wpndmg.low class="short" name="system.combat.wpndmg.low" step=1 min=0 max=100}}
-				{{numberInput actor.system.combat.wpndmg.high class="short" name="system.combat.wpndmg.high" step=1 min=0 max=100}}
+				{{actor.system.combat.baseDamageType}}
+
 			</span>
 		</div>
 		{{/if}}

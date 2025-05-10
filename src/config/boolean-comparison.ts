@@ -160,6 +160,7 @@ type HasItemCheckComparison = {
 	boolComparisonTarget: "has-item-in-inventory",
 	itemId: string,
 	conditionTarget: ConditionTarget,
+	equipped: boolean,
 }
 
 type SocialTargetIsComparisonMulti = {

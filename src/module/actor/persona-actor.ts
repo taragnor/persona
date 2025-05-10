@@ -3207,7 +3207,9 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 	// const role = this.system.role;
 	const diff = this.comparativePowerRatingToUsePower(power);
 	let energyReq= 0, cost= 1;
-	let reqMin = power.hasTag("buff") || power.hasTag("debuff") || power.hasTag("status-removal") ? 0 : 1;
+	const reducedCostType = power.hasTag("buff") || power.hasTag("debuff") || power.hasTag("status-removal");
+		let reqMin = reducedCostType ? 0 : 1;
+	let energyMod = reducedCostType ? -3: 1;
 	switch (true) {
 		case (power.isDefensive() == true):
 		case (power.isPassive() == true):
@@ -3232,6 +3234,7 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 			cost += 2 - diff;
 			break;
 	}
+	energyReq += energyMod;
 	cost = Math.clamp(cost, 0, 10);
 	energyReq = Math.clamp(energyReq, reqMin, 10);
 	return await power.setPowerCost(energyReq, cost);

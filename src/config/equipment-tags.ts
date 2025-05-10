@@ -41,6 +41,7 @@ export const EQUIPMENT_TAGS_LIST = [
 	"drug",
 	"defensive",
 	"crafting",
+	"d-mon",
 ] as const;
 
 export type EquipmentTag = typeof EQUIPMENT_TAGS_LIST[number];

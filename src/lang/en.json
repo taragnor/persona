@@ -260,6 +260,7 @@
 	"persona.modifier.shadowMoneyBoostPercent": "Bonus % to Money found",
 	"persona.modifier.actions-per-turn": "Actions per turn",
 	"persona.modifier.baleful-status-duration": "Baleful Status Duration",
+	"persona.modifier.d-mon-storage": "Max D-Mon storage",
 
 	"persona.equipslots.weapon": "Weapon",
 	"persona.equipslots.body": "Outfit",
@@ -434,6 +435,7 @@
 	"persona.equipment.tag.drug" : "Drug",
 	"persona.equipment.tag.defensive" : "Defensive",
 	"persona.equipment.tag.crafting" : "Crafting Material",
+	"persona.equipment.tag.d-mon" : "D-Mon",
 
 
 	"persona.power.shadowcosts.none": "Any",
@@ -829,7 +831,9 @@
 	"persona.creatureType.card-soldier": "Card Soldier",
 	"persona.creatureType.rat": "Nezumi",
 	"persona.creatureType.true-demon": "True Demon",
+	"persona.creatureType.pure-shadow": "Pure Shadow",
 	"persona.creatureType.evil-spirit": "Evil Spirit",
+	"persona.creatureType.d-mon": "D-Mon",
 	"persona.creatureType.student": "Student",
 	"persona.creatureType.professor": "Professor",
 	"persona.creatureType.social-shadow": "Shadow Social Link",

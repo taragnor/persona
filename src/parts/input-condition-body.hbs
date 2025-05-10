@@ -280,6 +280,12 @@
 	<select name="{{strcat namePrefix 'itemId'}}">
 		{{selectOptions POWERSTUFF.ITEMS localize=false selected=cond.itemId}}
 	</select>
+	<div>
+		<span>
+			<label> Must Be Equipped </label>
+			<input type="checkbox" id="flagState" name="{{strcat namePrefix 'equipped'}}" {{checked cond.equipped}}>
+		</span>
+	</div>
 	{{/if}}
 
 	{{#if (eq cond.boolComparisonTarget "logical-or")}}

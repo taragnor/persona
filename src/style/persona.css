@@ -813,3 +813,8 @@ textarea {
 	padding: 8px;             /* ensure there's space for top-aligned text */
 	line-height: 1.4;         /* avoid vertical compression */
 }
+
+.basic-attack-type label {
+	font-weight: bold;
+	padding-right: 5px;
+}
