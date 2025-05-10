@@ -1,3 +1,4 @@
+import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { ModifierList } from "./combat/modifier-list.js";
@@ -225,9 +226,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	get printableResistanceString() : string {
 		const resists = this.statusResists;
 		const retdata = Object.entries(resists)
-			.map(([statusRaw, level]) => {
-				const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[statusRaw]);
-				switch (level) {
+			.map(([statusRaw, _level]) => {
+				const actual = this.statusResist(statusRaw as StatusEffectId);
+				const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[actual]);
+				switch (actual) {
 					case "resist": return `Resist ${statusTrans}`;
 					case "absorb":
 					case "reflect":
@@ -239,5 +241,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			.join(", ");
 		return retdata;
 	}
+
+	statusResist(status: StatusEffectId) : ResistStrength {
+		return this.user.statusResist(status);
+	}
+
 
 }

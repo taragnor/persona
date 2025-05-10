@@ -495,7 +495,7 @@
 	"persona.effecttypes.set-flag": "Set Flag",
 	"persona.effecttypes.raise-resistance": "Raise Damage Resistance",
 	"persona.effecttypes.lower-resistance": "Lower Damage Resistance",
-	"persona.effecttypes.raise-status-resistance": "Raise Status Resistance",
+	"persona.effecttypes.raise-status-resistance": "Alter Status Resistance",
 	"persona.effecttypes.inspiration-cost": "Pay Inspiration",
 	"persona.effecttypes.display-msg": "Print Message",
 	"persona.effecttypes.use-power": "Activate Power",

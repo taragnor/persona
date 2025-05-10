@@ -1585,8 +1585,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	static processConsequence( power: ModifierContainer, situation: Situation, cons: Consequence, attacker: ValidAttackers, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed["consequences"] {
+		//need to fix this so it knows who the target actual is so it can do a proper compariosn, right now when applying to Self it won't consider resistance or consider the target's resist.
 		let damageMult = 1;
-		const applyToSelf = cons.applyToSelf ?? false;
+		const applyToSelf = cons.applyToSelf ?? (cons.applyTo == "attacker" || cons.applyTo =="user" || cons.applyTo == "owner");
 		const absorb = (situation.isAbsorbed && !applyToSelf) ?? false;
 		const block = atkresult && atkresult.result == "block" && !applyToSelf;
 		damageMult *= situation.resisted ? 0.5 : 1;
@@ -2153,7 +2154,7 @@ static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[])
 		case "all-others": {
 			const combat= this.ensureCombatExists();
 			return combat.validCombatants(attacker)
-			.filter( x=> x.actorId != attacker.actor.id
+			.filter( x=> x.token != attacker
 				&& x?.actor?.isAlive())
 			.map( x=> x.token as PToken)
 			.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));

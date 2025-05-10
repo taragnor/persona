@@ -115,7 +115,12 @@
 	<select name="{{strcat namePrefix 'resistanceLevel'}}">
 		{{selectOptions POWERSTUFF.RESIST_STRENGTHS localize=true selected=cons.resistanceLevel}}
 	</select>
-
+	<div>
+		<span>
+			<label>Lower Resistance </label>
+			<input type="checkbox" name="{{strcat namePrefix 'lowerResist'}}" {{checked cons.lowerResist}}>
+		</span>
+	</div>
 	{{/if}}
 
 	{{#if (eq cons.type	"set-flag")}}

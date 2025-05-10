@@ -24,7 +24,7 @@ export const CONSQUENCELIST = [
 	"add-creature-tag",
 	"alter-energy",
 	"dungeon-action",
-	"raise-status-resistance",
+	"raise-status-resistance", // functions as raise and lower
 	"raise-resistance",
 	"lower-resistance",
 	"use-power",

@@ -1601,19 +1601,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
 		if (!this.isValidCombatant()) return [];
-		const persona= this.persona();
-		const passivePowers = (options && options.omitPowers) ? [] : this.getPassivePowers();
-		return [
-			...this.equippedItems(),
-			...this.passiveFocii(),
-			...persona.talents,
-			...passivePowers,
-			...this.passiveItems(),
-			...this.getAllSocialFocii(),
-			...this.roomModifiers(),
-			...PersonaDB.getGlobalModifiers(),
-			...PersonaDB.navigatorModifiers(),
-		].filter( x => x.getEffects(this as ValidAttackers).length > 0);
+		return this.persona().mainModifiers();
+		// const persona= this.persona();
+		// const passivePowers = (options && options.omitPowers) ? [] : this.getPassivePowers();
+		// return [
+		// 	...this.equippedItems(),
+		// 	...this.passiveFocii(),
+		// 	...persona.talents,
+		// 	...passivePowers,
+		// 	...this.passiveItems(),
+		// 	...this.getAllSocialFocii(),
+		// 	...this.roomModifiers(),
+		// 	...PersonaDB.getGlobalModifiers(),
+		// 	...PersonaDB.navigatorModifiers(),
+		// ].filter( x => x.getEffects(this as ValidAttackers).length > 0);
 	}
 
 	defensivePowers(this: ValidAttackers) : ModifierContainer [] {
@@ -1739,7 +1740,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		for (const cons of consequences) {
 			if (cons.type == "raise-status-resistance"
 				&& cons.statusName == status) {
-				if (resval(cons.resistanceLevel) > resval(resist)) {
+				if (!cons.lowerResist && resval(cons.resistanceLevel) > resval(resist)) {
+					resist = cons.resistanceLevel;
+				}
+				if (cons.lowerResist && resval(cons.resistanceLevel) < resval(resist)) {
 					resist = cons.resistanceLevel;
 				}
 			}

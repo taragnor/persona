@@ -278,6 +278,7 @@ type StatusResistanceAlterConsequence = {
 	type: "raise-status-resistance",
 	statusName: StatusEffectId,
 	resistanceLevel: ResistStrength,
+	lowerResist: boolean,
 }
 
 type AlterMPConsequence = {
@@ -285,7 +286,6 @@ type AlterMPConsequence = {
 	subtype: AlterMPSubtype,
 	amount: number,
 }
-
 
 type ExpendItemConsequence = {
 	type : "expend-item",
