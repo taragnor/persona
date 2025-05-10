@@ -18,9 +18,7 @@
 		</select>
 	</div>
 	{{> "systems/persona/parts/itemTags.hbs" item=item POWERSTUFF=POWERSTUFF}}
-	<textarea name="system.description">
-		{{item.system.description}}
-	</textarea>
+	<textarea name="system.description">{{item.system.description}}</textarea>
 
 	{{#if (isGM)}}
 	<label> Price </label>

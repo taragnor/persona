@@ -3239,9 +3239,16 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 
 comparativePowerRatingToUsePower(this: Shadow, power: Power) {
 	const userLevel = this.system.combat.classData.level;
-	const powerSlot = power.system.slot;
-
-	return userLevel - (powerSlot*3);
+	let powerSlot = power.system.slot;
+	let extraMod = 0;
+	if (power.hasTag("price-lower-for-shadow")) {
+		powerSlot -= 1;
+	}
+	if (power.hasTag("high-cost")) {
+		extraMod += 2;
+	}
+	const effectiveLevel = extraMod + (powerSlot*3);
+	return Math.round(userLevel - effectiveLevel);
 }
 
 static highestPowerSlotUsableAtLvl(lvl: number) : number {

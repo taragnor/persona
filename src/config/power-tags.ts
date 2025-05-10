@@ -53,6 +53,7 @@ export const POWER_TAGS_LIST = [
 	"high-cost",
 	"status-removal",
 	"resurrection",
+	"price-lower-for-shadow",
 	...STATUS_POWER_TAGS,
 	...POWER_TYPE_TAGS,
 ] as const;
