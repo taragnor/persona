@@ -7,9 +7,7 @@
 			<div>
 				<h2> Consumable</h2>
 				<input type="text" class="borderless item-name" name="name" value="{{item.name}}" title="Conusmable Name" placeholder="Consumable Name">
-				<textarea name="system.description">
-					{{item.system.description}}
-				</textarea>
+				<textarea name="system.description">{{item.system.description}}</textarea>
 				{{#if (isGM)}}
 				<div>
 					<label>Amount</label>
@@ -53,7 +51,6 @@
 	</div>
 	<hr>
 
-
 	{{#if (isGM)}}
 	<label> Price </label>
 	{{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}
@@ -67,7 +64,6 @@
 	{{/if}}
 
 	{{> "systems/persona/parts/power-effects.hbs" item=item POWERSTUFF=POWERSTUFF}}
-
 
 </form>
 

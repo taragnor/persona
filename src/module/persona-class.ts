@@ -66,6 +66,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	get scanLevel(): number {
 		const user = this.user;
 		const source = this.source;
+		if (game.user.isGM) return 3;
 		if (user.hasPlayerOwner) {
 			return 3;
 		}

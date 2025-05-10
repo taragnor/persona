@@ -802,6 +802,10 @@ span.skill-card img {
 
 }
 
+.status-resists {
+	margin-top: 10px;
+}
+
 textarea {
 	text-align: left;         /* horizontal alignment */
 	vertical-align: top;      /* affects how it's aligned inline—not the text inside */

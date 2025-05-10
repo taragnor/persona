@@ -460,10 +460,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (this.system.combat.resists.physical == "weakness") {
 				multmods.add("weak to Physical", 0.25);
 			}
-			const overResist = blocks + (0.5 * resists) - (weaknesses * 1);
-			if (overResist > 2.5) {
-				const penalty = overResist * -0.07;
-				multmods.add("overResist/Block Mod", penalty);
+			if (this.isShadow()) {
+				const overResist = blocks + (0.5 * resists) - (weaknesses * 1);
+				if (overResist > 2.5) {
+					const penalty = overResist * -0.07;
+					multmods.add("overResist/Block Mod", penalty);
+				}
 			}
 			bonuses.add("incremental bonus hp", incBonus)
 			const mult = multmods.total(sit, "percentage-special");
@@ -3210,8 +3212,8 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 			reqMin = 0;
 			break;
 		case (diff == 0):
-			energyReq +=3;
-			cost += 2;
+			energyReq += 3;
+			cost += 1;
 			break;
 		case (diff > 0):
 			energyReq += Math.max(reqMin, 3-diff);
@@ -3219,7 +3221,7 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 			break;
 		case (diff < 0):
 			if (power.hasTag("debuff") || power.hasTag("buff")) {
-				energyReq += Math.min(3, 3-diff);
+				energyReq += Math.min(3, 3 - diff);
 			} else {
 				energyReq += Math.min(10, 3-diff);
 			}

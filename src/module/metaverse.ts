@@ -57,10 +57,10 @@ export class Metaverse {
 		await Logger.sendToChat(`Exiting Metaverse...`);
 	}
 
-	static weightedTest() {
+	static weightedTest(type :Shadow["system"]["creatureType"] = "shadow") {
 		const map = new Map<Shadow["name"], number>();
 		for (let tries =0; tries< 2000; tries++) {
-			const {encounter} = this.generateEncounter("shadow");
+			const {encounter} = this.generateEncounter(type);
 			for (const shadow of encounter) {
 				const current = map.get(shadow.name) ?? 0;
 				map.set(shadow.name, current +1);
