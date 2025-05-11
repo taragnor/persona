@@ -1524,7 +1524,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "triggering-character":
 				const triggerer = "triggeringCharacter" in situation? situation.triggeringCharacter: undefined;
 				if (!triggerer) {
-					PersonaError.softFail("Can't target triggering character for this");
+					PersonaError.softFail(`Can't target triggering character for ${situation.trigger}`, situation);
 					return [];
 				}
 				const token = this.getPTokenFromActorAccessor(triggerer);

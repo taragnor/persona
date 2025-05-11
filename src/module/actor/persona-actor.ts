@@ -2806,6 +2806,7 @@ async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
 }
 
 XPValue(this: Shadow) : number {
+	if (this.hasCreatureTag("no-xp")) return 0;
 	const SHADOWS_TO_LEVEL = 15;
 	const baseXP = 100/SHADOWS_TO_LEVEL;
 	const role = shadowRoleMultiplier(this.system.role) * shadowRoleMultiplier(this.system.role2);
@@ -2815,7 +2816,6 @@ XPValue(this: Shadow) : number {
 		return acc;
 	}, 0);
 	return baseXP * role * (1 + (incrementals * 0.05));
-
 }
 
 maxActions(this: ValidAttackers): number  {
@@ -3208,8 +3208,8 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 	const diff = this.comparativePowerRatingToUsePower(power);
 	let energyReq= 0, cost= 1;
 	const reducedCostType = power.hasTag("buff") || power.hasTag("debuff") || power.hasTag("status-removal");
-		let reqMin = reducedCostType ? 0 : 1;
-	let energyMod = reducedCostType ? -3: 1;
+	let reqMin = reducedCostType ? 0 : 1;
+	let energyMod = reducedCostType ? -3: 0;
 	switch (true) {
 		case (power.isDefensive() == true):
 		case (power.isPassive() == true):

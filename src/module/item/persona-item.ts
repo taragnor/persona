@@ -900,7 +900,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (this.system.type == "skillCard") {return false;}
 		const item = this as Usable;
 		return item.system.subtype == "passive" ||
-			item.hasTag("passive");;
+			item.hasTag("passive");
 	}
 
 	isTeamwork(this: UsableAndCard): boolean {

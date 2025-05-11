@@ -437,7 +437,6 @@
 	"persona.equipment.tag.crafting" : "Crafting Material",
 	"persona.equipment.tag.d-mon" : "D-Mon",
 
-
 	"persona.power.shadowcosts.none": "Any",
 	"persona.power.shadowcosts.always": "Charged (Depleting)",
 	"persona.power.shadowcosts.charged-req": "Charged (Req Only)",
@@ -850,6 +849,7 @@
 	"persona.creatureType.tech-enthusiast": "Tech enthusiast",
 	"persona.creatureType.unscannable": "Scan Jam",
 	"persona.creatureType.enigmatic": "Defies Analysis",
+	"persona.creatureType.no-xp": "Gives No XP",
 	"persona.creatureType.stupid": "Mindless",
 	"persona.creatureType.smart": "Tactical",
 
