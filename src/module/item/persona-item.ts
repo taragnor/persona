@@ -1,3 +1,4 @@
+import { randomSelect } from "../utility/array-tools.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
 import { POWER_TYPE_TAGS } from "../../config/power-tags.js";
@@ -853,6 +854,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 		if (this.system.type == "consumable") return 0;
 		if (this.isBasicPower()) {return 0;}
+		if (this.isTeamwork()) return 0;
 		let mult = 1;
 		if (this.hasTag("high-cost")) {
 			mult *= 2;
@@ -894,6 +896,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 	isOpener(this: UsableAndCard) : boolean {
 		return this.hasTag("opener");
+	}
+
+
+	isTrueItem() : this is InvItem | SkillCard | Weapon | Consumable {
+		switch(this.system.type) {
+			case "consumable":
+			case "item":
+			case "weapon":
+			case "skillCard":
+				return true;
+			default:
+				return false;
+		}
 	}
 
 	isPassive(this: UsableAndCard) : boolean {

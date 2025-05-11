@@ -1,3 +1,4 @@
+import { randomSelect } from "../utility/array-tools.js";
 import { Persona } from "../persona-class.js";
 import { SHADOW_ROLE } from "../../config/shadow-types.js";
 import { PowerTag } from "../../config/power-tags.js";
@@ -925,6 +926,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.mainPowers,
 			...this.bonusPowers,
 		].flat();
+	}
+
+	randomItem(this:PC): InvItem | SkillCard | Weapon | Consumable  {
+		const items = this.items.filter(x=> x.isTrueItem() == true);
+		return randomSelect(items) as InvItem | SkillCard | Weapon | Consumable;
 	}
 
 	get weapon() : Option<Weapon> {
