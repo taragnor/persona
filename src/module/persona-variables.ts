@@ -1,3 +1,4 @@
+import { VariableTypeSpecifier } from "../config/consequence-types.js";
 import { PersonaError } from "./persona-error.js";
 import { PersonaScene } from "./persona-scene.js";
 import { PersonaSocial } from "./social/persona-social.js";
@@ -7,9 +8,9 @@ import { AlterVariableConsequence } from "../config/consequence-types.js";
 
 export class PersonaVariables {
 	static async alterVariable (cons: AlterVariableConsequence, actor: PersonaActor) {
-		const variableLocation = this.#convertConsequenceToLocation(cons, actor);
+		const variableLocation = this.#convertTypeSpecToLocation(cons, actor);
 		if (!variableLocation) return;
-		const origValue = await this.#get(variableLocation);
+		const origValue = this.#get(variableLocation);
 		const newValue = this.#applyMutator( cons, origValue);
 		if (newValue == undefined) {
 			PersonaError.softFail(`Couldn't execute ${cons.operator} on ${cons.varType} variable ${cons.variableId}`);
@@ -18,7 +19,13 @@ export class PersonaVariables {
 		await this.#set(variableLocation, newValue);
 	}
 
-	static #convertConsequenceToLocation(cons: AlterVariableConsequence, actor: PersonaActor) : VariableData | undefined {
+	static getVariable( cond: VariableTypeSpecifier, actor : PersonaActor | null ) : number | undefined {
+		const varData = this.#convertTypeSpecToLocation(cond, actor);
+		if (!varData) return undefined;
+		return this.#get(varData);
+	}
+
+	static #convertTypeSpecToLocation(cons: VariableTypeSpecifier, actor: PersonaActor | null) : VariableData | undefined {
 		const {varType, variableId} = cons;
 		switch (varType) {
 			case "global":
@@ -38,6 +45,10 @@ export class PersonaVariables {
 					scene,
 				}
 			case "actor":
+				if (!actor) {
+					PersonaError.softFail(`No Actor Provided to find Variable ${cons.variableId}`, cons);
+					return undefined;
+				}
 				return {
 					varType,
 					variableId,
@@ -95,7 +106,7 @@ export class PersonaVariables {
 
 	}
 
-	static async #get(data: VariableData) : Promise<number | undefined> {
+	static #get(data: VariableData) : number | undefined {
 		switch (data.varType) {
 			case "global":
 				PersonaError.softFail("Setting global variable not yet implemented");

@@ -1,3 +1,4 @@
+import { VARIABLE_TYPE } from "../../persona-variables.js";
 import { COMPARISON_GROUPS } from "../../../config/numeric-comparison.js";
 import { UNIVERSAL_MODIFIERS_TYPE } from "../../datamodel/universal-modifiers-types.js";
 import { RESULT_SUBTYPE_COMPARISON } from "../../../config/numeric-comparison.js";
@@ -138,12 +139,12 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			COMBAT_EFFECTS,
 			RESULT_SUBTYPE_COMPARISON,
 			COMPARISON_GROUPS,
+			VARIABLE_TYPE,
 			UNIVERSAL_MODIFIERS_TYPE,
 			SCENE_WEATHER_TYPES: Object.fromEntries(
 				([""].concat(Object.keys(CONFIG.weatherEffects))).map( x=> [x,x])
 			),
 		};
-		Debug(this._powerStuffBase.SCENE_WEATHER_TYPES);
 		return this._powerStuffBase;
 	}
 

@@ -613,9 +613,11 @@ export class ConditionalEffectManager {
 				return `Number of ${cond.group} that meet Special Condition ${endString(cond)}`;
 			case "progress-tokens-with":
 				return `Progress tokens with ${cond.conditionTarget} is ${endString(cond)}`;
+			case "variable-value":
+				return `Value of ${cond.varType} variable named ${cond.variableId} is ${endString(cond)}`;
 			default:
 				cond satisfies never;
-				return "UNKNOWN CONDITION"
+				return "UNKNOWN CONDITION";
 		}
 	}
 

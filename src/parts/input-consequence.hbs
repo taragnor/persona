@@ -123,6 +123,30 @@
 	</div>
 	{{/if}}
 
+	{{#if (eq cons.type "alter-variable") }}
+	<select name="{{strcat namePrefix 'varType'}}">
+		{{selectOptions POWERSTUFF.VARIABLE_TYPE localize=true selected=cons.varType}}
+	</select>
+	<div>
+		{{#if (eqAny cons.varType "scene")}}
+		<select name="{{strcat namePrefix 'sceneId'}}">
+			{{selectOptions POWERSTUFF.SCENES localize=true selected=cons.sceneId}}
+		</select>
+		{{/if}}
+	</div>
+	<input type=string name="{{strcat namePrefix 'variableId'}}" value="{{cons.variableId}}">
+	<div>
+		<span>
+			<select name="{{strcat namePrefix 'operator'}}">
+				{{selectOptions POWERSTUFF.VARIABLE_ACTIONS localize=true selected=cons.operator}}
+			</select>
+		</span>
+		<span>
+			<input class="short" type=number name="{{strcat namePrefix 'value'}}" value="{{cons.value}}">
+		</span>
+	</div>
+	{{/if}}
+
 	{{#if (eq cons.type	"set-flag")}}
 	<div>
 		<label for="flag-id"> Flag Id</label>

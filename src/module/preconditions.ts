@@ -1,3 +1,4 @@
+import { PersonaVariables } from "./persona-variables.js";
 import { PersonaScene } from "./persona-scene.js";
 import { ActorChange } from "./combat/combat-result.js";
 import { AttackResult } from "./combat/combat-result.js";
@@ -378,13 +379,25 @@ function numericComparison(condition: Precondition, situation: Situation, source
 						user: acc,
 						target: acc,
 					};
-				return	a + (testPrecondition(condition.otherComparison, situation, null) ? 1 : 0);
+					return	a + (testPrecondition(condition.otherComparison, situation, null) ? 1 : 0);
 				}
-			, 0);
+				, 0);
 			break;
-
-
 		}
+		case "variable-value": {
+			let val: number | undefined;
+			if (condition.varType == "actor") {
+				const subject = getSubjectActor(condition, situation, source, "applyTo");
+				if (subject == undefined) return false;
+				val = PersonaVariables.getVariable(condition, subject);
+			} else {
+				val = PersonaVariables.getVariable(condition, null);
+			}
+			if (val == undefined) return false;
+			target = val;
+			break;
+		}
+
 		default:
 			condition satisfies never;
 			PersonaError.softFail(`Unknwon numeric comparison type ${condition["comparisonTarget"]}`)

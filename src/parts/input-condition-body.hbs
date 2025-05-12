@@ -33,6 +33,27 @@
 		{{/if}}
 	</div>
 
+	{{#if (eq cond.comparisonTarget "variable-value") }}
+	<select name="{{strcat namePrefix 'varType'}}">
+		{{selectOptions POWERSTUFF.VARIABLE_TYPE localize=true selected=cond.varType}}
+	</select>
+	<div>
+		{{#if (eqAny cond.varType "scene")}}
+		<select name="{{strcat namePrefix 'sceneId'}}">
+			{{selectOptions POWERSTUFF.SCENES localize=true selected=cond.sceneId}}
+		</select>
+		{{/if}}
+
+		{{#if (eqAny cond.varType "actor")}}
+		<select name="{{strcat namePrefix 'applyTo'}}">
+			{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.applyTo}}
+		</select>
+		{{/if}}
+
+	</div>
+	<input type=string name="{{strcat namePrefix 'variableId'}}" value="{{cond.variableId}}">
+	{{/if}}
+
 	{{#if (eq cond.comparisonTarget "social-link-level")}}
 	<select name="{{strcat namePrefix 'socialLinkIdOrTarot'}}">
 		{{selectOptions POWERSTUFF.SOCIAL_LINK_OR_TAROT localize=true selected=cond.socialLinkIdOrTarot}}

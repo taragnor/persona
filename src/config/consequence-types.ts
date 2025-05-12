@@ -194,23 +194,23 @@ type NonGenericConsequences = UsePowerConsequence
 export type AlterVariableConsequence = {
 	type: "alter-variable",
 	varType: VariableType,
-	variableId: string,
 	operator: VariableAction,
 	value: number,
 } &
-	AlterVariableConsequences;
+	VariableTypeSpecifier;
 
-type AlterVariableConsequences = {
-	varType: "global",
-} | {
-	varType: "scene",
-	sceneId: string,
-} | {
-	varType: "actor",
-	applyTo : ConsequenceTarget,
-} | {
-	varType: "social-temp",
-};
+export type VariableTypeSpecifier =
+	{variableId: string} & ({
+		varType: "global",
+	} | {
+		varType: "scene",
+		sceneId: string,
+	} | {
+		varType: "actor",
+		applyTo : ConsequenceTarget,
+	} | {
+		varType: "social-temp",
+	});
 
 type FatigueConsequence = {
 	type: "alter-fatigue-lvl",

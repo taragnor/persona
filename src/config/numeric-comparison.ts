@@ -1,3 +1,5 @@
+import { VariableTypeSpecifier } from "./consequence-types.js";
+import { VariableType } from "../module/persona-variables.js";
 import { Precondition } from "./precondition-types.js";
 import { SocialLinkIdOrTarot } from "./precondition-types.js";
 import { ConditionTarget } from "./precondition-types.js";
@@ -33,6 +35,7 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"round-count",
 	"combat-result-based",
 	"num-of-others-with",
+	"variable-value",
 ] as const;
 
 export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];
@@ -90,7 +93,13 @@ type NonGenericNumericComparison = ResistanceComparison
 	| totalSLComparison
 	| CombatResultComparison
 	| NumberOfOthersWithComparison
+ | VariableComparison
 ;
+
+type VariableComparison = NumericComparisonBase & {
+	comparisonTarget: "variable-value",
+	varType: VariableType,
+} & VariableTypeSpecifier;
 
 type SocialVariableComparison = NumericComparisonBase & {
 	comparisonTarget:	"social-variable",

@@ -1340,7 +1340,7 @@ export class PersonaSocial {
 		}
 	}
 
-	static async getSocialVariable(varId: string): Promise<number | undefined> {
+	static getSocialVariable(varId: string): number | undefined {
 		if (!this.rollState) {
 			console.log(`No rollstate so couldn't get variable ${varId}`);
 			return undefined;
