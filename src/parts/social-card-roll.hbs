@@ -2,6 +2,11 @@
 	<div>
 		{{#if (eqAny roll.rollType "studentSkillCheck" "save" "question")}}
 		<button class="make-roll" {{#if (not enabled)}} disabled {{/if}}>
+			{{#if (getRollTags roll)}}
+			<span class="card-tags">
+				({{getRollTags roll}})
+			</span>
+			{{/if}}
 			{{replace label cardData.replaceSet}}
 			{{#if (eq roll.rollType "save")}}
 			. Roll {{roll.saveType}} Save

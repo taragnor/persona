@@ -1,3 +1,5 @@
+import { ROLL_TAGS } from "../config/roll-tags.js";
+import { CardRoll } from "../config/social-card-config.js";
 import { Persona } from "./persona-class.js";
 import { RESIST_STRENGTHS } from "../config/damage-types.js";
 import { PersonaI } from "../config/persona-interface.js";
@@ -563,6 +565,14 @@ export class PersonaHandleBarsHelpers {
 		"canDeletePowers": function (persona: Persona): boolean {
 			return persona.user.isOwner && persona.isBasePersona;
 		},
+
+		"getRollTags": function (cardRoll: CardRoll): string {
+			debugger;
+			const localization= PersonaSocial.getCardRollTags(cardRoll)
+				.map (t => localize(ROLL_TAGS[t]))
+			return localization
+				.join(", ");
+		}
 	}
 
 

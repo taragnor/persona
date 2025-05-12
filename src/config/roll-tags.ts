@@ -12,7 +12,11 @@ export const ROLL_TAG_LIST = [
 	"activation",
 	"defense",
 	"academic",
-	"test",
+	"school-test",
+	"rest",
+	"romantic",
+	"commanding",
+
 ] as const;
 
 export type RollTag = typeof ROLL_TAG_LIST[number];
