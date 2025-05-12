@@ -19,10 +19,11 @@ export class PersonaVariables {
 		await this.#set(variableLocation, newValue);
 	}
 
+	/** returns 0 on a non-existent variable, returns undefined if the request was invalid (bad actor Id, etc) */
 	static getVariable( cond: VariableTypeSpecifier, actor : PersonaActor | null ) : number | undefined {
 		const varData = this.#convertTypeSpecToLocation(cond, actor);
 		if (!varData) return undefined;
-		return this.#get(varData);
+		return this.#get(varData) ?? 0;
 	}
 
 	static #convertTypeSpecToLocation(cons: VariableTypeSpecifier, actor: PersonaActor | null) : VariableData | undefined {
