@@ -16,7 +16,17 @@ export const ROLL_TAG_LIST = [
 	"rest",
 	"romantic",
 	"commanding",
-
+	"persuasive",
+	"artistic",
+	"studying",
+	"music",
+	"crime",
+	"linguistic",
+	"gaming",
+	"metaverse",
+	"deception",
+	"emotional",
+	"friendly",
 ] as const;
 
 export type RollTag = typeof ROLL_TAG_LIST[number];

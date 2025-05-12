@@ -763,7 +763,7 @@ export class PersonaSocial {
 		if (event.eventTags.includes("one-shot")) {
 			await this.markEventUsed(event);
 		}
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event,eventNumber, cardData, situation : cardData.situation, eventIndex});
+		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event, eventNumber, cardData, situation : cardData.situation, eventIndex});
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
 			speaker,

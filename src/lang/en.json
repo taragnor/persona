@@ -873,6 +873,19 @@
 	"persona.roll.rolltag.fatigue" : "Fatigue",
 	"persona.roll.rolltag.romantic" : "Romantic",
 	"persona.roll.rolltag.commanding" : "Commanding",
+	"persona.roll.rolltag.persuasive" : "Persuasive",
+	"persona.roll.rolltag.artistic" : "Artistic",
+	"persona.roll.rolltag.studying" : "Studying",
+	"persona.roll.rolltag.music" : "Music",
+	"persona.roll.rolltag.crime" : "Crime",
+	"persona.roll.rolltag.linguistic" : "Linguistic",
+	"persona.roll.rolltag.gaming" : "Gaming",
+	"persona.roll.rolltag.metaverse" : "Metaverse",
+	"persona.roll.rolltag.deception" : "Deception",
+	"persona.roll.rolltag.emotional" : "Emotional",
+	"persona.roll.rolltag.friendly" : "Friendly",
+
+
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",
