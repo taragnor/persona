@@ -22,12 +22,19 @@ type TriggerSituation = TriggerSituation_base & (
 	| EnterRegionTrigger
 	| ExplorationTrigger
 	| ClockTrigger
+	| OnRollTrigger
 );
 
 type ExplorationTrigger = {
 	trigger: "on-open-door" | "on-search-end" | "on-attain-tarot-perk" | "enter-metaverse" | "exit-metaverse" | "on-metaverse-turn";
 	triggeringCharacter?:  UniversalActorAccessor<ValidAttackers>;
 }
+
+export type OnRollTrigger = {
+	trigger: "on-roll",
+	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,
+	user: UniversalActorAccessor<ValidAttackers>,
+} & RollSituation;
 
 type ClockTrigger = {
 	trigger: "on-clock-tick" | "on-clock-change",
@@ -121,8 +128,6 @@ type NonRollSituation = {
 	rollTags ?: RollTag[];
 	rollTotal ?: undefined;
 }
-
-
 
 type SituationUniversal = {
 	//more things can be added here all should be optional

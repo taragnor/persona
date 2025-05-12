@@ -1,3 +1,5 @@
+import { OnRollTrigger } from "../config/situation.js";
+import { RollSituation } from "../config/situation.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
 import { PToken } from "./combat/persona-combat.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
@@ -13,7 +15,7 @@ export class RollBundle {
 	name: string;
 	_playerRoll: boolean;
 
-	constructor (rollName: string,roll : Roll, playerRoll : boolean,  modList ?: ModifierList, situation ?: Situation) {
+	constructor (rollName: string,roll : Roll, playerRoll : boolean,  modList ?: ModifierList, situation ?: Situation ) {
 		this._playerRoll = playerRoll;
 		if (!roll._evaluated)
 			throw new Error("Can't construct a Roll bundle with unevaluated roll");
@@ -35,7 +37,7 @@ export class RollBundle {
 		}
 		const {mods, situation} = this.modList;
 		if (!situation)
-			throw new Error("No Situation can't resolve");
+			throw new Error("Situation can't resolve");
 		this.modList =  {
 			mods : mods.printable(situation),
 			modtotal: mods.total(situation),
@@ -129,7 +131,7 @@ export class RollBundle {
 
 type UnresolvedMods = {
 	mods: ModifierList,
-	situation: Situation | null,
+	situation: (Situation) | null,
 }
 
 type ResolvedMods = {

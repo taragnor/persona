@@ -1,3 +1,4 @@
+import { RollSituation } from "../../config/situation.js";
 import { randomSelect } from "../utility/array-tools.js";
 import { Persona } from "../persona-class.js";
 import { SHADOW_ROLE } from "../../config/shadow-types.js";
@@ -3351,6 +3352,27 @@ async setEnergy(this: Shadow, amt: number) {
 
 async alterEnergy(this: Shadow, amt: number) {
 	await this.setEnergy(this.system.combat.energy.value + amt);
+}
+
+async onRoll(situation: RollSituation & Situation) {
+	if (!this.isValidCombatant()) return;
+	if (this.isPC() ) {
+		if (situation.rollTags.includes("fatigue")) {
+			await this.setAlteredFatigue(true);
+		}
+	}
+	const rollSituation : Situation = {
+		user: this.accessor,
+		triggeringCharacter: this.accessor,
+		trigger: "on-roll",
+		rollTags: situation.rollTags,
+		naturalRoll: situation.naturalRoll,
+		rollTotal: situation.rollTotal,
+		triggeringUser: game.user,
+	};
+	await TriggeredEffect.onTrigger("on-roll", this, rollSituation)
+		.emptyCheck()
+		?.autoApplyResult();
 }
 
 async onCombatStart() {

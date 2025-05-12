@@ -1,3 +1,4 @@
+import { RollSituation } from "../../config/situation.js";
 import { RollTag } from "../../config/roll-tags.js";
 import { Precondition } from "../../config/precondition-types.js";
 import { shuffle } from "../utility/array-tools.js";
@@ -1060,6 +1061,7 @@ export class PersonaSocial {
 					rollTags: this.getCardRollTags(cardRoll),
 				};
 				await this.processAutoProgress(cardData, cardRoll, hit, critical );
+				await this.#onCardRoll(situation);
 				await this.applyEffects(effectList, situation, cardData.actor);
 				break;
 			}
@@ -1086,6 +1088,20 @@ export class PersonaSocial {
 			default:
 				cardRoll satisfies never;
 		}
+	}
+
+	static async #onCardRoll(situation: Situation & RollSituation) {
+		const userAcc = situation.user;
+		if (!userAcc) {
+			PersonaError.softFail("No user in Card Roll Situation");
+			return;
+		}
+		const user = PersonaDB.findActor(userAcc);
+		if (!user) {
+			PersonaError.softFail("Can't find user in Card Roll Situation");
+			return;
+		}
+		await user.onRoll(situation);
 	}
 
 	static async processAutoProgress( cardData: CardData, cardRoll: CardRoll, hit: boolean, critical: boolean) : Promise<void> {

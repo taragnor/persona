@@ -700,6 +700,7 @@
 	"persona.triggers.enter-metaverse": "Enter the Metaverse",
 	"persona.triggers.exit-metaverse": "Exit the Metaverse",
 	"persona.triggers.on-metaverse-turn": "On Metaverse Turn",
+	"persona.triggers.on-roll": "On Roll",
 	"persona.triggers.start-turn": "Start Turn",
 	"persona.triggers.end-turn": "End Turn",
 	"persona.triggers.on-open-door": "A door opens",

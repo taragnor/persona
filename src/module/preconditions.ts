@@ -480,6 +480,8 @@ function triggerComparison(condition: Triggered, situation: Situation, _source:O
 				return false;
 			}
 			return true;
+		case "on-roll":
+			return true;
 		default:
 			condition.trigger satisfies never;
 			return false;

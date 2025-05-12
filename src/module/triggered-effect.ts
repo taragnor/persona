@@ -12,7 +12,7 @@ import { PersonaCombat } from "./combat/persona-combat.js";
 
 export class TriggeredEffect {
 
-	static onTrigger(trigger: Trigger, actor ?: ValidAttackers, situation ?: Situation) : CombatResult {
+	static onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation ) : CombatResult {
 		const result = new CombatResult();
 		if (!situation) {
 			switch (trigger) {
@@ -76,6 +76,7 @@ export class TriggeredEffect {
 				case "on-clock-tick":
 				case "on-clock-change":
 				case "on-use-power":
+				case "on-roll":
 				case "on-open-door":
 					PersonaError.softFail(`Must proivide a situation with this trigger:  ${trigger}`);
 					return result;
@@ -85,8 +86,11 @@ export class TriggeredEffect {
 					return result;
 			}
 		}
-		//@ts-ignore
-		situation = { ...situation, trigger }  as Situation; //copy the object so it doesn't permanently change it
+		if (situation == undefined) {
+					PersonaError.softFail(`Cant' resolve trigger, no situation for ${trigger}`);
+			return result;
+		}
+		const situationCopy = { ...situation, trigger } as Situation; //copy the object so it doesn't permanently change it
 		let triggers : ModifierContainer[];
 		if (actor) {
 			triggers = actor.triggers;
@@ -99,8 +103,8 @@ export class TriggeredEffect {
 		}
 		for (const trig of triggers) {
 			for (const eff of trig.getEffects(actor ?? null)) {
-				if (!ModifierList.testPreconditions(eff.conditions, situation, trig)) { continue; }
-				const res = PersonaCombat.consequencesToResult(eff.consequences,trig, situation, actor, actor, null);
+				if (!ModifierList.testPreconditions(eff.conditions, situationCopy, trig)) { continue; }
+				const res = PersonaCombat.consequencesToResult(eff.consequences,trig, situationCopy, actor, actor, null);
 				result.merge(res);
 			}
 		}
@@ -118,10 +122,12 @@ export class TriggeredEffect {
 		.emptyCheck();
 		if (!triggerResult) return;
 		const usePowers = triggerResult.findEffects("use-power");
-		situation = situation ? situation : {
-			attacker: actor.accessor,
-			user: actor.accessor,
-		};
+		if (situation == undefined) {
+			situation = {
+				attacker: actor.accessor,
+				user: actor.accessor,
+			} satisfies Situation;
+		}
 		for (const usePower of usePowers) {
 			//TODO BUG: Extra attacks keep the main inputted modifier
 			const newAttacker = PersonaCombat.getPTokenFromActorAccessor(usePower.newAttacker);
