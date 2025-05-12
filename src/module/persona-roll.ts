@@ -4,11 +4,8 @@ import { PersonaCombat } from "./combat/persona-combat.js";
 import { PersonaError } from "./persona-error.js";
 import { ResolvedModifierList } from "./combat/modifier-list.js";
 import { ModifierList } from "./combat/modifier-list.js";
-import { Situation } from "./preconditions.js";
 import { PersonaDB } from "./persona-db.js";
 import { UniversalActorAccessor } from "./utility/db-accessor.js";
-import { PC } from "./actor/persona-actor.js";
-import { Shadow } from "./actor/persona-actor.js";
 
 export class RollBundle {
 	roll: Roll;

@@ -2,7 +2,6 @@ import { PersonaSettings } from "../config/persona-settings.js";
 import { ModifierTarget } from "../config/item-modifiers.js";
 import { getActiveConsequences } from "./preconditions.js";
 import { PowerContainer } from "./item/persona-item.js";
-import { Situation } from "./preconditions.js";
 import { STATUS_EFFECT_DURATION_TYPES } from "../config/status-effects.js";
 import { Helpers } from "./utility/helpers.js";
 import { multiCheckToArray } from "./preconditions.js";

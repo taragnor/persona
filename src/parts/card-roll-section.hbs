@@ -2,6 +2,17 @@
 	<select name='{{strcat namePrefix "rollType"}}'>
 		{{selectOptions (ternIf allowComplex CONST.ROLLTYPES CONST.SIMPLE_ROLL_TYPES) localize=true selected=roll.rollType}}
 	</select>
+	<div class="roll-tags">
+	<select name='{{strcat namePrefix "rollTag1"}}'>
+		{{selectOptions CONST.ROLL_TAGS localize=true selected=roll.rollTag1}}
+	</select>
+	<select name='{{strcat namePrefix "rollTag2"}}'>
+		{{selectOptions CONST.ROLL_TAGS localize=true selected=roll.rollTag2}}
+	</select>
+	<select name='{{strcat namePrefix "rollTag3"}}'>
+		{{selectOptions CONST.ROLL_TAGS localize=true selected=roll.rollTag3}}
+	</select>
+	</div>
 	<div class="simple-roll-stuff">
 		<span>
 			<input type="checkbox" id="invert" name="{{strcat namePrefix 'simpleRoll'}}" {{checked roll.simpleRoll}}>

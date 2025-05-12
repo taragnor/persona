@@ -10,7 +10,6 @@ import { PowerContainer } from "../item/persona-item.js";
 import { UniversalItemAccessor } from "../utility/db-accessor.js";
 import { PersonaDB } from "../persona-db.js";
 import { Precondition } from "../../config/precondition-types.js";
-import { Situation } from "../preconditions.js"
 import { ModifierVariable } from "../../config/effect-types.js";
 
 export type ModifierListItem = {

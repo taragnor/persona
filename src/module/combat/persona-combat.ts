@@ -1,3 +1,4 @@
+import { RollSituation } from "../../config/situation.js";
 import { Persona } from "../persona-class.js";
 import { PersonaScene } from "../persona-scene.js";
 import { Power } from "../item/persona-item.js";
@@ -36,7 +37,6 @@ import { PersonaError } from "../persona-error.js";
 import { CombatResult } from "./combat-result.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { ModifierList } from "./modifier-list.js";
-import { Situation } from "../preconditions.js";
 import { AttackResult } from "./combat-result.js";
 import { Usable } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
@@ -405,7 +405,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const rollValue = openingRoll.total;
 		const situation : Situation = {
 			user: actor.accessor,
-			openingRoll: rollValue,
+			naturalRoll: rollValue,
+			rollTags: ["opening"],
+			rollTotal: rollValue,
 			activeCombat: true,
 		}
 		returns.push(
@@ -438,7 +440,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	mockOpeningSaveTotal( combatant: Combatant<ValidAttackers> , situation: Situation, status: StatusEffectId) : number | undefined {
-		const rollValue = situation.openingRoll ?? -999;
+		const rollValue = situation.naturalRoll ?? -999;
 		if (!combatant.actor) return undefined;
 		const statusEffect = combatant.actor.getStatus(status);
 		if (!statusEffect && status != "fading") return undefined;
@@ -618,8 +620,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	disengageOpener( combatant: Combatant<ValidAttackers> , situation: Situation) :OpenerOptionsReturn {
 		let options : OpenerOptionsReturn["options"] = [];
-		const rollValue = situation.openingRoll ?? -999;
 		let msg : string[] = [];
+		const rollValue = situation.naturalRoll ?? -999;
+		if (!situation.rollTags?.includes("opening")) return {msg, options};
 		if (!combatant.actor?.isCapableOfAction()
 			|| combatant.actor?.hasStatus("challenged")
 		) {
@@ -852,6 +855,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	async fadingRoll( combatant: Combatant<ValidAttackers> , situation: Situation) : Promise<OpenerOptionsReturn> {
 		let options : OpenerOptionsReturn["options"] = [];
 		let msg : string[] = [];
+		if (!situation.rollTags?.includes("opening")) return {msg, options};
 		const actor = combatant.actor;
 		if (
 			!actor
@@ -873,7 +877,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		msg.push(`Resisting Fading (${saveTotal}) -->`);
 		switch (true) {
-			case situation.openingRoll == 20
+			case situation.naturalRoll == 20
 					&& (actor as PC).getSocialSLWithTarot("Star") >= 3: {
 						msg.push(`Critical Success`);
 						options.push({
@@ -1159,12 +1163,18 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const r = await new Roll("1d20").roll();
 		const emptyList = new ModifierList();
 		const roll = new RollBundle("Activation Roll Skiill Card", r, attacker.actor.system.type == "pc", emptyList, situation);
+	const combatRollSituation : CombatRollSituation = {
+		...situation,
+		naturalRoll: r.total,
+		rollTags: [],
+		rollTotal: r.total,
+	}
 		const res : AttackResult = {
 			result: "hit",
 			target: PersonaDB.getUniversalTokenAccessor(target),
 			attacker: PersonaDB.getUniversalTokenAccessor(attacker),
 			power: usableOrCard.accessor,
-			situation,
+			situation: combatRollSituation,
 			roll,
 			critBoost: 0,
 			printableModifiers: []
@@ -1172,12 +1182,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return res;
 	}
 
-	static processAttackNullifiers(attacker : PToken , power :Usable, target: PToken, baseData: Pick<AttackResult, "attacker" | "target"  | "power" | "roll">, situation: Situation, rollType: AttackRollType): AttackResult | null
+	static processAttackNullifiers(attacker : PToken , power :Usable, target: PToken, baseData: Pick<AttackResult, "attacker" | "target"  | "power" | "roll">, situation: Situation & RollSituation, rollType: AttackRollType): AttackResult | null
 	{
 		const naturalAttackRoll = situation.naturalRoll;
-		if (!naturalAttackRoll) {
-			PersonaError.softFail("No natural attack roll passed to siutuation in processAttackNullifiers");
-		}
 		const element = power.getDamageType(attacker.actor);
 		const targetP = target.actor.persona();
 		const resist = targetP.elemResist(element);
@@ -1194,7 +1201,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 						hit: false,
 						criticalHit: false,
 						...situation,
-						naturalRoll: naturalAttackRoll,
 					},
 					...baseData,
 				};
@@ -1211,7 +1217,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 						hit: false,
 						criticalHit: false,
 						...situation,
-						naturalRoll: naturalAttackRoll,
 					},
 					...baseData,
 				};
@@ -1226,7 +1231,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					critBoost: 0,
 					situation: {
 						...situation,
-						naturalRoll: naturalAttackRoll,
 						hit: true,
 						criticalHit: false,
 						isAbsorbed: true,
@@ -1272,15 +1276,20 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	static async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, modifiers: ModifierList, rollType: AttackRollType) : Promise<AttackResult> {
 		const combat = game.combat as PersonaCombat | undefined;
-		const situation : Situation = {
+		const rollTags: NonNullable<Situation["rollTags"]> = ["attack"];
+		const activationRoll = rollType == "activation";
+		if (activationRoll) {
+			rollTags.push("activation");
+		}
+		const baseSituation : Situation = {
 			target: target.actor.accessor,
 			usedPower: PersonaDB.getUniversalItemAccessor(usableOrCard),
 			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
+			rollTags,
 			attacker: attacker.actor.accessor,
-			activationRoll: rollType == "activation",
 			activeCombat:combat ? !!combat.combatants.find( x=> x.actor?.system.type != attacker.actor.system.type): false ,
 		};
-		const cardReturn = await this.processSkillCard(attacker, usableOrCard, target, situation);
+		const cardReturn = await this.processSkillCard(attacker, usableOrCard, target, baseSituation);
 		if (cardReturn) return cardReturn;
 		const targetP = target.actor.persona();
 		const power = usableOrCard as Usable;
@@ -1288,7 +1297,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const resist = targetP.elemResist(element);
 		const def = power.system.defense;
 		const r = await new Roll("1d20").roll();
-		if (situation.activationRoll) {
+		if (activationRoll) {
 			const combat = game.combat as PersonaCombat;
 			if (combat && !combat.isSocial) {
 				combat.lastActivationRoll = r.total;
@@ -1296,11 +1305,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		const attackbonus = this.getAttackBonus(attacker.actor, power, target, modifiers);
 		const cssClass=  (target.actor.system.type != "pc") ? "gm-only" : "";
-		const roll = new RollBundle("Temp", r, attacker.actor.system.type == "pc", attackbonus, situation);
+		const roll = new RollBundle("Temp", r, attacker.actor.system.type == "pc", attackbonus, baseSituation);
 		const naturalAttackRoll = roll.dice[0].total;
-		situation.naturalRoll = naturalAttackRoll;
-		const defenseVal = def != "none" ? target.actor.getDefense(def).total(situation): 0;
-		const validDefModifiers = def != "none" ? target.actor.getDefense(def).list(situation): [];
+		// situation.naturalRoll = naturalAttackRoll;
+		const defenseVal = def != "none" ? target.actor.getDefense(def).total(baseSituation): 0;
+		const validDefModifiers = def != "none" ? target.actor.getDefense(def).list(baseSituation): [];
 		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
 		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.system.defense} ${defenseStr}`;
 		roll.setName(rollName);
@@ -1310,11 +1319,17 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			target: PersonaDB.getUniversalTokenAccessor(target),
 			power: PersonaDB.getUniversalItemAccessor(power)
 		} satisfies Pick<AttackResult, "attacker" | "target"  | "power" | "roll">;
+		const total = roll.total;
+		const situation : CombatRollSituation = {
+			...baseSituation,
+			naturalRoll: naturalAttackRoll,
+			rollTags,
+			rollTotal: roll.total,
+		};
 		const testNullify = this.processAttackNullifiers(attacker, power, target, baseData, situation, rollType);
 		if (testNullify)  {
 			return testNullify;
 		}
-		const total = roll.total;
 		const validAtkModifiers = attackbonus.list(situation);
 		const printableModifiers = attackbonus.printable(situation);
 		if (def == "none") {
@@ -2704,9 +2719,10 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 			const actor = ally.actor;
 			if (!actor || !actor.teamworkMove ) return [];
 			if (!actor.canUsePower(actor.teamworkMove, false)) return [];
-			const situation = {
+			const situation : CombatRollSituation = {
 				naturalRoll: activationRoll,
-				activationRoll: activationRoll != undefined,
+				rollTags: ["attack", "activation"],
+				rollTotal : activationRoll,
 				user: actor.accessor
 			};
 			if (!actor.teamworkMove.testTeamworkPrereqs(situation, actor)) return [];
@@ -2811,3 +2827,4 @@ type OpenerOption = {
 
 export type PersonaCombatant = NonNullable<PersonaCombat["combatant"]>;
 
+type CombatRollSituation = AttackResult["situation"];

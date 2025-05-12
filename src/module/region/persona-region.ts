@@ -3,7 +3,6 @@ import { Helpers } from "../utility/helpers.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { PC } from "../actor/persona-actor.js";
-import { Situation } from "../preconditions.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { PersonaSockets } from "../persona.js";
 import { Metaverse } from "../metaverse.js";

@@ -1,15 +1,11 @@
-import { Persona } from "./persona-class.js";
 import { PersonaScene } from "./persona-scene.js";
 import { ActorChange } from "./combat/combat-result.js";
 import { AttackResult } from "./combat/combat-result.js";
-import { CombatResult } from "./combat/combat-result.js";
 import { Usable } from "./item/persona-item.js";
 import { SocialLink } from "./actor/persona-actor.js";
 import { NPCAlly } from "./actor/persona-actor.js";
-import { UsableAndCard } from "./item/persona-item.js";
 import { ValidSocialTarget } from "./social/persona-social.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
-import { CombatTriggerTypes } from "../config/triggers.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaSocial } from "./social/persona-social.js";
 import { SOCIAL_LINK_OR_TAROT_OTHER } from "../config/precondition-types.js";
@@ -27,15 +23,11 @@ import { ArrayCorrector } from "./item/persona-item.js";
 import { BooleanComparisonPC } from "../config/boolean-comparison.js";
 import { Triggered } from "../config/precondition-types.js";
 import { PToken } from "./combat/persona-combat.js";
-import { TarotCard } from "../config/tarot.js";
 import { ConditionTarget } from "../config/precondition-types.js";
 import { PersonaActor } from "./actor/persona-actor.js";
-import { SocialCard } from "./item/persona-item.js";
 import { NPC } from "./actor/persona-actor.js";
-import { SocialStat } from "../config/student-skills.js";
-import {Metaverse} from "./metaverse.js";
+import { Metaverse } from "./metaverse.js";
 import { PowerContainer } from "./item/persona-item.js";
-import { UniversalItemAccessor } from "./utility/db-accessor.js";
 import { Precondition } from "../config/precondition-types.js";
 import { UniversalActorAccessor } from "./utility/db-accessor.js";
 import { PersonaDB } from "./persona-db.js";
@@ -101,9 +93,10 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			target = situation.naturalRoll;
 			break;
 		case "activation-roll":
-			if (!situation.activationRoll)
+			if (situation.naturalRoll == undefined) return false;
+			if (!situation?.rollTags?.includes("activation"))
 				return false;
-			target = situation.naturalRoll!;
+			target = situation.naturalRoll;
 			break;
 		case "escalation":
 			const combat = game.combat as PersonaCombat | undefined;
@@ -256,8 +249,8 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			break;
 		}
 		case "opening-roll": {
-			if(situation.openingRoll == undefined) return false;
-			target = situation.openingRoll;
+			if (situation.naturalRoll == undefined  || !situation.rollTags?.includes("opening")) return false;
+			target = situation.naturalRoll;
 			break;
 		}
 		case "links-dating": {
@@ -1027,126 +1020,3 @@ function multiCheckTest<T extends string>(multiCheck: MultiCheck<T> | T, testFn:
 		.some (([item, _]) => testFn(item as T));
 
 }
-
-type UserSituation = {
-	user: UniversalActorAccessor<ValidAttackers>;
-};
-
-type TriggerSituation = TriggerSituation_base & (
-	CombatTrigger
-	| PresenceCheckTrigger
-	| EnterRegionTrigger
-	| ExplorationTrigger
-	| ClockTrigger
-);
-
-type ExplorationTrigger = {
-	trigger: "on-open-door" | "on-search-end" | "on-attain-tarot-perk" | "enter-metaverse" | "exit-metaverse" | "on-metaverse-turn";
-	triggeringCharacter?:  UniversalActorAccessor<ValidAttackers>;
-}
-
-type ClockTrigger = {
-	trigger: "on-clock-tick" | "on-clock-change",
-	triggeringClockId: string,
-}
-
-type CombatTrigger = (
-	GenericCombatTrigger
-	| NonGenericCombatTrigger
-);
-
-
-type GenericCombatTrigger = UserSituation & {
-	trigger: Exclude<CombatTriggerTypes, NonGenericCombatTrigger["trigger"]>;
-	triggeringCharacter?:  UniversalActorAccessor<ValidAttackers>;
-}
-
-type NonGenericCombatTrigger =
-	InflictStatusTrigger
-	| CombatGlobalTrigger
-	| UsePowerTrigger
-	| KillTargetTrigger
-;
-
-type KillTargetTrigger = UserSituation & {
-	trigger: "on-kill-target",
-	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,
-}
-
-
-type UsePowerTrigger = UserSituation & {
-	trigger: "on-use-power",
-	triggeringCharacter: UniversalActorAccessor<ValidAttackers>;
-	combatResult: CombatResult,
-}
-
-type InflictStatusTrigger = UserSituation & {
-	trigger: "on-inflict-status",
-	statusEffect: StatusEffectId,
-}
-
-type CombatGlobalTrigger = {
-	trigger: "on-combat-end-global",
-}
-
-type TriggerSituation_base = {
-	triggeringUser : FoundryUser,
-}
-
-type PresenceCheckTrigger = {
-	trigger: "on-presence-check",
-	triggeringRegionId : string,
-}
-
-type EnterRegionTrigger = {
-	trigger: "on-enter-region",
-	triggeringRegionId : string,
-	triggeringCharacter ?:  UniversalActorAccessor<ValidAttackers>;
-}
-
-export type Situation = SituationUniversal & (
-	TriggerSituation  | NonTriggerUserSituation | SocialCardSituation);
-
-type NonTriggerUserSituation = UserSituation & {trigger ?: never};
-
-export type SocialCardSituation = UserSituation & {
-	attacker : UniversalActorAccessor<ValidSocialTarget>;
-	socialRandom :number;
-	socialTarget ?: UniversalActorAccessor<ValidSocialTarget>;
-	target ?: UniversalActorAccessor<ValidSocialTarget>;
-	isSocial: true;
-	cameo : UniversalActorAccessor<ValidSocialTarget> | undefined;
-	trigger ?: never;
-};
-
-type SituationUniversal = {
-	//more things can be added here all should be optional
-	user?: UniversalActorAccessor<ValidAttackers>;
-	persona?: Persona;
-	usedPower ?: UniversalItemAccessor<UsableAndCard>;
-	usedSkill ?: SocialStat;
-	activeCombat ?: boolean ;
-	openingRoll ?: number;
-	naturalRoll ?: number;
-	rollTotal ?: number;
-	criticalHit ?: boolean;
-	hit?: boolean;
-	resisted ?: boolean;
-	struckWeakness ?: boolean;
-	isAbsorbed ?: boolean;
-	activationRoll ?: boolean;
-	target ?: UniversalActorAccessor<ValidAttackers>;
-	attacker ?:UniversalActorAccessor<ValidAttackers>;
-	saveVersus ?: StatusEffectId;
-	statusEffect ?: StatusEffectId;
-	eventCard ?: UniversalItemAccessor<SocialCard>,
-	isSocial?: boolean,
-	tarot ?: TarotCard,
-	socialTarget ?: UniversalActorAccessor<ValidSocialTarget>;
-	socialRandom ?: number;
-	cameo ?: UniversalActorAccessor<ValidSocialTarget>;
-}
-
-
-
-

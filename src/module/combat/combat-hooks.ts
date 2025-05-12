@@ -2,7 +2,6 @@ import { TriggeredEffect } from "../triggered-effect.js";
 import { PC } from "../actor/persona-actor.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { PersonaSocial } from "../social/persona-social.js";
-import { Situation } from "../preconditions.js";
 import { PToken } from "./persona-combat.js";
 import { ValidAttackers } from "./persona-combat.js";
 import { PersonaActor } from "../actor/persona-actor.js";

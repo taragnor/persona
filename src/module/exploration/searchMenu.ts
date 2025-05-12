@@ -1,6 +1,5 @@
 import { NPCAlly } from "../actor/persona-actor.js";
-import { Situation } from "../preconditions.js";
-	import { Metaverse } from "../metaverse.js";
+import { Metaverse } from "../metaverse.js";
 import { PersonaRegion } from "../region/persona-region.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaSFX } from "../combat/persona-sfx.js";

@@ -4,7 +4,6 @@ import { NonCombatTriggerTypes } from "../config/triggers.js";
 import { CombatTriggerTypes } from "../config/triggers.js";
 import { Trigger } from "../config/triggers.js";
 import { CombatResult } from "./combat/combat-result.js";
-import { Situation } from "./preconditions.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
 import { ModifierContainer } from "./item/persona-item.js";
 import { ModifierList } from "./combat/modifier-list.js";
@@ -19,7 +18,6 @@ export class TriggeredEffect {
 			switch (trigger) {
 				case "on-combat-end":
 				case "on-damage":
-				case "on-kill-target":
 				case "on-combat-start":
 				case "start-turn":
 				case "end-turn": {
@@ -27,13 +25,29 @@ export class TriggeredEffect {
 						PersonaError.softFail("NO Actor givent o trigger ${trigger}");
 						return result;
 					}
-					const newSit: Situation = {
+					const newSit = {
 						trigger: trigger,
 						triggeringUser: game.user,
 						user : actor.accessor,
 						target : actor.accessor,
 						triggeringCharacter : actor.accessor,
-					};
+					} satisfies Situation;
+					situation = newSit;
+					break;
+				}
+				case "on-kill-target": {
+					//required its own thing for some reason since was giving TS errors
+					if (!actor) {
+						PersonaError.softFail("NO Actor givent o trigger ${trigger}");
+						return result;
+					}
+					const newSit = {
+						trigger: trigger,
+						triggeringUser: game.user,
+						user : actor.accessor,
+						target : actor.accessor,
+						triggeringCharacter : actor.accessor,
+					} satisfies Situation;
 					situation = newSit;
 					break;
 				}
@@ -114,7 +128,7 @@ export class TriggeredEffect {
 			const execPower = PersonaDB.allPowers().find( x=> x.id == usePower.powerId);
 			if (execPower && newAttacker) {
 				const altTargets= PersonaCombat.getAltTargets(newAttacker, situation, usePower.target );
-				const newTargets = await PersonaCombat.getTargets(newAttacker, execPower, altTargets)
+				const newTargets = PersonaCombat.getTargets(newAttacker, execPower, altTargets)
 				const extraPower = await PersonaCombat.usePowerOn(newAttacker, execPower, newTargets, "standard");
 				triggerResult.merge(extraPower);
 

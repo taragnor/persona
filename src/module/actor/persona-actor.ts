@@ -35,7 +35,6 @@ import { getActiveConsequences } from "../preconditions.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { PersonaActorSheetBase } from "./sheets/actor-sheet.base.js";
 import { Logger } from "../utility/logger.js";
-import { Situation } from "../preconditions.js";
 import { STUDENT_SKILLS } from "../../config/student-skills.js";
 import { Consumable } from "../item/persona-item.js";
 import { SocialStat } from "../../config/student-skills.js";

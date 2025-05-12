@@ -1,3 +1,4 @@
+import { RollTag } from "../../config/roll-tags.js";
 import { Precondition } from "../../config/precondition-types.js";
 import { shuffle } from "../utility/array-tools.js";
 import { NPCAlly } from "../actor/persona-actor.js";
@@ -8,7 +9,7 @@ import { VariableAction } from "../../config/consequence-types.js";
 import { SocialCardActionConsequence } from "../../config/consequence-types.js";
 import { PersonaSounds } from "../persona-sounds.js";
 import { randomSelect } from "../utility/array-tools.js";
-import { SocialCardSituation } from "../preconditions.js";
+import { SocialCardSituation } from "../../config/situation.js";
 import { NPC } from "../actor/persona-actor.js";
 import { ConditionalEffectManager } from "../conditional-effect-manager.js";
 import { TriggeredEffect } from "../triggered-effect.js";
@@ -42,7 +43,6 @@ import { PC } from "../actor/persona-actor.js";
 import { SocialStat } from "../../config/student-skills.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { STUDENT_SKILLS } from "../../config/student-skills.js";
-import { Situation } from "../preconditions.js";
 import { RollBundle } from "../persona-roll.js";
 import { PersonaDB } from "../persona-db.js";
 import { HTMLTools } from "../utility/HTMLTools.js";
@@ -432,6 +432,9 @@ export class PersonaSocial {
 				progressSuccess: choice.progressSuccess,
 				progressFail: 0,
 				progressCrit: 0,
+				rollTag1: "",
+				rollTag2: "",
+				rollTag3: "",
 			},
 			postEffects: {effects},
 		};
@@ -1053,7 +1056,8 @@ export class PersonaSocial {
 					hit,
 					criticalHit: critical,
 					naturalRoll: roll.natural,
-					rollTotal: roll.total
+					rollTotal: roll.total,
+					rollTags: this.getCardRollTags(cardRoll),
 				};
 				await this.processAutoProgress(cardData, cardRoll, hit, critical );
 				await this.applyEffects(effectList, situation, cardData.actor);
@@ -1068,7 +1072,8 @@ export class PersonaSocial {
 					...cardData.situation,
 					hit: saveResult.success,
 					rollTotal: saveResult.total,
-					naturalRoll: saveResult.natural
+					naturalRoll: saveResult.natural,
+					rollTags: this.getCardRollTags(cardRoll),
 				};
 				await this.processAutoProgress(cardData, cardRoll, saveResult.success, false);
 				await this.applyEffects(effectList,situation, cardData.actor);
@@ -1536,6 +1541,14 @@ export class PersonaSocial {
 			PersonaError.softFail(`${npc.name} is not an NPC`, msg, payload);
 			return;
 		}
+	}
+
+	static getCardRollTags (cardRoll: CardRoll) : RollTag[] {
+		return [
+			cardRoll.rollTag1,
+			cardRoll.rollTag2,
+			cardRoll.rollTag3,
+		].filter(x=> x);
 	}
 
 	static async getExpendEventRequest(msg : SocketMessage["EXPEND_EVENT"], payload: SocketPayload<"EXPEND_EVENT">) {

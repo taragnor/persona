@@ -1,3 +1,4 @@
+import { RollTag } from "./roll-tags.js";
 import { SocialCard } from "../module/item/persona-item.js";
 import { Consequence } from "./consequence-types.js";
 import { StudentSkillExt } from "./student-skills.js";
@@ -66,12 +67,19 @@ export type CardRoll = {
 	rollType: typeof SOCIAL_CARD_ROLL_TYPES_LIST[number]} 
 	& CardRollList[keyof CardRollList]
 	& RollProgress
+	& RollTags
 ;
 
 type RollProgress = {
 	progressSuccess: number,
 	progressFail: number,
 	progressCrit: number
+}
+
+type RollTags = {
+	rollTag1: RollTag;
+	rollTag2: RollTag;
+	rollTag3: RollTag;
 }
 
 type CardRollList = {

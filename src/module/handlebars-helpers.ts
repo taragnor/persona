@@ -25,7 +25,6 @@ import { DamageType } from "../config/damage-types.js";
 import { DAMAGETYPES } from "../config/damage-types.js";
 import { localize } from "./persona.js";
 import { AttackResult } from "./combat/combat-result.js";
-import { Situation } from "./preconditions.js";
 import { Activity } from "./item/persona-item.js";
 import { CardData } from "./social/persona-social.js";
 import { testPreconditions } from "./preconditions.js";

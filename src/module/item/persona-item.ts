@@ -1,3 +1,4 @@
+import { CardRoll } from "../../config/social-card-config.js";
 import { randomSelect } from "../utility/array-tools.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
@@ -32,7 +33,6 @@ import { getActiveConsequences } from "../preconditions.js";
 import { PersonaError } from "../persona-error.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { UniversalItemAccessor } from "../utility/db-accessor.js";
-import { Situation } from "../preconditions.js";
 import { SLOTTYPES } from "../../config/slot-types.js";
 import { ModifierListItem } from "../combat/modifier-list.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
@@ -1161,13 +1161,22 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	async addEventChoice(this: SocialCard, eventIndex: number) {
 		const event = this.system.events[eventIndex];
 		const arr = ArrayCorrector(event.choices);
+		const roll: CardRoll = {
+			rollType: "none",
+			progressSuccess:0,
+			progressCrit: 0,
+			progressFail: 0,
+			rollTag1: "",
+			rollTag2: "",
+			rollTag3: "",
+		};
 		const newChoice: CardChoice = {
 			name: "Unnamed Choice",
 			conditions: [],
 			text: "",
 			postEffects: {effects:[]},
-			roll: {rollType: "none", progressSuccess:0, progressCrit: 0, progressFail: 0},
-		};
+			roll,
+		}
 		arr.push( newChoice);
 		event.choices = arr;
 		await this.update({"system.events": Helpers.expandObject(this.system.events)});

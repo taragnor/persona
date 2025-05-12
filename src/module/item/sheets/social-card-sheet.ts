@@ -1,3 +1,5 @@
+import { ROLL_TAGS } from "../../../config/roll-tags.js";
+import { CARD_TAGS } from "../../../config/card-tags.js";
 import { SIMPLE_SOCIAL_CARD_ROLL_TYPES } from "../../../config/social-card-config.js";
 import { CARD_DC_TYPES } from "../../../config/social-card-config.js";
 import { FREQUENCY } from "../../../config/frequency.js";
@@ -29,6 +31,7 @@ const PRIMARY_SECONDARY = {
 export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 	declare item: SocialCard;
 	focusedEvent: number | undefined = undefined;
+	static _socialData: Record<string, unknown>;
 
 	override async getData() {
 		const data = await super.getData();
@@ -38,16 +41,8 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		data.CONST = {
 			DAYS
 		};
-		data.SOCIAL_DATA = {
-			ROLLTYPES : SOCIAL_CARD_ROLL_TYPES,
-			SIMPLE_ROLL_TYPES : SIMPLE_SOCIAL_CARD_ROLL_TYPES,
-			STUDENT_SKILLS,
-			STUDENT_SKILLS_EXT,
-			SAVE_DIFFICULTY: SAVE_TYPES_LOCALIZED,
-			ROLL_DC_TYPES: CARD_DC_TYPES,
-			FREQUENCY: FREQUENCY,
-		};
-		// data.FREQUENCY = FREQUENCY;
+		data.SOCIAL_DATA = PersonaSocialCardSheet.socialData();
+		data.FREQUENCY = FREQUENCY;
 		data.SOCIAL_CARD_TYPES = SOCIAL_CARD_TYPES;
 		data.CAMEO_TYPES = CAMEO_TYPES;
 		data.PERK_TYPES = PERK_TYPES;
@@ -57,6 +52,24 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 			.map(qual=> qual.relationshipName)
 			.filter( (val, i, arr) => arr.indexOf(val) == i);
 		return data;
+	}
+
+	static socialData() {
+		if (this._socialData) {
+			return this._socialData;
+		}
+		this._socialData = {
+			ROLLTYPES : SOCIAL_CARD_ROLL_TYPES,
+			SIMPLE_ROLL_TYPES : SIMPLE_SOCIAL_CARD_ROLL_TYPES,
+			STUDENT_SKILLS,
+			STUDENT_SKILLS_EXT,
+			SAVE_DIFFICULTY: SAVE_TYPES_LOCALIZED,
+			ROLL_DC_TYPES: CARD_DC_TYPES,
+			FREQUENCY: FREQUENCY,
+			CARD_TAGS,
+			ROLL_TAGS,
+		} as const;
+		return this._socialData;
 	}
 
 	get powerStuff() {
@@ -128,7 +141,10 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 				progressCrit: 0,
 				progressSuccess: 0,
 				progressFail: 0,
-			}
+				rollTag1: "",
+				rollTag2: "",
+				rollTag3: "",
+			},
 		};
 		opList.push( newOpportunity);
 		await card.update({"system.opportunity_list": opList});

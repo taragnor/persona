@@ -1,3 +1,4 @@
+import { RollSituation } from "../../config/situation.js";
 import { PersonaVariables } from "../persona-variables.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { RealDamageType } from "../../config/damage-types.js";
@@ -21,7 +22,6 @@ import { PersonaSFX } from "./persona-sfx.js";
 import { PersonaSockets } from "../persona.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaError } from "../persona-error.js";
-import { Situation } from "../preconditions.js";
 import { Usable } from "../item/persona-item.js";
 import { PC } from "../actor/persona-actor.js";
 import { PToken } from "./persona-combat.js";
@@ -325,7 +325,7 @@ export class CombatResult  {
 				});
 				break;
 			case "inspiration-cost": {
-				let situation = atkResult?.situation;
+				let situation: Situation | undefined = atkResult?.situation;
 				if (!effect) break;
 				if (!situation) {
 					situation = {
@@ -1013,7 +1013,7 @@ export type AttackResult = {
 	target: UniversalTokenAccessor<PToken>,
 	attacker: UniversalTokenAccessor<PToken>,
 	power: UniversalItemAccessor<UsableAndCard>,
-	situation: Situation,
+	situation: Situation & RollSituation,
 	roll: RollBundle,
 	critBoost: number,
 	printableModifiers: {name: string, modifier:string} [],

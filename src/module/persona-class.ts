@@ -9,7 +9,6 @@ import { localize } from "./persona.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../config/status-effects.js";
 import { RESIST_STRENGTH_LIST } from "../config/damage-types.js";
 import { getActiveConsequences } from "./preconditions.js";
-import { Situation } from "./preconditions.js";
 import { PersonaI } from "../config/persona-interface.js";
 import { DamageType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";

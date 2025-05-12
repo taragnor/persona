@@ -1,27 +1,13 @@
-const testO = {
-	xxxx: "hello",
-};
+import { ValidAttackers } from "./module/combat/persona-combat.js";
 
-type RR = typeof testO;
 
-interface X {
-	j: number;
+function f( actor: ValidAttackers) {
+	const situation : Situation = {
+		user : actor.accessor,
+		naturalRoll: 12,
+		rollTags: [],
+		rollTotal : 12,
+	}
 }
-
-interface Y extends RR {
-	x: number;
-}
-
-interface Y extends X  {
-	b: number;
-}
-
-
-
-//@ts-ignore
-let x: Y = window;
-
-CONFIG
-
 
 

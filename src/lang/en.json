@@ -857,6 +857,18 @@
 	"persona.universalModifier.scene" : "Scene",
 	"persona.universalModifier.room" : "Room",
 
+	"persona.roll.rolltag." : "-",
+	"persona.roll.rolltag.physical" : "Physical",
+	"persona.roll.rolltag.mental" : "Mental",
+	"persona.roll.rolltag.social" : "Social",
+	"persona.roll.rolltag.save" : "Save",
+	"persona.roll.rolltag.opening" : "Opening",
+	"persona.roll.rolltag.activation" : "Activation",
+	"persona.roll.rolltag.attack" : "Attack",
+	"persona.roll.rolltag.defense" : "Attack",
+	"persona.roll.rolltag.academic" : "Academic",
+	"persona.roll.rolltag.test" : "School Test",
+
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",
 	"persona.availability.-": "Normal (-)",
