@@ -851,8 +851,6 @@ export class ConditionalEffectManager {
 		switch (cons.subtype) {
 			case "direct":
 				return `MP ${signedAmount}`;
-			case "cost-reduction":
-				return `MP Cost * ${cons.amount}`;
 			case "percent-of-total":
 				return `MP Cost ${signedAmount} % of total`;
 			default:
@@ -890,7 +888,6 @@ export class ConditionalEffectManager {
 				return "ERROR";
 		}
 	}
-
 }
 
 export class EMAccessor<T> {
@@ -902,7 +899,7 @@ export class EMAccessor<T> {
 		this._owner = owner;
 		this._path = writePath;
 		if (this._path.endsWith(".")) {
-			throw new PersonaError("What fuckhole put a period here?");
+			throw new PersonaError("What fool put a period here?");
 		}
 		this._master = master;
 	}

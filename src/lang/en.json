@@ -885,7 +885,19 @@
 	"persona.roll.rolltag.deception" : "Deception",
 	"persona.roll.rolltag.emotional" : "Emotional",
 	"persona.roll.rolltag.friendly" : "Friendly",
+	"persona.roll.rolltag.apathetic" : "Apathetic",
+	"persona.roll.rolltag.callous" : "Callous",
+	"persona.roll.rolltag.competitive" : "Competitive",
+	"persona.roll.rolltag.strength" : "Strength",
+	"persona.roll.rolltag.agility" : "Agility",
+	"persona.roll.rolltag.seduction" : "Seduction",
+	"persona.roll.rolltag.humor" : "Humor",
+	"persona.roll.rolltag.prank" : "Prank",
+	"persona.roll.rolltag.on-social-target" : "On Social Target",
+	"persona.roll.rolltag.on-cameo" : "On Cameo",
 
+	"persona.roll.rolltag.deep-conversation" : "Deep Conversation",
+	"persona.roll.rolltag.smalltalk" : "Smalltalk",
 
 
 	"persona.availability.++": "Favored (++)",

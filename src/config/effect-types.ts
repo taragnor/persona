@@ -184,7 +184,7 @@ export const DAMAGE_SUBTYPES = Object.fromEntries(
 
 export const ALTER_MP_SUBTYPES_LIST = [
 	"direct",
-	"cost-reduction",
+	// "cost-reduction", // remplaced with a modifier
 	"percent-of-total",
 ] as const;
 
