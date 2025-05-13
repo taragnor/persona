@@ -1,6 +1,5 @@
 import { CARD_TAGS } from "./card-tags.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
-import { CARD_SITUATIONS } from "./card-tags.js";
 
 export const ROLL_TAG_LIST = [
 	"",
