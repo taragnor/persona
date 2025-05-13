@@ -1,3 +1,4 @@
+import { CardTag } from "./card-tags.js";
 import { VariableType } from "../module/persona-variables.js";
 import { CombatEffect } from "./effect-types.js";
 import { Consumable } from "../module/item/persona-item.js";
@@ -374,7 +375,10 @@ type CardActionTypes = [
 	}, {
 		cardAction: "card-response",
 		text: string,
-	},
+	}, {
+		cardAction: "append-card-tag",
+		cardTag: CardTag,
+	}
 ];
 
 export const VARIABLE_ACTION_LIST =  [

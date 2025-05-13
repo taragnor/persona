@@ -1,3 +1,4 @@
+import { CardTag } from "../../config/card-tags.js";
 import { RollSituation } from "../../config/situation.js";
 import { RollTag } from "../../config/roll-tags.js";
 import { Precondition } from "../../config/precondition-types.js";
@@ -341,6 +342,7 @@ export class PersonaSocial {
 			eventList,
 			replaceSet,
 			variables: {},
+			extraCardTags: []
 		};
 		return await this.#execCardSequence(cardData);
 	}
@@ -1232,54 +1234,66 @@ export class PersonaSocial {
 		switch (eff.cardAction) {
 			case "stop-execution":
 				await this.stopCardExecution();
-				return;
+				break;
 			case "exec-event":
 				this.forceEvent(eff.eventLabel);
 				this.addExtraEvent(1);
-				return;
+				break;
 			case "inc-events":
 				this.addExtraEvent(eff.amount ?? 0);
-				return;
+				break;
 			case "gain-money":
 					await this.gainMoney(eff.amount ?? 0)
-				return;
+				break;
 			case "modify-progress-tokens":
 					await this.modifyProgress(eff.amount ?? 0);
-				return;
+				break;
 			case "alter-student-skill":
 					if (!eff.studentSkill) {
 						PersonaError.softFail("No student skill given");
-						return;
+						break;
 					}
 				await this.alterStudentSkill( eff.studentSkill, eff.amount ?? 0);
-				return;
+				break;
 			case "modify-progress-tokens-cameo": {
 				const cameos = this.rollState.cardData.cameos
 				const actor  = this.rollState.cardData.actor;
 				if (!cameos || cameos.length < 1) {
-					return;
+					break;
 				}
 				for (const cameo of cameos) {
 					await actor.socialLinkProgress(cameo.id, eff.amount ?? 0);
 				}
-				return;
+				break;
 			}
 			case "add-card-events-to-list":
 					await this.addCardEvents(eff.cardId);
-				return;
+				break;
 			case "replace-card-events":
 					await this.replaceCardEvents(eff.cardId, eff.keepEventChain);
-				return;
+				break;
 			case "set-temporary-variable":
 					await this.variableAction(eff.operator, eff.variableId, eff.value);
-				return;
+				break;
 			case "card-response":
 					await this.#applyCardResponse(eff.text);
-				return;
+				break;
+			case "append-card-tag":
+				await this.#appendCardTag(eff.cardTag);
+				break;
 			default:
 					eff satisfies never;
-				return;
+				break;
 		}
+	}
+
+	static async #appendCardTag(tag: CardTag) {
+		if (!this.rollState) {
+			PersonaError.softFail("Can't find Rollstate when trying to apply Card Response");
+			return;
+		}
+		const cardData = this.rollState.cardData;
+		cardData.extraCardTags.push(tag);
 	}
 
 	static async #applyCardResponse(text: string) {
@@ -1313,7 +1327,7 @@ export class PersonaSocial {
 			PersonaError.softFail(`Can't create more events as there is no RollState`);
 			return;
 		}
-		let varVal = await this.getSocialVariable(variableName);
+		let varVal = this.getSocialVariable(variableName);
 		switch (operator) {
 			case "set":
 				varVal = amount;
@@ -1676,6 +1690,7 @@ export type CardData = {
 	replaceSet: Record<string, string>;
 	sound?: FOUNDRY.AUDIO.Sound
 	variables: Record<string, number>;
+	extraCardTags: CardTag[];
 };
 
 

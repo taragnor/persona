@@ -244,6 +244,14 @@
 	<input class="short" type=number name="{{strcat namePrefix 'value'}}" value="{{cons.value}}">
 	{{/if}}
 
+	{{#if (eq cons.cardAction "append-card-tag")}}
+	<div>
+		<select name="{{strcat namePrefix 'cardTag'}}">
+			{{selectOptions POWERSTUFF.CARD_TAGS localize=true selected=cons.cardTaq}}
+		</select>
+	</div>
+	{{/if}}
+
 	{{/if}}
 
 	{{#if (eq cons.type "inspiration-cost")}}

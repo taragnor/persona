@@ -815,6 +815,8 @@ export class ConditionalEffectManager {
 				return `${cons.operator} ${cons.value} to social variable ${cons.variableId}`;
 			case "card-response":
 				return `Chat Response`;
+			case "append-card-tag":
+				return `Add card tag: ${cons.cardTag}`;
 			default:
 				cons satisfies never;
 				return "ERROR";

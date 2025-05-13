@@ -1,3 +1,4 @@
+import { ROLL_TAGS_AND_CARD_TAGS } from "../../../config/roll-tags.js";
 import { VARIABLE_TYPE } from "../../persona-variables.js";
 import { COMPARISON_GROUPS } from "../../../config/numeric-comparison.js";
 import { UNIVERSAL_MODIFIERS_TYPE } from "../../datamodel/universal-modifiers-types.js";
@@ -134,6 +135,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			SOCIAL_CHECKS,
 			CREATURE_TAGS,
 			CARD_TAGS,
+			ROLL_TAGS_AND_CARD_TAGS,
 			EQUIPMENT_TAGS,
 			VARIABLE_ACTIONS,
 			COMBAT_EFFECTS,

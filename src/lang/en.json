@@ -392,6 +392,10 @@
 	"persona.card.tag.real-world": "Real World",
 	"persona.card.tag.one-shot": "One Time Event",
 	"persona.card.tag.question": "Question",
+	"persona.card.tag.romantic-place": "Romantic Place",
+	"persona.card.tag.public-place": "Public Place",
+	"persona.card.tag.school-grounds": "School Grounds",
+	"persona.card.tag.in-metaverse": "In the Metaverse",
 
 	"persona.equipment.tag.nil" : "-",
 	"persona.equipment.tag.metaverse" : "Metaverse Item",

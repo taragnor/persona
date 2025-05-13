@@ -1,3 +1,4 @@
+import { CARD_RESTRICTOR_TAGS } from "../../config/card-tags.js";
 import { CardRoll } from "../../config/social-card-config.js";
 import { randomSelect } from "../utility/array-tools.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
@@ -1375,7 +1376,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			};
 			return SLcheck;
 		};
-		return this.system.cardTags.flatMap( tag => {
+		const conditionTags : typeof CARD_RESTRICTOR_TAGS[number][] = this.system.cardTags
+		.filter(tag=> CARD_RESTRICTOR_TAGS.includes(tag as any)) as typeof CARD_RESTRICTOR_TAGS[number][];
+		return conditionTags.flatMap( tag => {
 			switch (tag) {
 				case "real-world":
 					const realWorld : Precondition = {
@@ -1415,7 +1418,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					return [SLCheck(1,3)];
 				case "one-shot":
 				case "question":
-				case "":
 					return [];
 				case "disabled":
 					const neverHappen: Precondition = {

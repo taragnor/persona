@@ -1,4 +1,6 @@
+import { CARD_TAGS } from "./card-tags.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
+import { CARD_SITUATIONS } from "./card-tags.js";
 
 export const ROLL_TAG_LIST = [
 	"",
@@ -44,3 +46,5 @@ export const ROLL_TAG_LIST = [
 export type RollTag = typeof ROLL_TAG_LIST[number];
 
 export const ROLL_TAGS = HTMLTools.createLocalizationObject(ROLL_TAG_LIST.slice().sort(), "persona.roll.rolltag");
+
+export const ROLL_TAGS_AND_CARD_TAGS= foundry.utils.mergeObject(ROLL_TAGS, CARD_TAGS);
