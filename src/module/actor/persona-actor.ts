@@ -1349,7 +1349,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return [];
 		}
 		const inv = this.inventory;
-		return inv.filter( item => item.system.type == "item" && item.system.slot == "none") as InvItem[];
+		return inv.filter( item => item.system.type == "item" && (item.system.slot == "none" || item.system.slot =="key-item")) as InvItem[];
 	}
 
 	wpnDamage(this: ValidAttackers) : {low: number, high:number} {
@@ -2981,15 +2981,17 @@ async onEndDay(this: PC): Promise<string[]> {
 			case "exhausted": DC =11; break;
 			case "tired": DC= 11; break;
 		}
-		const {success} = await PersonaRoller.rollSave(this, {
+		const roll = await PersonaRoller.rollSave(this, {
 			DC,
 			label: `Save to end ${localizeStatusId(fatigueStat)}`,
 			saveVersus: fatigueStat,
 			rollTags: ["rest"],
 		});
+		await roll.toModifiedMessage(true);
+
 		const locStat = localizeStatusId(fatigueStat);
 		const fatLevel = this.fatigueLevel;
-		if (success && fatLevel < 1) {
+		if (roll.success && fatLevel < 1) {
 			const newStat = await this.alterFatigueLevel(1);
 			if (newStat) {
 				ret.push(`${this.displayedName} is now ${localizeStatusId(newStat)}`);
@@ -2997,7 +2999,7 @@ async onEndDay(this: PC): Promise<string[]> {
 				ret.push(`${this.displayedName} is no longer ${locStat}`);
 			}
 		}
-		if (!success && fatLevel > 1) {
+		if (!roll.success && fatLevel > 1) {
 			await this.alterFatigueLevel(-1);
 			ret.push(`${this.displayedName} is no longer ${locStat}`);
 		}
