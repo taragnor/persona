@@ -75,8 +75,8 @@ export class PersonaRoller {
 		const bundle = await this.#makeRoll(rollName, mods, situationWithRollTags);
 		const resSit = bundle.modList.resolvedSituation;
 		if (DC != undefined) {
-			resSit.hit = resSit.rollTotal > DC;
-			resSit.criticalHit = false;
+			resSit.hit = resSit.rollTotal >= DC;
+			resSit.criticalHit = resSit.rollTotal >= DC +10;
 		}
 		await pc.onRoll(resSit);
 		return bundle;

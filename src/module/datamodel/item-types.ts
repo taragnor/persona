@@ -422,9 +422,13 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 		const data = this as SocialCard["system"]["events"][number]["choices"][number];
 		let starterTxt = "";
 
-			const roll = data.roll;
+		const roll = data.roll;
+		roll.progressCrit = roll.progressCrit == undefined ? 0 : roll.progressCrit;
+		roll.progressSuccess = roll.progressSuccess == undefined ? 0 : roll.progressSuccess;
+		roll.progressFail = roll.progressFail == undefined ? 0 : roll.progressFail;
 		switch (roll.rollType) {
-			case "question": return "";
+			case "question":
+				return ""; //early bail out to not give away info
 			case "studentSkillCheck":
 				if (roll.progressSuccess || roll.progressCrit) {
 					const modifier = roll.modifier == 0 ? "" : `at ${NumberTools.signed(roll.modifier)}`;
@@ -432,10 +436,16 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 				}
 				break;
 			case "save":
-					const modifier = (roll.modifier ?? 0) == 0 ? "" : `at ${NumberTools.signed(roll.modifier)}`;
+				const modifier = (roll.modifier ?? 0) == 0 ? "" : `at ${NumberTools.signed(roll.modifier)}`;
 				if (roll.progressSuccess) {
 					starterTxt += `${roll.saveType} Save Success ${modifier} (${roll.progressSuccess} + ${roll.progressCrit}).`;
 				}
+			case "none":
+					const gainLose = roll.progressSuccess >= 0 ? "Gain" : "Lose";
+				if (roll.progressSuccess) {
+					starterTxt += `${gainLose} ${roll.progressSuccess} Progress Tokens`
+				}
+				break;
 			default:
 		}
 		if ((roll.progressFail ?? 0) != 0) {

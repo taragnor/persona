@@ -1093,6 +1093,7 @@ export class PersonaSocial {
 					label: "Card Roll (Saving Throw)",
 					rollTags
 				});
+				await saveResult.toModifiedMessage(true);
 				const situation = saveResult.resolvedSituation();
 				await this.processAutoProgress(cardData, cardRoll, saveResult.success ?? false, false);
 				await this.#onCardRoll(cardData, cardRoll, situation);
