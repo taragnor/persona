@@ -757,7 +757,7 @@ export class PersonaSocial {
 		const link = this.lookupLink(cardData);
 		const DC = this.getBaseSkillDC(cardData);
 		const linkId =  "actor" in link ? link.actor.id : link.activity.id;
-		const { perkDisabled} = card.system;
+		const { perkDisabled } = card.system;
 		const isCameo = card.system.cameoType != "none";
 		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-intro.hbs`, {item: card,card, cameos, perk, perkDisabled, link: link, linkId, pc: actor, isCameo, user: game.user, DC} );
 		const speaker = ChatMessage.getSpeaker();
@@ -1045,6 +1045,7 @@ export class PersonaSocial {
 		if (cardData.currentEvent) {
 			rollTags.push(...cardData.currentEvent.eventTags)
 		}
+		rollTags.push(...cardData.extraCardTags);
 		if (!cardData.currentEvent) {
 			PersonaError.softFail(`No current event for Card ${cardData.card.name}`);
 		}
