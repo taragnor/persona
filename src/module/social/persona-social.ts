@@ -342,7 +342,8 @@ export class PersonaSocial {
 			eventList,
 			replaceSet,
 			variables: {},
-			extraCardTags: []
+			extraCardTags: [],
+			currentEvent: null,
 		};
 		return await this.#execCardSequence(cardData);
 	}
@@ -650,9 +651,13 @@ export class PersonaSocial {
 		while (cardData.eventsRemaining > 0) {
 			const ev = this.#getCardEvent(cardData);
 			if (!ev) {
-				PersonaError.softFail("Ran out of events");
-				break;
+				cardData.currentEvent = null;
+				PersonaError.softFail(`Missing Event choice for events remaining: ${cardData.eventsRemaining} on card ${cardData.card.name}`);
+				cardData.eventsRemaining--;
+				continue;
 			}
+			cardData.eventsChosen.push(ev);
+			cardData.currentEvent = ev;
 			cardData.eventsRemaining--;
 			const msg = await this.#execEvent(ev, cardData);
 			chatMessages.push(msg);
@@ -691,16 +696,17 @@ export class PersonaSocial {
 			;
 			cardData.forceEventLabel = null;
 			if (gotoEvent.length > 0) {
-				return weightedChoice(gotoEvent.map( event => ({
+				const ev= weightedChoice(gotoEvent.map( event => ({
 					item: event,
 					weight: Number(event.frequency) > 0 ? (Number(event.frequency) ?? 1) : 1,
 				})));
+				return ev;
 			}
 			PersonaError.softFail (`Can't find event label ${cardData.forceEventLabel} on card ${cardData.card.name}`);
 		}
 		let eventList = cardEventList
 			.filter ( ev => !ev.eventTags.includes("disabled"))
-			.filter( (ev, i) => !cardData.eventsChosen.includes(i) && testPreconditions(
+			.filter( (ev) => !cardData.eventsChosen.includes(ev) && testPreconditions(
 				ConditionalEffectManager.getConditionals( ev.conditions, null, null),
 				cardData.situation, null));
 		const isEvType = function (ev: CardEvent, evType: keyof NonNullable<CardEvent["placement"]>) {
@@ -738,7 +744,6 @@ export class PersonaSocial {
 		);
 		const ev = weightedChoice(eventWeights);
 		if (!ev) return undefined;
-		cardData.eventsChosen.push(cardEventList.indexOf(ev));
 		return ev;
 	}
 
@@ -1032,6 +1037,14 @@ export class PersonaSocial {
 	static async handleCardChoice(cardData: CardData, cardChoice: DeepNoArray<CardChoice>) {
 		const cardRoll = cardChoice.roll;
 		// const effectList  = cardChoice?.postEffects?.effects ?? [];
+		let rollTags = this.getCardRollTags(cardRoll);
+		if (!cardData.currentEvent) {
+			PersonaError.softFail(`No current event for Card ${cardData.card.name}`);
+		}
+		if (cardData.currentEvent) {
+			rollTags.push(	...cardData.currentEvent.eventTags);
+		}
+		const currentEvent = cardData.currentEvent;
 		const effectList = ConditionalEffectManager.getEffects(cardChoice?.postEffects?.effects ?? [], null, null);
 		switch (cardRoll.rollType) {
 			case "question":
@@ -1060,7 +1073,7 @@ export class PersonaSocial {
 					criticalHit: critical,
 					naturalRoll: roll.natural,
 					rollTotal: roll.total,
-					rollTags: this.getCardRollTags(cardRoll),
+					rollTags,
 				};
 				await this.processAutoProgress(cardData, cardRoll, hit, critical );
 				await this.#onCardRoll(situation);
@@ -1077,7 +1090,7 @@ export class PersonaSocial {
 					hit: saveResult.success,
 					rollTotal: saveResult.total,
 					naturalRoll: saveResult.natural,
-					rollTags: this.getCardRollTags(cardRoll),
+					rollTags,
 				};
 				await this.processAutoProgress(cardData, cardRoll, saveResult.success, false);
 				await this.applyEffects(effectList,situation, cardData.actor);
@@ -1404,7 +1417,7 @@ export class PersonaSocial {
 		if (!keepEventChain) {
 			this.rollState.cardData.eventsRemaining = newCard.system.num_of_events;
 		}
-			this.rollState.cardData.eventsChosen = [];
+		this.rollState.cardData.eventsChosen = [];
 		this.rollState.cardData.eventList = newCard.cardEvents().slice();
 	}
 
@@ -1573,7 +1586,7 @@ export class PersonaSocial {
 		}
 	}
 
-	static getCardRollTags (cardRoll: CardRoll) : RollTag[] {
+	static getCardRollTags (cardRoll: CardRoll) : (RollTag | CardTag)[] {
 		return [
 			cardRoll.rollTag1,
 			cardRoll.rollTag2,
@@ -1684,13 +1697,15 @@ export type CardData = {
 	perk: string,
 	forceEventLabel: null | string,
 	eventList: SocialCard["system"]["events"];
-	eventsChosen: number[],
+	eventsChosen: SocialCard["system"]["events"][number][];
 	eventsRemaining: number,
+	currentEvent: SocialCard["system"]["events"][number] | null;
 	situation: Situation & SocialCardSituation;
 	replaceSet: Record<string, string>;
 	sound?: FOUNDRY.AUDIO.Sound
 	variables: Record<string, number>;
 	extraCardTags: CardTag[];
+
 };
 
 

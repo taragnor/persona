@@ -1,3 +1,5 @@
+import { HTMLTools } from "../module/utility/HTMLTools.js";
+
 export const PERSON_TAG_LIST = [
 	"student",
 	"professor",
@@ -56,6 +58,4 @@ export const CREATURE_TAG_LIST = [
 
 export type CreatureTag = typeof CREATURE_TAG_LIST[number];
 
-export const CREATURE_TAGS = Object.fromEntries(
-	CREATURE_TAG_LIST.map(x=> [x, `persona.creatureType.${x}`])
-);
+export const CREATURE_TAGS = HTMLTools.createLocalizationObject(CREATURE_TAG_LIST, "persona.creatureType");

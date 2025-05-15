@@ -1,3 +1,5 @@
+import { HTMLTools } from "../module/utility/HTMLTools.js";
+
 export const CONSQUENCELIST = [
 	"none",
 	"absorb",
@@ -53,9 +55,11 @@ export  const MODIFIER_VARIABLE_LIST= [
 
 export type ModifierVariable = typeof MODIFIER_VARIABLE_LIST[number];
 
-export const MODIFIER_VARIABLES = Object.fromEntries(
-	MODIFIER_VARIABLE_LIST.map( x=> [x, `persona.modifier-variable.${x}`])
-);
+export const MODIFIER_VARIABLES = HTMLTools.createLocalizationObject(MODIFIER_VARIABLE_LIST, "persona.modifier-variable");
+
+// export const MODIFIER_VARIABLES = Object.fromEntries(
+// 	MODIFIER_VARIABLE_LIST.map( x=> [x, `persona.modifier-variable.${x}`])
+// );
 
 export const CONSQUENCETYPES = Object.fromEntries(
 CONSQUENCELIST.map( x=> [x, `persona.effecttypes.${x}`])
@@ -75,7 +79,8 @@ export const POWERTYPESLIST = [
 
 export type PowerType = typeof POWERTYPESLIST[number];
 
-export const POWERTYPES= Object.fromEntries( POWERTYPESLIST.map(x=> [x, `persona.power.types.${x}`]));
+export const POWERTYPES= HTMLTools.createLocalizationObject(POWERTYPESLIST, "persona.power.types");
+// export const POWERTYPES= Object.fromEntries( POWERTYPESLIST.map(x=> [x, `persona.power.types.${x}`]));
 
 export const TARGETINGLIST = [
 	"1-engaged",
@@ -94,7 +99,8 @@ export const TARGETINGLIST = [
 	"everyone",
 ] as const;
 
-export const TARGETING= Object.fromEntries( TARGETINGLIST.map(x=> [x, `persona.power.targets.${x}`]));
+export const TARGETING= HTMLTools.createLocalizationObject(TARGETINGLIST, "persona.power.targets");
+// export const TARGETING= Object.fromEntries( TARGETINGLIST.map(x=> [x, `persona.power.targets.${x}`]));
 
 export const SHADOW_CHANGE_REQ_LIST_FULL= [
 	"none",
@@ -178,9 +184,10 @@ export const DAMAGE_SUBTYPE_LIST = [
 
 export type DamageSubtype = typeof DAMAGE_SUBTYPE_LIST[number];
 
-export const DAMAGE_SUBTYPES = Object.fromEntries(
-	DAMAGE_SUBTYPE_LIST.map( x=> [x, `persona.damage-subtype.${x}`])
-);
+export const DAMAGE_SUBTYPES = HTMLTools.createLocalizationObject(DAMAGE_SUBTYPE_LIST, "persona.damage-subtype");
+// export const DAMAGE_SUBTYPES = Object.fromEntries(
+	// DAMAGE_SUBTYPE_LIST.map( x=> [x, `persona.damage-subtype.${x}`])
+// );
 
 export const ALTER_MP_SUBTYPES_LIST = [
 	"direct",

@@ -1,3 +1,4 @@
+import { CardTag } from "./card-tags.js";
 import { SocialCard } from "../module/item/persona-item.js";
 import { UsableAndCard } from "../module/item/persona-item.js";
 import { Persona } from "../module/persona-class.js";
@@ -115,7 +116,7 @@ export type RollSituation = {
 	// activationRoll ?: boolean;
 	// openingRoll ?: number,
 	naturalRoll : number,
-	rollTags : RollTag[],
+	rollTags : (RollTag | CardTag)[],
 	rollTotal : number;
 	criticalHit ?: boolean;
 }
@@ -125,7 +126,7 @@ type NonRollSituation = {
 	naturalRoll ?: undefined,
 	// openingRoll ?: undefined,
 	criticalHit ?: undefined;
-	rollTags ?: RollTag[];
+	rollTags ?: (RollTag | CardTag)[];
 	rollTotal ?: undefined;
 }
 

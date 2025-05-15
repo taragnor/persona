@@ -571,7 +571,7 @@
 	"persona.preconditions.talent-level+": "Level in Talent >=",
 	"persona.preconditions.power-type-is": "Power Type is",
 	"persona.preconditions.power-damage-type-is": "Using a power of damage type:",
-	"persona.preconditions.has-tag": "Used Power has Tag",
+	"persona.preconditions.has-tag": "Has Tag",
 	"persona.preconditions.not-tag": "Used Power doesn't have Tag",
 	"persona.preconditions.user-has-status": "User Has Status",
 	"persona.preconditions.user-not-status": "User doesn't Have Status",
@@ -635,8 +635,8 @@
 	"persona.preconditions.comparison.is-shadow": "Is Shadow",
 	"persona.preconditions.comparison.is-pc": "Is PC",
 	"persona.preconditions.comparison.is-enemy": "Is Enemy",
-	"persona.preconditions.comparison.has-tag": "Power Has Power Tag",
-	"persona.preconditions.comparison.has-creature-tag": "Has Creature Tag",
+	"persona.preconditions.comparison.has-tag": "Has Power Tag",
+	"persona.preconditions.comparison.has-creature-tag": " (Deprecated) Has Creature Tag",
 	"persona.preconditions.comparison.cameo-in-scene": "Card has a Cameo",
 	"persona.preconditions.comparison.arcana-is": "Arcana is",
 	"persona.preconditions.comparison.logical-or": "Or",
@@ -902,6 +902,10 @@
 
 	"persona.roll.rolltag.deep-conversation" : "Deep Conversation",
 	"persona.roll.rolltag.smalltalk" : "Smalltalk",
+
+	"persona.comparison.tagType.power": "Power Tag",
+	"persona.comparison.tagType.actor": "Actor Tag",
+	"persona.comparison.tagType.roll": "Roll Tag",
 
 
 	"persona.availability.++": "Favored (++)",

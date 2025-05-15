@@ -1,4 +1,5 @@
-import { PC } from "../module/actor/persona-actor";
+import { HTMLTools } from "../module/utility/HTMLTools.js";
+import { PC } from "../module/actor/persona-actor.js";
 
 export const REALDAMAGETYPESLIST = [
 	"physical",
@@ -20,9 +21,11 @@ export const DAMAGETYPESLIST = [
 	"by-power", //by power or weapon
 ] as const;
 
-export const DAMAGETYPES = Object.fromEntries(
-	DAMAGETYPESLIST.map( x=> [x, `persona.damage.types.${x}`])
-);
+export const DAMAGETYPES = HTMLTools.createLocalizationObject(DAMAGETYPESLIST, "persona.damage.types");
+
+// export const DAMAGETYPES = Object.fromEntries(
+// 	DAMAGETYPESLIST.map( x=> [x, `persona.damage.types.${x}`])
+// );
 export const REALDAMAGETYPES = Object.fromEntries(
 	REALDAMAGETYPESLIST.map( x=> [x, `persona.damage.types.${x}`])
 );
@@ -44,9 +47,11 @@ export const RESIST_STRENGTH_LIST = [
 
 export type ResistStrength = typeof RESIST_STRENGTH_LIST[number];
 
-export const RESIST_STRENGTHS = Object.fromEntries(
-	RESIST_STRENGTH_LIST.map( x=> [x, `persona.damage.resist.${x}`])
-);
+export const RESIST_STRENGTHS = HTMLTools.createLocalizationObject(RESIST_STRENGTH_LIST, "persona.damage.resist");
+
+// export const RESIST_STRENGTHS = Object.fromEntries(
+// 	RESIST_STRENGTH_LIST.map( x=> [x, `persona.damage.resist.${x}`])
+// );
 
 export const ELEMENTAL_DEFENSE_LINK : Record<keyof PC["system"]["combat"]["defenses"], ResistType[]> = {
 	"ref": ["physical", "fire"],

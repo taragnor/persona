@@ -1,3 +1,5 @@
+import { HTMLTools } from "../module/utility/HTMLTools.js";
+
 export const EQUIPMENT_TAGS_LIST = [
 	"nil",
 	"metaverse",
@@ -46,10 +48,4 @@ export const EQUIPMENT_TAGS_LIST = [
 
 export type EquipmentTag = typeof EQUIPMENT_TAGS_LIST[number];
 
-export const EQUIPMENT_TAGS = Object.fromEntries(
-	EQUIPMENT_TAGS_LIST
-	.slice()
-	.sort()
-	.map(x => ([x, `persona.equipment.tag.${x}`] as const))
-);
-
+export const EQUIPMENT_TAGS = HTMLTools.createLocalizationObject(EQUIPMENT_TAGS_LIST.slice().sort(), "persona.equipment.tag");

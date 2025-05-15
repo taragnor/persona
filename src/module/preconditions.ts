@@ -529,7 +529,6 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			const target = getSubjectToken(condition, situation, source, "conditionTarget");
 			const target2 = getSubjectToken(condition, situation, source, "conditionTarget2");
 			if (!target || !target2) return undefined;
-
 			const tok1 = PersonaDB.getUniversalTokenAccessor(target);
 			const tok2 = PersonaDB.getUniversalTokenAccessor(target2);
 			return combat.isEngaging(tok1, tok2);
@@ -548,30 +547,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			return target.system.type == "pc";
 		}
 		case "has-tag": {
-			if (!situation.usedPower) {
-				return undefined;
-			}
-			const power = PersonaDB.findItem(situation.usedPower);
-			if (!power) return undefined;
-			let user: ValidAttackers | null;
-			switch (true) {
-				case situation.attacker != undefined:
-					user = PersonaDB.findActor(situation.attacker);
-					break;
-				case situation.user != undefined:
-					user = PersonaDB.findActor(situation.user);
-					break;
-				default:
-					user = null;
-					break;
-			}
-			const powerTags = power.tagList(user);
-			if (typeof condition.powerTag == "string") {
-				return powerTags.includes(condition.powerTag!);
-			}
-			return Object.entries(condition.powerTag)
-			.filter( ([_, val]) => val == true)
-			.some (([tag, _]) => powerTags.includes(tag as PowerTag));
+			return hasTagConditional(condition, situation, source);
 		}
 		case "power-type-is": {
 			if (!situation.usedPower) {
@@ -838,6 +814,52 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 		default :
 			condition satisfies never;
 			return undefined;
+	}
+}
+
+function hasTagConditional(condition: Precondition & BooleanComparisonPC & {boolComparisonTarget: "has-tag"}, situation: Situation, source: Option<PowerContainer>) : boolean | undefined {
+	switch (condition.tagComparisonType) {
+		case undefined:
+		case "power": {
+			if (!situation.usedPower) {
+				return undefined;
+			}
+			const power = PersonaDB.findItem(situation.usedPower);
+			if (!power) return undefined;
+			let user: ValidAttackers | null;
+			switch (true) {
+				case situation.attacker != undefined:
+					user = PersonaDB.findActor(situation.attacker);
+					break;
+				case situation.user != undefined:
+					user = PersonaDB.findActor(situation.user);
+					break;
+				default:
+					user = null;
+					break;
+			}
+			const powerTags = power.tagList(user);
+			if (typeof condition.powerTag == "string") {
+				return powerTags.includes(condition.powerTag!);
+			}
+			return Object.entries(condition.powerTag)
+			.filter( ([_, val]) => val == true)
+			.some (([tag, _]) => powerTags.includes(tag as PowerTag));
+		}
+		case "actor": {
+			const target = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!target) return undefined;
+			return multiCheckTest(condition.creatureTag, x => target.hasCreatureTag(x));
+		}
+		case "roll": {
+			const rollTags = situation.rollTags ?? [];
+			return multiCheckContains(condition.rollTag, rollTags);
+		}
+		default:  {
+			condition satisfies never;
+			PersonaError.softFail(`Can't run hasTagConditional becuase tagComparionType is invalid (${condition["tagComparisonType"]})`);
+			return undefined;
+		}
 	}
 }
 

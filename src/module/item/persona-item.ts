@@ -1,6 +1,5 @@
 import { CARD_RESTRICTOR_TAGS } from "../../config/card-tags.js";
 import { CardRoll } from "../../config/social-card-config.js";
-import { randomSelect } from "../utility/array-tools.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
 import { POWER_TYPE_TAGS } from "../../config/power-tags.js";
@@ -184,7 +183,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		switch (true) {
 			case ("itemTags" in this.system): {
 				tags = tags.concat(
-					// this.system.itemTags
 					this.tagList(user)
 					.map(tag => localize(localizeTable[tag]))
 				);

@@ -1,3 +1,6 @@
+import { DAMAGE_SUBTYPES } from "../config/effect-types.js";
+
+import { ROLL_TAGS_AND_CARD_TAGS } from "../config/roll-tags.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { ModifierTarget } from "../config/item-modifiers.js";
 import { getActiveConsequences } from "./preconditions.js";
@@ -392,13 +395,13 @@ export class ConditionalEffectManager {
 		}
 	}
 
-	static translate<const T extends string>(items: MultiCheck<T> | T, translationTable?: Record<string, string>) : string {
+	static translate<const T extends string>(items: MultiCheck<T> | T, translationTable?: Record<T, string>) : string {
 		if (typeof items == "string")  {
 			return translationTable ? localize(translationTable[items]) : items;
 		}
 		return Object.entries(items)
 			.flatMap( ([k,v]) => v ? [k] : [])
-			.map( x=> translationTable ? localize(translationTable[x]) : x)
+			.map( (x:T)=> translationTable ? localize(translationTable[x]) : x)
 			.join(", ");
 	}
 
@@ -419,8 +422,8 @@ export class ConditionalEffectManager {
 			case "is-pc":
 				return `${target1} is ${not} PC type`;
 			case "has-tag":
-				const powerTag = this.translate(cond.powerTag, POWER_TAGS);
-				return `used power ${not} has tag: ${powerTag}`;
+				const tagName = this.getTagNameForHasTag(cond);
+				return `used power ${not} has tag: ${tagName}`;
 			case "in-combat":
 				return `is ${not} in combat`;
 			case "is-critical":
@@ -521,6 +524,23 @@ export class ConditionalEffectManager {
 				cond satisfies never
 				return "";
 		}
+	}
+
+	static getTagNameForHasTag(cond: Precondition & {type: "boolean"} & {boolComparisonTarget: "has-tag"}): string {
+		switch (cond.tagComparisonType) {
+			case undefined:
+			case "power":
+				return this.translate(cond.powerTag, POWER_TAGS);
+			case "actor":
+				return this.translate(cond.creatureTag, CREATURE_TAGS);
+			case "roll":
+				return this.translate (cond.rollTag, ROLL_TAGS_AND_CARD_TAGS);
+			default:
+				cond satisfies never;
+				return "ERROR";
+
+		}
+
 	}
 
 	static  #printNumericCond(cond: Precondition & {type: "numeric"}) : string {
@@ -867,7 +887,7 @@ export class ConditionalEffectManager {
 	}
 
 	static printDamageConsequence(cons: Consequence & {type: "damage-new"}) : string {
-		const damageType = "damageType" in cons ? this.translate(cons.damageSubtype, DAMAGETYPES): "";
+		const damageType = "damageType" in cons ? this.translate(cons.damageSubtype, DAMAGE_SUBTYPES): "";
 		switch (cons.damageSubtype) {
 			case "constant":
 				return `${cons.amount} ${damageType} damage`;

@@ -1764,7 +1764,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			arr.push( {
 				id: k,
 				val: v,
-				local: localize(STATUS_EFFECT_TRANSLATION_TABLE[k]),
+				local: localize(STATUS_EFFECT_TRANSLATION_TABLE[k as StatusEffectId]),
 				img: STATUS_EFFECT_LIST.find(x=> x.id == k)?.icon ?? "",
 			});
 		}

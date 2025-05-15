@@ -235,7 +235,7 @@ export type FatigueStatusId = Extract<StatusEffectId, "tired" | "exhausted" | "r
 
 export const STATUS_EFFECT_TRANSLATION_TABLE = Object.fromEntries(
 	CONFIG.statusEffects.map( ({id, name}) => [id, name])
-);
+) as Record<StatusEffectId, string>;
 
 export const statusMap = new Map(CONFIG.statusEffects.map( k => ([k.id, k])) );
 
@@ -263,10 +263,12 @@ export const STATUS_EFFECT_DURATIONS_TYPE_LIST = [
 
 export type StatusDurationType = typeof STATUS_EFFECT_DURATIONS_TYPE_LIST[number];
 
-export const STATUS_EFFECT_DURATION_TYPES = Object.fromEntries(
-	STATUS_EFFECT_DURATIONS_TYPE_LIST.map( x=> [x, `persona.status.duration.${x}`]
-	)
-);
+export const STATUS_EFFECT_DURATION_TYPES = HTMLTools.createLocalizationObject(STATUS_EFFECT_DURATIONS_TYPE_LIST, "persona.status.duration");
+
+// export const STATUS_EFFECT_DURATION_TYPES = Object.fromEntries(
+// 	STATUS_EFFECT_DURATIONS_TYPE_LIST.map( x=> [x, `persona.status.duration.${x}`]
+// 	)
+// );
 
 
 Hooks.on("ready", () => {

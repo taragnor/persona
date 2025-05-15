@@ -1,3 +1,4 @@
+import { TAG_COMPARISON_TYPES } from "../../../config/boolean-comparison.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../../../config/roll-tags.js";
 import { VARIABLE_TYPE } from "../../persona-variables.js";
 import { COMPARISON_GROUPS } from "../../../config/numeric-comparison.js";
@@ -89,7 +90,6 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 		};
 
 		const DAMAGETYPESPLUS = {
-"by-power": 	"persona.damage.types.by-power",
 			...DAMAGETYPES,
 		};
 
@@ -141,6 +141,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			COMBAT_EFFECTS,
 			RESULT_SUBTYPE_COMPARISON,
 			COMPARISON_GROUPS,
+			TAG_COMPARISON_TYPES,
 			VARIABLE_TYPE,
 			UNIVERSAL_MODIFIERS_TYPE,
 			SCENE_WEATHER_TYPES: Object.fromEntries(

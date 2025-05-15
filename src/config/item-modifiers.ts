@@ -1,3 +1,4 @@
+import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { STUDENT_SKILLS_LIST } from "./student-skills.js";
 
 export const ENVIRONMENTAL_MODIFIERS = [
@@ -56,9 +57,10 @@ export const MODIFIERLIST = [
 ] as const;
 
 
-export const MODIFIERS_TABLE = Object.fromEntries(
-	MODIFIERLIST.map ( x=> [x, `persona.modifier.${x}`])
-);
+export const MODIFIERS_TABLE = HTMLTools.createLocalizationObject(MODIFIERLIST, "persona.modifier");
+// export const MODIFIERS_TABLE = Object.fromEntries(
+// 	MODIFIERLIST.map ( x=> [x, `persona.modifier.${x}`])
+// );
 
 export type ModifierTarget = typeof MODIFIERLIST[number];
 

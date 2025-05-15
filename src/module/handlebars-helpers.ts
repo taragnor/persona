@@ -1,4 +1,5 @@
-import { ROLL_TAGS } from "../config/roll-tags.js";
+import { POWER_TAGS } from "../config/power-tags.js";
+import { ROLL_TAGS_AND_CARD_TAGS } from "../config/roll-tags.js";
 import { CardRoll } from "../config/social-card-config.js";
 import { Persona } from "./persona-class.js";
 import { RESIST_STRENGTHS } from "../config/damage-types.js";
@@ -396,8 +397,12 @@ export class PersonaHandleBarsHelpers {
 			return PersonaSocial.meetsConditionsToStartLink(pc, target);
 		},
 		"getItemTagList": function (item: Usable | InvItem | Weapon) : string[] {
+			const localizeTable  =  {
+				...EQUIPMENT_TAGS,
+				...POWER_TAGS
+			};
 			if (item.system.type == "power") {PersonaError.softFail("Calling Item Tag list on Power");}
-			return (item as Consumable | InvItem | Weapon).tagList().map(tag=> localize(EQUIPMENT_TAGS[tag]));
+			return (item as Consumable | InvItem | Weapon).tagList().map(tag=> localize(localizeTable[tag]));
 		},
 
 		"getCreatureTagList": function (actor: PersonaActor) : string[] {
@@ -569,7 +574,7 @@ export class PersonaHandleBarsHelpers {
 		"getRollTags": function (cardRoll: CardRoll): string {
 			debugger;
 			const localization= PersonaSocial.getCardRollTags(cardRoll)
-				.map (t => localize(ROLL_TAGS[t]))
+				.map (t => localize(ROLL_TAGS_AND_CARD_TAGS[t]))
 			return localization
 				.join(", ");
 		}

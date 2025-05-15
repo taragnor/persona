@@ -219,8 +219,25 @@
 	</select>
 	{{/if}}
 	{{#if (eqAny cond.boolComparisonTarget "has-tag" "not-has-tag")}}
-	{{multicheck (strcat namePrefix 'powerTag') POWERSTUFF.TAGS checked=cond.powerTag localize=true}}
-	{{/if}}
+	<select name="{{strcat namePrefix 'tagComparisonType'}}">
+		{{selectOptions POWERSTUFF.TAG_COMPARISON_TYPES localize=true selected=cond.tagComparisonType}}
+	</select>
+		{{#if (eqAny cond.tagComparisonType "power")}}
+		{{multicheck (strcat namePrefix 'powerTag') POWERSTUFF.TAGS checked=cond.powerTag localize=true}}
+		{{/if}}
+
+		{{#if (eqAny cond.tagComparisonType "actor")}}
+		<select name="{{strcat namePrefix 'conditionTarget'}}">
+			{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+		</select>
+		{{multicheck (strcat namePrefix 'creatureTag') POWERSTUFF.CREATURE_TAGS checked=cond.creatureTag localize=true}}
+		{{/if}}
+		{{#if (eqAny cond.tagComparisonType "roll")}}
+		{{multicheck (strcat namePrefix 'rollTag') POWERSTUFF.ROLL_TAGS_AND_CARD_TAGS checked=cond.rollTag localize=true}}
+		{{/if}}
+
+		{{/if}}
+
 	{{#if (eqAny cond.boolComparisonTarget "has-creature-tag")}}
 	<select name="{{strcat namePrefix 'conditionTarget'}}">
 		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}

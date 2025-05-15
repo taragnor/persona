@@ -1,3 +1,6 @@
+import { RollTag } from "./roll-tags.js";
+import { CardTag } from "./card-tags.js";
+import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { Precondition } from "./precondition-types.js";
 import { UserComparisonTarget } from "./precondition-types.js";
 import { PowerType } from "./effect-types.js";
@@ -8,6 +11,7 @@ import { StatusEffectId } from "./status-effects.js";
 import { SocialLinkIdOrTarot } from "./precondition-types.js";
 import { ConditionTarget } from "./precondition-types.js";
 import { MultiCheck } from "./precondition-types.js";
+import { MultiCheckOrSingle } from "./precondition-types.js";
 import { CreatureTag } from "./creature-tags.js";
 import { CreatureType } from "./shadow-types.js";
 import { ShadowRole } from "./shadow-types.js";
@@ -22,7 +26,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"is-shadow",
 	"is-pc",
 	"is-enemy",
-	"has-tag",//power-has-tag
+	"has-tag",//universal tag finder
 	"in-combat",
 	"is-critical",
 	"is-hit",
@@ -49,10 +53,10 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"creature-type-is",
 	"power-slot-is",
 	"social-availability",
-	"has-creature-tag",
 	"cameo-in-scene",
 	"arcana-is",
 	"logical-or",
+	"has-creature-tag", // Deprecated
 ] as const;
 
 
@@ -192,12 +196,44 @@ type StatusComparisonPC = {
 	conditionTarget : ConditionTarget,
 }
 
-type TagComparisonPC = PowerTagComparison | CreatureTagComparison;
+// type TagComparisonPC = PowerTagComparison | CreatureTagComparison;
+type TagComparisonPC = GeneralTagComparison | DeprecatedTagComparisons;
 
-type PowerTagComparison = {
+type DeprecatedTagComparisons=  CreatureTagComparison;
+
+// type PowerTagComparison = {
+// 	boolComparisonTarget: "has-tag",
+// 	powerTag : PowerTag | Record<PowerTag, boolean>,
+// }
+
+const TAG_COMPARISON_TYPE_LIST = [
+	"power",
+	"actor",
+	"roll",
+] as const;
+
+type TagComparisonType = typeof TAG_COMPARISON_TYPE_LIST[number];
+
+export const TAG_COMPARISON_TYPES = HTMLTools.createLocalizationObject(TAG_COMPARISON_TYPE_LIST, "persona.comparison.tagType");
+
+type GeneralTagComparison = {
 	boolComparisonTarget: "has-tag",
-	powerTag : PowerTag | Record<PowerTag, boolean>,
+	tagComparisonType : TagComparisonType | undefined,
+} & (
+	{
+	tagComparisonType: "power" | undefined,
+	powerTag: MultiCheckOrSingle<PowerTag>,
+} | {
+	tagComparisonType: "actor",
+	creatureTag : MultiCheckOrSingle<CreatureTag>,
+	conditionTarget : ConditionTarget,
+} | {
+	tagComparisonType: "roll",
+	rollTag: MultiCheckOrSingle<RollTag | CardTag>,
+
 }
+
+);
 
 type CreatureTagComparison = {
 	boolComparisonTarget: "has-creature-tag",
