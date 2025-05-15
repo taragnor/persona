@@ -1,3 +1,4 @@
+import { STUDENT_SKILLS } from "./student-skills.js";
 import { CARD_TAGS } from "./card-tags.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 
@@ -42,9 +43,12 @@ export const ROLL_TAG_LIST = [
 	"smalltalk",
 ] as const;
 
-export type RollTag = typeof ROLL_TAG_LIST[number];
 
-export const ROLL_TAGS = HTMLTools.createLocalizationObject(ROLL_TAG_LIST.slice().sort(), "persona.roll.rolltag");
+const ROLL_TAGS_PARTIAL = HTMLTools.createLocalizationObject(ROLL_TAG_LIST.slice().sort(), "persona.roll.rolltag");
+
+export const ROLL_TAGS = foundry.utils.mergeObject( {...ROLL_TAGS_PARTIAL}, STUDENT_SKILLS);
+
+export type RollTag = keyof typeof ROLL_TAGS;
 
 export const ROLL_TAGS_AND_CARD_TAGS= foundry.utils.mergeObject({...ROLL_TAGS}, CARD_TAGS);
 

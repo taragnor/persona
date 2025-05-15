@@ -1,3 +1,5 @@
+import { RollTag } from "./roll-tags.js";
+import { CardTag } from "./card-tags.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { NumericComparisonPC } from "./numeric-comparison.js";
 import { BooleanComparisonPC } from "./boolean-comparison.js";
@@ -65,7 +67,7 @@ type NonSimpleTrigger =
 	onInflictStatus
 	| onTarotPerk
 	| ClockTickTrigger
-	;
+;
 
 type onInflictStatus = {
 	trigger: "on-inflict-status",

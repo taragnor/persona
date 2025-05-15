@@ -1,3 +1,4 @@
+import { PersonaRoller } from "../persona-roll.js";
 import { CardTag } from "../../config/card-tags.js";
 import { RollSituation } from "../../config/situation.js";
 import { RollTag } from "../../config/roll-tags.js";
@@ -167,23 +168,25 @@ export class PersonaSocial {
 	}
 
 	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation) : Promise<RollBundle> {
-		let mods = pc.getSocialStat(socialStat);
-		let socialmods = pc.getPersonalBonuses("socialRoll");
-		mods = mods.concat(socialmods);
-		const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
-		mods.add("Custom Modifier", customMod);
-		if (extraModifiers) {
-			mods = mods.concat(extraModifiers);
-		}
-		const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
-		const rollName = (altName) ? altName : skillName;
-		const sit: Situation = situation ?? {
-			user: PersonaDB.getUniversalActorAccessor(pc),
-			attacker: pc.accessor,
-		};
-		const r = await new Roll("1d20").roll();
-		const dice = new RollBundle(rollName, r, true,  mods, sit);
-		return dice;
+		const rollTags = situation?.rollTags ?? [];
+			return await PersonaRoller.rollsocialStat(pc, socialStat, rollTags, situation, extraModifiers);
+		// let mods = pc.getSocialStat(socialStat);
+		// let socialmods = pc.getPersonalBonuses("socialRoll");
+		// mods = mods.concat(socialmods);
+		// const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
+		// mods.add("Custom Modifier", customMod);
+		// if (extraModifiers) {
+		// 	mods = mods.concat(extraModifiers);
+		// }
+		// const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
+		// const rollName = (altName) ? altName : skillName;
+		// const sit: Situation = situation ?? {
+		// 	user: PersonaDB.getUniversalActorAccessor(pc),
+		// 	attacker: pc.accessor,
+		// };
+		// const r = await new Roll("1d20").roll();
+		// const dice = new RollBundle(rollName, r, true,  mods, sit);
+		// return dice;
 	}
 
 	static async boostSocialSkill(pc: PC, socialStat: SocialStat) {
@@ -1044,7 +1047,6 @@ export class PersonaSocial {
 		if (cardData.currentEvent) {
 			rollTags.push(	...cardData.currentEvent.eventTags);
 		}
-		const currentEvent = cardData.currentEvent;
 		const effectList = ConditionalEffectManager.getEffects(cardChoice?.postEffects?.effects ?? [], null, null);
 		switch (cardRoll.rollType) {
 			case "question":
@@ -1530,15 +1532,7 @@ export class PersonaSocial {
 			ui.notifications.warn("Can only do this on your turn.");
 			return;
 		}
-		// const situation: Situation = {
-		// 	user: initiator.accessor,
-		// 	attacker: initiator.accessor,
-		// 	isSocial: true,
-		// 	target: target.accessor,
-		// 	socialTarget: target.accessor,
-		// };
 		if (!this.meetsConditionsToStartLink(initiator, target)) {
-		// if (!testPreconditions(target.system.type == "npc" ? target.system.conditions : [], situation, null)) {
 			const requirements = ConditionalEffectManager.printConditions((target as NPC).system?.conditions ?? []);
 			ui.notifications.warn(`You don't meet the prerequisites to start a relationship with this Link: ${requirements}`);
 			return;

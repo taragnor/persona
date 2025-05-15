@@ -1386,13 +1386,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		));
 		return modList;
 	}
- 
-	// getBonuses (modnames : ModifierTarget | ModifierTarget[], sources: ModifierContainer[] = this.mainModifiers() ): ModifierList {
-	// 	let modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this as ValidAttackers)
-	// 		.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
-	// 	));
-	// 	return modList;
-	// }
 
 	actorMainModifiers(): ModifierContainer[] {
 		return [
@@ -3355,6 +3348,7 @@ async alterEnergy(this: Shadow, amt: number) {
 }
 
 async onRoll(situation: RollSituation & Situation) {
+	console.log(`${this.name} is making a roll with tags: ${situation.rollTags.join(", ")}`);
 	if (!this.isValidCombatant()) return;
 	if (this.isPC() ) {
 		if (situation.rollTags.includes("fatigue")) {

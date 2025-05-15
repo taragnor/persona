@@ -1,4 +1,4 @@
-import { OnRollTrigger } from "../config/situation.js";
+import { HTMLTools } from "./utility/HTMLTools.js";
 import { RollSituation } from "../config/situation.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
 import { PToken } from "./combat/persona-combat.js";
@@ -8,6 +8,58 @@ import { ResolvedModifierList } from "./combat/modifier-list.js";
 import { ModifierList } from "./combat/modifier-list.js";
 import { PersonaDB } from "./persona-db.js";
 import { UniversalActorAccessor } from "./utility/db-accessor.js";
+import { RollTag } from "../config/roll-tags.js";
+import { CardTag } from "../config/card-tags.js";
+import { SocialStat } from "../config/student-skills.js";
+import { PC } from "./actor/persona-actor.js";
+import { STUDENT_SKILLS } from "../config/student-skills.js";
+
+
+export class PersonaRoller {
+	static async #makeRoll(rollName:string, mods: ModifierList, situation: Situation & {rollTags: (RollTag | CardTag)[]} ): Promise<RollBundle & {modList: ResolvedMods}> {
+		const r = await new Roll("1d20").roll();
+		const user = situation.user;
+		let playerRoll = !game.user.isGM;
+		if (user) {
+			const roller = PersonaDB.findActor(user);
+			if (roller?.isPC() || roller?.isNPCAlly()) {
+				playerRoll = true;
+			}
+		}
+		const bundle = new RollBundle(rollName, r, playerRoll,  mods, situation);
+		bundle.resolveMods();
+		return bundle as RollBundle & {modList: ResolvedMods};
+	}
+
+	static async rollsocialStat(pc: PC, socialStat: SocialStat, rollTags : (RollTag | CardTag)[] = [], situation ?: Situation, extraMods ?: ModifierList): Promise<RollBundle> {
+		if (!situation) {
+			situation = {
+				user: pc.accessor,
+				attacker: pc.accessor,
+			}
+		}
+		rollTags.pushUnique(socialStat);
+		const situationWithRollTags = {
+			...situation,
+			rollTags: rollTags.concat(situation?.rollTags ?? [])
+		};
+		let mods = pc.getSocialStat(socialStat);
+		let socialmods = pc.getPersonalBonuses("socialRoll");
+		mods = mods.concat(socialmods);
+		const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
+		mods.add("Custom Modifier", customMod);
+		const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
+		const rollName = skillName;
+		if (extraMods) {
+			mods = mods.concat(extraMods);
+		}
+		const bundle = await this.#makeRoll(rollName, mods, situationWithRollTags);
+		await pc.onRoll(bundle.modList.resolvedSituation);
+		return bundle;
+	}
+}
+
+
 
 export class RollBundle {
 	roll: Roll;
@@ -42,8 +94,24 @@ export class RollBundle {
 			mods : mods.printable(situation),
 			modtotal: mods.total(situation),
 			actor: situation.user,
+			resolvedSituation: this.generateResolvedSituation(situation, mods),
 		} satisfies ResolvedMods;
 		return this.modList;
+	}
+
+	generateResolvedSituation(situation: Situation , mods:ModifierList) : Situation & RollSituation {
+		if (situation.user) {
+			const rollSituation : Situation & RollSituation = {
+				...situation,
+				naturalRoll: this.roll.total,
+				rollTags: situation.rollTags ?? [],
+				rollTotal: this.roll.total + mods.total(situation),
+				user: situation.user,
+			};
+			return rollSituation;
+		}
+		PersonaError.softFail("No user for this roll", situation);
+		return situation as any;
 	}
 
 	get gmRoll() : boolean {
@@ -138,6 +206,7 @@ type ResolvedMods = {
 	mods: ResolvedModifierList,
 	modtotal : number,
 	actor: UniversalActorAccessor<ValidAttackers> | undefined,
+	resolvedSituation: Situation & RollSituation,
 };
 
 Hooks.on("renderChatMessage", async (_msg, html) => {

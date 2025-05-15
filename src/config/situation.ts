@@ -118,6 +118,7 @@ export type RollSituation = {
 	naturalRoll : number,
 	rollTags : (RollTag | CardTag)[],
 	rollTotal : number;
+	hit?: boolean;
 	criticalHit ?: boolean;
 }
 
