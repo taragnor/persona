@@ -1,6 +1,6 @@
+import { PersonaRoller } from "../../persona-roll.js";
 import { Shadow } from "../persona-actor.js";
 import { ValidAttackers } from "../../combat/persona-combat.js";
-import { localize } from "../../persona.js";
 import { Logger } from "../../utility/logger.js";
 import { PersonaError } from "../../persona-error.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
@@ -93,8 +93,8 @@ export class PCSheet extends PCLikeSheet {
 		if (!STUDENT_SKILLS_LIST.includes(socialStat)) {
 			throw new PersonaError(`Invalid student skill: ${socialStat}.`);
 		}
-		const roll = await PersonaSocial.rollSocialStat(this.actor, socialStat);
-		await roll.toModifiedMessage();
+		const roll = await PersonaRoller.rollSocialStat(this.actor, socialStat, {DC: undefined, label: undefined, rollTags:[], askForModifier: true} );
+		await roll.toModifiedMessage(false);
 	}
 
 	async socialBoost (ev: JQuery.Event) {

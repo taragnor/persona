@@ -1,4 +1,4 @@
-import { SaveOptions } from "./combat/persona-combat.js";
+import { StatusEffectId } from "../config/status-effects.js";
 import { HTMLTools } from "./utility/HTMLTools.js";
 import { RollSituation } from "../config/situation.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
@@ -32,30 +32,46 @@ export class PersonaRoller {
 		return bundle as RollBundle & {modList: ResolvedMods};
 	}
 
-	static async rollsocialStat(pc: PC, socialStat: SocialStat, rollTags : (RollTag | CardTag)[] = [], situation ?: Situation, extraMods ?: ModifierList, DC ?: number): Promise<RollBundle & {modList: ResolvedMods}> {
+	static async #compileModifiers (options: RollOptions, ...existingMods: (ModifierList | undefined)[]) : Promise<ModifierList> {
+		let mods = new ModifierList();
+		for (const list of existingMods) {
+			if (!list) continue;
+			mods = mods.concat(list)
+		}
+		if (options.askForModifier) {
+			const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
+			mods.add("Custom modifier", customMod);
+		}
+		if (options.modifier) {
+			mods.add("Modifier", options.modifier);
+		}
+		if (options.modifierList) {
+			mods = mods.concat(options.modifierList)
+		}
+		return mods;
+	}
+
+	static async rollSocialStat(pc: PC, socialStat: SocialStat, options  : RollOptions): Promise<RollBundle & {modList: ResolvedMods}> {
+		const {DC} = options;
+		let {situation} = options;
 		if (!situation) {
 			situation = {
 				user: pc.accessor,
 				attacker: pc.accessor,
 			}
 		}
-		rollTags=  rollTags.slice();
+		const rollTags =  options.rollTags.slice();
 		rollTags.pushUnique(socialStat);
 		const situationWithRollTags = {
 			...situation,
 			rollTags: rollTags.concat(situation?.rollTags ?? []),
 			DC
 		};
-		let mods = pc.getSocialStat(socialStat);
-		let socialmods = pc.getPersonalBonuses("socialRoll");
-		mods = mods.concat(socialmods);
-		const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
-		mods.add("Custom Modifier", customMod);
+		const baseMods = pc.getSocialStat(socialStat);
+		const socialMods = pc.getPersonalBonuses("socialRoll");
+		const mods = await this.#compileModifiers(options, baseMods, socialMods);
 		const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
 		const rollName = skillName;
-		if (extraMods) {
-			mods = mods.concat(extraMods);
-		}
 		const bundle = await this.#makeRoll(rollName, mods, situationWithRollTags);
 		const resSit = bundle.modList.resolvedSituation;
 		if (DC != undefined) {
@@ -66,19 +82,14 @@ export class PersonaRoller {
 		return bundle;
 	}
 
-	static async rollSave (actor: ValidAttackers, {DC, label, askForModifier, saveVersus, modifier, rollTags}: SaveOptions, situation ?: Situation): Promise< RollBundle & {modList: ResolvedMods}> {
+	static async rollSave (actor: ValidAttackers, options: SaveOptions): Promise< RollBundle & {modList: ResolvedMods}> {
+		let {rollTags, DC, saveVersus, label, situation} = options;
 		rollTags = rollTags == undefined ? [] : rollTags;
 		DC = DC ? DC : 11;
-		const mods = actor.getSaveBonus();
+		const baseMods = actor.getSaveBonus();
 		rollTags = rollTags.slice();
 		rollTags.pushUnique("save");
-		if (modifier) {
-			mods.add("Modifier", modifier);
-		}
-		if (askForModifier) {
-			const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
-			mods.add("Custom modifier", customMod);
-		}
+		const mods = await this.#compileModifiers(options, baseMods)
 		if (!situation) {
 			situation = {
 				user: PersonaDB.getUniversalActorAccessor(actor),
@@ -216,17 +227,17 @@ export class RollBundle {
 		}
 	}
 
-	async getHTML(): Promise<string> {
+	async getHTML(showSuccess :boolean): Promise<string> {
 		this.resolveMods();
 		if ("situation" in this.modList) {
 			throw new PersonaError("Mod List not resolved");
 		}
-		const html = await renderTemplate("systems/persona/parts/simple-roll.hbs", {roll: this});
+		const html = await renderTemplate("systems/persona/parts/simple-roll.hbs", {roll: this, showSuccess});
 		return html;
 	}
 
-	async toModifiedMessage() : Promise<ChatMessage> {
-		const html = await this.getHTML();
+	async toModifiedMessage(showSuccess : boolean) : Promise<ChatMessage> {
+		const html = await this.getHTML(showSuccess);
 		const actorAcc = (this.modList as ResolvedMods).actor;
 		let speaker: Foundry.ChatSpeakerObject;
 		if (actorAcc) {
@@ -284,4 +295,17 @@ Hooks.on("renderChatMessage", async (_msg, html) => {
 	}
 });
 
+type SaveOptions = RollOptions & {
+	saveVersus?: StatusEffectId,
+}
 
+
+type RollOptions = {
+	label : string | undefined,
+	DC: number | undefined,
+	askForModifier ?: boolean,
+	modifier ?: number,
+	rollTags : (RollTag | CardTag) [],
+	modifierList ?: ModifierList,
+	situation ?: Situation,
+}

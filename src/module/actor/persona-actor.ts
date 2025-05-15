@@ -1071,7 +1071,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					modifier: 0,
 					rollTags: ["resist-status"],
 				});
-				await save.toModifiedMessage();
+				await save.toModifiedMessage(true);
 				if (save.success) return true;
 				break;
 			default:

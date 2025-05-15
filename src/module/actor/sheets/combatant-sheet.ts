@@ -128,7 +128,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				return undefined;
 			default:
 				item.system satisfies never;
-				throw new Error(`Unknown supported type ${item.type}`);
+				throw new Error(`Unknown supported type ${item["system"]["type"]}`);
 		}
 	}
 
@@ -253,7 +253,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			DC:11, label:"Manual Save", askForModifier:true,
 			rollTags: []
 		});
-		await roll.toModifiedMessage();
+		await roll.toModifiedMessage(false);
 	}
 
 	async addIncremental_HP(_ev: JQuery.ClickEvent) {

@@ -245,9 +245,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		if (!actor.isValidCombatant()) {return false;}
 		const DC = this.statusSaveDC;
 		const bundle = await PersonaRoller.rollSave(actor as ValidAttackers, { DC, label: this.name, saveVersus: this.statusId, rollTags: [] } );
-		// const {success} = await PersonaCombat.rollSave(actor as (PC | Shadow), { DC, label: this.name, saveVersus: this.statusId })
 		if (bundle.success) { await this.delete();}
-		await bundle.toModifiedMessage();
+		await bundle.toModifiedMessage(true);
 		return bundle.success ?? false;
 	}
 

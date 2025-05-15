@@ -167,27 +167,29 @@ export class PersonaSocial {
 		console.debug(`NPC availability Reset: ${day}`);
 	}
 
-	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation, DC ?: number) : Promise<RollBundle> {
-		const rollTags = situation?.rollTags ?? [];
-			return await PersonaRoller.rollsocialStat(pc, socialStat, rollTags, situation, extraModifiers, DC);
-		// let mods = pc.getSocialStat(socialStat);
-		// let socialmods = pc.getPersonalBonuses("socialRoll");
-		// mods = mods.concat(socialmods);
-		// const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
-		// mods.add("Custom Modifier", customMod);
-		// if (extraModifiers) {
-		// 	mods = mods.concat(extraModifiers);
-		// }
-		// const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
-		// const rollName = (altName) ? altName : skillName;
-		// const sit: Situation = situation ?? {
-		// 	user: PersonaDB.getUniversalActorAccessor(pc),
-		// 	attacker: pc.accessor,
-		// };
-		// const r = await new Roll("1d20").roll();
-		// const dice = new RollBundle(rollName, r, true,  mods, sit);
-		// return dice;
-	}
+	// static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation, DC ?: number) : Promise<RollBundle> {
+	// 	const rollTags = situation?.rollTags ?? [];
+	// 		return await PersonaRoller.rollsocialStat(pc, socialStat, rollTags, situation, extraModifiers, DC);
+
+	//OLD ROLLER CODE
+	// let mods = pc.getSocialStat(socialStat);
+	// let socialmods = pc.getPersonalBonuses("socialRoll");
+	// mods = mods.concat(socialmods);
+	// const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
+	// mods.add("Custom Modifier", customMod);
+	// if (extraModifiers) {
+	// 	mods = mods.concat(extraModifiers);
+	// }
+	// const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
+	// const rollName = (altName) ? altName : skillName;
+	// const sit: Situation = situation ?? {
+	// 	user: PersonaDB.getUniversalActorAccessor(pc),
+	// 	attacker: pc.accessor,
+	// };
+	// const r = await new Roll("1d20").roll();
+	// const dice = new RollBundle(rollName, r, true,  mods, sit);
+	// return dice;
+	// }
 
 	static async boostSocialSkill(pc: PC, socialStat: SocialStat) {
 		const amount = await HTMLTools.numberButtons("Amount", 1, 3) as 1 | 2| 3;
@@ -1039,8 +1041,10 @@ export class PersonaSocial {
 
 	static async handleCardChoice(cardData: CardData, cardChoice: DeepNoArray<CardChoice>) {
 		const cardRoll = cardChoice.roll;
-		// const effectList  = cardChoice?.postEffects?.effects ?? [];
 		let rollTags = this.getCardRollTags(cardRoll);
+		if (cardData.currentEvent) {
+			rollTags.push(...cardData.currentEvent.eventTags)
+		}
 		if (!cardData.currentEvent) {
 			PersonaError.softFail(`No current event for Card ${cardData.card.name}`);
 		}
@@ -1052,11 +1056,13 @@ export class PersonaSocial {
 			case "question":
 			case "none": {
 				await this.processAutoProgress(cardData, cardRoll, true, false);
+				await this.#onCardChoice(cardData, cardRoll, rollTags);
 				await this.applyEffects(effectList,cardData.situation, cardData.actor);
 				break;
 			}
 			case "gmspecial":
 				await this.applyEffects(effectList,cardData.situation, cardData.actor);
+				await this.#onCardChoice(cardData, cardRoll, rollTags);
 				break;
 			case "studentSkillCheck": {
 				const modifiers = this.getCardModifiers(cardData);
@@ -1065,22 +1071,19 @@ export class PersonaSocial {
 				const link = this.lookupLink(cardData);
 				const activityOrActor = "actor" in link ? link.actor: link.activity;
 				const skill = this.resolvePrimarySecondarySocialStat(cardRoll.studentSkill, activityOrActor);
-				const roll = await this.rollSocialStat(cardData.actor, skill, modifiers, `Card Roll (${skill} ${cardRoll.modifier || ""} vs DC ${DC})`,  cardData.situation);
-				await roll.toModifiedMessage();
+				const roll = await PersonaRoller.rollSocialStat(cardData.actor, skill, {
+					askForModifier: true,
+					modifierList: modifiers ,
+					rollTags,
+					DC,
+					label: `Card Roll (${skill} ${cardRoll.modifier || ""} vs DC ${DC})`,
+				});
+				await roll.toModifiedMessage(true);
 				const hit = roll.success ?? false;
 				const critical = roll.critical ?? false;
-				// const hit = roll.total >= DC;
-				// const critical = roll.total >= DC + 10;
-				const situation : Situation = {
-					...cardData.situation,
-					hit,
-					criticalHit: critical,
-					naturalRoll: roll.natural,
-					rollTotal: roll.total,
-					rollTags,
-				};
+				const situation = roll.resolvedSituation();
 				await this.processAutoProgress(cardData, cardRoll, hit, critical );
-				await this.#onCardRoll(situation);
+				await this.#onCardRoll(cardData, cardRoll, situation);
 				await this.applyEffects(effectList, situation, cardData.actor);
 				break;
 			}
@@ -1090,12 +1093,10 @@ export class PersonaSocial {
 					label: "Card Roll (Saving Throw)",
 					rollTags
 				});
-				// const saveResult = await PersonaCombat.rollSave(cardData.actor, {
-					// DC: this.getCardRollDC(cardData, cardRoll),
-					// label: "Card Roll (Saving Throw)",
-				// });
+				const situation = saveResult.resolvedSituation();
 				await this.processAutoProgress(cardData, cardRoll, saveResult.success ?? false, false);
-				await this.applyEffects(effectList,saveResult.resolvedSituation(), cardData.actor);
+				await this.#onCardRoll(cardData, cardRoll, situation);
+				await this.applyEffects(effectList,situation, cardData.actor);
 				break;
 			}
 			case "dual":
@@ -1107,7 +1108,7 @@ export class PersonaSocial {
 		}
 	}
 
-	static async #onCardRoll(situation: Situation & RollSituation) {
+	static async #onCardRoll(cardData: CardData, cardRoll: CardChoice["roll"], situation: Situation & RollSituation) {
 		const userAcc = situation.user;
 		if (!userAcc) {
 			PersonaError.softFail("No user in Card Roll Situation");
@@ -1118,8 +1119,14 @@ export class PersonaSocial {
 			PersonaError.softFail("Can't find user in Card Roll Situation");
 			return;
 		}
-		await user.onRoll(situation);
+		await this.#onCardChoice(cardData, cardRoll, situation.rollTags);
+
 	}
+
+	static async #onCardChoice(_cardData: CardData , _cardRoll: CardChoice["roll"], _rollTags: (RollTag | CardTag)[]) {
+
+	}
+
 
 	static async processAutoProgress( cardData: CardData, cardRoll: CardRoll, hit: boolean, critical: boolean) : Promise<void> {
 		let progress = 0;
