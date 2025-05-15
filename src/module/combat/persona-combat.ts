@@ -1,3 +1,5 @@
+import { CardTag } from "../../config/card-tags.js";
+import { RollTag } from "../../config/roll-tags.js";
 import { RollSituation } from "../../config/situation.js";
 import { Persona } from "../persona-class.js";
 import { PersonaScene } from "../persona-scene.js";
@@ -2309,31 +2311,31 @@ async setEngageWith(token1: UniversalTokenAccessor<PToken>, token2: UniversalTok
 }
 
 /** returns pass or fail */
-static async rollSave (actor: ValidAttackers, {DC, label, askForModifier, saveVersus, modifier} :SaveOptions) : Promise<{success:boolean, total:number, natural: number}> {
-	const difficulty = DC ? DC : 11;
-	const mods = actor.getSaveBonus();
-	if (modifier) {
-		mods.add("Modifier", modifier);
-	}
-	if (askForModifier) {
-		const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
-		mods.add("Custom modifier", customMod);
-	}
-	const situation : Situation = {
-		user: PersonaDB.getUniversalActorAccessor(actor),
-		saveVersus: saveVersus ? saveVersus : undefined,
-	}
-	const difficultyTxt = DC == 11 ? "normal" : DC == 16 ? "hard" : DC == 6 ? "easy" : "unknown difficulty";
-	const labelTxt = `Saving Throw (${label ? label + " " + difficultyTxt : ""})`;
-	const r = await new Roll("1d20").roll();
-	const roll = new RollBundle(labelTxt, r, actor.system.type == "pc", mods, situation);
-	await roll.toModifiedMessage();
-	return {
-		success: roll.total >= difficulty,
-		total: roll.total,
-		natural: roll.natural,
-	}
-};
+// static async rollSave (actor: ValidAttackers, {DC, label, askForModifier, saveVersus, modifier} :SaveOptions) : Promise<{success:boolean, total:number, natural: number}> {
+// 	const difficulty = DC ? DC : 11;
+// 	const mods = actor.getSaveBonus();
+// 	if (modifier) {
+// 		mods.add("Modifier", modifier);
+// 	}
+// 	if (askForModifier) {
+// 		const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
+// 		mods.add("Custom modifier", customMod);
+// 	}
+// 	const situation : Situation = {
+// 		user: PersonaDB.getUniversalActorAccessor(actor),
+// 		saveVersus: saveVersus ? saveVersus : undefined,
+// 	}
+// 	const difficultyTxt = DC == 11 ? "normal" : DC == 16 ? "hard" : DC == 6 ? "easy" : "unknown difficulty";
+// 	const labelTxt = `Saving Throw (${label ? label + " " + difficultyTxt : ""})`;
+// 	const r = await new Roll("1d20").roll();
+// 	const roll = new RollBundle(labelTxt, r, actor.system.type == "pc", mods, situation);
+// 	await roll.toModifiedMessage();
+// 	return {
+// 		success: roll.total >= difficulty,
+// 		total: roll.total,
+// 		natural: roll.natural,
+// 	}
+// };
 
 static async disengageRoll( actor: ValidAttackers, DC = 11) : Promise<{total: number, rollBundle: RollBundle, success: boolean}> {
 	const situation : Situation = {
@@ -2794,12 +2796,13 @@ type DialogReturn = {
 	disallowMetaverse: boolean,
 }
 
-type SaveOptions = {
+export type SaveOptions = {
 	label?: string,
 	DC?: number,
 	askForModifier?: boolean,
 	saveVersus?: StatusEffectId,
 	modifier ?: number,
+	rollTags : (RollTag | CardTag) [], 
 }
 
 

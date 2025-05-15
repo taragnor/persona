@@ -1,3 +1,4 @@
+import { PersonaRoller } from "../persona-roll.js";
 import { RollSituation } from "../../config/situation.js";
 import { randomSelect } from "../utility/array-tools.js";
 import { Persona } from "../persona-class.js";
@@ -1062,13 +1063,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "block":
 				return true;
 			case "resist":
-				const save = await PersonaCombat.rollSave(this as Shadow, {
+				const save = await PersonaRoller.rollSave(this as Shadow, {
 					DC: 11,
 					label:`Resist status ${id}`,
 					askForModifier: false,
 					saveVersus: id,
 					modifier: 0,
+					rollTags: ["resist-status"],
 				});
+				await save.toModifiedMessage();
 				if (save.success) return true;
 				break;
 			default:
@@ -2978,10 +2981,11 @@ async onEndDay(this: PC): Promise<string[]> {
 			case "exhausted": DC =11; break;
 			case "tired": DC= 11; break;
 		}
-		const {success} = await PersonaCombat.rollSave(this, {
+		const {success} = await PersonaRoller.rollSave(this, {
 			DC,
 			label: `Save to end ${localizeStatusId(fatigueStat)}`,
-			saveVersus: fatigueStat
+			saveVersus: fatigueStat,
+			rollTags: ["rest"],
 		});
 		const locStat = localizeStatusId(fatigueStat);
 		const fatLevel = this.fatigueLevel;

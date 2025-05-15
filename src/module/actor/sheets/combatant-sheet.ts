@@ -1,3 +1,4 @@
+import { PersonaRoller } from "../../persona-roll.js";
 import { PersonaDB } from "../../persona-db.js";
 import { UsableAndCard } from "../../item/persona-item.js";
 import { NPCAlly } from "../persona-actor.js";
@@ -248,8 +249,11 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	async rollSave(_event: Event) {
-		await PersonaCombat.rollSave(this.actor, {
-			DC:11, label:"Manual Save", askForModifier:true});
+		const roll = await PersonaRoller.rollSave(this.actor, {
+			DC:11, label:"Manual Save", askForModifier:true,
+			rollTags: []
+		});
+		await roll.toModifiedMessage();
 	}
 
 	async addIncremental_HP(_ev: JQuery.ClickEvent) {

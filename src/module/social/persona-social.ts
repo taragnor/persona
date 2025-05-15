@@ -167,9 +167,9 @@ export class PersonaSocial {
 		console.debug(`NPC availability Reset: ${day}`);
 	}
 
-	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation) : Promise<RollBundle> {
+	static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation, DC ?: number) : Promise<RollBundle> {
 		const rollTags = situation?.rollTags ?? [];
-			return await PersonaRoller.rollsocialStat(pc, socialStat, rollTags, situation, extraModifiers);
+			return await PersonaRoller.rollsocialStat(pc, socialStat, rollTags, situation, extraModifiers, DC);
 		// let mods = pc.getSocialStat(socialStat);
 		// let socialmods = pc.getPersonalBonuses("socialRoll");
 		// mods = mods.concat(socialmods);
@@ -1067,8 +1067,10 @@ export class PersonaSocial {
 				const skill = this.resolvePrimarySecondarySocialStat(cardRoll.studentSkill, activityOrActor);
 				const roll = await this.rollSocialStat(cardData.actor, skill, modifiers, `Card Roll (${skill} ${cardRoll.modifier || ""} vs DC ${DC})`,  cardData.situation);
 				await roll.toModifiedMessage();
-				const hit = roll.total >= DC;
-				const critical =roll.total >= DC + 10;
+				const hit = roll.success ?? false;
+				const critical = roll.critical ?? false;
+				// const hit = roll.total >= DC;
+				// const critical = roll.total >= DC + 10;
 				const situation : Situation = {
 					...cardData.situation,
 					hit,
@@ -1083,19 +1085,17 @@ export class PersonaSocial {
 				break;
 			}
 			case "save": {
-				const saveResult = await PersonaCombat.rollSave(cardData.actor, {
+				const saveResult = await PersonaRoller.rollSave(cardData.actor,  {
 					DC: this.getCardRollDC(cardData, cardRoll),
 					label: "Card Roll (Saving Throw)",
+					rollTags
 				});
-					const situation : Situation = {
-					...cardData.situation,
-					hit: saveResult.success,
-					rollTotal: saveResult.total,
-					naturalRoll: saveResult.natural,
-					rollTags,
-				};
-				await this.processAutoProgress(cardData, cardRoll, saveResult.success, false);
-				await this.applyEffects(effectList,situation, cardData.actor);
+				// const saveResult = await PersonaCombat.rollSave(cardData.actor, {
+					// DC: this.getCardRollDC(cardData, cardRoll),
+					// label: "Card Roll (Saving Throw)",
+				// });
+				await this.processAutoProgress(cardData, cardRoll, saveResult.success ?? false, false);
+				await this.applyEffects(effectList,saveResult.resolvedSituation(), cardData.actor);
 				break;
 			}
 			case "dual":

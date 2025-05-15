@@ -120,6 +120,7 @@ export type RollSituation = {
 	rollTotal : number;
 	hit?: boolean;
 	criticalHit ?: boolean;
+	DC ?: number;
 }
 
 type NonRollSituation = {

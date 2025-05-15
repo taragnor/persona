@@ -1,9 +1,8 @@
+import { ValidAttackers } from "./combat/persona-combat.js";
+import { PersonaRoller } from "./persona-roll.js";
 import { FatigueStatusId } from "../config/status-effects.js";
 import { statusMap } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
-import { PC } from "./actor/persona-actor.js";
-import { Shadow } from "./actor/persona-actor.js";
-import { PersonaCombat } from "./combat/persona-combat.js";
 import { UniversalAEAccessor } from "./utility/db-accessor.js";
 import { UniversalActorAccessor } from "./utility/db-accessor.js";
 import { StatusDurationType } from "../config/status-effects.js";
@@ -245,9 +244,11 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		if (!actor) return false;
 		if (!actor.isValidCombatant()) {return false;}
 		const DC = this.statusSaveDC;
-		const {success} = await PersonaCombat.rollSave(actor as (PC | Shadow), { DC, label: this.name, saveVersus: this.statusId })
-		if (success) { await this.delete();}
-		return success;
+		const bundle = await PersonaRoller.rollSave(actor as ValidAttackers, { DC, label: this.name, saveVersus: this.statusId, rollTags: [] } );
+		// const {success} = await PersonaCombat.rollSave(actor as (PC | Shadow), { DC, label: this.name, saveVersus: this.statusId })
+		if (bundle.success) { await this.delete();}
+		await bundle.toModifiedMessage();
+		return bundle.success ?? false;
 	}
 
 	override async delete() {

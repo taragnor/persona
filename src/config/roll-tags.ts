@@ -11,6 +11,8 @@ export const ROLL_TAG_LIST = [
 	"save",
 	"attack",
 	"opening",
+	"disengage",
+	"resist-status",
 	"activation",
 	"defense",
 	"academic",

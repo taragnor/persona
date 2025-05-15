@@ -1,3 +1,4 @@
+import { SaveOptions } from "./combat/persona-combat.js";
 import { HTMLTools } from "./utility/HTMLTools.js";
 import { RollSituation } from "../config/situation.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
@@ -17,7 +18,6 @@ import { STUDENT_SKILLS } from "../config/student-skills.js";
 
 export class PersonaRoller {
 	static async #makeRoll(rollName:string, mods: ModifierList, situation: Situation & {rollTags: (RollTag | CardTag)[]} ): Promise<RollBundle & {modList: ResolvedMods}> {
-		const r = await new Roll("1d20").roll();
 		const user = situation.user;
 		let playerRoll = !game.user.isGM;
 		if (user) {
@@ -26,22 +26,25 @@ export class PersonaRoller {
 				playerRoll = true;
 			}
 		}
+		const r = await new Roll("1d20").roll();
 		const bundle = new RollBundle(rollName, r, playerRoll,  mods, situation);
 		bundle.resolveMods();
 		return bundle as RollBundle & {modList: ResolvedMods};
 	}
 
-	static async rollsocialStat(pc: PC, socialStat: SocialStat, rollTags : (RollTag | CardTag)[] = [], situation ?: Situation, extraMods ?: ModifierList): Promise<RollBundle> {
+	static async rollsocialStat(pc: PC, socialStat: SocialStat, rollTags : (RollTag | CardTag)[] = [], situation ?: Situation, extraMods ?: ModifierList, DC ?: number): Promise<RollBundle & {modList: ResolvedMods}> {
 		if (!situation) {
 			situation = {
 				user: pc.accessor,
 				attacker: pc.accessor,
 			}
 		}
+		rollTags=  rollTags.slice();
 		rollTags.pushUnique(socialStat);
 		const situationWithRollTags = {
 			...situation,
-			rollTags: rollTags.concat(situation?.rollTags ?? [])
+			rollTags: rollTags.concat(situation?.rollTags ?? []),
+			DC
 		};
 		let mods = pc.getSocialStat(socialStat);
 		let socialmods = pc.getPersonalBonuses("socialRoll");
@@ -54,9 +57,51 @@ export class PersonaRoller {
 			mods = mods.concat(extraMods);
 		}
 		const bundle = await this.#makeRoll(rollName, mods, situationWithRollTags);
-		await pc.onRoll(bundle.modList.resolvedSituation);
+		const resSit = bundle.modList.resolvedSituation;
+		if (DC != undefined) {
+			resSit.hit = resSit.rollTotal > DC;
+			resSit.criticalHit = false;
+		}
+		await pc.onRoll(resSit);
 		return bundle;
 	}
+
+	static async rollSave (actor: ValidAttackers, {DC, label, askForModifier, saveVersus, modifier, rollTags}: SaveOptions, situation ?: Situation): Promise< RollBundle & {modList: ResolvedMods}> {
+		rollTags = rollTags == undefined ? [] : rollTags;
+		DC = DC ? DC : 11;
+		const mods = actor.getSaveBonus();
+		rollTags = rollTags.slice();
+		rollTags.pushUnique("save");
+		if (modifier) {
+			mods.add("Modifier", modifier);
+		}
+		if (askForModifier) {
+			const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
+			mods.add("Custom modifier", customMod);
+		}
+		if (!situation) {
+			situation = {
+				user: PersonaDB.getUniversalActorAccessor(actor),
+				saveVersus: saveVersus ? saveVersus : undefined,
+			};
+		}
+		const situationWithRollTags = {
+			...situation,
+			rollTags: rollTags.concat(situation?.rollTags ?? []),
+			saveVersus: situation.saveVersus ? situation.saveVersus : saveVersus,
+		} satisfies Situation;
+		const difficultyTxt = DC == 11 ? "normal" : DC == 16 ? "hard" : DC == 6 ? "easy" : "unknown difficulty";
+		const labelTxt = `Saving Throw (${label ? label + " " + difficultyTxt : ""})`;
+		const bundle = await this.#makeRoll(labelTxt, mods, situationWithRollTags);
+		const resSit = bundle.modList.resolvedSituation;
+		if (DC != undefined) {
+			resSit.hit = resSit.rollTotal > DC;
+			resSit.criticalHit = false;
+		}
+		await actor.onRoll(resSit);
+		return bundle;
+	}
+
 }
 
 
@@ -90,22 +135,23 @@ export class RollBundle {
 		const {mods, situation} = this.modList;
 		if (!situation)
 			throw new Error("Situation can't resolve");
+		const total = mods.total(situation);
 		this.modList =  {
 			mods : mods.printable(situation),
-			modtotal: mods.total(situation),
+			modtotal: total,
 			actor: situation.user,
-			resolvedSituation: this.generateResolvedSituation(situation, mods),
+			resolvedSituation: this.generateResolvedSituation(situation, total),
 		} satisfies ResolvedMods;
 		return this.modList;
 	}
 
-	generateResolvedSituation(situation: Situation , mods:ModifierList) : Situation & RollSituation {
+	generateResolvedSituation(situation: Situation , total: number) : Situation & RollSituation {
 		if (situation.user) {
 			const rollSituation : Situation & RollSituation = {
 				...situation,
 				naturalRoll: this.roll.total,
 				rollTags: situation.rollTags ?? [],
-				rollTotal: this.roll.total + mods.total(situation),
+				rollTotal: this.roll.total + total,
 				user: situation.user,
 			};
 			return rollSituation;
@@ -123,6 +169,29 @@ export class RollBundle {
 			throw new Error("can't change situation in resolved modList");
 		}
 		this.modList.situation = sit;
+	}
+
+	get situation() : Situation | null {
+		if ("modtotal" in this.modList) {
+			return this.modList.resolvedSituation;
+		}
+		return this.modList.situation;
+	}
+
+	resolvedSituation(this: RollBundle & {modList: ResolvedMods}) : ResolvedMods["resolvedSituation"] {
+		return this.modList.resolvedSituation;
+	}
+
+	get success() : boolean | undefined {
+		if ("modtotal" in this.modList) {
+			return this.modList.resolvedSituation.hit;
+		}
+	}
+
+	get critical(): boolean | undefined {
+		if ("modtotal" in this.modList) {
+			return this.modList.resolvedSituation.criticalHit;
+		}
 	}
 
 	get natural(): number {
