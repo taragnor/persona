@@ -16,8 +16,15 @@ export const CARD_RESTRICTOR_TAGS = [
 export const CARD_SITUATIONS = [
 	"romantic-place",
 	"public-place",
+	"private-area",
 	"school-grounds",
 	"in-metaverse",
+	"outside",
+	"cheap",
+	"luxury",
+	"noisy",
+	"quiet",
+	"group-setting",
 ] as const;
 
 export const CARD_TAG_LIST = [

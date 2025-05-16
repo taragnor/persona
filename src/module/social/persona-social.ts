@@ -46,7 +46,6 @@ import { PC } from "../actor/persona-actor.js";
 import { SocialStat } from "../../config/student-skills.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { STUDENT_SKILLS } from "../../config/student-skills.js";
-import { RollBundle } from "../persona-roll.js";
 import { PersonaDB } from "../persona-db.js";
 import { HTMLTools } from "../utility/HTMLTools.js";
 import { StudentSkillExt } from "../../config/student-skills.js";
@@ -825,14 +824,20 @@ export class PersonaSocial {
 		PersonaSockets.simpleSend("EXPEND_QUESTION", {npcId: npc.id, eventIndex: index}, gms.map( x=> x.id));
 	}
 
-	static getCardModifiers(cardData: CardData) : ModifierList {
+	static getCardModifiers(cardData: CardData, rollTags: (RollTag | CardTag)[] ) : ModifierList {
 		const card = cardData.card;
 		const effects : ConditionalEffect[] = [];
 		const globalMods = ConditionalEffectManager.getEffects(card.system.globalModifiers, null, null);
 		effects.push(...globalMods);
 		if (cardData.activity instanceof PersonaActor) {
 			const link =cardData.activity;
-			effects.push(...link.socialEffects());
+			if (!rollTags.includes("on-cameo") && !rollTags.includes("on-other")) {
+				effects.push(...link.socialEffects());
+			}
+		}
+		if (rollTags.includes("on-cameo") && cardData.cameos) {
+			const cameoEffects= cardData.cameos.flatMap( x=> x.socialEffects())
+			effects.push(...cameoEffects);
 		}
 		const retList = new ModifierList();
 		retList.addConditionalEffects(effects, "Card Modifier",["DCIncrease"]);
@@ -1027,7 +1032,7 @@ export class PersonaSocial {
 	}
 
 	static getCardRollDC(cardData: CardData, cardRoll: CardRoll, rollTags: (RollTag | CardTag)[]) : number {
-		const modifiers = this.getCardRollDCModifiers(cardData, cardRoll);
+		const modifiers = this.getCardRollDCModifiers(cardData, cardRoll, rollTags);
 		const situation = {
 			... cardData.situation,
 			rollTags,
@@ -1035,26 +1040,27 @@ export class PersonaSocial {
 		return modifiers.total(situation);
 	}
 
-	static getCardRollDCModifiers(cardData: CardData, cardRoll: CardRoll) : ModifierList {
-		const base = this.getBaseCardRollDC(cardData, cardRoll);
+	static getCardRollDCModifiers(cardData: CardData, cardRoll: CardRoll, rollTags : (RollTag | CardTag)[]) : ModifierList {
+		const base = this.getBaseCardRollDC(cardData, cardRoll)
 		if ((cardRoll.rollType == "save" || cardRoll.rollType == "studentSkillCheck") && !(base > 0)) {
 			debugger;
 		}
 		let modifiers = new ModifierList();
 		modifiers.add("Base DC", base);
 		if ("modifier" in cardRoll) {
-			modifiers.add("Roll Choice Modifier", cardRoll.modifier * -1);
+			modifiers.add("Roll Modifier Reversed", cardRoll.modifier * -1);
 		}
-		modifiers = modifiers.concat(this.getCardModifiers(cardData));
+		modifiers = modifiers.concat(this.getCardModifiers(cardData, rollTags));
 		return modifiers;
 	}
 
 	static getRollTags(cardData: CardData, cardChoice: CardChoice) : (RollTag | CardTag)[] {
 		const cardRoll = cardChoice.roll;
 		let rollTags = this.getCardRollTags(cardRoll);
-		rollTags.push(...cardData.extraCardTags);
+		rollTags.pushUnique(...cardData.extraCardTags);
+		rollTags.pushUnique(...cardData.card.system.cardTags);
 		if (cardData.currentEvent) {
-			rollTags.push(	...cardData.currentEvent.eventTags);
+			rollTags.pushUnique(	...cardData.currentEvent.eventTags);
 		}
 		return rollTags;
 	}
@@ -1084,7 +1090,7 @@ export class PersonaSocial {
 				break;
 			case "studentSkillCheck": {
 				// modifiers.add("Roll Modifier", cardRoll.modifier);
-				const DCMods = this.getCardRollDCModifiers(cardData, cardRoll);
+				const DCMods = this.getCardRollDCModifiers(cardData, cardRoll, rollTags);
 				const link = this.lookupLink(cardData);
 				const activityOrActor = "actor" in link ? link.actor: link.activity;
 				const skill = this.resolvePrimarySecondarySocialStat(cardRoll.studentSkill, activityOrActor);
@@ -1108,7 +1114,7 @@ export class PersonaSocial {
 				break;
 			}
 			case "save": {
-				const DCMods = this.getCardRollDCModifiers(cardData, cardRoll);
+				const DCMods = this.getCardRollDCModifiers(cardData, cardRoll, rollTags);
 				const saveResult = await PersonaRoller.rollSave(cardData.actor,  {
 					askForModifier: true,
 					DC: 0,

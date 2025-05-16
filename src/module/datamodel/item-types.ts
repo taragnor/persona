@@ -431,12 +431,14 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 				return ""; //early bail out to not give away info
 			case "studentSkillCheck":
 				if (roll.progressSuccess || roll.progressCrit) {
-					const modifier = roll.modifier == 0 ? "" : `at ${NumberTools.signed(roll.modifier)}`;
+					// const modifier = roll.modifier == 0 ? "" : `at ${NumberTools.signed(roll.modifier)}`;
+					const modifier = 0;
 					starterTxt += ` ${roll.studentSkill} ${modifier} Check Success (${roll.progressSuccess} + ${roll.progressCrit}).`;
 				}
 				break;
 			case "save":
-				const modifier = (roll.modifier ?? 0) == 0 ? "" : `at ${NumberTools.signed(roll.modifier)}`;
+				const modifier = 0;
+				// const modifier = (roll.modifier ?? 0) == 0 ? "" : `at ${NumberTools.signed(roll.modifier)}`;
 				if (roll.progressSuccess) {
 					starterTxt += `${roll.saveType} Save Success ${modifier} (${roll.progressSuccess} + ${roll.progressCrit}).`;
 				}
