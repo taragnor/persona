@@ -843,12 +843,16 @@ export class PersonaSocial {
 	}
 
 	static getCardModifiers(cardData: CardData) : ModifierList {
-		const card= cardData.card;
-		let effects : ConditionalEffect[] = [];
+		const card = cardData.card;
+		const effects : ConditionalEffect[] = [];
 		const globalMods = ConditionalEffectManager.getEffects(card.system.globalModifiers, null, null);
-		effects = effects.concat(globalMods);
+		effects.push(...globalMods);
+		if (cardData.activity instanceof PersonaActor) {
+			const link =cardData.activity;
+			effects.push(...link.socialEffects());
+		}
 		const retList = new ModifierList();
-		retList.addConditionalEffects(effects, "Card Modifier",["socialRoll"]);
+		retList.addConditionalEffects(effects, "Card Modifier",["DCIncrease"]);
 		return retList;
 	}
 
@@ -1013,30 +1017,50 @@ export class PersonaSocial {
 		}
 	}
 
-	static getCardRollDC(cardData: CardData, roll: CardRoll) : number {
-		switch (roll.rollType) {
+	static getBaseCardRollDC(cardData: CardData, cardRoll: CardRoll): number {
+		switch (cardRoll.rollType) {
 			case "save":
-				switch (roll.saveType) {
+				switch (cardRoll.saveType) {
 					case "normal": return 11;
 					case "easy": return 6;
 					case "hard": return 16;
-					default: roll.saveType satisfies never;
+					default: cardRoll.saveType satisfies never;
 						throw new PersonaError("Should be unreachable");
 				}
 			case "studentSkillCheck":
-				switch (roll.DC.subtype) {
+				switch (cardRoll.DC.subtype) {
 					case "static":
-						return roll.DC.staticDC;
+						return cardRoll.DC.staticDC;
 					case "base":
 						return this.getBaseSkillDC(cardData);
 					case "cameoSocial":
 						return this.getSocialLinkDC(cardData, "cameo") ?? -1;
 					default:
-						roll.DC.subtype satisfies never;
+							cardRoll.DC.subtype satisfies never;
 
 				}
 			default: return 0;
 		}
+	}
+
+	static getCardRollDC(cardData: CardData, cardRoll: CardRoll, rollTags: (RollTag | CardTag)[]) : number {
+		const modifiers = this.getCardRollDCModifiers(cardData, cardRoll);
+		const situation = {
+			... cardData.situation,
+			rollTags,
+		};
+		return modifiers.total(situation);
+	}
+
+	static getCardRollDCModifiers(cardData: CardData, cardRoll: CardRoll) : ModifierList {
+		const base = this.getBaseCardRollDC(cardData, cardRoll);
+		let modifiers = new ModifierList();
+		modifiers.add("Base DC", base);
+		if ("modifier" in cardRoll) {
+			modifiers.add("Roll Choice Modifier", cardRoll.modifier * -1);
+		}
+		modifiers = modifiers.concat(this.getCardModifiers(cardData));
+		return modifiers;
 	}
 
 	static async handleCardChoice(cardData: CardData, cardChoice: DeepNoArray<CardChoice>) {
@@ -1066,17 +1090,18 @@ export class PersonaSocial {
 				await this.#onCardChoice(cardData, cardRoll, rollTags);
 				break;
 			case "studentSkillCheck": {
-				const modifiers = this.getCardModifiers(cardData);
-				modifiers.add("Roll Modifier", cardRoll.modifier);
-				const DC = this.getCardRollDC(cardData, cardRoll);
+				// modifiers.add("Roll Modifier", cardRoll.modifier);
+				const DC = 0;
+				const DCMods = this.getCardRollDCModifiers(cardData, cardRoll);
 				const link = this.lookupLink(cardData);
 				const activityOrActor = "actor" in link ? link.actor: link.activity;
 				const skill = this.resolvePrimarySecondarySocialStat(cardRoll.studentSkill, activityOrActor);
 				const roll = await PersonaRoller.rollSocialStat(cardData.actor, skill, {
 					askForModifier: true,
-					modifierList: modifiers ,
+					// modifierList: modifiers ,
 					rollTags,
 					DC,
+					DCMods,
 					label: `Card Roll (${skill} ${cardRoll.modifier || ""} vs DC ${DC})`,
 				});
 				await roll.toModifiedMessage(true);
@@ -1089,8 +1114,11 @@ export class PersonaSocial {
 				break;
 			}
 			case "save": {
+				const DC = 0;
+				const DCMods = this.getCardRollDCModifiers(cardData, cardRoll);
 				const saveResult = await PersonaRoller.rollSave(cardData.actor,  {
-					DC: this.getCardRollDC(cardData, cardRoll),
+					DC,
+					DCMods,
 					label: "Card Roll (Saving Throw)",
 					rollTags
 				});

@@ -13,7 +13,7 @@ import { ValidAttackers } from "../module/combat/persona-combat.js";
 import { UniversalActorAccessor } from "../module/utility/db-accessor.js";
 import { UniversalItemAccessor } from "../module/utility/db-accessor.js";
 
-type UserSituation = {
+export type UserSituation = {
 	user: UniversalActorAccessor<ValidAttackers>;
 };
 

@@ -1,3 +1,4 @@
+import { ConditionalEffectDM } from "../module/datamodel/item-types.js";
 import { Precondition } from "./precondition-types.js";
 import { TokenSpend } from "./social-card-config.js";
 import { TAROT_DECK } from "./tarot.js";
@@ -77,7 +78,6 @@ export function keySkills() {
 	return new sch ( {
 		primary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
 		secondary: new txt( {choices: STUDENT_SKILLS_LIST, initial: "diligence"}),
-
 	});
 }
 
@@ -251,6 +251,7 @@ export function SocialTargetBlockData() {
 		availabilityConditions: new arr(new obj<Precondition>()),
 		specialEvents: new txt(),
 		datePerk: new txt(),
+		socialEffects: new arr(new embedded(ConditionalEffectDM))
 	}
 }
 

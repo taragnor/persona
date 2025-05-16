@@ -28,6 +28,7 @@ export const MODIFIERLIST = [
 	"ref",
 	"fort",
 	"will",
+	"DCIncrease",
 	"socialRoll",
 	...STUDENT_SKILLS_LIST,
 	"save",

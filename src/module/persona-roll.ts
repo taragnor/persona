@@ -1,3 +1,4 @@
+import { UserSituation } from "../config/situation.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { HTMLTools } from "./utility/HTMLTools.js";
 import { RollSituation } from "../config/situation.js";
@@ -32,6 +33,19 @@ export class PersonaRoller {
 		return bundle as RollBundle & {modList: ResolvedMods};
 	}
 
+	static #getDC(situation: UserSituation & Situation, options: RollOptions) : number | undefined {
+		const {DCMods} = options;
+		let {DC} = options;
+		situation = {
+			...situation,
+			rollTags: options.rollTags ?? [],
+		}
+		if (DC != undefined && DCMods != undefined) {
+			DC += DCMods.total(situation);
+		}
+		return DC;
+	}
+
 	static async #compileModifiers (options: RollOptions, ...existingMods: (ModifierList | undefined)[]) : Promise<ModifierList> {
 		let mods = new ModifierList();
 		for (const list of existingMods) {
@@ -52,7 +66,6 @@ export class PersonaRoller {
 	}
 
 	static async rollSocialStat(pc: PC, socialStat: SocialStat, options  : RollOptions): Promise<RollBundle & {modList: ResolvedMods}> {
-		const {DC} = options;
 		let {situation} = options;
 		if (!situation) {
 			situation = {
@@ -62,6 +75,8 @@ export class PersonaRoller {
 		}
 		const rollTags =  options.rollTags.slice();
 		rollTags.pushUnique(socialStat);
+		rollTags.pushUnique("social");
+		const DC = this.#getDC(situation, options);
 		const situationWithRollTags = {
 			...situation,
 			rollTags: rollTags.concat(situation?.rollTags ?? []),
@@ -83,9 +98,8 @@ export class PersonaRoller {
 	}
 
 	static async rollSave (actor: ValidAttackers, options: SaveOptions): Promise< RollBundle & {modList: ResolvedMods}> {
-		let {rollTags, DC, saveVersus, label, situation} = options;
+		let {rollTags, saveVersus, label, situation} = options;
 		rollTags = rollTags == undefined ? [] : rollTags;
-		DC = DC ? DC : 11;
 		const baseMods = actor.getSaveBonus();
 		rollTags = rollTags.slice();
 		rollTags.pushUnique("save");
@@ -96,6 +110,8 @@ export class PersonaRoller {
 				saveVersus: saveVersus ? saveVersus : undefined,
 			};
 		}
+		const maybeDC = this.#getDC(situation, options);
+		const DC = maybeDC ? maybeDC : 11;
 		const situationWithRollTags = {
 			...situation,
 			rollTags: rollTags.concat(situation?.rollTags ?? []),
@@ -303,9 +319,10 @@ type SaveOptions = RollOptions & {
 type RollOptions = {
 	label : string | undefined,
 	DC: number | undefined,
+	DCMods ?: ModifierList,
 	askForModifier ?: boolean,
 	modifier ?: number,
 	rollTags : (RollTag | CardTag) [],
 	modifierList ?: ModifierList,
-	situation ?: Situation,
+	situation ?: UserSituation & Situation,
 }

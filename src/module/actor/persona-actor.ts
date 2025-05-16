@@ -2967,6 +2967,10 @@ async onMetaverseTimeAdvance(): Promise<string[]> {
 	return ret;
 }
 
+socialEffects(this: SocialLink) : ConditionalEffect[] {
+	return this.system?.socialEffects ?? [];
+}
+
 async onEndDay(this: PC): Promise<string[]> {
 	let ret = [] as string[];
 	for (const eff of this.effects) {
