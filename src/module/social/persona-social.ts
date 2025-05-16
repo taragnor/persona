@@ -167,30 +167,6 @@ export class PersonaSocial {
 		console.debug(`NPC availability Reset: ${day}`);
 	}
 
-	// static async rollSocialStat( pc: PC, socialStat: SocialStat, extraModifiers?: ModifierList, altName ?: string, situation?: Situation, DC ?: number) : Promise<RollBundle> {
-	// 	const rollTags = situation?.rollTags ?? [];
-	// 		return await PersonaRoller.rollsocialStat(pc, socialStat, rollTags, situation, extraModifiers, DC);
-
-	//OLD ROLLER CODE
-	// let mods = pc.getSocialStat(socialStat);
-	// let socialmods = pc.getPersonalBonuses("socialRoll");
-	// mods = mods.concat(socialmods);
-	// const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
-	// mods.add("Custom Modifier", customMod);
-	// if (extraModifiers) {
-	// 	mods = mods.concat(extraModifiers);
-	// }
-	// const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
-	// const rollName = (altName) ? altName : skillName;
-	// const sit: Situation = situation ?? {
-	// 	user: PersonaDB.getUniversalActorAccessor(pc),
-	// 	attacker: pc.accessor,
-	// };
-	// const r = await new Roll("1d20").roll();
-	// const dice = new RollBundle(rollName, r, true,  mods, sit);
-	// return dice;
-	// }
-
 	static async boostSocialSkill(pc: PC, socialStat: SocialStat) {
 		const amount = await HTMLTools.numberButtons("Amount", 1, 3) as 1 | 2| 3;
 		await pc.alterSocialSkill(socialStat, amount);
@@ -775,6 +751,13 @@ export class PersonaSocial {
 		if (event.eventTags.includes("one-shot")) {
 			await this.markEventUsed(event);
 		}
+		event.choices.forEach( ch => {
+			const roll : CardRoll = ch.roll;
+			const rollTags = this.getRollTags(cardData, ch);
+			const DC = this.getCardRollDC(cardData, ch.roll, rollTags);
+			//@ts-ignore
+			roll.DCVal = DC;
+		});
 		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event, eventNumber, cardData, situation : cardData.situation, eventIndex});
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
@@ -1054,6 +1037,9 @@ export class PersonaSocial {
 
 	static getCardRollDCModifiers(cardData: CardData, cardRoll: CardRoll) : ModifierList {
 		const base = this.getBaseCardRollDC(cardData, cardRoll);
+		if ((cardRoll.rollType == "save" || cardRoll.rollType == "studentSkillCheck") && !(base > 0)) {
+			debugger;
+		}
 		let modifiers = new ModifierList();
 		modifiers.add("Base DC", base);
 		if ("modifier" in cardRoll) {
@@ -1061,6 +1047,16 @@ export class PersonaSocial {
 		}
 		modifiers = modifiers.concat(this.getCardModifiers(cardData));
 		return modifiers;
+	}
+
+	static getRollTags(cardData: CardData, cardChoice: CardChoice) : (RollTag | CardTag)[] {
+		const cardRoll = cardChoice.roll;
+		let rollTags = this.getCardRollTags(cardRoll);
+		rollTags.push(...cardData.extraCardTags);
+		if (cardData.currentEvent) {
+			rollTags.push(	...cardData.currentEvent.eventTags);
+		}
+		return rollTags;
 	}
 
 	static async handleCardChoice(cardData: CardData, cardChoice: DeepNoArray<CardChoice>) {
@@ -1072,9 +1068,6 @@ export class PersonaSocial {
 		rollTags.push(...cardData.extraCardTags);
 		if (!cardData.currentEvent) {
 			PersonaError.softFail(`No current event for Card ${cardData.card.name}`);
-		}
-		if (cardData.currentEvent) {
-			rollTags.push(	...cardData.currentEvent.eventTags);
 		}
 		const effectList = ConditionalEffectManager.getEffects(cardChoice?.postEffects?.effects ?? [], null, null);
 		switch (cardRoll.rollType) {
@@ -1091,7 +1084,6 @@ export class PersonaSocial {
 				break;
 			case "studentSkillCheck": {
 				// modifiers.add("Roll Modifier", cardRoll.modifier);
-				const DC = 0;
 				const DCMods = this.getCardRollDCModifiers(cardData, cardRoll);
 				const link = this.lookupLink(cardData);
 				const activityOrActor = "actor" in link ? link.actor: link.activity;
@@ -1100,9 +1092,11 @@ export class PersonaSocial {
 					askForModifier: true,
 					// modifierList: modifiers ,
 					rollTags,
-					DC,
+					DC: 0,
 					DCMods,
-					label: `Card Roll (${skill} ${cardRoll.modifier || ""} vs DC ${DC})`,
+					situation: cardData.situation,
+					label: `Card Roll (${skill} ${cardRoll.modifier || ""})`,
+					// label: `Card Roll (${skill} ${cardRoll.modifier || ""} vs DC ${DC})`,
 				});
 				await roll.toModifiedMessage(true);
 				const hit = roll.success ?? false;
@@ -1114,13 +1108,14 @@ export class PersonaSocial {
 				break;
 			}
 			case "save": {
-				const DC = 0;
 				const DCMods = this.getCardRollDCModifiers(cardData, cardRoll);
 				const saveResult = await PersonaRoller.rollSave(cardData.actor,  {
-					DC,
+					askForModifier: true,
+					DC: 0,
 					DCMods,
 					label: "Card Roll (Saving Throw)",
-					rollTags
+					rollTags,
+					situation: cardData.situation,
 				});
 				await saveResult.toModifiedMessage(true);
 				const situation = saveResult.resolvedSituation();

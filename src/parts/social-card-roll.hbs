@@ -10,9 +10,19 @@
 			{{replace label cardData.replaceSet}}
 			{{#if (eq roll.rollType "save")}}
 			. Roll {{roll.saveType}} Save
+			<span class="dc">
+				{{#if roll.DCVal}}
+				(DC {{roll.DCVal}})
+				{{/if}}
+			</span>
 			{{/if}}
 			{{#if (eq roll.rollType "studentSkillCheck")}}
 			. Roll {{roll.studentSkill}}
+			<span class="dc">
+				{{#if roll.DCVal}}
+				(DC {{roll.DCVal}})
+				{{/if}}
+			</span>
 			{{/if}}
 		</button>
 		{{else}}

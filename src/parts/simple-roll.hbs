@@ -1,6 +1,11 @@
 <section class="simple-roll">
 	<h2>
 		{{{roll.name}}}
+		{{#if roll.DC}}
+		<span class="dc-string">
+			vs DC {{roll.DC}}
+		</span>
+		{{/if}}
 	</h2>
 	<div class="roll-body tooltip">
 		{{#each roll.dice as |die|}}

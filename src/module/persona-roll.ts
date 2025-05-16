@@ -18,7 +18,7 @@ import { STUDENT_SKILLS } from "../config/student-skills.js";
 
 
 export class PersonaRoller {
-	static async #makeRoll(rollName:string, mods: ModifierList, situation: Situation & {rollTags: (RollTag | CardTag)[]} ): Promise<RollBundle & {modList: ResolvedMods}> {
+	static async #makeRoll(rollName:string, mods: ModifierList, situation: Situation & {rollTags: (RollTag | CardTag)[]}, DC ?: number ): Promise<RollBundle & {modList: ResolvedMods}> {
 		const user = situation.user;
 		let playerRoll = !game.user.isGM;
 		if (user) {
@@ -28,7 +28,7 @@ export class PersonaRoller {
 			}
 		}
 		const r = await new Roll("1d20").roll();
-		const bundle = new RollBundle(rollName, r, playerRoll,  mods, situation);
+		const bundle = new RollBundle(rollName, r, playerRoll,  mods, situation, DC);
 		bundle.resolveMods();
 		return bundle as RollBundle & {modList: ResolvedMods};
 	}
@@ -41,7 +41,8 @@ export class PersonaRoller {
 			rollTags: options.rollTags ?? [],
 		}
 		if (DC != undefined && DCMods != undefined) {
-			DC += DCMods.total(situation);
+			const DCModsTotal = DCMods.total(situation);
+			DC += DCModsTotal;
 		}
 		return DC;
 	}
@@ -87,11 +88,11 @@ export class PersonaRoller {
 		const mods = await this.#compileModifiers(options, baseMods, socialMods);
 		const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
 		const rollName = skillName;
-		const bundle = await this.#makeRoll(rollName, mods, situationWithRollTags);
+		const bundle = await this.#makeRoll(rollName, mods, situationWithRollTags, DC);
 		const resSit = bundle.modList.resolvedSituation;
 		if (DC != undefined) {
 			resSit.hit = resSit.rollTotal >= DC;
-			resSit.criticalHit = resSit.rollTotal >= DC +10;
+			resSit.criticalHit = resSit.rollTotal >= DC + 10;
 		}
 		await pc.onRoll(resSit);
 		return bundle;
@@ -119,7 +120,7 @@ export class PersonaRoller {
 		} satisfies Situation;
 		const difficultyTxt = DC == 11 ? "normal" : DC == 16 ? "hard" : DC == 6 ? "easy" : "unknown difficulty";
 		const labelTxt = `Saving Throw (${label ? label + " " + difficultyTxt : ""})`;
-		const bundle = await this.#makeRoll(labelTxt, mods, situationWithRollTags);
+		const bundle = await this.#makeRoll(labelTxt, mods, situationWithRollTags, DC);
 		const resSit = bundle.modList.resolvedSituation;
 		if (DC != undefined) {
 			resSit.hit = resSit.rollTotal > DC;
@@ -137,9 +138,10 @@ export class RollBundle {
 	roll: Roll;
 	modList: UnresolvedMods | ResolvedMods;
 	name: string;
+	DC ?: number;
 	_playerRoll: boolean;
 
-	constructor (rollName: string,roll : Roll, playerRoll : boolean,  modList ?: ModifierList, situation ?: Situation ) {
+	constructor (rollName: string,roll : Roll, playerRoll : boolean,  modList ?: ModifierList, situation ?: Situation, DC ?: number) {
 		this._playerRoll = playerRoll;
 		if (!roll._evaluated)
 			throw new Error("Can't construct a Roll bundle with unevaluated roll");
@@ -149,6 +151,7 @@ export class RollBundle {
 			situation: situation ?? null,
 		};
 		this.name = rollName;
+		this.DC = DC;
 	}
 
 	setName(newName: string): void {
@@ -248,6 +251,7 @@ export class RollBundle {
 		if ("situation" in this.modList) {
 			throw new PersonaError("Mod List not resolved");
 		}
+		if (this.DC == 0) debugger;
 		const html = await renderTemplate("systems/persona/parts/simple-roll.hbs", {roll: this, showSuccess});
 		return html;
 	}

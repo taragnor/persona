@@ -572,7 +572,6 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"getRollTags": function (cardRoll: CardRoll): string {
-			debugger;
 			const localization= PersonaSocial.getCardRollTags(cardRoll)
 				.map (t => localize(ROLL_TAGS_AND_CARD_TAGS[t]))
 			return localization

@@ -95,6 +95,7 @@ type CardRollList = {
 		studentSkill: StudentSkillExt,
 		modifier: number,
 		DC: CardRollDC,
+		DCVal ?: number,
 	},
 	"save" : {
 		rollType: "save",
@@ -102,6 +103,7 @@ type CardRollList = {
 		saveType: SaveType,
 		modifier: number,
 		disallow_other_modifiers: boolean,
+		DCVal ?: number,
 	},
 	"waitForGM" : {
 		rollType: "gmspecial"
