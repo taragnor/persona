@@ -137,13 +137,17 @@ export const SOCIAL_CARD_ACTION_LIST = [
 	"add-card-events-to-list",
 	"replace-card-events",
 	"set-temporary-variable",
+	"card-response",
+	"append-card-tag",
+	"remove-cameo",
 ] as const;
 
 export type SocialCardAction = typeof SOCIAL_CARD_ACTION_LIST[number];
 
-export const SOCIAL_CARD_ACTIONS = Object.fromEntries(
-	SOCIAL_CARD_ACTION_LIST.map( x=> [x, `persona.effecttypes.social-card.${x}`])
-);
+export const SOCIAL_CARD_ACTIONS = HTMLTools.createLocalizationObject(SOCIAL_CARD_ACTION_LIST, "persona.effecttypes.social-card");
+// export const SOCIAL_CARD_ACTIONS = Object.fromEntries(
+// 	SOCIAL_CARD_ACTION_LIST.map( x=> [x, `persona.effecttypes.social-card.${x}`])
+// );
 
 export const DUNGEON_ACTION_LIST = [
 	"roll-tension-pool",

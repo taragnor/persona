@@ -252,6 +252,10 @@
 	</div>
 	{{/if}}
 
+	{{#if (eq cons.cardAction "card-response")}}
+		<textarea class="text-msg" id="text-msg" name="{{strcat namePrefix 'text'}}">{{cons.text}}</textarea>
+	{{/if}}
+
 	{{/if}}
 
 	{{#if (eq cons.type "inspiration-cost")}}

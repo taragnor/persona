@@ -837,6 +837,8 @@ export class ConditionalEffectManager {
 				return `Chat Response`;
 			case "append-card-tag":
 				return `Add card tag: ${cons.cardTag}`;
+			case "remove-cameo":
+				return `Remove Cameo(s) from scene`;
 			default:
 				cons satisfies never;
 				return "ERROR";

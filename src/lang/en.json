@@ -528,6 +528,8 @@
 	"persona.effecttypes.social-card.add-card-events-to-list": "Add Card events to List",
 	"persona.effecttypes.social-card.replace-card-events": "Replace Card events",
 	"persona.effecttypes.social-card.set-temporary-variable": "Set Temporary Variable",
+	"persona.effecttypes.social-card.append-card-tag": "Add Card Tag",
+	"persona.effecttypes.social-card.remove-cameo": "Remove Cameo from Scene",
 
 
 	"persona.effecttypes.dungeonAction.roll-tension-pool": "Roll Tension Pool",

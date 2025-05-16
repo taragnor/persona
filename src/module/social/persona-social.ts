@@ -1334,10 +1334,23 @@ export class PersonaSocial {
 			case "append-card-tag":
 				await this.#appendCardTag(eff.cardTag);
 				break;
+			case "remove-cameo":
+				await this.#removeCameo();
+				break;
 			default:
 					eff satisfies never;
 				break;
 		}
+	}
+
+	static async #removeCameo() {
+		if (!this.rollState) {
+			PersonaError.softFail("Can't find Rollstate when trying to apply Card Response");
+			return;
+		}
+		const cardData = this.rollState.cardData;
+		cardData.cameos = [];
+		cardData.replaceSet["$CAMEO"] = "REMOVED CAMEO";
 	}
 
 	static async #appendCardTag(tag: CardTag) {

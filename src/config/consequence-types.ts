@@ -1,3 +1,4 @@
+import { SocialCardAction } from "./effect-types.js";
 import { CardTag } from "./card-tags.js";
 import { VariableType } from "../module/persona-variables.js";
 import { CombatEffect } from "./effect-types.js";
@@ -345,7 +346,7 @@ type SystemVariableModifier = {
 }
 
 export type SocialCardActionConsequence =
-	{ type: "social-card-action" } & CardActionTypes[number];
+	{ type: "social-card-action", cardAction: SocialCardAction} & CardActionTypes[number];
 
 type CardActionTypes = [
 	{
@@ -378,6 +379,8 @@ type CardActionTypes = [
 	}, {
 		cardAction: "append-card-tag",
 		cardTag: CardTag,
+	}, {
+		cardAction: "remove-cameo",
 	}
 ];
 
