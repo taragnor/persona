@@ -60,6 +60,9 @@ export const ROLL_TAGS = foundry.utils.mergeObject( {...ROLL_TAGS_PARTIAL}, STUD
 
 export type RollTag = keyof typeof ROLL_TAGS;
 
-export const ROLL_TAGS_AND_CARD_TAGS= foundry.utils.mergeObject({...ROLL_TAGS}, CARD_TAGS);
+const MERGED_ROLL_TAGS_AND_CARD_TAGS= foundry.utils.mergeObject({...ROLL_TAGS}, CARD_TAGS);
+
+export const ROLL_TAGS_AND_CARD_TAGS= Object.fromEntries(Object.entries(MERGED_ROLL_TAGS_AND_CARD_TAGS ).sort( ([ak, _av], [bk, _bv]) =>  ak.localeCompare(bk))) as typeof MERGED_ROLL_TAGS_AND_CARD_TAGS;
+
 
 

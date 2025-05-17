@@ -293,19 +293,6 @@ export class ConditionalEffectManager {
 		}
 	}
 
-	//static restoreLastClick(html : JQuery) {
-	//	if (this.lastClick) {
-	//		const el = html.find(`.multi-check[data-name="${this.lastClick}"]`);
-	//		debugger;
-	//		if (el.length == 0) {
-	//			//@ts-ignore
-	//			window.lastClick = this.lastClick;
-	//			console.log("Some error no last click")
-	//		}
-	//		el.show();
-	//	}
-	//}
-
 	static applyHandlers<D extends FoundryDocument<any>>(html: JQuery, doc: D) {
 		html.find(".add-effect").on("click", async (ev) => await this.handler_addPowerEffect(ev, doc));
 		html.find(".del-effect").on("click", async (ev) => await this.handler_deletePowerEffect(ev, doc));

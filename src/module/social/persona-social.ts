@@ -838,7 +838,7 @@ export class PersonaSocial {
 			}
 		}
 		if (rollTags.includes("on-cameo") && cardData.cameos) {
-			const cameoEffects= cardData.cameos.flatMap( x=> x.socialEffects())
+			const cameoEffects = cardData.cameos.flatMap( x=> x.socialEffects() )
 			effects.push(...cameoEffects);
 		}
 		const retList = new ModifierList();
@@ -1475,7 +1475,7 @@ export class PersonaSocial {
 		const cardData = this.rollState.cardData;
 		cardData.eventsChosen = [];
 		cardData.eventList = newCard.cardEvents().slice();
-		cardData.extraCardTags= newCard.system.cardTags.slice();
+		cardData.extraCardTags = newCard.system.cardTags.slice();
 	}
 
 	static async modifyProgress(amt: number) {
@@ -1753,7 +1753,7 @@ export type CardData = {
 	replaceSet: Record<string, string>;
 	sound?: FOUNDRY.AUDIO.Sound
 	variables: Record<string, number>;
-	extraCardTags: CardTag[];
+	extraCardTags: (CardTag | RollTag)[];
 
 };
 

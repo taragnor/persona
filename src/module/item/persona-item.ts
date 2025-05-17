@@ -1,3 +1,4 @@
+import { ROLL_TAGS_AND_CARD_TAGS } from "../../config/roll-tags.js";
 import { CARD_RESTRICTOR_TAGS } from "../../config/card-tags.js";
 import { CardRoll } from "../../config/social-card-config.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
@@ -11,7 +12,6 @@ import { EQUIPMENT_TAGS } from "../../config/equipment-tags.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { CreatureTag } from "../../config/creature-tags.js";
 import { Precondition } from "../../config/precondition-types.js";
-import { CARD_TAGS } from "../../config/card-tags.js";
 import { SimpleDamageCons } from "../../config/consequence-types.js";
 import { Helpers } from "../utility/helpers.js";
 import { PersonaAE } from "../active-effect.js";
@@ -254,7 +254,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	get cardTags() : string {
 		if ("cardTags" in this.system) {
-			const tags= this.system.cardTags.map(tag => localize(CARD_TAGS[tag]));
+			const tags= this.system.cardTags.map(tag => localize(ROLL_TAGS_AND_CARD_TAGS[tag]));
 			return tags.join(", ");
 		}
 		return "";

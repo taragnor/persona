@@ -435,7 +435,7 @@ export class PersonaHandleBarsHelpers {
 			}
 		},
 		"getEventTagList": function (event: SocialCard["system"]["events"][number]) {
-			const tags= event.eventTags.map(tag => localize(CARD_TAGS[tag]));
+			const tags= event.eventTags.map(tag => localize(ROLL_TAGS_AND_CARD_TAGS[tag]));
 			return tags.join(", ");
 		},
 

@@ -1,3 +1,4 @@
+import { ROLL_TAGS_AND_CARD_TAGS } from "../../config/roll-tags.js";
 import { NumberTools } from "../utility/numberTools.js";
 import { SocialCard } from "../item/persona-item.js";
 import { UniversalModifier } from "../item/persona-item.js";
@@ -233,7 +234,7 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 		const ret = {
 			cardType: new txt({initial: "social", choices: SOCIAL_CARD_TYPES_LIST}),
 			//for social cards
-			cardTags: new arr( new txt({choices: CARD_TAG_LIST})),
+			cardTags: new arr( new txt({choices: ROLL_TAGS_AND_CARD_TAGS})),
 			frequency: new num({initial: 1, integer: false}),
 			announceWhenAvailable: new bool({initial : false}),
 			qualifiers: new arr( new obj<{
@@ -375,7 +376,7 @@ class SocialCardEventDM extends foundry.abstract.DataModel {
 			volume: new num({initial: 0.5, integer:false, max: 1.0, min: 0}),
 			label: new txt(),
 			text: new txt(),
-			eventTags: new arr( new txt({choices: CARD_TAG_LIST })),
+			eventTags: new arr( new txt({choices: ROLL_TAGS_AND_CARD_TAGS })),
 			frequency: new num({initial: 1.0, integer: false}),
 			placement: new sch({
 				starter: new bool({initial: true}),
