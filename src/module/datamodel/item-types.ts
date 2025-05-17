@@ -435,14 +435,14 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 				if (roll.progressSuccess || roll.progressCrit) {
 					// const modifier = roll.modifier == 0 ? "" : `at ${NumberTools.signed(roll.modifier)}`;
 					const modifier = 0;
-					starterTxt += ` ${roll.studentSkill} ${modifier} Check Success (${roll.progressSuccess} + ${roll.progressCrit}).`;
+					starterTxt += ` ${roll.studentSkill} ${modifier ? modifier : ""} Check Success (${roll.progressSuccess} + ${roll.progressCrit}).`;
 				}
 				break;
 			case "save":
 				const modifier = 0;
 				// const modifier = (roll.modifier ?? 0) == 0 ? "" : `at ${NumberTools.signed(roll.modifier)}`;
 				if (roll.progressSuccess) {
-					starterTxt += `${roll.saveType} Save Success ${modifier} (${roll.progressSuccess} + ${roll.progressCrit}).`;
+					starterTxt += `${roll.saveType} Save Success ${modifier ? modifier : ""} (${roll.progressSuccess} + ${roll.progressCrit}).`;
 				}
 			case "none":
 					const gainLose = roll.progressSuccess >= 0 ? "Gain" : "Lose";
