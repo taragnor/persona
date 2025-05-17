@@ -280,7 +280,7 @@ export class PersonaSocial {
 		if (activity instanceof PersonaActor) {
 			const link = this.lookupSocialLink(actor, activity.id);
 			replaceSet["$TARGET"] = link.actor.name;
-			if (link.actor.isSpecialEvent(link.linkLevel+1)) {
+			if (link.actor.isSpecialEvent(link.linkLevel + 1)) {
 				const msg = await this.specialEvent(actor, activity)
 				return [msg];
 			}
@@ -849,10 +849,16 @@ export class PersonaSocial {
 	static async #finalizeCard( cardData: CardData) : Promise<ChatMessage<Roll>> {
 		let html = "";
 		let pcImproveSpend = "";
+		let giftStr= "";
 		if (cardData.card.system.cardType == "social") {
 			const link = this.lookupLink(cardData) as SocialLinkData;
 			if (link.actor.isPC()) {
 				pcImproveSpend = `<li class="token-spend"> spend 4 progress tokens to raise link with ${link.actor.name}</li>`;
+			}
+			giftStr += `You may give a gift to anyone in the scene (max 1 gift per person). `
+			const SLCameos = cardData.cameos.filter(cameo => cardData.actor.getSocialSLWith(cameo) >= 4);
+			if (SLCameos.length > 0) {
+				giftStr += `However since there are multiple people in the scene...  ${SLCameos.map(x=> x.name).join(", ")}. Anyone who doesn't get a gift will lose a progress token if they are SL 4+ or higher. `;
 			}
 		}
 		const tokenSpends = (cardData.card.system.tokenSpends ?? [])
@@ -862,6 +868,9 @@ export class PersonaSocial {
 		.map(x=> `<li class="token-spend"> ${x} </li>`);
 		const finale = (cardData.card.system.finale?.trim()) ? `
 		<h2> Finale </h2>
+		<div class="gift">
+		${giftStr}
+		</div>
 		<span class="finale">
 		${cardData.card.system.finale.trim()}
 		</span>
@@ -1129,7 +1138,10 @@ export class PersonaSocial {
 				const situation = saveResult.resolvedSituation();
 				await this.processAutoProgress(cardData, cardRoll, saveResult.success ?? false, false);
 				await this.#onCardRoll(cardData, cardRoll, situation);
-				await this.applyEffects(effectList,situation, cardData.actor);
+				if (rollTags.includes("free-event")) {
+					this.addExtraEvent(1);
+				}
+				await this.applyEffects(effectList, situation, cardData.actor);
 				break;
 			}
 			case "dual":

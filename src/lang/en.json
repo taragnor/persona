@@ -895,7 +895,11 @@
 	"persona.roll.rolltag.studying" : "Studying",
 	"persona.roll.rolltag.music" : "Music",
 	"persona.roll.rolltag.crime" : "Crime",
-	"persona.roll.rolltag.linguistic" : "Linguistic",
+	"persona.roll.rolltag.subject-math" : "Subject (Math)",
+	"persona.roll.rolltag.subject-english" : "Subject (English)",
+	"persona.roll.rolltag.subject-language" : "Subject (Foreign Language)",
+	"persona.roll.rolltag.subject-science" : "Subject (Science)",
+	"persona.roll.rolltag.subject-history" : "Subject (History)",
 	"persona.roll.rolltag.gaming" : "Gaming",
 	"persona.roll.rolltag.training" : "Training",
 	"persona.roll.rolltag.metaverse" : "Metaverse",
@@ -922,6 +926,7 @@
 
 	"persona.roll.rolltag.deep-conversation" : "Deep Conversation",
 	"persona.roll.rolltag.smalltalk" : "Smalltalk",
+	"persona.roll.rolltag.free-event" : "+1 Event",
 
 	"persona.comparison.tagType.power": "Power Tag",
 	"persona.comparison.tagType.actor": "Actor Tag",

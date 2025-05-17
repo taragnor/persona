@@ -23,9 +23,13 @@ export const ROLL_TAG_LIST = [
 	"persuasive",
 	"artistic",
 	"studying",
+	"subject-english",
+	"subject-math",
+	"subject-language",
+	"subject-science",
+	"subject-history",
 	"music",
 	"crime",
-	"linguistic",
 	"training",
 	"gaming",
 	"spiritual",
@@ -51,6 +55,7 @@ export const ROLL_TAG_LIST = [
 	"on-group",
 	"deep-conversation",
 	"smalltalk",
+	"free-event",
 ] as const;
 
 
