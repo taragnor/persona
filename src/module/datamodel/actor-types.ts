@@ -38,7 +38,10 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 		const ret = {
 			...BaseStuff.defineSchema(),
 			...SocialTargetBlockData(),
-			hasAlteredFatigueToday: new bool({initial: false}),
+			fatigue: new sch( {
+				hasAlteredFatigueToday: new bool({initial: false}),
+				hasMadeFatigueRollToday: new bool({initial: false}),
+			}),
 			equipped: equipslots(),
 			activePersona: new id(),
 			personaList: new arr(new id()),

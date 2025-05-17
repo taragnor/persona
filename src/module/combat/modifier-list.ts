@@ -33,7 +33,7 @@ export class ModifierList {
 		this.listType = listType;
 	}
 
-	add(name: string, modifier: number, sourceItem: Option<ModifierContainer> = null, conditions: Precondition[] = []) {
+	add(name: string, modifier: number, sourceItem: Option<ModifierContainer> = null, conditions: Precondition[] = []) : ModifierList {
 		const source = sourceItem ? PersonaDB.getUniversalItemAccessor(sourceItem) : null;
 		this._data.push( {
 			source,
@@ -42,6 +42,7 @@ export class ModifierList {
 			modifier,
 			variableModifier: new Set(),
 		});
+		return this;
 	}
 
 	list(situtation: Situation): [number, string][] {

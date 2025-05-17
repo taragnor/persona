@@ -318,7 +318,15 @@ export class PersonaHandleBarsHelpers {
 
 		"multicheck": function (name: string, list: Record<string, string>, options: {hash: {localize: boolean, checked: Record<string, boolean>}}) : SafeString {
 			let html = "";
+			html += `<div class="multi-check" data-name="${name}">`;
 			const hash = options?.hash ?? undefined;
+			const selected= Object.entries(hash?.checked ?? {})
+				.filter (([_k,v]) => v == true)
+				.map( ([k, _v])=> list[k] ? list[k] : k)
+				.map( k => hash?.localize ? localize(k) : k )
+				.join (", ");
+			html += `<span class="selected micro-text"> ${selected.length ? selected : "NONE SELECTED"} </span>`;
+			html+= `<div class="MC-selectors ${(selected.length && ConditionalEffectManager.lastClick != name) ? 'hidden': ''}">`;
 			for (const [key, val] of Object.entries(list)) {
 				const valName = hash?.localize ? localize(val) : val;
 				html += `<span class="small-box">`;
@@ -332,6 +340,8 @@ export class PersonaHandleBarsHelpers {
 				html += `<input type="checkbox" name="${name}.${key}" ${ (checked) ? 'checked' : ""} >`;
 				html += `</span>`;
 			}
+			html+= `</div>`;
+			html += `</div>`;
 			return new Handlebars.SafeString(html);
 		},
 

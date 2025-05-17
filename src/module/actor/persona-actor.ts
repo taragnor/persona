@@ -441,7 +441,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
 			const inc = this.system.combat.classData.incremental.hp ?? 0;
 			const lvl = this.system.combat.classData.level;
-			const bonuses = persona.getBonuses("maxhp");
+			const nonMultbonuses = persona.getBonuses("maxhp");
+			const newForm = persona.getBonuses("maxhpMult-new");
 			const lvlbase = this.class.getClassProperty(lvl, "maxhp");
 			const diff = this.class.getClassProperty(lvl+1, "maxhp") - lvlbase;
 			const incBonus = Math.round(inc / 3 * diff);
@@ -460,7 +461,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				multmods.add("weaknesses mod", bonus)
 			}
 			if (this.system.combat.resists.physical == "weakness") {
-				multmods.add("weak to Physical", 0.25);
+				newForm.add("weak to Physical", 1.25);
 			}
 			if (this.isShadow()) {
 				const overResist = blocks + (0.5 * resists) - (weaknesses * 1);
@@ -469,10 +470,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					multmods.add("overResist/Block Mod", penalty);
 				}
 			}
-			bonuses.add("incremental bonus hp", incBonus)
+			// bonuses.add("incremental bonus hp", incBonus)
 			const mult = multmods.total(sit, "percentage-special");
-			const newform = persona.getBonuses("maxhpMult-new").total(sit, "percentage");
-			const mhp = ((mult * lvlbase) + bonuses.total(sit)) * newform;
+			const newformMult = newForm.total(sit, "percentage");
+			const mhp = (newformMult * mult * (lvlbase + incBonus)) + nonMultbonuses.total(sit);
 			return Math.round(mhp);
 		} catch (e) {
 			console.log(e);
@@ -1428,12 +1429,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	hasAlteredFatigueToday(this:PC): boolean {
-		return this.system.hasAlteredFatigueToday ?? false;
+		return this.system.fatigue.hasAlteredFatigueToday ?? false;
+	}
 
+	hasMadeFatigueRollToday(this:PC) : boolean {
+		return this.system.fatigue.hasMadeFatigueRollToday ?? false;
 	}
 
 	async setAlteredFatigue(val = true) {
-		await this.update({"system.hasAlteredFatigueToday": val});
+		await this.update({"system.fatigue.hasAlteredFatigueToday": val});
 	}
 
 	async setFatigueLevel(lvl: number,log = true) : Promise<FatigueStatusId | undefined> {
@@ -1603,7 +1607,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
 		if (!this.isValidCombatant()) return [];
-		return this.persona().mainModifiers();
+		return this.persona().mainModifiers(options);
 		// const persona= this.persona();
 		// const passivePowers = (options && options.omitPowers) ? [] : this.getPassivePowers();
 		// return [
@@ -2512,6 +2516,14 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 
 async levelUp(this: PC | NPCAlly) : Promise<void> {
 	const newlevel  = this.system.combat.classData.level+1 ;
+	await this.resetIncrementals();
+	await this.update({
+		"system.combat.classData.level": newlevel,
+		"system.combat.xp" : 0,
+	});
+}
+
+async resetIncrementals(this: ValidAttackers) {
 	const incremental : PC["system"]["combat"]["classData"]["incremental"] = {
 		hp: 0,
 		mp: 0,
@@ -2524,11 +2536,8 @@ async levelUp(this: PC | NPCAlly) : Promise<void> {
 		initiative: 0,
 	};
 	await this.update({
-		"system.combat.classData.level": newlevel,
 		"system.combat.classData.incremental": incremental,
-		"system.combat.classData.incremental_progress": 0,
-		"system.combat.xp" : 0,
-	});
+	})
 }
 
 maxSlot() : number {
@@ -2971,46 +2980,62 @@ socialEffects(this: SocialLink) : ConditionalEffect[] {
 	return this.system?.socialEffects ?? [];
 }
 
+async fatigueRecoveryRoll(this: PC): Promise<string[]> {
+	let ret = [] as string[];
+	const fatigueStat = this.getFatigueStatus();
+	if (fatigueStat == undefined) return ret;
+	if (this.hasAlteredFatigueToday()) return ret;
+	let DC = 11;
+	switch (fatigueStat) {
+		case "rested": DC = 16; break;
+		case "exhausted": DC = 11;
+			if (this.hasMadeFatigueRollToday()) return ret;
+			break;
+		case "tired": DC= 6;
+			if (this.hasMadeFatigueRollToday()) return ret;
+			break;
+	}
+	const roll = await PersonaRoller.rollSave(this, {
+		DC,
+		label: `Save to end ${localizeStatusId(fatigueStat)}`,
+		saveVersus: fatigueStat,
+		rollTags: ["rest"],
+	});
+	await roll.toModifiedMessage(true);
+	const locStat = localizeStatusId(fatigueStat);
+	const fatLevel = this.fatigueLevel;
+	if (roll.success && fatLevel < 1) {
+		const newStat = await this.alterFatigueLevel(1);
+		if (newStat) {
+			ret.push(`${this.displayedName} is now ${localizeStatusId(newStat)}`);
+		} else {
+			ret.push(`${this.displayedName} is no longer ${locStat}`);
+		}
+	}
+	if (!roll.success && fatLevel > 1) {
+		await this.alterFatigueLevel(-1);
+		ret.push(`${this.displayedName} is no longer ${locStat}`);
+	}
+	return ret;
+}
+
+async resetFatigueChecks(this: PC) {
+	if (this.hasAlteredFatigueToday()) {
+		await this.update({"system.hasAlteredFatigueToday": false});
+	}
+	if (this.hasMadeFatigueRollToday()) {
+		await this.update({"system.fatigue.hasMadeFatigueRollToday" : false});
+	}
+}
+
 async onEndDay(this: PC): Promise<string[]> {
 	let ret = [] as string[];
 	for (const eff of this.effects) {
 		if (await eff.onEndSocialTurn())
 			ret.push(`Removed Condition ${eff.displayedName} at end of day.`);
 	}
-	const fatigueStat = this.getFatigueStatus();
-	if (fatigueStat != undefined && !this.hasAlteredFatigueToday()) {
-		let DC = 11;
-		switch (fatigueStat) {
-			case "rested": DC =16; break;
-			case "exhausted": DC =11; break;
-			case "tired": DC= 11; break;
-		}
-		const roll = await PersonaRoller.rollSave(this, {
-			DC,
-			label: `Save to end ${localizeStatusId(fatigueStat)}`,
-			saveVersus: fatigueStat,
-			rollTags: ["rest"],
-		});
-		await roll.toModifiedMessage(true);
-
-		const locStat = localizeStatusId(fatigueStat);
-		const fatLevel = this.fatigueLevel;
-		if (roll.success && fatLevel < 1) {
-			const newStat = await this.alterFatigueLevel(1);
-			if (newStat) {
-				ret.push(`${this.displayedName} is now ${localizeStatusId(newStat)}`);
-			} else {
-				ret.push(`${this.displayedName} is no longer ${locStat}`);
-			}
-		}
-		if (!roll.success && fatLevel > 1) {
-			await this.alterFatigueLevel(-1);
-			ret.push(`${this.displayedName} is no longer ${locStat}`);
-		}
-	}
-	if (this.hasAlteredFatigueToday()) {
-		await this.update({"system.hasAlteredFatigueToday": false});
-	}
+	await this.resetFatigueChecks();
+	ret.push(...await this.fatigueRecoveryRoll());
 	return ret;
 }
 
@@ -3362,7 +3387,7 @@ async onRoll(situation: RollSituation & Situation) {
 	if (!this.isValidCombatant()) return;
 	if (this.isPC() ) {
 		if (situation.rollTags.includes("fatigue")) {
-			await this.setAlteredFatigue(true);
+			await this.update({"system.fatigue.hasMadeFatigueRollToday" : true});
 		}
 	}
 	const rollSituation : Situation = {

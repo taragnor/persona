@@ -155,7 +155,6 @@ export const classData = function () {
 			wpnDamage: new num({integer: true, initial: 0, max: 2}),
 			initiative: new num({integer: true, initial: 0, max: 3}),
 		}),
-		incremental_progress: new num({initial:0, min:0, integer:true}),
 	});
 }
 

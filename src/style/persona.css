@@ -793,6 +793,10 @@ span.skill-card img {
 	overflow: hidden; /* to contain floated elements */
 }
 
+.hidden {
+  display: none;
+}
+
 
 .social-card-response img.float-img {
 	float: left;

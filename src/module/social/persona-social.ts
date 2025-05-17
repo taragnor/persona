@@ -829,6 +829,8 @@ export class PersonaSocial {
 		const effects : ConditionalEffect[] = [];
 		const globalMods = ConditionalEffectManager.getEffects(card.system.globalModifiers, null, null);
 		effects.push(...globalMods);
+		const universal = PersonaDB.getGlobalModifiers().flatMap(x => x.getEffects(null));
+		effects.push(...universal);
 		if (cardData.activity instanceof PersonaActor) {
 			const link =cardData.activity;
 			if (!rollTags.includes("on-cameo") && !rollTags.includes("on-other")) {
@@ -1470,8 +1472,10 @@ export class PersonaSocial {
 		if (!keepEventChain) {
 			this.rollState.cardData.eventsRemaining = newCard.system.num_of_events;
 		}
-		this.rollState.cardData.eventsChosen = [];
-		this.rollState.cardData.eventList = newCard.cardEvents().slice();
+		const cardData = this.rollState.cardData;
+		cardData.eventsChosen = [];
+		cardData.eventList = newCard.cardEvents().slice();
+		cardData.extraCardTags= newCard.system.cardTags.slice();
 	}
 
 	static async modifyProgress(amt: number) {

@@ -42,6 +42,8 @@ import { PersonaDB } from "./persona-db.js";
 
 export class ConditionalEffectManager {
 
+	static lastClick: string;
+
 	static clipboard: {
 		condition ?: Precondition;
 		consequence ?: Consequence;
@@ -277,6 +279,33 @@ export class ConditionalEffectManager {
 		this.clipboard.consequence = acc.data[consIndex];
 	}
 
+	static async handler_clickMCSelected<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, _item: D) {
+		ev.stopPropagation();
+		$(ev.currentTarget).parent().find(".MC-selectors").toggle();
+		this.lastClick = "";
+	}
+
+	static async handler_clickMCSelector<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, _item: D) {
+		$(ev.currentTarget).show();
+		this.lastClick= HTMLTools.getClosestDataSafe(ev.currentTarget, "name", "");
+		if (this.lastClick == "") {
+			debugger;
+		}
+	}
+
+	//static restoreLastClick(html : JQuery) {
+	//	if (this.lastClick) {
+	//		const el = html.find(`.multi-check[data-name="${this.lastClick}"]`);
+	//		debugger;
+	//		if (el.length == 0) {
+	//			//@ts-ignore
+	//			window.lastClick = this.lastClick;
+	//			console.log("Some error no last click")
+	//		}
+	//		el.show();
+	//	}
+	//}
+
 	static applyHandlers<D extends FoundryDocument<any>>(html: JQuery, doc: D) {
 		html.find(".add-effect").on("click", async (ev) => await this.handler_addPowerEffect(ev, doc));
 		html.find(".del-effect").on("click", async (ev) => await this.handler_deletePowerEffect(ev, doc));
@@ -290,6 +319,9 @@ export class ConditionalEffectManager {
 		html.find(".copy-effect").on("click", async(ev) => this.handler_copyEffect(ev, doc))
 		html.find(".copy-consequence").on("click", async(ev) => this.handler_copyConsequence(ev, doc))
 		html.find(".copy-condition").on("click", async(ev) => this.handler_copyCondition(ev, doc))
+		html.find("div.multi-check .selected").on("click", (ev) => this.handler_clickMCSelected(ev, doc))
+		html.find(".MC-selectors").on("click", (ev) => this.handler_clickMCSelector(ev, doc))
+		// setTimeout( () => this.restoreLastClick(html), 100);
 	}
 
 	static getEffects<T extends Actor<any>, I extends Item<any>>(CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null) : ConditionalEffect[] {
