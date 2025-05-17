@@ -49,7 +49,9 @@ export type CardChoice = {
 	conditions: Precondition[],
 	text: string,
 	roll: CardRoll, //defaults to "none"
-	postEffects: { effects: ConditionalEffect[]}
+	postEffects: { effects: ConditionalEffect[]},
+	resourceCost: number,
+
 };
 
 export type CardEvent = SocialCard["system"]["events"][number];

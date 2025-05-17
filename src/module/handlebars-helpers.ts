@@ -251,6 +251,19 @@ export class PersonaHandleBarsHelpers {
 			else return str;
 		},
 
+		"choiceMeetsConditions": function(cardData: CardData, choice: SocialCard["system"]["events"][number]["choices"][number]) : boolean {
+			const conditions = choice.conditions;
+			if (choice.resourceCost > 0) {
+				conditions.push( {
+					type: "numeric",
+					comparisonTarget: "has-resources",
+					comparator: ">=",
+					num: choice.resourceCost,
+				});
+			}
+			return testPreconditions(conditions ?? [], cardData.situation, null);
+
+		},
 		"meetsConditions" : function (cardData: CardData, conditions: Precondition[]) : boolean {
 			return testPreconditions(conditions ?? [], cardData.situation, null);
 		},

@@ -15,13 +15,19 @@
 	</div>
 	{{#each event.choices as |choice i|}}
 	<div class="event-choice" data-choice-index="{{i}}">
-		{{> "systems/persona/parts/social-card-roll.hbs" roll=choice.roll cardData=../cardData situation=situation enabled=(meetsConditions ../cardData choice.conditions) label=choice.name }}
-		{{#if (not (meetsConditions ../cardData choice.conditions))}}
+		{{> "systems/persona/parts/social-card-roll.hbs" roll=choice.roll cardData=../cardData situation=situation enabled=(choiceMeetsConditions ../cardData choice) label=choice.name  resourceCost=choice.resourceCost}}
+		{{#if (not (choiceMeetsConditions ../cardData choice))}}
 		<div class="missing-conditions">
 			Requires: {{printConditionals choice.conditions}}
 		</div>
 		{{/if}}
 		<div class="choice-text">
+			{{#if choice.resourceCost}}
+			<span class="cost">
+				Pay {{choice.resourceCost}} R.
+			</span>
+				{{/if}}
+
 			{{newlineConversion (replace choice.appendedText ../cardData.replaceSet)}}
 		</div>
 	</div>

@@ -411,6 +411,7 @@ export class PersonaSocial {
 			conditions: [],
 			text: choice.name,
 			appendedText: choice.name,
+			resourceCost: 0,
 			roll: {
 				rollType: "question",
 				progressSuccess: choice.progressSuccess,
@@ -1087,6 +1088,9 @@ export class PersonaSocial {
 			PersonaError.softFail(`No current event for Card ${cardData.card.name}`);
 		}
 		const effectList = ConditionalEffectManager.getEffects(cardChoice?.postEffects?.effects ?? [], null, null);
+		if (cardChoice.resourceCost > 0) {
+			cardData.actor.spendMoney(Math.abs(cardChoice.resourceCost ?? 0));
+		}
 		switch (cardRoll.rollType) {
 			case "question":
 			case "none": {

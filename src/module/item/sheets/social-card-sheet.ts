@@ -136,6 +136,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 			conditions: [],
 			text: "",
 			postEffects: { effects: []},
+			resourceCost: 0,
 			roll: {
 				rollType: "none",
 				progressCrit: 0,

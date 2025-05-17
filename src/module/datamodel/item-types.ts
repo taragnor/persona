@@ -412,6 +412,7 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 			name: new txt({initial: "New Choice"}),
 			conditions: new arr(new obj<Precondition>()),
 			text: new txt(),
+			resourceCost: new num({initial: 0}),
 			roll: new obj<CardRoll>(),
 			postEffects: new sch({
 				effects: new arr(new embedded(ConditionalEffectDM)),

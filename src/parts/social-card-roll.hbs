@@ -7,6 +7,9 @@
 				({{getRollTags roll}})
 			</span>
 			{{/if}}
+			{{#if resourceCost}}
+			( {{resourceCost}} R )
+			{{/if}}
 			{{replace label cardData.replaceSet}}
 			{{#if (eq roll.rollType "save")}}
 			. Roll {{roll.saveType}} Save
@@ -27,12 +30,18 @@
 		</button>
 		{{else}}
 		<button class="next" {{#if (not enabled)}} disabled {{/if}}>
+			{{#if resourceCost}}
+			( {{resourceCost}} R )
+			{{/if}}
 			{{replace label cardData.replaceSet}} (Custom Roll)
 		</button>
 		{{/if}}
 	</div>
 	{{else}}
 	<button class="next" {{#if (not enabled)}} disabled {{/if}}>
+			{{#if resourceCost}}
+			( {{resourceCost}} R )
+			{{/if}}
 		{{replace label cardData.replaceSet}}
 	</button>
 	{{/if}}

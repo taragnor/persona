@@ -1175,6 +1175,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			text: "",
 			postEffects: {effects:[]},
 			roll,
+			resourceCost: 0,
 		}
 		arr.push( newChoice);
 		event.choices = arr;
