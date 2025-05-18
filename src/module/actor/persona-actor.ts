@@ -3021,11 +3021,11 @@ async fatigueRecoveryRoll(this: PC): Promise<string[]> {
 }
 
 async resetFatigueChecks(this: PC) {
-	if (this.hasAlteredFatigueToday()) {
-		await this.update({"system.hasAlteredFatigueToday": false});
-	}
-	if (this.hasMadeFatigueRollToday()) {
-		await this.update({"system.fatigue.hasMadeFatigueRollToday" : false});
+	if (this.hasAlteredFatigueToday() || this.hasMadeFatigueRollToday()) {
+		await this.update({
+		"system.fatigue.hasAlteredFatigueToday": false,
+		"system.fatigue.hasMadeFatigueRollToday" : false
+		});
 	}
 }
 
@@ -3035,8 +3035,8 @@ async onEndDay(this: PC): Promise<string[]> {
 		if (await eff.onEndSocialTurn())
 			ret.push(`Removed Condition ${eff.displayedName} at end of day.`);
 	}
-	await this.resetFatigueChecks();
 	ret.push(...await this.fatigueRecoveryRoll());
+	await this.resetFatigueChecks();
 	return ret;
 }
 
