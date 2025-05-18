@@ -826,7 +826,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				const bonusPowers : Power[] =
 					this.mainModifiers({omitPowers:true})
 					.filter(x=> x.grantsPowers())
-					.flatMap(x=> x.getGrantedPowers(this as PC )) ;
+					.flatMap(x=> x.getGrantedPowers(this as PC ))
+					.sort ( (a,b)=> a.name.localeCompare(b.name)) ;
 				return removeDuplicates(bonusPowers);
 			default:
 				this.system satisfies never;

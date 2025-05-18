@@ -12,6 +12,8 @@
 				{{selectOptions POWERSTUFF.UNIVERSAL_MODIFIERS_TYPE localize=true selected=item.system.scope}}
 			</select>
 		</div>
+		<label>room effect box</label>
+		<input type="checkbox" id="{{day}}" name="system.room_effect" {{checked item.system.room_effect}} }}>
 		{{#if (eq item.system.scope "scene")}}
 		<h3> Scenes
 			<a class="add-scene">

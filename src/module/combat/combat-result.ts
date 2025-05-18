@@ -950,7 +950,7 @@ export class CombatResult  {
 
 						default:
 							otherEffect.subtype satisfies never;
-							PersonaError.softFail("No subtype for Alter MP effect");
+							PersonaError.softFail(`Bad subtype for Alter MP effect : ${otherEffect.subtype}`);
 					}
 					break;
 				case "combat-effect":
