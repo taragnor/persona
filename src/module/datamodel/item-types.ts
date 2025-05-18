@@ -97,10 +97,12 @@ class UniversalModifierDM extends foundry.abstract.TypeDataModel {
 	}
 
 	static override migrateData(data: UniversalModifier["system"])  {
-		if (data.room_effect === true) {
+		if (data?.room_effect === true) {
 			data.scope = "room";
 		}
-		data.room_effect = false;
+		if ("room_effect" in data) {
+			data.room_effect = false;
+		}
 		return data;
 	}
 }

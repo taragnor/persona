@@ -836,11 +836,16 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			for (const user of this.combatants) {
 				if (user.token.actor == undefined) {continue;}
 				const situation : Situation = {
+					trigger: "end-turn",
+					triggeringUser: game.user,
 					triggeringCharacter,
 					user: user.token.actor.accessor,
 					activeCombat: true,
 				}
-				await PersonaCombat.execTrigger("end-turn", user.token.actor as ValidAttackers, situation);
+				await TriggeredEffect.onTrigger("end-turn", user.actor, situation)
+					.emptyCheck()
+					?.toMessage("On End Turn", combatant.actor);
+				// await PersonaCombat.execTrigger("end-turn", user.token.actor as ValidAttackers, situation);
 			}
 		}
 		const notes = await actor?.onEndCombatTurn() ?? [];

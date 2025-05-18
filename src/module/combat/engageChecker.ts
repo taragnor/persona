@@ -11,6 +11,8 @@ export class EngagementChecker {
 
 	static isEngaging(subject: PersonaCombatant, target: PersonaCombatant, combat: PersonaCombat) : boolean {
 		if (subject == target) return false;
+		if (!subject.actor || !subject.actor.isAlive()) return false;
+		if (!target.actor || !target.actor.isAlive()) return false;
 		if (!target.actor  || target.actor.hasStatus("charmed")) return false;
 		if (!subject.actor || !subject.actor.canEngage()) return false;
 		const inMelee = this.listOfCombatantsInMelee(subject, combat);
