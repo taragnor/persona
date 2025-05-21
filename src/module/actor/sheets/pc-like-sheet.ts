@@ -53,7 +53,7 @@ export class PCLikeSheet extends CombatantSheetBase {
 	async delItem (event : Event) {
 		const item_id= String(HTMLTools.getClosestData(event, "itemId"));
 		const item = this.actor.items.find(x=> x.id == item_id);
-		if (item && await HTMLTools.confirmBox("Confirm", "Really delete?")) {
+		if (item && await HTMLTools.confirmBox("Confirm", `Really delete <b>${item?.name ?? "Unknown item"}</b>?`)) {
 			item.delete();
 		}
 	}
