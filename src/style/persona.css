@@ -477,6 +477,16 @@ div.job {
 	flex-grow:0;
 }
 
+a.rollPower {
+	max-width: 10px;
+	width: 10px;
+}
+
+img.small-die {
+	max-width: 10px;
+	width: 10px;
+}
+
 div.main-powers,
 div.power-sideboard {
 	display: flex;
@@ -520,6 +530,16 @@ div.power-operations,
 div.power-name-block {
 	flex: 5 5 7%;
 	max-width: 100%;
+}
+
+span.die-with-text {
+	display: inline-block;
+}
+
+a.rollPower,
+a.powerName,
+a.roll-icon {
+	display: inline-block;
 }
 
 div.power-operations {

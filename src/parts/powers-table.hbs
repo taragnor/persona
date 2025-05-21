@@ -10,9 +10,9 @@
 	<div class="basic-powers">
 		{{#each actor.basicPowers as |power|}}
 		<div>
-			<button class="rollPower basic-power {{#if (not (canUsePower ../actor power))}} faded {{/if}}" data-power-id="{{power.id}}">
-				<img class="power-img" src="{{power.img}}" title='{{> "systems/persona/parts/power-tooltip.hbs" actor=../actor CONST=CONST power=power}}'>
-			</button>
+				<button class="rollPower basic-power {{#if (not (canUsePower ../actor power))}} faded {{/if}}" data-power-id="{{power.id}}">
+					<img class="power-img" src="{{power.img}}" title='{{> "systems/persona/parts/power-tooltip.hbs" actor=../actor CONST=CONST power=power}}'>
+				</button>
 		</div>
 		{{/each}}
 	</div>

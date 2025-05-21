@@ -1,10 +1,11 @@
-	<div class="main-powers">
-		{{#each persona.powers as |power i|}}
-		<div class="main-power" data-power-id="{{power.id}}">
-			<div class="power-name-block {{#if (lte ../actor.maxMainPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../actor power)}} illegal-level {{/if}}">
-				{{#if (canUsePower ../persona.user power)}}
+<div class="main-powers">
+	{{#each persona.powers as |power i|}}
+	<div class="main-power" data-power-id="{{power.id}}">
+		<div class="power-name-block {{#if (lte ../actor.maxMainPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../actor power)}} illegal-level {{/if}}">
+			<span class="die-with-text">
+			{{#if (canUsePower ../persona.user power)}}
 				<a class="rollPower" >
-					<img src="icons/dice/d20black.svg">
+					<img class="small-die" src="icons/dice/d20black.svg">
 				</a>
 					{{/if}}
 					<a class="powerName" title='{{> "systems/persona/parts/power-tooltip.hbs" actor=../actor CONST=../CONST power=power}}'>
@@ -13,31 +14,32 @@
 							({{powerCostString power ../persona.user}})
 						</span>
 					</a>
-			</div>
-			<div class="power-operations">
-				{{#if (canSideboardPowers ../persona)}}
-				<a class="sort-up">
-					<i class="fa-solid fa-sort-up"></i>
-				</a>
-				<a class="sort-down">
-					<i class="fa-solid fa-sort-down"></i>
-				</a>
-				<a class="move-to-sideboard" title="Move to Sideboard">
-					<i class="fa-solid fa-people-carry-box"></i>
-				</a>
-				{{/if}}
-				{{#if (eq ../persona.user.system.type "shadow")}}
-				<a class="recost-power">
-					<i class="fa-solid fa-circle-dot"></i>
-				</a>
-				{{/if}}
-				{{#if (canDeletePowers ../persona)}}
-				<a class="delPower" title="Delete Power">
-					<i class="fa-solid fa-trash-can"></i>
-				</a>
-				{{/if}}
-			</div>
+			</span>
 		</div>
-		{{/each}}
+		<div class="power-operations">
+			{{#if (canSideboardPowers ../persona)}}
+			<a class="sort-up">
+				<i class="fa-solid fa-sort-up"></i>
+			</a>
+			<a class="sort-down">
+				<i class="fa-solid fa-sort-down"></i>
+			</a>
+			<a class="move-to-sideboard" title="Move to Sideboard">
+				<i class="fa-solid fa-people-carry-box"></i>
+			</a>
+			{{/if}}
+			{{#if (eq ../persona.user.system.type "shadow")}}
+			<a class="recost-power">
+				<i class="fa-solid fa-circle-dot"></i>
+			</a>
+			{{/if}}
+			{{#if (canDeletePowers ../persona)}}
+			<a class="delPower" title="Delete Power">
+				<i class="fa-solid fa-trash-can"></i>
+			</a>
+			{{/if}}
+		</div>
 	</div>
+	{{/each}}
+</div>
 
