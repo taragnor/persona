@@ -801,8 +801,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "shadow":
 			case "npc":
 			case "tarot":
-			case "npcAlly":
 				return [];
+			case "npcAlly":
 			case "pc":
 				break;
 			default:
@@ -1858,6 +1858,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (powers.length < this.maxMainPowers) {
 			powers.push(power.id);
 			await this.update( {"system.combat.powers": powers});
+			return;
 		}
 		sideboard.push(power.id);
 		await this.update( {"system.combat.powers_sideboard": sideboard});
@@ -1878,19 +1879,33 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (! ("talents" in this.system)) {
 			return false;
 		}
+		if (this.isShadow()) return;
 		let powers = this.system.combat.powers;
 		const power = PersonaDB.getItemById(id) as Power;
 		if (powers.includes(id)) {
 			powers = powers.filter( x=> x != id);
 			await this.update( {"system.combat.powers": powers});
+			await this.checkMainPowerEmptySpace();
 			await Logger.sendToChat(`${this.name} deleted power ${power.name}` , this);
+			return;
 		}
-		if (this.system.type == "npcAlly") {return;}
 		let sideboard = this.system.combat.powers_sideboard;
 		if (sideboard.includes(id)) {
 			sideboard = sideboard.filter( x=> x != id);
 			await this.update( {"system.combat.powers_sideboard": sideboard});
 			await Logger.sendToChat(`${this.name} deleted sideboard power ${power.name}` , this);
+		}
+	}
+
+	async checkMainPowerEmptySpace(this: PC | NPCAlly) {
+		let powers = this.system.combat.powers;
+		while (powers.length < this.maxMainPowers) {
+			let sideboard = this.system.combat.powers_sideboard;
+			const pow1 = sideboard.shift();
+			if (!pow1) return;
+			powers.push(pow1);
+			await this.update( {"system.combat.powers": powers});
+			await this.update( {"system.combat.powers_sideboard": sideboard});
 		}
 	}
 

@@ -990,9 +990,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			return new CombatResult();
 		}
 		try {
-			const isCard = power.system.type == "skillCard";
 			const targets = this.getTargets(attacker, power);
-			if (!isCard && targets.some( target => target.actor.system.type == "shadow" ) && (power as Usable).system.targets != "self" ) {
+			if (!power.isSkillCard() && targets.some( target => target.actor.system.type == "shadow" ) && (power as Usable).system.targets != "self" ) {
 				this.ensureCombatExists();
 			}
 			this.customAtkBonus = await HTMLTools.getNumber("Attack Modifier");

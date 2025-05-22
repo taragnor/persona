@@ -124,6 +124,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.system.type == "focus";
 	}
 
+	isSkillCard(): this is SkillCard {
+		return this.system.type == "skillCard";
+	}
+
 	isDefensive(): boolean {
 		switch (this.system.type) {
 			case "power":
@@ -142,10 +146,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				this.system satisfies never;
 				return false;
 		}
-	}
-
-	isSkillCard() : this is SkillCard {
-		return this.system.type == "skillCard";
 	}
 
 	isUsable() : this is UsableAndCard  {

@@ -386,10 +386,10 @@ static getSubgroupAmt(etype :EncounterType) : number {
 				PersonaError.softFail(`Can't fiund Power Id ${power} for treasure`);
 				return;
 			}
+			const newCard = await PersonaItem.createSkillCardFromPower(power);
 			const msg = `Skill Card created for ${power.name}`;
 			ui.notifications.notify(msg);
 			console.log(msg);
-			const newCard = await PersonaItem.createSkillCardFromPower(power);
 			items.push(newCard);
 		};
 		const considerItem = function (itemId: string, prob: number) {
