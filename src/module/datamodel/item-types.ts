@@ -1,13 +1,10 @@
 import { ROLL_TAGS_AND_CARD_TAGS } from "../../config/roll-tags.js";
-import { NumberTools } from "../utility/numberTools.js";
 import { SocialCard } from "../item/persona-item.js";
 import { UniversalModifier } from "../item/persona-item.js";
 import { UNIVERSAL_MODIFIERS_TYPE_LIST } from "./universal-modifiers-types.js";
 import { frequencyConvert } from "../../config/frequency.js";
 import { FREQUENCY } from "../../config/frequency.js";
 import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
-import { PersonaItem } from "../item/persona-item.js";
-import { CARD_TAG_LIST } from "../../config/card-tags.js";
 import { CardRoll } from "../../config/social-card-config.js"
 import { ArrayCorrector } from "../item/persona-item.js";
 import { Consequence } from "../../config/consequence-types.js";
@@ -199,11 +196,11 @@ class TalentDM extends foundry.abstract.TypeDataModel {
 	get _systemData() { return this as DataModelSystemData<typeof TalentDM>
 			;}
 
-		override prepareBaseData() {
-			const d = this._systemData;
-			const test = this._systemData.test!;
-			const test2 = this._systemData.description;
-		}
+	override prepareBaseData() {
+		// const d = this._systemData;
+		// const test = this._systemData.test!;
+		// const test2 = this._systemData.description;
+	}
 
 	get test() {return 5 as const;}
 
@@ -447,7 +444,7 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 					starterTxt += `${roll.saveType} Save Success ${modifier ? modifier : ""} (${roll.progressSuccess} + ${roll.progressCrit}).`;
 				}
 			case "none":
-					const gainLose = roll.progressSuccess >= 0 ? "Gain" : "Lose";
+				const gainLose = roll.progressSuccess >= 0 ? "Gain" : "Lose";
 				if (roll.progressSuccess) {
 					starterTxt += `${gainLose} ${roll.progressSuccess} Progress Tokens`
 				}

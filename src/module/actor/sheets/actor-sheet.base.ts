@@ -18,6 +18,13 @@ import { DAYS } from "../../../config/days.js";
 
 export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
+	#activeQuestion = -1;
+
+	constructor(...args: any[]) {
+		super(...args)
+		this.refreshQuestionFocus();
+	}
+
 	override async getData() {
 		const data= await super.getData();
 		await PersonaDB.waitUntilLoaded();
@@ -44,6 +51,11 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 	}
 
 	static CONST() {
+		let USERS = Object.fromEntries(
+			game.users.contents
+			.map(user=> [user.id, user.name])
+		);
+		USERS = foundry.utils.mergeObject( {"" : ""}, USERS);
 		return {
 			DAYS,
 			STUDENT_SKILLS,
@@ -52,6 +64,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 			TAROT  : TAROT_DECK,
 			RESIST_STRENGTHS : RESIST_STRENGTHS,
 			DAMAGETYPES : DAMAGETYPES,
+			USERS,
 		} as const;
 	}
 
@@ -71,6 +84,55 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 		html.find(".addFocus").on("click", this.onAddFocus.bind(this));
 		html.find(".focusName").on("click", this.openFocus.bind(this));
 		html.find("textarea").on("input", this.autoResize.bind(this));
+		html.find(".add-question").on("click", this.addQuestion.bind(this));
+		html.find(".del-question").on("click", this.deleteQuestion.bind(this));
+		html.find(".question-list .question-name").on("click", this.selectQuestion.bind(this));
+		html.find(".questions-breakdown .back-button").on("click", this.goBackToIndex.bind(this));
+		this.refreshQuestionFocus();
+
+	}
+
+	refreshQuestionFocus() {
+		const index = this.#activeQuestion;
+		if (index == -1) {
+			this.element.find(".question-list").show();
+			this.element.find(".questions-breakdown").hide();
+			return;
+		}
+		this.element.find(".question-list").hide();
+		this.element.find(".questions-breakdown").show();
+		this.element.find(".questions-breakdown .question").each( function () {
+			const elem = $(this);
+			const questionIndex = HTMLTools.getClosestDataNumber(elem, "questionIndex");
+			if (index != questionIndex) {elem.hide();} else {elem.show();}
+		});
+	}
+
+	set activeQuestion (index: number) {
+		this.#activeQuestion = index;
+		this.refreshQuestionFocus();
+	}
+
+	goBackToIndex() {
+		this.activeQuestion = -1;
+	}
+
+	async addQuestion(_ev: JQuery.ClickEvent) {
+		if (!this.actor.isPC() && !this.actor.isNPC()) return;
+		await this.actor.addQuestion();
+	}
+
+	async deleteQuestion(ev: JQuery.ClickEvent) {
+		if (!this.actor.isPC() && !this.actor.isNPC()) return;
+		if (!await HTMLTools.confirmBox("Delete?", "Delete This question?")) return;
+		const index= Number(HTMLTools.getClosestDataNumber(ev, "questionIndex"));
+		await this.actor.deleteQuestion(index);
+	}
+
+	selectQuestion(ev: JQuery.ClickEvent) {
+		if (!this.actor.isPC() && !this.actor.isNPC()) return;
+	const index= Number(HTMLTools.getClosestDataNumber(ev, "questionIndex"));
+		this.activeQuestion = index;
 	}
 
 	static autoResize(el: HTMLElement) {

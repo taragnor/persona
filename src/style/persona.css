@@ -842,3 +842,31 @@ textarea {
 	font-weight: bold;
 	padding-right: 5px;
 }
+
+input.question-input {
+	width: 20em;
+	max-width: 20em;
+}
+
+input.choice-input {
+	width: 25em;
+	max-width: 25em;
+}
+
+h5.choices-block {
+	margin-top: 20px;
+	margin-left: 5px;
+	font-size: 1.2rem;
+}
+
+.question-header {
+	font-size: 1.2rem;
+}
+
+.choices-block .question-choice {
+	border-style: dotted;
+	border-width: 2px;
+	border-radius:5px;
+	margin: 10px;
+	padding: 5px;
+}

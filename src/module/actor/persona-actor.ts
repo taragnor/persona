@@ -3498,7 +3498,7 @@ get questions(): NPC["system"]["questions"] {
 	}
 }
 
-async restoreAllQuestions(this:NPC) {
+async restoreAllQuestions(this: NPC) {
 	const questions = this.system.questions.map (x=> x.toJSON ? x.toJSON() as NPC["system"]["questions"][number] : x );
 	for (const question of questions) {
 		question.expended = false;
@@ -3512,7 +3512,7 @@ async markQuestionUsed(this: NPC, index: number) {
 	await this.update({system: {questions}});
 }
 
-async addQuestion(this: NPC) {
+async addQuestion(this: NPC | PC) {
 	const choices : NPC["system"]["questions"][number]["choices"] = [
 		{
 			name: "A",
@@ -3542,7 +3542,7 @@ async addQuestion(this: NPC) {
 	await this.update( { "system.questions": this.system.questions});
 }
 
-async deleteQuestion(this: NPC, index: number) {
+async deleteQuestion(this: NPC | PC, index: number) {
 	this.system.questions.splice(index, 1);
 	await this.update( { "system.questions": this.system.questions});
 }
@@ -3589,6 +3589,19 @@ static convertSlotToMP(slotLevel: number) {
 		case 3: return 24;
 		default: return 48;
 	}
+}
+
+get isTrueOwner() : boolean {
+	switch (this.system.type) {
+		case "tarot":
+		case "npcAlly":
+		case "shadow":
+		case "npc":
+			return game.user.isGM;
+		case "pc":
+			return game.user.isGM || game.user.id == this.system.trueOwner;
+	}
+
 }
 
 }

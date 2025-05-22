@@ -55,6 +55,8 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 			...PCSpecificStuff(),
 			personaName: new txt({initial: "Persona"}),
 			...sharedAbilities(),
+			questions: new arr( new embedded(SocialQuestionDM)),
+			trueOwner: new id(),
 		} as const;
 		return ret;
 	}

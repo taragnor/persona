@@ -599,7 +599,12 @@ export class PersonaHandleBarsHelpers {
 				.map (t => localize(ROLL_TAGS_AND_CARD_TAGS[t]))
 			return localization
 				.join(", ");
-		}
+		},
+
+		"isTrueOwner": function (actor: PersonaActor): boolean {
+			return actor.isTrueOwner;
+
+		},
 	}
 
 

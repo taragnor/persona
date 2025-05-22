@@ -13,6 +13,15 @@
 					</select>
 				</div>
 				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
+				{{#if (isGM)}}
+				<label> True Owner </label>
+				<div class="trueOwnerSelector">
+					<select name="system.trueOwner">
+						{{selectOptions CONST.USERS localize=false selected=actor.system.trueOwner}}
+					</select>
+				</div>
+				{{/if}}
+
 			</div>
 		</div>
 
@@ -37,6 +46,11 @@
 		<a class="item" data-tab="inc">
 			{{localize "persona.sheet.tabs.incremental.tabname" }}
 		</a>
+		{{#if (isTrueOwner actor)}}
+		<a class="item" data-tab="questions">
+			{{localize "persona.sheet.tabs.questions.tabname" }}
+		</a>
+		{{/if}}
 	</nav>
 	<section class="sheet-body">
 		<section class="tab tab-content social-section flexcol" data-group="primary" data-tab="social">
@@ -55,6 +69,11 @@
 		<section class="tab tab-content inventory-section flexcol" data-group="primary" data-tab="inv">
 			{{> "systems/persona/parts/inventory-section.hbs" actor=actor CONST=CONST equips=equips}}
 		</section>
+		{{#if (isTrueOwner actor)}}
+		<section class="tab tab-content questions-section flexcol" data-group="primary" data-tab="questions">
+			{{> "systems/persona/parts/npc-questions.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
+		</section>
+		{{/if}}
 		<section class="tab tab-content incremental-section flexcol" data-group="primary" data-tab="inc">
 			{{> "systems/persona/parts/incremental-section.hbs" actor=actor CONST=CONST}}
 		</section>
