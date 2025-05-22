@@ -3487,12 +3487,12 @@ async onAddToCombat() {
 
 get questions(): NPC["system"]["questions"] {
 	switch (this.system.type) {
-		case "pc":
 		case "shadow":
 		case "tarot":
 			return [];
 		case "npcAlly":
 			return (this as NPCAlly).getNPCProxyActor()?.questions ?? [];
+		case "pc":
 		case "npc":
 				return this.system.questions;
 	}
