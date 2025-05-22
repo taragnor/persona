@@ -1,6 +1,27 @@
 <h2>
 	{{localize "persona.sheet.tabs.incremental.header"}}
 </h2>
+
+<div class="lvl">
+	<span>
+		{{localize "persona.statistic.level"}}:
+	</span>
+	<span>
+		{{actor.basePersona.level}}
+	</span>
+	{{#if (isGM)}}
+	<span>
+		<a class="levelUp">
+			<i class="fa-solid fa-circle-plus"></i>
+		</a>
+	</span>
+	{{/if}}
+	<span>
+		<progress id="progressBar" max="{{actor.basePersona.XPForNextLevel}}" value="{{actor.basePersona.xp}}" title="{{actor.basePersona.xp}} / {{actor.basePersona.XPForNextLevel}}"></progress>
+	</span>
+</div>
+<hr>
+
 <div class="incremental-advance-block">
 	<div class="hp">
 		<label>

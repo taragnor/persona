@@ -1,3 +1,4 @@
+import { PersonaSFX } from "./combat/persona-sfx.js";
 import { TriggeredEffect } from "./triggered-effect.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaSockets } from "./persona.js";
@@ -352,11 +353,12 @@ static getSubgroupAmt(etype :EncounterType) : number {
 				levelUps.push(character);
 			}
 		}
-		const levelUpsStr = levelUps.map( x=> x.name).join(", ");
+		const levelUpsStr = levelUps.map( x=> `<li>${x.name}</li>`).join("");
 		let text = `
 	<div>XP Awarded: ${individualXP}</div> `;
 		if (levelUpsStr.length > 0) {
-			text += `<div> Level Ups: ${levelUpsStr} </div>`;
+			text += `<div class="level-up-msg"> Level Ups: <ul> ${levelUpsStr} </ul> </div>`;
+			PersonaSFX.onLevelUp();
 		}
 		await ChatMessage.create({
 			speaker: {

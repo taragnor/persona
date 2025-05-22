@@ -2786,7 +2786,9 @@ numOfIncAdvances(): number {
 get XPForNextLevel() : number {
 	const incAdvances = this.numOfIncAdvances();
 	const typeMult = this.system.type == "pc" ? 1.0 : 0.75;
-	return Math.floor( 60 + 15 * incAdvances * typeMult);
+	const base = Persona.leveling.BASE_XP;
+	const growth = Persona.leveling.XP_GROWTH;
+	return Math.floor( base + growth * incAdvances * typeMult);
 }
 
 /** returns true on level up */
@@ -2808,7 +2810,7 @@ async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
 	}
 	let levelUp = false;
 	let newxp = this.system.combat.xp + amt;
-	const XPrequired= this.XPForNextLevel;
+	const XPrequired = this.XPForNextLevel;
 	while (newxp > XPrequired) {
 		newxp -= XPrequired;
 		levelUp = true;
@@ -2819,10 +2821,11 @@ async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
 
 XPValue(this: Shadow) : number {
 	if (this.hasCreatureTag("no-xp")) return 0;
-	const SHADOWS_TO_LEVEL = 15;
-	const baseXP = 100/SHADOWS_TO_LEVEL;
+	const SHADOWS_TO_LEVEL = Persona.leveling.SHADOWS_TO_LEVEL;
+	const firstLevelUp = Persona.leveling.BASE_XP;
+	const baseXP = firstLevelUp/SHADOWS_TO_LEVEL;
 	const role = shadowRoleMultiplier(this.system.role) * shadowRoleMultiplier(this.system.role2);
-	const incrementals = Object.entries(this.system.combat.classData.incremental).reduce ( (acc, i) => {
+	const incrementals = Object.values(this.system.combat.classData.incremental).reduce<number> ( (acc, i) => {
 		if (typeof i == "number") return acc+i;
 		if (typeof i == "boolean") return acc + (i ? 1 : 0);
 		return acc;

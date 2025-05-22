@@ -20,6 +20,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	source: ValidAttackers;
 	powers: Power[];
 
+	static leveling = {
+		SHADOWS_TO_LEVEL: 10,
+		BASE_XP: 600, // XP FOR FIRST LEVEL UP
+		XP_GROWTH: 200, //added XP for additional level ups
+	}
+
 	constructor (source: ValidAttackers, user: T, powers: Power[]) {
 		this.user = user;
 		this.source = source;

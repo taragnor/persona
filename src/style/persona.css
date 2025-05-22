@@ -863,6 +863,11 @@ h5.choices-block {
 	font-size: 1.2rem;
 }
 
+.level-up-msg {
+	font-size: 1.5rem;
+	font-weight: bold;
+}
+
 .choices-block .question-choice {
 	border-style: dotted;
 	border-width: 2px;

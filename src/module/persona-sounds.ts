@@ -26,6 +26,7 @@ const SOUNDS = {
 	"attack-nerf": "atk-debuff.mp3",
 	"damage-nerf": "atk-debuff.mp3",
 	"scan": "scan.mp3",
+	"level-up": "P4 Level up.mp3",
 } as const;
 
 export type ValidSound = keyof typeof SOUNDS;
@@ -33,11 +34,24 @@ export type ValidSound = keyof typeof SOUNDS;
 
 export class PersonaSounds {
 
+	static init() {
+		for  (const src of Object.values(SOUNDS)) {
+			if (src) {
+				this.preloadSnd(src);
+			}
+		}
+	}
+
 	static async playFile(src: string, volume= 1.0, recipients: string[] | false = []): Promise<void> {
 		const sound = await this.playFree(src, volume, recipients);
 		if (sound) {
 			await waitUntilTrue( () => !sound.playing);
 		}
+	}
+
+	static async preloadSnd(filename: string) {
+		const src  = `systems/persona/sound/${filename}`;
+		return foundry.audio.AudioHelper.preloadSound(src);
 	}
 
 	static async play(filename: string, volume = 1.0, recipients:string[] | false =[]) : Promise<void> {
@@ -109,6 +123,8 @@ export class PersonaSounds {
 	}
 
 }
+
+Hooks.on("ready",function () {PersonaSounds.init();});
 
 //@ts-ignore
 window.PersonaSounds = PersonaSounds;

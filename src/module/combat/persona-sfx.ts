@@ -22,6 +22,7 @@ const DoomDoor : DoorSound= {
 CONFIG.Wall.doorSounds["doomDoor"] = DoomDoor;
 
 export class PersonaSFX {
+
 	static async onDamage( _token: PToken | undefined, hpchange: number, damageType: RealDamageType) {
 		if (hpchange == 0) return;
 		if (hpchange > 0) {
@@ -438,6 +439,11 @@ export class PersonaSFX {
 		await PersonaSounds.playBattleSound(snd, volume);
 	}
 
+	static async onLevelUp(): Promise<void> {
+		await this.#play("level-up");
+	}
+
+
 }
 
 Hooks.on("createActiveEffect",(eff: PersonaAE) => {
@@ -470,3 +476,7 @@ interface TokenMagic {
 	deleteFilters(token :Token<any>, filterId: string): Promise<unknown>;
 	addUpdateFilters(token: Token<any>, filterData: {}): Promise<unknown>;
 }
+
+//@ts-ignore
+window.PersonaSFX = PersonaSFX;
+
