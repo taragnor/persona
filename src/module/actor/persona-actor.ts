@@ -2071,47 +2071,47 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return true; //placeholder
 	}
 
-	getSocialStat(this: PC, socialStat: SocialStat) : ModifierList {
-		const stat = this.system.skills[socialStat];
-		const mods = new ModifierList();
-		const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
-		mods.add(skillName, stat);
-		return mods.concat(this.persona().getBonuses(socialStat));
-	}
+getSocialStat(this: PC, socialStat: SocialStat) : ModifierList {
+	const stat = this.system.skills[socialStat];
+	const mods = new ModifierList();
+	const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
+	mods.add(skillName, stat);
+	return mods.concat(this.persona().getBonuses(socialStat));
+}
 
-	async createSocialLink(this: PC, npc: SocialLink) {
-		if (this.system.social.find( x=> x.linkId == npc.id)) {
-			return;
-		}
-		this.system.social.push(
-			{
-				linkId: npc.id,
-				linkLevel: 1,
-				inspiration: 1,
-				currentProgress: 0,
-				relationshipType: "PEER",
-				isDating: false,
-			}
-		);
-		PersonaSounds.newSocialLink();
-		await this.update({"system.social": this.system.social});
-		await Logger.sendToChat(`${this.name} forged new social link with ${npc.displayedName} (${npc.tarot?.name}).` , this);
+async createSocialLink(this: PC, npc: SocialLink) {
+	if (this.system.social.find( x=> x.linkId == npc.id)) {
+		return;
 	}
+	this.system.social.push(
+		{
+			linkId: npc.id,
+			linkLevel: 1,
+			inspiration: 1,
+			currentProgress: 0,
+			relationshipType: "PEER",
+			isDating: false,
+		}
+	);
+	PersonaSounds.newSocialLink();
+	await this.update({"system.social": this.system.social});
+	await Logger.sendToChat(`${this.name} forged new social link with ${npc.displayedName} (${npc.tarot?.name}).` , this);
+}
 
-	get baseRelationship(): string {
-		switch (this.system.type) {
-			case "pc":
-				return "PEER";
-			case "npc": case "npcAlly":
-				return "PEER";
-			case "shadow":
-			case "tarot":
-				break;
-			default:
-				this.system satisfies never;
-		}
-		return "NONE";
+get baseRelationship(): string {
+	switch (this.system.type) {
+		case "pc":
+			return "PEER";
+		case "npc": case "npcAlly":
+			return "PEER";
+		case "shadow":
+		case "tarot":
+			break;
+		default:
+			this.system satisfies never;
 	}
+	return "NONE";
+}
 
 async increaseSocialLink(this: PC, linkId: string) {
 	const link = this.system.social.find( x=> x.linkId == linkId);
@@ -3023,8 +3023,8 @@ async fatigueRecoveryRoll(this: PC): Promise<string[]> {
 async resetFatigueChecks(this: PC) {
 	if (this.hasAlteredFatigueToday() || this.hasMadeFatigueRollToday()) {
 		await this.update({
-		"system.fatigue.hasAlteredFatigueToday": false,
-		"system.fatigue.hasMadeFatigueRollToday" : false
+			"system.fatigue.hasAlteredFatigueToday": false,
+			"system.fatigue.hasMadeFatigueRollToday" : false
 		});
 	}
 }
