@@ -1,3 +1,5 @@
+import { HTMLTools } from "../../utility/HTMLTools.js";
+import { PersonaError } from "../../persona-error.js";
 import { PersonaItem } from "../../item/persona-item.js";
 import { PersonaActor } from "../persona-actor.js";
 import { NPCAlly } from "../persona-actor.js";
@@ -22,6 +24,7 @@ export class NPCAllySheet extends PCLikeSheet {
 
 	override activateListeners(html: JQuery) {
 		super.activateListeners(html);
+		html.find(".basic-powers .power-img").rightclick( this.deleteBasicSkill.bind(this));
 	}
 
 	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) {
@@ -38,6 +41,21 @@ export class NPCAllySheet extends PCLikeSheet {
 			}
 		}
 		return super._onDropItem(_event, itemD);
+	}
+
+	async deleteBasicSkill (ev: JQuery.ClickEvent) {
+		const index= HTMLTools.getClosestDataNumber(ev, "basicPowerIndex");
+		const power = this.actor.basicPowers.at(index);
+		if (!power) {throw new PersonaError(`Can't get Power at this index ${index}`)};
+		if (!await HTMLTools.confirmBox("Really Delete", `Really Delete ${power.name}`)) return;
+		switch (true) {
+			case power.isNavigator(): {
+				return await this.actor.deleteNavigatorSkill(power);
+			}
+			default: {
+				throw new PersonaError("Can't delete skill of this stype");
+			}
+		}
 	}
 
 	override async _onDropActor(_event: Event, actorD: unknown) {

@@ -843,10 +843,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return PersonaItem.getBasicShadowPowers();
 			case "pc":
 			case "npcAlly":
-				const arr =  PersonaItem.getBasicPCPowers();
+				const arr = PersonaItem.getBasicPCPowers();
 				const extraSkills = [
 					this.teamworkMove,
-					this.navigatorSkill
+					...this.navigatorSkills,
 				].flatMap( x=> x != undefined ? [x] : []);
 				arr.push (...extraSkills);
 				return arr;
@@ -886,27 +886,51 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	async setNavigatorSkill(this: NPCAlly, pwr: Power) {
-		await this.update( {"system.combat.navigatorSkill" : pwr.id});
-		await Logger.sendToChat(`${this.name} set Navigator skill to ${pwr.name}` , this);
+	async addNavigatorSkill(this: NPCAlly, pwr: Power) {
+		this.system.combat.navigatorSkills.push(pwr.id);
+		await this.update( {"system.combat.navigatorSkills" : this.system.combat.navigatorSkills});
+		await Logger.sendToChat(`${this.name} added Navigator skill to ${pwr.name}` , this);
 	}
 
-	get navigatorSkill(): Power | undefined {
+	async deleteNavigatorSkill(this: NPCAlly, power: Power ) {
+		this.system.combat.navigatorSkills= this.system.combat.navigatorSkills.filter(x=> x != power.id);
+		await this.update( {"system.combat.navigatorSkills" : this.system.combat.navigatorSkills});
+		await Logger.sendToChat(`${this.name} deleted Navigator skill ${power.name}` , this);
+
+
+	}
+
+	get navigatorSkills(): Power[] {
 		switch (this.system.type) {
 			case "shadow":
 			case "npc":
 			case "tarot":
 			case "pc":
-				return undefined;
+				return [];
 			case "npcAlly":
-				const id = this.system.combat.navigatorSkill;
-				const power = PersonaDB.allPowers().find(x=> x.id == id);
-				return power;
+				const powers = this.system.combat.navigatorSkills
+				.map( id => PersonaDB.getPower(id))
+				.filter( x=> x != undefined);
+				// const powers = PersonaDB.allPowers().filter(x=> x.id == id);
+				return powers;
 			default:
 				this.system satisfies never;
-				return undefined;
+				return [];
 		}
 	}
+
+	//async convertNavigatorSkillToNewSystem() {
+	//	if (!this.isNPCAlly()) return;
+	//	if (this.system.combat.navigatorSkill) {
+	//		//move navigator skill to new system
+	//		const skill = this.system.combat.navigatorSkill;
+	//		this.system.combat.navigatorSkills.push(skill);
+	//		await this.update( { "system.combat.navigatorSkill": "",
+	//			"system.combat.navigatorSkills" : this.system.combat.navigatorSkills,
+	//		});
+	//		console.log(`${this.name} converted Navigator Skill.`);
+	//	}
+	//}
 
 	get maxSideboardPowers() : number {
 		if (!this.isValidCombatant()) return 0;
@@ -1840,6 +1864,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async addPower(this: PC | NPCAlly | Shadow, power: Power) {
+		if (power.isNavigator()) {
+			if (!this.isNPCAlly()) {
+				PersonaError.softFail("Only NPC Allies can learn Navigator skills!");
+				return;
+			}
+			await this.addNavigatorSkill(power);
+			return;
+		}
 		if (this.isShadow()) {
 			const pow = await this.createEmbeddedDocuments("Item", [power]);
 			await this.setDefaultShadowCosts(pow[0] as Power);

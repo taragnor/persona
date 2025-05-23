@@ -35,20 +35,14 @@ export class NPCSheet extends NoncombatantSheet  {
 		}
 	}
 
-
-// 	async deleteQuestion(ev: JQuery.ClickEvent) {
-// 	const index= Number(HTMLTools.getClosestDataNumber(ev, "questionIndex"));
-// 		await this.actor.deleteQuestion(index);
-// 	}
-
 	async addTokenSpend(_ev: JQuery.ClickEvent) {
 		await this.actor.createNewTokenSpend();
 	}
 
-async deleteTokenSpend(ev: JQuery.ClickEvent) {
-	const spendIndex= Number(HTMLTools.getClosestData(ev, "spendIndex"));
-	await this.actor.deleteTokenSpend(spendIndex);
-}
+	async deleteTokenSpend(ev: JQuery.ClickEvent) {
+		const spendIndex= Number(HTMLTools.getClosestData(ev, "spendIndex"));
+		await this.actor.deleteTokenSpend(spendIndex);
+	}
 
 
 }

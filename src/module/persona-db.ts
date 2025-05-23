@@ -210,7 +210,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	NPCAllies() : NPCAlly[] {
-		return this.allActors().filter( x=> 
+		return this.allActors().filter( x=>
 			x.system.type == "npcAlly") as NPCAlly[];
 	}
 
@@ -225,7 +225,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	navigatorModifiers(): ModifierContainer[] {
 		const navigator = this.getNavigator();
 		if (!navigator) return [];
-		const skills = [navigator.navigatorSkill];
+		const skills = navigator.navigatorSkills;
 		return skills
 			.filter( sk => sk && sk.isPassive()) as ModifierContainer[];
 	}
