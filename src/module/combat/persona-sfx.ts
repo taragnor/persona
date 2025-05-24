@@ -454,8 +454,10 @@ export class PersonaSFX {
 		}
 		try {
 			switch (weather) {
-				case "sunny":
 				case "windy":
+					scene.changeWeather("windy");
+					break;
+				case "sunny":
 					scene.changeWeather("");
 					break;
 				case "cloudy":

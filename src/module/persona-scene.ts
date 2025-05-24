@@ -1,3 +1,4 @@
+import { sleep } from "./utility/async-wait.js";
 import { Metaverse } from "./metaverse.js";
 import { UniversalModifier } from "./item/persona-item.js";
 import { testPreconditions } from "./preconditions.js";
@@ -159,7 +160,19 @@ export class PersonaScene extends Scene {
 		return (name in currentEffects);
 	}
 
-	async changeWeather(newWeather: "" | Scene["weather"] | "cloudy") {
+	async changeWeather(newWeather: "" | Scene["weather"] | "cloudy" | "windy") {
+		const windy = {
+			name: "windy",
+			type: "clouds",
+			options :{
+				scale: .2,
+				speed: 12.0,
+				lifetime: 0.33,
+				density: 0.2,
+				direction: 120,
+				alpha: 0.15, //opacity value named this for some reason
+			}
+		};
 		const blizzard =  {
 			name: "blizzard",
 			type: "snowstorm",
@@ -212,18 +225,19 @@ export class PersonaScene extends Scene {
 				lifetime: 0.666,
 				density: 0.15,
 				direction: 35,
-				alpha: 0.5, //opacity value named this for some reason
+				alpha: 0.4, //opacity value named this for some reason
 			}
 
 		}
 		const rainStorm = {
 			name: "myRainStorm",
-			type: "rainstorm",
+			type: "rain",
 			options :{
-				scale: 1.0,
-				speed: 1.5,
-				lifetime: 0.5,
-				density: 0.6,
+				scale: 2.0,
+				speed: 2.2,
+				lifetime: 1,
+				density: 1,
+				direction: 35,
 			}
 		}
 		const weatherData = {
@@ -233,14 +247,18 @@ export class PersonaScene extends Scene {
 			"rain": rain,
 			"rainstorm": rainStorm,
 			"fog": fog,
+			"windy": windy,
 		} as const satisfies Partial<Record<typeof newWeather, any>>;
-		for (const [k,weather] of Object.entries(weatherData)) {
-			let actual = this.isEffectOn(weather.name);
-			const weatherS = newWeather == k;
-			if (actual != weatherS) {
-				//@ts-ignore
-				Hooks.call("fxmaster.switchParticleEffect", weather);
+		for (let i = 0; i<2; i++) {
+			for (const [k,weather] of Object.entries(weatherData)) {
+				let actual = this.isEffectOn(weather.name);
+				const weatherS = newWeather == k;
+				if (actual != weatherS) {
+					//@ts-ignore
+					Hooks.call("fxmaster.switchParticleEffect", weather);
+				}
 			}
+			await sleep(250);
 		}
 	}
 
