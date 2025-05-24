@@ -943,19 +943,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	//async convertNavigatorSkillToNewSystem() {
-	//	if (!this.isNPCAlly()) return;
-	//	if (this.system.combat.navigatorSkill) {
-	//		//move navigator skill to new system
-	//		const skill = this.system.combat.navigatorSkill;
-	//		this.system.combat.navigatorSkills.push(skill);
-	//		await this.update( { "system.combat.navigatorSkill": "",
-	//			"system.combat.navigatorSkills" : this.system.combat.navigatorSkills,
-	//		});
-	//		console.log(`${this.name} converted Navigator Skill.`);
-	//	}
-	//}
-
 	get maxSideboardPowers() : number {
 		if (!this.isValidCombatant()) return 0;
 		switch (this.system.type) {

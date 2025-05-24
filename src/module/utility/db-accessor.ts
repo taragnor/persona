@@ -364,8 +364,9 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 	}
 
 	accessorEq<T extends UniversalTokenAccessor<any> | UniversalItemAccessor<any> | UniversalActorAccessor<any>> ( a: T, b: T) : boolean {
-		if ("tokenId" in a && "tokenId" in b) {
-			return a.tokenId == b.tokenId
+		debugger;
+		if ("token" in a && "token" in b && a.token && b.token) {
+			return a.token.tokenId == b.token.tokenId;
 		}
 		if ("actorId" in a && "actorId" in b) {
 			return a.actorId == b.actorId && a.token?.tokenId == a.token?.tokenId;
