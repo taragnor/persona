@@ -69,6 +69,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	// declare combatants: Collection<Combatant<ValidAttackers>>;
 	// engagedList: Combatant<PersonaActor>[][] = [];
+	_startedList: Set<typeof this["combatants"]["contents"][number]["id"]>;
 	_engagedList: EngagementList;
 	static customAtkBonus: number;
 	consecutiveCombat: number =0;
@@ -79,6 +80,37 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		super(...args);
 		this.consecutiveCombat = 0;
 		this.defeatedFoes = [];
+		this._startedList = new Set();
+	}
+
+	hasCombatantRanStartCombatTrigger(combatant: Combatant<ValidAttackers>) : boolean {
+		return this._startedList.has(combatant.id);
+	}
+
+	async runCombatantStartCombatTriggers() {
+		const combatants = this.combatants
+		.filter( c => c.actor != undefined && !this._startedList.has(c.id));
+		for (const comb of combatants) {
+			await this.#runCombatantStartCombatTrigger(comb);
+		}
+	}
+
+	async #runCombatantStartCombatTrigger(comb: Combatant<ValidAttackers>) {
+		if (!comb.actor) return;
+		if (this.hasCombatantRanStartCombatTrigger(comb)) {
+			return;
+		}
+		const token = comb.token as PToken;
+		const situation : Situation = {
+			activeCombat : true,
+			user: comb.actor.accessor,
+			triggeringCharacter: comb.actor.accessor,
+		};
+		await TriggeredEffect
+			.onTrigger("on-combat-start", token.actor, situation)
+			.emptyCheck()
+			?.toMessage("Triggered Effect", token.actor);
+		this._startedList.add(comb.id);
 	}
 
 	get validEngagementCombatants(): (Combatant <ValidAttackers> & {actor: ValidAttackers})[] {
@@ -1630,7 +1662,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					cons: {
 						type: "damage-new",
 						damageSubtype: "high",
-						amount: power.getDamage(attacker, "high", situation) * (absorb ? -1 : damageMult),
+						amount: power.getDamage(attacker, situation)["high"] * (absorb ? -1 : damageMult),
 						damageType: (power as Usable).getDamageType(attacker),
 					}
 				}];
@@ -1640,7 +1672,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					cons: {
 						type: "damage-new",
 						damageSubtype: "low",
-						amount: power.getDamage(attacker, "low", situation) * (absorb ? -1 : damageMult),
+						amount: power.getDamage(attacker, situation)["low"] * (absorb ? -1 : damageMult),
 						damageType: (power as Usable).getDamageType(attacker),
 					}
 				}];
@@ -1703,9 +1735,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					break;
 				}
 				if ( (situation.naturalRoll ?? 0) % 2 == 0) {
-					dmgAmt = power.getDamage(attacker, "high", situation, cons.damageType);
+					dmgAmt = power.getDamage(attacker, situation, cons.damageType)["high"];
 				} else {
-					dmgAmt = power.getDamage(attacker, "low", situation, cons.damageType);
+					dmgAmt = power.getDamage(attacker, situation, cons.damageType)["low"];
 				}
 				break;
 			case "multiplier":
@@ -1714,10 +1746,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 						cons
 					}];
 			case "high":
-					dmgAmt = power.getDamage(attacker, "high", situation, cons.damageType);
+					dmgAmt = power.getDamage(attacker, situation, cons.damageType)["high"];
 				break;
 			case "low":
-				dmgAmt = power.getDamage(attacker, "low", situation, cons.damageType);
+				dmgAmt = power.getDamage(attacker, situation, cons.damageType)["low"];
 				break;
 			case "allout-low":
 			case "allout-high": {

@@ -60,7 +60,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		this.#resetCache();
 	}
 
-	onCreateActor(_actor :PersonaActor) {
+	onCreateActor(actor :PersonaActor) {
 		this.#resetCache();
 	}
 

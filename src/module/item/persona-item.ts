@@ -760,11 +760,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	getDamage(this:ModifierContainer , user: ValidAttackers, type: "high" | "low", situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: user.accessor}, typeOverride : SimpleDamageCons["damageType"] = "none") : number {
+	getDamage(this:ModifierContainer , user: ValidAttackers, situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: user.accessor}, typeOverride : SimpleDamageCons["damageType"] = "none") : {low: number, high:number} {
 		//TODO: handle type override check to see if power damage is by-power or has other type
-		if (!("dmg_type" in this.system) || !("subtype" in this.system)) return 0;
+		if (!("dmg_type" in this.system) || !("subtype" in this.system)) return {low: 0, high:0};
 		if (!typeOverride || typeOverride == "by-power") {
-			if (this.system.dmg_type == "none") return 0;
+			if (this.system.dmg_type == "none") return {low: 0, high:0};
 		}
 		const subtype : PowerType  = this.system.type == "power" ? this.system.subtype : "standalone";
 		switch(subtype) {
@@ -777,7 +777,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				const dmgamt =  {
 					low: dmg.low * mult + bonusDamage.low.total(situation),
 					high: dmg.high * mult + bonusDamage.high.total(situation),
-				}[type];
+				};
 				return dmgamt;
 			}
 			case "magic": {
@@ -793,14 +793,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					low: baseLow + (baseLow > 0 ? finalBonus: 0),
 					high: baseHigh + (baseHigh > 0 ? finalBonus: 0),
 				};
-				return modified[type];
+				return modified;
 			}
 			case "standalone": {
 				const dmg = this.system.damage;
-				return dmg[type];
+				return dmg;
 			}
 			default:
-				return 0;
+				return {low: 0, high:0};
 		}
 	}
 

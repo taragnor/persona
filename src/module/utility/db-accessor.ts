@@ -7,6 +7,8 @@ import { sleep } from "./async-wait.js";
 
 export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extends Item<any>> {
 
+private allActorsMap : Map<string, ActorType> = new Map();
+private allItemsMap : Map<string, ItemType> = new Map();
 	private comp_items: ItemType[] = [];
 	private comp_actors: ActorType[] = [];
 	private _loaded= false;
@@ -42,22 +44,31 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 
 	 _initHooks() : void {
 		Hooks.on("updateCompendium", this.onUpdateCompendium.bind(this));
-		Hooks.on("updateItem", this.onUpdateItem.bind(this));
-		Hooks.on("updateActor", this.onUpdateActor.bind(this));
-		Hooks.on("createActor", this.onUpdateActor.bind(this));
-		Hooks.on("createItem", this.onUpdateItem.bind(this));
+		Hooks.on("updateItem", this.#onUpdateItem.bind(this));
+		Hooks.on("updateActor", this.#onUpdateActor.bind(this));
+		Hooks.on("createActor", this.#onCreateActor.bind(this));
+		Hooks.on("createItem", this.#onCreateItem.bind(this));
 		this.initHooks();
 	}
 
+	#onCreateItem(item: ItemType) {
+		this._editedItems.push(item);
+		this.queueLoad();
+	}
 
-	onUpdateItem(item: Item) {
+	 #onCreateActor(actor: ActorType) {
+		this._edited.push(actor);
+		this.queueLoad();
+	}
+
+	#onUpdateItem(item: ItemType) {
 		if (item.pack ||  item.parent instanceof Actor && item.parent.pack) {
 			console.log(`${item.name} curerntly beign edited`);
 			this._editedItems.push(item);
 		}
 	}
 
-	async onUpdateActor(actor: Actor) {
+	 #onUpdateActor(actor: ActorType) {
 		if (actor.pack) {
 			console.log(`${actor.name} curerntly beign edited`);
 			this._edited.push(actor);
@@ -152,27 +163,26 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 	}
 
 	#findById(id: string, type: ValidDBTypes = "Actor") : Option<ItemType | ActorType> {
-		let retarr: (Actor<any> | Item<any>)[];
+		// let retarr: (Actor<any> | Item<any>)[];
 		switch (type) {
 			case "Actor":
-				retarr =  this.filterActors( x => x.id == id);
-				break;
+				const actor = this.allActorsMap.get(id);
+				return actor ? actor : null;
 			case "Item":
-				retarr = this.filterItems( x => x.id == id);
-				if (retarr.length == 0) {
-					const x= this.allActors().find( x=> x.items.find( item => item.id == id));
-					if (!x) break;
-					retarr = [x.items.find(x=> x.id == id)! as Item<any>];
-
-				}
-				break;
+				const item = this.allItemsMap.get(id);
+				return item ? item : null;
+// 				retarr = this.filterItems( x => x.id == id);
+// 				if (retarr.length == 0) {
+// 					const x= this.allActors().find( x=> x.items.find( item => item.id == id));
+// 					if (!x) break;
+// 					retarr = [x.items.find(x=> x.id == id)! as Item<any>];
 			default:
 				throw new Error(`Unsupported Type ${type}`);
 		}
-		if (retarr.length == 0) {
-			return null;
-		}
-		return retarr[0] as ItemType | ActorType;
+		// if (retarr.length == 0) {
+		// 	return null;
+		// }
+		// return retarr[0] as ItemType | ActorType;
 	}
 
 	 getAllByType(type : ValidDBTypes) : (ItemType | ActorType)[] {
@@ -201,6 +211,10 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 		console.log("Loading Packs");
 		this.comp_items = await this.getCompendiumDataByType("Item") as ItemType[];
 		this.comp_actors = await this.getCompendiumDataByType("Actor") as ActorType[];
+		const baseActors = this.getBaseItemsByType("Actor") as ActorType[];
+		const baseItems = this.getBaseItemsByType("Item") as ItemType[];
+		this.allItemsMap = new Map( baseItems.concat(this.comp_items).map( x=> [x.id, x]));
+		this.allActorsMap = new Map( baseActors.concat(this.comp_actors).map( x=> [x.id, x]));
 	}
 
 	 async onLoadPacks(): Promise<void> { }

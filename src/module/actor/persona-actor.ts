@@ -1644,19 +1644,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
 		if (!this.isValidCombatant()) return [];
 		return this.persona().mainModifiers(options);
-		// const persona= this.persona();
-		// const passivePowers = (options && options.omitPowers) ? [] : this.getPassivePowers();
-		// return [
-		// 	...this.equippedItems(),
-		// 	...this.passiveFocii(),
-		// 	...persona.talents,
-		// 	...passivePowers,
-		// 	...this.passiveItems(),
-		// 	...this.getAllSocialFocii(),
-		// 	...this.roomModifiers(),
-		// 	...PersonaDB.getGlobalModifiers(),
-		// 	...PersonaDB.navigatorModifiers(),
-		// ].filter( x => x.getEffects(this as ValidAttackers).length > 0);
 	}
 
 	defensivePowers(this: ValidAttackers) : ModifierContainer [] {
@@ -3371,8 +3358,9 @@ allOutAttackDamage(this: ValidAttackers, situation?: Situation) : { high: number
 		return {high, low};
 	}
 	const mult = basicAttack.getDamageMultSimple(this, situation);
-	low = basicAttack.getDamage(this, "low") * mult;
-	high = basicAttack.getDamage(this, "high") * mult;
+	const dmg = basicAttack.getDamage(this);
+	low = dmg["low"] * mult;
+	high = dmg["high"] * mult;
 	return {high, low};
 }
 

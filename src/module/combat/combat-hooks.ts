@@ -62,24 +62,12 @@ export class CombatHooks {
 		});
 
 		Hooks.on("combatStart", async (combat: PersonaCombat) => {
-			for (const comb of combat.combatants) {
-				if (!comb.actor) continue;
-				const situation : Situation = {
-					activeCombat : true,
-					user: comb.actor.accessor,
-					triggeringCharacter: comb.actor.accessor,
-				};
-				const token = comb.token as PToken;
-				await TriggeredEffect
-					.onTrigger("on-combat-start", token.actor, situation)
-					.emptyCheck()
-					?.toMessage("Triggered Effect", token.actor);
-			}
 			const x = combat.turns[0];
 			if (x.actor) {
 				if (combat.isSocial) {
 					await PersonaSocial.startSocialTurn(x.actor as PC);
 				} else {
+					await combat.runCombatantStartCombatTriggers();
 					await combat.startCombatantTurn(x as Combatant<ValidAttackers>);
 				}
 			}
@@ -91,10 +79,10 @@ export class CombatHooks {
 		});
 
 
-		Hooks.on("createCombatant", async (combatant: Combatant<PersonaActor>) => {
+		Hooks.on("createCombatant", async (combatant: Combatant<ValidAttackers>) => {
 			await combatant?.token?.actor?.onAddToCombat();
-			if (combatant.parent?.started && combatant.actor) {
-				await PersonaCombat.execTrigger("on-combat-start", combatant.actor as ValidAttackers);
+			if (combatant.parent?.started) {
+				await (combatant.combat as PersonaCombat).runCombatantStartCombatTriggers();
 			}
 		});
 

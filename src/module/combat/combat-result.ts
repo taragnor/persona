@@ -205,7 +205,7 @@ export class CombatResult  {
 						break;
 					}
 					const attacker = PersonaDB.findToken(atkResult.attacker).actor;
-					status_damage = attacker ? (power as Usable).getDamage(attacker, "low"): 0;
+					status_damage = attacker ? (power as Usable).getDamage(attacker)["low"]: 0;
 				}
 				const id = cons.statusName!;
 				if (id != "bonus-action") {

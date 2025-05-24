@@ -104,7 +104,7 @@ export class TriggeredEffect {
 		for (const trig of triggers) {
 			for (const eff of trig.getEffects(actor ?? null)) {
 				if (!ModifierList.testPreconditions(eff.conditions, situationCopy, trig)) { continue; }
-				const res = PersonaCombat.consequencesToResult(eff.consequences,trig, situationCopy, actor, actor, null);
+				const res = PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null);
 				result.merge(res);
 			}
 		}

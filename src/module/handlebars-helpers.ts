@@ -4,7 +4,6 @@ import { CardRoll } from "../config/social-card-config.js";
 import { Persona } from "./persona-class.js";
 import { RESIST_STRENGTHS } from "../config/damage-types.js";
 import { PersonaI } from "../config/persona-interface.js";
-import { CARD_TAGS } from "../config/card-tags.js";
 import { PersonaError } from "./persona-error.js";
 import { Consumable } from "./item/persona-item.js";
 import { FREQUENCY } from "../config/frequency.js";
@@ -130,7 +129,7 @@ export class PersonaHandleBarsHelpers {
 		},
 		"getDamage": (actor: PersonaActor, usable: Usable) => {
 			if (usable == PersonaDB.getBasicPower("All-out Attack")) {
-				if (actor.system.type != "pc" && actor.system.type != "shadow") {
+				if (!actor.isValidCombatant()) {
 					return "- / -";
 				}
 				const combat = game.combat as PersonaCombat;
@@ -162,8 +161,9 @@ export class PersonaHandleBarsHelpers {
 					return "-/-";
 				case "npcAlly": case "pc": case"shadow": const combatant = actor as ValidAttackers;
 					const mult = usable.getDamageMultSimple(combatant);
-					const low = usable.getDamage(combatant, "low") * mult;
-					const high = usable.getDamage(combatant, "high") * mult;
+					const dmg = usable.getDamage(combatant);
+					const low = dmg["low"] * mult;
+					const high = dmg["high"] * mult;
 					return Math.round(low) + " / " + Math.round(high);
 				default:
 					actor.system satisfies never;
