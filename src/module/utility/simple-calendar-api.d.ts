@@ -13,7 +13,9 @@ namespace SimpleCalendar {
 		changeDate(data: Partial<DateObject>): Promise<boolean>;
 		currentDateTimeDisplay(): DisplayableDateTime;
 		getCurrentSeason() : {name: SeasonName}
+		currentDateTime(): DateTimeData;
 
+		getAllMonths(): MonthData[];
 	}
 
 	type DateObject = {
@@ -25,9 +27,30 @@ namespace SimpleCalendar {
 		year: number,
 	}
 
+	type DateTimeData = {
+		year: number,
+		month: number,
+		day: number,
+		hour: number,
+		minute: number,
+		seconds: number,
+	}
+
 	type DisplayableDateTime ={
 		date: string,
 		time: string
+	}
+
+	type MonthData = {
+		abbreviation: string,
+		description: string,
+		id: string,
+		intercalary: boolean,
+		intercalaryInclude: boolean,
+		name: string,
+		numberOfDays: number,
+		numberOfLeapYearDays: number,
+		numericRepresentation: 1,
 	}
 
 	type WeekdayName= "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";

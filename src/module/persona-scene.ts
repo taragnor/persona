@@ -159,7 +159,7 @@ export class PersonaScene extends Scene {
 		return (name in currentEffects);
 	}
 
-	async changeWeather(newWeather: "" | Scene["weather"]) {
+	async changeWeather(newWeather: "" | Scene["weather"] | "cloudy") {
 		const blizzard =  {
 			name: "blizzard",
 			type: "snowstorm",
@@ -181,53 +181,66 @@ export class PersonaScene extends Scene {
 				density: 0.6,
 			}
 		};
-		let blizzardS = false;
-		let snowS = false;
-		switch (newWeather) {
-			case "blizzard":
-				blizzardS = true;
-				console.log("Blizzard On");
-				break;
-			case "fog":
-				break;
-			case "snow":
-				snowS = true;
-				console.log("Snow On");
-				break;
-			case "rain":
-				break;
-			case "rainstorm":
-				break;
-			case "":
-				break;
-			default:
-				console.log(`Unknown Weather ${newWeather}`);
-				break;
+		const rain = {
+			name: "myRain",
+			type: "rain",
+			options :{
+				scale: 1.0,
+				speed: 1.5,
+				lifetime: 0.5,
+				density: 0.6,
+			}
 		}
-		let blizActual = this.isEffectOn(blizzard.name);
-		let snActual = this.isEffectOn(snow.name);
-		if (blizActual && blizzardS == false) {
-			//@ts-ignore
-			Hooks.call("fxmaster.switchParticleEffect", blizzard);
-			console.log(`Blizzard ${blizzardS}`);
+		const clouds = {
+			name: "MyClouds",
+			type: "clouds",
+			options :{
+				scale: 1.0,
+				speed: 0.5,
+				lifetime: 0.33,
+				density: 0.2,
+				direction: 35,
+				alpha: 0.15, //opacity value named this for some reason
+			}
 		}
-		if (snActual && snowS == false) {
-			//@ts-ignore
-			Hooks.call("fxmaster.switchParticleEffect", snow);
-			console.log(`Snow ${snowS}`);
+		const fog = {
+			name: "MyFog",
+			type: "fog",
+			options :{
+				scale: 2.0,
+				speed: 0.333,
+				lifetime: 0.666,
+				density: 0.15,
+				direction: 35,
+				alpha: 0.5, //opacity value named this for some reason
+			}
+
 		}
-		// await sleep(250);
-		blizActual = this.isEffectOn(blizzard.name);
-		snActual = this.isEffectOn(snow.name);
-		if (!blizActual && blizzardS == true) {
-			//@ts-ignore
-			Hooks.call("fxmaster.switchParticleEffect", blizzard);
-			console.log(`Blizzard ${blizzardS}`);
+		const rainStorm = {
+			name: "myRainStorm",
+			type: "rainstorm",
+			options :{
+				scale: 1.0,
+				speed: 1.5,
+				lifetime: 0.5,
+				density: 0.6,
+			}
 		}
-		if (!snActual && snowS == true) {
-			//@ts-ignore
-			Hooks.call("fxmaster.switchParticleEffect", snow);
-			console.log(`Snow ${snowS}`);
+		const weatherData = {
+			"blizzard": blizzard,
+			"cloudy" : clouds,
+			"snow": snow,
+			"rain": rain,
+			"rainstorm": rainStorm,
+			"fog": fog,
+		} as const satisfies Partial<Record<typeof newWeather, any>>;
+		for (const [k,weather] of Object.entries(weatherData)) {
+			let actual = this.isEffectOn(weather.name);
+			const weatherS = newWeather == k;
+			if (actual != weatherS) {
+				//@ts-ignore
+				Hooks.call("fxmaster.switchParticleEffect", weather);
+			}
 		}
 	}
 

@@ -1,3 +1,4 @@
+import { PersonaSFX } from "../combat/persona-sfx.js";
 import { PersonaDB } from "../persona-db.js";
 import { sleep } from "../utility/async-wait.js";
 import { PersonaSocial } from "./persona-social.js";
@@ -80,8 +81,13 @@ export class PersonaCalendar {
 		const requireManual = !(await this.advanceCalendar());
 		const date = calendar.currentDateTimeDisplay().date;
 		const weekday = calendar.getCurrentWeekday().name;
-		rolls.push(await this.randomizeWeather());
+		const newWeather =  this.determineWeather(calendar.currentDateTime());
+		await this.setWeather(newWeather);
+		// rolls.push(await this.randomizeWeather());
 		const weather = this.getWeather();
+		if (weather != newWeather) {
+			PersonaError.softFail(`Weather is incorrect. Shoudl be ${newWeather}`);
+		}
 		const manualUpdate = requireManual ? `<h2> Requires Manaul date update </h2>`: "";
 		await PersonaSocial.updateLinkAvailability(weekday);
 		const doomsdayMsg = await this.advanceDoomsday();
@@ -146,13 +152,24 @@ export class PersonaCalendar {
 		return doomsdayMsg;
 	}
 
-	static async randomizeWeather() : Promise<Roll> {
-		const roll = new Roll("2d6");
-		await roll.roll();
-		const season = window.SimpleCalendar!.api.getCurrentSeason().name;
+	static determineWeather( date: Readonly<CalendarDate>) : WeatherType {
+		const {day, month, year} = date;
+		const str = `${year}-${day}-${month}`;
+		const hash = this.hash(str);
+		const rand = 2 + (hash[0] % 6) + (hash[1] % 6) ;
+		let prevWeather :WeatherType = "cloudy";
+		if (rand > 10) {
+			prevWeather = this.determineWeather(this.#calcPrevDay(date));
+		}
+		const currWeather = this.#weatherCompute(rand, prevWeather);
+		// await this.setWeather(currWeather);
+		return currWeather;
+	}
+
+	static #weatherCompute(rand: number, currentWeather: WeatherType) : WeatherType {
 		let weather : WeatherType;
-		const currentWeather = this.getWeather();
-		switch (roll.total) {
+		const season = window.SimpleCalendar!.api.getCurrentSeason().name;
+		switch (rand) {
 			case 2: weather = "lightning"; break;
 			case 3: weather = "rain"; break;
 			case 4: weather = "rain"; break;
@@ -169,15 +186,109 @@ export class PersonaCalendar {
 				weather = currentWeather == "rain" || currentWeather == "lightning" ? "fog" : "lightning";
 				break;
 			default:
-				PersonaError.softFail(`Odd Weather Result ${roll.total}`);
+				PersonaError.softFail(`Odd Weather Result for random: ${rand}`);
 				weather = "cloudy";
 		}
 		if (season == "Winter" && weather == "rain") {
 			weather = "snow";
 		}
-		await this.setWeather(weather);
-		return roll;
+		return weather;
 	}
+
+	static weatherFrequency() {
+		const weatherTypes : Partial<Record<WeatherType, number>> = {};
+		const data = this.weatherReport(150);
+		for (const weather of data) {
+			const curr = weatherTypes[weather] ?? 0;
+			weatherTypes[weather] = curr +1;
+		}
+		console.log(weatherTypes);
+	}
+
+	static #calcNextDay (date: Readonly<CalendarDate>) : CalendarDate {
+		const months = window.SimpleCalendar?.api.getAllMonths();
+		if (!months) throw new PersonaError("Calendar Module not loaded");
+		const currMonth = months[date.month];
+		let {day, month, year} = date;
+		day += 1;
+		if (day >= currMonth.numberOfDays) {
+			day = 0;
+			month += 1;
+		}
+		if (month >= months.length) {
+			month = 0;
+			year ++;
+		}
+		return {day, month, year};
+	}
+
+	static #calcPrevDay (date: Readonly<CalendarDate>) : CalendarDate {
+		const months = window.SimpleCalendar?.api.getAllMonths();
+		if (!months) throw new PersonaError("Calendar Module not loaded");
+		let {day, month, year} = date;
+		day -= 1;
+		if (day >= 0) {
+			return {day, month, year};
+		}
+		//Day must be less than 0
+		month -= 1;
+		if (month < 0) {
+			month = months.length - 1;
+		}
+		day = months[month].numberOfDays - 1;
+		return {day, month, year};
+	}
+
+	static hash(str: string) {
+		let h1 = 1779033703, h2 = 3144134277,
+		h3 = 1013904242, h4 = 2773480762;
+		for (let i = 0, k; i < str.length; i++) {
+			k = str.charCodeAt(i);
+			h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+			h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+			h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+			h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+		}
+		h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+		h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+		h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+		h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+		h1 ^= (h2 ^ h3 ^ h4), h2 ^= h1, h3 ^= h1, h4 ^= h1;
+		return [h1>>>0, h2>>>0, h3>>>0, h4>>>0];
+	}
+
+	// static async randomizeWeather() : Promise<Roll> {
+	// 	const roll = new Roll("2d6");
+	// 	await roll.roll();
+	// 	const season = window.SimpleCalendar!.api.getCurrentSeason().name;
+	// 	let weather : WeatherType;
+	// 	const currentWeather = this.getWeather();
+	// 	switch (roll.total) {
+	// 		case 2: weather = "lightning"; break;
+	// 		case 3: weather = "rain"; break;
+	// 		case 4: weather = "rain"; break;
+	// 		case 5: weather = "sunny"; break;
+	// 		case 6: weather = "sunny"; break;
+	// 		case 7: weather = "cloudy"; break;
+	// 		case 8: weather = "cloudy"; break;
+	// 		case 9: weather = "cloudy"; break;
+	// 		case 10: weather = "rain"; break;
+	// 		case 11:
+	// 			weather = currentWeather == "rain" || currentWeather == "lightning" ? "fog" : "windy";
+	// 			break;
+	// 		case 12:
+	// 			weather = currentWeather == "rain" || currentWeather == "lightning" ? "fog" : "lightning";
+	// 			break;
+	// 		default:
+	// 			PersonaError.softFail(`Odd Weather Result ${roll.total}`);
+	// 			weather = "cloudy";
+	// 	}
+	// 	if (season == "Winter" && weather == "rain") {
+	// 		weather = "snow";
+	// 	}
+	// 	await this.setWeather(weather);
+	// 	return roll;
+	// }
 
 	static getWeather() : WeatherType {
 		const weather = PersonaSettings.get("weather");
@@ -187,10 +298,22 @@ export class PersonaCalendar {
 		return "cloudy";
 	}
 
+	static weatherReport(days: number = 5) : WeatherType[] {
+		let day : CalendarDate | undefined = window.SimpleCalendar?.api.currentDateTime();
+		if (!day) throw new PersonaError("Can't get weather report as calendar can't be reached");
+		let arr : WeatherType[]  = [];
+		while (days-- > 0) {
+			day = this.#calcNextDay(day)
+			const weather = this.determineWeather(day);
+			arr.push(weather);
+		}
+		return arr;
+	}
 
 
 	static async setWeather(weather: WeatherType) {
 		await PersonaSettings.set("weather", weather);
+		PersonaSFX.onWeatherChange(weather);
 	}
 
 	static getDateString() : string {
@@ -256,3 +379,9 @@ Hooks.on("updateSetting", function (updateItem, changes) {
 	}
 });
 
+
+type CalendarDate = {day: number, year:number, month: number}
+
+
+//@ts-ignore
+window.PersonaCalendar = PersonaCalendar;

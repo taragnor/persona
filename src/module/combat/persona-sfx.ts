@@ -1,3 +1,5 @@
+import { PersonaScene } from "../persona-scene.js";
+import { WeatherType } from "../../config/weather-types.js";
 import { BASIC_PC_POWER_NAMES } from "../../config/basic-powers.js";
 import { PersonaError } from "../persona-error.js";
 import { UsableAndCard } from "../item/persona-item.js";
@@ -443,6 +445,39 @@ export class PersonaSFX {
 		await this.#play("level-up");
 	}
 
+	static async onWeatherChange(weather: WeatherType) {
+		const sceneName = "Loading Screen";
+		const scene = game.scenes.getName(sceneName) as PersonaScene | undefined;
+		if (!scene) {
+			PersonaError.softFail(`Can't find scene : ${sceneName}`);
+			return;
+		}
+		try {
+			switch (weather) {
+				case "sunny":
+				case "windy":
+					scene.changeWeather("");
+					break;
+				case "cloudy":
+					scene.changeWeather("cloudy");
+					break;
+				case "lightning":
+					scene.changeWeather("rainstorm");
+					break;
+				case "rain":
+					scene.changeWeather("rain");
+					break;
+				case "snow":
+					scene.changeWeather("snow");
+					break;
+				case "fog":
+					scene.changeWeather("fog");
+					break;
+			}
+		} catch (e: unknown) {
+			PersonaError.softFail(`${e}`, e);
+		}
+	}
 
 }
 
