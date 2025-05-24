@@ -19,7 +19,12 @@
 						</label>
 						<input class="navigator-check" type="checkbox" name="system.combat.isNavigator" {{checked actor.system.combat.isNavigator}}>
 					</div>
-
+				</div>
+				<div>
+					<label> Total SLs:</label>
+					<span>
+						{{actor.totalSLs}}
+					</span>
 				</div>
 				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
 			</div>
@@ -43,7 +48,7 @@
 			{{localize "persona.sheet.tabs.social-section.tabname" }}
 		</a>
 		<a  class="item" data-tab="persona">
-			Persona
+			{{actor.system.personaName}}
 		</a>
 
 		{{/if}}

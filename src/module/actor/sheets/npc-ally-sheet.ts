@@ -35,7 +35,7 @@ export class NPCAllySheet extends PCLikeSheet {
 				const power = item as Power;
 				const actor = this.actor as NPCAlly;
 				if (power.isNavigator()) {
-					await actor.setNavigatorSkill(power);
+					await actor.addNavigatorSkill(power);
 					return power;
 				}
 			}

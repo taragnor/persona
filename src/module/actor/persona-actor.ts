@@ -123,6 +123,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.system.type == "shadow";
 	}
 
+	isTarot(): this is Tarot {
+		return this.system.type == "tarot";
+	}
+
 	isRealPC(): this is PC {
 		return this.system.type == "pc" && this.hasPlayerOwner && this.tarot != undefined;
 	}
@@ -524,6 +528,28 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return linkData.linkLevel;
 	}
 
+	/** returns the total SLs that the PCs have with this character*/
+	get totalSLs() : number {
+		switch (this.system.type) {
+			case "shadow":
+			case "tarot": return 0;
+			case "pc":
+			case "npc":
+			case "npcAlly":
+				let targetActor : NPC | PC | NPCAlly = this as any;
+				if (this.isNPCAlly()) {
+					const proxy = this.getNPCProxyActor();
+					if (!proxy) {return 0;}
+					targetActor = proxy;
+				}
+				return PersonaDB.realPCs()
+					.reduce( (acc, pc) => acc + pc.getSocialSLWith(targetActor), 0)
+			default:
+				this.system satisfies never;
+				return -1;
+		}
+	}
+
 	get socialBenefits() : SocialBenefit[] {
 		let focuses : Focus[] = [];
 		switch (this.system.type) {
@@ -887,17 +913,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async addNavigatorSkill(this: NPCAlly, pwr: Power) {
-		this.system.combat.navigatorSkills.push(pwr.id);
+		this.system.combat.navigatorSkills.pushUnique(pwr.id);
 		await this.update( {"system.combat.navigatorSkills" : this.system.combat.navigatorSkills});
-		await Logger.sendToChat(`${this.name} added Navigator skill to ${pwr.name}` , this);
+		await Logger.sendToChat(`${this.name} added Navigator skill: ${pwr.name}` , this);
 	}
 
 	async deleteNavigatorSkill(this: NPCAlly, power: Power ) {
 		this.system.combat.navigatorSkills= this.system.combat.navigatorSkills.filter(x=> x != power.id);
 		await this.update( {"system.combat.navigatorSkills" : this.system.combat.navigatorSkills});
 		await Logger.sendToChat(`${this.name} deleted Navigator skill ${power.name}` , this);
-
-
 	}
 
 	get navigatorSkills(): Power[] {
