@@ -221,7 +221,6 @@ static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod
 	console.log(`Encounter list : ${encounterList.map( x=> x.name).join(", ")}`);
 	const weightedList = this.weightedEncounterList(encounterList, scene);
 	const minSize = encounterList.reduce ( (a, x) => Math.min(a, x.encounterSizeValue()), 10);
-
 	while (encounterSizeRemaining > 0) {
 		if (bailout > 200) {
 			PersonaError.softFail(`Had to bail out, couldn't find match for ${scene.name}`);
@@ -246,7 +245,7 @@ static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod
 			bailout++; //escape hatch for if it keeps screwing up
 			continue;
 		}
-		let amt = this.getSubgroupAmt(etype);
+		let amt = this.getSubgroupAmt(pick);
 		if (minSize > encounterSizeRemaining) {
 			break;
 		}
@@ -269,35 +268,53 @@ static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod
 	return {encounter, etype};
 }
 
-static getSubgroupAmt(etype :EncounterType) : number {
-	let subroll : number;
-	switch (etype) {
-		case "standard":
-			subroll = Math.floor(Math.random() * 3 + 1);
-			switch (subroll) {
-				case 1: return 1;
-				case 2: return 2;
-				case 3: return 2;
-				case 4: return 3;
-				default: return 2;
-			}
-		case "mixed":
-		case "tough":
-		case "treasure":
-			subroll = Math.floor(Math.random() * 2 + 1);
-			switch (subroll) {
-				case 1: return 1;
-				case 2: return 1;
-				case 3: return 2;
-				default: return 2;
-			}
-		case "error":
-			return 0;
+static getSubgroupAmt(pick: Shadow) : number {
+	switch (true) {
+		case pick.hasRole("minion"):
+			return Math.floor(Math.random() * 3 + 3);
+		case pick.hasRole("duo"): return 2;
+		case pick.hasRole("solo"): return 1;
+		case pick.hasRole("elite"): return Math.floor(Math.random() * 2 + 2);
+		case pick.hasRole(["soldier", "artillery", "tank", "brute", "assassin"]): return Math.floor(Math.random() * 3 + 1);
+		case pick.hasRole("controller"):
+		case pick.hasRole("treasure-shadow"):
+		case pick.hasRole("lurker"):
+		case pick.hasRole("support"):
+			return Math.floor(Math.random() * 2 + 1);
 		default:
-			etype satisfies never;
-			return 1;
+			return Math.floor(Math.random() * 5 + 1)
 	}
 }
+
+// static getSubgroupAmt(etype :EncounterType) : number {
+// 	let subroll : number;
+// 	switch (etype) {
+// 		case "standard":
+// 			subroll = Math.floor(Math.random() * 3 + 1);
+// 			switch (subroll) {
+// 				case 1: return 1;
+// 				case 2: return 2;
+// 				case 3: return 2;
+// 				case 4: return 3;
+// 				default: return 2;
+// 			}
+// 		case "mixed":
+// 		case "tough":
+// 		case "treasure":
+// 			subroll = Math.floor(Math.random() * 2 + 1);
+// 			switch (subroll) {
+// 				case 1: return 1;
+// 				case 2: return 1;
+// 				case 3: return 2;
+// 				default: return 2;
+// 			}
+// 		case "error":
+// 			return 0;
+// 		default:
+// 			etype satisfies never;
+// 			return 1;
+// 	}
+// }
 
 	static async printRandomEncounterList(encounter: Shadow[], encounterType : EncounterType) {
 		const speaker = ChatMessage.getSpeaker({alias: "Encounter Generator"});

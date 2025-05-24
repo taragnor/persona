@@ -152,7 +152,7 @@ export class CombatResult  {
 				origValue -= mult;
 				return Math.max(0, origValue);
 			default:
-				PersonaError.softFail(`Odd value for damgae multiplier :${mult}`);
+				PersonaError.softFail(`Odd value for damage multiplier :${mult}`);
 				break;
 		}
 				return origValue;
