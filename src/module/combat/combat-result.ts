@@ -126,6 +126,39 @@ export class CombatResult  {
 		this.sounds.push({sound, timing});
 	}
 
+	calcDamageMult(change :ActorChange<ValidAttackers>, mult : number) {
+		change.hpchangemult = CombatResult.calcHpChangeMult(change.hpchangemult, mult);
+	}
+
+	static calcHpChangeMult(origValue: number, mult: number): number {
+		if (!PersonaSettings.get("damageMult")) {
+			return origValue *= mult;
+		}
+		switch (true) {
+			case origValue == 0:
+				return 0;
+			case mult == 0:
+				return 0;
+			case mult == -1:
+				return origValue *= -1;
+			case mult <0:
+				PersonaError.softFail("calcDamageMult doesn't handle values less than 0 that aren't -1");
+				break;
+			case mult > 1:
+				mult -= 1;
+				return origValue += mult;
+			case mult < 1:
+				mult = 1 - mult;
+				origValue -= mult;
+				return Math.max(0, origValue);
+			default:
+				PersonaError.softFail(`Odd value for damgae multiplier :${mult}`);
+				break;
+		}
+				return origValue;
+
+	}
+
 	addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Consequence) {
 		let effect: ActorChange<ValidAttackers> | undefined = undefined;
 		if (target) {
@@ -145,13 +178,14 @@ export class CombatResult  {
 				break;
 			case "absorb":
 				if (!effect) break;
-				effect.hpchangemult = Math.abs(effect.hpchangemult) * -1;
+				this.calcDamageMult(effect, -1);
 				break;
 			case "damage-new": {
 				if (!effect) break;
 				switch (cons.damageSubtype) {
 					case "multiplier":
-						effect.hpchangemult *= cons.amount ?? 0;
+						this.calcDamageMult(effect, cons.amount);
+
 						break;
 					case "odd-even":
 					case "high":
@@ -186,7 +220,8 @@ export class CombatResult  {
 			}
 			case "dmg-mult":
 				if (!effect) break;
-				effect.hpchangemult *= cons.amount ?? 0;
+				this.calcDamageMult(effect, cons.amount ?? 0);
+
 				break;
 			case "dmg-high":
 			case "dmg-low":
@@ -492,13 +527,6 @@ export class CombatResult  {
 			}
 		}
 		for (const cost of this.costs) {
-			const actor = PersonaDB.findActor(cost.actor);
-			if (this.hasFlag(actor, "half-hp-cost")) {
-				cost.hpchangemult *= 0.666;
-			}
-			if (this.hasFlag(actor, "save-slot")) {
-				cost.expendSlot = [0, 0, 0, 0];
-			}
 			this.finalizeChange(cost);
 		}
 		this._finalized = true;
@@ -698,10 +726,9 @@ export class CombatResult  {
 
 	async #applyCosts() {
 		for (const cost of this.costs) {
-			const actor = PersonaDB.findActor(cost.actor);
-			if (this.hasFlag(actor, "half-hp-cost")) {
-				cost.hpchangemult *= 0.666;
-			}
+			// if (this.hasFlag(actor, "half-hp-cost")) {
+			// 	cost.hpchangemult *= 0.666;
+			// }
 			await this.applyChange(cost);
 		}
 	}
@@ -980,7 +1007,7 @@ export class CombatResult  {
 			actor: initial.actor,
 			hpchange: absMax(initial.hpchange, other.hpchange),
 			damageType : initial.damageType == "none" ? other.damageType : initial.damageType,
-			hpchangemult: initial.hpchangemult * other.hpchangemult,
+			hpchangemult: CombatResult.calcHpChangeMult(initial.hpchangemult, other.hpchangemult),
 			addStatus : initial.addStatus.concat(other.addStatus),
 			removeStatus : initial.removeStatus.concat(other.removeStatus),
 			expendSlot : initial.expendSlot.map( (x,i)=> x + other.expendSlot[i]) as [number, number, number, number],

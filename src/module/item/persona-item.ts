@@ -1,3 +1,4 @@
+import { CombatResult } from "../combat/combat-result.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../../config/roll-tags.js";
 import { CARD_RESTRICTOR_TAGS } from "../../config/card-tags.js";
 import { CardRoll } from "../../config/social-card-config.js";
@@ -813,10 +814,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			.map ( eff => getActiveConsequences(eff,situation, this))
 			.flat()
 			.filter( x=> x.type == "dmg-mult" || ( x.type == "damage-new" && x.damageSubtype == "multiplier"));
-		return multCons.reduce( (acc, cons) =>
-			acc * ("amount" in cons ? cons.amount ?? 1: 1)
+		return multCons.reduce( (acc, cons) => {
+			const amt = "amount" in cons ? cons.amount ?? 1: 1
+			return CombatResult.calcHpChangeMult(acc,amt)
+			// acc * ("amount" in cons ? cons.amount ?? 1: 1)
+		}
 			,1);
 	}
+
 
 	critBoost(this: Usable, user: ValidAttackers) : ModifierList {
 		const x = this.getModifier("criticalBoost", user);

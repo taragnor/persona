@@ -127,6 +127,16 @@ const SETTINGS = {
 		type: String,
 	},
 
+	"damageMult": {
+		name: "Damage Multiplier",
+		hint: "Use New Damage Multiplier system",
+		scope: "world",
+		restricted: true,
+		config: true,
+		type: Boolean,
+		default: true,
+	},
+
 	"searchReminder": {
 		name: "Search Reminder",
 		hint: "Beeps annoyingly at the last person to pick in search actions",
