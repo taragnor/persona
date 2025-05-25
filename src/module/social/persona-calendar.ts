@@ -310,7 +310,6 @@ export class PersonaCalendar {
 		return arr;
 	}
 
-
 	static async setWeather(weather: WeatherType) {
 		await PersonaSettings.set("weather", weather);
 		PersonaSFX.onWeatherChange(weather);
@@ -326,8 +325,10 @@ export class PersonaCalendar {
 		return daystr;
 	}
 
-	static getWeatherIcon() : JQuery {
-		const weather = PersonaCalendar.getWeather();
+	static getWeatherIcon(weather ?: WeatherType) : JQuery {
+		if (weather == undefined) {
+			weather = PersonaCalendar.getWeather();
+		}
 		const weatherLoc = localize(WEATHER_TYPES[weather]);
 		switch (weather) {
 			case "cloudy":
@@ -348,6 +349,20 @@ export class PersonaCalendar {
 				weather satisfies never;
 		}
 		throw new PersonaError(`Unknwon weather type ${weather}`);
+	}
+
+	static async openWeatherForecast() {
+		const weatherReport = PersonaCalendar.weatherReport(4)
+			.map(weather =>` <span class="weather-icon"> ${PersonaCalendar.getWeatherIcon(weather).get(0)?.outerHTML} </span>`)
+			.join("");
+		const msg = `<h2> Upcoming Weather </h2> ${weatherReport}`;
+		let messageData : Foundry.MessageData = {
+			speaker: {alias: "Weather Forecast"},
+			content: msg,
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			whisper: [game.user],
+		};
+		ChatMessage.create(messageData, {});
 	}
 
 }

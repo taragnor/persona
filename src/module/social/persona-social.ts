@@ -1573,7 +1573,7 @@ export class PersonaSocial {
 			tracker.find(".combat-tracker-header").append(socialTracker);
 		}
 		const weatherIcon = PersonaCalendar.getWeatherIcon();
-		tracker.find("div.weather-icon").append(weatherIcon);
+		tracker.find("div.weather-icon").append(weatherIcon).on("click" , PersonaCalendar.openWeatherForecast.bind(PersonaCalendar));
 		const doom = PersonaCalendar.DoomsdayClock;
 		const doomtxt = `${doom.amt} / ${doom.max}`
 		tracker.find("span.doomsday").text(doomtxt);
