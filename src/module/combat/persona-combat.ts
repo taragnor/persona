@@ -231,7 +231,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				trigger: "on-combat-end",
 				triggeringUser: game.user,
 				hit: PCsWin,
-				user: comb.actor.accessor
+				triggeringCharacter: comb.actor.accessor,
+				user: comb.actor.accessor,
 			};
 			await TriggeredEffect.onTrigger("on-combat-end", comb.actor, situation)
 				.emptyCheck()

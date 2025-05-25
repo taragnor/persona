@@ -839,6 +839,10 @@ function hasTagConditional(condition: Precondition & BooleanComparisonPC & {bool
 					break;
 			}
 			const powerTags = power.tagList(user);
+			if (condition.powerTag == undefined) {
+				//weird Sachi Error
+				return undefined;
+			}
 			if (typeof condition.powerTag == "string") {
 				return powerTags.includes(condition.powerTag!);
 			}

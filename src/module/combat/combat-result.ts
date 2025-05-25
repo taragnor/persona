@@ -137,6 +137,8 @@ export class CombatResult  {
 		switch (true) {
 			case origValue == 0:
 				return 0;
+			case mult == 1:
+				return origValue;
 			case mult == 0:
 				return 0;
 			case mult == -1:

@@ -728,7 +728,8 @@ export class ConditionalEffectManager {
 			case "expend-item":
 				return `expend item`;
 			case "add-power-to-list":
-				return `Add power to list ${cons.id}`
+				const grantedPower = PersonaDB.getPower(cons.id);
+				return `Add power to list ${grantedPower?.displayedName?.toString() ?? "ERROR"}`
 			case "other-effect":
 				return this.#printOtherEffect(cons);
 			case "set-flag":
