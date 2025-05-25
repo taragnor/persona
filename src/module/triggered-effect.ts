@@ -16,7 +16,6 @@ export class TriggeredEffect {
 		const result = new CombatResult();
 		if (!situation) {
 			switch (trigger) {
-				case "on-combat-end":
 				case "on-damage":
 				case "on-combat-start":
 				case "start-turn":
@@ -77,6 +76,7 @@ export class TriggeredEffect {
 				case "on-clock-change":
 				case "on-use-power":
 				case "on-roll":
+				case "on-combat-end": 
 				case "on-open-door":
 					PersonaError.softFail(`Must proivide a situation with this trigger:  ${trigger}`);
 					return result;

@@ -450,7 +450,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			this.mandatoryOtherOpeners(combatant, situation),
 			this.sleepEffect(combatant),
 			this.saveVsFear(combatant, situation),
-			this.saveVsDespair(combatant, situation),
+			// this.saveVsDespair(combatant, situation),
 			this.saveVsConfusion(combatant, situation),
 			this.saveVsCharm(combatant, situation),
 			this.rageOpener(combatant, situation),
@@ -975,7 +975,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		if (despair && actor.isPC()) {
 			const drain = actor.despairMPDamage();
-			Msg.push(`${combatant.name} is burning and will lose ${drain} MP at end of turn. (original MP: ${actor.mp}`);
+			Msg.push(`${combatant.name} is feeling despair and will lose ${drain} MP at end of turn. (original MP: ${actor.mp}`);
 		}
 		const poisonStatus = actor.effects.find( eff=> eff.statuses.has("poison"));
 		if (poisonStatus) {

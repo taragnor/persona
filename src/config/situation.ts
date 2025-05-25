@@ -58,6 +58,7 @@ type NonGenericCombatTrigger =
 	| CombatGlobalTrigger
 	| UsePowerTrigger
 	| KillTargetTrigger
+	| CombatEndIndividual;
 ;
 
 type KillTargetTrigger = UserSituation & {
@@ -79,6 +80,12 @@ type InflictStatusTrigger = UserSituation & {
 
 type CombatGlobalTrigger = {
 	trigger: "on-combat-end-global",
+}
+
+type CombatEndIndividual = {
+	trigger: "on-combat-end",
+	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,
+	hit: boolean,
 }
 
 type TriggerSituation_base = {
