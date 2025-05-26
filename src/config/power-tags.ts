@@ -31,6 +31,7 @@ export const POWER_TYPE_TAGS = [
 	"no-crit",
 	"pierce",
 	"hack",
+	"exploration",
 ] as const;
 
 export const POWER_TAGS_LIST = [
@@ -48,6 +49,7 @@ export const POWER_TAGS_LIST = [
 	"weapon",
 	"physical",
 	"gun",
+	"variable-damage",
 	"healing",
 	"mobile",
 	"basicatk",

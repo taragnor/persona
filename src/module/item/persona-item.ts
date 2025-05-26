@@ -1018,6 +1018,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const sit : Situation = {
 			user: user.accessor,
 			usedPower: this.accessor,
+			attacker: user.accessor,
 		}
 		let list = user.persona().getBonuses("mpCostMult");
 		// const bonuses = this.getModifier("mpCostMult", user);
