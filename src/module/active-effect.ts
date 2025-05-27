@@ -208,8 +208,10 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		if (!this.durationLessThanOrEqualTo({ dtype: "combat"})) return false;
 		return Array.from(this.statuses).some( st=> {
 			const status = CONFIG.statusEffects.find( x=> x.id == st)
+			if (st == "sticky") return false;
 			const tags = status?.tags;
 			if (!status || !tags) return false;
+			if (tags.includes("identifier")) return false;
 			if (tags.includes("fade")) return false;
 			if (tags.includes("downtime")) return false;
 			return true;

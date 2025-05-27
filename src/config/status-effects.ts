@@ -162,7 +162,7 @@ export const STATUS_EFFECT_LIST = [
 	}, {
 		id: "sticky",
 		icon:   "icons/svg/anchor.svg",
-		tags: [],
+		tags: ["identifier"],
 	},
 	{
 		id: "baton-pass",
@@ -220,7 +220,7 @@ declare global {
 
 
 
-type StatusTag = "distracting" | "baneful" | "incapacitating" | "debuff" | "buff" | "lethal" | "downtime" | "beneficial" | "fade" | "fatigue";
+type StatusTag = "distracting" | "baneful" | "incapacitating" | "debuff" | "buff" | "lethal" | "downtime" | "beneficial" | "fade" | "fatigue" | "identifier";
 
 
 

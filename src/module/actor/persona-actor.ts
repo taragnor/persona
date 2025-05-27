@@ -2532,7 +2532,7 @@ async endEffectsOfDurationOrLess( duration: StatusDuration) : Promise<ActiveEffe
 async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 	try {
 		if (this.isPC() && !this.isRealPC()) {return;} //skip fake PCs like itempiles and the party token
-		if (this.isRealPC()) {
+		if (this.isRealPC() || this.isNPCAlly()) {
 			if (this.hasStatus("full-fade")) {
 				await this.removeStatus("full-fade");
 				await this.alterFatigueLevel(-2);
@@ -2631,7 +2631,6 @@ isFullyFaded(this: ValidAttackers, newhp?:number) : boolean {
 isFading(this: ValidAttackers): boolean {
 	if (this.system.type == "shadow") return false;
 	return this.hp <= 0 && !this.hasStatus("full-fade");
-	// return this.hp <= 0 && this.system.combat.fadingState < 2;
 }
 
 get triggers() : ModifierContainer[] {
@@ -2676,32 +2675,6 @@ async clearFadingState( this: ValidAttackers) {
 	await this.removeStatus("fading");
 	await this.removeStatus("full-fade");
 }
-
-// async setFadingState (this: ValidAttackers, state: number) {
-// 	switch (state) {
-// 		case 0:
-// 			await this.removeStatus({
-// 				id: "fading"
-// 			});
-// 			break;
-// 		case 1:
-// 			if (state == this.system.combat.fadingState)
-// 				return;
-// 			await this.addStatus({
-// 				id:"fading",
-// 				duration: {
-// 					dtype: "expedition"
-// 				},
-// 			});
-// 			break;
-// 		case 2:
-// 			break;
-// 	}
-// 	if (state == this.system.combat.fadingState)
-// 		return;
-// 	await this.update( {"system.combat.fadingState": state});
-// 	await this.refreshHpStatus();
-// }
 
 async alterSocialSkill (this: PC, socialStat: SocialStat, amt: number, logger = true) {
 	const oldval = this.system.skills[socialStat];

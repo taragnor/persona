@@ -345,6 +345,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "power": {
 				const list : (PowerTag | EquipmentTag) [] = this.system.tags.slice();
 				list.pushUnique(itype);
+				if (this.system.dmg_type == "by-power") {
+					list.pushUnique("variable-damage");
+				}
 				if( list.includes("weapon") && this.system.dmg_type == "by-power" && user) {
 					const wpnList : (PowerTag | EquipmentTag)[] = user?.weapon?.tagList() ?? user.unarmedTagList();
 					list.pushUnique(...wpnList);
