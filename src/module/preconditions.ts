@@ -571,8 +571,9 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			}
 			const power = PersonaDB.findItem(situation.usedPower);
 			if (!power || power.isSkillCard()) return undefined;
-			if (!situation.attacker) return undefined;
-			const attacker = PersonaDB.findActor(situation.attacker);
+			if (!situation.attacker && !situation.user) return undefined;
+			const attackerAcc = situation.attacker ? situation.attacker : situation.user!;
+			const attacker = PersonaDB.findActor(attackerAcc);
 			if (!attacker) return undefined;
 			const dtype = power.getDamageType(attacker);
 			return multiCheckContains(condition.powerDamageType, [dtype]);
@@ -841,6 +842,11 @@ function hasTagConditional(condition: Precondition & BooleanComparisonPC & {bool
 			const powerTags = power.tagList(user);
 			if (condition.powerTag == undefined) {
 				//weird Sachi Error
+				if (source) {
+					PersonaError.softFail(`Error in ${source.name}, no Power Tags provided`, condition, situation, source)
+				} else {
+					PersonaError.softFail(`No power tags provided in unsourced Power`, condition, situation, source)
+				}
 				return undefined;
 			}
 			if (typeof condition.powerTag == "string") {
