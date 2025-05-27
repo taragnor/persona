@@ -82,6 +82,7 @@ class FocusDM extends foundry.abstract.TypeDataModel {
 
 class UniversalModifierDM extends foundry.abstract.TypeDataModel {
 	get type() { return "universalModifier" as const;}
+
 	static override defineSchema() {
 		const ret = {
 			description: new html(),
@@ -94,7 +95,11 @@ class UniversalModifierDM extends foundry.abstract.TypeDataModel {
 	}
 
 	static override migrateData(data: UniversalModifier["system"])  {
+		if (data.scope != undefined) {
+			return data;
+		}
 		if (data?.room_effect === true) {
+			debugger;
 			data.scope = "room";
 		}
 		if ("room_effect" in data) {
