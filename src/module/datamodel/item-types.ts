@@ -99,7 +99,6 @@ class UniversalModifierDM extends foundry.abstract.TypeDataModel {
 			return data;
 		}
 		if (data?.room_effect === true) {
-			debugger;
 			data.scope = "room";
 		}
 		if ("room_effect" in data) {
