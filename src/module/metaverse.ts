@@ -113,52 +113,41 @@ export class Metaverse {
 			.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
 }
 
-static #getEncounterType(sizeMod: number): {size: number, etype: EncounterType} {
-	let etype : EncounterType = "standard";
-		let encounterSize = sizeMod;
+static #getEncounterType(): EncounterType {
 	const DIE_SIZE = 16;
 		const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
-		switch (sizeRoll) {
-			case 1:
-				encounterSize += 3;
-				break;
-			case 2: case 3: case 4: case 5: case 6: case 7:
-				encounterSize += 4;
-				break;
-			case 8: case 9: case 10: case 11:
-				encounterSize += 5;
-				break;
-			case 12: case 13:
-				encounterSize += 5;
-				etype = "tough";
-				break;
-			case 14:
-				encounterSize += Math.floor(Math.random() * 3+1);
-				etype = "treasure";
-				break;
-			case 15:
-				encounterSize += 5;
-				etype = "mixed";
-				break;
-			case 16:
-				const rnd = Math.floor(Math.random() * 2 + 5);
-				if (rnd >= 6) {
-				console.log("Mixed encounter size ${rnd}");
-				}
-				encounterSize += rnd;
-				etype = "mixed";
-				break;
-			default:
+	switch (true) {
+		case sizeRoll <= 11:
+			return "standard";
+		case sizeRoll >= 12 && sizeRoll <= 13 :
+			return "tough";
+		case sizeRoll == 14:
+			return "treasure";
+		case sizeRoll >= 15:
+			return "mixed";
+		default:
+			return "standard";
+	}
+}
+
+
+static #getEncounterSize() : number {
+	const DIE_SIZE = 10;
+	const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
+	switch (sizeRoll)  {
+		case 1:
+			return 3;
+		case 2: case 3: case 4: case 5:
+			return 4;
+		case 8: case 9: case 10:
+			return 5;
+		default:
 				if (sizeRoll > DIE_SIZE) {
 					PersonaError.softFail(`Encounter number is ${sizeRoll}`);
 				}
-				encounterSize += 4;
-				break;
-		}
-	return {
-		size: encounterSize,
-		etype
-	};
+			return 4;
+	}
+
 }
 
 static #filterByEncounterType(shadowList : Shadow[], etype : EncounterType) : Shadow[] {
@@ -194,8 +183,7 @@ static choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encount
 	return pick;
 }
 
-
-static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod = 0): {encounter:Shadow[], etype: EncounterType} {
+static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}): {encounter:Shadow[], etype: EncounterType} {
 	const scene = game.scenes.current as PersonaScene;
 	const baseList  = this.getEncounterList(scene, shadowType);
 	let enemyType : Shadow["system"]["creatureType"] | undefined = undefined;
@@ -212,9 +200,9 @@ static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], sizeMod
 	}
 	let etype : EncounterType;
 	do {
-		let { size, etype: encounterType} = this.#getEncounterType(sizeMod);
+		etype = options.encounterType ? options.encounterType : this.#getEncounterType();
+		const size = this.#getEncounterSize() + (options.sizeMod ?? 0);
 		encounterSizeRemaining = size;
-		etype = encounterType;
 		encounterList = this.#filterByEncounterType(baseList, etype);
 	} while (encounterList.length <= 0);
 
@@ -869,3 +857,9 @@ type Treasure = {
 };
 
 type EncounterType = "standard" | "tough" | "treasure" | "mixed" | "error";
+
+export type EncounterOptions = {
+	sizeMod ?: number;
+	encounterType ?: EncounterType;
+}
+

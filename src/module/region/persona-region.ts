@@ -1,3 +1,4 @@
+import { EncounterOptions } from "../metaverse.js";
 import { PersonaScene } from "../persona-scene.js";
 import { Helpers } from "../utility/helpers.js";
 import { ModifierList } from "../combat/modifier-list.js";
@@ -301,7 +302,7 @@ export class PersonaRegion extends RegionDocument {
 		return true;
 	}
 
-	async presenceCheck(modifier = 0) : Promise<boolean> {
+	async presenceCheck(modifier = 0, battleType: "wandering" | "secondary" | "room-no-guard" | "room-with-guard" = "wandering") : Promise<boolean> {
 		const presence = await Metaverse.presenceCheck(this, undefined, modifier);
 		if (!presence) return false;
 		let shadowType : Shadow["system"]["creatureType"] | undefined = undefined;
@@ -327,7 +328,17 @@ export class PersonaRegion extends RegionDocument {
 			...this.roomEffects
 		].flatMap( x=> x.getModifier("encounterSize", null))
 		).total(situation);;
-		const {encounter, etype} = Metaverse.generateEncounter(shadowType, sizeMod);
+		let encounterType : EncounterOptions["encounterType"] = undefined;
+		switch (battleType) {
+			case "secondary":
+				encounterType = "standard";
+				break;
+		}
+		const options : EncounterOptions = {
+			sizeMod,
+			encounterType
+		};
+		const {encounter, etype} = Metaverse.generateEncounter(shadowType, options);
 		await Metaverse.printRandomEncounterList(encounter, etype);
 		return true;
 	}
