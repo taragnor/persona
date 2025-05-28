@@ -1343,6 +1343,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			}
 		}
 		const attackbonus = this.getAttackBonus(attacker.actor, power, target, modifiers);
+		if (rollType == "reflect") {
+			attackbonus.add("Reflected Attack", 5);
+		}
 		const cssClass=  (target.actor.system.type != "pc") ? "gm-only" : "";
 		const roll = new RollBundle("Temp", r, attacker.actor.system.type == "pc", attackbonus, baseSituation);
 		const naturalAttackRoll = roll.dice[0].total;
