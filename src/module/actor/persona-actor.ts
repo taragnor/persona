@@ -1064,6 +1064,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (hp > this.mhp) {
 			await this.update( {"system.combat.hp": this.mhp});
 		}
+		if (this.hasStatus("full-fade")) {
+			await this.update( {"system.combat.hp": 0});
+		}
 		if (newval != undefined) {
 			if (startingHP > 0  && newval <= 0) {
 				await this.onKO();
@@ -2660,7 +2663,7 @@ async increaseFadeState( this: ValidAttackers) {
 			await this.removeStatus("fading");
 			await this.addStatus( {
 				id: "full-fade",
-				duration: {dtype: "expedition"}
+				duration: {dtype: "permanent"}
 			});
 			return "full-fade";
 		default :
@@ -2673,7 +2676,7 @@ async increaseFadeState( this: ValidAttackers) {
 
 async clearFadingState( this: ValidAttackers) {
 	await this.removeStatus("fading");
-	await this.removeStatus("full-fade");
+	// await this.removeStatus("full-fade");
 }
 
 async alterSocialSkill (this: PC, socialStat: SocialStat, amt: number, logger = true) {

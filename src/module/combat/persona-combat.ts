@@ -216,6 +216,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		for (const combatant of this.combatants) {
 			const actor = combatant.actor;
 			if (!actor) continue;
+			if (actor.hasStatus("full-fade")) continue;
 			if (actor.isFading()) {
 				await actor.modifyHP(1);
 			}

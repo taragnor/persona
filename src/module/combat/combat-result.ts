@@ -1185,7 +1185,7 @@ function convertConsToStatusDuration(cons: Consequence & {type : "addStatus" | "
 				};
 			}
 			const anchorHolder = resolveStatusDurationAnchor(cons.durationApplyTo, atkResultOrActor);
-			//this isn't necessarily target, it has to be  determined by who the anchor is 
+			//this isn't necessarily target, it has to be  determined by who the anchor is
 			if (anchorHolder)  {
 				return {
 					dtype: dur,
