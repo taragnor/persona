@@ -83,13 +83,11 @@ export const STATUS_EFFECT_LIST = [
 		id: "blind",
 		icon: "icons/svg/blind.svg",
 		tags: ["baneful", "distracting"],
-	},
-	{
+	}, {
 		id: "mouse",
 		icon: "icons/creatures/mammals/rodent-rat-green.webp",
 		tags: ["baneful", "distracting"],
-	},
-	{
+	}, {
 		id: "buffed",
 		icon:  "icons/svg/upgrade.svg",
 		tags: [],
@@ -141,9 +139,7 @@ export const STATUS_EFFECT_LIST = [
 		id: "injured",
 		icon:  "icons/skills/wounds/injury-triple-slash-bleed.webp",
 		tags: ["downtime", "baneful"],
-	},
-
-	{
+	}, {
 		id: "jailed",
 		icon:  "icons/environment/traps/steel.webp",
 		tags: ["downtime", "distracting"],
@@ -163,13 +159,11 @@ export const STATUS_EFFECT_LIST = [
 		id: "sticky",
 		icon:   "icons/svg/anchor.svg",
 		tags: ["identifier"],
-	},
-	{
+	}, {
 		id: "baton-pass",
 		icon: "icons/weapons/staves/staff-orb-red.webp",
 		tags: [],
-	},
-	{
+	}, {
 		id:"challenged",
 		icon: "icons/skills/melee/swords-parry-block-blue.webp",
 		tags: [],
@@ -178,27 +172,23 @@ export const STATUS_EFFECT_LIST = [
 		icon: "icons/magic/holy/barrier-shield-winged-cross.webp",
 		tags: ["beneficial"],
 
-},{
+	},{
 		id:"rage",
 		icon: "icons/skills/melee/unarmed-punch-fist.webp",
 		tags: ["baneful"],
-	},
-	{
+	}, {
 		id:"phys-shield",
 		icon: "icons/equipment/shield/heater-steel-grey.webp",
 		tags: [],
-	},
-	{
+	}, {
 		id:"magic-shield",
 		icon: "icons/equipment/shield/heater-steel-segmented-purple.webp",
 		tags: [],
-	},
-	{
+	}, {
 		id:"fight-in-spirit-attack",
 		icon: "icons/skills/melee/strike-polearm-light-orange.webp",
 		tags: [],
-	},
-	{
+	}, {
 		id:"fight-in-spirit-defense",
 		icon: "icons/skills/melee/shield-block-gray-yellow.webp",
 		tags: [],

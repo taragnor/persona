@@ -1086,6 +1086,55 @@ Hooks.on("updateActor", async (updatedActor : PersonaActor, changes) => {
 	}
 });
 
+function resolveStatusDurationAnchor (anchor: (Consequence & {type : "addStatus" | "set-flag"})["durationApplyTo"], atkResult: AttackResult) : UniversalActorAccessor<ValidAttackers> | null {
+	if (!anchor) {
+		anchor = "target";
+	}
+	let accessor : UniversalTokenAccessor<PToken> | undefined;
+	const situation = atkResult.situation;
+	switch (anchor) {
+		case "target":
+			accessor = atkResult.target;
+			break;
+		case "owner":
+			console.warn("Using owner in status duration anchors is unsupported and just resolves to 'user'");
+		case "user":
+			const userAcc=  atkResult.situation.user;
+			if (userAcc)
+				return userAcc;
+			PersonaError.softFail("Can't resolve user for status Duration anchor");
+			return null;
+		case "attacker":
+			accessor = atkResult.attacker;
+			break;
+		case "triggering-character":
+			if ("triggeringCharacter" in situation && situation.triggeringCharacter) {
+				return situation.triggeringCharacter;
+			}
+			PersonaError.softFail("Can't resolve triggering Character for status Duration anchor");
+			return null;
+		case "cameo":
+			if ("cameo" in situation && situation.cameo) {
+				const actor = PersonaDB.findActor(situation.cameo);
+				if (actor && actor.isValidCombatant()) return actor.accessor;
+				return null;
+			}
+		case "all-allies":
+		case "all-foes":
+			PersonaError.softFail(`${anchor} not supported as a status anchor`);
+			return null;
+		default:
+			anchor satisfies never;
+			return null;
+	}
+	if (accessor) {
+		const token = PersonaDB.findToken(accessor)!;
+		return token?.actor?.accessor!;
+	}
+	PersonaError.softFail("Odd error in resolving Status Anchor");
+	return null;
+}
+
 function convertConsToStatusDuration(cons: Consequence & {type : "addStatus" | "set-flag"}, atkResultOrActor: AttackResult | ValidAttackers) : StatusDuration {
 	const dur = cons.statusDuration;
 	switch (dur) {
@@ -1135,27 +1184,17 @@ function convertConsToStatusDuration(cons: Consequence & {type : "addStatus" | "
 					actorTurn: atkResultOrActor.accessor
 				};
 			}
-			const targetToken = PersonaDB.findToken(atkResultOrActor.target);
-			const target = targetToken?.actor;
-			if (target)  {
+			const anchorHolder = resolveStatusDurationAnchor(cons.durationApplyTo, atkResultOrActor);
+			//this isn't necessarily target, it has to be  determined by who the anchor is 
+			if (anchorHolder)  {
 				return {
 					dtype: dur,
-					actorTurn: target.accessor
+					actorTurn: anchorHolder,
 				};
 			}
-			if (!target) {
+			if (!anchorHolder) {
 				PersonaError.softFail(`Can't coinvert consequence ${cons.type}`, atkResultOrActor);
 			}
-			//had to change this when all-allies/enemies selectors were introduced might break something
-			// const applyTarget = PersonaCombat.resolveEffectiveTarget(cons.durationApplyTo, atkResultOrActor, cons);
-			// if (!applyTarget) {
-			// 	PersonaError.softFail(`Can't get applyTarget for status ${cons.type}`);
-			// 	return {dtype: "instant"};
-			// }
-			// return {
-			// 	dtype: dur,
-			// 	actorTurn: applyTarget.actor.accessor,
-			// }
 		case "anchored":
 			PersonaError.softFail("Anchored shouldn't happen here");
 			return {

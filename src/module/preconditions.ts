@@ -52,7 +52,6 @@ export function testPreconditions(conditionArr: Precondition[] | DeepNoArray<Pre
 		.every( cond => testPrecondition(cond, situation, source));
 }
 
-
 export function testPrecondition (condition: Precondition, situation:Situation, source: PowerContainer| null) : boolean {
 	switch (condition.type) {
 		case "always":
@@ -843,9 +842,9 @@ function hasTagConditional(condition: Precondition & BooleanComparisonPC & {bool
 			if (condition.powerTag == undefined) {
 				//weird Sachi Error
 				if (source) {
-					PersonaError.softFail(`Error in ${source.name}, no Power Tags provided`, condition, situation, source)
+					PersonaError.softFail(`Error in ${source.name}, no Power Tags provided`, condition, situation, source);
 				} else {
-					PersonaError.softFail(`No power tags provided in unsourced Power`, condition, situation, source)
+					PersonaError.softFail(`No power tags provided in unsourced Power`, condition, situation, source);
 				}
 				return undefined;
 			}

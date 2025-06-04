@@ -113,13 +113,15 @@ export class Metaverse {
 			.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
 }
 
-static #getEncounterType(): EncounterType {
-	const DIE_SIZE = 16;
-		const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
+static #getEncounterType(frequencies: {hard ?: number, mixed ?: number}): EncounterType {
+	const mixed = frequencies.mixed ? frequencies.mixed : 0;
+	const DIE_SIZE = 16 + mixed;
+	const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
+	const hardMod = frequencies.hard ? frequencies.hard : 0;
 	switch (true) {
-		case sizeRoll <= 11:
+		case sizeRoll <= 11 - hardMod:
 			return "standard";
-		case sizeRoll >= 12 && sizeRoll <= 13 :
+		case sizeRoll <= 13:
 			return "tough";
 		case sizeRoll == 14:
 			return "treasure";
@@ -131,21 +133,22 @@ static #getEncounterType(): EncounterType {
 }
 
 
-static #getEncounterSize() : number {
+static #getEncounterSize(etype: EncounterType) : number {
 	const DIE_SIZE = 10;
 	const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
+	const addon = etype == "tough" || etype == "mixed" ? 1 : 0;
 	switch (sizeRoll)  {
 		case 1:
-			return 3;
+			return 3 + addon;
 		case 2: case 3: case 4: case 5:
-			return 4;
+			return 4 + addon;
 		case 8: case 9: case 10:
-			return 5;
+			return 5 + addon;
 		default:
 				if (sizeRoll > DIE_SIZE) {
 					PersonaError.softFail(`Encounter number is ${sizeRoll}`);
 				}
-			return 4;
+			return 4 + addon;
 	}
 
 }
@@ -200,8 +203,8 @@ static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options
 	}
 	let etype : EncounterType;
 	do {
-		etype = options.encounterType ? options.encounterType : this.#getEncounterType();
-		const size = this.#getEncounterSize() + (options.sizeMod ?? 0);
+		etype = options.encounterType ? options.encounterType : this.#getEncounterType(options.frequencies ?? {});
+		const size = this.#getEncounterSize(etype) + (options.sizeMod ?? 0);
 		encounterSizeRemaining = size;
 		encounterList = this.#filterByEncounterType(baseList, etype);
 	} while (encounterList.length <= 0);
@@ -861,5 +864,6 @@ type EncounterType = "standard" | "tough" | "treasure" | "mixed" | "error";
 export type EncounterOptions = {
 	sizeMod ?: number;
 	encounterType ?: EncounterType;
+	frequencies ?: {hard: number, mixed: number},
 }
 

@@ -323,11 +323,19 @@ export class PersonaRegion extends RegionDocument {
 			triggeringUser: game.user,
 			triggeringRegionId : this.id,
 		}
-		const sizeMod = new ModifierList([
+		const modifiers = [
 			...PersonaDB.getGlobalModifiers(),
 			...this.roomEffects
-		].flatMap( x=> x.getModifier("encounterSize", null))
-		).total(situation);;
+		];
+		const sizeMod = new ModifierList(
+			modifiers.flatMap( x=> x.getModifier("encounterSize", null))
+		).total(situation);
+		const hardMod = new ModifierList(
+			modifiers.flatMap( x=> x.getModifier("hardMod", null))
+		).total(situation);
+		const mixedMod = new ModifierList(
+			modifiers.flatMap( x=> x.getModifier("mixedMod", null))
+		).total(situation);
 		let encounterType : EncounterOptions["encounterType"] = undefined;
 		switch (battleType) {
 			case "secondary":
@@ -336,7 +344,11 @@ export class PersonaRegion extends RegionDocument {
 		}
 		const options : EncounterOptions = {
 			sizeMod,
-			encounterType
+			encounterType,
+			frequencies: {
+				hard: hardMod,
+				mixed: mixedMod,
+			},
 		};
 		const {encounter, etype} = Metaverse.generateEncounter(shadowType, options);
 		await Metaverse.printRandomEncounterList(encounter, etype);
