@@ -118,6 +118,7 @@ static #getEncounterType(frequencies: {hard ?: number, mixed ?: number}): Encoun
 	const DIE_SIZE = 16 + mixed;
 	const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
 	const hardMod = frequencies.hard ? frequencies.hard : 0;
+	console.log(`Hard Mod: ${hardMod}, Mixed Mod:${mixed}`);
 	switch (true) {
 		case sizeRoll <= 11 - hardMod:
 			return "standard";

@@ -1,9 +1,8 @@
 {
- "$schema": "https://json.schemastore.org/tsconfig",
   "display": "Node 16",
 
   "compilerOptions": {
-    "target": "es2022",
+    "target": "ESNext",
     "moduleResolution": "node",
 
     "outDir": "dist",

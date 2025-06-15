@@ -221,7 +221,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				await actor.modifyHP(1);
 			}
 		}
-
 	}
 
 	async endCombatTriggers() : Promise<void> {
