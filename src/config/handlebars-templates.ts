@@ -29,6 +29,8 @@ const templateFileNames : string[] =[
 	"input-condition.hbs",
 	"input-condition-body.hbs",
 	"input-consequence.hbs",
+	"input-numeric-v2.hbs",
+	"input-numeric-v2-operand.hbs",
 	"input-card-choice.hbs",
 	"social-card-roll.hbs",
 	"token-spends-section.hbs",

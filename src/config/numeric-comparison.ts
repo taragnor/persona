@@ -1,3 +1,4 @@
+import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { VariableTypeSpecifier } from "./consequence-types.js";
 import { VariableType } from "../module/persona-variables.js";
 import { Precondition } from "./precondition-types.js";
@@ -9,44 +10,57 @@ import { SocialStat } from "../config/student-skills.js";
 
 const DEPRECATED_OPERANDS = [
 	"escalation",
-	"social-variable", 
+	"social-variable",
 ] as const;
 
-const NUMERIC_COMPARISON_TARGET_LIST = [
-	"natural-roll",
-	"activation-roll",
-	"opening-roll",
-	"total-roll",
-	"talent-level",
-	"social-link-level",
-	"total-SL-levels",
-	"progress-tokens-with",
-	"student-skill",
-	"character-level",
-	"has-resources",
-	"resistance-level",
-	"health-percentage",
+const COMMON_COMPARISON_TARGET_LIST = [
 	"clock-comparison",
-	"percentage-of-mp",
-	"percentage-of-hp",
-	"energy",
 	"socialRandom",
-	"inspirationWith",
-	"itemCount",
-	"links-dating",
 	"round-count",
 	"combat-result-based",
 	"num-of-others-with",
 	"variable-value",
+] as const;
+
+const FOLDED_COMPARISON_TARGETS = [
+	"natural-roll",
+	"activation-roll",
+	"opening-roll",
+	"total-roll",
+] as const;
+
+const ACTOR_STAT_LIST = [
+	"inspirationWith",
+	"itemCount",
+	"links-dating",
+	"energy",
+	"percentage-of-mp",
+	"percentage-of-hp",
+	"student-skill",
+	"character-level",
+	"talent-level",
+	"social-link-level",
+	"total-SL-levels",
+	"progress-tokens-with",
+	"has-resources",
+	"health-percentage",
+	"resistance-level",
+] as const;
+
+const NUMERIC_COMPARISON_TARGET_LIST = [
+	...FOLDED_COMPARISON_TARGETS,
+	...ACTOR_STAT_LIST,
+	...COMMON_COMPARISON_TARGET_LIST,
 	...DEPRECATED_OPERANDS,
 ] as const;
 
 
-const SPECIAL_OPERANDS = [
-	"", //equal to constant
+const V2_OPERANDS = [
 	"constant",
 	"roll-comparison",
 	"odd-even",
+	"actor-stat",
+	"deprecated",
 ] as const;
 
 const CONSTANT_SUBTYPE = [
@@ -55,15 +69,24 @@ const CONSTANT_SUBTYPE = [
 	"resistance-level",
 ] as const;
 
+
+const NUMERIC_V2_COMPARISON_TARGET_LIST= [
+	...V2_OPERANDS,
+	...COMMON_COMPARISON_TARGET_LIST,
+] as const;
+
 export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];
 
 export const NUMERIC_COMPARISON_TARGET = Object.fromEntries(
 	NUMERIC_COMPARISON_TARGET_LIST.map( x=> [x, `persona.preconditions.comparison.${x}`])
 );
 
+export const NUMERIC_V2_COMPARISON_TARGETS = HTMLTools.createLocalizationObject(NUMERIC_V2_COMPARISON_TARGET_LIST, "persona.preconditions.comparison");
 
 export type NumericComparator = BasicNumericComparator
 | NonBasicComparator
+
+export const ACTOR_STATS = HTMLTools.createLocalizationObject(ACTOR_STAT_LIST, "persona.preconditions.comparison");
 
 type BasicNumericComparator = {
 	comparator : Exclude<Comparator, NonBasicComparator["comparator"]>,
@@ -111,22 +134,6 @@ export type NumericComparisonOld =
 		GenericNumericComparison | NonGenericNumericComparison
 	);
 
-// type NonGenericNumericComparison = ResistanceComparison
-// 	| TargettedNumericComparison
-// 	| ClockNumericComparison
-// 	| HPMPComparison
-// 	| EnergyComparison
-// 	| InspirationNumericComparison
-// 	| AmountOfItemComparison
-// 	| SocialLinkLevelComparison
-// 	| ProgressTokensComparison
-// 	| SocialVariableComparison
-// 	| totalSLComparison
-// 	| CombatResultComparison
-// 	| NumberOfOthersWithComparison
-//  | VariableComparison
-// ;
-
 type NonGenericNumericComparison =
 	(DerivedComparator & DerivedNumericComparisons) | (BaseNumericComparisons & NumericComparator);
 
@@ -155,8 +162,70 @@ type BaseNumericComparisons =
 	| RollComparison
 	| StudentSkillComparison
 	| DeprecatedComparison
+	| V2SpecificComparisons
 ;
 
+
+type V2SpecificComparisons =
+	ActorStatComparion
+
+
+type ActorStatComparion = {
+	comparisonTarget: "actor-stat",
+	subtype: typeof ACTOR_STAT_LIST[number]
+} & (
+	SimpleActorStatComparison
+	| TargettedActorStatComparison
+	| ActorStatComparisonSocialLinkLevelComparison
+	| ActorStatsInspirationNumericComparison
+	| ActorStatStudentSkillComparison
+	| ActorStatResistanceComparison
+	| ActorStatAmountOfItemComparison
+)
+
+type TargettedActorStatComparison = {
+	subtype: "health-percentage"
+	| "percentage-of-mp"
+	| "percentage-of-hp"
+	| "energy"
+	| "total-SL-levels"
+	| "progress-tokens-with",
+	conditionTarget: ConditionTarget,
+}
+
+type ActorStatComparisonSocialLinkLevelComparison =  {
+	subtype: "social-link-level",
+	socialLinkIdOrTarot : SocialLinkIdOrTarot,
+}
+
+type ActorStatsInspirationNumericComparison =  {
+	subtype: "inspirationWith",
+	conditionTarget : ConditionTarget,
+	socialLinkIdOrTarot : SocialLinkIdOrTarot,
+}
+
+type SimpleActorStatComparison = {
+	subtype :"talent-level" | "has-resources" | "character-level" | "links-dating",
+}
+
+type ActorStatStudentSkillComparison = {
+	subtype: "student-skill",
+	studentSkill : SocialStat;
+}
+
+type ActorStatResistanceComparison =  {
+	type: "numeric",
+	subtype: "resistance-level"
+	element: ResistType | "by-power",
+	// resistLevel : ResistStrength,
+	conditionTarget : ConditionTarget,
+}
+
+type ActorStatAmountOfItemComparison =  {
+	subtype: "itemCount",
+	conditionTarget : ConditionTarget,
+	itemId: string,
+}
 
 type SimpleComparison = {
 	comparisonTarget: "talent-level" |  "has-resources"  | "character-level" | "socialRandom" | "links-dating" | "round-count"
@@ -276,17 +345,25 @@ type ClockNumericComparison =  {
 	clockId: string,
 }
 
-const COMPARATORS_LIST = [
+const SIMPLE_COMPARATORS_LIST = [
 	"==",
 	"!=",
 	">=",
 	">",
 	"<",
 	"<=",
+] as const;
+
+const COMPARATORS_LIST = [
+	...SIMPLE_COMPARATORS_LIST,
 	"odd",
 	"even",
 	"range",
 ] as const;
+
+export const SIMPLE_COMPARATORS = Object.fromEntries (
+	SIMPLE_COMPARATORS_LIST.map( x=> [x, x])
+);
 
 type Comparator = typeof COMPARATORS_LIST[number];
 
@@ -359,11 +436,16 @@ type ComparatorNew =  {
 
 
 type NumericOperand =
+	{
+	comparisonTarget: typeof NUMERIC_V2_COMPARISON_TARGET_LIST[number]
+	} & (
 	BaseNumericComparisons | DerivedNumericComparisons
+	)
 ;
 
 ;
-function convertNumericV1toV2(old: NumericComparisonPC) : NumericComparisonV2 {
+
+export function convertNumericV1toV2(old: NumericComparisonPC) : NumericComparisonV2 {
 	if (old.type == "numeric-v2") return old;
 	const op1 : NumericOperand = DeriveOperand1(old);
 	const op2 = deriveConstant(old);
@@ -388,33 +470,46 @@ function DeriveOperand1 (old: NumericComparisonOld) : NumericOperand {
 				rollType : old.comparisonTarget,
 			};
 		case "social-link-level":
-			return { 
-				comparisonTarget: old.comparisonTarget,
+			return {
+				comparisonTarget: "actor-stat",
+				subtype: old.comparisonTarget,
 				socialLinkIdOrTarot : old.socialLinkIdOrTarot,
 			}
 		case "total-SL-levels":
 			return {
-				comparisonTarget: old.comparisonTarget,
+				comparisonTarget: "actor-stat",
+				subtype: old.comparisonTarget,
 				conditionTarget: old.conditionTarget,
 			};
 		case "progress-tokens-with":
 			return {
-				comparisonTarget: old.comparisonTarget,
+				comparisonTarget: "actor-stat",
+				subtype: old.comparisonTarget,
 				conditionTarget: old.conditionTarget,
 			};
-		case "student-skill":
-		case "character-level":
-		case "has-resources":
-		case "talent-level":
 		case "socialRandom":
-		case "links-dating":
 		case "round-count":
 			return {
 				comparisonTarget: old.comparisonTarget,
 			};
+		case "student-skill":
+			return {
+				comparisonTarget: "actor-stat",
+				subtype: old.comparisonTarget,
+				studentSkill: old.studentSkill!,
+			};
+		case "character-level":
+		case "has-resources":
+		case "talent-level":
+		case "links-dating":
+			return {
+				comparisonTarget: "actor-stat",
+				subtype: old.comparisonTarget,
+			};
 		case "resistance-level":
 			return {
-				comparisonTarget: old.comparisonTarget,
+				comparisonTarget: "actor-stat",
+				subtype: old.comparisonTarget,
 				type: old.type,
 				element: old.element,
 				conditionTarget: old.conditionTarget,
@@ -424,7 +519,8 @@ function DeriveOperand1 (old: NumericComparisonOld) : NumericOperand {
 		case "health-percentage":
 		case "energy":
 			return {
-				comparisonTarget: old.comparisonTarget,
+				comparisonTarget: "actor-stat",
+				subtype: old.comparisonTarget,
 				conditionTarget: old.conditionTarget,
 			};
 		case "clock-comparison":
@@ -434,13 +530,15 @@ function DeriveOperand1 (old: NumericComparisonOld) : NumericOperand {
 			};
 		case "inspirationWith":
 			return {
-				comparisonTarget: old.comparisonTarget,
+				comparisonTarget: "actor-stat",
+				subtype: old.comparisonTarget,
 				conditionTarget: old.conditionTarget,
 				socialLinkIdOrTarot: old.socialLinkIdOrTarot,
 			}
 		case "itemCount":
 			return {
-				comparisonTarget: old.comparisonTarget,
+				comparisonTarget: "actor-stat",
+				subtype: old.comparisonTarget,
 				conditionTarget: old.conditionTarget,
 				itemId: old.itemId,
 			};

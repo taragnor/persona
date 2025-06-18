@@ -563,6 +563,7 @@
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",
+	"persona.preconditions.numeric-v2": "Numeric V2",
 	"persona.preconditions.boolean": "Boolean Comparison",
 	"persona.preconditions.natural+": "Natural >=",
 	"persona.preconditions.natural-": "Natural <=",
@@ -628,6 +629,9 @@
 	"persona.preconditions.dice.save": "Saving Throw" ,
 	"persona.preconditions.dice.skill": "Student Skill Roll" ,
 	"persona.preconditions.dice.attack-roll": "Attack Roll" ,
+	"persona.preconditions.comparison.constant": "Constant",
+	"persona.preconditions.comparison.roll-comparison": "Roll Comparison",
+	"persona.preconditions.comparison.odd-even": "Odd/Even",
 	"persona.preconditions.comparison.escalation": "Escalation Die",
 	"persona.preconditions.comparison.activation-roll": "Activation Roll",
 	"persona.preconditions.comparison.natural-roll": "Natural Roll",

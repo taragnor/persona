@@ -16,6 +16,7 @@ import { Trigger } from "../config/triggers.js";
 export const PRECONDITIONLIST = [
 	"always",
 	"numeric",
+	"numeric-v2",
 	"boolean",
 	"miss-all-targets",
 	"save-versus",
@@ -38,7 +39,7 @@ export type PreconditionComparison =
 	(GenericPC | NumericComparisonPC | BooleanComparisonPC | SaveVersus | Triggered);
 
 type GenericPC = {
-	type: Exclude<PreconditionType, "numeric" | "boolean" | 'save-versus' | "on-trigger">;
+	type: Exclude<PreconditionType, "numeric" | "boolean" | 'save-versus' | "on-trigger" | "numeric-v2">;
 	status ?: StatusEffectId | Record<StatusEffectId, boolean>,
 	powerTag ?: PowerTag | Record<PowerTag, boolean>,
 	powerType ?: PowerType,

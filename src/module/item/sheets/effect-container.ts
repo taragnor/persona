@@ -1,3 +1,4 @@
+import { NUMERIC_V2_COMPARISON_TARGETS } from "../../../config/numeric-comparison.js";
 import { TAG_COMPARISON_TYPES } from "../../../config/boolean-comparison.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../../../config/roll-tags.js";
 import { VARIABLE_TYPE } from "../../persona-variables.js";
@@ -50,6 +51,7 @@ import { CONDITION_TARGETS } from "../../../config/precondition-types.js";
 import { NUMERIC_COMPARISON_TARGET } from "../../../config/numeric-comparison.js";
 import { BOOLEAN_COMPARISON_TARGET } from "../../../config/boolean-comparison.js";
 import { COMPARATORS } from "../../../config/numeric-comparison.js";
+import { SIMPLE_COMPARATORS } from "../../../config/numeric-comparison.js";
 import { SAVE_TYPES_LOCALIZED } from "../../../config/save-types.js";
 import { WEATHER_TYPES } from "../../../config/weather-types.js";
 import { STUDENT_SKILLS } from "../../../config/student-skills.js"
@@ -100,6 +102,8 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			BOOLEAN_COMPARISON_TARGET,
 			RESIST_STRENGTHS,
 			COMPARATORS,
+			SIMPLE_COMPARATORS,
+			NUMERIC_V2_COMPARISON_TARGETS,
 			CONDITION_TARGETS,
 			OTHER_CONSEQUENCES : OTHER_CONSEQUENCES,
 			TRIGGERS: TRIGGERS,

@@ -96,26 +96,123 @@ export class NumericV2 {
 			case "constant": {
 				return this.deriveConstant( op);
 			}
-			case "resistance-level": {
-				const subject = getSubjectActor(op, situation, source, "conditionTarget");
-				if (!subject) return null;
-				let element : DamageType | "by-power" = op.element;
-				if (element == "by-power") {
-					if (!situation.usedPower) {return null;}
-					const power = PersonaDB.findItem(situation.usedPower);
-					if (power.system.type == "skillCard") return null;
-					if (!situation.attacker) return null;
-					const attacker = PersonaDB.findActor(situation?.attacker);
-					element = (power as Usable).getDamageType(attacker);
-					// element = power.system.dmg_type;
-					if (element == "healing" || element == "untyped" || element == "all-out" || element =="none" ) return null;
-				}
-				if (subject.system.type == "npc") return null;
-				const targetResist = subject.system.combat.resists[element] ?? "normal";
-				return RESIST_STRENGTH_LIST.indexOf(targetResist);
-			}
 			case "odd-even":
 				return op.oddEven ?? null;
+
+			case "clock-comparison": {
+				const clock = ProgressClock.getClock(op.clockId);
+				if (!clock) return null;
+				return clock.amt;
+			}
+
+			case "socialRandom":
+				if (situation.socialRandom == undefined) {
+					return null;
+				}
+				return situation.socialRandom;
+
+			case "round-count":
+				if (!game.combat) return null;
+				return game.combat.round ?? -1;
+
+
+			case "combat-result-based": {
+				const res = combatResultBasedNumericTarget(op, situation, source) ;
+				if (res === true) return true;
+				if (res === false) return null;
+				return res;
+			}
+			case "num-of-others-with": {
+				const res= numberOfOthersWithResolver(op, situation, source);
+				if (res === false) return null;
+				return res;
+			}
+			case "variable-value": {
+				let val: number | undefined;
+				if (op.varType == "actor") {
+					const subject = getSubjectActor(op, situation, source, "applyTo");
+					if (subject == undefined) return null;
+					val = PersonaVariables.getVariable(op, subject);
+				} else {
+					val = PersonaVariables.getVariable(op, null);
+				}
+				if (val == undefined) return null;
+				return val;
+			}
+			case "roll-comparison": {
+				return this.rollComparison(op, situation, source);
+			}
+			case "deprecated":
+				return this.handleDeprecated(op, situation, source);
+			case "actor-stat":
+				return this.handleActorStat(op, situation, source);
+			default:
+				op satisfies never;
+				PersonaError.softFail("Bad Operand", op);
+				Debug(op);
+				return null;
+		}
+
+	}
+
+
+	static handleActorStat(op: NumericComparisonV2["op1"] & {comparisonTarget : "actor-stat"},situation : Situation, source: Option<PowerContainer>) : number | null | true {
+		switch (op.subtype) {
+			case "social-link-level": {
+				if (!situation.user) return null;
+				const actor = PersonaDB.findActor(situation.user);
+				if (!actor  || actor.system.type =="shadow") return null;
+
+				if (op.socialLinkIdOrTarot == "SLSource"){
+					//in theory these should be preverified so we're automatically letting them through
+					return true;
+				}
+				const socialLink = getSocialLinkTarget(op.socialLinkIdOrTarot, situation, source);
+				if (!socialLink) {
+					return 0;
+				}
+				const link = actor.system.social.find(data=> data.linkId == socialLink.id);
+				return link ? link.linkLevel : 0;
+			}
+			case "social-link-level": {
+				if (!situation.user) return null;
+				const actor = PersonaDB.findActor(situation.user);
+				if (!actor  || actor.system.type =="shadow") return null;
+
+				if (op.socialLinkIdOrTarot == "SLSource"){
+					//in theory these should be preverified so we're automatically letting them through
+					return true;
+				}
+				const socialLink = getSocialLinkTarget(op.socialLinkIdOrTarot, situation, source);
+				if (!socialLink) {
+					return 0;
+				}
+				const link = actor.system.social.find(data=> data.linkId == socialLink.id);
+				return link ? link.linkLevel : 0;
+			}
+			case "progress-tokens-with": {
+				const targetActor = getSubjectActor(op, situation, source, "conditionTarget");
+				if (!targetActor || !targetActor.isSocialLink()) {
+					return null;
+				}
+				const subjectAcc = situation.user ?? situation.attacker;
+				if (!subjectAcc) return null;
+				const subject = PersonaDB.findActor(subjectAcc);
+				if (!subject.isPC()) return null;
+				return subject.getSocialLinkProgress(targetActor.id);
+			}
+			case "has-resources": {
+				if (!situation.user) return null;
+				const actor = PersonaDB.findActor(situation.user);
+				if (actor.system.type != "pc") return null;
+				return actor.system.money ?? 0;
+			}
+			case "student-skill": {
+				if (!situation.user) return null;
+				const actor = PersonaDB.findActor(situation.user);
+				if (actor.system.type != "pc") return null;
+				return actor.system.skills[op.studentSkill!] ?? 0;
+			}
 			case "talent-level": {
 				if (!situation.user) return null;
 				const user = PersonaDB.findActor(situation.user);
@@ -136,26 +233,17 @@ export class NumericV2 {
 				}
 				return talent.talentLevel;
 			}
-
-			case "has-resources": {
+			case "has-resources":
 				if (!situation.user) return null;
 				const actor = PersonaDB.findActor(situation.user);
 				if (actor.system.type != "pc") return null;
 				return actor.system.money ?? 0;
-			}
 
 			case "character-level": {
 				if (!situation.user) return null;
 				const actor = PersonaDB.findActor(situation.user);
 				return actor.system.combat.classData.level;
 			}
-
-			case "socialRandom":
-				if (situation.socialRandom == undefined) {
-					return null;
-				}
-				return situation.socialRandom;
-
 			case "links-dating": {
 				const subjectAcc = situation.user ?? situation.attacker;
 				if (!subjectAcc) return null;
@@ -166,20 +254,56 @@ export class NumericV2 {
 				.filter( x=> x.isDating || x.relationshipType == "DATE")
 				.length;
 			}
-			case "round-count":
-				if (!game.combat) return null;
-				return game.combat.round ?? -1;
+			case "resistance-level": {
+				const subject = getSubjectActor(op, situation, source, "conditionTarget");
+				if (!subject) return null;
+				let element : DamageType | "by-power" = op.element;
+				if (element == "by-power") {
+					if (!situation.usedPower) {return null;}
+					const power = PersonaDB.findItem(situation.usedPower);
+					if (power.system.type == "skillCard") return null;
+					if (!situation.attacker) return null;
+					const attacker = PersonaDB.findActor(situation?.attacker);
+					element = (power as Usable).getDamageType(attacker);
+					// element = power.system.dmg_type;
+					if (element == "healing" || element == "untyped" || element == "all-out" || element =="none" ) return null;
+				}
+				if (subject.system.type == "npc") return null;
+				const targetResist = subject.system.combat.resists[element] ?? "normal";
+				return RESIST_STRENGTH_LIST.indexOf(targetResist);
+			}
+
+			case "total-SL-levels": {
+				const subject : PersonaActor | undefined = getSubjectActor(op, situation, source, "conditionTarget");
+				if (!subject) return null;
+				let targetActor : SocialLink | undefined = undefined;
+				switch (subject.system.type) {
+					case "tarot":
+					case "shadow":
+						break;
+					case "npcAlly":
+						const proxy = (subject as NPCAlly).getNPCProxyActor();
+						if (!proxy) {break;}
+						targetActor = proxy;
+						break;
+					case "pc": case "npc":
+						targetActor = subject as PC | NPC;
+						break;
+					default:
+						subject.system satisfies never;
+						return null;
+				}
+				if (!targetActor) {return 0;}
+				return PersonaDB.PCs()
+				.reduce( (acc, pc) => acc + pc.getSocialSLWith(targetActor), 0);
+			}
 
 			case "health-percentage": {
 				const subject = getSubjectActor(op, situation, source, "conditionTarget");
 				if (!subject) return null;
 				return (subject.hp / subject.mhp) * 100;
 			}
-			case "clock-comparison": {
-				const clock = ProgressClock.getClock(op.clockId);
-				if (!clock) return null;
-				return clock.amt;
-			}
+
 			case "percentage-of-hp": {
 				const subject = getSubjectActor(op, situation, source, "conditionTarget");
 				if (!subject) return null;
@@ -217,106 +341,13 @@ export class NumericV2 {
 					, 0);
 			}
 
-			case "social-link-level": {
-				if (!situation.user) return null;
-				const actor = PersonaDB.findActor(situation.user);
-				if (!actor  || actor.system.type =="shadow") return null;
-
-				if (op.socialLinkIdOrTarot == "SLSource"){
-					//in theory these should be preverified so we're automatically letting them through
-					return true;
-				}
-				const socialLink = getSocialLinkTarget(op.socialLinkIdOrTarot, situation, source);
-				if (!socialLink) {
-					return 0;
-				}
-				const link = actor.system.social.find(data=> data.linkId == socialLink.id);
-				return link ? link.linkLevel : 0;
-			}
-
-			case "progress-tokens-with": {
-				const targetActor = getSubjectActor(op, situation, source, "conditionTarget");
-				if (!targetActor || !targetActor.isSocialLink()) {
-					return null;
-				}
-				const subjectAcc = situation.user ?? situation.attacker;
-				if (!subjectAcc) return null;
-				const subject = PersonaDB.findActor(subjectAcc);
-				if (!subject.isPC()) return null;
-				return subject.getSocialLinkProgress(targetActor.id);
-			}
-			case "social-variable": {
-				if (!PersonaSocial.rollState) return null;
-				return PersonaSocial.rollState.cardData.variables[op.variableId] ?? null ;
-			}
-
-			case "total-SL-levels": {
-				const subject : PersonaActor | undefined = getSubjectActor(op, situation, source, "conditionTarget");
-				if (!subject) return null;
-				let targetActor : SocialLink | undefined = undefined;
-				switch (subject.system.type) {
-					case "tarot":
-					case "shadow":
-						break;
-					case "npcAlly":
-						const proxy = (subject as NPCAlly).getNPCProxyActor();
-						if (!proxy) {break;}
-						targetActor = proxy;
-						break;
-					case "pc": case "npc":
-						targetActor = subject as PC | NPC;
-						break;
-					default:
-						subject.system satisfies never;
-						return null;
-				}
-				if (!targetActor) {return 0;}
-				return PersonaDB.PCs()
-				.reduce( (acc, pc) => acc + pc.getSocialSLWith(targetActor), 0);
-			}
-			case "combat-result-based": {
-				const res = combatResultBasedNumericTarget(op, situation, source) ;
-				if (res === true) return true;
-				if (res === false) return null;
-				return res;
-			}
-			case "num-of-others-with": {
-				const res= numberOfOthersWithResolver(op, situation, source);
-				if (res === false) return null;
-				return res;
-			}
-			case "variable-value": {
-				let val: number | undefined;
-				if (op.varType == "actor") {
-					const subject = getSubjectActor(op, situation, source, "applyTo");
-					if (subject == undefined) return null;
-					val = PersonaVariables.getVariable(op, subject);
-				} else {
-					val = PersonaVariables.getVariable(op, null);
-				}
-				if (val == undefined) return null;
-				return val;
-			}
-			case "roll-comparison": {
-				return this.rollComparison(op, situation, source);
-			}
-			case "student-skill": {
-				if (!situation.user) return null;
-				const actor = PersonaDB.findActor(situation.user);
-				if (actor.system.type != "pc") return null;
-				return actor.system.skills[op.studentSkill!] ?? 0;
-			}
-			case "deprecated":
-				return this.handleDeprecated(op, situation, source);
 			default:
 				op satisfies never;
-				PersonaError.softFail("Bad Operand", op);
-				Debug(op);
 				return null;
 		}
 
-	}
 
+	}
 
 
 	static deriveConstant ( op: NumericComparisonV2["op1"] & {comparisonTarget: "constant"}) : number  | Range {
@@ -387,7 +418,7 @@ export class NumericV2 {
 
 
 	private static prettyPrintOperand(op: NumericComparisonV2["op1"]): string {
-		const cond = op;
+		const cond  = op;
 		switch (cond.comparisonTarget) {
 			case "constant":
 				switch (cond.subtype) {
@@ -398,30 +429,42 @@ export class NumericV2 {
 					case "resistance-level":
 						return localize(RESIST_STRENGTHS[cond.resistLevel]);
 				}
-			case "resistance-level":
-				const damage = this.translate(cond.element, DAMAGETYPES);
-				return `${damage} resistance`;
+			case "actor-stat":
+				return this.prettyPrintActorStat(cond);
 			case "odd-even":
 				return cond.oddEven;
-			case "talent-level":
-				return `Talent Level `;
-			case "has-resources":
-				return `Resources `;
-			case "character-level":
-				return `Character Level`;
 			case "socialRandom":
 				return `Social Card Random Die`;
-			case "links-dating":
-				return `Amount of People being dated`;
 			case "round-count":
 				return `round count`;
-			case "health-percentage":
-			case "percentage-of-hp":
-				return `Percentage of HP`;
-			case "percentage-of-mp":
-				return `Percentage of SP`;
 			case "clock-comparison":
 				return `Clock ${cond.clockId}`;
+			case "combat-result-based":
+				const combatResult = ConditionalEffectManager.printCombatResultString(cond);
+				return `${combatResult}`;
+			case "num-of-others-with":
+				return `Number of ${cond.group} that meet Special Condition`;
+			case "variable-value": 
+				return `Value of ${cond.varType} variable named ${cond.variableId}`;
+			case "roll-comparison":
+				switch (cond.rollType)  {
+					case "natural-roll":
+						return `Natural roll`;
+					case "activation-roll":
+						return "Activation Roll";
+					case "opening-roll":
+						return "Opening Roll";
+					case "total-roll":
+						return "Total Roll";
+				}
+			case "deprecated":
+				return "Deprecated Condition";
+		}
+
+	}
+
+	static prettyPrintActorStat(cond: NumericComparisonV2["op1"] & {comparisonTarget: "actor-stat"}) : string {
+		switch (cond.subtype) {
 			case "energy":
 				return `Shadow Energy`;
 			case "inspirationWith":
@@ -438,34 +481,32 @@ export class NumericV2 {
 				return `${name} SL `;
 			case "progress-tokens-with":
 					return `Progress tokens with ${cond.conditionTarget}`;
-			case "social-variable":
-					return `Value of Social variable ${cond.variableId}`;
 			case "total-SL-levels":
-				return `Total SL levels among all PCs`;
-			case "combat-result-based":
-				const combatResult = ConditionalEffectManager.printCombatResultString(cond);
-				return `${combatResult}`;
-			case "num-of-others-with":
-				return `Number of ${cond.group} that meet Special Condition`;
-			case "variable-value": 
-				return `Value of ${cond.varType} variable named ${cond.variableId}`;
+					return `Total SL levels among all PCs`;
 			case "student-skill":
 				const skill = this.translate(cond.studentSkill!, STUDENT_SKILLS);
 				return `${skill}`;
-			case "roll-comparison":
-				switch (cond.rollType)  {
-					case "natural-roll":
-						return `Natural roll`;
-					case "activation-roll":
-						return "Activation Roll";
-					case "opening-roll":
-						return "Opening Roll";
-					case "total-roll":
-						return "Total Roll";
-				}
-			case "deprecated":
-				return "Deprecated Condition";
+			case "resistance-level":
+				const damage = this.translate(cond.element, DAMAGETYPES);
+				return `${damage} resistance`;
+			case "talent-level":
+				return `Talent Level `;
+			case "has-resources":
+				return `Resources `;
+			case "character-level":
+				return `Character Level`;
+			case "links-dating":
+				return `Amount of People being dated`;
+			case "health-percentage":
+			case "percentage-of-hp":
+				return `Percentage of HP`;
+			case "percentage-of-mp":
+				return `Percentage of SP`;
+			default:
+				cond satisfies never;
+				return "ERROR";
 		}
+
 
 	}
 
