@@ -1,3 +1,6 @@
+import { NumberOfOthersWithComparison } from "../config/numeric-comparison.js";
+import { CombatResultComparison } from "../config/numeric-comparison.js";
+import { NumericV2 } from "./conditionalEffects/numericV2.js";
 import { PersonaVariables } from "./persona-variables.js";
 import { PersonaScene } from "./persona-scene.js";
 import { ActorChange } from "./combat/combat-result.js";
@@ -66,6 +69,8 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 		case "numeric": {
 			return numericComparison(condition, situation, source);
 		}
+		case "numeric-v2":
+			return NumericV2.eval(condition, situation, source);
 		case "boolean": {
 			return booleanComparison(condition, situation, source);
 		}
@@ -81,6 +86,7 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 			return false;
 	}
 }
+
 
 function numericComparison(condition: Precondition, situation: Situation, source:Option<PowerContainer>) : boolean {
 	if (condition.type != "numeric") throw new PersonaError("Not a numeric comparison");
@@ -318,69 +324,11 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (typeof res == "boolean") return res;
 			target= res;
 			break;
+
 		case "num-of-others-with": {
-			const subject = getSubjectActor(condition, situation, source, "conditionTarget");
-			if (!subject) return false;
-			let targets : PersonaActor[];
-			const combat = game.combat as PersonaCombat | undefined;
-			switch (condition.group) {
-				case "allies": {
-					if (subject.isNPC()) return false;
-					if (combat) {
-						const comb = combat.getCombatantByActor(subject as ValidAttackers)
-						if (!comb) {return false;}
-						const allies = combat.getAllies(comb);
-						targets = allies
-							.map( x=> x.actor)
-							.filter (x=> x != undefined);
-					} else {
-						if (subject.getAllegiance() != "PCs") {
-							return false;
-						}
-						const token= (game.scenes.current as PersonaScene).findActorToken(subject);
-						if (!token) return false;
-						const allies = PersonaCombat.getAllAlliesOf(token as PToken);
-						targets= allies.map( x=> x.actor)
-							.filter (x=> x != undefined);
-					}
-					break;
-				}
-				case "enemies": {
-					if (!combat) return false;
-					const token= (game.scenes.current as PersonaScene).findActorToken(subject);
-					if (!token) return false;
-					const foes = PersonaCombat.getAllEnemiesOf(token as PToken);
-					targets= foes.map( x=> x.actor)
-					.filter (x=> x != undefined);
-					break;
-				}
-				case "both": {
-					if (!combat) {
-						const token = (game.scenes.current as PersonaScene).findActorToken(subject);
-						const allies = PersonaCombat.getAllAlliesOf(token as PToken);
-						targets= allies.map( x=> x.actor)
-							.filter (x=> x != undefined);
-					} else {
-						targets = combat.combatants.contents
-							.map( x=> x.actor)
-							.filter (x=> x != undefined);
-					}
-					break;
-				}
-				default:
-					condition.group satisfies never
-					return false;
-			}
-			target = targets.reduce(
-				function (a,act) {
-					const acc = (act as ValidAttackers).accessor;
-					const situation : Situation = {
-						user: acc,
-						target: acc,
-					};
-					return	a + (testPrecondition(condition.otherComparison, situation, null) ? 1 : 0);
-				}
-				, 0);
+			const res  =  numberOfOthersWithResolver(condition, situation, source);
+			if (typeof res == "boolean") return res;
+			target = res;
 			break;
 		}
 		case "variable-value": {
@@ -418,7 +366,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 	return false;
 }
 
-function combatResultBasedNumericTarget(condition: Precondition & {type: "numeric", comparisonTarget: "combat-result-based"}, situation: Situation, _source:Option<PowerContainer>): number | boolean {
+export function combatResultBasedNumericTarget(condition: CombatResultComparison, situation: Situation, _source:Option<PowerContainer>): number | boolean {
 	const invert = condition.invertComparison ?? false;
 	let resultCompFn : (atk: AttackResult) => boolean = (_atk) => true;
 	let changeCompFn: (  changes: ActorChange<ValidAttackers>) => boolean = () => true;
@@ -904,7 +852,7 @@ function getSubjectToken<K extends string, T extends Record<K, ConditionTarget>>
 	return undefined;
 }
 
-function getSubjectActor<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K): ValidAttackers | NPC| undefined {
+export function getSubjectActor<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K): ValidAttackers | NPC| undefined {
 	let subject = getSubject(cond, situation, source, field);
 	if (subject instanceof TokenDocument) {
 		subject = subject.actor;
@@ -1065,4 +1013,69 @@ function multiCheckTest<T extends string>(multiCheck: MultiCheck<T> | T, testFn:
 		.filter( ([_, val]) => val == true)
 		.some (([item, _]) => testFn(item as T));
 
+}
+
+export function numberOfOthersWithResolver(condition: NumberOfOthersWithComparison, situation : Situation, source: Option<PowerContainer>) : number | false {
+	const subject = getSubjectActor(condition, situation, source, "conditionTarget");
+	if (!subject) return false;
+	let targets : PersonaActor[];
+	const combat = game.combat as PersonaCombat | undefined;
+	switch (condition.group) {
+		case "allies": {
+			if (subject.isNPC()) return false;
+			if (combat) {
+				const comb = combat.getCombatantByActor(subject as ValidAttackers)
+				if (!comb) {return false;}
+				const allies = combat.getAllies(comb);
+				targets = allies
+					.map( x=> x.actor)
+					.filter (x=> x != undefined);
+			} else {
+				if (subject.getAllegiance() != "PCs") {
+					return false;
+				}
+				const token= (game.scenes.current as PersonaScene).findActorToken(subject);
+				if (!token) return false;
+				const allies = PersonaCombat.getAllAlliesOf(token as PToken);
+				targets= allies.map( x=> x.actor)
+					.filter (x=> x != undefined);
+			}
+			break;
+		}
+		case "enemies": {
+			if (!combat) return false;
+			const token= (game.scenes.current as PersonaScene).findActorToken(subject);
+			if (!token) return false;
+			const foes = PersonaCombat.getAllEnemiesOf(token as PToken);
+			targets= foes.map( x=> x.actor)
+			.filter (x=> x != undefined);
+			break;
+		}
+		case "both": {
+			if (!combat) {
+				const token = (game.scenes.current as PersonaScene).findActorToken(subject);
+				const allies = PersonaCombat.getAllAlliesOf(token as PToken);
+				targets= allies.map( x=> x.actor)
+					.filter (x=> x != undefined);
+			} else {
+				targets = combat.combatants.contents
+					.map( x=> x.actor)
+					.filter (x=> x != undefined);
+			}
+			break;
+		}
+		default:
+			condition.group satisfies never
+			return false;
+	}
+	return targets.reduce(
+		function (a,act) {
+			const acc = (act as ValidAttackers).accessor;
+			const situation : Situation = {
+				user: acc,
+				target: acc,
+			};
+			return	a + (testPrecondition(condition.otherComparison, situation, null) ? 1 : 0);
+		}
+		, 0);
 }

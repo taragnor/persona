@@ -1,3 +1,5 @@
+import { NumericV2 } from "./conditionalEffects/numericV2.js";
+import { CombatResultComparison } from "../config/numeric-comparison.js";
 import { DAMAGE_SUBTYPES } from "../config/effect-types.js";
 
 import { ROLL_TAGS_AND_CARD_TAGS } from "../config/roll-tags.js";
@@ -407,6 +409,8 @@ export class ConditionalEffectManager {
 				return "Never";
 			case "disable-on-debug":
 				return "Disabled on Debug Mode"
+			case "numeric-v2":
+				return NumericV2.prettyPrintCondition(cond);
 			default:
 				cond satisfies never;
 				PersonaError.softFail(`Unknown type ${(cond as any)?.type}`);
@@ -563,7 +567,10 @@ export class ConditionalEffectManager {
 	}
 
 	static  #printNumericCond(cond: Precondition & {type: "numeric"}) : string {
-		const endString = function(cond: Precondition & {type: "numeric"}, derivedVar?: string) {
+		const endString = function(cond: Precondition & {type: "numeric"} , derivedVar?: string) {
+			if (!("comparator" in cond)) {
+				return "ERROR";
+			}
 			switch (cond.comparator) {
 				case "odd":
 					return "is Odd";
@@ -645,7 +652,7 @@ export class ConditionalEffectManager {
 			case "total-SL-levels":
 				return `Total SL levels among all PCs ${endString(cond)}`;
 			case "combat-result-based":
-				const combatResult = this.#printCombatResultString(cond);
+				const combatResult = this.printCombatResultString(cond);
 				return `${combatResult} ${endString(cond)}`;
 			case "num-of-others-with":
 				//TODO: put in special condition
@@ -660,7 +667,7 @@ export class ConditionalEffectManager {
 		}
 	}
 
-	static #printCombatResultString(cons : Precondition & {type: "numeric", comparisonTarget: "combat-result-based"}): string {
+	static printCombatResultString(cons : CombatResultComparison): string {
 		const non = cons.invertComparison ? "non-" : "";
 		switch (cons.resultSubtypeComparison) {
 			case "total-hits":

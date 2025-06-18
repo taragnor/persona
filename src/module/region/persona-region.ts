@@ -325,7 +325,7 @@ export class PersonaRegion extends RegionDocument {
 		}
 		const modifiers = [
 			...PersonaDB.getGlobalModifiers(),
-			...this.allRoomEffects
+			...this.roomEffects
 		];
 		const sizeMod = new ModifierList(
 			modifiers.flatMap( x=> x.getModifier("encounterSize", null))

@@ -7,11 +7,14 @@ import { ResistType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";
 import { SocialStat } from "../config/student-skills.js";
 
+const DEPRECATED_OPERANDS = [
+	"escalation",
+	"social-variable", 
+] as const;
 
 const NUMERIC_COMPARISON_TARGET_LIST = [
 	"natural-roll",
 	"activation-roll",
-	"escalation",
 	"opening-roll",
 	"total-roll",
 	"talent-level",
@@ -31,11 +34,25 @@ const NUMERIC_COMPARISON_TARGET_LIST = [
 	"inspirationWith",
 	"itemCount",
 	"links-dating",
-	"social-variable",
 	"round-count",
 	"combat-result-based",
 	"num-of-others-with",
 	"variable-value",
+	...DEPRECATED_OPERANDS,
+] as const;
+
+
+const SPECIAL_OPERANDS = [
+	"", //equal to constant
+	"constant",
+	"roll-comparison",
+	"odd-even",
+] as const;
+
+const CONSTANT_SUBTYPE = [
+	"number",
+	"range",
+	"resistance-level",
 ] as const;
 
 export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];
@@ -45,7 +62,7 @@ export const NUMERIC_COMPARISON_TARGET = Object.fromEntries(
 );
 
 
-type NumericComparator = BasicNumericComparator
+export type NumericComparator = BasicNumericComparator
 | NonBasicComparator
 
 type BasicNumericComparator = {
@@ -70,6 +87,12 @@ type OddEvenComparator = {
 /** Derived comparator gets its comparison number from somewhere else*/
 type DerivedComparator = {
 	comparator : BasicNumericComparator["comparator"],
+} & (
+	ResistanceLevelComparator
+);
+
+type ResistanceLevelComparator = {
+	resistLevel : ResistStrength,
 }
 
 type NumericComparisonBase = NumericComparator & {
@@ -78,9 +101,44 @@ type NumericComparisonBase = NumericComparator & {
 }
 
 export type NumericComparisonPC =
-	GenericNumericComparison | NonGenericNumericComparison;
+	NumericComparisonOld | NumericComparisonV2;
 
-type NonGenericNumericComparison = ResistanceComparison
+export type NumericComparisonOld =
+	{
+		type : "numeric",
+		comparisonTarget: NumericComparisonTarget,
+	} & (
+		GenericNumericComparison | NonGenericNumericComparison
+	);
+
+// type NonGenericNumericComparison = ResistanceComparison
+// 	| TargettedNumericComparison
+// 	| ClockNumericComparison
+// 	| HPMPComparison
+// 	| EnergyComparison
+// 	| InspirationNumericComparison
+// 	| AmountOfItemComparison
+// 	| SocialLinkLevelComparison
+// 	| ProgressTokensComparison
+// 	| SocialVariableComparison
+// 	| totalSLComparison
+// 	| CombatResultComparison
+// 	| NumberOfOthersWithComparison
+//  | VariableComparison
+// ;
+
+type NonGenericNumericComparison =
+	(DerivedComparator & DerivedNumericComparisons) | (BaseNumericComparisons & NumericComparator);
+
+type DerivedNumericComparisons =
+	ResistanceComparison
+;
+
+type BaseNumericComparisons =
+	ConstantComparison
+	| OddEvenComparison
+	| SimpleComparison
+	| ResistanceLevelConstant
 	| TargettedNumericComparison
 	| ClockNumericComparison
 	| HPMPComparison
@@ -93,65 +151,127 @@ type NonGenericNumericComparison = ResistanceComparison
 	| totalSLComparison
 	| CombatResultComparison
 	| NumberOfOthersWithComparison
- | VariableComparison
+	| VariableComparison
+	| RollComparison
+	| StudentSkillComparison
+	| DeprecatedComparison
 ;
 
-type VariableComparison = NumericComparisonBase & {
+
+type SimpleComparison = {
+	comparisonTarget: "talent-level" |  "has-resources"  | "character-level" | "socialRandom" | "links-dating" | "round-count"
+};
+
+type StudentSkillComparison = {
+	comparisonTarget: "student-skill",
+	studentSkill ?: SocialStat;
+}
+
+type DeprecatedComparison = {
+	comparisonTarget: "deprecated",
+	deprecatedType : typeof DEPRECATED_OPERANDS[number];
+	variableId ?: string,
+}
+
+
+
+
+
+type ConstantComparison = {
+	comparisonTarget: "constant",
+	subtype: typeof CONSTANT_SUBTYPE[number],
+} & (
+	NumericConstant
+| ResistanceLevelConstant
+| RangeConstant
+)
+	;
+
+type NumericConstant = {
+	comparisonTarget: "constant",
+	subtype: "number",
+	num: number,
+}
+
+type OddEvenComparison = {
+	comparisonTarget: "odd-even",
+	oddEven: "odd" | "even",
+}
+
+type ResistanceLevelConstant = {
+	comparisonTarget: "constant",
+	subtype: "resistance-level",
+	resistLevel : ResistStrength,
+};
+
+type RangeConstant = {
+	comparisonTarget: "constant",
+	subtype: "range",
+	low: number,
+	high: number,
+}
+
+type RollComparison = {
+	comparisonTarget: "roll-comparison",
+	rollType: typeof ROLL_TYPE[number];
+}
+
+type VariableComparison =  {
 	comparisonTarget: "variable-value",
 	varType: VariableType,
 } & VariableTypeSpecifier;
 
-type SocialVariableComparison = NumericComparisonBase & {
+type SocialVariableComparison =  {
 	comparisonTarget:	"social-variable",
 	variableId: string,
 }
 
-type EnergyComparison = NumericComparisonBase & {
+type EnergyComparison =  {
 	comparisonTarget : "energy",
 	conditionTarget : ConditionTarget,
 }
 
-type GenericNumericComparison = NumericComparisonBase & {
-	comparisonTarget : Exclude<NumericComparisonTarget, NonGenericNumericComparison["comparisonTarget"]>,
+type GenericNumericComparison =  NumericComparisonBase & {
+	comparisonTarget : Exclude<NumericComparisonTarget, NonGenericNumericComparison["comparisonTarget"] | "constant" | "">,
 	studentSkill ?: SocialStat;
 }
 
-type SocialLinkLevelComparison = NumericComparisonBase & {
+type SocialLinkLevelComparison =  {
 	comparisonTarget: "social-link-level",
 	socialLinkIdOrTarot : SocialLinkIdOrTarot,
 }
 
-type InspirationNumericComparison = NumericComparisonBase & {
+type InspirationNumericComparison =  {
 	conditionTarget : ConditionTarget,
 	comparisonTarget: "inspirationWith",
 	socialLinkIdOrTarot : SocialLinkIdOrTarot,
 }
 
-type AmountOfItemComparison = NumericComparisonBase & {
+type AmountOfItemComparison =  {
 	conditionTarget : ConditionTarget,
 	comparisonTarget: "itemCount",
 	itemId: string,
 }
 
-type ResistanceComparison = DerivedComparator & {
+type ResistanceComparison =  {
 	type: "numeric",
 	comparisonTarget: "resistance-level"
 	element: ResistType | "by-power",
-	resistLevel : ResistStrength,
+	// resistLevel : ResistStrength,
 	conditionTarget : ConditionTarget,
 }
 
-type TargettedNumericComparison = NumericComparisonBase & {
+type TargettedNumericComparison =  {
 	comparisonTarget: "health-percentage",
 	conditionTarget: ConditionTarget,
 }
 
-type HPMPComparison = NumericComparisonBase & {
+type HPMPComparison =  {
 	comparisonTarget: "percentage-of-mp" | "percentage-of-hp",
 	conditionTarget: ConditionTarget,
 }
 
-type ClockNumericComparison = NumericComparisonBase & {
+type ClockNumericComparison =  {
 	comparisonTarget: "clock-comparison",
 	clockId: string,
 }
@@ -174,18 +294,18 @@ export const COMPARATORS = Object.fromEntries (
 	COMPARATORS_LIST.map( x=> [x, x])
 );
 
-type totalSLComparison = NumericComparisonBase & {
+type totalSLComparison = {
 	comparisonTarget:		"total-SL-levels",
 	conditionTarget: ConditionTarget,
 }
 
 
-type ProgressTokensComparison = NumericComparisonBase & {
+type ProgressTokensComparison = {
 	comparisonTarget: "progress-tokens-with",
 	conditionTarget: ConditionTarget,
 }
 
-type CombatResultComparison = NumericComparisonBase & {
+export type CombatResultComparison =  {
 	comparisonTarget:	"combat-result-based",
 	resultSubtypeComparison: CombatResultSubtypeComparison,
 	invertComparison: boolean,
@@ -198,7 +318,7 @@ const RESULT_SUBTYPE_COMPARISON_LIST = [
 
 type CombatResultSubtypeComparison = typeof RESULT_SUBTYPE_COMPARISON_LIST[number];
 
-type NumberOfOthersWithComparison = NumericComparisonBase & {
+export type NumberOfOthersWithComparison =  {
 	comparisonTarget:		"num-of-others-with",
 	group: ComparisonGroup,
 	otherComparison: Precondition,
@@ -223,3 +343,215 @@ export const COMPARISON_GROUPS = Object.fromEntries(
 export const RESULT_SUBTYPE_COMPARISON = Object.fromEntries(
 	RESULT_SUBTYPE_COMPARISON_LIST.map( x=> [x, `persona.preconditions.combat-result-subtype.${x}`])
 );
+
+//new form
+export type NumericComparisonV2 = {
+	type: "numeric-v2",
+} & {op1: NumericOperand}
+	& ComparatorNew
+	& {
+		op2: NumericOperand,
+	};
+
+type ComparatorNew =  {
+		comparator: BasicNumericComparator["comparator"]
+};
+
+
+type NumericOperand =
+	BaseNumericComparisons | DerivedNumericComparisons
+;
+
+;
+function convertNumericV1toV2(old: NumericComparisonPC) : NumericComparisonV2 {
+	if (old.type == "numeric-v2") return old;
+	const op1 : NumericOperand = DeriveOperand1(old);
+	const op2 = deriveConstant(old);
+	const comparator = deriveComparator(old);
+	const ret : NumericComparisonV2 = {
+		type: "numeric-v2",
+		comparator,
+		op1,
+		op2,
+	};
+	return ret;
+}
+
+function DeriveOperand1 (old: NumericComparisonOld) : NumericOperand {
+	switch (old.comparisonTarget) {
+		case "natural-roll":
+		case "activation-roll":
+		case "opening-roll":
+		case "total-roll":
+			return {
+				comparisonTarget: "roll-comparison",
+				rollType : old.comparisonTarget,
+			};
+		case "social-link-level":
+			return { 
+				comparisonTarget: old.comparisonTarget,
+				socialLinkIdOrTarot : old.socialLinkIdOrTarot,
+			}
+		case "total-SL-levels":
+			return {
+				comparisonTarget: old.comparisonTarget,
+				conditionTarget: old.conditionTarget,
+			};
+		case "progress-tokens-with":
+			return {
+				comparisonTarget: old.comparisonTarget,
+				conditionTarget: old.conditionTarget,
+			};
+		case "student-skill":
+		case "character-level":
+		case "has-resources":
+		case "talent-level":
+		case "socialRandom":
+		case "links-dating":
+		case "round-count":
+			return {
+				comparisonTarget: old.comparisonTarget,
+			};
+		case "resistance-level":
+			return {
+				comparisonTarget: old.comparisonTarget,
+				type: old.type,
+				element: old.element,
+				conditionTarget: old.conditionTarget,
+			};
+		case "percentage-of-mp":
+		case "percentage-of-hp":
+		case "health-percentage":
+		case "energy":
+			return {
+				comparisonTarget: old.comparisonTarget,
+				conditionTarget: old.conditionTarget,
+			};
+		case "clock-comparison":
+			return {
+				comparisonTarget: old.comparisonTarget,
+				clockId: old.clockId,
+			};
+		case "inspirationWith":
+			return {
+				comparisonTarget: old.comparisonTarget,
+				conditionTarget: old.conditionTarget,
+				socialLinkIdOrTarot: old.socialLinkIdOrTarot,
+			}
+		case "itemCount":
+			return {
+				comparisonTarget: old.comparisonTarget,
+				conditionTarget: old.conditionTarget,
+				itemId: old.itemId,
+			};
+		case "social-variable":
+			return {
+				comparisonTarget: "variable-value",
+				varType: "social-temp",
+				variableId: old.variableId,
+			}
+		case "combat-result-based":
+			return {
+				comparisonTarget: old.comparisonTarget,
+				resultSubtypeComparison: old.resultSubtypeComparison,
+				invertComparison: old.invertComparison,
+			}
+		case "num-of-others-with":
+			return {
+				comparisonTarget: old.comparisonTarget,
+				conditionTarget: old.conditionTarget,
+				group: old.group,
+				otherComparison: old.otherComparison,
+			};
+		case "variable-value":
+			switch (old.varType) {
+				case "global":
+					return {
+						comparisonTarget: old.comparisonTarget,
+						varType: old.varType,
+						variableId: old.variableId,
+					};
+				case "scene":
+					return {
+						comparisonTarget: old.comparisonTarget,
+						varType: old.varType,
+						variableId: old.variableId,
+						sceneId: old.sceneId,
+					}
+				case "actor":
+					return {
+						comparisonTarget: old.comparisonTarget,
+						varType: old.varType,
+						variableId: old.variableId,
+						applyTo: old.applyTo,
+					}
+				case "social-temp":
+					return {
+						comparisonTarget: old.comparisonTarget,
+						varType: old.varType,
+						variableId: old.variableId,
+					}
+			}
+		case "escalation":
+			return {
+				comparisonTarget: "deprecated",
+				deprecatedType: old.comparisonTarget,
+			};
+	}
+}
+
+function deriveConstant (oldC: NumericComparator | DerivedComparator) : NumericOperand & (ConstantComparison | OddEvenComparison)  {
+	switch (oldC.comparator) {
+		case "odd":
+		case "even":
+			return {
+				comparisonTarget: "odd-even",
+				oddEven: oldC.comparator,
+			}
+		case "range":
+			return  {
+				comparisonTarget:"constant",
+				subtype: "range",
+				low: oldC.num,
+				high: oldC.high,
+			}
+	}
+	if ("num" in oldC) {
+		return  {
+			comparisonTarget:"constant",
+			subtype: "number",
+			num: oldC.num,
+		}
+	}
+	if ("resistLevel" in oldC) {
+		return  {
+			comparisonTarget: "constant",
+			subtype: "resistance-level",
+			resistLevel: oldC.resistLevel,
+		}
+	}
+	oldC satisfies never;
+	return {
+		comparisonTarget:"constant",
+		subtype: "number",
+		num: 0,
+	};
+}
+
+function deriveComparator(oldC: NumericComparator | DerivedComparator) : ComparatorNew["comparator"]  {
+	switch (oldC.comparator) {
+		case "odd":
+		case "range":
+		case "even":
+			return "==";
+	}
+	return oldC.comparator;
+}
+
+
+const ROLL_TYPE = [
+	"natural-roll",
+	"activation-roll",
+	"opening-roll",
+	"total-roll",
+] as const;

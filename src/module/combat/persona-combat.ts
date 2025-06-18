@@ -2550,7 +2550,7 @@ async alterRoomEffects() {
 roomEffectsMsg(): string {
 	const mods = this.getRoomEffects();
 	if (mods.length == 0) {
-		return "";
+			return "";
 	}
 	let msg = "";
 	msg += "<u><h2>Room Effects</h2></u><ul>";
