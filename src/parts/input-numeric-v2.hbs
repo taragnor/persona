@@ -1,5 +1,5 @@
 <div class="operand operand-1">
-		{{> "systems/persona/parts/input-numeric-v2-operand.hbs" namePrefix=(strcat namePrefix "op1.")  cond=cond POWERSTUFF=POWERSTUFF owner=owner}}
+		{{> "systems/persona/parts/input-numeric-v2-operand.hbs" namePrefix=(strcat namePrefix "op1.")  cond=cond.op1 POWERSTUFF=POWERSTUFF owner=owner}}
 </div>
 
 		<select id="comparator" name="{{strcat namePrefix 'comparator'}}">
@@ -7,6 +7,6 @@
 		</select>
 
 <div class="operand operand-2">
-		{{> "systems/persona/parts/input-numeric-v2-operand.hbs" namePrefix=(strcat namePrefix "op2.")  cond=cond POWERSTUFF=POWERSTUFF owner=owner}}
+		{{> "systems/persona/parts/input-numeric-v2-operand.hbs" namePrefix=(strcat namePrefix "op2.")  cond=cond.op2 POWERSTUFF=POWERSTUFF owner=owner}}
 </div>
 

@@ -1,4 +1,10 @@
-		<select id="comparison-target" name="{{strcat namePrefix 'comparisonTarget'}}">
+		<select name="{{strcat namePrefix 'comparisonTarget'}}">
 			{{selectOptions POWERSTUFF.NUMERIC_V2_COMPARISON_TARGETS localize=true selected=cond.comparisonTarget}}
 		</select>
+
+		{{#if (eqAny cond.comparisonTarget "actor-stat")}}
+		<select name="{{strcat namePrefix 'subtype'}}">
+			{{selectOptions POWERSTUFF.NUMERIC_V2_ACTOR_STATS localize=true selected=cond.subtype}}
+		</select>
+		{{/if}}
 

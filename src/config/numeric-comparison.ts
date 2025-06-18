@@ -60,7 +60,6 @@ const V2_OPERANDS = [
 	"roll-comparison",
 	"odd-even",
 	"actor-stat",
-	"deprecated",
 ] as const;
 
 const CONSTANT_SUBTYPE = [
@@ -73,6 +72,7 @@ const CONSTANT_SUBTYPE = [
 const NUMERIC_V2_COMPARISON_TARGET_LIST= [
 	...V2_OPERANDS,
 	...COMMON_COMPARISON_TARGET_LIST,
+	"deprecated",
 ] as const;
 
 export type NumericComparisonTarget = typeof NUMERIC_COMPARISON_TARGET_LIST[number];
@@ -86,7 +86,7 @@ export const NUMERIC_V2_COMPARISON_TARGETS = HTMLTools.createLocalizationObject(
 export type NumericComparator = BasicNumericComparator
 | NonBasicComparator
 
-export const ACTOR_STATS = HTMLTools.createLocalizationObject(ACTOR_STAT_LIST, "persona.preconditions.comparison");
+export const NUMERIC_V2_ACTOR_STATS = HTMLTools.createLocalizationObject(ACTOR_STAT_LIST, "persona.preconditions.comparison");
 
 type BasicNumericComparator = {
 	comparator : Exclude<Comparator, NonBasicComparator["comparator"]>,

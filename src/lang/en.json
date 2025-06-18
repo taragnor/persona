@@ -633,6 +633,8 @@
 	"persona.preconditions.comparison.roll-comparison": "Roll Comparison",
 	"persona.preconditions.comparison.odd-even": "Odd/Even",
 	"persona.preconditions.comparison.escalation": "Escalation Die",
+	"persona.preconditions.comparison.actor-stat": "Actor Stat",
+	"persona.preconditions.comparison.deprecated": "Deprecated value",
 	"persona.preconditions.comparison.activation-roll": "Activation Roll",
 	"persona.preconditions.comparison.natural-roll": "Natural Roll",
 	"persona.preconditions.comparison.total-roll": "Total Roll",

@@ -1,3 +1,4 @@
+import { NUMERIC_V2_ACTOR_STATS } from "../../../config/numeric-comparison.js";
 import { NUMERIC_V2_COMPARISON_TARGETS } from "../../../config/numeric-comparison.js";
 import { TAG_COMPARISON_TYPES } from "../../../config/boolean-comparison.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../../../config/roll-tags.js";
@@ -96,6 +97,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 		};
 
 		this._powerStuffBase = {
+			NUMERIC_V2_ACTOR_STATS,
 			DAYS_LIST,
 			TAROT_DECK,
 			NUMERIC_COMPARISON_TARGET,
