@@ -490,6 +490,12 @@ export class PersonaSocial {
 			filter (link => testCameo(link));
 		switch (card.system.cameoType) {
 			case "none": return [];
+			case "any-pc": {
+				targets = allCameos.filter(
+					x=> testCameo(x) && x.isPC()
+				);
+				break;
+			}
 			case "above": {
 				const initChar = this.getCharInInitiativeList(-1);
 				if (initChar) {
@@ -685,11 +691,15 @@ export class PersonaSocial {
 			}
 			PersonaError.softFail (`Can't find event label ${cardData.forceEventLabel} on card ${cardData.card.name}`);
 		}
+		const situation = {
+			...cardData.situation,
+			rollTags: cardData.extraCardTags
+		}
 		let eventList = cardEventList
 			.filter ( ev => !ev.eventTags.includes("disabled"))
 			.filter( (ev) => !cardData.eventsChosen.includes(ev) && testPreconditions(
 				ConditionalEffectManager.getConditionals( ev.conditions, null, null),
-				cardData.situation, null));
+				situation, null));
 		const isEvType = function (ev: CardEvent, evType: keyof NonNullable<CardEvent["placement"]>) {
 			let placement = ev.placement ?? {
 				starter: true,

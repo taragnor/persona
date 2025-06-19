@@ -25,6 +25,23 @@ export const CARD_SITUATIONS = [
 	"noisy",
 	"quiet",
 	"group-setting",
+	"movie-any",
+	"movie-action",
+	"movie-romance",
+	"movie-foreign",
+	"movie-comedy",
+	"movie-drama",
+	"movie-horror",
+	"movie-crap",
+	"movie-quality",
+	"movie-historical",
+	"movie-documentary",
+	"movie-politics",
+	"movie-crime",
+	"movie-sports",
+	"movie-science",
+	"sci-fi",
+
 ] as const;
 
 export const CARD_TAG_LIST = [

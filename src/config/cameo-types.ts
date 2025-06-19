@@ -1,5 +1,6 @@
 export const CAMEO_TYPES_LIST = [
 	"none",
+	"any-pc",
 	"above",
 	"below",
 	"above+below",
