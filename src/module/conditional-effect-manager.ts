@@ -1,3 +1,4 @@
+import { WEAPON_TAGS } from "../config/equipment-tags.js";
 import { NumericV2 } from "./conditionalEffects/numericV2.js";
 import { CombatResultComparison } from "../config/numeric-comparison.js";
 import { DAMAGE_SUBTYPES } from "../config/effect-types.js";
@@ -558,6 +559,8 @@ export class ConditionalEffectManager {
 				return this.translate(cond.creatureTag, CREATURE_TAGS);
 			case "roll":
 				return this.translate (cond.rollTag, ROLL_TAGS_AND_CARD_TAGS);
+			case "weapon":
+				return this.translate (cond.rollTag, WEAPON_TAGS);
 			default:
 				cond satisfies never;
 				return "ERROR";

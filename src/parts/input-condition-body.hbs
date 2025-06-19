@@ -240,6 +240,12 @@
 		{{multicheck (strcat namePrefix 'rollTag') POWERSTUFF.ROLL_TAGS_AND_CARD_TAGS checked=cond.rollTag localize=true}}
 		{{/if}}
 
+		{{#if (eqAny cond.tagComparisonType "weapon")}}
+		<select name="{{strcat namePrefix 'conditionTarget'}}">
+			{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+		</select>
+		{{multicheck (strcat namePrefix 'rollTag') POWERSTUFF.WEAPON_TAGS checked=cond.rollTag localize=true}}
+		{{/if}}
 		{{/if}}
 
 	{{#if (eqAny cond.boolComparisonTarget "has-creature-tag")}}

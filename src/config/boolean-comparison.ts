@@ -1,3 +1,4 @@
+import { WeaponTag } from "./equipment-tags.js";
 import { RollTag } from "./roll-tags.js";
 import { CardTag } from "./card-tags.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
@@ -210,6 +211,7 @@ const TAG_COMPARISON_TYPE_LIST = [
 	"power",
 	"actor",
 	"roll",
+	"weapon",
 ] as const;
 
 type TagComparisonType = typeof TAG_COMPARISON_TYPE_LIST[number];
@@ -230,7 +232,10 @@ type GeneralTagComparison = {
 } | {
 	tagComparisonType: "roll",
 	rollTag: MultiCheckOrSingle<RollTag | CardTag>,
-
+} | {
+	tagComparisonType: "weapon",
+	rollTag: MultiCheckOrSingle<WeaponTag>,
+	conditionTarget : ConditionTarget,
 }
 
 );

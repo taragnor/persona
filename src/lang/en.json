@@ -452,6 +452,14 @@
 	"persona.equipment.tag.defensive" : "Defensive",
 	"persona.equipment.tag.crafting" : "Crafting Material",
 	"persona.equipment.tag.d-mon" : "D-Mon",
+	"persona.equipment.tag.bow" : "Bow",
+	"persona.equipment.tag.fist" : "Fist",
+	"persona.equipment.tag.mace" : "Mace",
+	"persona.equipment.tag.blade" : "Blade",
+	"persona.equipment.tag.axe" : "Axe",
+	"persona.equipment.tag.heavy" : "Heavy Weapon",
+	"persona.equipment.tag.light-weapon" : "Light Weapon",
+	"persona.equipment.tag.spear" : "Spear",
 
 	"persona.power.shadowcosts.none": "Any",
 	"persona.power.shadowcosts.always": "Charged (Depleting)",
@@ -904,6 +912,10 @@
 	"persona.roll.rolltag.artistic" : "Artistic",
 	"persona.roll.rolltag.studying" : "Studying",
 	"persona.roll.rolltag.music" : "Music",
+	"persona.roll.rolltag.movie-action" : "Action Movie",
+	"persona.roll.rolltag.movie-romance" : "Romance Movie",
+	"persona.roll.rolltag.movie-foreign" : "Foreign Movie",
+	"persona.roll.rolltag.sci-fi" : "Sci-Fi",
 	"persona.roll.rolltag.crime" : "Crime",
 	"persona.roll.rolltag.subject-math" : "Subject (Math)",
 	"persona.roll.rolltag.subject-english" : "Subject (English)",
@@ -941,6 +953,7 @@
 	"persona.comparison.tagType.power": "Power Tag",
 	"persona.comparison.tagType.actor": "Actor Tag",
 	"persona.comparison.tagType.roll": "Roll Tag",
+	"persona.comparison.tagType.weapon": "Weapon Tag",
 
 
 	"persona.availability.++": "Favored (++)",

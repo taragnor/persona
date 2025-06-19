@@ -523,7 +523,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			const attacker = PersonaDB.findActor(attackerAcc);
 			if (!attacker) return undefined;
 			const dtype = power.getDamageType(attacker);
-			return multiCheckContains(condition.powerDamageType, [dtype]);
+			return multiCheckContains(condition.powerDamageType, [dtype as string]);
 		}
 		case "has-status" : {
 			const target = getSubject(condition, situation, source,  "conditionTarget");
@@ -812,6 +812,11 @@ function hasTagConditional(condition: Precondition & BooleanComparisonPC & {bool
 			const rollTags = situation.rollTags ?? [];
 			return multiCheckContains(condition.rollTag, rollTags);
 		}
+		case "weapon":{
+			const target = getSubjectActor(condition, situation, source, "conditionTarget");
+			if (!target || !target.weapon || target.isNPC()) return undefined;
+			return multiCheckContains(condition.rollTag, target.weapon.tagList(target));
+		}
 		default:  {
 			condition satisfies never;
 			PersonaError.softFail(`Can't run hasTagConditional becuase tagComparionType is invalid (${condition["tagComparisonType"]})`);
@@ -996,7 +1001,7 @@ export function multiCheckToArray<T extends string>(multiCheck: MultiCheck<T>) :
 		.map( ([k,_v]) => k as T) ;
 }
 
-function multiCheckContains<T extends string>(multiCheck: MultiCheck<T> | T, arr: T[]) : boolean {
+function multiCheckContains<T extends R, R extends string>(multiCheck: MultiCheck<T> | T, arr: R[]) : boolean {
 	if (typeof multiCheck != "object") {
 		return arr.includes(multiCheck);
 	}

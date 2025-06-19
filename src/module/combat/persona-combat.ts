@@ -2551,7 +2551,7 @@ roomEffectsMsg(): string {
 	const mods = this.getRoomEffects();
 	if (mods.length == 0) {
 			return "";
-	}
+		}
 	let msg = "";
 	msg += "<u><h2>Room Effects</h2></u><ul>";
 	msg += mods.map( x=> `<li><b>${x.name}</b> : ${x.system.description}</li>`).join("");
@@ -2755,6 +2755,7 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 	const combat = combatant.parent as PersonaCombat | undefined;
 	if (!combat) return;
 	const allies = this.getAllies(combatant as Combatant<ValidAttackers>);
+	const followups = this.getUsableFollowUps(token, activationRoll).join("");
 	const validTeamworkAllies = allies
 		.flatMap( ally => {
 			if (ally == combatant) return [];
@@ -2765,7 +2766,7 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 				naturalRoll: activationRoll,
 				rollTags: ["attack", "activation"],
 				rollTotal : activationRoll,
-				user: actor.accessor
+				user: actor.accessor,
 			};
 			if (!actor.teamworkMove.testTeamworkPrereqs(situation, actor)) return [];
 			const targets = combat.getValidTargetsFor(actor.teamworkMove, combatant as Combatant<ValidAttackers>, situation);
@@ -2787,6 +2788,7 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 <ul>
 		<li> Act again </li>
 		${allout}
+		${followups}
 		${teamworkList}
 		</ul>
 `;
@@ -2796,6 +2798,30 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 		style: CONST.CHAT_MESSAGE_STYLES.OOC,
 	};
 	await ChatMessage.create(messageData, {});
+}
+
+getUsableFollowUps(token: PToken, activationRoll: number) : string []{
+	const combatant = token.object ? this.getCombatantByToken(token): null;
+	if (!combatant || !combatant.actor) return [];
+	const actor = combatant.actor;
+	const situation : CombatRollSituation = {
+		naturalRoll: activationRoll,
+		rollTags: ["attack", "activation"],
+		rollTotal: activationRoll,
+		user: actor.accessor,
+	};
+	const combat = this;
+	const followUpMoves = actor.powers
+		.filter( x=> x.isFollowUpMove());
+	const followup = followUpMoves
+		.map(usable => {
+			const targets =combat.getValidTargetsFor(usable, combatant, situation)
+			.map (x=> x.token.name);
+
+			if (targets.length == 0) return "";
+			return `<li> ${usable.name} (${targets.join(", ")})</li>`;
+		});
+	return followup;
 }
 
 async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll: R}[], messageOptions: Foundry.MessageOptions = {}): Promise<ChatMessage<R>> {

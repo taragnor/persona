@@ -129,6 +129,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.system.type == "skillCard";
 	}
 
+	isFollowUpMove(): boolean {
+		if (!this.isUsable()) return false;
+		return this.hasTag("follow-up");
+	}
+
 	isDefensive(): boolean {
 		switch (this.system.type) {
 			case "power":

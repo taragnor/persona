@@ -1,3 +1,4 @@
+import { WEAPON_TAGS } from "../../../config/equipment-tags.js";
 import { NUMERIC_V2_ACTOR_STATS } from "../../../config/numeric-comparison.js";
 import { NUMERIC_V2_COMPARISON_TARGETS } from "../../../config/numeric-comparison.js";
 import { TAG_COMPARISON_TYPES } from "../../../config/boolean-comparison.js";
@@ -140,6 +141,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			ALTER_MP_SUBTYPES,
 			SOCIAL_CHECKS,
 			CREATURE_TAGS,
+			WEAPON_TAGS,
 			CARD_TAGS,
 			ROLL_TAGS_AND_CARD_TAGS,
 			EQUIPMENT_TAGS,
