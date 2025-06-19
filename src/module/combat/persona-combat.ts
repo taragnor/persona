@@ -1034,7 +1034,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
 			result.merge(costs);
 			result.finalize();
-			if (!power.hasTag("opener"))  {
+			if (!power.isOpener())  {
 				await attacker.actor.expendAction();
 			}
 			await attacker.actor.removeStatus("baton-pass");
@@ -2405,6 +2405,8 @@ turnCheck(token: PToken, power: UsableAndCard): boolean {
 	if (!this.combatant) return false;
 	if (token.actor.hasStatus("baton-pass"))
 		return true;
+	if (token.actor.hasStatus("bonus-action"))
+		return true;
 	if (power.isTeamwork() ) {
 		if ( this.combatant.actor?.hasStatus("bonus-action") && this.combatant.token.id != token.id) {
 			return true;
@@ -2812,7 +2814,9 @@ getUsableFollowUps(token: PToken, activationRoll: number) : string []{
 	};
 	const combat = this;
 	const followUpMoves = actor.powers
-		.filter( x=> x.isFollowUpMove());
+		.filter( x=> x.isFollowUpMove())
+	.filter( x=> x.testFollowUpPrereqs(situation, actor))
+
 	const followup = followUpMoves
 		.map(usable => {
 			const targets =combat.getValidTargetsFor(usable, combatant, situation)

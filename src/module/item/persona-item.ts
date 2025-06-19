@@ -537,6 +537,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return testPreconditions(conditions, situation, this as Usable);
 	}
 
+	testFollowUpPrereqs(this: UsableAndCard, situation: Situation, user: PersonaActor): boolean {
+		return this.testTeamworkPrereqs(situation, user);
+	}
+
 	getGrantedPowers(this: ModifierContainer, user: PC | Shadow, situation?: Situation): Power[] {
 		return this.getAllGrantedPowers(user, situation);
 		// .filter(pwr => !pwr.hasTag("opener"));
