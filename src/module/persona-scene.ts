@@ -1,3 +1,5 @@
+import { Logger } from "./utility/logger.js";
+import { PersonaCombat } from "./combat/persona-combat.js";
 import { sleep } from "./utility/async-wait.js";
 import { Metaverse } from "./metaverse.js";
 import { UniversalModifier } from "./item/persona-item.js";
@@ -263,3 +265,15 @@ export class PersonaScene extends Scene {
 	}
 
 }
+
+
+Hooks.on("updateScene", (_scene: PersonaScene, diff) => {
+	console.log("Update Scene Hook");
+	console.log(diff);
+	if (diff.active == true) {
+		if (game.combats.contents.some( (cmb: PersonaCombat) => cmb.isSocial)) {
+			Logger.gmMessage("Social Scene still active, consider ending it before starting metaverse activity");
+		}
+
+	}
+});
