@@ -536,7 +536,11 @@ export class CombatResult  {
 		return this;
 	}
 
-	emptyCheck() : this | undefined {
+	emptyCheck(debug = false) : this | undefined {
+		if (debug) {
+			Debug(this);
+			debugger;
+		}
 		if (!this._finalized) this.finalize();
 		const attacks = Array.from(this.attacks.entries());
 		if (this.escalationMod == 0 && this.costs.length == 0 && attacks.length ==0 && this.globalOtherEffects.length == 0) return undefined;

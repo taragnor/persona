@@ -1,3 +1,5 @@
+import { Metaverse } from "./metaverse.js";
+import { UniversalModifier } from "./item/persona-item.js";
 import { PersonaError } from "./persona-error.js";
 import { PC } from "./actor/persona-actor.js";
 import { NonCombatTriggerTypes } from "../config/triggers.js";
@@ -87,7 +89,7 @@ export class TriggeredEffect {
 			}
 		}
 		if (situation == undefined) {
-					PersonaError.softFail(`Cant' resolve trigger, no situation for ${trigger}`);
+			PersonaError.softFail(`Cant' resolve trigger, no situation for ${trigger}`);
 			return result;
 		}
 		const situationCopy = { ...situation, trigger } as Situation; //copy the object so it doesn't permanently change it
@@ -95,7 +97,13 @@ export class TriggeredEffect {
 		if (actor) {
 			triggers = actor.triggers;
 		} else {
-			const roomEffects= (game?.combat as PersonaCombat)?.getRoomEffects() ?? [];
+			const roomEffects : UniversalModifier[] = [];
+			if (game.combat) {
+				roomEffects.push(...(game.combat as PersonaCombat)?.getRoomEffects());
+			} else {
+				const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
+				roomEffects.push(...arr)
+			}
 			triggers = [
 				...PersonaDB.getGlobalModifiers(), //testin only
 				...roomEffects,

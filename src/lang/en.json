@@ -17,6 +17,7 @@
 	"TYPES.Item.universalModifier": "Universal Modifier",
 	"TYPES.Item.job": "Job",
 	"TYPES.Item.socialCard": "Social Card",
+	"TYPES.Item.skillCard": "Skill Card",
 
 	"persona.term.primary": "Primary",
 	"persona.term.secondary": "Secondary",

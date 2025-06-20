@@ -82,7 +82,6 @@ function registerSheetApplications() {
 	// Items.registerSheet("persona", PersonaJobSheet, {types: ["job"], makeDefault: true});
 	Items.registerSheet("persona", UniversalModifierSheet, {types: ["universalModifier"], makeDefault: true});
 	Items.registerSheet("persona", PersonaSocialCardSheet, {types: ["socialCard"], makeDefault: true});
-
 }
 
 Hooks.once("ready", () => {Darkness.init()});

@@ -1550,6 +1550,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	static getCombatResultFromConsequences(consList: ConsequenceProcessed["consequences"], situation: Situation, attacker: ValidAttackers | undefined, target : ValidAttackers | undefined, atkResult ?: AttackResult | null ) : CombatResult {
 		const result = new CombatResult(atkResult);
 		for (const cons of consList) {
+			if (cons.applyTo == "global") {
+				result.addEffect(atkResult, undefined, cons.cons);
+				return result;
+			}
 			const effectiveTargets = PersonaCombat.resolveEffectiveTargets(cons.applyTo, situation, attacker, target, cons.cons);
 			for (const target of effectiveTargets) {
 				if (target) {
@@ -1560,7 +1564,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return result;
 	}
 
-	static resolveEffectiveTargets(applyTo :Consequence["applyTo"], situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, cons?: Consequence) : ValidAttackers[] {
+	static resolveEffectiveTargets(applyTo :Consequence["applyTo"], situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, cons?: Consequence) : ValidAttackers[]  {
 		switch (applyTo) {
 			case "target" :
 				return target ? [target]: [];
@@ -1837,7 +1841,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "social-card-action":
 			case "scan":
 			case "alter-energy":
-			case "dungeon-action":
 			case "alter-mp":
 			case "extraTurn":
 			case "teach-power":
@@ -1845,6 +1848,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "alter-variable":
 			case "alter-fatigue-lvl":
 				return [{applyTo,cons}];
+			case "dungeon-action":
+				return [{applyTo: "global", cons}];
 			case "expend-item":
 				if (cons.itemId) {
 					const item = game.items.get(cons.itemId) as Usable;
@@ -2648,8 +2653,8 @@ async generateTreasureAndXP() {
 		await foe.onDefeat();
 	}
 	this.defeatedFoes = [];
-	const pcs = actors.filter( x => x.system.type == "pc") as PC[];
-	const party = actors.filter( x=> x.system.type == "pc" || x.system.type == "npcAlly") as (PC | NPCAlly)[];
+	const pcs = actors.filter( x => x.isPC());
+	const party = actors.filter( x=> x.isPC() ||  x.isNPCAlly());
 	try {
 		await Metaverse.awardXP(defeatedFoes as Shadow[], party);
 	} catch (e) {
@@ -2878,7 +2883,7 @@ export type SaveOptions = {
 
 export type ConsequenceProcessed = {
 	consequences: {
-		applyTo: ConditionTarget,
+		applyTo: ConditionTarget | "global",
 		// applyToSelf: boolean,
 		cons: Consequence,
 	}[],

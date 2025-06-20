@@ -228,10 +228,10 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	get allRoomEffects() : UniversalModifier[] {
-		return this.parent.sceneEffects.concat(this.roomEffects);
+		return this.parent.sceneEffects.concat(this.personalRoomEffectsOnly());
 	}
 
-	get roomEffects(): UniversalModifier[] {
+	personalRoomEffectsOnly(): UniversalModifier[] {
 		return this.regionData.roomEffects.flatMap ( id=> {
 			if (!id) return [];
 			const mod = PersonaDB.getRoomModifiers().find(x=> x.id == id);
@@ -325,7 +325,7 @@ export class PersonaRegion extends RegionDocument {
 		}
 		const modifiers = [
 			...PersonaDB.getGlobalModifiers(),
-			...this.roomEffects
+			...this.allRoomEffects,
 		];
 		const sizeMod = new ModifierList(
 			modifiers.flatMap( x=> x.getModifier("encounterSize", null))
@@ -350,8 +350,8 @@ export class PersonaRegion extends RegionDocument {
 				mixed: mixedMod,
 			},
 		};
-		const {encounter, etype} = Metaverse.generateEncounter(shadowType, options);
-		await Metaverse.printRandomEncounterList(encounter, etype);
+		const encounter = Metaverse.generateEncounter(shadowType, options);
+		await Metaverse.printRandomEncounterList(encounter);
 		return true;
 	}
 

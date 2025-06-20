@@ -633,6 +633,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	static async createSkillCardFromPower(power: Power) : Promise<SkillCard> {
+		if (power.system.type != "power") {
+			throw new Error("Not a power");
+		}
 		return await PersonaItem.create( {
 			name: `${power.name} card`,
 			type: "skillCard",

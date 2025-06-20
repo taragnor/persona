@@ -1,3 +1,4 @@
+
 import { PersonaSFX } from "./combat/persona-sfx.js";
 import { TriggeredEffect } from "./triggered-effect.js";
 import { Helpers } from "./utility/helpers.js";
@@ -60,8 +61,8 @@ export class Metaverse {
 	static weightedTest(type :Shadow["system"]["creatureType"] = "shadow") {
 		const map = new Map<Shadow["name"], number>();
 		for (let tries =0; tries< 2000; tries++) {
-			const {encounter} = this.generateEncounter(type);
-			for (const shadow of encounter) {
+			const {enemies} = this.generateEncounter(type);
+			for (const shadow of enemies) {
 				const current = map.get(shadow.name) ?? 0;
 				map.set(shadow.name, current +1);
 			}
@@ -187,7 +188,7 @@ static choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encount
 	return pick;
 }
 
-static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}): {encounter:Shadow[], etype: EncounterType} {
+static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}): Encounter {
 	const scene = game.scenes.current as PersonaScene;
 	const baseList  = this.getEncounterList(scene, shadowType);
 	let enemyType : Shadow["system"]["creatureType"] | undefined = undefined;
@@ -198,8 +199,8 @@ static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options
 	if (baseList.length == 0) {
 		PersonaError.softFail(`Base Encounter List is empty for ${scene.name} ${shadowType ? "(" + shadowType+ ")"  :""}`);
 		return {
-			encounter: [],
-			etype: "error",
+			enemies: [],
+			encounterType: "error",
 		}
 	}
 	let etype : EncounterType;
@@ -217,8 +218,8 @@ static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options
 		if (bailout > 200) {
 			PersonaError.softFail(`Had to bail out, couldn't find match for ${scene.name}`);
 			return {
-				encounter,
-				etype: "error"
+				enemies: encounter,
+				encounterType: "error"
 			};
 		}
 		if (bailout == 20) {
@@ -257,7 +258,7 @@ static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options
 		}
 	}
 	encounter.sort( (a,b) => a.name.localeCompare(b.name));
-	return {encounter, etype};
+	return {enemies: encounter, encounterType: etype};
 }
 
 static getSubgroupAmt(pick: Shadow) : number {
@@ -308,9 +309,10 @@ static getSubgroupAmt(pick: Shadow) : number {
 // 	}
 // }
 
-	static async printRandomEncounterList(encounter: Shadow[], encounterType : EncounterType) {
+	static async printRandomEncounterList(encounter: Encounter) {
+		const {enemies, encounterType} = encounter;
 		const speaker = ChatMessage.getSpeaker({alias: "Encounter Generator"});
-		const enchtml = encounter.map( shadow =>
+		const enchtml = enemies.map( shadow =>
 			`<li class="shadow"> ${shadow.name} </div>`
 		).join("");
 		const text = `
@@ -330,8 +332,8 @@ static getSubgroupAmt(pick: Shadow) : number {
 
 	/** for use by macro */
 	static async randomEncounter() {
-		const {encounter, etype} = Metaverse.generateEncounter();
-		await Metaverse.printRandomEncounterList(encounter, etype);
+		const encounter = Metaverse.generateEncounter();
+		await Metaverse.printRandomEncounterList(encounter);
 	}
 
 
@@ -409,6 +411,7 @@ static getSubgroupAmt(pick: Shadow) : number {
 		};
 		for (const shadow of shadows) {
 			if (shadow.system.type != "shadow") { continue;}
+			if (shadow.hasCreatureTag("d-mon")) { continue;}
 			const treasure = shadow.system.encounter.treasure;
 			const moneyLow = treasure.moneyLow ?? 0;
 			const moneyHigh = treasure.moneyHigh ?? 0;
@@ -450,27 +453,26 @@ static getSubgroupAmt(pick: Shadow) : number {
 		await ChatMessage.create(messageData, {});
 	}
 
-	static async distributeMoney(money: number, players: PersonaActor[]) {
-		if (players.length > 0) {
-			const moneyShare = Math.floor(money / players.length);
-			const shareDist =
-				players.map( actor => ({
-					pc: actor,
-					share: Math.round(moneyShare * actor.treasureMultiplier)
-				}));
-			shuffle(shareDist);
-			let moneyOverflow = money - (moneyShare * players.length);
-			for (const entry of shareDist) {
-				if (moneyOverflow > 0) {
-					entry.share += 1;
-					moneyOverflow--;
-				}
-				if (entry.pc.system.type == "pc") {
-					await (entry.pc as PC).gainMoney(entry.share, true);
-				}
-			}
+static async distributeMoney(money: number, players: PersonaActor[]) {
+	if (players.length <= 0) return;
+	const moneyShare = Math.floor(money / players.length);
+	const shareDist =
+		players.map( actor => ({
+			pc: actor,
+			share: Math.round(moneyShare * actor.treasureMultiplier)
+		}));
+	shuffle(shareDist);
+	let moneyOverflow = money - (moneyShare * players.length);
+	for (const entry of shareDist) {
+		if (moneyOverflow > 0) {
+			entry.share += 1;
+			moneyOverflow--;
+		}
+		if (entry.pc.system.type == "pc") {
+			await (entry.pc as PC).gainMoney(entry.share, true);
 		}
 	}
+}
 
 	static async executeDungeonAction( action: DungeonActionConsequence) : Promise<void> {
 		switch (action.dungeonAction) {
@@ -679,7 +681,7 @@ static async #sendPassTurnRequest() {
 		}
 		const sModifiers = new ModifierList(
 			PersonaDB.getGlobalModifiers()
-			.concat(region.roomEffects)
+			.concat(region.allRoomEffects)
 			.flatMap(x=> x.getModifier("shadowPresence", null))
 		);
 		const sPresence = region.shadowPresence + sModifiers.total(situation);
@@ -690,7 +692,7 @@ static async #sendPassTurnRequest() {
 		}
 		const cModifiers = new ModifierList(
 			PersonaDB.getGlobalModifiers()
-			.concat(region.roomEffects)
+			.concat(region.allRoomEffects)
 			.flatMap(x=> x.getModifier("concordiaPresence", null))
 		);
 		const cPresence = region.concordiaPresence + cModifiers.total(situation);
@@ -866,5 +868,10 @@ export type EncounterOptions = {
 	sizeMod ?: number;
 	encounterType ?: EncounterType;
 	frequencies ?: {hard: number, mixed: number},
+}
+
+export type Encounter =  {
+	enemies: Shadow[],
+	encounterType : EncounterType,
 }
 
