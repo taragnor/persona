@@ -1,3 +1,5 @@
+import { Metaverse } from "./metaverse.js";
+import { UniversalModifier } from "./item/persona-item.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
@@ -141,7 +143,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
 		const user = this.user;
 		// const source = this.source;
-		const roomModifiers = PersonaCombat.getRoomModifiers(this);
+		const roomModifiers : UniversalModifier[] = []; 
+		if (game.combat) {
+			roomModifiers.push(...PersonaCombat.getRoomModifiers(this));
+		} else {
+			roomModifiers.push(...(Metaverse.getRegion()?.allRoomEffects ?? []));
+		}
 		const passivePowers = (options && options.omitPowers) ? [] : this.passivePowers();
 		return [
 			...this.passiveFocii(),

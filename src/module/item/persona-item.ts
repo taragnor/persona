@@ -1,3 +1,4 @@
+import { Trigger } from "../../config/triggers.js";
 import { CombatResult } from "../combat/combat-result.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../../config/roll-tags.js";
 import { CARD_RESTRICTOR_TAGS } from "../../config/card-tags.js";
@@ -1089,6 +1090,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			this.cache.effectsMap.set(sourceActor, newData);
 			return newData;
 		}
+	}
+
+	triggersOn(this: ModifierContainer, trig: Trigger)  :boolean {
+		const effects= this.getEffects(null);
+		return effects.some( eff=> eff.conditions
+			.some (cond => cond.type == "on-trigger" && cond.trigger == trig)
+		);
 	}
 
 	requiredLinkLevel(this: Focus) : number  {

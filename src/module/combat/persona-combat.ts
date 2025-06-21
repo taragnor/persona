@@ -1850,7 +1850,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "lower-resistance":
 			case "raise-status-resistance":
 			case "inspiration-cost":
-			case "display-msg":
 			case "use-power":
 			case "social-card-action":
 			case "scan":
@@ -1862,6 +1861,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "alter-variable":
 			case "alter-fatigue-lvl":
 				return [{applyTo,cons}];
+			case "display-msg":
+				debugger;
+				if (cons.newChatMsg) {
+					return [{applyTo: "global", cons}];
+				} else {
+					return [{applyTo,cons}];
+				}
 			case "dungeon-action":
 				return [{applyTo: "global", cons}];
 			case "expend-item":

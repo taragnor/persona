@@ -253,7 +253,7 @@ export class PersonaRegion extends RegionDocument {
 
 	async onEnterRegion(token: TokenDocument<PersonaActor>) {
 		console.debug(`Region Entered: ${this.name}`);
-		if (token.actor?.system.type != "pc") return;
+		if (!token.actor?.isPC()) return;
 		const tokens = Array.from(this.tokens);
 		const situation : Situation = {
 			trigger: "on-enter-region",
@@ -602,7 +602,7 @@ export class PersonaRegion extends RegionDocument {
 		return div;
 	}
 
-	static updateRegionDisplay(token: TokenDocument<PersonaActor>, tokenMove: boolean = true) {
+	static async updateRegionDisplay(token: TokenDocument<PersonaActor>, tokenMove: boolean = true) {
 		const scene = token.parent;
 		const region = scene.regions.find( (region : PersonaRegion) => region.tokens.has(token) && !region?.regionData?.ignore)
 		if (!region || game?.combat?.active) {
@@ -614,7 +614,7 @@ export class PersonaRegion extends RegionDocument {
 		const lastRegion = PersonaSettings.get("lastRegionExplored");
 		if (tokenMove && lastRegion != region.id) {
 			if (game.user.isGM) {
-				PersonaSettings.set("lastRegionExplored", region.id);
+				await PersonaSettings.set("lastRegionExplored", region.id);
 				(region as PersonaRegion).onEnterRegion(token);
 			}
 		}
@@ -731,11 +731,11 @@ Hooks.on("canvasInit", () => {
 	clearRegionDisplay();
 });
 
-Hooks.on("controlToken", (token : Token<PersonaActor>) => {
+Hooks.on("controlToken", async (token : Token<PersonaActor>) => {
 	const actor = token?.document?.actor;
 	if (!actor) return;
-	if (actor.system.type == "pc") {
-		PersonaRegion.updateRegionDisplay(token.document, false);
+	if (actor.isPC()) {
+		await PersonaRegion.updateRegionDisplay(token.document, false);
 	}
 
 });

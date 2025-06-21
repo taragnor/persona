@@ -78,7 +78,7 @@ export class TriggeredEffect {
 				case "on-clock-change":
 				case "on-use-power":
 				case "on-roll":
-				case "on-combat-end": 
+				case "on-combat-end":
 				case "on-open-door":
 					PersonaError.softFail(`Must proivide a situation with this trigger:  ${trigger}`);
 					return result;
@@ -95,7 +95,8 @@ export class TriggeredEffect {
 		const situationCopy = { ...situation, trigger } as Situation; //copy the object so it doesn't permanently change it
 		let triggers : ModifierContainer[];
 		if (actor) {
-			triggers = actor.triggers;
+			// triggers = actor.triggers;
+			triggers = actor.triggersOn(trigger);
 		} else {
 			const roomEffects : UniversalModifier[] = [];
 			if (game.combat) {

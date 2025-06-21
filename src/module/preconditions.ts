@@ -486,7 +486,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 		case "is-shadow": {
 			const arr = getSubjects(condition, situation, source,  "conditionTarget");
 			if (!arr) return undefined;
-				return arr.some( target => {
+			return arr.some( target => {
 				const targetActor = target instanceof PersonaActor ? target : target.actor;
 				if (targetActor.system.type == "shadow") return true;
 			});
@@ -872,7 +872,7 @@ function getSubjectTokens<K extends string, T extends Record<K, ConditionTarget>
 
 export function getSubjectActors<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K): (ValidAttackers | NPC) []{
 	const subjects = getSubjects(cond, situation, source, field)
-	.filter(subject => subject instanceof PersonaActor);
+	.map( subject => subject instanceof TokenDocument ? subject.actor : subject);
 	return subjects;
 }
 
@@ -984,7 +984,7 @@ function getSubjects<K extends string, T extends Record<K, ConditionTarget>>( co
 			if (situation?.user?.token) {
 				const tok =  PersonaDB.findToken(situation.user.token) as PToken | undefined;
 				return tok ? [tok] : [];
-			} else { 
+			} else {
 				const tok=  PersonaDB.findActor(situation.user);
 				return tok ? [tok] : [];
 			}

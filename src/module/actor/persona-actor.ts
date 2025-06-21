@@ -1,3 +1,4 @@
+import { Trigger } from "../../config/triggers.js";
 import { PersonaRoller } from "../persona-roll.js";
 import { RollSituation } from "../../config/situation.js";
 import { randomSelect } from "../utility/array-tools.js";
@@ -2634,6 +2635,12 @@ isFullyFaded(this: ValidAttackers, newhp?:number) : boolean {
 isFading(this: ValidAttackers): boolean {
 	if (this.system.type == "shadow") return false;
 	return this.hp <= 0 && !this.hasStatus("full-fade");
+}
+
+
+triggersOn( trigger : Trigger) : ModifierContainer[] {
+	const triggers= this.triggers;
+	return triggers.filter( modC => modC.triggersOn(trigger));
 }
 
 get triggers() : ModifierContainer[] {
