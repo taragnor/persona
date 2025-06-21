@@ -1,3 +1,5 @@
+import { PersonaScene } from "./persona-scene.js";
+import { PersonaRegion } from "./region/persona-region.js";
 import { TreasureItem } from "./metaverse.js";
 import { SkillCard } from "./item/persona-item.js";
 import { NPCAlly } from "./actor/persona-actor.js";
@@ -67,6 +69,14 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	onCreateItem(_item: PersonaItem) {
 		this.#resetCache();
 	}
+
+
+
+	// getRegionById (id: string) : PersonaRegion | undefined {
+	// 	const scene = game.scenes.find(x=> x.regions.has(id)) as PersonaScene | undefined;
+	// 	if (!scene) return undefined;
+	// 	return scene?.regions?.get(id) as PersonaRegion | undefined;
+	// }
 
 
 	getClassById(id: string): Option<ItemSub<"characterClass">> {

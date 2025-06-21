@@ -630,10 +630,10 @@ static async #sendPassTurnRequest() {
 		});
 	}
 
-	static getRegion() : PersonaRegion | undefined {
+	static getRegion(regionId ?: string) : PersonaRegion | undefined {
 		if (game.user.isGM) {
-			const id = PersonaSettings.get("lastRegionExplored");
-			const region = game.scenes.current.regions.find( (r: PersonaRegion) => r.id == id && !r?.regionData?.ignore);
+			regionId = regionId ? regionId : PersonaSettings.get("lastRegionExplored").toString();
+			const region = game.scenes.current.regions.find( (r: PersonaRegion) => r.id == regionId && !r?.regionData?.ignore);
 			if (!region) {
 				return undefined;
 			}

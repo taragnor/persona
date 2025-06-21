@@ -648,6 +648,7 @@
 	"persona.preconditions.targets.triggering-character": "Triggering Character" ,
 	"persona.preconditions.targets.all-allies": "All Allies" ,
 	"persona.preconditions.targets.all-foes": "All Foes" ,
+	"persona.preconditions.targets.all-in-region": "Everyone in the Region" ,
 	"persona.preconditions.targets.cameo": "Cameo Character" ,
 
 	"persona.preconditions.dice.escalation": "Escalation DIe" ,

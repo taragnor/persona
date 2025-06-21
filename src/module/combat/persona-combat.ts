@@ -1,3 +1,4 @@
+import { PersonaRegion } from "../region/persona-region.js";
 import { CardTag } from "../../config/card-tags.js";
 import { RollTag } from "../../config/roll-tags.js";
 import { RollSituation } from "../../config/situation.js";
@@ -1608,6 +1609,19 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case undefined:
 				return target ? [target] : []; //default to target since this is old material
 				// PersonaError.softFail("cons.applyTo is undefined");
+			case "all-in-region": {
+				let id : string | undefined;
+				if ("triggeringRegionId" in situation) {
+					id = situation.triggeringRegionId;
+				}
+				const region = Metaverse.getRegion(id);
+				if (!region) return [];
+				const tokens = Array.from(region.tokens);
+				const actors = tokens
+				.filter( x=> x.actor && x.actor.isValidCombatant())
+				.map( x=> x.actor! as ValidAttackers);
+				return actors;
+			}
 			default:
 				applyTo satisfies never;
 				return [];
@@ -2091,6 +2105,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "cameo": {
 				return [];
 			}
+			case "all-in-region":
+				PersonaError.softFail("all-in-region does not support alt targets");
+				return [];
 			default:
 				targettingType satisfies never;
 				return [];

@@ -262,7 +262,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (current <3) {
 			await this.actor.update({
 				"system.combat.classData.incremental.hp" : current +1});
-			if (this.actor.system.type == "pc") {
+			if (this.actor.isPC() || this.actor.isNPCAlly()) {
 				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 			}
 		}
@@ -274,7 +274,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (current <3) {
 			await this.actor.update({
 				"system.combat.classData.incremental.mp" : current +1});
-			if (this.actor.system.type == "pc") {
+			if (this.actor.isPC() || this.actor.isNPCAlly()) {
 				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 			}
 		}
@@ -287,7 +287,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (current <3) {
 			await this.actor.update({
 				"system.combat.classData.incremental.wpnDamage" : current +1});
-			if (this.actor.system.type == "pc") {
+			if (this.actor.isPC() || this.actor.isNPCAlly()) {
 				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 			}
 		}
@@ -299,7 +299,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (current <2) {
 			await this.actor.update({
 				"system.combat.classData.incremental.attack" : current +1});
-			if (this.actor.system.type == "pc") {
+			if (this.actor.isPC() || this.actor.isNPCAlly()) {
 				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 			}
 		}
@@ -310,7 +310,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (current <2) {
 			await this.actor.update({
 				"system.combat.classData.incremental.defense" : current +1});
-			if (this.actor.system.type == "pc") {
+			if (this.actor.isPC() || this.actor.isNPCAlly()) {
 				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 			}
 		}
@@ -321,7 +321,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (current <3) {
 			await this.actor.update({
 				"system.combat.classData.incremental.initiative" : current +1});
-			if (this.actor.system.type == "pc") {
+			if (this.actor.isPC() || this.actor.isNPCAlly()) {
 				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 			}
 		}

@@ -18,7 +18,7 @@ import { Usable } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
 import { DamageType } from "../../config/damage-types.js";
 import { PowerContainer } from "../item/persona-item.js";
-import { getSubjectActor } from "../preconditions.js";
+import { getSubjectActors } from "../preconditions.js";
 import { PersonaError } from "../persona-error.js";
 import { RESIST_STRENGTH_LIST } from "../../config/damage-types.js";
 import { NumericComparisonV2 } from "../../config/numeric-comparison.js";
@@ -130,7 +130,7 @@ export class NumericV2 {
 			case "variable-value": {
 				let val: number | undefined;
 				if (op.varType == "actor") {
-					const subject = getSubjectActor(op, situation, source, "applyTo");
+					const subject = getSubjectActors(op, situation, source, "applyTo")[0];
 					if (subject == undefined) return null;
 					val = PersonaVariables.getVariable(op, subject);
 				} else {
@@ -191,7 +191,7 @@ export class NumericV2 {
 				return link ? link.linkLevel : 0;
 			}
 			case "progress-tokens-with": {
-				const targetActor = getSubjectActor(op, situation, source, "conditionTarget");
+				const targetActor = getSubjectActors(op, situation, source, "conditionTarget")[0];
 				if (!targetActor || !targetActor.isSocialLink()) {
 					return null;
 				}
@@ -255,7 +255,7 @@ export class NumericV2 {
 				.length;
 			}
 			case "resistance-level": {
-				const subject = getSubjectActor(op, situation, source, "conditionTarget");
+				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
 				if (!subject) return null;
 				let element : DamageType | "by-power" = op.element;
 				if (element == "by-power") {
@@ -274,7 +274,7 @@ export class NumericV2 {
 			}
 
 			case "total-SL-levels": {
-				const subject : PersonaActor | undefined = getSubjectActor(op, situation, source, "conditionTarget");
+				const subject : PersonaActor | undefined = getSubjectActors(op, situation, source, "conditionTarget")[0];
 				if (!subject) return null;
 				let targetActor : SocialLink | undefined = undefined;
 				switch (subject.system.type) {
@@ -299,47 +299,58 @@ export class NumericV2 {
 			}
 
 			case "health-percentage": {
-				const subject = getSubjectActor(op, situation, source, "conditionTarget");
+				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
 				if (!subject) return null;
 				return (subject.hp / subject.mhp) * 100;
 			}
 
 			case "percentage-of-hp": {
-				const subject = getSubjectActor(op, situation, source, "conditionTarget");
+				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
 				if (!subject) return null;
 				return subject.hp / subject.mhp;
 			}
 			case "percentage-of-mp":{
-				const subject = getSubjectActor(op, situation, source, "conditionTarget");
+				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
 				if (!subject) return null;
 				return subject.mp / subject.mmp;
 			}
 
 			case "energy": {
-				const subject = getSubjectActor(op, situation, source, "conditionTarget");
+				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
 				if (!subject) return null;
 				if (subject.system.type != "shadow") return null;
 				return subject.system.combat.energy.value;
 			}
 
 			case "inspirationWith": {
-				const subject = getSubjectActor(op, situation, source, "conditionTarget");
+				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
 				if (!subject) return null;
 				const link = getSocialLinkTarget(op.socialLinkIdOrTarot, situation, source);
 				if (!link) return null;
 				return subject.getInspirationWith(link.id)
 			}
 			case "itemCount":  {
-				const subject = getSubjectActor(op, situation, source, "conditionTarget");
-				if (!subject) return null;
-				const item = game.items.get(op.itemId);
-				if (!item) return null;
-				return subject.items.contents
-				.reduce( (a,x) => (x.name == item.name && ("amount" in x.system))
-					? (a + x.system.amount)
-					: a
-					, 0);
+				const arr = getSubjectActors(op, situation, source, "conditionTarget");
+				if (arr.length == 0) return null;
+				return arr.reduce( (acc,subject) => {
+					const item = game.items.get(op.itemId);
+					if (!item) return acc;
+					return acc + subject.items.contents
+						.reduce( (a,x) => (x.name == item.name && ("amount" in x.system))
+							? (a + x.system.amount)
+							: a
+							, 0);
+				}, 0);
 			}
+				// const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
+				// if (!subject) return null;
+				// const item = game.items.get(op.itemId);
+				// if (!item) return null;
+				// return subject.items.contents
+				// .reduce( (a,x) => (x.name == item.name && ("amount" in x.system))
+				// 	? (a + x.system.amount)
+				// 	: a
+				// 	, 0);
 
 			default:
 				op satisfies never;

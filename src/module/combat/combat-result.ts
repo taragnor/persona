@@ -1126,6 +1126,7 @@ function resolveStatusDurationAnchor (anchor: (Consequence & {type : "addStatus"
 			}
 		case "all-allies":
 		case "all-foes":
+		case "all-in-region":
 			PersonaError.softFail(`${anchor} not supported as a status anchor`);
 			return null;
 		default:

@@ -94,6 +94,7 @@ export const CONDITION_TARGETS_LIST = [
 	"cameo",
 	"all-allies",
 	"all-foes",
+	"all-in-region",
 ] as const;
 
 export type ConditionTarget= typeof CONDITION_TARGETS_LIST[number];
