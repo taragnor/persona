@@ -1018,7 +1018,9 @@ function getSubjects<K extends string, T extends Record<K, ConditionTarget>>( co
 			}
 			const region = Metaverse.getRegion(id);
 			if (!region) return [];
-			const tokens = Array.from(region.tokens)
+			//have to get all in scene due to party token mucking it up
+			// const tokens = Array.from(region.tokens)
+			const tokens = region.parent.tokens.contents
 			.filter( tok => tok.actor && tok.actor.isValidCombatant());
 			return tokens as PToken[];
 		}
