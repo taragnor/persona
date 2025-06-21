@@ -356,7 +356,20 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	async setRegionData(data: RegionData) {
+		if (!this.isOwner) return;
 		await this.setFlag("persona", "RegionData", data);
+	}
+
+	async setShadowPresence(newPresence: number) {
+		const rdata = this.regionData;
+		rdata.shadowPresence = newPresence;
+		await this.setRegionData(rdata);
+	}
+
+	async setConcordiaPresence(newPresence: number) {
+		const rdata = this.regionData;
+		rdata.concordiaPresence = newPresence;
+		await this.setRegionData(rdata);
 	}
 
 	formEntryField(field: keyof RegionData) {
