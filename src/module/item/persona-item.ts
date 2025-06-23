@@ -58,6 +58,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		containsModifier: boolean | undefined;
 		containsTagAdd: boolean | undefined;
 		statsModified: Map<ModifierTarget, boolean>,
+		hasTriggers: U<boolean>,
 	}
 
 	static cacheStats = {
@@ -90,6 +91,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			containsModifier: undefined,
 			containsTagAdd: undefined,
 			statsModified: new Map(),
+			hasTriggers: undefined,
 		};
 	}
 
@@ -1090,6 +1092,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			this.cache.effectsMap.set(sourceActor, newData);
 			return newData;
 		}
+	}
+
+	hasTriggeredEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
+		if ( this.cache.hasTriggers == undefined) {
+			this.cache.hasTriggers = this.getEffects(actor)
+				.some( eff => eff.conditions.some( cond => cond.type == "on-trigger"));
+		}
+		return this.cache.hasTriggers;
 	}
 
 	triggersOn(this: ModifierContainer, trig: Trigger)  :boolean {

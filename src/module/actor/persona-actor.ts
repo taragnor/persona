@@ -75,13 +75,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	cache: {
 		tarot: Tarot | undefined;
 		complementRating: Map<Shadow["id"], number>;
+		triggers: U<ModifierContainer[]>;
 	};
 
 	constructor(...arr: any[]) {
 		super(...arr);
+		this.clearCache();
+	}
+
+	clearCache() {
 		this.cache = {
 			tarot: undefined,
 			complementRating: new Map(),
+			triggers: [],
 		}
 	}
 
@@ -2651,11 +2657,15 @@ get triggers() : ModifierContainer[] {
 		case "pc":
 		case "shadow":
 		case "npcAlly":
-			return (this as ValidAttackers).mainModifiers().filter( x=>
-				x.getEffects(this as ValidAttackers).some( eff =>
-					eff.conditions.some( cond => cond.type == "on-trigger")
-				)
-			);
+			if (this.cache.triggers == undefined) {
+				this.cache.triggers = (this as ValidAttackers).mainModifiers().filter( x=> x.hasTriggeredEffects(this));
+				// this.cache.triggers = (this as ValidAttackers).mainModifiers().filter( x=>
+				// 	x.getEffects(this as ValidAttackers).some( eff =>
+				// 		eff.conditions.some( cond => cond.type == "on-trigger")
+				// 	)
+				// );
+			}
+			return this.cache.triggers;
 		default:
 			this.system satisfies never;
 			return [];
@@ -3732,4 +3742,8 @@ Hooks.on("createActor", async function (actor: PersonaActor) {
 		await actor.update({ "system.combat.classData.level" : avgLevel});
 		await actor.setWeaponDamageByLevel(avgLevel);
 	}
+});
+
+Hooks.on("updateActor", function (actor: PersonaActor) {
+	actor.clearCache();
 });
