@@ -87,7 +87,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		this.cache = {
 			tarot: undefined,
 			complementRating: new Map(),
-			triggers: [],
+			triggers: undefined,
 		}
 	}
 
@@ -2653,17 +2653,12 @@ get triggers() : ModifierContainer[] {
 	switch (this.system.type ) {
 		case "npc":
 		case "tarot":
-			return []
+			return [];
 		case "pc":
 		case "shadow":
 		case "npcAlly":
 			if (this.cache.triggers == undefined) {
 				this.cache.triggers = (this as ValidAttackers).mainModifiers().filter( x=> x.hasTriggeredEffects(this));
-				// this.cache.triggers = (this as ValidAttackers).mainModifiers().filter( x=>
-				// 	x.getEffects(this as ValidAttackers).some( eff =>
-				// 		eff.conditions.some( cond => cond.type == "on-trigger")
-				// 	)
-				// );
 			}
 			return this.cache.triggers;
 		default:

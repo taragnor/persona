@@ -226,21 +226,37 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	async endCombatTriggers() : Promise<void> {
 		const PCsWin = this.didPCsWin();
-		for (const comb of this.combatants) {
-			if (!comb.actor) continue;
+		const promises = this.combatants
+		.filter (x=> x.actor != undefined)
+		.map( async (comb) => {
 			const situation : Situation = {
 				trigger: "on-combat-end",
 				triggeringUser: game.user,
 				hit: PCsWin,
-				triggeringCharacter: comb.actor.accessor,
-				user: comb.actor.accessor,
+				triggeringCharacter: comb.actor!.accessor,
+				user: comb.actor!.accessor,
 			};
-			await TriggeredEffect.onTrigger("on-combat-end", comb.actor, situation)
+			return await TriggeredEffect.onTrigger("on-combat-end", comb.actor, situation)
 				.emptyCheck()
 				?.toMessage("End Combat Triggered Effect", comb.actor);
-		}
-		await TriggeredEffect.onTrigger("on-combat-end-global").emptyCheck()?.toMessage("End Combat Global Trigger", undefined);
-
+		});
+		await Promise.allSettled(promises);
+		// for (const comb of this.combatants) {
+		// 	if (!comb.actor) continue;
+		// 	const situation : Situation = {
+		// 		trigger: "on-combat-end",
+		// 		triggeringUser: game.user,
+		// 		hit: PCsWin,
+		// 		triggeringCharacter: comb.actor.accessor,
+		// 		user: comb.actor.accessor,
+		// 	};
+		// 	await TriggeredEffect.onTrigger("on-combat-end", comb.actor, situation)
+		// 		.emptyCheck()
+		// 		?.toMessage("End Combat Triggered Effect", comb.actor);
+		// }
+		await TriggeredEffect.onTrigger("on-combat-end-global")
+		.emptyCheck()
+		?.toMessage("End Combat Global Trigger", undefined);
 	}
 
 	async checkEndCombat() : Promise<boolean> {
@@ -1855,7 +1871,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "scan":
 			case "alter-energy":
 			case "alter-mp":
-			case "extraTurn":
+				case "extraTurn":
 			case "teach-power":
 			case "combat-effect":
 			case "alter-variable":

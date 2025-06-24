@@ -1513,6 +1513,9 @@ export type UsableAndCard = Usable | SkillCard;
 
 Hooks.on("updateItem", (item :PersonaItem, _diff: DeepPartial<typeof item>) => {
 	item.clearCache();
+	if (item.parent instanceof PersonaActor) {
+		item.parent.clearCache();
+	}
 });
 
 function cacheStats() {
