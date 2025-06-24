@@ -214,14 +214,17 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	async reviveFallenActors(): Promise<void> {
-		for (const combatant of this.combatants) {
-			const actor = combatant.actor;
-			if (!actor) continue;
-			if (actor.hasStatus("full-fade")) continue;
+		const promises = this.combatants.contents
+		.filter( combatant=> combatant.actor != undefined
+			&& !combatant.actor.hasStatus("full-fade")
+		)
+		.map( async (combatant) => {
+			const actor = combatant.actor!;
 			if (actor.isFading()) {
 				await actor.modifyHP(1);
 			}
-		}
+		});
+		await Promise.allSettled(promises);
 	}
 
 	async endCombatTriggers() : Promise<void> {
