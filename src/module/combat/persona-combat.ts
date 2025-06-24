@@ -181,21 +181,19 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			await Metaverse.enterMetaverse();
 		}
 		await this.combatantsEndCombat();
-		// await PersonaCombat.onTrigger("on-combat-end-global").emptyCheck()?.toMessage("Triggered Effect", undefined);
 		if (this.didPCsWin()) {
 			await this.clearFoes();
 		}
-
 	}
 
 	didPCsWin(): boolean {
 		const actorList = this.combatants.contents
-		.map( x=> x?.actor)
-		.filter (x=> x!= undefined);
+			.map( x=> x?.actor)
+			.filter (x=> x!= undefined);
 		const isPCStanding = actorList
-		.some ( c=> c.isAlive() && c.getAllegiance() == "PCs")
+			.some ( c=> c.isAlive() && c.getAllegiance() == "PCs")
 		const isShadowStanding = actorList
-		.some ( c=> c.isAlive() && c.getAllegiance() == "Shadows")
+			.some ( c=> c.isAlive() && c.getAllegiance() == "Shadows")
 		const PCsWin = isPCStanding && !isShadowStanding;
 		return PCsWin;
 	}
@@ -203,14 +201,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	async combatantsEndCombat() : Promise<void> {
 		await this.endCombatTriggers();
 		await this.reviveFallenActors();
-		for (const c of this.combatants) {
+		const promises = this.combatants.contents.map( async (c) => {
 			try {
-				await c.actor?.onEndCombat()
+				await c.actor?.onEndCombat();
 			} catch (e) {
 				PersonaError.softFail(e);
 				console.warn(e);
 			}
-		}
+		});
+		await Promise.allSettled(promises);
 	}
 
 	async reviveFallenActors(): Promise<void> {
