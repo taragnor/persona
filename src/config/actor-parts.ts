@@ -178,6 +178,8 @@ export function combatCommonStats() {
 		statusResists: statusResists(),
 		focuses: new arr( new id(), {initial: []}),
 		actionsRemaining: new num( {initial: 1, integer:true, min:0, max: 20}),
+		bonusHP: new num({initial: 0, integer: true}),
+		bonusMP: new num({initial: 0, integer: true}),
 	};
 };
 

@@ -172,7 +172,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const bonuses = persona.getBonuses("maxmp");
 		const mult = 1 + persona.getBonuses("maxmpMult").total(sit);
 		const lvlmaxMP = (this as PC | NPCAlly).calcBaseClassMMP();
-		const val = Math.round((mult * (lvlmaxMP)) + bonuses.total(sit));
+		const nonMultMPBonus = this.system.combat.bonusMP ?? 0;
+		const val = Math.round((mult * (lvlmaxMP)) + bonuses.total(sit) + nonMultMPBonus);
 		(this as PC | NPCAlly).refreshMaxMP(val);
 		return val;
 	}
@@ -484,6 +485,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			// bonuses.add("incremental bonus hp", incBonus)
 			const mult = multmods.total(sit, "percentage-special");
 			const newformMult = newForm.total(sit, "percentage");
+			nonMultbonuses.add("Innate HP Bonus", this.system.combat.bonusHP ?? 0);
 			const mhp = (newformMult * mult * (lvlbase + incBonus)) + nonMultbonuses.total(sit);
 			return Math.round(mhp);
 		} catch (e) {

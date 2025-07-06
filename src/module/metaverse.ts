@@ -710,7 +710,7 @@ static async #sendPassTurnRequest() {
 			presenceValue,
 			regionName,
 			label: "Concordia Presence",
-			rollString: "1d6",
+			rollString: "1d8",
 			atkText: "Daemons Attack!",
 		});
 	}
@@ -720,7 +720,7 @@ static async #sendPassTurnRequest() {
 			presenceValue,
 			regionName,
 			label: "Shadow Presence",
-			rollString: "1d10",
+			rollString: "1d12",
 			atkText: "Shadows Attack!",
 		});
 	}
