@@ -8,6 +8,11 @@ const simplestruct = {
 	data: [{name: "id", dataType: "string"}],
 }  as const satisfies ConsStruct;
 
+const simplestruct2 = {
+	type: "cons",
+	data: [{name: "tokenId", dataType: "string"}],
+}  as const satisfies ConsStruct;
+
 const Menu2 = {
 	name: "targetType",
 	dataType: "menu",
@@ -16,7 +21,7 @@ const Menu2 = {
 		consStruct: simplestruct,
 	},{
 		name: "other",
-		consStruct: simplestruct
+		consStruct: simplestruct2
 	},
 	],
 } as const satisfies MenuFieldDescriptor;
@@ -78,7 +83,7 @@ type test3 = ConsStructToCons<typeof MenuStruct>;
 
 type test4 = Prettify<ParseMenuItems<typeof Menu["choices"], "m1">>;
 
-type test5 = MenuFieldUnion<typeof Menu[]>;
+type test5 = Prettify<MenuFieldUnion<typeof Menu[]>>;
 type test6 = MenuFieldUnion<typeof simpleField[]>;
 type test7 = GenericFieldDescriptorObject<typeof simpleField[]>;
 type test8 = GenericFieldDescriptorObject<typeof Menu[]>;
@@ -88,7 +93,7 @@ type targetTest = Prettify<ConsStructToCons<typeof XConstruct>>;
 	type targetTest2 = Prettify<MenuFieldUnion<typeof XConstruct.data>>;
 
 
-type Increment<N extends number, T extends any[] = []> = 
+type Increment<N extends number, T extends any[] = []> =
   [...T, any]['length'] extends N
     ? [...T, any, any]['length']
     : Increment<N, [...T, any]>;

@@ -6,8 +6,8 @@ type MenuItem = {
 }
 
 type ConsStructToCons<T extends ConsStruct> = 
-	T extends ConsequenceNode<any> ? ConsNodeToCons<T> :
-	unknown;
+	Prettify< T extends ConsequenceNode<any> ? ConsNodeToCons<T> :
+	unknown>;
 
 
 
@@ -49,13 +49,6 @@ type ParseMenuItems<T extends MenuItem[], MenuFieldName extends string> =
 	type FieldDescriptorToObject<T extends readonly FieldDescriptor[]> =
 	GenericFieldDescriptorObject<T> &
 	MenuFieldUnion<T>
-	// ObjToValueUnion<
-	// {
-	// 	[K in T[number] as K["name"]]:
-	// 	K extends MenuFieldDescriptor
-	// 	? ParseMenuItems<K["choices"], K["name"]>
-	// 	: {}
-	// }>;
 
 	type GenericFieldDescriptorObject <T extends readonly FieldDescriptor[]> =
 	{
@@ -85,6 +78,3 @@ type ObjectProp<S extends string, X extends any> = {
 
 type ObjToValueUnion<T> = T[keyof T] extends never ? {} : T[keyof T];
 
-
-
-type xxx = ObjToValueUnion<{}>
