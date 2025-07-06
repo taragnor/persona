@@ -260,8 +260,12 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 			case "UEoT":
 				const acc = duration.anchorStatus;
 				if (!acc) break;
-				const anchorStatus = PersonaDB.findAE(acc);
-				await anchorStatus?.delete();
+				try {
+					const anchorStatus = PersonaDB.findAE(acc);
+					await anchorStatus?.delete();
+				} catch (e) {
+					console.log(e);
+				}
 				break;
 			default:
 				break;

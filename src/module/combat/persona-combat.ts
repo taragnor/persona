@@ -699,14 +699,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const disengageTotal = disengageBonus + rollValue;
 		msg.push( `Disengage Total: ${disengageTotal}`);
 		switch (true) {
-			case disengageTotal > 16 :
+			case disengageTotal >= 16 :
 				options.push( {
 					optionTxt: "Expert Disengage",
 					optionEffects: [],
 					mandatory: false,
 				});
 				break;
-			case disengageTotal > 11:
+			case disengageTotal >= 11:
 				options.push( {
 					optionTxt: "Standard Disengage",
 					optionEffects: [],
