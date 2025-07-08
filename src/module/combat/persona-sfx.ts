@@ -44,8 +44,11 @@ export class PersonaSFX {
 			case "light":
 			case "dark":
 			case "untyped":
-			case "gun":
 				await this.#play(damageType);
+				break;
+			case "gun":
+				await this.#play("gun-single");
+				break;
 			case "healing":
 				return;
 			case "all-out": //silent since AoA plays earlier
@@ -81,10 +84,19 @@ export class PersonaSFX {
 			case "lightning":
 				await this.#play(damageType);
 				break;
+			case "gun":
+				await this.#play("gun-auto");
+				break;
+
 			case "healing":
 				await this.#play("heal");
 				break;
+			case "none":
+			case "all-out":
+			case "by-power":
+				break;
 			default:
+				damageType satisfies never;
 				return;
 		}
 		return;
