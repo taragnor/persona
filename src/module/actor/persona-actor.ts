@@ -1,3 +1,4 @@
+import { PermaBuffType } from "../../config/perma-buff-type.js";
 import { Trigger } from "../../config/triggers.js";
 import { PersonaRoller } from "../persona-roll.js";
 import { RollSituation } from "../../config/situation.js";
@@ -3640,7 +3641,23 @@ get isTrueOwner() : boolean {
 		case "pc":
 			return game.user.isGM || game.user.id == this.system.trueOwner;
 	}
+}
 
+async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) {
+	switch (buffType) {
+		case "max-hp": {
+			const newHP = this.system.combat.bonusHP + amt;
+			await this.update( {"system.combat.bonusHP": newHP});
+			break;
+		}
+		case "max-mp": {
+			const newMP = this.system.combat.bonusMP + amt;
+			await this.update( {"system.combat.bonusMP": newMP});
+			break;
+		}
+		default:
+			buffType satisfies never;
+	}
 }
 
 }

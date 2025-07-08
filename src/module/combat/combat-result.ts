@@ -464,6 +464,10 @@ export class CombatResult  {
 			case "alter-variable":
 				effect?.otherEffects.push(cons);
 				break;
+			case "perma-buff":
+				if (!effect) break;
+				effect.otherEffects.push(cons);
+				break;
 			default: {
 				cons satisfies never;
 				throw new Error("Should be unreachable");
@@ -839,6 +843,7 @@ export class CombatResult  {
 				case "alter-mp":
 				case "combat-effect":
 				case "alter-fatigue-lvl":
+				case "perma-buff":
 				case "alter-variable":
 					break;
 				default:
@@ -997,6 +1002,9 @@ export class CombatResult  {
 					break;
 				case "alter-variable":
 					await PersonaVariables.alterVariable(otherEffect, actor);
+					break;
+				case "perma-buff":
+					await actor.addPermaBuff(otherEffect.buffType, otherEffect.value ?? 0);
 					break;
 				default:
 					otherEffect satisfies never;

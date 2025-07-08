@@ -806,6 +806,8 @@ export class ConditionalEffectManager {
 				return `Alter Fatigue Level ${cons.amount}`;
 			case "alter-variable":
 				return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${cons.value}`;
+			case "perma-buff":
+				return `Add Permabuff ${cons.buffType} :${cons.value}`;
 			default:
 				cons satisfies never;
 				return "ERROR";

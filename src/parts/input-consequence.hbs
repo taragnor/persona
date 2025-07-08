@@ -349,6 +349,16 @@
 	</select>
 
 	{{/if}}
+
+	{{#if (eq cons.type "perma-buff")}}
+	<span>
+		<input class="short" type=number name="{{strcat namePrefix 'value'}}" value="{{cons.value}}">
+	</span>
+	<select name="{{strcat namePrefix 'buffType'}}">
+		{{selectOptions POWERSTUFF.PERMA_BUFFS localize=true selected=cons.buffType}}
+	</select>
+	{{/if}}
+
 	<div>
 		<a class="copy-consequence">
 			<i class="fa-solid fa-copy"></i>

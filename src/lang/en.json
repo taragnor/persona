@@ -546,6 +546,7 @@
 	"persona.effecttypes.social-card-action": "Social Card Action",
 	"persona.effecttypes.dungeon-action": "Dungeon Action",
 	"persona.effecttypes.alter-variable": "Alter Variable",
+	"persona.effecttypes.perma-buff": "Permanent Buff",
 
 	"persona.effecttypes.social-card.stop-execution": "Stop Card Execution",
 	"persona.effecttypes.social-card.exec-event": "Execute Event",
@@ -971,6 +972,8 @@
 	"persona.comparison.tagType.roll": "Roll Tag",
 	"persona.comparison.tagType.weapon": "Weapon Tag",
 
+	"persona.permabuff.max-hp": "Max HP",
+	"persona.permabuff.max-mp": "Max MP",
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",

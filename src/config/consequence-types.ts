@@ -1,3 +1,4 @@
+import { PermaBuffType } from "./perma-buff-type.js";
 import { SocialCardAction } from "./effect-types.js";
 import { CardTag } from "./card-tags.js";
 import { VariableType } from "../module/persona-variables.js";
@@ -98,15 +99,6 @@ type ScanEffect = {
 	level: number,
 }
 
-// export type SocialCardActionEffect = {
-// 	type: "social-card-action",
-// 	action: SocialCardAction,
-// 	eventLabel: string | undefined,
-// 	amount: number | undefined,
-// 	studentSkill : StudentSkill | undefined,
-// 	// socialActor: UniversalActorAccessor<PC | Shadow>,
-// }
-
 export type AlterEnergyEffect = {
 	type: "alter-energy",
 	amount: number,
@@ -123,7 +115,7 @@ export type ExtraTurnEffect = {
 	activation: number,
 };
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence;
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence;
 ;
 
 export type StatusEffect = StatusEffect_Basic | StatusEffect_NonBasic;
@@ -189,9 +181,16 @@ type NonGenericConsequences = UsePowerConsequence
 	| SetFlagConsequence
 	| AddTagConsequence
 	| CombatEffectConsequence
-| FatigueConsequence
-| AlterVariableConsequence
+	| FatigueConsequence
+	| AlterVariableConsequence
+	| PermabuffConsequence
 ;
+
+export type PermabuffConsequence = {
+	type: "perma-buff",
+	buffType: PermaBuffType,
+	value: number,
+}
 
 export type AlterVariableConsequence = {
 	type: "alter-variable",

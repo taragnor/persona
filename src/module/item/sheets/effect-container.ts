@@ -1,3 +1,4 @@
+import { PERMA_BUFFS } from "../../../config/perma-buff-type.js";
 import { WEAPON_TAGS } from "../../../config/equipment-tags.js";
 import { NUMERIC_V2_ACTOR_STATS } from "../../../config/numeric-comparison.js";
 import { NUMERIC_V2_COMPARISON_TARGETS } from "../../../config/numeric-comparison.js";
@@ -149,6 +150,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			COMBAT_EFFECTS,
 			RESULT_SUBTYPE_COMPARISON,
 			COMPARISON_GROUPS,
+			PERMA_BUFFS,
 			TAG_COMPARISON_TYPES,
 			VARIABLE_TYPE,
 			UNIVERSAL_MODIFIERS_TYPE,

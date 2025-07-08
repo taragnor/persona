@@ -1877,6 +1877,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "teach-power":
 			case "combat-effect":
 			case "alter-variable":
+			case "perma-buff":
 			case "alter-fatigue-lvl":
 				return [{applyTo,cons}];
 			case "display-msg":
@@ -1912,6 +1913,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					console.log("Warning: can't expend item, no sourceItem");
 					return [];
 				}
+
 			default:
 				cons satisfies never;
 				break;
