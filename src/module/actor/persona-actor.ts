@@ -1,3 +1,5 @@
+import { PersonaSFX } from "../combat/persona-sfx.js";
+import { PERMA_BUFFS } from "../../config/perma-buff-type.js";
 import { PermaBuffType } from "../../config/perma-buff-type.js";
 import { Trigger } from "../../config/triggers.js";
 import { PersonaRoller } from "../persona-roll.js";
@@ -76,7 +78,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	cache: {
 		tarot: Tarot | undefined;
 		complementRating: Map<Shadow["id"], number>;
-		triggers: U<ModifierContainer[]>;
+		// triggers: U<ModifierContainer[]>;
 	};
 
 	constructor(...arr: any[]) {
@@ -88,7 +90,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		this.cache = {
 			tarot: undefined,
 			complementRating: new Map(),
-			triggers: undefined,
+			// triggers: undefined,
 		}
 	}
 
@@ -2660,10 +2662,7 @@ get triggers() : ModifierContainer[] {
 		case "pc":
 		case "shadow":
 		case "npcAlly":
-			if (this.cache.triggers == undefined) {
-				this.cache.triggers = (this as ValidAttackers).mainModifiers().filter( x=> x.hasTriggeredEffects(this));
-			}
-			return this.cache.triggers;
+			return (this as ValidAttackers).mainModifiers().filter( x=> x.hasTriggeredEffects(this));
 		default:
 			this.system satisfies never;
 			return [];
@@ -3644,6 +3643,7 @@ get isTrueOwner() : boolean {
 }
 
 async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) {
+	if (typeof amt != "number" || amt == 0 || !Number.isNaN(amt)) return;
 	switch (buffType) {
 		case "max-hp": {
 			const newHP = this.system.combat.bonusHP + amt;
@@ -3657,7 +3657,11 @@ async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) {
 		}
 		default:
 			buffType satisfies never;
+			return;
 	}
+	const permaBuffLocalized = localize(PERMA_BUFFS[buffType]);
+	PersonaSFX.onPermaBuff(this, buffType, amt);
+	Logger.sendToChat(`+${amt} ${permaBuffLocalized} applied to ${this.name}`);
 }
 
 }

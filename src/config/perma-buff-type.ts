@@ -1,4 +1,4 @@
-import { HTMLTools } from "../module/utility/HTMLTools";
+import { HTMLTools } from "../module/utility/HTMLTools.js";
 
 export const PERMA_BUFF_LIST = [
 	"max-hp",

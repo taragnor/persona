@@ -80,6 +80,10 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 			if (PersonaSettings.debugMode() == true) {
 				return false;
 			} else return true;
+		case "diagnostic": {
+			debugger;
+			return true;
+		}
 		default:
 			condition satisfies never;
 			PersonaError.softFail(`Unexpected Condition: ${(condition as any)?.type}`);

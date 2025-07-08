@@ -412,6 +412,8 @@ export class ConditionalEffectManager {
 				return "Disabled on Debug Mode"
 			case "numeric-v2":
 				return NumericV2.prettyPrintCondition(cond);
+			case "diagnostic":
+				return "Diagnostic breakpoint";
 			default:
 				cond satisfies never;
 				PersonaError.softFail(`Unknown type ${(cond as any)?.type}`);
