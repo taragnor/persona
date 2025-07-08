@@ -27,6 +27,7 @@ export const CONSQUENCELIST = [
 	"alter-energy",
 	"dungeon-action",
 	"perma-buff",
+	"play-sound",
 	"raise-status-resistance", // functions as raise and lower
 	"raise-resistance",
 	"lower-resistance",

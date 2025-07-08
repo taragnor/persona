@@ -1874,6 +1874,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "alter-energy":
 			case "alter-mp":
 				case "extraTurn":
+			case "play-sound":
 			case "teach-power":
 			case "combat-effect":
 			case "alter-variable":

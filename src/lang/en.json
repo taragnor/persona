@@ -547,6 +547,7 @@
 	"persona.effecttypes.dungeon-action": "Dungeon Action",
 	"persona.effecttypes.alter-variable": "Alter Variable",
 	"persona.effecttypes.perma-buff": "Permanent Buff",
+	"persona.effecttypes.play-sound": "Play Sound",
 
 	"persona.effecttypes.social-card.stop-execution": "Stop Card Execution",
 	"persona.effecttypes.social-card.exec-event": "Execute Event",

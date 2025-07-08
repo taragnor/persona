@@ -810,6 +810,8 @@ export class ConditionalEffectManager {
 				return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${cons.value}`;
 			case "perma-buff":
 				return `Add Permabuff ${cons.buffType} :${cons.value}`;
+			case "play-sound":
+				return `Play Sound: ${cons.soundSrc} (${cons.volume})`;
 			default:
 				cons satisfies never;
 				return "ERROR";

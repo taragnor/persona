@@ -1,3 +1,4 @@
+import { PersonaSounds } from "../persona-sounds.js";
 import { RollSituation } from "../../config/situation.js";
 import { PersonaVariables } from "../persona-variables.js";
 import { TriggeredEffect } from "../triggered-effect.js";
@@ -468,6 +469,9 @@ export class CombatResult  {
 				if (!effect) break;
 				effect.otherEffects.push(cons);
 				break;
+			case "play-sound":
+				this.globalOtherEffects.push(cons);
+				break;
 			default: {
 				cons satisfies never;
 				throw new Error("Should be unreachable");
@@ -750,6 +754,9 @@ export class CombatResult  {
 				case "dungeon-action":
 					await Metaverse.executeDungeonAction(eff);
 					break;
+				case "play-sound":
+					await PersonaSounds.playFile(eff.soundSrc, eff.volume ?? 1.0);
+					break;
 				case "display-message":
 					if (!eff.newChatMsg) break;
 					const html = eff.msg;
@@ -845,6 +852,7 @@ export class CombatResult  {
 				case "alter-fatigue-lvl":
 				case "perma-buff":
 				case "alter-variable":
+				case "play-sound":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -1006,8 +1014,11 @@ export class CombatResult  {
 				case "perma-buff":
 					await actor.addPermaBuff(otherEffect.buffType, otherEffect.value ?? 0);
 					break;
+				case "play-sound":
+						await PersonaSounds.playFile(otherEffect.soundSrc);
+					break;
 				default:
-					otherEffect satisfies never;
+						otherEffect satisfies never;
 			}
 		}
 		if (mpcost != 0 && actor.system.type != "shadow") {

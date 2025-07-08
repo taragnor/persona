@@ -115,7 +115,7 @@ export type ExtraTurnEffect = {
 	activation: number,
 };
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence;
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence	| PlaySoundConsequence
 ;
 
 export type StatusEffect = StatusEffect_Basic | StatusEffect_NonBasic;
@@ -184,7 +184,15 @@ type NonGenericConsequences = UsePowerConsequence
 	| FatigueConsequence
 	| AlterVariableConsequence
 	| PermabuffConsequence
+	| PlaySoundConsequence
 ;
+
+
+export type PlaySoundConsequence = {
+	type: "play-sound",
+	volume: number,
+	soundSrc: string,
+}
 
 export type PermabuffConsequence = {
 	type: "perma-buff",
