@@ -27,8 +27,12 @@ CONFIG.Wall.doorSounds["doomDoor"] = DoomDoor;
 
 export class PersonaSFX {
 
-	static async onDamage( _token: PToken | undefined, hpchange: number, damageType: RealDamageType) {
+	static async onDamage( _token: PToken | undefined, hpchange: number, damageType: RealDamageType, power ?: UsableAndCard) {
 		if (hpchange == 0) return;
+		if (power?.hasTag("resurrection")) {
+			await this.#play("raise");
+			return;
+		}
 		if (hpchange > 0) {
 			if (damageType == "healing") {
 				await this.#play("heal");

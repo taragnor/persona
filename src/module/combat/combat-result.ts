@@ -886,7 +886,7 @@ export class CombatResult  {
 			if (token) {
 				const power = this.power;
 				if (power && !power.isAoE()) {
-					await PersonaSFX.onDamage(token, change.hpchange, change.damageType);
+					await PersonaSFX.onDamage(token, change.hpchange, change.damageType, power);
 				}
 				Hooks.callAll("onTakeDamage", token, change.hpchange, change.damageType);
 			}
