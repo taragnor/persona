@@ -2889,7 +2889,7 @@ async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll
 	.join("");
 	const html = `<h3 class="init-rolls"> Initiative Rolls </h3> ${rolltxt}`;
 	const chatMessage: MessageData<R> = {
-		speaker: {},
+		speaker: {alias: "Combat Start"},
 		content: html,
 		rolls: rolls.map(x=> x.roll),
 	}
