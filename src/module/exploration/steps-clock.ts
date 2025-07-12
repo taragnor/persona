@@ -1,7 +1,7 @@
 import { ProgressClock } from "../utility/progress-clock.js";
 
 const STEPS_CLOCK_NAME = "Metaverse Turns Taken";
-const STEPS_CLOCK_MAX = 200;
+const STEPS_CLOCK_MAX = 120;
 
 export class StepsClock extends ProgressClock {
 	static _instance: StepsClock;
@@ -18,6 +18,7 @@ export class StepsClock extends ProgressClock {
 	static init() {
 		this._instance = new StepsClock();
 		this._instance.setGMOnly(true);
+		this._instance.hide();
 	}
 }
 
@@ -27,5 +28,5 @@ Hooks.on("ready", () => {
 
 
 Hooks.on("exitMetaverse", () => {
-		StepsClock.instance.set(0);
-	});
+	StepsClock.instance.set(0);
+});
