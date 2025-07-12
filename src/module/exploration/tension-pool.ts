@@ -20,6 +20,7 @@ export class TensionPool extends ProgressClock {
 
 	 static init() {
 		 this._instance = new TensionPool();
+		 this._instance.setHideOnZero(true);
 	 }
 
 	 async rollAuto() {

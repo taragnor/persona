@@ -12,6 +12,7 @@ declare global {
 interface ClockMetaData  {
 	cyclic ?: boolean;
 	hideOnZero ?: boolean;
+	gmOnly?: boolean;
 }
 
 interface MetaObject {
@@ -144,6 +145,10 @@ export  class ProgressClock {
 		return this.meta.hideOnZero ?? false;
 	}
 
+	gmOnly(): boolean {
+		return this.meta.gmOnly ?? false;
+	}
+
 	setCyclic(isCyclic: boolean) {
 		const m = this.meta;
 		m.cyclic = isCyclic;
@@ -156,12 +161,20 @@ export  class ProgressClock {
 		this.meta = m;
 	}
 
+	setGMOnly(hide: boolean) {
+		const m = this.meta;
+		m.gmOnly = hide;
+		this.meta = m;
+	}
+
+
 	setMax(newMax: number) {
 		const clk = this.#getClock();
 		if (!clk) return;
 		clk.max = newMax;
 		window.clockDatabase!.update(clk);
 	}
+
 
 	get meta(): ClockMetaData {
 		const cl = this.#getClock();
@@ -215,6 +228,7 @@ export  class ProgressClock {
 	async hide() {
 		const clock = this.#getClock();
 		if (!clock) return;
+		if (clock.private == true) return;
 		clock.private = true;
 		window.clockDatabase!.update(clock);
 	}
@@ -222,6 +236,7 @@ export  class ProgressClock {
 	async show() {
 		const clock = this.#getClock();
 		if (!clock) return;
+		if (clock.private == false) return;
 		clock.private = false;
 		window.clockDatabase!.update(clock);
 	}
@@ -253,6 +268,10 @@ export  class ProgressClock {
 	}
 
 	async onUpdate() {
+		if (this.gmOnly()) {
+			await this.hide();
+			return;
+		}
 		if (this.hideOnZero() && this.amt == 0) {
 			await this.hide();
 		} else {

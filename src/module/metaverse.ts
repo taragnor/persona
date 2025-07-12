@@ -1,3 +1,5 @@
+import { StepsClock } from "./exploration/steps-clock.js";
+import { DoomsdayClock } from "./exploration/doomsday-clock.js";
 import { SceneClock } from "./exploration/scene-clock.js";
 import { PersonaSFX } from "./combat/persona-sfx.js";
 import { TriggeredEffect } from "./triggered-effect.js";
@@ -484,10 +486,13 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 				await TensionPool.instance.add(action.amount);
 				break;
 			case "modify-clock": {
-				debugger;
 				const clock = ProgressClock.getClock(action.clockId);
 				if (!clock) {
 					PersonaError.softFail(`Can't find clock id ${action.clockId}`);
+					return;
+				}
+				if (clock == DoomsdayClock.instance) {
+					PersonaError.softFail("Can't modify doomsday clock via dungeon action");
 					return;
 				}
 				await clock.add(action.amount);
@@ -503,6 +508,10 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 				const clock = ProgressClock.getClock(action.clockId);
 				if (!clock) {
 					PersonaError.softFail(`Can't find clock id ${action.clockId}`);
+					return;
+				}
+				if (clock == DoomsdayClock.instance) {
+					PersonaError.softFail("Can't modify doomsday clock via dungeon action");
 					return;
 				}
 				await clock.set(action.amount);
@@ -566,6 +575,7 @@ static async #passMetaverseTurn() {
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 		});
 	}
+	await StepsClock.instance.inc();
 	await TriggeredEffect.onTrigger("on-metaverse-turn")
 		.emptyCheck()
 		?.autoApplyResult();
