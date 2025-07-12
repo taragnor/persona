@@ -264,9 +264,7 @@ export class PersonaScene extends Scene {
 			await sleep(250);
 		}
 	}
-
 }
-
 
 Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
 	if (!game.user.isGM) return;
