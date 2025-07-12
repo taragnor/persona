@@ -1,3 +1,4 @@
+import { SeededRandom } from "../utility/seededRandom.js";
 import { PersonaSFX } from "../combat/persona-sfx.js";
 import { PersonaDB } from "../persona-db.js";
 import { sleep } from "../utility/async-wait.js";
@@ -155,14 +156,15 @@ export class PersonaCalendar {
 	static determineWeather( date: Readonly<CalendarDate>) : WeatherType {
 		const {day, month, year} = date;
 		const str = `${year}-${day}-${month}`;
-		const hash = this.hash(str);
-		const rand = 2 + (hash[0] % 6) + (hash[1] % 6) ;
+		const rng = new SeededRandom(str);
+		// const hash = this.hash(str);
+		const rand = rng.die(2,6);
+		// const rand = 2 + (hash[0] % 6) + (hash[1] % 6) ;
 		let prevWeather :WeatherType = "cloudy";
 		if (rand > 10) {
 			prevWeather = this.determineWeather(this.#calcPrevDay(date));
 		}
 		const currWeather = this.#weatherCompute(rand, prevWeather);
-		// await this.setWeather(currWeather);
 		return currWeather;
 	}
 
@@ -205,6 +207,7 @@ export class PersonaCalendar {
 		console.log(weatherTypes);
 	}
 
+	//returns the day after the current date
 	static #calcNextDay (date: Readonly<CalendarDate>) : CalendarDate {
 		const months = window.SimpleCalendar?.api.getAllMonths();
 		if (!months) throw new PersonaError("Calendar Module not loaded");
@@ -239,55 +242,22 @@ export class PersonaCalendar {
 		return {day, month, year};
 	}
 
-	static hash(str: string) {
-		let h1 = 1779033703, h2 = 3144134277,
-		h3 = 1013904242, h4 = 2773480762;
-		for (let i = 0, k; i < str.length; i++) {
-			k = str.charCodeAt(i);
-			h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
-			h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
-			h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
-			h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
-		}
-		h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
-		h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
-		h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
-		h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
-		h1 ^= (h2 ^ h3 ^ h4), h2 ^= h1, h3 ^= h1, h4 ^= h1;
-		return [h1>>>0, h2>>>0, h3>>>0, h4>>>0];
-	}
-
-	// static async randomizeWeather() : Promise<Roll> {
-	// 	const roll = new Roll("2d6");
-	// 	await roll.roll();
-	// 	const season = window.SimpleCalendar!.api.getCurrentSeason().name;
-	// 	let weather : WeatherType;
-	// 	const currentWeather = this.getWeather();
-	// 	switch (roll.total) {
-	// 		case 2: weather = "lightning"; break;
-	// 		case 3: weather = "rain"; break;
-	// 		case 4: weather = "rain"; break;
-	// 		case 5: weather = "sunny"; break;
-	// 		case 6: weather = "sunny"; break;
-	// 		case 7: weather = "cloudy"; break;
-	// 		case 8: weather = "cloudy"; break;
-	// 		case 9: weather = "cloudy"; break;
-	// 		case 10: weather = "rain"; break;
-	// 		case 11:
-	// 			weather = currentWeather == "rain" || currentWeather == "lightning" ? "fog" : "windy";
-	// 			break;
-	// 		case 12:
-	// 			weather = currentWeather == "rain" || currentWeather == "lightning" ? "fog" : "lightning";
-	// 			break;
-	// 		default:
-	// 			PersonaError.softFail(`Odd Weather Result ${roll.total}`);
-	// 			weather = "cloudy";
+	// static hash(str: string) {
+	// 	let h1 = 1779033703, h2 = 3144134277,
+	// 	h3 = 1013904242, h4 = 2773480762;
+	// 	for (let i = 0, k; i < str.length; i++) {
+	// 		k = str.charCodeAt(i);
+	// 		h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+	// 		h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+	// 		h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+	// 		h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
 	// 	}
-	// 	if (season == "Winter" && weather == "rain") {
-	// 		weather = "snow";
-	// 	}
-	// 	await this.setWeather(weather);
-	// 	return roll;
+	// 	h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+	// 	h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+	// 	h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+	// 	h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+	// 	h1 ^= (h2 ^ h3 ^ h4), h2 ^= h1, h3 ^= h1, h4 ^= h1;
+	// 	return [h1>>>0, h2>>>0, h3>>>0, h4>>>0];
 	// }
 
 	static getWeather() : WeatherType {

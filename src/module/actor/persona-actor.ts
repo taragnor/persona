@@ -1,3 +1,4 @@
+import { SeededRandom } from "../utility/seededRandom.js";
 import { PersonaSFX } from "../combat/persona-sfx.js";
 import { PERMA_BUFFS } from "../../config/perma-buff-type.js";
 import { PermaBuffType } from "../../config/perma-buff-type.js";
@@ -2575,7 +2576,7 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 	}
 }
 
-async levelUp(this: PC | NPCAlly) : Promise<void> {
+async levelUp_full(this: ValidAttackers) : Promise<void> {
 	const newlevel  = this.system.combat.classData.level+1 ;
 	await this.resetIncrementals();
 	await this.update({
@@ -2852,6 +2853,52 @@ async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
 	}
 	await this.update({"system.combat.xp" : newxp});
 	return levelUp;
+}
+
+async levelUp_Incremental(this: ValidAttackers) {
+	if (this.isPC()) return;
+	const incData = this.system.combat.classData.incremental;
+	const incrementals = Object.keys(incData) as (keyof typeof incData)[];
+	const filtered = incrementals.filter ((incChoice: keyof typeof incData)=> !this.isIncrementalMaxed(incChoice));
+	if (filtered.length > 0) {
+		const favored = this.system.combat.classData.favoredIncremental ?? "";
+		if (favored && filtered.includes(favored)) {
+			filtered.push(favored, favored, favored); // make the favored upgrade more likely;
+		}
+		const rng = new SeededRandom((this.tarot?.name ?? "UNKNOWN TAROT") + String(this.numOfIncAdvances()));
+		const result = rng.randomArraySelect(filtered);
+		if (!result) {
+			PersonaError.softFail("Can't find Incremental to Level, error with random Array selection");
+			return;
+		}
+		if ( typeof incData[result] == "boolean") {
+			//@ts-expect-error
+			incData[result] = true;
+		}
+		if (typeof incData[result] == "number") {
+			//@ts-expect-error
+			incData[result] = incData[result] +  1;
+		}
+
+		await this.update( {"system.combat.classData.incremental": incData});
+		const msg = `${this.name} upgraded ${result} to ${incData[result]}`;
+		console.log(msg);
+		if (this.hasPlayerOwner) {
+			Logger.sendToChat(msg);
+		}
+	}
+}
+
+isIncrementalMaxed( this: ValidAttackers,  incremental:  keyof ValidAttackers["system"]["combat"]["classData"]["incremental"]): boolean {
+	const incValue = this.system.combat.classData.incremental[incremental];
+	if (typeof incValue == "boolean") return incValue;
+	//@ts-ignore
+	const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incremental] as {max ?: number};
+	if (x.max)
+	return incValue >= x.max ;
+	const msg = `Unknown Max incremental for ${incremental}`;
+	PersonaError.softFail(msg);
+	return true;
 }
 
 XPValue(this: Shadow) : number {

@@ -27,6 +27,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
+		html.find(".levelUp").on("click", this.levelUp.bind(this));
 		html.find(".delPower").on("click", this.deletePower.bind(this));
 		html.find(".delFocus").on("click", this.deleteFocus.bind(this));
 		html.find(".delTalent").on("click", this.deleteTalent.bind(this));
@@ -43,6 +44,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".incremental-advance-block .attack .add").on("click", this.addIncremental_attack.bind(this));
 		html.find(".incremental-advance-block .defense .add").on("click", this.addIncremental_defense.bind(this));
 		html.find(".incremental-advance-block .initiative .add").on("click", this.addIncremental_initiative.bind(this));
+		html.find("button.random-incremental").on("click", this.randomIncremental.bind(this));
 
 	}
 
@@ -325,6 +327,19 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 			}
 		}
+	}
+
+	async randomIncremental(_ev: JQuery.ClickEvent) {
+		await this.actor.levelUp_Incremental();
+
+	}
+
+	async levelUp(_event: Event) {
+		if (!game.user.isGM) return;
+		if (await HTMLTools.confirmBox("Level Up", "Level Up Character")) {
+			await this.actor.levelUp_full();
+		}
+
 	}
 
 }

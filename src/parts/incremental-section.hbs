@@ -22,6 +22,26 @@
 </div>
 <hr>
 
+{{#if (isGM)}}
+<div class="favored">
+	<label>
+		Favored
+	</label>
+	<select name="system.combat.classData.favoredIncremental">
+		{{selectOptions (favoredIncrementalTypes actor) localize=true selected=actor.system.combat.classData.favoredIncremental}}
+	</select>
+
+</div>
+
+<div class>
+	<button class="random-incremental">
+		Random Incremental
+	</button>
+</div>
+
+
+{{/if}}
+
 <div class="incremental-advance-block">
 	<div class="hp">
 		<label>

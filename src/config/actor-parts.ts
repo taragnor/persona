@@ -144,17 +144,24 @@ export const classData = function () {
 	return  new sch( {
 		level: new num({min: 0, max: 10, initial: 1, integer:true}),
 		classId: new id(),
-		incremental: new sch ({
-			hp: new num({integer: true, initial: 0, max: 3}),
-			mp: new num({integer: true, initial: 0, max: 3}),
-			attack: new num({integer: true, initial: 0, max: 2}),
-			defense: new num({integer: true, initial: 0, max: 2}),
-			magicLow: new bool(),
-			magicHigh: new bool(),
-			talent: new bool(),
-			wpnDamage: new num({integer: true, initial: 0, max: 2}),
-			initiative: new num({integer: true, initial: 0, max: 3}),
-		}),
+		favoredIncremental: new txt<incrementalTypes | "">({initial: ""}),
+		incremental: incremental(),
+	});
+}
+
+type incrementalTypes = ReturnType<typeof incremental> extends SchemaField<infer T> ? keyof T : never;
+
+function incremental() {
+	return  new sch ({
+		hp: new num({integer: true, initial: 0, max: 3}),
+		mp: new num({integer: true, initial: 0, max: 3}),
+		attack: new num({integer: true, initial: 0, max: 2}),
+		defense: new num({integer: true, initial: 0, max: 2}),
+		magicLow: new bool(),
+		magicHigh: new bool(),
+		talent: new bool(),
+		wpnDamage: new num({integer: true, initial: 0, max: 2}),
+		initiative: new num({integer: true, initial: 0, max: 3}),
 	});
 }
 

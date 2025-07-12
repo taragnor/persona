@@ -42,7 +42,6 @@ export class PCLikeSheet extends CombatantSheetBase {
 		super.activateListeners(html);
 		html.find(".delItem").on("click", this.delItem.bind(this));
 		html.find(".addItem").on("click", this.#addItem.bind(this));
-		html.find(".levelUp").on("click", this.levelUp.bind(this));
 		html.find(".equips select").on("change", this.equipmentChange.bind(this));
 		html.find(".sort-up").on("click", this.reorderPowerUp.bind(this));
 		html.find(".sort-down").on("click", this.reorderPowerDown.bind(this));
@@ -62,12 +61,6 @@ export class PCLikeSheet extends CombatantSheetBase {
 		this.actor.createNewItem();
 	}
 
-	async levelUp(_event: Event) {
-		if (await HTMLTools.confirmBox("Level Up", "Level Up Character")) {
-			await this.actor.levelUp();
-		}
-
-	}
 
 	async equipmentChange(event: JQuery.ChangeEvent) {
 		const div = $(event.currentTarget).parent();

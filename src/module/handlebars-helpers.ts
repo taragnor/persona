@@ -605,7 +605,13 @@ export class PersonaHandleBarsHelpers {
 			return actor.isTrueOwner;
 
 		},
-	}
 
+		"favoredIncrementalTypes": function (actor: ValidAttackers): Record<string, string> {
+			const keys = Object.keys(actor.system.combat.classData.incremental);
+			return	Object.fromEntries(
+				["", ...keys].map( x=> [x, x])
+			);
+		},
+	}
 
 } //end of class

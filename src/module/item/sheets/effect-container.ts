@@ -97,7 +97,6 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 		const DAMAGETYPESPLUS = {
 			...DAMAGETYPES,
 		};
-
 		this._powerStuffBase = {
 			NUMERIC_V2_ACTOR_STATS,
 			DAYS_LIST,
