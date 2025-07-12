@@ -484,6 +484,7 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 				await TensionPool.instance.add(action.amount);
 				break;
 			case "modify-clock": {
+				debugger;
 				const clock = ProgressClock.getClock(action.clockId);
 				if (!clock) {
 					PersonaError.softFail(`Can't find clock id ${action.clockId}`);

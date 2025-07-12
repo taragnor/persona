@@ -1571,7 +1571,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		for (const cons of consList) {
 			if (cons.applyTo == "global") {
 				result.addEffect(atkResult, undefined, cons.cons);
-				return result;
+				continue;
 			}
 			const effectiveTargets = PersonaCombat.resolveEffectiveTargets(cons.applyTo, situation, attacker, target, cons.cons);
 			for (const target of effectiveTargets) {
