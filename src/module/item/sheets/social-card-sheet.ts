@@ -169,8 +169,8 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 	async deleteCardEvent( ev: JQuery.ClickEvent) {
 		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
 		this.focusedEvent = undefined;
-		this.element.find(".event-index").show();
-		this.element.find(".card-event").hide();
+		this.element.find(".event-index").show().addClass("hidden");
+		this.element.find(".card-event").hide().removeClass("hidden");
 		await this.item.deleteCardEvent(eventIndex);
 	}
 
@@ -211,18 +211,18 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
 		this.focusedEvent = eventIndex;
 
-		this.element.find(".event-index").hide();
+		this.element.find(".event-index").hide().addClass("hidden");
 		this.element.find(".card-event").each( function () {
 			const elem = $(this);
 			const index = Number(HTMLTools.getClosestData(elem, "eventIndex"));
-			if (index != eventIndex) {elem.hide();} else {elem.show();}
+			if (index != eventIndex) {elem.hide().addClass("hidden");} else {elem.show().removeClass("hidden");}
 		});
 	}
 
 	async goBackEventList(_ev: JQuery.ClickEvent) {
 		this.focusedEvent = undefined;
-		this.element.find(".event-index").show();
-		this.element.find(".card-event").hide();
+		this.element.find(".event-index").show().removeClass("hidden");
+		this.element.find(".card-event").hide().addClass("hidden");
 	}
 
 } // end of class

@@ -1012,6 +1012,7 @@ export class CombatResult  {
 					await PersonaVariables.alterVariable(otherEffect, actor);
 					break;
 				case "perma-buff":
+					debugger;
 					await actor.addPermaBuff(otherEffect.buffType, otherEffect.value ?? 0);
 					break;
 				case "play-sound":

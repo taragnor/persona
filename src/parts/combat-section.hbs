@@ -7,14 +7,23 @@
 				</label>
 				<span>
 					{{#if (isGM)}}
-					<input class="short" type="number" name="system.combat.hp" value="{{actor.hp}}">
+					<span class="hp-main">
+						<input class="short" type="number" name="system.combat.hp" value="{{actor.hp}}">
+					</span>
 					{{else}}
-					{{actor.hp}}
+					<span class="hp-main">
+						{{actor.hp}}
+					</span>
 					{{/if}}
 				</span>
-				<span>
+				<span class="max-hp">
 					/ {{actor.mhp}}
 				</span>
+				{{#if actor.system.combat.bonusHP}}
+				<span class="bonus-HP">
+					(+ {{actor.system.combat.bonusHP}})
+				</span>
+				{{/if}}
 			</div>
 			{{#if (hasMP actor)}}
 			<div class="mp">
@@ -29,6 +38,11 @@
 				<span>
 					/ {{actor.mmp}}
 				</span>
+					{{#if actor.system.combat.bonusMP}}
+				<span class="bonus-MP">
+					(+ {{actor.system.combat.bonusMP}})
+				</span>
+					{{/if}}
 			</div>
 			{{/if}}
 		</div>

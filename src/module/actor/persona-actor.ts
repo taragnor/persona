@@ -2852,6 +2852,10 @@ async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
 		levelUp = true;
 	}
 	await this.update({"system.combat.xp" : newxp});
+	if (levelUp ) {
+		if (this.isNPCAlly() || this.isShadow())
+			await this.levelUp_Incremental();
+	}
 	return levelUp;
 }
 
@@ -3690,7 +3694,7 @@ get isTrueOwner() : boolean {
 }
 
 async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) {
-	if (typeof amt != "number" || amt == 0 || !Number.isNaN(amt)) return;
+	if (typeof amt != "number" || amt == 0 || Number.isNaN(amt)) return;
 	switch (buffType) {
 		case "max-hp": {
 			const newHP = this.system.combat.bonusHP + amt;

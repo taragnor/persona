@@ -766,10 +766,6 @@ form h5 {
 	margin-left: 5px;
 }
 
-.hidden {
-	display: none;
-}
-
 .event-index .name {
 	font-weight: bold;
 	font-size: larger;
@@ -824,6 +820,10 @@ span.skill-card img {
 	margin-bottom: 8px;  /* optional: spacing between image and text below */
 	max-width: 20%; /* optional: make it responsive */
 
+}
+
+.bonus-HP, .bonus-MP {
+	opacity: 60%;
 }
 
 .status-resists {
