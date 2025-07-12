@@ -282,6 +282,24 @@
 	</select>
 	{{/if}}
 
+	{{#if (eqAny cons.dungeonAction "rename-scene-clock")}}
+	<div>
+		<input class="new-name" id="new-name" type="text" name="{{strcat namePrefix 'clockNewName'}}" value="{{cons.clockNewName}}">
+	</div>
+	<div>
+		<label>
+			Cyclical
+		</label>
+		<input type="checkbox" name="{{strcat namePrefix 'cyclicClock'}}" {{checked cons.cyclicClock}}>
+	</div>
+	<div>
+		<label>
+			Hide on zero
+		</label>
+		<input type="checkbox" name="{{strcat namePrefix 'hideOnZero'}}" {{checked cons.hideOnZero}}>
+	</div>
+	{{/if}}
+
 	{{#if (eqAny cons.dungeonAction "modify-tension-pool" "modify-clock" "set-clock")}}
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 	{{/if}}

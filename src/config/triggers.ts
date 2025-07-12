@@ -24,6 +24,7 @@ export const NONCOMBAT_TRIGGER_LIST = [
 	"exit-metaverse",
 	"on-metaverse-turn",
 	"on-roll",
+	"on-active-scene-change",
 ] as const;
 
 export const TRIGGER_LIST = [

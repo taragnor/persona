@@ -9,21 +9,94 @@ declare global {
 
 }
 
+interface ClockMetaData  {
+	cyclic ?: boolean;
+	hideOnZero ?: boolean;
+}
+
+interface MetaObject {
+	meta: ClockMetaData
+}
+
 export  class ProgressClock {
 	static _clocks: Map<string, ProgressClock> = new Map();
 	static _ready = false;
 	clockName: string;
 	default_max: number;
-	#cyclic: boolean = false;
+	id: string;
 	#lastKnown: number;
 
-	constructor(name: string, max: number) {
+	constructor(id: string, name: string, max: number) {
+		this.id = id;
 		this.clockName = name;
 		this.default_max = max;
-		this.#cyclic = name.trim().toLowerCase().endsWith("(c)");
 		this.registerClock();
 	}
 
+	static async createNamedClock(name:string, max: number) : Promise<ProgressClock> {
+		while (!ProgressClock._ready) {
+			await sleep(1000);
+		}
+		const db = window.clockDatabase;
+		if (!db) {
+			throw new PersonaError("No clock database, is Global Progress Clocks enabled?");
+		}
+		let clock = db.getName(name);
+		if (!clock) {
+			db.addClock({
+				name: name,
+				value: 0,
+				max: max,
+			});
+			clock = db.getName(name)!;
+		}
+		return new ProgressClock(clock.id, clock.name, clock.max);
+	}
+
+	renameClock(newName: string) {
+		this.clockName = newName;
+		const cl = this.#getClock();
+		if (!cl) return;
+		cl.name = newName;
+		window.clockDatabase!.update(cl);
+	}
+
+	static getOrCreateClockByName(name: string, maxIfDoesntExist: number) {
+		const db = window.clockDatabase;
+		if (!db) throw new Error("No Clock database, is Global Progress Clocks Active?");
+		let cl = db.getName(name);
+		if (!cl) {
+			db.addClock({
+				name: name,
+				value: 0,
+				max: maxIfDoesntExist,
+			});
+			cl = db.getName(name);
+		}
+		if (!cl) {
+			throw new Error(`Couldn't create clock named ${name} for some reason`);
+		}
+		return cl;
+	}
+
+	static getOrCreateClockById(id: string, nameIfDoesntExist: string, maxIfDoesntExist: number) {
+		const db = window.clockDatabase;
+		if (!db) throw new Error("No Clock database, is Global Progress Clocks Active?");
+		let cl = db.get(id);
+		if (!cl) {
+			db.addClock({
+				name: nameIfDoesntExist,
+				value: 0,
+				max: maxIfDoesntExist,
+				id: id,
+			});
+			cl = db.get(id);
+		}
+		if (!cl) {
+			throw new Error(`Couldn't create clock ${id} for some reason`);
+		}
+		return cl;
+	}
 
 	async registerClock() {
 		while (!ProgressClock._ready) {
@@ -33,10 +106,6 @@ export  class ProgressClock {
 		if (!clock) return;
 		ProgressClock._clocks.set(clock.id, this);
 		this.#lastKnown = this.amt;
-	}
-
-	get id(): string {
-		return this.#getClock()!.id;
 	}
 
 	static async checkForUpdate() : Promise<void> {
@@ -62,13 +131,49 @@ export  class ProgressClock {
 		if (!clock) return undefined;
 		const pClock = this._clocks.get(clock.id);
 		if (pClock) return pClock;
-		else return new ProgressClock(clock.name, clock.max);
+		else return new ProgressClock(id, clock.name, clock.max);
 	}
+
 
 	/** returns true if it should start back at 0 once it overflows*/
 	isCyclical(): boolean {
-		return this.#cyclic;
+		return this.meta.cyclic ?? false;
 	}
+
+	hideOnZero(): boolean {
+		return this.meta.hideOnZero ?? false;
+	}
+
+	setCyclic(isCyclic: boolean) {
+		const m = this.meta;
+		m.cyclic = isCyclic;
+		this.meta = m;
+	}
+
+	setHideOnZero(hide: boolean) {
+		const m = this.meta;
+		m.hideOnZero = hide;
+		this.meta = m;
+
+	}
+
+	get meta(): ClockMetaData {
+		const cl = this.#getClock();
+		if (cl && "meta" in cl && typeof cl.meta == "object") {
+			return cl.meta as ClockMetaData;
+		}
+		return {};
+	}
+
+	set meta(metadata: ClockMetaData) {
+		const cl = this.#getClock();
+		if( cl) {
+			const cm = cl as {meta ?: ClockMetaData};
+			cm["meta"] = metadata;
+			window.clockDatabase!.update(cl);
+		}
+	}
+
 
 	get amt() : number {
 		const clock= this.#getClock()
@@ -136,9 +241,19 @@ export  class ProgressClock {
 	async reportChange(newAmt: number, oldAmt: number) : Promise<void> {
 		const delta = newAmt - oldAmt;
 		if (delta != 0) {
+			await this.onUpdate();
 			Hooks.callAll("updateClock", this, newAmt, delta);
 		}
 	}
+
+	async onUpdate() {
+		if (this.hideOnZero() && this.amt == 0) {
+			await this.hide();
+		} else {
+			await this.show();
+		}
+	}
+
 
 	async set(amt: number) : Promise<number> {
 		const oldVal = this.amt;
@@ -180,15 +295,14 @@ export  class ProgressClock {
 			PersonaError.softFail("No clock database, is Global Progress Clocks enabled?");
 			return undefined;
 		}
-
-		let clock = window.clockDatabase.getName(this.clockName);
+		let clock = window.clockDatabase.get(this.id);
 		if (!clock) {
 			window.clockDatabase.addClock({
 				name: this.clockName,
 				value: 0,
 				max: this.default_max,
 			});
-			clock = window.clockDatabase.getName("Doomsday Clock");
+			clock = window.clockDatabase.getName(this.clockName);
 		}
 		return clock;
 	}

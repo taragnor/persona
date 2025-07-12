@@ -1,4 +1,4 @@
-
+import { SceneClock } from "./exploration/scene-clock.js";
 import { PersonaSFX } from "./combat/persona-sfx.js";
 import { TriggeredEffect } from "./triggered-effect.js";
 import { Helpers } from "./utility/helpers.js";
@@ -42,7 +42,7 @@ export class Metaverse {
 			.forEach( (pc: PC | NPCAlly)=> pc.onEnterMetaverse());
 		(game.scenes.contents as PersonaScene[])
 			.forEach( sc => sc.onEnterMetaverse());
-		await TensionPool.clear();
+		await TensionPool.instance.clear();
 		Hooks.callAll("enterMetaverse");
 		await Logger.sendToChat(`Entering Metaverse...`);
 	}
@@ -53,7 +53,7 @@ export class Metaverse {
 			.forEach( (x: PC | NPCAlly) => x.onExitMetaverse());
 		const promises = game.scenes.contents.map(sc => (sc as PersonaScene).onExitMetaverse());
 		await Promise.allSettled(promises);
-		await TensionPool.clear();
+		await TensionPool.instance.clear();
 		Hooks.callAll("exitMetaverse");
 		await Logger.sendToChat(`Exiting Metaverse...`);
 	}
@@ -478,10 +478,10 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 		switch (action.dungeonAction) {
 			case "roll-tension-pool":
 				await TensionPool
-					.rollAuto();
+					.instance.rollAuto();
 				break;
 			case "modify-tension-pool":
-				await TensionPool.add(action.amount);
+				await TensionPool.instance.add(action.amount);
 				break;
 			case "modify-clock": {
 				const clock = ProgressClock.getClock(action.clockId);
@@ -507,6 +507,12 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 				await clock.set(action.amount);
 				break;
 			}
+			case "rename-scene-clock":
+				const clock = SceneClock.instance;
+				if (action.clockNewName) clock.renameClock(action.clockNewName);
+				clock.setCyclic(action.cyclicClock ?? false);
+				clock.setHideOnZero(action.hideOnZero ?? false);
+				break;
 			default:
 				action satisfies never;
 		}

@@ -1,9 +1,25 @@
 import { PersonaActor } from "../actor/persona-actor.js";
 import { ProgressClock } from "../utility/progress-clock.js";
+import { SceneClock } from "./scene-clock.js";
+import { LIGHT_LEVEL_CLOCK_NAME } from "./scene-clock.js";
+
 export class Darkness {
-	static lightClock= new ProgressClock("Light Level", 6);
+	// static lightClock= new ProgressClock(LIGHT_LEVEL_CLOCK_NAME, 6);
 	static lastLight = -1;
 
+	static clockName() { return LIGHT_LEVEL_CLOCK_NAME;}
+
+	static get lightClock() : ProgressClock | undefined {
+		const sceneClock = SceneClock.instance;
+		if (sceneClock.clockName == LIGHT_LEVEL_CLOCK_NAME)
+			return sceneClock;
+		else return undefined;
+	}
+
+	static get lightClockAmt() : number {
+		if (this.lightClock) return this.lightClock.amt;
+		return 0;
+	}
 
 	static init() {
 		if (!game.user.isGM) return;
@@ -16,20 +32,20 @@ export class Darkness {
 			this.updateLight();
 		});
 		Hooks.on("enterMetaverse", () => {
-			this.lightClock.set(0);
+			this.lightClock?.set(0);
 		});
 		Hooks.on("exitMetaverse", () => {
-			this.lightClock.set(0);
+			this.lightClock?.set(0);
 		});
 		// this.updateLightVisibility();
 		this.setListener();
 	}
 
 	static async updateClockVisibility() {
-		if (this.lightClock.amt > 0) {
-			await this.lightClock.show();
+		if (this.lightClockAmt > 0) {
+			await this.lightClock?.show();
 		} else {
-			await this.lightClock.hide();
+			await this.lightClock?.hide();
 		}
 	}
 
@@ -39,7 +55,7 @@ export class Darkness {
 	}
 
 	static updateLight() {
-		const clockVal = (this.lightClock.visible) ? this.lightClock.amt: 0;
+		const clockVal = (this.lightClock?.visible) ? this.lightClock.amt: 0;
 		if (clockVal != this.lastLight) {
 			this.lastLight = clockVal;
 			// const bright = clockVal * 0.5;

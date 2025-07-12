@@ -212,7 +212,7 @@ export class SearchMenu {
 		await PersonaCombat.onTrigger("on-search-end")
 			.emptyCheck()
 			?.autoApplyResult();
-		const {roll, result} = TensionPool.nullResult();
+		const {roll, result} = TensionPool.instance.nullResult();
 		if (roll) {
 			rolls.push(roll);
 		}
@@ -230,7 +230,7 @@ export class SearchMenu {
 		})
 		let inc = options.incTension;
 		while (inc--) {
-			await TensionPool.inc();
+			await TensionPool.instance.inc();
 		}
 		// if (!options.rollTension) return msg;
 		const isEncounter = await region.presenceCheck();
@@ -271,10 +271,10 @@ export class SearchMenu {
 
 	static async tensionPool(_guards: number, options: SearchOptions<typeof SearchMenu["template"]>) : Promise<TensionPoolResult> {
 		// if (!options.rollTension) return TensionPool.nullResult();
-		const tensionRoll =  await TensionPool.roll();
+		const tensionRoll =  await TensionPool.instance.roll();
 		let inc = options.incTension;
 		while (inc--) {
-			await TensionPool.inc();
+			await TensionPool.instance.inc();
 		}
 		return tensionRoll;
 

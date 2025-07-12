@@ -411,6 +411,7 @@ export type DungeonActionConsequence = {
 	GenericDungeonAction
 	| ClockDungeonActionCons
 	| WeatherChangeDungeonEvent
+	| AlterSceneClockProperties
 );
 
 type GenericDungeonAction = {
@@ -424,6 +425,13 @@ type ClockDungeonActionCons = {
 	dungeonAction: "modify-clock" | "set-clock",
 	clockId: string,
 	amount: number,
+}
+
+type AlterSceneClockProperties = {
+	dungeonAction: "rename-scene-clock",
+	clockNewName: string,
+	cyclicClock: boolean,
+	hideOnZero: boolean,
 }
 
 type WeatherChangeDungeonEvent = {

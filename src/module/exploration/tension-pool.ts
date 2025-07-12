@@ -5,10 +5,21 @@ import { ProgressClock } from "../utility/progress-clock.js";
 
 
 const TENSION_POOL_MAX = 8 as const;
+const TENSION_POOL_NAME = "Tension Pool";
 
- class TensionPoolClass extends ProgressClock {
+export class TensionPool extends ProgressClock {
+	 static _instance : TensionPool;
 	 constructor() {
-		 super ("Tension Pool", TENSION_POOL_MAX);
+		 const cl = ProgressClock.getOrCreateClockByName(TENSION_POOL_NAME, TENSION_POOL_MAX);
+		 super(cl.id, cl.name, cl.max);
+	 }
+
+	 static get instance() : TensionPool {
+		 return this._instance;
+	 }
+
+	 static init() {
+		 this._instance = new TensionPool();
 	 }
 
 	 async rollAuto() {
@@ -26,13 +37,13 @@ const TENSION_POOL_MAX = 8 as const;
 		 if (!roll.dice.some(dice => dice.values.some(v => v == 1))) {
 			 return new TensionPoolResult(roll, "none");
 		 }
-		 if (TensionPool.isMaxed())  {
+		 if (this.isMaxed())  {
 			 return new TensionPoolResult(roll, "reaper");
 		 }
 		 const sixes = roll.dice
 		 .flatMap( die=> die.total == 6 ? [die] : [])
 		 .length;
-		 await TensionPool.add(-sixes);
+		 await this.add(-sixes);
 		 this.generateEncounter();
 		 return new TensionPoolResult (roll, "battle");
 	 }
@@ -52,7 +63,9 @@ const TENSION_POOL_MAX = 8 as const;
 
  }
 
-export const TensionPool = new TensionPoolClass();
+Hooks.on("ready", () => {
+	TensionPool.init();
+});
 
 export class TensionPoolResult {
 	roll: Roll | undefined;
@@ -86,5 +99,3 @@ declare global {
 }
 
 export type EncounterResult ="ambush" | "battle" |"reaper" | "none" ;
-
-window.TensionPool = TensionPool;

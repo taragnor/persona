@@ -900,6 +900,9 @@ export class ConditionalEffectManager {
 				const clock = cons.clockId;
 				return `${clock} set to ${signedAmount}`;
 			}
+			case "rename-scene-clock": {
+				return `Change Scene Clock details`;
+			}
 			default:
 				cons satisfies never;
 				return "ERROR";

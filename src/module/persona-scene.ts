@@ -1,3 +1,4 @@
+import { TriggeredEffect } from "./triggered-effect.js";
 import { Logger } from "./utility/logger.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { sleep } from "./utility/async-wait.js";
@@ -267,13 +268,19 @@ export class PersonaScene extends Scene {
 }
 
 
-Hooks.on("updateScene", (_scene: PersonaScene, diff) => {
+Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
+	if (!game.user.isGM) return;
 	console.log("Update Scene Hook");
 	console.log(diff);
 	if (diff.active == true) {
 		if (game.combats.contents.some( (cmb: PersonaCombat) => cmb.isSocial)) {
 			Logger.gmMessage("Social Scene still active, consider ending it before starting metaverse activity");
 		}
+		await TriggeredEffect.onTrigger("on-active-scene-change")
+			.emptyCheck()
+			?.autoApplyResult();
 
 	}
 });
+
+

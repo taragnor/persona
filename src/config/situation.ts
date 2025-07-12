@@ -27,7 +27,7 @@ type TriggerSituation = TriggerSituation_base & (
 );
 
 type ExplorationTrigger = {
-	trigger: "on-open-door" | "on-search-end" | "on-attain-tarot-perk" | "enter-metaverse" | "exit-metaverse" | "on-metaverse-turn";
+	trigger: "on-open-door" | "on-search-end" | "on-attain-tarot-perk" | "enter-metaverse" | "exit-metaverse" | "on-metaverse-turn" | "on-active-scene-change";
 	triggeringCharacter?:  UniversalActorAccessor<ValidAttackers>;
 }
 

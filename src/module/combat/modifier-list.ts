@@ -156,7 +156,7 @@ export class ModifierList {
 					if (!game.combat) return acc;
 					return acc + (((game?.combat as PersonaCombat )?.getEscalationDie() ?? 0) * sign);
 				case "tensionPool":
-						return (TensionPool.amt ?? 0) * sign;
+						return (TensionPool.instance.amt ?? 0) * sign;
 				default:
 						varmod.variable satisfies never;
 			}

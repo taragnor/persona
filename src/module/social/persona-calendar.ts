@@ -1,3 +1,4 @@
+import { DoomsdayClock } from "../exploration/doomsday-clock.js";
 import { SeededRandom } from "../utility/seededRandom.js";
 import { PersonaSFX } from "../combat/persona-sfx.js";
 import { PersonaDB } from "../persona-db.js";
@@ -5,14 +6,16 @@ import { sleep } from "../utility/async-wait.js";
 import { PersonaSocial } from "./persona-social.js";
 import { localize } from "../persona.js";
 import { WEATHER_TYPES } from "../../config/weather-types.js";
-import { ProgressClock } from "../utility/progress-clock.js";
 import { WEATHER_TYPE_LIST } from "../../config/weather-types.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { WeatherType } from "../../config/weather-types.js";
 import { PersonaError } from "../persona-error.js";
 
 export class PersonaCalendar {
-	static DoomsdayClock = new ProgressClock("Doomsday Clock", 30);
+
+	static get DoomsdayClock() {
+		return DoomsdayClock.instance;
+	}
 
 	static weekday() : SimpleCalendar.WeekdayName {
 		if (!window.SimpleCalendar)
