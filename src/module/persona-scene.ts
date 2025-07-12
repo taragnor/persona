@@ -1,3 +1,4 @@
+import { PersonaSettings } from "../config/persona-settings.js";
 import { TriggeredEffect } from "./triggered-effect.js";
 import { Logger } from "./utility/logger.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
@@ -271,6 +272,7 @@ Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
 	console.log("Update Scene Hook");
 	console.log(diff);
 	if (diff.active == true) {
+		await PersonaSettings.set("lastRegionExplored", "" );
 		if (game.combats.contents.some( (cmb: PersonaCombat) => cmb.isSocial)) {
 			Logger.gmMessage("Social Scene still active, consider ending it before starting metaverse activity");
 		}

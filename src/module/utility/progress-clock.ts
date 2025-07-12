@@ -154,7 +154,13 @@ export  class ProgressClock {
 		const m = this.meta;
 		m.hideOnZero = hide;
 		this.meta = m;
+	}
 
+	setMax(newMax: number) {
+		const clk = this.#getClock();
+		if (!clk) return;
+		clk.max = newMax;
+		window.clockDatabase!.update(clk);
 	}
 
 	get meta(): ClockMetaData {

@@ -546,6 +546,8 @@ export class ConditionalEffectManager {
 				const c2= this.printConditional(cond.comparison2);
 				return `(${c1} OR ${c2})`
 			}
+			case "scene-clock-name-is":
+				return `Scene Clock is named ${cond.clockName}`;
 			default:
 				cond satisfies never
 				return "";

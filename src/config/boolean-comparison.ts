@@ -57,6 +57,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"cameo-in-scene",
 	"arcana-is",
 	"logical-or",
+	"scene-clock-name-is",
 	"has-creature-tag", // Deprecated
 ] as const;
 
@@ -79,12 +80,17 @@ export type BooleanComparisonPC = {
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison;
+StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison | SceneClockNameComparison;
 ;
 
 type GeneralActorComparison = {
 	boolComparisonTarget: "is-PC" | "is-shadow",
 	conditionTarget: ConditionTarget,
+}
+
+type SceneClockNameComparison = {
+	boolComparisonTarget: "scene-clock-name-is";
+	clockName: string;
 }
 
 type IsEnemyComparison = {

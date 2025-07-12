@@ -1,3 +1,4 @@
+import { SceneClock } from "./exploration/scene-clock.js";
 import { NumberOfOthersWithComparison } from "../config/numeric-comparison.js";
 import { CombatResultComparison } from "../config/numeric-comparison.js";
 import { NumericV2 } from "./conditionalEffects/numericV2.js";
@@ -779,6 +780,8 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 		}
 		case "logical-or":
 			return testPrecondition(condition.comparison1, situation, source) || testPrecondition(condition.comparison2, situation, source);
+		case "scene-clock-name-is":
+			return SceneClock.instance.clockName.toUpperCase().trim() == condition.clockName.toUpperCase().trim();
 		default :
 			condition satisfies never;
 			return undefined;

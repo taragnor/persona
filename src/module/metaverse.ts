@@ -513,6 +513,9 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 				if (action.clockNewName) clock.renameClock(action.clockNewName);
 				clock.setCyclic(action.cyclicClock ?? false);
 				clock.setHideOnZero(action.hideOnZero ?? false);
+				if (action.clockMax) {
+					clock.setMax(action.clockMax);
+				}
 				break;
 			default:
 				action satisfies never;

@@ -298,6 +298,12 @@
 		</label>
 		<input type="checkbox" name="{{strcat namePrefix 'hideOnZero'}}" {{checked cons.hideOnZero}}>
 	</div>
+	<div>
+		<label>
+			Clock Max
+		</label>
+	<input class="short" type=number name="{{strcat namePrefix 'clockMax'}}" value="{{cons.clockMax}}">
+</div>
 	{{/if}}
 
 	{{#if (eqAny cons.dungeonAction "modify-tension-pool" "modify-clock" "set-clock")}}

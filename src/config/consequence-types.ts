@@ -432,6 +432,7 @@ type AlterSceneClockProperties = {
 	clockNewName: string,
 	cyclicClock: boolean,
 	hideOnZero: boolean,
+	clockMax: number,
 }
 
 type WeatherChangeDungeonEvent = {
