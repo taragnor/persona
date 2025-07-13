@@ -2827,6 +2827,30 @@ get XPForNextLevel() : number {
 	return Math.floor( base + growth * incAdvances * typeMult);
 }
 
+/** Calculates challenge rating by adding level + incremental advances
+*/
+get CR() : number {
+	if (!this.isValidCombatant()) return 0;
+	const advances = this.numOfIncAdvances();
+	const maxIncAdvances = this.maxIncrementalAdvances();
+	const valPerAdvance = 1 / maxIncAdvances;
+	return this.system.combat.classData.level + (valPerAdvance * advances);
+}
+
+maxIncrementalAdvances(this: ValidAttackers): number {
+	const x= Object.entries(this.system.combat.classData.incremental)
+	return x.reduce ( (a,[k,v]) => {
+		const incremental = k;
+		if (typeof v == "boolean") return a+1;
+		//@ts-expect-error
+		const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incremental] as {max ?: number};
+		if (typeof x?.max == "number")
+			return a + x.max;
+		PersonaError.softFail("Trouble calculating max incremental advances");
+		return a;
+	}, 0);
+}
+
 /** returns true on level up */
 async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
 	if (!amt) {

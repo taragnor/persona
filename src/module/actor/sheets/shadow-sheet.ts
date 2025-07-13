@@ -99,6 +99,8 @@ export class ShadowSheet extends CombatantSheetBase {
 	}
 
 	override get template() {
+		if (this.actor.hasCreatureTag("d-mon"))
+			return this.options.template;
 		if ( !game.user.isGM && this.actor.limited) {
 			return `${HBS_TEMPLATES_DIR}/shadow-limited.hbs`;
 		}
