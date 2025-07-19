@@ -1,3 +1,4 @@
+import { Helpers } from "./utility/helpers.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { TriggeredEffect } from "./triggered-effect.js";
 import { Logger } from "./utility/logger.js";
@@ -157,10 +158,14 @@ export class PersonaScene extends Scene {
 			`);
 	}
 
-	isEffectOn(name: string, type: string) : boolean {
-		const currentEffects = canvas.scene.getFlag("fxmaster", "effects") ?? {};
-		//@ts-ignore
-		return (name in currentEffects) || (`core_${type}` in currentEffects);
+	isEffectOn(weatherType: WeatherData) : boolean {
+		const currentEffects = canvas.scene.getFlag("fxmaster", "effects") as Record<string,WeatherData> ?? {};
+		if (weatherType.name in currentEffects) return true;
+		if (`core_${weatherType.type}` in currentEffects) {
+			const data = currentEffects[`core_${weatherType.type}`];
+			if( Helpers.isObjectShallowEqual(data, weatherType)) return true;
+		}
+		return false;
 	}
 
 	async changeWeather(newWeather: "" | Scene["weather"] | "cloudy" | "windy") {
@@ -175,7 +180,7 @@ export class PersonaScene extends Scene {
 				direction: 120,
 				alpha: 0.15, //opacity value named this for some reason
 			}
-		};
+		} as const;
 		const blizzard =  {
 			name: "blizzard",
 			type: "snowstorm",
@@ -186,7 +191,7 @@ export class PersonaScene extends Scene {
 				density: 1.0,
 				lifetime: 0.3,
 			}
-		};
+		} as const;
 		const snow = {
 			name: "mySnow",
 			type: "snow",
@@ -196,7 +201,7 @@ export class PersonaScene extends Scene {
 				lifetime: 0.5,
 				density: 0.6,
 			}
-		};
+		} as const;
 		const rain = {
 			name: "myRain",
 			type: "rain",
@@ -206,7 +211,7 @@ export class PersonaScene extends Scene {
 				lifetime: 0.5,
 				density: 0.6,
 			}
-		}
+		} as const;
 		const clouds = {
 			name: "MyClouds",
 			type: "clouds",
@@ -218,7 +223,7 @@ export class PersonaScene extends Scene {
 				direction: 35,
 				alpha: 0.15, //opacity value named this for some reason
 			}
-		}
+		} as const;
 		const fog = {
 			name: "MyFog",
 			type: "fog",
@@ -230,7 +235,7 @@ export class PersonaScene extends Scene {
 				direction: 35,
 				alpha: 0.4, //opacity value named this for some reason
 			}
-		};
+		} as const;
 		const rainStorm = {
 			name: "myRainStorm",
 			type: "rain",
@@ -241,7 +246,7 @@ export class PersonaScene extends Scene {
 				density: 1,
 				direction: 35,
 			}
-		};
+		} as const;
 		const weatherData = {
 			"blizzard": blizzard,
 			"cloudy" : clouds,
@@ -250,44 +255,72 @@ export class PersonaScene extends Scene {
 			"rainstorm": rainStorm,
 			"fog": fog,
 			"windy": windy,
-
-		} as const satisfies Partial<Record<typeof newWeather, any>>;
-		const newWeatherType = newWeather ? weatherData[newWeather as keyof typeof weatherData].type : "";
-		for (let i = 0; i<2; i++) {
-			for (const [k,weather] of Object.entries(weatherData)) {
-				let actual = this.isEffectOn(weather.name, weather.type);
-				const weatherS = newWeatherType == weather.type;
-				if (actual != weatherS) {
-					//@ts-ignore
-					Hooks.call("fxmaster.switchParticleEffect", weather);
-				}
-				let bailout = 0;
-				while (weatherS && !this.isEffectOn(weather.name, weather.type)) {
-					await sleep (500);
-					bailout ++;
-					if (bailout > 50) {
-						break;
-					}
-				}
-			}
-			await sleep(1000);
+		} as const satisfies Partial<Record<typeof newWeather, WeatherData>>;
+		const newWeatherData = newWeather ? weatherData[newWeather as keyof typeof weatherData] : undefined;
+		await this.clearAllWeather();
+		if (newWeatherData) {
+			//@ts-ignore
+			Hooks.call("fxmaster.switchParticleEffect", newWeatherData);
 		}
+		//for (let i = 0; i<2; i++) {
+		//	for (const [k,weather] of Object.entries(weatherData)) {
+		//		let actual = this.isEffectOn(weather);
+		//		const weatherS = newWeatherType == weather.type;
+		//		if (actual != weatherS) {
+		//			//@ts-ignore
+		//			Hooks.call("fxmaster.switchParticleEffect", weather);
+		//		}
+		//		let bailout = 0;
+		//		while (weatherS && !this.isEffectOn(weather)) {
+		//			await sleep (100);
+		//			bailout ++;
+		//			if (bailout > 50) {
+		//				break;
+		//			}
+		//		}
+		//	}
+		//	await sleep(250);
+		//}
 	}
+
+	async clearAllWeather() : Promise<void> {
+		const currentEffects = canvas.scene.getFlag("fxmaster", "effects") as Record<string,WeatherData> ?? {};
+		if (!currentEffects) return;
+		for (const wd of Object.values(currentEffects)) {
+			//@ts-ignore
+			Hooks.call("fxmaster.switchParticleEffect", {type: wd.type});
+		}
+		await sleep(250);
+	}
+
 }
+
+
+type WeatherData = {
+	name: string,
+	type: "rain" | "snow" | "fog" | "clouds" | "snowstorm",
+	options : {
+		scale?: number,
+		speed?: number,
+		lifetime?: number,
+		density?: number,
+		direction?: number,
+		alpha?: number
+	}
+};
+
+
 
 Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
 	if (!game.user.isGM) return;
-	console.log("Update Scene Hook");
-	console.log(diff);
 	if (diff.active == true) {
-		await PersonaSettings.set("lastRegionExplored", "" );
+		await PersonaSettings.set("lastRegionExplored", "");
 		if (game.combats.contents.some( (cmb: PersonaCombat) => cmb.isSocial)) {
 			Logger.gmMessage("Social Scene still active, consider ending it before starting metaverse activity");
 		}
 		await TriggeredEffect.onTrigger("on-active-scene-change")
 			.emptyCheck()
 			?.autoApplyResult();
-
 	}
 });
 
