@@ -48,7 +48,6 @@ export class PersonaScene extends Scene {
 	async setAllDoorSound(snd: string) {
 		const doors = this.walls.filter( wall => wall.door != 0);
 		doors.forEach( door => door.update({doorSound: snd}));
-
 	}
 
 	get sceneEffects() : UniversalModifier[] {
@@ -158,10 +157,10 @@ export class PersonaScene extends Scene {
 			`);
 	}
 
-	isEffectOn(name: string) : boolean {
+	isEffectOn(name: string, type: string) : boolean {
 		const currentEffects = canvas.scene.getFlag("fxmaster", "effects") ?? {};
 		//@ts-ignore
-		return (name in currentEffects);
+		return (name in currentEffects) || (`core_${type}` in currentEffects);
 	}
 
 	async changeWeather(newWeather: "" | Scene["weather"] | "cloudy" | "windy") {
@@ -214,7 +213,7 @@ export class PersonaScene extends Scene {
 			options :{
 				scale: 1.0,
 				speed: 0.5,
-				lifetime: 0.33,
+				lifetime: 0.3,
 				density: 0.2,
 				direction: 35,
 				alpha: 0.15, //opacity value named this for some reason
@@ -231,8 +230,7 @@ export class PersonaScene extends Scene {
 				direction: 35,
 				alpha: 0.4, //opacity value named this for some reason
 			}
-
-		}
+		};
 		const rainStorm = {
 			name: "myRainStorm",
 			type: "rain",
@@ -243,7 +241,7 @@ export class PersonaScene extends Scene {
 				density: 1,
 				direction: 35,
 			}
-		}
+		};
 		const weatherData = {
 			"blizzard": blizzard,
 			"cloudy" : clouds,
@@ -252,17 +250,27 @@ export class PersonaScene extends Scene {
 			"rainstorm": rainStorm,
 			"fog": fog,
 			"windy": windy,
+
 		} as const satisfies Partial<Record<typeof newWeather, any>>;
+		const newWeatherType = newWeather ? weatherData[newWeather as keyof typeof weatherData].type : "";
 		for (let i = 0; i<2; i++) {
 			for (const [k,weather] of Object.entries(weatherData)) {
-				let actual = this.isEffectOn(weather.name);
-				const weatherS = newWeather == k;
+				let actual = this.isEffectOn(weather.name, weather.type);
+				const weatherS = newWeatherType == weather.type;
 				if (actual != weatherS) {
 					//@ts-ignore
 					Hooks.call("fxmaster.switchParticleEffect", weather);
 				}
+				let bailout = 0;
+				while (weatherS && !this.isEffectOn(weather.name, weather.type)) {
+					await sleep (500);
+					bailout ++;
+					if (bailout > 50) {
+						break;
+					}
+				}
 			}
-			await sleep(250);
+			await sleep(1000);
 		}
 	}
 }
