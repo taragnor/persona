@@ -1,4 +1,3 @@
-import { PersonaRegion } from "../region/persona-region.js";
 import { CardTag } from "../../config/card-tags.js";
 import { RollTag } from "../../config/roll-tags.js";
 import { RollSituation } from "../../config/situation.js";
@@ -70,7 +69,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	// declare combatants: Collection<Combatant<ValidAttackers>>;
 	// engagedList: Combatant<PersonaActor>[][] = [];
-	_startedList: Set<typeof this["combatants"]["contents"][number]["id"]>;
 	_engagedList: EngagementList;
 	static customAtkBonus: number;
 	consecutiveCombat: number =0;
@@ -81,26 +79,36 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		super(...args);
 		this.consecutiveCombat = 0;
 		this.defeatedFoes = [];
-		this._startedList = new Set();
 	}
 
 	hasCombatantRanStartCombatTrigger(combatant: Combatant<ValidAttackers>) : boolean {
-		return this._startedList.has(combatant.id);
+		const startedList = this.getFlag<Combatant["id"][]>("persona", "startedCombatList") ?? [];
+		return startedList.includes(combatant.id);
 	}
 
-	async runCombatantStartCombatTriggers() {
+	async setCombatantRanStartCombatTrigger(combatant: Combatant<ValidAttackers>) {
+		const startedList = this.getFlag<Combatant["id"][]>("persona", "startedCombatList") ?? [];
+		startedList.pushUnique(combatant.id);
+		await this.setFlag("persona", "startedCombatList", startedList);
+	}
+
+
+	async runAllCombatantStartCombatTriggers() {
 		const combatants = this.combatants
-		.filter( c => c.actor != undefined && !this._startedList.has(c.id));
+		.filter( c => c.actor != undefined
+			&& !this.hasCombatantRanStartCombatTrigger(c));
 		for (const comb of combatants) {
-			await this.#runCombatantStartCombatTrigger(comb);
+			await this.runCombatantStartCombatTriggers(comb);
 		}
 	}
 
-	async #runCombatantStartCombatTrigger(comb: Combatant<ValidAttackers>) {
+
+	async runCombatantStartCombatTriggers(comb: Combatant<ValidAttackers>) {
 		if (!comb.actor) return;
 		if (this.hasCombatantRanStartCombatTrigger(comb)) {
 			return;
 		}
+		await this.setCombatantRanStartCombatTrigger(comb);
 		const token = comb.token as PToken;
 		const situation : Situation = {
 			activeCombat : true,
@@ -111,7 +119,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			.onTrigger("on-combat-start", token.actor, situation)
 			.emptyCheck()
 			?.toMessage("Triggered Effect", token.actor);
-		this._startedList.add(comb.id);
+		// this._startedList.add(comb.id);
 	}
 
 	get validEngagementCombatants(): (Combatant <ValidAttackers> & {actor: ValidAttackers})[] {
@@ -1442,6 +1450,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		const canCrit = typeof rollType == "number" ? false : true;
 		if (naturalAttackRoll + critBoost >= 20
+			&& total >= defenseVal
 			&& (!power.isMultiTarget() || naturalAttackRoll % 2 == 0)
 			&& !target.actor.hasStatus("blocking")
 			&& !power.hasTag("no-crit")

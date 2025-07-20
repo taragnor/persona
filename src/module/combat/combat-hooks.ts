@@ -67,13 +67,13 @@ export class CombatHooks {
 				if (combat.isSocial) {
 					await PersonaSocial.startSocialTurn(x.actor as PC);
 				} else {
-					await combat.runCombatantStartCombatTriggers();
+					await combat.runAllCombatantStartCombatTriggers();
 					await combat.startCombatantTurn(x as Combatant<ValidAttackers>);
 				}
 			}
 		});
 
-		Hooks.on("deleteCombat", async (combat: PersonaCombat) => {
+		Hooks.on("deleteCombat", async (_combat: PersonaCombat) => {
 			if (!game.user.isGM)
 				return;
 		});
@@ -82,7 +82,7 @@ export class CombatHooks {
 		Hooks.on("createCombatant", async (combatant: Combatant<ValidAttackers>) => {
 			await combatant?.token?.actor?.onAddToCombat();
 			if (combatant.parent?.started) {
-				await (combatant.combat as PersonaCombat).runCombatantStartCombatTriggers();
+				await (combatant.combat as PersonaCombat).runCombatantStartCombatTriggers(combatant);
 			}
 		});
 

@@ -262,25 +262,6 @@ export class PersonaScene extends Scene {
 			//@ts-ignore
 			Hooks.call("fxmaster.switchParticleEffect", newWeatherData);
 		}
-		//for (let i = 0; i<2; i++) {
-		//	for (const [k,weather] of Object.entries(weatherData)) {
-		//		let actual = this.isEffectOn(weather);
-		//		const weatherS = newWeatherType == weather.type;
-		//		if (actual != weatherS) {
-		//			//@ts-ignore
-		//			Hooks.call("fxmaster.switchParticleEffect", weather);
-		//		}
-		//		let bailout = 0;
-		//		while (weatherS && !this.isEffectOn(weather)) {
-		//			await sleep (100);
-		//			bailout ++;
-		//			if (bailout > 50) {
-		//				break;
-		//			}
-		//		}
-		//	}
-		//	await sleep(250);
-		//}
 	}
 
 	async clearAllWeather() : Promise<void> {
