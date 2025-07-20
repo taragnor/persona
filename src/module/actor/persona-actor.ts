@@ -3174,7 +3174,7 @@ encounterSizeValue() : number {
 	if (this.hasRole("solo")) val *= 4;
 	if (this.hasRole("duo")) val*= 2;
 	if (this.hasRole("elite")) val*= 1.5;
-	if (this.hasRole("summoner")) val *= 2;
+	if (this.hasRole("summoner")) val *= 1.5;
 	if (this.hasRole("minion")) val *= 0.666;
 	if (this.isNewEnemy() && !this.hasRole("solo")) val *= 1.2;
 	return val;

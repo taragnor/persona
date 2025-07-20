@@ -1417,9 +1417,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		// Power Diff: ${powerDiff}
 		// Enemy Crit Resist ${-critResist}
 		// 	`);
-		if (naturalAttackRoll == 1
-			|| total < defenseVal
-			|| (rageOrBlind && naturalAttackRoll % 2 == 1)
+		const autoHit = naturalAttackRoll == 20;
+		if (!autoHit &&
+			(naturalAttackRoll == 1
+				|| total < defenseVal
+				|| (rageOrBlind && naturalAttackRoll % 2 == 1)
+			)
 		) {
 			situation.hit = false;
 			situation.criticalHit = false;

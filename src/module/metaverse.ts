@@ -488,7 +488,9 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 			case "modify-clock": {
 				const clock = ProgressClock.getClock(action.clockId);
 				if (!clock) {
-					PersonaError.softFail(`Can't find clock id ${action.clockId}`);
+					const msg =`Can't find clock id ${action.clockId}`;
+					console.warn(msg);
+					// PersonaError.softFail(msg);
 					return;
 				}
 				if (clock == DoomsdayClock.instance) {
