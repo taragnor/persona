@@ -1894,7 +1894,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "alter-fatigue-lvl":
 				return [{applyTo,cons}];
 			case "display-msg":
-				debugger;
 				if (cons.newChatMsg) {
 					return [{applyTo: "global", cons}];
 				} else {
