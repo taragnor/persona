@@ -1,9 +1,14 @@
+{{#if actor.isUnderDefenseCap}}
+<div class="error">
+	UNSPENT BOOSTS
+</div>
+{{/if}}
+{{#if actor.isOverDefenseCap}}
+<div class="error">
+	OVER DEFENSE CAP
+</div>
+{{/if}}
 <div class="defenses">
-	{{#if actor.isOverDefenseCap}}
-	<div class="error">
-		OVER DEFENSE CAP
-	</div>
-	{{/if}}
 	<div class="defense">
 		<label>
 			{{localize "persona.defense.fort"}}

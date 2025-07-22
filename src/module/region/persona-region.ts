@@ -259,7 +259,8 @@ export class PersonaRegion extends RegionDocument {
 
 	get EnemyDifficultyRange(): {low:number, high:number} {
 		const diffLevel = this.regionData.challengeLevel + this.parent.challengeLevel;
-		const diffRange = 5;
+		//TODO: replace with real range after difficult is properly set in scene
+		const diffRange = 9999;
 		return {
 			low:	diffLevel - diffRange,
 			high: diffLevel + diffRange,

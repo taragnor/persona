@@ -2835,7 +2835,8 @@ get CR() : number {
 	const advances = this.numOfIncAdvances();
 	const maxIncAdvances = this.maxIncrementalAdvances();
 	const valPerAdvance = 1 / maxIncAdvances;
-	const rawCR= this.system.combat.classData.level + (valPerAdvance * advances);
+	const defenseBoosts = (this.totalDefenseBoosts() -2) * .1;
+	const rawCR= this.system.combat.classData.level + (valPerAdvance * advances) + defenseBoosts;
 	const roundedCR = Math.round(rawCR *10) / 10;
 	return roundedCR;
 }
@@ -2861,9 +2862,76 @@ totalDefenseBoosts(this: ValidAttackers) : number {
 	return defScore + initScore;
 }
 
+issues() : string {
+	const issues : string[] = [];
+	if (this.isUnderDefenseCap || this.isOverDefenseCap)
+		issues.push("Defense");
+	if (this.isUnderResistCap || this.isOverResistCap)
+		issues.push("Resists");
+	return issues.join("/")
+}
+
+
+get isUnderDefenseCap(): boolean {
+	if (!this.isValidCombatant()) return false;
+	return this.totalDefenseBoosts() < this.maxDefensiveBoosts();
+}
+
 get isOverDefenseCap(): boolean {
 	if (!this.isValidCombatant()) return false;
 	return this.totalDefenseBoosts() > this.maxDefensiveBoosts();
+}
+
+get isOverResistCap(): boolean {
+	if (!this.isValidCombatant()) return false;
+	return this.totalResists() > this.maxResists();
+}
+
+get isUnderResistCap(): boolean {
+	if (!this.isValidCombatant()) return false;
+	return this.totalResists() +1 < this.maxResists();
+	//allow leeway for double weakness
+}
+
+totalResists (this:ValidAttackers) : number {
+	const resists = this.system.combat.resists;
+	const pcTranslator : Record<typeof resists["cold"], number> = {
+		normal: 0,
+		weakness: -1,
+		resist: 1,
+		block: 2,
+		absorb: 3,
+		reflect: 3
+	} as const;
+	const shadowTranslator : Record<typeof resists["cold"], number> = {
+		normal: 0,
+		weakness: -1,
+		resist: 1,
+		block: 2,
+		absorb: 2.5,
+		reflect:2.5,
+	} as const;
+	const resistTranslator = this.isShadow() ? shadowTranslator : pcTranslator;
+	return Object.values(resists)
+	.reduce( (acc,res) => acc + resistTranslator[res] ,0 );
+}
+
+maxResists (this:ValidAttackers) : number {
+	const baseResists = this.#baseResists();
+	const situation: Situation = {
+		user: this.accessor,
+		target: this.accessor,
+	}
+	const bonusBoosts =this.persona().getBonuses("max-resist-boosts").total(situation);
+	return baseResists + bonusBoosts;
+}
+
+#baseResists(this: ValidAttackers) : number {
+	switch (this.system.type) {
+		case "pc": return 0;
+		case "shadow" : return 2;
+		case "npcAlly": return 0;
+	}
 }
 
 maxDefensiveBoosts(this: ValidAttackers) : number {
