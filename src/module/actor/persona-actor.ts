@@ -3696,11 +3696,9 @@ async addCreatureTag() : Promise<void> {
 async onAddToCombat() {
 	switch (this.system.type) {
 		case "shadow":
-			const sit : Situation = {
-				user: (this as Shadow).accessor,
-			}
-			const startingEnergy = 3 + (this as Shadow).persona().getBonuses("starting-energy").total(sit);
-			await (this as Shadow).setEnergy(startingEnergy);
+			if (!this.isShadow()) return;// a double check purely for TS to recognize it;
+			const energy = this.startingEnergy();
+			await this.setEnergy(energy);
 			break;
 		case "pc":
 		case "npc":
@@ -3708,6 +3706,16 @@ async onAddToCombat() {
 			break;
 	}
 
+}
+
+startingEnergy(this: Shadow) : number {
+	const sit : Situation = {
+		user: this.accessor,
+	}
+	const bonusEnergy = this.persona().getBonuses("starting-energy").total(sit);
+	const inc = this.system.combat.classData.incremental.mp;
+	const baseStartingEnergy = 2;
+	return baseStartingEnergy + inc + bonusEnergy;
 }
 
 /** rate that shadow is encountered in the a scene
