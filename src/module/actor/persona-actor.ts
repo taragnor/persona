@@ -3705,7 +3705,6 @@ async onAddToCombat() {
 		case "tarot":
 			break;
 	}
-
 }
 
 startingEnergy(this: Shadow) : number {
