@@ -1,3 +1,6 @@
+import { FREQUENCY } from "./frequency.js";
+import { PROBABILITY_LIST } from "./probability.js";
+
 import { ConditionalEffectDM } from "../module/datamodel/item-types.js";
 import { Precondition } from "./precondition-types.js";
 import { TokenSpend } from "./social-card-config.js";
@@ -294,8 +297,47 @@ class EncounterDataDM extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		return {
 			dungeonId: new txt(),
-			frequency: new num({initial: 1})
+			frequency: new num({initial: 1}),
+			frequencyNew: new txt( {choices: PROBABILITY_LIST, initial: "normal"}),
 		}
+	}
+
+	static override migrateData(oldData: Record<string, any>) {
+		const data = super.migrateData(oldData);
+		const oldFreq = data.frequency as keyof typeof FREQUENCY;
+		if (oldFreq != undefined) {
+			const newFreq : typeof PROBABILITY_LIST[number] = frequencyConvert2(oldFreq);
+			if (data.frequencyNew == "normal" && newFreq != data.frequencyNew) {
+				data.frequencyNew = newFreq;
+			}
+		}
+		return data;
 	}
 }
 
+export function frequencyConvert2(oldFreq: keyof typeof FREQUENCY): typeof PROBABILITY_LIST[number] {
+	switch (oldFreq) {
+		case 0:
+			return "never";
+		case 0.1:
+			return "rare";
+		case 0.25:
+			return "rare-plus";
+		case 0.75:
+			return "normal-minus";
+		case 1.0:
+			return "normal";
+		case 1.5:
+			return "normal-plus";
+		case 3:
+			return "common-minus";
+		case 10:
+			return "common";
+		case 10000:
+			return "always";
+		default:
+			oldFreq satisfies never;
+			console.warn(`Weird value for old frequncy ${oldFreq} on probability`);
+			return "never";
+	}
+}

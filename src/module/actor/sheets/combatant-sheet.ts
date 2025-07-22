@@ -282,7 +282,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 	}
 
-
 	async addIncremental_wpnDamage(_ev: JQuery.ClickEvent) {
 		const target = "wpnDamage";
 		const current = this.actor.system.combat.classData.incremental[target];

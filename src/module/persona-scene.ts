@@ -19,6 +19,12 @@ export class PersonaScene extends Scene {
 	declare regions: Collection<PersonaRegion>;
 	declare tokens: Collection<TokenDocument<PersonaActor>>;
 
+	get challengeLevel(): number {
+		//TODO: placeholder
+		return 0;
+
+	}
+
 	allFoes() : Shadow[] {
 		return PersonaDB.shadows()
 			.filter ( shadow=> shadow.system.encounter.dungeonEncounters.some( x=> x.dungeonId == this.id)) ;

@@ -56,6 +56,7 @@ export const MODIFIERLIST = [
 	"actions-per-turn",
 	"baleful-status-duration",
 	"d-mon-storage",
+	"max-defense-boosts",
 	...ENVIRONMENTAL_MODIFIERS,
 ] as const;
 

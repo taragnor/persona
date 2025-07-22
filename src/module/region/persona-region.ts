@@ -251,6 +251,21 @@ export class PersonaRegion extends RegionDocument {
 			.filter(x=> x);
 	}
 
+	encounterList(): Shadow[] {
+		const baseList = this.parent.encounterList();
+		const regionRange = this.EnemyDifficultyRange;
+		return baseList.filter( shadow => shadow.CR >= regionRange.low && shadow.CR <= regionRange.high);
+	}
+
+	get EnemyDifficultyRange(): {low:number, high:number} {
+		const diffLevel = this.regionData.challengeLevel + this.parent.challengeLevel;
+		const diffRange = 5;
+		return {
+			low:	diffLevel - diffRange,
+			high: diffLevel + diffRange,
+		};
+	}
+
 	async onEnterRegion(token: TokenDocument<PersonaActor>) {
 		console.debug(`Region Entered: ${this.name}`);
 		if (!token.actor?.isPC()) return;

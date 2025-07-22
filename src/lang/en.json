@@ -265,6 +265,7 @@
 	"persona.modifier.actions-per-turn": "Actions per turn",
 	"persona.modifier.baleful-status-duration": "Baleful Status Duration",
 	"persona.modifier.d-mon-storage": "Max D-Mon storage",
+	"persona.modifier.max-defense-boosts": "Max Defense Boosts",
 
 	"persona.equipslots.weapon": "Weapon",
 	"persona.equipslots.body": "Outfit",
@@ -979,6 +980,16 @@
 
 	"persona.permabuff.max-hp": "Max HP",
 	"persona.permabuff.max-mp": "Max MP",
+
+	"persona.probability.common": "Super Common",
+	"persona.probability.common-minus": "Common",
+	"persona.probability.normal-plus": "More Frequent",
+	"persona.probability.normal": "Normal",
+	"persona.probability.normal-minus": "Less Frequent",
+	"persona.probability.rare-plus": "Rare",
+	"persona.probability.rare": "Very Rare",
+	"persona.probability.never": "Never",
+	"persona.probability.always": "Always",
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",

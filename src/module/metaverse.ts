@@ -105,15 +105,16 @@ export class Metaverse {
 
 	static weightedEncounterList(arr: Shadow[], scene: PersonaScene = game.scenes.current as PersonaScene) {
 		return arr
-			.map (shadow => ({
-				item: shadow,
-				weight: shadow.getEncounterWeight(scene) ?? 1,
-			}));
+			.map (shadow => {
+				const encounterWeight = shadow.getEncounterWeight(scene);
+				const weight = encounterWeight;
+				return { item: shadow, weight, };
+			});
 	}
 
-	static getEncounterList(scene: PersonaScene, shadowType ?: Shadow["system"]["creatureType"]): Shadow[] {
-		return scene.encounterList()
-			.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
+	static getEncounterList(sceneOrRegion: PersonaScene | PersonaRegion, shadowType ?: Shadow["system"]["creatureType"]): Shadow[] {
+		return sceneOrRegion.encounterList()
+			.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true)
 }
 
 static #getEncounterType(frequencies: {hard ?: number, mixed ?: number}): EncounterType {
@@ -121,7 +122,7 @@ static #getEncounterType(frequencies: {hard ?: number, mixed ?: number}): Encoun
 	const DIE_SIZE = 16 + mixed;
 	const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
 	const hardMod = frequencies.hard ? frequencies.hard : 0;
-	console.log(`Hard Mod: ${hardMod}, Mixed Mod:${mixed}`);
+	console.debug(`Hard Mod: ${hardMod}, Mixed Mod:${mixed}`);
 	switch (true) {
 		case sizeRoll <= 11 - hardMod:
 			return "standard";
@@ -191,8 +192,10 @@ static choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encount
 }
 
 static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}): Encounter {
-	const scene = game.scenes.current as PersonaScene;
-	const baseList  = this.getEncounterList(scene, shadowType);
+	const region = this.getRegion();
+	const scene =  game.scenes.current as PersonaScene;
+	const regionOrScene = region ? region : scene;
+	const baseList  = this.getEncounterList(regionOrScene, shadowType);
 	let enemyType : Shadow["system"]["creatureType"] | undefined = undefined;
 	const encounter : Shadow[] = [];
 	let bailout = 0;

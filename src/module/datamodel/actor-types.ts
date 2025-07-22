@@ -1,3 +1,5 @@
+import { FREQUENCY } from "../../config/frequency.js";
+import { frequencyConvert2 } from "../../config/actor-parts.js";
 import { SocialQuestionDM } from "./item-types.js";
 import { frequencyConvert } from "../../config/frequency.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
@@ -130,9 +132,11 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 			if (data.encounter.dungeons && system.encounter.dungeonEncounters.length == 0) {
 				const dungeonIds : string[] = data.encounter.dungeons;
 				for (const dungeonId of dungeonIds) {
+					const conv =  frequencyConvert(system.encounter.frequency);
 					system.encounter.dungeonEncounters.push({
 						dungeonId,
-						frequency: frequencyConvert(system.encounter.frequency),
+						frequency: conv,
+						frequencyNew: frequencyConvert2(conv as keyof typeof FREQUENCY),
 					});
 				}
 				data.encounter.dungeons = [];
@@ -148,7 +152,6 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 		}
 		return data;
 	}
-
 }
 
 class NPCAllySchema extends foundry.abstract.TypeDataModel {

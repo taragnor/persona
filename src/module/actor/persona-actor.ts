@@ -1,3 +1,4 @@
+import { ENCOUNTER_RATE_PROBABILITY } from "../../config/probability.js";
 import { SeededRandom } from "../utility/seededRandom.js";
 import { PersonaSFX } from "../combat/persona-sfx.js";
 import { PERMA_BUFFS } from "../../config/perma-buff-type.js";
@@ -1729,7 +1730,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "weak": return Math.min(-3 + 1 * weaknesses, -1);
 			case "normal": return 0;
 			case "strong": return Math.max(3 - 1 * weaknesses, 1);
-			case "ultimate": return Math.max(6 - 2 * weaknesses, 2);
+				case "ultimate": return Math.max(6 - 2 * weaknesses, 2);
 			default:
 				PersonaError.softFail(`Bad defense tsring ${val} for ${defType}`);
 				return -999;
@@ -2834,7 +2835,54 @@ get CR() : number {
 	const advances = this.numOfIncAdvances();
 	const maxIncAdvances = this.maxIncrementalAdvances();
 	const valPerAdvance = 1 / maxIncAdvances;
-	return this.system.combat.classData.level + (valPerAdvance * advances);
+	const rawCR= this.system.combat.classData.level + (valPerAdvance * advances);
+	const roundedCR = Math.round(rawCR *10) / 10;
+	return roundedCR;
+}
+
+totalDefenseBoosts(this: ValidAttackers) : number {
+	if (!this.isValidCombatant())  return 0;
+	const defenses = this.system.combat.defenses;
+	const evalDef = function (defVal: typeof defenses["fort"]) {
+		switch (defVal) {
+			case "pathetic": return -2;
+			case "weak": return -1;
+			case "normal": return 0;
+			case "strong": return 1;
+			case "ultimate": return 2;
+			default:
+				defVal satisfies never;
+				return 99;
+		}
+	};
+	const defScore = Object.values(defenses).reduce<number>( (acc, def) =>
+		acc+ evalDef(def) , 0);
+	const initScore = evalDef(this.system.combat.initiative);
+	return defScore + initScore;
+}
+
+get isOverDefenseCap(): boolean {
+	if (!this.isValidCombatant()) return false;
+	return this.totalDefenseBoosts() > this.maxDefensiveBoosts();
+}
+
+maxDefensiveBoosts(this: ValidAttackers) : number {
+	const baseBoosts = this.#baseDefenseBoosts();
+	const situation: Situation = {
+		user: this.accessor,
+		target: this.accessor,
+	}
+	const bonusBoosts =this.persona().getBonuses("max-defense-boosts").total(situation);
+	return baseBoosts + bonusBoosts;
+}
+
+#baseDefenseBoosts(this: ValidAttackers) : number {
+	switch (this.system.type) {
+		case "pc": return 2;
+		case "shadow": return 2;
+		case "npcAlly": return 2;
+	}
+
 }
 
 maxIncrementalAdvances(this: ValidAttackers): number {
@@ -3206,11 +3254,6 @@ getFlagState(flagName: string) : boolean {
 	return !!this.getEffectFlag(flagName);
 }
 
-getEncounterWeight(this: Shadow, scene: PersonaScene): number {
-	const encounterData= this.system.encounter.dungeonEncounters.find(x=> x.dungeonId == scene.id);
-	if (!encounterData) return 0;
-	return encounterData.frequency ?? 1;
-}
 
 getFlagDuration(flagName: string) : StatusDuration | undefined {
 	return this.getEffectFlag(flagName)?.duration;
@@ -3598,6 +3641,27 @@ async onAddToCombat() {
 	}
 
 }
+
+/** rate that shadow is encountered in the a scene
+ */
+getEncounterWeight(this: Shadow, scene: PersonaScene = game.scenes.current as PersonaScene) : number {
+	const rate = this.system.encounter.dungeonEncounters.find(x => x.dungeonId == scene.id);
+	if (!rate) return 0;
+	const baseProb = ENCOUNTER_RATE_PROBABILITY[rate.frequencyNew];
+	if (baseProb == undefined) {
+		console.warn (`Invalid value for frequencynew: ${rate.frequencyNew as any}`);
+		return 0;
+	}
+	return baseProb;
+}
+
+/* Old code
+getEncounterWeight(this: Shadow, scene: PersonaScene): number {
+	const encounterData= this.system.encounter.dungeonEncounters.find(x=> x.dungeonId == scene.id);
+	if (!encounterData) return 0;
+	return encounterData.frequency ?? 1;
+}
+*/
 
 get questions(): NPC["system"]["questions"] {
 	switch (this.system.type) {

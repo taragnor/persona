@@ -32,6 +32,10 @@
 					<label> Scan Level</label>
 					<input class="short" type="number" name="system.scanLevel" value="{{actor.system.scanLevel}}">
 				</div>
+				<div>
+					<label> Challenge Level</label>
+					{{actor.CR}}
+				</div>
 				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
 			</div>
 			<div class="flexcol encounter-column">
@@ -56,7 +60,6 @@
 	</nav>
 	<section class="sheet-body">
 		<section class="tab tab-content combat-section flexcol" data-group="primary" data-tab="combat">
-
 			{{> "systems/persona/parts/combat-section.hbs" actor=actor persona=(persona actor)}}
 		</section>
 		<section class="tab tab-content incremental-section flexcol" data-group="primary" data-tab="inc">

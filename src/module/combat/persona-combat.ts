@@ -102,7 +102,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 	}
 
-
 	async runCombatantStartCombatTriggers(comb: Combatant<ValidAttackers>) {
 		if (!comb.actor) return;
 		if (this.hasCombatantRanStartCombatTrigger(comb)) {

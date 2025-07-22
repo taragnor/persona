@@ -1,3 +1,4 @@
+import { PROBABILITIES } from "../../../config/probability.js";
 import { FREQUENCY } from "../../../config/frequency.js";
 import { Power } from "../../item/persona-item.js";
 import { CREATURE_TAGS } from "../../../config/creature-tags.js";
@@ -84,6 +85,7 @@ export class ShadowSheet extends CombatantSheetBase {
 			)
 		);
 		data.SHADOW_STUFF =  {
+			FREQUENCY_NEW: PROBABILITIES,
 			CREATURE_TAGS : CREATURE_TAGS,
 			SHADOW_CREATURE_TYPE: SHADOW_CREATURE_TYPE,
 			SHADOW_ROLE,
@@ -107,7 +109,6 @@ export class ShadowSheet extends CombatantSheetBase {
 		if (!game.user.isGM) return "";
 		return this.options.template;
 	}
-
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
@@ -144,6 +145,7 @@ export class ShadowSheet extends CombatantSheetBase {
 		arr.push({
 			dungeonId: game.scenes.current.id,
 			frequency: 1,
+			frequencyNew: "normal",
 		});
 		await this.actor.update({"system.encounter.dungeonEncounters": arr});
 	}

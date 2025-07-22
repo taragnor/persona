@@ -826,6 +826,11 @@ span.skill-card img {
 	opacity: 60%;
 }
 
+.error {
+	font-size:larger;
+	font-weight: bold;
+}
+
 .status-resists {
 	margin-top: 10px;
 }
