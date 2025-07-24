@@ -110,7 +110,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			...this.baseSituation,
 		};
 		amt = amt * this.getBonuses("xp-multiplier").total(sit, "percentage");
-
 		if (amt <= 0) {
 			PersonaError.softFail(`Could be an error as XP gained is now ${amt}`);
 			return false;
@@ -122,7 +121,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			newxp -= XPrequired;
 			levelUp = true;
 		}
-		await this.source.update({"system.combat.xp" : newxp});
+		// await this.source.update({"system.combat.xp" : newxp});
 		return levelUp;
 	}
 
@@ -131,6 +130,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			user: this.user.accessor,
 			persona: this,
 		}
+	}
+
+	numOfIncAdvances(): number {
+		return this.source.numOfIncAdvances();
 	}
 
 	getBonuses (modnames : ModifierTarget | ModifierTarget[], sources: ModifierContainer[] = this.mainModifiers() ): ModifierList {
@@ -164,6 +167,40 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	passivePowers() : Power[] {
 	return this.powers
 		.filter( power=> power.system.subtype == "passive");
+	}
+
+	get effectiveLevel() : number {
+	const advances = this.numOfIncAdvances();
+	const maxIncAdvances = this.maxIncrementalAdvances();
+	const valPerAdvance = 1 / maxIncAdvances;
+	return this.source.system.combat.classData.level + (valPerAdvance * advances);
+	}
+
+	maxIncrementalAdvances(): number {
+		return this.source.maxIncrementalAdvances();
+	}
+
+	/* Base XP for one shadow of equal power **/
+	static get BaselineXP(): number {
+	const SHADOWS_TO_LEVEL = Persona.leveling.SHADOWS_TO_LEVEL;
+	const firstLevelUp = Persona.leveling.BASE_XP;
+	return firstLevelUp/SHADOWS_TO_LEVEL;
+	}
+
+	static MIN_XP_MULT = 0.05;
+	static MAX_XP_MULT = 3;
+
+	calcXP(killedTargets: ValidAttackers[], numOfAllies: number): number {
+	const XPSubtotal = killedTargets.reduce ((acc, target) => {
+		if (!target.isShadow()) return acc;
+		const levelDifference = target.persona().effectiveLevel - this.effectiveLevel;
+		const rawXPMult= 1 + (levelDifference * 0.75)
+		const XPMult= Math.clamp(rawXPMult, Persona.MIN_XP_MULT, Persona.MAX_XP_MULT);
+		const realXP = Persona.BaselineXP * XPMult;
+		return acc + realXP;
+	}, 0);
+
+		return Math.round(XPSubtotal / numOfAllies);
 	}
 
 	passiveFocii() : Focus[] {

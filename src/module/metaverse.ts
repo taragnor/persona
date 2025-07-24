@@ -342,49 +342,40 @@ static getSubgroupAmt(pick: Shadow) : number {
 	}
 
 
-	static getXPFor(shadow: Shadow, partyLevel: number): number {
-		const levelDiff = partyLevel - shadow.system.combat.classData.level;
-		let levelMult = 1;
-		switch (true) {
-			case (levelDiff == 1): levelMult = 0.25; break;
-			case (levelDiff > 1): levelMult = 0.05; break;
-			case (levelDiff < 0): levelMult = 2; break;
-			case (levelDiff == 0): levelMult =  1;break;
-			default: levelMult = 1;
-		}
-		const XPValue = shadow.XPValue();
-		return levelMult * XPValue;
+	static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void> {
+		if (!game.user.isGM) return;
+		const numOfPCs = party.length;
+		const XPAwardDataPromises = party.map( async actor=> {
+			const persona  = actor.persona();
+			const xp= persona.calcXP(shadows, numOfPCs );
+			const levelUp = await persona.awardXP(xp);
+			return { actor, xp ,levelUp}
+		});
+		const data = await Promise.all(XPAwardDataPromises);
+		await this.reportXPGain(data);
 	}
 
-	static async awardXP(shadows: Shadow[], party: (PC | NPCAlly)[]) : Promise<void> {
-		if (party.length == 0) return;
-		const partyLvl = Math.max(...party.map(x=> x.system.combat.classData.level));
-		const totalXP = shadows.reduce( (acc,shadow) => {
-			return acc + this.getXPFor(shadow, partyLvl) ;
-		}, 0);
-		const individualXP = Math.floor( totalXP / party.length);
-		const levelUps : ValidAttackers[] = [];
-		for (const character of party)  {
-			if(await character.awardXP(individualXP)) {
-				levelUps.push(character);
-			}
+static async reportXPGain(xpReport: {actor: ValidAttackers, xp: number, levelUp: boolean}[]) : Promise<void> {
+	const xpStringParts = xpReport
+	.map( ({actor, xp, levelUp}) => {
+		if (!levelUp) {
+			return `<div> ${actor.name}: ${xp}`;
 		}
-		const levelUpsStr = levelUps.map( x=> `<li>${x.name}</li>`).join("");
-		let text = `
-	<div>XP Awarded: ${individualXP}</div> `;
-		if (levelUpsStr.length > 0) {
-			text += `<div class="level-up-msg"> Level Ups: <ul> ${levelUpsStr} </ul> </div>`;
-			PersonaSFX.onLevelUp();
-		}
-		await ChatMessage.create({
-			speaker: {
-				alias: "XP Award",
-			},
-			content: text ,
-			rolls: [],
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
-		});
+		return `<div class="level-up-msg"> ${actor.name} Level Up! (${xp} </div>`;
+	});
+	const text = xpStringParts.join("");
+	if (xpReport.some(x=> x.levelUp)) {
+		PersonaSFX.onLevelUp();
 	}
+	await ChatMessage.create({
+		speaker: {
+			alias: "XP Award",
+		},
+		content: text ,
+		rolls: [],
+		style: CONST.CHAT_MESSAGE_STYLES.OOC,
+	});
+}
 
 	static async generateTreasure(shadows: PersonaActor[]): Promise<Treasure> {
 		let items : TreasureItem[] = [];

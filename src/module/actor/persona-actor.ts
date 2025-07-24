@@ -2832,11 +2832,10 @@ get XPForNextLevel() : number {
 */
 get CR() : number {
 	if (!this.isValidCombatant()) return 0;
-	const advances = this.numOfIncAdvances();
-	const maxIncAdvances = this.maxIncrementalAdvances();
-	const valPerAdvance = 1 / maxIncAdvances;
-	const defenseBoosts = (this.totalDefenseBoosts() -2) * .1;
-	const rawCR= this.system.combat.classData.level + (valPerAdvance * advances) + defenseBoosts;
+	const effectiveLevel = this.persona().effectiveLevel;
+	const valPerExtraDefenseBoost = 0.2;
+	const defenseBoosts = (this.totalDefenseBoosts() -2) * valPerExtraDefenseBoost;
+	const rawCR= effectiveLevel + defenseBoosts;
 	const roundedCR = Math.round(rawCR *10) / 10;
 	return roundedCR;
 }
@@ -2965,6 +2964,11 @@ maxIncrementalAdvances(this: ValidAttackers): number {
 		PersonaError.softFail("Trouble calculating max incremental advances");
 		return a;
 	}, 0);
+}
+
+calcXP (this: ValidAttackers, killedTargets: ValidAttackers[], numOfAllies: number) : number {
+	return this.persona().calcXP(killedTargets, numOfAllies);
+
 }
 
 /** returns true on level up */
