@@ -1,3 +1,4 @@
+import { PresenceRollData } from "../metaverse.js";
 import { EncounterOptions } from "../metaverse.js";
 import { PersonaScene } from "../persona-scene.js";
 import { Helpers } from "../utility/helpers.js";
@@ -279,7 +280,7 @@ export class PersonaRegion extends RegionDocument {
 		}
 		await TriggeredEffect.onTrigger("on-enter-region", token.actor as PC, situation).emptyCheck()?.autoApplyResult();
 		if (tokens.some(t => t.actor?.system.type == "shadow" && !t.hidden) ) return;
-		this.presenceCheck();
+		this.presenceCheck("wandering");
 		await Metaverse.passMetaverseTurn();
 	}
 
@@ -318,8 +319,8 @@ export class PersonaRegion extends RegionDocument {
 		return true;
 	}
 
-	async presenceCheck(modifier = 0, battleType: "wandering" | "secondary" | "room-no-guard" | "room-with-guard" = "wandering") : Promise<boolean> {
-		const presence = await Metaverse.presenceCheck(this, undefined, modifier);
+	async presenceCheck(battleType: PresenceRollData["encounterType"], modifier = 0) : Promise<boolean> {
+		const presence = await Metaverse.presenceCheck(battleType, this, undefined, modifier);
 		if (!presence) return false;
 		let shadowType : Shadow["system"]["creatureType"] | undefined = undefined;
 		switch (presence) {

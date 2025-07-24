@@ -4,7 +4,7 @@ import { HBS_TEMPLATES_DIR } from "../../config/persona-settings.js";
 import { ProgressClock } from "../utility/progress-clock.js";
 
 
-const TENSION_POOL_MAX = 8 as const;
+const TENSION_POOL_MAX = 6 as const;
 const TENSION_POOL_NAME = "Tension Pool";
 
 export class TensionPool extends ProgressClock {

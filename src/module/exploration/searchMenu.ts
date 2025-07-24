@@ -29,7 +29,7 @@ export class SearchMenu {
 		stopOnHazard: {initial: false, label: "Stop On Hazard"},
 		isHazard: {initial: false, label: "Hazard in Room"},
 		isSecret: {initial: false, label: "Secret in Room"},
-		incTension: {initial: 1, label: "Increase Tension By"},
+		incTension: {initial: 0, label: "Increase Tension By"},
 		hazardOnTwo: {initial: false, label: "Hazard on 2s"},
 		cycle: {initial: true, label: "allow multiple searches in a row"},
 		treasureFindBonus: {initial: 0, label: "Treasure Find Bonus"},
@@ -233,7 +233,7 @@ export class SearchMenu {
 			await TensionPool.instance.inc();
 		}
 		// if (!options.rollTension) return msg;
-		const isEncounter = await region.presenceCheck();
+		const isEncounter = await region.presenceCheck("room");
 		if (isEncounter) {
 			this.suspend(true);
 			return;

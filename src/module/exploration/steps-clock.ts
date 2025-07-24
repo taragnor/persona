@@ -18,7 +18,7 @@ export class StepsClock extends ProgressClock {
 	static init() {
 		this._instance = new StepsClock();
 		this._instance.setGMOnly(true);
-		this._instance.hide();
+		this._instance.show();
 	}
 }
 
@@ -27,8 +27,13 @@ Hooks.on("ready", () => {
 });
 
 
-Hooks.on("exitMetaverse", () => {
-	StepsClock.instance.set(0);
+Hooks.on("exitMetaverse", async() => {
+	await StepsClock.instance.set(0);
+	await StepsClock.instance.hide();
 });
 
+Hooks.on("enterMetaverse",async () => {
+	await StepsClock.instance.set(0);
+	await StepsClock.instance.show();
+});
 
