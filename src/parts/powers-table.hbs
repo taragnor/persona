@@ -67,7 +67,7 @@
 				Cost
 			</th>
 		</tr>
-		{{#each actor.bonusPowers as |power|}}
+		{{#each actor.displayedBonusPowers as |power|}}
 		<tr class="power-row {{#if (not (canUsePower ../actor power))}} faded {{/if}}" data-power-id="{{power.id}}">
 			<td>
 				{{#if (canUsePower ../actor power)}}

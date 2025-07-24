@@ -1,0 +1,21 @@
+<section class="opener-block" data-combatant-id="{{combatant.id}}">
+	<h3> Opening Roll -> {{roll.total}}</h3>
+
+	<div class="opener-choices">
+	{{#each openers as |opener i|}}
+	<div class="opener">
+		<div class="initial-msg">
+			<h4> {{opener.msg}}</h4>
+		</div>
+		<ul class="options-list">
+			{{#each opener.options as |opt j|}}
+			<li class="opener-option">
+				{{> "systems/persona/parts/opener-option-links.hbs" opt=opt}}
+			</li>
+			{{/each}}
+		</ul>
+
+	</div>
+	{{/each}}
+	</div>
+</section>

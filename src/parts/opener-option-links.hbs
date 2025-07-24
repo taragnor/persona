@@ -1,0 +1,28 @@
+{{#if opt.power.targets}}
+<div class="targeted-action" data-power-id="{{opt.power.powerId}}" title="{{opt.optionTooltip}}">
+	{{#if opt.mandatory}}
+	<b>(Mandatory)</b>
+	{{/if}}
+	<span class="option-name">
+		{{opt.optionName}}
+	</span>
+	<span class="option-targets">
+		(
+		{{#each opt.power.targets as |target|}}
+		<a class="option-target" data-target-id="{{target.id}}">
+			{{target.token.name}}
+		</a>
+		{{/each}}
+		)
+	</span>
+</div>
+{{else}}
+<a class="simple-action" data-power-id="{{opt.power.powerId}}" title="{{opt.optionTooltip}}">
+	{{#if opt.mandatory}}
+	<b>(Mandatory)</b>
+	{{/if}}
+	<span class="option-name">
+		{{opt.optionName}}
+	</span>
+</a>
+{{/if}}

@@ -121,14 +121,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		// this._startedList.add(comb.id);
 	}
 
-	get validEngagementCombatants(): (Combatant <ValidAttackers> & {actor: ValidAttackers})[] {
+	get validEngagementCombatants(): PersonaCombatant[] {
 		return this.combatants.contents.filter( comb => {
 			const actor = comb.token.actor;
 			if (!actor) return false;
 			if (actor.hasStatus("charmed")) return false;
 			if (!actor.isAlive()) return false;
 			return true;
-		}) as (Combatant <ValidAttackers> & {actor: ValidAttackers})[];
+		}) as PersonaCombatant[];
 
 	}
 
@@ -386,7 +386,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 	}
 
-	async startCombatantTurn( combatant: Combatant<ValidAttackers> ){
+	async startCombatantTurn( combatant: Combatant<PersonaActor>){
+		if (!PersonaCombat.isPersonaCombatant(combatant)) return;
 		let baseRolls : Roll[] = [];
 		const rolls : RollBundle[] = [];
 		const actor = combatant.actor;
@@ -415,18 +416,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const openingReturn = await this.execOpeningRoll(combatant);
 		if (openingReturn) {
 			const {data, roll} = openingReturn;
-			const initialMsg = `<h3> Opening Roll -> ${roll.total}</h3>`;
-			const concatData =
-				data.map( ret => {
-					const optionsMap = ret.options.map( opt=> {
-						const mandatoryStr = opt.mandatory ? "<b>(Mandatory)</b>": "";
-						return `<li> ${mandatoryStr} ${opt.optionTxt}  </li>`;
-					});
-					const list = optionsMap.length ? `<ul>${optionsMap.join("")}</ul>`: "";
-					return `${ret.msg.join("")} ${list}`;
-				});
-			startTurnMsg.push(initialMsg);
-			startTurnMsg = startTurnMsg.concat(concatData);
+			const openerMsg = await renderTemplate("systems/persona/parts/openers-list.hbs", {roll, openers: data, combatant});
+			startTurnMsg.push(openerMsg);
 			baseRolls.push(roll);
 		}
 		const speaker = {alias: "Combat Turn Start"};
@@ -439,6 +430,68 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		};
 		await ChatMessage.create(messageData, {});
 	}
+
+	static async addOpeningActionListeners(elem: JQuery) : Promise<void> {
+		debugger;
+		elem.find("a.option-target").on("click", this.activateTargettedOpener.bind(this));
+		elem.find("a.simple-action").on("click", this.activateGeneralOpener.bind(this));
+
+	}
+
+	static async activateGeneralOpener (ev: JQuery.ClickEvent) {
+		if (!await HTMLTools.confirmBox("use this opener?", "use this opener?")) return;
+		const combatantId = HTMLTools.getClosestData(ev,"combatantId");
+		const powerId = HTMLTools.getClosestDataSafe(ev,"powerId", "");
+		const combatant = this.#ensureActivatingCharacterValid(combatantId);
+		const options = {} //later to be used for stuff like disengage and other specials;
+		if (!combatant) return;
+		if (!powerId) {
+			await this.execSimpleAction(options);
+			return;
+		}
+		const power = combatant.actor.getUsableById(powerId);
+		if (!power) { return; }
+		if (power && combatant.actor?.canUseOpener()) {
+			await this.usePower(combatant.token as PToken, power);
+		} else {
+			ui.notifications.warn("Can't use opener here");
+		}
+	}
+
+	static async execSimpleAction(options: unknown) {
+		ui.notifications.notify("Executing simple action");
+	}
+
+	static async activateTargettedOpener( ev: JQuery.ClickEvent) {
+		if (!await HTMLTools.confirmBox("use this opener?", "use this opener?")) return;
+		const combatantId = HTMLTools.getClosestData(ev,"combatantId");
+		const powerId = HTMLTools.getClosestData(ev,"powerId");
+		const targetId = HTMLTools.getClosestData(ev,"targetId");
+		const combatant = this.#ensureActivatingCharacterValid(combatantId);
+		if (!combatant) return;
+		const power = combatant.actor.getUsableById(powerId);
+		if (!power) { return; }
+		const target = combatant.parent?.combatants.find(c=> c.id == targetId);
+		if (!target) {
+			PersonaError.softFail(`Cant find target Id ${targetId}`)
+			return;
+		}
+		if (combatant.actor?.canUseOpener()) {
+			await this.usePower(combatant.token as PToken, power, [(target as PersonaCombatant).token]);
+		}
+	}
+
+	static #ensureActivatingCharacterValid(combatantId: PersonaCombatant["id"]): PersonaCombatant | undefined {
+		const currentCombat = game.combat as PersonaCombat | undefined;
+		const combatant = currentCombat?.combatant;
+		if (!currentCombat || !combatant || !combatant.actor) return;
+		if (combatant?.id != combatantId) {
+			ui.notifications.warn("Not your turn");
+			return;
+		}
+		return combatant as PersonaCombatant;
+	}
+
 
 	async	execStartingTrigger(combatant: PersonaCombat["combatant"]) {
 		const triggeringCharacter  = (combatant as Combatant<ValidAttackers>)?.token?.actor?.accessor;
@@ -456,7 +509,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 
-	async execOpeningRoll( combatant: Combatant<ValidAttackers> ) : Promise<{data: OpenerOptionsReturn[], roll: Roll} | null> {
+	async execOpeningRoll( combatant: PersonaCombatant) : Promise<{data: OpenerOptionsReturn[], roll: Roll} | null> {
 		let returns :OpenerOptionsReturn[]= [];
 		if (this.isSocial) {return null;}
 		const actor = combatant.actor;
@@ -521,7 +574,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		msg.push(`Sleeping`);
 		options.push({
-			optionTxt: "Sleep Soundly",
+			optionName: "Sleep Soundly",
 			mandatory: true,
 			optionEffects: [],
 		});
@@ -540,7 +593,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case (saveTotal >= 16): {
 				msg.push(`Success (Remove Charm)`);
 				options.push({
-					optionTxt: "Clear Charm and act normally (Lose opening action)",
+					optionName: "Clear Charm and act normally (Lose opening action)",
 					mandatory: true,
 					optionEffects: [],
 				});
@@ -549,7 +602,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case (saveTotal >= 11): {
 				msg.push(`Success (Dazed)`);
 				options.push({
-					optionTxt: "You stand around and do nothing",
+					optionName: "You stand around and do nothing",
 					mandatory: true,
 					optionEffects: [],
 				});
@@ -558,7 +611,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case (saveTotal < 6) : {
 				msg.push(`Failure (Buff, Heal or attack)`);
 				options.push({
-					optionTxt: "The enemy chooses your action , causing you to cast a single target healing or buffing effect on an enemy or making a basic attack against an ally",
+					optionName: "Charmed",
+					toolTip: "The enemy chooses your action , causing you to cast a single target healing or buffing effect on an enemy or making a basic attack against an ally",
 					mandatory: true,
 					optionEffects: [],
 				});
@@ -567,7 +621,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			default:
 				msg.push(`Failure (Basic Attack)`);
 				options.push({
-					optionTxt: "Basic Attack against an ally of the enemy's choice",
+					optionName: "Basic Attack against an ally of the enemy's choice",
 					mandatory: true,
 					optionEffects: [],
 				});
@@ -591,7 +645,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case (saveTotal <= 5):{
 				msg.push(`Failure (Miss Turn + lose 10% Resources)`);
 				options.push({
-					optionTxt: "Throw Away Money (Miss Turn + lose 10% Resources)",
+					optionName: "Throw Away Money (Miss Turn + lose 10% Resources)",
 					mandatory: true,
 					optionEffects: [],
 				});
@@ -600,7 +654,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			default:
 				msg.push(`Failure (Miss Turn)`);
 				options.push({
-					optionTxt: "Stand around confused (Miss Turn)",
+					optionName: "Stand around confused (Miss Turn)",
 					mandatory: true,
 					optionEffects: [],
 				});
@@ -624,7 +678,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			default:
 				msg.push(`Failure (Miss Turn)`);
 				options.push({
-					optionTxt: "Wallow in Despair (Miss Turn)",
+					optionName: "Wallow in Despair (Miss Turn)",
 					mandatory: true,
 					optionEffects: [],
 				});
@@ -648,7 +702,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case (saveTotal <= 2) : {
 				msg.push(`Failure (Flee)`);
 				options.push({
-					optionTxt: "Flee from Combat",
+					optionName: "Flee from Combat",
 					mandatory: true,
 					optionEffects: [],
 				});
@@ -657,7 +711,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			default:
 				msg.push(`Failure (Miss Turn)`);
 				options.push({
-					optionTxt: "Cower in Fear (Miss Turn)",
+					optionName: "Cower in Fear (Miss Turn)",
 					mandatory: true,
 					optionEffects: [],
 				});
@@ -671,7 +725,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (combatant?.actor?.hasStatus("rage")) {
 			msg.push(`Battle Rage`);
 			options.push({
-				optionTxt: "Attack nearest random enemy",
+				optionName: "Attack nearest random enemy",
 				mandatory: true,
 				optionEffects: [],
 			});
@@ -679,7 +733,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return {msg, options};
 	}
 
-	disengageOpener( combatant: Combatant<ValidAttackers> , situation: Situation) :OpenerOptionsReturn {
+	disengageOpener( combatant: PersonaCombatant, situation: Situation) :OpenerOptionsReturn {
 		let options : OpenerOptionsReturn["options"] = [];
 		let msg : string[] = [];
 		const rollValue = situation.naturalRoll ?? -999;
@@ -708,26 +762,27 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		switch (true) {
 			case disengageTotal >= 16 :
 				options.push( {
-					optionTxt: "Expert Disengage",
-					optionEffects: [],
+					optionName: "Expert Disengage",
+					optionEffects: ["disengage"],
 					mandatory: false,
 				});
 				break;
 			case disengageTotal >= 11:
-				options.push( {
-					optionTxt: "Standard Disengage",
-					optionEffects: [],
-					mandatory: false,
-				});
+				const enemyDefenders = this.getEnemyEngagedDefenders(combatant);
+				if (enemyDefenders.length == 0) {
+					options.push( {
+						optionName: "Standard Disengage",
+						optionEffects: ["disengage"],
+						mandatory: false,
+					});
+				}
 				break;
 		}
 		return { msg, options};
 	}
 
-	getOpenerPrintableName(usable: Usable, user: Combatant<ValidAttackers>, situation: Situation) : string  | undefined {
-		const targets= this.getValidTargetsFor(usable, user, situation)
-			.map( target=> target.name);
-		if (targets.length == 0) return undefined;
+	getOpenerPrintableName(usable: Usable, targetList: PersonaCombatant[]) : string  | undefined {
+		const targets= targetList.map( target=> target.name);
 		return `${usable.displayedName} (${targets.join(", ")}): ${usable.system.description}`;
 	}
 
@@ -746,13 +801,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			});
 		options = usableActions
 			.flatMap( action =>  {
-				const printableName = this.getOpenerPrintableName(action, combatant, situation);
-				if (!printableName) return [];
+				const targets= this.getValidTargetsFor(action, combatant, situation);
+				if (targets.length == 0) return [];
 				return [{
 					mandatory: action.hasTag("mandatory"),
-					optionTxt: printableName,
+					optionName: action.name,
+					toolTip: action.system.description,
 					optionEffects: []
-				}];
+				}] satisfies OpenerOption[];
 			});
 		if (options.length > 0) {
 			msg.push(`Special Actions`);
@@ -777,14 +833,21 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				return action.testOpenerPrereqs(useSituation, combatant.actor!);
 			});
 		options = usableActions
-			.flatMap( action =>  {
-				const printableName = this.getOpenerPrintableName(action, combatant, situation);
-				if (!printableName) return [];
+			.flatMap<OpenerOption>( action =>  {
+				const targets= this.getValidTargetsFor(action, combatant, situation);
+				if (targets.length == 0) return [];
+				// const printableName = this.getOpenerPrintableName(action, targets);
 				return [{
 					mandatory: action.hasTag("mandatory"),
-					optionTxt: printableName,
-					optionEffects: []
-				}];
+					optionName: action.name,
+					toolTip: action.system.description,
+					// optionTxt: printableName ?? "",
+					optionEffects: [],
+					power: {
+						powerId: action.id,
+						targets: action.requiresTargetSelection() ? targets: undefined,
+					}
+				}] satisfies OpenerOption[];
 			});
 		if (options.length > 0) {
 			msg.push(`Other Available Options`);
@@ -799,38 +862,77 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return actor1.getAllegiance() == actor2.getAllegiance();
 	}
 
-	getAlliedEngagedDefenders(Tacc: UniversalTokenAccessor<PToken>) : PersonaCombatant[];
-	getAlliedEngagedDefenders(comb: PersonaCombatant  ) : PersonaCombatant[];
-	getAlliedEngagedDefenders(Tacc: UniversalTokenAccessor<PToken> | PersonaCombatant) : PersonaCombatant[] {
-		let comb : PersonaCombatant;
-		if (! (Tacc instanceof Combatant)) {
-			const token = PersonaDB.findToken(Tacc);
-			if (!token) return [];
-			const combTest =  this.findCombatant(token);
-			if (!combTest) return [];
-			comb = combTest;
-		} else {
-			if (!Tacc.token.actor) {
-				return [];
-			}
-			comb = Tacc;
+	toCombatant(c: IntoCombatant) : PersonaCombatant | undefined {
+		if (c instanceof Combatant) return c; 
+		if (PersonaDB.isTokenAccessor(c))  {
+			const tok= PersonaDB.findToken(c);
+			return this.findCombatant(tok);
+		}
+		if (PersonaDB.isActorAccessor(c)) {
+			const actor = PersonaDB.findActor(c);
+			return this.findCombatant(actor);
+		}
+		throw new Error("Illegal Argument passed to toCombatant");
+	}
+
+	getEnemyEngagedDefenders(x: IntoCombatant) : PersonaCombatant[] {
+		const comb = this.toCombatant(x);
+		if (!comb) {
+			PersonaError.softFail("Can't find Combatant", x);
+			return [];
 		}
 		const meleeCombatants = EngagementChecker.listOfCombatantsInMelee(comb, this);
 		return meleeCombatants
-			.filter( x=> x.actor && x.actor.statuses.has("sticky")
+			.filter( x=> x.actor && x.actor.hasDefenderAura()
+				&& !PersonaCombat.isSameTeam(comb,x )
+				&& x.actor.canEngage()
+			);
+
+
+	}
+
+	getAlliedEngagedDefenders(Tacc: UniversalTokenAccessor<PToken>) : PersonaCombatant[];
+	getAlliedEngagedDefenders(comb: PersonaCombatant  ) : PersonaCombatant[];
+	getAlliedEngagedDefenders(Tacc: UniversalTokenAccessor<PToken> | PersonaCombatant) : PersonaCombatant[] {
+		const comb = this.toCombatant(Tacc);
+		if (!comb) {
+			PersonaError.softFail("Can't find Combatant", Tacc);
+			return [];
+		}
+		// if (! (Tacc instanceof Combatant)) {
+		// 	const token = PersonaDB.findToken(Tacc);
+		// 	if (!token) return [];
+		// 	const combTest =  this.findCombatant(token);
+		// 	if (!combTest) return [];
+		// 	comb = combTest;
+		// } else {
+		// 	if (!Tacc.token.actor) {
+		// 		return [];
+		// 	}
+		// 	comb = Tacc;
+		// }
+		const meleeCombatants = EngagementChecker.listOfCombatantsInMelee(comb, this);
+		return meleeCombatants
+			.filter( x=> x.actor && x.actor.hasDefenderAura()
 				&& PersonaCombat.isSameTeam(comb,x )
 				&& x.actor.canEngage()
 			);
 	}
 
-	getValidTargetsFor(usable: Usable, user: Combatant<ValidAttackers>, situation: Situation): Combatant<ValidAttackers>[]  {
+	getValidTargetsFor(usable: Usable, user: Combatant<ValidAttackers>, situation: Situation): PersonaCombatant[] {
 		const userActor = user.token.actor;
 		if (!userActor) return [];
-		return this.combatants.filter( comb =>  {
+		return this.combatants
+			.filter( comb =>  {
 			const targetActor = comb.token.actor;
 			if (!targetActor) return false;
+			if (!PersonaCombat.isPersonaCombatant(comb)) return false;
 			return this.isValidTargetFor( usable, user, comb, situation);
-		});
+		}) as PersonaCombatant[];
+	}
+
+	static isPersonaCombatant(comb: Combatant<PersonaActor>) : comb is PersonaCombatant {
+		return comb.actor?.isValidCombatant() == true;
 	}
 
 	isValidTargetFor(usable: Usable, user: Combatant<ValidAttackers>, target: Combatant<ValidAttackers>, situation: Situation): boolean {
@@ -870,7 +972,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (!combatant.token) return 11;
 		const list = EngagementChecker.getAllEngagedEnemies(combatant, this);
 		for (const item of list) {
-			if (item.actor && item.actor.isSticky()) return 16;
+			if (item.actor && item.actor.hasDefenderAura()) return 16;
 		}
 		return 11;
 	}
@@ -931,7 +1033,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (actor.hasStatus("full-fade")) {
 			msg.push(`${combatant.name} is completely faded...`);
 			options.push({
-				optionTxt: "Completely Faded (Help in Spirit only)",
+				optionName: "Completely Faded (Help in Spirit only)",
 				mandatory: true,
 				optionEffects: [],
 			});
@@ -947,7 +1049,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					&& (actor as PC).getSocialSLWithTarot("Star") >= 3: {
 						msg.push(`Critical Success`);
 						options.push({
-							optionTxt: `Star Benefit ( get up at 1 HP)`,
+							optionName: `Star Benefit ( get up at 1 HP)`,
 							mandatory: true,
 							optionEffects: [],
 						});
@@ -956,7 +1058,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case (saveTotal >= 11):{
 				msg.push(`Success`);
 				options.push({
-					optionTxt: `${actor.hasStatus("fading") ? "Barely " : ""}Hanging On (Help in Spirit Only)`,
+					optionName: `${actor.hasStatus("fading") ? "Barely " : ""}Hanging On (Help in Spirit Only)`,
 					mandatory: true,
 					optionEffects: [],
 				});
@@ -967,7 +1069,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				await actor.increaseFadeState();
 				const fadeState = actor.hasStatus("fading") ? "Starting to Fade Away" : "Fully Fade Away (Ejected from Metaverse)";
 				options.push({
-					optionTxt: `${fadeState} (Help in Spirit Only)`,
+					optionName: `${fadeState} (Help in Spirit Only)`,
 					mandatory: true,
 					optionEffects: [],
 				});
@@ -1041,7 +1143,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return true;
 	}
 
-	static async usePower(attacker: PToken, power: UsableAndCard) : Promise<CombatResult> {
+	static async usePower(attacker: PToken, power: UsableAndCard, presetTargets ?: PToken[] ) : Promise<CombatResult> {
 		if (attacker instanceof Token) {
 			throw new Error("Actual token found instead of token document");
 		}
@@ -1049,7 +1151,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			return new CombatResult();
 		}
 		try {
-			const targets = this.getTargets(attacker, power);
+			const targets = presetTargets ? presetTargets :  this.getTargets(attacker, power);
 			if (!power.isSkillCard() && targets.some( target => target.actor.system.type == "shadow" ) && (power as Usable).system.targets != "self" ) {
 				this.ensureCombatExists();
 			}
@@ -2505,19 +2607,23 @@ static async allOutAttackPrompt() {
 }
 
 findCombatant(acc :UniversalTokenAccessor<TokenDocument<ValidAttackers>>) : PersonaCombatant | undefined;
+findCombatant(actor: ValidAttackers): PersonaCombatant | undefined;
 findCombatant(comb :PersonaCombatant) : PersonaCombatant | undefined;
 findCombatant(token :PToken) : PersonaCombatant | undefined;
-findCombatant(token :PToken | PersonaCombatant | UniversalTokenAccessor<TokenDocument<ValidAttackers>>) : Combatant<ValidAttackers> | undefined {
+findCombatant(thing :PToken | PersonaCombatant | UniversalTokenAccessor<TokenDocument<ValidAttackers>> | ValidAttackers) : Combatant<ValidAttackers> | undefined {
 	const validCombatants = this.validCombatants();
 	switch (true) {
-		case token instanceof Combatant: {
-			return validCombatants.find( comb=> comb == token);
+		case thing instanceof Combatant: {
+			return validCombatants.find( comb=> comb == thing);
 		}
-		case token instanceof TokenDocument: {
-			return validCombatants.find( comb=> comb.token == token);
+		case thing instanceof TokenDocument: {
+			return validCombatants.find( comb=> comb.token == thing);
+		}
+		case thing instanceof Actor: {
+			return validCombatants.find( comb=> comb.actor == thing);
 		}
 		default:
-			const tokenDoc = PersonaDB.findToken(token);
+			const tokenDoc = PersonaDB.findToken(thing);
 			return validCombatants.find( comb=> comb.token != undefined && comb.token == tokenDoc);
 	}
 }
@@ -2956,10 +3062,26 @@ type OpenerOptionsReturn = {
 
 type OpenerOption = {
 	mandatory: boolean,
-	optionTxt: string,
-	optionEffects: unknown[]
+	optionName: string,
+	// optionTxt: string,
+	optionEffects: OptionEffect[],
+	toolTip ?: string,
+	power ?: {
+		powerId: Power["id"],
+		/** Only included if power has selectable targets, and lists a list of possible legal targets */
+		targets: PersonaCombatant[] | undefined,
+	}
 }
 
-export type PersonaCombatant = NonNullable<PersonaCombat["combatant"]>;
+interface OptionEffects {
+	"disengage": string,
+}
+
+type OptionEffect = keyof OptionEffects;
+
+export type PersonaCombatant = NonNullable<PersonaCombat["combatant"]> & {actor: ValidAttackers , token: PToken};
 
 type CombatRollSituation = AttackResult["situation"];
+
+type IntoCombatant = PersonaCombatant | UniversalTokenAccessor<PToken> | UniversalActorAccessor<ValidAttackers>;
+

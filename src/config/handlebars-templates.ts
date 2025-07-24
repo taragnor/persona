@@ -50,6 +50,8 @@ const templateFileNames : string[] =[
 	"base-persona-section.hbs",
 	"main-powers-table.hbs",
 	"printable-mods.hbs",
+	"openers-list.hbs",
+	"opener-option-links.hbs",
 ];
 
 export const templatePaths = templateFileNames.

@@ -266,6 +266,21 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		return a.name.localeCompare(b.name);
 	}
 
+	isItemAccessor(obj: unknown) : obj is UniversalItemAccessor<any> {
+		const x = obj as Partial<UniversalItemAccessor<any>>;
+		return (typeof x?.itemId == "string");
+	}
+
+	isActorAccessor(obj: unknown): obj is UniversalActorAccessor<any> {
+		const x = obj as Partial<UniversalActorAccessor<any>>;
+		return (typeof x?.actorId == "string");
+	}
+
+	isTokenAccessor( obj: unknown): obj is UniversalTokenAccessor<any> {
+		const x = obj as Partial<UniversalTokenAccessor<any>>;
+		return (typeof x?.tokenId == "string");
+	}
+
 	findItem<T extends Item<any>> ({actor, itemId}: UniversalItemAccessor<T>): T {
 		if (actor) {
 			const foundActor = this.findActor(actor);

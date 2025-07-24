@@ -880,3 +880,8 @@ h5.choices-block {
 	margin: 10px;
 	padding: 5px;
 }
+
+.option-target {
+	padding-left: 5px;
+	padding-right: 5px;
+}

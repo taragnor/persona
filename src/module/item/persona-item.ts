@@ -1383,6 +1383,34 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return testPreconditions(conditions, situation, usable);
 	}
 
+	requiresTargetSelection(this: Usable) : boolean {
+		switch (this.system.targets) {
+			case "1-engaged":
+			case "1-nearby":
+				return true;
+			case "1d4-random":
+			case "1d3-random":
+			case "1-random-enemy":
+				return false;
+			case "1-nearby-dead":
+				return true;
+			case "1d4-random-rep":
+			case "1d3-random-rep":
+				return false;
+			case "self":
+				return false;
+			case "all-enemies":
+			case "all-allies":
+			case "all-dead-allies":
+			case "all-others":
+			case "everyone":
+				return false;
+			default:
+				this.system.targets satisfies never;
+				return false;
+		}
+	}
+
 	cardConditionsToSelect( this: SocialCard) : SocialCard["system"]["conditions"] {
 		const extraConditionsFromTags = this.extraConditionsFromTags();
 		if (extraConditionsFromTags.length == 0) {

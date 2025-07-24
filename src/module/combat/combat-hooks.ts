@@ -1,3 +1,4 @@
+import { PersonaCombatant } from "./persona-combat.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { PC } from "../actor/persona-actor.js";
 import { PersonaCombat } from "./persona-combat.js";
@@ -54,7 +55,7 @@ export class CombatHooks {
 						}
 					} else {
 						if (combat.combatant) {
-							await combat.startCombatantTurn(combat.combatant);
+							await combat.startCombatantTurn(combat.combatant as PersonaCombatant);
 						}
 					}
 				}
@@ -68,7 +69,7 @@ export class CombatHooks {
 					await PersonaSocial.startSocialTurn(x.actor as PC);
 				} else {
 					await combat.runAllCombatantStartCombatTriggers();
-					await combat.startCombatantTurn(x as Combatant<ValidAttackers>);
+					await combat.startCombatantTurn(x as PersonaCombatant);
 				}
 			}
 		});
@@ -146,6 +147,12 @@ export class CombatHooks {
 			PersonaSockets.setHandler("QUERY_ALL_OUT_ATTACK", () => {
 				PersonaCombat.allOutAttackPrompt();
 			});
+		});
+
+		Hooks.on("renderChatMessage", async(msg, elem) => {
+			if (elem.find(".opener-block").length > 0) {
+				PersonaCombat.addOpeningActionListeners(elem);
+			}
 		});
 
 	}

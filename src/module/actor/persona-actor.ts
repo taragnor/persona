@@ -957,6 +957,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
+	getUsableById(id: Usable["id"]) : Usable | undefined {
+		const power = this.powers.find(pow => pow.id == id);
+		if (power) return power;
+		const usable = this.items.find( item=> item.id == id && item.isUsable());
+		if (usable) return usable as Usable;
+		PersonaError.softFail(`Can't find Usable with Id ${id}`);
+	}
+
 	get maxSideboardPowers() : number {
 		if (!this.isValidCombatant()) return 0;
 		switch (this.system.type) {
@@ -978,6 +986,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.mainPowers,
 			...this.bonusPowers,
 		].flat();
+	}
+
+	get displayedBonusPowers() : Power[] {
+		return this.bonusPowers.filter( power=>
+			!power.isOpener()
+		);
 	}
 
 	randomItem(this:PC): InvItem | SkillCard | Weapon | Consumable  {
@@ -3145,6 +3159,15 @@ hasRole( roles: Shadow["system"]["role"] | Shadow["system"]["role"][]): boolean 
 
 isSoloType() : boolean {
 	return this.hasRole("solo");
+}
+
+hasDefenderAura(): boolean {
+	return this.statuses.has("sticky");
+}
+
+canUseOpener(): boolean {
+	//TODO: placeholder
+	return true;
 }
 
 isBossOrMiniBossType() : boolean {
