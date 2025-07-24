@@ -121,7 +121,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			newxp -= XPrequired;
 			levelUp = true;
 		}
-		// await this.source.update({"system.combat.xp" : newxp});
+		await this.source.update({"system.combat.xp" : newxp});
 		return levelUp;
 	}
 
@@ -130,6 +130,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			user: this.user.accessor,
 			persona: this,
 		}
+	}
+
+	numOfWeaknesses(): number {
+		return Object.values(this.resists)
+			.reduce( (acc, res) =>  acc + (res == "weakness" ? 1 : 0) ,0);
 	}
 
 	numOfIncAdvances(): number {

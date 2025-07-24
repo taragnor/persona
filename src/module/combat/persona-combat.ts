@@ -1998,6 +1998,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		this.applyRelevantTagAttackBonus(attackBonus, attacker, power);
 		if (power.isStatusEffect()) {
 			attackBonus.add(`Status Effect Modifier`, -3);
+			if (target?.actor?.persona().numOfWeaknesses() == 0 && !target.actor.isBossOrMiniBossType()) {
+			attackBonus.add(`Vulnerable to Status Effects`, +3);
+			}
 		}
 		if (power.isMultiTarget()) {
 			attackBonus.add(`Multitarget attack penalty`, -3);

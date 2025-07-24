@@ -1,12 +1,14 @@
 
 <section class="resistance">
 	<h3> Damage Resistance </h3>
+	{{#if (isGM)}}
 	{{#if actor.isUnderResistCap}}
 	<div class="error">
 		UNSPENT BOOSTS
 	</div>
 	{{/if}}
 	{{#if actor.isOverResistCap}}
+	{{/if}}
 	{{/if}}
 	<div class="error">
 		OVER RESIST CAP

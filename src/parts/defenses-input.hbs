@@ -1,3 +1,4 @@
+{{#if (isGM)}}
 {{#if actor.isUnderDefenseCap}}
 <div class="error">
 	UNSPENT BOOSTS
@@ -7,6 +8,7 @@
 <div class="error">
 	OVER DEFENSE CAP
 </div>
+{{/if}}
 {{/if}}
 <div class="defenses">
 	<div class="defense">
