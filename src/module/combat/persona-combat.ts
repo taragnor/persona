@@ -442,7 +442,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const combatantId = HTMLTools.getClosestData(ev,"combatantId");
 		const powerId = HTMLTools.getClosestDataSafe(ev,"powerId", "");
 		const combatant = this.#ensureActivatingCharacterValid(combatantId);
-		const options = {} //later to be used for stuff like disengage and other specials;
+		const options = HTMLTools.getClosestDataSafe(ev, "optionEffects", "");
 		if (!combatant) return;
 		if (!powerId) {
 			await this.execSimpleAction(options);
@@ -459,9 +459,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 	}
 
-	static async execSimpleAction(options: unknown) {
+	static async execSimpleAction(options: string) {
+		options = options.trim();
+		if (options.length == 0) return;
+		switch (options.trim() as OptionEffect) {
+			case "disengage":
+				//TODO handle disengage later
+		}
 		ui.notifications.notify("Executing simple action");
-
 	}
 
 	static async activateTargettedOpener( ev: JQuery.ClickEvent) {
