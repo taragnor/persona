@@ -432,7 +432,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	static async addOpeningActionListeners(elem: JQuery) : Promise<void> {
-		debugger;
 		elem.find("a.option-target").on("click", this.activateTargettedOpener.bind(this));
 		elem.find("a.simple-action").on("click", this.activateGeneralOpener.bind(this));
 
@@ -447,12 +446,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (!combatant) return;
 		if (!powerId) {
 			await this.execSimpleAction(options);
+			await this.chooseOpener(ev);
 			return;
 		}
 		const power = combatant.actor.getUsableById(powerId);
 		if (!power) { return; }
 		if (power && combatant.actor?.canUseOpener()) {
 			await this.usePower(combatant.token as PToken, power);
+			await this.chooseOpener(ev);
 		} else {
 			ui.notifications.warn("Can't use opener here");
 		}
@@ -460,6 +461,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	static async execSimpleAction(options: unknown) {
 		ui.notifications.notify("Executing simple action");
+
 	}
 
 	static async activateTargettedOpener( ev: JQuery.ClickEvent) {
@@ -478,6 +480,26 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		if (combatant.actor?.canUseOpener()) {
 			await this.usePower(combatant.token as PToken, power, [(target as PersonaCombatant).token]);
+			await this.chooseOpener(ev);
+		}
+	}
+
+	static async chooseOpener(event: JQuery.ClickEvent) {
+		const actionName = $(event.currentTarget).parents("li.opener-option").find(".option-name").text().trim();
+		const chatMsgId = HTMLTools.getClosestData(event, "messageId");
+		const msg = game.messages.get(chatMsgId);
+		if (!msg) return;
+		const choice = $(`<div class='opener-choice'>
+		<span>Chosen Opener:</span>
+		<span>${actionName}</span>
+		</div>`);
+		const targetToReplace = $(msg.content).find(".opener-choices");
+		const replacedData = targetToReplace.empty();
+		replacedData.append(choice);
+		const newContent = replacedData
+			.parents().last().html();
+		if (newContent) {
+			await msg.update( {"content": newContent});
 		}
 	}
 

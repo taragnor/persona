@@ -1,5 +1,5 @@
 {{#if opt.power.targets}}
-<div class="targeted-action" data-power-id="{{opt.power.powerId}}" title="{{opt.optionTooltip}}">
+<div class="targeted-action" data-power-id="{{opt.power.powerId}}" title="{{opt.toolTip}}">
 	{{#if opt.mandatory}}
 	<b>(Mandatory)</b>
 	{{/if}}
@@ -17,7 +17,7 @@
 	</span>
 </div>
 {{else}}
-<a class="simple-action" data-power-id="{{opt.power.powerId}}" title="{{opt.optionTooltip}}">
+<a class="simple-action" data-power-id="{{opt.power.powerId}}" title="{{opt.toolTip}}">
 	{{#if opt.mandatory}}
 	<b>(Mandatory)</b>
 	{{/if}}
