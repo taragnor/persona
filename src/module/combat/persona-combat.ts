@@ -169,6 +169,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const unrolledInit = this.combatants
 			.filter( x=>x.initiative == undefined)
 			.map( c=> c.id);
+		await TriggeredEffect.onTrigger("on-combat-start-global")
+			.emptyCheck()
+			?.autoApplyResult();
 		if (unrolledInit.length > 0) {
 			await this.rollInitiative(unrolledInit);
 		}
@@ -2013,14 +2016,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "scan":
 			case "alter-energy":
 			case "alter-mp":
-				case "extraTurn":
-			case "play-sound":
+			case "extraTurn":
 			case "teach-power":
 			case "combat-effect":
 			case "alter-variable":
 			case "perma-buff":
 			case "alter-fatigue-lvl":
 				return [{applyTo,cons}];
+			case "play-sound":
+				return [{applyTo: "global", cons}];
 			case "display-msg":
 				if (cons.newChatMsg) {
 					return [{applyTo: "global", cons}];

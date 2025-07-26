@@ -78,8 +78,15 @@ type InflictStatusTrigger = UserSituation & {
 	statusEffect: StatusEffectId,
 }
 
-type CombatGlobalTrigger = {
+type CombatGlobalTrigger = CombatEndGlobal | CombatStartGlobal;
+
+type CombatEndGlobal = {
 	trigger: "on-combat-end-global",
+}
+
+type CombatStartGlobal = {
+	trigger: "on-combat-start-global",
+
 }
 
 type CombatEndIndividual = {

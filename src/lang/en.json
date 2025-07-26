@@ -752,7 +752,8 @@
 
 	"persona.triggers.on-damage": "Character Takes Damage",
 	"persona.triggers.on-kill-target": "Character kills a target",
-	"persona.triggers.on-combat-start": "Combat Starts",
+	"persona.triggers.on-combat-start": "Combat Starts (each character)",
+	"persona.triggers.on-combat-start-global": "Combat Starts (once)",
 	"persona.triggers.on-use-power": "Character uses a power",
 	"persona.triggers.on-combat-end": "Combat Ends (each combatant)",
 	"persona.triggers.on-combat-end-global": "Combat Ends (Run once)",

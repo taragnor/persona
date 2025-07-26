@@ -4,6 +4,7 @@ export const COMBAT_TRIGGER_LIST = [
 	"on-damage",
 	"on-kill-target",
 	"on-combat-start",
+	"on-combat-start-global",
 	"on-use-power",
 	"on-combat-end",
 	"on-combat-end-global",

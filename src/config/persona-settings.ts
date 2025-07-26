@@ -15,11 +15,11 @@ export class PersonaSettings {
 		}
 	}
 
-	static get<T extends SETTINGKEYS, IT extends InstanceType<typeof SETTINGS[T]["type"]>>(settingName: T) : IT extends Boolean ? boolean: IT {
+	static get<T extends keyof PersonaSettingKeys>(settingName: T) : PersonaSettingKeys[T] {
 		return game.settings.get("persona", settingName);
 	}
 
-	static async set<T extends SETTINGKEYS>(settingName: T, value: InstanceType<typeof SETTINGS[T]["type"]>) {
+	static async set<T extends SETTINGKEYS>(settingName: T, value: SettingNameSpace["persona"][T]) {
 		await game.settings.set("persona", settingName, value);
 
 	}
@@ -160,4 +160,23 @@ const SETTINGS = {
 } as const;
 
 type SETTINGKEYS = keyof typeof SETTINGS;
+
+// type S2 = {
+// 	[k in SETTINGKEYS] :
+// 	"choices" extends keyof Settings[k]
+// 	? keyof Settings[k]["choices"]
+// 	// ? Settings[k]["choices"][keyof Settings[k]["choices"]]
+// 	: Unwrap<InstanceType<Settings[k]["type"]>>
+// }
+
+type PersonaSettingKeysBase = Prettify<SettingsObjToSettingKeyType<typeof SETTINGS>>;
+
+interface PersonaSettingKeys extends PersonaSettingKeysBase {};
+
+declare global {
+	interface SettingNameSpace {
+		"persona": PersonaSettingKeys;
+	}
+}
+
 

@@ -65,13 +65,22 @@ export class TriggeredEffect {
 				case "exit-metaverse":
 				case "on-attain-tarot-perk":
 				case "on-search-end":
-				case "on-active-scene-change":
+				case "on-active-scene-change": {
 					const newSit : Situation = {
 						trigger: trigger,
 						triggeringUser: game.user,
 					};
 					situation = newSit;
 					break;
+				}
+				case "on-combat-start-global": {
+					const newSit : Situation = {
+						trigger: trigger,
+						triggeringUser: game.user,
+					};
+					situation = newSit;
+					break;
+				}
 				case "on-inflict-status":
 				case "on-enter-region":
 				case "on-presence-check":

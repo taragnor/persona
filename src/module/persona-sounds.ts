@@ -30,7 +30,9 @@ const SOUNDS = {
 	"level-up": "P4 Level up.mp3",
 } as const;
 
+
 export type ValidSound = keyof typeof SOUNDS;
+
 
 
 export class PersonaSounds {
@@ -41,6 +43,11 @@ export class PersonaSounds {
 				this.preloadSnd(src);
 			}
 		}
+	}
+
+
+	static FXVolume() : number {
+		return game.settings.get("core", "globalAmbientVolumen");
 	}
 
 	static async playFile(src: string, volume= 1.0, recipients: string[] | false = []): Promise<void> {

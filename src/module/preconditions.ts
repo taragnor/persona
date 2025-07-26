@@ -435,6 +435,7 @@ function triggerComparison(condition: Triggered, situation: Situation, _source:O
 		case "on-metaverse-turn":
 		case "on-open-door":
 		case "on-active-scene-change":
+		case "on-combat-start-global":
 			return true;
 		case "on-clock-change":
 		case "on-clock-tick":
