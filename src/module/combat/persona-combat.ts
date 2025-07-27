@@ -431,7 +431,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			rolls: rolls.map(r=> r.roll).concat(baseRolls),
 			sound: rolls.length + baseRolls.length > 0 ? CONFIG.sounds.dice : undefined
 		};
-		await ChatMessage.create(messageData, {});
+		const msg = await ChatMessage.create(messageData, {});
+		const actorOwner = actor.getPrimaryPlayerOwner();
+		if (actorOwner) {
+			await msg.update({"author": actorOwner})
+		}
 	}
 
 	static async addOpeningActionListeners(elem: JQuery) : Promise<void> {

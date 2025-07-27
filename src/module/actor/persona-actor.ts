@@ -3046,7 +3046,7 @@ async levelUp_Incremental(this: ValidAttackers) {
 		const msg = `${this.name} upgraded ${result} to ${incData[result]}`;
 		console.log(msg);
 		if (this.hasPlayerOwner) {
-			Logger.sendToChat(msg);
+			await Logger.sendToChat(msg);
 		}
 	}
 }
@@ -3881,6 +3881,21 @@ get isTrueOwner() : boolean {
 		case "pc":
 			return game.user.isGM || game.user.id == this.system.trueOwner;
 	}
+}
+
+getPrimaryPlayerOwner() : typeof game.users.contents[number] | undefined {
+	if ("trueOwner" in this.system) {
+		return game.users.get(this.system.trueOwner);
+	}
+	const userIdPair = Object.entries(this.ownership)
+	.find( ([k,v]) => {
+		if (v < CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER) return false;
+		const user = game.users.get(k);
+		if (user && !user.isGM) return true;
+		return false;
+	});
+	if (!userIdPair) return undefined;
+	return game.users.get(userIdPair[0]);
 }
 
 async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) {

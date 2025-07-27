@@ -83,6 +83,7 @@ export class PersonaVariables {
 	static async #set(data: VariableData, value: number) {
 		switch (data.varType) {
 			case "global":
+				//TODO: implement
 				PersonaError.softFail("Setting global variable not yet implemented");
 				break;
 			case "scene": {
