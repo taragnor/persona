@@ -803,7 +803,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "none": return 0;
 			case "light": return 1;
 			case "-": return this.system.melee_extra_mult;
-			case "fixed": return this.system.damage
+			case "fixed": return this.system.damage;
 			case "miniscule": return -1;
 			case "basic": return 0;
 			case "medium": return 3;
@@ -1598,7 +1598,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		// 	console.log(`Damage Type for ${item.name} set to ${damageLevel}`);
 		// 	return;
 		// }
-		if (item.system.damageLevel != "-") return;
+		if (item.system.damageLevel != "-" && item.system.damageLevel != "fixed") return;
 		if (item.system.dmg_type == "none") {
 			damageLevel = "none";
 		} else {
@@ -1608,6 +1608,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					break;
 				case "weapon":
 					damageLevel = PersonaItem.#convertPhysicalDamage(item);
+					break;
 				case "consumable":
 					if (item.system.damage.low > 0)  {
 						damageLevel = "fixed";
@@ -1631,8 +1632,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				return "basic";
 			case 1:
 				return "light";
+			case 2:
 			case 3:
 				return "medium";
+			case 4:
 			case 5:
 				return "heavy";
 			case 7:
