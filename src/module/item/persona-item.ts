@@ -779,40 +779,115 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
+	getWeaponSkillDamage(this: Usable, user: ValidAttackers, situation: Situation) : {low: number, high: number} {
+		const persona = user.persona();
+		const dmg = user.wpnDamage();
+		const bonus = persona.getBonuses("wpnMult");
+		const meleeExtraMult = this.meleeExtraMult();
+		if (typeof meleeExtraMult == "number") {
+			const mult = Math.max(1, user.wpnMult() + (meleeExtraMult ?? 0) + bonus.total(situation));
+			const bonusDamage = user.getBonusWpnDamage();
+			const dmgamt =  {
+				low: dmg.low * mult + bonusDamage.low.total(situation),
+				high: dmg.high * mult + bonusDamage.high.total(situation),
+			};
+			return dmgamt;
+		} else {
+			PersonaError.softFail("damage range wepaon attacks not yet supported");
+			return {high:0, low:0};
+		}
+	}
+
+	meleeExtraMult(this: Usable) : {low: number, high: number} | number {
+		switch (this.system.damageLevel) {
+			case "none": return 0;
+			case "light": return 1;
+			case "-": return this.system.melee_extra_mult;
+			case "fixed": return this.system.damage
+			case "miniscule": return -1;
+			case "basic": return 0;
+			case "medium": return 3;
+			case "heavy": return 5;
+			case "severe": return 7;
+			case "colossal": return 10;
+			default:
+				PersonaError.softFail(`Unknwon damage Level ${this.system.damageLevel}`);
+				return 0;
+		}
+	}
+
+
+	getMagicSkillDamage(this: Usable, user: ValidAttackers, situation: Situation): {low: number, high:number} {
+		const persona = user.persona();
+		const dmg = user.magDmg();
+		const mult = this.magicExtraMult();
+		if (typeof mult == "number") {
+		// const mult = this.system.mag_mult;
+		const high_bonus = persona.getBonuses("magHigh").total(situation);
+		const low_bonus = persona.getBonuses("magLow").total(situation);
+		const baseLow =  (dmg.low + low_bonus)  * mult;
+		const baseHigh =  (dmg.high + high_bonus) * mult;
+		const finalBonus =  persona.getBonuses("magDmg").total(situation);
+		const modified = {
+			low: baseLow + (baseLow > 0 ? finalBonus: 0),
+			high: baseHigh + (baseHigh > 0 ? finalBonus: 0),
+		};
+		return modified;
+		} else {
+			PersonaError.softFail("damage range magic attacks not yet supported");
+			return {high:0, low:0};
+		}
+	}
+
+	magicExtraMult(this: Usable) : {low: number, high: number} | number {
+		switch (this.system.damageLevel) {
+			case "none": return 0;
+			case "fixed": return this.system.damage;
+			case "miniscule": return 2;
+			case "basic":
+				return 1;
+			case "light":
+				if (this.system.dmg_type == "healing")
+					return 4;
+				return 3;
+			case "medium":
+				if (this.system.dmg_type == "healing")
+					return 5;
+				return 4;
+			case "heavy":
+				if (this.system.dmg_type == "healing")
+					return 8;
+				return 7;
+			case "severe":
+				if (this.system.dmg_type == "healing")
+					return 13;
+				return 11;
+			case "colossal":
+				if (this.system.dmg_type == "healing")
+					return 18;
+				return 15;
+			case "-": return this.system.mag_mult;
+			default:
+				PersonaError.softFail(`Unknwon damage Level ${this.system.damageLevel}`);
+				return 0;
+		}
+
+	}
+
 	getDamage(this:ModifierContainer , user: ValidAttackers, situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: user.accessor}, typeOverride : SimpleDamageCons["damageType"] = "none") : {low: number, high:number} {
 		//TODO: handle type override check to see if power damage is by-power or has other type
-		if (!("dmg_type" in this.system) || !("subtype" in this.system)) return {low: 0, high:0};
+		if (!this.isUsable() || this.isSkillCard()) return {low:0, high:0};
+		// if (!("dmg_type" in this.system) || !("subtype" in this.system)) return {low: 0, high:0};
 		if (!typeOverride || typeOverride == "by-power") {
 			if (this.system.dmg_type == "none") return {low: 0, high:0};
 		}
 		const subtype : PowerType  = this.system.type == "power" ? this.system.subtype : "standalone";
 		switch(subtype) {
 			case "weapon" : {
-				const persona = user.persona();
-				const dmg = user.wpnDamage();
-				const bonus = persona.getBonuses("wpnMult");
-				const mult = Math.max(1, user.wpnMult() + (this.system.melee_extra_mult ?? 0) + bonus.total(situation));
-				const bonusDamage = user.getBonusWpnDamage();
-				const dmgamt =  {
-					low: dmg.low * mult + bonusDamage.low.total(situation),
-					high: dmg.high * mult + bonusDamage.high.total(situation),
-				};
-				return dmgamt;
+				return this.getWeaponSkillDamage(user, situation);
 			}
 			case "magic": {
-				const persona = user.persona();
-				const dmg = user.magDmg();
-				const mult = this.system.mag_mult;
-				const high_bonus = persona.getBonuses("magHigh").total(situation);
-				const low_bonus = persona.getBonuses("magLow").total(situation);
-				const baseLow =  (dmg.low + low_bonus)  * mult;
-				const baseHigh =  (dmg.high + high_bonus) * mult;
-				const finalBonus =  persona.getBonuses("magDmg").total(situation);
-				const modified = {
-					low: baseLow + (baseLow > 0 ? finalBonus: 0),
-					high: baseHigh + (baseHigh > 0 ? finalBonus: 0),
-				};
-				return modified;
+				return this.getMagicSkillDamage(user, situation);
 			}
 			case "standalone": {
 				const dmg = this.system.damage;
@@ -1512,8 +1587,93 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const eventsArr= this.system.events.map( x=> (x as any).toJSON());
 		return await this.update({"system.events": eventsArr});
 	}
-}
 
+	static async DamageLevelConvert(item: PersonaItem) {
+		if (!item.isUsable()) return;
+		if (item.isSkillCard()) return;
+		let damageLevel : typeof item["system"]["damageLevel"] | undefined;
+		// if (item.system.damageLevel == "severe" && item.system.subtype == "weapon") {
+		// 	damageLevel = "heavy";
+		// 	await item.update({"system.damageLevel": damageLevel});
+		// 	console.log(`Damage Type for ${item.name} set to ${damageLevel}`);
+		// 	return;
+		// }
+		if (item.system.damageLevel != "-") return;
+		if (item.system.dmg_type == "none") {
+			damageLevel = "none";
+		} else {
+			switch (item.system.subtype) {
+				case "magic":
+					damageLevel= PersonaItem.#convertSpellDamage(item);
+					break;
+				case "weapon":
+					damageLevel = PersonaItem.#convertPhysicalDamage(item);
+				case "consumable":
+					if (item.system.damage.low > 0)  {
+						damageLevel = "fixed";
+						break;
+					}
+				default:
+					break;
+			}
+		}
+		if (damageLevel) {
+			await item.update({"system.damageLevel": damageLevel});
+			console.log(`Damage Type for ${item.name} set to ${damageLevel}`);
+		}
+	}
+
+	static #convertPhysicalDamage(item: Usable) :typeof item["system"]["damageLevel"] | undefined  {
+		switch (item.system.melee_extra_mult) {
+			case -1:
+				return "miniscule";
+			case 0:
+				return "basic";
+			case 1:
+				return "light";
+			case 3:
+				return "medium";
+			case 5:
+				return "heavy";
+			case 7:
+				return "severe";
+			default:
+				console.log(`Unknown Value for ${item.name}, ${item.system.melee_extra_mult} weapon mult`);
+				return undefined;
+		}
+	}
+
+	static #convertSpellDamage(item: Usable) : typeof item["system"]["damageLevel"] | undefined {
+		switch (item.system.mag_mult) {
+			case 0:
+				return "none";
+			case 3:
+				return "light";
+			case 4:
+				return "medium";
+			case 6:
+				if (item.system.dmg_type == "healing")
+					return "medium";
+				break;
+			case 7:
+				return "heavy";
+			case 8:
+				if (item.system.dmg_type == "healing")
+					return "heavy";
+				break;
+			case 11:
+				return "severe";
+			case 12:
+				if (item.system.dmg_type == "healing")
+					return "severe";
+				break;
+			default:
+		}
+		console.log(`Unknown Value for ${item.name}, ${item.system.mag_mult} magic mult`);
+		return undefined;
+	}
+
+}
 
 /** Handlebars keeps turning my arrays inside an object into an object with numeric keys, this fixes that */
 export function ArrayCorrector<T extends any>(obj: (T[] | Record<string | number, T>)): T[] {

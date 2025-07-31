@@ -1214,6 +1214,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const power = result.power;
 		if (!power) return;
 		const combat= game.combat as PersonaCombat | undefined;
+		if (!combat?.combatant || !PersonaCombat.isPersonaCombatant(combat.combatant)) return;
 		if (combat && combat.combatant?.token == attacker) {
 			const shouldEndTurn =
 				(
@@ -1230,8 +1231,26 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					return;
 				}
 				await combat.displayEndTurnMessage();
+			} else {
+				await this.displayActionsRemaining(combat.combatant);
 			}
 		}
+	}
+
+	static async displayActionsRemaining(combatant: PersonaCombatant) : Promise<ChatMessage> {
+		const token = combatant?.token as PToken;
+		const boldName = `<b>${token.name}</b>`;
+		const actor = combatant.actor;
+		const actionsRemaining = actor.actionsRemaining + ( actor.hasStatus("bonus-action") ? 1 : 0);
+		const content = `<div>${boldName} has ${actionsRemaining} actions remaining.</div>`;
+		const messageData: Foundry.MessageData = {
+			speaker: {
+				alias: actor.displayedName ?? "ERROR"
+			},
+			content,
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+		};
+		return await ChatMessage.create(messageData, {});
 	}
 
 	hasRunOutOfActions(combatant: Combatant<ValidAttackers>) : boolean {

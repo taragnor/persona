@@ -50,6 +50,15 @@
 	</div>
 	{{/if}}
 
+	<div class="damage-level">
+		<label>
+			Damage Level
+		</label>
+		<select name="system.damageLevel">
+			{{selectOptions POWERSTUFF.DAMAGE_LEVELS localize=true selected=item.system.damageLevel}}
+		</select>
+	</div>
+
 	{{#if (eq item.system.subtype "weapon")}}
 	<div class="hp-cost">
 		<label class="hp-cost">

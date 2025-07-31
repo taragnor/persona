@@ -59,3 +59,21 @@ export const ELEMENTAL_DEFENSE_LINK : Record<keyof PC["system"]["combat"]["defen
 	"will": ["dark", "light"],
 };
 
+export const DAMAGE_LEVELS_LIST = [
+	"-",
+	"none",
+	"fixed",
+	"miniscule",
+	"basic",
+	"light",
+	"medium",
+	"heavy",
+	"severe",
+	"colossal",
+] as const;
+
+export type DamageLevel = typeof DAMAGE_LEVELS_LIST[number];
+
+export const DAMAGE_LEVELS = HTMLTools.createLocalizationObject(DAMAGE_LEVELS_LIST, "persona.damage.levels");
+
+

@@ -54,12 +54,14 @@ export const POWER_TAGS_LIST = [
 	"mobile",
 	"basicatk",
 	"high-cost",
+	"inaccurate",
 	"status-removal",
 	"resurrection",
 	"price-lower-for-shadow",
 	...STATUS_POWER_TAGS,
 	...POWER_TYPE_TAGS,
 ] as const;
+
 
 
 export type PowerTag = typeof POWER_TAGS_LIST[number];
