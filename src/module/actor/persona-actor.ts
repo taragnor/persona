@@ -2836,9 +2836,10 @@ numOfIncAdvances(): number {
 
 get XPForNextLevel() : number {
 	const incAdvances = this.numOfIncAdvances();
-	const typeMult = this.system.type == "pc" ? 1.0 : 0.75;
+	const typeMult = this.isPC() ? 1.0 : 0.75;
 	const base = Persona.leveling.BASE_XP;
-	const growth = Persona.leveling.XP_GROWTH;
+	// const growth = Persona.leveling.XP_GROWTH;
+	const growth = 0;
 	return Math.floor( base + growth * incAdvances * typeMult);
 }
 
