@@ -10,7 +10,7 @@ export class PersonaVariables {
 	static async alterVariable (cons: AlterVariableConsequence, actor: PersonaActor) {
 		const variableLocation = this.#convertTypeSpecToLocation(cons, actor);
 		if (!variableLocation) return;
-		const origValue = this.#get(variableLocation);
+		const origValue = this.#get(variableLocation) ?? 0;
 		const newValue = this.#applyMutator( cons, origValue);
 		if (newValue == undefined) {
 			PersonaError.softFail(`Couldn't execute ${cons.operator} on ${cons.varType} variable ${cons.variableId}`);

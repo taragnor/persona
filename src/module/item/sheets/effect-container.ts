@@ -1,3 +1,4 @@
+import { CONSUMABLE_SUBTYPES } from "../../../config/equip-slots.js";
 import { DAMAGE_LEVELS } from "../../../config/damage-types.js";
 import { PERMA_BUFFS } from "../../../config/perma-buff-type.js";
 import { WEAPON_TAGS } from "../../../config/equipment-tags.js";
@@ -99,6 +100,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			...DAMAGETYPES,
 		};
 		this._powerStuffBase = {
+			CONSUMABLE_SUBTYPES,
 			DAMAGE_LEVELS,
 			NUMERIC_V2_ACTOR_STATS,
 			DAYS_LIST,

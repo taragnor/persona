@@ -2096,7 +2096,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return TriggeredEffect.onTrigger(trigger, actor, situation);
 	}
 
-	static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifiers: OtherEffect[]) : Promise<CombatResult>
+static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifiers: OtherEffect[]) : Promise<CombatResult>
 	{
 		const res = new CombatResult();
 		switch (usableOrCard.system.type) {
@@ -2136,11 +2136,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				break;
 			case "skillCard":
 			case "consumable" :{
-				res.addEffect(null, attacker.actor, {
-					type: "expend-item",
-					itemId: "",
-					itemAcc: PersonaDB.getUniversalItemAccessor(usableOrCard as SkillCard | Consumable),
-				});
+				const consumable = usableOrCard as Consumable;
+				if (consumable.system.subtype == "consumable") {
+					res.addEffect(null, attacker.actor, {
+						type: "expend-item",
+						itemId: "",
+						itemAcc: PersonaDB.getUniversalItemAccessor(usableOrCard as SkillCard | Consumable),
+					});
+				}
 				break;
 			}
 			default:
@@ -2149,26 +2152,30 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return res;
 	}
 
-	static getAttackBonus(attacker: ValidAttackers, power: Usable, target: PToken | undefined, modifiers ?: ModifierList) : ModifierList {
-		let attackBonus = this.getBaseAttackBonus(attacker, power);
-		this.applyRelevantTagAttackBonus(attackBonus, attacker, power);
-		if (power.isStatusEffect()) {
-			attackBonus.add(`Status Effect Modifier`, -3);
-			if (target?.actor?.persona().numOfWeaknesses() == 0 && !target.actor.isBossOrMiniBossType()) {
+static getAttackBonus(attacker: ValidAttackers, power: Usable, target: PToken | undefined, modifiers ?: ModifierList) : ModifierList {
+	let attackBonus = this.getBaseAttackBonus(attacker, power);
+	this.applyRelevantTagAttackBonus(attackBonus, attacker, power);
+	if (power.isStatusEffect()) {
+		// attackBonus.add(`Status Effect Modifier`, -3);
+		if (target?.actor?.persona().numOfWeaknesses() == 0 && !target.actor.isBossOrMiniBossType()) {
 			attackBonus.add(`Vulnerable to Status Effects`, +3);
-			}
 		}
-		if (power.isMultiTarget()) {
-			attackBonus.add(`Multitarget attack penalty`, -3);
-		}
-		attackBonus.add("Custom modifier", this.customAtkBonus ?? 0);
-		const defense = this.getDefenderAttackModifiers(target);
-		attackBonus = attackBonus.concat(defense);
-		if (modifiers) {
-			attackBonus = attackBonus.concat(modifiers);
-		}
-		return attackBonus;
 	}
+	if (power.isMultiTarget()) {
+		if (power.isStatusEffect()) {
+			attackBonus.add(`Multitarget attack penalty`, -3);
+		} else {
+			attackBonus.add(`Multitarget status attack penalty`, -5);
+		}
+	}
+	attackBonus.add("Custom modifier", this.customAtkBonus ?? 0);
+	const defense = this.getDefenderAttackModifiers(target);
+	attackBonus = attackBonus.concat(defense);
+	if (modifiers) {
+		attackBonus = attackBonus.concat(modifiers);
+	}
+	return attackBonus;
+}
 
 	static getDefenderAttackModifiers(target: PToken | undefined) : ModifierList {
 		if (!target) {return new ModifierList();}

@@ -10,6 +10,13 @@
 				<textarea name="system.description">{{item.system.description}}</textarea>
 				{{#if (isGM)}}
 				<div>
+					<label>
+						Consumable Type</label>
+					<select name="system.subtype">
+						{{selectOptions POWERSTUFF.CONSUMABLE_SUBTYPES localize=true selected=item.system.subtype}}
+					</select>
+				</div>
+				<div>
 					<label>Amount</label>
 					{{numberInput item.system.amount class="short" name="system.amount" step=1 min=1 max=100}}
 				</div>

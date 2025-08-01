@@ -22,6 +22,7 @@ export const POWER_TYPE_TAGS = [
 	"ailment",
 	"navigator",
 	"downtime",
+	"downtime-minor",
 	"follow-up",
 	"mandatory",
 	"summon",
@@ -32,6 +33,14 @@ export const POWER_TYPE_TAGS = [
 	"pierce",
 	"hack",
 	"exploration",
+] as const;
+
+const POWER_TRAIT_TAGS = [
+	"inaccurate",
+	"accurate",
+	"high-cost",
+	"price-lower-for-shadow",
+	"mobile",
 ] as const;
 
 export const POWER_TAGS_LIST = [
@@ -51,15 +60,12 @@ export const POWER_TAGS_LIST = [
 	"gun",
 	"variable-damage",
 	"healing",
-	"mobile",
 	"basicatk",
-	"high-cost",
-	"inaccurate",
 	"status-removal",
 	"resurrection",
-	"price-lower-for-shadow",
 	...STATUS_POWER_TAGS,
 	...POWER_TYPE_TAGS,
+	...POWER_TRAIT_TAGS,
 ] as const;
 
 

@@ -1077,6 +1077,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return testPreconditions(this.system.validTargetConditions, situation, this);
 	}
 
+
+	isPower() : this is Power {
+		return this.system.type == "power";
+	}
+
+	isConsumable(): this is Consumable {
+		return this.system.type == "consumable";
+	}
+
 	isBasicPower(this: UsableAndCard) : boolean {
 		if (this.system.type == "skillCard") {return false;}
 		if (this.system.type == "consumable") {return false;}
@@ -1107,17 +1116,21 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	mpCost(this: Usable, user: ValidAttackers): number {
-		if (this.system.type == "consumable") return 0;
+		if (this.isConsumable()) return 0;
 		const sit : Situation = {
 			user: user.accessor,
 			usedPower: this.accessor,
 			attacker: user.accessor,
 		}
 		let list = user.persona().getBonuses("mpCostMult");
-		// const bonuses = this.getModifier("mpCostMult", user);
-		// list = list.concat(new ModifierList(bonuses));
 		const mult = list.total(sit, "percentage");
-		return Math.round(this.system.mpcost * mult);
+		const baseMPCost = this.baseMPCost();
+		return Math.round(baseMPCost * mult);
+	}
+
+	baseMPCost(this: Power): number {
+		//NOTE: room to change to autocalc System
+		return this.system.mpcost;
 	}
 
 	getSourcedEffects(this: ModifierContainer, sourceActor: ValidAttackers): {source: ModifierContainer, effects: ConditionalEffect[]} {

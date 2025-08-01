@@ -46,6 +46,9 @@
 	"persona.foe.type.enemy-metaverse-user": "Enemy Metaverse User",
 	"persona.foe.type.pc": "PC",
 	"persona.foe.type.npc": "NPC",
+	"persona.foe.type.npc-ally": "NPC Ally",
+	"persona.foe.type.d-mon": "D-Mon",
+	"persona.foe.type.velvet-dweller": "Velvet Dweller",
 
 	"persona.sheet.tabs.encounter.tabname" : "Encounter",
 	"persona.sheet.tabs.inventory.tabname" : "Inventory",
@@ -286,6 +289,10 @@
 	"persona.equipslots.none": "None",
 	"persona.equipslots.crafting": "Crafting Item",
 
+	"persona.consumables.subtype.consumable": "One Use Consumable",
+	"persona.consumables.subtype.reusable": "Unlimited Use Item",
+
+
 	"persona.tarot.cardname": "Tarot Card",
 	"persona.tarot.0.name": "The Fool",
 	"persona.tarot.1.name": "The Magician",
@@ -385,9 +392,11 @@
 	"persona.power.tag.opener": "Opener",
 	"persona.power.tag.navigator": "Navigator",
 	"persona.power.tag.downtime": "Downtime",
+	"persona.power.tag.downtime-minor": "Downtime (Minor Action)",
 	"persona.power.tag.teamwork": "Teamwork",
 	"persona.power.tag.power": "Metaverse Power",
 	"persona.power.tag.consumable": "Consumable Item",
+	"persona.power.tag.reusable": "Reusable Item",
 	"persona.power.tag.follow-up": "Follow-Up",
 	"persona.power.tag.mandatory": "Mandatory",
 	"persona.power.tag.summon": "Summoning",

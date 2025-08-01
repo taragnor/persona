@@ -17,6 +17,7 @@ export const EQUIPMENT_TAGS_LIST = [
 	"mundane",
 	"common-loot",
 	"consumable",
+	"reusable",
 	"weapon",
 	"key-item",
 	"body",

@@ -34,6 +34,8 @@ export const SHADOW_CREATURE_TYPE_LIST = [
 	"demon",
 	"enemy-metaverse-user",
 	"npc-ally",
+	"velvet-dweller",
+	"d-mon",
 ] as const;
 
 

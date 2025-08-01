@@ -1,3 +1,4 @@
+import { CONSUMABLE_SUBTYPE_LIST } from "../../config/equip-slots.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../../config/roll-tags.js";
 import { SocialCard } from "../item/persona-item.js";
 import { UniversalModifier } from "../item/persona-item.js";
@@ -167,7 +168,7 @@ class ConsumableSchema extends foundry.abstract.TypeDataModel {
 	static override defineSchema() {
 		const ret = {
 
-			subtype: new txt({ initial: "consumable", choices: ["consumable"]}),
+			subtype: new txt({ initial: "consumable", choices: CONSUMABLE_SUBTYPE_LIST}),
 			...itemBase(),
 			...UsablePowerProps(),
 			...effects(true),
