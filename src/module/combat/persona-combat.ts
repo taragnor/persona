@@ -95,8 +95,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	async runAllCombatantStartCombatTriggers() {
 		const combatants = this.combatants
-		.filter( c => c.actor != undefined
-			&& !this.hasCombatantRanStartCombatTrigger(c));
+			.filter( c => c.actor != undefined
+				&& !this.hasCombatantRanStartCombatTrigger(c));
 		for (const comb of combatants) {
 			await this.runCombatantStartCombatTriggers(comb);
 		}
@@ -958,11 +958,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (!userActor) return [];
 		return this.combatants
 			.filter( comb =>  {
-			const targetActor = comb.token.actor;
-			if (!targetActor) return false;
-			if (!PersonaCombat.isPersonaCombatant(comb)) return false;
-			return this.isValidTargetFor( usable, user, comb, situation);
-		}) as PersonaCombatant[];
+				const targetActor = comb.token.actor;
+				if (!targetActor) return false;
+				if (!PersonaCombat.isPersonaCombatant(comb)) return false;
+				return this.isValidTargetFor( usable, user, comb, situation);
+			}) as PersonaCombatant[];
 	}
 
 	static isPersonaCombatant(comb: Combatant<PersonaActor>) : comb is PersonaCombatant {
@@ -1383,12 +1383,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const r = await new Roll("1d20").roll();
 		const emptyList = new ModifierList();
 		const roll = new RollBundle("Activation Roll Skiill Card", r, attacker.actor.system.type == "pc", emptyList, situation);
-	const combatRollSituation : CombatRollSituation = {
-		...situation,
-		naturalRoll: r.total,
-		rollTags: [],
-		rollTotal: r.total,
-	}
+		const combatRollSituation : CombatRollSituation = {
+			...situation,
+			naturalRoll: r.total,
+			rollTags: [],
+			rollTotal: r.total,
+		}
 		const res : AttackResult = {
 			result: "hit",
 			target: PersonaDB.getUniversalTokenAccessor(target),
@@ -2088,13 +2088,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return [];
 	}
 
-	static async execTrigger(trigger: CombatTriggerTypes, actor: ValidAttackers, situation?: Situation) : Promise<void> {
-		return await TriggeredEffect.execCombatTrigger(trigger, actor, situation);
-	}
+static async execTrigger(trigger: CombatTriggerTypes, actor: ValidAttackers, situation?: Situation) : Promise<void> {
+	return await TriggeredEffect.execCombatTrigger(trigger, actor, situation);
+}
 
-	static onTrigger(trigger: CombatTriggerTypes | NonCombatTriggerTypes, actor ?: ValidAttackers, situation ?: Situation) : CombatResult {
-		return TriggeredEffect.onTrigger(trigger, actor, situation);
-	}
+static onTrigger(trigger: CombatTriggerTypes | NonCombatTriggerTypes, actor ?: ValidAttackers, situation ?: Situation) : CombatResult {
+	return TriggeredEffect.onTrigger(trigger, actor, situation);
+}
 
 static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifiers: OtherEffect[]) : Promise<CombatResult>
 	{
@@ -2177,25 +2177,25 @@ static getAttackBonus(attacker: ValidAttackers, power: Usable, target: PToken | 
 	return attackBonus;
 }
 
-	static getDefenderAttackModifiers(target: PToken | undefined) : ModifierList {
-		if (!target) {return new ModifierList();}
-		const defense = new ModifierList(
-			target.actor.defensivePowers()
-			.flatMap (item => item.getModifier("allAtk", target.actor))
-		);
-		return defense;
-	}
+static getDefenderAttackModifiers(target: PToken | undefined) : ModifierList {
+	if (!target) {return new ModifierList();}
+	const defense = new ModifierList(
+		target.actor.defensivePowers()
+		.flatMap (item => item.getModifier("allAtk", target.actor))
+	);
+	return defense;
+}
 
-	static applyRelevantTagAttackBonus(attackBonus: ModifierList, attacker: ValidAttackers, power: Usable) {
-		let tag = this.#getRelevantAttackTag(attacker, power.getDamageType(attacker));
-		if (!tag) return;
-		const isDarkLight = tag == "dark" || tag == "light";
-		if (isDarkLight && !power.hasTag("no-crit")) return;
-		// const _localized = game.i18n.localize(POWER_TAGS[tag]);
-		attackBonus.add(`Damage Power bonus`, +3);
-	}
+static applyRelevantTagAttackBonus(attackBonus: ModifierList, attacker: ValidAttackers, power: Usable) {
+	let tag = this.#getRelevantAttackTag(attacker, power.getDamageType(attacker));
+	if (!tag) return;
+	const isDarkLight = tag == "dark" || tag == "light";
+	if (isDarkLight && !power.hasTag("no-crit")) return;
+	// const _localized = game.i18n.localize(POWER_TAGS[tag]);
+	attackBonus.add(`Damage Power bonus`, +3);
+}
 
-	/* old version
+/* old version
 	static old_applyRelevantTagAttackBonus(attackBonus: ModifierList, attacker: ValidAttackers, power: Usable) {
 		let tag = this.getRelevantAttackTag(attacker, power.getDamageType(attacker));
 		if (tag) {
@@ -2207,152 +2207,152 @@ static getAttackBonus(attacker: ValidAttackers, power: Usable, target: PToken | 
 		}
 
 	}
-*/
+ */
 
-	static #getRelevantAttackTag(_attacker: ValidAttackers, dmgType : DamageType) : PowerTag | undefined  {
-		switch (dmgType) {
-			case "fire": case "wind":
-			case "light": case "dark":
-			case "healing":
-				return dmgType;
-			case "lightning":
-				return "elec";
-			case "gun":
-				return "gun";
-			case "physical":
-				return "weapon";
-			case "by-power": //read as by-weapon here
-				return "weapon";
-			case "cold":
-				return "ice";
-			case "untyped":
-				return "almighty";
-			case "none":
-				break;
-				// tag = power.system.tags.find(x=> STATUS_POWER_TAGS.includes(x as any));
-			case "all-out":
-				break;
-			default:
-				dmgType satisfies never;
-				break;
+static #getRelevantAttackTag(_attacker: ValidAttackers, dmgType : DamageType) : PowerTag | undefined  {
+	switch (dmgType) {
+		case "fire": case "wind":
+		case "light": case "dark":
+		case "healing":
+			return dmgType;
+		case "lightning":
+			return "elec";
+		case "gun":
+			return "gun";
+		case "physical":
+			return "weapon";
+		case "by-power": //read as by-weapon here
+			return "weapon";
+		case "cold":
+			return "ice";
+		case "untyped":
+			return "almighty";
+		case "none":
+			break;
+			// tag = power.system.tags.find(x=> STATUS_POWER_TAGS.includes(x as any));
+		case "all-out":
+			break;
+		default:
+			dmgType satisfies never;
+			break;
+	}
+
+}
+
+static getBaseAttackBonus(attacker: ValidAttackers, power:Usable): ModifierList {
+	const actor = attacker;
+	if (power.system.type == "consumable") {
+		const l = actor.itemAtkBonus(power as Consumable);
+		return l;
+	}
+	if (power.system.subtype == "weapon") {
+		const mod = actor.wpnAtkBonus();
+		mod.add("Power attack modifier", power.system.atk_bonus);
+		return mod.concat(new ModifierList(power.getModifier("wpnAtk", actor)));
+	}
+	if (power.system.subtype == "magic") {
+		const mod = actor.magAtkBonus();
+		mod.add("Power attack modifier", power.system.atk_bonus);
+		return mod.concat(new ModifierList(power.getModifier("magAtk", actor)));
+	}
+
+	return new ModifierList();
+}
+
+static getAltTargets ( attacker: PToken, situation : Situation, targettingType :  ConsTarget) : PToken[] {
+	const attackerType = attacker.actor.getAllegiance();
+	switch (targettingType) {
+		case "target": {
+			if (!situation.target) return [];
+			const token = this.getPTokenFromActorAccessor(situation.target);
+			if (token) return [token]; else return [];
 		}
-
-	}
-
-	static getBaseAttackBonus(attacker: ValidAttackers, power:Usable): ModifierList {
-		const actor = attacker;
-		if (power.system.type == "consumable") {
-			const l = actor.itemAtkBonus(power as Consumable);
-			return l;
+		case "owner":
+			return [attacker];
+		case "attacker": {
+			if (!situation.attacker) return [];
+			const token = this.getPTokenFromActorAccessor(situation.attacker);
+			if (token) return [token]; else return [];
 		}
-		if (power.system.subtype == "weapon") {
-			const mod = actor.wpnAtkBonus();
-			mod.add("Power attack modifier", power.system.atk_bonus);
-			return mod.concat(new ModifierList(power.getModifier("wpnAtk", actor)));
+		case "all-enemies": {
+			const combat= this.ensureCombatExists();
+			const targets= combat.combatants.filter( x => {
+				const actor = x.actor;
+				if (!actor || !(actor as ValidAttackers).isAlive())  return false;
+				return ((x.actor as ValidAttackers).getAllegiance() != attackerType)
+			});
+			return targets.map( x=> x.token as PToken);
 		}
-		if (power.system.subtype == "magic") {
-			const mod = actor.magAtkBonus();
-			mod.add("Power attack modifier", power.system.atk_bonus);
-			return mod.concat(new ModifierList(power.getModifier("magAtk", actor)));
+		case "all-allies": {
+			return this.getAllAlliesOf(attacker);
 		}
-
-		return new ModifierList();
-	}
-
-	static getAltTargets ( attacker: PToken, situation : Situation, targettingType :  ConsTarget) : PToken[] {
-		const attackerType = attacker.actor.getAllegiance();
-		switch (targettingType) {
-			case "target": {
-				if (!situation.target) return [];
-				const token = this.getPTokenFromActorAccessor(situation.target);
-				if (token) return [token]; else return [];
-			}
-			case "owner":
-				return [attacker];
-			case "attacker": {
-				if (!situation.attacker) return [];
-				const token = this.getPTokenFromActorAccessor(situation.attacker);
-				if (token) return [token]; else return [];
-			}
-			case "all-enemies": {
-				const combat= this.ensureCombatExists();
-				const targets= combat.combatants.filter( x => {
-					const actor = x.actor;
-					if (!actor || !(actor as ValidAttackers).isAlive())  return false;
-					return ((x.actor as ValidAttackers).getAllegiance() != attackerType)
-				});
-				return targets.map( x=> x.token as PToken);
-			}
-			case "all-allies": {
-				return this.getAllAlliesOf(attacker);
-			}
-			case "all-foes":{
-				return this.getAllEnemiesOf(attacker);
-			}
-			case "all-combatants": {
-				const combat = game.combat as PersonaCombat;
-				if (!combat) return [];
-				return combat.validCombatants(attacker).flatMap( c=> c.actor ? [c.token as PToken] : []);
-			}
-			case "user": {
-				if (!situation.user) return [];
-				const token = this.getPTokenFromActorAccessor(situation.user);
-				if (token) return [token]; else return [];
-			}
-			case "triggering-character": {
-				if (!("triggeringCharacter" in  situation)) return [];
-				if (!situation.triggeringCharacter) return [];
-				const token = this.getPTokenFromActorAccessor(situation.triggeringCharacter);
-				if (token) return [token]; else return [];
-			}
-			case "cameo": {
-				return [];
-			}
-			case "all-in-region":
-				PersonaError.softFail("all-in-region does not support alt targets");
-				return [];
-			default:
-				targettingType satisfies never;
-				return [];
+		case "all-foes":{
+			return this.getAllEnemiesOf(attacker);
 		}
+		case "all-combatants": {
+			const combat = game.combat as PersonaCombat;
+			if (!combat) return [];
+			return combat.validCombatants(attacker).flatMap( c=> c.actor ? [c.token as PToken] : []);
+		}
+		case "user": {
+			if (!situation.user) return [];
+			const token = this.getPTokenFromActorAccessor(situation.user);
+			if (token) return [token]; else return [];
+		}
+		case "triggering-character": {
+			if (!("triggeringCharacter" in  situation)) return [];
+			if (!situation.triggeringCharacter) return [];
+			const token = this.getPTokenFromActorAccessor(situation.triggeringCharacter);
+			if (token) return [token]; else return [];
+		}
+		case "cameo": {
+			return [];
+		}
+		case "all-in-region":
+			PersonaError.softFail("all-in-region does not support alt targets");
+			return [];
+		default:
+			targettingType satisfies never;
+			return [];
 	}
+}
 
-	getAllEnemiesOf(token: PToken) : PToken [] {
-		const attackerType = token.actor.getAllegiance();
-		const targets = this.validCombatants(token).filter( x => {
-			const actor = x.actor;
-			if (!actor || !actor.isAlive())  return false;
-			return (x.actor && x.actor.getAllegiance() != attackerType)
-		});
-		return targets.map( x=> x.token as PToken);
+getAllEnemiesOf(token: PToken) : PToken [] {
+	const attackerType = token.actor.getAllegiance();
+	const targets = this.validCombatants(token).filter( x => {
+		const actor = x.actor;
+		if (!actor || !actor.isAlive())  return false;
+		return (x.actor && x.actor.getAllegiance() != attackerType)
+	});
+	return targets.map( x=> x.token as PToken);
 
-	}
+}
 
-	static getAllEnemiesOf(token: PToken) : PToken [] {
-		const combat= this.ensureCombatExists();
-		return combat.getAllEnemiesOf(token);
-	}
+static getAllEnemiesOf(token: PToken) : PToken [] {
+	const combat= this.ensureCombatExists();
+	return combat.getAllEnemiesOf(token);
+}
 
-	/** returns self and all allies */
-	static getAllAlliesOf(token: PToken) : PToken[] {
-		const attackerType = token.actor.getAllegiance();
-		const combat= game.combat as PersonaCombat;
-		const tokens = combat
-			? ( combat.validCombatants(token)
-				.filter( x=> x.actor)
-				.map(x=> x.token))
-			: (game.scenes.current.tokens
-				.filter( (x : TokenDocument<PersonaActor>) => !!x.actor && (x.actor.system.type == "pc" || x.actor.system.type =="npcAlly"))
-			);
-		const targets= tokens.filter( x => {
-			const actor = x.actor as ValidAttackers | undefined;
-			if (!actor)  return false;
-			if (!actor.isAlive()) return false;
-			if (actor.isFullyFaded()) return false;
-			return (actor.getAllegiance() == attackerType)
-		});
-		return targets.map( x=> x as PToken);
-	}
+/** returns self and all allies */
+static getAllAlliesOf(token: PToken) : PToken[] {
+	const attackerType = token.actor.getAllegiance();
+	const combat= game.combat as PersonaCombat;
+	const tokens = combat
+		? ( combat.validCombatants(token)
+			.filter( x=> x.actor)
+			.map(x=> x.token))
+		: (game.scenes.current.tokens
+			.filter( (x : TokenDocument<PersonaActor>) => !!x.actor && (x.actor.system.type == "pc" || x.actor.system.type =="npcAlly"))
+		);
+	const targets= tokens.filter( x => {
+		const actor = x.actor as ValidAttackers | undefined;
+		if (!actor)  return false;
+		if (!actor.isAlive()) return false;
+		if (actor.isFullyFaded()) return false;
+		return (actor.getAllegiance() == attackerType)
+	});
+	return targets.map( x=> x as PToken);
+}
 
 static selectedPTokens(): PToken[] {
 	return Array.from(game.user.targets)
@@ -2362,8 +2362,8 @@ static selectedPTokens(): PToken[] {
 
 static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[]): PToken[] {
 	const selected = altTargets != undefined
-	? altTargets
-	: this.selectedPTokens();
+		? altTargets
+		: this.selectedPTokens();
 	const combat = game.combat as PersonaCombat | undefined;
 	if (combat) {
 		const attackerActor = attacker.actor;
@@ -2446,6 +2446,13 @@ static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[])
 			const combat= this.ensureCombatExists();
 			return combat.validCombatants(attacker)
 			.filter( x=> x?.actor?.isAlive())
+			.map( x=> x.token as PToken)
+			.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+		}
+		case "everyone-even-dead": {
+			const combat= this.ensureCombatExists();
+			return combat.validCombatants(attacker)
+			.filter( x=> x.actor && !x.actor.isFullyFaded())
 			.map( x=> x.token as PToken)
 			.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
 		}
@@ -2781,8 +2788,8 @@ async alterRoomEffects() {
 roomEffectsMsg(): string {
 	const mods = this.getRoomEffects();
 	if (mods.length == 0) {
-			return "";
-		}
+		return "";
+	}
 	let msg = "";
 	msg += "<u><h2>Room Effects</h2></u><ul>";
 	msg += mods.map( x=> `<li><b>${x.name}</b> : ${x.system.description}</li>`).join("");
@@ -3044,12 +3051,12 @@ getUsableFollowUps(token: PToken, activationRoll: number) : string []{
 	const combat = this;
 	const followUpMoves = actor.powers
 		.filter( x=> x.isFollowUpMove())
-	.filter( x=> x.testFollowUpPrereqs(situation, actor))
+		.filter( x=> x.testFollowUpPrereqs(situation, actor))
 
 	const followup = followUpMoves
 		.map(usable => {
 			const targets =combat.getValidTargetsFor(usable, combatant, situation)
-			.map (x=> x.token.name);
+				.map (x=> x.token.name);
 
 			if (targets.length == 0) return "";
 			return `<li> ${usable.name} (${targets.join(", ")})</li>`;

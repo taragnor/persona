@@ -98,7 +98,8 @@ export const TARGETINGLIST = [
 	"all-allies",
 	"all-dead-allies",
 	"all-others",
-	"everyone",
+	"everyone", //doesn't include dead
+	"everyone-even-dead", // includes dead
 ] as const;
 
 export const TARGETING= HTMLTools.createLocalizationObject(TARGETINGLIST, "persona.power.targets");

@@ -1044,6 +1044,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				if (target.isAlive()) return false;
 				break;
 			case "everyone":
+				if (!target.isAlive()) return false;
+				break;
+			case "everyone-even-dead":
 				break;
 			default:
 				this.system.targets satisfies never;
@@ -1371,6 +1374,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "all-dead-allies":
 			case "all-others":
 			case "everyone":
+			case "everyone-even-dead":
 				return true;
 			default:
 				this.system.targets satisfies never;
@@ -1397,6 +1401,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "all-dead-allies":
 			case "all-others":
 			case "everyone":
+			case "everyone-even-dead":
 				return true;
 			default:
 				this.system.targets satisfies never;
@@ -1470,6 +1475,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "all-dead-allies":
 			case "all-others":
 			case "everyone":
+			case "everyone-even-dead":
 				return false;
 			default:
 				this.system.targets satisfies never;

@@ -352,6 +352,7 @@
 	"persona.power.targets.all-allies": "All Living Allies",
 	"persona.power.targets.all-others": "All Others (friend and foes)",
 	"persona.power.targets.everyone": "All Living Targets",
+	"persona.power.targets.everyone-even-dead": "All Combatants (living and dead)",
 
 	"persona.power.tag.fire": "Fire",
 	"persona.power.tag.ice": "Ice",
