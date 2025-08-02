@@ -474,6 +474,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				.length;
 			const multmods = persona.getBonuses("maxhpMult")
 			const underCap = this.maxResists() - this.totalResists() ;
+			if (this.isPC() || this.isNPCAlly()) {
+				const ArmorHPBoost = this.equippedItems().find(x=> x.isOutfit())?.system?.armorHPBoost ?? 0;
+				if (ArmorHPBoost > 0)
+					nonMultbonuses.add("Armor HP Bonus", ArmorHPBoost);
+			}
 			if (underCap > 0) {
 				const bonus = underCap * 0.20;
 				multmods.add("under resist Cap", bonus);
@@ -481,7 +486,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (this.isPC() || this.isNPCAlly()) {
 				newForm.add("PC HP boost", 1.15);
 			}
-
 			// if (weaknesses > 1) {
 			// 	const bonus = (weaknesses -1 ) * 0.25;
 			// 	multmods.add("weaknesses mod", bonus)

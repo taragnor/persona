@@ -129,6 +129,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.system.type == "focus";
 	}
 
+	isOutfit(): this is InvItem {
+		return this.system.type == "item" && this.system.slot == "body";
+	}
+
+	isAccessory() : this is InvItem {
+		return this.system.type == "item" && this.system.slot == "accessory";
+	}
+
 	isSkillCard(): this is SkillCard {
 		return this.system.type == "skillCard";
 	}

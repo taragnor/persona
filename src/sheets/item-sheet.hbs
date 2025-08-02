@@ -9,28 +9,37 @@
 				<h2> Item </h2>
 				<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Power Name" placeholder="Power Name">
 
-	<div class="equip-slot">
-		<label>
-			Slot
-		</label>
-		<select name="system.slot">
-			{{selectOptions EQUIP_SLOTS localize=true selected=item.system.slot}}
-		</select>
-	</div>
-	{{> "systems/persona/parts/itemTags.hbs" item=item POWERSTUFF=POWERSTUFF}}
-	<textarea name="system.description">{{item.system.description}}</textarea>
+				<div class="equip-slot">
+					<label>
+						Slot
+					</label>
+					<select name="system.slot">
+						{{selectOptions EQUIP_SLOTS localize=true selected=item.system.slot}}
+					</select>
+				</div>
+				{{> "systems/persona/parts/itemTags.hbs" item=item POWERSTUFF=POWERSTUFF}}
+				<textarea name="system.description">{{item.system.description}}</textarea>
 
-	{{#if (isGM)}}
-	<label> Price </label>
-	{{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}
-	<br>
-	<label> No Trade </label>
-	<input type="checkbox" name="system.noTrade" {{checked item.system.noTrade}}>
-	{{else}}
-	{{#if item.system.noTrade}}
-	<b> Can't trade</b>
-	{{/if}}
-	{{/if}}
+				{{#if (isGM)}}
+				<label> Price </label>
+				{{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}
+				<br>
+				<label> No Trade </label>
+				<input type="checkbox" name="system.noTrade" {{checked item.system.noTrade}}>
+				{{else}}
+				{{#if item.system.noTrade}}
+				<b> Can't trade</b>
+				{{/if}}
+				{{/if}}
+				{{#if (eq item.system.slot "body")}}
+				<div class="armor-stats">
+					<label>
+						Armor HP Bonus:
+					</label>
+					{{numberInput item.system.armorHPBoost class="short" name="system.armorHPBoost" step=1 min=0 max=200}}
+				</div>
+				{{/if}}
+				<br>
 			</div>
 	</header>
 

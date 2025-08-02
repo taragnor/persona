@@ -226,6 +226,7 @@ class InventoryItemSchema extends foundry.abstract.TypeDataModel {
 		const ret = {
 			...itemBase(),
 			slot: new txt<typeof EQUIP_SLOTS_LIST[number]>({choices: EQUIP_SLOTS_LIST}),
+			armorHPBoost: new num( {initial: 0, integer: true}),
 			...effects(false),
 		}
 		return ret;
