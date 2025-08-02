@@ -143,14 +143,14 @@ export function tarotFields() {
 	}
 }
 
-export const classData = function () {
-	return  new sch( {
-		level: new num({min: 0, max: 10, initial: 1, integer:true}),
-		classId: new id(),
-		favoredIncremental: new txt<incrementalTypes | "">({initial: ""}),
-		incremental: incremental(),
-	});
-}
+// export const classData = function () {
+// 	return  new sch( {
+// 		level: new num({min: 0, max: 10, initial: 1, integer:true}),
+// 		classId: new id(),
+// 		favoredIncremental: new txt<incrementalTypes | "">({initial: ""}),
+// 		incremental: incremental(),
+// 	});
+// }
 
 type incrementalTypes = ReturnType<typeof incremental> extends SchemaField<infer T> ? keyof T : never;
 
@@ -164,13 +164,31 @@ function incremental() {
 		magicHigh: new bool(),
 		talent: new bool(),
 		wpnDamage: new num({integer: true, initial: 0, max: 2}),
-		initiative: new num({integer: true, initial: 0, max: 3}),
+		initiative: new num({integer: true, initial: 0, max: 2}),
 	});
+}
+
+export class ClassDataDM extends foundry.abstract.DataModel {
+	static override defineSchema() {
+		return {
+			level: new num({min: 0, max: 10, initial: 1, integer:true}),
+		classId: new id(),
+		favoredIncremental: new txt<incrementalTypes | "">({initial: ""}),
+		incremental: incremental(),
+		};
+	}
+	static override migrateData(oldData: Record<string, any>) {
+		const data= super.migrateData(oldData);
+		if (data?.incremental?.initiative >=3 ) {
+			data.incremental.initiative == 2;
+		}
+		return data;
+	}
 }
 
 export function combatCommonStats() {
 	return {
-		classData: classData(),
+		classData: new embedded(ClassDataDM),
 		xp: new num( {integer: false, initial: 0, min: 0}),
 		hp: new num( {integer:true, initial: 1}),
 		wpnatk: new num( {integer:true, initial: 0}),

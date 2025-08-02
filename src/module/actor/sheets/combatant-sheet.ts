@@ -261,7 +261,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async addIncremental_HP(_ev: JQuery.ClickEvent) {
 		const target = "hp";
 		const current = this.actor.system.combat.classData.incremental[target];
-		if (current <3) {
+		const max = this.actor.maxIncrementalAdvancesInCategory(target);
+		if (current < max) {
 			await this.actor.update({
 				"system.combat.classData.incremental.hp" : current +1});
 			if (this.actor.isPC() || this.actor.isNPCAlly()) {
@@ -273,7 +274,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async addIncremental_MP(_ev: JQuery.ClickEvent) {
 		const target = "mp";
 		const current = this.actor.system.combat.classData.incremental[target];
-		if (current <3) {
+		const max = this.actor.maxIncrementalAdvancesInCategory(target);
+		if (current < max) {
 			await this.actor.update({
 				"system.combat.classData.incremental.mp" : current +1});
 			if (this.actor.isPC() || this.actor.isNPCAlly()) {
@@ -285,7 +287,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async addIncremental_wpnDamage(_ev: JQuery.ClickEvent) {
 		const target = "wpnDamage";
 		const current = this.actor.system.combat.classData.incremental[target];
-		if (current <3) {
+		const max = this.actor.maxIncrementalAdvancesInCategory(target);
+		if (current < max) {
 			await this.actor.update({
 				"system.combat.classData.incremental.wpnDamage" : current +1});
 			if (this.actor.isPC() || this.actor.isNPCAlly()) {
@@ -297,7 +300,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async addIncremental_attack(_ev: JQuery.ClickEvent) {
 		const target = "attack";
 		const current = this.actor.system.combat.classData.incremental[target];
-		if (current <2) {
+		const max = this.actor.maxIncrementalAdvancesInCategory(target);
+		if (current < max) {
 			await this.actor.update({
 				"system.combat.classData.incremental.attack" : current +1});
 			if (this.actor.isPC() || this.actor.isNPCAlly()) {
@@ -308,7 +312,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async addIncremental_defense(_ev: JQuery.ClickEvent) {
 		const target = "defense";
 		const current = this.actor.system.combat.classData.incremental[target];
-		if (current <2) {
+		const max = this.actor.maxIncrementalAdvancesInCategory(target);
+		if (current <max) {
 			await this.actor.update({
 				"system.combat.classData.incremental.defense" : current +1});
 			if (this.actor.isPC() || this.actor.isNPCAlly()) {
@@ -319,7 +324,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async addIncremental_initiative(_ev: JQuery.ClickEvent) {
 		const target = "initiative";
 		const current = this.actor.system.combat.classData.incremental[target];
-		if (current <3) {
+		const max = this.actor.maxIncrementalAdvancesInCategory(target);
+		if (current < max) {
 			await this.actor.update({
 				"system.combat.classData.incremental.initiative" : current +1});
 			if (this.actor.isPC() || this.actor.isNPCAlly()) {

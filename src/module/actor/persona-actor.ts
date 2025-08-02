@@ -35,7 +35,6 @@ import { TAROT_DECK } from "../../config/tarot.js";
 import { localize } from "../persona.js";
 import { STATUS_EFFECT_LIST } from "../../config/status-effects.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../../config/status-effects.js";
-import { ELEMENTAL_DEFENSE_LINK } from "../../config/damage-types.js";
 import { RESIST_STRENGTH_LIST } from "../../config/damage-types.js";
 import { Activity } from "../item/persona-item.js";
 import { RecoverSlotEffect } from "../../config/consequence-types.js";
@@ -350,43 +349,44 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get combatInit(): number {
 		if (!this.isValidCombatant()) return -666;
-		const situation = {user: (this as PC | Shadow).accessor};
-		const initBonus = this.persona()
-			.getBonuses("initiative")
-			.total(situation);
-		switch (this.system.type) {
-			case "shadow": {
-				const inc = this.system.combat.classData.incremental.initiative;
-				const level  = this.system.combat.classData.level;
-				const initRating = this.system.combat.initiative;
-				const initScore = this.#translateInitString(initRating);
-				return initBonus + (inc * 2) + (level * 3) + initScore;
-			}
-			case "pc":  case "npcAlly": {
-				const inc = this.system.combat.classData.incremental.initiative;
-				const level  = this.system.combat.classData.level;
-				const initRating = this.system.combat.initiative;
-				const initScore = this.#translateInitString(initRating);
-				return initBonus + (inc * 2) +  (level * 3) + initScore;
-			}
-			default:
-				this.system satisfies never;
-				throw new PersonaError(`Unepxected Type`);
-		}
+		return this.persona().combatInit;
+		// const situation = {user: (this as PC | Shadow).accessor};
+		// const initBonus = this.persona()
+		// 	.getBonuses("initiative")
+		// 	.total(situation);
+		// switch (this.system.type) {
+		// 	case "shadow": {
+		// 		const inc = this.system.combat.classData.incremental.initiative;
+		// 		const level  = this.system.combat.classData.level;
+		// 		const initRating = this.system.combat.initiative;
+		// 		const initScore = this.#translateInitString(initRating);
+		// 		return initBonus + (inc * 2) + (level * 3) + initScore;
+		// 	}
+		// 	case "pc":  case "npcAlly": {
+		// 		const inc = this.system.combat.classData.incremental.initiative;
+		// 		const level  = this.system.combat.classData.level;
+		// 		const initRating = this.system.combat.initiative;
+		// 		const initScore = this.#translateInitString(initRating);
+		// 		return initBonus + (inc * 2) +  (level * 3) + initScore;
+		// 	}
+		// 	default:
+		// 		this.system satisfies never;
+		// 		throw new PersonaError(`Unepxected Type`);
+		// }
 	}
 
-	#translateInitString(initString: PC["system"]["combat"]["initiative"]): number {
-		switch (initString) {
-			case "pathetic": return -6;
-			case "weak": return -3;
-			case "normal": return 0;
-			case "strong": return 3;
-			case "ultimate": return 6;
-			default:
-				initString satisfies never;
-				return -999;
-		}
-	}
+	// #translateInitString(initString: PC["system"]["combat"]["initiative"]): number {
+	// 	switch (initString) {
+	// 		case "pathetic": return -6;
+	// 		case "weak": return -3;
+	// 		case "normal": return 0;
+	// 		case "strong": return 3;
+	// 		case "ultimate": return 6;
+	// 		default:
+	// 			initString satisfies never;
+	// 			return -999;
+	// 	}
+	// }
 
 
 	get accessor() : UniversalActorAccessor<typeof this> {
@@ -1724,38 +1724,40 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	getDefense(this: ValidAttackers,  type : keyof PC["system"]["combat"]["defenses"]) : ModifierList {
-		const mods = new ModifierList();
-		const lvl = this.system.combat.classData.level;
-		const baseDef = this.#translateDefenseString(type, this.system.combat.defenses[type]);
-		const inc = this.system.combat.classData.incremental.defense;
-		mods.add("Base", 10);
-		mods.add("Base Defense Bonus", baseDef);
-		mods.add("Level Bonus (x2)", lvl * 2);
-		mods.add("Incremental Advance" , inc);
-		const otherBonuses = this.persona().getBonuses([type, "allDefenses"]);
-		const defenseMods = this.persona().getBonuses([type, "allDefenses"], this.defensivePowers());
-		return mods.concat(otherBonuses).concat(defenseMods);
+		return this.persona().getDefense(type);
 	}
+		// const mods = new ModifierList();
+		// const lvl = this.system.combat.classData.level;
+		// const baseDef = this.#translateDefenseString(type, this.system.combat.defenses[type]);
+		// const inc = this.system.combat.classData.incremental.defense;
+		// mods.add("Base", 10);
+		// mods.add("Base Defense Bonus", baseDef);
+		// mods.add("Level Bonus (x2)", lvl * 2);
+		// mods.add("Incremental Advance" , inc);
+		// const otherBonuses = this.persona().getBonuses([type, "allDefenses"]);
+		// const defenseMods = this.persona().getBonuses([type, "allDefenses"], this.defensivePowers());
+		// return mods.concat(otherBonuses).concat(defenseMods);
+	// }
 
-	#translateDefenseString(this: ValidAttackers, defType: keyof PC["system"]["combat"]["defenses"], val: PC["system"]["combat"]["defenses"]["fort"],): number {
-		const weaknesses= this.#getWeaknessesInCategory(defType);
-		switch (val) {
-			case "pathetic": return Math.min(-6 + 2 * weaknesses,-2) ;
-			case "weak": return Math.min(-3 + 1 * weaknesses, -1);
-			case "normal": return 0;
-			case "strong": return Math.max(3 - 1 * weaknesses, 1);
-				case "ultimate": return Math.max(6 - 2 * weaknesses, 2);
-			default:
-				PersonaError.softFail(`Bad defense tsring ${val} for ${defType}`);
-				return -999;
-		}
-	}
+	// #translateDefenseString(this: ValidAttackers, defType: keyof PC["system"]["combat"]["defenses"], val: PC["system"]["combat"]["defenses"]["fort"],): number {
+	// 	const weaknesses= this.#getWeaknessesInCategory(defType);
+	// 	switch (val) {
+	// 		case "pathetic": return Math.min(-6 + 2 * weaknesses,-2) ;
+	// 		case "weak": return Math.min(-3 + 1 * weaknesses, -1);
+	// 		case "normal": return 0;
+	// 		case "strong": return Math.max(3 - 1 * weaknesses, 1);
+	// 			case "ultimate": return Math.max(6 - 2 * weaknesses, 2);
+	// 		default:
+	// 			PersonaError.softFail(`Bad defense tsring ${val} for ${defType}`);
+	// 			return -999;
+	// 	}
+	// }
 
-	#getWeaknessesInCategory(this: ValidAttackers, defType: keyof PC["system"]["combat"]["defenses"]): number {
-		const damageTypes = ELEMENTAL_DEFENSE_LINK[defType];
-		const weaknesses= damageTypes.filter( dt => this.system.combat.resists[dt] == "weakness")
-		return weaknesses.length;
-	}
+	// #getWeaknessesInCategory(this: ValidAttackers, defType: keyof PC["system"]["combat"]["defenses"]): number {
+	// 	const damageTypes = ELEMENTAL_DEFENSE_LINK[defType];
+	// 	const weaknesses= damageTypes.filter( dt => this.system.combat.resists[dt] == "weakness")
+	// 	return weaknesses.length;
+	// }
 
 	// elementalResist(this: ValidAttackers, type: Exclude<DamageType, "by-power">) : ResistStrength  {
 	// 	return this.persona().elemResist(type);
@@ -2876,6 +2878,8 @@ totalDefenseBoosts(this: ValidAttackers) : number {
 	return defScore + initScore;
 }
 
+
+
 issues() : string {
 	const issues : string[] = [];
 	if (this.isUnderDefenseCap || this.isOverDefenseCap)
@@ -2968,17 +2972,21 @@ maxDefensiveBoosts(this: ValidAttackers) : number {
 }
 
 maxIncrementalAdvances(this: ValidAttackers): number {
-	const x= Object.entries(this.system.combat.classData.incremental)
-	return x.reduce ( (a,[k,v]) => {
-		const incremental = k;
-		if (typeof v == "boolean") return a+1;
+	const x= Object.keys(this.system.combat.classData.incremental) as (keyof ValidAttackers["system"]["combat"]["classData"]["incremental"])[] ;
+	return x.reduce ( (acc,k) => acc + this.maxIncrementalAdvancesInCategory(k)
+	, 0);
+}
+
+maxIncrementalAdvancesInCategory(this: ValidAttackers, incrementalType: keyof ValidAttackers["system"]["combat"]["classData"]["incremental"]): number {
+	const v = this.system.combat.classData.incremental[incrementalType];
+		// const incremental = k;
+		if (typeof v == "boolean") return 1;
 		//@ts-expect-error
-		const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incremental] as {max ?: number};
+		const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incrementalType] as {max ?: number};
 		if (typeof x?.max == "number")
-			return a + x.max;
+			return x.max;
 		PersonaError.softFail("Trouble calculating max incremental advances");
-		return a;
-	}, 0);
+		return 0;
 }
 
 calcXP (this: ValidAttackers, killedTargets: ValidAttackers[], numOfAllies: number) : number {

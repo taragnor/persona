@@ -68,13 +68,12 @@ export class PersonaHandleBarsHelpers {
 		"getDefense" : (actorOrPersona: ValidAttackers | PersonaI, defense: keyof ValidAttackers["system"]["combat"]["defenses"]): number => {
 			const persona = (actorOrPersona instanceof PersonaActor) ? actorOrPersona.persona() : actorOrPersona;
 			const acc = persona.user.accessor;
-			return persona.user.getDefense(defense).total({user: acc, target: acc});
+			return persona.getDefense(defense).total({user: acc, target: acc});
 
 		},
-		"getInit" : (actor: PC | Shadow) => {
+		"getInit" : (actor: ValidAttackers  | PersonaI) => {
 			return actor.combatInit;
 		},
-
 
 
 		"isGM" : () => {

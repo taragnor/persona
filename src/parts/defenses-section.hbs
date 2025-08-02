@@ -29,5 +29,15 @@
 		{{getDefense persona "will"}}
 		{{/if}}
 	</div>
+	<div class="initiative">
+		<label>
+			Initiative
+		</label>
+		{{#if (lt (scanLevel persona) 2)}}
+		{{persona.baseInitRank}}
+		{{else}}
+		{{getInit persona}}
+		{{/if}}
+	</div>
 </div>
 

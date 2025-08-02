@@ -1,3 +1,4 @@
+import { ELEMENTAL_DEFENSE_LINK } from "../config/damage-types.js";
 import { Metaverse } from "./metaverse.js";
 import { UniversalModifier } from "./item/persona-item.js";
 import { StatusEffectId } from "../config/status-effects.js";
@@ -207,6 +208,73 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 		return Math.round(XPSubtotal / numOfAllies);
 	}
+
+	get baseInitRank() : ValidAttackers["system"]["combat"]["initiative"] {
+		return this.source.system.combat.initiative;
+	}
+
+	get combatInit(): number {
+		const inc = this.classData.incremental.initiative;
+		const situation = {user: this.user.accessor};
+		const initBonus = this
+			.getBonuses("initiative")
+			.total(situation);
+		const level  = this.classData.level;
+		const initScore = this.#translateInitString(this.baseInitRank);
+		return initBonus + (inc * 2) + (level * 4) + initScore;
+	}
+
+	#translateInitString(initString: ValidAttackers["system"]["combat"]["initiative"]): number {
+		switch (initString) {
+			case "pathetic": return -6;
+			case "weak": return -3;
+			case "normal": return 0;
+			case "strong": return 3;
+			case "ultimate": return 6;
+			default:
+				initString satisfies never;
+				return -999;
+		}
+	}
+
+	getDefense(defense: keyof ValidAttackers["system"]["combat"]["defenses"]) : ModifierList {
+		const mods = new ModifierList();
+		const lvl = this.level;
+		const baseDef = this.#translateDefenseString(defense, this.defenses[defense]);
+		const inc = this.classData.incremental.defense;
+		mods.add("Base", 10);
+		mods.add("Base Defense Bonus", baseDef);
+		mods.add("Level Bonus (x2)", lvl * 2);
+		mods.add("Incremental Advance" , inc);
+		const otherBonuses = this.getBonuses([defense, "allDefenses"]);
+		const defenseMods = this.getBonuses([defense, "allDefenses"], this.user.defensivePowers());
+		return mods.concat(otherBonuses).concat(defenseMods);
+
+	}
+
+	#translateDefenseString(defType: keyof ValidAttackers["system"]["combat"]["defenses"], val: ValidAttackers["system"]["combat"]["defenses"]["fort"],): number {
+		const weaknesses= this.#getWeaknessesInCategory(defType);
+		switch (val) {
+			case "pathetic": return Math.min(-6 + 2 * weaknesses,-2) ;
+			case "weak": return Math.min(-3 + 1 * weaknesses, -1);
+			case "normal": return 0;
+			case "strong": return Math.max(3 - 1 * weaknesses, 1);
+				case "ultimate": return Math.max(6 - 2 * weaknesses, 2);
+			default:
+				PersonaError.softFail(`Bad defense tsring ${val} for ${defType}`);
+				return -999;
+		}
+	}
+
+	#getWeaknessesInCategory( defType: keyof ValidAttackers["system"]["combat"]["defenses"]): number {
+		const damageTypes = ELEMENTAL_DEFENSE_LINK[defType];
+		const weaknesses= damageTypes.filter( dt => this.resists[dt] == "weakness")
+		return weaknesses.length;
+	}
+
+		get defenses(): ValidAttackers["system"]["combat"]["defenses"] {
+			return this.source.system.combat.defenses;
+		}
 
 	passiveFocii() : Focus[] {
 		return this.focii.filter( f=> !f.system.defensive);
