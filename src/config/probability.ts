@@ -15,7 +15,7 @@ type Probability = typeof PROBABILITY_LIST[number];
 
 export const PROBABILITIES = HTMLTools.createLocalizationObject(PROBABILITY_LIST, "persona.probability");
 
-type ProbabilityRate = Record<Probability, number>;
+export type ProbabilityRate = Record<Probability, number>;
 
 export const ENCOUNTER_RATE_PROBABILITY : ProbabilityRate = {
 	common: 5,

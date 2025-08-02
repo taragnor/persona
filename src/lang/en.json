@@ -1015,6 +1015,12 @@
 	"persona.probability.never": "Never",
 	"persona.probability.always": "Always",
 
+	"persona.treasureTable.label.none": "N/A",
+	"persona.treasureTable.label.trinkets": "Trinkets",
+	"persona.treasureTable.label.lesser": "Lesser",
+	"persona.treasureTable.label.greater": "Greater",
+	"persona.treasureTable.label.royal": "Royal",
+
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",
 	"persona.availability.-": "Normal (-)",

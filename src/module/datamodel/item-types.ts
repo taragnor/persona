@@ -31,6 +31,8 @@ import { EQUIP_SLOTS_LIST } from "../../config/equip-slots.js";
 import { effects } from "./power-dm.js";
 import { CAMEO_TYPES_LIST } from "../../config/cameo-types.js";
 import { PERK_TYPES_LIST } from "../../config/perk-types.js";
+import { TREASURE_TABLES } from "../../config/treasure-tables.js";
+import { PROBABILITIES } from "../../config/probability.js";
 
 function itemBase() {
 	return {
@@ -38,8 +40,19 @@ function itemBase() {
 		amount: new num({ integer: true, initial: 1, min: 0}),
 		price: new num({ integer: true, initial: 0, min:0}),
 		noTrade: new bool({initial: false}),
-		itemTags: new arr(new txt({choices: EQUIPMENT_TAGS_LIST}))
+		itemTags: new arr(new txt({choices: EQUIPMENT_TAGS_LIST})),
+		treasure: itemTreasureStats(),
 	};
+}
+
+function itemTreasureStats() {
+	return new sch({
+		minLevel: new num({initial: 0, integer: true}),
+		maxLevel: new num({initial: 0, integer: true}),
+		table: new txt({choices: TREASURE_TABLES, initial: "none"}),
+		rarity: new txt({choices: PROBABILITIES, initial:"normal"}),
+	});
+
 }
 
 function weeklyAvailability() {
