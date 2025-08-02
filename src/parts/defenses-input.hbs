@@ -1,4 +1,4 @@
-{{#if (isGM)}}
+{{#if (or (isGM) (isPC actor))}}
 {{#if actor.isUnderDefenseCap}}
 <div class="error">
 	UNSPENT BOOSTS

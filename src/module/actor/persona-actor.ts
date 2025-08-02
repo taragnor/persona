@@ -473,18 +473,33 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				.filter(x=> x == "block" || x == "absorb" || x == "reflect")
 				.length;
 			const multmods = persona.getBonuses("maxhpMult")
-			if (weaknesses > 1) {
-				const bonus = (weaknesses -1 ) * 0.25;
-				multmods.add("weaknesses mod", bonus)
+			const underCap = this.maxResists() - this.totalResists() ;
+			if (underCap > 0) {
+				const bonus = underCap * 0.20;
+				multmods.add("under resist Cap", bonus);
 			}
-			if (this.system.combat.resists.physical == "weakness") {
-				newForm.add("weak to Physical", 1.25);
+			if (this.isPC() || this.isNPCAlly()) {
+				newForm.add("PC HP boost", 1.15);
 			}
+
+			// if (weaknesses > 1) {
+			// 	const bonus = (weaknesses -1 ) * 0.25;
+			// 	multmods.add("weaknesses mod", bonus)
+			// }
+			// if (this.system.combat.resists.physical == "weakness") {
+			// 	newForm.add("weak to Physical", 1.25);
+			// }
 			if (this.isShadow()) {
-				const overResist = blocks + (0.5 * resists) - (weaknesses * 1);
-				if (overResist > 2.5) {
-					const penalty = overResist * -0.07;
-					multmods.add("overResist/Block Mod", penalty);
+				const overCap = this.totalResists() - this.maxResists();
+				if (overCap > 0) {
+					const penalty = overCap * -0.07;
+					multmods.add("Over Resist Cap", penalty);
+
+					// const overResist = blocks + (0.5 * resists) - (weaknesses * 1);
+					// if (overResist > 2.5) {
+					// 	const penalty = overResist * -0.07;
+					// 	multmods.add("overResist/Block Mod", penalty);
+					// }
 				}
 			}
 			// bonuses.add("incremental bonus hp", incBonus)
@@ -1726,42 +1741,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	getDefense(this: ValidAttackers,  type : keyof PC["system"]["combat"]["defenses"]) : ModifierList {
 		return this.persona().getDefense(type);
 	}
-		// const mods = new ModifierList();
-		// const lvl = this.system.combat.classData.level;
-		// const baseDef = this.#translateDefenseString(type, this.system.combat.defenses[type]);
-		// const inc = this.system.combat.classData.incremental.defense;
-		// mods.add("Base", 10);
-		// mods.add("Base Defense Bonus", baseDef);
-		// mods.add("Level Bonus (x2)", lvl * 2);
-		// mods.add("Incremental Advance" , inc);
-		// const otherBonuses = this.persona().getBonuses([type, "allDefenses"]);
-		// const defenseMods = this.persona().getBonuses([type, "allDefenses"], this.defensivePowers());
-		// return mods.concat(otherBonuses).concat(defenseMods);
-	// }
-
-	// #translateDefenseString(this: ValidAttackers, defType: keyof PC["system"]["combat"]["defenses"], val: PC["system"]["combat"]["defenses"]["fort"],): number {
-	// 	const weaknesses= this.#getWeaknessesInCategory(defType);
-	// 	switch (val) {
-	// 		case "pathetic": return Math.min(-6 + 2 * weaknesses,-2) ;
-	// 		case "weak": return Math.min(-3 + 1 * weaknesses, -1);
-	// 		case "normal": return 0;
-	// 		case "strong": return Math.max(3 - 1 * weaknesses, 1);
-	// 			case "ultimate": return Math.max(6 - 2 * weaknesses, 2);
-	// 		default:
-	// 			PersonaError.softFail(`Bad defense tsring ${val} for ${defType}`);
-	// 			return -999;
-	// 	}
-	// }
-
-	// #getWeaknessesInCategory(this: ValidAttackers, defType: keyof PC["system"]["combat"]["defenses"]): number {
-	// 	const damageTypes = ELEMENTAL_DEFENSE_LINK[defType];
-	// 	const weaknesses= damageTypes.filter( dt => this.system.combat.resists[dt] == "weakness")
-	// 	return weaknesses.length;
-	// }
-
-	// elementalResist(this: ValidAttackers, type: Exclude<DamageType, "by-power">) : ResistStrength  {
-	// 	return this.persona().elemResist(type);
-	// }
 
 	statusResist(status: StatusEffectId) : ResistStrength {
 		switch (this.system.type) {
@@ -2914,24 +2893,39 @@ get isUnderResistCap(): boolean {
 totalResists (this:ValidAttackers) : number {
 	const resists = this.system.combat.resists;
 	const pcTranslator : Record<typeof resists["cold"], number> = {
-		normal: 0,
 		weakness: -1,
+		normal: 0,
 		resist: 1,
 		block: 2,
 		absorb: 3,
 		reflect: 3
 	} as const;
-	const shadowTranslator : Record<typeof resists["cold"], number> = {
+
+	const physicalTranslator : Record<typeof resists["cold"], number> = {
+		weakness: -2,
 		normal: 0,
+		resist: 2,
+		block: 3,
+		absorb: 4,
+		reflect:4,
+	}
+	const shadowTranslator : Record<typeof resists["cold"], number> = {
 		weakness: -1,
+		normal: 0,
 		resist: 1,
 		block: 2,
 		absorb: 2.5,
 		reflect:2.5,
 	} as const;
 	const resistTranslator = this.isShadow() ? shadowTranslator : pcTranslator;
-	return Object.values(resists)
-	.reduce( (acc,res) => acc + resistTranslator[res] ,0 );
+	const entries = Object.entries(resists) as [keyof typeof resists, typeof resists["cold"]][];
+	return entries.reduce(
+		function (acc, [k,res]) {
+			return acc + (k != "physical"
+				? resistTranslator[res]
+				: physicalTranslator[res]
+			);
+		},0 );
 }
 
 maxResists (this:ValidAttackers) : number {
@@ -2964,9 +2958,12 @@ maxDefensiveBoosts(this: ValidAttackers) : number {
 
 #baseDefenseBoosts(this: ValidAttackers) : number {
 	switch (this.system.type) {
-		case "pc": return 2;
+		case "pc": return 1;
 		case "shadow": return 2;
-		case "npcAlly": return 2;
+		case "npcAlly": return 1;
+		default:
+			this.system satisfies never;
+			return 0;
 	}
 
 }

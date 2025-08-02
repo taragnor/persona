@@ -80,12 +80,12 @@ export class PersonaHandleBarsHelpers {
 			return game.user.isGM;
 		},
 
-		"abs" : (x:string | number) => {
-			return Math.abs(Number(x))
+		"isPC": (actor: PersonaActor) : boolean => {
+			return actor.isPC();
 		},
 
-		"isPC" : (actor: PersonaActor) => {
-			return actor.system.type == "pc";
+		"abs" : (x:string | number) => {
+			return Math.abs(Number(x))
 		},
 
 		"isPCOrNPCAlly": function (actor: PersonaActor): boolean {

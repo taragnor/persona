@@ -2255,7 +2255,6 @@ static getBaseAttackBonus(attacker: ValidAttackers, power:Usable): ModifierList 
 		mod.add("Power attack modifier", power.system.atk_bonus);
 		return mod.concat(new ModifierList(power.getModifier("magAtk", actor)));
 	}
-
 	return new ModifierList();
 }
 
