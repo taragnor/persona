@@ -866,6 +866,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					...situation,
 					usedPower: action.accessor,
 				};
+				if (!combatant.actor?.canPayActivationCost(action)) {return false;}
 				return action.testOpenerPrereqs(useSituation, combatant.actor!);
 			});
 		options = usableActions
@@ -2993,7 +2994,8 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 	if (combatant.actor && combatant.actor.hasStatus("down")) return;
 	const combat = combatant.parent as PersonaCombat | undefined;
 	if (!combat) return;
-	const allies = this.getAllies(combatant as Combatant<ValidAttackers>);
+	const allies = this.getAllies(combatant as Combatant<ValidAttackers>)
+	.filter (ally => ally.actor?.canTakeFollowUpAction());
 	const followups = this.getUsableFollowUps(token, activationRoll).join("");
 	const validTeamworkAllies = allies
 		.flatMap( ally => {
@@ -3052,7 +3054,8 @@ getUsableFollowUps(token: PToken, activationRoll: number) : string []{
 	const combat = this;
 	const followUpMoves = actor.powers
 		.filter( x=> x.isFollowUpMove())
-		.filter( x=> x.testFollowUpPrereqs(situation, actor))
+		.filter(x => actor.canPayActivationCost(x))
+	.filter( x=> x.testFollowUpPrereqs(situation, actor));
 
 	const followup = followUpMoves
 		.map(usable => {

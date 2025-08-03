@@ -3452,6 +3452,14 @@ canTakeNormalDowntimeActions(): boolean {
 	return !this.hasStatus("jailed") && !this.hasStatus("crippled");
 }
 
+isDowned(): boolean {
+	return this.hasStatus("down");
+}
+
+canTakeFollowUpAction(this: ValidAttackers) : boolean {
+	return !this.isDistracted() && !this.isDowned();
+}
+
 async moneyFix() {
 	//updates money to new x10 total
 	switch (this.system.type) {
