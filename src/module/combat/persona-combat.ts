@@ -1,3 +1,4 @@
+import { sleep } from "../utility/async-wait.js";
 import { CardTag } from "../../config/card-tags.js";
 import { RollTag } from "../../config/roll-tags.js";
 import { RollSituation } from "../../config/situation.js";
@@ -434,6 +435,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const msg = await ChatMessage.create(messageData, {});
 		const actorOwner = actor.getPrimaryPlayerOwner();
 		if (actorOwner) {
+			await sleep(2000);
 			await msg.update({"author": actorOwner})
 		}
 	}
@@ -786,7 +788,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		const alliedDefenders = this.getAlliedEngagedDefenders(accessor);
 		if (alliedDefenders.length > 0) {
-			msg.push(`<br>Can Freely disengage thanks to ${alliedDefenders.map(x=> x.name).join(", ")}`);
+			msg.push(`Can Freely disengage thanks to ${alliedDefenders.map(x=> x.name).join(", ")}`);
 			return {msg, options};
 		}
 		if (!combatant.actor) return { msg, options};
@@ -2163,9 +2165,9 @@ static getAttackBonus(attacker: ValidAttackers, power: Usable, target: PToken | 
 	}
 	if (power.isMultiTarget()) {
 		if (power.isStatusEffect()) {
-			attackBonus.add(`Multitarget attack penalty`, -3);
-		} else {
 			attackBonus.add(`Multitarget status attack penalty`, -5);
+		} else {
+			attackBonus.add(`Multitarget attack penalty`, -3);
 		}
 	}
 	attackBonus.add("Custom modifier", this.customAtkBonus ?? 0);
