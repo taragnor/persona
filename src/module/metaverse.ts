@@ -348,7 +348,7 @@ static getSubgroupAmt(pick: Shadow) : number {
 		const XPAwardDataPromises = party.map( async actor=> {
 			const persona  = actor.persona();
 			const xp= persona.calcXP(shadows, numOfPCs );
-			const levelUp = await persona.awardXP(xp);
+			const levelUp = await actor.awardXP(xp);
 			return { actor, xp ,levelUp}
 		});
 		const data = await Promise.all(XPAwardDataPromises);

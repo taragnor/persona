@@ -2165,9 +2165,9 @@ static getAttackBonus(attacker: ValidAttackers, power: Usable, target: PToken | 
 	}
 	if (power.isMultiTarget()) {
 		if (power.isStatusEffect()) {
-			attackBonus.add(`Multitarget status attack penalty`, -5);
+			attackBonus.add(`Multitarget status attack penalty`, -4);
 		} else {
-			attackBonus.add(`Multitarget attack penalty`, -3);
+			attackBonus.add(`Multitarget attack penalty`, -2);
 		}
 	}
 	attackBonus.add("Custom modifier", this.customAtkBonus ?? 0);

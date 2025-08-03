@@ -463,15 +463,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const lvlbase = this.class.getClassProperty(lvl, "maxhp");
 			const diff = this.class.getClassProperty(lvl+1, "maxhp") - lvlbase;
 			const incBonus = Math.round(inc / 3 * diff);
-			const weaknesses = Object.values(this.system.combat.resists)
-				.filter(x=> x == "weakness")
-				.length;
-			const resists = Object.values(this.system.combat.resists)
-				.filter(x=> x == "resist")
-				.length;
-			const blocks = Object.values(this.system.combat.resists)
-				.filter(x=> x == "block" || x == "absorb" || x == "reflect")
-				.length;
+			// const weaknesses = Object.values(this.system.combat.resists)
+			// 	.filter(x=> x == "weakness")
+			// 	.length;
+			// const resists = Object.values(this.system.combat.resists)
+			// 	.filter(x=> x == "resist")
+			// 	.length;
+			// const blocks = Object.values(this.system.combat.resists)
+			// 	.filter(x=> x == "block" || x == "absorb" || x == "reflect")
+			// 	.length;
 			const multmods = persona.getBonuses("maxhpMult")
 			const underCap = this.maxResists() - this.totalResists() ;
 			if (this.isPC() || this.isNPCAlly()) {
@@ -496,9 +496,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (this.isShadow()) {
 				const overCap = this.totalResists() - this.maxResists();
 				if (overCap > 0) {
-					const penalty = overCap * -0.07;
-					multmods.add("Over Resist Cap", penalty);
-
+					const penalty = 1 - Math.min(0.2, overCap * 0.05);
+					newForm.add("Over Resist Cap", penalty);
 					// const overResist = blocks + (0.5 * resists) - (weaknesses * 1);
 					// if (overResist > 2.5) {
 					// 	const penalty = overResist * -0.07;
@@ -2996,34 +2995,9 @@ calcXP (this: ValidAttackers, killedTargets: ValidAttackers[], numOfAllies: numb
 }
 
 /** returns true on level up */
-async awardXP(this: PC | NPCAlly, amt: number) : Promise<boolean> {
-	if (!amt) {
-		return false;
-	}
-	if (Number.isNaN(amt)) {
-		PersonaError.softFail(`Attempting to add NaN XP to ${this.name}, aborted`);
-		return false;
-	}
-	const sit: Situation = {
-		user: this.accessor,
-	};
-	amt = amt * this.persona().getBonuses("xp-multiplier").total(sit, "percentage");
-	if (amt <= 0) {
-		PersonaError.softFail(`Could be an error as XP gained is now ${amt}`);
-		return false;
-	}
-	let levelUp = false;
-	let newxp = this.system.combat.xp + amt;
-	const XPrequired = this.XPForNextLevel;
-	while (newxp > XPrequired) {
-		newxp -= XPrequired;
-		levelUp = true;
-	}
-	await this.update({"system.combat.xp" : newxp});
-	if (levelUp ) {
-		if (this.isNPCAlly() || this.isShadow())
-			await this.levelUp_Incremental();
-	}
+async awardXP(this: ValidAttackers, amt: number) : Promise<boolean> {
+	const levelUp = await this.persona().awardXP(amt);
+	//possible code later for multiple personas with growth
 	return levelUp;
 }
 

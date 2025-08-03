@@ -123,6 +123,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			levelUp = true;
 		}
 		await this.source.update({"system.combat.xp" : newxp});
+	if (levelUp ) {
+		if (this.user.isNPCAlly() || this.user.isShadow())
+			await this.source.levelUp_Incremental();
+	}
 		return levelUp;
 	}
 
