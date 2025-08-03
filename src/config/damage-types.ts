@@ -125,7 +125,7 @@ export class DamageCalculator {
 const DAMAGE_LEVEL_CONVERT_WEAPON : Record<ConvertableDamageLevel, DamageReturn> = {
 	"none": { multiplier: 0, low: 0, high: 0},
 	"miniscule": {multiplier: -1, low: 0, high: 0},
-	"basic": {multiplier: 1, low: 1, high: 1},
+	"basic": {multiplier: 1, low: 1, high: 2},
 	// "light": {multiplier: 1, low: 0, high: 0},
 	// "medium": {multiplier: 3, low: 0, high: 0},
 	// "heavy": {multiplier: 5, low: 0, high: 0},
