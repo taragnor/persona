@@ -855,18 +855,19 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	otherOpeners( combatant: Combatant<ValidAttackers> , situation: Situation): OpenerOptionsReturn {
 		let options : OpenerOptionsReturn["options"] = [];
 		let msg : string[] = [];
-		if (!combatant.actor) return { msg, options};
-		if (!combatant.actor.isCapableOfAction()) {
+		const actor = combatant.actor;
+		if (!actor) return { msg, options};
+		if (!actor.isCapableOfAction()) {
 			return {msg, options};
 		}
-		const openerActions = combatant.actor.openerActions;
+		const openerActions = actor.openerActions;
 		const usableActions = openerActions
 			.filter( action => {
 				const useSituation : Situation = {
 					...situation,
 					usedPower: action.accessor,
 				};
-				if (!combatant.actor?.canPayActivationCost(action)) {return false;}
+				if (!actor.canPayActivationCost(action)) {return false;}
 				return action.testOpenerPrereqs(useSituation, combatant.actor!);
 			});
 		options = usableActions

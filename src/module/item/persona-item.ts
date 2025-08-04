@@ -494,13 +494,22 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	isAnyItemType() : this is (InvItem | Weapon | Consumable) {
+	isAnyItemType() : this is (InvItem | Weapon | Consumable | SkillCard) {
 		switch (this.system.type) {
+			case "skillCard":
 			case "consumable":
 			case "item":
 			case "weapon":
 				return true;
+			case "power":
+			case "characterClass":
+			case "focus":
+			case "talent":
+			case "universalModifier":
+			case "socialCard":
+				return false;
 			default:
+				this.system satisfies never;
 				return false;
 		}
 	}
@@ -1074,6 +1083,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	isConsumable(): this is Consumable {
 		return this.system.type == "consumable";
 	}
+
 
 	isBasicPower(this: UsableAndCard) : boolean {
 		if (this.system.type == "skillCard") {return false;}
