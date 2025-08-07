@@ -1898,6 +1898,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "dmg-allout-low":
 			case "dmg-allout-high":
 			case "hp-loss":
+			case "revive":
 				const newFormCons = DamageCalculation.convertToNewFormConsequence(cons, (power as Usable)?.getDamageType(attacker) ?? "none");
 				return this.processConsequence_damage(newFormCons, applyTo, attacker, power, situation, absorb, damageMult);
 			case "none":

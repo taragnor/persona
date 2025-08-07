@@ -109,12 +109,12 @@ export class DamageCalculation {
 			const effectName = cons.source?.displayedName?.toString() ?? "Unknown Source";
 			this.add(damageOrder, amt ?? 0, effectName);
 		}
-		if (cons.absorbed) {
-			this.setAbsorbed();
-		}
 		// if (cons.damageCalc) {
 		// 	this.merge(cons.damageCalc);
 		// }
+		if (cons.absorbed) {
+			this.setAbsorbed();
+		}
 		return this;
 	}
 
@@ -159,9 +159,9 @@ export class DamageCalculation {
 
 	merge(other :DamageCalculation) : DamageCalculation {
 		this.amt = this.amt.concat(other.amt);
-		this.multiplier = this.multiplier.concat(other.amt);
-		this.divisor = this.divisor.concat(other.amt);
-		this.nonMultPostAdd = this.nonMultPostAdd.concat(other.amt);
+		this.multiplier = this.multiplier.concat(other.multiplier);
+		this.divisor = this.divisor.concat(other.divisor);
+		this.nonMultPostAdd = this.nonMultPostAdd.concat(other.nonMultPostAdd);
 		return this;
 	}
 

@@ -1,3 +1,4 @@
+import { EvaluatedDamage } from "../combat/damage-calc.js";
 import { PToken } from "../combat/persona-combat.js";
 import { DamageCalculation } from "../combat/damage-calc.js";
 import { DamageConsequence } from "../../config/consequence-types.js";
@@ -914,15 +915,28 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			,1);
 	}
 
-	estimateDamage(this: Usable, user: ValidAttackers) : {low: number, high: number} {
+	getDamageEstimate (this: Usable, user: ValidAttackers, simulatedNat: number) : EvaluatedDamage | undefined {
 		const token = user.getActiveTokens(true)
 		.map(x=> x.document) as PToken[];
-		if (!token) return {low: -1, high: -1};
-		const EvenResult = PersonaCombat.getSimulatedResult(token[0], this,token[0], 6);
-		const oddResult = PersonaCombat.getSimulatedResult(token[0], this,token[0], 5);
+		if (!token) return undefined;
+		const result = PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedNat);
+		return result.finalize()?.attacks[0]?.changes[0]?.damage[0];
+	}
+
+	displayDamageStack(this: Usable, user: ValidAttackers) {
+		const sim = this.getDamageEstimate(user, 6)?.str;
+		if (!sim) {console.warn(`Can't get damage stack for ${this.name}`);
+			return;}
+			console.log(`
+Damage stack (${this.name})
+${sim.join("\n")}
+			`);
+	}
+
+	estimateDamage(this: Usable, user: ValidAttackers) : {low: number, high: number} {
 		return {
-			high: Math.abs(EvenResult.finalize()?.attacks[0]?.changes[0]?.damage[0]?.hpChange ?? 0),
-			low: Math.abs(oddResult.finalize()?.attacks[0]?.changes[0]?.damage[0]?.hpChange ?? 0),
+			high: Math.abs(this.getDamageEstimate(user, 6)?.hpChange ?? 0),
+			low: Math.abs(this.getDamageEstimate(user, 5)?.hpChange ?? 0) ,
 		};
 	}
 

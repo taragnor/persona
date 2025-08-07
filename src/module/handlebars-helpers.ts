@@ -129,6 +129,9 @@ export class PersonaHandleBarsHelpers {
 		"getDamage": (actor: PersonaActor, usable: Usable) => {
 			if (!actor.isValidCombatant()) return "0/0";
 			const dmg = usable.estimateDamage(actor);
+			if (dmg.high <= 0) {
+				return `-/-`;
+			}
 			return `${dmg.low}/${dmg.high}`;
 	},
 		// "getDamage": (actor: PersonaActor, usable: Usable) => {

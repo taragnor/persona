@@ -385,7 +385,10 @@ private allItemsMap : Map<string, ItemType> = new Map();
 	getUniversalTokenAccessor<T extends Token<any>>(tok: T) : UniversalTokenAccessor<T["document"]> ;
 	getUniversalTokenAccessor<T extends TokenDocument<any>>(tok: T) : UniversalTokenAccessor<T>;
 	getUniversalTokenAccessor(tok: Token<any> | TokenDocument<any>) : UniversalTokenAccessor<any> {
-		if (tok instanceof Token) tok = tok.document;
+		const TokClass =foundry?.canvas?.placeables?.Token ? foundry.canvas.placeables.Token : Token;
+		if (tok instanceof TokClass) {
+			tok = tok.document;
+		}
 		return {
 			scene: tok.parent.id,
 			tokenId: tok.id,

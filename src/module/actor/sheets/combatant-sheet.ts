@@ -37,6 +37,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".talentName").on("click", this.openTalent.bind(this));
 		html.find(".focusName").on("click", this.openFocus.bind(this));
 		html.find(".itemName").on("click", this.openItem.bind(this));
+		html.find(".powerName").rightclick(this.displayDamageStack.bind(this));
 		html.find(".rollSave").on("click", this.rollSave.bind(this));
 		html.find(".incremental-advance-block .hp .add").on("click", this.addIncremental_HP.bind(this));
 		html.find(".incremental-advance-block .mp .add").on("click", this.addIncremental_MP.bind(this));
@@ -349,6 +350,18 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			await this.actor.levelUp_full();
 		}
 
+	}
+
+	async displayDamageStack(event: JQuery.ClickEvent) {
+		const powerId = HTMLTools.getClosestData(event, "powerId");
+		if (powerId == undefined) {
+			throw new PersonaError(`Can't find power`);
+		}
+		const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.allPowers().find(pwr => pwr.id == powerId);
+		if (!power) {
+			throw new PersonaError(`Can't find power id ${powerId}`);
+		}
+		power.displayDamageStack(this.actor);
 	}
 
 }
