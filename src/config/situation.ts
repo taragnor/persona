@@ -10,8 +10,6 @@ import { StatusEffectId } from "./status-effects";
 import { CombatResult } from "../module/combat/combat-result.js";
 import { CombatTriggerTypes } from "./triggers.js";
 import { ValidAttackers } from "../module/combat/persona-combat.js";
-import { UniversalActorAccessor } from "../module/utility/db-accessor.js";
-import { UniversalItemAccessor } from "../module/utility/db-accessor.js";
 
 export type UserSituation = {
 	user: UniversalActorAccessor<ValidAttackers>;

@@ -2,40 +2,34 @@
 	<span class="change-target">
 		{{getTokenAccName change.actor}}:
 	</span>
-	{{#if change.hpchange}}
-	<span>
-		{{#if (lt change.hpchange 0)}}
-		{{abs change.hpchange}} damage ({{localizeDamageType change.damageType}})
-		{{else}}
-		{{abs change.hpchange}} healing ({{localizeDamageType change.damageType}})
-		{{/if}}
+	{{#each change.damage as |damage|}}
+	<span class="damage-element">
+		<span class="tooltip">
+			{{#if (lt damage.hpChange 0)}}
+			<span class="damage">{{abs damage.hpChange}}</span> {{displayDamageIcon damage.damageType}}
+			{{else}}
+			<span class="healing">{{abs damage.hpChange}}</span> {{displayDamageIcon damage.damageType}}
+			{{/if}}
+			{{> "systems/persona/parts/damage-calc-display.hbs" damage=damage}}
+		</span>
+		<span>
+			{{#if damage.resisted}}
+			<span class="resisted">(Resist)</span>
+			{{/if}}
+		</span>
+		<span>
+			{{#if damage.weakness}}
+			<span class="resisted">(Weak)</span>
+			{{/if}}
+		</span>
 	</span>
-	<span>
-		{{#if attack.attackResult.situation.resisted}}
-		<span class="resisted">(Resist)</span>
-		{{/if}}
-	</span>
-	<span>
-		{{#if attack.attackResult.situation.struckWeakness}}
-		<span class="resisted">(Weak)</span>
-		{{/if}}
-	</span>
-	<span>
-		{{#if attack.attackResult.situation.isAbsorbed}}
-		<span class="resisted">(Absorbed)</span>
-		{{/if}}
-	</span>
-	{{/if}}
+	{{/each}}
+
 	{{#each change.addStatus as |status|}}
-	+{{localize (concat "persona.status." status.id)}}
+	+{{displayStatusIcon status.id}}
 	{{/each}}
 	{{#each change.removeStatus as |status|}}
-	-{{localize (concat "persona.status." status.id)}}
-	{{/each}}
-	{{#each change.expendSlot as |slot i|}}
-	{{#if (ne slot 0)}}
-	Expend Slot {{i}}
-	{{/if}}
+	-{{displayStatusIcon status.id}}
 	{{/each}}
 	{{#each change.otherEffects as |effect|}}
 	<span class="other-effect">

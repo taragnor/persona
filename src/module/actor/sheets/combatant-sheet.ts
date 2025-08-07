@@ -170,8 +170,12 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		try {
 			await PersonaCombat.usePower(token, power );
 		} catch (e) {
-			console.error(e);
-			throw e;
+			if (e instanceof Error) {
+				console.error(e);
+				console.error(e.stack);
+				PersonaError.softFail("Problem with Using Item or Power", e, e.stack);
+			}
+			return;
 		}
 
 	}

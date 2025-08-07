@@ -1,3 +1,6 @@
+import { NonDeprecatedConsequences } from "../../config/consequence-types.js";
+import { SourcedConsequence } from "../../config/consequence-types.js";
+import { DamageCalculation } from "./damage-calc.js";
 import { sleep } from "../utility/async-wait.js";
 import { CardTag } from "../../config/card-tags.js";
 import { RollTag } from "../../config/roll-tags.js";
@@ -22,7 +25,6 @@ import { ConditionTarget } from "../../config/precondition-types.js";
 import { ConsTarget } from "../../config/consequence-types.js";
 import { PersonaSocial } from "../social/persona-social.js"
 import { UniversalModifier } from "../item/persona-item.js";
-import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { CombatTriggerTypes } from "../../config/triggers.js";
 import { PersonaSFX } from "./persona-sfx.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
@@ -44,7 +46,6 @@ import { AttackResult } from "./combat-result.js";
 import { Usable } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
 import { RollBundle } from "../persona-roll.js";
-import { UniversalTokenAccessor } from "../utility/db-accessor.js";
 import { EngagementList } from "./engagementList.js";
 import { OtherEffect } from "../../config/consequence-types.js";
 import { Consumable } from "../item/persona-item.js";
@@ -1199,12 +1200,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			result.merge(await this.usePowerOn(attacker, power, targets, "standard"));
 			const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
 			result.merge(costs);
-			result.finalize();
+			const finalizedResult = result.finalize();
 			if (!power.isOpener())  {
 				await attacker.actor.expendAction();
 			}
 			await attacker.actor.removeStatus("baton-pass");
-			await result.toMessage(power.name, attacker.actor);
+			await finalizedResult.toMessage(power.name, attacker.actor);
 			await this.postAction(attacker, result);
 			return result;
 		} catch(e) {
@@ -1317,12 +1318,38 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	}
 
+	static getSimulatedResult(attacker: PToken, power: UsableAndCard, target: PToken, simNaturalRoll: number = 6) : CombatResult {
+		const situation : Situation = {
+			user: attacker.actor.accessor,
+			usedPower: PersonaDB.getUniversalItemAccessor(power),
+			attacker: attacker.actor.accessor,
+			target: target.actor.accessor,
+			naturalRoll: simNaturalRoll,
+			rollTags: ["attack"],
+			rollTotal: simNaturalRoll,
+			hit: true,
+			criticalHit: false,
+		};
+		const simAtkResult : AttackResult = {
+			result: "hit",
+			target: PersonaDB.getUniversalTokenAccessor(target),
+			attacker: PersonaDB.getUniversalTokenAccessor(attacker),
+			power: PersonaDB.getUniversalItemAccessor(power),
+			situation,
+			roll: null,
+			critBoost: 0,
+			printableModifiers: []
+		};
+		const CR = this.processEffects(simAtkResult);
+		return CR;
+	}
+
 	static async usePowerOn(attacker: PToken, power: UsableAndCard, targets: PToken[], rollType : AttackRollType, modifiers: ModifierList = new ModifierList()) : Promise<CombatResult> {
 		let i = 0;
 		const result = new CombatResult();
 		for (const target of targets) {
 			const atkResult = await this.processAttackRoll( attacker, power, target, modifiers, rollType == "standard" && i==0 ? "activation" : rollType);
-			const this_result = await this.processEffects(atkResult);
+			const this_result = this.processEffects(atkResult);
 			result.merge(this_result);
 			if (atkResult.result == "reflect") {
 				result.merge(await this.usePowerOn(attacker, power, [attacker], "reflect"));
@@ -1665,7 +1692,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return critBoostMod;
 	}
 
-	static async processEffects(atkResult: AttackResult) : Promise<CombatResult> {
+	static processEffects(atkResult: AttackResult) : CombatResult {
 		const CombatRes = new CombatResult();
 		const {result } = atkResult;
 		switch (result) {
@@ -1675,16 +1702,18 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				const power = PersonaDB.findItem(atkResult.power);
 				const attacker = PersonaDB.findToken(atkResult.attacker);
 				if ( targetActor.hasStatus("magic-shield") && power.canBeReflectedByMagicShield(attacker.actor)) {
-					const cons : Consequence = {
+					const cons : SourcedConsequence = {
 						type: "removeStatus",
 						statusName: "magic-shield",
+						source: power,
 					};
 					reflectRes.addEffect(atkResult, targetActor, cons);
 				}
 				if (targetActor.hasStatus("phys-shield") && power.canBeReflectedByPhyiscalShield(attacker.actor)) {
-					const cons : Consequence = {
+					const cons : SourcedConsequence = {
 						type: "removeStatus",
 						statusName: "phys-shield",
+						source: power,
 					};
 					reflectRes.addEffect(atkResult, targetActor, cons);
 				}
@@ -1703,12 +1732,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				result satisfies never;
 				PersonaError.softFail(`Unknown hit result ${result}`);
 		}
-		CombatRes.merge(await this.processPowerEffectsOnTarget(atkResult));
+		CombatRes.merge(this.processPowerEffectsOnTarget(atkResult));
 
 		return CombatRes;
 	}
 
-	static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<CombatResult> {
+	static processPowerEffectsOnTarget(atkResult: AttackResult) : CombatResult {
 		const {situation} = atkResult;
 		const power = PersonaDB.findItem(atkResult.power);
 		const attacker = PersonaDB.findToken(atkResult.attacker);
@@ -1719,7 +1748,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			for (let effect of effects) {
 				const {conditions, consequences}  = effect;
 				if (ModifierList.testPreconditions(conditions, situation, source)) {
-					const res = this.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult);
+					const res = this.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult, source);
 					CombatRes.merge(res);
 				}
 			}
@@ -1727,9 +1756,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return CombatRes;
 	}
 
-	static consequencesToResult(cons: Consequence[], power: ModifierContainer, situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkResult: AttackResult | null): CombatResult {
+	static consequencesToResult(cons: Consequence[], power: ModifierContainer, situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkResult: AttackResult | null, source: SourcedConsequence["source"] | null): CombatResult {
 		const CombatRes = new CombatResult(atkResult);
-		const x = this.ProcessConsequences(power, situation, cons, attacker, atkResult);
+		const x = this.ProcessConsequences(power, situation, cons, attacker, atkResult, source);
 		CombatRes.escalationMod += x.escalationMod;
 		const result = this.getCombatResultFromConsequences(x.consequences, situation, attacker, target, atkResult);
 		CombatRes.merge(result);
@@ -1816,7 +1845,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 	}
 
-	static ProcessConsequences_simple(consequence_list: Consequence[]): ConsequenceProcessed {
+	static ProcessConsequences_simple(consequence_list: SourcedConsequence[]): ConsequenceProcessed {
 		let consequences : ConsequenceProcessed["consequences"] = [];
 		for (const cons of consequence_list) {
 			consequences= consequences.concat(this.processConsequence_simple(cons));
@@ -1828,16 +1857,20 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 
-	static ProcessConsequences(power: ModifierContainer, situation: Situation, relevantConsequences: Consequence[], attacker: ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null)
+	static ProcessConsequences(power: ModifierContainer, situation: Situation, relevantConsequences: Consequence[], attacker: ValidAttackers | undefined, atkresult : Partial<AttackResult> | null, source: SourcedConsequence["source"] | null)
 	: ConsequenceProcessed {
 		let escalationMod = 0;
 		let consequences : ConsequenceProcessed["consequences"]= [];
 		for (const cons of relevantConsequences) {
+			const sourcedC = {
+				...cons,
+				source
+			};
 			if (attacker) {
-				const newCons = this.processConsequence(power, situation, cons, attacker, atkresult);
+				const newCons = this.processConsequence(power, situation, sourcedC, attacker, atkresult);
 				consequences = consequences.concat(newCons);
 			} else {
-				const newCons = this.processConsequence_simple( cons);
+				const newCons = this.processConsequence_simple( sourcedC);
 				consequences = consequences.concat(newCons);
 			}
 			if (cons.type == "escalationManipulation") {
@@ -1847,7 +1880,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return {consequences, escalationMod} satisfies ConsequenceProcessed;
 	}
 
-	static processConsequence( power: ModifierContainer, situation: Situation, cons: Consequence, attacker: ValidAttackers, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed["consequences"] {
+	static processConsequence( power: ModifierContainer, situation: Situation, cons: SourcedConsequence, attacker: ValidAttackers, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed["consequences"] {
 		//need to fix this so it knows who the target actual is so it can do a proper compariosn, right now when applying to Self it won't consider resistance or consider the target's resist.
 		let damageMult = 1;
 		const applyToSelf = cons.applyToSelf ?? (cons.applyTo == "attacker" || cons.applyTo =="user" || cons.applyTo == "owner");
@@ -1858,70 +1891,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		switch (cons.type) {
 			case "damage-new":
 				return this.processConsequence_damage(cons, applyTo, attacker, power, situation, absorb, damageMult);
+			case "absorb":
 			case "dmg-mult":
-				return [{
-					applyTo,
-					cons: {type: "damage-new",
-						damageSubtype: "multiplier",
-						amount: cons.amount ?? 1,
-					}
-				}];
 			case "dmg-high":
-				return [{
-					applyTo,
-					cons: {
-						type: "damage-new",
-						damageSubtype: "high",
-						amount: power.getDamage(attacker, situation)["high"] * (absorb ? -1 : damageMult),
-						damageType: (power as Usable).getDamageType(attacker),
-					}
-				}];
 			case "dmg-low":
-				return [{
-					applyTo,
-					cons: {
-						type: "damage-new",
-						damageSubtype: "low",
-						amount: power.getDamage(attacker, situation)["low"] * (absorb ? -1 : damageMult),
-						damageType: (power as Usable).getDamageType(attacker),
-					}
-				}];
-			case "dmg-allout-low": {
-				const combat =this.ensureCombatExists();
-				const userTokenAcc = combat.getToken(situation.user);
-				if (!userTokenAcc) {
-					PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId ?? "Null user"}`);
-					break;
-				}
-				const userToken = PersonaDB.findToken(userTokenAcc);
-				return [{
-					applyTo,
-					cons : {
-						type: "damage-new",
-						damageSubtype: "allout-low",
-						amount: PersonaCombat.calculateAllOutAttackDamage(userToken, situation).low * (absorb ? -1 : damageMult),
-						damageType: "all-out",
-					}
-				}];
-			}
-			case "dmg-allout-high": {
-				const combat =this.ensureCombatExists();
-				const userTokenAcc = combat.getToken(situation.user);
-				if (!userTokenAcc) {
-					PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId}`);
-					break;
-				}
-				const userToken = PersonaDB.findToken(userTokenAcc);
-				return [{
-					applyTo,
-					cons : {
-						type: "damage-new",
-						damageSubtype: "allout-high",
-						amount: PersonaCombat.calculateAllOutAttackDamage(userToken, situation).high * (absorb ? -1 : damageMult),
-						damageType: "all-out",
-					}
-				}];
-			}
+			case "dmg-allout-low":
+			case "dmg-allout-high":
+			case "hp-loss":
+				const newFormCons = DamageCalculation.convertToNewFormConsequence(cons, (power as Usable)?.getDamageType(attacker) ?? "none");
+				return this.processConsequence_damage(newFormCons, applyTo, attacker, power, situation, absorb, damageMult);
 			case "none":
 			case "modifier":
 			case "escalationManipulation": //since this is no llonger handled here we do nothing
@@ -1935,8 +1913,19 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return [];
 	}
 
-	static processConsequence_damage( cons: DamageConsequence, applyTo: ConsequenceProcessed["consequences"][number]["applyTo"], attacker: ValidAttackers, power: ModifierContainer, situation: Situation, absorb: boolean, damageMult: number) : ConsequenceProcessed["consequences"] {
+	static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, applyTo: ConsequenceProcessed["consequences"][number]["applyTo"], attacker: ValidAttackers, power: ModifierContainer, situation: Situation, absorb: boolean, _damageMult: number) : ConsequenceProcessed["consequences"] {
 		let dmgAmt : number = 0;
+		const damageType = cons.damageType != "by-power" ? cons.damageType : (power as Usable).getDamageType(attacker);
+		cons= {
+			...cons,
+			absorbed: absorb,
+			damageType,
+		};
+		if (cons.damageType == undefined) {
+			debugger;
+			PersonaError.softFail("Damage type is undefined, wtf");
+			return [];
+		}
 		switch (cons.damageSubtype) {
 			case "odd-even":
 				if (situation.naturalRoll == undefined) {
@@ -1953,7 +1942,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "multiplier":
 					return [{
 						applyTo,
-						cons
+						cons,
 					}];
 			case "high":
 					dmgAmt = power.getDamage(attacker, situation, cons.damageType)["high"];
@@ -1983,18 +1972,17 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			default:
 				cons satisfies never;
 		}
-		const damageType = cons.damageType != "by-power" ? cons.damageType : (power as Usable).getDamageType(attacker);
 		return [{
 			applyTo,
 			cons: {
 				...cons,
-				amount: dmgAmt * (absorb ? -1 : damageMult),
-				damageType,
+				// amount: dmgAmt * (absorb ? -1 : damageMult),
+				amount: dmgAmt,
 			}
 		}];
 	}
 
-	static processConsequence_simple( cons: Consequence) :ConsequenceProcessed["consequences"] {
+	static processConsequence_simple( cons: SourcedConsequence) :ConsequenceProcessed["consequences"] {
 		const applyToSelf = cons.applyToSelf ?? false;
 		const applyTo = cons.applyTo ? cons.applyTo : (applyToSelf ? "owner" : "target");
 		switch (cons.type) {
@@ -2004,16 +1992,19 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "dmg-allout-high":
 			case "dmg-mult":
 			case "damage-new":
+			case "hp-loss":
+			case "absorb":
+			case "revive":
 				PersonaError.softFail(`Process Consequence Simple does not handle ${cons.type}`);
 				return [];
-			case "hp-loss":
-				return [{
-					applyTo,
-					cons: {
-						type: "hp-loss",
-						amount: cons.amount ?? 0,
-					}
-				}];
+			// case "hp-loss":
+				// return [{
+				// 	applyTo,
+				// 	cons: {
+				// 		type: "hp-loss",
+				// 		amount: cons.amount ?? 0,
+				// 	}
+				// }];
 			case "addStatus":
 			case "removeStatus":
 				return  [{applyTo,cons}];
@@ -2024,11 +2015,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "escalationManipulation": //since this is no llonger handled here we do nothing
 				break;
 			case "extraAttack" :
-			case "absorb":
 			case "expend-slot":
 			case "add-escalation":
 			case "save-slot":
-			case "revive":
 			case "recover-slot":
 			case "half-hp-cost":
 			case "other-effect":
@@ -2069,6 +2058,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 							type: "expend-item",
 							itemId: item.id,
 							itemAcc: (item as Consumable | SkillCard).accessor,
+							source: cons.source,
 						}
 					}];
 				}
@@ -2077,7 +2067,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 						cons: {
 							type: "expend-item",
 							itemId: "",
-							itemAcc: cons.sourceItem
+							itemAcc: cons.sourceItem,
+							source: cons.source,
 						}
 					}];
 				} else {
@@ -2111,28 +2102,34 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 						res.addEffect(null, attacker.actor, {
 							type:"inspiration-cost",
 							amount: power.system.inspirationCost,
-							socialLinkIdOrTarot: power.system.inspirationId as unknown as AnyStringObject
+							socialLinkIdOrTarot: power.system.inspirationId as unknown as AnyStringObject,
+							source: usableOrCard,
 						});
 					}
 				}
 				if (attacker.actor!.system.type != "shadow" && power.hpCost()) {
-					res.addEffect(null, attacker.actor!, {
+					const deprecatedConvert = DamageCalculation.convertToNewFormConsequence({
 						type: "hp-loss",
-						amount: power.modifiedHpCost(attacker.actor)
-					});
+						damageType: "none",
+						amount: power.modifiedHpCost(attacker.actor),
+						source: usableOrCard,
+					}, power.getDamageType(attacker.actor));
+					res.addEffect(null, attacker.actor!, deprecatedConvert );
 				}
 				if (attacker.actor.system.type != "shadow" && power.system.subtype == "magic" && power.system.mpcost > 0) {
 					res.addEffect(null, attacker.actor, {
 						type: "alter-mp",
 						subtype: "direct",
 						amount: -power.mpCost(attacker.actor),
+						source: usableOrCard,
 					});
 				}
 				if (attacker.actor.system.type == "shadow") {
 					if (power.system.energy.cost > 0) {
 						res.addEffect(null, attacker.actor, {
 							type: "alter-energy",
-							amount: -power.system.energy.cost
+							amount: -power.system.energy.cost,
+							source: usableOrCard,
 						});
 					}
 				}
@@ -2146,6 +2143,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 						type: "expend-item",
 						itemId: "",
 						itemAcc: PersonaDB.getUniversalItemAccessor(usableOrCard as SkillCard | Consumable),
+						source: usableOrCard,
 					});
 				}
 				break;
@@ -3121,7 +3119,7 @@ export type ConsequenceProcessed = {
 	consequences: {
 		applyTo: ConditionTarget | "global",
 		// applyToSelf: boolean,
-		cons: Consequence,
+			cons: SourcedConsequence<NonDeprecatedConsequences>,
 	}[],
 	escalationMod: number
 }

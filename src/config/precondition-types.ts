@@ -1,9 +1,6 @@
-import { RollTag } from "./roll-tags.js";
-import { CardTag } from "./card-tags.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { NumericComparisonPC } from "./numeric-comparison.js";
 import { BooleanComparisonPC } from "./boolean-comparison.js";
-import { UniversalActorAccessor } from "../module/utility/db-accessor.js";
 import { PC } from "../module/actor/persona-actor.js";
 import { Shadow } from "../module/actor/persona-actor.js";
 import { TarotCard } from "./tarot.js";

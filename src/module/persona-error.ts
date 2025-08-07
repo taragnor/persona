@@ -16,10 +16,11 @@ export class PersonaError extends Error {
 			ui.notifications.error(errortxt);
 			const trace = this.getTrace();
 			console.error(`${errortxt} \n ${trace}`);
-			debugArgs.forEach( arg=> Debug(arg));
 		} catch (e) {
-			debugArgs.forEach( arg=> Debug(arg));
 			throw new Error(errortxt);
+		}
+		if (debugArgs) {
+			debugArgs.forEach( arg=> Debug(arg));
 		}
 	}
 

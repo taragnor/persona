@@ -14,7 +14,6 @@ import { HBS_TEMPLATES_DIR } from "../../config/persona-settings.js";
 import { PC } from "../actor/persona-actor.js";
 import { PersonaSockets } from "../persona.js";
 import { PersonaActor } from "../actor/persona-actor.js";
-import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { TensionPool } from "./tension-pool.js";
 import { sleep } from "../utility/async-wait.js";
 

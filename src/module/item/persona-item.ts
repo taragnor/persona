@@ -1,3 +1,6 @@
+import { PToken } from "../combat/persona-combat.js";
+import { DamageCalculation } from "../combat/damage-calc.js";
+import { DamageConsequence } from "../../config/consequence-types.js";
 import { DamageCalculator } from "../../config/damage-types.js";
 import { Trigger } from "../../config/triggers.js";
 import { CombatResult } from "../combat/combat-result.js";
@@ -35,7 +38,6 @@ import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { getActiveConsequences } from "../preconditions.js";
 import { PersonaError } from "../persona-error.js";
 import { PersonaActor } from "../actor/persona-actor.js";
-import { UniversalItemAccessor } from "../utility/db-accessor.js";
 import { SLOTTYPES } from "../../config/slot-types.js";
 import { ModifierListItem } from "../combat/modifier-list.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
@@ -869,7 +871,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	// }
 
-	getDamage(this:ModifierContainer , user: ValidAttackers, situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: user.accessor}, typeOverride : SimpleDamageCons["damageType"] = "none") : {low: number, high:number} {
+	getDamage(this:ModifierContainer , user: ValidAttackers, situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: user.accessor}, typeOverride : DamageConsequence["damageType"] = "none") : {low: number, high:number} {
 		//TODO: handle type override check to see if power damage is by-power or has other type
 		if (!this.isUsable() || this.isSkillCard()) return {low:0, high:0};
 		// if (!("dmg_type" in this.system) || !("subtype" in this.system)) return {low: 0, high:0};
@@ -904,12 +906,25 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			.filter( x=> x.type == "dmg-mult" || ( x.type == "damage-new" && x.damageSubtype == "multiplier"));
 		return multCons.reduce( (acc, cons) => {
 			const amt = "amount" in cons ? cons.amount ?? 1: 1
-			return CombatResult.calcHpChangeMult(acc,amt)
+			//TODO: do simulation stuff
+			return acc * amt;
+			// return CombatResult.calcHpChangeMult(acc,amt)
 			// acc * ("amount" in cons ? cons.amount ?? 1: 1)
 		}
 			,1);
 	}
 
+	estimateDamage(this: Usable, user: ValidAttackers) : {low: number, high: number} {
+		const token = user.getActiveTokens(true)
+		.map(x=> x.document) as PToken[];
+		if (!token) return {low: -1, high: -1};
+		const EvenResult = PersonaCombat.getSimulatedResult(token[0], this,token[0], 6);
+		const oddResult = PersonaCombat.getSimulatedResult(token[0], this,token[0], 5);
+		return {
+			high: Math.abs(EvenResult.finalize()?.attacks[0]?.changes[0]?.damage[0]?.hpChange ?? 0),
+			low: Math.abs(oddResult.finalize()?.attacks[0]?.changes[0]?.damage[0]?.hpChange ?? 0),
+		};
+	}
 
 	critBoost(this: Usable, user: ValidAttackers) : ModifierList {
 		const x = this.getModifier("criticalBoost", user);

@@ -1,3 +1,5 @@
+import { PowerContainer } from "../module/item/persona-item.js";
+import { DamageCalculation } from "../module/combat/damage-calc.js";
 import { PermaBuffType } from "./perma-buff-type.js";
 import { SocialCardAction } from "./effect-types.js";
 import { CardTag } from "./card-tags.js";
@@ -29,9 +31,7 @@ import { StatusDuration } from "../module/active-effect.js";
 import { StatusEffectId } from "./status-effects.js";
 import { ModifierTarget } from "./item-modifiers.js";
 import { PC } from "../module/actor/persona-actor.js";
-import { UniversalActorAccessor } from "../module/utility/db-accessor.js";
 import { Shadow } from "../module/actor/persona-actor.js";
-import { UniversalItemAccessor } from "../module/utility/db-accessor.js";
 
 type ExpendOtherEffect = {
 	type: "expend-item";
@@ -139,6 +139,11 @@ type StatusEffect_FollowUp = {
 	activationRoll: number,
 }
 
+export type SourcedConsequence<C extends Consequence = Consequence> = C & {
+	source: PowerContainer | null;
+}
+
+
 export type Consequence =
 	{
 		applyToSelf ?: boolean,
@@ -167,6 +172,7 @@ type NonGenericConsequences = UsePowerConsequence
 	| SocialCardActionConsequence
 	| DungeonActionConsequence
 	| ModifierConsequence
+	| OldDamageConsequence
 	| DamageConsequence
 	| DisplayMessageConsequence
 	| ExpendItemConsequence
@@ -307,8 +313,24 @@ type DamageConsequenceShared = {
 	type : "damage-new",
 	damageSubtype: DamageSubtype
 	amount ?: number; //only added later for effects
+	damageType: DamageType | "by-power",
+	/** manually added as part of processing */
+	absorbed ?: boolean,
 };
 
+export type NonDeprecatedConsequences = Exclude<Consequence, DeprecatedConsequences>;
+
+type DeprecatedConsequences =
+	OldDamageConsequence
+;
+
+
+
+export type OldDamageConsequence = {
+	type: "dmg-high" | "dmg-low" | "dmg-mult" | "absorb" | "dmg-allout-low" | "dmg-allout-high" | "revive" | "hp-loss" ;
+	amount ?: number;
+	damageType: DamageType | "by-power",
+}
 export type DamageConsequence = DamageConsequenceShared & (
 	SimpleDamageCons
 	| ConstantDamageCons
@@ -317,12 +339,10 @@ export type DamageConsequence = DamageConsequenceShared & (
 
 export type SimpleDamageCons = {
 	damageSubtype: "high" | "low" | "allout-high" | "allout-low" | "odd-even",
-	damageType: DamageType | "by-power",
 }
 
 type ConstantDamageCons = {
 	damageSubtype: "constant" | "percentage";
-	damageType: DamageType | "by-power",
 	amount: number;
 }
 

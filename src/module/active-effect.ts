@@ -3,8 +3,6 @@ import { PersonaRoller } from "./persona-roll.js";
 import { FatigueStatusId } from "../config/status-effects.js";
 import { statusMap } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
-import { UniversalAEAccessor } from "./utility/db-accessor.js";
-import { UniversalActorAccessor } from "./utility/db-accessor.js";
 import { StatusDurationType } from "../config/status-effects.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { PersonaActor } from "./actor/persona-actor.js";

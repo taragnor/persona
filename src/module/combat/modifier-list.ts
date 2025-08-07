@@ -7,7 +7,6 @@ import { testPreconditions } from "../preconditions.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { ModifierContainer } from "../item/persona-item.js";
 import { PowerContainer } from "../item/persona-item.js";
-import { UniversalItemAccessor } from "../utility/db-accessor.js";
 import { PersonaDB } from "../persona-db.js";
 import { Precondition } from "../../config/precondition-types.js";
 import { ModifierVariable } from "../../config/effect-types.js";

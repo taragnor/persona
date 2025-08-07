@@ -1,34 +1,24 @@
-import { PersonaSounds } from "../persona-sounds.js";
+import { DAMAGETYPES } from "../../config/damage-types.js";
+import { FinalizedCombatResult } from "./finalized-combat-result.js";
+import { ConsequenceProcessed } from "./persona-combat.js";
+import { DamageConsequence } from "../../config/consequence-types.js";
+import { OldDamageConsequence } from "../../config/consequence-types.js";
+import { DamageCalculation } from "./damage-calc.js";
 import { RollSituation } from "../../config/situation.js";
-import { PersonaVariables } from "../persona-variables.js";
-import { TriggeredEffect } from "../triggered-effect.js";
-import { RealDamageType } from "../../config/damage-types.js";
 import { UsableAndCard } from "../item/persona-item.js";
-import { NPCAlly } from "../actor/persona-actor.js";
 import { ValidAttackers } from "./persona-combat.js";
 import { StatusDuration } from "../active-effect.js";
 import { getSocialLinkTarget } from "../preconditions.js";
-import { Consumable } from "../item/persona-item.js";
-import { Metaverse } from "../metaverse.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { SocialCardActionConsequence } from "../../config/consequence-types.js";
 import { OtherEffect } from "../../config/consequence-types.js";
 import { StatusEffect } from "../../config/consequence-types.js";
 import { PersonaSocial } from "../social/persona-social.js";
-import { Shadow } from "../actor/persona-actor.js";
-import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { ValidSound } from "../persona-sounds.js";
-import { PersonaSFX } from "./persona-sfx.js";
-
-import { PersonaSockets } from "../persona.js";
-import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaError } from "../persona-error.js";
 import { Usable } from "../item/persona-item.js";
-import { PC } from "../actor/persona-actor.js";
 import { PToken } from "./persona-combat.js";
 import { RollBundle } from "../persona-roll.js";
-import { UniversalTokenAccessor } from "../utility/db-accessor.js";
-import { UniversalItemAccessor } from "../utility/db-accessor.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { PersonaDB } from "../persona-db.js";
 import { PersonaActor } from "../actor/persona-actor.js";
@@ -41,12 +31,12 @@ declare global {
 }
 
 export class CombatResult  {
-	_finalized : boolean = false;
-	static pendingPromises: Map< CombatResult["id"], Function> = new Map();
-	tokenFlags: {
-		actor: UniversalActorAccessor<PersonaActor>,
-			effects: OtherEffect[]
-	}[] = [] ;
+	// _finalized : boolean = false;
+	// static pendingPromises: Map< CombatResult["id"], Function> = new Map();
+	// tokenFlags: {
+	// 	actor: UniversalActorAccessor<PersonaActor>,
+	// 		effects: OtherEffect[]
+	// }[] = [] ;
 	static lastId = 0;
 	id : number;
 	attacks: Map<AttackResult, ActorChange<ValidAttackers>[]> = new Map();
@@ -63,38 +53,30 @@ export class CombatResult  {
 		}
 	}
 
-	static addPending(res: CombatResult): Promise<unknown> {
-		const promise = new Promise(
-			(resolve, reject) => {
-				this.pendingPromises.set(res.id, resolve);
-				setTimeout( () => {
-					reject("Timeout");
-					this.pendingPromises.delete(res.id);
-				}	, 16000);
-			});
-		return promise;
-
+	finalize(): FinalizedCombatResult {
+		return new FinalizedCombatResult(this);
 	}
 
-	static resolvePending( resId: CombatResult["id"]) {
-		const resolver = this.pendingPromises.get(resId);
-		if (!resolver) throw new Error(`No Resolver for ${resId}`);
-		resolver();
-		this.pendingPromises.delete(resId);
-	}
+	// static addPending(res: CombatResult): Promise<unknown> {
+	// 	const promise = new Promise(
+	// 		(resolve, reject) => {
+	// 			this.pendingPromises.set(res.id, resolve);
+	// 			setTimeout( () => {
+	// 				reject("Timeout");
+	// 				this.pendingPromises.delete(res.id);
+	// 			}	, 16000);
+	// 		});
+	// 	return promise;
 
-	toJSON() : string {
-		const obj = {
-			attacks: Array.from(this.attacks),
-			escalationMod: this.escalationMod,
-			costs: this.costs,
-			tokenFlags: this.tokenFlags,
-			globalOtherEffects : this.globalOtherEffects,
-			id: this.id,
-		};
-		const json = JSON.stringify(obj);
-		return json;
-	}
+	// }
+
+	// static resolvePending( resId: CombatResult["id"]) {
+	// 	const resolver = this.pendingPromises.get(resId);
+	// 	if (!resolver) throw new Error(`No Resolver for ${resId}`);
+	// 	resolver();
+	// 	this.pendingPromises.delete(resId);
+	// }
+
 
 	findEffects<T extends OtherEffect["type"]>(effectType: T): (OtherEffect & {type:T})[] {
 		let arr = [] as (OtherEffect & {type:T})[];
@@ -111,129 +93,122 @@ export class CombatResult  {
 		return arr;
 	}
 
-	static fromJSON(json: string) : CombatResult {
-		const x = JSON.parse(json);
-		const ret = new CombatResult();
-		ret.attacks = new Map(x.attacks);
-		ret.escalationMod = x.escalationMod;
-		ret.costs = x.costs;
-		ret.tokenFlags = x.tokenFlags;
-		ret.globalOtherEffects = x.globalOtherEffects;
-		ret.id = x.id;
-		return ret;
-	}
 
 	addSound(sound: ValidSound, timing: this["sounds"][number]["timing"]) {
 		this.sounds.push({sound, timing});
 	}
 
-	calcDamageMult(change :ActorChange<ValidAttackers>, mult : number) {
-		change.hpchangemult = CombatResult.calcHpChangeMult(change.hpchangemult, mult);
+	// calcDamageMult(change :ActorChange<ValidAttackers>, mult : number) {
+	// 	change.hpchangemult = CombatResult.calcHpChangeMult(change.hpchangemult, mult);
+	// }
+
+	// static calcHpChangeMult(origValue: number, mult: number): number {
+	// 	if (!PersonaSettings.get("damageMult")) {
+	// 		return origValue *= mult;
+	// 	}
+	// 	switch (true) {
+	// 		case origValue == 0:
+	// 			return 0;
+	// 		case mult == 1:
+	// 			return origValue;
+	// 		case mult == 0:
+	// 			return 0;
+	// 		case mult == -1:
+	// 			return origValue *= -1;
+	// 		case mult <0:
+	// 			PersonaError.softFail("calcDamageMult doesn't handle values less than 0 that aren't -1");
+	// 			break;
+	// 		case mult > 1:
+	// 			mult -= 1;
+	// 			return origValue += mult;
+	// 		case mult < 1:
+	// 			return origValue *= mult;
+	// 			// mult = 1 - mult;
+	// 			// origValue -= mult;
+	// 			// return Math.max(0, origValue);
+	// 		default:
+	// 			PersonaError.softFail(`Odd value for damage multiplier :${mult}`);
+	// 			break;
+	// 	}
+	// 			return origValue;
+	// }
+
+	#getDamageCalc(cons: OldDamageConsequence | DamageConsequence, atkResult: U<AttackResult>, effect: U<ActorChange<ValidAttackers>>  ) : U<DamageCalculation> {
+		if (!effect) return undefined;
+		let damageType = cons.damageType;
+		if (damageType == "by-power") {
+			if (!atkResult) {
+				PersonaError.softFail("Can't get atk Result for determining damage type");
+				return undefined;
+			}
+			const power = PersonaDB.findItem(atkResult.power);
+			if (power.isSkillCard()) {
+				PersonaError.softFail("Skill Cards can't do damage");
+				return undefined;
+			}
+			const attacker = PersonaDB.findToken(atkResult.attacker).actor;
+			if (!attacker) {
+				PersonaError.softFail("Can't get attacker");
+				return undefined;
+
+			}
+			damageType = power.getDamageType(attacker);
+		}
+		let damageCalc : DamageCalculation;
+		if (damageType == undefined) {
+			debugger;
+			PersonaError.softFail("Damage Type is undefined on this consequence", cons, atkResult, effect);
+			return undefined;
+		}
+		if (effect.damage[damageType]) {
+			damageCalc = effect.damage[damageType]!;
+		} else {
+			damageCalc=  new DamageCalculation(damageType);
+			effect.damage[damageType] = damageCalc;
+		}
+		return damageCalc;
 	}
 
-	static calcHpChangeMult(origValue: number, mult: number): number {
-		if (!PersonaSettings.get("damageMult")) {
-			return origValue *= mult;
-		}
-		switch (true) {
-			case origValue == 0:
-				return 0;
-			case mult == 1:
-				return origValue;
-			case mult == 0:
-				return 0;
-			case mult == -1:
-				return origValue *= -1;
-			case mult <0:
-				PersonaError.softFail("calcDamageMult doesn't handle values less than 0 that aren't -1");
-				break;
-			case mult > 1:
-				mult -= 1;
-				return origValue += mult;
-			case mult < 1:
-				return origValue *= mult;
-				// mult = 1 - mult;
-				// origValue -= mult;
-				// return Math.max(0, origValue);
-			default:
-				PersonaError.softFail(`Odd value for damage multiplier :${mult}`);
-				break;
-		}
-				return origValue;
-
-	}
-
-	addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Consequence) {
-		let effect: ActorChange<ValidAttackers> | undefined = undefined;
+	#getEffect(target: ValidAttackers | undefined) : U<ActorChange<ValidAttackers>> {
 		if (target) {
-			effect = {
+			return {
 				actor: target.accessor,
 				otherEffects: [],
-				hpchange: 0,
-				damageType: "none",
-				hpchangemult: 1,
+				damage: {},
 				addStatus: [],
 				removeStatus: [],
-				expendSlot: [0, 0, 0, 0],
 			};
 		}
+		return undefined;
+	}
+
+	addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: ConsequenceProcessed["consequences"][number]["cons"]) {
+		const effect = this.#getEffect(target);
 		switch (cons.type) {
 			case "none":
 				break;
-			case "absorb":
-				if (!effect) break;
-				this.calcDamageMult(effect, -1);
-				break;
+			// case "absorb":
+			// case "dmg-high":
+			// case "dmg-low":
+			// case "dmg-allout-high":
+			// case "dmg-allout-low":
+			// case "revive":
+			// case "dmg-mult": {
+			// 	if (!target) break;
+			// 	const damageCalc = this.#getDamageCalc(cons, atkResult ?? undefined, effect);
+			// 	if (!damageCalc) break;
+			// 	damageCalc.addDamageConsOldForm(cons, target);
+			// 	// if (!effect) break;
+			// 	// this.calcDamageMult(effect, -1);
+			// 	break;
+			// }
 			case "damage-new": {
-				if (!effect) break;
-				switch (cons.damageSubtype) {
-					case "multiplier":
-						this.calcDamageMult(effect, cons.amount);
-
-						break;
-					case "odd-even":
-					case "high":
-					case "low":
-					case "allout-low":
-					case "allout-high":
-					case "constant":
-						if (cons.damageType != "by-power") {
-							effect.damageType = cons.damageType;
-						}
-						effect.hpchange = -(cons.amount ?? 0);
-						if (effect.damageType == "healing") {
-							effect.hpchange = Math.abs(effect.hpchange);
-						}
-						break;
-					case "percentage":
-							if (!target) {
-								PersonaError.softFail("No target for percentage HP");
-								break;
-							}
-						const amt = Math.abs(Math.round(target.mhp * cons.amount * 0.01));
-						effect.hpchange = cons.damageType == "healing" ? amt : -amt;
-						if (cons.damageType != "by-power") {
-							effect.damageType = cons.damageType;
-						}
-						break;
-					default:
-							cons satisfies never;
-						break;
-				}
+				if (!target) break;
+				const damageCalc = this.#getDamageCalc(cons, atkResult ?? undefined, effect);
+				if (!damageCalc) break;
+				damageCalc.addConsequence(cons, target);
 				break;
 			}
-			case "dmg-mult":
-				if (!effect) break;
-				this.calcDamageMult(effect, cons.amount ?? 0);
-
-				break;
-			case "dmg-high":
-			case "dmg-low":
-			case "dmg-allout-high":
-			case "dmg-allout-low":
-				if (!effect) break;
-				effect.hpchange = -(cons.amount ?? 0);
-				break;
 			case "addStatus": {
 				if (!effect) break;
 				let status_damage : number | undefined = undefined;
@@ -281,14 +256,7 @@ export class CombatResult  {
 				});
 				break;
 			case "expend-slot": {
-				if (!effect) break;
-				const slot = cons.amount;
-				if (slot == undefined) {
-					const err= "Slot is undefined";
-					ui.notifications.error(err);
-					throw new Error(err);
-				}
-				effect.expendSlot[slot]+= 1;
+				console.warn("Expend slot is unused and does nnothing");
 				break;
 			}
 			case "modifier":
@@ -303,20 +271,20 @@ export class CombatResult  {
 				if (!effect) break;
 				effect.otherEffects.push({ type: "save-slot"});
 				break;
-			case "hp-loss":
-				if (!effect) break;
-				effect.otherEffects.push({ type: "hp-loss", amount: Math.floor(cons.amount ?? 0)});
-				break;
+			// case "hp-loss":
+			// 	if (!effect) break;
+			// 	effect.otherEffects.push({ type: "hp-loss", amount: Math.floor(cons.amount ?? 0)});
+			// 	break;
 			case "half-hp-cost":
 				if (!effect) break;
 				effect.otherEffects.push({type: "half-hp-cost"});
 				break;
-			case "revive":
-				if (!effect || !target) break;
-				effect.removeStatus.push({ id: "fading"});
-				effect.hpchange = Math.round(target.mhp * (cons.amount ?? 0.01));
-				effect.hpchangemult = 1;
-				break;
+			// case "revive":
+			// 	if (!effect || !target) break;
+			// 	effect.removeStatus.push({ id: "fading"});
+			// 	effect.hpchange = Math.round(target.mhp * (cons.amount ?? 0.01));
+			// 	effect.hpchangemult = 1;
+			// 	break;
 			case "extraTurn": {
 				if (atkResult) {
 					const power = PersonaDB.findItem(atkResult.power);
@@ -515,11 +483,11 @@ export class CombatResult  {
 		}
 	}
 
-	static normalizeChange(change: ActorChange<ValidAttackers>) {
-		change.hpchange *= change.hpchangemult;
-		change.hpchangemult = 1;
-		change.hpchange = Math.trunc(change.hpchange);
-	}
+	// static normalizeChange(change: ActorChange<ValidAttackers>) {
+	// 	change.hpchange *= change.hpchangemult;
+	// 	change.hpchangemult = 1;
+	// 	change.hpchange = Math.trunc(change.hpchange);
+	// }
 
 	getOtherEffects(actor : ValidAttackers): OtherEffect[] {
 		const acc = actor.accessor;
@@ -530,114 +498,28 @@ export class CombatResult  {
 			.flatMap( x=> x.otherEffects)
 	}
 
-	finalize(): this {
-		this.clearFlags();
-		for (const changes of this.attacks.values()) {
-			for (const change of changes) {
-				this.finalizeChange(change);
-			}
-		}
-		for (const cost of this.costs) {
-			this.finalizeChange(cost);
-		}
-		this._finalized = true;
-		return this;
-	}
 
-	emptyCheck(debug = false) : this | undefined {
+	emptyCheck(debug = false) : CombatResult | undefined {
+		// const finalized = new FinalizedCombatResult(this);
+		// return finalized.emptyCheck(debug);
+
 		if (debug) {
 			Debug(this);
 			debugger;
 		}
-		if (!this._finalized) this.finalize();
 		const attacks = Array.from(this.attacks.entries());
 		if (this.escalationMod == 0 && this.costs.length == 0 && attacks.length ==0 && this.globalOtherEffects.length == 0) return undefined;
 		return this;
 	}
 
-	async toMessage( effectName: string, initiator: PersonaActor | undefined) : Promise<ChatMessage> {
-		if (!this._finalized) this.finalize();
-		if (!initiator) {
-			const speaker = ChatMessage.getSpeaker();
-			const msg = await ChatMessage.create( {
-				speaker,
-				content: "Userless triggered action PLACEHOLDER" ,
-			});
-			try {
-				await this.autoApplyResult();
-			} catch (e) {
-				await msg.setFlag("persona", "atkResult", this.toJSON());
-			}
-			return msg;
-		}
-		let initiatorToken : PToken | undefined;
-		if (game.combat) {
-			initiatorToken = PersonaCombat.getPTokenFromActorAccessor(initiator.accessor);
-		}
-		const rolls : RollBundle[] = Array.from(this.attacks.entries()).map( ([attackResult]) => attackResult.roll);
-		const attacks = Array.from(this.attacks.entries()).map( ([attackResult, changes])=> {
-			return {
-				attackResult,
-				changes
-			};
-		});
-		const manualApply = !PersonaSettings.autoApplyCombatResults() || !game.users.contents.some( x=> x.isGM && x.active);
-		const attackerName = initiator.token?.name ?? initiatorToken?.name ?? initiator.displayedName;
-		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attackerName, effectName,  attacks, escalation: this.escalationMod, result: this, costs: this.costs, manualApply});
-		const chatMsg = await ChatMessage.create( {
-			speaker: {
-				scene: initiatorToken?.parent?.id ?? initiator?.token?.parent.id,
-				actor: initiatorToken?.actor?.id ?? initiator.id,
-				token:  initiatorToken?.id,
-				alias: initiatorToken?.name ?? undefined,
-			},
-			rolls: rolls.map( rb=> rb.roll),
-			content: html,
-			user: game.user,
-			style: CONST?.CHAT_MESSAGE_STYLES.OOC,
-		}, {})
-		if (manualApply) {
-			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
-			return chatMsg;
-		}
-		try {
-			await this.autoApplyResult();
-		} catch (e) {
-			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
-			PersonaError.softFail("Error with automatic result application");
-		}
-		return chatMsg;
+	async toMessage(...args: Parameters<FinalizedCombatResult["toMessage"]>) : ReturnType<FinalizedCombatResult["toMessage"]> {
+		const finalized = this.finalize();
+		return finalized.toMessage(...args);
 	}
 
-	async autoApplyResult() {
-		if (game.user.isGM) {
-			try {
-				await this.#apply();
-			} catch (e) {
-				PersonaError.softFail("Problem with GM apply");
-				Debug(e);
-				Debug(this);
-				throw e;
-			}
-			return;
-		}
-		const gmTarget = game.users.find(x=> x.isGM && x.active);
-		if (gmTarget)  {
-			const sendObj = {
-				resultObj : this.toJSON(),
-				sender: game.user.id,
-			}
-			PersonaSockets.simpleSend("COMBAT_RESULT_APPLY", sendObj, [gmTarget.id])
-			try {
-				await CombatResult.addPending(this);
-			} catch (e) {
-				Debug(this);
-				PersonaError.softFail("Error Autoapplying Effect");
-			}
-			return;
-		} else {
-			throw new Error("Can't apply no GM connected");
-		}
+	async autoApplyResult(): ReturnType<FinalizedCombatResult["autoApplyResult"]> {
+		const finalized = this.finalize();
+		return finalized.autoApplyResult();
 	}
 
 	async print(): Promise<void> {
@@ -648,410 +530,75 @@ export class CombatResult  {
 		}
 	}
 
-	static async applyHandler(x: SocketMessage["COMBAT_RESULT_APPLY"]) : Promise<void> {
-		const {resultObj, sender} = x;
-		const result = CombatResult.fromJSON(resultObj);
-		await result.#apply();
-		PersonaSockets.simpleSend("COMBAT_RESULT_APPLIED", result.id, [sender])
-	}
 
-	static async resolvedHandler(replyId: SocketMessage["COMBAT_RESULT_APPLIED"]) : Promise<void> {
-		CombatResult.resolvePending(replyId);
-	}
 
-	async applyButton() {
-		return this.#apply();
-	}
-
-	async #apply(): Promise<void> {
-		await this.#processEscalationChange();
-		await this.#processAttacks();
-		await this.#applyCosts();
-		await this.#applyGlobalOtherEffects();
-	}
-
-	async #processEscalationChange() {
-		const escalationChange = this.escalationMod;
-		if (escalationChange) {
-			const combat = PersonaCombat.ensureCombatExists();
-			combat.setEscalationDie(combat.getEscalationDie() + escalationChange);
-		}
-	}
-
-	async #processAttacks() {
-		for (const [result, changes] of this.attacks.entries()) {
-			switch (result.result) {
-				case "miss":
-				case "absorb":
-				case "block":
-				case "reflect":
-					const power = PersonaDB.findItem(result.power);
-					if (power.system.type != "skillCard" && power.system.dmg_type != "healing") {
-						await PersonaSFX.onDefend(PersonaDB.findToken(result.target), result.result);
-					}
-			}
-			let token: PToken | undefined;
-			for (const change of changes) {
-				if (change.actor.token)
-					token = PersonaDB.findToken(change.actor.token) as PToken;
-				const priorHP = token ?  token.actor.hp : 0;
-				await this.applyChange(change);
-				if (!token) continue;
-				if (token.actor && !token.actor.isAlive() && priorHP > 0) {
-					const attacker = PersonaDB.findToken(result.attacker);
-					await this.#onDefeatOpponent(token, attacker);
-				}
-			}
-		}
-	}
-
-	async #onDefeatOpponent(target: PToken, attacker ?: PToken) {
-		const combat = game.combat as PersonaCombat | undefined;
-		if (!combat) return;
-		if (target.actor.system.type == "shadow") {
-			// const shadow = combat?.combatants.find( c=> c.token.id == target.id) as Combatant<PersonaActor> | undefined;
-			const shadow = combat.findCombatant(target)
-			if (shadow) {
-				if (!shadow.defeated) {
-					try {
-						await shadow.update( {defeated: true});
-					} catch (e) {
-						console.error(e);
-					}
-				}
-			}
-		}
-		const attackerActor = attacker?.actor;
-		if (attackerActor) {
-			const situation: Situation = {
-				trigger: "on-kill-target",
-				triggeringCharacter: attackerActor.accessor,
-				attacker: attacker.actor.accessor,
-				target: target.actor.accessor,
-				user: attackerActor.accessor,
-				triggeringUser: game.user,
-			}
-			for (const comb of combat.combatants) {
-				if (!comb.actor) continue;
-				situation.user = comb.actor.accessor;
-				await TriggeredEffect.execCombatTrigger("on-kill-target", comb.actor, situation);
-			}
-		}
-	}
-
-	async #applyCosts() {
-		for (const cost of this.costs) {
-			// if (this.hasFlag(actor, "half-hp-cost")) {
-			// 	cost.hpchangemult *= 0.666;
-			// }
-			await this.applyChange(cost);
-		}
-	}
-
-	async #applyGlobalOtherEffects() {
-		for (const eff of this.globalOtherEffects) {
-			switch (eff.type) {
-				case "dungeon-action":
-					await Metaverse.executeDungeonAction(eff);
-					break;
-				case "play-sound":
-					await PersonaSounds.playFile(eff.soundSrc, eff.volume ?? 1.0);
-					break;
-				case "display-message":
-					if (!eff.newChatMsg) break;
-					const html = eff.msg;
-					const speaker : Foundry.ChatSpeakerObject = {
-						alias: "System"
-					};
-					await ChatMessage.create( {
-						speaker,
-						content: html,
-						style: CONST?.CHAT_MESSAGE_STYLES.OOC,
-					});
-					break;
-			}
-		}
-	}
-
-	clearFlags() {
-		this.tokenFlags = [];
-	}
-
-	addFlag(actor: PersonaActor, flag: OtherEffect) {
-		const item = this.tokenFlags.find(x=> x.actor.actorId ==  actor.accessor.actorId );
-		if (!item) {
-			this.tokenFlags.push({
-				actor: actor.accessor,
-				effects: [flag]
-			});
-		} else {
-			if (!item.effects.includes(flag))
-				item.effects.push(flag);
-		}
-	}
-
-	hasFlag(actor: PersonaActor, flag: OtherEffect["type"]) : boolean{
-		return !!this.tokenFlags.find(x=> x.actor.actorId == actor.id)?.effects.find( eff=> eff.type == flag);
-
-	}
-
-	finalizeChange(change: ActorChange<ValidAttackers>) {
-		const actor = PersonaDB.findActor(change.actor);
-
-		for (const otherEffect of change.otherEffects) {
-			switch (otherEffect.type) {
-				case "expend-item":
-					break;
-				case "save-slot":
-					this.addFlag(actor, otherEffect);
-					break;
-				case "half-hp-cost":
-					this.addFlag(actor, otherEffect);
-					break;
-				case "extraTurn":
-					if (actor.hasStatus("baton-pass")) {
-						//can't get bonus actions from baton pass
-						break;
-					}
-					const bonusAction : StatusEffect = {
-						id: "bonus-action",
-						duration: { dtype:  "UEoT"},
-						activationRoll: otherEffect.activation,
-					};
-					const extraTurnChange : ActorChange<ValidAttackers> = {
-						actor:change.actor,
-						hpchange: 0,
-						damageType: "none",
-						hpchangemult: 0,
-						addStatus: [bonusAction],
-						otherEffects: [],
-						removeStatus: [],
-						expendSlot: [0, 0, 0, 0]
-					}
-					this.costs.push(extraTurnChange);
-					break;
-				case "recover-slot":
-					break;
-				case "set-flag":
-					break;
-				case "raise-resistance":
-				case "lower-resistance":
-				case "display-message":
-				case "inspiration-cost":
-				case "hp-loss":
-				case "alter-energy":
-				case "extra-attack":
-				case "dungeon-action":
-				case "use-power":
-				case "scan":
-				case "social-card-action":
-				case "add-power-to-list":
-				case "teach-power":
-				case "alter-mp":
-				case "combat-effect":
-				case "alter-fatigue-lvl":
-				case "perma-buff":
-				case "alter-variable":
-				case "play-sound":
-					break;
-				default:
-					otherEffect satisfies never;
-			}
-
-		}
-		CombatResult.normalizeChange(change);
-	}
-
-	get power() : UsableAndCard | undefined {
-		for (const key of this.attacks.keys()) {
-			if (key.power) {
-				return PersonaDB.findItem(key.power);
-			}
-		}
-		return undefined;
-	}
-
-	async applyChange(change: ActorChange<ValidAttackers>) {
-		const actor = PersonaDB.findActor(change.actor);
-		const token  = change.actor.token ? PersonaDB.findToken(change.actor.token) as PToken: undefined;
-		if (change.hpchange != 0) {
-			if (change.hpchange < 0) {
-				setTimeout( () => {
-					PersonaCombat
-						.onTrigger("on-damage", actor)
-						.emptyCheck()
-						?.toMessage("Reaction (Taking Damage)" , actor)
-				});
-			}
-			if (token) {
-				const power = this.power;
-				if (power && !power.isAoE()) {
-					await PersonaSFX.onDamage(token, change.hpchange, change.damageType, power);
-				}
-				Hooks.callAll("onTakeDamage", token, change.hpchange, change.damageType);
-			}
-			await actor.modifyHP(change.hpchange * change.hpchangemult);
-		}
-		for (const status of change.addStatus) {
-			if (await actor.addStatus(status) && token) {
-				Hooks.callAll("onAddStatus", token, status);
-			}
-		}
-		for (const status of change.removeStatus) {
-			await actor.removeStatus(status);
-		}
-		let mpcost = 0;
-		let mpmult = 1;
-		for (const otherEffect of change.otherEffects) {
-			switch (otherEffect.type) {
-				case "expend-item":
-					if (otherEffect.itemId) {
-						const item = game.items.get(otherEffect.itemId);
-						if (!item) {
-							PersonaError.softFail(`Couldn't find personal Item to expend ${otherEffect.itemId}`);
-							continue;
-						}
-						const playerItem = actor.items.getName(item.name) as Consumable;
-						if (!playerItem) {
-							PersonaError.softFail(`Couldn't find personal Item to expend ${item.name}`);
-							continue;
-						}
-						await actor.expendConsumable(playerItem);
-						continue;
-					}
-					if (!otherEffect.itemAcc) {
-						PersonaError.softFail("Can't find item to expend");
-						continue;
-					}
-					try {
-						const item = PersonaDB.findItem(otherEffect.itemAcc);
-						if ( item.parent) {
-							await (item.parent as PersonaActor).expendConsumable(item);
-						} else  {
-							PersonaError.softFail("Can't find item's parent to execute consume item");
-						}
-					} catch (e) {
-						PersonaError.softFail("Can't find item to expend");
-						continue;
-					}
-					break;
-				case "save-slot":
-					break;
-				case "half-hp-cost":
-					break;
-				case "extraTurn":
-					break;
-				case "recover-slot":
-					PersonaError.softFail("Recover slot is deprecated as an effect");
-					break;
-				case "set-flag":
-					await actor.setEffectFlag(otherEffect.flagId, otherEffect.state, otherEffect.duration, otherEffect.flagName);
-					break;
-				case "teach-power":
-					const power = PersonaDB.allPowers().find(power => power.id == otherEffect.id);
-					if (power && (actor.system.type == "pc" || actor.system.type == "npcAlly")) {
-						await (actor as PC | NPCAlly).addPower(power);
-					}
-					break;
-				case "lower-resistance":
-				case "raise-resistance":
-				case "add-power-to-list":
-				case "display-message":
-					break;
-				case "inspiration-cost":
-					if (actor.system.type == "pc") {
-						await (actor as PC).spendInspiration(otherEffect.linkId, otherEffect.amount)
-					}
-					break;
-				case "hp-loss":
-					await actor.modifyHP(-otherEffect.amount);
-					break;
-				case "extra-attack":
-					break;
-				case "use-power":
-					break;
-				case "scan":
-					if (actor.system.type == "shadow") {
-						await (actor as Shadow).increaseScanLevel(otherEffect.level);
-						PersonaSFX.onScan(token, otherEffect.level);
-					}
-					break; // done elsewhere for local player
-				case "social-card-action":
-					break;
-				case "dungeon-action":
-					await Metaverse.executeDungeonAction(otherEffect);
-					break;
-				case "alter-energy":
-					if (actor.system.type == "shadow") {
-						await (actor as Shadow).alterEnergy(otherEffect.amount);
-					}
-					break;
-				case "alter-mp":
-					switch (otherEffect.subtype) {
-						case "direct":
-							mpcost += otherEffect.amount;
-							break;
-						case "percent-of-total":
-							mpcost += actor.mmp * (otherEffect.amount / 100);
-							break;
-
-						default:
-							otherEffect.subtype satisfies never;
-							PersonaError.softFail(`Bad subtype for Alter MP effect : ${otherEffect.subtype}`);
-					}
-					break;
-				case "combat-effect":
-					if (game.combat && otherEffect.combatEffect == "auto-end-turn" && actor == game.combat?.combatant?.actor) {
-						await (game.combat as PersonaCombat).setForceEndTurn(true);
-					}
-					break;
-				case "alter-fatigue-lvl":
-					await actor.alterFatigueLevel(otherEffect.amount);
-					break;
-				case "alter-variable":
-					await PersonaVariables.alterVariable(otherEffect, actor);
-					break;
-				case "perma-buff":
-					await actor.addPermaBuff(otherEffect.buffType, otherEffect.value ?? 0);
-					break;
-				case "play-sound":
-						await PersonaSounds.playFile(otherEffect.soundSrc);
-					break;
-				default:
-						otherEffect satisfies never;
-			}
-		}
-		if (mpcost != 0 && actor.system.type != "shadow") {
-			mpcost *= mpmult;
-			await (actor as PC).modifyMP(mpcost);
-		}
-	}
 
 	/** combines other's data into initial*/
 	static combineChanges (initial: ActorChange<ValidAttackers>, other: ActorChange<ValidAttackers>) : ActorChange<ValidAttackers> {
 		return {
 			actor: initial.actor,
-			hpchange: absMax(initial.hpchange, other.hpchange),
-			damageType : initial.damageType == "none" ? other.damageType : initial.damageType,
-			hpchangemult: CombatResult.calcHpChangeMult(initial.hpchangemult, other.hpchangemult),
+			damage: this.combineDamage(initial.damage, other.damage),
+			// hpchange: absMax(initial.hpchange, other.hpchange),
+			// damageType : initial.damageType == "none" ? other.damageType : initial.damageType,
+			// hpchangemult: CombatResult.calcHpChangeMult(initial.hpchangemult, other.hpchangemult),
 			addStatus : initial.addStatus.concat(other.addStatus),
 			removeStatus : initial.removeStatus.concat(other.removeStatus),
-			expendSlot : initial.expendSlot.map( (x,i)=> x + other.expendSlot[i]) as [number, number, number, number],
+			// expendSlot : initial.expendSlot.map( (x,i)=> x + other.expendSlot[i]) as [number, number, number, number],
 			otherEffects: initial.otherEffects.concat(other.otherEffects)
 		};
 	}
+
+	/** note this is a destructive merge, original will be changed */
+	static combineDamage( original: ActorChange<ValidAttackers>["damage"], b: ActorChange<ValidAttackers>["damage"]) : ActorChange<ValidAttackers>["damage"] {
+		const ret = {...original}; // copy this to prevent changes
+		for (const k  in Object.keys(ret)) {
+			const key = k as keyof typeof ret;
+			if (DAMAGETYPES[key] == undefined) continue;
+			const bDamage = b[key];
+			if (!bDamage) continue;
+			const aDamage = ret[key]!;
+			if (!bDamage.isMergeable(aDamage)) {
+				PersonaError.softFail("Unmergable value, this shoudln't hapepn", original, b);
+				debugger;
+			}
+			aDamage.merge(bDamage);
+		}
+		for (const k in Object.keys(b)) {
+			const key = k as keyof typeof ret;
+			if (DAMAGETYPES[key] == undefined) continue;
+			const aDamage = ret[key];
+			if (aDamage) continue; //already handled if its already in a;
+			ret[key] = b[key];
+		}
+		return ret;
+	}
+
+	get power() : UsableAndCard | undefined {
+		for (const atkResult of this.attacks.keys()) {
+			if (atkResult.power) {
+				return PersonaDB.findItem(atkResult.power);
+			}
+		}
+		return undefined;
+	}
+
 }
+
+
+
 
 export interface ActorChange<T extends PersonaActor> {
 	actor: UniversalActorAccessor<T>;
-	hpchange: number;
-	damageType: RealDamageType;
-	hpchangemult: number;
+	damage: Partial<Record<DamageCalculation["damageType"], DamageCalculation>>;
+	// hpchange: number;
+	// damageType: RealDamageType;
+	// hpchangemult: number;
 	addStatus: StatusEffect[],
 	otherEffects: OtherEffect[]
 	removeStatus: Pick<StatusEffect, "id">[],
-	expendSlot: [number, number, number, number];
+	// expendSlot: [number, number, number, number];
 }
+
 
 export type AttackResult = {
 	result: "hit" | "miss" | "crit" | "reflect" | "block" | "absorb",
@@ -1064,51 +611,12 @@ export type AttackResult = {
 	attacker: UniversalTokenAccessor<PToken>,
 	power: UniversalItemAccessor<UsableAndCard>,
 	situation: Situation & RollSituation,
-	roll: RollBundle,
+	roll: RollBundle | null ,
 	critBoost: number,
 	printableModifiers: {name: string, modifier:string} [],
 	critPrintable?: {name: string, modifier:string} []
 };
 
-function absMax(...nums : number[]) {
-	const absnums = nums.map( x=> Math.abs(x));
-	const maxabs = Math.max(...absnums);
-	const index = absnums.indexOf(maxabs);
-	return nums[index];
-}
-
-
-Hooks.on("renderChatMessage", async (msg: ChatMessage, html: JQuery<HTMLElement>) => {
-	const flag = msg.getFlag("persona", "atkResult") as string;
-	if (!flag) {
-		html.find(".applyChanges").each( function () { this.remove()});
-	}
-	html.find(".applyChanges").on("click", async () => {
-		const flag = msg.getFlag("persona", "atkResult") as string;
-		if (!flag) throw new PersonaError("Can't apply twice");
-		if (!game.user.isGM) {
-			throw new PersonaError("Only GM can click this");
-		}
-		const res = CombatResult.fromJSON(flag);
-		await res.applyButton();
-		await msg.unsetFlag("persona", "atkResult");
-	});
-});
-
-Hooks.on("socketsReady", async () => {
-	PersonaSockets.setHandler("COMBAT_RESULT_APPLY", CombatResult.applyHandler.bind(CombatResult));
-	PersonaSockets.setHandler("COMBAT_RESULT_APPLIED", CombatResult.resolvedHandler.bind(CombatResult));
-});
-
-Hooks.on("updateActor", async (updatedActor : PersonaActor, changes) => {
-	//open scan prompt for all players on scan
-	if (game.user.isGM) return;
-	if (updatedActor.system.type == "shadow") {
-		if (changes?.system?.scanLevel && updatedActor.token) {
-			updatedActor.sheet.render(true);
-		}
-	}
-});
 
 function resolveStatusDurationAnchor (anchor: (Consequence & {type : "addStatus" | "set-flag"})["durationApplyTo"], atkResult: AttackResult) : UniversalActorAccessor<ValidAttackers> | null {
 	if (!anchor) {

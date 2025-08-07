@@ -1,3 +1,4 @@
+import { SourcedConsequence } from "../config/consequence-types.js";
 import { SceneClock } from "./exploration/scene-clock.js";
 import { NumberOfOthersWithComparison } from "../config/numeric-comparison.js";
 import { CombatResultComparison } from "../config/numeric-comparison.js";
@@ -34,7 +35,6 @@ import { NPC } from "./actor/persona-actor.js";
 import { Metaverse } from "./metaverse.js";
 import { PowerContainer } from "./item/persona-item.js";
 import { Precondition } from "../config/precondition-types.js";
-import { UniversalActorAccessor } from "./utility/db-accessor.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaError } from "./persona-error.js";
 import { PC } from "./actor/persona-actor.js";
@@ -42,13 +42,16 @@ import { Shadow } from "./actor/persona-actor.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { ConditionalEffect } from "./datamodel/power-dm.js";
-import { Consequence } from "../config/consequence-types.js";
 
-export function getActiveConsequences(condEffect: ConditionalEffect, situation: Situation, source: PowerContainer | null) : Consequence[] {
+export function getActiveConsequences(condEffect: ConditionalEffect, situation: Situation, source: PowerContainer | null) : SourcedConsequence[] {
 	if (ArrayCorrector(condEffect.conditions).some(
 		cond=>!testPrecondition(cond, situation, source)
 	)) return [];
-	return ArrayCorrector(condEffect.consequences);
+	const arr=  ArrayCorrector(condEffect.consequences);
+	return arr.map( cons => ({
+		...cons,
+		source,
+	}));
 }
 
 export function testPreconditions(conditionArr: Precondition[] | DeepNoArray<Precondition[]>, situation: Situation, source : PowerContainer | null) : boolean {

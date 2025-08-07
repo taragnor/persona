@@ -124,7 +124,7 @@ export class TriggeredEffect {
 		for (const trig of triggers) {
 			for (const eff of trig.getEffects(actor ?? null)) {
 				if (!ModifierList.testPreconditions(eff.conditions, situationCopy, trig)) { continue; }
-				const res = PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null);
+				const res = PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null, trig);
 				result.merge(res);
 			}
 		}
@@ -133,8 +133,8 @@ export class TriggeredEffect {
 
 	static async execNonCombatTrigger( trigger: NonCombatTriggerTypes, actor: PC, situation ?: Situation, msg = "Triggered Effect") : Promise<void> {
 		await this.onTrigger(trigger, actor, situation)
-			.emptyCheck()
-			?.toMessage(msg, actor);
+		.emptyCheck()
+		?.toMessage(msg, actor);
 	}
 
 	static async execCombatTrigger(trigger: CombatTriggerTypes, actor: ValidAttackers, situation?: Situation) : Promise<void> {

@@ -408,23 +408,25 @@ private allItemsMap : Map<string, ItemType> = new Map();
 } //End of class
 
 
-export type UniversalTokenAccessor<T extends TokenDocument<any>> = {
+declare global {
+
+type UniversalTokenAccessor<T extends TokenDocument<any>> = {
 	scene: string,
 	tokenId : T["id"],
 };
 
-export type UniversalActorAccessor<T extends Actor<any, any, any>> = {
+type UniversalActorAccessor<T extends Actor<any, any, any>> = {
 	token ?: UniversalTokenAccessor<TokenDocument<T>>,
 	actorId : T["id"],
 }
 
-export type UniversalItemAccessor<T extends Item<any>> = {
+type UniversalItemAccessor<T extends Item<any>> = {
 	actor?: UniversalActorAccessor<Actor<any, any>>,
 	itemId: T["id"],
 }
 
 
-export type UniversalAEAccessor<T extends ActiveEffect<any,any>> =
+type UniversalAEAccessor<T extends ActiveEffect<any,any>> =
 	{
 		effectId: T["id"],
 	} &
@@ -432,3 +434,7 @@ export type UniversalAEAccessor<T extends ActiveEffect<any,any>> =
 		{ actor: UniversalActorAccessor<any>}
 		| { item: UniversalItemAccessor<any>}
 	);
+
+}
+
+

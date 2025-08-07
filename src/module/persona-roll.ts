@@ -9,7 +9,6 @@ import { PersonaError } from "./persona-error.js";
 import { ResolvedModifierList } from "./combat/modifier-list.js";
 import { ModifierList } from "./combat/modifier-list.js";
 import { PersonaDB } from "./persona-db.js";
-import { UniversalActorAccessor } from "./utility/db-accessor.js";
 import { RollTag } from "../config/roll-tags.js";
 import { CardTag } from "../config/card-tags.js";
 import { SocialStat } from "../config/student-skills.js";

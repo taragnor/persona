@@ -1,3 +1,5 @@
+import { StatusEffectId } from "../config/status-effects.js";
+import { DAMAGE_ICONS } from "../config/damage-types.js";
 import { POWER_TAGS } from "../config/power-tags.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../config/roll-tags.js";
 import { CardRoll } from "../config/social-card-config.js";
@@ -34,7 +36,6 @@ import { Precondition } from "../config/precondition-types.js";
 import { Focus } from "./item/persona-item.js";
 import { SetFlagEffect } from "../config/consequence-types.js";
 import { SocialLinkData } from "./actor/persona-actor.js";
-import { UniversalActorAccessor } from "./utility/db-accessor.js";
 import { Power } from "./item/persona-item.js";
 import { SocialBenefit } from "./actor/persona-actor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
@@ -42,7 +43,6 @@ import { PC } from "./actor/persona-actor.js";
 import { Shadow } from "./actor/persona-actor.js";
 import { PersonaDB } from "./persona-db.js";
 import { Talent } from "./item/persona-item.js";
-import { UniversalTokenAccessor } from "./utility/db-accessor.js";
 import { PToken } from "./combat/persona-combat.js";
 import { Usable } from "./item/persona-item.js";
 
@@ -127,48 +127,54 @@ export class PersonaHandleBarsHelpers {
 			return (pc as PC).meetsSLRequirement(benefit.focus);
 		},
 		"getDamage": (actor: PersonaActor, usable: Usable) => {
-			if (usable == PersonaDB.getBasicPower("All-out Attack")) {
-				if (!actor.isValidCombatant()) {
-					return "- / -";
-				}
-				const combat = game.combat as PersonaCombat;
-				if (!combat) {
-					return "- / -";
-				}
-				const tokenAcc = combat.getToken(actor.accessor);
-				if (!tokenAcc) {
-					return "No token?";
-				}
-				const usable = PersonaDB.getBasicPower("All-out Attack");
-				const token = PersonaDB.findToken(tokenAcc);
-				if (!token || !usable) {
-					return "No token or no power?";
-				}
-				const situation :Situation = {
-					user: (actor as PC | Shadow).accessor,
-					attacker: (actor as PC | Shadow).accessor,
-					usedPower: usable?.accessor,
-				};
-				const dmg = PersonaCombat.calculateAllOutAttackDamage(token, situation);
-				const mult = usable.getDamageMultSimple(actor as PC | Shadow);
-				const {high, low} = dmg;
-				return Math.round(low * mult) + " / " + Math.round(high * mult);
-			}
-			switch (actor.system.type) {
-				case "tarot":
-				case "npc":
-					return "-/-";
-				case "npcAlly": case "pc": case"shadow": const combatant = actor as ValidAttackers;
-					const mult = usable.getDamageMultSimple(combatant);
-					const dmg = usable.getDamage(combatant);
-					const low = dmg["low"] * mult;
-					const high = dmg["high"] * mult;
-					return Math.round(low) + " / " + Math.round(high);
-				default:
-					actor.system satisfies never;
-					return "-/-";
-			}
-		},
+			if (!actor.isValidCombatant()) return "0/0";
+			const dmg = usable.estimateDamage(actor);
+			return `${dmg.low}/${dmg.high}`;
+	},
+		// "getDamage": (actor: PersonaActor, usable: Usable) => {
+		// 	if (usable == PersonaDB.getBasicPower("All-out Attack")) {
+		// 		if (!actor.isValidCombatant()) {
+		// 			return "- / -";
+		// 		}
+		// 		const combat = game.combat as PersonaCombat;
+		// 		if (!combat) {
+		// 			return "- / -";
+		// 		}
+		// 		const tokenAcc = combat.getToken(actor.accessor);
+		// 		if (!tokenAcc) {
+		// 			return "No token?";
+		// 		}
+		// 		const usable = PersonaDB.getBasicPower("All-out Attack");
+		// 		const token = PersonaDB.findToken(tokenAcc);
+		// 		if (!token || !usable) {
+		// 			return "No token or no power?";
+		// 		}
+		// 		const situation :Situation = {
+		// 			user: (actor as PC | Shadow).accessor,
+		// 			attacker: (actor as PC | Shadow).accessor,
+		// 			usedPower: usable?.accessor,
+		// 		};
+		// 		const dmg = PersonaCombat.calculateAllOutAttackDamage(token, situation);
+		// 		const mult = usable.getDamageMultSimple(actor as PC | Shadow);
+		// 		const {high, low} = dmg;
+		// 		return Math.round(low * mult) + " / " + Math.round(high * mult);
+		// 	}
+		// 	switch (actor.system.type) {
+		// 		case "tarot":
+		// 		case "npc":
+		// 			return "-/-";
+		// 		case "npcAlly": case "pc": case"shadow": const combatant = actor as ValidAttackers;
+		// 			const mult = usable.getDamageMultSimple(combatant);
+		// 			const dmg = usable.getDamage(combatant);
+		// 			const low = dmg["low"] * mult;
+		// 			const high = dmg["high"] * mult;
+		// 			return Math.round(low) + " / " + Math.round(high);
+		// 		default:
+		// 			actor.system satisfies never;
+		// 			return "-/-";
+		// 	}
+		// },
+
 		"getCriticalBoostEstimate" : function (actor: PC | Shadow, power: Usable) : number {
 			const situation : Situation = {
 				usedPower: power.accessor,
@@ -611,6 +617,27 @@ export class PersonaHandleBarsHelpers {
 				["", ...keys].map( x=> [x, x])
 			);
 		},
+
+		"displayDamageIcon": function (damageType: DamageType): SafeString {
+			const iconFileName = DAMAGE_ICONS[damageType];
+			const filepath = `systems/persona/img/icon/${iconFileName}`;
+			const locName = localize(DAMAGETYPES[damageType]);
+			return new Handlebars.SafeString(`<img class="damage-icon" src='${filepath}' title='${locName}'>`);
+		},
+
+		"displayStatusIcon": function (statusId: StatusEffectId) : SafeString {
+
+			const status = CONFIG.statusEffects.find( x=> x.id == statusId);
+			if (status) {
+				const locName = localize(status.name);
+				const icon = status.icon;
+				return new Handlebars.SafeString(`
+				<img class="status-icon" src='${icon}' title='${locName}'>`);
+			}
+			return new Handlebars.SafeString("broken status");
+		},
+
+
 	}
 
 } //end of class

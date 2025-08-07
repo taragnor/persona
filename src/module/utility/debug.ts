@@ -2,7 +2,7 @@
 	static DEBUG = true;
 	static _DList: unknown[] = [];
 
-	static Debug(args :unknown[] ) {
+	static Debug(...args :unknown[] ) {
 		if (this._DList == null)
 			this._DList= [];
 		for (const str of args)

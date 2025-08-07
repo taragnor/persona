@@ -45,7 +45,6 @@ import { Logger } from "../utility/logger.js";
 import { STUDENT_SKILLS } from "../../config/student-skills.js";
 import { Consumable } from "../item/persona-item.js";
 import { SocialStat } from "../../config/student-skills.js";
-import { UniversalActorAccessor } from "../utility/db-accessor.js";
 import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { PersonaError } from "../persona-error.js";
 import { PersonaSounds } from "../persona-sounds.js";
