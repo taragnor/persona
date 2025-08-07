@@ -924,11 +924,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	displayDamageStack(this: Usable, user: ValidAttackers) {
-		const sim = this.getDamageEstimate(user, 6)?.str;
-		if (!sim) {console.warn(`Can't get damage stack for ${this.name}`);
-			return;}
+		const estimate = this.getDamageEstimate(user, 6);
+		if (!estimate) {console.warn(`Can't get damage stack for ${this.name}`); return;}
+		const sim = estimate?.str;
+		if (!sim) {console.warn(`Can't get damage stack for ${this.name}`); return;}
 			console.log(`
-Damage stack (${this.name})
+Damage stack (${this.name}, ${estimate.damageType})
 ${sim.join("\n")}
 			`);
 	}
@@ -961,7 +962,7 @@ ${sim.join("\n")}
 	}
 
 	isPhysicalSkill(this: UsableAndCard): boolean{
-		if (this.system.type == "skillCard") return false;
+		if (this.isSkillCard()) return false;
 		switch (this.system.subtype) {
 			case "weapon":
 				return true;

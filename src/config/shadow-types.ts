@@ -36,6 +36,7 @@ export const SHADOW_CREATURE_TYPE_LIST = [
 	"npc-ally",
 	"velvet-dweller",
 	"d-mon",
+	"persona",
 ] as const;
 
 
@@ -54,9 +55,6 @@ export const CREATURE_TYPE_LIST = [
 export type CreatureType = typeof CREATURE_TYPE_LIST[number];
 
 export const CREATURE_TYPE = HTMLTools.createLocalizationObject(CREATURE_TYPE_LIST, "persona.foe.type");
-// export const CREATURE_TYPE =  Object.fromEntries(
-// 	CREATURE_TYPE_LIST.map( x=> [x, `persona.foe.type.${x}`])
-// );
 
 export function shadowRoleMultiplier (role: ShadowRole) : number{
 	switch (role) {

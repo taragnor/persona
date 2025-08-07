@@ -49,6 +49,7 @@
 	"persona.foe.type.npc-ally": "NPC Ally",
 	"persona.foe.type.d-mon": "D-Mon",
 	"persona.foe.type.velvet-dweller": "Velvet Dweller",
+	"persona.foe.type.persona": "Persona",
 
 	"persona.sheet.tabs.encounter.tabname" : "Encounter",
 	"persona.sheet.tabs.inventory.tabname" : "Inventory",

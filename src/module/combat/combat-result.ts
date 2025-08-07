@@ -163,7 +163,7 @@ export class CombatResult  {
 		if (effect.damage[damageType]) {
 			damageCalc = effect.damage[damageType]!;
 		} else {
-			damageCalc=  new DamageCalculation(damageType);
+			damageCalc =  new DamageCalculation(damageType);
 			effect.damage[damageType] = damageCalc;
 		}
 		return damageCalc;
@@ -187,21 +187,6 @@ export class CombatResult  {
 		switch (cons.type) {
 			case "none":
 				break;
-			// case "absorb":
-			// case "dmg-high":
-			// case "dmg-low":
-			// case "dmg-allout-high":
-			// case "dmg-allout-low":
-			// case "revive":
-			// case "dmg-mult": {
-			// 	if (!target) break;
-			// 	const damageCalc = this.#getDamageCalc(cons, atkResult ?? undefined, effect);
-			// 	if (!damageCalc) break;
-			// 	damageCalc.addDamageConsOldForm(cons, target);
-			// 	// if (!effect) break;
-			// 	// this.calcDamageMult(effect, -1);
-			// 	break;
-			// }
 			case "damage-new": {
 				if (!target) break;
 				const damageCalc = this.#getDamageCalc(cons, atkResult ?? undefined, effect);
@@ -271,20 +256,10 @@ export class CombatResult  {
 				if (!effect) break;
 				effect.otherEffects.push({ type: "save-slot"});
 				break;
-			// case "hp-loss":
-			// 	if (!effect) break;
-			// 	effect.otherEffects.push({ type: "hp-loss", amount: Math.floor(cons.amount ?? 0)});
-			// 	break;
 			case "half-hp-cost":
 				if (!effect) break;
 				effect.otherEffects.push({type: "half-hp-cost"});
 				break;
-			// case "revive":
-			// 	if (!effect || !target) break;
-			// 	effect.removeStatus.push({ id: "fading"});
-			// 	effect.hpchange = Math.round(target.mhp * (cons.amount ?? 0.01));
-			// 	effect.hpchangemult = 1;
-			// 	break;
 			case "extraTurn": {
 				if (atkResult) {
 					const power = PersonaDB.findItem(atkResult.power);
@@ -483,12 +458,6 @@ export class CombatResult  {
 		}
 	}
 
-	// static normalizeChange(change: ActorChange<ValidAttackers>) {
-	// 	change.hpchange *= change.hpchangemult;
-	// 	change.hpchangemult = 1;
-	// 	change.hpchange = Math.trunc(change.hpchange);
-	// }
-
 	getOtherEffects(actor : ValidAttackers): OtherEffect[] {
 		const acc = actor.accessor;
 		return Array
@@ -500,9 +469,6 @@ export class CombatResult  {
 
 
 	emptyCheck(debug = false) : CombatResult | undefined {
-		// const finalized = new FinalizedCombatResult(this);
-		// return finalized.emptyCheck(debug);
-
 		if (debug) {
 			Debug(this);
 			debugger;
@@ -551,7 +517,7 @@ export class CombatResult  {
 	/** note this is a destructive merge, original will be changed */
 	static combineDamage( original: ActorChange<ValidAttackers>["damage"], b: ActorChange<ValidAttackers>["damage"]) : ActorChange<ValidAttackers>["damage"] {
 		const ret = {...original}; // copy this to prevent changes
-		for (const k  in Object.keys(ret)) {
+		for (const k of Object.keys(ret)) {
 			const key = k as keyof typeof ret;
 			if (DAMAGETYPES[key] == undefined) continue;
 			const bDamage = b[key];
@@ -563,7 +529,7 @@ export class CombatResult  {
 			}
 			aDamage.merge(bDamage);
 		}
-		for (const k in Object.keys(b)) {
+		for (const k of Object.keys(b)) {
 			const key = k as keyof typeof ret;
 			if (DAMAGETYPES[key] == undefined) continue;
 			const aDamage = ret[key];

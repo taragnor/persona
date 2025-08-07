@@ -137,6 +137,36 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 	}
 
+
+	isEligibleToBecomeDMon() : boolean {
+		const source = this.source;
+		if (source.hasRole(["boss", "miniboss", "treasure-shadow", "duo", "solo", "summoner"])) return false;
+		if (source.hasCreatureTag("pure-shadow")) return false;
+		return true;
+	}
+
+	isEligibleToBecomePersona(): boolean {
+		const source = this.source;
+		if (!source.isShadow()) return false;
+		if (this.isPersona()) return true;
+		if (this.isDMon()) return true;
+		return this.isEligibleToBecomeDMon();
+	}
+
+	isPersona(): boolean {
+		const source = this.source;
+		if (source.isPC() || source.isNPCAlly()) return true;
+		if (source.system.creatureType == "persona") return true;
+		return false;
+	}
+
+	isDMon() : boolean {
+		const source = this.source;
+		if (source.system.creatureType == "d-mon") return true;
+		if (source.isShadow() && source.hasCreatureTag("d-mon")) return true;
+		return false;
+	}
+
 	numOfWeaknesses(): number {
 		return Object.values(this.resists)
 			.reduce( (acc, res) =>  acc + (res == "weakness" ? 1 : 0) ,0);

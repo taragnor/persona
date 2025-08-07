@@ -1916,7 +1916,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, applyTo: ConsequenceProcessed["consequences"][number]["applyTo"], attacker: ValidAttackers, power: ModifierContainer, situation: Situation, absorb: boolean, _damageMult: number) : ConsequenceProcessed["consequences"] {
 		let dmgAmt : number = 0;
-		const damageType = cons.damageType != "by-power" ? cons.damageType : (power as Usable).getDamageType(attacker);
+		const damageType = cons.damageType != "by-power" && cons.damageType != undefined ? cons.damageType : (power as Usable).getDamageType(attacker);
+		// const damageType = cons.damageType != "by-power" ? cons.damageType : (power as Usable).getDamageType(attacker);
 		cons= {
 			...cons,
 			absorbed: absorb,
@@ -1924,7 +1925,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		};
 		if (cons.damageType == undefined) {
 			debugger;
-			PersonaError.softFail("Damage type is undefined, wtf");
+			PersonaError.softFail(`Damage type is undefined for ${power.name}`, cons);
 			return [];
 		}
 		switch (cons.damageSubtype) {
@@ -1953,15 +1954,20 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				break;
 			case "allout-low":
 			case "allout-high": {
-				const combat =this.ensureCombatExists();
-				const userTokenAcc = combat.getToken(situation.user);
-				if (!userTokenAcc) {
-					PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId ?? "Null user"}`);
-					break;
+				const combat = game.combat as PersonaCombat;
+				if (combat) {
+					const userTokenAcc = combat.getToken(situation.user);
+					if (!userTokenAcc) {
+						PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId ?? "Null user"}`);
+						break;
+					}
+					const userToken = PersonaDB.findToken(userTokenAcc);
+					const dmg = PersonaCombat.calculateAllOutAttackDamage(userToken, situation);
+					dmgAmt = cons.damageSubtype == "allout-high"? dmg.high: dmg.low;
+				} else {
+					dmgAmt = 0;
+					//bailout since no combat and can't calc all out.
 				}
-				const userToken = PersonaDB.findToken(userTokenAcc);
-				const dmg = PersonaCombat.calculateAllOutAttackDamage(userToken, situation);
-				dmgAmt = cons.damageSubtype == "allout-high"? dmg.high: dmg.low;
 				break;
 			}
 			case "constant":

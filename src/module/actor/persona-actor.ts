@@ -349,47 +349,57 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get combatInit(): number {
 		if (!this.isValidCombatant()) return -666;
 		return this.persona().combatInit;
-		// const situation = {user: (this as PC | Shadow).accessor};
-		// const initBonus = this.persona()
-		// 	.getBonuses("initiative")
-		// 	.total(situation);
-		// switch (this.system.type) {
-		// 	case "shadow": {
-		// 		const inc = this.system.combat.classData.incremental.initiative;
-		// 		const level  = this.system.combat.classData.level;
-		// 		const initRating = this.system.combat.initiative;
-		// 		const initScore = this.#translateInitString(initRating);
-		// 		return initBonus + (inc * 2) + (level * 3) + initScore;
-		// 	}
-		// 	case "pc":  case "npcAlly": {
-		// 		const inc = this.system.combat.classData.incremental.initiative;
-		// 		const level  = this.system.combat.classData.level;
-		// 		const initRating = this.system.combat.initiative;
-		// 		const initScore = this.#translateInitString(initRating);
-		// 		return initBonus + (inc * 2) +  (level * 3) + initScore;
-		// 	}
-		// 	default:
-		// 		this.system satisfies never;
-		// 		throw new PersonaError(`Unepxected Type`);
-		// }
 	}
-
-	// #translateInitString(initString: PC["system"]["combat"]["initiative"]): number {
-	// 	switch (initString) {
-	// 		case "pathetic": return -6;
-	// 		case "weak": return -3;
-	// 		case "normal": return 0;
-	// 		case "strong": return 3;
-	// 		case "ultimate": return 6;
-	// 		default:
-	// 			initString satisfies never;
-	// 			return -999;
-	// 	}
-	// }
-
 
 	get accessor() : UniversalActorAccessor<typeof this> {
 		return PersonaDB.getUniversalActorAccessor(this);
+	}
+
+	async toPersona(this: Shadow, newOwner ?: PC) : Promise<Shadow> {
+		if (!this.isShadow()) {
+			throw new PersonaError("Can't convert a non-shadow into a persona.")
+		}
+		if (!this.basePersona.isEligibleToBecomePersona()) {
+			throw new PersonaError(`${this.name} is Ineligible to become a Persona`);
+		}
+		const ownership = newOwner != undefined
+			? { ownership: newOwner.ownership }
+			: {};
+		const persona = await PersonaActor.create( {
+			name: `${this.name} (Persona)`,
+			type: "shadow",
+			...ownership,
+			system: {
+				...this.system,
+				creatureType : "persona",
+			},
+		}) as Shadow;
+		await persona.#stripShadowOnlyPowers();
+		return persona;
+	}
+
+	async toDMon(this: Shadow): Promise<Shadow> {
+		if (!this.isShadow()) {
+			throw new PersonaError("Can't convert a non-shadow into a d-mon.")
+		}
+		if (!this.basePersona.isEligibleToBecomeDMon()) {
+			throw new PersonaError(`${this.name} is Ineligible to become a D-Mon`);
+		}
+		const dmon = await PersonaActor.create( {
+			name: `${this.name} (Persona)`,
+			type: "shadow",
+			system: {
+				...this.system,
+				creatureType : "d-mon",
+			},
+		}) as Shadow;
+		await dmon.#stripShadowOnlyPowers();
+		return dmon;
+	}
+
+	async #stripShadowOnlyPowers(this: Shadow) {
+		//TODO: finish later
+
 	}
 
 	get class() : Subtype<PersonaItem, "characterClass"> {

@@ -178,7 +178,7 @@ export class DamageCalculation {
 		str.push(`${Math.round(subtotal)} --- Subtotal`);
 		for (const {amt, name} of this.multiplier) {
 			const addAmt = amt * subtotal;
-			str.push(`+${addAmt} ${name}(${amt+1})`);
+			str.push(`+${Math.round(addAmt)} ${name}(${amt+1})`);
 			total+= addAmt;
 		}
 		const subtotal2 = Math.round(total);
@@ -188,7 +188,7 @@ export class DamageCalculation {
 		let divisor = 1;
 		for (const {amt, name} of this.divisor) {
 			divisor *= amt;
-			str.push(`* ${name} (${amt})`);
+			str.push(`* ${amt} ${name}`);
 		}
 		total *= divisor;
 		const subtotal3  = Math.round(total);
@@ -200,11 +200,12 @@ export class DamageCalculation {
 			const dataString = `+${amt} ${name}`;
 			str.push(dataString);
 		}
+		total = Math.round(total);
 		str.push(`${total} --- Total`);
 		if (!this.#absorbed) {
 			total *= -1;
 		}
-		const hpChange = Math.round(total);
+		const hpChange = total;
 		return { hpChange, str, damageType: this.damageType,
 			resisted: this.#resisted,
 			absorbed: this.#absorbed,
