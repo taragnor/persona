@@ -1,3 +1,4 @@
+import { triEffects } from "./power-dm.js";
 import { CONSUMABLE_SUBTYPE_LIST } from "../../config/equip-slots.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../../config/roll-tags.js";
 import { SocialCard } from "../item/persona-item.js";
@@ -241,6 +242,7 @@ class InventoryItemSchema extends foundry.abstract.TypeDataModel {
 			slot: new txt<typeof EQUIP_SLOTS_LIST[number]>({choices: EQUIP_SLOTS_LIST}),
 			armorHPBoost: new num( {initial: 0, integer: true}),
 			...effects(false),
+			...triEffects(),
 		}
 		return ret;
 	}

@@ -1,6 +1,10 @@
 <hr>
 <div class="effects-list" data-path="{{namePrefix}}">
-	<h4> Effects
+	<h4> {{#if listName}}
+		{{listName}}
+		{{else}}
+		Effects
+		{{/if}}
 		<a class="add-effect">
 			<i class="fa-solid fa-plus"> </i>
 		</a>

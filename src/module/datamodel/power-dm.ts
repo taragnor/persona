@@ -76,3 +76,22 @@ export function effects(_baseattack: boolean) {
 	}
 }
 
+export class TriEffectsDM extends foundry.abstract.DataModel {
+	static override defineSchema() {
+		return {
+			onUse: new arr(new embedded(ConditionalEffectDM)),
+			triggered: new arr(new embedded(ConditionalEffectDM)),
+			passive: new arr(new embedded(ConditionalEffectDM)),
+			defensive: new arr(new embedded(ConditionalEffectDM)),
+			embedded: new arr(new embedded(ConditionalEffectDM)),
+		};
+	}
+
+}
+
+export function triEffects() {
+	return {
+		triEffects: new embedded(TriEffectsDM),
+	}
+}
+

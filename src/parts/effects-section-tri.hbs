@@ -1,0 +1,24 @@
+<div data-top-path="system.effects">
+	{{> "systems/persona/parts/effects-section-adaptable.hbs" listName="Old Style Effects" topPath="system.effects" namePrefix="system.effects." effects=item.system.effects POWERSTUFF=POWERSTUFF owner=item}}
+</div>
+
+<hr>
+
+<div data-top-path="system.triEffects">
+	<div data-top-path="system.triEffects.onUse">
+		{{> "systems/persona/parts/effects-section-adaptable.hbs" listName="On Use" namePrefix="system.triEffects.onUse." effects=item.system.triEffects.onUse POWERSTUFF=POWERSTUFF owner=item}}
+	</div>
+	<div data-top-path="system.triEffects.triggered">
+		{{> "systems/persona/parts/effects-section-adaptable.hbs" listName="Triggered" namePrefix="system.triEffects.triggered." effects=item.system.triEffects.triggered POWERSTUFF=POWERSTUFF owner=item}}
+	</div>
+	<div data-top-path="system.triEffects.passive">
+		{{> "systems/persona/parts/effects-section-adaptable.hbs" listName="Passive" namePrefix="system.triEffects.passive." effects=item.system.triEffects.passive POWERSTUFF=POWERSTUFF owner=item}}
+	</div>
+	<div data-top-path="system.triEffects.defensive">
+		{{> "systems/persona/parts/effects-section-adaptable.hbs" listName="Defensive" namePrefix="system.triEffects.defensive." effects=item.system.triEffects.defensive POWERSTUFF=POWERSTUFF owner=item}}
+	</div>
+	<div data-top-path="system.triEffects.embedded">
+		{{> "systems/persona/parts/effects-section-adaptable.hbs" listName="Embedded" namePrefix="system.triEffects.embedded." effects=item.system.triEffects.embedded POWERSTUFF=POWERSTUFF owner=item}}
+	</div>
+</div>
+

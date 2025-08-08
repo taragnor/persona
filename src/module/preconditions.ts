@@ -358,7 +358,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 
 		default:
 			condition satisfies never;
-			PersonaError.softFail(`Unknwon numeric comparison type ${condition["comparisonTarget"]}`)
+			PersonaError.softFail(`Unknown numeric comparison type ${condition["comparisonTarget"]}`)
 			return false;
 	}
 	switch (condition.comparator) {
@@ -953,7 +953,7 @@ function getSubjects<K extends string, T extends Record<K, ConditionTarget>>( co
 		Debug(cond);
 		Debug(situation);
 		const printCondition = ConditionalEffectManager.printConditional(cond as unknown as Precondition);
-		PersonaError.softFail(`No field ${field} in ${printCondition} ${source?.name} of ${source?.parent?.name}`)
+		// PersonaError.softFail(`No field ${field} in ${printCondition} ${source?.name} of ${source?.parent?.name}`)
 		return [];
 	}
 	const condTarget = cond[field];
