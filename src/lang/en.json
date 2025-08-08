@@ -199,6 +199,7 @@
 	"persona.damage-subtype.allout-low" : "All Out (Low)",
 	"persona.damage-subtype.constant" : "Constant",
 	"persona.damage-subtype.multiplier" : "Damage Multiplier",
+	"persona.damage-subtype.mult-stack" : "Multiply (full stacking)",
 	"persona.damage-subtype.percentage" : "% of Total HP",
 
 

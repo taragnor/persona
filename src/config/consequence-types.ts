@@ -140,7 +140,7 @@ type StatusEffect_FollowUp = {
 }
 
 export type SourcedConsequence<C extends Consequence = Consequence> = C & {
-	source: PowerContainer | null;
+	source: {displayedName: string} | PowerContainer | null;
 }
 
 
@@ -348,9 +348,13 @@ type ConstantDamageCons = {
 
 
 type DamageMultiplierCons = {
-	damageSubtype: "multiplier";
+	damageSubtype: "multiplier" | "mult-stack";
 	amount: number;
 }
+
+
+const _errorCheckDType : Expect<DamageConsequence["damageSubtype"], DamageSubtype> = true;
+
 
 type ModifierConsequence = {
 	type: "modifier-new",

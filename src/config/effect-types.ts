@@ -187,6 +187,7 @@ export const DAMAGE_SUBTYPE_LIST = [
 	"allout-low",
 	"constant",
 	"multiplier",
+	"mult-stack",
 	"percentage",
 ] as const;
 

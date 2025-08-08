@@ -20,17 +20,22 @@ import { DAYS_LIST } from "./days.js";
 import { WeatherType } from "./weather-types.js";
 import { Power } from "../module/item/persona-item.js";
 
+const BASIC_BOOLEAN_COMPARISON_LIST = [
+	"in-combat",
+	"is-critical",
+	"is-hit",
+	"is-consumable",
+	"cameo-in-scene",
+] as const;
+
 const BOOLEAN_COMPARISON_TARGET_LIST = [
+	...BASIC_BOOLEAN_COMPARISON_LIST,
 	"engaged",
 	"engaged-with",
-	"metaverse-enhanced",
 	"is-shadow",
 	"is-pc",
 	"is-enemy",
 	"has-tag",//universal tag finder
-	"in-combat",
-	"is-critical",
-	"is-hit",
 	"is-dead",
 	"target-owner-comparison",
 	"damage-type-is",
@@ -40,7 +45,6 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"is-resistant-to",
 	"is-same-arcana",
 	"flag-state",
-	"is-consumable",
 	"power-target-type-is",
 	"weather-is",
 	"weekday-is",
@@ -54,13 +58,12 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"creature-type-is",
 	"power-slot-is",
 	"social-availability",
-	"cameo-in-scene",
 	"arcana-is",
 	"logical-or",
 	"scene-clock-name-is",
 	"has-creature-tag", // Deprecated
+	"metaverse-enhanced", // Deprecated
 ] as const;
-
 
 export type BooleanComparisonTarget = typeof BOOLEAN_COMPARISON_TARGET_LIST[number];
 
@@ -68,23 +71,38 @@ export const BOOLEAN_COMPARISON_TARGET = Object.fromEntries(
 	BOOLEAN_COMPARISON_TARGET_LIST.map( x=> [x, `persona.preconditions.comparison.${x}`])
 );
 
+type BasicComparisonTargets=  typeof BASIC_BOOLEAN_COMPARISON_LIST[number];
+
+
+
+
 export type BooleanComparisonPC = {
 	type : "boolean",
 	booleanState : boolean,
-	boolComparisonTarget: BooleanComparisonTarget,
-} & (BasicBComparisonPC | NonBasicBoolComparison);
+	// boolComparisonTarget: BooleanComparisonTarget,
+} & (BooleanComparisionSpecifics);
+
+type BooleanComparisionSpecifics =
+	BasicBComparisonPC | NonBasicBoolComparison | DeprecatedBoolComparisons;
 
 	type BasicBComparisonPC = {
-	boolComparisonTarget: Exclude<BooleanComparisonTarget,
-	NonBasicBoolComparison["boolComparisonTarget"]>
+	boolComparisonTarget:BasicComparisonTargets,
 }
 
 type NonBasicBoolComparison =
 StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison | SceneClockNameComparison;
 ;
 
+type DeprecatedBoolComparisons =
+	MetaverseEnhancedComparison;
+
+type MetaverseEnhancedComparison = {
+	boolComparisonTarget: "metaverse-enhanced",
+}
+
+
 type GeneralActorComparison = {
-	boolComparisonTarget: "is-PC" | "is-shadow",
+	boolComparisonTarget: "is-pc" | "is-shadow",
 	conditionTarget: ConditionTarget,
 }
 

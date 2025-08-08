@@ -1,3 +1,4 @@
+import { EvaluatedDamage } from "../combat/damage-calc.js";
 import { ENCOUNTER_RATE_PROBABILITY } from "../../config/probability.js";
 import { SeededRandom } from "../utility/seededRandom.js";
 import { PersonaSFX } from "../combat/persona-sfx.js";
@@ -3545,28 +3546,41 @@ static highestPowerSlotUsableAtLvl(lvl: number) : number {
 	return Math.min(0, Math.floor(lvl / 3));
 }
 
-allOutAttackDamage(this: ValidAttackers, situation?: Situation) : { high: number, low: number } {
-	if (!this.canAllOutAttack()) {
-		return {high: 0, low: 0};
-	}
-	let high = 0, low = 0;
-	if (!situation) {
-		situation = {
-			user: this.accessor,
-			attacker: this.accessor,
-		};
-	}
-	const basicAttack = PersonaDB.getBasicPower("Basic Attack");
-	if (!basicAttack) {
-		PersonaError.softFail("Can't find Basic attack power");
-		return {high, low};
-	}
-	const mult = basicAttack.getDamageMultSimple(this, situation);
-	const dmg = basicAttack.getDamage(this);
-	low = dmg["low"] * mult;
-	high = dmg["high"] * mult;
-	return {high, low};
-}
+// individualContributionToAllOutAttackDamage(this: ValidAttackers, situation?: Situation, type: "high" | "low") : CombatResult {
+// 		if (!this.canAllOutAttack()) {
+// 			return {high: nullDamage, low: nullDamage};
+// 		}
+// 		if (!situation) {
+// 			situation = {
+// 				user: this.accessor,
+// 				attacker: this.accessor,
+// 			};
+// 		}
+// 		const basicAttack = PersonaDB.getBasicPower("Basic Attack");
+// 		if (!basicAttack) {
+// 			PersonaError.softFail("Can't find Basic attack power");
+// 			return {high: nullDamage, low: nullDamage};
+// 		}
+// 		const basicLow = basicAttack.generateSimulatedDamageObject(this, 5);
+// 		const basicHigh = basicAttack.generateSimulatedDamageObject(this, 5);
+// 		if (basicLow && basicHigh) {
+// 			return {low: basicLow, high: basicHigh};
+// 		}
+// 		return {high: nullDamage, low: nullDamage};
+
+		// return basicAttack.estimateDamage(this);
+
+		// const evenDmg = basicAttack.estimateDamage(this, 6);
+		// const oddDmg = basicAttack.estimateDamage(this, 5);
+
+	/* //old code to determine AoA
+	// const mult = basicAttack.getDamageMultSimple(this, situation);
+	// const dmg = basicAttack.getDamage(this);
+	// low = dmg["low"] * mult;
+	// high = dmg["high"] * mult;
+	// return {high: evenDmg, low: oddDmg};
+	*/
+// }
 
 getPoisonDamage(this: ValidAttackers): number {
 	const base = Math.round(this.mhp * 0.15);

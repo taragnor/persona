@@ -32,12 +32,12 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".delFocus").on("click", this.deleteFocus.bind(this));
 		html.find(".delTalent").on("click", this.deleteTalent.bind(this));
 		html.find(".rollPower").on("click", this.usePower.bind(this));
+		html.find(".rollPower").rightclick(this.displayDamageStack.bind(this));
 		html.find(".rollItem").on("click", this.useItem.bind(this));
 		html.find(".powerName").on("click", this.openPower.bind(this));
 		html.find(".talentName").on("click", this.openTalent.bind(this));
 		html.find(".focusName").on("click", this.openFocus.bind(this));
 		html.find(".itemName").on("click", this.openItem.bind(this));
-		html.find(".powerName").rightclick(this.displayDamageStack.bind(this));
 		html.find(".rollSave").on("click", this.rollSave.bind(this));
 		html.find(".incremental-advance-block .hp .add").on("click", this.addIncremental_HP.bind(this));
 		html.find(".incremental-advance-block .mp .add").on("click", this.addIncremental_MP.bind(this));

@@ -948,6 +948,8 @@ export class ConditionalEffectManager {
 				return `Damage Multiplier ${cons.amount}`;
 			case "percentage":
 				return `${cons.amount}% of target HP`;
+			case "mult-stack":
+				return `Damage Multiplier (stacking) ${cons.amount}`;
 			default:
 				cons satisfies never;
 				return "ERROR";

@@ -137,6 +137,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			}
 			const talent = user.system.talents.find( x=> x.talentId == id);
 			if (!talent) {
+				//this error mostly comes from all out attack stuff I think
 				console.log(`COuldn't find Talent ${id}`);
 				console.log(source);
 				return false;

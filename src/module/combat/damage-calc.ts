@@ -1,3 +1,4 @@
+import { PersonaError } from "../persona-error.js";
 import { SourcedConsequence } from "../../config/consequence-types.js";
 import { ValidAttackers } from "./persona-combat.js";
 import { RealDamageType } from "../../config/damage-types.js";
@@ -9,10 +10,13 @@ export class DamageCalculation {
 	#resisted: boolean = false;
 	#absorbed: boolean = false;
 	#weakness: boolean = false;
-	amt: DamageObj[] = [];
-	multiplier: DamageObj[] = [];
-	divisor: DamageObj[] = [];
-	nonMultPostAdd: DamageObj[] = [];
+	lists = {
+		base: [] as DamageObj[],
+		multiplier: [] as DamageObj[],
+		divisor: [] as DamageObj[],
+		stackMult: [] as DamageObj[],
+		nonMultPostAdd: [] as DamageObj[],
+	} satisfies Record<string, DamageObj[]>;
 	damageType : RealDamageType;
 	target: ValidAttackers;
 
@@ -98,8 +102,12 @@ export class DamageCalculation {
 				amt = cons.amount ?? 0;
 				break;
 			case "percentage":
-				damageOrder = "nonMultPostAdd";
+					damageOrder = "nonMultPostAdd";
 				amt = Math.round(target.mhp * (cons.amount ?? 0.01));
+				break;
+			case "mult-stack":
+					damageOrder = "stackMult";
+				amt = cons.amount ?? 1;
 				break;
 			default:
 					cons satisfies never;
@@ -124,44 +132,39 @@ export class DamageCalculation {
 
 	add (dOrder : DamageOrder, val: number, name: string): DamageCalculation {
 		switch (dOrder) {
-			case "base":
-				this.amt.push({
-						amt: val,
-						name
-				});
-				break;
 			case "multiplier":
 				if (val > 1) {
 					val = val - 1;
-					this.multiplier.push({
+					this.lists[dOrder].push({
 						amt: val,
 						name
 					});
 				} else {
-					this.divisor.push( {
+					this.lists["divisor"].push({
 						amt: val,
 						name
 					});
 				}
 				break;
-			case "nonMultPostAdd":
-				this.nonMultPostAdd.push({
+			default:
+				this.lists[dOrder].push({
 					amt: val,
 					name
 				});
-				break;
-			default:
-				dOrder satisfies never;
 				break;
 		}
 		return this;
 	}
 
 	merge(other :DamageCalculation) : DamageCalculation {
-		this.amt = this.amt.concat(other.amt);
-		this.multiplier = this.multiplier.concat(other.multiplier);
-		this.divisor = this.divisor.concat(other.divisor);
-		this.nonMultPostAdd = this.nonMultPostAdd.concat(other.nonMultPostAdd);
+		for (const k of Object.keys(this.lists)) {
+			const dOrder= k as keyof DamageCalculation["lists"];
+			this.lists[dOrder] = this.lists[dOrder].concat(other.lists[dOrder]);
+		}
+		// this.amt = this.amt.concat(other.amt);
+		// this.multiplier = this.multiplier.concat(other.multiplier);
+		// this.divisor = this.divisor.concat(other.divisor);
+		// this.nonMultPostAdd = this.nonMultPostAdd.concat(other.nonMultPostAdd);
 		return this;
 	}
 
@@ -169,43 +172,54 @@ export class DamageCalculation {
 		const str = [] as string[];
 		let total = 0;
 		let subtotal = 0;
-		for (const {amt, name} of this.amt) {
+		for (const {amt, name} of this.lists.base) {
 			subtotal += amt;
 			const dataString = `+${amt} ${name}`;
 			str.push(dataString);
 		}
 		total += subtotal;
 		str.push(`${Math.round(subtotal)} --- Subtotal`);
-		for (const {amt, name} of this.multiplier) {
+		for (const {amt, name} of this.lists.multiplier) {
 			const addAmt = amt * subtotal;
 			str.push(`+${Math.round(addAmt)} ${name}(${amt+1})`);
 			total+= addAmt;
 		}
-		const subtotal2 = Math.round(total);
-		if (this.multiplier.length) {
-		str.push(`${subtotal2} --- Subtotal 2 `);
+		if (this.lists.multiplier.length) {
+			const subtotal2 = Math.round(total);
+			str.push(`${subtotal2} --- Subtotal`);
 		}
 		let divisor = 1;
-		for (const {amt, name} of this.divisor) {
+		for (const {amt, name} of this.lists.divisor) {
 			divisor *= amt;
 			str.push(`* ${amt} ${name}`);
 		}
 		total *= divisor;
-		const subtotal3  = Math.round(total);
-		if (this.divisor.length) {
-			str.push(`${subtotal3} --- Subtotal 3`);
+		if (this.lists.divisor.length) {
+			const subtotal3  = Math.round(total);
+			str.push(`${subtotal3} --- Subtotal`);
 		}
-		for (const {amt, name} of this.nonMultPostAdd) {
+		let mult = 1;
+		for (const {amt, name} of this.lists.stackMult) {
+			mult *= amt;
+			str.push(`* ${amt} ${name}`);
+		}
+		total *= mult;
+		if (this.lists.stackMult.length) {
+			const subtotal4  = Math.round(total);
+			str.push(`${subtotal4} --- Subtotal`);
+		}
+		for (const {amt, name} of this.lists.nonMultPostAdd) {
 			total += amt;
 			const dataString = `+${amt} ${name}`;
 			str.push(dataString);
 		}
 		total = Math.round(total);
 		str.push(`${total} --- Total`);
-		if (!this.#absorbed) {
-			total *= -1;
+		let hpChange = total * (this.#absorbed ? 1 : -1);
+		if (hpChange == undefined || typeof hpChange != "number" ||  Number.isNaN(hpChange)) {
+			PersonaError.softFail("Hp change isn't a number");
+			hpChange = -1;
 		}
-		const hpChange = total;
 		return { hpChange, str, damageType: this.damageType,
 			resisted: this.#resisted,
 			absorbed: this.#absorbed,
@@ -214,13 +228,7 @@ export class DamageCalculation {
 	}
 }
 
-const DAMAGE_ORDER_LIST = [
-	"base",
-	"multiplier",
-	"nonMultPostAdd",
-] as const;
-
-type DamageOrder = typeof DAMAGE_ORDER_LIST[number];
+type DamageOrder = keyof DamageCalculation["lists"];
 
 type DamageObj = {
 	name: string;

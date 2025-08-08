@@ -1,3 +1,4 @@
+import { AttackResult } from "../combat/combat-result.js";
 import { EvaluatedDamage } from "../combat/damage-calc.js";
 import { PToken } from "../combat/persona-combat.js";
 import { DamageCalculation } from "../combat/damage-calc.js";
@@ -897,34 +898,45 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	/** used for damage calculation estaimate for char sheet*/
-	getDamageMultSimple(this: ModifierContainer, user: ValidAttackers, situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true, attacker: user.accessor} ) {
-		const mainMods = user.getEffects();
+	//getDamageMultSimple(this: ModifierContainer, user: ValidAttackers, situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true, attacker: user.accessor} ) {
+	//	const mainMods = user.getEffects();
 
-		const multCons = this.getEffects(user)
-			.concat(mainMods)
-			.map ( eff => getActiveConsequences(eff,situation, this))
-			.flat()
-			.filter( x=> x.type == "dmg-mult" || ( x.type == "damage-new" && x.damageSubtype == "multiplier"));
-		return multCons.reduce( (acc, cons) => {
-			const amt = "amount" in cons ? cons.amount ?? 1: 1
-			//TODO: do simulation stuff
-			return acc * amt;
-			// return CombatResult.calcHpChangeMult(acc,amt)
-			// acc * ("amount" in cons ? cons.amount ?? 1: 1)
+	//	const multCons = this.getEffects(user)
+	//		.concat(mainMods)
+	//		.map ( eff => getActiveConsequences(eff,situation, this))
+	//		.flat()
+	//		.filter( x=> x.type == "dmg-mult" || ( x.type == "damage-new" && x.damageSubtype == "multiplier"));
+	//	return multCons.reduce( (acc, cons) => {
+	//		const amt = "amount" in cons ? cons.amount ?? 1: 1
+	//		//TODO: do simulation stuff
+	//		return acc * amt;
+	//		// return CombatResult.calcHpChangeMult(acc,amt)
+	//		// acc * ("amount" in cons ? cons.amount ?? 1: 1)
+	//	}
+	//		,1);
+	//}
+
+	/** used for damage calculation estaimate for char sheet*/
+	generateSimulatedResult(this: Usable, user: ValidAttackers, situation: AttackResult["situation"]) : CombatResult | undefined;
+	generateSimulatedResult(this: Usable, user: ValidAttackers, simulatedNat: number) : CombatResult | undefined;
+	generateSimulatedResult (this: Usable, user: ValidAttackers, simulatedSitOrNat: number | AttackResult["situation"]) : CombatResult | undefined {
+		const token = user.getActiveTokens(true)
+			.map(x=> x.document) as PToken[];
+		if (!token) return undefined;
+		if (typeof simulatedSitOrNat == "number") {
+			return PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedSitOrNat);
+		} else {
+			return PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedSitOrNat);
 		}
-			,1);
 	}
 
-	getDamageEstimate (this: Usable, user: ValidAttackers, simulatedNat: number) : EvaluatedDamage | undefined {
-		const token = user.getActiveTokens(true)
-		.map(x=> x.document) as PToken[];
-		if (!token) return undefined;
-		const result = PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedNat);
-		return result.finalize()?.attacks[0]?.changes[0]?.damage[0];
+	generateSimulatedDamageObject(this: Usable, user: ValidAttackers, simulatedNat: number) : EvaluatedDamage | undefined {
+		const result = this.generateSimulatedResult(user, simulatedNat);
+		return result?.finalize()?.attacks[0]?.changes[0]?.damage[0];
 	}
 
 	displayDamageStack(this: Usable, user: ValidAttackers) {
-		const estimate = this.getDamageEstimate(user, 6);
+		const estimate = this.generateSimulatedDamageObject(user, 6);
 		if (!estimate) {console.warn(`Can't get damage stack for ${this.name}`); return;}
 		const sim = estimate?.str;
 		if (!sim) {console.warn(`Can't get damage stack for ${this.name}`); return;}
@@ -936,8 +948,8 @@ ${sim.join("\n")}
 
 	estimateDamage(this: Usable, user: ValidAttackers) : {low: number, high: number} {
 		return {
-			high: Math.abs(this.getDamageEstimate(user, 6)?.hpChange ?? 0),
-			low: Math.abs(this.getDamageEstimate(user, 5)?.hpChange ?? 0) ,
+			high: Math.abs(this.generateSimulatedDamageObject(user, 6)?.hpChange ?? 0),
+			low: Math.abs(this.generateSimulatedDamageObject(user, 5)?.hpChange ?? 0) ,
 		};
 	}
 

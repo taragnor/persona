@@ -362,7 +362,7 @@
 	</select>
 	{{/if}}
 
-	{{#if (eqAny cons.damageSubtype "constant" "multiplier" "percentage")}}
+	{{#if (eqAny cons.damageSubtype "constant" "multiplier" "percentage" "mult-stack")}}
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 	{{/if}}
 
