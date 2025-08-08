@@ -710,3 +710,9 @@ function convertConsToStatusDuration(cons: Consequence & {type : "addStatus" | "
 			return {dtype: "instant"};
 	}
 }
+
+export type ResistResult =  {
+	resist: boolean,
+	absorb: boolean,
+	block: boolean,
+}

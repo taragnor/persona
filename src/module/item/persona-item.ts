@@ -809,11 +809,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const meleeExtraMult = DamageReturn.multiplier;
 		const mult = Math.max(1, user.wpnMult() + (meleeExtraMult ?? 0) + bonus.total(situation));
 		const bonusDamage = user.getBonusWpnDamage();
-		bonusDamage.low.add("Power Low bonus", DamageReturn.low);
-		bonusDamage.high.add("Power High bonus", DamageReturn.high);
+		const bonusLow = bonusDamage.low.add("Power Low bonus", DamageReturn.low).total(situation);
+		const bonusHigh = bonusDamage.high.add("Power High bonus", DamageReturn.high).total(situation);
 		const dmgamt =  {
-			low: dmg.low * mult + bonusDamage.low.total(situation),
-			high: dmg.high * mult + bonusDamage.high.total(situation),
+			low: dmg.low * mult + bonusLow,
+			high: dmg.high * mult + bonusHigh,
 		};
 		return dmgamt;
 	}
@@ -837,41 +837,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		};
 		return modified;
 	}
-
-	// magicExtraMult(this: Usable) : {low: number, high: number} | number {
-	// 	switch (this.system.damageLevel) {
-	// 		case "none": return 0;
-	// 		case "fixed": return this.system.damage;
-	// 		case "miniscule": return 2;
-	// 		case "basic":
-	// 			return 1;
-	// 		case "light":
-	// 			if (this.system.dmg_type == "healing")
-	// 				return 4;
-	// 			return 3;
-	// 		case "medium":
-	// 			if (this.system.dmg_type == "healing")
-	// 				return 5;
-	// 			return 4;
-	// 		case "heavy":
-	// 			if (this.system.dmg_type == "healing")
-	// 				return 8;
-	// 			return 7;
-	// 		case "severe":
-	// 			if (this.system.dmg_type == "healing")
-	// 				return 13;
-	// 			return 11;
-	// 		case "colossal":
-	// 			if (this.system.dmg_type == "healing")
-	// 				return 18;
-	// 			return 15;
-	// 		case "-": return this.system.mag_mult;
-	// 		default:
-	// 			PersonaError.softFail(`Unknwon damage Level ${this.system.damageLevel}`);
-	// 			return 0;
-	// 	}
-
-	// }
 
 	getDamage(this:ModifierContainer , user: ValidAttackers, situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: user.accessor}, typeOverride : DamageConsequence["damageType"] = "none") : {low: number, high:number} {
 		//TODO: handle type override check to see if power damage is by-power or has other type
@@ -898,31 +863,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	/** used for damage calculation estaimate for char sheet*/
-	//getDamageMultSimple(this: ModifierContainer, user: ValidAttackers, situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true, attacker: user.accessor} ) {
-	//	const mainMods = user.getEffects();
-
-	//	const multCons = this.getEffects(user)
-	//		.concat(mainMods)
-	//		.map ( eff => getActiveConsequences(eff,situation, this))
-	//		.flat()
-	//		.filter( x=> x.type == "dmg-mult" || ( x.type == "damage-new" && x.damageSubtype == "multiplier"));
-	//	return multCons.reduce( (acc, cons) => {
-	//		const amt = "amount" in cons ? cons.amount ?? 1: 1
-	//		//TODO: do simulation stuff
-	//		return acc * amt;
-	//		// return CombatResult.calcHpChangeMult(acc,amt)
-	//		// acc * ("amount" in cons ? cons.amount ?? 1: 1)
-	//	}
-	//		,1);
-	//}
-
-	/** used for damage calculation estaimate for char sheet*/
 	generateSimulatedResult(this: Usable, user: ValidAttackers, situation: AttackResult["situation"]) : CombatResult | undefined;
 	generateSimulatedResult(this: Usable, user: ValidAttackers, simulatedNat: number) : CombatResult | undefined;
 	generateSimulatedResult (this: Usable, user: ValidAttackers, simulatedSitOrNat: number | AttackResult["situation"]) : CombatResult | undefined {
 		const token = user.getActiveTokens(true)
 			.map(x=> x.document) as PToken[];
-		if (!token) return undefined;
+		if (!token || token.length ==0) return undefined;
 		if (typeof simulatedSitOrNat == "number") {
 			return PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedSitOrNat);
 		} else {
