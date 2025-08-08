@@ -10,6 +10,7 @@ export class DamageCalculation {
 	#resisted: boolean = false;
 	#absorbed: boolean = false;
 	#weakness: boolean = false;
+	#blocked : boolean = false;
 	lists = {
 		base: [] as DamageObj[],
 		multiplier: [] as DamageObj[],
@@ -47,6 +48,7 @@ export class DamageCalculation {
 	static convertToNewFormConsequence( cons: SourcedConsequence<OldDamageConsequence>, defaultDamageType: DamageType) : SourcedConsequence<DamageConsequence> {
 		let st : DamageConsequence["damageSubtype"];
 		let dtype = cons.damageType != undefined ? cons.damageType : defaultDamageType;
+		let amount = cons.amount ?? 0;
 		switch (cons.type) {
 			case "dmg-high":
 				st = "high";
@@ -69,6 +71,9 @@ export class DamageCalculation {
 			case "revive":
 				st = "percentage";
 				dtype = "healing";
+				if (amount < 1) {
+					amount *= 100;
+				}
 				break;
 			case "hp-loss":
 				st ="constant";
@@ -80,13 +85,25 @@ export class DamageCalculation {
 			damageSubtype: st,
 			source: cons.source,
 			damageType: dtype,
-			amount: cons.amount ?? 0,
+			amount: amount,
 		};
 	}
 
 	addConsequence(cons: SourcedConsequence<DamageConsequence>, target: ValidAttackers): DamageCalculation {
 		let damageOrder: DamageOrder;
 		let amt : number;
+		if (cons.modifiers) {
+			for (const mod of cons.modifiers) {
+				switch (mod) {
+					case "blocked":
+						this.#blocked = true;
+					case "absorbed":
+						this.#absorbed = true;
+					case "resisted":
+						this.#resisted = true;
+				}
+			}
+		}
 		switch (cons.damageSubtype) {
 			case "multiplier":
 				damageOrder = "multiplier";
@@ -103,7 +120,7 @@ export class DamageCalculation {
 				break;
 			case "percentage":
 					damageOrder = "nonMultPostAdd";
-				amt = Math.round(target.mhp * (cons.amount ?? 0.01));
+				amt = Math.round(target.mhp * (cons.amount * 0.01));
 				break;
 			case "mult-stack":
 					damageOrder = "stackMult";
@@ -120,9 +137,6 @@ export class DamageCalculation {
 		// if (cons.damageCalc) {
 		// 	this.merge(cons.damageCalc);
 		// }
-		if (cons.absorbed) {
-			this.setAbsorbed();
-		}
 		return this;
 	}
 
@@ -161,6 +175,10 @@ export class DamageCalculation {
 			const dOrder= k as keyof DamageCalculation["lists"];
 			this.lists[dOrder] = this.lists[dOrder].concat(other.lists[dOrder]);
 		}
+		this.#absorbed = this.#absorbed || other.#absorbed;
+		this.#weakness = this.#weakness || other.#weakness;
+		this.#resisted = this.#resisted || other.#resisted;
+		this.#blocked = this.#blocked || other.#blocked;
 		// this.amt = this.amt.concat(other.amt);
 		// this.multiplier = this.multiplier.concat(other.multiplier);
 		// this.divisor = this.divisor.concat(other.divisor);
@@ -215,7 +233,7 @@ export class DamageCalculation {
 		}
 		total = Math.round(total);
 		str.push(`${total} --- Total`);
-		let hpChange = total * (this.#absorbed ? 1 : -1);
+		let hpChange = total * (this.#absorbed ? 1 : -1) * (this.#blocked ? 0 : 1);
 		if (hpChange == undefined || typeof hpChange != "number" ||  Number.isNaN(hpChange)) {
 			PersonaError.softFail("Hp change isn't a number");
 			hpChange = -1;

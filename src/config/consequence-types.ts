@@ -141,8 +141,10 @@ type StatusEffect_FollowUp = {
 
 export type SourcedConsequence<C extends Consequence = Consequence> = C & {
 	source: {displayedName: string} | PowerContainer | null;
+	modifiers?: ConsModifiers[];
 }
 
+type ConsModifiers = "blocked" | "absorbed" | "resisted";
 
 export type Consequence =
 	{
@@ -315,7 +317,6 @@ type DamageConsequenceShared = {
 	amount ?: number; //only added later for effects
 	damageType: DamageType | "by-power",
 	/** manually added as part of processing */
-	absorbed ?: boolean,
 };
 
 export type NonDeprecatedConsequences = Exclude<Consequence, DeprecatedConsequences>;

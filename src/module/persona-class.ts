@@ -326,7 +326,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			case "healing":
 				return "absorb";
 		}
-
 		const baseResist = this.resists[type] ?? "normal";
 		const effectChangers=  this.user.mainModifiers().filter( x=> x.getEffects(this.user)
 			.some(x=> x.consequences

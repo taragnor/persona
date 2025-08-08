@@ -223,9 +223,12 @@ export class CombatResult  {
 			case "removeStatus" : {
 				if (!effect) break;
 				const id = cons.statusName!;
-				effect.removeStatus.push({
-					id,
-				});
+				const actor = PersonaDB.findActor(effect.actor);
+				if (actor.hasStatus(id)) {
+					effect.removeStatus.push({
+						id,
+					});
+				}
 				break;
 			}
 			case "escalationManipulation" : {
@@ -276,7 +279,7 @@ export class CombatResult  {
 				break;
 			}
 			case "expend-item":
-					if (!effect) break;
+				if (!effect) break;
 				effect.otherEffects.push({
 					itemId: cons.itemId,
 					type: 	"expend-item",
@@ -325,19 +328,19 @@ export class CombatResult  {
 				break;
 			}
 			case "display-msg":
-				if (effect) {
-					effect.otherEffects.push( {
-						type: "display-message",
-						newChatMsg: cons.newChatMsg ?? false,
-						msg: cons.msg ?? "",
-					});
-				} else {
-					this.globalOtherEffects.push({
-						type: "display-message",
-						newChatMsg: cons.newChatMsg ?? false,
-						msg: cons.msg ?? "",
-					});
-				}
+					if (effect) {
+						effect.otherEffects.push( {
+							type: "display-message",
+							newChatMsg: cons.newChatMsg ?? false,
+							msg: cons.msg ?? "",
+						});
+					} else {
+						this.globalOtherEffects.push({
+							type: "display-message",
+							newChatMsg: cons.newChatMsg ?? false,
+							msg: cons.msg ?? "",
+						});
+					}
 				break;
 			case "use-power":  {
 				if (!effect) break;

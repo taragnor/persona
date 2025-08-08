@@ -1215,7 +1215,7 @@ export class PersonaSocial {
 
 	static async applyEffects(effects: ConditionalEffect[], situation: Situation, actor: PC) {
 		const results = ArrayCorrector(effects ?? []).flatMap( eff=> getActiveConsequences(eff, situation, null));
-		const processed= PersonaCombat.ProcessConsequences_simple(results);
+		const processed= PersonaCombat.ProcessConsequences_simple(results, situation);
 		const result = new CombatResult();
 		for (const c of processed.consequences) {
 			result.addEffect(null, actor, c.cons);
