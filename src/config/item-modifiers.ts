@@ -53,6 +53,7 @@ export const MODIFIERLIST = [
 	"initiative",
 	"starting-energy",
 	"energy-per-turn",
+	"max-energy",
 	"actions-per-turn",
 	"baleful-status-duration",
 	"d-mon-storage",

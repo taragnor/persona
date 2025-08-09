@@ -38,6 +38,7 @@ export const POWER_TYPE_TAGS = [
 const POWER_TRAIT_TAGS = [
 	"inaccurate",
 	"accurate",
+	"high-crit",
 	"high-cost",
 	"price-lower-for-shadow",
 	"mobile",

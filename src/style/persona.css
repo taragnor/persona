@@ -899,3 +899,8 @@ h5.choices-block {
 .changes .healing {
 	color: green;
 }
+
+
+.die-with-text {
+	font-size: smaller;
+}

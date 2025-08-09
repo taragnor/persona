@@ -3637,10 +3637,22 @@ async increaseScanLevel(this: Shadow, amt :number) {
 	}
 }
 
+get maxEnergy() : number {
+	if (!this.isShadow()) return 0;
+	const BASE_MAX_ENERGY = 10;
+	const situation = {
+		user: this.accessor,
+	}
+	const maxEnergy = BASE_MAX_ENERGY + this.basePersona.getBonuses("max-energy").total(situation);
+	// const maxEnergy = Math.min(BASE_MAX_ENERGY, bonuses);
+	return maxEnergy;
+
+}
+
 async setEnergy(this: Shadow, amt: number) {
-	const maxEnergy = Math.min(10, this.system.combat.energy.max);
-	if (this.system.combat.energy.max < 10) {
-		await this.update( { "system.combat.energy.max": 10});
+	const maxEnergy = this.maxEnergy;
+	if (this.system.combat.energy.max != maxEnergy) {
+		await this.update( { "system.combat.energy.max": maxEnergy});
 	}
 	amt = Math.clamp(amt, -1, maxEnergy);
 	await this.update({"system.combat.energy.value": amt});
