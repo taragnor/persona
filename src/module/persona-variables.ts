@@ -111,7 +111,8 @@ export class PersonaVariables {
 	static #get(data: VariableData) : number | undefined {
 		switch (data.varType) {
 			case "global":
-				PersonaError.softFail("Setting global variable not yet implemented");
+				//TODO: Global not yet implemented
+				// PersonaError.softFail("Setting global variable not yet implemented");
 				return undefined;
 			case "scene": {
 				const vars : Record<string, number> = data.scene.getFlag("persona", "variables") ?? {};

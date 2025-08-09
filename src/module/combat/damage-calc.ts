@@ -134,6 +134,10 @@ export class DamageCalculation {
 			const effectName = cons.source?.displayedName?.toString() ?? "Unknown Source";
 			this.add(damageOrder, amt ?? 0, effectName);
 		}
+		if (this.damageType == "healing") {
+			this.#resisted= false;
+			this.#absorbed= true;
+		}
 		// if (cons.damageCalc) {
 		// 	this.merge(cons.damageCalc);
 		// }

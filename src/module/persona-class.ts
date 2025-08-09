@@ -21,7 +21,7 @@ import {Power, Talent, Focus} from "./item/persona-item.js";
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
 	user: T;
 	source: ValidAttackers;
-	powers: Power[];
+	_powers: Power[];
 
 	static leveling = {
 		SHADOWS_TO_LEVEL: 10,
@@ -32,7 +32,15 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	constructor (source: ValidAttackers, user: T, powers: Power[]) {
 		this.user = user;
 		this.source = source;
-		this.powers = powers;
+		this._powers = powers;
+	}
+
+	get powers() : Power[] {
+		return this.mainPowers.concat(this.user.bonusPowers);
+	}
+
+	get mainPowers(): Power[] {
+		return this._powers;
 	}
 
 	get statusResists() : ValidAttackers["system"]["combat"]["statusResists"] {

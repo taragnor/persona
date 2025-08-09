@@ -533,16 +533,17 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 
 	async	execStartingTrigger(combatant: PersonaCombat["combatant"]) {
-		const triggeringCharacter  = (combatant as Combatant<ValidAttackers>)?.token?.actor?.accessor;
-		if (triggeringCharacter) {
+		const triggeringCharacter  = (combatant as Combatant<ValidAttackers>)?.token?.actor;
+		if (triggeringCharacter != undefined) {
 			for (const user of this.combatants) {
 				if (user.token.actor == undefined) {continue;}
 				const situation : Situation = {
-					triggeringCharacter,
+					triggeringCharacter: triggeringCharacter.accessor,
 					user: user.token.actor.accessor,
 					activeCombat: true,
 				}
 				await PersonaCombat.execTrigger("start-turn", user.token.actor as ValidAttackers, situation);
+				console.log(`Triggering Start turn for ${triggeringCharacter.name} on ${user.name}`);
 			}
 		}
 	}
