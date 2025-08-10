@@ -668,6 +668,8 @@ export class ConditionalEffectManager {
 				return `Progress tokens with ${cond.conditionTarget} is ${endString(cond)}`;
 			case "variable-value":
 				return `Value of ${cond.varType} variable named ${cond.variableId} is ${endString(cond)}`;
+			case "scan-level":
+				return `Scan level of ${cond.conditionTarget} ${endString(cond)}`;
 			default:
 				cond satisfies never;
 				return "UNKNOWN CONDITION";

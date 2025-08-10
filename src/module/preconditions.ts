@@ -355,7 +355,11 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			target = val;
 			break;
 		}
-
+		case "scan-level":
+			const targetActor = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+			if (!targetActor || !targetActor.isValidCombatant()) return false;
+			target = targetActor.persona().scanLevel;
+			break;
 		default:
 			condition satisfies never;
 			PersonaError.softFail(`Unknown numeric comparison type ${condition["comparisonTarget"]}`)

@@ -1,3 +1,4 @@
+import { PersonaError } from "../module/persona-error.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { VariableTypeSpecifier } from "./consequence-types.js";
 import { VariableType } from "../module/persona-variables.js";
@@ -45,6 +46,7 @@ const ACTOR_STAT_LIST = [
 	"has-resources",
 	"health-percentage",
 	"resistance-level",
+	"scan-level",
 ] as const;
 
 const NUMERIC_COMPARISON_TARGET_LIST = [
@@ -162,12 +164,18 @@ type BaseNumericComparisons =
 	| RollComparison
 	| StudentSkillComparison
 	| DeprecatedComparison
+	| ScanLevelComparison
 	| V2SpecificComparisons
 ;
 
 
 type V2SpecificComparisons =
 	ActorStatComparion
+
+type ScanLevelComparison = {
+	comparisonTarget: "scan-level",
+	conditionTarget: ConditionTarget,
+}
 
 
 type ActorStatComparion = {
@@ -189,7 +197,8 @@ type TargettedActorStatComparison = {
 	| "percentage-of-hp"
 	| "energy"
 	| "total-SL-levels"
-	| "progress-tokens-with",
+	| "progress-tokens-with"
+	| "scan-level",
 	conditionTarget: ConditionTarget,
 }
 
@@ -475,6 +484,12 @@ function DeriveOperand1 (old: NumericComparisonOld) : NumericOperand {
 				subtype: old.comparisonTarget,
 				socialLinkIdOrTarot : old.socialLinkIdOrTarot,
 			}
+		case "scan-level":
+			return {
+				comparisonTarget: "actor-stat",
+				subtype: old.comparisonTarget,
+				conditionTarget: old.conditionTarget,
+			};
 		case "total-SL-levels":
 			return {
 				comparisonTarget: "actor-stat",
@@ -595,6 +610,9 @@ function DeriveOperand1 (old: NumericComparisonOld) : NumericOperand {
 				comparisonTarget: "deprecated",
 				deprecatedType: old.comparisonTarget,
 			};
+		default:
+			old satisfies never;
+			throw new PersonaError(`Unhandled choice -- ${(old as any)?.comparisonTarget}`);
 	}
 }
 

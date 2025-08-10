@@ -351,7 +351,10 @@ export class NumericV2 {
 				// 	? (a + x.system.amount)
 				// 	: a
 				// 	, 0);
-
+			case "scan-level":
+				const targetActor = getSubjectActors(op, situation, source, "conditionTarget")[0];
+				if (!targetActor || !targetActor.isValidCombatant()) return null;
+				return targetActor.persona().scanLevel;
 			default:
 				op satisfies never;
 				return null;
@@ -513,6 +516,8 @@ export class NumericV2 {
 				return `Percentage of HP`;
 			case "percentage-of-mp":
 				return `Percentage of SP`;
+			case "scan-level":
+				return `Scan Level`;
 			default:
 				cond satisfies never;
 				return "ERROR";

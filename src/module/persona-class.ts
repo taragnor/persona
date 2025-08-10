@@ -149,6 +149,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	isEligibleToBecomeDMon() : boolean {
 		const source = this.source;
 		if (source.hasRole(["boss", "miniboss", "treasure-shadow", "duo", "solo", "summoner"])) return false;
+		if (source.system.creatureType != "shadow" && source.system.creatureType != "daemon") return false;
 		if (source.hasCreatureTag("pure-shadow")) return false;
 		return true;
 	}
@@ -156,6 +157,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	isEligibleToBecomePersona(): boolean {
 		const source = this.source;
 		if (!source.isShadow()) return false;
+		if (source.system.creatureType == "daemon") return false;
 		if (this.isPersona()) return true;
 		if (this.isDMon()) return true;
 		return this.isEligibleToBecomeDMon();
@@ -268,11 +270,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	#translateInitString(initString: ValidAttackers["system"]["combat"]["initiative"]): number {
 		switch (initString) {
-			case "pathetic": return -6;
-			case "weak": return -3;
+			case "pathetic": return -8;
+			case "weak": return -4;
 			case "normal": return 0;
-			case "strong": return 3;
-			case "ultimate": return 6;
+			case "strong": return 4;
+			case "ultimate": return 8;
 			default:
 				initString satisfies never;
 				return -999;

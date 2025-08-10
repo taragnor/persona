@@ -386,12 +386,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!this.basePersona.isEligibleToBecomeDMon()) {
 			throw new PersonaError(`${this.name} is Ineligible to become a D-Mon`);
 		}
+		const dmonTags = this.system.creatureTags.slice();
+		dmonTags.push("d-mon");
 		const dmon = await PersonaActor.create( {
-			name: `${this.name} (Persona)`,
+			name: `${this.name} (D-Mon)`,
 			type: "shadow",
+			prototypeToken: {
+				...this.prototypeToken,
+				name: this.name,
+			},
 			system: {
 				...this.system,
 				creatureType : "d-mon",
+				creatureTags: dmonTags,
 			},
 		}) as Shadow;
 		await dmon.#stripShadowOnlyPowers();
@@ -857,7 +864,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "pc":
 			case "shadow":
 			case "npcAlly":
-				return (this as ValidAttackers).persona().powers;
+				return (this as ValidAttackers).persona().mainPowers;
 			default:
 				this.system satisfies never;
 				return [];
@@ -3715,16 +3722,24 @@ get tagList() : CreatureTag[] {
 	switch (this.system.type) {
 		case "pc":
 			if (!list.includes("pc")) {
-				list.push("pc");
+				list.pushUnique("pc");
 			}
 			return list;
 		case "npcAlly":
 			if (!list.includes("npc-ally")) {
-				list.push("npc-ally");
+				list.pushUnique("npc-ally");
 			}
 			return list;
 		case "npc": return list;
-		case "shadow": return list;
+		case "shadow": {
+			if (this.system.creatureType == "d-mon") {
+				list.pushUnique("d-mon");
+			}
+			if (this.system.creatureType == "persona") {
+				list.pushUnique("persona");
+			}
+			return list;
+		}
 		default:
 			this.system satisfies never;
 			return [];

@@ -240,6 +240,20 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			.filter( sk => sk && sk.isPassive()) as ModifierContainer[];
 	}
 
+	PersonaableShadowsOfArcana(min: number, max: number) : Shadow[] {
+		const shadows = this.allActors()
+			.filter ( x=> x.isShadow()
+				&& !x.hasCreatureTag("d-mon")
+				&& x.persona().isEligibleToBecomePersona()
+				&& x.persona().level >= min
+				&& x.persona().level <= max
+			)
+			.sort( (a,b) => (b.tarot?.displayedName ?? "").localeCompare(a.tarot?.displayedName ?? ""));
+		for (const shadow of shadows) {
+			console.log(`${shadow.name} (${shadow.tarot?.displayedName ?? "No Tarot"})`);
+		}
+		return shadows as Shadow[];
+	}
 }
 
 export const PersonaDB = new PersonaDatabase();
