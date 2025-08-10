@@ -64,6 +64,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		containsTagAdd: boolean | undefined;
 		statsModified: Map<ModifierTarget, boolean>,
 		hasTriggers: U<boolean>,
+		grantsPowers: U<boolean>,
 	}
 
 	static cacheStats = {
@@ -97,6 +98,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			containsTagAdd: undefined,
 			statsModified: new Map(),
 			hasTriggers: undefined,
+			grantsPowers: undefined,
 		};
 	}
 
@@ -527,11 +529,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	grantsPowers(this: ModifierContainer): boolean {
+		if (this.cache.grantsPowers != undefined) {
+			return this.cache.grantsPowers;
+		}
 		try{
-			return this.getEffects(null).some(
+			const grantsPowers= this.getEffects(null).some(
 				eff => eff.consequences.some(
 					cons => cons.type == "add-power-to-list"
 				));
+			this.cache.grantsPowers = grantsPowers;
+			return this.cache.grantsPowers;
 		} catch (e) {
 			console.log(this);
 			return false;
@@ -893,10 +900,27 @@ ${sim.join("\n")}
 	}
 
 	estimateDamage(this: Usable, user: ValidAttackers) : {low: number, high: number} {
-		return {
-			high: Math.abs(this.generateSimulatedDamageObject(user, 6)?.hpChange ?? 0),
-			low: Math.abs(this.generateSimulatedDamageObject(user, 5)?.hpChange ?? 0) ,
-		};
+		switch (this.system.subtype) {
+			case "social-link":
+			case "passive":
+			case "other":
+			case "none":
+			case "defensive":
+			case "downtime":
+				return {high: 0, low:0};
+			case "consumable":
+			case "weapon":
+			case "magic":
+			case "standalone":
+			case "reusable":
+				return {
+					high: Math.abs(this.generateSimulatedDamageObject(user, 6)?.hpChange ?? 0),
+					low: Math.abs(this.generateSimulatedDamageObject(user, 5)?.hpChange ?? 0) ,
+				};
+			default:
+				this.system satisfies never;
+				return {high: -1, low:-1};
+		}
 	}
 
 	critBoost(this: Usable, user: ValidAttackers) : ModifierList {

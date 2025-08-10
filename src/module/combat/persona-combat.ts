@@ -173,9 +173,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const unrolledInit = this.combatants
 			.filter( x=>x.initiative == undefined)
 			.map( c=> c.id);
-		await TriggeredEffect.onTrigger("on-combat-start-global")
-			.emptyCheck()
-			?.autoApplyResult();
+		if (!this.isSocial) {
+			await TriggeredEffect.onTrigger("on-combat-start-global")
+				.emptyCheck()
+				?.autoApplyResult();
+		}
 		if (unrolledInit.length > 0) {
 			await this.rollInitiative(unrolledInit);
 		}
@@ -241,6 +243,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	async endCombatTriggers() : Promise<void> {
+		if (this.isSocial) return;
 		const PCsWin = this.didPCsWin();
 		const promises = this.combatants
 		.filter (x=> x.actor != undefined)

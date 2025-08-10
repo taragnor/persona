@@ -399,7 +399,10 @@
 		<div>{{cons.soundSrc}}</div>
 		{{/if}}
 	</div>
-
+	<div>
+		<label> Wait Until Finished </label>
+		<input type="checkbox" name="{{strcat namePrefix 'waitUntilFinished'}}" {{checked cons.waitUntilFinished}}>
+	</div>
 	{{/if}}
 
 	<div>

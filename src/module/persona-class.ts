@@ -216,7 +216,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	passivePowers() : Power[] {
 	return this.powers
-		.filter( power=> power.system.subtype == "passive");
+		.filter( power=> power.isPassive());
 	}
 
 	get effectiveLevel() : number {

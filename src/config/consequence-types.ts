@@ -200,6 +200,7 @@ export type PlaySoundConsequence = {
 	type: "play-sound",
 	volume: number,
 	soundSrc: string,
+	waitUntilFinished: boolean,
 }
 
 export type PermabuffConsequence = {

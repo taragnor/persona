@@ -76,20 +76,21 @@ export class PersonaScene extends Scene {
 
 	async onEnterMetaverse() : Promise<void> {
 		const regionActions =
-			this.regions.contents
-			.map( region => region.onEnterMetaverse())
+		this.regions.contents
+		.map( region => region.onEnterMetaverse())
 		const actorActions =
-			this.tokens.contents
-			.map( tok => {
-				try {
-					if (!tok.actor) return Promise.resolve();
-					const actor = tok.actor as PersonaActor;
-					return actor.onEnterMetaverse();
-				} catch (e) {
-					console.log(e);
-				}
-				return Promise.reject("Error in token metaverse action");
-			});
+		this.tokens.contents
+		.map( tok => {
+			try {
+				if (!tok.actor) return Promise.resolve();
+				const actor = tok.actor as PersonaActor;
+				if (!actor.isShadow())  return Promise.resolve();
+				return actor.onEnterMetaverse();
+			} catch (e) {
+				console.log(e);
+			}
+			return Promise.reject("Error in token metaverse action");
+		});
 		const promises : Promise<any>[] = [
 			...regionActions,
 			...actorActions,
@@ -105,6 +106,7 @@ export class PersonaScene extends Scene {
 				const actor = (tok.actor as PersonaActor);
 				if (!actor
 					|| !actor.isValidCombatant()
+					|| !actor.isShadow()
 					|| tok.actorLink == true
 				) return Promise.resolve();
 				return actor.onExitMetaverse();

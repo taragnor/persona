@@ -402,10 +402,13 @@ export class FinalizedCombatResult {
 					await Metaverse.executeDungeonAction(eff);
 					break;
 				case "play-sound":
-					await PersonaSounds.playFile(eff.soundSrc, eff.volume ?? 1.0);
+					const promise  = PersonaSounds.playFile(eff.soundSrc, eff.volume ?? 1.0);
+					if (eff.waitUntilFinished) {
+						await promise;
+					}
 					break;
 				case "display-message":
-					if (!eff.newChatMsg) break;
+						if (!eff.newChatMsg) break;
 					const html = eff.msg;
 					const speaker : Foundry.ChatSpeakerObject = {
 						alias: "System"

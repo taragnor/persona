@@ -40,7 +40,7 @@ export class Metaverse {
 	static async enterMetaverse() {
 		if (!game.user.isGM) return;
 		(game.actors as Collection<PersonaActor>)
-			.filter( (x: PersonaActor)=> (x.system.type == "pc" && x.tarot != undefined) || x.system.type == "npcAlly")
+			.filter( (x: PersonaActor)=> (x.isRealPC()) || x.system.type == "npcAlly")
 			.forEach( (pc: PC | NPCAlly)=> pc.onEnterMetaverse());
 		(game.scenes.contents as PersonaScene[])
 			.forEach( sc => sc.onEnterMetaverse());
@@ -51,7 +51,7 @@ export class Metaverse {
 
 	static async exitMetaverse() {
 		(game.actors as Collection<PersonaActor>)
-			.filter( (x: PersonaActor)=> (x.system.type == "pc" && x.tarot != undefined) || x.system.type == "npcAlly")
+			.filter( (x: PersonaActor)=> x.isRealPC() || x.isNPCAlly())
 			.forEach( (x: PC | NPCAlly) => x.onExitMetaverse());
 		const promises = game.scenes.contents.map(sc => (sc as PersonaScene).onExitMetaverse());
 		await Promise.allSettled(promises);

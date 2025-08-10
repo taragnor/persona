@@ -1,4 +1,3 @@
-import { EvaluatedDamage } from "../combat/damage-calc.js";
 import { ENCOUNTER_RATE_PROBABILITY } from "../../config/probability.js";
 import { SeededRandom } from "../utility/seededRandom.js";
 import { PersonaSFX } from "../combat/persona-sfx.js";
@@ -138,7 +137,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.system.type == "tarot";
 	}
 
-	isRealPC(): this is PC {
+	isRealPC(): this is PC & {tarot : Tarot} {
 		return this.system.type == "pc" && this.hasPlayerOwner && this.tarot != undefined;
 	}
 
@@ -209,12 +208,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update( { "system.combat.mp.max": amt});
 	}
 
-	async refreshHpTracker(this:ValidAttackers)  {
-		if (!game.user.isGM) return;
-		if (this.system.type == "pc") {
-			await (this as PC).refreshMaxMP();
-		}
 
+	async refreshTrackers(this: ValidAttackers) {
+		if (this.isNPCAlly() || this.isRealPC()) {
+			await this.#refreshMPTracker();
+		}
+		await this.#refreshHpTracker();
+	}
+
+	async #refreshMPTracker(this:PC | NPCAlly) : Promise<void> {
+		await this.refreshMaxMP();
+	}
+
+	async #refreshHpTracker(this:ValidAttackers)  : Promise<void> {
+		if (!game.user.isGM) return;
 		if (this.hp > this.mhp) {
 			this.update({"system.combat.hp": this.mhp});
 		}
@@ -446,13 +453,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return cl;
 	}
 
-	set hp(newval: number) {
-		if (this.system.type == "npc"
-			|| this.system.type == "tarot") return;
+	async setHP(newval: number) {
+		if (!this.isValidCombatant()) return;
+		if (this.system.combat.hp == newval) return;
 		newval = Math.clamp(newval, 0, this.mhp);
-		this.update({"system.combat.hp": newval});
-		(this as PC | Shadow).refreshHpStatus(newval);
+		await this.update({"system.combat.hp": newval});
+		await (this as PC | Shadow).refreshHpStatus(newval);
 	}
+
 
 	get hp(): number {
 		switch (this.system.type) {
@@ -469,6 +477,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get mhp() : number {
+		//NOTE: This function is a performance sink
 		if (!this.isValidCombatant()) return 0;
 		try {
 			const persona = this.persona();
@@ -1211,7 +1220,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
 		if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
-			this.hp -= 9999;
+			this.setHP(0);
 		}
 		// id = await this.checkStatusEscalation(id);
 		const eff = this.effects.find( eff => eff.statuses.has(id));
@@ -2518,11 +2527,14 @@ isCapableOfAction() : boolean {
 
 async fullHeal() {
 	if (this.isValidCombatant()) {
-		this.hp = this.mhp;
+		await this.setHP(this.mhp);
 		if (this.system.type == "pc" || this.system.type == "npcAlly") {
-			this.update({"system.combat.mp.value" : this.mmp});
+			const mmp = this.mmp;
+			if (this.system.combat.mp.value != mmp) {
+				await this.update({"system.combat.mp.value" : mmp});
+			}
 		}
-		(this as PC | Shadow).refreshHpTracker();
+		await this.refreshTrackers();
 	}
 }
 
@@ -3710,7 +3722,7 @@ async onRevive() : Promise<void> {
 
 get tagList() : CreatureTag[] {
 	//NOTE: This is a candidate for caching
-	if (this.system.type == "tarot") return [];
+	if (this.isTarot()) { return []; }
 	let list = this.system.creatureTags.slice();
 	if (this.isValidCombatant()) {
 		const extraTags = this.mainModifiers().flatMap( x=> x.getConferredTags(this as ValidAttackers));
@@ -3740,6 +3752,8 @@ get tagList() : CreatureTag[] {
 			}
 			return list;
 		}
+		case "tarot":
+			return [];
 		default:
 			this.system satisfies never;
 			return [];
@@ -3984,21 +3998,19 @@ Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) =
 });
 
 Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
+	if (!actor.isValidCombatant()) return;
 	switch (actor.system.type) {
 		case "npcAlly":
 			if (changes?.system?.combat?.isNavigator == true) {
 				await (actor as NPCAlly).setAsNavigator();
 			}
-			await	(actor as NPCAlly).refreshHpTracker();
 			break;
 		case "pc": case "shadow":
-			await	(actor as PC | Shadow).refreshHpTracker();
-			break;
-		case "npc": case "tarot":
 			break;
 		default:
 			actor.system satisfies never;
 	}
+	await	actor.refreshTrackers();
 });
 
 Hooks.on("createToken", async function (token: TokenDocument<PersonaActor>)  {

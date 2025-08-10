@@ -640,11 +640,12 @@ export class PersonaRegion extends RegionDocument {
 	async onEnterMetaverse() : Promise<void> {
 		const data = this.regionData;
 		const refresh = data.specialMods.includes("treasure-refresh")
-		if (!refresh) return;
-		if (data.treasures.found > 0) {
-			data.treasures.found = 0;
-			await this.setRegionData(data);
-			console.debug(`Refreshing Treasures for : ${this.name}`);
+		if (refresh) {
+			if (data.treasures.found > 0) {
+				data.treasures.found = 0;
+				await this.setRegionData(data);
+				console.debug(`Refreshing Treasures for : ${this.name}`);
+			}
 		}
 	}
 
