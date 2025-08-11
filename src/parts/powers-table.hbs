@@ -11,7 +11,7 @@
 		{{#each actor.basicPowers as |power i|}}
 		<div>
 				<button class="rollPower basic-power {{#if (not (canUsePower ../actor power))}} faded {{/if}}" data-power-id="{{power.id}}">
-					<img class="power-img" src="{{power.img}}" title='{{> "systems/persona/parts/power-tooltip.hbs" actor=../actor CONST=CONST power=power}}' data-basic-power-index='{{i}}'>
+					<img class="power-img" src="{{power.img}}" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=CONST power=power}}' data-basic-power-index='{{i}}'>
 				</button>
 		</div>
 		{{/each}}
@@ -26,7 +26,7 @@
 		{{#each actor.sideboardPowers as |power i|}}
 		<div class="sideboard-power" data-power-id="{{power.id}}">
 			<div class="power-name-block {{#if (lte ../actor.maxSideboardPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../actor power)}} illegal-level {{/if}}">
-				<a class="powerName" title='{{> "systems/persona/parts/power-tooltip.hbs" actor=../actor CONST=../CONST power=power}}'>
+				<a class="powerName" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power}}'>
 					{{power.name}}
 					<span class="cost-string">
 						({{powerCostString power ../actor}})

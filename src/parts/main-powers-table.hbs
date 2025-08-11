@@ -8,7 +8,7 @@
 					<img class="small-die" src="icons/dice/d20black.svg">
 				</a>
 					{{/if}}
-					<a class="powerName" title='{{> "systems/persona/parts/power-tooltip.hbs" actor=../actor CONST=../CONST power=power}}'>
+					<a class="powerName" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power}}'>
 						{{power.name}}
 						<span class="cost-string">
 							({{powerCostString power ../persona.user}})

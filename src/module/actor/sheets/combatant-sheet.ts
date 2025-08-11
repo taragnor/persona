@@ -46,7 +46,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".incremental-advance-block .defense .add").on("click", this.addIncremental_defense.bind(this));
 		html.find(".incremental-advance-block .initiative .add").on("click", this.addIncremental_initiative.bind(this));
 		html.find("button.random-incremental").on("click", this.randomIncremental.bind(this));
-
+		html.find(".powerName").on("mouseover", this.createDamageEstimate.bind(this));
+		html.find(".power-img").on("mouseover", this.createDamageEstimate.bind(this));
 	}
 
 	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) {
@@ -357,11 +358,20 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (powerId == undefined) {
 			throw new PersonaError(`Can't find power`);
 		}
-		const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.allPowers().find(pwr => pwr.id == powerId);
+		const power = this.actor.powers.find(x=> x.id == powerId) ?? (PersonaDB.getItemById(powerId) as Power);
 		if (!power) {
 			throw new PersonaError(`Can't find power id ${powerId}`);
 		}
 		power.displayDamageStack(this.actor);
+	}
+
+	async createDamageEstimate( ev: JQuery.MouseOverEvent) {
+		const powerId = HTMLTools.getClosestData(ev, "powerId");
+		const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.getItemById(powerId);
+		const CONST = PersonaActorSheetBase.CONST();
+
+		const html = await renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST});
+		$(ev.currentTarget).prop('title', html);
 	}
 
 }

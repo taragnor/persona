@@ -913,6 +913,10 @@ ${sim.join("\n")}
 			case "magic":
 			case "standalone":
 			case "reusable":
+				if (this.system.damageLevel == "none") {
+					return {high: 0, low:0};
+				}
+				console.log(`Estimating Damage for ${this.displayedName}`);
 				return {
 					high: Math.abs(this.generateSimulatedDamageObject(user, 6)?.hpChange ?? 0),
 					low: Math.abs(this.generateSimulatedDamageObject(user, 5)?.hpChange ?? 0) ,
@@ -921,6 +925,13 @@ ${sim.join("\n")}
 				this.system satisfies never;
 				return {high: -1, low:-1};
 		}
+	}
+
+	get description(): string {
+		if (this.isUsable())
+		return this.system.description;
+		return "";
+
 	}
 
 	critBoost(this: Usable, user: ValidAttackers) : ModifierList {

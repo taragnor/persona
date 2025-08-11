@@ -36,6 +36,7 @@ const templateFileNames : string[] =[
 	"token-spends-section.hbs",
 	"weekly-availability.hbs",
 	"power-tooltip.hbs",
+	"power-tooltip-lite.hbs",
 	"tension-pool.hbs",
 	"conditions-section.hbs",
 	"consequences-section.hbs",
