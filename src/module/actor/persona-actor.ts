@@ -1771,7 +1771,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.persona().getDefense(type);
 	}
 
-	statusResist(status: StatusEffectId) : ResistStrength {
+	statusResist(status: StatusEffectId, modifiers ?: ModifierContainer[]) : ResistStrength {
 		switch (this.system.type) {
 			case "tarot":
 			case "npc":
@@ -1786,7 +1786,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return "normal";
 		}
 		const actor = this as PC | Shadow;
-		const effectChangers=  actor.mainModifiers().filter( x=> x.getEffects(actor)
+		if (!modifiers) {
+			modifiers = actor.mainModifiers();
+		}
+		const effectChangers=  modifiers.filter( x=> x.getEffects(actor)
 			.some(x=> x.consequences
 				.some( cons=>cons.type == "raise-status-resistance" && cons.statusName == status)));
 		const situation : Situation = {

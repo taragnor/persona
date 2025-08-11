@@ -22,6 +22,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	user: T;
 	source: ValidAttackers;
 	_powers: Power[];
+	#cache: PersonaClassCache;
 
 	static leveling = {
 		SHADOWS_TO_LEVEL: 10,
@@ -194,6 +195,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
+		if (!options && this.#cache.mainModifiers) {
+			return this.#cache.mainModifiers;
+		}
 		const user = this.user;
 		const roomModifiers : UniversalModifier[] = []; 
 		if (game.combat) {
@@ -202,7 +206,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			roomModifiers.push(...(Metaverse.getRegion()?.allRoomEffects ?? []));
 		}
 		const passivePowers = (options && options.omitPowers) ? [] : this.passivePowers();
-		return [
+		const mainMods = [
 			...this.passiveFocii(),
 			...this.talents,
 			...passivePowers,
@@ -211,6 +215,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			...PersonaDB.getGlobalModifiers(),
 			...PersonaDB.navigatorModifiers(),
 		].filter( x => x.getEffects(this.user).length > 0);
+		this.#cache.mainModifiers = mainMods;
+		return mainMods;
 	}
 
 	passivePowers() : Power[] {
@@ -415,4 +421,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 
+
+
+}
+
+
+interface PersonaClassCache {
+	mainModifiers: U<ModifierContainer[]>;
 }

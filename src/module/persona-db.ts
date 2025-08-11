@@ -33,6 +33,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	navigator: NPC | PC;
 	failLog: Map<string, string>;
 
+
 	constructor() {
 		super();
 		this.#resetCache();
@@ -48,6 +49,8 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			tarot: undefined,
 			navigator: undefined,
 			pcs: undefined,
+			teammateSocialLink: undefined,
+			personalSocialLink: undefined,
 		};
 		Hooks.callAll("DBrefresh");
 		return newCache;
@@ -195,11 +198,17 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	personalSocialLink(): NPC {
-		return this.getActorByName("Personal Social Link") as NPC;
+		if (!this.#cache.personalSocialLink) {
+			this.#cache.personalSocialLink = this.getActorByName("Personal Social Link") as NPC;
+		}
+		return this.#cache.personalSocialLink;
 	}
 
 	teammateSocialLink(): NPC {
-		return PersonaDB.getActorByName("Teammate Social Link") as NPC;
+		if (!this.#cache.teammateSocialLink) {
+			this.#cache.teammateSocialLink =  PersonaDB.getActorByName("Teammate Social Link") as NPC;
+		}
+		return this.#cache.teammateSocialLink;
 	}
 
 	socialLinks(): (PC | NPC)[] {
@@ -277,5 +286,7 @@ type PersonaDBCache =	{
 	tarot: Tarot[] | undefined;
 	navigator: NPCAlly | undefined;
 	pcs: PC[] | undefined;
+	teammateSocialLink: NPC | undefined;
+	personalSocialLink: NPC | undefined;
 };
 
