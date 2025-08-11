@@ -205,7 +205,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
 		//NOTE: this could be a risky operation
 		const PersonaCaching = PersonaSettings.get("aggressiveCaching");
-		if (!options && this.#cache.mainModifiers) {
+		if (!options && PersonaCaching && this.#cache.mainModifiers) {
 			return this.#cache.mainModifiers;
 		}
 		const user = this.user;
