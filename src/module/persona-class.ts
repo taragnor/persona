@@ -195,7 +195,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
 		const user = this.user;
-		// const source = this.source;
 		const roomModifiers : UniversalModifier[] = []; 
 		if (game.combat) {
 			roomModifiers.push(...PersonaCombat.getRoomModifiers(this));

@@ -916,7 +916,6 @@ ${sim.join("\n")}
 				if (this.system.damageLevel == "none") {
 					return {high: 0, low:0};
 				}
-				console.log(`Estimating Damage for ${this.displayedName}`);
 				return {
 					high: Math.abs(this.generateSimulatedDamageObject(user, 6)?.hpChange ?? 0),
 					low: Math.abs(this.generateSimulatedDamageObject(user, 5)?.hpChange ?? 0) ,
