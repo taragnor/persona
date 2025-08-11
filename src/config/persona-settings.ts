@@ -116,6 +116,16 @@ const SETTINGS = {
 		default: true,
 	},
 
+	"aggressiveCaching": {
+		name: "Aggressive Data Caching",
+		hint: "Attempt potentially losy optimizations",
+		scope: "world",
+		restricted: true,
+		config: true,
+		type: Boolean,
+		default: true,
+	},
+
 	"weather": {
 		name: "Weather Conditions",
 		hint: "Weather conditions in world",

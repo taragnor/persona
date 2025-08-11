@@ -1,3 +1,4 @@
+import { PersonaSettings } from "../config/persona-settings.js";
 import { ELEMENTAL_DEFENSE_LINK } from "../config/damage-types.js";
 import { Metaverse } from "./metaverse.js";
 import { UniversalModifier } from "./item/persona-item.js";
@@ -34,6 +35,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		this.user = user;
 		this.source = source;
 		this._powers = powers;
+		this.resetCache();
+	}
+
+	resetCache() {
+		this.#cache = {
+			mainModifiers: undefined,
+		};
 	}
 
 	get powers() : Power[] {
@@ -195,6 +203,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
+		//NOTE: this could be a risky operation
+		const PersonaCaching = PersonaSettings.get("aggressiveCaching");
 		if (!options && this.#cache.mainModifiers) {
 			return this.#cache.mainModifiers;
 		}
@@ -417,7 +427,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	statusResist(status: StatusEffectId) : ResistStrength {
-		return this.user.statusResist(status);
+		//caching trick to try to save time
+		const mods = this.mainModifiers();
+		return this.user.statusResist(status, mods);
 	}
 
 
