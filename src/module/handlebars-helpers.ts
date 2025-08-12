@@ -1,5 +1,5 @@
+import { DAMAGE_ICONS } from "../config/icons.js";
 import { StatusEffectId } from "../config/status-effects.js";
-import { DAMAGE_ICONS } from "../config/damage-types.js";
 import { POWER_TAGS } from "../config/power-tags.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../config/roll-tags.js";
 import { CardRoll } from "../config/social-card-config.js";
@@ -522,7 +522,7 @@ export class PersonaHandleBarsHelpers {
 			return `${frequencyStr} -- ${placementStr}`;
 		},
 		"isItemUsable": function (item: PersonaItem) : boolean {
-			return item.isUsable();
+			return item.isTrulyUsable();
 		},
 		"hpCost": function (item: Power) : number {
 			return item.hpCost();
@@ -622,8 +622,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"displayDamageIcon": function (damageType: DamageType): SafeString {
-			const iconFileName = DAMAGE_ICONS[damageType];
-			const filepath = `systems/persona/img/icon/${iconFileName}`;
+			const filepath = DAMAGE_ICONS[damageType];
 			const locName = localize(DAMAGETYPES[damageType]);
 			return new Handlebars.SafeString(`<img class="damage-icon" src='${filepath}' title='${locName}'>`);
 		},
@@ -640,7 +639,11 @@ export class PersonaHandleBarsHelpers {
 			return new Handlebars.SafeString("broken status");
 		},
 
-
+		"displayPowerIcon": function (power: Usable, user: ValidAttackers | Persona) : SafeString {
+			const str =  power.getDisplayedIcon(user);
+			if (!str) { return new Handlebars.SafeString("");}
+			return str;
+		},
 	}
 
 } //end of class

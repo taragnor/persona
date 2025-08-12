@@ -1004,7 +1004,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	getUsableById(id: Usable["id"]) : Usable | undefined {
 		const power = this.powers.find(pow => pow.id == id);
 		if (power) return power;
-		const usable = this.items.find( item=> item.id == id && item.isUsable());
+		const usable = this.items.find( item=> item.id == id && item.isUsableType());
 		if (usable) return usable as Usable;
 		PersonaError.softFail(`Can't find Usable with Id ${id}`);
 	}

@@ -20,33 +20,33 @@
 {{> "systems/persona/parts/main-powers-table.hbs" CONST=CONST persona=persona}}
 
 
-	{{#if actor.sideboardPowers}}
-	<h3> Sideboarded Powers (max {{actor.maxSideboardPowers}}) </h3>
-	<div class="power-sideboard">
-		{{#each actor.sideboardPowers as |power i|}}
-		<div class="sideboard-power" data-power-id="{{power.id}}">
-			<div class="power-name-block {{#if (lte ../actor.maxSideboardPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../actor power)}} illegal-level {{/if}}">
-				<a class="powerName" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power}}'>
-					{{power.name}}
-					<span class="cost-string">
-						({{powerCostString power ../actor}})
-					</span>
-				</a>
-			</div>
-			<div class="power-operations">
-				{{#if (eq ../actor.system.type "pc")}}
-				<a class="move-to-main" title="Move to Main powers">
-					<i class="fa-solid fa-truck-ramp-box"></i>
-				</a>
-				{{/if}}
-				<a class="delPower" title="Delete Power">
-					<i class="fa-solid fa-trash-can"></i>
-				</a>
-			</div>
+{{#if actor.sideboardPowers}}
+<h3> Sideboarded Powers (max {{actor.maxSideboardPowers}}) </h3>
+<div class="power-sideboard">
+	{{#each actor.sideboardPowers as |power i|}}
+	<div class="sideboard-power" data-power-id="{{power.id}}">
+		<div class="power-name-block {{#if (lte ../actor.maxSideboardPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../actor power)}} illegal-level {{/if}}">
+			<a class="powerName" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power}}'>
+				{{> "systems/persona/parts/pretty-power-name.hbs" CONST=CONST power=power user=../actor}}
+				<span class="cost-string">
+					({{powerCostString power ../actor}})
+				</span>
+			</a>
 		</div>
-		{{/each}}
+		<div class="power-operations">
+			{{#if (eq ../actor.system.type "pc")}}
+			<a class="move-to-main" title="Move to Main powers">
+				<i class="fa-solid fa-truck-ramp-box"></i>
+			</a>
+			{{/if}}
+			<a class="delPower" title="Delete Power">
+				<i class="fa-solid fa-trash-can"></i>
+			</a>
+		</div>
 	</div>
-	{{/if}}
+	{{/each}}
+</div>
+{{/if}}
 
 	{{#if actor.bonusPowers}}
 	Bonus Powers

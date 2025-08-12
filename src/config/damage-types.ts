@@ -178,19 +178,3 @@ type DamageReturn = {
 	high: number,
 }
 
-
-export const DAMAGE_ICONS : Record< DamageType, string>= {
-	physical: "phys.webp",
-	gun: "pierce.png",
-	fire: "fire.webp",
-	cold: "ice.webp",
-	wind: "wind.webp",
-	lightning: "elec.webp",
-	light: "light.webp",
-	dark: "dark.webp",
-	untyped: "untyped.webp",
-	healing: "happy face.png",
-	"all-out": "untyped.webp",
-	none: "",
-	"by-power": ""
-};

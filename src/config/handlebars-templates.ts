@@ -55,6 +55,7 @@ const templateFileNames : string[] =[
 	"opener-option-links.hbs",
 	"damage-calc-display.hbs",
 	"effects-section-tri.hbs",
+	"pretty-power-name.hbs",
 ];
 
 export const templatePaths = templateFileNames.

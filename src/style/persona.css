@@ -904,3 +904,14 @@ h5.choices-block {
 .die-with-text {
 	font-size: smaller;
 }
+
+.pretty-power-name {
+	background-color: #333; /* dark grey */
+	border-radius: 6px;     /* rounded corners */
+	color: white;           /* text stands out on dark background */
+	padding: 0.2em 0.5em;   /* some space inside */
+}
+
+.resistance-item div {
+	text-align: center;
+}

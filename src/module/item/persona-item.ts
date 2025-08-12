@@ -1,7 +1,10 @@
+import { DAMAGE_ICONS } from "../../config/icons.js";
+import { Persona } from "../persona-class.js";
+import { POWER_ICONS } from "../../config/icons.js";
+import { RealDamageType } from "../../config/damage-types.js";
 import { AttackResult } from "../combat/combat-result.js";
 import { EvaluatedDamage } from "../combat/damage-calc.js";
 import { PToken } from "../combat/persona-combat.js";
-import { DamageCalculation } from "../combat/damage-calc.js";
 import { DamageConsequence } from "../../config/consequence-types.js";
 import { DamageCalculator } from "../../config/damage-types.js";
 import { Trigger } from "../../config/triggers.js";
@@ -20,7 +23,6 @@ import { EQUIPMENT_TAGS } from "../../config/equipment-tags.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { CreatureTag } from "../../config/creature-tags.js";
 import { Precondition } from "../../config/precondition-types.js";
-import { SimpleDamageCons } from "../../config/consequence-types.js";
 import { Helpers } from "../utility/helpers.js";
 import { PersonaAE } from "../active-effect.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
@@ -102,6 +104,69 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		};
 	}
 
+	static getDamageIconPath(dmgType : RealDamageType) : string  | undefined {
+		switch (dmgType) {
+			case "fire":
+			case "wind":
+			case "light":
+			case "dark":
+			case "physical":
+			case "gun":
+			case "healing":
+			case "cold":
+			case "lightning":
+			case "untyped":
+				return DAMAGE_ICONS[dmgType];
+			case "all-out":
+			case "none":
+				return undefined;
+			default:
+				dmgType satisfies never;
+				PersonaError.softFail(`Unknown Damage Type ${dmgType}`);
+				return "ERROR";
+		}
+	}
+
+
+	getDisplayedIcon(this: Power | Consumable, user: ValidAttackers | Persona) : SafeString  | undefined {
+		function iconize( path: string | undefined) {
+			if (!path) { return new Handlebars.SafeString("");}
+			return new Handlebars.SafeString(`<img class='power-icon' src='${path}'>`);
+		}
+		if (this.isUsableType())  {
+			if (this.isPower()) {
+				const dtype = this.system.dmg_type;
+				switch (dtype) {
+					case "fire":
+					case "wind":
+					case "light":
+					case "dark":
+					case "physical":
+					case "gun":
+					case "healing":
+					case "cold":
+					case "lightning":
+					case "untyped":
+						return iconize(PersonaItem.getDamageIconPath(dtype));
+					case "by-power":
+						const altDtype = this.getDamageType(user);
+						return iconize(PersonaItem.getDamageIconPath(altDtype));
+					case "none":
+					case "all-out":
+						break;
+				}
+			}
+			if (this.hasTag("ailment")) {
+				return iconize(POWER_ICONS["ailment"]);
+			}
+			if (this.isPassive() || this.isDefensive()) {
+				return iconize(POWER_ICONS["passive"]);
+			}
+			return iconize(POWER_ICONS["support"]);
+		}
+		return new Handlebars.SafeString("");
+	}
+
 	getClassProperty<T extends keyof CClass["system"]["leveling_table"][number]> (this: CClass,lvl: number, property:T)  : CClass["system"]["leveling_table"][number][T] {
 		const adjustedLvl = Math.clamp(lvl, 0, 11);
 		const data = this.system.leveling_table[adjustedLvl][property];
@@ -147,8 +212,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.system.type == "skillCard";
 	}
 
-	isFollowUpMove(): boolean {
-		if (!this.isUsable()) return false;
+	isFollowUpMove(this: UsableAndCard): boolean {
+		if (!this.isTrulyUsable()) return false;
 		return this.hasTag("follow-up");
 	}
 
@@ -172,7 +237,17 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	isUsable() : this is UsableAndCard  {
+	isUsableType() : this is Usable {
+		switch (this.system.type) {
+			case "power":
+			case "consumable":
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	isTrulyUsable() : boolean {
 		switch (this.system.type) {
 			case "power":
 				const sub = this.system.subtype;
@@ -784,7 +859,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return cons.map( c => c.creatureTag);
 	}
 
-	getDamageType(this: Usable | Weapon, attacker: ValidAttackers): Exclude<DamageType, "by-power"> {
+	getDamageType(this: Usable | Weapon, attacker: ValidAttackers | Persona): Exclude<DamageType, "by-power"> {
+		if (attacker instanceof Persona) {
+			attacker = attacker.user;
+		}
 		switch (this.system.dmg_type) {
 			case "fire":
 			case "wind":
@@ -847,7 +925,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	getDamage(this:ModifierContainer , user: ValidAttackers, situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: user.accessor}, typeOverride : DamageConsequence["damageType"] = "none") : {low: number, high:number} {
 		//TODO: handle type override check to see if power damage is by-power or has other type
-		if (!this.isUsable() || this.isSkillCard()) return {low:0, high:0};
+		if (!this.isUsableType() || !this.isTrulyUsable() || this.isSkillCard()) return {low:0, high:0};
 		// if (!("dmg_type" in this.system) || !("subtype" in this.system)) return {low: 0, high:0};
 		if (!typeOverride || typeOverride == "by-power") {
 			if (this.system.dmg_type == "none") return {low: 0, high:0};
@@ -927,7 +1005,7 @@ ${sim.join("\n")}
 	}
 
 	get description(): string {
-		if (this.isUsable())
+		if (this.isUsableType())
 		return this.system.description;
 		return "";
 
@@ -1626,7 +1704,7 @@ ${sim.join("\n")}
 	}
 
 	static async DamageLevelConvert(item: PersonaItem) {
-		if (!item.isUsable()) return;
+		if (!item.isUsableType()) return;
 		if (item.isSkillCard()) return;
 		let damageLevel : typeof item["system"]["damageLevel"] | undefined;
 		// if (item.system.damageLevel == "severe" && item.system.subtype == "weapon") {

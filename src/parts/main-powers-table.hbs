@@ -3,13 +3,13 @@
 	<div class="main-power" data-power-id="{{power.id}}">
 		<div class="power-name-block {{#if (lte ../actor.maxMainPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../actor power)}} illegal-level {{/if}}">
 			<span class="die-with-text">
-			{{#if (canUsePower ../persona.user power)}}
+				{{#if (canUsePower ../persona.user power)}}
 				<a class="rollPower" >
 					<img class="small-die" src="icons/dice/d20black.svg">
 				</a>
 					{{/if}}
 					<a class="powerName" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power}}'>
-						{{power.name}}
+						{{> "systems/persona/parts/pretty-power-name.hbs" CONST=CONST power=power user=../persona}}
 						<span class="cost-string">
 							({{powerCostString power ../persona.user}})
 						</span>
