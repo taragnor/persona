@@ -249,8 +249,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		const navigator = this.getNavigator();
 		if (!navigator) return [];
 		const skills = navigator.navigatorSkills;
-		return skills
-			.filter( sk => sk && sk.isPassive()) as ModifierContainer[];
+		return skills as ModifierContainer[];
 	}
 
 	PersonaableShadowsOfArcana(min: number, max: number) : Shadow[] {

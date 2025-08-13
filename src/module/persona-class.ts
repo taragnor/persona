@@ -239,7 +239,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const PersonaCaching = PersonaSettings.get("aggressiveCaching");
 		if (!this.#cache.passivePowers || !PersonaCaching) {
 				this.#cache.passivePowers = this.powers
-				.filter( power=> power.isPassive());
+				.filter( power=> power.hasPassiveEffects(this.user));
 		}
 		return this.#cache.passivePowers;
 	}
@@ -252,7 +252,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 					...this.user.userDefensivePowers(),
 					...this.defensiveFocii(),
 					...this.powers,
-				].filter( power=> power.isDefensive());
+				].filter( power=> power.hasDefensiveEffects(this.user));
 		}
 		return this.#cache.defensivePowers;
 
@@ -360,11 +360,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 
 	passiveFocii() : Focus[] {
-		return this.focii.filter( f=> !f.system.defensive);
+		return this.focii.filter( f=> f.hasPassiveEffects(this.user));
 	}
 
 	defensiveFocii(): Focus[] {
-		return this.focii.filter( f=> f.system.defensive);
+		return this.focii.filter( f=> f.hasDefensiveEffects(this.user));
 	}
 
 	elemResist(type: Exclude<DamageType, "by-power">): ResistStrength {

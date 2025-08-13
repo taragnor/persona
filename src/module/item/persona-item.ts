@@ -1368,6 +1368,14 @@ ${sim.join("\n")}
 		return this.getPassiveEffects(actor).length > 0;
 	}
 
+	getDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
+		return this.#accessEffectsCache("defensiveEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType == "defensive"))
+	}
+
+	hasDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor) : boolean {
+		return this.getDefensiveEffects(sourceActor).length > 0;
+	}
+
 	// hasTriggeredEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
 	// 	if ( this.cache.hasTriggers == undefined) {
 	// 		this.cache.hasTriggers = this.getEffects(actor)
@@ -1377,7 +1385,7 @@ ${sim.join("\n")}
 	// }
 
 	triggersOn(this: ModifierContainer, trig: Trigger)  :boolean {
-		const effects= this.getEffects(null);
+		const effects= this.getTriggeredEffects(null);
 		return effects.some( eff=> eff.conditions
 			.some (cond => cond.type == "on-trigger" && cond.trigger == trig)
 		);

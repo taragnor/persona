@@ -1741,7 +1741,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!this.isValidCombatant()) return [];
 		return  [
 			...this.equippedItems(),
-		].filter(x=> x.isDefensive())
+		].filter(x=> x.hasDefensiveEffects(this))
 	}
 
 	getSourcedDefensivePowers(this: ValidAttackers) {
