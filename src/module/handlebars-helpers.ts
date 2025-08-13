@@ -65,11 +65,10 @@ export class PersonaHandleBarsHelpers {
 		"getCritResist": (actor: PC | Shadow) => {
 			return actor.critResist().total({user: actor.accessor, target:actor.accessor});
 		},
-		"getDefense" : (actorOrPersona: ValidAttackers | PersonaI, defense: keyof ValidAttackers["system"]["combat"]["defenses"]): number => {
+		"getDefense" : (actorOrPersona: ValidAttackers | Persona, defense: keyof ValidAttackers["system"]["combat"]["defenses"]): number => {
 			const persona = (actorOrPersona instanceof PersonaActor) ? actorOrPersona.persona() : actorOrPersona;
 			const acc = persona.user.accessor;
 			return persona.getDefense(defense).total({user: acc, target: acc});
-
 		},
 		"getInit" : (actor: ValidAttackers  | PersonaI) => {
 			return actor.combatInit;

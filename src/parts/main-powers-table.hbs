@@ -1,7 +1,7 @@
 <div class="main-powers">
 	{{#each persona.mainPowers as |power i|}}
 	<div class="main-power" data-power-id="{{power.id}}">
-		<div class="power-name-block {{#if (lte ../actor.maxMainPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../actor power)}} illegal-level {{/if}}">
+		<div class="power-name-block {{#if (lte ../persona.maxMainPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../actor power)}} illegal-level {{/if}}">
 			<span class="die-with-text">
 				{{#if (canUsePower ../persona.user power)}}
 				<a class="rollPower" >

@@ -57,6 +57,11 @@ declare global {
 
 export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE> {
 
+	static #cache =  {
+		basicPCPowers: undefined as Power[] | undefined,
+		basicShadowPowers: undefined as Power[] | undefined,
+	}
+
 	declare parent: PersonaActor | undefined;
 
 	cache: {
@@ -178,22 +183,28 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return PersonaDB.getUniversalItemAccessor(this);
 	}
 
-	static getBasicPCPowers() : Power[] {
-		const basic = BASIC_PC_POWER_NAMES;
-		return basic.flatMap( powerName =>  {
-			const power = PersonaDB.getBasicPower(powerName);
-			if (!power) return [];
-			return [power as Power];
-		});
+	static getBasicPCPowers() : readonly Power[] {
+		if (!this.#cache.basicPCPowers)  {
+			const basic = BASIC_PC_POWER_NAMES;
+			this.#cache.basicPCPowers = basic.flatMap( powerName =>  {
+				const power = PersonaDB.getBasicPower(powerName);
+				if (!power) return [];
+				return [power as Power];
+			});
+		}
+		return this.#cache.basicPCPowers;
 	}
 
-	static getBasicShadowPowers() : Power[] {
+	static getBasicShadowPowers() : readonly Power[] {
+		if (!this.#cache.basicShadowPowers)  {
 		const basic = BASIC_SHADOW_POWER_NAMES;
-		return basic.flatMap( powerName =>  {
+		this.#cache.basicShadowPowers = basic.flatMap( powerName =>  {
 			const power = PersonaDB.getBasicPower(powerName);
 			if (!power) return [];
 			return [power as Power];
 		});
+		}
+		return this.#cache.basicShadowPowers;
 	}
 
 	isFocus(): this is Focus {
@@ -1044,7 +1055,7 @@ ${sim.join("\n")}
 		if (!this.isPhysicalSkill()) {
 			return 0;
 		}
-		if (this.system.type == "consumable") return 0;
+		if (this.isConsumable()) return 0;
 		if (this.isBasicPower()) {return 0;}
 		if (this.isTeamwork()) return 0;
 		let mult = 1;

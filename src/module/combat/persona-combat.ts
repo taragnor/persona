@@ -2226,7 +2226,7 @@ static getAttackBonus(attacker: ValidAttackers, power: Usable, target: PToken | 
 static getDefenderAttackModifiers(target: PToken | undefined) : ModifierList {
 	if (!target) {return new ModifierList();}
 	const defense = new ModifierList(
-		target.actor.defensivePowers()
+		target.actor.persona().defensivePowers()
 		.flatMap (item => item.getModifier("allAtk", target.actor))
 	);
 	return defense;

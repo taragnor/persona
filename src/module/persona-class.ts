@@ -41,6 +41,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	resetCache() {
 		this.#cache = {
 			mainModifiers: undefined,
+			passivePowers: undefined,
+			defensivePowers : undefined,
 		};
 	}
 
@@ -230,8 +232,26 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	passivePowers() : Power[] {
-	return this.powers
-		.filter( power=> power.isPassive());
+		const PersonaCaching = PersonaSettings.get("aggressiveCaching");
+		if (!this.#cache.passivePowers || !PersonaCaching) {
+				this.#cache.passivePowers = this.powers
+				.filter( power=> power.isPassive());
+		}
+		return this.#cache.passivePowers;
+	}
+
+	defensivePowers(): ModifierContainer[] {
+		const PersonaCaching = PersonaSettings.get("aggressiveCaching");
+		if (!this.#cache.defensivePowers || !PersonaCaching) {
+			this.#cache.defensivePowers =
+				[
+					...this.user.userDefensivePowers(),
+					...this.defensiveFocii(),
+					...this.powers,
+				].filter( power=> power.isDefensive());
+		}
+		return this.#cache.defensivePowers;
+
 	}
 
 	get effectiveLevel() : number {
@@ -306,7 +326,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		mods.add("Level Bonus (x2)", lvl * 2);
 		mods.add("Incremental Advance" , inc);
 		const otherBonuses = this.getBonuses([defense, "allDefenses"]);
-		const defenseMods = this.getBonuses([defense, "allDefenses"], this.user.defensivePowers());
+		const defenseMods = this.getBonuses([defense, "allDefenses"], this.defensivePowers());
 		return mods.concat(otherBonuses).concat(defenseMods);
 
 	}
@@ -352,7 +372,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				return "absorb";
 		}
 		const baseResist = this.resists[type] ?? "normal";
-		const effectChangers=  this.user.mainModifiers().filter( x=> x.getEffects(this.user)
+		const effectChangers=  this.mainModifiers().filter( x=> x.getEffects(this.user)
 			.some(x=> x.consequences
 				.some( cons=>cons.type == "raise-resistance" || cons.type == "lower-resistance")));
 		const situation : Situation = {
@@ -433,11 +453,95 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 
+	get maxSideboardPowers() : number {
+		if (!this.source.isValidCombatant()) return 0;
+		switch (this.source.system.type) {
+			case "npcAlly":
+			case "shadow":
+				return 0;
+			case "pc":
+				const extraMaxPowers = this.getBonuses("extraMaxPowers");
+				return extraMaxPowers
+					.total ( {user: this.user.accessor});
+			default:
+				this.source.system satisfies never;
+				return -1;
+		}
+	}
 
+	get maxMainPowers() : number {
+		switch (this.source.system.type) {
+			case "pc":
+			case "npcAlly":
+			case "shadow":
+				return 8;
+			default:
+				this.source.system satisfies never;
+				return -1;
+		}
+	}
+
+	maxDefensiveBoosts() : number {
+		const baseBoosts = this.#baseDefenseBoosts();
+		const situation: Situation = {
+			user: this.user.accessor,
+			target: this.user.accessor,
+		}
+		const bonusBoosts =this.getBonuses("max-defense-boosts").total(situation);
+		return baseBoosts + bonusBoosts;
+	}
+
+#baseDefenseBoosts() : number {
+	switch (this.source.system.type) {
+		case "pc": return 1;
+		case "shadow": return 2;
+		case "npcAlly": return 1;
+		default:
+			this.source.system satisfies never;
+			return 0;
+	}
+}
+
+maxResists () : number {
+	const baseResists = this.#baseResists();
+	const situation: Situation = {
+		user: this.user.accessor,
+		target: this.user.accessor,
+	}
+	const bonusBoosts = this.getBonuses("max-resist-boosts").total(situation);
+	return baseResists + bonusBoosts;
+}
+
+#baseResists() : number {
+	switch (this.source.system.type) {
+		case "pc": return 0;
+		case "shadow" : return 2;
+		case "npcAlly": return 0;
+	}
+}
+
+get isUnderDefenseCap(): boolean {
+	return this.source.totalDefenseBoosts() < this.maxDefensiveBoosts();
+}
+
+get isOverDefenseCap(): boolean {
+	return this.source.totalDefenseBoosts() > this.maxDefensiveBoosts();
+}
+
+get isOverResistCap(): boolean {
+	return this.source.totalResists() > this.maxResists();
+}
+
+get isUnderResistCap(): boolean {
+	return this.source.totalResists() +1 < this.maxResists();
+	//allow leeway for double weakness
+}
 
 }
 
 
 interface PersonaClassCache {
 	mainModifiers: U<ModifierContainer[]>;
+	passivePowers: U<Power[]>;
+	defensivePowers: U<ModifierContainer[]>;
 }

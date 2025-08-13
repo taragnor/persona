@@ -1,10 +1,10 @@
 {{#if (or (isGM) (isPC actor))}}
-{{#if actor.isUnderDefenseCap}}
+{{#if persona.isUnderDefenseCap}}
 <div class="error">
 	UNSPENT BOOSTS
 </div>
 {{/if}}
-{{#if actor.isOverDefenseCap}}
+{{#if persona.isOverDefenseCap}}
 <div class="error">
 	OVER DEFENSE CAP
 </div>

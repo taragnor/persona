@@ -507,7 +507,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			// 	.filter(x=> x == "block" || x == "absorb" || x == "reflect")
 			// 	.length;
 			const multmods = persona.getBonuses("maxhpMult")
-			const underCap = this.maxResists() - this.totalResists() ;
+			const underCap = this.basePersona.maxResists() - this.totalResists() ;
 			if (this.isPC() || this.isNPCAlly()) {
 				const ArmorHPBoost = this.equippedItems().find(x=> x.isOutfit())?.system?.armorHPBoost ?? 0;
 				if (ArmorHPBoost > 0)
@@ -528,7 +528,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			// 	newForm.add("weak to Physical", 1.25);
 			// }
 			if (this.isShadow()) {
-				const overCap = this.totalResists() - this.maxResists();
+				const overCap = this.totalResists() - this.basePersona.maxResists();
 				if (overCap > 0) {
 					const penalty = 1 - Math.min(0.2, overCap * 0.05);
 					newForm.add("Over Resist Cap", penalty);
@@ -908,7 +908,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return pcPowers;
 	}
 
-	get bonusPowers() : Power[] {
+	get bonusPowers() : readonly Power[] {
 		switch (this.system.type) {
 			case "npc": case "tarot":
 				return [];
@@ -927,7 +927,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	get basicPowers() : Power [] {
+	get basicPowers() : readonly Power [] {
 		switch (this.system.type) {
 			case "npc": case "tarot":
 				return [];
@@ -935,7 +935,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return PersonaItem.getBasicShadowPowers();
 			case "pc":
 			case "npcAlly":
-				const arr = PersonaItem.getBasicPCPowers();
+				const arr = PersonaItem.getBasicPCPowers().slice();
 				const extraSkills = [
 					this.teamworkMove,
 					...this.navigatorSkills,
@@ -963,20 +963,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	get maxMainPowers() : number {
-		switch (this.system.type) {
-			case "npc":
-			case "tarot":
-				return 0;
-			case "pc":
-			case "npcAlly":
-			case "shadow":
-				return 8;
-			default:
-				this.system satisfies never;
-				return -1;
-		}
-	}
+	// get maxMainPowers() : number {
+	// 	switch (this.system.type) {
+	// 		case "npc":
+	// 		case "tarot":
+	// 			return 0;
+	// 		case "pc":
+	// 		case "npcAlly":
+	// 		case "shadow":
+	// 			return 8;
+	// 		default:
+	// 			this.system satisfies never;
+	// 			return -1;
+	// 	}
+	// }
 
 	async addNavigatorSkill(this: NPCAlly, pwr: Power) {
 		this.system.combat.navigatorSkills.pushUnique(pwr.id);
@@ -1017,20 +1017,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		PersonaError.softFail(`Can't find Usable with Id ${id}`);
 	}
 
-	get maxSideboardPowers() : number {
-		if (!this.isValidCombatant()) return 0;
-		switch (this.system.type) {
-			case "npcAlly":
-			case "shadow":
-				return 0;
-			case "pc":
-				const extraMaxPowers = this.persona().getBonuses("extraMaxPowers");
-				return extraMaxPowers.total ( {user: (this as PC | Shadow).accessor});
-			default:
-				this.system satisfies never;
-				return -1;
-		}
-	}
+	// get maxSideboardPowers() : number {
+	// 	if (!this.isValidCombatant()) return 0;
+	// 	switch (this.system.type) {
+	// 		case "npcAlly":
+	// 		case "shadow":
+	// 			return 0;
+	// 		case "pc":
+	// 			const extraMaxPowers = this.persona().getBonuses("extraMaxPowers");
+	// 			return extraMaxPowers.total ( {user: (this as PC | Shadow).accessor});
+	// 		default:
+	// 			this.system satisfies never;
+	// 			return -1;
+	// 	}
+	// }
 
 	get powers(): Power[] {
 		return [
@@ -1732,18 +1732,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.persona().mainModifiers(options);
 	}
 
-	defensivePowers(this: ValidAttackers) : ModifierContainer [] {
+	userDefensivePowers(this: ValidAttackers) : ModifierContainer [] {
 		if (!this.isValidCombatant()) return [];
-		const defensiveItems = this.equippedItems().filter( item => item.hasTag("defensive"));
 		return  [
-			...defensiveItems,
-			...this.persona().powers,
-			...this.defensiveFocii(),
+			...this.equippedItems(),
 		].filter(x=> x.isDefensive())
 	}
 
 	getSourcedDefensivePowers(this: ValidAttackers) {
-		return this.defensivePowers().flatMap( x=> x.getSourcedEffects(this));
+		return this.persona().defensivePowers().flatMap( x=> x.getSourcedEffects(this));
 	}
 
 	wpnAtkBonus(this: ValidAttackers) : ModifierList {
@@ -1940,7 +1937,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			ui.notifications.notify("You already know this power in sideboard!");
 			return;
 		}
-		if (powers.length < this.maxMainPowers) {
+		if (powers.length < this.basePersona.maxMainPowers) {
 			powers.push(power.id);
 			await this.update( {"system.combat.powers": powers});
 			return;
@@ -1984,7 +1981,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async checkMainPowerEmptySpace(this: PC | NPCAlly) {
 		let powers = this.system.combat.powers;
-		while (powers.length < this.maxMainPowers) {
+		while (powers.length < this.persona().maxMainPowers) {
 			let sideboard = this.system.combat.powers_sideboard;
 			const pow1 = sideboard.shift();
 			if (!pow1) return;
@@ -2006,8 +2003,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async retrievePowerFromSideboard(this: PC, powerId: Power["id"]) {
-		if (this.mainPowers.length >= this.maxMainPowers) {
-			ui.notifications.warn(`Can't have more than ${this.maxMainPowers} main powers.`);
+		if (this.mainPowers.length >= this.basePersona.maxMainPowers) {
+			ui.notifications.warn(`Can't have more than ${this.basePersona.maxMainPowers} main powers.`);
 			return;
 		}
 		const newSideboard = this.system.combat.powers_sideboard
@@ -2907,33 +2904,11 @@ totalDefenseBoosts(this: ValidAttackers) : number {
 
 issues() : string {
 	const issues : string[] = [];
-	if (this.isUnderDefenseCap || this.isOverDefenseCap)
+	if (this.basePersona.isUnderDefenseCap || this.basePersona.isOverDefenseCap)
 		issues.push("Defense");
-	if (this.isUnderResistCap || this.isOverResistCap)
+	if (this.basePersona.isUnderResistCap || this.basePersona.isOverResistCap)
 		issues.push("Resists");
 	return issues.join("/")
-}
-
-
-get isUnderDefenseCap(): boolean {
-	if (!this.isValidCombatant()) return false;
-	return this.totalDefenseBoosts() < this.maxDefensiveBoosts();
-}
-
-get isOverDefenseCap(): boolean {
-	if (!this.isValidCombatant()) return false;
-	return this.totalDefenseBoosts() > this.maxDefensiveBoosts();
-}
-
-get isOverResistCap(): boolean {
-	if (!this.isValidCombatant()) return false;
-	return this.totalResists() > this.maxResists();
-}
-
-get isUnderResistCap(): boolean {
-	if (!this.isValidCombatant()) return false;
-	return this.totalResists() +1 < this.maxResists();
-	//allow leeway for double weakness
 }
 
 totalResists (this:ValidAttackers) : number {
@@ -2972,46 +2947,6 @@ totalResists (this:ValidAttackers) : number {
 				: physicalTranslator[res]
 			);
 		},0 );
-}
-
-maxResists (this:ValidAttackers) : number {
-	const baseResists = this.#baseResists();
-	const situation: Situation = {
-		user: this.accessor,
-		target: this.accessor,
-	}
-	const bonusBoosts =this.persona().getBonuses("max-resist-boosts").total(situation);
-	return baseResists + bonusBoosts;
-}
-
-#baseResists(this: ValidAttackers) : number {
-	switch (this.system.type) {
-		case "pc": return 0;
-		case "shadow" : return 2;
-		case "npcAlly": return 0;
-	}
-}
-
-maxDefensiveBoosts(this: ValidAttackers) : number {
-	const baseBoosts = this.#baseDefenseBoosts();
-	const situation: Situation = {
-		user: this.accessor,
-		target: this.accessor,
-	}
-	const bonusBoosts =this.persona().getBonuses("max-defense-boosts").total(situation);
-	return baseBoosts + bonusBoosts;
-}
-
-#baseDefenseBoosts(this: ValidAttackers) : number {
-	switch (this.system.type) {
-		case "pc": return 1;
-		case "shadow": return 2;
-		case "npcAlly": return 1;
-		default:
-			this.system satisfies never;
-			return 0;
-	}
-
 }
 
 maxIncrementalAdvances(this: ValidAttackers): number {
