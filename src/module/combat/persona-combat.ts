@@ -1338,6 +1338,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				rollTags: ["attack"],
 				rollTotal: simNaturalRoll,
 				hit: true,
+				addedTags: ["pierce"],
 				criticalHit: false,
 				activeCombat:combat && !combat.isSocial ? !!combat.combatants.find( x=> x.actor?.system.type != attacker.actor.system.type): false ,
 			};
@@ -1935,7 +1936,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			damageType,
 		};
 		if (cons.damageType == undefined) {
-			debugger;
 			PersonaError.softFail(`Damage type is undefined for ${power.name}`, cons);
 			return [];
 		}
@@ -2007,15 +2007,19 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		if (dmgAmt) {
 			for (const applyTo of targets) {
-				const resist = applyTo.persona().elemResist(damageType);
-				if (resist == "resist") {
-					mods.push("resisted");
-				}
-				if (resist == "absorb") {
-					mods.push("absorbed");
-				}
-				if (resist == "block") {
-					mods.push("blocked");
+				const piercePower = (power as Usable).hasTag("pierce");
+				const pierceTag = "addedTags" in situation && situation.addedTags && situation.addedTags.includes("pierce");
+				if (!piercePower && !pierceTag) {
+					const resist = applyTo.persona().elemResist(damageType);
+					if (resist == "resist") {
+						mods.push("resisted");
+					}
+					if (resist == "absorb") {
+						mods.push("absorbed");
+					}
+					if (resist == "block") {
+						mods.push("blocked");
+					}
 				}
 				consList.push( {
 					applyTo,

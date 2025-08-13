@@ -40,6 +40,7 @@ export class PersonaItemSheetBase extends ItemSheet<PersonaItem> {
 
 	defaultConditionalEffect(_ev: JQuery.ClickEvent): ConditionalEffect {
 		const effect : ConditionalEffect = {
+			isDefensive: false,
 			conditions: [{
 				type: "always",
 			}],

@@ -13,6 +13,15 @@
 		</a>
 	</h4>
 	{{#each (getProp owner namePrefix) as |effect i|}}
+	<div class="conditional-header flexrow">
+		<div>
+			<label> {{getConditionalType effect}}</label>
+		</div>
+		<div>
+			<label>Defensive</label>
+			<input type="checkbox" id="is-defensive" name="{{strcat ../namePrefix i '.isDefensive'}}" {{checked effect.isDefensive}}>
+		</div>
+	</div>
 	<div class="flexrow" data-effect-index="{{i}}">
 		<div class="power-effect" >
 			{{> "systems/persona/parts/conditions-section.hbs" namePrefix=(strcat ../namePrefix i ".conditions.")  POWERSTUFF=../POWERSTUFF owner=../owner}}

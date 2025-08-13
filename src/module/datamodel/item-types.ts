@@ -324,6 +324,7 @@ export const ITEMMODELS = {
 export class ConditionalEffectDM extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		return {
+			isDefensive: new bool(),
 			conditions: new arr(new obj<Precondition>({required: true, initial: [] as any})),
 			consequences: new arr(new obj<Consequence>({required: true, initial: [] as any})),
 		};

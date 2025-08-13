@@ -651,6 +651,10 @@ export class PersonaHandleBarsHelpers {
 			if (!str) { return new Handlebars.SafeString("");}
 			return str;
 		},
+
+		"getConditionalType": function (ce: ConditionalEffect) : string{
+			return ConditionalEffectManager.getConditionalType(ce);
+		}
 	}
 
 } //end of class

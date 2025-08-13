@@ -20,7 +20,8 @@ export  const damage = function() {
 
 export const DEFENSECHOICES = ["fort" , "ref" , "will", "none"] as const;
 
-export type ConditionalEffect  = {
+export interface ConditionalEffect {
+	isDefensive: boolean,
 	conditions: Precondition[],
 	consequences: Consequence[]
 };

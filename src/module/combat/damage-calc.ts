@@ -235,6 +235,11 @@ export class DamageCalculation {
 			const dataString = `+${amt} ${name}`;
 			str.push(dataString);
 		}
+		if (this.#resisted) {
+			const RESISTMULT = 0.5;
+			str.push(`* ${RESISTMULT} Damage Resistance`);
+			total *= RESISTMULT;
+		}
 		total = Math.round(total);
 		str.push(`${total} --- Total`);
 		let hpChange = total * (this.#absorbed ? 1 : -1) * (this.#blocked ? 0 : 1);

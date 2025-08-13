@@ -1,3 +1,4 @@
+import { PowerTag } from "./power-tags.js";
 import { CardTag } from "./card-tags.js";
 import { SocialCard } from "../module/item/persona-item.js";
 import { UsableAndCard } from "../module/item/persona-item.js";
@@ -133,6 +134,7 @@ export type RollSituation = {
 	hit?: boolean;
 	criticalHit ?: boolean;
 	DC ?: number;
+	addedTags ?: PowerTag[],
 }
 
 type NonRollSituation = {

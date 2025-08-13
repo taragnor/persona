@@ -112,7 +112,7 @@ export class ConditionalEffectManager {
 		return { topPath, dataPath };
 	}
 
-	static canModifyStat (effects: ConditionalEffect[], stat: ModifierTarget): boolean {
+	static canModifyStat (effects: readonly ConditionalEffect[], stat: ModifierTarget): boolean {
 		return effects.some( eff => eff.consequences.some( c=> {
 			if ( "modifiedField" in c ) {
 				if (c.modifiedField == stat) return true;
@@ -126,7 +126,7 @@ export class ConditionalEffectManager {
 		);
 	}
 
-	static getAllActiveConsequences(condEffects: ConditionalEffect[], situation: Situation, source: PowerContainer | null) : Consequence[] {
+	static getAllActiveConsequences(condEffects: readonly ConditionalEffect[], situation: Situation, source: PowerContainer | null) : Consequence[] {
 		return condEffects.flatMap( effect=> getActiveConsequences(effect, situation, source));
 	}
 
@@ -314,15 +314,59 @@ export class ConditionalEffectManager {
 		// setTimeout( () => this.restoreLastClick(html), 100);
 	}
 
-	static getEffects<T extends Actor<any>, I extends Item<any>>(CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null) : ConditionalEffect[] {
-		const Arr = this.ArrayCorrector;
-		const conditionalEffects = Arr(CEObject);
-		return conditionalEffects.map( ce=> ({
-			conditions: this.getConditionals(ce.conditions, sourceItem, sourceActor),
-			consequences: this.getConsequences(ce.consequences, sourceItem, sourceActor),
-		})
+	static getEffects<T extends Actor<any>, I extends Item<any> & Partial<{isDefensive : () => boolean}>>(CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null) : TypedConditionalEffect[] {
+		const conditionalEffects = this.ArrayCorrector(CEObject);
+		return conditionalEffects.map( ce=> {
+			const conditions = this.getConditionals(ce.conditions, sourceItem, sourceActor);
+			const consequences= this.getConsequences(ce.consequences, sourceItem, sourceActor);
+			let forceDefensive = (sourceItem?.isDefensive)
+				? sourceItem.isDefensive()
+				: false;
+			const isDefensive = forceDefensive || (ce.isDefensive ?? false);
+			const conditionalType = !forceDefensive ? this.getConditionalType({conditions, consequences, isDefensive}): "defensive";
+			return {
+				conditionalType,
+				conditions,
+				consequences,
+				isDefensive,
+			};
+	}
+		);
+}
+
+	static getConditionalType( ce: ConditionalEffect) : TypedConditionalEffect["conditionalType"] {
+		if (ce.isDefensive) return "defensive";
+		for (const cond of ce.conditions) {
+			if (this.isTriggeredCondition(cond)) {
+				return "triggered";
+			}
+			if (this.hasSocialQualifier(cond)) {
+				return "social";
+			}
+		}
+		for (const cons of ce.consequences) {
+			if (this.isBonusConsequence(cons)) {
+				return "passive";
+			}
+		}
+		return "on-use";
+	}
+
+	static hasSocialQualifier(cond: ConditionalEffect["conditions"][number]) : boolean {
+		if (cond.type == "numeric" && cond.comparisonTarget == "social-link-level") return true;
+		return false;
+	}
+
+	static isBonusConsequence(cons: ConditionalEffect["consequences"][number]) : boolean {
+		return (cons.type == "modifier-new" 
+			|| cons.type =="modifier"
+			|| cons.type == "add-power-to-list"
 		);
 	}
+
+		static isTriggeredCondition(cond: ConditionalEffect["conditions"][number]): boolean {
+			return (cond.type == "on-trigger");
+		}
 
 	static getConditionals<T extends Actor<any>, I extends Item<any>>(condObject: DeepNoArray<ConditionalEffect["conditions"]>, sourceItem: I | null, sourceActor: T | null): ConditionalEffect["conditions"] {
 		const Arr = this.ArrayCorrector;
@@ -1063,6 +1107,7 @@ export class EMAccessor<T> {
 	async addConditionalEffect<I extends DeepNoArray<ConditionalEffect[]>>(this: EMAccessor<I>, effect ?: ConditionalEffect) {
 		if (!effect) {
 			effect= {
+				isDefensive: false,
 				conditions: [ {
 					type: "always"
 				}],
@@ -1183,6 +1228,20 @@ export type CEAction = {
 	effectIndex?:number,
 	consIndex: number
 };
+
+
+export interface TypedConditionalEffect extends ConditionalEffect {
+	conditionalType: typeof CETypes[number];
+}
+
+const CETypes = [
+	"on-use", // does something when power is used
+	"passive", // grants bonuses
+	"unknown", // can't classify
+	"triggered", // triggers
+	"defensive", // invoked as a defensive power
+	"social" //social link granted
+] as const;
 
 //@ts-ignore
 window.CEManager = ConditionalEffectManager;

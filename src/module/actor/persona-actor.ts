@@ -2409,7 +2409,7 @@ getAllSocialFocii() : Focus[] {
 	}
 }
 
-getSourcedEffects(this: ValidAttackers): {source: ModifierContainer, effects: ConditionalEffect[]} []{
+getSourcedEffects(this: ValidAttackers): {source: ModifierContainer, effects: readonly ConditionalEffect[]} []{
 	return this.mainModifiers().flatMap( x=> x.getSourcedEffects(this));
 }
 

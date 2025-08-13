@@ -1,3 +1,4 @@
+import { TypedConditionalEffect } from "../conditional-effect-manager.js";
 import { DAMAGE_ICONS } from "../../config/icons.js";
 import { Persona } from "../persona-class.js";
 import { POWER_ICONS } from "../../config/icons.js";
@@ -65,8 +66,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	declare parent: PersonaActor | undefined;
 
 	cache: {
-		effectsNull: ConditionalEffect[] | undefined;
-		effectsMap: WeakMap<PersonaActor, ConditionalEffect[]>;
+		effects: AdvancedEffectsCache;
+		// effectsNull: ConditionalEffect[] | undefined;
+		// effectsMap: WeakMap<PersonaActor, ConditionalEffect[]>;
 		containsModifier: boolean | undefined;
 		containsTagAdd: boolean | undefined;
 		statsModified: Map<ModifierTarget, boolean>,
@@ -99,14 +101,41 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	clearCache() {
 		this.cache = {
-			effectsNull: undefined,
-			effectsMap: new WeakMap(),
+			effects: PersonaItem.#newEffectsCache(),
+			// effectsNull: undefined,
+			// effectsMap: new WeakMap(),
 			containsModifier: undefined,
 			containsTagAdd: undefined,
 			statsModified: new Map(),
 			hasTriggers: undefined,
 			grantsPowers: undefined,
 		};
+	}
+
+	static #newEffectsCache() : AdvancedEffectsCache {
+		const cache : AdvancedEffectsCache = {
+			allEffects: {
+				actors: new WeakMap(),
+				nullActor: []
+			},
+			passiveEffects: {
+				actors: new WeakMap(),
+				nullActor: []
+			},
+			triggeredEffects: {
+				actors: new WeakMap(),
+				nullActor: []
+			},
+			defensiveEffects: {
+				actors: new WeakMap(),
+				nullActor: []
+			},
+			onUseEffects: {
+				actors: new WeakMap(),
+				nullActor: []
+			}
+		}
+		return cache;
 	}
 
 	static getDamageIconPath(dmgType : RealDamageType) : string  | undefined {
@@ -825,7 +854,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		for (const modifier of bonusTypes) {
 			let hasBonus = this.cache.statsModified.get(modifier);
 			if (hasBonus === undefined) {
-				hasBonus = ConditionalEffectManager.canModifyStat(this.getEffects(sourceActor), modifier);
+				hasBonus = ConditionalEffectManager.canModifyStat(this.getPassiveEffects(sourceActor), modifier);
 				this.cache.statsModified.set(modifier, hasBonus);
 			}
 			if (hasBonus === true) {
@@ -1238,26 +1267,31 @@ ${sim.join("\n")}
 		return Math.round(baseMPCost * mult);
 	}
 
+
 	baseMPCost(this: Power): number {
 		//NOTE: room to change to autocalc System
 		return this.system.mpcost;
 	}
 
-	getSourcedEffects(this: ModifierContainer, sourceActor: ValidAttackers): {source: ModifierContainer, effects: ConditionalEffect[]} {
+	getSourcedEffects(this: ModifierContainer, sourceActor: ValidAttackers): {source: ModifierContainer, effects: readonly ConditionalEffect[]} {
 		return {
 			source: this,
 			effects: this.getEffects(sourceActor)
 		};
 	}
 
-	generateSkillCardTeach(this: SkillCard): ConditionalEffect {
+	generateSkillCardTeach(this: SkillCard): TypedConditionalEffect {
 		if (!this.system.skillId) {
 			return {
+				conditionalType: "on-use",
+				isDefensive: false,
 				conditions: [],
 				consequences: []
 			};
 		}
-		const cardEffect: ConditionalEffect = {
+		const cardEffect: TypedConditionalEffect = {
+			conditionalType: "on-use",
+			isDefensive: false,
 			conditions: [
 				{type: "always"}
 			],
@@ -1269,36 +1303,78 @@ ${sim.join("\n")}
 		return cardEffect;
 	}
 
-	getEffects(this: ModifierContainer, sourceActor : PersonaActor | null): ConditionalEffect[] {
+	// hasTargettedEffects(this: Usable): boolean {
+	//TODO: Finish later
+	// }
+
+	getEffects(this: ModifierContainer, sourceActor : PersonaActor | null): readonly TypedConditionalEffect[] {
 		if (this.system.type == "skillCard") {
 			return [
 				(this as SkillCard).generateSkillCardTeach()
 			];
 		}
+		const effects = this.system.effects;
+		return this.#accessEffectsCache("allEffects", sourceActor, () => ConditionalEffectManager.getEffects(effects, this, sourceActor));
+		// PersonaItem.cacheStats.total++;
+		// const cache = this.cache.effects.allEffects;
+		// if (sourceActor == null) {
+		// 	if (!cache.nullActor) {
+		// 		PersonaItem.cacheStats.miss++;
+		// 		cache.nullActor = ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
+		// 	}
+		// 	return cache.nullActor;
+		// } else {
+		// 	const data = cache.actors.get(sourceActor);
+		// 	if (data) return data;
+		// 	PersonaItem.cacheStats.miss++;
+		// 	const newData=  ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
+		// 	cache.actors.set(sourceActor, newData);
+		// 	return newData;
+		// }
+	}
+
+	#accessEffectsCache(this: ModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, refresherFn: () => TypedConditionalEffect[]) : readonly TypedConditionalEffect[] {
 		PersonaItem.cacheStats.total++;
+		const cache = this.cache.effects[cacheType];
 		if (sourceActor == null) {
-			if (!this.cache.effectsNull) {
+			if (!cache.nullActor) {
 				PersonaItem.cacheStats.miss++;
-				this.cache.effectsNull = ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
+				cache.nullActor = refresherFn();
 			}
-			return this.cache.effectsNull;
+			return cache.nullActor;
 		} else {
-			const data = this.cache.effectsMap.get(sourceActor);
+			const data = cache.actors.get(sourceActor);
 			if (data) return data;
 			PersonaItem.cacheStats.miss++;
-			const newData=  ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
-			this.cache.effectsMap.set(sourceActor, newData);
+			const newData=  refresherFn();
+			cache.actors.set(sourceActor, newData);
 			return newData;
 		}
 	}
 
-	hasTriggeredEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
-		if ( this.cache.hasTriggers == undefined) {
-			this.cache.hasTriggers = this.getEffects(actor)
-				.some( eff => eff.conditions.some( cond => cond.type == "on-trigger"));
-		}
-		return this.cache.hasTriggers;
+	getTriggeredEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
+		return this.#accessEffectsCache("triggeredEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType == "triggered"))
 	}
+
+	hasTriggeredEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
+		return this.getTriggeredEffects(actor).length > 0;
+	}
+
+	getPassiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
+		return this.#accessEffectsCache("passiveEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType == "passive"))
+	}
+
+	hasPassiveEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
+		return this.getPassiveEffects(actor).length > 0;
+	}
+
+	// hasTriggeredEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
+	// 	if ( this.cache.hasTriggers == undefined) {
+	// 		this.cache.hasTriggers = this.getEffects(actor)
+	// 			.some( eff => eff.conditions.some( cond => cond.type == "on-trigger"));
+	// 	}
+	// 	return this.cache.hasTriggers;
+	// }
 
 	triggersOn(this: ModifierContainer, trig: Trigger)  :boolean {
 		const effects= this.getEffects(null);
@@ -1857,3 +1933,17 @@ Hooks.on("deleteItem", (item: PersonaItem) => {
 export type ItemSubtype <I extends Power, X extends I["system"]["subtype"]> = I & SystemSubtype<X>;
 type SystemSubtype<X extends string> = {system: {subytpe : X }};
 
+
+type AdvancedEffectsCache = {
+	allEffects: WeakMapPlus,
+	passiveEffects: WeakMapPlus,
+	triggeredEffects: WeakMapPlus,
+	defensiveEffects: WeakMapPlus,
+	onUseEffects: WeakMapPlus
+}
+
+type WeakMapPlus = {
+	actors: WeakMap<PersonaActor, TypedConditionalEffect[]>;
+	nullActor: TypedConditionalEffect[];
+
+};

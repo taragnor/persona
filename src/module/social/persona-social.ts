@@ -402,6 +402,7 @@ export class PersonaSocial {
 				text: responseText,
 			}] satisfies typeof effects[number]["consequences"];
 			effects.push({
+				isDefensive: false,
 				conditions: [{type: "always"}],
 				consequences: responseEffects,
 			});

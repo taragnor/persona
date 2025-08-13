@@ -1,3 +1,4 @@
+import { PowerTag } from "../../config/power-tags.js";
 import { DAMAGETYPES } from "../../config/damage-types.js";
 import { FinalizedCombatResult } from "./finalized-combat-result.js";
 import { ConsequenceProcessed } from "./persona-combat.js";
