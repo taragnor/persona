@@ -1,4 +1,3 @@
-import { ResistResult } from "./combat-result.js";
 import { EvaluatedDamage } from "./damage-calc.js";
 import { NonDeprecatedConsequences } from "../../config/consequence-types.js";
 import { SourcedConsequence } from "../../config/consequence-types.js";
@@ -23,7 +22,6 @@ import { NonCombatTriggerTypes } from "../../config/triggers.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { PersonaCalendar } from "../social/persona-calendar.js";
 import { PowerTag } from "../../config/power-tags.js";
-import { ConditionTarget } from "../../config/precondition-types.js";
 import { ConsTarget } from "../../config/consequence-types.js";
 import { PersonaSocial } from "../social/persona-social.js"
 import { UniversalModifier } from "../item/persona-item.js";
@@ -874,7 +872,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					...situation,
 					usedPower: action.accessor,
 				};
-				if (!actor.canPayActivationCost(action)) {return false;}
+				if (!actor.persona().canPayActivationCost(action)) {return false;}
 				return action.testOpenerPrereqs(useSituation, combatant.actor!);
 			});
 		options = usableActions
@@ -1177,11 +1175,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				}
 			}
 		}
-		if (!attacker.actor.canPayActivationCost(power)) {
+		if (!attacker.actor.persona().canPayActivationCost(power)) {
 			ui.notifications.notify("You can't pay the activation cost for this power");
 			return false;
 		}
-		if (!attacker.actor.canUsePower(power)) {
+		if (!attacker.actor.persona().canUsePower(power)) {
 			ui.notifications.notify("You can't Use this power");
 			return false;
 		}
@@ -3087,7 +3085,7 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 			if (ally == combatant) return [];
 			const actor = ally.actor;
 			if (!actor || !actor.teamworkMove ) return [];
-			if (!actor.canUsePower(actor.teamworkMove, false)) return [];
+			if (!actor.persona().canUsePower(actor.teamworkMove, false)) return [];
 			const situation : CombatRollSituation = {
 				naturalRoll: activationRoll,
 				rollTags: ["attack", "activation"],
@@ -3137,11 +3135,12 @@ getUsableFollowUps(token: PToken, activationRoll: number) : string []{
 		user: actor.accessor,
 	};
 	const combat = this;
+	const persona = actor.persona();
 	const followUpMoves = actor.powers
-		.filter( x=> x.isFollowUpMove())
-		.filter(x => actor.canPayActivationCost(x))
-	.filter( x=> x.testFollowUpPrereqs(situation, actor));
-
+		.filter(pwr => pwr.isFollowUpMove()
+			&& persona.canPayActivationCost(pwr)
+			&& pwr.testFollowUpPrereqs(situation, actor)
+		);
 	const followup = followUpMoves
 		.map(usable => {
 			const targets =combat.getValidTargetsFor(usable, combatant, situation)

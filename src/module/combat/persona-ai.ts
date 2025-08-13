@@ -42,8 +42,8 @@ export class RandomAI extends PersonaAI {
    override getAction(): AIAction | null {
       const shadow= this.actor;
       const powers = this.actor.powers;
-      const usablePowers = powers.filter( pwr => shadow.canUsePower(pwr));
-      const chargeAblePowers = powers.filter (pwr => !shadow.canUsePower(pwr) && pwr.system.energy.required > shadow.system.combat.energy.value);
+      const usablePowers = powers.filter( pwr => shadow.persona().canUsePower(pwr));
+      const chargeAblePowers = powers.filter (pwr => !shadow.persona().canUsePower(pwr) && pwr.system.energy.required > shadow.system.combat.energy.value);
       const freePowers = usablePowers.filter( pwr=> pwr.system.energy.cost == 0)
       const tokenAcc = PersonaDB.getUniversalTokenAccessor(this.token);
       const engaged = this.combat.isEngagedByAnyFoe(tokenAcc);

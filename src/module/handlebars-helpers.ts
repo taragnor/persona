@@ -196,8 +196,14 @@ export class PersonaHandleBarsHelpers {
 			return token.name;
 		},
 
-		'canUsePower': (actor:PC | Shadow, power: Power) => {
-			return actor.isAlive() && actor.canUsePower(power, false) && power.system?.subtype != "passive" && power.system?.subtype != "defensive" ;
+		'canUsePower': (persona:Persona, power: Power) : boolean => {
+			try {
+			return persona.canUsePower(power, false);
+			// return persona.canUsePower(power, false) && power.system?.subtype != "passive" && power.system?.subtype != "defensive" ;
+			} catch (e) {
+				console.log(e);
+				return false;
+			}
 		},
 
 		'canModifySearchChoice': (ownerId : string) => {

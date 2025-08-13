@@ -1,3 +1,4 @@
+import { PersonaSettings } from "../../config/persona-settings.js";
 import { ENCOUNTER_RATE_PROBABILITY } from "../../config/probability.js";
 import { SeededRandom } from "../utility/seededRandom.js";
 import { PersonaSFX } from "../combat/persona-sfx.js";
@@ -79,6 +80,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		tarot: Tarot | undefined;
 		complementRating: Map<Shadow["id"], number>;
 		// triggers: U<ModifierContainer[]>;
+		socialData: U<readonly SocialLinkData[]>,
 	};
 
 	constructor(...arr: any[]) {
@@ -90,6 +92,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		this.cache = {
 			tarot: undefined,
 			complementRating: new Map(),
+			socialData: undefined,
 			// triggers: undefined,
 		}
 	}
@@ -732,14 +735,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 
-	get socialLinks() : SocialLinkData[] {
-		const meetsSL = function (linkLevel: number, focus:Focus) {
+	get socialLinks() : readonly SocialLinkData[] {
+		if (!this.isPC()) return EMPTYARR;
+		function meetsSL(linkLevel: number, focus:Focus) {
 			return linkLevel >= focus.requiredLinkLevel();
 		};
-		if (this.system.type != "pc") {
-			return EMPTYARR;
-		}
-		return this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
+		const PersonaCaching = PersonaSettings.get("aggressiveCaching");
+		if (!PersonaCaching || this.cache.socialData == undefined) {
+			this.cache.socialData = this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
 			const npc = PersonaDB.getActor(linkId);
 			if (!npc) return [];
 			const isDating = relationshipType == "DATE";
@@ -801,6 +804,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				}
 			}
 		});
+		}
+		return this.cache.socialData;
 	}
 
 	get unrealizedSocialLinks() : (NPC | PC)[] {
@@ -2054,74 +2059,76 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		return false;
 	}
-	canUsePower (this: ValidAttackers, usable: UsableAndCard, outputReason: boolean = true) : boolean {
-		if (this.hasStatus("rage") && usable != PersonaDB.getBasicPower("Basic Attack")) {
-			if (outputReason) {
-				ui.notifications.warn("Can't only use basic attacks when raging");
-			}
-			return false;
-		}
-		if (this.hasPowerInhibitingStatus() && usable.system.type == "power" && !usable.isBasicPower()) {
-			if (outputReason) {
-				ui.notifications.warn("Can't use that power due to a status");
-			}
-			return false;
-		}
-		return this.canPayActivationCost(usable, outputReason);
 
-	}
+	// canUsePower (this: ValidAttackers, usable: UsableAndCard, outputReason: boolean = true) : boolean {
+	// 	if (!this.isAlive()) return false;
 
-	canPayActivationCost(this: ValidAttackers, usable: UsableAndCard, outputReason: boolean = true) : boolean {
-		switch (this.system.type) {
-			case "npcAlly":
-			case "pc":
-				return (this as PC | NPCAlly).canPayActivationCost_pc(usable, outputReason);
-			case "shadow":
-				return (this as Shadow).canPayActivationCost_shadow(usable, outputReason);
-			default:
-				this.system satisfies never;
-				throw new PersonaError("Unknown Type");
-		}
-	}
+	// 	if (this.hasStatus("rage") && usable != PersonaDB.getBasicPower("Basic Attack")) {
+	// 		if (outputReason) {
+	// 			ui.notifications.warn("Can't only use basic attacks when raging");
+	// 		}
+	// 		return false;
+	// 	}
+	// 	if (this.hasPowerInhibitingStatus() && usable.system.type == "power" && !usable.isBasicPower()) {
+	// 		if (outputReason) {
+	// 			ui.notifications.warn("Can't use that power due to a status");
+	// 		}
+	// 		return false;
+	// 	}
+	// 	return this.canPayActivationCost(usable, outputReason);
+	// }
 
-	canPayActivationCost_pc(this: PC | NPCAlly, usable: UsableAndCard, _outputReason: boolean) : boolean {
-		switch (usable.system.type) {
-			case "power": {
-				if (usable.system.tags.includes("basicatk")) {
-					return true;
-				}
-				switch (usable.system.subtype) {
-					case "weapon":
-						return  this.hp > (usable as Power).hpCost();
-					case "magic":
-						const mpcost = (usable as Power).mpCost(this.persona());
-						if (mpcost > 0) {
-							return this.mp >= mpcost;
-						}
-					case "social-link":
-						const inspirationId = usable.system.inspirationId;
-						if (inspirationId) {
-							const socialLink = this.system.social.find( x=> x.linkId == inspirationId);
-							if (!socialLink) return false;
-							return socialLink.inspiration >= usable.system.inspirationCost;
-						} else {
-							const inspiration = this.system.social.reduce( (acc, item) => acc + item.inspiration , 0)
-							return inspiration >= usable.system.inspirationCost;
-						}
-					case "downtime":
-						const combat = game.combat as PersonaCombat;
-						if (!combat) return false;
-						return combat.isSocial;
-					default:
-						return true;
-				}
-			}
-			case "consumable":
-				return usable.system.amount > 0;
-			case "skillCard":
-				return this.canLearnNewSkill();
-		}
-	}
+	// canPayActivationCost(this: ValidAttackers, usable: UsableAndCard, outputReason: boolean = true) : boolean {
+	// 	switch (this.system.type) {
+	// 		case "npcAlly":
+	// 		case "pc":
+	// 			return (this as PC | NPCAlly).canPayActivationCost_pc(usable, outputReason);
+	// 		case "shadow":
+	// 			return (this as Shadow).canPayActivationCost_shadow(usable, outputReason);
+	// 		default:
+	// 			this.system satisfies never;
+	// 			throw new PersonaError("Unknown Type");
+	// 	}
+	// }
+
+	// canPayActivationCost_pc(this: PC | NPCAlly, usable: UsableAndCard, _outputReason: boolean) : boolean {
+	// 	switch (usable.system.type) {
+	// 		case "power": {
+	// 			if (usable.system.tags.includes("basicatk")) {
+	// 				return true;
+	// 			}
+	// 			switch (usable.system.subtype) {
+	// 				case "weapon":
+	// 					return  this.hp > (usable as Power).hpCost();
+	// 				case "magic":
+	// 					const mpcost = (usable as Power).mpCost(this.persona());
+	// 					if (mpcost > 0) {
+	// 						return this.mp >= mpcost;
+	// 					}
+	// 				case "social-link":
+	// 					const inspirationId = usable.system.inspirationId;
+	// 					if (inspirationId) {
+	// 						const socialLink = this.system.social.find( x=> x.linkId == inspirationId);
+	// 						if (!socialLink) return false;
+	// 						return socialLink.inspiration >= usable.system.inspirationCost;
+	// 					} else {
+	// 						const inspiration = this.system.social.reduce( (acc, item) => acc + item.inspiration , 0)
+	// 						return inspiration >= usable.system.inspirationCost;
+	// 					}
+	// 				case "downtime":
+	// 					const combat = game.combat as PersonaCombat;
+	// 					if (!combat) return false;
+	// 					return combat.isSocial;
+	// 				default:
+	// 					return true;
+	// 			}
+	// 		}
+	// 		case "consumable":
+	// 			return usable.system.amount > 0;
+	// 		case "skillCard":
+	// 			return this.canLearnNewSkill();
+	// 	}
+	// }
 
 	canLearnNewSkill() : boolean {
 		switch (this.system.type) {
@@ -2138,35 +2145,35 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	canPayActivationCost_shadow(this: Shadow, usable: UsableAndCard, outputReason: boolean) : boolean {
-		if (usable.system.type == "skillCard") {
-			return false;
-		}
-		if (usable.system.type == "power") {
-			const combat = game.combat;
-			// if (combat && usable.system.reqEscalation > 0 && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
-			const energyRequired = usable.system.energy.required;
-			const energyCost = usable.system.energy.cost;
-			const currentEnergy = this.system.combat.energy.value;
-			if (combat && energyRequired > 0 && energyRequired > currentEnergy) {
-				if (outputReason) {
-					ui.notifications.notify(`Requires ${energyRequired} energy and you only have ${currentEnergy}`);
-				}
-				return false;
-			}
-			if (combat && energyCost > (currentEnergy + 3)) {
-				if (outputReason) {
-					ui.notifications.notify(`Costs ${energyCost} energy and you only have ${currentEnergy}`);
-				}
-				return false;
-			}
-			if (usable.system.reqHealthPercentage < 100) {
-				const reqHp = (usable.system.reqHealthPercentage / 100) * this.mhpEstimate ;
-				if (this.hp > reqHp) return false;
-			}
-		}
-		return true; //placeholder
-	}
+	// canPayActivationCost_shadow(this: Shadow, usable: UsableAndCard, outputReason: boolean) : boolean {
+	// 	if (usable.system.type == "skillCard") {
+	// 		return false;
+	// 	}
+	// 	if (usable.system.type == "power") {
+	// 		const combat = game.combat;
+	// 		// if (combat && usable.system.reqEscalation > 0 && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
+	// 		const energyRequired = usable.system.energy.required;
+	// 		const energyCost = usable.system.energy.cost;
+	// 		const currentEnergy = this.system.combat.energy.value;
+	// 		if (combat && energyRequired > 0 && energyRequired > currentEnergy) {
+	// 			if (outputReason) {
+	// 				ui.notifications.notify(`Requires ${energyRequired} energy and you only have ${currentEnergy}`);
+	// 			}
+	// 			return false;
+	// 		}
+	// 		if (combat && energyCost > (currentEnergy + 3)) {
+	// 			if (outputReason) {
+	// 				ui.notifications.notify(`Costs ${energyCost} energy and you only have ${currentEnergy}`);
+	// 			}
+	// 			return false;
+	// 		}
+	// 		if (usable.system.reqHealthPercentage < 100) {
+	// 			const reqHp = (usable.system.reqHealthPercentage / 100) * this.mhpEstimate ;
+	// 			if (this.hp > reqHp) return false;
+	// 		}
+	// 	}
+	// 	return true; //placeholder
+	// }
 
 getSocialStat(this: PC, socialStat: SocialStat) : ModifierList {
 	const stat = this.system.skills[socialStat];

@@ -1,3 +1,7 @@
+import { Shadow } from "./actor/persona-actor.js";
+import { NPCAlly } from "./actor/persona-actor.js";
+import { PC } from "./actor/persona-actor.js";
+import { UsableAndCard } from "./item/persona-item.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { ELEMENTAL_DEFENSE_LINK } from "../config/damage-types.js";
 import { Metaverse } from "./metaverse.js";
@@ -539,6 +543,107 @@ get isUnderResistCap(): boolean {
 
 	hpCostMod() : ModifierList {
 		return this.getBonuses("hpCostMult");
+	}
+
+canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
+	const user = this.user;
+	if (!this.user.isAlive()) return false;
+	if (!usable.isTrulyUsable()) return false;
+
+		if (user.hasStatus("rage") && usable != PersonaDB.getBasicPower("Basic Attack")) {
+			if (outputReason) {
+				ui.notifications.warn("Can't only use basic attacks when raging");
+			}
+			return false;
+		}
+		if (user.hasPowerInhibitingStatus() && usable.system.type == "power" && !usable.isBasicPower()) {
+			if (outputReason) {
+				ui.notifications.warn("Can't use that power due to a status");
+			}
+			return false;
+		}
+		return this.canPayActivationCost(usable, outputReason);
+	}
+
+	canPayActivationCost(usable: UsableAndCard, outputReason: boolean = true) : boolean {
+		switch (this.user.system.type) {
+			case "npcAlly":
+			case "pc":
+				return (this as Persona<PC | NPCAlly>).canPayActivationCost_pc(usable, outputReason);
+			case "shadow":
+				return (this as Persona<Shadow>).canPayActivationCost_shadow(usable, outputReason);
+			default:
+				this.user.system satisfies never;
+				throw new PersonaError("Unknown Type");
+		}
+	}
+
+	canPayActivationCost_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard, _outputReason: boolean) : boolean {
+		switch (usable.system.type) {
+			case "power": {
+				if (usable.system.tags.includes("basicatk")) {
+					return true;
+				}
+				switch (usable.system.subtype) {
+					case "weapon":
+						return  this.user.hp > (usable as Power).hpCost();
+					case "magic":
+						const mpcost = (usable as Power).mpCost(this);
+						if (mpcost > 0) {
+							return this.user.mp >= mpcost;
+						}
+					case "social-link":
+						const inspirationId = usable.system.inspirationId;
+						if (inspirationId) {
+							const socialLink = this.user.system.social.find( x=> x.linkId == inspirationId);
+							if (!socialLink) return false;
+							return socialLink.inspiration >= usable.system.inspirationCost;
+						} else {
+							const inspiration = this.user.system.social.reduce( (acc, item) => acc + item.inspiration , 0)
+							return inspiration >= usable.system.inspirationCost;
+						}
+					case "downtime":
+						const combat = game.combat as PersonaCombat;
+						if (!combat) return false;
+						return combat.isSocial;
+					default:
+						return true;
+				}
+			}
+			case "consumable":
+				return usable.system.amount > 0;
+			case "skillCard":
+				return this.user.canLearnNewSkill();
+		}
+	}
+
+	canPayActivationCost_shadow(this: Persona<Shadow>, usable: UsableAndCard, outputReason: boolean) : boolean { if (usable.system.type == "skillCard") {
+			return false;
+		}
+		if (usable.system.type == "power") {
+			const combat = game.combat;
+			// if (combat && usable.system.reqEscalation > 0 && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
+			const energyRequired = usable.system.energy.required;
+			const energyCost = usable.system.energy.cost;
+			const currentEnergy = this.user.system.combat.energy.value;
+			if (combat && energyRequired > 0 && energyRequired > currentEnergy) {
+				if (outputReason) {
+					ui.notifications.notify(`Requires ${energyRequired} energy and you only have ${currentEnergy}`);
+				}
+				return false;
+			}
+			if (combat && energyCost > (currentEnergy + 3)) {
+				if (outputReason) {
+					ui.notifications.notify(`Costs ${energyCost} energy and you only have ${currentEnergy}`);
+				}
+				return false;
+			}
+			if (usable.system.reqHealthPercentage < 100) {
+				const reqHp = (usable.system.reqHealthPercentage / 100) * this.user.mhpEstimate ;
+				if (this.user.hp > reqHp) return false;
+			}
+		}
+		return true; //placeholder
 	}
 
 }

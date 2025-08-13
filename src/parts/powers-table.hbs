@@ -10,7 +10,7 @@
 	<div class="basic-powers">
 		{{#each actor.basicPowers as |power i|}}
 		<div>
-				<button class="rollPower basic-power {{#if (not (canUsePower ../actor power))}} faded {{/if}}" data-power-id="{{power.id}}">
+				<button class="rollPower basic-power {{#if (not (canUsePower ../persona power))}} faded {{/if}}" data-power-id="{{power.id}}">
 					<img class="power-img" src="{{power.img}}" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=CONST power=power}}' data-basic-power-index='{{i}}'>
 				</button>
 		</div>
@@ -68,7 +68,7 @@
 			</th>
 		</tr>
 		{{#each actor.displayedBonusPowers as |power|}}
-		<tr class="power-row {{#if (not (canUsePower ../actor power))}} faded {{/if}}" data-power-id="{{power.id}}">
+		<tr class="power-row {{#if (not (canUsePower ../persona power))}} faded {{/if}}" data-power-id="{{power.id}}">
 			<td>
 				{{#if (canUsePower ../actor power)}}
 				<a class="rollPower">
