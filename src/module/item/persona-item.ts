@@ -575,10 +575,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return "ERROR";
 	}
 
-	costString1(actor: ValidAttackers) : string {
+	costString1(persona: Persona) : string {
 		switch (this.system.type) {
 			case "power":
-				return (this as Power).powerCostString(actor);
+				return (this as Power).powerCostString(persona);
 			case "consumable":
 				return "consumable";
 			default:
@@ -606,9 +606,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	powerCostString(this: Power, user: ValidAttackers) : string {
+	powerCostString(this: Power, persona: Persona) : string {
 		if (!this.parent || this.parent.system.type == "pc" || this.parent.system.type == "npcAlly")
-			return this.powerCostString_PC(user);
+			return this.powerCostString_PC(persona);
 		if (this.parent.system.type == "shadow")
 			return this.powerCostString_Shadow();
 		else return "";
@@ -688,21 +688,21 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return removeDuplicates(powers);
 	}
 
-	modifiedHpCost(this: Usable, user: ValidAttackers, situation ?: Situation) : number {
+	modifiedHpCost(this: Usable, persona: Persona, situation ?: Situation) : number {
 		if (!situation) {
 			situation = {
-				user: user.accessor,
+				user: persona.user.accessor,
 				usedPower: this.accessor,
 			};
 		}
-		return Math.round(this.hpCost() * user.hpCostMod().total(situation, "percentage"));
+		return Math.round(this.hpCost() * persona.hpCostMod().total(situation, "percentage"));
 	}
 
-	powerCostString_PC(this: Power, actor: ValidAttackers) : string {
+	powerCostString_PC(this: Power, persona: Persona) : string {
 		switch (this.system.subtype) {
 			case "weapon":
 				if (this.hpCost()) {
-					const modCost = this.modifiedHpCost(actor);
+					const modCost = this.modifiedHpCost(persona);
 					return `${modCost} HP`;
 				}
 
@@ -710,7 +710,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "magic":
 
 				// const mpcost = this.system.mpcost;
-				const mpcost = this.mpCost(actor);
+				const mpcost = this.mpCost(persona);
 				return `${mpcost} MP`;
 			case "social-link":
 				if (this.system.inspirationCost > 0) {
@@ -1225,14 +1225,14 @@ ${sim.join("\n")}
 		}
 	}
 
-	mpCost(this: Usable, user: ValidAttackers): number {
+	mpCost(this: Usable, userPersona: Persona): number {
 		if (this.isConsumable()) return 0;
 		const sit : Situation = {
-			user: user.accessor,
+			user: userPersona.user.accessor,
 			usedPower: this.accessor,
-			attacker: user.accessor,
+			attacker: userPersona.user.accessor,
 		}
-		let list = user.persona().getBonuses("mpCostMult");
+		let list = userPersona.getBonuses("mpCostMult");
 		const mult = list.total(sit, "percentage");
 		const baseMPCost = this.baseMPCost();
 		return Math.round(baseMPCost * mult);

@@ -2155,7 +2155,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 					const deprecatedConvert = DamageCalculation.convertToNewFormConsequence({
 						type: "hp-loss",
 						damageType: "none",
-						amount: power.modifiedHpCost(attacker.actor),
+						amount: power.modifiedHpCost(attacker.actor.persona()),
 						source: usableOrCard,
 					}, power.getDamageType(attacker.actor));
 					res.addEffect(null, attacker.actor!, deprecatedConvert );
@@ -2164,7 +2164,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 					res.addEffect(null, attacker.actor, {
 						type: "alter-mp",
 						subtype: "direct",
-						amount: -power.mpCost(attacker.actor),
+						amount: -power.mpCost(attacker.actor.persona()),
 						source: usableOrCard,
 					});
 				}

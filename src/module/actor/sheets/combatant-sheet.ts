@@ -370,7 +370,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.getItemById(powerId);
 		const CONST = PersonaActorSheetBase.CONST();
 
-		const html = await renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST});
+		const html = await renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona()});
 		$(ev.currentTarget).prop('title', html);
 	}
 

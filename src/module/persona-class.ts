@@ -537,6 +537,10 @@ get isUnderResistCap(): boolean {
 	//allow leeway for double weakness
 }
 
+	hpCostMod() : ModifierList {
+		return this.getBonuses("hpCostMult");
+	}
+
 }
 
 

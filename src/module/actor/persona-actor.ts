@@ -1521,9 +1521,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		].filter (x=> x.getEffects(this).length > 0);
 	}
 
-	hpCostMod(this: ValidAttackers) : ModifierList {
-		return this.persona().getBonuses("hpCostMult");
-	}
+	// hpCostMod(this: ValidAttackers) : ModifierList {
+	// 	return this.persona().getBonuses("hpCostMult");
+	// }
 
 	get treasureMultiplier () : number {
 		if (!this.isValidCombatant()) return 1;
@@ -2094,7 +2094,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					case "weapon":
 						return  this.hp > (usable as Power).hpCost();
 					case "magic":
-						const mpcost = (usable as Power).mpCost(this);
+						const mpcost = (usable as Power).mpCost(this.persona());
 						if (mpcost > 0) {
 							return this.mp >= mpcost;
 						}
