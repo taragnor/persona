@@ -222,13 +222,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async #refreshHpTracker(this:ValidAttackers)  : Promise<void> {
 		if (!game.user.isGM) return;
-		if (this.hp > this.mhp) {
-			this.update({"system.combat.hp": this.mhp});
+		const mhp = this.mhp;
+		if (this.hp > mhp) {
+			this.update({"system.combat.hp": mhp});
 		}
 		if (this.system.combat.hpTracker.value != this.hp
-			|| this.system.combat.hpTracker.max != this.mhp){
+			|| this.system.combat.hpTracker.max != mhp){
 			this.update( {"system.combat.hpTracker.value" : this.hp,
-				"system.combat.hpTracker.max": this.mhp
+				"system.combat.hpTracker.max": mhp
 			});
 		}
 	}
@@ -474,6 +475,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				this.system satisfies never;
 				throw new PersonaError(`Unknown Type, can't get hp`);
 		}
+	}
+
+	get mhpEstimate() : number {
+		if (!this.isValidCombatant()) return 0;
+		const mhp = this.system.combat.hpTracker.max;
+		if (mhp) return mhp;
+		return this.mhp;
 	}
 
 	get mhp() : number {
@@ -1109,13 +1117,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async modifyHP( this: ValidAttackers, delta: number) {
+		if (delta == 0) return;
 		let hp = this.system.combat.hp;
 		hp += delta;
 		if (hp < 0 ) {
 			hp = 0;
 		}
-		if (hp >= this.mhp) {
-			hp = this.mhp;
+		const mhp = this.mhp;
+		if (hp >= mhp) {
+			hp = mhp;
 		}
 		await this.update( {"system.combat.hp": hp});
 	}
@@ -1130,11 +1140,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async refreshHpStatus(this: ValidAttackers, newval?: number) {
 		const startingHP = this.system.combat.hp;
 		const hp = newval ?? this.system.combat.hp;
+		const mhp = this.mhp;
 		if (hp > 0) {
 			await this.clearFadingState();
 		}
-		if (hp > this.mhp) {
-			await this.update( {"system.combat.hp": this.mhp});
+		if (hp > mhp) {
+			await this.update( {"system.combat.hp": mhp});
 		}
 		if (this.hasStatus("full-fade")) {
 			await this.update( {"system.combat.hp": 0});
@@ -2153,7 +2164,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return false;
 			}
 			if (usable.system.reqHealthPercentage < 100) {
-				const reqHp = (usable.system.reqHealthPercentage / 100) * this.mhp ;
+				const reqHp = (usable.system.reqHealthPercentage / 100) * this.mhpEstimate ;
 				if (this.hp > reqHp) return false;
 			}
 		}
@@ -3605,7 +3616,7 @@ static highestPowerSlotUsableAtLvl(lvl: number) : number {
 // }
 
 getPoisonDamage(this: ValidAttackers): number {
-	const base = Math.round(this.mhp * 0.15);
+	const base = Math.round(this.mhpEstimate * 0.15);
 	switch (this.system.type) {
 		case "pc":
 		case "npcAlly":
