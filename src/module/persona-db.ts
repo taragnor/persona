@@ -51,6 +51,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			pcs: undefined,
 			teammateSocialLink: undefined,
 			personalSocialLink: undefined,
+			NPCAllies: undefined,
 		};
 		Hooks.callAll("DBrefresh");
 		return newCache;
@@ -229,8 +230,11 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	NPCAllies() : NPCAlly[] {
-		return this.allActors().filter( x=>
-			x.system.type == "npcAlly") as NPCAlly[];
+		if (this.#cache.NPCAllies == undefined) {
+			this.#cache.NPCAllies = this.allActors().filter( x=>
+				x.system.type == "npcAlly") as NPCAlly[];
+		}
+		return this.#cache.NPCAllies;
 	}
 
 	getNavigator() : NPCAlly | undefined {
@@ -288,5 +292,6 @@ type PersonaDBCache =	{
 	pcs: PC[] | undefined;
 	teammateSocialLink: NPC | undefined;
 	personalSocialLink: NPC | undefined;
+	NPCAllies: U<NPCAlly[]>;
 };
 
