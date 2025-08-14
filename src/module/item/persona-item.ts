@@ -116,23 +116,23 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const cache : AdvancedEffectsCache = {
 			allEffects: {
 				actors: new WeakMap(),
-				nullActor: []
+				nullActor: undefined,
 			},
 			passiveEffects: {
 				actors: new WeakMap(),
-				nullActor: []
+				nullActor: undefined,
 			},
 			triggeredEffects: {
 				actors: new WeakMap(),
-				nullActor: []
+				nullActor: undefined,
 			},
 			defensiveEffects: {
 				actors: new WeakMap(),
-				nullActor: []
+				nullActor: undefined,
 			},
 			onUseEffects: {
 				actors: new WeakMap(),
-				nullActor: []
+				nullActor: undefined,
 			}
 		}
 		return cache;
@@ -644,6 +644,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	grantsPowers(this: ModifierContainer): boolean {
+		if (!PersonaDB.isLoaded) return false;
 		if (this.cache.grantsPowers != undefined) {
 			return this.cache.grantsPowers;
 		}
@@ -688,31 +689,31 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.testTeamworkPrereqs(situation, user);
 	}
 
-	getGrantedPowers(this: ModifierContainer, user: PC | Shadow, situation?: Situation): Power[] {
+	getGrantedPowers(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
 		return this.getAllGrantedPowers(user, situation);
 		// .filter(pwr => !pwr.hasTag("opener"));
 	}
 
-	getOpenerPowers(this: ModifierContainer, user: PC | Shadow, situation?: Situation): Power[] {
+	getOpenerPowers(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
 		return this.getAllGrantedPowers(user, situation)
 			.filter (pwr=> pwr.hasTag("opener"));
 	}
 
-	getAllGrantedPowers(this: ModifierContainer, user: PC | Shadow, situation?: Situation): Power[] {
+	getAllGrantedPowers(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
 		if (!this.grantsPowers()) return [];
 		if (!situation) {
 			situation = {
 				user: user.accessor
 			};
 		}
-		const powers=  this.getEffects(user)
+		const powers=  this.getPassiveEffects(user)
 			.filter(
 				eff => eff.consequences.some(
 					cons => cons.type == "add-power-to-list"
 				))
 			.flatMap(eff=> getActiveConsequences(eff, situation, this))
 			.flatMap(x=> x.type == "add-power-to-list" ? [x.id] : [])
-			.map(id=> PersonaDB.allPowers().find( x=>x.id == id))
+			.map(id=> PersonaDB.allPowers().get(id))
 			.flatMap( pwr=> pwr? [pwr]: []);
 		return removeDuplicates(powers);
 	}
@@ -1334,6 +1335,7 @@ ${sim.join("\n")}
 	}
 
 	#accessEffectsCache(this: ModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, refresherFn: () => TypedConditionalEffect[]) : readonly TypedConditionalEffect[] {
+		if (!PersonaDB.isLoaded) return [];
 		PersonaItem.cacheStats.total++;
 		const cache = this.cache.effects[cacheType];
 		if (sourceActor == null) {
@@ -1952,6 +1954,6 @@ type AdvancedEffectsCache = {
 
 type WeakMapPlus = {
 	actors: WeakMap<PersonaActor, TypedConditionalEffect[]>;
-	nullActor: TypedConditionalEffect[];
+	nullActor: U<TypedConditionalEffect[]>;
 
 };

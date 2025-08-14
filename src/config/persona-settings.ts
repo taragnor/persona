@@ -1,3 +1,4 @@
+import { PersonaDB } from "../module/persona-db.js";
 import { WEATHER_TYPES } from "./weather-types.js";
 import { PersonaActor } from "../module/actor/persona-actor.js";
 

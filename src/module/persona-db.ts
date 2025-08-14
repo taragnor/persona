@@ -123,11 +123,18 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 
-	allPowers() : Power[] {
+	allPowersArr(): Power[] {
+		return Array.from(this.allPowers().values());
+	}
+
+	allPowers() : Map<string, Power> {
 		if (this.#cache.powers) return this.#cache.powers;
-		const items = this.allItems();
-		return this.#cache.powers = items
-			.filter( x=> x.system.type == "power") as Power[];
+		// const items = this.allItems();
+		// return this.#cache.powers =
+		const items = this.allItems()
+			.filter( x=> x.system.type == "power")
+			.map( pwr => [pwr.id, pwr]) as [string, Power][];
+		return this.#cache.powers = new Map(items);
 	}
 
 	getBasicPower( name: typeof BASIC_SHADOW_POWER_NAMES[number] | typeof BASIC_PC_POWER_NAMES[number]) : Power | undefined {
@@ -282,7 +289,7 @@ Hooks.on("createActor", (actor : PersonaActor) => {
 });
 
 type PersonaDBCache =	{
-	powers: Power[] | undefined,
+	powers: Map<Power["id"], Power> | undefined,
 	shadows: Shadow[] | undefined;
 	socialLinks: (PC | NPC)[] | undefined;
 	treasureItems: TreasureItem[] | undefined;

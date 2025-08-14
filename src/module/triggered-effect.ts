@@ -151,7 +151,7 @@ export class TriggeredEffect {
 		for (const usePower of usePowers) {
 			//TODO BUG: Extra attacks keep the main inputted modifier
 			const newAttacker = PersonaCombat.getPTokenFromActorAccessor(usePower.newAttacker);
-			const execPower = PersonaDB.allPowers().find( x=> x.id == usePower.powerId);
+			const execPower = PersonaDB.allPowers().get( usePower.powerId);
 			if (execPower && newAttacker) {
 				const altTargets= PersonaCombat.getAltTargets(newAttacker, situation, usePower.target );
 				const newTargets = PersonaCombat.getTargets(newAttacker, execPower, altTargets)

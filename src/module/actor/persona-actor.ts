@@ -736,7 +736,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 
 	get socialLinks() : readonly SocialLinkData[] {
-		if (!this.isPC()) return EMPTYARR;
+		if (!this.isPC() || !PersonaDB.isLoaded) return EMPTYARR;
 		function meetsSL(linkLevel: number, focus:Focus) {
 			return linkLevel >= focus.requiredLinkLevel();
 		};
@@ -913,24 +913,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return pcPowers;
 	}
 
-	get bonusPowers() : readonly Power[] {
-		switch (this.system.type) {
-			case "npc": case "tarot":
-				return [];
-			case "shadow":
-			case "pc":
-			case "npcAlly":
-				const bonusPowers : Power[] =
-					this.mainModifiers({omitPowers:true})
-					.filter(x=> x.grantsPowers())
-					.flatMap(x=> x.getGrantedPowers(this as PC ))
-					.sort ( (a,b)=> a.name.localeCompare(b.name)) ;
-				return removeDuplicates(bonusPowers);
-			default:
-				this.system satisfies never;
-				return [];
-		}
-	}
+	// get bonusPowers() : readonly Power[] {
+	// 	switch (this.system.type) {
+	// 		case "npc": case "tarot":
+	// 			return [];
+	// 		case "shadow":
+	// 		case "pc":
+	// 		case "npcAlly":
+	// 			const bonusPowers : Power[] =
+	// 				this.persona().mainModifiers({omitPowers:true})
+	// 				.filter(x=> x.grantsPowers())
+	// 				.flatMap(x=> x.getGrantedPowers(this as PC ))
+	// 				.sort ( (a,b)=> a.name.localeCompare(b.name)) ;
+	// 			return removeDuplicates(bonusPowers);
+	// 		default:
+	// 			this.system satisfies never;
+	// 			return [];
+	// 	}
+	// }
 
 	get basicPowers() : readonly Power [] {
 		switch (this.system.type) {
@@ -1038,15 +1038,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	// }
 
 	get powers(): Power[] {
+		if (!this.isValidCombatant()) return [];
 		return [
 			...this.basicPowers,
 			...this.mainPowers,
-			...this.bonusPowers,
+			...this.persona().bonusPowers,
 		].flat();
 	}
 
 	get displayedBonusPowers() : Power[] {
-		return this.bonusPowers.filter( power=>
+		if (!this.isValidCombatant()) return [];
+		return this.persona().bonusPowers.filter( power=>
 			!power.isOpener()
 		);
 	}
@@ -1344,7 +1346,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const id = this.system.combat.teamworkMove;
 		if (!id)
 			return undefined;
-		return PersonaDB.allPowers().find(pwr => pwr.id == id);
+		return PersonaDB.allPowers().get(id);
 	}
 
 	hasStatus (id: StatusEffectId) : boolean {
@@ -3868,7 +3870,7 @@ get treasureString() : SafeString {
 		.filter( id=> id)
 		.map( id => PersonaDB.treasureItems().find(x=> x.id == id))
 		.flatMap(item => item ? [item.name] : [])
-	const cardPower = treasure.cardPowerId ? PersonaDB.allPowers().filter( x=> treasure.cardPowerId == x.id): [];
+	const cardPower = treasure.cardPowerId ? PersonaDB.allPowersArr().filter( x=> treasure.cardPowerId == x.id): [];
 	const cardName = cardPower.map( pwr => `${pwr.name} Card`);
 	return new Handlebars.SafeString(items.concat(cardName).join(", "));
 }

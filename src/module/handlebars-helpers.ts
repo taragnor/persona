@@ -201,6 +201,7 @@ export class PersonaHandleBarsHelpers {
 			return persona.canUsePower(power, false);
 			// return persona.canUsePower(power, false) && power.system?.subtype != "passive" && power.system?.subtype != "defensive" ;
 			} catch (e) {
+				Debug(persona);
 				console.log(e);
 				return false;
 			}

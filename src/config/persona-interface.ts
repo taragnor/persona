@@ -11,13 +11,13 @@ import { ModifierList } from "../module/combat/modifier-list.js";
 export interface PersonaI {
 	user: ValidAttackers;
 	name: string;
-	powers: Power[];
+	powers: readonly Power[];
 	xp: number;
 	statusResists: Foundry.SchemaConvert<ReturnType<typeof statusResists>>;
 	resists: Foundry.SchemaConvert<ReturnType<typeof elementalResists>>;
 	classData: ValidAttackers["system"]["combat"]["classData"];
-	talents: Talent[];
-	focii: Focus[];
+	talents: readonly Talent[];
+	focii: readonly Focus[];
 	XPForNextLevel: number;
 	level: number;
 	scanLevel: number;

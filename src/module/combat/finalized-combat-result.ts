@@ -524,7 +524,7 @@ export class FinalizedCombatResult {
 					await actor.setEffectFlag(otherEffect.flagId, otherEffect.state, otherEffect.duration, otherEffect.flagName);
 					break;
 				case "teach-power":
-					const power = PersonaDB.allPowers().find(power => power.id == otherEffect.id);
+					const power = PersonaDB.allPowers().get(otherEffect.id);
 					if (power && (actor.system.type == "pc" || actor.system.type == "npcAlly")) {
 						await (actor as PC | NPCAlly).addPower(power);
 					}

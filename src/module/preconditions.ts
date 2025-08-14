@@ -818,7 +818,8 @@ function hasTagConditional(condition: Precondition & BooleanComparisonPC & {bool
 					user = null;
 					break;
 			}
-			const powerTags = power.tagList(user);
+			const extraTags = "addedTags" in situation ? situation.addedTags ?? [] : [];
+			const powerTags = power.tagList(user).concat(extraTags);
 			if (condition.powerTag == undefined) {
 				//weird Sachi Error
 				if (source) {

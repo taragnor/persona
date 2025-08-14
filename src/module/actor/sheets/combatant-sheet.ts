@@ -226,7 +226,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (powerId == undefined) {
 			throw new PersonaError(`Can't find power`);
 		}
-		const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.allPowers().find(pwr => pwr.id == powerId);
+		const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.allPowers().get(powerId);
 		if (!power) {
 			throw new PersonaError(`Can't find power id ${powerId}`);
 		}

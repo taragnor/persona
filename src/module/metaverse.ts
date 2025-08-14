@@ -388,7 +388,7 @@ static async reportXPGain(xpReport: {actor: ValidAttackers, xp: number, levelUp:
 				items.push(existingCard);
 				return;
 			}
-			const power = PersonaDB.allPowers().find( x=> x.id == powerId);
+			const power = PersonaDB.allPowers().get(powerId);
 			if (!power) {
 				PersonaError.softFail(`Can't fiund Power Id ${power} for treasure`);
 				return;

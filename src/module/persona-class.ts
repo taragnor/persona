@@ -1,3 +1,4 @@
+import { removeDuplicates } from "./utility/array-tools.js";
 import { Shadow } from "./actor/persona-actor.js";
 import { NPCAlly } from "./actor/persona-actor.js";
 import { PC } from "./actor/persona-actor.js";
@@ -50,8 +51,17 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		};
 	}
 
-	get powers() : Power[] {
-		return this.mainPowers.concat(this.user.bonusPowers);
+	get powers() : readonly Power[] {
+		return this.mainPowers.concat(this.bonusPowers);
+	}
+
+	get bonusPowers() : readonly Power [] {
+		const bonusPowers : Power[] =
+			this.mainModifiers({omitPowers:true})
+			.filter(trait => trait.grantsPowers())
+			.flatMap(powerGranter=> powerGranter.getGrantedPowers(this.user))
+			.sort ( (a,b)=> a.name.localeCompare(b.name)) ;
+		return removeDuplicates(bonusPowers);
 	}
 
 	get mainPowers(): Power[] {

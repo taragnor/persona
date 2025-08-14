@@ -334,23 +334,38 @@ export class ConditionalEffectManager {
 		);
 }
 
-	static getConditionalType( ce: ConditionalEffect) : TypedConditionalEffect["conditionalType"] {
-		if (ce.isDefensive) return "defensive";
-		for (const cond of ce.conditions) {
-			if (this.isTriggeredCondition(cond)) {
-				return "triggered";
-			}
-			if (this.hasSocialQualifier(cond)) {
-				return "social";
-			}
+static getConditionalType( ce: ConditionalEffect) : TypedConditionalEffect["conditionalType"] {
+	if (ce.isDefensive) return "defensive";
+	for (const cond of ce.conditions) {
+		if (this.isTriggeredCondition(cond)) {
+			return "triggered";
 		}
-		for (const cons of ce.consequences) {
-			if (this.isBonusConsequence(cons)) {
-				return "passive";
-			}
-		}
-		return "on-use";
 	}
+	for (const cons of ce.consequences) {
+		switch (true) {
+			case this.isBonusConsequence(cons):
+			case this.grantsPowers(cons) :
+			case this.changesResistance(cons) :
+				return "passive";
+		}
+	}
+	return "on-use";
+}
+
+static grantsPowers(cons: ConditionalEffect["consequences"][number]) : boolean {
+	return cons.type == "add-power-to-list";
+}
+
+static changesResistance(cons: ConditionalEffect["consequences"][number]) : boolean {
+	switch (cons.type) {
+		case "raise-resistance":
+		case "raise-status-resistance":
+		case "lower-resistance":
+			return true;
+	}
+	return false;
+
+}
 
 	static hasSocialQualifier(cond: ConditionalEffect["conditions"][number]) : boolean {
 		if (cond.type == "numeric" && cond.comparisonTarget == "social-link-level") return true;
@@ -360,7 +375,6 @@ export class ConditionalEffectManager {
 	static isBonusConsequence(cons: ConditionalEffect["consequences"][number]) : boolean {
 		return (cons.type == "modifier-new" 
 			|| cons.type =="modifier"
-			|| cons.type == "add-power-to-list"
 		);
 	}
 
@@ -1240,7 +1254,7 @@ const CETypes = [
 	"unknown", // can't classify
 	"triggered", // triggers
 	"defensive", // invoked as a defensive power
-	"social" //social link granted
+	// "social" //social link granted
 ] as const;
 
 //@ts-ignore

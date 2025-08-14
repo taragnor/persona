@@ -48,7 +48,7 @@
 </div>
 {{/if}}
 
-	{{#if actor.bonusPowers}}
+	{{#if persona.bonusPowers}}
 	Bonus Powers
 	<table class="powers-table">
 		<tr>
@@ -70,7 +70,7 @@
 		{{#each actor.displayedBonusPowers as |power|}}
 		<tr class="power-row {{#if (not (canUsePower ../persona power))}} faded {{/if}}" data-power-id="{{power.id}}">
 			<td>
-				{{#if (canUsePower ../actor power)}}
+				{{#if (canUsePower ../persona power)}}
 				<a class="rollPower">
 					<img src="icons/dice/d20black.svg">
 				</a>

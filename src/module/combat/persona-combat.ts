@@ -1388,7 +1388,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			for (const usePower of execPowers) {
 				//TODO BUG: Extra attacks keep the main inputted modifier
 				const newAttacker = this.getPTokenFromActorAccessor(usePower.newAttacker);
-				const execPower = PersonaDB.allPowers().find( x=> x.id == usePower.powerId);
+				const execPower = PersonaDB.allPowers().get( usePower.powerId);
 				if (execPower && newAttacker) {
 					const altTargets= this.getAltTargets(newAttacker, atkResult.situation, usePower.target );
 					const newTargets = this.getTargets(newAttacker, execPower, altTargets)
