@@ -1949,7 +1949,7 @@ ${sim.join("\n")}
 		switch (this.system.ailmentChance) {
 			case "none": return undefined;
 			case "low": return {low: 17, high: 18};
-			case "medium": return {low: 15, high: 20};
+			case "medium": return {low: 15, high: 18};
 			case "high": return {low: 11, high: 20};
 		}
 	}

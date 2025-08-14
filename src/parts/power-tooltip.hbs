@@ -5,6 +5,9 @@ Tags: {{getPowerTagsL actor power}}
 
 Damage: {{getDamage actor power}} {{getDamageType actor power}}
 Cost: {{powerCostString power persona}}
+{{#if power.ailmentRange}}
+Ailment Range: {{power.ailmentRange.low}} - {{power.ailmentRange.high}}
+{{/if}}
 {{#if power.system.description}}
 {{power.system.description}}
 {{/if}}

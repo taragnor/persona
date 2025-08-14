@@ -12,6 +12,7 @@ export class PowerCostCalculator {
 			this.hpCost_damage(pwr),
 			this.tagAdjust(pwr),
 			this.hpCost_instantKill(pwr),
+			this.hpCost_ailment(pwr),
 		].reduce ( (acc, x) => acc * x.mult + x.add, 0);
 		return Math.round(val);
 	}
@@ -22,6 +23,19 @@ export class PowerCostCalculator {
 			total += TAG_ADJUST_HP[tag as PowerTag] ?? 0;
 		}
 		return i(total);
+	}
+
+	static hpCost_ailment(pwr: Power) : CostModifier {
+		switch (pwr.system.ailmentChance) {
+			case "none":
+				return i(0);
+			case "low":
+				return i(2);
+			case "medium":
+				return i(4);
+			case "high":
+				return i(6);
+		}
 	}
 
 	static hpCost_damage(pwr: Power) : CostModifier { 
@@ -161,7 +175,7 @@ const DAMAGE_TYPE_MODIFIER : Record<DamageType, CostModifier> = {
 	healing: s(1),
 	cold: s(1),
 	lightning: s(1),
-	untyped: {mult: 2.66666, add: 4},
+	untyped: {mult: 1, add: 0},
 	"all-out": s(0),
 	"by-power": s(1),
 };
@@ -198,7 +212,7 @@ const DAMAGE_LEVEL_MULTIPLIERS_MP : Record<DamageLevel, number>  = {
 	light: 1,
 	medium: 2,
 	heavy: 3,
-	severe: 12,
+	severe: 9,
 	colossal: 24,
 };
 
