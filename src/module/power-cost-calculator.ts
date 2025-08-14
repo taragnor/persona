@@ -223,7 +223,8 @@ const TAG_ADJUST_HP : Partial<Record<PowerTag, number>> = {
 	"high-crit": 3,
 	"high-cost": 4,
 	"price-lower-for-shadow": 0,
-	mobile: 5
+	mobile: 5,
+	"half-on-miss": 3,
 }
 
 type PowerCost = {
