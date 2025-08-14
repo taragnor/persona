@@ -255,12 +255,6 @@ export type StatusDurationType = typeof STATUS_EFFECT_DURATIONS_TYPE_LIST[number
 
 export const STATUS_EFFECT_DURATION_TYPES = HTMLTools.createLocalizationObject(STATUS_EFFECT_DURATIONS_TYPE_LIST, "persona.status.duration");
 
-// export const STATUS_EFFECT_DURATION_TYPES = Object.fromEntries(
-// 	STATUS_EFFECT_DURATIONS_TYPE_LIST.map( x=> [x, `persona.status.duration.${x}`]
-// 	)
-// );
-
-
 Hooks.on("ready", () => {
 	console.log("Sorting status effects");
 	CONFIG.statusEffects.sort( (a,b) =>  {
@@ -299,3 +293,16 @@ export function fatigueLevelToStatus(lvl: number): FatigueStatusId | undefined {
 			throw new PersonaError(`Unknown Fatigue Level: ${lvl}`);
 	}
 }
+
+export const STATUS_AILMENT_LIST = [
+	"charmed",
+	"fear",
+	"sleep",
+	"confused",
+	"poison",
+	"rage",
+	"blind",
+	"mouse",
+	"sealed",
+	"despair",
+] as const satisfies StatusEffectId[];

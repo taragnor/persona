@@ -218,6 +218,7 @@ export class PersonaHandleBarsHelpers {
 			return game.user.isGM;
 		},
 
+
 		'newlineConversion': function (txt: string) : SafeString {
 			return new Handlebars.SafeString(txt?.replaceAll("\n", "<br>") ?? "");
 		},
@@ -655,7 +656,8 @@ export class PersonaHandleBarsHelpers {
 
 		"getConditionalType": function (ce: ConditionalEffect) : string{
 			return ConditionalEffectManager.getConditionalType(ce);
-		}
+		},
+
 	}
 
 } //end of class

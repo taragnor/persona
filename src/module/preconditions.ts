@@ -791,6 +791,8 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			return testPrecondition(condition.comparison1, situation, source) || testPrecondition(condition.comparison2, situation, source);
 		case "scene-clock-name-is":
 			return SceneClock.instance.clockName.toUpperCase().trim() == condition.clockName.toUpperCase().trim();
+		case "is-within-ailment-range":
+			return "withinAilmentRange" in situation ? situation.withinAilmentRange ?? false : false;
 		default :
 			condition satisfies never;
 			return undefined;

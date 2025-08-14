@@ -1,3 +1,4 @@
+import { INSTANT_KILL_LEVELS } from "../../../config/damage-types.js";
 import { CONSUMABLE_SUBTYPES } from "../../../config/equip-slots.js";
 import { DAMAGE_LEVELS } from "../../../config/damage-types.js";
 import { PERMA_BUFFS } from "../../../config/perma-buff-type.js";
@@ -100,6 +101,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			...DAMAGETYPES,
 		};
 		this._powerStuffBase = {
+			INSTANT_KILL_LEVELS,
 			CONSUMABLE_SUBTYPES,
 			DAMAGE_LEVELS,
 			NUMERIC_V2_ACTOR_STATS,

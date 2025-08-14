@@ -3,6 +3,7 @@ const {StringField:txt, EmbeddedDataField: embedded, ObjectField:obj, NumberFiel
 import { ConditionalEffectDM } from "./item-types.js";
 
 import { DAMAGE_LEVELS_LIST } from "../../config/damage-types.js";
+import { INSTANT_KILL_LEVELS } from "../../config/damage-types.js";
 import { POWERTYPESLIST } from "../../config/effect-types.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { TARGETINGLIST } from "../../config/effect-types.js";
@@ -56,6 +57,9 @@ export function UsablePowerProps() {
 		sound: new file ({categories: ["AUDIO"] }),
 		tags: new arr( new txt<typeof POWER_TAGS_LIST[number]>({choices: POWER_TAGS_LIST})),
 		damageLevel: new txt({choices: DAMAGE_LEVELS_LIST, initial: "-"}),
+		customCost: new bool(),
+		instantKillChance: new txt({choices: INSTANT_KILL_LEVELS, initial: "none"}),
+		ailmentChance: new txt({choices: INSTANT_KILL_LEVELS, initial: "none"}),
 		damage: damage(),
 		mag_mult: new num( {integer:true, min:0, max: 100, initial:1}),
 		melee_extra_mult: new num( {integer: true, min: -10, max:50, initial: 0}),

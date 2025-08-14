@@ -606,6 +606,8 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 			}
 			case "scene-clock-name-is":
 				return `Scene Clock is named ${cond.clockName}`;
+			case "is-within-ailment-range":
+				return `Attack Roll is within ailment range`;
 			default:
 				cond satisfies never
 				return "";

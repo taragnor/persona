@@ -1,3 +1,7 @@
+import { STATUS_AILMENT_LIST } from "../../config/status-effects.js";
+import { INSTANT_KILL_CRIT_BOOST } from "../../config/damage-types.js";
+import { PowerCostCalculator } from "../power-cost-calculator.js";
+import { StatusEffectId } from "../../config/status-effects.js";
 import { TypedConditionalEffect } from "../conditional-effect-manager.js";
 import { DAMAGE_ICONS } from "../../config/icons.js";
 import { Persona } from "../persona-class.js";
@@ -17,7 +21,7 @@ import { PersonaSettings } from "../../config/persona-settings.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
 import { POWER_TYPE_TAGS } from "../../config/power-tags.js";
 import { Logger } from "../utility/logger.js";
-import { STATUS_POWER_TAGS } from "../../config/power-tags.js";
+import { STATUS_AILMENT_POWER_TAGS } from "../../config/power-tags.js";
 import { DamageType } from "../../config/damage-types.js";
 import { ValidAttackers } from "../combat/persona-combat.js";
 import { EQUIPMENT_TAGS } from "../../config/equipment-tags.js";
@@ -74,6 +78,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		statsModified: Map<ModifierTarget, boolean>,
 		hasTriggers: U<boolean>,
 		grantsPowers: U<boolean>,
+		mpCost: U<number>,
 	}
 
 	static cacheStats = {
@@ -109,6 +114,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			statsModified: new Map(),
 			hasTriggers: undefined,
 			grantsPowers: undefined,
+			mpCost: undefined,
 		};
 	}
 
@@ -362,35 +368,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 
-	/** tags Localized */
-	// get tags() : string {
-	// 	let tags : string[] = [];
-	// 	const localizeTable  =  {
-	// 		...EQUIPMENT_TAGS,
-	// 		...POWER_TAGS
-	// 	};
-	// 	switch (true) {
-	// 		case ("itemTags" in this.system): {
-	// 			tags = tags.concat(
-	// 				// this.system.itemTags
-	// 				(this as InvItem).tagList()
-	// 				.map(tag => localize(localizeTable[tag]))
-	// 			);
-	// 			break;
-	// 		}
-	// 		case ("tags" in this.system): {
-	// 			tags = tags.concat(
-	// 				(this as Power).tagList(null)
-	// 				.map(tag => localize(localizeTable[tag]))
-	// 				// this.system.tags
-	// 				// .map(tag => localize(POWER_TAGS[tag]))
-	// 			);
-	// 			break;
-	// 		}
-	// 	}
-	// 	return tags.join(", ");
-	// }
-
 	get cardTags() : string {
 		if ("cardTags" in this.system) {
 			const tags= this.system.cardTags.map(tag => localize(ROLL_TAGS_AND_CARD_TAGS[tag]));
@@ -483,6 +460,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "power": {
 				const list : (PowerTag | EquipmentTag) [] = this.system.tags.slice();
 				list.pushUnique(itype);
+				if (this.system.instantKillChance != "none") {
+					list.pushUnique("instantKill");
+				}
 				if (this.system.dmg_type == "by-power") {
 					list.pushUnique("variable-damage");
 				}
@@ -494,7 +474,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 						list.pushUnique(this.system.dmg_type as any);
 					}
 				}
-				if (STATUS_POWER_TAGS.some(tag=> list.includes(tag))) {
+				if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
 					list.pushUnique("ailment");
 				}
 				const subtype : typeof POWER_TYPE_TAGS[number]  = this.system.subtype as typeof POWER_TYPE_TAGS[number];
@@ -509,7 +489,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
 					list.pushUnique(this.system.dmg_type as any);
 				}
-				if (STATUS_POWER_TAGS.some(tag=> list.includes(tag))) {
+				if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
 					list.pushUnique("ailment");
 				}
 				const subtype = this.system.subtype;
@@ -725,15 +705,24 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				usedPower: this.accessor,
 			};
 		}
-		return Math.round(this.hpCost() * persona.hpCostMod().total(situation, "percentage"));
+		const newHPCost = this.hpCost();
+		if (newHPCost > 0) {
+		const calcedHPPercent = (this.hpCost() /100) * persona.user.mhpEstimate;
+		return Math.round(calcedHPPercent * persona.hpCostMod().total(situation, "percentage"));
+		}
+
+		const oldHPCost = this.oldhpCost();
+		return Math.round(oldHPCost * persona.hpCostMod().total(situation, "percentage"));
 	}
 
 	powerCostString_PC(this: Power, persona: Persona) : string {
 		switch (this.system.subtype) {
 			case "weapon":
-				if (this.hpCost()) {
+				const hpCost = this.hpCost();
+				if (hpCost > 0 || this.oldhpCost() > 0) {
+					const hpCostPercent = (hpCost > 0) ? ` (${hpCost}%)` : "";
 					const modCost = this.modifiedHpCost(persona);
-					return `${modCost} HP`;
+					return `${modCost} HP ${hpCostPercent}`;
 				}
 
 				else return "free";
@@ -1056,7 +1045,14 @@ ${sim.join("\n")}
 		const x = this.getModifier("criticalBoost", user);
 		let list = new ModifierList(x);
 		list = list.concat(user.critBoost());
-		list.add("Power Modifier", this.system.crit_boost ?? 0);
+		let powerCrit = (this.system.crit_boost ?? 0);
+		if (this.isWeaponSkill()
+			&& !this.isBasicPower()
+			&& this.system.ailmentChance == "none" 
+			&& !this.isInstantDeathAttack()) {
+			powerCrit += 2;
+		}
+		list.add("Power Modifier", powerCrit);
 		return list;
 	}
 
@@ -1072,7 +1068,7 @@ ${sim.join("\n")}
 		}
 	}
 
-	isPhysicalSkill(this: UsableAndCard): boolean{
+	isWeaponSkill(this: UsableAndCard): boolean{
 		if (this.isSkillCard()) return false;
 		switch (this.system.subtype) {
 			case "weapon":
@@ -1082,7 +1078,14 @@ ${sim.join("\n")}
 	}
 
 	hpCost(this: Usable): number {
-		if (!this.isPhysicalSkill()) {
+		if (!this.isWeaponSkill() || !this.isPower()) {return 0;}
+		const newSys=  PowerCostCalculator.calcHPPercentCost(this);
+		return newSys;
+
+	}
+
+	oldhpCost(this: Usable): number {
+		if (!this.isWeaponSkill()) {
 			return 0;
 		}
 		if (this.isConsumable()) return 0;
@@ -1236,24 +1239,31 @@ ${sim.join("\n")}
 		return basics.includes(this as Power);
 	}
 
-	baseCritSlotBonus(this: Usable) : number {
-		if (this.system.type == "consumable") {return 0;}
-		if (this.isBasicPower()) return 0;
+	baseInstantKillBonus(this: Usable) : number {
 		if (!this.isInstantDeathAttack()) return 0;
-		switch (this.system.slot) {
-			case 0:
-				return 5;
-			case 1:
-				return 7;
-			case 2:
-				return 9;
-			case 3:
-				return 11;
-			default:
-				PersonaError.softFail(`Unknwon Slot Type :${this.system.slot}`);
-				return 0;
-		}
+		let boost = INSTANT_KILL_CRIT_BOOST[this.system.instantKillChance] ?? 0;
+		if (this.isAoE()) boost += 4;
+		return boost;
 	}
+
+	// baseCritSlotBonus(this: Usable) : number {
+	// 	if (this.system.type == "consumable") {return 0;}
+	// 	if (this.isBasicPower()) return 0;
+	// 	if (!this.isInstantDeathAttack()) return 0;
+	// 	switch (this.system.slot) {
+	// 		case 0:
+	// 			return 5;
+	// 		case 1:
+	// 			return 7;
+	// 		case 2:
+	// 			return 9;
+	// 		case 3:
+	// 			return 11;
+	// 		default:
+	// 			PersonaError.softFail(`Unknwon Slot Type :${this.system.slot}`);
+	// 			return 0;
+	// 	}
+	// }
 
 	mpCost(this: Usable, userPersona: Persona): number {
 		if (this.isConsumable()) return 0;
@@ -1263,14 +1273,23 @@ ${sim.join("\n")}
 			attacker: userPersona.user.accessor,
 		}
 		let list = userPersona.getBonuses("mpCostMult");
+		Debug(list);
 		const mult = list.total(sit, "percentage");
-		const baseMPCost = this.baseMPCost();
+		const baseMPCost = this.baseMPCost;
 		return Math.round(baseMPCost * mult);
 	}
 
 
-	baseMPCost(this: Power): number {
-		//NOTE: room to change to autocalc System
+	get baseMPCost(): number {
+		if (!this.isPower()) return 0;
+		if (this.customCost)
+			return this.system.mpcost;
+		if (this.cache.mpCost == undefined) {
+			this.cache.mpCost = PowerCostCalculator.calcMPCost(this);
+		}
+		if (this.cache.mpCost > 0)  {
+			return this.cache.mpCost;
+		}
 		return this.system.mpcost;
 	}
 
@@ -1707,12 +1726,14 @@ ${sim.join("\n")}
 	}
 
 	isInstantDeathAttack(this: Usable) : boolean {
-		switch (this.system.dmg_type) {
-			case "dark":
-			case "light": return true;
-			default: break; 
-		}
-		return this.hasTag("instantKill");
+		return (this.system.instantKillChance != "none");
+
+		// switch (this.system.dmg_type) {
+		// 	case "dark":
+		// 	case "light": return true;
+		// 	default: break; 
+		// }
+		// return this.hasTag("instantKill");
 
 	}
 
@@ -1886,6 +1907,51 @@ ${sim.join("\n")}
 		}
 		console.log(`Unknown Value for ${item.name}, ${item.system.mag_mult} magic mult`);
 		return undefined;
+	}
+
+	addsStatus(this: Usable, statusIds: StatusEffectId) : number;
+	addsStatus(this: Usable, statusIds: StatusEffectId[]) : number;
+	addsStatus(this: Usable, statusIds: StatusEffectId | StatusEffectId[]) : number {
+		const ids = Array.isArray(statusIds) ? statusIds : [statusIds];
+		const statusesGranted = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == "addStatus"? [cons.statusName] : [])
+		);
+		return statusesGranted.reduce( (acc,st) => acc + (ids.includes(st)? 1: 0), 0);
+	}
+
+	removesStatus(this: Usable, statusIds: StatusEffectId) : number;
+	removesStatus<T extends StatusEffectId>(this: Usable, statusIds: readonly T[]) : number;
+	removesStatus(this: Usable, statusIds: StatusEffectId | readonly StatusEffectId[]) : number {
+		const ids = Array.isArray(statusIds) ? statusIds : [statusIds];
+		const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == "removeStatus"? [cons.statusName] : [])
+		);
+		return statusesRemoved.reduce( (acc,st) => acc + (ids.includes(st)? 1: 0), 0);
+	}
+
+	canInstantKill(this: Usable) : boolean {
+		return this.system.instantKillChance != "none";
+	}
+
+	causesAilment(this: Power) : boolean {
+		return this.hasTag("ailment");
+	}
+
+	removesAilment(this:Power) : boolean {
+		return this.removesStatus(STATUS_AILMENT_LIST) > 0;
+	}
+
+	get customCost() : boolean {
+		if (!this.isPower()) return false;
+		return this.system.customCost || this.system.damageLevel == "-";
+	}
+
+	get ailmentRange() : {low: number, high:number} | undefined {
+		if (!this.isUsableType()) return undefined;
+		switch (this.system.ailmentChance) {
+			case "none": return undefined;
+			case "low": return {low: 17, high: 18};
+			case "medium": return {low: 15, high: 20};
+			case "high": return {low: 11, high: 20};
+		}
 	}
 
 }

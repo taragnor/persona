@@ -1,5 +1,5 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
-export const STATUS_POWER_TAGS  = [
+export const STATUS_AILMENT_POWER_TAGS  = [
 	"charm",
 	"fear",
 	"sleep",
@@ -64,7 +64,7 @@ export const POWER_TAGS_LIST = [
 	"basicatk",
 	"status-removal",
 	"resurrection",
-	...STATUS_POWER_TAGS,
+	...STATUS_AILMENT_POWER_TAGS,
 	...POWER_TYPE_TAGS,
 	...POWER_TRAIT_TAGS,
 ] as const;

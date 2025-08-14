@@ -1022,21 +1022,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		PersonaError.softFail(`Can't find Usable with Id ${id}`);
 	}
 
-	// get maxSideboardPowers() : number {
-	// 	if (!this.isValidCombatant()) return 0;
-	// 	switch (this.system.type) {
-	// 		case "npcAlly":
-	// 		case "shadow":
-	// 			return 0;
-	// 		case "pc":
-	// 			const extraMaxPowers = this.persona().getBonuses("extraMaxPowers");
-	// 			return extraMaxPowers.total ( {user: (this as PC | Shadow).accessor});
-	// 		default:
-	// 			this.system satisfies never;
-	// 			return -1;
-	// 	}
-	// }
-
 	get powers(): Power[] {
 		if (!this.isValidCombatant()) return [];
 		return [

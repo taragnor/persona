@@ -1,4 +1,3 @@
-import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { Usable } from "../persona-item.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaEffectContainerBaseSheet } from "./effect-container.js";

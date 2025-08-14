@@ -24,6 +24,7 @@ const BASIC_BOOLEAN_COMPARISON_LIST = [
 	"in-combat",
 	"is-critical",
 	"is-hit",
+	"is-within-ailment-range",
 	"is-consumable",
 	"cameo-in-scene",
 ] as const;

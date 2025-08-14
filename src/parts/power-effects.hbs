@@ -55,6 +55,22 @@
 			{{selectOptions POWERSTUFF.DAMAGETYPES localize=true selected=item.system.dmg_type}}
 		</select>
 	</div>
+	<div class="instant-kill">
+		<label>
+			Instant Kill Chance
+		</label>
+		<select name="system.instantKillChance">
+			{{selectOptions POWERSTUFF.INSTANT_KILL_LEVELS localize=true selected=item.system.instantKillChance}}
+		</select>
+	</div>
+	<div class="ailment">
+		<label>
+			Ailment Chance
+		</label>
+		<select name="system.ailmentChance">
+			{{selectOptions POWERSTUFF.INSTANT_KILL_LEVELS localize=true selected=item.system.ailmentChance}}
+		</select>
+	</div>
 	<div class="atk-boost">
 		<label>
 			Attack Bonus

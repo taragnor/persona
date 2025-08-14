@@ -178,3 +178,22 @@ type DamageReturn = {
 	high: number,
 }
 
+
+const INSTANT_KILL_LEVELS_LIST= [
+	"none",
+	"low",
+	"medium",
+	"high",
+] as const;
+
+export type InstantKillLevel = typeof INSTANT_KILL_LEVELS_LIST[number];
+
+export const INSTANT_KILL_LEVELS = HTMLTools.createLocalizationObject( INSTANT_KILL_LEVELS_LIST, "persona.powers.instantKillLevels");
+
+
+export const INSTANT_KILL_CRIT_BOOST : Record< InstantKillLevel, number>= {
+	none: 0,
+	high: 11,
+	low: 5,
+	medium: 8
+}

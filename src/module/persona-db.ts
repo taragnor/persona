@@ -255,7 +255,8 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	navigatorModifiers(): ModifierContainer[] {
 		const navigator = this.getNavigator();
 		if (!navigator) return [];
-		const skills = navigator.navigatorSkills;
+		const skills = navigator.navigatorSkills
+			.filter(sk => sk.isPassive());
 		return skills as ModifierContainer[];
 	}
 

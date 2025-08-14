@@ -1351,6 +1351,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			target: PersonaDB.getUniversalTokenAccessor(target),
 			attacker: PersonaDB.getUniversalTokenAccessor(attacker),
 			power: PersonaDB.getUniversalItemAccessor(power),
+			ailmentRange: undefined,
 			situation,
 			roll: null,
 			critBoost: 0,
@@ -1441,6 +1442,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			target: PersonaDB.getUniversalTokenAccessor(target),
 			attacker: PersonaDB.getUniversalTokenAccessor(attacker),
 			power: usableOrCard.accessor,
+			ailmentRange: undefined,
 			situation: combatRollSituation,
 			roll,
 			critBoost: 0,
@@ -1464,6 +1466,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					critBoost: 0,
+					ailmentRange: power.ailmentRange,
 					situation: {
 						hit: false,
 						criticalHit: false,
@@ -1476,6 +1479,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				if (pierce) return null;
 				return {
 					result: "block",
+					ailmentRange: undefined,
 					printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
@@ -1492,6 +1496,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				if (pierce) return null;
 				return {
 					result: "absorb",
+					ailmentRange: undefined,
 					printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
@@ -1510,6 +1515,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			return {
 				result: rollType != "reflect" ? "reflect": "block",
 				printableModifiers: [],
+				ailmentRange: power.ailmentRange,
 				validAtkModifiers: [],
 				validDefModifiers: [],
 				critBoost: 0,
@@ -1526,6 +1532,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			return {
 				result: rollType != "reflect" ? "reflect": "block",
 				printableModifiers: [],
+				ailmentRange: power.ailmentRange,
 				validAtkModifiers: [],
 				validDefModifiers: [],
 				critBoost: 0,
@@ -1590,11 +1597,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			power: PersonaDB.getUniversalItemAccessor(power)
 		} satisfies Pick<AttackResult, "attacker" | "target"  | "power" | "roll">;
 		const total = roll.total;
+		const ailmentRange = power.ailmentRange;
+		const withinAilmentRange = ailmentRange ? naturalAttackRoll >= ailmentRange.low && naturalAttackRoll <= ailmentRange.high : false;
+
 		const situation : CombatRollSituation = {
 			...baseSituation,
 			naturalRoll: naturalAttackRoll,
 			rollTags,
 			rollTotal: roll.total,
+			withinAilmentRange,
 		};
 		const testNullify = this.processAttackNullifiers(attacker, power, target, baseData, situation, rollType);
 		if (testNullify)  {
@@ -1611,8 +1622,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				validAtkModifiers,
 				validDefModifiers: [],
 				situation,
+				ailmentRange,
 				...baseData,
-			};
+			} satisfies AttackResult;
 		}
 		situation.resisted = resist == "resist" && !power.hasTag("pierce");
 		situation.struckWeakness = resist == "weakness";
@@ -1638,6 +1650,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				printableModifiers,
 				validAtkModifiers,
 				validDefModifiers,
+				ailmentRange,
 				critBoost,
 				critPrintable,
 				situation,
@@ -1661,6 +1674,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				hitResistance: situation.resisted ?? false,
 				validAtkModifiers,
 				validDefModifiers,
+				ailmentRange,
 				printableModifiers,
 				critBoost,
 				critPrintable,
@@ -1676,6 +1690,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				hitWeakness: situation.struckWeakness ?? false,
 				hitResistance: situation.resisted ?? false,
 				validAtkModifiers,
+				ailmentRange,
 				validDefModifiers,
 				printableModifiers,
 				critBoost,
@@ -1691,9 +1706,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const critResist = target.critResist().total(situation);
 		critBoostMod.add("Enemy Critical Resistance", -critResist);
 		if (power.isInstantDeathAttack()) {
-			const powerLevel = power.baseCritSlotBonus();
+			const powerLevel = power.baseInstantKillBonus();
 			const targetResist = target.basePowerCritResist(power);
-			critBoostMod.add("Slot-based Death Bonus", powerLevel);
+			critBoostMod.add("Power-based Instant Kill Bonus", powerLevel);
 			critBoostMod.add("Level-based Instant Death Resist", -targetResist);
 			const mult = ignoreInstantKillMult ? 1 : target.instantKillResistanceMultiplier(attacker);
 			const total = critBoostMod.total(situation);

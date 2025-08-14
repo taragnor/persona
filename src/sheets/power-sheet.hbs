@@ -13,124 +13,127 @@
 			</div>
 		</div>
 
-	<div class="power-tags">
-		<h2>
-			<span>Power Tags</span>
-			<a class="addTag">
-				<i class="fa-solid fa-plus"> </i>
-			</a>
-		</h2>
-		<div class="tag-list">
-			{{#each item.system.tags as |tag i|}}
-			<div class="tag-item", data-tag-index="{{i}}">
-				<select name="system.tags.{{i}}">
-					{{selectOptions ../POWERSTUFF.TAGS localize=true selected=tag}}
-				</select>
-				<a class="delTag">
-					<i class="fa-solid fa-trash-can"></i>
+		<div class="power-tags">
+			<h2>
+				<span>Power Tags</span>
+				<a class="addTag">
+					<i class="fa-solid fa-plus"> </i>
 				</a>
+			</h2>
+			<div class="tag-list">
+				{{#each item.system.tags as |tag i|}}
+				<div class="tag-item", data-tag-index="{{i}}">
+					<select name="system.tags.{{i}}">
+						{{selectOptions ../POWERSTUFF.TAGS localize=true selected=tag}}
+					</select>
+					<a class="delTag">
+						<i class="fa-solid fa-trash-can"></i>
+					</a>
+				</div>
+				{{/each}}
 			</div>
-			{{/each}}
 		</div>
-	</div>
 
-	<div class="slot-cost">
+		<div class="slot-cost">
+			<label>
+				{{localize	"persona.power.powertype"}}
+			</label>
+			<select name="system.slot">
+				{{selectOptions POWERSTUFF.SLOTTYPES localize=true selected=item.system.slot}}
+			</select>
+		</div>
+
+		<div>
+			<label> Custom Cost</label>
+			<input type="checkbox" name="system.customCost" {{checked item.system.customCost}}>
+		</div>
+
+		{{#if (eq item.system.subtype "magic")}}
+		<div>
+			<label> MP Cost </label>
+			{{#if item.customCost}}
+			{{numberInput item.system.mpcost class="short" name="system.mpcost" step=1 min=1 max=100}}
+			{{else}}
+			{{item.baseMPCost}}
+			{{/if}}
+		</div>
+		{{/if}}
+
+		<div class="damage-level">
+			<label>
+				Damage Level
+			</label>
+			<select name="system.damageLevel">
+				{{selectOptions POWERSTUFF.DAMAGE_LEVELS localize=true selected=item.system.damageLevel}}
+			</select>
+		</div>
+
+		{{#if (eq item.system.subtype "weapon")}}
+		<div class="hp-cost">
+			<label class="hp-cost">
+				{{localize	"persona.power.hpcost"}}
+			</label>
+			{{hpCost item}}
+		</div>
+		{{/if}}
+
+		{{#if (eq item.system.damageLevel "-")}}
+		{{#if (eq item.system.subtype "weapon")}}
+		<div class="damage">
+			<label class="dmg-mult">
+				Extra Damage Mult
+			</label>
+			{{numberInput item.system.melee_extra_mult class="short" name="system.melee_extra_mult" step=1 min=0 max=100}}
+		</div>
+		{{/if}}
+		<hr>
+		{{#if (eq item.system.subtype "magic")}}
+		<div class="mag-mult">
+			<label>
+				Multiplier
+			</label>
+			{{numberInput item.system.mag_mult class="short" name="system.mag_mult" step=1 min=0 max=900}}
+		</div>
+		{{/if}}
+		{{/if}}
+
+		{{#if (eq item.system.subtype "standalone")}}
+		<div class="damage">
+			<label class="dmg-low">
+				Low
+			</label>
+			{{numberInput item.system.damage.low class="short" name="system.damage.low" step=1 min=0 max=900}}
+			<label class="dmg-high">
+				High
+			</label>
+			{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=900}}
+		</div>
+		{{/if}}
+		{{#if (eq item.system.subtype "social-link")}}
 		<label>
-			{{localize	"persona.power.powertype"}}
+			Social Link
 		</label>
-		<select name="system.slot">
-			{{selectOptions POWERSTUFF.SLOTTYPES localize=true selected=item.system.slot}}
-		</select>
-	</div>
-
-	{{#if (eq item.system.subtype "magic")}}
-	<div>
-		<label> MP Cost </label>
-		{{numberInput item.system.mpcost class="short" name="system.mpcost" step=1 min=1 max=100}}
-	</div>
-	{{/if}}
-
-	<div class="damage-level">
-		<label>
-			Damage Level
-		</label>
-		<select name="system.damageLevel">
-			{{selectOptions POWERSTUFF.DAMAGE_LEVELS localize=true selected=item.system.damageLevel}}
-		</select>
-	</div>
-
-	{{#if (eq item.system.subtype "weapon")}}
-	<div class="hp-cost">
-		<label class="hp-cost">
-			{{localize	"persona.power.hpcost"}}
-		</label>
-		{{hpCost item}}
-	</div>
-	<div class="damage">
-		<label class="dmg-mult">
-			Extra Damage Mult
-		</label>
-		{{numberInput item.system.melee_extra_mult class="short" name="system.melee_extra_mult" step=1 min=0 max=100}}
-	</div>
-	<hr>
-	{{/if}}
-	{{#if (eq item.system.subtype "magic")}}
-	<div class="mag-mult">
-		<label>
-			Multiplier
-		</label>
-		{{numberInput item.system.mag_mult class="short" name="system.mag_mult" step=1 min=0 max=900}}
-	</div>
-	{{/if}}
-	{{#if (eq item.system.subtype "standalone")}}
-	<div class="damage">
-		<label class="dmg-low">
-			Low
-		</label>
-		{{numberInput item.system.damage.low class="short" name="system.damage.low" step=1 min=0 max=900}}
-		<label class="dmg-high">
-			High
-		</label>
-		{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=900}}
-	</div>
-	{{/if}}
-	{{#if (eq item.system.subtype "social-link")}}
-	<label>
-	Social Link
-	</label>
-	<select name="system.inspirationId">
+		<select name="system.inspirationId">
 			{{selectOptions POWERSTUFF.SOCIAL_LINKS localize=false selected=item.system.inspirationId}}
-	</select>
-	<label>
-		Inspiration Amt
-	</label>
+		</select>
+		<label>
+			Inspiration Amt
+		</label>
 		{{numberInput item.system.inspirationCost class="short" name="system.inspirationCost" step=1 min=0 max=10}}
 
-	{{/if}}
+		{{/if}}
 
-	{{#if (eq item.parent.type "shadow")}}
-	<hr>
-	<section class="shadow-costs">
-		<div>
-			<label> Energy Req</label>
-			{{numberInput item.system.energy.required class="short" name="system.energy.required" step=1 min=0 max=6}}
-			<label> Energy Cost</label>
-			{{numberInput item.system.energy.cost class="short" name="system.energy.cost" step=1 min=0 max=6}}
+		{{#if (eq item.parent.type "shadow")}}
+		<hr>
+		<section class="shadow-costs">
+			<div>
+				<label> Energy Req</label>
+				{{numberInput item.system.energy.required class="short" name="system.energy.required" step=1 min=0 max=6}}
+				<label> Energy Cost</label>
+				{{numberInput item.system.energy.cost class="short" name="system.energy.cost" step=1 min=0 max=6}}
 
-		</div>
-		<div class="deprecated">
-			<label>
-				Requires Charge Depletion
-			</label>
-			<select name="system.reqCharge">
-				{{selectOptions POWERSTUFF.SHADOW_CHARGE_REQ localize=true selected=item.system.reqCharge}}
-			</select>
-			<label>
-				ESC requirement
-			</label>
-			{{numberInput item.system.reqEscalation class="short" name="system.reqEscalation" step=1 min=0 max=6}}
-	</section>
-		</div>
+			</div>
+		</section>
 		<label>
 			Health
 		</label>
@@ -138,7 +141,7 @@
 		</section>
 		{{/if}}
 
-	<hr>
+		<hr>
 	</header>
 	{{> "systems/persona/parts/power-effects.hbs" item=item POWERSTUFF=POWERSTUFF}}
 </form>

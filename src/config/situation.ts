@@ -135,6 +135,7 @@ export type RollSituation = {
 	criticalHit ?: boolean;
 	DC ?: number;
 	addedTags ?: PowerTag[],
+	withinAilmentRange ?: boolean;
 }
 
 type NonRollSituation = {

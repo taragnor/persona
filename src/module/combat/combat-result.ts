@@ -572,6 +572,7 @@ export interface ActorChange<T extends PersonaActor> {
 
 export type AttackResult = {
 	result: "hit" | "miss" | "crit" | "reflect" | "block" | "absorb",
+	ailmentRange: {low: number, high: number} | undefined;
 	defenseValue?: number,
 	hitWeakness?: boolean,
 	hitResistance?: boolean,
