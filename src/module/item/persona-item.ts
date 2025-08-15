@@ -1079,6 +1079,7 @@ ${sim.join("\n")}
 
 	hpCost(this: Usable): number {
 		if (!this.isWeaponSkill() || !this.isPower()) {return 0;}
+		if (this.isTeamwork()) return 0;
 		const newSys=  PowerCostCalculator.calcHPPercentCost(this);
 		return newSys;
 
@@ -1282,6 +1283,7 @@ ${sim.join("\n")}
 
 	get baseMPCost(): number {
 		if (!this.isPower()) return 0;
+		if (this.isTeamwork()) return 0;
 		if (this.customCost)
 			return this.system.mpcost;
 		if (this.cache.mpCost == undefined) {
