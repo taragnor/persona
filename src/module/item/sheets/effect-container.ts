@@ -205,7 +205,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			...this.powerStuffBase,
 			SOCIAL_LINKS,
 			COMPENDIUM_POWERS: Object.fromEntries(
-				PersonaDB.allPowersArr()
+				PersonaDB.allPowersArr().slice()
 				.sort((a,b) => a.name.localeCompare(b.name))
 				.map(pwr=> ([pwr.id, pwr.name]))
 			),

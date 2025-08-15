@@ -84,7 +84,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		throw new Error("Id ${id} points towards invalid type");
 	}
 
-	getGlobalModifiers() : UniversalModifier [] {
+	getGlobalModifiers() : readonly UniversalModifier [] {
 		if (this.#cache.worldModifiers == undefined) {
 		const items = this.getAllByType("Item") as PersonaItem[];
 		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
@@ -93,7 +93,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.worldModifiers;
 	}
 
-	getRoomModifiers() : UniversalModifier [] {
+	getRoomModifiers() : readonly UniversalModifier [] {
 		const items = this.getAllByType("Item") as PersonaItem[];
 		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
 		return UMs
@@ -101,7 +101,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			.sort ( (a,b) => a.name.localeCompare(b.name));
 	}
 
-	getSceneModifiers() : UniversalModifier [] {
+	getSceneModifiers() : readonly UniversalModifier [] {
 		if (this.#cache.sceneModifiers == undefined) {
 		const items = this.getAllByType("Item") as PersonaItem[];
 		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
@@ -112,7 +112,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.sceneModifiers;
 	}
 
-	getSceneAndRoomModifiers() : UniversalModifier[] {
+	getSceneAndRoomModifiers() : readonly UniversalModifier[] {
 		const items = this.getAllByType("Item") as PersonaItem[];
 		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
 		return UMs
@@ -121,7 +121,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 
-	allPowersArr(): Power[] {
+	allPowersArr(): readonly Power[] {
 		return Array.from(this.allPowers().values());
 	}
 
@@ -145,14 +145,14 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return power;
 	}
 
-	shadows(): Shadow[] {
+	shadows(): readonly Shadow[] {
 		if (this.#cache.shadows) return this.#cache.shadows;
 		const actors = this.allActors();
 		return this.#cache.shadows = actors
 			.filter( act=> act.system.type == "shadow") as Shadow[];
 	}
 
-	tarotCards(): Tarot[] {
+	tarotCards(): readonly Tarot[] {
 		if (this.#cache.tarot) return this.#cache.tarot;
 		const actors = this.allActors();
 		return this.#cache.tarot = actors
@@ -169,7 +169,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		);
 	}
 
-	treasureItems(): TreasureItem[] {
+	treasureItems(): readonly TreasureItem[] {
 		if (this.#cache.treasureItems) return this.#cache.treasureItems;
 		const items = this.allItems();
 		this.#cache.treasureItems =
@@ -183,32 +183,32 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.treasureItems;
 	}
 
-	dungeonScenes(): Scene[] {
+	dungeonScenes(): readonly Scene[] {
 		return game.scenes.contents;
 	}
 
-	allSocialCards() :SocialCard[] {
+	allSocialCards() :readonly SocialCard[] {
 		return this.allItems()
 			.filter( x=> x.system.type == "socialCard") as SocialCard[];
 	}
 
-	socialEncounterCards(): SocialEncounterCard[] {
+	socialEncounterCards(): readonly SocialEncounterCard[] {
 		return this.allSocialCards()
 			.filter( x=> x.system.cardType == "social") as SocialEncounterCard[]
 	}
 
 	/** Actual PCs not counting things with just PC type like item piles and party token*/
-	realPCs():  PC[] {
+	realPCs(): readonly  PC[] {
 		return this.PCs().filter( x=> x.isRealPC());
 	}
 
-	PCs() : PC[] {
+	PCs() : readonly PC[] {
 		if (this.#cache.pcs) return this.#cache.pcs;
 		this.#cache.pcs=  this.allActors().filter( actor => actor.isPC() && actor.hasPlayerOwner) as PC[];
 		return this.#cache.pcs;
 	}
 
-	allActivities(): Activity[] {
+	allActivities(): readonly Activity[] {
 		return this.allSocialCards()
 			.filter( x=> (x.system.cardType == "job" || x.system.cardType =="training" || x.system.cardType == "recovery" || x.system.cardType == "other") ) as Activity[];
 	}
@@ -227,7 +227,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.teammateSocialLink;
 	}
 
-	socialLinks(): (PC | NPC)[] {
+	socialLinks(): readonly (PC | NPC)[] {
 		if (this.#cache.socialLinks) return this.#cache.socialLinks;
 		return this.#cache.socialLinks = game.actors.filter( (actor :PersonaActor) =>
 			(actor.system.type == "npc"
@@ -236,7 +236,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		) as (PC | NPC)[];
 	}
 
-	skillCards(): SkillCard[] {
+	skillCards(): readonly SkillCard[] {
 		return this.allItems().filter( item => item.system.type == "skillCard") as SkillCard[];
 	}
 
@@ -244,7 +244,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.getItemById(id) as Power | undefined;
 	}
 
-	NPCAllies() : NPCAlly[] {
+	NPCAllies() : readonly NPCAlly[] {
 		if (this.#cache.NPCAllies == undefined) {
 			this.#cache.NPCAllies = this.allActors().filter( x=>
 				x.system.type == "npcAlly") as NPCAlly[];

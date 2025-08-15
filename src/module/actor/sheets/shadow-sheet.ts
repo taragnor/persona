@@ -57,13 +57,13 @@ export class ShadowSheet extends CombatantSheetBase {
 		data.CREATURE_TAGS = CREATURE_TAGS;
 		const TREASURE_LIST = Object.fromEntries(
 			[["", "-"]].concat(
-				PersonaDB.treasureItems()
+				PersonaDB.treasureItems().slice()
 				.sort( (a, b) => a.name.localeCompare(b.name))
 				.map( x=> [x.id, x.name])
 			)
 		);
 		const SCENE_LIST = Object.fromEntries(
-			PersonaDB.dungeonScenes()
+			PersonaDB.dungeonScenes().slice()
 			.sort( (a, b) => a.name.localeCompare(b.name))
 			.map(x=> [x.id, x.name])
 		);
