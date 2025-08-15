@@ -56,6 +56,7 @@ const templateFileNames : string[] =[
 	"damage-calc-display.hbs",
 	"effects-section-tri.hbs",
 	"pretty-power-name.hbs",
+	"bonus-powers-table.hbs",
 ];
 
 export const templatePaths = templateFileNames.

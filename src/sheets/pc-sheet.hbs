@@ -1,8 +1,10 @@
 <form class="pc-sheet {{#if actor.system.locked}} locked {{else}} unlocked {{/if}}">
 	<header class="flexcol">
-		<div class="flexrow">
-			<img class="profile-img" src="{{actor.img}}" data-edit="img"/>
-			<div>
+		<div class="no-wrap flexrow">
+			<div class="flex-shrink">
+				<img class="profile-img" src="{{actor.img}}" data-edit="img"/>
+			</div>
+			<div class="pc-header-data">
 				<input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
 				<div class="flexrow">
 					<label>
@@ -14,17 +16,18 @@
 				</div>
 				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
 				{{#if (isGM)}}
-				<label> True Owner </label>
-				<div class="trueOwnerSelector">
-					<select name="system.trueOwner">
-						{{selectOptions CONST.USERS localize=false selected=actor.system.trueOwner}}
-					</select>
+				<div>
+					<label> True Owner </label>
+					<span class="trueOwnerSelector">
+						<select name="system.trueOwner">
+							{{selectOptions CONST.USERS localize=false selected=actor.system.trueOwner}}
+						</select>
+					</span>
 				</div>
 				{{/if}}
 			</div>
 		</div>
 
-		<textarea name="system.short_desc"> {{actor.system.short_desc}} </textarea>
 	</header>
 	<nav class="sheet-tabs tabs" data-group="primary">
 		<a class="item" data-tab="combat">

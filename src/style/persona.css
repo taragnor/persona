@@ -25,6 +25,7 @@ div.resistance-item {
 div.tag-list {
 	display: flex;
 	flex-direction: row;
+	flex-wrap: wrap;
 	justify-content: flex-start;
 }
 
@@ -33,12 +34,27 @@ div.tag-item {
 	flex-direction: row;
 	justify-content: flex-start;
 	align-items: center;
-	margin: 10px;
+	padding: 5px;
+	flex: 0 10 auto;
+	max-width: 30%;
 }
 
-.tag-item select {
-	margin-right: 10px;
+div.tag-item select {
+	flex: 5 5 auto;
+	/* padding-right: 10px; */
+	font-size: 0.8em;
+	min-width: 130px;
 }
+
+div.tag-list .delTag {
+	max-width: 16px;
+	flex-shrink: 10;
+}
+
+.flex-shrink {
+	flex: 0 10 auto !important;
+}
+
 
 .resistance-item img {
 	width: 50px;
@@ -915,3 +931,13 @@ h5.choices-block {
 .resistance-item div {
 	text-align: center;
 }
+
+.pc-header-data {
+	flex: 10 0 auto;
+}
+
+
+.no-wrap {
+	flex-wrap: nowrap;
+}
+
