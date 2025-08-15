@@ -9,8 +9,8 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
 
 private allActorsMap : Map<string, ActorType> = new Map();
 private allItemsMap : Map<string, ItemType> = new Map();
-	private comp_items: ItemType[] = [];
-	private comp_actors: ActorType[] = [];
+	private comp_items: readonly ItemType[] = [];
+	private comp_actors: readonly ActorType[] = [];
 	private _loaded= false;
 	private _requiresReload = true;
 	private _edited: Actor[] = [];
@@ -105,7 +105,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		return this.allItems().filter(fn);
 	}
 
-	 filterActors(fn: filterFN<ActorType>) {
+	 filterActors(fn: filterFN<ActorType>) : ActorType[]{
 		return this.allActors().filter(fn);
 	}
 
@@ -117,11 +117,11 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		return this.filterActors( x=> x.type == type);
 	}
 
-	 allItems() : ItemType[] {
+	 allItems() : readonly ItemType[] {
 		return this.getAllByType ("Item") as ItemType[];
 	}
 
-	 allActors() : ActorType[] {
+	 allActors() : readonly ActorType[] {
 		return this.getAllByType ("Actor") as ActorType[];
 	}
 
@@ -185,13 +185,13 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		// return retarr[0] as ItemType | ActorType;
 	}
 
-	 getAllByType(type : ValidDBTypes) : (ItemType | ActorType)[] {
+	 getAllByType(type : ValidDBTypes) : readonly (ItemType | ActorType)[] {
 		const base_items = this.getBaseItemsByType(type);
 		const compendium_items = this.getCompendiumItemsByType(type);
 		return base_items.concat(compendium_items);
 	}
 
-	 getBaseItemsByType (type: ValidDBTypes) : (ActorType | ItemType)[] {
+	 getBaseItemsByType (type: ValidDBTypes) : readonly (ActorType | ItemType)[] {
 		switch (type) {
 			case "Actor": return game.actors.contents as ActorType[];
 			case "Item": return game.items.contents as ItemType[];
@@ -199,7 +199,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		}
 	}
 
-	 getCompendiumItemsByType(type: ValidDBTypes) : (ActorType | ItemType)[] {
+	 getCompendiumItemsByType(type: ValidDBTypes) : readonly (ActorType | ItemType)[] {
 		switch (type) {
 			case "Actor": return this.comp_actors;
 			case "Item": return this.comp_items;
