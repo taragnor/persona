@@ -52,6 +52,8 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			teammateSocialLink: undefined,
 			personalSocialLink: undefined,
 			NPCAllies: undefined,
+			sceneModifiers: undefined,
+			worldModifiers: undefined,
 		};
 		Hooks.callAll("DBrefresh");
 		return newCache;
@@ -93,9 +95,12 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	getGlobalModifiers() : UniversalModifier [] {
+		if (this.#cache.worldModifiers == undefined) {
 		const items = this.getAllByType("Item") as PersonaItem[];
 		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
-		return UMs.filter(um=> um.system.scope == "global");
+		this.#cache.worldModifiers = UMs.filter(um=> um.system.scope == "global");
+		}
+		return this.#cache.worldModifiers;
 	}
 
 	getRoomModifiers() : UniversalModifier [] {
@@ -107,11 +112,14 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	getSceneModifiers() : UniversalModifier [] {
+		if (this.#cache.sceneModifiers == undefined) {
 		const items = this.getAllByType("Item") as PersonaItem[];
 		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
-		return UMs
+			this.#cache.sceneModifiers = UMs
 			.filter(um=> um.system.scope == "scene")
 			.sort ( (a,b) => a.name.localeCompare(b.name));
+		}
+		return this.#cache.sceneModifiers;
 	}
 
 	getSceneAndRoomModifiers() : UniversalModifier[] {
@@ -310,5 +318,7 @@ type PersonaDBCache =	{
 	teammateSocialLink: NPC | undefined;
 	personalSocialLink: NPC | undefined;
 	NPCAllies: U<NPCAlly[]>;
+	sceneModifiers: U<UniversalModifier[]>;
+	worldModifiers: U<UniversalModifier[]>;
 };
 
