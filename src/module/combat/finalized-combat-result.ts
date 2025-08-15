@@ -525,8 +525,8 @@ export class FinalizedCombatResult {
 					break;
 				case "teach-power":
 					const power = PersonaDB.allPowers().get(otherEffect.id);
-					if (power && (actor.system.type == "pc" || actor.system.type == "npcAlly")) {
-						await (actor as PC | NPCAlly).addPower(power);
+					if (power && (actor.isPC() || actor.isNPCAlly())) {
+						await actor.persona().learnPower(power);
 					}
 					break;
 				case "lower-resistance":

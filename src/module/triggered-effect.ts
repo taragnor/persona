@@ -116,13 +116,15 @@ export class TriggeredEffect {
 				const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
 				roomEffects.push(...arr)
 			}
+			const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
 			triggers = [
 				...PersonaDB.getGlobalModifiers(), //testin only
 				...roomEffects,
+				...PCTriggers,
 			];
 		}
 		for (const trig of triggers) {
-			for (const eff of trig.getEffects(actor ?? null)) {
+			for (const eff of trig.getTriggeredEffects(actor ?? null)) {
 				if (!ModifierList.testPreconditions(eff.conditions, situationCopy, trig)) { continue; }
 				const res = PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null, trig);
 				result.merge(res);

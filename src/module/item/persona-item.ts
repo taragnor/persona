@@ -1057,7 +1057,7 @@ ${sim.join("\n")}
 	}
 
 	canBeReflectedByPhyiscalShield(this: UsableAndCard, attacker: ValidAttackers): boolean {
-		if (this.system.type == "skillCard") return false;
+		if (this.isSkillCard()) return false;
 		const dtype = (this as Usable).getDamageType(attacker);
 		switch (dtype) {
 			case "physical":
@@ -1107,7 +1107,7 @@ ${sim.join("\n")}
 	}
 
 	canBeReflectedByMagicShield(this: UsableAndCard, attacker: ValidAttackers) : boolean {
-		if (this.system.type == "skillCard") return false;
+		if (this.isSkillCard()) return false;
 		const dtype = (this as Usable).getDamageType(attacker);
 		switch (dtype) {
 			case "fire":
@@ -1374,7 +1374,7 @@ ${sim.join("\n")}
 	}
 
 	getTriggeredEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
-		return this.#accessEffectsCache("triggeredEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType == "triggered"))
+		return this.#accessEffectsCache("triggeredEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === "triggered"))
 	}
 
 	hasTriggeredEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
@@ -1382,7 +1382,7 @@ ${sim.join("\n")}
 	}
 
 	getPassiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
-		return this.#accessEffectsCache("passiveEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType == "passive"))
+		return this.#accessEffectsCache("passiveEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === "passive"))
 	}
 
 	hasPassiveEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
@@ -1390,7 +1390,7 @@ ${sim.join("\n")}
 	}
 
 	getDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
-		return this.#accessEffectsCache("defensiveEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType == "defensive"))
+		return this.#accessEffectsCache("defensiveEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === "defensive"))
 	}
 
 	hasDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor) : boolean {
@@ -1408,7 +1408,7 @@ ${sim.join("\n")}
 	triggersOn(this: ModifierContainer, trig: Trigger)  :boolean {
 		const effects= this.getTriggeredEffects(null);
 		return effects.some( eff=> eff.conditions
-			.some (cond => cond.type == "on-trigger" && cond.trigger == trig)
+			.some (cond => cond.type === "on-trigger" && cond.trigger == trig)
 		);
 	}
 
@@ -1913,8 +1913,7 @@ ${sim.join("\n")}
 	addsStatus(this: Usable, statusIds: StatusEffectId[]) : number;
 	addsStatus(this: Usable, statusIds: StatusEffectId | StatusEffectId[]) : number {
 		const ids = Array.isArray(statusIds) ? statusIds : [statusIds];
-		const statusesGranted = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == "addStatus"? [cons.statusName] : [])
-		);
+		const statusesGranted = this.statusesAdded();
 		return statusesGranted.reduce( (acc,st) => acc + (ids.includes(st)? 1: 0), 0);
 	}
 
@@ -1922,8 +1921,7 @@ ${sim.join("\n")}
 	removesStatus<T extends StatusEffectId>(this: Usable, statusIds: readonly T[]) : number;
 	removesStatus(this: Usable, statusIds: StatusEffectId | readonly StatusEffectId[]) : number {
 		const ids = Array.isArray(statusIds) ? statusIds : [statusIds];
-		const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == "removeStatus"? [cons.statusName] : [])
-		);
+		const statusesRemoved = this.statusesRemoved();
 		return statusesRemoved.reduce( (acc,st) => acc + (ids.includes(st)? 1: 0), 0);
 	}
 
@@ -1952,6 +1950,40 @@ ${sim.join("\n")}
 			case "medium": return {low: 15, high: 18};
 			case "high": return {low: 11, high: 20};
 		}
+	}
+
+	isDamagePower(this: Usable): boolean {
+		if (!this.isTrulyUsable()) return false;
+		if (this.isSkillCard()) return false;
+		if (this.system.damageLevel == "none") return false;
+		return true;
+	}
+
+	statusesAdded(this: Usable): StatusEffectId[] {
+		const effects= this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == "addStatus"? [cons.statusName] : []));
+		return effects;
+	}
+
+	statusesRemoved(this: Usable): StatusEffectId[] {
+		const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == "removeStatus"? [cons.statusName] : []));
+		return statusesRemoved;
+	}
+
+	buffsOrDebuffsAdded(this: Usable) : number {
+		const statusesGranted = this.statusesAdded();
+		const buffsAndDebuffs = CONFIG.statusEffects
+			.filter(st => st.tags.includes("buff") || st.tags.includes("debuff"))
+			.map( x=> x.id);
+		return statusesGranted.reduce( (acc, st) => buffsAndDebuffs.includes(st) ? acc + 1 : acc, 0);
+	}
+
+	isBuffOrDebuff(this: Usable) : boolean {
+		return this.buffsOrDebuffsAdded() > 0;
+	}
+
+	isStatusRemoval(this: Usable) : boolean {
+		const removed = this.statusesRemoved();
+		return removed.length > 0;
 	}
 
 }

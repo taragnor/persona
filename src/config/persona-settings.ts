@@ -9,10 +9,16 @@ export const HANDLEBARS_TEMPLATE_DIR = `${SYSTEMPATH}/parts` as const;
 
 
 export class PersonaSettings {
+	static cache : Partial<Record<SETTINGKEYS, unknown>> = {} ;
 	static registerSettings() {
 		for (const [key, options] of Object.entries(SETTINGS)) {
 			//@ts-ignore
 			game.settings.register("persona", key, options);
+		}
+	}
+
+	static resetCache() {
+		this.cache = {
 		}
 	}
 
@@ -41,6 +47,12 @@ export class PersonaSettings {
 
 	static autoApplyCombatResults(): boolean {
 		return this.get("autoApplyCombatResults").valueOf();
+	}
+	static agressiveCaching(): boolean {
+		if (this.cache.aggressiveCaching === undefined) {
+			this.cache.aggressiveCaching = this.get("aggressiveCaching");
+		}
+		return this.cache.aggressiveCaching as boolean;
 	}
 
 }
@@ -122,6 +134,7 @@ const SETTINGS = {
 		hint: "Attempt potentially losy optimizations",
 		scope: "world",
 		restricted: true,
+		onChange: () => PersonaSettings.resetCache(),
 		config: true,
 		type: Boolean,
 		default: true,

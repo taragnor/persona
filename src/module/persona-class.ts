@@ -220,7 +220,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
 		//NOTE: this could be a risky operation
-		const PersonaCaching = PersonaSettings.get("aggressiveCaching");
+		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!options && PersonaCaching && this.#cache.mainModifiers) {
 			return this.#cache.mainModifiers;
 		}
@@ -246,7 +246,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	passivePowers() : Power[] {
-		const PersonaCaching = PersonaSettings.get("aggressiveCaching");
+		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!this.#cache.passivePowers || !PersonaCaching) {
 				this.#cache.passivePowers = this.powers
 				.filter( power=> power.hasPassiveEffects(this.user));
@@ -255,7 +255,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	defensivePowers(): ModifierContainer[] {
-		const PersonaCaching = PersonaSettings.get("aggressiveCaching");
+		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!this.#cache.defensivePowers || !PersonaCaching) {
 			this.#cache.defensivePowers =
 				[
@@ -532,6 +532,11 @@ maxResists () : number {
 		case "shadow" : return 2;
 		case "npcAlly": return 0;
 	}
+}
+
+async learnPower(pwr: Power) {
+	await this.source.addPower(pwr);
+
 }
 
 get isUnderDefenseCap(): boolean {

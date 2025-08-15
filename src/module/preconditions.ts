@@ -941,18 +941,29 @@ export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, si
 			break;
 	}
 	if (!targetIdOrTarot) return undefined;
-	const allLinks = PersonaDB.socialLinks();
-	const allyCheck = PersonaDB.NPCAllies()
-		.find( ally => ally.id == targetIdOrTarot);
-	if (allyCheck) {
-		return allyCheck.getNPCProxyActor();
+	const idTest = PersonaDB.getActorById(targetIdOrTarot as string);
+	if (idTest != undefined) {
+		if (idTest.isNPCAlly()) {
+			return idTest.getNPCProxyActor();
+		}
+		if (idTest.isPC() || idTest.isNPC()) {
+			return idTest;
+		}
 	}
-	const desiredActor  = allLinks
-		.find( x=> x.id == targetIdOrTarot)
-		?? allLinks
-		.find(x=> x.tarot?.id == targetIdOrTarot
-		|| x.tarot?.name == targetIdOrTarot);
-	return desiredActor;
+	return PersonaDB.socialLinks()
+	.find( SL => SL.tarot?.name == targetIdOrTarot);
+	// const allLinks = PersonaDB.socialLinks();
+	// const allyCheck = PersonaDB.NPCAllies()
+	// 	.find( ally => ally.id == targetIdOrTarot);
+	// if (allyCheck) {
+	// 	return allyCheck.getNPCProxyActor();
+	// }
+	// const desiredActor  = allLinks
+	// 	.find( x=> x.id == targetIdOrTarot)
+	// 	?? allLinks
+	// 	.find(x=> x.tarot?.id == targetIdOrTarot
+	// 		|| x.tarot?.name == targetIdOrTarot);
+	// return desiredActor;
 }
 
 function getSubjects<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K) : (PToken | ValidAttackers | NPC) []{

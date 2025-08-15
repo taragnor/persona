@@ -162,6 +162,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await Logger.sendToChat(`${this.name} set to party navigator`, this);
 	}
 
+	get level() : number {
+		if (!this.isValidCombatant()) return 0;
+		return this.system.combat.classData.level ?? 0;
+	}
+
 	get mmp() : number {
 		if (!this.isValidCombatant()) return 0;
 		switch (this.system.type) {
@@ -740,7 +745,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		function meetsSL(linkLevel: number, focus:Focus) {
 			return linkLevel >= focus.requiredLinkLevel();
 		};
-		const PersonaCaching = PersonaSettings.get("aggressiveCaching");
+		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!PersonaCaching || this.cache.socialData == undefined) {
 			this.cache.socialData = this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
 			const npc = PersonaDB.getActor(linkId);
