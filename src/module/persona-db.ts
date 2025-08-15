@@ -1,4 +1,3 @@
-import { SocialLink } from "./actor/persona-actor.js";
 import { TarotCard } from "../config/tarot.js";
 import { TreasureItem } from "./metaverse.js";
 import { SkillCard } from "./item/persona-item.js";
@@ -68,22 +67,13 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		this.#resetCache();
 	}
 
-	onCreateActor(actor :PersonaActor) {
+	onCreateActor(_actor :PersonaActor) {
 		this.#resetCache();
 	}
 
 	onCreateItem(_item: PersonaItem) {
 		this.#resetCache();
 	}
-
-
-
-	// getRegionById (id: string) : PersonaRegion | undefined {
-	// 	const scene = game.scenes.find(x=> x.regions.has(id)) as PersonaScene | undefined;
-	// 	if (!scene) return undefined;
-	// 	return scene?.regions?.get(id) as PersonaRegion | undefined;
-	// }
-
 
 	getClassById(id: string): Option<ItemSub<"characterClass">> {
 		const item = this.getItemById(id);

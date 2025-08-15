@@ -66,7 +66,6 @@ export class PersonaScene extends Scene {
 		const sceneEffects = this.sceneEffects
 			.map(x=> x.id);
 		const regionMods = Metaverse.getRegion()?.personalRoomEffectsOnly().map(x=> x.id) ?? [];
-		//TODO: get global effects from the scene
 		return sceneEffects.concat(regionMods);
 	}
 
