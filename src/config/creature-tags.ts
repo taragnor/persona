@@ -18,6 +18,7 @@ export const PERSONALITY_TAG_LIST = [
 	"timid",
 	"tech-enthusiast",
 	"artist",
+	"not-like-other-girls",
 ] as const;
 
 
