@@ -222,16 +222,8 @@ export class NumericV2 {
 				if (!id) {
 					return null;
 				}
-				if (! ("talents" in user.system)) {
-					return null;
-				}
-				const talent = user.system.talents.find( x=> x.talentId == id);
-				if (!talent) {
-					console.log(`COuldn't find Talent ${id}`);
-					console.log(source);
-					return null;
-				}
-				return talent.talentLevel;
+				return user.getTalentLevel(id);
+
 			}
 			case "has-resources":
 				if (!situation.user) return null;

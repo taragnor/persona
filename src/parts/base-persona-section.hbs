@@ -46,3 +46,9 @@
 {{> "systems/persona/parts/resistance-input.hbs" actor=actor CONST=CONST persona=persona}}
 {{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=false}}
 
+<hr>
+{{#if (canUseTalents actor)}}
+{{> "systems/persona/parts/talents-table.hbs" actor=actor CONST=CONST persona=persona}}
+{{/if}}
+{{> "systems/persona/parts/focii-table.hbs" actor=actor CONST=CONST persona=persona}}
+

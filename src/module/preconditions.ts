@@ -133,17 +133,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (!id) {
 				return false;
 			}
-			if (! ("talents" in user.system)) {
-				return false;
-			}
-			const talent = user.system.talents.find( x=> x.talentId == id);
-			if (!talent) {
-				//this error mostly comes from all out attack stuff I think
-				console.log(`COuldn't find Talent ${id}`);
-				console.log(source);
-				return false;
-			}
-			target = talent.talentLevel;
+			target= user.getTalentLevel(id);
 			break;
 		}
 		case "social-link-level": {

@@ -467,7 +467,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					list.pushUnique("variable-damage");
 				}
 				if( list.includes("weapon") && this.system.dmg_type == "by-power" && user) {
-					const wpnList : (PowerTag | EquipmentTag)[] = user?.weapon?.tagList() ?? user.unarmedTagList();
+					const wpnList : readonly (PowerTag | EquipmentTag)[] = user?.weapon?.tagList() ?? user.unarmedTagList();
 					list.pushUnique(...wpnList);
 				} else {
 					if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {

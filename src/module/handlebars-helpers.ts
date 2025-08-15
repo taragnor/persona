@@ -111,7 +111,7 @@ export class PersonaHandleBarsHelpers {
 				default:
 					actor.system satisfies never;
 			}
-			const numLevel = (actor as PC).getLevelOfTalent(talent);
+			const numLevel = (actor as PC).getTalentLevel(talent);
 			return game.i18n.localize(`persona.talentLevels.${numLevel}.name`);
 		},
 
@@ -480,18 +480,7 @@ export class PersonaHandleBarsHelpers {
 			return power.system.slot > actor.maxSlot();
 		},
 		"canUseTalents": function (actor: PersonaActor) : boolean {
-			switch (actor.system.type) {
-				case "tarot":
-				case "npc":
-				case "shadow":
-					return false;
-				case "pc":
-				case "npcAlly":
-					return true;
-				default:
-					actor.system satisfies never;
-					return false;
-			}
+			return actor.isValidCombatant();
 		},
 		"canUseCustomFocii": function (actor: PersonaActor) : boolean {
 			switch (actor.system.type) {

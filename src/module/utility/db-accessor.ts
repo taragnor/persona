@@ -129,12 +129,12 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		return this.getActorById(id);
 	}
 
-	 getActorById (id: string) : Option<ActorType> {
-		return this.#findById(id, "Actor") as Option<ActorType>;
+	 getActorById<T extends ActorType = ActorType> (id: string) : Option<T> {
+		return this.#findById(id, "Actor") as Option<T>;
 	}
 
-	 getItemById (id : string) : Option<ItemType> {
-		return this.#findById(id, "Item") as Option<ItemType>;
+	 getItemById<T extends ItemType = ItemType> (id : string) : Option<T> {
+		return this.#findById(id, "Item") as Option<T>;
 	}
 
 	getActorByName (name: string) : Option<ActorType> {

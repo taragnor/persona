@@ -68,23 +68,23 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this._powers;
 	}
 
-	get statusResists() : ValidAttackers["system"]["combat"]["statusResists"] {
+	get statusResists() : Readonly<ValidAttackers["system"]["combat"]["statusResists"]> {
 		return this.source.system.combat.statusResists;
 	}
 
-	get resists(): ValidAttackers["system"]["combat"]["resists"] {
+	get resists(): Readonly<ValidAttackers["system"]["combat"]["resists"]> {
 		return this.source.system.combat.resists;
 	}
 
-	get classData(): ValidAttackers["system"]["combat"]["classData"] {
+	get classData(): Readonly<ValidAttackers["system"]["combat"]["classData"]> {
 		return this.source.system.combat.classData;
 	}
 
-	get focii(): Focus[] {
+	get focii(): readonly Focus[] {
 		return this.source.focii;
 	}
 
-	get talents(): Talent[] {
+	get talents(): readonly Talent[] {
 		return this.source.talents;
 	}
 
@@ -211,14 +211,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.numOfIncAdvances();
 	}
 
-	getBonuses (modnames : ModifierTarget | ModifierTarget[], sources: ModifierContainer[] = this.mainModifiers() ): ModifierList {
+	getBonuses (modnames : ModifierTarget | ModifierTarget[], sources: readonly ModifierContainer[] = this.mainModifiers() ): ModifierList {
 		let modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this.source)
 			.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
 		));
 		return modList;
 	}
 
-	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
+	mainModifiers(options?: {omitPowers?: boolean} ): readonly ModifierContainer[] {
 		//NOTE: this could be a risky operation
 		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!options && PersonaCaching && this.#cache.mainModifiers) {
@@ -245,7 +245,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return mainMods;
 	}
 
-	passivePowers() : Power[] {
+	passivePowers() : readonly Power[] {
 		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!this.#cache.passivePowers || !PersonaCaching) {
 				this.#cache.passivePowers = this.powers
@@ -254,7 +254,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.#cache.passivePowers;
 	}
 
-	defensivePowers(): ModifierContainer[] {
+	defensivePowers(): readonly ModifierContainer[] {
 		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!this.#cache.defensivePowers || !PersonaCaching) {
 			this.#cache.defensivePowers =
@@ -665,7 +665,7 @@ canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
 
 
 interface PersonaClassCache {
-	mainModifiers: U<ModifierContainer[]>;
-	passivePowers: U<Power[]>;
-	defensivePowers: U<ModifierContainer[]>;
+	mainModifiers: U<readonly ModifierContainer[]>;
+	passivePowers: U<readonly Power[]>;
+	defensivePowers: U<readonly ModifierContainer[]>;
 }

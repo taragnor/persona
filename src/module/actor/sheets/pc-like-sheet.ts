@@ -45,8 +45,8 @@ export class PCLikeSheet extends CombatantSheetBase {
 		html.find(".equips select").on("change", this.equipmentChange.bind(this));
 		html.find(".sort-up").on("click", this.reorderPowerUp.bind(this));
 		html.find(".sort-down").on("click", this.reorderPowerDown.bind(this));
-		html.find(".incTalent").on("click", this.incTalent.bind(this));
-		html.find(".decTalent").on("click", this.decTalent.bind(this));
+		// html.find(".incTalent").on("click", this.incTalent.bind(this));
+		// html.find(".decTalent").on("click", this.decTalent.bind(this));
 	}
 
 	async delItem (event : Event) {
@@ -105,15 +105,15 @@ export class PCLikeSheet extends CombatantSheetBase {
 		await this.actor.update({"system.combat.powers": powers});
 	}
 
-	async incTalent(event: Event) {
-		const talentId= String(HTMLTools.getClosestData(event, "talentId"));
-		await this.actor.incrementTalent(talentId);
-	}
+	// async incTalent(event: Event) {
+	// 	const talentId= String(HTMLTools.getClosestData(event, "talentId"));
+	// 	await this.actor.incrementTalent(talentId);
+	// }
 
-	async decTalent(event: Event) {
-		const talentId= String(HTMLTools.getClosestData(event, "talentId"));
-		await this.actor.decrementTalent(talentId);
-	}
+	// async decTalent(event: Event) {
+	// 	const talentId= String(HTMLTools.getClosestData(event, "talentId"));
+	// 	await this.actor.decrementTalent(talentId);
+	// }
 
 
 

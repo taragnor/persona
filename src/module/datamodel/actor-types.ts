@@ -34,6 +34,16 @@ abstract class BaseStuff extends window.foundry.abstract.DataModel {
 
 }
 
+function talentConversion(data: any) {
+	if (data.talents != undefined) {
+		if (data.combat.talents == undefined || data.combat.talents.length == 0)  {
+			const ids= data.talents.map((x:any)=> x.talentId);
+			data.combat.talents = ids;
+		}
+	}
+	return data;
+}
+
 export class PCSchema extends window.foundry.abstract.TypeDataModel {
 	get type() { return "pc" as const;}
 	static override defineSchema() {
@@ -64,6 +74,7 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 	}
 
 	static override migrateData(data: any) {
+		data = talentConversion(data);
 		const system = data as PC["system"];
 		const convert = function (x: number) {
 			switch (true) {
@@ -177,6 +188,11 @@ class NPCAllySchema extends foundry.abstract.TypeDataModel {
 			NPCSocialProxyId: new id(),
 		} as const;
 		return ret;
+	}
+
+	static override migrateData(d : any) {
+		const data= super.migrateData(d);
+		return talentConversion(data);
 	}
 }
 

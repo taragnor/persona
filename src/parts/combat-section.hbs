@@ -76,12 +76,5 @@
 			Roll Save
 		</button>
 		{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=true}}
-
-		{{#if (canUseTalents actor)}}
-		{{> "systems/persona/parts/talents-table.hbs" actor=actor CONST=CONST persona=persona}}
-		{{/if}}
-		<hr>
-		{{> "systems/persona/parts/focii-table.hbs" actor=actor CONST=CONST persona=persona}}
-		<hr>
 	</div>
 </section>

@@ -205,6 +205,7 @@ export function combatCommonStats() {
 		// fadingState: new num( {integer:true, initial:0}),
 		statusResists: statusResists(),
 		focuses: new arr( new id(), {initial: []}),
+		talents: new arr( new id(), {initial: []}),
 		actionsRemaining: new num( {initial: 1, integer:true, min:0, max: 20}),
 		bonusHP: new num({initial: 0, integer: true}),
 		bonusMP: new num({initial: 0, integer: true}),
@@ -267,7 +268,7 @@ export function PCSpecificStuff() {
 		social: socialLinks(),
 		activities: activityLinks(),
 		skills: studentSkills(),
-		talents: new arr( new obj<TalentData>(), {initial: []}),
+		// talents: new arr( new obj<TalentData>(), {initial: []}),
 	}
 }
 

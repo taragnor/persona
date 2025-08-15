@@ -1068,14 +1068,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return null;
 	}
 
-	unarmedTagList() : PowerTag[] {
+	unarmedTagList() : readonly PowerTag[] {
 		if (POWER_TAGS_LIST.includes (this.getUnarmedDamageType() as any)) {
 			return [this.getUnarmedDamageType()] as PowerTag[];
 		}
 		return [];
 	}
 
-	get talents() : Talent[] {
+	get talents() : readonly Talent[] {
 		switch (this.system.type) {
 			case "tarot":
 			case "npc":
@@ -1089,14 +1089,34 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				this.system satisfies never;
 				return [];
 		}
-		const extTalents = this.system.talents.flatMap( ({talentId}) => {
-			const tal= PersonaDB.getItemById(talentId);
-			if (!tal) return [];
-			if (tal.system.type != "talent") return [];
-			return tal as Talent;
-		});
-		const itemTalents = this.items.filter ( x => x.system.type == "talent") as Talent[];
-		return extTalents.concat(itemTalents);
+		return this.system.combat.talents
+			.map( id => PersonaDB.getItemById<Talent>(id))
+			.filter( tal => tal != undefined);
+		// const extTalents = this.system.talents.flatMap( ({talentId}) => {
+		// 	const tal= PersonaDB.getItemById(talentId);
+		// 	if (!tal) return [];
+		// 	if (tal.system.type != "talent") return [];
+		// 	return tal as Talent;
+		// });
+		// const itemTalents = this.items.filter ( x => x.system.type == "talent") as Talent[];
+		// return extTalents.concat(itemTalents);
+	}
+
+	getTalentLevel(talent: Talent | Talent["id"]) : number {
+		const id = talent instanceof PersonaItem ? talent.id : talent;
+		if (!this.isValidCombatant()) return 0;
+		const talents = this.system.combat.talents;
+		let index = talents.indexOf(id);
+		if (index == -1) return 0;
+		const inc = this.system.combat.classData.incremental.talent ? 1 : 0;
+		const effectiveLevel = Math.max(0, this.level + inc -1);
+		const baseVal = Math.floor(effectiveLevel / 3);
+		const partial = effectiveLevel % 3;
+		index = index >= 2 ? 2 : index;
+		if (index < partial) {
+			return baseVal + 1;
+		}
+		return baseVal;
 	}
 
 	get focii(): Focus[] {
@@ -1503,14 +1523,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	getPersonalBonuses(modnames : ModifierTarget | ModifierTarget[], sources: ModifierContainer[] = this.actorMainModifiers()) : ModifierList  {
+	getPersonalBonuses(modnames : ModifierTarget | ModifierTarget[], sources: readonly ModifierContainer[] = this.actorMainModifiers()) : ModifierList  {
 		let modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this)
 			.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
 		));
 		return modList;
 	}
 
-	actorMainModifiers(): ModifierContainer[] {
+	actorMainModifiers(): readonly ModifierContainer[] {
 		return [
 			...this.passiveItems(),
 			...this.getAllSocialFocii(),
@@ -1724,7 +1744,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.persona().getBonuses("instantDeathResistanceMult").total(situation, "percentage");
 	}
 
-	mainModifiers(options?: {omitPowers?: boolean} ): ModifierContainer[] {
+	mainModifiers(options?: {omitPowers?: boolean} ): readonly ModifierContainer[] {
 		if (!this.isValidCombatant()) return [];
 		return this.persona().mainModifiers(options);
 	}
@@ -1776,7 +1796,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.persona().getDefense(type);
 	}
 
-	statusResist(status: StatusEffectId, modifiers ?: ModifierContainer[]) : ResistStrength {
+	statusResist(status: StatusEffectId, modifiers ?: readonly ModifierContainer[]) : ResistStrength {
 		switch (this.system.type) {
 			case "tarot":
 			case "npc":
@@ -1868,24 +1888,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async addTalent(this: ValidAttackers, talent: Talent) {
-		switch (this.system.type) {
-			case "shadow":
-				ui.notifications.warn("Shadows can't use talents");
-				return;
-			case "pc":
-			case "npcAlly":
-				break;
-			default:
-				this.system satisfies never;
-				return;
-		}
-		const talents = this.system.talents;
-		if (talents.find(x => x.talentId == talent.id)) return;
-		talents.push( {
-			talentLevel: 0,
-			talentId: talent.id
-		});
-		await this.update( {"system.talents": talents});
+		const arr = this.system.combat.talents;
+		arr.push(talent.id);
+		await this.update( {"system.combat.talents": arr});
 		await Logger.sendToChat(`${this.name} added ${talent.name} Talent` , this);
 	}
 
@@ -1896,18 +1901,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async deleteTalent(this: ValidAttackers, id: string) {
-		const item = this.items.find(x => x.id == id);
-		if (item) {
-			await item.delete();
-			return;
-		}
-		if (!("talents" in this.system)) {return;}
-		let talents = this.system.talents;
-		if (!talents.find(x => x.talentId == id)) return;
-		const talent = PersonaDB.getItemById(id) as Talent;
-		talents = talents.filter( x=> x.talentId != id);
-		await this.update( {"system.talents": talents});
-		await Logger.sendToChat(`${this.name} deleted talent ${talent.name}` , this);
+		const talent = PersonaDB.getItemById<Talent>(id);
+		if (!talent) throw new PersonaError(`No such talent ${id}`);
+		const arr = this.system.combat.talents
+			.filter(x=> x != id);
+		await this.update( {"system.combat.talents": arr});
+		await Logger.sendToChat(`${this.name} deleted ${talent.name} Talent` , this);
 	}
 
 	async addPower(this: PC | NPCAlly | Shadow, power: Power) {
@@ -2405,11 +2404,11 @@ getSourcedEffects(this: ValidAttackers): {source: ModifierContainer, effects: re
 	return this.mainModifiers().flatMap( x=> x.getSourcedEffects(this));
 }
 
-getEffects(this: ValidAttackers) : ConditionalEffect[] {
+getEffects(this: ValidAttackers) : readonly ConditionalEffect[] {
 	return this.mainModifiers().flatMap( x=> x.getEffects(this));
 }
 
-getPassivePowers(this: ValidAttackers): Power[] {
+getPassivePowers(this: ValidAttackers): readonly Power[] {
 	return this.persona().passivePowers();
 }
 
@@ -2429,29 +2428,29 @@ hasBanefulStatus(): boolean {
 	return !!this.effects.find( (st) => st.isBaneful)
 }
 
-getLevelOfTalent(this: PC, talent: Talent) : number {
-	const x= this.system.talents.find( x=> x.talentId == talent.id);
-	if (!x) return 0;
-	return x.talentLevel;
-}
+// getLevelOfTalent(this: PC, talent: Talent) : number {
+// 	const x= this.system.talents.find( x=> x.talentId == talent.id);
+// 	if (!x) return 0;
+// 	return x.talentLevel;
+// }
 
-async incrementTalent(this: PC | NPCAlly, talentId: string) {
-	const x = this.system.talents.find( x => x.talentId == talentId);
-	if (!x) return;
-	x.talentLevel = Math.min(3, x.talentLevel+1);
-	await this.update({"system.talents": this.system.talents});
-	const talent = PersonaDB.allItems().find( item => item.id == talentId);
-	await Logger.sendToChat(`<b>${this.name}:</b> raised talent ${talent?.name} to level ${x.talentLevel}`, this);
-}
+// async incrementTalent(this: PC | NPCAlly, talentId: string) {
+// 	const x = this.system.talents.find( x => x.talentId == talentId);
+// 	if (!x) return;
+// 	x.talentLevel = Math.min(3, x.talentLevel+1);
+// 	await this.update({"system.talents": this.system.talents});
+// 	const talent = PersonaDB.allItems().find( item => item.id == talentId);
+// 	await Logger.sendToChat(`<b>${this.name}:</b> raised talent ${talent?.name} to level ${x.talentLevel}`, this);
+// }
 
-async decrementTalent(this:PC | NPCAlly, talentId :string) {
-	const x = this.system.talents.find( x => x.talentId == talentId);
-	if (!x) return;
-	x.talentLevel = Math.max(0, x.talentLevel-1);
-	await this.update({"system.talents": this.system.talents});
-	const talent = PersonaDB.allItems().find( item => item.id == talentId);
-	await Logger.sendToChat(`<b>${this.name}:</b> reduced talent ${talent?.name} to level ${x.talentLevel}`, this);
-}
+// async decrementTalent(this:PC | NPCAlly, talentId :string) {
+// 	const x = this.system.talents.find( x => x.talentId == talentId);
+// 	if (!x) return;
+// 	x.talentLevel = Math.max(0, x.talentLevel-1);
+// 	await this.update({"system.talents": this.system.talents});
+// 	const talent = PersonaDB.allItems().find( item => item.id == talentId);
+// 	await Logger.sendToChat(`<b>${this.name}:</b> reduced talent ${talent?.name} to level ${x.talentLevel}`, this);
+// }
 
 getSaveBonus( this: ValidAttackers) : ModifierList {
 	const mods = this.mainModifiers().flatMap( item => item.getModifier("save", this));
