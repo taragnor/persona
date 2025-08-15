@@ -57,7 +57,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		console.debug(`${item.system.type} dropped on sheet of ${this.actor}`);
 		switch (item.system.type) {
 			case "talent":
-				this.actor.addTalent(item as Talent);
+				this.actor.persona().addTalent(item as Talent);
 				return undefined;
 			case "power": {
 				const actorType = this.actor.system.type;
@@ -203,7 +203,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new Error(err);
 		}
 		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this talent?")) {
-			this.actor.deleteTalent(talentId);
+		//TODO: temp fix until we get a persona Id
+			await this.actor.persona().deleteTalent(talentId);
 		}
 
 	}
@@ -217,7 +218,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new Error(err);
 		}
 		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this power?")) {
-			this.actor.deletePower(powerId);
+			await this.actor.deletePower(powerId);
 		}
 	}
 
@@ -239,7 +240,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (talentId == undefined) {
 			throw new PersonaError(`Can't find ${itemType}`);
 		}
-		const talent = this.actor.talents.find(x=> x.id == talentId);
+		//TODO: temp fix until we get a persona Id
+		const talent = this.actor.persona().talents.find(x=> x.id == talentId);
 		if (!talent) {
 			throw new PersonaError(`Can't find ${itemType} id ${talentId}`);
 		}

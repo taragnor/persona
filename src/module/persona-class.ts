@@ -1,3 +1,5 @@
+import { PersonaItem } from "./item/persona-item.js";
+import { Logger } from "./utility/logger.js";
 import { removeDuplicates } from "./utility/array-tools.js";
 import { Shadow } from "./actor/persona-actor.js";
 import { NPCAlly } from "./actor/persona-actor.js";
@@ -84,15 +86,38 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.focii;
 	}
 
-	get talents(): readonly Talent[] {
-		return this.source.talents;
+	// get talents(): readonly Talent[] {
+	// 	return this.source.talents;
+	// }
+
+	get talents() : readonly Talent[] {
+		return this.source.system.combat.talents
+			.map( id => PersonaDB.getItemById<Talent>(id))
+			.filter( tal => tal != undefined);
+	}
+
+	getTalentLevel(talent: Talent | Talent["id"]) : number {
+		const id = talent instanceof PersonaItem ? talent.id : talent;
+		const source = this.source;
+		const talents = source.system.combat.talents;
+		let index = talents.indexOf(id);
+		if (index == -1) return 0;
+		const inc = source.system.combat.classData.incremental.talent ? 1 : 0;
+		const effectiveLevel = Math.max(0, this.level + inc -1);
+		const baseVal = Math.floor(effectiveLevel / 3);
+		const partial = effectiveLevel % 3;
+		index = index >= 2 ? 2 : index;
+		if (index < partial) {
+			return baseVal + 1;
+		}
+		return baseVal;
 	}
 
 	get name(): string {
 		switch (this.source.system.type) {
 			case "pc":
 			case "npcAlly":
-				return this.source.system.personaName;
+				return this.source.system.personaName ?? this.source.displayedName;
 			case "shadow":
 				return this.source.name;
 			default:
@@ -267,6 +292,25 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.#cache.defensivePowers;
 
 	}
+
+	async addTalent(talent: Talent) {
+		const source = this.source;
+		const arr = source.system.combat.talents;
+		arr.push(talent.id);
+		await source.update( {"system.combat.talents": arr});
+		await Logger.sendToChat(`${this.name} added ${talent.name} Talent` , source);
+	}
+
+	async deleteTalent(id: string) {
+		const source = this.source;
+		const talent = PersonaDB.getItemById<Talent>(id);
+		if (!talent) throw new PersonaError(`No such talent ${id}`);
+		const arr = source.system.combat.talents
+			.filter(x=> x != id);
+		await source.update( {"system.combat.talents": arr});
+		await Logger.sendToChat(`${this.name} deleted ${talent.name} Talent` , source);
+	}
+
 
 	get effectiveLevel() : number {
 	const advances = this.numOfIncAdvances();

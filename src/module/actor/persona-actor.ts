@@ -57,7 +57,6 @@ import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { ResistStrength } from "../../config/damage-types.js";
 import { StatusEffect } from "../../config/consequence-types.js";
 import { ModifierList } from "../combat/modifier-list.js";
-import { Talent } from "../item/persona-item.js";
 import { Focus } from "../item/persona-item.js";
 import { ModifierContainer } from "../item/persona-item.js";
 import { InvItem } from "../item/persona-item.js";
@@ -1075,49 +1074,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return [];
 	}
 
-	get talents() : readonly Talent[] {
-		switch (this.system.type) {
-			case "tarot":
-			case "npc":
-				return [];
-			case "shadow":
-				return this.items.filter( x=> x.system.type == "talent") as Talent[];
-			case "pc":
-			case "npcAlly":
-				break;
-			default:
-				this.system satisfies never;
-				return [];
-		}
-		return this.system.combat.talents
-			.map( id => PersonaDB.getItemById<Talent>(id))
-			.filter( tal => tal != undefined);
-		// const extTalents = this.system.talents.flatMap( ({talentId}) => {
-		// 	const tal= PersonaDB.getItemById(talentId);
-		// 	if (!tal) return [];
-		// 	if (tal.system.type != "talent") return [];
-		// 	return tal as Talent;
-		// });
-		// const itemTalents = this.items.filter ( x => x.system.type == "talent") as Talent[];
-		// return extTalents.concat(itemTalents);
-	}
-
-	getTalentLevel(talent: Talent | Talent["id"]) : number {
-		const id = talent instanceof PersonaItem ? talent.id : talent;
-		if (!this.isValidCombatant()) return 0;
-		const talents = this.system.combat.talents;
-		let index = talents.indexOf(id);
-		if (index == -1) return 0;
-		const inc = this.system.combat.classData.incremental.talent ? 1 : 0;
-		const effectiveLevel = Math.max(0, this.level + inc -1);
-		const baseVal = Math.floor(effectiveLevel / 3);
-		const partial = effectiveLevel % 3;
-		index = index >= 2 ? 2 : index;
-		if (index < partial) {
-			return baseVal + 1;
-		}
-		return baseVal;
-	}
 
 	get focii(): Focus[] {
 		if (this.system.type == "pc")
@@ -1887,12 +1843,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return new ModifierList(mods);
 	}
 
-	async addTalent(this: ValidAttackers, talent: Talent) {
-		const arr = this.system.combat.talents;
-		arr.push(talent.id);
-		await this.update( {"system.combat.talents": arr});
-		await Logger.sendToChat(`${this.name} added ${talent.name} Talent` , this);
-	}
 
 	critResist(this: ValidAttackers) : ModifierList {
 		const ret = new ModifierList();
@@ -1900,14 +1850,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return ret.concat(new ModifierList(mods));
 	}
 
-	async deleteTalent(this: ValidAttackers, id: string) {
-		const talent = PersonaDB.getItemById<Talent>(id);
-		if (!talent) throw new PersonaError(`No such talent ${id}`);
-		const arr = this.system.combat.talents
-			.filter(x=> x != id);
-		await this.update( {"system.combat.talents": arr});
-		await Logger.sendToChat(`${this.name} deleted ${talent.name} Talent` , this);
-	}
 
 	async addPower(this: PC | NPCAlly | Shadow, power: Power) {
 		if (power.isNavigator()) {
@@ -4011,7 +3953,7 @@ Object.seal(EMPTYARR);
 Hooks.on("createActor", async function (actor: PersonaActor) {
 	if (actor.isShadow()) {
 		const pcs = game.actors
-			.filter( (x: PersonaActor)=> x.isPC() && x.hasPlayerOwner && x.talents.length > 0)
+			.filter( (x: PersonaActor)=> x.isRealPC() && x.hasPlayerOwner)
 		const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.combat.classData.level, 0 );
 		const avgLevel = Math.round(totalLevels/ pcs.length);
 		await actor.update({ "system.combat.classData.level" : avgLevel});

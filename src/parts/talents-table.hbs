@@ -3,11 +3,11 @@
 		{{localize 	"persona.statistic.talents"}}
 	</h2>
 	<table class="talents-table">
-		{{#each actor.talents as |talent|}}
+		{{#each persona.talents as |talent|}}
 		<tr data-talent-id="{{talent.id}}">
 			<td>
 				<a class="talentName">
-					{{talent.name}} ({{getTalentLevel ../actor talent}})
+					{{talent.name}} ({{getTalentLevel ../persona talent}})
 				</a>
 			</td>
 			<td>

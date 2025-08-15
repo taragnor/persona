@@ -133,7 +133,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (!id) {
 				return false;
 			}
-			target= user.getTalentLevel(id);
+			target= user.persona().getTalentLevel(id);
 			break;
 		}
 		case "social-link-level": {
@@ -942,22 +942,6 @@ export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, si
 		}
 	}
 	return PersonaDB.getSocialLinkByTarot(targetIdOrTarot as TarotCard | string);
-
-	// return PersonaDB.socialLinks()
-	// .find( SL => SL.tarot?.name == targetIdOrTarot);
-
-	// const allLinks = PersonaDB.socialLinks();
-	// const allyCheck = PersonaDB.NPCAllies()
-	// 	.find( ally => ally.id == targetIdOrTarot);
-	// if (allyCheck) {
-	// 	return allyCheck.getNPCProxyActor();
-	// }
-	// const desiredActor  = allLinks
-	// 	.find( x=> x.id == targetIdOrTarot)
-	// 	?? allLinks
-	// 	.find(x=> x.tarot?.id == targetIdOrTarot
-	// 		|| x.tarot?.name == targetIdOrTarot);
-	// return desiredActor;
 }
 
 function getSubjects<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K) : (PToken | ValidAttackers | NPC) []{

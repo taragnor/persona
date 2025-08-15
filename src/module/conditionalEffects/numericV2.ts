@@ -222,7 +222,7 @@ export class NumericV2 {
 				if (!id) {
 					return null;
 				}
-				return user.getTalentLevel(id);
+				return user.persona().getTalentLevel(id);
 
 			}
 			case "has-resources":

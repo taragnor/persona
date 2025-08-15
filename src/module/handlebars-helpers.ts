@@ -103,15 +103,8 @@ export class PersonaHandleBarsHelpers {
 			return testStr.includes(substr);
 		},
 
-		"getTalentLevel": (actor: PersonaActor, talent: Talent) : string => {
-			switch (actor.system.type) {
-				case "shadow": case "npc": case "tarot": return "-";
-				case "pc": case "npcAlly":
-					break;
-				default:
-					actor.system satisfies never;
-			}
-			const numLevel = (actor as PC).getTalentLevel(talent);
+		"getTalentLevel": (persona: Persona, talent: Talent) : string => {
+			const numLevel = persona.getTalentLevel(talent);
 			return game.i18n.localize(`persona.talentLevels.${numLevel}.name`);
 		},
 
@@ -132,50 +125,7 @@ export class PersonaHandleBarsHelpers {
 				return `-/-`;
 			}
 			return `${dmg.low}/${dmg.high}`;
-	},
-		// "getDamage": (actor: PersonaActor, usable: Usable) => {
-		// 	if (usable == PersonaDB.getBasicPower("All-out Attack")) {
-		// 		if (!actor.isValidCombatant()) {
-		// 			return "- / -";
-		// 		}
-		// 		const combat = game.combat as PersonaCombat;
-		// 		if (!combat) {
-		// 			return "- / -";
-		// 		}
-		// 		const tokenAcc = combat.getToken(actor.accessor);
-		// 		if (!tokenAcc) {
-		// 			return "No token?";
-		// 		}
-		// 		const usable = PersonaDB.getBasicPower("All-out Attack");
-		// 		const token = PersonaDB.findToken(tokenAcc);
-		// 		if (!token || !usable) {
-		// 			return "No token or no power?";
-		// 		}
-		// 		const situation :Situation = {
-		// 			user: (actor as PC | Shadow).accessor,
-		// 			attacker: (actor as PC | Shadow).accessor,
-		// 			usedPower: usable?.accessor,
-		// 		};
-		// 		const dmg = PersonaCombat.calculateAllOutAttackDamage(token, situation);
-		// 		const mult = usable.getDamageMultSimple(actor as PC | Shadow);
-		// 		const {high, low} = dmg;
-		// 		return Math.round(low * mult) + " / " + Math.round(high * mult);
-		// 	}
-		// 	switch (actor.system.type) {
-		// 		case "tarot":
-		// 		case "npc":
-		// 			return "-/-";
-		// 		case "npcAlly": case "pc": case"shadow": const combatant = actor as ValidAttackers;
-		// 			const mult = usable.getDamageMultSimple(combatant);
-		// 			const dmg = usable.getDamage(combatant);
-		// 			const low = dmg["low"] * mult;
-		// 			const high = dmg["high"] * mult;
-		// 			return Math.round(low) + " / " + Math.round(high);
-		// 		default:
-		// 			actor.system satisfies never;
-		// 			return "-/-";
-		// 	}
-		// },
+		},
 
 		"getCriticalBoostEstimate" : function (actor: PC | Shadow, power: Usable) : number {
 			const situation : Situation = {

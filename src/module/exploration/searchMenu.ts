@@ -363,9 +363,8 @@ export class SearchMenu {
 
 		private static generateOriginalSearchResults() : SearchResult[] {
 			return (game.scenes.current.tokens.contents as TokenDocument<PersonaActor>[])
-				.filter( x=> x.actor
-					&& (x.actor.system.type == "pc" || x.actor.system.type == "npcAlly")
-					&& x.actor.talents.length > 0 //check to eliminate crunched party token
+				.filter( x=> x.actor instanceof PersonaActor
+					&& (x.actor.isRealPC() || x.actor.isNPCAlly())
 				)
 				.flatMap( tok=> {
 					const actor = tok.actor! as PC;
