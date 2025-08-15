@@ -1,3 +1,4 @@
+import { TarotCard } from "../config/tarot.js";
 import { SourcedConsequence } from "../config/consequence-types.js";
 import { SceneClock } from "./exploration/scene-clock.js";
 import { NumberOfOthersWithComparison } from "../config/numeric-comparison.js";
@@ -950,8 +951,11 @@ export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, si
 			return idTest;
 		}
 	}
-	return PersonaDB.socialLinks()
-	.find( SL => SL.tarot?.name == targetIdOrTarot);
+	return PersonaDB.getSocialLinkByTarot(targetIdOrTarot as TarotCard | string);
+
+	// return PersonaDB.socialLinks()
+	// .find( SL => SL.tarot?.name == targetIdOrTarot);
+
 	// const allLinks = PersonaDB.socialLinks();
 	// const allyCheck = PersonaDB.NPCAllies()
 	// 	.find( ally => ally.id == targetIdOrTarot);

@@ -1,5 +1,5 @@
-import { PersonaScene } from "./persona-scene.js";
-import { PersonaRegion } from "./region/persona-region.js";
+import { SocialLink } from "./actor/persona-actor.js";
+import { TarotCard } from "../config/tarot.js";
 import { TreasureItem } from "./metaverse.js";
 import { SkillCard } from "./item/persona-item.js";
 import { NPCAlly } from "./actor/persona-actor.js";
@@ -159,6 +159,16 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		const actors = this.allActors();
 		return this.#cache.tarot = actors
 			.filter( actor=> actor.system.type == "tarot") as Tarot[];
+	}
+
+	getSocialLinkByTarot(tarotCardNameOrId: TarotCard | Tarot["id"]) : U<NPC | PC> {
+		return this.socialLinks()
+		.find( x=> x.tarot
+			&& (
+				x.tarot.name == tarotCardNameOrId
+				|| x.tarot.id == tarotCardNameOrId
+			)
+		);
 	}
 
 	treasureItems(): TreasureItem[] {
