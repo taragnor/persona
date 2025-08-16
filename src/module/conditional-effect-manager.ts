@@ -884,7 +884,9 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 			case "alter-fatigue-lvl":
 				return `Alter Fatigue Level ${cons.amount}`;
 			case "alter-variable":
-				return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${cons.value}`;
+				if (cons.operator != "set-range") {
+				return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${cons.value}`; } else {
+				return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${cons.min} - ${cons.max}`; }
 			case "perma-buff":
 				return `Add Permabuff ${cons.buffType} :${cons.value}`;
 			case "play-sound":
@@ -945,7 +947,11 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 			case "add-card-events-to-list":
 				return `Add Card Events card ${cons.cardId}`;
 			case "set-temporary-variable":
+				if (cons.operator != "set-range") {
 				return `${cons.operator} ${cons.value} to social variable ${cons.variableId}`;
+				} else {
+				return `${cons.operator} ${cons.min} - ${cons.max} to social variable ${cons.variableId}`;
+				}
 			case "card-response":
 				return `Chat Response`;
 			case "append-card-tag":

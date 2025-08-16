@@ -212,10 +212,18 @@ export type PermabuffConsequence = {
 export type AlterVariableConsequence = {
 	type: "alter-variable",
 	varType: VariableType,
-	operator: VariableAction,
+}  & VariableOperators
+& VariableTypeSpecifier;
+
+type VariableOperators = {
+	operator: Extract<VariableAction, "set" | "add" | "multiply">,
 	value: number,
-} &
-	VariableTypeSpecifier;
+} | {
+	operator: Extract<VariableAction, "set-range">,
+	min: number,
+	max: number,
+};
+
 
 export type VariableTypeSpecifier =
 	{variableId: string} & ({
@@ -403,9 +411,15 @@ type CardActionTypes = [
 		keepEventChain: boolean,
 	}, {
 		cardAction:	"set-temporary-variable",
-		operator: VariableAction,
+		operator: Extract<VariableAction, "set" | "add" | "multiply">,
 		variableId: string,
 		value: number,
+	}, {
+		cardAction:	"set-temporary-variable",
+		variableId: string,
+		operator: Extract<VariableAction, "set-range">,
+		min: number,
+		max: number,
 	}, {
 		cardAction: "card-response",
 		text: string,
@@ -421,6 +435,7 @@ export const VARIABLE_ACTION_LIST =  [
 	"set",
 	"add",
 	"multiply",
+	"set-range",
 ] as const;
 
 export type VariableAction = typeof VARIABLE_ACTION_LIST[number];

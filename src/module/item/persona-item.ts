@@ -616,11 +616,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	powerCostString(this: Power, persona: Persona) : string {
-		if (!this.parent || this.parent.system.type == "pc" || this.parent.system.type == "npcAlly")
+		if (persona.user.isShadow())
+			return this.powerCostString_Shadow(persona);
+		else  {
 			return this.powerCostString_PC(persona);
-		if (this.parent.system.type == "shadow")
-			return this.powerCostString_Shadow();
-		else return "";
+		}
+		// if (!this.parent || this.parent.system.type == "pc" || this.parent.system.type == "npcAlly")
+		// 	return this.powerCostString_PC(persona);
+		// if (this.parent.system.type == "shadow")
+		// 	return this.powerCostString_Shadow();
+		// else return "";
 	}
 
 	grantsPowers(this: ModifierContainer): boolean {
@@ -749,13 +754,73 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return "free";
 	}
 
-	powerCostString_Shadow(this: Power) : string {
+	estimateShadowCosts(this: Power, user: ValidAttackers) : {energyReq: number, cost: number} {
+	const diff = this.comparativePowerRatingToUsePower(user);
+	let energyReq= 0, cost= 1;
+	const reducedCostType = this.hasTag("buff") || this.hasTag("debuff") || this.hasTag("status-removal");
+	let reqMin = reducedCostType ? 0 : 1;
+	let energyMod = reducedCostType ? -3: 0;
+	switch (true) {
+		case (this.isDefensive() == true):
+		case (this.isPassive() == true):
+			energyReq = 0;
+			cost = 0;
+			reqMin = 0;
+			break;
+		case (diff == 0):
+			energyReq += 3;
+			cost += 1;
+			break;
+		case (diff > 0):
+			energyReq += Math.max(reqMin, 3-diff);
+			cost += 2 - Math.floor((1+diff)/2);
+			break;
+		case (diff < 0):
+			if (this.hasTag("debuff") || this.hasTag("buff")) {
+				energyReq += Math.min(3, 3 - diff);
+			} else {
+				energyReq += Math.min(10, 3-diff);
+			}
+			cost += 2 - diff;
+			break;
+	}
+	energyReq += energyMod;
+	cost = Math.clamp(cost, 0, 10);
+	energyReq = Math.clamp(energyReq, reqMin, 10);
+		return {energyReq, cost};
+
+	}
+
+comparativePowerRatingToUsePower(this: Power, user: ValidAttackers) : number {
+	const userLevel = user.system.combat.classData.level;
+	let powerSlot = this.system.slot;
+	let extraMod = 0;
+	if (this.hasTag("price-lower-for-shadow")) {
+		powerSlot -= 1;
+	}
+	if (this.hasTag("high-cost")) {
+		extraMod += 2;
+	}
+	const effectiveLevel = extraMod + (powerSlot*3);
+	return Math.round(userLevel - effectiveLevel);
+}
+
+	powerCostString_Shadow(this: Power, persona: Persona) : string {
 		let costs : string[] = [];
-		if (this.system.energy.required > 0) {
-			costs.push(`EN>=${this.system.energy.required}`);
+		let required: number, cost: number;
+		if (this.parent instanceof PersonaActor) {
+			required= this.system.energy.required;
+			cost = this.system.energy.cost;
+		} else {
+			const estimates = this.estimateShadowCosts(persona.user);
+			required = estimates.energyReq;
+			cost = estimates.cost;
 		}
-		if (this.system.energy.cost > 0) {
-			costs.push(`EN-${this.system.energy.cost}`);
+		if (required > 0) {
+			costs.push(`EN>=${required}`);
+		}
+		if (cost > 0) {
+			costs.push(`EN-${cost}`);
 		}
 		return costs.join(", ");
 	}

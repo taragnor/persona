@@ -1355,7 +1355,8 @@ export class PersonaSocial {
 					await this.replaceCardEvents(eff.cardId, eff.keepEventChain);
 				break;
 			case "set-temporary-variable":
-					await this.variableAction(eff.operator, eff.variableId, eff.value);
+					const val = "value" in eff ? eff.value : Math.floor(eff.min + (eff.max * Math.random()));
+					await this.variableAction(eff.operator, eff.variableId, val);
 				break;
 			case "card-response":
 					await this.#applyCardResponse(eff.text);
@@ -1424,6 +1425,8 @@ export class PersonaSocial {
 		}
 		let varVal = this.getSocialVariable(variableName);
 		switch (operator) {
+			case "set-range":
+				//since this forces an amount set range responds the same
 			case "set":
 				varVal = amount;
 				this.setSocialVariable(variableName, varVal);
@@ -1444,6 +1447,7 @@ export class PersonaSocial {
 				varVal *= amount;
 				this.setSocialVariable(variableName, varVal);
 				break;
+
 			default:
 				operator satisfies never;
 		}

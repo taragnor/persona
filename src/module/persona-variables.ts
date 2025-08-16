@@ -62,20 +62,28 @@ export class PersonaVariables {
 				}
 		}
 	}
-	static #applyMutator( mutator: Pick<AlterVariableConsequence, "operator" | "value">, origValue :number | undefined) : number | undefined {
-		const {operator, value} = mutator;
+	static #applyMutator( mutator: AlterVariableConsequence, origValue :number | undefined) : number | undefined {
 		if (Number.isNaN(origValue)) return undefined;
-		switch (operator) {
-			case "set":
+		switch (mutator.operator) {
+			case "set": {
+				const {value} = mutator;
 				return value;
-			case "add":
+			}
+			case "add": {
+				const {value} = mutator;
 				if (origValue == undefined) return undefined;
 				return value + origValue;
-			case "multiply":
+			}
+			case "multiply": {
+				const {value} = mutator;
 				if (origValue == undefined) return undefined;
 				return value + origValue;
+			}
+			case "set-range":
+				const {min, max} = mutator;
+				return Math.floor(min + (Math.random() * ((1+max)- min)));
 			default:
-				operator satisfies never;
+				mutator satisfies never;
 				return undefined;
 		}
 	}

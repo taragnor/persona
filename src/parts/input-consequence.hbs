@@ -141,9 +141,18 @@
 				{{selectOptions POWERSTUFF.VARIABLE_ACTIONS localize=true selected=cons.operator}}
 			</select>
 		</span>
+		{{#if (eqAny cons.operator "set" "add" "multiply")}}
 		<span>
 			<input class="short" type=number name="{{strcat namePrefix 'value'}}" value="{{cons.value}}">
 		</span>
+		{{/if}}
+		{{#if (eqAny cons.operator "set-range")}}
+		<span>
+			<input class="short" type=number name="{{strcat namePrefix 'min'}}" value="{{cons.min}}">
+			-
+			<input class="short" type=number name="{{strcat namePrefix 'max'}}" value="{{cons.max}}">
+		</span>
+		{{/if}}
 	</div>
 	{{/if}}
 

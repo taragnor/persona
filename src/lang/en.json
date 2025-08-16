@@ -608,6 +608,7 @@
 "persona.effecttypes.variableActions.set": "Set",
 "persona.effecttypes.variableActions.add": "Add",
 "persona.effecttypes.variableActions.multiply": "Multiply",
+"persona.effecttypes.variableActions.set-range": "Set (random range)",
 
 "persona.effecttypes.variableTypes.global": "Global",
 "persona.effecttypes.variableTypes.scene": "Scene",

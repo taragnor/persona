@@ -3449,95 +3449,13 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 		ui.notifications.warn("Shadow can't edit power it doesn't own");
 		return;
 	}
-	// const role = this.system.role;
-	const diff = this.comparativePowerRatingToUsePower(power);
-	let energyReq= 0, cost= 1;
-	const reducedCostType = power.hasTag("buff") || power.hasTag("debuff") || power.hasTag("status-removal");
-	let reqMin = reducedCostType ? 0 : 1;
-	let energyMod = reducedCostType ? -3: 0;
-	switch (true) {
-		case (power.isDefensive() == true):
-		case (power.isPassive() == true):
-			energyReq = 0;
-			cost = 0;
-			reqMin = 0;
-			break;
-		case (diff == 0):
-			energyReq += 3;
-			cost += 1;
-			break;
-		case (diff > 0):
-			energyReq += Math.max(reqMin, 3-diff);
-			cost += 2 - Math.floor((1+diff)/2);
-			break;
-		case (diff < 0):
-			if (power.hasTag("debuff") || power.hasTag("buff")) {
-				energyReq += Math.min(3, 3 - diff);
-			} else {
-				energyReq += Math.min(10, 3-diff);
-			}
-			cost += 2 - diff;
-			break;
-	}
-	energyReq += energyMod;
-	cost = Math.clamp(cost, 0, 10);
-	energyReq = Math.clamp(energyReq, reqMin, 10);
+	const {energyReq, cost} = power.estimateShadowCosts(this);
 	return await power.setPowerCost(energyReq, cost);
-}
-
-comparativePowerRatingToUsePower(this: Shadow, power: Power) {
-	const userLevel = this.system.combat.classData.level;
-	let powerSlot = power.system.slot;
-	let extraMod = 0;
-	if (power.hasTag("price-lower-for-shadow")) {
-		powerSlot -= 1;
-	}
-	if (power.hasTag("high-cost")) {
-		extraMod += 2;
-	}
-	const effectiveLevel = extraMod + (powerSlot*3);
-	return Math.round(userLevel - effectiveLevel);
 }
 
 static highestPowerSlotUsableAtLvl(lvl: number) : number {
 	return Math.min(0, Math.floor(lvl / 3));
 }
-
-// individualContributionToAllOutAttackDamage(this: ValidAttackers, situation?: Situation, type: "high" | "low") : CombatResult {
-// 		if (!this.canAllOutAttack()) {
-// 			return {high: nullDamage, low: nullDamage};
-// 		}
-// 		if (!situation) {
-// 			situation = {
-// 				user: this.accessor,
-// 				attacker: this.accessor,
-// 			};
-// 		}
-// 		const basicAttack = PersonaDB.getBasicPower("Basic Attack");
-// 		if (!basicAttack) {
-// 			PersonaError.softFail("Can't find Basic attack power");
-// 			return {high: nullDamage, low: nullDamage};
-// 		}
-// 		const basicLow = basicAttack.generateSimulatedDamageObject(this, 5);
-// 		const basicHigh = basicAttack.generateSimulatedDamageObject(this, 5);
-// 		if (basicLow && basicHigh) {
-// 			return {low: basicLow, high: basicHigh};
-// 		}
-// 		return {high: nullDamage, low: nullDamage};
-
-		// return basicAttack.estimateDamage(this);
-
-		// const evenDmg = basicAttack.estimateDamage(this, 6);
-		// const oddDmg = basicAttack.estimateDamage(this, 5);
-
-	/* //old code to determine AoA
-	// const mult = basicAttack.getDamageMultSimple(this, situation);
-	// const dmg = basicAttack.getDamage(this);
-	// low = dmg["low"] * mult;
-	// high = dmg["high"] * mult;
-	// return {high: evenDmg, low: oddDmg};
-	*/
-// }
 
 getPoisonDamage(this: ValidAttackers): number {
 	const base = Math.round(this.mhpEstimate * 0.15);

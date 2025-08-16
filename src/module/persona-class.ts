@@ -91,10 +91,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.focii;
 	}
 
-	// get talents(): readonly Talent[] {
-	// 	return this.source.talents;
-	// }
-
 	get talents() : readonly Talent[] {
 		return this.source.system.combat.talents
 			.map( id => PersonaDB.getItemById<Talent>(id))
