@@ -126,6 +126,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 	}
 
+	get displayedName(): string {
+		return this.name;
+	}
+
 	get XPForNextLevel() : number {
 		return this.source.XPForNextLevel;
 	}
@@ -156,14 +160,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.classData.level;
 	}
 
-	/** return true on level up*/
-	async awardXP(amt: number): Promise<boolean> {
+	/** return leveled Persona on level up*/
+	async awardXP(amt: number): Promise<U<Persona>> {
 		if (!amt) {
-			return false;
+			return undefined;
 		}
 		if (Number.isNaN(amt)) {
 			PersonaError.softFail(`Attempting to add NaN XP to ${this.name}, aborted`);
-			return false;
+			return undefined;
 		}
 		const sit: Situation = {
 			...this.baseSituation,
@@ -171,7 +175,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		amt = amt * this.getBonuses("xp-multiplier").total(sit, "percentage");
 		if (amt <= 0) {
 			PersonaError.softFail(`Could be an error as XP gained is now ${amt}`);
-			return false;
+			return undefined;
 		}
 		let levelUp = false;
 		const XPrequired= this.XPForNextLevel;
@@ -181,11 +185,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			levelUp = true;
 		}
 		await this.source.update({"system.combat.xp" : newxp});
-	if (levelUp ) {
-		if (this.user.isNPCAlly() || this.user.isShadow())
-			await this.source.levelUp_Incremental();
-	}
-		return levelUp;
+		if (levelUp ) {
+			if (this.user.isNPCAlly() || this.user.isShadow()) {
+				await this.source.levelUp_Incremental();
+			}
+		}
+		return levelUp ? this : undefined;
 	}
 
 	get baseSituation() : Required<Pick<Situation, "user" | "persona">> {
@@ -637,44 +642,45 @@ canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
 		}
 	}
 
-	canPayActivationCost_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard, _outputReason: boolean) : boolean {
-		switch (usable.system.type) {
-			case "power": {
-				if (usable.system.tags.includes("basicatk")) {
-					return true;
-				}
-				switch (usable.system.subtype) {
-					case "weapon":
-						return  this.user.hp > (usable as Power).hpCost();
-					case "magic":
-						const mpcost = (usable as Power).mpCost(this);
-						if (mpcost > 0) {
-							return this.user.mp >= mpcost;
-						}
-					case "social-link":
-						const inspirationId = usable.system.inspirationId;
-						if (inspirationId) {
-							const socialLink = this.user.system.social.find( x=> x.linkId == inspirationId);
-							if (!socialLink) return false;
-							return socialLink.inspiration >= usable.system.inspirationCost;
-						} else {
-							const inspiration = this.user.system.social.reduce( (acc, item) => acc + item.inspiration , 0)
-							return inspiration >= usable.system.inspirationCost;
-						}
-					case "downtime":
-						const combat = game.combat as PersonaCombat;
-						if (!combat) return false;
-						return combat.isSocial;
-					default:
-						return true;
-				}
+canPayActivationCost_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard, _outputReason: boolean) : boolean {
+	switch (usable.system.type) {
+		case "power": {
+			if (usable.system.tags.includes("basicatk")) {
+				return true;
 			}
-			case "consumable":
-				return usable.system.amount > 0;
-			case "skillCard":
-				return this.user.canLearnNewSkill();
+			switch (usable.system.subtype) {
+				case "weapon":
+					return  this.user.hp > (usable as Power).hpCost();
+				case "magic":
+					const mpcost = (usable as Power).mpCost(this);
+					if (mpcost > 0) {
+						return this.user.mp >= mpcost;
+					}
+				case "social-link":
+					const inspirationId = usable.system.inspirationId;
+					if (!this.user.isPC()) return false;
+					if (inspirationId) {
+						const socialLink = this.user.system.social.find( x=> x.linkId == inspirationId);
+						if (!socialLink) return false;
+						return socialLink.inspiration >= usable.system.inspirationCost;
+					} else {
+						const inspiration = this.user.system.social.reduce( (acc, item) => acc + item.inspiration , 0)
+						return inspiration >= usable.system.inspirationCost;
+					}
+				case "downtime":
+					const combat = game.combat as PersonaCombat;
+					if (!combat) return false;
+					return combat.isSocial;
+				default:
+					return true;
+			}
 		}
+		case "consumable":
+			return usable.system.amount > 0;
+		case "skillCard":
+			return this.user.canLearnNewSkill();
 	}
+}
 
 	canPayActivationCost_shadow(this: Persona<Shadow>, usable: UsableAndCard, outputReason: boolean) : boolean { if (usable.system.type == "skillCard") {
 			return false;

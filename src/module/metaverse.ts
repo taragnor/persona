@@ -1,3 +1,4 @@
+import { Persona } from "./persona-class.js";
 import { StepsClock } from "./exploration/steps-clock.js";
 import { DoomsdayClock } from "./exploration/doomsday-clock.js";
 import { SceneClock } from "./exploration/scene-clock.js";
@@ -348,23 +349,24 @@ static getSubgroupAmt(pick: Shadow) : number {
 		const XPAwardDataPromises = party.map( async actor=> {
 			const persona  = actor.persona();
 			const xp= persona.calcXP(shadows, numOfPCs );
-			const levelUp = await actor.awardXP(xp);
-			return { actor, xp ,levelUp}
+			const levelUps = await actor.awardXP(xp);
+			return { actor, xp ,levelUps};
 		});
 		const data = await Promise.all(XPAwardDataPromises);
 		await this.reportXPGain(data);
 	}
 
-static async reportXPGain(xpReport: {actor: ValidAttackers, xp: number, levelUp: boolean}[]) : Promise<void> {
+static async reportXPGain(xpReport: {actor: ValidAttackers, xp: number, levelUps: (Persona | PersonaActor)[] }[]) : Promise<void> {
 	const xpStringParts = xpReport
-	.map( ({actor, xp, levelUp}) => {
-		if (!levelUp) {
-			return `<div> ${actor.name}: ${xp}`;
-		}
-		return `<div class="level-up-msg"> ${actor.name} Level Up! (${xp} </div>`;
+	.map( ({actor, xp, levelUps}) => {
+		const base =  `<div> ${actor.name}: ${xp} </div>`;
+		const LUMsg = levelUps.map( LU => {
+			return `<div class="level-up-msg"> ${LU.displayedName} Level Up! (${xp} </div>`;
+		});
+		return base + LUMsg.join("");
 	});
 	const text = xpStringParts.join("");
-	if (xpReport.some(x=> x.levelUp)) {
+	if (xpReport.some(x=> x.levelUps.length > 0)) {
 		PersonaSFX.onLevelUp();
 	}
 	await ChatMessage.create({

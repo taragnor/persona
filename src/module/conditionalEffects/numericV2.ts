@@ -161,7 +161,7 @@ export class NumericV2 {
 			case "social-link-level": {
 				if (!situation.user) return null;
 				const actor = PersonaDB.findActor(situation.user);
-				if (!actor  || actor.system.type =="shadow") return null;
+				if (!actor  || !actor.isRealPC()) return null;
 
 				if (op.socialLinkIdOrTarot == "SLSource"){
 					//in theory these should be preverified so we're automatically letting them through
@@ -177,7 +177,7 @@ export class NumericV2 {
 			case "social-link-level": {
 				if (!situation.user) return null;
 				const actor = PersonaDB.findActor(situation.user);
-				if (!actor  || actor.system.type =="shadow") return null;
+				if (!actor  || !actor.isRealPC()) return null;
 
 				if (op.socialLinkIdOrTarot == "SLSource"){
 					//in theory these should be preverified so we're automatically letting them through

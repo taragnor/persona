@@ -1,3 +1,4 @@
+import { LevelUpCalculator } from "../../config/level-up-calculator.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { ENCOUNTER_RATE_PROBABILITY } from "../../config/probability.js";
 import { SeededRandom } from "../utility/seededRandom.js";
@@ -2912,11 +2913,51 @@ calcXP (this: ValidAttackers, killedTargets: ValidAttackers[], numOfAllies: numb
 
 }
 
+get personalELevel() : number {
+	if (!this.isPC() && !this.isNPCAlly()) return 0;
+	return this.system.personaleLevel;
+}
+
+get personalXP(): number {
+	if (!this.isPC() && !this.isNPCAlly()) return 0;
+	return this.system.personalXP
+}
+
+get XPForNextPersonalLevel() : number {
+	if (!this.isPC() && !this.isNPCAlly()) return 0;
+	return LevelUpCalculator.XPForNextLevel(this);
+}
+
+async awardPersonalXP(this: ValidAttackers, amt: number) : Promise<U<PersonaActor>> {
+	if (this.isShadow()) return undefined;
+	if (!amt) return;
+	const situation =  {
+		user: this.accessor,
+	};
+	amt = amt * this.getPersonalBonuses("xp-multiplier").total(situation, "percentage");
+	this.system.combat.classData.level;
+	const currentXP = this.system.personalXP;
+	const newTotal = currentXP + amt;
+	await this.update({"system.personalXP": newTotal});
+	const levelsGained = LevelUpCalculator.levelsGained(this, newTotal);
+	if (levelsGained > 0) {
+		const currLvl = this.system.personaleLevel;
+		const newlvl = currLvl + levelsGained;
+		await this.update({"system.personaleLevel" : newlvl});
+		return this;
+	}
+	return undefined;
+}
+
+
 /** returns true on level up */
-async awardXP(this: ValidAttackers, amt: number) : Promise<boolean> {
-	const levelUp = await this.persona().awardXP(amt);
-	//possible code later for multiple personas with growth
-	return levelUp;
+async awardXP(this: ValidAttackers, amt: number) : Promise<(Persona | PersonaActor)[]> {
+	const possibleLevelUps = [
+		await this.awardPersonalXP(amt),
+		await this.persona().awardXP(amt),
+		//possible code later for multiple personas with growth
+	];
+	return possibleLevelUps.filter(x=> x != undefined);
 }
 
 async levelUp_Incremental(this: ValidAttackers) {

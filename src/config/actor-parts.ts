@@ -263,12 +263,19 @@ export function shadowOnlyCombatAbilities() {
 	}
 }
 
+export function PCAndAllyStuff() {
+	return {
+		personalXP: new num({integer: true, initial:0, min:0}),
+		personaleLevel: new num({integer: true, min: 0, max: 100, initial:0}),
+	};
+
+}
+
 export function PCSpecificStuff() {
 	return {
 		social: socialLinks(),
 		activities: activityLinks(),
 		skills: studentSkills(),
-		// talents: new arr( new obj<TalentData>(), {initial: []}),
 	}
 }
 

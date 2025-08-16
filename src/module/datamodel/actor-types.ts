@@ -1,3 +1,4 @@
+import { PCAndAllyStuff } from "../../config/actor-parts.js";
 import { FREQUENCY } from "../../config/frequency.js";
 import { frequencyConvert2 } from "../../config/actor-parts.js";
 import { SocialQuestionDM } from "./item-types.js";
@@ -34,6 +35,7 @@ abstract class BaseStuff extends window.foundry.abstract.DataModel {
 
 }
 
+
 function talentConversion(data: any) {
 	if (data.talents != undefined) {
 		if (data.combat.talents == undefined || data.combat.talents.length == 0)  {
@@ -65,6 +67,7 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 			}),
 			bio: personalBio(),
 			...PCSpecificStuff(),
+			...PCAndAllyStuff(),
 			personaName: new txt({initial: "Persona"}),
 			...sharedAbilities(),
 			questions: new arr( new embedded(SocialQuestionDM)),
@@ -181,7 +184,7 @@ class NPCAllySchema extends foundry.abstract.TypeDataModel {
 				navigatorSkills: new arr(new id()),
 				isNavigator: new bool(),
 			}),
-			...PCSpecificStuff(),
+			...PCAndAllyStuff(),
 			bio: personalBio(),
 			...sharedAbilities(),
 			personaName: new txt({initial: "Persona"}),
@@ -191,7 +194,7 @@ class NPCAllySchema extends foundry.abstract.TypeDataModel {
 	}
 
 	static override migrateData(d : any) {
-		const data= super.migrateData(d);
+		let data= super.migrateData(d);
 		return talentConversion(data);
 	}
 }

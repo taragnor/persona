@@ -139,7 +139,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 		case "social-link-level": {
 			if (!situation.user) return false;
 			const actor = PersonaDB.findActor(situation.user);
-			if (!actor  || actor.system.type =="shadow") return false;
+			if (!actor  || !actor.isRealPC()) return false;
 
 			if (condition.socialLinkIdOrTarot == "SLSource"){
 				//in theory these should be preverified so we're automatically letting them through
@@ -948,7 +948,7 @@ function getSubjects<K extends string, T extends Record<K, ConditionTarget>>( co
 	if (!(field in cond)) {
 		Debug(cond);
 		Debug(situation);
-		const printCondition = ConditionalEffectManager.printConditional(cond as unknown as Precondition);
+		// const printCondition = ConditionalEffectManager.printConditional(cond as unknown as Precondition);
 		// PersonaError.softFail(`No field ${field} in ${printCondition} ${source?.name} of ${source?.parent?.name}`)
 		return [];
 	}
