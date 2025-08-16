@@ -53,6 +53,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		};
 	}
 
+
+	get img() : string {
+		return this.source.img;
+	}
+
 	get powers() : readonly Power[] {
 		return this.mainPowers.concat(this.bonusPowers);
 	}

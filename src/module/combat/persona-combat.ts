@@ -1658,12 +1658,20 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			};
 		}
 		const canCrit = typeof rollType == "number" ? false : true;
+		let cancelCritsForInstantDeath = false;
+		if (power.isInstantDeathAttack()) {
+			const resistanceMult = target.actor.instantKillResistanceMultiplier(attacker.actor)
+			if (resistanceMult == 0) {
+				cancelCritsForInstantDeath = true;
+			}
+		}
 		if (naturalAttackRoll + critBoost >= 20
 			&& total >= defenseVal
 			&& (!power.isMultiTarget() || naturalAttackRoll % 2 == 0)
 			&& !target.actor.hasStatus("blocking")
 			&& !power.hasTag("no-crit")
 			&& canCrit
+			&& !cancelCritsForInstantDeath
 		) {
 			situation.hit = true;
 			situation.criticalHit  = true;

@@ -773,7 +773,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (power.system.type != "power") {
 			throw new Error("Not a power");
 		}
-		return await PersonaItem.create( {
+		return await PersonaItem.create<SkillCard>( {
 			name: `${power.name} card`,
 			type: "skillCard",
 			system: {
@@ -1246,25 +1246,6 @@ ${sim.join("\n")}
 		if (this.isAoE()) boost += 4;
 		return boost;
 	}
-
-	// baseCritSlotBonus(this: Usable) : number {
-	// 	if (this.system.type == "consumable") {return 0;}
-	// 	if (this.isBasicPower()) return 0;
-	// 	if (!this.isInstantDeathAttack()) return 0;
-	// 	switch (this.system.slot) {
-	// 		case 0:
-	// 			return 5;
-	// 		case 1:
-	// 			return 7;
-	// 		case 2:
-	// 			return 9;
-	// 		case 3:
-	// 			return 11;
-	// 		default:
-	// 			PersonaError.softFail(`Unknwon Slot Type :${this.system.slot}`);
-	// 			return 0;
-	// 	}
-	// }
 
 	mpCost(this: Usable, userPersona: Persona): number {
 		if (this.isConsumable()) return 0;

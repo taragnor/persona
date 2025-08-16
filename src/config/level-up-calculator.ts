@@ -6,7 +6,7 @@ export class LevelUpCalculator {
 		const currLevel = actor.personalELevel;
 		const eLevel = this.getEffectiveLevel(newXPValue);
 		const levelsGained = Math.max(0, eLevel - currLevel);
-		levelsGained;
+		return levelsGained;
 	}
 
 	static getEffectiveLevel(xpTotal: number) : number {
@@ -16,11 +16,6 @@ export class LevelUpCalculator {
 		}
 		return 100;
 	}
-
-	// static minXPForLevel( lvl : number): number {
-	// 	return this.minXPForEffectiveLevel(lvl * 10);
-	// }
-
 
 	static XPForNextLevel(actor: PC | NPCAlly): number {
 		const currLvl = actor.personalELevel;

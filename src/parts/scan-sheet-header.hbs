@@ -1,0 +1,59 @@
+<section class="scan-header flexrow">
+	<div class="img-column">
+		<image src="{{persona.user.img}}"></image>
+		{{#if (ne persona.source persona.user)}}
+		<image src="{{persona.img}}"></image>
+		{{/if}}
+	</div>
+	<div class="scan-stats-column">
+		<div>
+			Scan Level: {{persona.scanLevel}}
+		</div>
+		<div>
+			<label> Identifier: </label> {{persona.user.prototypeToken.name}}
+		</div>
+		{{#if (and (ne persona.user.prototypeToken.name persona.user.name) (scanLevelgte persona 1))}}
+		<div>
+			<label> Actual Name: </label> {{persona.user.displayedName}}
+		</div>
+		{{#if (scanLevelgte persona 1)}}
+		{{#if (ne persona.source persona.user)}}
+		<div>
+			Active Persona: {{persona.displayedName}}
+		</div>
+		{{/if}}
+		{{/if}}
+		{{/if}}
+		<br>
+		<div>
+			<label>Tarot </label>
+			<span> {{persona.user.tarot.name}} </span>
+		</div>
+		{{#if (scanLevelgte persona 1)}}
+		<div>
+			<label>Role</label>
+			<span>{{persona.source.roleString}} </span>
+		</div>
+		{{/if}}
+
+		{{#if (scanLevelgte persona 1)}}
+		<div>
+			<label> HP </label>
+			<span> {{persona.user.hp}} / {{persona.user.mhp}} </span>
+		</div>
+		{{#if persona.user.system.creatureTags}}
+		<div>
+			<label>
+				Tags:
+			</label>
+			{{#each persona.user.system.creatureTags as |tag|}}
+			{{localize (lookup ../CREATURE_TAGS tag)}}
+			{{/each}}
+		</div>
+		{{/if}}
+
+		{{/if}}
+	</div>
+</section>
+
+

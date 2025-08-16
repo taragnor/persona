@@ -382,15 +382,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const ownership = newOwner != undefined
 			? { ownership: newOwner.ownership }
 			: {};
-		const persona = await PersonaActor.create( {
+		const persona = await PersonaActor.create<Shadow>( {
 			name: `${this.name} (Persona)`,
 			type: "shadow",
 			...ownership,
+			img: this.img,
 			system: {
-				...this.system,
+				...this.system.toJSON(),
 				creatureType : "persona",
+				baseShadowId: this.id,
 			},
 		}) as Shadow;
+
+		await persona.createEmbeddedDocuments("Item", this.items.contents.map (x=> x.toJSON()))
 		await persona.#stripShadowOnlyPowers();
 		return persona;
 	}
@@ -404,19 +408,23 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		const dmonTags = this.system.creatureTags.slice();
 		dmonTags.push("d-mon");
-		const dmon = await PersonaActor.create( {
+		const dmonStats : DeepPartial<Shadow> = {
 			name: `${this.name} (D-Mon)`,
 			type: "shadow",
+			img: this.img,
 			prototypeToken: {
 				...this.prototypeToken,
 				name: this.name,
 			},
 			system: {
-				...this.system,
+				...this.system.toJSON(),
 				creatureType : "d-mon",
 				creatureTags: dmonTags,
+				baseShadowId: this.id,
 			},
-		}) as Shadow;
+		};
+		const dmon = await PersonaActor.create<Shadow>(dmonStats);
+		await dmon.createEmbeddedDocuments("Item", this.items.contents.map (x=> x.toJSON()))
 		await dmon.#stripShadowOnlyPowers();
 		return dmon;
 	}
@@ -3586,6 +3594,13 @@ async increaseScanLevel(this: Shadow, amt :number) {
 	}
 }
 
+async clearScanLevel(this:Shadow) {
+	const scanLevel = this.persona().scanLevel ?? 0;
+	if (scanLevel == 0) return;
+	await this.update({"system.scanLevel": 0});
+}
+
+
 get maxEnergy() : number {
 	if (!this.isShadow()) return 0;
 	const BASE_MAX_ENERGY = 10;
@@ -3688,8 +3703,8 @@ get tagList() : CreatureTag[] {
 			this.system satisfies never;
 			return [];
 	}
-
 }
+
 hasCreatureTag(tag: CreatureTag) : boolean{
 	return this.tagList.includes(tag);
 }

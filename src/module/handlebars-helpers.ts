@@ -530,7 +530,7 @@ export class PersonaHandleBarsHelpers {
 			if (typeof scanLevel != "number") {
 				PersonaError.softFail("Trouble reading scan level for Persona of ${user.name}");
 			}
-			console.log(`Scan level is :${scanLevel}`);
+			// console.log(`Scan level is :${scanLevel}`);
 			return scanLevel ?? 0;
 		},
 
@@ -596,6 +596,14 @@ export class PersonaHandleBarsHelpers {
 		"getConditionalType": function (ce: ConditionalEffect) : string{
 			return ConditionalEffectManager.getConditionalType(ce);
 		},
+
+		"hasPersona": function (actor: PersonaActor) : boolean {
+			if (actor.isRealPC() || actor.isNPCAlly()) return true;
+			if (actor.isShadow())  {
+				return (actor.persona().source != actor);
+			}
+			return false;
+		}
 
 	}
 

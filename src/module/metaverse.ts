@@ -343,18 +343,23 @@ static getSubgroupAmt(pick: Shadow) : number {
 	}
 
 
-	static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void> {
-		if (!game.user.isGM) return;
-		const numOfPCs = party.length;
-		const XPAwardDataPromises = party.map( async actor=> {
-			const persona  = actor.persona();
-			const xp= persona.calcXP(shadows, numOfPCs );
+static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void> {
+	if (!game.user.isGM) return;
+	const numOfPCs = party.length;
+	const XPAwardDataPromises = party.map( async actor=> {
+		const persona  = actor.persona();
+		const xp= persona.calcXP(shadows, numOfPCs );
+		try {
 			const levelUps = await actor.awardXP(xp);
-			return { actor, xp ,levelUps};
-		});
-		const data = await Promise.all(XPAwardDataPromises);
-		await this.reportXPGain(data);
-	}
+			return { actor, xp , levelUps};
+		} catch (e) {
+			PersonaError.softFail(`Error giving XP to ${actor.name}`);
+			return {actor, xp: 0, levelUps:[]};
+		}
+	});
+	const data = await Promise.all(XPAwardDataPromises);
+	await this.reportXPGain(data);
+}
 
 static async reportXPGain(xpReport: {actor: ValidAttackers, xp: number, levelUps: (Persona | PersonaActor)[] }[]) : Promise<void> {
 	const xpStringParts = xpReport

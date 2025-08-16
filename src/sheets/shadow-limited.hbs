@@ -1,60 +1,15 @@
 <form class="shadow-sheet-limited">
 	<div class="scan-dialog">
 		<header>
-			<div>
-				<image src="{{actor.img}}"></image>
-			</div>
-			<div>
-				<div>
-					Scan Level: {{persona.scanLevel}}
-				</div>
-				<div>
-					<label> Identifier: </label> {{actor.prototypeToken.name}}
-				</div>
-				{{#if (and (ne actor.prototypeToken.name actor.name) (scanLevelgte persona 1))}}
-				<div>
-					<label> Actual Name: </label> {{actor.name}}
-				</div>
-				{{/if}}
-				<br>
-				<div>
-					<label>Tarot </label>
-					<span> {{actor.tarot.name}} </span>
-				</div>
-				{{#if (scanLevelgte persona 1)}}
-				<div>
-					<label>Role</label>
-					<span>{{actor.roleString}} </span>
-				</div>
-				{{/if}}
-
-				{{#if (scanLevelgte persona 1)}}
-				<div>
-					<label> HP </label>
-					<span> {{actor.hp}} / {{actor.mhp}} </span>
-				</div>
-				{{#if actor.system.creatureTags}}
-				<div>
-					<label>
-						Tags:
-					</label>
-					{{#each actor.system.creatureTags as |tag|}}
-					{{localize (lookup ../CREATURE_TAGS tag)}}
-					{{/each}}
-				</div>
-				{{/if}}
-
-				{{/if}}
-
-			</div>
+			{{> "systems/persona/parts/scan-sheet-header.hbs" persona=persona}}
 		</header>
 
 		<hr>
 
 		{{#if (scanLevelgte persona 1)}}
-		{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=(persona actor)}}
+		{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=persona}}
 
-		{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=(persona actor)}}
+		{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=persona}}
 		{{/if}}
 
 		{{#if (scanLevelgte persona 2)}}
@@ -69,13 +24,13 @@
 					</a>
 						{{/if}}
 						<div class="power-name">
-							{{power.name}}
+							{{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../actor}}
 							{{#if (gt ../actor.system.scanLevel 1)}}
 							<span class="cost-string">
 								({{powerCostString power ../actor}})
 							</span>
-							{{/if}}
 						</div>
+						{{/if}}
 				</div>
 				<div class="power-operations">
 				</div>

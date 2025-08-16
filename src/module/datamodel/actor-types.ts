@@ -111,6 +111,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 			creatureType: new txt({ choices: SHADOW_CREATURE_TYPE_LIST, initial: "shadow"}),
 			...tarotFields(),
 			...sharedAbilities(),
+			baseShadowId: new id(), // the base shadow that DMon and Persona are based off of, used to make learning abilities easier
 			combat: new sch({
 				...combatCommonStats(),
 				...shadowOnlyCombatAbilities(),

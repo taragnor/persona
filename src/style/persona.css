@@ -941,3 +941,15 @@ h5.choices-block {
 	flex-wrap: nowrap;
 }
 
+.scan-header .scan-stats-column {
+	flex: 5 5 auto;
+	max-width: 80%;
+	min-width: 60%;
+}
+
+.scan-header .img-column {
+	flex: 5 5 auto;
+	max-width: 20%;
+	min-width: 15%;
+}
+

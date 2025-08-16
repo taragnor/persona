@@ -117,6 +117,7 @@ export class ShadowSheet extends CombatantSheetBase {
 		html.find(".recost-power").on("click", this.onRecostPower.bind(this));
 		html.find(".add-dungeon").on("click", this.addDungeon.bind(this));
 		html.find(".del-dungeon").on("click", this.deleteDungeon.bind(this));
+		html.find(".dmon-convert").on("click", this.convertToDMon.bind(this));
 	}
 
 	async onAddPower( _ev: Event) {
@@ -155,6 +156,10 @@ export class ShadowSheet extends CombatantSheetBase {
 		const arr= this.actor.system.encounter.dungeonEncounters;
 		arr.splice(index, 1);
 		await this.actor.update({"system.encounter.dungeonEncounters": arr});
+	}
+
+	async convertToDMon() {
+		await this.actor.toDMon();
 	}
 }
 

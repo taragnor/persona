@@ -38,14 +38,24 @@
 				<span>
 					/ {{actor.mmp}}
 				</span>
-					{{#if actor.system.combat.bonusMP}}
+				{{#if actor.system.combat.bonusMP}}
 				<span class="bonus-MP">
 					(+ {{actor.system.combat.bonusMP}})
 				</span>
-					{{/if}}
+				{{/if}}
 			</div>
 			{{/if}}
 		</div>
+		{{#if (hasPersona actor)}}
+		<div class="active-persona">
+			<label>
+				Active Persona:
+			</label>
+			<span>
+				{{persona.displayedName}}
+			</span>
+		</div>
+		{{/if}}
 		{{#if (isShadow actor)}}
 		<div class="basic-attack-type">
 			<span>
