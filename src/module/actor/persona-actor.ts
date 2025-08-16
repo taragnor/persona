@@ -3691,6 +3691,10 @@ get tagList() : CreatureTag[] {
 		case "shadow": {
 			if (this.system.creatureType == "d-mon") {
 				list.pushUnique("d-mon");
+				if (this.hasPlayerOwner) {
+				list.pushUnique("pc-d-mon");
+				}
+
 			}
 			if (this.system.creatureType == "persona") {
 				list.pushUnique("persona");
