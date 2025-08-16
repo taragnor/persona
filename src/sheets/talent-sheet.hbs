@@ -15,9 +15,7 @@
 			<input type="checkbox" id="defensive" name="system.defensive" {{checked item.system.defensive}}>
 		</span>
 	</div>
-	<textarea name="system.description">
-		{{item.system.description}}
-	</textarea>
+	<textarea name="system.description">{{item.system.description}}</textarea>
 
 	<body>
 		{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}

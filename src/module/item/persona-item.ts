@@ -1035,11 +1035,30 @@ ${sim.join("\n")}
 	}
 
 	get description(): string {
-		if (this.isUsableType())
-		return this.system.description;
-		return "";
-
+		switch (this.system.type) {
+			case "consumable":
+			case "item":
+			case "power":
+			case "focus":
+			case "talent":
+			case "universalModifier":
+			case "weapon":
+		return this.system.description?.trim() ?? "";
+			case "characterClass":
+			case "skillCard":
+			case "socialCard":
+				return "";
+			default:
+				this.system satisfies never;
+				return "";
+		}
 	}
+
+		defaultConditionalEffectType() : TypedConditionalEffect["conditionalType"] {
+			if (this.isTrulyUsable()) return "on-use";
+			if (this.isDefensive()) return "defensive";
+			return "passive";
+		}
 
 	critBoost(this: Usable, user: ValidAttackers) : ModifierList {
 		const x = this.getModifier("criticalBoost", user);

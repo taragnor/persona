@@ -356,11 +356,9 @@
 	<select name="{{strcat namePrefix 'damageSubtype'}}">
 		{{selectOptions POWERSTUFF.DAMAGE_SUBTYPES localize=true selected=cons.damageSubtype}}
 	</select>
-	{{#if (ne cons.damageSubtype "multiplier")}}
 	<select name="{{strcat namePrefix 'damageType'}}">
 		{{selectOptions POWERSTUFF.DAMAGETYPESPLUS localize=true selected=cons.damageType}}
 	</select>
-	{{/if}}
 
 	{{#if (eqAny cons.damageSubtype "constant" "multiplier" "percentage" "mult-stack")}}
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">

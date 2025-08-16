@@ -314,7 +314,7 @@ export class ConditionalEffectManager {
 		// setTimeout( () => this.restoreLastClick(html), 100);
 	}
 
-	static getEffects<T extends Actor<any>, I extends Item<any> & Partial<{isDefensive : () => boolean}>>(CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null) : TypedConditionalEffect[] {
+	static getEffects<T extends Actor<any>, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null) : TypedConditionalEffect[] {
 		const conditionalEffects = this.ArrayCorrector(CEObject);
 		return conditionalEffects.map( ce=> {
 			const conditions = this.getConditionals(ce.conditions, sourceItem, sourceActor);
@@ -322,19 +322,29 @@ export class ConditionalEffectManager {
 			let forceDefensive = (sourceItem?.isDefensive)
 				? sourceItem.isDefensive()
 				: false;
-			const isDefensive = forceDefensive || (ce.isDefensive ?? false);
-			const conditionalType = !forceDefensive ? this.getConditionalType({conditions, consequences, isDefensive}): "defensive";
+			let conditionalType : TypedConditionalEffect["conditionalType"];
+			const isDefensive= (ce.isDefensive || forceDefensive) ?? false;
+			switch (true) {
+				case forceDefensive || ce.isDefensive: 
+					conditionalType = "defensive";
+					break;
+				default:
+					conditionalType = !forceDefensive ? this.getConditionalType({conditions, consequences, isDefensive}, sourceItem): "defensive";
+					if (conditionalType == "unknown" && sourceItem) {
+						conditionalType = (sourceItem.defaultConditionalEffectType) ? sourceItem.defaultConditionalEffectType() : "passive";
+					}
+			}
 			return {
 				conditionalType,
 				conditions,
 				consequences,
-				isDefensive,
+				isDefensive: conditionalType == "defensive",
 			};
-	}
+		}
 		);
-}
+	}
 
-static getConditionalType( ce: ConditionalEffect) : TypedConditionalEffect["conditionalType"] {
+static getConditionalType<I extends ConditonalEffectHolderItem>( ce: ConditionalEffect, sourceItem ?: I | null ) : TypedConditionalEffect["conditionalType"] {
 	if (ce.isDefensive) return "defensive";
 	for (const cond of ce.conditions) {
 		if (this.isTriggeredCondition(cond)) {
@@ -349,7 +359,10 @@ static getConditionalType( ce: ConditionalEffect) : TypedConditionalEffect["cond
 				return "passive";
 		}
 	}
-	return "on-use";
+	if (sourceItem && sourceItem.defaultConditionalEffectType) {
+		return sourceItem.defaultConditionalEffectType();
+	}
+	return "unknown";
 }
 
 static grantsPowers(cons: ConditionalEffect["consequences"][number]) : boolean {
@@ -1261,3 +1274,5 @@ const CETypes = [
 
 //@ts-ignore
 window.CEManager = ConditionalEffectManager;
+
+type ConditonalEffectHolderItem = Item<any> & Partial<{isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]}> ;

@@ -594,7 +594,18 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"getConditionalType": function (ce: ConditionalEffect) : string{
-			return ConditionalEffectManager.getConditionalType(ce);
+			let item : PersonaItem | undefined;
+			let someObj : Object = ce;
+			while ("parent" in someObj) {
+				if (someObj instanceof PersonaItem) {
+					item = someObj;
+					break;
+				}
+				if (typeof someObj["parent"] == "object") {
+					someObj = someObj["parent"] as Object;
+				}
+			}
+			return ConditionalEffectManager.getConditionalType(ce, item);
 		},
 
 		"hasPersona": function (actor: PersonaActor) : boolean {
