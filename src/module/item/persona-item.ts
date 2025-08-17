@@ -1,3 +1,4 @@
+import { NewDamageParams } from "../../config/damage-types.js";
 import { STATUS_AILMENT_LIST } from "../../config/status-effects.js";
 import { INSTANT_KILL_CRIT_BOOST } from "../../config/damage-types.js";
 import { PowerCostCalculator } from "../power-cost-calculator.js";
@@ -976,6 +977,23 @@ comparativePowerRatingToUsePower(this: Power, user: ValidAttackers) : number {
 		}
 	}
 
+	// getWeaponSkillDamage(this: ItemSubtype<Power, "weapon">, user: ValidAttackers, situation: Situation) : NewDamageParams {
+	// 	const persona = user.persona();
+	// 	const dmg = user.wpnDamage();
+	// 	const bonus = persona.getBonuses("wpnMult");
+	// 	const DamageReturn = DamageCalculator.weaponSkillDamage(this);
+	// 	const meleeExtraMult = DamageReturn.multiplier;
+	// 	const mult = Math.max(1, user.wpnMult() + (meleeExtraMult ?? 0) + bonus.total(situation));
+	// 	const bonusDamage = user.getBonusWpnDamage();
+	// 	const bonusLow = bonusDamage.low.add("Power Low bonus", DamageReturn.low).total(situation);
+	// 	const bonusHigh = bonusDamage.high.add("Power High bonus", DamageReturn.high).total(situation);
+	// 	const dmgamt =  {
+	// 		low: dmg.low * mult + bonusLow,
+	// 		high: dmg.high * mult + bonusHigh,
+	// 	};
+	// 	return dmgamt;
+	// }
+
 	getWeaponSkillDamage(this: ItemSubtype<Power, "weapon">, user: ValidAttackers, situation: Situation) : {low: number, high: number} {
 		const persona = user.persona();
 		const dmg = user.wpnDamage();
@@ -1076,11 +1094,16 @@ ${sim.join("\n")}
 			case "defensive":
 			case "downtime":
 				return {high: 0, low:0};
+			case "reusable":
 			case "consumable":
+			case "standalone": {
+				return {
+					high: Math.abs(this.generateSimulatedDamageObject(user, 6)?.hpChange ?? 0),
+					low: Math.abs(this.generateSimulatedDamageObject(user, 5)?.hpChange ?? 0) ,
+				};
+			}
 			case "weapon":
 			case "magic":
-			case "standalone":
-			case "reusable":
 				if (this.system.damageLevel == "none") {
 					return {high: 0, low:0};
 				}
@@ -1886,13 +1909,8 @@ ${sim.join("\n")}
 	static async DamageLevelConvert(item: PersonaItem) {
 		if (!item.isUsableType()) return;
 		if (item.isSkillCard()) return;
+		if (!item.isPower()) return;
 		let damageLevel : typeof item["system"]["damageLevel"] | undefined;
-		// if (item.system.damageLevel == "severe" && item.system.subtype == "weapon") {
-		// 	damageLevel = "heavy";
-		// 	await item.update({"system.damageLevel": damageLevel});
-		// 	console.log(`Damage Type for ${item.name} set to ${damageLevel}`);
-		// 	return;
-		// }
 		if (item.system.damageLevel != "-" && item.system.damageLevel != "fixed") return;
 		if (item.system.dmg_type == "none") {
 			damageLevel = "none";
@@ -1904,11 +1922,11 @@ ${sim.join("\n")}
 				case "weapon":
 					damageLevel = PersonaItem.#convertPhysicalDamage(item);
 					break;
-				case "consumable":
-					if (item.system.damage.low > 0)  {
-						damageLevel = "fixed";
-						break;
-					}
+				// case "consumable":
+				// 	if (item.system.damage.low > 0)  {
+				// 		damageLevel = "fixed";
+				// 		break;
+				// 	}
 				default:
 					break;
 			}
@@ -1919,7 +1937,7 @@ ${sim.join("\n")}
 		}
 	}
 
-	static #convertPhysicalDamage(item: Usable) :typeof item["system"]["damageLevel"] | undefined  {
+	static #convertPhysicalDamage(item: Power) :typeof item["system"]["damageLevel"] | undefined  {
 		switch (item.system.melee_extra_mult) {
 			case -1:
 				return "miniscule";
@@ -1941,7 +1959,7 @@ ${sim.join("\n")}
 		}
 	}
 
-	static #convertSpellDamage(item: Usable) : typeof item["system"]["damageLevel"] | undefined {
+	static #convertSpellDamage(item: Power) : typeof item["system"]["damageLevel"] | undefined {
 		switch (item.system.mag_mult) {
 			case 0:
 				return "none";
@@ -2014,12 +2032,15 @@ ${sim.join("\n")}
 		}
 	}
 
-	isDamagePower(this: Usable): boolean {
-		if (!this.isTrulyUsable()) return false;
-		if (this.isSkillCard()) return false;
+isDamagePower(this: Usable): boolean {
+	if (!this.isTrulyUsable()) return false;
+	if (this.isSkillCard()) return false;
+	if (this.isPower()) {
 		if (this.system.damageLevel == "none") return false;
 		return true;
 	}
+	return this.system.damage.high > 0; //for consumables
+}
 
 	statusesAdded(this: Usable): StatusEffectId[] {
 		const effects= this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == "addStatus"? [cons.statusName] : []));

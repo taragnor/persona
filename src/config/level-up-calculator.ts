@@ -76,7 +76,17 @@ export class LevelUpCalculator {
 	static async converterFromOldSystem( actor: PC | NPCAlly): Promise<void> {
 		if (actor.system.personaleLevel != 0) return;
 		//TODO: finish this
+		const eLevel = this.getElevelOfOldSystem(actor);
+	}
+
+	static getElevelOfOldSystem(actor : PC | NPCAlly) : number {
 		const baseLvl = actor.system.combat.classData.level;
+		const incrementals = actor.numOfIncAdvances();
+		const maxIncrementals = actor.maxIncrementalAdvances();
+		const effectiveAdds = Math.round((incrementals / maxIncrementals) * 10) / 10;
+		const effectiveLevel =  effectiveAdds + baseLvl;
+		return effectiveLevel;
+
 	}
 
 	static shadowXPValue(shadowELevel: number) : number {

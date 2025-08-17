@@ -1,3 +1,4 @@
+import { powerOnlyUsableProps } from "./power-dm.js";
 import { triEffects } from "./power-dm.js";
 import { CONSUMABLE_SUBTYPE_LIST } from "../../config/equip-slots.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../../config/roll-tags.js";
@@ -137,6 +138,7 @@ class PowerSchema extends foundry.abstract.TypeDataModel {
 	get type() {return "power" as const;}
 	static override defineSchema() {
 		const ret = {
+			...powerOnlyUsableProps(),
 			...powerSpecific(),
 			...powerCost(),
 			...UsablePowerProps(),
@@ -191,20 +193,20 @@ class ConsumableSchema extends foundry.abstract.TypeDataModel {
 	}
 
 	static override migrateData(data: any)  {
-		const itemData = data as (Power["system"] | Consumable["system"]);
-		let dmult = 0;
-		if (itemData.melee_extra_mult == undefined && itemData?.damage?.low) {
-			const dmglow = itemData.damage.low;
-			switch (true) {
-				case dmglow == 0: dmult = 0; break;
-				case	dmglow <= 5: dmult = 2;   break;
-				case dmglow <=10: dmult = 4; break;
-				case dmglow <=25: dmult = 7; break;
-				case dmglow >25: dmult= 10; break;
-				default: break;
-			}
-			itemData.melee_extra_mult = dmult;
-		}
+		// const itemData = data as (Power["system"] | Consumable["system"]);
+		// let dmult = 0;
+		// if (itemData.melee_extra_mult == undefined && itemData?.damage?.low) {
+		// 	const dmglow = itemData.damage.low;
+		// 	switch (true) {
+		// 		case dmglow == 0: dmult = 0; break;
+		// 		case	dmglow <= 5: dmult = 2;   break;
+		// 		case dmglow <=10: dmult = 4; break;
+		// 		case dmglow <=25: dmult = 7; break;
+		// 		case dmglow >25: dmult= 10; break;
+		// 		default: break;
+		// 	}
+		// 	itemData.melee_extra_mult = dmult;
+		// }
 		return data;
 	}
 }
@@ -307,19 +309,6 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 	}
 }
 
-export const ITEMMODELS = {
-	consumable: ConsumableSchema,
-	item: InventoryItemSchema,
-	power: PowerSchema,
-	characterClass: CharacterClassDM,
-	focus: FocusDM,
-	talent: TalentDM,
-	weapon: WeaponDM,
-	universalModifier: UniversalModifierDM,
-	skillCard: SkillCardSchema,
-	// job: JobItemSchema,
-	socialCard: SocialCardSchema,
-} as const;
 
 export class ConditionalEffectDM extends foundry.abstract.DataModel {
 	static override defineSchema() {
@@ -500,6 +489,20 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 	}
 
 }
+
+export const ITEMMODELS = {
+	consumable: ConsumableSchema,
+	item: InventoryItemSchema,
+	power: PowerSchema,
+	characterClass: CharacterClassDM,
+	focus: FocusDM,
+	talent: TalentDM,
+	weapon: WeaponDM,
+	universalModifier: UniversalModifierDM,
+	skillCard: SkillCardSchema,
+	// job: JobItemSchema,
+	socialCard: SocialCardSchema,
+} as const;
 
 namespace Test{
 	type CardSChema = Foundry.SystemDataObjectFromDM<typeof SocialCardSchema>;

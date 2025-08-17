@@ -168,6 +168,10 @@ function incremental() {
 	});
 }
 
+function newIncremental() {
+
+}
+
 export class ClassDataDM extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		return {

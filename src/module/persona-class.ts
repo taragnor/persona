@@ -170,6 +170,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			PersonaError.softFail(`Attempting to add NaN XP to ${this.name}, aborted`);
 			return undefined;
 		}
+		amt = Math.floor(amt);
 		const sit: Situation = {
 			...this.baseSituation,
 		};

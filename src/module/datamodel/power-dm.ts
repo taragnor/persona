@@ -52,17 +52,24 @@ export function powerCost() {
 	}
 }
 
+export function powerOnlyUsableProps() {
+	return {
+		damageLevel: new txt({choices: DAMAGE_LEVELS_LIST, initial: "-"}),
+		customCost: new bool(),
+		mag_mult: new num( {integer:true, min:0, max: 100, initial:1}),
+		melee_extra_mult: new num( {integer: true, min: -10, max:50, initial: 0}),
+
+	};
+
+}
+
 export function UsablePowerProps() {
 	return {
 		sound: new file ({categories: ["AUDIO"] }),
 		tags: new arr( new txt<typeof POWER_TAGS_LIST[number]>({choices: POWER_TAGS_LIST})),
-		damageLevel: new txt({choices: DAMAGE_LEVELS_LIST, initial: "-"}),
-		customCost: new bool(),
 		instantKillChance: new txt({choices: INSTANT_KILL_LEVELS, initial: "none"}),
 		ailmentChance: new txt({choices: INSTANT_KILL_LEVELS, initial: "none"}),
 		damage: damage(),
-		mag_mult: new num( {integer:true, min:0, max: 100, initial:1}),
-		melee_extra_mult: new num( {integer: true, min: -10, max:50, initial: 0}),
 		defense: new txt<(typeof DEFENSECHOICES[number]) >( {choices: DEFENSECHOICES, initial: "ref"}),
 		targets: new txt<typeof TARGETINGLIST[number]> ( {choices: TARGETINGLIST, initial: "1-engaged"}),
 		validTargetConditions: new arr( new obj<Precondition>()),
