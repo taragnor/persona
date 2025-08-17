@@ -1887,6 +1887,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (powers.length < this.basePersona.maxMainPowers) {
 			powers.push(power.id);
 			await this.update( {"system.combat.powers": powers});
+			await Logger.sendToChat(`${this.name} learned Power: ${power.name}`);
 			return;
 		}
 		sideboard.push(power.id);
@@ -1904,9 +1905,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (item) {
 			await item.delete();
 			return;
-		}
-		if (! ("talents" in this.system)) {
-			return false;
 		}
 		if (this.isShadow()) return;
 		let powers = this.system.combat.powers;

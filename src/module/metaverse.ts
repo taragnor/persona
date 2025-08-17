@@ -353,7 +353,7 @@ static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void>
 			const levelUps = await actor.awardXP(xp);
 			return { actor, xp , levelUps};
 		} catch (e) {
-			PersonaError.softFail(`Error giving XP to ${actor.name}`);
+			PersonaError.softFail(`Error giving XP to ${actor.name}`, e);
 			return {actor, xp: 0, levelUps:[]};
 		}
 	});

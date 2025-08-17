@@ -440,7 +440,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				break;
 			default:
 				this.system satisfies never;
-				PersonaError.softFail(`Can't check tag list for ${this.system["type"]}`);
+				// PersonaError.softFail(`Can't check tag list for ${this.system["type"]}`);
 				return false;
 		}
 		return list.includes(tag);

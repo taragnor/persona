@@ -30,6 +30,8 @@ export class LevelUpCalculator {
 		if (this.XPTable.has(eLevel)) {
 			return this.XPTable.get(eLevel)!;
 		}
+		if (eLevel <= 1)
+			return 100;
 		let xp = (eLevel == 1) ? 100 : ( 1.1 * this.minXPForEffectiveLevel(eLevel-1));
 		xp = Math.round(xp);
 		this.XPTable.set(eLevel, xp);
