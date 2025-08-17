@@ -621,11 +621,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		else  {
 			return this.powerCostString_PC(persona);
 		}
-		// if (!this.parent || this.parent.system.type == "pc" || this.parent.system.type == "npcAlly")
-		// 	return this.powerCostString_PC(persona);
-		// if (this.parent.system.type == "shadow")
-		// 	return this.powerCostString_Shadow();
-		// else return "";
 	}
 
 	grantsPowers(this: ModifierContainer): boolean {
