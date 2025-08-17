@@ -1579,7 +1579,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		const attackbonus = this.getAttackBonus(attacker.actor, power, target, modifiers);
 		if (rollType == "reflect") {
-			attackbonus.add("Reflected Attack", 5);
+			attackbonus.add("Reflected Attack", 15);
 		}
 		const cssClass=  (target.actor.system.type != "pc") ? "gm-only" : "";
 		const roll = new RollBundle("Temp", r, attacker.actor.system.type == "pc", attackbonus, baseSituation);
@@ -2802,7 +2802,8 @@ static calculateAllOutAttackDamage(attacker: PToken, situation: AttackResult["si
 		const mult = actor == attackLeader ? 1 : (1/4);
 		const combatResult = this.individualContributionToAllOutAttackDamage(actor, situation);
 		const dmg = combatResult?.finalize()?.attacks[0]?.changes[0]?.damage[0];
-		if (dmg == undefined) {
+		if (dmg == undefined || dmg.hpChange == 0) {
+			PersonaError.softFail("Allout contribution for ${actor.name} was 0 or undefined");
 			continue;
 		}
 		const contribution= Math.round(Math.abs(dmg.hpChange) * mult);

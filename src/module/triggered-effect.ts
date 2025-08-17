@@ -1,3 +1,4 @@
+import { removeDuplicates } from "./utility/array-tools.js";
 import { Metaverse } from "./metaverse.js";
 import { UniversalModifier } from "./item/persona-item.js";
 import { PersonaError } from "./persona-error.js";
@@ -123,7 +124,7 @@ export class TriggeredEffect {
 				...PCTriggers,
 			];
 		}
-		for (const trig of triggers) {
+		for (const trig of removeDuplicates(triggers)) {
 			for (const eff of trig.getTriggeredEffects(actor ?? null)) {
 				if (!ModifierList.testPreconditions(eff.conditions, situationCopy, trig)) { continue; }
 				const res = PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null, trig);

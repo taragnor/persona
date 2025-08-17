@@ -262,11 +262,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		} else {
 			roomModifiers.push(...(Metaverse.getRegion()?.allRoomEffects ?? []));
 		}
-		const passivePowers = (options && options.omitPowers) ? [] : this.passivePowers();
+		const passiveOrTriggeredPowers = (options && options.omitPowers) ? [] : this.passiveOrTriggeredPowers();
 		const mainMods = [
 			...this.passiveFocii(),
 			...this.talents,
-			...passivePowers,
+			...passiveOrTriggeredPowers,
 			...user.actorMainModifiers(),
 			...roomModifiers,
 			...PersonaDB.getGlobalModifiers(),
@@ -276,11 +276,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return mainMods;
 	}
 
-	passivePowers() : readonly Power[] {
+	passiveOrTriggeredPowers() : readonly Power[] {
 		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!this.#cache.passivePowers || !PersonaCaching) {
 				this.#cache.passivePowers = this.powers
-				.filter( power=> power.hasPassiveEffects(this.user));
+				.filter( power=> power.hasPassiveEffects(this.user) || power.hasTriggeredEffects(this.user));
 		}
 		return this.#cache.passivePowers;
 	}

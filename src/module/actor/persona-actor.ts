@@ -2357,9 +2357,9 @@ getEffects(this: ValidAttackers) : readonly ConditionalEffect[] {
 	return this.mainModifiers().flatMap( x=> x.getEffects(this));
 }
 
-getPassivePowers(this: ValidAttackers): readonly Power[] {
-	return this.persona().passivePowers();
-}
+// getPassivePowers(this: ValidAttackers): readonly Power[] {
+// 	return this.persona().powers().filter;
+// }
 
 canEngage() :boolean {
 	return !this.isDistracted() && this.isCapableOfAction();

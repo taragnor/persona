@@ -345,6 +345,9 @@ static getSubgroupAmt(pick: Shadow) : number {
 
 static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void> {
 	if (!game.user.isGM) return;
+	//TEmp fix since it was bugged
+	return;
+	//TODO: fix XP
 	const numOfPCs = party.length;
 	const XPAwardDataPromises = party.map( async actor=> {
 		const persona  = actor.persona();
@@ -366,7 +369,7 @@ static async reportXPGain(xpReport: {actor: ValidAttackers, xp: number, levelUps
 	.map( ({actor, xp, levelUps}) => {
 		const base =  `<div> ${actor.name}: ${xp} </div>`;
 		const LUMsg = levelUps.map( LU => {
-			return `<div class="level-up-msg"> ${LU.displayedName} Level Up! (${xp} </div>`;
+			return `<div class="level-up-msg"> ${LU.displayedName} Level Up! (${xp}) </div>`;
 		});
 		return base + LUMsg.join("");
 	});
