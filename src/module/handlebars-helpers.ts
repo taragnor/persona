@@ -599,7 +599,7 @@ export class PersonaHandleBarsHelpers {
 		"getConditionalType": function (ce: ConditionalEffect) : string{
 			let item : PersonaItem | undefined;
 			let someObj : Object = ce;
-			while ("parent" in someObj) {
+			while (someObj && "parent" in someObj) {
 				if (someObj instanceof PersonaItem) {
 					item = someObj;
 					break;

@@ -33,6 +33,7 @@ export const POWER_TYPE_TAGS = [
 	"pierce",
 	"hack",
 	"exploration",
+	"usable-while-dead",
 ] as const;
 
 const POWER_TRAIT_TAGS = [

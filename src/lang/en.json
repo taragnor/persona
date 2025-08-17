@@ -414,6 +414,7 @@
 	"persona.power.tag.pierce": "Pierce",
 	"persona.power.tag.hack": "MV Hack",
 	"persona.power.tag.exploration": "Exploration",
+	"persona.power.tag.usable-while-dead": "Usable while downed",
 
 	"persona.card.tag.": "-",
 	"persona.card.tag.nil": "-",

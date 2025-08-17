@@ -612,7 +612,7 @@ get isUnderResistCap(): boolean {
 
 canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
 	const user = this.user;
-	if (!this.user.isAlive()) return false;
+	if (!this.user.isAlive() && !usable.hasTag("usable-while-dead")) return false;
 	if (!usable.isTrulyUsable()) return false;
 
 		if (user.hasStatus("rage") && usable != PersonaDB.getBasicPower("Basic Attack")) {
