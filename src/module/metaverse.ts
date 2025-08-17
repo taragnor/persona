@@ -346,8 +346,6 @@ static getSubgroupAmt(pick: Shadow) : number {
 static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void> {
 	if (!game.user.isGM) return;
 	//TEmp fix since it was bugged
-	return;
-	//TODO: fix XP
 	const numOfPCs = party.length;
 	const XPAwardDataPromises = party.map( async actor=> {
 		const persona  = actor.persona();

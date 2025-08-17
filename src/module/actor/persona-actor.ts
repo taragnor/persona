@@ -2377,30 +2377,6 @@ hasBanefulStatus(): boolean {
 	return !!this.effects.find( (st) => st.isBaneful)
 }
 
-// getLevelOfTalent(this: PC, talent: Talent) : number {
-// 	const x= this.system.talents.find( x=> x.talentId == talent.id);
-// 	if (!x) return 0;
-// 	return x.talentLevel;
-// }
-
-// async incrementTalent(this: PC | NPCAlly, talentId: string) {
-// 	const x = this.system.talents.find( x => x.talentId == talentId);
-// 	if (!x) return;
-// 	x.talentLevel = Math.min(3, x.talentLevel+1);
-// 	await this.update({"system.talents": this.system.talents});
-// 	const talent = PersonaDB.allItems().find( item => item.id == talentId);
-// 	await Logger.sendToChat(`<b>${this.name}:</b> raised talent ${talent?.name} to level ${x.talentLevel}`, this);
-// }
-
-// async decrementTalent(this:PC | NPCAlly, talentId :string) {
-// 	const x = this.system.talents.find( x => x.talentId == talentId);
-// 	if (!x) return;
-// 	x.talentLevel = Math.max(0, x.talentLevel-1);
-// 	await this.update({"system.talents": this.system.talents});
-// 	const talent = PersonaDB.allItems().find( item => item.id == talentId);
-// 	await Logger.sendToChat(`<b>${this.name}:</b> reduced talent ${talent?.name} to level ${x.talentLevel}`, this);
-// }
-
 getSaveBonus( this: ValidAttackers) : ModifierList {
 	const mods = this.mainModifiers().flatMap( item => item.getModifier("save", this));
 	// const x = this.getActiveTokens()[0]
@@ -2959,7 +2935,7 @@ async awardPersonalXP(this: ValidAttackers, amt: number) : Promise<U<PersonaActo
 /** returns true on level up */
 async awardXP(this: ValidAttackers, amt: number) : Promise<(Persona | PersonaActor)[]> {
 	const possibleLevelUps = [
-		await this.awardPersonalXP(amt),
+		// await this.awardPersonalXP(amt),
 		await this.persona().awardXP(amt),
 		//possible code later for multiple personas with growth
 	];

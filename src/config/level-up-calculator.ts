@@ -1,7 +1,14 @@
-import { PC } from "../module/actor/persona-actor";
-import { NPCAlly } from "../module/actor/persona-actor";
+import { PC } from "../module/actor/persona-actor.js";
+import { NPCAlly } from "../module/actor/persona-actor.js";
+
 
 export class LevelUpCalculator {
+	static LEVEL_GROWTH_RATE = 1.125;
+	static SHADOWS_TO_KILL_TO_LEVEL = 10;
+
+	static XPTable : Map<number, number> = new Map();
+	static XPToAdvanceTable: Map<number, number> = new Map();
+
 	static levelsGained(actor: PC | NPCAlly, newXPValue: number) : number {
 		const currLevel = actor.personalELevel;
 		const eLevel = this.getEffectiveLevel(newXPValue);
@@ -19,28 +26,86 @@ export class LevelUpCalculator {
 
 	static XPForNextLevel(actor: PC | NPCAlly): number {
 		const currLvl = actor.personalELevel;
-		const xpForCurrent = this.minXPForEffectiveLevel(currLvl);
-		const xpForNext = this.minXPForEffectiveLevel(currLvl+1);
-		return xpForNext - xpForCurrent;
+		return this.XPRequiredToAdvance(currLvl);
 	}
 
-	static XPTable : Map<number, number> = new Map();
 	//** uses 1-100 scale
 	static minXPForEffectiveLevel( eLevel: number) : number {
+		eLevel = Math.floor(eLevel);
+		if (Number.isNaN(eLevel)) {
+			throw new Error("NaN level can't compute XP");
+		}
 		if (this.XPTable.has(eLevel)) {
 			return this.XPTable.get(eLevel)!;
 		}
-		if (eLevel <= 1)
+		console.log(`Computing XP for level ${eLevel}`);
+		if (eLevel <= 1) {
+			if (eLevel < 1) {
+				this.XPTable.set(eLevel, 0);
+				return 0;
+			}
+			this.XPTable.set(eLevel, 100);
 			return 100;
-		let xp = (eLevel == 1) ? 100 : ( 1.1 * this.minXPForEffectiveLevel(eLevel-1));
-		xp = Math.round(xp);
+		}
+		const XPReqForLastLevel = this.minXPForEffectiveLevel(eLevel-1);
+		const XPReqForNewLevel = XPReqForLastLevel + this.XPRequiredToAdvance(eLevel);
+		const xp = Math.round(XPReqForNewLevel);
 		this.XPTable.set(eLevel, xp);
 		return xp;
 	}
+
+	static XPRequiredToAdvance(eLevel: number) : number {
+		const val = this.XPToAdvanceTable.get(eLevel);
+		if (eLevel <= 1) {
+			if (eLevel < 1) {
+				this.XPToAdvanceTable.set(eLevel, 0);
+				return 0;
+			}
+			this.XPToAdvanceTable.set(eLevel, 100);
+			return 100;
+		}
+		if (val)
+			return val;
+		const XPRequiredForLastLevel = this.XPRequiredToAdvance(eLevel - 1);
+		let XPNeeded = this.LEVEL_GROWTH_RATE * XPRequiredForLastLevel;
+		XPNeeded = Math.round(XPNeeded);
+		this.XPToAdvanceTable.set(eLevel, XPNeeded);
+		return XPNeeded;
+	}
+
 	static async converterFromOldSystem( actor: PC | NPCAlly): Promise<void> {
 		if (actor.system.personaleLevel != 0) return;
+		//TODO: finish this
 		const baseLvl = actor.system.combat.classData.level;
 	}
 
+	static shadowXPValue(shadowELevel: number) : number {
+		const XPValue = this.XPRequiredToAdvance(shadowELevel) / this.SHADOWS_TO_KILL_TO_LEVEL;
+		return Math.round(XPValue);
+
+	}
+
+
+	static resetCache(): void {
+		this.XPTable = new Map();
+		this.XPToAdvanceTable = new Map();
+
+	}
+
+	static printMilestones(xp_growth ?: number) {
+		if (xp_growth) {
+			this.LEVEL_GROWTH_RATE = xp_growth;
+			this.resetCache();
+		}
+		for (let lvl = 1; lvl < 100; lvl+=10) {
+			const XPNeeded = this.XPRequiredToAdvance(lvl);
+			console.log(` ${lvl} : ${XPNeeded}`);
+		}
+
+	}
+
 }
+
+//@ts-ignore
+window.LevelUpCalculator = LevelUpCalculator;
 
