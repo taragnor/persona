@@ -197,6 +197,7 @@ export function combatCommonStats() {
 		hp: new num( {integer:true, initial: 1}),
 		wpnatk: new num( {integer:true, initial: 0}),
 		magatk: new num( {integer:true, initial: 0}),
+		powers: new arr( new id()),
 		defenses :
 		new sch({
 			ref: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
@@ -219,7 +220,6 @@ export function combatCommonStats() {
 export function PCAndNPCAllyCombatStats() {
 	return {
 		...combatCommonStats(),
-		powers: new arr( new id()),
 		powers_sideboard: new arr( new id()),
 		teamworkMove: new id(),
 		mp: new sch({

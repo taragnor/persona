@@ -1968,6 +1968,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			PersonaError.softFail(`Damage type is undefined for ${power.name}`, cons);
 			return [];
 		}
+		const  stamina = -Math.floor(targets[0].persona().endurance / 2);
+		const staminaString = "Target Endurance / 2";
 		switch (cons.damageSubtype) {
 			case "odd-even":
 				if (situation.naturalRoll == undefined) {
@@ -1976,22 +1978,23 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				}
 				if ( (situation.naturalRoll ?? 0) % 2 == 0) {
 					dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
-						// dmgAmt = power.getDamage(attacker, situation, cons.damageType)["high"];
 					dmgCalc.setApplyEvenBonus();
 				} else {
 					dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
-					// dmgAmt = power.getDamage(attacker, situation, cons.damageType)["low"];
 				}
+				dmgCalc.add("resist", stamina, staminaString);
 				break;
 			case "multiplier":
 					return targets.map( applyTo => ({applyTo, cons, })
 					);
 			case "low":
 					dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
+				dmgCalc.add("resist", stamina, staminaString);
 				break;
 			case "high":
-					dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
+				dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
 				dmgCalc.setApplyEvenBonus();
+				dmgCalc.add("resist", stamina, staminaString);
 				// dmgAmt = power.getDamage(attacker, situation, cons.damageType)[cons.damageSubtype];
 				break;
 			case "allout-low":

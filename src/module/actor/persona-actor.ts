@@ -381,8 +381,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			throw new PersonaError(`${this.name} is Ineligible to become a Persona`);
 		}
 		const ownership = newOwner != undefined
-			? { ownership: newOwner.ownership }
-			: {};
+		? { ownership: newOwner.ownership }
+		: {};
 		const persona = await PersonaActor.create<Shadow>( {
 			name: `${this.name} (Persona)`,
 			type: "shadow",
@@ -757,32 +757,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!PersonaCaching || this.cache.socialData == undefined) {
 			this.cache.socialData = this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
-			const npc = PersonaDB.getActor(linkId);
-			if (!npc) return [];
-			const isDating = relationshipType == "DATE";
-			relationshipType = relationshipType ? relationshipType : npc.baseRelationship;
-			if (npc.system.type == "npc") {
-				const allFocii = (npc as NPC).getSocialFocii_NPC(npc as SocialLink);
-				const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
-				return [{
-					currentProgress,
-					linkLevel,
-					inspiration,
-					relationshipType,
-					actor:npc as SocialLink,
-					linkBenefits: npc as SocialLink,
-					allFocii,
-					available: npc.isAvailable(this as PC),
-					focii: qualifiedFocii,
-					isDating,
-				}];
-			} else {
-				if (npc == this) {
-					const personalLink = PersonaDB.personalSocialLink();
-					if (!personalLink)  {
-						return [];
-					}
-					const allFocii = (personalLink as NPC).getSocialFocii_PC(personalLink as SocialLink, npc as PC);
+				const npc = PersonaDB.getActor(linkId);
+				if (!npc) return [];
+				const isDating = relationshipType == "DATE";
+				relationshipType = relationshipType ? relationshipType : npc.baseRelationship;
+				if (npc.system.type == "npc") {
+					const allFocii = (npc as NPC).getSocialFocii_NPC(npc as SocialLink);
 					const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
 					return [{
 						currentProgress,
@@ -790,34 +770,54 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						inspiration,
 						relationshipType,
 						actor:npc as SocialLink,
-						linkBenefits: personalLink,
-						allFocii: allFocii,
+						linkBenefits: npc as SocialLink,
+						allFocii,
+						available: npc.isAvailable(this as PC),
 						focii: qualifiedFocii,
-						available: (npc as SocialLink).isAvailable(this as PC),
 						isDating,
 					}];
 				} else {
-					const teammate = PersonaDB.teammateSocialLink();
-					if (!teammate)  {
-						return [];
+					if (npc == this) {
+						const personalLink = PersonaDB.personalSocialLink();
+						if (!personalLink)  {
+							return [];
+						}
+						const allFocii = (personalLink as NPC).getSocialFocii_PC(personalLink as SocialLink, npc as PC);
+						const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
+						return [{
+							currentProgress,
+							linkLevel,
+							inspiration,
+							relationshipType,
+							actor:npc as SocialLink,
+							linkBenefits: personalLink,
+							allFocii: allFocii,
+							focii: qualifiedFocii,
+							available: (npc as SocialLink).isAvailable(this as PC),
+							isDating,
+						}];
+					} else {
+						const teammate = PersonaDB.teammateSocialLink();
+						if (!teammate)  {
+							return [];
+						}
+						const allFocii = (teammate as NPC).getSocialFocii_PC(teammate as SocialLink, npc as PC);
+						const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
+						return [{
+							currentProgress,
+							linkLevel,
+							inspiration,
+							relationshipType,
+							actor:npc as SocialLink,
+							linkBenefits: teammate,
+							allFocii: allFocii,
+							focii: qualifiedFocii,
+							available: (npc as SocialLink).isAvailable(this as PC),
+							isDating,
+						}];
 					}
-					const allFocii = (teammate as NPC).getSocialFocii_PC(teammate as SocialLink, npc as PC);
-					const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
-					return [{
-						currentProgress,
-						linkLevel,
-						inspiration,
-						relationshipType,
-						actor:npc as SocialLink,
-						linkBenefits: teammate,
-						allFocii: allFocii,
-						focii: qualifiedFocii,
-						available: (npc as SocialLink).isAvailable(this as PC),
-						isDating,
-					}];
 				}
-			}
-		});
+			});
 		}
 		return this.cache.socialData;
 	}
@@ -878,16 +878,23 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		switch (this.system.type) {
 			case "npc": case "tarot": return [];
 			case "npcAlly":
-			case "pc":
+			case "pc": {
 				const powerIds = this.system.combat.powers;
 				const pcPowers : Power[] = powerIds.flatMap( id=> {
 					const i = PersonaDB.getItemById(id);
 					return (i ? [i as Power] : []);
 				});
 				return pcPowers;
-			case "shadow":
+			}
+			case "shadow": {
+				const powerIds = this.system.combat.powers;
+				const compPowers : Power[] = powerIds.flatMap( id=> {
+					const i = PersonaDB.getItemById(id);
+					return (i ? [i as Power] : []);
+				});
 				const shadowPowers = this.items.filter( x=> x.system.type == "power") as Power[];
-				return shadowPowers;
+				return compPowers.concat(shadowPowers);
+			}
 			default:
 				this.system satisfies never;
 				return [];
@@ -927,25 +934,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return pcPowers;
 	}
 
-	// get bonusPowers() : readonly Power[] {
-	// 	switch (this.system.type) {
-	// 		case "npc": case "tarot":
-	// 			return [];
-	// 		case "shadow":
-	// 		case "pc":
-	// 		case "npcAlly":
-	// 			const bonusPowers : Power[] =
-	// 				this.persona().mainModifiers({omitPowers:true})
-	// 				.filter(x=> x.grantsPowers())
-	// 				.flatMap(x=> x.getGrantedPowers(this as PC ))
-	// 				.sort ( (a,b)=> a.name.localeCompare(b.name)) ;
-	// 			return removeDuplicates(bonusPowers);
-	// 		default:
-	// 			this.system satisfies never;
-	// 			return [];
-	// 	}
-	// }
-
 	get basicPowers() : readonly Power [] {
 		switch (this.system.type) {
 			case "npc": case "tarot":
@@ -982,21 +970,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	// get maxMainPowers() : number {
-	// 	switch (this.system.type) {
-	// 		case "npc":
-	// 		case "tarot":
-	// 			return 0;
-	// 		case "pc":
-	// 		case "npcAlly":
-	// 		case "shadow":
-	// 			return 8;
-	// 		default:
-	// 			this.system satisfies never;
-	// 			return -1;
-	// 	}
-	// }
-
 	async addNavigatorSkill(this: NPCAlly, pwr: Power) {
 		this.system.combat.navigatorSkills.pushUnique(pwr.id);
 		await this.update( {"system.combat.navigatorSkills" : this.system.combat.navigatorSkills});
@@ -1018,8 +991,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return [];
 			case "npcAlly":
 				const powers = this.system.combat.navigatorSkills
-				.map( id => PersonaDB.getPower(id))
-				.filter( x=> x != undefined);
+					.map( id => PersonaDB.getPower(id))
+					.filter( x=> x != undefined);
 				// const powers = PersonaDB.allPowers().filter(x=> x.id == id);
 				return powers;
 			default:
@@ -1981,98 +1954,98 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-getSocialStat(this: PC, socialStat: SocialStat) : ModifierList {
-	const stat = this.system.skills[socialStat];
-	const mods = new ModifierList();
-	const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
-	mods.add(skillName, stat);
-	return mods.concat(this.persona().getBonuses(socialStat));
-}
-
-async createSocialLink(this: PC, npc: SocialLink) {
-	if (this.system.social.find( x=> x.linkId == npc.id)) {
-		return;
+	getSocialStat(this: PC, socialStat: SocialStat) : ModifierList {
+		const stat = this.system.skills[socialStat];
+		const mods = new ModifierList();
+		const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
+		mods.add(skillName, stat);
+		return mods.concat(this.persona().getBonuses(socialStat));
 	}
-	this.system.social.push(
-		{
-			linkId: npc.id,
-			linkLevel: 1,
-			inspiration: 1,
-			currentProgress: 0,
-			relationshipType: "PEER",
-			isDating: false,
+
+	async createSocialLink(this: PC, npc: SocialLink) {
+		if (this.system.social.find( x=> x.linkId == npc.id)) {
+			return;
 		}
-	);
-	PersonaSounds.newSocialLink();
-	await this.update({"system.social": this.system.social});
-	await Logger.sendToChat(`${this.name} forged new social link with ${npc.displayedName} (${npc.tarot?.name}).` , this);
-}
+		this.system.social.push(
+			{
+				linkId: npc.id,
+				linkLevel: 1,
+				inspiration: 1,
+				currentProgress: 0,
+				relationshipType: "PEER",
+				isDating: false,
+			}
+		);
+		PersonaSounds.newSocialLink();
+		await this.update({"system.social": this.system.social});
+		await Logger.sendToChat(`${this.name} forged new social link with ${npc.displayedName} (${npc.tarot?.name}).` , this);
+	}
 
-get baseRelationship(): string {
-	switch (this.system.type) {
-		case "pc":
-			return "PEER";
-		case "npc": case "npcAlly":
-			return "PEER";
-		case "shadow":
-		case "tarot":
-			break;
-		default:
-			this.system satisfies never;
+	get baseRelationship(): string {
+		switch (this.system.type) {
+			case "pc":
+				return "PEER";
+			case "npc": case "npcAlly":
+				return "PEER";
+			case "shadow":
+			case "tarot":
+				break;
+			default:
+				this.system satisfies never;
+		}
+		return "NONE";
 	}
-	return "NONE";
-}
 
-async increaseSocialLink(this: PC, linkId: string) {
-	const link = this.system.social.find( x=> x.linkId == linkId);
-	if (!link) {
-		throw new PersonaError("Trying to increase social link you don't have");
+	async increaseSocialLink(this: PC, linkId: string) {
+		const link = this.system.social.find( x=> x.linkId == linkId);
+		if (!link) {
+			throw new PersonaError("Trying to increase social link you don't have");
+		}
+		if (link.linkLevel >= 10) {
+			throw new PersonaError("Social Link is already maxed out");
+		}
+		link.linkLevel +=1 ;
+		// link.currentProgress= 0;
+		link.inspiration = link.linkLevel;
+		if (link.linkLevel == 10) {
+			PersonaSounds.socialLinkMax();
+		} else {
+			PersonaSounds.socialLinkUp();
+		}
+		await this.update({"system.social": this.system.social});
+		const target = game.actors.get(link.linkId) as NPC | PC;
+		if (target) {
+			await Logger.sendToChat(`${this.name} increased Social Link with ${target.displayedName} (${target.tarot?.name}) to SL ${link.linkLevel}.` , this);
+		}
 	}
-	if (link.linkLevel >= 10) {
-		throw new PersonaError("Social Link is already maxed out");
-	}
-	link.linkLevel +=1 ;
-	// link.currentProgress= 0;
-	link.inspiration = link.linkLevel;
-	if (link.linkLevel == 10) {
-		PersonaSounds.socialLinkMax();
-	} else {
-		PersonaSounds.socialLinkUp();
-	}
-	await this.update({"system.social": this.system.social});
-	const target = game.actors.get(link.linkId) as NPC | PC;
-	if (target) {
-		await Logger.sendToChat(`${this.name} increased Social Link with ${target.displayedName} (${target.tarot?.name}) to SL ${link.linkLevel}.` , this);
-	}
-}
 
-async decreaseSocialLink(this: PC, linkId: string) {
-	const link = this.system.social.find( x=> x.linkId == linkId);
-	if (!link) {
-		throw new PersonaError("Trying to decrease social link you don't have");
+	async decreaseSocialLink(this: PC, linkId: string) {
+		const link = this.system.social.find( x=> x.linkId == linkId);
+		if (!link) {
+			throw new PersonaError("Trying to decrease social link you don't have");
+		}
+		if (link.linkLevel >= 10) {
+			throw new PersonaError("Social Link is already maxed out");
+		}
+		link.linkLevel -=1 ;
+		// link.currentProgress= 0;
+		link.inspiration = link.linkLevel;
+		PersonaSounds.socialLinkReverse();
+		if (link.linkLevel == 0) {
+			const newSocial = this.system.social.filter( x=> x != link);
+			await this.update({"system.social": newSocial});
+			return;
+		}
+		await this.update({"system.social": this.system.social});
 	}
-	if (link.linkLevel >= 10) {
-		throw new PersonaError("Social Link is already maxed out");
-	}
-	link.linkLevel -=1 ;
-	// link.currentProgress= 0;
-	link.inspiration = link.linkLevel;
-	PersonaSounds.socialLinkReverse();
-	if (link.linkLevel == 0) {
-		const newSocial = this.system.social.filter( x=> x != link);
-		await this.update({"system.social": newSocial});
-		return;
-	}
-	await this.update({"system.social": this.system.social});
-}
 
-getSocialLinkProgress(this: PC, linkId: string) : number {
-	const link = this.system.social.find( x=> x.linkId == linkId);
-	if (!link) {
-		return 0;
+	getSocialLinkProgress(this: PC, linkId: string) : number {
+		const link = this.system.social.find( x=> x.linkId == linkId);
+		if (!link) {
+			return 0;
+		}
+		return link.currentProgress;
 	}
-	return link.currentProgress;
-}
 
 async alterSocialLinkProgress(this: PC, linkId: string, progress: number) {
 	return await this.socialLinkProgress(linkId, progress);
@@ -2657,7 +2630,7 @@ get XPForNextLevel() : number {
 }
 
 /** Calculates challenge rating by adding level + incremental advances
-*/
+ */
 get CR() : number {
 	if (!this.isValidCombatant()) return 0;
 	const effectiveLevel = this.persona().effectiveLevel;
@@ -2741,19 +2714,19 @@ totalResists (this:ValidAttackers) : number {
 maxIncrementalAdvances(this: ValidAttackers): number {
 	const x= Object.keys(this.system.combat.classData.incremental) as (keyof ValidAttackers["system"]["combat"]["classData"]["incremental"])[] ;
 	return x.reduce ( (acc,k) => acc + this.maxIncrementalAdvancesInCategory(k)
-	, 0);
+		, 0);
 }
 
 maxIncrementalAdvancesInCategory(this: ValidAttackers, incrementalType: keyof ValidAttackers["system"]["combat"]["classData"]["incremental"]): number {
 	const v = this.system.combat.classData.incremental[incrementalType];
-		// const incremental = k;
-		if (typeof v == "boolean") return 1;
-		//@ts-expect-error
-		const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incrementalType] as {max ?: number};
-		if (typeof x?.max == "number")
-			return x.max;
-		PersonaError.softFail("Trouble calculating max incremental advances");
-		return 0;
+	// const incremental = k;
+	if (typeof v == "boolean") return 1;
+	//@ts-expect-error
+	const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incrementalType] as {max ?: number};
+	if (typeof x?.max == "number")
+		return x.max;
+	PersonaError.softFail("Trouble calculating max incremental advances");
+	return 0;
 }
 
 calcXP (this: ValidAttackers, killedTargets: ValidAttackers[], numOfAllies: number) : number {
@@ -2848,7 +2821,7 @@ isIncrementalMaxed( this: ValidAttackers,  incremental:  keyof ValidAttackers["s
 	//@ts-ignore
 	const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incremental] as {max ?: number};
 	if (x.max)
-	return incValue >= x.max ;
+		return incValue >= x.max ;
 	const msg = `Unknown Max incremental for ${incremental}`;
 	PersonaError.softFail(msg);
 	return true;
@@ -3450,7 +3423,7 @@ get tagList() : CreatureTag[] {
 			if (this.system.creatureType == "d-mon") {
 				list.pushUnique("d-mon");
 				if (this.hasPlayerOwner) {
-				list.pushUnique("pc-d-mon");
+					list.pushUnique("pc-d-mon");
 				}
 
 			}
@@ -3526,7 +3499,7 @@ getEncounterWeight(this: Shadow, scene: PersonaScene): number {
 	if (!encounterData) return 0;
 	return encounterData.frequency ?? 1;
 }
-*/
+ */
 
 get questions(): NPC["system"]["questions"] {
 	switch (this.system.type) {
@@ -3651,12 +3624,12 @@ getPrimaryPlayerOwner() : typeof game.users.contents[number] | undefined {
 		return game.users.get(this.system.trueOwner);
 	}
 	const userIdPair = Object.entries(this.ownership)
-	.find( ([k,v]) => {
-		if (v < CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER) return false;
-		const user = game.users.get(k);
-		if (user && !user.isGM) return true;
-		return false;
-	});
+		.find( ([k,v]) => {
+			if (v < CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER) return false;
+			const user = game.users.get(k);
+			if (user && !user.isGM) return true;
+			return false;
+		});
 	if (!userIdPair) return undefined;
 	return game.users.get(userIdPair[0]);
 }
@@ -3681,6 +3654,26 @@ async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) {
 	const permaBuffLocalized = localize(PERMA_BUFFS[buffType]);
 	PersonaSFX.onPermaBuff(this, buffType, amt);
 	Logger.sendToChat(`+${amt} ${permaBuffLocalized} applied to ${this.name}`);
+}
+
+
+async convertShadowPowers(this:Shadow) : Promise<void> {
+	if (!this.isShadow()) return;
+	const compPowers= PersonaDB.allPowersArr();
+	for (const power of this.#mainPowers()) {
+		if (power.parent == this) {
+			const compPower= compPowers.find(x=> x.name == power.name);
+			if (compPower) {
+				const arr = this.system.combat.powers ?? [];
+				arr.push(compPower.id);
+				await this.update( {"system.combat.powers": arr});
+				await power.delete();
+				console.log(`converted ${power.name}`);
+			} else {
+				console.log(`*** Couldn't convert ${this.name} power ${power.name}`);
+			}
+		}
+	}
 }
 
 }

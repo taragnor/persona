@@ -1,3 +1,4 @@
+import { DamageCalculator } from "../config/damage-types.js";
 import { NonDeprecatedModifierType } from "../config/item-modifiers.js";
 import { NewDamageParams } from "../config/damage-types.js";
 import { PersonaItem } from "./item/persona-item.js";
@@ -430,6 +431,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return Math.round(30 * this.level / 5);//placeholder
 	}
 
+	get endurance() : number {
+		return Math.round(30 * this.level / 5);//placeholder
+	}
+
 	passiveFocii() : Focus[] {
 		return this.focii.filter( f=> f.hasPassiveEffects(this.user));
 	}
@@ -733,7 +738,7 @@ wpnDamage() : NewDamageParams {
 			return  wpn.baseDamage();
 		case "shadow":
 			return {
-				baseAmt: this.strength,
+				baseAmt: DamageCalculator.convertFromOldLowDamageToNewBase(this.level + 1),
 				extraVariance: 0
 			};
 		default:

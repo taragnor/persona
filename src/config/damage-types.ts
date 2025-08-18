@@ -120,52 +120,17 @@ export class DamageCalculator {
 				if (isHealing) {
 					return {
 						extraVariance: val.extraVariance + 2,
-						baseAmt: val.baseAmt + 10,
+						baseAmt: val.baseAmt,
 					};
 				}
 				return val;
 		}
 	}
 
-	// static weaponSkillDamage(weaponPower:ItemSubtype<Power, "weapon">) : DamageReturn {
-	// switch (weaponPower.system.damageLevel) {
-	// 		case "-": //old system
-	// 		return {
-	// 			multiplier: weaponPower.system.melee_extra_mult,
-	// 			low: 0, high:0};
-	// 		case "fixed":
-	// 		return {
-	// 			multiplier: 0,
-	// 			...weaponPower.system.damage
-	// 		};
-	// 		default:
-	// 		return DAMAGE_LEVEL_CONVERT_WEAPON[weaponPower.system.damageLevel];
-	// 	}
-	// }
-
-	// static magicSkillDamage(magic: ItemSubtype<Power, "magic">) : DamageReturn {
-	// 	switch (magic.system.damageLevel) {
-
-	// 		case "-":
-	// 			return {
-	// 				multiplier: magic.system.mag_mult,
-	// 				low: 0, high: 0 };
-	// 		case "fixed":
-	// 			return {
-	// 				multiplier: 0,
-	// 				...magic.system.damage,
-	// 			};
-	// 		default:
-	// 			const isHealing = magic.system.dmg_type == "healing";
-	// 			if (isHealing) {
-	// 				return DAMAGE_LEVEL_CONVERT_MAGIC_HEALING[magic.system.damageLevel];
-	// 			} else {
-	// 				return DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE[magic.system.damageLevel];
-	// 			}
-	// 	}
-	// }
-
 	static convertFromOldLowDamageToNewBase(low: number) : number {
+		// const level = low -1;
+		// if (level <= 0) return 4;
+		// return (1+ level) + this.convertFromOldLowDamageToNewBase(level -1);
 		const val= WEAPON_LEVEL_TO_DAMAGE[low-1];
 		if (val) return val;
 		return 0;
@@ -177,86 +142,28 @@ export class DamageCalculator {
 const DAMAGE_LEVEL_CONVERT_WEAPON = {
 	"none": {extraVariance: 0, baseAmt: 0},
 	"miniscule": {extraVariance: 0, baseAmt: 0},
-	"basic": {extraVariance: 1, baseAmt: 0},
-	"light": {extraVariance: 1, baseAmt: 5},
-	"medium": {extraVariance: 3, baseAmt: 15},
-	"heavy": {extraVariance: 5, baseAmt: 35},
-	"severe": {extraVariance: 7, baseAmt: 50},
-	"colossal": {extraVariance: 9, baseAmt: 75},
+	"basic": {extraVariance: 2, baseAmt: 0},
+	"light": {extraVariance: 2, baseAmt: 10},
+	"medium": {extraVariance: 3, baseAmt: 25},
+	"heavy": {extraVariance: 4, baseAmt: 40},
+	"severe": {extraVariance: 5, baseAmt: 70},
+	"colossal": {extraVariance: 6, baseAmt: 110},
 } as const satisfies Readonly<Record<ConvertableDamageLevel, NewDamageParams>> ;
 
 
 const DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE = {
 	"none": {extraVariance: 0, baseAmt: 0},
 	"miniscule": {extraVariance: 0, baseAmt: 0},
-	"basic": {extraVariance: 0, baseAmt: 0},
-	// "light": {multiplier: 3, low: 0, high: 0},
-	// "medium": {multiplier: 4, low: 0, high: 0},
-	// "heavy": {multiplier: 7, low: 0, high: 0},
-	// "severe": {multiplier: 11, low: 0, high: 0},
-	// "colossal": {multiplier: 15, low: 0, high: 0},
-	"light": {extraVariance: 1, baseAmt: 5},
-	"medium": {extraVariance: 3, baseAmt: 15},
-	"heavy": {extraVariance: 5, baseAmt: 35},
-	"severe": {extraVariance: 7, baseAmt: 50},
-	"colossal": {extraVariance: 9, baseAmt: 75},
+	"basic": {extraVariance: 2, baseAmt: 0},
+	"light": {extraVariance: 2, baseAmt: 10},
+	"medium": {extraVariance: 3, baseAmt: 25},
+	"heavy": {extraVariance: 4, baseAmt: 55},
+	"severe": {extraVariance: 5, baseAmt: 80},
+	"colossal": {extraVariance: 6, baseAmt: 120},
 } as const satisfies Readonly<Record< ConvertableDamageLevel, NewDamageParams>>
-
-// const DAMAGE_LEVEL_CONVERT_WEAPON : Record<ConvertableDamageLevel, DamageReturn> = {
-// 	"none": { multiplier: 0, low: 0, high: 0},
-// 	"miniscule": {multiplier: -1, low: 0, high: 0},
-// 	"basic": {multiplier: 0, low: 1, high: 2},
-// 	// "light": {multiplier: 1, low: 0, high: 0},
-// 	// "medium": {multiplier: 3, low: 0, high: 0},
-// 	// "heavy": {multiplier: 5, low: 0, high: 0},
-// 	// "severe": {multiplier: 7, low: 0, high: 0},
-// 	// "colossal": {multiplier: 10, low: 0, high: 0},
-// 	"light": {multiplier: 1, low: 2, high: 5},
-// 	"medium": {multiplier: 3, low: 5, high: 10},
-// 	"heavy": {multiplier: 5, low: 10, high: 15},
-// 	"severe": {multiplier: 7, low: 15, high: 20},
-// 	"colossal": {multiplier: 9, low: 25, high: 30},
-// } as const;
-
-// const DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE : Record< ConvertableDamageLevel, DamageReturn> = {
-// 	"none": { multiplier: 0, low: 0, high: 0},
-// 	"miniscule": {multiplier: 2, low: 0, high: 0},
-// 	"basic": {multiplier: 1, low: 0, high: 0},
-// 	// "light": {multiplier: 3, low: 0, high: 0},
-// 	// "medium": {multiplier: 4, low: 0, high: 0},
-// 	// "heavy": {multiplier: 7, low: 0, high: 0},
-// 	// "severe": {multiplier: 11, low: 0, high: 0},
-// 	// "colossal": {multiplier: 15, low: 0, high: 0},
-// 	"light": {multiplier: 2, low: 3, high: 7},
-// 	"medium": {multiplier: 3, low: 25, high: 35},
-// 	"heavy": {multiplier: 4, low: 45, high: 55},
-// 	"severe": {multiplier: 5, low: 60, high: 80},
-// 	"colossal": {multiplier: 6, low: 90, high: 110},
-// } as const;
-
-// const DAMAGE_LEVEL_CONVERT_MAGIC_HEALING : Record< ConvertableDamageLevel, DamageReturn> = {
-// 	"none": { multiplier: 0, low: 0, high: 0},
-// 	"miniscule": {multiplier: 2, low: 0, high: 0},
-// 	"basic": {multiplier: 1, low: 0, high: 0},
-// 	// "light": {multiplier: 4, low: 0, high: 0},
-// 	// "medium": {multiplier: 6, low: 0, high: 0},
-// 	// "heavy": {multiplier: 8, low: 0, high: 0},
-// 	// "severe": {multiplier: 13, low: 0, high: 0},
-// 	// "colossal": {multiplier: 18, low: 0, high: 0},
-// 	"light": {multiplier: 3, low: 3, high: 7},
-// 	"medium": {multiplier: 4, low: 25, high: 35},
-// 	"heavy": {multiplier: 6, low: 45, high: 55},
-// 	"severe": {multiplier: 8, low: 60, high: 80},
-// 	"colossal": {multiplier: 10, low: 90, high: 110},
-// } as const;
 
 type ConvertableDamageLevel = Exclude<DamageLevel, "-" | "fixed">;
 
-// type DamageReturn = {
-// 	multiplier: number,
-// 	low: number,
-// 	high: number,
-// }
 
 
 const INSTANT_KILL_LEVELS_LIST= [
@@ -300,3 +207,5 @@ const WEAPON_LEVEL_TO_DAMAGE: Record<number, number> = {
 	12: 94
 }
 
+
+export const BASE_VARIANCE = 2 as const;

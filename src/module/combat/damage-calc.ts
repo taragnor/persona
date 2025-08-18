@@ -19,6 +19,7 @@ export class DamageCalculation {
 		divisor: [] as DamageObj[],
 		stackMult: [] as DamageObj[],
 		nonMultPostAdd: [] as DamageObj[],
+		resist: [] as DamageObj[],
 	} satisfies Record<string, DamageObj[]>;
 	damageType : RealDamageType;
 	target: ValidAttackers;
@@ -204,14 +205,14 @@ export class DamageCalculation {
 		for (const {amt, name} of this.lists.base) {
 			if (amt == 0) continue;
 			subtotal += amt;
-			const dataString = `+${amt} ${name}`;
+			const dataString = `${signed(amt)} ${name}`;
 			str.push(dataString);
 		}
 		if (this.#applyEvenBonus) {
 			for (const {amt, name} of this.lists.evenBonus) {
 				if (amt == 0) continue;
 				subtotal += amt;
-				const dataString = `+${amt} ${name}`;
+				const dataString = `${signed(amt)} ${name}`;
 				str.push(dataString);
 			}
 		}
@@ -219,7 +220,7 @@ export class DamageCalculation {
 		str.push(`${Math.round(subtotal)} --- Subtotal`);
 		for (const {amt, name} of this.lists.multiplier) {
 			const addAmt = amt * subtotal;
-			str.push(`+${Math.round(addAmt)} ${name}(${amt+1})`);
+			str.push(`${signed(Math.round(addAmt))} ${name}(${amt+1})`);
 			total+= addAmt;
 		}
 		if (this.lists.multiplier.length) {
@@ -246,17 +247,26 @@ export class DamageCalculation {
 			const subtotal4  = Math.round(total);
 			str.push(`${subtotal4} --- Subtotal`);
 		}
+		if (!this.#absorbed && total > 0) {
+			for (const {amt, name} of this.lists.resist) {
+				if (amt == 0) continue;
+				total += amt;
+				const dataString = `${signed(amt)} ${name}`;
+				str.push(dataString);
+			}
+		}
 		for (const {amt, name} of this.lists.nonMultPostAdd) {
 			total += amt;
 			const dataString = `+${amt} ${name}`;
 			str.push(dataString);
 		}
+
 		if (this.#resisted) {
 			const RESISTMULT = 0.5;
 			str.push(`* ${RESISTMULT} Damage Resistance`);
 			total *= RESISTMULT;
 		}
-		total = Math.round(total);
+		total = Math.max(0, Math.round(total));
 		str.push(`${total} --- Total`);
 		let hpChange = total * (this.#absorbed ? 1 : -1) * (this.#blocked ? 0 : 1);
 		if (hpChange == undefined || typeof hpChange != "number" ||  Number.isNaN(hpChange)) {
@@ -287,3 +297,8 @@ export type EvaluatedDamage = {
 	weakness: boolean;
 	absorbed: boolean;
 };
+
+function signed(num: number) : string {
+	if (num > 0) return `+${num}`;
+	else return `${num}`;
+}
