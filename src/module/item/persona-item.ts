@@ -1008,7 +1008,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const skillDamage = DamageCalculator.weaponSkillDamage(this);
 		const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
-		calc.add("base", str, `${userPersona.source.displayedName} Strength`);
+		calc.add("base", str, `${userPersona.displayedName} Strength`);
 		const weaponName = userPersona.user.isShadow() ? `Unarmed Shadow Damage` : (userPersona.user.weapon?.displayedName ?? "Unarmed");
 		calc.add("base", weaponDmg.baseAmt, weaponName.toString());
 		calc.add("base", skillDamage.baseAmt, `${this.displayedName} Power Bonus`);
@@ -1033,43 +1033,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		calc.add("evenBonus", variance * userPersona.level, `Even Bonus (${variance}x Variance)` )
 		return calc;
 	}
-
-	// getWeaponSkillDamage(this: ItemSubtype<Power, "weapon">, user: ValidAttackers, situation: Situation) : {low: number, high: number} {
-	// 	const persona = user.persona();
-	// 	const dmg = user.wpnDamage();
-	// 	const bonus = persona.getBonuses("wpnMult");
-	// 	const DamageReturn = DamageCalculator.weaponSkillDamage(this);
-	// 	const meleeExtraMult = DamageReturn.multiplier;
-	// 	const mult = Math.max(1, user.wpnMult() + (meleeExtraMult ?? 0) + bonus.total(situation));
-	// 	const bonusDamage = user.getBonusWpnDamage();
-	// 	const bonusLow = bonusDamage.low.add("Power Low bonus", DamageReturn.low).total(situation);
-	// 	const bonusHigh = bonusDamage.high.add("Power High bonus", DamageReturn.high).total(situation);
-	// 	const dmgamt =  {
-	// 		low: dmg.low * mult + bonusLow,
-	// 		high: dmg.high * mult + bonusHigh,
-	// 	};
-	// 	return dmgamt;
-	// }
-
-	// getMagicSkillDamage(this: ItemSubtype<Power, "magic">, user: ValidAttackers, situation: Situation): {low: number, high:number} {
-	// 	const persona = user.persona();
-	// 	const dmg = user.magDmg();
-	// 	// const mult = this.magicExtraMult();
-	// 	// if (typeof mult == "number") {
-	// 	// const mult = this.system.mag_mult;
-	// 		const DamageReturn = DamageCalculator.magicSkillDamage(this);
-	// 		const mult = DamageReturn.multiplier;
-	// 	const high_bonus = persona.getBonuses("magHigh").total(situation);
-	// 	const low_bonus = persona.getBonuses("magLow").total(situation);
-	// 	const baseLow =  (dmg.low + low_bonus)  * mult;
-	// 	const baseHigh =  (dmg.high + high_bonus) * mult;
-	// 	const finalBonus =  persona.getBonuses("magDmg").total(situation);
-	// 	const modified = {
-	// 		low: baseLow + (baseLow > 0 ? finalBonus: 0) + DamageReturn.low,
-	// 		high: baseHigh + (baseHigh > 0 ? finalBonus: 0) + DamageReturn.high,
-	// 	};
-	// 	return modified;
-	// }
 
 	getDamage(this:ModifierContainer , userPersona: Persona, situation: Situation = {user: userPersona.user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: userPersona.user.accessor}, typeOverride : DamageConsequence["damageType"] = "none") : DamageCalculation {
 		//TODO: handle type override check to see if power damage is by-power or has other type
