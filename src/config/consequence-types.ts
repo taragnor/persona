@@ -322,8 +322,9 @@ type ExpendItemConsequence = {
 
 type DamageConsequenceShared = {
 	type : "damage-new",
-	damageSubtype: DamageSubtype
+	damageSubtype: DamageSubtype,
 	amount ?: number; //only added later for effects
+	calc ?: unknown, //this is a DamageCalc but typescript doesn't like it
 	damageType: DamageType | "by-power",
 	/** manually added as part of processing */
 };
@@ -340,6 +341,7 @@ export type OldDamageConsequence = {
 	type: "dmg-high" | "dmg-low" | "dmg-mult" | "absorb" | "dmg-allout-low" | "dmg-allout-high" | "revive" | "hp-loss" ;
 	amount ?: number;
 	damageType: DamageType | "by-power",
+	calc ?: unknown, //this is a DamageCalc but typescript doesn't like it
 }
 export type DamageConsequence = DamageConsequenceShared & (
 	SimpleDamageCons

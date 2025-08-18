@@ -12,19 +12,24 @@ export const ENVIRONMENTAL_MODIFIERS = [
 	"shadowMoneyBoostPercent",
 ] as const;
 
+const DEPRECATED_TYPES = [
+	"wpnMult",
+	"magLow",
+	"magHigh",
+] as const;
+
 export const MODIFIERLIST = [
 	"allAtk",
 	"wpnAtk",
 	"magAtk",
 	"itemAtk",
 	"wpnDmg",
-	"wpnMult",
 	"magDmg",
-	"magLow",
-	"magHigh",
+	"variance",
 	"criticalBoost",
 	"critResist",
 	"instantDeathResistanceMult",
+	"afflictionRange",
 	"allOutDmgMult", //adds to weapon multiplier on AoA
 	"allDefenses",
 	"ref",
@@ -60,6 +65,8 @@ export const MODIFIERLIST = [
 	"max-defense-boosts",
 	"max-resist-boosts",
 	...ENVIRONMENTAL_MODIFIERS,
+	...DEPRECATED_TYPES,
+
 ] as const;
 
 
@@ -68,5 +75,6 @@ export const MODIFIERS_TABLE = HTMLTools.createLocalizationObject(MODIFIERLIST, 
 // 	MODIFIERLIST.map ( x=> [x, `persona.modifier.${x}`])
 // );
 
+export type NonDeprecatedModifierType = Exclude<ModifierTarget, typeof DEPRECATED_TYPES[number]>;
 export type ModifierTarget = typeof MODIFIERLIST[number];
 

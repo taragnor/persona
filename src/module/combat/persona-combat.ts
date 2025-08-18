@@ -1776,7 +1776,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const power = PersonaDB.findItem(atkResult.power);
 		const attacker = PersonaDB.findToken(atkResult.attacker);
 		const target = PersonaDB.findToken(atkResult.target);
-		const sourcedEffects = [power.getSourcedEffects( PersonaDB.findToken(atkResult.attacker).actor)].concat(attacker.actor!.getSourcedEffects()).concat(target.actor.getSourcedDefensivePowers());
+		const attackerEffects= attacker.actor!.getSourcedEffects(["passive", "on-use"]);
+		const defenderEffects = target.actor.getSourcedDefensivePowers();
+		const sourcedEffects = [
+			power.getSourcedEffects(attacker.actor, ["on-use", "passive"])
+		].concat(attackerEffects)
+			.concat(defenderEffects);
 		const CombatRes = new CombatResult(atkResult);
 		for (const {source, effects} of sourcedEffects){
 			for (let effect of effects) {
@@ -1951,6 +1956,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, power: ModifierContainer, situation: Situation) : ConsequenceProcessed["consequences"] {
 		const consList : ConsequenceProcessed["consequences"] = [];
+		let dmgCalc: U<DamageCalculation>;
 		let dmgAmt : number = 0;
 		const damageType = cons.damageType != "by-power" && cons.damageType != undefined ? cons.damageType : (power as Usable).getDamageType(attacker);
 		const mods : SourcedConsequence<DamageConsequence>["modifiers"] = [];
@@ -1965,22 +1971,28 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		switch (cons.damageSubtype) {
 			case "odd-even":
 				if (situation.naturalRoll == undefined) {
-					dmgAmt = 0;
 					PersonaError.softFail(`Can't get odd even for damage of ${power.displayedName }` );
-					break;
+					return [];
 				}
 				if ( (situation.naturalRoll ?? 0) % 2 == 0) {
-					dmgAmt = power.getDamage(attacker, situation, cons.damageType)["high"];
+					dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
+						// dmgAmt = power.getDamage(attacker, situation, cons.damageType)["high"];
+					dmgCalc.setApplyEvenBonus();
 				} else {
-					dmgAmt = power.getDamage(attacker, situation, cons.damageType)["low"];
+					dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
+					// dmgAmt = power.getDamage(attacker, situation, cons.damageType)["low"];
 				}
 				break;
 			case "multiplier":
 					return targets.map( applyTo => ({applyTo, cons, })
 					);
 			case "low":
+					dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
+				break;
 			case "high":
-				dmgAmt = power.getDamage(attacker, situation, cons.damageType)[cons.damageSubtype];
+					dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
+				dmgCalc.setApplyEvenBonus();
+				// dmgAmt = power.getDamage(attacker, situation, cons.damageType)[cons.damageSubtype];
 				break;
 			case "allout-low":
 			case "allout-high": {
@@ -2011,10 +2023,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					break;
 					// dmgAmt = cons.damageSubtype == "allout-high"? dmg.high: dmg.low;
 				} else {
-					dmgAmt = 0;
+					return [];
 					//bailout since no combat and can't calc all out.
 				}
-				break;
 			}
 			case "constant":
 				dmgAmt = cons.amount;
@@ -2028,7 +2039,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			default:
 				cons satisfies never;
 		}
-		if (dmgAmt) {
+		if (dmgAmt || dmgCalc) {
 			for (const applyTo of targets) {
 				const piercePower = (power as Usable).hasTag("pierce");
 				const pierceTag = "addedTags" in situation && situation.addedTags && situation.addedTags.includes("pierce");
@@ -2044,12 +2055,16 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 						mods.push("blocked");
 					}
 				}
+				if (dmgCalc) {
+					dmgCalc.setDamageType(damageType);
+				}
 				consList.push( {
 					applyTo,
 					cons: {
 						...cons,
 						modifiers: mods,
 						amount: dmgAmt,
+						calc: dmgCalc,
 					}
 				});
 			}

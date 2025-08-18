@@ -19,6 +19,14 @@ export  const damage = function() {
 	});
 }
 
+export const damageNew = function () {
+	return new sch( {
+		baseAmt: new num( {integer:true, min: 0, initial:0}),
+		extraVariance: new num( {integer:true, min: 0, initial: 0}),
+	});
+
+}
+
 export const DEFENSECHOICES = ["fort" , "ref" , "will", "none"] as const;
 
 export interface ConditionalEffect {

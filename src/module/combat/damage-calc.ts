@@ -11,8 +11,10 @@ export class DamageCalculation {
 	#absorbed: boolean = false;
 	#weakness: boolean = false;
 	#blocked : boolean = false;
+	#applyEvenBonus: boolean = false;
 	lists = {
 		base: [] as DamageObj[],
+		evenBonus: [] as DamageObj[],
 		multiplier: [] as DamageObj[],
 		divisor: [] as DamageObj[],
 		stackMult: [] as DamageObj[],
@@ -32,6 +34,13 @@ export class DamageCalculation {
 
 	}
 
+	setDamageType(dtype : RealDamageType) {
+		this.damageType = dtype;
+	}
+
+	setApplyEvenBonus() {
+		this.#applyEvenBonus = true;
+	}
 	setHitWeakness() {
 		this.#weakness = true;
 	}
@@ -86,6 +95,7 @@ export class DamageCalculation {
 			source: cons.source,
 			damageType: dtype,
 			amount: amount,
+			calc: cons.calc,
 		};
 	}
 
@@ -138,9 +148,9 @@ export class DamageCalculation {
 			this.#resisted= false;
 			this.#absorbed= true;
 		}
-		// if (cons.damageCalc) {
-		// 	this.merge(cons.damageCalc);
-		// }
+		if (cons.calc && cons.calc instanceof DamageCalculation) {
+			this.merge(cons.calc);
+		}
 		return this;
 	}
 
@@ -174,19 +184,16 @@ export class DamageCalculation {
 		return this;
 	}
 
-	merge(other :DamageCalculation) : DamageCalculation {
+	merge(other : DamageCalculation) : typeof this {
 		for (const k of Object.keys(this.lists)) {
 			const dOrder= k as keyof DamageCalculation["lists"];
 			this.lists[dOrder] = this.lists[dOrder].concat(other.lists[dOrder]);
 		}
 		this.#absorbed = this.#absorbed || other.#absorbed;
 		this.#weakness = this.#weakness || other.#weakness;
+		this.#applyEvenBonus = this.#applyEvenBonus || other.#applyEvenBonus;
 		this.#resisted = this.#resisted || other.#resisted;
 		this.#blocked = this.#blocked || other.#blocked;
-		// this.amt = this.amt.concat(other.amt);
-		// this.multiplier = this.multiplier.concat(other.multiplier);
-		// this.divisor = this.divisor.concat(other.divisor);
-		// this.nonMultPostAdd = this.nonMultPostAdd.concat(other.nonMultPostAdd);
 		return this;
 	}
 
@@ -195,9 +202,18 @@ export class DamageCalculation {
 		let total = 0;
 		let subtotal = 0;
 		for (const {amt, name} of this.lists.base) {
+			if (amt == 0) continue;
 			subtotal += amt;
 			const dataString = `+${amt} ${name}`;
 			str.push(dataString);
+		}
+		if (this.#applyEvenBonus) {
+			for (const {amt, name} of this.lists.evenBonus) {
+				if (amt == 0) continue;
+				subtotal += amt;
+				const dataString = `+${amt} ${name}`;
+				str.push(dataString);
+			}
 		}
 		total += subtotal;
 		str.push(`${Math.round(subtotal)} --- Subtotal`);

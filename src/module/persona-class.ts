@@ -1,3 +1,5 @@
+import { NonDeprecatedModifierType } from "../config/item-modifiers.js";
+import { NewDamageParams } from "../config/damage-types.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { Logger } from "./utility/logger.js";
 import { removeDuplicates } from "./utility/array-tools.js";
@@ -243,7 +245,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.numOfIncAdvances();
 	}
 
-	getBonuses (modnames : ModifierTarget | ModifierTarget[], sources: readonly ModifierContainer[] = this.mainModifiers() ): ModifierList {
+	getBonuses (modnames : NonDeprecatedModifierType | NonDeprecatedModifierType[], sources: readonly ModifierContainer[] = this.mainModifiers() ): ModifierList {
 		let modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this.source)
 			.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
 		));
@@ -419,6 +421,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		get defenses(): ValidAttackers["system"]["combat"]["defenses"] {
 			return this.source.system.combat.defenses;
 		}
+
+	get strength() : number {
+		return Math.round(30 * this.level / 5);//placeholder
+	}
+
+	get magic() : number {
+		return Math.round(30 * this.level / 5);//placeholder
+	}
 
 	passiveFocii() : Focus[] {
 		return this.focii.filter( f=> f.hasPassiveEffects(this.user));
@@ -712,6 +722,33 @@ canPayActivationCost_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard, _out
 		}
 		return true; //placeholder
 	}
+
+wpnDamage() : NewDamageParams {
+	switch (this.user.system.type) {
+		case "pc": case "npcAlly":
+			const wpn = this.user.weapon;
+			if (!wpn) {
+				return  {baseAmt: 0, extraVariance: 0};
+			}
+			return  wpn.baseDamage();
+		case "shadow":
+			return {
+				baseAmt: this.strength,
+				extraVariance: 0
+			};
+		default:
+			this.user.system satisfies never;
+			return {baseAmt: 0, extraVariance: 0};
+	}
+}
+
+getBonusWpnDamage() : ModifierList {
+	return this.getBonuses("wpnDmg");
+}
+
+getBonusVariance() : ModifierList {
+	return this.getBonuses("variance");
+}
 
 }
 

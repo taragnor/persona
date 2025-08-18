@@ -1,3 +1,4 @@
+import { DamageCalculation } from "../combat/damage-calc.js";
 import { NewDamageParams } from "../../config/damage-types.js";
 import { STATUS_AILMENT_LIST } from "../../config/status-effects.js";
 import { INSTANT_KILL_CRIT_BOOST } from "../../config/damage-types.js";
@@ -233,12 +234,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	static getBasicShadowPowers() : readonly Power[] {
 		if (!this.#cache.basicShadowPowers)  {
-		const basic = BASIC_SHADOW_POWER_NAMES;
-		this.#cache.basicShadowPowers = basic.flatMap( powerName =>  {
-			const power = PersonaDB.getBasicPower(powerName);
-			if (!power) return [];
-			return [power as Power];
-		});
+			const basic = BASIC_SHADOW_POWER_NAMES;
+			this.#cache.basicShadowPowers = basic.flatMap( powerName =>  {
+				const power = PersonaDB.getBasicPower(powerName);
+				if (!power) return [];
+				return [power as Power];
+			});
 		}
 		return this.#cache.basicShadowPowers;
 	}
@@ -708,8 +709,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 		const newHPCost = this.hpCost();
 		if (newHPCost > 0) {
-		const calcedHPPercent = (this.hpCost() /100) * persona.user.mhpEstimate;
-		return Math.round(calcedHPPercent * persona.hpCostMod().total(situation, "percentage"));
+			const calcedHPPercent = (this.hpCost() /100) * persona.user.mhpEstimate;
+			return Math.round(calcedHPPercent * persona.hpCostMod().total(situation, "percentage"));
 		}
 
 		const oldHPCost = this.oldhpCost();
@@ -751,55 +752,55 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	estimateShadowCosts(this: Power, user: ValidAttackers) : {energyReq: number, cost: number} {
-	const diff = this.comparativePowerRatingToUsePower(user);
-	let energyReq= 0, cost= 1;
-	const reducedCostType = this.hasTag("buff") || this.hasTag("debuff") || this.hasTag("status-removal");
-	let reqMin = reducedCostType ? 0 : 1;
-	let energyMod = reducedCostType ? -3: 0;
-	switch (true) {
-		case (this.isDefensive() == true):
-		case (this.isPassive() == true):
-			energyReq = 0;
-			cost = 0;
-			reqMin = 0;
-			break;
-		case (diff == 0):
-			energyReq += 3;
-			cost += 1;
-			break;
-		case (diff > 0):
-			energyReq += Math.max(reqMin, 3-diff);
-			cost += 2 - Math.floor((1+diff)/2);
-			break;
-		case (diff < 0):
-			if (this.hasTag("debuff") || this.hasTag("buff")) {
-				energyReq += Math.min(3, 3 - diff);
-			} else {
-				energyReq += Math.min(10, 3-diff);
-			}
-			cost += 2 - diff;
-			break;
-	}
-	energyReq += energyMod;
-	cost = Math.clamp(cost, 0, 10);
-	energyReq = Math.clamp(energyReq, reqMin, 10);
+		const diff = this.comparativePowerRatingToUsePower(user);
+		let energyReq= 0, cost= 1;
+		const reducedCostType = this.hasTag("buff") || this.hasTag("debuff") || this.hasTag("status-removal");
+		let reqMin = reducedCostType ? 0 : 1;
+		let energyMod = reducedCostType ? -3: 0;
+		switch (true) {
+			case (this.isDefensive() == true):
+			case (this.isPassive() == true):
+				energyReq = 0;
+				cost = 0;
+				reqMin = 0;
+				break;
+			case (diff == 0):
+				energyReq += 3;
+				cost += 1;
+				break;
+			case (diff > 0):
+				energyReq += Math.max(reqMin, 3-diff);
+				cost += 2 - Math.floor((1+diff)/2);
+				break;
+			case (diff < 0):
+				if (this.hasTag("debuff") || this.hasTag("buff")) {
+					energyReq += Math.min(3, 3 - diff);
+				} else {
+					energyReq += Math.min(10, 3-diff);
+				}
+				cost += 2 - diff;
+				break;
+		}
+		energyReq += energyMod;
+		cost = Math.clamp(cost, 0, 10);
+		energyReq = Math.clamp(energyReq, reqMin, 10);
 		return {energyReq, cost};
 
 	}
 
-comparativePowerRatingToUsePower(this: Power, user: ValidAttackers) : number {
-	const userLevel = user.system.combat.classData.level;
-	let powerSlot = this.system.slot;
-	let extraMod = 0;
-	if (this.hasTag("price-lower-for-shadow")) {
-		powerSlot -= 1;
+	comparativePowerRatingToUsePower(this: Power, user: ValidAttackers) : number {
+		const userLevel = user.system.combat.classData.level;
+		let powerSlot = this.system.slot;
+		let extraMod = 0;
+		if (this.hasTag("price-lower-for-shadow")) {
+			powerSlot -= 1;
+		}
+		if (this.hasTag("high-cost")) {
+			extraMod += 2;
+		}
+		const effectiveLevel = extraMod + (powerSlot*3);
+		return Math.round(userLevel - effectiveLevel);
 	}
-	if (this.hasTag("high-cost")) {
-		extraMod += 2;
-	}
-	const effectiveLevel = extraMod + (powerSlot*3);
-	return Math.round(userLevel - effectiveLevel);
-}
 
 	powerCostString_Shadow(this: Power, persona: Persona) : string {
 		let costs : string[] = [];
@@ -977,7 +978,63 @@ comparativePowerRatingToUsePower(this: Power, user: ValidAttackers) : number {
 		}
 	}
 
-	// getWeaponSkillDamage(this: ItemSubtype<Power, "weapon">, user: ValidAttackers, situation: Situation) : NewDamageParams {
+	baseDamage(this: Weapon) : Readonly<NewDamageParams> {
+		if (this.system.damageNew && this.system.damageNew.baseAmt > 0) return this.system.damageNew
+		if (this.system.damage.high >0) {
+			return PersonaItem.convertOldDamageToNew(this.system.damage);
+		}
+		return {
+			baseAmt: 0,
+			extraVariance: 0
+		};
+	}
+
+	static convertOldDamageToNew (oldDmg : Weapon["system"]["damage"]): Readonly<NewDamageParams> {
+		const {high, low} = oldDmg;
+		const diff = high-low;
+		let extraVariance = 0;
+		if (diff >=4) { extraVariance= 1;}
+		return {extraVariance,
+			baseAmt: DamageCalculator.convertFromOldLowDamageToNewBase(low)
+		};
+
+	}
+
+	getWeaponSkillDamage(this: ItemSubtype<Power, "weapon">, userPersona: Persona, situation: Situation) : DamageCalculation {
+		const dtype = this.getDamageType(userPersona);
+		const calc= new DamageCalculation(dtype);
+		const str = userPersona.strength;
+		const weaponDmg = userPersona.wpnDamage();
+		const skillDamage = DamageCalculator.weaponSkillDamage(this);
+		const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
+		const bonusVariance = userPersona.getBonusVariance().total(situation);
+		calc.add("base", str, `${userPersona.source.displayedName} Strength`);
+		const weaponName = userPersona.user.isShadow() ? `Unarmed Shadow Damage` : (userPersona.user.weapon?.displayedName ?? "Unarmed");
+		calc.add("base", weaponDmg.baseAmt, weaponName.toString());
+		calc.add("base", skillDamage.baseAmt, `${this.displayedName} Power Bonus`);
+		calc.add("base", bonusDamage, `Bonus Damage`);
+		const variance  = (1 + weaponDmg.extraVariance + skillDamage.extraVariance + bonusVariance )
+		calc.add("evenBonus", variance * userPersona.level, `Even Bonus (${variance}x Variance)` )
+		return calc ;
+	}
+
+	getMagicSkillDamage(this: ItemSubtype<Power, "magic">, userPersona: Persona, situation: Situation): DamageCalculation {
+		const persona = userPersona;
+		const dmg = persona.magic;
+		const skillDamage = DamageCalculator.magicSkillDamage(this);
+		const damageBonus =  persona.getBonuses("magDmg").total(situation);
+		const bonusVariance = userPersona.getBonusVariance().total(situation);
+		const dtype = this.getDamageType(userPersona);
+		const calc= new DamageCalculation(dtype);
+		calc.add("base", dmg, `${userPersona.displayedName} Magic`, )
+		calc.add("base", skillDamage.baseAmt, `${this.displayedName} Damage`);
+		calc.add("base", damageBonus, `Bonus Damage`);
+		const variance  = (1 + skillDamage.extraVariance + bonusVariance )
+		calc.add("evenBonus", variance * userPersona.level, `Even Bonus (${variance}x Variance)` )
+		return calc;
+	}
+
+	// getWeaponSkillDamage(this: ItemSubtype<Power, "weapon">, user: ValidAttackers, situation: Situation) : {low: number, high: number} {
 	// 	const persona = user.persona();
 	// 	const dmg = user.wpnDamage();
 	// 	const bonus = persona.getBonuses("wpnMult");
@@ -994,64 +1051,54 @@ comparativePowerRatingToUsePower(this: Power, user: ValidAttackers) : number {
 	// 	return dmgamt;
 	// }
 
-	getWeaponSkillDamage(this: ItemSubtype<Power, "weapon">, user: ValidAttackers, situation: Situation) : {low: number, high: number} {
-		const persona = user.persona();
-		const dmg = user.wpnDamage();
-		const bonus = persona.getBonuses("wpnMult");
-		const DamageReturn = DamageCalculator.weaponSkillDamage(this);
-		const meleeExtraMult = DamageReturn.multiplier;
-		const mult = Math.max(1, user.wpnMult() + (meleeExtraMult ?? 0) + bonus.total(situation));
-		const bonusDamage = user.getBonusWpnDamage();
-		const bonusLow = bonusDamage.low.add("Power Low bonus", DamageReturn.low).total(situation);
-		const bonusHigh = bonusDamage.high.add("Power High bonus", DamageReturn.high).total(situation);
-		const dmgamt =  {
-			low: dmg.low * mult + bonusLow,
-			high: dmg.high * mult + bonusHigh,
-		};
-		return dmgamt;
-	}
+	// getMagicSkillDamage(this: ItemSubtype<Power, "magic">, user: ValidAttackers, situation: Situation): {low: number, high:number} {
+	// 	const persona = user.persona();
+	// 	const dmg = user.magDmg();
+	// 	// const mult = this.magicExtraMult();
+	// 	// if (typeof mult == "number") {
+	// 	// const mult = this.system.mag_mult;
+	// 		const DamageReturn = DamageCalculator.magicSkillDamage(this);
+	// 		const mult = DamageReturn.multiplier;
+	// 	const high_bonus = persona.getBonuses("magHigh").total(situation);
+	// 	const low_bonus = persona.getBonuses("magLow").total(situation);
+	// 	const baseLow =  (dmg.low + low_bonus)  * mult;
+	// 	const baseHigh =  (dmg.high + high_bonus) * mult;
+	// 	const finalBonus =  persona.getBonuses("magDmg").total(situation);
+	// 	const modified = {
+	// 		low: baseLow + (baseLow > 0 ? finalBonus: 0) + DamageReturn.low,
+	// 		high: baseHigh + (baseHigh > 0 ? finalBonus: 0) + DamageReturn.high,
+	// 	};
+	// 	return modified;
+	// }
 
-	getMagicSkillDamage(this: ItemSubtype<Power, "magic">, user: ValidAttackers, situation: Situation): {low: number, high:number} {
-		const persona = user.persona();
-		const dmg = user.magDmg();
-		// const mult = this.magicExtraMult();
-		// if (typeof mult == "number") {
-		// const mult = this.system.mag_mult;
-			const DamageReturn = DamageCalculator.magicSkillDamage(this);
-			const mult = DamageReturn.multiplier;
-		const high_bonus = persona.getBonuses("magHigh").total(situation);
-		const low_bonus = persona.getBonuses("magLow").total(situation);
-		const baseLow =  (dmg.low + low_bonus)  * mult;
-		const baseHigh =  (dmg.high + high_bonus) * mult;
-		const finalBonus =  persona.getBonuses("magDmg").total(situation);
-		const modified = {
-			low: baseLow + (baseLow > 0 ? finalBonus: 0) + DamageReturn.low,
-			high: baseHigh + (baseHigh > 0 ? finalBonus: 0) + DamageReturn.high,
-		};
-		return modified;
-	}
-
-	getDamage(this:ModifierContainer , user: ValidAttackers, situation: Situation = {user: user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: user.accessor}, typeOverride : DamageConsequence["damageType"] = "none") : {low: number, high:number} {
+	getDamage(this:ModifierContainer , userPersona: Persona, situation: Situation = {user: userPersona.user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: userPersona.user.accessor}, typeOverride : DamageConsequence["damageType"] = "none") : DamageCalculation {
 		//TODO: handle type override check to see if power damage is by-power or has other type
-		if (!this.isUsableType() || !this.isTrulyUsable() || this.isSkillCard()) return {low:0, high:0};
-		// if (!("dmg_type" in this.system) || !("subtype" in this.system)) return {low: 0, high:0};
+		if (!this.isUsableType() || !this.isTrulyUsable() || this.isSkillCard()) {
+			return new DamageCalculation("none");
+		}
 		if (!typeOverride || typeOverride == "by-power") {
-			if (this.system.dmg_type == "none") return {low: 0, high:0};
+			if (this.system.dmg_type == "none") {
+				return new DamageCalculation("none");
+			}
 		}
 		const subtype : PowerType  = this.system.type == "power" ? this.system.subtype : "standalone";
 		switch(subtype) {
 			case "weapon" : {
-				return (this as ItemSubtype<Power, "weapon">).getWeaponSkillDamage(user, situation);
+				return (this as ItemSubtype<Power, "weapon">).getWeaponSkillDamage(userPersona, situation);
 			}
 			case "magic": {
-				return (this as ItemSubtype<Power, "magic">).getMagicSkillDamage(user, situation);
+				return (this as ItemSubtype<Power, "magic">).getMagicSkillDamage(userPersona, situation);
 			}
 			case "standalone": {
 				const dmg = this.system.damage;
-				return dmg;
+				const dtype = this.system.dmg_type == "by-power" ? "untyped" : this.system.dmg_type;
+				const calc = new DamageCalculation(dtype);
+				calc.add("base", dmg.low, `${this.displayedName} base damage`);
+				calc.add("evenBonus", dmg.high - dmg.low, `${this.displayedName} Even Bonus Damage`);
+				return calc;
 			}
 			default:
-				return {low: 0, high:0};
+				return new DamageCalculation("none");
 		}
 	}
 
@@ -1079,9 +1126,9 @@ comparativePowerRatingToUsePower(this: Power, user: ValidAttackers) : number {
 		if (!estimate) {console.warn(`Can't get damage stack for ${this.name}`); return;}
 		const sim = estimate?.str;
 		if (!sim) {console.warn(`Can't get damage stack for ${this.name}`); return;}
-			console.log(`
+		console.log(`
 Damage stack (${this.name}, ${estimate.damageType})
-${sim.join("\n")}
+		${sim.join("\n")}
 			`);
 	}
 
@@ -1126,7 +1173,7 @@ ${sim.join("\n")}
 			case "talent":
 			case "universalModifier":
 			case "weapon":
-		return this.system.description?.trim() ?? "";
+				return this.system.description?.trim() ?? "";
 			case "characterClass":
 			case "skillCard":
 			case "socialCard":
@@ -1137,11 +1184,11 @@ ${sim.join("\n")}
 		}
 	}
 
-		defaultConditionalEffectType() : TypedConditionalEffect["conditionalType"] {
-			if (this.isTrulyUsable()) return "on-use";
-			if (this.isDefensive()) return "defensive";
-			return "passive";
-		}
+	defaultConditionalEffectType() : TypedConditionalEffect["conditionalType"] {
+		if (this.isTrulyUsable()) return "on-use";
+		if (this.isDefensive()) return "defensive";
+		return "passive";
+	}
 
 	critBoost(this: Usable, user: ValidAttackers) : ModifierList {
 		const x = this.getModifier("criticalBoost", user);
@@ -1378,11 +1425,36 @@ ${sim.join("\n")}
 		return this.system.mpcost;
 	}
 
-	getSourcedEffects(this: ModifierContainer, sourceActor: ValidAttackers): {source: ModifierContainer, effects: readonly ConditionalEffect[]} {
-		return {
-			source: this,
-			effects: this.getEffects(sourceActor)
-		};
+	getSourcedEffects(this: ModifierContainer, sourceActor: ValidAttackers, condTypes :TypedConditionalEffect["conditionalType"][] = []): {source: ModifierContainer, effects: readonly ConditionalEffect[] } {
+		if (condTypes.length == 0) {
+			return {
+				source: this,
+				effects: this.getEffects(sourceActor)
+			};
+		}
+		let effects: ConditionalEffect[] = [];
+		for (const cType of condTypes) {
+			switch (cType) {
+				case "defensive":
+					effects.push(...this.getDefensiveEffects(sourceActor));
+					break;
+				case "triggered":
+					effects.push(...this.getTriggeredEffects(sourceActor));
+					break;
+				case "passive":
+					effects.push(...this.getPassiveEffects(sourceActor));
+					break;
+				case "on-use":
+					effects.push(...this.getOnUseEffects(sourceActor));
+					break;
+				case "unknown":
+					effects.push(...this.getEffects(sourceActor).filter( x=> x.conditionalType == cType));
+					break;
+				default:
+					cType satisfies never;
+			}
+		}
+		return {source: this, effects};
 	}
 
 	generateSkillCardTeach(this: SkillCard): TypedConditionalEffect {
@@ -1420,22 +1492,6 @@ ${sim.join("\n")}
 		}
 		const effects = this.system.effects;
 		return this.#accessEffectsCache("allEffects", sourceActor, () => ConditionalEffectManager.getEffects(effects, this, sourceActor));
-		// PersonaItem.cacheStats.total++;
-		// const cache = this.cache.effects.allEffects;
-		// if (sourceActor == null) {
-		// 	if (!cache.nullActor) {
-		// 		PersonaItem.cacheStats.miss++;
-		// 		cache.nullActor = ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
-		// 	}
-		// 	return cache.nullActor;
-		// } else {
-		// 	const data = cache.actors.get(sourceActor);
-		// 	if (data) return data;
-		// 	PersonaItem.cacheStats.miss++;
-		// 	const newData=  ConditionalEffectManager.getEffects(this.system.effects, this, sourceActor);
-		// 	cache.actors.set(sourceActor, newData);
-		// 	return newData;
-		// }
 	}
 
 	#accessEffectsCache(this: ModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, refresherFn: () => TypedConditionalEffect[]) : readonly TypedConditionalEffect[] {
@@ -1464,6 +1520,11 @@ ${sim.join("\n")}
 
 	hasTriggeredEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
 		return this.getTriggeredEffects(actor).length > 0;
+	}
+
+
+	getOnUseEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
+		return this.#accessEffectsCache("onUseEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === "on-use"))
 	}
 
 	getPassiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
@@ -1836,7 +1897,7 @@ ${sim.join("\n")}
 			return SLcheck;
 		};
 		const conditionTags : typeof CARD_RESTRICTOR_TAGS[number][] = this.system.cardTags
-		.filter(tag=> CARD_RESTRICTOR_TAGS.includes(tag as any)) as typeof CARD_RESTRICTOR_TAGS[number][];
+			.filter(tag=> CARD_RESTRICTOR_TAGS.includes(tag as any)) as typeof CARD_RESTRICTOR_TAGS[number][];
 		return conditionTags.flatMap( tag => {
 			switch (tag) {
 				case "real-world":
@@ -1922,11 +1983,11 @@ ${sim.join("\n")}
 				case "weapon":
 					damageLevel = PersonaItem.#convertPhysicalDamage(item);
 					break;
-				// case "consumable":
-				// 	if (item.system.damage.low > 0)  {
-				// 		damageLevel = "fixed";
-				// 		break;
-				// 	}
+					// case "consumable":
+					// 	if (item.system.damage.low > 0)  {
+					// 		damageLevel = "fixed";
+					// 		break;
+					// 	}
 				default:
 					break;
 			}
@@ -2022,15 +2083,15 @@ ${sim.join("\n")}
 		return this.system.customCost || this.system.damageLevel == "-";
 	}
 
-	get ailmentRange() : {low: number, high:number} | undefined {
-		if (!this.isUsableType()) return undefined;
-		switch (this.system.ailmentChance) {
-			case "none": return undefined;
-			case "low": return {low: 17, high: 18};
-			case "medium": return {low: 15, high: 18};
-			case "high": return {low: 11, high: 20};
-		}
+get ailmentRange() : {low: number, high:number} | undefined {
+	if (!this.isUsableType()) return undefined;
+	switch (this.system.ailmentChance) {
+		case "none": return undefined;
+		case "low": return {low: 17, high: 18};
+		case "medium": return {low: 15, high: 18};
+		case "high": return {low: 11, high: 20};
 	}
+}
 
 isDamagePower(this: Usable): boolean {
 	if (!this.isTrulyUsable()) return false;
@@ -2042,32 +2103,32 @@ isDamagePower(this: Usable): boolean {
 	return this.system.damage.high > 0; //for consumables
 }
 
-	statusesAdded(this: Usable): StatusEffectId[] {
-		const effects= this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == "addStatus"? [cons.statusName] : []));
-		return effects;
-	}
+statusesAdded(this: Usable): StatusEffectId[] {
+	const effects= this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == "addStatus"? [cons.statusName] : []));
+	return effects;
+}
 
-	statusesRemoved(this: Usable): StatusEffectId[] {
-		const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == "removeStatus"? [cons.statusName] : []));
-		return statusesRemoved;
-	}
+statusesRemoved(this: Usable): StatusEffectId[] {
+	const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == "removeStatus"? [cons.statusName] : []));
+	return statusesRemoved;
+}
 
-	buffsOrDebuffsAdded(this: Usable) : number {
-		const statusesGranted = this.statusesAdded();
-		const buffsAndDebuffs = CONFIG.statusEffects
-			.filter(st => st.tags.includes("buff") || st.tags.includes("debuff"))
-			.map( x=> x.id);
-		return statusesGranted.reduce( (acc, st) => buffsAndDebuffs.includes(st) ? acc + 1 : acc, 0);
-	}
+buffsOrDebuffsAdded(this: Usable) : number {
+	const statusesGranted = this.statusesAdded();
+	const buffsAndDebuffs = CONFIG.statusEffects
+		.filter(st => st.tags.includes("buff") || st.tags.includes("debuff"))
+		.map( x=> x.id);
+	return statusesGranted.reduce( (acc, st) => buffsAndDebuffs.includes(st) ? acc + 1 : acc, 0);
+}
 
-	isBuffOrDebuff(this: Usable) : boolean {
-		return this.buffsOrDebuffsAdded() > 0;
-	}
+isBuffOrDebuff(this: Usable) : boolean {
+	return this.buffsOrDebuffsAdded() > 0;
+}
 
-	isStatusRemoval(this: Usable) : boolean {
-		const removed = this.statusesRemoved();
-		return removed.length > 0;
-	}
+isStatusRemoval(this: Usable) : boolean {
+	const removed = this.statusesRemoved();
+	return removed.length > 0;
+}
 
 }
 

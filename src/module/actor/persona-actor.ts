@@ -1,3 +1,4 @@
+import { TypedConditionalEffect } from "../conditional-effect-manager.js";
 import { LevelUpCalculator } from "../../config/level-up-calculator.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { ENCOUNTER_RATE_PROBABILITY } from "../../config/probability.js";
@@ -1457,37 +1458,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return inv.filter( item => item.system.type == "item" && (item.system.slot == "none" || item.system.slot =="key-item")) as InvItem[];
 	}
 
-	wpnDamage(this: ValidAttackers) : {low: number, high:number} {
-		let basedmg: {low: number, high:number};
-		switch (this.system.type) {
-			case "pc": case "npcAlly":
-				const wpn = this.weapon;
-				if (!wpn) {
-					return  {low: 1, high:2};
-				}
-				basedmg =  wpn.system.damage;
-				break;
-			case "shadow":
-				basedmg = this.system.combat.wpndmg;
-				break;
-			default:
-				this.system satisfies never;
-				return {low: 0, high: 0};
-		}
-		return basedmg;
-	}
-
-	getBonusWpnDamage(this: ValidAttackers) : {low: ModifierList, high: ModifierList} {
-		const persona = this.persona();
-		const total = persona.getBonuses("wpnDmg");
-		const low = persona.getBonuses("wpnDmg_low");
-		const high = persona.getBonuses("wpnDmg_high");
-		return {
-			low: total.concat(low),
-			high: total.concat(high)
-		}
-	}
-
 	getPersonalBonuses(modnames : ModifierTarget | ModifierTarget[], sources: readonly ModifierContainer[] = this.actorMainModifiers()) : ModifierList  {
 		let modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this)
 			.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
@@ -1502,10 +1472,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.equippedItems(),
 		].filter (x=> x.getEffects(this).length > 0);
 	}
-
-	// hpCostMod(this: ValidAttackers) : ModifierList {
-	// 	return this.persona().getBonuses("hpCostMult");
-	// }
 
 	get treasureMultiplier () : number {
 		if (!this.isValidCombatant()) return 1;
@@ -2000,76 +1966,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return false;
 	}
 
-	// canUsePower (this: ValidAttackers, usable: UsableAndCard, outputReason: boolean = true) : boolean {
-	// 	if (!this.isAlive()) return false;
-
-	// 	if (this.hasStatus("rage") && usable != PersonaDB.getBasicPower("Basic Attack")) {
-	// 		if (outputReason) {
-	// 			ui.notifications.warn("Can't only use basic attacks when raging");
-	// 		}
-	// 		return false;
-	// 	}
-	// 	if (this.hasPowerInhibitingStatus() && usable.system.type == "power" && !usable.isBasicPower()) {
-	// 		if (outputReason) {
-	// 			ui.notifications.warn("Can't use that power due to a status");
-	// 		}
-	// 		return false;
-	// 	}
-	// 	return this.canPayActivationCost(usable, outputReason);
-	// }
-
-	// canPayActivationCost(this: ValidAttackers, usable: UsableAndCard, outputReason: boolean = true) : boolean {
-	// 	switch (this.system.type) {
-	// 		case "npcAlly":
-	// 		case "pc":
-	// 			return (this as PC | NPCAlly).canPayActivationCost_pc(usable, outputReason);
-	// 		case "shadow":
-	// 			return (this as Shadow).canPayActivationCost_shadow(usable, outputReason);
-	// 		default:
-	// 			this.system satisfies never;
-	// 			throw new PersonaError("Unknown Type");
-	// 	}
-	// }
-
-	// canPayActivationCost_pc(this: PC | NPCAlly, usable: UsableAndCard, _outputReason: boolean) : boolean {
-	// 	switch (usable.system.type) {
-	// 		case "power": {
-	// 			if (usable.system.tags.includes("basicatk")) {
-	// 				return true;
-	// 			}
-	// 			switch (usable.system.subtype) {
-	// 				case "weapon":
-	// 					return  this.hp > (usable as Power).hpCost();
-	// 				case "magic":
-	// 					const mpcost = (usable as Power).mpCost(this.persona());
-	// 					if (mpcost > 0) {
-	// 						return this.mp >= mpcost;
-	// 					}
-	// 				case "social-link":
-	// 					const inspirationId = usable.system.inspirationId;
-	// 					if (inspirationId) {
-	// 						const socialLink = this.system.social.find( x=> x.linkId == inspirationId);
-	// 						if (!socialLink) return false;
-	// 						return socialLink.inspiration >= usable.system.inspirationCost;
-	// 					} else {
-	// 						const inspiration = this.system.social.reduce( (acc, item) => acc + item.inspiration , 0)
-	// 						return inspiration >= usable.system.inspirationCost;
-	// 					}
-	// 				case "downtime":
-	// 					const combat = game.combat as PersonaCombat;
-	// 					if (!combat) return false;
-	// 					return combat.isSocial;
-	// 				default:
-	// 					return true;
-	// 			}
-	// 		}
-	// 		case "consumable":
-	// 			return usable.system.amount > 0;
-	// 		case "skillCard":
-	// 			return this.canLearnNewSkill();
-	// 	}
-	// }
-
 	canLearnNewSkill() : boolean {
 		switch (this.system.type) {
 			case "shadow":
@@ -2084,36 +1980,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return false;
 		}
 	}
-
-	// canPayActivationCost_shadow(this: Shadow, usable: UsableAndCard, outputReason: boolean) : boolean {
-	// 	if (usable.system.type == "skillCard") {
-	// 		return false;
-	// 	}
-	// 	if (usable.system.type == "power") {
-	// 		const combat = game.combat;
-	// 		// if (combat && usable.system.reqEscalation > 0 && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
-	// 		const energyRequired = usable.system.energy.required;
-	// 		const energyCost = usable.system.energy.cost;
-	// 		const currentEnergy = this.system.combat.energy.value;
-	// 		if (combat && energyRequired > 0 && energyRequired > currentEnergy) {
-	// 			if (outputReason) {
-	// 				ui.notifications.notify(`Requires ${energyRequired} energy and you only have ${currentEnergy}`);
-	// 			}
-	// 			return false;
-	// 		}
-	// 		if (combat && energyCost > (currentEnergy + 3)) {
-	// 			if (outputReason) {
-	// 				ui.notifications.notify(`Costs ${energyCost} energy and you only have ${currentEnergy}`);
-	// 			}
-	// 			return false;
-	// 		}
-	// 		if (usable.system.reqHealthPercentage < 100) {
-	// 			const reqHp = (usable.system.reqHealthPercentage / 100) * this.mhpEstimate ;
-	// 			if (this.hp > reqHp) return false;
-	// 		}
-	// 	}
-	// 	return true; //placeholder
-	// }
 
 getSocialStat(this: PC, socialStat: SocialStat) : ModifierList {
 	const stat = this.system.skills[socialStat];
@@ -2349,8 +2215,8 @@ getAllSocialFocii() : Focus[] {
 	}
 }
 
-getSourcedEffects(this: ValidAttackers): {source: ModifierContainer, effects: readonly ConditionalEffect[]} []{
-	return this.mainModifiers().flatMap( x=> x.getSourcedEffects(this));
+getSourcedEffects(this: ValidAttackers, condTypes :TypedConditionalEffect["conditionalType"][] = []): {source: ModifierContainer, effects: readonly ConditionalEffect[], } []{
+	return this.persona().mainModifiers().flatMap( x=> x.getSourcedEffects(this, condTypes));
 }
 
 getEffects(this: ValidAttackers) : readonly ConditionalEffect[] {
@@ -3158,7 +3024,7 @@ async onMetaverseTimeAdvance(): Promise<string[]> {
 	return ret;
 }
 
-socialEffects(this: SocialLink) : ConditionalEffect[] {
+socialEffects(this: SocialLink) : readonly ConditionalEffect[] {
 	return this.system?.socialEffects ?? [];
 }
 

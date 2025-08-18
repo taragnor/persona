@@ -205,7 +205,12 @@ export class CombatResult  {
 						break;
 					}
 					const attacker = PersonaDB.findToken(atkResult.attacker).actor;
-					status_damage = attacker ? (power as Usable).getDamage(attacker)["low"]: 0;
+					status_damage = attacker
+						? (power as Usable)
+						.getDamage(attacker.persona())
+						.eval()
+						.hpChange ?? 0
+						: 0;
 				}
 				const id = cons.statusName!;
 				if (id != "bonus-action") {
@@ -215,7 +220,7 @@ export class CombatResult  {
 					}
 					effect.addStatus.push({
 						id,
-						potency: status_damage ?? cons.amount ?? 0,
+						potency: Math.abs(status_damage ?? cons.amount ?? 0),
 						duration: convertConsToStatusDuration(cons, atkResult ?? target),
 					});
 				}

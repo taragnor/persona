@@ -1,3 +1,4 @@
+import { damageNew } from "./power-dm.js";
 import { powerOnlyUsableProps } from "./power-dm.js";
 import { triEffects } from "./power-dm.js";
 import { CONSUMABLE_SUBTYPE_LIST } from "../../config/equip-slots.js";
@@ -77,6 +78,7 @@ class WeaponDM extends foundry.abstract.TypeDataModel {
 		const ret = {
 			...itemBase(),
 			damage: damage(),
+			damageNew: damageNew(),
 			...effects (false),
 			dmg_type: new txt( {choices: REALDAMAGETYPESLIST, initial:"physical"}),
 		};
