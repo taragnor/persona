@@ -294,9 +294,10 @@ export function fatigueLevelToStatus(lvl: number): FatigueStatusId | undefined {
 	}
 }
 
-export const STATUS_AILMENT_LIST = [
+export const STATUS_AILMENT_LIST : StatusEffectId[] = [
 	"charmed",
 	"fear",
+	"dizzy",
 	"sleep",
 	"confused",
 	"poison",
@@ -306,3 +307,6 @@ export const STATUS_AILMENT_LIST = [
 	"sealed",
 	"despair",
 ] as const satisfies StatusEffectId[];
+
+
+export const STATUS_AILMENT_SET = new Set(STATUS_AILMENT_LIST);

@@ -4,7 +4,15 @@ class Application {
 	static get defaultOptions() : SheetOptions;
 	activateListeners(html: JQuery<HTMLElement>): void;
 	async getData(options : Record<string, unknown> = {}): Promise<Record<string, unknown>>;
-
+	appId: number;
+	_minimized: boolean;
+	_priorState: number;
+	_scrollPositions: unknown[];
+	_searchFilters: unknown[];
+	_dragDrop: unknown[];
+	_state: number;
+	template: string;
+	title: string;
 } ;
 
 

@@ -1,5 +1,6 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 export const STATUS_AILMENT_POWER_TAGS  = [
+	"dizzy",
 	"charm",
 	"fear",
 	"sleep",
@@ -15,8 +16,6 @@ export const STATUS_AILMENT_POWER_TAGS  = [
 export const POWER_TYPE_TAGS = [
 	"power",
 	"consumable",
-	"exotic",
-	"shadow-only",
 	"teamwork",
 	"opener",
 	"ailment",
@@ -34,6 +33,14 @@ export const POWER_TYPE_TAGS = [
 	"hack",
 	"exploration",
 	"usable-while-dead",
+] as const;
+
+
+const RESTRICTION_TAGS = [
+	"exotic",
+	"shadow-only",
+	"lone-persona-only",
+	"persona-only",
 ] as const;
 
 const POWER_TRAIT_TAGS = [
@@ -66,6 +73,7 @@ export const POWER_TAGS_LIST = [
 	"basicatk",
 	"status-removal",
 	"resurrection",
+	...RESTRICTION_TAGS,
 	...STATUS_AILMENT_POWER_TAGS,
 	...POWER_TYPE_TAGS,
 	...POWER_TRAIT_TAGS,

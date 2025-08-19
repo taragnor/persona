@@ -26,8 +26,8 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 	}
 
 	override async getData() {
-		const data= await super.getData();
 		await PersonaDB.waitUntilLoaded();
+		const data= await super.getData();
 		data.RELATIONSHIP_TYPES_LIST = PersonaDB.allSocialCards()
 			.flatMap(card => card.system.qualifiers)
 			.map(qual=> qual.relationshipName)

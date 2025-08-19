@@ -1,3 +1,4 @@
+import { PowerPrinter } from "../../printers/power-list.js";
 import { PersonaRoller } from "../../persona-roll.js";
 import { PersonaDB } from "../../persona-db.js";
 import { UsableAndCard } from "../../item/persona-item.js";
@@ -21,9 +22,9 @@ import { Focus } from "../../item/persona-item.js";
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	declare actor: ValidAttackers;
 
-	override async getData () {
-		return super.getData();
-	}
+	// override async getData () {
+	// 	return await super.getData();
+	// }
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
@@ -48,6 +49,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find("button.random-incremental").on("click", this.randomIncremental.bind(this));
 		html.find(".powerName").on("mouseover", this.createDamageEstimate.bind(this));
 		html.find(".power-img").on("mouseover", this.createDamageEstimate.bind(this));
+		html.find(".showPowersTable").on("click", this.showPowersTable.bind(this));
 	}
 
 	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) {
@@ -374,6 +376,10 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 		const html = await renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona()});
 		$(ev.currentTarget).prop('title', html);
+	}
+
+	async showPowersTable(_ev: JQuery.ClickEvent) {
+		PowerPrinter.open();
 	}
 
 }

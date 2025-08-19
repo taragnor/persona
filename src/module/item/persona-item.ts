@@ -1,3 +1,4 @@
+import { STATUS_AILMENT_SET } from "../../config/status-effects.js";
 import { BASE_VARIANCE } from "../../config/damage-types.js";
 import { DamageCalculation } from "../combat/damage-calc.js";
 import { NewDamageParams } from "../../config/damage-types.js";
@@ -269,6 +270,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	isDefensive(): boolean {
 		switch (this.system.type) {
 			case "power":
+				return this.system.subtype == "defensive";
 			case "focus":
 			case "item":
 			case "talent":
@@ -294,6 +296,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			default:
 				return false;
 		}
+	}
+
+	isAilment(): boolean {
+		if (!this.isUsableType() || !this.isTrulyUsable())  return false;
+		return this.causesAilment();
+	}
+
+	isSupport() : boolean {
+		if (!this.isUsableType() || !this.isTrulyUsable())  return false;
+		if (this.isPower()) {
+			return this.system.damageLevel == "none" && this.system.ailmentChance == "none" && this.system.instantKillChance == "none";
+		}
+			return this.system.damage.high == 0 && this.system.defense == "none";
 	}
 
 	isTrulyUsable() : boolean {
@@ -472,30 +487,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	tagList(this: Talent | Focus | UsableAndCard | InvItem | Weapon, user ?: ValidAttackers | null) : (PowerTag | EquipmentTag)[] {
 		const itype = this.system.type;
 		switch (itype) {
-			case "power": {
-				const list : (PowerTag | EquipmentTag) [] = this.system.tags.slice();
-				list.pushUnique(itype);
-				if (this.system.instantKillChance != "none") {
-					list.pushUnique("instantKill");
-				}
-				if (this.system.dmg_type == "by-power") {
-					list.pushUnique("variable-damage");
-				}
-				if( list.includes("weapon") && this.system.dmg_type == "by-power" && user) {
-					const wpnList : readonly (PowerTag | EquipmentTag)[] = user?.weapon?.tagList() ?? user.unarmedTagList();
-					list.pushUnique(...wpnList);
-				} else {
-					if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
-						list.pushUnique(this.system.dmg_type as any);
-					}
-				}
-				if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
-					list.pushUnique("ailment");
-				}
-				const subtype : typeof POWER_TYPE_TAGS[number]  = this.system.subtype as typeof POWER_TYPE_TAGS[number];
-				if (POWER_TYPE_TAGS.includes(subtype) && !list.includes(subtype)) { list.pushUnique(subtype);}
-				return list;
-			}
+			case "power":
+				return (this as Power).#autoTags_power(user);
 			case "consumable": {
 				const list : (PowerTag | EquipmentTag)[]= (this.system.tags as (PowerTag | EquipmentTag)[]).concat(this.system.itemTags);
 				if (!list.includes(itype)) {
@@ -564,6 +557,35 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				PersonaError.softFail(`Can't get tag list for ${itype}`);
 				return [];
 		}
+	}
+
+	#autoTags_power(this: Power, user ?: null | ValidAttackers): (PowerTag | EquipmentTag)[] {
+		const list : (PowerTag | EquipmentTag) [] = this.system.tags.slice();
+		list.pushUnique(this.system.type);
+		if (this.system.instantKillChance != "none") {
+			list.pushUnique("instantKill");
+		}
+		if (this.system.ailmentChance != "none" || this.causesAilment()) {
+			list.pushUnique("ailment");
+		}
+		if (this.system.dmg_type == "by-power") {
+			list.pushUnique("variable-damage");
+		}
+		if ( list.includes("weapon") && this.system.dmg_type == "by-power" && user) {
+			const wpnList : readonly (PowerTag | EquipmentTag)[] = user?.weapon?.tagList() ?? user.unarmedTagList();
+			list.pushUnique(...wpnList);
+		} else {
+			if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
+				list.pushUnique(this.system.dmg_type as any);
+			}
+			return list;
+		}
+		if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
+			list.pushUnique("ailment");
+		}
+		const subtype : typeof POWER_TYPE_TAGS[number]  = this.system.subtype as typeof POWER_TYPE_TAGS[number];
+		if (POWER_TYPE_TAGS.includes(subtype) && !list.includes(subtype)) { list.pushUnique(subtype);}
+		return list;
 	}
 
 	get amount() : number {
@@ -2045,12 +2067,24 @@ Damage stack (${this.name}, ${estimate.damageType})
 		return this.system.instantKillChance != "none";
 	}
 
-	causesAilment(this: Power) : boolean {
-		return this.hasTag("ailment");
+	causesAilment(this: Usable) : boolean {
+		if (this.statusesAdded().some (
+			status => STATUS_AILMENT_SET.has(status)
+		)) {
+			return true;
+		}
+		return false;
+		// return this.hasTag("ailment");
 	}
 
 	removesAilment(this:Power) : boolean {
-		return this.removesStatus(STATUS_AILMENT_LIST) > 0;
+		if (this.statusesRemoved().some (
+			status => STATUS_AILMENT_SET.has(status)
+		)) {
+			return true;
+		}
+		return false;
+		// return this.removesStatus(STATUS_AILMENT_LIST) > 0;
 	}
 
 	get customCost() : boolean {

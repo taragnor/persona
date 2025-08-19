@@ -999,6 +999,9 @@ h5.choices-block {
 	font-style: italic;
 }
 
+.printable-power-table .power-name:hover {
+	cursor: pointer;
+}
 
 .printable-power-table tr {
 	user-select: text !important;

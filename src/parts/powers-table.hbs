@@ -1,6 +1,12 @@
 <div class="powers-section">
 	<h2>
 		{{localize 	"persona.statistic.powers"}}
+		{{#if showPowerTableButton}}
+		<a class="showPowersTable">
+			<i class="fa-solid fa-table-list"></i>
+		</a>
+		{{/if}}
+
 		{{#if (isShadow actor)}}
 		<a class="addShadowPower">
 			<i class="fa-solid fa-plus"> </i>

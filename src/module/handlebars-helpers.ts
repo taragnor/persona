@@ -151,9 +151,9 @@ export class PersonaHandleBarsHelpers {
 			return token.name;
 		},
 
-		'isPassiveOrDefensive': (power: Power): boolean => {
+		'canUseShortFormPower': (power: Power): boolean => {
 
-			return power.isPassive() || power.isDefensive();
+			return power.isPassive() || power.isDefensive() || power.isSupport();
 		},
 
 		'canUsePower': (persona:Persona, power: Power) : boolean => {

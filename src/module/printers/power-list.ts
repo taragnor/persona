@@ -1,7 +1,10 @@
+import { HTMLTools } from "../utility/HTMLTools.js";
+import { PersonaError } from "../persona-error.js";
 import { Power } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
 
 export class PowerPrinter extends Application {
+	static _instance : U<PowerPrinter>;
 
 	static init() {
 
@@ -21,33 +24,45 @@ export class PowerPrinter extends Application {
 
 	override async activateListeners(html: JQuery) {
 		super.activateListeners(html);
+		html.find(".power-name").on("click", this.openPower.bind(this));
 
 	}
 
-	static open() {
-		const x= new PowerPrinter();
-		x.render(true);
-		return x;
+	static async open() {
+		await PersonaDB.waitUntilLoaded();
+		if (!this._instance) {
+			this._instance = new PowerPrinter();
+		}
+		this._instance.render(true);
+
+		return this._instance;
 	}
 
 	override async getData(options: Record<string, unknown>) {
 		await PersonaDB.waitUntilLoaded();
 		const data = super.getData(options);
+		const untypedSkills = [
+			PowerPrinter.filterByType("magic" ,"none").filter( x=> x.isSupport()),
+			PowerPrinter.filterByType("magic" ,"none").filter( x=> x.isAilment()),
+			PowerPrinter.filterByType("magic" ,"none").filter( x=> !x.isAilment() && !x.isSupport()),
+		].filter( x=> x.length > 0);
+
 		const powers : Power[][] = [
-				PowerPrinter.filterByType("magic" ,"fire"),
-				PowerPrinter.filterByType("magic" , "cold"),
-				PowerPrinter.filterByType("magic" , "lightning"),
-				PowerPrinter.filterByType("magic" , "wind"),
-				PowerPrinter.filterByType("magic" ,"light"),
-				PowerPrinter.filterByType("magic" ,"dark"),
-				PowerPrinter.filterByType("magic" ,"healing"),
-				PowerPrinter.filterByType("magic" ,"untyped"),
-				PowerPrinter.filterByType("magic" ,"none"),
-				PowerPrinter.filterByType("weapon" ,"physical"),
-				PowerPrinter.filterByType("weapon" ,"gun"),
-				PowerPrinter.filterByType("weapon" ,"by-power"),
-				PowerPrinter.filterByType("passive"),
-				PowerPrinter.filterByType("defensive"),
+			PowerPrinter.filterByType("magic" ,"fire"),
+			PowerPrinter.filterByType("magic" , "cold"),
+			PowerPrinter.filterByType("magic" , "lightning"),
+			PowerPrinter.filterByType("magic" , "wind"),
+			PowerPrinter.filterByType("magic" ,"light"),
+			PowerPrinter.filterByType("magic" ,"dark"),
+			PowerPrinter.filterByType("magic" ,"healing"),
+			PowerPrinter.filterByType("magic" ,"untyped"),
+			// PowerPrinter.filterByType("magic" ,"none"),
+			PowerPrinter.filterByType("weapon" ,"physical"),
+			PowerPrinter.filterByType("weapon" ,"gun"),
+			PowerPrinter.filterByType("weapon" ,"by-power"),
+			...untypedSkills,
+			PowerPrinter.filterByType("passive"),
+			PowerPrinter.filterByType("defensive"),
 		];
 		return {
 			...data,
@@ -63,16 +78,35 @@ export class PowerPrinter extends Application {
 			.sort( (a,b) => {
 				const sort= a.system.slot - b.system.slot
 				if (sort != 0) return sort;
-				const exoticSort= (a.hasTag("exotic")? 1 : 0) -
-					(b.hasTag("exotic") ? 1 : 0);
+				const exoticSort= (a.hasTag("exotic")? 1 : 0)
+					- (b.hasTag("exotic") ? 1 : 0);
 				if (exoticSort != 0) return exoticSort;
 				return a.name.localeCompare(b.name);
 			});
 	}
 
+	async openPower(event: JQuery.ClickEvent) {
+		const powerId = HTMLTools.getClosestData(event, "powerId");
+		if (powerId == undefined) {
+			throw new PersonaError(`Can't find power`);
+		}
+		const power = PersonaDB.allPowers().get(powerId);
+		if (!power) {
+			throw new PersonaError(`Can't find power id ${powerId}`);
+		}
+		await power.sheet.render(true);
+	}
+
 
 
 }
+
+Hooks.on("DBrefresh", function () {
+	const instance = PowerPrinter._instance;
+	if (instance && instance._state >= 2) {
+		instance.render(true);
+	}
+});
 
 
 //@ts-ignore
