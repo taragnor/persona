@@ -170,6 +170,7 @@ export class PowerCostCalculator {
 			this.mpCost_ailment(pwr),
 			this.mpCost_dekaja(pwr),
 			// this.statusRemoval(pwr),
+			this.#mpCost_tags(pwr),
 		].reduce ( (acc, x) => acc * x.mult + x.add, 0);
 		return Math.round(val);
 	}
@@ -217,10 +218,15 @@ export class PowerCostCalculator {
 				mult *= 2.0;
 				add += 3;
 				break;
-			case "none":
+			case "always":
 				mult *= 2.0;
 				add += 3;
 				break;
+			case "none":
+				return i(0);
+			default:
+				pwr.system.ailmentChance satisfies never;
+				return i(0);
 		}
 		if (pwr.isAoE()) {
 			add += 6;
@@ -248,6 +254,20 @@ export class PowerCostCalculator {
 			cost += 0;
 		}
 		return i(cost);
+	}
+
+	static #mpCost_tags(pwr: Power) : CostModifier {
+		let mult = 1;
+		const tags = pwr.tagList()
+		for (const x of tags) {
+			const modMult = TAG_ADJUST_MP_MULT[x as PowerTag];
+			if (modMult == undefined) continue;
+			mult *= modMult;
+		}
+		return {
+			add: 0,
+			mult
+		};
 	}
 
 }
@@ -344,6 +364,15 @@ const TAG_ADJUST_HP : Partial<Record<PowerTag, number>> = {
 	"price-lower-for-shadow": 0,
 	mobile: 5,
 	"half-on-miss": 3,
+	"pierce": 5,
+}
+
+const TAG_ADJUST_MP_MULT : Partial<Record<PowerTag, number>> = {
+	"half-on-miss": 1.1,
+	"pierce": 1.5,
+	"high-crit":1.25,
+	"accurate": 1.15,
+	"inaccurate": 0.85,
 }
 
 type PowerCost = {

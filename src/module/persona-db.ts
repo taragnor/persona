@@ -53,6 +53,8 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			NPCAllies: undefined,
 			sceneModifiers: undefined,
 			worldModifiers: undefined,
+			worldPassives: undefined,
+			worldDefensives: undefined,
 		};
 		Hooks.callAll("DBrefresh");
 		return newCache;
@@ -82,6 +84,22 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			return item as ItemSub<"characterClass">;
 		}
 		throw new Error("Id ${id} points towards invalid type");
+	}
+
+	getGlobalDefensives(): readonly UniversalModifier [] {
+		if (this.#cache.worldDefensives == undefined) {
+		this.#cache.worldDefensives = this.getGlobalModifiers()
+				.filter(um=> um.hasDefensiveEffects(null));
+		}
+		return this.#cache.worldDefensives;
+	}
+
+	getGlobalPassives() : readonly UniversalModifier [] {
+		if (this.#cache.worldPassives == undefined) {
+		this.#cache.worldPassives = this.getGlobalModifiers()
+				.filter(um=> um.hasPassiveEffects(null));
+		}
+		return this.#cache.worldPassives;
 	}
 
 	getGlobalModifiers() : readonly UniversalModifier [] {
@@ -310,5 +328,7 @@ type PersonaDBCache =	{
 	NPCAllies: U<NPCAlly[]>;
 	sceneModifiers: U<UniversalModifier[]>;
 	worldModifiers: U<UniversalModifier[]>;
+	worldPassives: U<UniversalModifier[]>;
+	worldDefensives: U<UniversalModifier[]>;
 };
 

@@ -46,6 +46,10 @@ export class PowerPrinter extends Application {
 			PowerPrinter.filterByType("magic" ,"none").filter( x=> x.isAilment()),
 			PowerPrinter.filterByType("magic" ,"none").filter( x=> !x.isAilment() && !x.isSupport()),
 		].filter( x=> x.length > 0);
+		const passiveSkills = [
+			PowerPrinter.filterByType("passive"),
+			PowerPrinter.filterByType("defensive"),
+		].flat();
 
 		const powers : Power[][] = [
 			PowerPrinter.filterByType("magic" ,"fire"),
@@ -56,14 +60,15 @@ export class PowerPrinter extends Application {
 			PowerPrinter.filterByType("magic" ,"dark"),
 			PowerPrinter.filterByType("magic" ,"healing"),
 			PowerPrinter.filterByType("magic" ,"untyped"),
-			// PowerPrinter.filterByType("magic" ,"none"),
 			PowerPrinter.filterByType("weapon" ,"physical"),
 			PowerPrinter.filterByType("weapon" ,"gun"),
 			PowerPrinter.filterByType("weapon" ,"by-power"),
 			...untypedSkills,
-			PowerPrinter.filterByType("passive"),
-			PowerPrinter.filterByType("defensive"),
-		];
+			passiveSkills,
+			// PowerPrinter.filterByType("passive"),
+			// PowerPrinter.filterByType("defensive"),
+		].map( list => list.sort(PowerPrinter.sortPowerFn))
+
 		return {
 			...data,
 			powerLists: powers,
@@ -75,14 +80,15 @@ export class PowerPrinter extends Application {
 			.filter( pwr => pwr.system.subtype == subtype && !pwr.isTeamwork() && !pwr.isOpener() && !pwr.isNavigator())
 			.filter( pwr=> powerType ? pwr.system.dmg_type == powerType: true)
 			.filter( x=> !x.hasTag("shadow-only"))
-			.sort( (a,b) => {
-				const sort= a.system.slot - b.system.slot
-				if (sort != 0) return sort;
-				const exoticSort= (a.hasTag("exotic")? 1 : 0)
-					- (b.hasTag("exotic") ? 1 : 0);
-				if (exoticSort != 0) return exoticSort;
-				return a.name.localeCompare(b.name);
-			});
+	}
+
+	static sortPowerFn( a: Power, b: Power) : number {
+		const sort= a.system.slot - b.system.slot
+		if (sort != 0) return sort;
+		const exoticSort= (a.hasTag("exotic")? 1 : 0)
+			- (b.hasTag("exotic") ? 1 : 0);
+		if (exoticSort != 0) return exoticSort;
+		return a.name.localeCompare(b.name);
 	}
 
 	async openPower(event: JQuery.ClickEvent) {

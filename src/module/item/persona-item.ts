@@ -941,7 +941,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		for (const modifier of bonusTypes) {
 			let hasBonus = this.cache.statsModified.get(modifier);
 			if (hasBonus === undefined) {
-				hasBonus = ConditionalEffectManager.canModifyStat(this.getPassiveEffects(sourceActor), modifier);
+				hasBonus = ConditionalEffectManager.canModifyStat(this.getPassiveAndDefensiveEffects(sourceActor), modifier);
 				this.cache.statsModified.set(modifier, hasBonus);
 			}
 			if (hasBonus === true) {
@@ -1533,7 +1533,12 @@ Damage stack (${this.name}, ${estimate.damageType})
 		return this.#accessEffectsCache("passiveEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === "passive"))
 	}
 
-	hasPassiveEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
+	getPassiveAndDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor  | null) : readonly ConditionalEffect[] {
+		return this.getPassiveEffects(sourceActor)
+		.concat(this.getDefensiveEffects(sourceActor));
+	}
+
+	hasPassiveEffects(this: ModifierContainer, actor: PersonaActor | null) : boolean {
 		return this.getPassiveEffects(actor).length > 0;
 	}
 
@@ -1541,7 +1546,7 @@ Damage stack (${this.name}, ${estimate.damageType})
 		return this.#accessEffectsCache("defensiveEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === "defensive"))
 	}
 
-	hasDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor) : boolean {
+	hasDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : boolean {
 		return this.getDefensiveEffects(sourceActor).length > 0;
 	}
 

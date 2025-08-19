@@ -273,7 +273,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			...passiveOrTriggeredPowers,
 			...user.actorMainModifiers(),
 			...roomModifiers,
-			...PersonaDB.getGlobalModifiers(),
+			...PersonaDB.getGlobalPassives(),
+			// ...PersonaDB.getGlobalModifiers(),
 			...PersonaDB.navigatorModifiers(),
 		].filter( x => x.getEffects(this.user).length > 0);
 		this.#cache.mainModifiers = mainMods;
@@ -289,11 +290,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.#cache.passivePowers;
 	}
 
-	defensivePowers(): readonly ModifierContainer[] {
+	defensiveModifiers(): readonly ModifierContainer[] {
 		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!this.#cache.defensivePowers || !PersonaCaching) {
 			this.#cache.defensivePowers =
 				[
+					//can't do this yet becuase it mixes defensives and passives in main
+					// ...PersonaDB.getGlobalDefensives(),
 					...this.user.userDefensivePowers(),
 					...this.defensiveFocii(),
 					...this.powers,
@@ -394,7 +397,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		mods.add("Level Bonus (x2)", lvl * 2);
 		mods.add("Incremental Advance" , inc);
 		const otherBonuses = this.getBonuses([defense, "allDefenses"]);
-		const defenseMods = this.getBonuses([defense, "allDefenses"], this.defensivePowers());
+		const defenseMods = this.getBonuses([defense, "allDefenses"], this.defensiveModifiers());
 		return mods.concat(otherBonuses).concat(defenseMods);
 
 	}

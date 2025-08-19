@@ -1661,7 +1661,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	getSourcedDefensivePowers(this: ValidAttackers) {
-		return this.persona().defensivePowers().flatMap( x=> x.getSourcedEffects(this));
+		return this.persona().defensiveModifiers().flatMap( x=> x.getSourcedEffects(this));
 	}
 
 	wpnAtkBonus(this: ValidAttackers) : ModifierList {

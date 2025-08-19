@@ -2276,7 +2276,7 @@ static getAttackBonus(attacker: ValidAttackers, power: Usable, target: PToken | 
 static getDefenderAttackModifiers(target: PToken | undefined) : ModifierList {
 	if (!target) {return new ModifierList();}
 	const defense = new ModifierList(
-		target.actor.persona().defensivePowers()
+		target.actor.persona().defensiveModifiers()
 		.flatMap (item => item.getModifier("allAtk", target.actor))
 	);
 	return defense;
@@ -2290,20 +2290,6 @@ static applyRelevantTagAttackBonus(attackBonus: ModifierList, attacker: ValidAtt
 	// const _localized = game.i18n.localize(POWER_TAGS[tag]);
 	attackBonus.add(`Damage Power bonus`, +3);
 }
-
-/* old version
-	static old_applyRelevantTagAttackBonus(attackBonus: ModifierList, attacker: ValidAttackers, power: Usable) {
-		let tag = this.getRelevantAttackTag(attacker, power.getDamageType(attacker));
-		if (tag) {
-			const bonusPowers = attacker.mainPowers.concat(attacker.bonusPowers)
-				.filter(x => x.system.tags.includes(tag));
-			const bonus = bonusPowers.length * 3;
-			const localized = game.i18n.localize(POWER_TAGS[tag]);
-			attackBonus.add(`${localized} Power bonus`, bonus);
-		}
-
-	}
- */
 
 static #getRelevantAttackTag(_attacker: ValidAttackers, dmgType : DamageType) : PowerTag | undefined  {
 	switch (dmgType) {
