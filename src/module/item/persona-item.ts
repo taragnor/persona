@@ -1181,13 +1181,14 @@ Damage stack (${this.name}, ${estimate.damageType})
 		}
 	}
 
-	isWeaponSkill(this: UsableAndCard): boolean{
+	isWeaponSkill(this: UsableAndCard): this is PowerSub<"weapon"> {
 		if (this.isSkillCard()) return false;
-		switch (this.system.subtype) {
-			case "weapon":
-				return true;
-		}
-		return false;
+		return (this.system.subtype == "weapon")
+	}
+
+	isMagicSkill(this: UsableAndCard): this is PowerSub<"magic"> {
+		if (this.isSkillCard()) return false;
+		return (this.system.subtype == "magic")
 	}
 
 	hpCost(this: Usable): number {
@@ -1360,16 +1361,18 @@ Damage stack (${this.name}, ${estimate.damageType})
 		return boost;
 	}
 
-	mpCost(this: Usable, userPersona: Persona): number {
+	mpCost(this: Usable, userPersona: Persona | null): number {
 		if (this.isConsumable()) return 0;
-		const sit : Situation = {
-			user: userPersona.user.accessor,
-			usedPower: this.accessor,
-			attacker: userPersona.user.accessor,
+		let mult  = 1;
+		if (userPersona) {
+			const sit : Situation = {
+				user: userPersona.user.accessor,
+				usedPower: this.accessor,
+				attacker: userPersona.user.accessor,
+			}
+			let list = userPersona.getBonuses("mpCostMult");
+			mult = list.total(sit, "percentage");
 		}
-		let list = userPersona.getBonuses("mpCostMult");
-		Debug(list);
-		const mult = list.total(sit, "percentage");
 		const baseMPCost = this.baseMPCost;
 		return Math.round(baseMPCost * mult);
 	}
@@ -2158,3 +2161,5 @@ type WeakMapPlus = {
 	nullActor: U<TypedConditionalEffect[]>;
 
 };
+
+type PowerSub<T extends Power["system"]["subtype"]> = Power & {system: {subtype: T}}

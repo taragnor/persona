@@ -1808,20 +1808,22 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			await this.addNavigatorSkill(power);
 			return;
 		}
-		if (this.isShadow()) {
-			const pow = await this.createEmbeddedDocuments("Item", [power]);
-			await this.setDefaultShadowCosts(pow[0] as Power);
-			return;
-		}
+		// if (this.isShadow()) {
+		// 	const pow = await this.createEmbeddedDocuments("Item", [power]);
+		// 	await this.setDefaultShadowCosts(pow[0] as Power);
+		// 	return;
+		// }
 		const powers = this.system.combat.powers;
 		if (powers.includes(power.id)) {
 			ui.notifications.notify("You already know this power in main powers!");
 			return;
 		}
-		const sideboard =  this.system.combat.powers_sideboard;
-		if (sideboard.includes(power.id)) {
-			ui.notifications.notify("You already know this power in sideboard!");
-			return;
+		if (!this.isShadow()) {
+			const sideboard =  this.system.combat.powers_sideboard;
+			if (sideboard.includes(power.id)) {
+				ui.notifications.notify("You already know this power in sideboard!");
+				return;
+			}
 		}
 		if (powers.length < this.basePersona.maxMainPowers) {
 			powers.push(power.id);
@@ -1829,15 +1831,29 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			await Logger.sendToChat(`${this.name} learned Power: ${power.name}`);
 			return;
 		}
-		sideboard.push(power.id);
-		await this.update( {"system.combat.powers_sideboard": sideboard});
-		const totalPowers = this.mainPowers.length + this.sideboardPowers.length;
-		let maxMsg = "";
-		if (totalPowers > this.maxPowers) {
-			maxMsg = `<br>${this.name} has exceeded their allowed number of powers (${this.maxPowers})  and must forget one or more powers.`;
+		if (!this.isShadow()) {
+			const sideboard =  this.system.combat.powers_sideboard;
+			if (sideboard.length < this.persona().maxSideboardPowers) {
+				sideboard.push(power.id);
+				await this.update( {"system.combat.powers_sideboard": sideboard});
+				await Logger.sendToChat(`${this.name} learned Power: ${power.name} (placed in sideboard)`);
+			}
 		}
-		await Logger.sendToChat(`${this.name} learned ${power.name} ${maxMsg}` , this);
+		const totalPowers = this.mainPowers.length + this.sideboardPowers.length;
+		if (totalPowers > this.maxPowers) {
+			const totalPowers = this.mainPowers.length + this.sideboardPowers.length;
+			if (totalPowers > this.maxPowers) {
+				const buffer= this.system.combat.learnedPowersBuffer;
+				buffer.push(power.id);
+				await this.update( {"system.combat.learnedPowersBuffer": buffer});
+				// await Logger.sendToChat(`${this.name} learned Power: ${power.name}, which has been placed in the learned Powers Buffer, you must choose to forget a power to get it`);
+				const maxMsg = `<br>${this.name} has exceeded their allowed number of powers (${this.maxPowers})  and must forget one or more powers.`;
+				await Logger.sendToChat(`${this.name} learned ${power.name} ${maxMsg}` , this);
+			}
+		}
 	}
+
+
 
 	async deletePower(this: ValidAttackers, id: string ) {
 		const item = this.items.find(x => x.id == id);

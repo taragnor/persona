@@ -198,6 +198,7 @@ export function combatCommonStats() {
 		wpnatk: new num( {integer:true, initial: 0}),
 		magatk: new num( {integer:true, initial: 0}),
 		powers: new arr( new id()),
+		learnedPowersBuffer: new arr( new id()),
 		defenses :
 		new sch({
 			ref: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),

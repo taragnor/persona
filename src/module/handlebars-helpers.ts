@@ -387,13 +387,14 @@ export class PersonaHandleBarsHelpers {
 			if (pc.system.type != "pc") return false;
 			return PersonaSocial.meetsConditionsToStartLink(pc, target);
 		},
-		"getItemTagList": function (item: Usable | InvItem | Weapon) : string[] {
-			const localizeTable  =  {
-				...EQUIPMENT_TAGS,
-				...POWER_TAGS
-			};
-			if (item.system.type == "power") {PersonaError.softFail("Calling Item Tag list on Power");}
-			return (item as Consumable | InvItem | Weapon).tagList().map(tag=> localize(localizeTable[tag]));
+		"getItemTagList": function (item: Usable | InvItem | Weapon) : string {
+			return item.tagListLocalized(null);
+			// const localizeTable  =  {
+			// 	...EQUIPMENT_TAGS,
+			// 	...POWER_TAGS
+			// };
+			// if (item.system.type == "power") {PersonaError.softFail("Calling Item Tag list on Power");}
+			// return (item as Consumable | InvItem | Weapon).tagList().map(tag=> localize(localizeTable[tag]));
 		},
 
 		"getCreatureTagList": function (actor: PersonaActor) : string[] {
@@ -490,6 +491,18 @@ export class PersonaHandleBarsHelpers {
 			try {
 			return new Handlebars.SafeString(power.costString1(persona));
 			} catch (e) {return "ERROR";}
+		},
+
+		"simplePowerCost": function (power: Power) : string {
+			if (power.isWeaponSkill()) {
+				const hpCost = power.hpCost();
+				return `${hpCost}% HP`;
+			}
+			if (power.isMagicSkill()) {
+				const mpCost = power.mpCost(null);
+				return `${mpCost} MP`;
+			}
+			return "";
 		},
 
 		"costString": function () {

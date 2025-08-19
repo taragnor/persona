@@ -1045,6 +1045,9 @@
 	"persona.availability.+": "Advantageous (+)",
 	"persona.availability.-": "Normal (-)",
 	"persona.availability.--": "Negative (--)",
-	"persona.availability.N/A": "Not Available (N/A)"
+	"persona.availability.N/A": "Not Available (N/A)",
+
+	"persona.applications.powerPrinter" : "Persona Powers List"
+
 }
 
