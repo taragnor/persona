@@ -41,9 +41,13 @@ export class PowerPrinter extends Application {
 				PowerPrinter.filterByType("magic" ,"light"),
 				PowerPrinter.filterByType("magic" ,"dark"),
 				PowerPrinter.filterByType("magic" ,"healing"),
+				PowerPrinter.filterByType("magic" ,"untyped"),
+				PowerPrinter.filterByType("magic" ,"none"),
 				PowerPrinter.filterByType("weapon" ,"physical"),
 				PowerPrinter.filterByType("weapon" ,"gun"),
 				PowerPrinter.filterByType("weapon" ,"by-power"),
+				PowerPrinter.filterByType("passive"),
+				PowerPrinter.filterByType("defensive"),
 		];
 		return {
 			...data,
@@ -51,16 +55,18 @@ export class PowerPrinter extends Application {
 		};
 	}
 
-	static filterByType (subtype: Power["system"]["subtype"], powerType : Power["system"]["dmg_type"]) : Power[] {
+	static filterByType (subtype: Power["system"]["subtype"], powerType ?: Power["system"]["dmg_type"]) : Power[] {
 		return PersonaDB.allPowersArr()
-			.filter( pwr => pwr.system.subtype == subtype && !pwr.isTeamwork() && !pwr.isOpener())
-			.filter( pwr=> pwr.system.dmg_type == powerType)
+			.filter( pwr => pwr.system.subtype == subtype && !pwr.isTeamwork() && !pwr.isOpener() && !pwr.isNavigator())
+			.filter( pwr=> powerType ? pwr.system.dmg_type == powerType: true)
 			.filter( x=> !x.hasTag("shadow-only"))
 			.sort( (a,b) => {
 				const sort= a.system.slot - b.system.slot
 				if (sort != 0) return sort;
-				return (a.hasTag("exotic")? 1 : 0) -
+				const exoticSort= (a.hasTag("exotic")? 1 : 0) -
 					(b.hasTag("exotic") ? 1 : 0);
+				if (exoticSort != 0) return exoticSort;
+				return a.name.localeCompare(b.name);
 			});
 	}
 

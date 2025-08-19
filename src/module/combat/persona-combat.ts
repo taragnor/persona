@@ -1466,7 +1466,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					critBoost: 0,
-					ailmentRange: power.ailmentRange,
+					ailmentRange: undefined,
 					situation: {
 						hit: false,
 						criticalHit: false,
@@ -1515,7 +1515,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			return {
 				result: rollType != "reflect" ? "reflect": "block",
 				printableModifiers: [],
-				ailmentRange: power.ailmentRange,
+				ailmentRange: undefined,
 				validAtkModifiers: [],
 				validDefModifiers: [],
 				critBoost: 0,
@@ -1532,7 +1532,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			return {
 				result: rollType != "reflect" ? "reflect": "block",
 				printableModifiers: [],
-				ailmentRange: power.ailmentRange,
+				ailmentRange: undefined,
 				validAtkModifiers: [],
 				validDefModifiers: [],
 				critBoost: 0,
@@ -1550,6 +1550,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	static async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, modifiers: ModifierList, rollType: AttackRollType) : Promise<AttackResult> {
 		const combat = game.combat as PersonaCombat | undefined;
+		const attackerPersona = attacker.actor.persona();
+		const targetPersona = target.actor.persona();
 		const rollTags: NonNullable<Situation["rollTags"]> = ["attack"];
 		const activationRoll = rollType == "activation";
 		if (activationRoll) {
@@ -1565,10 +1567,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		};
 		const cardReturn = await this.processSkillCard(attacker, usableOrCard, target, baseSituation);
 		if (cardReturn) return cardReturn;
-		const targetP = target.actor.persona();
 		const power = usableOrCard as Usable;
 		const element = power.getDamageType(attacker.actor);
-		const resist = targetP.elemResist(element);
+		const resist = targetPersona.elemResist(element);
 		const def = power.system.defense;
 		const r = await new Roll("1d20").roll();
 		if (activationRoll) {
@@ -1585,8 +1586,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const roll = new RollBundle("Temp", r, attacker.actor.system.type == "pc", attackbonus, baseSituation);
 		const naturalAttackRoll = roll.dice[0].total;
 		// situation.naturalRoll = naturalAttackRoll;
-		const defenseVal = def != "none" ? target.actor.getDefense(def).total(baseSituation): 0;
-		const validDefModifiers = def != "none" ? target.actor.getDefense(def).list(baseSituation): [];
+		const defenseVal = def != "none" ? targetPersona.getDefense(def).total(baseSituation): 0;
+		const validDefModifiers = def != "none" ? targetPersona.getDefense(def).list(baseSituation): [];
 		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
 		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.system.defense} ${defenseStr}`;
 		roll.setName(rollName);
@@ -1597,7 +1598,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			power: PersonaDB.getUniversalItemAccessor(power)
 		} satisfies Pick<AttackResult, "attacker" | "target"  | "power" | "roll">;
 		const total = roll.total;
+		const ailmentMod = attackerPersona.getBonuses("afflictionRange").concat(
+			targetPersona.getBonuses("afflictionRange")
+		).total(baseSituation);
 		const ailmentRange = power.ailmentRange;
+		if (ailmentRange) {
+			ailmentRange.low -= ailmentMod;
+		}
 		const withinAilmentRange = ailmentRange ? naturalAttackRoll >= ailmentRange.low && naturalAttackRoll <= ailmentRange.high : false;
 
 		const situation : CombatRollSituation = {

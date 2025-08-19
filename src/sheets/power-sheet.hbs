@@ -73,7 +73,11 @@
 			<label class="hp-cost">
 				{{localize	"persona.power.hpcost"}}
 			</label>
+			{{#if item.customCost}}
+			{{numberInput item.system.hpcost class="short" name="system.hpcost" step=1 min=1 max=100}}
+			{{else}}
 			{{hpCost item}}
+			{{/if}}
 		</div>
 		{{/if}}
 
@@ -123,7 +127,7 @@
 
 		{{/if}}
 
-		{{#if (eq item.parent.type "shadow")}}
+		{{#if item.customCost}}
 		<hr>
 		<section class="shadow-costs">
 			<div>

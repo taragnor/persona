@@ -15,16 +15,25 @@
 			{{#each powers as |power i|}}
 			<tr>
 				<td class="power-name">
+					{{#if (isExotic power)}}
+					*
+					{{/if}}
 					{{power.name}}
 				</td>
 				<td> {{power.slotLocalized}} </td>
 				<td> {{getItemTagList power}} </td>
+				{{#if (isPassiveOrDefensive power)}}
+				<td class="description" colspan="4">
+					{{power.description}}
+				</td>
+				{{else}}
 				<td> {{simplePowerCost power}} </td>
 				<td> {{localizeDamageLevel power}}</td>
 				<td> {{localizeKillLevel power}}</td>
 				<td> {{localizeAilmentLevel power}}</td>
+				{{/if}}
 			</tr>
-			{{#if power.description}}
+			{{#if (and power.description (not (isPassiveOrDefensive power)))}}
 			<tr>
 				<td class="description" colspan="5">
 					{{power.description}}

@@ -1206,6 +1206,7 @@ Damage stack (${this.name}, ${estimate.damageType})
 	hpCost(this: Usable): number {
 		if (!this.isWeaponSkill() || !this.isPower()) {return 0;}
 		if (this.isTeamwork()) return 0;
+		if (this.customCost) return this.system.hpcost;
 		const newSys=  PowerCostCalculator.calcHPPercentCost(this);
 		return newSys;
 

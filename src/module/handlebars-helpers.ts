@@ -151,6 +151,11 @@ export class PersonaHandleBarsHelpers {
 			return token.name;
 		},
 
+		'isPassiveOrDefensive': (power: Power): boolean => {
+
+			return power.isPassive() || power.isDefensive();
+		},
+
 		'canUsePower': (persona:Persona, power: Power) : boolean => {
 			try {
 			return persona.canUsePower(power, false);
@@ -490,14 +495,19 @@ export class PersonaHandleBarsHelpers {
 			} catch (e) {return "ERROR";}
 		},
 
+		"isExotic" : function (power: Power) : boolean {
+			return power.hasTag("exotic");
+		},
+
 		"simplePowerCost": function (power: Power) : string {
+			const customCost = power.customCost ? "*" : "";
 			if (power.isWeaponSkill()) {
 				const hpCost = power.hpCost();
-				return `${hpCost}% HP`;
+				return `${hpCost}${customCost}% HP`;
 			}
 			if (power.isMagicSkill()) {
 				const mpCost = power.mpCost(null);
-				return `${mpCost} MP`;
+				return `${mpCost}${customCost} MP`;
 			}
 			return "";
 		},
