@@ -953,3 +953,61 @@ h5.choices-block {
 	min-width: 15%;
 }
 
+.printable-power-table {
+	user-select: text !important;
+	max-height: auto;
+	min-height: auto;
+	table-layout: auto;
+	width: 100%;   /* or a fixed width */
+}
+
+.printable-power-table th {
+	user-select: text !important;
+	max-height: 1em;
+	height: 1em;
+	min-height: 0px;
+	text-align: center;
+	vertical-align: middle;
+}
+
+.printable-power-table power-name {
+	font-weight: bold;
+}
+
+.printable-power-table tbody td {
+	user-select: text !important;
+	min-height: 0px;
+	height: 1em;
+	max-height: 1em;
+	overflow: hidden; /* hides extra content */
+	padding-bottom: 0px;
+	padding-top: 0px;
+	padding-left: 2px;
+	padding-right: 2px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	text-align: center;
+	vertical-align: middle;
+}
+
+.printable-power-table tbody td.power-name {
+	font-weight: bold;
+}
+
+.printable-power-table tbody td.description {
+	font-style: italic;
+}
+
+
+.printable-power-table tr {
+	user-select: text !important;
+	min-height: 0px;
+	max-height: 1em;
+	height: 1em;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	text-align: center;
+	vertical-align: middle;
+}
+

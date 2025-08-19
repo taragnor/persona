@@ -1040,6 +1040,7 @@
 	"persona.powers.instantKillLevels.low": "Low",
 	"persona.powers.instantKillLevels.medium": "Medium",
 	"persona.powers.instantKillLevels.high": "High",
+	"persona.powers.instantKillLevels.always": "Always",
 
 	"persona.availability.++": "Favored (++)",
 	"persona.availability.+": "Advantageous (+)",

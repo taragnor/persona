@@ -3,7 +3,7 @@ class Application {
 	render(force: boolean, options: Record<string, unknown> = {}) : this;
 	static get defaultOptions() : SheetOptions;
 	activateListeners(html: JQuery<HTMLElement>): void;
-	async getData(): Promise<Record<string, unknown>>;
+	async getData(options : Record<string, unknown> = {}): Promise<Record<string, unknown>>;
 
 } ;
 

@@ -131,6 +131,8 @@ export class PowerCostCalculator {
 				return i(4);
 			case "high":
 				return i(6);
+			case "always":
+				return i(8);
 		}
 	}
 
@@ -155,6 +157,8 @@ export class PowerCostCalculator {
 				return {mult: 1.5, add: 3};
 			case "high":
 				return {mult: 2, add: 5};
+			case "always":
+				return {mult: 3, add: 10};
 		}
 	}
 
@@ -258,6 +262,7 @@ const INSTANT_KILL_LEVELS_MULT : Record<InstantKillLevel, number> = {
 	low: 1,
 	medium: 1.875,
 	high: 2.5,
+	always: 4,
 }
 
 const DAMAGE_TYPE_MODIFIER : Record<DamageType, CostModifier> = {

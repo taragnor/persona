@@ -171,6 +171,7 @@ const INSTANT_KILL_LEVELS_LIST= [
 	"low",
 	"medium",
 	"high",
+	"always"
 ] as const;
 
 export type InstantKillLevel = typeof INSTANT_KILL_LEVELS_LIST[number];
@@ -182,7 +183,8 @@ export const INSTANT_KILL_CRIT_BOOST : Record< InstantKillLevel, number>= {
 	none: 0,
 	high: 11,
 	low: 5,
-	medium: 8
+	medium: 8,
+	always: 1000,
 }
 
 export type NewDamageParams = {

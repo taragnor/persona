@@ -1,0 +1,37 @@
+<div>
+	<table class="printable-power-table">
+		<thead>
+			<tr>
+				<th> Name</th>
+				<th> Slot </th>
+				<th> Tags</th>
+				<th> Cost</th>
+				<th> Damage </th>
+				<th> Kill</th>
+				<th> Ailment</th>
+			</tr>
+		</thead>
+		<tbody>
+			{{#each powers as |power i|}}
+			<tr>
+				<td class="power-name">
+					{{power.name}}
+				</td>
+				<td> {{power.slotLocalized}} </td>
+				<td> {{getItemTagList power}} </td>
+				<td> {{simplePowerCost power}} </td>
+				<td> {{localizeDamageLevel power}}</td>
+				<td> {{localizeKillLevel power}}</td>
+				<td> {{localizeAilmentLevel power}}</td>
+			</tr>
+			{{#if power.description}}
+			<tr>
+				<td class="description" colspan="5">
+					{{power.description}}
+				</td>
+			</tr>
+			{{/if}}
+			{{/each}}
+		</tbody>
+	</table>
+</div>

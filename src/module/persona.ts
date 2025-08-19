@@ -12,6 +12,7 @@ declare global {
 
 }
 
+import { PowerPrinter } from "./printers/power-list.js";
 import { Simulations } from "./exploration/simulations.js";
 import { AnyaPlanets } from "./exploration/anya-planets.js";
 import { AmongUs } from "./exploration/among-us.js";
@@ -110,6 +111,7 @@ Hooks.once("init", async function() {
 	preloadHandlebarsTemplates();
 	// ErrorScanner.check();
 	Heartbeat.start();
+	PowerPrinter.init();
 });
 
 function registerHandlebarsHelpers() {

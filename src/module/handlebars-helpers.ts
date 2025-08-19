@@ -1,3 +1,5 @@
+import { INSTANT_KILL_LEVELS } from "../config/damage-types.js";
+import { DAMAGE_LEVELS } from "../config/damage-types.js";
 import { DAMAGE_ICONS } from "../config/icons.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { POWER_TAGS } from "../config/power-tags.js";
@@ -387,14 +389,9 @@ export class PersonaHandleBarsHelpers {
 			if (pc.system.type != "pc") return false;
 			return PersonaSocial.meetsConditionsToStartLink(pc, target);
 		},
+
 		"getItemTagList": function (item: Usable | InvItem | Weapon) : string {
 			return item.tagListLocalized(null);
-			// const localizeTable  =  {
-			// 	...EQUIPMENT_TAGS,
-			// 	...POWER_TAGS
-			// };
-			// if (item.system.type == "power") {PersonaError.softFail("Calling Item Tag list on Power");}
-			// return (item as Consumable | InvItem | Weapon).tagList().map(tag=> localize(localizeTable[tag]));
 		},
 
 		"getCreatureTagList": function (actor: PersonaActor) : string[] {
@@ -505,8 +502,38 @@ export class PersonaHandleBarsHelpers {
 			return "";
 		},
 
+		"localizeDamageLevel": function (pwr: Power) : SafeString {
+			const dlevel = pwr.system.damageLevel;
+			const lvlLocString = DAMAGE_LEVELS[dlevel];
+			const localized = localize(lvlLocString);
+			if (localized) {
+				return new Handlebars.SafeString(localized);
+			}
+			return new Handlebars.SafeString("");
+		},
+
 		"costString": function () {
 			return "ERROR";
+		},
+
+		"localizeKillLevel": function (pwr: Power) : SafeString {
+			const dlevel = pwr.system.instantKillChance;
+			const lvlLocString = INSTANT_KILL_LEVELS[dlevel];
+			const localized = localize(lvlLocString);
+			if (localized) {
+				return new Handlebars.SafeString(localized);
+			}
+			return new Handlebars.SafeString("");
+		},
+
+		"localizeAilmentLevel": function (pwr: Power) : SafeString {
+			const dlevel = pwr.system.ailmentChance;
+			const lvlLocString = INSTANT_KILL_LEVELS[dlevel];
+			const localized = localize(lvlLocString);
+			if (localized) {
+				return new Handlebars.SafeString(localized);
+			}
+			return new Handlebars.SafeString("");
 		},
 
 		"ternIf": function (cond, r1, r2) {

@@ -370,6 +370,18 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
+	get slotLocalized() : SafeString {
+		if (!this.isPower()) {
+			return new HandleBarsExtras.SafeString("");
+		}
+		const slot = this.system.slot;
+		const slotName = SLOTTYPES[slot]
+		if (slotName) {
+			return new Handlebars.SafeString (game.i18n.localize(slotName));
+		}
+		return new HandleBarsExtras.SafeString("");
+	}
+
 
 	get cardTags() : string {
 		if ("cardTags" in this.system) {
@@ -2052,6 +2064,9 @@ get ailmentRange() : {low: number, high:number} | undefined {
 		case "low": return {low: 17, high: 18};
 		case "medium": return {low: 15, high: 18};
 		case "high": return {low: 11, high: 20};
+		case "always": return {low: 1, high: 20};
+		default:
+			this.system.ailmentChance satisfies never;
 	}
 }
 

@@ -1,13 +1,18 @@
-import { PersonaDB } from "../persona-db";
+import { Power } from "../item/persona-item.js";
+import { PersonaDB } from "../persona-db.js";
 
-class PowerPrinter extends Application {
+export class PowerPrinter extends Application {
+
+	static init() {
+
+	}
 
 	static override get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {
 			id: "power-list-printer",
-			template: "systems/persona/sheets/lists/power-list.hbs",
-			width: 600,
-			height: 800,
+			template: "systems/persona/sheets/lists/power-printout.hbs",
+			width: 1000,
+			height: 1200,
 			minimizable: true,
 			resizable: true,
 			title: game.i18n.localize("persona.applications.powerPrinter"),
@@ -20,17 +25,49 @@ class PowerPrinter extends Application {
 	}
 
 	static open() {
-		return new PowerPrinter();
+		const x= new PowerPrinter();
+		x.render(true);
+		return x;
 	}
 
-	override async getData() {
-		const powers= PersonaDB.allPowersArr()
-			.filter( x=> x.system.dmg_type == "fire");
+	override async getData(options: Record<string, unknown>) {
+		await PersonaDB.waitUntilLoaded();
+		const data = super.getData(options);
+		const powers : Power[][] = [
+				PowerPrinter.filterByType("magic" ,"fire"),
+				PowerPrinter.filterByType("magic" , "cold"),
+				PowerPrinter.filterByType("magic" , "lightning"),
+				PowerPrinter.filterByType("magic" , "wind"),
+				PowerPrinter.filterByType("magic" ,"light"),
+				PowerPrinter.filterByType("magic" ,"dark"),
+				PowerPrinter.filterByType("magic" ,"healing"),
+				PowerPrinter.filterByType("weapon" ,"physical"),
+				PowerPrinter.filterByType("weapon" ,"gun"),
+				PowerPrinter.filterByType("weapon" ,"by-power"),
+		];
 		return {
-			powers,
+			...data,
+			powerLists: powers,
 		};
-
 	}
+
+	static filterByType (subtype: Power["system"]["subtype"], powerType : Power["system"]["dmg_type"]) : Power[] {
+		return PersonaDB.allPowersArr()
+			.filter( pwr => pwr.system.subtype == subtype && !pwr.isTeamwork() && !pwr.isOpener())
+			.filter( pwr=> pwr.system.dmg_type == powerType)
+			.filter( x=> !x.hasTag("shadow-only"))
+			.sort( (a,b) => {
+				const sort= a.system.slot - b.system.slot
+				if (sort != 0) return sort;
+				return (a.hasTag("exotic")? 1 : 0) -
+					(b.hasTag("exotic") ? 1 : 0);
+			});
+	}
+
+
 
 }
 
+
+//@ts-ignore
+window.PowerPrinter = PowerPrinter;

@@ -58,6 +58,7 @@ const templateFileNames : string[] =[
 	"pretty-power-name.hbs",
 	"bonus-powers-table.hbs",
 	"scan-sheet-header.hbs",
+	"power-list.hbs",
 ];
 
 export const templatePaths = templateFileNames.
