@@ -1,5 +1,5 @@
+import { PersonaActor } from "../module/actor/persona-actor.js";
 import { PowerContainer } from "../module/item/persona-item.js";
-import { DamageCalculation } from "../module/combat/damage-calc.js";
 import { PermaBuffType } from "./perma-buff-type.js";
 import { SocialCardAction } from "./effect-types.js";
 import { CardTag } from "./card-tags.js";
@@ -211,13 +211,12 @@ export type PermabuffConsequence = {
 
 export type AlterVariableConsequence = {
 	type: "alter-variable",
-	varType: VariableType,
 }  & VariableOperators
 & VariableTypeSpecifier;
 
 type VariableOperators = {
 	operator: Extract<VariableAction, "set" | "add" | "multiply">,
-	value: number,
+	value: ConsequenceAmount,
 } | {
 	operator: Extract<VariableAction, "set-range">,
 	min: number,
@@ -226,7 +225,13 @@ type VariableOperators = {
 
 
 export type VariableTypeSpecifier =
-	{variableId: string} & ({
+	{
+		variableId: string,
+		varType: VariableType
+	}
+	& VariableTypes;
+
+type VariableTypes = ({
 		varType: "global",
 	} | {
 		varType: "scene",
@@ -234,9 +239,13 @@ export type VariableTypeSpecifier =
 	} | {
 		varType: "actor",
 		applyTo : ConsequenceTarget,
+		actor ?: UniversalActorAccessor<PersonaActor>,
 	} | {
 		varType: "social-temp",
 	});
+
+
+
 
 type FatigueConsequence = {
 	type: "alter-fatigue-lvl",
@@ -507,3 +516,56 @@ export type ConsTarget = typeof CONS_TARGET_LIST[number];
 export const CONS_TARGETS = Object.fromEntries(
 	CONS_TARGET_LIST.map( x=> [x, `persona.consequence.targets.${x}`])
 );
+
+type LegacyConsequenceAmount = number;
+
+export type ConsequenceAmount = LegacyConsequenceAmount | ConsequenceAmountV2;
+
+export type ConsequenceAmountV2 =
+	{ type : ConsequenceAmountType}
+& (
+	VariableAmount
+	| ConstantAmount
+	| AmountOperation
+);
+
+export type AmountOperation = {
+	type: "operation",
+	amt1: ConsequenceAmountV2,
+	amt2: ConsequenceAmountV2,
+	operator: ArithmeticOperator,
+}
+
+type ConstantAmount = {
+	type: "constant",
+	val: number
+}
+
+export type VariableAmount = {
+	type: "variable-value",
+	} & VariableTypeSpecifier
+& { varType : Exclude<VariableTypeSpecifier["varType"], "actor">;};
+
+
+
+
+
+const CONSEQUENCE_AMOUNT_TYPES_LIST = [
+	"operation",
+	"constant",
+	"variable-value",
+] as const;
+
+		type ConsequenceAmountType = typeof CONSEQUENCE_AMOUNT_TYPES_LIST[number];
+
+
+const ARITHMETIC_OPERATOR_LIST = [
+	"add",
+	"subtract",
+	"divide",
+	"multiply",
+	"modulus",
+] as const;
+
+type ArithmeticOperator = typeof ARITHMETIC_OPERATOR_LIST[number];
+

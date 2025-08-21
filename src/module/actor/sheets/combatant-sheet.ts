@@ -50,6 +50,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".powerName").on("mouseover", this.createDamageEstimate.bind(this));
 		html.find(".power-img").on("mouseover", this.createDamageEstimate.bind(this));
 		html.find(".showPowersTable").on("click", this.showPowersTable.bind(this));
+		html.find(".delLearnablePower").on("click", this.deleteLearnablePower.bind(this));
 	}
 
 	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) {
@@ -66,7 +67,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				const power = item as Power;
 				switch (actorType) {
 					case "shadow":
-						await this.actor.addPower(power);
+						if (this.isOnLearningTab())
+						{await this.actor.addLearnedPower(power);}
+						else {await this.actor.addPower(power);}
 						return power;
 					case "pc":
 					case "npcAlly":
@@ -82,6 +85,11 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 						if (power.hasTag("shadow-only")) {
 							ui.notifications.warn(`Can't take Shadow only power ${item.name}`);
 							return;
+						}
+						if (this.isOnLearningTab())
+						{
+							await this.actor.addLearnedPower(power);
+							return power;
 						}
 						if (power.system.slot > this.actor.maxSlot()) {
 							ui.notifications.warn(`Power is too strong for you`);
@@ -223,6 +231,20 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			await this.actor.deletePower(powerId);
 		}
 	}
+
+async deleteLearnablePower(event: JQuery.ClickEvent) {
+		const powerId = HTMLTools.getClosestData(event, "powerId");
+		if (powerId == undefined) {
+			const err = `Can't find power at index ${powerId}`;
+			console.error(err);
+			ui.notifications.error(err);
+			throw new Error(err);
+		}
+		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this power?")) {
+			await this.actor.deleteLearnablePower(powerId);
+		}
+
+}
 
 	async openPower(event: Event) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
@@ -380,6 +402,11 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async showPowersTable(_ev: JQuery.ClickEvent) {
 		PowerPrinter.open();
+	}
+
+	isOnLearningTab() : boolean {
+		//placeholder
+		return (this._tabs.at(0)?.active == "learning");
 	}
 
 }

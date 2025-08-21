@@ -1,0 +1,21 @@
+<section class="learned-powers">
+	{{#each actor.powerLearningListFull as |pwrData i|}}
+	<div class="power-to-learn" data-power-id="{{pwrData.power.id}}">
+		<div class="powers-table-item">
+			<div class="power-name-block">
+				<a class="powerName">
+					{{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=pwrData.power user=../persona}}
+				</a>
+			</div>
+			<input class="hidden" type=string name="system.combat.powersToLearn.{{i}}.powerId" value="{{pwrData.power.id}}">
+
+			<input class="short" type=number name="system.combat.powersToLearn.{{i}}.level" value="{{pwrData.level}}">
+			<div class="power-operations">
+				<a class="delLearnablePower" title="Delete Power">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</div>
+		</div>
+	</div>
+	{{/each}}
+</section>

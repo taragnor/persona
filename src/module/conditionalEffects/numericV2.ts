@@ -92,66 +92,68 @@ export class NumericV2 {
 	}
 
 	static deriveOperand ( op : NumericComparisonV2["op1"], situation: Situation, source: Option<PowerContainer>) : number | Range | OddEven | null | true {
-		switch (op.comparisonTarget) {
-			case "constant": {
-				return this.deriveConstant( op);
-			}
-			case "odd-even":
-				return op.oddEven ?? null;
+		return null;
+		//ESCAPE SO IT DOESN'T ERROR
+		// switch (op.comparisonTarget) {
+		// 	case "constant": {
+		// 		return this.deriveConstant( op);
+		// 	}
+		// 	case "odd-even":
+		// 		return op.oddEven ?? null;
 
-			case "clock-comparison": {
-				const clock = ProgressClock.getClock(op.clockId);
-				if (!clock) return null;
-				return clock.amt;
-			}
+		// 	case "clock-comparison": {
+		// 		const clock = ProgressClock.getClock(op.clockId);
+		// 		if (!clock) return null;
+		// 		return clock.amt;
+		// 	}
 
-			case "socialRandom":
-				if (situation.socialRandom == undefined) {
-					return null;
-				}
-				return situation.socialRandom;
+		// 	case "socialRandom":
+		// 		if (situation.socialRandom == undefined) {
+		// 			return null;
+		// 		}
+		// 		return situation.socialRandom;
 
-			case "round-count":
-				if (!game.combat) return null;
-				return game.combat.round ?? -1;
+		// 	case "round-count":
+		// 		if (!game.combat) return null;
+		// 		return game.combat.round ?? -1;
 
 
-			case "combat-result-based": {
-				const res = combatResultBasedNumericTarget(op, situation, source) ;
-				if (res === true) return true;
-				if (res === false) return null;
-				return res;
-			}
-			case "num-of-others-with": {
-				const res= numberOfOthersWithResolver(op, situation, source);
-				if (res === false) return null;
-				return res;
-			}
-			case "variable-value": {
-				let val: number | undefined;
-				if (op.varType == "actor") {
-					const subject = getSubjectActors(op, situation, source, "applyTo")[0];
-					if (subject == undefined) return null;
-					val = PersonaVariables.getVariable(op, subject);
-				} else {
-					val = PersonaVariables.getVariable(op, null);
-				}
-				if (val == undefined) return null;
-				return val;
-			}
-			case "roll-comparison": {
-				return this.rollComparison(op, situation, source);
-			}
-			case "deprecated":
-				return this.handleDeprecated(op, situation, source);
-			case "actor-stat":
-				return this.handleActorStat(op, situation, source);
-			default:
-				op satisfies never;
-				PersonaError.softFail("Bad Operand", op);
-				Debug(op);
-				return null;
-		}
+		// 	case "combat-result-based": {
+		// 		const res = combatResultBasedNumericTarget(op, situation, source) ;
+		// 		if (res === true) return true;
+		// 		if (res === false) return null;
+		// 		return res;
+		// 	}
+		// 	case "num-of-others-with": {
+		// 		const res= numberOfOthersWithResolver(op, situation, source);
+		// 		if (res === false) return null;
+		// 		return res;
+		// 	}
+		// 	case "variable-value": {
+		// 		let val: number | undefined;
+		// 		if (op.varType == "actor") {
+		// 			const subject = getSubjectActors(op, situation, source, "applyTo")[0];
+		// 			if (subject == undefined) return null;
+		// 			val = PersonaVariables.getVariable(op, subject);
+		// 		} else {
+		// 			val = PersonaVariables.getVariable(op, null);
+		// 		}
+		// 		if (val == undefined) return null;
+		// 		return val;
+		// 	}
+		// 	case "roll-comparison": {
+		// 		return this.rollComparison(op, situation, source);
+		// 	}
+		// 	case "deprecated":
+		// 		return this.handleDeprecated(op, situation, source);
+		// 	case "actor-stat":
+		// 		return this.handleActorStat(op, situation, source);
+		// 	default:
+		// 		op satisfies never;
+		// 		PersonaError.softFail("Bad Operand", op);
+		// 		Debug(op);
+		// 		return null;
+		// }
 
 	}
 

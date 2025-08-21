@@ -338,9 +338,13 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			if (condition.varType == "actor") {
 				const subject = getSubjectActors(condition, situation, source, "applyTo")[0];
 				if (subject == undefined) return false;
-				val = PersonaVariables.getVariable(condition, subject);
+				const reqCondition = {
+					...condition,
+					actor:subject.accessor,
+				}
+				val = PersonaVariables.getVariable(reqCondition);
 			} else {
-				val = PersonaVariables.getVariable(condition, null);
+				val = PersonaVariables.getVariable(condition);
 			}
 			if (val == undefined) return false;
 			target = val;

@@ -503,6 +503,7 @@ img.small-die {
 	width: 20px;
 }
 
+div.powers-table,
 div.main-powers,
 div.power-sideboard {
 	display: flex;
@@ -510,6 +511,7 @@ div.power-sideboard {
 	/* justify-content: flex-start; */
 	flex-wrap: wrap;
 }
+
 
 
 
@@ -527,6 +529,7 @@ div.main-power {
 	max-height: 2.5em;
 }
 
+div.powers-table-item,
 div.sideboard-power {
 	flex: 1 1 50%;
 	max-width: 45%;
@@ -1014,3 +1017,28 @@ h5.choices-block {
 	vertical-align: middle;
 }
 
+
+a.powerName {
+	border: none;
+}
+
+span.pretty-power-name {
+display: inline-flex;       /* let span size itself to contents */
+  align-items: center;        /* vertically align text + image */
+  background: #333;           /* example background */
+  color: white;               /* text color */
+  border-radius: 6px;         /* rounded corners */
+  padding: 0.2em 0.5em; 
+}
+
+
+
+
+.power-type-icon img {
+	height: 1em;          /* scale image to text size */
+	width: auto;          /* preserve aspect ratio */
+	margin-left: 0.3em; 
+	border: none;
+	outline: none;
+	border: 0;
+}

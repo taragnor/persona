@@ -52,6 +52,7 @@
 	"persona.foe.type.persona": "Persona",
 
 	"persona.sheet.tabs.encounter.tabname" : "Encounter",
+	"persona.sheet.tabs.learning.tabname" : "Learned Powers",
 	"persona.sheet.tabs.inventory.tabname" : "Inventory",
 	"persona.sheet.tabs.social.tabname" : "Social",
 

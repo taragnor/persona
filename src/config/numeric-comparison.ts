@@ -671,3 +671,16 @@ const ROLL_TYPE = [
 	"opening-roll",
 	"total-roll",
 ] as const;
+
+
+//Future stuff
+//replaces the basic number in the num field
+type LegacyNumericAmount = number;
+type NumericAmount  =
+	LegacyNumericAmount
+	| NewNumericAmount;
+
+
+type NewNumericAmount = {
+
+}

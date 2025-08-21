@@ -27,7 +27,7 @@
 
 
 {{#if actor.sideboardPowers}}
-<h3> Sideboarded Powers (max {{actor.maxSideboardPowers}}) </h3>
+<h3> Sideboarded Powers (max {{persona.maxSideboardPowers}}) </h3>
 <div class="power-sideboard">
 	{{#each actor.sideboardPowers as |power i|}}
 	<div class="sideboard-power" data-power-id="{{power.id}}">
@@ -53,6 +53,49 @@
 	{{/each}}
 </div>
 {{/if}}
+
+{{#if (and showLearnedBuffer actor.topLearnedBuffer)}}
+<hr>
+<section class="learned-powers">
+	<h3> Learned Powers (out of space) </h3>
+	<div class="powers-table">
+		<div class="powers-table-item" data-power-id="{{actor.topLearnedBuffer.id}}">
+			<div class="power-name-block">
+				<a class="powerName">
+					{{> "systems/persona/parts/pretty-power-name.hbs" CONST=CONST power=actor.topLearnedBuffer user=actor}}
+				</a>
+			</div>
+			<div class="power-operations">
+				<a class="delPower" title="Delete Power">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</div>
+		</div>
+	</div>
+</section>
+{{else}}
+{{#if actor.nextPowerToLearn}}
+<section class="next-power-to-learn">
+	<div>Next Power to Learn: </div>
+	<div class="powers-table">
+		<div class="next-power-to-learn powers-table-item" data-power-id="{{actor.nextPowerToLearn.id}}">
+			<div class="power-name-block">
+				<a class="powerName">
+					{{> "systems/persona/parts/pretty-power-name.hbs" CONST=CONST power=actor.nextPowerToLearn user=actor}}
+				</a>
+				<span class="level-to-learn">
+					at L {{actor.nextLevelLearnPower}}
+				</span>
+			</div>
+		</div>
+	</div>
+</section>
+{{/if}}
+
+{{/if}}
+
+
+
 {{#if showBonusPowers}}
 {{> "systems/persona/parts/bonus-powers-table.hbs" CONST=CONST persona=persona actor=actor}}
 {{/if}}

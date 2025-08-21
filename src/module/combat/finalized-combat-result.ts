@@ -1,3 +1,5 @@
+import { Mutator } from "../persona-variables.js";
+import { AlterVariableConsequence } from "../../config/consequence-types.js";
 import { PersonaVariables } from "../persona-variables.js";
 import { UsableAndCard } from "../item/persona-item.js";
 import { Consumable } from "../item/persona-item.js";
@@ -8,7 +10,6 @@ import { PersonaSFX } from "./persona-sfx.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { RollBundle } from "../persona-roll.js";
 import { PC } from "../actor/persona-actor.js";
-import { NPCAlly } from "../actor/persona-actor.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { PToken } from "./persona-combat.js";
@@ -585,7 +586,26 @@ export class FinalizedCombatResult {
 					await actor.alterFatigueLevel(otherEffect.amount);
 					break;
 				case "alter-variable":
-					await PersonaVariables.alterVariable(otherEffect, actor);
+					const varCons = otherEffect;
+					switch (varCons.varType) {
+						case "actor": {
+							const actorMod =  {
+								...varCons,
+								actor : actor.accessor,
+								varType: "actor",
+							} satisfies AlterVariableConsequence;
+							actorMod satisfies Mutator<AlterVariableConsequence>;
+							await PersonaVariables.alterVariable(actorMod);
+							break;
+						}
+						case "global":
+						case "scene":
+						case "social-temp": {
+							varCons.varType
+							await PersonaVariables.alterVariable(varCons);
+							break;
+						}
+					}
 					break;
 				case "perma-buff":
 					await actor.addPermaBuff(otherEffect.buffType, otherEffect.value ?? 0);

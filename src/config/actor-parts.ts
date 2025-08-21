@@ -1,3 +1,4 @@
+import { Power } from "../module/item/persona-item.js";
 import { FREQUENCY } from "./frequency.js";
 import { PROBABILITY_LIST } from "./probability.js";
 
@@ -198,6 +199,8 @@ export function combatCommonStats() {
 		wpnatk: new num( {integer:true, initial: 0}),
 		magatk: new num( {integer:true, initial: 0}),
 		powers: new arr( new id()),
+		lastLearnedLevel: new num({initial: 1}),
+		powersToLearn: new arr( new obj<PowerToLearn>()),
 		learnedPowersBuffer: new arr( new id()),
 		defenses :
 		new sch({
@@ -372,3 +375,8 @@ export function frequencyConvert2(oldFreq: keyof typeof FREQUENCY): typeof PROBA
 			return "never";
 	}
 }
+
+type PowerToLearn = {
+	powerId: Power["id"],
+	level: number,
+};

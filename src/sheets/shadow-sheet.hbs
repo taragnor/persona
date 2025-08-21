@@ -44,6 +44,11 @@
 		<a class="item" data-tab="combat">
 			{{localize "persona.sheet.tabs.combat.tabname" }}
 		</a>
+		{{#if (isGM)}}
+		<a  class="item" data-tab="persona">
+			Modify Combat Stats
+		</a>
+		{{/if}}
 		<a class="item" data-tab="inc">
 			{{localize "persona.sheet.tabs.incremental.tabname" }}
 		</a>
@@ -51,9 +56,10 @@
 		<a  class="item" data-tab="encounter">
 			{{localize "persona.sheet.tabs.encounter.tabname" }}
 		</a>
-		<a  class="item" data-tab="persona">
-			Modify Combat Stats
+		<a  class="item" data-tab="learning">
+			{{localize "persona.sheet.tabs.learning.tabname" }}
 		</a>
+
 		{{/if}}
 	</nav>
 	<section class="sheet-body">
@@ -64,12 +70,16 @@
 			{{> "systems/persona/parts/incremental-section.hbs" actor=actor CONST=CONST}}
 		</section>
 		{{#if (isGM)}}
+		<section class="tab tab-content learning-section flexcol" data-group="primary" data-tab="learning">
+			{{> "systems/persona/parts/learned-powers-section.hbs" actor=actor CONST=CONST persona=actor.basePersona}}
+		</section>
 		<section class="tab tab-content encounter-section flexcol" data-group="primary" data-tab="persona">
 			{{> "systems/persona/parts/base-persona-section.hbs" actor=actor CONST=CONST persona=actor.basePersona}}
 		</section>
 		<section class="tab tab-content persona-section flexcol" data-group="primary" data-tab="encounter">
 			{{> "systems/persona/parts/encounter-section.hbs" actor=actor CONST=CONST SHADOW_STUFF=SHADOW_STUFF POWERSTUFF=POWERSTUFF}}
 		</section>
+
 		{{/if}}
 
 		{{#if (isGM)}}

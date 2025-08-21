@@ -258,7 +258,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.allItems().filter( item => item.system.type == "skillCard") as SkillCard[];
 	}
 
-	getPower(id: string) : Power | undefined {
+	getPower(id: Power["id"]) : Power | undefined {
 		return this.getItemById(id) as Power | undefined;
 	}
 
