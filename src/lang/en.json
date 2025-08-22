@@ -879,6 +879,17 @@
 	"persona.consequence.targets.all-allies" : "All Allies",
 	"persona.consequence.targets.all-combatants" : "All Combatants",
 
+"persona.consequences.consequences-amount.operation": "O",
+"persona.consequences.consequences-amount.constant": "C",
+"persona.consequences.consequences-amount.variable-value": "V",
+
+
+"persona.consequences.consequences-operators.add" : "+",
+"persona.consequences.consequences-operators.subtract" : "-",
+"persona.consequences.consequences-operators.divide" : "+",
+"persona.consequences.consequences-operators.multiply" : "*",
+"persona.consequences.consequences-operators.modulus" : "%",
+
 	"persona.modifier-variable.escalationDie": "Escalation Die",
 	"persona.modifier-variable.tensionPool": "Tension Pool",
 

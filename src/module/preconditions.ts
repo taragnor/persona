@@ -1,3 +1,4 @@
+import { TargettingContextList } from "./combat/persona-combat.js";
 import { TarotCard } from "../config/tarot.js";
 import { SourcedConsequence } from "../config/consequence-types.js";
 import { SceneClock } from "./exploration/scene-clock.js";
@@ -342,9 +343,11 @@ function numericComparison(condition: Precondition, situation: Situation, source
 					...condition,
 					actor:subject.accessor,
 				}
-				val = PersonaVariables.getVariable(reqCondition);
+				const contextList : Partial<TargettingContextList> ={};
+				contextList[condition.applyTo]  = [subject.accessor as UniversalActorAccessor<any>];
+				val = PersonaVariables.getVariable(reqCondition, contextList);
 			} else {
-				val = PersonaVariables.getVariable(condition);
+				val = PersonaVariables.getVariable(condition,{});
 			}
 			if (val == undefined) return false;
 			target = val;

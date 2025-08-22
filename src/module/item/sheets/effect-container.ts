@@ -1,3 +1,5 @@
+import { ARITHMETIC_OPERATORS } from "../../../config/consequence-types.js";
+import { CONSEQUENCE_AMOUNT_TYPES } from "../../../config/consequence-types.js";
 import { INSTANT_KILL_LEVELS } from "../../../config/damage-types.js";
 import { CONSUMABLE_SUBTYPES } from "../../../config/equip-slots.js";
 import { DAMAGE_LEVELS } from "../../../config/damage-types.js";
@@ -110,6 +112,8 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			NUMERIC_COMPARISON_TARGET,
 			BOOLEAN_COMPARISON_TARGET,
 			RESIST_STRENGTHS,
+			ARITHMETIC_OPERATORS,
+			CONSEQUENCE_AMOUNT_TYPES,
 			COMPARATORS,
 			SIMPLE_COMPARATORS,
 			NUMERIC_V2_COMPARISON_TARGETS,

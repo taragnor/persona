@@ -1,4 +1,6 @@
-import { PersonaActor } from "../module/actor/persona-actor.js";
+import { HTMLTools } from "../module/utility/HTMLTools.js";
+import { ValidAttackers } from "../module/combat/persona-combat.js";
+import { TargettingContextList } from "../module/combat/persona-combat.js";
 import { PowerContainer } from "../module/item/persona-item.js";
 import { PermaBuffType } from "./perma-buff-type.js";
 import { SocialCardAction } from "./effect-types.js";
@@ -31,7 +33,6 @@ import { StatusDuration } from "../module/active-effect.js";
 import { StatusEffectId } from "./status-effects.js";
 import { ModifierTarget } from "./item-modifiers.js";
 import { PC } from "../module/actor/persona-actor.js";
-import { Shadow } from "../module/actor/persona-actor.js";
 
 type ExpendOtherEffect = {
 	type: "expend-item";
@@ -89,7 +90,7 @@ export type ExtraAttackEffect = {
 
 type ExecPowerEffect = {
 	type: "use-power",
-	newAttacker: UniversalActorAccessor<PC | Shadow>
+	newAttacker: UniversalActorAccessor<ValidAttackers>
 	powerId: string,
 	target: ConsTarget,
 }
@@ -115,8 +116,10 @@ export type ExtraTurnEffect = {
 	activation: number,
 };
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence	| PlaySoundConsequence
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence
 ;
+
+type AlterVariableOtherEffect = AlterVariableConsequence & {contextList: TargettingContextList}
 
 export type StatusEffect = StatusEffect_Basic | StatusEffect_NonBasic;
 
@@ -150,7 +153,7 @@ export type Consequence =
 	{
 		applyToSelf ?: boolean,
 		applyTo ?: ConsequenceTarget,
-		actorOwner ?: UniversalActorAccessor<PC | Shadow>,
+		actorOwner ?: UniversalActorAccessor<ValidAttackers>,
 	} & (
 		GenericConsequence | NonGenericConsequences
 
@@ -239,7 +242,6 @@ type VariableTypes = ({
 	} | {
 		varType: "actor",
 		applyTo : ConsequenceTarget,
-		actor ?: UniversalActorAccessor<PersonaActor>,
 	} | {
 		varType: "social-temp",
 	});
@@ -375,7 +377,6 @@ type DamageMultiplierCons = {
 
 
 const _errorCheckDType : Expect<DamageConsequence["damageSubtype"], DamageSubtype> = true;
-
 
 type ModifierConsequence = {
 	type: "modifier-new",
@@ -544,19 +545,17 @@ type ConstantAmount = {
 export type VariableAmount = {
 	type: "variable-value",
 	} & VariableTypeSpecifier
-& { varType : Exclude<VariableTypeSpecifier["varType"], "actor">;};
-
-
-
-
+// & { varType : Exclude<VariableTypeSpecifier["varType"], "actor">;};
 
 const CONSEQUENCE_AMOUNT_TYPES_LIST = [
-	"operation",
 	"constant",
+	"operation",
 	"variable-value",
 ] as const;
 
 		type ConsequenceAmountType = typeof CONSEQUENCE_AMOUNT_TYPES_LIST[number];
+
+export const CONSEQUENCE_AMOUNT_TYPES = HTMLTools.createLocalizationObject(CONSEQUENCE_AMOUNT_TYPES_LIST, "persona.consequences.consequences-amount");
 
 
 const ARITHMETIC_OPERATOR_LIST = [
@@ -568,4 +567,6 @@ const ARITHMETIC_OPERATOR_LIST = [
 ] as const;
 
 type ArithmeticOperator = typeof ARITHMETIC_OPERATOR_LIST[number];
+
+export const ARITHMETIC_OPERATORS = HTMLTools.createLocalizationObject(ARITHMETIC_OPERATOR_LIST, "persona.consequences.consequences-operators");
 

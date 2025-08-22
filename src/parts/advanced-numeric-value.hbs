@@ -1,0 +1,33 @@
+<span class="advanced-value">
+{{#if (isOldFormValue cons)}}
+<span class="old-form">
+	<input class="short" type=number name="{{cutEndOfString namePrefix}}" value="{{cons}}">
+</span>
+{{else}}
+<span class="new-form">
+<select name="{{strcat namePrefix 'type'}}">
+				{{selectOptions POWERSTUFF.CONSEQUENCE_AMOUNT_TYPES localize=true selected=cons.type}}
+</select>
+{{#if (eqAny (defVal cons.type "constant") "constant")}}
+			<input class="short" type=number name="{{strcat namePrefix 'val'}}" value="{{cons.val}}">
+{{/if}}
+
+{{#if (eqAny cons.type "operation")}}
+(
+{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amt1.') cons=cons.amt1 POWERSTUFF=POWERSTUFF owner=owner}}
+)
+<select name="{{strcat namePrefix 'operator'}}">
+	{{selectOptions POWERSTUFF.ARITHMETIC_OPERATORS localize=true selected=cons.operator}}
+</select>
+(
+{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amt2.') cons=cons.amt2 POWERSTUFF=POWERSTUFF owner=owner}}
+)
+{{/if}}
+
+{{#if (eqAny cons.type "variable-value")}}
+	{{> "systems/persona/parts/variable-type-specifier.hbs" namePrefix=namePrefix cons=cons POWERSTUFF=POWERSTUFF owner=owner}}
+{{/if}}
+
+</span>
+{{/if}}
+</span>

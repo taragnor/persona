@@ -1,3 +1,4 @@
+import { ConsequenceAmount } from "../config/consequence-types.js";
 import { INSTANT_KILL_LEVELS } from "../config/damage-types.js";
 import { DAMAGE_LEVELS } from "../config/damage-types.js";
 import { DAMAGE_ICONS } from "../config/icons.js";
@@ -151,6 +152,11 @@ export class PersonaHandleBarsHelpers {
 			return token.name;
 		},
 
+
+		'isOldFormValue': function (val: ConsequenceAmount) : boolean {
+			return (typeof val == "number");
+		},
+
 		'canUseShortFormPower': (power: Power): boolean => {
 
 			return power.isPassive() || power.isDefensive() || power.isSupport();
@@ -188,8 +194,13 @@ export class PersonaHandleBarsHelpers {
 			const highest = linkData.actor.highestLinker();
 			return highest.linkLevel == linkData.linkLevel;
 		},
+
 		'eqAny': function (testCase: string, ...rest: string[]) : boolean {
 			return rest.some( str => str == testCase)
+		},
+
+		'neAll': function (testCase: string, ...rest: string[]) : boolean {
+			return rest.every( str => str != testCase);
 		},
 
 		"strcat": function (...args: (string | number)[]) : string{
@@ -667,6 +678,15 @@ export class PersonaHandleBarsHelpers {
 				return (actor.persona().source != actor);
 			}
 			return false;
+		},
+
+		"cutEndOfString": function (str: string) : string{
+			return str.substring(0, str.length-1);
+		},
+
+		"defVal": function <T extends string | number>(thing:T, defaultV: T) {
+			if (thing != undefined) return thing;
+			return defaultV;
 		}
 
 	}

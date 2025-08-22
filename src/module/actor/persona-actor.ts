@@ -3150,6 +3150,7 @@ async onMetaverseTimeAdvance(): Promise<string[]> {
 }
 
 socialEffects(this: SocialLink) : readonly ConditionalEffect[] {
+	this.system.socialEffects[0].consequences[0] satisfies ConditionalEffect["consequences"][number];
 	return this.system?.socialEffects ?? [];
 }
 

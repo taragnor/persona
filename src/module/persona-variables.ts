@@ -1,3 +1,5 @@
+import { ValidAttackers } from "./combat/persona-combat.js";
+import { TargettingContextList } from "./combat/persona-combat.js";
 import { PersonaDB } from "./persona-db.js";
 import { VariableAmount } from "../config/consequence-types.js";
 import { AmountOperation } from "../config/consequence-types.js";
@@ -12,11 +14,11 @@ import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { AlterVariableConsequence } from "../config/consequence-types.js";
 
 export class PersonaVariables {
-	static async alterVariable (cons: Mutator<AlterVariableConsequence>) {
-		const variableLocation = this.#convertTypeSpecToLocation(cons);
+	static async alterVariable (cons: Mutator<AlterVariableConsequence>, contextList : TargettingContextList) {
+		const variableLocation = this.#convertTypeSpecToLocation(cons, contextList);
 		if (!variableLocation) return;
 		const origValue = this.#get(variableLocation) ?? 0;
-		const newValue = this.#applyMutator( cons, origValue);
+		const newValue = this.#applyMutator( cons, origValue, contextList);
 		if (newValue == undefined) {
 			PersonaError.softFail(`Couldn't execute ${cons.operator} on ${cons.varType} variable ${cons.variableId}`);
 			return;
@@ -25,13 +27,13 @@ export class PersonaVariables {
 	}
 
 	/** returns 0 on a non-existent variable, returns undefined if the request was invalid (bad actor Id, etc) */
-	static getVariable( cond: Required<VariableTypeSpecifier>) : number | undefined {
-		const varData = this.#convertTypeSpecToLocation(cond);
+	static getVariable( cond: Required<VariableTypeSpecifier>, contextList : Partial<TargettingContextList>) : number | undefined {
+		const varData = this.#convertTypeSpecToLocation(cond, contextList);
 		if (!varData) return undefined;
 		return this.#get(varData) ?? 0;
 	}
 
-	static #convertTypeSpecToLocation(cons: Required<VariableTypeSpecifier>) : VariableData | undefined {
+	static #convertTypeSpecToLocation(cons: Required<VariableTypeSpecifier>, contextList: Partial<TargettingContextList>) : VariableData | undefined {
 		const {varType, variableId} = cons;
 		switch (varType) {
 			case "global":
@@ -51,15 +53,18 @@ export class PersonaVariables {
 					scene,
 				}
 			case "actor":
-				const actor = PersonaDB.findActor(cons.actor);
-				if (!actor) {
+				const actorAccs = contextList[cons.applyTo];
+				if (!actorAccs) return undefined;
+				const actors = actorAccs
+					.map(actorAcc=>  PersonaDB.findActor(actorAcc as UniversalActorAccessor<ValidAttackers>));
+				if (actors.length == 0 || !actors.at(0)) {
 					PersonaError.softFail(`No Actor Provided to find Variable ${cons.variableId}`, cons);
 					return undefined;
 				}
 				return {
 					varType,
 					variableId,
-					actor,
+					actor: actors.at(0)!,
 				};
 			case "social-temp":
 				return {
@@ -68,22 +73,22 @@ export class PersonaVariables {
 				}
 		}
 	}
-	static #applyMutator<T extends Mutator<AlterVariableConsequence>>( mutator: T, origValue :number | undefined) : number | undefined {
+	static #applyMutator<T extends Mutator<AlterVariableConsequence>>( mutator: T, origValue :number | undefined, contextList: TargettingContextList) : number | undefined {
 		if (Number.isNaN(origValue)) return undefined;
 		switch (mutator.operator) {
 			case "set": {
 				const {value} = mutator;
-				return resolveConsequenceAmount(value);
+				return resolveConsequenceAmount(value, contextList);
 			}
 			case "add": {
 				const {value} = mutator;
 				if (origValue == undefined) return undefined;
-				return resolveConsequenceAmount(value) + origValue;
+				return resolveConsequenceAmount(value, contextList) + origValue;
 			}
 			case "multiply": {
 				const {value} = mutator;
 				if (origValue == undefined) return undefined;
-				return resolveConsequenceAmount(value) + origValue;
+				return resolveConsequenceAmount(value, contextList) + origValue;
 			}
 			case "set-range":
 				const {min, max} = mutator;
@@ -174,15 +179,15 @@ type VariableSpecifier = {
 };
 
 
-function resolveConsequenceAmount< C extends ConsequenceAmount, T extends PreparedConsequenceAmountV2<C>>(amt: T) : number {
+function resolveConsequenceAmount< C extends ConsequenceAmount, T extends PreparedConsequenceAmountV2<C>>(amt: T, contextList: TargettingContextList) : number {
 	if (typeof amt == "number") return amt;
 	switch (amt.type) {
 		case "operation":
-			return resolveOperation(amt);
+			return resolveOperation(amt, contextList);
 		case "constant":
 			return amt.val ?? 0;
 		case "variable-value":
-				return PersonaVariables.getVariable(amt) ?? 0;
+				return PersonaVariables.getVariable(amt, contextList) ?? 0;
 		default:
 			amt satisfies never;
 			PersonaError.softFail(`Unknwon consequence Amount type :${amt["type"]}`);
@@ -191,9 +196,9 @@ function resolveConsequenceAmount< C extends ConsequenceAmount, T extends Prepar
 
 }
 
-function resolveOperation <T extends PreparedConsequenceAmountV2<C> , C extends ConsequenceAmountV2>(amt: T & {type : "operation"} ) : number {
-	const val1 = resolveConsequenceAmount(amt.amt1);
-	const val2 = resolveConsequenceAmount(amt.amt2);
+function resolveOperation <T extends PreparedConsequenceAmountV2<C> , C extends ConsequenceAmountV2>(amt: T & {type : "operation"}, contextList: TargettingContextList ) : number {
+	const val1 = resolveConsequenceAmount(amt.amt1, contextList);
+	const val2 = resolveConsequenceAmount(amt.amt2, contextList);
 
 	switch (amt.operator) {
 		case "add":
@@ -224,12 +229,6 @@ export type Mutator<T extends AlterVariableConsequence> =
 			value: PreparedConsequenceAmountV2<T["value"]>,
 			// found: true
 		}
-		: {}
-	) & (
-		T extends {
-			varType: "actor"
-		}
-		? {actor: UniversalActorAccessor<PersonaActor>}
 		: {}
 	)
 	) : never;

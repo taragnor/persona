@@ -451,24 +451,6 @@ export class FinalizedCombatResult {
 				await actor.modifyHP(dmg.hpChange);
 			}
 		}
-		// if (change.hpchange != 0) {
-		// 	if (change.hpchange < 0) {
-		// 		setTimeout( () => {
-		// 			PersonaCombat
-		// 				.onTrigger("on-damage", actor)
-		// 				.emptyCheck()
-		// 				?.toMessage("Reaction (Taking Damage)" , actor)
-		// 		});
-		// 	}
-		// 	if (token) {
-		// 		const power = this.power;
-		// 		if (power && !power.isAoE()) {
-		// 			await PersonaSFX.onDamage(token, change.hpchange, change.damageType, power);
-		// 		}
-		// 		Hooks.callAll("onTakeDamage", token, change.hpchange, change.damageType);
-		// 	}
-		// 	await actor.modifyHP(change.hpchange * change.hpchangemult);
-		// }
 		for (const status of change.addStatus) {
 			if (await actor.addStatus(status) && token) {
 				Hooks.callAll("onAddStatus", token, status);
@@ -589,20 +571,13 @@ export class FinalizedCombatResult {
 					const varCons = otherEffect;
 					switch (varCons.varType) {
 						case "actor": {
-							const actorMod =  {
-								...varCons,
-								actor : actor.accessor,
-								varType: "actor",
-							} satisfies AlterVariableConsequence;
-							actorMod satisfies Mutator<AlterVariableConsequence>;
-							await PersonaVariables.alterVariable(actorMod);
+							await PersonaVariables.alterVariable(varCons, varCons.contextList);
 							break;
 						}
 						case "global":
 						case "scene":
 						case "social-temp": {
-							varCons.varType
-							await PersonaVariables.alterVariable(varCons);
+							await PersonaVariables.alterVariable(varCons, varCons.contextList);
 							break;
 						}
 					}

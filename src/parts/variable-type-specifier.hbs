@@ -1,0 +1,23 @@
+<select name="{{strcat namePrefix 'varType'}}">
+	{{selectOptions POWERSTUFF.VARIABLE_TYPE localize=true selected=cons.varType}}
+</select>
+{{#if (eqAny cons.varType "scene")}}
+<div>
+	<select name="{{strcat namePrefix 'sceneId'}}">
+		{{selectOptions POWERSTUFF.SCENES localize=true selected=cons.sceneId}}
+	</select>
+</div>
+{{/if}}
+
+{{#if (eqAny cons.varType "actor")}}
+
+<select name="{{strcat namePrefix 'applyTo'}}">
+	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.applyTo}}
+</select>
+
+{{/if}}
+
+<div>
+
+<input type=string name="{{strcat namePrefix 'variableId'}}" value="{{cons.variableId}}">
+

@@ -1,4 +1,3 @@
-import { PowerTag } from "../../config/power-tags.js";
 import { DAMAGETYPES } from "../../config/damage-types.js";
 import { FinalizedCombatResult } from "./finalized-combat-result.js";
 import { ConsequenceProcessed } from "./persona-combat.js";
@@ -183,7 +182,7 @@ export class CombatResult  {
 		return undefined;
 	}
 
-	addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: ConsequenceProcessed["consequences"][number]["cons"]) {
+	addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
 		const effect = this.#getEffect(target);
 		switch (cons.type) {
 			case "none":
@@ -415,7 +414,11 @@ export class CombatResult  {
 				effect.otherEffects.push(cons);
 				break;
 			case "alter-variable":
-				effect?.otherEffects.push(cons);
+				const alterVarCons = {
+					...cons,
+					contextList: PersonaCombat.createTargettingContextList(situation, cons),
+				}
+				effect?.otherEffects.push(alterVarCons);
 				break;
 			case "perma-buff":
 				if (!effect) break;

@@ -1,4 +1,5 @@
 <div class="consequence-block" data-consequence-index="{{consequence_index}}" data-path="{{namePrefix}}">
+	{{#if (neAll cons.type "alter-variable" "modifier" "modifier-new")}}
 	{{#if (ne cons.applyToSelf undefined)}}
 	<div>
 		<label>
@@ -15,6 +16,7 @@
 			{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.applyTo}}
 		</select>
 	</div>
+	{{/if}}
 	{{/if}}
 	<div class="type-select">
 		<select name="{{strcat namePrefix 'type'}}">
@@ -124,17 +126,7 @@
 	{{/if}}
 
 	{{#if (eq cons.type "alter-variable") }}
-	<select name="{{strcat namePrefix 'varType'}}">
-		{{selectOptions POWERSTUFF.VARIABLE_TYPE localize=true selected=cons.varType}}
-	</select>
-	<div>
-		{{#if (eqAny cons.varType "scene")}}
-		<select name="{{strcat namePrefix 'sceneId'}}">
-			{{selectOptions POWERSTUFF.SCENES localize=true selected=cons.sceneId}}
-		</select>
-		{{/if}}
-	</div>
-	<input type=string name="{{strcat namePrefix 'variableId'}}" value="{{cons.variableId}}">
+	{{> "systems/persona/parts/variable-type-specifier.hbs" namePrefix=namePrefix cons=cons POWERSTUFF=POWERSTUFF owner=owner}}
 	<div>
 		<span>
 			<select name="{{strcat namePrefix 'operator'}}">
@@ -142,9 +134,7 @@
 			</select>
 		</span>
 		{{#if (eqAny cons.operator "set" "add" "multiply")}}
-		<span>
-			<input class="short" type=number name="{{strcat namePrefix 'value'}}" value="{{cons.value}}">
-		</span>
+		{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'value.') cons=cons.value POWERSTUFF=POWERSTUFF owner=owner}}
 		{{/if}}
 		{{#if (eqAny cons.operator "set-range")}}
 		<span>

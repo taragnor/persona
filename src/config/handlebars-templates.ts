@@ -60,6 +60,8 @@ const templateFileNames : string[] =[
 	"scan-sheet-header.hbs",
 	"power-list.hbs",
 	"learned-powers-section.hbs",
+	"variable-type-specifier.hbs",
+	"advanced-numeric-value.hbs",
 ];
 
 export const templatePaths = templateFileNames.

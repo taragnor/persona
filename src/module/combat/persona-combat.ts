@@ -1,3 +1,4 @@
+import { ValidSocialTarget } from "../social/persona-social.js";
 import { EvaluatedDamage } from "./damage-calc.js";
 import { NonDeprecatedConsequences } from "../../config/consequence-types.js";
 import { SourcedConsequence } from "../../config/consequence-types.js";
@@ -1748,7 +1749,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 						statusName: "magic-shield",
 						source: power,
 					};
-					reflectRes.addEffect(atkResult, targetActor, cons);
+					reflectRes.addEffect(atkResult, targetActor, cons, atkResult.situation );
 				}
 				if (targetActor.hasStatus("phys-shield") && power.canBeReflectedByPhyiscalShield(attacker.actor)) {
 					const cons : SourcedConsequence = {
@@ -1756,7 +1757,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 						statusName: "phys-shield",
 						source: power,
 					};
-					reflectRes.addEffect(atkResult, targetActor, cons);
+					reflectRes.addEffect(atkResult, targetActor, cons, atkResult.situation);
 				}
 				CombatRes.merge(reflectRes);
 				return CombatRes;
@@ -1811,28 +1812,90 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return CombatRes;
 	}
 
-	static getCombatResultFromConsequences(consList: ConsequenceProcessed["consequences"], _situation: Situation, _attacker: ValidAttackers | undefined, _target : ValidAttackers | undefined, atkResult ?: AttackResult | null ) : CombatResult {
+	static getCombatResultFromConsequences(consList: ConsequenceProcessed["consequences"], situation: Situation, _attacker: ValidAttackers | undefined, _target : ValidAttackers | undefined, atkResult ?: AttackResult | null ) : CombatResult {
 		const result = new CombatResult(atkResult);
 		for (const cons of consList) {
 			if (cons.applyTo == "global") {
-				result.addEffect(atkResult, undefined, cons.cons);
+				result.addEffect(atkResult, undefined, cons.cons, situation);
 				continue;
 			}
-			result.addEffect(atkResult, cons.applyTo, cons.cons);
+			result.addEffect(atkResult, cons.applyTo, cons.cons, situation);
 		}
 		return result;
 	}
 
-	static resolveEffectiveTargets(applyTo :Consequence["applyTo"], situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, cons?: Consequence) : ValidAttackers[]  {
+	static createTargettingContextList(situation: Situation, cons ?: Consequence) : TargettingContextList {
+		const {target, attacker, user, cameo} = situation;
+		const triggeringCharacter = "triggeringCharacter" in situation ? situation.triggeringCharacter : undefined;
+		const owner = [];
+		if (cons && cons.actorOwner) {
+			if (cons.actorOwner)
+				owner.push(cons.actorOwner);
+		}
+		const foes :TargettingContextList["all-foes"] = [];
+		const allies : TargettingContextList["all-allies"] = [];
+
+		if (attacker) {
+			const attackerToken = this.getPTokenFromActorAccessor(attacker);
+			if (attackerToken) {
+				foes.push(...this
+					.getAllEnemiesOf(attackerToken)
+					.map( x=> x.actor.accessor)
+				);
+			}
+			if (attackerToken) {
+				allies.push(...this
+					.getAllAlliesOf(attackerToken)
+					.map( x=> x.actor.accessor)
+				);
+			}
+		}
+
+		const allInRegion :TargettingContextList["all-in-region"] = [];
+		const id = ("triggeringRegionId" in situation)? situation.triggeringRegionId : undefined;
+		const region = Metaverse.getRegion(id);
+		if (region)  {
+			const tokens = Array.from(region.tokens);
+			const actors = tokens
+				.filter( x=> x.actor && x.actor.isValidCombatant())
+				.map( x=> (x.actor as ValidAttackers).accessor);
+			allInRegion.push(...actors);
+		}
+
+		const context : TargettingContextList = {
+			target: target ? [target] : [],
+			owner,
+			attacker: attacker ? [attacker] : [],
+			user: user ? [user] : [],
+			"triggering-character": triggeringCharacter ? [triggeringCharacter] : [],
+			cameo: cameo ? [cameo] : [],
+			"all-allies": allies,
+			"all-foes": foes,
+			"all-in-region": allInRegion,
+		};
+		return context;
+	}
+
+	// static getTargettingContext (situation: Readonly<Situation>, cons ? : Readonly<Consequence>) : TargettingContext {
+	// 	return function <T extends keyof TargettingContextList>(applyTo : T) {
+	// 		return PersonaCombat.solveEffectiveTargets(applyTo, situation, cons);
+	// 	} as TargettingContext;
+
+	// }
+
+
+	static solveEffectiveTargets< T extends keyof TargettingContextList>(applyTo :T, situation: Situation, cons?: Consequence) : (ValidAttackers | ValidSocialTarget)[]  {
 		switch (applyTo) {
 			case "target" :
+				const target = situation.target ? PersonaDB.findActor(situation.target) : undefined
 				return target ? [target]: [];
 			case "attacker":
+				const attacker = situation.attacker ? PersonaDB.findActor(situation.attacker) : undefined
 				return attacker ? [attacker]: [];
 			case "owner":
 				if (cons && cons.actorOwner) {
 					const pt =  this.getPTokenFromActorAccessor(cons.actorOwner);
-					if (pt) return [pt.actor];
+					if (pt && pt.actor) return [pt.actor];
 					else return [];
 				}
 				ui.notifications.notify("Can't find Owner of Consequnece");
@@ -1850,7 +1913,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				const token = this.getPTokenFromActorAccessor(triggerer);
 				return token ? [token.actor] : [];
 			case "cameo":
-				return [];
+				const cameo = "cameo" in situation && situation.cameo ? PersonaDB.findActor(situation.cameo) : undefined;
+				return cameo ? [cameo] : [];
 			case "all-foes": {
 				if (!attacker) return [];
 				const attackerToken = this.getPTokenFromActorAccessor(attacker.accessor);
@@ -1885,12 +1949,74 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				return [];
 		}
 	}
+	// static resolveEffectiveTargets(applyTo :Consequence["applyTo"], situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, cons?: Consequence) : ValidAttackers[]  {
+	// 	switch (applyTo) {
+	// 		case "target" :
+	// 			return target ? [target]: [];
+	// 		case "attacker":
+	// 			return attacker ? [attacker]: [];
+	// 		case "owner":
+	// 			if (cons && cons.actorOwner) {
+	// 				const pt =  this.getPTokenFromActorAccessor(cons.actorOwner);
+	// 				if (pt) return [pt.actor];
+	// 				else return [];
+	// 			}
+	// 			ui.notifications.notify("Can't find Owner of Consequnece");
+	// 			return [];
+	// 		case "user":
+	// 			if (!situation.user) {return [];}
+	// 			const userToken  = this.getPTokenFromActorAccessor(situation.user);
+	// 			return userToken ? [userToken.actor] : [];
+	// 		case "triggering-character":
+	// 			const triggerer = "triggeringCharacter" in situation? situation.triggeringCharacter: undefined;
+	// 			if (!triggerer) {
+	// 				PersonaError.softFail(`Can't target triggering character for ${situation.trigger}`, situation);
+	// 				return [];
+	// 			}
+	// 			const token = this.getPTokenFromActorAccessor(triggerer);
+	// 			return token ? [token.actor] : [];
+	// 		case "cameo":
+	// 			return [];
+	// 		case "all-foes": {
+	// 			if (!attacker) return [];
+	// 			const attackerToken = this.getPTokenFromActorAccessor(attacker.accessor);
+	// 			if (!attackerToken) return [];
+	// 			return this.getAllEnemiesOf(attackerToken).map( x=> x.actor);
+	// 		}
+	// 		case "all-allies": {
+	// 			if (!attacker) return [];
+	// 			const attackerToken = this.getPTokenFromActorAccessor(attacker.accessor);
+	// 			if (!attackerToken) return [];
+	// 			return this.getAllAlliesOf(attackerToken)
+	// 			.map( x=> x.actor);
+	// 		}
+	// 		case undefined:
+	// 			return target ? [target] : []; //default to target since this is old material
+	// 			// PersonaError.softFail("cons.applyTo is undefined");
+	// 		case "all-in-region": {
+	// 			let id : string | undefined;
+	// 			if ("triggeringRegionId" in situation) {
+	// 				id = situation.triggeringRegionId;
+	// 			}
+	// 			const region = Metaverse.getRegion(id);
+	// 			if (!region) return [];
+	// 			const tokens = Array.from(region.tokens);
+	// 			const actors = tokens
+	// 			.filter( x=> x.actor && x.actor.isValidCombatant())
+	// 			.map( x=> x.actor! as ValidAttackers);
+	// 			return actors;
+	// 		}
+	// 		default:
+	// 			applyTo satisfies never;
+	// 			return [];
+	// 	}
+	// }
 
-	static ProcessConsequences_simple(consequence_list: SourcedConsequence[], situation: Situation): ConsequenceProcessed {
+	static processConsequences_simple(consequence_list: SourcedConsequence[], situation: Situation): ConsequenceProcessed {
 		let consequences : ConsequenceProcessed["consequences"] = [];
 		for (const cons of consequence_list) {
 		const applyTo = cons.applyTo ?? (cons.applyToSelf ? "owner" : "target");
-		const consTargets = PersonaCombat.resolveEffectiveTargets(applyTo, situation, undefined, undefined, cons);
+		const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
 			consequences= consequences.concat(this.processConsequence_simple(cons, consTargets));
 		}
 		return {
@@ -1914,7 +2040,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				consequences = consequences.concat(newCons);
 			} else {
 				const applyTo = sourcedC.applyTo ?? (sourcedC.applyToSelf ? "owner" : "target");
-				const consTargets = PersonaCombat.resolveEffectiveTargets(applyTo, situation, attacker, target, cons);
+				const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
+				// const consTargets = PersonaCombat.resolveEffectiveTargets(applyTo, situation, attacker, target, cons);
 				const newCons = this.processConsequence_simple( sourcedC, consTargets);
 				consequences = consequences.concat(newCons);
 			}
@@ -1925,10 +2052,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return {consequences, escalationMod} satisfies ConsequenceProcessed;
 	}
 
-	static processConsequence( power: ModifierContainer, situation: Situation, cons: SourcedConsequence, attacker: ValidAttackers, target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed["consequences"] {
+	static processConsequence( power: ModifierContainer, situation: Situation, cons: SourcedConsequence, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed["consequences"] {
 		//need to fix this so it knows who the target actual is so it can do a proper compariosn, right now when applying to Self it won't consider resistance or consider the target's resist.
 		const applyTo = cons.applyTo ?? (cons.applyToSelf ? "owner" : "target");
-		const consTargets = PersonaCombat.resolveEffectiveTargets(applyTo, situation, attacker, target, cons);
+		const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
+		// const consTargets = PersonaCombat.resolveEffectiveTargets(applyTo, situation, attacker, target, cons);
 		const applyToSelf = cons.applyToSelf ?? (cons.applyTo == "attacker" || cons.applyTo =="user" || cons.applyTo == "owner");
 		const absorb = (situation.isAbsorbed && !applyToSelf) ?? false;
 		const block = atkresult && atkresult.result == "block" && !applyToSelf;
@@ -2187,6 +2315,11 @@ static onTrigger(trigger: CombatTriggerTypes | NonCombatTriggerTypes, actor ?: V
 
 static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifiers: OtherEffect[]) : Promise<CombatResult>
 	{
+		const situation : Situation = {
+			user: attacker.actor.accessor,
+			attacker: attacker.actor.accessor,
+			usedPower: usableOrCard.accessor,
+		};
 		const res = new CombatResult();
 		switch (usableOrCard.system.type) {
 			case "power": {
@@ -2198,7 +2331,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 							amount: power.system.inspirationCost,
 							socialLinkIdOrTarot: power.system.inspirationId as unknown as AnyStringObject,
 							source: usableOrCard,
-						});
+						}, situation);
 					}
 				}
 				if (attacker.actor!.system.type != "shadow" && power.hpCost()) {
@@ -2208,7 +2341,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 						amount: power.modifiedHpCost(attacker.actor.persona()),
 						source: usableOrCard,
 					}, power.getDamageType(attacker.actor));
-					res.addEffect(null, attacker.actor!, deprecatedConvert );
+					res.addEffect(null, attacker.actor!, deprecatedConvert, situation );
 				}
 				if (attacker.actor.system.type != "shadow" && power.system.subtype == "magic" && power.system.mpcost > 0) {
 					res.addEffect(null, attacker.actor, {
@@ -2216,7 +2349,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 						subtype: "direct",
 						amount: -power.mpCost(attacker.actor.persona()),
 						source: usableOrCard,
-					});
+					}, situation);
 				}
 				if (attacker.actor.system.type == "shadow") {
 					if (power.system.energy.cost > 0) {
@@ -2224,7 +2357,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 							type: "alter-energy",
 							amount: -power.system.energy.cost,
 							source: usableOrCard,
-						});
+						}, situation);
 					}
 				}
 			}
@@ -2238,7 +2371,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 						itemId: "",
 						itemAcc: PersonaDB.getUniversalItemAccessor(usableOrCard as SkillCard | Consumable),
 						source: usableOrCard,
-					});
+					}, situation);
 				}
 				break;
 			}
@@ -2318,7 +2451,6 @@ static #getRelevantAttackTag(_attacker: ValidAttackers, dmgType : DamageType) : 
 			dmgType satisfies never;
 			break;
 	}
-
 }
 
 static getBaseAttackBonus(attacker: ValidAttackers, power:Usable): ModifierList {
@@ -2591,7 +2723,6 @@ async incEscalationDie() : Promise<void> {
 
 async decEscalationDie() : Promise<void> {
 	this.setEscalationDie(Math.max(this.getEscalationDie() - 1, 0));
-
 }
 
 async setEscalationDie(val: number) : Promise<void> {
@@ -3280,4 +3411,11 @@ export type PersonaCombatant = NonNullable<PersonaCombat["combatant"]> & {actor:
 type CombatRollSituation = AttackResult["situation"];
 
 type IntoCombatant = PersonaCombatant | UniversalTokenAccessor<PToken> | UniversalActorAccessor<ValidAttackers>;
+
+
+export type TargettingContextList = Record<ValidAttackersApplies, UniversalActorAccessor<ValidAttackers>[]> & { cameo: UniversalActorAccessor<ValidSocialTarget>[]};
+
+type ValidAttackersApplies = Exclude<NonNullable<Consequence["applyTo"]>, "cameo">;
+
+export type TargettingContext = <T extends keyof TargettingContextList>( applyTo: T) => TargettingContextList[T]
 

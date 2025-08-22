@@ -1122,13 +1122,11 @@ export class PersonaSocial {
 				const skill = this.resolvePrimarySecondarySocialStat(cardRoll.studentSkill, activityOrActor);
 				const roll = await PersonaRoller.rollSocialStat(cardData.actor, skill, {
 					askForModifier: true,
-					// modifierList: modifiers ,
 					rollTags,
 					DC: 0,
 					DCMods,
 					situation: cardData.situation,
 					label: `Card Roll (${skill} ${cardRoll.modifier || ""})`,
-					// label: `Card Roll (${skill} ${cardRoll.modifier || ""} vs DC ${DC})`,
 				});
 				await roll.toModifiedMessage(true);
 				const hit = roll.success ?? false;
@@ -1216,15 +1214,14 @@ export class PersonaSocial {
 
 	static async applyEffects(effects: ConditionalEffect[], situation: Situation, actor: PC) {
 		const results = ArrayCorrector(effects ?? []).flatMap( eff=> getActiveConsequences(eff, situation, null));
-		const processed= PersonaCombat.ProcessConsequences_simple(results, situation);
+		const processed= PersonaCombat.processConsequences_simple(results, situation);
 		const result = new CombatResult();
 		for (const c of processed.consequences) {
-			result.addEffect(null, actor, c.cons);
+			result.addEffect(null, actor, c.cons, situation);
 		}
 		await result.emptyCheck()
 			?.autoApplyResult();
 		// .toMessage("Social Roll Effects", actor);
-
 	}
 
 	static async makeCardRoll(ev: JQuery.ClickEvent) {
