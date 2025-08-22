@@ -188,8 +188,12 @@ function resolveConsequenceAmount< C extends ConsequenceAmount, T extends Prepar
 			return amt.val ?? 0;
 		case "variable-value":
 				return PersonaVariables.getVariable(amt, contextList) ?? 0;
+		case "random-range": {
+			const rand = Math.floor(amt.min + Math.random() * (amt.max - amt.min));
+			return rand;
+		}
 		default:
-			amt satisfies never;
+				amt satisfies never;
 			PersonaError.softFail(`Unknwon consequence Amount type :${amt["type"]}`);
 			return -1;
 	}

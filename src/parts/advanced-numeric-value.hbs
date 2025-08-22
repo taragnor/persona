@@ -28,6 +28,12 @@
 	{{> "systems/persona/parts/variable-type-specifier.hbs" namePrefix=namePrefix cons=cons POWERSTUFF=POWERSTUFF owner=owner}}
 {{/if}}
 
+{{#if (eqAny cons.type "random-range")}}
+			<input class="short" type=number name="{{strcat namePrefix 'min'}}" value="{{cons.min}}">
+			to
+			<input class="short" type=number name="{{strcat namePrefix 'max'}}" value="{{cons.max}}">
+{{/if}}
+
 </span>
 {{/if}}
 </span>

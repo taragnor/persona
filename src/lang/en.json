@@ -881,6 +881,7 @@
 
 "persona.consequences.consequences-amount.operation": "O",
 "persona.consequences.consequences-amount.constant": "C",
+"persona.consequences.consequences-amount.random-range": "R",
 "persona.consequences.consequences-amount.variable-value": "V",
 
 

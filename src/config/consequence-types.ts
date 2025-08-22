@@ -392,6 +392,7 @@ type ConstantModifier = {
 	amount: number
 }
 
+
 type SystemVariableModifier = {
 	modifierType : "system-variable",
 	varName : ModifierVariable,
@@ -528,6 +529,7 @@ export type ConsequenceAmountV2 =
 	VariableAmount
 	| ConstantAmount
 	| AmountOperation
+	| RandomRangeAmount
 );
 
 export type AmountOperation = {
@@ -535,6 +537,12 @@ export type AmountOperation = {
 	amt1: ConsequenceAmountV2,
 	amt2: ConsequenceAmountV2,
 	operator: ArithmeticOperator,
+}
+
+type RandomRangeAmount = {
+	type: "random-range",
+	min: number,
+	max: number
 }
 
 type ConstantAmount = {
@@ -549,6 +557,7 @@ export type VariableAmount = {
 
 const CONSEQUENCE_AMOUNT_TYPES_LIST = [
 	"constant",
+	"random-range",
 	"operation",
 	"variable-value",
 ] as const;
