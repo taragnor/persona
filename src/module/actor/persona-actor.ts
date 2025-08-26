@@ -1,3 +1,4 @@
+import { ActorConverters } from "../converters/actorConverters.js";
 import { TypedConditionalEffect } from "../conditional-effect-manager.js";
 import { LevelUpCalculator } from "../../config/level-up-calculator.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
@@ -331,7 +332,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!this.isValidCombatant()) {
 			throw new PersonaError("Can't call basePersona getter on non combatant");
 		}
-		return new Persona(this, this, this.#mainPowers());
+		return new Persona(this, this, this._mainPowers());
 	}
 
 	persona<T extends ValidAttackers>(this: T): Persona<T> {
@@ -374,66 +375,22 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async toPersona(this: Shadow, newOwner ?: PC) : Promise<Shadow> {
-		if (!this.isShadow()) {
-			throw new PersonaError("Can't convert a non-shadow into a persona.")
-		}
-		if (!this.basePersona.isEligibleToBecomePersona()) {
-			throw new PersonaError(`${this.name} is Ineligible to become a Persona`);
-		}
-		const ownership = newOwner != undefined
-		? { ownership: newOwner.ownership }
-		: {};
-		const persona = await PersonaActor.create<Shadow>( {
-			name: `${this.name} (Persona)`,
-			type: "shadow",
-			...ownership,
-			img: this.img,
-			system: {
-				...this.system.toJSON(),
-				creatureType : "persona",
-				baseShadowId: this.id,
-			},
-		}) as Shadow;
-
-		await persona.createEmbeddedDocuments("Item", this.items.contents.map (x=> x.toJSON()))
-		await persona.#stripShadowOnlyPowers();
-		return persona;
+		return ActorConverters.toPersona(this, newOwner);
 	}
 
 	async toDMon(this: Shadow): Promise<Shadow> {
-		if (!this.isShadow()) {
-			throw new PersonaError("Can't convert a non-shadow into a d-mon.")
-		}
-		if (!this.basePersona.isEligibleToBecomeDMon()) {
-			throw new PersonaError(`${this.name} is Ineligible to become a D-Mon`);
-		}
-		const dmonTags = this.system.creatureTags.slice();
-		dmonTags.push("d-mon");
-		const dmonStats : DeepPartial<Shadow> = {
-			name: `${this.name} (D-Mon)`,
-			type: "shadow",
-			img: this.img,
-			prototypeToken: {
-				...this.prototypeToken,
-				name: this.name,
-			},
-			system: {
-				...this.system.toJSON(),
-				creatureType : "d-mon",
-				creatureTags: dmonTags,
-				baseShadowId: this.id,
-			},
-		};
-		const dmon = await PersonaActor.create<Shadow>(dmonStats);
-		await dmon.createEmbeddedDocuments("Item", this.items.contents.map (x=> x.toJSON()))
-		await dmon.#stripShadowOnlyPowers();
-		return dmon;
+		return ActorConverters.toDMon(this);
 	}
 
-	async #stripShadowOnlyPowers(this: Shadow) {
+	async _stripShadowOnlyPowers(this: Shadow) {
 		//TODO: finish later
 
 	}
+
+	convertOldLevelToNew(this: ValidAttackers) : number {
+		return ActorConverters.convertOldLevelToNew(this);
+	}
+
 
 	get class() : Subtype<PersonaItem, "characterClass"> {
 		let classNameDefault;
@@ -874,7 +831,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.modifyHP(healing);
 	}
 
-	#mainPowers() : Power[] {
+	_mainPowers() : Power[] {
 		switch (this.system.type) {
 			case "npc": case "tarot": return [];
 			case "npcAlly":
@@ -2081,98 +2038,98 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	getSocialStat(this: PC, socialStat: SocialStat) : ModifierList {
-		const stat = this.system.skills[socialStat];
-		const mods = new ModifierList();
-		const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
-		mods.add(skillName, stat);
-		return mods.concat(this.persona().getBonuses(socialStat));
-	}
+getSocialStat(this: PC, socialStat: SocialStat) : ModifierList {
+	const stat = this.system.skills[socialStat];
+	const mods = new ModifierList();
+	const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
+	mods.add(skillName, stat);
+	return mods.concat(this.persona().getBonuses(socialStat));
+}
 
-	async createSocialLink(this: PC, npc: SocialLink) {
-		if (this.system.social.find( x=> x.linkId == npc.id)) {
-			return;
-		}
-		this.system.social.push(
-			{
-				linkId: npc.id,
-				linkLevel: 1,
-				inspiration: 1,
-				currentProgress: 0,
-				relationshipType: "PEER",
-				isDating: false,
-			}
-		);
-		PersonaSounds.newSocialLink();
-		await this.update({"system.social": this.system.social});
-		await Logger.sendToChat(`${this.name} forged new social link with ${npc.displayedName} (${npc.tarot?.name}).` , this);
+async createSocialLink(this: PC, npc: SocialLink) {
+	if (this.system.social.find( x=> x.linkId == npc.id)) {
+		return;
 	}
+	this.system.social.push(
+		{
+			linkId: npc.id,
+			linkLevel: 1,
+			inspiration: 1,
+			currentProgress: 0,
+			relationshipType: "PEER",
+			isDating: false,
+		}
+	);
+	PersonaSounds.newSocialLink();
+	await this.update({"system.social": this.system.social});
+	await Logger.sendToChat(`${this.name} forged new social link with ${npc.displayedName} (${npc.tarot?.name}).` , this);
+}
 
-	get baseRelationship(): string {
-		switch (this.system.type) {
-			case "pc":
-				return "PEER";
-			case "npc": case "npcAlly":
-				return "PEER";
-			case "shadow":
-			case "tarot":
-				break;
-			default:
-				this.system satisfies never;
-		}
-		return "NONE";
+get baseRelationship(): string {
+	switch (this.system.type) {
+		case "pc":
+			return "PEER";
+		case "npc": case "npcAlly":
+			return "PEER";
+		case "shadow":
+		case "tarot":
+			break;
+		default:
+			this.system satisfies never;
 	}
+	return "NONE";
+}
 
-	async increaseSocialLink(this: PC, linkId: string) {
-		const link = this.system.social.find( x=> x.linkId == linkId);
-		if (!link) {
-			throw new PersonaError("Trying to increase social link you don't have");
-		}
-		if (link.linkLevel >= 10) {
-			throw new PersonaError("Social Link is already maxed out");
-		}
-		link.linkLevel +=1 ;
-		// link.currentProgress= 0;
-		link.inspiration = link.linkLevel;
-		if (link.linkLevel == 10) {
-			PersonaSounds.socialLinkMax();
-		} else {
-			PersonaSounds.socialLinkUp();
-		}
-		await this.update({"system.social": this.system.social});
-		const target = game.actors.get(link.linkId) as NPC | PC;
-		if (target) {
-			await Logger.sendToChat(`${this.name} increased Social Link with ${target.displayedName} (${target.tarot?.name}) to SL ${link.linkLevel}.` , this);
-		}
+async increaseSocialLink(this: PC, linkId: string) {
+	const link = this.system.social.find( x=> x.linkId == linkId);
+	if (!link) {
+		throw new PersonaError("Trying to increase social link you don't have");
 	}
+	if (link.linkLevel >= 10) {
+		throw new PersonaError("Social Link is already maxed out");
+	}
+	link.linkLevel +=1 ;
+	// link.currentProgress= 0;
+	link.inspiration = link.linkLevel;
+	if (link.linkLevel == 10) {
+		PersonaSounds.socialLinkMax();
+	} else {
+		PersonaSounds.socialLinkUp();
+	}
+	await this.update({"system.social": this.system.social});
+	const target = game.actors.get(link.linkId) as NPC | PC;
+	if (target) {
+		await Logger.sendToChat(`${this.name} increased Social Link with ${target.displayedName} (${target.tarot?.name}) to SL ${link.linkLevel}.` , this);
+	}
+}
 
-	async decreaseSocialLink(this: PC, linkId: string) {
-		const link = this.system.social.find( x=> x.linkId == linkId);
-		if (!link) {
-			throw new PersonaError("Trying to decrease social link you don't have");
-		}
-		if (link.linkLevel >= 10) {
-			throw new PersonaError("Social Link is already maxed out");
-		}
-		link.linkLevel -=1 ;
-		// link.currentProgress= 0;
-		link.inspiration = link.linkLevel;
-		PersonaSounds.socialLinkReverse();
-		if (link.linkLevel == 0) {
-			const newSocial = this.system.social.filter( x=> x != link);
-			await this.update({"system.social": newSocial});
-			return;
-		}
-		await this.update({"system.social": this.system.social});
+async decreaseSocialLink(this: PC, linkId: string) {
+	const link = this.system.social.find( x=> x.linkId == linkId);
+	if (!link) {
+		throw new PersonaError("Trying to decrease social link you don't have");
 	}
+	if (link.linkLevel >= 10) {
+		throw new PersonaError("Social Link is already maxed out");
+	}
+	link.linkLevel -=1 ;
+	// link.currentProgress= 0;
+	link.inspiration = link.linkLevel;
+	PersonaSounds.socialLinkReverse();
+	if (link.linkLevel == 0) {
+		const newSocial = this.system.social.filter( x=> x != link);
+		await this.update({"system.social": newSocial});
+		return;
+	}
+	await this.update({"system.social": this.system.social});
+}
 
-	getSocialLinkProgress(this: PC, linkId: string) : number {
-		const link = this.system.social.find( x=> x.linkId == linkId);
-		if (!link) {
-			return 0;
-		}
-		return link.currentProgress;
+getSocialLinkProgress(this: PC, linkId: string) : number {
+	const link = this.system.social.find( x=> x.linkId == linkId);
+	if (!link) {
+		return 0;
 	}
+	return link.currentProgress;
+}
 
 async alterSocialLinkProgress(this: PC, linkId: string, progress: number) {
 	return await this.socialLinkProgress(linkId, progress);
@@ -3484,7 +3441,6 @@ async clearScanLevel(this:Shadow) {
 	await this.update({"system.scanLevel": 0});
 }
 
-
 get maxEnergy() : number {
 	if (!this.isShadow()) return 0;
 	const BASE_MAX_ENERGY = 10;
@@ -3809,25 +3765,6 @@ async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) {
 	Logger.sendToChat(`+${amt} ${permaBuffLocalized} applied to ${this.name}`);
 }
 
-
-async convertShadowPowers(this:Shadow) : Promise<void> {
-	if (!this.isShadow()) return;
-	const compPowers= PersonaDB.allPowersArr();
-	for (const power of this.#mainPowers()) {
-		if (power.parent == this) {
-			const compPower= compPowers.find(x=> x.name == power.name);
-			if (compPower) {
-				const arr = this.system.combat.powers ?? [];
-				arr.push(compPower.id);
-				await this.update( {"system.combat.powers": arr});
-				await power.delete();
-				console.log(`converted ${power.name}`);
-			} else {
-				console.log(`*** Couldn't convert ${this.name} power ${power.name}`);
-			}
-		}
-	}
-}
 
 }
 

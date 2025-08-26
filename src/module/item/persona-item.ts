@@ -1,3 +1,4 @@
+import { PersonaCombatStats } from "../actor/persona-combat-stats.js";
 import { STATUS_AILMENT_SET } from "../../config/status-effects.js";
 import { BASE_VARIANCE } from "../../config/damage-types.js";
 import { DamageCalculation } from "../combat/damage-calc.js";
@@ -1038,7 +1039,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	getWeaponSkillDamage(this: ItemSubtype<Power, "weapon">, userPersona: Persona, situation: Situation) : DamageCalculation {
 		const dtype = this.getDamageType(userPersona);
 		const calc= new DamageCalculation(dtype);
-		const str = Math.floor(userPersona.strength);
+		const str = PersonaCombatStats.strDamageBonus(userPersona);
 		const weaponDmg = userPersona.wpnDamage();
 		const skillDamage = DamageCalculator.weaponSkillDamage(this);
 		const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
@@ -1049,13 +1050,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		calc.add("base", skillDamage.baseAmt, `${this.displayedName} Power Bonus`);
 		calc.add("base", bonusDamage, `Bonus Damage`);
 		const variance  = (BASE_VARIANCE + weaponDmg.extraVariance + skillDamage.extraVariance + bonusVariance )
-		calc.add("evenBonus", variance * userPersona.level, `Even Bonus (${variance}x Variance)` )
+		const varianceMult = PersonaCombatStats.getPhysicalVariance(userPersona);
+		calc.add("evenBonus", variance * varianceMult, `Even Bonus (${variance}x Variance)` )
 		return calc ;
 	}
 
 	getMagicSkillDamage(this: ItemSubtype<Power, "magic">, userPersona: Persona, situation: Situation): DamageCalculation {
 		const persona = userPersona;
-		const magicDmg = Math.floor(persona.magic);
+		const magicDmg = PersonaCombatStats.magDamageBonus(persona);
+		// const magicDmg = Math.floor(persona.magic);
 		const skillDamage = DamageCalculator.magicSkillDamage(this);
 		const damageBonus =  persona.getBonuses("magDmg").total(situation);
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
@@ -1065,7 +1068,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		calc.add("base", skillDamage.baseAmt, `${this.displayedName} Damage`);
 		calc.add("base", damageBonus, `Bonus Damage`);
 		const variance  = (BASE_VARIANCE + skillDamage.extraVariance + bonusVariance )
-		calc.add("evenBonus", variance * userPersona.level, `Even Bonus (${variance}x Variance)` )
+		const varianceMult = PersonaCombatStats.getMagicalVariance(userPersona);
+		calc.add("evenBonus", variance * varianceMult, `Even Bonus (${variance}x Variance)` )
 		return calc;
 	}
 

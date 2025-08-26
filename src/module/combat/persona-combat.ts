@@ -1,3 +1,4 @@
+import { PersonaCombatStats } from "../actor/persona-combat-stats.js";
 import { ValidSocialTarget } from "../social/persona-social.js";
 import { EvaluatedDamage } from "./damage-calc.js";
 import { NonDeprecatedConsequences } from "../../config/consequence-types.js";
@@ -2103,7 +2104,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			PersonaError.softFail(`Damage type is undefined for ${power.name}`, cons);
 			return [];
 		}
-		const  stamina = -Math.floor(targets[0].persona().endurance / 2);
+		const stamina = PersonaCombatStats.staminaDR(targets[0].persona());
+		// const  stamina = -Math.floor(targets[0].persona().endurance / 2);
 		const staminaString = "Target Endurance / 2";
 		switch (cons.damageSubtype) {
 			case "odd-even":

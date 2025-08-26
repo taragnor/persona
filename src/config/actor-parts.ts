@@ -169,9 +169,6 @@ function incremental() {
 	});
 }
 
-function newIncremental() {
-
-}
 
 export class ClassDataDM extends foundry.abstract.DataModel {
 	static override defineSchema() {
@@ -208,6 +205,7 @@ export function combatCommonStats() {
 			will: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 			fort: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 		}),
+		personaStats: new embedded(PersonaStatsDM),
 		initiative: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 		resists: elementalResists(),
 		hpTracker: new obj<HPTracking>(),
@@ -347,6 +345,34 @@ class EncounterDataDM extends foundry.abstract.DataModel {
 		}
 		return data;
 	}
+}
+
+class PersonaStatsDM extends foundry.abstract.DataModel {
+	static override defineSchema() {
+		const statsObj = {
+			str: new num({initial: 1, max: 99, min:1, integer: true}),
+			mag: new num({initial: 1, max: 99, min:1, integer: true}),
+			end: new num({initial: 1, max: 99, min:1, integer: true}),
+			agi: new num({initial: 1, max: 99, min:1, integer: true}),
+			luk: new num({initial: 1, max: 99, min:1, integer: true}),
+		} as const;
+		const k = Object.keys(statsObj) as (keyof typeof statsObj)[];
+		return {
+			stats: new sch({...statsObj}),
+			preferred_stat: new txt<typeof k[number] | "">({initial:"" }),
+			disfavored_stat: new txt<typeof k[number] | "">({initial:"" }),
+			pLevel: new num({min: 1, max: 150, initial: 1}),
+		}
+	}
+
+	static override migrateData(oldData: Record<string, any>) {
+		if (!oldData.preferred_stat)
+			oldData.preferred_stat = "";
+		if (!oldData.disfavored_stat)
+			oldData.disfavored_stat = "";
+		return oldData;
+	}
+
 }
 
 export function frequencyConvert2(oldFreq: keyof typeof FREQUENCY): typeof PROBABILITY_LIST[number] {

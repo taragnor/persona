@@ -1,3 +1,4 @@
+import { PersonaCombatStats } from "./actor/persona-combat-stats.js";
 import { DamageCalculator } from "../config/damage-types.js";
 import { NonDeprecatedModifierType } from "../config/item-modifiers.js";
 import { NewDamageParams } from "../config/damage-types.js";
@@ -425,16 +426,43 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			return this.source.system.combat.defenses;
 		}
 
+	#emptyStatPlaceholder(): number{
+		// return Math.round(30 * this.level / 5);//placeholder
+		const statsPerLevel = 10 * PersonaCombatStats.STAT_POINTS_PER_LEVEL;
+		return Math.round(statsPerLevel * this.level / 5);//placeholder
+	}
+
+	get tarot() {
+		return this.source.tarot;
+	}
+
+	get combatStats() {
+		return this.source.system.combat.personaStats;
+	}
+
 	get strength() : number {
-		return Math.round(30 * this.level / 5);//placeholder
+		return this.combatStats.stats.str;
+		// return this.#emptyStatPlaceholder();
 	}
 
 	get magic() : number {
-		return Math.round(30 * this.level / 5);//placeholder
+		return this.combatStats.stats.mag;
 	}
 
 	get endurance() : number {
-		return Math.round(30 * this.level / 5);//placeholder
+		return this.combatStats.stats.end;
+	}
+
+	get agility(): number {
+		return this.combatStats.stats.agi;
+	}
+
+	get luck(): number {
+		return this.combatStats.stats.luk;
+	}
+
+	levelUpStatIncreases(level: number) {
+		return PersonaCombatStats.autoSpendPoints(this,level);
 	}
 
 	passiveFocii() : Focus[] {
