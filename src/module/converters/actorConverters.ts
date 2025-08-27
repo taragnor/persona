@@ -118,11 +118,15 @@ export class ActorConverters {
 		const lvl =  Math.clamp((baseLevel -1) * 10 + fractional, 1, 100 );
 		const minXP = LevelUpCalculator.minXPForEffectiveLevel(lvl);
 		if (actor.isPC()) {
-			await actor.update ({"system.personaleLevel": lvl});
-			await actor.update({"system.personalXP": minXP});
+			await actor.update ( {
+				"system.personaleLevel": lvl,
+				"system.personalXP": minXP
+			});
 		}
-		await actor.update({"system.combat.personaStats.pLevel": lvl});
-		await actor.update({"system.combat.personaStats.xp": minXP});
+		await actor.update({
+			"system.combat.personaStats.pLevel": lvl,
+			"system.combat.personaStats.xp": minXP
+		});
 		if (actor.isNPCAlly() || actor.isShadow()) {
 			await actor.basePersona.autoSpendStatPoints();
 			if (actor.isShadow()) {

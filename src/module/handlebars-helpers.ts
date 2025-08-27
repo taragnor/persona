@@ -1,3 +1,4 @@
+import { PersonaCombatStats } from "./actor/persona-combat-stats.js";
 import { PersonaStat } from "../config/persona-stats.js";
 import { ConsequenceAmount } from "../config/consequence-types.js";
 import { INSTANT_KILL_LEVELS } from "../config/damage-types.js";
@@ -705,7 +706,11 @@ export class PersonaHandleBarsHelpers {
 		"defVal": function <T extends string | number>(thing:T, defaultV: T) {
 			if (thing != undefined) return thing;
 			return defaultV;
-		}
+		},
+
+		"canRaiseStat": function (persona: Persona, stat: PersonaStat) : boolean {
+			return persona.canRaiseStat(stat);
+		},
 
 	}
 

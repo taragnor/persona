@@ -19,19 +19,19 @@ export class PersonaCombatStats {
 	}
 
 	static lukCriticalBoost(persona: Persona) : number {
-		return 0;
+		return Math.floor((persona.luck + 2) / 5);
 	}
 
 	static lukCriticalResist(persona: Persona) : number {
-		return 0;
+		return Math.floor(persona.luck / 5);
 	}
 
 	static lukInstantDeathBonus(persona: Persona) : number {
-		return 0;
+		return Math.floor((persona.luck + 1) / 5);
 	}
 
 	static lukInstantDeathResist(persona: Persona) : number {
-		return 0;
+		return Math.floor((persona.luck + 3) / 5);
 	}
 
 	static magDamageBonus(persona: Persona) : number {
@@ -39,11 +39,11 @@ export class PersonaCombatStats {
 	}
 
 	static getPhysicalVariance(persona:Persona) : number {
-		return 1 + Math.round(persona.luck / 10);
+		return 1 + Math.round(persona.strength / 5);
 	}
 
 	static getMagicalVariance(persona:Persona) : number {
-		return 1 + Math.round(persona.luck / 10);
+		return 1 + Math.round(persona.magic / 5);
 	}
 
 	static unspentStatPoints(persona: Persona) : number {
@@ -82,9 +82,9 @@ export class PersonaCombatStats {
 						return [st,st, st, st];
 					}
 					if (disfavored && st == disfavored) {
-						return [st];
+						return [st, st];
 					}
-					return [st,st];
+					return [st,st, st];
 				});
 			const totalStatPoints = Object.values(stblk).reduce ((acc, x) => acc + x, 0);
 			const rng = new SeededRandom(`${persona.name}${tarotName}${totalStatPoints}`);

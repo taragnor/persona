@@ -39,7 +39,7 @@ export class LevelUpCalculator {
 		if (this.XPTable.has(eLevel)) {
 			return this.XPTable.get(eLevel)!;
 		}
-		console.log(`Computing XP for level ${eLevel}`);
+		// console.log(`Computing XP for level ${eLevel}`);
 		if (eLevel <= 1) {
 			if (eLevel < 1) {
 				this.XPTable.set(eLevel, 0);

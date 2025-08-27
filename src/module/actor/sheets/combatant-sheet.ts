@@ -54,6 +54,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".delLearnablePower").on("click", this.deleteLearnablePower.bind(this));
 		html.find(".add-five-to-all").on("click", this.addFiveToAll.bind(this));
 		html.find(".add-stat-point").on("click", this.addStatPoint.bind(this));
+		html.find(".reset-stats").on("click", this.resetStats.bind(this));
 	}
 
 	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) {
@@ -377,7 +378,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async levelUp(_event: Event) {
 		if (!game.user.isGM) return;
 		if (await HTMLTools.confirmBox("Level Up", "Level Up Character")) {
-			await this.actor.levelUp_full();
+			await this.actor.levelUp_manual();
 		}
 
 	}
@@ -427,13 +428,27 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async addStatPoint(ev: JQuery.ClickEvent) {
 		if (this.actor.basePersona.unspentStatPoints < 1) return;
 		const stat = HTMLTools.getClosestData(ev, "stat") as PersonaStat;
-		const stats = this.actor.system.combat.personaStats.stats
+		const stats = this.actor.system.combat.personaStats.stats;
 		if (stats[stat]) {
 			stats[stat] += 1;
 		}
 		await this.actor.update({
 "system.combat.personaStats.stats": stats
 		});
+	}
+
+	async resetStats(_ev: JQuery.ClickEvent) {
+		if (!await HTMLTools.confirmBox("Reset", "Really reset stats?")) return;
+		const stats = this.actor.system.combat.personaStats.stats
+		for (const k of Object.keys(stats)) {
+			stats[k as PersonaStat] = 1;
+		}
+		await this.actor.update({
+"system.combat.personaStats.stats": stats
+		});
+		if (this.actor.isNPCAlly() || this.actor.isShadow()) {
+			await this.actor.basePersona.autoSpendStatPoints();
+		}
 	}
 
 }

@@ -2501,18 +2501,21 @@ async onLevelUp_checkLearnedPowers(this: ValidAttackers, newLevel: number, logCh
 
 async onLevelUp_BasePersona(this: ValidAttackers, newLevel: number) : Promise<void> {
 	if (this.isNPCAlly() || this.isShadow()) {
-		await this.levelUp_Incremental();
+		await this.basePersona.autoSpendStatPoints();
+		// await this.levelUp_Incremental();
 	}
 	await this.onLevelUp_checkLearnedPowers(newLevel);
 }
 
-async levelUp_full(this: ValidAttackers) : Promise<void> {
-	const newlevel  = this.system.combat.classData.level+1 ;
-	await this.resetIncrementals();
-	await this.update({
-		"system.combat.classData.level": newlevel,
-		"system.combat.xp" : 0,
-	});
+async levelUp_manual(this: ValidAttackers) : Promise<void> {
+	if (this.isPC()) {
+		const currXP = this.system.personalXP;
+		const XPForNext = LevelUpCalculator.minXPForEffectiveLevel(this.system.personaleLevel + 1);
+		const XPNeeded = XPForNext - currXP;
+		console.log(`${this.name} XP needed: ${XPNeeded}`);
+		await this.awardPersonalXP(XPNeeded, false);
+}
+	await this.basePersona.levelUp_manual();
 }
 
 async resetIncrementals(this: ValidAttackers) {
@@ -2877,13 +2880,15 @@ get XPForNextPersonalLevel() : number {
 	return LevelUpCalculator.XPForNextLevel(this);
 }
 
-async awardPersonalXP(this: ValidAttackers, amt: number) : Promise<U<PersonaActor>> {
+async awardPersonalXP(this: ValidAttackers, amt: number, allowMult= true) : Promise<U<PersonaActor>> {
 	if (this.isShadow()) return undefined;
 	if (!amt) return;
 	const situation =  {
 		user: this.accessor,
 	};
-	amt = amt * this.getPersonalBonuses("xp-multiplier").total(situation, "percentage");
+	if (allowMult) {
+		amt = amt * this.getPersonalBonuses("xp-multiplier").total(situation, "percentage");
+	}
 	const currentXP = this.system.personalXP;
 	const newTotal = currentXP + amt;
 	await this.update({"system.personalXP": newTotal});

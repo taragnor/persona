@@ -1,3 +1,4 @@
+import { PersonaStat } from "../config/persona-stats.js";
 import { StatGroup } from "./actor/persona-combat-stats.js";
 import { LevelUpCalculator } from "../config/level-up-calculator.js";
 import { PersonaCombatStats } from "./actor/persona-combat-stats.js";
@@ -126,9 +127,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			case "npcAlly":
 				return this.source.system.personaName ?? this.source.displayedName;
 			case "shadow":
-				return this.source.name;
+					return this.source.name;
 			default:
-				this.source.system satisfies never;
+					this.source.system satisfies never;
 				return "ERROR";
 		}
 	}
@@ -166,14 +167,17 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	critResist(): ModifierList {
 		const ret = new ModifierList();
 		const mods = this.mainModifiers().flatMap( item => item.getModifier("critResist", this.user));
-		return ret.concat(new ModifierList(mods));
+		const list =  ret.concat(new ModifierList(mods));
+		list.add("Luck Bonus", PersonaCombatStats.lukCriticalResist(this))
+		return list;
 	}
 
 	critBoost() : ModifierList {
 		const mods = this.mainModifiers().flatMap( item => item.getModifier("criticalBoost", this.user));
-		return new ModifierList(mods);
+		const list= new ModifierList(mods);
+		list.add("Luck Bonus", PersonaCombatStats.lukCriticalBoost(this))
+		return list;
 	}
-
 
 	equals(other: Persona<any>) : boolean {
 		return this.source == other.source;
@@ -185,7 +189,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	/** return leveled Persona on level up*/
-	async awardXP(amt: number): Promise<U<Persona>> {
+	async awardXP(amt: number, allowMult = true): Promise<U<Persona>> {
 		if (!amt) {
 			return undefined;
 		}
@@ -197,8 +201,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const sit: Situation = {
 			...this.baseSituation,
 		};
-		const XPMult = this.getBonuses("xp-multiplier").total(sit, "percentage") ?? 1;
-		amt = amt * XPMult;
+		if (allowMult) {
+			const XPMult = this.getBonuses("xp-multiplier").total(sit, "percentage") ?? 1;
+			amt = amt * XPMult;
+		}
 		if (amt <= 0) {
 			PersonaError.softFail(`Could be an error as XP gained is now ${amt}`);
 			return undefined;
@@ -206,19 +212,22 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		let levelUp = false;
 		const currXP  = this.source.system.combat.personaStats.xp;
 		const newXP = currXP + amt;
-		await this.source.update({"source.system.combat.personaStats.xp" : newXP});
 		let newLevel = this.level;
 		while (newXP >= LevelUpCalculator.minXPForEffectiveLevel(newLevel +1)) {
 			newLevel += 1;
 		}
-		if (newXP > this.XPForNextLevel) {
+		if (newLevel > this.level) {
 			levelUp = true;
 			//TODO: FINISH THIS
-			await this.source.onLevelUp_BasePersona(newLevel);
+			// await this.source.onLevelUp_BasePersona(newLevel);
 		}
+		await this.source.update({
+			"system.combat.personaStats.xp" : newXP,
+			"system.combat.personaStats.pLevel" : newLevel
+		});
 		// await this.source.update({"system.combat.xp" : newxp});
 		if (levelUp ) {
-			const newLevel = 1; //placeholder
+			// const newLevel = 1; //placeholder
 			await this.source.onLevelUp_BasePersona(newLevel);
 		}
 		return levelUp ? this : undefined;
@@ -314,7 +323,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	passiveOrTriggeredPowers() : readonly Power[] {
 		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!this.#cache.passivePowers || !PersonaCaching) {
-				this.#cache.passivePowers = this.powers
+			this.#cache.passivePowers = this.powers
 				.filter( power=> power.hasPassiveEffects(this.user) || power.hasTriggeredEffects(this.user));
 		}
 		return this.#cache.passivePowers;
@@ -356,10 +365,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 
 	get effectiveLevel() : number {
-	const advances = this.numOfIncAdvances();
-	const maxIncAdvances = this.maxIncrementalAdvances();
-	const valPerAdvance = 1 / maxIncAdvances;
-	return this.source.system.combat.classData.level + (valPerAdvance * advances);
+		const advances = this.numOfIncAdvances();
+		const maxIncAdvances = this.maxIncrementalAdvances();
+		const valPerAdvance = 1 / maxIncAdvances;
+		return this.source.system.combat.classData.level + (valPerAdvance * advances);
 	}
 
 	maxIncrementalAdvances(): number {
@@ -368,23 +377,23 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	/* Base XP for one shadow of equal power **/
 	static get BaselineXP(): number {
-	const SHADOWS_TO_LEVEL = Persona.leveling.SHADOWS_TO_LEVEL;
-	const firstLevelUp = Persona.leveling.BASE_XP;
-	return firstLevelUp/SHADOWS_TO_LEVEL;
+		const SHADOWS_TO_LEVEL = Persona.leveling.SHADOWS_TO_LEVEL;
+		const firstLevelUp = Persona.leveling.BASE_XP;
+		return firstLevelUp/SHADOWS_TO_LEVEL;
 	}
 
 	static MIN_XP_MULT = 0.05;
 	static MAX_XP_MULT = 3;
 
 	calcXP(killedTargets: ValidAttackers[], numOfAllies: number): number {
-	const XPSubtotal = killedTargets.reduce ((acc, target) => {
-		if (!target.isShadow()) return acc;
-		const levelDifference = target.persona().effectiveLevel - this.effectiveLevel;
-		const rawXPMult= 1 + (levelDifference * 0.75)
-		const XPMult= Math.clamp(rawXPMult, Persona.MIN_XP_MULT, Persona.MAX_XP_MULT);
-		const realXP = Persona.BaselineXP * XPMult;
-		return acc + realXP;
-	}, 0);
+		const XPSubtotal = killedTargets.reduce ((acc, target) => {
+			if (!target.isShadow()) return acc;
+			const levelDifference = target.persona().effectiveLevel - this.effectiveLevel;
+			const rawXPMult= 1 + (levelDifference * 0.75)
+			const XPMult= Math.clamp(rawXPMult, Persona.MIN_XP_MULT, Persona.MAX_XP_MULT);
+			const realXP = Persona.BaselineXP * XPMult;
+			return acc + realXP;
+		}, 0);
 
 		return Math.round(XPSubtotal / numOfAllies);
 	}
@@ -458,7 +467,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			case "weak": return Math.min(-3 + 1 * weaknesses, -1);
 			case "normal": return 0;
 			case "strong": return Math.max(3 - 1 * weaknesses, 1);
-				case "ultimate": return Math.max(6 - 2 * weaknesses, 2);
+			case "ultimate": return Math.max(6 - 2 * weaknesses, 2);
 			default:
 				PersonaError.softFail(`Bad defense tsring ${val} for ${defType}`);
 				return -999;
@@ -471,9 +480,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return weaknesses.length;
 	}
 
-		get defenses(): ValidAttackers["system"]["combat"]["defenses"] {
-			return this.source.system.combat.defenses;
-		}
+	get defenses(): ValidAttackers["system"]["combat"]["defenses"] {
+		return this.source.system.combat.defenses;
+	}
 
 	#emptyStatPlaceholder(): number{
 		// return Math.round(30 * this.level / 5);//placeholder
@@ -512,7 +521,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	async autoSpendStatPoints() : Promise<StatGroup> {
 		const increases = PersonaCombatStats.autoSpendPoints(this);
-		const stats = this.source.system.combat.personaStats.stats
+		const stats = this.source.system.combat.personaStats.stats;
 		for (const k of Object.keys(stats)) {
 			const stat = k as keyof typeof increases;
 			stats[stat] += increases[stat];
@@ -659,64 +668,64 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return baseBoosts + bonusBoosts;
 	}
 
-#baseDefenseBoosts() : number {
-	switch (this.source.system.type) {
-		case "pc": return 1;
-		case "shadow": return 2;
-		case "npcAlly": return 1;
-		default:
-			this.source.system satisfies never;
-			return 0;
+	#baseDefenseBoosts() : number {
+		switch (this.source.system.type) {
+			case "pc": return 1;
+			case "shadow": return 2;
+			case "npcAlly": return 1;
+			default:
+				this.source.system satisfies never;
+				return 0;
+		}
 	}
-}
 
-maxResists () : number {
-	const baseResists = this.#baseResists();
-	const situation: Situation = {
-		user: this.user.accessor,
-		target: this.user.accessor,
+	maxResists () : number {
+		const baseResists = this.#baseResists();
+		const situation: Situation = {
+			user: this.user.accessor,
+			target: this.user.accessor,
+		}
+		const bonusBoosts = this.getBonuses("max-resist-boosts").total(situation);
+		return baseResists + bonusBoosts;
 	}
-	const bonusBoosts = this.getBonuses("max-resist-boosts").total(situation);
-	return baseResists + bonusBoosts;
-}
 
-#baseResists() : number {
-	switch (this.source.system.type) {
-		case "pc": return 0;
-		case "shadow" : return 2;
-		case "npcAlly": return 0;
+	#baseResists() : number {
+		switch (this.source.system.type) {
+			case "pc": return 0;
+			case "shadow" : return 2;
+			case "npcAlly": return 0;
+		}
 	}
-}
 
-async learnPower(pwr: Power) {
-	await this.source.addPower(pwr);
-}
+	async learnPower(pwr: Power) {
+		await this.source.addPower(pwr);
+	}
 
-get isUnderDefenseCap(): boolean {
-	return this.source.totalDefenseBoosts() < this.maxDefensiveBoosts();
-}
+	get isUnderDefenseCap(): boolean {
+		return this.source.totalDefenseBoosts() < this.maxDefensiveBoosts();
+	}
 
-get isOverDefenseCap(): boolean {
-	return this.source.totalDefenseBoosts() > this.maxDefensiveBoosts();
-}
+	get isOverDefenseCap(): boolean {
+		return this.source.totalDefenseBoosts() > this.maxDefensiveBoosts();
+	}
 
-get isOverResistCap(): boolean {
-	return this.source.totalResists() > this.maxResists();
-}
+	get isOverResistCap(): boolean {
+		return this.source.totalResists() > this.maxResists();
+	}
 
-get isUnderResistCap(): boolean {
-	return this.source.totalResists() +1 < this.maxResists();
-	//allow leeway for double weakness
-}
+	get isUnderResistCap(): boolean {
+		return this.source.totalResists() +1 < this.maxResists();
+		//allow leeway for double weakness
+	}
 
 	hpCostMod() : ModifierList {
 		return this.getBonuses("hpCostMult");
 	}
 
-canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
-	const user = this.user;
-	if (!this.user.isAlive() && !usable.hasTag("usable-while-dead")) return false;
-	if (!usable.isTrulyUsable()) return false;
+	canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
+		const user = this.user;
+		if (!this.user.isAlive() && !usable.hasTag("usable-while-dead")) return false;
+		if (!usable.isTrulyUsable()) return false;
 
 		if (user.hasStatus("rage") && usable != PersonaDB.getBasicPower("Basic Attack")) {
 			if (outputReason) {
@@ -746,49 +755,49 @@ canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
 		}
 	}
 
-canPayActivationCost_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard, _outputReason: boolean) : boolean {
-	switch (usable.system.type) {
-		case "power": {
-			if (usable.system.tags.includes("basicatk")) {
-				return true;
-			}
-			switch (usable.system.subtype) {
-				case "weapon":
-					return  this.user.hp > (usable as Power).hpCost();
-				case "magic":
-					const mpcost = (usable as Power).mpCost(this);
-					if (mpcost > 0) {
-						return this.user.mp >= mpcost;
-					}
-				case "social-link":
-					const inspirationId = usable.system.inspirationId;
-					if (!this.user.isPC()) return false;
-					if (inspirationId) {
-						const socialLink = this.user.system.social.find( x=> x.linkId == inspirationId);
-						if (!socialLink) return false;
-						return socialLink.inspiration >= usable.system.inspirationCost;
-					} else {
-						const inspiration = this.user.system.social.reduce( (acc, item) => acc + item.inspiration , 0)
-						return inspiration >= usable.system.inspirationCost;
-					}
-				case "downtime":
-					const combat = game.combat as PersonaCombat;
-					if (!combat) return false;
-					return combat.isSocial;
-				default:
+	canPayActivationCost_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard, _outputReason: boolean) : boolean {
+		switch (usable.system.type) {
+			case "power": {
+				if (usable.system.tags.includes("basicatk")) {
 					return true;
+				}
+				switch (usable.system.subtype) {
+					case "weapon":
+						return  this.user.hp > (usable as Power).hpCost();
+					case "magic":
+						const mpcost = (usable as Power).mpCost(this);
+						if (mpcost > 0) {
+							return this.user.mp >= mpcost;
+						}
+					case "social-link":
+						const inspirationId = usable.system.inspirationId;
+						if (!this.user.isPC()) return false;
+						if (inspirationId) {
+							const socialLink = this.user.system.social.find( x=> x.linkId == inspirationId);
+							if (!socialLink) return false;
+							return socialLink.inspiration >= usable.system.inspirationCost;
+						} else {
+							const inspiration = this.user.system.social.reduce( (acc, item) => acc + item.inspiration , 0)
+							return inspiration >= usable.system.inspirationCost;
+						}
+					case "downtime":
+						const combat = game.combat as PersonaCombat;
+						if (!combat) return false;
+						return combat.isSocial;
+					default:
+						return true;
+				}
 			}
+			case "consumable":
+				return usable.system.amount > 0;
+			case "skillCard":
+				return this.user.canLearnNewSkill();
 		}
-		case "consumable":
-			return usable.system.amount > 0;
-		case "skillCard":
-			return this.user.canLearnNewSkill();
 	}
-}
 
 	canPayActivationCost_shadow(this: Persona<Shadow>, usable: UsableAndCard, outputReason: boolean) : boolean { if (usable.system.type == "skillCard") {
-			return false;
-		}
+		return false;
+	}
 		if (usable.system.type == "power") {
 			const combat = game.combat;
 			// if (combat && usable.system.reqEscalation > 0 && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
@@ -815,32 +824,45 @@ canPayActivationCost_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard, _out
 		return true; //placeholder
 	}
 
-wpnDamage() : NewDamageParams {
-	switch (this.user.system.type) {
-		case "pc": case "npcAlly":
-			const wpn = this.user.weapon;
-			if (!wpn) {
-				return  {baseAmt: 0, extraVariance: 0};
-			}
-			return  wpn.baseDamage();
-		case "shadow":
-			return {
-				baseAmt: DamageCalculator.convertFromOldLowDamageToNewBase(this.level + 1),
-				extraVariance: 0
-			};
-		default:
-			this.user.system satisfies never;
-			return {baseAmt: 0, extraVariance: 0};
+	wpnDamage() : NewDamageParams {
+		switch (this.user.system.type) {
+			case "pc": case "npcAlly":
+				const wpn = this.user.weapon;
+				if (!wpn) {
+					return  {baseAmt: 0, extraVariance: 0};
+				}
+				return  wpn.baseDamage();
+			case "shadow":
+				return {
+					baseAmt: DamageCalculator.convertFromOldLowDamageToNewBase(this.level + 1),
+					extraVariance: 0
+				};
+			default:
+				this.user.system satisfies never;
+				return {baseAmt: 0, extraVariance: 0};
+		}
 	}
-}
 
-getBonusWpnDamage() : ModifierList {
-	return this.getBonuses("wpnDmg");
-}
+	getBonusWpnDamage() : ModifierList {
+		return this.getBonuses("wpnDmg");
+	}
 
-getBonusVariance() : ModifierList {
-	return this.getBonuses("variance");
-}
+	getBonusVariance() : ModifierList {
+		return this.getBonuses("variance");
+	}
+
+	canRaiseStat (st: PersonaStat) : boolean {
+		return this.unspentStatPoints > 0 && PersonaCombatStats.canRaiseStat(st, this.combatStats.stats);
+	}
+
+	async levelUp_manual() {
+		const level = this.source.system.combat.personaStats.pLevel;
+		const currXP = this.source.system.combat.personaStats.xp;
+		const XPForNext = LevelUpCalculator.minXPForEffectiveLevel(level + 1);
+		const XPNeeded = XPForNext - currXP;
+		console.log(`${this.name} XP needed: ${XPNeeded}`);
+		await this.awardXP(XPNeeded, false);
+	}
 
 }
 

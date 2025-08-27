@@ -2119,7 +2119,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				} else {
 					dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
 				}
-				dmgCalc.add("resist", stamina, staminaString);
+				dmgCalc.add("resist", -stamina, staminaString);
 				break;
 			case "multiplier":
 					return targets.map( applyTo => ({applyTo, cons, })

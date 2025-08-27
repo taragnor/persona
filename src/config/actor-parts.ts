@@ -367,14 +367,6 @@ class PersonaStatsDM extends foundry.abstract.DataModel {
 		}
 	}
 
-	static override migrateData(oldData: Record<string, any>) {
-		if (!oldData.preferred_stat)
-			oldData.preferred_stat = "";
-		if (!oldData.disfavored_stat)
-			oldData.disfavored_stat = "";
-		return oldData;
-	}
-
 }
 
 export function frequencyConvert2(oldFreq: keyof typeof FREQUENCY): typeof PROBABILITY_LIST[number] {

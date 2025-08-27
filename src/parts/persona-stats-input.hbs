@@ -1,7 +1,12 @@
 <section class="persona-stats" >
-	<h2> Persona Stats
+	<h2> Persona Stats 
 		{{#if (gt persona.unspentStatPoints 5)}}
 		<a class="add-five-to-all" title="+5 to all">+5</a>
+		{{/if}}
+		{{#if (isGM)}}
+		<a class="reset-stats">
+			<i class="fa-solid fa-arrows-rotate"></i>
+		</a>
 		{{/if}}
 	</h2>
 	{{#if persona.unspentStatPoints}}
@@ -15,7 +20,7 @@
 			{{localize locStr}}
 		</label>
 		<span> {{statValue ../persona stat}} </span>
-		{{#if (gt ../persona.unspentStatPoints 1)}}
+		{{#if (canRaiseStat ../persona stat)}}
 		<span>
 			<a class="add-stat-point"><i class="fa-solid fa-circle-plus"></i></a>
 		</span>
