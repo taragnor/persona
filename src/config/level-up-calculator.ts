@@ -8,6 +8,7 @@ export class LevelUpCalculator {
 
 	static XPTable : Map<number, number> = new Map();
 	static XPToAdvanceTable: Map<number, number> = new Map();
+	static XP_FOR_LEVEL_1 = 50;
 
 	static levelsGained(actor: PC | NPCAlly, newXPValue: number) : number {
 		const currLevel = actor.personalELevel;
@@ -44,8 +45,8 @@ export class LevelUpCalculator {
 				this.XPTable.set(eLevel, 0);
 				return 0;
 			}
-			this.XPTable.set(eLevel, 100);
-			return 100;
+			this.XPTable.set(eLevel, this.XP_FOR_LEVEL_1);
+			return this.XP_FOR_LEVEL_1;
 		}
 		const XPReqForLastLevel = this.minXPForEffectiveLevel(eLevel-1);
 		const XPReqForNewLevel = XPReqForLastLevel + this.XPRequiredToAdvance(eLevel);
@@ -61,8 +62,8 @@ export class LevelUpCalculator {
 				this.XPToAdvanceTable.set(eLevel, 0);
 				return 0;
 			}
-			this.XPToAdvanceTable.set(eLevel, 100);
-			return 100;
+			this.XPToAdvanceTable.set(eLevel, this.XP_FOR_LEVEL_1);
+			return this.XP_FOR_LEVEL_1;
 		}
 		if (val)
 			return val;

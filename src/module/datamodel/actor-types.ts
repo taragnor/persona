@@ -111,7 +111,11 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 			creatureType: new txt({ choices: SHADOW_CREATURE_TYPE_LIST, initial: "shadow"}),
 			...tarotFields(),
 			...sharedAbilities(),
-			baseShadowId: new id(), // the base shadow that DMon and Persona are based off of, used to make learning abilities easier
+			personaConversion: new sch({
+				baseShadowId: new id(), // the base shadow that DMon and Persona are based off of, used to make learning abilities easier
+				compendiumId: new id(), //Id of the compendium entry relating to this shadow
+				startingLevel: new num({integer: true, min: 1, max: 150, initial: 1}),
+			}),
 			combat: new sch({
 				...combatCommonStats(),
 				...shadowOnlyCombatAbilities(),

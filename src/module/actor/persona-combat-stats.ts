@@ -7,6 +7,8 @@ export class PersonaCombatStats {
 
 	static STAT_POINTS_PER_LEVEL = 3;
 	static MAX_STAT_GAP =  10;
+	static MAX_STAT_VAL = 99;
+	static MIN_STAT_VAL = 1;
 
 	static staminaDR(persona: Persona) : number{
 		return Math.floor(persona.endurance / 2);
@@ -44,7 +46,14 @@ export class PersonaCombatStats {
 		return 1 + Math.round(persona.luck / 10);
 	}
 
-	static autoSpendPoints(persona: Persona, level: number) : StatGroup {
+	static unspentStatPoints(persona: Persona) : number {
+		const total = Object.values(persona.combatStats.stats).reduce( (a,x) => a+x, 0);
+		const baseStatPoints = 5;
+		const expected_total = persona.level * this.STAT_POINTS_PER_LEVEL + baseStatPoints;
+		return expected_total - total;
+	}
+
+	static autoSpendPoints(persona: Persona, pointsToSpend: number = persona.unspentStatPoints) : StatGroup {
 		const favored = persona.combatStats.preferred_stat;
 		const disfavored = persona.combatStats.disfavored_stat;
 		const tarotName = persona.tarot?.name;
@@ -63,8 +72,8 @@ export class PersonaCombatStats {
 		const stblk : StatGroup = {
 			...persona.combatStats.stats
 		};
-		const rng = new SeededRandom(`${persona.name}${tarotName}${level}`);
-		let statsToBeChosen = this.STAT_POINTS_PER_LEVEL;
+		let statsToBeChosen = pointsToSpend;
+		// let statsToBeChosen = this.STAT_POINTS_PER_LEVEL;
 		while (statsToBeChosen > 0) {
 			const slist = (Object.keys(stblk) as PersonaStatType[])
 				.filter(( st) => PersonaCombatStats.canRaiseStat(st, stblk))
@@ -77,6 +86,8 @@ export class PersonaCombatStats {
 					}
 					return [st,st];
 				});
+			const totalStatPoints = Object.values(stblk).reduce ((acc, x) => acc + x, 0);
+			const rng = new SeededRandom(`${persona.name}${tarotName}${totalStatPoints}`);
 			if (slist.length == 0) throw new PersonaError(`All stats unselectable for ${persona.source.name}`);
 			const stat = rng.randomArraySelect(slist)!;
 			stblk[stat] += 1;
@@ -90,15 +101,25 @@ export class PersonaCombatStats {
 		return statBlock[st] < PersonaCombatStats.maxStatAmount(statBlock);
 	}
 
+	static canLowerStat(st: PersonaStatType, statBlock: StatGroup) : boolean {
+		return statBlock[st] > PersonaCombatStats.minStatAmount(statBlock);
+	}
+
+	static minStatAmount(statBlock: StatGroup) : number {
+		const MaxStatGap = this.MAX_STAT_GAP;
+		const maxStat = Object.values(statBlock).reduce ( (a, x) => Math.max(a, x));
+		return Math.max(this.MIN_STAT_VAL, maxStat - MaxStatGap);
+	}
+
 	static maxStatAmount(statBlock: StatGroup): number {
 		const MaxStatGap = this.MAX_STAT_GAP;
 		const minStat = Object.values(statBlock).reduce ( (a, x) => Math.min(a, x));
-		return minStat + MaxStatGap;
+		return Math.min(this.MAX_STAT_VAL, minStat + MaxStatGap);
 	}
 
 
 }
 
-type StatGroup = Record<PersonaStatType, number>;
+export type StatGroup = Record<PersonaStatType, number>;
 
 type PersonaStatType = keyof ValidAttackers["system"]["combat"]["personaStats"]["stats"];

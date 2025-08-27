@@ -15,16 +15,22 @@
 					</select>
 				</div>
 				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
-				{{#if (isGM)}}
-				<div>
-					<label> True Owner </label>
-					<span class="trueOwnerSelector">
-						<select name="system.trueOwner">
-							{{selectOptions CONST.USERS localize=false selected=actor.system.trueOwner}}
-						</select>
-					</span>
+				<div class="flexrow">
+					<div>
+						<label> Character Level</label>
+						<span> {{actor.personalLevel}}
+					</div>
+					<div>
+						{{#if (isGM)}}
+						<label> True Owner </label>
+						<span class="trueOwnerSelector">
+							<select name="system.trueOwner">
+								{{selectOptions CONST.USERS localize=false selected=actor.system.trueOwner}}
+							</select>
+						</span>
+						{{/if}}
+					</div>
 				</div>
-				{{/if}}
 			</div>
 		</div>
 

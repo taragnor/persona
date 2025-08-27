@@ -196,7 +196,7 @@ export function combatCommonStats() {
 		wpnatk: new num( {integer:true, initial: 0}),
 		magatk: new num( {integer:true, initial: 0}),
 		powers: new arr( new id()),
-		lastLearnedLevel: new num({initial: 1}),
+		lastLearnedLevel: new num({initial: 1, integer: true, min: 0}),
 		powersToLearn: new arr( new obj<PowerToLearn>()),
 		learnedPowersBuffer: new arr( new id()),
 		defenses :
@@ -362,6 +362,7 @@ class PersonaStatsDM extends foundry.abstract.DataModel {
 			preferred_stat: new txt<typeof k[number] | "">({initial:"" }),
 			disfavored_stat: new txt<typeof k[number] | "">({initial:"" }),
 			pLevel: new num({min: 1, max: 150, initial: 1}),
+			xp: new num({min:0, integer: true, initial: 0}),
 		}
 	}
 

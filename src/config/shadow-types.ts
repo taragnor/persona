@@ -59,7 +59,7 @@ export const CREATURE_TYPE = HTMLTools.createLocalizationObject(CREATURE_TYPE_LI
 export function shadowRoleMultiplier (role: ShadowRole) : number{
 	switch (role) {
 		case "elite":
-			return 2.5;
+			return 2.0;
 		case "miniboss":
 			return 3.5;
 		case "boss":

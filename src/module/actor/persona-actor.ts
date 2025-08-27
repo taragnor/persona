@@ -169,6 +169,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.system.combat.classData.level ?? 0;
 	}
 
+	get personalLevel(): number {
+		if (!this.isPC()) return 0;
+		return this.system.personaleLevel;
+	}
+
 	get mmp() : number {
 		if (!this.isValidCombatant()) return 0;
 		switch (this.system.type) {
@@ -387,10 +392,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	convertOldLevelToNew(this: ValidAttackers) : number {
-		return ActorConverters.convertOldLevelToNew(this);
+	async convertOldLevelToNew(this: ValidAttackers) : Promise<number> {
+		return await ActorConverters.convertOldLevelToNew(this);
 	}
-
 
 	get class() : Subtype<PersonaItem, "characterClass"> {
 		let classNameDefault;
@@ -1804,11 +1808,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			await this.addNavigatorSkill(power);
 			return;
 		}
-		// if (this.isShadow()) {
-		// 	const pow = await this.createEmbeddedDocuments("Item", [power]);
-		// 	await this.setDefaultShadowCosts(pow[0] as Power);
-		// 	return;
-		// }
 		const powers = this.system.combat.powers;
 		if (powers.includes(power.id)) {
 			ui.notifications.notify("You already know this power in main powers!");
@@ -1848,9 +1847,22 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	async addLearnedPower(this: ValidAttackers, power: Power) : Promise<void> {
+	async checkLearnedPowersIntegrity(this: Shadow) {
+		const powers = this.system.combat.powers;
+		const learned= this.system.combat.powersToLearn;
+		const missing = powers
+			.filter( pwr => !learned
+				.some(learnedPwr => learnedPwr.powerId == pwr))
+			.map (pwr=> PersonaDB.getPower(pwr))
+			.filter (pwr=> pwr != undefined);
+		for (const pwr of missing) {
+			await this.addLearnedPower(pwr, this.system.personaConversion.startingLevel ?? this.system.combat.personaStats.pLevel);
+		}
+	}
+
+	async addLearnedPower(this: ValidAttackers, power: Power, level = 99) : Promise<void> {
 		const arr = this.system.combat.powersToLearn
-		arr.push( { powerId: power.id, level: 99});
+		arr.push( { powerId: power.id, level});
 		await this.update({ "system.combat.powersToLearn": arr});
 	}
 
@@ -2361,6 +2373,7 @@ isStanding() : boolean {
 isValidCombatant(): this is ValidAttackers {
 	switch (this.system.type) {
 		case "pc":
+			return this.isRealPC();
 		case "shadow":
 		case "npcAlly":
 			return true;
@@ -2733,7 +2746,6 @@ get XPForNextLevel() : number {
 	const incAdvances = this.numOfIncAdvances();
 	const typeMult = this.isPC() ? 1.0 : 0.75;
 	const base = Persona.leveling.BASE_XP;
-	// const growth = Persona.leveling.XP_GROWTH;
 	const growth = 0;
 	return Math.floor( base + growth * incAdvances * typeMult);
 }
@@ -2865,7 +2877,6 @@ async awardPersonalXP(this: ValidAttackers, amt: number) : Promise<U<PersonaActo
 		user: this.accessor,
 	};
 	amt = amt * this.getPersonalBonuses("xp-multiplier").total(situation, "percentage");
-	this.system.combat.classData.level;
 	const currentXP = this.system.personalXP;
 	const newTotal = currentXP + amt;
 	await this.update({"system.personalXP": newTotal});
@@ -2883,7 +2894,7 @@ async awardPersonalXP(this: ValidAttackers, amt: number) : Promise<U<PersonaActo
 /** returns true on level up */
 async awardXP(this: ValidAttackers, amt: number) : Promise<(Persona | PersonaActor)[]> {
 	const possibleLevelUps = [
-		// await this.awardPersonalXP(amt),
+		await this.awardPersonalXP(amt),
 		await this.persona().awardXP(amt),
 		//possible code later for multiple personas with growth
 	];
@@ -2938,16 +2949,21 @@ isIncrementalMaxed( this: ValidAttackers,  incremental:  keyof ValidAttackers["s
 
 XPValue(this: Shadow) : number {
 	if (this.hasCreatureTag("no-xp")) return 0;
-	const SHADOWS_TO_LEVEL = Persona.leveling.SHADOWS_TO_LEVEL;
-	const firstLevelUp = Persona.leveling.BASE_XP;
-	const baseXP = firstLevelUp/SHADOWS_TO_LEVEL;
-	const role = shadowRoleMultiplier(this.system.role) * shadowRoleMultiplier(this.system.role2);
-	const incrementals = Object.values(this.system.combat.classData.incremental).reduce<number> ( (acc, i) => {
-		if (typeof i == "number") return acc+i;
-		if (typeof i == "boolean") return acc + (i ? 1 : 0);
-		return acc;
-	}, 0);
-	return baseXP * role * (1 + (incrementals * 0.05));
+	const persona = this.basePersona;
+	const pLevel = persona.pLevel;
+	const xpValue = LevelUpCalculator.shadowXPValue(pLevel);
+	const xpMult = persona.getBonuses("shadow-xp-value").total ( {user: this.accessor}, "percentage");
+	return xpValue * xpMult;
+	// const SHADOWS_TO_LEVEL = Persona.leveling.SHADOWS_TO_LEVEL;
+	// const firstLevelUp = Persona.leveling.BASE_XP;
+	// const baseXP = firstLevelUp/SHADOWS_TO_LEVEL;
+	// const role = shadowRoleMultiplier(this.system.role) * shadowRoleMultiplier(this.system.role2);
+	// const incrementals = Object.values(this.system.combat.classData.incremental).reduce<number> ( (acc, i) => {
+	// 	if (typeof i == "number") return acc+i;
+	// 	if (typeof i == "boolean") return acc + (i ? 1 : 0);
+	// 	return acc;
+	// }, 0);
+	// return baseXP * role * (1 + (incrementals * 0.05));
 }
 
 maxActions(this: ValidAttackers): number  {

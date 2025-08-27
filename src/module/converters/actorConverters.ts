@@ -1,3 +1,4 @@
+import { LevelUpCalculator } from "../../config/level-up-calculator.js";
 import { ValidAttackers } from "../combat/persona-combat.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaError } from "../persona-error.js";
@@ -36,20 +37,31 @@ export class ActorConverters {
 		const ownership = newOwner != undefined
 		? { ownership: newOwner.ownership }
 		: {};
-		const persona = await PersonaActor.create<Shadow>( {
+		const personaTags = shadow.system.creatureTags.slice();
+		personaTags.push("persona");
+		const personaData : DeepPartial<Shadow> = {
 			name: `${shadow.name} (Persona)`,
 			type: "shadow",
 			...ownership,
 			img: shadow.img,
+			prototypeToken: {
+				...shadow.prototypeToken,
+				name: shadow.name,
+			},
 			system: {
 				...shadow.system.toJSON(),
-				creatureType : "persona",
-				baseShadowId: shadow.id,
-			},
-		}) as Shadow;
-
+				creatureType:  "persona",
+				creatureTags: personaTags,
+				personaConversion : {
+					baseShadowId: shadow.id,
+					startingLevel: shadow.system.personaConversion.startingLevel,
+				}
+			}
+		};
+		personaData!.system!.combat!.powers = [];
+		const persona = await PersonaActor.create<Shadow>(personaData) as Shadow;
 		await persona.createEmbeddedDocuments("Item", shadow.items.contents.map (x=> x.toJSON()))
-		await shadow._stripShadowOnlyPowers();
+		await this.convertPowers(shadow, persona);
 		return persona;
 	}
 
@@ -74,22 +86,48 @@ export class ActorConverters {
 				...shadow.system.toJSON(),
 				creatureType : "d-mon",
 				creatureTags: dmonTags,
-				baseShadowId: shadow.id,
+				personaConversion : {
+					baseShadowId: shadow.id,
+					startingLevel: shadow.system.personaConversion.startingLevel,
+				}
 			},
 		};
+		dmonStats!.system!.combat!.powers = [];
 		const dmon = await PersonaActor.create<Shadow>(dmonStats);
-		await dmon.createEmbeddedDocuments("Item", shadow.items.contents.map (x=> x.toJSON()))
-		await dmon._stripShadowOnlyPowers();
+		const nonPowerItems = shadow.items.contents.filter(x=> !x.isPower())
+		await dmon.createEmbeddedDocuments("Item", nonPowerItems.map (x=> x.toJSON()))
+		await this.convertPowers(shadow, dmon);
 		return dmon;
 	}
 
-	static convertOldLevelToNew( actor: ValidAttackers): number {
+	static async convertPowers(original: Shadow, convert: Shadow) {
+		const baseLevel = original.system.personaConversion.startingLevel ?? original.system.combat.personaStats.pLevel;
+		await convert.update( {
+			"system.combat.personaStats.pLevel": baseLevel,
+"system.combat.lastLearnedLevel": 0,
+		});
+		await convert.onLevelUp_checkLearnedPowers(baseLevel);
+	}
+
+	static async convertOldLevelToNew( actor: ValidAttackers): Promise<number> {
+		if (!actor.isValidCombatant()) return 0;
 		const baseLevel = actor.system.combat.classData.level;
 		const incrementals = actor.numOfIncAdvances();
 		const maxInc = actor.maxIncrementalAdvances();
 		const fractional = Math.round(incrementals / maxInc * 10);
-		return (baseLevel -1) * 10 + fractional;
-	}
+		const lvl =  Math.clamp((baseLevel -1) * 10 + fractional, 1, 100 );
+		const minXP = LevelUpCalculator.minXPForEffectiveLevel(lvl);
+		if (actor.isPC()) {
+			await actor.update ({"system.personaleLevel": lvl});
+			await actor.update({"system.personalXP": minXP});
+		}
+		await actor.update({"system.combat.personaStats.pLevel": lvl});
+		await actor.update({"system.combat.personaStats.xp": minXP});
+		if (actor.isNPCAlly() || actor.isShadow()) {
+			await actor.basePersona.autoSpendStatPoints();
 
+		}
+		return lvl;
+	}
 }
 

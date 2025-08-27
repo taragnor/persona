@@ -1,3 +1,5 @@
+import { StatGroup } from "./actor/persona-combat-stats.js";
+import { LevelUpCalculator } from "../config/level-up-calculator.js";
 import { PersonaCombatStats } from "./actor/persona-combat-stats.js";
 import { DamageCalculator } from "../config/damage-types.js";
 import { NonDeprecatedModifierType } from "../config/item-modifiers.js";
@@ -135,8 +137,17 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.name;
 	}
 
+	get unspentStatPoints() : number {
+		return PersonaCombatStats.unspentStatPoints(this);
+	}
+
 	get XPForNextLevel() : number {
-		return this.source.XPForNextLevel;
+		return LevelUpCalculator.XPRequiredToAdvance(this.level +1)
+		// return this.source.XPForNextLevel;
+	}
+
+	get xp(): number {
+		return this.source.system.combat.personaStats.xp - LevelUpCalculator.minXPForEffectiveLevel(this.level);
 	}
 
 	get scanLevel(): number {
@@ -152,9 +163,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return 0;
 	}
 
-	get xp(): number {
-		return this.source.system.combat.xp;
-	}
 
 
 	equals(other: Persona<any>) : boolean {
@@ -162,7 +170,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	get level() : number {
-		return this.classData.level;
+		// return this.classData.level;
+		return this.source.system.combat.personaStats.pLevel ?? 0;
 	}
 
 	/** return leveled Persona on level up*/
@@ -178,19 +187,26 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const sit: Situation = {
 			...this.baseSituation,
 		};
-		amt = amt * this.getBonuses("xp-multiplier").total(sit, "percentage");
+		const XPMult = this.getBonuses("xp-multiplier").total(sit, "percentage") ?? 1;
+		amt = amt * XPMult;
 		if (amt <= 0) {
 			PersonaError.softFail(`Could be an error as XP gained is now ${amt}`);
 			return undefined;
 		}
 		let levelUp = false;
-		const XPrequired= this.XPForNextLevel;
-		let newxp = this.xp + amt;
-		while (newxp > XPrequired) {
-			newxp -= XPrequired;
-			levelUp = true;
+		const currXP  = this.source.system.combat.personaStats.xp;
+		const newXP = currXP + amt;
+		await this.source.update({"source.system.combat.personaStats.xp" : newXP});
+		let newLevel = this.level;
+		while (newXP >= LevelUpCalculator.minXPForEffectiveLevel(newLevel +1)) {
+			newLevel += 1;
 		}
-		await this.source.update({"system.combat.xp" : newxp});
+		if (newXP > this.XPForNextLevel) {
+			levelUp = true;
+			//TODO: FINISH THIS
+			await this.source.onLevelUp_BasePersona(newLevel);
+		}
+		// await this.source.update({"system.combat.xp" : newxp});
 		if (levelUp ) {
 			const newLevel = 1; //placeholder
 			await this.source.onLevelUp_BasePersona(newLevel);
@@ -205,6 +221,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 	}
 
+
+	get pLevel() : number {
+		return this.source.system.combat.personaStats.pLevel;
+	}
 
 	isEligibleToBecomeDMon() : boolean {
 		const source = this.source;
@@ -461,8 +481,17 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.combatStats.stats.luk;
 	}
 
-	levelUpStatIncreases(level: number) {
-		return PersonaCombatStats.autoSpendPoints(this,level);
+	async autoSpendStatPoints() : Promise<StatGroup> {
+		const increases = PersonaCombatStats.autoSpendPoints(this);
+		const stats = this.source.system.combat.personaStats.stats
+		for (const k of Object.keys(stats)) {
+			const stat = k as keyof typeof increases;
+			stats[stat] += increases[stat];
+		}
+		await this.source.update({
+			"system.combat.personaStats.stats": stats,
+		});
+		return increases;
 	}
 
 	passiveFocii() : Focus[] {
@@ -632,7 +661,6 @@ maxResists () : number {
 
 async learnPower(pwr: Power) {
 	await this.source.addPower(pwr);
-
 }
 
 get isUnderDefenseCap(): boolean {

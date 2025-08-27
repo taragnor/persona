@@ -549,6 +549,9 @@ div.power-operations,
 div.power-name-block {
 	flex: 5 5 7%;
 	max-width: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis; /* adds "…" at the cutoff for text */
 }
 
 span.die-with-text {
@@ -1037,8 +1040,9 @@ display: inline-flex;       /* let span size itself to contents */
 .power-type-icon img {
 	height: 1em;          /* scale image to text size */
 	width: auto;          /* preserve aspect ratio */
-	margin-left: 0.3em; 
+	margin-left: 0.3em;
 	border: none;
 	outline: none;
 	border: 0;
+	padding-right: 5px;
 }

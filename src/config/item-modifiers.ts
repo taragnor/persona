@@ -54,6 +54,7 @@ export const MODIFIERLIST = [
 	"weakestSlot",
 	"pay",
 	"xp-multiplier",
+	"shadow-xp-value",
 	"extraMaxPowers",
 	"initiative",
 	"starting-energy",

@@ -1382,6 +1382,10 @@ Damage stack (${this.name}, ${estimate.damageType})
 		return this.system.type == "consumable";
 	}
 
+	isShadowExclusivePower(): boolean {
+		if (!this.isPower()) return false;
+		return this.hasTag("shadow-only");
+	}
 
 	isBasicPower(this: UsableAndCard) : boolean {
 		if (this.system.type == "skillCard") {return false;}
