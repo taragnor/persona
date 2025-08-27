@@ -116,6 +116,11 @@
 	"persona.statistic.talents": "Talents",
 	"persona.statistic.initiative": "Initiative",
 
+	"persona.statistic.stat.str": "Strength",
+	"persona.statistic.stat.mag": "Magic",
+	"persona.statistic.stat.end": "Endurance",
+	"persona.statistic.stat.agi": "Agility",
+	"persona.statistic.stat.luk": "Luck",
 
 	"persona.defense.ref": "Reflex",
 	"persona.defense.will": "Will",

@@ -1,3 +1,4 @@
+import { PersonaStat } from "./persona-stats.js";
 import { Power } from "../module/item/persona-item.js";
 import { FREQUENCY } from "./frequency.js";
 import { PROBABILITY_LIST } from "./probability.js";
@@ -355,12 +356,12 @@ class PersonaStatsDM extends foundry.abstract.DataModel {
 			end: new num({initial: 1, max: 99, min:1, integer: true}),
 			agi: new num({initial: 1, max: 99, min:1, integer: true}),
 			luk: new num({initial: 1, max: 99, min:1, integer: true}),
-		} as const;
-		const k = Object.keys(statsObj) as (keyof typeof statsObj)[];
+		} as const satisfies Record<PersonaStat, any>;
+		const k = Object.keys(statsObj) as PersonaStat[];
 		return {
 			stats: new sch({...statsObj}),
-			preferred_stat: new txt<typeof k[number] | "">({initial:"" }),
-			disfavored_stat: new txt<typeof k[number] | "">({initial:"" }),
+			preferred_stat: new txt<PersonaStat | "">({initial:"" }),
+			disfavored_stat: new txt<PersonaStat | "">({initial:"" }),
 			pLevel: new num({min: 1, max: 150, initial: 1}),
 			xp: new num({min:0, integer: true, initial: 0}),
 		}

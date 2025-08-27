@@ -1195,7 +1195,7 @@ Damage stack (${this.name}, ${estimate.damageType})
 	critBoost(this: Usable, user: ValidAttackers) : ModifierList {
 		const x = this.getModifier("criticalBoost", user);
 		let list = new ModifierList(x);
-		list = list.concat(user.critBoost());
+		list = list.concat(user.persona().critBoost());
 		let powerCrit = (this.system.crit_boost ?? 0);
 		if (this.isWeaponSkill()
 			&& !this.isBasicPower()

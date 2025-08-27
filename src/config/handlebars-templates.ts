@@ -62,6 +62,8 @@ const templateFileNames : string[] =[
 	"learned-powers-section.hbs",
 	"variable-type-specifier.hbs",
 	"advanced-numeric-value.hbs",
+	"persona-stats-input.hbs",
+	"persona-stats-display.hbs"
 ];
 
 export const templatePaths = templateFileNames.

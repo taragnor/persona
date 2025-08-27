@@ -1,0 +1,44 @@
+<section class="persona-stats" >
+	<h2> Persona Stats
+		{{#if (gt persona.unspentStatPoints 5)}}
+		<a class="add-five-to-all" title="+5 to all">+5</a>
+		{{/if}}
+	</h2>
+	{{#if persona.unspentStatPoints}}
+	<div class="unspent">
+		Unspent Points: {{persona.unspentStatPoints}}
+	</div>
+	{{/if}}
+	{{#each CONST.PERSONA_STATS as |locStr stat|}}
+	<div data-stat="{{stat}}">
+		<label>
+			{{localize locStr}}
+		</label>
+		<span> {{statValue ../persona stat}} </span>
+		{{#if (gt ../persona.unspentStatPoints 1)}}
+		<span>
+			<a class="add-stat-point"><i class="fa-solid fa-circle-plus"></i></a>
+		</span>
+		{{/if}}
+
+	</div>
+	{{/each}}
+
+	{{#if (isShadowOrNPCAlly actor)}}
+	<div>
+		<label>Favored Stat</label>
+		<select name="system.combat.personaStats.preferred_stat">
+			{{selectOptions CONST.PERSONA_STATS_PLUS_EMPTY  localize=true selected=actor.system.combat.personaStats.preferred_stat}}
+		</select>
+	</div>
+
+	<div>
+		<label>Disfavored Stat</label>
+		<select name="system.combat.personaStats.disfavored_stat">
+			{{selectOptions CONST.PERSONA_STATS_PLUS_EMPTY  localize=true selected=actor.system.combat.personaStats.disfavored_stat}}
+		</select>
+	</div>
+	{{/if}}
+
+</section>
+

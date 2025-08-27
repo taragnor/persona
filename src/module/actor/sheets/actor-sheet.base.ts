@@ -1,3 +1,4 @@
+import { PERSONA_STATS } from "../../../config/persona-stats.js";
 import { PersonaError } from "../../persona-error.js";
 import { PC } from "../persona-actor.js";
 import { ConditionalEffect } from "../../datamodel/power-dm.js";
@@ -56,6 +57,10 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 			.map(user=> [user.id, user.name])
 		);
 		USERS = foundry.utils.mergeObject( {"" : ""}, USERS);
+		const PERSONA_STATS_PLUS_EMPTY = {
+			"": "",
+			...PERSONA_STATS
+		};
 		return {
 			DAYS,
 			STUDENT_SKILLS,
@@ -64,6 +69,8 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 			TAROT  : TAROT_DECK,
 			RESIST_STRENGTHS : RESIST_STRENGTHS,
 			DAMAGETYPES : DAMAGETYPES,
+			PERSONA_STATS,
+			PERSONA_STATS_PLUS_EMPTY,
 			USERS,
 		} as const;
 	}

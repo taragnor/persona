@@ -21,7 +21,7 @@
 	{{/if}}
 	{{#if (isShadow actor) }}
 	<span>
-		<input class="short" type="number" name="system.combat.classData.level" value="{{actor.system.combat.classData.level}}">
+		<input class="short" type="number" name="system.combat.personaStats.pLevel" value="{{actor.system.combat.personaStats.pLevel}}">
 	</span>
 	{{/if}}
 </div>
@@ -47,8 +47,11 @@
 {{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=false showPowerTableButton=true showLearnedBuffer=true}}
 
 <hr>
+{{> "systems/persona/parts/persona-stats-input.hbs" actor=actor persona=persona CONST=CONST}}
+
 {{#if (canUseTalents actor)}}
 {{> "systems/persona/parts/talents-table.hbs" actor=actor CONST=CONST persona=persona}}
 {{/if}}
 {{> "systems/persona/parts/focii-table.hbs" actor=actor CONST=CONST persona=persona}}
+
 

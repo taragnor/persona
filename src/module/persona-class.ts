@@ -20,7 +20,6 @@ import { PersonaDB } from "./persona-db.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { ModifierList } from "./combat/modifier-list.js";
 import { ModifierContainer } from "./item/persona-item.js";
-import { ModifierTarget } from "../config/item-modifiers.js";
 import { PersonaError } from "./persona-error.js";
 import { localize } from "./persona.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../config/status-effects.js";
@@ -110,7 +109,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		let index = talents.indexOf(id);
 		if (index == -1) return 0;
 		const inc = source.system.combat.classData.incremental.talent ? 1 : 0;
-		const effectiveLevel = Math.max(0, this.level + inc -1);
+		const convertedLevel = Math.floor(this.level/10) + 1;
+		const effectiveLevel = Math.max(0, convertedLevel + inc -1);
 		const baseVal = Math.floor(effectiveLevel / 3);
 		const partial = effectiveLevel % 3;
 		index = index >= 2 ? 2 : index;
@@ -142,7 +142,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	get XPForNextLevel() : number {
-		return LevelUpCalculator.XPRequiredToAdvance(this.level +1)
+		return LevelUpCalculator.XPRequiredToAdvanceToLevel(this.level +1)
 		// return this.source.XPForNextLevel;
 	}
 
@@ -163,6 +163,16 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return 0;
 	}
 
+	critResist(): ModifierList {
+		const ret = new ModifierList();
+		const mods = this.mainModifiers().flatMap( item => item.getModifier("critResist", this.user));
+		return ret.concat(new ModifierList(mods));
+	}
+
+	critBoost() : ModifierList {
+		const mods = this.mainModifiers().flatMap( item => item.getModifier("criticalBoost", this.user));
+		return new ModifierList(mods);
+	}
 
 
 	equals(other: Persona<any>) : boolean {
@@ -384,14 +394,15 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	get combatInit(): number {
-		const inc = this.classData.incremental.initiative;
+		// const inc = this.classData.incremental.initiative;
 		const situation = {user: this.user.accessor};
 		const initBonus = this
 			.getBonuses("initiative")
 			.total(situation);
-		const level  = this.classData.level;
+		const agi = Math.floor(this.agility / 2);
+		// const level  = this.classData.level;
 		const initScore = this.#translateInitString(this.baseInitRank);
-		return initBonus + (inc * 2) + (level * 4) + initScore;
+		return initBonus + agi + initScore;
 	}
 
 	#translateInitString(initString: ValidAttackers["system"]["combat"]["initiative"]): number {
@@ -409,13 +420,31 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	getDefense(defense: keyof ValidAttackers["system"]["combat"]["defenses"]) : ModifierList {
 		const mods = new ModifierList();
-		const lvl = this.level;
+		switch (defense) {
+			case "ref": {
+				const agi = Math.floor(this.agility / 3);
+				mods.add("Agility (* 1/3)", agi);
+				break;
+			}
+			case "will": {
+				const luk = Math.floor(this.luck / 3);
+				mods.add("Luck (* 1/3)", luk);
+				break;
+			}
+			case "fort":
+				const end = Math.floor(this.endurance / 3);
+				mods.add("Endurance (* 1/3)", end);
+				break;
+			default:
+				defense satisfies never;
+				return mods;
+		}
+		// const lvl = this.level;
 		const baseDef = this.#translateDefenseString(defense, this.defenses[defense]);
-		const inc = this.classData.incremental.defense;
-		mods.add("Base", 10);
+		// const inc = this.classData.incremental.defense;
+		// mods.add("Base", 10);
 		mods.add("Base Defense Bonus", baseDef);
-		mods.add("Level Bonus (x2)", lvl * 2);
-		mods.add("Incremental Advance" , inc);
+		// mods.add("Incremental Advance" , inc);
 		const otherBonuses = this.getBonuses([defense, "allDefenses"]);
 		const defenseMods = this.getBonuses([defense, "allDefenses"], this.defensiveModifiers());
 		return mods.concat(otherBonuses).concat(defenseMods);

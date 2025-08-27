@@ -27,7 +27,7 @@ export class LevelUpCalculator {
 
 	static XPForNextLevel(actor: PC | NPCAlly): number {
 		const currLvl = actor.personalELevel;
-		return this.XPRequiredToAdvance(currLvl);
+		return this.XPRequiredToAdvanceToLevel(currLvl + 1);
 	}
 
 	//** uses 1-100 scale
@@ -49,14 +49,16 @@ export class LevelUpCalculator {
 			return this.XP_FOR_LEVEL_1;
 		}
 		const XPReqForLastLevel = this.minXPForEffectiveLevel(eLevel-1);
-		const XPReqForNewLevel = XPReqForLastLevel + this.XPRequiredToAdvance(eLevel);
+		const XPReqForNewLevel = XPReqForLastLevel + this.XPRequiredToAdvanceToLevel(eLevel);
 		const xp = Math.round(XPReqForNewLevel);
 		this.XPTable.set(eLevel, xp);
 		return xp;
 	}
 
-	static XPRequiredToAdvance(eLevel: number) : number {
+	static XPRequiredToAdvanceToLevel(eLevel: number) : number {
 		const val = this.XPToAdvanceTable.get(eLevel);
+		if (val)
+			return val;
 		if (eLevel <= 1) {
 			if (eLevel < 1) {
 				this.XPToAdvanceTable.set(eLevel, 0);
@@ -65,20 +67,18 @@ export class LevelUpCalculator {
 			this.XPToAdvanceTable.set(eLevel, this.XP_FOR_LEVEL_1);
 			return this.XP_FOR_LEVEL_1;
 		}
-		if (val)
-			return val;
-		const XPRequiredForLastLevel = this.XPRequiredToAdvance(eLevel - 1);
+		const XPRequiredForLastLevel = this.XPRequiredToAdvanceToLevel(eLevel - 1);
 		let XPNeeded = this.LEVEL_GROWTH_RATE * XPRequiredForLastLevel;
 		XPNeeded = Math.round(XPNeeded);
 		this.XPToAdvanceTable.set(eLevel, XPNeeded);
 		return XPNeeded;
 	}
 
-	static async converterFromOldSystem( actor: PC | NPCAlly): Promise<void> {
-		if (actor.system.personaleLevel != 0) return;
-		//TODO: finish this
-		const eLevel = this.getElevelOfOldSystem(actor);
-	}
+	//static async converterFromOldSystem( actor: PC | NPCAlly): Promise<void> {
+	//	if (actor.system.personaleLevel != 0) return;
+	//	//TODO: finish this
+	//	const eLevel = this.getElevelOfOldSystem(actor);
+	//}
 
 	static getElevelOfOldSystem(actor : PC | NPCAlly) : number {
 		const baseLvl = actor.system.combat.classData.level;
@@ -91,7 +91,7 @@ export class LevelUpCalculator {
 	}
 
 	static shadowXPValue(shadowELevel: number) : number {
-		const XPValue = this.XPRequiredToAdvance(shadowELevel) / this.SHADOWS_TO_KILL_TO_LEVEL;
+		const XPValue = this.XPRequiredToAdvanceToLevel(shadowELevel + 1 ) / this.SHADOWS_TO_KILL_TO_LEVEL;
 		return Math.round(XPValue);
 
 	}
@@ -109,7 +109,7 @@ export class LevelUpCalculator {
 			this.resetCache();
 		}
 		for (let lvl = 1; lvl < 100; lvl+=10) {
-			const XPNeeded = this.XPRequiredToAdvance(lvl);
+			const XPNeeded = this.XPRequiredToAdvanceToLevel(lvl);
 			console.log(` ${lvl} : ${XPNeeded}`);
 		}
 

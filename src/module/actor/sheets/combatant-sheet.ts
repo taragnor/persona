@@ -1,3 +1,4 @@
+import { PersonaStat } from "../../../config/persona-stats.js";
 import { PowerPrinter } from "../../printers/power-list.js";
 import { PersonaRoller } from "../../persona-roll.js";
 import { PersonaDB } from "../../persona-db.js";
@@ -51,6 +52,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".power-img").on("mouseover", this.createDamageEstimate.bind(this));
 		html.find(".showPowersTable").on("click", this.showPowersTable.bind(this));
 		html.find(".delLearnablePower").on("click", this.deleteLearnablePower.bind(this));
+		html.find(".add-five-to-all").on("click", this.addFiveToAll.bind(this));
+		html.find(".add-stat-point").on("click", this.addStatPoint.bind(this));
 	}
 
 	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) {
@@ -213,7 +216,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new Error(err);
 		}
 		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this talent?")) {
-		//TODO: temp fix until we get a persona Id
+			//TODO: temp fix until we get a persona Id
 			await this.actor.persona().deleteTalent(talentId);
 		}
 
@@ -232,7 +235,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 	}
 
-async deleteLearnablePower(event: JQuery.ClickEvent) {
+	async deleteLearnablePower(event: JQuery.ClickEvent) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		if (powerId == undefined) {
 			const err = `Can't find power at index ${powerId}`;
@@ -244,7 +247,7 @@ async deleteLearnablePower(event: JQuery.ClickEvent) {
 			await this.actor.deleteLearnablePower(powerId);
 		}
 
-}
+	}
 
 	async openPower(event: Event) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
@@ -407,6 +410,30 @@ async deleteLearnablePower(event: JQuery.ClickEvent) {
 	isOnLearningTab() : boolean {
 		//placeholder
 		return (this._tabs.at(0)?.active == "learning");
+	}
+
+	async addFiveToAll(_ev : JQuery.ClickEvent) {
+		if (this.actor.basePersona.unspentStatPoints < 25)
+			return;
+		const stats = this.actor.system.combat.personaStats.stats
+		for (const k of Object.keys(stats)) {
+			stats[k as PersonaStat] += 5;
+		}
+		await this.actor.update({
+"system.combat.personaStats.stats": stats
+		});
+	}
+
+	async addStatPoint(ev: JQuery.ClickEvent) {
+		if (this.actor.basePersona.unspentStatPoints < 1) return;
+		const stat = HTMLTools.getClosestData(ev, "stat") as PersonaStat;
+		const stats = this.actor.system.combat.personaStats.stats
+		if (stats[stat]) {
+			stats[stat] += 1;
+		}
+		await this.actor.update({
+"system.combat.personaStats.stats": stats
+		});
 	}
 
 }

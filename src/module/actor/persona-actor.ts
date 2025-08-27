@@ -1786,20 +1786,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	critBoost(this: ValidAttackers) : ModifierList {
-		const mods = this.mainModifiers().flatMap( item => item.getModifier("criticalBoost", this));
-		return new ModifierList(mods);
-	}
+	// critBoost(this: ValidAttackers) : ModifierList {
+	// 	const mods = this.mainModifiers().flatMap( item => item.getModifier("criticalBoost", this));
+	// 	return new ModifierList(mods);
+	// }
 
 
-	critResist(this: ValidAttackers) : ModifierList {
-		const ret = new ModifierList();
-		const mods = this.mainModifiers().flatMap( item => item.getModifier("critResist", this));
-		return ret.concat(new ModifierList(mods));
-	}
+	// critResist(this: ValidAttackers) : ModifierList {
+	// 	const ret = new ModifierList();
+	// 	const mods = this.mainModifiers().flatMap( item => item.getModifier("critResist", this));
+	// 	return ret.concat(new ModifierList(mods));
+	// }
 
 
-	async addPower(this: PC | NPCAlly | Shadow, power: Power) {
+	async addPower(this: PC | NPCAlly | Shadow, power: Power, logChanges = true) {
 		if (power.isNavigator()) {
 			if (!this.isNPCAlly()) {
 				PersonaError.softFail("Only NPC Allies can learn Navigator skills!");
@@ -1823,7 +1823,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (powers.length < this.basePersona.maxMainPowers) {
 			powers.push(power.id);
 			await this.update( {"system.combat.powers": powers});
+			if (logChanges) {
 			await Logger.sendToChat(`${this.name} learned Power: ${power.name}`);
+			}
 			return;
 		}
 		if (!this.isShadow()) {
@@ -1831,7 +1833,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (sideboard.length < this.persona().maxSideboardPowers) {
 				sideboard.push(power.id);
 				await this.update( {"system.combat.powers_sideboard": sideboard});
+			if (logChanges) {
 				await Logger.sendToChat(`${this.name} learned Power: ${power.name} (placed in sideboard)`);
+			}
 				return;
 			}
 		}
@@ -1841,13 +1845,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			buffer.push(power.id);
 			await this.update( {"system.combat.learnedPowersBuffer": buffer});
 			const maxMsg = `<br>${this.name} has exceeded their allowed number of powers (${this.maxPowers})  and must forget one or more powers.`;
-			await Logger.sendToChat(`${this.name} learned ${power.name} ${maxMsg}` , this);
+			if (logChanges) {
+				await Logger.sendToChat(`${this.name} learned ${power.name} ${maxMsg}` , this);
+			}
 		} else {
 			PersonaError.softFail(`There was a problem adding power to ${this.name}`);
 		}
 	}
 
-	async checkLearnedPowersIntegrity(this: Shadow) {
+	async checkForMissingLearnedPowers(this: Shadow) {
+		if (!this.isShadow()) return;
 		const powers = this.system.combat.powers;
 		const learned= this.system.combat.powersToLearn;
 		const missing = powers
@@ -2474,7 +2481,7 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 	}
 }
 
-async onLevelUp_checkLearnedPowers(this: ValidAttackers, newLevel: number) : Promise<void> {
+async onLevelUp_checkLearnedPowers(this: ValidAttackers, newLevel: number, logChanges= true) : Promise<void> {
 	if (!newLevel) return;
 	const powersToLearn = this.system.combat.powersToLearn
 	.filter( x=> x.level > this.system.combat.lastLearnedLevel)
@@ -2487,7 +2494,7 @@ async onLevelUp_checkLearnedPowers(this: ValidAttackers, newLevel: number) : Pro
 			PersonaError.softFail(`Can't find power ${powerData.powerId} on ${this.name} level up`);
 			continue;
 		}
-		await this.addPower(power);
+		await this.addPower(power, logChanges);
 	}
 	await this.update( {"system.combat.lastLearnedLevel": newLevel});
 }

@@ -1035,8 +1035,23 @@ display: inline-flex;       /* let span size itself to contents */
 }
 
 
+.add-five-to-all {
+display: inline-block;      /* lets you add padding/box styles */
+  background-color: #333;     /* dark grey background */
+  color: #fff;                /* white text for contrast */
+  padding: 0.4em 0.8em;       /* spacing inside */
+  border-radius: 6px;         /* rounded corners */
+  text-decoration: none;      /* remove underline */
+  font-weight: 500;           /* slightly bolder text */
+}
 
+a.add-five-to-all:hover {
+  background-color: #555;     /* lighter grey on hover */
+}
 
+a.add-five-to-all:active {
+  background-color: #111;     /* darker when clicked */
+}
 .power-type-icon img {
 	height: 1em;          /* scale image to text size */
 	width: auto;          /* preserve aspect ratio */

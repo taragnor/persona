@@ -1,16 +1,15 @@
+import { PersonaStat } from "../config/persona-stats.js";
 import { ConsequenceAmount } from "../config/consequence-types.js";
 import { INSTANT_KILL_LEVELS } from "../config/damage-types.js";
 import { DAMAGE_LEVELS } from "../config/damage-types.js";
 import { DAMAGE_ICONS } from "../config/icons.js";
 import { StatusEffectId } from "../config/status-effects.js";
-import { POWER_TAGS } from "../config/power-tags.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../config/roll-tags.js";
 import { CardRoll } from "../config/social-card-config.js";
 import { Persona } from "./persona-class.js";
 import { RESIST_STRENGTHS } from "../config/damage-types.js";
 import { PersonaI } from "../config/persona-interface.js";
 import { PersonaError } from "./persona-error.js";
-import { Consumable } from "./item/persona-item.js";
 import { FREQUENCY } from "../config/frequency.js";
 import { CardEvent } from "../config/social-card-config.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
@@ -19,7 +18,6 @@ import { PersonaCombat } from "./combat/persona-combat.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
-import { EQUIPMENT_TAGS } from "../config/equipment-tags.js";
 import { InvItem } from "./item/persona-item.js";
 import { Weapon } from "./item/persona-item.js";
 import { PersonaSocial } from "./social/persona-social.js";
@@ -65,16 +63,32 @@ export class PersonaHandleBarsHelpers {
 			return 0;
 		},
 
-		"getCritResist": (actor: PC | Shadow) => {
-			return actor.critResist().total({user: actor.accessor, target:actor.accessor});
+		"getCritResist": (persona: Persona) => {
+			return persona.critResist().total({user: persona.user.accessor, target:persona.user.accessor});
 		},
+
 		"getDefense" : (actorOrPersona: ValidAttackers | Persona, defense: keyof ValidAttackers["system"]["combat"]["defenses"]): number => {
 			const persona = (actorOrPersona instanceof PersonaActor) ? actorOrPersona.persona() : actorOrPersona;
 			const acc = persona.user.accessor;
 			return persona.getDefense(defense).total({user: acc, target: acc});
 		},
-		"getInit" : (actor: ValidAttackers  | PersonaI) => {
-			return actor.combatInit;
+		"getInit" : (persona: Persona) => {
+			return persona.combatInit;
+		},
+
+		"statValue" : (persona: Persona, stat: PersonaStat) : number => {
+			switch (stat) {
+				case "str":
+					return persona.strength;
+				case "mag":
+					return persona.magic
+				case "end":
+					return persona.endurance;
+				case "luk":
+					return persona.luck;
+				case "agi":
+					return persona.agility;
+			}
 		},
 
 
@@ -91,11 +105,15 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"isPCOrNPCAlly": function (actor: PersonaActor): boolean {
-			return actor.system.type == "pc" || actor.system.type == "npcAlly";
+			return actor.isRealPC() || actor.isNPCAlly();
 
 		},
 		"isShadow" : (actor: PersonaActor) => {
-			return actor.system.type == "shadow";
+			return actor.isShadow();
+		},
+
+		"isShadowOrNPCAlly" : (actor: PersonaActor) => {
+			return actor.isShadow() || actor.isNPCAlly();
 		},
 
 		"arrIncludes": function (arr: string[], value: string): boolean {

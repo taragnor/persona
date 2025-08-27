@@ -1720,7 +1720,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	static calcCritModifier( attacker: ValidAttackers, target: ValidAttackers, power: Usable, situation: Situation, ignoreInstantKillMult = false) : ModifierList {
 		const critBoostMod = power.critBoost(attacker);
-		const critResist = target.critResist().total(situation);
+		const critResist = target.persona().critResist().total(situation);
 		critBoostMod.add("Enemy Critical Resistance", -critResist);
 		if (power.isInstantDeathAttack()) {
 			const powerLevel = power.baseInstantKillBonus();
