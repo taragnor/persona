@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
 import { PersonaRoller } from "../persona-roll.js";
 import { CardTag } from "../../config/card-tags.js";
 import { RollSituation } from "../../config/situation.js";
@@ -55,7 +56,7 @@ export class PersonaSocial {
 	static metaverseChoosers = 0;
 	static cardDrawPromise: null | {
 		res: (str: string) => void,
-		rej: (x: any) => void,
+		rej: (x: unknown) => void,
 	};
 	static sound: FOUNDRY.AUDIO.Sound | null = null;
 
@@ -69,7 +70,7 @@ export class PersonaSocial {
 	static #drawnCardIds: string[] = [];
 	static rollState: null |
 		{
-			continuation: ((...args: any) => void);
+			continuation: ((...args: unknown[]) => void);
 			cardData: CardData;
 		};
 
@@ -116,7 +117,7 @@ export class PersonaSocial {
 		}
 		for (const activity of PersonaDB.allActivities()) {
 			if (activity.announce(pc)) {
-				startTurnMsg.push(` <b>${activity.displayedName}</b> is available today.`);
+				startTurnMsg.push(` <b>${activity.displayedName.toString()}</b> is available today.`);
 			}
 		}
 		const speaker = {alias: "Social Turn Start"};
@@ -125,7 +126,7 @@ export class PersonaSocial {
 			content: startTurnMsg.join("<br>"),
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 		};
-		ChatMessage.create(messageData, {});
+		await ChatMessage.create(messageData, {});
 	}
 
 	static async endSocialTurn( pc: PC) {
@@ -134,7 +135,7 @@ export class PersonaSocial {
 
 		try {
 			endTurnMsg.push(...await pc.onEndSocialTurn());
-		} catch (e) {
+		} catch  {
 			PersonaError.softFail(`Problem trying to end social turn on ${pc.name}`);
 		}
 		if (endTurnMsg.length) {
@@ -144,7 +145,7 @@ export class PersonaSocial {
 				content: endTurnMsg.join("<br>"),
 				style: CONST.CHAT_MESSAGE_STYLES.OOC,
 			};
-			ChatMessage.create(messageData, {});
+			await ChatMessage.create(messageData, {});
 		}
 	}
 
@@ -202,7 +203,7 @@ export class PersonaSocial {
 			const dialog = new Dialog({
 				title: `Prompt`,
 				content: html,
-				render: async (html: string) => {
+				render: (html: string) => {
 					$(html).find(".numInput").trigger("focus");
 				},
 				buttons: {
@@ -253,8 +254,7 @@ export class PersonaSocial {
 		if (PersonaSettings.debugMode() == true) {
 			console.log(`Valid Cards: ${preconditionPass.map(x=> x.name).join(", ")}`);
 		}
-		if (preconditionPass.length == 0) {
-		}
+		// if (preconditionPass.length == 0) { }
 		return preconditionPass;
 	}
 
@@ -268,7 +268,7 @@ export class PersonaSocial {
 		const undrawn = cards;
 		const weightedList = undrawn.map( card=> ({
 				item: card,
-				weight: Number(card.system.frequency) ?? 1,
+				weight: Number(card.system.frequency ?? 1),
 			}));
 		const chosenCard = weightedChoice(weightedList);
 		if (!chosenCard) {throw new PersonaError("Can't find valid social card!");}
@@ -334,7 +334,7 @@ export class PersonaSocial {
 		return questions.map(this.questionToEvent);
 	}
 
-	static questionToEvent(question: NPC["system"]["questions"][number]) : SocialCard["system"]["events"][number] & {origName: string} {
+	static questionToEvent(this:void, question: NPC["system"]["questions"][number]) : SocialCard["system"]["events"][number] & {origName: string} {
 		const eventTags  = ["question", "one-shot"] as SocialCard["system"]["events"][number]["eventTags"];
 		if (question.expended) {
 			eventTags.push("disabled");
@@ -392,7 +392,7 @@ export class PersonaSocial {
 	}
 
 
-	static convertQuestionChoiceToEventChoice( choice: NPC["system"]["questions"][number]["choices"][number]) : SocialCard["system"]["events"][number]["choices"][number] {
+	static convertQuestionChoiceToEventChoice(this:void, choice: NPC["system"]["questions"][number]["choices"][number]) : SocialCard["system"]["events"][number]["choices"][number] {
 		const responseText = (choice.response ?? "").trim();
 		const effects : SocialCard["system"]["events"][number]["choices"][number]["postEffects"]["effects"] = [];
 		if (responseText.length >0) {
@@ -561,7 +561,7 @@ export class PersonaSocial {
 		}
 		return targets.filter( x=> x != undefined
 			&& x != actor
-			&& x.id != linkId) as SocialLink[];
+			&& x.id != linkId);
 	}
 
 	static #getPerk(card: SocialCard,actor: PC, link: Activity | SocialLink, cameos: SocialLink[]) {
@@ -584,7 +584,7 @@ export class PersonaSocial {
 					[link.perk, card.perk]
 					.map( x=> `* ${x}`)
 					.join("<br>");
-			case "standard-or-date":
+			case "standard-or-date": {
 				let datePerk : string | undefined = undefined;
 				if (actor.isDating(link.id)) {
 					switch (link.system.type) {
@@ -604,6 +604,7 @@ export class PersonaSocial {
 					.filter ( x=> x != undefined)
 					.map( x=> `* ${x}`)
 					.join("<br>");
+			}
 			case "none":
 				return "";
 			default:
@@ -648,11 +649,11 @@ export class PersonaSocial {
 			cardData.currentEvent = ev;
 			cardData.eventsRemaining--;
 			const msg = await this.#execEvent(ev, cardData);
-			chatMessages.push(msg);
+			chatMessages.push(msg as ChatMessage);
 		}
 		const opp = await this.#execOpportunity(cardData);
 		if (opp) {
-			chatMessages.push(opp);
+			chatMessages.push(opp as ChatMessage);
 		}
 		const finale = await this.#finalizeCard(cardData);
 		chatMessages.push(finale);
@@ -686,7 +687,7 @@ export class PersonaSocial {
 			if (gotoEvent.length > 0) {
 				const ev= weightedChoice(gotoEvent.map( event => ({
 					item: event,
-					weight: Number(event.frequency) > 0 ? (Number(event.frequency) ?? 1) : 1,
+					weight: Number(event.frequency) > 0 ? Number(event.frequency ?? 1) : 1,
 				})));
 				return ev;
 			}
@@ -731,7 +732,7 @@ export class PersonaSocial {
 		}
 		const eventWeights = eventList.map( event => ({
 			item: event,
-			weight: Number(event.frequency) ?? 1
+			weight: Number(event.frequency ?? 1)
 		})
 		);
 		const ev = weightedChoice(eventWeights);
@@ -766,7 +767,7 @@ export class PersonaSocial {
 			const roll : CardRoll = ch.roll;
 			const rollTags = this.getRollTags(cardData, ch);
 			const DC = this.getCardRollDC(cardData, ch.roll, rollTags);
-			//@ts-ignore
+			//@ts-expect-error forcing this on there
 			roll.DCVal = DC;
 		});
 		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event, eventNumber, cardData, situation : cardData.situation, eventIndex});
@@ -824,6 +825,7 @@ export class PersonaSocial {
 	}
 
 	static async markQuestionUsed(npc: NPC, event: CardEvent) {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
 		const index= npc.questions.findIndex( q=> q.name == (event as any)?.origName);
 		if (index == -1) {
 			PersonaError.softFail(`Can't find event index for ${event.name}`); return;
@@ -954,7 +956,7 @@ export class PersonaSocial {
 		if (activity instanceof PersonaActor) {
 			// await activity.setAvailability(false);
 		}
-		this.#socialEncounter(actor, activity);
+		await this.#socialEncounter(actor, activity);
 	}
 
 	static drawnCards() : string[] {
@@ -1015,9 +1017,10 @@ export class PersonaSocial {
 						return cardData.card.system.dc.num;
 					case "levelScaled":
 						return cardData.card.system.dc.multiplier * cardData.actor.system.combat.classData.level + cardData.card.system.dc.startingVal;
-					case "statScaled":
+					case "statScaled": {
 						const stat = cardData.card.system.dc.stat;
 						return 10 + (cardData.actor.system.skills[stat] ?? -999);
+					}
 					default:
 							cardData.card.system.dc satisfies never;
 						return 20;
@@ -1046,8 +1049,10 @@ export class PersonaSocial {
 						return this.getBaseSkillDC(cardData);
 					case "cameoSocial":
 						return this.getSocialLinkDC(cardData, "cameo") ?? -1;
-					default:
-							cardRoll.DC.subtype satisfies never;
+					default: {
+						cardRoll.DC.subtype satisfies never;
+						return 0;
+					}
 
 				}
 			default: return 0;
@@ -1066,7 +1071,7 @@ export class PersonaSocial {
 	static getCardRollDCModifiers(cardData: CardData, cardRoll: CardRoll, rollTags : (RollTag | CardTag)[]) : ModifierList {
 		const base = this.getBaseCardRollDC(cardData, cardRoll);
 		if ((cardRoll.rollType == "save" || cardRoll.rollType == "studentSkillCheck") && !(base > 0)) {
-			debugger;
+			// debugger;
 		}
 		let modifiers = new ModifierList();
 		modifiers.add("Base DC", base);
@@ -1100,7 +1105,7 @@ export class PersonaSocial {
 		}
 		const effectList = ConditionalEffectManager.getEffects(cardChoice?.postEffects?.effects ?? [], null, null);
 		if (cardChoice.resourceCost > 0) {
-			cardData.actor.spendMoney(Math.abs(cardChoice.resourceCost ?? 0));
+			await cardData.actor.spendMoney(Math.abs(cardChoice.resourceCost ?? 0));
 		}
 		switch (cardRoll.rollType) {
 			case "question":
@@ -1297,7 +1302,7 @@ export class PersonaSocial {
 		PersonaSockets.simpleSend("CARD_REPLY", {cardId: card.id}, sendBack);
 	}
 
-	static async getCardReply(req: SocketMessage["CARD_REPLY"]) {
+	static getCardReply(req: SocketMessage["CARD_REPLY"]) {
 		console.log(`got reply ${req.cardId}`);
 		if (!this.cardDrawPromise) {return;}
 		if (req.cardId) {
@@ -1312,7 +1317,7 @@ export class PersonaSocial {
 		}
 		switch (eff.cardAction) {
 			case "stop-execution":
-				await this.stopCardExecution();
+				this.stopCardExecution();
 				break;
 			case "exec-event":
 				this.forceEvent(eff.eventLabel);
@@ -1346,23 +1351,24 @@ export class PersonaSocial {
 				break;
 			}
 			case "add-card-events-to-list":
-					await this.addCardEvents(eff.cardId);
+					 this.addCardEvents(eff.cardId);
 				break;
 			case "replace-card-events":
-					await this.replaceCardEvents(eff.cardId, eff.keepEventChain);
+					 this.replaceCardEvents(eff.cardId, eff.keepEventChain);
 				break;
-			case "set-temporary-variable":
-					const val = "value" in eff ? eff.value : Math.floor(eff.min + (eff.max * Math.random()));
-					await this.variableAction(eff.operator, eff.variableId, val);
+			case "set-temporary-variable": {
+				const val = "value" in eff ? eff.value : Math.floor(eff.min + (eff.max * Math.random()));
+					this.variableAction(eff.operator, eff.variableId, val);
 				break;
+			}
 			case "card-response":
 					await this.#applyCardResponse(eff.text);
 				break;
 			case "append-card-tag":
-				await this.#appendCardTag(eff.cardTag);
+				this.#appendCardTag(eff.cardTag);
 				break;
 			case "remove-cameo":
-				await this.#removeCameo();
+				this.#removeCameo();
 				break;
 			default:
 					eff satisfies never;
@@ -1370,7 +1376,7 @@ export class PersonaSocial {
 		}
 	}
 
-	static async #removeCameo() {
+	static #removeCameo() {
 		if (!this.rollState) {
 			PersonaError.softFail("Can't find Rollstate when trying to apply Card Response");
 			return;
@@ -1380,7 +1386,7 @@ export class PersonaSocial {
 		cardData.replaceSet["$CAMEO"] = "REMOVED CAMEO";
 	}
 
-	static async #appendCardTag(tag: CardTag) {
+	static #appendCardTag(tag: CardTag) {
 		if (!this.rollState) {
 			PersonaError.softFail("Can't find Rollstate when trying to apply Card Response");
 			return;
@@ -1415,15 +1421,14 @@ export class PersonaSocial {
 		await ChatMessage.create( messageData);
 	}
 
-	static async variableAction(operator: VariableAction, variableName: string, amount: number) {
+	static variableAction(operator: VariableAction, variableName: string, amount: number) {
 		if (!this.rollState) {
 			PersonaError.softFail(`Can't create more events as there is no RollState`);
 			return;
 		}
 		let varVal = this.getSocialVariable(variableName);
 		switch (operator) {
-			case "set-range":
-				//since this forces an amount set range responds the same
+			case "set-range": //since this forces an amount set range responds the same
 			case "set":
 				varVal = amount;
 				this.setSocialVariable(variableName, varVal);
@@ -1459,7 +1464,7 @@ export class PersonaSocial {
 		return varData[varId];
 	}
 
-	static async setSocialVariable(varId: string, value: number) {
+	static setSocialVariable(varId: string, value: number) {
 		if (!this.rollState) {
 			console.log(`No rollstate so couldn't alter variable ${varId} ${value}`);
 			return;
@@ -1468,7 +1473,7 @@ export class PersonaSocial {
 		varData[varId] = value;
 	}
 
-	static async addCardEvents(cardId: string) {
+	static addCardEvents(cardId: string) {
 		if (!cardId) {throw new PersonaError("No card ID given to addCardEvent");}
 		if (!this.rollState) {
 			PersonaError.softFail(`Can't create more events as there is no RollState`);
@@ -1482,7 +1487,7 @@ export class PersonaSocial {
 		this.rollState.cardData.eventList.push(...newCard.cardEvents().slice());
 	}
 
-	static async replaceCardEvents(cardId: string, keepEventChain = false) {
+	static replaceCardEvents(cardId: string, keepEventChain = false) {
 		if (!cardId) {
 			PersonaError.softFail("No card ID given to addCardEvent");
 			return;
@@ -1550,7 +1555,7 @@ export class PersonaSocial {
 		this.rollState.cardData.eventsRemaining += amount;
 	}
 
-	static async stopCardExecution() {
+	static stopCardExecution() {
 		if (this.sound) {this.sound.stop();}
 		this.sound = null;
 		this.rollState = null;
@@ -1585,6 +1590,7 @@ export class PersonaSocial {
 			tracker.find(".combat-tracker-header").append(socialTracker);
 		}
 		const weatherIcon = PersonaCalendar.getWeatherIcon();
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		tracker.find("div.weather-icon").append(weatherIcon).on("click" , PersonaCalendar.openWeatherForecast.bind(PersonaCalendar));
 		const doom = PersonaCalendar.DoomsdayClock;
 		const doomtxt = `${doom.amt} / ${doom.max}`;
@@ -1627,7 +1633,7 @@ export class PersonaSocial {
 		await initiator.createSocialLink(target);
 	}
 
-	static async requestAvailabilitySet(targetId: string, newValue: boolean) {
+	static requestAvailabilitySet(targetId: string, newValue: boolean) {
 		if (newValue == true) {
 			throw new PersonaError("Doesn't support positive setting");
 		}
@@ -1715,21 +1721,25 @@ declare global {
 
 Hooks.on("socketsReady", () => {
 	console.log("Sockets set handler");
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 	PersonaSockets.setHandler("DRAW_CARD", PersonaSocial.answerCardRequest.bind(PersonaSocial));
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 	PersonaSockets.setHandler("CARD_REPLY", PersonaSocial.getCardReply.bind(PersonaSocial));
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 	PersonaSockets.setHandler("EXPEND_EVENT", PersonaSocial.getExpendEventRequest.bind(PersonaSocial));
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 	PersonaSockets.setHandler("EXPEND_QUESTION", PersonaSocial.getExpendQuestionRequest.bind(PersonaSocial));
 });
 
 
-Hooks.on("socketsReady" , () => {
-	PersonaSockets.setHandler("DEC_AVAILABILITY", ( task_id: string) => {
+Hooks.on("socketsReady" , function() {
+	PersonaSockets.setHandler("DEC_AVAILABILITY", async ( task_id: string) => {
 		if (!game.user.isGM) {return;}
 		const link = game.actors.find(x=> x.id == task_id);
 		if (link) {
 			const actor = link as PersonaActor;
-			if (actor.system.type == "npc" || actor.system.type == "pc") {
-				(actor as SocialLink).setAvailability(false);
+			if (actor.isNPC() || actor.isPC()) {
+				await actor.setAvailability(false);
 			}
 			return;
 		}
@@ -1737,30 +1747,33 @@ Hooks.on("socketsReady" , () => {
 	});
 });
 
-//@ts-ignore
+//@ts-expect-error window setting for debug purposes
 window.PersonaSocial = PersonaSocial;
 
-Hooks.on("updateActor", async (_actor: PersonaActor, changes) => {
-	if ((changes as any)?.system?.weeklyAvailability) {
+Hooks.on("updateActor", (_actor: PersonaActor, changes) => {
+	if ((changes as DeepPartial<PC>)?.system?.weeklyAvailability) {
 		(game.actors.contents as PersonaActor[])
-			.filter(x=> x.system.type =="pc"
+			.filter(x=> x.isPC()
 				&& x.sheet._state > 0)
-			.forEach(x=> x.sheet.render(true));
+			.forEach(x=> void x.sheet.render(true));
 	}
 });
 
-Hooks.on("updateItem", async (_item: PersonaItem, changes) => {
+Hooks.on("updateItem", (_item: PersonaItem, changes) => {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
 	if ((changes as any)?.system?.weeklyAvailability) {
 		(game.actors.contents as PersonaActor[])
-			.filter(x=> x.system.type =="pc"
+			.filter(x=> x.isPC()
 				&& x.sheet._state > 0)
-			.forEach(x=> x.sheet.render(true));
+			.forEach(x=> void x.sheet.render(true));
 	}
 });
 
-Hooks.on("renderChatMessage", async (message: ChatMessage, html: JQuery ) => {
+Hooks.on("renderChatMessage", (message: ChatMessage, html: JQuery ) => {
 	if ((message?.author ?? message?.user) == game.user) {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		html.find(".social-card-roll .make-roll").on("click", PersonaSocial.makeCardRoll.bind(PersonaSocial));
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		html.find(".social-card-roll .next").on("click", PersonaSocial.makeCardRoll.bind(PersonaSocial));
 	}
 });

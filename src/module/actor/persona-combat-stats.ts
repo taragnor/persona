@@ -9,6 +9,23 @@ export class PersonaCombatStats {
 	static MAX_STAT_GAP =  10;
 	static MAX_STAT_VAL = 99;
 	static MIN_STAT_VAL = 1;
+	static DEFENSE_DIVISOR = 1.5;
+
+	static baseFort(persona: Persona) : number {
+		return Math.floor(persona.endurance / this.DEFENSE_DIVISOR);
+	}
+
+	static baseWill(persona: Persona) : number {
+		return Math.floor(persona.luck / this.DEFENSE_DIVISOR);
+	}
+
+	static baseRef(persona: Persona) : number {
+		return Math.floor(persona.agility / this.DEFENSE_DIVISOR);
+	}
+
+	static baseInit(persona: Persona) : number {
+		return Math.floor(persona.agility);
+	}
 
 	static staminaDR(persona: Persona) : number{
 		return Math.floor(persona.endurance);

@@ -12,5 +12,6 @@ namespace HandleBarsExtras {
 
 	class SafeString {
 		constructor(txt: string);
+		toString() : string;
 	}
 }

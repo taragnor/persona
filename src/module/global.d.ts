@@ -8,3 +8,7 @@ type Expect<A, B> = (<T>() => T extends A ? 1 : 2) extends
 type UniqueMembers<A, B> = A extends B ? never : A;
 
 type ExpectNever<T> = Expect<T, never>;
+
+type JSONAble = {
+	toJSON() : string;
+}

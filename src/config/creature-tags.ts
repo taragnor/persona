@@ -53,6 +53,8 @@ export const PERSONA_TAG_LIST = [
 	"simulated",
 ] as const;
 
+export type PersonaTag = typeof PERSONA_TAG_LIST[number];
+
 export const PERSONA_TAGS = HTMLTools.createLocalizationObject(PERSONA_TAG_LIST, "persona.creatureType");
 
 export const CREATURE_TAG_LIST = [

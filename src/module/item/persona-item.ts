@@ -968,7 +968,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         const cardPath = 'systems/persona/img/icon/persona-card.png';
         const cardImg = `<span class="skill-card"> <img class="name-icon" src="${cardPath}">`;
         if (power && power.system.type == 'power') {
-          return new Handlebars.SafeString(`${cardImg} ${power.displayedName} Card </span>`);
+          return new Handlebars.SafeString(`${cardImg} ${power.displayedName.toString()} Card </span>`);
         }
         else {return 'Unlinked Skill Card';}
       }
@@ -1060,7 +1060,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       default:
           this.system satisfies never;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        PersonaError.softFail(`Can't find damag etype for ${(this.system as any).dmg_type}`);
+        PersonaError.softFail(`Can't find damag etype for ${String((this.system as any)?.dmg_type)}`);
         return 'none';
     }
   }
@@ -1106,7 +1106,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     calc.add('base', str, `${userPersona.displayedName} Strength`);
     const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
     calc.add('base', weaponDmg.baseAmt, weaponName.toString());
-    calc.add('base', skillDamage.baseAmt, `${this.displayedName} Power Bonus`);
+    calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Power Bonus`);
     calc.add('base', bonusDamage, 'Bonus Damage');
     const variance  = (BASE_VARIANCE + weaponDmg.extraVariance + skillDamage.extraVariance + bonusVariance );
     const varianceMult = PersonaCombatStats.getPhysicalVariance(userPersona);
@@ -1124,7 +1124,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const dtype = this.getDamageType(userPersona);
     const calc= new DamageCalculation(dtype);
     calc.add('base', magicDmg, `${userPersona.displayedName} Magic`, );
-    calc.add('base', skillDamage.baseAmt, `${this.displayedName} Damage`);
+    calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Damage`);
     calc.add('base', damageBonus, 'Bonus Damage');
     const variance  = (BASE_VARIANCE + skillDamage.extraVariance + bonusVariance );
     const varianceMult = PersonaCombatStats.getMagicalVariance(userPersona);

@@ -4,7 +4,7 @@ import tseslint from "typescript-eslint";
 export default [
 	js.configs.recommended,
 	...tseslint.configs.recommended, // TS plugin's recommended rules
-...tseslint.configs.recommendedTypeChecked, // 👈 enables typed rules
+	...tseslint.configs.recommendedTypeChecked, // 👈 enables typed rules
 	{
 		languageOptions: {
 			parserOptions: {
@@ -29,7 +29,16 @@ export default [
 			// "indent": ["error", 2],
 			"@typescript-eslint/no-namespace": "off",
 			"@typescript-eslint/restrict-plus-operands": "error",
-
-		},
-	},
+			"@typescript-eslint/restrict-template-expressions": [
+				"error",
+				{
+					allowNumber: true,
+					allowBoolean: true,
+					allowNullish: true,
+					allowAny: true,
+					allowRegExp: false,
+				},
+			]
+		}
+	}
 ];

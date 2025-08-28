@@ -31,6 +31,7 @@ import { DamageType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";
 import {ValidAttackers} from "./combat/persona-combat.js";
 import {Power, Talent, Focus} from "./item/persona-item.js";
+import {PersonaTag} from "../config/creature-tags.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
 	user: T;
@@ -410,10 +411,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const initBonus = this
 			.getBonuses("initiative")
 			.total(situation);
-		const agi = Math.floor(this.agility / 2);
-		// const level  = this.classData.level;
-		const initScore = this.#translateInitString(this.baseInitRank);
-		return initBonus + agi + initScore;
+		const agi = PersonaCombatStats.baseInit(this);
+		const initMod = 0;
+		// const initMod = this.#translateInitString(this.baseInitRank);
+		return initBonus + agi + initMod;
 	}
 
 	#translateInitString(initString: ValidAttackers["system"]["combat"]["initiative"]): number {
@@ -433,30 +434,23 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const mods = new ModifierList();
 		switch (defense) {
 			case "ref": {
-				const agi = Math.floor(this.agility / 2);
-				mods.add("Agility Bonus", agi);
+				mods.add("Agility Bonus", PersonaCombatStats.baseRef(this));
 				break;
 			}
 			case "will": {
-				const luk = Math.floor(this.luck / 2);
-				mods.add("Luck Bonus", luk);
+				mods.add("Luck Bonus", PersonaCombatStats.baseWill(this));
 				break;
 			}
 			case "fort": {
-         const end = Math.floor(this.endurance / 2);
-				mods.add("Endurance Bonus", end);
+				mods.add("Endurance Bonus", PersonaCombatStats.baseWill(this));
 				break;
       }
 			default:
 				defense satisfies never;
 				return mods;
 		}
-		// const lvl = this.level;
-		// const inc = this.classData.incremental.defense;
-		// mods.add("Base", 10);
-		const baseDef = this.#translateDefenseString(defense, this.defenses[defense]);
-		mods.add("Base Defense Bonus", baseDef);
-		// mods.add("Incremental Advance" , inc);
+		// const baseDef = this.#translateDefenseString(defense, this.defenses[defense]);
+		// mods.add("Base Defense Bonus", baseDef);
 		const otherBonuses = this.getBonuses([defense, "allDefenses"]);
 		const defenseMods = this.getBonuses([defense, "allDefenses"], this.defensiveModifiers());
 		return mods.concat(otherBonuses).concat(defenseMods);
@@ -472,7 +466,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			case "strong": return Math.max(2 - 1 * weaknesses, 1);
 			case "ultimate": return Math.max(4 - 2 * weaknesses, 2);
 			default:
-				PersonaError.softFail(`Bad defense tsring ${val} for ${defType}`);
+				PersonaError.softFail(`Bad defense tsring ${String(val)} for ${defType}`);
 				return -999;
 		}
 	}
@@ -571,14 +565,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			switch (cons.type) {
 				case "raise-resistance":
 					if (cons.resistType == type &&
-						resval(cons.resistanceLevel!) > resval(baseResist)) {
-						resBonus = Math.max(resBonus, resval(cons.resistanceLevel!) - resval(baseResist));
+						resval(cons.resistanceLevel) > resval(baseResist)) {
+						resBonus = Math.max(resBonus, resval(cons.resistanceLevel) - resval(baseResist));
 					}
 					break;
 				case "lower-resistance":
 					if (cons.resistType == type &&
-						resval (cons.resistanceLevel!) < resval(baseResist))  {
-						resPenalty = Math.min(resPenalty, resval(cons.resistanceLevel!) - resval(baseResist));
+						resval (cons.resistanceLevel) < resval(baseResist))  {
+						resPenalty = Math.min(resPenalty, resval(cons.resistanceLevel) - resval(baseResist));
 					}
 					break;
 				default:
@@ -697,9 +691,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	#baseResists() : number {
 		switch (this.source.system.type) {
-			case "pc": return 0;
-			case "shadow" : return 2;
-			case "npcAlly": return 0;
+			case "pc": return -1;
+			case "shadow" : return 1;
+			case "npcAlly": return -1;
 		}
 	}
 
@@ -720,8 +714,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	get isUnderResistCap(): boolean {
-		return this.source.totalResists() +1 < this.maxResists();
-		//allow leeway for double weakness
+		const leeway  = 0;  //allow leeway for double weakness
+
+		return this.source.totalResists() + leeway < this.maxResists();
 	}
 
 	hpCostMod() : ModifierList {
@@ -834,6 +829,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			}
 		}
 		return true; //placeholder
+	}
+
+	tagList() : PersonaTag[] {
+		const base = this.source.system.combat.personaTags.slice();
+		if (this.source.isShadow() && this.source.system.creatureType == "daemon") {
+			base.push("simulated");
+		}
+		return base;
 	}
 
 	wpnDamage() : NewDamageParams {

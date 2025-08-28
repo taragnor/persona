@@ -190,12 +190,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		const persona = this.persona();
 		const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
+		const mpAdjustPercent = this.#mpAdjustPercent();
+		// const mpAdjust = this.system.mp_adjust;
 		const bonuses = persona.getBonuses("maxmp");
 		const mult = 1 + persona.getBonuses("maxmpMult").total(sit);
 		const lvlmaxMP = (this as PC | NPCAlly).calcBaseClassMMP();
 		const nonMultMPBonus = this.system.combat.bonusMP ?? 0;
-		const val = Math.round((mult * (lvlmaxMP)) + bonuses.total(sit) + nonMultMPBonus);
-		(this as PC | NPCAlly).refreshMaxMP(val);
+		const val = Math.round((mpAdjustPercent * mult * (lvlmaxMP)) + bonuses.total(sit) + nonMultMPBonus);
+		void (this as PC | NPCAlly).refreshMaxMP(val);
 		return val;
 	}
 
@@ -242,11 +244,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!game.user.isGM) {return;}
 		const mhp = this.mhp;
 		if (this.hp > mhp) {
-			this.update({"system.combat.hp": mhp});
+			await this.update({"system.combat.hp": mhp});
 		}
 		if (this.system.combat.hpTracker.value != this.hp
 			|| this.system.combat.hpTracker.max != mhp){
-			this.update( {"system.combat.hpTracker.value" : this.hp,
+			await this.update( {"system.combat.hpTracker.value" : this.hp,
 				"system.combat.hpTracker.max": mhp
 			});
 		}
@@ -487,7 +489,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			// const inc = this.system.combat.classData.incremental.hp ?? 0;
 			const lvl = this.level;
 			const incBonus = 0;
-			const hpAdjustPercent = this.hpAdjustPercent();
+			const hpAdjustPercent = this.#hpAdjustPercent();
 			const hpAdjust = this.system.hp_adjust;
 			newForm.add(`HP Adjust (${hpAdjust})`, hpAdjustPercent);
 			const lvlbase = this.class.getClassProperty(lvl, "maxhp");
@@ -495,14 +497,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				const shadowRelHPChange = 0.75 + (this.level * .005);
 				newForm.add("Shadow Class Adjust", shadowRelHPChange);
 			}
-			if (this.hasSoloPersona()) {
-				const resists = this.system.combat.resists;
-				const values = Object.values(resists) as typeof resists["cold"][];
-				const weaknesses = values.reduce( (acc, x) => x == "weakness" ? acc + 1: acc, 0);
-				if (weaknesses >= 2) {
-					newForm.add("Multiweakness", 1.25);
-				}
-			}
+			// if (this.hasSoloPersona()) {
+			// 	const resists = this.system.combat.resists;
+			// 	const values = Object.values(resists) ;
+			// 	const weaknesses = values.reduce( (acc, x) => x == "weakness" ? acc + 1: acc, 0);
+			// 	if (weaknesses >= 2) {
+			// 		newForm.add("Multiweakness", 1.25);
+			// 	}
+			// }
 			// const diff = this.class.getClassProperty(lvl+1, "maxhp") - lvlbase;
 			// const incBonus = Math.round(inc / 3 * diff);
 			const multmods = persona.getBonuses("maxhpMult");
@@ -538,33 +540,33 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	hpAdjustPercent(this: ValidAttackers) : number {
+	#hpAdjustPercent(this: ValidAttackers) : number {
 		switch (this.system.hp_adjust) {
 			case "pathetic":
-				return 0.8;
+				return 0.70;
 			case "weak":
-				return 0.9;
+				return 0.85;
 			case "normal":
 				return 1.0;
 			case "strong":
-				return 1.1;
+				return 1.15;
 			case "ultimate":
-				return 1.2;
+				return 1.30;
 		}
 	}
 
-	mpAdjustPercent(this: ValidAttackers) : number {
-		switch (this.system.hp_adjust) {
+	#mpAdjustPercent(this: ValidAttackers) : number {
+		switch (this.system.mp_adjust) {
 			case "pathetic":
-				return 0.6;
+				return 0.40;
 			case "weak":
-				return 0.8;
+				return 0.70;
 			case "normal":
 				return 1.0;
 			case "strong":
-				return 1.2;
+				return 1.30;
 			case "ultimate":
-				return 1.4;
+				return 1.60;
 		}
 	}
 
@@ -589,7 +591,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	/** @deprecated */
-	async recoverSlot(this: PC, _slottype: RecoverSlotEffect["slot"], _amt: number = 1) : Promise<never> {
+	recoverSlot(this: PC, _slottype: RecoverSlotEffect["slot"], _amt: number = 1) : Promise<never> {
 		throw new Error("Deprecated Crap, do not call");
 	}
 
@@ -667,7 +669,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return this.system.keyskill.secondary;
 			default:
 				classification satisfies never;
-				throw new PersonaError(`Unknown type ${classification}`);
+				throw new PersonaError(`Unknown type ${classification as any}`);
 		}
 	}
 
@@ -738,7 +740,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				break;
 			default:
 				this.system satisfies never;
-				PersonaError.softFail(`Unexpected Date type: ${this.system["type"]}`);
+				// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+				PersonaError.softFail(`Unexpected Date type: ${this.system["type"] as unknown}`);
 				return false;
 		}
 		if (this.system.type != "pc") {return false;}
@@ -750,7 +753,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 
 	get socialLinks() : readonly SocialLinkData[] {
-		if (!this.isPC() || !PersonaDB.isLoaded) {return EMPTYARR;}
+		if (!this.isPC() || !PersonaDB.isLoaded) {return EMPTYARR as SocialLinkData[];}
 		function meetsSL(linkLevel: number, focus:Focus) {
 			return linkLevel >= focus.requiredLinkLevel();
 		};
@@ -782,7 +785,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						if (!personalLink)  {
 							return [];
 						}
-						const allFocii = (personalLink as NPC).getSocialFocii_PC(personalLink as SocialLink, npc as PC);
+						const allFocii = personalLink.getSocialFocii_PC(personalLink as SocialLink, npc as PC);
 						const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
 						return [{
 							currentProgress,
@@ -801,7 +804,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						if (!teammate)  {
 							return [];
 						}
-						const allFocii = (teammate as NPC).getSocialFocii_PC(teammate as SocialLink, npc as PC);
+						const allFocii = teammate.getSocialFocii_PC(teammate as SocialLink, npc as PC);
 						const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
 						return [{
 							currentProgress,
@@ -1165,9 +1168,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			await this.token.update({"alpha": opacity});
 		} else {
 			//@ts-expect-error dependent tokens not in foundrytypes
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 			for (const iterableList of this._dependentTokens.values()) {
 				for (const tokDoc of iterableList) {
-					(tokDoc as TokenDocument<PersonaActor>).update({"alpha": opacity});
+					await (tokDoc as TokenDocument<PersonaActor>).update({"alpha": opacity});
 				}
 			}
 		}
@@ -1230,7 +1234,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
 		if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
-			this.setHP(0);
+			await this.setHP(0);
 		}
 		// id = await this.checkStatusEscalation(id);
 		const eff = this.effects.find( eff => eff.statuses.has(id));
@@ -1316,9 +1320,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const oldTW = this.teamworkMove;
 		await this.update( {"system.combat.teamworkMove": id});
 		if (oldTW) {
-			await Logger.sendToChat(`${this.name} replaced Teamwork ${oldTW.displayedName} with ${power.displayedName}` , this);
+			await Logger.sendToChat(`${this.name} replaced Teamwork ${oldTW.displayedName.toString()} with ${power.displayedName.toString()}` , this);
 		} else {
-			await Logger.sendToChat(`${this.name} set Teamwork Move to ${power.displayedName}` , this);
+			await Logger.sendToChat(`${this.name} set Teamwork Move to ${power.displayedName.toString()}` , this);
 		}
 
 	}
@@ -1356,8 +1360,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (this.token) {
 			return [this.token];
 		}
-		//@ts-expect-error dependent tokesn not in foundrytypes
+		//@ts-expect-error not in foundrytypes
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument
 		const dependentTokens : TokenDocument<PersonaActor>[] = Array.from(this._dependentTokens.values()).flatMap(x=> Array.from(x.values()));
+
 		return dependentTokens.filter( x=> x.actorLink == true) as TokenDocument<this>[];
 	}
 
@@ -2059,7 +2065,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await Logger.sendToChat(`${this.name} moved power ${power.name} out of sideboard` , this);
 	}
 
-	async addFocus(this: PC, focus: Focus) {
+	addFocus(this: PC, focus: Focus) {
 		PersonaError.softFail(`Can't drop ${focus.name}. Focii are no longer supported on PCs`);
 		return;
 	}
@@ -2135,7 +2141,7 @@ async createSocialLink(this: PC, npc: SocialLink) {
 			isDating: false,
 		}
 	);
-	PersonaSounds.newSocialLink();
+	void PersonaSounds.newSocialLink();
 	await this.update({"system.social": this.system.social});
 	await Logger.sendToChat(`${this.name} forged new social link with ${npc.displayedName} (${npc.tarot?.name}).` , this);
 }
@@ -2167,9 +2173,9 @@ async increaseSocialLink(this: PC, linkId: string) {
 	// link.currentProgress= 0;
 	link.inspiration = link.linkLevel;
 	if (link.linkLevel == 10) {
-		PersonaSounds.socialLinkMax();
+		void PersonaSounds.socialLinkMax();
 	} else {
-		PersonaSounds.socialLinkUp();
+		void PersonaSounds.socialLinkUp();
 	}
 	await this.update({"system.social": this.system.social});
 	const target = game.actors.get(link.linkId) as NPC | PC;
@@ -2189,7 +2195,7 @@ async decreaseSocialLink(this: PC, linkId: string) {
 	link.linkLevel -=1 ;
 	// link.currentProgress= 0;
 	link.inspiration = link.linkLevel;
-	PersonaSounds.socialLinkReverse();
+	void PersonaSounds.socialLinkReverse();
 	if (link.linkLevel == 0) {
 		const newSocial = this.system.social.filter( x=> x != link);
 		await this.update({"system.social": newSocial});
@@ -2223,11 +2229,11 @@ async socialLinkProgress(this: PC, linkId: string, progress: number) {
 	}
 	const linkActor = game.actors.get(link.linkId);
 	switch (progress) {
-		case 1: PersonaSounds.socialBoostJingle(1);
+		case 1: void PersonaSounds.socialBoostJingle(1);
 			break;
-		case 2: PersonaSounds.socialBoostJingle(2);
+		case 2: void PersonaSounds.socialBoostJingle(2);
 			break;
-		case 3: PersonaSounds.socialBoostJingle(3);
+		case 3: void PersonaSounds.socialBoostJingle(3);
 			break;
 	}
 	await this.update({"system.social": this.system.social});
@@ -2400,7 +2406,7 @@ getAllegiance()  : Team {
 			return "PCs";
 		default:
 			this.system satisfies never;
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
 			PersonaError.softFail(`Unknown type of actor, ${(this as any)?.system?.type}`);
 			return "Neutral";
 	}
@@ -2744,7 +2750,7 @@ async setAvailability(this: SocialLink, bool: boolean) {
 		this.system.weeklyAvailability.available = bool;
 		await	this.update( {"system.weeklyAvailability.available": bool});
 	} else {
-		PersonaSocial.requestAvailabilitySet(this.id, bool);
+	 await PersonaSocial.requestAvailabilitySet(this.id, bool);
 	}
 }
 get tarot() : (Tarot | undefined) {
@@ -2877,7 +2883,7 @@ issues() : string {
 
 totalResists (this:ValidAttackers) : number {
 	const pcTranslator : Record<typeof resists["cold"], number> = {
-		weakness: -1,
+		weakness: -2,
 		normal: 0,
 		resist: 1,
 		block: 2,
@@ -2886,7 +2892,7 @@ totalResists (this:ValidAttackers) : number {
 	} as const;
 
 	const physicalTranslator : Record<typeof resists["cold"], number> = {
-		weakness: -2,
+		weakness: -3,
 		normal: 0,
 		resist: 2,
 		block: 3,
@@ -2894,7 +2900,7 @@ totalResists (this:ValidAttackers) : number {
 		reflect:4,
 	};
 	const shadowTranslator : Record<typeof resists["cold"], number> = {
-		weakness: -1,
+		weakness: -2.5,
 		normal: 0,
 		resist: 1,
 		block: 2,
@@ -2904,13 +2910,14 @@ totalResists (this:ValidAttackers) : number {
 	const resistTranslator = this.isShadow() ? shadowTranslator : pcTranslator;
 	const resists = this.system.combat.resists;
 	const entries = Object.entries(resists) as [keyof typeof resists, typeof resists["cold"]][];
-	return entries.reduce(
+	return Math.round(entries.reduce(
 		function (acc, [k,res]) {
 			return acc + (k != "physical"
 				? resistTranslator[res]
 				: physicalTranslator[res]
 			);
-		},0 );
+		},0 )
+	);
 }
 
 maxIncrementalAdvances(this: ValidAttackers): number {
@@ -3619,7 +3626,9 @@ get tagList() : CreatureTag[] {
 	//NOTE: This is a candidate for caching
 	if (this.isTarot()) { return []; }
 	const list = this.system.creatureTags.slice();
-	const personaTags = this.persona().tagList();
+	if (this.isValidCombatant()) {
+		list.push(...this.persona().tagList());
+	}
 	if (this.isValidCombatant()) {
 		const extraTags = this.mainModifiers().flatMap( x=> x.getConferredTags(this as ValidAttackers));
 		for (const tag of extraTags) {
@@ -3640,9 +3649,6 @@ get tagList() : CreatureTag[] {
 			return list;
 		case "npc": return list;
 		case "shadow": {
-			if (this.system.creatureType == "daemon") {
-				list.pushUnique("simulated");
-			}
 			if (this.system.creatureType == "d-mon") {
 				list.pushUnique("d-mon");
 				if (this.hasPlayerOwner) {
@@ -3711,7 +3717,7 @@ getEncounterWeight(this: Shadow, scene: PersonaScene = game.scenes.current as Pe
 	if (!rate) {return 0;}
 	const baseProb = ENCOUNTER_RATE_PROBABILITY[rate.frequencyNew];
 	if (baseProb == undefined) {
-		console.warn (`Invalid value for frequencynew: ${rate.frequencyNew as unknown}`);
+		console.warn (`Invalid value for frequencynew: ${rate.frequencyNew}`);
 		return 0;
 	}
 	return baseProb;
@@ -3747,9 +3753,8 @@ async restoreAllQuestions(this: NPC) {
 }
 
 async markQuestionUsed(this: NPC, index: number) {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const questions = this.system.questions.map( x=> (x as any).toJSON());
-	questions[index].expended = true;
+	this.system.questions[index].expended = true;
+	const questions = this.system.questions.map( x=> (x as unknown as JSONAble).toJSON());
 	await this.update({system: {questions}});
 }
 
@@ -3876,22 +3881,23 @@ async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) {
 			return;
 	}
 	const permaBuffLocalized = localize(PERMA_BUFFS[buffType]);
-	PersonaSFX.onPermaBuff(this, buffType, amt);
-	Logger.sendToChat(`+${amt} ${permaBuffLocalized} applied to ${this.name}`);
+	void PersonaSFX.onPermaBuff(this, buffType, amt);
+	await Logger.sendToChat(`+${amt} ${permaBuffLocalized} applied to ${this.name}`);
 }
 
 
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) => {
+Hooks.on("preUpdateActor", async (actor: PersonaActor, changes) => {
 	switch (actor.system.type) {
 		case "npc": return;
 		case "tarot": return;
 		case "pc":
 		case "npcAlly":
 		case "shadow":  {
-			const newHp = changes?.system?.combat?.hp;
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+			const newHp = changes?.system?.combat?.hp as number | undefined;
 			if (newHp == undefined)
 			{return;}
 			await (actor as ValidAttackers).refreshHpStatus(newHp);
@@ -3908,6 +3914,7 @@ Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
 	if (!actor.isValidCombatant()) {return;}
 	switch (actor.system.type) {
 		case "npcAlly":
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 			if (changes?.system?.combat?.isNavigator == true) {
 				await (actor as NPCAlly).setAsNavigator();
 			}
@@ -3922,7 +3929,7 @@ Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
 
 Hooks.on("createToken", async function (token: TokenDocument<PersonaActor>)  {
 	if (token.actor && game.user.isGM && token.actor.system.type == "shadow") {
-		token.actor.fullHeal();
+		await token.actor.fullHeal();
 	}
 });
 

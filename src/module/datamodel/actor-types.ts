@@ -1,3 +1,8 @@
+/* eslint-disable no-unsafe-optional-chaining */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PCAndAllyStuff } from "../../config/actor-parts.js";
 import { FREQUENCY } from "../../config/frequency.js";
@@ -87,7 +92,9 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 				default: return "normal";
 			}
 		};
+		const defensesSection =system?.combat?.defenses;
 		for (const def of ["fort", "ref", "will"] as const) {
+			if (defensesSection == undefined) {continue;}
 			if (typeof system?.combat?.defenses[def] == "number") {
 				system.combat.defenses[def] = convert(data.combat.defenses[def]);
 			}

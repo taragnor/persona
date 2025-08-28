@@ -1,4 +1,4 @@
-import { CREATURE_TAG_LIST } from "./creature-tags.js";
+import { CREATURE_TAG_LIST, PERSONA_TAGS } from "./creature-tags.js";
 import { PersonaStat } from "./persona-stats.js";
 import { Power } from "../module/item/persona-item.js";
 import { FREQUENCY } from "./frequency.js";
@@ -219,7 +219,7 @@ export function combatCommonStats() {
 		actionsRemaining: new num( {initial: 1, integer:true, min:0, max: 20}),
 		bonusHP: new num({initial: 0, integer: true}),
 		bonusMP: new num({initial: 0, integer: true}),
-		personaTags: new arr(new txt({choices:CREATURE_TAG_LIST})),
+		personaTags: new arr(new txt({choices:PERSONA_TAGS})),
 
 	};
 };

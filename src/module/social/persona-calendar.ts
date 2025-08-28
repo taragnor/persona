@@ -335,7 +335,7 @@ export class PersonaCalendar {
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 			whisper: [game.user],
 		};
-		ChatMessage.create(messageData, {});
+		await ChatMessage.create(messageData, {});
 	}
 
 }
