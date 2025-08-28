@@ -159,7 +159,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 		const ptype = power.system.type;
 		if (ptype != "power" && ptype != "consumable")
-			throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);
+			{throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);}
 		this.#useItemOrPower(power);
 	}
 
@@ -181,7 +181,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 
 		if (!token) {
-			throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` )
+			throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` );
 		}
 		try {
 			await PersonaCombat.usePower(token, power );
@@ -376,7 +376,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	async levelUp(_event: Event) {
-		if (!game.user.isGM) return;
+		if (!game.user.isGM) {return;}
 		if (await HTMLTools.confirmBox("Level Up", "Level Up Character")) {
 			await this.actor.levelUp_manual();
 		}
@@ -417,8 +417,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async addFiveToAll(_ev : JQuery.ClickEvent) {
 		if (this.actor.basePersona.unspentStatPoints < 25)
-			return;
-		const stats = this.actor.system.combat.personaStats.stats
+			{return;}
+		const stats = this.actor.system.combat.personaStats.stats;
 		for (const k of Object.keys(stats)) {
 			stats[k as PersonaStat] += 5;
 		}
@@ -428,7 +428,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	async addStatPoint(ev: JQuery.ClickEvent) {
-		if (this.actor.basePersona.unspentStatPoints < 1) return;
+		if (this.actor.basePersona.unspentStatPoints < 1) {return;}
 		const stat = HTMLTools.getClosestData(ev, "stat") as PersonaStat;
 		const stats = this.actor.system.combat.personaStats.stats;
 		if (stats[stat]) {
@@ -440,8 +440,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	async resetStats(_ev: JQuery.ClickEvent) {
-		if (!await HTMLTools.confirmBox("Reset", "Really reset stats?")) return;
-		const stats = this.actor.system.combat.personaStats.stats
+		if (!await HTMLTools.confirmBox("Reset", "Really reset stats?")) {return;}
+		const stats = this.actor.system.combat.personaStats.stats;
 		for (const k of Object.keys(stats)) {
 			stats[k as PersonaStat] = 1;
 		}

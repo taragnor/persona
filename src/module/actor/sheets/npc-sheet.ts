@@ -30,7 +30,7 @@ export class NPCSheet extends NoncombatantSheet  {
 		const target = Array.from(game.user.targets)
 			.find( (x: Token<PersonaActor>) => x.actor.system.type == "pc");
 		if (target) {
-			console.log(`Awarding Perk to ${target?.name}`)
+			console.log(`Awarding Perk to ${target?.name}`);
 			PersonaSocial.awardPerk(target.actor, this.actor);
 		}
 	}

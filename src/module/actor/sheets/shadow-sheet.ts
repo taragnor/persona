@@ -102,11 +102,11 @@ export class ShadowSheet extends CombatantSheetBase {
 
 	override get template() {
 		if (this.actor.hasCreatureTag("d-mon"))
-			return this.options.template;
+			{return this.options.template;}
 		if ( !game.user.isGM && this.actor.limited) {
 			return `${HBS_TEMPLATES_DIR}/shadow-limited.hbs`;
 		}
-		if (!game.user.isGM) return "";
+		if (!game.user.isGM) {return "";}
 		return this.options.template;
 	}
 
@@ -137,7 +137,7 @@ export class ShadowSheet extends CombatantSheetBase {
 	async onRecostPower(event: JQuery.ClickEvent) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		const power = this.actor.powers.find(power => power.id == powerId);
-		if (!power) return;
+		if (!power) {return;}
 		this.actor.setDefaultShadowCosts(power);
 	}
 

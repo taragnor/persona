@@ -22,7 +22,7 @@ export const STUDENT_SKILLS_LIST_EXT = [
 ] as const;
 
 export const STUDENT_SKILLS_EXT = Object.fromEntries(STUDENT_SKILLS_LIST_EXT.map( x=> [x, `persona.skills.${x}.name`])
-)
+);
 
 
 export type StudentSkillExt = typeof STUDENT_SKILLS_LIST_EXT[number];

@@ -48,7 +48,7 @@ export class SearchMenu {
 	static data: null | SearchUpdate = null;
 
 	static isOpen() : boolean {
-		return !!this.dialog && !(this.data && this.data.suspended);
+		return Boolean(this.dialog) && !(this.data && this.data.suspended);
 	}
 
 	static async start(searchOptions?: typeof this.options, region ?: PersonaRegion) : Promise<SearchResult[]> {
@@ -60,7 +60,7 @@ export class SearchMenu {
 		};
 		if (!region) {
 			region = Metaverse.getRegion();
-			if (!region) throw new PersonaError("Can't find region!");
+			if (!region) {throw new PersonaError("Can't find region!");}
 		}
 		searchOptions = !searchOptions ? await this.searchOptionsDialog(this.template) : searchOptions;
 		this.options = searchOptions;
@@ -74,7 +74,7 @@ export class SearchMenu {
 		}
 		if (!region) {
 			region = Metaverse.getRegion();
-			if (!region) throw new PersonaError("Can't find region!");
+			if (!region) {throw new PersonaError("Can't find region!");}
 		}
 		if (this.data?.suspended) {
 			this.data.suspended = false;
@@ -123,17 +123,17 @@ export class SearchMenu {
 			},
 			content: html,
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
-		})
+		});
 	}
 
 	static async execSearch(results : SearchResult[], options: SearchOptions<typeof SearchMenu["template"]>, region: PersonaRegion) {
-		let rolls : Roll[] = [];
+		const rolls : Roll[] = [];
 		// const guards = results.filter( x=> x.declaration == "guard").length;
 		exitFor: for (const searcher of results) {
 			const actor = PersonaDB.findActor(searcher.searcher.actor) as PC | NPCAlly;
 			const situation : Situation = {
 				user: actor.accessor,
-			}
+			};
 			options.treasureFindBonus = actor.persona().getBonuses("treasureFind").total(situation);
 			switch (searcher.declaration) {
 				case "search": {
@@ -153,7 +153,7 @@ export class SearchMenu {
 					const actor = PersonaDB.findActor(searcher.searcher.actor) as PC | NPCAlly;
 					const situation : Situation = {
 						user: actor.accessor,
-					}
+					};
 					const numberOfSearches = 1 + actor.persona().getBonuses("numberOfSearches").total(situation);
 					for (let searches = 0; searches < numberOfSearches; ++searches) {
 						const roll = new Roll("1d6");
@@ -226,7 +226,7 @@ export class SearchMenu {
 			content: html,
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 			rolls,
-		})
+		});
 		let inc = options.incTension;
 		while (inc--) {
 			await TensionPool.instance.inc();
@@ -244,7 +244,7 @@ export class SearchMenu {
 			for (const roll of rolls) {
 				await roll.roll();
 			}
-			let val = Math.max( ...rolls.map (x=> x.total))
+			let val = Math.max( ...rolls.map (x=> x.total));
 			let result : SearchAttempt["result"];
 			switch (val) {
 				case 1:
@@ -280,7 +280,7 @@ export class SearchMenu {
 	}
 
 	static async searchOptionsDialog<T extends SearchPromptConfigObject>(optionsToFill: T) : Promise<SearchOptions<T>> {
-		let ret: Partial<SearchOptions<T>> = {};
+		const ret: Partial<SearchOptions<T>> = {};
 		const inputs: string[] = [];
 		for ( const [k,v] of Object.entries(optionsToFill)) {
 			(ret as any)[k] = v.initial;
@@ -347,7 +347,7 @@ export class SearchMenu {
 				ui.notifications.error("Only the GM can call this function");
 				return [];
 			}
-			let searchUpdate: SearchUpdate ={
+			const searchUpdate: SearchUpdate ={
 				results: this.generateOriginalSearchResults(),
 				options,
 				suspended: false
@@ -374,7 +374,7 @@ export class SearchMenu {
 						.find( user => user.character == actor)
 						?? activePlayers.find( user=> actor.testUserPermission(user, "OWNER"))
 						?? game.users.find(x=> x.isGM && x.active);
-					if (!owner) return [];
+					if (!owner) {return [];}
 					const ret : SearchResult = {
 						searcher: {
 							actor: {
@@ -387,7 +387,7 @@ export class SearchMenu {
 						},
 						declaration: "undecided",
 						results: [],
-					}
+					};
 					return [ret];
 				});
 		}
@@ -412,7 +412,7 @@ export class SearchMenu {
 				this.updateDialog();
 			}
 			if (send)
-				this.sendUpdate();
+				{this.sendUpdate();}
 		}
 
 		private static async openDialog( updateData: SearchUpdate) : Promise<Dialog> {
@@ -445,21 +445,21 @@ export class SearchMenu {
 			this.data!.suspended = true;
 		}
 		if (notifyOthers)
-			this.sendUpdate();
+			{this.sendUpdate();}
 	}
 
 		private static async updateDialog() {
-			if (!this.dialog) throw new PersonaError("Dialog isn't open!");
-			if (!this.data) throw new PersonaError("Can't find Data");
+			if (!this.dialog) {throw new PersonaError("Dialog isn't open!");}
+			if (!this.data) {throw new PersonaError("Can't find Data");}
 			const html = await this.renderTemplate();
 			this.dialog.element.find(".dialog-content").children().replaceWith(html);
 			this.setListeners(this.dialog.element);
 			if ( this.checkResolution())
-				this.close();
+				{this.close();}
 		}
 
 		private static checkResolution() : boolean{
-			if (!this.data) return false;
+			if (!this.data) {return false;}
 			const results = this.data.results;
 			if (results.some (res => res.declaration == "undecided" || res.declaration == "disconnected")) {
 				return false;
@@ -473,9 +473,9 @@ export class SearchMenu {
 
 		static close() {
 			if (!this.promises && game.user.isGM)
-				throw new PersonaError("No promise data found!")
+				{throw new PersonaError("No promise data found!");}
 			if (!this.data)
-				throw new PersonaError("No data found!")
+				{throw new PersonaError("No data found!");}
 			if (this.promises) {
 				this.promises.resolve(this.data.results);
 				this.promises = undefined;
@@ -484,7 +484,7 @@ export class SearchMenu {
 			this.dialog = undefined;
 			this.clearTimer();
 			if (dialog)
-				dialog.close();
+				{dialog.close();}
 		}
 
 		private static async renderTemplate() : Promise<string> {
@@ -502,7 +502,7 @@ export class SearchMenu {
 				}
 				const results = this.data.results;
 				const unchosenList = results.filter( x=> x.declaration == "undecided");
-				if (unchosenList.length != 1) return;
+				if (unchosenList.length != 1) {return;}
 				const unchosen = unchosenList[0];
 				const actor = PersonaDB.findActor(unchosen.searcher.actor);
 				if (!actor.isOwner) {
@@ -516,7 +516,7 @@ export class SearchMenu {
 	}
 
 	private static clearTimer() {
-		if (!this.timer) return;
+		if (!this.timer) {return;}
 		clearInterval(this.timer);
 		this.timer = null;
 	}
@@ -524,7 +524,7 @@ export class SearchMenu {
 		private static setListeners(html: string | JQuery<HTMLElement>) {
 			this.initTimer();
 			if (typeof html == "string")
-				html = $(html);
+				{html = $(html);}
 			html.find(".action-choice").on("change", ev=> {
 				ev.preventDefault();
 				ev.stopPropagation();

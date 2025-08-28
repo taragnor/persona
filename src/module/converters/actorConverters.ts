@@ -9,7 +9,7 @@ import { PersonaDB } from "../persona-db.js";
 export class ActorConverters {
 
 	static async convertShadowPowers(actor: Shadow) : Promise<void> {
-		if (!actor.isShadow()) return;
+		if (!actor.isShadow()) {return;}
 		const compPowers= PersonaDB.allPowersArr();
 		for (const power of actor._mainPowers()) {
 			if (power.parent == actor) {
@@ -29,7 +29,7 @@ export class ActorConverters {
 
 	static async toPersona(shadow: Shadow, newOwner ?: PC) : Promise<Shadow> {
 		if (!shadow.isShadow()) {
-			throw new PersonaError("Can't convert a non-shadow into a persona.")
+			throw new PersonaError("Can't convert a non-shadow into a persona.");
 		}
 		if (!shadow.basePersona.isEligibleToBecomePersona()) {
 			throw new PersonaError(`${shadow.name} is Ineligible to become a Persona`);
@@ -63,14 +63,14 @@ export class ActorConverters {
 		};
 		personaData!.system!.combat!.powers = [];
 		const persona = await PersonaActor.create<Shadow>(personaData) as Shadow;
-		await persona.createEmbeddedDocuments("Item", shadow.items.contents.map (x=> x.toJSON()))
+		await persona.createEmbeddedDocuments("Item", shadow.items.contents.map (x=> x.toJSON()));
 		await this.convertPowers(shadow, persona);
 		return persona;
 	}
 
 	static async toDMon(shadow: Shadow): Promise<Shadow> {
 		if (!shadow.isShadow()) {
-			throw new PersonaError("Can't convert a non-shadow into a d-mon.")
+			throw new PersonaError("Can't convert a non-shadow into a d-mon.");
 		}
 		if (!shadow.basePersona.isEligibleToBecomeDMon()) {
 			throw new PersonaError(`${shadow.name} is Ineligible to become a D-Mon`);
@@ -100,8 +100,8 @@ export class ActorConverters {
 		};
 		dmonStats!.system!.combat!.powers = [];
 		const dmon = await PersonaActor.create<Shadow>(dmonStats);
-		const nonPowerItems = shadow.items.contents.filter(x=> !x.isPower())
-		await dmon.createEmbeddedDocuments("Item", nonPowerItems.map (x=> x.toJSON()))
+		const nonPowerItems = shadow.items.contents.filter(x=> !x.isPower());
+		await dmon.createEmbeddedDocuments("Item", nonPowerItems.map (x=> x.toJSON()));
 		await this.convertPowers(shadow, dmon);
 		return dmon;
 	}
@@ -116,7 +116,7 @@ export class ActorConverters {
 	}
 
 	static async convertOldLevelToNew( actor: ValidAttackers): Promise<number> {
-		if (!actor.isValidCombatant()) return 0;
+		if (!actor.isValidCombatant()) {return 0;}
 		const baseLevel = actor.system.combat.classData.level;
 		const incrementals = actor.numOfIncAdvances();
 		const maxInc = actor.maxIncrementalAdvances();

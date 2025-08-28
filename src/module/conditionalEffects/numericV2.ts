@@ -27,8 +27,8 @@ import { Precondition } from "../../config/precondition-types.js";
 export class NumericV2 {
 	static eval( condition: Precondition & {type: "numeric-v2"}, situation: Situation , source: Option<PowerContainer>) : boolean {
 		const op1 = this.deriveOperand(condition.op1, situation, source);
-		if (op1 === null) return false;
-		if (op1 === true) return true;
+		if (op1 === null) {return false;}
+		if (op1 === true) {return true;}
 		const comparator = condition.comparator;
 		if (typeof op1 != "number") {
 			PersonaError.softFail("Operation 1 can't be a non-number");
@@ -161,9 +161,9 @@ export class NumericV2 {
 	static handleActorStat(op: NumericComparisonV2["op1"] & {comparisonTarget : "actor-stat"},situation : Situation, source: Option<PowerContainer>) : number | null | true {
 		switch (op.subtype) {
 			case "social-link-level": {
-				if (!situation.user) return null;
+				if (!situation.user) {return null;}
 				const actor = PersonaDB.findActor(situation.user);
-				if (!actor  || !actor.isRealPC()) return null;
+				if (!actor  || !actor.isRealPC()) {return null;}
 
 				if (op.socialLinkIdOrTarot == "SLSource"){
 					//in theory these should be preverified so we're automatically letting them through
@@ -177,9 +177,9 @@ export class NumericV2 {
 				return link ? link.linkLevel : 0;
 			}
 			case "social-link-level": {
-				if (!situation.user) return null;
+				if (!situation.user) {return null;}
 				const actor = PersonaDB.findActor(situation.user);
-				if (!actor  || !actor.isRealPC()) return null;
+				if (!actor  || !actor.isRealPC()) {return null;}
 
 				if (op.socialLinkIdOrTarot == "SLSource"){
 					//in theory these should be preverified so we're automatically letting them through
@@ -198,25 +198,25 @@ export class NumericV2 {
 					return null;
 				}
 				const subjectAcc = situation.user ?? situation.attacker;
-				if (!subjectAcc) return null;
+				if (!subjectAcc) {return null;}
 				const subject = PersonaDB.findActor(subjectAcc);
-				if (!subject.isPC()) return null;
+				if (!subject.isPC()) {return null;}
 				return subject.getSocialLinkProgress(targetActor.id);
 			}
 			case "has-resources": {
-				if (!situation.user) return null;
+				if (!situation.user) {return null;}
 				const actor = PersonaDB.findActor(situation.user);
-				if (actor.system.type != "pc") return null;
+				if (actor.system.type != "pc") {return null;}
 				return actor.system.money ?? 0;
 			}
 			case "student-skill": {
-				if (!situation.user) return null;
+				if (!situation.user) {return null;}
 				const actor = PersonaDB.findActor(situation.user);
-				if (actor.system.type != "pc") return null;
+				if (actor.system.type != "pc") {return null;}
 				return actor.system.skills[op.studentSkill!] ?? 0;
 			}
 			case "talent-level": {
-				if (!situation.user) return null;
+				if (!situation.user) {return null;}
 				const user = PersonaDB.findActor(situation.user);
 				//@ts-ignore
 				const sourceItem = "sourceItem" in condition ? PersonaDB.findItem(condition.sourceItem) : "";
@@ -228,21 +228,21 @@ export class NumericV2 {
 
 			}
 			case "has-resources":
-				if (!situation.user) return null;
+				if (!situation.user) {return null;}
 				const actor = PersonaDB.findActor(situation.user);
-				if (actor.system.type != "pc") return null;
+				if (actor.system.type != "pc") {return null;}
 				return actor.system.money ?? 0;
 
 			case "character-level": {
-				if (!situation.user) return null;
+				if (!situation.user) {return null;}
 				const actor = PersonaDB.findActor(situation.user);
 				return actor.system.combat.classData.level;
 			}
 			case "links-dating": {
 				const subjectAcc = situation.user ?? situation.attacker;
-				if (!subjectAcc) return null;
+				if (!subjectAcc) {return null;}
 				const subject = PersonaDB.findActor(subjectAcc);
-				if (!subject) return null;
+				if (!subject) {return null;}
 				if ( subject.system.type != "pc") {return 0; }
 				return subject.system.social
 				.filter( x=> x.isDating || x.relationshipType == "DATE")
@@ -250,26 +250,26 @@ export class NumericV2 {
 			}
 			case "resistance-level": {
 				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
-				if (!subject) return null;
+				if (!subject) {return null;}
 				let element : DamageType | "by-power" = op.element;
 				if (element == "by-power") {
 					if (!situation.usedPower) {return null;}
 					const power = PersonaDB.findItem(situation.usedPower);
-					if (power.system.type == "skillCard") return null;
-					if (!situation.attacker) return null;
+					if (power.system.type == "skillCard") {return null;}
+					if (!situation.attacker) {return null;}
 					const attacker = PersonaDB.findActor(situation?.attacker);
 					element = (power as Usable).getDamageType(attacker);
 					// element = power.system.dmg_type;
-					if (element == "healing" || element == "untyped" || element == "all-out" || element =="none" ) return null;
+					if (element == "healing" || element == "untyped" || element == "all-out" || element =="none" ) {return null;}
 				}
-				if (subject.system.type == "npc") return null;
+				if (subject.system.type == "npc") {return null;}
 				const targetResist = subject.system.combat.resists[element] ?? "normal";
 				return RESIST_STRENGTH_LIST.indexOf(targetResist);
 			}
 
 			case "total-SL-levels": {
 				const subject : PersonaActor | undefined = getSubjectActors(op, situation, source, "conditionTarget")[0];
-				if (!subject) return null;
+				if (!subject) {return null;}
 				let targetActor : SocialLink | undefined = undefined;
 				switch (subject.system.type) {
 					case "tarot":
@@ -294,41 +294,41 @@ export class NumericV2 {
 
 			case "health-percentage": {
 				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
-				if (!subject) return null;
+				if (!subject) {return null;}
 				return (subject.hp / subject.mhp) * 100;
 			}
 
 			case "percentage-of-hp": {
 				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
-				if (!subject) return null;
+				if (!subject) {return null;}
 				return subject.hp / subject.mhp;
 			}
 			case "percentage-of-mp":{
 				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
-				if (!subject) return null;
+				if (!subject) {return null;}
 				return subject.mp / subject.mmp;
 			}
 
 			case "energy": {
 				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
-				if (!subject) return null;
-				if (subject.system.type != "shadow") return null;
+				if (!subject) {return null;}
+				if (subject.system.type != "shadow") {return null;}
 				return subject.system.combat.energy.value;
 			}
 
 			case "inspirationWith": {
 				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
-				if (!subject) return null;
+				if (!subject) {return null;}
 				const link = getSocialLinkTarget(op.socialLinkIdOrTarot, situation, source);
-				if (!link) return null;
-				return subject.getInspirationWith(link.id)
+				if (!link) {return null;}
+				return subject.getInspirationWith(link.id);
 			}
 			case "itemCount":  {
 				const arr = getSubjectActors(op, situation, source, "conditionTarget");
-				if (arr.length == 0) return null;
+				if (arr.length == 0) {return null;}
 				return arr.reduce( (acc,subject) => {
 					const item = game.items.get(op.itemId);
-					if (!item) return acc;
+					if (!item) {return acc;}
 					return acc + subject.items.contents
 						.reduce( (a,x) => (x.name == item.name && ("amount" in x.system))
 							? (a + x.system.amount)
@@ -347,7 +347,7 @@ export class NumericV2 {
 				// 	, 0);
 			case "scan-level":
 				const targetActor = getSubjectActors(op, situation, source, "conditionTarget")[0];
-				if (!targetActor || !targetActor.isValidCombatant()) return null;
+				if (!targetActor || !targetActor.isValidCombatant()) {return null;}
 				return targetActor.persona().scanLevel;
 			default:
 				op satisfies never;
@@ -380,19 +380,19 @@ export class NumericV2 {
 		switch (op.rollType) {
 			case "natural-roll":
 				if (situation.naturalRoll == undefined)
-					return null;
+					{return null;}
 				return situation.naturalRoll ?? null;
 			case "activation-roll":
-					if (situation.naturalRoll == undefined) return null;
+					if (situation.naturalRoll == undefined) {return null;}
 				if (!situation?.rollTags?.includes("activation"))
-					return null;
+					{return null;}
 				return situation.naturalRoll ?? null;
 			case "opening-roll":
-					if (situation.naturalRoll == undefined  || !situation.rollTags?.includes("opening")) return null;
+					if (situation.naturalRoll == undefined  || !situation.rollTags?.includes("opening")) {return null;}
 				return situation.naturalRoll ?? null;
 			case "total-roll":
 					if (situation.rollTotal == undefined)
-					return null;
+					{return null;}
 				return situation.rollTotal ?? null;
 			default:
 					op.rollType satisfies never;
@@ -407,7 +407,7 @@ export class NumericV2 {
 				return PersonaSocial.getSocialVariable(op.variableId!) ?? null;
 			case "escalation": {
 				const combat = game.combat as PersonaCombat | undefined;
-				if (!combat) return null;
+				if (!combat) {return null;}
 				const die = combat.getEscalationDie();
 				return die;
 			}

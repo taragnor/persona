@@ -82,7 +82,7 @@ export class PersonaHandleBarsHelpers {
 				case "str":
 					return persona.strength;
 				case "mag":
-					return persona.magic
+					return persona.magic;
 				case "end":
 					return persona.endurance;
 				case "luk":
@@ -102,7 +102,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"abs" : (x:string | number) => {
-			return Math.abs(Number(x))
+			return Math.abs(Number(x));
 		},
 
 		"isPCOrNPCAlly": function (actor: PersonaActor): boolean {
@@ -118,10 +118,10 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"arrIncludes": function (arr: string[], value: string): boolean {
-			return arr.includes(value)
+			return arr.includes(value);
 		},
 		"strIncludes" : (testStr: string | undefined, substr: string) => {
-			if (!testStr) return false;
+			if (!testStr) {return false;}
 			return testStr.includes(substr);
 		},
 
@@ -135,16 +135,16 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"meetsSLRequirementNPC": (benefit: SocialBenefit) => {
-			if (game.user.isGM) return true;
+			if (game.user.isGM) {return true;}
 			const pc= game.user.character as PersonaActor;
-			if (!pc || pc.system.type != "pc") return false;
+			if (!pc || pc.system.type != "pc") {return false;}
 			return (pc as PC).meetsSLRequirement(benefit.focus);
 		},
 		"getDamage": (actor: PersonaActor | Persona, usable: Usable) => {
 			if (actor instanceof Persona) {
 				actor = actor.user;
 			}
-			if (!actor.isValidCombatant()) return "0/0";
+			if (!actor.isValidCombatant()) {return "0/0";}
 			const dmg = usable.estimateDamage(actor);
 			if (dmg.high <= 0) {
 				return `-/-`;
@@ -157,7 +157,7 @@ export class PersonaHandleBarsHelpers {
 				usedPower: power.accessor,
 				attacker: actor.accessor,
 				user: actor.accessor,
-			}
+			};
 			const critBonus = PersonaCombat.calcCritModifier(actor, actor, power, situation, true);
 			return critBonus.total(situation);
 		},
@@ -209,13 +209,13 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		'isHighestLinker': (_pc: PC, linkData:SocialLinkData ) => {
-			if (!linkData) return false;
+			if (!linkData) {return false;}
 			const highest = linkData.actor.highestLinker();
 			return highest.linkLevel == linkData.linkLevel;
 		},
 
 		'eqAny': function (testCase: string, ...rest: string[]) : boolean {
-			return rest.some( str => str == testCase)
+			return rest.some( str => str == testCase);
 		},
 
 		'neAll': function (testCase: string, ...rest: string[]) : boolean {
@@ -239,7 +239,7 @@ export class PersonaHandleBarsHelpers {
 		"getEffectFlagName" : function (acc: UniversalActorAccessor<PC | Shadow>, flagEffect: SetFlagEffect): string {
 			const actor = PersonaDB.findActor(acc);
 			const flag = actor.getEffectFlag(flagEffect.flagId);
-			if (flag) return flag.flagName ?? flagEffect.flagName ?? flag.flagId;
+			if (flag) {return flag.flagName ?? flagEffect.flagName ?? flag.flagId;}
 			return flagEffect.flagName ?? flagEffect.flagId;
 		},
 
@@ -252,8 +252,8 @@ export class PersonaHandleBarsHelpers {
 
 		"trim" : function (str: string) {
 			if (typeof str == "string")
-				return str.trim();
-			else return str;
+				{return str.trim();}
+			else {return str;}
 		},
 
 		"choiceMeetsConditions": function(cardData: CardData, choice: SocialCard["system"]["events"][number]["choices"][number]) : boolean {
@@ -275,9 +275,9 @@ export class PersonaHandleBarsHelpers {
 
 		"isActivitySelectable": function (pc: PC, activity: Activity): boolean {
 			if (!activity.system.weeklyAvailability.available)
-				return false;
+				{return false;}
 			if ((pc.system.activities.find( act=> act.linkId == activity.id)?.strikes ?? 0) >= 3)
-				return false;
+				{return false;}
 			const situation : Situation=  {
 				user: pc.accessor,
 				attacker: pc.accessor,
@@ -306,17 +306,17 @@ export class PersonaHandleBarsHelpers {
 		"prettyAtkResult": function (result: AttackResult) : string {
 			switch (result.result) {
 				case "crit":
-					let str = "CRITICAL";
+					const str = "CRITICAL";
 					if (result.hitResistance)
-						return str  + " (RESIST)";
+						{return str  + " (RESIST)";}
 					if (result.hitWeakness)
-						return str + " (WEAK)";
+						{return str + " (WEAK)";}
 					return str;
 				case "hit":
 					if (result.hitResistance)
-						return "RESIST";
+						{return "RESIST";}
 					if (result.hitWeakness)
-						return "WEAK";
+						{return "WEAK";}
 					return result.result;
 				case "miss":
 					return "MISS";
@@ -364,20 +364,20 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"inCombat": function() : boolean {
-			if (!game.combat) return false;
+			if (!game.combat) {return false;}
 			return (game.combat.combatants.contents.some( x=> x?.actor?.system.type == "shadow"));
 		},
 
 		"inventoryLocked": function() : boolean {
-			if (game.user.isGM) return false;
-			if (!game.combat) return false;
+			if (game.user.isGM) {return false;}
+			if (!game.combat) {return false;}
 			return (!(game.combat as PersonaCombat).isSocial);
 		},
 
 		"signed" : function(num: string | number) : SafeString {
 			num = Number(num);
-			if (num >=0) return new Handlebars.SafeString(`+${num}`);
-			else return new Handlebars.SafeString(`${num}`);
+			if (num >=0) {return new Handlebars.SafeString(`+${num}`);}
+			else {return new Handlebars.SafeString(`${num}`);}
 		},
 
 		"localizeDamageType": function (dtype:DamageType ) : string {
@@ -391,13 +391,13 @@ export class PersonaHandleBarsHelpers {
 				return foundry.utils.getProperty(object, path);
 			}
 			catch (e) {
-				console.trace()
+				console.trace();
 				console.error(e);
 				Debug(object);
 				console.log(`Error on path ${path}`);
 			}
 		},
-		"powerStuff" : function () : Object {
+		"powerStuff" : function () : object {
 			return PersonaEffectContainerBaseSheet.powerStuff;
 		},
 
@@ -421,7 +421,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"canForgeSocialLink": function (pc: PC, target: SocialLink) : boolean {
-			if (pc.system.type != "pc") return false;
+			if (pc.system.type != "pc") {return false;}
 			return PersonaSocial.meetsConditionsToStartLink(pc, target);
 		},
 
@@ -441,7 +441,7 @@ export class PersonaHandleBarsHelpers {
 					return source.tagList.includes(tagName as any);
 				}
 				case source instanceof PersonaItem: {
-					const list = (source as Usable).tagList(null)
+					const list = (source as Usable).tagList(null);
 					return list.includes (tagName as any);
 				}
 				default:
@@ -606,9 +606,9 @@ export class PersonaHandleBarsHelpers {
 
 		"scanLevel": function (persona: PersonaI) : number {
 			const user = persona.user;
-			if (user.isOwner) return 3;
-			if (user.isPC() || user.isNPCAlly()) return 2;
-			if (user.hasCreatureTag("enigmatic")) return 0;
+			if (user.isOwner) {return 3;}
+			if (user.isPC() || user.isNPCAlly()) {return 2;}
+			if (user.hasCreatureTag("enigmatic")) {return 0;}
 			const scanLevel= user.system.scanLevel;
 			if (typeof scanLevel != "number") {
 				PersonaError.softFail("Trouble reading scan level for Persona of ${user.name}");
@@ -635,7 +635,7 @@ export class PersonaHandleBarsHelpers {
 
 		"getRollTags": function (cardRoll: CardRoll): string {
 			const localization= PersonaSocial.getCardRollTags(cardRoll)
-				.map (t => localize(ROLL_TAGS_AND_CARD_TAGS[t]))
+				.map (t => localize(ROLL_TAGS_AND_CARD_TAGS[t]));
 			return localization
 				.join(", ");
 		},
@@ -678,21 +678,21 @@ export class PersonaHandleBarsHelpers {
 
 		"getConditionalType": function (ce: ConditionalEffect) : string{
 			let item : PersonaItem | undefined;
-			let someObj : Object = ce;
+			let someObj : object = ce;
 			while (someObj && "parent" in someObj) {
 				if (someObj instanceof PersonaItem) {
 					item = someObj;
 					break;
 				}
 				if (typeof someObj["parent"] == "object") {
-					someObj = someObj["parent"] as Object;
+					someObj = someObj["parent"] as object;
 				}
 			}
 			return ConditionalEffectManager.getConditionalType(ce, item);
 		},
 
 		"hasPersona": function (actor: PersonaActor) : boolean {
-			if (actor.isRealPC() || actor.isNPCAlly()) return true;
+			if (actor.isRealPC() || actor.isNPCAlly()) {return true;}
 			if (actor.isShadow())  {
 				return (actor.persona().source != actor);
 			}
@@ -704,7 +704,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"defVal": function <T extends string | number>(thing:T, defaultV: T) {
-			if (thing != undefined) return thing;
+			if (thing != undefined) {return thing;}
 			return defaultV;
 		},
 
@@ -716,6 +716,6 @@ export class PersonaHandleBarsHelpers {
 			return weapon.baseDamage().baseAmt;
 		}
 
-	}
+	};
 
 } //end of class

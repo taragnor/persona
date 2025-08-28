@@ -43,7 +43,7 @@ export class FinalizedCombatResult {
 
 	constructor( cr: CombatResult | null) {
 		//TODO: needs to be adapted
-		if (cr == null ) return;
+		if (cr == null ) {return;}
 		this.#finalize(cr);
 	}
 
@@ -88,7 +88,7 @@ export class FinalizedCombatResult {
 
 	#evaluateDamage (dmg : ActorChange<ValidAttackers>["damage"]) : EvaluatedDamage[] {
 		const dmgArr = Object.values(dmg)
-			.map( v=> v.eval())
+			.map( v=> v.eval());
 		return dmgArr.filter( damage => damage.hpChange != 0)
 		;
 	}
@@ -111,7 +111,7 @@ export class FinalizedCombatResult {
 			([atkRes, change]) => {
 				const changes = change.map( change => {
 					return this.#resolveActorChange(change);
-				})
+				});
 				return {
 					atkResult: atkRes,
 					changes,
@@ -162,7 +162,7 @@ export class FinalizedCombatResult {
 						addStatus: [bonusAction],
 						otherEffects: [],
 						removeStatus: [],
-					}
+					};
 					this.costs.push(extraTurnChange);
 					break;
 				case "recover-slot":
@@ -206,12 +206,12 @@ export class FinalizedCombatResult {
 			});
 		} else {
 			if (!item.effects.includes(flag))
-				item.effects.push(flag);
+				{item.effects.push(flag);}
 		}
 	}
 
 	hasFlag(actor: PersonaActor, flag: OtherEffect["type"]) : boolean{
-		return !!this.tokenFlags.find(x=> x.actor.actorId == actor.id)?.effects.find( eff=> eff.type == flag);
+		return Boolean(this.tokenFlags.find(x=> x.actor.actorId == actor.id)?.effects.find( eff=> eff.type == flag));
 
 	}
 
@@ -259,7 +259,7 @@ export class FinalizedCombatResult {
 			content: html,
 			user: game.user,
 			style: CONST?.CHAT_MESSAGE_STYLES.OOC,
-		}, {})
+		}, {});
 		if (manualApply) {
 			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
 			return chatMsg;
@@ -290,8 +290,8 @@ export class FinalizedCombatResult {
 			const sendObj = {
 				resultObj : this.toJSON(),
 				sender: game.user.id,
-			}
-			PersonaSockets.simpleSend("COMBAT_RESULT_APPLY", sendObj, [gmTarget.id])
+			};
+			PersonaSockets.simpleSend("COMBAT_RESULT_APPLY", sendObj, [gmTarget.id]);
 			try {
 				await FinalizedCombatResult.addPending(this);
 			} catch (e) {
@@ -308,7 +308,7 @@ export class FinalizedCombatResult {
 		const {resultObj, sender} = x;
 		const result = FinalizedCombatResult.fromJSON(resultObj);
 		await result.#apply();
-		PersonaSockets.simpleSend("COMBAT_RESULT_APPLIED", result.id, [sender])
+		PersonaSockets.simpleSend("COMBAT_RESULT_APPLIED", result.id, [sender]);
 	}
 
 	static async resolvedHandler(replyId: SocketMessage["COMBAT_RESULT_APPLIED"]) : Promise<void> {
@@ -341,10 +341,10 @@ export class FinalizedCombatResult {
 			let token: PToken | undefined;
 			for (const change of changes) {
 				if (change.actor.token)
-					token = PersonaDB.findToken(change.actor.token) as PToken;
+					{token = PersonaDB.findToken(change.actor.token) as PToken;}
 				const priorHP = token ?  token.actor.hp : 0;
 				await this.applyChange(change);
-				if (!token) continue;
+				if (!token) {continue;}
 				if (token.actor && !token.actor.isAlive() && priorHP > 0) {
 					const attacker = PersonaDB.findToken(atkResult.attacker);
 					await this.#onDefeatOpponent(token, attacker);
@@ -355,10 +355,10 @@ export class FinalizedCombatResult {
 
 	async #onDefeatOpponent(target: PToken, attacker ?: PToken) {
 		const combat = game.combat as PersonaCombat | undefined;
-		if (!combat) return;
+		if (!combat) {return;}
 		if (target.actor.system.type == "shadow") {
 			// const shadow = combat?.combatants.find( c=> c.token.id == target.id) as Combatant<PersonaActor> | undefined;
-			const shadow = combat.findCombatant(target)
+			const shadow = combat.findCombatant(target);
 			if (shadow) {
 				if (!shadow.defeated) {
 					try {
@@ -378,9 +378,9 @@ export class FinalizedCombatResult {
 				target: target.actor.accessor,
 				user: attackerActor.accessor,
 				triggeringUser: game.user,
-			}
+			};
 			for (const comb of combat.combatants) {
-				if (!comb.actor) continue;
+				if (!comb.actor) {continue;}
 				situation.user = comb.actor.accessor;
 				await TriggeredEffect.execCombatTrigger("on-kill-target", comb.actor, situation);
 			}
@@ -409,7 +409,7 @@ export class FinalizedCombatResult {
 					}
 					break;
 				case "display-message":
-						if (!eff.newChatMsg) break;
+						if (!eff.newChatMsg) {break;}
 					const html = eff.msg;
 					const speaker : Foundry.ChatSpeakerObject = {
 						alias: "System"
@@ -438,7 +438,7 @@ export class FinalizedCombatResult {
 						PersonaCombat
 							.onTrigger("on-damage", actor)
 							.emptyCheck()
-							?.toMessage("Reaction (Taking Damage)" , actor)
+							?.toMessage("Reaction (Taking Damage)" , actor);
 					});
 				}
 				if (token) {
@@ -460,7 +460,7 @@ export class FinalizedCombatResult {
 			await actor.removeStatus(status);
 		}
 		let mpcost = 0;
-		let mpmult = 1;
+		const mpmult = 1;
 		for (const otherEffect of change.otherEffects) {
 			switch (otherEffect.type) {
 				case "expend-item":
@@ -519,7 +519,7 @@ export class FinalizedCombatResult {
 					break;
 				case "inspiration-cost":
 					if (actor.system.type == "pc") {
-						await (actor as PC).spendInspiration(otherEffect.linkId, otherEffect.amount)
+						await (actor as PC).spendInspiration(otherEffect.linkId, otherEffect.amount);
 					}
 					break;
 				case "hp-loss":
@@ -613,7 +613,7 @@ export class FinalizedCombatResult {
 
 	static resolvePending( resId: CombatResult["id"]) {
 		const resolver = this.pendingPromises.get(resId);
-		if (!resolver) throw new Error(`No Resolver for ${resId}`);
+		if (!resolver) {throw new Error(`No Resolver for ${resId}`);}
 		resolver();
 		this.pendingPromises.delete(resId);
 	}
@@ -628,16 +628,16 @@ export class FinalizedCombatResult {
 	}
 
 	findEffects<T extends OtherEffect["type"]>(effectType: T): (OtherEffect & {type:T})[] {
-		let arr = [] as (OtherEffect & {type:T})[];
+		const arr = [] as (OtherEffect & {type:T})[];
 		for (const v of this.attacks) {
 			for (const eff of v.changes.flatMap(chg => chg.otherEffects) ) {
 				if (eff.type == effectType)
-					arr.push( eff as OtherEffect & {type:T});
+					{arr.push( eff as OtherEffect & {type:T});}
 			}
 		}
 		for (const eff of this.costs.flatMap(chg => chg.otherEffects) ) {
 			if (eff.type == effectType)
-				arr.push( eff as OtherEffect & {type:T});
+				{arr.push( eff as OtherEffect & {type:T});}
 		}
 		return arr;
 	}
@@ -663,11 +663,11 @@ interface ResolvedAttackResult<T extends ValidAttackers = ValidAttackers> {
 Hooks.on("renderChatMessage", async (msg: ChatMessage, html: JQuery<HTMLElement>) => {
 	const flag = msg.getFlag("persona", "atkResult") as string;
 	if (!flag) {
-		html.find(".applyChanges").each( function () { this.remove()});
+		html.find(".applyChanges").each( function () { this.remove();});
 	}
 	html.find(".applyChanges").on("click", async () => {
 		const flag = msg.getFlag("persona", "atkResult") as string;
-		if (!flag) throw new PersonaError("Can't apply twice");
+		if (!flag) {throw new PersonaError("Can't apply twice");}
 		if (!game.user.isGM) {
 			throw new PersonaError("Only GM can click this");
 		}
@@ -685,7 +685,7 @@ Hooks.on("socketsReady", async () => {
 
 Hooks.on("updateActor", async (updatedActor : PersonaActor, changes) => {
 	//open scan prompt for all players on scan
-	if (game.user.isGM) return;
+	if (game.user.isGM) {return;}
 	if (updatedActor.system.type == "shadow") {
 		if (changes?.system?.scanLevel && updatedActor.token) {
 			updatedActor.sheet.render(true);

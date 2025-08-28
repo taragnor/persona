@@ -27,7 +27,7 @@ export class PersonaClassSheet  extends PersonaItemSheetBase {
 
 	async #addRow() {
 		console.log("Adding a row");
-		let oldtable = this.item.system.leveling_table;
+		const oldtable = this.item.system.leveling_table;
 		const newobj: typeof oldtable[number] = {
 			lvl_num: 0,
 			maxhp: 1,

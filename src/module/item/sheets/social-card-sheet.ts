@@ -128,7 +128,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 
 	async addOpportunity(_ev: JQuery.ClickEvent) {
 		const card = this.item;
-		let opList = card.system.opportunity_list;
+		const opList = card.system.opportunity_list;
 		const newOpportunity : Opportunity = {
 			name: "Unnamed Choice",
 			choices: 1,
@@ -158,7 +158,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 			throw new PersonaError("Bad index on Delete opportunity");
 		}
 		const card = this.item;
-		let opList =card.system.opportunity_list;
+		const opList =card.system.opportunity_list;
 		opList.splice(index,1);
 		await card.update({"system.opportunity_list": opList});
 	}

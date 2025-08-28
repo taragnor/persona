@@ -27,7 +27,7 @@ export class SeededRandom {
 		let t  = state[3];
 		const s  = state[0];
 		state[3] = state[2];
-		state[2] = state[1]
+		state[2] = state[1];
 		state[1] = s;
 
 		t ^= t << 11;
@@ -37,7 +37,7 @@ export class SeededRandom {
 	}
 
 	randomArraySelect<T extends unknown>(arr: T[]) : T | undefined {
-		if (arr.length ==0) return undefined;
+		if (arr.length ==0) {return undefined;}
 		const random = this.getRandom();
 		const randomChoice = random % arr.length;
 		return arr[randomChoice];
@@ -45,7 +45,7 @@ export class SeededRandom {
 
 	weightedChoice<T>( array: WeightedChoiceItem<T>[]): U<T> {
 	array = array.filter( x=>x.weight > 0);
-	if (array.length == 0) return undefined;
+	if (array.length == 0) {return undefined;}
 	if (array.some(x=> typeof x.weight != "number")) {
 		array.forEach( x=> x.weight = Number(x.weight));
 	}

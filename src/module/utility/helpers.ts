@@ -41,7 +41,7 @@ export class Helpers {
 			case "function":
 				throw new Error("Doesn't handle functions");
 			case "object":
-				if (data  == null) return data;
+				if (data  == null) {return data;}
 				if (Array.isArray(data)) {
 					return data.map( x=> this.expandObject(x)) as T;
 				}
@@ -59,12 +59,12 @@ export class Helpers {
 							case "function":
 								return [];
 							case "object":
-								if (v == null) return [k,v];
-								if ("schema" in v && "toObject" in v && typeof v.toObject == "function") return this.expandObject(v.toObject());
+								if (v == null) {return [k,v];}
+								if ("schema" in v && "toObject" in v && typeof v.toObject == "function") {return this.expandObject(v.toObject());}
 								if (Array.isArray(v))
-									return [k,
-										v.map( x=> this.expandObject(x))];
-								else return [k, this.expandObject(v)];
+									{return [k,
+										v.map( x=> this.expandObject(x))];}
+								else {return [k, this.expandObject(v)];}
 						}
 					})
 					.filter(x=> x.length > 0 )
@@ -77,7 +77,7 @@ export class Helpers {
 			return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 		};
 		const keys = Object.keys(replacements).map(key => escapeRegExp(key));
-		if (keys.length == 0) return input;
+		if (keys.length == 0) {return input;}
 		const pattern = new RegExp(keys.join('|'), 'g');
 		return input.replace(pattern, match => replacements[match]);
 	}
@@ -88,7 +88,7 @@ export class Helpers {
 		if (keys1.length !== keys2.length) {
 			return false;
 		}
-		for (let key of keys1) {
+		for (const key of keys1) {
 			if (object1[key] !== object2[key]) {
 				return false;
 			}

@@ -39,4 +39,4 @@ export const SOCIAL_CARD_RATE : ProbabilityRate = {
 	rare: .2,
 	never: 0,
 	always: Infinity,
-}
+};

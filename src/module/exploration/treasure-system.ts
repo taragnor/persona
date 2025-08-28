@@ -1,5 +1,5 @@
 import { PersonaActor } from "../actor/persona-actor.js";
-import { PersonaDB } from "../persona-db.js"
+import { PersonaDB } from "../persona-db.js";
 import { weightedChoice } from "../utility/array-tools.js";
 import { ProbabilityRate } from "../../config/probability.js";
 import { TreasureTable } from "../../config/treasure-tables.js";
@@ -7,7 +7,7 @@ import { TreasureTable } from "../../config/treasure-tables.js";
 export class TreasureSystem {
 	static get treasureList() {
 		return PersonaDB.treasureItems()
-		.filter ( item => item.system.treasure.table != "none")
+		.filter ( item => item.system.treasure.table != "none");
 	}
 
 	static generate(table: Exclude<TreasureTable, "none">, treasureLevel: number) : U<TreasureItem> {
@@ -30,12 +30,12 @@ export class TreasureSystem {
 
 	static amountOfItemOwnedByParty(item : TreasureItem) : number {
 		const pcsAndAllies = game.actors.filter( (act:PersonaActor) => act.isPC() || act.isNPCAlly()) as PersonaActor[];
-		const items=  pcsAndAllies.map( actor => actor.items.find(i=> i == item)?.amount ?? 0)
+		const items=  pcsAndAllies.map( actor => actor.items.find(i=> i == item)?.amount ?? 0);
 		return items.reduce( (acc,i) => acc+i, 0);
 	}
 
 	static possessionWeightMod(item: TreasureItem) : number {
-		if (this.isCollectableItem(item)) return 1;
+		if (this.isCollectableItem(item)) {return 1;}
 		const amtOwned= this.amountOfItemOwnedByParty(item);
 		return Math.max(0, 1 - amtOwned/3);
 	}
@@ -45,7 +45,7 @@ export class TreasureSystem {
 			case "consumable":
 				return true;
 			case "item":
-				if (item.isCraftingItem) return true;
+				if (item.isCraftingItem) {return true;}
 				return false;
 			case "skillCard":
 				return false;

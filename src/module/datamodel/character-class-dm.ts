@@ -14,7 +14,7 @@ function level_table() {
 	const internalObj = function () {
 		return new obj<ClassLevelType>();
 	};
-	let ret= new arr( internalObj()
+	const ret= new arr( internalObj()
 		, {initial: []});
 	return ret;
 }

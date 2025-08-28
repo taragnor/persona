@@ -73,11 +73,11 @@ export class ModifierList {
 				&& c.modifierType == "system-variable") {
 				return [{variable: c.varName, makeNegative: c.makeNegative}];
 			}
-			if (!("modifiedField" in c) || !c.modifiedField) return [];
-			if (!targetMods.includes(c.modifiedField)) return [];
-			if (c.type == "add-escalation") return [{variable: "escalationDie", makeNegative: false}];
+			if (!("modifiedField" in c) || !c.modifiedField) {return [];}
+			if (!targetMods.includes(c.modifiedField)) {return [];}
+			if (c.type == "add-escalation") {return [{variable: "escalationDie", makeNegative: false}];}
 			return [];
-		}))
+		}));
 	}
 
 	static getModifierAmount(consequences: Consequence[], targetMods: ModifierTarget[] | ModifierTarget) : number {
@@ -90,7 +90,7 @@ export class ModifierList {
 					return acc + (x.amount ?? 0);
 				}
 				if ("modifiedField" in x && x.modifiedField && targetMods.includes(x.modifiedField)) {
-					if (x.amount) return acc + x.amount;
+					if (x.amount) {return acc + x.amount;}
 				}
 				return acc;
 			}, 0);
@@ -106,7 +106,7 @@ export class ModifierList {
 					conditions: ArrayCorrector(eff.conditions),
 				modifier: ModifierList.getModifierAmount(eff.consequences, bonusTypes),
 				variableModifier: ModifierList.getVariableModifiers(eff.consequences, bonusTypes),
-			}
+			};
 		});
 		this._data = this._data.concat(stuff);
 		return this;
@@ -152,7 +152,7 @@ export class ModifierList {
 			const sign = varmod.makeNegative ? -1 : 1;
 			switch (varmod.variable) {
 				case "escalationDie":
-					if (!game.combat) return acc;
+					if (!game.combat) {return acc;}
 					return acc + (((game?.combat as PersonaCombat )?.getEscalationDie() ?? 0) * sign);
 				case "tensionPool":
 						return (TensionPool.instance.amt ?? 0) * sign;
@@ -170,7 +170,7 @@ export class ModifierList {
 			.validModifiers(situation)
 			.map( ({name, modifier, variableModifier}) => {
 				const total = modifier + ModifierList.resolveVariableModifiers(variableModifier, situation);
-				return { name, modifier: signedFormatter.format(total), raw: total}
+				return { name, modifier: signedFormatter.format(total), raw: total};
 			})
 			.filter(x=> x.raw != 0);
 	}

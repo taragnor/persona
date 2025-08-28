@@ -1343,7 +1343,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         hit: true,
         addedTags: ['pierce'],
         criticalHit: false,
-        activeCombat:combat && !combat.isSocial ? !!combat.combatants.find( x=> x.actor?.system.type != attacker.actor.system.type): false ,
+        activeCombat:combat && !combat.isSocial ? Boolean(combat.combatants.find( x=> x.actor?.system.type != attacker.actor.system.type)): false ,
       };
     } else {
       situation = simSitOrNat;
@@ -1575,7 +1575,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       user: PersonaDB.getUniversalActorAccessor(attacker.actor),
       rollTags,
       attacker: attacker.actor.accessor,
-      activeCombat:combat ? !!combat.combatants.find( x=> x.actor?.system.type != attacker.actor.system.type): false ,
+      activeCombat:combat ? Boolean(combat.combatants.find( x=> x.actor?.system.type != attacker.actor.system.type)): false ,
     };
     const cardReturn = await this.processSkillCard(attacker, usableOrCard, target, baseSituation);
     if (cardReturn) {return cardReturn;}
@@ -2577,8 +2577,8 @@ static getAllAlliesOf(token: PToken) : PToken[] {
       .filter( x=> x.actor)
       .map(x=> x.token))
     : (game.scenes.current.tokens
-      .filter( (x : TokenDocument<PersonaActor>) => !!x.actor && (x.actor.system.type == 'pc' || x.actor.system.type =='npcAlly'))
-    );
+      .filter( (x : TokenDocument<PersonaActor>) => x.actor != undefined && (x.actor?.isPC() || x.actor?.isNPCAlly())
+    ));
   const targets= tokens.filter( x => {
     const actor = x.actor as ValidAttackers | undefined;
     if (!actor)  {return false;}

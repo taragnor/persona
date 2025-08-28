@@ -26,7 +26,7 @@ export class PersonaError extends Error {
 
 	static getTrace() : string {
 		try {
-			throw new Error()
+			throw new Error();
 		} catch (e ) {
 			const stack =  (e as Error).stack;
 			return stack ? stack : "No Trace";
@@ -34,7 +34,7 @@ export class PersonaError extends Error {
 	}
 
 	static notifyGM(errorMsg: string, stack ?: string) {
-		if (!game || !game.user || game.user.isGM) return;
+		if (!game || !game.user || game.user.isGM) {return;}
 		const trace = stack ? stack : this.getTrace();
 		const userId = game.user.id;
 		const gmIds = game.users

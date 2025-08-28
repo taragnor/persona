@@ -16,7 +16,7 @@ import { AlterVariableConsequence } from "../config/consequence-types.js";
 export class PersonaVariables {
 	static async alterVariable (cons: Mutator<AlterVariableConsequence>, contextList : TargettingContextList) {
 		const variableLocation = this.#convertTypeSpecToLocation(cons, contextList);
-		if (!variableLocation) return;
+		if (!variableLocation) {return;}
 		const origValue = this.#get(variableLocation) ?? 0;
 		const newValue = this.#applyMutator( cons, origValue, contextList);
 		if (newValue == undefined) {
@@ -29,7 +29,7 @@ export class PersonaVariables {
 	/** returns 0 on a non-existent variable, returns undefined if the request was invalid (bad actor Id, etc) */
 	static getVariable( cond: Required<VariableTypeSpecifier>, contextList : Partial<TargettingContextList>) : number | undefined {
 		const varData = this.#convertTypeSpecToLocation(cond, contextList);
-		if (!varData) return undefined;
+		if (!varData) {return undefined;}
 		return this.#get(varData) ?? 0;
 	}
 
@@ -51,10 +51,10 @@ export class PersonaVariables {
 					varType,
 					variableId,
 					scene,
-				}
+				};
 			case "actor":
 				const actorAccs = contextList[cons.applyTo];
-				if (!actorAccs) return undefined;
+				if (!actorAccs) {return undefined;}
 				const actors = actorAccs
 					.map(actorAcc=>  PersonaDB.findActor(actorAcc as UniversalActorAccessor<ValidAttackers>));
 				if (actors.length == 0 || !actors.at(0)) {
@@ -70,11 +70,11 @@ export class PersonaVariables {
 				return {
 					varType,
 					variableId,
-				}
+				};
 		}
 	}
 	static #applyMutator<T extends Mutator<AlterVariableConsequence>>( mutator: T, origValue :number | undefined, contextList: TargettingContextList) : number | undefined {
-		if (Number.isNaN(origValue)) return undefined;
+		if (Number.isNaN(origValue)) {return undefined;}
 		switch (mutator.operator) {
 			case "set": {
 				const {value} = mutator;
@@ -82,12 +82,12 @@ export class PersonaVariables {
 			}
 			case "add": {
 				const {value} = mutator;
-				if (origValue == undefined) return undefined;
+				if (origValue == undefined) {return undefined;}
 				return resolveConsequenceAmount(value, contextList) + origValue;
 			}
 			case "multiply": {
 				const {value} = mutator;
-				if (origValue == undefined) return undefined;
+				if (origValue == undefined) {return undefined;}
 				return resolveConsequenceAmount(value, contextList) + origValue;
 			}
 			case "set-range":
@@ -180,7 +180,7 @@ type VariableSpecifier = {
 
 
 function resolveConsequenceAmount< C extends ConsequenceAmount, T extends PreparedConsequenceAmountV2<C>>(amt: T, contextList: TargettingContextList) : number {
-	if (typeof amt == "number") return amt;
+	if (typeof amt == "number") {return amt;}
 	switch (amt.type) {
 		case "operation":
 			return resolveOperation(amt, contextList);

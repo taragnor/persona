@@ -11,7 +11,7 @@ export class Logger {
 		const gmIds = game.users.filter( x=> x.role == CONST.USER_ROLES.GAMEMASTER);
 		// const speaker = ChatMessage.getSpeaker({actor});
 		const speaker = typeof actorOrAlias == "string" ? {alias: actorOrAlias} :  ChatMessage.getSpeaker({alias: actorOrAlias.name});
-		let messageData = {
+		const messageData = {
 			speaker: speaker,
 			content: text,
 			style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
@@ -23,7 +23,7 @@ export class Logger {
 	static async sendToChat<T extends Actor<any, Item<any>>>(text: string, actor?: T) {
 		// const speaker = ChatMessage.getSpeaker(sender);
 		const speaker = ChatMessage.getSpeaker({alias: actor?.name ?? "System"});
-		let messageData = {
+		const messageData = {
 			speaker: speaker,
 			content: text,
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,

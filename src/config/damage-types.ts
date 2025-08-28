@@ -132,7 +132,7 @@ export class DamageCalculator {
 
 	static getWeaponDamageByWpnLevel(lvl: number) : number {
 		const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
-		if (val) return val;
+		if (val) {return val;}
 		return 0;
 	}
 
@@ -159,7 +159,7 @@ const DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE = {
 	"heavy": {extraVariance: 3, baseAmt: 60},
 	"severe": {extraVariance: 4, baseAmt: 85},
 	"colossal": {extraVariance: 4, baseAmt: 120},
-} as const satisfies Readonly<Record< ConvertableDamageLevel, NewDamageParams>>
+} as const satisfies Readonly<Record< ConvertableDamageLevel, NewDamageParams>>;
 
 type ConvertableDamageLevel = Exclude<DamageLevel, "-" | "fixed">;
 
@@ -184,7 +184,7 @@ export const INSTANT_KILL_CRIT_BOOST : Record< InstantKillLevel, number>= {
 	low: 5,
 	medium: 8,
 	always: 1000,
-}
+};
 
 export type NewDamageParams = {
 	baseAmt: number,
@@ -206,7 +206,7 @@ const WEAPON_LEVEL_TO_DAMAGE: Record<number, number> = {
 	10: 122,
 	11: 144,
 	12: 168,
-}
+};
 
 
 export const BASE_VARIANCE = 1 as const;

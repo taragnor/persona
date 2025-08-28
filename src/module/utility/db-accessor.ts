@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 type filterFN<I> = (item: I) => boolean;
 
@@ -30,7 +31,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 	}
 
 	async waitUntilLoaded(): Promise<void> {
-		if (this.isLoaded) return;
+		if (this.isLoaded) {return;}
 		await new Promise( (conf) => {
 			const interval = setInterval( () => {
 				if (this.isLoaded) {
@@ -78,7 +79,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 
 	queueLoad() {
 		if (this._requiresReload)
-			return;
+			{return;}
 		this._requiresReload = true;
 		setTimeout(() => this.checkReload(), 1000);
 	}
@@ -158,31 +159,24 @@ private allItemsMap : Map<string, ItemType> = new Map();
 				throw new Error(`Unsupported Type ${type}`);
 		}
 		if (retarr.length == 0)
-			return null;
+			{return null;}
 		return retarr[0];
 	}
 
 	#findById(id: string, type: ValidDBTypes = "Actor") : Option<ItemType | ActorType> {
 		// let retarr: (Actor<any> | Item<any>)[];
 		switch (type) {
-			case "Actor":
+			case "Actor": {
 				const actor = this.allActorsMap.get(id);
 				return actor ? actor : null;
-			case "Item":
+			}
+			case "Item": {
 				const item = this.allItemsMap.get(id);
 				return item ? item : null;
-// 				retarr = this.filterItems( x => x.id == id);
-// 				if (retarr.length == 0) {
-// 					const x= this.allActors().find( x=> x.items.find( item => item.id == id));
-// 					if (!x) break;
-// 					retarr = [x.items.find(x=> x.id == id)! as Item<any>];
+			}
 			default:
 				throw new Error(`Unsupported Type ${type}`);
 		}
-		// if (retarr.length == 0) {
-		// 	return null;
-		// }
-		// return retarr[0] as ItemType | ActorType;
 	}
 
 	 getAllByType(type : ValidDBTypes) : readonly (ItemType | ActorType)[] {
@@ -233,7 +227,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 	}
 
 	async getCompendiumDataByType(DBtype: ValidDBTypes) : Promise<(ActorType | ItemType)[]> {
-		const pack_finder = ((e: FoundryCompendium<any>) => e.documentName == DBtype && !e.metadata?.name?.includes("item-piles"));
+		const pack_finder = ((e: FoundryCompendium<FoundryDocument>) => e.documentName == DBtype && !e.metadata?.name?.includes("item-piles"));
 		const packs = game.packs.filter(pack_finder);
 		let compendium_content : (ActorType | ItemType)[] = [];
 		for (const pack of packs) {
@@ -251,23 +245,24 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		}
 	}
 
-	 async onUpdateCompendium(compendium: FoundryCompendium<any>) {
+	 async onUpdateCompendium(compendium: FoundryCompendium<FoundryDocument>) {
 		console.debug("Updating Compendium");
 		switch (compendium.documentName) {
 			case "Actor":
 			case "Item":
 				this.queueLoad();
+				break;
 			default:
 				return;
 		}
 	}
 
-	static namesort<T extends FoundryDocument<any>>(a: T,b:T) {
+	static namesort<T extends {name: string}>(a: T,b:T) {
 		return a.name.localeCompare(b.name);
 	}
 
-	isItemAccessor(obj: unknown) : obj is UniversalItemAccessor<any> {
-		const x = obj as Partial<UniversalItemAccessor<any>>;
+	isItemAccessor(obj: unknown) : obj is UniversalItemAccessor<Item> {
+		const x = obj as Partial<UniversalItemAccessor<Item>>;
 		return (typeof x?.itemId == "string");
 	}
 
@@ -284,7 +279,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 	findItem<T extends Item<any>> ({actor, itemId}: UniversalItemAccessor<T>): T {
 		if (actor) {
 			const foundActor = this.findActor(actor);
-			if (!foundActor) throw new Error(`Actor Id ${actor.actorId} doesn't exist`);
+			if (!foundActor) {throw new Error(`Actor Id ${actor.actorId} doesn't exist`);}
 			const item = foundActor.items.find( x=> x.id == itemId);
 			if (!item) {
 				throw new Error(`Item Id ${itemId} not found on Actor Id ${foundActor.id}` );
@@ -295,7 +290,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 	}
 
 	findToken<X extends UniversalTokenAccessor<any> | undefined>(acc: X) : X extends UniversalTokenAccessor<infer R> ? R : undefined  {
-		if (!acc) return undefined as any;
+		if (!acc) {return undefined as any;}
 			const {scene, tokenId} = acc;
 		if (scene != null) {
 			const sc = game.scenes.get(scene);
@@ -313,7 +308,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		}
 		const sc = game.scenes.find(x=> x.tokens.get(tokenId) != null);
 		if (!sc)
-		throw new Error(`Couldn't find tokenId ${tokenId} on any scene`);
+		{throw new Error(`Couldn't find tokenId ${tokenId} on any scene`);}
 		const tok = sc.tokens.get(tokenId)!;
 		if (!tok.actor) {
 			throw new Error(`No actor on Token Id ${tokenId}`);
@@ -342,7 +337,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		return {
 			actor: (item.parent) ? this.getUniversalActorAccessor(item.parent): undefined,
 			itemId: item.id,
-		}
+		};
 	}
 
 	getUniversalActorAccessor<T extends Actor<any>> (actor: T) : UniversalActorAccessor<T> {
@@ -353,16 +348,16 @@ private allItemsMap : Map<string, ItemType> = new Map();
 			};
 		}
 		for (const comb of game.combat?.combatants ?? [])
-		if (comb.actor == actor && comb.token.actorLink) {
+		{if (comb.actor == actor && comb.token.actorLink) {
 			return  {
 				actorId: actor.id,
 				token: this.getUniversalTokenAccessor(comb.token),
 			} as UniversalActorAccessor<T>;
-		}
+		}}
 		return {
 			actorId: actor.id,
 			token: undefined
-		}
+		};
 	}
 
 	getUniversalAEAccessor<T extends ActiveEffect<any, any> & {parent: Actor<any> | Item<any>}> (effect: T): UniversalAEAccessor<T> {
@@ -379,7 +374,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 				effectId: effect.id,
 			};
 		}
-		else throw new Error("Active Effect doesn't have a pvalid parent");
+		else {throw new Error("Active Effect doesn't have a pvalid parent");}
 	}
 
 	getUniversalTokenAccessor<T extends Token<any>>(tok: T) : UniversalTokenAccessor<T["document"]> ;
@@ -418,12 +413,12 @@ type UniversalTokenAccessor<T extends TokenDocument<any>> = {
 	tokenId : T["id"],
 };
 
-type UniversalActorAccessor<T extends Actor<any, any, any>> = {
+type UniversalActorAccessor<T extends Actor<any, any, any> = Actor<any, any, any>> = {
 	token ?: UniversalTokenAccessor<TokenDocument<T>>,
 	actorId : T["id"],
 }
 
-type UniversalItemAccessor<T extends Item<any>> = {
+type UniversalItemAccessor<T extends Item<any>= Item<any>> = {
 	actor?: UniversalActorAccessor<Actor<any, any>>,
 	itemId: T["id"],
 }

@@ -7,4 +7,4 @@ export const PERMA_BUFF_LIST = [
 
 export type PermaBuffType = typeof PERMA_BUFF_LIST[number];
 
-export const PERMA_BUFFS = HTMLTools.createLocalizationObject(PERMA_BUFF_LIST, "persona.permabuff")
+export const PERMA_BUFFS = HTMLTools.createLocalizationObject(PERMA_BUFF_LIST, "persona.permabuff");

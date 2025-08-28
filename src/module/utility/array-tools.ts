@@ -1,7 +1,7 @@
 export function shuffle<T>(array: T[]) : Array<T> {
   let currentIndex = array.length;
   while (currentIndex != 0) {
-    let randomIndex = Math.floor(Math.random() * currentIndex);
+    const randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
     [array[currentIndex], array[randomIndex]] = [
       array[randomIndex], array[currentIndex]];
@@ -11,7 +11,7 @@ export function shuffle<T>(array: T[]) : Array<T> {
 
 export function weightedChoice<T>( array: WeightedChoiceItem<T>[]) : T | undefined {
 	array = array.filter( x=>x.weight > 0);
-	if (array.length == 0) return undefined;
+	if (array.length == 0) {return undefined;}
 	if (array.some(x=> typeof x.weight != "number")) {
 		array.forEach( x=> x.weight = Number(x.weight));
 	}
@@ -55,7 +55,7 @@ function test_weightedChoice() {
 			item: "C", weight: 0.2
 		}
 	];
-	let x = {
+	const x = {
 		A: 0,
 		B: 0,
 		C: 0
@@ -64,7 +64,7 @@ function test_weightedChoice() {
 	for (let i = 0; i< times; i++) {
 		shuffle(items);
 		const result = weightedChoice(items);
-		if (result == undefined) continue;
+		if (result == undefined) {continue;}
 		x[result] += 1;
 	}
 	for (const [k,v] of Object.entries(x)) {
@@ -84,11 +84,11 @@ declare global {
 
 Array.prototype.pushUnique = function<T>(this: Array<T>, ...list: T[]) {
 	for (const x of list) {
-		if (this.includes(x)) continue;
+		if (this.includes(x)) {continue;}
 		this.push(x);
 	}
 	return this.length;
-}
+};
 
 
 //@ts-ignore

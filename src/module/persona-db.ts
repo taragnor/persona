@@ -79,7 +79,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	getClassById(id: string): Option<ItemSub<"characterClass">> {
 		const item = this.getItemById(id);
-		if (!item) return null;
+		if (!item) {return null;}
 		if (item.system.type == "characterClass") {
 			return item as ItemSub<"characterClass">;
 		}
@@ -144,7 +144,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	allPowers() : Map<string, Power> {
-		if (this.#cache.powers) return this.#cache.powers;
+		if (this.#cache.powers) {return this.#cache.powers;}
 		// const items = this.allItems();
 		// return this.#cache.powers =
 		const items = this.allItems()
@@ -164,14 +164,14 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	shadows(): readonly Shadow[] {
-		if (this.#cache.shadows) return this.#cache.shadows;
+		if (this.#cache.shadows) {return this.#cache.shadows;}
 		const actors = this.allActors();
 		return this.#cache.shadows = actors
 			.filter( act=> act.system.type == "shadow") as Shadow[];
 	}
 
 	tarotCards(): readonly Tarot[] {
-		if (this.#cache.tarot) return this.#cache.tarot;
+		if (this.#cache.tarot) {return this.#cache.tarot;}
 		const actors = this.allActors();
 		return this.#cache.tarot = actors
 			.filter( actor=> actor.system.type == "tarot") as Tarot[];
@@ -188,7 +188,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	treasureItems(): readonly TreasureItem[] {
-		if (this.#cache.treasureItems) return this.#cache.treasureItems;
+		if (this.#cache.treasureItems) {return this.#cache.treasureItems;}
 		const items = this.allItems();
 		this.#cache.treasureItems =
 			this.#cache.treasureItems = items
@@ -212,7 +212,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	socialEncounterCards(): readonly SocialEncounterCard[] {
 		return this.allSocialCards()
-			.filter( x=> x.system.cardType == "social") as SocialEncounterCard[]
+			.filter( x=> x.system.cardType == "social") as SocialEncounterCard[];
 	}
 
 	/** Actual PCs not counting things with just PC type like item piles and party token*/
@@ -221,7 +221,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	PCs() : readonly PC[] {
-		if (this.#cache.pcs) return this.#cache.pcs;
+		if (this.#cache.pcs) {return this.#cache.pcs;}
 		this.#cache.pcs=  this.allActors().filter( actor => actor.isPC() && actor.hasPlayerOwner) as PC[];
 		return this.#cache.pcs;
 	}
@@ -246,11 +246,11 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	socialLinks(): readonly (PC | NPC)[] {
-		if (this.#cache.socialLinks) return this.#cache.socialLinks;
+		if (this.#cache.socialLinks) {return this.#cache.socialLinks;}
 		return this.#cache.socialLinks = game.actors.filter( (actor :PersonaActor) =>
 			(actor.system.type == "npc"
 				|| actor.system.type == "pc" )
-			&& !!actor.tarot
+			&& Boolean(actor.tarot)
 		) as (PC | NPC)[];
 	}
 
@@ -280,7 +280,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	navigatorModifiers(): ModifierContainer[] {
 		const navigator = this.getNavigator();
-		if (!navigator) return [];
+		if (!navigator) {return [];}
 		const skills = navigator.navigatorSkills
 			.filter(sk => sk.isPassive());
 		return skills as ModifierContainer[];

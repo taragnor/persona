@@ -63,14 +63,14 @@ export class PersonaSounds {
 	}
 
 	static async play(filename: string, volume = 1.0, recipients:string[] | false =[]) : Promise<void> {
-		if (!filename) return;
+		if (!filename) {return;}
 		const src  = `systems/persona/sound/${filename}`;
 		return this.playFile(src, volume, recipients);
 	}
 
 	static async playFree(filename: string, volume = 1.0, recipients:string[] | false =[]): Promise<FOUNDRY.AUDIO.Sound | undefined> {
 		try {
-			if (!filename) return;
+			if (!filename) {return;}
 			const socketOpts = (recipients && recipients.length) ? { recipients} : false;
 			const src = filename;
 			console.debug(`playing ${src}`);

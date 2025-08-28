@@ -15,10 +15,10 @@ export class CombatHooks {
 	static init() {
 
 		Hooks.on("preUpdateCombat" , async (combat: PersonaCombat, _changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
-			const prevActor = combat?.combatant?.actor
+			const prevActor = combat?.combatant?.actor;
 			if (prevActor && (diffObject?.direction ?? 0) > 0) {
 				if (combat.combatant) {
-					await combat.endTurn(combat.combatant)
+					await combat.endTurn(combat.combatant);
 				}
 			}
 
@@ -46,7 +46,7 @@ export class CombatHooks {
 				}
 			}
 			if (diffObject.direction && diffObject.direction != 0) {
-				const currentActor = combat?.combatant?.actor
+				const currentActor = combat?.combatant?.actor;
 				if (currentActor && diffObject.direction > 0) {
 					if (combat.isSocial) {
 						if (currentActor.system.type == "pc") {
@@ -76,7 +76,7 @@ export class CombatHooks {
 
 		Hooks.on("deleteCombat", async (_combat: PersonaCombat) => {
 			if (!game.user.isGM)
-				return;
+				{return;}
 		});
 
 
@@ -89,7 +89,7 @@ export class CombatHooks {
 
 		Hooks.on("renderCombatTracker", async (_item: CombatTracker, element: JQuery<HTMLElement>, _options: RenderCombatTabOptions) => {
 			const combat = (game.combat as (PersonaCombat | undefined));
-			if (!combat) return;
+			if (!combat) {return;}
 			if (combat.isSocial) {
 				PersonaSocial.displaySocialPanel(element);
 			} else {
@@ -101,7 +101,7 @@ export class CombatHooks {
 		Hooks.on("onAddStatus", async function (token: PToken, status: StatusEffect)  {
 			switch (status.id) {
 				case "down":
-					if (status.id != "down") return;
+					if (status.id != "down") {return;}
 					if (!game.user.isGM) {
 						throw new PersonaError("Somehow isn't GM executing this");
 					}
@@ -109,14 +109,14 @@ export class CombatHooks {
 						const allegiance = token.actor.getAllegiance();
 						const standingAllies = game.combat.combatants.contents
 							.some(comb => {
-								if (!comb.token) return false;
+								if (!comb.token) {return false;}
 								const actor = comb.actor as ValidAttackers;
 								return actor.isStanding()
 									&& actor.getAllegiance() == allegiance;
 							});
 						if (!standingAllies) {
 							const currentTurnCharacter = game.combat.combatant?.actor;
-							if (!currentTurnCharacter) return;
+							if (!currentTurnCharacter) {return;}
 							const currentTurnType = currentTurnCharacter.system.type;
 							if (currentTurnType == "shadow") {
 								await PersonaCombat.allOutAttackPrompt();

@@ -79,16 +79,16 @@ export class CombatResult  {
 
 
 	findEffects<T extends OtherEffect["type"]>(effectType: T): (OtherEffect & {type:T})[] {
-		let arr = [] as (OtherEffect & {type:T})[];
+		const arr = [] as (OtherEffect & {type:T})[];
 		for (const v of this.attacks.values()) {
 			for (const eff of v.flatMap(chg => chg.otherEffects) ) {
 				if (eff.type == effectType)
-					arr.push( eff as OtherEffect & {type:T});
+					{arr.push( eff as OtherEffect & {type:T});}
 			}
 		}
 		for (const eff of this.costs.flatMap(chg => chg.otherEffects) ) {
 			if (eff.type == effectType)
-				arr.push( eff as OtherEffect & {type:T});
+				{arr.push( eff as OtherEffect & {type:T});}
 		}
 		return arr;
 	}
@@ -134,7 +134,7 @@ export class CombatResult  {
 	// }
 
 	#getDamageCalc(cons: OldDamageConsequence | DamageConsequence, atkResult: U<AttackResult>, effect: U<ActorChange<ValidAttackers>>  ) : U<DamageCalculation> {
-		if (!effect) return undefined;
+		if (!effect) {return undefined;}
 		let damageType = cons.damageType;
 		if (damageType == "by-power") {
 			if (!atkResult) {
@@ -188,14 +188,14 @@ export class CombatResult  {
 			case "none":
 				break;
 			case "damage-new": {
-				if (!target) break;
+				if (!target) {break;}
 				const damageCalc = this.#getDamageCalc(cons, atkResult ?? undefined, effect);
-				if (!damageCalc) break;
+				if (!damageCalc) {break;}
 				damageCalc.addConsequence(cons, target);
 				break;
 			}
 			case "addStatus": {
-				if (!effect) break;
+				if (!effect) {break;}
 				let status_damage : number | undefined = undefined;
 				if (atkResult && cons.statusName == "burn") {
 					const power = PersonaDB.findItem(atkResult.power);
@@ -226,7 +226,7 @@ export class CombatResult  {
 				break;
 			}
 			case "removeStatus" : {
-				if (!effect) break;
+				if (!effect) {break;}
 				const id = cons.statusName!;
 				const actor = PersonaDB.findActor(effect.actor);
 				if (actor.hasStatus(id)) {
@@ -241,7 +241,7 @@ export class CombatResult  {
 				break;
 			}
 			case "extraAttack":
-				if (!effect) break;
+				if (!effect) {break;}
 				effect.otherEffects.push({
 					type: "extra-attack",
 					maxChain: cons.amount ?? 1,
@@ -261,22 +261,22 @@ export class CombatResult  {
 			case "add-escalation":
 				break;
 			case "save-slot":
-				if (!effect) break;
+				if (!effect) {break;}
 				effect.otherEffects.push({ type: "save-slot"});
 				break;
 			case "half-hp-cost":
-				if (!effect) break;
+				if (!effect) {break;}
 				effect.otherEffects.push({type: "half-hp-cost"});
 				break;
 			case "extraTurn": {
 				if (atkResult) {
 					const power = PersonaDB.findItem(atkResult.power);
-					if (power.isOpener()) break;
-					if (power.isTeamwork()) break;
+					if (power.isOpener()) {break;}
+					if (power.isTeamwork()) {break;}
 				}
-				if (!effect) break;
+				if (!effect) {break;}
 				const combat = game.combat as PersonaCombat;
-				if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) break;
+				if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) {break;}
 				effect.otherEffects.push({
 					type: "extraTurn",
 					activation: combat.lastActivationRoll
@@ -284,7 +284,7 @@ export class CombatResult  {
 				break;
 			}
 			case "expend-item":
-				if (!effect) break;
+				if (!effect) {break;}
 				effect.otherEffects.push({
 					itemId: cons.itemId,
 					type: 	"expend-item",
@@ -292,7 +292,7 @@ export class CombatResult  {
 				});
 				break;
 			case "recover-slot":
-				if (!effect) break;
+				if (!effect) {break;}
 				effect.otherEffects.push( {
 					type: "recover-slot",
 					slot: cons.slotType!,
@@ -304,7 +304,7 @@ export class CombatResult  {
 			case "other-effect":
 				break;
 			case "set-flag":
-				if (!effect) break;
+				if (!effect) {break;}
 				const dur = convertConsToStatusDuration(cons, atkResult ?? target!);
 				effect.otherEffects.push( {
 					type: "set-flag",
@@ -316,7 +316,7 @@ export class CombatResult  {
 				break;
 			case "inspiration-cost": {
 				let situation: Situation | undefined = atkResult?.situation;
-				if (!effect) break;
+				if (!effect) {break;}
 				if (!situation) {
 					situation = {
 						user: effect.actor,
@@ -324,7 +324,7 @@ export class CombatResult  {
 					};
 				}
 				const socialTarget = getSocialLinkTarget(cons.socialLinkIdOrTarot, situation, null);
-				if (!socialTarget) break;
+				if (!socialTarget) {break;}
 				effect.otherEffects.push( {
 					type: "inspiration-cost",
 					amount: cons.amount ?? 1,
@@ -348,7 +348,7 @@ export class CombatResult  {
 					}
 				break;
 			case "use-power":  {
-				if (!effect) break;
+				if (!effect) {break;}
 				if (!cons.actorOwner) {
 					PersonaError.softFail("No actor owner for usepower ability");
 					break;
@@ -362,7 +362,7 @@ export class CombatResult  {
 				break;
 			}
 			case "scan":
-				if (!effect) break;
+				if (!effect) {break;}
 				effect.otherEffects.push( {
 					type: cons.type,
 					level: cons.amount ?? 1,
@@ -370,7 +370,7 @@ export class CombatResult  {
 				break;
 			case "social-card-action":
 				//must be executed playerside as event execution is a player thing
-				if (!effect) break;
+				if (!effect) {break;}
 				const otherEffect : SocialCardActionConsequence = {
 					...cons
 				};
@@ -383,14 +383,14 @@ export class CombatResult  {
 				});
 				break;
 			case "alter-energy":
-				if (!effect) break;
+				if (!effect) {break;}
 				effect.otherEffects.push( {
 					type: cons.type,
 					amount: cons.amount ?? 0,
 				});
 				break;
 			case "alter-mp":
-				if (!effect) break;
+				if (!effect) {break;}
 				effect.otherEffects.push( {
 					type: cons.type,
 					amount: cons.amount ?? 0,
@@ -398,7 +398,7 @@ export class CombatResult  {
 				});
 				break;
 			case "teach-power":
-				if (!effect) break;
+				if (!effect) {break;}
 				effect.otherEffects.push( {
 					...cons
 				});
@@ -406,22 +406,22 @@ export class CombatResult  {
 			case "add-creature-tag":
 				break;
 			case "combat-effect":
-				if (!effect) break;
+				if (!effect) {break;}
 				effect.otherEffects.push(cons);
 				break;
 			case "alter-fatigue-lvl":
-				if (!effect) break;
+				if (!effect) {break;}
 				effect.otherEffects.push(cons);
 				break;
 			case "alter-variable":
 				const alterVarCons = {
 					...cons,
 					contextList: PersonaCombat.createTargettingContextList(situation, cons),
-				}
+				};
 				effect?.otherEffects.push(alterVarCons);
 				break;
 			case "perma-buff":
-				if (!effect) break;
+				if (!effect) {break;}
 				effect.otherEffects.push(cons);
 				break;
 			case "play-sound":
@@ -432,7 +432,7 @@ export class CombatResult  {
 				throw new Error("Should be unreachable");
 			}
 		}
-		if (!effect) return;
+		if (!effect) {return;}
 		if (atkResult == null) {
 			CombatResult.mergeChanges(this.costs, [effect]);
 			return;
@@ -476,7 +476,7 @@ export class CombatResult  {
 			.from(this.attacks.values())
 			.flat()
 			.filter(x => PersonaDB.accessorEq(x.actor, acc) && x.otherEffects.length > 0)
-			.flatMap( x=> x.otherEffects)
+			.flatMap( x=> x.otherEffects);
 	}
 
 
@@ -486,7 +486,7 @@ export class CombatResult  {
 			debugger;
 		}
 		const attacks = Array.from(this.attacks.entries());
-		if (this.escalationMod == 0 && this.costs.length == 0 && attacks.length ==0 && this.globalOtherEffects.length == 0) return undefined;
+		if (this.escalationMod == 0 && this.costs.length == 0 && attacks.length ==0 && this.globalOtherEffects.length == 0) {return undefined;}
 		return this;
 	}
 
@@ -531,9 +531,9 @@ export class CombatResult  {
 		const ret = {...original}; // copy this to prevent changes
 		for (const k of Object.keys(ret)) {
 			const key = k as keyof typeof ret;
-			if (DAMAGETYPES[key] == undefined) continue;
+			if (DAMAGETYPES[key] == undefined) {continue;}
 			const bDamage = b[key];
-			if (!bDamage) continue;
+			if (!bDamage) {continue;}
 			const aDamage = ret[key]!;
 			if (!bDamage.isMergeable(aDamage)) {
 				PersonaError.softFail("Unmergable value, this shoudln't hapepn", original, b);
@@ -543,9 +543,9 @@ export class CombatResult  {
 		}
 		for (const k of Object.keys(b)) {
 			const key = k as keyof typeof ret;
-			if (DAMAGETYPES[key] == undefined) continue;
+			if (DAMAGETYPES[key] == undefined) {continue;}
 			const aDamage = ret[key];
-			if (aDamage) continue; //already handled if its already in a;
+			if (aDamage) {continue;} //already handled if its already in a;
 			ret[key] = b[key];
 		}
 		return ret;
@@ -612,7 +612,7 @@ function resolveStatusDurationAnchor (anchor: (Consequence & {type : "addStatus"
 		case "user":
 			const userAcc=  atkResult.situation.user;
 			if (userAcc)
-				return userAcc;
+				{return userAcc;}
 			PersonaError.softFail("Can't resolve user for status Duration anchor");
 			return null;
 		case "attacker":
@@ -627,7 +627,7 @@ function resolveStatusDurationAnchor (anchor: (Consequence & {type : "addStatus"
 		case "cameo":
 			if ("cameo" in situation && situation.cameo) {
 				const actor = PersonaDB.findActor(situation.cameo);
-				if (actor && actor.isValidCombatant()) return actor.accessor;
+				if (actor && actor.isValidCombatant()) {return actor.accessor;}
 				return null;
 			}
 		case "all-allies":
@@ -668,7 +668,7 @@ function convertConsToStatusDuration(cons: Consequence & {type : "addStatus" | "
 			return {
 				dtype: "save",
 				saveType: cons.saveType ?? "normal",
-			}
+			};
 		case "save-easy":
 		case "presave-easy":
 			return {

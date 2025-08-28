@@ -24,7 +24,7 @@ import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { ArrayCorrector } from "../item/persona-item.js";
 import { ActivityLink } from "../actor/persona-actor.js";
 import { Activity } from "../item/persona-item.js";
-import { StudentSkill } from "../../config/student-skills.js"
+import { StudentSkill } from "../../config/student-skills.js";
 
 import { getActiveConsequences } from "../preconditions.js";
 import { CardRoll } from "../../config/social-card-config.js";
@@ -56,7 +56,7 @@ export class PersonaSocial {
 	static cardDrawPromise: null | {
 		res: (str: string) => void,
 		rej: (x: any) => void,
-	}
+	};
 	static sound: FOUNDRY.AUDIO.Sound | null = null;
 
 	static disqualifierStatuses : StatusEffectId[] = [
@@ -92,10 +92,10 @@ export class PersonaSocial {
 
 	static async startSocialTurn( pc: PC) {
 		if (pc.isOwner && !game.user.isGM)
-			TurnAlert.alert();
+			{TurnAlert.alert();}
 		if (!game.user.isGM) {return;}
 		//only GM access beyond this point
-		let startTurnMsg = [ `<u><h2> ${pc.name}'s Social Turn</h2></u><hr>`];
+		const startTurnMsg = [ `<u><h2> ${pc.name}'s Social Turn</h2></u><hr>`];
 		if (pc.hasStatus("injured")) {
 			startTurnMsg.push(`<b> ${pc.name} </b>: is injured and should probably take the rest action`);
 		}
@@ -120,7 +120,7 @@ export class PersonaSocial {
 			}
 		}
 		const speaker = {alias: "Social Turn Start"};
-		let messageData = {
+		const messageData = {
 			speaker: speaker,
 			content: startTurnMsg.join("<br>"),
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
@@ -129,7 +129,7 @@ export class PersonaSocial {
 	}
 
 	static async endSocialTurn( pc: PC) {
-		let endTurnMsg = [] as string[];
+		const endTurnMsg = [] as string[];
 		//Check exhaustion statuses
 
 		try {
@@ -139,7 +139,7 @@ export class PersonaSocial {
 		}
 		if (endTurnMsg.length) {
 			const speaker = {alias: "Social Turn End"};
-			let messageData = {
+			const messageData = {
 				speaker: speaker,
 				content: endTurnMsg.join("<br>"),
 				style: CONST.CHAT_MESSAGE_STYLES.OOC,
@@ -235,7 +235,7 @@ export class PersonaSocial {
 	}
 
 	static validSocialCards(actor: PC, activity: SocialLink) : SocialEncounterCard[] {
-		const link = this.lookupSocialLink(actor, activity.id)
+		const link = this.lookupSocialLink(actor, activity.id);
 		const situation : Situation= {
 			user: actor.accessor,
 			attacker: actor.accessor,
@@ -260,7 +260,7 @@ export class PersonaSocial {
 
 	static async #drawSocialCard(actor: PC, link : Activity | SocialLink) : Promise<SocialCard> {
 		if (!game.user.isGM)
-		return await this.#sendGMCardRequest(actor, link);
+		{return await this.#sendGMCardRequest(actor, link);}
 		if (link instanceof PersonaItem) {
 			return link;
 		}
@@ -269,19 +269,19 @@ export class PersonaSocial {
 		const weightedList = undrawn.map( card=> ({
 				item: card,
 				weight: Number(card.system.frequency) ?? 1,
-			}))
+			}));
 		const chosenCard = weightedChoice(weightedList);
-		if (!chosenCard) throw new PersonaError("Can't find valid social card!");
+		if (!chosenCard) {throw new PersonaError("Can't find valid social card!");}
 		return chosenCard;
 	}
 
 	static async #socialEncounter(actor: PC, activity: SocialLink | Activity) : Promise<ChatMessage[]> {
-		let replaceSet : Record<string, string> = {};
+		const replaceSet : Record<string, string> = {};
 		if (activity instanceof PersonaActor) {
 			const link = this.lookupSocialLink(actor, activity.id);
 			replaceSet["$TARGET"] = link.actor.name;
 			if (link.actor.isSpecialEvent(link.linkLevel + 1)) {
-				const msg = await this.specialEvent(actor, activity)
+				const msg = await this.specialEvent(actor, activity);
 				return [msg];
 			}
 		}
@@ -455,25 +455,25 @@ export class PersonaSocial {
 
 	static lookupActivity(actor: PC, activityId: string): ActivityLink {
 		const link = actor.activityLinks.find( x=> x.activity.id == activityId);
-		if (!link) throw new PersonaError(`Can't find activity: ${activityId}`);
+		if (!link) {throw new PersonaError(`Can't find activity: ${activityId}`);}
 		return link;
 	}
 
 	static lookupSocialLink(actor: PC, linkId: string) :SocialLinkData {
 		const link= actor.socialLinks.find(link => link.actor.id == linkId);
 		if (!link)
-			throw new PersonaError(`Can't find link ${linkId}`);
+			{throw new PersonaError(`Can't find link ${linkId}`);}
 		return link;
 	}
 
 	static #getCameos(card: SocialCard, actor: PC, linkId: string) : SocialLink[] {
 		let targets : (SocialLink)[] = [];
 		const testCameo = (cameo: SocialLink) => {
-			if (cameo.id == actor.id) return false;
-			if (cameo.id == linkId) return false;
+			if (cameo.id == actor.id) {return false;}
+			if (cameo.id == linkId) {return false;}
 			const acc = cameo.accessor;
-			if (!cameo.isAvailable(actor)) return false;
-			if (cameo.hasCreatureTag("stuck-in-metaverse")) return false;
+			if (!cameo.isAvailable(actor)) {return false;}
+			if (cameo.hasCreatureTag("stuck-in-metaverse")) {return false;}
 			const target = PersonaDB.socialLinks().find(link => link.id == linkId) as SocialLink | undefined;
 			const targetAcc = target?.accessor;
 			const situation: Situation = {
@@ -486,7 +486,7 @@ export class PersonaSocial {
 			};
 			if (this.disqualifierStatuses.some( st => cameo.hasStatus(st))) { return false;}
 			return testPreconditions(card.system.cameoConditions , situation, null);
-		}
+		};
 		const allCameos = PersonaDB.socialLinks().
 			filter (link => testCameo(link));
 		switch (card.system.cameoType) {
@@ -524,18 +524,18 @@ export class PersonaSocial {
 			case "student": {
 				const students = allCameos
 				.filter( x=> x.hasCreatureTag("student"));
-				if (students.length == 0) return [];
+				if (students.length == 0) {return [];}
 				const randomPick = students[Math.floor(Math.random() * students.length)];
 				if (!randomPick)
-				throw new PersonaError("Random student select failed");
+				{throw new PersonaError("Random student select failed");}
 				return [randomPick];
 			}
 			case "any": {
 				const anyLink = allCameos;
-				if (allCameos.length == 0) return [];
+				if (allCameos.length == 0) {return [];}
 				const randomPick = anyLink[Math.floor(Math.random() * anyLink.length)];
 				if (!randomPick)
-				throw new PersonaError("Random any link select failed");
+				{throw new PersonaError("Random any link select failed");}
 				return [randomPick];
 			}
 			case "invite-sl4":
@@ -553,7 +553,7 @@ export class PersonaSocial {
 			case "cockblocker": {
 				const otherDates = allCameos
 				.filter( x =>  actor.isDating(x));
-				if (otherDates.length ==0) return [];
+				if (otherDates.length ==0) {return [];}
 				return [randomSelect(otherDates)];
 			}
 			default:
@@ -617,7 +617,7 @@ export class PersonaSocial {
 	}
 
 	static getCharInInitiativeList( offset: number) : SocialLink | undefined {
-		if (!game.combat || !game.combat.combatant) return undefined;
+		if (!game.combat || !game.combat.combatant) {return undefined;}
 		const initList = game.combat.turns;
 		const index = initList.indexOf(game.combat.combatant);
 		let modOffset = (index + offset) % initList.length;
@@ -628,7 +628,7 @@ export class PersonaSocial {
 	}
 
 	static async #execCardSequence(cardData: CardData): Promise<ChatMessage[]> {
-		let chatMessages: ChatMessage[] = [];
+		const chatMessages: ChatMessage[] = [];
 		await this.#printCardIntro(cardData);
 		this.rollState = {
 			continuation: () => {},
@@ -664,7 +664,7 @@ export class PersonaSocial {
 		const card = cardData.card;
 		if (!card.system.opportunity
 			&& !card.system.opportunity_choices)
-			return;
+			{return;}
 		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-opportunity.hbs`, {item: card,card,cardData} );
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
@@ -695,7 +695,7 @@ export class PersonaSocial {
 		const situation = {
 			...cardData.situation,
 			rollTags: cardData.extraCardTags
-		}
+		};
 		let eventList = cardEventList
 			.filter ( ev => !ev.eventTags.includes("disabled"))
 			.filter( (ev) => !cardData.eventsChosen.includes(ev) && testPreconditions(
@@ -735,7 +735,7 @@ export class PersonaSocial {
 		})
 		);
 		const ev = weightedChoice(eventWeights);
-		if (!ev) return undefined;
+		if (!ev) {return undefined;}
 		return ev;
 	}
 
@@ -850,7 +850,7 @@ export class PersonaSocial {
 			}
 		}
 		if (rollTags.includes("on-cameo") && cardData.cameos) {
-			const cameoEffects = cardData.cameos.flatMap( x=> x.socialEffects() )
+			const cameoEffects = cardData.cameos.flatMap( x=> x.socialEffects() );
 			effects.push(...cameoEffects);
 		}
 		const retList = new ModifierList();
@@ -867,7 +867,7 @@ export class PersonaSocial {
 			if (link.actor.isPC()) {
 				pcImproveSpend = `<li class="token-spend"> spend 4 progress tokens to raise link with ${link.actor.name}</li>`;
 			}
-			giftStr += `You may give a gift to anyone in the scene (max 1 gift per person). `
+			giftStr += `You may give a gift to anyone in the scene (max 1 gift per person). `;
 			const SLCameos = cardData.cameos.filter(cameo => cardData.actor.getSocialSLWith(cameo) >= 4);
 			if (SLCameos.length > 0) {
 				giftStr += `However since there are multiple people in the scene...  ${SLCameos.map(x=> x.name).join(", ")}. Anyone who doesn't get a gift will lose a progress token if they are SL 4+ or higher. `;
@@ -976,7 +976,7 @@ export class PersonaSocial {
 			tarot: socialLink.tarot?.name as TarotCard,
 			target: target.accessor,
 			socialTarget: target.accessor,
-		}
+		};
 		// console.log(situation);
 		await this.execTrigger("on-attain-tarot-perk", target, situation, `Gains Perk (${socialLink.tarot?.name})`) ;
 	}
@@ -990,7 +990,7 @@ export class PersonaSocial {
 		switch (type) {
 			case "cameo": {
 				const cameoId = cardData.cameos[0]?.id;
-				if (!cameoId) return undefined;
+				if (!cameoId) {return undefined;}
 				const link = this.lookupSocialLink(cardData.actor, cameoId);
 				return 10 + link.linkLevel * 2;
 			}
@@ -1064,7 +1064,7 @@ export class PersonaSocial {
 	}
 
 	static getCardRollDCModifiers(cardData: CardData, cardRoll: CardRoll, rollTags : (RollTag | CardTag)[]) : ModifierList {
-		const base = this.getBaseCardRollDC(cardData, cardRoll)
+		const base = this.getBaseCardRollDC(cardData, cardRoll);
 		if ((cardRoll.rollType == "save" || cardRoll.rollType == "studentSkillCheck") && !(base > 0)) {
 			debugger;
 		}
@@ -1079,7 +1079,7 @@ export class PersonaSocial {
 
 	static getRollTags(cardData: CardData, cardChoice: CardChoice) : (RollTag | CardTag)[] {
 		const cardRoll = cardChoice.roll;
-		let rollTags = this.getCardRollTags(cardRoll);
+		const rollTags = this.getCardRollTags(cardRoll);
 		rollTags.pushUnique(...cardData.extraCardTags);
 		rollTags.pushUnique(...cardData.card.system.cardTags);
 		if (cardData.currentEvent) {
@@ -1090,9 +1090,9 @@ export class PersonaSocial {
 
 	static async handleCardChoice(cardData: CardData, cardChoice: DeepNoArray<CardChoice>) {
 		const cardRoll = cardChoice.roll;
-		let rollTags = this.getCardRollTags(cardRoll);
+		const rollTags = this.getCardRollTags(cardRoll);
 		if (cardData.currentEvent) {
-			rollTags.push(...cardData.currentEvent.eventTags)
+			rollTags.push(...cardData.currentEvent.eventTags);
 		}
 		rollTags.push(...cardData.extraCardTags);
 		if (!cardData.currentEvent) {
@@ -1159,7 +1159,7 @@ export class PersonaSocial {
 			}
 			case "dual":
 				//TODO: implement dual roll
-				PersonaError.softFail("Dual roll is not yet supported")
+				PersonaError.softFail("Dual roll is not yet supported");
 				break;
 			default:
 				cardRoll satisfies never;
@@ -1192,7 +1192,7 @@ export class PersonaSocial {
 		progress += critical ? cardRoll.progressCrit ?? 0 : 0;
 		progress += !hit ? cardRoll.progressFail ?? 0 : 0;
 		if (progress != 0) {
-			await this.applyCardProgress(cardData, progress)
+			await this.applyCardProgress(cardData, progress);
 		}
 	}
 
@@ -1226,7 +1226,7 @@ export class PersonaSocial {
 
 	static async makeCardRoll(ev: JQuery.ClickEvent) {
 		if (!this.rollState)
-			throw new PersonaError("No event state present, can't resume roll");
+			{throw new PersonaError("No event state present, can't resume roll");}
 		const cardId = HTMLTools.getClosestData(ev, "cardId");
 		const messageId = HTMLTools.getClosestData(ev, "messageId");
 		const message = game.messages.get(messageId);
@@ -1277,7 +1277,7 @@ export class PersonaSocial {
 		PersonaSockets.simpleSend("DRAW_CARD", {actorId: actor.id, linkId: link.id}, gms.map( x=> x.id));
 		const cardId = await promise;
 		const card = game.items.get(cardId) as SocialCard | undefined;
-		if (!card) throw new PersonaError(`No card found for ${link.name}`);
+		if (!card) {throw new PersonaError(`No card found for ${link.name}`);}
 		return card;
 	}
 
@@ -1291,7 +1291,7 @@ export class PersonaSocial {
 		if (activity instanceof PersonaActor) {
 			await activity.setAvailability(false);
 		}
-		const card = await this.#drawSocialCard(actor, activity)
+		const card = await this.#drawSocialCard(actor, activity);
 		const sendBack = [socketPayload.sender];
 		// console.log(`Send back ${card.name}`);
 		PersonaSockets.simpleSend("CARD_REPLY", {cardId: card.id}, sendBack);
@@ -1299,7 +1299,7 @@ export class PersonaSocial {
 
 	static async getCardReply(req: SocketMessage["CARD_REPLY"]) {
 		console.log(`got reply ${req.cardId}`);
-		if (!this.cardDrawPromise) return;
+		if (!this.cardDrawPromise) {return;}
 		if (req.cardId) {
 			this.cardDrawPromise.res(req.cardId);
 		}
@@ -1322,7 +1322,7 @@ export class PersonaSocial {
 				this.addExtraEvent(eff.amount ?? 0);
 				break;
 			case "gain-money":
-					await this.gainMoney(eff.amount ?? 0)
+					await this.gainMoney(eff.amount ?? 0);
 				break;
 			case "modify-progress-tokens":
 					await this.modifyProgress(eff.amount ?? 0);
@@ -1335,7 +1335,7 @@ export class PersonaSocial {
 				await this.alterStudentSkill( eff.studentSkill, eff.amount ?? 0);
 				break;
 			case "modify-progress-tokens-cameo": {
-				const cameos = this.rollState.cardData.cameos
+				const cameos = this.rollState.cardData.cameos;
 				const actor  = this.rollState.cardData.actor;
 				if (!cameos || cameos.length < 1) {
 					break;
@@ -1469,7 +1469,7 @@ export class PersonaSocial {
 	}
 
 	static async addCardEvents(cardId: string) {
-		if (!cardId) throw new PersonaError("No card ID given to addCardEvent");
+		if (!cardId) {throw new PersonaError("No card ID given to addCardEvent");}
 		if (!this.rollState) {
 			PersonaError.softFail(`Can't create more events as there is no RollState`);
 			return;
@@ -1508,13 +1508,13 @@ export class PersonaSocial {
 
 	static async modifyProgress(amt: number) {
 		const  rs = this.checkRollState("modify Progress tokens");
-		if (!rs) return;
+		if (!rs) {return;}
 		const actor = rs.cardData.actor;
 		if (rs.cardData.situation.socialTarget) {
 			const linkId = rs.cardData.linkId;
 			await actor.socialLinkProgress(linkId, amt);
 		} else {
-			const id = rs.cardData.card.id
+			const id = rs.cardData.card.id;
 			await actor.activityProgress(id, amt);
 		}
 	}
@@ -1529,7 +1529,7 @@ export class PersonaSocial {
 
 	static async alterStudentSkill(skill: StudentSkill, amt: number) {
 		const rs = this.checkRollState("alter student skill");
-		if (!rs) return;
+		if (!rs) {return;}
 		await rs.cardData.actor.alterSocialSkill(skill, amt);
 	}
 
@@ -1551,7 +1551,7 @@ export class PersonaSocial {
 	}
 
 	static async stopCardExecution() {
-		if (this.sound) this.sound.stop();
+		if (this.sound) {this.sound.stop();}
 		this.sound = null;
 		this.rollState = null;
 		this.cardDrawPromise= null;
@@ -1559,7 +1559,7 @@ export class PersonaSocial {
 
 	static forceEvent(evLabel?: string) {
 		console.log(`Entering Force Event : ${evLabel}`);
-		if (!evLabel) return;
+		if (!evLabel) {return;}
 		if (!this.rollState) {
 			PersonaError.softFail(`Can't force event ${evLabel} as there is no rollstate`);
 			return;
@@ -1587,7 +1587,7 @@ export class PersonaSocial {
 		const weatherIcon = PersonaCalendar.getWeatherIcon();
 		tracker.find("div.weather-icon").append(weatherIcon).on("click" , PersonaCalendar.openWeatherForecast.bind(PersonaCalendar));
 		const doom = PersonaCalendar.DoomsdayClock;
-		const doomtxt = `${doom.amt} / ${doom.max}`
+		const doomtxt = `${doom.amt} / ${doom.max}`;
 		tracker.find("span.doomsday").text(doomtxt);
 		const weekday = PersonaCalendar.getDateString();
 		tracker.find(".day").text(weekday);
@@ -1724,7 +1724,7 @@ Hooks.on("socketsReady", () => {
 
 Hooks.on("socketsReady" , () => {
 	PersonaSockets.setHandler("DEC_AVAILABILITY", ( task_id: string) => {
-		if (!game.user.isGM) return;
+		if (!game.user.isGM) {return;}
 		const link = game.actors.find(x=> x.id == task_id);
 		if (link) {
 			const actor = link as PersonaActor;
@@ -1738,7 +1738,7 @@ Hooks.on("socketsReady" , () => {
 });
 
 //@ts-ignore
-window.PersonaSocial = PersonaSocial
+window.PersonaSocial = PersonaSocial;
 
 Hooks.on("updateActor", async (_actor: PersonaActor, changes) => {
 	if ((changes as any)?.system?.weeklyAvailability) {

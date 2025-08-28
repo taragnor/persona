@@ -20,7 +20,7 @@ export class LevelUpCalculator {
 	static getEffectiveLevel(xpTotal: number) : number {
 		for (let EL= 0; EL <= 100; EL += 1) {
 			if (xpTotal < this.minXPForEffectiveLevel(EL))
-				return EL-1;
+				{return EL-1;}
 		}
 		return 100;
 	}
@@ -53,7 +53,7 @@ export class LevelUpCalculator {
 	static XPRequiredToAdvanceToLevel(eLevel: number) : number {
 		const val = this.XPToAdvanceTable.get(eLevel);
 		if (val)
-			return val;
+			{return val;}
 		if (eLevel <= 1) {
 			if (eLevel < 1) {
 				this.XPToAdvanceTable.set(eLevel, 0);

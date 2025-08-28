@@ -21,10 +21,10 @@ export class EngagementList {
 		data = data.map ( engagement => {
 			return engagement.filter( cId => {
 				const comb = this.getCombatant(cId);
-				if (!comb.actor) return false;
+				if (!comb.actor) {return false;}
 				return comb.actor.canEngage();
-			})
-		})
+			});
+		});
 		await this.storeData(data);
 	}
 
@@ -62,7 +62,7 @@ export class EngagementList {
 		if (!engagement.includes(combatant1.id)) {
 			engagement.push(combatant1.id);
 			if (!this.data.includes(engagement))
-				this.data.push(engagement)
+				{this.data.push(engagement);}
 			await this.storeData(this.data);//if this doesn't work may need to do something else here
 		}
 	}

@@ -9,7 +9,7 @@ import { PersonaSocial } from "../../social/persona-social.js";
 import { SocialStat } from "../../../config/student-skills.js";
 import { STUDENT_SKILLS_LIST } from "../../../config/student-skills.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
-import { PersonaDB } from "../../persona-db.js"
+import { PersonaDB } from "../../persona-db.js";
 import { NPC } from "../persona-actor.js";
 import { PC } from "../persona-actor.js";
 import { PCLikeSheet } from "./pc-like-sheet.js";
@@ -44,7 +44,7 @@ export class PCSheet extends PCLikeSheet {
 		const actor : PersonaActor = await Actor.implementation.fromDropData(actorD);
 		switch (actor.system.type) {
 			case "pc" :{
-				await this.actor.createSocialLink(actor as PC)
+				await this.actor.createSocialLink(actor as PC);
 				return undefined;
 			}
 			case "shadow":
@@ -55,7 +55,7 @@ export class PCSheet extends PCLikeSheet {
 			case "npcAlly":
 			case "npc":
 				//create a social link
-				await this.actor.createSocialLink(actor as NPC)
+				await this.actor.createSocialLink(actor as NPC);
 				return undefined;
 			default:
 				actor.system satisfies never;
@@ -79,9 +79,9 @@ export class PCSheet extends PCLikeSheet {
 		html.find(`.social-stat .social-minus`).on("click", this.socialMinus.bind(this));
 		html.find(`.spend-money`).on('click', this.spendMoney.bind(this));
 		html.find(`.gain-money`).on('click', this.gainMoney.bind(this));
-		html.find(".draw-social-card").on("click", this.drawSocialCard.bind(this))
-		html.find(".draw-activity-card").on("click", this.drawActivityCard.bind(this))
-		html.find(".relationship-type").on("change", this.relationshipTypeChange.bind(this))
+		html.find(".draw-social-card").on("click", this.drawSocialCard.bind(this));
+		html.find(".draw-activity-card").on("click", this.drawActivityCard.bind(this));
+		html.find(".relationship-type").on("change", this.relationshipTypeChange.bind(this));
 		html.find(".add-strike").on("click", this.addStrike.bind(this));
 		html.find(".rem-strike").on("click", this.removeStrike.bind(this));
 		html.find(".init-social-link").on("click", this.startSocialLink.bind(this));
@@ -103,7 +103,7 @@ export class PCSheet extends PCLikeSheet {
 		if (!STUDENT_SKILLS_LIST.includes(socialStat)) {
 			throw new PersonaError(`Invalid student skill: ${socialStat}.`);
 		}
-		PersonaSocial.boostSocialSkill(this.actor, socialStat)
+		PersonaSocial.boostSocialSkill(this.actor, socialStat);
 	}
 
 	async socialMinus (ev: JQuery.Event) {
@@ -111,7 +111,7 @@ export class PCSheet extends PCLikeSheet {
 		if (!STUDENT_SKILLS_LIST.includes(socialStat)) {
 			throw new PersonaError(`Invalid student skill: ${socialStat}.`);
 		}
-		PersonaSocial.lowerSocialSkill(this.actor, socialStat)
+		PersonaSocial.lowerSocialSkill(this.actor, socialStat);
 	}
 
 	async refreshLink(event: Event) {
@@ -128,7 +128,7 @@ export class PCSheet extends PCLikeSheet {
 			9999: "All",
 		}, {default: 1, title: "Refresh Inspiration from Link"});
 
-		if (!amount) return;
+		if (!amount) {return;}
 		await Logger.sendToChat(`Added ${Number(amount)} inpiration for ${npc.name} (was ${link.inspiration})`, this.actor);
 		await this.actor.addInspiration(npc.id, Number(amount));
 	}
@@ -178,7 +178,7 @@ export class PCSheet extends PCLikeSheet {
 			3: "3",
 			4: "4",
 		}, {default: 1, title: "Add Social Boost"});
-		if (choice == null) return;
+		if (choice == null) {return;}
 		if ($(event.currentTarget).closest(".social-link").length > 0) {
 			const linkId= String(HTMLTools.getClosestData(event, "linkId"));
 			await this.actor.socialLinkProgress(linkId, Number(choice));
@@ -199,7 +199,7 @@ export class PCSheet extends PCLikeSheet {
 			5: "5",
 			9999: "All",
 		}, {default: 1, title: "Remove Social Boosts"});
-		if (choice == null) return;
+		if (choice == null) {return;}
 		if ($(event.currentTarget).closest(".social-link").length > 0) {
 			const linkId= String(HTMLTools.getClosestData(event, "linkId"));
 			await this.actor.socialLinkProgress(linkId, -Number(choice));
@@ -234,7 +234,7 @@ export class PCSheet extends PCLikeSheet {
 	async relationshipTypeChange(event: JQuery.ChangeEvent) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
 		const newval = $(event.currentTarget).find(":selected").val();
-		if (!newval) return;
+		if (!newval) {return;}
 		this.actor.setRelationshipType(linkId, String(newval));
 	}
 
@@ -258,13 +258,13 @@ export class PCSheet extends PCLikeSheet {
 
 	async gainMoney(_ev: Event) {
 		const x = await HTMLTools.getNumber("Amount to gain");
-		if (x <= 0) return;
+		if (x <= 0) {return;}
 		await this.actor.gainMoney(x, true);
 	}
 
 	async spendMoney(_ev: Event) {
 		const x = await HTMLTools.getNumber("Amount to spend");
-		if (x <= 0) return;
+		if (x <= 0) {return;}
 		await this.actor.spendMoney(x);
 		// await Logger.sendToChat(`${this.actor.name} Spent ${x} resource points`);
 	}
@@ -274,7 +274,7 @@ export class PCSheet extends PCLikeSheet {
 		const activity = PersonaDB.allActivities().find(x => x.id == activityId);
 		if (activity &&
 			await HTMLTools.confirmBox("Social Card", "Draw Activity Card?")) {
-			await PersonaSocial.chooseActivity(this.actor, activity, {noDegrade:true})
+			await PersonaSocial.chooseActivity(this.actor, activity, {noDegrade:true});
 		}
 	}
 	async drawSocialCard(event: JQuery.ClickEvent) {
@@ -282,7 +282,7 @@ export class PCSheet extends PCLikeSheet {
 		const link = PersonaSocial.lookupSocialLink(this.actor, linkId);
 		if (link &&
 			await HTMLTools.confirmBox("Social Card", "Draw Social Card?")) {
-			await PersonaSocial.chooseActivity(this.actor, link.actor, {noDegrade:true})
+			await PersonaSocial.chooseActivity(this.actor, link.actor, {noDegrade:true});
 		}
 	}
 

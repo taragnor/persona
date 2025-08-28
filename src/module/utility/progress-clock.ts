@@ -15,9 +15,9 @@ interface ClockMetaData  {
 	gmOnly?: boolean;
 }
 
-interface MetaObject {
-	meta: ClockMetaData
-}
+// interface MetaObject {
+// 	meta: ClockMetaData
+// }
 
 export  class ProgressClock {
 	static _clocks: Map<string, ProgressClock> = new Map();
@@ -57,14 +57,14 @@ export  class ProgressClock {
 	renameClock(newName: string) {
 		this.clockName = newName;
 		const cl = this.#getClock();
-		if (!cl) return;
+		if (!cl) {return;}
 		cl.name = newName;
 		window.clockDatabase!.update(cl);
 	}
 
 	static getOrCreateClockByName(name: string, maxIfDoesntExist: number) {
 		const db = window.clockDatabase;
-		if (!db) throw new Error("No Clock database, is Global Progress Clocks Active?");
+		if (!db) {throw new Error("No Clock database, is Global Progress Clocks Active?");}
 		let cl = db.getName(name);
 		if (!cl) {
 			db.addClock({
@@ -82,7 +82,7 @@ export  class ProgressClock {
 
 	static getOrCreateClockById(id: string, nameIfDoesntExist: string, maxIfDoesntExist: number) {
 		const db = window.clockDatabase;
-		if (!db) throw new Error("No Clock database, is Global Progress Clocks Active?");
+		if (!db) {throw new Error("No Clock database, is Global Progress Clocks Active?");}
 		let cl = db.get(id);
 		if (!cl) {
 			db.addClock({
@@ -104,7 +104,7 @@ export  class ProgressClock {
 			await sleep(1000);
 		}
 		const clock = this.#getClock();
-		if (!clock) return;
+		if (!clock) {return;}
 		ProgressClock._clocks.set(clock.id, this);
 		this.#lastKnown = this.amt;
 	}
@@ -120,19 +120,19 @@ export  class ProgressClock {
 	}
 
 	static allClocks() : GlobalProgressClocks.ProgressClock[]{
-		if (!window.clockDatabase) return [];
+		if (!window.clockDatabase) {return [];}
 		const db = window.clockDatabase;
 		return db.contents;
 	}
 
 	static getClock(id: string) : ProgressClock | undefined {
-		if (!window.clockDatabase) return undefined;
+		if (!window.clockDatabase) {return undefined;}
 		const db = window.clockDatabase;
 		const clock = db.get(id);
-		if (!clock) return undefined;
+		if (!clock) {return undefined;}
 		const pClock = this._clocks.get(clock.id);
-		if (pClock) return pClock;
-		else return new ProgressClock(id, clock.name, clock.max);
+		if (pClock) {return pClock;}
+		else {return new ProgressClock(id, clock.name, clock.max);}
 	}
 
 
@@ -170,7 +170,7 @@ export  class ProgressClock {
 
 	setMax(newMax: number) {
 		const clk = this.#getClock();
-		if (!clk) return;
+		if (!clk) {return;}
 		clk.max = newMax;
 		window.clockDatabase!.update(clk);
 	}
@@ -195,14 +195,14 @@ export  class ProgressClock {
 
 
 	get amt() : number {
-		const clock= this.#getClock()
-		if (!clock) return -1;
+		const clock= this.#getClock();
+		if (!clock) {return -1;}
 		return clock.value;
 	}
 
 	get visible() : boolean {
-		const clock = this.#getClock()
-		if (!clock) return false;
+		const clock = this.#getClock();
+		if (!clock) {return false;}
 		return !clock.private;
 	}
 
@@ -212,8 +212,8 @@ export  class ProgressClock {
 
 	protected async refreshValue(amt: number) {
 		const clock = this.#getClock();
-		if (!clock) return;
-		if (clock.value == amt) return;
+		if (!clock) {return;}
+		if (clock.value == amt) {return;}
 		clock.value = amt;
 		if (window.clockDatabase) {
 			await window.clockDatabase.update(clock);
@@ -227,16 +227,16 @@ export  class ProgressClock {
 
 	async hide() {
 		const clock = this.#getClock();
-		if (!clock) return;
-		if (clock.private == true) return;
+		if (!clock) {return;}
+		if (clock.private == true) {return;}
 		clock.private = true;
 		window.clockDatabase!.update(clock);
 	}
 
 	async show() {
 		const clock = this.#getClock();
-		if (!clock) return;
-		if (clock.private == false) return;
+		if (!clock) {return;}
+		if (clock.private == false) {return;}
 		clock.private = false;
 		window.clockDatabase!.update(clock);
 	}
@@ -251,7 +251,7 @@ export  class ProgressClock {
 
 	async inc(): Promise<number> {
 		if (!this.isMaxed() || this.isCyclical())
-		await this.add(1);
+		{await this.add(1);}
 		return this.amt;
 	}
 

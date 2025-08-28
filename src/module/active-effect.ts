@@ -55,10 +55,10 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 	statusHasTag(tag: StatusEffectObject["tags"][number]): boolean {
 		for (const status of this.statuses) {
 			const stData = statusMap.get(status);
-			if (!stData) continue;
+			if (!stData) {continue;}
 			const tags = stData.tags;
 			if (tags.includes(tag))
-				return true;
+				{return true;}
 		}
 		return false;
 	}
@@ -80,7 +80,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 	}
 
 	durationFix(duration: TurnEndDuration) : void {
-		if (duration.anchorStatus) return;
+		if (duration.anchorStatus) {return;}
 		const owner = duration.actorTurn ? PersonaDB.findActor(duration.actorTurn) : this.parent;
 		if (!(owner instanceof PersonaActor)) { return;}
 		const combat = game.combat;
@@ -110,7 +110,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				const newDuration : StatusDuration = {
 					dtype: "anchored",
 					anchor: anchor.accessor,
-				}
+				};
 				await this.setFlag("persona", "duration", newDuration);
 				return;
 			default:
@@ -131,13 +131,13 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 			case "USoNT":
 			case "UEoT":
 				const anchorHolderAcc = origDuration.actorTurn;
-				if (!anchorHolderAcc) return null;
+				if (!anchorHolderAcc) {return null;}
 				const anchorHolder = PersonaDB.findActor(anchorHolderAcc);
-				if (anchorHolder == this.parent) return null;
+				if (anchorHolder == this.parent) {return null;}
 				const duration :StatusDuration = {
 					dtype: origDuration.dtype,
 					anchorStatus: this.accessor,
-				}
+				};
 				const anchored = {
 					name: `Anchor for ${this.name}`,
 				};
@@ -149,7 +149,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 					if (!game.user.isGM) {
 						PersonaError.softFail("Problems creating Anchor status, probably ownership issues");
 					} else {
-						PersonaError.softFail(`Unknown Error: ${e.toString()}`)
+						PersonaError.softFail(`Unknown Error: ${e.toString()}`);
 					}
 					return null;
 				}
@@ -201,17 +201,17 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 	}
 
 	removesOnDown() : boolean {
-		if (this.statuses.size == 0) return false;
-		if (this.statusDuration.dtype == "instant") return false;
-		if (!this.durationLessThanOrEqualTo({ dtype: "combat"})) return false;
+		if (this.statuses.size == 0) {return false;}
+		if (this.statusDuration.dtype == "instant") {return false;}
+		if (!this.durationLessThanOrEqualTo({ dtype: "combat"})) {return false;}
 		return Array.from(this.statuses).some( st=> {
-			const status = CONFIG.statusEffects.find( x=> x.id == st)
-			if (st == "sticky") return false;
+			const status = CONFIG.statusEffects.find( x=> x.id == st);
+			if (st == "sticky") {return false;}
 			const tags = status?.tags;
-			if (!status || !tags) return false;
-			if (tags.includes("identifier")) return false;
-			if (tags.includes("fade")) return false;
-			if (tags.includes("downtime")) return false;
+			if (!status || !tags) {return false;}
+			if (tags.includes("identifier")) {return false;}
+			if (tags.includes("fade")) {return false;}
+			if (tags.includes("downtime")) {return false;}
 			return true;
 		});
 	}
@@ -239,9 +239,9 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				PersonaError.softFail(`Bad Duration ${(duration as any).dtype}`);
 				return false;
 		}
-		if (this.statuses.has("charmed")) return false;
+		if (this.statuses.has("charmed")) {return false;}
 		const actor = this.parent instanceof PersonaActor ? this.parent : null;
-		if (!actor) return false;
+		if (!actor) {return false;}
 		if (!actor.isValidCombatant()) {return false;}
 		const DC = this.statusSaveDC;
 		const bundle = await PersonaRoller.rollSave(actor as ValidAttackers, { DC, label: this.name, saveVersus: this.statusId, rollTags: [] } );
@@ -257,7 +257,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 			case "UEoNT":
 			case "UEoT":
 				const acc = duration.anchorStatus;
-				if (!acc) break;
+				if (!acc) {break;}
 				try {
 					const anchorStatus = PersonaDB.findAE(acc);
 					await anchorStatus?.delete();
@@ -433,7 +433,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 
 
 	get isDowntimeStatus(): boolean {
-		if (this.statuses.size < 1) return false;
+		if (this.statuses.size < 1) {return false;}
 		const downtime = CONFIG.statusEffects.filter(x => x.tags.includes("downtime"));
 		return downtime.some( st => this.statuses.has(st.id as StatusEffectId) );
 	}
@@ -527,7 +527,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 
 	get flagId() : string | undefined {
 		const flag = this.getFlag<string>("persona", "flagId");
-		if (flag == undefined) return flag;
+		if (flag == undefined) {return flag;}
 		return flag.toLowerCase();
 	}
 
@@ -536,8 +536,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 			this.getFlag<string>("persona", "linkedEffectFlag") == undefined
 			&& this.flagId == undefined
 		)
-			return false;
-		if (!flagId)  return true;
+			{return false;}
+		if (!flagId)  {return true;}
 		return flagId.toLowerCase() == this.flagId;
 	}
 

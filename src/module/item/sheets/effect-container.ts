@@ -62,7 +62,7 @@ import { COMPARATORS } from "../../../config/numeric-comparison.js";
 import { SIMPLE_COMPARATORS } from "../../../config/numeric-comparison.js";
 import { SAVE_TYPES_LOCALIZED } from "../../../config/save-types.js";
 import { WEATHER_TYPES } from "../../../config/weather-types.js";
-import { STUDENT_SKILLS } from "../../../config/student-skills.js"
+import { STUDENT_SKILLS } from "../../../config/student-skills.js";
 
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {

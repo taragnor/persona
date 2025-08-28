@@ -38,7 +38,7 @@ export class PersonaRoller {
 		situation = {
 			...situation,
 			rollTags: options.rollTags ?? [],
-		}
+		};
 		if (DC != undefined && DCMods != undefined) {
 			const DCModsTotal = DCMods.total(situation);
 			DC += DCModsTotal;
@@ -49,8 +49,8 @@ export class PersonaRoller {
 	static async #compileModifiers (options: RollOptions, ...existingMods: (ModifierList | undefined)[]) : Promise<ModifierList> {
 		let mods = new ModifierList();
 		for (const list of existingMods) {
-			if (!list) continue;
-			mods = mods.concat(list)
+			if (!list) {continue;}
+			mods = mods.concat(list);
 		}
 		if (options.askForModifier) {
 			const customMod = await HTMLTools.getNumber("Custom Modifier") ?? 0;
@@ -60,7 +60,7 @@ export class PersonaRoller {
 			mods.add("Modifier", options.modifier);
 		}
 		if (options.modifierList) {
-			mods = mods.concat(options.modifierList)
+			mods = mods.concat(options.modifierList);
 		}
 		return mods;
 	}
@@ -71,7 +71,7 @@ export class PersonaRoller {
 			situation = {
 				user: pc.accessor,
 				attacker: pc.accessor,
-			}
+			};
 		}
 		const rollTags =  options.rollTags.slice();
 		rollTags.pushUnique(socialStat);
@@ -103,7 +103,7 @@ export class PersonaRoller {
 		const baseMods = actor.getSaveBonus();
 		rollTags = rollTags.slice();
 		rollTags.pushUnique("save");
-		const mods = await this.#compileModifiers(options, baseMods)
+		const mods = await this.#compileModifiers(options, baseMods);
 		if (!situation) {
 			situation = {
 				user: PersonaDB.getUniversalActorAccessor(actor),
@@ -143,7 +143,7 @@ export class RollBundle {
 	constructor (rollName: string,roll : Roll, playerRoll : boolean,  modList ?: ModifierList, situation ?: Situation, DC ?: number) {
 		this._playerRoll = playerRoll;
 		if (!roll._evaluated)
-			throw new Error("Can't construct a Roll bundle with unevaluated roll");
+			{throw new Error("Can't construct a Roll bundle with unevaluated roll");}
 		this.roll = roll;
 		this.modList = {
 			mods: modList ?? new ModifierList(),
@@ -163,7 +163,7 @@ export class RollBundle {
 		}
 		const {mods, situation} = this.modList;
 		if (!situation)
-			throw new Error("Situation can't resolve");
+			{throw new Error("Situation can't resolve");}
 		const total = mods.total(situation);
 		this.modList =  {
 			mods : mods.printable(situation),
@@ -234,7 +234,7 @@ export class RollBundle {
 	get total() : number {
 		try {
 			if (!this.roll._evaluated)
-				throw new Error("Roll isn't evaluated");
+				{throw new Error("Roll isn't evaluated");}
 			this.resolveMods();
 			if ("situation" in this.modList) {
 				throw new PersonaError("Mod List not resolved");
@@ -250,7 +250,7 @@ export class RollBundle {
 		if ("situation" in this.modList) {
 			throw new PersonaError("Mod List not resolved");
 		}
-		if (this.DC == 0) debugger;
+		if (this.DC == 0) {debugger;}
 		const html = await renderTemplate("systems/persona/parts/simple-roll.hbs", {roll: this, showSuccess});
 		return html;
 	}

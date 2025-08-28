@@ -19,7 +19,7 @@ export class PersonaSettings {
 
 	static resetCache() {
 		this.cache = {
-		}
+		};
 	}
 
 	static get<T extends keyof PersonaSettingKeys>(settingName: T) : PersonaSettingKeys[T] {

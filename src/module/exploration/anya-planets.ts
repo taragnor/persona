@@ -46,7 +46,7 @@ export class AnyaPlanets {
 		const PA = this.periphery.createPlanet("GateWay To M", 20 );
 		const asteroidM = { name: "Asteroid M", hardLinks: [PA]};
 		const Fleetwood = { name: "Fleetwood School for the Badass (shadow Anya)", hardLinks: [asteroidM]};
-		const paintedWorld = {name: "Digitized World 41234", hardLinks: [industrial]}
+		const paintedWorld = {name: "Digitized World 41234", hardLinks: [industrial]};
 		industrial.hardLinks.push(paintedWorld);
 		asteroidM.hardLinks.push(Fleetwood);
 		PA.hardLinks.push(asteroidM);
@@ -77,7 +77,7 @@ export class AnyaPlanets {
 			console.log(`Orbits for day ${days}`);
 		}
 		this.reset();
-		this.orbit(days)
+		this.orbit(days);
 		this.inner.print();
 		this.middle.print();
 		this.outer.print();
@@ -91,7 +91,7 @@ export class AnyaPlanets {
 		let orbits = 0;
 		const start = this.getPlanetByName("start");
 		while (orbits <= tests) {
-			if (!start) throw new Error("No start planet");
+			if (!start) {throw new Error("No start planet");}
 			for (const planet of this.allPlanets()) {
 				const path = this.getPathTo(start, planet);
 				if (!path) {
@@ -120,7 +120,7 @@ export class AnyaPlanets {
 
 	#visitTest(start: Planet, destination: Planet) {
 		const planets = this.allPlanets();
-		if (!start || !destination) throw new Error("Couldn't initialize");
+		if (!start || !destination) {throw new Error("Couldn't initialize");}
 		const map = new Map<Planet, number>(planets.map(x=> [x, 0] ));
 			for (let orbit = 0; orbit < 60; orbit++) {
 				const path = this.getPathTo(start, destination);
@@ -143,7 +143,7 @@ export class AnyaPlanets {
 			this.middle,
 			this.outer,
 			this.periphery,
-		].flatMap( x=> x.planets.filter(x=> x))
+		].flatMap( x=> x.planets.filter(x=> x));
 		return arr.concat(this.untethered) as Planet[];
 	}
 
@@ -158,7 +158,7 @@ export class AnyaPlanets {
 		for (const orbit of [this.inner, this.middle, this.outer, this.periphery]) {
 			const index = orbit.findPlanetIndex(planetName);
 			if (index >= 0) {
-				return [orbit, index]
+				return [orbit, index];
 			}
 		}
 		const index =  this.untethered.findIndex(x=> x.name == planetName);
@@ -198,7 +198,7 @@ export class AnyaPlanets {
 
 	getPaths(start: Planet) : Planet[] {
 		const paths = start.hardLinks.slice();
-		let [orbit, index] = this.findPlanet(start.name);
+		const [orbit, index] = this.findPlanet(start.name);
 		if (orbit) {
 			paths.push(...orbit.adjacent(index));
 			const outer = this.getOuterOrbit(orbit);
@@ -208,7 +208,7 @@ export class AnyaPlanets {
 			paths.push(
 				...(inner?.planetsInRange(innerR!) ?? []),
 				...(outer?.planetsInRange(outerR!) ?? [])
-			)
+			);
 		}
 		return paths;
 	}
@@ -291,13 +291,13 @@ export class Orbit {
 			case MIDDLE_SIZE:
 				const outerBlockSize = Math.floor(this.blockSize * GROWTH_FACTOR);
 				const low = index * GROWTH_FACTOR;
-				return {low, high: low + GROWTH_FACTOR}
+				return {low, high: low + GROWTH_FACTOR};
 		}
 	}
 
 	planetsInRange({low, high} : LocationRange) : Planet[] {
 		return this.planets.filter ( (planet, index) => {
-			if (planet == undefined) return false;
+			if (planet == undefined) {return false;}
 			return index >= low && index < high;
 		}) as Planet[];
 
@@ -312,7 +312,7 @@ export class Orbit {
 				hardLinks: [],
 			};
 		}
-		if (location >= this.planets.length) throw new Error(`Invalid location ${location} foir size {$this.planets.length}`);
+		if (location >= this.planets.length) {throw new Error(`Invalid location ${location} foir size {$this.planets.length}`);}
 		if (this.planets[location]) {
 			throw new Error(`Location ${location} already contains ${this.planets[location].name}`);
 		}

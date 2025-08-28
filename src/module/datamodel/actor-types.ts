@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PCAndAllyStuff } from "../../config/actor-parts.js";
 import { FREQUENCY } from "../../config/frequency.js";
 import { frequencyConvert2 } from "../../config/actor-parts.js";
@@ -14,7 +15,7 @@ import { encounterDataSchema } from "../../config/actor-parts.js";
 import { sharedAbilities } from "../../config/actor-parts.js";
 import { personalBio } from "../../config/actor-parts.js";
 import { CREATURE_TAG_LIST } from "../../config/creature-tags.js";
-const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
+const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
 import { SHADOW_CREATURE_TYPE_LIST } from "../../config/shadow-types.js";
 import { PC } from "../actor/persona-actor.js";
 import { SHADOW_ROLE_LIST } from "../../config/shadow-types.js";
@@ -30,7 +31,7 @@ abstract class BaseStuff extends window.foundry.abstract.DataModel {
 			short_desc: new txt(),
 			// flags: new arr(new obj<FlagData>()),
 			creatureTags: new arr(new txt({choices:CREATURE_TAG_LIST})),
-		}
+		};
 	}
 
 }
@@ -138,7 +139,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 			if (system.combat.resists?.gun == undefined) {
 				system.combat.resists.gun = "normal";
 			}
-		} catch (e) {
+		} catch {
 			if (game.user.isGM && PersonaSettings.debugMode()) {
 				Debug(system);
 				console.log("Error on Shadow Schema Convert");
@@ -157,7 +158,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 				}
 				data.encounter.dungeons = [];
 			}
-		} catch (e) {
+		} catch  {
 			console.log("Something went wrong with migrating dungeondata.");
 			Debug(data.encounter);
 		}
@@ -196,7 +197,7 @@ class NPCAllySchema extends foundry.abstract.TypeDataModel {
 	}
 
 	static override migrateData(d : any) {
-		let data= super.migrateData(d);
+		const data= super.migrateData(d);
 		return talentConversion(data);
 	}
 }
@@ -241,11 +242,11 @@ export const ACTORMODELS = {
 } as const;
 
 //testing the types, purely for debug purposes
-type testPC = Foundry.SystemDataObjectFromDM<typeof PCSchema>;
-type testNPC = Foundry.SystemDataObjectFromDM<typeof NPCSchema>;
-type testShadow =Foundry.SystemDataObjectFromDM<typeof ShadowSchema>;
+// type testPC = Foundry.SystemDataObjectFromDM<typeof PCSchema>;
+// type testNPC = Foundry.SystemDataObjectFromDM<typeof NPCSchema>;
+// type testShadow =Foundry.SystemDataObjectFromDM<typeof ShadowSchema>;
 
 
-type test = Foundry.TCSplit<typeof ACTORMODELS>;
+// type test = Foundry.TCSplit<typeof ACTORMODELS>;
 
 

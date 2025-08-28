@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DamageCalculator } from "../../config/damage-types.js";
 import { damageNew } from "./power-dm.js";
 import { powerOnlyUsableProps } from "./power-dm.js";
@@ -10,7 +12,7 @@ import { UNIVERSAL_MODIFIERS_TYPE_LIST } from "./universal-modifiers-types.js";
 import { frequencyConvert } from "../../config/frequency.js";
 import { FREQUENCY } from "../../config/frequency.js";
 import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
-import { CardRoll } from "../../config/social-card-config.js"
+import { CardRoll } from "../../config/social-card-config.js";
 import { ArrayCorrector } from "../item/persona-item.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { EQUIPMENT_TAGS_LIST } from "../../config/equipment-tags.js";
@@ -90,7 +92,7 @@ class WeaponDM extends foundry.abstract.TypeDataModel {
 				weaponLevel: data.damage.low -1,
 				baseAmt: DamageCalculator.convertFromOldLowDamageToNewBase(data.damage.low ?? 0),
 				extraVariance: 0,
-			}
+			};
 		}
 		return data;
 	}
@@ -104,7 +106,7 @@ class FocusDM extends foundry.abstract.TypeDataModel {
 			description: new txt(),
 			defensive: new bool(),
 			...effects (false),
-		}
+		};
 		return ret;
 	}
 }
@@ -119,7 +121,7 @@ class UniversalModifierDM extends foundry.abstract.TypeDataModel {
 			scope: new txt({choices: UNIVERSAL_MODIFIERS_TYPE_LIST, initial: "global"}),
 			sceneList: new arr( new id()),
 			...effects (false),
-		}
+		};
 		return ret;
 	}
 
@@ -230,7 +232,7 @@ class TalentDM extends foundry.abstract.TypeDataModel {
 			description: new html(),
 			defensive: new bool(),
 			...effects(false),
-		}
+		};
 		return ret;
 	}
 }
@@ -245,7 +247,7 @@ class InventoryItemSchema extends foundry.abstract.TypeDataModel {
 			armorHPBoost: new num( {initial: 0, integer: true}),
 			...effects(false),
 			...triEffects(),
-		}
+		};
 		return ret;
 	}
 }
@@ -304,7 +306,7 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 			active: new bool({initial: false}),
 			tokenSpends:new arr(new obj<TokenSpend>()),
 			immediateEffects: new arr(new embedded(ConditionalEffectDM)),
-		}
+		};
 		return ret;
 	}
 }
@@ -343,13 +345,13 @@ export class ConditionalEffectDM extends foundry.abstract.DataModel {
 
 }
 
-class CEContainer extends foundry.abstract.DataModel {
-	static override defineSchema() {
-		return {
-			emb: new arr(new embedded(ConditionalEffectDM)),
-		}
-	}
-}
+// class CEContainer extends foundry.abstract.DataModel {
+// 	static override defineSchema() {
+// 		return {
+// 			emb: new arr(new embedded(ConditionalEffectDM)),
+// 		};
+// 	}
+// }
 
 export class SocialQuestionDM extends foundry.abstract.DataModel {
 	static override defineSchema() {
@@ -362,7 +364,7 @@ export class SocialQuestionDM extends foundry.abstract.DataModel {
 			SLmax: new num({initial: 10, integer: true, max: 10, min:1}),
 			requiresDating: new bool({initial: false}),
 			expended: new bool({initial: false}),
-		}
+		};
 	}
 }
 
@@ -372,7 +374,7 @@ class QuestionChoiceDM extends foundry.abstract.DataModel {
 			name: new txt({initial: "New Choice"}),
 			response: new txt(),
 			progressSuccess: new num({initial: 0, integer: true}),
-		}
+		};
 	}
 
 }
@@ -408,7 +410,7 @@ class SocialCardEventDM extends foundry.abstract.DataModel {
 			data.conditions = ArrayCorrector(data.conditions);
 		}
 		if (data.choices == undefined)
-			data.choices = [];
+			{data.choices = [];}
 		if (FREQUENCY[data.frequency as keyof typeof FREQUENCY] == undefined) {
 			data.frequency = frequencyConvert(data.frequency);
 		}
@@ -448,28 +450,29 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 					starterTxt += ` ${roll.studentSkill} ${modifier ? modifier : ""} Check Success (${roll.progressSuccess} + ${roll.progressCrit}).`;
 				}
 				break;
-			case "save":
+			case "save": {
 				const modifier = 0;
 				// const modifier = (roll.modifier ?? 0) == 0 ? "" : `at ${NumberTools.signed(roll.modifier)}`;
 				if (roll.progressSuccess) {
 					starterTxt += `${roll.saveType} Save Success ${modifier ? modifier : ""} (${roll.progressSuccess} + ${roll.progressCrit}).`;
 				}
-			case "none":
+			}
+				break;
+			case "none": {
 				const gainLose = roll.progressSuccess >= 0 ? "Gain" : "Lose";
 				if (roll.progressSuccess) {
-					starterTxt += `${gainLose} ${roll.progressSuccess} Progress Tokens`
+					starterTxt += `${gainLose} ${roll.progressSuccess} Progress Tokens`;
 				}
 				break;
+			}
 			default:
 		}
 		if ((roll.progressFail ?? 0) != 0) {
 			const gainLose = roll.progressFail > 0 ? "Gain" : "Lose";
 			starterTxt += ` ${gainLose} ${roll.progressFail} on failure.`;
 		}
-		return starterTxt +  data.text
+		return starterTxt +  data.text;
 	}
-
-
 
 	static override migrateData(source: Record<string, any>) : typeof source {
 		const  data = source as Foundry.SystemDataObjectFromDM<typeof CardChoiceDM>;
@@ -510,7 +513,6 @@ namespace Test{
 	type CCDM = Foundry.SystemDataObjectFromDM<typeof CardChoiceDM>;
 
 	//testing the types, purely for debug purposes
-	type CECon = Foundry.SystemDataObjectFromDM<typeof CEContainer>;
 	type CEDM = Foundry.SystemDataObjectFromDM<typeof ConditionalEffectDM>;
 	type CClass = Foundry.SystemDataObjectFromDM<typeof CharacterClassDM>;
 	type PowerSO= Foundry.SystemDataObjectFromDM<typeof PowerSchema>;

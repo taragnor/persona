@@ -33,7 +33,7 @@ export const AI_TAGS = [
 	"smart",
 ] as const;
 
-export const CREATURE_TAG_LIST = [
+export const PERSONA_TAG_LIST = [
 	"neko",
 	"cu",
 	"fairy",
@@ -50,9 +50,15 @@ export const CREATURE_TAG_LIST = [
 	"rat",
 	"true-demon",
 	"pure-shadow",
+	"simulated",
+] as const;
+
+export const PERSONA_TAGS = HTMLTools.createLocalizationObject(PERSONA_TAG_LIST, "persona.creatureType");
+
+export const CREATURE_TAG_LIST = [
+	...PERSONA_TAG_LIST,
 	"d-mon",
 	"pc-d-mon",
-	"simulated",
 	"persona",
 	...PERSON_TAG_LIST,
 	...PERSONALITY_TAG_LIST,

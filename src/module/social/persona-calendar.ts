@@ -19,7 +19,7 @@ export class PersonaCalendar {
 
 	static weekday() : SimpleCalendar.WeekdayName {
 		if (!window.SimpleCalendar)
-			throw new PersonaError("Simple Calendar isn't enabled!");
+			{throw new PersonaError("Simple Calendar isn't enabled!");}
 		return window.SimpleCalendar.api.getCurrentWeekday().name;
 	}
 
@@ -75,7 +75,7 @@ export class PersonaCalendar {
 	}
 
 	static async nextDay(extraMsgs : string[] = []) {
-		if(!game.user.isGM) return;
+		if(!game.user.isGM) {return;}
 		console.debug("nextday Called");
 		const rolls: Roll[] = [];
 		const calendar = window?.SimpleCalendar?.api;
@@ -123,11 +123,11 @@ export class PersonaCalendar {
 	}
 
 	static async endDayForPCs(): Promise<string[]> {
-		let ret : string[] = [];
+		const ret : string[] = [];
 		for (const pc of PersonaDB.realPCs()) {
 			try {
 				const changes = await pc.onEndDay();
-				if (changes.length == 0) continue;
+				if (changes.length == 0) {continue;}
 				ret.push(`<div class="pc-change end-day">`);
 				ret.push( `<div>${pc.displayedName} End of Day</div>`);
 				ret.push(`<ul>`);
@@ -213,7 +213,7 @@ export class PersonaCalendar {
 	//returns the day after the current date
 	static #calcNextDay (date: Readonly<CalendarDate>) : CalendarDate {
 		const months = window.SimpleCalendar?.api.getAllMonths();
-		if (!months) throw new PersonaError("Calendar Module not loaded");
+		if (!months) {throw new PersonaError("Calendar Module not loaded");}
 		const currMonth = months[date.month];
 		let {day, month, year} = date;
 		day += 1;
@@ -230,7 +230,7 @@ export class PersonaCalendar {
 
 	static #calcPrevDay (date: Readonly<CalendarDate>) : CalendarDate {
 		const months = window.SimpleCalendar?.api.getAllMonths();
-		if (!months) throw new PersonaError("Calendar Module not loaded");
+		if (!months) {throw new PersonaError("Calendar Module not loaded");}
 		let {day, month, year} = date;
 		day -= 1;
 		if (day >= 0) {
@@ -273,10 +273,10 @@ export class PersonaCalendar {
 
 	static weatherReport(days: number = 5) : WeatherType[] {
 		let day : CalendarDate | undefined = window.SimpleCalendar?.api.currentDateTime();
-		if (!day) throw new PersonaError("Can't get weather report as calendar can't be reached");
-		let arr : WeatherType[]  = [];
+		if (!day) {throw new PersonaError("Can't get weather report as calendar can't be reached");}
+		const arr : WeatherType[]  = [];
 		while (days-- > 0) {
-			day = this.#calcNextDay(day)
+			day = this.#calcNextDay(day);
 			const weather = this.determineWeather(day);
 			arr.push(weather);
 		}
@@ -290,7 +290,7 @@ export class PersonaCalendar {
 
 	static getDateString() : string {
 		const calendar = window.SimpleCalendar;
-		if (!calendar) return "ERROR";
+		if (!calendar) {return "ERROR";}
 		const day = calendar.api.currentDateTimeDisplay();
 		let daystr = day.date;
 		daystr = daystr.substring(0, daystr.length -6);
@@ -329,7 +329,7 @@ export class PersonaCalendar {
 			.map(weather =>` <span class="weather-icon"> ${PersonaCalendar.getWeatherIcon(weather).get(0)?.outerHTML} </span>`)
 			.join("");
 		const msg = `<h2> Upcoming Weather </h2> ${weatherReport}`;
-		let messageData : Foundry.MessageData = {
+		const messageData : Foundry.MessageData = {
 			speaker: {alias: "Weather Forecast"},
 			content: msg,
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
@@ -354,7 +354,7 @@ Hooks.on("preUpdateSetting", function (updateItem, changes) {
 		Debug(updateItem, changes);
 	}
 
-})
+});
 
 Hooks.on("updateSetting", function (updateItem, changes) {
 	if (updateItem.key == "smalltime.current-date" && changes.value != undefined) {

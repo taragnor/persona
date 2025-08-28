@@ -203,14 +203,14 @@ export class DamageCalculation {
 		let total = 0;
 		let subtotal = 0;
 		for (const {amt, name} of this.lists.base) {
-			if (amt == 0) continue;
+			if (amt == 0) {continue;}
 			subtotal += amt;
 			const dataString = `${signed(amt)} ${name}`;
 			str.push(dataString);
 		}
 		if (this.#applyEvenBonus) {
 			for (const {amt, name} of this.lists.evenBonus) {
-				if (amt == 0) continue;
+				if (amt == 0) {continue;}
 				subtotal += amt;
 				const dataString = `${signed(amt)} ${name}`;
 				str.push(dataString);
@@ -249,7 +249,7 @@ export class DamageCalculation {
 		}
 		if (!this.#absorbed && total > 0) {
 			for (const {amt, name} of this.lists.resist) {
-				if (amt == 0) continue;
+				if (amt == 0) {continue;}
 				total += amt;
 				const dataString = `${signed(amt)} ${name}`;
 				str.push(dataString);
@@ -299,6 +299,6 @@ export type EvaluatedDamage = {
 };
 
 function signed(num: number) : string {
-	if (num > 0) return `+${num}`;
-	else return `${num}`;
+	if (num > 0) {return `+${num}`;}
+	else {return `${num}`;}
 }

@@ -2,18 +2,18 @@
 export class HTMLTools {
 	static getClosestData <ReturnType extends string | number = string> ( eventOrJQObj: Event | JQuery<HTMLElement> | JQuery.Event, prop: string) : ReturnType {
 		const target = ("currentTarget" in eventOrJQObj) ? (eventOrJQObj as Event).currentTarget : eventOrJQObj;
-		if (!target) throw new Error("No target for event");
+		if (!target) {throw new Error("No target for event");}
 		const convert = function (str: string) {
 			return Array.from(str).map(x => {
-				if (x === x.toLowerCase()) return x;
-				else return "-" + x.toLowerCase();
+				if (x === x.toLowerCase()) {return x;}
+				else {return "-" + x.toLowerCase();}
 			}).join("");
 		};
 		if (prop === undefined)
-			throw new Error("Property name is undefined");
+			{throw new Error("Property name is undefined");}
 		const cssprop = convert(prop);
 		const data = $(target).closest(`[data-${cssprop}]`).data(prop);
-		if (data != null) return data;
+		if (data != null) {return data;}
 		else {
 			throw new Error(`Couldn't find ${prop} property`);
 		}
@@ -21,7 +21,7 @@ export class HTMLTools {
 
 	static getClosestDataNumber <ReturnType extends number = number> ( eventOrJQObj: Event | JQuery<HTMLElement> | JQuery.Event, prop: string) : ReturnType {
 		const num = Number(this.getClosestData(eventOrJQObj, prop));
-		if (Number.isNaN(num)) throw new Error("NaN result");
+		if (Number.isNaN(num)) {throw new Error("NaN result");}
 		return num as ReturnType;
 	}
 
@@ -35,8 +35,8 @@ export class HTMLTools {
 
 	static convertForm(str: string) {
 		return Array.from(str).map(x => {
-			if (x === x.toLowerCase()) return x;
-			else return "-" + x.toLowerCase();
+			if (x === x.toLowerCase()) {return x;}
+			else {return "-" + x.toLowerCase();}
 		}).join("");
 	}
 
@@ -46,10 +46,10 @@ export class HTMLTools {
 			const checker = () =>  {
 				const isOpen = item.sheet._state != -1; //window state check
 				if (isOpen)
-					setTimeout( checker, 500);
+					{setTimeout( checker, 500);}
 				else
-					keep(item);
-			}
+					{keep(item);}
+			};
 			setTimeout(checker, 1000);
 		});
 	}
@@ -93,7 +93,7 @@ export class HTMLTools {
 						callback: (htm: string) => {
 							const ret =
 								$(htm).find("select.selection").find(":selected").val();
-							if (!ret) conf(null);
+							if (!ret) {conf(null);}
 							conf(ret as any);
 						}
 					},
@@ -193,7 +193,7 @@ export class HTMLTools {
 				event.stopPropagation();
 				return handler(event);
 			}
-		}
+		};
 	}
 
 	static rightClick (handler: (ev:Event)=>any) {
@@ -203,19 +203,19 @@ export class HTMLTools {
 				event.stopPropagation();
 				return handler(event);
 			}
-		}
+		};
 	}
 
 	static initCustomJqueryFunctions() {
 		if (!jQuery.fn.middleclick) {
 			jQuery.fn.middleclick = function (handler) {
 				this.mousedown(HTMLTools.middleClick(handler));
-			}
+			};
 		}
 		if (!jQuery.fn.rightclick) {
 			jQuery.fn.rightclick = function (handler) {
 				this.mousedown(HTMLTools.rightClick(handler));
-			}
+			};
 		}
 	}
 

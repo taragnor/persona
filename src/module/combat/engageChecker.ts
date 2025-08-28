@@ -10,11 +10,11 @@ export class EngagementChecker {
 	}
 
 	static isEngaging(subject: PersonaCombatant, target: PersonaCombatant, combat: PersonaCombat) : boolean {
-		if (subject == target) return false;
-		if (!subject.actor || !subject.actor.isAlive()) return false;
-		if (!target.actor || !target.actor.isAlive()) return false;
-		if (!target.actor  || target.actor.hasStatus("charmed")) return false;
-		if (!subject.actor || !subject.actor.canEngage()) return false;
+		if (subject == target) {return false;}
+		if (!subject.actor || !subject.actor.isAlive()) {return false;}
+		if (!target.actor || !target.actor.isAlive()) {return false;}
+		if (!target.actor  || target.actor.hasStatus("charmed")) {return false;}
+		if (!subject.actor || !subject.actor.canEngage()) {return false;}
 		const inMelee = this.listOfCombatantsInMelee(subject, combat);
 		return inMelee.includes(target);
 	}
@@ -37,7 +37,7 @@ export class EngagementChecker {
 		while (checkList.length > 0) {
 			const checkedToken = checkList.pop()!;
 			for (const comb of combat.validEngagementCombatants) {
-				if (!comb.token.actor?.isAlive()) continue;
+				if (!comb.token.actor?.isAlive()) {continue;}
 				const token  = comb.token as PToken;
 				if ( this.isWithinEngagedRange(checkedToken.token as PToken, token)
 					&& !engagedList.has(comb)

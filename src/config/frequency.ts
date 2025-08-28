@@ -23,8 +23,8 @@ export const OLD_FREQUENCY = {
 } as const;
 
 export function frequencyConvert (x: number) : number {
-	const convertType= (OLD_FREQUENCY[x as keyof typeof OLD_FREQUENCY])
-	if (!convertType)  return x;
+	const convertType= (OLD_FREQUENCY[x as keyof typeof OLD_FREQUENCY]);
+	if (!convertType)  {return x;}
 
 	for (const [num, stringType] of Object.entries(FREQUENCY))  {
 		if (stringType == convertType) {

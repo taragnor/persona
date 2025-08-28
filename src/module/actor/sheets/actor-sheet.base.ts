@@ -22,7 +22,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 	#activeQuestion = -1;
 
 	constructor(...args: any[]) {
-		super(...args)
+		super(...args);
 		this.refreshQuestionFocus();
 	}
 
@@ -125,25 +125,25 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 	}
 
 	async addQuestion(_ev: JQuery.ClickEvent) {
-		if (!this.actor.isPC() && !this.actor.isNPC()) return;
+		if (!this.actor.isPC() && !this.actor.isNPC()) {return;}
 		await this.actor.addQuestion();
 	}
 
 	async deleteQuestion(ev: JQuery.ClickEvent) {
-		if (!this.actor.isPC() && !this.actor.isNPC()) return;
-		if (!await HTMLTools.confirmBox("Delete?", "Delete This question?")) return;
+		if (!this.actor.isPC() && !this.actor.isNPC()) {return;}
+		if (!await HTMLTools.confirmBox("Delete?", "Delete This question?")) {return;}
 		const index= Number(HTMLTools.getClosestDataNumber(ev, "questionIndex"));
 		await this.actor.deleteQuestion(index);
 	}
 
 	selectQuestion(ev: JQuery.ClickEvent) {
-		if (!this.actor.isPC() && !this.actor.isNPC()) return;
+		if (!this.actor.isPC() && !this.actor.isNPC()) {return;}
 	const index= Number(HTMLTools.getClosestDataNumber(ev, "questionIndex"));
 		this.activeQuestion = index;
 	}
 
 	static autoResize(el: HTMLElement) {
-		if (el.scrollHeight == 0) return;
+		if (el.scrollHeight == 0) {return;}
 		el.style.height = 'auto'; // Reset to shrink if needed
 		el.style.height = el.scrollHeight + 'px'; // Set to actual content height
 		el.style.minHeight = el.scrollHeight + 'px'; // Set to actual content height
@@ -213,7 +213,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
 
 	getIncAdvanceValue(val: keyof PC["system"]["combat"]["classData"]["incremental"]) {
-		const actor = this.actor
+		const actor = this.actor;
 		switch (actor.system.type) {
 			case "npc":
 			case "tarot":

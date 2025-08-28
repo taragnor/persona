@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable no-empty */
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { AlterVariableConsequence } from "./config/consequence-types";
 import { Mutator } from "./module/persona-variables";
 
@@ -13,12 +17,16 @@ if (x.varType == "actor" && x.operator == "set") {
 		const value = x.value;
 		if ( value.type =="operation" ) {
 			const amt1 = value.amt1;
-			}
-		if ( value.type =="variable-value" ) {
-}
+		}
+		if ( value.type == "variable-value" ) {
+		}
 
 		}
 
 }
 
+
+function xxxx(x ?: boolean) : number {
+	return 1;
+	}
 

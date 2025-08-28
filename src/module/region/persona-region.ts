@@ -9,7 +9,7 @@ import { Shadow } from "../actor/persona-actor.js";
 import { PersonaSockets } from "../persona.js";
 import { Metaverse } from "../metaverse.js";
 import { PersonaError } from "../persona-error.js";
-import { localize } from "../persona.js"
+import { localize } from "../persona.js";
 import { UniversalModifier } from "../item/persona-item.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
@@ -114,7 +114,7 @@ export class PersonaRegion extends RegionDocument {
 	get regionData(): RegionData {
 		const regionData = this.getFlag("persona", "RegionData") as RegionData | undefined;
 		const defaultRegion = this.defaultRegionData();
-		if (!regionData) return defaultRegion;
+		if (!regionData) {return defaultRegion;}
 		foundry.utils.mergeObject(regionData, defaultRegion, {insertKeys: true, overwrite: false});
 		return regionData;
 	}
@@ -147,8 +147,8 @@ export class PersonaRegion extends RegionDocument {
 
 	get shadowPresence(): number {
 		if (this.regionData.shadowPresence)
-			return Number(this.regionData.shadowPresence);
-		else return 0;
+			{return Number(this.regionData.shadowPresence);}
+		else {return 0;}
 	}
 
 	get isSafe() : boolean {
@@ -234,10 +234,10 @@ export class PersonaRegion extends RegionDocument {
 
 	personalRoomEffectsOnly(): UniversalModifier[] {
 		return this.regionData.roomEffects.flatMap ( id=> {
-			if (!id) return [];
+			if (!id) {return [];}
 			const mod = PersonaDB.getRoomModifiers().find(x=> x.id == id);
-			if (mod) return [mod];
-			else return [];
+			if (mod) {return [mod];}
+			else {return [];}
 		});
 	}
 
@@ -270,16 +270,16 @@ export class PersonaRegion extends RegionDocument {
 
 	async onEnterRegion(token: TokenDocument<PersonaActor>) {
 		console.debug(`Region Entered: ${this.name}`);
-		if (!token.actor?.isPC()) return;
+		if (!token.actor?.isPC()) {return;}
 		const tokens = Array.from(this.tokens);
 		const situation : Situation = {
 			trigger: "on-enter-region",
 			triggeringRegionId: this.id,
 			triggeringCharacter: (token.actor as PC).accessor,
 			triggeringUser: game.user,
-		}
+		};
 		await TriggeredEffect.onTrigger("on-enter-region", token.actor as PC, situation).emptyCheck()?.autoApplyResult();
-		if (tokens.some(t => t.actor?.system.type == "shadow" && !t.hidden) ) return;
+		if (tokens.some(t => t.actor?.system.type == "shadow" && !t.hidden) ) {return;}
 		this.presenceCheck("wandering");
 		await Metaverse.passMetaverseTurn();
 	}
@@ -291,8 +291,8 @@ export class PersonaRegion extends RegionDocument {
 			if (!mod) {throw new Error("Modifier Not found");}
 			mod = item as UniversalModifier;
 		}
-		if (mod?.system?.type != "universalModifier") throw new PersonaError("Not a modifier");
-		if (mod.system.scope != "room")  throw new PersonaError("Not a Room Effect");
+		if (mod?.system?.type != "universalModifier") {throw new PersonaError("Not a modifier");}
+		if (mod.system.scope != "room")  {throw new PersonaError("Not a Room Effect");}
 		const data = this.regionData;
 		if (data.roomEffects.includes( mod.id)) {
 			return false;
@@ -308,8 +308,8 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	async removeRoomModifier(mod: UniversalModifier) {
-		if (mod?.system?.type != "universalModifier") throw new PersonaError("Not a modifier");
-		if (mod.system.scope != "room")  throw new PersonaError("Not a Room Effect");
+		if (mod?.system?.type != "universalModifier") {throw new PersonaError("Not a modifier");}
+		if (mod.system.scope != "room")  {throw new PersonaError("Not a Room Effect");}
 		const data = this.regionData;
 		if (!data.roomEffects.includes( mod.id)) {
 			return false;
@@ -321,7 +321,7 @@ export class PersonaRegion extends RegionDocument {
 
 	async presenceCheck(battleType: PresenceRollData["encounterType"], modifier = 0) : Promise<boolean> {
 		const presence = await Metaverse.presenceCheck(battleType, this, undefined, modifier);
-		if (!presence) return false;
+		if (!presence) {return false;}
 		let shadowType : Shadow["system"]["creatureType"] | undefined = undefined;
 		switch (presence) {
 			case "shadows":
@@ -339,7 +339,7 @@ export class PersonaRegion extends RegionDocument {
 			trigger: "on-presence-check",
 			triggeringUser: game.user,
 			triggeringRegionId : this.id,
-		}
+		};
 		const modifiers = [
 			...PersonaDB.getGlobalModifiers(),
 			...this.allRoomEffects,
@@ -373,7 +373,7 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	async setRegionData(data: RegionData) {
-		if (!this.isOwner) return;
+		if (!this.isOwner) {return;}
 		await this.setFlag("persona", "RegionData", data);
 	}
 
@@ -390,7 +390,7 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	formEntryField(field: keyof RegionData) {
-		let element = $("<div>");
+		const element = $("<div>");
 		element.append($("<label>").text(
 			game.i18n.localize(`persona.roomAttribute.${field}`)
 		));
@@ -398,10 +398,10 @@ export class PersonaRegion extends RegionDocument {
 		switch (field) {
 			case "ignore": {
 				const val = this.regionData[field];
-				let check = $(`<input type="checkbox">`)
+				const check = $(`<input type="checkbox">`)
 				.prop("checked", val)
 				.addClass(fieldClass)
-				.on("change", this.#refreshRegionData.bind(this))
+				.on("change", this.#refreshRegionData.bind(this));
 				element.append(check);
 				break;
 			}
@@ -409,14 +409,14 @@ export class PersonaRegion extends RegionDocument {
 			case "hazardDetails": {
 				const val = this.regionData[field];
 				const input = $(`<input type="text">`).val(val ?? "").addClass(fieldClass)
-				.on("change", this.#refreshRegionData.bind(this))
+				.on("change", this.#refreshRegionData.bind(this));
 				element.append(input);
 				break;
 			}
 			case "secret":
 			case "hazard": {
 				const val = this.regionData[field];
-				let select = $("<select>")
+				const select = $("<select>")
 				.addClass(fieldClass)
 				.on("change", this.#refreshRegionData.bind(this))
 				;
@@ -591,7 +591,7 @@ export class PersonaRegion extends RegionDocument {
 					data[k]= {
 						found,
 						max
-					}
+					};
 					break;
 				}
 				default:
@@ -604,7 +604,7 @@ export class PersonaRegion extends RegionDocument {
 
 	async processInputBuffer() : Promise<void> {
 		const buffer = this.#changeBuffer;
-		if (buffer == undefined) return;
+		if (buffer == undefined) {return;}
 		await this.setRegionData(buffer);
 		this.#changeBuffer = undefined;
 	}
@@ -621,7 +621,7 @@ export class PersonaRegion extends RegionDocument {
 
 	static async updateRegionDisplay(token: TokenDocument<PersonaActor>, tokenMove: boolean = true) {
 		const scene = token.parent;
-		const region = scene.regions.find( (region : PersonaRegion) => region.tokens.has(token) && !region?.regionData?.ignore)
+		const region = scene.regions.find( (region : PersonaRegion) => region.tokens.has(token) && !region?.regionData?.ignore);
 		if (!region || game?.combat?.active) {
 			clearRegionDisplay();
 			return;
@@ -639,7 +639,7 @@ export class PersonaRegion extends RegionDocument {
 
 	async onEnterMetaverse() : Promise<void> {
 		const data = this.regionData;
-		const refresh = data.specialMods.includes("treasure-refresh")
+		const refresh = data.specialMods.includes("treasure-refresh");
 		if (refresh) {
 			if (data.treasures.found > 0) {
 				data.treasures.found = 0;
@@ -663,7 +663,7 @@ Hooks.on("closeRegionConfig", async (app) => {
 
 //Append Region Configuraton dialog
 Hooks.on("renderRegionConfig", async (app, html) => {
-	let appendPoint = $(html).find(".tab.region-identity");
+	const appendPoint = $(html).find(".tab.region-identity");
 	if (appendPoint.length != 1) {
 		throw new Error(`Append Point Length equals ${appendPoint.length}`);
 	}
@@ -685,15 +685,15 @@ Hooks.on("updateRegion", async (region) => {
 
 Hooks.on("updateToken", (token, changes) => {
 	const actor = token.actor as PersonaActor;
-	if (!actor) return;
-	if (token.hidden) return;
+	if (!actor) {return;}
+	if (token.hidden) {return;}
 	if (actor.system.type != "pc" || !actor.hasPlayerOwner) {
 		return;
 	}
 	if ((changes.x ?? changes.y) == undefined)
-		return;
+		{return;}
 	const scene = token.parent;
-	if (!scene) return;
+	if (!scene) {return;}
 	PersonaRegion.updateRegionDisplay(token);
 });
 
@@ -740,7 +740,7 @@ async function searchButton(_ev: JQuery.ClickEvent) {
 Hooks.on("socketsReady", () => {
 	PersonaSockets.setHandler("SEARCH_REQUEST", async function (data) {
 		const region = game.scenes.current.regions.find( r=> data.regionId == r.id);
-		if (!region) throw new PersonaError(`Can't find region ${data.regionId}`);
+		if (!region) {throw new PersonaError(`Can't find region ${data.regionId}`);}
 		await Metaverse.searchRegion(region as PersonaRegion);
 	});
 });
@@ -751,7 +751,7 @@ Hooks.on("canvasInit", () => {
 
 Hooks.on("controlToken", async (token : Token<PersonaActor>) => {
 	const actor = token?.document?.actor;
-	if (!actor) return;
+	if (!actor) {return;}
 	if (actor.isPC()) {
 		await PersonaRegion.updateRegionDisplay(token.document, false);
 	}

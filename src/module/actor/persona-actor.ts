@@ -839,7 +839,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const list = PersonaDB.socialLinks()
 			.filter( x=> !currentLinks.includes(x.id))
 			.filter( (x : PC | NPC)=> Object.values(x.system.weeklyAvailability).some(x=> x == true))
-			.filter( (x : PC | NPC)=> !!x.system.tarot);
+			.filter( (x : PC | NPC)=> Boolean(x.system.tarot));
 		return list;
 	}
 
@@ -1048,7 +1048,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!this.isValidCombatant()) {return [];}
 		return this.system.combat.learnedPowersBuffer
 			.map( p => PersonaDB.getPower(p))
-			.filter( p=> !!p);
+			.filter( p=> p != undefined);
 	}
 
 	get powers(): Power[] {
@@ -2372,7 +2372,7 @@ canAllOutAttack(): boolean {
 }
 
 hasBanefulStatus(): boolean {
-	return !!this.effects.find( (st) => st.isBaneful);
+	return Boolean(this.effects.find( (st) => st.isBaneful));
 }
 
 getSaveBonus( this: ValidAttackers) : ModifierList {
@@ -2451,7 +2451,7 @@ isValidCombatant(): this is ValidAttackers {
 }
 
 isDistracted() : boolean {
-	return !!this.effects.find( st => st.isDistracting);
+	return Boolean(this.effects.find( st => st.isDistracting));
 }
 
 isCapableOfAction() : boolean {
@@ -3326,7 +3326,7 @@ async endTurnSaves(this: ValidAttackers) : Promise<string[]> {
 }
 
 getFlagState(flagName: string) : boolean {
-	return !!this.getEffectFlag(flagName);
+	return Boolean(this.getEffectFlag(flagName));
 }
 
 
@@ -3619,11 +3619,12 @@ get tagList() : CreatureTag[] {
 	//NOTE: This is a candidate for caching
 	if (this.isTarot()) { return []; }
 	const list = this.system.creatureTags.slice();
+	const personaTags = this.persona().tagList();
 	if (this.isValidCombatant()) {
 		const extraTags = this.mainModifiers().flatMap( x=> x.getConferredTags(this as ValidAttackers));
 		for (const tag of extraTags) {
 			if (!list.includes(tag))
-				{list.push(tag);}
+			{list.push(tag);}
 		}
 	}
 	switch (this.system.type) {
@@ -3639,6 +3640,9 @@ get tagList() : CreatureTag[] {
 			return list;
 		case "npc": return list;
 		case "shadow": {
+			if (this.system.creatureType == "daemon") {
+				list.pushUnique("simulated");
+			}
 			if (this.system.creatureType == "d-mon") {
 				list.pushUnique("d-mon");
 				if (this.hasPlayerOwner) {
@@ -3979,3 +3983,5 @@ Hooks.on("createActor", async function (actor: PersonaActor) {
 Hooks.on("updateActor", function (actor: PersonaActor) {
 	actor.clearCache();
 });
+
+

@@ -28,7 +28,7 @@ CONFIG.Wall.doorSounds["doomDoor"] = DoomDoor;
 export class PersonaSFX {
 
 	static async onDamage( _token: PToken | undefined, hpchange: number, damageType: RealDamageType, power ?: UsableAndCard) {
-		if (hpchange == 0) return;
+		if (hpchange == 0) {return;}
 		if (hpchange > 0) {
 			if (power?.hasTag("resurrection")) {
 				await this.#play("raise");
@@ -75,7 +75,7 @@ export class PersonaSFX {
 			const snd = PersonaSounds.playFile(power.system.sound, 0.5);
 			return snd;
 		}
-		if (!power.isAoE()) return;
+		if (!power.isAoE()) {return;}
 		const damageType = power.system.dmg_type;
 		switch (damageType) {
 			case "fire":
@@ -115,10 +115,10 @@ export class PersonaSFX {
 	}
 
 	static async onScan(token: PToken | undefined, _level: number) {
-		if (!token) return;
+		if (!token) {return;}
 		await this.addTMFiltersSpecial("scan", token);
 		await PersonaSFX.#play("scan");
-		await this.removeTMFiltersSpecial("scan", token)
+		await this.removeTMFiltersSpecial("scan", token);
 	}
 
 	static async onDefend( _token: PToken | undefined, defenseType: "block" | "absorb" | "miss" | "reflect") {
@@ -172,8 +172,8 @@ export class PersonaSFX {
 	}
 
 	static async addTMFiltersStatus(statusId: StatusEffectId, token: TokenDocument<any>) {
-		if (!window.TokenMagic) return;
-		if (!token.isOwner) return;
+		if (!window.TokenMagic) {return;}
+		if (!token.isOwner) {return;}
 		let params;
 		switch (statusId) {
 			case "burn":
@@ -370,8 +370,8 @@ export class PersonaSFX {
 	}
 
 	static async addTMFiltersSpecial(filterType: "scan", token: TokenDocument<any>) {
-		if (!window.TokenMagic) return;
-		if (!token.isOwner) return;
+		if (!window.TokenMagic) {return;}
+		if (!token.isOwner) {return;}
 		let params;
 		switch (filterType) {
 			case "scan": {
@@ -412,8 +412,8 @@ export class PersonaSFX {
 	}
 
 	static async removeTMFiltersSpecial(filterType: "scan", token: TokenDocument) {
-		if (!window.TokenMagic) return;
-		if (!token.isOwner) return;
+		if (!window.TokenMagic) {return;}
+		if (!token.isOwner) {return;}
 		let filters = [];
 		switch (filterType) {
 			case "scan" :{
@@ -433,7 +433,7 @@ export class PersonaSFX {
 	}
 
 	static async removeTMFiltersStatus(statusId: StatusEffectId, token: TokenDocument<any>) {
-		if (!window.TokenMagic) return;
+		if (!window.TokenMagic) {return;}
 		let filters : string[] = [];
 		switch (statusId) {
 			case "burn":
@@ -507,7 +507,7 @@ export class PersonaSFX {
 
 Hooks.on("createActiveEffect",(eff: PersonaAE) => {
 	console.log(`Create Active effect ${eff.name}`);
-	if (!game.user.isGM) return;
+	if (!game.user.isGM) {return;}
 	eff.statuses.forEach( statusId => {
 		if (eff.parent instanceof PersonaActor)  {
 			PersonaSFX.onAddStatus(statusId, eff.parent);
@@ -516,7 +516,7 @@ Hooks.on("createActiveEffect",(eff: PersonaAE) => {
 });
 
 Hooks.on("deleteActiveEffect", (eff: PersonaAE) => {
-	if (!game.user.isGM) return;
+	if (!game.user.isGM) {return;}
 	eff.statuses.forEach( statusId => {
 		if (eff.parent instanceof PersonaActor)  {
 			PersonaSFX.onRemoveStatus(statusId, eff.parent);

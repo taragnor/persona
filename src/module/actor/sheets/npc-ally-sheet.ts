@@ -46,8 +46,8 @@ export class NPCAllySheet extends PCLikeSheet {
 	async deleteBasicSkill (ev: JQuery.ClickEvent) {
 		const index= HTMLTools.getClosestDataNumber(ev, "basicPowerIndex");
 		const power = this.actor.basicPowers.at(index);
-		if (!power) {throw new PersonaError(`Can't get Power at this index ${index}`)};
-		if (!await HTMLTools.confirmBox("Really Delete", `Really Delete ${power.name}`)) return;
+		if (!power) {throw new PersonaError(`Can't get Power at this index ${index}`);};
+		if (!await HTMLTools.confirmBox("Really Delete", `Really Delete ${power.name}`)) {return;}
 		switch (true) {
 			case power.isNavigator(): {
 				return await this.actor.deleteNavigatorSkill(power);

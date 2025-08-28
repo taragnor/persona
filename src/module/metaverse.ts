@@ -39,7 +39,7 @@ export class Metaverse {
 	}
 
 	static async enterMetaverse() {
-		if (!game.user.isGM) return;
+		if (!game.user.isGM) {return;}
 		(game.actors as Collection<PersonaActor>)
 			.filter( (x: PersonaActor)=> (x.isRealPC()) || x.system.type == "npcAlly")
 			.forEach( (pc: PC | NPCAlly)=> pc.onEnterMetaverse());
@@ -80,7 +80,7 @@ export class Metaverse {
 		for (let tries =0; tries< 5000; tries++) {
 			const shadow = weightedChoice(weightedList);
 			if (!shadow) {
-				console.warn("No choice was selected")
+				console.warn("No choice was selected");
 				continue;
 			}
 			const current = map.get(shadow.name) ?? 0;
@@ -92,7 +92,7 @@ export class Metaverse {
 
 	static #averageMap(map: Map<string, number>) : string[] {
 		let total = 0;
-		let ret = [] as string[];
+		const ret = [] as string[];
 		for (const [_data, amt] of map.entries()) {
 			total += amt;
 		}
@@ -115,7 +115,7 @@ export class Metaverse {
 
 	static getEncounterList(sceneOrRegion: PersonaScene | PersonaRegion, shadowType ?: Shadow["system"]["creatureType"]): Shadow[] {
 		return sceneOrRegion.encounterList()
-			.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true)
+			.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
 }
 
 static #getEncounterType(frequencies: {hard ?: number, mixed ?: number}): EncounterType {
@@ -182,8 +182,8 @@ static choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encount
 		PersonaError.softFail("Couldn't get a pick from choice list");
 		return undefined;
 	}
-	if (encounterList.length <= 0) return pick1;
-	if (Math.random() < 0.3333) return pick1; //favor weights less heavily
+	if (encounterList.length <= 0) {return pick1;}
+	if (Math.random() < 0.3333) {return pick1;} //favor weights less heavily
 	const p1score = encounterList
 		.reduce ( (acc, shadow) => acc + shadow.complementRating(pick1), 0);
 	const p2score = encounterList
@@ -207,7 +207,7 @@ static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options
 		return {
 			enemies: [],
 			encounterType: "error",
-		}
+		};
 	}
 	let etype : EncounterType;
 	do {
@@ -250,7 +250,7 @@ static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options
 		}
 		while (amt > 0) {
 			const sizeVal = pick.encounterSizeValue();
-			if (encounterSizeRemaining < 3 && minSize >= 3) break; //don't swamp them with solos
+			if (encounterSizeRemaining < 3 && minSize >= 3) {break;} //don't swamp them with solos
 			if (sizeVal > encounterSizeRemaining) {
 				break;
 			}
@@ -281,7 +281,7 @@ static getSubgroupAmt(pick: Shadow) : number {
 		case pick.hasRole("support"):
 			return Math.floor(Math.random() * 2 + 1);
 		default:
-			return Math.floor(Math.random() * 5 + 1)
+			return Math.floor(Math.random() * 5 + 1);
 	}
 }
 
@@ -327,7 +327,7 @@ static getSubgroupAmt(pick: Shadow) : number {
 		${enchtml}
 		</ul>
 		`;
-		let messageData = {
+		const messageData = {
 			speaker: speaker,
 			content: text,
 			whisper: game.users.filter(usr => usr.isGM),
@@ -344,7 +344,7 @@ static getSubgroupAmt(pick: Shadow) : number {
 
 
 static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void> {
-	if (!game.user.isGM) return;
+	if (!game.user.isGM) {return;}
 	//TEmp fix since it was bugged
 	const numOfPCs = party.length;
 	const XPAwardDataPromises = party.map( async actor=> {
@@ -386,10 +386,10 @@ static async reportXPGain(xpReport: {actor: ValidAttackers, xp: number, levelUps
 }
 
 	static async generateTreasure(shadows: PersonaActor[]): Promise<Treasure> {
-		let items : TreasureItem[] = [];
+		const items : TreasureItem[] = [];
 		let money = 0;
 		const considerSkillCard = async function (powerId: string, prob: number) {
-			if (!powerId) return;
+			if (!powerId) {return;}
 			if (Math.random() > (prob ?? 0) / 100) {return;}
 			const existingCard = PersonaDB.skillCards().find( x=> x.system.skillId  ==  powerId);
 			if (existingCard) {
@@ -448,7 +448,7 @@ static async reportXPGain(xpReport: {actor: ValidAttackers, xp: number, levelUps
 		${treasureListHTML}
 		</ul>
 		`;
-		let messageData = {
+		const messageData = {
 			speaker: speaker,
 			content: text,
 			whisper: game.users.filter(usr => usr.isGM),
@@ -458,7 +458,7 @@ static async reportXPGain(xpReport: {actor: ValidAttackers, xp: number, levelUps
 	}
 
 static async distributeMoney(money: number, players: PersonaActor[]) {
-	if (players.length <= 0) return;
+	if (players.length <= 0) {return;}
 	const moneyShare = Math.floor(money / players.length);
 	const shareDist =
 		players.map( actor => ({
@@ -524,7 +524,7 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 			}
 			case "rename-scene-clock":
 				const clock = SceneClock.instance;
-				if (action.clockNewName) clock.renameClock(action.clockNewName);
+				if (action.clockNewName) {clock.renameClock(action.clockNewName);}
 				clock.setCyclic(action.cyclicClock ?? false);
 				clock.setHideOnZero(action.hideOnZero ?? false);
 				if (action.clockMax) {
@@ -559,9 +559,9 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 
 static async passMetaverseTurn() {
 	if (game.user.isGM)
-		return await this.#passMetaverseTurn();
+		{return await this.#passMetaverseTurn();}
 	else
-		return await this.#sendPassTurnRequest();
+		{return await this.#sendPassTurnRequest();}
 }
 
 static async #passMetaverseTurn() {
@@ -605,7 +605,7 @@ static async #sendPassTurnRequest() {
 			treasureFindBonus: 0,
 		};
 		const results = await SearchMenu.start(searchOptions, region);
-		let treasureRolls : Roll[] = [];
+		const treasureRolls : Roll[] = [];
 		for (const resultSet of results) {
 			for (const result of resultSet.results) {
 				switch (result.result) {
@@ -616,7 +616,7 @@ static async #sendPassTurnRequest() {
 							PersonaError.softFail("Treasure Found but no roll given");
 							break;
 						}
-						const treasureRoll = await region.treasureFound(result.roll)
+						const treasureRoll = await region.treasureFound(result.roll);
 						if (treasureRoll) {
 							treasureRolls.push(treasureRoll);
 						}
@@ -669,15 +669,15 @@ static async #sendPassTurnRequest() {
 			throw new PersonaError("No controlled Character");
 		}
 		let region = game.scenes.current.regions.find( (region : PersonaRegion) => {
-			if (region?.regionData?.ignore) return false;
+			if (region?.regionData?.ignore) {return false;}
 			const arr = Array.from(region.tokens);
-			return arr.some( tok => tok.actor?.id == actor.id)
+			return arr.some( tok => tok.actor?.id == actor.id);
 		});
 		if (!region) {
 			//Search for party token
 			region = game.scenes.current.regions.find(
 				(region : PersonaRegion) => {
-					if (region?.regionData?.ignore) return false;
+					if (region?.regionData?.ignore) {return false;}
 					const arr = Array.from(region.tokens);
 					return arr.some(token => token.actor?.isOwner);
 				});
@@ -695,7 +695,7 @@ static async #sendPassTurnRequest() {
 	static async presenceCheck(encounterType: PresenceRollData["encounterType"], region ?: PersonaRegion, situation ?: Situation, modifier = 0) : Promise<PresenceCheckResult> {
 		if (!region) {
 			region = this.getRegion();
-			if (!region) return null;
+			if (!region) {return null;}
 		}
 		if  (!situation) {
 			situation = {
@@ -761,7 +761,7 @@ static async #presenceRoll (data: PresenceRollData) : Promise<boolean> {
 	const result = isEncounter ? data.atkText ?? `Danger`: data.safeText ?? `Safe`;
 	html += `<div class="action-result">${result}</div>`;
 	if (isEncounter) {
-		html += `<br><hr><div>Will you?</div>`
+		html += `<br><hr><div>Will you?</div>`;
 		html += `<ul>`;
 		html += `<li> Fight</li>`;
 		switch (data.encounterType) {
@@ -816,14 +816,14 @@ return roll.total <= data.presenceValue;
 
 	static async onCrunchRequest() {
 		if (game.user.isGM) {
-			const currTime = Date.now()
+			const currTime = Date.now();
 			if (currTime - this.lastCrunch > 8000) {
 				await this.toggleCrunchParty();
 			}
 		} else {
 			PersonaError.softFail("Crunch request recieved by non-GM, this is in error");
 		}
-		Hooks
+		Hooks;
 
 	}
 }
@@ -864,7 +864,7 @@ Hooks.on("updateWall", function (_updateItem: WallDocument, changes: Record<stri
 		const situation : Situation = {
 			trigger: "on-open-door",
 			triggeringUser: game.users.get(userId)!,
-		}
+		};
 		PersonaCombat.onTrigger("on-open-door", undefined, situation)
 		.emptyCheck()
 		?.autoApplyResult();

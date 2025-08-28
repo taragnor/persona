@@ -12,22 +12,22 @@ export class Darkness {
 	static get lightClock() : ProgressClock | undefined {
 		const sceneClock = SceneClock.instance;
 		if (sceneClock.clockName == LIGHT_LEVEL_CLOCK_NAME)
-			return sceneClock;
-		else return undefined;
+			{return sceneClock;}
+		else {return undefined;}
 	}
 
 	static get lightClockAmt() : number {
-		if (this.lightClock) return this.lightClock.amt;
+		if (this.lightClock) {return this.lightClock.amt;}
 		return 0;
 	}
 
 	static init() {
-		if (!game.user.isGM) return;
+		if (!game.user.isGM) {return;}
 		Hooks.on("canvasReady", () => {
 			this.updateClockVisibility();
 		});
 		Hooks.on("updateClock", (clock) => {
-			if (clock != Darkness.lightClock) return;
+			if (clock != Darkness.lightClock) {return;}
 			this.updateClockVisibility();
 			this.updateLight();
 		});
@@ -67,7 +67,7 @@ export class Darkness {
 			};
 			const noLight = {
 				type: null,
-			}
+			};
 			const animation = clockVal > 0 ? torch : noLight;
 			const alpha = clockVal > 0 ? clockVal * 0.10: 0;
 			const lightObj = {

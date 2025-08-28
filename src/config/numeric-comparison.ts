@@ -455,7 +455,7 @@ type NumericOperand =
 ;
 
 export function convertNumericV1toV2(old: NumericComparisonPC) : NumericComparisonV2 {
-	if (old.type == "numeric-v2") return old;
+	if (old.type == "numeric-v2") {return old;}
 	const op1 : NumericOperand = DeriveOperand1(old);
 	const op2 = deriveConstant(old);
 	const comparator = deriveComparator(old);
@@ -483,7 +483,7 @@ function DeriveOperand1 (old: NumericComparisonOld) : NumericOperand {
 				comparisonTarget: "actor-stat",
 				subtype: old.comparisonTarget,
 				socialLinkIdOrTarot : old.socialLinkIdOrTarot,
-			}
+			};
 		case "scan-level":
 			return {
 				comparisonTarget: "actor-stat",
@@ -549,7 +549,7 @@ function DeriveOperand1 (old: NumericComparisonOld) : NumericOperand {
 				subtype: old.comparisonTarget,
 				conditionTarget: old.conditionTarget,
 				socialLinkIdOrTarot: old.socialLinkIdOrTarot,
-			}
+			};
 		case "itemCount":
 			return {
 				comparisonTarget: "actor-stat",
@@ -562,13 +562,13 @@ function DeriveOperand1 (old: NumericComparisonOld) : NumericOperand {
 				comparisonTarget: "variable-value",
 				varType: "social-temp",
 				variableId: old.variableId,
-			}
+			};
 		case "combat-result-based":
 			return {
 				comparisonTarget: old.comparisonTarget,
 				resultSubtypeComparison: old.resultSubtypeComparison,
 				invertComparison: old.invertComparison,
-			}
+			};
 		case "num-of-others-with":
 			return {
 				comparisonTarget: old.comparisonTarget,
@@ -590,20 +590,20 @@ function DeriveOperand1 (old: NumericComparisonOld) : NumericOperand {
 						varType: old.varType,
 						variableId: old.variableId,
 						sceneId: old.sceneId,
-					}
+					};
 				case "actor":
 					return {
 						comparisonTarget: old.comparisonTarget,
 						varType: old.varType,
 						variableId: old.variableId,
 						applyTo: old.applyTo,
-					}
+					};
 				case "social-temp":
 					return {
 						comparisonTarget: old.comparisonTarget,
 						varType: old.varType,
 						variableId: old.variableId,
-					}
+					};
 			}
 		case "escalation":
 			return {
@@ -623,28 +623,28 @@ function deriveConstant (oldC: NumericComparator | DerivedComparator) : NumericO
 			return {
 				comparisonTarget: "odd-even",
 				oddEven: oldC.comparator,
-			}
+			};
 		case "range":
 			return  {
 				comparisonTarget:"constant",
 				subtype: "range",
 				low: oldC.num,
 				high: oldC.high,
-			}
+			};
 	}
 	if ("num" in oldC) {
 		return  {
 			comparisonTarget:"constant",
 			subtype: "number",
 			num: oldC.num,
-		}
+		};
 	}
 	if ("resistLevel" in oldC) {
 		return  {
 			comparisonTarget: "constant",
 			subtype: "resistance-level",
 			resistLevel: oldC.resistLevel,
-		}
+		};
 	}
 	oldC satisfies never;
 	return {

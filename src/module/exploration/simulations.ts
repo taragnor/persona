@@ -19,7 +19,7 @@ export class Simulations {
 
 	static sinistar(sinistarCompletion = 20) : number {
 		const NUM_PLAYERS = 4;
-		let travel = 6;
+		const travel = 6;
 		let bombs = 0;
 		for (let sinistar = travel; sinistar < sinistarCompletion; sinistar++) {
 			for (let i=0; i< NUM_PLAYERS; i++) {

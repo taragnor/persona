@@ -65,9 +65,9 @@ function NumericResolver(x: unknown, _sit: Situation): number {
 type x= Prettify<FieldDescriptorToObject<typeof NumericValue[]>>;
 
 function ActorStatResolver (x: unknown, sit: Situation): number | undefined{
-  const y= x as FieldDescriptorToObject<typeof ActorStatSelector>
+  const y= x as FieldDescriptorToObject<typeof ActorStatSelector>;
     const actor=  game.actors.get(y.actorId);
-  if (!actor) return undefined;
+  if (!actor) {return undefined;}
   switch (y.actorStat) {
     case "strength":
       return 5;

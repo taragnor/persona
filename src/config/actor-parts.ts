@@ -1,3 +1,4 @@
+import { CREATURE_TAG_LIST } from "./creature-tags.js";
 import { PersonaStat } from "./persona-stats.js";
 import { Power } from "../module/item/persona-item.js";
 import { FREQUENCY } from "./frequency.js";
@@ -28,7 +29,7 @@ export const personalBio = function () {
 		description: new html(),
 		background: new html(),
 	});
-}
+};
 
 export type TalentData = {
 	talentId: string,
@@ -142,7 +143,7 @@ export function tarotFields() {
 			blank: true,
 			initial:""
 		}),
-	}
+	};
 }
 
 // export const classData = function () {
@@ -190,6 +191,7 @@ export class ClassDataDM extends foundry.abstract.DataModel {
 }
 
 export function combatCommonStats() {
+
 	return {
 		classData: new embedded(ClassDataDM),
 		xp: new num( {integer: false, initial: 0, min: 0}),
@@ -217,6 +219,8 @@ export function combatCommonStats() {
 		actionsRemaining: new num( {initial: 1, integer:true, min:0, max: 20}),
 		bonusHP: new num({initial: 0, integer: true}),
 		bonusMP: new num({initial: 0, integer: true}),
+		personaTags: new arr(new txt({choices:CREATURE_TAG_LIST})),
+
 	};
 };
 
@@ -257,7 +261,7 @@ export function sharedAbilities() {
 		personaList: new arr(new id()),
 		hp_adjust: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 		mp_adjust: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
-	}
+	};
 
 };
 
@@ -271,7 +275,7 @@ export function shadowOnlyCombatAbilities() {
 			low: new num({integer:true, min:0, initial:1}),
 			high: new num({integer:true, min:0, initial:2}),
 		}),
-	}
+	};
 }
 
 export function PCAndAllyStuff() {
@@ -287,7 +291,7 @@ export function PCSpecificStuff() {
 		skills: studentSkills(),
 		personalXP: new num({integer: true, initial:0, min:0}),
 		personaleLevel: new num({integer: true, min: 1, max: 200, initial:1}),
-	}
+	};
 }
 
 export function SocialTargetBlockData() {
@@ -300,7 +304,7 @@ export function SocialTargetBlockData() {
 		specialEvents: new txt(),
 		datePerk: new txt(),
 		socialEffects: new arr(new embedded(ConditionalEffectDM))
-	}
+	};
 }
 
 
@@ -336,7 +340,7 @@ class EncounterDataDM extends foundry.abstract.DataModel {
 			dungeonId: new txt(),
 			frequency: new num({initial: 1}),
 			frequencyNew: new txt( {choices: PROBABILITY_LIST, initial: "normal"}),
-		}
+		};
 	}
 
 	static override migrateData(oldData: Record<string, any>) {
@@ -368,7 +372,7 @@ class PersonaStatsDM extends foundry.abstract.DataModel {
 			disfavored_stat: new txt<PersonaStat | "">({initial:"" }),
 			pLevel: new num({min: 1, max: 150, initial: 1}),
 			xp: new num({min:0, integer: true, initial: 0}),
-		}
+		};
 	}
 
 }

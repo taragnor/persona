@@ -14,23 +14,23 @@ export class PCLikeSheet extends CombatantSheetBase {
 		data.equips = {
 			weapons: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
 				if (x.system.type == "weapon")
-					return [[ x.id, x.name]];
-				else return [];
+					{return [[ x.id, x.name]];}
+				else {return [];}
 			})),
 			body: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
 				if (x.system.type == "item" && x.system.slot =="body")
-					return [[ x.id, x.name]];
-				else return [];
+					{return [[ x.id, x.name]];}
+				else {return [];}
 			})),
 			accessory: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
 				if (x.system.type == "item" && x.system.slot =="accessory")
-					return [[ x.id, x.name]];
-				else return [];
+					{return [[ x.id, x.name]];}
+				else {return [];}
 			})),
 			attachment: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
 				if (x.system.type == "item" && x.system.slot =="weapon_crystal")
-					return [[ x.id, x.name]];
-				else return [];
+					{return [[ x.id, x.name]];}
+				else {return [];}
 			})),
 		};
 
@@ -66,7 +66,7 @@ export class PCLikeSheet extends CombatantSheetBase {
 		const div = $(event.currentTarget).parent();
 		let itemType = "unknown";
 		const itemId = $(event.currentTarget).find(":selected").val();
-		if (!itemId) return false;
+		if (!itemId) {return false;}
 		const item = this.actor.items.find(x=> x.id == itemId);
 		const typeTable = {
 			"weapon": "persona.equipslots.weapon",
@@ -86,8 +86,8 @@ export class PCLikeSheet extends CombatantSheetBase {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		const powers = this.actor.system.combat.powers;
 		const index = powers.indexOf(powerId);
-		if (index == -1) return;
-		if (index == 0) return;
+		if (index == -1) {return;}
+		if (index == 0) {return;}
 		powers[index] = powers[index-1];
 		powers[index-1] = powerId;
 		await this.actor.update({"system.combat.powers": powers});
@@ -97,9 +97,9 @@ export class PCLikeSheet extends CombatantSheetBase {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		const powers = this.actor.system.combat.powers;
 		const index = powers.indexOf(powerId);
-		if (index == -1) return;
+		if (index == -1) {return;}
 		if (index >= powers.length-1)
-			return;
+			{return;}
 		powers[index] = powers[index+1];
 		powers[index+1] = powerId;
 		await this.actor.update({"system.combat.powers": powers});

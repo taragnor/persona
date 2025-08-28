@@ -67,7 +67,7 @@ export class PowerPrinter extends Application {
 			passiveSkills,
 			// PowerPrinter.filterByType("passive"),
 			// PowerPrinter.filterByType("defensive"),
-		].map( list => list.sort(PowerPrinter.sortPowerFn))
+		].map( list => list.sort(PowerPrinter.sortPowerFn));
 
 		return {
 			...data,
@@ -79,15 +79,15 @@ export class PowerPrinter extends Application {
 		return PersonaDB.allPowersArr()
 			.filter( pwr => pwr.system.subtype == subtype && !pwr.isTeamwork() && !pwr.isOpener() && !pwr.isNavigator())
 			.filter( pwr=> powerType ? pwr.system.dmg_type == powerType: true)
-			.filter( x=> !x.hasTag("shadow-only"))
+			.filter( x=> !x.hasTag("shadow-only"));
 	}
 
 	static sortPowerFn( a: Power, b: Power) : number {
-		const sort= a.system.slot - b.system.slot
-		if (sort != 0) return sort;
+		const sort= a.system.slot - b.system.slot;
+		if (sort != 0) {return sort;}
 		const exoticSort= (a.hasTag("exotic")? 1 : 0)
 			- (b.hasTag("exotic") ? 1 : 0);
-		if (exoticSort != 0) return exoticSort;
+		if (exoticSort != 0) {return exoticSort;}
 		return a.name.localeCompare(b.name);
 	}
 

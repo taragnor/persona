@@ -76,14 +76,14 @@ export class PersonaScene extends Scene {
 	async onEnterMetaverse() : Promise<void> {
 		const regionActions =
 		this.regions.contents
-		.map( region => region.onEnterMetaverse())
+		.map( region => region.onEnterMetaverse());
 		const actorActions =
 		this.tokens.contents
 		.map( tok => {
 			try {
-				if (!tok.actor) return Promise.resolve();
+				if (!tok.actor) {return Promise.resolve();}
 				const actor = tok.actor as PersonaActor;
-				if (!actor.isShadow())  return Promise.resolve();
+				if (!actor.isShadow())  {return Promise.resolve();}
 				return actor.onEnterMetaverse();
 			} catch (e) {
 				console.log(e);
@@ -107,11 +107,11 @@ export class PersonaScene extends Scene {
 					|| !actor.isValidCombatant()
 					|| !actor.isShadow()
 					|| tok.actorLink == true
-				) return Promise.resolve();
+				) {return Promise.resolve();}
 				return actor.onExitMetaverse();
-			} catch (e) {console.log(e)}
+			} catch (e) {console.log(e);}
 			return Promise.reject("Error on running Actor triggers for exit-metaverse");
-		})
+		});
 		const promises = [
 			...regionPromises,
 			...tokenPromises,
@@ -121,7 +121,7 @@ export class PersonaScene extends Scene {
 
 
 	stats() : void {
-		if (!game.user.isGM) return;
+		if (!game.user.isGM) {return;}
 		type RelevantDamageTypes = Exclude<DamageType, "none"| "healing"| "all-out"| "untyped" | "by-power"> ;
 		const stats : Record<RelevantDamageTypes, number> = {
 			physical: 0,
@@ -168,10 +168,10 @@ export class PersonaScene extends Scene {
 
 	isEffectOn(weatherType: WeatherData) : boolean {
 		const currentEffects = canvas.scene.getFlag("fxmaster", "effects") as Record<string,WeatherData> ?? {};
-		if (weatherType.name in currentEffects) return true;
+		if (weatherType.name in currentEffects) {return true;}
 		if (`core_${weatherType.type}` in currentEffects) {
 			const data = currentEffects[`core_${weatherType.type}`];
-			if( Helpers.isObjectShallowEqual(data, weatherType)) return true;
+			if( Helpers.isObjectShallowEqual(data, weatherType)) {return true;}
 		}
 		return false;
 	}
@@ -274,7 +274,7 @@ export class PersonaScene extends Scene {
 
 	async clearAllWeather() : Promise<void> {
 		const currentEffects = canvas.scene.getFlag("fxmaster", "effects") as Record<string,WeatherData> ?? {};
-		if (!currentEffects) return;
+		if (!currentEffects) {return;}
 		for (const wd of Object.values(currentEffects)) {
 			//@ts-ignore
 			Hooks.call("fxmaster.switchParticleEffect", {type: wd.type});
@@ -301,7 +301,7 @@ type WeatherData = {
 
 
 Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
-	if (!game.user.isGM) return;
+	if (!game.user.isGM) {return;}
 	if (diff.active == true) {
 		await PersonaSettings.set("lastRegionExplored", "");
 		if (game.combats.contents.some( (cmb: PersonaCombat) => cmb.isSocial)) {

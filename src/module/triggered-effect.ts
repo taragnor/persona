@@ -57,7 +57,7 @@ export class TriggeredEffect {
 					const newSit : Situation = {
 						trigger: trigger,
 						triggeringUser: game.user,
-					}
+					};
 					situation = newSit;
 					break;
 				}
@@ -115,7 +115,7 @@ export class TriggeredEffect {
 				roomEffects.push(...(game.combat as PersonaCombat)?.getRoomEffects());
 			} else {
 				const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
-				roomEffects.push(...arr)
+				roomEffects.push(...arr);
 			}
 			const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
 			triggers = [
@@ -143,7 +143,7 @@ export class TriggeredEffect {
 	static async execCombatTrigger(trigger: CombatTriggerTypes, actor: ValidAttackers, situation?: Situation) : Promise<void> {
 		const triggerResult = this.onTrigger(trigger, actor, situation)
 		.emptyCheck();
-		if (!triggerResult) return;
+		if (!triggerResult) {return;}
 		const usePowers = triggerResult.findEffects("use-power");
 		if (situation == undefined) {
 			situation = {
@@ -157,7 +157,7 @@ export class TriggeredEffect {
 			const execPower = PersonaDB.allPowers().get( usePower.powerId);
 			if (execPower && newAttacker) {
 				const altTargets= PersonaCombat.getAltTargets(newAttacker, situation, usePower.target );
-				const newTargets = PersonaCombat.getTargets(newAttacker, execPower, altTargets)
+				const newTargets = PersonaCombat.getTargets(newAttacker, execPower, altTargets);
 				const extraPower = await PersonaCombat.usePowerOn(newAttacker, execPower, newTargets, "standard");
 				triggerResult.merge(extraPower);
 

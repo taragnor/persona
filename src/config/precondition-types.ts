@@ -6,7 +6,7 @@ import { Shadow } from "../module/actor/persona-actor.js";
 import { TarotCard } from "./tarot.js";
 import { PowerTag } from "../config/power-tags.js";
 import { StatusEffectId } from "../config/status-effects.js";
-import { PowerType } from "../config/effect-types.js"
+import { PowerType } from "../config/effect-types.js";
 import { DamageType } from "../config/damage-types.js";
 import { Trigger } from "../config/triggers.js";
 

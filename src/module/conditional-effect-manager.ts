@@ -98,7 +98,7 @@ export class ConditionalEffectManager {
 				return match[1];
 			}
 			return input;
-		}
+		};
 		if (dataPath.endsWith(".")) {
 			dataPath = dataPath.slice(0,-1);
 		}
@@ -115,11 +115,11 @@ export class ConditionalEffectManager {
 	static canModifyStat (effects: readonly ConditionalEffect[], stat: ModifierTarget): boolean {
 		return effects.some( eff => eff.consequences.some( c=> {
 			if ( "modifiedField" in c ) {
-				if (c.modifiedField == stat) return true;
+				if (c.modifiedField == stat) {return true;}
 			}
 				if ( "modifiedFields" in c) {
 					if (c.modifiedFields[stat] == true)
-						return true;
+						{return true;}
 				}
 			return false;
 		})
@@ -144,18 +144,18 @@ export class ConditionalEffectManager {
 		const action : CEAction= {
 			type: "create-effect",
 			effect
-		}
+		};
 		const {topPath, dataPath} = this.#getPaths(ev);
 		await this.alterConditionalEffect(topPath, dataPath, action, item);
 	}
 
 	static async handler_deletePowerEffect<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
 		const effectIndex = this.#getEffectIndex(ev);
-		if (effectIndex == undefined) throw new PersonaError("Can't get effect Index");
+		if (effectIndex == undefined) {throw new PersonaError("Can't get effect Index");}
 		const action : CEAction= {
 			type: "delete-effect",
 			effectIndex
-		}
+		};
 		const {topPath, dataPath} = this.#getPaths(ev);
 		await this.alterConditionalEffect(topPath, dataPath, action, item);
 	}
@@ -165,7 +165,7 @@ export class ConditionalEffectManager {
 		const action : CEAction= {
 			type: "create-conditional",
 			effectIndex
-		}
+		};
 		const {topPath, dataPath} = this.#getPaths(ev);
 		await this.alterConditionalEffect(topPath, dataPath, action, item);
 	}
@@ -175,7 +175,7 @@ export class ConditionalEffectManager {
 		const action : CEAction= {
 			type: "create-consequence",
 			effectIndex
-		}
+		};
 		const {topPath, dataPath} = this.#getPaths(ev);
 		await this.alterConditionalEffect(topPath, dataPath, action, item);
 	}
@@ -187,7 +187,7 @@ export class ConditionalEffectManager {
 			type: "delete-consequence",
 			effectIndex,
 			consIndex,
-		}
+		};
 		const {topPath, dataPath} = this.#getPaths(ev);
 		await this.alterConditionalEffect(topPath, dataPath, action, item);
 	}
@@ -200,7 +200,7 @@ export class ConditionalEffectManager {
 			type: "delete-conditional",
 			effectIndex,
 			condIndex,
-		}
+		};
 		const {topPath, dataPath} = this.#getPaths(ev);
 		await this.alterConditionalEffect(topPath, dataPath, action, item);
 	}
@@ -213,7 +213,7 @@ export class ConditionalEffectManager {
 		const action : CEAction= {
 			type: "create-effect",
 			effect:data,
-		}
+		};
 		const {topPath, dataPath} = this.#getPaths(ev);
 		await this.alterConditionalEffect(topPath, dataPath, action, item);
 	}
@@ -228,7 +228,7 @@ export class ConditionalEffectManager {
 			type: "create-conditional",
 			effectIndex,
 			conditional: data,
-		}
+		};
 		const {topPath, dataPath} = this.#getPaths(ev);
 		await this.alterConditionalEffect(topPath, dataPath, action, item);
 
@@ -244,7 +244,7 @@ export class ConditionalEffectManager {
 			type: "create-consequence",
 			effectIndex,
 			consequence: data,
-		}
+		};
 		const {topPath, dataPath} = this.#getPaths(ev);
 		await this.alterConditionalEffect(topPath, dataPath, action, item);
 
@@ -303,14 +303,14 @@ export class ConditionalEffectManager {
 		html.find(".add-consequence").on("click", async (ev)=> this.handler_addConsequence(ev,doc));
 		html.find(".del-consequence").on("click", async (ev) => this.handler_deleteConsequence(ev, doc));
 		html.find(".del-condition").on("click", async(ev) => this.handler_deletePrecondition(ev,doc));
-		html.find(".paste-effect").on("click", async(ev) => this.handler_pasteEffect(ev, doc))
-		html.find(".paste-consequence").on("click", async(ev) => this.handler_pasteConsequence(ev, doc))
-		html.find(".paste-condition").on("click", async(ev) => this.handler_pasteCondition(ev, doc))
-		html.find(".copy-effect").on("click", async(ev) => this.handler_copyEffect(ev, doc))
-		html.find(".copy-consequence").on("click", async(ev) => this.handler_copyConsequence(ev, doc))
-		html.find(".copy-condition").on("click", async(ev) => this.handler_copyCondition(ev, doc))
-		html.find("div.multi-check .selected").on("click", (ev) => this.handler_clickMCSelected(ev, doc))
-		html.find(".MC-selectors").on("click", (ev) => this.handler_clickMCSelector(ev, doc))
+		html.find(".paste-effect").on("click", async(ev) => this.handler_pasteEffect(ev, doc));
+		html.find(".paste-consequence").on("click", async(ev) => this.handler_pasteConsequence(ev, doc));
+		html.find(".paste-condition").on("click", async(ev) => this.handler_pasteCondition(ev, doc));
+		html.find(".copy-effect").on("click", async(ev) => this.handler_copyEffect(ev, doc));
+		html.find(".copy-consequence").on("click", async(ev) => this.handler_copyConsequence(ev, doc));
+		html.find(".copy-condition").on("click", async(ev) => this.handler_copyCondition(ev, doc));
+		html.find("div.multi-check .selected").on("click", (ev) => this.handler_clickMCSelected(ev, doc));
+		html.find(".MC-selectors").on("click", (ev) => this.handler_clickMCSelector(ev, doc));
 		// setTimeout( () => this.restoreLastClick(html), 100);
 	}
 
@@ -319,7 +319,7 @@ export class ConditionalEffectManager {
 		return conditionalEffects.map( ce=> {
 			const conditions = this.getConditionals(ce.conditions, sourceItem, sourceActor);
 			const consequences= this.getConsequences(ce.consequences, sourceItem, sourceActor);
-			let forceDefensive = (sourceItem?.isDefensive)
+			const forceDefensive = (sourceItem?.isDefensive)
 				? sourceItem.isDefensive()
 				: false;
 			let conditionalType : TypedConditionalEffect["conditionalType"];
@@ -345,7 +345,7 @@ export class ConditionalEffectManager {
 	}
 
 static getConditionalType<I extends ConditonalEffectHolderItem>( ce: ConditionalEffect, sourceItem ?: I | null ) : TypedConditionalEffect["conditionalType"] {
-	if (ce.isDefensive) return "defensive";
+	if (ce.isDefensive) {return "defensive";}
 	for (const cond of ce.conditions) {
 		if (this.isTriggeredCondition(cond)) {
 			return "triggered";
@@ -381,7 +381,7 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 }
 
 	static hasSocialQualifier(cond: ConditionalEffect["conditions"][number]) : boolean {
-		if (cond.type == "numeric" && cond.comparisonTarget == "social-link-level") return true;
+		if (cond.type == "numeric" && cond.comparisonTarget == "social-link-level") {return true;}
 		return false;
 	}
 
@@ -417,12 +417,12 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 
 	static ArrayCorrector<T extends any>(obj: (T[] | Record<string | number, T>)): T[] {
 		try {
-			if (obj == null) return[];
+			if (obj == null) {return[];}
 			if (!Array.isArray(obj)) {
 				if (PersonaSettings.debugMode()) {
 					console.debug("Array Correction Required");
 				}
-				return Object.keys(obj).map(function(k) { return obj[k] });
+				return Object.keys(obj).map(function(k) { return obj[k]; });
 			}
 		} catch (e) {
 			throw e;
@@ -470,17 +470,17 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 			case "always":
 				return "always";
 			case "miss-all-targets":
-				return "Miss All Targets"
+				return "Miss All Targets";
 			case "save-versus":
 				const saveType = this.translate(cond.status!, STATUS_EFFECT_TRANSLATION_TABLE);
 				return `on save versus ${saveType}`;
 			case "on-trigger":
 				const trig = this.translate(cond.trigger!, TRIGGERS);
-				return `trigger: ${trig}`
+				return `trigger: ${trig}`;
 			case "never":
 				return "Never";
 			case "disable-on-debug":
-				return "Disabled on Debug Mode"
+				return "Disabled on Debug Mode";
 			case "numeric-v2":
 				return NumericV2.prettyPrintCondition(cond);
 			case "diagnostic":
@@ -509,9 +509,9 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 		const not =  !cond.booleanState ? "not" : "";
 		switch (cond.boolComparisonTarget) {
 			case "engaged":
-				return `${target1} is ${not} engaged with anyone`
+				return `${target1} is ${not} engaged with anyone`;
 			case "engaged-with":
-				return `${target1} is ${not} engaged with ${target2}`
+				return `${target1} is ${not} engaged with ${target2}`;
 			case "metaverse-enhanced":
 				return `metaverse is ${not} enhanced`;
 			case "is-shadow":
@@ -615,14 +615,14 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 			case "logical-or": {
 				const c1= this.printConditional(cond.comparison1);
 				const c2= this.printConditional(cond.comparison2);
-				return `(${c1} OR ${c2})`
+				return `(${c1} OR ${c2})`;
 			}
 			case "scene-clock-name-is":
 				return `Scene Clock is named ${cond.clockName}`;
 			case "is-within-ailment-range":
 				return `Attack Roll is within ailment range`;
 			default:
-				cond satisfies never
+				cond satisfies never;
 				return "";
 		}
 	}
@@ -795,8 +795,8 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 				return this.printDamageConsequence(cons);
 			case "addStatus": {
 				const status = this.translate(cons.statusName!, STATUS_EFFECT_TRANSLATION_TABLE);
-				let dur = cons.statusDuration;
-				if (!dur) return `ERROR`;
+				const dur = cons.statusDuration;
+				if (!dur) {return `ERROR`;}
 				const duration = this.translate(dur, STATUS_EFFECT_DURATION_TYPES);
 				return `Add Status ${status} (${duration})`;
 			} case "removeStatus": {
@@ -818,7 +818,7 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 				return `expend item`;
 			case "add-power-to-list":
 				const grantedPower = PersonaDB.getPower(cons.id);
-				return `Add power to list ${grantedPower?.displayedName?.toString() ?? "ERROR"}`
+				return `Add power to list ${grantedPower?.displayedName?.toString() ?? "ERROR"}`;
 			case "other-effect":
 				return this.#printOtherEffect(cons);
 			case "set-flag":
@@ -862,7 +862,7 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 			case "dmg-low":
 				return "Low Damage";
 			case "dmg-high":
-				return "High Damage"
+				return "High Damage";
 			case "dmg-allout-low":
 			case "dmg-allout-high":
 				return "";
@@ -880,7 +880,7 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 				const tag = this.translate(cons.creatureTag, CREATURE_TAGS);
 				return `Add ${tag} tag`;
 			case "combat-effect":
-				return this.#printCombatEffect(cons)
+				return this.#printCombatEffect(cons);
 			case "alter-fatigue-lvl":
 				return `Alter Fatigue Level ${cons.amount}`;
 			case "alter-variable":
@@ -932,7 +932,7 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 			case "exec-event":
 				return `Execute Event Chain ${cons.eventLabel}`;
 			case "inc-events":
-				return `Remaining events ${signedAmount}`
+				return `Remaining events ${signedAmount}`;
 			case "gain-money":
 				return `Resources ${signedAmount}`;
 			case "modify-progress-tokens":
@@ -1006,8 +1006,8 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 	}
 
 	static signedAmount(amt?: number): string {
-		if (!amt) return "";
-		return amt! > 0 ?`+${amt}` : `${amt}`
+		if (!amt) {return "";}
+		return amt! > 0 ?`+${amt}` : `${amt}`;
 	}
 
 	static printDamageConsequence(cons: Consequence & {type: "damage-new"}) : string {
@@ -1087,7 +1087,7 @@ export class EMAccessor<T> {
 		const pathdiff = updatePath.slice(this._path.length).split(".");
 		while (pathdiff.length > 1) {
 			const path = pathdiff.shift();
-			if (!path) continue;
+			if (!path) {continue;}
 			if (datapart[path] == undefined) {
 				datapart[path] = {};
 				console.log(`Had to create path for ${updatePath}`);

@@ -85,7 +85,7 @@ function registerSheetApplications() {
 	Items.registerSheet("persona", PersonaSocialCardSheet, {types: ["socialCard"], makeDefault: true});
 }
 
-Hooks.once("ready", () => {Darkness.init()});
+Hooks.once("ready", () => {Darkness.init();});
 
 Hooks.once("init", async function() {
 	console.log("*** PERSONA SYSTEM INIT START ***");
@@ -142,7 +142,7 @@ export function localize(...args: Parameters<typeof game.i18n.localize>): Return
 }
 
 //@ts-ignore
-window.AmongUs = AmongUs
+window.AmongUs = AmongUs;
 
 //@ts-ignore
 window.AnyaPlanets = new AnyaPlanets();

@@ -30,7 +30,7 @@ export class Heartbeat {
 				const heartbeatChecker = new Heartbeat();
 				Heartbeat.instance = heartbeatChecker;
 				heartbeatChecker.initHooks();
-				heartbeatChecker.mainHeartbeatLoop()
+				heartbeatChecker.mainHeartbeatLoop();
 				setInterval( () => {
 					heartbeatChecker.refreshPlayerStatus();
 				}, 3000);
@@ -48,7 +48,7 @@ export class Heartbeat {
 
 	constructor () {
 		const targets = game.users.contents
-			.filter (user=> !user.isGM && user.active)
+			.filter (user=> !user.isGM && user.active);
 		for (const target of targets) {
 			const channel = PersonaSockets.createChannel<HEARTBEAT_MSG>( Heartbeat.LINK_CODE, [target.id]);
 			this.sessions.push(channel);
@@ -60,7 +60,7 @@ export class Heartbeat {
 
 	initHooks() {
 		Hooks.on("userConnected", async (user, isConnected ) => {
-			if (!game.user.isGM) return;
+			if (!game.user.isGM) {return;}
 			if (isConnected) {
 				//User Connect
 				ui.notifications.notify( `${user.name} has connected`);
@@ -97,7 +97,7 @@ export class Heartbeat {
 				continue;
 			}
 			const target = game.users.find( x=> x.id == session.recipients[0]);
-			if (!target) throw new Error("Not sending to anyone");
+			if (!target) {throw new Error("Not sending to anyone");}
 			// console.log(`Sending pulse to ${target.name}`);
 			const initialTime= Date.now();
 			try {
@@ -111,7 +111,7 @@ export class Heartbeat {
 					notifyTime = 20;
 				}
 			}
-			if (session.closed) return;
+			if (session.closed) {return;}
 			await sleep(4000);
 			if (notifyTime > 0) {
 				notifyTime -= 1;
@@ -124,11 +124,11 @@ export class Heartbeat {
 		$(document).find("aside#players").find("li.player")
 		.each( function f() {
 			const id = $(this).data("userId") as string;
-			if (!id) throw new Error("No id for Player");
+			if (!id) {throw new Error("No id for Player");}
 			const user = game.users.find(x=> x.id == id);
-			if (!user || user.isGM) return;
+			if (!user || user.isGM) {return;}
 			const lastContact = that.secondsUntilLastContact(user);
-			if (!lastContact) return;
+			if (!lastContact) {return;}
 			const icon = $(`<span class="connection"> ${that.getHTMLStatusIndicator(lastContact)} </span>`);
 			$(this).find(".connection").remove();
 			$(this).append(icon);

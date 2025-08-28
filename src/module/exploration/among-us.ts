@@ -26,7 +26,7 @@ export class AmongUs {
 	}
 
 	static getLocation (token: TokenDocument<PersonaActor>, shipScene: PersonaScene) : PersonaRegion | undefined {
-		if (token.actor && token.actor.hasStatus("down")) return undefined;
+		if (token.actor && token.actor.hasStatus("down")) {return undefined;}
 		const region = shipScene.regions.find( region => {
 			return region.tokens.has(token);
 		});
@@ -67,7 +67,7 @@ export class AmongUs {
 					return await this.assignNewTask(token, shipScene);
 				}
 			case "Move To":
-				const location = this.getLocation(token, shipScene)
+				const location = this.getLocation(token, shipScene);
 				if (location != undefined && location.id != current.regionId) {
 					return current;
 				} else {
@@ -98,7 +98,7 @@ export class AmongUs {
 			case 2:
 				action =   {
 					action : "Do Nothing"
-				}
+				};
 				break;
 			case 2:
 			case 3:
@@ -122,7 +122,7 @@ export class AmongUs {
 			scene = game.scenes.get(scene) as PersonaScene;
 		}
 
-		let actions : [string, string][] = [];
+		const actions : [string, string][] = [];
 		for (const player of this.alivePlayers(scene)) {
 			const action = await this.getAction(player, scene);
 			actions.push([`${player.name}`,`${this.translateAction(action, scene)}`]);

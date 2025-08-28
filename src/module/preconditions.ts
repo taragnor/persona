@@ -400,7 +400,7 @@ export function combatResultBasedNumericTarget(condition: CombatResultComparison
 			break;
 		case "total-knocks-down":
 			changeCompFn = function(change) {
-				return !!change.addStatus.find( x=> x.id == "down");
+				return Boolean(change.addStatus.find( x=> x.id == "down"));
 			};
 			break;
 		default:
@@ -529,7 +529,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
          return power.system.type == "power" && power.system.subtype == condition.powerType;
       }
       case "in-combat": {
-         return !!situation.activeCombat;
+         return Boolean(situation.activeCombat);
       }
       case "is-critical": {
          return situation.criticalHit ?? false;
@@ -782,7 +782,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			return multiCheckTest(condition.creatureTag, x => target.hasCreatureTag(x));
 		}
 		case "cameo-in-scene": {
-			return !!situation.cameo;
+			return Boolean(situation.cameo);
 		}
 		case "arcana-is": {
 			const target = getSubjectActors(condition, situation, source, "conditionTarget")[0];

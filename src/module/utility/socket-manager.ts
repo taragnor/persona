@@ -50,7 +50,7 @@ export class SocketManager {
 			targetInfo: sessionInfo,
 			recipients: recipientIds,
 			data	:dataToSend,
-		}
+		};
 		game.socket.emit(this.#socketName, sPayload );
 	}
 
@@ -70,7 +70,7 @@ export class SocketManager {
 
 	private onMsgRecieve(packet: SocketPayload<keyof SocketMessage>) :void {
 		const {code, recipients} = packet;
-		if (!recipients.includes(game.user.id)) return;
+		if (!recipients.includes(game.user.id)) {return;}
 		const handlers = this.#handlers.get(code);
 		if (!handlers) {
 			console.warn(`No handler for message ${code}`);
@@ -81,7 +81,7 @@ export class SocketManager {
 		}
 	}
 
-	createChannel<T extends ChannelMessage>(linkCode: string, recipients: SocketChannel<T>["recipients"] = [], sessionCode?: number) : SocketChannel<T> {
+	createChannel<T extends ChannelMessage>(linkCode: string, recipients: SocketChannel<T>["recipients"] = [], _sessionCode?: number) : SocketChannel<T> {
 		const channel =  new SocketChannel<T>(linkCode, recipients);
 		SocketChannel.channels.push(channel);
 
@@ -104,7 +104,7 @@ export type SocketPayload<T extends keyof SocketMessage> = {
 };
 
 type DataHandlerFn<T extends keyof SocketMessage> =
-	(data: SocketMessage[T], payload: SocketPayload<T>) => any;
+	(data: SocketMessage[T], payload: SocketPayload<T>) => unknown;
 
 type SessionInfo = {};
 
