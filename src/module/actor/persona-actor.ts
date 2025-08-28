@@ -65,8 +65,8 @@ import { InvItem } from "../item/persona-item.js";
 import { Weapon } from "../item/persona-item.js";
 import { Power } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
-import { ACTORMODELS } from "../datamodel/actor-types.js"
-import { PersonaItem } from "../item/persona-item.js"
+import { ACTORMODELS } from "../datamodel/actor-types.js";
+import { PersonaItem } from "../item/persona-item.js";
 import { PersonaAE } from "../active-effect.js";
 import { StatusDuration } from "../active-effect.js";
 
@@ -85,7 +85,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		socialData: U<readonly SocialLinkData[]>,
 	};
 
-	constructor(...arr: any[]) {
+	constructor(...arr: unknown[]) {
 		super(...arr);
 		this.clearCache();
 	}
@@ -96,7 +96,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			complementRating: new Map(),
 			socialData: undefined,
 			// triggers: undefined,
-		}
+		};
 	}
 
 	get mp() : number {
@@ -122,7 +122,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!this.isNPC() && !this.isPC()) {
 			return false;
 		}
-		if (this.tarot == undefined) return false;
+		if (this.tarot == undefined) {return false;}
 		return true;
 	}
 
@@ -148,8 +148,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async setAsNavigator(this: NPCAlly) {
 		for (const ally of PersonaDB.NPCAllies()) {
-			if (ally == this) continue;
-			if (!ally.system.combat.isNavigator) continue;
+			if (ally == this) {continue;}
+			if (!ally.system.combat.isNavigator) {continue;}
 			if (!ally.isOwner) {
 				PersonaError.softFail(`Can't change navigator status on ${ally.name}, no ownership`);
 				continue;
@@ -165,7 +165,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get level() : number {
-		if (!this.isValidCombatant()) return 0;
+		if (!this.isValidCombatant()) {return 0;}
 		if (this.isPC()) {
 			return this.system.personaleLevel;
 		}
@@ -173,12 +173,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get personalLevel(): number {
-		if (!this.isPC()) return 0;
+		if (!this.isPC()) {return 0;}
 		return this.system.personaleLevel;
 	}
 
 	get mmp() : number {
-		if (!this.isValidCombatant()) return 0;
+		if (!this.isValidCombatant()) {return 0;}
 		switch (this.system.type) {
 			case "npcAlly": case "pc":
 				break;
@@ -214,7 +214,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (mapVal != undefined) {
 			return mapVal;
 		}
-		if (level <= 1) return 50;
+		if (level <= 1) {return 50;}
 		const prevMP = this.calcMP(level -1);
 		const MP = prevMP + (prevMP * (0.33 - ((level - 2) * .02)));
 		this.MPMap.set(level, MP);
@@ -222,7 +222,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async refreshMaxMP(this: PC | NPCAlly, amt = this.mmp) {
-		if (amt == this.system.combat.mp.max) return;
+		if (amt == this.system.combat.mp.max) {return;}
 		await this.update( { "system.combat.mp.max": amt});
 	}
 
@@ -239,7 +239,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async #refreshHpTracker(this:ValidAttackers)  : Promise<void> {
-		if (!game.user.isGM) return;
+		if (!game.user.isGM) {return;}
 		const mhp = this.mhp;
 		if (this.hp > mhp) {
 			this.update({"system.combat.hp": mhp});
@@ -263,9 +263,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get consumables(): Consumable[] {
 		const consumables =  this.items.filter( x=> x.system.type == "consumable" || x.system.type == "skillCard") as Consumable[];
 		return consumables.sort( (a,b) => {
-			if (!a.isCraftingItem && b.isCraftingItem ) return -1;
-			if (!b.isCraftingItem && a.isCraftingItem ) return 1;
-			return a.name.localeCompare(b.name)
+			if (!a.isCraftingItem && b.isCraftingItem ) {return -1;}
+			if (!b.isCraftingItem && a.isCraftingItem ) {return 1;}
+			return a.name.localeCompare(b.name);
 		}
 		);
 	}
@@ -274,10 +274,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const inventory = this.items.filter( i=> i.system.type == "item" || i.system.type == "weapon" || i.system.type == "skillCard") as (InvItem | Weapon)[];
 		return inventory.sort( (a,b) =>  {
 			const typesort = a.system.type.localeCompare(b.system.type);
-			if (typesort != 0) return typesort;
+			if (typesort != 0) {return typesort;}
 			if (a.system.type == "item" && b.system.type == "item") {
 				const slotSort = a.system.slot.localeCompare(b.system.slot);
-				if (slotSort != 0) return slotSort;
+				if (slotSort != 0) {return slotSort;}
 			}
 			return a.name.localeCompare(b.name);
 		});
@@ -288,12 +288,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "tarot":
 				return game.i18n.localize(TAROT_DECK[this.name as keyof typeof TAROT_DECK] ?? "-");
 			case "npcAlly":
-			case "shadow":
-					const combat = game.combat as PersonaCombat | undefined;
-				if (!combat) return this.name;
+			case "shadow": {
+        const combat = game.combat as PersonaCombat | undefined;
+				if (!combat) {return this.name;}
 				const token = combat.getCombatantByActor(this as ValidAttackers)?.token;
-				if (!token) return this.name;
+				if (!token) {return this.name;}
 				return token.name;
+      }
 			default:
 				return this.name;
 		}
@@ -311,7 +312,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get socialInit(): number {
-		if (this.system.type != "pc") return -999;
+		if (this.system.type != "pc") {return -999;}
 		return (this as PC).getSocialStat("courage").total({user:(this as PC).accessor});
 	}
 
@@ -319,7 +320,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	getNPCProxyActor(this: NPCAlly) : NPC | PC | undefined {
 		const proxyId = this.system.NPCSocialProxyId;
 		if (!proxyId)
-			return undefined;
+			{return undefined;}
 		const npc = PersonaDB.socialLinks()
 			.find( x=> x.id == proxyId);
 		if (!npc || npc.system.type != "npc" && npc.system.type != "pc") {
@@ -346,15 +347,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	persona<T extends ValidAttackers>(this: T): Persona<T> {
 		switch (this.system.type) {
 			case "pc":
-			case "npcAlly":
-				if (this.isNPCAlly() || (this.isPC() && (this.system.activePersona == null || this.system.activePersona == this.id))) {
+			case "npcAlly": {
+        if (this.isNPCAlly() || (this.isPC() && (this.system.activePersona == null || this.system.activePersona == this.id))) {
 					return this.basePersona as Persona<T>;
 				}
 				const activePersona = game.actors.get((this as PC).system.activePersona) as ValidAttackers;
 				if (!activePersona) {
-					return this.basePersona as Persona<T>
+					return this.basePersona as Persona<T>;
 				};
 				return Persona.combinedPersona(this.basePersona, activePersona.basePersona) as Persona<T>;
+      }
 			case "shadow":
 				return this.basePersona as Persona<T>;
 			default:
@@ -374,7 +376,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get combatInit(): number {
-		if (!this.isValidCombatant()) return -666;
+		if (!this.isValidCombatant()) {return -666;}
 		return this.persona().combatInit;
 	}
 
@@ -423,9 +425,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const id = this.system.combat.classData.classId;
 		let cl = PersonaDB.getClassById(id);
 		if (!cl) {
-			const namesearch = PersonaDB.getItemByName(classNameDefault)
+			const namesearch = PersonaDB.getItemByName(classNameDefault);
 			if (!namesearch)
-				throw new Error(`Couldn't find class id: ${id} or name: ${classNameDefault}`);
+				{throw new Error(`Couldn't find class id: ${id} or name: ${classNameDefault}`);}
 			if (namesearch.system.type != "characterClass")
 			{
 				throw new Error("Bad Item named: ${classNameDefault}, expecting a character class");
@@ -436,8 +438,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async setHP(newval: number) {
-		if (!this.isValidCombatant()) return;
-		if (this.system.combat.hp == newval) return;
+		if (!this.isValidCombatant()) {return;}
+		if (this.system.combat.hp == newval) {return;}
 		newval = Math.clamp(newval, 0, this.mhp);
 		await this.update({"system.combat.hp": newval});
 		await (this as PC | Shadow).refreshHpStatus(newval);
@@ -459,16 +461,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get mhpEstimate() : number {
-		if (!this.isValidCombatant()) return 0;
+		if (!this.isValidCombatant()) {return 0;}
 		const mhp = this.system.combat.hpTracker.max;
-		if (mhp) return mhp;
+		if (mhp) {return mhp;}
 		return this.mhp;
 	}
 
 	hasSoloPersona(this: ValidAttackers): boolean {
-		if (this.isNPCAlly()) return true;
-		if (this.isPC()) return this.system.personaList.length <= 1;
-		if (this.isShadow()) return true;
+		if (this.isNPCAlly()) {return true;}
+		if (this.isPC()) {return this.system.personaList.length <= 1;}
+		if (this.isShadow()) {return true;}
 		this satisfies never;
 		return false;
 	}
@@ -476,7 +478,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get mhp() : number {
 		//NOTE: This function is a performance sink
-		if (!this.isValidCombatant()) return 0;
+		if (!this.isValidCombatant()) {return 0;}
 		try {
 			const persona = this.persona();
 			const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
@@ -503,12 +505,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			}
 			// const diff = this.class.getClassProperty(lvl+1, "maxhp") - lvlbase;
 			// const incBonus = Math.round(inc / 3 * diff);
-			const multmods = persona.getBonuses("maxhpMult")
+			const multmods = persona.getBonuses("maxhpMult");
 			// const underCap = this.basePersona.maxResists() - this.totalResists() ;
 			if (this.isPC() || this.isNPCAlly()) {
 				const ArmorHPBoost = this.equippedItems().find(x=> x.isOutfit())?.system?.armorHPBoost ?? 0;
 				if (ArmorHPBoost > 0)
-					nonMultbonuses.add("Armor HP Bonus", ArmorHPBoost);
+					{nonMultbonuses.add("Armor HP Bonus", ArmorHPBoost);}
 			}
 			// if (underCap > 0) {
 			// 	const bonus = underCap * 0.20;
@@ -594,7 +596,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	getSocialSLWithTarot(this: PC, tarot: TarotCard) : number {
 		const link= this.socialLinks.find(
 			link => link.actor.tarot?.name == tarot);
-		if (!link) return 0;
+		if (!link) {return 0;}
 		return link.linkLevel;
 	}
 
@@ -603,8 +605,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			sl = PersonaDB.findActor(sl);
 
 		}
-		const linkData= this.system.social.find( x=> x.linkId == sl.id)
-		if (!linkData) return 0;
+		const linkData= this.system.social.find( x=> x.linkId == sl.id);
+		if (!linkData) {return 0;}
 		return linkData.linkLevel;
 	}
 
@@ -615,15 +617,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "tarot": return 0;
 			case "pc":
 			case "npc":
-			case "npcAlly":
-				let targetActor : NPC | PC | NPCAlly = this as any;
+			case "npcAlly": {
+         let targetActor : NPC | PC | NPCAlly = this as PC;
 				if (this.isNPCAlly()) {
 					const proxy = this.getNPCProxyActor();
 					if (!proxy) {return 0;}
 					targetActor = proxy;
 				}
 				return PersonaDB.realPCs()
-					.reduce( (acc, pc) => acc + pc.getSocialSLWith(targetActor), 0)
+					.reduce( (acc, pc) => acc + pc.getSocialSLWith(targetActor), 0);
+      }
 			default:
 				this.system satisfies never;
 				return -1;
@@ -688,7 +691,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async addNewActivity(this: PC, activity: Activity) {
 		const act= this.system.activities;
 		if (act.find(x=> x.linkId == activity.id))
-			return;
+			{return;}
 		const item : typeof act[number] = {
 			linkId: activity.id,
 			strikes: 0,
@@ -699,17 +702,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get activityLinks() : ActivityLink[] {
-		if (this.system.type != "pc") return [];
+		if (this.system.type != "pc") {return [];}
 		return this.system.activities
 			.flatMap( aData => {
 				const activity = PersonaDB.allActivities().find(x=> x.id == aData.linkId);
-				if (!activity) return [];
+				if (!activity) {return [];}
 				const aLink : ActivityLink = {
 					strikes: aData.strikes ?? 0,
 					available: activity.isAvailable(this as PC),
 					currentProgress: aData.currentProgress,
 					activity,
-				}
+				};
 				return aLink;
 			});
 	}
@@ -738,16 +741,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				PersonaError.softFail(`Unexpected Date type: ${this.system["type"]}`);
 				return false;
 		}
-		if (this.system.type != "pc") return false;
+		if (this.system.type != "pc") {return false;}
 		const id = sl instanceof PersonaActor ? sl.id: sl;
 		const link =  this.system.social.find(x=> x.linkId == id);
-		if (!link) return false;
+		if (!link) {return false;}
 		return link.isDating || link.relationshipType == "DATE";
 	}
 
 
 	get socialLinks() : readonly SocialLinkData[] {
-		if (!this.isPC() || !PersonaDB.isLoaded) return EMPTYARR;
+		if (!this.isPC() || !PersonaDB.isLoaded) {return EMPTYARR;}
 		function meetsSL(linkLevel: number, focus:Focus) {
 			return linkLevel >= focus.requiredLinkLevel();
 		};
@@ -755,7 +758,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!PersonaCaching || this.cache.socialData == undefined) {
 			this.cache.socialData = this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
 				const npc = PersonaDB.getActor(linkId);
-				if (!npc) return [];
+				if (!npc) {return [];}
 				const isDating = relationshipType == "DATE";
 				relationshipType = relationshipType ? relationshipType : npc.baseRelationship;
 				if (npc.system.type == "npc") {
@@ -836,12 +839,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const list = PersonaDB.socialLinks()
 			.filter( x=> !currentLinks.includes(x.id))
 			.filter( (x : PC | NPC)=> Object.values(x.system.weeklyAvailability).some(x=> x == true))
-			.filter( (x : PC | NPC)=> !!x.system.tarot)
+			.filter( (x : PC | NPC)=> !!x.system.tarot);
 		return list;
 	}
 
 	get recoveryAmt(): number {
-		if (!this.isPC()) return 0;
+		if (!this.isPC()) {return 0;}
 		const persona = this.persona();
 		const rec_bonuses = persona.getBonuses("recovery");
 		rec_bonuses.add("Base", 10);
@@ -931,36 +934,38 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return pcPowers;
 	}
 
-	get basicPowers() : readonly Power [] {
-		switch (this.system.type) {
-			case "npc": case "tarot":
-				return [];
-			case "shadow":
-				return PersonaItem.getBasicShadowPowers();
-			case "pc":
-			case "npcAlly":
-				const arr = PersonaItem.getBasicPCPowers().slice();
-				const extraSkills = [
-					this.teamworkMove,
-					...this.navigatorSkills,
-				].flatMap( x=> x != undefined ? [x] : []);
-				arr.push (...extraSkills);
-				return arr;
-			default:
-				this.system satisfies never;
-				return [];
-		}
-	}
+  get basicPowers() : readonly Power [] {
+    switch (this.system.type) {
+      case "npc": case "tarot":
+        return [];
+      case "shadow":
+        return PersonaItem.getBasicShadowPowers();
+      case "pc":
+      case "npcAlly": {
+        const arr = PersonaItem.getBasicPCPowers().slice();
+        const extraSkills = [
+          this.teamworkMove,
+          ...this.navigatorSkills,
+        ].flatMap( x=> x != undefined ? [x] : []);
+        arr.push (...extraSkills);
+        return arr; 
+      }
+      default:
+        this.system satisfies never;
+        return [];
+    }
+  }
 
 	get maxPowers() : number {
-		if (!this.isValidCombatant()) return 0;
+		if (!this.isValidCombatant()) {return 0;}
 		switch (this.system.type) {
 			case "npcAlly":
 				return 8;
 			case "pc":
-			case "shadow":
-				const extraMaxPowers = this.persona().getBonuses("extraMaxPowers");
+			case "shadow": {
+        const extraMaxPowers = this.persona().getBonuses("extraMaxPowers");
 				return 8 + extraMaxPowers.total ( {user: (this as PC | Shadow).accessor});
+      }
 			default:
 				this.system satisfies never;
 				return -1;
@@ -986,12 +991,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "tarot":
 			case "pc":
 				return [];
-			case "npcAlly":
-				const powers = this.system.combat.navigatorSkills
+			case "npcAlly": {
+        const powers = this.system.combat.navigatorSkills
 					.map( id => PersonaDB.getPower(id))
 					.filter( x=> x != undefined);
 				// const powers = PersonaDB.allPowers().filter(x=> x.id == id);
 				return powers;
+      }
 			default:
 				this.system satisfies never;
 				return [];
@@ -1000,14 +1006,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	getUsableById(id: Usable["id"]) : Usable | undefined {
 		const power = this.powers.find(pow => pow.id == id);
-		if (power) return power;
+		if (power) {return power;}
 		const usable = this.items.find( item=> item.id == id && item.isUsableType());
-		if (usable) return usable as Usable;
+		if (usable) {return usable as Usable;}
 		PersonaError.softFail(`Can't find Usable with Id ${id}`);
 	}
 
 	get powerLearningListFull() : readonly Readonly<{power: Power, level: number}>[] {
-		if (!this.isValidCombatant()) return [];
+		if (!this.isValidCombatant()) {return [];}
 		return this.system.combat.powersToLearn
 			.sort( (a,b) => a.level - b.level)
 			.map( data => {
@@ -1021,7 +1027,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get powerLearningList() : readonly Readonly<{power: Power, level: number}>[] {
-		if (!this.isValidCombatant()) return [];
+		if (!this.isValidCombatant()) {return [];}
 		return this.powerLearningListFull
 			.filter( x=> x.level > this.system.combat.lastLearnedLevel);
 	}
@@ -1039,14 +1045,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get learnedPowersBuffer() : Power[] {
-		if (!this.isValidCombatant()) return [];
+		if (!this.isValidCombatant()) {return [];}
 		return this.system.combat.learnedPowersBuffer
 			.map( p => PersonaDB.getPower(p))
 			.filter( p=> !!p);
 	}
 
 	get powers(): Power[] {
-		if (!this.isValidCombatant()) return [];
+		if (!this.isValidCombatant()) {return [];}
 		return [
 			...this.basicPowers,
 			...this.mainPowers,
@@ -1055,7 +1061,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get displayedBonusPowers() : Power[] {
-		if (!this.isValidCombatant()) return [];
+		if (!this.isValidCombatant()) {return [];}
 		return this.persona().bonusPowers.filter( power=>
 			!power.isOpener()
 		);
@@ -1080,14 +1086,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		const id = this.system.equipped.weapon;
 		const item = this.items.find( x=> x.id == id);
-		if (item) return item as Weapon;
+		if (item) {return item as Weapon;}
 		const dbitem = PersonaDB.getItemById(id);
-		if (dbitem) return dbitem as Weapon;
+		if (dbitem) {return dbitem as Weapon;}
 		return null;
 	}
 
 	unarmedTagList() : readonly PowerTag[] {
-		if (POWER_TAGS_LIST.includes (this.getUnarmedDamageType() as any)) {
+		if (POWER_TAGS_LIST.includes (this.getUnarmedDamageType() as typeof POWER_TAGS_LIST[number])) {
 			return [this.getUnarmedDamageType()] as PowerTag[];
 		}
 		return [];
@@ -1096,7 +1102,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get focii(): Focus[] {
 		if (this.system.type == "pc")
-			return [];
+			{return [];}
 		return this.items.filter( x=> x.isFocus()) as Focus[];
 	}
 
@@ -1109,7 +1115,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async modifyHP( this: ValidAttackers, delta: number) {
-		if (delta == 0) return;
+		if (delta == 0) {return;}
 		let hp = this.system.combat.hp;
 		hp += delta;
 		if (hp < 0 ) {
@@ -1158,7 +1164,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (this.token) {
 			await this.token.update({"alpha": opacity});
 		} else {
-			//@ts-ignore
+			//@ts-expect-error dependent tokens not in foundrytypes
 			for (const iterableList of this._dependentTokens.values()) {
 				for (const tokDoc of iterableList) {
 					(tokDoc as TokenDocument<PersonaActor>).update({"alpha": opacity});
@@ -1177,8 +1183,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				break;
 			case "block":
 				return true;
-			case "resist":
-				const save = await PersonaRoller.rollSave(this as Shadow, {
+			case "resist": {
+        const save = await PersonaRoller.rollSave(this as Shadow, {
 					DC: 11,
 					label:`Resist status ${id}`,
 					askForModifier: false,
@@ -1187,8 +1193,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					rollTags: ["resist-status"],
 				});
 				await save.toModifiedMessage(true);
-				if (save.success) return true;
+				if (save.success) {return true;}
 				break;
+      }
 			default:
 				resist satisfies never;
 		}
@@ -1216,7 +1223,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const newLvl = this.fatigueLevel;
 			return oldLvl != newLvl;
 		}
-		if (await this.isStatusResisted(id)) return false;
+		if (await this.isStatusResisted(id)) {return false;}
 		const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
 		if (!stateData) {
 			throw new Error(`Couldn't find status effect Id: ${id}`);
@@ -1234,7 +1241,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				name: game.i18n.localize(stateData.name),
 				statuses: s
 			};
-			if (await this.checkStatusNullificaton(id)) return false;
+			if (await this.checkStatusNullificaton(id)) {return false;}
 			const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
 			await newEffect.setPotency(potency ?? 0);
 			const adjustedDuration = this.getAdjustedDuration(duration, id);
@@ -1257,12 +1264,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	getAdjustedDuration( duration: StatusDuration, id: StatusEffect["id"]) : StatusDuration {
-		if (!this.isValidCombatant()) return duration;
+		if (!this.isValidCombatant()) {return duration;}
 		try {
 			switch (duration.dtype)  {
 				case "X-rounds":
-				case "3-rounds":
-					const tags = CONFIG.statusEffects.find(x=> x.id == id)?.tags;
+				case "3-rounds": {
+          const tags = CONFIG.statusEffects.find(x=> x.id == id)?.tags;
 					if (!tags) {
 						PersonaError.softFail(`Bad status Id: ${id}`);
 						return duration;
@@ -1281,6 +1288,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						...duration,
 						amount: reducedAmt,
 					};
+        }
 				default:
 					return duration;
 			}
@@ -1293,7 +1301,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get openerActions() : Usable[] {
 		if (this.system.type == "npc" || this.system.type == "tarot")
-			return [];
+			{return [];}
 		const powerBased = (this.system.type == "shadow" ? this.mainPowers : this.consumables)
 			.filter( power => power.isOpener());
 		const arr : Usable[] = (this as ValidAttackers).mainModifiers({omitPowers:true})
@@ -1330,7 +1338,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		const id = this.system.combat.teamworkMove;
 		if (!id)
-			return undefined;
+			{return undefined;}
 		return PersonaDB.allPowers().get(id);
 	}
 
@@ -1345,19 +1353,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get tokens() : TokenDocument<this>[] {
-		const actor = this;
-		if (actor.token) {
-			return [actor.token];
+		if (this.token) {
+			return [this.token];
 		}
-		//@ts-ignore
-		const dependentTokens : TokenDocument<PersonaActor>[] = Array.from(actor._dependentTokens.values()).flatMap(x=> Array.from(x.values()));
+		//@ts-expect-error dependent tokesn not in foundrytypes
+		const dependentTokens : TokenDocument<PersonaActor>[] = Array.from(this._dependentTokens.values()).flatMap(x=> Array.from(x.values()));
 		return dependentTokens.filter( x=> x.actorLink == true) as TokenDocument<this>[];
 	}
 
 	/** returns true if nullfied **/
 	async checkStatusNullificaton(statusId: StatusEffectId) : Promise<boolean> {
 		let cont = false;
-		let remList : StatusEffectId[] = [];
+		const remList : StatusEffectId[] = [];
 		switch (statusId) {
 			case "defense-boost":
 				remList.push("defense-nerf");
@@ -1381,7 +1388,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (this.hp <= 0) {
 			const allNonDowntimeStatus = this.effects.filter( x=> x.isStatus && !x.isDowntimeStatus && !x.statuses.has("fading"));
 			const list = allNonDowntimeStatus.flatMap( x=> Array.from(x.statuses));
-			remList.push(...list)
+			remList.push(...list);
 			cont = true;
 		}
 		let removed =0;
@@ -1397,11 +1404,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	/** returns new status to escalate if needed  */
 	async checkStatusEscalation (statusId: StatusEffectId) : Promise <StatusEffectId>  {
-		let remList : StatusEffectId[] = [];
+		const remList : StatusEffectId[] = [];
 		let returnStatus: StatusEffectId = statusId;
 		switch (statusId) {
 			case "tired":
-				if (!this.hasStatus("tired")) break;
+				if (!this.hasStatus("tired")) {break;}
 				remList.push("tired");
 				returnStatus = "exhausted";
 				break;
@@ -1442,7 +1449,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return [];
 		}
 		const inv = this.inventory;
-		const slots : (keyof typeof this.system.equipped)[]=  ["weapon", "body", "accessory", "weapon_crystal"]
+		const slots : (keyof typeof this.system.equipped)[]=  ["weapon", "body", "accessory", "weapon_crystal"];
 		const ret = slots
 			.map( slot=> inv
 				.find(item => item.id == (this as PC).system.equipped[slot]))
@@ -1468,7 +1475,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	getPersonalBonuses(modnames : ModifierTarget | ModifierTarget[], sources: readonly ModifierContainer[] = this.actorMainModifiers()) : ModifierList  {
-		let modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this)
+		const modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this)
 			.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
 		));
 		return modList;
@@ -1483,14 +1490,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get treasureMultiplier () : number {
-		if (!this.isValidCombatant()) return 1;
+		if (!this.isValidCombatant()) {return 1;}
 		switch (this.system.type) {
-			case "pc": case "npcAlly":
-				const situation :Situation = {
+			case "pc": case "npcAlly": {
+        const situation :Situation = {
 					user: (this as PC | NPCAlly).accessor
 				};
 				const bonus= this.persona().getBonuses("shadowMoneyBoostPercent").total(situation, "percentage");
 				return !Number.isNaN(bonus) ? bonus : 1;
+      }
 			default:
 				return 1;
 		}
@@ -1502,7 +1510,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get fatigueLevel() : number {
-		if (this.system.type != "pc") return 0;
+		if (this.system.type != "pc") {return 0;}
 		const st = this.getFatigueStatus();
 		return statusToFatigueLevel(st);
 	}
@@ -1526,7 +1534,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		for (const eff of this.effects.contents) {
 			if (eff.isFatigueStatus) {
 				if (!eff.statuses.has(newId!))
-					await eff.delete();
+					{await eff.delete();}
 			}
 		}
 		if (newId) {
@@ -1562,7 +1570,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	getUnarmedDamageType(): RealDamageType {
-		if (this.system.type == "shadow") return this.system.combat.baseDamageType ?? "physical";
+		if (this.system.type == "shadow") {return this.system.combat.baseDamageType ?? "physical";}
 		return "physical";
 	}
 
@@ -1572,7 +1580,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			return {rating, name: shadow.name};
 		})
 			.sort( (a,b) => b.rating - a.rating)
-			.map(x => `${x.name}: ${x.rating}`)
+			.map(x => `${x.name}: ${x.rating}`);
 
 	}
 
@@ -1588,7 +1596,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	#complementRating (this: Shadow, other: Shadow) : number {
 		let rating = 0;
-		if (this == other) return 0; //baseline
+		if (this == other) {return 0;} //baseline
 		const scaledPairs : [Shadow["system"]["role"], Shadow["system"]["role"], number][] = [
 			["soldier", "lurker", 1],
 			["soldier", "support", 1],
@@ -1604,7 +1612,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		] as const;
 		for (const [r1,r2, amt] of scaledPairs) {
 			if (this.hasRole(r1) && other.hasRole(r2)) {
-				rating += amt
+				rating += amt;
 			}
 		}
 		const thisP= this.persona();
@@ -1662,7 +1670,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const otherAttacks =
 			other.powers
 			.map(x=> x.system.dmg_type)
-			.filter (dmgType => dmgType != "healing" && dmgType != "untyped" && dmgType != "none")
+			.filter (dmgType => dmgType != "healing" && dmgType != "untyped" && dmgType != "none");
 		rating += otherAttacks.reduce( (acc, dmg) =>
 			acc + (!attacks.has(dmg) ? 1 : 0)
 			, 0 );
@@ -1670,7 +1678,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	basePowerCritResist(this: ValidAttackers, power: Usable): number {
-		if (!power.isInstantDeathAttack()) return 0;
+		if (!power.isInstantDeathAttack()) {return 0;}
 		const level = this.system.combat.classData.level;
 		return Math.floor(level / 2);
 	}
@@ -1680,20 +1688,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			attacker: attacker.accessor,
 			user: this.accessor,
 			target: this.accessor,
-		}
+		};
 		return this.persona().getBonuses("instantDeathResistanceMult").total(situation, "percentage");
 	}
 
 	mainModifiers(options?: {omitPowers?: boolean} ): readonly ModifierContainer[] {
-		if (!this.isValidCombatant()) return [];
+		if (!this.isValidCombatant()) {return [];}
 		return this.persona().mainModifiers(options);
 	}
 
 	userDefensivePowers(this: ValidAttackers) : ModifierContainer [] {
-		if (!this.isValidCombatant()) return [];
+		if (!this.isValidCombatant()) {return [];}
 		return  [
 			...this.equippedItems(),
-		].filter(x=> x.hasDefensiveEffects(this))
+		].filter(x=> x.hasDefensiveEffects(this));
 	}
 
 	getSourcedDefensivePowers(this: ValidAttackers) {
@@ -1790,8 +1798,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get statusResists() : {id: string, img: string, local: string, val: string}[] {
-		let arr: {id: string, img: string, local: string, val: string}[]   = [];
-		if (this.system.type != "shadow") return [];
+		const arr: {id: string, img: string, local: string, val: string}[]   = [];
+		if (this.system.type != "shadow") {return [];}
 		for (const [k, v] of Object.entries(this.system.combat.statusResists)) {
 			arr.push( {
 				id: k,
@@ -1819,7 +1827,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return {
 			low: incLow ? nextLvl.low : baseDmg.low,
 			high: incHigh ? nextLvl.high : baseDmg.high,
-		}
+		};
 	}
 
 	// critBoost(this: ValidAttackers) : ModifierList {
@@ -1901,7 +1909,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async checkForMissingLearnedPowers(this: Shadow) {
-		if (!this.isShadow()) return;
+		if (!this.isShadow()) {return;}
 		const powers = this.system.combat.powers;
 		const learned= this.system.combat.powersToLearn;
 		const missing = powers
@@ -1915,7 +1923,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async addLearnedPower(this: ValidAttackers, power: Power, level = 99) : Promise<void> {
-		const arr = this.system.combat.powersToLearn
+		const arr = this.system.combat.powersToLearn;
 		arr.push( { powerId: power.id, level});
 		await this.update({ "system.combat.powersToLearn": arr});
 	}
@@ -1982,9 +1990,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async checkSideboardEmptySpace(this: ValidAttackers) {
-		if (this.isShadow()) return;
+		if (this.isShadow()) {return;}
 		while (this.sideboardPowers.length < this.persona().maxSideboardPowers) {
-			let sideboard = this.system.combat.powers_sideboard;
+			const sideboard = this.system.combat.powers_sideboard;
 			const buffer = this.system.combat.learnedPowersBuffer;
 			if (buffer.length > 0) {
 				const bufferItem = buffer.shift()!;
@@ -1998,10 +2006,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async checkMainPowerEmptySpace(this: ValidAttackers) {
-		let powers = this.system.combat.powers;
+		const powers = this.system.combat.powers;
 		while (powers.length < this.persona().maxMainPowers) {
 			if (!this.isShadow()) {
-				let sideboard = this.system.combat.powers_sideboard;
+				const sideboard = this.system.combat.powers_sideboard;
 				const pow1 = sideboard.shift();
 				if (pow1) {
 					powers.push(pow1);
@@ -2066,11 +2074,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		switch (actorType) {
 			case "npc": return;
 			case "tarot": return;
-			case "pc": case "shadow": case "npcAlly":
-				let foci = this.system.combat.focuses;
-				if (!foci.includes(focusId)) return;
+			case "pc": case "shadow": case "npcAlly": {
+        let foci = this.system.combat.focuses;
+				if (!foci.includes(focusId)) {return;}
 				foci = foci.filter( x=> x != focusId);
 				return await this.update( {"system.combat.focuses": foci});
+      }
 			default:
 				actorType satisfies never;
 		}
@@ -2279,9 +2288,9 @@ async spendInspiration(this: PC, socialLinkOrId:SocialLink | string, amt: number
 }
 
 getInspirationWith(linkId: SocialLink["id"]): number {
-	if (this.system.type != "pc") return 0;
+	if (this.system.type != "pc") {return 0;}
 	const link = this.system.social.find( x=> x.linkId == linkId);
-	if (!link) return 0;
+	if (!link) {return 0;}
 	return link.inspiration;
 }
 
@@ -2355,15 +2364,15 @@ canEngage() :boolean {
 }
 
 canAllOutAttack(): boolean {
-	if (this.hp < 0) return false;
-	if (this.isDistracted()) return false;
-	if (!this.isCapableOfAction()) return false;
-	if (this.hasBanefulStatus()) return false;
+	if (this.hp < 0) {return false;}
+	if (this.isDistracted()) {return false;}
+	if (!this.isCapableOfAction()) {return false;}
+	if (this.hasBanefulStatus()) {return false;}
 	return true;
 }
 
 hasBanefulStatus(): boolean {
-	return !!this.effects.find( (st) => st.isBaneful)
+	return !!this.effects.find( (st) => st.isBaneful);
 }
 
 getSaveBonus( this: ValidAttackers) : ModifierList {
@@ -2379,18 +2388,19 @@ getDisengageBonus( this: ValidAttackers) : ModifierList {
 
 /** returns current team (taking into account charm)*/
 getAllegiance()  : Team {
-	if (!this.isValidCombatant()) return "Neutral";
+	if (!this.isValidCombatant()) {return "Neutral";}
 	switch (this.system.type) {
 		case "pc":
-			if (!this.hasPlayerOwner) return "Neutral";
+			if (!this.hasPlayerOwner) {return "Neutral";}
 			return "PCs";
 		case "shadow":
-			if (this.hasPlayerOwner) return "PCs";
+			if (this.hasPlayerOwner) {return "PCs";}
 			return "Shadows";
 		case "npcAlly":
 			return "PCs";
 		default:
 			this.system satisfies never;
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			PersonaError.softFail(`Unknown type of actor, ${(this as any)?.system?.type}`);
 			return "Neutral";
 	}
@@ -2416,12 +2426,12 @@ roomModifiers() : ModifierContainer[] {
 	return (game.combats.contents as PersonaCombat[])
 		.filter(combat => combat.combatants.contents
 			.some( comb => comb.actor == this)
-		).flatMap( combat=> combat.getRoomEffects())
+		).flatMap( combat=> combat.getRoomEffects());
 }
 
 /** used for determining all out attack viability*/
 isStanding() : boolean {
-	return (this.hp > 0 && !this.statuses.has("down"))
+	return (this.hp > 0 && !this.statuses.has("down"));
 }
 
 isValidCombatant(): this is ValidAttackers {
@@ -2445,7 +2455,7 @@ isDistracted() : boolean {
 }
 
 isCapableOfAction() : boolean {
-	if (!!this.effects.find( st=> st.isIncapacitating)) return false;
+	if (this.effects.find( st=> st.isIncapacitating)) {return false;}
 	return this.hp > 0;
 }
 
@@ -2463,8 +2473,8 @@ async fullHeal() {
 }
 
 async onEnterMetaverse()  : Promise<void> {
-	if (!this.isValidCombatant()) return;
-	if (this.system.type == "pc" && !this.hasPlayerOwner) return; //deal with removing item piles and such
+	if (!this.isValidCombatant()) {return;}
+	if (this.system.type == "pc" && !this.hasPlayerOwner) {return;} //deal with removing item piles and such
 	try {
 		await this.fullHeal();
 		if (this.system.type == "pc") {
@@ -2516,7 +2526,7 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 			case "pc":
 			case "shadow":
 			case "npcAlly":
-				await TriggeredEffect.onTrigger("exit-metaverse", this).emptyCheck()?.autoApplyResult() ?? Promise.resolve();
+				await TriggeredEffect.onTrigger("exit-metaverse", this).emptyCheck()?.autoApplyResult();
 				break;
 			default:
 					this.system satisfies never;
@@ -2529,7 +2539,7 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 }
 
 async onLevelUp_checkLearnedPowers(this: ValidAttackers, newLevel: number, logChanges= true) : Promise<void> {
-	if (!newLevel) return;
+	if (!newLevel) {return;}
 	const powersToLearn = this.system.combat.powersToLearn
 	.filter( x=> x.level > this.system.combat.lastLearnedLevel)
 	.sort( (a,b) => a.level - b.level);
@@ -2579,7 +2589,7 @@ async resetIncrementals(this: ValidAttackers) {
 	};
 	await this.update({
 		"system.combat.classData.incremental": incremental,
-	})
+	});
 }
 
 maxSlot() : number {
@@ -2625,7 +2635,7 @@ isFullyFaded(this: ValidAttackers, newhp?:number) : boolean {
 }
 
 isFading(this: ValidAttackers): boolean {
-	if (this.system.type == "shadow") return false;
+	if (this.system.type == "shadow") {return false;}
 	return this.hp <= 0 && !this.hasStatus("full-fade");
 }
 
@@ -2677,7 +2687,7 @@ async clearFadingState( this: ValidAttackers) {
 async alterSocialSkill (this: PC, socialStat: SocialStat, amt: number, logger = true) {
 	const oldval = this.system.skills[socialStat];
 	const newval = oldval + amt;
-	const upgradeObj : Record<string, any> = {};
+	const upgradeObj : Record<string, unknown> = {};
 	const skillLoc = `system.skills.${socialStat}`;
 	upgradeObj[skillLoc] = newval;
 	await this.update(upgradeObj);
@@ -2718,7 +2728,7 @@ async spendMoney(this: PC, amt: number) {
 }
 
 isAlive(): boolean {
-	if (this.system.type == "npc") return true;
+	if (this.system.type == "npc") {return true;}
 	return this.hp > 0;
 }
 
@@ -2728,7 +2738,7 @@ async resetAvailability( this: SocialLink, day: SimpleCalendar.WeekdayName) {
 }
 
 async setAvailability(this: SocialLink, bool: boolean) {
-	if (this.system.weeklyAvailability.available == bool) return;
+	if (this.system.weeklyAvailability.available == bool) {return;}
 	if (game.user.isGM || this.isOwner) {
 		//possible fix for the update seemingly not taking effect in time despite the await
 		this.system.weeklyAvailability.available = bool;
@@ -2739,33 +2749,35 @@ async setAvailability(this: SocialLink, bool: boolean) {
 }
 get tarot() : (Tarot | undefined) {
 	switch (this.system.type) {
-		case "pc":
-			if (this.cache.tarot?.name == this.system.tarot)
-				break;
+		case "pc": {
+      if (this.cache.tarot?.name == this.system.tarot)
+				{break;}
 			if (this.system.tarot == "")
-				return undefined;
+				{return undefined;}
 			const PC = this as PC;
 			this.cache.tarot = PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
 			break;
-		case "shadow":
-			if (this.cache.tarot?.name == this.system.tarot)
-				break;
+    }
+		case "shadow": {
+      if (this.cache.tarot?.name == this.system.tarot)
+				{break;}
 			if (this.system.tarot == "")
-				return undefined;
+				{return undefined;}
 			const shadow = this as Shadow;
 			this.cache.tarot =  PersonaDB.tarotCards().find(x=> x.name == shadow.system.tarot);
 			break;
+    }
 		case "npcAlly":
 			if (this.system.NPCSocialProxyId) {
 				const actor = PersonaDB.socialLinks().find( x=> x.id == (this as NPCAlly).system.NPCSocialProxyId);
-				if (actor) return actor.tarot;
+				if (actor) {return actor.tarot;}
 			}
 			//switch fallthrough is deliberate here
-		case "npc":
-			if (this.cache.tarot?.name == this.system.tarot)
-				break;
+		case "npc": {
+      if (this.cache.tarot?.name == this.system.tarot)
+				{break;}
 			if (this.system.tarot == "")
-				return undefined;
+				{return undefined;}
 			// console.debug("cached value no good (NPC)");
 			const NPC = this as NPC;
 			if (
@@ -2775,7 +2787,7 @@ get tarot() : (Tarot | undefined) {
 				return undefined;
 			}
 			this.cache.tarot =  PersonaDB.tarotCards().find(x=> x.name == NPC.system.tarot);
-			break;
+			break; }
 		case "tarot":
 			return this as Tarot;
 		default:
@@ -2800,13 +2812,13 @@ numOfIncAdvances(): number {
 }
 
 get XPForNextLevel() : number {
-	if (!this.isPC()) return 999999;
+	if (!this.isPC()) {return 999999;}
 	const lvl = this.system.personaleLevel;
 	return LevelUpCalculator.XPRequiredToAdvanceToLevel(lvl+1);
 }
 
 get personalXPTowardsNextLevel() : number {
-	if (!this.isPC()) return -1;
+	if (!this.isPC()) {return -1;}
 	const lvl = this.system.personaleLevel;
 	return this.system.personalXP - LevelUpCalculator.minXPForEffectiveLevel(lvl);
 }
@@ -2822,7 +2834,7 @@ get personalXPTowardsNextLevel() : number {
 /** Calculates challenge rating by adding level + incremental advances
  */
 get CR() : number {
-	if (!this.isValidCombatant()) return 0;
+	if (!this.isValidCombatant()) {return 0;}
 	const effectiveLevel = this.persona().effectiveLevel;
 	const valPerExtraDefenseBoost = 0.2;
 	const defenseBoosts = (this.totalDefenseBoosts() -2) * valPerExtraDefenseBoost;
@@ -2832,7 +2844,7 @@ get CR() : number {
 }
 
 totalDefenseBoosts(this: ValidAttackers) : number {
-	if (!this.isValidCombatant())  return 0;
+	if (!this.isValidCombatant())  {return 0;}
 	const defenses = this.system.combat.defenses;
 	const evalDef = function (defVal: typeof defenses["fort"]) {
 		switch (defVal) {
@@ -2857,10 +2869,10 @@ totalDefenseBoosts(this: ValidAttackers) : number {
 issues() : string {
 	const issues : string[] = [];
 	if (this.basePersona.isUnderDefenseCap || this.basePersona.isOverDefenseCap)
-		issues.push("Defense");
+		{issues.push("Defense");}
 	if (this.basePersona.isUnderResistCap || this.basePersona.isOverResistCap)
-		issues.push("Resists");
-	return issues.join("/")
+		{issues.push("Resists");}
+	return issues.join("/");
 }
 
 totalResists (this:ValidAttackers) : number {
@@ -2880,7 +2892,7 @@ totalResists (this:ValidAttackers) : number {
 		block: 3,
 		absorb: 4,
 		reflect:4,
-	}
+	};
 	const shadowTranslator : Record<typeof resists["cold"], number> = {
 		weakness: -1,
 		normal: 0,
@@ -2910,11 +2922,11 @@ maxIncrementalAdvances(this: ValidAttackers): number {
 maxIncrementalAdvancesInCategory(this: ValidAttackers, incrementalType: keyof ValidAttackers["system"]["combat"]["classData"]["incremental"]): number {
 	const v = this.system.combat.classData.incremental[incrementalType];
 	// const incremental = k;
-	if (typeof v == "boolean") return 1;
-	//@ts-expect-error
+	if (typeof v == "boolean") {return 1;}
+	//@ts-expect-error doing complicated schema stuff not in foundrytypes
 	const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incrementalType] as {max ?: number};
 	if (typeof x?.max == "number")
-		return x.max;
+		{return x.max;}
 	PersonaError.softFail("Trouble calculating max incremental advances");
 	return 0;
 }
@@ -2925,13 +2937,13 @@ calcXP (this: ValidAttackers, killedTargets: ValidAttackers[], numOfAllies: numb
 }
 
 get personalELevel() : number {
-	if (!this.isPC()) return 0;
+	if (!this.isPC()) {return 0;}
 	return this.system.personaleLevel;
 }
 
 get personalXP(): number {
-	if (!this.isPC() ) return 0;
-	return this.system.personalXP
+	if (!this.isPC() ) {return 0;}
+	return this.system.personalXP;
 }
 
 get XPForNextPersonalLevel() : number {
@@ -2946,8 +2958,8 @@ get XPForNextPersonalLevel() : number {
 
 
 async awardPersonalXP(this: ValidAttackers, amt: number, allowMult= true) : Promise<U<PersonaActor>> {
-	if (!this.isPC() ) return undefined;
-	if (!amt) return;
+	if (!this.isPC() ) {return undefined;}
+	if (!amt) {return;}
 	const situation =  {
 		user: this.accessor,
 	};
@@ -2979,7 +2991,7 @@ async awardXP(this: ValidAttackers, amt: number) : Promise<(Persona | PersonaAct
 }
 
 async levelUp_Incremental(this: ValidAttackers) {
-	if (this.isPC()) return;
+	if (this.isPC()) {return;}
 	const incData = this.system.combat.classData.incremental;
 	const incrementals = Object.keys(incData) as (keyof typeof incData)[];
 	const filtered = incrementals.filter ((incChoice: keyof typeof incData)=> !this.isIncrementalMaxed(incChoice));
@@ -2995,11 +3007,11 @@ async levelUp_Incremental(this: ValidAttackers) {
 			return;
 		}
 		if ( typeof incData[result] == "boolean") {
-			//@ts-expect-error
+			//@ts-expect-error typescript had issues with this
 			incData[result] = true;
 		}
 		if (typeof incData[result] == "number") {
-			//@ts-expect-error
+			//@ts-expect-error typescript had issues with this
 			incData[result] = incData[result] +  1;
 		}
 
@@ -3014,19 +3026,19 @@ async levelUp_Incremental(this: ValidAttackers) {
 
 isIncrementalMaxed( this: ValidAttackers,  incremental:  keyof ValidAttackers["system"]["combat"]["classData"]["incremental"]): boolean {
 	const incValue = this.system.combat.classData.incremental[incremental];
-	if (typeof incValue == "boolean") return incValue;
-	//@ts-ignore
+	if (typeof incValue == "boolean") {return incValue;}
+	//@ts-expect-error foundrytypes doesn't handle this sort of schema reflection yet
 	const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incremental] as {max ?: number};
 	if (x.max)
-		return incValue >= x.max ;
+		{return incValue >= x.max ;}
 	const msg = `Unknown Max incremental for ${incremental}`;
 	PersonaError.softFail(msg);
 	return true;
 }
 
 XPValue(this: ValidAttackers) : number {
-	if (!this.isShadow()) return 0;
-	if (this.hasCreatureTag("no-xp")) return 0;
+	if (!this.isShadow()) {return 0;}
+	if (this.hasCreatureTag("no-xp")) {return 0;}
 	const persona = this.basePersona;
 	const pLevel = persona.pLevel;
 	const xpValue = LevelUpCalculator.shadowXPValue(pLevel);
@@ -3080,7 +3092,7 @@ get actionsRemaining(): number {
 	if (this.isValidCombatant()) {
 		return this.system.combat.actionsRemaining;
 	}
-	else return 0;
+	else {return 0;}
 }
 
 get perk() : string {
@@ -3103,17 +3115,17 @@ get perk() : string {
 
 getEffectFlag(flagId: string) : FlagData | undefined {
 	const flag= this.effects.find(eff=> eff.flagId?.toLowerCase() == flagId.toLowerCase());
-	if (flag) return {
+	if (flag) {return {
 		flagId,
 		duration: flag.statusDuration,
 		flagName: flag.name,
 		AEId: flag.id,
-	};
+	};}
 }
 
 //** returns true if shadow has one of the roles in the array */
 hasRole( roles: Shadow["system"]["role"] | Shadow["system"]["role"][]): boolean {
-	if (this.system.type != "shadow") return false;
+	if (this.system.type != "shadow") {return false;}
 	if (!Array.isArray(roles)) {
 		roles = [roles];
 	}
@@ -3138,7 +3150,7 @@ canUseOpener(): boolean {
 }
 
 isBossOrMiniBossType() : boolean {
-	if (this.system.type != "shadow") return false;
+	if (this.system.type != "shadow") {return false;}
 	const bossRoles : Shadow["system"]["role"][] = [
 		"miniboss", "boss", "solo",
 	];
@@ -3148,7 +3160,7 @@ isBossOrMiniBossType() : boolean {
 async onStartCombatTurn(this: PC | Shadow): Promise<string[]> {
 	console.log(`${this.name} on Start turn`);
 	await this.removeStatus("blocking");
-	let ret = [] as string[];
+	const ret = [] as string[];
 	for (const eff of this.effects) {
 		if ( await eff.onStartCombatTurn()) {
 			ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
@@ -3158,7 +3170,7 @@ async onStartCombatTurn(this: PC | Shadow): Promise<string[]> {
 }
 
 async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
-	let ret: string[]= [];
+	const ret: string[]= [];
 	const burnStatus = this.effects.find( eff=> eff.statuses.has("burn"));
 	if (burnStatus) {
 		const damage = burnStatus.potency;
@@ -3181,7 +3193,7 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 		await this.alterEnergy(bonusEnergy);
 	}
 
-	ret.push(...await this.endTurnSaves())
+	ret.push(...await this.endTurnSaves());
 	return ret;
 }
 
@@ -3206,18 +3218,18 @@ socialEffects(this: SocialLink) : readonly ConditionalEffect[] {
 }
 
 async fatigueRecoveryRoll(this: PC): Promise<string[]> {
-	let ret = [] as string[];
+	const ret = [] as string[];
 	const fatigueStat = this.getFatigueStatus();
-	if (fatigueStat == undefined) return ret;
-	if (this.hasAlteredFatigueToday()) return ret;
+	if (fatigueStat == undefined) {return ret;}
+	if (this.hasAlteredFatigueToday()) {return ret;}
 	let DC = 11;
 	switch (fatigueStat) {
 		case "rested": DC = 16; break;
 		case "exhausted": DC = 11;
-			if (this.hasMadeFatigueRollToday()) return ret;
+			if (this.hasMadeFatigueRollToday()) {return ret;}
 			break;
 		case "tired": DC= 6;
-			if (this.hasMadeFatigueRollToday()) return ret;
+			if (this.hasMadeFatigueRollToday()) {return ret;}
 			break;
 	}
 	const roll = await PersonaRoller.rollSave(this, {
@@ -3254,10 +3266,10 @@ async resetFatigueChecks(this: PC) {
 }
 
 async onEndDay(this: PC): Promise<string[]> {
-	let ret = [] as string[];
+	const ret = [] as string[];
 	for (const eff of this.effects) {
 		if (await eff.onEndSocialTurn())
-			ret.push(`Removed Condition ${eff.displayedName} at end of day.`);
+			{ret.push(`Removed Condition ${eff.displayedName} at end of day.`);}
 	}
 	ret.push(...await this.fatigueRecoveryRoll());
 	await this.resetFatigueChecks();
@@ -3265,10 +3277,10 @@ async onEndDay(this: PC): Promise<string[]> {
 }
 
 async onEndSocialTurn(this: PC) : Promise<string[]> {
-	let ret = [] as string[];
+	const ret = [] as string[];
 	for (const eff of this.effects) {
 		if (await eff.onEndSocialTurn())
-			ret.push(`Removed Condition ${eff.displayedName} at end of social turn`);
+			{ret.push(`Removed Condition ${eff.displayedName} at end of social turn`);}
 	}
 	return ret;
 }
@@ -3281,18 +3293,18 @@ async onEndCombat(this: ValidAttackers) : Promise<void> {
 
 encounterSizeValue() : number {
 	let val = 1;
-	if (!this.isValidCombatant()) return 1;
-	if (this.hasRole("solo")) val *= 4;
-	if (this.hasRole("duo")) val*= 2;
-	if (this.hasRole("elite")) val*= 1.5;
-	if (this.hasRole("summoner")) val *= 1.5;
-	if (this.hasRole("minion")) val *= 0.666;
-	if (this.isNewEnemy() && !this.hasRole("solo")) val *= 1.2;
+	if (!this.isValidCombatant()) {return 1;}
+	if (this.hasRole("solo")) {val *= 4;}
+	if (this.hasRole("duo")) {val*= 2;}
+	if (this.hasRole("elite")) {val*= 1.5;}
+	if (this.hasRole("summoner")) {val *= 1.5;}
+	if (this.hasRole("minion")) {val *= 0.666;}
+	if (this.isNewEnemy() && !this.hasRole("solo")) {val *= 1.2;}
 	return val;
 }
 
 isNewEnemy(): boolean {
-	if (!this.isShadow()) return false;
+	if (!this.isShadow()) {return false;}
 	return this.system.encounter.timesDefeated == 0 && this.persona().scanLevel == 0;
 }
 
@@ -3304,7 +3316,7 @@ async onDefeat(this: ValidAttackers) {
 }
 
 async endTurnSaves(this: ValidAttackers) : Promise<string[]> {
-	let ret = [] as string[];
+	const ret = [] as string[];
 	for (const eff of this.effects) {
 		if (await eff.onEndCombatTurn()) {
 			ret.push(`Removed Condition ${eff.displayedName} at end of turn`);
@@ -3333,7 +3345,7 @@ async setEffectFlag(flagId: string, setting: boolean, duration: StatusDuration =
 
 async createEffectFlag(flagId: string, duration: StatusDuration = {dtype: "instant"}, flagName ?: string) {
 	flagId = flagId.toLowerCase();
-	const eff = this.effects.find(x=> x.isFlag(flagId))
+	const eff = this.effects.find(x=> x.isFlag(flagId));
 	const newAE = {
 		name: flagName,
 	};
@@ -3347,7 +3359,7 @@ async createEffectFlag(flagId: string, duration: StatusDuration = {dtype: "insta
 }
 
 async clearEffectFlag(flagId: string) {
-	const eff = this.effects.find(x=> x.isFlag(flagId))
+	const eff = this.effects.find(x=> x.isFlag(flagId));
 	if (eff) {await eff.delete();}
 }
 
@@ -3363,7 +3375,7 @@ async setRelationshipType(this: PC, socialLinkId: string, newRelationshipType: s
 }
 
 isSpecialEvent(this:SocialLink, numberToCheck: number) : boolean {
-	if (this.system.type == "pc") return false;
+	if (this.system.type == "pc") {return false;}
 	const peices = (this.system.specialEvents ?? "").split(",", 20).map(x=> Number(x?.trim() ?? ""));
 	return peices.includes(numberToCheck);
 }
@@ -3391,8 +3403,8 @@ isAvailable(pc: PersonaActor) : boolean {
 		case "shadow":
 		case "tarot":
 			return false;
-		case "npc": case "npcAlly":
-			const npc = this as NPC;
+		case "npc": case "npcAlly": {
+      const npc = this as NPC;
 			const sit: Situation = {
 				user: (pc as PC).accessor,
 				socialTarget: npc.accessor,
@@ -3401,6 +3413,7 @@ isAvailable(pc: PersonaActor) : boolean {
 				return false;
 			}
 			break;
+    }
 		case "pc":
 			break;
 		default:
@@ -3419,9 +3432,10 @@ isSociallyDisabled(): boolean {
 		case "shadow":
 		case "tarot":
 			return true;
-		case "pc":
-			const statuses : StatusEffectId[] = ["jailed", "exhausted", "crippled", "injured"];
+		case "pc": {
+      const statuses : StatusEffectId[] = ["jailed", "exhausted", "crippled", "injured"];
 			return statuses.some( x=> this.hasStatus(x));
+    }
 
 		case "npcAlly":
 		case "npc":
@@ -3447,9 +3461,11 @@ canTakeFollowUpAction(this: ValidAttackers) : boolean {
 async moneyFix() {
 	//updates money to new x10 total
 	switch (this.system.type) {
-		case "pc":
-			const money = this.system.money * 10;
+		case "pc": {
+      const money = this.system.money * 10;
 			await this.update({"system.money": money});
+      break;
+    }
 		default:
 			return;
 	}
@@ -3490,7 +3506,7 @@ getPoisonDamage(this: ValidAttackers): number {
 
 static calcPowerRequirement(role: Shadow["system"]["role"], power: Readonly<Power>,  diff: number) : number {
 	if (power.system.tags.includes("basicatk"))
-		return 0;
+		{return 0;}
 	const tags = power.system.tags;
 	switch (role) {
 		case "support":
@@ -3510,15 +3526,15 @@ static calcPowerRequirement(role: Shadow["system"]["role"], power: Readonly<Powe
 
 static calcPowerCost(_role: Shadow["system"]["role"], power: Readonly<Power>, diff: number) : Power["system"]["reqEscalation"] {
 	if (power.system.tags.includes("basicatk"))
-		return 0;
-	if (diff <= 0) return 0;
-	let esc = Math.round(Math.abs(diff) / 2);
+		{return 0;}
+	if (diff <= 0) {return 0;}
+	const esc = Math.round(Math.abs(diff) / 2);
 	return Math.clamp(esc, 0, 6);
 }
 
 async increaseScanLevel(this: Shadow, amt :number) {
 	const scanLevel = this.system.scanLevel ?? 0;
-	if (scanLevel >= amt) return;
+	if (scanLevel >= amt) {return;}
 	if (this.token) {
 		await this.token.baseActor.increaseScanLevel(amt);
 	}
@@ -3531,16 +3547,16 @@ async increaseScanLevel(this: Shadow, amt :number) {
 
 async clearScanLevel(this:Shadow) {
 	const scanLevel = this.persona().scanLevel ?? 0;
-	if (scanLevel == 0) return;
+	if (scanLevel == 0) {return;}
 	await this.update({"system.scanLevel": 0});
 }
 
 get maxEnergy() : number {
-	if (!this.isShadow()) return 0;
+	if (!this.isShadow()) {return 0;}
 	const BASE_MAX_ENERGY = 10;
 	const situation = {
 		user: this.accessor,
-	}
+	};
 	const maxEnergy = BASE_MAX_ENERGY + this.basePersona.getBonuses("max-energy").total(situation);
 	// const maxEnergy = Math.min(BASE_MAX_ENERGY, bonuses);
 	return maxEnergy;
@@ -3562,7 +3578,7 @@ async alterEnergy(this: Shadow, amt: number) {
 
 async onRoll(situation: RollSituation & Situation) {
 	console.log(`${this.name} is making a roll with tags: ${situation.rollTags.join(", ")}`);
-	if (!this.isValidCombatant()) return;
+	if (!this.isValidCombatant()) {return;}
 	if (this.isPC() ) {
 		if (situation.rollTags.includes("fatigue")) {
 			await this.update({"system.fatigue.hasMadeFatigueRollToday" : true});
@@ -3602,12 +3618,12 @@ async onRevive() : Promise<void> {
 get tagList() : CreatureTag[] {
 	//NOTE: This is a candidate for caching
 	if (this.isTarot()) { return []; }
-	let list = this.system.creatureTags.slice();
+	const list = this.system.creatureTags.slice();
 	if (this.isValidCombatant()) {
 		const extraTags = this.mainModifiers().flatMap( x=> x.getConferredTags(this as ValidAttackers));
 		for (const tag of extraTags) {
 			if (!list.includes(tag))
-				list.push(tag);
+				{list.push(tag);}
 		}
 	}
 	switch (this.system.type) {
@@ -3661,11 +3677,12 @@ async addCreatureTag() : Promise<void> {
 
 async onAddToCombat() {
 	switch (this.system.type) {
-		case "shadow":
-			if (!this.isShadow()) return;// a double check purely for TS to recognize it;
+		case "shadow": {
+      if (!this.isShadow()) {return;}// a double check purely for TS to recognize it;
 			const energy = this.startingEnergy();
 			await this.setEnergy(energy);
 			break;
+    }
 		case "pc":
 		case "npc":
 		case "tarot":
@@ -3676,7 +3693,7 @@ async onAddToCombat() {
 startingEnergy(this: Shadow) : number {
 	const sit : Situation = {
 		user: this.accessor,
-	}
+	};
 	const bonusEnergy = this.persona().getBonuses("starting-energy").total(sit);
 	// const inc = this.system.combat.classData.incremental.mp;
 	const baseStartingEnergy = 3;
@@ -3687,10 +3704,10 @@ startingEnergy(this: Shadow) : number {
  */
 getEncounterWeight(this: Shadow, scene: PersonaScene = game.scenes.current as PersonaScene) : number {
 	const rate = this.system.encounter.dungeonEncounters.find(x => x.dungeonId == scene.id);
-	if (!rate) return 0;
+	if (!rate) {return 0;}
 	const baseProb = ENCOUNTER_RATE_PROBABILITY[rate.frequencyNew];
 	if (baseProb == undefined) {
-		console.warn (`Invalid value for frequencynew: ${rate.frequencyNew as any}`);
+		console.warn (`Invalid value for frequencynew: ${rate.frequencyNew as unknown}`);
 		return 0;
 	}
 	return baseProb;
@@ -3726,6 +3743,7 @@ async restoreAllQuestions(this: NPC) {
 }
 
 async markQuestionUsed(this: NPC, index: number) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const questions = this.system.questions.map( x=> (x as any).toJSON());
 	questions[index].expended = true;
 	await this.update({system: {questions}});
@@ -3767,8 +3785,8 @@ async deleteQuestion(this: NPC | PC, index: number) {
 }
 
 get roleString() : SafeString {
-	if (!this.isShadow()) return "";
-	let roles: (typeof this.system.role)[] = [];
+	if (!this.isShadow()) {return "";}
+	const roles: (typeof this.system.role)[] = [];
 	roles.push(this.system.role);
 	roles.push(this.system.role2);
 	const localized = roles
@@ -3781,7 +3799,6 @@ get roleString() : SafeString {
 async setWeaponDamageByLevel(this: Shadow, lvl: number) {
 	const low = 3 + Math.floor(lvl /2);
 	const high = 5 + Math.floor((lvl +1) /2);
-	this.system.combat.wpndmg.low;
 	await this.update( {
 		"system.combat.wpndmg.low" : low,
 		"system.combat.wpndmg.high": high
@@ -3789,12 +3806,12 @@ async setWeaponDamageByLevel(this: Shadow, lvl: number) {
 }
 
 get treasureString() : SafeString {
-	if (this.system.type != "shadow") return "";
+	if (this.system.type != "shadow") {return "";}
 	const treasure = this.system.encounter.treasure;
 	const items = [treasure.item0, treasure.item1, treasure.item2]
 		.filter( id=> id)
 		.map( id => PersonaDB.treasureItems().find(x=> x.id == id))
-		.flatMap(item => item ? [item.name] : [])
+		.flatMap(item => item ? [item.name] : []);
 	const cardPower = treasure.cardPowerId ? PersonaDB.allPowersArr().filter( x=> treasure.cardPowerId == x.id): [];
 	const cardName = cardPower.map( pwr => `${pwr.name} Card`);
 	return new Handlebars.SafeString(items.concat(cardName).join(", "));
@@ -3828,17 +3845,17 @@ getPrimaryPlayerOwner() : typeof game.users.contents[number] | undefined {
 	}
 	const userIdPair = Object.entries(this.ownership)
 		.find( ([k,v]) => {
-			if (v < CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER) return false;
+			if (v < CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER) {return false;}
 			const user = game.users.get(k);
-			if (user && !user.isGM) return true;
+			if (user && !user.isGM) {return true;}
 			return false;
 		});
-	if (!userIdPair) return undefined;
+	if (!userIdPair) {return undefined;}
 	return game.users.get(userIdPair[0]);
 }
 
 async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) {
-	if (typeof amt != "number" || amt == 0 || Number.isNaN(amt)) return;
+	if (typeof amt != "number" || amt == 0 || Number.isNaN(amt)) {return;}
 	switch (buffType) {
 		case "max-hp": {
 			const newHP = this.system.combat.bonusHP + amt;
@@ -3862,6 +3879,7 @@ async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) {
 
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) => {
 	switch (actor.system.type) {
 		case "npc": return;
@@ -3871,7 +3889,7 @@ Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) =
 		case "shadow":  {
 			const newHp = changes?.system?.combat?.hp;
 			if (newHp == undefined)
-			return;
+			{return;}
 			await (actor as ValidAttackers).refreshHpStatus(newHp);
 			return ;
 		}
@@ -3881,8 +3899,9 @@ Hooks.on("preUpdateActor", async (actor: PersonaActor, changes: {system: any}) =
 	}
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
-	if (!actor.isValidCombatant()) return;
+	if (!actor.isValidCombatant()) {return;}
 	switch (actor.system.type) {
 		case "npcAlly":
 			if (changes?.system?.combat?.isNavigator == true) {
@@ -3940,6 +3959,7 @@ export type SocialLinkData = {
 
 type Team = "PCs" | "Shadows" | "Neutral" ;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const EMPTYARR :any[] = [] as const; //to speed up things by not needing to create new empty arrays for immutables;
 
 Object.seal(EMPTYARR);
@@ -3948,7 +3968,7 @@ Object.seal(EMPTYARR);
 Hooks.on("createActor", async function (actor: PersonaActor) {
 	if (actor.isShadow()) {
 		const pcs = game.actors
-			.filter( (x: PersonaActor)=> x.isRealPC() && x.hasPlayerOwner)
+			.filter( (x: PersonaActor)=> x.isRealPC() && x.hasPlayerOwner);
 		const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.combat.classData.level, 0 );
 		const avgLevel = Math.round(totalLevels/ pcs.length);
 		await actor.update({ "system.combat.classData.level" : avgLevel});

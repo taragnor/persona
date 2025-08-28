@@ -221,11 +221,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const adjustedLvl = Math.clamp(lvl, 0, 200);
     switch (property) {
       case 'maxhp':
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return this.calcClassMaxHP(adjustedLvl) as any;
       default:
     }
     const data = this.system.leveling_table[adjustedLvl][property];
-    if (property == 'slots') return ArrayCorrector(data as any) as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (property == 'slots') {return ArrayCorrector(data as any) as any;}
     return data;
   }
 
@@ -250,7 +252,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       const basic = BASIC_PC_POWER_NAMES;
       this.#cache.basicPCPowers = basic.flatMap( powerName =>  {
         const power = PersonaDB.getBasicPower(powerName);
-        if (!power) return [];
+        if (!power) {return [];}
         return [power as Power];
       });
     }
@@ -262,7 +264,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       const basic = BASIC_SHADOW_POWER_NAMES;
       this.#cache.basicShadowPowers = basic.flatMap( powerName =>  {
         const power = PersonaDB.getBasicPower(powerName);
-        if (!power) return [];
+        if (!power) {return [];}
         return [power as Power];
       });
     }
@@ -286,7 +288,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   isFollowUpMove(this: UsableAndCard): boolean {
-    if (!this.isTrulyUsable()) return false;
+    if (!this.isTrulyUsable()) {return false;}
     return this.hasTag('follow-up');
   }
 
@@ -322,12 +324,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   isAilment(): boolean {
-    if (!this.isUsableType() || !this.isTrulyUsable())  return false;
+    if (!this.isUsableType() || !this.isTrulyUsable())  {return false;}
     return this.causesAilment();
   }
 
   isSupport() : boolean {
-    if (!this.isUsableType() || !this.isTrulyUsable())  return false;
+    if (!this.isUsableType() || !this.isTrulyUsable())  {return false;}
     if (this.isPower()) {
       return this.system.damageLevel == 'none' && this.system.ailmentChance == 'none' && this.system.instantKillChance == 'none';
     }
@@ -336,11 +338,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   isTrulyUsable() : boolean {
     switch (this.system.type) {
-      case 'power':
-        const sub = this.system.subtype;
+      case 'power': {
+			const sub = this.system.subtype;
         if ( sub == 'passive'  || sub == 'defensive')
-          return false;
-        return true;
+          {return false;}
+        return true; 
+		}
       case 'skillCard':
         return true;
       case 'consumable':
@@ -413,7 +416,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       return new HandleBarsExtras.SafeString('');
     }
     const slot = this.system.slot;
-    const slotName = SLOTTYPES[slot]
+    const slotName = SLOTTYPES[slot];
     if (slotName) {
       return new Handlebars.SafeString (game.i18n.localize(slotName));
     }
@@ -442,6 +445,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   async addEventTag(this: SocialCard, eventIndex:number) : Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = this.system.events.map(x=> (x as any).toJSON());
     const ev = data[eventIndex];
     const newTags =  ev.eventTags.slice();
@@ -463,6 +467,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   async deleteEventTag(this: SocialCard, eventIndex:number, tagIndex: number) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = this.system.events.map(x=> (x as any).toJSON());
     const ev= data[eventIndex];
     ev.eventTags.splice(tagIndex, 1);
@@ -517,7 +522,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         if (!list.includes(itype)) {
           list.pushUnique(itype);
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           list.pushUnique(this.system.dmg_type as any);
         }
         if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
@@ -536,7 +543,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
           case 'weapon_crystal':
           case 'key-item':
             if (!list.includes(subtype))
-              list.push(subtype);
+              {list.push(subtype);}
             break;
           case 'none':
             list.push('non-equippable');
@@ -552,7 +559,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       }
       case 'weapon': {
         const list = this.system.itemTags.slice();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           list.pushUnique(this.system.dmg_type as any);
         }
         if (!list.includes(itype)) {
@@ -598,7 +607,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       const wpnList : readonly (PowerTag | EquipmentTag)[] = user?.weapon?.tagList() ?? user.unarmedTagList();
       list.pushUnique(...wpnList);
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         list.pushUnique(this.system.dmg_type as any);
       }
       return list;
@@ -629,9 +640,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case 'consumable':
       case 'item':
         if ((this as Consumable | InvItem).hasTag('crafting'))
-          return true;
+          {return true;}
         if (this.system.type == 'item' && this.system.slot == 'crafting')
-          return true;
+          {return true;}
         break;
       default:
         break;
@@ -677,14 +688,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   powerCostString(this: Power, persona: Persona) : string {
     if (persona.user.isShadow())
-      return this.powerCostString_Shadow(persona);
+      {return this.powerCostString_Shadow(persona);}
     else  {
       return this.powerCostString_PC(persona);
     }
   }
 
   grantsPowers(this: ModifierContainer): boolean {
-    if (!PersonaDB.isLoaded) return false;
+    if (!PersonaDB.isLoaded) {return false;}
     if (this.cache.grantsPowers != undefined) {
       return this.cache.grantsPowers;
     }
@@ -695,7 +706,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         ));
       this.cache.grantsPowers = grantsPowers;
       return this.cache.grantsPowers;
-    } catch (e) {
+    } catch  {
       console.log(this);
       return false;
     }
@@ -740,7 +751,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   getAllGrantedPowers(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
-    if (!this.grantsPowers()) return [];
+    if (!this.grantsPowers()) {return [];}
     if (!situation) {
       situation = {
         user: user.accessor
@@ -776,36 +787,36 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   powerCostString_PC(this: Power, persona: Persona) : string {
     switch (this.system.subtype) {
-      case 'weapon':
-        const hpCost = this.hpCost();
+      case 'weapon': {
+			const hpCost = this.hpCost();
         if (hpCost > 0 || this.oldhpCost() > 0) {
           const hpCostPercent = (hpCost > 0) ? ` (${hpCost}%)` : '';
           const modCost = this.modifiedHpCost(persona);
           return `${modCost} HP ${hpCostPercent}`;
         }
 
-        else return 'free';
-      case 'magic':
-
-        // const mpcost = this.system.mpcost;
-        const mpcost = this.mpCost(persona);
-        return `${mpcost} MP`;
-      case 'social-link':
-        if (this.system.inspirationCost > 0) {
-          return `${this.system.inspirationCost} Inspiration`;
-        }
-
-      case 'other':
-      case 'passive':
-      case 'none':
-      case 'standalone':
-      case 'defensive':
-      case 'downtime':
-        break;
-      default:
-        this.system.subtype satisfies never;
-    }
-    return 'free';
+			else {return 'free';}
+		}
+		 case 'magic': {
+			 const mpcost = this.mpCost(persona);
+			 return `${mpcost} MP`;
+		 }
+		 case 'social-link':
+			 if (this.system.inspirationCost > 0) {
+				 return `${this.system.inspirationCost} Inspiration`;
+			 }
+			 break;
+		 case 'other':
+		 case 'passive':
+		 case 'none':
+		 case 'standalone':
+		 case 'defensive':
+		 case 'downtime':
+			 break;
+		 default:
+			 this.system.subtype satisfies never;
+	 }
+	  return 'free';
   }
 
   estimateShadowCosts(this: Power, user: ValidAttackers) : {energyReq: number, cost: number} {
@@ -813,7 +824,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     let energyReq= 0, cost= 1;
     const reducedCostType = this.hasTag('buff') || this.hasTag('debuff') || this.hasTag('status-removal');
     let reqMin = reducedCostType ? 0 : 1;
-    let energyMod = reducedCostType ? -3: 0;
+    const energyMod = reducedCostType ? -3: 0;
     switch (true) {
       case (this.isDefensive() == true):
       case (this.isPassive() == true):
@@ -860,7 +871,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   powerCostString_Shadow(this: Power, persona: Persona) : string {
-    let costs : string[] = [];
+    const costs : string[] = [];
     let required: number, cost: number;
     if (this.parent instanceof PersonaActor) {
       required= this.system.energy.required;
@@ -880,20 +891,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   energyRequired(this: UsableAndCard, persona: Persona) : number {
-    if (!this.isPower()) return 0;
+    if (!this.isPower()) {return 0;}
     if (this.customCost) {
       return this.system.energy.required;
     }
-    const estimate = this.estimateShadowCosts(persona.user)
+    const estimate = this.estimateShadowCosts(persona.user);
     return estimate.energyReq;
   }
 
   energyCost(this: UsableAndCard, persona:Persona) : number {
-    if (!this.isPower()) return 0;
+    if (!this.isPower()) {return 0;}
     if (this.customCost) {
       return this.system.energy.cost;
     }
-    const estimate = this.estimateShadowCosts(persona.user)
+    const estimate = this.estimateShadowCosts(persona.user);
     return estimate.cost;
   }
 
@@ -902,7 +913,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   targets(this: UsableAndCard): Power['system']['targets'] {
-    if (this.system.type == 'skillCard') return 'self';
+    if (this.system.type == 'skillCard') {return 'self';}
     return this.system.targets;
   }
 
@@ -921,7 +932,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   /** required because foundry input hates arrays*/
   async sanitizeEffectsData(this: PowerContainer) {
-    if (this.system.type == 'skillCard') return;
+    if (this.system.type == 'skillCard') {return;}
     const isArray = Array.isArray;
     let update = false;
     let effects = this.system.effects;
@@ -959,7 +970,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         if (power && power.system.type == 'power') {
           return new Handlebars.SafeString(`${cardImg} ${power.displayedName} Card </span>`);
         }
-        else return 'Unlinked Skill Card';
+        else {return 'Unlinked Skill Card';}
       }
     }
     return this.name;
@@ -1022,7 +1033,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       user: actor.accessor,
     };
     const cons : (Consequence & {type : 'add-creature-tag'})[] = ConditionalEffectManager.getAllActiveConsequences(effects, situation, this)
-      .filter( c=> c.type == 'add-creature-tag') as any ;
+      .filter( c=> c.type == 'add-creature-tag') as (Consequence & {type : 'add-creature-tag'})[] ;
     return cons.map( c => c.creatureTag);
   }
 
@@ -1048,6 +1059,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         return attacker.weapon?.getDamageType(attacker) ?? attacker.getUnarmedDamageType();
       default:
           this.system satisfies never;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         PersonaError.softFail(`Can't find damag etype for ${(this.system as any).dmg_type}`);
         return 'none';
     }
@@ -1055,12 +1067,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   baseDamage(this: Weapon) : Readonly<NewDamageParams> {
     if (this.system.damageNew)  {
-      if (this.system.damageNew.baseAmt > 0) return this.system.damageNew;
+      if (this.system.damageNew.baseAmt > 0) {return this.system.damageNew;}
       if (this.system.damageNew.weaponLevel > 0) {
         return {
           baseAmt: DamageCalculator.getWeaponDamageByWpnLevel(this.system.damageNew.weaponLevel),
           extraVariance: this.system.damageNew.extraVariance ?? 0,
-        }
+        };
       }
     }
     if (this.system.damage.high >0) {
@@ -1096,9 +1108,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     calc.add('base', weaponDmg.baseAmt, weaponName.toString());
     calc.add('base', skillDamage.baseAmt, `${this.displayedName} Power Bonus`);
     calc.add('base', bonusDamage, 'Bonus Damage');
-    const variance  = (BASE_VARIANCE + weaponDmg.extraVariance + skillDamage.extraVariance + bonusVariance )
+    const variance  = (BASE_VARIANCE + weaponDmg.extraVariance + skillDamage.extraVariance + bonusVariance );
     const varianceMult = PersonaCombatStats.getPhysicalVariance(userPersona);
-    calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` )
+    calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` );
     return calc ;
   }
 
@@ -1111,12 +1123,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const bonusVariance = userPersona.getBonusVariance().total(situation);
     const dtype = this.getDamageType(userPersona);
     const calc= new DamageCalculation(dtype);
-    calc.add('base', magicDmg, `${userPersona.displayedName} Magic`, )
+    calc.add('base', magicDmg, `${userPersona.displayedName} Magic`, );
     calc.add('base', skillDamage.baseAmt, `${this.displayedName} Damage`);
     calc.add('base', damageBonus, 'Bonus Damage');
-    const variance  = (BASE_VARIANCE + skillDamage.extraVariance + bonusVariance )
+    const variance  = (BASE_VARIANCE + skillDamage.extraVariance + bonusVariance );
     const varianceMult = PersonaCombatStats.getMagicalVariance(userPersona);
-    calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` )
+    calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` );
     return calc;
   }
 
@@ -1157,7 +1169,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   generateSimulatedResult (this: Usable, user: ValidAttackers, simulatedSitOrNat: number | AttackResult['situation']) : CombatResult | undefined {
     const token = user.getActiveTokens(true)
       .map(x=> x.document) as PToken[];
-    if (!token || token.length ==0) return undefined;
+    if (!token || token.length ==0) {return undefined;}
     if (typeof simulatedSitOrNat == 'number') {
       return PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedSitOrNat);
     } else {
@@ -1243,8 +1255,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   defaultConditionalEffectType() : TypedConditionalEffect['conditionalType'] {
-    if (this.isTrulyUsable()) return 'on-use';
-    if (this.isDefensive()) return 'defensive';
+    if (this.isTrulyUsable()) {return 'on-use';}
+    if (this.isDefensive()) {return 'defensive';}
     return 'passive';
   }
 
@@ -1264,7 +1276,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   canBeReflectedByPhyiscalShield(this: UsableAndCard, attacker: ValidAttackers): boolean {
-    if (this.isSkillCard()) return false;
+    if (this.isSkillCard()) {return false;}
     const dtype = (this as Usable).getDamageType(attacker);
     switch (dtype) {
       case 'physical':
@@ -1276,19 +1288,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   isWeaponSkill(this: UsableAndCard): this is PowerSub<'weapon'> {
-    if (this.isSkillCard()) return false;
-    return (this.system.subtype == 'weapon')
+    if (this.isSkillCard()) {return false;}
+    return (this.system.subtype == 'weapon');
   }
 
   isMagicSkill(this: UsableAndCard): this is PowerSub<'magic'> {
-    if (this.isSkillCard()) return false;
-    return (this.system.subtype == 'magic')
+    if (this.isSkillCard()) {return false;}
+    return (this.system.subtype == 'magic');
   }
 
   hpCost(this: Usable): number {
     if (!this.isWeaponSkill() || !this.isPower()) {return 0;}
-    if (this.isTeamwork()) return 0;
-    if (this.customCost) return this.system.hpcost;
+    if (this.isTeamwork()) {return 0;}
+    if (this.customCost) {return this.system.hpcost;}
     const newSys=  PowerCostCalculator.calcHPPercentCost(this);
     return newSys;
 
@@ -1298,9 +1310,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     if (!this.isWeaponSkill()) {
       return 0;
     }
-    if (this.isConsumable()) return 0;
+    if (this.isConsumable()) {return 0;}
     if (this.isBasicPower()) {return 0;}
-    if (this.isTeamwork()) return 0;
+    if (this.isTeamwork()) {return 0;}
     let mult = 1;
     if (this.hasTag('high-cost')) {
       mult *= 2;
@@ -1317,7 +1329,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   canBeReflectedByMagicShield(this: UsableAndCard, attacker: ValidAttackers) : boolean {
-    if (this.isSkillCard()) return false;
+    if (this.isSkillCard()) {return false;}
     const dtype = (this as Usable).getDamageType(attacker);
     switch (dtype) {
       case 'fire':
@@ -1372,62 +1384,64 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.hasTag('navigator');
   }
 
-  isValidTargetFor(this: Usable, user: ValidAttackers, target: ValidAttackers, situation?: Situation): boolean {
-    if (!situation) {
-      situation = {
-        user : user.accessor,
-        target: target.accessor,
-      };
-    } else {
-      situation = {
-        ...situation,
-        target: target.accessor
-      };
-    }
-    switch (this.system.targets) {
-      case '1-engaged':
-      case '1-nearby':
-      case '1d4-random':
-      case '1d4-random-rep':
-      case '1d3-random':
-      case '1d3-random-rep':
-        if (!target.isAlive()) return false;
-        break;
-      case '1-nearby-dead':
-        if (target.isAlive()) return false;
-        break;
-      case 'self':
-        if (user != target) return false;
-        break;
-      case '1-random-enemy':
-      case 'all-enemies':
-        if (PersonaCombat.isSameTeam(user, target)) return false;
-        if (!target.isAlive()) return false;
-        break;
-      case 'all-allies':
-        if (!PersonaCombat.isSameTeam(user, target)) return false;
-        if (!target.isAlive()) return false;
-      case 'all-dead-allies':
-        if (!PersonaCombat.isSameTeam(user, target)) return false;
-        if (target.isAlive()) return false;
-      case 'all-others':
-        if (user == target) return false;
-        if (target.isAlive()) return false;
-        break;
-      case 'everyone':
-        if (!target.isAlive()) return false;
-        break;
-      case 'everyone-even-dead':
-        break;
-      default:
-        this.system.targets satisfies never;
-    }
-    if (this.isOpener()) {
-      const conditions = this.system.openerConditions;
-      if (!testPreconditions(conditions, situation, this)) return false;
-    }
-    return testPreconditions(this.system.validTargetConditions, situation, this);
-  }
+	isValidTargetFor(this: Usable, user: ValidAttackers, target: ValidAttackers, situation?: Situation): boolean {
+		if (!situation) {
+			situation = {
+				user : user.accessor,
+				target: target.accessor,
+			};
+		} else {
+			situation = {
+				...situation,
+				target: target.accessor
+			};
+		}
+		switch (this.system.targets) {
+			case '1-engaged':
+			case '1-nearby':
+			case '1d4-random':
+			case '1d4-random-rep':
+			case '1d3-random':
+			case '1d3-random-rep':
+				if (!target.isAlive()) {return false;}
+				break;
+			case '1-nearby-dead':
+				if (target.isAlive()) {return false;}
+				break;
+			case 'self':
+				if (user != target) {return false;}
+				break;
+			case '1-random-enemy':
+			case 'all-enemies':
+				if (PersonaCombat.isSameTeam(user, target)) {return false;}
+				if (!target.isAlive()) {return false;}
+				break;
+			case 'all-allies':
+				if (!PersonaCombat.isSameTeam(user, target)) {return false;}
+				if (!target.isAlive()) {return false;}
+				break;
+			case 'all-dead-allies':
+				if (!PersonaCombat.isSameTeam(user, target)) {return false;}
+				if (target.isAlive()) {return false;}
+				break;
+			case 'all-others':
+				if (user == target) {return false;}
+				if (target.isAlive()) {return false;}
+				break;
+			case 'everyone':
+				if (!target.isAlive()) {return false;}
+				break;
+			case 'everyone-even-dead':
+				break;
+			default:
+				this.system.targets satisfies never;
+		}
+		if (this.isOpener()) {
+			const conditions = this.system.openerConditions;
+			if (!testPreconditions(conditions, situation, this)) {return false;}
+		}
+		return testPreconditions(this.system.validTargetConditions, situation, this);
+	}
 
 
   isPower() : this is Power {
@@ -1439,7 +1453,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   isShadowExclusivePower(): boolean {
-    if (!this.isPower()) return false;
+    if (!this.isPower()) {return false;}
     return this.hasTag('shadow-only');
   }
 
@@ -1454,22 +1468,22 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   baseInstantKillBonus(this: Usable) : number {
-    if (!this.isInstantDeathAttack()) return 0;
+    if (!this.isInstantDeathAttack()) {return 0;}
     let boost = INSTANT_KILL_CRIT_BOOST[this.system.instantKillChance] ?? 0;
-    if (this.isAoE()) boost += 4;
+    if (this.isAoE()) {boost += 4;}
     return boost;
   }
 
   mpCost(this: Usable, userPersona: Persona | null): number {
-    if (this.isConsumable()) return 0;
+    if (this.isConsumable()) {return 0;}
     let mult  = 1;
     if (userPersona) {
       const sit : Situation = {
         user: userPersona.user.accessor,
         usedPower: this.accessor,
         attacker: userPersona.user.accessor,
-      }
-      let list = userPersona.getBonuses('mpCostMult');
+      };
+      const list = userPersona.getBonuses('mpCostMult');
       mult = list.total(sit, 'percentage');
     }
     const baseMPCost = this.baseMPCost;
@@ -1478,10 +1492,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 
   get baseMPCost(): number {
-    if (!this.isPower()) return 0;
-    if (this.isTeamwork()) return 0;
+    if (!this.isPower()) {return 0;}
+    if (this.isTeamwork()) {return 0;}
     if (this.customCost)
-      return this.system.mpcost;
+      {return this.system.mpcost;}
     if (this.cache.mpCost == undefined) {
       this.cache.mpCost = PowerCostCalculator.calcMPCost(this);
     }
@@ -1498,7 +1512,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         effects: this.getEffects(sourceActor)
       };
     }
-    let effects: ConditionalEffect[] = [];
+    const effects: ConditionalEffect[] = [];
     for (const cType of condTypes) {
       switch (cType) {
         case 'defensive':
@@ -1561,7 +1575,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   #accessEffectsCache(this: ModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, refresherFn: () => TypedConditionalEffect[]) : readonly TypedConditionalEffect[] {
-    if (!PersonaDB.isLoaded) return [];
+    if (!PersonaDB.isLoaded) {return [];}
     PersonaItem.cacheStats.total++;
     const cache = this.cache.effects[cacheType];
     if (sourceActor == null) {
@@ -1572,7 +1586,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       return cache.nullActor;
     } else {
       const data = cache.actors.get(sourceActor);
-      if (data) return data;
+      if (data) {return data;}
       PersonaItem.cacheStats.miss++;
       const newData=  refresherFn();
       cache.actors.set(sourceActor, newData);
@@ -1581,7 +1595,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   getTriggeredEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
-    return this.#accessEffectsCache('triggeredEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'triggered'))
+    return this.#accessEffectsCache('triggeredEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'triggered'));
   }
 
   hasTriggeredEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
@@ -1590,11 +1604,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 
   getOnUseEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
-    return this.#accessEffectsCache('onUseEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'on-use'))
+    return this.#accessEffectsCache('onUseEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'on-use'));
   }
 
   getPassiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
-    return this.#accessEffectsCache('passiveEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'passive'))
+    return this.#accessEffectsCache('passiveEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'passive'));
   }
 
   getPassiveAndDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor  | null) : readonly ConditionalEffect[] {
@@ -1607,7 +1621,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   getDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
-    return this.#accessEffectsCache('defensiveEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'defensive'))
+    return this.#accessEffectsCache('defensiveEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'defensive'));
   }
 
   hasDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : boolean {
@@ -1630,7 +1644,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   requiredLinkLevel(this: Focus) : number  {
-    let requirement = 0;
+    const requirement = 0;
     for (const eff of this.getEffects( null)) {
       for (const cond of eff.conditions) {
         if (
@@ -1660,8 +1674,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const sit: Situation = {
       user: pc.accessor
     };
-    if (this.system.weeklyAvailability.disabled) return false;
-    if(!testPreconditions(this.system.conditions,sit, null)) return false;
+    if (this.system.weeklyAvailability.disabled) {return false;}
+    if(!testPreconditions(this.system.conditions,sit, null)) {return false;}
     return this.system.weeklyAvailability.available;
   }
 
@@ -1735,7 +1749,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       postEffects: {effects:[]},
       roll,
       resourceCost: 0,
-    }
+    };
     arr.push( newChoice);
     event.choices = arr;
     await this.update({'system.events': Helpers.expandObject(this.system.events)});
@@ -1777,20 +1791,22 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     await this.update({'system.tokenSpends':list});
   }
 
-  async priceFix() {
-    //updates money to new x10 total
-    switch (this.system.type) {
-      case 'item':
-      case 'consumable':
-        const price = this.system.price * 10;
-        await this.update({'system.price': price});
-      default:
-        return;
-    }
-  }
+	async priceFix() {
+		//updates money to new x10 total
+		switch (this.system.type) {
+			case 'item':
+			case 'consumable': {
+				const price = this.system.price * 10;
+				await this.update({'system.price': price});
+				break;
+			}
+			default:
+				return;
+		}
+	}
 
   isStatusEffect(this: UsableAndCard) : boolean {
-    if (this.system.type == 'skillCard') return false;
+    if (this.system.type == 'skillCard') {return false;}
     const statusTags : PowerTag[] = [
       'ailment',
       'sleep',
@@ -1808,7 +1824,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   isMultiTarget(this: UsableAndCard) : boolean {
-    if (this.system.type == 'skillCard') return false;
+    if (this.system.type == 'skillCard') {return false;}
     switch (this.system.targets) {
       case '1-nearby-dead':
       case '1-nearby':
@@ -1835,7 +1851,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   isAoE(this: UsableAndCard) : boolean {
-    if (this.system.type == 'skillCard') return false;
+    if (this.system.type == 'skillCard') {return false;}
     switch (this.system.targets) {
       case '1-nearby-dead':
       case '1-nearby':
@@ -1873,7 +1889,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     // const multiMod = this.isMultiTarget() ? 1 : 0;
     const dmgtype = this.system.dmg_type;
     if (dmgtype == 'dark' || dmgtype == 'light')
-      mod+= 1;
+      {mod+= 1;}
     if (this.isAoE()) {
       mod += 2;
     }
@@ -1889,10 +1905,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   targetMeetsConditions(this: UsableAndCard, user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
-    if (target.hasStatus('protected') && user != target) return false;
-    if (this.system.type == 'skillCard') return target.canLearnNewSkill();
+    if (target.hasStatus('protected') && user != target) {return false;}
+    if (this.system.type == 'skillCard') {return target.canLearnNewSkill();}
     const usable = this as Usable;
-    if (!usable.system.validTargetConditions) return true;
+    if (!usable.system.validTargetConditions) {return true;}
     const conditions  = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user);
     if (!situation) {
       situation = {
@@ -1968,21 +1984,23 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       return SLcheck;
     };
     const conditionTags : typeof CARD_RESTRICTOR_TAGS[number][] = this.system.cardTags
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .filter(tag=> CARD_RESTRICTOR_TAGS.includes(tag as any)) as typeof CARD_RESTRICTOR_TAGS[number][];
     return conditionTags.flatMap( tag => {
       switch (tag) {
-        case 'real-world':
-          const realWorld : Precondition = {
+        case 'real-world': {
+			  const realWorld : Precondition = {
             type: 'boolean',
             boolComparisonTarget: 'has-creature-tag',
             conditionTarget: 'target',
             creatureTag: 'stuck-in-metaverse',
             booleanState: false,
           };
-          return [ realWorld ];
+          return [ realWorld ]; 
+		  }
         case 'date':
-        case 'friends':
-          const isDating : Precondition = {
+        case 'friends': {
+			  const isDating : Precondition = {
             type: 'boolean',
             boolComparisonTarget: 'social-availability',
             booleanState: tag == 'date',
@@ -1990,7 +2008,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
             socialTypeCheck: 'is-dating',
             socialLinkIdOrTarot: 'target',
           };
-          return [ isDating ]
+          return [ isDating ];
+		  }
         case 'student-stuff': {
           const isStudent: Precondition = {
             type: 'boolean',
@@ -2010,11 +2029,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         case 'one-shot':
         case 'question':
           return [];
-        case 'disabled':
-          const neverHappen: Precondition = {
+        case 'disabled': {
+			  const neverHappen: Precondition = {
             type: 'never',
           };
           return [neverHappen];
+		  }
         default:
           tag satisfies never;
           break;
@@ -2034,16 +2054,17 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       return;
     }
     ev.eventTags.pushUnique('disabled');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const eventsArr= this.system.events.map( x=> (x as any).toJSON());
     return await this.update({'system.events': eventsArr});
   }
 
   static async DamageLevelConvert(item: PersonaItem) {
-    if (!item.isUsableType()) return;
-    if (item.isSkillCard()) return;
-    if (!item.isPower()) return;
+    if (!item.isUsableType()) {return;}
+    if (item.isSkillCard()) {return;}
+    if (!item.isPower()) {return;}
     let damageLevel : typeof item['system']['damageLevel'] | undefined;
-    if (item.system.damageLevel != '-' && item.system.damageLevel != 'fixed') return;
+    if (item.system.damageLevel != '-' && item.system.damageLevel != 'fixed') {return;}
     if (item.system.dmg_type == 'none') {
       damageLevel = 'none';
     } else {
@@ -2096,19 +2117,19 @@ static #convertSpellDamage(item: Power) : typeof item['system']['damageLevel'] |
       return 'medium';
     case 6:
       if (item.system.dmg_type == 'healing')
-        return 'medium';
+        {return 'medium';}
       break;
     case 7:
       return 'heavy';
     case 8:
       if (item.system.dmg_type == 'healing')
-        return 'heavy';
+        {return 'heavy';}
       break;
     case 11:
       return 'severe';
     case 12:
       if (item.system.dmg_type == 'healing')
-        return 'severe';
+        {return 'severe';}
       break;
     default:
   }
@@ -2157,12 +2178,12 @@ removesAilment(this:Power) : boolean {
 }
 
 get customCost() : boolean {
-  if (!this.isPower()) return false;
+  if (!this.isPower()) {return false;}
   return this.system.customCost || this.system.damageLevel == '-';
 }
 
 get ailmentRange() : {low: number, high:number} | undefined {
-  if (!this.isUsableType()) return undefined;
+  if (!this.isUsableType()) {return undefined;}
   switch (this.system.ailmentChance) {
     case 'none': return undefined;
     case 'low': return {low: 17, high: 18};
@@ -2175,10 +2196,10 @@ get ailmentRange() : {low: number, high:number} | undefined {
 }
 
 isDamagePower(this: Usable): boolean {
-  if (!this.isTrulyUsable()) return false;
-  if (this.isSkillCard()) return false;
+  if (!this.isTrulyUsable()) {return false;}
+  if (this.isSkillCard()) {return false;}
   if (this.isPower()) {
-    if (this.system.damageLevel == 'none') return false;
+    if (this.system.damageLevel == 'none') {return false;}
     return true;
   }
   return this.system.damage.high > 0; //for consumables
@@ -2214,7 +2235,7 @@ isStatusRemoval(this: Usable) : boolean {
 }
 
 /** Handlebars keeps turning my arrays inside an object into an object with numeric keys, this fixes that */
-export function ArrayCorrector<T extends any>(obj: (T[] | Record<string | number, T>)): T[] {
+export function ArrayCorrector<T>(obj: (T[] | Record<string | number, T>)): T[] {
   return ConditionalEffectManager.ArrayCorrector(obj);
 }
 
@@ -2252,7 +2273,7 @@ function cacheStats() {
   console.log(`Effects Cache : ${skipPercent}% modifierSkip Rate`);
 }
 
-//@ts-ignore
+//@ts-expect-error isn't defined on window
 window.cacheStats = cacheStats;
 
 
