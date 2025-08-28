@@ -1,3 +1,4 @@
+import { ELEMENTAL_DEFENSE_LINK } from "../config/damage-types.js";
 import { PersonaStat } from "../config/persona-stats.js";
 import { StatGroup } from "./actor/persona-combat-stats.js";
 import { LevelUpCalculator } from "../config/level-up-calculator.js";
@@ -453,8 +454,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		// const lvl = this.level;
 		// const inc = this.classData.incremental.defense;
 		// mods.add("Base", 10);
-		// const baseDef = this.#translateDefenseString(defense, this.defenses[defense]);
-		// mods.add("Base Defense Bonus", baseDef);
+		const baseDef = this.#translateDefenseString(defense, this.defenses[defense]);
+		mods.add("Base Defense Bonus", baseDef);
 		// mods.add("Incremental Advance" , inc);
 		const otherBonuses = this.getBonuses([defense, "allDefenses"]);
 		const defenseMods = this.getBonuses([defense, "allDefenses"], this.defensiveModifiers());
@@ -462,25 +463,25 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	}
 
-	// #translateDefenseString(defType: keyof ValidAttackers["system"]["combat"]["defenses"], val: ValidAttackers["system"]["combat"]["defenses"]["fort"],): number {
-	// 	const weaknesses= this.#getWeaknessesInCategory(defType);
-	// 	switch (val) {
-	// 		case "pathetic": return Math.min(-6 + 2 * weaknesses,-2) ;
-	// 		case "weak": return Math.min(-3 + 1 * weaknesses, -1);
-	// 		case "normal": return 0;
-	// 		case "strong": return Math.max(3 - 1 * weaknesses, 1);
-	// 		case "ultimate": return Math.max(6 - 2 * weaknesses, 2);
-	// 		default:
-	// 			PersonaError.softFail(`Bad defense tsring ${val} for ${defType}`);
-	// 			return -999;
-	// 	}
-	// }
+	#translateDefenseString(defType: keyof ValidAttackers["system"]["combat"]["defenses"], val: ValidAttackers["system"]["combat"]["defenses"]["fort"],): number {
+		const weaknesses= this.#getWeaknessesInCategory(defType);
+		switch (val) {
+			case "pathetic": return Math.min(-4 + 2 * weaknesses,-2) ;
+			case "weak": return Math.min(-2 + 1 * weaknesses, -1);
+			case "normal": return 0;
+			case "strong": return Math.max(2 - 1 * weaknesses, 1);
+			case "ultimate": return Math.max(4 - 2 * weaknesses, 2);
+			default:
+				PersonaError.softFail(`Bad defense tsring ${val} for ${defType}`);
+				return -999;
+		}
+	}
 
-	// #getWeaknessesInCategory( defType: keyof ValidAttackers["system"]["combat"]["defenses"]): number {
-	// 	const damageTypes = ELEMENTAL_DEFENSE_LINK[defType];
-	// 	const weaknesses= damageTypes.filter( dt => this.resists[dt] == "weakness");
-	// 	return weaknesses.length;
-	// }
+	#getWeaknessesInCategory( defType: keyof ValidAttackers["system"]["combat"]["defenses"]): number {
+		const damageTypes = ELEMENTAL_DEFENSE_LINK[defType];
+		const weaknesses= damageTypes.filter( dt => this.resists[dt] == "weakness");
+		return weaknesses.length;
+	}
 
 	get defenses(): ValidAttackers["system"]["combat"]["defenses"] {
 		return this.source.system.combat.defenses;
