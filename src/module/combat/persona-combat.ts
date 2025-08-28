@@ -66,7 +66,7 @@ declare global {
 	}
 }
 
-type AttackRollType = "activation" | "standard" | "reflect" | number; //number is used for bonus attacks
+type AttackRollType = "activation" | "standard" | "reflect" | "iterative" | number; //number is used for bonus attacks
 
 
 export class PersonaCombat extends Combat<ValidAttackers> {
@@ -1367,40 +1367,49 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		let i = 0;
 		const result = new CombatResult();
 		for (const target of targets) {
-			const atkResult = await this.processAttackRoll( attacker, power, target, modifiers, rollType == "standard" && i==0 ? "activation" : rollType);
-			const this_result = this.processEffects(atkResult);
-			result.merge(this_result);
-			if (atkResult.result == "reflect") {
-				result.merge(await this.usePowerOn(attacker, power, [attacker], "reflect"));
+			let num_of_attacks = 1;
+			if (power.isPower()) {
+				const min = power.system.attacksMin ?? 1;
+				const max = power.system.attacksMax ?? 1;
+				num_of_attacks = Math.floor(min + (Math.random() * (max - min+1)));
 			}
-			const extraAttacks = this_result.findEffects("extra-attack");
-			for (const extraAttack of extraAttacks)
-			{
-				const bonusRollType = typeof rollType != "number" ? 0: rollType+1;
-				const mods = new ModifierList();
-				//TODO BUG: Extra attacks keep the main inputted modifier
-				if (extraAttack.iterativePenalty) {
-					mods.add("Iterative Penalty", (bonusRollType + 1) * extraAttack.iterativePenalty);
+			for (let atkNum = 0; atkNum < num_of_attacks; atkNum++) {
+				rollType = atkNum > 0 ? "iterative": rollType;
+				const atkResult = await this.processAttackRoll( attacker, power, target, modifiers, rollType == "standard" && i==0 ? "activation" : rollType);
+				const this_result = this.processEffects(atkResult);
+				result.merge(this_result);
+				if (atkResult.result == "reflect") {
+					result.merge(await this.usePowerOn(attacker, power, [attacker], "reflect"));
 				}
-				if (bonusRollType < extraAttack.maxChain) {
-					const extra = await this.usePowerOn(attacker, power, [target], bonusRollType, mods);
-					result.merge(extra);
+				const extraAttacks = this_result.findEffects("extra-attack");
+				for (const extraAttack of extraAttacks)
+				{
+					const bonusRollType = typeof rollType != "number" ? 0: rollType+1;
+					const mods = new ModifierList();
+					//TODO BUG: Extra attacks keep the main inputted modifier
+					if (extraAttack.iterativePenalty) {
+						mods.add("Iterative Penalty", (bonusRollType + 1) * extraAttack.iterativePenalty);
+					}
+					if (bonusRollType < extraAttack.maxChain) {
+						const extra = await this.usePowerOn(attacker, power, [target], bonusRollType, mods);
+						result.merge(extra);
+					}
 				}
+				const execPowers = this_result.findEffects("use-power");
+				for (const usePower of execPowers) {
+					//TODO BUG: Extra attacks keep the main inputted modifier
+					const newAttacker = this.getPTokenFromActorAccessor(usePower.newAttacker);
+					const execPower = PersonaDB.allPowers().get( usePower.powerId);
+					if (execPower && newAttacker) {
+						const altTargets= this.getAltTargets(newAttacker, atkResult.situation, usePower.target );
+						const newTargets = this.getTargets(newAttacker, execPower, altTargets)
+						const extraPower = await this.usePowerOn(newAttacker, execPower, newTargets, "standard");
+						result.merge(extraPower);
+					}
+				}
+				Hooks.callAll("onUsePower", power, attacker, target);
+				i++;
 			}
-			const execPowers = this_result.findEffects("use-power");
-			for (const usePower of execPowers) {
-				//TODO BUG: Extra attacks keep the main inputted modifier
-				const newAttacker = this.getPTokenFromActorAccessor(usePower.newAttacker);
-				const execPower = PersonaDB.allPowers().get( usePower.powerId);
-				if (execPower && newAttacker) {
-					const altTargets= this.getAltTargets(newAttacker, atkResult.situation, usePower.target );
-					const newTargets = this.getTargets(newAttacker, execPower, altTargets)
-					const extraPower = await this.usePowerOn(newAttacker, execPower, newTargets, "standard");
-					result.merge(extraPower);
-				}
-			}
-			Hooks.callAll("onUsePower", power, attacker, target);
-			i++;
 		}
 		this.computeResultBasedEffects(result);
 		return result;
@@ -1666,7 +1675,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				...baseData,
 			};
 		}
-		const canCrit = typeof rollType == "number" ? false : true;
+		const canCrit = typeof rollType == "number" || rollType == "iterative" ? false : true;
 		let cancelCritsForInstantDeath = false;
 		if (power.isInstantDeathAttack()) {
 			const resistanceMult = target.actor.instantKillResistanceMultiplier(attacker.actor)

@@ -109,6 +109,7 @@ export class PowerCostCalculator {
 			this.tagAdjust(pwr),
 			this.hpCost_instantKill(pwr),
 			this.hpCost_ailment(pwr),
+			this.hpCost_multiattack(pwr),
 		].reduce ( (acc, x) => acc * x.mult + x.add, 0);
 		return Math.round(val);
 	}
@@ -119,6 +120,20 @@ export class PowerCostCalculator {
 			total += TAG_ADJUST_HP[tag as PowerTag] ?? 0;
 		}
 		return i(total);
+	}
+
+
+	static hpCost_multiattack(pwr: Power) :CostModifier {
+		if (pwr.system.attacksMax == 1) return i(0);
+		const min =pwr.system.attacksMin;
+		const max = pwr.system.attacksMax;
+		const maxMult =  0.66 * (max -1);
+		const minMult = 0.33 * (min -1);
+		const costMod : CostModifier = {
+			mult: 1 + maxMult + minMult,
+			add: 1,
+		}
+		return costMod;
 	}
 
 	static hpCost_ailment(pwr: Power) : CostModifier {

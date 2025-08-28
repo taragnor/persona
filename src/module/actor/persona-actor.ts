@@ -465,6 +465,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.mhp;
 	}
 
+	hasSoloPersona(this: ValidAttackers): boolean {
+		if (this.isNPCAlly()) return true;
+		if (this.isPC()) return this.system.personaList.length <= 1;
+		if (this.isShadow()) return true;
+		this satisfies never;
+		return false;
+	}
+
+
 	get mhp() : number {
 		//NOTE: This function is a performance sink
 		if (!this.isValidCombatant()) return 0;
@@ -483,6 +492,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (this.isShadow()) {
 				const shadowRelHPChange = 0.75 + (this.level * .005);
 				newForm.add("Shadow Class Adjust", shadowRelHPChange);
+			}
+			if (this.hasSoloPersona()) {
+				const resists = this.system.combat.resists;
+				const values = Object.values(resists) as typeof resists["cold"][];
+				const weaknesses = values.reduce( (acc, x) => x == "weakness" ? acc + 1: acc, 0);
+				if (weaknesses >= 2) {
+					newForm.add("Multiweakness", 1.25);
+				}
 			}
 			// const diff = this.class.getClassProperty(lvl+1, "maxhp") - lvlbase;
 			// const incBonus = Math.round(inc / 3 * diff);
@@ -2847,7 +2864,6 @@ issues() : string {
 }
 
 totalResists (this:ValidAttackers) : number {
-	const resists = this.system.combat.resists;
 	const pcTranslator : Record<typeof resists["cold"], number> = {
 		weakness: -1,
 		normal: 0,
@@ -2874,6 +2890,7 @@ totalResists (this:ValidAttackers) : number {
 		reflect:2.5,
 	} as const;
 	const resistTranslator = this.isShadow() ? shadowTranslator : pcTranslator;
+	const resists = this.system.combat.resists;
 	const entries = Object.entries(resists) as [keyof typeof resists, typeof resists["cold"]][];
 	return entries.reduce(
 		function (acc, [k,res]) {
