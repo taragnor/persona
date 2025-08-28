@@ -803,8 +803,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		if (usable.system.type == "power") {
 			const combat = game.combat;
 			// if (combat && usable.system.reqEscalation > 0 && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
-			const energyRequired = usable.system.energy.required;
-			const energyCost = usable.system.energy.cost;
+			const energyRequired = usable.energyRequired(this);
+			const energyCost = usable.energyCost(this);
 			const currentEnergy = this.user.system.combat.energy.value;
 			if (combat && energyRequired > 0 && energyRequired > currentEnergy) {
 				if (outputReason) {

@@ -1,2217 +1,2235 @@
-import { GrowthCalculator } from "../utility/growth-calculator.js";
-import { PersonaCombatStats } from "../actor/persona-combat-stats.js";
-import { STATUS_AILMENT_SET } from "../../config/status-effects.js";
-import { BASE_VARIANCE } from "../../config/damage-types.js";
-import { DamageCalculation } from "../combat/damage-calc.js";
-import { NewDamageParams } from "../../config/damage-types.js";
-import { STATUS_AILMENT_LIST } from "../../config/status-effects.js";
-import { INSTANT_KILL_CRIT_BOOST } from "../../config/damage-types.js";
-import { PowerCostCalculator } from "../power-cost-calculator.js";
-import { StatusEffectId } from "../../config/status-effects.js";
-import { TypedConditionalEffect } from "../conditional-effect-manager.js";
-import { DAMAGE_ICONS } from "../../config/icons.js";
-import { Persona } from "../persona-class.js";
-import { POWER_ICONS } from "../../config/icons.js";
-import { RealDamageType } from "../../config/damage-types.js";
-import { AttackResult } from "../combat/combat-result.js";
-import { EvaluatedDamage } from "../combat/damage-calc.js";
-import { PToken } from "../combat/persona-combat.js";
-import { DamageConsequence } from "../../config/consequence-types.js";
-import { DamageCalculator } from "../../config/damage-types.js";
-import { Trigger } from "../../config/triggers.js";
-import { CombatResult } from "../combat/combat-result.js";
-import { ROLL_TAGS_AND_CARD_TAGS } from "../../config/roll-tags.js";
-import { CARD_RESTRICTOR_TAGS } from "../../config/card-tags.js";
-import { CardRoll } from "../../config/social-card-config.js";
-import { PersonaSettings } from "../../config/persona-settings.js";
-import { POWER_TAGS_LIST } from "../../config/power-tags.js";
-import { POWER_TYPE_TAGS } from "../../config/power-tags.js";
-import { Logger } from "../utility/logger.js";
-import { STATUS_AILMENT_POWER_TAGS } from "../../config/power-tags.js";
-import { DamageType } from "../../config/damage-types.js";
-import { ValidAttackers } from "../combat/persona-combat.js";
-import { EQUIPMENT_TAGS } from "../../config/equipment-tags.js";
-import { Consequence } from "../../config/consequence-types.js";
-import { CreatureTag } from "../../config/creature-tags.js";
-import { Precondition } from "../../config/precondition-types.js";
-import { Helpers } from "../utility/helpers.js";
-import { PersonaAE } from "../active-effect.js";
-import { PersonaCombat } from "../combat/persona-combat.js";
-import { removeDuplicates } from "../utility/array-tools.js";
-import { EquipmentTag } from "../../config/equipment-tags.js";
-import { PowerTag } from "../../config/power-tags.js";
-import { ConditionalEffectManager } from "../conditional-effect-manager.js";
-import { localize } from "../persona.js";
-import { POWER_TAGS } from "../../config/power-tags.js";
-import { ModifierList } from "../combat/modifier-list.js";
-import { testPreconditions } from "../preconditions.js";
-import { CardChoice } from "../../config/social-card-config.js";
-import { CardEvent } from "../../config/social-card-config.js";
-import { BASIC_PC_POWER_NAMES } from "../../config/basic-powers.js";
-import { BASIC_SHADOW_POWER_NAMES } from "../../config/basic-powers.js";
-import { ConditionalEffect } from "../datamodel/power-dm.js";
-import { getActiveConsequences } from "../preconditions.js";
-import { PersonaError } from "../persona-error.js";
-import { PersonaActor } from "../actor/persona-actor.js";
-import { SLOTTYPES } from "../../config/slot-types.js";
-import { ModifierListItem } from "../combat/modifier-list.js";
-import { ModifierTarget } from "../../config/item-modifiers.js";
-import { PowerType } from "../../config/effect-types.js";
-import { PC } from "../actor/persona-actor.js";
-import { Shadow } from "../actor/persona-actor.js";
-import { ITEMMODELS } from "../datamodel/item-types.js";
-import { PersonaDB } from "../persona-db.js";
+import { GrowthCalculator } from '../utility/growth-calculator.js';
+import { PersonaCombatStats } from '../actor/persona-combat-stats.js';
+import { STATUS_AILMENT_SET } from '../../config/status-effects.js';
+import { BASE_VARIANCE } from '../../config/damage-types.js';
+import { DamageCalculation } from '../combat/damage-calc.js';
+import { NewDamageParams } from '../../config/damage-types.js';
+import { INSTANT_KILL_CRIT_BOOST } from '../../config/damage-types.js';
+import { PowerCostCalculator } from '../power-cost-calculator.js';
+import { StatusEffectId } from '../../config/status-effects.js';
+import { TypedConditionalEffect } from '../conditional-effect-manager.js';
+import { DAMAGE_ICONS } from '../../config/icons.js';
+import { Persona } from '../persona-class.js';
+import { POWER_ICONS } from '../../config/icons.js';
+import { RealDamageType } from '../../config/damage-types.js';
+import { AttackResult } from '../combat/combat-result.js';
+import { EvaluatedDamage } from '../combat/damage-calc.js';
+import { PToken } from '../combat/persona-combat.js';
+import { DamageConsequence } from '../../config/consequence-types.js';
+import { DamageCalculator } from '../../config/damage-types.js';
+import { Trigger } from '../../config/triggers.js';
+import { CombatResult } from '../combat/combat-result.js';
+import { ROLL_TAGS_AND_CARD_TAGS } from '../../config/roll-tags.js';
+import { CARD_RESTRICTOR_TAGS } from '../../config/card-tags.js';
+import { CardRoll } from '../../config/social-card-config.js';
+import { PersonaSettings } from '../../config/persona-settings.js';
+import { POWER_TAGS_LIST } from '../../config/power-tags.js';
+import { POWER_TYPE_TAGS } from '../../config/power-tags.js';
+import { Logger } from '../utility/logger.js';
+import { STATUS_AILMENT_POWER_TAGS } from '../../config/power-tags.js';
+import { DamageType } from '../../config/damage-types.js';
+import { ValidAttackers } from '../combat/persona-combat.js';
+import { EQUIPMENT_TAGS } from '../../config/equipment-tags.js';
+import { Consequence } from '../../config/consequence-types.js';
+import { CreatureTag } from '../../config/creature-tags.js';
+import { Precondition } from '../../config/precondition-types.js';
+import { Helpers } from '../utility/helpers.js';
+import { PersonaAE } from '../active-effect.js';
+import { PersonaCombat } from '../combat/persona-combat.js';
+import { removeDuplicates } from '../utility/array-tools.js';
+import { EquipmentTag } from '../../config/equipment-tags.js';
+import { PowerTag } from '../../config/power-tags.js';
+import { ConditionalEffectManager } from '../conditional-effect-manager.js';
+import { localize } from '../persona.js';
+import { POWER_TAGS } from '../../config/power-tags.js';
+import { ModifierList } from '../combat/modifier-list.js';
+import { testPreconditions } from '../preconditions.js';
+import { CardChoice } from '../../config/social-card-config.js';
+import { CardEvent } from '../../config/social-card-config.js';
+import { BASIC_PC_POWER_NAMES } from '../../config/basic-powers.js';
+import { BASIC_SHADOW_POWER_NAMES } from '../../config/basic-powers.js';
+import { ConditionalEffect } from '../datamodel/power-dm.js';
+import { getActiveConsequences } from '../preconditions.js';
+import { PersonaError } from '../persona-error.js';
+import { PersonaActor } from '../actor/persona-actor.js';
+import { SLOTTYPES } from '../../config/slot-types.js';
+import { ModifierListItem } from '../combat/modifier-list.js';
+import { ModifierTarget } from '../../config/item-modifiers.js';
+import { PowerType } from '../../config/effect-types.js';
+import { PC } from '../actor/persona-actor.js';
+import { Shadow } from '../actor/persona-actor.js';
+import { ITEMMODELS } from '../datamodel/item-types.js';
+import { PersonaDB } from '../persona-db.js';
 
 declare global {
-	type ItemSub<X extends PersonaItem["system"]["type"]> = Subtype<PersonaItem, X>;
+  type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
 }
 
 export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE> {
 
-	static hpGrowthTable = new GrowthCalculator(1.02, 45, 2);
-	static mpGrowthTable = new GrowthCalculator(1.02, 50, 1.5);
+  static hpGrowthTable = new GrowthCalculator(1.02, 45, 2);
+  static mpGrowthTable = new GrowthCalculator(1.02, 50, 1.5);
 
 
-	static #cache =  {
-		basicPCPowers: undefined as Power[] | undefined,
-		basicShadowPowers: undefined as Power[] | undefined,
-	}
+  static #cache =  {
+    basicPCPowers: undefined as Power[] | undefined,
+    basicShadowPowers: undefined as Power[] | undefined,
+  };
 
-	declare parent: PersonaActor | undefined;
+  declare parent: PersonaActor | undefined;
 
-	cache: {
-		effects: AdvancedEffectsCache;
-		// effectsNull: ConditionalEffect[] | undefined;
-		// effectsMap: WeakMap<PersonaActor, ConditionalEffect[]>;
-		containsModifier: boolean | undefined;
-		containsTagAdd: boolean | undefined;
-		statsModified: Map<ModifierTarget, boolean>,
-		hasTriggers: U<boolean>,
-		grantsPowers: U<boolean>,
-		mpCost: U<number>,
-	}
+  cache: {
+    effects: AdvancedEffectsCache;
+    // effectsNull: ConditionalEffect[] | undefined;
+    // effectsMap: WeakMap<PersonaActor, ConditionalEffect[]>;
+    containsModifier: boolean | undefined;
+    containsTagAdd: boolean | undefined;
+    statsModified: Map<ModifierTarget, boolean>,
+    hasTriggers: U<boolean>,
+    grantsPowers: U<boolean>,
+    mpCost: U<number>,
+  };
 
-	static cacheStats = {
-		miss: 0,
-		total: 0,
-		modifierSkip: 0,
-		modifierRead: 0,
-	};
+  static cacheStats = {
+    miss: 0,
+    total: 0,
+    modifierSkip: 0,
+    modifierRead: 0,
+  };
 
-	constructor(...args: any[]) {
-		super (...args)
-		this.clearCache();
-	}
+  constructor(...args: unknown[]) {
+    super (...args);
+    this.clearCache();
+  }
 
-	isActualItem(): this is InvItem | Consumable | Weapon {
-		switch (this.system.type) {
-			case "item":
-			case "weapon":
-			case "consumable":
-				return true;
-			default:
-				return false;
-		}
-	}
+  isActualItem(): this is InvItem | Consumable | Weapon {
+    switch (this.system.type) {
+      case 'item':
+      case 'weapon':
+      case 'consumable':
+        return true;
+      default:
+        return false;
+    }
+  }
 
-	clearCache() {
-		this.cache = {
-			effects: PersonaItem.#newEffectsCache(),
-			// effectsNull: undefined,
-			// effectsMap: new WeakMap(),
-			containsModifier: undefined,
-			containsTagAdd: undefined,
-			statsModified: new Map(),
-			hasTriggers: undefined,
-			grantsPowers: undefined,
-			mpCost: undefined,
-		};
-	}
+  clearCache() {
+    this.cache = {
+      effects: PersonaItem.#newEffectsCache(),
+      // effectsNull: undefined,
+      // effectsMap: new WeakMap(),
+      containsModifier: undefined,
+      containsTagAdd: undefined,
+      statsModified: new Map(),
+      hasTriggers: undefined,
+      grantsPowers: undefined,
+      mpCost: undefined,
+    };
+  }
 
-	static #newEffectsCache() : AdvancedEffectsCache {
-		const cache : AdvancedEffectsCache = {
-			allEffects: {
-				actors: new WeakMap(),
-				nullActor: undefined,
-			},
-			passiveEffects: {
-				actors: new WeakMap(),
-				nullActor: undefined,
-			},
-			triggeredEffects: {
-				actors: new WeakMap(),
-				nullActor: undefined,
-			},
-			defensiveEffects: {
-				actors: new WeakMap(),
-				nullActor: undefined,
-			},
-			onUseEffects: {
-				actors: new WeakMap(),
-				nullActor: undefined,
-			}
-		}
-		return cache;
-	}
+  static #newEffectsCache() : AdvancedEffectsCache {
+    const cache : AdvancedEffectsCache = {
+      allEffects: {
+        actors: new WeakMap(),
+        nullActor: undefined,
+      },
+      passiveEffects: {
+        actors: new WeakMap(),
+        nullActor: undefined,
+      },
+      triggeredEffects: {
+        actors: new WeakMap(),
+        nullActor: undefined,
+      },
+      defensiveEffects: {
+        actors: new WeakMap(),
+        nullActor: undefined,
+      },
+      onUseEffects: {
+        actors: new WeakMap(),
+        nullActor: undefined,
+      }
+    };
+    return cache;
+  }
 
-	static getDamageIconPath(dmgType : RealDamageType) : string  | undefined {
-		switch (dmgType) {
-			case "fire":
-			case "wind":
-			case "light":
-			case "dark":
-			case "physical":
-			case "gun":
-			case "healing":
-			case "cold":
-			case "lightning":
-			case "untyped":
-				return DAMAGE_ICONS[dmgType];
-			case "all-out":
-			case "none":
-				return undefined;
-			default:
-				dmgType satisfies never;
-				PersonaError.softFail(`Unknown Damage Type ${dmgType}`);
-				return "ERROR";
-		}
-	}
+  static getDamageIconPath(dmgType : RealDamageType) : string  | undefined {
+    switch (dmgType) {
+      case 'fire':
+      case 'wind':
+      case 'light':
+      case 'dark':
+      case 'physical':
+      case 'gun':
+      case 'healing':
+      case 'cold':
+      case 'lightning':
+      case 'untyped':
+        return DAMAGE_ICONS[dmgType];
+      case 'all-out':
+      case 'none':
+        return undefined;
+      default:
+        dmgType satisfies never;
+        PersonaError.softFail(`Unknown Damage Type ${dmgType}`);
+        return 'ERROR';
+    }
+  }
 
 
-	getDisplayedIcon(this: Power | Consumable, user: ValidAttackers | Persona) : SafeString  | undefined {
-		function iconize( path: string | undefined) {
-			if (!path) { return new Handlebars.SafeString("");}
-			return new Handlebars.SafeString(`<img class='power-icon' src='${path}'>`);
-		}
-		if (this.isUsableType())  {
-			if (this.isPower()) {
-				const dtype = this.system.dmg_type;
-				switch (dtype) {
-					case "fire":
-					case "wind":
-					case "light":
-					case "dark":
-					case "physical":
-					case "gun":
-					case "healing":
-					case "cold":
-					case "lightning":
-					case "untyped":
-						return iconize(PersonaItem.getDamageIconPath(dtype));
-					case "by-power":
-						const altDtype = this.getDamageType(user);
-						return iconize(PersonaItem.getDamageIconPath(altDtype));
-					case "none":
-					case "all-out":
-						break;
-				}
-			}
-			if (this.hasTag("ailment")) {
-				return iconize(POWER_ICONS["ailment"]);
-			}
-			if (this.isPassive() || this.isDefensive()) {
-				return iconize(POWER_ICONS["passive"]);
-			}
-			return iconize(POWER_ICONS["support"]);
-		}
-		return new Handlebars.SafeString("");
-	}
+  getDisplayedIcon(this: Power | Consumable, user: ValidAttackers | Persona) : SafeString  | undefined {
+    function iconize( path: string | undefined) {
+      if (!path) { return new Handlebars.SafeString('');}
+      return new Handlebars.SafeString(`<img class='power-icon' src='${path}'>`);
+    }
+    if (this.isUsableType())  {
+      if (this.isPower()) {
+        const dtype = this.system.dmg_type;
+        switch (dtype) {
+          case 'fire':
+          case 'wind':
+          case 'light':
+          case 'dark':
+          case 'physical':
+          case 'gun':
+          case 'healing':
+          case 'cold':
+          case 'lightning':
+          case 'untyped':
+            return iconize(PersonaItem.getDamageIconPath(dtype));
+          case 'by-power': {
+            const altDtype = this.getDamageType(user);
+            return iconize(PersonaItem.getDamageIconPath(altDtype));
+			 }
+          case 'none':
+          case 'all-out':
+            break;
+        }
+      }
+      if (this.hasTag('ailment')) {
+        return iconize(POWER_ICONS['ailment']);
+      }
+      if (this.isPassive() || this.isDefensive()) {
+        return iconize(POWER_ICONS['passive']);
+      }
+      return iconize(POWER_ICONS['support']);
+    }
+    return new Handlebars.SafeString('');
+  }
 
-	getClassProperty<T extends keyof CClass["system"]["leveling_table"][number]> (this: CClass,lvl: number, property:T)  : CClass["system"]["leveling_table"][number][T] {
-		const adjustedLvl = Math.clamp(lvl, 0, 200);
-		switch (property) {
-			case "maxhp":
-				return this.calcClassMaxHP(adjustedLvl) as any;
-			default:
-		}
-		const data = this.system.leveling_table[adjustedLvl][property];
-		if (property == "slots") return ArrayCorrector(data as any) as any;
-		return data;
-	}
+  getClassProperty<T extends keyof CClass['system']['leveling_table'][number]> (this: CClass,lvl: number, property:T)  : CClass['system']['leveling_table'][number][T] {
+    const adjustedLvl = Math.clamp(lvl, 0, 200);
+    switch (property) {
+      case 'maxhp':
+        return this.calcClassMaxHP(adjustedLvl) as any;
+      default:
+    }
+    const data = this.system.leveling_table[adjustedLvl][property];
+    if (property == 'slots') return ArrayCorrector(data as any) as any;
+    return data;
+  }
 
-	// getClassProperty<T extends keyof CClass["system"]["leveling_table"][number]> (this: CClass,lvl: number, property:T)  : CClass["system"]["leveling_table"][number][T] {
-	// 	const adjustedLvl = Math.clamp(lvl, 0, 11);
-	// 	const data = this.system.leveling_table[adjustedLvl][property];
-	// 	if (property == "slots") return ArrayCorrector(data as any) as any;
-	// 	return data;
-	// }
+  // getClassProperty<T extends keyof CClass["system"]["leveling_table"][number]> (this: CClass,lvl: number, property:T)  : CClass["system"]["leveling_table"][number][T] {
+  //  const adjustedLvl = Math.clamp(lvl, 0, 11);
+  //  const data = this.system.leveling_table[adjustedLvl][property];
+  //  if (property == "slots") return ArrayCorrector(data as any) as any;
+  //  return data;
+  // }
 
-	calcClassMaxHP (this: CClass, lvl: number) : number {
-		return PersonaItem.hpGrowthTable.valueAt(lvl);
+  calcClassMaxHP (this: CClass, lvl: number) : number {
+    return PersonaItem.hpGrowthTable.valueAt(lvl);
+  }
+
+
+  get accessor() : UniversalItemAccessor<typeof this> {
+    return PersonaDB.getUniversalItemAccessor(this);
+  }
+
+  static getBasicPCPowers() : readonly Power[] {
+    if (!this.#cache.basicPCPowers)  {
+      const basic = BASIC_PC_POWER_NAMES;
+      this.#cache.basicPCPowers = basic.flatMap( powerName =>  {
+        const power = PersonaDB.getBasicPower(powerName);
+        if (!power) return [];
+        return [power as Power];
+      });
+    }
+    return this.#cache.basicPCPowers;
+  }
+
+  static getBasicShadowPowers() : readonly Power[] {
+    if (!this.#cache.basicShadowPowers)  {
+      const basic = BASIC_SHADOW_POWER_NAMES;
+      this.#cache.basicShadowPowers = basic.flatMap( powerName =>  {
+        const power = PersonaDB.getBasicPower(powerName);
+        if (!power) return [];
+        return [power as Power];
+      });
+    }
+    return this.#cache.basicShadowPowers;
+  }
+
+  isFocus(): this is Focus {
+    return this.system.type == 'focus';
+  }
+
+  isOutfit(): this is InvItem {
+    return this.system.type == 'item' && this.system.slot == 'body';
+  }
+
+  isAccessory() : this is InvItem {
+    return this.system.type == 'item' && this.system.slot == 'accessory';
+  }
+
+  isSkillCard(): this is SkillCard {
+    return this.system.type == 'skillCard';
+  }
+
+  isFollowUpMove(this: UsableAndCard): boolean {
+    if (!this.isTrulyUsable()) return false;
+    return this.hasTag('follow-up');
+  }
+
+  isDefensive(): boolean {
+    switch (this.system.type) {
+      case 'power':
+        return this.system.subtype == 'defensive';
+      case 'focus':
+      case 'item':
+      case 'talent':
+      case 'weapon':
+      case 'consumable':
+        return (this as Usable | Focus | InvItem | Talent | Weapon).tagList(null).includes('defensive');
+      case 'universalModifier':
+      case 'skillCard':
+      case 'socialCard':
+      case 'characterClass':
+        return false;
+      default:
+        this.system satisfies never;
+        return false;
+    }
+  }
+
+  isUsableType() : this is Usable {
+    switch (this.system.type) {
+      case 'power':
+      case 'consumable':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  isAilment(): boolean {
+    if (!this.isUsableType() || !this.isTrulyUsable())  return false;
+    return this.causesAilment();
+  }
+
+  isSupport() : boolean {
+    if (!this.isUsableType() || !this.isTrulyUsable())  return false;
+    if (this.isPower()) {
+      return this.system.damageLevel == 'none' && this.system.ailmentChance == 'none' && this.system.instantKillChance == 'none';
+    }
+    return this.system.damage.high == 0 && this.system.defense == 'none';
+  }
+
+  isTrulyUsable() : boolean {
+    switch (this.system.type) {
+      case 'power':
+        const sub = this.system.subtype;
+        if ( sub == 'passive'  || sub == 'defensive')
+          return false;
+        return true;
+      case 'skillCard':
+        return true;
+      case 'consumable':
+        if (this.isCraftingItem) {return false;}
+        return true;
+      case 'characterClass':
+      case 'focus':
+      case 'talent':
+      case 'universalModifier':
+      case 'socialCard':
+      case 'item':
+      case 'weapon':
+        return false;
+      default:
+        this.system satisfies never;
+        return false;
+    }
+  }
+
+  tagListLocalized(this: Weapon | UsableAndCard | InvItem | Weapon, user: null  | ValidAttackers) : string {
+    let tags : string[] = [];
+    const localizeTable  =  {
+      ...EQUIPMENT_TAGS,
+      ...POWER_TAGS
+    };
+    switch (true) {
+      case ('itemTags' in this.system): {
+        tags = tags.concat(
+          this.tagList(user)
+          .map(tag => localize(localizeTable[tag]))
+        );
+        break;
+      }
+      case ('tags' in this.system): {
+        tags = tags.concat(
+          (this as Power).tagList(user)
+          .map(tag => localize(localizeTable[tag]))
+        );
+        break;
+      }
+    }
+    return tags.join(', ');
+  }
+
+
+  /** @deprecated
+  tags Localized */
+  get tags() : string {
+    if (PersonaSettings.debugMode()) {
+      PersonaError.softFail('tags getter is deprecated, tagListLocalized instead');
+    }
+    switch (this.system.type) {
+      case 'consumable':
+      case 'item':
+      case 'power':
+      case 'weapon':
+      case 'skillCard':
+        return (this as UsableAndCard | Weapon | InvItem).tagListLocalized(null);
+      case 'talent':
+      case 'focus':
+      case 'characterClass':
+      case 'universalModifier':
+      case 'socialCard':
+        return 'ERROR';
+    }
+  }
+
+  get slotLocalized() : SafeString {
+    if (!this.isPower()) {
+      return new HandleBarsExtras.SafeString('');
+    }
+    const slot = this.system.slot;
+    const slotName = SLOTTYPES[slot]
+    if (slotName) {
+      return new Handlebars.SafeString (game.i18n.localize(slotName));
+    }
+    return new HandleBarsExtras.SafeString('');
+  }
+
+
+  get cardTags() : string {
+    if ('cardTags' in this.system) {
+      const tags= this.system.cardTags.map(tag => localize(ROLL_TAGS_AND_CARD_TAGS[tag]));
+      return tags.join(', ');
+    }
+    return '';
+  }
+
+  async addItemTag(this: Consumable | InvItem | Weapon): Promise<void> {
+    const tags = this.system.itemTags;
+    tags.push('nil');
+    await this.update( {'system.itemTags': tags});
+  }
+
+  async addCardTag(this: SocialCard): Promise<void> {
+    const tags = this.system.cardTags;
+    tags.push('');
+    await this.update( {'system.cardTags': tags});
+  }
+
+  async addEventTag(this: SocialCard, eventIndex:number) : Promise<void> {
+    const data = this.system.events.map(x=> (x as any).toJSON());
+    const ev = data[eventIndex];
+    const newTags =  ev.eventTags.slice();
+    newTags.push('');
+    ev.eventTags = newTags;
+    await this.update( {'system.events': data});
+  }
+
+  async deleteItemTag(this: Consumable | InvItem | Weapon, index: number) : Promise<void> {
+    const tags = this.system.itemTags;
+    tags.splice(index, 1);
+    await this.update( {'system.itemTags': tags});
+  }
+
+  async deleteCardTag(this: SocialCard, index: number) : Promise<void> {
+    const tags = this.system.cardTags;
+    tags.splice(index, 1);
+    await this.update( {'system.cardTags': tags});
+  }
+
+  async deleteEventTag(this: SocialCard, eventIndex:number, tagIndex: number) {
+    const data = this.system.events.map(x=> (x as any).toJSON());
+    const ev= data[eventIndex];
+    ev.eventTags.splice(tagIndex, 1);
+    await this.update( {'system.events': data});
+  }
+
+  hasTag(this: Power, tag: PowerTag, user : null | ValidAttackers) : boolean;
+  hasTag(this: Consumable, tag: PowerTag, user ?: null) : boolean;
+  hasTag(this: InvItem | Weapon | SkillCard, tag: EquipmentTag, user ?: null): boolean;
+  hasTag(this: UsableAndCard, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
+  hasTag(this: SkillCard | Consumable | InvItem | Weapon, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
+  hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user : null) : boolean;
+  hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user?: null | ValidAttackers) : boolean {
+    let list : (PowerTag | EquipmentTag)[];
+    switch (this.system.type) {
+      case 'power':
+        list = (this as Power).tagList(user ?? null);
+        break;
+      case 'consumable':
+          list = (this as Consumable).tagList();
+        break;
+      case 'item':
+      case 'weapon':
+        list = (this as Weapon | InvItem).tagList();
+        break;
+      case 'skillCard':
+        list = (this as SkillCard).tagList();
+        break;
+      default:
+        this.system satisfies never;
+        // PersonaError.softFail(`Can't check tag list for ${this.system["type"]}`);
+        return false;
+    }
+    return list.includes(tag);
+  }
+
+  tagList(this : Power, user: ValidAttackers | null): (PowerTag | EquipmentTag)[];
+  tagList(this: UsableAndCard, user: ValidAttackers | null) : PowerTag[];
+  tagList(this : Weapon, user ?: null ): EquipmentTag[];
+  tagList(this : InvItem, user ?: null ): EquipmentTag[];
+  tagList(this : Talent, user ?: null): PowerTag[];
+  tagList(this : Focus, user ?: null): PowerTag[];
+  tagList(this: Consumable | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : (PowerTag | EquipmentTag)[];
+  tagList(this: UsableAndCard | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : (PowerTag | EquipmentTag)[];
+  tagList(this: Talent | Focus | UsableAndCard | InvItem | Weapon, user ?: ValidAttackers | null) : (PowerTag | EquipmentTag)[] {
+    const itype = this.system.type;
+    switch (itype) {
+      case 'power':
+        return (this as Power).#autoTags_power(user);
+      case 'consumable': {
+        const list : (PowerTag | EquipmentTag)[]= (this.system.tags as (PowerTag | EquipmentTag)[]).concat(this.system.itemTags);
+        if (!list.includes(itype)) {
+          list.pushUnique(itype);
+        }
+        if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
+          list.pushUnique(this.system.dmg_type as any);
+        }
+        if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
+          list.pushUnique('ailment');
+        }
+        const subtype = this.system.subtype;
+        list.pushUnique(subtype);
+        return list;
+      }
+      case 'item': {
+        const list= this.system.itemTags.slice();
+        const subtype = this.system.slot;
+        switch (subtype) {
+          case 'body':
+          case 'accessory':
+          case 'weapon_crystal':
+          case 'key-item':
+            if (!list.includes(subtype))
+              list.push(subtype);
+            break;
+          case 'none':
+            list.push('non-equippable');
+            break;
+          case 'crafting':
+            list.push('non-equippable');
+            list.push('crafting');
+            break;
+          default:
+            subtype satisfies never;
+        }
+        return list;
+      }
+      case 'weapon': {
+        const list = this.system.itemTags.slice();
+        if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
+          list.pushUnique(this.system.dmg_type as any);
+        }
+        if (!list.includes(itype)) {
+          list.pushUnique(itype);
+        }
+        return list;
+      }
+      case 'skillCard': {
+        return [
+          'skill-card'
+        ];
+      }
+      case 'talent':
+      case 'focus' : {
+        const list : PowerTag[] = [];
+        if (this.system.defensive) {
+          list.push('defensive');
+        } else {
+          list.push('passive');
+        }
+        return list;
+      }
+      default:
+        itype satisfies never;
+        PersonaError.softFail(`Can't get tag list for ${itype}`);
+        return [];
+    }
+  }
+
+  #autoTags_power(this: Power, user ?: null | ValidAttackers): (PowerTag | EquipmentTag)[] {
+    const list : (PowerTag | EquipmentTag) [] = this.system.tags.slice();
+    list.pushUnique(this.system.type);
+    if (this.system.instantKillChance != 'none') {
+      list.pushUnique('instantKill');
+    }
+    if (this.system.ailmentChance != 'none' || this.causesAilment()) {
+      list.pushUnique('ailment');
+    }
+    if (this.system.dmg_type == 'by-power') {
+      list.pushUnique('variable-damage');
+    }
+    if ( list.includes('weapon') && this.system.dmg_type == 'by-power' && user) {
+      const wpnList : readonly (PowerTag | EquipmentTag)[] = user?.weapon?.tagList() ?? user.unarmedTagList();
+      list.pushUnique(...wpnList);
+    } else {
+      if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
+        list.pushUnique(this.system.dmg_type as any);
+      }
+      return list;
+    }
+    if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
+      list.pushUnique('ailment');
+    }
+    const subtype : typeof POWER_TYPE_TAGS[number]  = this.system.subtype as typeof POWER_TYPE_TAGS[number];
+    if (POWER_TYPE_TAGS.includes(subtype) && !list.includes(subtype)) { list.pushUnique(subtype);}
+    return list;
+  }
+
+  get amount() : number {
+    if ('amount' in this.system) {
+      return this.system.amount ?? 1;
+    }
+    return 1;
+  }
+
+  async addItem(this: Consumable, amt: number) : Promise<typeof this> {
+    const newAmt = this.system.amount += amt;
+    await this.update({'system.amount': newAmt});
+    return this;
+  }
+
+  get isCraftingItem() : boolean {
+    switch (this.system.type) {
+      case 'consumable':
+      case 'item':
+        if ((this as Consumable | InvItem).hasTag('crafting'))
+          return true;
+        if (this.system.type == 'item' && this.system.slot == 'crafting')
+          return true;
+        break;
+      default:
+        break;
+    }
+    return false;
+  }
+
+  /**@deprecated */
+  costString() : string {
+    return 'ERROR';
+  }
+
+  costString1(persona: Persona) : string {
+    switch (this.system.type) {
+      case 'power':
+        return (this as Power).powerCostString(persona);
+      case 'consumable':
+        return 'consumable';
+      default:
+        return 'free';
+    }
+  }
+
+  isAnyItemType() : this is (InvItem | Weapon | Consumable | SkillCard) {
+    switch (this.system.type) {
+      case 'skillCard':
+      case 'consumable':
+      case 'item':
+      case 'weapon':
+        return true;
+      case 'power':
+      case 'characterClass':
+      case 'focus':
+      case 'talent':
+      case 'universalModifier':
+      case 'socialCard':
+        return false;
+      default:
+        this.system satisfies never;
+        return false;
+    }
+  }
+
+  powerCostString(this: Power, persona: Persona) : string {
+    if (persona.user.isShadow())
+      return this.powerCostString_Shadow(persona);
+    else  {
+      return this.powerCostString_PC(persona);
+    }
+  }
+
+  grantsPowers(this: ModifierContainer): boolean {
+    if (!PersonaDB.isLoaded) return false;
+    if (this.cache.grantsPowers != undefined) {
+      return this.cache.grantsPowers;
+    }
+    try{
+      const grantsPowers= this.getEffects(null).some(
+        eff => eff.consequences.some(
+          cons => cons.type == 'add-power-to-list'
+        ));
+      this.cache.grantsPowers = grantsPowers;
+      return this.cache.grantsPowers;
+    } catch (e) {
+      console.log(this);
+      return false;
+    }
+  }
+
+  testOpenerPrereqs (this: UsableAndCard, situation: Situation, user: PersonaActor) : boolean {
+    switch (this.system.type) {
+      case 'skillCard': return false;
+      case 'power': case 'consumable':
+        break;
+      default:
+        this.system satisfies never;
+    }
+    const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this,user );
+    return testPreconditions(conditions, situation, this as Usable);
+  }
+
+  testTeamworkPrereqs (this: UsableAndCard, situation: Situation, user: PersonaActor) : boolean {
+    switch (this.system.type) {
+      case 'skillCard': return false;
+      case 'power': case 'consumable':
+        break;
+      default:
+        this.system satisfies never;
+    }
+    const conditions = ConditionalEffectManager.getConditionals(this.system.teamworkConditions, this,user );
+    return testPreconditions(conditions, situation, this as Usable);
+  }
+
+  testFollowUpPrereqs(this: UsableAndCard, situation: Situation, user: PersonaActor): boolean {
+    return this.testTeamworkPrereqs(situation, user);
+  }
+
+  getGrantedPowers(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
+    return this.getAllGrantedPowers(user, situation);
+    // .filter(pwr => !pwr.hasTag("opener"));
+  }
+
+  getOpenerPowers(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
+    return this.getAllGrantedPowers(user, situation)
+      .filter (pwr=> pwr.hasTag('opener'));
+  }
+
+  getAllGrantedPowers(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
+    if (!this.grantsPowers()) return [];
+    if (!situation) {
+      situation = {
+        user: user.accessor
+      };
+    }
+    const powers=  this.getPassiveEffects(user)
+      .filter(
+        eff => eff.consequences.some(
+          cons => cons.type == 'add-power-to-list'
+        ))
+      .flatMap(eff=> getActiveConsequences(eff, situation, this))
+      .flatMap(x=> x.type == 'add-power-to-list' ? [x.id] : [])
+      .map(id=> PersonaDB.allPowers().get(id))
+      .flatMap( pwr=> pwr? [pwr]: []);
+    return removeDuplicates(powers);
+  }
+
+  modifiedHpCost(this: Usable, persona: Persona, situation ?: Situation) : number {
+    if (!situation) {
+      situation = {
+        user: persona.user.accessor,
+        usedPower: this.accessor,
+      };
+    }
+    const newHPCost = this.hpCost();
+    if (newHPCost > 0) {
+      const calcedHPPercent = (this.hpCost() /100) * persona.user.mhpEstimate;
+      return Math.round(calcedHPPercent * persona.hpCostMod().total(situation, 'percentage'));
+    }
+    const oldHPCost = this.oldhpCost();
+    return Math.round(oldHPCost * persona.hpCostMod().total(situation, 'percentage'));
+  }
+
+  powerCostString_PC(this: Power, persona: Persona) : string {
+    switch (this.system.subtype) {
+      case 'weapon':
+        const hpCost = this.hpCost();
+        if (hpCost > 0 || this.oldhpCost() > 0) {
+          const hpCostPercent = (hpCost > 0) ? ` (${hpCost}%)` : '';
+          const modCost = this.modifiedHpCost(persona);
+          return `${modCost} HP ${hpCostPercent}`;
+        }
+
+        else return 'free';
+      case 'magic':
+
+        // const mpcost = this.system.mpcost;
+        const mpcost = this.mpCost(persona);
+        return `${mpcost} MP`;
+      case 'social-link':
+        if (this.system.inspirationCost > 0) {
+          return `${this.system.inspirationCost} Inspiration`;
+        }
+
+      case 'other':
+      case 'passive':
+      case 'none':
+      case 'standalone':
+      case 'defensive':
+      case 'downtime':
+        break;
+      default:
+        this.system.subtype satisfies never;
+    }
+    return 'free';
+  }
+
+  estimateShadowCosts(this: Power, user: ValidAttackers) : {energyReq: number, cost: number} {
+    const diff = this.comparativePowerRatingToUsePower(user);
+    let energyReq= 0, cost= 1;
+    const reducedCostType = this.hasTag('buff') || this.hasTag('debuff') || this.hasTag('status-removal');
+    let reqMin = reducedCostType ? 0 : 1;
+    let energyMod = reducedCostType ? -3: 0;
+    switch (true) {
+      case (this.isDefensive() == true):
+      case (this.isPassive() == true):
+        energyReq = 0;
+        cost = 0;
+        reqMin = 0;
+        break;
+      case (diff == 0):
+        energyReq += 3;
+        cost += 1;
+        break;
+      case (diff > 0):
+        energyReq += Math.max(reqMin, 3-diff);
+        cost += 2 - Math.floor((1+diff)/2);
+        break;
+      case (diff < 0):
+        if (this.hasTag('debuff') || this.hasTag('buff')) {
+          energyReq += Math.min(3, 3 - diff);
+        } else {
+          energyReq += Math.min(10, 3-diff);
+        }
+        cost += 2 - diff;
+        break;
+    }
+    energyReq += energyMod;
+    cost = Math.clamp(cost, 0, 10);
+    energyReq = Math.clamp(energyReq, reqMin, 10);
+    return {energyReq, cost};
+
+  }
+
+  comparativePowerRatingToUsePower(this: Power, user: ValidAttackers) : number {
+    const userLevel = user.system.combat.classData.level;
+    let powerSlot = this.system.slot;
+    let extraMod = 0;
+    if (this.hasTag('price-lower-for-shadow')) {
+      powerSlot -= 1;
+    }
+    if (this.hasTag('high-cost')) {
+      extraMod += 2;
+    }
+    const effectiveLevel = extraMod + (powerSlot*3);
+    return Math.round(userLevel - effectiveLevel);
+  }
+
+  powerCostString_Shadow(this: Power, persona: Persona) : string {
+    let costs : string[] = [];
+    let required: number, cost: number;
+    if (this.parent instanceof PersonaActor) {
+      required= this.system.energy.required;
+      cost = this.system.energy.cost;
+    } else {
+      const estimates = this.estimateShadowCosts(persona.user);
+      required = estimates.energyReq;
+      cost = estimates.cost;
+    }
+    if (required > 0) {
+      costs.push(`EN>=${required}`);
+    }
+    if (cost > 0) {
+      costs.push(`EN-${cost}`);
+    }
+    return costs.join(', ');
+  }
+
+  energyRequired(this: UsableAndCard, persona: Persona) : number {
+    if (!this.isPower()) return 0;
+    if (this.customCost) {
+      return this.system.energy.required;
+    }
+    const estimate = this.estimateShadowCosts(persona.user)
+    return estimate.energyReq;
+  }
+
+  energyCost(this: UsableAndCard, persona:Persona) : number {
+    if (!this.isPower()) return 0;
+    if (this.customCost) {
+      return this.system.energy.cost;
+    }
+    const estimate = this.estimateShadowCosts(persona.user)
+    return estimate.cost;
+  }
+
+  static getSlotName(num : number) {
+    return game.i18n.localize(SLOTTYPES[num]);
+  }
+
+  targets(this: UsableAndCard): Power['system']['targets'] {
+    if (this.system.type == 'skillCard') return 'self';
+    return this.system.targets;
+  }
+
+  static async createSkillCardFromPower(power: Power) : Promise<SkillCard> {
+    if (power.system.type != 'power') {
+      throw new Error('Not a power');
+    }
+    return await PersonaItem.create<SkillCard>( {
+      name: `${power.name} card`,
+      type: 'skillCard',
+      system: {
+        skillId: power.id,
+      }
+    }) as SkillCard;
+  }
+
+  /** required because foundry input hates arrays*/
+  async sanitizeEffectsData(this: PowerContainer) {
+    if (this.system.type == 'skillCard') return;
+    const isArray = Array.isArray;
+    let update = false;
+    let effects = this.system.effects;
+    try {
+      if (!isArray(this.system.effects)) {
+        effects = ArrayCorrector(this.system.effects);
+        update = true;
+      }
+      effects.forEach( ({conditions, consequences}, i) => {
+        if (!isArray(conditions)) {
+          effects[i].conditions = ArrayCorrector(conditions);
+          update = true;
+        }
+        if (!isArray(consequences)) {
+          effects[i].consequences = ArrayCorrector(consequences);
+          update = true;
+        }
+      });
+    } catch (e) {
+      console.log(this);
+      throw e;
+    }
+    if (update) {
+      await this.update({'system.effects': effects});
+    }
+  }
+
+  get displayedName() : string | SafeString {
+    switch (this.system.type) {
+      case 'skillCard': {
+        const skillId = this.system.skillId;
+        const power = PersonaDB.allItems().find(x=> x.id == skillId);
+        const cardPath = 'systems/persona/img/icon/persona-card.png';
+        const cardImg = `<span class="skill-card"> <img class="name-icon" src="${cardPath}">`;
+        if (power && power.system.type == 'power') {
+          return new Handlebars.SafeString(`${cardImg} ${power.displayedName} Card </span>`);
+        }
+        else return 'Unlinked Skill Card';
+      }
+    }
+    return this.name;
+  }
+
+  toModifierList(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow | null): ModifierList {
+    const modifiers = this.getModifier(bonusTypes, sourceActor);
+    return new ModifierList(modifiers);
+  }
+
+  getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null) : ModifierListItem[] {
+    PersonaItem.cacheStats.modifierRead++;
+    if (this.cache.containsModifier === false) {
+      PersonaItem.cacheStats.modifierSkip++;
+      return [];
+    }
+    bonusTypes = Array.isArray(bonusTypes) ? bonusTypes : [bonusTypes];
+    let found = false;
+    for (const modifier of bonusTypes) {
+      let hasBonus = this.cache.statsModified.get(modifier);
+      if (hasBonus === undefined) {
+        hasBonus = ConditionalEffectManager.canModifyStat(this.getPassiveAndDefensiveEffects(sourceActor), modifier);
+        this.cache.statsModified.set(modifier, hasBonus);
+      }
+      if (hasBonus === true) {
+        found = true;
+      }
+    }
+    if (!found) {
+      PersonaItem.cacheStats.modifierSkip++;
+      return [];
+    }
+    const filteredEffects = this.getEffects(sourceActor)
+      .filter( eff => eff.consequences.some( cons => 'modifiedFields' in cons || 'modifiedField' in cons))
+    ;
+    this.cache.containsModifier = filteredEffects.length > 0;
+    return filteredEffects
+      .map(x =>
+        ({
+          name: this.name,
+          source: PersonaDB.getUniversalItemAccessor(this),
+          conditions: ArrayCorrector(x.conditions),
+          modifier: ModifierList.getModifierAmount(x.consequences, bonusTypes),
+          variableModifier: ModifierList.getVariableModifiers(x.consequences, bonusTypes),
+        })
+      );
+  }
+
+  getConferredTags(this: ModifierContainer, actor: ValidAttackers) : CreatureTag[] {
+    if (this.cache.containsTagAdd === false) {
+      return [];
+    }
+    const effects = this.getEffects(actor);
+    if (!effects.some( e => e.consequences
+      .some( cons => cons.type == 'add-creature-tag'))) {
+      this.cache.containsTagAdd = false;
+      return [];
+    }
+    const situation = {
+      user: actor.accessor,
+    };
+    const cons : (Consequence & {type : 'add-creature-tag'})[] = ConditionalEffectManager.getAllActiveConsequences(effects, situation, this)
+      .filter( c=> c.type == 'add-creature-tag') as any ;
+    return cons.map( c => c.creatureTag);
+  }
+
+  getDamageType(this: Usable | Weapon, attacker: ValidAttackers | Persona): Exclude<DamageType, 'by-power'> {
+    if (attacker instanceof Persona) {
+      attacker = attacker.user;
+    }
+    switch (this.system.dmg_type) {
+      case 'fire':
+      case 'wind':
+      case 'light':
+      case 'dark':
+      case 'none':
+      case 'healing':
+      case 'physical':
+      case 'gun':
+      case 'cold':
+      case 'lightning':
+      case 'untyped':
+      case 'all-out':
+        return this.system.dmg_type;
+      case 'by-power':
+        return attacker.weapon?.getDamageType(attacker) ?? attacker.getUnarmedDamageType();
+      default:
+          this.system satisfies never;
+        PersonaError.softFail(`Can't find damag etype for ${(this.system as any).dmg_type}`);
+        return 'none';
+    }
+  }
+
+  baseDamage(this: Weapon) : Readonly<NewDamageParams> {
+    if (this.system.damageNew)  {
+      if (this.system.damageNew.baseAmt > 0) return this.system.damageNew;
+      if (this.system.damageNew.weaponLevel > 0) {
+        return {
+          baseAmt: DamageCalculator.getWeaponDamageByWpnLevel(this.system.damageNew.weaponLevel),
+          extraVariance: this.system.damageNew.extraVariance ?? 0,
+        }
+      }
+    }
+    if (this.system.damage.high >0) {
+      return PersonaItem.convertOldDamageToNew(this.system.damage);
+    }
+    return {
+      baseAmt: 0,
+      extraVariance: 0
+    };
+  }
+
+  static convertOldDamageToNew (oldDmg : Weapon['system']['damage']): Readonly<NewDamageParams> {
+    const {high, low} = oldDmg;
+    const diff = high-low;
+    let extraVariance = 0;
+    if (diff >=4) { extraVariance= 1;}
+    return {extraVariance,
+      baseAmt: DamageCalculator.convertFromOldLowDamageToNewBase(low)
+    };
+
+  }
+
+  getWeaponSkillDamage(this: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
+    const dtype = this.getDamageType(userPersona);
+    const calc= new DamageCalculation(dtype);
+    const str = PersonaCombatStats.strDamageBonus(userPersona);
+    const weaponDmg = userPersona.wpnDamage();
+    const skillDamage = DamageCalculator.weaponSkillDamage(this);
+    const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
+    const bonusVariance = userPersona.getBonusVariance().total(situation);
+    calc.add('base', str, `${userPersona.displayedName} Strength`);
+    const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
+    calc.add('base', weaponDmg.baseAmt, weaponName.toString());
+    calc.add('base', skillDamage.baseAmt, `${this.displayedName} Power Bonus`);
+    calc.add('base', bonusDamage, 'Bonus Damage');
+    const variance  = (BASE_VARIANCE + weaponDmg.extraVariance + skillDamage.extraVariance + bonusVariance )
+    const varianceMult = PersonaCombatStats.getPhysicalVariance(userPersona);
+    calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` )
+    return calc ;
+  }
+
+  getMagicSkillDamage(this: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: Situation): DamageCalculation {
+    const persona = userPersona;
+    const magicDmg = PersonaCombatStats.magDamageBonus(persona);
+    // const magicDmg = Math.floor(persona.magic);
+    const skillDamage = DamageCalculator.magicSkillDamage(this);
+    const damageBonus =  persona.getBonuses('magDmg').total(situation);
+    const bonusVariance = userPersona.getBonusVariance().total(situation);
+    const dtype = this.getDamageType(userPersona);
+    const calc= new DamageCalculation(dtype);
+    calc.add('base', magicDmg, `${userPersona.displayedName} Magic`, )
+    calc.add('base', skillDamage.baseAmt, `${this.displayedName} Damage`);
+    calc.add('base', damageBonus, 'Bonus Damage');
+    const variance  = (BASE_VARIANCE + skillDamage.extraVariance + bonusVariance )
+    const varianceMult = PersonaCombatStats.getMagicalVariance(userPersona);
+    calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` )
+    return calc;
+  }
+
+  getDamage(this:ModifierContainer , userPersona: Persona, situation: Situation = {user: userPersona.user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: userPersona.user.accessor}, typeOverride : DamageConsequence['damageType'] = 'none') : DamageCalculation {
+    //TODO: handle type override check to see if power damage is by-power or has other type
+    if (!this.isUsableType() || !this.isTrulyUsable() || this.isSkillCard()) {
+      return new DamageCalculation('none');
+    }
+    if (!typeOverride || typeOverride == 'by-power') {
+      if (this.system.dmg_type == 'none') {
+        return new DamageCalculation('none');
+      }
+    }
+    const subtype : PowerType  = this.system.type == 'power' ? this.system.subtype : 'standalone';
+    switch(subtype) {
+      case 'weapon' : {
+        return (this as ItemSubtype<Power, 'weapon'>).getWeaponSkillDamage(userPersona, situation);
+      }
+      case 'magic': {
+        return (this as ItemSubtype<Power, 'magic'>).getMagicSkillDamage(userPersona, situation);
+      }
+      case 'standalone': {
+        const dmg = this.system.damage;
+        const dtype = this.system.dmg_type == 'by-power' ? 'untyped' : this.system.dmg_type;
+        const calc = new DamageCalculation(dtype);
+        calc.add('base', dmg.low, `${this.displayedName} base damage`);
+        calc.add('evenBonus', dmg.high - dmg.low, `${this.displayedName} Even Bonus Damage`);
+        return calc;
+      }
+      default:
+        return new DamageCalculation('none');
+    }
+  }
+
+  /** used for damage calculation estaimate for char sheet*/
+  generateSimulatedResult(this: Usable, user: ValidAttackers, situation: AttackResult['situation']) : CombatResult | undefined;
+  generateSimulatedResult(this: Usable, user: ValidAttackers, simulatedNat: number) : CombatResult | undefined;
+  generateSimulatedResult (this: Usable, user: ValidAttackers, simulatedSitOrNat: number | AttackResult['situation']) : CombatResult | undefined {
+    const token = user.getActiveTokens(true)
+      .map(x=> x.document) as PToken[];
+    if (!token || token.length ==0) return undefined;
+    if (typeof simulatedSitOrNat == 'number') {
+      return PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedSitOrNat);
+    } else {
+      return PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedSitOrNat);
+    }
+  }
+
+  generateSimulatedDamageObject(this: Usable, user: ValidAttackers, simulatedNat: number) : EvaluatedDamage | undefined {
+    const result = this.generateSimulatedResult(user, simulatedNat);
+    return result?.finalize()?.attacks[0]?.changes[0]?.damage[0];
+  }
+
+  displayDamageStack(this: Usable, user: ValidAttackers) {
+    // const estimate = this.generateSimulatedDamageObject(user, 6);
+    // if (!estimate) {console.warn(`Can't get damage stack for ${this.name}`); return;}
+    // const sim = estimate?.str;
+    // if (!sim) {console.warn(`Can't get damage stack for ${this.name}`); return;}
+    const st = this.getDamageStack(user);
+    console.log(`Damage stack ${st}`);
+  }
+
+  getDamageStack(this: Usable, user: ValidAttackers): string {
+    const estimate = this.generateSimulatedDamageObject(user, 6);
+    if (!estimate) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return '';}
+    const sim = estimate?.str;
+    if (!sim) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return '';}
+    return `
+    ${this.name}: ${estimate.damageType}
+    ${sim.join('\n')}
+      `;
+  }
+
+  estimateDamage(this: Usable, user: ValidAttackers) : {low: number, high: number} {
+    switch (this.system.subtype) {
+      case 'social-link':
+      case 'passive':
+      case 'other':
+      case 'none':
+      case 'defensive':
+      case 'downtime':
+        return {high: 0, low:0};
+      case 'reusable':
+      case 'consumable':
+      case 'standalone': {
+        return {
+          high: Math.abs(this.generateSimulatedDamageObject(user, 6)?.hpChange ?? 0),
+          low: Math.abs(this.generateSimulatedDamageObject(user, 5)?.hpChange ?? 0) ,
+        };
+      }
+      case 'weapon':
+      case 'magic':
+        if (this.system.damageLevel == 'none') {
+          return {high: 0, low:0};
+        }
+        return {
+          high: Math.abs(this.generateSimulatedDamageObject(user, 6)?.hpChange ?? 0),
+          low: Math.abs(this.generateSimulatedDamageObject(user, 5)?.hpChange ?? 0) ,
+        };
+      default:
+        this.system satisfies never;
+        return {high: -1, low:-1};
+    }
+  }
+
+  get description(): string {
+    switch (this.system.type) {
+      case 'consumable':
+      case 'item':
+      case 'power':
+      case 'focus':
+      case 'talent':
+      case 'universalModifier':
+      case 'weapon':
+        return this.system.description?.trim() ?? '';
+      case 'characterClass':
+      case 'skillCard':
+      case 'socialCard':
+        return '';
+      default:
+        this.system satisfies never;
+        return '';
+    }
+  }
+
+  defaultConditionalEffectType() : TypedConditionalEffect['conditionalType'] {
+    if (this.isTrulyUsable()) return 'on-use';
+    if (this.isDefensive()) return 'defensive';
+    return 'passive';
+  }
+
+  critBoost(this: Usable, user: ValidAttackers) : ModifierList {
+    const x = this.getModifier('criticalBoost', user);
+    let list = new ModifierList(x);
+    list = list.concat(user.persona().critBoost());
+    let powerCrit = (this.system.crit_boost ?? 0);
+    if (this.isWeaponSkill()
+      && !this.isBasicPower()
+      && this.system.ailmentChance == 'none' 
+      && !this.isInstantDeathAttack()) {
+      powerCrit += 2;
+    }
+    list.add('Power Modifier', powerCrit);
+    return list;
+  }
+
+  canBeReflectedByPhyiscalShield(this: UsableAndCard, attacker: ValidAttackers): boolean {
+    if (this.isSkillCard()) return false;
+    const dtype = (this as Usable).getDamageType(attacker);
+    switch (dtype) {
+      case 'physical':
+      case 'gun':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  isWeaponSkill(this: UsableAndCard): this is PowerSub<'weapon'> {
+    if (this.isSkillCard()) return false;
+    return (this.system.subtype == 'weapon')
+  }
+
+  isMagicSkill(this: UsableAndCard): this is PowerSub<'magic'> {
+    if (this.isSkillCard()) return false;
+    return (this.system.subtype == 'magic')
+  }
+
+  hpCost(this: Usable): number {
+    if (!this.isWeaponSkill() || !this.isPower()) {return 0;}
+    if (this.isTeamwork()) return 0;
+    if (this.customCost) return this.system.hpcost;
+    const newSys=  PowerCostCalculator.calcHPPercentCost(this);
+    return newSys;
+
+  }
+
+  oldhpCost(this: Usable): number {
+    if (!this.isWeaponSkill()) {
+      return 0;
+    }
+    if (this.isConsumable()) return 0;
+    if (this.isBasicPower()) {return 0;}
+    if (this.isTeamwork()) return 0;
+    let mult = 1;
+    if (this.hasTag('high-cost')) {
+      mult *= 2;
+    }
+    switch (this.system.slot) {
+      case 0: return mult * 6;
+      case 1: return mult * 12;
+      case 2: return mult * 25;
+      case 3: return mult * 50;
+      default:
+        PersonaError.softFail(`Unknwon slot ${ this.system.slot}`);
+        return 100;
+    }
+  }
+
+  canBeReflectedByMagicShield(this: UsableAndCard, attacker: ValidAttackers) : boolean {
+    if (this.isSkillCard()) return false;
+    const dtype = (this as Usable).getDamageType(attacker);
+    switch (dtype) {
+      case 'fire':
+      case 'wind':
+      case 'light':
+      case 'dark':
+      case 'cold':
+      case 'lightning':
+        return true;
+      case 'gun':
+      case 'none':
+      case 'healing':
+      case 'physical':
+      case 'untyped':
+      case 'all-out':
+        break;
+      default:
+        dtype satisfies never;
+    }
+    return false;
+
+  }
+  isOpener(this: UsableAndCard) : boolean {
+    return this.hasTag('opener');
+  }
+
+
+  isTrueItem() : this is InvItem | SkillCard | Weapon | Consumable {
+    switch(this.system.type) {
+      case 'consumable':
+      case 'item':
+      case 'weapon':
+      case 'skillCard':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  isPassive(this: UsableAndCard) : boolean {
+    if (this.system.type == 'skillCard') {return false;}
+    const item = this as Usable;
+    return item.system.subtype == 'passive' ||
+      item.hasTag('passive');
+  }
+
+  isTeamwork(this: UsableAndCard): boolean {
+    return this.hasTag('teamwork');
+  }
+
+  isNavigator(this: UsableAndCard): boolean {
+    return this.hasTag('navigator');
+  }
+
+  isValidTargetFor(this: Usable, user: ValidAttackers, target: ValidAttackers, situation?: Situation): boolean {
+    if (!situation) {
+      situation = {
+        user : user.accessor,
+        target: target.accessor,
+      };
+    } else {
+      situation = {
+        ...situation,
+        target: target.accessor
+      };
+    }
+    switch (this.system.targets) {
+      case '1-engaged':
+      case '1-nearby':
+      case '1d4-random':
+      case '1d4-random-rep':
+      case '1d3-random':
+      case '1d3-random-rep':
+        if (!target.isAlive()) return false;
+        break;
+      case '1-nearby-dead':
+        if (target.isAlive()) return false;
+        break;
+      case 'self':
+        if (user != target) return false;
+        break;
+      case '1-random-enemy':
+      case 'all-enemies':
+        if (PersonaCombat.isSameTeam(user, target)) return false;
+        if (!target.isAlive()) return false;
+        break;
+      case 'all-allies':
+        if (!PersonaCombat.isSameTeam(user, target)) return false;
+        if (!target.isAlive()) return false;
+      case 'all-dead-allies':
+        if (!PersonaCombat.isSameTeam(user, target)) return false;
+        if (target.isAlive()) return false;
+      case 'all-others':
+        if (user == target) return false;
+        if (target.isAlive()) return false;
+        break;
+      case 'everyone':
+        if (!target.isAlive()) return false;
+        break;
+      case 'everyone-even-dead':
+        break;
+      default:
+        this.system.targets satisfies never;
+    }
+    if (this.isOpener()) {
+      const conditions = this.system.openerConditions;
+      if (!testPreconditions(conditions, situation, this)) return false;
+    }
+    return testPreconditions(this.system.validTargetConditions, situation, this);
+  }
+
+
+  isPower() : this is Power {
+    return this.system.type == 'power';
+  }
+
+  isConsumable(): this is Consumable {
+    return this.system.type == 'consumable';
+  }
+
+  isShadowExclusivePower(): boolean {
+    if (!this.isPower()) return false;
+    return this.hasTag('shadow-only');
+  }
+
+  isBasicPower(this: UsableAndCard) : boolean {
+    if (this.system.type == 'skillCard') {return false;}
+    if (this.system.type == 'consumable') {return false;}
+    const basics = [
+      ...PersonaItem.getBasicPCPowers(),
+      ...PersonaItem.getBasicShadowPowers(),
+    ];
+    return basics.includes(this as Power);
+  }
+
+  baseInstantKillBonus(this: Usable) : number {
+    if (!this.isInstantDeathAttack()) return 0;
+    let boost = INSTANT_KILL_CRIT_BOOST[this.system.instantKillChance] ?? 0;
+    if (this.isAoE()) boost += 4;
+    return boost;
+  }
+
+  mpCost(this: Usable, userPersona: Persona | null): number {
+    if (this.isConsumable()) return 0;
+    let mult  = 1;
+    if (userPersona) {
+      const sit : Situation = {
+        user: userPersona.user.accessor,
+        usedPower: this.accessor,
+        attacker: userPersona.user.accessor,
+      }
+      let list = userPersona.getBonuses('mpCostMult');
+      mult = list.total(sit, 'percentage');
+    }
+    const baseMPCost = this.baseMPCost;
+    return Math.round(baseMPCost * mult);
+  }
+
+
+  get baseMPCost(): number {
+    if (!this.isPower()) return 0;
+    if (this.isTeamwork()) return 0;
+    if (this.customCost)
+      return this.system.mpcost;
+    if (this.cache.mpCost == undefined) {
+      this.cache.mpCost = PowerCostCalculator.calcMPCost(this);
+    }
+    if (this.cache.mpCost > 0)  {
+      return this.cache.mpCost;
+    }
+    return this.system.mpcost;
+  }
+
+  getSourcedEffects(this: ModifierContainer, sourceActor: ValidAttackers, condTypes :TypedConditionalEffect['conditionalType'][] = []): {source: ModifierContainer, effects: readonly ConditionalEffect[] } {
+    if (condTypes.length == 0) {
+      return {
+        source: this,
+        effects: this.getEffects(sourceActor)
+      };
+    }
+    let effects: ConditionalEffect[] = [];
+    for (const cType of condTypes) {
+      switch (cType) {
+        case 'defensive':
+          effects.push(...this.getDefensiveEffects(sourceActor));
+          break;
+        case 'triggered':
+          effects.push(...this.getTriggeredEffects(sourceActor));
+          break;
+        case 'passive':
+          effects.push(...this.getPassiveEffects(sourceActor));
+          break;
+        case 'on-use':
+          effects.push(...this.getOnUseEffects(sourceActor));
+          break;
+        case 'unknown':
+          effects.push(...this.getEffects(sourceActor).filter( x=> x.conditionalType == cType));
+          break;
+        default:
+          cType satisfies never;
+      }
+    }
+    return {source: this, effects};
+  }
+
+  generateSkillCardTeach(this: SkillCard): TypedConditionalEffect {
+    if (!this.system.skillId) {
+      return {
+        conditionalType: 'on-use',
+        isDefensive: false,
+        conditions: [],
+        consequences: []
+      };
+    }
+    const cardEffect: TypedConditionalEffect = {
+      conditionalType: 'on-use',
+      isDefensive: false,
+      conditions: [
+        {type: 'always'}
+      ],
+      consequences: [{
+        type: 'teach-power',
+        id: this.system.skillId,
+      }]
+    };
+    return cardEffect;
+  }
+
+  // hasTargettedEffects(this: Usable): boolean {
+  //TODO: Finish later
+  // }
+
+  getEffects(this: ModifierContainer, sourceActor : PersonaActor | null): readonly TypedConditionalEffect[] {
+    if (this.system.type == 'skillCard') {
+      return [
+        (this as SkillCard).generateSkillCardTeach()
+      ];
+    }
+    const effects = this.system.effects;
+    return this.#accessEffectsCache('allEffects', sourceActor, () => ConditionalEffectManager.getEffects(effects, this, sourceActor));
+  }
+
+  #accessEffectsCache(this: ModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, refresherFn: () => TypedConditionalEffect[]) : readonly TypedConditionalEffect[] {
+    if (!PersonaDB.isLoaded) return [];
+    PersonaItem.cacheStats.total++;
+    const cache = this.cache.effects[cacheType];
+    if (sourceActor == null) {
+      if (!cache.nullActor) {
+        PersonaItem.cacheStats.miss++;
+        cache.nullActor = refresherFn();
+      }
+      return cache.nullActor;
+    } else {
+      const data = cache.actors.get(sourceActor);
+      if (data) return data;
+      PersonaItem.cacheStats.miss++;
+      const newData=  refresherFn();
+      cache.actors.set(sourceActor, newData);
+      return newData;
+    }
+  }
+
+  getTriggeredEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
+    return this.#accessEffectsCache('triggeredEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'triggered'))
+  }
+
+  hasTriggeredEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
+    return this.getTriggeredEffects(actor).length > 0;
+  }
+
+
+  getOnUseEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
+    return this.#accessEffectsCache('onUseEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'on-use'))
+  }
+
+  getPassiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
+    return this.#accessEffectsCache('passiveEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'passive'))
+  }
+
+  getPassiveAndDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor  | null) : readonly ConditionalEffect[] {
+    return this.getPassiveEffects(sourceActor)
+      .concat(this.getDefensiveEffects(sourceActor));
+  }
+
+  hasPassiveEffects(this: ModifierContainer, actor: PersonaActor | null) : boolean {
+    return this.getPassiveEffects(actor).length > 0;
+  }
+
+  getDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
+    return this.#accessEffectsCache('defensiveEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'defensive'))
+  }
+
+  hasDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : boolean {
+    return this.getDefensiveEffects(sourceActor).length > 0;
+  }
+
+  // hasTriggeredEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
+  //  if ( this.cache.hasTriggers == undefined) {
+  //    this.cache.hasTriggers = this.getEffects(actor)
+  //      .some( eff => eff.conditions.some( cond => cond.type == "on-trigger"));
+  //  }
+  //  return this.cache.hasTriggers;
+  // }
+
+  triggersOn(this: ModifierContainer, trig: Trigger)  :boolean {
+    const effects= this.getTriggeredEffects(null);
+    return effects.some( eff=> eff.conditions
+      .some (cond => cond.type === 'on-trigger' && cond.trigger == trig)
+    );
+  }
+
+  requiredLinkLevel(this: Focus) : number  {
+    let requirement = 0;
+    for (const eff of this.getEffects( null)) {
+      for (const cond of eff.conditions) {
+        if (
+          cond.type != 'numeric'
+          || cond.comparisonTarget != 'social-link-level'
+        ) {
+          continue;
+        }
+        if (
+          cond.socialLinkIdOrTarot == 'SLSource'
+          || cond.socialLinkIdOrTarot == this.parent?.id
+          || cond.socialLinkIdOrTarot == this.parent?.name
+          || cond.socialLinkIdOrTarot == this.parent?.tarot?.name
+        ) {
+          return 'num' in cond ? cond.num ?? 0 : 0;
+        }
+      }
+    }
+    return requirement;
+  }
+
+  cardEvents(this: SocialCard) : CardEvent[] {
+    return this.system.events;
+  }
+
+  isAvailable(this: Activity, pc: PC): boolean {
+    const sit: Situation = {
+      user: pc.accessor
+    };
+    if (this.system.weeklyAvailability.disabled) return false;
+    if(!testPreconditions(this.system.conditions,sit, null)) return false;
+    return this.system.weeklyAvailability.available;
+  }
+
+  announce(this: SocialCard, pc: PC): boolean {
+    if (!this.system.announceWhenAvailable) {
+      return false;
+    }
+    return this.isAvailable(pc);
+  }
+
+  async resetAvailability (this: Activity, day: SimpleCalendar.WeekdayName) : Promise<void> {
+    const avail = this.system.weeklyAvailability[day];
+    await this.setAvailability(avail);
+  }
+
+  async setAvailability(this: SocialCard, bool: boolean) : Promise<void> {
+    if (this.system.weeklyAvailability.available == bool){ return; }
+    if (game.user.isGM || this.isOwner) {
+      //possible fix for the update seemingly not taking effect in time despite the await
+      this.system.weeklyAvailability.available = bool;
+      await this.update( {'system.weeklyAvailability.available': bool});
+    } else {
+      PersonaError.softFail(`Can't update availability for ${this.name} as you are not an owner`);
+    }
+  }
+
+  async addCardEvent(this: SocialCard) {
+    const newEv : SocialCard['system']['events'][number] = {
+      sound: '',
+      text: '',
+      img: '',
+      volume: 1.0,
+      placement: {
+        starter: true,
+        middle: true,
+        finale: true,
+        special: false,
+      },
+      label: '',
+      name: 'Unnamed Event',
+      frequency: 1,
+      choices: [],
+      conditions: [],
+      eventTags: [],
+    };
+    this.system.events.push( newEv);
+    await this.update({'system.events': this.system.events});
+  }
+
+  async deleteCardEvent(this: SocialCard, eventIndex: number) {
+    this.system.events.splice(eventIndex, 1);
+    await this.update({'system.events': this.system.events});
+  }
+
+  async addEventChoice(this: SocialCard, eventIndex: number) {
+    const event = this.system.events[eventIndex];
+    const arr = ArrayCorrector(event.choices);
+    const roll: CardRoll = {
+      rollType: 'none',
+      progressSuccess:0,
+      progressCrit: 0,
+      progressFail: 0,
+      rollTag1: '',
+      rollTag2: '',
+      rollTag3: '',
+    };
+    const newChoice: CardChoice = {
+      name: 'Unnamed Choice',
+      conditions: [],
+      text: '',
+      postEffects: {effects:[]},
+      roll,
+      resourceCost: 0,
+    }
+    arr.push( newChoice);
+    event.choices = arr;
+    await this.update({'system.events': Helpers.expandObject(this.system.events)});
+  }
+
+  async deleteEventChoice(this: SocialCard, eventIndex: number, choiceIndex: number) {
+    const event = this.system.events[eventIndex];
+    const arr = ArrayCorrector(event.choices);
+    arr.splice(choiceIndex, 1);
+    event.choices = arr;
+    await this.update({'system.events': Helpers.expandObject(this.system.events)});
+  }
+
+
+  get perk() : string {
+    switch (this.system.type) {
+      case 'socialCard':
+        return this.system.perk;
+      default:
+        return '';
+    }
+  }
+
+  async createNewTokenSpend(this: Activity | SocialCard) {
+    const list = this.system.tokenSpends;
+    const newItem : typeof list[number] = {
+      conditions: [],
+      amount: 1,
+      text: '',
+      consequences: []
+    };
+    list.push(newItem);
+    await this.update({'system.tokenSpends':list});
+  }
+
+  async deleteTokenSpend(this: Activity | SocialCard, deleteIndex:number) {
+    const list = this.system.tokenSpends;
+    list.splice(deleteIndex,1);
+    await this.update({'system.tokenSpends':list});
+  }
+
+  async priceFix() {
+    //updates money to new x10 total
+    switch (this.system.type) {
+      case 'item':
+      case 'consumable':
+        const price = this.system.price * 10;
+        await this.update({'system.price': price});
+      default:
+        return;
+    }
+  }
+
+  isStatusEffect(this: UsableAndCard) : boolean {
+    if (this.system.type == 'skillCard') return false;
+    const statusTags : PowerTag[] = [
+      'ailment',
+      'sleep',
+      'charm',
+      'rage',
+      'fear',
+      'confusion',
+      'poison',
+      'sealed',
+      'mouse',
+      'despair',
+      'blind',
+    ];
+    return statusTags.some( st => this.hasTag(st));
+  }
+
+  isMultiTarget(this: UsableAndCard) : boolean {
+    if (this.system.type == 'skillCard') return false;
+    switch (this.system.targets) {
+      case '1-nearby-dead':
+      case '1-nearby':
+      case '1-engaged':
+      case '1-random-enemy':
+      case 'self':
+        return false;
+      case '1d4-random':
+      case '1d4-random-rep':
+      case '1d3-random':
+      case '1d3-random-rep':
+      case 'all-enemies':
+      case 'all-allies':
+      case 'all-dead-allies':
+      case 'all-others':
+      case 'everyone':
+      case 'everyone-even-dead':
+        return true;
+      default:
+        this.system.targets satisfies never;
+        PersonaError.softFail(`Unknown target type: ${this.system.targets}`);
+        return false;
+    }
+  }
+
+  isAoE(this: UsableAndCard) : boolean {
+    if (this.system.type == 'skillCard') return false;
+    switch (this.system.targets) {
+      case '1-nearby-dead':
+      case '1-nearby':
+      case '1-engaged':
+      case 'self':
+      case '1d4-random':
+      case '1d4-random-rep':
+      case '1d3-random':
+      case '1d3-random-rep':
+      case '1-random-enemy':
+        return false;
+      case 'all-enemies':
+      case 'all-allies':
+      case 'all-dead-allies':
+      case 'all-others':
+      case 'everyone':
+      case 'everyone-even-dead':
+        return true;
+      default:
+        this.system.targets satisfies never;
+        PersonaError.softFail(`Unknown target type: ${this.system.targets}`);
+        return false;
+    }
+  }
+
+  /** used for determining shadows usage limits
+   */
+  powerEffectLevel(this: Power) : number {
+    const base = this.system.slot * 3;
+    const tags = this.system.tags;
+    let mod = 0;
+    if (tags.includes('healing')) {
+      mod += 1;
+    }
+    // const multiMod = this.isMultiTarget() ? 1 : 0;
+    const dmgtype = this.system.dmg_type;
+    if (dmgtype == 'dark' || dmgtype == 'light')
+      mod+= 1;
+    if (this.isAoE()) {
+      mod += 2;
+    }
+    return base + mod;
+  }
+
+  async setPowerCost(this: Power, required: number, cost: number) {
+    await this.update({
+      'system.energy.required': required,
+      'system.energy.cost': cost,
+      'system.energy.newForm': true,
+    });
+  }
+
+  targetMeetsConditions(this: UsableAndCard, user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
+    if (target.hasStatus('protected') && user != target) return false;
+    if (this.system.type == 'skillCard') return target.canLearnNewSkill();
+    const usable = this as Usable;
+    if (!usable.system.validTargetConditions) return true;
+    const conditions  = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user);
+    if (!situation) {
+      situation = {
+        attacker : user.accessor,
+        user: user.accessor,
+        target: target.accessor,
+        usedPower: usable.accessor,
+      };
+    }
+    return testPreconditions(conditions, situation, usable);
+  }
+
+  requiresTargetSelection(this: Usable) : boolean {
+    switch (this.system.targets) {
+      case '1-engaged':
+      case '1-nearby':
+        return true;
+      case '1d4-random':
+      case '1d3-random':
+      case '1-random-enemy':
+        return false;
+      case '1-nearby-dead':
+        return true;
+      case '1d4-random-rep':
+      case '1d3-random-rep':
+        return false;
+      case 'self':
+        return false;
+      case 'all-enemies':
+      case 'all-allies':
+      case 'all-dead-allies':
+      case 'all-others':
+      case 'everyone':
+      case 'everyone-even-dead':
+        return false;
+      default:
+        this.system.targets satisfies never;
+        return false;
+    }
+  }
+
+  cardConditionsToSelect( this: SocialCard) : SocialCard['system']['conditions'] {
+    const extraConditionsFromTags = this.extraConditionsFromTags();
+    if (extraConditionsFromTags.length == 0) {
+      return this.system.conditions;
+    }
+    return this.system.conditions.concat(extraConditionsFromTags);
+  }
+
+  isInstantDeathAttack(this: Usable) : boolean {
+    return (this.system.instantKillChance != 'none');
+
+    // switch (this.system.dmg_type) {
+    //  case "dark":
+    //  case "light": return true;
+    //  default: break; 
+    // }
+    // return this.hasTag("instantKill");
+
+  }
+
+
+  extraConditionsFromTags( this: SocialCard) : SocialCard['system']['conditions'] {
+    const SLCheck = function (low:number, high:number) : Precondition {
+      const SLcheck: Precondition = {
+        type: 'numeric',
+        comparator: 'range',
+        comparisonTarget: 'social-link-level',
+        num: low,
+        high: high,
+        socialLinkIdOrTarot: 'target',
+      };
+      return SLcheck;
+    };
+    const conditionTags : typeof CARD_RESTRICTOR_TAGS[number][] = this.system.cardTags
+      .filter(tag=> CARD_RESTRICTOR_TAGS.includes(tag as any)) as typeof CARD_RESTRICTOR_TAGS[number][];
+    return conditionTags.flatMap( tag => {
+      switch (tag) {
+        case 'real-world':
+          const realWorld : Precondition = {
+            type: 'boolean',
+            boolComparisonTarget: 'has-creature-tag',
+            conditionTarget: 'target',
+            creatureTag: 'stuck-in-metaverse',
+            booleanState: false,
+          };
+          return [ realWorld ];
+        case 'date':
+        case 'friends':
+          const isDating : Precondition = {
+            type: 'boolean',
+            boolComparisonTarget: 'social-availability',
+            booleanState: tag == 'date',
+            conditionTarget: 'user',
+            socialTypeCheck: 'is-dating',
+            socialLinkIdOrTarot: 'target',
+          };
+          return [ isDating ]
+        case 'student-stuff': {
+          const isStudent: Precondition = {
+            type: 'boolean',
+            boolComparisonTarget: 'has-creature-tag',
+            booleanState: true,
+            conditionTarget: 'target',
+            creatureTag: 'student',
+          };
+          return [isStudent];
+        }
+        case 'middle-range':
+          return [SLCheck(3,8)];
+        case 'trusted':
+          return [SLCheck(7,10)];
+        case 'introductory':
+          return [SLCheck(1,3)];
+        case 'one-shot':
+        case 'question':
+          return [];
+        case 'disabled':
+          const neverHappen: Precondition = {
+            type: 'never',
+          };
+          return [neverHappen];
+        default:
+          tag satisfies never;
+          break;
+      }
+      return [];
+    });
+  }
+
+  async markEventUsed(this: SocialCard, event: CardEvent) {
+    const ev = this.system.events.find(ev => ev == event);
+    if (!ev) {
+      PersonaError.softFail(`Can't find event ${event.name} on ${this.name}`);
+      return;
+    }
+    if (!ev.eventTags.includes('one-shot')) {
+      PersonaError.softFail(`Event ${ev.name} isnt a one shot event and thus can't be disabled!`);
+      return;
+    }
+    ev.eventTags.pushUnique('disabled');
+    const eventsArr= this.system.events.map( x=> (x as any).toJSON());
+    return await this.update({'system.events': eventsArr});
+  }
+
+  static async DamageLevelConvert(item: PersonaItem) {
+    if (!item.isUsableType()) return;
+    if (item.isSkillCard()) return;
+    if (!item.isPower()) return;
+    let damageLevel : typeof item['system']['damageLevel'] | undefined;
+    if (item.system.damageLevel != '-' && item.system.damageLevel != 'fixed') return;
+    if (item.system.dmg_type == 'none') {
+      damageLevel = 'none';
+    } else {
+      switch (item.system.subtype) {
+        case 'magic':
+          damageLevel= PersonaItem.#convertSpellDamage(item);
+          break;
+        case 'weapon':
+          damageLevel = PersonaItem.#convertPhysicalDamage(item);
+          break;
+        default:
+          break;
+      }
+    }
+    if (damageLevel) {
+      await item.update({'system.damageLevel': damageLevel});
+      console.log(`Damage Type for ${item.name} set to ${damageLevel}`);
+    }
+  }
+
+  static #convertPhysicalDamage(item: Power) :typeof item['system']['damageLevel'] | undefined  {
+    switch (item.system.melee_extra_mult) {
+      case -1:
+        return 'miniscule';
+      case 0:
+        return 'basic';
+      case 1:
+        return 'light';
+      case 2:
+      case 3:
+        return 'medium';
+      case 4:
+      case 5:
+        return 'heavy';
+      case 7:
+        return 'severe';
+      default:
+        console.log(`Unknown Value for ${item.name}, ${item.system.melee_extra_mult} weapon mult`);
+        return undefined;
+    }
+  }
+
+static #convertSpellDamage(item: Power) : typeof item['system']['damageLevel'] | undefined {
+  switch (item.system.mag_mult) {
+    case 0:
+      return 'none';
+    case 3:
+      return 'light';
+    case 4:
+      return 'medium';
+    case 6:
+      if (item.system.dmg_type == 'healing')
+        return 'medium';
+      break;
+    case 7:
+      return 'heavy';
+    case 8:
+      if (item.system.dmg_type == 'healing')
+        return 'heavy';
+      break;
+    case 11:
+      return 'severe';
+    case 12:
+      if (item.system.dmg_type == 'healing')
+        return 'severe';
+      break;
+    default:
+  }
+  console.log(`Unknown Value for ${item.name}, ${item.system.mag_mult} magic mult`);
+  return undefined;
 }
 
-
-	get accessor() : UniversalItemAccessor<typeof this> {
-		return PersonaDB.getUniversalItemAccessor(this);
-	}
-
-	static getBasicPCPowers() : readonly Power[] {
-		if (!this.#cache.basicPCPowers)  {
-			const basic = BASIC_PC_POWER_NAMES;
-			this.#cache.basicPCPowers = basic.flatMap( powerName =>  {
-				const power = PersonaDB.getBasicPower(powerName);
-				if (!power) return [];
-				return [power as Power];
-			});
-		}
-		return this.#cache.basicPCPowers;
-	}
-
-	static getBasicShadowPowers() : readonly Power[] {
-		if (!this.#cache.basicShadowPowers)  {
-			const basic = BASIC_SHADOW_POWER_NAMES;
-			this.#cache.basicShadowPowers = basic.flatMap( powerName =>  {
-				const power = PersonaDB.getBasicPower(powerName);
-				if (!power) return [];
-				return [power as Power];
-			});
-		}
-		return this.#cache.basicShadowPowers;
-	}
-
-	isFocus(): this is Focus {
-		return this.system.type == "focus";
-	}
-
-	isOutfit(): this is InvItem {
-		return this.system.type == "item" && this.system.slot == "body";
-	}
-
-	isAccessory() : this is InvItem {
-		return this.system.type == "item" && this.system.slot == "accessory";
-	}
-
-	isSkillCard(): this is SkillCard {
-		return this.system.type == "skillCard";
-	}
-
-	isFollowUpMove(this: UsableAndCard): boolean {
-		if (!this.isTrulyUsable()) return false;
-		return this.hasTag("follow-up");
-	}
-
-	isDefensive(): boolean {
-		switch (this.system.type) {
-			case "power":
-				return this.system.subtype == "defensive";
-			case "focus":
-			case "item":
-			case "talent":
-			case "weapon":
-			case "consumable":
-				return (this as Usable | Focus | InvItem | Talent | Weapon).tagList(null).includes("defensive");
-			case "universalModifier":
-			case "skillCard":
-			case "socialCard":
-			case "characterClass":
-				return false;
-			default:
-				this.system satisfies never;
-				return false;
-		}
-	}
-
-	isUsableType() : this is Usable {
-		switch (this.system.type) {
-			case "power":
-			case "consumable":
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	isAilment(): boolean {
-		if (!this.isUsableType() || !this.isTrulyUsable())  return false;
-		return this.causesAilment();
-	}
-
-	isSupport() : boolean {
-		if (!this.isUsableType() || !this.isTrulyUsable())  return false;
-		if (this.isPower()) {
-			return this.system.damageLevel == "none" && this.system.ailmentChance == "none" && this.system.instantKillChance == "none";
-		}
-			return this.system.damage.high == 0 && this.system.defense == "none";
-	}
-
-	isTrulyUsable() : boolean {
-		switch (this.system.type) {
-			case "power":
-				const sub = this.system.subtype;
-				if ( sub == "passive"  || sub == "defensive")
-					return false;
-				return true;
-			case "skillCard":
-				return true;
-			case "consumable":
-				if (this.isCraftingItem) {return false;}
-				return true;
-			case "characterClass":
-			case "focus":
-			case "talent":
-			case "universalModifier":
-			case "socialCard":
-			case "item":
-			case "weapon":
-				return false;
-			default:
-				this.system satisfies never;
-				return false;
-		}
-	}
-
-	tagListLocalized(this: Weapon | UsableAndCard | InvItem | Weapon, user: null  | ValidAttackers) : string {
-		let tags : string[] = [];
-		const localizeTable  =  {
-			...EQUIPMENT_TAGS,
-			...POWER_TAGS
-		};
-		switch (true) {
-			case ("itemTags" in this.system): {
-				tags = tags.concat(
-					this.tagList(user)
-					.map(tag => localize(localizeTable[tag]))
-				);
-				break;
-			}
-			case ("tags" in this.system): {
-				tags = tags.concat(
-					(this as Power).tagList(user)
-					.map(tag => localize(localizeTable[tag]))
-				);
-				break;
-			}
-		}
-		return tags.join(", ");
-	}
-
-
-	/** @deprecated
-	tags Localized */
-	get tags() : string {
-		if (PersonaSettings.debugMode()) {
-			PersonaError.softFail("tags getter is deprecated, tagListLocalized instead");
-		}
-		switch (this.system.type) {
-			case "consumable":
-			case "item":
-			case "power":
-			case "weapon":
-			case "skillCard":
-				return (this as UsableAndCard | Weapon | InvItem).tagListLocalized(null);
-			case "talent":
-			case "focus":
-			case "characterClass":
-			case "universalModifier":
-			case "socialCard":
-				return "ERROR";
-		}
-	}
-
-	get slotLocalized() : SafeString {
-		if (!this.isPower()) {
-			return new HandleBarsExtras.SafeString("");
-		}
-		const slot = this.system.slot;
-		const slotName = SLOTTYPES[slot]
-		if (slotName) {
-			return new Handlebars.SafeString (game.i18n.localize(slotName));
-		}
-		return new HandleBarsExtras.SafeString("");
-	}
-
-
-	get cardTags() : string {
-		if ("cardTags" in this.system) {
-			const tags= this.system.cardTags.map(tag => localize(ROLL_TAGS_AND_CARD_TAGS[tag]));
-			return tags.join(", ");
-		}
-		return "";
-	}
-
-	async addItemTag(this: Consumable | InvItem | Weapon): Promise<void> {
-		const tags = this.system.itemTags;
-		tags.push("nil");
-		await this.update( {"system.itemTags": tags});
-	}
-
-	async addCardTag(this: SocialCard): Promise<void> {
-		const tags = this.system.cardTags;
-		tags.push("");
-		await this.update( {"system.cardTags": tags});
-	}
-
-	async addEventTag(this: SocialCard, eventIndex:number) : Promise<void> {
-		const data = this.system.events.map(x=> (x as any).toJSON());
-		const ev = data[eventIndex];
-		const newTags =  ev.eventTags.slice();
-		newTags.push("");
-		ev.eventTags = newTags;
-		await this.update( {"system.events": data});
-	}
-
-	async deleteItemTag(this: Consumable | InvItem | Weapon, index: number) : Promise<void> {
-		const tags = this.system.itemTags;
-		tags.splice(index, 1);
-		await this.update( {"system.itemTags": tags});
-	}
-
-	async deleteCardTag(this: SocialCard, index: number) : Promise<void> {
-		const tags = this.system.cardTags;
-		tags.splice(index, 1);
-		await this.update( {"system.cardTags": tags});
-	}
-
-	async deleteEventTag(this: SocialCard, eventIndex:number, tagIndex: number) {
-		const data = this.system.events.map(x=> (x as any).toJSON());
-		const ev= data[eventIndex];
-		ev.eventTags.splice(tagIndex, 1);
-		await this.update( {"system.events": data});
-	}
-
-	hasTag(this: Power, tag: PowerTag, user : null | ValidAttackers) : boolean;
-	hasTag(this: Consumable, tag: PowerTag, user ?: null) : boolean;
-	hasTag(this: InvItem | Weapon | SkillCard, tag: EquipmentTag, user ?: null): boolean;
-	hasTag(this: UsableAndCard, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
-	hasTag(this: SkillCard | Consumable | InvItem | Weapon, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
-	hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user : null) : boolean;
-	hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user?: null | ValidAttackers) : boolean {
-		let list : (PowerTag | EquipmentTag)[];
-		switch (this.system.type) {
-			case "power":
-				list = (this as Power).tagList(user ?? null);
-				break;
-			case "consumable":
-					list = (this as Consumable).tagList();
-				break;
-			case "item":
-			case "weapon":
-				list = (this as Weapon | InvItem).tagList();
-				break;
-			case "skillCard":
-				list = (this as SkillCard).tagList();
-				break;
-			default:
-				this.system satisfies never;
-				// PersonaError.softFail(`Can't check tag list for ${this.system["type"]}`);
-				return false;
-		}
-		return list.includes(tag);
-	}
-
-	tagList(this : Power, user: ValidAttackers | null): (PowerTag | EquipmentTag)[];
-	tagList(this: UsableAndCard, user: ValidAttackers | null) : PowerTag[];
-	tagList(this : Weapon, user ?: null ): EquipmentTag[];
-	tagList(this : InvItem, user ?: null ): EquipmentTag[];
-	tagList(this : Talent, user ?: null): PowerTag[];
-	tagList(this : Focus, user ?: null): PowerTag[];
-	tagList(this: Consumable | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : (PowerTag | EquipmentTag)[];
-	tagList(this: UsableAndCard | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : (PowerTag | EquipmentTag)[];
-	tagList(this: Talent | Focus | UsableAndCard | InvItem | Weapon, user ?: ValidAttackers | null) : (PowerTag | EquipmentTag)[] {
-		const itype = this.system.type;
-		switch (itype) {
-			case "power":
-				return (this as Power).#autoTags_power(user);
-			case "consumable": {
-				const list : (PowerTag | EquipmentTag)[]= (this.system.tags as (PowerTag | EquipmentTag)[]).concat(this.system.itemTags);
-				if (!list.includes(itype)) {
-					list.pushUnique(itype);
-				}
-				if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
-					list.pushUnique(this.system.dmg_type as any);
-				}
-				if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
-					list.pushUnique("ailment");
-				}
-				const subtype = this.system.subtype;
-				list.pushUnique(subtype);
-				return list;
-			}
-			case "item": {
-				const list= this.system.itemTags.slice();
-				const subtype = this.system.slot;
-				switch (subtype) {
-					case "body":
-					case "accessory":
-					case "weapon_crystal":
-					case "key-item":
-						if (!list.includes(subtype))
-							list.push(subtype);
-						break;
-					case "none":
-						list.push("non-equippable");
-						break;
-					case "crafting":
-						list.push("non-equippable");
-						list.push("crafting");
-						break;
-					default:
-						subtype satisfies never;
-				}
-				return list;
-			}
-			case "weapon": {
-				const list = this.system.itemTags.slice();
-				if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
-					list.pushUnique(this.system.dmg_type as any);
-				}
-				if (!list.includes(itype)) {
-					list.pushUnique(itype);
-				}
-				return list;
-			}
-			case "skillCard": {
-				return [
-					"skill-card"
-				];
-			}
-			case "talent":
-			case "focus" : {
-				const list : PowerTag[] = [];
-				if (this.system.defensive) {
-					list.push("defensive");
-				} else {
-					list.push("passive");
-				}
-				return list;
-			}
-			default:
-				itype satisfies never;
-				PersonaError.softFail(`Can't get tag list for ${itype}`);
-				return [];
-		}
-	}
-
-	#autoTags_power(this: Power, user ?: null | ValidAttackers): (PowerTag | EquipmentTag)[] {
-		const list : (PowerTag | EquipmentTag) [] = this.system.tags.slice();
-		list.pushUnique(this.system.type);
-		if (this.system.instantKillChance != "none") {
-			list.pushUnique("instantKill");
-		}
-		if (this.system.ailmentChance != "none" || this.causesAilment()) {
-			list.pushUnique("ailment");
-		}
-		if (this.system.dmg_type == "by-power") {
-			list.pushUnique("variable-damage");
-		}
-		if ( list.includes("weapon") && this.system.dmg_type == "by-power" && user) {
-			const wpnList : readonly (PowerTag | EquipmentTag)[] = user?.weapon?.tagList() ?? user.unarmedTagList();
-			list.pushUnique(...wpnList);
-		} else {
-			if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
-				list.pushUnique(this.system.dmg_type as any);
-			}
-			return list;
-		}
-		if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
-			list.pushUnique("ailment");
-		}
-		const subtype : typeof POWER_TYPE_TAGS[number]  = this.system.subtype as typeof POWER_TYPE_TAGS[number];
-		if (POWER_TYPE_TAGS.includes(subtype) && !list.includes(subtype)) { list.pushUnique(subtype);}
-		return list;
-	}
-
-	get amount() : number {
-		if ("amount" in this.system) {
-			return this.system.amount ?? 1;
-		}
-		return 1;
-	}
-
-	async addItem(this: Consumable, amt: number) : Promise<typeof this> {
-		const newAmt = this.system.amount += amt;
-		await this.update({"system.amount": newAmt});
-		return this;
-	}
-
-	get isCraftingItem() : boolean {
-		switch (this.system.type) {
-			case "consumable":
-			case "item":
-				if ((this as Consumable | InvItem).hasTag("crafting"))
-					return true;
-				if (this.system.type == "item" && this.system.slot == "crafting")
-					return true;
-				break;
-			default:
-				break;
-		}
-		return false;
-	}
-
-	/**@deprecated */
-	costString() : string {
-		return "ERROR";
-	}
-
-	costString1(persona: Persona) : string {
-		switch (this.system.type) {
-			case "power":
-				return (this as Power).powerCostString(persona);
-			case "consumable":
-				return "consumable";
-			default:
-				return "free";
-		}
-	}
-
-	isAnyItemType() : this is (InvItem | Weapon | Consumable | SkillCard) {
-		switch (this.system.type) {
-			case "skillCard":
-			case "consumable":
-			case "item":
-			case "weapon":
-				return true;
-			case "power":
-			case "characterClass":
-			case "focus":
-			case "talent":
-			case "universalModifier":
-			case "socialCard":
-				return false;
-			default:
-				this.system satisfies never;
-				return false;
-		}
-	}
-
-	powerCostString(this: Power, persona: Persona) : string {
-		if (persona.user.isShadow())
-			return this.powerCostString_Shadow(persona);
-		else  {
-			return this.powerCostString_PC(persona);
-		}
-	}
-
-	grantsPowers(this: ModifierContainer): boolean {
-		if (!PersonaDB.isLoaded) return false;
-		if (this.cache.grantsPowers != undefined) {
-			return this.cache.grantsPowers;
-		}
-		try{
-			const grantsPowers= this.getEffects(null).some(
-				eff => eff.consequences.some(
-					cons => cons.type == "add-power-to-list"
-				));
-			this.cache.grantsPowers = grantsPowers;
-			return this.cache.grantsPowers;
-		} catch (e) {
-			console.log(this);
-			return false;
-		}
-	}
-
-	testOpenerPrereqs (this: UsableAndCard, situation: Situation, user: PersonaActor) : boolean {
-		switch (this.system.type) {
-			case "skillCard": return false;
-			case "power": case "consumable":
-				break;
-			default:
-				this.system satisfies never;
-		}
-		const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this,user );
-		return testPreconditions(conditions, situation, this as Usable);
-	}
-
-	testTeamworkPrereqs (this: UsableAndCard, situation: Situation, user: PersonaActor) : boolean {
-		switch (this.system.type) {
-			case "skillCard": return false;
-			case "power": case "consumable":
-				break;
-			default:
-				this.system satisfies never;
-		}
-		const conditions = ConditionalEffectManager.getConditionals(this.system.teamworkConditions, this,user );
-		return testPreconditions(conditions, situation, this as Usable);
-	}
-
-	testFollowUpPrereqs(this: UsableAndCard, situation: Situation, user: PersonaActor): boolean {
-		return this.testTeamworkPrereqs(situation, user);
-	}
-
-	getGrantedPowers(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
-		return this.getAllGrantedPowers(user, situation);
-		// .filter(pwr => !pwr.hasTag("opener"));
-	}
-
-	getOpenerPowers(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
-		return this.getAllGrantedPowers(user, situation)
-			.filter (pwr=> pwr.hasTag("opener"));
-	}
-
-	getAllGrantedPowers(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
-		if (!this.grantsPowers()) return [];
-		if (!situation) {
-			situation = {
-				user: user.accessor
-			};
-		}
-		const powers=  this.getPassiveEffects(user)
-			.filter(
-				eff => eff.consequences.some(
-					cons => cons.type == "add-power-to-list"
-				))
-			.flatMap(eff=> getActiveConsequences(eff, situation, this))
-			.flatMap(x=> x.type == "add-power-to-list" ? [x.id] : [])
-			.map(id=> PersonaDB.allPowers().get(id))
-			.flatMap( pwr=> pwr? [pwr]: []);
-		return removeDuplicates(powers);
-	}
-
-	modifiedHpCost(this: Usable, persona: Persona, situation ?: Situation) : number {
-		if (!situation) {
-			situation = {
-				user: persona.user.accessor,
-				usedPower: this.accessor,
-			};
-		}
-		const newHPCost = this.hpCost();
-		if (newHPCost > 0) {
-			const calcedHPPercent = (this.hpCost() /100) * persona.user.mhpEstimate;
-			return Math.round(calcedHPPercent * persona.hpCostMod().total(situation, "percentage"));
-		}
-		const oldHPCost = this.oldhpCost();
-		return Math.round(oldHPCost * persona.hpCostMod().total(situation, "percentage"));
-	}
-
-	powerCostString_PC(this: Power, persona: Persona) : string {
-		switch (this.system.subtype) {
-			case "weapon":
-				const hpCost = this.hpCost();
-				if (hpCost > 0 || this.oldhpCost() > 0) {
-					const hpCostPercent = (hpCost > 0) ? ` (${hpCost}%)` : "";
-					const modCost = this.modifiedHpCost(persona);
-					return `${modCost} HP ${hpCostPercent}`;
-				}
-
-				else return "free";
-			case "magic":
-
-				// const mpcost = this.system.mpcost;
-				const mpcost = this.mpCost(persona);
-				return `${mpcost} MP`;
-			case "social-link":
-				if (this.system.inspirationCost > 0) {
-					return `${this.system.inspirationCost} Inspiration`;
-				}
-
-			case "other":
-			case "passive":
-			case "none":
-			case "standalone":
-			case "defensive":
-			case "downtime":
-				break;
-			default:
-				this.system.subtype satisfies never;
-		}
-		return "free";
-	}
-
-	estimateShadowCosts(this: Power, user: ValidAttackers) : {energyReq: number, cost: number} {
-		const diff = this.comparativePowerRatingToUsePower(user);
-		let energyReq= 0, cost= 1;
-		const reducedCostType = this.hasTag("buff") || this.hasTag("debuff") || this.hasTag("status-removal");
-		let reqMin = reducedCostType ? 0 : 1;
-		let energyMod = reducedCostType ? -3: 0;
-		switch (true) {
-			case (this.isDefensive() == true):
-			case (this.isPassive() == true):
-				energyReq = 0;
-				cost = 0;
-				reqMin = 0;
-				break;
-			case (diff == 0):
-				energyReq += 3;
-				cost += 1;
-				break;
-			case (diff > 0):
-				energyReq += Math.max(reqMin, 3-diff);
-				cost += 2 - Math.floor((1+diff)/2);
-				break;
-			case (diff < 0):
-				if (this.hasTag("debuff") || this.hasTag("buff")) {
-					energyReq += Math.min(3, 3 - diff);
-				} else {
-					energyReq += Math.min(10, 3-diff);
-				}
-				cost += 2 - diff;
-				break;
-		}
-		energyReq += energyMod;
-		cost = Math.clamp(cost, 0, 10);
-		energyReq = Math.clamp(energyReq, reqMin, 10);
-		return {energyReq, cost};
-
-	}
-
-	comparativePowerRatingToUsePower(this: Power, user: ValidAttackers) : number {
-		const userLevel = user.system.combat.classData.level;
-		let powerSlot = this.system.slot;
-		let extraMod = 0;
-		if (this.hasTag("price-lower-for-shadow")) {
-			powerSlot -= 1;
-		}
-		if (this.hasTag("high-cost")) {
-			extraMod += 2;
-		}
-		const effectiveLevel = extraMod + (powerSlot*3);
-		return Math.round(userLevel - effectiveLevel);
-	}
-
-	powerCostString_Shadow(this: Power, persona: Persona) : string {
-		let costs : string[] = [];
-		let required: number, cost: number;
-		if (this.parent instanceof PersonaActor) {
-			required= this.system.energy.required;
-			cost = this.system.energy.cost;
-		} else {
-			const estimates = this.estimateShadowCosts(persona.user);
-			required = estimates.energyReq;
-			cost = estimates.cost;
-		}
-		if (required > 0) {
-			costs.push(`EN>=${required}`);
-		}
-		if (cost > 0) {
-			costs.push(`EN-${cost}`);
-		}
-		return costs.join(", ");
-	}
-
-	static getSlotName(num : number) {
-		return game.i18n.localize(SLOTTYPES[num]);
-	}
-
-	targets(this: UsableAndCard): Power["system"]["targets"] {
-		if (this.system.type == "skillCard") return "self";
-		return this.system.targets;
-	}
-
-	static async createSkillCardFromPower(power: Power) : Promise<SkillCard> {
-		if (power.system.type != "power") {
-			throw new Error("Not a power");
-		}
-		return await PersonaItem.create<SkillCard>( {
-			name: `${power.name} card`,
-			type: "skillCard",
-			system: {
-				skillId: power.id,
-			}
-		}) as SkillCard;
-	}
-
-	/** required because foundry input hates arrays*/
-	async sanitizeEffectsData(this: PowerContainer) {
-		if (this.system.type == "skillCard") return;
-		const isArray = Array.isArray;
-		let update = false;
-		let effects = this.system.effects;
-		try {
-			if (!isArray(this.system.effects)) {
-				effects = ArrayCorrector(this.system.effects);
-				update = true;
-			}
-			effects.forEach( ({conditions, consequences}, i) => {
-				if (!isArray(conditions)) {
-					effects[i].conditions = ArrayCorrector(conditions);
-					update = true;
-				}
-				if (!isArray(consequences)) {
-					effects[i].consequences = ArrayCorrector(consequences);
-					update = true;
-				}
-			});
-		} catch (e) {
-			console.log(this);
-			throw e;
-		}
-		if (update) {
-			await this.update({"system.effects": effects});
-		}
-	}
-
-	get displayedName() : string | SafeString {
-		switch (this.system.type) {
-			case "skillCard": {
-				const skillId = this.system.skillId;
-				const power = PersonaDB.allItems().find(x=> x.id == skillId);
-				const cardPath = "systems/persona/img/icon/persona-card.png";
-				const cardImg = `<span class="skill-card"> <img class="name-icon" src="${cardPath}">`;
-				if (power && power.system.type == "power") {
-					return new Handlebars.SafeString(`${cardImg} ${power.displayedName} Card </span>`);
-				}
-				else return "Unlinked Skill Card";
-			}
-		}
-		return this.name;
-	}
-
-	toModifierList(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow | null): ModifierList {
-		const modifiers = this.getModifier(bonusTypes, sourceActor);
-		return new ModifierList(modifiers);
-	}
-
-	getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null) : ModifierListItem[] {
-		PersonaItem.cacheStats.modifierRead++;
-		if (this.cache.containsModifier === false) {
-			PersonaItem.cacheStats.modifierSkip++;
-			return [];
-		}
-		bonusTypes = Array.isArray(bonusTypes) ? bonusTypes : [bonusTypes];
-		let found = false;
-		for (const modifier of bonusTypes) {
-			let hasBonus = this.cache.statsModified.get(modifier);
-			if (hasBonus === undefined) {
-				hasBonus = ConditionalEffectManager.canModifyStat(this.getPassiveAndDefensiveEffects(sourceActor), modifier);
-				this.cache.statsModified.set(modifier, hasBonus);
-			}
-			if (hasBonus === true) {
-				found = true;
-			}
-		}
-		if (!found) {
-			PersonaItem.cacheStats.modifierSkip++;
-			return [];
-		}
-		const filteredEffects = this.getEffects(sourceActor)
-			.filter( eff => eff.consequences.some( cons => "modifiedFields" in cons || "modifiedField" in cons))
-		;
-		this.cache.containsModifier = filteredEffects.length > 0;
-		return filteredEffects
-			.map(x =>
-				({
-					name: this.name,
-					source: PersonaDB.getUniversalItemAccessor(this),
-					conditions: ArrayCorrector(x.conditions),
-					modifier: ModifierList.getModifierAmount(x.consequences, bonusTypes),
-					variableModifier: ModifierList.getVariableModifiers(x.consequences, bonusTypes),
-				})
-			);
-	}
-
-	getConferredTags(this: ModifierContainer, actor: ValidAttackers) : CreatureTag[] {
-		if (this.cache.containsTagAdd === false) {
-			return [];
-		}
-		const effects = this.getEffects(actor);
-		if (!effects.some( e => e.consequences
-			.some( cons => cons.type == "add-creature-tag"))) {
-			this.cache.containsTagAdd = false;
-			return [];
-		}
-		const situation = {
-			user: actor.accessor,
-		};
-		const cons : (Consequence & {type : "add-creature-tag"})[] = ConditionalEffectManager.getAllActiveConsequences(effects, situation, this)
-			.filter( c=> c.type == "add-creature-tag") as any ;
-		return cons.map( c => c.creatureTag);
-	}
-
-	getDamageType(this: Usable | Weapon, attacker: ValidAttackers | Persona): Exclude<DamageType, "by-power"> {
-		if (attacker instanceof Persona) {
-			attacker = attacker.user;
-		}
-		switch (this.system.dmg_type) {
-			case "fire":
-			case "wind":
-			case "light":
-			case "dark":
-			case "none":
-			case "healing":
-			case "physical":
-			case "gun":
-			case "cold":
-			case "lightning":
-			case "untyped":
-			case "all-out":
-				return this.system.dmg_type;
-			case "by-power":
-				return attacker.weapon?.getDamageType(attacker) ?? attacker.getUnarmedDamageType();
-			default:
-					this.system satisfies never;
-				PersonaError.softFail(`Can't find damag etype for ${(this.system as any).dmg_type}`);
-				return "none";
-		}
-	}
-
-	baseDamage(this: Weapon) : Readonly<NewDamageParams> {
-		if (this.system.damageNew)  {
-		if (this.system.damageNew.baseAmt > 0) return this.system.damageNew;
-			if (this.system.damageNew.weaponLevel > 0) {
-				return {
-					baseAmt: DamageCalculator.getWeaponDamageByWpnLevel(this.system.damageNew.weaponLevel),
-					extraVariance: this.system.damageNew.extraVariance ?? 0,
-				}
-			}
-		}
-		if (this.system.damage.high >0) {
-			return PersonaItem.convertOldDamageToNew(this.system.damage);
-		}
-		return {
-			baseAmt: 0,
-			extraVariance: 0
-		};
-	}
-
-	static convertOldDamageToNew (oldDmg : Weapon["system"]["damage"]): Readonly<NewDamageParams> {
-		const {high, low} = oldDmg;
-		const diff = high-low;
-		let extraVariance = 0;
-		if (diff >=4) { extraVariance= 1;}
-		return {extraVariance,
-			baseAmt: DamageCalculator.convertFromOldLowDamageToNewBase(low)
-		};
-
-	}
-
-	getWeaponSkillDamage(this: ItemSubtype<Power, "weapon">, userPersona: Persona, situation: Situation) : DamageCalculation {
-		const dtype = this.getDamageType(userPersona);
-		const calc= new DamageCalculation(dtype);
-		const str = PersonaCombatStats.strDamageBonus(userPersona);
-		const weaponDmg = userPersona.wpnDamage();
-		const skillDamage = DamageCalculator.weaponSkillDamage(this);
-		const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
-		const bonusVariance = userPersona.getBonusVariance().total(situation);
-		calc.add("base", str, `${userPersona.displayedName} Strength`);
-		const weaponName = userPersona.user.isShadow() ? `Unarmed Shadow Damage` : (userPersona.user.weapon?.displayedName ?? "Unarmed");
-		calc.add("base", weaponDmg.baseAmt, weaponName.toString());
-		calc.add("base", skillDamage.baseAmt, `${this.displayedName} Power Bonus`);
-		calc.add("base", bonusDamage, `Bonus Damage`);
-		const variance  = (BASE_VARIANCE + weaponDmg.extraVariance + skillDamage.extraVariance + bonusVariance )
-		const varianceMult = PersonaCombatStats.getPhysicalVariance(userPersona);
-		calc.add("evenBonus", variance * varianceMult, `Even Bonus (${variance}x Variance)` )
-		return calc ;
-	}
-
-	getMagicSkillDamage(this: ItemSubtype<Power, "magic">, userPersona: Persona, situation: Situation): DamageCalculation {
-		const persona = userPersona;
-		const magicDmg = PersonaCombatStats.magDamageBonus(persona);
-		// const magicDmg = Math.floor(persona.magic);
-		const skillDamage = DamageCalculator.magicSkillDamage(this);
-		const damageBonus =  persona.getBonuses("magDmg").total(situation);
-		const bonusVariance = userPersona.getBonusVariance().total(situation);
-		const dtype = this.getDamageType(userPersona);
-		const calc= new DamageCalculation(dtype);
-		calc.add("base", magicDmg, `${userPersona.displayedName} Magic`, )
-		calc.add("base", skillDamage.baseAmt, `${this.displayedName} Damage`);
-		calc.add("base", damageBonus, `Bonus Damage`);
-		const variance  = (BASE_VARIANCE + skillDamage.extraVariance + bonusVariance )
-		const varianceMult = PersonaCombatStats.getMagicalVariance(userPersona);
-		calc.add("evenBonus", variance * varianceMult, `Even Bonus (${variance}x Variance)` )
-		return calc;
-	}
-
-	getDamage(this:ModifierContainer , userPersona: Persona, situation: Situation = {user: userPersona.user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: userPersona.user.accessor}, typeOverride : DamageConsequence["damageType"] = "none") : DamageCalculation {
-		//TODO: handle type override check to see if power damage is by-power or has other type
-		if (!this.isUsableType() || !this.isTrulyUsable() || this.isSkillCard()) {
-			return new DamageCalculation("none");
-		}
-		if (!typeOverride || typeOverride == "by-power") {
-			if (this.system.dmg_type == "none") {
-				return new DamageCalculation("none");
-			}
-		}
-		const subtype : PowerType  = this.system.type == "power" ? this.system.subtype : "standalone";
-		switch(subtype) {
-			case "weapon" : {
-				return (this as ItemSubtype<Power, "weapon">).getWeaponSkillDamage(userPersona, situation);
-			}
-			case "magic": {
-				return (this as ItemSubtype<Power, "magic">).getMagicSkillDamage(userPersona, situation);
-			}
-			case "standalone": {
-				const dmg = this.system.damage;
-				const dtype = this.system.dmg_type == "by-power" ? "untyped" : this.system.dmg_type;
-				const calc = new DamageCalculation(dtype);
-				calc.add("base", dmg.low, `${this.displayedName} base damage`);
-				calc.add("evenBonus", dmg.high - dmg.low, `${this.displayedName} Even Bonus Damage`);
-				return calc;
-			}
-			default:
-				return new DamageCalculation("none");
-		}
-	}
-
-	/** used for damage calculation estaimate for char sheet*/
-	generateSimulatedResult(this: Usable, user: ValidAttackers, situation: AttackResult["situation"]) : CombatResult | undefined;
-	generateSimulatedResult(this: Usable, user: ValidAttackers, simulatedNat: number) : CombatResult | undefined;
-	generateSimulatedResult (this: Usable, user: ValidAttackers, simulatedSitOrNat: number | AttackResult["situation"]) : CombatResult | undefined {
-		const token = user.getActiveTokens(true)
-			.map(x=> x.document) as PToken[];
-		if (!token || token.length ==0) return undefined;
-		if (typeof simulatedSitOrNat == "number") {
-			return PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedSitOrNat);
-		} else {
-			return PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedSitOrNat);
-		}
-	}
-
-	generateSimulatedDamageObject(this: Usable, user: ValidAttackers, simulatedNat: number) : EvaluatedDamage | undefined {
-		const result = this.generateSimulatedResult(user, simulatedNat);
-		return result?.finalize()?.attacks[0]?.changes[0]?.damage[0];
-	}
-
-	displayDamageStack(this: Usable, user: ValidAttackers) {
-		// const estimate = this.generateSimulatedDamageObject(user, 6);
-		// if (!estimate) {console.warn(`Can't get damage stack for ${this.name}`); return;}
-		// const sim = estimate?.str;
-		// if (!sim) {console.warn(`Can't get damage stack for ${this.name}`); return;}
-		const st = this.getDamageStack(user);
-		console.log(`Damage stack ${st}`);
-	}
-
-	getDamageStack(this: Usable, user: ValidAttackers): string {
-		const estimate = this.generateSimulatedDamageObject(user, 6);
-		if (!estimate) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return "";}
-		const sim = estimate?.str;
-		if (!sim) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return "";}
-		return `
-${this.name}: ${estimate.damageType}
-		${sim.join("\n")}
-			`;
-	}
-
-	estimateDamage(this: Usable, user: ValidAttackers) : {low: number, high: number} {
-		switch (this.system.subtype) {
-			case "social-link":
-			case "passive":
-			case "other":
-			case "none":
-			case "defensive":
-			case "downtime":
-				return {high: 0, low:0};
-			case "reusable":
-			case "consumable":
-			case "standalone": {
-				return {
-					high: Math.abs(this.generateSimulatedDamageObject(user, 6)?.hpChange ?? 0),
-					low: Math.abs(this.generateSimulatedDamageObject(user, 5)?.hpChange ?? 0) ,
-				};
-			}
-			case "weapon":
-			case "magic":
-				if (this.system.damageLevel == "none") {
-					return {high: 0, low:0};
-				}
-				return {
-					high: Math.abs(this.generateSimulatedDamageObject(user, 6)?.hpChange ?? 0),
-					low: Math.abs(this.generateSimulatedDamageObject(user, 5)?.hpChange ?? 0) ,
-				};
-			default:
-				this.system satisfies never;
-				return {high: -1, low:-1};
-		}
-	}
-
-	get description(): string {
-		switch (this.system.type) {
-			case "consumable":
-			case "item":
-			case "power":
-			case "focus":
-			case "talent":
-			case "universalModifier":
-			case "weapon":
-				return this.system.description?.trim() ?? "";
-			case "characterClass":
-			case "skillCard":
-			case "socialCard":
-				return "";
-			default:
-				this.system satisfies never;
-				return "";
-		}
-	}
-
-	defaultConditionalEffectType() : TypedConditionalEffect["conditionalType"] {
-		if (this.isTrulyUsable()) return "on-use";
-		if (this.isDefensive()) return "defensive";
-		return "passive";
-	}
-
-	critBoost(this: Usable, user: ValidAttackers) : ModifierList {
-		const x = this.getModifier("criticalBoost", user);
-		let list = new ModifierList(x);
-		list = list.concat(user.persona().critBoost());
-		let powerCrit = (this.system.crit_boost ?? 0);
-		if (this.isWeaponSkill()
-			&& !this.isBasicPower()
-			&& this.system.ailmentChance == "none" 
-			&& !this.isInstantDeathAttack()) {
-			powerCrit += 2;
-		}
-		list.add("Power Modifier", powerCrit);
-		return list;
-	}
-
-	canBeReflectedByPhyiscalShield(this: UsableAndCard, attacker: ValidAttackers): boolean {
-		if (this.isSkillCard()) return false;
-		const dtype = (this as Usable).getDamageType(attacker);
-		switch (dtype) {
-			case "physical":
-			case "gun":
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	isWeaponSkill(this: UsableAndCard): this is PowerSub<"weapon"> {
-		if (this.isSkillCard()) return false;
-		return (this.system.subtype == "weapon")
-	}
-
-	isMagicSkill(this: UsableAndCard): this is PowerSub<"magic"> {
-		if (this.isSkillCard()) return false;
-		return (this.system.subtype == "magic")
-	}
-
-	hpCost(this: Usable): number {
-		if (!this.isWeaponSkill() || !this.isPower()) {return 0;}
-		if (this.isTeamwork()) return 0;
-		if (this.customCost) return this.system.hpcost;
-		const newSys=  PowerCostCalculator.calcHPPercentCost(this);
-		return newSys;
-
-	}
-
-	oldhpCost(this: Usable): number {
-		if (!this.isWeaponSkill()) {
-			return 0;
-		}
-		if (this.isConsumable()) return 0;
-		if (this.isBasicPower()) {return 0;}
-		if (this.isTeamwork()) return 0;
-		let mult = 1;
-		if (this.hasTag("high-cost")) {
-			mult *= 2;
-		}
-		switch (this.system.slot) {
-			case 0: return mult * 6;
-			case 1: return mult * 12;
-			case 2: return mult * 25;
-			case 3: return mult * 50;
-			default:
-				PersonaError.softFail(`Unknwon slot ${ this.system.slot}`);
-				return 100;
-		}
-	}
-
-	canBeReflectedByMagicShield(this: UsableAndCard, attacker: ValidAttackers) : boolean {
-		if (this.isSkillCard()) return false;
-		const dtype = (this as Usable).getDamageType(attacker);
-		switch (dtype) {
-			case "fire":
-			case "wind":
-			case "light":
-			case "dark":
-			case "cold":
-			case "lightning":
-				return true;
-			case "gun":
-			case "none":
-			case "healing":
-			case "physical":
-			case "untyped":
-			case "all-out":
-				break;
-			default:
-				dtype satisfies never;
-		}
-		return false;
-
-	}
-	isOpener(this: UsableAndCard) : boolean {
-		return this.hasTag("opener");
-	}
-
-
-	isTrueItem() : this is InvItem | SkillCard | Weapon | Consumable {
-		switch(this.system.type) {
-			case "consumable":
-			case "item":
-			case "weapon":
-			case "skillCard":
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	isPassive(this: UsableAndCard) : boolean {
-		if (this.system.type == "skillCard") {return false;}
-		const item = this as Usable;
-		return item.system.subtype == "passive" ||
-			item.hasTag("passive");
-	}
-
-	isTeamwork(this: UsableAndCard): boolean {
-		return this.hasTag("teamwork");
-	}
-
-	isNavigator(this: UsableAndCard): boolean {
-		return this.hasTag("navigator");
-	}
-
-	isValidTargetFor(this: Usable, user: ValidAttackers, target: ValidAttackers, situation?: Situation): boolean {
-		if (!situation) {
-			situation = {
-				user : user.accessor,
-				target: target.accessor,
-			};
-		} else {
-			situation = {
-				...situation,
-				target: target.accessor
-			};
-		}
-		switch (this.system.targets) {
-			case "1-engaged":
-			case "1-nearby":
-			case "1d4-random":
-			case "1d4-random-rep":
-			case "1d3-random":
-			case "1d3-random-rep":
-				if (!target.isAlive()) return false;
-				break;
-			case "1-nearby-dead":
-				if (target.isAlive()) return false;
-				break;
-			case "self":
-				if (user != target) return false;
-				break;
-			case "1-random-enemy":
-			case "all-enemies":
-				if (PersonaCombat.isSameTeam(user, target)) return false;
-				if (!target.isAlive()) return false;
-				break;
-			case "all-allies":
-				if (!PersonaCombat.isSameTeam(user, target)) return false;
-				if (!target.isAlive()) return false;
-			case "all-dead-allies":
-				if (!PersonaCombat.isSameTeam(user, target)) return false;
-				if (target.isAlive()) return false;
-			case "all-others":
-				if (user == target) return false;
-				if (target.isAlive()) return false;
-				break;
-			case "everyone":
-				if (!target.isAlive()) return false;
-				break;
-			case "everyone-even-dead":
-				break;
-			default:
-				this.system.targets satisfies never;
-		}
-		if (this.isOpener()) {
-			const conditions = this.system.openerConditions;
-			if (!testPreconditions(conditions, situation, this)) return false;
-		}
-		return testPreconditions(this.system.validTargetConditions, situation, this);
-	}
-
-
-	isPower() : this is Power {
-		return this.system.type == "power";
-	}
-
-	isConsumable(): this is Consumable {
-		return this.system.type == "consumable";
-	}
-
-	isShadowExclusivePower(): boolean {
-		if (!this.isPower()) return false;
-		return this.hasTag("shadow-only");
-	}
-
-	isBasicPower(this: UsableAndCard) : boolean {
-		if (this.system.type == "skillCard") {return false;}
-		if (this.system.type == "consumable") {return false;}
-		const basics = [
-			...PersonaItem.getBasicPCPowers(),
-			...PersonaItem.getBasicShadowPowers(),
-		];
-		return basics.includes(this as Power);
-	}
-
-	baseInstantKillBonus(this: Usable) : number {
-		if (!this.isInstantDeathAttack()) return 0;
-		let boost = INSTANT_KILL_CRIT_BOOST[this.system.instantKillChance] ?? 0;
-		if (this.isAoE()) boost += 4;
-		return boost;
-	}
-
-	mpCost(this: Usable, userPersona: Persona | null): number {
-		if (this.isConsumable()) return 0;
-		let mult  = 1;
-		if (userPersona) {
-			const sit : Situation = {
-				user: userPersona.user.accessor,
-				usedPower: this.accessor,
-				attacker: userPersona.user.accessor,
-			}
-			let list = userPersona.getBonuses("mpCostMult");
-			mult = list.total(sit, "percentage");
-		}
-		const baseMPCost = this.baseMPCost;
-		return Math.round(baseMPCost * mult);
-	}
-
-
-	get baseMPCost(): number {
-		if (!this.isPower()) return 0;
-		if (this.isTeamwork()) return 0;
-		if (this.customCost)
-			return this.system.mpcost;
-		if (this.cache.mpCost == undefined) {
-			this.cache.mpCost = PowerCostCalculator.calcMPCost(this);
-		}
-		if (this.cache.mpCost > 0)  {
-			return this.cache.mpCost;
-		}
-		return this.system.mpcost;
-	}
-
-	getSourcedEffects(this: ModifierContainer, sourceActor: ValidAttackers, condTypes :TypedConditionalEffect["conditionalType"][] = []): {source: ModifierContainer, effects: readonly ConditionalEffect[] } {
-		if (condTypes.length == 0) {
-			return {
-				source: this,
-				effects: this.getEffects(sourceActor)
-			};
-		}
-		let effects: ConditionalEffect[] = [];
-		for (const cType of condTypes) {
-			switch (cType) {
-				case "defensive":
-					effects.push(...this.getDefensiveEffects(sourceActor));
-					break;
-				case "triggered":
-					effects.push(...this.getTriggeredEffects(sourceActor));
-					break;
-				case "passive":
-					effects.push(...this.getPassiveEffects(sourceActor));
-					break;
-				case "on-use":
-					effects.push(...this.getOnUseEffects(sourceActor));
-					break;
-				case "unknown":
-					effects.push(...this.getEffects(sourceActor).filter( x=> x.conditionalType == cType));
-					break;
-				default:
-					cType satisfies never;
-			}
-		}
-		return {source: this, effects};
-	}
-
-	generateSkillCardTeach(this: SkillCard): TypedConditionalEffect {
-		if (!this.system.skillId) {
-			return {
-				conditionalType: "on-use",
-				isDefensive: false,
-				conditions: [],
-				consequences: []
-			};
-		}
-		const cardEffect: TypedConditionalEffect = {
-			conditionalType: "on-use",
-			isDefensive: false,
-			conditions: [
-				{type: "always"}
-			],
-			consequences: [{
-				type: "teach-power",
-				id: this.system.skillId,
-			}]
-		};
-		return cardEffect;
-	}
-
-	// hasTargettedEffects(this: Usable): boolean {
-	//TODO: Finish later
-	// }
-
-	getEffects(this: ModifierContainer, sourceActor : PersonaActor | null): readonly TypedConditionalEffect[] {
-		if (this.system.type == "skillCard") {
-			return [
-				(this as SkillCard).generateSkillCardTeach()
-			];
-		}
-		const effects = this.system.effects;
-		return this.#accessEffectsCache("allEffects", sourceActor, () => ConditionalEffectManager.getEffects(effects, this, sourceActor));
-	}
-
-	#accessEffectsCache(this: ModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, refresherFn: () => TypedConditionalEffect[]) : readonly TypedConditionalEffect[] {
-		if (!PersonaDB.isLoaded) return [];
-		PersonaItem.cacheStats.total++;
-		const cache = this.cache.effects[cacheType];
-		if (sourceActor == null) {
-			if (!cache.nullActor) {
-				PersonaItem.cacheStats.miss++;
-				cache.nullActor = refresherFn();
-			}
-			return cache.nullActor;
-		} else {
-			const data = cache.actors.get(sourceActor);
-			if (data) return data;
-			PersonaItem.cacheStats.miss++;
-			const newData=  refresherFn();
-			cache.actors.set(sourceActor, newData);
-			return newData;
-		}
-	}
-
-	getTriggeredEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
-		return this.#accessEffectsCache("triggeredEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === "triggered"))
-	}
-
-	hasTriggeredEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
-		return this.getTriggeredEffects(actor).length > 0;
-	}
-
-
-	getOnUseEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
-		return this.#accessEffectsCache("onUseEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === "on-use"))
-	}
-
-	getPassiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
-		return this.#accessEffectsCache("passiveEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === "passive"))
-	}
-
-	getPassiveAndDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor  | null) : readonly ConditionalEffect[] {
-		return this.getPassiveEffects(sourceActor)
-		.concat(this.getDefensiveEffects(sourceActor));
-	}
-
-	hasPassiveEffects(this: ModifierContainer, actor: PersonaActor | null) : boolean {
-		return this.getPassiveEffects(actor).length > 0;
-	}
-
-	getDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
-		return this.#accessEffectsCache("defensiveEffects", sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === "defensive"))
-	}
-
-	hasDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : boolean {
-		return this.getDefensiveEffects(sourceActor).length > 0;
-	}
-
-	// hasTriggeredEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
-	// 	if ( this.cache.hasTriggers == undefined) {
-	// 		this.cache.hasTriggers = this.getEffects(actor)
-	// 			.some( eff => eff.conditions.some( cond => cond.type == "on-trigger"));
-	// 	}
-	// 	return this.cache.hasTriggers;
-	// }
-
-	triggersOn(this: ModifierContainer, trig: Trigger)  :boolean {
-		const effects= this.getTriggeredEffects(null);
-		return effects.some( eff=> eff.conditions
-			.some (cond => cond.type === "on-trigger" && cond.trigger == trig)
-		);
-	}
-
-	requiredLinkLevel(this: Focus) : number  {
-		let requirement = 0;
-		for (const eff of this.getEffects( null)) {
-			for (const cond of eff.conditions) {
-				if (
-					cond.type != "numeric"
-					|| cond.comparisonTarget != "social-link-level"
-				) {
-					continue;
-				}
-				if (
-					cond.socialLinkIdOrTarot == "SLSource"
-					|| cond.socialLinkIdOrTarot == this.parent?.id
-					|| cond.socialLinkIdOrTarot == this.parent?.name
-					|| cond.socialLinkIdOrTarot == this.parent?.tarot?.name
-				) {
-					return "num" in cond ? cond.num ?? 0 : 0;
-				}
-			}
-		}
-		return requirement;
-	}
-
-	cardEvents(this: SocialCard) : CardEvent[] {
-		return this.system.events;
-	}
-
-	isAvailable(this: Activity, pc: PC): boolean {
-		const sit: Situation = {
-			user: pc.accessor
-		};
-		if (this.system.weeklyAvailability.disabled) return false;
-		if(!testPreconditions(this.system.conditions,sit, null)) return false;
-		return this.system.weeklyAvailability.available;
-	}
-
-	announce(this: SocialCard, pc: PC): boolean {
-		if (!this.system.announceWhenAvailable) {
-			return false;
-		}
-		return this.isAvailable(pc);
-	}
-
-	async resetAvailability (this: Activity, day: SimpleCalendar.WeekdayName) : Promise<void> {
-		const avail = this.system.weeklyAvailability[day];
-		await this.setAvailability(avail);
-	}
-
-	async setAvailability(this: SocialCard, bool: boolean) : Promise<void> {
-		if (this.system.weeklyAvailability.available == bool){ return; }
-		if (game.user.isGM || this.isOwner) {
-			//possible fix for the update seemingly not taking effect in time despite the await
-			this.system.weeklyAvailability.available = bool;
-			await	this.update( {"system.weeklyAvailability.available": bool});
-		} else {
-			PersonaError.softFail(`Can't update availability for ${this.name} as you are not an owner`);
-		}
-	}
-
-	async addCardEvent(this: SocialCard) {
-		const newEv : SocialCard["system"]["events"][number] = {
-			sound: "",
-			text: "",
-			img: "",
-			volume: 1.0,
-			placement: {
-				starter: true,
-				middle: true,
-				finale: true,
-				special: false,
-			},
-			label: "",
-			name: "Unnamed Event",
-			frequency: 1,
-			choices: [],
-			conditions: [],
-			eventTags: [],
-		};
-		this.system.events.push( newEv);
-		await this.update({"system.events": this.system.events});
-	}
-
-	async deleteCardEvent(this: SocialCard, eventIndex: number) {
-		this.system.events.splice(eventIndex, 1);
-		await this.update({"system.events": this.system.events});
-	}
-
-	async addEventChoice(this: SocialCard, eventIndex: number) {
-		const event = this.system.events[eventIndex];
-		const arr = ArrayCorrector(event.choices);
-		const roll: CardRoll = {
-			rollType: "none",
-			progressSuccess:0,
-			progressCrit: 0,
-			progressFail: 0,
-			rollTag1: "",
-			rollTag2: "",
-			rollTag3: "",
-		};
-		const newChoice: CardChoice = {
-			name: "Unnamed Choice",
-			conditions: [],
-			text: "",
-			postEffects: {effects:[]},
-			roll,
-			resourceCost: 0,
-		}
-		arr.push( newChoice);
-		event.choices = arr;
-		await this.update({"system.events": Helpers.expandObject(this.system.events)});
-	}
-
-	async deleteEventChoice(this: SocialCard, eventIndex: number, choiceIndex: number) {
-		const event = this.system.events[eventIndex];
-		const arr = ArrayCorrector(event.choices);
-		arr.splice(choiceIndex, 1);
-		event.choices = arr;
-		await this.update({"system.events": Helpers.expandObject(this.system.events)});
-	}
-
-
-	get perk() : string {
-		switch (this.system.type) {
-			case "socialCard":
-				return this.system.perk;
-			default:
-				return "";
-		}
-	}
-
-	async createNewTokenSpend(this: Activity | SocialCard) {
-		const list = this.system.tokenSpends;
-		const newItem : typeof list[number] = {
-			conditions: [],
-			amount: 1,
-			text: "",
-			consequences: []
-		};
-		list.push(newItem);
-		await this.update({"system.tokenSpends":list});
-	}
-
-	async deleteTokenSpend(this: Activity | SocialCard, deleteIndex:number) {
-		const list = this.system.tokenSpends;
-		list.splice(deleteIndex,1);
-		await this.update({"system.tokenSpends":list});
-	}
-
-	async priceFix() {
-		//updates money to new x10 total
-		switch (this.system.type) {
-			case "item":
-			case "consumable":
-				const price = this.system.price * 10;
-				await this.update({"system.price": price});
-			default:
-				return;
-		}
-	}
-
-	isStatusEffect(this: UsableAndCard) : boolean {
-		if (this.system.type == "skillCard") return false;
-		const statusTags : PowerTag[] = [
-			"ailment",
-			"sleep",
-			"charm",
-			"rage",
-			"fear",
-			"confusion",
-			"poison",
-			"sealed",
-			"mouse",
-			"despair",
-			"blind",
-		];
-		return statusTags.some( st => this.hasTag(st));
-	}
-
-	isMultiTarget(this: UsableAndCard) : boolean {
-		if (this.system.type == "skillCard") return false;
-		switch (this.system.targets) {
-			case "1-nearby-dead":
-			case "1-nearby":
-			case "1-engaged":
-			case "1-random-enemy":
-			case "self":
-				return false;
-			case "1d4-random":
-			case "1d4-random-rep":
-			case "1d3-random":
-			case "1d3-random-rep":
-			case "all-enemies":
-			case "all-allies":
-			case "all-dead-allies":
-			case "all-others":
-			case "everyone":
-			case "everyone-even-dead":
-				return true;
-			default:
-				this.system.targets satisfies never;
-				PersonaError.softFail(`Unknown target type: ${this.system.targets}`);
-				return false;
-		}
-	}
-
-	isAoE(this: UsableAndCard) : boolean {
-		if (this.system.type == "skillCard") return false;
-		switch (this.system.targets) {
-			case "1-nearby-dead":
-			case "1-nearby":
-			case "1-engaged":
-			case "self":
-			case "1d4-random":
-			case "1d4-random-rep":
-			case "1d3-random":
-			case "1d3-random-rep":
-			case "1-random-enemy":
-				return false;
-			case "all-enemies":
-			case "all-allies":
-			case "all-dead-allies":
-			case "all-others":
-			case "everyone":
-			case "everyone-even-dead":
-				return true;
-			default:
-				this.system.targets satisfies never;
-				PersonaError.softFail(`Unknown target type: ${this.system.targets}`);
-				return false;
-		}
-	}
-
-	/** used for determining shadows usage limits
-	 */
-	powerEffectLevel(this: Power) : number {
-		const base = this.system.slot * 3;
-		const tags = this.system.tags;
-		let mod = 0;
-		if (tags.includes("healing")) {
-			mod += 1;
-		}
-		// const multiMod = this.isMultiTarget() ? 1 : 0;
-		const dmgtype = this.system.dmg_type;
-		if (dmgtype == "dark" || dmgtype == "light")
-			mod+= 1;
-		if (this.isAoE()) {
-			mod += 2;
-		}
-		return base + mod;
-	}
-
-	async setPowerCost(this: Power, required: number, cost: number) {
-		await this.update({
-			"system.energy.required": required,
-			"system.energy.cost": cost,
-			"system.energy.newForm": true,
-		});
-	}
-
-	targetMeetsConditions(this: UsableAndCard, user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
-		if (target.hasStatus("protected") && user != target) return false;
-		if (this.system.type == "skillCard") return target.canLearnNewSkill();
-		const usable = this as Usable;
-		if (!usable.system.validTargetConditions) return true;
-		const conditions  = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user);
-		if (!situation) {
-			situation = {
-				attacker : user.accessor,
-				user: user.accessor,
-				target: target.accessor,
-				usedPower: usable.accessor,
-			};
-		}
-		return testPreconditions(conditions, situation, usable);
-	}
-
-	requiresTargetSelection(this: Usable) : boolean {
-		switch (this.system.targets) {
-			case "1-engaged":
-			case "1-nearby":
-				return true;
-			case "1d4-random":
-			case "1d3-random":
-			case "1-random-enemy":
-				return false;
-			case "1-nearby-dead":
-				return true;
-			case "1d4-random-rep":
-			case "1d3-random-rep":
-				return false;
-			case "self":
-				return false;
-			case "all-enemies":
-			case "all-allies":
-			case "all-dead-allies":
-			case "all-others":
-			case "everyone":
-			case "everyone-even-dead":
-				return false;
-			default:
-				this.system.targets satisfies never;
-				return false;
-		}
-	}
-
-	cardConditionsToSelect( this: SocialCard) : SocialCard["system"]["conditions"] {
-		const extraConditionsFromTags = this.extraConditionsFromTags();
-		if (extraConditionsFromTags.length == 0) {
-			return this.system.conditions;
-		}
-		return this.system.conditions.concat(extraConditionsFromTags);
-	}
-
-	isInstantDeathAttack(this: Usable) : boolean {
-		return (this.system.instantKillChance != "none");
-
-		// switch (this.system.dmg_type) {
-		// 	case "dark":
-		// 	case "light": return true;
-		// 	default: break; 
-		// }
-		// return this.hasTag("instantKill");
-
-	}
-
-
-	extraConditionsFromTags( this: SocialCard) : SocialCard["system"]["conditions"] {
-		const SLCheck = function (low:number, high:number) : Precondition {
-			const SLcheck: Precondition = {
-				type: "numeric",
-				comparator: "range",
-				comparisonTarget: "social-link-level",
-				num: low,
-				high: high,
-				socialLinkIdOrTarot: "target",
-			};
-			return SLcheck;
-		};
-		const conditionTags : typeof CARD_RESTRICTOR_TAGS[number][] = this.system.cardTags
-			.filter(tag=> CARD_RESTRICTOR_TAGS.includes(tag as any)) as typeof CARD_RESTRICTOR_TAGS[number][];
-		return conditionTags.flatMap( tag => {
-			switch (tag) {
-				case "real-world":
-					const realWorld : Precondition = {
-						type: "boolean",
-						boolComparisonTarget: "has-creature-tag",
-						conditionTarget: "target",
-						creatureTag: "stuck-in-metaverse",
-						booleanState: false,
-					};
-					return [ realWorld ];
-				case "date":
-				case "friends":
-					const isDating : Precondition = {
-						type: "boolean",
-						boolComparisonTarget: "social-availability",
-						booleanState: tag == "date",
-						conditionTarget: "user",
-						socialTypeCheck: "is-dating",
-						socialLinkIdOrTarot: "target",
-					};
-					return [ isDating ]
-				case "student-stuff": {
-					const isStudent: Precondition = {
-						type: "boolean",
-						boolComparisonTarget: "has-creature-tag",
-						booleanState: true,
-						conditionTarget: "target",
-						creatureTag: "student",
-					};
-					return [isStudent];
-				}
-				case "middle-range":
-					return [SLCheck(3,8)];
-				case "trusted":
-					return [SLCheck(7,10)];
-				case "introductory":
-					return [SLCheck(1,3)];
-				case "one-shot":
-				case "question":
-					return [];
-				case "disabled":
-					const neverHappen: Precondition = {
-						type: "never",
-					};
-					return [neverHappen];
-				default:
-					tag satisfies never;
-					break;
-			}
-			return [];
-		});
-	}
-
-	async markEventUsed(this: SocialCard, event: CardEvent) {
-		const ev = this.system.events.find(ev => ev == event);
-		if (!ev) {
-			PersonaError.softFail(`Can't find event ${event.name} on ${this.name}`);
-			return;
-		}
-		if (!ev.eventTags.includes("one-shot")) {
-			PersonaError.softFail(`Event ${ev.name} isnt a one shot event and thus can't be disabled!`);
-			return;
-		}
-		ev.eventTags.pushUnique("disabled");
-		const eventsArr= this.system.events.map( x=> (x as any).toJSON());
-		return await this.update({"system.events": eventsArr});
-	}
-
-	static async DamageLevelConvert(item: PersonaItem) {
-		if (!item.isUsableType()) return;
-		if (item.isSkillCard()) return;
-		if (!item.isPower()) return;
-		let damageLevel : typeof item["system"]["damageLevel"] | undefined;
-		if (item.system.damageLevel != "-" && item.system.damageLevel != "fixed") return;
-		if (item.system.dmg_type == "none") {
-			damageLevel = "none";
-		} else {
-			switch (item.system.subtype) {
-				case "magic":
-					damageLevel= PersonaItem.#convertSpellDamage(item);
-					break;
-				case "weapon":
-					damageLevel = PersonaItem.#convertPhysicalDamage(item);
-					break;
-				default:
-					break;
-			}
-		}
-		if (damageLevel) {
-			await item.update({"system.damageLevel": damageLevel});
-			console.log(`Damage Type for ${item.name} set to ${damageLevel}`);
-		}
-	}
-
-	static #convertPhysicalDamage(item: Power) :typeof item["system"]["damageLevel"] | undefined  {
-		switch (item.system.melee_extra_mult) {
-			case -1:
-				return "miniscule";
-			case 0:
-				return "basic";
-			case 1:
-				return "light";
-			case 2:
-			case 3:
-				return "medium";
-			case 4:
-			case 5:
-				return "heavy";
-			case 7:
-				return "severe";
-			default:
-				console.log(`Unknown Value for ${item.name}, ${item.system.melee_extra_mult} weapon mult`);
-				return undefined;
-		}
-	}
-
-	static #convertSpellDamage(item: Power) : typeof item["system"]["damageLevel"] | undefined {
-		switch (item.system.mag_mult) {
-			case 0:
-				return "none";
-			case 3:
-				return "light";
-			case 4:
-				return "medium";
-			case 6:
-				if (item.system.dmg_type == "healing")
-					return "medium";
-				break;
-			case 7:
-				return "heavy";
-			case 8:
-				if (item.system.dmg_type == "healing")
-					return "heavy";
-				break;
-			case 11:
-				return "severe";
-			case 12:
-				if (item.system.dmg_type == "healing")
-					return "severe";
-				break;
-			default:
-		}
-		console.log(`Unknown Value for ${item.name}, ${item.system.mag_mult} magic mult`);
-		return undefined;
-	}
-
-	addsStatus(this: Usable, statusIds: StatusEffectId) : number;
-	addsStatus(this: Usable, statusIds: StatusEffectId[]) : number;
-	addsStatus(this: Usable, statusIds: StatusEffectId | StatusEffectId[]) : number {
-		const ids = Array.isArray(statusIds) ? statusIds : [statusIds];
-		const statusesGranted = this.statusesAdded();
-		return statusesGranted.reduce( (acc,st) => acc + (ids.includes(st)? 1: 0), 0);
-	}
-
-	removesStatus(this: Usable, statusIds: StatusEffectId) : number;
-	removesStatus<T extends StatusEffectId>(this: Usable, statusIds: readonly T[]) : number;
-	removesStatus(this: Usable, statusIds: StatusEffectId | readonly StatusEffectId[]) : number {
-		const ids = Array.isArray(statusIds) ? statusIds : [statusIds];
-		const statusesRemoved = this.statusesRemoved();
-		return statusesRemoved.reduce( (acc,st) => acc + (ids.includes(st)? 1: 0), 0);
-	}
-
-	canInstantKill(this: Usable) : boolean {
-		return this.system.instantKillChance != "none";
-	}
-
-	causesAilment(this: Usable) : boolean {
-		if (this.statusesAdded().some (
-			status => STATUS_AILMENT_SET.has(status)
-		)) {
-			return true;
-		}
-		return false;
-		// return this.hasTag("ailment");
-	}
-
-	removesAilment(this:Power) : boolean {
-		if (this.statusesRemoved().some (
-			status => STATUS_AILMENT_SET.has(status)
-		)) {
-			return true;
-		}
-		return false;
-		// return this.removesStatus(STATUS_AILMENT_LIST) > 0;
-	}
-
-	get customCost() : boolean {
-		if (!this.isPower()) return false;
-		return this.system.customCost || this.system.damageLevel == "-";
-	}
+addsStatus(this: Usable, statusIds: StatusEffectId) : number;
+addsStatus(this: Usable, statusIds: StatusEffectId[]) : number;
+addsStatus(this: Usable, statusIds: StatusEffectId | StatusEffectId[]) : number {
+  const ids = Array.isArray(statusIds) ? statusIds : [statusIds];
+  const statusesGranted = this.statusesAdded();
+  return statusesGranted.reduce( (acc,st) => acc + (ids.includes(st)? 1: 0), 0);
+}
+
+removesStatus(this: Usable, statusIds: StatusEffectId) : number;
+removesStatus<T extends StatusEffectId>(this: Usable, statusIds: readonly T[]) : number;
+removesStatus(this: Usable, statusIds: StatusEffectId | readonly StatusEffectId[]) : number {
+  const ids = Array.isArray(statusIds) ? statusIds : [statusIds];
+  const statusesRemoved = this.statusesRemoved();
+  return statusesRemoved.reduce( (acc,st) => acc + (ids.includes(st)? 1: 0), 0);
+}
+
+canInstantKill(this: Usable) : boolean {
+  return this.system.instantKillChance != 'none';
+}
+
+causesAilment(this: Usable) : boolean {
+  if (this.statusesAdded().some (
+    status => STATUS_AILMENT_SET.has(status)
+  )) {
+    return true;
+  }
+  return false;
+  // return this.hasTag("ailment");
+}
+
+removesAilment(this:Power) : boolean {
+  if (this.statusesRemoved().some (
+    status => STATUS_AILMENT_SET.has(status)
+  )) {
+    return true;
+  }
+  return false;
+  // return this.removesStatus(STATUS_AILMENT_LIST) > 0;
+}
+
+get customCost() : boolean {
+  if (!this.isPower()) return false;
+  return this.system.customCost || this.system.damageLevel == '-';
+}
 
 get ailmentRange() : {low: number, high:number} | undefined {
-	if (!this.isUsableType()) return undefined;
-	switch (this.system.ailmentChance) {
-		case "none": return undefined;
-		case "low": return {low: 17, high: 18};
-		case "medium": return {low: 15, high: 18};
-		case "high": return {low: 11, high: 20};
-		case "always": return {low: 1, high: 20};
-		default:
-			this.system.ailmentChance satisfies never;
-	}
+  if (!this.isUsableType()) return undefined;
+  switch (this.system.ailmentChance) {
+    case 'none': return undefined;
+    case 'low': return {low: 17, high: 18};
+    case 'medium': return {low: 15, high: 18};
+    case 'high': return {low: 11, high: 20};
+    case 'always': return {low: 1, high: 20};
+    default:
+      this.system.ailmentChance satisfies never;
+  }
 }
 
 isDamagePower(this: Usable): boolean {
-	if (!this.isTrulyUsable()) return false;
-	if (this.isSkillCard()) return false;
-	if (this.isPower()) {
-		if (this.system.damageLevel == "none") return false;
-		return true;
-	}
-	return this.system.damage.high > 0; //for consumables
+  if (!this.isTrulyUsable()) return false;
+  if (this.isSkillCard()) return false;
+  if (this.isPower()) {
+    if (this.system.damageLevel == 'none') return false;
+    return true;
+  }
+  return this.system.damage.high > 0; //for consumables
 }
 
 statusesAdded(this: Usable): StatusEffectId[] {
-	const effects= this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == "addStatus"? [cons.statusName] : []));
-	return effects;
+  const effects= this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == 'addStatus'? [cons.statusName] : []));
+  return effects;
 }
 
 statusesRemoved(this: Usable): StatusEffectId[] {
-	const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == "removeStatus"? [cons.statusName] : []));
-	return statusesRemoved;
+  const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == 'removeStatus'? [cons.statusName] : []));
+  return statusesRemoved;
 }
 
 buffsOrDebuffsAdded(this: Usable) : number {
-	const statusesGranted = this.statusesAdded();
-	const buffsAndDebuffs = CONFIG.statusEffects
-		.filter(st => st.tags.includes("buff") || st.tags.includes("debuff"))
-		.map( x=> x.id);
-	return statusesGranted.reduce( (acc, st) => buffsAndDebuffs.includes(st) ? acc + 1 : acc, 0);
+  const statusesGranted = this.statusesAdded();
+  const buffsAndDebuffs = CONFIG.statusEffects
+    .filter(st => st.tags.includes('buff') || st.tags.includes('debuff'))
+    .map( x=> x.id);
+  return statusesGranted.reduce( (acc, st) => buffsAndDebuffs.includes(st) ? acc + 1 : acc, 0);
 }
 
 isBuffOrDebuff(this: Usable) : boolean {
-	return this.buffsOrDebuffsAdded() > 0;
+  return this.buffsOrDebuffsAdded() > 0;
 }
 
 isStatusRemoval(this: Usable) : boolean {
-	const removed = this.statusesRemoved();
-	return removed.length > 0;
+  const removed = this.statusesRemoved();
+  return removed.length > 0;
 }
 
 }
 
 /** Handlebars keeps turning my arrays inside an object into an object with numeric keys, this fixes that */
 export function ArrayCorrector<T extends any>(obj: (T[] | Record<string | number, T>)): T[] {
-	return ConditionalEffectManager.ArrayCorrector(obj);
+  return ConditionalEffectManager.ArrayCorrector(obj);
 }
 
-export type CClass = Subtype<PersonaItem, "characterClass">;
-export type Power = Subtype<PersonaItem, "power">;
-export type Weapon = Subtype<PersonaItem, "weapon">;
-export type InvItem = Subtype<PersonaItem, "item">;
-export type Talent = Subtype<PersonaItem, "talent">;
-export type Focus = Subtype<PersonaItem, "focus">;
-export type Consumable = Subtype<PersonaItem, "consumable">;
+export type CClass = Subtype<PersonaItem, 'characterClass'>;
+export type Power = Subtype<PersonaItem, 'power'>;
+export type Weapon = Subtype<PersonaItem, 'weapon'>;
+export type InvItem = Subtype<PersonaItem, 'item'>;
+export type Talent = Subtype<PersonaItem, 'talent'>;
+export type Focus = Subtype<PersonaItem, 'focus'>;
+export type Consumable = Subtype<PersonaItem, 'consumable'>;
 export type Activity = SocialCard;
-export type SocialCard = Subtype<PersonaItem, "socialCard">;
-export type SkillCard = Subtype<PersonaItem, "skillCard">;
+export type SocialCard = Subtype<PersonaItem, 'socialCard'>;
+export type SkillCard = Subtype<PersonaItem, 'skillCard'>;
 
-export type UniversalModifier = Subtype<PersonaItem, "universalModifier">;
+export type UniversalModifier = Subtype<PersonaItem, 'universalModifier'>;
 
 export type ModifierContainer = Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier | SkillCard;
 
@@ -2219,48 +2237,48 @@ export type PowerContainer = Consumable | Power | ModifierContainer;
 export type Usable = Power | Consumable ;
 export type UsableAndCard = Usable | SkillCard; 
 
-Hooks.on("updateItem", (item :PersonaItem, _diff: DeepPartial<typeof item>) => {
-	item.clearCache();
-	if (item.parent instanceof PersonaActor) {
-		item.parent.clearCache();
-	}
+Hooks.on('updateItem', (item :PersonaItem, _diff: DeepPartial<typeof item>) => {
+  item.clearCache();
+  if (item.parent instanceof PersonaActor) {
+    item.parent.clearCache();
+  }
 });
 
 function cacheStats() {
-	const {miss, total, modifierSkip, modifierRead} = PersonaItem.cacheStats;
-	const missPercent = Math.round(miss/total * 100);
-	const skipPercent = Math.round(100 * modifierSkip / modifierRead);
-	console.log(`Effects Cache : ${missPercent}% misses`);
-	console.log(`Effects Cache : ${skipPercent}% modifierSkip Rate`);
+  const {miss, total, modifierSkip, modifierRead} = PersonaItem.cacheStats;
+  const missPercent = Math.round(miss/total * 100);
+  const skipPercent = Math.round(100 * modifierSkip / modifierRead);
+  console.log(`Effects Cache : ${missPercent}% misses`);
+  console.log(`Effects Cache : ${skipPercent}% modifierSkip Rate`);
 }
 
 //@ts-ignore
 window.cacheStats = cacheStats;
 
 
-Hooks.on("deleteItem", (item: PersonaItem) => {
-	if (item.parent instanceof PersonaActor && item.hasPlayerOwner && item.isOwner && !game.user.isGM) {
-		Logger.sendToChat(`${item.parent.displayedName} deletes ${item.name}(${item.amount})`, item.parent);
-	}
+Hooks.on('deleteItem', (item: PersonaItem) => {
+  if (item.parent instanceof PersonaActor && item.hasPlayerOwner && item.isOwner && !game.user.isGM) {
+    Logger.sendToChat(`${item.parent.displayedName} deletes ${item.name}(${item.amount})`, item.parent);
+  }
 
 });
 
-export type ItemSubtype <I extends Power, X extends I["system"]["subtype"]> = I & SystemSubtype<X>;
+export type ItemSubtype <I extends Power, X extends I['system']['subtype']> = I & SystemSubtype<X>;
 type SystemSubtype<X extends string> = {system: {subytpe : X }};
 
 
 type AdvancedEffectsCache = {
-	allEffects: WeakMapPlus,
-	passiveEffects: WeakMapPlus,
-	triggeredEffects: WeakMapPlus,
-	defensiveEffects: WeakMapPlus,
-	onUseEffects: WeakMapPlus
+  allEffects: WeakMapPlus,
+  passiveEffects: WeakMapPlus,
+  triggeredEffects: WeakMapPlus,
+  defensiveEffects: WeakMapPlus,
+  onUseEffects: WeakMapPlus
 }
 
 type WeakMapPlus = {
-	actors: WeakMap<PersonaActor, TypedConditionalEffect[]>;
-	nullActor: U<TypedConditionalEffect[]>;
+  actors: WeakMap<PersonaActor, TypedConditionalEffect[]>;
+  nullActor: U<TypedConditionalEffect[]>;
 
 };
 
-type PowerSub<T extends Power["system"]["subtype"]> = Power & {system: {subtype: T}}
+type PowerSub<T extends Power['system']['subtype']> = Power & {system: {subtype: T}}
