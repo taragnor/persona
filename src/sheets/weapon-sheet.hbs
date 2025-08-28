@@ -23,6 +23,7 @@
 		<select name="system.dmg_type">
 			{{selectOptions POWERSTUFF.REALDAMAGETYPES localize=true selected=item.system.dmg_type}}
 		</select>
+		{{#if (not item.system.damageNew.weaponLevel)}}
 		<div class="dmg-low">
 			<label>
 				{{localize	"persona.damage.low"}}
@@ -36,6 +37,21 @@
 				{{localize	"persona.damage.high"}}
 			</label>
 			{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=900}}
+		</div>
+		{{/if}}
+		{{#if (isGM)}}
+		<div class="new-dmg">
+			<label> Weapon Level </label>
+			{{numberInput item.system.damageNew.weaponLevel class="short" name="system.damageNew.weaponLevel" step=1 min=0 max=11}}
+		</div>
+		{{/if}}
+		<div>
+			<label> Damage Amt </label>
+			{{getWeaponDamageAmt item}}
+		</div>
+		<div>
+			<label>Extra Variance</label>
+			{{numberInput item.system.damageNew.extraVariance class="short" name="system.damageNew.extraVariance" step=1 min=0 max=10}}
 		</div>
 	</div>
 	{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}

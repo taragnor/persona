@@ -68,6 +68,14 @@
 			</select>
 		</div>
 
+		<div class="num-of-attacks">
+			<label>
+				Number of Attacks
+			</label>
+			{{numberInput item.system.attacksMin class="short" name="system.attacksMin" step=1 min=1 max=5}}
+			-
+			{{numberInput item.system.attacksMax class="short" name="system.attacksMax" step=1 min=1 max=5}}
+		</div>
 		{{#if (eq item.system.subtype "weapon")}}
 		<div class="hp-cost">
 			<label class="hp-cost">

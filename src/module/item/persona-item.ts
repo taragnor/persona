@@ -1,3 +1,4 @@
+import { GrowthCalculator } from "../utility/growth-calculator.js";
 import { PersonaCombatStats } from "../actor/persona-combat-stats.js";
 import { STATUS_AILMENT_SET } from "../../config/status-effects.js";
 import { BASE_VARIANCE } from "../../config/damage-types.js";
@@ -66,6 +67,10 @@ declare global {
 }
 
 export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE> {
+
+	static hpGrowthTable = new GrowthCalculator(1.02, 45, 2);
+	static mpGrowthTable = new GrowthCalculator(1.02, 50, 1.5);
+
 
 	static #cache =  {
 		basicPCPowers: undefined as Power[] | undefined,
@@ -213,11 +218,28 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	getClassProperty<T extends keyof CClass["system"]["leveling_table"][number]> (this: CClass,lvl: number, property:T)  : CClass["system"]["leveling_table"][number][T] {
-		const adjustedLvl = Math.clamp(lvl, 0, 11);
+		const adjustedLvl = Math.clamp(lvl, 0, 200);
+		switch (property) {
+			case "maxhp":
+				return this.calcClassMaxHP(adjustedLvl) as any;
+			default:
+		}
 		const data = this.system.leveling_table[adjustedLvl][property];
 		if (property == "slots") return ArrayCorrector(data as any) as any;
 		return data;
 	}
+
+	// getClassProperty<T extends keyof CClass["system"]["leveling_table"][number]> (this: CClass,lvl: number, property:T)  : CClass["system"]["leveling_table"][number][T] {
+	// 	const adjustedLvl = Math.clamp(lvl, 0, 11);
+	// 	const data = this.system.leveling_table[adjustedLvl][property];
+	// 	if (property == "slots") return ArrayCorrector(data as any) as any;
+	// 	return data;
+	// }
+
+	calcClassMaxHP (this: CClass, lvl: number) : number {
+		return PersonaItem.hpGrowthTable.valueAt(lvl);
+}
+
 
 	get accessor() : UniversalItemAccessor<typeof this> {
 		return PersonaDB.getUniversalItemAccessor(this);
@@ -748,7 +770,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			const calcedHPPercent = (this.hpCost() /100) * persona.user.mhpEstimate;
 			return Math.round(calcedHPPercent * persona.hpCostMod().total(situation, "percentage"));
 		}
-
 		const oldHPCost = this.oldhpCost();
 		return Math.round(oldHPCost * persona.hpCostMod().total(situation, "percentage"));
 	}
@@ -1015,7 +1036,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	baseDamage(this: Weapon) : Readonly<NewDamageParams> {
-		if (this.system.damageNew && this.system.damageNew.baseAmt > 0) return this.system.damageNew
+		if (this.system.damageNew)  {
+		if (this.system.damageNew.baseAmt > 0) return this.system.damageNew;
+			if (this.system.damageNew.weaponLevel > 0) {
+				return {
+					baseAmt: DamageCalculator.getWeaponDamageByWpnLevel(this.system.damageNew.weaponLevel),
+					extraVariance: this.system.damageNew.extraVariance ?? 0,
+				}
+			}
+		}
 		if (this.system.damage.high >0) {
 			return PersonaItem.convertOldDamageToNew(this.system.damage);
 		}
@@ -1124,14 +1153,23 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	displayDamageStack(this: Usable, user: ValidAttackers) {
+		// const estimate = this.generateSimulatedDamageObject(user, 6);
+		// if (!estimate) {console.warn(`Can't get damage stack for ${this.name}`); return;}
+		// const sim = estimate?.str;
+		// if (!sim) {console.warn(`Can't get damage stack for ${this.name}`); return;}
+		const st = this.getDamageStack(user);
+		console.log(`Damage stack ${st}`);
+	}
+
+	getDamageStack(this: Usable, user: ValidAttackers): string {
 		const estimate = this.generateSimulatedDamageObject(user, 6);
-		if (!estimate) {console.warn(`Can't get damage stack for ${this.name}`); return;}
+		if (!estimate) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return "";}
 		const sim = estimate?.str;
-		if (!sim) {console.warn(`Can't get damage stack for ${this.name}`); return;}
-		console.log(`
-Damage stack (${this.name}, ${estimate.damageType})
+		if (!sim) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return "";}
+		return `
+${this.name}: ${estimate.damageType}
 		${sim.join("\n")}
-			`);
+			`;
 	}
 
 	estimateDamage(this: Usable, user: ValidAttackers) : {low: number, high: number} {

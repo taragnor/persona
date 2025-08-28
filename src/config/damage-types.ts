@@ -101,7 +101,6 @@ export class DamageCalculator {
 
 	static magicSkillDamage(magic: ItemSubtype<Power, "magic">) : Readonly<NewDamageParams> {
 		switch (magic.system.damageLevel) {
-
 			case "-":
 				PersonaError.softFail(`${magic.name} is no longer supported (No damagelevel)`);
 				return {
@@ -119,7 +118,7 @@ export class DamageCalculator {
 				const val = DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE[magic.system.damageLevel];
 				if (isHealing) {
 					return {
-						extraVariance: val.extraVariance + 2,
+						extraVariance: val.extraVariance + 1,
 						baseAmt: val.baseAmt,
 					};
 				}
@@ -128,14 +127,14 @@ export class DamageCalculator {
 	}
 
 	static convertFromOldLowDamageToNewBase(low: number) : number {
-		// const level = low -1;
-		// if (level <= 0) return 4;
-		// return (1+ level) + this.convertFromOldLowDamageToNewBase(level -1);
-		const val= WEAPON_LEVEL_TO_DAMAGE[low-1];
+		return this.getWeaponDamageByWpnLevel(low-1);
+	}
+
+	static getWeaponDamageByWpnLevel(lvl: number) : number {
+		const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
 		if (val) return val;
 		return 0;
 	}
-
 
 }
 
@@ -145,7 +144,7 @@ const DAMAGE_LEVEL_CONVERT_WEAPON = {
 	"basic": {extraVariance: 2, baseAmt: 0},
 	"light": {extraVariance: 2, baseAmt: 10},
 	"medium": {extraVariance: 3, baseAmt: 25},
-	"heavy": {extraVariance: 3, baseAmt: 40},
+	"heavy": {extraVariance: 3, baseAmt: 50},
 	"severe": {extraVariance: 4, baseAmt: 70},
 	"colossal": {extraVariance: 4, baseAmt: 110},
 } as const satisfies Readonly<Record<ConvertableDamageLevel, NewDamageParams>> ;
@@ -155,10 +154,10 @@ const DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE = {
 	"none": {extraVariance: 0, baseAmt: 0},
 	"miniscule": {extraVariance: 0, baseAmt: 0},
 	"basic": {extraVariance: 2, baseAmt: 0},
-	"light": {extraVariance: 2, baseAmt: 10},
-	"medium": {extraVariance: 3, baseAmt: 25},
-	"heavy": {extraVariance: 3, baseAmt: 55},
-	"severe": {extraVariance: 4, baseAmt: 80},
+	"light": {extraVariance: 2, baseAmt: 18},
+	"medium": {extraVariance: 3, baseAmt: 35},
+	"heavy": {extraVariance: 3, baseAmt: 60},
+	"severe": {extraVariance: 4, baseAmt: 85},
 	"colossal": {extraVariance: 4, baseAmt: 120},
 } as const satisfies Readonly<Record< ConvertableDamageLevel, NewDamageParams>>
 
@@ -194,20 +193,20 @@ export type NewDamageParams = {
 
 //formual start at 6, then to get further levels , add (newlvl+1) to previous value
 const WEAPON_LEVEL_TO_DAMAGE: Record<number, number> = {
-	0: 4,
-	1: 6,
-	2: 9,
-	3: 13,
-	4: 18,
-	5: 24,
-	6: 31,
-	7: 39,
-	8: 48,
-	9: 58,
-	10: 69,
-	11: 81,
-	12: 94
+	0: 10,
+	1: 14,
+	2: 18,
+	3: 24,
+	4: 32,
+	5: 42,
+	6: 54,
+	7: 68,
+	8: 84,
+	9: 102,
+	10: 122,
+	11: 144,
+	12: 168,
 }
 
 
-export const BASE_VARIANCE = 2 as const;
+export const BASE_VARIANCE = 1 as const;

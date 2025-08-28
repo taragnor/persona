@@ -393,6 +393,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new PersonaError(`Can't find power id ${powerId}`);
 		}
 		power.displayDamageStack(this.actor);
+		const stack = power.getDamageStack(this.actor);
+		$(event.currentTarget).prop('title', stack);
 	}
 
 	async createDamageEstimate( ev: JQuery.MouseOverEvent) {

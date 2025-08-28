@@ -11,7 +11,7 @@ export class PersonaCombatStats {
 	static MIN_STAT_VAL = 1;
 
 	static staminaDR(persona: Persona) : number{
-		return Math.floor(persona.endurance / 2);
+		return Math.floor(persona.endurance);
 	}
 
 	static strDamageBonus(persona: Persona) : number {
@@ -35,7 +35,7 @@ export class PersonaCombatStats {
 	}
 
 	static magDamageBonus(persona: Persona) : number {
-		return persona.magic;
+		return persona.magic * 2;
 	}
 
 	static getPhysicalVariance(persona:Persona) : number {
@@ -77,22 +77,38 @@ export class PersonaCombatStats {
 		while (statsToBeChosen > 0) {
 			const slist = (Object.keys(stblk) as PersonaStatType[])
 				.filter(( st) => PersonaCombatStats.canRaiseStat(st, stblk))
-				.flatMap( st => {
-					if (favored && st == favored) {
-						return [st,st, st, st];
+				.map( st => {
+					let weight = 1;
+					if (favored == st) {
+						weight *= 1.5;
 					}
-					if (disfavored && st == disfavored) {
-						return [st, st];
+					if (disfavored == st) {
+						weight *= 0.80;
 					}
-					return [st,st, st];
+
+					return {
+						weight,
+						item: st
+					};
+					// if (favored && st == favored) {
+					// 	return [st,st, st, st];
+					// }
+					// if (disfavored && st == disfavored) {
+					// 	return [st, st];
+					// }
+					// return [st,st, st];
 				});
 			const totalStatPoints = Object.values(stblk).reduce ((acc, x) => acc + x, 0);
 			const rng = new SeededRandom(`${persona.name}${tarotName}${totalStatPoints}`);
 			if (slist.length == 0) throw new PersonaError(`All stats unselectable for ${persona.source.name}`);
-			const stat = rng.randomArraySelect(slist)!;
-			stblk[stat] += 1;
-			stIncreases[stat] += 1;
-			statsToBeChosen -= 1;
+			// const stat = rng.randomArraySelect(slist)!;
+			const stat = rng.weightedChoice(slist);
+			if (stat) {
+				// console.log(`${stat} chosen`);
+				stblk[stat] += 1;
+				stIncreases[stat] += 1;
+				statsToBeChosen -= 1;
+			}
 		}
 		return stIncreases;
 	}
@@ -112,7 +128,8 @@ export class PersonaCombatStats {
 	}
 
 	static maxStatAmount(statBlock: StatGroup): number {
-		const MaxStatGap = this.MAX_STAT_GAP;
+		const totalPoints = Object.values(statBlock).reduce ( (a, x) => a+x, 0);
+		const MaxStatGap = Math.max(this.MAX_STAT_GAP, Math.floor(totalPoints/ 10)) ;
 		const minStat = Object.values(statBlock).reduce ( (a, x) => Math.min(a, x));
 		return Math.min(this.MAX_STAT_VAL, minStat + MaxStatGap);
 	}

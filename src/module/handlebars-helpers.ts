@@ -712,6 +712,10 @@ export class PersonaHandleBarsHelpers {
 			return persona.canRaiseStat(stat);
 		},
 
+		"getWeaponDamageAmt": function (weapon: Weapon) {
+			return weapon.baseDamage().baseAmt;
+		}
+
 	}
 
 } //end of class

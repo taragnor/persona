@@ -52,6 +52,7 @@ export const CREATURE_TAG_LIST = [
 	"pure-shadow",
 	"d-mon",
 	"pc-d-mon",
+	"simulated",
 	"persona",
 	...PERSON_TAG_LIST,
 	...PERSONALITY_TAG_LIST,

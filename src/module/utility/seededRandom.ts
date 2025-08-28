@@ -14,6 +14,14 @@ export class SeededRandom {
 		return total;
 	}
 
+	random(): number {
+		//TODO: emulate Math.random()
+		// throw new Error("NOt yet implemented");
+		// const MAX_INT = 2147483612; // based on tests this seemsto be the largest integer produced;
+		// return Math.clamp(this.getRandom() / MAX_INT, 0, 1);
+		return this.getRandom() % 1000000 / 1000000;
+	}
+
 	getRandom() : number {
 		const state = this.#state;
 		let t  = state[3];
@@ -33,6 +41,27 @@ export class SeededRandom {
 		const random = this.getRandom();
 		const randomChoice = random % arr.length;
 		return arr[randomChoice];
+	}
+
+	weightedChoice<T>( array: WeightedChoiceItem<T>[]): U<T> {
+	array = array.filter( x=>x.weight > 0);
+	if (array.length == 0) return undefined;
+	if (array.some(x=> typeof x.weight != "number")) {
+		array.forEach( x=> x.weight = Number(x.weight));
+	}
+	const weightSum = array.reduce(
+		(acc, {weight}) => acc + (weight ?? 1)
+		, 0);
+	let random = this.random() * weightSum;
+	for (const {item, weight} of array) {
+		random -= weight ?? 1;
+		if (random <=0) {
+			return item;
+		}
+	}
+	console.log("Might be error, returning last element in array");
+	return array[array.length-1].item;
+
 	}
 
 	private static hash(str: string) : [number, number, number, number] {
@@ -55,3 +84,12 @@ export class SeededRandom {
 
 
 }
+
+type WeightedChoiceItem<T>= {
+	item: T,
+	weight: number
+}
+
+
+//@ts-ignore
+window.SeededRandom = SeededRandom;

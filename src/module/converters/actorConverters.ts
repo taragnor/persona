@@ -39,6 +39,9 @@ export class ActorConverters {
 		: {};
 		const personaTags = shadow.system.creatureTags.slice();
 		personaTags.push("persona");
+		if (shadow.system.creatureType == "daemon") {
+			personaTags.push("simulated");
+		}
 		const personaData : DeepPartial<Shadow> = {
 			name: `${shadow.name} (Persona)`,
 			type: "shadow",
@@ -74,6 +77,9 @@ export class ActorConverters {
 		}
 		const dmonTags = shadow.system.creatureTags.slice();
 		dmonTags.push("d-mon");
+		if (shadow.system.creatureType == "daemon") {
+			dmonTags.push("simulated");
+		}
 		const dmonStats : DeepPartial<Shadow> = {
 			name: `${shadow.name} (D-Mon)`,
 			type: "shadow",

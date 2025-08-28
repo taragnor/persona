@@ -1,3 +1,4 @@
+import { DamageCalculator } from "../../config/damage-types.js";
 import { damageNew } from "./power-dm.js";
 import { powerOnlyUsableProps } from "./power-dm.js";
 import { triEffects } from "./power-dm.js";
@@ -13,9 +14,7 @@ import { CardRoll } from "../../config/social-card-config.js"
 import { ArrayCorrector } from "../item/persona-item.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { EQUIPMENT_TAGS_LIST } from "../../config/equipment-tags.js";
-import { PersonaActor } from "../actor/persona-actor.js";
 import { Power } from "../item/persona-item.js";
-import { Consumable } from "../item/persona-item.js";
 import { TokenSpend } from "../../config/social-card-config.js";
 import { ConditionalEffect } from "./power-dm.js";
 import { Precondition } from "../../config/precondition-types.js";
@@ -84,6 +83,18 @@ class WeaponDM extends foundry.abstract.TypeDataModel {
 		};
 		return ret;
 	}
+
+	static override migrateData(data: any) {
+		if (data.damageNew == undefined) {
+			data.damageNew = {
+				weaponLevel: data.damage.low -1,
+				baseAmt: DamageCalculator.convertFromOldLowDamageToNewBase(data.damage.low ?? 0),
+				extraVariance: 0,
+			}
+		}
+		return data;
+	}
+
 }
 
 class FocusDM extends foundry.abstract.TypeDataModel {

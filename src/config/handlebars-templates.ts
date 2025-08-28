@@ -63,7 +63,9 @@ const templateFileNames : string[] =[
 	"variable-type-specifier.hbs",
 	"advanced-numeric-value.hbs",
 	"persona-stats-input.hbs",
-	"persona-stats-display.hbs"
+	"persona-stats-display.hbs",
+	"hp-mp-section.hbs",
+	"character-tab.hbs",
 ];
 
 export const templatePaths = templateFileNames.

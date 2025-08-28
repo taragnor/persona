@@ -386,16 +386,18 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	static MAX_XP_MULT = 3;
 
 	calcXP(killedTargets: ValidAttackers[], numOfAllies: number): number {
-		const XPSubtotal = killedTargets.reduce ((acc, target) => {
-			if (!target.isShadow()) return acc;
-			const levelDifference = target.persona().effectiveLevel - this.effectiveLevel;
-			const rawXPMult= 1 + (levelDifference * 0.75)
-			const XPMult= Math.clamp(rawXPMult, Persona.MIN_XP_MULT, Persona.MAX_XP_MULT);
-			const realXP = Persona.BaselineXP * XPMult;
-			return acc + realXP;
-		}, 0);
+		const XP= killedTargets.reduce( (a,x) => x.XPValue() + a, 0);
+		return Math.floor(XP / numOfAllies);
+		// const XPSubtotal = killedTargets.reduce ((acc, target) => {
+		// 	if (!target.isShadow()) return acc;
+		// 	const levelDifference = target.persona().effectiveLevel - this.effectiveLevel;
+		// 	const rawXPMult= 1 + (levelDifference * 0.75)
+		// 	const XPMult= Math.clamp(rawXPMult, Persona.MIN_XP_MULT, Persona.MAX_XP_MULT);
+		// 	const realXP = Persona.BaselineXP * XPMult;
+		// 	return acc + realXP;
+		// }, 0);
 
-		return Math.round(XPSubtotal / numOfAllies);
+		// return Math.round(XPSubtotal / numOfAllies);
 	}
 
 	get baseInitRank() : ValidAttackers["system"]["combat"]["initiative"] {
@@ -431,28 +433,28 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const mods = new ModifierList();
 		switch (defense) {
 			case "ref": {
-				const agi = Math.floor(this.agility / 3);
-				mods.add("Agility (* 1/3)", agi);
+				const agi = Math.floor(this.agility / 2);
+				mods.add("Agility Bonus", agi);
 				break;
 			}
 			case "will": {
-				const luk = Math.floor(this.luck / 3);
-				mods.add("Luck (* 1/3)", luk);
+				const luk = Math.floor(this.luck / 2);
+				mods.add("Luck Bonus", luk);
 				break;
 			}
 			case "fort":
-				const end = Math.floor(this.endurance / 3);
-				mods.add("Endurance (* 1/3)", end);
+				const end = Math.floor(this.endurance / 2);
+				mods.add("Endurance Bonus", end);
 				break;
 			default:
 				defense satisfies never;
 				return mods;
 		}
 		// const lvl = this.level;
-		const baseDef = this.#translateDefenseString(defense, this.defenses[defense]);
 		// const inc = this.classData.incremental.defense;
 		// mods.add("Base", 10);
-		mods.add("Base Defense Bonus", baseDef);
+		// const baseDef = this.#translateDefenseString(defense, this.defenses[defense]);
+		// mods.add("Base Defense Bonus", baseDef);
 		// mods.add("Incremental Advance" , inc);
 		const otherBonuses = this.getBonuses([defense, "allDefenses"]);
 		const defenseMods = this.getBonuses([defense, "allDefenses"], this.defensiveModifiers());
@@ -486,8 +488,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	#emptyStatPlaceholder(): number{
 		// return Math.round(30 * this.level / 5);//placeholder
-		const statsPerLevel = 10 * PersonaCombatStats.STAT_POINTS_PER_LEVEL;
-		return Math.round(statsPerLevel * this.level / 5);//placeholder
+		const statsPerLevel = PersonaCombatStats.STAT_POINTS_PER_LEVEL;
+		return Math.round(1 + statsPerLevel * this.level / 5);//placeholder
 	}
 
 	get tarot() {
@@ -834,7 +836,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				return  wpn.baseDamage();
 			case "shadow":
 				return {
-					baseAmt: DamageCalculator.convertFromOldLowDamageToNewBase(this.level + 1),
+					baseAmt: DamageCalculator.getWeaponDamageByWpnLevel(Math.floor(this.level / 10) + 1),
 					extraVariance: 0
 				};
 			default:

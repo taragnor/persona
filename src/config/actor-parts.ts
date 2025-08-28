@@ -253,6 +253,10 @@ export function studentSkills() {
 
 export function sharedAbilities() {
 	return {
+		activePersona: new id(),
+		personaList: new arr(new id()),
+		hp_adjust: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
+		mp_adjust: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 	}
 
 };
@@ -272,8 +276,6 @@ export function shadowOnlyCombatAbilities() {
 
 export function PCAndAllyStuff() {
 	return {
-		personalXP: new num({integer: true, initial:0, min:0}),
-		personaleLevel: new num({integer: true, min: 1, max: 200, initial:1}),
 	};
 
 }
@@ -283,6 +285,8 @@ export function PCSpecificStuff() {
 		social: socialLinks(),
 		activities: activityLinks(),
 		skills: studentSkills(),
+		personalXP: new num({integer: true, initial:0, min:0}),
+		personaleLevel: new num({integer: true, min: 1, max: 200, initial:1}),
 	}
 }
 

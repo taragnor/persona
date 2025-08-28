@@ -1721,12 +1721,18 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	static calcCritModifier( attacker: ValidAttackers, target: ValidAttackers, power: Usable, situation: Situation, ignoreInstantKillMult = false) : ModifierList {
 		const critBoostMod = power.critBoost(attacker);
 		const critResist = target.persona().critResist().total(situation);
+		const attackerPersona = attacker.persona();
+		const targetPersona = target.persona();
 		critBoostMod.add("Enemy Critical Resistance", -critResist);
 		if (power.isInstantDeathAttack()) {
 			const powerLevel = power.baseInstantKillBonus();
-			const targetResist = target.basePowerCritResist(power);
+			const instantKillBoost = PersonaCombatStats.lukInstantDeathBonus(attackerPersona);
+			const instantKillResist = PersonaCombatStats.lukInstantDeathResist(targetPersona);
+			// const targetResist = target.basePowerCritResist(power);
 			critBoostMod.add("Power-based Instant Kill Bonus", powerLevel);
-			critBoostMod.add("Level-based Instant Death Resist", -targetResist);
+			critBoostMod.add(`Luck (${attackerPersona.name}) Instant Kill Bonus`, instantKillBoost);
+			critBoostMod.add(`Luck (${targetPersona.name}) Instant Kill Resist`, -instantKillResist);
+			// critBoostMod.add("Level-based Instant Death Resist", -targetResist);
 			const mult = ignoreInstantKillMult ? 1 : target.instantKillResistanceMultiplier(attacker);
 			const total = critBoostMod.total(situation);
 			const mod = total > 0 ? Math.round((total * mult) - total) : 0;
@@ -2106,7 +2112,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		const stamina = PersonaCombatStats.staminaDR(targets[0].persona());
 		// const  stamina = -Math.floor(targets[0].persona().endurance / 2);
-		const staminaString = "Target Endurance / 2";
+		const staminaString = "Endurance Damage Reduction";
 		switch (cons.damageSubtype) {
 			case "odd-even":
 				if (situation.naturalRoll == undefined) {

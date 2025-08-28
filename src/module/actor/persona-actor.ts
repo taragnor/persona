@@ -23,7 +23,6 @@ import { statusMap } from "../../config/status-effects.js";
 import { PersonaScene } from "../persona-scene.js";
 import { poisonDamageMultiplier } from "../../config/shadow-types.js";
 import { TriggeredEffect } from "../triggered-effect.js";
-import { shadowRoleMultiplier } from "../../config/shadow-types.js";
 import { RealDamageType } from "../../config/damage-types.js";
 import { SkillCard } from "../item/persona-item.js";
 import { UsableAndCard } from "../item/persona-item.js";
@@ -75,6 +74,7 @@ import { StatusDuration } from "../active-effect.js";
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
 	declare statuses: Set<StatusEffectId>;
 	declare sheet: PersonaActorSheetBase;
+
 
 	static MPMap = new Map<number, number>;
 
@@ -166,7 +166,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get level() : number {
 		if (!this.isValidCombatant()) return 0;
-		return this.system.combat.classData.level ?? 0;
+		if (this.isPC()) {
+			return this.system.personaleLevel;
+		}
+		return this.basePersona.level;
 	}
 
 	get personalLevel(): number {
@@ -468,56 +471,42 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		try {
 			const persona = this.persona();
 			const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
-			const inc = this.system.combat.classData.incremental.hp ?? 0;
-			const lvl = this.system.combat.classData.level;
 			const nonMultbonuses = persona.getBonuses("maxhp");
 			const newForm = persona.getBonuses("maxhpMult-new");
+			// const inc = this.system.combat.classData.incremental.hp ?? 0;
+			const lvl = this.level;
+			const incBonus = 0;
+			const hpAdjustPercent = this.hpAdjustPercent();
+			const hpAdjust = this.system.hp_adjust;
+			newForm.add(`HP Adjust (${hpAdjust})`, hpAdjustPercent);
 			const lvlbase = this.class.getClassProperty(lvl, "maxhp");
-			const diff = this.class.getClassProperty(lvl+1, "maxhp") - lvlbase;
-			const incBonus = Math.round(inc / 3 * diff);
-			// const weaknesses = Object.values(this.system.combat.resists)
-			// 	.filter(x=> x == "weakness")
-			// 	.length;
-			// const resists = Object.values(this.system.combat.resists)
-			// 	.filter(x=> x == "resist")
-			// 	.length;
-			// const blocks = Object.values(this.system.combat.resists)
-			// 	.filter(x=> x == "block" || x == "absorb" || x == "reflect")
-			// 	.length;
+			if (this.isShadow()) {
+				const shadowRelHPChange = 0.75 + (this.level * .005);
+				newForm.add("Shadow Class Adjust", shadowRelHPChange);
+			}
+			// const diff = this.class.getClassProperty(lvl+1, "maxhp") - lvlbase;
+			// const incBonus = Math.round(inc / 3 * diff);
 			const multmods = persona.getBonuses("maxhpMult")
-			const underCap = this.basePersona.maxResists() - this.totalResists() ;
+			// const underCap = this.basePersona.maxResists() - this.totalResists() ;
 			if (this.isPC() || this.isNPCAlly()) {
 				const ArmorHPBoost = this.equippedItems().find(x=> x.isOutfit())?.system?.armorHPBoost ?? 0;
 				if (ArmorHPBoost > 0)
 					nonMultbonuses.add("Armor HP Bonus", ArmorHPBoost);
 			}
-			if (underCap > 0) {
-				const bonus = underCap * 0.20;
-				multmods.add("under resist Cap", bonus);
-			}
-			if (this.isPC() || this.isNPCAlly()) {
-				newForm.add("PC HP boost", 1.15);
-			}
-			// if (weaknesses > 1) {
-			// 	const bonus = (weaknesses -1 ) * 0.25;
-			// 	multmods.add("weaknesses mod", bonus)
+			// if (underCap > 0) {
+			// 	const bonus = underCap * 0.20;
+			// 	multmods.add("under resist Cap", bonus);
 			// }
-			// if (this.system.combat.resists.physical == "weakness") {
-			// 	newForm.add("weak to Physical", 1.25);
+			// if (this.isPC() || this.isNPCAlly()) {
+			// 	newForm.add("PC HP boost", 1.15);
 			// }
-			if (this.isShadow()) {
-				const overCap = this.totalResists() - this.basePersona.maxResists();
-				if (overCap > 0) {
-					const penalty = 1 - Math.min(0.2, overCap * 0.05);
-					newForm.add("Over Resist Cap", penalty);
-					// const overResist = blocks + (0.5 * resists) - (weaknesses * 1);
-					// if (overResist > 2.5) {
-					// 	const penalty = overResist * -0.07;
-					// 	multmods.add("overResist/Block Mod", penalty);
-					// }
-				}
-			}
-			// bonuses.add("incremental bonus hp", incBonus)
+			// if (this.isShadow()) {
+			// 	const overCap = this.totalResists() - this.basePersona.maxResists();
+			// 	if (overCap > 0) {
+			// 		const penalty = 1 - Math.min(0.2, overCap * 0.05);
+			// 		newForm.add("Over Resist Cap", penalty);
+			// 	}
+			// }
 			const mult = multmods.total(sit, "percentage-special");
 			const newformMult = newForm.total(sit, "percentage");
 			nonMultbonuses.add("Innate HP Bonus", this.system.combat.bonusHP ?? 0);
@@ -527,6 +516,36 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			console.log(e);
 			console.warn(`Can't get Hp for ${this.name} (${this.id})`);
 			return 0;
+		}
+	}
+
+	hpAdjustPercent(this: ValidAttackers) : number {
+		switch (this.system.hp_adjust) {
+			case "pathetic":
+				return 0.8;
+			case "weak":
+				return 0.9;
+			case "normal":
+				return 1.0;
+			case "strong":
+				return 1.1;
+			case "ultimate":
+				return 1.2;
+		}
+	}
+
+	mpAdjustPercent(this: ValidAttackers) : number {
+		switch (this.system.hp_adjust) {
+			case "pathetic":
+				return 0.6;
+			case "weak":
+				return 0.8;
+			case "normal":
+				return 1.0;
+			case "strong":
+				return 1.2;
+			case "ultimate":
+				return 1.4;
 		}
 	}
 
@@ -1798,6 +1817,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	// 	return ret.concat(new ModifierList(mods));
 	// }
 
+	isDMon(this: Shadow) : boolean {
+		return this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon");
+	}
+
+	isPersona(this: Shadow): boolean {
+		return this.system.creatureType == "persona" ||  this.hasCreatureTag("persona");
+	}
+
 
 	async addPower(this: PC | NPCAlly | Shadow, power: Power, logChanges = true) {
 		if (power.isNavigator()) {
@@ -1823,8 +1850,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (powers.length < this.basePersona.maxMainPowers) {
 			powers.push(power.id);
 			await this.update( {"system.combat.powers": powers});
+			if (this.isShadow() && !this.isPersona() && !this.isDMon()) {
+				await this.addLearnedPower(power, this.level);
+			}
 			if (logChanges) {
-			await Logger.sendToChat(`${this.name} learned Power: ${power.name}`);
+				await Logger.sendToChat(`${this.name} learned Power: ${power.name}`);
 			}
 			return;
 		}
@@ -1833,9 +1863,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (sideboard.length < this.persona().maxSideboardPowers) {
 				sideboard.push(power.id);
 				await this.update( {"system.combat.powers_sideboard": sideboard});
-			if (logChanges) {
-				await Logger.sendToChat(`${this.name} learned Power: ${power.name} (placed in sideboard)`);
-			}
+				if (logChanges) {
+					await Logger.sendToChat(`${this.name} learned Power: ${power.name} (placed in sideboard)`);
+				}
 				return;
 			}
 		}
@@ -2753,12 +2783,24 @@ numOfIncAdvances(): number {
 }
 
 get XPForNextLevel() : number {
-	const incAdvances = this.numOfIncAdvances();
-	const typeMult = this.isPC() ? 1.0 : 0.75;
-	const base = Persona.leveling.BASE_XP;
-	const growth = 0;
-	return Math.floor( base + growth * incAdvances * typeMult);
+	if (!this.isPC()) return 999999;
+	const lvl = this.system.personaleLevel;
+	return LevelUpCalculator.XPRequiredToAdvanceToLevel(lvl+1);
 }
+
+get personalXPTowardsNextLevel() : number {
+	if (!this.isPC()) return -1;
+	const lvl = this.system.personaleLevel;
+	return this.system.personalXP - LevelUpCalculator.minXPForEffectiveLevel(lvl);
+}
+
+// get XPForNextLevel() : number {
+// 	const incAdvances = this.numOfIncAdvances();
+// 	const typeMult = this.isPC() ? 1.0 : 0.75;
+// 	const base = Persona.leveling.BASE_XP;
+// 	const growth = 0;
+// 	return Math.floor( base + growth * incAdvances * typeMult);
+// }
 
 /** Calculates challenge rating by adding level + incremental advances
  */
@@ -2866,22 +2908,28 @@ calcXP (this: ValidAttackers, killedTargets: ValidAttackers[], numOfAllies: numb
 }
 
 get personalELevel() : number {
-	if (!this.isPC() && !this.isNPCAlly()) return 0;
+	if (!this.isPC()) return 0;
 	return this.system.personaleLevel;
 }
 
 get personalXP(): number {
-	if (!this.isPC() && !this.isNPCAlly()) return 0;
+	if (!this.isPC() ) return 0;
 	return this.system.personalXP
 }
 
 get XPForNextPersonalLevel() : number {
-	if (!this.isPC() && !this.isNPCAlly()) return 0;
-	return LevelUpCalculator.XPForNextLevel(this);
+	if (this.isPC()) {
+		return LevelUpCalculator.XPRequiredToAdvanceToLevel(this.personalLevel + 1);
+	}
+	if (this.isNPCAlly()) {
+		return LevelUpCalculator.XPRequiredToAdvanceToLevel(this.basePersona.level + 1);
+	}
+	return 99999999;
 }
 
+
 async awardPersonalXP(this: ValidAttackers, amt: number, allowMult= true) : Promise<U<PersonaActor>> {
-	if (this.isShadow()) return undefined;
+	if (!this.isPC() ) return undefined;
 	if (!amt) return;
 	const situation =  {
 		user: this.accessor,
@@ -2959,7 +3007,8 @@ isIncrementalMaxed( this: ValidAttackers,  incremental:  keyof ValidAttackers["s
 	return true;
 }
 
-XPValue(this: Shadow) : number {
+XPValue(this: ValidAttackers) : number {
+	if (!this.isShadow()) return 0;
 	if (this.hasCreatureTag("no-xp")) return 0;
 	const persona = this.basePersona;
 	const pLevel = persona.pLevel;
@@ -3612,9 +3661,9 @@ startingEnergy(this: Shadow) : number {
 		user: this.accessor,
 	}
 	const bonusEnergy = this.persona().getBonuses("starting-energy").total(sit);
-	const inc = this.system.combat.classData.incremental.mp;
-	const baseStartingEnergy = 2;
-	return baseStartingEnergy + inc + bonusEnergy;
+	// const inc = this.system.combat.classData.incremental.mp;
+	const baseStartingEnergy = 3;
+	return baseStartingEnergy + bonusEnergy;
 }
 
 /** rate that shadow is encountered in the a scene

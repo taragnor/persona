@@ -1,6 +1,6 @@
 <section>
-  {{> "systems/persona/parts/weekly-availability.hbs" item=actor CONST=CONST}}
 
+	{{#if false}}
 	<h2> Key Skills</h2>
 	<div class="key-skills flexrow">
 		<div class="primary">
@@ -20,107 +20,13 @@
 			</select>
 		</div>
 	</div>
+	{{/if}}
 	<br>
 	<hr>
-	<h2> Student Skills</h2>
-	<div class="social-stat" data-social-skill="expression">
-		<label>
-			<a class="roll-icon">
-				<img src="icons/dice/d20black.svg">
-			</a>
-			{{localize	"persona.skills.expression.name"}}
-		</label>
-		{{#if ( isGM )}}
-		{{numberInput actor.system.skills.expression class="short" name="system.skills.expression" step=1 min=0 max=100}}
-		{{else}}
-		{{actor.system.skills.expression}}
-		{{/if}}
-		<a class="social-boost">
-			<i class="fa-solid fa-square-plus"></i>
-		</a>
-		<a class="social-minus">
-			<i class="fa-solid fa-square-minus"></i>
-		</a>
-	</div>
-	<div class="social-stat" data-social-skill="courage">
-		<label>
-			<a class="roll-icon">
-				<img src="icons/dice/d20black.svg">
-			</a>
-			{{localize	"persona.skills.courage.name"}}
-		</label>
-		{{#if (isGM)}}
-		{{numberInput actor.system.skills.courage class="short" name="system.skills.courage" step=1 min=0 max=100}}
-		{{else}}
-		{{actor.system.skills.courage}}
-		{{/if}}
-		<a class="social-boost">
-			<i class="fa-solid fa-square-plus"></i>
-		</a>
-		<a class="social-minus">
-			<i class="fa-solid fa-square-minus"></i>
-		</a>
-	</div>
-	<div class="social-stat" data-social-skill="diligence">
-		<label>
-			<a class="roll-icon">
-				<img src="icons/dice/d20black.svg">
-			</a>
-			{{localize	"persona.skills.diligence.name"}}
-		</label>
-		{{#if ( isGM )}}
-		{{numberInput actor.system.skills.diligence class="short" name="system.skills.diligence" step=1 min=0 max=100}}
-		{{else}}
-		{{actor.system.skills.diligence}}
-		{{/if}}
-		<a class="social-boost">
-			<i class="fa-solid fa-square-plus"></i>
-		</a>
-		<a class="social-minus">
-			<i class="fa-solid fa-square-minus"></i>
-		</a>
-	</div>
-	<div class="social-stat" data-social-skill="knowledge">
-		<label>
-			<a class="roll-icon">
-				<img src="icons/dice/d20black.svg">
-			</a>
-			{{localize	"persona.skills.knowledge.name"}}
-		</label>
-		{{#if ( isGM )}}
-		{{numberInput actor.system.skills.knowledge class="short" name="system.skills.knowledge" step=1 min=0 max=100}}
-		{{else}}
-		{{actor.system.skills.knowledge}}
-		{{/if}}
-		<a class="social-boost">
-			<i class="fa-solid fa-square-plus"></i>
-		</a>
-		<a class="social-minus">
-			<i class="fa-solid fa-square-minus"></i>
-		</a>
-	</div>
-	<div class="social-stat" data-social-skill="understanding">
-		<label>
-			<a class="roll-icon">
-				<img src="icons/dice/d20black.svg">
-			</a>
-			{{localize	"persona.skills.understanding.name"}}
-		</label>
-		{{#if ( isGM )}}
-		{{numberInput actor.system.skills.understanding class="short" name="system.skills.understanding" step=1 min=0 max=100}}
-		{{else}}
-		{{actor.system.skills.understanding}}
-		{{/if}}
-		<a class="social-boost">
-			<i class="fa-solid fa-square-plus"></i>
-		</a>
-		<a class="social-minus">
-			<i class="fa-solid fa-square-minus"></i>
-		</a>
-	</div>
 
 </section>
 
+{{#if false}}
 <div class="perk">
 	<span>
 		<b>Tarot Perk:</b>
@@ -129,6 +35,7 @@
 		{{actor.tarot.system.perk}}
 	</span>
 </div>
+{{/if}}
 
 <section class="social-links">
 	<h2> Social Links</h2>
@@ -136,9 +43,9 @@
 	<div class="social-link" data-link-id="{{link.actor.id}}">
 		{{#if link.available}}
 		<span class="social-command social-card">
-		<a class="draw-social-card" title="Draw Social card">
-			<i class="fa-regular fa-id-card"></i>
-		</a>
+			<a class="draw-social-card" title="Draw Social card">
+				<i class="fa-regular fa-id-card"></i>
+			</a>
 		</span>
 		{{/if}}
 
@@ -194,26 +101,26 @@
 		</span>
 		{{/if}}
 	</div>
-		{{/each}}
+	{{/each}}
 
-		{{#each actor.unrealizedSocialLinks as |link|}}
-		<div class="social-link unrealized-social-link" data-link-id="{{link.id}}">
-			{{#if (canForgeSocialLink ../actor link)}}
-			<span class="social-command social-card">
-				<a class="init-social-link" title="Forge Social Link">
-					<i class="fa-solid fa-person-circle-plus"></i>
-				</a>
-			</span>
-			{{/if}}
-			<img class="portrait" src={{link.img}}>
-			<a class="name">
-				{{link.displayedName}}
+	{{#each actor.unrealizedSocialLinks as |link|}}
+	<div class="social-link unrealized-social-link" data-link-id="{{link.id}}">
+		{{#if (canForgeSocialLink ../actor link)}}
+		<span class="social-command social-card">
+			<a class="init-social-link" title="Forge Social Link">
+				<i class="fa-solid fa-person-circle-plus"></i>
 			</a>
-			<span class="tarot">
-				( {{link.tarot.displayedName }} )
-			</span>
-		</div>
-		{{/each}}
+		</span>
+		{{/if}}
+		<img class="portrait" src={{link.img}}>
+		<a class="name">
+			{{link.displayedName}}
+		</a>
+		<span class="tarot">
+			( {{link.tarot.displayedName }} )
+		</span>
+	</div>
+	{{/each}}
 
 </section>
 

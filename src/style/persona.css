@@ -944,7 +944,7 @@ h5.choices-block {
 
 
 .no-wrap {
-	flex-wrap: nowrap;
+	flex-wrap: nowrap !important;
 }
 
 .scan-header .scan-stats-column {
@@ -1060,4 +1060,19 @@ a.add-five-to-all:active {
 	outline: none;
 	border: 0;
 	padding-right: 5px;
+}
+
+/* replacemet for flexrow to reduce foundry internal dependency */
+.f-row  {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+}
+
+.f-col {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	justify-content: flex-start;
 }

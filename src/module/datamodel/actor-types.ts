@@ -35,7 +35,6 @@ abstract class BaseStuff extends window.foundry.abstract.DataModel {
 
 }
 
-
 function talentConversion(data: any) {
 	if (data.talents != undefined) {
 		if (data.combat.talents == undefined || data.combat.talents.length == 0)  {
@@ -57,8 +56,6 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 				hasMadeFatigueRollToday: new bool({initial: false}),
 			}),
 			equipped: equipslots(),
-			activePersona: new id(),
-			personaList: new arr(new id()),
 			money: new num({integer: true, min: 0, initial:1}),
 			creatureType: new txt({ choices: SHADOW_CREATURE_TYPE_LIST, initial: "npc-ally"}),
 			...tarotFields(),

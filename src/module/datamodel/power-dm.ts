@@ -23,6 +23,7 @@ export const damageNew = function () {
 	return new sch( {
 		baseAmt: new num( {integer:true, min: 0, initial:0}),
 		extraVariance: new num( {integer:true, min: 0, initial: 0}),
+		weaponLevel: new num( {integer: true, min: 0, initial: 0}),
 	});
 
 }
@@ -65,6 +66,8 @@ export function powerOnlyUsableProps() {
 		damageLevel: new txt({choices: DAMAGE_LEVELS_LIST, initial: "-"}),
 		customCost: new bool(),
 		mag_mult: new num( {integer:true, min:0, max: 100, initial:1}),
+		attacksMin: new num( {integer: true, min: 1, initial:1 }),
+		attacksMax: new num( {integer: true, min: 1, initial:1 }),
 		melee_extra_mult: new num( {integer: true, min: -10, max:50, initial: 0}),
 
 	};

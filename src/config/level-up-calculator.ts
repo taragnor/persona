@@ -10,7 +10,7 @@ export class LevelUpCalculator {
 	static XPToAdvanceTable: Map<number, number> = new Map();
 	static XP_FOR_LEVEL_1 = 50;
 
-	static levelsGained(actor: PC | NPCAlly, newXPValue: number) : number {
+	static levelsGained(actor: PC, newXPValue: number) : number {
 		const currLevel = actor.personalELevel;
 		const eLevel = this.getEffectiveLevel(newXPValue);
 		const levelsGained = Math.max(0, eLevel - currLevel);
@@ -23,11 +23,6 @@ export class LevelUpCalculator {
 				return EL-1;
 		}
 		return 100;
-	}
-
-	static XPForNextLevel(actor: PC | NPCAlly): number {
-		const currLvl = actor.personalELevel;
-		return this.XPRequiredToAdvanceToLevel(currLvl + 1);
 	}
 
 	//** uses 1-100 scale
