@@ -540,9 +540,9 @@ export type AmountOperation = {
 }
 
 type RandomRangeAmount = {
-	type: "random-range",
-	min: number,
-	max: number
+   type: "random-range",
+   min: number,
+   max: number
 }
 
 type ConstantAmount = {

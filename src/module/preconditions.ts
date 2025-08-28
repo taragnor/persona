@@ -967,108 +967,108 @@ export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, si
 }
 
 function getSubjects<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K) : (PToken | ValidAttackers | NPC) []{
-   if (!(field in cond)) {
-      Debug(cond);
-      Debug(situation);
-      // const printCondition = ConditionalEffectManager.printConditional(cond as unknown as Precondition);
-      // PersonaError.softFail(`No field ${field} in ${printCondition} ${source?.name} of ${source?.parent?.name}`)
+  if (!(field in cond)) {
+    Debug(cond);
+    Debug(situation);
+    // const printCondition = ConditionalEffectManager.printConditional(cond as unknown as Precondition);
+    // PersonaError.softFail(`No field ${field} in ${printCondition} ${source?.name} of ${source?.parent?.name}`)
+    return [];
+  }
+  const condTarget = cond[field];
+  switch (condTarget) {
+      //owner of the power in question
+    case "owner":
+      if (source && source.parent) {
+        const parent = source.parent;
+        switch (parent.system.type) {
+          case "pc":
+          case "shadow":
+          case "npcAlly":
+            return [parent as ValidAttackers];
+          default:
+            break;
+        }
+      }
+      if ("actorOwner" in cond && cond.actorOwner) {
+        const tok = 	PersonaCombat.getPTokenFromActorAccessor(cond.actorOwner as NonNullable<Precondition["actorOwner"]>);
+        return tok ? [tok] : [];
+      }
       return [];
-   }
-   const condTarget = cond[field];
-   switch (condTarget) {
-         //owner of the power in question
-      case "owner":
-         if (source && source.parent) {
-            const parent = source.parent;
-            switch (parent.system.type) {
-               case "pc":
-               case "shadow":
-               case "npcAlly":
-                  return [parent as ValidAttackers];
-               default:
-                  break;
-            }
-         }
-         if ("actorOwner" in cond && cond.actorOwner) {
-            const tok = 	PersonaCombat.getPTokenFromActorAccessor(cond.actorOwner as NonNullable<Precondition["actorOwner"]>);
-            return tok ? [tok] : [];
-         }
-         return [];
-      case "attacker":
-         if (situation.attacker?.token){
-            const tok =  PersonaDB.findToken(situation.attacker.token) as PToken ;
-            return tok ? [tok] : [];
-         } else {
-            const tok = situation.attacker ? PersonaDB.findActor(situation.attacker): undefined;
-            return tok ? [tok] : [];
-         }
-      case "target": {
-         if (situation.target?.token) {
-            const tok = PersonaDB.findToken(situation.target.token) as PToken | undefined;
-            return tok ? [tok] : [];
-         }
-         const target : UniversalActorAccessor<ValidAttackers | ValidSocialTarget> | undefined = situation.target ?? situation.socialTarget;
-         const tok = target ? PersonaDB.findActor(target): undefined;
-         return tok ? [tok] : [];
+    case "attacker":
+      if (situation.attacker?.token){
+        const tok =  PersonaDB.findToken(situation.attacker.token) as PToken ;
+        return tok ? [tok] : [];
+      } else {
+        const tok = situation.attacker ? PersonaDB.findActor(situation.attacker): undefined;
+        return tok ? [tok] : [];
       }
-      case "user":
-         if (!situation.user) {return [];}
-         if (situation?.user?.token) {
-            const tok =  PersonaDB.findToken(situation.user.token) as PToken | undefined;
-            return tok ? [tok] : [];
-         } else {
-            const tok=  PersonaDB.findActor(situation.user);
-            return tok ? [tok] : [];
-         }
-      case "triggering-character":
-         if ( !("triggeringCharacter" in situation)|| !situation.triggeringCharacter) {return [];}
-         if (situation.triggeringCharacter.token) {
-            const tok= PersonaDB.findToken(situation.triggeringCharacter.token) as PToken | undefined;
-            return tok ? [tok] : [];
-         } else {
-            const actor =  PersonaDB.findActor(situation.triggeringCharacter);
-            return actor ? [actor] : [];
-         }
-      case "cameo":
-         if (!situation.cameo) {return [];}
-         if (situation.cameo.token) {
-            const tok =  PersonaDB.findToken(situation.cameo.token) as PToken | undefined;
-            return tok ? [tok] : [];
-         } else {
-            const actor = PersonaDB.findActor(situation.cameo);
-            return actor ? [actor] : [];
-         }
-      case "all-foes":
-      case "all-allies": {
-         PersonaError.softFail("all-foes and all-allies not allowed as part of a conditional");
-         return [];
+    case "target": {
+      if (situation.target?.token) {
+        const tok = PersonaDB.findToken(situation.target.token) as PToken | undefined;
+        return tok ? [tok] : [];
       }
-      case "all-in-region": {
-         let id : string | undefined;
-         if ("triggeringRegionId" in situation) {
-            id = situation.triggeringRegionId;
-         }
-         const region = Metaverse.getRegion(id);
-         if (!region) {return [];}
-         //have to get all in scene due to party token mucking it up
-         // const tokens = Array.from(region.tokens)
-         const tokens = region.parent.tokens.contents
-         .filter( tok => tok.actor && tok.actor.isValidCombatant());
-         return tokens as PToken[];
+      const target : UniversalActorAccessor<ValidAttackers | ValidSocialTarget> | undefined = situation.target ?? situation.socialTarget;
+      const tok = target ? PersonaDB.findActor(target): undefined;
+      return tok ? [tok] : [];
+    }
+    case "user":
+      if (!situation.user) {return [];}
+      if (situation?.user?.token) {
+        const tok =  PersonaDB.findToken(situation.user.token) as PToken | undefined;
+        return tok ? [tok] : [];
+      } else {
+        const tok=  PersonaDB.findActor(situation.user);
+        return tok ? [tok] : [];
       }
-      default: {
-         condTarget satisfies undefined;
-         if (situation.target?.token) {
-            const tok = PersonaDB.findToken(situation.target.token) as PToken | undefined;
-            return tok ? [tok] : [];
-         }
-         if (!situation.user) {
-            return [];
-         }
-         const actor=  PersonaDB.findActor(situation.user);
-         return actor ? [actor] : [];
+    case "triggering-character":
+      if ( !("triggeringCharacter" in situation)|| !situation.triggeringCharacter) {return [];}
+      if (situation.triggeringCharacter.token) {
+        const tok= PersonaDB.findToken(situation.triggeringCharacter.token) as PToken | undefined;
+        return tok ? [tok] : [];
+      } else {
+        const actor =  PersonaDB.findActor(situation.triggeringCharacter);
+        return actor ? [actor] : [];
       }
-   }
+    case "cameo":
+      if (!situation.cameo) {return [];}
+      if (situation.cameo.token) {
+        const tok =  PersonaDB.findToken(situation.cameo.token) as PToken | undefined;
+        return tok ? [tok] : [];
+      } else {
+        const actor = PersonaDB.findActor(situation.cameo);
+        return actor ? [actor] : [];
+      }
+    case "all-foes":
+    case "all-allies": {
+      PersonaError.softFail("all-foes and all-allies not allowed as part of a conditional");
+      return [];
+    }
+    case "all-in-region": {
+      let id : string | undefined;
+      if ("triggeringRegionId" in situation) {
+        id = situation.triggeringRegionId;
+      }
+      const region = Metaverse.getRegion(id);
+      if (!region) {return [];}
+      //have to get all in scene due to party token mucking it up
+      // const tokens = Array.from(region.tokens)
+      const tokens = region.parent.tokens.contents
+      .filter( tok => tok.actor && tok.actor.isValidCombatant());
+      return tokens as PToken[];
+    }
+    default: {
+      condTarget satisfies undefined;
+      if (situation.target?.token) {
+        const tok = PersonaDB.findToken(situation.target.token) as PToken | undefined;
+        return tok ? [tok] : [];
+      }
+      if (!situation.user) {
+        return [];
+      }
+      const actor=  PersonaDB.findActor(situation.user);
+      return actor ? [actor] : [];
+    }
+  }
 }
 
 export function multiCheckToArray<T extends string>(multiCheck: MultiCheck<T>) : T[] {

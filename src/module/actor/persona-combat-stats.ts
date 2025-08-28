@@ -100,7 +100,9 @@ export class PersonaCombatStats {
 				});
 			const totalStatPoints = Object.values(stblk).reduce ((acc, x) => acc + x, 0);
 			const rng = new SeededRandom(`${persona.name}${tarotName}${totalStatPoints}`);
-			if (slist.length == 0) throw new PersonaError(`All stats unselectable for ${persona.source.name}`);
+			if (slist.length == 0) {
+				throw new PersonaError(`All stats unselectable for ${persona.source.name}`);
+			}
 			// const stat = rng.randomArraySelect(slist)!;
 			const stat = rng.weightedChoice(slist);
 			if (stat) {
