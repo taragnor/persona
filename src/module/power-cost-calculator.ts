@@ -37,8 +37,6 @@ export class PowerCostCalculator {
     return ecost;
   }
 
-
-
   static energyLevel_power(pwr: Power) : number {
     const items = [
       this.#energyLevel_ailment(pwr),

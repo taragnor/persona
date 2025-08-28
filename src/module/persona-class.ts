@@ -13,7 +13,6 @@ import { NPCAlly } from "./actor/persona-actor.js";
 import { PC } from "./actor/persona-actor.js";
 import { UsableAndCard } from "./item/persona-item.js";
 import { PersonaSettings } from "../config/persona-settings.js";
-import { ELEMENTAL_DEFENSE_LINK } from "../config/damage-types.js";
 import { Metaverse } from "./metaverse.js";
 import { UniversalModifier } from "./item/persona-item.js";
 import { StatusEffectId } from "../config/status-effects.js";
@@ -42,7 +41,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		SHADOWS_TO_LEVEL: 10,
 		BASE_XP: 600, // XP FOR FIRST LEVEL UP
 		XP_GROWTH: 200, //added XP for additional level ups
-	}
+	};
 
 	constructor (source: ValidAttackers, user: T, powers: Power[]) {
 		this.user = user;
@@ -108,7 +107,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const source = this.source;
 		const talents = source.system.combat.talents;
 		let index = talents.indexOf(id);
-		if (index == -1) return 0;
+		if (index == -1) {return 0;}
 		const inc = source.system.combat.classData.incremental.talent ? 1 : 0;
 		const convertedLevel = Math.floor(this.level/10) + 1;
 		const effectiveLevel = Math.max(0, convertedLevel + inc -1);
@@ -143,7 +142,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	get XPForNextLevel() : number {
-		return LevelUpCalculator.XPRequiredToAdvanceToLevel(this.level +1)
+		return LevelUpCalculator.XPRequiredToAdvanceToLevel(this.level +1);
 		// return this.source.XPForNextLevel;
 	}
 
@@ -154,7 +153,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	get scanLevel(): number {
 		const user = this.user;
 		const source = this.source;
-		if (game.user.isGM) return 3;
+		if (game.user.isGM) {return 3;}
 		if (user.hasPlayerOwner) {
 			return 3;
 		}
@@ -168,18 +167,18 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const ret = new ModifierList();
 		const mods = this.mainModifiers().flatMap( item => item.getModifier("critResist", this.user));
 		const list =  ret.concat(new ModifierList(mods));
-		list.add("Luck Bonus", PersonaCombatStats.lukCriticalResist(this))
+		list.add("Luck Bonus", PersonaCombatStats.lukCriticalResist(this));
 		return list;
 	}
 
 	critBoost() : ModifierList {
 		const mods = this.mainModifiers().flatMap( item => item.getModifier("criticalBoost", this.user));
 		const list= new ModifierList(mods);
-		list.add("Luck Bonus", PersonaCombatStats.lukCriticalBoost(this))
+		list.add("Luck Bonus", PersonaCombatStats.lukCriticalBoost(this));
 		return list;
 	}
 
-	equals(other: Persona<any>) : boolean {
+	equals(other: Persona) : boolean {
 		return this.source == other.source;
 	}
 
@@ -237,7 +236,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return {
 			user: this.user.accessor,
 			persona: this,
-		}
+		};
 	}
 
 
@@ -247,32 +246,32 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	isEligibleToBecomeDMon() : boolean {
 		const source = this.source;
-		if (source.hasRole(["boss", "miniboss", "treasure-shadow", "duo", "solo", "summoner"])) return false;
-		if (source.system.creatureType != "shadow" && source.system.creatureType != "daemon") return false;
-		if (source.hasCreatureTag("pure-shadow")) return false;
+		if (source.hasRole(["boss", "miniboss", "treasure-shadow", "duo", "solo", "summoner"])) {return false;}
+		if (source.system.creatureType != "shadow" && source.system.creatureType != "daemon") {return false;}
+		if (source.hasCreatureTag("pure-shadow")) {return false;}
 		return true;
 	}
 
 	isEligibleToBecomePersona(): boolean {
 		const source = this.source;
-		if (!source.isShadow()) return false;
-		if (source.system.creatureType == "daemon") return false;
-		if (this.isPersona()) return true;
-		if (this.isDMon()) return true;
+		if (!source.isShadow()) {return false;}
+		if (source.system.creatureType == "daemon") {return false;}
+		if (this.isPersona()) {return true;}
+		if (this.isDMon()) {return true;}
 		return this.isEligibleToBecomeDMon();
 	}
 
 	isPersona(): boolean {
 		const source = this.source;
-		if (source.isPC() || source.isNPCAlly()) return true;
-		if (source.system.creatureType == "persona") return true;
+		if (source.isPC() || source.isNPCAlly()) {return true;}
+		if (source.system.creatureType == "persona") {return true;}
 		return false;
 	}
 
 	isDMon() : boolean {
 		const source = this.source;
-		if (source.system.creatureType == "d-mon") return true;
-		if (source.isShadow() && source.hasCreatureTag("d-mon")) return true;
+		if (source.system.creatureType == "d-mon") {return true;}
+		if (source.isShadow() && source.hasCreatureTag("d-mon")) {return true;}
 		return false;
 	}
 
@@ -286,7 +285,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	getBonuses (modnames : NonDeprecatedModifierType | NonDeprecatedModifierType[], sources: readonly ModifierContainer[] = this.mainModifiers() ): ModifierList {
-		let modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this.source)
+		const modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this.source)
 			.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
 		));
 		return modList;
@@ -356,7 +355,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	async deleteTalent(id: string) {
 		const source = this.source;
 		const talent = PersonaDB.getItemById<Talent>(id);
-		if (!talent) throw new PersonaError(`No such talent ${id}`);
+		if (!talent) {throw new PersonaError(`No such talent ${id}`);}
 		const arr = source.system.combat.talents
 			.filter(x=> x != id);
 		await source.update( {"system.combat.talents": arr});
@@ -442,10 +441,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				mods.add("Luck Bonus", luk);
 				break;
 			}
-			case "fort":
-				const end = Math.floor(this.endurance / 2);
+			case "fort": {
+         const end = Math.floor(this.endurance / 2);
 				mods.add("Endurance Bonus", end);
 				break;
+      }
 			default:
 				defense satisfies never;
 				return mods;
@@ -462,35 +462,35 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	}
 
-	#translateDefenseString(defType: keyof ValidAttackers["system"]["combat"]["defenses"], val: ValidAttackers["system"]["combat"]["defenses"]["fort"],): number {
-		const weaknesses= this.#getWeaknessesInCategory(defType);
-		switch (val) {
-			case "pathetic": return Math.min(-6 + 2 * weaknesses,-2) ;
-			case "weak": return Math.min(-3 + 1 * weaknesses, -1);
-			case "normal": return 0;
-			case "strong": return Math.max(3 - 1 * weaknesses, 1);
-			case "ultimate": return Math.max(6 - 2 * weaknesses, 2);
-			default:
-				PersonaError.softFail(`Bad defense tsring ${val} for ${defType}`);
-				return -999;
-		}
-	}
+	// #translateDefenseString(defType: keyof ValidAttackers["system"]["combat"]["defenses"], val: ValidAttackers["system"]["combat"]["defenses"]["fort"],): number {
+	// 	const weaknesses= this.#getWeaknessesInCategory(defType);
+	// 	switch (val) {
+	// 		case "pathetic": return Math.min(-6 + 2 * weaknesses,-2) ;
+	// 		case "weak": return Math.min(-3 + 1 * weaknesses, -1);
+	// 		case "normal": return 0;
+	// 		case "strong": return Math.max(3 - 1 * weaknesses, 1);
+	// 		case "ultimate": return Math.max(6 - 2 * weaknesses, 2);
+	// 		default:
+	// 			PersonaError.softFail(`Bad defense tsring ${val} for ${defType}`);
+	// 			return -999;
+	// 	}
+	// }
 
-	#getWeaknessesInCategory( defType: keyof ValidAttackers["system"]["combat"]["defenses"]): number {
-		const damageTypes = ELEMENTAL_DEFENSE_LINK[defType];
-		const weaknesses= damageTypes.filter( dt => this.resists[dt] == "weakness")
-		return weaknesses.length;
-	}
+	// #getWeaknessesInCategory( defType: keyof ValidAttackers["system"]["combat"]["defenses"]): number {
+	// 	const damageTypes = ELEMENTAL_DEFENSE_LINK[defType];
+	// 	const weaknesses= damageTypes.filter( dt => this.resists[dt] == "weakness");
+	// 	return weaknesses.length;
+	// }
 
 	get defenses(): ValidAttackers["system"]["combat"]["defenses"] {
 		return this.source.system.combat.defenses;
 	}
 
-	#emptyStatPlaceholder(): number{
-		// return Math.round(30 * this.level / 5);//placeholder
-		const statsPerLevel = PersonaCombatStats.STAT_POINTS_PER_LEVEL;
-		return Math.round(1 + statsPerLevel * this.level / 5);//placeholder
-	}
+	// #emptyStatPlaceholder(): number{
+	// 	// return Math.round(30 * this.level / 5);//placeholder
+	// 	const statsPerLevel = PersonaCombatStats.STAT_POINTS_PER_LEVEL;
+	// 	return Math.round(1 + statsPerLevel * this.level / 5);//placeholder
+	// }
 
 	get tarot() {
 		return this.source.tarot;
@@ -571,13 +571,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				case "raise-resistance":
 					if (cons.resistType == type &&
 						resval(cons.resistanceLevel!) > resval(baseResist)) {
-						resBonus = Math.max(resBonus, resval(cons.resistanceLevel!) - resval(baseResist))
+						resBonus = Math.max(resBonus, resval(cons.resistanceLevel!) - resval(baseResist));
 					}
 					break;
 				case "lower-resistance":
 					if (cons.resistType == type &&
 						resval (cons.resistanceLevel!) < resval(baseResist))  {
-						resPenalty = Math.min(resPenalty, resval(cons.resistanceLevel!) - resval(baseResist))
+						resPenalty = Math.min(resPenalty, resval(cons.resistanceLevel!) - resval(baseResist));
 					}
 					break;
 				default:
@@ -588,14 +588,15 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return RESIST_STRENGTH_LIST[resLevel];
 	}
 
-	static combinedPersona<T extends ValidAttackers>(basePersona: Persona<T>, attachedPersona: Persona<any>) : Persona<T> {
+	static combinedPersona<T extends ValidAttackers>(basePersona: Persona<T>, attachedPersona: Persona) : Persona<T> {
 		const fusedPowers = attachedPersona.powers.concat(
 			basePersona.powers);
 		fusedPowers.length = Math.min(6, fusedPowers.length);
 		const fusedPersona = new Persona(attachedPersona.source, attachedPersona.user, fusedPowers);
 		fusedPersona.user = basePersona.user;
 		fusedPersona.source = attachedPersona.source;
-		return fusedPersona;
+     //I am not sure if this really persona<T> as there were errors but not sure if this ufnction is even used
+		return fusedPersona as Persona<T>;
 	}
 
 	get isBasePersona(): boolean {
@@ -609,6 +610,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				const actual = this.statusResist(statusRaw as StatusEffectId);
 				const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[statusRaw as StatusEffectId]);
 				if (statusTrans == undefined) {
+					// eslint-disable-next-line no-debugger
 					debugger;
 					return "";
 				}
@@ -633,15 +635,16 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 
 	get maxSideboardPowers() : number {
-		if (!this.source.isValidCombatant()) return 0;
+		if (!this.source.isValidCombatant()) {return 0;}
 		switch (this.source.system.type) {
 			case "npcAlly":
 			case "shadow":
 				return 0;
-			case "pc":
-				const extraMaxPowers = this.getBonuses("extraMaxPowers");
+			case "pc": {
+         const extraMaxPowers = this.getBonuses("extraMaxPowers");
 				return extraMaxPowers
 					.total ( {user: this.user.accessor});
+      }
 			default:
 				this.source.system satisfies never;
 				return -1;
@@ -665,7 +668,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const situation: Situation = {
 			user: this.user.accessor,
 			target: this.user.accessor,
-		}
+		};
 		const bonusBoosts =this.getBonuses("max-defense-boosts").total(situation);
 		return baseBoosts + bonusBoosts;
 	}
@@ -686,7 +689,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const situation: Situation = {
 			user: this.user.accessor,
 			target: this.user.accessor,
-		}
+		};
 		const bonusBoosts = this.getBonuses("max-resist-boosts").total(situation);
 		return baseResists + bonusBoosts;
 	}
@@ -726,8 +729,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
 		const user = this.user;
-		if (!this.user.isAlive() && !usable.hasTag("usable-while-dead")) return false;
-		if (!usable.isTrulyUsable()) return false;
+		if (!this.user.isAlive() && !usable.hasTag("usable-while-dead")) {return false;}
+		if (!usable.isTrulyUsable()) {return false;}
 
 		if (user.hasStatus("rage") && usable != PersonaDB.getBasicPower("Basic Attack")) {
 			if (outputReason) {
@@ -757,45 +760,51 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 	}
 
-	canPayActivationCost_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard, _outputReason: boolean) : boolean {
-		switch (usable.system.type) {
-			case "power": {
-				if (usable.system.tags.includes("basicatk")) {
-					return true;
-				}
-				switch (usable.system.subtype) {
-					case "weapon":
-						return  this.user.hp > (usable as Power).hpCost();
-					case "magic":
-						const mpcost = (usable as Power).mpCost(this);
-						if (mpcost > 0) {
-							return this.user.mp >= mpcost;
-						}
-					case "social-link":
-						const inspirationId = usable.system.inspirationId;
-						if (!this.user.isPC()) return false;
-						if (inspirationId) {
-							const socialLink = this.user.system.social.find( x=> x.linkId == inspirationId);
-							if (!socialLink) return false;
-							return socialLink.inspiration >= usable.system.inspirationCost;
-						} else {
-							const inspiration = this.user.system.social.reduce( (acc, item) => acc + item.inspiration , 0)
-							return inspiration >= usable.system.inspirationCost;
-						}
-					case "downtime":
-						const combat = game.combat as PersonaCombat;
-						if (!combat) return false;
-						return combat.isSocial;
-					default:
-						return true;
-				}
-			}
-			case "consumable":
-				return usable.system.amount > 0;
-			case "skillCard":
-				return this.user.canLearnNewSkill();
-		}
-	}
+   canPayActivationCost_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard, _outputReason: boolean) : boolean {
+      switch (usable.system.type) {
+         case "power": {
+            if (usable.system.tags.includes("basicatk")) {
+               return true;
+            }
+            switch (usable.system.subtype) {
+               case "weapon":
+                  return  this.user.hp > (usable as Power).hpCost();
+               case "magic": {
+                  const mpcost = (usable as Power).mpCost(this);
+                  if (mpcost > 0) {
+                     return this.user.mp >= mpcost;
+                  }
+               }
+                  break;
+               case "social-link": {
+                  const inspirationId = usable.system.inspirationId;
+                  if (!this.user.isPC()) {return false;}
+                  if (inspirationId) {
+                     const socialLink = this.user.system.social.find( x=> x.linkId == inspirationId);
+                     if (!socialLink) {return false;}
+                     return socialLink.inspiration >= usable.system.inspirationCost;
+                  } else {
+                     const inspiration = this.user.system.social.reduce( (acc, item) => acc + item.inspiration , 0);
+                     return inspiration >= usable.system.inspirationCost;
+                  }
+               }
+               case "downtime": {
+                  const combat = game.combat as PersonaCombat;
+                  if (!combat) {return false;}
+                  return combat.isSocial; 
+               }
+               default:
+                  return true;
+            }
+         }
+            break;
+         case "consumable":
+            return usable.system.amount > 0;
+         case "skillCard":
+            return this.user.canLearnNewSkill();
+      }
+      return true;
+   }
 
 	canPayActivationCost_shadow(this: Persona<Shadow>, usable: UsableAndCard, outputReason: boolean) : boolean { if (usable.system.type == "skillCard") {
 		return false;
@@ -820,7 +829,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			}
 			if (usable.system.reqHealthPercentage < 100) {
 				const reqHp = (usable.system.reqHealthPercentage / 100) * this.user.mhpEstimate ;
-				if (this.user.hp > reqHp) return false;
+				if (this.user.hp > reqHp) {return false;}
 			}
 		}
 		return true; //placeholder
@@ -828,12 +837,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	wpnDamage() : NewDamageParams {
 		switch (this.user.system.type) {
-			case "pc": case "npcAlly":
-				const wpn = this.user.weapon;
+			case "pc": case "npcAlly": {
+         const wpn = this.user.weapon;
 				if (!wpn) {
 					return  {baseAmt: 0, extraVariance: 0};
 				}
 				return  wpn.baseDamage();
+         }
 			case "shadow":
 				return {
 					baseAmt: DamageCalculator.getWeaponDamageByWpnLevel(Math.floor(this.level / 10) + 1),
