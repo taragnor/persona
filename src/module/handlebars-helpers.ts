@@ -618,7 +618,8 @@ export class PersonaHandleBarsHelpers {
 			return scanLevel ?? 0;
 		},
 
-		"scanLevelgte": function (persona: PersonaI, val: number) : boolean {
+		"scanLevelgte": function (persona: Persona, val: number) : boolean {
+			if (persona.source.isOwner || game.user.isGM) {return true;}
 			return persona.scanLevel >= val;
 		},
 
@@ -715,7 +716,12 @@ export class PersonaHandleBarsHelpers {
 
 		"getWeaponDamageAmt": function (weapon: Weapon) {
 			return weapon.baseDamage().baseAmt;
+		},
+
+		"resistStr": function (persona: Persona) {
+			return persona.printableResistanceString;
 		}
+
 
 	};
 

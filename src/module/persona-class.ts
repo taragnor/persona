@@ -299,7 +299,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			return this.#cache.mainModifiers;
 		}
 		const user = this.user;
-		const roomModifiers : UniversalModifier[] = []; 
+		const roomModifiers : UniversalModifier[] = [];
 		if (game.combat) {
 			roomModifiers.push(...PersonaCombat.getRoomModifiers(this));
 		} else {
@@ -316,7 +316,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			// ...PersonaDB.getGlobalModifiers(),
 			...PersonaDB.navigatorModifiers(),
 		].filter( x => x.getEffects(this.user).length > 0);
-		this.#cache.mainModifiers = mainMods;
+		if (!options) {
+			this.#cache.mainModifiers = mainMods;
+		}
 		return mainMods;
 	}
 

@@ -52,12 +52,11 @@
 </section>
 
 {{#if (scanLevelgte persona 2)}}
-
-{{#if persona.printableResistanceString}}
+{{#if (resistStr persona)}}
 <div class="status-resists">
 	<span> <b>Status Resistances: </b></span>
 	<span>
-		{{persona.printableResistanceString}}
+		{{resistStr persona}}
 	</span>
 </div>
 {{/if}}
