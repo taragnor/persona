@@ -1,7 +1,7 @@
 
 export class HTMLTools {
 	static getClosestData <ReturnType extends string | number = string> ( eventOrJQObj: Event | JQuery<HTMLElement> | JQuery.Event, prop: string) : ReturnType {
-		const target = ("currentTarget" in eventOrJQObj) ? (eventOrJQObj as Event).currentTarget : eventOrJQObj;
+		const target = ("currentTarget" in eventOrJQObj) ? (eventOrJQObj).currentTarget : eventOrJQObj;
 		if (!target) {throw new Error("No target for event");}
 		const convert = function (str: string) {
 			return Array.from(str).map(x => {
@@ -12,8 +12,8 @@ export class HTMLTools {
 		if (prop === undefined)
 			{throw new Error("Property name is undefined");}
 		const cssprop = convert(prop);
-		const data = $(target).closest(`[data-${cssprop}]`).data(prop);
-		if (data != null) {return data;}
+		const data = $(target).closest(`[data-${cssprop}]`).data(prop) as unknown;
+		if (data != null) {return data as ReturnType;}
 		else {
 			throw new Error(`Couldn't find ${prop} property`);
 		}
@@ -28,7 +28,7 @@ export class HTMLTools {
 	static getClosestDataSafe<T extends string | number> (eventOrJQObj: Event | JQuery<HTMLElement> | JQuery.Event, prop: string, elseValue: T): T {
 		try {
 			return this.getClosestData(eventOrJQObj, prop);
-		} catch (_) {
+		} catch {
 			return elseValue;
 		}
 	}
@@ -40,8 +40,8 @@ export class HTMLTools {
 		}).join("");
 	}
 
-	static async editItemWindow<T extends Item<any>>(item: T):  Promise<Option<T>> {
-		item.sheet.render(true);
+	static async editItemWindow<T extends Item>(item: T):  Promise<Option<T>> {
+		await item.sheet.render(true);
 		return await new Promise ( (keep, _brk) => {
 			const checker = () =>  {
 				const isOpen = item.sheet._state != -1; //window state check
@@ -59,7 +59,7 @@ export class HTMLTools {
 // **************************************************
 
 	static async confirmBox(title: string, text: string, defaultYes = false) {
-		const templateData = {text};
+		// const templateData = {text};
 		const html = `<div>
 		${text}
 			</div>`;
@@ -67,8 +67,8 @@ export class HTMLTools {
 			Dialog.confirm({
 				title,
 				content: html,
-				yes: conf.bind(null, true),
-				no: conf.bind(null, false),
+				yes: conf.bind(null, true) as typeof conf,
+				no: conf.bind(null, false) as typeof conf,
 				defaultYes,
 				close: () => {
 					conf(false);
@@ -78,7 +78,7 @@ export class HTMLTools {
 	}
 
 
-	static async singleChoiceBox<K extends string, const T extends Record<K, any>>(choices: T, options: ChoiceBoxOptions<T> = {}) : Promise<K | null> {
+	static async singleChoiceBox<K extends string, const T extends Record<K, unknown>>(choices: T, options: ChoiceBoxOptions<T> = {}) : Promise<K | null> {
 		const localize = options.localize ?? false;
 		const defaultChoice = options.default ?? undefined;
 		const html = await renderTemplate(`systems/${game.system.id}/module/utility/singleChoiceBox.hbs`, {choices, localize, defaultChoice});
@@ -94,7 +94,7 @@ export class HTMLTools {
 							const ret =
 								$(htm).find("select.selection").find(":selected").val();
 							if (!ret) {conf(null);}
-							conf(ret as any);
+							conf(ret as K);
 						}
 					},
 					cancel : {
@@ -105,7 +105,7 @@ export class HTMLTools {
 					}
 				},
 				close: () => {
-					conf(null as any);
+					conf(null);
 				},
 			},
 				{}
@@ -122,7 +122,7 @@ export class HTMLTools {
 			const dialog = new Dialog({
 				title: `Prompt`,
 				content: html,
-				render: async (html: string) => {
+				render: (html: string) => {
 					$(html).find(".numInput").focus();
 				},
 				buttons: {
@@ -134,19 +134,19 @@ export class HTMLTools {
 							if (value != undefined) {
 								conf(value);
 							} else {
-								_reject("Something weird happened");
+								_reject( new Error("Something weird happened"));
 							}
 						}
 					},
 					two: {
 						icon: `<i class="fas fa-times"></i>`,
 						label: "Cancel",
-						callback: () => _reject("Cancel"),
+						callback: () => _reject(new Error("Cancel")),
 					}
 				},
 				default: "one",
 				close: () => {
-					_reject("close");
+					_reject(new Error("close"));
 				},
 			}, {});
 			dialog.render(true);
@@ -168,7 +168,7 @@ export class HTMLTools {
 				content: html,
 				buttons,
 				default: `${min}`,
-				close: () => rej ("closed"),
+				close: () => rej (new Error("closed")),
 			}, {});
 			dialog.render(true);
 		});
@@ -186,7 +186,7 @@ export class HTMLTools {
 // **************   EventHandlers  *************** *
 // **************************************************
 
-	static middleClick (handler: (ev: Event)=>any ) {
+	static middleClick (handler: (ev: Event)=>unknown ) {
 		return function (event: MouseEvent) {
 			if (event.which == 2) {
 				event.preventDefault();
@@ -196,7 +196,7 @@ export class HTMLTools {
 		};
 	}
 
-	static rightClick (handler: (ev:Event)=>any) {
+	static rightClick (handler: (ev:Event)=>unknown) {
 		return function (event: MouseEvent) {
 			if (event.which == 3) {
 				event.preventDefault();
@@ -209,11 +209,13 @@ export class HTMLTools {
 	static initCustomJqueryFunctions() {
 		if (!jQuery.fn.middleclick) {
 			jQuery.fn.middleclick = function (handler) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 				this.mousedown(HTMLTools.middleClick(handler));
 			};
 		}
 		if (!jQuery.fn.rightclick) {
 			jQuery.fn.rightclick = function (handler) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 				this.mousedown(HTMLTools.rightClick(handler));
 			};
 		}
@@ -226,9 +228,9 @@ export class HTMLTools {
 HTMLTools.initCustomJqueryFunctions();
 
 declare global{
-	interface JQuery<TElement = HTMLElement> {
-		middleclick( fn: (ev: Event)=> any): void;
-		rightclick( fn: (ev: Event)=> any): void;
+	interface JQuery {
+		middleclick( fn: (ev: Event)=> unknown): void;
+		rightclick( fn: (ev: Event)=> unknown): void;
 	}
 }
 

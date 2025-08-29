@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { WEAPON_TAGS } from "../config/equipment-tags.js";
 import { NumericV2 } from "./conditionalEffects/numericV2.js";
 import { CombatResultComparison } from "../config/numeric-comparison.js";
@@ -16,7 +21,7 @@ import { localize } from "./persona.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
 import { MODIFIER_VARIABLES } from "../config/effect-types.js";
 import { MODIFIERS_TABLE } from "../config/item-modifiers.js";
-import { Consequence } from "../config/consequence-types.js";
+import { Consequence, ConsequenceAmount } from "../config/consequence-types.js";
 import { RESIST_STRENGTHS } from "../config/damage-types.js";
 import { STUDENT_SKILLS } from "../config/student-skills.js";
 import { SLOTTYPES } from "../config/slot-types.js";
@@ -66,16 +71,16 @@ export class ConditionalEffectManager {
 			case "delete-effect":
 				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).deleteConditionalEffect(action.effectIndex);
 			case "create-conditional" :
-				// @ts-ignore
+				// @ts-expect-error weird type error
 				return await acc.addNewCondition(action.conditional, action.effectIndex);
 			case "create-consequence":
-				//@ts-ignore
+				// @ts-expect-error weird type error
 				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).addNewConsequence(action.consequence, action.effectIndex);
 			case "delete-conditional":
-				//@ts-ignore
+				// @ts-expect-error weird type error
 				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).deleteCondition(action.condIndex, action.effectIndex);
 			case "delete-consequence":
-				//@ts-ignore
+				// @ts-expect-error weird type error
 				return await (acc as EMAccessor<DeepNoArray<ConditionalEffect[]>>).deleteCondition(action.consIndex, action.effectIndex);
 			default:
 				throw new PersonaError(`Unknown Action Type: ${(action as any)?.type}`);
@@ -138,6 +143,7 @@ export class ConditionalEffectManager {
 	static async handler_addPowerEffect<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item: D) {
 		let effect : ConditionalEffect  | undefined = undefined;
 		if ("defaultConditionalEffect" in item.sheet && typeof item.sheet.defaultConditionalEffect == "function") {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 			effect = item.sheet.defaultConditionalEffect(ev) as ConditionalEffect;
 		}
 
@@ -251,66 +257,67 @@ export class ConditionalEffectManager {
 
 	}
 
-	static async handler_copyEffect<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item:D) {
+	static handler_copyEffect<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item:D) {
 		const effectIndex = this.#getEffectIndex(ev);
 		if (effectIndex == undefined ) {
 			throw new PersonaError("Can't get effect index");
 		}
 		const {topPath, dataPath} = this.#getPaths(ev);
-		const master  = topPath as string != dataPath as string ? new EMAccessor<D>(item, topPath) : undefined;
+		const master  = topPath != dataPath ? new EMAccessor<D>(item, topPath) : undefined;
 		const acc = new EMAccessor<D>(item, dataPath, master);
-		this.clipboard.effect = acc.data[effectIndex];
+		this.clipboard.effect = acc.data[effectIndex] as ConditionalEffect;
 	}
 
-	static async handler_copyCondition<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item:D) {
+	static handler_copyCondition<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item:D) {
 		const condIndex = Number(HTMLTools.getClosestData(ev,
 			"preconditionIndex"));
 		// const effectIndex = this.#getEffectIndex(ev);
 		const {topPath, dataPath} = this.#getPaths(ev);
-		const master  = topPath as string != dataPath as string ? new EMAccessor<D>(item, topPath) : undefined;
+		const master  = topPath != dataPath ? new EMAccessor<D>(item, topPath) : undefined;
 		const acc = new EMAccessor<D>(item, dataPath, master);
-		this.clipboard.condition = acc.data[condIndex];
+		this.clipboard.condition = acc.data[condIndex] as Precondition;
 	}
 
-	static async handler_copyConsequence<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item:D) {
+	static handler_copyConsequence<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, item:D) {
 		const consIndex = Number(HTMLTools.getClosestData(ev, "consequenceIndex"));
 		// const effectIndex = this.#getEffectIndex(ev);
 		const {topPath, dataPath} = this.#getPaths(ev);
 
-		const master  = topPath as string != dataPath as string ? new EMAccessor<D>(item, topPath) : undefined;
+		const master  = topPath != dataPath ? new EMAccessor<D>(item, topPath) : undefined;
 		const acc = new EMAccessor<D>(item, dataPath, master);
-		this.clipboard.consequence = acc.data[consIndex];
+		this.clipboard.consequence = acc.data[consIndex] as Consequence;
 	}
 
-	static async handler_clickMCSelected<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, _item: D) {
+	static handler_clickMCSelected<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, _item: D) {
 		ev.stopPropagation();
 		$(ev.currentTarget).parent().find(".MC-selectors").toggle();
 		this.lastClick = "";
 	}
 
-	static async handler_clickMCSelector<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, _item: D) {
+	static handler_clickMCSelector<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, _item: D) {
 		$(ev.currentTarget).show();
 		this.lastClick= HTMLTools.getClosestDataSafe(ev.currentTarget, "name", "");
 		if (this.lastClick == "") {
+			// eslint-disable-next-line no-debugger
 			debugger;
 		}
 	}
 
 	static applyHandlers<D extends FoundryDocument<any>>(html: JQuery, doc: D) {
-		html.find(".add-effect").on("click", async (ev) => await this.handler_addPowerEffect(ev, doc));
-		html.find(".del-effect").on("click", async (ev) => await this.handler_deletePowerEffect(ev, doc));
-		html.find(".add-condition").on("click", async (ev) => this.handler_addPrecondition(ev, doc));
-		html.find(".add-consequence").on("click", async (ev)=> this.handler_addConsequence(ev,doc));
-		html.find(".del-consequence").on("click", async (ev) => this.handler_deleteConsequence(ev, doc));
-		html.find(".del-condition").on("click", async(ev) => this.handler_deletePrecondition(ev,doc));
-		html.find(".paste-effect").on("click", async(ev) => this.handler_pasteEffect(ev, doc));
-		html.find(".paste-consequence").on("click", async(ev) => this.handler_pasteConsequence(ev, doc));
-		html.find(".paste-condition").on("click", async(ev) => this.handler_pasteCondition(ev, doc));
-		html.find(".copy-effect").on("click", async(ev) => this.handler_copyEffect(ev, doc));
-		html.find(".copy-consequence").on("click", async(ev) => this.handler_copyConsequence(ev, doc));
-		html.find(".copy-condition").on("click", async(ev) => this.handler_copyCondition(ev, doc));
-		html.find("div.multi-check .selected").on("click", (ev) => this.handler_clickMCSelected(ev, doc));
-		html.find(".MC-selectors").on("click", (ev) => this.handler_clickMCSelector(ev, doc));
+		html.find(".add-effect").on("click", (ev) => {void this.handler_addPowerEffect(ev, doc);});
+		html.find(".del-effect").on("click", (ev) => {void this.handler_deletePowerEffect(ev, doc);});
+		html.find(".add-condition").on("click", (ev) => {void this.handler_addPrecondition(ev, doc);});
+		html.find(".add-consequence").on("click", (ev)=> {void this.handler_addConsequence(ev,doc);});
+		html.find(".del-consequence").on("click", (ev) => {void this.handler_deleteConsequence(ev, doc);});
+		html.find(".del-condition").on("click", (ev) => { void this.handler_deletePrecondition(ev,doc);});
+		html.find(".paste-effect").on("click", (ev) => {void this.handler_pasteEffect(ev, doc);});
+		html.find(".paste-consequence").on("click", (ev) => {void this.handler_pasteConsequence(ev, doc);});
+		html.find(".paste-condition").on("click", (ev) => { void this.handler_pasteCondition(ev, doc);});
+		html.find(".copy-effect").on("click", (ev) => void this.handler_copyEffect(ev, doc));
+		html.find(".copy-consequence").on("click", (ev) => void this.handler_copyConsequence(ev, doc));
+		html.find(".copy-condition").on("click", (ev) => void this.handler_copyCondition(ev, doc));
+		html.find("div.multi-check .selected").on("click", (ev) => void this.handler_clickMCSelected(ev, doc));
+		html.find(".MC-selectors").on("click", (ev) => void this.handler_clickMCSelector(ev, doc));
 		// setTimeout( () => this.restoreLastClick(html), 100);
 	}
 
@@ -396,8 +403,7 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 		}
 
 	static getConditionals<T extends Actor<any>, I extends Item<any>>(condObject: DeepNoArray<ConditionalEffect["conditions"]>, sourceItem: I | null, sourceActor: T | null): ConditionalEffect["conditions"] {
-		const Arr = this.ArrayCorrector;
-		const conditionalEffects = Arr(condObject);
+		const conditionalEffects = this.ArrayCorrector(condObject);
 		return conditionalEffects.map( eff=> ({
 			...eff,
 			actorOwner: sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner,
@@ -406,8 +412,7 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 	}
 
 	static getConsequences<T extends Actor<any>, I extends Item<any>>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null): ConditionalEffect["consequences"] {
-		const Arr = this.ArrayCorrector;
-		const consequences = Arr(consObject);
+		const consequences = this.ArrayCorrector(consObject);
 		return  consequences.map( eff=> ({
 			...eff,
 			actorOwner: sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner,
@@ -416,6 +421,7 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 	}
 
 	static ArrayCorrector<T>(obj: (T[] | Record<string | number, T>)): T[] {
+		// eslint-disable-next-line no-useless-catch
 		try {
 			if (obj == null) {return[];}
 			if (!Array.isArray(obj)) {
@@ -471,12 +477,13 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 				return "always";
 			case "miss-all-targets":
 				return "Miss All Targets";
-			case "save-versus":
-				const saveType = this.translate(cond.status!, STATUS_EFFECT_TRANSLATION_TABLE);
+			case "save-versus": { const saveType = this.translate(cond.status!, STATUS_EFFECT_TRANSLATION_TABLE);
 				return `on save versus ${saveType}`;
-			case "on-trigger":
+			}
+			case "on-trigger": {
 				const trig = this.translate(cond.trigger!, TRIGGERS);
 				return `trigger: ${trig}`;
+			}
 			case "never":
 				return "Never";
 			case "disable-on-debug":
@@ -502,130 +509,142 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 			.join(", ");
 	}
 
-	static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
-		const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, CONDITION_TARGETS) : "";
-		const target2 = ("conditionTarget2" in cond) ? this.translate(cond.conditionTarget2, CONDITION_TARGETS): "" ;
-		// const boolComparison = this.translate (cond.boolComparisonTarget, BOOLEAN_COMPARISON_TARGET);
-		const not =  !cond.booleanState ? "not" : "";
-		switch (cond.boolComparisonTarget) {
-			case "engaged":
-				return `${target1} is ${not} engaged with anyone`;
-			case "engaged-with":
-				return `${target1} is ${not} engaged with ${target2}`;
-			case "metaverse-enhanced":
-				return `metaverse is ${not} enhanced`;
-			case "is-shadow":
-				return `${target1} is ${not} enemy type`;
-			case "is-pc":
-				return `${target1} is ${not} PC type`;
-			case "has-tag":
-				const tagName = this.getTagNameForHasTag(cond);
-				return `used power ${not} has tag: ${tagName}`;
-			case "in-combat":
-				return `is ${not} in combat`;
-			case "is-critical":
-				return `${not} critical hit/success`;
-			case "is-hit":
-				return `${not} hit/success`;
-			case "is-dead":
-				return `${target1} is ${not} dead`;
-			case "target-owner-comparison":
-				return `${target1} is ${not} equal to ${target2}`;
-			case "damage-type-is":
-				const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
-				return `Power Damage Type is ${not} ${damageType}`;
-			case "power-type-is":
-				const powerType = this.translate(cond.powerType, POWERTYPES);
-				return `Power Type is ${not} ${powerType}`;
-			case "has-status":
-				const status = this.translate(cond.status, STATUS_EFFECT_TRANSLATION_TABLE);
-				return `${target1} ${not} has status: ${status}`;
-			case "struck-weakness":
-				return `attack ${not} targets a weakness`;
-			case "is-resistant-to": {
-				const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
-				return `${target1} is ${not} resistant to ${damageType}`;
-			}  case "is-same-arcana": 
-				return `${target1} is ${not} the same arcana as attacker`; 
-			case "flag-state":
-				return `${target1} flag ${cond.flagId} is ${not} true`;
-			case "is-consumable":
-				return `used power/item is ${not} a consumable item`;
-			case "power-target-type-is":
-				const targetType = this.translate(cond.powerTargetType, TARGETING);
-				return `used power targets type is ${not}: ${targetType}`; 
-			case "weather-is":
-				const weather = this.translate(cond.weatherComparison, WEATHER_TYPES);
-				return `weather is ${not}: ${weather}`;
-			case "weekday-is":
-				const weekday = this.translate(cond.days, DAYS);
-				return `weekday is ${not} : ${weekday}`;
-			case "social-target-is":
-				const link = cond.socialLinkIdOrTarot ? (game.actors.get(cond.socialLinkIdOrTarot as string) as PersonaActor)?.displayedName : "ERROR";
-				return `social Target is ${not} ${link}`;
-			case "social-target-is-multi":
-				const actors = multiCheckToArray(cond.socialLinkIdOrTarot)
-					.map( x=> x ? (game.actors.get(x as string) as PersonaActor)?.displayedName ?? x : "ERROR");
-				return `social Target is ${not} ${actors.join(", ")}`;
-			case "shadow-role-is":
-				const shadowRole = this.translate(cond.shadowRole, SHADOW_ROLE);
-				return `${target1} role is is ${not} ${shadowRole}`;
-			case "is-distracted":
-				return `${target1} is ${not} distracted`;
-			case "active-scene-is":
-				return `Active Scene is ${not} ${cond.sceneId}`;
-			case "is-gm":
-				return `User is ${not} GM`;
-			case "has-item-in-inventory":
-				const item = game.items.get(cond.itemId);
-				return `${target1} ${not} has ${item?.name ?? "Unknown Item"} in Inventory`;
-			case "creature-type-is":
-				const creatureType = this.translate(cond.creatureType, CREATURE_TYPE);
-				return `${target1} is ${not} of creature type: ${creatureType}`;
-			case "power-slot-is":
-				const slot = this.translate(cond.slotType, SLOTTYPES);
-				return `Power is ${not} of slot type: ${slot}`;
-			case "social-availability":
-				switch (cond.socialTypeCheck) {
-					case "relationship-type-check":
-						return `Relationship Type with ${target1} is ${not} ${cond.relationshipType}`;
-					case "is-social-disabled":
-						return `${target1} is ${not} socially Disabled`;
-					case "is-available":
-						return `${target1} is ${not} socially available`;
-					case "is-dating":
-						return `initiator is ${not} dating ${target1}`;
-					default:
-						cond satisfies never;
-						return `ERROR`;
-				}
-			case "has-creature-tag": {
-				const tags = this.translate(cond.creatureTag, CREATURE_TAGS);
-				return `${target1} ${not} has Tag: ${tags}`;
-			}
-			case "cameo-in-scene": {
-				return `Scene ${not} has a cameo `;
-			}
-			case "arcana-is": {
-				const arcana = this.translate(cond.tarot, TAROT_DECK);
-				return `Arcana is ${not} ${arcana}`;
-			}
-			case "is-enemy":
-				return `${target1} is ${not} enemy of ${target2}`;
-			case "logical-or": {
-				const c1= this.printConditional(cond.comparison1);
-				const c2= this.printConditional(cond.comparison2);
-				return `(${c1} OR ${c2})`;
-			}
-			case "scene-clock-name-is":
-				return `Scene Clock is named ${cond.clockName}`;
-			case "is-within-ailment-range":
-				return `Attack Roll is within ailment range`;
-			default:
-				cond satisfies never;
-				return "";
+static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
+	const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, CONDITION_TARGETS) : "";
+	const target2 = ("conditionTarget2" in cond) ? this.translate(cond.conditionTarget2, CONDITION_TARGETS): "" ;
+	// const boolComparison = this.translate (cond.boolComparisonTarget, BOOLEAN_COMPARISON_TARGET);
+	const not =  !cond.booleanState ? "not" : "";
+	switch (cond.boolComparisonTarget) {
+		case "engaged":
+			return `${target1} is ${not} engaged with anyone`;
+		case "engaged-with":
+			return `${target1} is ${not} engaged with ${target2}`;
+		case "metaverse-enhanced":
+			return `metaverse is ${not} enhanced`;
+		case "is-shadow":
+			return `${target1} is ${not} enemy type`;
+		case "is-pc":
+			return `${target1} is ${not} PC type`;
+		case "has-tag": {
+			const tagName = this.getTagNameForHasTag(cond);
+			return `used power ${not} has tag: ${tagName}`;
 		}
+		case "in-combat":
+			return `is ${not} in combat`;
+		case "is-critical":
+			return `${not} critical hit/success`;
+		case "is-hit":
+			return `${not} hit/success`;
+		case "is-dead":
+			return `${target1} is ${not} dead`;
+		case "target-owner-comparison":
+			return `${target1} is ${not} equal to ${target2}`;
+		case "damage-type-is": {
+			const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
+			return `Power Damage Type is ${not} ${damageType}`;
+		}
+		case "power-type-is": {
+			const powerType = this.translate(cond.powerType, POWERTYPES);
+			return `Power Type is ${not} ${powerType}`;
+		}
+		case "has-status": {
+			const status = this.translate(cond.status, STATUS_EFFECT_TRANSLATION_TABLE);
+			return `${target1} ${not} has status: ${status}`;
+		}
+		case "struck-weakness":
+			return `attack ${not} targets a weakness`;
+		case "is-resistant-to": {
+			const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
+			return `${target1} is ${not} resistant to ${damageType}`;
+		}  case "is-same-arcana": 
+			return `${target1} is ${not} the same arcana as attacker`; 
+		case "flag-state":
+			return `${target1} flag ${cond.flagId} is ${not} true`;
+		case "is-consumable":
+			return `used power/item is ${not} a consumable item`;
+		case "power-target-type-is": {
+			const targetType = this.translate(cond.powerTargetType, TARGETING);
+			return `used power targets type is ${not}: ${targetType}`;
+		}
+		case "weather-is": {
+			const weather = this.translate(cond.weatherComparison, WEATHER_TYPES);
+			return `weather is ${not}: ${weather}`;
+		}
+		case "weekday-is": {
+			const weekday = this.translate(cond.days, DAYS);
+			return `weekday is ${not} : ${weekday}`;
+		}
+		case "social-target-is": { const link = cond.socialLinkIdOrTarot ? (game.actors.get(cond.socialLinkIdOrTarot as string) as PersonaActor)?.displayedName : "ERROR";
+			return `social Target is ${not} ${link}`;
+		}
+		case "social-target-is-multi": {
+			const actors = multiCheckToArray(cond.socialLinkIdOrTarot)
+			.map( x=> x ? (game.actors.get(x) as PersonaActor)?.displayedName ?? x : "ERROR");
+			return `social Target is ${not} ${actors.join(", ")}`;
+		}
+		case "shadow-role-is": {
+			const shadowRole = this.translate(cond.shadowRole, SHADOW_ROLE);
+			return `${target1} role is is ${not} ${shadowRole}`;
+		}
+		case "is-distracted":
+			return `${target1} is ${not} distracted`;
+		case "active-scene-is":
+			return `Active Scene is ${not} ${cond.sceneId}`;
+		case "is-gm":
+			return `User is ${not} GM`;
+		case "has-item-in-inventory": {
+			const item = game.items.get(cond.itemId);
+			return `${target1} ${not} has ${item?.name ?? "Unknown Item"} in Inventory`;
+		}
+		case "creature-type-is": {
+			const creatureType = this.translate(cond.creatureType, CREATURE_TYPE);
+			return `${target1} is ${not} of creature type: ${creatureType}`;
+		}
+		case "power-slot-is": {
+			const slot = this.translate(cond.slotType, SLOTTYPES);
+			return `Power is ${not} of slot type: ${slot}`;
+		}
+		case "social-availability":
+			switch (cond.socialTypeCheck) {
+				case "relationship-type-check":
+					return `Relationship Type with ${target1} is ${not} ${cond.relationshipType}`;
+				case "is-social-disabled":
+					return `${target1} is ${not} socially Disabled`;
+				case "is-available":
+					return `${target1} is ${not} socially available`;
+				case "is-dating":
+					return `initiator is ${not} dating ${target1}`;
+				default:
+					cond satisfies never;
+					return `ERROR`;
+			}
+		case "has-creature-tag": {
+			const tags = this.translate(cond.creatureTag, CREATURE_TAGS);
+			return `${target1} ${not} has Tag: ${tags}`;
+		}
+		case "cameo-in-scene": {
+			return `Scene ${not} has a cameo `;
+		}
+		case "arcana-is": {
+			const arcana = this.translate(cond.tarot, TAROT_DECK);
+			return `Arcana is ${not} ${arcana}`;
+		}
+		case "is-enemy":
+			return `${target1} is ${not} enemy of ${target2}`;
+		case "logical-or": {
+			const c1= this.printConditional(cond.comparison1);
+			const c2= this.printConditional(cond.comparison2);
+			return `(${c1} OR ${c2})`;
+		}
+		case "scene-clock-name-is":
+			return `Scene Clock is named ${cond.clockName}`;
+		case "is-within-ailment-range":
+			return `Attack Roll is within ailment range`;
+		default:
+			cond satisfies never;
+			return "";
 	}
+}
 
 	static getTagNameForHasTag(cond: Precondition & {type: "boolean"} & {boolComparisonTarget: "has-tag"}): string {
 		switch (cond.tagComparisonType) {
@@ -685,24 +704,27 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 				return `Roll Total ${endString(cond)}`;
 			case "talent-level":
 				return `Talent Level ${endString(cond)}`;
-			case "social-link-level":
+			case "social-link-level": {
 				const socialTarget  = PersonaDB.allActors()
 					.find( x=> x.id == cond.socialLinkIdOrTarot)
 					?? PersonaDB.socialLinks()
 					.find(x=> x.tarot?.name  == cond.socialLinkIdOrTarot);
 				const name = socialTarget ? socialTarget.displayedName : "Unknown";
 				return `${name} SL ${endString(cond)}`;
-			case "student-skill":
-					const skill = this.translate(cond.studentSkill!, STUDENT_SKILLS);
+			}
+			case "student-skill": {
+				const skill = this.translate(cond.studentSkill!, STUDENT_SKILLS);
 				return `${skill} ${endString(cond)}`;
+			}
 			case "character-level":
 					return `Character Level ${endString(cond)}`;
 			case "has-resources":
 				return `Resources ${endString(cond)}`;
-			case "resistance-level":
+			case "resistance-level": {
 				const resist = this.translate(cond.resistLevel, RESIST_STRENGTHS);
 				const damage = this.translate(cond.element, DAMAGETYPES);
 				return `${damage} resistance ${endString(cond, resist)}`;
+			}
 			case "health-percentage":
 				return `Health Percentage ${endString(cond)}`;
 			case "clock-comparison":
@@ -718,9 +740,10 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 				return `Social Card d20 ${endString(cond)}`;
 			case "inspirationWith":
 				return `Has Inspiration With Link ??? ${endString(cond)}`;
-			case "itemCount":
+			case "itemCount": {
 				const item = game.items.get(cond.itemId);
 				return `Has Amount of ${item?.name ?? "UNKNOWN"} ${endString(cond)}`;
+			}
 			case "opening-roll":
 				return `Opening Roll natural value ${endString(cond)}`;
 			case "links-dating":
@@ -731,9 +754,10 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 				return `Round Count ${endString(cond)}`;
 			case "total-SL-levels":
 				return `Total SL levels among all PCs ${endString(cond)}`;
-			case "combat-result-based":
+			case "combat-result-based": {
 				const combatResult = this.printCombatResultString(cond);
 				return `${combatResult} ${endString(cond)}`;
+			}
 			case "num-of-others-with":
 				//TODO: put in special condition
 				return `Number of ${cond.group} that meet Special Condition ${endString(cond)}`;
@@ -775,7 +799,7 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 				return "";
 			case "absorb":
 				return "Absorb";
-			case "modifier-new":
+			case "modifier-new": {
 				const modifiers = this.translate(cons.modifiedFields, MODIFIERS_TABLE);
 				let amt: string;
 				switch (cons.modifierType) {
@@ -791,16 +815,17 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 						amt = "error";
 				}
 				return `${modifiers}: ${amt}`;
+			}
 			case "damage-new":
 				return this.printDamageConsequence(cons);
 			case "addStatus": {
-				const status = this.translate(cons.statusName!, STATUS_EFFECT_TRANSLATION_TABLE);
+				const status = this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE);
 				const dur = cons.statusDuration;
 				if (!dur) {return `ERROR`;}
 				const duration = this.translate(dur, STATUS_EFFECT_DURATION_TYPES);
 				return `Add Status ${status} (${duration})`;
 			} case "removeStatus": {
-				const status = this.translate(cons.statusName!, STATUS_EFFECT_TRANSLATION_TABLE);
+				const status = this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE);
 				return `Remove Status ${status}`;
 			} case "escalationManipulation":
 				return `Modify Escalation Die ${cons.amount}`;
@@ -816,9 +841,10 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 				return `Take an extra turn`;
 			case "expend-item":
 				return `expend item`;
-			case "add-power-to-list":
+			case "add-power-to-list": {
 				const grantedPower = PersonaDB.getPower(cons.id);
 				return `Add power to list ${grantedPower?.displayedName?.toString() ?? "ERROR"}`;
+			}
 			case "other-effect":
 				return this.#printOtherEffect(cons);
 			case "set-flag":
@@ -841,11 +867,12 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 				return `Raise ${resistType} Resistance ${resistLevel}` ; }
 			case "lower-resistance" : {
 				const resistType =this.translate(cons.resistType, DAMAGETYPES);
-				const resistLevel = this.translate(cons.resistanceLevel!, RESIST_STRENGTHS);;
+				const resistLevel = this.translate(cons.resistanceLevel, RESIST_STRENGTHS);;
 				return `Lower ${resistType} Resistance ${resistLevel}` ;
-			} case "use-power":
+			} case "use-power": {
 				const power = PersonaDB.getPower(cons.powerId);
 				return `Use Power ${power?.name}`;
+			}
 			case "alter-mp":
 				return this.#printMPAlter(cons);
 			case "save-slot":
@@ -872,20 +899,21 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 				return `HP loss: ${cons.amount}`;
 			case "teach-power": {
 				const power = PersonaDB.getPower(cons.id);
-				return `Teach Power ${power?.displayedName ?? "ERROR"}`;
+				return `Teach Power ${power?.displayedName?.toString() ?? "ERROR"}`;
 			}
 			case "raise-status-resistance":
 				return `${this.translate(cons.resistanceLevel, RESIST_STRENGTHS)} status ${this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE)}`;
-			case "add-creature-tag":
+			case "add-creature-tag": {
 				const tag = this.translate(cons.creatureTag, CREATURE_TAGS);
 				return `Add ${tag} tag`;
+			}
 			case "combat-effect":
 				return this.#printCombatEffect(cons);
 			case "alter-fatigue-lvl":
 				return `Alter Fatigue Level ${cons.amount}`;
 			case "alter-variable":
 				if (cons.operator != "set-range") {
-				return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${cons.value}`; } else {
+				return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${this.#printConsequenceAmount(cons.value)}`; } else {
 				return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${cons.min} - ${cons.max}`; }
 			case "perma-buff":
 				return `Add Permabuff ${cons.buffType} :${cons.value}`;
@@ -897,6 +925,12 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 		}
 
 	}
+
+static #printConsequenceAmount(consAmt: ConsequenceAmount) : string {
+	if (typeof consAmt =="number") {return String(consAmt);}
+	return `Complex Consequence Amount`;
+
+}
 
 	static #printCombatEffect( cons: Consequence & {type: "combat-effect"}) : string {
 		switch (cons.combatEffect) {
@@ -937,9 +971,10 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 				return `Resources ${signedAmount}`;
 			case "modify-progress-tokens":
 				return `Progress Tokens ${signedAmount}`;
-			case "alter-student-skill":
-				const skill = this.translate(cons.studentSkill!, STUDENT_SKILLS);
+			case "alter-student-skill": {
+				const skill = this.translate(cons.studentSkill, STUDENT_SKILLS);
 				return `${skill} ${signedAmount}`;
+			}
 			case "modify-progress-tokens-cameo":
 				return `Cameo Progress Tokens ${signedAmount}`;
 			case "replace-card-events":
@@ -1006,8 +1041,8 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 	}
 
 	static signedAmount(amt?: number): string {
-		if (!amt) {return "";}
-		return amt! > 0 ?`+${amt}` : `${amt}`;
+		if (typeof amt != "number" ) {return "";}
+		return amt > 0 ?`+${amt}` : `${amt}`;
 	}
 
 	static printDamageConsequence(cons: Consequence & {type: "damage-new"}) : string {
@@ -1040,10 +1075,10 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 
 export class EMAccessor<T> {
 	private _path : string;
-	private _owner: FoundryDocument<any>;
-	_master: EMAccessor<any> | null;
+	private _owner: FoundryDocument;
+	_master: EMAccessor<unknown> | null;
 
-	constructor(owner: FoundryDocument<any>, writePath: string, master: EMAccessor<any> | null = null) {
+	constructor(owner: FoundryDocument, writePath: string, master: EMAccessor<unknown> | null = null) {
 		this._owner = owner;
 		this._path = writePath;
 		if (this._path.endsWith(".")) {
@@ -1052,11 +1087,11 @@ export class EMAccessor<T> {
 		this._master = master;
 	}
 
-	static create<const O extends FoundryDocument<any>, const P extends string, T extends NoArray<GetProperty<O, P>>> ( owner: O, path: P, master?: EMAccessor<any>): EMAccessor<T> {
+	static create<const O extends FoundryDocument, const P extends string, T extends NoArray<GetProperty<O, P>>> ( owner: O, path: P, master?: EMAccessor<unknown>): EMAccessor<T> {
 		return new EMAccessor(owner, path, master) as unknown as EMAccessor<T>;
 
 	}
-	get data(): T extends Record<number, any> ? T[number][] : never {
+	get data(): T extends Record<number, unknown> ? T[number][] : never {
 		const data = foundry.utils.getProperty(this._owner, this._path) as T;
 		return ConditionalEffectManager.getVariableEffects(data as any);
 	}
@@ -1073,13 +1108,13 @@ export class EMAccessor<T> {
 		return this;
 	}
 
-		static expandObject<T extends unknown>(data: T) :T  {
+		static expandObject<T>(data: T) :T  {
 		return Helpers.expandObject(data);
 	}
 
 	async #patchUpdate(newData: unknown, updatePath: string) {
 		if (this._master) {
-			this._master.#patchUpdate(newData, updatePath);
+			await this._master.#patchUpdate(newData, updatePath);
 			return;
 		}
 		const data = EMAccessor.expandObject(this.data);
@@ -1107,8 +1142,8 @@ export class EMAccessor<T> {
 		}
 	}
 
-	delve<const P extends string, Prop extends GetProperty<T,P>>(path: P) : Prop extends Record<any, any> ? EMAccessor<Prop> : never;
-	delve<I extends Record<number, any>> (this: EMAccessor<I>, index: number) : T extends Record<number, any> ? EMAccessor<T[number]> : never;
+	delve<const P extends string, Prop extends GetProperty<T,P>>(path: P) : Prop extends Record<string | number | symbol, unknown> ? EMAccessor<Prop> : never;
+	delve<I extends Record<number, unknown>> (this: EMAccessor<I>, index: number) : T extends Record<number, unknown> ? EMAccessor<T[number]> : never;
 	delve(search: number | string) : EMAccessor<any> {
 		if (typeof search == "number") {
 			const newPath = `${this._path}.${search}`;
@@ -1176,7 +1211,7 @@ export class EMAccessor<T> {
 		await that.update(newData);
 	}
 
-	async addNewCondition<I extends DeepNoArray<ConditionalEffect["conditions"]>>( this: EMAccessor<I>, cond ?: Precondition | undefined ) : Promise<void>;
+	async addNewCondition<I extends DeepNoArray<ConditionalEffect["conditions"]>>( this: EMAccessor<I>, cond ?: Precondition ) : Promise<void>;
 	async addNewCondition<I extends DeepNoArray<ConditionalEffect[]>>( this: EMAccessor<I>, cond: Precondition | undefined, effectIndex: number): Promise<void>;
 	async addNewCondition<I extends DeepNoArray<ConditionalEffect[]>>( this: EMAccessor<I>, cond: Precondition | undefined, effectIndex: number): Promise<void>;
 	async addNewCondition<I extends DeepNoArray<ConditionalEffect[]> | DeepNoArray<ConditionalEffect["conditions"]>> ( this: EMAccessor<I>, cond:Precondition | undefined, effectIndex?: number) : Promise<void> {
@@ -1196,7 +1231,7 @@ export class EMAccessor<T> {
 	async deleteCondition<I extends DeepNoArray<ConditionalEffect[]>>( this: EMAccessor<I>, condIndex: number, effectIndex: number): Promise<void>;
 	async deleteCondition<I extends DeepNoArray<ConditionalEffect[]> | DeepNoArray<ConditionalEffect["conditions"]>>( this: EMAccessor<I>, condIndex: number, effectIndex?: number) : Promise<void> {
 		if (this.#effectIndexChecker(effectIndex)) {
-			return (this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).conditions(effectIndex!).deleteCondition(condIndex);
+			return (this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).conditions(effectIndex).deleteCondition(condIndex);
 		}
 		const that = this as EMAccessor<DeepNoArray<ConditionalEffect["conditions"]>>;
 		const d = that.data;
@@ -1208,7 +1243,7 @@ export class EMAccessor<T> {
 	async deleteConsequence<I extends DeepNoArray<ConditionalEffect[]>>( this: EMAccessor<I>, consIndex: number, effectIndex: number): Promise<void>;
 	async deleteConsequence<I extends DeepNoArray<ConditionalEffect[]> | DeepNoArray<ConditionalEffect["consequences"]>>( this: EMAccessor<I>, consIndex: number, effectIndex?: number) : Promise<void> {
 		if (this.#effectIndexChecker(effectIndex)) {
-			(this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).consequences(effectIndex).deleteConsequence(consIndex);
+			await (this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).consequences(effectIndex).deleteConsequence(consIndex);
 		}
 		const that = this as EMAccessor<DeepNoArray<ConditionalEffect["consequences"]>>;
 		const d = that.data;
@@ -1218,8 +1253,8 @@ export class EMAccessor<T> {
 
 	#effectIndexChecker(effectIndex: number | undefined): effectIndex is number {
 		if (effectIndex != undefined) {
-			const item = this.data[effectIndex];
-			if (item && "conditions" in item) {
+			const item = this.data[effectIndex] as ConditionalEffect;
+			if (item && typeof item == "object" && "conditions" in item) {
 				return true;
 			}
 		}
@@ -1269,6 +1304,7 @@ export interface TypedConditionalEffect extends ConditionalEffect {
 	conditionalType: typeof CETypes[number];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CETypes = [
 	"on-use", // does something when power is used
 	"passive", // grants bonuses
@@ -1278,7 +1314,7 @@ const CETypes = [
 	// "social" //social link granted
 ] as const;
 
-//@ts-ignore
+//@ts-expect-error added to window objects
 window.CEManager = ConditionalEffectManager;
 
 type ConditonalEffectHolderItem = Item<any> & Partial<{isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]}> ;

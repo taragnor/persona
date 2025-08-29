@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { PresenceRollData } from "../metaverse.js";
 import { EncounterOptions } from "../metaverse.js";
 import { PersonaScene } from "../persona-scene.js";
 import { Helpers } from "../utility/helpers.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { TriggeredEffect } from "../triggered-effect.js";
-import { PC } from "../actor/persona-actor.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { PersonaSockets } from "../persona.js";
 import { Metaverse } from "../metaverse.js";
@@ -112,11 +113,11 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	get regionData(): RegionData {
-		const regionData = this.getFlag("persona", "RegionData") as RegionData | undefined;
+		const regionData = this.getFlag("persona", "RegionData");
 		const defaultRegion = this.defaultRegionData();
 		if (!regionData) {return defaultRegion;}
 		foundry.utils.mergeObject(regionData, defaultRegion, {insertKeys: true, overwrite: false});
-		return regionData;
+		return regionData as RegionData;
 	}
 
 
@@ -142,7 +143,7 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	get concordiaPresence(): number {
-		return Number(this.regionData.concordiaPresence) ?? 0;
+		return Number(this.regionData.concordiaPresence ?? 0);
 	}
 
 	get shadowPresence(): number {
@@ -243,7 +244,7 @@ export class PersonaRegion extends RegionDocument {
 
 	get specialMods() : string[] {
 		return this.regionData.specialMods
-			.filter( x=> x && (game.user.isGM || PLAYER_VISIBLE_MOD_LIST.includes(x as any)))
+			.filter( x=> x && (game.user.isGM || PLAYER_VISIBLE_MOD_LIST.includes(x as typeof PLAYER_VISIBLE_MOD_LIST[number])))
 			.map( x=> game.i18n.localize(SPECIAL_MODS[x]));
 	}
 
@@ -275,12 +276,12 @@ export class PersonaRegion extends RegionDocument {
 		const situation : Situation = {
 			trigger: "on-enter-region",
 			triggeringRegionId: this.id,
-			triggeringCharacter: (token.actor as PC).accessor,
+			triggeringCharacter: token.actor.accessor,
 			triggeringUser: game.user,
 		};
-		await TriggeredEffect.onTrigger("on-enter-region", token.actor as PC, situation).emptyCheck()?.autoApplyResult();
+		await TriggeredEffect.onTrigger("on-enter-region", token.actor, situation).emptyCheck()?.autoApplyResult();
 		if (tokens.some(t => t.actor?.system.type == "shadow" && !t.hidden) ) {return;}
-		this.presenceCheck("wandering");
+		await this.presenceCheck("wandering");
 		await Metaverse.passMetaverseTurn();
 	}
 
@@ -548,10 +549,11 @@ export class PersonaRegion extends RegionDocument {
 			const k = key as keyof RegionData;
 			const fieldClass = `field-${k}`;
 			switch (k) {
-				case "ignore":
+				case "ignore": {
 					const input = topLevel.find(`.${fieldClass}`).prop("checked");
-					(data[k] as any) = input;
+					(data[k] as unknown) = input;
 					break;
+				}
 				case "secretDetails":
 				case "hazardDetails":
 				case "secret":
@@ -559,7 +561,7 @@ export class PersonaRegion extends RegionDocument {
 				case "secretNotes":{
 					const input = topLevel.find(`.${fieldClass}`).val();
 					if (input != undefined) {
-						(data[k] as any) = input;
+						(data[k] as unknown) = input;
 					}
 					break;
 				}
@@ -568,7 +570,7 @@ export class PersonaRegion extends RegionDocument {
 				case "concordiaPresence": {
 					const input = topLevel.find(`.${fieldClass}`).val();
 					if (input != undefined) {
-						(data[k] as any) = Number(input) ?? 0;
+						(data[k] as unknown) = Number(input ?? 0);
 					}
 					break;
 				}
@@ -581,7 +583,7 @@ export class PersonaRegion extends RegionDocument {
 					})
 					.toArray();
 					if (inputs != undefined) {
-						(data[k] as any) = inputs;
+						(data[k] as unknown) = inputs;
 					}
 					break;
 				}
@@ -627,12 +629,12 @@ export class PersonaRegion extends RegionDocument {
 			return;
 		}
 		//TODO: refactor into onMove, onSelect and actual updateRegion functions
-		updateRegionDisplay(region as PersonaRegion);
+		await updateRegionDisplay(region as PersonaRegion);
 		const lastRegion = PersonaSettings.get("lastRegionExplored");
 		if (tokenMove && lastRegion != region.id) {
 			if (game.user.isGM) {
 				await PersonaSettings.set("lastRegionExplored", region.id);
-				(region as PersonaRegion).onEnterRegion(token);
+				await (region as PersonaRegion).onEnterRegion(token);
 			}
 		}
 	}
@@ -672,18 +674,19 @@ Hooks.on("renderRegionConfig", async (app, html) => {
 	appendPoint.append($("<hr>"))
 		.append(region.formFields());
 
-	//@ts-ignore
+	//@ts-expect-error not in foundrytypes
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 	app.setPosition({ height: 'auto' });
 });
 
 Hooks.on("updateRegion", async (region) => {
 	const lastRegion = PersonaSettings.get("lastRegionExplored");
 	if (region.id == lastRegion) {
-		updateRegionDisplay(region as PersonaRegion);
+		await updateRegionDisplay(region as PersonaRegion);
 	}
 });
 
-Hooks.on("updateToken", (token, changes) => {
+Hooks.on("updateToken", async (token, changes) => {
 	const actor = token.actor as PersonaActor;
 	if (!actor) {return;}
 	if (token.hidden) {return;}
@@ -694,7 +697,7 @@ Hooks.on("updateToken", (token, changes) => {
 		{return;}
 	const scene = token.parent;
 	if (!scene) {return;}
-	PersonaRegion.updateRegionDisplay(token);
+	await PersonaRegion.updateRegionDisplay(token);
 });
 
 Hooks.on("updateCombat", (_combat) => {
@@ -702,7 +705,7 @@ Hooks.on("updateCombat", (_combat) => {
 });
 
 
-async function clearRegionDisplay() {
+function clearRegionDisplay() {
 	const infoPanel = $(document).find(".region-info-panel");
 	if (infoPanel.length) {
 		infoPanel.remove();
@@ -723,9 +726,9 @@ async function updateRegionDisplay (region: PersonaRegion) {
 	infoPanel.find(".crunch-button").on("click", Metaverse.toggleCrunchParty.bind(Metaverse));
 }
 
-async function searchButton(_ev: JQuery.ClickEvent) {
+function searchButton(_ev: JQuery.ClickEvent) {
 	if (game.user.isGM) {
-		await Metaverse.searchRoom();
+		void Metaverse.searchRoom();
 		return;
 	}
 	Helpers.pauseCheck();

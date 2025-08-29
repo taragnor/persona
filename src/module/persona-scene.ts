@@ -54,7 +54,8 @@ export class PersonaScene extends Scene {
 
 	async setAllDoorSound(snd: string) {
 		const doors = this.walls.filter( wall => wall.door != 0);
-		doors.forEach( door => door.update({doorSound: snd}));
+		const prom = doors.map( door => door.update({doorSound: snd}));
+		await Promise.allSettled(prom);
 	}
 
 	get sceneEffects() : UniversalModifier[] {
@@ -82,15 +83,15 @@ export class PersonaScene extends Scene {
 		.map( tok => {
 			try {
 				if (!tok.actor) {return Promise.resolve();}
-				const actor = tok.actor as PersonaActor;
+				const actor = tok.actor;
 				if (!actor.isShadow())  {return Promise.resolve();}
 				return actor.onEnterMetaverse();
 			} catch (e) {
 				console.log(e);
 			}
-			return Promise.reject("Error in token metaverse action");
+			return Promise.reject(new Error("Error in token metaverse action"));
 		});
-		const promises : Promise<any>[] = [
+		const promises : Promise<unknown>[] = [
 			...regionActions,
 			...actorActions,
 		];
@@ -98,8 +99,8 @@ export class PersonaScene extends Scene {
 	}
 
 	async onExitMetaverse(): Promise<void> {
-		const regionPromises : Promise<any>[] = this.regions.contents.map( reg => reg.onExitMetaverse());
-		const tokenPromises : Promise<any>[] = this.tokens.contents
+		const regionPromises : Promise<unknown>[] = this.regions.contents.map( reg => reg.onExitMetaverse());
+		const tokenPromises : Promise<unknown>[] = this.tokens.contents
 		.map( tok => {
 			try {
 				const actor = (tok.actor as PersonaActor);
@@ -110,7 +111,7 @@ export class PersonaScene extends Scene {
 				) {return Promise.resolve();}
 				return actor.onExitMetaverse();
 			} catch (e) {console.log(e);}
-			return Promise.reject("Error on running Actor triggers for exit-metaverse");
+			return Promise.reject(new Error("Error on running Actor triggers for exit-metaverse"));
 		});
 		const promises = [
 			...regionPromises,
@@ -267,7 +268,7 @@ export class PersonaScene extends Scene {
 		const newWeatherData = newWeather ? weatherData[newWeather as keyof typeof weatherData] : undefined;
 		await this.clearAllWeather();
 		if (newWeatherData) {
-			//@ts-ignore
+			//@ts-expect-error using weather stuff unregisterd  hook
 			Hooks.call("fxmaster.switchParticleEffect", newWeatherData);
 		}
 	}
@@ -276,7 +277,7 @@ export class PersonaScene extends Scene {
 		const currentEffects = canvas.scene.getFlag("fxmaster", "effects") as Record<string,WeatherData> ?? {};
 		if (!currentEffects) {return;}
 		for (const wd of Object.values(currentEffects)) {
-			//@ts-ignore
+			//@ts-expect-error unreg hook
 			Hooks.call("fxmaster.switchParticleEffect", {type: wd.type});
 		}
 		await sleep(250);
@@ -305,7 +306,7 @@ Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
 	if (diff.active == true) {
 		await PersonaSettings.set("lastRegionExplored", "");
 		if (game.combats.contents.some( (cmb: PersonaCombat) => cmb.isSocial)) {
-			Logger.gmMessage("Social Scene still active, consider ending it before starting metaverse activity");
+			await Logger.gmMessage("Social Scene still active, consider ending it before starting metaverse activity");
 		}
 		await TriggeredEffect.onTrigger("on-active-scene-change")
 			.emptyCheck()

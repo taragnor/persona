@@ -93,8 +93,7 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 		}
 		default:
 			condition satisfies never;
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			PersonaError.softFail(`Unexpected Condition: ${(condition as any)?.type}`);
+			PersonaError.softFail(`Unexpected Condition: ${(condition as Precondition)?.type}`);
 			return false;
 	}
 }
@@ -369,7 +368,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
     }
 		default:
 			condition satisfies never;
-			PersonaError.softFail(`Unknown numeric comparison type ${condition["comparisonTarget"]}`);
+			PersonaError.softFail(`Unknown numeric comparison type ${(condition as Record<string, string>)["comparisonTarget"]}`);
 			return false;
 	}
 	switch (condition.comparator) {
@@ -484,7 +483,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
             if (subject instanceof PersonaActor) {
                if (subject.isNPC()) {return false;}
             }
-            const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken((subject as ValidAttackers).accessor);
+            const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken((subject).accessor);
             if (!subjectToken) {
                // PersonaError.softFail(`Can't find token for ${subject?.name}`);
                return false;
@@ -769,8 +768,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 				}
 				default:
 					condition satisfies never;
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any
-					PersonaError.softFail(`Unexpected social check ${(condition as any)?.socialTypeCheck}`);
+					PersonaError.softFail(`Unexpected social check ${(condition as Record<string,string>)?.socialTypeCheck}`);
 					Debug(condition);
 					Debug(situation);
 					return undefined;
@@ -845,7 +843,7 @@ function hasTagConditional(condition: Precondition & BooleanComparisonPC & {bool
 				return undefined;
 			}
 			if (typeof condition.powerTag == "string") {
-				return powerTags.includes(condition.powerTag!);
+				return powerTags.includes(condition.powerTag);
 			}
 			return Object.entries(condition.powerTag)
 			.filter( ([_, val]) => val == true)
@@ -867,7 +865,7 @@ function hasTagConditional(condition: Precondition & BooleanComparisonPC & {bool
 		}
 		default:  {
 			condition satisfies never;
-			PersonaError.softFail(`Can't run hasTagConditional becuase tagComparionType is invalid (${condition["tagComparisonType"]})`);
+			PersonaError.softFail(`Can't run hasTagConditional becuase tagComparionType is invalid (${(condition as Record<string,string>)["tagComparisonType"]})`);
 			return undefined;
 		}
 	}
@@ -911,7 +909,7 @@ export function getSubjectActors<K extends string, T extends Record<K, Condition
 
 export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, situation: Situation, source: Option<PowerContainer>): NPC | PC | undefined {
 	if (socialLinkIdOrTarot == undefined ) {return undefined;}
-	let targetIdOrTarot : SocialLinkIdOrTarot | undefined = socialLinkIdOrTarot as SocialLinkIdOrTarot;
+	let targetIdOrTarot : SocialLinkIdOrTarot | undefined = socialLinkIdOrTarot;
 	const test = targetIdOrTarot as keyof typeof SOCIAL_LINK_OR_TAROT_OTHER;
 	switch (test) {
 		case "target":
@@ -963,7 +961,7 @@ export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, si
 			return idTest;
 		}
 	}
-	return PersonaDB.getSocialLinkByTarot(targetIdOrTarot as TarotCard | string);
+	return PersonaDB.getSocialLinkByTarot(targetIdOrTarot as TarotCard | (string & {}));
 }
 
 function getSubjects<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<PowerContainer>, field : K) : (PToken | ValidAttackers | NPC) []{
@@ -1105,7 +1103,7 @@ export function numberOfOthersWithResolver(condition: NumberOfOthersWithComparis
 			case "allies": {
 				if (subject.isNPC()) {return false;}
 				if (combat) {
-					const comb = combat.getCombatantByActor(subject as ValidAttackers);
+					const comb = combat.getCombatantByActor(subject);
 					if (!comb) {return false;}
 					const allies = combat.getAllies(comb);
 					targets.push(...allies

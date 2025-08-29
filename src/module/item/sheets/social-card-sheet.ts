@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { ROLL_TAGS } from "../../../config/roll-tags.js";
 import { CARD_TAGS } from "../../../config/card-tags.js";
 import { SIMPLE_SOCIAL_CARD_ROLL_TYPES } from "../../../config/social-card-config.js";
@@ -207,10 +208,9 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		await this.item.update({"system.qualifiers": qual});
 	}
 
-	async loadCardEvent(ev: JQuery.ClickEvent) {
+	loadCardEvent(ev: JQuery.ClickEvent) {
 		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
 		this.focusedEvent = eventIndex;
-
 		this.element.find(".event-index").hide().addClass("hidden");
 		this.element.find(".card-event").each( function () {
 			const elem = $(this);
@@ -219,7 +219,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		});
 	}
 
-	async goBackEventList(_ev: JQuery.ClickEvent) {
+	goBackEventList(_ev: JQuery.ClickEvent) {
 		this.focusedEvent = undefined;
 		this.element.find(".event-index").show().removeClass("hidden");
 		this.element.find(".card-event").hide().addClass("hidden");

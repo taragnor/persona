@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import { ValidAttackers } from "./combat/persona-combat.js";
 import { TargettingContextList } from "./combat/persona-combat.js";
 import { PersonaDB } from "./persona-db.js";
@@ -41,8 +42,7 @@ export class PersonaVariables {
 					varType,
 					variableId,
 				};
-			case "scene":
-				const scene = game.scenes.get(cons.sceneId) as PersonaScene;
+			case "scene": { const scene = game.scenes.get(cons.sceneId) as PersonaScene;
 				if (!scene) {
 					PersonaError.softFail(`can't find scene ${cons.sceneId} in convertConsequenceToLocation`);
 					return undefined;
@@ -52,7 +52,8 @@ export class PersonaVariables {
 					variableId,
 					scene,
 				};
-			case "actor":
+			}
+			case "actor": {
 				const actorAccs = contextList[cons.applyTo];
 				if (!actorAccs) {return undefined;}
 				const actors = actorAccs
@@ -66,6 +67,7 @@ export class PersonaVariables {
 					variableId,
 					actor: actors.at(0)!,
 				};
+			}
 			case "social-temp":
 				return {
 					varType,
@@ -90,9 +92,10 @@ export class PersonaVariables {
 				if (origValue == undefined) {return undefined;}
 				return resolveConsequenceAmount(value, contextList) + origValue;
 			}
-			case "set-range":
+			case "set-range": {
 				const {min, max} = mutator;
 				return Math.floor(min + (Math.random() * ((1+max)- min)));
+			}
 			default:
 				mutator satisfies never;
 				return undefined;
@@ -118,7 +121,7 @@ export class PersonaVariables {
 				break;
 			}
 			case "social-temp": {
-				await PersonaSocial.setSocialVariable(data.variableId, value);
+				PersonaSocial.setSocialVariable(data.variableId, value);
 				break;
 			}
 			default:
@@ -194,7 +197,7 @@ function resolveConsequenceAmount< C extends ConsequenceAmount, T extends Prepar
 		}
 		default:
 				amt satisfies never;
-			PersonaError.softFail(`Unknwon consequence Amount type :${amt["type"]}`);
+			PersonaError.softFail(`Unknwon consequence Amount type :${amt["type"] as string}`);
 			return -1;
 	}
 
@@ -217,7 +220,7 @@ function resolveOperation <T extends PreparedConsequenceAmountV2<C> , C extends 
 			return val1 % val2;
 		default:
 			amt.operator satisfies never;
-			PersonaError.softFail(`Unknown Operator: ${amt["operator"]}`);
+			PersonaError.softFail(`Unknown Operator: ${amt["operator"] as string}`);
 			return -1;
 	}
 }

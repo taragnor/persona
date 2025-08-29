@@ -1,4 +1,3 @@
-import { ValidAttackers } from "./combat/persona-combat.js";
 import { PersonaRoller } from "./persona-roll.js";
 import { FatigueStatusId } from "../config/status-effects.js";
 import { statusMap } from "../config/status-effects.js";
@@ -13,8 +12,9 @@ import { StatusEffectId } from "../config/status-effects.js";
 export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 
 	declare statuses: Set<StatusEffectId>;
+	_flaggedDeletion: boolean;
 
-	static async applyHook (_actor: PersonaActor, _change: Foundry.AEChange, _current: any, _delta: any, _changes: Record<string, any> ) {
+	static async applyHook (this: never, _actor: PersonaActor, _change: Foundry.AEChange, _current: unknown, _delta: unknown, _changes: Record<string, unknown> ) {
 		//*changes object is a record of valeus taht may get changed by applying the AE;
 		// example: changes["system.hp"] = 25
 	}
@@ -27,7 +27,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		try {
 			const potency = Number(this.getFlag<string>("persona", "potency"));
 			return potency ?? 0;
-		} catch (e) {
+		} catch {
 			PersonaError.softFail("Can't convert Potency for status");
 			return 0;
 		}
@@ -43,12 +43,12 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		if (typeof duration == "string") {
 			return {
 				dtype: duration
-			} as any;
+			} as StatusDuration;
 		}
 		if (duration && duration.dtype) {
 			return duration;
 		}
-		PersonaError.softFail(`Unable to convert DurationType ${duration}`);
+		PersonaError.softFail(`Unable to convert DurationType ${duration as string}`);
 		return duration;
 	}
 
@@ -100,7 +100,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		switch (duration.dtype) {
 			case "UEoNT":
 			case "USoNT":
-			case "UEoT":
+			case "UEoT": {
 				if (duration.anchorStatus) {break;}
 				if (!duration.actorTurn) {break;}
 				const actorTurn = PersonaDB.findActor(duration.actorTurn);
@@ -113,6 +113,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				};
 				await this.setFlag("persona", "duration", newDuration);
 				return;
+			}
 			default:
 				break;
 
@@ -129,7 +130,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		switch (origDuration.dtype) {
 			case "UEoNT":
 			case "USoNT":
-			case "UEoT":
+			case "UEoT": {
 				const anchorHolderAcc = origDuration.actorTurn;
 				if (!anchorHolderAcc) {return null;}
 				const anchorHolder = PersonaDB.findActor(anchorHolderAcc);
@@ -149,10 +150,11 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 					if (!game.user.isGM) {
 						PersonaError.softFail("Problems creating Anchor status, probably ownership issues");
 					} else {
-						PersonaError.softFail(`Unknown Error: ${e.toString()}`);
+						PersonaError.softFail(`Unknown Error: ${(e as Error).toString()}`);
 					}
 					return null;
 				}
+			}
 			default:
 				PersonaError.softFail(`Wrong Duraton Type, can't create Anchored : ${origDuration.dtype}`);
 				return null;
@@ -178,17 +180,17 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 			case "USoNT":
 				await this.delete();
 				return true;
-			case "save":
+			case "save": {
 				const owner = this.parent;
 				if (owner instanceof PersonaActor && owner.isSoloType()) {
 					return await this.saveVsSaveEffects();
 				}
 				return false;
+			}
 			case "permanent":
 			case "X-exploration-turns":
 			case "expedition":
 			case "combat":
-			case "X-rounds":
 			case "X-days":
 			case "anchored":
 			case "UEoNT":
@@ -236,7 +238,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				return false;
 			default:
 				duration satisfies never;
-				PersonaError.softFail(`Bad Duration ${(duration as any).dtype}`);
+				PersonaError.softFail(`Bad Duration ${(duration as StatusDuration).dtype}`);
 				return false;
 		}
 		if (this.statuses.has("charmed")) {return false;}
@@ -244,7 +246,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		if (!actor) {return false;}
 		if (!actor.isValidCombatant()) {return false;}
 		const DC = this.statusSaveDC;
-		const bundle = await PersonaRoller.rollSave(actor as ValidAttackers, { DC, label: this.name, saveVersus: this.statusId, rollTags: [] } );
+		const bundle = await PersonaRoller.rollSave(actor, { DC, label: this.name, saveVersus: this.statusId, rollTags: [] } );
 		if (bundle.success) { await this.delete();}
 		await bundle.toModifiedMessage(true);
 		return bundle.success ?? false;
@@ -255,7 +257,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		switch (duration.dtype) {
 			case "USoNT":
 			case "UEoNT":
-			case "UEoT":
+			case "UEoT": {
 				const acc = duration.anchorStatus;
 				if (!acc) {break;}
 				try {
@@ -265,10 +267,11 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 					console.log(e);
 				}
 				break;
+			}
 			default:
 				break;
 		}
-		super.delete();
+		await super.delete();
 	}
 
 	/** returns true if the status expires*/
@@ -297,7 +300,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				return false;
 			default:
 				duration satisfies never;
-				PersonaError.softFail(`Weird Duration: ${(duration as any)?.dtype}`);
+				PersonaError.softFail(`Weird Duration: ${(duration as StatusDuration)?.dtype}`);
 				return false;
 		}
 	}
@@ -465,7 +468,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 						return 4;
 					default:
 						duration.saveType satisfies never;
-						PersonaError.softFail(`Unknown duration type ${duration.saveType}`);
+						PersonaError.softFail(`Unknown duration type ${duration.saveType as string}`);
 						return 4;
 				}
 			case "UEoNT":
@@ -478,7 +481,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				return 1;
 			default:
 				duration satisfies never;
-				PersonaError.softFail(`Unknwon duration ${duration}`);
+				PersonaError.softFail(`Unknwon duration ${duration as string}`);
 				return 100;
 		}
 	}
@@ -491,7 +494,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		await this.setFlag("persona", "linkedEffectFlag", flagId);
 	}
 
-	static async onPreDelete(effect: PersonaAE) {
+	static async onPreDelete(this: never, effect: PersonaAE) {
 		const flag = effect.linkedFlagId;
 		try {
 			// await effect.unsetFlag("persona", "LinkedEffectFlag");
@@ -499,7 +502,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 			console.log(e);
 		}
 		if (flag && effect.parent instanceof PersonaActor) {
-			(effect as any)["_flaggedDeletion"] = true;
+			effect["_flaggedDeletion"] = true;
 			await effect.parent.setEffectFlag(flag, false);
 		}
 	}
@@ -541,7 +544,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		return flagId.toLowerCase() == this.flagId;
 	}
 
-	AEtestEffect() {
+	async AEtestEffect() {
 		let changes= this.changes;
 		changes = [
 			{
@@ -551,13 +554,15 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 				value: ""
 			}
 		];
-		this.update({"changes": changes});
+		await this.update({"changes": changes});
 	}
 
 }
 
+// eslint-disable-next-line @typescript-eslint/unbound-method
 Hooks.on("preDeleteActiveEffect", PersonaAE.onPreDelete);
 
+// eslint-disable-next-line @typescript-eslint/unbound-method
 Hooks.on("applyActiveEffect", PersonaAE.applyHook);
 
 //Sachi told me to disable this because it sucks apparently

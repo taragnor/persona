@@ -43,7 +43,7 @@ export class SearchMenu {
 	} ;
 	static promises : undefined | {
 		resolve: (data: SearchResult[] | PromiseLike<SearchResult[]>) => void;
-		reject: (reason: any) => void;
+		reject: (reason: unknown) => void;
 	};
 	static data: null | SearchUpdate = null;
 
@@ -85,18 +85,18 @@ export class SearchMenu {
 	private static async mainLoop(region: PersonaRegion): Promise<SearchResult[]> {
 		let allResults : SearchResult[] = [];
 		while (true) {
-			const results = await this.openSearchWindow(this.options!);
+			const results = await this.openSearchWindow(this.options);
 			allResults = allResults.concat(results);
 			if (results.some( res => res.declaration == "leave")) {
-				this.endSearch();
+				await this.endSearch();
 				break;
 			}
 			const ret = await this.execSearch(results, this.options, region);
 			if (this.options.stopOnHazard && results.some(r => r.results.find(res => res.result == "hazard"))) {
-				this.endSearch();
+				await this.endSearch();
 				break;
 			}
-			if (!ret || !this.options.cycle) {this.endSearch(); break;}
+			if (!ret || !this.options.cycle) {await this.endSearch(); break;}
 		}
 		return allResults;
 	}
@@ -259,6 +259,7 @@ export class SearchMenu {
 				case 4:
 				case 5:
 					val = Math.min(6, val + (options.treasureFindBonus ?? 0));
+				// eslint-disable-next-line no-fallthrough
 				case 6:
 					result= (7 - options.treasureRemaining <= val) ? "treasure" : "nothing";
 					break;
@@ -283,6 +284,7 @@ export class SearchMenu {
 		const ret: Partial<SearchOptions<T>> = {};
 		const inputs: string[] = [];
 		for ( const [k,v] of Object.entries(optionsToFill)) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
 			(ret as any)[k] = v.initial;
 			switch(typeof v.initial) {
 				case "string":
@@ -312,7 +314,7 @@ export class SearchMenu {
 			const dialog = new Dialog( {
 				title: "Search Options",
 				content: html,
-				close: () => rej ("Closed"),
+				close: () => rej (new Error("Closed")),
 				buttons: {
 					submit: {
 						label: "Submit",
@@ -320,12 +322,15 @@ export class SearchMenu {
 		for ( const [k,v] of Object.entries(optionsToFill)) {
 			switch(typeof v.initial) {
 				case "string":
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
 							(ret as any)[k] = String($(html).find(`#${k}`).val());
 					break;
 				case "number":
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
 							(ret as any)[k] = Number($(html).find(`#${k}`).val());
 					break;
 				case "boolean":
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
 							(ret as any)[k] = ($(html).find(`#${k}`).is(":checked"));
 					break;
 				default:
@@ -352,7 +357,7 @@ export class SearchMenu {
 				options,
 				suspended: false
 			};
-			this.onSearchUpdate(searchUpdate);
+			await this.onSearchUpdate(searchUpdate);
 			return new Promise( (res, rej) => {
 				this.promises = {
 					resolve: res,
@@ -407,9 +412,9 @@ export class SearchMenu {
 				return;
 			}
 			if (!this.isOpen()) {
-				this.openDialog(updateData);
+				await this.openDialog(updateData);
 			} else {
-				this.updateDialog();
+				await this.updateDialog();
 			}
 			if (send)
 				{this.sendUpdate();}
@@ -422,7 +427,7 @@ export class SearchMenu {
 				content: html,
 				render: (html) => this.setListeners(html),
 				buttons: {},
-				close: () => this.isOpen() ? this.openDialog(this.data!) : this.closeDialog(),
+				close: () => void (this.isOpen() ? this.openDialog(this.data!) : this.closeDialog()),
 			}, {});
 			this.dialog.render(true);
 			this.data = updateData;
@@ -539,13 +544,13 @@ export class SearchMenu {
 					throw new PersonaError(`Can't find actor ${actorId}`);
 				}
 				sdata.declaration = newAction as SearchAction;
-				this.onSearchUpdate(this.data);
+				void this.onSearchUpdate(this.data);
 			});
 		}
 
 		static async onUserConnect(_user: FoundryUser) {
 			if (this.isOpen() && this.data) {
-				this.onSearchUpdate(this.data);
+				await this.onSearchUpdate(this.data);
 				if (game.user.isGM) {
 					ui.notifications.notify("Sending to client to try to revive search");
 					await sleep(4000);
@@ -559,15 +564,15 @@ export class SearchMenu {
 				const results = this.data.results;
 				results.filter( item => item.searcher.ownerId == user.id)
 					.forEach( item => item.declaration = "disconnected");
-				this.onSearchUpdate(this.data);
+				void this.onSearchUpdate(this.data);
 			}
 		}
 	} // end of class
 
-	Hooks.on("userConnected", (user: FoundryUser, isConnectionEvent: boolean) => {
+	Hooks.on("userConnected", async (user: FoundryUser, isConnectionEvent: boolean) => {
 		if (game.user.isGM && SearchMenu.isOpen()) {
 			if (isConnectionEvent) {
-				SearchMenu.onUserConnect(user);
+				await SearchMenu.onUserConnect(user);
 			} else {
 				SearchMenu.onUserDisconnect(user);
 			}

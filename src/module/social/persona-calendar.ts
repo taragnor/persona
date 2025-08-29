@@ -231,7 +231,8 @@ export class PersonaCalendar {
 	static #calcPrevDay (date: Readonly<CalendarDate>) : CalendarDate {
 		const months = window.SimpleCalendar?.api.getAllMonths();
 		if (!months) {throw new PersonaError("Calendar Module not loaded");}
-		let {day, month, year} = date;
+		let {day, month} = date;
+		const {year} = date;
 		day -= 1;
 		if (day >= 0) {
 			return {day, month, year};
@@ -265,8 +266,8 @@ export class PersonaCalendar {
 
 	static getWeather() : WeatherType {
 		const weather = PersonaSettings.get("weather");
-		if (WEATHER_TYPE_LIST.includes(weather as any)) {
-			return weather as typeof WEATHER_TYPE_LIST[number];
+		if (WEATHER_TYPE_LIST.includes(weather)) {
+			return weather;
 		}
 		return "cloudy";
 	}
@@ -285,7 +286,7 @@ export class PersonaCalendar {
 
 	static async setWeather(weather: WeatherType) {
 		await PersonaSettings.set("weather", weather);
-		PersonaSFX.onWeatherChange(weather);
+		await PersonaSFX.onWeatherChange(weather);
 	}
 
 	static getDateString() : string {
@@ -321,7 +322,7 @@ export class PersonaCalendar {
 			default:
 				weather satisfies never;
 		}
-		throw new PersonaError(`Unknwon weather type ${weather}`);
+		throw new PersonaError(`Unknwon weather type ${weather as string}`);
 	}
 
 	static async openWeatherForecast() {
@@ -346,7 +347,7 @@ export class PersonaCalendar {
 
 Hooks.on("preUpdateSetting", function (updateItem, changes) {
 	if (updateItem.key == "smalltime.current-date" && changes.value != undefined) {
-		console.log(`SmallTime PreUpdate: ${updateItem.value}`);
+		console.log(`SmallTime PreUpdate: ${JSON.stringify(updateItem.value)}`);
 		Debug(updateItem, changes);
 	}
 	if (updateItem.key == "foundryvtt-simple-calendar.calendar-configuration" && changes.value != undefined) {
@@ -358,7 +359,7 @@ Hooks.on("preUpdateSetting", function (updateItem, changes) {
 
 Hooks.on("updateSetting", function (updateItem, changes) {
 	if (updateItem.key == "smalltime.current-date" && changes.value != undefined) {
-		console.log(`SmallTime Update: ${updateItem.value}`);
+		console.log(`SmallTime Update: ${JSON.stringify(updateItem.value)}`);
 		Debug(updateItem, changes);
 	}
 	if (updateItem.key == "foundryvtt-simple-calendar.calendar-configuration" && changes.value != undefined) {
@@ -371,5 +372,5 @@ Hooks.on("updateSetting", function (updateItem, changes) {
 type CalendarDate = {day: number, year:number, month: number}
 
 
-//@ts-ignore
+//@ts-expect-error adding to global window
 window.PersonaCalendar = PersonaCalendar;

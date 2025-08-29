@@ -42,9 +42,9 @@ export class Metaverse {
 		if (!game.user.isGM) {return;}
 		(game.actors as Collection<PersonaActor>)
 			.filter( (x: PersonaActor)=> (x.isRealPC()) || x.system.type == "npcAlly")
-			.forEach( (pc: PC | NPCAlly)=> pc.onEnterMetaverse());
+			.forEach( (pc: PC | NPCAlly) => void pc.onEnterMetaverse());
 		(game.scenes.contents as PersonaScene[])
-			.forEach( sc => sc.onEnterMetaverse());
+			.forEach( sc => void sc.onEnterMetaverse());
 		await TensionPool.instance.clear();
 		Hooks.callAll("enterMetaverse");
 		await Logger.sendToChat(`Entering Metaverse...`);
@@ -53,7 +53,7 @@ export class Metaverse {
 	static async exitMetaverse() {
 		(game.actors as Collection<PersonaActor>)
 			.filter( (x: PersonaActor)=> x.isRealPC() || x.isNPCAlly())
-			.forEach( (x: PC | NPCAlly) => x.onExitMetaverse());
+			.forEach( (x: PC | NPCAlly) => void x.onExitMetaverse());
 		const promises = game.scenes.contents.map(sc => (sc as PersonaScene).onExitMetaverse());
 		await Promise.allSettled(promises);
 		await TensionPool.instance.clear();
@@ -93,7 +93,7 @@ export class Metaverse {
 	static #averageMap(map: Map<string, number>) : string[] {
 		let total = 0;
 		const ret = [] as string[];
-		for (const [_data, amt] of map.entries()) {
+		for (const amt of map.values()) {
 			total += amt;
 		}
 		const sorted = Array.from(map.entries()).sort( (a,b) => b[1] - a[1]);
@@ -373,7 +373,7 @@ static async reportXPGain(xpReport: {actor: ValidAttackers, xp: number, levelUps
 	});
 	const text = xpStringParts.join("");
 	if (xpReport.some(x=> x.levelUps.length > 0)) {
-		PersonaSFX.onLevelUp();
+		void PersonaSFX.onLevelUp();
 	}
 	await ChatMessage.create({
 		speaker: {
@@ -440,7 +440,7 @@ static async reportXPGain(xpReport: {actor: ValidAttackers, xp: number, levelUps
 		const {money, items} = treasure;
 		const speaker = ChatMessage.getSpeaker({alias: "Treasure Generator"});
 		const treasureListHTML = items
-			.map( item => `<li> ${item.displayedName} </li>`)
+			.map( item => `<li> ${item.displayedName.toString()} </li>`)
 			.join("");
 		const text = `
 		<b>Money:</b> ${money} <br>
@@ -522,7 +522,7 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 				await clock.set(action.amount);
 				break;
 			}
-			case "rename-scene-clock":
+			case "rename-scene-clock": {
 				const clock = SceneClock.instance;
 				if (action.clockNewName) {clock.renameClock(action.clockNewName);}
 				clock.setCyclic(action.cyclicClock ?? false);
@@ -531,6 +531,7 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 					clock.setMax(action.clockMax);
 				}
 				break;
+			}
 			default:
 				action satisfies never;
 		}
@@ -541,7 +542,7 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 		const openDoors = scene.walls
 			.filter(w=> w.door > 0 && w.ds == 1);
 		for (const door of openDoors) {
-			door.update( {ds: 0});
+			await door.update( {ds: 0});
 		}
 	}
 
@@ -561,7 +562,7 @@ static async passMetaverseTurn() {
 	if (game.user.isGM)
 		{return await this.#passMetaverseTurn();}
 	else
-		{return await this.#sendPassTurnRequest();}
+		{return this.#sendPassTurnRequest();}
 }
 
 static async #passMetaverseTurn() {
@@ -587,7 +588,7 @@ static async #passMetaverseTurn() {
 	ui.notifications.notify("Passing Metaverse turn");
 }
 
-static async #sendPassTurnRequest() {
+static #sendPassTurnRequest() {
 	const gms = game.users.filter(x=> x.isGM).map (x=> x.id);
 	PersonaSockets.simpleSend("PASS_MV_TURN", {}, gms);
 }
@@ -611,7 +612,7 @@ static async #sendPassTurnRequest() {
 				switch (result.result) {
 					case "nothing":
 						break;
-					case "treasure":
+					case "treasure": {
 						if (!result.roll) {
 							PersonaError.softFail("Treasure Found but no roll given");
 							break;
@@ -621,6 +622,7 @@ static async #sendPassTurnRequest() {
 							treasureRolls.push(treasureRoll);
 						}
 						break;
+					}
 					case "hazard":
 						await region.hazardFound();
 						break;
@@ -800,16 +802,17 @@ return roll.total <= data.presenceValue;
 		if (game.user.isGM) {
 			if ("PartyCruncher" in window) {
 				this.lastCrunch = Date.now();
-				//@ts-ignore
+				//@ts-expect-error party curnch stuff
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 				await window.PartyCruncher.toggleParty(1);
 			}
 		} else {
 			Helpers.pauseCheck();
-			await this.sendPartyCrunchRequest();
+			this.sendPartyCrunchRequest();
 		}
 	}
 
-	static async sendPartyCrunchRequest() {
+	static sendPartyCrunchRequest() {
 			const gms = game.users.filter(x=> x.isGM);
 			PersonaSockets.simpleSend("CRUNCH_TOGGLE", {}, gms.map( x=> x.id));
 	}
@@ -823,22 +826,21 @@ return roll.total <= data.presenceValue;
 		} else {
 			PersonaError.softFail("Crunch request recieved by non-GM, this is in error");
 		}
-		Hooks;
-
 	}
 }
 
 Hooks.on("socketsReady", () => {
 	console.log("Sockets set handler");
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 	PersonaSockets.setHandler("CRUNCH_TOGGLE", Metaverse.onCrunchRequest.bind(Metaverse));
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 	PersonaSockets.setHandler("PASS_MV_TURN", Metaverse.passMetaverseTurn.bind(Metaverse));
 });
 
 declare global {
 	interface SocketMessage {
-		"CRUNCH_TOGGLE": {
-		};
-		"PASS_MV_TURN" : {};
+		"CRUNCH_TOGGLE": object;
+		"PASS_MV_TURN" : object;
 	}
 }
 
@@ -859,26 +861,26 @@ declare global {
 	}
 }
 
-Hooks.on("updateWall", function (_updateItem: WallDocument, changes: Record<string, unknown>, _diff: unknown, userId: string) {
+Hooks.on("updateWall", async function (_updateItem: WallDocument, changes: Record<string, unknown>, _diff: unknown, userId: string) {
 	if (changes.ds == 1 && game.user.isGM) {
 		const situation : Situation = {
 			trigger: "on-open-door",
 			triggeringUser: game.users.get(userId)!,
 		};
-		PersonaCombat.onTrigger("on-open-door", undefined, situation)
+		await PersonaCombat.onTrigger("on-open-door", undefined, situation)
 		.emptyCheck()
 		?.autoApplyResult();
 	}
 });
 
-Hooks.on("clockTick", function (clock: ProgressClock, _newAmt: number) {
+Hooks.on("clockTick", async function (clock: ProgressClock, _newAmt: number) {
 	const situation : Situation = {
 		trigger: "on-clock-tick",
 		triggeringClockId: clock.id,
 		triggeringUser: game.user,
 	};
 	console.log("Triggering ClockTick");
-	PersonaCombat.onTrigger("on-clock-tick", undefined, situation)
+	await PersonaCombat.onTrigger("on-clock-tick", undefined, situation)
 	.emptyCheck()
 	?.autoApplyResult();
 });
@@ -895,7 +897,7 @@ Hooks.on("updateClock", async function (clock: ProgressClock, _newAmt: number, _
 	?.autoApplyResult();
 });
 
-//@ts-ignore
+//@ts-expect-error adding to window
 window.Metaverse = Metaverse;
 
 export type PresenceCheckResult = null
