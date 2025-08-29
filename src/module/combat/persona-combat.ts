@@ -1,4 +1,4 @@
-import { PersonaCombatStats } from '../actor/persona-combat-stats.js';
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { ValidSocialTarget } from '../social/persona-social.js';
 import { EvaluatedDamage } from './damage-calc.js';
 import { NonDeprecatedConsequences } from '../../config/consequence-types.js';
@@ -155,7 +155,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       await PersonaSocial.startSocialCombatRound(combatInit.disallowMetaverse, combatInit.advanceCalendar);
     }
     const mods = combatInit.roomModifiers;
-    this.setRoomEffects(mods);
+    await this.setRoomEffects(mods);
     await this.setEscalationDie(0);
 
     msg += this.roomEffectsMsg();
@@ -169,7 +169,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     }
     const starters = this.combatants.contents.map( comb => comb?.actor?.onCombatStart());
     await Promise.all(starters);
-    this.refreshActorSheets();
+    void this.refreshActorSheets();
     const unrolledInit = this.combatants
       .filter( x=> x.initiative == undefined)
       .map( c=> c.id);
@@ -191,7 +191,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
   async onEndCombat() : Promise<void> {
     if (!game.user.isGM) {return;}
-    this.refreshActorSheets();
+    void this.refreshActorSheets();
     await this.generateTreasureAndXP();
     if (this.isSocial && await HTMLTools.confirmBox('Enter Meta', 'Enter Metaverse?', true)) {
       await Metaverse.enterMetaverse();
@@ -301,7 +301,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       const actor= comb.token?.actor;
       if (!actor) {continue;}
       if (actor.sheet._state > 0) {
-        actor.sheet?.render(true);
+        await actor.sheet?.render(true);
       }
     }
   }
@@ -311,7 +311,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     if (dialog == false) {return false;}
     const nextCombat = await this.checkForConsecutiveCombat();
     if (!nextCombat) {
-      this.delete();
+      await this.delete();
       return true;
     }
     await this.prepareForNextCombat();
@@ -336,7 +336,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
             break;
           default:
             actorType satisfies never;
-            PersonaError.softFail(`${actorType} is an invalid Actor type for a combatant`);
+            PersonaError.softFail(`${actorType as string} is an invalid Actor type for a combatant`);
             break;
         }
       } catch {
@@ -420,7 +420,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     }
     startTurnMsg = startTurnMsg.concat(
       await (actor as PC | Shadow).onStartCombatTurn(),
-      await this.handleStartTurnEffects(combatant),
+      this.handleStartTurnEffects(combatant),
     );
     await this.execStartingTrigger(combatant);
     const openingReturn = await this.execOpeningRoll(combatant);
@@ -446,7 +446,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     }
   }
 
-  static async addOpeningActionListeners(elem: JQuery) : Promise<void> {
+  static addOpeningActionListeners(elem: JQuery) : void {
     elem.find('a.option-target').on('click', this.activateTargettedOpener.bind(this));
     elem.find('a.simple-action').on('click', this.activateGeneralOpener.bind(this));
 
@@ -460,7 +460,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     const options = HTMLTools.getClosestDataSafe(ev, 'optionEffects', '');
     if (!combatant) {return;}
     if (!powerId) {
-      await this.execSimpleAction(options);
+      this.execSimpleAction(options);
       await this.chooseOpener(ev);
       return;
     }
@@ -474,7 +474,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     }
   }
 
-  static async execSimpleAction(options: string) {
+  static execSimpleAction(options: string) {
     options = options.trim();
     if (options.length == 0) {return;}
     switch (options.trim() as OptionEffect) {
@@ -545,7 +545,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
           user: user.token.actor.accessor,
           activeCombat: true,
         };
-        await PersonaCombat.execTrigger('start-turn', user.token.actor as ValidAttackers, situation);
+        await PersonaCombat.execTrigger('start-turn', user.token.actor, situation);
         console.log(`Triggering Start turn for ${triggeringCharacter.name} on ${user.name}`);
       }
     }
@@ -827,7 +827,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
   getOpenerPrintableName(usable: Usable, targetList: PersonaCombatant[]) : string  | undefined {
     const targets= targetList.map( target=> target.name);
-    return `${usable.displayedName} (${targets.join(', ')}): ${usable.system.description}`;
+    return `${usable.displayedName.toString()} (${targets.join(', ')}): ${usable.system.description}`;
   }
 
   mandatoryOtherOpeners( combatant: Combatant<ValidAttackers> , situation: Situation): OpenerOptionsReturn {
@@ -1025,7 +1025,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
   async skipBox(msg: string) {
     if (await HTMLTools.confirmBox(msg, msg)) {
-      this.nextTurn();
+      await this.nextTurn();
     }
   }
 
@@ -1038,7 +1038,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       await PersonaSocial.endSocialTurn(actor);
       return;
     }
-    const triggeringCharacter  = (combatant as Combatant<ValidAttackers>)?.token?.actor?.accessor;
+    const triggeringCharacter  = (combatant)?.token?.actor?.accessor;
     if (triggeringCharacter) {
       for (const user of this.combatants) {
         if (user.token.actor == undefined) {continue;}
@@ -1125,7 +1125,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     return { msg, options};
   }
 
-  async handleStartTurnEffects(combatant: Combatant<ValidAttackers>): Promise<string[]> {
+  handleStartTurnEffects(combatant: Combatant<ValidAttackers>): string[] {
     const actor= combatant.actor;
     if (!actor) {return [];}
     const Msg: string[] = [];
@@ -1138,7 +1138,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       const msg =  `${combatant.name} can't take actions normally because of ${debilitatingStatus.name}`;
       Msg.push(msg) ;
       if (actor.system.type == 'shadow') {
-        this.skipBox(`${msg}. <br> Skip turn?`); //don't await this so it processes the rest of the code
+        void this.skipBox(`${msg}. <br> Skip turn?`); //don't await this so it processes the rest of the code
       }
     }
     const despair = actor.hasStatus('despair');
@@ -1198,14 +1198,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     }
     try {
       const targets = presetTargets ? presetTargets :  this.getTargets(attacker, power);
-      if (!power.isSkillCard() && targets.some( target => target.actor.system.type == 'shadow' ) && (power as Usable).system.targets != 'self' ) {
+      if (!power.isSkillCard() && targets.some( target => target.actor.system.type == 'shadow' ) && (power).system.targets != 'self' ) {
         this.ensureCombatExists();
       }
       this.customAtkBonus = await HTMLTools.getNumber('Attack Modifier');
       const result = new CombatResult();
       await PersonaSFX.onUsePower(power);
       result.merge(await this.usePowerOn(attacker, power, targets, 'standard'));
-      const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
+      const costs = this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
       result.merge(costs);
       const finalizedResult = result.finalize();
       if (!power.isOpener())  {
@@ -1590,11 +1590,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         combat.lastActivationRoll = r.total;
       }
     }
-    const attackbonus = this.getAttackBonus(attacker.actor, power, target, modifiers);
+    const attackbonus = this.getAttackBonus(attackerPersona, power, target, modifiers);
     if (rollType == 'reflect') {
       attackbonus.add('Reflected Attack', 15);
     }
-    const cssClass=  (target.actor.system.type != 'pc') ? 'gm-only' : '';
+    const cssClass=  (!target.actor.isPC()) ? 'gm-only' : '';
     const roll = new RollBundle('Temp', r, attacker.actor.system.type == 'pc', attackbonus, baseSituation);
     const naturalAttackRoll = roll.dice[0].total;
     // situation.naturalRoll = naturalAttackRoll;
@@ -1736,8 +1736,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     critBoostMod.add('Enemy Critical Resistance', -critResist);
     if (power.isInstantDeathAttack()) {
       const powerLevel = power.baseInstantKillBonus();
-      const instantKillBoost = PersonaCombatStats.lukInstantDeathBonus(attackerPersona);
-      const instantKillResist = PersonaCombatStats.lukInstantDeathResist(targetPersona);
+      const instantKillBoost = attackerPersona.combatStats.lukInstantDeathBonus();
+      const instantKillResist = targetPersona.combatStats.lukInstantDeathResist();
       // const targetResist = target.basePowerCritResist(power);
       critBoostMod.add('Power-based Instant Kill Bonus', powerLevel);
       critBoostMod.add(`Luck (${attackerPersona.name}) Instant Kill Bonus`, instantKillBoost);
@@ -1789,7 +1789,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         break;
       default:
         result satisfies never;
-        PersonaError.softFail(`Unknown hit result ${result}`);
+        PersonaError.softFail(`Unknown hit result ${result as string}`);
     }
     const powerEffects = this.processPowerEffectsOnTarget(atkResult);
     CombatRes.merge(powerEffects);
@@ -1801,7 +1801,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     const power = PersonaDB.findItem(atkResult.power);
     const attacker = PersonaDB.findToken(atkResult.attacker);
     const target = PersonaDB.findToken(atkResult.target);
-    const attackerEffects= attacker.actor!.getSourcedEffects(['passive', 'on-use']);
+    const attackerEffects= attacker.actor.getSourcedEffects(['passive', 'on-use']);
     const defenderEffects = target.actor.getSourcedDefensivePowers();
     const sourcedEffects = [
       power.getSourcedEffects(attacker.actor, ['on-use', 'passive'])
@@ -2124,13 +2124,13 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
     PersonaError.softFail(`Damage type is undefined for ${power.name}`, cons);
     return [];
   }
-  const stamina = PersonaCombatStats.staminaDR(targets[0].persona());
+  const stamina = targets[0].persona().combatStats.staminaDR();
   // const  stamina = -Math.floor(targets[0].persona().endurance / 2);
   const staminaString = 'Endurance Damage Reduction';
   switch (cons.damageSubtype) {
     case 'odd-even':
       if (situation.naturalRoll == undefined) {
-        PersonaError.softFail(`Can't get odd even for damage of ${power.displayedName }` );
+        PersonaError.softFail(`Can't get odd even for damage of ${power.displayedName.toString() }` );
         return [];
       }
       if ( (situation.naturalRoll ?? 0) % 2 == 0) {
@@ -2335,7 +2335,7 @@ static onTrigger(trigger: CombatTriggerTypes | NonCombatTriggerTypes, actor ?: V
   return TriggeredEffect.onTrigger(trigger, actor, situation);
 }
 
-static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifiers: OtherEffect[]) : Promise<CombatResult>
+static #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifiers: OtherEffect[]) : CombatResult
   {
     const situation : Situation = {
       user: attacker.actor.accessor,
@@ -2356,14 +2356,14 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
             }, situation);
           }
         }
-        if (!attacker.actor!.isShadow() && power.hpCost()) {
+        if (!attacker.actor.isShadow() && power.hpCost()) {
           const deprecatedConvert = DamageCalculation.convertToNewFormConsequence({
             type: 'hp-loss',
             damageType: 'none',
             amount: power.modifiedHpCost(attacker.actor.persona()),
             source: usableOrCard,
           }, power.getDamageType(attacker.actor));
-          res.addEffect(null, attacker.actor!, deprecatedConvert, situation );
+          res.addEffect(null, attacker.actor, deprecatedConvert, situation );
         }
         if (!attacker.actor.isShadow() && power.system.subtype == 'magic' && power.system.mpcost > 0) {
           res.addEffect(null, attacker.actor, {
@@ -2374,7 +2374,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
           }, situation);
         }
         if (attacker.actor.isShadow()) {
-          if (power.system.energy.cost > 0) {
+          if (power.energyCost(attacker.actor.persona()) > 0) {
             res.addEffect(null, attacker.actor, {
               type: 'alter-energy',
               amount: -power.energyCost(attacker.actor.persona()),
@@ -2403,9 +2403,9 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
     return res;
   }
 
-static getAttackBonus(attacker: ValidAttackers, power: Usable, target: PToken | undefined, modifiers ?: ModifierList) : ModifierList {
-  let attackBonus = this.getBaseAttackBonus(attacker, power);
-  this.applyRelevantTagAttackBonus(attackBonus, attacker, power);
+static getAttackBonus(attackerP: Persona, power: Usable, target: PToken | undefined, modifiers ?: ModifierList) : ModifierList {
+  let attackBonus = this.getBaseAttackBonus(attackerP, power);
+  this.applyRelevantTagAttackBonus(attackBonus, attackerP.user, power);
   if (power.isStatusEffect()) {
     // attackBonus.add(`Status Effect Modifier`, -3);
     if (target?.actor?.persona().numOfWeaknesses() == 0 && !target.actor.isBossOrMiniBossType()) {
@@ -2475,23 +2475,25 @@ static #getRelevantAttackTag(_attacker: ValidAttackers, dmgType : DamageType) : 
   }
 }
 
-static getBaseAttackBonus(attacker: ValidAttackers, power:Usable): ModifierList {
-  const actor = attacker;
-  if (power.system.type == 'consumable') {
-    const l = actor.itemAtkBonus(power as Consumable);
-    return l;
-  }
-  if (power.system.subtype == 'weapon') {
-    const mod = actor.wpnAtkBonus();
-    mod.add('Power attack modifier', power.system.atk_bonus);
-    return mod.concat(new ModifierList(power.getModifier('wpnAtk', actor)));
-  }
-  if (power.system.subtype == 'magic') {
-    const mod = actor.magAtkBonus();
-    mod.add('Power attack modifier', power.system.atk_bonus);
-    return mod.concat(new ModifierList(power.getModifier('magAtk', actor)));
-  }
-  return new ModifierList();
+static getBaseAttackBonus(attackerPersona: Persona, power:Usable): ModifierList {
+	switch (true) {
+		case power.isConsumable(): {
+			const l = attackerPersona.itemAtkBonus(power);
+			return l;
+		}
+		case power.isWeaponSkill(): {
+			const mod = attackerPersona.wpnAtkBonus();
+			mod.add('Power attack modifier', power.system.atk_bonus);
+			return mod.concat(new ModifierList(power.getModifier('wpnAtk', attackerPersona.user)));
+		}
+		case power.isMagicSkill(): {
+			const mod = attackerPersona.magAtkBonus();
+			mod.add('Power attack modifier', power.system.atk_bonus);
+			return mod.concat(new ModifierList(power.getModifier('magAtk', attackerPersona.user)));
+		}
+		default:
+			return new ModifierList();
+	}
 }
 
 static getAltTargets ( attacker: PToken, situation : Situation, targettingType :  ConsTarget) : PToken[] {
@@ -2513,7 +2515,7 @@ static getAltTargets ( attacker: PToken, situation : Situation, targettingType :
       const combat= this.ensureCombatExists();
       const targets= combat.combatants.filter( x => {
         const actor = x.actor;
-        if (!actor || !(actor as ValidAttackers).isAlive())  {return false;}
+        if (!actor || !(actor).isAlive())  {return false;}
         return ((x.actor as ValidAttackers).getAllegiance() != attackerType);
       });
       return targets.map( x=> x.token as PToken);
@@ -2650,8 +2652,8 @@ static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[])
       .filter( x => {
         const actor = x.actor;
         if (!actor) {return false;}
-        if ((actor as ValidAttackers).isAlive()) {return false;}
-        if ((actor as ValidAttackers).isFullyFaded()) {return false;}
+        if ((actor).isAlive()) {return false;}
+        if ((actor).isFullyFaded()) {return false;}
         return ((x.actor as ValidAttackers).getAllegiance() == attackerType);
       });
       return targets.map( x=> x.token as PToken);
@@ -2694,7 +2696,7 @@ static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[])
     }
     default:
       targets satisfies never;
-      throw new PersonaError(`targets ${targets} Not yet implemented`);
+      throw new PersonaError(`targets ${targets as string} Not yet implemented`);
   }
 }
 
@@ -2741,11 +2743,11 @@ getEscalationDie() : number {
 }
 
 async incEscalationDie() : Promise<void> {
-  this.setEscalationDie(Math.min(this.getEscalationDie() +1, 6));
+  await this.setEscalationDie(Math.min(this.getEscalationDie() +1, 6));
 }
 
 async decEscalationDie() : Promise<void> {
-  this.setEscalationDie(Math.max(this.getEscalationDie() - 1, 0));
+	await  this.setEscalationDie(Math.max(this.getEscalationDie() - 1, 0));
 }
 
 async setEscalationDie(val: number) : Promise<void> {
@@ -2889,7 +2891,7 @@ static async allOutAttackPrompt() {
   {return;}
   const combat= this.ensureCombatExists();
   const comb = combat?.combatant as Combatant<ValidAttackers> | undefined;
-  const actor = comb?.actor as ValidAttackers | undefined;
+  const actor = comb?.actor;
   if (!comb || !actor) {return;}
   if (!actor.canAllOutAttack()) {return;}
   const allies = combat.getAllies(comb)
@@ -2900,7 +2902,7 @@ static async allOutAttackPrompt() {
     return;
   }
   if (!comb || !actor?.isOwner) {return;}
-  PersonaSFX.onAllOutPrompt();
+  void PersonaSFX.onAllOutPrompt();
   if (!await HTMLTools.confirmBox('All out attack!', `All out attack is available, would you like to do it? <br> (active Party members: ${numOfAllies})`)
   ) {return;}
   if (!actor.hasStatus('bonus-action')) {ui.notifications.warn('No bonus action');}
@@ -3095,7 +3097,7 @@ async roomEffectsDialog(initialRoomModsIds: string[] = [], startSocial: boolean)
     const dialogOptions : DialogOptions = {
       title: 'room Effects',
       content: html,
-      close: () => rej('Closed'),
+      close: () => rej(new Error('Closed')),
       buttons: {
         'ok': {
           label: 'ok',

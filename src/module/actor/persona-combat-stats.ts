@@ -5,74 +5,112 @@ import { Persona } from "../persona-class.js";
 
 export class PersonaCombatStats {
 
-	static STAT_POINTS_PER_LEVEL = 3;
-	static MAX_STAT_GAP =  10;
-	static MAX_STAT_VAL = 99;
-	static MIN_STAT_VAL = 1;
-	static DEFENSE_DIVISOR = 1.5;
+	persona : Persona;
+	static STAT_POINTS_PER_LEVEL = 3 as const;
+	static MAX_STAT_GAP =  10 as const;
+	static MAX_STAT_VAL = 99 as const;
+	static MIN_STAT_VAL = 1 as const;
+	static DEFENSE_DIVISOR = 1.5 as const;
+	static BASE_DEFENSE = 5 as const;
 
-	static baseFort(persona: Persona) : number {
-		return Math.floor(persona.endurance / this.DEFENSE_DIVISOR);
+	constructor (persona: Persona) {
+		this.persona = persona;
 	}
 
-	static baseWill(persona: Persona) : number {
-		return Math.floor(persona.luck / this.DEFENSE_DIVISOR);
+	get combatStats() {
+		return this.persona.source.system.combat.personaStats;
 	}
 
-	static baseRef(persona: Persona) : number {
-		return Math.floor(persona.agility / this.DEFENSE_DIVISOR);
+	get strength() : number { return this.combatStats.stats.str; }
+	get magic() : number { return this.combatStats.stats.mag; }
+	get endurance() : number { return this.combatStats.stats.end; }
+	get agility(): number { return this.combatStats.stats.agi; }
+	get luck(): number { return this.combatStats.stats.luk; }
+
+	baseFort() : number {
+		return PersonaCombatStats.BASE_DEFENSE + Math.floor(this.endurance / PersonaCombatStats.DEFENSE_DIVISOR);
 	}
 
-	static baseInit(persona: Persona) : number {
-		return Math.floor(persona.agility);
+	baseWill() : number {
+		return PersonaCombatStats.BASE_DEFENSE + Math.floor(this.luck / PersonaCombatStats.DEFENSE_DIVISOR);
 	}
 
-	static staminaDR(persona: Persona) : number{
-		return Math.floor(persona.endurance);
+	baseRef() : number {
+		return PersonaCombatStats.BASE_DEFENSE + Math.floor(this.agility / PersonaCombatStats.DEFENSE_DIVISOR);
 	}
 
-	static strDamageBonus(persona: Persona) : number {
-		return persona.strength;
+	baseWpnAttackBonus() : number {
+		return Math.floor(this.strength / PersonaCombatStats.DEFENSE_DIVISOR);
 	}
 
-	static lukCriticalBoost(persona: Persona) : number {
-		return Math.floor((persona.luck + 2) / 5);
+	baseMagAttackBonus(): number {
+		return Math.floor(this.magic / PersonaCombatStats.DEFENSE_DIVISOR);
 	}
 
-	static lukCriticalResist(persona: Persona) : number {
-		return Math.floor(persona.luck / 5);
+	baseAilmentAtkBonus(): number {
+		return 0;
 	}
 
-	static lukInstantDeathBonus(persona: Persona) : number {
-		return Math.floor((persona.luck + 1) / 5);
+	baseInit() : number {
+		return Math.floor(this.agility);
 	}
 
-	static lukInstantDeathResist(persona: Persona) : number {
-		return Math.floor((persona.luck + 3) / 5);
+	staminaDR() : number{
+		return Math.floor(this.endurance);
 	}
 
-	static magDamageBonus(persona: Persona) : number {
-		return persona.magic * 2;
+	strDamageBonus() : number {
+		return this.strength * 2;
 	}
 
-	static getPhysicalVariance(persona:Persona) : number {
-		return 1 + Math.round(persona.strength / 5);
+	lukCriticalResist() : number {
+		return Math.floor(this.luck / 5);
 	}
 
-	static getMagicalVariance(persona:Persona) : number {
-		return 1 + Math.round(persona.magic / 5);
+	lukInstantDeathBonus() : number {
+		return Math.floor((this.luck + 1) / 5);
 	}
 
-	static unspentStatPoints(persona: Persona) : number {
-		const total = Object.values(persona.combatStats.stats).reduce( (a,x) => a+x, 0);
+	lukCriticalBoost() : number {
+		return Math.floor((this.luck + 2) / 5);
+	}
+
+	lukInstantDeathResist() : number {
+		return Math.floor((this.luck + 3) / 5);
+	}
+
+	lukAilmentResist(): number {
+		return Math.floor((this.luck + 3) / 5);
+	}
+
+	lukAilmentBonus(): number {
+		return Math.floor((this.luck + 4) / 5);
+	}
+
+	magDamageBonus() : number {
+		return this.magic * 2;
+	}
+
+	getPhysicalVariance() : number {
+		return 2 + Math.round(this.strength / 5);
+	}
+
+	getMagicalVariance() : number {
+		return 2 + Math.round(this.magic / 5);
+	}
+
+	unspentStatPoints() : number {
+		const persona = this.persona;
+		const total = Object.values(this.combatStats.stats).reduce( (a,x) => a+x, 0);
 		const baseStatPoints = 5;
-		const expected_total = persona.level * this.STAT_POINTS_PER_LEVEL + baseStatPoints;
+		const expected_total = persona.level * PersonaCombatStats.STAT_POINTS_PER_LEVEL + baseStatPoints;
 		return expected_total - total;
 	}
 
-	static autoSpendPoints(persona: Persona, pointsToSpend: number = persona.unspentStatPoints) : StatGroup {
-		const favored = persona.combatStats.preferred_stat;
-		const disfavored = persona.combatStats.disfavored_stat;
+	#autoSpendPoints(pointsToSpend: number = this.persona.unspentStatPoints) : StatGroup {
+		const persona = this.persona;
+		const favored = this.combatStats.preferred_stat;
+		const disfavored = this.combatStats.disfavored_stat;
 		const tarotName = persona.tarot?.name;
 		const stIncreases : StatGroup = {
 			str: 0,
@@ -87,7 +125,7 @@ export class PersonaCombatStats {
 			return  stIncreases;
 		}
 		const stblk : StatGroup = {
-			...persona.combatStats.stats
+			...this.combatStats.stats
 		};
 		let statsToBeChosen = pointsToSpend;
 		// let statsToBeChosen = this.STAT_POINTS_PER_LEVEL;
@@ -132,6 +170,10 @@ export class PersonaCombatStats {
 		return stIncreases;
 	}
 
+	canRaiseStat(st: PersonaStatType, statBlock: StatGroup = this.combatStats.stats) : boolean {
+		return statBlock[st] < PersonaCombatStats.maxStatAmount(statBlock);
+	}
+
 	static canRaiseStat(st: PersonaStatType, statBlock: StatGroup) : boolean {
 		return statBlock[st] < PersonaCombatStats.maxStatAmount(statBlock);
 	}
@@ -153,6 +195,18 @@ export class PersonaCombatStats {
 		return Math.min(this.MAX_STAT_VAL, minStat + MaxStatGap);
 	}
 
+	async autoSpendStatPoints() : Promise<StatGroup> {
+		const increases = this.#autoSpendPoints();
+		const stats = this.persona.source.system.combat.personaStats.stats;
+		for (const k of Object.keys(stats)) {
+			const stat = k as keyof typeof increases;
+			stats[stat] += increases[stat];
+		}
+		await this.persona.source.update({
+			"system.combat.personaStats.stats": stats,
+		});
+		return increases;
+	}
 
 }
 

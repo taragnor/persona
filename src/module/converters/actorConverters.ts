@@ -61,8 +61,8 @@ export class ActorConverters {
 				}
 			}
 		};
-		personaData!.system!.combat!.powers = [];
-		const persona = await PersonaActor.create<Shadow>(personaData) as Shadow;
+		personaData.system!.combat!.powers = [];
+		const persona = await PersonaActor.create<Shadow>(personaData);
 		await persona.createEmbeddedDocuments("Item", shadow.items.contents.map (x=> x.toJSON()));
 		await this.convertPowers(shadow, persona);
 		return persona;
@@ -98,7 +98,7 @@ export class ActorConverters {
 				}
 			},
 		};
-		dmonStats!.system!.combat!.powers = [];
+		dmonStats.system!.combat!.powers = [];
 		const dmon = await PersonaActor.create<Shadow>(dmonStats);
 		const nonPowerItems = shadow.items.contents.filter(x=> !x.isPower());
 		await dmon.createEmbeddedDocuments("Item", nonPowerItems.map (x=> x.toJSON()));
@@ -134,7 +134,7 @@ export class ActorConverters {
 			"system.combat.personaStats.xp": minXP
 		});
 		if (actor.isNPCAlly() || actor.isShadow()) {
-			await actor.basePersona.autoSpendStatPoints();
+			await actor.basePersona.combatStats.autoSpendStatPoints();
 			if (actor.isShadow()) {
 				await actor.checkForMissingLearnedPowers();
 			}

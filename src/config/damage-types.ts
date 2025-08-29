@@ -141,24 +141,24 @@ export class DamageCalculator {
 const DAMAGE_LEVEL_CONVERT_WEAPON = {
 	"none": {extraVariance: 0, baseAmt: 0},
 	"miniscule": {extraVariance: 0, baseAmt: 0},
-	"basic": {extraVariance: 2, baseAmt: 0},
-	"light": {extraVariance: 2, baseAmt: 10},
-	"medium": {extraVariance: 3, baseAmt: 25},
-	"heavy": {extraVariance: 3, baseAmt: 50},
-	"severe": {extraVariance: 4, baseAmt: 70},
-	"colossal": {extraVariance: 4, baseAmt: 110},
+	"basic": {extraVariance: 0, baseAmt: 0},
+	"light": {extraVariance: 1, baseAmt: 10},
+	"medium": {extraVariance: 2, baseAmt: 25},
+	"heavy": {extraVariance: 2, baseAmt: 50},
+	"severe": {extraVariance: 3, baseAmt: 70},
+	"colossal": {extraVariance: 3, baseAmt: 110},
 } as const satisfies Readonly<Record<ConvertableDamageLevel, NewDamageParams>> ;
 
 
 const DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE = {
 	"none": {extraVariance: 0, baseAmt: 0},
 	"miniscule": {extraVariance: 0, baseAmt: 0},
-	"basic": {extraVariance: 2, baseAmt: 0},
-	"light": {extraVariance: 2, baseAmt: 18},
-	"medium": {extraVariance: 3, baseAmt: 35},
-	"heavy": {extraVariance: 3, baseAmt: 60},
-	"severe": {extraVariance: 4, baseAmt: 85},
-	"colossal": {extraVariance: 4, baseAmt: 120},
+	"basic": {extraVariance: 0, baseAmt: 0},
+	"light": {extraVariance: 1, baseAmt: 18},
+	"medium": {extraVariance: 2, baseAmt: 35},
+	"heavy": {extraVariance: 2, baseAmt: 60},
+	"severe": {extraVariance: 3, baseAmt: 85},
+	"colossal": {extraVariance: 3, baseAmt: 120},
 } as const satisfies Readonly<Record< ConvertableDamageLevel, NewDamageParams>>;
 
 type ConvertableDamageLevel = Exclude<DamageLevel, "-" | "fixed">;
@@ -209,4 +209,4 @@ const WEAPON_LEVEL_TO_DAMAGE: Record<number, number> = {
 };
 
 
-export const BASE_VARIANCE = 1 as const;
+export const BASE_VARIANCE = 2 as const;

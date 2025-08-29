@@ -1,4 +1,3 @@
-import { PersonaCombatStats } from "./actor/persona-combat-stats.js";
 import { PersonaStat } from "../config/persona-stats.js";
 import { ConsequenceAmount } from "../config/consequence-types.js";
 import { INSTANT_KILL_LEVELS } from "../config/damage-types.js";
@@ -57,8 +56,8 @@ export class PersonaHandleBarsHelpers {
 
 	}
 
-	static helpers : Record<string, (...args: any[])=> any>  = {
-		"caps" : (str) => str.toUpperCase?.() || str,
+	static helpers : Record<string, (...args: unknown[])=> unknown>  = {
+		"caps" : (str: string) => str?.toUpperCase?.() || str,
 
 		"getMaxSlotsAt": (_actor: PersonaActor, _lvl:number) => {
 			return 0;
@@ -80,15 +79,15 @@ export class PersonaHandleBarsHelpers {
 		"statValue" : (persona: Persona, stat: PersonaStat) : number => {
 			switch (stat) {
 				case "str":
-					return persona.strength;
+					return persona.combatStats.strength;
 				case "mag":
-					return persona.magic;
+					return persona.combatStats.magic;
 				case "end":
-					return persona.endurance;
+					return persona.combatStats.endurance;
 				case "luk":
-					return persona.luck;
+					return persona.combatStats.luck;
 				case "agi":
-					return persona.agility;
+					return persona.combatStats.agility;
 			}
 		},
 
@@ -229,6 +228,7 @@ export class PersonaHandleBarsHelpers {
 					case "string":
 					case "number":
 						str += String(arg);
+						break;
 					default:
 						break;
 				}
@@ -305,13 +305,14 @@ export class PersonaHandleBarsHelpers {
 
 		"prettyAtkResult": function (result: AttackResult) : string {
 			switch (result.result) {
-				case "crit":
+				case "crit": {
 					const str = "CRITICAL";
 					if (result.hitResistance)
 						{return str  + " (RESIST)";}
 					if (result.hitWeakness)
 						{return str + " (WEAK)";}
 					return str;
+				}
 				case "hit":
 					if (result.hitResistance)
 						{return "RESIST";}
@@ -365,7 +366,7 @@ export class PersonaHandleBarsHelpers {
 
 		"inCombat": function() : boolean {
 			if (!game.combat) {return false;}
-			return (game.combat.combatants.contents.some( x=> x?.actor?.system.type == "shadow"));
+			return (game.combat.combatants.contents.some( x=> (x?.actor as PersonaActor)?.isShadow()));
 		},
 
 		"inventoryLocked": function() : boolean {
@@ -383,7 +384,7 @@ export class PersonaHandleBarsHelpers {
 		"localizeDamageType": function (dtype:DamageType ) : string {
 			return game.i18n.localize(DAMAGETYPES[dtype]);
 		},
-		"getProp": function (object: {}, path: string) : unknown {
+		"getProp": function (object: object, path: string) : unknown {
 			while (path.endsWith(".")) {
 				path = path.slice(0, -1);
 			}
@@ -438,11 +439,11 @@ export class PersonaHandleBarsHelpers {
 		"hasTag": function (source: PersonaActor | PersonaItem, tagName: string) : boolean {
 			switch (true) {
 				case source instanceof PersonaActor :{
-					return source.tagList.includes(tagName as any);
+					return source.tagList.includes(tagName as typeof source.tagList[number]);
 				}
 				case source instanceof PersonaItem: {
 					const list = (source as Usable).tagList(null);
-					return list.includes (tagName as any);
+					return list.includes (tagName as typeof list[number]);
 				}
 				default:
 					return false;
@@ -453,10 +454,10 @@ export class PersonaHandleBarsHelpers {
 			return tags.join(", ");
 		},
 
-		"eq-m": function<T extends any> (comparisonOne:T, ...compArr: T[]) {
+		"eq-m": function<T> (comparisonOne:T, ...compArr: T[]) {
 			return compArr.some(x=> x == comparisonOne);
 		},
-		"neq-m": function<T extends any> (comparisonOne:T, ...compArr: T[]) {
+		"neq-m": function<T> (comparisonOne:T, ...compArr: T[]) {
 			return compArr.every(x=> x != comparisonOne);
 		},
 		"replace": function(originalString: string = "ERROR", replacementSet: Record<string, string> = {}): string {
@@ -510,19 +511,19 @@ export class PersonaHandleBarsHelpers {
 			return item.hpCost();
 		},
 
-		"getAttackBonus": function (actor: ValidAttackers, power: Usable) : number {
+		"getAttackBonus": function (persona: Persona, power: Usable) : number {
 			const situation : Situation = {
-				attacker: actor.accessor,
-				user: actor.accessor,
+				attacker: persona.user.accessor,
+				user: persona.user.accessor,
 				usedPower: power.accessor,
 			};
-			return PersonaCombat.getAttackBonus(actor, power, undefined).total(situation);
+			return PersonaCombat.getAttackBonus(persona, power, undefined).total(situation);
 		},
 
 		"powerCostString": function (power: Power, persona: Persona)  : SafeString {
 			try {
 			return new Handlebars.SafeString(power.costString1(persona));
-			} catch (e) {return "ERROR";}
+			} catch {return "ERROR";}
 		},
 
 		"isExotic" : function (power: Power) : boolean {
@@ -576,7 +577,7 @@ export class PersonaHandleBarsHelpers {
 			return new Handlebars.SafeString("");
 		},
 
-		"ternIf": function (cond, r1, r2) {
+		"ternIf": function (cond: boolean, r1: unknown, r2: unknown) {
 			if (r1 == undefined) {
 				PersonaError.softFail(`Ternif result 1 is undefined`);
 			}
@@ -709,7 +710,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"canRaiseStat": function (persona: Persona, stat: PersonaStat) : boolean {
-			return persona.canRaiseStat(stat);
+			return persona.combatStats.canRaiseStat(stat);
 		},
 
 		"getWeaponDamageAmt": function (weapon: Weapon) {

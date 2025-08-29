@@ -495,8 +495,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const lvlbase = this.class.getClassProperty(lvl, "maxhp");
 			if (this.isShadow()) {
 				const shadowRelHPChange = 0.75 + (this.level * .005);
-				newForm.add("Shadow Class Adjust", shadowRelHPChange);
-			}
+				newForm.add("Shadow Class Adjust", shadowRelHPChange); }
 			// if (this.hasSoloPersona()) {
 			// 	const resists = this.system.combat.resists;
 			// 	const values = Object.values(resists) ;
@@ -1714,38 +1713,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.persona().defensiveModifiers().flatMap( x=> x.getSourcedEffects(this));
 	}
 
-	wpnAtkBonus(this: ValidAttackers) : ModifierList {
-		const mods = this.persona().getBonuses(["allAtk", "wpnAtk"]);
-		const lvl = this.system.combat.classData.level;
-		const inc = this.system.combat.classData.incremental.attack ?? 0;
-		const wpnAtk = this.system.combat.wpnatk;
-		mods.add("Base Weapon Attack Bonus", wpnAtk);
-		mods.add("Level Bonus (x2)", lvl * 2);
-		mods.add("Incremental Advance" , inc);
-		return mods;
-	}
-
-	magAtkBonus(this: ValidAttackers) : ModifierList {
-		const mods = this.persona().getBonuses(["allAtk", "magAtk"]);
-		const lvl = this.system.combat.classData.level ?? 0;
-		const magAtk = this.system.combat.magatk ?? 0;
-		const inc = this.system.combat.classData.incremental.attack ?? 0;
-		mods.add("Base Magic Attack Bonus", magAtk);
-		mods.add("Level Bonus (x2)", lvl * 2);
-		mods.add("Incremental Advance" , inc);
-		return mods;
-	}
-
-	itemAtkBonus(this: ValidAttackers, item :Consumable) : ModifierList {
-		const mods = this.persona().getBonuses(["itemAtk", "allAtk"]);
-		mods.add("Item Base Bonus", item.system.atk_bonus);
-		const lvl = this.system.combat.classData.level ?? 0;
-		const inc = this.system.combat.classData.incremental.attack ?? 0;
-		mods.add("Level Bonus (x1)", lvl);
-		mods.add("Incremental Advance" , inc);
-		return mods;
-	}
-
 	getDefense(this: ValidAttackers,  type : keyof PC["system"]["combat"]["defenses"]) : ModifierList {
 		return this.persona().getDefense(type);
 	}
@@ -2564,7 +2531,7 @@ async onLevelUp_checkLearnedPowers(this: ValidAttackers, newLevel: number, logCh
 
 async onLevelUp_BasePersona(this: ValidAttackers, newLevel: number) : Promise<void> {
 	if (this.isNPCAlly() || this.isShadow()) {
-		await this.basePersona.autoSpendStatPoints();
+		await this.basePersona.combatStats.autoSpendStatPoints();
 		// await this.levelUp_Incremental();
 	}
 	await this.onLevelUp_checkLearnedPowers(newLevel);

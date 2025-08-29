@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { PersonaStat } from "../../../config/persona-stats.js";
 import { PowerPrinter } from "../../printers/power-list.js";
 import { PersonaRoller } from "../../persona-roll.js";
@@ -57,14 +58,15 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".reset-stats").on("click", this.resetStats.bind(this));
 	}
 
-	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) {
+	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:unknown[]) {
 		Helpers.ownerCheck(this.actor);
-		//@ts-ignore
+		//@ts-expect-error using unsupported foundrytype
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 		const item: PersonaItem = await Item.implementation.fromDropData(itemD);
-		console.debug(`${item.system.type} dropped on sheet of ${this.actor}`);
+		console.debug(`${item.system.type} dropped on sheet of ${this.actor.displayedName.toString()}`);
 		switch (item.system.type) {
 			case "talent":
-				this.actor.persona().addTalent(item as Talent);
+				await this.actor.persona().addTalent(item as Talent);
 				return undefined;
 			case "power": {
 				const actorType = this.actor.system.type;
@@ -76,7 +78,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 						else {await this.actor.addPower(power);}
 						return power;
 					case "pc":
-					case "npcAlly":
+					case "npcAlly": {
 						const actor = this.actor as PC | NPCAlly;
 						if (power.isTeamwork()) {
 							await actor.setTeamworkMove(power);
@@ -105,9 +107,10 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 						}
 						await actor.addPower(item as Power);
 						return item ;
+					}
 					default:
 						actorType satisfies never;
-						throw new PersonaError(`Unsupported Type ${actorType}`);
+						throw new PersonaError(`Unsupported Type ${actorType as string}`);
 				}
 			}
 			case "focus":
@@ -118,7 +121,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 					return item;
 				}
 			case "skillCard":
-			case "consumable":
+			case "consumable": {
 				if (!game.user.isGM) {
 					ui.notifications.warn("Use Item Piles functionality to move items.");
 					return undefined;
@@ -130,6 +133,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 					return existing;
 				}
 				return super._onDropItem(_event, itemD);
+			}
 			case "item":
 			case "weapon":
 				if (!game.user.isGM) {
@@ -138,7 +142,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				}
 				return super._onDropItem(_event, itemD);
 			case "characterClass":
-				this.actor.setClass(item as CClass);
+				await this.actor.setClass(item as CClass);
 				return item;
 			case "universalModifier":
 				throw new PersonaError("Universal Modifiers can't be added to sheets");
@@ -146,6 +150,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				return undefined;
 			default:
 				item.system satisfies never;
+				// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 				throw new Error(`Unknown supported type ${item["system"]["type"]}`);
 		}
 	}
@@ -160,7 +165,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const ptype = power.system.type;
 		if (ptype != "power" && ptype != "consumable")
 			{throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);}
-		this.#useItemOrPower(power);
+		await this.#useItemOrPower(power);
 	}
 
 	async #useItemOrPower(power : UsableAndCard) {
@@ -173,7 +178,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		} else {
 			const tokens = this.actor._dependentTokens.get(game.scenes.current)!;
 			//THIS IS PROBABLY A bad idea to iterate over weakset
-			//@ts-ignore
+			//@ts-expect-error not sure what type tokens are
 			token = Array.from(tokens)[0];
 		}
 		if (!token) {
@@ -205,13 +210,13 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!item.isUsableType() || !item.isTrulyUsable()) {
 			throw new PersonaError(`item ${item.name} isn't usable`);
 		}
-		this.#useItemOrPower(item);
+		await this.#useItemOrPower(item);
 	}
 
 	async deleteTalent(event: Event) {
 		const talentId = HTMLTools.getClosestData(event, "talentId");
 		if (talentId == undefined) {
-			const err = `Can't find talent at index ${talentId}`;
+			const err = `Can't find talent: TalentId is undefined`;
 			console.error(err);
 			ui.notifications.error(err);
 			throw new Error(err);
@@ -226,7 +231,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async deletePower(event: Event) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		if (powerId == undefined) {
-			const err = `Can't find power at index ${powerId}`;
+			const err = `Can't find power: Power Id is undefied`;
 			console.error(err);
 			ui.notifications.error(err);
 			throw new Error(err);
@@ -239,7 +244,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async deleteLearnablePower(event: JQuery.ClickEvent) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		if (powerId == undefined) {
-			const err = `Can't find power at index ${powerId}`;
+			const err = `Can't find power: Power Id is undefined`;
 			console.error(err);
 			ui.notifications.error(err);
 			throw new Error(err);
@@ -302,7 +307,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			await this.actor.update({
 				"system.combat.classData.incremental.hp" : current +1});
 			if (this.actor.isPC() || this.actor.isNPCAlly()) {
-				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
+				await Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 			}
 		}
 	}
@@ -315,7 +320,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			await this.actor.update({
 				"system.combat.classData.incremental.mp" : current +1});
 			if (this.actor.isPC() || this.actor.isNPCAlly()) {
-				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
+				await Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 			}
 		}
 	}
@@ -328,7 +333,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			await this.actor.update({
 				"system.combat.classData.incremental.wpnDamage" : current +1});
 			if (this.actor.isPC() || this.actor.isNPCAlly()) {
-				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
+				await Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 			}
 		}
 	}
@@ -341,7 +346,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			await this.actor.update({
 				"system.combat.classData.incremental.attack" : current +1});
 			if (this.actor.isPC() || this.actor.isNPCAlly()) {
-				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
+				await Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 			}
 		}
 	}
@@ -353,7 +358,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			await this.actor.update({
 				"system.combat.classData.incremental.defense" : current +1});
 			if (this.actor.isPC() || this.actor.isNPCAlly()) {
-				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
+				await Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 			}
 		}
 	}
@@ -365,7 +370,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			await this.actor.update({
 				"system.combat.classData.incremental.initiative" : current +1});
 			if (this.actor.isPC() || this.actor.isNPCAlly()) {
-				Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
+				await Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
 			}
 		}
 	}
@@ -383,7 +388,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	}
 
-	async displayDamageStack(event: JQuery.ClickEvent) {
+	displayDamageStack(event: JQuery.ClickEvent) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		if (powerId == undefined) {
 			throw new PersonaError(`Can't find power`);
@@ -407,7 +412,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	async showPowersTable(_ev: JQuery.ClickEvent) {
-		PowerPrinter.open();
+		await PowerPrinter.open();
 	}
 
 	isOnLearningTab() : boolean {
@@ -429,7 +434,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async addStatPoint(ev: JQuery.ClickEvent) {
 		if (this.actor.basePersona.unspentStatPoints < 1) {return;}
-		const stat = HTMLTools.getClosestData(ev, "stat") as PersonaStat;
+		const stat = HTMLTools.getClosestData<PersonaStat>(ev, "stat");
 		const stats = this.actor.system.combat.personaStats.stats;
 		if (stats[stat]) {
 			stats[stat] += 1;
@@ -449,7 +454,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 "system.combat.personaStats.stats": stats
 		});
 		if (this.actor.isNPCAlly() || this.actor.isShadow()) {
-			await this.actor.basePersona.autoSpendStatPoints();
+			await this.actor.basePersona.combatStats.autoSpendStatPoints();
 		}
 	}
 

@@ -1,12 +1,10 @@
 import { ELEMENTAL_DEFENSE_LINK } from "../config/damage-types.js";
-import { PersonaStat } from "../config/persona-stats.js";
-import { StatGroup } from "./actor/persona-combat-stats.js";
 import { LevelUpCalculator } from "../config/level-up-calculator.js";
 import { PersonaCombatStats } from "./actor/persona-combat-stats.js";
 import { DamageCalculator } from "../config/damage-types.js";
 import { NonDeprecatedModifierType } from "../config/item-modifiers.js";
 import { NewDamageParams } from "../config/damage-types.js";
-import { PersonaItem } from "./item/persona-item.js";
+import { Consumable, PersonaItem } from "./item/persona-item.js";
 import { Logger } from "./utility/logger.js";
 import { removeDuplicates } from "./utility/array-tools.js";
 import { Shadow } from "./actor/persona-actor.js";
@@ -34,6 +32,7 @@ import {Power, Talent, Focus} from "./item/persona-item.js";
 import {PersonaTag} from "../config/creature-tags.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
+	#combatStats: U<PersonaCombatStats>;
 	user: T;
 	source: ValidAttackers;
 	_powers: Power[];
@@ -140,7 +139,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	get unspentStatPoints() : number {
-		return PersonaCombatStats.unspentStatPoints(this);
+		return this.combatStats.unspentStatPoints();
 	}
 
 	get XPForNextLevel() : number {
@@ -169,14 +168,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const ret = new ModifierList();
 		const mods = this.mainModifiers().flatMap( item => item.getModifier("critResist", this.user));
 		const list =  ret.concat(new ModifierList(mods));
-		list.add("Luck Bonus", PersonaCombatStats.lukCriticalResist(this));
+		list.add("Luck Bonus", this.combatStats.lukCriticalResist());
 		return list;
 	}
 
 	critBoost() : ModifierList {
 		const mods = this.mainModifiers().flatMap( item => item.getModifier("criticalBoost", this.user));
 		const list= new ModifierList(mods);
-		list.add("Luck Bonus", PersonaCombatStats.lukCriticalBoost(this));
+		list.add("Luck Bonus", this.combatStats.lukCriticalBoost());
 		return list;
 	}
 
@@ -411,7 +410,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const initBonus = this
 			.getBonuses("initiative")
 			.total(situation);
-		const agi = PersonaCombatStats.baseInit(this);
+		const agi = this.combatStats.baseInit();
 		const initMod = 0;
 		// const initMod = this.#translateInitString(this.baseInitRank);
 		return initBonus + agi + initMod;
@@ -434,15 +433,15 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const mods = new ModifierList();
 		switch (defense) {
 			case "ref": {
-				mods.add("Agility Bonus", PersonaCombatStats.baseRef(this));
+				mods.add("Agility Bonus", this.combatStats.baseRef());
 				break;
 			}
 			case "will": {
-				mods.add("Luck Bonus", PersonaCombatStats.baseWill(this));
+				mods.add("Luck Bonus", this.combatStats.baseWill());
 				break;
 			}
 			case "fort": {
-				mods.add("Endurance Bonus", PersonaCombatStats.baseWill(this));
+				mods.add("Endurance Bonus", this.combatStats.baseWill());
 				break;
       }
 			default:
@@ -491,43 +490,17 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.tarot;
 	}
 
-	get combatStats() {
-		return this.source.system.combat.personaStats;
-	}
+	// get combatStats() {
+	// 	return this.source.system.combat.personaStats;
+	// }
 
-	get strength() : number {
-		return this.combatStats.stats.str;
-		// return this.#emptyStatPlaceholder();
-	}
-
-	get magic() : number {
-		return this.combatStats.stats.mag;
-	}
-
-	get endurance() : number {
-		return this.combatStats.stats.end;
-	}
-
-	get agility(): number {
-		return this.combatStats.stats.agi;
-	}
-
-	get luck(): number {
-		return this.combatStats.stats.luk;
-	}
-
-	async autoSpendStatPoints() : Promise<StatGroup> {
-		const increases = PersonaCombatStats.autoSpendPoints(this);
-		const stats = this.source.system.combat.personaStats.stats;
-		for (const k of Object.keys(stats)) {
-			const stat = k as keyof typeof increases;
-			stats[stat] += increases[stat];
+	get combatStats(): PersonaCombatStats {
+		if (this.#combatStats == undefined) {
+			this.#combatStats = new PersonaCombatStats(this);
 		}
-		await this.source.update({
-			"system.combat.personaStats.stats": stats,
-		});
-		return increases;
+		return this.#combatStats;
 	}
+
 
 	passiveFocii() : Focus[] {
 		return this.focii.filter( f=> f.hasPassiveEffects(this.user));
@@ -713,6 +686,50 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.totalResists() > this.maxResists();
 	}
 
+	wpnAtkBonus() : ModifierList {
+		const mods = this.getBonuses(["allAtk", "wpnAtk"]);
+		// const lvl = this.system.combat.classData.level;
+		// const inc = this.system.combat.classData.incremental.attack ?? 0;
+		// mods.add("Level Bonus (x2)", lvl * 2);
+		// mods.add("Incremental Advance" , inc);
+		// const wpnAtk = this.source.system.combat.wpnatk;
+		const wpnAtk = this.combatStats.baseWpnAttackBonus();
+		mods.add("Base Weapon Attack Bonus", wpnAtk);
+		return mods;
+	}
+
+	magAtkBonus() : ModifierList {
+		const mods = this.getBonuses(["allAtk", "magAtk"]);
+		// const lvl = this.system.combat.classData.level ?? 0;
+		// const inc = this.system.combat.classData.incremental.attack ?? 0;
+		// mods.add("Level Bonus (x2)", lvl * 2);
+		// mods.add("Incremental Advance" , inc);
+		// const magAtk = this.source.system.combat.magatk ?? 0;
+		const magAtk = this.combatStats.baseMagAttackBonus();
+		mods.add("Base Magic Attack Bonus", magAtk);
+		return mods;
+	}
+
+	ailmentAtkBonus() :ModifierList {
+		const mods = this.getBonuses(["allAtk"]);
+		// const lvl = this.system.combat.classData.level ?? 0;
+		const ailAtk = this.combatStats.baseAilmentAtkBonus();
+		mods.add("Base Magic Attack Bonus", ailAtk);
+		return mods;
+
+
+	}
+
+	itemAtkBonus(item :Consumable) : ModifierList {
+		const mods = this.getBonuses(["itemAtk", "allAtk"]);
+		mods.add("Item Base Bonus", item.system.atk_bonus);
+		// const lvl = this.system.combat.classData.level ?? 0;
+		// const inc = this.system.combat.classData.incremental.attack ?? 0;
+		// mods.add("Level Bonus (x1)", lvl);
+		// mods.add("Incremental Advance" , inc);
+		return mods;
+	}
+
 	get isUnderResistCap(): boolean {
 		const leeway  = 0;  //allow leeway for double weakness
 
@@ -867,9 +884,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.getBonuses("variance");
 	}
 
-	canRaiseStat (st: PersonaStat) : boolean {
-		return this.unspentStatPoints > 0 && PersonaCombatStats.canRaiseStat(st, this.combatStats.stats);
-	}
+	// canRaiseStat (st: PersonaStat) : boolean {
+	// 	return this.unspentStatPoints > 0 && this.combatStats.canRaiseStat(st, this.combatStats.stats);
+	// }
 
 	async levelUp_manual() {
 		const level = this.source.system.combat.personaStats.pLevel;

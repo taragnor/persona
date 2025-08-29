@@ -1,5 +1,4 @@
 import { GrowthCalculator } from '../utility/growth-calculator.js';
-import { PersonaCombatStats } from '../actor/persona-combat-stats.js';
 import { STATUS_AILMENT_SET } from '../../config/status-effects.js';
 import { BASE_VARIANCE } from '../../config/damage-types.js';
 import { DamageCalculation } from '../combat/damage-calc.js';
@@ -171,7 +170,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         return undefined;
       default:
         dmgType satisfies never;
-        PersonaError.softFail(`Unknown Damage Type ${dmgType}`);
+        PersonaError.softFail(`Unknown Damage Type ${dmgType as string}`);
         return 'ERROR';
     }
   }
@@ -221,12 +220,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const adjustedLvl = Math.clamp(lvl, 0, 200);
     switch (property) {
       case 'maxhp':
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
         return this.calcClassMaxHP(adjustedLvl) as any;
       default:
     }
     const data = this.system.leveling_table[adjustedLvl][property];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument
     if (property == 'slots') {return ArrayCorrector(data as any) as any;}
     return data;
   }
@@ -253,7 +252,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       this.#cache.basicPCPowers = basic.flatMap( powerName =>  {
         const power = PersonaDB.getBasicPower(powerName);
         if (!power) {return [];}
-        return [power as Power];
+        return [power];
       });
     }
     return this.#cache.basicPCPowers;
@@ -265,7 +264,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       this.#cache.basicShadowPowers = basic.flatMap( powerName =>  {
         const power = PersonaDB.getBasicPower(powerName);
         if (!power) {return [];}
-        return [power as Power];
+        return [power];
       });
     }
     return this.#cache.basicShadowPowers;
@@ -363,7 +362,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
   }
 
-  tagListLocalized(this: Weapon | UsableAndCard | InvItem | Weapon, user: null  | ValidAttackers) : string {
+  tagListLocalized(this: Weapon | UsableAndCard | InvItem  , user: null  | ValidAttackers) : string {
     let tags : string[] = [];
     const localizeTable  =  {
       ...EQUIPMENT_TAGS,
@@ -444,15 +443,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     await this.update( {'system.cardTags': tags});
   }
 
-  async addEventTag(this: SocialCard, eventIndex:number) : Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data = this.system.events.map(x=> (x as any).toJSON());
-    const ev = data[eventIndex];
-    const newTags =  ev.eventTags.slice();
-    newTags.push('');
-    ev.eventTags = newTags;
-    await this.update( {'system.events': data});
-  }
+	async addEventTag(this: SocialCard, eventIndex:number) : Promise<void> {
+		const data = this.system.events;
+		const ev = data[eventIndex];
+		const newTags =  ev.eventTags.slice();
+		newTags.push('');
+		ev.eventTags = newTags;
+		const json = data.map(x=> (x as unknown as JSONAble).toJSON());
+		await this.update( {'system.events': json});
+	}
 
   async deleteItemTag(this: Consumable | InvItem | Weapon, index: number) : Promise<void> {
     const tags = this.system.itemTags;
@@ -466,13 +465,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     await this.update( {'system.cardTags': tags});
   }
 
-  async deleteEventTag(this: SocialCard, eventIndex:number, tagIndex: number) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data = this.system.events.map(x=> (x as any).toJSON());
-    const ev= data[eventIndex];
-    ev.eventTags.splice(tagIndex, 1);
-    await this.update( {'system.events': data});
-  }
+	async deleteEventTag(this: SocialCard, eventIndex:number, tagIndex: number) {
+		const data = this.system.events;
+		const ev= data[eventIndex];
+		ev.eventTags.splice(tagIndex, 1);
+		const json = data.map(x=> (x as unknown as JSONAble).toJSON());
+		await this.update( {'system.events': json});
+	}
 
   hasTag(this: Power, tag: PowerTag, user : null | ValidAttackers) : boolean;
   hasTag(this: Consumable, tag: PowerTag, user ?: null) : boolean;
@@ -522,8 +521,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         if (!list.includes(itype)) {
           list.pushUnique(itype);
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
+        if (!list.includes(this.system.dmg_type as typeof list[number]) && POWER_TAGS_LIST.includes(this.system.dmg_type as typeof POWER_TAGS_LIST[number])) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           list.pushUnique(this.system.dmg_type as any);
         }
@@ -559,8 +557,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       }
       case 'weapon': {
         const list = this.system.itemTags.slice();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
+        if (!list.includes(this.system.dmg_type as typeof list[number]) && POWER_TAGS_LIST.includes(this.system.dmg_type as typeof POWER_TAGS_LIST[number])) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           list.pushUnique(this.system.dmg_type as any);
         }
@@ -586,7 +583,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       }
       default:
         itype satisfies never;
-        PersonaError.softFail(`Can't get tag list for ${itype}`);
+        PersonaError.softFail(`Can't get tag list for ${itype as string}`);
         return [];
     }
   }
@@ -607,8 +604,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       const wpnList : readonly (PowerTag | EquipmentTag)[] = user?.weapon?.tagList() ?? user.unarmedTagList();
       list.pushUnique(...wpnList);
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (!list.includes(this.system.dmg_type as any) && POWER_TAGS_LIST.includes(this.system.dmg_type as any)) {
+      if (!list.includes(this.system.dmg_type as typeof list[number]) && POWER_TAGS_LIST.includes(this.system.dmg_type as typeof POWER_TAGS_LIST[number])) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         list.pushUnique(this.system.dmg_type as any);
       }
@@ -874,12 +870,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const costs : string[] = [];
     let required: number, cost: number;
     if (this.parent instanceof PersonaActor) {
-      required= this.system.energy.required;
+      required = this.system.energy.required;
       cost = this.system.energy.cost;
     } else {
-      const estimates = this.estimateShadowCosts(persona.user);
-      required = estimates.energyReq;
-      cost = estimates.cost;
+		 const Ecost= this.energyCostData(persona);
+      // const estimates = this.estimateShadowCosts(persona.user);
+      required = Ecost.required;
+      cost = Ecost.cost;
     }
     if (required > 0) {
       costs.push(`EN>=${required}`);
@@ -891,21 +888,29 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   energyRequired(this: UsableAndCard, persona: Persona) : number {
-    if (!this.isPower()) {return 0;}
-    if (this.customCost) {
-      return this.system.energy.required;
-    }
-    const estimate = this.estimateShadowCosts(persona.user);
-    return estimate.energyReq;
+	  const cost =this.energyCostData(persona);
+	  return cost.required;
   }
 
+
+	energyCostData(this: UsableAndCard, persona: Persona): Power["system"]["energy"] {
+		if (!this.isPower()) {
+			return {cost: 0, required: 0, newForm: false};
+		}
+		if (this.customCost) {
+			return this.system.energy;
+		}
+		const estimate = this.estimateShadowCosts(persona.user);
+		return {
+			cost: estimate.cost,
+			required: estimate.energyReq,
+			newForm: false,
+		};
+	}
+
   energyCost(this: UsableAndCard, persona:Persona) : number {
-    if (!this.isPower()) {return 0;}
-    if (this.customCost) {
-      return this.system.energy.cost;
-    }
-    const estimate = this.estimateShadowCosts(persona.user);
-    return estimate.cost;
+	  const cost =this.energyCostData(persona);
+	  return cost.cost;
   }
 
   static getSlotName(num : number) {
@@ -927,7 +932,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       system: {
         skillId: power.id,
       }
-    }) as SkillCard;
+    });
   }
 
   /** required because foundry input hates arrays*/
@@ -1059,8 +1064,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         return attacker.weapon?.getDamageType(attacker) ?? attacker.getUnarmedDamageType();
       default:
           this.system satisfies never;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        PersonaError.softFail(`Can't find damag etype for ${String((this.system as any)?.dmg_type)}`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        PersonaError.softFail(`Can't find damag etype for ${String((this.system as any)?.dmg_type ?? "")}`);
         return 'none';
     }
   }
@@ -1098,7 +1103,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   getWeaponSkillDamage(this: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
     const dtype = this.getDamageType(userPersona);
     const calc= new DamageCalculation(dtype);
-    const str = PersonaCombatStats.strDamageBonus(userPersona);
+    const str = userPersona.combatStats.strDamageBonus();
     const weaponDmg = userPersona.wpnDamage();
     const skillDamage = DamageCalculator.weaponSkillDamage(this);
     const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
@@ -1109,14 +1114,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Power Bonus`);
     calc.add('base', bonusDamage, 'Bonus Damage');
     const variance  = (BASE_VARIANCE + weaponDmg.extraVariance + skillDamage.extraVariance + bonusVariance );
-    const varianceMult = PersonaCombatStats.getPhysicalVariance(userPersona);
+    const varianceMult = userPersona.combatStats.getPhysicalVariance();
     calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` );
     return calc ;
   }
 
   getMagicSkillDamage(this: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: Situation): DamageCalculation {
     const persona = userPersona;
-    const magicDmg = PersonaCombatStats.magDamageBonus(persona);
+    const magicDmg = userPersona.combatStats.magDamageBonus();
     // const magicDmg = Math.floor(persona.magic);
     const skillDamage = DamageCalculator.magicSkillDamage(this);
     const damageBonus =  persona.getBonuses('magDmg').total(situation);
@@ -1127,7 +1132,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Damage`);
     calc.add('base', damageBonus, 'Bonus Damage');
     const variance  = (BASE_VARIANCE + skillDamage.extraVariance + bonusVariance );
-    const varianceMult = PersonaCombatStats.getMagicalVariance(userPersona);
+    const varianceMult = userPersona.combatStats.getMagicalVariance();
     calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` );
     return calc;
   }
@@ -1154,8 +1159,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         const dmg = this.system.damage;
         const dtype = this.system.dmg_type == 'by-power' ? 'untyped' : this.system.dmg_type;
         const calc = new DamageCalculation(dtype);
-        calc.add('base', dmg.low, `${this.displayedName} base damage`);
-        calc.add('evenBonus', dmg.high - dmg.low, `${this.displayedName} Even Bonus Damage`);
+        calc.add('base', dmg.low, `${this.displayedName.toString()} base damage`);
+        calc.add('evenBonus', dmg.high - dmg.low, `${this.displayedName.toString()} Even Bonus Damage`);
         return calc;
       }
       default:
@@ -1277,7 +1282,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   canBeReflectedByPhyiscalShield(this: UsableAndCard, attacker: ValidAttackers): boolean {
     if (this.isSkillCard()) {return false;}
-    const dtype = (this as Usable).getDamageType(attacker);
+    const dtype = (this).getDamageType(attacker);
     switch (dtype) {
       case 'physical':
       case 'gun':
@@ -1330,7 +1335,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   canBeReflectedByMagicShield(this: UsableAndCard, attacker: ValidAttackers) : boolean {
     if (this.isSkillCard()) {return false;}
-    const dtype = (this as Usable).getDamageType(attacker);
+    const dtype = (this).getDamageType(attacker);
     switch (dtype) {
       case 'fire':
       case 'wind':
@@ -1773,7 +1778,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
   }
 
-  async createNewTokenSpend(this: Activity | SocialCard) {
+  async createNewTokenSpend(this: Activity  ) {
     const list = this.system.tokenSpends;
     const newItem : typeof list[number] = {
       conditions: [],
@@ -1785,7 +1790,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     await this.update({'system.tokenSpends':list});
   }
 
-  async deleteTokenSpend(this: Activity | SocialCard, deleteIndex:number) {
+  async deleteTokenSpend(this: Activity  , deleteIndex:number) {
     const list = this.system.tokenSpends;
     list.splice(deleteIndex,1);
     await this.update({'system.tokenSpends':list});
@@ -1845,7 +1850,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         return true;
       default:
         this.system.targets satisfies never;
-        PersonaError.softFail(`Unknown target type: ${this.system.targets}`);
+        PersonaError.softFail(`Unknown target type: ${this.system.targets as string}`);
         return false;
     }
   }
@@ -1872,7 +1877,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         return true;
       default:
         this.system.targets satisfies never;
-        PersonaError.softFail(`Unknown target type: ${this.system.targets}`);
+        PersonaError.softFail(`Unknown target type: ${this.system.targets as string}`);
         return false;
     }
   }
@@ -1984,8 +1989,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       return SLcheck;
     };
     const conditionTags : typeof CARD_RESTRICTOR_TAGS[number][] = this.system.cardTags
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .filter(tag=> CARD_RESTRICTOR_TAGS.includes(tag as any)) as typeof CARD_RESTRICTOR_TAGS[number][];
+      .filter(tag=> CARD_RESTRICTOR_TAGS.includes(tag as typeof CARD_RESTRICTOR_TAGS[number])) as typeof CARD_RESTRICTOR_TAGS[number][];
     return conditionTags.flatMap( tag => {
       switch (tag) {
         case 'real-world': {
@@ -2054,8 +2058,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       return;
     }
     ev.eventTags.pushUnique('disabled');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const eventsArr= this.system.events.map( x=> (x as any).toJSON());
+    const eventsArr= this.system.events.map( x=> (x as unknown as JSONAble).toJSON());
     return await this.update({'system.events': eventsArr});
   }
 
@@ -2277,9 +2280,9 @@ function cacheStats() {
 window.cacheStats = cacheStats;
 
 
-Hooks.on('deleteItem', (item: PersonaItem) => {
+Hooks.on('deleteItem', async (item: PersonaItem) => {
   if (item.parent instanceof PersonaActor && item.hasPlayerOwner && item.isOwner && !game.user.isGM) {
-    Logger.sendToChat(`${item.parent.displayedName} deletes ${item.name}(${item.amount})`, item.parent);
+    await Logger.sendToChat(`${item.parent.displayedName} deletes ${item.name}(${item.amount})`, item.parent);
   }
 
 });
