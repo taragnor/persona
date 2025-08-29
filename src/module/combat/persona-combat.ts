@@ -2122,8 +2122,6 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 		PersonaError.softFail(`Damage type is undefined for ${power.name}`, cons);
 		return [];
 	}
-	const stamina = targets[0].persona().combatStats.staminaDR();
-	const staminaString = 'Endurance Damage Reduction';
 	switch (cons.damageSubtype) {
 		case 'odd-even':
 			if (situation.naturalRoll == undefined) {
@@ -2136,20 +2134,19 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 			} else {
 				dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
 			}
-			dmgCalc.add('resist', -stamina, staminaString);
+			// dmgCalc.add('resist', -Math.abs(stamina), staminaString);
 			break;
 		case 'multiplier':
 				return targets.map( applyTo => ({applyTo, cons, })
 				);
 		case 'low':
 				dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
-			dmgCalc.add('resist', stamina, staminaString);
+			// dmgCalc.add('resist', -Math.abs(stamina), staminaString);
 			break;
 		case 'high':
 			dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
 			dmgCalc.setApplyEvenBonus();
-			dmgCalc.add('resist', stamina, staminaString);
-			// dmgAmt = power.getDamage(attacker, situation, cons.damageType)[cons.damageSubtype];
+			// dmgCalc.add('resist', stamina, staminaString);
 			break;
 		case 'allout-low':
 		case 'allout-high': {
@@ -2214,16 +2211,35 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 			}
 			if (dmgCalc) {
 				dmgCalc.setDamageType(damageType);
+
 			}
-			consList.push( {
-				applyTo,
-				cons: {
-					...cons,
-					modifiers: mods,
-					amount: dmgAmt,
-					calc: dmgCalc,
-				}
+			const consItems = targets.map( target => {
+				const DC = dmgCalc != undefined ? dmgCalc.clone(): undefined;
+				if (DC) {
+					const stamina = target.persona().combatStats.staminaDR();
+					const staminaString = 'Endurance Damage Reduction';
+					DC.add('resist', -Math.abs(stamina), staminaString);
+				};
+				return {
+					applyTo: target,
+					cons: {
+						...cons,
+						modifiers: mods,
+						amount: dmgAmt,
+						calc: DC
+					}
+				};
 			});
+			consList.push(...consItems);
+			// consList.push( {
+			// 	applyTo,
+			// 	cons: {
+			// 		...cons,
+			// 		modifiers: mods,
+			// 		amount: dmgAmt,
+			// 		calc: dmgCalc,
+			// 	}
+			// });
 		}
 	}
 	return consList;

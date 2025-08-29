@@ -100,6 +100,7 @@ export class DamageCalculation {
 		};
 	}
 
+
 	addConsequence(cons: SourcedConsequence<DamageConsequence>, target: ValidAttackers): DamageCalculation {
 		let damageOrder: DamageOrder;
 		let amt : number;
@@ -108,10 +109,13 @@ export class DamageCalculation {
 				switch (mod) {
 					case "blocked":
 						this.#blocked = true;
+						break;
 					case "absorbed":
 						this.#absorbed = true;
+						break;
 					case "resisted":
 						this.#resisted = true;
+						break;
 				}
 			}
 		}
@@ -196,6 +200,11 @@ export class DamageCalculation {
 		this.#resisted = this.#resisted || other.#resisted;
 		this.#blocked = this.#blocked || other.#blocked;
 		return this;
+	}
+
+	clone(): DamageCalculation {
+		const dc = new DamageCalculation(this.damageType);
+		return dc.merge(this);
 	}
 
 	eval(): EvaluatedDamage {

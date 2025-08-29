@@ -851,7 +851,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	tagList() : PersonaTag[] {
 		const base = this.source.system.combat.personaTags.slice();
 		if (this.source.isShadow() && this.source.system.creatureType == "daemon") {
-			base.push("simulated");
+			base.pushUnique("simulated");
 		}
 		return base;
 	}
