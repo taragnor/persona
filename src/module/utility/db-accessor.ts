@@ -19,7 +19,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 
 	constructor() {
 		Hooks.once("ready", async () => {
-			this.#loadPacks();
+			await this.#loadPacks();
 			this._initHooks();
 			console.log("Database initialized");
 			this._loaded = true;
@@ -84,7 +84,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		setTimeout(() => this.checkReload(), 1000);
 	}
 
-	checkReload() {
+	async checkReload() {
 		if ( this._editedItems.some(
 			i => i.sheet._state > 0)
 			|| this._edited.some(
@@ -95,7 +95,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 			setTimeout(() => this.checkReload(), 1000);
 			return;
 		}
-		this.#loadPacks();
+		await this.#loadPacks();
 	}
 
 	 initHooks() {
@@ -156,7 +156,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 				retarr = this.filterItems( x => x.name == name);
 				break;
 			default:
-				throw new Error(`Unsupported Type ${type}`);
+				throw new Error(`Unsupported Type ${type as string}`);
 		}
 		if (retarr.length == 0)
 			{return null;}
@@ -175,7 +175,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 				return item ? item : null;
 			}
 			default:
-				throw new Error(`Unsupported Type ${type}`);
+				throw new Error(`Unsupported Type ${type as string}`);
 		}
 	}
 
@@ -189,7 +189,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		switch (type) {
 			case "Actor": return game.actors.contents as ActorType[];
 			case "Item": return game.items.contents as ItemType[];
-			default: throw new Error(`Unsupported Type ${type}`);
+			default: throw new Error(`Unsupported Type ${type as string}`);
 		}
 	}
 
@@ -197,7 +197,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		switch (type) {
 			case "Actor": return this.comp_actors;
 			case "Item": return this.comp_items;
-			default: throw new Error(`Unsupported Type ${type}`);
+			default: throw new Error(`Unsupported Type ${type as string}`);
 		}
 	}
 
@@ -241,11 +241,11 @@ private allItemsMap : Map<string, ItemType> = new Map();
 				return compendium_content as ItemType[];
 			default:
 				DBtype satisfies never;
-				throw new Error(`Bad Type ${DBtype}`);
+				throw new Error(`Bad Type ${DBtype as string}`);
 		}
 	}
 
-	 async onUpdateCompendium(compendium: FoundryCompendium<FoundryDocument>) {
+	 onUpdateCompendium(compendium: FoundryCompendium<FoundryDocument>) {
 		console.debug("Updating Compendium");
 		switch (compendium.documentName) {
 			case "Actor":
@@ -280,7 +280,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		if (actor) {
 			const foundActor = this.findActor(actor);
 			if (!foundActor) {throw new Error(`Actor Id ${actor.actorId} doesn't exist`);}
-			const item = foundActor.items.find( x=> x.id == itemId);
+			const item = foundActor.items.find( (x: T) => x.id == itemId) as U<T>;
 			if (!item) {
 				throw new Error(`Item Id ${itemId} not found on Actor Id ${foundActor.id}` );
 			}
@@ -289,7 +289,8 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		return this.getItemById(itemId) as unknown as T;
 	}
 
-	findToken<X extends UniversalTokenAccessor<any> | undefined>(acc: X) : X extends UniversalTokenAccessor<infer R> ? R : undefined  {
+	findToken<X extends UniversalTokenAccessor | undefined>(acc: X) : X extends UniversalTokenAccessor<infer R> ? R : undefined  {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 		if (!acc) {return undefined as any;}
 			const {scene, tokenId} = acc;
 		if (scene != null) {
@@ -297,13 +298,14 @@ private allItemsMap : Map<string, ItemType> = new Map();
 			if (!sc)  {
 				throw new Error(`Scene Id ${scene} doesn't exist`);
 			}
-			const tok = sc.tokens.get(tokenId!);
+			const tok = sc.tokens.get(tokenId);
 			if (!tok) {
 				throw new Error(`Token Id ${tokenId} doesn't exist`);
 			}
 			if (!tok.actor) {
 				throw new Error(`No actor on Token Id ${tokenId}`);
 			}
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 			return tok as any;
 		}
 		const sc = game.scenes.find(x=> x.tokens.get(tokenId) != null);
@@ -313,6 +315,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		if (!tok.actor) {
 			throw new Error(`No actor on Token Id ${tokenId}`);
 		}
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 		return tok as any;
 	}
 
@@ -361,7 +364,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 	}
 
 	getUniversalAEAccessor<T extends ActiveEffect<any, any> & {parent: Actor<any> | Item<any>}> (effect: T): UniversalAEAccessor<T> {
-		const parent = effect.parent;
+		const parent = effect.parent as unknown;
 		if (parent instanceof Actor) {
 			return {
 				actor: this.getUniversalActorAccessor(parent),
@@ -408,7 +411,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 
 declare global {
 
-type UniversalTokenAccessor<T extends TokenDocument<any>> = {
+type UniversalTokenAccessor<T extends TokenDocument<any> = TokenDocument<any>> = {
 	scene: string,
 	tokenId : T["id"],
 };
@@ -424,13 +427,13 @@ type UniversalItemAccessor<T extends Item<any>= Item<any>> = {
 }
 
 
-type UniversalAEAccessor<T extends ActiveEffect<any,any>> =
+type UniversalAEAccessor<T extends ActiveEffect<any,any> = ActiveEffect> =
 	{
 		effectId: T["id"],
 	} &
 	(
-		{ actor: UniversalActorAccessor<any>}
-		| { item: UniversalItemAccessor<any>}
+		{ actor: UniversalActorAccessor}
+		| { item: UniversalItemAccessor}
 	);
 
 }

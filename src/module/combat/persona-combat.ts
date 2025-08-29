@@ -2125,7 +2125,6 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
     return [];
   }
   const stamina = targets[0].persona().combatStats.staminaDR();
-  // const  stamina = -Math.floor(targets[0].persona().endurance / 2);
   const staminaString = 'Endurance Damage Reduction';
   switch (cons.damageSubtype) {
     case 'odd-even':

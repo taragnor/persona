@@ -1097,7 +1097,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return {extraVariance,
       baseAmt: DamageCalculator.convertFromOldLowDamageToNewBase(low)
     };
-
   }
 
   getWeaponSkillDamage(this: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
@@ -1110,6 +1109,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const bonusVariance = userPersona.getBonusVariance().total(situation);
     calc.add('base', str, `${userPersona.displayedName} Strength`);
     const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
+	  if (this.isFlurryPower()) {
+		  calc.add("multiplier", 0.666, "Flurry Attack Power");
+
+	  }
     calc.add('base', weaponDmg.baseAmt, weaponName.toString());
     calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Power Bonus`);
     calc.add('base', bonusDamage, 'Bonus Damage');
@@ -1301,6 +1304,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     if (this.isSkillCard()) {return false;}
     return (this.system.subtype == 'magic');
   }
+
+	isFlurryPower(this: Power): boolean {
+		return this.system.attacksMax > 1;
+	}
 
   hpCost(this: Usable): number {
     if (!this.isWeaponSkill() || !this.isPower()) {return 0;}

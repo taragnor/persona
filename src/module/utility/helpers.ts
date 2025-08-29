@@ -7,7 +7,7 @@ export class Helpers {
 	}
 
 	/** returns true or throws an error*/
-	static ownerCheck(doc: FoundryDocument<any>): true {
+	static ownerCheck<T extends FoundryDocument | undefined>(doc: FoundryDocument<T>): true {
 		if (doc.isOwner) {
 			return true;
 		}
@@ -29,7 +29,7 @@ export class Helpers {
 	}
 
 	/** used primarily for array related stuff, clears out datamodels and offers a full diff so array pushes aren't lost**/
-	static expandObject<T extends unknown>(data: T) :T  {
+	static expandObject<T>(data: T) : T  {
 		switch (typeof data) {
 			case "string":
 			case "number":
@@ -43,11 +43,11 @@ export class Helpers {
 			case "object":
 				if (data  == null) {return data;}
 				if (Array.isArray(data)) {
-					return data.map( x=> this.expandObject(x)) as T;
+					return data.map( x=> this.expandObject(x as unknown)) as T;
 				}
 				return Object.fromEntries(
 					Object.entries(data)
-					.map (([k,v])=> {
+					.map (([k,v] : [string, unknown] )=> {
 						switch (typeof v) {
 							case "string":
 							case "number":
@@ -59,16 +59,21 @@ export class Helpers {
 							case "function":
 								return [];
 							case "object":
-								if (v == null) {return [k,v];}
-								if ("schema" in v && "toObject" in v && typeof v.toObject == "function") {return this.expandObject(v.toObject());}
+								if (v == null) {return [k,v as unknown];}
+								if ("schema" in v && "toObject" in v && typeof v.toObject == "function") {
+									// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+									const obj = v.toObject() as object;
+									return [k, this.expandObject(obj)];}
 								if (Array.isArray(v))
-									{return [k,
-										v.map( x=> this.expandObject(x))];}
+								{return [k,
+									(v as unknown[]).map( x=> this.expandObject(x))];}
 								else {return [k, this.expandObject(v)];}
 						}
 					})
 					.filter(x=> x.length > 0 )
 				) as T;
+			default:
+				throw new Error("Something weird happened");
 		}
 	}
 
@@ -82,7 +87,7 @@ export class Helpers {
 		return input.replace(pattern, match => replacements[match]);
 	}
 
-	static isObjectShallowEqual(object1: Record<string, any>, object2: Record<string,any>) : boolean {
+	static isObjectShallowEqual(object1: Record<string, unknown>, object2: Record<string,unknown>) : boolean {
 		const keys1 = Object.keys(object1);
 		const keys2 = Object.keys(object2);
 		if (keys1.length !== keys2.length) {

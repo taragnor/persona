@@ -668,7 +668,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return this.system.keyskill.secondary;
 			default:
 				classification satisfies never;
-				throw new PersonaError(`Unknown type ${classification as any}`);
+				throw new PersonaError(`Unknown type ${classification as string}`);
 		}
 	}
 
@@ -1943,7 +1943,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			powers = powers.filter( x=> x != id);
 			await this.update( {"system.combat.powers": powers});
 			await this.checkMainPowerEmptySpace();
+			if (this.hasPlayerOwner) {
 			await Logger.sendToChat(`${this.name} deleted power ${power.name}` , this);
+			}
 			return true;
 		}
 		return false;
@@ -2717,29 +2719,29 @@ async setAvailability(this: SocialLink, bool: boolean) {
 		this.system.weeklyAvailability.available = bool;
 		await	this.update( {"system.weeklyAvailability.available": bool});
 	} else {
-	 await PersonaSocial.requestAvailabilitySet(this.id, bool);
+		PersonaSocial.requestAvailabilitySet(this.id, bool);
 	}
 }
 get tarot() : (Tarot | undefined) {
 	switch (this.system.type) {
 		case "pc": {
-      if (this.cache.tarot?.name == this.system.tarot)
-				{break;}
+			if (this.cache.tarot?.name == this.system.tarot)
+			{break;}
 			if (this.system.tarot == "")
-				{return undefined;}
+			{return undefined;}
 			const PC = this as PC;
 			this.cache.tarot = PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
 			break;
-    }
+		}
 		case "shadow": {
-      if (this.cache.tarot?.name == this.system.tarot)
-				{break;}
+			if (this.cache.tarot?.name == this.system.tarot)
+			{break;}
 			if (this.system.tarot == "")
-				{return undefined;}
+			{return undefined;}
 			const shadow = this as Shadow;
 			this.cache.tarot =  PersonaDB.tarotCards().find(x=> x.name == shadow.system.tarot);
 			break;
-    }
+		}
 		case "npcAlly":
 			if (this.system.NPCSocialProxyId) {
 				const actor = PersonaDB.socialLinks().find( x=> x.id == (this as NPCAlly).system.NPCSocialProxyId);
@@ -2747,10 +2749,10 @@ get tarot() : (Tarot | undefined) {
 			}
 			//switch fallthrough is deliberate here
 		case "npc": {
-      if (this.cache.tarot?.name == this.system.tarot)
-				{break;}
+			if (this.cache.tarot?.name == this.system.tarot)
+			{break;}
 			if (this.system.tarot == "")
-				{return undefined;}
+			{return undefined;}
 			// console.debug("cached value no good (NPC)");
 			const NPC = this as NPC;
 			if (
@@ -2898,6 +2900,7 @@ maxIncrementalAdvancesInCategory(this: ValidAttackers, incrementalType: keyof Va
 	// const incremental = k;
 	if (typeof v == "boolean") {return 1;}
 	//@ts-expect-error doing complicated schema stuff not in foundrytypes
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 	const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incrementalType] as {max ?: number};
 	if (typeof x?.max == "number")
 		{return x.max;}
@@ -3002,6 +3005,7 @@ isIncrementalMaxed( this: ValidAttackers,  incremental:  keyof ValidAttackers["s
 	const incValue = this.system.combat.classData.incremental[incremental];
 	if (typeof incValue == "boolean") {return incValue;}
 	//@ts-expect-error foundrytypes doesn't handle this sort of schema reflection yet
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 	const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incremental] as {max ?: number};
 	if (x.max)
 		{return incValue >= x.max ;}
@@ -3054,7 +3058,7 @@ async refreshActions(): Promise<number> {
 async expendAction(this: ValidAttackers): Promise<number> {
 
 	let actions = this.system.combat.actionsRemaining ?? 1;
-	if (this.hasStatus("bonus-action")) {this.removeStatus("bonus-action");
+	if (this.hasStatus("bonus-action")) { await this.removeStatus("bonus-action");
 		return actions;
 	}
 	actions = Math.max(0, actions-1);
@@ -3324,7 +3328,7 @@ async createEffectFlag(flagId: string, duration: StatusDuration = {dtype: "insta
 		name: flagName,
 	};
 	if (eff) {
-		eff.setDuration(duration);
+		await eff.setDuration(duration);
 	} else {
 		const AE = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
 		await AE.setDuration(duration);
@@ -3584,8 +3588,9 @@ async onKO() : Promise<void> {
 	);
 }
 
-async onRevive() : Promise<void> {
+onRevive() : Promise<void> {
 	console.log("Calling onRevive");
+	return Promise.resolve();
 }
 
 
@@ -3855,7 +3860,6 @@ async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) {
 
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 Hooks.on("preUpdateActor", async (actor: PersonaActor, changes) => {
 	switch (actor.system.type) {
 		case "npc": return;

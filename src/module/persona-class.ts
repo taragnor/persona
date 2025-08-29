@@ -716,8 +716,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const ailAtk = this.combatStats.baseAilmentAtkBonus();
 		mods.add("Base Magic Attack Bonus", ailAtk);
 		return mods;
-
-
 	}
 
 	itemAtkBonus(item :Consumable) : ModifierList {

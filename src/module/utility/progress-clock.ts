@@ -31,7 +31,7 @@ export  class ProgressClock {
 		this.id = id;
 		this.clockName = name;
 		this.default_max = max;
-		this.registerClock();
+		void this.registerClock();
 	}
 
 	static async createNamedClock(name:string, max: number) : Promise<ProgressClock> {
@@ -44,7 +44,7 @@ export  class ProgressClock {
 		}
 		let clock = db.getName(name);
 		if (!clock) {
-			db.addClock({
+			await db.addClock({
 				name: name,
 				value: 0,
 				max: max,

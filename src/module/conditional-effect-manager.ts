@@ -415,7 +415,7 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 		}));
 	}
 
-	static ArrayCorrector<T extends any>(obj: (T[] | Record<string | number, T>)): T[] {
+	static ArrayCorrector<T>(obj: (T[] | Record<string | number, T>)): T[] {
 		try {
 			if (obj == null) {return[];}
 			if (!Array.isArray(obj)) {
@@ -1073,7 +1073,7 @@ export class EMAccessor<T> {
 		return this;
 	}
 
-	static expandObject<T extends unknown>(data: T) :T  {
+		static expandObject<T extends unknown>(data: T) :T  {
 		return Helpers.expandObject(data);
 	}
 

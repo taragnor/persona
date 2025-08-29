@@ -29,11 +29,11 @@ export function weightedChoice<T>( array: WeightedChoiceItem<T>[]) : T | undefin
 	return array[array.length-1].item;
 }
 
-export function randomSelect<T extends any>(arr: T[]) : T {
+export function randomSelect<T>(arr: T[]) : T {
 	return arr[Math.floor(Math.random() * arr.length)];
 }
 
-export function removeDuplicates<T extends any>(arr: T[]) : T[] {
+export function removeDuplicates<T>(arr: T[]) : T[] {
 	return [...new Set(arr)];
 }
 
@@ -43,38 +43,38 @@ type WeightedChoiceItem<T>= {
 }
 
 //PURE TESTING FUNCTION no real usage
-function test_weightedChoice() {
-	const items : WeightedChoiceItem<"A" | "B" | "C">[] = [
-		{
-			item: "A", weight: 2
-		},
-		{
-			item: "B", weight: 1
-		},
-		{
-			item: "C", weight: 0.2
-		}
-	];
-	const x = {
-		A: 0,
-		B: 0,
-		C: 0
-	};
-	const times = 100000;
-	for (let i = 0; i< times; i++) {
-		shuffle(items);
-		const result = weightedChoice(items);
-		if (result == undefined) {continue;}
-		x[result] += 1;
-	}
-	for (const [k,v] of Object.entries(x)) {
-		x[k as keyof typeof x] = Math.round(v / times * 1000) / 1000;
-	}
+// function test_weightedChoice() {
+// 	const items : WeightedChoiceItem<"A" | "B" | "C">[] = [
+// 		{
+// 			item: "A", weight: 2
+// 		},
+// 		{
+// 			item: "B", weight: 1
+// 		},
+// 		{
+// 			item: "C", weight: 0.2
+// 		}
+// 	];
+// 	const x = {
+// 		A: 0,
+// 		B: 0,
+// 		C: 0
+// 	};
+// 	const times = 100000;
+// 	for (let i = 0; i< times; i++) {
+// 		shuffle(items);
+// 		const result = weightedChoice(items);
+// 		if (result == undefined) {continue;}
+// 		x[result] += 1;
+// 	}
+// 	for (const [k,v] of Object.entries(x)) {
+// 		x[k as keyof typeof x] = Math.round(v / times * 1000) / 1000;
+// 	}
 
-	console.log( `A: ${x["A"]}`);
-	console.log( `B: ${x["B"]}`);
-	console.log( `C: ${x["C"]}`);
-}
+// 	console.log( `A: ${x["A"]}`);
+// 	console.log( `B: ${x["B"]}`);
+// 	console.log( `C: ${x["C"]}`);
+// }
 
 declare global {
 	interface Array<T> {
@@ -91,7 +91,3 @@ Array.prototype.pushUnique = function<T>(this: Array<T>, ...list: T[]) {
 };
 
 
-//@ts-ignore
-window.weightedChoice = weightedChoice;
-//@ts-ignore
-window.test_weightedChoice = test_weightedChoice;
