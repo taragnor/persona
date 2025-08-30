@@ -7,21 +7,14 @@
 			<section class="pc-header-data flex-shrink">
 				<div class="f-row">
 					<input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
-					<div class="f-row">
-						<label>
-							{{localize "persona.tarot.cardname"}}
-						</label>
-						<select name="system.tarot">
-							{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
-						</select>
-					</div>
-				</div>
-				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
-				<div class="f-row">
 					<div>
 						<label> Character Level</label>
 						<span> {{actor.personalLevel}}
 					</div>
+				</div>
+
+				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
+				<div class="f-row">
 					<div>
 						{{#if (isGM)}}
 						<label> True Owner </label>

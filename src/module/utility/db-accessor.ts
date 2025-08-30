@@ -49,6 +49,8 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		Hooks.on("updateActor", this.#onUpdateActor.bind(this));
 		Hooks.on("createActor", this.#onCreateActor.bind(this));
 		Hooks.on("createItem", this.#onCreateItem.bind(this));
+		Hooks.on("deleteItem", this.#onDeleteItem.bind(this));
+		Hooks.on("deleteActor", this.#onDeleteActor.bind(this));
 		this.initHooks();
 	}
 
@@ -59,6 +61,14 @@ private allItemsMap : Map<string, ItemType> = new Map();
 
 	 #onCreateActor(actor: ActorType) {
 		this._edited.push(actor);
+		this.queueLoad();
+	}
+
+	#onDeleteItem(_item: ItemType) {
+		this.queueLoad();
+	}
+
+	#onDeleteActor(_actor: ActorType) {
 		this.queueLoad();
 	}
 

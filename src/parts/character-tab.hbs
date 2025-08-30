@@ -11,6 +11,35 @@
 		</span>
 	</div>
 
+	<div class="tarot">
+		<div class="f-row">
+			<label>
+				{{localize "persona.tarot.cardname"}}
+			</label>
+			<select name="system.tarot" {{#if actor.tarot}} disabled{{/if}}>
+				{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
+			</select>
+		</div>
+		<div class="tarot-description">
+			<div class="perk">
+				<label>
+					<b>Tarot Perk:</b>
+				</label>
+				<span>
+					{{actor.tarot.system.perk}}
+				</span>
+			</div>
+			<div class="advantage">
+				<label>
+					<b>Cardholder Advantage:</b>
+				</label>
+				<span>
+					{{actor.tarot.system.studentAbility}}
+				</span>
+			</div>
+		</div>
+	</div>
+
 	<div>
 		{{> "systems/persona/parts/hp-mp-section.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
 	</div>

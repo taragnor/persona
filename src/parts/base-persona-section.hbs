@@ -1,63 +1,67 @@
 <section class="base-persona-section {{#if (isSimulated persona)}} simulated-persona {{/if}}"
-<input type="text" class="borderless character-name" name="system.personaName" value="{{actor.system.personaName}}" title="Persona Name" placeholder="Persona Name">
-{{#if (and (isGM) (not (isPC actor)))}}
-{{> "systems/persona/parts/hp-mp-section.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
-{{/if}}
-{{> "systems/persona/parts/defenses-input.hbs" actor=actor persona=persona CONST=CONST}}
-<div class="lvl">
-	<span>
-		{{localize "persona.statistic.level"}}:
-	</span>
-	{{#if (isPCOrNPCAlly actor)}}
-	<span>
-		{{actor.basePersona.level}}
-	</span>
-	{{#if (isGM)}}
-	<span>
-		<a class="levelUp">
-			<i class="fa-solid fa-circle-plus"></i>
-		</a>
-	</span>
+	<input type="text" class="borderless character-name" name="system.personaName" value="{{actor.system.personaName}}" title="Persona Name" placeholder="Persona Name">
+	{{#if (and (isGM) (not (isPC actor)))}}
+	{{> "systems/persona/parts/hp-mp-section.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
 	{{/if}}
-	<span>
-		<progress id="progressBar" max="{{persona.XPForNextLevel}}" value="{{persona.xp}}" title="{{persona.xp}} / {{persona.XPForNextLevel}}"></progress>
-	</span>
-	{{/if}}
-	{{#if (isShadow actor) }}
-	<span>
-		<input class="short" type="number" name="system.combat.personaStats.pLevel" value="{{actor.system.combat.personaStats.pLevel}}">
-	</span>
-	{{/if}}
-</div>
-{{#if (isShadow actor)}}
-<div class="shadow-dmg">
-	<label>
-		Damage
-	</label>
-	<span>
-		<select name="system.combat.baseDamageType">
-			{{selectOptions CONST.DAMAGETYPES  localize=true selected=actor.system.combat.baseDamageType }}
-		</select>
-	</span>
+
 	{{#if false}}
-	<span>
-		{{numberInput actor.system.combat.wpndmg.low class="short" name="system.combat.wpndmg.low" step=1 min=0 max=100}}
-		{{numberInput actor.system.combat.wpndmg.high class="short" name="system.combat.wpndmg.high" step=1 min=0 max=100}}
-	</span>
+	{{> "systems/persona/parts/defenses-input.hbs" actor=actor persona=persona CONST=CONST}}
 	{{/if}}
-</div>
-{{/if}}
 
-</div>
-{{> "systems/persona/parts/resistance-input.hbs" actor=actor CONST=CONST persona=persona}}
-{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=false showPowerTableButton=true showLearnedBuffer=true showSideboard=true canDelete=true}}
+	<div class="lvl">
+		<span>
+			{{localize "persona.statistic.level"}}:
+		</span>
+		{{#if (isPCOrNPCAlly actor)}}
+		<span>
+			{{actor.basePersona.level}}
+		</span>
+		{{#if (isGM)}}
+		<span>
+			<a class="levelUp">
+				<i class="fa-solid fa-circle-plus"></i>
+			</a>
+		</span>
+		{{/if}}
+		<span>
+			<progress id="progressBar" max="{{persona.XPForNextLevel}}" value="{{persona.xp}}" title="{{persona.xp}} / {{persona.XPForNextLevel}}"></progress>
+		</span>
+		{{/if}}
+		{{#if (isShadow actor) }}
+		<span>
+			<input class="short" type="number" name="system.combat.personaStats.pLevel" value="{{actor.system.combat.personaStats.pLevel}}">
+		</span>
+		{{/if}}
+	</div>
+	{{#if (isShadow actor)}}
+	<div class="shadow-dmg">
+		<label>
+			Damage
+		</label>
+		<span>
+			<select name="system.combat.baseDamageType">
+				{{selectOptions CONST.DAMAGETYPES  localize=true selected=actor.system.combat.baseDamageType }}
+			</select>
+		</span>
+		{{#if false}}
+		<span>
+			{{numberInput actor.system.combat.wpndmg.low class="short" name="system.combat.wpndmg.low" step=1 min=0 max=100}}
+			{{numberInput actor.system.combat.wpndmg.high class="short" name="system.combat.wpndmg.high" step=1 min=0 max=100}}
+		</span>
+		{{/if}}
+	</div>
+	{{/if}}
 
-<hr>
-{{> "systems/persona/parts/persona-stats-input.hbs" actor=actor persona=persona CONST=CONST}}
+	</div>
+	{{> "systems/persona/parts/resistance-input.hbs" actor=actor CONST=CONST persona=persona}}
+	{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=false showPowerTableButton=true showLearnedBuffer=true showSideboard=true canDelete=true}}
 
-{{#if (canUseTalents actor)}}
-{{> "systems/persona/parts/talents-table.hbs" actor=actor CONST=CONST persona=persona}}
-{{/if}}
-{{> "systems/persona/parts/focii-table.hbs" actor=actor CONST=CONST persona=persona}}
+	<hr>
+	{{> "systems/persona/parts/persona-stats-input.hbs" actor=actor persona=persona CONST=CONST}}
 
+	{{#if (canUseTalents actor)}}
+	{{> "systems/persona/parts/talents-table.hbs" actor=actor CONST=CONST persona=persona}}
+	{{/if}}
+	{{> "systems/persona/parts/focii-table.hbs" actor=actor CONST=CONST persona=persona}}
 
+</section>

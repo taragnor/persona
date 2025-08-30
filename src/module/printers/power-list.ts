@@ -22,8 +22,9 @@ export class PowerPrinter extends Application {
 		});
 	}
 
-	override async activateListeners(html: JQuery) {
+	override activateListeners(html: JQuery) {
 		super.activateListeners(html);
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		html.find(".power-name").on("click", this.openPower.bind(this));
 
 	}
@@ -40,7 +41,7 @@ export class PowerPrinter extends Application {
 
 	override async getData(options: Record<string, unknown>) {
 		await PersonaDB.waitUntilLoaded();
-		const data = super.getData(options);
+		const data = await super.getData(options);
 		const untypedSkills = [
 			PowerPrinter.filterByType("magic" ,"none").filter( x=> x.isSupport()),
 			PowerPrinter.filterByType("magic" ,"none").filter( x=> x.isAilment()),
@@ -82,7 +83,7 @@ export class PowerPrinter extends Application {
 			.filter( x=> !x.hasTag("shadow-only"));
 	}
 
-	static sortPowerFn( a: Power, b: Power) : number {
+	static sortPowerFn(this: void, a: Power, b: Power) : number {
 		const sort= a.system.slot - b.system.slot;
 		if (sort != 0) {return sort;}
 		const exoticSort= (a.hasTag("exotic")? 1 : 0)
@@ -115,5 +116,3 @@ Hooks.on("DBrefresh", function () {
 });
 
 
-//@ts-ignore
-window.PowerPrinter = PowerPrinter;

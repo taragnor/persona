@@ -2,7 +2,7 @@
 <section class="persona-stats" >
 	<h2> Persona Stats </h2>
 	{{#each CONST.PERSONA_STATS as |locStr stat|}}
-	<div data-stat="{{stat}}">
+	<div data-stat="{{stat}}" title="{{localize (strcat 'persona.statistic.stat.description.' stat)}}">
 		<label>
 			{{localize locStr}}
 		</label>

@@ -21,7 +21,10 @@ export class NPCAllySheet extends PCLikeSheet {
 			template: `${HBS_TEMPLATES_DIR}/npc-ally-sheet.hbs`,
 			width: 800,
 			height: 800,
-			tabs: [{navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "combat"}]
+			tabs: [
+				{navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "combat"},
+				{navSelector: ".inventory-tabs", contentSelector: ".inventory-body", initial: "consumables"}
+			]
 		});
 	}
 

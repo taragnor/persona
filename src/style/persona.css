@@ -44,6 +44,8 @@ div.tag-item select {
 	/* padding-right: 10px; */
 	font-size: 0.8em;
 	min-width: 130px;
+width: auto;              /* shrink to fit */
+  min-width: fit-content;   /* ensure at least content width */
 }
 
 div.tag-list .delTag {
@@ -172,7 +174,9 @@ input.single-digit {
 .consequence-block input,
 .condition-block select,
 .consequence-block select {
-	height: 20px;
+	font-size: 0.8rem;      /* match your text size */
+	line-height: 1.0;     /* gives breathing room */
+	height: auto;         /* let it grow naturally */
 }
 
 .change-target {
@@ -416,8 +420,9 @@ section.qualifiers {
 
 .card-roll select,
 .card-roll input {
-	font-size: smaller;
-	height: 20px;
+font-size: 1rem;      /* match your text size */
+  line-height: 1.2;     /* gives breathing room */
+  height: auto;         /* let it grow naturally */
 }
 
 .event-choice .chosen {
@@ -584,7 +589,9 @@ div.power-operations {
 
 .micro-text {
 	font-size: 0.8em;
+	text-shadow: none;
 }
+
 
 .small-box {
 	border : 1px solid #000000;
@@ -1018,6 +1025,7 @@ h5.choices-block {
 	padding-bottom: 0px;
 	text-align: center;
 	vertical-align: middle;
+	text-shadow: none !important;
 }
 
 
@@ -1147,18 +1155,38 @@ font-family: "Consolas", "Lucida Console", "Courier New", monospace;
 	color: #1A8BBF;       /* text color */
 	background-color: #0F274A; /* background */
 	border: 1px solid #1A8BBF;
-	padding: 6px 10px;
+	padding: 3px 5px;
 	border-radius: 6px;
-	font-size: 1rem;
+	font-size: 0.6rem;
+	width: auto;              /* shrink to fit */
+	min-width: fit-content;   /* ensure at least content width */
+	line-height: 1.0;     /* gives breathing room */
+	height: auto;         /* let it grow naturally */
 }
 
 /* Style the options inside the dropdown */
 .window-app select option {
   color: #FFFFFF;             /* text color inside the dropdown */
   background-color: #123B6B;  /* dropdown option background */
+
+}
+
+.window-app textarea,
+.window-app input {
+  color: #FFFFFF; 
 }
 
 
 input.character-name {
 	width:200px;
+}
+
+.personal-stats .tarot {
+	margin-top:1em;
+	margin-bottom:1em;
+
+}
+
+.tarot .tarot-description{
+	margin-left: 25px;
 }

@@ -104,15 +104,29 @@ export class PowerCostCalculator {
 
   static calcHPPercentCost(pwr: Power) : number {
     if (pwr.isBasicPower()) {return 0;}
-    const val = [
+    const mods = [
       this.hpCost_damage(pwr),
       this.tagAdjust(pwr),
       this.hpCost_instantKill(pwr),
       this.hpCost_ailment(pwr),
       this.hpCost_multiattack(pwr),
-    ].reduce ( (acc, x) => acc * x.mult + x.add, 0);
-    return Math.round(val);
+	 ];
+    // ].reduce ( (acc, x) => acc * x.mult + x.add, 0);
+    return Math.round(this.combineModifiers(mods));
   }
+
+	static combineModifiers (this: void, mods: CostModifier[]) : number {
+		const base : CostModifier = {
+			mult: 1,
+			add: 0
+		};
+		const subtotal = mods.reduce( (a,cm) => {
+			a.add += cm.add;
+			a.mult *= cm.mult;
+			return a;
+		}, base);
+		return subtotal.add * subtotal.mult;
+	}
 
   static tagAdjust(pwr: Power) : CostModifier {
     let total = 0;
@@ -127,11 +141,11 @@ export class PowerCostCalculator {
     if (pwr.system.attacksMax == 1) {return i(0);}
     const min =pwr.system.attacksMin;
     const max = pwr.system.attacksMax;
-    const maxMult =  0.66 * (max -1);
-    const minMult = 0.33 * (min -1);
+    const maxMult =  0.75 * (max -1);
+    const minMult = 0.5 * (min -1);
     const costMod : CostModifier = {
       mult: 1 + maxMult + minMult,
-      add: 1,
+      add: 1 + Math.round(maxMult + minMult),
     };
     return costMod;
   }
@@ -178,7 +192,7 @@ export class PowerCostCalculator {
   }
 
   static calcMPCost(pwr: Power) : number {
-    const val =  [
+    const mods =  [
       this.mpCost_damagePower(pwr),
       this.mpCost_instantKill(pwr),
       this.mpCost_buffOrDebuff(pwr),
@@ -186,8 +200,10 @@ export class PowerCostCalculator {
       this.mpCost_dekaja(pwr),
       // this.statusRemoval(pwr),
       this.#mpCost_tags(pwr),
-    ].reduce ( (acc, x) => acc * x.mult + x.add, 0);
-    return Math.round(val);
+	 ];
+    return Math.round(this.combineModifiers(mods));
+    // ].reduce ( (acc, x) => acc * x.mult + x.add, 0);
+    // return Math.round(val);
   }
 
   static mpCost_damagePower(pwr : Power) : CostModifier {
@@ -223,14 +239,14 @@ export class PowerCostCalculator {
     switch (pwr.system.ailmentChance) {
       case "low":
         mult *= 1.1;
-        add += 2;
+        add += 1;
         break;
       case "medium":
-        mult *= 1.5;
+        mult *= 1.3333;
         add += 2;
         break;
       case "high":
-        mult *= 2.0;
+        mult *= 1.6666;
         add += 3;
         break;
       case "always":
@@ -349,7 +365,7 @@ const DAMAGE_LEVEL_MULTIPLIERS_HP : Record<DamageLevel, number>  = {
   "-": 0,
   fixed: 0,
   miniscule: 0.25,
-  basic: 0.5,
+  basic: 0.75,
   light: 1,
   medium: 2,
   heavy: 3,
@@ -386,8 +402,8 @@ const TAG_ADJUST_MP_MULT : Partial<Record<PowerTag, number>> = {
   "half-on-miss": 1.1,
   "pierce": 1.5,
   "high-crit":1.25,
-  "accurate": 1.15,
-  "inaccurate": 0.85,
+  "accurate": 1.10,
+  "inaccurate": 0.90,
 };
 
 // type PowerCost = {
@@ -395,5 +411,4 @@ const TAG_ADJUST_MP_MULT : Partial<Record<PowerTag, number>> = {
 //   energyReq: number,
 //   eneryMin: number,
 // }
-
 
