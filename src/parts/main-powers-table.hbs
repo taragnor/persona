@@ -1,9 +1,10 @@
 <div class="main-powers">
-	{{#each persona.mainPowers as |power i|}}
+	{{#each (iff activePowersOnly persona.activeCombatPowers persona.mainPowers) as |power i|}}
 	<div class="main-power" data-power-id="{{power.id}}">
-		<div class="power-name-block {{#if (lte ../persona.maxMainPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../actor power)}} illegal-level {{/if}}">
+		<div class="power-name-block
+			{{#if (and (not ../activePowersOnly) (lte ../persona.maxMainPowers i))}} over-max-power {{/if}} {{#if (isPowerIllegal ../actor power)}} illegal-level {{/if}}">
 			<span class="die-with-text">
-				{{#if (canUsePower ../persona power)}}
+				{{#if (and ../usePowers (canUsePower ../persona power))}}
 				<a class="rollPower" >
 					<img class="small-die" src="icons/dice/d20black.svg">
 				</a>
@@ -17,7 +18,7 @@
 			</span>
 		</div>
 		<div class="power-operations">
-			{{#if (canSideboardPowers ../persona)}}
+			{{#if (and showSideboard (canSideboardPowers ../persona))}}
 			<a class="sort-up">
 				<i class="fa-solid fa-sort-up"></i>
 			</a>
@@ -33,7 +34,7 @@
 				<i class="fa-solid fa-circle-dot"></i>
 			</a>
 			{{/if}}
-			{{#if (canDeletePowers ../persona)}}
+			{{#if (and (canDeletePowers ../persona) canDelete)}}
 			<a class="delPower" title="Delete Power">
 				<i class="fa-solid fa-trash-can"></i>
 			</a>

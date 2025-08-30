@@ -2432,23 +2432,6 @@ static #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifi
 
 static getAttackBonus(attackerP: Persona, power: Usable, target: PToken | undefined, modifiers ?: ModifierList) : ModifierList {
 	let attackBonus = this.getBaseAttackBonus(attackerP, power);
-	// this.applyRelevantTagAttackBonus(attackBonus, attackerP.user, power); should be reudndant in new system
-	// if (power.isStatusEffect()) {
-	// 	// attackBonus.add(`Status Effect Modifier`, -3);
-	// 	if (target?.actor?.persona().numOfWeaknesses() == 0 && !target.actor.isBossOrMiniBossType()) {
-	// 		attackBonus.add('Vulnerable to Status Effects', +3);
-	// 	}
-	//TODO: should probably build this into as a modifier to ailment defense
-	// }
-	if (power.isMultiTarget()) {
-			attackBonus.add('Multitarget power attack penalty', -4);
-	}
-		// if (power.isStatusEffect()) {
-		// 	attackBonus.add('Multitarget status attack penalty', -4);
-		// } else {
-		// 	attackBonus.add('Multitarget attack penalty', -2);
-		// }
-	// }
 	attackBonus.add('Custom modifier', this.customAtkBonus ?? 0);
 	const defense = this.getDefenderAttackModifiers(target, power.system.defense);
 	attackBonus = attackBonus.concat(defense);
@@ -2519,7 +2502,8 @@ static getBaseAttackBonus(attackerPersona: Persona, power:Usable): ModifierList 
 			modList = modList.concat(attackerPersona.magAtkBonus());
 			modList = modList.concat(new ModifierList(power.getModifier('magAtk', attackerPersona.user)));
 			break;
-		case "kill": { modList = modList.concat(attackerPersona.instantDeathAtkBonus());
+		case "kill": {
+			modList = modList.concat(attackerPersona.instantDeathAtkBonus());
 			const ID_Bonus = power.baseInstantKillBonus();
 			modList.add(`${power.displayedName.toString()} Bonus`, ID_Bonus);
 			modList = modList.concat(new ModifierList(power.getModifier('instantDeathRange', attackerPersona.user)));
@@ -2539,35 +2523,11 @@ static getBaseAttackBonus(attackerPersona: Persona, power:Usable): ModifierList 
 		default:
 			power.system.defense satisfies never;
 	}
+	if (power.isMultiTarget()) {
+			modList.add('Multitarget power attack penalty', -4);
+	}
 	return modList;
 }
-
-
-// static getBaseAttackBonus(attackerPersona: Persona, power:Usable): ModifierList {
-// 	let modList = new ModifierList();
-// 	modList.add('Power attack modifier', power.system.atk_bonus);
-// 	switch (true) {
-// 		case power.isConsumable(): {
-// 			modList = modList.concat(attackerPersona.itemAtkBonus(power));
-// 			break;
-// 		}
-// 		case power.isWeaponSkill(): {
-// 			modList = modList.concat(attackerPersona.wpnAtkBonus());
-// 			modList =  modList.concat(new ModifierList(power.getModifier('wpnAtk', attackerPersona.user)));
-// 			break;
-// 		}
-// 		case power.isMagicSkill(): {
-// 			if (power.isAilment()) {
-// 				modList = modList.concat(attackerPersona.ailmentAtkBonus());
-// 			}
-// 			modList = modList.concat(attackerPersona.magAtkBonus());
-// 			modList= modList.concat(new ModifierList(power.getModifier('magAtk', attackerPersona.user)));
-// 		}
-// 			break;
-// 		default:
-// 	}
-// 	return modList;
-// }
 
 static getAltTargets ( attacker: PToken, situation : Situation, targettingType :  ConsTarget) : PToken[] {
 	const attackerType = attacker.actor.getAllegiance();

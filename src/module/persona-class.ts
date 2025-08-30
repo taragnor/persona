@@ -69,6 +69,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.mainPowers.concat(this.bonusPowers);
 	}
 
+	get activeCombatPowers() : readonly Power[] {
+		return this.powers.filter( pwr => pwr.system.subtype == "magic" || pwr.system.subtype == "weapon");
+	}
+
 	get bonusPowers() : readonly Power [] {
 		const bonusPowers : Power[] =
 			this.mainModifiers({omitPowers:true})

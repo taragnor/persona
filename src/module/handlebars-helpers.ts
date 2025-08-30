@@ -720,6 +720,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"canRaiseStat": function (persona: Persona, stat: PersonaStat) : boolean {
+			if (persona.unspentStatPoints <= 0) {return false;}
 			return persona.combatStats.canRaiseStat(stat);
 		},
 
@@ -759,6 +760,11 @@ export class PersonaHandleBarsHelpers {
 			{ retstr+= "R"; }
 			return retstr;
 		},
+
+		"iff": function (cond: boolean, choice1: unknown, choice2: unknown) : unknown {
+			return cond ? choice1 : choice2;
+		}
+
 
 	};
 

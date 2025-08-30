@@ -1282,7 +1282,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     let powerCrit = (this.system.crit_boost ?? 0);
     if (this.isWeaponSkill()
       && !this.isBasicPower()
-      && this.system.ailmentChance == 'none' 
+      && this.system.ailmentChance == 'none'
       && !this.isInstantDeathAttack()) {
       powerCrit += 2;
     }
@@ -1988,14 +1988,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   isInstantDeathAttack(this: Usable) : boolean {
     return (this.system.instantKillChance != 'none');
-
-    // switch (this.system.dmg_type) {
-    //  case "dark":
-    //  case "light": return true;
-    //  default: break; 
-    // }
-    // return this.hasTag("instantKill");
-
   }
 
 

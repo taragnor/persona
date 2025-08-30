@@ -23,10 +23,10 @@
 		{{/each}}
 	</div>
 
-{{> "systems/persona/parts/main-powers-table.hbs" CONST=CONST persona=persona}}
+{{> "systems/persona/parts/main-powers-table.hbs" CONST=CONST persona=persona activePowersOnly=activePowersOnly canDeletePowers=canDelete showSideboard=showSideboard usePowers=usePowers}}
 
 
-{{#if actor.sideboardPowers}}
+{{#if (and actor.sideboardPowers showSideboard)}}
 <h3> Sideboarded Powers (max {{persona.maxSideboardPowers}}) </h3>
 <div class="power-sideboard">
 	{{#each actor.sideboardPowers as |power i|}}
@@ -97,7 +97,7 @@
 
 
 {{#if showBonusPowers}}
-{{> "systems/persona/parts/bonus-powers-table.hbs" CONST=CONST persona=persona actor=actor}}
+{{> "systems/persona/parts/bonus-powers-table.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers}}
 {{/if}}
 
 </div>
