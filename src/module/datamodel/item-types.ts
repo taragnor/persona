@@ -308,8 +308,8 @@ export class ConditionalEffectDM extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		return {
 			isDefensive: new bool(),
-			conditions: new arr(new obj<Precondition>({required: true, initial: [] as any})),
-			consequences: new arr(new obj<Consequence>({required: true, initial: [] as any})),
+			conditions: new arr(new obj<Precondition>({required: true})),
+			consequences: new arr(new obj<Consequence>({required: true})),
 		};
 	}
 
@@ -323,14 +323,16 @@ export class ConditionalEffectDM extends foundry.abstract.DataModel {
 			change = true;
 			data.consequences = [];
 		}
-		if ( !Array.isArray(data.conditions)
-			|| !Array.isArray(data.consequences)) {
+		if ( !Array.isArray(data.conditions)) {
 			change = true;
 			data.conditions = ArrayCorrector(data.conditions);
+		}
+		if(!Array.isArray(data.consequences)) {
+			change = true;
 			data.consequences = ArrayCorrector(data.consequences);
 		}
 		if (change) {
-			console.debug("Migrate Dagae for ConditionalEffectDM making changes");
+			console.debug("Migrate Data for ConditionalEffectDM making changes ");
 		}
 		return data;
 	}

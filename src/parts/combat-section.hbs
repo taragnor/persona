@@ -85,6 +85,10 @@
 		<button class="rollSave">
 			Roll Save
 		</button>
-		{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=true showLearnedBuffer=true activePowersOnly=true canDelete=false showSideboard=false usePowers=true}}
+		{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=true showLearnedBuffer=true activePowersOnly=false canDelete=false showSideboard=false usePowers=true}}
 	</div>
+	<div>
+		{{> "systems/persona/parts/persona-stats-display.hbs" CONST=CONST persona=persona}}
+	</div>
+
 </section>

@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaError } from "../../persona-error.js";
 import { PersonaItem } from "../../item/persona-item.js";
@@ -27,13 +30,14 @@ export class NPCAllySheet extends PCLikeSheet {
 		html.find(".basic-powers .power-img").rightclick( this.deleteBasicSkill.bind(this));
 	}
 
-	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) {
-		//@ts-ignore
+	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:unknown[]) {
+		//@ts-expect-error not in foundrytypes
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 		const item: PersonaItem = await Item.implementation.fromDropData(itemD);
 		switch (item.system.type) {
 			case "power": {
 				const power = item as Power;
-				const actor = this.actor as NPCAlly;
+				const actor = this.actor;
 				if (power.isNavigator()) {
 					await actor.addNavigatorSkill(power);
 					return power;
@@ -59,7 +63,8 @@ export class NPCAllySheet extends PCLikeSheet {
 	}
 
 	override async _onDropActor(_event: Event, actorD: unknown) {
-		//@ts-ignore
+		//@ts-expect-error no supported
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 		const actor : PersonaActor = await Actor.implementation.fromDropData(actorD);
 		switch (actor.system.type) {
 			case "npc":

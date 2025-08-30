@@ -1076,3 +1076,7 @@ a.add-five-to-all:active {
 	flex-wrap: nowrap;
 	justify-content: flex-start;
 }
+
+.persona-stats label {
+	font-weight: bold;
+}

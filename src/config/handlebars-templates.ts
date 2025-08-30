@@ -66,6 +66,7 @@ const templateFileNames : string[] =[
 	"persona-stats-display.hbs",
 	"hp-mp-section.hbs",
 	"character-tab.hbs",
+	"persona-stats-display.hbs",
 ];
 
 export const templatePaths = templateFileNames.

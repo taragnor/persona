@@ -1,0 +1,13 @@
+{{#if (scanLevelgte persona 1)}}
+<section class="persona-stats" >
+	<h2> Persona Stats </h2>
+	{{#each CONST.PERSONA_STATS as |locStr stat|}}
+	<div data-stat="{{stat}}">
+		<label>
+			{{localize locStr}}
+		</label>
+		<span> {{statValue ../persona stat}} </span>
+	</div>
+	{{/each}}
+</section>
+{{/if}}

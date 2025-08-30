@@ -614,21 +614,12 @@ export class PersonaHandleBarsHelpers {
 			return game.i18n.localize(RESIST_STRENGTHS[resist]);
 		},
 
-		"scanLevel": function (persona: PersonaI) : number {
-			const user = persona.user;
-			if (user.isOwner) {return 3;}
-			if (user.isPC() || user.isNPCAlly()) {return 2;}
-			if (user.hasCreatureTag("enigmatic")) {return 0;}
-			const scanLevel= user.system.scanLevel;
-			if (typeof scanLevel != "number") {
-				PersonaError.softFail("Trouble reading scan level for Persona of ${user.name}");
-			}
-			// console.log(`Scan level is :${scanLevel}`);
-			return scanLevel ?? 0;
+		"scanLevel": function (persona: Persona) : number {
+			return persona.scanLevel;
 		},
 
 		"scanLevelgte": function (persona: Persona, val: number) : boolean {
-			if (persona.source.isOwner || game.user.isGM) {return true;}
+			if (game.user.isGM) {return true;}
 			return persona.scanLevel >= val;
 		},
 

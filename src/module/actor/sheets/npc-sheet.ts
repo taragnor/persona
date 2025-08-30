@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaSocial } from "../../social/persona-social.js";
 import { PersonaActor } from "../persona-actor.js";
@@ -26,12 +27,12 @@ export class NPCSheet extends NoncombatantSheet  {
 	}
 
 
-	activatePerk(_ev: JQuery.ClickEvent) {
+	async activatePerk(_ev: JQuery.ClickEvent) {
 		const target = Array.from(game.user.targets)
 			.find( (x: Token<PersonaActor>) => x.actor.system.type == "pc");
 		if (target) {
 			console.log(`Awarding Perk to ${target?.name}`);
-			PersonaSocial.awardPerk(target.actor, this.actor);
+			await PersonaSocial.awardPerk(target.actor, this.actor);
 		}
 	}
 

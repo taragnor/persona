@@ -160,9 +160,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const user = this.user;
 		const source = this.source;
 		if (game.user.isGM) {return 3;}
-		if (user.hasPlayerOwner) {
+		if (source.hasPlayerOwner && user.hasPlayerOwner) {
 			return 3;
 		}
+		const permission = Math.min(source.permission, user.permission);
+		if (permission >= 2) {return 3;}
 		if (source.isShadow()) {
 			return source.system.scanLevel ?? 0;
 		}
