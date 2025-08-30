@@ -71,7 +71,7 @@
 	</nav>
 	<section class="sheet-body">
 		<section class="tab tab-content combat-section flexcol" data-group="primary" data-tab="combat">
-			{{> "systems/persona/parts/combat-section.hbs" actor=actor persona=(persona actor)}}
+			{{> "systems/persona/parts/combat-section.hbs" actor=actor persona=(persona actor) canDelete=actor.isOwner activePowersOnly=(isGM)}}
 		</section>
 		{{#if (isGM)}}
 		<section class="tab tab-content learning-section flexcol" data-group="primary" data-tab="learning">

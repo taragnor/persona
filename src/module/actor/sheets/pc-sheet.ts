@@ -24,7 +24,10 @@ export class PCSheet extends PCLikeSheet {
 			template: `${HBS_TEMPLATES_DIR}/pc-sheet.hbs`,
 			width: 800,
 			height: 800,
-			tabs: [{navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "combat"}]
+			tabs: [{navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "combat"},
+				{navSelector: ".secondary-tabs", contentSelector: ".inner-body", initial: "SL"},
+				{navSelector: ".inventory-tabs", contentSelector: ".inventory-body", initial: "consumables"}
+			],
 		});
 	}
 

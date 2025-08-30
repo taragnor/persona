@@ -1,4 +1,4 @@
-<section class="combat-section">
+<section class="combat-section {{#if (isSimulated persona)}} simulated-persona {{/if}}">
 	<div class="combat-stats flexcol">
 		<div class="flexrow">
 			<div class="hp" title="{{hpBreakdown actor}}">
@@ -85,7 +85,7 @@
 		<button class="rollSave">
 			Roll Save
 		</button>
-		{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=true showLearnedBuffer=true activePowersOnly=false canDelete=false showSideboard=false usePowers=true}}
+		{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=true showLearnedBuffer=true activePowersOnly=activePowersOnly canDelete=canDelete showSideboard=false usePowers=true}}
 	</div>
 	<div>
 		{{> "systems/persona/parts/persona-stats-display.hbs" CONST=CONST persona=persona}}

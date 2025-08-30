@@ -1080,3 +1080,85 @@ a.add-five-to-all:active {
 .persona-stats label {
 	font-weight: bold;
 }
+
+nav.secondary-tabs a,
+nav.inventory-tabs a {
+	display: inline-block;
+	background-color: #51EEFC;    /* soft, glowy cyan */
+	color: #1269CC;               /* strong but not overpowering navy */
+	padding: 0.5em 1em;
+	border-radius: 8px;
+	text-decoration: none;
+	font-family: 'Oswald', sans-serif; /* bold, impactful slab-like style */
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	box-shadow: 0 4px 6px rgba(18, 105, 204, 0.3);
+	transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+	/* display: inline-block; */
+	/* /1* background-color: #333; *1/ */
+	/* /1* color: #fff; *1/ */
+	/* background-color: #e0f0ff;     /1* light blue background *1/ */
+	/* color: #003366;                /1* dark navy text for contrast *1/ */
+	/* padding: 0.4em 0.8em; */
+	/* border-radius: 6px; */
+	/* text-decoration: none; */
+	/* font-weight: 500; */
+	/* transition: background-color 0.2s ease */
+	/* font-family: 'Montserrat', sans-serif;  /1* important-looking font *1/ */
+	/* font-weight: 600;                       /1* semi-bold *1/ */
+	/* text-transform: uppercase;              /1* all caps *1/ */
+	/* letter-spacing: 1px;                    /1* spacing for authority *1/ */
+}
+
+nav.secondary-tabs a:hover,
+nav.inventory-tabs a:hover {
+  background-color: #6D9AC7;    /* calmer sky-blue blend */
+  color: #FFFFFF;
+  box-shadow: 0 6px 8px rgba(18, 105, 204, 0.4);
+}
+
+nav.secondary-tabs a:active,
+nav.inventory-tabs a:active {
+  background-color: #1269CC;    /* full-depth navy for pressed state */
+  color: #E0F7FF;               /* very pale cyan text */
+  box-shadow: 0 2px 4px rgba(18, 105, 204, 0.5);
+}
+
+.window-app header.window-header,
+.window-app section.window-content {
+background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%);
+  color: #E6F8FF; /* pale cyan for readable text */
+  font-family: 'Oswald', sans-serif;
+	text-shadow: 0 0 1px #00FF99, 0 0 3px #00FF99;
+
+  /* background: linear-gradient(180deg, #1D2B64 0%, #1A8BBF 50%, #1269CC 100%); */
+  /* color: #F0FAFF; */ 
+
+/* background: radial-gradient(circle at center, #1A8BBF 0%, #0F274A 100%); */
+/*   color: #FFFFFF; */
+}
+
+section.simulated-persona {
+font-family: "Consolas", "Lucida Console", "Courier New", monospace;
+}
+
+.window-app select {
+	color: #1A8BBF;       /* text color */
+	background-color: #0F274A; /* background */
+	border: 1px solid #1A8BBF;
+	padding: 6px 10px;
+	border-radius: 6px;
+	font-size: 1rem;
+}
+
+/* Style the options inside the dropdown */
+.window-app select option {
+  color: #FFFFFF;             /* text color inside the dropdown */
+  background-color: #123B6B;  /* dropdown option background */
+}
+
+
+input.character-name {
+	width:200px;
+}

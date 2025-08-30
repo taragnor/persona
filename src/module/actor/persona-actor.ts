@@ -24,7 +24,7 @@ import { PersonaScene } from "../persona-scene.js";
 import { poisonDamageMultiplier } from "../../config/shadow-types.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { RealDamageType } from "../../config/damage-types.js";
-import { SkillCard } from "../item/persona-item.js";
+import { Carryable, CraftingMaterial, SkillCard } from "../item/persona-item.js";
 import { UsableAndCard } from "../item/persona-item.js";
 import { ValidSocialTarget } from "../social/persona-social.js";
 import { ValidAttackers } from "../combat/persona-combat.js";
@@ -301,6 +301,38 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		);
 	}
 
+	get trueConsumables(): Consumable[] {
+		const items = this.consumables.filter( x=> !x.isCraftingMaterial());
+		return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
+	}
+
+	get equippables(): (InvItem | Weapon)[] {
+		const items=	this.items.filter( item => item.isEquippable() ) as (InvItem | Weapon)[];
+		return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
+	}
+
+	get skillCards(): SkillCard[] {
+		const items= this.items
+			.filter( item => item.isSkillCard()) as SkillCard[];
+		return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
+	}
+
+	get keyItems(): Carryable[] {
+		const items= this.items
+			.filter( item => item.isKeyItem()) as Carryable[];
+		return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
+	}
+
+	get craftingMaterials() : CraftingMaterial[] {
+		const items= this.items
+			.filter( item => item.isCraftingMaterial()) as CraftingMaterial[];
+		return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
+	}
+
+	hasTag(this: ValidAttackers ,tag : CreatureTag  ): boolean {
+		return this.tagList.includes(tag);
+	}
+
 	get nonUsableInventory() : (SkillCard | InvItem | Weapon)[] {
 		const inventory = this.items.filter( i=> i.system.type == "item" || i.system.type == "weapon" || i.system.type == "skillCard") as (InvItem | Weapon)[];
 		return inventory.sort( (a,b) =>  {
@@ -369,7 +401,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get basePersona() : Persona<ValidAttackers> {
-		if (!this.isValidCombatant()) {
+		if (!this.isValidCombatant() && !this.isPC()) {
 			throw new PersonaError("Can't call basePersona getter on non combatant");
 		}
 		return new Persona(this, this, this._mainPowers());

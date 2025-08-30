@@ -153,6 +153,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return cache;
   }
 
+	static sortInventoryItems( this: void, a: Carryable, b: Carryable) : number {
+		const typesort = a.system.type.localeCompare(b.system.type);
+		if (typesort != 0) {return typesort;}
+		if (a.system.type == "item" && b.system.type == "item") {
+			const slotSort = a.system.slot.localeCompare(b.system.slot);
+			if (slotSort != 0) {return slotSort;}
+		}
+		return a.name.localeCompare(b.name);
+	}
+
   static getDamageIconPath(dmgType : RealDamageType) : string  | undefined {
     switch (dmgType) {
       case 'fire':
@@ -637,18 +647,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   get isCraftingItem() : boolean {
-    switch (this.system.type) {
-      case 'consumable':
-      case 'item':
-        if ((this as Consumable | InvItem).hasTag('crafting'))
-          {return true;}
-        if (this.system.type == 'item' && this.system.slot == 'crafting')
-          {return true;}
-        break;
-      default:
-        break;
-    }
-    return false;
+	  return this.isCraftingMaterial();
   }
 
   /**@deprecated */
@@ -1471,6 +1470,64 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.system.type == 'consumable';
   }
 
+	isWeapon() : this is Weapon {
+		return this.system.type == "weapon";
+	}
+
+	isCarryableType(): this is Carryable  {
+		switch (this.system.type) {
+			case "consumable":
+			case "item":
+			case "weapon":
+			case "skillCard":
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	isInvItem(): this is InvItem {
+		return this.system.type == "item";
+	}
+
+	isKeyItem(): boolean {
+		if (!this.isCarryableType()) {return false;}
+		if (this.isInvItem()) {
+			if (this.system.slot == "key-item")
+				{return true;}
+		}
+		return this.hasTag("key-item");
+	}
+
+	isCraftingMaterial(): this is CraftingMaterial {
+		if (!this.isCarryableType()) return false;
+		if (this.isInvItem()) {
+			return this.system.slot == "crafting";
+		}
+		if (this.isConsumable()) {
+			return this.hasTag("crafting");
+		}
+		return false;
+	}
+
+
+	isEquippable(): boolean {
+		if (!this.isCarryableType()) {return false;}
+		if (this.isWeapon()) {return true;}
+		if (this.system.type != "item") {return false;}
+		switch (this.system.slot) {
+			case "key-item": return false;
+			case "body": return true;
+			case "accessory": return true;
+			case "weapon_crystal": return true;
+			case "crafting": return false;
+			case "none": return false;
+			default:
+				this.system.slot satisfies never;
+				return false;
+		}
+	}
+
   isShadowExclusivePower(): boolean {
     if (!this.isPower()) {return false;}
     return this.hasTag('shadow-only');
@@ -2268,6 +2325,10 @@ export type Consumable = Subtype<PersonaItem, 'consumable'>;
 export type Activity = SocialCard;
 export type SocialCard = Subtype<PersonaItem, 'socialCard'>;
 export type SkillCard = Subtype<PersonaItem, 'skillCard'>;
+export type Carryable = InvItem | Weapon | Consumable | SkillCard;
+
+type CraftingInventoryItem= InvItem & {system: {slot: "crafting"}};
+export type CraftingMaterial = CraftingInventoryItem | Consumable;
 
 export type UniversalModifier = Subtype<PersonaItem, 'universalModifier'>;
 

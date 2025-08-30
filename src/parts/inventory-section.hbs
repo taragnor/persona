@@ -1,37 +1,3 @@
-<div class="equips">
-	<div class="weapon">
-		<label>
-			Weapon
-		</label>
-		<select name="system.equipped.weapon" {{#if (inventoryLocked)}} disabled{{/if}} >
-			{{selectOptions equips.weapons localize=true selected=actor.system.equipped.weapon}}
-		</select>
-	</div>
-	<div class="armor"> <label>
-			Clothing
-		</label>
-		<select name="system.equipped.body" {{#if (inventoryLocked)}} disabled{{/if}}>
-			{{selectOptions equips.body localize=true selected=actor.system.equipped.body}}
-		</select>
-	</div>
-	<div class="accessory"> <label>
-			Accessory
-		</label>
-		<select name="system.equipped.accessory" {{#if ( inventoryLocked )}} disabled{{/if}}>
-			{{selectOptions equips.accessory localize=true selected=actor.system.equipped.accessory}}
-		</select>
-	</div>
-
-	<div class="weapon-crystal"> <label>
-			Weapon Attachment
-		</label>
-		<select name="system.equipped.weapon_crystal" {{#if ( inventoryLocked )}} disabled{{/if}}>
-			{{selectOptions equips.attachment localize=true selected=actor.system.equipped.weapon_crystal}}
-		</select>
-	</div>
-
-</div>
-<hr>
 
 {{#if (eq actor.type "pc")}}
 <section class="money">
@@ -57,82 +23,47 @@
 </section>
 {{/if}}
 
-<hr>
-<section class="items">
+<nav class="inventory-tabs tabs" data-group="social">
+	<a class="item" data-tab="consumables">
+		Consumables
+	</a>
+	<a class="item" data-tab="equip">
+		Equippables
+	</a>
+	<a class="item" data-tab="crafting">
+		Crafting
+	</a>
+	<a class="item" data-tab="key">
+		Key
+	</a>
+	<a class="item" data-tab="cards">
+		Skill Cards
+	</a>
+</nav>
+<section class="inventory-body">
 	<h2>Items
-		{{#if (isGM)}}
+		{{#if false}}
 		<a class="addItem">
 			<i class="fa-solid fa-plus"> </i>
 		</a>
 		{{/if}}
 	</h2>
-	<div class="flexrow">
-		<div class="item-list flexcol">
-			{{#each actor.consumables as |item|}}
-			<div class="{{#if (ne item.system.noTrade true)}} item item-entry {{/if}} inventory-item" data-item-id="{{item.id}}">
-				{{#if (isItemUsable item)}}
-				<a class="rollItem">
-					<img src="icons/dice/d20black.svg">
-				</a>
-				{{/if}}
-				<span class="itemName">
-					{{#if item.isCraftingItem}}
-					<i class="fa-solid fa-hammer"></i>
-					{{/if}}
-					{{item.displayedName}}
-					{{#if (gt item.amount 1)}}
-					( {{item.amount}} )
-					{{/if}}
-					{{#if (eq item.system.type "consumable")}}
-					{{/if}}
-				</span>
-				<a class="delItem">
-					<i class="fa-solid fa-trash-can"></i>
-				</a>
-			</div>
-			{{/each}}
-		</div>
-		<div class="item-list flexcol">
-			{{#each actor.nonUsableInventory as |item|}}
-			<div class="{{#if (ne item.system.noTrade true)}} item item-entry {{/if}} inventory-item" data-item-id="{{item.id}}">
-				{{#if (eq item.system.type "consumable")}}
-				<a class="rollItem">
-					<img src="icons/dice/d20black.svg">
-				</a>
-				{{/if}}
-				<span class="itemName">
-					{{#if (eq item.system.type "weapon")}}
-					<i class="fa-solid fa-baseball-bat-ball"></i>
-					{{/if}}
-					{{#if (eq item.system.slot "body")}}
-					<i class="fa-solid fa-shirt"></i>
-					{{/if}}
-					{{#if (eq item.system.slot "accessory")}}
-					<i class="fa-solid fa-ring"></i>
-					{{/if}}
-					{{#if (eq item.system.slot "none")}}
-					<i class="fa-solid fa-circle-question"></i>
-					{{/if}}
-					{{#if (eq item.system.slot "weapon_crystal")}}
-					<i class="fa-solid fa-gem"></i>
-					{{/if}}
-					{{#if (eq item.system.slot "key-item")}}
-					<i class="fa-solid fa-key"></i>
-					{{/if}}
-					{{#if (eq item.system.slot "crafting")}}
-					<i class="fa-solid fa-hammer"></i>
-					{{/if}}
-					{{item.name}}
-					{{#if (gt item.amount 1)}}
-					( {{item.amount}} )
-					{{/if}}
-				</span>
-				<a class="delItem">
-					<i class="fa-solid fa-trash-can"></i>
-				</a>
-			</div>
-			{{/each}}
-		</div>
-	</div>
-</section>
+
+	<section class="tab tab-content inventory-section f-col" data-group="social" data-tab="consumables">
+			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.trueConsumables }}
+	</section>
+	<section class="tab tab-content inventory-section f-col" data-group="social" data-tab="equip">
+			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.equippables }}
+	</section>
+	<section class="tab tab-content inventory-section f-col" data-group="social" data-tab="crafting">
+			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.craftingMaterials }}
+		</section>
+	<section class="tab tab-content inventory-section f-col" data-group="social" data-tab="key">
+			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.keyItems }}
+	</section>
+	<section class="tab tab-content inventory-section f-col" data-group="social" data-tab="cards">
+			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.skillCards }}
+
+	</section>
+<hr>
 

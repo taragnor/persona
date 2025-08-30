@@ -59,7 +59,7 @@
 	"persona.sheet.tabs.combat.tabname" : "Combat",
 	"persona.sheet.tabs.combat.header": "Combat Stats",
 
-	"persona.sheet.tabs.personal-stats.tabname" : "Stats",
+	"persona.sheet.tabs.personal-stats.tabname" : "Character Stats",
 	"persona.sheet.tabs.personal-stats.header" : "Character Stats",
 
 	"persona.sheet.tabs.social-benefits.tabname" : "Social Benefits",

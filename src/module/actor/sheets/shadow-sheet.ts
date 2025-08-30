@@ -21,7 +21,9 @@ export class ShadowSheet extends CombatantSheetBase {
 			template: `${HBS_TEMPLATES_DIR}/shadow-sheet.hbs`,
 			width: 800,
 			height: 800,
-			tabs: [{navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "main"}]
+			tabs: [
+				{navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "main"},
+			]
 		});
 	}
 

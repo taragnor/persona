@@ -1,31 +1,3 @@
-<section>
-
-	{{#if false}}
-	<h2> Key Skills</h2>
-	<div class="key-skills flexrow">
-		<div class="primary">
-			<label>
-				Primary Skill
-			</label>
-			<select name="system.keyskill.primary">
-				{{selectOptions CONST.STUDENT_SKILLS localize=true selected=actor.system.keyskill.primary}}
-			</select>
-		</div>
-		<div class="secondary">
-			<label>
-				Secondary Skill
-			</label>
-			<select name="system.keyskill.secondary">
-				{{selectOptions CONST.STUDENT_SKILLS localize=true selected=actor.system.keyskill.secondary}}
-			</select>
-		</div>
-	</div>
-	{{/if}}
-	<br>
-	<hr>
-
-</section>
-
 {{#if false}}
 <div class="perk">
 	<span>
@@ -36,128 +8,21 @@
 	</span>
 </div>
 {{/if}}
-
-<section class="social-links">
-	<h2> Social Links</h2>
-	{{#each actor.socialLinks as |link|}}
-	<div class="social-link" data-link-id="{{link.actor.id}}">
-		{{#if link.available}}
-		<span class="social-command social-card">
-			<a class="draw-social-card" title="Draw Social card">
-				<i class="fa-regular fa-id-card"></i>
-			</a>
-		</span>
-		{{/if}}
-
-		<img class="portrait" src={{actor.img}}>
-		{{#if (isHighestLinker ../actor link)}}
-		<i title="Highest Link Level" class="fa-solid fa-star"></i>
-		{{/if}}
-		<a class="name">
-			{{link.actor.displayedName}}
+<nav class="secondary-tabs tabs" data-group="social">
+		<a class="item" data-tab="SL">
+			Social Links
 		</a>
-		<span class="tarot">
-			( {{link.actor.tarot.displayedName}} )
-		</span>
-		<span class="relationshipType">
-			[ {{link.relationshipType}} ]
-		</span>
-		<span class="inspiration">
-			{{link.inspiration}} / {{link.linkLevel}}
-		</span>
-		{{#if link.currentProgress}}
-		( {{link.currentProgress}} progress )
-		{{/if}}
-		<span class="social-icons">
-			<a class="useInspiration" title="Spend Inspiration">
-				<i class="fa-solid fa-user-minus"></i>
-			</a>
-			<a class="useRecovery" title="Use Recovery">
-				<i class="fa fa-heart" aria-hidden="true"></i>
-			</a>
-			<a class="refreshLink" title="Refresh Inspiration">
-				<i class="fa fa-refresh" aria-hidden="true"></i>
-			</a>
-			{{#if (isGM)}}
-			<a class="addSocialRank" title="Increase Social Rank ">
-				<i class="fa-solid fa-user-plus"></i>
-			</a>
-			<a class="removeSocialRank" title="Decrease Social Rank ">
-				<i class="fa-solid fa-user-minus"></i>
-			</a>
-			{{/if}}
-			<a class="add-progress-token" title="Add Progress Token">
-				<i class="fa-solid fa-arrow-up"></i>
-			</a>
-			<a class="rem-progress-token" title="Remove Progress Token">
-				<i class="fa-solid fa-arrow-down"></i>
-			</a>
-		</span>
-		{{#if (isGM)}}
-		<span>
-			<select class="relationship-type">
-				{{selectOptions ../RELATIONSHIP_TYPES localize=false selected=link.relationshipType}}
-			</select>
-		</span>
-		{{/if}}
-	</div>
-	{{/each}}
-
-	{{#each actor.unrealizedSocialLinks as |link|}}
-	<div class="social-link unrealized-social-link" data-link-id="{{link.id}}">
-		{{#if (canForgeSocialLink ../actor link)}}
-		<span class="social-command social-card">
-			<a class="init-social-link" title="Forge Social Link">
-				<i class="fa-solid fa-person-circle-plus"></i>
-			</a>
-		</span>
-		{{/if}}
-		<img class="portrait" src={{link.img}}>
-		<a class="name">
-			{{link.displayedName}}
+		<a class="item" data-tab="activities">
+			Activities
 		</a>
-		<span class="tarot">
-			( {{link.tarot.displayedName }} )
-		</span>
-	</div>
-	{{/each}}
+</nav>
+	<section class="inner-body">
+		<section class="tab tab-content social-section f-col" data-group="social" data-tab="SL">
+			{{> "systems/persona/parts/social-links-list.hbs" actor=actor CONST=CONST}}
+		</section>
+		<section class="tab tab-content social-section f-col" data-group="social" data-tab="activities">
+			{{> "systems/persona/parts/social-activities-list.hbs" actor=actor CONST=CONST}}
+		</section>
 
-</section>
+	</section>
 
-<section class="activities">
-	<h2> Activities </h2>
-	{{#each jobs as |job|}}
-	<div class="job" data-activity-id="{{job.id}}">
-		{{#if (isActivitySelectable ../actor job)}}
-		<span class="social-command social-card">
-			<a class="draw-activity-card" title="Draw Activity card">
-				<i class="fa-regular fa-id-card"></i>
-			</a>
-		</span>
-		{{/if}}
-		<img class="portrait" src="{{job.img}}">
-		<span class="job-name">
-			<a class="name">
-				{{job.name}}
-			</a>
-		</span>
-		<span clas="progress">
-			( Progress: {{getActivityProgress ../actor job}}, Strikes: {{getActivityStrikes ../actor job}})
-		</span>
-		<span class="social-icons">
-			<a class="add-progress-token" title="Add Progress Token">
-				<i class="fa-solid fa-arrow-up"></i>
-			</a>
-			<a class="rem-progress-token" title="Remove Progress Token">
-				<i class="fa-solid fa-arrow-down"></i>
-			</a>
-			<a class="rem-strike" title="-1 Strike">
-				<i class="fa-solid fa-user-minus"></i>
-			</a>
-			<a class="add-strike" title="+1 Strike">
-				<i class="fa-solid fa-user-plus"></i>
-			</a>
-		</span>
-	</div>
-	{{/each}}
-</section>

@@ -1,3 +1,4 @@
+<section class="base-persona-section {{#if (isSimulated persona)}} simulated-persona {{/if}}"
 <input type="text" class="borderless character-name" name="system.personaName" value="{{actor.system.personaName}}" title="Persona Name" placeholder="Persona Name">
 {{#if (and (isGM) (not (isPC actor)))}}
 {{> "systems/persona/parts/hp-mp-section.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
@@ -49,7 +50,7 @@
 
 </div>
 {{> "systems/persona/parts/resistance-input.hbs" actor=actor CONST=CONST persona=persona}}
-{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=false showPowerTableButton=true showLearnedBuffer=true showSideboard=true}}
+{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=false showPowerTableButton=true showLearnedBuffer=true showSideboard=true canDelete=true}}
 
 <hr>
 {{> "systems/persona/parts/persona-stats-input.hbs" actor=actor persona=persona CONST=CONST}}

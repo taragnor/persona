@@ -754,8 +754,19 @@ export class PersonaHandleBarsHelpers {
 
 		"iff": function (cond: boolean, choice1: unknown, choice2: unknown) : unknown {
 			return cond ? choice1 : choice2;
-		}
+		},
 
+		"disableHPMPChange": function () : boolean {
+			if (game.user.isGM) {return false;}
+			const combat = game.combat as U<PersonaCombat>;
+			return (combat != undefined && !combat.isSocial);
+		},
+
+		"isSimulated": function (persona: Persona) : boolean{
+			const source = persona.source;
+			if (source.isShadow() && source.system.creatureType == "daemon") {return true;}
+			return source.hasTag("simulated");
+		}
 
 	};
 

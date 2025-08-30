@@ -1,0 +1,38 @@
+<section class="activities">
+	<h2> Activities </h2>
+	{{#each jobs as |job|}}
+	<div class="job" data-activity-id="{{job.id}}">
+		{{#if (isActivitySelectable ../actor job)}}
+		<span class="social-command social-card">
+			<a class="draw-activity-card" title="Draw Activity card">
+				<i class="fa-regular fa-id-card"></i>
+			</a>
+		</span>
+		{{/if}}
+		<img class="portrait" src="{{job.img}}">
+		<span class="job-name">
+			<a class="name">
+				{{job.name}}
+			</a>
+		</span>
+		<span clas="progress">
+			( Progress: {{getActivityProgress ../actor job}}, Strikes: {{getActivityStrikes ../actor job}})
+		</span>
+		<span class="social-icons">
+			<a class="add-progress-token" title="Add Progress Token">
+				<i class="fa-solid fa-arrow-up"></i>
+			</a>
+			<a class="rem-progress-token" title="Remove Progress Token">
+				<i class="fa-solid fa-arrow-down"></i>
+			</a>
+			<a class="rem-strike" title="-1 Strike">
+				<i class="fa-solid fa-user-minus"></i>
+			</a>
+			<a class="add-strike" title="+1 Strike">
+				<i class="fa-solid fa-user-plus"></i>
+			</a>
+		</span>
+	</div>
+	{{/each}}
+</section>
+

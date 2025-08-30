@@ -714,12 +714,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	wpnAtkBonus() : ModifierList {
-		let mods = this.getBonuses(["allAtk", "wpnAtk"]);
-		// const lvl = this.system.combat.classData.level;
-		// const inc = this.system.combat.classData.incremental.attack ?? 0;
-		// mods.add("Level Bonus (x2)", lvl * 2);
-		// mods.add("Incremental Advance" , inc);
-		// const wpnAtk = this.source.system.combat.wpnatk;
+		const mods = this.getBonuses(["allAtk", "wpnAtk"]);
 		const wpnAtk = this.combatStats.baseWpnAttackBonus();
 		mods.add("Base Weapon Attack Bonus", wpnAtk);
 		return mods;
@@ -727,11 +722,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	magAtkBonus() : ModifierList {
 		const mods = this.getBonuses(["allAtk", "magAtk"]);
-		// const lvl = this.system.combat.classData.level ?? 0;
-		// const inc = this.system.combat.classData.incremental.attack ?? 0;
-		// mods.add("Level Bonus (x2)", lvl * 2);
-		// mods.add("Incremental Advance" , inc);
-		// const magAtk = this.source.system.combat.magatk ?? 0;
 		const magAtk = this.combatStats.baseMagAttackBonus();
 		mods.add("Base Magic Attack Bonus", magAtk);
 		return mods;
@@ -746,7 +736,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	ailmentAtkBonus() :ModifierList {
 		const mods = this.getBonuses("afflictionRange");
-		// const lvl = this.system.combat.classData.level ?? 0;
 		const ailAtk = this.combatStats.baseAilmentAtkBonus();
 		mods.add("Base Magic Attack Bonus", ailAtk);
 		return mods;
@@ -755,16 +744,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	itemAtkBonus(item :Consumable) : ModifierList {
 		const mods = this.getBonuses(["itemAtk", "allAtk"]);
 		mods.add("Item Base Bonus", item.system.atk_bonus);
-		// const lvl = this.system.combat.classData.level ?? 0;
-		// const inc = this.system.combat.classData.incremental.attack ?? 0;
-		// mods.add("Level Bonus (x1)", lvl);
-		// mods.add("Incremental Advance" , inc);
 		return mods;
 	}
 
 	get isUnderResistCap(): boolean {
 		const leeway  = 0;  //allow leeway for double weakness
-
 		return this.source.totalResists() + leeway < this.maxResists();
 	}
 
@@ -878,6 +862,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			}
 		}
 		return true; //placeholder
+	}
+
+
+	hasTag(tag: PersonaTag) : boolean {
+		return this.tagList().includes(tag);
 	}
 
 	tagList() : PersonaTag[] {
