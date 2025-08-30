@@ -747,11 +747,17 @@ export class PersonaHandleBarsHelpers {
 			return game.i18n.localize(DEFENSE_TYPES[defense]);
 		},
 		"powerTargetsAbbrev": function (power: Power) : string {
+			let retstr = "";
+			if (power.system.attacksMax > 1) {
+				retstr += `(${power.system.attacksMin}-${power.system.attacksMax})`;
+			}
 			if (power.isMultiTarget())
-			{return "M";}
-			if (power.system.targets.includes("random")) 
-			{ return "R"; }
-			return "1";
+			{retstr+= "M";} else  {
+				retstr += "S";
+			}
+			if (power.system.targets.includes("random"))
+			{ retstr+= "R"; }
+			return retstr;
 		},
 
 	};

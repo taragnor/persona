@@ -1973,7 +1973,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 
 	async deletePower(this: ValidAttackers, id: string ) {
-		// const power = PersonaDB.getItemById(id) as Power;
 		const item = this.items.find(x => x.id == id);
 		if (item) {
 			await item.delete();
@@ -1982,9 +1981,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const result = await this.deletefromLearnBuffer(id)
 			|| await this.deleteFromMainPowers(id)
 			|| (!this.isShadow() ? await this.deleteFromSideboard(id) : false) ;
-		// if (result) {
-		// 	await Logger.sendToChat(`${this.name} deleted power ${power.name}` , this);
-		// }
 		return result;
 	}
 
@@ -4023,12 +4019,12 @@ Object.seal(EMPTYARR);
 
 
 Hooks.on("createActor", async function (actor: PersonaActor) {
-	if (actor.isShadow()) {
+	if (actor.isShadow() && actor.level <= 1) {
 		const pcs = game.actors
 			.filter( (x: PersonaActor)=> x.isRealPC() && x.hasPlayerOwner);
 		const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.personaleLevel, 0 );
 		const avgLevel = Math.round(totalLevels/ pcs.length);
-		await actor.update({ "system.combat.personaStats.pLevel" : avgLevel});
+			await actor.update({ "system.combat.personaStats.pLevel" : avgLevel});
 		await actor.setWeaponDamageByLevel(avgLevel);
 	}
 });

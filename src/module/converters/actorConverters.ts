@@ -75,6 +75,7 @@ export class ActorConverters {
 				creatureType:  "persona",
 				creatureTags: personaTags,
 				personaConversion : {
+					...shadow.system.personaConversion,
 					baseShadowId: shadow.id,
 					startingLevel: shadow.system.personaConversion.startingLevel,
 				},
@@ -116,6 +117,7 @@ export class ActorConverters {
 				creatureType : "d-mon",
 				creatureTags: dmonTags,
 				personaConversion : {
+					...shadow.system.personaConversion,
 					baseShadowId: shadow.id,
 					startingLevel: shadow.system.personaConversion.startingLevel,
 				}
@@ -133,7 +135,7 @@ export class ActorConverters {
 		const baseLevel = original.system.personaConversion.startingLevel ?? original.system.combat.personaStats.pLevel;
 		await convert.update( {
 			"system.combat.personaStats.pLevel": baseLevel,
-"system.combat.lastLearnedLevel": 0,
+			"system.combat.lastLearnedLevel": 0,
 			"system.combat.powers": [],
 		});
 		await convert.onLevelUp_checkLearnedPowers(baseLevel, false);

@@ -1610,14 +1610,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			power: PersonaDB.getUniversalItemAccessor(power)
 		} satisfies Pick<AttackResult, 'attacker' | 'target'  | 'power' | 'roll'>;
 		const total = roll.total;
-		const ailmentRange = this.#calculateAilmentRange(attackerPersona, targetPersona, power, baseSituation);
-		const withinAilmentRange = ailmentRange ? naturalAttackRoll >= ailmentRange.low && naturalAttackRoll <= ailmentRange.high : false;
 		const situation : CombatRollSituation = {
 			...baseSituation,
 			naturalRoll: naturalAttackRoll,
 			rollTags,
 			rollTotal: roll.total,
-			withinAilmentRange,
+			withinAilmentRange: false,
 		};
 		const testNullify = this.processAttackNullifiers(attacker, power, target, baseData, situation, rollType);
 		if (testNullify)  {
@@ -1625,6 +1623,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		const validAtkModifiers = attackbonus.list(situation);
 		const printableModifiers = attackbonus.printable(situation);
+		const ailmentRange = this.#calculateAilmentRange(attackerPersona, targetPersona, power, baseSituation);
 		if (def == 'none') {
 			situation.hit = true;
 			return {
@@ -1671,6 +1670,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				...baseData,
 			};
 		}
+		let withinAilmentRange = false;
+		if (power.system.defense == "ail") {
+			withinAilmentRange = true;
+		} else {
+			withinAilmentRange = ailmentRange ? naturalAttackRoll >= ailmentRange.low && naturalAttackRoll <= ailmentRange.high : false;
+		}
+		situation["withinAilmentRange"]= withinAilmentRange;
 		const canCrit = typeof rollType == 'number' || rollType == 'iterative' ? false : true;
 		let cancelCritsForInstantDeath = false;
 		if (power.isInstantDeathAttack()) {
