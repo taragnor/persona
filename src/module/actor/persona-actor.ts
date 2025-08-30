@@ -509,8 +509,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	mhpCalculation(this: ValidAttackers) {
 		try {
+			if (this.system == undefined) {return new Calculation().eval();}
 			const lvlbase = this.class.getClassProperty(this.level, "maxhp");
-			const calc= new Calculation(lvlbase);
+			const calc = new Calculation(lvlbase);
 			const persona = this.persona();
 			const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
 			const nonMultbonuses = persona.getBonuses("maxhp");
@@ -535,8 +536,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			calc.add(0, multmods, "Old Form Mods", "noStackMultiply");
 			calc.add(0, nonMultbonuses, "Adds", "add");
 			return calc.eval(sit);
-		}	 catch {
-			ui.notifications.warn(`Error in calculating ${this.name} MHP`);
+		}	 catch(e) {
+			PersonaError.softFail(`Error in calculating ${this.name} MHP`, e);
 		}
 		return new Calculation().eval();
 	}
@@ -1980,7 +1981,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		const result = await this.deletefromLearnBuffer(id)
 			|| await this.deleteFromMainPowers(id)
-			|| !this.isShadow() ? await (this as PC | NPCAlly).deleteFromSideboard(id) : false ;
+			|| (!this.isShadow() ? await this.deleteFromSideboard(id) : false) ;
 		// if (result) {
 		// 	await Logger.sendToChat(`${this.name} deleted power ${power.name}` , this);
 		// }
@@ -2022,7 +2023,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async deleteFromSideboard(this: PC | NPCAlly, id: Power["id"]) {
 		let sideboard = this.system.combat.powers_sideboard;
-		if (sideboard.includes(id)) {
+		if (sideboard && sideboard.includes(id)) {
 			const power = PersonaDB.getItemById(id) as Power;
 			sideboard = sideboard.filter( x=> x != id);
 			await this.update( {"system.combat.powers_sideboard": sideboard});
@@ -3952,6 +3953,11 @@ Hooks.on("preUpdateActor", async (actor: PersonaActor, changes) => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
 	if (!actor.isValidCombatant()) {return;}
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+	const lvl =changes?.system?.combat?.personaStats?.pLevel as U<number>;
+	if (lvl != undefined) {
+		await actor.onLevelUp_checkLearnedPowers(lvl, !actor.isShadow());
+	}
 	switch (actor.system.type) {
 		case "npcAlly":
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -4020,9 +4026,9 @@ Hooks.on("createActor", async function (actor: PersonaActor) {
 	if (actor.isShadow()) {
 		const pcs = game.actors
 			.filter( (x: PersonaActor)=> x.isRealPC() && x.hasPlayerOwner);
-		const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.combat.classData.level, 0 );
+		const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.personaleLevel, 0 );
 		const avgLevel = Math.round(totalLevels/ pcs.length);
-		await actor.update({ "system.combat.classData.level" : avgLevel});
+		await actor.update({ "system.combat.personaStats.pLevel" : avgLevel});
 		await actor.setWeaponDamageByLevel(avgLevel);
 	}
 });

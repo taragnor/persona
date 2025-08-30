@@ -38,10 +38,29 @@ export class ActorConverters {
 		? { ownership: newOwner.ownership }
 		: {};
 		const personaTags = shadow.system.creatureTags.slice();
-		personaTags.push("persona");
+		personaTags.pushUnique("persona");
 		if (shadow.system.creatureType == "daemon") {
-			personaTags.push("simulated");
+			personaTags.pushUnique("simulated");
 		}
+		const statusResists : Shadow["system"]["combat"]["statusResists"] = {
+			burn: "normal",
+			charmed: "normal",
+			curse: "normal",
+			confused: "normal",
+			dizzy: "normal",
+			expel: "normal",
+			fear: "normal",
+			vulnerable: "normal",
+			forgetful: "normal",
+			frozen: "normal",
+			sleep: "normal",
+			shock: "normal",
+			rage: "normal",
+			poison: "normal",
+			blind: "normal",
+			sealed: "normal",
+			despair: "normal"
+		};
 		const personaData : DeepPartial<Shadow> = {
 			name: `${shadow.name} (Persona)`,
 			type: "shadow",
@@ -58,6 +77,10 @@ export class ActorConverters {
 				personaConversion : {
 					baseShadowId: shadow.id,
 					startingLevel: shadow.system.personaConversion.startingLevel,
+				},
+				combat: {
+					...shadow.system.combat,
+					statusResists,
 				}
 			}
 		};
@@ -76,9 +99,9 @@ export class ActorConverters {
 			throw new PersonaError(`${shadow.name} is Ineligible to become a D-Mon`);
 		}
 		const dmonTags = shadow.system.creatureTags.slice();
-		dmonTags.push("d-mon");
+		dmonTags.pushUnique("d-mon");
 		if (shadow.system.creatureType == "daemon") {
-			dmonTags.push("simulated");
+			dmonTags.pushUnique("simulated");
 		}
 		const dmonStats : DeepPartial<Shadow> = {
 			name: `${shadow.name} (D-Mon)`,
@@ -111,6 +134,7 @@ export class ActorConverters {
 		await convert.update( {
 			"system.combat.personaStats.pLevel": baseLevel,
 "system.combat.lastLearnedLevel": 0,
+			"system.combat.powers": [],
 		});
 		await convert.onLevelUp_checkLearnedPowers(baseLevel, false);
 	}

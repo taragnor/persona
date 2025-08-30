@@ -163,16 +163,17 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			}
 		}
 		case "student-skill": {
-       if (!situation.user) {return false;}
+			if (!situation.user) {return false;}
 			const actor = PersonaDB.findActor(situation.user);
 			if (actor.system.type != "pc") {return false;}
 			target = actor.system.skills[condition.studentSkill!];
 			break;
-    }
+		}
 		case "character-level": {
 			if (!situation.user) {return false;}
 			const actor = PersonaDB.findActor(situation.user);
-			target= actor.system.combat.classData.level;
+			if (!actor) { return false;}
+			target= actor.level;
 			break;
 		}
 		case "has-resources": {

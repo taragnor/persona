@@ -1645,10 +1645,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const floor = situation.resisted ? -999 : 0;
 		const critBoost = Math.max(floor, critBoostMod.total(situation));
 		const critPrintable = critBoostMod.printable(situation);
-		const autoHit = naturalAttackRoll == 20;
+		const autoHit = rollType == "reflect" && !power.isInstantDeathAttack() && !power.isAilment();
+		const Mod20 = naturalAttackRoll == 20 ? 3 : 0;
+		// const autoHit = naturalAttackRoll == 20;
 		if (!autoHit &&
 			(naturalAttackRoll == 1
-				|| total < defenseVal
+				|| (total+Mod20) < defenseVal
 				|| (rageOrBlind && naturalAttackRoll % 2 == 1)
 			)
 		) {

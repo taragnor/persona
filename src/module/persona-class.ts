@@ -708,7 +708,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	wpnAtkBonus() : ModifierList {
-		const mods = this.getBonuses(["allAtk", "wpnAtk"]);
+		let mods = this.getBonuses(["allAtk", "wpnAtk"]);
 		// const lvl = this.system.combat.classData.level;
 		// const inc = this.system.combat.classData.incremental.attack ?? 0;
 		// mods.add("Level Bonus (x2)", lvl * 2);
@@ -732,14 +732,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	instantDeathAtkBonus() : ModifierList {
-		const mods = this.getBonuses(["allAtk"]);
+		const mods = this.getBonuses(["instantDeathRange"]);
 		const deathAtk = this.combatStats.baseDeathAtkBonus();
 		mods.add("Base Magic Attack Bonus", deathAtk);
 		return mods;
 	}
 
 	ailmentAtkBonus() :ModifierList {
-		const mods = this.getBonuses(["allAtk"]);
+		const mods = this.getBonuses("afflictionRange");
 		// const lvl = this.system.combat.classData.level ?? 0;
 		const ailAtk = this.combatStats.baseAilmentAtkBonus();
 		mods.add("Base Magic Attack Bonus", ailAtk);
