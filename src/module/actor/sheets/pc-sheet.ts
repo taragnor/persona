@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { PersonaRoller } from "../../persona-roll.js";
 import { Shadow } from "../persona-actor.js";
 import { ValidAttackers } from "../../combat/persona-combat.js";
@@ -40,8 +42,9 @@ export class PCSheet extends PCLikeSheet {
 
 	override async _onDropActor(_event: Event, actorD: unknown)
 	{
-		//@ts-ignore
-		const actor : PersonaActor = await Actor.implementation.fromDropData(actorD);
+		//@ts-expect-error using weird function
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		const actor : PersonaActor = await Actor.implementation.fromDropData(actorD) as PersonaActor;
 		switch (actor.system.type) {
 			case "pc" :{
 				await this.actor.createSocialLink(actor as PC);
@@ -59,7 +62,8 @@ export class PCSheet extends PCLikeSheet {
 				return undefined;
 			default:
 				actor.system satisfies never;
-				throw new Error(`Unknown unsupported type ${actor.type}`);
+				// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+				throw new Error(`Unknown unsupported type ${actor.system["type"]}`);
 		}
 	}
 
@@ -90,7 +94,7 @@ export class PCSheet extends PCLikeSheet {
 	}
 
 	async rollSocial (ev: JQuery.Event) {
-		const socialStat = HTMLTools.getClosestData(ev, "socialSkill") as SocialStat;
+		const socialStat = HTMLTools.getClosestData<SocialStat>(ev, "socialSkill");
 		if (!STUDENT_SKILLS_LIST.includes(socialStat)) {
 			throw new PersonaError(`Invalid student skill: ${socialStat}.`);
 		}
@@ -99,19 +103,19 @@ export class PCSheet extends PCLikeSheet {
 	}
 
 	async socialBoost (ev: JQuery.Event) {
-		const socialStat = HTMLTools.getClosestData(ev, "socialSkill") as SocialStat;
+		const socialStat = HTMLTools.getClosestData<SocialStat>(ev, "socialSkill");
 		if (!STUDENT_SKILLS_LIST.includes(socialStat)) {
 			throw new PersonaError(`Invalid student skill: ${socialStat}.`);
 		}
-		PersonaSocial.boostSocialSkill(this.actor, socialStat);
+		await PersonaSocial.boostSocialSkill(this.actor, socialStat);
 	}
 
 	async socialMinus (ev: JQuery.Event) {
-		const socialStat = HTMLTools.getClosestData(ev, "socialSkill") as SocialStat;
+		const socialStat = HTMLTools.getClosestData<SocialStat>(ev, "socialSkill");
 		if (!STUDENT_SKILLS_LIST.includes(socialStat)) {
 			throw new PersonaError(`Invalid student skill: ${socialStat}.`);
 		}
-		PersonaSocial.lowerSocialSkill(this.actor, socialStat);
+		await PersonaSocial.lowerSocialSkill(this.actor, socialStat);
 	}
 
 	async refreshLink(event: Event) {
@@ -235,7 +239,7 @@ export class PCSheet extends PCLikeSheet {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
 		const newval = $(event.currentTarget).find(":selected").val();
 		if (!newval) {return;}
-		this.actor.setRelationshipType(linkId, String(newval));
+		await this.actor.setRelationshipType(linkId, String(newval));
 	}
 
 
@@ -244,7 +248,7 @@ export class PCSheet extends PCLikeSheet {
 		const linkId= String(HTMLTools.getClosestData(ev, "linkId"));
 		const link = this.actor.socialLinks.find( link=> link.actor.id == linkId);
 		if (link && link.actor != this.actor) {
-			link.actor.sheet.render(true);
+			await link.actor.sheet.render(true);
 		}
 	}
 
@@ -252,7 +256,7 @@ export class PCSheet extends PCLikeSheet {
 		const jobId= String(HTMLTools.getClosestData(ev, "activityId"));
 		const job = PersonaDB.allActivities().find(x=> x.id == jobId);
 		if (job){
-			job.sheet.render(true);
+			await job.sheet.render(true);
 		}
 	}
 

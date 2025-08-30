@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { PERSONA_STATS } from "../../../config/persona-stats.js";
 import { PersonaError } from "../../persona-error.js";
 import { PC } from "../persona-actor.js";
@@ -24,7 +25,6 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	constructor(...args: any[]) {
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		super(...args);
 		this.refreshQuestionFocus();
 	}
@@ -153,7 +153,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 		el.style.minHeight = el.scrollHeight + 'px'; // Set to actual content height
 	}
 
-	async autoResize( ev: JQuery.ClickEvent) {
+	autoResize( ev: JQuery.ClickEvent) {
 		console.log("Resizing Text area?!");
 		PersonaActorSheetBase.autoResize(ev.target);
 	}
@@ -175,7 +175,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 			throw new PersonaError(err);
 		}
 		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this Focus?")) {
-			this.actor.deleteFocus(focusId);
+			await this.actor.deleteFocus(focusId);
 		}
 	}
 

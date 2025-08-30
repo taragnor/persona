@@ -65,7 +65,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	override async onLoadPacks() {
-		super.onLoadPacks();
+		await super.onLoadPacks();
 		this.#resetCache();
 	}
 
@@ -177,7 +177,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			.filter( actor=> actor.system.type == "tarot") as Tarot[];
 	}
 
-	getSocialLinkByTarot(tarotCardNameOrId: TarotCard | Tarot["id"]) : U<NPC | PC> {
+	getSocialLinkByTarot(tarotCardNameOrId: TarotCard | (Tarot["id"] & {})) : U<NPC | PC> {
 		return this.socialLinks()
 		.find( x=> x.tarot
 			&& (
@@ -228,7 +228,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	allActivities(): readonly Activity[] {
 		return this.allSocialCards()
-			.filter( x=> (x.system.cardType == "job" || x.system.cardType =="training" || x.system.cardType == "recovery" || x.system.cardType == "other") ) as Activity[];
+			.filter( x=> (x.system.cardType == "job" || x.system.cardType =="training" || x.system.cardType == "recovery" || x.system.cardType == "other") );
 	}
 
 	personalSocialLink(): NPC {
@@ -304,7 +304,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 export const PersonaDB = new PersonaDatabase();
 
-//@ts-ignore
+//@ts-expect-error adding to global objects
 window.PersonaDB =PersonaDB;
 
 Hooks.on("createItem", (item: PersonaItem) => {

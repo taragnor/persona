@@ -46,7 +46,7 @@ import { PersonaDB } from "./persona-db.js";
 import { Talent } from "./item/persona-item.js";
 import { PToken } from "./combat/persona-combat.js";
 import { Usable } from "./item/persona-item.js";
-import {Defense} from "../config/defense-types.js";
+import {Defense, DEFENSE_TYPES} from "../config/defense-types.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -741,7 +741,19 @@ export class PersonaHandleBarsHelpers {
 			return new Handlebars.SafeString( 
 				actor.mmpCalculation().steps.join("\n")
 			);
-		}
+		},
+		"localizeDefenseTarget": function (power:Power ) : string {
+			const defense = power.system.defense;
+			return game.i18n.localize(DEFENSE_TYPES[defense]);
+		},
+		"powerTargetsAbbrev": function (power: Power) : string {
+			if (power.isMultiTarget())
+			{return "M";}
+			if (power.system.targets.includes("random")) 
+			{ return "R"; }
+			return "1";
+		},
+
 	};
 
 } //end of class

@@ -110,8 +110,8 @@ export class PersonaSFX {
 		await this.#play("all-out");
 	}
 
-	static async onAllOutPrompt() {
-		this.#play("all-out prompt");
+	static onAllOutPrompt() {
+		void this.#play("all-out prompt");
 	}
 
 	static async onScan(token: PToken | undefined, _level: number) {
@@ -135,7 +135,7 @@ export class PersonaSFX {
 		const tokens = actor.tokens;
 		for (const token of tokens) {
 			try {
-				this.addTMFiltersStatus(statusId, token);
+				await this.addTMFiltersStatus(statusId, token);
 			} catch (e)  {
 				console.error(e);
 			}
@@ -151,7 +151,7 @@ export class PersonaSFX {
 		const tokens = actor.tokens;
 		for (const token of tokens) {
 			try {
-				this.removeTMFiltersStatus(statusId, token);
+				await this.removeTMFiltersStatus(statusId, token);
 			} catch (e)  {
 				console.error(e);
 			}
@@ -166,12 +166,13 @@ export class PersonaSFX {
 		if (actor.token) {
 			return [actor.token];
 		}
-		//@ts-ignore
+		//@ts-expect-error using weird stuff
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
 		const dependentTokens : TokenDocument<PersonaActor>[] = Array.from(actor._dependentTokens.values()).flatMap(x=> Array.from(x.values()));
 		return dependentTokens.filter( x=> x.actorLink == true);
 	}
 
-	static async addTMFiltersStatus(statusId: StatusEffectId, token: TokenDocument<any>) {
+	static async addTMFiltersStatus(statusId: StatusEffectId, token: TokenDocument) {
 		if (!window.TokenMagic) {return;}
 		if (!token.isOwner) {return;}
 		let params;
@@ -369,7 +370,7 @@ export class PersonaSFX {
 		await window.TokenMagic.addUpdateFilters(token.object!, params);
 	}
 
-	static async addTMFiltersSpecial(filterType: "scan", token: TokenDocument<any>) {
+	static async addTMFiltersSpecial(filterType: "scan", token: TokenDocument) {
 		if (!window.TokenMagic) {return;}
 		if (!token.isOwner) {return;}
 		let params;
@@ -432,7 +433,7 @@ export class PersonaSFX {
 		}
 	}
 
-	static async removeTMFiltersStatus(statusId: StatusEffectId, token: TokenDocument<any>) {
+	static async removeTMFiltersStatus(statusId: StatusEffectId, token: TokenDocument) {
 		if (!window.TokenMagic) {return;}
 		let filters : string[] = [];
 		switch (statusId) {
@@ -462,8 +463,7 @@ export class PersonaSFX {
 	static async #play(snd: Parameters<typeof PersonaSounds["playBattleSound"]>[0], volume = 0.5) {
 		await PersonaSounds.playBattleSound(snd, volume);
 	}
-
-	static async onLevelUp(): Promise<void> {
+static async onLevelUp(): Promise<void> {
 		await this.#play("level-up");
 	}
 
@@ -477,29 +477,31 @@ export class PersonaSFX {
 		try {
 			switch (weather) {
 				case "windy":
-					scene.changeWeather("windy");
+					await scene.changeWeather("windy");
 					break;
 				case "sunny":
-					scene.changeWeather("");
+					await scene.changeWeather("");
 					break;
 				case "cloudy":
-					scene.changeWeather("cloudy");
+					await scene.changeWeather("cloudy");
 					break;
 				case "lightning":
-					scene.changeWeather("rainstorm");
+					await scene.changeWeather("rainstorm");
 					break;
 				case "rain":
-					scene.changeWeather("rain");
+					await scene.changeWeather("rain");
 					break;
 				case "snow":
-					scene.changeWeather("snow");
+					await scene.changeWeather("snow");
 					break;
 				case "fog":
-					scene.changeWeather("fog");
+					await scene.changeWeather("fog");
 					break;
 			}
 		} catch (e: unknown) {
-			PersonaError.softFail(`${e}`, e);
+			if (e instanceof Error) {
+				PersonaError.softFail(`${e}`, e);
+			}
 		}
 	}
 
@@ -510,7 +512,7 @@ Hooks.on("createActiveEffect",(eff: PersonaAE) => {
 	if (!game.user.isGM) {return;}
 	eff.statuses.forEach( statusId => {
 		if (eff.parent instanceof PersonaActor)  {
-			PersonaSFX.onAddStatus(statusId, eff.parent);
+			void PersonaSFX.onAddStatus(statusId, eff.parent);
 		}
 	});
 });
@@ -519,7 +521,7 @@ Hooks.on("deleteActiveEffect", (eff: PersonaAE) => {
 	if (!game.user.isGM) {return;}
 	eff.statuses.forEach( statusId => {
 		if (eff.parent instanceof PersonaActor)  {
-			PersonaSFX.onRemoveStatus(statusId, eff.parent);
+			void PersonaSFX.onRemoveStatus(statusId, eff.parent);
 		}
 	});
 });
@@ -532,10 +534,7 @@ declare global {
 }
 
 interface TokenMagic {
-	deleteFilters(token :Token<any>, filterId: string): Promise<unknown>;
-	addUpdateFilters(token: Token<any>, filterData: {}): Promise<unknown>;
+	deleteFilters(token :Token, filterId: string): Promise<unknown>;
+	addUpdateFilters(token: Token, filterData: object): Promise<unknown>;
 }
-
-//@ts-ignore
-window.PersonaSFX = PersonaSFX;
 

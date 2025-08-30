@@ -1,11 +1,9 @@
 import { PersonaCombatant } from "./persona-combat.js";
-import { TriggeredEffect } from "../triggered-effect.js";
 import { PC } from "../actor/persona-actor.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { PersonaSocial } from "../social/persona-social.js";
 import { PToken } from "./persona-combat.js";
 import { ValidAttackers } from "./persona-combat.js";
-import { PersonaActor } from "../actor/persona-actor.js";
 import { StatusEffect } from "../../config/consequence-types.js";
 import { PersonaError } from "../persona-error.js";
 import { PersonaSockets } from "../persona.js";
@@ -74,7 +72,7 @@ export class CombatHooks {
 			}
 		});
 
-		Hooks.on("deleteCombat", async (_combat: PersonaCombat) => {
+		Hooks.on("deleteCombat", (_combat: PersonaCombat) => {
 			if (!game.user.isGM)
 				{return;}
 		});
@@ -87,7 +85,7 @@ export class CombatHooks {
 			}
 		});
 
-		Hooks.on("renderCombatTracker", async (_item: CombatTracker, element: JQuery<HTMLElement>, _options: RenderCombatTabOptions) => {
+		Hooks.on("renderCombatTracker", (_item: CombatTracker, element: JQuery<HTMLElement>, _options: RenderCombatTabOptions) => {
 			const combat = (game.combat as (PersonaCombat | undefined));
 			if (!combat) {return;}
 			if (combat.isSocial) {
@@ -115,7 +113,7 @@ export class CombatHooks {
 									&& actor.getAllegiance() == allegiance;
 							});
 						if (!standingAllies) {
-							const currentTurnCharacter = game.combat.combatant?.actor;
+							const currentTurnCharacter = (game.combat as PersonaCombat).combatant?.actor;
 							if (!currentTurnCharacter) {return;}
 							const currentTurnType = currentTurnCharacter.system.type;
 							if (currentTurnType == "shadow") {
@@ -130,26 +128,26 @@ export class CombatHooks {
 						}
 					}
 					break;
-				case "bonus-action":
-					const combat = game.combat as PersonaCombat;
+				case "bonus-action": { const combat = game.combat as PersonaCombat;
 					if (combat && !combat.isSocial) {
 						await combat.onFollowUpAction(token, status.activationRoll);
 					}
 
 					break;
+				}
 				default:
 			}
 
 		});
 
 
-		Hooks.on("socketsReady", async () => {
+		Hooks.on("socketsReady", () => {
 			PersonaSockets.setHandler("QUERY_ALL_OUT_ATTACK", () => {
-				PersonaCombat.allOutAttackPrompt();
+				void PersonaCombat.allOutAttackPrompt();
 			});
 		});
 
-		Hooks.on("renderChatMessage", async(msg, elem) => {
+		Hooks.on("renderChatMessage", (_msg, elem) => {
 			if (elem.find(".opener-block").length > 0) {
 				PersonaCombat.addOpeningActionListeners(elem);
 			}

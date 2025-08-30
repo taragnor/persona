@@ -94,7 +94,7 @@ type CombatUpdateOptions = {
 }
 
 
-type RenderCombatTabFn= (item: CombatTracker, element: JQuery<HTMLElement>, options: RenderCombatTabOptions) => Promise<unknown>;
+type RenderCombatTabFn= (item: CombatTracker, element: JQuery<HTMLElement>, options: RenderCombatTabOptions) => unknown;
 
 type RenderCombatTabOptions = {
 	combat: Combat;

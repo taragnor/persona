@@ -87,7 +87,7 @@ function registerSheetApplications() {
 
 Hooks.once("ready", () => {Darkness.init();});
 
-Hooks.once("init", async function() {
+Hooks.once("init", function() {
 	console.log("*** PERSONA SYSTEM INIT START ***");
 
 	DebugTools.setDebugMode(true);
@@ -100,7 +100,7 @@ Hooks.once("init", async function() {
 	// Add custom config constants
 	CONFIG.PERSONACFG = {}; //TODO: config object goes here
 
-	//@ts-ignore
+	//@ts-expect-error adding to global
 	window.SearchMenu = SearchMenu;
 
 	registerDataModels();
@@ -123,8 +123,8 @@ function preloadHandlebarsTemplates() {
 	loadTemplates(templatePaths);
 }
 
-Hooks.on("init", async () => {
-	//@ts-ignore
+Hooks.on("init", () => {
+	//@ts-expect-error not in foundrytypes
 	CONFIG.Actor.trackableAttributes = {
 		pc: {
 			bar: ["combat.hpTracker", "combat.mp"],
@@ -141,11 +141,11 @@ export function localize(...args: Parameters<typeof game.i18n.localize>): Return
 	return game.i18n.localize(...args);
 }
 
-//@ts-ignore
+//@ts-expect-error adding to global Object
 window.AmongUs = AmongUs;
 
-//@ts-ignore
+//@ts-expect-error adding to global
 window.AnyaPlanets = new AnyaPlanets();
 
-//@ts-ignore
+//@ts-expect-error adding to global Object
 window.Simulations = Simulations;

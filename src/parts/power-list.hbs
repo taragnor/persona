@@ -3,10 +3,12 @@
 		<thead>
 			<tr>
 				<th> Name</th>
-				<th> Slot </th>
+				<th> Level </th>
+				<th>Targets</th>
 				<th> Tags</th>
 				<th> Cost</th>
 				<th> Damage </th>
+				<th> Defense </th>
 				<th> Kill</th>
 				<th> Ailment</th>
 			</tr>
@@ -21,14 +23,16 @@
 					{{power.name}}
 				</td>
 				<td> {{power.slotLocalized}} </td>
+				<td> {{powerTargetsAbbrev power}}</td>
 				<td> {{getItemTagList power}} </td>
 				<td> {{simplePowerCost power}} </td>
 				{{#if (canUseShortFormPower power)}}
-				<td class="description" colspan="3">
+				<td class="description" colspan="4">
 					{{power.description}}
 				</td>
 				{{else}}
 				<td> {{localizeDamageLevel power}}</td>
+				<td> {{localizeDefenseTarget power}}</td>
 				<td> {{localizeKillLevel power}}</td>
 				<td> {{localizeAilmentLevel power}}</td>
 				{{/if}}

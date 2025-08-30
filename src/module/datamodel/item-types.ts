@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DamageCalculator } from "../../config/damage-types.js";
@@ -164,19 +165,10 @@ class PowerSchema extends foundry.abstract.TypeDataModel {
 
 	static override migrateData(data: any)  {
 		const itemData = data as (Power["system"]);
-		// if (itemData.subtype == "magic" && (itemData.mpcost == undefined || itemData.mpcost == -1)) {
-		// 	const slot = (itemData as Power["system"]).slot;
-		// 	const isArea = itemData.targets == "all-enemies" || itemData.targets == "all-allies";
-		// 	const isExpensive = itemData.dmg_type == "light" || itemData.dmg_type == "dark" || itemData.dmg_type =="untyped";
-		// 	const statusEffectTags : typeof itemData["tags"] =["charm", "sleep", "fear", "confusion",   ];
-		// 	const isStatusEffect = itemData.tags.some( x=> statusEffectTags.includes(x));
-		// 	const isBuff = (itemData.tags.includes("buff") || itemData.tags.includes("debuff")) && !isStatusEffect;
-		// 	const areaMult = 1.5 + (isStatusEffect ? 1.0 : 0);
-		// 	const mult = (1 + (isExpensive ? 1 : 0) + (isBuff ? 0.5 : 0)) * (isArea ? areaMult : 1);
-		// 	const baseCost = PersonaActor.convertSlotToMP(slot);
-		// 	const mpCost = baseCost * mult;
-		// 	itemData.mpcost = Math.round(mpCost);
-		// }
+		if (itemData?.ailmentChance =="always" && itemData?.damageLevel == "none") {
+			itemData.ailmentChance = "high";
+			itemData.defense = "ail";
+		}
 		return data;
 	}
 }
