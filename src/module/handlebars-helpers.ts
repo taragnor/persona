@@ -77,6 +77,14 @@ export class PersonaHandleBarsHelpers {
 			return persona.combatInit;
 		},
 
+		"defenseBreakdown": function (persona: Persona, defense: Defense) :SafeString {
+			const SS = new Handlebars.SafeString(persona.printableDefenseMods(defense)
+				.map (x=> `${x.name} (${x.modifier})`.trim())
+				.join("\n")
+			);
+			return SS;
+		},
+
 		"statValue" : (persona: Persona, stat: PersonaStat) : number => {
 			switch (stat) {
 				case "str":
@@ -721,9 +729,19 @@ export class PersonaHandleBarsHelpers {
 
 		"resistStr": function (persona: Persona) {
 			return persona.printableResistanceString;
+		},
+
+		"hpBreakdown": function (actor: ValidAttackers) {
+			return new Handlebars.SafeString(
+				actor.mhpCalculation().steps.join("\n")
+			);
+		},
+
+		"mpBreakdown": function (actor: ValidAttackers) {
+			return new Handlebars.SafeString( 
+				actor.mmpCalculation().steps.join("\n")
+			);
 		}
-
-
 	};
 
 } //end of class

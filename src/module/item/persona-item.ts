@@ -59,6 +59,7 @@ import { PC } from '../actor/persona-actor.js';
 import { Shadow } from '../actor/persona-actor.js';
 import { ITEMMODELS } from '../datamodel/item-types.js';
 import { PersonaDB } from '../persona-db.js';
+import {DEFENSE_TYPES} from '../../config/defense-types.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -361,6 +362,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         return false;
     }
   }
+
+	targettedDefenseLocalized(this: Usable) : string {
+		return localize(DEFENSE_TYPES[this.system.defense]);
+	}
 
   tagListLocalized(this: Weapon | UsableAndCard | InvItem  , user: null  | ValidAttackers) : string {
     let tags : string[] = [];
@@ -1139,16 +1144,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return calc;
   }
 
-  getDamage(this:ModifierContainer , userPersona: Persona, situation: Situation = {user: userPersona.user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: userPersona.user.accessor}, typeOverride : DamageConsequence['damageType'] = 'none') : DamageCalculation {
-    //TODO: handle type override check to see if power damage is by-power or has other type
-    if (!this.isUsableType() || !this.isTrulyUsable() || this.isSkillCard()) {
-      return new DamageCalculation('none');
-    }
-    if (!typeOverride || typeOverride == 'by-power') {
-      if (this.system.dmg_type == 'none') {
-        return new DamageCalculation('none');
-      }
-    }
+	getDamage(this:ModifierContainer , userPersona: Persona, situation: Situation = {user: userPersona.user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: userPersona.user.accessor}, typeOverride : DamageConsequence['damageType'] = 'none') : DamageCalculation {
+		//TODO: handle type override check to see if power damage is by-power or has other type
+		if (!this.isUsableType() || !this.isTrulyUsable() || this.isSkillCard()) {
+			return new DamageCalculation('none');
+		}
+		if (!typeOverride || typeOverride == 'by-power') {
+			if (this.system.dmg_type == 'none') {
+				return new DamageCalculation('none');
+			}
+		}
+		if (this.isPower() && this.system.damageLevel == 'none') {
+			return new DamageCalculation('none');
+		}
     const subtype : PowerType  = this.system.type == 'power' ? this.system.subtype : 'standalone';
     switch(subtype) {
       case 'weapon' : {

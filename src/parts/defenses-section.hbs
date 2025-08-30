@@ -1,7 +1,7 @@
 <div class="defenses">
 	{{#if (gte (scanLevel persona) 2)}}
 	{{#each CONST.REAL_DEFENSE_TYPES as |locName systemName|}}
-	<div class="defense">
+	<div class="defense" title="{{defenseBreakdown ../persona systemName}}">
 		<label>
 			{{localize locName}}
 		</label>

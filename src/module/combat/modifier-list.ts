@@ -56,7 +56,7 @@ export class ModifierList {
 
 	validModifiers (situation: Situation) : ModifierListItem[]  {
 		return this._data.filter( item => {
-			const source = item.source ? PersonaDB.findItem(item.source) as PowerContainer: null;
+			const source = item.source ? PersonaDB.findItem(item.source): null;
 			if (ModifierList.testPreconditions(item.conditions, situation, source)) {
 				if (item.modifier != 0 || item.variableModifier.size != 0) {
 					return true;
@@ -116,12 +116,13 @@ export class ModifierList {
 	total(situation: Situation , style = this.listType) : number {
 		const mods = this.validModifiers(situation);
 		switch (style) {
-			case "standard":
+			case "standard": {
 				const base =  mods.reduce( (acc, item) => acc + item.modifier , 0);
 				const vartotal = mods.reduce((acc, item) => {
 					return acc + ModifierList.resolveVariableModifiers(item.variableModifier, situation);
 				}, 0);
 				return base + vartotal;
+			}
 			case "percentage": {
 				const base =  mods.reduce( (acc, item) => acc * (item.modifier ?? 1) , 1);
 				return base;
@@ -187,7 +188,6 @@ type Modifier = {
 	target: ModifierTarget,
 	amount: number;
 }
-
 
 export type ResolvedModifierList ={name: string, modifier:string}[];
 

@@ -1,7 +1,7 @@
 <section class="combat-section">
 	<div class="combat-stats flexcol">
 		<div class="flexrow">
-			<div class="hp">
+			<div class="hp" title="{{hpBreakdown actor}}">
 				<label>
 					HP:
 				</label>
@@ -26,7 +26,7 @@
 				{{/if}}
 			</div>
 			{{#if (hasMP actor)}}
-			<div class="mp">
+			<div class="mp" title="{{mpBreakdown actor}}">
 				<label> MP </label>
 				<span>
 					{{#if (isGM)}}

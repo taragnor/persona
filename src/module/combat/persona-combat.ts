@@ -1601,7 +1601,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const defenseVal = def != 'none' ? targetPersona.getDefense(def).total(baseSituation): 0;
 		const validDefModifiers = def != 'none' ? targetPersona.getDefense(def).list(baseSituation): [];
 		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
-		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.system.defense} ${defenseStr}`;
+		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.targettedDefenseLocalized()} ${defenseStr}`;
 		roll.setName(rollName);
 		const baseData = {
 			roll,
@@ -1610,13 +1610,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			power: PersonaDB.getUniversalItemAccessor(power)
 		} satisfies Pick<AttackResult, 'attacker' | 'target'  | 'power' | 'roll'>;
 		const total = roll.total;
-		const ailmentMod = attackerPersona.getBonuses('afflictionRange').concat(
-			targetPersona.getBonuses('afflictionRange')
-		).total(baseSituation);
-		const ailmentRange = power.ailmentRange;
-		if (ailmentRange) {
-			ailmentRange.low -= ailmentMod;
-		}
+		const ailmentRange = this.#calculateAilmentRange(attackerPersona, targetPersona, power, baseSituation);
 		const withinAilmentRange = ailmentRange ? naturalAttackRoll >= ailmentRange.low && naturalAttackRoll <= ailmentRange.high : false;
 		const situation : CombatRollSituation = {
 			...baseSituation,
@@ -1725,6 +1719,17 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				...baseData,
 			};
 		}
+	}
+
+	static #calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) {
+		const ailmentMod = attackerPersona.getBonuses('afflictionRange').concat(
+			targetPersona.getBonuses('afflictionRange')
+		).total(situation);
+		const ailmentRange = power.ailmentRange;
+		if (ailmentRange) {
+			ailmentRange.low -= ailmentMod;
+		}
+		return ailmentRange;
 	}
 
 	static calcCritModifier( attacker: ValidAttackers, target: ValidAttackers, power: Usable, situation: Situation, ignoreInstantKillMult = false) : ModifierList {
@@ -2216,7 +2221,7 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 			}
 			const consItems = targets.map( target => {
 				const DC = dmgCalc != undefined ? dmgCalc.clone(): undefined;
-				if (DC) {
+				if (DC && damageType != "healing") {
 					const stamina = target.persona().combatStats.staminaDR();
 					const staminaString = 'Endurance Damage Reduction';
 					DC.add('resist', -Math.abs(stamina), staminaString);

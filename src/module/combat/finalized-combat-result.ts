@@ -1,5 +1,4 @@
-import { Mutator } from "../persona-variables.js";
-import { AlterVariableConsequence } from "../../config/consequence-types.js";
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { PersonaVariables } from "../persona-variables.js";
 import { UsableAndCard } from "../item/persona-item.js";
 import { Consumable } from "../item/persona-item.js";
@@ -30,7 +29,7 @@ import { ActorChange } from "./combat-result.js";
 
 
 export class FinalizedCombatResult {
-	static pendingPromises: Map< CombatResult["id"], Function> = new Map();
+	static pendingPromises: Map< CombatResult["id"], (val: unknown) => void> = new Map();
 	tokenFlags: {
 		actor: UniversalActorAccessor<PersonaActor>,
 			effects: OtherEffect[]
@@ -48,7 +47,7 @@ export class FinalizedCombatResult {
 	}
 
 	static fromJSON(json: string) : FinalizedCombatResult {
-		const x = JSON.parse(json);
+		const x = JSON.parse(json) as FinalizedCombatResult;
 		//TODO need to fix for new constructor
 		const ret = new FinalizedCombatResult(null);
 		ret.attacks = x.attacks;
@@ -74,6 +73,7 @@ export class FinalizedCombatResult {
 	emptyCheck(debug = false) : this | undefined {
 		if (debug) {
 			Debug(this);
+			// eslint-disable-next-line no-debugger
 			debugger;
 		}
 		switch (true) {
@@ -118,7 +118,7 @@ export class FinalizedCombatResult {
 				} satisfies ResolvedAttackResult;
 			});
 		this.attacks = attacks;
-		this.id == cr.id;
+		this.id = cr.id;
 		this.costs = cr.costs.map( cost=> this.#resolveActorChange(cost));
 		this.globalOtherEffects = cr.globalOtherEffects;
 		this.sounds = cr.sounds;
@@ -146,7 +146,7 @@ export class FinalizedCombatResult {
 				case "half-hp-cost":
 					this.addFlag(actor, otherEffect);
 					break;
-				case "extraTurn":
+				case "extraTurn": {
 					if (actor.hasStatus("baton-pass")) {
 						//can't get bonus actions from baton pass
 						break;
@@ -165,6 +165,7 @@ export class FinalizedCombatResult {
 					};
 					this.costs.push(extraTurnChange);
 					break;
+				}
 				case "recover-slot":
 					break;
 				case "set-flag":
@@ -228,7 +229,7 @@ export class FinalizedCombatResult {
 			});
 			try {
 				await this.autoApplyResult();
-			} catch (e) {
+			} catch {
 				await msg.setFlag("persona", "atkResult", this.toJSON());
 			}
 			return msg;
@@ -266,7 +267,7 @@ export class FinalizedCombatResult {
 		}
 		try {
 			await this.autoApplyResult();
-		} catch (e) {
+		} catch {
 			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
 			PersonaError.softFail("Error with automatic result application");
 		}
@@ -296,7 +297,7 @@ export class FinalizedCombatResult {
 				await FinalizedCombatResult.addPending(this);
 			} catch (e) {
 				Debug(this);
-				PersonaError.softFail("Error Autoapplying Effect");
+				PersonaError.softFail("Error Autoapplying Effect", e);
 			}
 			return;
 		} else {
@@ -311,7 +312,7 @@ export class FinalizedCombatResult {
 		PersonaSockets.simpleSend("COMBAT_RESULT_APPLIED", result.id, [sender]);
 	}
 
-	static async resolvedHandler(replyId: SocketMessage["COMBAT_RESULT_APPLIED"]) : Promise<void> {
+	static resolvedHandler(replyId: SocketMessage["COMBAT_RESULT_APPLIED"]) : void {
 		FinalizedCombatResult.resolvePending(replyId);
 	}
 
@@ -332,11 +333,12 @@ export class FinalizedCombatResult {
 				case "miss":
 				case "absorb":
 				case "block":
-				case "reflect":
+				case "reflect": {
 					const power = PersonaDB.findItem(atkResult.power);
 					if (power.system.type != "skillCard" && power.system.dmg_type != "healing") {
 						await PersonaSFX.onDefend(PersonaDB.findToken(atkResult.target), atkResult.result);
 					}
+				}
 			}
 			let token: PToken | undefined;
 			for (const change of changes) {
@@ -402,14 +404,15 @@ export class FinalizedCombatResult {
 				case "dungeon-action":
 					await Metaverse.executeDungeonAction(eff);
 					break;
-				case "play-sound":
+				case "play-sound": {
 					const promise  = PersonaSounds.playFile(eff.soundSrc, eff.volume ?? 1.0);
 					if (eff.waitUntilFinished) {
 						await promise;
 					}
 					break;
-				case "display-message":
-						if (!eff.newChatMsg) {break;}
+				}
+				case "display-message": {
+					if (!eff.newChatMsg) {break;}
 					const html = eff.msg;
 					const speaker : Foundry.ChatSpeakerObject = {
 						alias: "System"
@@ -420,6 +423,7 @@ export class FinalizedCombatResult {
 						style: CONST?.CHAT_MESSAGE_STYLES.OOC,
 					});
 					break;
+				}
 			}
 		}
 	}
@@ -435,7 +439,7 @@ export class FinalizedCombatResult {
 			if (dmg.hpChange != 0) {
 				if (dmg.hpChange < 0) {
 					setTimeout( () => {
-						PersonaCombat
+						void PersonaCombat
 							.onTrigger("on-damage", actor)
 							.emptyCheck()
 							?.toMessage("Reaction (Taking Damage)" , actor);
@@ -485,12 +489,12 @@ export class FinalizedCombatResult {
 					try {
 						const item = PersonaDB.findItem(otherEffect.itemAcc);
 						if ( item.parent) {
-							await (item.parent as PersonaActor).expendConsumable(item);
+							await (item.parent).expendConsumable(item);
 						} else  {
 							PersonaError.softFail("Can't find item's parent to execute consume item");
 						}
 					} catch (e) {
-						PersonaError.softFail("Can't find item to expend");
+						PersonaError.softFail("Can't find item to expend", e);
 						continue;
 					}
 					break;
@@ -506,12 +510,13 @@ export class FinalizedCombatResult {
 				case "set-flag":
 					await actor.setEffectFlag(otherEffect.flagId, otherEffect.state, otherEffect.duration, otherEffect.flagName);
 					break;
-				case "teach-power":
+				case "teach-power": {
 					const power = PersonaDB.allPowers().get(otherEffect.id);
 					if (power && (actor.isPC() || actor.isNPCAlly())) {
 						await actor.persona().learnPower(power);
 					}
 					break;
+				}
 				case "lower-resistance":
 				case "raise-resistance":
 				case "add-power-to-list":
@@ -532,7 +537,7 @@ export class FinalizedCombatResult {
 				case "scan":
 					if (actor.system.type == "shadow") {
 						await (actor as Shadow).increaseScanLevel(otherEffect.level);
-						PersonaSFX.onScan(token, otherEffect.level);
+						void PersonaSFX.onScan(token, otherEffect.level);
 					}
 					break; // done elsewhere for local player
 				case "social-card-action":
@@ -556,6 +561,7 @@ export class FinalizedCombatResult {
 
 						default:
 							otherEffect.subtype satisfies never;
+							// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 							PersonaError.softFail(`Bad subtype for Alter MP effect : ${otherEffect.subtype}`);
 					}
 					break;
@@ -567,7 +573,7 @@ export class FinalizedCombatResult {
 				case "alter-fatigue-lvl":
 					await actor.alterFatigueLevel(otherEffect.amount);
 					break;
-				case "alter-variable":
+				case "alter-variable": {
 					const varCons = otherEffect;
 					switch (varCons.varType) {
 						case "actor": {
@@ -582,6 +588,7 @@ export class FinalizedCombatResult {
 						}
 					}
 					break;
+				}
 				case "perma-buff":
 					await actor.addPermaBuff(otherEffect.buffType, otherEffect.value ?? 0);
 					break;
@@ -603,7 +610,7 @@ export class FinalizedCombatResult {
 			(resolve, reject) => {
 				this.pendingPromises.set(res.id, resolve);
 				setTimeout( () => {
-					reject("Timeout");
+					reject(new Error("Timeout"));
 					this.pendingPromises.delete(res.id);
 				}	, 16000);
 			});
@@ -614,7 +621,7 @@ export class FinalizedCombatResult {
 	static resolvePending( resId: CombatResult["id"]) {
 		const resolver = this.pendingPromises.get(resId);
 		if (!resolver) {throw new Error(`No Resolver for ${resId}`);}
-		resolver();
+		resolver(undefined);
 		this.pendingPromises.delete(resId);
 	}
 
@@ -660,11 +667,12 @@ interface ResolvedAttackResult<T extends ValidAttackers = ValidAttackers> {
 
 }
 
-Hooks.on("renderChatMessage", async (msg: ChatMessage, html: JQuery<HTMLElement>) => {
+Hooks.on("renderChatMessage", (msg: ChatMessage, html: JQuery<HTMLElement>) => {
 	const flag = msg.getFlag("persona", "atkResult") as string;
 	if (!flag) {
 		html.find(".applyChanges").each( function () { this.remove();});
 	}
+	// eslint-disable-next-line @typescript-eslint/no-misused-promises
 	html.find(".applyChanges").on("click", async () => {
 		const flag = msg.getFlag("persona", "atkResult") as string;
 		if (!flag) {throw new PersonaError("Can't apply twice");}
@@ -678,7 +686,7 @@ Hooks.on("renderChatMessage", async (msg: ChatMessage, html: JQuery<HTMLElement>
 });
 
 
-Hooks.on("socketsReady", async () => {
+Hooks.on("socketsReady", () => {
 	PersonaSockets.setHandler("COMBAT_RESULT_APPLY", FinalizedCombatResult.applyHandler.bind(CombatResult));
 	PersonaSockets.setHandler("COMBAT_RESULT_APPLIED", FinalizedCombatResult.resolvedHandler.bind(CombatResult));
 });
@@ -687,8 +695,9 @@ Hooks.on("updateActor", async (updatedActor : PersonaActor, changes) => {
 	//open scan prompt for all players on scan
 	if (game.user.isGM) {return;}
 	if (updatedActor.system.type == "shadow") {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 		if (changes?.system?.scanLevel && updatedActor.token) {
-			updatedActor.sheet.render(true);
+			await updatedActor.sheet.render(true);
 		}
 	}
 });

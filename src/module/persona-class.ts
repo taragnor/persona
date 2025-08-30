@@ -432,6 +432,15 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 	}
 
+	printableDefenseMods( defense: Defense) {
+		const def = this.getDefense(defense);
+		const situation : Situation  = {
+			user: this.user.accessor,
+			target: this.user.accessor,
+		};
+		return def.printable(situation);
+	}
+
 	getDefense(defense: Defense) : ModifierList {
 		const mods = new ModifierList();
 		switch (defense) {
