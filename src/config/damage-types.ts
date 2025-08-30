@@ -186,6 +186,14 @@ export const INSTANT_KILL_CRIT_BOOST : Record< InstantKillLevel, number>= {
 	always: 1000,
 };
 
+export const AILMENT_BONUS_LEVELS : Record <InstantKillLevel, number> = {
+	none: 0,
+	high: 11,
+	low: 5,
+	medium: 8,
+	always: 11,//treat as always
+};
+
 export type NewDamageParams = {
 	baseAmt: number,
 	extraVariance: number,

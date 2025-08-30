@@ -30,11 +30,14 @@ export const MODIFIERLIST = [
 	"critResist",
 	"instantDeathResistanceMult",
 	"afflictionRange",
+	"instantDeathRange",
 	"allOutDmgMult", //adds to weapon multiplier on AoA
 	"allDefenses",
 	"ref",
 	"fort",
 	"will",
+	"kill", //kill defense bonus
+	"ail", //ailment defnese bonus
 	"DCIncrease",
 	"socialRoll",
 	...STUDENT_SKILLS_LIST,

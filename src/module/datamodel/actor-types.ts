@@ -66,12 +66,12 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 			creatureType: new txt({ choices: SHADOW_CREATURE_TYPE_LIST, initial: "npc-ally"}),
 			...tarotFields(),
 			combat: new sch( {
+				...combatCommonStats(),
 				...PCAndNPCAllyCombatStats(),
 			}),
 			bio: personalBio(),
 			...PCSpecificStuff(),
 			...PCAndAllyStuff(),
-			personaName: new txt({initial: "Persona"}),
 			...sharedAbilities(),
 			questions: new arr( new embedded(SocialQuestionDM)),
 			trueOwner: new id(),
@@ -189,6 +189,7 @@ class NPCAllySchema extends foundry.abstract.TypeDataModel {
 			creatureType: new txt({ choices: ["npc-ally"] , initial: "npc-ally"}),
 			...tarotFields(),
 			combat: new sch( {
+				...combatCommonStats(),
 				...PCAndNPCAllyCombatStats(),
 				// navigatorSkill: new id(), //deprecated
 				navigatorSkills: new arr(new id()),
@@ -197,7 +198,6 @@ class NPCAllySchema extends foundry.abstract.TypeDataModel {
 			...PCAndAllyStuff(),
 			bio: personalBio(),
 			...sharedAbilities(),
-			personaName: new txt({initial: "Persona"}),
 			NPCSocialProxyId: new id(),
 		} as const;
 		return ret;

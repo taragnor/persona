@@ -2,16 +2,21 @@ import { PersonaError } from "../persona-error.js";
 import { SeededRandom } from "../utility/seededRandom.js";
 import { ValidAttackers } from "../combat/persona-combat.js";
 import { Persona } from "../persona-class.js";
+import {PersonaStat} from "../../config/persona-stats.js";
 
 export class PersonaCombatStats {
 
 	persona : Persona;
+	static AILMENT_RESIST_DIVISOR = 2 as const;
+	static INSTANT_DEATH_RESIST_DIVISOR = 2 as const;
 	static STAT_POINTS_PER_LEVEL = 3 as const;
 	static MAX_STAT_GAP =  10 as const;
 	static MAX_STAT_VAL = 99 as const;
 	static MIN_STAT_VAL = 1 as const;
 	static DEFENSE_DIVISOR = 1.5 as const;
+	static BASE_INSTANT_DEATH_DEFENSE= 10 as const;
 	static BASE_DEFENSE = 5 as const;
+	static BASE_AILMENT_DEFENSE = 10 as const;
 
 	constructor (persona: Persona) {
 		this.persona = persona;
@@ -21,11 +26,16 @@ export class PersonaCombatStats {
 		return this.persona.source.system.combat.personaStats;
 	}
 
-	get strength() : number { return this.combatStats.stats.str; }
-	get magic() : number { return this.combatStats.stats.mag; }
-	get endurance() : number { return this.combatStats.stats.end; }
-	get agility(): number { return this.combatStats.stats.agi; }
-	get luck(): number { return this.combatStats.stats.luk; }
+	getStatValue(x: PersonaStat) : number {
+		const permaBonus = this.combatStats.permanentStatsBonuses[x];
+		return permaBonus + this.combatStats.stats[x];
+	}
+
+	get strength() : number { return this.getStatValue("str");}
+	get magic() : number { return this.getStatValue("mag"); }
+	get endurance() : number { return this.getStatValue("end"); }
+	get agility(): number { return this.getStatValue("agi"); }
+	get luck(): number { return this.getStatValue("luk");}
 
 	baseFort() : number {
 		return PersonaCombatStats.BASE_DEFENSE + Math.floor(this.endurance / PersonaCombatStats.DEFENSE_DIVISOR);
@@ -48,7 +58,11 @@ export class PersonaCombatStats {
 	}
 
 	baseAilmentAtkBonus(): number {
-		return 0;
+		return this.lukAilmentBonus();
+	}
+
+	baseDeathAtkBonus() : number {
+		return this.instantDeathBonus();
 	}
 
 	baseInit() : number {
@@ -67,7 +81,7 @@ export class PersonaCombatStats {
 		return Math.floor(this.luck / 5);
 	}
 
-	lukInstantDeathBonus() : number {
+	instantDeathBonus() : number {
 		return Math.floor((this.luck + 1) / 5);
 	}
 
@@ -75,11 +89,21 @@ export class PersonaCombatStats {
 		return Math.floor((this.luck + 2) / 5);
 	}
 
-	lukInstantDeathResist() : number {
+	instantDeathResist() : number {
 		return Math.floor((this.luck + 3) / 5);
 	}
 
-	lukAilmentResist(): number {
+	instantDeathDefense() : number {
+		const defenseBoost = Math.floor((this.luck +3) /PersonaCombatStats.INSTANT_DEATH_RESIST_DIVISOR);
+		return defenseBoost + PersonaCombatStats.BASE_INSTANT_DEATH_DEFENSE;
+	}
+
+	ailmentDefense(): number {
+		const defenseBoost = Math.floor((this.luck +3) /PersonaCombatStats.AILMENT_RESIST_DIVISOR);
+		return defenseBoost + PersonaCombatStats.BASE_AILMENT_DEFENSE;
+	}
+
+	ailmentResist(): number {
 		return Math.floor((this.luck + 3) / 5);
 	}
 

@@ -226,7 +226,6 @@ export function combatCommonStats() {
 
 export function PCAndNPCAllyCombatStats() {
 	return {
-		...combatCommonStats(),
 		powers_sideboard: new arr( new id()),
 		teamworkMove: new id(),
 		mp: new sch({
@@ -280,6 +279,7 @@ export function shadowOnlyCombatAbilities() {
 
 export function PCAndAllyStuff() {
 	return {
+			personaName: new txt({initial: "Persona"}),
 	};
 
 }
@@ -358,17 +358,29 @@ class EncounterDataDM extends foundry.abstract.DataModel {
 
 class PersonaStatsDM extends foundry.abstract.DataModel {
 	static override defineSchema() {
-		const statsObj = {
+		const statsObj = function statsObj() {
+			return {
 			str: new num({initial: 1, max: 99, min:1, integer: true}),
 			mag: new num({initial: 1, max: 99, min:1, integer: true}),
 			end: new num({initial: 1, max: 99, min:1, integer: true}),
 			agi: new num({initial: 1, max: 99, min:1, integer: true}),
 			luk: new num({initial: 1, max: 99, min:1, integer: true}),
-		} as const satisfies Record<PersonaStat, any>;
-		const k = Object.keys(statsObj) as PersonaStat[];
+			} as const satisfies Record<PersonaStat, unknown>;
+		};
+		const permaBonuses = function() {
+			return {
+			str: new num({initial: 0, max: 99, min:0, integer: true}),
+			mag: new num({initial: 0, max: 99, min:0, integer: true}),
+			end: new num({initial: 0, max: 99, min:0, integer: true}),
+			agi: new num({initial: 0, max: 99, min:0, integer: true}),
+			luk: new num({initial: 0, max: 99, min:0, integer: true}),
+			} as const satisfies Record<PersonaStat, unknown>;
+		};
+		// const k = Object.keys(statsObj) as PersonaStat[];
 		return {
-			stats: new sch({...statsObj}),
+			stats: new sch({...statsObj()}),
 			preferred_stat: new txt<PersonaStat | "">({initial:"" }),
+			permanentStatsBonuses: new sch({...permaBonuses()}),
 			disfavored_stat: new txt<PersonaStat | "">({initial:"" }),
 			pLevel: new num({min: 1, max: 150, initial: 1}),
 			xp: new num({min:0, integer: true, initial: 0}),

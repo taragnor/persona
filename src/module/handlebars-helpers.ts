@@ -46,6 +46,7 @@ import { PersonaDB } from "./persona-db.js";
 import { Talent } from "./item/persona-item.js";
 import { PToken } from "./combat/persona-combat.js";
 import { Usable } from "./item/persona-item.js";
+import {Defense} from "../config/defense-types.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -67,7 +68,7 @@ export class PersonaHandleBarsHelpers {
 			return persona.critResist().total({user: persona.user.accessor, target:persona.user.accessor});
 		},
 
-		"getDefense" : (actorOrPersona: ValidAttackers | Persona, defense: keyof ValidAttackers["system"]["combat"]["defenses"]): number => {
+		"getDefense" : (actorOrPersona: ValidAttackers | Persona, defense: Defense): number => {
 			const persona = (actorOrPersona instanceof PersonaActor) ? actorOrPersona.persona() : actorOrPersona;
 			const acc = persona.user.accessor;
 			return persona.getDefense(defense).total({user: acc, target: acc});

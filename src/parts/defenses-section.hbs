@@ -1,43 +1,19 @@
 <div class="defenses">
+	{{#if (gte (scanLevel persona) 2)}}
+	{{#each CONST.REAL_DEFENSE_TYPES as |locName systemName|}}
 	<div class="defense">
 		<label>
-			{{localize "persona.defense.fort"}}
+			{{localize locName}}
 		</label>
-		{{#if (lt (scanLevel persona) 2)}}
-		{{persona.defenses.fort}}
-		{{else}}
-		{{getDefense persona "fort"}}
-		{{/if}}
+		{{getDefense ../persona systemName}}
 	</div>
-	<div class="defense">
-		<label>
-			{{localize "persona.defense.ref"}}
-		</label>
-		{{#if (lt (scanLevel persona) 2)}}
-		{{persona.defenses.ref}}
-		{{else}}
-		{{getDefense persona "ref"}}
-		{{/if}}
-	</div>
-	<div class="defense">
-		<label>
-			{{localize "persona.defense.will"}}
-		</label>
-		{{#if (lt (scanLevel persona) 2)}}
-		{{persona.defenses.will}}
-		{{else}}
-		{{getDefense persona "will"}}
-		{{/if}}
-	</div>
+	{{/each}}
 	<div class="initiative">
 		<label>
 			Initiative
 		</label>
-		{{#if (lt (scanLevel persona) 2)}}
-		{{persona.baseInitRank}}
-		{{else}}
 		{{getInit persona}}
-		{{/if}}
 	</div>
 </div>
+{{/if}}
 

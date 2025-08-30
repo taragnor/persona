@@ -16,12 +16,15 @@ import { STUDENT_SKILLS } from "../../../config/student-skills.js";
 import { AVAILABILITY } from "../../../config/availability-types.js";
 import { PersonaDB } from "../../persona-db.js";
 import { DAYS } from "../../../config/days.js";
+import {REAL_DEFENSE_TYPES} from "../../../config/defense-types.js";
 
 export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
 	#activeQuestion = -1;
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	constructor(...args: any[]) {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		super(...args);
 		this.refreshQuestionFocus();
 	}
@@ -72,6 +75,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 			PERSONA_STATS,
 			PERSONA_STATS_PLUS_EMPTY,
 			USERS,
+			REAL_DEFENSE_TYPES,
 		} as const;
 	}
 

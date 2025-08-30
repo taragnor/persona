@@ -51,6 +51,7 @@ import { RollBundle } from '../persona-roll.js';
 import { EngagementList } from './engagementList.js';
 import { OtherEffect } from '../../config/consequence-types.js';
 import { Consumable } from '../item/persona-item.js';
+import {Defense} from '../../config/defense-types.js';
 
 declare global {
 	interface SocketMessage {
@@ -1590,7 +1591,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			}
 		}
 		const attackbonus = this.getAttackBonus(attackerPersona, power, target, modifiers);
-		if (rollType == 'reflect') {
+		if (rollType == 'reflect' && (def == "fort" || def =="ref" || def =="will")) {
 			attackbonus.add('Reflected Attack', 15);
 		}
 		const cssClass=  (!target.actor.isPC()) ? 'gm-only' : '';
@@ -1732,10 +1733,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const attackerPersona = attacker.persona();
 		const targetPersona = target.persona();
 		critBoostMod.add('Enemy Critical Resistance', -critResist);
-		if (power.isInstantDeathAttack()) {
+		if (power.isInstantDeathAttack() && power.system.defense != "kill") {
 			const powerLevel = power.baseInstantKillBonus();
-			const instantKillBoost = attackerPersona.combatStats.lukInstantDeathBonus();
-			const instantKillResist = targetPersona.combatStats.lukInstantDeathResist();
+			const instantKillBoost = attackerPersona.combatStats.instantDeathBonus();
+			const instantKillResist = targetPersona.combatStats.instantDeathResist();
 			// const targetResist = target.basePowerCritResist(power);
 			critBoostMod.add('Power-based Instant Kill Bonus', powerLevel);
 			critBoostMod.add(`Luck (${attackerPersona.name}) Instant Kill Bonus`, instantKillBoost);
@@ -2418,22 +2419,25 @@ static #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifi
 
 static getAttackBonus(attackerP: Persona, power: Usable, target: PToken | undefined, modifiers ?: ModifierList) : ModifierList {
 	let attackBonus = this.getBaseAttackBonus(attackerP, power);
-	this.applyRelevantTagAttackBonus(attackBonus, attackerP.user, power);
-	if (power.isStatusEffect()) {
-		// attackBonus.add(`Status Effect Modifier`, -3);
-		if (target?.actor?.persona().numOfWeaknesses() == 0 && !target.actor.isBossOrMiniBossType()) {
-			attackBonus.add('Vulnerable to Status Effects', +3);
-		}
-	}
+	// this.applyRelevantTagAttackBonus(attackBonus, attackerP.user, power); should be reudndant in new system
+	// if (power.isStatusEffect()) {
+	// 	// attackBonus.add(`Status Effect Modifier`, -3);
+	// 	if (target?.actor?.persona().numOfWeaknesses() == 0 && !target.actor.isBossOrMiniBossType()) {
+	// 		attackBonus.add('Vulnerable to Status Effects', +3);
+	// 	}
+	//TODO: should probably build this into as a modifier to ailment defense
+	// }
 	if (power.isMultiTarget()) {
-		if (power.isStatusEffect()) {
-			attackBonus.add('Multitarget status attack penalty', -4);
-		} else {
-			attackBonus.add('Multitarget attack penalty', -2);
-		}
+			attackBonus.add('Multitarget power attack penalty', -4);
 	}
+		// if (power.isStatusEffect()) {
+		// 	attackBonus.add('Multitarget status attack penalty', -4);
+		// } else {
+		// 	attackBonus.add('Multitarget attack penalty', -2);
+		// }
+	// }
 	attackBonus.add('Custom modifier', this.customAtkBonus ?? 0);
-	const defense = this.getDefenderAttackModifiers(target);
+	const defense = this.getDefenderAttackModifiers(target, power.system.defense);
 	attackBonus = attackBonus.concat(defense);
 	if (modifiers) {
 		attackBonus = attackBonus.concat(modifiers);
@@ -2441,23 +2445,23 @@ static getAttackBonus(attackerP: Persona, power: Usable, target: PToken | undefi
 	return attackBonus;
 }
 
-static getDefenderAttackModifiers(target: PToken | undefined) : ModifierList {
-	if (!target) {return new ModifierList();}
-	const defense = new ModifierList(
+static getDefenderAttackModifiers(target: PToken | undefined, defense : Defense) : ModifierList {
+	if (!target || defense == "none") {return new ModifierList();}
+	const defenseMod = new ModifierList(
 		target.actor.persona().defensiveModifiers()
-		.flatMap (item => item.getModifier('allAtk', target.actor))
+		.flatMap (item => item.getModifier(['allAtk', defense], target.actor))
 	);
-	return defense;
+	return defenseMod;
 }
 
-static applyRelevantTagAttackBonus(attackBonus: ModifierList, attacker: ValidAttackers, power: Usable) {
-	const tag = this.#getRelevantAttackTag(attacker, power.getDamageType(attacker));
-	if (!tag) {return;}
-	const isDarkLight = tag == 'dark' || tag == 'light';
-	if (isDarkLight && !power.hasTag('no-crit')) {return;}
-	// const _localized = game.i18n.localize(POWER_TAGS[tag]);
-	attackBonus.add('Damage Power bonus', +3);
-}
+// static applyRelevantTagAttackBonus(attackBonus: ModifierList, attacker: ValidAttackers, power: Usable) {
+// 	const tag = this.#getRelevantAttackTag(attacker, power.getDamageType(attacker));
+// 	if (!tag) {return;}
+// 	const isDarkLight = tag == 'dark' || tag == 'light';
+// 	if (isDarkLight && !power.hasTag('no-crit')) {return;}
+// 	// const _localized = game.i18n.localize(POWER_TAGS[tag]);
+// 	attackBonus.add('Damage Power bonus', +3);
+// }
 
 static #getRelevantAttackTag(_attacker: ValidAttackers, dmgType : DamageType) : PowerTag | undefined  {
 	switch (dmgType) {
@@ -2489,25 +2493,68 @@ static #getRelevantAttackTag(_attacker: ValidAttackers, dmgType : DamageType) : 
 }
 
 static getBaseAttackBonus(attackerPersona: Persona, power:Usable): ModifierList {
-	switch (true) {
-		case power.isConsumable(): {
-			const l = attackerPersona.itemAtkBonus(power);
-			return l;
+	let modList = new ModifierList();
+	modList.add('Power attack modifier', power.system.atk_bonus);
+	switch (power.system.defense) {
+		case "none":
+			return modList;
+		case "ref": // weapon attack
+			modList = modList.concat(attackerPersona.wpnAtkBonus());
+			modList =  modList.concat(new ModifierList(power.getModifier('wpnAtk', attackerPersona.user)));
+			break;
+		case "fort": //magic attack
+			modList = modList.concat(attackerPersona.magAtkBonus());
+			modList = modList.concat(new ModifierList(power.getModifier('magAtk', attackerPersona.user)));
+			break;
+		case "kill": { modList = modList.concat(attackerPersona.instantDeathAtkBonus());
+			const ID_Bonus = power.baseInstantKillBonus();
+			modList.add(`${power.displayedName.toString()} Bonus`, ID_Bonus);
+			modList = modList.concat(new ModifierList(power.getModifier('instantDeathRange', attackerPersona.user)));
+			break;
 		}
-		case power.isWeaponSkill(): {
-			const mod = attackerPersona.wpnAtkBonus();
-			mod.add('Power attack modifier', power.system.atk_bonus);
-			return mod.concat(new ModifierList(power.getModifier('wpnAtk', attackerPersona.user)));
+		case "ail": {
+			modList = modList.concat(attackerPersona.ailmentAtkBonus());
+			const Ail_Bonus = power.baseAilmentBonus();
+			modList.add(`${power.displayedName.toString()} Bonus`, Ail_Bonus);
+			modList = modList.concat(new ModifierList(power.getModifier('afflictionRange', attackerPersona.user)));
+			break;
 		}
-		case power.isMagicSkill(): {
-			const mod = attackerPersona.magAtkBonus();
-			mod.add('Power attack modifier', power.system.atk_bonus);
-			return mod.concat(new ModifierList(power.getModifier('magAtk', attackerPersona.user)));
-		}
+		case "will":// mostly legacy
+			modList = modList.concat(attackerPersona.magAtkBonus());
+			modList = modList.concat(new ModifierList(power.getModifier('magAtk', attackerPersona.user)));
+			break;
 		default:
-			return new ModifierList();
+			power.system.defense satisfies never;
 	}
+	return modList;
 }
+
+
+// static getBaseAttackBonus(attackerPersona: Persona, power:Usable): ModifierList {
+// 	let modList = new ModifierList();
+// 	modList.add('Power attack modifier', power.system.atk_bonus);
+// 	switch (true) {
+// 		case power.isConsumable(): {
+// 			modList = modList.concat(attackerPersona.itemAtkBonus(power));
+// 			break;
+// 		}
+// 		case power.isWeaponSkill(): {
+// 			modList = modList.concat(attackerPersona.wpnAtkBonus());
+// 			modList =  modList.concat(new ModifierList(power.getModifier('wpnAtk', attackerPersona.user)));
+// 			break;
+// 		}
+// 		case power.isMagicSkill(): {
+// 			if (power.isAilment()) {
+// 				modList = modList.concat(attackerPersona.ailmentAtkBonus());
+// 			}
+// 			modList = modList.concat(attackerPersona.magAtkBonus());
+// 			modList= modList.concat(new ModifierList(power.getModifier('magAtk', attackerPersona.user)));
+// 		}
+// 			break;
+// 		default:
+// 	}
+// 	return modList;
+// }
 
 static getAltTargets ( attacker: PToken, situation : Situation, targettingType :  ConsTarget) : PToken[] {
 	const attackerType = attacker.actor.getAllegiance();

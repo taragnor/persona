@@ -11,6 +11,7 @@ import { Precondition } from "../../config/precondition-types.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
 import { SHADOW_CHANGE_REQ_LIST_FULL } from "../../config/effect-types.js";
+import {DEFENSE_TYPES} from "../../config/defense-types.js";
 
 export  const damage = function() {
   return new sch( {
@@ -28,7 +29,6 @@ export const damageNew = function () {
 
 };
 
-export const DEFENSECHOICES = ["fort" , "ref" , "will", "none"] as const;
 
 export interface ConditionalEffect {
   isDefensive: boolean,
@@ -81,7 +81,7 @@ export function UsablePowerProps() {
     instantKillChance: new txt({choices: INSTANT_KILL_LEVELS, initial: "none"}),
     ailmentChance: new txt({choices: INSTANT_KILL_LEVELS, initial: "none"}),
     damage: damage(),
-    defense: new txt<(typeof DEFENSECHOICES[number]) >( {choices: DEFENSECHOICES, initial: "ref"}),
+    defense: new txt( {choices: DEFENSE_TYPES, initial: "ref"}),
     targets: new txt<typeof TARGETINGLIST[number]> ( {choices: TARGETINGLIST, initial: "1-engaged"}),
     validTargetConditions: new arr( new obj<Precondition>()),
     dmg_type: new txt( {choices: DAMAGETYPESLIST, initial:"physical"}),

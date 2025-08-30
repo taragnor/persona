@@ -30,6 +30,7 @@ import { ResistStrength } from "../config/damage-types.js";
 import {ValidAttackers} from "./combat/persona-combat.js";
 import {Power, Talent, Focus} from "./item/persona-item.js";
 import {PersonaTag} from "../config/creature-tags.js";
+import {Defense} from "../config/defense-types.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
 	#combatStats: U<PersonaCombatStats>;
@@ -431,7 +432,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 	}
 
-	getDefense(defense: keyof ValidAttackers["system"]["combat"]["defenses"]) : ModifierList {
+	getDefense(defense: Defense) : ModifierList {
 		const mods = new ModifierList();
 		switch (defense) {
 			case "ref": {
@@ -446,8 +447,17 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				mods.add("Endurance Bonus", this.combatStats.baseWill());
 				break;
       }
+			case "kill":
+				mods.add("Luck Death Resist", this.combatStats.instantDeathDefense());
+				break;
+			case "ail":
+				mods.add("Luck Ailment Resist", this.combatStats.ailmentDefense());
+				break;
+			case "none":
+				return mods;
 			default:
 				defense satisfies never;
+				ui.notifications.warn(`Attmept to access nonsense Defense :${defense as string}`);
 				return mods;
 		}
 		// const baseDef = this.#translateDefenseString(defense, this.defenses[defense]);
@@ -709,6 +719,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		// const magAtk = this.source.system.combat.magatk ?? 0;
 		const magAtk = this.combatStats.baseMagAttackBonus();
 		mods.add("Base Magic Attack Bonus", magAtk);
+		return mods;
+	}
+
+	instantDeathAtkBonus() : ModifierList {
+		const mods = this.getBonuses(["allAtk"]);
+		const deathAtk = this.combatStats.baseDeathAtkBonus();
+		mods.add("Base Magic Attack Bonus", deathAtk);
 		return mods;
 	}
 

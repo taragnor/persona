@@ -1,6 +1,6 @@
 import { GrowthCalculator } from '../utility/growth-calculator.js';
 import { STATUS_AILMENT_SET } from '../../config/status-effects.js';
-import { BASE_VARIANCE } from '../../config/damage-types.js';
+import { AILMENT_BONUS_LEVELS, BASE_VARIANCE } from '../../config/damage-types.js';
 import { DamageCalculation } from '../combat/damage-calc.js';
 import { NewDamageParams } from '../../config/damage-types.js';
 import { INSTANT_KILL_CRIT_BOOST } from '../../config/damage-types.js';
@@ -892,7 +892,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	  return cost.required;
   }
 
-
 	energyCostData(this: UsableAndCard, persona: Persona): Power["system"]["energy"] {
 		if (!this.isPower()) {
 			return {cost: 0, required: 0, newForm: false};
@@ -1481,10 +1480,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   baseInstantKillBonus(this: Usable) : number {
     if (!this.isInstantDeathAttack()) {return 0;}
-    let boost = INSTANT_KILL_CRIT_BOOST[this.system.instantKillChance] ?? 0;
-    if (this.isAoE()) {boost += 4;}
+    const boost = INSTANT_KILL_CRIT_BOOST[this.system.instantKillChance] ?? 0;
+    // if (this.isAoE()) {boost += 4;}
     return boost;
   }
+
+	baseAilmentBonus(this: Usable) : number {
+		if (this.system.defense != "ail") {return 0;}
+		const boost = AILMENT_BONUS_LEVELS[this.system.ailmentChance] ?? 0;
+		if (this.system.ailmentChance == "always") {
+			ui.notifications.notify(`${this.name} Ailment Always not allowed on ailment targetting powers, treating as High`);
+		}
+		return boost;
+	}
 
   mpCost(this: Usable, userPersona: Persona | null): number {
     if (this.isConsumable()) {return 0;}
@@ -2194,6 +2202,7 @@ get customCost() : boolean {
 
 get ailmentRange() : {low: number, high:number} | undefined {
   if (!this.isUsableType()) {return undefined;}
+	if (this.system.defense == "ail") {return undefined;}
   switch (this.system.ailmentChance) {
     case 'none': return undefined;
     case 'low': return {low: 17, high: 18};

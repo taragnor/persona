@@ -50,7 +50,6 @@ import { STATUS_EFFECT_DURATION_TYPES } from "../../../config/status-effects.js"
 import { TARGETING } from "../../../config/effect-types.js";
 import { POWER_TAGS } from "../../../config/power-tags.js";
 import { MODIFIERS_TABLE } from "../../../config/item-modifiers.js";
-import { DEFENSECHOICES } from "../../datamodel/power-dm.js";
 import { SHADOW_CHARGE_REQ } from "../../../config/effect-types.js";
 import { PersonaDB } from "../../persona-db.js";
 import { TRIGGERS } from "../../../config/triggers.js";
@@ -63,11 +62,12 @@ import { SIMPLE_COMPARATORS } from "../../../config/numeric-comparison.js";
 import { SAVE_TYPES_LOCALIZED } from "../../../config/save-types.js";
 import { WEATHER_TYPES } from "../../../config/weather-types.js";
 import { STUDENT_SKILLS } from "../../../config/student-skills.js";
+import {DEFENSE_TYPES} from "../../../config/defense-types.js";
 
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
 	declare item: PowerContainer | SocialCard;
-	static _powerStuffBase?: Record<string, any>;
+	static _powerStuffBase?: Record<string, unknown>;
 
 	override async getData() {
 		if (this.item.isOwner && this.item.system.type != "socialCard") {
@@ -82,7 +82,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 		return data;
 	}
 
-	static get powerStuffBase() :Record<string, any> {
+	static get powerStuffBase() :Record<string, unknown> {
 		if (this._powerStuffBase)  {
 			return this._powerStuffBase;
 		}
@@ -132,7 +132,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			TARGETING : TARGETING,
 			TAGS: POWER_TAGS,
 			MODIFIER_TARGETS: MODIFIERS_TABLE,
-			DEFENSES: Object.fromEntries(DEFENSECHOICES.map( x=> [x, x])),
+			DEFENSES: DEFENSE_TYPES,
 			SHADOW_CHARGE_REQ: SHADOW_CHARGE_REQ,
 			SLOT_TYPES_EXPANDED: SLOT_TYPES_EXPANDED,
 			SAVE_DIFFICULTY: SAVE_TYPES_LOCALIZED,
@@ -170,7 +170,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 		return this._powerStuffBase;
 	}
 
-	static get powerStuff(): Record<string, any> {
+	static get powerStuff(): Record<string, unknown> {
 		const SOCIAL_LINKS = Object.fromEntries(
 			PersonaDB.socialLinks().map(actor => [actor.id, actor.name])
 		);
@@ -201,7 +201,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 		.map(qual=> qual.relationshipName)
 		.filter( (val, i, arr) => arr.indexOf(val) == i);
 		const RELATIONSHIP_TYPE_OBJECT  = Object.fromEntries(
-			(RELATIONSHIP_TYPES_LIST as string[])
+			RELATIONSHIP_TYPES_LIST
 			.map(x=> ([x,x]))
 		);
 
