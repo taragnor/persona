@@ -2392,7 +2392,7 @@ static #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifi
 				}, power.getDamageType(attacker.actor));
 				res.addEffect(null, attacker.actor, deprecatedConvert, situation );
 			}
-			if (!attacker.actor.isShadow() && power.system.subtype == 'magic' && power.system.mpcost > 0) {
+			if (!attacker.actor.isShadow() && power.system.subtype == 'magic' && power.mpCost(attacker.actor.persona()) > 0) {
 				res.addEffect(null, attacker.actor, {
 					type: 'alter-mp',
 					subtype: 'direct',

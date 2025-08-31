@@ -66,7 +66,7 @@ export class PersonaCombatStats {
 	}
 
 	baseInit() : number {
-		return Math.floor(this.agility);
+		return Math.floor(this.agility / PersonaCombatStats.DEFENSE_DIVISOR);
 	}
 
 	staminaDR() : number{
@@ -81,13 +81,14 @@ export class PersonaCombatStats {
 		return Math.floor(this.luck / 5);
 	}
 
+	lukCriticalBoost() : number {
+		return Math.floor((this.luck + 2) / 5);
+	}
+
 	instantDeathBonus() : number {
 		return Math.floor((this.luck + 1) / 5);
 	}
 
-	lukCriticalBoost() : number {
-		return Math.floor((this.luck + 2) / 5);
-	}
 
 	instantDeathResist() : number {
 		return Math.floor((this.luck + 3) / 5);

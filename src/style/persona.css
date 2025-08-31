@@ -1133,6 +1133,12 @@ nav.inventory-tabs a:active {
   box-shadow: 0 2px 4px rgba(18, 105, 204, 0.5);
 }
 
+.sheet.journal-entry .journal-entry-content {
+background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%) important!;
+  color: #E6F8FF important!; /* pale cyan for readable text */
+
+}
+
 .window-app header.window-header,
 .window-app section.window-content {
 background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%);

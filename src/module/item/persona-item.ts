@@ -323,15 +323,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
   }
 
-  isUsableType() : this is Usable {
-    switch (this.system.type) {
-      case 'power':
-      case 'consumable':
-        return true;
-      default:
-        return false;
-    }
-  }
+	isUsableType() : this is Usable {
+		switch (this.system.type) {
+			case 'power':
+			case 'consumable':
+			// case "skillCard":
+				return true;
+			default:
+				return false;
+		}
+	}
 
   isAilment(): boolean {
     if (!this.isUsableType() || !this.isTrulyUsable())  {return false;}
@@ -2258,7 +2259,7 @@ get customCost() : boolean {
 }
 
 get ailmentRange() : {low: number, high:number} | undefined {
-  if (!this.isUsableType()) {return undefined;}
+  if (!this.isUsableType() || this.isSkillCard()) {return undefined;}
 	if (this.system.defense == "ail") {return undefined;}
   switch (this.system.ailmentChance) {
     case 'none': return undefined;

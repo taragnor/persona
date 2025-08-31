@@ -231,6 +231,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	calcBaseClassMMP(this: PC | NPCAlly): number {
+		//TODO: still using old level
 		const lvl = this.system.combat.classData.level;
 
 		const inc = this.system.combat.classData.incremental.mp;
@@ -1784,11 +1785,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return rating;
 	}
 
-	basePowerCritResist(this: ValidAttackers, power: Usable): number {
-		if (!power.isInstantDeathAttack()) {return 0;}
-		const level = this.system.combat.classData.level;
-		return Math.floor(level / 2);
-	}
+	// basePowerCritResist(this: ValidAttackers, power: Usable): number {
+	// 	if (!power.isInstantDeathAttack()) {return 0;}
+	// 	const level = this.system.combat.classData.level;
+	// 	return Math.floor(level / 2);
+	// }
 
 	instantKillResistanceMultiplier(this: ValidAttackers, attacker: ValidAttackers) : number {
 		const situation : Situation = {
@@ -1886,24 +1887,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return arr;
 	}
 
-	wpnMult( this: ValidAttackers) : number {
-		const lvl = this.system.combat.classData.level;
-		const inc = this.system.combat.classData.incremental.wpnDamage * 0.5 ;
-		const mult = ((this.class.getClassProperty(lvl, "wpn_mult") ?? 0)  + inc);
-		return mult;
-	}
+	// wpnMult( this: ValidAttackers) : number {
+	// 	const lvl = this.system.combat.classData.level;
+	// 	const inc = this.system.combat.classData.incremental.wpnDamage * 0.5 ;
+	// 	const mult = ((this.class.getClassProperty(lvl, "wpn_mult") ?? 0)  + inc);
+	// 	return mult;
+	// }
 
-	magDmg (this: ValidAttackers) : {low: number, high:number} {
-		const lvl = this.system.combat.classData.level;
-		const incLow = this.system.combat.classData.incremental.magicLow ? 1 : 0;
-		const incHigh = this.system.combat.classData.incremental.magicHigh ? 1 : 0;
-		const baseDmg = this.class.getClassProperty(lvl, "magic_damage") ?? 0;
-		const nextLvl = this.class.getClassProperty(lvl+1, "magic_damage") ?? 0;
-		return {
-			low: incLow ? nextLvl.low : baseDmg.low,
-			high: incHigh ? nextLvl.high : baseDmg.high,
-		};
-	}
+	// magDmg (this: ValidAttackers) : {low: number, high:number} {
+	// 	const lvl = this.system.combat.classData.level;
+	// 	const incLow = this.system.combat.classData.incremental.magicLow ? 1 : 0;
+	// 	const incHigh = this.system.combat.classData.incremental.magicHigh ? 1 : 0;
+	// 	const baseDmg = this.class.getClassProperty(lvl, "magic_damage") ?? 0;
+	// 	const nextLvl = this.class.getClassProperty(lvl+1, "magic_damage") ?? 0;
+	// 	return {
+	// 		low: incLow ? nextLvl.low : baseDmg.low,
+	// 		high: incHigh ? nextLvl.high : baseDmg.high,
+	// 	};
+	// }
 
 	// critBoost(this: ValidAttackers) : ModifierList {
 	// 	const mods = this.mainModifiers().flatMap( item => item.getModifier("criticalBoost", this));

@@ -207,7 +207,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!item) {
 			throw new PersonaError(`Can't find Item Id:${itemId}`);
 		}
-		if (!item.isUsableType() || !item.isTrulyUsable()) {
+		if (!item.isSkillCard() && (!item.isUsableType() || !item.isTrulyUsable())) {
 			throw new PersonaError(`item ${item.name} isn't usable`);
 		}
 		await this.#useItemOrPower(item);
