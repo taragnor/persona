@@ -19,7 +19,6 @@ import { PersonaSocial } from "./social/persona-social.js";
 import { SOCIAL_LINK_OR_TAROT_OTHER } from "../config/precondition-types.js";
 import { AnyStringObject } from "../config/precondition-types.js";
 import { SocialLinkIdOrTarot } from "../config/precondition-types.js";
-import { ConditionalEffectManager } from "./conditional-effect-manager.js";
 import { MultiCheck } from "../config/precondition-types.js";
 import { UserComparisonTarget } from "../config/precondition-types.js";
 import { ProgressClock } from "./utility/progress-clock.js";
@@ -36,16 +35,14 @@ import { PersonaActor } from "./actor/persona-actor.js";
 import { NPC } from "./actor/persona-actor.js";
 import { Metaverse } from "./metaverse.js";
 import { PowerContainer } from "./item/persona-item.js";
-import { Precondition } from "../config/precondition-types.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaError } from "./persona-error.js";
 import { PC } from "./actor/persona-actor.js";
 import { Shadow } from "./actor/persona-actor.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
-import { ConditionalEffect } from "./datamodel/power-dm.js";
 
-export function getActiveConsequences(condEffect: ConditionalEffect, situation: Situation, source: PowerContainer | null) : SourcedConsequence[] {
+export function getActiveConsequences(condEffect: SourcedConditionalEffect["effects"][number], situation: Situation, source: PowerContainer | null) : SourcedConsequence[] {
 	if (ArrayCorrector(condEffect.conditions).some(
 		cond=>!testPrecondition(cond, situation, source)
 	)) {return [];}
@@ -56,12 +53,21 @@ export function getActiveConsequences(condEffect: ConditionalEffect, situation: 
 	}));
 }
 
-export function testPreconditions(conditionArr: Precondition[] | DeepNoArray<Precondition[]>, situation: Situation, source : PowerContainer | null) : boolean {
-	return ConditionalEffectManager.getConditionals(conditionArr,source, null)
-		.every( cond => testPrecondition(cond, situation, source));
+export function testPreconditions(conditionArr: DeepReadonly<Precondition[]>, situation: Situation, source : PowerContainer | null) : boolean {
+	// return ConditionalEffectManager.getConditionals(conditionArr,source, null)
+	try {
+		return conditionArr.every( cond =>
+			testPrecondition(cond, situation, source));
+	} catch (e) {
+		if (e instanceof Error) {
+			PersonaError.softFail(e.toString(), e);
+		}
+		return false;
+	}
 }
 
-export function testPrecondition (condition: Precondition, situation:Situation, source: PowerContainer| null) : boolean {
+
+export function testPrecondition (condition: DeepReadonly<Precondition>, situation:Situation, source: PowerContainer| null) : boolean {
 	switch (condition.type) {
 		case "always":
 			return true;
@@ -99,7 +105,7 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 }
 
 
-function numericComparison(condition: Precondition, situation: Situation, source:Option<PowerContainer>) : boolean {
+function numericComparison(condition: DeepReadonly<Precondition>, situation: Situation, source:Option<PowerContainer>) : boolean {
 	if (condition.type != "numeric") {throw new PersonaError("Not a numeric comparison");}
 	let target: number;
 	let testCase = ("num" in condition) ? condition.num : 0;
@@ -425,7 +431,7 @@ export function combatResultBasedNumericTarget(condition: CombatResultComparison
 	return count;
 }
 
-function triggerComparison(condition: Triggered, situation: Situation, _source:Option<PowerContainer>) : boolean {
+function triggerComparison(condition: DeepReadonly<Triggered>, situation: Situation, _source:Option<PowerContainer>) : boolean {
 	if (!("trigger" in situation)) {return false;}
 	if (!condition.trigger) {return false;}
 	if (condition.trigger != situation.trigger) {return false;}
@@ -872,7 +878,7 @@ function hasTagConditional(condition: Precondition & BooleanComparisonPC & {bool
 	}
 }
 
-function booleanComparison(condition : Precondition , situation: Situation, source:Option<PowerContainer>): boolean {
+function booleanComparison(condition : DeepReadonly<Precondition> , situation: Situation, source:Option<PowerContainer>): boolean {
 	if (condition.type != "boolean") {throw new PersonaError("Not a boolean comparison");}
 	const testState = getBoolTestState(condition, situation, source);
 	if (testState === undefined) {return false;}

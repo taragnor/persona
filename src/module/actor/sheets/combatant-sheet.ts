@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
+	/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { PersonaStat } from "../../../config/persona-stats.js";
 import { PowerPrinter } from "../../printers/power-list.js";
 import { PersonaRoller } from "../../persona-roll.js";

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -19,8 +21,6 @@ import { Consequence } from "../../config/consequence-types.js";
 import { EQUIPMENT_TAGS_LIST } from "../../config/equipment-tags.js";
 import { Power } from "../item/persona-item.js";
 import { TokenSpend } from "../../config/social-card-config.js";
-import { ConditionalEffect } from "./power-dm.js";
-import { Precondition } from "../../config/precondition-types.js";
 import { ThresholdOrDC } from "../../config/social-card-config.js";
 import { Opportunity } from "../../config/social-card-config.js";
 const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, FilePathField: file } = foundry.data.fields;
@@ -91,7 +91,7 @@ class WeaponDM extends foundry.abstract.TypeDataModel {
 		if (data.damageNew == undefined) {
 			data.damageNew = {
 				weaponLevel: data.damage.low -1,
-				baseAmt: DamageCalculator.convertFromOldLowDamageToNewBase(data.damage.low ?? 0),
+				baseAmt: DamageCalculator.convertFromOldLowDamageToNewBase(data?.damage?.low ?? 0),
 				extraVariance: 0,
 			};
 		}
@@ -325,11 +325,11 @@ export class ConditionalEffectDM extends foundry.abstract.DataModel {
 		}
 		if ( !Array.isArray(data.conditions)) {
 			change = true;
-			data.conditions = ArrayCorrector(data.conditions);
+			data.conditions = ArrayCorrector(data.conditions) as typeof data.conditions ;
 		}
 		if(!Array.isArray(data.consequences)) {
 			change = true;
-			data.consequences = ArrayCorrector(data.consequences);
+			data.consequences = ArrayCorrector(data.consequences) as typeof data.consequences;
 		}
 		if (change) {
 			console.debug("Migrate Data for ConditionalEffectDM making changes ");
@@ -401,7 +401,7 @@ class SocialCardEventDM extends foundry.abstract.DataModel {
 			data.conditions = [];
 		}
 		if (!Array.isArray(data.conditions)) {
-			data.conditions = ArrayCorrector(data.conditions);
+			data.conditions = ArrayCorrector(data.conditions)as typeof data.conditions;
 		}
 		if (data.choices == undefined)
 			{data.choices = [];}
@@ -474,13 +474,13 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 			data.conditions = [];
 		}
 		if (!Array.isArray(data.conditions)) {
-			data.conditions = ArrayCorrector(data.conditions);
+			data.conditions = ArrayCorrector(data.conditions) as typeof data.conditions;
 		}
 		if (data.postEffects.effects == undefined) {
 			data.postEffects.effects = [];
 		}
 		if (!Array.isArray(data.postEffects.effects)) {
-			data.postEffects.effects = ArrayCorrector(data.postEffects.effects);
+			data.postEffects.effects = ArrayCorrector(data.postEffects.effects) as typeof data.postEffects.effects;
 		}
 		return source;
 	}

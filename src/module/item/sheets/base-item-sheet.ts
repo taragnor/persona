@@ -1,4 +1,4 @@
-import { ConditionalEffect } from "../../datamodel/power-dm.js";
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { Consumable } from "../persona-item.js";
 import { PersonaItem } from "../persona-item.js";

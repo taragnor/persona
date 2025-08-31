@@ -6,7 +6,6 @@ import { NewDamageParams } from '../../config/damage-types.js';
 import { INSTANT_KILL_CRIT_BOOST } from '../../config/damage-types.js';
 import { PowerCostCalculator } from '../power-cost-calculator.js';
 import { StatusEffectId } from '../../config/status-effects.js';
-import { TypedConditionalEffect } from '../conditional-effect-manager.js';
 import { DAMAGE_ICONS } from '../../config/icons.js';
 import { Persona } from '../persona-class.js';
 import { POWER_ICONS } from '../../config/icons.js';
@@ -31,7 +30,6 @@ import { ValidAttackers } from '../combat/persona-combat.js';
 import { EQUIPMENT_TAGS } from '../../config/equipment-tags.js';
 import { Consequence } from '../../config/consequence-types.js';
 import { CreatureTag } from '../../config/creature-tags.js';
-import { Precondition } from '../../config/precondition-types.js';
 import { Helpers } from '../utility/helpers.js';
 import { PersonaAE } from '../active-effect.js';
 import { PersonaCombat } from '../combat/persona-combat.js';
@@ -47,7 +45,6 @@ import { CardChoice } from '../../config/social-card-config.js';
 import { CardEvent } from '../../config/social-card-config.js';
 import { BASIC_PC_POWER_NAMES } from '../../config/basic-powers.js';
 import { BASIC_SHADOW_POWER_NAMES } from '../../config/basic-powers.js';
-import { ConditionalEffect } from '../datamodel/power-dm.js';
 import { getActiveConsequences } from '../preconditions.js';
 import { PersonaError } from '../persona-error.js';
 import { PersonaActor } from '../actor/persona-actor.js';
@@ -947,16 +944,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     let effects = this.system.effects;
     try {
       if (!isArray(this.system.effects)) {
-        effects = ArrayCorrector(this.system.effects);
+        effects = ArrayCorrector(this.system.effects) as typeof this.system.effects;
         update = true;
       }
       effects.forEach( ({conditions, consequences}, i) => {
         if (!isArray(conditions)) {
-          effects[i].conditions = ArrayCorrector(conditions);
+          effects[i].conditions = ArrayCorrector(conditions) as (typeof effects)[number]["conditions"];
           update = true;
         }
         if (!isArray(consequences)) {
-          effects[i].consequences = ArrayCorrector(consequences);
+          effects[i].consequences = ArrayCorrector(consequences) as (typeof effects)[number]["consequences"];
           update = true;
         }
       });
@@ -1501,7 +1498,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	isCraftingMaterial(): this is CraftingMaterial {
-		if (!this.isCarryableType()) return false;
+		if (!this.isCarryableType()) {return false;}
 		if (this.isInvItem()) {
 			return this.system.slot == "crafting";
 		}
@@ -1591,14 +1588,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.system.mpcost;
   }
 
-  getSourcedEffects(this: ModifierContainer, sourceActor: ValidAttackers, condTypes :TypedConditionalEffect['conditionalType'][] = []): {source: ModifierContainer, effects: readonly ConditionalEffect[] } {
+  getSourcedEffects(this: ModifierContainer, sourceActor: ValidAttackers, condTypes :TypedConditionalEffect['conditionalType'][] = []): SourcedConditionalEffect {
     if (condTypes.length == 0) {
       return {
         source: this,
         effects: this.getEffects(sourceActor)
       };
     }
-    const effects: ConditionalEffect[] = [];
+    const effects: DeepReadonly<TypedConditionalEffect>[] = [];
     for (const cType of condTypes) {
       switch (cType) {
         case 'defensive':
@@ -1651,10 +1648,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   // }
 
   getEffects(this: ModifierContainer, sourceActor : PersonaActor | null): readonly TypedConditionalEffect[] {
-    if (this.system.type == 'skillCard') {
-      return [
-        (this as SkillCard).generateSkillCardTeach()
+    if (this.isSkillCard()) {
+		 const arr = [
+        this.generateSkillCardTeach()
       ];
+      return arr;
     }
     const effects = this.system.effects;
     return this.#accessEffectsCache('allEffects', sourceActor, () => ConditionalEffectManager.getEffects(effects, this, sourceActor));
@@ -1680,7 +1678,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
   }
 
-  getTriggeredEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
+  getTriggeredEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly TypedConditionalEffect[] {
     return this.#accessEffectsCache('triggeredEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'triggered'));
   }
 
@@ -1689,11 +1687,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
 
-  getOnUseEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
+  getOnUseEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly TypedConditionalEffect[] {
     return this.#accessEffectsCache('onUseEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'on-use'));
   }
 
-  getPassiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
+  getPassiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly TypedConditionalEffect[] {
     return this.#accessEffectsCache('passiveEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'passive'));
   }
 
@@ -1706,7 +1704,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.getPassiveEffects(actor).length > 0;
   }
 
-  getDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly ConditionalEffect[] {
+  getDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly TypedConditionalEffect[] {
     return this.#accessEffectsCache('defensiveEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'defensive'));
   }
 
@@ -1818,7 +1816,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   async addEventChoice(this: SocialCard, eventIndex: number) {
     const event = this.system.events[eventIndex];
-    const arr = ArrayCorrector(event.choices);
+    const arr = ArrayCorrector(event.choices) as CardChoice[];
     const roll: CardRoll = {
       rollType: 'none',
       progressSuccess:0,
@@ -1843,7 +1841,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   async deleteEventChoice(this: SocialCard, eventIndex: number, choiceIndex: number) {
     const event = this.system.events[eventIndex];
-    const arr = ArrayCorrector(event.choices);
+    const arr = ArrayCorrector(event.choices) as CardChoice[];
     arr.splice(choiceIndex, 1);
     event.choices = arr;
     await this.update({'system.events': Helpers.expandObject(this.system.events)});
@@ -2312,7 +2310,7 @@ isStatusRemoval(this: Usable) : boolean {
 }
 
 /** Handlebars keeps turning my arrays inside an object into an object with numeric keys, this fixes that */
-export function ArrayCorrector<T>(obj: (T[] | Record<string | number, T>)): T[] {
+export function ArrayCorrector<T>(obj: (DeepReadonly<T[]> | Record<string | number, T>)): DeepReadonly<T[]> {
   return ConditionalEffectManager.ArrayCorrector(obj);
 }
 

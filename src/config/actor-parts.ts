@@ -5,7 +5,6 @@ import { FREQUENCY } from "./frequency.js";
 import { PROBABILITY_LIST } from "./probability.js";
 
 import { ConditionalEffectDM } from "../module/datamodel/item-types.js";
-import { Precondition } from "./precondition-types.js";
 import { TokenSpend } from "./social-card-config.js";
 import { TAROT_DECK } from "./tarot.js";
 import { DEFENSE_CATEGORY_LIST } from "./defense-categories.js";

@@ -2,7 +2,6 @@ import { WeaponTag } from "./equipment-tags.js";
 import { RollTag } from "./roll-tags.js";
 import { CardTag } from "./card-tags.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
-import { Precondition } from "./precondition-types.js";
 import { UserComparisonTarget } from "./precondition-types.js";
 import { PowerType } from "./effect-types.js";
 import { DamageType } from "./damage-types.js";

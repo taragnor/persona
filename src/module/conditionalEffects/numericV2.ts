@@ -5,15 +5,11 @@ import { ConditionalEffectManager } from "../conditional-effect-manager.js";
 import { localize } from "../persona.js";
 import { RESIST_STRENGTHS } from "../../config/damage-types.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
-import { PersonaVariables } from "../persona-variables.js";
-import { numberOfOthersWithResolver } from "../preconditions.js";
-import { combatResultBasedNumericTarget } from "../preconditions.js";
 import { SocialLink } from "../actor/persona-actor.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { NPC, PC, NPCAlly } from "../actor/persona-actor.js";
 import { PersonaSocial } from "../social/persona-social.js";
 import { getSocialLinkTarget } from "../preconditions.js";
-import { ProgressClock } from "../utility/progress-clock.js";
 import { Usable } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
 import { DamageType } from "../../config/damage-types.js";
@@ -22,7 +18,6 @@ import { getSubjectActors } from "../preconditions.js";
 import { PersonaError } from "../persona-error.js";
 import { RESIST_STRENGTH_LIST } from "../../config/damage-types.js";
 import { NumericComparisonV2 } from "../../config/numeric-comparison.js";
-import { Precondition } from "../../config/precondition-types.js";
 
 export class NumericV2 {
 	static eval( condition: Precondition & {type: "numeric-v2"}, situation: Situation , source: Option<PowerContainer>) : boolean {

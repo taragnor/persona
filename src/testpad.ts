@@ -30,3 +30,12 @@ function xxxx(x ?: boolean) : number {
 	return 1;
 	}
 
+
+function r( x: Readonly<Item>) {
+	rr (x);
+}
+
+function rr( x: Item) {
+
+}
+

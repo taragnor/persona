@@ -23,7 +23,6 @@ import { TriggeredEffect } from '../triggered-effect.js';
 import { NonCombatTriggerTypes } from '../../config/triggers.js';
 import { Shadow } from '../actor/persona-actor.js';
 import { PersonaCalendar } from '../social/persona-calendar.js';
-import { PowerTag } from '../../config/power-tags.js';
 import { ConsTarget } from '../../config/consequence-types.js';
 import { PersonaSocial } from '../social/persona-social.js';
 import { UniversalModifier } from '../item/persona-item.js';
@@ -52,6 +51,7 @@ import { EngagementList } from './engagementList.js';
 import { OtherEffect } from '../../config/consequence-types.js';
 import { Consumable } from '../item/persona-item.js';
 import {Defense} from '../../config/defense-types.js';
+import {testPreconditions} from '../preconditions.js';
 
 declare global {
 	interface SocketMessage {
@@ -1823,7 +1823,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		for (const {source, effects} of sourcedEffects){
 			for (const effect of effects) {
 				const {conditions, consequences}  = effect;
-				if (ModifierList.testPreconditions(conditions, situation, source)) {
+				if (testPreconditions(conditions, situation, source)) {
 					const res = this.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult, source);
 					CombatRes.merge(res);
 				}
@@ -1832,12 +1832,18 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return CombatRes;
 	}
 
-	static consequencesToResult(cons: Consequence[], power: ModifierContainer, situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkResult: AttackResult | null, source: SourcedConsequence['source'] | null): CombatResult {
+	static consequencesToResult(cons: DeepReadonly<Consequence[]>, power: ModifierContainer, situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkResult: AttackResult | null, source: SourcedConsequence['source'] | null): CombatResult {
 		const CombatRes = new CombatResult(atkResult);
+		try {
 		const x = this.ProcessConsequences(power, situation, cons, attacker, target, atkResult, source);
 		CombatRes.escalationMod += x.escalationMod;
 		const result = this.getCombatResultFromConsequences(x.consequences, situation, attacker, target, atkResult);
 		CombatRes.merge(result);
+		}
+		catch (e) {
+			PersonaError.softFail("Error turning consequence into Result", e, cons);
+
+		}
 		return CombatRes;
 	}
 
@@ -2058,7 +2064,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 
-	static ProcessConsequences(power: ModifierContainer, situation: Situation, relevantConsequences: Consequence[], attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkresult : Partial<AttackResult> | null, source: SourcedConsequence['source'] | null)
+	static ProcessConsequences(power: ModifierContainer, situation: Situation, relevantConsequences: DeepReadonly<Consequence[]>, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkresult : Partial<AttackResult> | null, source: SourcedConsequence['source'] | null)
 	: ConsequenceProcessed {
 		let escalationMod = 0;
 		let consequences : ConsequenceProcessed['consequences']= [];
@@ -2232,7 +2238,7 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 				if (DC && damageType != "healing") {
 					const stamina = target.persona().combatStats.staminaDR();
 					const staminaString = 'Endurance Damage Reduction';
-					DC.add('resist', -Math.abs(stamina), staminaString);
+					DC.add("base", -Math.abs(stamina), staminaString);
 				};
 				return {
 					applyTo: target,
@@ -2459,34 +2465,34 @@ static getDefenderAttackModifiers(target: PToken | undefined, defense : Defense)
 // 	attackBonus.add('Damage Power bonus', +3);
 // }
 
-static #getRelevantAttackTag(_attacker: ValidAttackers, dmgType : DamageType) : PowerTag | undefined  {
-	switch (dmgType) {
-		case 'fire': case 'wind':
-		case 'light': case 'dark':
-		case 'healing':
-			return dmgType;
-		case 'lightning':
-			return 'elec';
-		case 'gun':
-			return 'gun';
-		case 'physical':
-			return 'weapon';
-		case 'by-power': //read as by-weapon here
-			return 'weapon';
-		case 'cold':
-			return 'ice';
-		case 'untyped':
-			return 'almighty';
-		case 'none':
-			break;
-			// tag = power.system.tags.find(x=> STATUS_POWER_TAGS.includes(x as any));
-		case 'all-out':
-			break;
-		default:
-			dmgType satisfies never;
-			break;
-	}
-}
+// static #getRelevantAttackTag(_attacker: ValidAttackers, dmgType : DamageType) : PowerTag | undefined  {
+// 	switch (dmgType) {
+// 		case 'fire': case 'wind':
+// 		case 'light': case 'dark':
+// 		case 'healing':
+// 			return dmgType;
+// 		case 'lightning':
+// 			return 'elec';
+// 		case 'gun':
+// 			return 'gun';
+// 		case 'physical':
+// 			return 'weapon';
+// 		case 'by-power': //read as by-weapon here
+// 			return 'weapon';
+// 		case 'cold':
+// 			return 'ice';
+// 		case 'untyped':
+// 			return 'almighty';
+// 		case 'none':
+// 			break;
+// 			// tag = power.system.tags.find(x=> STATUS_POWER_TAGS.includes(x as any));
+// 		case 'all-out':
+// 			break;
+// 		default:
+// 			dmgType satisfies never;
+// 			break;
+// 	}
+// }
 
 static getBaseAttackBonus(attackerPersona: Persona, power:Usable): ModifierList {
 	let modList = new ModifierList();

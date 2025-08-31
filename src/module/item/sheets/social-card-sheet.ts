@@ -188,7 +188,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 	}
 
 	async addQualifier(_ev: JQuery.ClickEvent) {
-		const qual = ArrayCorrector(this.item.system.qualifiers);
+		const qual = ArrayCorrector(this.item.system.qualifiers) as typeof this.item.system.qualifiers;
 		qual.push({
 			relationshipName: "",
 			min: 0,
@@ -203,7 +203,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		if (Number.isNaN(index))  {
 			throw new PersonaError("NaN index");
 		}
-		const qual = ArrayCorrector(this.item.system.qualifiers);
+		const qual = ArrayCorrector(this.item.system.qualifiers) as typeof this.item.system.qualifiers;
 		qual.splice(index, 1);
 		await this.item.update({"system.qualifiers": qual});
 	}

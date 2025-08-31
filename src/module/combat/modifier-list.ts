@@ -2,19 +2,17 @@ import { TensionPool } from "../exploration/tension-pool.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { ArrayCorrector } from "../item/persona-item.js";
-import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { testPreconditions } from "../preconditions.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { ModifierContainer } from "../item/persona-item.js";
 import { PowerContainer } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
-import { Precondition } from "../../config/precondition-types.js";
 import { ModifierVariable } from "../../config/effect-types.js";
 
 export type ModifierListItem = {
 	name: string;
 	source: Option<UniversalItemAccessor<PowerContainer>>;
-	conditions: Precondition[];
+	conditions: DeepReadonly<Precondition[]>;
 	modifier: number;
 	variableModifier: Set<{variable: ModifierVariable, makeNegative: boolean}>;
 }
@@ -57,7 +55,7 @@ export class ModifierList {
 	validModifiers (situation: Situation) : ModifierListItem[]  {
 		return this._data.filter( item => {
 			const source = item.source ? PersonaDB.findItem(item.source): null;
-			if (ModifierList.testPreconditions(item.conditions, situation, source)) {
+			if (testPreconditions(item.conditions, situation, source)) {
 				if (item.modifier != 0 || item.variableModifier.size != 0) {
 					return true;
 				}
@@ -66,7 +64,7 @@ export class ModifierList {
 		});
 	}
 
-	static getVariableModifiers(consequences: Consequence[], targetMods: ModifierTarget[]): ModifierList["_data"][number]["variableModifier"] {
+	static getVariableModifiers(consequences: DeepReadonly<Consequence[]>, targetMods: ModifierTarget[]): ModifierList["_data"][number]["variableModifier"] {
 		return new Set(ArrayCorrector(consequences).flatMap ( c=> {
 			if ("modifiedFields" in c
 				&& targetMods.some( f => c.modifiedFields[f] == true)
@@ -80,7 +78,7 @@ export class ModifierList {
 		}));
 	}
 
-	static getModifierAmount(consequences: Consequence[], targetMods: ModifierTarget[] | ModifierTarget) : number {
+	static getModifierAmount(consequences: DeepReadonly<Consequence[]>, targetMods: ModifierTarget[] | ModifierTarget) : number {
 		targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
 		return (ArrayCorrector(consequences) ?? [])
 			.reduce( (acc,x)=> {
@@ -144,9 +142,9 @@ export class ModifierList {
 		}
 	}
 
-	static testPreconditions (...args: Parameters<typeof testPreconditions>) : boolean {
-		return testPreconditions( ...args);
-	}
+	// static testPreconditions (...args: Parameters<typeof testPreconditions>) : boolean {
+	// 	return testPreconditions( ...args);
+	// }
 
 	static resolveVariableModifiers( variableMods: ModifierListItem["variableModifier"], _situation: Situation) : number {
 		return Array.from(variableMods).reduce( (acc, varmod) => {

@@ -12,6 +12,7 @@ import { ModifierContainer } from "./item/persona-item.js";
 import { ModifierList } from "./combat/modifier-list.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
+import {testPreconditions} from "./preconditions.js";
 
 export class TriggeredEffect {
 
@@ -112,7 +113,7 @@ export class TriggeredEffect {
 		} else {
 			const roomEffects : UniversalModifier[] = [];
 			if (game.combat) {
-				roomEffects.push(...(game.combat as PersonaCombat)?.getRoomEffects());
+				roomEffects.push(...(game.combat as PersonaCombat)?.getRoomEffects() ?? []);
 			} else {
 				const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
 				roomEffects.push(...arr);
@@ -126,7 +127,7 @@ export class TriggeredEffect {
 		}
 		for (const trig of removeDuplicates(triggers)) {
 			for (const eff of trig.getTriggeredEffects(actor ?? null)) {
-				if (!ModifierList.testPreconditions(eff.conditions, situationCopy, trig)) { continue; }
+				if (!testPreconditions(eff.conditions, situationCopy, trig)) { continue; }
 				const res = PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null, trig);
 				result.merge(res);
 			}

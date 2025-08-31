@@ -12,7 +12,7 @@ import { ROLL_TAGS_AND_CARD_TAGS } from "../config/roll-tags.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { ModifierTarget } from "../config/item-modifiers.js";
 import { getActiveConsequences } from "./preconditions.js";
-import { PowerContainer } from "./item/persona-item.js";
+import { ModifierContainer, PowerContainer } from "./item/persona-item.js";
 import { STATUS_EFFECT_DURATION_TYPES } from "../config/status-effects.js";
 import { Helpers } from "./utility/helpers.js";
 import { multiCheckToArray } from "./preconditions.js";
@@ -38,14 +38,12 @@ import { CONDITION_TARGETS } from "../config/precondition-types.js";
 import { TRIGGERS } from "../config/triggers.js";
 import { MultiCheck } from "../config/precondition-types.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../config/status-effects.js";
-import { Precondition } from "../config/precondition-types.js";
 import { HTMLTools } from "./utility/HTMLTools.js";
 import { PersonaError } from "./persona-error.js";
 import { PreconditionType } from "../config/precondition-types.js";
 import { ConsequenceType } from "../config/effect-types.js";
 import { CONSQUENCELIST } from "../config/effect-types.js";
 import { PRECONDITIONLIST } from "../config/precondition-types.js";
-import { ConditionalEffect } from "./datamodel/power-dm.js";
 import { PersonaDB } from "./persona-db.js";
 
 export class ConditionalEffectManager {
@@ -131,7 +129,7 @@ export class ConditionalEffectManager {
 		);
 	}
 
-	static getAllActiveConsequences(condEffects: readonly ConditionalEffect[], situation: Situation, source: PowerContainer | null) : Consequence[] {
+	static getAllActiveConsequences(condEffects: DeepReadonly<TypedConditionalEffect[]>, situation: Situation, source: PowerContainer | null) : Consequence[] {
 		return condEffects.flatMap( effect=> getActiveConsequences(effect, situation, source));
 	}
 
@@ -393,7 +391,7 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 	}
 
 	static isBonusConsequence(cons: ConditionalEffect["consequences"][number]) : boolean {
-		return (cons.type == "modifier-new" 
+		return (cons.type == "modifier-new"
 			|| cons.type =="modifier"
 		);
 	}
@@ -420,7 +418,7 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 		}));
 	}
 
-	static ArrayCorrector<T>(obj: (T[] | Record<string | number, T>)): T[] {
+	static ArrayCorrector<T>(obj: (DeepReadonly<T[]> | Record<string | number, T>)): DeepReadonly<T[]> {
 		// eslint-disable-next-line no-useless-catch
 		try {
 			if (obj == null) {return[];}
@@ -428,7 +426,7 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 				if (PersonaSettings.debugMode()) {
 					console.debug("Array Correction Required");
 				}
-				return Object.keys(obj).map(function(k) { return obj[k]; });
+				return Object.keys(obj).map(function(k) { return obj[k as keyof typeof obj] as DeepReadonly<T>; });
 			}
 		} catch (e) {
 			throw e;
@@ -1300,9 +1298,6 @@ export type CEAction = {
 };
 
 
-export interface TypedConditionalEffect extends ConditionalEffect {
-	conditionalType: typeof CETypes[number];
-}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CETypes = [
@@ -1318,3 +1313,24 @@ const CETypes = [
 window.CEManager = ConditionalEffectManager;
 
 type ConditonalEffectHolderItem = Item<any> & Partial<{isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]}> ;
+
+
+declare global{
+
+	interface ConditionalEffect {
+		isDefensive: boolean,
+			conditions: Precondition[],
+			consequences: Consequence[]
+	}
+
+	interface SourcedConditionalEffect {
+		source: ModifierContainer;
+		effects: DeepReadonly<TypedConditionalEffect[]>;
+	}
+
+	interface TypedConditionalEffect extends ConditionalEffect {
+		conditionalType: typeof CETypes[number];
+	}
+
+}
+

@@ -2,7 +2,6 @@ import { PersonaError } from "../module/persona-error.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { VariableTypeSpecifier } from "./consequence-types.js";
 import { VariableType } from "../module/persona-variables.js";
-import { Precondition } from "./precondition-types.js";
 import { SocialLinkIdOrTarot } from "./precondition-types.js";
 import { ConditionTarget } from "./precondition-types.js";
 import { ResistType } from "../config/damage-types.js";

@@ -3,7 +3,6 @@ import { PersonaRoller } from "../persona-roll.js";
 import { CardTag } from "../../config/card-tags.js";
 import { RollSituation } from "../../config/situation.js";
 import { RollTag } from "../../config/roll-tags.js";
-import { Precondition } from "../../config/precondition-types.js";
 import { shuffle } from "../utility/array-tools.js";
 import { NPCAlly } from "../actor/persona-actor.js";
 import { StatusEffectId } from "../../config/status-effects.js";
@@ -21,7 +20,6 @@ import { CardChoice } from "../../config/social-card-config.js";
 import { weightedChoice } from "../utility/array-tools.js";
 import { SocketPayload } from "../utility/socket-manager.js";
 import { PersonaCalendar } from "./persona-calendar.js";
-import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { ArrayCorrector } from "../item/persona-item.js";
 import { ActivityLink } from "../actor/persona-actor.js";
 import { Activity } from "../item/persona-item.js";
@@ -877,7 +875,10 @@ export class PersonaSocial {
 		}
 		const tokenSpends = (cardData.card.system.tokenSpends ?? [])
 		.concat(cardData.activity != cardData.card ?  cardData.activity.system.tokenSpends ?? [] : [])
-		.filter( spend => testPreconditions(spend.conditions ?? [], cardData.situation, null))
+		.filter( spend => {
+			const conds = ConditionalEffectManager.getConditionals(spend.conditions, null, null);
+			return testPreconditions(conds ?? [], cardData.situation, null);
+		})
 		.map(x=> `spend ${x.amount} progress tokens to ${x.text}.`)
 		.map(x=> `<li class="token-spend"> ${x} </li>`);
 		const finale = (cardData.card.system.finale?.trim()) ? `
@@ -1217,7 +1218,7 @@ export class PersonaSocial {
 		}
 	}
 
-	static async applyEffects(effects: ConditionalEffect[], situation: Situation, actor: PC) {
+	static async applyEffects(effects: TypedConditionalEffect[], situation: Situation, actor: PC) {
 		const results = ArrayCorrector(effects ?? []).flatMap( eff=> getActiveConsequences(eff, situation, null));
 		const processed= PersonaCombat.processConsequences_simple(results, situation);
 		const result = new CombatResult();

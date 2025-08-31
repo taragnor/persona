@@ -1,5 +1,4 @@
 import { ActorConverters } from "../converters/actorConverters.js";
-import { TypedConditionalEffect } from "../conditional-effect-manager.js";
 import { LevelUpCalculator } from "../../config/level-up-calculator.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { ENCOUNTER_RATE_PROBABILITY } from "../../config/probability.js";
@@ -48,7 +47,6 @@ import { Logger } from "../utility/logger.js";
 import { STUDENT_SKILLS } from "../../config/student-skills.js";
 import { Consumable } from "../item/persona-item.js";
 import { SocialStat } from "../../config/student-skills.js";
-import { ConditionalEffect } from "../datamodel/power-dm.js";
 import { PersonaError } from "../persona-error.js";
 import { PersonaSounds } from "../persona-sounds.js";
 import { Usable } from "../item/persona-item.js";
@@ -70,6 +68,7 @@ import { PersonaItem } from "../item/persona-item.js";
 import { PersonaAE } from "../active-effect.js";
 import { StatusDuration } from "../active-effect.js";
 import {Calculation} from "../utility/calculation.js";
+import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 
 
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
@@ -1812,7 +1811,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		].filter(x=> x.hasDefensiveEffects(this));
 	}
 
-	getSourcedDefensivePowers(this: ValidAttackers) {
+	getSourcedDefensivePowers(this: ValidAttackers) : SourcedConditionalEffect[] {
 		return this.persona().defensiveModifiers().flatMap( x=> x.getSourcedEffects(this));
 	}
 
@@ -2421,7 +2420,7 @@ getAllSocialFocii() : Focus[] {
 	}
 }
 
-getSourcedEffects(this: ValidAttackers, condTypes :TypedConditionalEffect["conditionalType"][] = []): {source: ModifierContainer, effects: readonly ConditionalEffect[], } []{
+getSourcedEffects(this: ValidAttackers, condTypes :TypedConditionalEffect["conditionalType"][] = []): SourcedConditionalEffect[] {
 	return this.persona().mainModifiers().flatMap( x=> x.getSourcedEffects(this, condTypes));
 }
 
@@ -3481,16 +3480,16 @@ isAvailable(pc: PersonaActor) : boolean {
 		case "tarot":
 			return false;
 		case "npc": case "npcAlly": {
-      const npc = this as NPC;
+			const npc = this as NPC | NPCAlly;
 			const sit: Situation = {
 				user: (pc as PC).accessor,
 				socialTarget: npc.accessor,
 			};
-			if(!testPreconditions(this.system.availabilityConditions,sit, null)) {
+			if(!testPreconditions(npc.getAvailabilityConditions(), sit, null)) {
 				return false;
 			}
 			break;
-    }
+		}
 		case "pc":
 			break;
 		default:
@@ -3502,6 +3501,12 @@ isAvailable(pc: PersonaActor) : boolean {
 		return false;
 	}
 	return availability?.available ?? false;
+}
+
+getAvailabilityConditions(this: NPC | NPCAlly)  : DeepReadonly<Precondition>[] {
+			const conds = ConditionalEffectManager.getConditionals(this.system.availabilityConditions, null, null);
+	return conds;
+
 }
 
 isSociallyDisabled(): boolean {

@@ -2,7 +2,6 @@
 import { PERSONA_STATS } from "../../../config/persona-stats.js";
 import { PersonaError } from "../../persona-error.js";
 import { PC } from "../persona-actor.js";
-import { ConditionalEffect } from "../../datamodel/power-dm.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaEffectContainerBaseSheet } from "../../item/sheets/effect-container.js";
 import { ConditionalEffectManager } from "../../conditional-effect-manager.js";

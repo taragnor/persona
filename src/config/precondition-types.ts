@@ -28,10 +28,12 @@ export type PreconditionType = typeof PRECONDITIONLIST[number];
 export const PRECONDITIONTYPES = Object.fromEntries( PRECONDITIONLIST.map(x=> [x, `persona.preconditions.${x}`]));
 
 
-export type Precondition =
-	{actorOwner ?: UniversalActorAccessor<PC | Shadow>}
-	& PreconditionComparison
+declare global {
+	type Precondition =
+		{actorOwner ?: UniversalActorAccessor<PC | Shadow>}
+		& PreconditionComparison
 	;
+}
 
 export type PreconditionComparison =
 	(GenericPC | NumericComparisonPC | BooleanComparisonPC | SaveVersus | Triggered);

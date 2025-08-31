@@ -7,8 +7,6 @@ import { INSTANT_KILL_LEVELS } from "../../config/damage-types.js";
 import { POWERTYPESLIST } from "../../config/effect-types.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { TARGETINGLIST } from "../../config/effect-types.js";
-import { Precondition } from "../../config/precondition-types.js";
-import { Consequence } from "../../config/consequence-types.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
 import { SHADOW_CHANGE_REQ_LIST_FULL } from "../../config/effect-types.js";
 import {DEFENSE_TYPES} from "../../config/defense-types.js";
@@ -29,12 +27,6 @@ export const damageNew = function () {
 
 };
 
-
-export interface ConditionalEffect {
-  isDefensive: boolean,
-    conditions: Precondition[],
-    consequences: Consequence[]
-};
 
 export function powerSpecific () {
   return {
