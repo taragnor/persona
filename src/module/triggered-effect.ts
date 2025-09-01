@@ -9,7 +9,6 @@ import { Trigger } from "../config/triggers.js";
 import { CombatResult } from "./combat/combat-result.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
 import { ModifierContainer } from "./item/persona-item.js";
-import { ModifierList } from "./combat/modifier-list.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import {testPreconditions} from "./preconditions.js";
@@ -119,17 +118,24 @@ export class TriggeredEffect {
 				roomEffects.push(...arr);
 			}
 			const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
-			triggers = [
-				...PersonaDB.getGlobalModifiers(), //testin only
-				...roomEffects,
-				...PCTriggers,
-			];
+			triggers = removeDuplicates(
+				[
+					...PersonaDB.getGlobalModifiers(), //testin only
+					...roomEffects,
+					...PCTriggers,
+				]
+			);
 		}
-		for (const trig of removeDuplicates(triggers)) {
+		for (const trig of triggers) {
 			for (const eff of trig.getTriggeredEffects(actor ?? null)) {
-				if (!testPreconditions(eff.conditions, situationCopy, trig)) { continue; }
-				const res = PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null, trig);
-				result.merge(res);
+				try {
+					if (!testPreconditions(eff.conditions, situationCopy, trig)) { continue; }
+					const res = PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null, trig);
+					result.merge(res);
+				} catch (e) {
+					PersonaError.softFail(`Problem with triggered effects ${trig.name} running on actor ${actor?.name ?? "none"}`, e);
+					continue;
+				}
 			}
 		}
 		return result;
@@ -154,14 +160,18 @@ export class TriggeredEffect {
 		}
 		for (const usePower of usePowers) {
 			//TODO BUG: Extra attacks keep the main inputted modifier
-			const newAttacker = PersonaCombat.getPTokenFromActorAccessor(usePower.newAttacker);
-			const execPower = PersonaDB.allPowers().get( usePower.powerId);
-			if (execPower && newAttacker) {
-				const altTargets= PersonaCombat.getAltTargets(newAttacker, situation, usePower.target );
-				const newTargets = PersonaCombat.getTargets(newAttacker, execPower, altTargets);
-				const extraPower = await PersonaCombat.usePowerOn(newAttacker, execPower, newTargets, "standard");
-				triggerResult.merge(extraPower);
-
+			try {
+				const newAttacker = PersonaCombat.getPTokenFromActorAccessor(usePower.newAttacker);
+				const execPower = PersonaDB.allPowers().get( usePower.powerId);
+				if (execPower && newAttacker) {
+					const altTargets= PersonaCombat.getAltTargets(newAttacker, situation, usePower.target );
+					const newTargets = PersonaCombat.getTargets(newAttacker, execPower, altTargets);
+					const extraPower = await PersonaCombat.usePowerOn(newAttacker, execPower, newTargets, "standard");
+					triggerResult.merge(extraPower);
+				}
+			} catch (e) {
+				PersonaError.softFail(`Error on Use Power in execCombat Trigger for Power ${usePower?.powerId}`, e);
+				continue;
 			}
 		}
 		await triggerResult?.finalize().toMessage("Triggered Effect", actor);

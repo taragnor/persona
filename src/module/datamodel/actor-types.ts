@@ -1,4 +1,3 @@
-/* eslint-disable no-unsafe-optional-chaining */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
@@ -148,12 +147,12 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 			}
 		} catch {
 			if (game.user.isGM && PersonaSettings.debugMode()) {
-				Debug(system);
+				// Debug(system);
 				console.log("Error on Shadow Schema Convert");
 			}
 		}
 		try {
-			if (data.encounter.dungeons && system.encounter.dungeonEncounters.length == 0) {
+			if (data?.encounter?.dungeons && system?.encounter?.dungeonEncounters?.length == 0) {
 				const dungeonIds : string[] = data.encounter.dungeons;
 				for (const dungeonId of dungeonIds) {
 					const conv =  frequencyConvert(system.encounter.frequency);
@@ -167,7 +166,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 			}
 		} catch  {
 			console.log("Something went wrong with migrating dungeondata.");
-			Debug(data.encounter);
+			// Debug(data.encounter);
 		}
 		if (typeof system?.combat?.defenses?.fort == "number") {
 			system.combat.defenses.fort = convert(data.combat.defenses.fort);

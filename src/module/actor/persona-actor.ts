@@ -1321,6 +1321,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	/** returns true if status is added*/
 	async addStatus({id, potency, duration}: StatusEffect, ignoreFatigue= false): Promise<boolean> {
+		try {
 		if (!ignoreFatigue && statusMap?.get(id)?.tags.includes("fatigue")) {
 			const lvl = statusToFatigueLevel(id as FatigueStatusId);
 			const oldLvl = this.fatigueLevel;
@@ -1363,6 +1364,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				await eff.setDuration(adjustedDuration);
 			}
 			//TODO: update the effect
+			return false;
+		}
+		} catch (e) {
+			PersonaError.softFail(`Error adding status :${id}`, e);
 			return false;
 		}
 
@@ -1535,11 +1540,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async removeStatus(status: Pick<StatusEffect, "id"> | StatusEffectId) : Promise<boolean>{
 		const id = typeof status == "object" ? status.id : status;
-		const promises = this.effects
-		.filter( eff => eff.statuses.has(id))
-		.map( eff => eff.delete());
-		await Promise.all(promises);
-		return promises.length > 0;
+		try {
+			const promises = this.effects
+				.filter( eff => eff.statuses.has(id))
+				.map( async (eff) => await eff.delete());
+			await Promise.all(promises);
+			return promises.length > 0;
+		} catch (e) {
+			PersonaError.softFail(`Error removing status ${id}`,e );
+			return false;
+		}
 	}
 
 	equippedItems() : (InvItem | Weapon)[]  {
@@ -3156,7 +3166,8 @@ async refreshActions(): Promise<number> {
 async expendAction(this: ValidAttackers): Promise<number> {
 
 	let actions = this.system.combat.actionsRemaining ?? 1;
-	if (this.hasStatus("bonus-action")) { await this.removeStatus("bonus-action");
+	if (this.hasStatus("bonus-action")) {
+		await this.removeStatus("bonus-action");
 		return actions;
 	}
 	actions = Math.max(0, actions-1);
@@ -3165,10 +3176,9 @@ async expendAction(this: ValidAttackers): Promise<number> {
 }
 
 get actionsRemaining(): number {
-	if (this.isValidCombatant()) {
-		return this.system.combat.actionsRemaining;
-	}
-	else {return 0;}
+	 return this.isValidCombatant()
+			? this.system.combat.actionsRemaining
+			: 0;
 }
 
 get perk() : string {
@@ -3235,18 +3245,40 @@ isBossOrMiniBossType() : boolean {
 
 async onStartCombatTurn(this: PC | Shadow): Promise<string[]> {
 	console.log(`${this.name} on Start turn`);
-	await this.removeStatus("blocking");
 	const ret = [] as string[];
-	for (const eff of this.effects) {
+	const promises = this.effects.contents.map( async (eff) => {
 		if ( await eff.onStartCombatTurn()) {
-			ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
+			return eff.displayedName;
 		}
+		return "";
+	});
+	try {
+		const strings = (await Promise.all(promises))
+			.filter( x=> x && x.length > 0)
+			.join(", ");
+		if (strings.length > 0) {
+			ret.push(`Conditions Removed: ${strings}`);
+		}
+	} catch (e) {
+		const msg = `Error resolving conditions at start of turn`;
+		ret.push(msg);
+		PersonaError.softFail(msg, e);
 	}
 	return ret;
+	// for (const eff of this.effects) {
+	// 	if ( await eff.onStartCombatTurn()) {
+	// 		ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
+	// 	}
+	// }
+	// return ret;
 }
 
 async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 	const ret: string[]= [];
+	if (!this.isOwner) {
+		PersonaError.softFail(`Illegal access of onEndCombatTurn, you are not the owner of ${this.displayedName}`);
+		return ret;
+	}
 	const burnStatus = this.effects.find( eff=> eff.statuses.has("burn"));
 	if (burnStatus) {
 		const damage = burnStatus.potency;
@@ -3269,7 +3301,7 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 		await this.alterEnergy(bonusEnergy);
 	}
 
-	ret.push(...await this.endTurnSaves());
+	ret.push(...await this.endTurnStatusEffects());
 	return ret;
 }
 
@@ -3391,7 +3423,7 @@ async onDefeat(this: ValidAttackers) {
 	}
 }
 
-async endTurnSaves(this: ValidAttackers) : Promise<string[]> {
+async endTurnStatusEffects(this: ValidAttackers) : Promise<string[]> {
 	const ret = [] as string[];
 	for (const eff of this.effects) {
 		if (await eff.onEndCombatTurn()) {
@@ -3762,6 +3794,7 @@ async addCreatureTag() : Promise<void> {
 }
 
 async onAddToCombat() {
+	if (!game.user.isGM) {return;}
 	switch (this.system.type) {
 		case "shadow": {
       if (!this.isShadow()) {return;}// a double check purely for TS to recognize it;
@@ -3965,6 +3998,7 @@ async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) {
 }
 
 Hooks.on("preUpdateActor", async (actor: PersonaActor, changes) => {
+	if (!actor.isOwner) {return;}
 	switch (actor.system.type) {
 		case "npc": return;
 		case "tarot": return;
@@ -3986,6 +4020,7 @@ Hooks.on("preUpdateActor", async (actor: PersonaActor, changes) => {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
+	if (!actor.isOwner) {return;}
 	if (!actor.isValidCombatant()) {return;}
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 	const lvl =changes?.system?.combat?.personaStats?.pLevel as U<number>;

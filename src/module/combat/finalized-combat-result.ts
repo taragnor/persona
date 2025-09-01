@@ -267,9 +267,9 @@ export class FinalizedCombatResult {
 		}
 		try {
 			await this.autoApplyResult();
-		} catch {
+		} catch (e) {
 			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
-			PersonaError.softFail("Error with automatic result application");
+			PersonaError.softFail("Error with automatic result application", e);
 		}
 		return chatMsg;
 	}
@@ -293,13 +293,22 @@ export class FinalizedCombatResult {
 				sender: game.user.id,
 			};
 			PersonaSockets.simpleSend("COMBAT_RESULT_APPLY", sendObj, [gmTarget.id]);
-			try {
-				await FinalizedCombatResult.addPending(this);
-			} catch (e) {
-				Debug(this);
-				PersonaError.softFail("Error Autoapplying Effect", e);
+			let tries = 3;
+			while (tries> 0) {
+				try {
+					await FinalizedCombatResult.addPending(this);
+					return;
+				} catch (e) {
+					if (e instanceof TimeoutError) {
+						PersonaError.softFail("Timeout error on communicationg to GM computer", e);
+						tries--;
+					} else {
+						Debug(this);
+						PersonaError.softFail("Generic Error Autoapplying Effect", e);
+						return;
+					}
+				}
 			}
-			return;
 		} else {
 			throw new Error("Can't apply no GM connected");
 		}
@@ -610,8 +619,8 @@ export class FinalizedCombatResult {
 			(resolve, reject) => {
 				this.pendingPromises.set(res.id, resolve);
 				setTimeout( () => {
-					reject(new Error("Timeout"));
 					this.pendingPromises.delete(res.id);
+					reject(new TimeoutError("Timeout"));
 				}	, 16000);
 			});
 		return promise;
@@ -710,4 +719,6 @@ Hooks.on("updateActor", async (updatedActor : PersonaActor, changes) => {
 // 	return nums[index];
 // }
 
+class TimeoutError extends Error{
 
+};

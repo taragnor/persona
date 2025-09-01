@@ -2,13 +2,13 @@
 	static DEBUG = true;
 	static _DList: unknown[] = [];
 
-	static Debug(...args :unknown[] ) {
-		if (this._DList == null)
-			{this._DList= [];}
-		for (const str of args)
-		{this._DList.unshift(str);}
-		// console.warn("Added to Debug");
-	}
+		static Debug(...args :unknown[] ) {
+			 if (this._DList == null) {this._DList= [];}
+			 console.warn("Added to Debug");
+			 for (const str of args) {
+					this._DList.unshift(str);
+			 }
+		}
 
 	static DLog (num ?: number | null) {
 		if (num == null)

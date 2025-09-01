@@ -76,7 +76,7 @@ export class PersonaCalendar {
 
 	static async nextDay(extraMsgs : string[] = []) {
 		if(!game.user.isGM) {return;}
-		console.debug("nextday Called");
+		// console.debug("nextday Called");
 		const rolls: Roll[] = [];
 		const calendar = window?.SimpleCalendar?.api;
 		if (!calendar) {
@@ -347,12 +347,12 @@ export class PersonaCalendar {
 
 Hooks.on("preUpdateSetting", function (updateItem, changes) {
 	if (updateItem.key == "smalltime.current-date" && changes.value != undefined) {
-		console.log(`SmallTime PreUpdate: ${JSON.stringify(updateItem.value)}`);
-		Debug(updateItem, changes);
+		// console.log(`SmallTime PreUpdate: ${JSON.stringify(updateItem.value)}`);
+		// Debug(updateItem, changes);
 	}
 	if (updateItem.key == "foundryvtt-simple-calendar.calendar-configuration" && changes.value != undefined) {
-		console.log(`SimpleCalendar Preupdate`);
-		Debug(updateItem, changes);
+		// console.log(`SimpleCalendar Preupdate`);
+		// Debug(updateItem, changes);
 	}
 
 });
@@ -360,11 +360,11 @@ Hooks.on("preUpdateSetting", function (updateItem, changes) {
 Hooks.on("updateSetting", function (updateItem, changes) {
 	if (updateItem.key == "smalltime.current-date" && changes.value != undefined) {
 		console.log(`SmallTime Update: ${JSON.stringify(updateItem.value)}`);
-		Debug(updateItem, changes);
+		// Debug(updateItem, changes);
 	}
 	if (updateItem.key == "foundryvtt-simple-calendar.calendar-configuration" && changes.value != undefined) {
-		console.log(`SimpleCalendar Update:`);
-		Debug(updateItem, changes);
+		// console.log(`SimpleCalendar Update:`);
+		// Debug(updateItem, changes);
 	}
 });
 

@@ -108,6 +108,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	async runCombatantStartCombatTriggers(comb: Combatant<ValidAttackers>) {
 		if (!comb.actor) {return;}
+		if (!game.user.isGM) {return;}
 		if (this.hasCombatantRanStartCombatTrigger(comb)) {
 			return;
 		}
@@ -2645,7 +2646,7 @@ static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[])
 		const attackerActor = attacker.actor;
 		for (const target of selected) {
 			const targetActor = target.actor;
-			const engagingTarget  = combat.isInMeleeWith(PersonaDB.getUniversalTokenAccessor(attacker), PersonaDB.getUniversalTokenAccessor(target));
+			const engagingTarget  = combat.isInMeleeWith(attacker, target);
 			if (attacker.id == target.id) {continue;}
 			if (attackerActor.hasStatus('challenged') && !engagingTarget) {
 				throw new PersonaError("Can't target non-engaged when challenged");
@@ -2808,13 +2809,14 @@ isEngagedByAnyFoe(subject: UniversalTokenAccessor<PToken>) : boolean {
 	return EngagementChecker.isEngagedByAnyFoe(comb, this);
 }
 
-isInMeleeWith (token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
-	const c1 = this.findCombatant(token1);
+isInMeleeWith (token1: UniversalTokenAccessor<PToken> | PToken, token2: UniversalTokenAccessor<PToken> | PToken) : boolean {
+	const c1 = token1 instanceof TokenDocument ? this.findCombatant(token1) : this.findCombatant(token1);
 	if (!c1) {
 		PersonaError.softFail("Can't find combatant");
 		return false;
 	}
-	const c2 = this.findCombatant(token2);
+	// const c2 = token2 instanceof Token ? token2 : this.findCombatant(token2 as UniversalTokenAccessor<PToken>);
+	const c2 = token2 instanceof TokenDocument ? this.findCombatant(token2) : this.findCombatant(token2);
 	if (!c2) {
 		PersonaError.softFail("Can't find combatant");
 		return false;

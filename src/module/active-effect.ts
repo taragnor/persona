@@ -164,6 +164,15 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 	/** returns true if the status expires*/
 	async onStartCombatTurn() : Promise<boolean> {
 		const duration = this.statusDuration;
+		if (this.statuses.has("blocking")) {
+			await this.delete();
+			return true;
+		}
+		if (this.statuses.has("bonus-action")) {
+			await this.delete();
+			return true;
+		}
+
 		switch (duration.dtype) {
 			case "instant":
 				await this.delete();
@@ -252,25 +261,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		return bundle.success ?? false;
 	}
 
+
 	override async delete() {
-		const duration = this.statusDuration;
-		switch (duration.dtype) {
-			case "USoNT":
-			case "UEoNT":
-			case "UEoT": {
-				const acc = duration.anchorStatus;
-				if (!acc) {break;}
-				try {
-					const anchorStatus = PersonaDB.findAE(acc);
-					await anchorStatus?.delete();
-				} catch (e) {
-					console.log(e);
-				}
-				break;
-			}
-			default:
-				break;
-		}
 		await super.delete();
 	}
 
@@ -615,11 +607,32 @@ Hooks.on("createActiveEffect", async function (eff: PersonaAE) {
 });
 
 Hooks.on("deleteActiveEffect", async function (eff: PersonaAE) {
+	if (!game.user.isGM) {return;}
 	if (eff.isFatigueStatus) {
 		const parent = eff.parent;
 		if (parent instanceof PersonaActor) {
 			await parent.setAlteredFatigue();
 		}
 	}
+	const duration = eff.statusDuration;
+	switch (duration.dtype) {
+		case "USoNT":
+		case "UEoNT":
+		case "UEoT": {
+			const acc = duration.anchorStatus;
+			if (!acc) {break;}
+			try {
+				const anchorStatus = PersonaDB.findAE(acc);
+				await anchorStatus?.delete();
+			} catch (e) {
+				console.log(e);
+			}
+			break;
+		}
+		default:
+			break;
+	}
+
 });
+
 

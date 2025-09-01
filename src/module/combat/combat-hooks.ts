@@ -79,6 +79,7 @@ export class CombatHooks {
 
 
 		Hooks.on("createCombatant", async (combatant: Combatant<ValidAttackers>) => {
+			if (!game.user.isGM) {return;}
 			await combatant?.token?.actor?.onAddToCombat();
 			if (combatant.parent?.started) {
 				await (combatant.combat as PersonaCombat).runCombatantStartCombatTriggers(combatant);
