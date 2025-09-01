@@ -133,12 +133,10 @@ export class CombatHooks {
 					if (combat && !combat.isSocial) {
 						await combat.onFollowUpAction(token, status.activationRoll);
 					}
-
 					break;
 				}
 				default:
 			}
-
 		});
 
 

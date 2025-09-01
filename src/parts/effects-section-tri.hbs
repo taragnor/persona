@@ -4,6 +4,7 @@
 
 <hr>
 
+{{#if false}}
 <div data-top-path="system.triEffects">
 	<div data-top-path="system.triEffects.onUse">
 		{{> "systems/persona/parts/effects-section-adaptable.hbs" listName="On Use" namePrefix="system.triEffects.onUse." effects=item.system.triEffects.onUse POWERSTUFF=POWERSTUFF owner=item}}
@@ -21,4 +22,6 @@
 		{{> "systems/persona/parts/effects-section-adaptable.hbs" listName="Embedded" namePrefix="system.triEffects.embedded." effects=item.system.triEffects.embedded POWERSTUFF=POWERSTUFF owner=item}}
 	</div>
 </div>
+{{/if}}
+
 

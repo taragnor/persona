@@ -17,10 +17,12 @@
 		<div>
 			<label> {{getConditionalType effect}}</label>
 		</div>
+		{{#if (isGM)}}
 		<div>
 			<label>Defensive</label>
 			<input type="checkbox" id="is-defensive" name="{{strcat ../namePrefix i '.isDefensive'}}" {{checked effect.isDefensive}}>
 		</div>
+		{{/if}}
 	</div>
 	<div class="flexrow" data-effect-index="{{i}}">
 		<div class="power-effect" >
