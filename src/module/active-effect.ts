@@ -607,6 +607,7 @@ Hooks.on("createActiveEffect", async function (eff: PersonaAE) {
 });
 
 Hooks.on("deleteActiveEffect", async function (eff: PersonaAE) {
+	console.log(`${eff.name} on ${eff.parent?.displayedName.toString()} deleted `);
 	if (!game.user.isGM) {return;}
 	if (eff.isFatigueStatus) {
 		const parent = eff.parent;

@@ -358,6 +358,7 @@ export class FinalizedCombatResult {
 				if (!token) {continue;}
 				if (token.actor && !token.actor.isAlive() && priorHP > 0) {
 					const attacker = PersonaDB.findToken(atkResult.attacker);
+					//need to do constant zero HP checks instead of just checking here
 					await this.#onDefeatOpponent(token, attacker);
 				}
 			}
@@ -367,7 +368,7 @@ export class FinalizedCombatResult {
 	async #onDefeatOpponent(target: PToken, attacker ?: PToken) {
 		const combat = game.combat as PersonaCombat | undefined;
 		if (!combat) {return;}
-		if (target.actor.system.type == "shadow") {
+		if (target.actor.isShadow()) {
 			// const shadow = combat?.combatants.find( c=> c.token.id == target.id) as Combatant<PersonaActor> | undefined;
 			const shadow = combat.findCombatant(target);
 			if (shadow) {
