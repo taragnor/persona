@@ -3,8 +3,8 @@ import { PersonaStat } from "../../../config/persona-stats.js";
 import { PowerPrinter } from "../../printers/power-list.js";
 import { PersonaRoller } from "../../persona-roll.js";
 import { PersonaDB } from "../../persona-db.js";
-import { UsableAndCard } from "../../item/persona-item.js";
-import { NPCAlly } from "../persona-actor.js";
+import { Usable, UsableAndCard } from "../../item/persona-item.js";
+import { NPCAlly, PersonaActor } from "../persona-actor.js";
 import { Consumable } from "../../item/persona-item.js";
 import { Logger } from "../../utility/logger.js";
 import { Helpers } from "../../utility/helpers.js";
@@ -20,6 +20,7 @@ import { ValidAttackers } from "../../combat/persona-combat.js";
 import { Talent } from "../../item/persona-item.js";
 import { Power } from "../../item/persona-item.js";
 import { Focus } from "../../item/persona-item.js";
+import {Persona} from "../../persona-class.js";
 
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	declare actor: ValidAttackers;
@@ -388,7 +389,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	}
 
-	displayDamageStack(event: JQuery.ClickEvent) {
+	async displayDamageStack(event: JQuery.ClickEvent) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		if (powerId == undefined) {
 			throw new PersonaError(`Can't find power`);
@@ -397,8 +398,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!power) {
 			throw new PersonaError(`Can't find power id ${powerId}`);
 		}
-		power.displayDamageStack(this.actor);
-		const stack = power.getDamageStack(this.actor);
+		await power.displayDamageStack(this.actor);
+		const stack = await power.getDamageStack(this.actor);
 		$(event.currentTarget).prop('title', stack);
 	}
 
@@ -407,9 +408,12 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.getItemById(powerId);
 		const CONST = PersonaActorSheetBase.CONST();
 
-		const html = await renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona()});
-		$(ev.currentTarget).prop('title', html);
-	}
+		if (!power) {return;}
+		const persona = this.actor.persona();
+		const damage =  await CombatantSheetBase.getDamage(persona, power as Power);
+			const html = await renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona(), damage});
+			$(ev.currentTarget).prop('title', html);
+		}
 
 	async showPowersTable(_ev: JQuery.ClickEvent) {
 		await PowerPrinter.open();
@@ -458,4 +462,18 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 	}
 
+	static async getDamage(actor: PersonaActor | Persona, usable: Usable) {
+		if (actor instanceof Persona) {
+			actor = actor.user;
+		}
+		if (!actor.isValidCombatant()) {return "0/0";}
+		const dmg = await usable.estimateDamage(actor);
+		if (dmg.high <= 0) {
+			return `-/-`;
+		}
+		return `${dmg.low}/${dmg.high}`;
+	}
+
 }
+
+

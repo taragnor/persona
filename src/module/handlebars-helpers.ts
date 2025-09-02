@@ -146,17 +146,6 @@ export class PersonaHandleBarsHelpers {
 			if (!pc || pc.system.type != "pc") {return false;}
 			return (pc as PC).meetsSLRequirement(benefit.focus);
 		},
-		"getDamage": (actor: PersonaActor | Persona, usable: Usable) => {
-			if (actor instanceof Persona) {
-				actor = actor.user;
-			}
-			if (!actor.isValidCombatant()) {return "0/0";}
-			const dmg = usable.estimateDamage(actor);
-			if (dmg.high <= 0) {
-				return `-/-`;
-			}
-			return `${dmg.low}/${dmg.high}`;
-		},
 
 		"getCriticalBoostEstimate" : function (actor: PC | Shadow, power: Usable) : number {
 			const situation : Situation = {
@@ -164,7 +153,7 @@ export class PersonaHandleBarsHelpers {
 				attacker: actor.accessor,
 				user: actor.accessor,
 			};
-			const critBonus = PersonaCombat.calcCritModifier(actor, actor, power, situation, true);
+			const critBonus = PersonaCombat.calcCritModifier(actor, actor, power, situation);
 			return critBonus.total(situation);
 		},
 		"getTokenAccName" : (tokenAcc: UniversalTokenAccessor<PToken> | UniversalActorAccessor<PC | Shadow>) =>  {

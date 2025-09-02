@@ -23,7 +23,6 @@ import { PersonaDB } from "./persona-db.js";
 import { PersonaError } from "./persona-error.js";
 import { TensionPool } from "./exploration/tension-pool.js";
 import { Shadow } from "./actor/persona-actor.js";
-import { PersonaCombat } from "./combat/persona-combat.js";
 import { Logger } from "./utility/logger.js";
 import { PC } from "./actor/persona-actor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
@@ -582,9 +581,7 @@ static async #passMetaverseTurn() {
 		});
 	}
 	await StepsClock.instance.inc();
-	await TriggeredEffect.onTrigger("on-metaverse-turn")
-		.emptyCheck()
-		?.autoApplyResult();
+	await TriggeredEffect.autoApplyTrigger("on-metaverse-turn");
 	ui.notifications.notify("Passing Metaverse turn");
 }
 
@@ -867,9 +864,7 @@ Hooks.on("updateWall", async function (_updateItem: WallDocument, changes: Recor
 			trigger: "on-open-door",
 			triggeringUser: game.users.get(userId)!,
 		};
-		await PersonaCombat.onTrigger("on-open-door", undefined, situation)
-		.emptyCheck()
-		?.autoApplyResult();
+		await TriggeredEffect.autoApplyTrigger("on-open-door", undefined, situation);
 	}
 });
 
@@ -880,9 +875,7 @@ Hooks.on("clockTick", async function (clock: ProgressClock, _newAmt: number) {
 		triggeringUser: game.user,
 	};
 	console.log("Triggering ClockTick");
-	await PersonaCombat.onTrigger("on-clock-tick", undefined, situation)
-	.emptyCheck()
-	?.autoApplyResult();
+	await TriggeredEffect.autoApplyTrigger("on-clock-tick", undefined, situation);
 });
 
 Hooks.on("updateClock", async function (clock: ProgressClock, _newAmt: number, _delta: number) {
@@ -892,9 +885,7 @@ Hooks.on("updateClock", async function (clock: ProgressClock, _newAmt: number, _
 		triggeringUser: game.user,
 	};
 	console.log("Triggering Clock Change");
-	await PersonaCombat.onTrigger("on-clock-change", undefined, situation)
-	.emptyCheck()
-	?.autoApplyResult();
+	await TriggeredEffect.autoApplyTrigger("on-clock-change", undefined, situation);
 });
 
 //@ts-expect-error adding to window

@@ -969,10 +969,6 @@ export class PersonaSocial {
 		return await TriggeredEffect.execNonCombatTrigger(trigger, actor, situation, msg);
 	}
 
-	static onTrigger(trigger: NonCombatTriggerTypes, actor: PC, situation ?: Situation) : CombatResult {
-		return TriggeredEffect.onTrigger(trigger, actor, situation);
-	}
-
 	static async awardPerk(target: PC, socialLink: SocialLink) {
 		const situation : Situation = {
 			user: target.accessor,
@@ -1223,7 +1219,7 @@ export class PersonaSocial {
 		const processed= PersonaCombat.processConsequences_simple(results, situation);
 		const result = new CombatResult();
 		for (const c of processed.consequences) {
-			result.addEffect(null, actor, c.cons, situation);
+			await result.addEffect(null, actor, c.cons, situation);
 		}
 		await result.emptyCheck()
 			?.autoApplyResult();

@@ -245,6 +245,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return PersonaItem.hpGrowthTable.valueAt(lvl);
   }
 
+	calcClassMaxMP( this:CClass, lvl: number) : number {
+		return PersonaItem.mpGrowthTable.valueAt(lvl);
+	}
+
 
   get accessor() : UniversalItemAccessor<typeof this> {
     return PersonaDB.getUniversalItemAccessor(this);
@@ -1170,35 +1174,36 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   /** used for damage calculation estaimate for char sheet*/
-  generateSimulatedResult(this: Usable, user: ValidAttackers, situation: AttackResult['situation']) : CombatResult | undefined;
-  generateSimulatedResult(this: Usable, user: ValidAttackers, simulatedNat: number) : CombatResult | undefined;
-  generateSimulatedResult (this: Usable, user: ValidAttackers, simulatedSitOrNat: number | AttackResult['situation']) : CombatResult | undefined {
+  async generateSimulatedResult(this: Usable, user: ValidAttackers, situation: AttackResult['situation']) : Promise<CombatResult | undefined>;
+  async generateSimulatedResult(this: Usable, user: ValidAttackers, simulatedNat: number) : Promise<CombatResult | undefined>;
+  async generateSimulatedResult (this: Usable, user: ValidAttackers, simulatedSitOrNat: number | AttackResult['situation']) : Promise<CombatResult | undefined> {
     const token = user.getActiveTokens(true)
       .map(x=> x.document) as PToken[];
     if (!token || token.length ==0) {return undefined;}
     if (typeof simulatedSitOrNat == 'number') {
-      return PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedSitOrNat);
+      return await PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedSitOrNat);
     } else {
-      return PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedSitOrNat);
+      return await PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedSitOrNat);
     }
   }
 
-  generateSimulatedDamageObject(this: Usable, user: ValidAttackers, simulatedNat: number) : EvaluatedDamage | undefined {
-    const result = this.generateSimulatedResult(user, simulatedNat);
+  async generateSimulatedDamageObject(this: Usable, user: ValidAttackers, simulatedNat: number) : Promise<EvaluatedDamage | undefined> {
+    const result = await this.generateSimulatedResult(user, simulatedNat);
     return result?.finalize()?.attacks[0]?.changes[0]?.damage[0];
   }
 
-  displayDamageStack(this: Usable, user: ValidAttackers) {
-    // const estimate = this.generateSimulatedDamageObject(user, 6);
-    // if (!estimate) {console.warn(`Can't get damage stack for ${this.name}`); return;}
-    // const sim = estimate?.str;
-    // if (!sim) {console.warn(`Can't get damage stack for ${this.name}`); return;}
-    const st = this.getDamageStack(user);
-    console.log(`Damage stack ${st}`);
-  }
+	async displayDamageStack(this: Usable, user: ValidAttackers) : Promise<string> {
+		// const estimate = this.generateSimulatedDamageObject(user, 6);
+		// if (!estimate) {console.warn(`Can't get damage stack for ${this.name}`); return;}
+		// const sim = estimate?.str;
+		// if (!sim) {console.warn(`Can't get damage stack for ${this.name}`); return;}
+		const st = await this.getDamageStack(user);
+		console.log(`Damage stack ${st}`);
+		return st;
+	}
 
-  getDamageStack(this: Usable, user: ValidAttackers): string {
-    const estimate = this.generateSimulatedDamageObject(user, 6);
+  async getDamageStack(this: Usable, user: ValidAttackers): Promise<string> {
+    const estimate = await this.generateSimulatedDamageObject(user, 6);
     if (!estimate) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return '';}
     const sim = estimate?.str;
     if (!sim) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return '';}
@@ -1208,7 +1213,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       `;
   }
 
-  estimateDamage(this: Usable, user: ValidAttackers) : {low: number, high: number} {
+  async estimateDamage(this: Usable, user: ValidAttackers) : Promise<{low: number, high: number}> {
     switch (this.system.subtype) {
       case 'social-link':
       case 'passive':
@@ -1221,8 +1226,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case 'consumable':
       case 'standalone': {
         return {
-          high: Math.abs(this.generateSimulatedDamageObject(user, 6)?.hpChange ?? 0),
-          low: Math.abs(this.generateSimulatedDamageObject(user, 5)?.hpChange ?? 0) ,
+          high: Math.abs((await this.generateSimulatedDamageObject(user, 6))?.hpChange ?? 0),
+          low: Math.abs((await this.generateSimulatedDamageObject(user, 5))?.hpChange ?? 0) ,
         };
       }
       case 'weapon':
@@ -1231,8 +1236,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
           return {high: 0, low:0};
         }
         return {
-          high: Math.abs(this.generateSimulatedDamageObject(user, 6)?.hpChange ?? 0),
-          low: Math.abs(this.generateSimulatedDamageObject(user, 5)?.hpChange ?? 0) ,
+          high: Math.abs((await this.generateSimulatedDamageObject(user, 6))?.hpChange ?? 0),
+          low: Math.abs((await this.generateSimulatedDamageObject(user, 5))?.hpChange ?? 0) ,
         };
       default:
         this.system satisfies never;

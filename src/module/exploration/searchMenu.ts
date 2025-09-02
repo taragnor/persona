@@ -4,7 +4,6 @@ import { PersonaRegion } from "../region/persona-region.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaSFX } from "../combat/persona-sfx.js";
 import { PersonaDB } from "../persona-db.js";
-import { PersonaCombat } from "../combat/persona-combat.js";
 import { TensionPoolResult } from "./tension-pool.js";
 import { PersonaError } from "../persona-error.js";
 import { HTMLTools } from "../utility/HTMLTools.js";
@@ -16,6 +15,7 @@ import { PersonaSockets } from "../persona.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { TensionPool } from "./tension-pool.js";
 import { sleep } from "../utility/async-wait.js";
+import {TriggeredEffect} from "../triggered-effect.js";
 
 
 
@@ -208,9 +208,7 @@ export class SearchMenu {
 				}
 			}
 		}
-		await PersonaCombat.onTrigger("on-search-end")
-			.emptyCheck()
-			?.autoApplyResult();
+		await TriggeredEffect.autoApplyTrigger("on-search-end");
 		const {roll, result} = TensionPool.instance.nullResult();
 		if (roll) {
 			rolls.push(roll);

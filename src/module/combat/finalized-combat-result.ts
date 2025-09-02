@@ -25,7 +25,6 @@ import { ValidAttackers } from "./persona-combat.js";
 import { ValidSound } from "../persona-sounds.js";
 import { PersonaDB } from "../persona-db.js";
 import { ActorChange } from "./combat-result.js";
-import {TimeoutError} from "../utility/socket-manager.js";
 
 
 
@@ -454,11 +453,12 @@ export class FinalizedCombatResult {
 			}
 			if (dmg.hpChange != 0) {
 				if (dmg.hpChange < 0) {
-					setTimeout( () => {
-						void PersonaCombat
-							.onTrigger("on-damage", actor)
-							.emptyCheck()
-							?.toMessage("Reaction (Taking Damage)" , actor);
+					setTimeout( async () => {
+						const CR = await TriggeredEffect
+							.autoTriggerToCR("on-damage", actor);
+						if (CR) {
+							await CR?.toMessage("Reaction (Taking Damage)" , actor);
+						}
 					});
 				}
 				if (token) {

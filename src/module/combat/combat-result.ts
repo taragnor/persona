@@ -156,6 +156,7 @@ export class CombatResult  {
 		}
 		let damageCalc : DamageCalculation;
 		if (damageType == undefined) {
+			// eslint-disable-next-line no-debugger
 			debugger;
 			PersonaError.softFail("Damage Type is undefined on this consequence", cons, atkResult, effect);
 			return undefined;
@@ -182,7 +183,7 @@ export class CombatResult  {
 		return undefined;
 	}
 
-	addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
+	async addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
 		const effect = this.#getEffect(target);
 		switch (cons.type) {
 			case "none":
@@ -211,7 +212,7 @@ export class CombatResult  {
 						.hpChange ?? 0
 						: 0;
 				}
-				const id = cons.statusName!;
+				const id = cons.statusName;
 				if (id != "bonus-action") {
 					if (!target) {
 						PersonaError.softFail(`No Target for ${id}`);
@@ -227,7 +228,7 @@ export class CombatResult  {
 			}
 			case "removeStatus" : {
 				if (!effect) {break;}
-				const id = cons.statusName!;
+				const id = cons.statusName;
 				const actor = PersonaDB.findActor(effect.actor);
 				if (actor.hasStatus(id)) {
 					effect.removeStatus.push({
@@ -303,7 +304,7 @@ export class CombatResult  {
 				break;
 			case "other-effect":
 				break;
-			case "set-flag":
+			case "set-flag": {
 				if (!effect) {break;}
 				const dur = convertConsToStatusDuration(cons, atkResult ?? target!);
 				effect.otherEffects.push( {
@@ -314,6 +315,7 @@ export class CombatResult  {
 					duration: dur,
 				});
 				break;
+			}
 			case "inspiration-cost": {
 				let situation: Situation | undefined = atkResult?.situation;
 				if (!effect) {break;}
@@ -368,15 +370,16 @@ export class CombatResult  {
 					level: cons.amount ?? 1,
 				});
 				break;
-			case "social-card-action":
+			case "social-card-action": {
 				//must be executed playerside as event execution is a player thing
 				if (!effect) {break;}
 				const otherEffect : SocialCardActionConsequence = {
 					...cons
 				};
-				PersonaSocial.execSocialCardAction(otherEffect);
+				await PersonaSocial.execSocialCardAction(otherEffect);
 				effect.otherEffects.push( otherEffect);
 				break;
+			}
 			case "dungeon-action":
 				this.globalOtherEffects.push( {
 					...cons
@@ -413,13 +416,14 @@ export class CombatResult  {
 				if (!effect) {break;}
 				effect.otherEffects.push(cons);
 				break;
-			case "alter-variable":
+			case "alter-variable": {
 				const alterVarCons = {
 					...cons,
 					contextList: PersonaCombat.createTargettingContextList(situation, cons),
 				};
 				effect?.otherEffects.push(alterVarCons);
 				break;
+			}
 			case "perma-buff":
 				if (!effect) {break;}
 				effect.otherEffects.push(cons);
@@ -483,7 +487,6 @@ export class CombatResult  {
 	emptyCheck(debug = false) : CombatResult | undefined {
 		if (debug) {
 			Debug(this);
-			debugger;
 		}
 		const attacks = Array.from(this.attacks.entries());
 		if (this.escalationMod == 0 && this.costs.length == 0 && attacks.length ==0 && this.globalOtherEffects.length == 0) {return undefined;}
@@ -500,13 +503,13 @@ export class CombatResult  {
 		return finalized.autoApplyResult();
 	}
 
-	async print(): Promise<void> {
-		const signedFormatter = new Intl.NumberFormat("en-US", {signDisplay : "always"});
-		let msg = "";
-		if (this.escalationMod) {
-			msg += `escalation Mod: ${signedFormatter.format(this.escalationMod)}`;
-		}
-	}
+	// async print(): Promise<void> {
+	// 	const signedFormatter = new Intl.NumberFormat("en-US", {signDisplay : "always"});
+	// 	let msg = "";
+	// 	if (this.escalationMod) {
+	// 		msg += `escalation Mod: ${signedFormatter.format(this.escalationMod)}`;
+	// 	}
+	// }
 
 
 
@@ -537,6 +540,7 @@ export class CombatResult  {
 			const aDamage = ret[key]!;
 			if (!bDamage.isMergeable(aDamage)) {
 				PersonaError.softFail("Unmergable value, this shoudln't hapepn", original, b);
+				// eslint-disable-next-line no-debugger
 				debugger;
 			}
 			aDamage.merge(bDamage);
@@ -610,12 +614,14 @@ function resolveStatusDurationAnchor (anchor: (Consequence & {type : "addStatus"
 			break;
 		case "owner":
 			console.warn("Using owner in status duration anchors is unsupported and just resolves to 'user'");
-		case "user":
-			const userAcc=  atkResult.situation.user;
+		// eslint-disable-next-line no-fallthrough
+		case "user": {
+			const userAcc = atkResult.situation.user;
 			if (userAcc)
 				{return userAcc;}
 			PersonaError.softFail("Can't resolve user for status Duration anchor");
-			return null;
+			return null; 
+		}
 		case "attacker":
 			accessor = atkResult.attacker;
 			break;
@@ -631,6 +637,7 @@ function resolveStatusDurationAnchor (anchor: (Consequence & {type : "addStatus"
 				if (actor && actor.isValidCombatant()) {return actor.accessor;}
 				return null;
 			}
+			break;
 		case "all-allies":
 		case "all-foes":
 		case "all-in-region":
@@ -641,8 +648,8 @@ function resolveStatusDurationAnchor (anchor: (Consequence & {type : "addStatus"
 			return null;
 	}
 	if (accessor) {
-		const token = PersonaDB.findToken(accessor)!;
-		return token?.actor?.accessor!;
+		const token = PersonaDB.findToken(accessor);
+		return token?.actor?.accessor;
 	}
 	PersonaError.softFail("Odd error in resolving Status Anchor");
 	return null;
@@ -690,7 +697,7 @@ function convertConsToStatusDuration(cons: Consequence & {type : "addStatus" | "
 			};
 		case "UEoNT":
 		case "USoNT":
-		case "UEoT":
+		case "UEoT": {
 			if (atkResultOrActor instanceof PersonaActor) {
 				return {
 					dtype: dur,
@@ -708,6 +715,8 @@ function convertConsToStatusDuration(cons: Consequence & {type : "addStatus" | "
 			if (!anchorHolder) {
 				PersonaError.softFail(`Can't coinvert consequence ${cons.type}`, atkResultOrActor);
 			}
+		}
+			break;
 		case "anchored":
 			PersonaError.softFail("Anchored shouldn't happen here");
 			return {
@@ -720,9 +729,9 @@ function convertConsToStatusDuration(cons: Consequence & {type : "addStatus" | "
 			};
 		default:
 			dur satisfies never;
-			PersonaError.softFail(`Invaliud Duration ${dur}`);
-			return {dtype: "instant"};
 	}
+	PersonaError.softFail(`Invaliud Duration ${dur as string}`, cons);
+	return {dtype: "instant"};
 }
 
 export type ResistResult =  {

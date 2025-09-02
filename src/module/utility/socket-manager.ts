@@ -21,7 +21,7 @@ export class SocketManager {
 	#socketName: string;
 	_socketsReady: boolean = false;
 	#handlers: HandlerMap<keyof SocketMessage>= new Map();
-	#channelNumber = 0;
+	// #channelNumber = 0;
 
 	#messageId: 1;
 

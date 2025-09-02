@@ -279,7 +279,7 @@ export class PersonaRegion extends RegionDocument {
 			triggeringCharacter: token.actor.accessor,
 			triggeringUser: game.user,
 		};
-		await TriggeredEffect.onTrigger("on-enter-region", token.actor, situation).emptyCheck()?.autoApplyResult();
+		await TriggeredEffect.autoApplyTrigger("on-enter-region", token.actor, situation);
 		if (tokens.some(t => t.actor?.system.type == "shadow" && !t.hidden) ) {return;}
 		await this.presenceCheck("wandering");
 		await Metaverse.passMetaverseTurn();

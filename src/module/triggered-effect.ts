@@ -15,7 +15,7 @@ import {testPreconditions} from "./preconditions.js";
 
 export class TriggeredEffect {
 
-	static onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation ) : CombatResult {
+	static async onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation ) : Promise<CombatResult> {
 		const result = new CombatResult();
 		if (!situation) {
 			switch (trigger) {
@@ -130,7 +130,7 @@ export class TriggeredEffect {
 			for (const eff of trig.getTriggeredEffects(actor ?? null)) {
 				try {
 					if (!testPreconditions(eff.conditions, situationCopy, trig)) { continue; }
-					const res = PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null, trig);
+					const res = await PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null, trig);
 					result.merge(res);
 				} catch (e) {
 					PersonaError.softFail(`Problem with triggered effects ${trig.name} running on actor ${actor?.name ?? "none"}`, e);
@@ -141,14 +141,24 @@ export class TriggeredEffect {
 		return result;
 	}
 
+	static async autoApplyTrigger(...args : Parameters<typeof TriggeredEffect["onTrigger"]>) : Promise<void> {
+		const CR = await this.autoTriggerToCR(...args);
+		await CR?.autoApplyResult();
+	}
+
+	static async autoTriggerToCR(...args : Parameters<typeof TriggeredEffect["onTrigger"]>) : Promise<U<CombatResult>> {
+		const CR = await this.onTrigger(...args);
+		return CR.emptyCheck();
+	}
+
 	static async execNonCombatTrigger( trigger: NonCombatTriggerTypes, actor: PC, situation ?: Situation, msg = "Triggered Effect") : Promise<void> {
-		await this.onTrigger(trigger, actor, situation)
+		await (await this.onTrigger(trigger, actor, situation))
 		.emptyCheck()
 		?.toMessage(msg, actor);
 	}
 
 	static async execCombatTrigger(trigger: CombatTriggerTypes, actor: ValidAttackers, situation?: Situation) : Promise<void> {
-		const triggerResult = this.onTrigger(trigger, actor, situation)
+		const triggerResult = (await this.onTrigger(trigger, actor, situation))
 		.emptyCheck();
 		if (!triggerResult) {return;}
 		const usePowers = triggerResult.findEffects("use-power");

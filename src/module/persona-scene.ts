@@ -308,9 +308,7 @@ Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
 		if (game.combats.contents.some( (cmb: PersonaCombat) => cmb.isSocial)) {
 			await Logger.gmMessage("Social Scene still active, consider ending it before starting metaverse activity");
 		}
-		await TriggeredEffect.onTrigger("on-active-scene-change")
-			.emptyCheck()
-			?.autoApplyResult();
+		await TriggeredEffect.autoApplyTrigger("on-active-scene-change");
 	}
 });
 

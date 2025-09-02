@@ -181,7 +181,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	mmpCalculation(this: ValidAttackers) {
 		if (this.isShadow()) {return new Calculation().eval();}
 		try {
-			const lvlmaxMP = this.calcBaseClassMMP();
+			// const lvlmaxMP = this.calcBaseClassMMP();
+			const lvlmaxMP = PersonaItem.mpGrowthTable.valueAt(this.level);
 			const x = new Calculation(lvlmaxMP);
 			const persona = this.persona();
 			const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
@@ -215,30 +216,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				this.system satisfies never;
 				return 0;
 		}
-		// const persona = this.persona();
-		// const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
-		// const mpAdjustPercent = this.#mpAdjustPercent();
-		// // const mpAdjust = this.system.mp_adjust;
-		// const bonuses = persona.getBonuses("maxmp");
-		// const mult = 1 + persona.getBonuses("maxmpMult").total(sit);
-		// const lvlmaxMP = (this as PC | NPCAlly).calcBaseClassMMP();
-		// const nonMultMPBonus = this.system.combat.bonusMP ?? 0;
-		// const val = Math.round((mpAdjustPercent * mult * (lvlmaxMP)) + bonuses.total(sit) + nonMultMPBonus);
 		const val = Math.round(this.mmpCalculation().total);
 		void (this as PC | NPCAlly).refreshMaxMP(val);
 		return val;
 	}
 
-	calcBaseClassMMP(this: PC | NPCAlly): number {
-		//TODO: still using old level
-		const lvl = this.system.combat.classData.level;
-
-		const inc = this.system.combat.classData.incremental.mp;
-		const mpBase = Math.round(PersonaActor.calcMP(lvl));
-		const mpNext = Math.round(PersonaActor.calcMP(lvl + 1));
-		const diff = mpNext - mpBase;
-		return mpBase + Math.round((inc/3 * diff));
-	}
 
 	static calcMP (level: number) : number {
 		const mapVal = this.MPMap.get(level);
@@ -538,6 +520,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return false;
 	}
 
+	calcBaseClassMMP(this: PC | NPCAlly): number {
+		//TODO: still using old level
+		const lvl = this.system.combat.classData.level;
+
+		const inc = this.system.combat.classData.incremental.mp;
+		const mpBase = Math.round(PersonaActor.calcMP(lvl));
+		const mpNext = Math.round(PersonaActor.calcMP(lvl + 1));
+		const diff = mpNext - mpBase;
+		return mpBase + Math.round((inc/3 * diff));
+	}
+
 
 	mhpCalculation(this: ValidAttackers) {
 		try {
@@ -573,6 +566,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		return new Calculation().eval();
 	}
+
 
 
 	get mhp() : number {
@@ -1964,7 +1958,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (this.isShadow() && !this.isPersona() && !this.isDMon()) {
 				await this.addLearnedPower(power, this.level);
 			}
-			if (logChanges) {
+			if (logChanges && this.hasPlayerOwner) {
 				await Logger.sendToChat(`${this.name} learned Power: ${power.name}`);
 			}
 			return;
@@ -1974,7 +1968,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (sideboard.length < this.persona().maxSideboardPowers) {
 				sideboard.push(power.id);
 				await this.update( {"system.combat.powers_sideboard": sideboard});
-				if (logChanges) {
+				if (logChanges && this.hasPlayerOwner) {
 					await Logger.sendToChat(`${this.name} learned Power: ${power.name} (placed in sideboard)`);
 				}
 				return;
@@ -2571,9 +2565,11 @@ async onEnterMetaverse()  : Promise<void> {
 			user: this.accessor,
 		};
 		await TriggeredEffect
-			.onTrigger("enter-metaverse", this, situation)
-			.emptyCheck()
-			?.autoApplyResult();
+		.autoApplyTrigger("enter-metaverse", this, situation);
+		// await TriggeredEffect
+		// 	.onTrigger("enter-metaverse", this, situation)
+		// 	.emptyCheck()
+		// 	?.autoApplyResult();
 	} catch (e) {
 		console.log(e);
 		PersonaError.softFail(`problem with onEnterMetaverse for ${this.name}`, e);
@@ -2610,7 +2606,7 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 			case "pc":
 			case "shadow":
 			case "npcAlly":
-				await TriggeredEffect.onTrigger("exit-metaverse", this).emptyCheck()?.autoApplyResult();
+				await TriggeredEffect.autoApplyTrigger("exit-metaverse", this);
 				break;
 			default:
 					this.system satisfies never;
@@ -2687,7 +2683,8 @@ maxSlot() : number {
 		default:
 			this.system satisfies never;
 	}
-	const level = this.system.combat.classData.level;
+	const level = Math.floor(this.level / 10)+1;
+	// const level = this.system.combat.classData.level;
 	switch (true) {
 		case level >= 9: return 3;
 		case level >= 6: return 2;
@@ -3707,9 +3704,7 @@ async onRoll(situation: RollSituation & Situation) {
 		rollTotal: situation.rollTotal,
 		triggeringUser: game.user,
 	};
-	await TriggeredEffect.onTrigger("on-roll", this, rollSituation)
-		.emptyCheck()
-		?.autoApplyResult();
+	await TriggeredEffect.autoApplyTrigger("on-roll", this, rollSituation);
 }
 
 async onCombatStart() {

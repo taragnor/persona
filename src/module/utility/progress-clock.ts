@@ -59,7 +59,7 @@ export  class ProgressClock {
 		const cl = this.#getClock();
 		if (!cl) {return;}
 		cl.name = newName;
-		window.clockDatabase!.update(cl);
+		void window.clockDatabase!.update(cl);
 	}
 
 	static getOrCreateClockByName(name: string, maxIfDoesntExist: number) {
@@ -67,7 +67,7 @@ export  class ProgressClock {
 		if (!db) {throw new Error("No Clock database, is Global Progress Clocks Active?");}
 		let cl = db.getName(name);
 		if (!cl) {
-			db.addClock({
+			void db.addClock({
 				name: name,
 				value: 0,
 				max: maxIfDoesntExist,
@@ -85,7 +85,7 @@ export  class ProgressClock {
 		if (!db) {throw new Error("No Clock database, is Global Progress Clocks Active?");}
 		let cl = db.get(id);
 		if (!cl) {
-			db.addClock({
+			void db.addClock({
 				name: nameIfDoesntExist,
 				value: 0,
 				max: maxIfDoesntExist,
@@ -172,7 +172,7 @@ export  class ProgressClock {
 		const clk = this.#getClock();
 		if (!clk) {return;}
 		clk.max = newMax;
-		window.clockDatabase!.update(clk);
+		void window.clockDatabase!.update(clk);
 	}
 
 
@@ -189,7 +189,7 @@ export  class ProgressClock {
 		if( cl) {
 			const cm = cl as {meta ?: ClockMetaData};
 			cm["meta"] = metadata;
-			window.clockDatabase!.update(cl);
+			void window.clockDatabase!.update(cl);
 		}
 	}
 
@@ -230,7 +230,7 @@ export  class ProgressClock {
 		if (!clock) {return;}
 		if (clock.private == true) {return;}
 		clock.private = true;
-		window.clockDatabase!.update(clock);
+		await window.clockDatabase!.update(clock);
 	}
 
 	async show() {
@@ -238,7 +238,7 @@ export  class ProgressClock {
 		if (!clock) {return;}
 		if (clock.private == false) {return;}
 		clock.private = false;
-		window.clockDatabase!.update(clock);
+		await window.clockDatabase!.update(clock);
 	}
 
 	get max(): number {
@@ -255,7 +255,7 @@ export  class ProgressClock {
 		return this.amt;
 	}
 
-	async reportTick(newAmt: number) : Promise<void> {
+	reportTick(newAmt: number) : void {
 		Hooks.callAll("clockTick", this, newAmt);
 	}
 
@@ -284,9 +284,9 @@ export  class ProgressClock {
 		const oldVal = this.amt;
 		const tick = Math.abs(this.amt - amt);
 		amt = Math.clamp(amt, 0, this.max);
-		this.refreshValue(amt);
+		await this.refreshValue(amt);
 		if (tick != 0) {
-			await this.reportTick(tick);
+			this.reportTick(tick);
 		}
 		await this.reportChange(amt, oldVal);
 		return this.amt;
@@ -297,7 +297,7 @@ export  class ProgressClock {
 			const oldVal = this.amt;
 			const amt = Math.min(this.max, Math.max(0, this.amt + mod));
 			await this.refreshValue(amt);
-			if (mod == 1) {await  this.reportTick(amt); }
+			if (mod == 1) {this.reportTick(amt); }
 			await this.reportChange(amt, oldVal);
 			return this.amt;
 		}
@@ -309,8 +309,8 @@ export  class ProgressClock {
 			modAmt = modAmt + (this.max +1);
 		}
 		const oldVal = this.amt;
-		this.refreshValue(modAmt);
-		if (mod == 1) { await this.reportTick(modAmt); }
+		await this.refreshValue(modAmt);
+		if (mod == 1) { this.reportTick(modAmt); }
 		await this.reportChange(modAmt, oldVal);
 		return this.amt;
 	}
@@ -322,7 +322,7 @@ export  class ProgressClock {
 		}
 		let clock = window.clockDatabase.get(this.id);
 		if (!clock) {
-			window.clockDatabase.addClock({
+			void window.clockDatabase.addClock({
 				name: this.clockName,
 				value: 0,
 				max: this.default_max,
