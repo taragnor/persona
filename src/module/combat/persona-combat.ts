@@ -1775,7 +1775,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (deathRange) {
 			deathRange.low -= total;
 		}
-		debugger;
 		return deathRange;
 	}
 
