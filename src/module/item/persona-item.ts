@@ -2051,6 +2051,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return (this.system.instantKillChance != 'none');
   }
 
+	canDealDamage(this: Usable) :  boolean {
+		return this.getOnUseEffects(null)
+			.some( eff => eff.consequences
+				.some( cons => cons.type == "damage-new" || cons.type.includes("dmg")
+				)
+		);
+
+	}
+
 
   extraConditionsFromTags( this: SocialCard) : SocialCard['system']['conditions'] {
     const SLCheck = function (low:number, high:number) : Precondition {
@@ -2272,6 +2281,20 @@ get ailmentRange() : {low: number, high:number} | undefined {
     case 'always': return {low: 1, high: 20};
     default:
       this.system.ailmentChance satisfies never;
+  }
+}
+
+get instantDeathRange(): {low: number, high: number} | undefined {
+  if (!this.isUsableType() || this.isSkillCard()) {return undefined;}
+	if (this.system.defense == "kill") {return undefined;}
+  switch (this.system.instantKillChance) {
+    case 'none': return undefined;
+    case 'low': return {low: 19, high: 20};
+    case 'medium': return {low: 17, high: 20};
+    case 'high': return {low: 15, high: 20};
+    case 'always': return {low: 1, high: 20};
+    default:
+      this.system.instantKillChance satisfies never;
   }
 }
 

@@ -637,7 +637,9 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 		case "scene-clock-name-is":
 			return `Scene Clock is named ${cond.clockName}`;
 		case "is-within-ailment-range":
-			return `Attack Roll is within ailment range`;
+			return `Attack Roll hits and is within ailment range`;
+		case "is-within-instant-death-range":
+			return `Attack roll hits and is within instant death range`;
 		default:
 			cond satisfies never;
 			return "";

@@ -811,6 +811,8 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			return SceneClock.instance.clockName.toUpperCase().trim() == condition.clockName.toUpperCase().trim();
 		case "is-within-ailment-range":
 			return "withinAilmentRange" in situation ? situation.withinAilmentRange ?? false : false;
+		case "is-within-instant-death-range":
+			return "withinInstantKillRange" in situation ? situation.withinInstantKillRange ?? false : false;
 		default :
 			condition satisfies never;
 			return undefined;

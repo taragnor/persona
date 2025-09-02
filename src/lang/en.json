@@ -762,6 +762,7 @@
 	"persona.preconditions.comparison.is-critical": "Critical Hit",
 	"persona.preconditions.comparison.is-hit": "Hit",
 	"persona.preconditions.comparison.is-within-ailment-range": "Within Ailment Range",
+	"persona.preconditions.comparison.is-within-instant-death-range": "Within Instant Death Range",
 	"persona.preconditions.comparison.damage-type-is": "Damage Type is",
 	"persona.preconditions.comparison.power-type-is": "Power Type Is",
 	"persona.preconditions.comparison.has-status": "Has Status",

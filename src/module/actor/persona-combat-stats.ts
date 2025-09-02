@@ -5,7 +5,7 @@ import { Persona } from "../persona-class.js";
 import {PersonaStat} from "../../config/persona-stats.js";
 import {RealDamageType} from "../../config/damage-types.js";
 import {DamageCalculation} from "../combat/damage-calc.js";
-import {ModifierContainer, Usable} from "../item/persona-item.js";
+import {ModifierContainer} from "../item/persona-item.js";
 
 export class PersonaCombatStats {
 
@@ -68,7 +68,7 @@ export class PersonaCombatStats {
 	}
 
 	baseAilmentAtkBonus(): number {
-		return this.lukAilmentBonus();
+		return this.ailmentBonus();
 	}
 
 	baseDeathAtkBonus() : number {
@@ -122,7 +122,6 @@ export class PersonaCombatStats {
 		return Math.floor((this.luck + 1) / 5);
 	}
 
-
 	instantDeathResist() : number {
 		return Math.floor((this.luck + 3) / 5);
 	}
@@ -137,11 +136,12 @@ export class PersonaCombatStats {
 		return defenseBoost + PersonaCombatStats.BASE_AILMENT_DEFENSE;
 	}
 
-	ailmentResist(): number {
-		return Math.floor((this.luck + 3) / 5);
+	ailmentResist(): number{
+		const luckAilmentResist=  Math.floor((this.luck + 3) / 5);
+		return luckAilmentResist;
 	}
 
-	lukAilmentBonus(): number {
+	ailmentBonus(): number {
 		return Math.floor((this.luck + 4) / 5);
 	}
 

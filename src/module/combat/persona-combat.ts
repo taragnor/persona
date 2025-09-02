@@ -1356,6 +1356,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			attacker: PersonaDB.getUniversalTokenAccessor(attacker),
 			power: PersonaDB.getUniversalItemAccessor(power),
 			ailmentRange: undefined,
+			instantKillRange: undefined,
 			situation,
 			roll: null,
 			critBoost: 0,
@@ -1456,6 +1457,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			attacker: PersonaDB.getUniversalTokenAccessor(attacker),
 			power: usableOrCard.accessor,
 			ailmentRange: undefined,
+			instantKillRange: undefined,
 			situation: combatRollSituation,
 			roll,
 			critBoost: 0,
@@ -1480,6 +1482,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					validDefModifiers: [],
 					critBoost: 0,
 					ailmentRange: undefined,
+					instantKillRange: undefined,
 					situation: {
 						hit: false,
 						criticalHit: false,
@@ -1493,6 +1496,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				return {
 					result: 'block',
 					ailmentRange: undefined,
+					instantKillRange: undefined,
 					printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
@@ -1510,6 +1514,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				return {
 					result: 'absorb',
 					ailmentRange: undefined,
+					instantKillRange: undefined,
 					printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
@@ -1529,6 +1534,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				result: rollType != 'reflect' ? 'reflect': 'block',
 				printableModifiers: [],
 				ailmentRange: undefined,
+				instantKillRange: undefined,
 				validAtkModifiers: [],
 				validDefModifiers: [],
 				critBoost: 0,
@@ -1546,6 +1552,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				result: rollType != 'reflect' ? 'reflect': 'block',
 				printableModifiers: [],
 				ailmentRange: undefined,
+				instantKillRange: undefined,
 				validAtkModifiers: [],
 				validDefModifiers: [],
 				critBoost: 0,
@@ -1625,6 +1632,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const validAtkModifiers = attackbonus.list(situation);
 		const printableModifiers = attackbonus.printable(situation);
 		const ailmentRange = this.#calculateAilmentRange(attackerPersona, targetPersona, power, baseSituation);
+		const instantDeathRange = this.#calculateInstantDeathRange(attackerPersona, targetPersona, power, baseSituation);
 		if (def == 'none') {
 			situation.hit = true;
 			return {
@@ -1635,6 +1643,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				validDefModifiers: [],
 				situation,
 				ailmentRange,
+				instantKillRange: instantDeathRange,
 				...baseData,
 			} satisfies AttackResult;
 		}
@@ -1666,11 +1675,18 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				validAtkModifiers,
 				validDefModifiers,
 				ailmentRange,
+				instantKillRange: instantDeathRange,
 				critBoost,
 				critPrintable,
 				situation,
 				...baseData,
 			};
+		}
+		let withinInstantKillRange = false;
+		if (power.system.defense == "kill") {
+			withinInstantKillRange = true;
+		} else {
+			withinInstantKillRange = instantDeathRange ? naturalAttackRoll >= instantDeathRange.low && naturalAttackRoll <= instantDeathRange.high : false;
 		}
 		let withinAilmentRange = false;
 		if (power.system.defense == "ail") {
@@ -1679,14 +1695,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			withinAilmentRange = ailmentRange ? naturalAttackRoll >= ailmentRange.low && naturalAttackRoll <= ailmentRange.high : false;
 		}
 		situation["withinAilmentRange"]= withinAilmentRange;
+		situation["withinInstantKillRange"] = withinInstantKillRange;
 		const canCrit = typeof rollType == 'number' || rollType == 'iterative' ? false : true;
-		let cancelCritsForInstantDeath = false;
-		if (power.isInstantDeathAttack()) {
-			const resistanceMult = target.actor.instantKillResistanceMultiplier(attacker.actor);
-			if (resistanceMult == 0) {
-				cancelCritsForInstantDeath = true;
-			}
-		}
+		const cancelCritsForInstantDeath = false;
 		if (naturalAttackRoll + critBoost >= 20
 			&& total >= defenseVal
 			&& (!power.isMultiTarget() || naturalAttackRoll % 2 == 0)
@@ -1705,6 +1716,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				validAtkModifiers,
 				validDefModifiers,
 				ailmentRange,
+				instantKillRange: instantDeathRange,
 				printableModifiers,
 				critBoost,
 				critPrintable,
@@ -1721,6 +1733,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				hitResistance: situation.resisted ?? false,
 				validAtkModifiers,
 				ailmentRange,
+				instantKillRange: instantDeathRange,
 				validDefModifiers,
 				printableModifiers,
 				critBoost,
@@ -1732,14 +1745,38 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	static #calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) {
-		const ailmentMod = attackerPersona.getBonuses('afflictionRange').concat(
-			targetPersona.getBonuses('afflictionRange')
-		).total(situation);
+		const ailmentMods =
+			attackerPersona.getBonuses('afflictionRange').concat(
+				targetPersona.getBonuses('ail')
+			);
+		ailmentMods.add("Persona Luck Boost", attackerPersona.combatStats.ailmentBonus());
+		ailmentMods.add("Target Luck Resistance", -targetPersona.combatStats.ailmentResist());
+		const total = ailmentMods.total(situation);
 		const ailmentRange = power.ailmentRange;
 		if (ailmentRange) {
-			ailmentRange.low -= ailmentMod;
+			ailmentRange.low -= total;
 		}
 		return ailmentRange;
+	}
+
+	static #calculateInstantDeathRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) {
+		if (!power.isInstantDeathAttack()) {return undefined
+		;}
+		if (!power.canDealDamage()) {return {low: -10, high: 30};}
+		const instantDeathMods =
+			attackerPersona.getBonuses('instantDeathRange');
+		const killDefense =
+			targetPersona.getBonuses('kill').total(situation);
+		instantDeathMods.add("Attacker Instant Death bonus", attackerPersona.combatStats.instantDeathBonus());
+		instantDeathMods.add("Target Instant Death Resist", -attackerPersona.combatStats.instantDeathResist());
+		instantDeathMods.add("Misc Mods to kill defense", -killDefense);
+		const total = instantDeathMods.total(situation);
+		const deathRange = power.instantDeathRange;
+		if (deathRange) {
+			deathRange.low -= total;
+		}
+		debugger;
+		return deathRange;
 	}
 
 	static calcCritModifier( attacker: ValidAttackers, target: ValidAttackers, power: Usable, situation: Situation, ignoreInstantKillMult = false) : ModifierList {

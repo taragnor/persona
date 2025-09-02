@@ -27,6 +27,34 @@
 			</div>
 		</div>
 		{{/if}}
+		{{#if atk.attackResult.instantKillRange}}
+		<div class="instant-kill gm-only">
+			<div class="tooltip">
+				<span>
+					Instant Kill Range:
+				</span>
+				<span>
+					{{atk.attackResult.instantKillRange.low}}
+					-
+					{{atk.attackResult.instantKillRange.high}}
+				</span>
+			</div>
+		</div>
+		{{/if}}
+		{{#if atk.attackResult.ailmentRange}}
+		<div class="ailment-range gm-only">
+			<div class="tooltip">
+				<span>
+					Instant Kill Range:
+				</span>
+				<span>
+					{{atk.attackResult.ailmentRange.low}}
+					-
+					{{atk.attackResult.ailmentRange.high}}
+				</span>
+			</div>
+		</div>
+		{{/if}}
 		<hr>
 		<div class="attack-result">
 			{{prettyAtkResult atk.attackResult}}
