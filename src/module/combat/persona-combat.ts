@@ -2253,7 +2253,6 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 			}
 			if (dmgCalc) {
 				dmgCalc.setDamageType(damageType);
-
 			}
 			const consItems = targets.map( target => {
 				const DC = dmgCalc != undefined ? dmgCalc.clone(): undefined;

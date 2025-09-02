@@ -2052,14 +2052,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
 	canDealDamage(this: Usable) :  boolean {
+		if (this.isPower() && this.system.damageLevel == "none") {return false;}
 		return this.getOnUseEffects(null)
 			.some( eff => eff.consequences
 				.some( cons => cons.type == "damage-new" || cons.type.includes("dmg")
 				)
-		);
-
+			);
 	}
-
 
   extraConditionsFromTags( this: SocialCard) : SocialCard['system']['conditions'] {
     const SLCheck = function (low:number, high:number) : Precondition {
