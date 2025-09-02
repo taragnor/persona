@@ -1761,7 +1761,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	static #calculateInstantDeathRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) {
 		if (!power.isInstantDeathAttack()) {return undefined
-		;}
+			;}
 		if (!power.canDealDamage()) {return {low: -10, high: 30};}
 		const instantDeathMods =
 			attackerPersona.getBonuses('instantDeathRange');
@@ -1782,23 +1782,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	static calcCritModifier( attacker: ValidAttackers, target: ValidAttackers, power: Usable, situation: Situation, ignoreInstantKillMult = false) : ModifierList {
 		const critBoostMod = power.critBoost(attacker);
 		const critResist = target.persona().critResist().total(situation);
-		const attackerPersona = attacker.persona();
-		const targetPersona = target.persona();
 		critBoostMod.add('Enemy Critical Resistance', -critResist);
-		if (power.isInstantDeathAttack() && power.system.defense != "kill") {
-			const powerLevel = power.baseInstantKillBonus();
-			const instantKillBoost = attackerPersona.combatStats.instantDeathBonus();
-			const instantKillResist = targetPersona.combatStats.instantDeathResist();
-			// const targetResist = target.basePowerCritResist(power);
-			critBoostMod.add('Power-based Instant Kill Bonus', powerLevel);
-			critBoostMod.add(`Luck (${attackerPersona.name}) Instant Kill Bonus`, instantKillBoost);
-			critBoostMod.add(`Luck (${targetPersona.name}) Instant Kill Resist`, -instantKillResist);
-			// critBoostMod.add("Level-based Instant Death Resist", -targetResist);
-			const mult = ignoreInstantKillMult ? 1 : target.instantKillResistanceMultiplier(attacker);
-			const total = critBoostMod.total(situation);
-			const mod = total > 0 ? Math.round((total * mult) - total) : 0;
-			critBoostMod.add(`Instant Death Multiplier (${mult}) Adjust`, mod);
-		}
 		return critBoostMod;
 	}
 
