@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { PROBABILITIES } from "../../../config/probability.js";
 import { FREQUENCY } from "../../../config/frequency.js";
-import { Power } from "../../item/persona-item.js";
 import { CREATURE_TAGS } from "../../../config/creature-tags.js";
 import { SHADOW_CREATURE_TYPE } from "../../../config/shadow-types.js";
 import { PersonaDB } from "../../persona-db.js";
@@ -27,8 +28,9 @@ export class ShadowSheet extends CombatantSheetBase {
 		});
 	}
 
-	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:any[]) {
-		//@ts-ignore
+	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:unknown[]) {
+		//@ts-expect-error not in foundrytypes
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 		const item: PersonaItem = await Item.implementation.fromDropData(itemD);
 		switch (item.system.type) {
 			case "talent":
@@ -73,7 +75,7 @@ export class ShadowSheet extends CombatantSheetBase {
 		const databasePowers = this.actor.mainPowers
 			.filter (pwr => !pwr.hasTag("shadow-only"))
 			.map( x=> PersonaDB.allPowersArr().find(pwr => pwr.name == x.name))
-			.filter( x=> x != undefined) as Power[];
+			.filter( x=> x != undefined);
 		const CARD_CANDIDATES = Object.fromEntries(
 			[["", "-"]].concat(
 				databasePowers.map( pwr => [pwr.id, pwr.displayedName.toString()])
@@ -140,7 +142,7 @@ export class ShadowSheet extends CombatantSheetBase {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		const power = this.actor.powers.find(power => power.id == powerId);
 		if (!power) {return;}
-		this.actor.setDefaultShadowCosts(power);
+		await this.actor.setDefaultShadowCosts(power);
 	}
 
 	async addDungeon(_event: JQuery.ClickEvent) {
