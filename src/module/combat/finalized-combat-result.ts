@@ -25,6 +25,7 @@ import { ValidAttackers } from "./persona-combat.js";
 import { ValidSound } from "../persona-sounds.js";
 import { PersonaDB } from "../persona-db.js";
 import { ActorChange } from "./combat-result.js";
+import {TimeoutError} from "../utility/socket-manager.js";
 
 
 
@@ -292,23 +293,28 @@ export class FinalizedCombatResult {
 				resultObj : this.toJSON(),
 				sender: game.user.id,
 			};
-			PersonaSockets.simpleSend("COMBAT_RESULT_APPLY", sendObj, [gmTarget.id]);
-			let tries = 3;
-			while (tries> 0) {
-				try {
-					await FinalizedCombatResult.addPending(this);
-					return;
-				} catch (e) {
-					if (e instanceof TimeoutError) {
-						PersonaError.softFail("Timeout error on communicationg to GM computer", e);
-						tries--;
-					} else {
-						Debug(this);
-						PersonaError.softFail("Generic Error Autoapplying Effect", e);
-						return;
-					}
-				}
+			try {
+			await PersonaSockets.verifiedSend("COMBAT_RESULT_APPLY", sendObj, gmTarget.id);
 			}
+			catch (e) {
+				PersonaError.softFail( "Something went wrong with sending combat result", e);
+			}
+			// let tries = 3;
+			// while (tries> 0) {
+			// 	try {
+			// 		await FinalizedCombatResult.addPending(this);
+			// 		return;
+			// 	} catch (e) {
+			// 		if (e instanceof TimeoutError) {
+			// 			PersonaError.softFail("Timeout error on communicationg to GM computer", e);
+			// 			tries--;
+			// 		} else {
+			// 			Debug(this);
+			// 			PersonaError.softFail("Generic Error Autoapplying Effect", e);
+			// 			return;
+			// 		}
+			// 	}
+			// }
 		} else {
 			throw new Error("Can't apply no GM connected");
 		}
@@ -318,12 +324,12 @@ export class FinalizedCombatResult {
 		const {resultObj, sender} = x;
 		const result = FinalizedCombatResult.fromJSON(resultObj);
 		await result.#apply();
-		PersonaSockets.simpleSend("COMBAT_RESULT_APPLIED", result.id, [sender]);
+		// PersonaSockets.simpleSend("COMBAT_RESULT_APPLIED", result.id, [sender]);
 	}
 
-	static resolvedHandler(replyId: SocketMessage["COMBAT_RESULT_APPLIED"]) : void {
-		FinalizedCombatResult.resolvePending(replyId);
-	}
+	// static resolvedHandler(replyId: SocketMessage["COMBAT_RESULT_APPLIED"]) : void {
+	// 	FinalizedCombatResult.resolvePending(replyId);
+	// }
 
 	async applyButton() {
 		return this.#apply();
@@ -615,25 +621,25 @@ export class FinalizedCombatResult {
 		}
 	}
 
-	static addPending(res: FinalizedCombatResult): Promise<unknown> {
-		const promise = new Promise(
-			(resolve, reject) => {
-				this.pendingPromises.set(res.id, resolve);
-				setTimeout( () => {
-					this.pendingPromises.delete(res.id);
-					reject(new TimeoutError("Timeout"));
-				}	, 16000);
-			});
-		return promise;
+	// static addPending(res: FinalizedCombatResult): Promise<unknown> {
+	// 	const promise = new Promise(
+	// 		(resolve, reject) => {
+	// 			this.pendingPromises.set(res.id, resolve);
+	// 			setTimeout( () => {
+	// 				this.pendingPromises.delete(res.id);
+	// 				reject(new TimeoutError("Timeout"));
+	// 			}	, 16000);
+	// 		});
+	// 	return promise;
 
-	}
+	// }
 
-	static resolvePending( resId: CombatResult["id"]) {
-		const resolver = this.pendingPromises.get(resId);
-		if (!resolver) {throw new Error(`No Resolver for ${resId}`);}
-		resolver(undefined);
-		this.pendingPromises.delete(resId);
-	}
+// 	static resolvePending( resId: CombatResult["id"]) {
+// 		const resolver = this.pendingPromises.get(resId);
+// 		if (!resolver) {throw new Error(`No Resolver for ${resId}`);}
+// 		resolver(undefined);
+// 		this.pendingPromises.delete(resId);
+// 	}
 
 	get power() : UsableAndCard | undefined {
 		for (const {atkResult} of this.attacks) {
@@ -698,7 +704,7 @@ Hooks.on("renderChatMessage", (msg: ChatMessage, html: JQuery<HTMLElement>) => {
 
 Hooks.on("socketsReady", () => {
 	PersonaSockets.setHandler("COMBAT_RESULT_APPLY", FinalizedCombatResult.applyHandler.bind(CombatResult));
-	PersonaSockets.setHandler("COMBAT_RESULT_APPLIED", FinalizedCombatResult.resolvedHandler.bind(CombatResult));
+	// PersonaSockets.setHandler("COMBAT_RESULT_APPLIED", FinalizedCombatResult.resolvedHandler.bind(CombatResult));
 });
 
 Hooks.on("updateActor", async (updatedActor : PersonaActor, changes) => {
@@ -720,6 +726,3 @@ Hooks.on("updateActor", async (updatedActor : PersonaActor, changes) => {
 // 	return nums[index];
 // }
 
-class TimeoutError extends Error{
-
-};
