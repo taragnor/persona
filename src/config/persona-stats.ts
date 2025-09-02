@@ -1,6 +1,6 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 
-const PERSONA_STATS_LIST = [
+export const PERSONA_STATS_LIST = [
 	"str",
 	"mag",
 	"end",

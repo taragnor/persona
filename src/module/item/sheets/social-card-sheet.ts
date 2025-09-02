@@ -18,11 +18,11 @@ import { CAMEO_TYPES } from "../../../config/cameo-types.js";
 import { SOCIAL_CARD_TYPES } from "../../../config/social-card-config.js";
 import { SOCIAL_CARD_ROLL_TYPES } from "../../../config/social-card-config.js";
 import { STUDENT_SKILLS } from "../../../config/student-skills.js";
-import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 import { DAYS } from "../../../config/days.js";
 import { SAVE_TYPES_LOCALIZED } from "../../../config/save-types.js";
 
 import { STUDENT_SKILLS_EXT } from "../../../config/student-skills.js";
+import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 
 const PRIMARY_SECONDARY = {
 	"primary": "persona.term.primary",

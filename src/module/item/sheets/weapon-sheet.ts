@@ -1,6 +1,6 @@
 import { Weapon } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
-import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
+import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 
 export class PersonaWeaponSheet extends PersonaEffectContainerBaseSheet {
 	declare item: Weapon;

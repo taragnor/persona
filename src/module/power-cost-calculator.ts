@@ -3,7 +3,7 @@ import { PowerTag } from '../config/power-tags.js';
 import { DamageType } from '../config/damage-types.js';
 import { DamageLevel } from '../config/damage-types.js';
 import { Power } from './item/persona-item.js';
-import { InstantKillLevel } from '../config/damage-types.js';
+import {InstantKillLevel} from './combat/damage-calc.js';
 
 export class PowerCostCalculator {
 

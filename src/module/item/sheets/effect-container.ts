@@ -1,6 +1,5 @@
 import { ARITHMETIC_OPERATORS } from "../../../config/consequence-types.js";
 import { CONSEQUENCE_AMOUNT_TYPES } from "../../../config/consequence-types.js";
-import { INSTANT_KILL_LEVELS } from "../../../config/damage-types.js";
 import { CONSUMABLE_SUBTYPES } from "../../../config/equip-slots.js";
 import { DAMAGE_LEVELS } from "../../../config/damage-types.js";
 import { PERMA_BUFFS } from "../../../config/perma-buff-type.js";
@@ -63,6 +62,7 @@ import { SAVE_TYPES_LOCALIZED } from "../../../config/save-types.js";
 import { WEATHER_TYPES } from "../../../config/weather-types.js";
 import { STUDENT_SKILLS } from "../../../config/student-skills.js";
 import {DEFENSE_TYPES} from "../../../config/defense-types.js";
+import {INSTANT_KILL_LEVELS} from "../../combat/damage-calc.js";
 
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {

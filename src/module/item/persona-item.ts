@@ -1,9 +1,6 @@
 import { GrowthCalculator } from '../utility/growth-calculator.js';
 import { STATUS_AILMENT_SET } from '../../config/status-effects.js';
-import { AILMENT_BONUS_LEVELS, BASE_VARIANCE } from '../../config/damage-types.js';
-import { DamageCalculation } from '../combat/damage-calc.js';
-import { NewDamageParams } from '../../config/damage-types.js';
-import { INSTANT_KILL_CRIT_BOOST } from '../../config/damage-types.js';
+import { AILMENT_BONUS_LEVELS, DamageCalculation, DamageCalculator, INSTANT_KILL_CRIT_BOOST, NewDamageParams } from '../combat/damage-calc.js';
 import { PowerCostCalculator } from '../power-cost-calculator.js';
 import { StatusEffectId } from '../../config/status-effects.js';
 import { DAMAGE_ICONS } from '../../config/icons.js';
@@ -14,7 +11,6 @@ import { AttackResult } from '../combat/combat-result.js';
 import { EvaluatedDamage } from '../combat/damage-calc.js';
 import { PToken } from '../combat/persona-combat.js';
 import { DamageConsequence } from '../../config/consequence-types.js';
-import { DamageCalculator } from '../../config/damage-types.js';
 import { Trigger } from '../../config/triggers.js';
 import { CombatResult } from '../combat/combat-result.js';
 import { ROLL_TAGS_AND_CARD_TAGS } from '../../config/roll-tags.js';
@@ -490,6 +486,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   hasTag(this: Consumable, tag: PowerTag, user ?: null) : boolean;
   hasTag(this: InvItem | Weapon | SkillCard, tag: EquipmentTag, user ?: null): boolean;
   hasTag(this: UsableAndCard, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
+	hasTag(this: ModifierContainer, tag: PowerTag, user ?: null): boolean;
   hasTag(this: SkillCard | Consumable | InvItem | Weapon, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
   hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user : null) : boolean;
   hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user?: null | ValidAttackers) : boolean {
@@ -1117,7 +1114,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     calc.add('base', weaponDmg.baseAmt, weaponName.toString());
     calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Power Bonus`);
     calc.add('base', bonusDamage, 'Bonus Damage');
-    const variance  = (BASE_VARIANCE + weaponDmg.extraVariance + skillDamage.extraVariance + bonusVariance );
+    const variance  = (DamageCalculator.BASE_VARIANCE + weaponDmg.extraVariance + skillDamage.extraVariance + bonusVariance );
     const varianceMult = userPersona.combatStats.getPhysicalVariance();
     calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` );
     return calc ;
@@ -1135,17 +1132,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     calc.add('base', magicDmg, `${userPersona.displayedName} Magic`, );
     calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Damage`);
     calc.add('base', damageBonus, 'Bonus Damage');
-    const variance  = (BASE_VARIANCE + skillDamage.extraVariance + bonusVariance );
+    const variance  = (DamageCalculator.BASE_VARIANCE + skillDamage.extraVariance + bonusVariance );
     const varianceMult = userPersona.combatStats.getMagicalVariance();
     calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` );
     return calc;
   }
 
-	getDamage(this:ModifierContainer , userPersona: Persona, situation: Situation = {user: userPersona.user.accessor , usedPower: (this as Usable).accessor, hit: true,  attacker: userPersona.user.accessor}, typeOverride : DamageConsequence['damageType'] = 'none') : DamageCalculation {
+	getDamage(this:Usable , userPersona: Persona, situation: Situation = {user: userPersona.user.accessor , usedPower: this.accessor, hit: true,  attacker: userPersona.user.accessor}, typeOverride : DamageConsequence['damageType'] = 'none') : DamageCalculation {
 		//TODO: handle type override check to see if power damage is by-power or has other type
-		if (!this.isUsableType() || !this.isTrulyUsable() || this.isSkillCard()) {
-			return new DamageCalculation('none');
-		}
 		if (!typeOverride || typeOverride == 'by-power') {
 			if (this.system.dmg_type == 'none') {
 				return new DamageCalculation('none');
@@ -1299,7 +1293,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
   }
 
-  isWeaponSkill(this: UsableAndCard): this is PowerSub<'weapon'> {
+  isWeaponSkill(): this is PowerSub<'weapon'> {
+	  if (!this.isUsableType()) {return false;}
     if (this.isSkillCard()) {return false;}
     return (this.system.subtype == 'weapon');
   }
@@ -1587,6 +1582,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
     return this.system.mpcost;
   }
+
+	armorDR(this: InvItem) : number {
+		if (this.system.armorLevel > 0) {
+			return DamageCalculator.getArmorDRByArmorLevel(this.system.armorLevel);
+		}
+		if (this.system.armorDR > 0) {
+			return this.system.armorDR;
+		}
+		return 0;
+	}
 
   getSourcedEffects(this: ModifierContainer, sourceActor: ValidAttackers, condTypes :TypedConditionalEffect['conditionalType'][] = []): SourcedConditionalEffect {
     if (condTypes.length == 0) {

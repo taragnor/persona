@@ -1,4 +1,3 @@
-import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
 import { STUDENT_SKILLS } from "../../../config/student-skills.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { AVAILABILITY } from "../../../config/availability-types.js";
@@ -6,6 +5,7 @@ import { PersonaDB } from "../../persona-db.js";
 import { DAYS } from "../../../config/days.js";
 import { SOCIAL_CARD_TYPES } from "../../../config/social-card-config.js";
 import { PersonaItemSheetBase } from "./base-item-sheet.js";
+import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 
 export class PersonaJobSheet extends PersonaItemSheetBase {
 	// declare item: Job;

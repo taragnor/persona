@@ -1,6 +1,5 @@
 import { PersonaStat } from "../config/persona-stats.js";
 import { ConsequenceAmount } from "../config/consequence-types.js";
-import { INSTANT_KILL_LEVELS } from "../config/damage-types.js";
 import { DAMAGE_LEVELS } from "../config/damage-types.js";
 import { DAMAGE_ICONS } from "../config/icons.js";
 import { StatusEffectId } from "../config/status-effects.js";
@@ -24,7 +23,6 @@ import { PersonaSocial } from "./social/persona-social.js";
 import { SocialLink } from "./actor/persona-actor.js";
 import { Consequence } from "../config/consequence-types.js";
 import { ConditionalEffectManager } from "./conditional-effect-manager.js";
-import { PersonaEffectContainerBaseSheet } from "./item/sheets/effect-container.js";
 import { DamageType } from "../config/damage-types.js";
 import { DAMAGETYPES } from "../config/damage-types.js";
 import { localize } from "./persona.js";
@@ -45,6 +43,8 @@ import { Talent } from "./item/persona-item.js";
 import { PToken } from "./combat/persona-combat.js";
 import { Usable } from "./item/persona-item.js";
 import {Defense, DEFENSE_TYPES} from "../config/defense-types.js";
+import {INSTANT_KILL_LEVELS} from "./combat/damage-calc.js";
+import {PersonaEffectContainerBaseSheet} from "./item/sheets/effect-container.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -764,7 +764,11 @@ export class PersonaHandleBarsHelpers {
 			const source = persona.source;
 			if (source.isShadow() && source.system.creatureType == "daemon") {return true;}
 			return source.hasTag("simulated");
-		}
+		},
+		"armorDR": function (item: InvItem) {
+			return item.armorDR();
+		},
+
 
 	};
 

@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { UniversalModifier } from "../persona-item.js";
-import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
+import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 
 export class UniversalModifierSheet extends PersonaEffectContainerBaseSheet {
 	declare item: UniversalModifier;

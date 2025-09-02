@@ -3,7 +3,6 @@ import { PERSONA_STATS } from "../../../config/persona-stats.js";
 import { PersonaError } from "../../persona-error.js";
 import { PC } from "../persona-actor.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
-import { PersonaEffectContainerBaseSheet } from "../../item/sheets/effect-container.js";
 import { ConditionalEffectManager } from "../../conditional-effect-manager.js";
 import { DEFENSE_CATEGORY } from "../../../config/defense-categories.js";
 import { RESIST_STRENGTHS } from "../../../config/damage-types.js";
@@ -17,6 +16,7 @@ import { AVAILABILITY } from "../../../config/availability-types.js";
 import { PersonaDB } from "../../persona-db.js";
 import { DAYS } from "../../../config/days.js";
 import {REAL_DEFENSE_TYPES} from "../../../config/defense-types.js";
+import {PersonaEffectContainerBaseSheet} from "../../item/sheets/effect-container.js";
 
 export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 

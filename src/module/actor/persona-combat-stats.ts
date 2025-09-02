@@ -3,6 +3,9 @@ import { SeededRandom } from "../utility/seededRandom.js";
 import { ValidAttackers } from "../combat/persona-combat.js";
 import { Persona } from "../persona-class.js";
 import {PersonaStat} from "../../config/persona-stats.js";
+import {RealDamageType} from "../../config/damage-types.js";
+import {DamageCalculation} from "../combat/damage-calc.js";
+import {ModifierContainer, Usable} from "../item/persona-item.js";
 
 export class PersonaCombatStats {
 
@@ -13,9 +16,9 @@ export class PersonaCombatStats {
 	static MAX_STAT_GAP =  10 as const;
 	static MAX_STAT_VAL = 99 as const;
 	static MIN_STAT_VAL = 1 as const;
-	static DEFENSE_DIVISOR = 1.5 as const;
+	static DEFENSE_DIVISOR = 2 as const;
 	static BASE_INSTANT_DEATH_DEFENSE= 10 as const;
-	static BASE_DEFENSE = 5 as const;
+	static BASE_DEFENSE = 4 as const;
 	static BASE_AILMENT_DEFENSE = 10 as const;
 
 	constructor (persona: Persona) {
@@ -28,7 +31,14 @@ export class PersonaCombatStats {
 
 	getStatValue(x: PersonaStat) : number {
 		const permaBonus = this.combatStats.permanentStatsBonuses[x];
-		return permaBonus + this.combatStats.stats[x];
+		const situation = {
+			user: this.persona.user.accessor,
+		};
+		const modBonuses = this.persona
+			.getBonuses(x)
+			.total(situation);
+		const statTotal = Math.floor( permaBonus + this.combatStats.stats[x] + modBonuses);
+		return Math.min(99, statTotal);
 	}
 
 	get strength() : number { return this.getStatValue("str");}
@@ -71,6 +81,29 @@ export class PersonaCombatStats {
 
 	staminaDR() : number{
 		return Math.floor(this.endurance);
+	}
+
+	damageReduction(damageType : RealDamageType, power: ModifierContainer): DamageCalculation {
+		const calc = new DamageCalculation(damageType);
+		const situation = {
+			user: this.persona.user.accessor,
+			target: this.persona.user.accessor,
+		};
+		if (damageType == "healing") {return calc;}
+		if (power.isConsumable()) {return calc;}
+		const stamina = this.staminaDR();
+		const generalDRBonus = this.persona.getBonuses("dr").total(situation);
+		const staminaString = 'Endurance Damage Reduction';
+		calc.add("base", -Math.abs(stamina), staminaString);
+		calc.add("base", -generalDRBonus, "DR Modifiers");
+		if (power.isWeaponSkill()) {
+			const armor = this.persona.armorDR();
+			const armorBonus = this.persona.getBonuses("armor-dr").total(situation);
+			const armorString = "Armor DR";
+			calc.add("base", -Math.abs(armor), armorString);
+			calc.add("base", -armorBonus, "Armor Modifiers");
+		}
+		return calc;
 	}
 
 	strDamageBonus() : number {

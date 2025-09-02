@@ -1,3 +1,4 @@
+import { PERSONA_STATS_LIST } from "./persona-stats.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { STUDENT_SKILLS_LIST } from "./student-skills.js";
 
@@ -18,7 +19,7 @@ const DEPRECATED_TYPES = [
 	"magHigh",
 ] as const;
 
-export const MODIFIERLIST = [
+export const COMBAT_BONUS_TYPES = [
 	"allAtk",
 	"wpnAtk",
 	"magAtk",
@@ -38,6 +39,13 @@ export const MODIFIERLIST = [
 	"will",
 	"kill", //kill defense bonus
 	"ail", //ailment defnese bonus
+	"dr",
+	"armor-dr",
+] as const;
+
+export const MODIFIERLIST = [
+	...COMBAT_BONUS_TYPES,
+	...PERSONA_STATS_LIST,
 	"DCIncrease",
 	"socialRoll",
 	...STUDENT_SKILLS_LIST,

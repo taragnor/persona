@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Usable } from "../persona-item.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
-import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
+import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 
 export abstract class PersonaPowerLikeBaseSheet extends PersonaEffectContainerBaseSheet {
 	declare item: Usable;

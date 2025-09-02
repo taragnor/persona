@@ -1,10 +1,11 @@
-import { PersonaError } from "../persona-error.js";
-import { SourcedConsequence } from "../../config/consequence-types.js";
+import { PersonaError } from "../persona-error.js"; import { SourcedConsequence } from "../../config/consequence-types.js";
 import { ValidAttackers } from "./persona-combat.js";
-import { RealDamageType } from "../../config/damage-types.js";
+import { DamageLevel, RealDamageType } from "../../config/damage-types.js";
 import { DamageConsequence } from "../../config/consequence-types.js";
 import { OldDamageConsequence } from "../../config/consequence-types.js";
 import { DamageType } from "../../config/damage-types.js";
+import {ItemSubtype, Power} from "../item/persona-item.js";
+import {HTMLTools} from "../utility/HTMLTools.js";
 
 export class DamageCalculation {
 	#resisted: boolean = false;
@@ -311,3 +312,152 @@ function signed(num: number) : string {
 	if (num > 0) {return `+${num}`;}
 	else {return `${num}`;}
 }
+
+
+export class DamageCalculator {
+	static BASE_VARIANCE = 2 as const;
+
+	static weaponSkillDamage(weaponPower:ItemSubtype<Power, "weapon">) : NewDamageParams {
+		switch (weaponPower.system.damageLevel) {
+			case "-": //old system
+				PersonaError.softFail(`${weaponPower.name} is no longer supported`);
+				return {
+					extraVariance: weaponPower.system.melee_extra_mult + 1,
+					baseAmt: 0
+				};
+			case "fixed":
+				return {
+					extraVariance: 0,
+					baseAmt: weaponPower.system.damage.low
+				};
+			default:
+				return DAMAGE_LEVEL_CONVERT_WEAPON[weaponPower.system.damageLevel];
+		}
+	}
+
+	static magicSkillDamage(magic: ItemSubtype<Power, "magic">) : Readonly<NewDamageParams> {
+		switch (magic.system.damageLevel) {
+			case "-":
+				PersonaError.softFail(`${magic.name} is no longer supported (No damagelevel)`);
+				return {
+					extraVariance: magic.system.mag_mult,
+					baseAmt: 0
+				};
+			case "fixed":
+				PersonaError.softFail(`${magic.name} is no longer supported (Fixed damage)`);
+				return {
+					extraVariance: 0,
+					baseAmt: magic.system.damage.low,
+				};
+			default: {
+				const isHealing = magic.system.dmg_type == "healing";
+				const val = DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE[magic.system.damageLevel];
+				if (isHealing) {
+					return {
+						extraVariance: val.extraVariance + 1,
+						baseAmt: val.baseAmt,
+					};
+				}
+				return val;
+			}
+		}
+	}
+
+	static convertFromOldLowDamageToNewBase(low: number) : number {
+		return this.getWeaponDamageByWpnLevel(low-1);
+	}
+
+	static getWeaponDamageByWpnLevel(lvl: number) : number {
+		const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
+		if (val) {return val;}
+		return 0;
+	}
+
+	static getArmorDRByArmorLevel(lvl: number) : number {
+		const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
+		if (val) {return val;}
+		return 0;
+	}
+
+}
+
+const DAMAGE_LEVEL_CONVERT_WEAPON = {
+	"none": {extraVariance: 0, baseAmt: 0},
+	"miniscule": {extraVariance: 0, baseAmt: 0},
+	"basic": {extraVariance: 0, baseAmt: 0},
+	"light": {extraVariance: 1, baseAmt: 10},
+	"medium": {extraVariance: 2, baseAmt: 25},
+	"heavy": {extraVariance: 2, baseAmt: 50},
+	"severe": {extraVariance: 3, baseAmt: 70},
+	"colossal": {extraVariance: 3, baseAmt: 110},
+} as const satisfies Readonly<Record<ConvertableDamageLevel, NewDamageParams>> ;
+
+
+const DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE = {
+	"none": {extraVariance: 0, baseAmt: 0},
+	"miniscule": {extraVariance: 0, baseAmt: 0},
+	"basic": {extraVariance: 0, baseAmt: 0},
+	"light": {extraVariance: 1, baseAmt: 18},
+	"medium": {extraVariance: 2, baseAmt: 35},
+	"heavy": {extraVariance: 2, baseAmt: 60},
+	"severe": {extraVariance: 3, baseAmt: 85},
+	"colossal": {extraVariance: 3, baseAmt: 120},
+} as const satisfies Readonly<Record< ConvertableDamageLevel, NewDamageParams>>;
+
+type ConvertableDamageLevel = Exclude<DamageLevel, "-" | "fixed">;
+
+
+
+const INSTANT_KILL_LEVELS_LIST= [
+	"none",
+	"low",
+	"medium",
+	"high",
+	"always"
+] as const;
+
+export type InstantKillLevel = typeof INSTANT_KILL_LEVELS_LIST[number];
+
+export const INSTANT_KILL_LEVELS = HTMLTools.createLocalizationObject( INSTANT_KILL_LEVELS_LIST, "persona.powers.instantKillLevels");
+
+
+export const INSTANT_KILL_CRIT_BOOST : Record< InstantKillLevel, number>= {
+	none: 0,
+	high: 11,
+	low: 5,
+	medium: 8,
+	always: 1000,
+};
+
+export const AILMENT_BONUS_LEVELS : Record <InstantKillLevel, number> = {
+	none: 0,
+	high: 11,
+	low: 5,
+	medium: 8,
+	always: 11,//treat as always
+};
+
+export type NewDamageParams = {
+	baseAmt: number,
+	extraVariance: number,
+};
+
+//formual start at 6, then to get further levels , add (newlvl+1) to previous value
+const WEAPON_LEVEL_TO_DAMAGE: Record<number, number> = {
+	0: 10,
+	1: 14,
+	2: 18,
+	3: 24,
+	4: 32,
+	5: 42,
+	6: 54,
+	7: 68,
+	8: 84,
+	9: 102,
+	10: 122,
+	11: 144,
+	12: 168,
+};
+
+
+

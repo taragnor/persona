@@ -1,10 +1,8 @@
 import { ELEMENTAL_DEFENSE_LINK } from "../config/damage-types.js";
 import { LevelUpCalculator } from "../config/level-up-calculator.js";
 import { PersonaCombatStats } from "./actor/persona-combat-stats.js";
-import { DamageCalculator } from "../config/damage-types.js";
 import { NonDeprecatedModifierType } from "../config/item-modifiers.js";
-import { NewDamageParams } from "../config/damage-types.js";
-import { Consumable, PersonaItem } from "./item/persona-item.js";
+import { Consumable, InvItem, PersonaItem } from "./item/persona-item.js";
 import { Logger } from "./utility/logger.js";
 import { removeDuplicates } from "./utility/array-tools.js";
 import { Shadow } from "./actor/persona-actor.js";
@@ -31,6 +29,7 @@ import {ValidAttackers} from "./combat/persona-combat.js";
 import {Power, Talent, Focus} from "./item/persona-item.js";
 import {PersonaTag} from "../config/creature-tags.js";
 import {Defense} from "../config/defense-types.js";
+import {DamageCalculator, NewDamageParams} from "./combat/damage-calc.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
 	#combatStats: U<PersonaCombatStats>;
@@ -132,7 +131,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			case "npcAlly":
 				return this.source.system.personaName ?? this.source.displayedName;
 			case "shadow":
-					return this.source.name;
+					return this.source.displayedName;
 			default:
 					this.source.system satisfies never;
 				return "ERROR";
@@ -884,7 +883,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				if (!wpn) {
 					return  {baseAmt: 0, extraVariance: 0};
 				}
-				return  wpn.baseDamage();
+				return wpn.baseDamage();
          }
 			case "shadow":
 				return {
@@ -897,6 +896,16 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 	}
 
+	armorDR() : number {
+		if (this.user.isShadow()) {
+			const DR =  DamageCalculator.getArmorDRByArmorLevel(Math.floor(this.level /10) +1);
+			return DR;
+		}
+		const armor = this.user.equippedItems().find(x => x.isInvItem() && x.system.slot =="body") as U<InvItem>;
+		return armor  != undefined ? armor.armorDR() : 0;
+	}
+
+
 	getBonusWpnDamage() : ModifierList {
 		return this.getBonuses("wpnDmg");
 	}
@@ -904,10 +913,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	getBonusVariance() : ModifierList {
 		return this.getBonuses("variance");
 	}
-
-	// canRaiseStat (st: PersonaStat) : boolean {
-	// 	return this.unspentStatPoints > 0 && this.combatStats.canRaiseStat(st, this.combatStats.stats);
-	// }
 
 	async levelUp_manual() {
 		const level = this.source.system.combat.personaStats.pLevel;

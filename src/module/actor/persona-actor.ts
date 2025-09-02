@@ -1896,6 +1896,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return arr;
 	}
 
+
 	// wpnMult( this: ValidAttackers) : number {
 	// 	const lvl = this.system.combat.classData.level;
 	// 	const inc = this.system.combat.classData.incremental.wpnDamage * 0.5 ;
@@ -3449,7 +3450,6 @@ async setEffectFlag(flagId: string, setting: boolean, duration: StatusDuration =
 		await this.clearEffectFlag(flagId);
 	}
 }
-
 
 async createEffectFlag(flagId: string, duration: StatusDuration = {dtype: "instant"}, flagName ?: string) {
 	flagId = flagId.toLowerCase();

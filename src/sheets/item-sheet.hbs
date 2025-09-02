@@ -33,10 +33,28 @@
 				{{/if}}
 				{{#if (eq item.system.slot "body")}}
 				<div class="armor-stats">
-					<label>
-						Armor HP Bonus:
-					</label>
-					{{numberInput item.system.armorHPBoost class="short" name="system.armorHPBoost" step=1 min=0 max=200}}
+					<div class="hp-boost">
+						<label>
+							Armor HP Bonus:
+						</label>
+						{{numberInput item.system.armorHPBoost class="short" name="system.armorHPBoost" step=1 min=0 max=200}}
+					</div>
+					{{#if (isGM)}}
+					<div class="armor-level">
+						<label>
+							Armor Level:
+						</label>
+						{{numberInput item.system.armorLevel class="short" name="system.armorLevel" step=1 min=0 max=15}}
+					</div>
+					{{/if}}
+					<div class="armor-dr">
+						<label>
+							Armor DR :
+						</label>
+						<span>
+							{{armorDR item}}
+						</span>
+					</div>
 				</div>
 				{{/if}}
 				<br>

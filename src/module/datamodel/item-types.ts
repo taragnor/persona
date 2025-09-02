@@ -3,7 +3,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DamageCalculator } from "../../config/damage-types.js";
 import { damageNew } from "./power-dm.js";
 import { powerOnlyUsableProps } from "./power-dm.js";
 import { triEffects } from "./power-dm.js";
@@ -38,6 +37,7 @@ import { CAMEO_TYPES_LIST } from "../../config/cameo-types.js";
 import { PERK_TYPES_LIST } from "../../config/perk-types.js";
 import { TREASURE_TABLES } from "../../config/treasure-tables.js";
 import { PROBABILITIES } from "../../config/probability.js";
+import {DamageCalculator} from "../combat/damage-calc.js";
 
 function itemBase() {
 	return {
@@ -237,6 +237,8 @@ class InventoryItemSchema extends foundry.abstract.TypeDataModel {
 			...itemBase(),
 			slot: new txt<typeof EQUIP_SLOTS_LIST[number]>({choices: EQUIP_SLOTS_LIST}),
 			armorHPBoost: new num( {initial: 0, integer: true}),
+			armorLevel: new num( {initial: 0, integer: true}),
+			armorDR : new num( {initial: 0, integer:true}),
 			...effects(false),
 			...triEffects(),
 		};

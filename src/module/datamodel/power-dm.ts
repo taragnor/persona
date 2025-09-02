@@ -3,13 +3,13 @@ const {StringField:txt, EmbeddedDataField: embedded, ObjectField:obj, NumberFiel
 import { ConditionalEffectDM } from "./item-types.js";
 
 import { DAMAGE_LEVELS_LIST } from "../../config/damage-types.js";
-import { INSTANT_KILL_LEVELS } from "../../config/damage-types.js";
 import { POWERTYPESLIST } from "../../config/effect-types.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { TARGETINGLIST } from "../../config/effect-types.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
 import { SHADOW_CHANGE_REQ_LIST_FULL } from "../../config/effect-types.js";
 import {DEFENSE_TYPES} from "../../config/defense-types.js";
+import {INSTANT_KILL_LEVELS} from "../combat/damage-calc.js";
 
 export  const damage = function() {
   return new sch( {

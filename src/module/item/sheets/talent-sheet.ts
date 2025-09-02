@@ -1,6 +1,6 @@
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { Talent } from "../persona-item.js";
-import { PersonaEffectContainerBaseSheet } from "./effect-container.js";
+import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 
 export class PersonaTalentSheet extends PersonaEffectContainerBaseSheet {
 	declare item: Talent;

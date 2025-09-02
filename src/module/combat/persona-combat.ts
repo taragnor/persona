@@ -30,7 +30,7 @@ import { CombatTriggerTypes } from '../../config/triggers.js';
 import { PersonaSFX } from './persona-sfx.js';
 import { PersonaSettings } from '../../config/persona-settings.js';
 import { StatusEffect } from '../../config/consequence-types.js';
-import { DamageType } from '../../config/damage-types.js';
+import { DamageType, RealDamageType } from '../../config/damage-types.js';
 import { ModifierContainer } from '../item/persona-item.js';
 import { Consequence } from '../../config/consequence-types.js';
 import { TurnAlert } from '../utility/turnAlert.js';
@@ -1642,8 +1642,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		situation.struckWeakness = resist == 'weakness';
 		const critBoostMod = this.calcCritModifier(attacker.actor, target.actor, power, situation);
 		const rageOrBlind = attacker.actor.hasStatus('rage') || attacker.actor.hasStatus('blind');
-		const floor = situation.resisted ? -999 : 0;
-		const critBoost = Math.max(floor, critBoostMod.total(situation));
+		const critMin = situation.resisted ? -999 : 0;
+		const CRIT_MAX = 10 as const;
+		const critBoost = Math.clamp(critBoostMod.total(situation), critMin, CRIT_MAX);
 		const critPrintable = critBoostMod.printable(situation);
 		const autoHit = rollType == "reflect" && !power.isInstantDeathAttack() && !power.isAilment();
 		const Mod20 = naturalAttackRoll == 20 ? 3 : 0;
@@ -2133,7 +2134,10 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 	const consList : ConsequenceProcessed['consequences'] = [];
 	let dmgCalc: U<DamageCalculation>;
 	let dmgAmt : number = 0;
-	const damageType = cons.damageType != 'by-power' && cons.damageType != undefined ? cons.damageType : (power as Usable).getDamageType(attacker);
+	let damageType : U<RealDamageType> = cons.damageType != "by-power" ? cons.damageType : "none";
+	if (power.isUsableType()) {
+		damageType = cons.damageType != 'by-power' && cons.damageType != undefined ? cons.damageType : power.getDamageType(attacker);
+	}
 	const mods : SourcedConsequence<DamageConsequence>['modifiers'] = [];
 	cons = {
 		...cons,
@@ -2144,31 +2148,27 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 		return [];
 	}
 	switch (cons.damageSubtype) {
-		case 'odd-even':
+		case 'low':
+		case 'high':
+		case 'odd-even': {
+			if (!power.isUsableType()) {
+				PersonaError.softFail(` Bad damage for power: ${power.displayedName.toString()}, it is not a usable type`);
+				return [];
+			}
 			if (situation.naturalRoll == undefined) {
 				PersonaError.softFail(`Can't get odd even for damage of ${power.displayedName.toString() }` );
 				return [];
 			}
-			if ( (situation.naturalRoll ?? 0) % 2 == 0) {
-				dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
-				dmgCalc.setApplyEvenBonus();
-			} else {
-				dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
-			}
-			// dmgCalc.add('resist', -Math.abs(stamina), staminaString);
-			break;
-		case 'multiplier':
-				return targets.map( applyTo => ({applyTo, cons, })
-				);
-		case 'low':
-				dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
-			// dmgCalc.add('resist', -Math.abs(stamina), staminaString);
-			break;
-		case 'high':
 			dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
-			dmgCalc.setApplyEvenBonus();
-			// dmgCalc.add('resist', stamina, staminaString);
+			const evenRoll = (situation.naturalRoll ?? 0) % 2 == 0;
+			if ( cons.damageSubtype == "high" || (cons.damageSubtype == "odd-even" && evenRoll)) {
+				dmgCalc.setApplyEvenBonus();
+			}
 			break;
+		}
+		case 'multiplier':
+			return targets.map( applyTo => ({applyTo, cons, })
+			);
 		case 'allout-low':
 		case 'allout-high': {
 			const combat = game.combat as PersonaCombat;
@@ -2216,7 +2216,7 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 	}
 	if (dmgAmt || dmgCalc) {
 		for (const applyTo of targets) {
-			const piercePower = (power as Usable).hasTag('pierce');
+			const piercePower = power.hasTag('pierce');
 			const pierceTag = 'addedTags' in situation && situation.addedTags && situation.addedTags.includes('pierce');
 			if (!piercePower && !pierceTag) {
 				const resist = applyTo.persona().elemResist(damageType);
@@ -2236,10 +2236,9 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 			}
 			const consItems = targets.map( target => {
 				const DC = dmgCalc != undefined ? dmgCalc.clone(): undefined;
-				if (DC && damageType != "healing") {
-					const stamina = target.persona().combatStats.staminaDR();
-					const staminaString = 'Endurance Damage Reduction';
-					DC.add("base", -Math.abs(stamina), staminaString);
+				if (DC) {
+					const DR = target.persona().combatStats.damageReduction(damageType, power);
+					DC.merge(DR);
 				};
 				return {
 					applyTo: target,
@@ -2252,15 +2251,6 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 				};
 			});
 			consList.push(...consItems);
-			// consList.push( {
-			// 	applyTo,
-			// 	cons: {
-			// 		...cons,
-			// 		modifiers: mods,
-			// 		amount: dmgAmt,
-			// 		calc: dmgCalc,
-			// 	}
-			// });
 		}
 	}
 	return consList;
@@ -2456,44 +2446,6 @@ static getDefenderAttackModifiers(target: PToken | undefined, defense : Defense)
 	);
 	return defenseMod;
 }
-
-// static applyRelevantTagAttackBonus(attackBonus: ModifierList, attacker: ValidAttackers, power: Usable) {
-// 	const tag = this.#getRelevantAttackTag(attacker, power.getDamageType(attacker));
-// 	if (!tag) {return;}
-// 	const isDarkLight = tag == 'dark' || tag == 'light';
-// 	if (isDarkLight && !power.hasTag('no-crit')) {return;}
-// 	// const _localized = game.i18n.localize(POWER_TAGS[tag]);
-// 	attackBonus.add('Damage Power bonus', +3);
-// }
-
-// static #getRelevantAttackTag(_attacker: ValidAttackers, dmgType : DamageType) : PowerTag | undefined  {
-// 	switch (dmgType) {
-// 		case 'fire': case 'wind':
-// 		case 'light': case 'dark':
-// 		case 'healing':
-// 			return dmgType;
-// 		case 'lightning':
-// 			return 'elec';
-// 		case 'gun':
-// 			return 'gun';
-// 		case 'physical':
-// 			return 'weapon';
-// 		case 'by-power': //read as by-weapon here
-// 			return 'weapon';
-// 		case 'cold':
-// 			return 'ice';
-// 		case 'untyped':
-// 			return 'almighty';
-// 		case 'none':
-// 			break;
-// 			// tag = power.system.tags.find(x=> STATUS_POWER_TAGS.includes(x as any));
-// 		case 'all-out':
-// 			break;
-// 		default:
-// 			dmgType satisfies never;
-// 			break;
-// 	}
-// }
 
 static getBaseAttackBonus(attackerPersona: Persona, power:Usable): ModifierList {
 	let modList = new ModifierList();
