@@ -182,7 +182,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (this.isShadow()) {return new Calculation().eval();}
 		try {
 			// const lvlmaxMP = this.calcBaseClassMMP();
-			const lvlmaxMP = PersonaItem.mpGrowthTable.valueAt(this.level);
+			const lvlmaxMP = this.class.getClassMMP(this.level);
 			const x = new Calculation(lvlmaxMP);
 			const persona = this.persona();
 			const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
@@ -190,9 +190,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const mpAdjust = this.system.mp_adjust;
 			const bonuses = persona.getBonuses("maxmp");
 			const maxMult = persona.getBonuses("maxmpMult");
-			// const mult = 1 + persona.getBonuses("maxmpMult").total(sit);
 			const nonMultMPBonus = this.system.combat.bonusMP ?? 0;
-			// const val = Math.round((mpAdjustPercent * mult * (lvlmaxMP)) + bonuses.total(sit) + nonMultMPBonus);
 			x.add(0, mpAdjustPercent, `MP adjust (${mpAdjust})`, "multiply");
 			x.add(0, bonuses, "additive bonuses", "add");
 			x.add(0, maxMult, "Multiplier Bonuses" ,"noStackMultiply");
@@ -450,13 +448,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		let classNameDefault;
 		switch (this.system.type) {
 			case "npcAlly":
-				classNameDefault = "Persona User";
+				classNameDefault = "Lone Persona User";
 				break;
 			case "pc":
-				classNameDefault = "Persona User";
+				classNameDefault = "Lone Persona User";
 				break;
 			case "shadow":
-				classNameDefault = "Persona User";
+				classNameDefault = "Shadow";
 				// classNameDefault = "Shadow";
 				break;
 			case "npc":
@@ -535,7 +533,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	mhpCalculation(this: ValidAttackers) {
 		try {
 			if (this.system == undefined) {return new Calculation().eval();}
-			const lvlbase = this.class.getClassProperty(this.level, "maxhp");
+			const lvlbase = this.class.getClassMHP(this.level);
 			const calc = new Calculation(lvlbase);
 			const persona = this.persona();
 			const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
@@ -573,67 +571,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!this.isValidCombatant()) {return 0;}
 		return Math.round(this.mhpCalculation().total);
 	}
-
-	//get mhp() : number {
-	//	//NOTE: This function is a performance sink
-	//	if (!this.isValidCombatant()) {return 0;}
-	//	try {
-	//		const persona = this.persona();
-	//		const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
-	//		const nonMultbonuses = persona.getBonuses("maxhp");
-	//		const newForm = persona.getBonuses("maxhpMult-new");
-	//		// const inc = this.system.combat.classData.incremental.hp ?? 0;
-	//		const lvl = this.level;
-	//		const incBonus = 0;
-	//		const hpAdjustPercent = this.#hpAdjustPercent();
-	//		const hpAdjust = this.system.hp_adjust;
-	//		newForm.add(`HP Adjust (${hpAdjust})`, hpAdjustPercent);
-	//		const lvlbase = this.class.getClassProperty(lvl, "maxhp");
-	//		if (this.isShadow()) {
-	//			const shadowRelHPChange = 0.75 + (this.level * .005);
-	//			newForm.add("Shadow Class Adjust", shadowRelHPChange); }
-	//		// if (this.hasSoloPersona()) {
-	//		// 	const resists = this.system.combat.resists;
-	//		// 	const values = Object.values(resists) ;
-	//		// 	const weaknesses = values.reduce( (acc, x) => x == "weakness" ? acc + 1: acc, 0);
-	//		// 	if (weaknesses >= 2) {
-	//		// 		newForm.add("Multiweakness", 1.25);
-	//		// 	}
-	//		// }
-	//		// const diff = this.class.getClassProperty(lvl+1, "maxhp") - lvlbase;
-	//		// const incBonus = Math.round(inc / 3 * diff);
-	//		const multmods = persona.getBonuses("maxhpMult");
-	//		// const underCap = this.basePersona.maxResists() - this.totalResists() ;
-	//		if (this.isPC() || this.isNPCAlly()) {
-	//			const ArmorHPBoost = this.equippedItems().find(x=> x.isOutfit())?.system?.armorHPBoost ?? 0;
-	//			if (ArmorHPBoost > 0)
-	//				{nonMultbonuses.add("Armor HP Bonus", ArmorHPBoost);}
-	//		}
-	//		// if (underCap > 0) {
-	//		// 	const bonus = underCap * 0.20;
-	//		// 	multmods.add("under resist Cap", bonus);
-	//		// }
-	//		// if (this.isPC() || this.isNPCAlly()) {
-	//		// 	newForm.add("PC HP boost", 1.15);
-	//		// }
-	//		// if (this.isShadow()) {
-	//		// 	const overCap = this.totalResists() - this.basePersona.maxResists();
-	//		// 	if (overCap > 0) {
-	//		// 		const penalty = 1 - Math.min(0.2, overCap * 0.05);
-	//		// 		newForm.add("Over Resist Cap", penalty);
-	//		// 	}
-	//		// }
-	//		const mult = multmods.total(sit, "percentage-special");
-	//		const newformMult = newForm.total(sit, "percentage");
-	//		nonMultbonuses.add("Innate HP Bonus", this.system.combat.bonusHP ?? 0);
-	//		const mhp = (newformMult * mult * (lvlbase + incBonus)) + nonMultbonuses.total(sit);
-	//		return Math.round(mhp);
-	//	} catch (e) {
-	//		console.log(e);
-	//		console.warn(`Can't get Hp for ${this.name} (${this.id})`);
-	//		return 0;
-	//	}
-	//}
 
 	#hpAdjustPercent(this: ValidAttackers) : number {
 		switch (this.system.hp_adjust) {
@@ -1889,38 +1826,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		return arr;
 	}
-
-
-	// wpnMult( this: ValidAttackers) : number {
-	// 	const lvl = this.system.combat.classData.level;
-	// 	const inc = this.system.combat.classData.incremental.wpnDamage * 0.5 ;
-	// 	const mult = ((this.class.getClassProperty(lvl, "wpn_mult") ?? 0)  + inc);
-	// 	return mult;
-	// }
-
-	// magDmg (this: ValidAttackers) : {low: number, high:number} {
-	// 	const lvl = this.system.combat.classData.level;
-	// 	const incLow = this.system.combat.classData.incremental.magicLow ? 1 : 0;
-	// 	const incHigh = this.system.combat.classData.incremental.magicHigh ? 1 : 0;
-	// 	const baseDmg = this.class.getClassProperty(lvl, "magic_damage") ?? 0;
-	// 	const nextLvl = this.class.getClassProperty(lvl+1, "magic_damage") ?? 0;
-	// 	return {
-	// 		low: incLow ? nextLvl.low : baseDmg.low,
-	// 		high: incHigh ? nextLvl.high : baseDmg.high,
-	// 	};
-	// }
-
-	// critBoost(this: ValidAttackers) : ModifierList {
-	// 	const mods = this.mainModifiers().flatMap( item => item.getModifier("criticalBoost", this));
-	// 	return new ModifierList(mods);
-	// }
-
-
-	// critResist(this: ValidAttackers) : ModifierList {
-	// 	const ret = new ModifierList();
-	// 	const mods = this.mainModifiers().flatMap( item => item.getModifier("critResist", this));
-	// 	return ret.concat(new ModifierList(mods));
-	// }
 
 	isDMon(this: Shadow) : boolean {
 		return this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon");

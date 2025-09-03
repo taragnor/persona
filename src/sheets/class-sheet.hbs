@@ -1,59 +1,109 @@
 <form class="class-sheet">
-	<div>
-		<input type="text" class="borderless item-name" name="name" value="{{item.name}}" title="Class Name" placeholder="Class Name">
-	</div>
-	<table>
-		<tr>
-			<th>Level</th>
-			<th> Max HP</th>
-			<th> Wpn Multiplier </th>
-			<th> Magic Damage </th>
-			<th> Powers Known </th>
-			<th> Slots </th>
-			<th> Talents </th>
-		</tr>
-		{{#each item.system.leveling_table as |lvl i|}}
-		<tr>
-			<td>
-				<input class="short" type="number" name="system.leveling_table.{{i}}.lvl_num" value="{{lvl.lvl_num}}">
-			</td>
-			<td>
-				<input class="short" type="number" name="system.leveling_table.{{i}}.maxhp" value="{{lvl.maxhp}}">
-			</td>
-			<td>
-				<input class="short" type="number" name="system.leveling_table.{{i}}.wpn_mult" value="{{lvl.wpn_mult}}">
-			</td>
-			<td>
-				<input class="short" type="number" name="system.leveling_table.{{i}}.magic_damage.low" value="{{lvl.magic_damage.low}}">
-				-
-				<input class="short" type="number" name="system.leveling_table.{{i}}.magic_damage.high" value="{{lvl.magic_damage.high}}">
-				boost (
-				<input class="short" type="number" name="system.leveling_table.{{i}}.magic_damage.boost" value="{{lvl.magic_damage.boost}}">
-				)
-			</td>
-			<td>
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.powers_known.0" value="{{lvl.powers_known.[0]}}">
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.powers_known.1" value="{{lvl.powers_known.[1]}}">
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.powers_known.2" value="{{lvl.powers_known.[2]}}">
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.powers_known.3" value="{{lvl.powers_known.[3]}}">
-			</td>
-			<td>
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.slots.0" value="{{lvl.slots.[0]}}">
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.slots.1" value="{{lvl.slots.[1]}}">
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.slots.2" value="{{lvl.slots.[2]}}">
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.slots.3" value="{{lvl.slots.[3]}}">
-			</td>
-			<td>
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.talents.0" value="{{lvl.talents.[0]}}">
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.talents.1" value="{{lvl.talents.[1]}}">
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.talents.2" value="{{lvl.talents.[2]}}">
-				<input class="single-digit" type="number" name="system.leveling_table.{{i}}.talents.3" value="{{lvl.talents.[3]}}">
-			</td>
-		</tr>
-		{{/each}}
-	</table>
-	<button class="add-row"> Add Row </button>
+	 <div>
+			<input type="text" class="borderless item-name" name="name" value="{{item.name}}" title="Class Name" placeholder="Class Name">
+	 </div>
+	 <section class="f-row hp">
+			<h3>HP</h3>
+			<div>
+				 <label>
+						Growth
+				 </label>
+				 {{numberInput item.system.hpgrowth.growthRate class="short" name="system.hpgrowth.growthRate" step=0.005 min=0.5 max=3}}
+			</div>
+			<div>
+				 <label>
+						Initial
+				 </label>
+				 {{numberInput item.system.hpgrowth.initial class="short" name="system.hpgrowth.initial" step=1 min=10 max=100}}
+			</div>
+			<div>
+				 <label>
+						Initial Growth Amount
+				 </label>
+				 {{numberInput item.system.hpgrowth.initialGrowthAmount class="short" name="system.hpgrowth.initialGrowthAmount" step=0.1 min=0.1 max=10}}
+			</div>
+			<div>
+				 <label>
+						Growth Acceleration
+				 </label>
+				 {{numberInput item.system.hpgrowth.growthAcceleration class="short" name="system.hpgrowth.growthAcceleration" step=0.01 min=0 max=1}}
+			</div>
+	 </section>
+	 <section class="f-row hp">
+			<h3>MP</h3>
+			<div>
+				 <label>
+						Growth
+				 </label>
+				 {{numberInput item.system.mpgrowth.growthRate class="short" name="system.mpgrowth.growthRate" step=0.005 min=0.5 max=3}}
+			</div>
+			<div>
+				 <label>
+						Initial
+				 </label>
+				 {{numberInput item.system.mpgrowth.initial class="short" name="system.mpgrowth.initial" step=1 min=10 max=100}}
+			</div>
+			<div>
+				 <label>
+						Initial Growth Amount
+				 </label>
+				 {{numberInput item.system.mpgrowth.initialGrowthAmount class="short" name="system.mpgrowth.initialGrowthAmount" step=0.1 min=0.1 max=10}}
+			</div>
+			<div>
+				 <label>
+						Growth Acceleration
+				 </label>
+				 {{numberInput item.system.mpgrowth.growthAcceleration class="short" name="system.mpgrowth.growthAcceleration" step=0.001 min=0 max=2}}
+			</div>
+	 </section>
 
+	 <section class="persona-section">
+			<div>
+				 <label>
+						Unique Personas
+				 </label>
+				 {{numberInput item.system.uniquePersonas class="short" name="system.uniquePersonas" step=1 min=0 max=3}}
+			</div>
+			<div>
+				 <label>
+						max Personas
+				 </label>
+				 {{numberInput item.system.maxPersonas class="short" name="system.maxPersonas" step=1 min=0 max=3}}
+			</div>
+			<div>
+				 <label>
+						Can Use Random Personas
+				 </label>
+				 <input type="checkbox" name="system.canUseRandomPersonas" {{checked item.system.canUseRandomPersonas}}>
+			</div>
+			<div>
+				 <label>
+						Persona Affinities
+				 </label>
+				 <select name="system.affinityType" >
+						{{selectOptions CONST.PERSONA_AFFINITIES localize=true selected=item.system.affinityType}}
+				 </select>
+			</div>
+	 </section>
+
+	 <table>
+			<tr>
+				 <th> Lvl </th>
+				 <th> HP </th>
+				 <th> MP </th>
+			</tr>
+			{{#each (levelSampleArray) as |lvl|}}
+			<tr>
+				 <td> {{lvl}}</td>
+				 <td>
+						{{HPAtLevel ../item lvl}}
+				 </td>
+				 <td>
+						{{MPAtLevel ../item lvl}}
+				 </td>
+			</tr>
+			{{/each}}
+	 </table>
 </form>
 
 

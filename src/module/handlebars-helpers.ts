@@ -13,7 +13,7 @@ import { PersonaError } from "./persona-error.js";
 import { FREQUENCY } from "../config/frequency.js";
 import { CardEvent } from "../config/social-card-config.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
-import { SocialCard } from "./item/persona-item.js";
+import { CClass, SocialCard } from "./item/persona-item.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaItem } from "./item/persona-item.js";
@@ -788,7 +788,16 @@ export class PersonaHandleBarsHelpers {
 			if (!(category in MODIFIER_CATEGORIES)) {return {};}
 			const baseObject = MODIFIER_CATEGORIES[category] ?? {};
 			return HTMLTools.createLocalizationObject(baseObject, "persona.modifier");
-		}
+		},
+		"levelSampleArray" : function () : number[] {
+			return [1,10,20,30,40,50,60,70,80,90,100];
+		},
+		"HPAtLevel": function (cl:CClass, lvl: number) : number{
+			return cl.getClassMHP(lvl);
+		},
+		"MPAtLevel": function (cl:CClass, lvl: number) : number{
+			return cl.getClassMMP(lvl);
+		},
 
 
 	};

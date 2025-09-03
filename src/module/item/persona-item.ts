@@ -60,8 +60,8 @@ declare global {
 
 export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE> {
 
-  static hpGrowthTable = new GrowthCalculator(1.02, 45, 2);
-  static mpGrowthTable = new GrowthCalculator(1.02, 50, 1.5);
+	 // hpGrowthTable : U<GrowthCalculator>= new GrowthCalculator(1.02, 45, 2);
+	 // mpGrowthTable: U<GrowthCalculator> = new GrowthCalculator(1.02, 30, 1.5);
 
 
   static #cache =  {
@@ -71,16 +71,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   declare parent: PersonaActor | undefined;
 
-  cache: {
-    effects: AdvancedEffectsCache;
-    // effectsNull: ConditionalEffect[] | undefined;
-    // effectsMap: WeakMap<PersonaActor, ConditionalEffect[]>;
-    containsModifier: boolean | undefined;
-    containsTagAdd: boolean | undefined;
-    statsModified: Map<ModifierTarget, boolean>,
-    hasTriggers: U<boolean>,
-    grantsPowers: U<boolean>,
-    mpCost: U<number>,
+	 cache: {
+			effects: AdvancedEffectsCache;
+			// effectsNull: ConditionalEffect[] | undefined;
+			// effectsMap: WeakMap<PersonaActor, ConditionalEffect[]>;
+			containsModifier: boolean | undefined;
+			containsTagAdd: boolean | undefined;
+			statsModified: Map<ModifierTarget, boolean>,
+			hasTriggers: U<boolean>,
+			grantsPowers: U<boolean>,
+			mpCost: U<number>,
+			mpGrowthTable: U<GrowthCalculator>,
+			hpGrowthTable: U<GrowthCalculator>,
+
   };
 
   static cacheStats = {
@@ -106,19 +109,21 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
   }
 
-  clearCache() {
-    this.cache = {
-      effects: PersonaItem.#newEffectsCache(),
-      // effectsNull: undefined,
-      // effectsMap: new WeakMap(),
-      containsModifier: undefined,
-      containsTagAdd: undefined,
-      statsModified: new Map(),
-      hasTriggers: undefined,
-      grantsPowers: undefined,
-      mpCost: undefined,
-    };
-  }
+	 clearCache() {
+			this.cache = {
+				 effects: PersonaItem.#newEffectsCache(),
+				 // effectsNull: undefined,
+				 // effectsMap: new WeakMap(),
+				 containsModifier: undefined,
+				 containsTagAdd: undefined,
+				 statsModified: new Map(),
+				 hasTriggers: undefined,
+				 grantsPowers: undefined,
+				 mpCost: undefined,
+				 mpGrowthTable: undefined,
+				 hpGrowthTable: undefined,
+			};
+	 }
 
   static #newEffectsCache() : AdvancedEffectsCache {
     const cache : AdvancedEffectsCache = {
@@ -220,33 +225,32 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return new Handlebars.SafeString('');
   }
 
-  getClassProperty<T extends keyof CClass['system']['leveling_table'][number]> (this: CClass,lvl: number, property:T)  : CClass['system']['leveling_table'][number][T] {
-    const adjustedLvl = Math.clamp(lvl, 0, 200);
-    switch (property) {
-      case 'maxhp':
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
-        return this.calcClassMaxHP(adjustedLvl) as any;
-      default:
-    }
-    const data = this.system.leveling_table[adjustedLvl][property];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument
-    if (property == 'slots') {return ArrayCorrector(data as any) as any;}
-    return data;
+	 getClassMHP(this: CClass, lvl: number) : number {
+        return this.#calcClassMaxHP(lvl);
+	 }
+
+	 getClassMMP(this: CClass, lvl: number): number {
+			return this.#calcClassMaxMP(lvl);
+	 }
+
+	 #calcClassMaxHP (this: CClass, lvl: number) : number {
+			if (!this?.cache?.hpGrowthTable) {
+				 const {growthRate, initial, initialGrowthAmount, growthAcceleration}  = this.system.hpgrowth;
+				 this.cache.hpGrowthTable = new GrowthCalculator(
+						growthRate, initial, initialGrowthAmount, growthAcceleration / 100);
+				 // this.cache.hpGrowthTable = new GrowthCalculator(1.02, 45, 2);
+			}
+    return this.cache.hpGrowthTable.valueAt(lvl);
   }
 
-  // getClassProperty<T extends keyof CClass["system"]["leveling_table"][number]> (this: CClass,lvl: number, property:T)  : CClass["system"]["leveling_table"][number][T] {
-  //  const adjustedLvl = Math.clamp(lvl, 0, 11);
-  //  const data = this.system.leveling_table[adjustedLvl][property];
-  //  if (property == "slots") return ArrayCorrector(data as any) as any;
-  //  return data;
-  // }
-
-  calcClassMaxHP (this: CClass, lvl: number) : number {
-    return PersonaItem.hpGrowthTable.valueAt(lvl);
-  }
-
-	calcClassMaxMP( this:CClass, lvl: number) : number {
-		return PersonaItem.mpGrowthTable.valueAt(lvl);
+	 #calcClassMaxMP( this:CClass, lvl: number) : number {
+			if (!this?.cache?.mpGrowthTable) {
+				 const {growthRate, initial, initialGrowthAmount, growthAcceleration}  = this.system.mpgrowth;
+				 this.cache.mpGrowthTable = new GrowthCalculator(
+						growthRate, initial, initialGrowthAmount, growthAcceleration / 100);
+				 // this.cache.mpGrowthTable = new GrowthCalculator(1.02, 30, 1.5);
+			}
+		return this.cache.mpGrowthTable.valueAt(lvl);
 	}
 
 

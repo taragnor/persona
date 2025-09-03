@@ -4,6 +4,7 @@ import { Consumable } from "../persona-item.js";
 import { PersonaItem } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { ConditionalEffectManager } from "../../conditional-effect-manager.js";
+import {PersonaDB} from "../../persona-db.js";
 
 export class PersonaItemSheetBase extends ItemSheet<PersonaItem> {
 
@@ -17,9 +18,10 @@ export class PersonaItemSheetBase extends ItemSheet<PersonaItem> {
 		});
 	}
 
-	override getData() {
-		return super.getData();
-	}
+	 override async getData() {
+			await PersonaDB.waitUntilLoaded();
+			return super.getData();
+	 }
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);

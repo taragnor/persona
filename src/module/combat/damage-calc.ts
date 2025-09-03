@@ -288,7 +288,9 @@ export class DamageCalculation {
 		}
 		total = Math.max(Math.round(total));
 		str.push(`${total} --- Total`);
-		let hpChange = Math.max(this.#minValue, total * (this.#absorbed ? 1 : -1) * (this.#blocked ? 0 : 1));
+		total = Math.max(this.#minValue, total);
+
+		let hpChange = total * (this.#absorbed ? 1 : -1) * (this.#blocked ? 0 : 1);
 		if (hpChange == undefined || typeof hpChange != "number" ||  Number.isNaN(hpChange)) {
 			PersonaError.softFail("Hp change isn't a number");
 			hpChange = -1;

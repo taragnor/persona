@@ -1107,7 +1107,11 @@
 
 	"persona.calculation.operation.multiply": "Multiply",
 	"persona.calculation.operation.add": "Add",
-	"persona.calculation.operation.noStackMultiply": "Multiply (no stacking)"
+	"persona.calculation.operation.noStackMultiply": "Multiply (no stacking)",
 
+	"persona.affinity.ranking.all": "All",
+	"persona.affinity.ranking.strong": "Strong",
+	"persona.affinity.ranking.standard": "Standard",
+	"persona.affinity.ranking.weak": "Weak"
 }
 

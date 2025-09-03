@@ -1083,6 +1083,11 @@ a.add-five-to-all:active {
 	justify-content: flex-start;
 }
 
+.f-row > *{
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
 .f-col {
 	display: flex;
 	flex-direction: column;
@@ -1138,11 +1143,6 @@ nav.inventory-tabs a:active {
   box-shadow: 0 2px 4px rgba(18, 105, 204, 0.5);
 }
 
-.sheet.journal-entry .journal-entry-content {
-background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%) important!;
-  color: #E6F8FF important!; /* pale cyan for readable text */
-
-}
 
 .window-app header.window-header,
 .window-app section.window-content {
@@ -1182,6 +1182,11 @@ font-family: "Consolas", "Lucida Console", "Courier New", monospace;
 
 }
 
+.window-app input {
+  color: #FFFFFF;             /* text color inside the dropdown */
+  background-color: #123B6B;  /* dropdown option background */
+}
+
 .window-app textarea,
 .window-app input {
   color: #FFFFFF; 
@@ -1200,4 +1205,22 @@ input.character-name {
 
 .tarot .tarot-description{
 	margin-left: 25px;
+}
+
+.window-app .sheet.journal-entry .journal-entry-content {
+background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%) !important;
+  color: #E6F8FF !important; /* pale cyan for readable text */
+
+}
+
+.window-app .item-piles-child-even-color {
+background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%) !important;
+  color: #E6F8FF !important; /* pale cyan for readable text */
+}
+
+
+.window-app .item-piles-item-row.svelte-ip-64vjsm.item-piles-child-even-color > * {
+background: initial !important;
+  color: #E6F8FF !important; /* pale cyan for readable text */
+
 }
