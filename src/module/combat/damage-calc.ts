@@ -40,25 +40,31 @@ export class DamageCalculation {
 
 	setMinValue(val: number) {
 		this.#minValue = val;
+		return this;
 	}
 
 	setDamageType(dtype : RealDamageType) {
 		this.damageType = dtype;
+		return this;
 	}
 
-	setApplyEvenBonus() {
+	setApplyEvenBonus() : this {
 		this.#applyEvenBonus = true;
+		return this;
 	}
 	setHitWeakness() {
 		this.#weakness = true;
+		return this;
 	}
 
 	setAbsorbed() {
 		this.#absorbed = true;
+		return this;
 	}
 
 	setResisted() {
 		this.#resisted = true;
+		return this;
 	}
 
 
@@ -387,8 +393,9 @@ export class DamageCalculator {
 	}
 
 	static getArmorDRByArmorLevel(lvl: number) : number {
+		const ARMOR_DIVISOR = 0.5;
 		const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
-		if (val) {return val;}
+		if (val) {return Math.floor(val * ARMOR_DIVISOR);}
 		return 0;
 	}
 

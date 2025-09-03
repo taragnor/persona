@@ -900,7 +900,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
 	energyCostData(this: UsableAndCard, persona: Persona): Power["system"]["energy"] {
-		if (!this.isPower()) {
+		if (!this.isPower() || this.isBasicPower()) {
 			return {cost: 0, required: 0, newForm: false};
 		}
 		if (this.customCost) {
@@ -1118,32 +1118,34 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		  calc.add("multiplier", 0.666, "Flurry Attack Power");
 
 	  }
-    calc.add('base', weaponDmg.baseAmt, weaponName.toString());
-    calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Power Bonus`);
-    calc.add('base', bonusDamage, 'Bonus Damage');
-    const variance  = (DamageCalculator.BASE_VARIANCE + weaponDmg.extraVariance + skillDamage.extraVariance + bonusVariance );
-    const varianceMult = userPersona.combatStats.getPhysicalVariance();
-    calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` );
-    return calc ;
+	  calc.add('base', weaponDmg.baseAmt, weaponName.toString());
+	  calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Power Bonus`);
+	  calc.add('base', bonusDamage, 'Bonus Damage');
+	  const variance  = (DamageCalculator.BASE_VARIANCE + weaponDmg.extraVariance + skillDamage.extraVariance + bonusVariance );
+	  const varianceMult = userPersona.combatStats.getPhysicalVariance();
+	  calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` );
+	  calc.setMinValue(1);
+	  return calc ;
   }
 
-  getMagicSkillDamage(this: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: Situation): DamageCalculation {
-    const persona = userPersona;
-    const magicDmg = userPersona.combatStats.magDamageBonus();
-    // const magicDmg = Math.floor(persona.magic);
-    const skillDamage = DamageCalculator.magicSkillDamage(this);
-    const damageBonus =  persona.getBonuses('magDmg').total(situation);
-    const bonusVariance = userPersona.getBonusVariance().total(situation);
-    const dtype = this.getDamageType(userPersona);
-    const calc= new DamageCalculation(dtype);
-    calc.add('base', magicDmg, `${userPersona.displayedName} Magic`, );
-    calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Damage`);
-    calc.add('base', damageBonus, 'Bonus Damage');
-    const variance  = (DamageCalculator.BASE_VARIANCE + skillDamage.extraVariance + bonusVariance );
-    const varianceMult = userPersona.combatStats.getMagicalVariance();
-    calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` );
-    return calc;
-  }
+	getMagicSkillDamage(this: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: Situation): DamageCalculation {
+		const persona = userPersona;
+		const magicDmg = userPersona.combatStats.magDamageBonus();
+		// const magicDmg = Math.floor(persona.magic);
+		const skillDamage = DamageCalculator.magicSkillDamage(this);
+		const damageBonus =  persona.getBonuses('magDmg').total(situation);
+		const bonusVariance = userPersona.getBonusVariance().total(situation);
+		const dtype = this.getDamageType(userPersona);
+		const calc= new DamageCalculation(dtype);
+		calc.add('base', magicDmg, `${userPersona.displayedName} Magic`, );
+		calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Damage`);
+		calc.add('base', damageBonus, 'Bonus Damage');
+		const variance  = (DamageCalculator.BASE_VARIANCE + skillDamage.extraVariance + bonusVariance );
+		const varianceMult = userPersona.combatStats.getMagicalVariance();
+		calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` );
+		calc.setMinValue(1);
+		return calc;
+	}
 
 	getDamage(this:Usable , userPersona: Persona, situation: Situation = {user: userPersona.user.accessor , usedPower: this.accessor, hit: true,  attacker: userPersona.user.accessor}, typeOverride : DamageConsequence['damageType'] = 'none') : DamageCalculation {
 		//TODO: handle type override check to see if power damage is by-power or has other type
@@ -1195,15 +1197,39 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return result?.finalize()?.attacks[0]?.changes[0]?.damage[0];
   }
 
-	async displayDamageStack(this: Usable, user: ValidAttackers) : Promise<string> {
+	async displayDamageStack(this: Usable, persona: Persona) : Promise<string> {
 		// const estimate = this.generateSimulatedDamageObject(user, 6);
 		// if (!estimate) {console.warn(`Can't get damage stack for ${this.name}`); return;}
 		// const sim = estimate?.str;
 		// if (!sim) {console.warn(`Can't get damage stack for ${this.name}`); return;}
-		const st = await this.getDamageStack(user);
+		const st = await this.getDamageStack(persona.user);
 		console.log(`Damage stack ${st}`);
 		return st;
 	}
+
+
+  // getDamageStack(this: Usable, userPersona: Persona): string {
+  //   const estimate = this.getDamage(userPersona).setApplyEvenBonus().eval();
+  //   if (!estimate) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return '';}
+  //   const sim = estimate?.str;
+  //   if (!sim) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return '';}
+  //   return `
+  //   ${this.name}: ${estimate.damageType}
+  //   ${sim.join('\n')}
+  //     `;
+  // }
+
+	// estimateDamage(this: Usable, userPersona: Persona) : {low: number, high: number} {
+		// if (!this.isTrulyUsable()) {return {high:0, low: 0};}
+
+		// if (this.isWeaponSkill() || this.isMagicSkill() || this.isConsumable()) {
+			// const damage = this.getDamage(userPersona);
+			// const high = Math.abs(damage.clone().setApplyEvenBonus().eval().hpChange);
+			// const low = Math.abs(damage.clone().eval().hpChange);
+			// return {high, low};
+		// }
+		// return {high: -1, low: -1};
+	// }
 
   async getDamageStack(this: Usable, user: ValidAttackers): Promise<string> {
     const estimate = await this.generateSimulatedDamageObject(user, 6);
@@ -1216,37 +1242,37 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       `;
   }
 
-  async estimateDamage(this: Usable, user: ValidAttackers) : Promise<{low: number, high: number}> {
-    switch (this.system.subtype) {
-      case 'social-link':
-      case 'passive':
-      case 'other':
-      case 'none':
-      case 'defensive':
-      case 'downtime':
-        return {high: 0, low:0};
-      case 'reusable':
-      case 'consumable':
-      case 'standalone': {
-        return {
-          high: Math.abs((await this.generateSimulatedDamageObject(user, 6))?.hpChange ?? 0),
-          low: Math.abs((await this.generateSimulatedDamageObject(user, 5))?.hpChange ?? 0) ,
-        };
-      }
-      case 'weapon':
-      case 'magic':
-        if (this.system.damageLevel == 'none') {
-          return {high: 0, low:0};
-        }
-        return {
-          high: Math.abs((await this.generateSimulatedDamageObject(user, 6))?.hpChange ?? 0),
-          low: Math.abs((await this.generateSimulatedDamageObject(user, 5))?.hpChange ?? 0) ,
-        };
-      default:
-        this.system satisfies never;
-        return {high: -1, low:-1};
-    }
-  }
+	async estimateDamage(this: Usable, user: ValidAttackers) : Promise<{low: number, high: number}> {
+	  switch (this.system.subtype) {
+	    case 'social-link':
+	    case 'passive':
+	    case 'other':
+	    case 'none':
+	    case 'defensive':
+	    case 'downtime':
+	      return {high: 0, low:0};
+	    case 'reusable':
+	    case 'consumable':
+	    case 'standalone': {
+	      return {
+	        high: Math.abs((await this.generateSimulatedDamageObject(user, 6))?.hpChange ?? 0),
+	        low: Math.abs((await this.generateSimulatedDamageObject(user, 5))?.hpChange ?? 0) ,
+	      };
+	    }
+	    case 'weapon':
+	    case 'magic':
+	      if (this.system.damageLevel == 'none') {
+	        return {high: 0, low:0};
+	      }
+	      return {
+	        high: Math.abs((await this.generateSimulatedDamageObject(user, 6))?.hpChange ?? 0),
+	        low: Math.abs((await this.generateSimulatedDamageObject(user, 5))?.hpChange ?? 0) ,
+	      };
+	    default:
+	      this.system satisfies never;
+	      return {high: -1, low:-1};
+	  }
+	}
 
   get description(): string {
     switch (this.system.type) {

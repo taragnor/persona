@@ -2173,7 +2173,6 @@ static async processConsequence_damage( cons: SourcedConsequence<DamageConsequen
 				return [];
 			}
 			dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
-			dmgCalc.setMinValue(1);
 			const evenRoll = (situation.naturalRoll ?? 0) % 2 == 0;
 			if ( cons.damageSubtype == "high" || (cons.damageSubtype == "odd-even" && evenRoll)) {
 				dmgCalc.setApplyEvenBonus();

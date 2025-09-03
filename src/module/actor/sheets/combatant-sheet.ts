@@ -398,7 +398,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!power) {
 			throw new PersonaError(`Can't find power id ${powerId}`);
 		}
-		await power.displayDamageStack(this.actor);
+		await power.displayDamageStack(this.actor.persona());
 		const stack = await power.getDamageStack(this.actor);
 		$(event.currentTarget).prop('title', stack);
 	}
@@ -410,7 +410,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 		if (!power) {return;}
 		const persona = this.actor.persona();
-		const damage =  await CombatantSheetBase.getDamage(persona, power as Power);
+		const damage = await CombatantSheetBase.getDamage(persona, power as Power);
 			const html = await renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona(), damage});
 			$(ev.currentTarget).prop('title', html);
 		}
@@ -462,12 +462,12 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 	}
 
-	static async getDamage(actor: PersonaActor | Persona, usable: Usable) {
-		if (actor instanceof Persona) {
-			actor = actor.user;
+	static async getDamage(persona: PersonaActor | Persona, usable: Usable) {
+		if (persona instanceof PersonaActor) {
+			if (!persona.isValidCombatant()) {return "0/0";}
+			persona = persona.persona();
 		}
-		if (!actor.isValidCombatant()) {return "0/0";}
-		const dmg = await usable.estimateDamage(actor);
+		const dmg = await usable.estimateDamage(persona.user);
 		if (dmg.high <= 0) {
 			return `-/-`;
 		}

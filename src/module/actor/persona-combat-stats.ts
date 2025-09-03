@@ -18,7 +18,7 @@ export class PersonaCombatStats {
 	static MIN_STAT_VAL = 1 as const;
 	static DEFENSE_DIVISOR = 2 as const;
 	static BASE_INSTANT_DEATH_DEFENSE= 10 as const;
-	static BASE_DEFENSE = 4 as const;
+	static BASE_DEFENSE = 2 as const;
 	static BASE_AILMENT_DEFENSE = 10 as const;
 
 	constructor (persona: Persona) {

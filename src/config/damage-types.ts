@@ -1,6 +1,3 @@
-import { PersonaError } from "../module/persona-error.js";
-import { ItemSubtype } from "../module/item/persona-item.js";
-import { Power } from "../module/item/persona-item.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { PC } from "../module/actor/persona-actor.js";
 

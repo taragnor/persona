@@ -22,7 +22,7 @@
 
 				{{#if (isGM)}}
 				<label> Price </label>
-				{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}
+				{{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}
 				<br>
 				<label> No Trade </label>
 				<input type="checkbox" name="system.noTrade" {{checked item.system.noTrade}}>
