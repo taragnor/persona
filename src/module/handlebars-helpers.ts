@@ -785,7 +785,6 @@ export class PersonaHandleBarsHelpers {
 		"getModifierTypesByCategory": function (category: U<keyof typeof MODIFIER_CATEGORIES>) {
 			if (!category)
 			{return MODIFIERS_TABLE;}
-			debugger;
 			if (!(category in MODIFIER_CATEGORIES)) {return {};}
 			const baseObject = MODIFIER_CATEGORIES[category] ?? {};
 			return HTMLTools.createLocalizationObject(baseObject, "persona.modifier");

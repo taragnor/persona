@@ -1,5 +1,18 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 
+const DEPRECATED_CONSEQUENCE_TYPES = [
+	"save-slot", //deprecated, don't expend slot you normally would
+	"recover-slot", // deprecated
+	"add-escalation", // deprecated
+	"dmg-low", //deprecated
+	"dmg-high", //deprecated
+	"dmg-allout-low", //deprecated
+	"dmg-allout-high", //deprecated
+	"dmg-mult", //deprecated
+	"hp-loss", //deprecated
+	"half-hp-cost", //deprecated
+] as const;
+
 export const CONSQUENCELIST = [
 	"none",
 	"absorb",
@@ -35,18 +48,9 @@ export const CONSQUENCELIST = [
 	"alter-mp",
 	"combat-effect",
 	"alter-fatigue-lvl",
-	"save-slot", //deprecated, don't expend slot you normally would
-	"recover-slot", // deprecated
-	"add-escalation", // deprecated
-	"dmg-low", //deprecated
-	"dmg-high", //deprecated
-	"dmg-allout-low", //deprecated
-	"dmg-allout-high", //deprecated
-	"dmg-mult", //deprecated
-	"hp-loss", //deprecated
-	"half-hp-cost", //deprecated
-
+	 ...DEPRECATED_CONSEQUENCE_TYPES,
 ] as const;
+
 
 export type ConsequenceType = typeof CONSQUENCELIST[number];
 

@@ -19,7 +19,6 @@ import { ConsequenceTarget } from "./precondition-types.js";
 import { DamageSubtype } from "./effect-types.js";
 import { DamageType } from "./damage-types.js";
 import { ModifierVariable } from "./effect-types.js";
-import { ModifierConsType } from "./effect-types.js";
 import { DungeonAction } from "./effect-types.js";
 import { SlotType } from "./slot-types.js";
 import { CONDITION_TARGETS_LIST } from "./precondition-types.js";
@@ -33,7 +32,6 @@ import { StatusDuration } from "../module/active-effect.js";
 import { StatusEffectId } from "./status-effects.js";
 import { ModifierCategory, ModifierTarget } from "./item-modifiers.js";
 import { PC } from "../module/actor/persona-actor.js";
-import {Calculation, CalculationOperation} from "../module/utility/calculation.js";
 
 type ExpendOtherEffect = {
 	type: "expend-item";
@@ -384,8 +382,8 @@ type ModifierConsequence = {
 	modifiedFields : Record<ModifierTarget,boolean>,
 	// modifierType: ModifierConsType,
 	modifierCategory: ModifierCategory,
-	calcPriority: number,
-	calcOperation: CalculationOperation,
+	// calcPriority: number,
+	// calcOperation: CalculationOperation,
 } & ModifierData;
 
 type ModifierData = ConstantModifier
