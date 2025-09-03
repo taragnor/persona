@@ -1213,12 +1213,14 @@ background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%) !impo
 
 }
 
+
 .window-app .item-piles-child-even-color {
 background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%) !important;
   color: #E6F8FF !important; /* pale cyan for readable text */
 }
 
 
+.window-app .item-piles-even-color:nth-child(even),
 .window-app .item-piles-item-row.svelte-ip-64vjsm.item-piles-child-even-color > * {
 background: initial !important;
   color: #E6F8FF !important; /* pale cyan for readable text */
