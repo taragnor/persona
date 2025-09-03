@@ -1207,7 +1207,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			}
 			await attacker.actor.removeStatus('baton-pass');
 			await finalizedResult.toMessage(power.name, attacker.actor);
-			await this.postAction(attacker, result);
+			await sleep(750); //allopw bonus action statuses and such to be placed;
+			await this.postActionCleanup(attacker, result);
 			return result;
 		} catch(e) {
 			console.log(e);
@@ -1215,7 +1216,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 	}
 
-	static async postAction(attacker: PToken, result: CombatResult ) {
+	static async postActionCleanup(attacker: PToken, result: CombatResult ) {
 		await this.afterActionTriggered(attacker, result);
 		const power = result.power;
 		if (!power) {return;}

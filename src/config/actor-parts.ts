@@ -227,6 +227,7 @@ export function PCAndNPCAllyCombatStats() {
 	return {
 		powers_sideboard: new arr( new id()),
 		teamworkMove: new id(),
+		usingMetaPod: new bool({initial: true}),
 		mp: new sch({
 			value: new num({initial: 0, integer: true, min: 0, max: 1000}),
 			max: new num({initial: 1, integer: true, min:1, max:1000}),
