@@ -85,24 +85,39 @@ export class PersonaCombatStats {
 
 	damageReduction(damageType : RealDamageType, power: ModifierContainer): DamageCalculation {
 		const calc = new DamageCalculation(damageType);
+		if (damageType == "healing") {return calc;}
+		if (!power.isUsableType()) {return calc;}
+		if (power.isConsumable()) {return calc;}
+		if (power.isWeaponSkill())  { return this.physDR();}
+		if (power.isMagicSkill()) {return this.magDR();}
+		return calc;
+	}
+
+	magDR(): DamageCalculation {
 		const situation = {
 			user: this.persona.user.accessor,
 			target: this.persona.user.accessor,
 		};
-		if (damageType == "healing") {return calc;}
-		if (power.isConsumable()) {return calc;}
+		const calc= new DamageCalculation(null);
 		const stamina = this.staminaDR();
 		const generalDRBonus = this.persona.getBonuses("dr").total(situation);
 		const staminaString = 'Endurance Damage Reduction';
 		calc.add("base", -Math.abs(stamina), staminaString);
 		calc.add("base", -generalDRBonus, "DR Modifiers");
-		if (power.isWeaponSkill()) {
-			const armor = this.persona.armorDR();
-			const armorBonus = this.persona.getBonuses("armor-dr").total(situation);
-			const armorString = "Armor DR";
-			calc.add("base", -Math.abs(armor), armorString);
-			calc.add("base", -armorBonus, "Armor Modifiers");
-		}
+		return calc;
+	}
+
+	physDR() : DamageCalculation {
+		const calc = this.magDR();
+		const situation = {
+			user: this.persona.user.accessor,
+			target: this.persona.user.accessor,
+		};
+		const armor = this.persona.armorDR();
+		const armorBonus = this.persona.getBonuses("armor-dr").total(situation);
+		const armorString = "Armor DR";
+		calc.add("base", -Math.abs(armor), armorString);
+		calc.add("base", -armorBonus, "Armor Modifiers");
 		return calc;
 	}
 

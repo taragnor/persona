@@ -241,6 +241,16 @@
 	"persona.status.duration.UEoT": "Until End of this Turn",
 	"persona.status.duration.instant": "Instant",
 
+	"persona.modifier.categories.combat": "Combat (Generic)",
+	"persona.modifier.categories.defense": "Defensive",
+	"persona.modifier.categories.offense": "Offensive",
+	"persona.modifier.categories.persona": "Persona",
+	"persona.modifier.categories.shadow": "Shadow Specific",
+	"persona.modifier.categories.actor": "Actor (general)",
+	"persona.modifier.categories.social": "Social",
+	"persona.modifier.categories.metaverse": "Metaverse",
+	"persona.modifier.categories.deprecated": "Deprecated",
+
 	"persona.modifier.maxhp": "Maximum HP",
 	"persona.modifier.maxmp": "Maximum MP",
 	"persona.modifier.wpnAtk": "Weapon Attack Bonus",
@@ -1093,7 +1103,11 @@
 	"persona.availability.--": "Negative (--)",
 	"persona.availability.N/A": "Not Available (N/A)",
 
-	"persona.applications.powerPrinter" : "Persona Powers List"
+	"persona.applications.powerPrinter" : "Persona Powers List",
+
+	"persona.calculation.operation.multiply": "Multiply",
+	"persona.calculation.operation.add": "Add",
+	"persona.calculation.operation.noStackMultiply": "Multiply (no stacking)"
 
 }
 

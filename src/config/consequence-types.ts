@@ -31,8 +31,9 @@ import { Usable } from "../module/item/persona-item.js";
 import { OtherConsequence } from "../module/datamodel/other-effects.js";
 import { StatusDuration } from "../module/active-effect.js";
 import { StatusEffectId } from "./status-effects.js";
-import { ModifierTarget } from "./item-modifiers.js";
+import { ModifierCategory, ModifierTarget } from "./item-modifiers.js";
 import { PC } from "../module/actor/persona-actor.js";
+import {Calculation, CalculationOperation} from "../module/utility/calculation.js";
 
 type ExpendOtherEffect = {
 	type: "expend-item";
@@ -381,11 +382,20 @@ const _errorCheckDType : Expect<DamageConsequence["damageSubtype"], DamageSubtyp
 type ModifierConsequence = {
 	type: "modifier-new",
 	modifiedFields : Record<ModifierTarget,boolean>,
-	modifierType: ModifierConsType
+	// modifierType: ModifierConsType,
+	modifierCategory: ModifierCategory,
+	calcPriority: number,
+	calcOperation: CalculationOperation,
 } & ModifierData;
 
 type ModifierData = ConstantModifier
-	| SystemVariableModifier;
+	| SystemVariableModifier
+;
+
+// type ConsAmountModifier = {
+// 	amount: ConsequenceAmount;
+// 	modifierType ?: undefined;
+// }
 
 type ConstantModifier = {
 	modifierType: "constant",

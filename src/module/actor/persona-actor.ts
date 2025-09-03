@@ -1587,7 +1587,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	getPersonalBonuses(modnames : ModifierTarget | ModifierTarget[], sources: readonly ModifierContainer[] = this.actorMainModifiers()) : ModifierList  {
 		const modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this)
-			.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
+			.filter( mod => mod.modifier != 0)
 		));
 		return modList;
 	}

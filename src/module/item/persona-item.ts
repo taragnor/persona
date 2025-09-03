@@ -1021,7 +1021,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
           source: PersonaDB.getUniversalItemAccessor(this),
           conditions: ArrayCorrector(x.conditions),
           modifier: ModifierList.getModifierAmount(x.consequences, bonusTypes),
-          variableModifier: ModifierList.getVariableModifiers(x.consequences, bonusTypes),
         })
       );
   }

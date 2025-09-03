@@ -293,7 +293,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	getBonuses (modnames : NonDeprecatedModifierType | NonDeprecatedModifierType[], sources: readonly ModifierContainer[] = this.mainModifiers() ): ModifierList {
 		const modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this.source)
-			.filter( mod => mod.modifier != 0 || mod.variableModifier.size > 0)
+			.filter( mod => mod.modifier != 0)
 		));
 		return modList;
 	}
@@ -898,7 +898,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	armorDR() : number {
 		if (this.user.isShadow()) {
-			const DR =  DamageCalculator.getArmorDRByArmorLevel(Math.floor(this.level /10) +1);
+			const DR =  DamageCalculator.getArmorDRByArmorLevel(Math.floor(this.level /10));
 			return DR;
 		}
 		const armor = this.user.equippedItems().find(x => x.isInvItem() && x.system.slot =="body") as U<InvItem>;

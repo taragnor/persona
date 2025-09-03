@@ -182,7 +182,7 @@ type VariableSpecifier = {
 };
 
 
-function resolveConsequenceAmount< C extends ConsequenceAmount, T extends PreparedConsequenceAmountV2<C>>(amt: T, contextList: TargettingContextList) : number {
+export function resolveConsequenceAmount< C extends ConsequenceAmount, T extends PreparedConsequenceAmountV2<C>>(amt: T, contextList: Partial<TargettingContextList>) : number {
 	if (typeof amt == "number") {return amt;}
 	switch (amt.type) {
 		case "operation":
@@ -203,7 +203,7 @@ function resolveConsequenceAmount< C extends ConsequenceAmount, T extends Prepar
 
 }
 
-function resolveOperation <T extends PreparedConsequenceAmountV2<C> , C extends ConsequenceAmountV2>(amt: T & {type : "operation"}, contextList: TargettingContextList ) : number {
+function resolveOperation <T extends PreparedConsequenceAmountV2<C> , C extends ConsequenceAmountV2>(amt: T & {type : "operation"}, contextList: Partial<TargettingContextList> ) : number {
 	const val1 = resolveConsequenceAmount(amt.amt1, contextList);
 	const val2 = resolveConsequenceAmount(amt.amt2, contextList);
 
@@ -223,6 +223,22 @@ function resolveOperation <T extends PreparedConsequenceAmountV2<C> , C extends 
 			PersonaError.softFail(`Unknown Operator: ${amt["operator"] as string}`);
 			return -1;
 	}
+}
+
+export function createTargettingContextListFromSituation( situation: Situation) : Partial<TargettingContextList> {
+	 const list : Partial<TargettingContextList> = {};
+
+	 function copyToListPartial< T extends keyof TargettingContextList & keyof Situation> ( partial: Partial<TargettingContextList>, sit: Situation, key: T) {
+			if (key in sit && sit[key] != undefined) {
+				 const x= [sit[key]] as NonNullable<Partial<TargettingContextList>[T]>;
+				 partial[key]= x;
+			}
+	 }
+	 copyToListPartial(list, situation, "target");
+	 copyToListPartial(list, situation, "user");
+	 copyToListPartial(list, situation, "cameo");
+	 copyToListPartial(list, situation, "attacker");
+	 return list;
 }
 
 export type Mutator<T extends AlterVariableConsequence> =

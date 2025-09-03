@@ -1,4 +1,5 @@
 import { PersonaStat } from "../config/persona-stats.js";
+import { MODIFIER_CATEGORIES, MODIFIERLIST, MODIFIERS_TABLE } from "../config/item-modifiers.js";
 import { ConsequenceAmount } from "../config/consequence-types.js";
 import { DAMAGE_LEVELS } from "../config/damage-types.js";
 import { DAMAGE_ICONS } from "../config/icons.js";
@@ -45,6 +46,7 @@ import { Usable } from "./item/persona-item.js";
 import {Defense, DEFENSE_TYPES} from "../config/defense-types.js";
 import {INSTANT_KILL_LEVELS} from "./combat/damage-calc.js";
 import {PersonaEffectContainerBaseSheet} from "./item/sheets/effect-container.js";
+import {HTMLTools} from "./utility/HTMLTools.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -145,6 +147,28 @@ export class PersonaHandleBarsHelpers {
 			const pc= game.user.character as PersonaActor;
 			if (!pc || pc.system.type != "pc") {return false;}
 			return (pc as PC).meetsSLRequirement(benefit.focus);
+		},
+
+		"getWeaponDR": function (persona: Persona) : number {
+			const DR = persona.combatStats.physDR();
+			DR.setMinValue(-Infinity);
+			return Math.abs(DR.eval().hpChange);
+		},
+		"getMagicDR": function (persona: Persona) : number {
+			const DR = persona.combatStats.magDR();
+			DR.setMinValue(-Infinity);
+			return Math.abs(DR.eval().hpChange);
+		},
+
+		"WeaponDRBreakdown": function (persona: Persona) : string {
+			const DR = persona.combatStats.physDR();
+			DR.setMinValue(-Infinity);
+			return DR.eval().str.join("\n");
+		},
+		"MagicDRBreakdown": function (persona: Persona) : string {
+			const DR = persona.combatStats.magDR();
+			DR.setMinValue(-Infinity);
+			return DR.eval().str.join("\n");
 		},
 
 		"getCriticalBoostEstimate" : function (actor: PC | Shadow, power: Usable) : number {
@@ -757,6 +781,15 @@ export class PersonaHandleBarsHelpers {
 		"armorDR": function (item: InvItem) {
 			return item.armorDR();
 		},
+
+		"getModifierTypesByCategory": function (category: U<keyof typeof MODIFIER_CATEGORIES>) {
+			if (!category)
+			{return MODIFIERS_TABLE;}
+			debugger;
+			if (!(category in MODIFIER_CATEGORIES)) {return {};}
+			const baseObject = MODIFIER_CATEGORIES[category] ?? {};
+			return HTMLTools.createLocalizationObject(baseObject, "persona.modifier");
+		}
 
 
 	};

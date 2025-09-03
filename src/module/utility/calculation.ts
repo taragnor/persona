@@ -1,4 +1,5 @@
 import {ModifierList} from "../combat/modifier-list.js";
+import {HTMLTools} from "./HTMLTools.js";
 
 export class Calculation {
 
@@ -119,11 +120,17 @@ export class Calculation {
 	}
 }
 
-type CalcList = {
-	multiply: CalculationNumber[],
-	add: CalculationNumber[],
-	noStackMultiply: CalculationNumber[],
-}
+type CalcList = Record<CalculationOperation, CalculationNumber[]>;
+
+const OPERATION_TYPE_LIST = [
+	"add",
+	"multiply",
+	"noStackMultiply",
+] as const;
+
+export const CALCULATION_OPERATION = HTMLTools.createLocalizationObject(OPERATION_TYPE_LIST, "persona.calculation.operation");
+
+export type CalculationOperation = typeof OPERATION_TYPE_LIST[number];
 
 type CalculationNumber = {
 	name: string,

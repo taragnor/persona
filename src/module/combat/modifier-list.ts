@@ -1,5 +1,3 @@
-import { TensionPool } from "../exploration/tension-pool.js";
-import { PersonaCombat } from "./persona-combat.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { ArrayCorrector } from "../item/persona-item.js";
 import { testPreconditions } from "../preconditions.js";
@@ -7,14 +5,12 @@ import { ModifierTarget } from "../../config/item-modifiers.js";
 import { ModifierContainer } from "../item/persona-item.js";
 import { PowerContainer } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
-import { ModifierVariable } from "../../config/effect-types.js";
 
 export type ModifierListItem = {
 	name: string;
 	source: Option<UniversalItemAccessor<PowerContainer>>;
 	conditions: DeepReadonly<Precondition[]>;
 	modifier: number;
-	variableModifier: Set<{variable: ModifierVariable, makeNegative: boolean}>;
 }
 
 type MLListType = "standard"
@@ -37,7 +33,6 @@ export class ModifierList {
 			name,
 			conditions,
 			modifier,
-			variableModifier: new Set(),
 		});
 		return this;
 	}
@@ -56,7 +51,7 @@ export class ModifierList {
 		return this._data.filter( item => {
 			const source = item.source ? PersonaDB.findItem(item.source): null;
 			if (testPreconditions(item.conditions, situation, source)) {
-				if (item.modifier != 0 || item.variableModifier.size != 0) {
+				if (item.modifier != 0) {
 					return true;
 				}
 			}
@@ -64,50 +59,39 @@ export class ModifierList {
 		});
 	}
 
-	static getVariableModifiers(consequences: DeepReadonly<Consequence[]>, targetMods: ModifierTarget[]): ModifierList["_data"][number]["variableModifier"] {
-		return new Set(ArrayCorrector(consequences).flatMap ( c=> {
-			if ("modifiedFields" in c
-				&& targetMods.some( f => c.modifiedFields[f] == true)
-				&& c.modifierType == "system-variable") {
-				return [{variable: c.varName, makeNegative: c.makeNegative}];
-			}
-			if (!("modifiedField" in c) || !c.modifiedField) {return [];}
-			if (!targetMods.includes(c.modifiedField)) {return [];}
-			if (c.type == "add-escalation") {return [{variable: "escalationDie", makeNegative: false}];}
-			return [];
-		}));
-	}
 
-	static getModifierAmount(consequences: DeepReadonly<Consequence[]>, targetMods: ModifierTarget[] | ModifierTarget) : number {
-		targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
-		return (ArrayCorrector(consequences) ?? [])
-			.reduce( (acc,x)=> {
-				if ("modifiedFields" in x
-					&& targetMods.some( f => x.modifiedFields[f] == true)
-					&& x.modifierType == "constant") {
-					return acc + (x.amount ?? 0);
-				}
-				if ("modifiedField" in x && x.modifiedField && targetMods.includes(x.modifiedField)) {
-					if (x.amount) {return acc + x.amount;}
-				}
-				return acc;
-			}, 0);
-	}
+	 static getModifierAmount(consequences: DeepReadonly<Consequence[]>, targetMods: ModifierTarget[] | ModifierTarget) : number {
+			targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
+			return (ArrayCorrector(consequences) ?? [])
+				 .reduce( (acc,cons)=> {
+						if ("modifiedFields" in cons
+							 && targetMods
+							 .some( f => cons.modifiedFields[f] == true)
+						) {
+							 if (cons.modifierType == "constant") {
+									return acc + (cons.amount ?? 0);
+							 }
+						}
+						if ("modifiedField" in cons && cons.modifiedField && targetMods.includes(cons.modifiedField)) {
+							 if (cons.amount) {return acc + cons.amount;}
+						}
+						return acc;
+				 }, 0);
+	 }
 
-	addConditionalEffects( effects: ConditionalEffect[], source: PowerContainer  | string, bonusTypes: ModifierTarget[]) : this {
-		const sourceName = typeof source =="string" ? source : source.name;
-		const sourceAccessor = typeof source == "string" ? null : source.accessor;
-		const stuff : ModifierListItem[] = (ArrayCorrector(effects) ?? []).map( eff=>{
-			return {
-					name: sourceName,
-					source: sourceAccessor,
-					conditions: ArrayCorrector(eff.conditions),
-				modifier: ModifierList.getModifierAmount(eff.consequences, bonusTypes),
-				variableModifier: ModifierList.getVariableModifiers(eff.consequences, bonusTypes),
-			};
-		});
-		this._data = this._data.concat(stuff);
-		return this;
+	 addConditionalEffects( effects: ConditionalEffect[], source: PowerContainer  | string, bonusTypes: ModifierTarget[]) : this {
+			const sourceName = typeof source =="string" ? source : source.name;
+			const sourceAccessor = typeof source == "string" ? null : source.accessor;
+			const stuff : ModifierListItem[] = (ArrayCorrector(effects) ?? []).map( eff=>{
+				 return {
+						name: sourceName,
+						source: sourceAccessor,
+						conditions: ArrayCorrector(eff.conditions),
+						modifier: ModifierList.getModifierAmount(eff.consequences, bonusTypes),
+				 };
+			});
+this._data = this._data.concat(stuff);
+return this;
 
 	}
 
@@ -116,10 +100,7 @@ export class ModifierList {
 		switch (style) {
 			case "standard": {
 				const base =  mods.reduce( (acc, item) => acc + item.modifier , 0);
-				const vartotal = mods.reduce((acc, item) => {
-					return acc + ModifierList.resolveVariableModifiers(item.variableModifier, situation);
-				}, 0);
-				return base + vartotal;
+				return base;
 			}
 			case "percentage": {
 				const base =  mods.reduce( (acc, item) => acc * (item.modifier ?? 1) , 1);
@@ -146,29 +127,29 @@ export class ModifierList {
 	// 	return testPreconditions( ...args);
 	// }
 
-	static resolveVariableModifiers( variableMods: ModifierListItem["variableModifier"], _situation: Situation) : number {
-		return Array.from(variableMods).reduce( (acc, varmod) => {
-			const sign = varmod.makeNegative ? -1 : 1;
-			switch (varmod.variable) {
-				case "escalationDie":
-					if (!game.combat) {return acc;}
-					return acc + (((game?.combat as PersonaCombat )?.getEscalationDie() ?? 0) * sign);
-				case "tensionPool":
-						return (TensionPool.instance.amt ?? 0) * sign;
-				default:
-						varmod.variable satisfies never;
-			}
-			return acc;
-		},0);
-	}
+	// static resolveVariableModifiers( variableMods: ModifierListItem["variableModifier"], _situation: Situation) : number {
+	// 	return Array.from(variableMods).reduce( (acc, varmod) => {
+	// 		const sign = varmod.makeNegative ? -1 : 1;
+	// 		switch (varmod.variable) {
+	// 			case "escalationDie":
+	// 				if (!game.combat) {return acc;}
+	// 				return acc + (((game?.combat as PersonaCombat )?.getEscalationDie() ?? 0) * sign);
+	// 			case "tensionPool":
+	// 					return (TensionPool.instance.amt ?? 0) * sign;
+	// 			default:
+	// 					varmod.variable satisfies never;
+	// 		}
+	// 		return acc;
+	// 	},0);
+	// }
 
 	/** returns an array of values to use in printing the rol */
 	printable(situation:Situation) : ResolvedModifierList {
 		const signedFormatter = new Intl.NumberFormat("en-US", {signDisplay:"always"});
 		return this
 			.validModifiers(situation)
-			.map( ({name, modifier, variableModifier}) => {
-				const total = modifier + ModifierList.resolveVariableModifiers(variableModifier, situation);
+			.map( ({name, modifier}) => {
+				const total = modifier;
 				return { name, modifier: signedFormatter.format(total), raw: total};
 			})
 			.filter(x=> x.raw != 0);

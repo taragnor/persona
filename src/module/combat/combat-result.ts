@@ -566,12 +566,9 @@ export class CombatResult  {
 
 }
 
-
-
-
 export interface ActorChange<T extends PersonaActor> {
 	actor: UniversalActorAccessor<T>;
-	damage: Partial<Record<DamageCalculation["damageType"], DamageCalculation>>;
+	damage: Partial<Record<NonNullable<DamageCalculation["damageType"]>, DamageCalculation>>;
 	// hpchange: number;
 	// damageType: RealDamageType;
 	// hpchangemult: number;

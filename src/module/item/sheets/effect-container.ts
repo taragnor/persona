@@ -48,7 +48,7 @@ import { STATUS_EFFECT_TRANSLATION_TABLE } from "../../../config/status-effects.
 import { STATUS_EFFECT_DURATION_TYPES } from "../../../config/status-effects.js";
 import { TARGETING } from "../../../config/effect-types.js";
 import { POWER_TAGS } from "../../../config/power-tags.js";
-import { MODIFIERS_TABLE } from "../../../config/item-modifiers.js";
+import { MODIFIER_CATEGORIES, MODIFIER_CATEGORIES_LOCALIZATION, MODIFIERS_TABLE } from "../../../config/item-modifiers.js";
 import { SHADOW_CHARGE_REQ } from "../../../config/effect-types.js";
 import { PersonaDB } from "../../persona-db.js";
 import { TRIGGERS } from "../../../config/triggers.js";
@@ -63,6 +63,7 @@ import { WEATHER_TYPES } from "../../../config/weather-types.js";
 import { STUDENT_SKILLS } from "../../../config/student-skills.js";
 import {DEFENSE_TYPES} from "../../../config/defense-types.js";
 import {INSTANT_KILL_LEVELS} from "../../combat/damage-calc.js";
+import {CALCULATION_OPERATION} from "../../utility/calculation.js";
 
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
@@ -163,6 +164,8 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			TAG_COMPARISON_TYPES,
 			VARIABLE_TYPE,
 			UNIVERSAL_MODIFIERS_TYPE,
+			MODIFIER_CATEGORIES_LOCALIZATION,
+			CALCULATION_OPERATION,
 			SCENE_WEATHER_TYPES: Object.fromEntries(
 				([""].concat(Object.keys(CONFIG.weatherEffects))).map( x=> [x,x])
 			),

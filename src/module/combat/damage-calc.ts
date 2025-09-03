@@ -12,6 +12,7 @@ export class DamageCalculation {
 	#absorbed: boolean = false;
 	#weakness: boolean = false;
 	#blocked : boolean = false;
+	#minValue : number = 0;
 	#applyEvenBonus: boolean = false;
 	lists = {
 		base: [] as DamageObj[],
@@ -22,11 +23,12 @@ export class DamageCalculation {
 		nonMultPostAdd: [] as DamageObj[],
 		resist: [] as DamageObj[],
 	} satisfies Record<string, DamageObj[]>;
-	damageType : RealDamageType;
+	damageType : RealDamageType | null;
 	target: ValidAttackers;
 
-	constructor (dtype : RealDamageType) {
+	constructor (dtype : RealDamageType | null) {
 		this.damageType = dtype;
+		this.#minValue = 0;
 	}
 
 	addDamageConsOldForm(cons: SourcedConsequence<OldDamageConsequence>, target: ValidAttackers, defaultDamageType: DamageType) : DamageCalculation {
@@ -34,6 +36,10 @@ export class DamageCalculation {
 		this.addConsequence(newForm, target);
 		return this;
 
+	}
+
+	setMinValue(val: number) {
+		this.#minValue = val;
 	}
 
 	setDamageType(dtype : RealDamageType) {
@@ -195,11 +201,15 @@ export class DamageCalculation {
 			const dOrder= k as keyof DamageCalculation["lists"];
 			this.lists[dOrder] = this.lists[dOrder].concat(other.lists[dOrder]);
 		}
+		if (this.damageType === null) {
+			this.damageType = other.damageType;
+		}
 		this.#absorbed = this.#absorbed || other.#absorbed;
 		this.#weakness = this.#weakness || other.#weakness;
 		this.#applyEvenBonus = this.#applyEvenBonus || other.#applyEvenBonus;
 		this.#resisted = this.#resisted || other.#resisted;
 		this.#blocked = this.#blocked || other.#blocked;
+		this.#minValue = this.#minValue == 0 ? other.#minValue : this.#minValue;
 		return this;
 	}
 
@@ -276,14 +286,15 @@ export class DamageCalculation {
 			str.push(`* ${RESISTMULT} Damage Resistance`);
 			total *= RESISTMULT;
 		}
-		total = Math.max(0, Math.round(total));
+		total = Math.max(Math.round(total));
 		str.push(`${total} --- Total`);
-		let hpChange = total * (this.#absorbed ? 1 : -1) * (this.#blocked ? 0 : 1);
+		let hpChange = Math.max(this.#minValue, total * (this.#absorbed ? 1 : -1) * (this.#blocked ? 0 : 1));
 		if (hpChange == undefined || typeof hpChange != "number" ||  Number.isNaN(hpChange)) {
 			PersonaError.softFail("Hp change isn't a number");
 			hpChange = -1;
 		}
-		return { hpChange, str, damageType: this.damageType,
+		const damageType = this.damageType ? this.damageType : "none";
+		return { hpChange, str, damageType,
 			resisted: this.#resisted,
 			absorbed: this.#absorbed,
 			weakness: this.#weakness,

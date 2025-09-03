@@ -17,9 +17,18 @@ const DEPRECATED_TYPES = [
 	"wpnMult",
 	"magLow",
 	"magHigh",
+	"wpnDmg_low",
+	"wpnDmg_high",
+	"weakestSlot",
+	"pay",
 ] as const;
 
 export const COMBAT_BONUS_TYPES = [
+	"disengage",
+	"initiative",
+] as const;
+
+export const OFFENSE_TYPES = [
 	"allAtk",
 	"wpnAtk",
 	"magAtk",
@@ -28,11 +37,14 @@ export const COMBAT_BONUS_TYPES = [
 	"magDmg",
 	"variance",
 	"criticalBoost",
-	"critResist",
-	"instantDeathResistanceMult",
 	"afflictionRange",
 	"instantDeathRange",
 	"allOutDmgMult", //adds to weapon multiplier on AoA
+
+
+	] as const;
+
+export const DEFENSE_TYPES = [
 	"allDefenses",
 	"ref",
 	"fort",
@@ -41,14 +53,12 @@ export const COMBAT_BONUS_TYPES = [
 	"ail", //ailment defnese bonus
 	"dr",
 	"armor-dr",
+	"instantDeathResistanceMult",
+	"critResist",
+	"baleful-status-duration",
 ] as const;
 
-export const MODIFIERLIST = [
-	...COMBAT_BONUS_TYPES,
-	...PERSONA_STATS_LIST,
-	"DCIncrease",
-	"socialRoll",
-	...STUDENT_SKILLS_LIST,
+export const ACTOR_STATS_TYPES = [
 	"save",
 	"recovery",
 	"recovery-mult",
@@ -59,27 +69,61 @@ export const MODIFIERLIST = [
 	"maxmpMult",
 	"hpCostMult",
 	"mpCostMult",
-	"wpnDmg_low",
-	"wpnDmg_high",
-	"disengage",
-	"weakestSlot",
-	"pay",
 	"xp-multiplier",
-	"shadow-xp-value",
 	"extraMaxPowers",
-	"initiative",
-	"starting-energy",
-	"energy-per-turn",
-	"max-energy",
-	"actions-per-turn",
-	"baleful-status-duration",
-	"d-mon-storage",
 	"max-defense-boosts",
 	"max-resist-boosts",
+	"d-mon-storage",
+] as const;
+
+export const SHADOW_STATS_TYPES = [
+	"shadow-xp-value",
+	"starting-energy",
+	"energy-per-turn",
+	"actions-per-turn",
+	"max-energy",
+] as const;
+
+export const STUDENT_SKILLS_TYPES = [
+	...STUDENT_SKILLS_LIST,
+	"DCIncrease",
+	"socialRoll",
+] as const;
+
+export const OTHER_TYPES = [
+
+
+];
+
+export const MODIFIERLIST = [
+	...OFFENSE_TYPES,
+	...DEFENSE_TYPES,
+	...COMBAT_BONUS_TYPES,
+	...PERSONA_STATS_LIST,
+	...SHADOW_STATS_TYPES,
+	...STUDENT_SKILLS_TYPES,
+	...ACTOR_STATS_TYPES,
 	...ENVIRONMENTAL_MODIFIERS,
 	...DEPRECATED_TYPES,
 
 ] as const;
+
+export const MODIFIER_CATEGORIES = {
+	"combat" : COMBAT_BONUS_TYPES,
+	"defense": DEFENSE_TYPES,
+	"offense": OFFENSE_TYPES,
+	"persona": PERSONA_STATS_LIST,
+	"shadow": SHADOW_STATS_TYPES,
+	"social": STUDENT_SKILLS_TYPES,
+	"actor": ACTOR_STATS_TYPES,
+	"metaverse": ENVIRONMENTAL_MODIFIERS,
+	"deprecated": DEPRECATED_TYPES,
+} as const satisfies Record<string, readonly ModifierTarget[]>;
+
+export type ModifierCategory = keyof typeof MODIFIER_CATEGORIES;
+
+export const MODIFIER_CATEGORIES_LOCALIZATION = HTMLTools.createLocalizationObject(Object.keys(MODIFIER_CATEGORIES) as ModifierCategory[], "persona.modifier.categories");
+
 
 
 export const MODIFIERS_TABLE = HTMLTools.createLocalizationObject(MODIFIERLIST, "persona.modifier");

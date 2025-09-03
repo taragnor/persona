@@ -78,6 +78,11 @@ div.defenses div.defense {
 
 }
 
+div.defenses > *{
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
 div.resistance-item {
 	margin-left: 10px;
 	margin-right: 10px;

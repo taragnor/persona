@@ -1,0 +1,31 @@
+
+<div>
+	<select name="{{strcat namePrefix 'modifierCategory'}}">
+		{{selectOptions POWERSTUFF.MODIFIER_CATEGORIES_LOCALIZATION localize=true selected=cons.modifierCategory}}
+	</select>
+</div>
+<div>
+	{{multicheck (strcat namePrefix 'modifiedFields') (getModifierTypesByCategory cons.modifierCategory) checked=cons.modifiedFields localize=true}}
+</div>
+
+<div>
+	<select name="{{strcat namePrefix 'calcOperation'}}">
+		{{selectOptions POWERSTUFF.CALCULATION_OPERATION localize=true selected=(defVal cons.calcOperation "add")}}
+	</select>
+	<label>Priority</label>
+	<input class="short" type=number name="{{strcat namePrefix 'calcPriority'}}" value="{{defVal cons.calcPriority 0}}">
+</div>
+
+<div>
+	<select name="{{strcat namePrefix 'modifierType'}}">
+		{{selectOptions POWERSTUFF.MODIFIER_CONS_TYPES localize=true selected=(defVal cons.modifierType "constant")}}
+	</select>
+	{{#if (eq cons.modifierType "constant")}}
+	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+	{{/if}}
+</div>
+
+	{{#if false}}
+	{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amount.') cons=cons.amount POWERSTUFF=POWERSTUFF owner=owner}}
+	{{/if}}
+
