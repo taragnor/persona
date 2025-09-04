@@ -191,7 +191,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 		if (focusId == undefined) {
 			throw new PersonaError(`Can't find ${itemType}`);
 		}
-		const focus = this.actor.focii
+		const focus = this.actor.focii()
 			.find(x=> x.id == focusId)
 			?? PersonaDB.tarotCards().find(x=> x.items.find(x=> x.id == focusId))
 				?.items.find(x=> x.id == focusId) ;

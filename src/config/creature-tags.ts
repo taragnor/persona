@@ -51,6 +51,9 @@ export const PERSONA_TAG_LIST = [
 	"true-demon",
 	"pure-shadow",
 	"simulated",
+	"d-mon",
+	"pc-d-mon",
+	"persona",
 ] as const;
 
 export type PersonaTag = typeof PERSONA_TAG_LIST[number];
@@ -59,9 +62,6 @@ export const PERSONA_TAGS = HTMLTools.createLocalizationObject(PERSONA_TAG_LIST,
 
 export const CREATURE_TAG_LIST = [
 	...PERSONA_TAG_LIST,
-	"d-mon",
-	"pc-d-mon",
-	"persona",
 	...PERSON_TAG_LIST,
 	...PERSONALITY_TAG_LIST,
 	...TRAIT_TAG_LIST,

@@ -59,13 +59,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		};
 	}
 
-
 	get img() : string {
 		return this.source.img;
 	}
 
 	get powers() : readonly Power[] {
-		return this.mainPowers.concat(this.bonusPowers);
+		return this.mainPowers
+			.concat(this.bonusPowers)
+		.filter( pwr => this.highestPowerSlotUsable() >= pwr.system.slot);
 	}
 
 	get activeCombatPowers() : readonly Power[] {
@@ -98,8 +99,18 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	get focii(): readonly Focus[] {
-		return this.source.focii;
+		const actor = this.source;
+		if (actor.isPC())
+		{return [];}
+		return actor.items.filter( x=> x.isFocus()) as Focus[];
 	}
+
+	async learnPower(power: Power, logChanges = true) {
+		await this.source.learnPower(power, logChanges);
+	}
+
+
+
 
 	get talents() : readonly Talent[] {
 		return this.source.system.combat.talents
@@ -696,10 +707,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 	}
 
-	async learnPower(pwr: Power) {
-		await this.source.addPower(pwr);
-	}
-
 	get isUnderDefenseCap(): boolean {
 		return this.source.totalDefenseBoosts() < this.maxDefensiveBoosts();
 	}
@@ -757,6 +764,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
 		const user = this.user;
+		if (usable.isPower() && this.highestPowerSlotUsable() < usable.system.slot) {
+			if (outputReason) {
+				ui.notifications.warn("Power is too advanced for you to use");
+			}
+			return false;
+		}
 		if (!this.user.isAlive() && !usable.hasTag("usable-while-dead")) {return false;}
 		if (!usable.isTrulyUsable()) {return false;}
 
@@ -870,6 +883,23 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	tagList() : PersonaTag[] {
 		const base = this.source.system.combat.personaTags.slice();
+		if (this.source.isPC() || this.source.isNPCAlly()){
+			base.pushUnique("persona");
+		}
+		if (this.user.isUsingMetaPod()) {
+			base.pushUnique("simulated");
+		}
+		switch (this.source.system.creatureType) {
+			case "enemy-metaverse-user":
+			case "persona":
+				base.pushUnique("persona");
+				break;
+			case "d-mon":
+				base.pushUnique("d-mon");
+				break;
+		}
+
+
 		if (this.source.isShadow() && this.source.system.creatureType == "daemon") {
 			base.pushUnique("simulated");
 		}
@@ -894,6 +924,23 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				this.user.system satisfies never;
 				return {baseAmt: 0, extraVariance: 0};
 		}
+	}
+
+	highestPowerSlotUsable() : number {
+		if (this.user.isShadow()) {return 99;}
+		const level = Math.floor(this.level / 10) +1;
+		const CAP = this.user.system.combat.usingMetaPod ? 2 : 99;
+		return Math.min(CAP, this.#powerSlotMaxByLevel(level));
+	}
+
+	#powerSlotMaxByLevel(this: void, level: number) {
+		switch (true) {
+			case level > 6: return 3;
+			case level > 4: return 2;
+			case level > 2: return 1;
+			default: return 0;
+		}
+
 	}
 
 	armorDR() : number {

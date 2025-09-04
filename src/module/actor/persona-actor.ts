@@ -39,7 +39,6 @@ import { STATUS_EFFECT_LIST } from "../../config/status-effects.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../../config/status-effects.js";
 import { RESIST_STRENGTH_LIST } from "../../config/damage-types.js";
 import { Activity } from "../item/persona-item.js";
-import { RecoverSlotEffect } from "../../config/consequence-types.js";
 import { getActiveConsequences } from "../preconditions.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { PersonaActorSheetBase } from "./sheets/actor-sheet.base.js";
@@ -612,21 +611,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	/** @deprecated */
-	getWeakestSlot(): void {
-		PersonaError.softFail("Thios function is deprecated and shouldn't be called anymore");
-	}
-
-	/** @deprecated */
-	getMaxSlotsAt(_slot_lvl: number) : void {
-		return;
-	}
-
-	/** @deprecated */
-	recoverSlot(this: PC, _slottype: RecoverSlotEffect["slot"], _amt: number = 1) : Promise<never> {
-		throw new Error("Deprecated Crap, do not call");
-	}
-
 	getSocialSLWithTarot(this: PC, tarot: TarotCard) : number {
 		const link= this.socialLinks.find(
 			link => link.actor.tarot?.name == tarot);
@@ -667,17 +651,22 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
+	focii(this:PersonaActor): Focus[] {
+		if (this.isPC()) {return [];}
+		return this.items.filter( x=> x.isFocus()) as Focus[];
+	}
+
 	get socialBenefits() : SocialBenefit[] {
 		let focuses : Focus[] = [];
 		switch (this.system.type) {
 			case "pc": return [];
 			case "shadow": return [];
 			case "tarot":
-				focuses = this.focii;
+				focuses = (this as Tarot).focii();
 				break;
 			case "npc": case "npcAlly":
-				focuses = this.focii
-					.concat(this.tarot?.focii ?? []);
+				focuses = (this as NPC | NPCAlly).focii()
+					.concat(this.tarot?.focii() ?? []);
 				break;
 			default:
 					this.system satisfies never;
@@ -1134,12 +1123,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return [];
 	}
 
-
-	get focii(): Focus[] {
-		if (this.system.type == "pc")
-			{return [];}
-		return this.items.filter( x=> x.isFocus()) as Focus[];
-	}
 
 	passiveFocii(this: ValidAttackers): Focus[] {
 		return this.persona().passiveFocii();
@@ -1836,7 +1819,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 
-	async addPower(this: PC | NPCAlly | Shadow, power: Power, logChanges = true) {
+	async learnPower(this: ValidAttackers, power: Power, logChanges = true) {
 		if (power.isNavigator()) {
 			if (!this.isNPCAlly()) {
 				PersonaError.softFail("Only NPC Allies can learn Navigator skills!");
@@ -1891,6 +1874,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		} else {
 			PersonaError.softFail(`There was a problem adding power to ${this.name}`);
 		}
+	}
+
+	isUsingMetaPod(this: ValidAttackers): boolean {
+		if (this.isShadow()) {return false;}
+		return this.system.combat.usingMetaPod ?? true;
 	}
 
 	async checkForMissingLearnedPowers(this: Shadow) {
@@ -2292,24 +2280,28 @@ getSocialFocii_PC(this: NPC, linkHolder: SocialLink, targetPC: PC) : Focus[] {
 	const sortFn = function (a: Focus, b: Focus) {
 		return a.requiredLinkLevel() - b.requiredLinkLevel();
 	};
+	const focii = this.items.filter( x=> x.isFocus()) as Focus[];
 	const tarot = targetPC.tarot;
 	if (!tarot) {
 		console.debug(`No tarot found for ${this.name} or ${linkHolder.name}`);
-		return this.focii.sort( sortFn);
+		return focii.sort( sortFn);
 	}
-	return this.focii.concat(tarot.focii).sort(sortFn);
+	const tarotFocii = tarot.items.filter( x=> x.isFocus()) as Focus[];
+	return focii.concat(tarotFocii).sort(sortFn);
 }
 
 getSocialFocii_NPC(this: NPC, linkHolder: SocialLink) : Focus[] {
 	const sortFn = function (a: Focus, b: Focus) {
 		return a.requiredLinkLevel() - b.requiredLinkLevel();
 	};
+	const focii = this.items.filter( x=> x.isFocus()) as Focus[];
 	const tarot = this.tarot ?? linkHolder.tarot;
 	if (!tarot) {
 		console.debug(`No tarot found for ${this.name} or ${linkHolder.name}`);
-		return this.focii.sort( sortFn);
+		return focii.sort( sortFn);
 	}
-	return this.focii.concat(tarot.focii).sort(sortFn);
+	const tarotFocii = tarot.items.filter( x=> x.isFocus()) as Focus[];
+	return focii.concat(tarotFocii).sort(sortFn);
 }
 
 getAllSocialFocii() : Focus[] {
@@ -2536,7 +2528,7 @@ async onLevelUp_checkLearnedPowers(this: ValidAttackers, newLevel: number, logCh
 			PersonaError.softFail(`Can't find power ${powerData.powerId} on ${this.name} level up`);
 			continue;
 		}
-		await this.addPower(power, logChanges);
+		await this.learnPower(power, logChanges);
 	}
 	await this.update( {"system.combat.lastLearnedLevel": newLevel});
 }
@@ -2575,28 +2567,6 @@ async resetIncrementals(this: ValidAttackers) {
 	await this.update({
 		"system.combat.classData.incremental": incremental,
 	});
-}
-
-maxSlot() : number {
-	switch (this.system.type) {
-		case "shadow": return 99;
-		case "npc": return -1;
-		case "tarot": return -1;
-		case "pc":
-		case "npcAlly":
-			break;
-		default:
-			this.system satisfies never;
-	}
-	const level = Math.floor(this.level / 10)+1;
-	// const level = this.system.combat.classData.level;
-	switch (true) {
-		case level >= 9: return 3;
-		case level >= 6: return 2;
-		case level >= 5: return 2; // SPECIAL CASE
-		case level >= 3: return 1;
-		default: return 0;
-	}
 }
 
 meetsSLRequirement (this: PC, focus: Focus) {
@@ -3500,10 +3470,6 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 	}
 	const {energyReq, cost} = power.estimateShadowCosts(this);
 	return await power.setPowerCost(energyReq, cost);
-}
-
-static highestPowerSlotUsableAtLvl(lvl: number) : number {
-	return Math.min(0, Math.floor(lvl / 3));
 }
 
 getPoisonDamage(this: ValidAttackers): number {

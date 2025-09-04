@@ -76,7 +76,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 					case "shadow":
 						if (this.isOnLearningTab())
 						{await this.actor.addLearnedPower(power);}
-						else {await this.actor.addPower(power);}
+						else {await this.actor.learnPower(power);}
 						return power;
 					case "pc":
 					case "npcAlly": {
@@ -98,15 +98,11 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 							await this.actor.addLearnedPower(power);
 							return power;
 						}
-						if (power.system.slot > this.actor.maxSlot()) {
-							ui.notifications.warn(`Power is too strong for you`);
-							return;
-						}
 						if (!game.user.isGM && power.hasTag("exotic")) {
 							ui.notifications.warn(`Can't directly take exotic power : ${item.name}`);
 							return;
 						}
-						await actor.addPower(item as Power);
+						await actor.persona().learnPower(item as Power);
 						return item ;
 					}
 					default:

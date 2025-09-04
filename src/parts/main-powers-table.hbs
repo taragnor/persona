@@ -2,7 +2,7 @@
 	{{#each (iff activePowersOnly persona.activeCombatPowers persona.mainPowers) as |power i|}}
 	<div class="main-power" data-power-id="{{power.id}}">
 		<div class="power-name-block
-			{{#if (and (not ../activePowersOnly) (lte ../persona.maxMainPowers i))}} over-max-power {{/if}} {{#if (isPowerIllegal ../actor power)}} illegal-level {{/if}}">
+			{{#if (and (not ../activePowersOnly) (lte ../persona.maxMainPowers i))}} over-max-power {{/if}} {{#if (isPowerIllegal ../persona power)}} illegal-level {{/if}}">
 			<span class="die-with-text">
 				{{#if (and ../usePowers (canUsePower ../persona power))}}
 				<a class="rollPower" >

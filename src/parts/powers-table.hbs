@@ -31,7 +31,7 @@
 <div class="power-sideboard">
 	{{#each actor.sideboardPowers as |power i|}}
 	<div class="sideboard-power" data-power-id="{{power.id}}">
-		<div class="power-name-block {{#if (lte ../persona.maxSideboardPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../actor power)}} illegal-level {{/if}}">
+		<div class="power-name-block {{#if (lte ../persona.maxSideboardPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../persona power)}} illegal-level {{/if}}">
 			<a class="powerName" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power persona=../persona}}'>
 				{{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../actor}}
 				<span class="cost-string">

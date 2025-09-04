@@ -483,8 +483,8 @@ export class PersonaHandleBarsHelpers {
 		"replace": function(originalString: string = "ERROR", replacementSet: Record<string, string> = {}): string {
 			return Helpers.replaceAll(originalString, replacementSet);
 		},
-		"isPowerIllegal":  function (actor: PersonaActor, power: Power): boolean {
-			return power.system.slot > actor.maxSlot();
+		"isPowerIllegal":  function (persona: Persona, power: Power): boolean {
+			return power.system.slot > persona.highestPowerSlotUsable();
 		},
 		"canUseTalents": function (actor: PersonaActor) : boolean {
 			return actor.isValidCombatant();
