@@ -2183,8 +2183,7 @@ static async processConsequence_damage( cons: SourcedConsequence<DamageConsequen
 		case 'multiplier':
 			return targets.map( applyTo => ({applyTo, cons, })
 			);
-		case 'allout-low':
-		case 'allout-high': {
+		case 'allout': {
 			const combat = game.combat as PersonaCombat;
 			if (combat) {
 				const userTokenAcc = combat.getToken(situation.user);
@@ -2193,24 +2192,19 @@ static async processConsequence_damage( cons: SourcedConsequence<DamageConsequen
 					break;
 				}
 				const userToken = PersonaDB.findToken(userTokenAcc);
-				const allOutDmg = await PersonaCombat.calculateAllOutAttackDamage(userToken, situation as AttackResult['situation']);
-				const items= allOutDmg.flatMap( AOD => {
+				const allOutDmg = PersonaCombat.calculateAllOutAttackDamage(userToken, situation as AttackResult['situation']);
+				dmgCalc = new DamageCalculation("all-out");
+				for (const AOD of allOutDmg) {
 					const source = {
 						displayedName: `${AOD.contributor.displayedName} (${AOD.stack.join(', ')})`,
 					};
-					const newCons : SourcedConsequence<NonDeprecatedConsequences>= {
-						type: 'damage-new',
-						damageType: 'all-out',
-						damageSubtype: 'odd-even',
-						source,
-						amount: AOD.amt,
-					};
-					return targets.map( applyTo => ({applyTo, cons: newCons, })
-					);
-				});
-				consList.push(...items);
+					dmgCalc.add("base", AOD.amt, source.displayedName);
+				}
+				const evenRoll = (situation.naturalRoll ?? 0) % 2 == 0;
+				if ( evenRoll) {
+					dmgCalc.setApplyEvenBonus();
+				}
 				break;
-				// dmgAmt = cons.damageSubtype == "allout-high"? dmg.high: dmg.low;
 			} else {
 				return [];
 				//bailout since no combat and can't calc all out.
@@ -2955,7 +2949,7 @@ getFoes(comb: Combatant<ValidAttackers>) : Combatant<ValidAttackers>[] {
 		&& c != comb);
 }
 
-static async calculateAllOutAttackDamage(attacker: PToken, situation: AttackResult['situation']) :Promise<{contributor: ValidAttackers, amt: number, stack: EvaluatedDamage['str']}[]> {
+static calculateAllOutAttackDamage(attacker: PToken, situation: AttackResult['situation']) :{contributor: ValidAttackers, amt: number, stack: EvaluatedDamage['str']}[] {
 	const attackLeader = PersonaDB.findActor(situation.attacker!);
 	const combat = game.combat as PersonaCombat | undefined;
 	if (!combat)
@@ -2972,64 +2966,37 @@ static async calculateAllOutAttackDamage(attacker: PToken, situation: AttackResu
 	const list : Awaited<ReturnType<typeof PersonaCombat['calculateAllOutAttackDamage']>> = [];
 	for (const actor of attackers) {
 		if (!actor.canAllOutAttack()) {continue;}
-		const mult = actor == attackLeader ? 1 : (1/4);
-		const combatResult = await this.individualContributionToAllOutAttackDamage(actor, situation);
-		const dmg = combatResult?.finalize()?.attacks[0]?.changes[0]?.damage[0];
-		if (dmg == undefined || dmg.hpChange == 0) {
+		const mult = actor == attackLeader ? 1 : (1/3);
+		const damageCalc = this.individualContributionToAllOutAttackDamage(actor, situation);
+		const result = damageCalc.eval();
+		// const dmg = combatResult?.finalize()?.attacks[0]?.changes[0]?.damage[0];
+		if (result == undefined || result.hpChange == 0) {
 			PersonaError.softFail('Allout contribution for ${actor.name} was 0 or undefined');
 			continue;
 		}
-		const contribution= Math.round(Math.abs(dmg.hpChange) * mult);
+		const contribution= Math.round(Math.abs(result.hpChange) * mult);
 		list.push(
 			{
 				contributor: actor,
 				amt: contribution,
-				stack: dmg.str,
+				stack: result.str,
 			}
 		);
 	}
 	return list;
 }
 
-static async individualContributionToAllOutAttackDamage(actor: ValidAttackers, situation: AttackResult['situation']) : Promise<CombatResult> ;
-static async individualContributionToAllOutAttackDamage(actor: ValidAttackers, type: 'high' | 'low') : Promise<CombatResult> ;
-static async individualContributionToAllOutAttackDamage(actor: ValidAttackers, sitOrType: AttackResult['situation'] | ('high' | 'low')) : Promise<CombatResult> {
+static individualContributionToAllOutAttackDamage(actor: ValidAttackers, situation: AttackResult['situation']) : DamageCalculation {
 	if (!actor.canAllOutAttack()) {
-		return new CombatResult();
+		return new DamageCalculation("physical");
 	}
 	const basicAttack = PersonaDB.getBasicPower('Basic Attack');
 	if (!basicAttack) {
 		PersonaError.softFail("Can't find Basic attack power");
-		return new CombatResult();
+		return new DamageCalculation("physical");
 	}
-	let result : CombatResult;
-	switch (sitOrType) {
-		case 'low': {
-			const r = await basicAttack.generateSimulatedResult(actor, 5);
-			if (!r) {return new CombatResult();}
-			result = r;
-			break;
-		}
-		case 'high':{
-			const r = await basicAttack.generateSimulatedResult(actor, 6);
-			if (!r) {return new CombatResult();}
-			result = r;
-			break;
-		}
-		default: {
-			//type is a situation
-			const situation : AttackResult['situation']= {
-				...sitOrType,
-				user: actor.accessor,
-				attacker: actor.accessor,
-				usedPower: basicAttack.accessor,
-			};
-			const r = await basicAttack.generateSimulatedResult(actor, situation);
-			if (!r) {return new CombatResult();}
-			result = r;
-		}
-	}
-	return result;
+	const damage = basicAttack.getDamage(actor.persona(), situation);
+	return damage;
 }
 
 getToken( acc: UniversalActorAccessor<PersonaActor>  | undefined): UniversalTokenAccessor<PToken> | undefined {

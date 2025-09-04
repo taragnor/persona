@@ -86,10 +86,8 @@ export class DamageCalculation {
 				st ="multiplier";
 				break;
 			case "dmg-allout-low":
-				st = "allout-low";
-				break;
 			case "dmg-allout-high":
-				st = "allout-high";
+				st = "allout";
 				break;
 			case "revive":
 				st = "percentage";
@@ -140,8 +138,7 @@ export class DamageCalculation {
 			case "odd-even":
 			case "high":
 			case "low":
-			case "allout-low":
-			case "allout-high":
+			case "allout":
 			case "constant":
 				damageOrder= "base";
 				amt = cons.amount ?? 0;

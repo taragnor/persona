@@ -90,6 +90,7 @@ export class PersonaCombatStats {
 		if (power.isConsumable()) {return calc;}
 		if (power.isWeaponSkill())  { return this.physDR();}
 		if (power.isMagicSkill()) {return this.magDR();}
+		if (damageType == "all-out") {return this.physDR();}
 		return calc;
 	}
 

@@ -1056,10 +1056,8 @@ static #printConsequenceAmount(consAmt: ConsequenceAmount) : string {
 				return `Odd/Even Damage`;
 			case "low":
 				return `Low Damage`;
-			case "allout-high":
-				return `AoA high`;
-			case "allout-low":
-				return `AoA Low`;
+			case "allout":
+				return `All Out Attack Damage`;
 			case "multiplier":
 				return `Damage Multiplier ${cons.amount}`;
 			case "percentage":

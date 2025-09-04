@@ -360,17 +360,17 @@ export type DamageConsequence = DamageConsequenceShared & (
 );
 
 export type SimpleDamageCons = {
-	damageSubtype: "high" | "low" | "allout-high" | "allout-low" | "odd-even",
+	damageSubtype: Extract<DamageSubtype, "high" | "low" | "allout"| "odd-even">,
 }
 
 type ConstantDamageCons = {
-	damageSubtype: "constant" | "percentage";
+	damageSubtype: Extract<DamageSubtype, "constant" | "percentage">;
 	amount: number;
 }
 
 
 type DamageMultiplierCons = {
-	damageSubtype: "multiplier" | "mult-stack";
+	damageSubtype: Extract<DamageSubtype, "multiplier" | "mult-stack">;
 	amount: number;
 }
 
