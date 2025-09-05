@@ -1,5 +1,4 @@
-<form class="npc-ally-sheet">
-	<header class="flexcol">
+<form class="npc-ally-sheet"> <header class="flexcol">
 		<div class="flexrow">
 			<img class="profile-img" src="{{actor.img}}" data-edit="img"/>
 			<div>
@@ -20,11 +19,19 @@
 						<input class="navigator-check" type="checkbox" name="system.combat.isNavigator" {{checked actor.system.combat.isNavigator}}>
 					</div>
 				</div>
-				<div>
-					<label> Total SLs:</label>
-					<span>
-						{{actor.totalSLs}}
-					</span>
+				<div class="f-row">
+					<div>
+						<label> Total SLs:</label>
+						<span>
+							{{actor.totalSLs}}
+						</span>
+					</div>
+					<div>
+						<label>
+							Using Meta Pod
+						</label>
+						<input type="checkbox" name="system.combat.usingMetaPod" {{checked actor.system.combat.usingMetaPod}} {{#if (not (canChangePodStatus actor))}} disabled {{/if}}>
+					</div>
 				</div>
 				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
 			</div>

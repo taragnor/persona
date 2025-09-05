@@ -3894,13 +3894,25 @@ Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
 		await actor.onLevelUp_checkLearnedPowers(lvl, !actor.isShadow());
 	}
 	switch (actor.system.type) {
-		case "npcAlly":
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-			if (changes?.system?.combat?.isNavigator == true) {
+		case "npcAlly": {
+			const PCChanges = changes.system as Partial<NPCAlly["system"]>;
+			if (PCChanges?.combat?.isNavigator == true) {
 				await (actor as NPCAlly).setAsNavigator();
 			}
+			if (PCChanges?.combat?.usingMetaPod != undefined)
+			{
+				await Logger.sendToChat(`${actor.name} changed Metaverse Pod status to ${PCChanges.combat.usingMetaPod}`);
+			}
+			break; }
+		case "pc": {
+			const PCChanges = changes.system as Partial<PC["system"]>;
+			if (PCChanges?.combat?.usingMetaPod != undefined)
+			{
+				await Logger.sendToChat(`${actor.name} changed Metaverse Pod status to ${PCChanges.combat.usingMetaPod}`);
+			}
 			break;
-		case "pc": case "shadow":
+		}
+		case "shadow":
 			break;
 		default:
 			actor.system satisfies never;

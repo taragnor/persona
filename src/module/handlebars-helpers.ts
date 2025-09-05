@@ -799,7 +799,12 @@ export class PersonaHandleBarsHelpers {
 			return cl.getClassMMP(lvl);
 		},
 
+		"canChangePodStatus": function (_actor: PersonaActor)  : boolean {
+			if (game.user.isGM) {return true;}
+			const combat =  game.combat as PersonaCombat;
+			return (combat != undefined && combat.isSocial);
 
+		},
 	};
 
 } //end of class

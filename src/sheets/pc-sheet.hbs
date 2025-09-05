@@ -16,6 +16,12 @@
 				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
 				<div class="f-row">
 					<div>
+						<label>
+						Using Meta Pod
+						</label>
+						<input type="checkbox" name="system.combat.usingMetaPod" {{checked actor.system.combat.usingMetaPod}} {{#if (not (canChangePodStatus actor))}} disabled {{/if}}>
+					</div>
+					<div>
 						{{#if (isGM)}}
 						<label> True Owner </label>
 						<span class="trueOwnerSelector">
