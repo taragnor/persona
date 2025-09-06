@@ -60,7 +60,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	get img() : string {
-		return this.source.img;
+		if (this.source.isShadow()) {
+			return this.source.img;
+		}
+		if (this.source.system.combat.personaImg) {
+			return this.source.system.combat.personaImg;
+		}
+		return "";
 	}
 
 	get powers() : readonly Power[] {

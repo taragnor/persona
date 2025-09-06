@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Logger } from "../../utility/logger.js";
 import { localize } from "../../persona.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
@@ -45,8 +46,8 @@ export class PCLikeSheet extends CombatantSheetBase {
 		html.find(".equips select").on("change", this.equipmentChange.bind(this));
 		html.find(".sort-up").on("click", this.reorderPowerUp.bind(this));
 		html.find(".sort-down").on("click", this.reorderPowerDown.bind(this));
-		// html.find(".incTalent").on("click", this.incTalent.bind(this));
-		// html.find(".decTalent").on("click", this.decTalent.bind(this));
+		html.find(".persona-img").on("click", this.personaImgFilePicker.bind(this));
+
 	}
 
 	async delItem (event : Event) {
@@ -103,6 +104,12 @@ export class PCLikeSheet extends CombatantSheetBase {
 		powers[index] = powers[index+1];
 		powers[index+1] = powerId;
 		await this.actor.update({"system.combat.powers": powers});
+	}
+
+	async personaImgFilePicker() {
+		const file = await FilePicker.browse("data", "");
+
+
 	}
 
 	// async incTalent(event: Event) {

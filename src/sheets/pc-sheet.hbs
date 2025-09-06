@@ -12,12 +12,11 @@
 						<span> {{actor.personalLevel}}
 					</div>
 				</div>
-
 				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
 				<div class="f-row">
 					<div>
 						<label>
-						Using Meta Pod
+							Using Meta Pod
 						</label>
 						<input type="checkbox" name="system.combat.usingMetaPod" {{checked actor.system.combat.usingMetaPod}} {{#if (not (canChangePodStatus actor))}} disabled {{/if}}>
 					</div>
@@ -33,6 +32,14 @@
 					</div>
 				</div>
 			</section>
+			<div>
+				{{#if (not actor.system.combat.personaImg)}}
+				{{filePicker type="image" target="system.combat.personaImg"}}
+				<input class="img" type="hidden" name="system.combat.personaImg" value="{{actor.system.combat.personaImg}}">
+				{{/if}}
+				<img class="profile-img persona-img" src="{{actor.system.combat.personaImg}}">
+				</img>
+			</div>
 		</div>
 	</header>
 

@@ -33,7 +33,6 @@ export class PersonaClassSheet  extends PersonaItemSheetBase {
 		super.activateListeners(html);
 	}
 
-
 }
 
 

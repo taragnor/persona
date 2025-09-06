@@ -1,9 +1,9 @@
 <form class="npc-ally-sheet"> <header class="flexcol">
-		<div class="flexrow">
+		<div class="f-row no-wrap">
 			<img class="profile-img" src="{{actor.img}}" data-edit="img"/>
 			<div>
 				<input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
-				<div class="flexrow">
+				<div class="f-row">
 					<div>
 						<label>
 							{{localize "persona.tarot.cardname"}}
@@ -34,6 +34,14 @@
 					</div>
 				</div>
 				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
+			</div>
+			<div>
+				{{#if (not actor.system.combat.personaImg)}}
+				{{filePicker type="image" target="system.combat.personaImg"}}
+				<input class="img" type="hidden" name="system.combat.personaImg" value="{{actor.system.combat.personaImg}}">
+				{{/if}}
+				<img class="profile-img persona-img" src="{{actor.system.combat.personaImg}}">
+				</img>
 			</div>
 		</div>
 	</header>

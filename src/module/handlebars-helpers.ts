@@ -106,7 +106,11 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"isPC": (actor: PersonaActor) : boolean => {
-			return actor.isPC() && actor.isRealPC();
+			return actor.isPC();
+		},
+
+		"isRealPC" :(actor: PersonaActor) : boolean => {
+			return actor.isRealPC();
 		},
 
 		"abs" : (x:string | number) => {

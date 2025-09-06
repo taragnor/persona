@@ -2058,6 +2058,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async  setClass(this: ValidAttackers, cClass: CClass) {
 		await this.update( {"this.system.combat.classData.classId": cClass.id});
+		await Logger.sendToChat(`${this.displayedName} changes class to ${cClass.name}`);
 	}
 
 	hasPowerInhibitingStatus() : boolean {

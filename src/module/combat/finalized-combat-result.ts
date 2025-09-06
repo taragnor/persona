@@ -248,7 +248,9 @@ export class FinalizedCombatResult {
 		});
 		const manualApply = !PersonaSettings.autoApplyCombatResults() || !game.users.contents.some( x=> x.isGM && x.active);
 		const attackerName = initiator.token?.name ?? initiatorToken?.name ?? initiator.displayedName;
-		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attackerName, effectName,  attacks, escalation: 0, result: this, costs: this.costs, manualApply});
+		const attackerToken = initiatorToken;
+		const attackerPersona = (initiator as ValidAttackers).persona();
+		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attackerToken, attackerPersona, attackerName, effectName,  attacks, escalation: 0, result: this, costs: this.costs, manualApply});
 		const chatMsg = await ChatMessage.create( {
 			speaker: {
 				scene: initiatorToken?.parent?.id ?? initiator?.token?.parent.id,

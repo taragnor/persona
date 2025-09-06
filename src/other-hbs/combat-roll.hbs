@@ -1,7 +1,15 @@
+<section class="combat-roll">
 <h2>
+	{{#if attackerToken}}
+	<img src="{{attackerToken.actor.img}}" title="{{attackerName}}">
+	{{#if attackerPersona}}
+	<img src="{{attackerPersona.img}}" title="{{attackerPersona.name}}">
+	{{/if}}
+	{{else}}
 	<span class="token-name">
 		{{attackerName}}
 	</span>
+	{{/if}}
 	<span class="uses">
 		uses
 	</span>
@@ -76,3 +84,4 @@
 	Apply Changes
 </button>
 {{/if}}
+</section>

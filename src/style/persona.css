@@ -196,6 +196,7 @@ input.single-digit {
 .profile-img {
 	max-height: 180px !important;
 	max-width: 180px !important;
+	/* min-width: 180px !important; */
 }
 
 .rollItem img{
@@ -1086,6 +1087,7 @@ a.add-five-to-all:active {
 .f-row > *{
 	margin-left: 10px;
 	margin-right: 10px;
+	flex: 5 5 auto;
 }
 
 .f-col {
@@ -1225,4 +1227,8 @@ background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%) !impo
 background: initial !important;
   color: #E6F8FF !important; /* pale cyan for readable text */
 
+}
+
+.combat-roll img {
+	max-height: 50px;
 }
