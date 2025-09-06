@@ -160,7 +160,16 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	get publicName() : string {
-		return this.source.publicName;
+		switch (this.source.system.type) {
+			case "pc":
+			case "npcAlly":
+				return this.displayedName;
+			case "shadow":
+				return this.source.publicName;
+			default:
+				this.source.system satisfies never;
+				return "ERROR";
+		}
 	}
 
 	get unspentStatPoints() : number {

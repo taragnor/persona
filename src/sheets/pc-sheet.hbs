@@ -36,9 +36,9 @@
 				{{#if (not persona.img)}}
 				{{filePicker type="image" target="system.combat.personaImg"}}
 				<input class="img" type="hidden" name="system.combat.personaImg" value="{{actor.system.combat.personaImg}}">
+				{{else}}
+				<img class="profile-img persona-img" src="{{persona.img}}" title="{{persona.publicName}}">
 				{{/if}}
-				<img class="profile-img persona-img" src="{{persona.img}}">
-				</img>
 			</div>
 		</div>
 	</header>
