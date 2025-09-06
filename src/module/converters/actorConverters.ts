@@ -87,6 +87,10 @@ export class ActorConverters {
 				combat: {
 					...json.combat,
 					statusResists,
+					personaStats: {
+						...json.combat.personaStats,
+						pLevel: shadow.system.personaConversion.startingLevel,
+					}
 				}
 			}
 		};

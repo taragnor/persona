@@ -1747,7 +1747,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 	}
 
-	static #calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) {
+	static #calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) : U<{low: number, high:number}> {
 		const ailmentMods =
 			attackerPersona.getBonuses('afflictionRange').concat(
 				targetPersona.getBonuses('ail')
@@ -1755,10 +1755,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		ailmentMods.add("Persona Luck Boost", attackerPersona.combatStats.ailmentBonus());
 		ailmentMods.add("Target Luck Resistance", -targetPersona.combatStats.ailmentResist());
 		const total = ailmentMods.total(situation);
+
 		const ailmentRange = power.ailmentRange;
-		if (ailmentRange) {
-			ailmentRange.low -= total;
-		}
+		if (!ailmentRange) {return undefined;}
+		ailmentRange.low -= total;
+		if (ailmentRange.low > ailmentRange.high) {return undefined;}
 		return ailmentRange;
 	}
 

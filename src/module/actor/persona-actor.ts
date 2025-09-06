@@ -393,10 +393,31 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const combat = game.combat as PersonaCombat;
 		if (!combat || combat.isSocial) {
 			if (this.isPC()) {
-				await Logger.sendToChat(`${this.name} activates Persona ${persona.name}`);
+				await Logger.sendToChat(`${this.name} activates Persona ${persona.publicName}`);
+				return;
+			} else {
+				ui.notifications.notify(`${this.name} switches Persona to ${persona.publicName}`);
+				return;
 			}
 		} else {
-				await Logger.sendToChat(`${this.name} switches to Persona ${persona.name}`);
+			// await Logger.sendToChat(`${this.name} switches to Persona ${persona.publicName}`);
+			let msg = "";
+			if (sourceId == this.id) {
+				msg = `<div class="persona-switch">
+					${this.publicName} Changes to base Persona </div>`;
+			} else {
+				msg = `<div class="persona-switch">
+					${this.publicName} changes Persona!
+					</div>
+					<img class="persona-img" src="${persona.img}" title="${persona.publicName}">
+					`;
+			}
+			const messageData: MessageData = {
+				speaker: {alias: `${this.publicName}`},
+				content: msg,
+				style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			};
+			await ChatMessage.create(messageData, {});
 		}
 	}
 
@@ -1112,6 +1133,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get powerLearningListFull() : readonly Readonly<{power: Power, level: number}>[] {
 		if (!this.isValidCombatant()) {return [];}
+		if (this.isShadow()) {
+			const baseId= (this.system.personaConversion.baseShadowId);
+			if (baseId) {
+				const baseShadow = PersonaDB.getActorById(baseId);
+				if (baseShadow) {
+					return baseShadow.powerLearningList;
+				}
+			}
+		}
 		return this.system.combat.powersToLearn
 			.sort( (a,b) => a.level - b.level)
 			.map( data => {
@@ -1964,10 +1994,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async checkForMissingLearnedPowers(this: Shadow) {
 		if (!this.isShadow()) {return;}
 		const powers = this.system.combat.powers;
-		const learned= this.system.combat.powersToLearn;
+		const learned= this.powerLearningList;
 		const missing = powers
 			.filter( pwr => !learned
-				.some(learnedPwr => learnedPwr.powerId == pwr))
+				.some(learnedPwr => learnedPwr.power.id == pwr))
 			.map (pwr=> PersonaDB.getPower(pwr))
 			.filter (pwr=> pwr != undefined);
 		for (const pwr of missing) {
@@ -4046,7 +4076,7 @@ Object.seal(EMPTYARR);
 
 
 Hooks.on("createActor", async function (actor: PersonaActor) {
-	if (actor.isShadow() && actor.level <= 1) {
+	if (actor.isShadow() && !actor.hasTag("persona") && !actor.hasTag("d-mon")  && actor.level <= 1) {
 		const pcs = game.actors
 			.filter( (x: PersonaActor)=> x.isRealPC() && x.hasPlayerOwner);
 		const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.personaleLevel, 0 );

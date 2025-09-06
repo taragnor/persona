@@ -71,6 +71,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".persona-name").on("click", this.setPersonaViewer.bind(this));
 		html.find(".persona-viewer a.back").on("click", this.clearViewedPersona.bind(this));
 		html.find(".persona-viewer .activate-persona").on("click", this.activatePersona.bind(this));
+		html.find(".persona-viewer .persona-name").on("click", this.openPersona.bind(this));
+		html.find(".persona-list li .persona-name").rightclick(this.activatePersona.bind(this));
 	}
 
 	override async _onDropActor(_event: Event, actorD: unknown) {
@@ -515,6 +517,15 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const personaId = HTMLTools.getClosestData(event, "personaId");
 		if (this.actor.isNPCAlly()) {return;}
 		await this.actor.deletePersona(personaId);
+	}
+
+	async openPersona(event: JQuery.ClickEvent) { 
+		const personaId = HTMLTools.getClosestData(event, "personaId");
+		const persona = PersonaDB.getActorById(personaId);
+		if (!persona) {
+			throw new PersonaError(`Can't find persona ${personaId}`);
+		}
+		await persona.sheet.render(true);
 	}
 
 

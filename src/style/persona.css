@@ -1233,3 +1233,9 @@ background: initial !important;
 	max-height: 100px;
 	min-height: 75px;
 }
+
+.persona-switch .persona-img {
+	max-height: 100px;
+	min-height: 75px;
+}
+

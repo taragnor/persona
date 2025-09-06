@@ -20,8 +20,6 @@
 	</ul>
 	{{else}}
 
-	something
-	<h2> {{selectedPersona.displayedName}} </h2>
 	{{> "systems/persona/parts/persona-viewer.hbs" actor=actor CONST=CONST persona=selectedPersona selectedPersona=selectedPersona}}
 	{{/if}}
 </section>

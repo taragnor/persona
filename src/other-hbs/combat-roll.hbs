@@ -3,7 +3,7 @@
 	{{#if attackerToken}}
 	<img src="{{attackerToken.actor.img}}" title="{{attackerName}}">
 	{{#if attackerPersona}}
-	<img src="{{attackerPersona.img}}" title="{{attackerPersona.publicName}}">
+	<img class="persona-img" src="{{attackerPersona.img}}" title="{{attackerPersona.publicName}}">
 	{{/if}}
 	{{else}}
 	<span class="token-name">
@@ -52,7 +52,7 @@
 		<div class="ailment-range gm-only">
 			<div class="tooltip">
 				<span>
-					Instant Kill Range:
+					Ailment Range:
 				</span>
 				<span>
 					{{atk.attackResult.ailmentRange.low}}
