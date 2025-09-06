@@ -860,7 +860,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   comparativePowerRatingToUsePower(this: Power, user: ValidAttackers) : number {
-    const userLevel = user.system.combat.classData.level;
+    const userLevel = Math.floor(user.level / 10) + 1;
     let powerSlot = this.system.slot;
     let extraMod = 0;
     if (this.hasTag('price-lower-for-shadow')) {

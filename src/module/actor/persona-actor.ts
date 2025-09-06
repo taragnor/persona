@@ -379,6 +379,23 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return true;
 	}
 
+	async switchPersona(this: ValidAttackers, sourceId: ValidAttackers["id"]) {
+		const persona = this.personaList.find( x=> x.source.id == sourceId);
+		if (!persona || !persona.source.isOwner) {
+			PersonaError.softFail(`Couldn't find Persona ${sourceId} or you don't own it`);
+			return;
+		}
+		await this.update({"system.activePersona": sourceId});
+		const combat = game.combat as PersonaCombat;
+		if (!combat || combat.isSocial) {
+			if (this.isPC()) {
+				await Logger.sendToChat(`${this.name} activates Persona ${persona.name}`);
+			}
+		} else {
+				await Logger.sendToChat(`${this.name} switches to Persona ${persona.name}`);
+		}
+	}
+
 	get basePersona() : Persona<ValidAttackers> {
 		if (!this.isValidCombatant() && !this.isPC()) {
 			throw new PersonaError("Can't call basePersona getter on non combatant");
@@ -388,18 +405,26 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	persona<T extends ValidAttackers>(this: T): Persona<T> {
 		switch (this.system.type) {
-			case "pc":
-			case "npcAlly": {
-        if (this.isNPCAlly() || (this.isPC() && (this.system.activePersona == null || this.system.activePersona == this.id))) {
+			case "npcAlly":
+				return this.basePersona as Persona<T>;
+			case "pc": {
+				if ((this.isPC() && (this.system.activePersona == null || this.system.activePersona == this.id || this.hasSoloPersona))) {
 					return this.basePersona as Persona<T>;
 				}
-				const activePersona = game.actors.get((this as PC).system.activePersona) as ValidAttackers;
+				const activePersona = PersonaDB.getActorById((this as PC).system.activePersona) as ValidAttackers;
 				if (!activePersona) {
 					return this.basePersona as Persona<T>;
 				};
-				return Persona.combinedPersona(this.basePersona, activePersona.basePersona) as Persona<T>;
-      }
+				return new Persona(activePersona, this);
+				// return Persona.combinedPersona(this.basePersona, activePersona.basePersona) as Persona<T>;
+			}
 			case "shadow":
+				if (this.system.activePersona) {
+					const activePersona = PersonaDB.getActorById((this as PC).system.activePersona) as U<ValidAttackers>;
+					if(activePersona) {
+						return new Persona(activePersona, this);
+					}
+				}
 				return this.basePersona as Persona<T>;
 			default:
 				this.system satisfies never;
@@ -407,14 +432,55 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	async addPersona(this: PC, shadow: Shadow) {
-		if (!shadow.hasPlayerOwner || !shadow.isOwner) {
+	get personaList(): Persona[] {
+		if (!this.isValidCombatant()) {return [];}
+		const actorList : ValidAttackers[] = this.system.personaList
+			.map( personaId=> PersonaDB.getActorById(personaId))
+			.filter(x=> x && x?.isValidCombatant()) as ValidAttackers[];
+		;
+		if (this.hasSoloPersona || this.isShadow()) {
+			actorList.push(this);
+		}
+		return actorList.map( source=> new Persona(source, this));
+	}
+
+	async addPersona(this: PC | Shadow, shadow: Shadow) {
+		if (this.isPC() && (!shadow.hasPlayerOwner || !shadow.isOwner)) {
 			PersonaError.softFail("Can't add this, doesn't have a player owner");
+			return;
+		}
+		if (!this.hasSpaceForNewPersona()) {
+			PersonaError.softFail("No Space for a new persona");
+			return;
+		}
+		if (!shadow.isPersona()) {
+			PersonaError.softFail("Can't add this, it's not a persona");
+			return;
 		}
 		const arr = this.system.personaList.slice();
 		arr.push(shadow.id);
 		await this.update( {"system.personaList": arr});
-		ui.notifications.notify(`Persona ${shadow.displayedName} added`);
+		if (this.isPC()) {
+			await Logger.sendToChat(`${this.name} adds Persona ${shadow.displayedName}`);
+		}
+	}
+
+	hasSpaceForNewPersona(this:ValidAttackers) : boolean {
+		if (this.isShadow()) {return true;}
+		const personas = this.personaList;
+		const totalPersonas = this.class.system.uniquePersonas + this.class.system.maxPersonas;
+		return personas.length < totalPersonas;
+	}
+
+
+	async deletePersona(this: PC | Shadow, personaId: ValidAttackers["id"]) {
+		const persona =this.personaList.find( x=> x.source.id == personaId);
+		if (!persona) {PersonaError.softFail(`Couldn't find persona ${personaId}`); return;}
+		const newList = this.system.personaList.filter( x=> x != personaId);
+		await this.update( {"system.personaList": newList});
+		if (this.isPC()) {
+			await Logger.sendToChat(`${this.name} deletes Persona ${persona.displayedName}`);
+		}
 	}
 
 	get combatInit(): number {
@@ -509,10 +575,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.mhp;
 	}
 
-	hasSoloPersona(this: ValidAttackers): boolean {
+	get hasSoloPersona(): boolean {
+		if (!this.isValidCombatant()) {return false;}
 		if (this.isNPCAlly()) {return true;}
-		if (this.isPC()) {return this.system.personaList.length <= 1;}
-		if (this.isShadow()) {return true;}
+		if (this.isPC()) {
+			const totalPersonas = this.class.system.uniquePersonas + this.class.system.maxPersonas;
+			return totalPersonas == 1;
+		}
+		if (this.isShadow()) {return this.system.personaList.length <= 1;}
 		this satisfies never;
 		return false;
 	}
@@ -1053,7 +1123,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get powerLearningList() : readonly Readonly<{power: Power, level: number}>[] {
 		if (!this.isValidCombatant()) {return [];}
 		return this.powerLearningListFull
-			.filter( x=> x.level > this.system.combat.lastLearnedLevel);
+			.filter( x=> x.level > this.system.combat.lastLearnedLevel)
+		.filter( x=> this.checkPowerLegality(x.power ));
+	}
+
+	checkPowerLegality( pwr: Power)  :boolean {
+		if (pwr.hasTag("shadow-only") && (!this.isShadow() || this.isPersona())) {return false;}
+		return true;
 	}
 
 	get nextPowerToLearn() : Power | undefined {
@@ -1814,8 +1890,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon");
 	}
 
-	isPersona(this: Shadow): boolean {
-		return this.system.creatureType == "persona" ||  this.hasCreatureTag("persona");
+	isPersona(): boolean {
+		return this.isShadow() && this.system.creatureType == "persona" ||  this.hasCreatureTag("persona");
 	}
 
 
@@ -2057,7 +2133,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async  setClass(this: ValidAttackers, cClass: CClass) {
-		await this.update( {"this.system.combat.classData.classId": cClass.id});
+		await this.update( {"system.combat.classData.classId": cClass.id});
 		await Logger.sendToChat(`${this.displayedName} changes class to ${cClass.name}`);
 	}
 
@@ -2518,18 +2594,13 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 
 async onLevelUp_checkLearnedPowers(this: ValidAttackers, newLevel: number, logChanges= true) : Promise<void> {
 	if (!newLevel) {return;}
-	const powersToLearn = this.system.combat.powersToLearn
-	.filter( x=> x.level > this.system.combat.lastLearnedLevel)
+	const powersToLearn = this.powerLearningList
+	.slice()
 	.sort( (a,b) => a.level - b.level);
 	for (const powerData of powersToLearn) {
-		if (newLevel < (powerData?.level ?? Infinity) ){
+		if (newLevel < (powerData.level ?? Infinity) ){
 			continue; }
-		const power = PersonaDB.getPower(powerData.powerId);
-		if (!power)  {
-			PersonaError.softFail(`Can't find power ${powerData.powerId} on ${this.name} level up`);
-			continue;
-		}
-		await this.learnPower(power, logChanges);
+		await this.learnPower(powerData.power, logChanges);
 	}
 	await this.update( {"system.combat.lastLearnedLevel": newLevel});
 }

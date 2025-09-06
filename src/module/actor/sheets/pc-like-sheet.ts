@@ -46,7 +46,6 @@ export class PCLikeSheet extends CombatantSheetBase {
 		html.find(".equips select").on("change", this.equipmentChange.bind(this));
 		html.find(".sort-up").on("click", this.reorderPowerUp.bind(this));
 		html.find(".sort-down").on("click", this.reorderPowerDown.bind(this));
-		html.find(".persona-img").on("click", this.personaImgFilePicker.bind(this));
 
 	}
 
@@ -106,11 +105,6 @@ export class PCLikeSheet extends CombatantSheetBase {
 		await this.actor.update({"system.combat.powers": powers});
 	}
 
-	async personaImgFilePicker() {
-		const file = await FilePicker.browse("data", "");
-
-
-	}
 
 	// async incTalent(event: Event) {
 	// 	const talentId= String(HTMLTools.getClosestData(event, "talentId"));

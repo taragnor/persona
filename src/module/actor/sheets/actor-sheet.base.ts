@@ -178,6 +178,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 		}
 	}
 
+
 	async onAddFocus(_ev: Event) {
 		await this.actor.createEmbeddedDocuments( "Item", [{
 			name: "New Social Link Benefit",

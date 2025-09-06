@@ -1,0 +1,27 @@
+<section class="persona-list">
+	{{#if (not selectedPersona)}}
+	<h2>Persona List</h2> 
+	<ul class="persona-list">
+		{{#each actor.personaList as |persona i|}}
+
+		<li class="f-row" data-persona-id="{{persona.source.id}}">
+			<div class="persona-name">
+				<a>
+					{{persona.name}}
+				</a>
+			</div>
+			<div>
+				<a class="delPersona">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</div>
+		</li>
+		{{/each}}
+	</ul>
+	{{else}}
+
+	something
+	<h2> {{selectedPersona.displayedName}} </h2>
+	{{> "systems/persona/parts/persona-viewer.hbs" actor=actor CONST=CONST persona=selectedPersona selectedPersona=selectedPersona}}
+	{{/if}}
+</section>

@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { PersonaRoller } from "../../persona-roll.js";
 import { Shadow } from "../persona-actor.js";
-import { ValidAttackers } from "../../combat/persona-combat.js";
 import { Logger } from "../../utility/logger.js";
 import { PersonaError } from "../../persona-error.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
@@ -36,12 +35,12 @@ export class PCSheet extends PCLikeSheet {
 	override async getData() {
 		await PersonaDB.waitUntilLoaded();
 		const data = await super.getData();
-		const personas = this.actor.system.personaList.map( x=> game.actors.get(x) as ValidAttackers);
-		const PERSONA_LIST = Object.fromEntries(
-			personas.map( x=> [x.id, x.displayedName])
-		);
-		PERSONA_LIST[this.actor.id] = this.actor.system.personaName;
-		data["PERSONA_LIST"]= PERSONA_LIST;
+		// const personas = this.actor.system.personaList.map( x=> game.actors.get(x) as ValidAttackers);
+		// const PERSONA_LIST = Object.fromEntries(
+		// 	personas.map( x=> [x.id, x.displayedName])
+		// );
+		// PERSONA_LIST[this.actor.id] = this.actor.system.personaName;
+		// data["PERSONA_LIST"]= PERSONA_LIST;
 		return data;
 	}
 
@@ -57,9 +56,9 @@ export class PCSheet extends PCLikeSheet {
 			}
 			case "shadow":
 				await this.actor.addPersona(actor as Shadow);
-				return;
+				return undefined;
 			case "tarot":
-				return;
+				break;
 			case "npcAlly":
 			case "npc":
 				//create a social link
@@ -70,6 +69,7 @@ export class PCSheet extends PCLikeSheet {
 				// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 				throw new Error(`Unknown unsupported type ${actor.system["type"]}`);
 		}
+		return super._onDropActor(_event, actorD);
 	}
 
 	override activateListeners(html: JQuery<HTMLElement>) {

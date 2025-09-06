@@ -1,0 +1,22 @@
+<section class="persona-viewer" data-persona-id="{{persona.source.id}}">
+	<div class="f-row">
+		<a class="back" title="Back to List">
+			<i class="fa-solid fa-backward"></i>
+		</a>
+		<img class="profile-img" src="{{persona.img}}">
+		<h2>
+			{{persona.name}}
+		</h2>
+	</div>
+	{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=persona}}
+	{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=persona}}
+	{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=false showLearnedBuffer=true activePowersOnly=false canDelete=false showSideboard=false usePowers=false}}
+	<div>
+		{{> "systems/persona/parts/persona-stats-display.hbs" CONST=CONST persona=persona}}
+	</div>
+
+	<button class="activate-persona">
+		Switch to this Persona
+	</button>
+</section>
+

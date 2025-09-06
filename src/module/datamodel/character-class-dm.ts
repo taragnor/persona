@@ -1,4 +1,3 @@
-import {DEFENSE_CATEGORY_LIST} from "../../config/defense-categories.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -23,8 +22,6 @@ export class CharacterClassDM extends foundry.abstract.DataModel {
 					 initialGrowthAmount: new num( {initial: 1.5, integer: false, min: 0, max: 100}),
 					 growthAcceleration: new num( {initial: 0, integer: false, min: 0, max: 2}),
 				}),
-				// hpProgression: new txt({choices: DEFENSE_CATEGORY_LIST, initial: "normal"}),
-				// mpProgression: new txt({choices: DEFENSE_CATEGORY_LIST, initial: "normal"}),
 				affinityType: new txt({choices: PERSONA_AFFINITIES, initial: "standard"}),
 				focii: new arr(new id()),
 				powers: new arr(new id()),

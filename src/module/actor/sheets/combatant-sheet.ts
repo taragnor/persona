@@ -24,16 +24,27 @@ import {Persona} from "../../persona-class.js";
 
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	declare actor: ValidAttackers;
+	selectedPersona: U<Persona>;
 
-	// override async getData () {
-	// 	return await super.getData();
-	// }
+	override async getData() {
+		const data= await super.getData();
+		data.selectedPersona = this.selectedPersona;
+		data.persona = this.actor.persona();
+		const personas = this.actor.personaList
+			.map( x=> [x.source.id, x.name]);
+		const PERSONA_LIST = Object.fromEntries(personas) as Record<string, string>;
+
+		data["PERSONA_LIST"]= PERSONA_LIST;
+		return data;
+	}
+
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 		html.find(".levelUp").on("click", this.levelUp.bind(this));
 		html.find(".delPower").on("click", this.deletePower.bind(this));
 		html.find(".delFocus").on("click", this.deleteFocus.bind(this));
+		html.find(".delPersona").on("click", this.deletePersona.bind(this));
 		html.find(".delTalent").on("click", this.deleteTalent.bind(this));
 		html.find(".rollPower").on("click", this.usePower.bind(this));
 		html.find(".rollPower").rightclick(this.displayDamageStack.bind(this));
@@ -57,7 +68,21 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".add-five-to-all").on("click", this.addFiveToAll.bind(this));
 		html.find(".add-stat-point").on("click", this.addStatPoint.bind(this));
 		html.find(".reset-stats").on("click", this.resetStats.bind(this));
+		html.find(".persona-name").on("click", this.setPersonaViewer.bind(this));
+		html.find(".persona-viewer a.back").on("click", this.clearViewedPersona.bind(this));
+		html.find(".persona-viewer .activate-persona").on("click", this.activatePersona.bind(this));
 	}
+
+	override async _onDropActor(_event: Event, actorD: unknown) {
+		//@ts-expect-error using weird function
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+		const actor : PersonaActor = await Actor.implementation.fromDropData(actorD) as PersonaActor;
+		if (actor.isShadow() && (this.actor.isPC() || this.actor.isShadow()) && actor.isOwner) {
+				await this.actor.addPersona(actor);
+		}
+		return super._onDropActor(_event, actorD);
+	}
+
 
 	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:unknown[]) {
 		Helpers.ownerCheck(this.actor);
@@ -469,6 +494,29 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 		return `${dmg.low}/${dmg.high}`;
 	}
+
+	setPersonaViewer(event: JQuery.ClickEvent) {
+		const personaId = HTMLTools.getClosestData(event, "personaId");
+		this.selectedPersona = this.actor.personaList.find( x=> x.source.id == personaId);
+		void this.render(true);
+	}
+
+	clearViewedPersona(_event: JQuery.ClickEvent) {
+		this.selectedPersona = undefined;
+		void this.render(true);
+	}
+
+	async activatePersona(event: JQuery.ClickEvent) {
+		const personaId = HTMLTools.getClosestData(event, "personaId");
+		await this.actor.switchPersona(personaId);
+	}
+
+	async deletePersona(event: JQuery.ClickEvent) {
+		const personaId = HTMLTools.getClosestData(event, "personaId");
+		if (this.actor.isNPCAlly()) {return;}
+		await this.actor.deletePersona(personaId);
+	}
+
 
 }
 

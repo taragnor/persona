@@ -37,7 +37,9 @@ export class ActorConverters {
 		const ownership = newOwner != undefined
 		? { ownership: newOwner.ownership }
 		: {};
-		const personaTags = shadow.system.creatureTags.slice();
+		const personaTags = shadow.system.creatureTags
+		.slice()
+		.filter ( x=> x != "d-mon" );
 		personaTags.pushUnique("persona");
 		if (shadow.system.creatureType == "daemon") {
 			personaTags.pushUnique("simulated");
@@ -61,6 +63,7 @@ export class ActorConverters {
 			sealed: "normal",
 			despair: "normal"
 		};
+		const json = shadow.system.toJSON() as Shadow["system"];
 		const personaData : DeepPartial<Shadow> = {
 			name: `${shadow.name} (Persona)`,
 			type: "shadow",
@@ -71,16 +74,18 @@ export class ActorConverters {
 				name: shadow.name,
 			},
 			system: {
-				...shadow.system.toJSON(),
+				...json,
 				creatureType:  "persona",
+				role: "base",
+				role2: "base",
 				creatureTags: personaTags,
 				personaConversion : {
-					...shadow.system.personaConversion,
-					baseShadowId: shadow.id,
+					...json.personaConversion,
+					baseShadowId: shadow.system.personaConversion.baseShadowId ?? shadow.id,
 					startingLevel: shadow.system.personaConversion.startingLevel,
 				},
 				combat: {
-					...shadow.system.combat,
+					...json.combat,
 					statusResists,
 				}
 			}
@@ -99,11 +104,15 @@ export class ActorConverters {
 		if (!shadow.basePersona.isEligibleToBecomeDMon()) {
 			throw new PersonaError(`${shadow.name} is Ineligible to become a D-Mon`);
 		}
-		const dmonTags = shadow.system.creatureTags.slice();
+		const dmonTags = shadow.system.creatureTags
+		.slice()
+		.filter ( x=> x != "persona" );
 		dmonTags.pushUnique("d-mon");
 		if (shadow.system.creatureType == "daemon") {
 			dmonTags.pushUnique("simulated");
 		}
+		const json =  shadow.system.toJSON() as Shadow["system"];
+
 		const dmonStats : DeepPartial<Shadow> = {
 			name: `${shadow.name} (D-Mon)`,
 			type: "shadow",
@@ -113,12 +122,12 @@ export class ActorConverters {
 				name: shadow.name,
 			},
 			system: {
-				...shadow.system.toJSON(),
+				...json,
 				creatureType : "d-mon",
 				creatureTags: dmonTags,
 				personaConversion : {
-					...shadow.system.personaConversion,
-					baseShadowId: shadow.id,
+					...json.personaConversion,
+					baseShadowId: shadow.system.personaConversion.baseShadowId ?? shadow.id,
 					startingLevel: shadow.system.personaConversion.startingLevel,
 				}
 			},

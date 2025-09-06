@@ -72,6 +72,8 @@ const templateFileNames : string[] =[
 	"equipped-items.hbs",
 	"inventory-list.hbs",
 	"input-modifier-new.hbs",
+	"persona-list.hbs",
+	"persona-viewer.hbs",
 ];
 
 export const templatePaths = templateFileNames.

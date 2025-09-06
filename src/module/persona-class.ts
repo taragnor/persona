@@ -44,10 +44,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		XP_GROWTH: 200, //added XP for additional level ups
 	};
 
-	constructor (source: ValidAttackers, user: T, powers: Power[]) {
+	constructor (source: ValidAttackers, user: T, powers?: Power[]) {
 		this.user = user;
 		this.source = source;
-		this._powers = powers;
+		this._powers = powers == undefined ? source._mainPowers(): powers;
 		this.resetCache();
 	}
 

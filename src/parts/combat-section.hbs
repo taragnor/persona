@@ -67,18 +67,6 @@
 			</span>
 		</div>
 		{{/if}}
-		{{#if (isPC actor) }}
-		{{#if (gte actor.system.personaList.length 1)}}
-		<div>
-			<span>
-				<label> Active Persona:</label>
-				<select name="system.activePersona">
-					{{selectOptions PERSONA_LIST localize=false selected=actor.system.activePersona}}
-				</select>
-			</span>
-		</div>
-		{{/if}}
-		{{/if}}
 
 		{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=persona}}
 		{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=persona}}
