@@ -159,6 +159,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.name;
 	}
 
+	get publicName() : string {
+		return this.source.publicName;
+	}
+
 	get unspentStatPoints() : number {
 		return this.combatStats.unspentStatPoints();
 	}

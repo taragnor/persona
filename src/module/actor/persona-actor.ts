@@ -342,6 +342,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
+	get publicName() : string {
+		return this.prototypeToken.name;
+	}
+
 	get init() : number {
 		const combat = game.combat as Combat<PersonaActor>;
 		if (!combat) {

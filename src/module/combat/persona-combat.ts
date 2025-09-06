@@ -1068,8 +1068,17 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (
 			!actor
 			|| actor.hp > 0
-			|| actor.system.type == 'shadow'
+			|| actor.isShadow()
 		) {return  {msg, options}; }
+		if (!actor.isUsingMetaPod()) {
+			msg.push(`${combatant.name} is currently downed (no safety systems)`);
+			options.push({
+				optionName: 'Lie there helplessly (fight in spirit only)',
+				mandatory: true,
+				optionEffects: [],
+			});
+			return { msg, options};
+		}
 		if (actor.hasStatus('full-fade')) {
 			msg.push(`${combatant.name} is completely faded...`);
 			options.push({
@@ -1677,10 +1686,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			};
 		}
 		let withinInstantKillRange = false;
-		if (power.system.defense == "kill") {
+		if (power.system.defense == "kill" && naturalAttackRoll > 5) {
 			withinInstantKillRange = true;
 		} else {
-			withinInstantKillRange = instantDeathRange ? naturalAttackRoll >= instantDeathRange.low && naturalAttackRoll <= instantDeathRange.high : false;
+			withinInstantKillRange = instantDeathRange ? naturalAttackRoll > 5 && naturalAttackRoll >= instantDeathRange.low && naturalAttackRoll <= instantDeathRange.high : false;
 		}
 		let withinAilmentRange = false;
 		if (power.system.defense == "ail") {

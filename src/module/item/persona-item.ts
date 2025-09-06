@@ -1112,7 +1112,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const skillDamage = DamageCalculator.weaponSkillDamage(this);
     const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
     const bonusVariance = userPersona.getBonusVariance().total(situation);
-    calc.add('base', str, `${userPersona.displayedName} Strength`);
+    calc.add('base', str, `${userPersona.publicName} Strength`);
     const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
 	  if (this.isFlurryPower()) {
 		  calc.add("multiplier", 0.666, "Flurry Attack Power");
@@ -1137,7 +1137,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
 		const dtype = this.getDamageType(userPersona);
 		const calc= new DamageCalculation(dtype);
-		calc.add('base', magicDmg, `${userPersona.displayedName} Magic`, );
+		calc.add('base', magicDmg, `${userPersona.publicName} Magic`, );
 		calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Damage`);
 		calc.add('base', damageBonus, 'Bonus Damage');
 		const variance  = (DamageCalculator.BASE_VARIANCE + skillDamage.extraVariance + bonusVariance );
