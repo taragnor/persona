@@ -3300,8 +3300,8 @@ async onMetaverseTimeAdvance(): Promise<string[]> {
 }
 
 socialEffects(this: SocialLink) : readonly ConditionalEffect[] {
-	this.system.socialEffects[0].consequences[0] satisfies ConditionalEffect["consequences"][number];
-	return this.system?.socialEffects ?? [];
+	// weird bug where sometimes the this isn't set properly
+	return this?.system?.socialEffects ?? [];
 }
 
 async fatigueRecoveryRoll(this: PC): Promise<string[]> {
@@ -3996,6 +3996,21 @@ Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
 	if (!actor.isValidCombatant()) {return;}
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 	const lvl =changes?.system?.combat?.personaStats?.pLevel as U<number>;
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+	if (changes?.system?.combat?.personaStats?.pLevel != undefined && lvl) {
+		console.log("Actor XP update");
+		const minXP = LevelUpCalculator.minXPForEffectiveLevel(lvl);
+		const maxXP = LevelUpCalculator.minXPForEffectiveLevel(lvl + 1);
+		if (actor.system.combat.personaStats.xp < minXP) {
+		console.log("Actor XP update raised");
+			await actor.update({"system.combat.personaStats.xp" : minXP});
+		}
+		if (actor.system.combat.personaStats.xp >= maxXP) {
+		console.log("Actor XP update lowered");
+
+			await actor.update({"system.combat.personaStats.xp" : minXP});
+			}
+	}
 	if (lvl != undefined) {
 		await actor.onLevelUp_checkLearnedPowers(lvl, !actor.isShadow());
 	}

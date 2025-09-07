@@ -845,7 +845,7 @@ export class PersonaSocial {
 		effects.push(...universal);
 		if (cardData.activity instanceof PersonaActor) {
 			const link =cardData.activity;
-			if (!rollTags.includes("on-cameo") && !rollTags.includes("on-other")) {
+			if (!rollTags.includes("on-cameo") && !rollTags.includes("on-other") && link instanceof PersonaActor) {
 				effects.push(...link.socialEffects());
 			}
 		}
@@ -1242,6 +1242,10 @@ export class PersonaSocial {
 		if (!card) {
 			throw new PersonaError(`Can't find card ${cardId}`);
 		}
+	if (!this.rollState) {
+		PersonaError.softFail("No roll state found");
+		return;
+	}
 		const cardEvent = this.rollState.cardData.eventList[eventIndex];
 		const choice = cardEvent.choices[choiceIndex];
 		await this.handleCardChoice(this.rollState.cardData, choice);
