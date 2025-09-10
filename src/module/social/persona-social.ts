@@ -634,7 +634,7 @@ export class PersonaSocial {
 			cardData
 		};
 		const effectList = ConditionalEffectManager.getEffects(cardData.card.system.immediateEffects ?? [], null, null);
-		await this.applyEffects(effectList,cardData.situation, cardData.actor);
+		await this.applyEffects(effectList, cardData.situation, cardData.actor);
 		while (cardData.eventsRemaining > 0) {
 			const ev = this.#getCardEvent(cardData);
 			if (!ev) {
@@ -780,12 +780,16 @@ export class PersonaSocial {
 			cardData.sound = await PersonaSounds.playFree(event.sound, event.volume ?? 0.5);
 		}
 		if (ArrayCorrector(event.choices).length > 0) {
-			await new Promise( (conf, _rej) => {
+			const cardEvent = await new Promise( (conf, _rej) => {
 				this.rollState = {
 					cardData,
 					continuation: conf
 				};
 			});
+			if (cardEvent != undefined) {
+				const choice = cardEvent as CardData["eventList"][number]["choices"][number];
+				await this.handleCardChoice(this.rollState!.cardData, choice);
+			}
 		}
 		return msg;
 	}
@@ -1223,7 +1227,6 @@ export class PersonaSocial {
 		}
 		await result.emptyCheck()
 			?.autoApplyResult();
-		// .toMessage("Social Roll Effects", actor);
 	}
 
 	static async makeCardRoll(ev: JQuery.ClickEvent) {
@@ -1248,7 +1251,7 @@ export class PersonaSocial {
 	}
 		const cardEvent = this.rollState.cardData.eventList[eventIndex];
 		const choice = cardEvent.choices[choiceIndex];
-		await this.handleCardChoice(this.rollState.cardData, choice);
+		// await this.handleCardChoice(this.rollState.cardData, choice);
 		const content = $(message.content);
 		content
 			.closest(".social-card-event")
@@ -1267,7 +1270,7 @@ export class PersonaSocial {
 		if (!this.rollState.continuation) {
 			throw new PersonaError("No roll is currently ongoing, can't execute");
 		}
-		this.rollState.continuation();
+		this.rollState.continuation(choice);
 	}
 
 

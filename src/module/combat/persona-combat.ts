@@ -1951,7 +1951,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	static solveEffectiveTargets< T extends keyof TargettingContextList>(applyTo :T, situation: Situation, cons?: Consequence) : (ValidAttackers | ValidSocialTarget)[]  {
 		switch (applyTo) {
 			case 'target' : {
-				const target = situation.target ? PersonaDB.findActor(situation.target) : undefined;
+				const target = situation.target
+				? PersonaDB.findActor(situation.target)
+				: situation.socialTarget
+				? PersonaDB.findActor(situation.socialTarget)
+				: undefined;
 				return target ? [target]: []; }
 			case 'attacker': {
 				const attacker = situation.attacker ? PersonaDB.findActor(situation.attacker) : undefined;

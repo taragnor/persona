@@ -672,6 +672,7 @@ export class PersonaHandleBarsHelpers {
 		"displayDamageIcon": function (damageType: DamageType): SafeString {
 			const filepath = DAMAGE_ICONS[damageType];
 			const locName = localize(DAMAGETYPES[damageType]);
+			if (!locName) {return "";}
 			return new Handlebars.SafeString(`<img class="damage-icon" src='${filepath}' title='${locName}'>`);
 		},
 
