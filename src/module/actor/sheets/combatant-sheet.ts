@@ -11,7 +11,7 @@ import { Helpers } from "../../utility/helpers.js";
 import { PersonaError } from "../../persona-error.js";
 import { PersonaCombat } from "../../combat/persona-combat.js";
 import { PToken } from "../../combat/persona-combat.js";
-import { HTMLTools } from "../../utility/HTMLTools.js";
+import { CanceledDialgogError, HTMLTools } from "../../utility/HTMLTools.js";
 import { CClass } from "../../item/persona-item.js";
 import { PersonaItem } from "../../item/persona-item.js";
 import { PersonaActorSheetBase } from "./actor-sheet.base.js";
@@ -215,6 +215,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		try {
 			await PersonaCombat.usePower(token, power );
 		} catch (e) {
+			if (e instanceof CanceledDialgogError) {
+				return;
+			}
 			if (e instanceof Error) {
 				console.error(e);
 				console.error(e.stack);

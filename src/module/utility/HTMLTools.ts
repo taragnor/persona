@@ -118,7 +118,7 @@ export class HTMLTools {
 		const html = `<div> ${comment} </div>
 		<input type='number' class='numInput' value=0>
 		`;
-		return await new Promise( (conf, _reject) => {
+		return await new Promise( (conf, reject) => {
 			const dialog = new Dialog({
 				title: `Prompt`,
 				content: html,
@@ -131,22 +131,22 @@ export class HTMLTools {
 						label: "Confirm",
 						callback: (htm: string) => {
 							const value = Number($(htm).find(".numInput").val());
-							if (value != undefined) {
-								conf(value);
-							} else {
-								_reject( new Error("Something weird happened"));
+							if (value == undefined) {
+								reject( new Error("Something weird happened"));
+								return;
 							}
+							conf(value);
 						}
 					},
 					two: {
 						icon: `<i class="fas fa-times"></i>`,
 						label: "Cancel",
-						callback: () => _reject(new Error("Cancel")),
+						callback: () => reject(new CanceledDialgogError("Cancel")),
 					}
 				},
 				default: "one",
 				close: () => {
-					_reject(new Error("close"));
+					reject(new CanceledDialgogError("close"));
 				},
 			}, {});
 			dialog.render(true);
@@ -239,4 +239,8 @@ type ChoiceBoxOptions<T> = {
 	localize?: boolean;
 	title ?: string;
 	default?: keyof T;
+}
+
+export class CanceledDialgogError extends Error {
+
 }

@@ -36,7 +36,7 @@ import { TurnAlert } from '../utility/turnAlert.js';
 import { EngagementChecker } from './engageChecker.js';
 import { Metaverse } from '../metaverse.js';
 import { StatusEffectId } from '../../config/status-effects.js';
-import { HTMLTools } from '../utility/HTMLTools.js';
+import { CanceledDialgogError, HTMLTools } from '../utility/HTMLTools.js';
 
 import { PersonaError } from '../persona-error.js';
 import { CombatResult } from './combat-result.js';
@@ -1220,6 +1220,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			await this.postActionCleanup(attacker, result);
 			return result;
 		} catch(e) {
+			if (e instanceof CanceledDialgogError) {
+				throw e;
+			}
 			console.log(e);
 			throw e;
 		}

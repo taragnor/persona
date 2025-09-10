@@ -10,16 +10,16 @@ import {ModifierContainer} from "../item/persona-item.js";
 export class PersonaCombatStats {
 
 	persona : Persona;
-	static AILMENT_RESIST_DIVISOR = 2 as const;
-	static INSTANT_DEATH_RESIST_DIVISOR = 2 as const;
+	static AILMENT_RESIST_DIVISOR = 5 as const;
+	static INSTANT_DEATH_RESIST_DIVISOR = 5 as const;
 	static STAT_POINTS_PER_LEVEL = 3 as const;
 	static MAX_STAT_GAP =  10 as const;
 	static MAX_STAT_VAL = 99 as const;
 	static MIN_STAT_VAL = 1 as const;
 	static DEFENSE_DIVISOR = 2 as const;
-	static BASE_INSTANT_DEATH_DEFENSE= 10 as const;
+	static BASE_INSTANT_DEATH_DEFENSE= 20 as const;
 	static BASE_DEFENSE = 2 as const;
-	static BASE_AILMENT_DEFENSE = 10 as const;
+	static BASE_AILMENT_DEFENSE = 20 as const;
 
 	constructor (persona: Persona) {
 		this.persona = persona;
@@ -143,22 +143,22 @@ export class PersonaCombatStats {
 	}
 
 	instantDeathDefense() : number {
-		const defenseBoost = Math.floor((this.luck +3) /PersonaCombatStats.INSTANT_DEATH_RESIST_DIVISOR);
+		const defenseBoost = this.instantDeathResist();
 		return defenseBoost + PersonaCombatStats.BASE_INSTANT_DEATH_DEFENSE;
 	}
 
 	ailmentDefense(): number {
-		const defenseBoost = Math.floor((this.luck +3) /PersonaCombatStats.AILMENT_RESIST_DIVISOR);
+		const defenseBoost = this.ailmentResist();
 		return defenseBoost + PersonaCombatStats.BASE_AILMENT_DEFENSE;
 	}
 
-	ailmentResist(): number{
-		const luckAilmentResist=  Math.floor((this.luck + 3) / 5);
+	ailmentResist(): number {
+		const luckAilmentResist=  Math.floor((this.luck + 3) / PersonaCombatStats.AILMENT_RESIST_DIVISOR);
 		return luckAilmentResist;
 	}
 
 	ailmentBonus(): number {
-		return Math.floor((this.luck + 4) / 5);
+		return Math.floor((this.luck + 4) / PersonaCombatStats.AILMENT_RESIST_DIVISOR);
 	}
 
 	magDamageBonus() : number {
