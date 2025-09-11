@@ -1239,3 +1239,7 @@ background: initial !important;
 	min-height: 75px;
 }
 
+img.inline {
+	display:inline;
+}
+

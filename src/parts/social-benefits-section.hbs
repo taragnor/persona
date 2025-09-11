@@ -1,16 +1,18 @@
-<h2>
-	{{localize "persona.sheet.tabs.social-benefits.header" }}
-</h2>
-{{#each actor.socialLinks as |link|}}
-<span class="sl-name">
-	<b> {{link.actor.name}}</b>
-</span>
-<ul>
-	{{#each link.focii as |focus|}}
-	<li>
-		<b>{{focus.name}}:</b>
-		{{focus.system.description}}
-	</li>
+<section class="f-col">
+	<h2>
+		{{localize "persona.sheet.tabs.social-benefits.header" }}
+	</h2>
+	{{#each actor.socialLinks as |link|}}
+	<span class="sl-name">
+		<b> {{link.actor.name}}</b>
+	</span>
+	<ul>
+		{{#each link.focii as |focus|}}
+		<li>
+			<b>{{focus.name}}:</b>
+			{{focus.system.description}}
+		</li>
+		{{/each}}
+	</ul>
 	{{/each}}
-</ul>
-{{/each}}
+</section>

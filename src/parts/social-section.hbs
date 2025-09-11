@@ -1,18 +1,20 @@
-<nav class="secondary-tabs tabs" data-group="social">
+<div class="f-col">
+	<nav class="secondary-tabs tabs" data-group="social">
 		<a class="item" data-tab="SL">
 			Social Links
 		</a>
 		<a class="item" data-tab="activities">
 			Activities
 		</a>
-</nav>
+	</nav>
 	<section class="inner-body">
-		<section class="tab tab-content social-section f-col" data-group="social" data-tab="SL">
+		<section class="tab tab-content social-section" data-group="social" data-tab="SL">
 			{{> "systems/persona/parts/social-links-list.hbs" actor=actor CONST=CONST}}
 		</section>
-		<section class="tab tab-content social-section f-col" data-group="social" data-tab="activities">
+		<section class="tab tab-content social-section" data-group="social" data-tab="activities">
 			{{> "systems/persona/parts/social-activities-list.hbs" actor=actor CONST=CONST}}
 		</section>
 
 	</section>
+</div>
 

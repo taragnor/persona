@@ -1,70 +1,72 @@
+<section class="f-col">
 
-{{#if (eq actor.type "pc")}}
-<section class="money">
-	<h2>
-		Money
-	</h2>
-	<div class="resource-points">
-		<label>
-			Resource Points (Money)
-		</label>
-		{{#if ( isGM )}}
-		<input class="short" type="number" name="system.money" value="{{actor.system.money}}">
-		{{else}}
-		{{actor.system.money}}
-		<a class="gain-money">
-			<i class="fa-solid fa-square-plus"></i>
+	{{#if (eq actor.type "pc")}}
+	<section class="money">
+		<h2>
+			Money
+		</h2>
+		<div class="resource-points">
+			<label>
+				Resource Points (Money)
+			</label>
+			{{#if ( isGM )}}
+			<input class="short" type="number" name="system.money" value="{{actor.system.money}}">
+			{{else}}
+			{{actor.system.money}}
+			<a class="gain-money">
+				<i class="fa-solid fa-square-plus"></i>
+			</a>
+			<a class="spend-money">
+				<i class="fa-solid fa-square-minus"></i>
+			</a>
+			{{/if}}
+		</div>
+	</section>
+	{{/if}}
+
+	<nav class="inventory-tabs tabs" data-group="social">
+		<a class="item" data-tab="consumables">
+			Consumables
 		</a>
-		<a class="spend-money">
-			<i class="fa-solid fa-square-minus"></i>
+		<a class="item" data-tab="equip">
+			Equippables
 		</a>
-		{{/if}}
-	</div>
+		<a class="item" data-tab="crafting">
+			Crafting
+		</a>
+		<a class="item" data-tab="key">
+			Key
+		</a>
+		<a class="item" data-tab="cards">
+			Skill Cards
+		</a>
+	</nav>
+	<section class="inventory-body">
+		<h2>Items
+			{{#if false}}
+			<a class="addItem">
+				<i class="fa-solid fa-plus"> </i>
+			</a>
+			{{/if}}
+		</h2>
+
+		<section class="tab tab-content inventory-section" data-group="social" data-tab="consumables">
+			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.trueConsumables }}
+		</section>
+		<section class="tab tab-content inventory-section" data-group="social" data-tab="equip">
+			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.equippables }}
+		</section>
+		<section class="tab tab-content inventory-section" data-group="social" data-tab="crafting">
+			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.craftingMaterials }}
+		</section>
+		<section class="tab tab-content inventory-section" data-group="social" data-tab="key">
+			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.keyItems }}
+		</section>
+		<section class="tab tab-content inventory-section" data-group="social" data-tab="cards">
+			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.skillCards }}
+
+		</section>
+	</section>
+	<hr>
+
 </section>
-{{/if}}
-
-<nav class="inventory-tabs tabs" data-group="social">
-	<a class="item" data-tab="consumables">
-		Consumables
-	</a>
-	<a class="item" data-tab="equip">
-		Equippables
-	</a>
-	<a class="item" data-tab="crafting">
-		Crafting
-	</a>
-	<a class="item" data-tab="key">
-		Key
-	</a>
-	<a class="item" data-tab="cards">
-		Skill Cards
-	</a>
-</nav>
-<section class="inventory-body">
-	<h2>Items
-		{{#if false}}
-		<a class="addItem">
-			<i class="fa-solid fa-plus"> </i>
-		</a>
-		{{/if}}
-	</h2>
-
-	<section class="tab tab-content inventory-section f-col" data-group="social" data-tab="consumables">
-		{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.trueConsumables }}
-	</section>
-	<section class="tab tab-content inventory-section f-col" data-group="social" data-tab="equip">
-		{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.equippables }}
-	</section>
-	<section class="tab tab-content inventory-section f-col" data-group="social" data-tab="crafting">
-		{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.craftingMaterials }}
-	</section>
-	<section class="tab tab-content inventory-section f-col" data-group="social" data-tab="key">
-		{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.keyItems }}
-	</section>
-	<section class="tab tab-content inventory-section f-col" data-group="social" data-tab="cards">
-		{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.skillCards }}
-
-	</section>
-</section>
-<hr>
-

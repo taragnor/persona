@@ -1,84 +1,86 @@
-<h2> Questions
-</h2>
-<div>
-	<span>
-		<label> New Question</label>
-		<a class="add-question">
-			<i class="fa-solid fa-plus"> </i>
-		</a>
-	</span>
-</div>
-<ul class="question-list">
-	{{#each actor.system.questions as |question i|}}
-	<li class="flexrow" data-question-index="{{i}}">
-		<span class="question-name" >
-			{{question.name}} {{#if question.expended}} <b>(Expended)</b> {{/if}}
-		</span>
-		<span class="del-question">
-			<a class="del-question">
-				<i class="fa-solid fa-trash-can"></i>
+<section class="f-col">
+	<h2> Questions
+	</h2>
+	<div>
+		<span>
+			<label> New Question</label>
+			<a class="add-question">
+				<i class="fa-solid fa-plus"> </i>
 			</a>
 		</span>
-	</li>
-	{{/each}}
-</ul>
-
-<div class="questions-breakdown">
-	<button class="back-button">
-		Back
-	</button>
-	{{#each actor.system.questions as |question i|}}
-	<div class="question" data-question-index="{{i}}">
-		<h4>
-			<span class="question-name" >
-				Question: <input class="question-input" type=string name='{{strcat "system.questions." i ".name"}}' value="{{question.name}}">
-				<span>
-					<label>
-						Expended
-					</label>
-				<input type="checkbox" name='{{strcat "system.questions." i ".expended"}}' {{checked question.expended}}>
-				</span>
-			</span>
-			<textarea name='{{strcat "system.questions." i ".text"}}'>{{question.text}}</textarea>
-		</h4>
-		<h5> Conditions </h5>
-		<div class="question-conditions">
-			<div class="sl-range">
-				<span>
-					<label>
-						SL Range
-					</label>
-					<input class="short" type=number name='{{strcat "system.questions." i ".SLmin"}}' value="{{question.SLmin}}">
-					-
-					<input class="short" type=number name='{{strcat "system.questions." i ".SLmax"}}' value="{{question.SLmax}}">
-				</span>
-			</div>
-			<div class="dating-restriction">
-				<span>
-					<label>
-						Dating only
-					</label>
-					<input type="checkbox" name='{{strcat "system.questions." i ".requiresDating"}}' {{checked question.requiresDating}}>
-				</span>
-			</div>
-		</div>
-		<div class="choices-block">
-			{{#each question.choices as |choice c|}}
-			<div class="question-choice">
-				<div class="question-header">
-					<label>
-						Choice:
-					</label>
-					<input type=string class="choice-input" name='{{strcat "system.questions." i ".choices." c ".name"}}' value="{{choice.name}}">
-					<input class="short" type=number name='{{strcat "system.questions." i ".choices." c ".progressSuccess"}}' value="{{choice.progressSuccess}}">
-				</div>
-				<label> Response</label>
-				<textarea name='{{strcat "system.questions." i ".choices." c ".response"}}'>{{choice.response}}</textarea>
-			</div>
-			{{/each}}
-		</div>
 	</div>
-	{{/each}}
+	<ul class="question-list">
+		{{#each actor.system.questions as |question i|}}
+		<li class="flexrow" data-question-index="{{i}}">
+			<span class="question-name" >
+				{{question.name}} {{#if question.expended}} <b>(Expended)</b> {{/if}}
+			</span>
+			<span class="del-question">
+				<a class="del-question">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</span>
+		</li>
+		{{/each}}
+	</ul>
 
-</div>
+	<div class="questions-breakdown">
+		<button class="back-button">
+			Back
+		</button>
+		{{#each actor.system.questions as |question i|}}
+		<div class="question" data-question-index="{{i}}">
+			<h4>
+				<span class="question-name" >
+					Question: <input class="question-input" type=string name='{{strcat "system.questions." i ".name"}}' value="{{question.name}}">
+					<span>
+						<label>
+							Expended
+						</label>
+					<input type="checkbox" name='{{strcat "system.questions." i ".expended"}}' {{checked question.expended}}>
+					</span>
+				</span>
+				<textarea name='{{strcat "system.questions." i ".text"}}'>{{question.text}}</textarea>
+			</h4>
+			<h5> Conditions </h5>
+			<div class="question-conditions">
+				<div class="sl-range">
+					<span>
+						<label>
+							SL Range
+						</label>
+						<input class="short" type=number name='{{strcat "system.questions." i ".SLmin"}}' value="{{question.SLmin}}">
+						-
+						<input class="short" type=number name='{{strcat "system.questions." i ".SLmax"}}' value="{{question.SLmax}}">
+					</span>
+				</div>
+				<div class="dating-restriction">
+					<span>
+						<label>
+							Dating only
+						</label>
+						<input type="checkbox" name='{{strcat "system.questions." i ".requiresDating"}}' {{checked question.requiresDating}}>
+					</span>
+				</div>
+			</div>
+			<div class="choices-block">
+				{{#each question.choices as |choice c|}}
+				<div class="question-choice">
+					<div class="question-header">
+						<label>
+							Choice:
+						</label>
+						<input type=string class="choice-input" name='{{strcat "system.questions." i ".choices." c ".name"}}' value="{{choice.name}}">
+						<input class="short" type=number name='{{strcat "system.questions." i ".choices." c ".progressSuccess"}}' value="{{choice.progressSuccess}}">
+					</div>
+					<label> Response</label>
+					<textarea name='{{strcat "system.questions." i ".choices." c ".response"}}'>{{choice.response}}</textarea>
+				</div>
+				{{/each}}
+			</div>
+		</div>
+		{{/each}}
 
+	</div>
+
+</section>

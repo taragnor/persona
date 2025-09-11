@@ -1,10 +1,11 @@
-<section class="items">
-	<div class="item-list flexcol">
+<section class="items f-col">
+	<div class="item-list f-col">
 		{{#each itemlist as |item|}}
 		<div class="{{#if (ne item.system.noTrade true)}} item item-entry {{/if}} inventory-item" data-item-id="{{item.id}}">
 			{{#if (isItemUsable item)}}
+			<span>
 			<a class="rollItem">
-				<img src="icons/dice/d20black.svg">
+				<img class="inline" src="icons/dice/d20black.svg">
 			</a>
 			{{/if}}
 			<span class="itemName">
@@ -40,6 +41,7 @@
 			<a class="delItem">
 				<i class="fa-solid fa-trash-can"></i>
 			</a>
+			</span>
 		</div>
 		{{/each}}
 	</div>

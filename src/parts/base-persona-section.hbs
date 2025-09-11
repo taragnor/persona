@@ -1,4 +1,4 @@
-<section class="base-persona-section {{#if (isSimulated persona)}} simulated-persona {{/if}}"
+<section class="f-col base-persona-section {{#if (isSimulated persona)}} simulated-persona {{/if}}"
 	<input type="text" class="borderless character-name" name="system.personaName" value="{{actor.system.personaName}}" title="Persona Name" placeholder="Persona Name">
 	{{#if (and (isGM) (not (isPC actor)))}}
 	{{> "systems/persona/parts/hp-mp-section.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
