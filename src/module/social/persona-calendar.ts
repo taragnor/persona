@@ -115,7 +115,7 @@ export class PersonaCalendar {
 		const msgData : MessageData = {
 			speaker,
 			content: html,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 			rolls,
 		};
 		await ChatMessage.create(msgData,{} );
@@ -333,7 +333,7 @@ export class PersonaCalendar {
 		const messageData : Foundry.MessageData = {
 			speaker: {alias: "Weather Forecast"},
 			content: msg,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
 			whisper: [game.user],
 		};
 		await ChatMessage.create(messageData, {});

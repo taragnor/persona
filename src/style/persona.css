@@ -1151,6 +1151,13 @@ nav.inventory-tabs a:active {
 	text-shadow: 0 0 1px #00FF99, 0 0 3px #00FF99;
 }
 
+.chat-message.message.other h2,
+.chat-message.message.ooc h2,
+.chat-message.message.ic h2 {
+	color: #E6F8FF; /* pale cyan for readable text */
+}
+
+
 .chat-message.message.ooc,
 .chat-message.message.emote,
 .chat-message.message.ic {
@@ -1159,6 +1166,28 @@ nav.inventory-tabs a:active {
 	color: #E6F8FF; /* pale cyan for readable text */
 }
 
+.chat-message.message.other button:disabled {
+	background: grey;
+	color: #C6C8CF;
+	text-shadow: none;
+}
+
+.chat-message.message.other .missing-conditions {
+	text-shadow: none;
+}
+
+.chat-message.message.other button {
+display: inline-block;   /* makes it size to its content */
+  width: auto;             /* don’t force a fixed width */
+  height: auto;
+  white-space: wrap;     /* prevent breaking text in weird ways */
+  overflow: visible;       /* make sure text isn’t clipped */
+  padding: 0.5em 1em;      /* add space around text */
+  box-sizing: border-box;  /* padding/border included in width */
+}
+
+
+.chat-message.message.other button,
 .chat-message.message.other,
 .chat-message.message.roll,
 .region-info-panel button,
@@ -1261,5 +1290,4 @@ background: initial !important;
 img.inline {
 	display:inline;
 }
-
 
