@@ -1,4 +1,3 @@
-import { PersonaDB } from "../module/persona-db.js";
 import { WEATHER_TYPES } from "./weather-types.js";
 import { PersonaActor } from "../module/actor/persona-actor.js";
 
@@ -12,7 +11,7 @@ export class PersonaSettings {
 	static cache : Partial<Record<SETTINGKEYS, unknown>> = {} ;
 	static registerSettings() {
 		for (const [key, options] of Object.entries(SETTINGS)) {
-			//@ts-ignore
+			//@ts-expect-error TS doesn't like this
 			game.settings.register("persona", key, options);
 		}
 	}
@@ -72,7 +71,7 @@ const SETTINGS = {
 			if (game.user.isGM) {
 			game.scenes
 				.forEach( scene => scene.tokens.contents
-					.forEach( tok => (tok.actor as PersonaActor | undefined)?.fullHeal()
+					.forEach( tok => void (tok.actor as PersonaActor | undefined)?.fullHeal()
 					)
 				);
 			}
@@ -195,6 +194,7 @@ type SETTINGKEYS = keyof typeof SETTINGS;
 
 type PersonaSettingKeysBase = Prettify<SettingsObjToSettingKeyType<typeof SETTINGS>>;
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface PersonaSettingKeys extends PersonaSettingKeysBase {};
 
 declare global {

@@ -11,8 +11,15 @@ class Application {
 	_searchFilters: unknown[];
 	_dragDrop: unknown[];
 	_state: number;
+	_getHeaderButtons() : HeaderButtons[];
 	template: string;
-	title: string;
+	get title(): string;
 } ;
 
 
+interface HeaderButtons {
+	label: string;
+	class: string;
+	icon: string;
+	onclick: () => void;
+}
