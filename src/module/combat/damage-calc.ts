@@ -35,7 +35,6 @@ export class DamageCalculation {
 		const newForm = DamageCalculation.convertToNewFormConsequence(cons, defaultDamageType);
 		this.addConsequence(newForm, target);
 		return this;
-
 	}
 
 	setMinValue(val: number) {
@@ -66,7 +65,6 @@ export class DamageCalculation {
 		this.#resisted = true;
 		return this;
 	}
-
 
 	static convertToNewFormConsequence( cons: SourcedConsequence<OldDamageConsequence>, defaultDamageType: DamageType) : SourcedConsequence<DamageConsequence> {
 		let st : DamageConsequence["damageSubtype"];
@@ -110,7 +108,6 @@ export class DamageCalculation {
 			calc: cons.calc,
 		};
 	}
-
 
 	addConsequence(cons: SourcedConsequence<DamageConsequence>, target: ValidAttackers): DamageCalculation {
 		let damageOrder: DamageOrder;
@@ -283,7 +280,6 @@ export class DamageCalculation {
 			const dataString = `+${amt} ${name}`;
 			str.push(dataString);
 		}
-
 		if (this.#resisted) {
 			const RESISTMULT = 0.5;
 			str.push(`* ${RESISTMULT} Damage Resistance`);
@@ -328,7 +324,6 @@ function signed(num: number) : string {
 	if (num > 0) {return `+${num}`;}
 	else {return `${num}`;}
 }
-
 
 export class DamageCalculator {
 	static BASE_VARIANCE = 2 as const;
