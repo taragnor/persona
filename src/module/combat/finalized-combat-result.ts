@@ -261,7 +261,7 @@ export class FinalizedCombatResult {
 			rolls: rolls.map( rb=> rb.roll),
 			content: html,
 			user: game.user,
-			style: CONST?.CHAT_MESSAGE_STYLES.OOC,
+			style: CONST?.CHAT_MESSAGE_STYLES.ROLL,
 		}, {});
 		if (manualApply) {
 			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
@@ -437,7 +437,7 @@ export class FinalizedCombatResult {
 					await ChatMessage.create( {
 						speaker,
 						content: html,
-						style: CONST?.CHAT_MESSAGE_STYLES.OOC,
+						style: CONST?.CHAT_MESSAGE_STYLES.OTHER,
 					});
 					break;
 				}

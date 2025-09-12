@@ -122,7 +122,7 @@ export class PersonaSocial {
 		const messageData = {
 			speaker: speaker,
 			content: startTurnMsg.join("<br>"),
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		};
 		await ChatMessage.create(messageData, {});
 	}
@@ -141,7 +141,7 @@ export class PersonaSocial {
 			const messageData = {
 				speaker: speaker,
 				content: endTurnMsg.join("<br>"),
-				style: CONST.CHAT_MESSAGE_STYLES.OOC,
+				style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 			};
 			await ChatMessage.create(messageData, {});
 		}
@@ -436,7 +436,7 @@ export class PersonaSocial {
 		const msgData : MessageData = {
 			speaker,
 			content: html,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		};
 		return await ChatMessage.create(msgData,{} );
 	}
@@ -669,7 +669,7 @@ export class PersonaSocial {
 		const msgData : MessageData = {
 			speaker,
 			content: html,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		};
 		return await ChatMessage.create(msgData,{} );
 	}
@@ -750,7 +750,7 @@ export class PersonaSocial {
 		const msgData : MessageData = {
 			speaker,
 			content: html,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		};
 		return await ChatMessage.create(msgData,{} );
 	}
@@ -773,7 +773,7 @@ export class PersonaSocial {
 		const msgData : MessageData = {
 			speaker,
 			content: html,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		};
 		const msg = await ChatMessage.create(msgData,{} );
 		if (event.sound && event.sound.length > 0) {
@@ -907,7 +907,7 @@ export class PersonaSocial {
 		const msgData : MessageData = {
 			speaker,
 			content: html,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		};
 		const msg= await ChatMessage.create(msgData,{} );
 		return msg;
@@ -1420,7 +1420,7 @@ export class PersonaSocial {
 		const messageData = {
 			speaker: {alias: "Question Response"},
 			content: html,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		};
 		await ChatMessage.create( messageData);
 	}

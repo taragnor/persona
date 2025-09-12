@@ -1145,19 +1145,38 @@ nav.inventory-tabs a:active {
   box-shadow: 0 2px 4px rgba(18, 105, 204, 0.5);
 }
 
+.combat-sidebar.sidebar-tab .combat-tracker .combatant {
+	color: #E6F8FF; /* pale cyan for readable text */
+	font-family: 'Oswald', sans-serif;
+	text-shadow: 0 0 1px #00FF99, 0 0 3px #00FF99;
+}
+
+.chat-message.message.ooc,
+.chat-message.message.emote,
+.chat-message.message.ic {
+	font-family: 'Oswald', sans-serif;
+	background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%);
+	color: #E6F8FF; /* pale cyan for readable text */
+}
+
+.chat-message.message.other,
+.chat-message.message.roll,
+.region-info-panel button,
+.region-info-panel,
+.combat-sidebar.sidebar-tab {
+	background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%);
+	color: #E6F8FF; /* pale cyan for readable text */
+	text-shadow: 0 0 1px #00FF99, 0 0 3px #00FF99;
+	font-family: "Consolas", "Lucida Console", "Courier New", monospace;
+
+}
 
 .window-app header.window-header,
 .window-app section.window-content {
-background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%);
-  color: #E6F8FF; /* pale cyan for readable text */
-  font-family: 'Oswald', sans-serif;
+	background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%);
+	color: #E6F8FF; /* pale cyan for readable text */
+	font-family: 'Oswald', sans-serif;
 	text-shadow: 0 0 1px #00FF99, 0 0 3px #00FF99;
-
-  /* background: linear-gradient(180deg, #1D2B64 0%, #1A8BBF 50%, #1269CC 100%); */
-  /* color: #F0FAFF; */ 
-
-/* background: radial-gradient(circle at center, #1A8BBF 0%, #0F274A 100%); */
-/*   color: #FFFFFF; */
 }
 
 section.simulated-persona {
@@ -1242,4 +1261,5 @@ background: initial !important;
 img.inline {
 	display:inline;
 }
+
 

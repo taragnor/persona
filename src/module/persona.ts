@@ -149,3 +149,29 @@ window.AnyaPlanets = new AnyaPlanets();
 
 //@ts-expect-error adding to global Object
 window.Simulations = Simulations;
+
+Hooks.on("renderChatMessage", (msg: ChatMessage, elem: JQuery) => {
+	const styles = CONST.CHAT_MESSAGE_STYLES;
+	switch (msg.style) {
+		case styles.IC:
+			elem.addClass("ic");
+			break;
+		case styles.OOC:
+			elem.addClass("ooc");
+			break;
+		case styles.OTHER:
+		case styles.WHISPER: //also covers other since some fool made them both value 0
+			if (msg.whisper.length> 0) {break;}
+			elem.addClass("other");
+			break;
+		case styles.ROLL:
+			elem.addClass("roll");
+			break;
+		case styles.EMOTE:
+			elem.addClass("emote");
+			break;
+		default:
+			elem.addClass("unknown-style");
+			break;
+	}
+});

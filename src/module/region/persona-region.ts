@@ -686,7 +686,7 @@ Hooks.on("updateRegion", async (region) => {
 	}
 });
 
-Hooks.on("updateToken", async (token, changes) => {
+Hooks.on("updateToken", async (token: TokenDocument<PersonaActor>, changes) => {
 	const actor = token.actor as PersonaActor;
 	if (!actor) {return;}
 	if (token.hidden) {return;}

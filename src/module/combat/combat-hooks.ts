@@ -86,14 +86,15 @@ export class CombatHooks {
 			}
 		});
 
-		Hooks.on("renderCombatTracker", (_item: CombatTracker, element: JQuery<HTMLElement>, _options: RenderCombatTabOptions) => {
+		Hooks.on("renderCombatTracker", (_item: CombatTracker, element: JQuery<HTMLElement> | HTMLElement, _options: RenderCombatTabOptions) => {
 			const combat = (game.combat as (PersonaCombat | undefined));
 			if (!combat) {return;}
+			element = $(element);
 			if (combat.isSocial) {
 				PersonaSocial.displaySocialPanel(element);
 			} else {
-				combat.displayEscalation(element);
-				combat.displayRoomEffectChanger(element);
+				combat.displayCombatHeader(element);
+				// combat.displayRoomEffectChanger(element);
 			}
 		});
 

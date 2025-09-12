@@ -162,7 +162,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			const messageData: MessageData = {
 				speaker: {alias: 'Combat Start'},
 				content: msg,
-				style: CONST.CHAT_MESSAGE_STYLES.OOC,
+				style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 			};
 			await ChatMessage.create(messageData, {});
 		}
@@ -429,7 +429,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const messageData = {
 			speaker: speaker,
 			content: startTurnMsg.join('<br>'),
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 			rolls: rolls.map(r=> r.roll).concat(baseRolls),
 			sound: rolls.length + baseRolls.length > 0 ? CONFIG.sounds.dice : undefined
 		};
@@ -1054,7 +1054,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			const messageData: MessageData = {
 				speaker: {alias: 'End of Turn'},
 				content: notes.join('<br>'),
-				style: CONST.CHAT_MESSAGE_STYLES.OOC,
+				style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 			};
 			await ChatMessage.create(messageData, {});
 		}
@@ -1267,7 +1267,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				alias: actor.displayedName ?? 'ERROR'
 			},
 			content,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		};
 		return await ChatMessage.create(messageData, {});
 	}
@@ -1306,7 +1306,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				alias: actor.displayedName ?? 'ERROR'
 			},
 			content,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		};
 		return await ChatMessage.create(messageData, {});
 	}
@@ -3050,7 +3050,7 @@ async alterRoomEffects() {
 	const messageData: MessageData = {
 		speaker: {alias: 'Room Effects Update'},
 		content: msg,
-		style: CONST.CHAT_MESSAGE_STYLES.OOC,
+		style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 	};
 	await ChatMessage.create(messageData, {});
 }
@@ -3170,24 +3170,38 @@ async generateTreasureAndXP() {
 	}
 }
 
-displayEscalation(element : JQuery<HTMLElement>) {
-	if (element.find('.escalation-die').length == 0) {
-		const escalationTracker = `
-				 <div class="combat-info flexrow">
+displayCombatHeader(element : JQuery<HTMLElement>) {
+	try {
+		if ($(element).find('.escalation-die').length == 0) {
+			const escalation = `
 						<div class="escalation-tracker">
 							 <span class="title"> Escalation Die: </span>
 							 <span class="escalation-die">N/A
 						</div>
-						<div class="weather-icon">
-						</div>
+			`;
+			const escalationTracker = `
+				 <div class="combat-info flexrow">
+					 <div class="weather-icon">
+					 </div>
+					 <div class="region-treasures">
+					 </div>
 				 </div>
 						`;
-		element.find('.combat-tracker-header').append(escalationTracker);
+			element.find('.combat-tracker-header').append(escalationTracker);
+		}
+		const weatherIcon = PersonaCalendar.getWeatherIcon();
+		element.find('div.weather-icon').append(weatherIcon);
+		const treasures = Metaverse.getRegion()?.treasuresRemaining;
+		if (treasures && treasures >= 0) {
+			element.find('div.region-treasures').append(`<span> Treasures Remaining ${treasures} </span>`);
+		}
+		element.find('div.weather-icon').append(weatherIcon);
+		// const escalationDie = String(this.getEscalationDie());
+		// element.find('.escalation-die').text(escalationDie);
+	} catch (e) {
+		PersonaError.softFail("Can't display Combat Tracker stuff", e);
 	}
-	const weatherIcon = PersonaCalendar.getWeatherIcon();
-	element.find('div.weather-icon').append(weatherIcon);
-	const escalationDie = String(this.getEscalationDie());
-	element.find('.escalation-die').text(escalationDie);
+	this.displayRoomEffectChanger(element);
 }
 
 displayRoomEffectChanger(element: JQuery<HTMLElement>) {
@@ -3305,7 +3319,7 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 	const messageData: MessageData = {
 		speaker: {alias: 'Follow Up Action'},
 		content: msg,
-		style: CONST.CHAT_MESSAGE_STYLES.OOC,
+		style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 	};
 	await ChatMessage.create(messageData, {});
 }
@@ -3352,6 +3366,7 @@ async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll
 		speaker: {alias: 'Combat Start'},
 		content: html,
 		rolls: rolls.map(x=> x.roll),
+		style: CONST.CHAT_MESSAGE_STYLES.ROLL,
 	};
 	return await ChatMessage.create(chatMessage, messageOptions);
 }

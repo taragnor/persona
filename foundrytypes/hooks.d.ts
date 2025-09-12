@@ -19,47 +19,47 @@ declare interface HOOKS {
 	"preCreateItem": PreCreateHook<Item>;
 	"preCreateChatMessage": PreCreateHook<ChatMessage>;
 	"createChatMessage": CreateHook<ChatMessage>;
-	"preUpdateActor": UpdateHook<Actor<any>>;
-	"preUpdateItem": UpdateHook<Item<any>>;
+	"preUpdateActor": UpdateHook<Actor>;
+	"preUpdateItem": UpdateHook<Item>;
 	"preUpdateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>;
 	"preUpdateWall": UpdateHook<WallDocument>;
 	"deleteCombat": DeleteHook<Combat>;
-	"createActor": CreateHook<Actor<any,any>>;
-	"createItem": CreateHook<Item<any>>;
-	"createToken": CreateHook<TokenDocument<any>>;
+	"createActor": CreateHook<Actor>;
+	"createItem": CreateHook<Item>;
+	"createToken": CreateHook<TokenDocument>;
 	"createScene": CreateHook<Scene>;
-	"createCombatant": CreateHook<Combatant<any>>;
+	"createCombatant": CreateHook<Combatant>;
 	"createActiveEffect": CreateHook<ActiveEffect>;
 	"createWall": CreateHook<WallDocument>;
-	"updateToken": UpdateHook<TokenDocument<any>>;
-	"deleteToken": DeleteHook<TokenDocument<any>>;
-	"deleteActor": DeleteHook<Actor<any>>;
+	"updateToken": UpdateHook<TokenDocument>;
+	"deleteToken": DeleteHook<TokenDocument>;
+	"deleteActor": DeleteHook<Actor>;
 	"deleteCombatant": DeleteHook<Combatant>;
-	"deleteItem": DeleteHook<Item<any>>;
+	"deleteItem": DeleteHook<Item>;
 	"deleteScene": DeleteHook<Scene>;
 	"deleteActiveEffect": DeleteHook<ActiveEffect>;
 	"deleteWall": DeleteHook<WallDocument>;
 	"preDeleteActiveEffect": PreDeleteHook<ActiveEffect>;
 	"updateScene": UpdateHook<Scene>;
-	"updateItem": UpdateHook<Item<any>>;
+	"updateItem": UpdateHook<Item>;
 	"updateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>;
-	"updateActor": UpdateHook<Actor<any>>;
+	"updateActor": UpdateHook<Actor>;
 	"updateWall": UpdateHook<WallDocument>;
 	"updateRegion": UpdateHook<RegionDocument>;
 	"updateSetting": UpdateHook<Setting<unknown>>;
 	"preUpdateSetting": UpdateHook<Setting<unknown>>;
-	"getSceneControlButtons": Function;
-	"renderActorSheet": Function;
-	"renderJournalDirectory": Function;
+	"getSceneControlButtons": (...args : unknown[]) => unknown;
+	"renderActorSheet": (...args : unknown[]) => unknown;
+	"renderJournalDirectory": (...args : unknown[]) => unknown;
 	"renderCombatTracker": RenderCombatTabFn;
-	"renderApplication": Function;
+	"renderApplication": (...args : unknown[]) => unknown;
 	"renderChatMessage": (msg: ChatMessage, htmlElement: JQuery<HTMLElement>, data: unknown) => unknown;
 	"renderSceneConfig": (app: unknown, html: JQuery, options: unknown) => unknown;
 	"renderRegionConfig": (app: ConfigApp<RegionDocument>, html: JQuery, options: unknown) => unknown;
 	"closeRegionConfig": (app: ConfigApp<RegionDocument>) => unknown,
-	"canvasReady": Function;
-	"canvasInit": Function;
-	"hoverToken" : (token: Token<any>, hover:boolean) => unknown;
+	"canvasReady": (...args : unknown[]) => unknown;
+	"canvasInit": (...args : unknown[]) => unknown;
+	"hoverToken" : (token: Token, hover:boolean) => unknown;
 	/**hook boolean value is true on connect, false on disconnect*/
 	"userConnected": (user: FoundryUser, isConnectionEvent : boolean) => unknown;
 	"controlToken": (token: Token, unknownBool: boolean) => unknown;
@@ -67,11 +67,11 @@ declare interface HOOKS {
 
 type PreCreateHook<T extends FoundryDocument> = (document: T, documentData: {name:string, type:string} & Record<string, unknown>, metaData: Record<string, unknown>, id:string) => unknown;
 
-type CreateHook<T extends FoundryDocument> = (item: T, metaData: Record<string, unknown>, id: string) => unknown | Promise<unknown>;
+type CreateHook<T extends FoundryDocument> = (item: T, metaData: Record<string, unknown>, id: string) => unknown;
 
-type ApplyAEHookFn = (actor: Actor<any,any>, change: AEChange , current: any , delta: any, changes: Record<string, any>) => unknown;
+type ApplyAEHookFn = (actor: Actor, change: AEChange , current: unknown , delta: object, changes: Record<string, unknown>) => unknown;
 
-type UpdateHook<T extends FoundryDocument, Diff = {}> = (updatedItem: T, changes: DeepPartial<T>, diff: DiffObject & Diff, userId: string) => unknown;
+type UpdateHook<T extends FoundryDocument, Diff = object> = (updatedItem: T, changes: DeepPartial<T>, diff: DiffObject & Diff, userId: string) => unknown;
 
 type DeleteHook<T extends FoundryDocument> = (deletedItem: T, something: Record<string, unknown>, id: string) => unknown;
 
@@ -94,7 +94,7 @@ type CombatUpdateOptions = {
 }
 
 
-type RenderCombatTabFn= (item: CombatTracker, element: JQuery<HTMLElement>, options: RenderCombatTabOptions) => unknown;
+type RenderCombatTabFn= (item: CombatTracker, element: JQuery<HTMLElement> | HTMLElement, options: RenderCombatTabOptions) => unknown;
 
 type RenderCombatTabOptions = {
 	combat: Combat;

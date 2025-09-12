@@ -380,7 +380,7 @@ static async reportXPGain(xpReport: {actor: ValidAttackers, xp: number, levelUps
 		},
 		content: text ,
 		rolls: [],
-		style: CONST.CHAT_MESSAGE_STYLES.OOC,
+		style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 	});
 }
 

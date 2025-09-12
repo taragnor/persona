@@ -415,7 +415,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const messageData: MessageData = {
 				speaker: {alias: `${this.publicName}`},
 				content: msg,
-				style: CONST.CHAT_MESSAGE_STYLES.OOC,
+				style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 			};
 			await ChatMessage.create(messageData, {});
 		}
