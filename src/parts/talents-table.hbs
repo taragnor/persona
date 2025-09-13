@@ -6,7 +6,7 @@
 		{{#each persona.talents as |talent|}}
 		<tr data-talent-id="{{talent.id}}">
 			<td>
-				<a class="talentName" title="{{talent.description}}">
+				<a class="talentName" title="{{talent.tooltip}}">
 					{{talent.name}} ({{getTalentLevel ../persona talent}})
 				</a>
 			</td>

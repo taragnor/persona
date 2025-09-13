@@ -1563,7 +1563,7 @@ grantsTalents(this: ModifierContainer) : boolean {
 	  }
 	}
 
-  get description(): string {
+  get tooltip(): string {
     switch (this.system.type) {
       case 'consumable':
       case 'item':
@@ -1576,6 +1576,30 @@ grantsTalents(this: ModifierContainer) : boolean {
 			 const parts=  description.split("\n")
 			 .map( x=> x.trim());
         return `${this.displayedName.toString()}\n` + parts.join("\n");
+	 }
+      case 'characterClass':
+      case 'skillCard':
+      case 'socialCard':
+        return '';
+      default:
+        this.system satisfies never;
+        return '';
+    }
+  }
+
+  get description(): string {
+    switch (this.system.type) {
+      case 'consumable':
+      case 'item':
+      case 'power':
+      case 'focus':
+      case 'talent':
+      case 'universalModifier':
+      case 'weapon': {
+			const description = this.system.description ?? "";
+			 const parts=  description.split("\n")
+			 .map( x=> x.trim());
+        return parts.join("<br>");
 	 }
       case 'characterClass':
       case 'skillCard':

@@ -2,22 +2,32 @@
 	<header class="flexcol">
 		<div class="flexrow">
 			<img class="profile-img" src="{{actor.img}}" data-edit="img"/>
-			<select name="name">
-				{{selectOptions CONST.TAROT localize=true selected=actor.name}}
-			</select>
+			<div>
+				<select name="name">
+					{{selectOptions CONST.TAROT localize=true selected=actor.name}}
+				</select>
+				<div>
+					<span>
+						<label>
+							Sort Order
+						</label>
+						{{numberInput actor.system.sortOrder class="short" name="system.sortOrder" step=1 min=0 max=100}}
+					</span>
+				</div>
+			</div>
 		</div>
 	</header>
 	<label/> Perk
 		<textarea name="system.perk"> {{actor.system.perk}} </textarea>
 		<label/> Student Advantage
-		<textarea name="system.studentAbility"> {{actor.system.studentAbility}} </textarea>
-	<section class="focii">
-		<h2>
-			Social Link Benefits
-			<a class="addFocus">
-				<i class="fa-solid fa-plus"> </i>
-			</a>
-		</h2>
+			<textarea name="system.studentAbility"> {{actor.system.studentAbility}} </textarea>
+			<section class="focii">
+				<h2>
+					Social Link Benefits
+					<a class="addFocus">
+						<i class="fa-solid fa-plus"> </i>
+					</a>
+				</h2>
 
 		{{#each actor.socialBenefits as |benefit|}}
 		<div class="focus" data-focus-id="{{benefit.focus.id}}">

@@ -80,7 +80,7 @@
 			Talents:
 		</span>
 			{{#each persona.talents as |talent i|}}
-			<span class="talent" data-talent-id="{{talent.id}}" title="{{talent.description}}">
+			<span class="talent" data-talent-id="{{talent.id}}" title="{{talent.tooltip}}">
 				{{talent.displayedName}} ({{getTalentLevel ../persona talent}})
 		</span>
 			{{/each}}

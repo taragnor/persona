@@ -949,7 +949,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						}];
 					}
 				}
-			});
+			})
+			.sort((a, b) => (a.actor.tarot?.system.sortOrder ?? 99) - (b.actor.tarot?.system.sortOrder ?? 99));
 		}
 		return this.cache.socialData;
 	}

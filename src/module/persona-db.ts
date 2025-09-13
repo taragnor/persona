@@ -178,7 +178,9 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		if (this.#cache.tarot) {return this.#cache.tarot;}
 		const actors = this.allActors();
 		return this.#cache.tarot = actors
-			.filter( actor=> actor.system.type == "tarot") as Tarot[];
+			.filter( actor=> actor.isTarot())
+			.sort((a,b) => a.system.sortOrder - b.system.sortOrder);
+
 	}
 
 	getSocialLinkByTarot(tarotCardNameOrId: TarotCard | (Tarot["id"] & {})) : U<NPC | PC> {

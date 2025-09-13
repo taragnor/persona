@@ -230,6 +230,7 @@ export class TarotSchema extends foundry.abstract.TypeDataModel {
 		const ret = {
 			...BaseStuff.defineSchema(),
 			studentAbility: new txt(),
+			sortOrder: new num({initial: 0}),
 			perk: new txt(),
 		} as const;
 		return ret;
