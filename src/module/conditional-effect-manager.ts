@@ -21,7 +21,7 @@ import { localize } from "./persona.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
 import { MODIFIER_VARIABLES } from "../config/effect-types.js";
 import { MODIFIERS_TABLE } from "../config/item-modifiers.js";
-import { Consequence, ConsequenceAmount, NonDeprecatedConsequence } from "../config/consequence-types.js";
+import { Consequence, ConsequenceAmount, LEVEL_GAIN_TARGETS, NonDeprecatedConsequence } from "../config/consequence-types.js";
 import { RESIST_STRENGTHS } from "../config/damage-types.js";
 import { STUDENT_SKILLS } from "../config/student-skills.js";
 import { SLOTTYPES } from "../config/slot-types.js";
@@ -644,6 +644,8 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 			return `Attack Roll hits and is within ailment range`;
 		case "is-within-instant-death-range":
 			return `Attack roll hits and is within instant death range`;
+		case "using-meta-pod":
+			return `${target1} is using Meta Pod`;
 		default:
 			cond satisfies never;
 			return "";
@@ -928,6 +930,10 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 				return `Add Permabuff ${cons.buffType} :${cons.value}`;
 			case "play-sound":
 				return `Play Sound: ${cons.soundSrc} (${cons.volume})`;
+			case "gain-levels": {
+				const gainTarget =this.translate(cons.gainTarget, LEVEL_GAIN_TARGETS);
+				return `Gain ${cons.value} Levels for ${gainTarget}`;
+			}
 			default:
 				cons satisfies never;
 				return "ERROR";

@@ -1,4 +1,4 @@
-import { ARITHMETIC_OPERATORS } from "../../../config/consequence-types.js";
+import { ARITHMETIC_OPERATORS, LEVEL_GAIN_TARGETS } from "../../../config/consequence-types.js";
 import { CONSEQUENCE_AMOUNT_TYPES } from "../../../config/consequence-types.js";
 import { CONSUMABLE_SUBTYPES } from "../../../config/equip-slots.js";
 import { DAMAGE_LEVELS } from "../../../config/damage-types.js";
@@ -165,6 +165,7 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 			VARIABLE_TYPE,
 			UNIVERSAL_MODIFIERS_TYPE,
 			MODIFIER_CATEGORIES_LOCALIZATION,
+			LEVEL_GAIN_TARGETS,
 			CALCULATION_OPERATION,
 			SCENE_WEATHER_TYPES: Object.fromEntries(
 				([""].concat(Object.keys(CONFIG.weatherEffects))).map( x=> [x,x])

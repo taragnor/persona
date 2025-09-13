@@ -400,6 +400,12 @@
 	<input type=string name="{{strcat namePrefix 'clockName'}}" value="{{cond.clockName}}">
 	{{/if}}
 
+	{{#if (eq cond.boolComparisonTarget "using-meta-pod")}}
+	<select name="{{strcat namePrefix 'conditionTarget'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+	</select>
+	{{/if}}
+
 	{{/if}}
 
 

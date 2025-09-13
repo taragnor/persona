@@ -752,11 +752,11 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (target1.system.type == "shadow") {return undefined;}
 			switch (condition.socialTypeCheck) {
 				case "relationship-type-check": {
-           const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, source);
+					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, source);
 					const link = target1.socialLinks.find(x=>x.actor == target2);
 					if (!link) {return undefined;}
 					return link.relationshipType.toUpperCase() == condition.relationshipType.toUpperCase();
-        }
+				}
 				case "is-social-disabled":
 					return target1.isSociallyDisabled();
 				case "is-available": {
@@ -811,7 +811,12 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 		case "is-within-ailment-range":
 			return "withinAilmentRange" in situation ? situation.withinAilmentRange ?? false : false;
 		case "is-within-instant-death-range":
-			return "withinInstantKillRange" in situation ? situation.withinInstantKillRange ?? false : false;
+				return "withinInstantKillRange" in situation ? situation.withinInstantKillRange ?? false : false;
+		case "using-meta-pod": {
+			const target = getSubjectActors(condition, situation, source,  "conditionTarget")[0];
+			if (!target.isValidCombatant()) {return false;}
+			return target.isUsingMetaPod();
+		}
 		default :
 			condition satisfies never;
 			return undefined;

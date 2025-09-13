@@ -2327,6 +2327,7 @@ static processConsequence_simple( cons: SourcedConsequence, targets: ValidAttack
 		case 'alter-variable':
 		case 'perma-buff':
 		case 'alter-fatigue-lvl':
+		case "gain-levels":
 			return targets.map( applyTo => ({applyTo, cons}));
 		case 'play-sound':
 			return [{applyTo: 'global', cons}];

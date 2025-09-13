@@ -62,6 +62,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"arcana-is",
 	"logical-or",
 	"scene-clock-name-is",
+	"using-meta-pod",
 	"has-creature-tag", // Deprecated
 	"metaverse-enhanced", // Deprecated
 ] as const;
@@ -94,6 +95,7 @@ type NonBasicBoolComparison =
 StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison | SceneClockNameComparison;
 ;
 
+
 type DeprecatedBoolComparisons =
 	MetaverseEnhancedComparison;
 
@@ -103,7 +105,7 @@ type MetaverseEnhancedComparison = {
 
 
 type GeneralActorComparison = {
-	boolComparisonTarget: "is-pc" | "is-shadow",
+	boolComparisonTarget: "is-pc" | "is-shadow" | "using-meta-pod",
 	conditionTarget: ConditionTarget,
 }
 

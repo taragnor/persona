@@ -30,6 +30,7 @@ import {Power, Talent, Focus} from "./item/persona-item.js";
 import {PersonaTag} from "../config/creature-tags.js";
 import {Defense} from "../config/defense-types.js";
 import {DamageCalculator, NewDamageParams} from "./combat/damage-calc.js";
+import {PersonaSFX} from "./combat/persona-sfx.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
 	#combatStats: U<PersonaCombatStats>;
@@ -129,8 +130,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	getTalentLevel(talent: Talent | Talent["id"]) : number {
 		const id = talent instanceof PersonaItem ? talent.id : talent;
 		const source = this.source;
-		const talents = source.system.combat.talents;
-		let index = talents.indexOf(id);
+		const talents = this.talents;
+		let index = talents.findIndex(tal => tal.id == id);
 		if (index == -1) {return 0;}
 		const inc = source.system.combat.classData.incremental.talent ? 1 : 0;
 		const convertedLevel = Math.floor(this.level/10) + 1;
@@ -234,6 +235,18 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.system.combat.personaStats.pLevel ?? 0;
 	}
 
+	/**gains X amount of levels */
+	async gainLevel(amt: number) : Promise<void> {
+		const source=  this.source;
+		const currLevel = source.system.combat.personaStats.pLevel;
+		const newLevel = amt + currLevel;
+		const neededXP = LevelUpCalculator.minXPForEffectiveLevel(newLevel);
+		await source.update( {
+			"system.combat.personaStats.pLevel" : newLevel,
+			"system.combat.personaStats.xp": neededXP,
+		});
+		await Logger.sendToChat(`${this.displayedName} gained ${amt} levels`);
+	}
 	/** return leveled Persona on level up*/
 	async awardXP(amt: number, allowMult = true): Promise<U<Persona>> {
 		if (!amt) {

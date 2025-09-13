@@ -258,7 +258,6 @@ export class CombatResult  {
 			case "raise-resistance":
 			case "lower-resistance":
 			case "raise-status-resistance":
-				break;
 			case "add-escalation":
 				break;
 			case "save-slot":
@@ -426,6 +425,10 @@ export class CombatResult  {
 				break;
 			}
 			case "perma-buff":
+				if (!effect) {break;}
+				effect.otherEffects.push(cons);
+				break;
+			case"gain-levels":
 				if (!effect) {break;}
 				effect.otherEffects.push(cons);
 				break;

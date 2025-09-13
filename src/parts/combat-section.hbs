@@ -81,7 +81,7 @@
 		</span>
 			{{#each persona.talents as |talent i|}}
 			<span class="talent" data-talent-id="{{talent.id}}" title="{{talent.description}}">
-			{{talent.displayedName}}
+				{{talent.displayedName}} ({{getTalentLevel ../persona talent}})
 		</span>
 			{{/each}}
 	</div>

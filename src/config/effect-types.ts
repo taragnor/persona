@@ -49,6 +49,7 @@ export const CONSQUENCELIST = [
 	"alter-mp",
 	"combat-effect",
 	"alter-fatigue-lvl",
+	"gain-levels",
 	 ...DEPRECATED_CONSEQUENCE_TYPES,
 ] as const;
 

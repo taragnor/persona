@@ -64,6 +64,7 @@ export class ActorConverters {
 			despair: "normal"
 		};
 		const json = shadow.system.toJSON() as Shadow["system"];
+		const talents = shadow.basePersona.talents;
 		const personaData : DeepPartial<Shadow> = {
 			name: `${shadow.name} (Persona)`,
 			type: "shadow",
@@ -86,6 +87,7 @@ export class ActorConverters {
 				},
 				combat: {
 					...json.combat,
+					talents: talents.map( x=> x.id),
 					statusResists,
 					personaStats: {
 						...json.combat.personaStats,

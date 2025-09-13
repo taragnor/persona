@@ -113,7 +113,7 @@ export type ExtraTurnEffect = {
 	activation: number,
 };
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence;
 ;
 
 type AlterVariableOtherEffect = AlterVariableConsequence & {contextList: TargettingContextList}
@@ -194,7 +194,24 @@ type NonGenericConsequences = UsePowerConsequence
 	| AlterVariableConsequence
 	| PermabuffConsequence
 	| PlaySoundConsequence
+	| GainLevelConsequence
 ;
+
+type GainLevelConsequence = {
+	type: "gain-levels",
+	value: number,
+	gainTarget: LevelGainTarget,
+}
+
+const LEVEL_GAIN_TARGETS_LIST = [
+	"persona",
+	"actor",
+	"both"
+] as const;
+
+type LevelGainTarget = typeof LEVEL_GAIN_TARGETS_LIST[number];
+
+export const LEVEL_GAIN_TARGETS = HTMLTools.createLocalizationObject(LEVEL_GAIN_TARGETS_LIST, "persona.effecttypes.targets.levelgain");
 
 
 export type PlaySoundConsequence = {

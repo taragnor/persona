@@ -189,6 +189,7 @@ export class FinalizedCombatResult {
 				case "perma-buff":
 				case "alter-variable":
 				case "play-sound":
+				case "gain-levels":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -322,7 +323,7 @@ export class FinalizedCombatResult {
 	}
 
 	static async applyHandler(x: SocketMessage["COMBAT_RESULT_APPLY"]) : Promise<void> {
-		const {resultObj, sender} = x;
+		const {resultObj} = x;
 		const result = FinalizedCombatResult.fromJSON(resultObj);
 		await result.#apply();
 		// PersonaSockets.simpleSend("COMBAT_RESULT_APPLIED", result.id, [sender]);
@@ -481,145 +482,166 @@ export class FinalizedCombatResult {
 		for (const status of change.removeStatus) {
 			await actor.removeStatus(status);
 		}
-		let mpcost = 0;
 		const mpmult = 1;
+		const mutableState =  {
+			mpCost: 0,
+		};
 		for (const otherEffect of change.otherEffects) {
-			switch (otherEffect.type) {
-				case "expend-item":
-					if (otherEffect.itemId) {
-						const item = game.items.get(otherEffect.itemId);
-						if (!item) {
-							PersonaError.softFail(`Couldn't find personal Item to expend ${otherEffect.itemId}`);
-							continue;
-						}
-						const playerItem = actor.items.getName(item.name) as Consumable;
-						if (!playerItem) {
-							PersonaError.softFail(`Couldn't find personal Item to expend ${item.name}`);
-							continue;
-						}
-						await actor.expendConsumable(playerItem);
-						continue;
-					}
-					if (!otherEffect.itemAcc) {
-						PersonaError.softFail("Can't find item to expend");
-						continue;
-					}
-					try {
-						const item = PersonaDB.findItem(otherEffect.itemAcc);
-						if ( item.parent) {
-							await (item.parent).expendConsumable(item);
-						} else  {
-							PersonaError.softFail("Can't find item's parent to execute consume item");
-						}
-					} catch (e) {
-						PersonaError.softFail("Can't find item to expend", e);
-						continue;
-					}
-					break;
-				case "save-slot":
-					break;
-				case "half-hp-cost":
-					break;
-				case "extraTurn":
-					break;
-				case "recover-slot":
-					PersonaError.softFail("Recover slot is deprecated as an effect");
-					break;
-				case "set-flag":
-					await actor.setEffectFlag(otherEffect.flagId, otherEffect.state, otherEffect.duration, otherEffect.flagName);
-					break;
-				case "teach-power": {
-					const power = PersonaDB.allPowers().get(otherEffect.id);
-					if (power && (actor.isPC() || actor.isNPCAlly())) {
-						await actor.persona().learnPower(power);
-					}
-					break;
-				}
-				case "lower-resistance":
-				case "raise-resistance":
-				case "add-power-to-list":
-				case "display-message":
-					break;
-				case "inspiration-cost":
-					if (actor.system.type == "pc") {
-						await (actor as PC).spendInspiration(otherEffect.linkId, otherEffect.amount);
-					}
-					break;
-				case "hp-loss":
-					await actor.modifyHP(-otherEffect.amount);
-					break;
-				case "extra-attack":
-					break;
-				case "use-power":
-					break;
-				case "scan":
-					if (actor.system.type == "shadow") {
-						await (actor as Shadow).increaseScanLevel(otherEffect.level);
-						void PersonaSFX.onScan(token, otherEffect.level);
-					}
-					break; // done elsewhere for local player
-				case "social-card-action":
-					break;
-				case "dungeon-action":
-					await Metaverse.executeDungeonAction(otherEffect);
-					break;
-				case "alter-energy":
-					if (actor.system.type == "shadow") {
-						await (actor as Shadow).alterEnergy(otherEffect.amount);
-					}
-					break;
-				case "alter-mp":
-					switch (otherEffect.subtype) {
-						case "direct":
-							mpcost += otherEffect.amount;
-							break;
-						case "percent-of-total":
-							mpcost += actor.mmp * (otherEffect.amount / 100);
-							break;
-
-						default:
-							otherEffect.subtype satisfies never;
-							// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-							PersonaError.softFail(`Bad subtype for Alter MP effect : ${otherEffect.subtype}`);
-					}
-					break;
-				case "combat-effect":
-					if (game.combat && otherEffect.combatEffect == "auto-end-turn" && actor == game.combat?.combatant?.actor) {
-						await (game.combat as PersonaCombat).setForceEndTurn(true);
-					}
-					break;
-				case "alter-fatigue-lvl":
-					await actor.alterFatigueLevel(otherEffect.amount);
-					break;
-				case "alter-variable": {
-					const varCons = otherEffect;
-					switch (varCons.varType) {
-						case "actor": {
-							await PersonaVariables.alterVariable(varCons, varCons.contextList);
-							break;
-						}
-						case "global":
-						case "scene":
-						case "social-temp": {
-							await PersonaVariables.alterVariable(varCons, varCons.contextList);
-							break;
-						}
-					}
-					break;
-				}
-				case "perma-buff":
-					await actor.addPermaBuff(otherEffect.buffType, otherEffect.value ?? 0);
-					break;
-				case "play-sound":
-						await PersonaSounds.playFile(otherEffect.soundSrc);
-					break;
-				default:
-						otherEffect satisfies never;
+			try {
+				await this.applyOtherEffect(actor, token, otherEffect, mutableState);
+			} catch (e) {
+				PersonaError.softFail(`Error trying to execute ${otherEffect.type} on ${actor.name}`, e);
 			}
 		}
-		if (mpcost != 0 && actor.system.type != "shadow") {
-			mpcost *= mpmult;
-			await (actor as PC).modifyMP(mpcost);
+		if (mutableState.mpCost != 0 && actor.system.type != "shadow") {
+			mutableState.mpCost *= mpmult;
+			await (actor as PC).modifyMP(mutableState.mpCost);
+		}
+	}
+
+	async applyOtherEffect(actor: ValidAttackers, token: PToken | undefined, otherEffect:OtherEffect, mutableState: {mpCost: number}): Promise<void> {
+		switch (otherEffect.type) {
+			case "expend-item":
+				if (otherEffect.itemId) {
+					const item = game.items.get(otherEffect.itemId);
+					if (!item) {
+						PersonaError.softFail(`Couldn't find personal Item to expend ${otherEffect.itemId}`);
+						return;
+					}
+					const playerItem = actor.items.getName(item.name) as Consumable;
+					if (!playerItem) {
+						PersonaError.softFail(`Couldn't find personal Item to expend ${item.name}`);
+						return;
+					}
+					await actor.expendConsumable(playerItem);
+					return;
+				}
+				if (!otherEffect.itemAcc) {
+					PersonaError.softFail("Can't find item to expend");
+					return;
+				}
+				try {
+					const item = PersonaDB.findItem(otherEffect.itemAcc);
+					if ( item.parent) {
+						await (item.parent).expendConsumable(item);
+					} else  {
+						PersonaError.softFail("Can't find item's parent to execute consume item");
+					}
+				} catch (e) {
+					PersonaError.softFail("Can't find item to expend", e);
+					return;
+				}
+				break;
+			case "save-slot":
+				break;
+			case "half-hp-cost":
+				break;
+			case "extraTurn":
+				break;
+			case "recover-slot":
+				PersonaError.softFail("Recover slot is deprecated as an effect");
+				break;
+			case "set-flag":
+				await actor.setEffectFlag(otherEffect.flagId, otherEffect.state, otherEffect.duration, otherEffect.flagName);
+				break;
+			case "teach-power": {
+				const power = PersonaDB.allPowers().get(otherEffect.id);
+				if (power && (actor.isPC() || actor.isNPCAlly())) {
+					await actor.persona().learnPower(power);
+				}
+				break;
+			}
+			case "lower-resistance":
+			case "raise-resistance":
+			case "add-power-to-list":
+			case "display-message":
+				break;
+			case "inspiration-cost":
+				if (actor.system.type == "pc") {
+					await (actor as PC).spendInspiration(otherEffect.linkId, otherEffect.amount);
+				}
+				break;
+			case "hp-loss":
+				await actor.modifyHP(-otherEffect.amount);
+				break;
+			case "extra-attack":
+				break;
+			case "use-power":
+				break;
+			case "scan":
+				if (actor.system.type == "shadow") {
+					await (actor as Shadow).increaseScanLevel(otherEffect.level);
+					void PersonaSFX.onScan(token, otherEffect.level);
+				}
+				break; // done elsewhere for local player
+			case "social-card-action":
+				break;
+			case "dungeon-action":
+				await Metaverse.executeDungeonAction(otherEffect);
+				break;
+			case "alter-energy":
+				if (actor.system.type == "shadow") {
+					await (actor as Shadow).alterEnergy(otherEffect.amount);
+				}
+				break;
+			case "alter-mp":
+				switch (otherEffect.subtype) {
+					case "direct":
+						mutableState.mpCost += otherEffect.amount;
+						break;
+					case "percent-of-total":
+						mutableState.mpCost += actor.mmp * (otherEffect.amount / 100);
+						break;
+
+					default:
+						otherEffect.subtype satisfies never;
+						// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+						PersonaError.softFail(`Bad subtype for Alter MP effect : ${otherEffect.subtype}`);
+				}
+				break;
+			case "combat-effect":
+				if (game.combat && otherEffect.combatEffect == "auto-end-turn" && actor == game.combat?.combatant?.actor) {
+					await (game.combat as PersonaCombat).setForceEndTurn(true);
+				}
+				break;
+			case "alter-fatigue-lvl":
+				await actor.alterFatigueLevel(otherEffect.amount);
+				break;
+			case "alter-variable": {
+				const varCons = otherEffect;
+				switch (varCons.varType) {
+					case "actor": {
+						await PersonaVariables.alterVariable(varCons, varCons.contextList);
+						break;
+					}
+					case "global":
+					case "scene":
+					case "social-temp": {
+						await PersonaVariables.alterVariable(varCons, varCons.contextList);
+						break;
+					}
+				}
+				break;
+			}
+			case "perma-buff":
+				await actor.addPermaBuff(otherEffect.buffType, otherEffect.value ?? 0);
+				break;
+			case "play-sound":
+					await PersonaSounds.playFile(otherEffect.soundSrc);
+				break;
+			case "gain-levels": {
+				const {gainTarget, value}=  otherEffect;
+				if (gainTarget == "persona" || gainTarget == "both") {
+					await actor.persona().gainLevel(value);
+				}
+				if (gainTarget == "actor" || gainTarget == "both") {
+					await actor.gainLevel(value);
+				}
+				void PersonaSFX.onLevelUp();
+				break;
+			}
+			default:
+				otherEffect satisfies never;
 		}
 	}
 

@@ -422,35 +422,48 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get basePersona() : Persona<ValidAttackers> {
+		if (this.isNPC()) {
+			const proxy = this.getNPCAllyProxy();
+			if (!proxy) {
+				throw new PersonaError("Can't call basePersona getter on non combatant");
+			}
+			return proxy.basePersona;
+		}
 		if (!this.isValidCombatant() && !this.isPC()) {
 			throw new PersonaError("Can't call basePersona getter on non combatant");
 		}
 		return new Persona(this, this, this._mainPowers());
 	}
 
-	persona<T extends ValidAttackers>(this: T): Persona<T> {
+	persona<T extends ValidAttackers | NPC>(this: T): Persona<T extends ValidAttackers ? T : ValidAttackers> {
+		type returnType = Persona<T extends ValidAttackers ? T : ValidAttackers>;
 		switch (this.system.type) {
+			case "npc": {
+				const proxy = (this as NPC).getNPCAllyProxy();
+				if (!proxy) {throw new Error("Can't get persona for noncombatant");}
+				return proxy.persona() as returnType;
+			}
 			case "npcAlly":
-				return this.basePersona as Persona<T>;
+				return this.basePersona as returnType;
 			case "pc": {
 				if ((this.isPC() && (this.system.activePersona == null || this.system.activePersona == this.id || this.hasSoloPersona))) {
-					return this.basePersona as Persona<T>;
+					return this.basePersona as returnType;
 				}
 				const activePersona = PersonaDB.getActorById((this as PC).system.activePersona) as ValidAttackers;
 				if (!activePersona) {
-					return this.basePersona as Persona<T>;
+					return this.basePersona as returnType;
 				};
-				return new Persona(activePersona, this);
+				return new Persona(activePersona, this as ValidAttackers) as returnType;
 				// return Persona.combinedPersona(this.basePersona, activePersona.basePersona) as Persona<T>;
 			}
 			case "shadow":
 				if (this.system.activePersona) {
 					const activePersona = PersonaDB.getActorById((this as PC).system.activePersona) as U<ValidAttackers>;
 					if(activePersona) {
-						return new Persona(activePersona, this);
+						return new Persona(activePersona, this as Shadow) as returnType;
 					}
 				}
-				return this.basePersona as Persona<T>;
+				return this.basePersona as returnType;
 			default:
 				this.system satisfies never;
 				throw new PersonaError(`Can't get persona for ${this.name}`);
@@ -3045,6 +3058,23 @@ async awardPersonalXP(this: ValidAttackers, amt: number, allowMult= true) : Prom
 	return undefined;
 }
 
+/**gains X amount of levels */
+async gainLevel(this: ValidAttackers, amt: number) : Promise<void> {
+	if (this.isNPC()) {
+		const proxy = this.getNPCAllyProxy();
+		if (!proxy) {return;}
+		return proxy.gainLevel(amt);
+	}
+	if (!this.isPC()) {return;}
+	const currLevel = this.system.personaleLevel;
+	const newLevel = amt + currLevel;
+	const neededXP = LevelUpCalculator.minXPForEffectiveLevel(newLevel);
+	await this.update( {
+		"system.personalXP" : neededXP,
+		"system.personaleLevel": newLevel
+	});
+	await Logger.sendToChat(`${this.displayedName} gained ${amt} levels`);
+}
 
 /** returns true on level up */
 async awardXP(this: ValidAttackers, amt: number) : Promise<(Persona | PersonaActor)[]> {
@@ -3650,7 +3680,6 @@ get maxEnergy() : number {
 	const maxEnergy = BASE_MAX_ENERGY + this.basePersona.getBonuses("max-energy").total(situation);
 	// const maxEnergy = Math.min(BASE_MAX_ENERGY, bonuses);
 	return maxEnergy;
-
 }
 
 async setEnergy(this: Shadow, amt: number) {
@@ -3946,7 +3975,16 @@ getPrimaryPlayerOwner() : typeof game.users.contents[number] | undefined {
 	return game.users.get(userIdPair[0]);
 }
 
-async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) : Promise<void> {
+getNPCAllyProxy(this: NPC) : U<NPCAlly> {
+		return PersonaDB.NPCAllies().find( x=> x.system.NPCSocialProxyId == this.id);
+}
+
+async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: number) : Promise<void> {
+	if (this.isNPC()) {
+		const proxyAlly = this.getNPCAllyProxy();
+		if (!proxyAlly) {return;}
+		return proxyAlly.addPermaBuff(buffType, amt);
+	}
 	if (typeof amt != "number" || amt == 0 || Number.isNaN(amt)) {return;}
 	switch (buffType) {
 		case "max-hp": {

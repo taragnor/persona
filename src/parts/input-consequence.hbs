@@ -384,6 +384,13 @@
 	</div>
 	{{/if}}
 
+	{{#if (eq cons.type "gain-levels") }}
+		<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+	<select name="{{strcat namePrefix 'gainTarget'}}">
+		{{selectOptions POWERSTUFF.LEVEL_GAIN_TARGETS localize=true selected=cons.gainTarget}}
+	</select>
+	{{/if}}
+
 	<div>
 		<a class="copy-consequence">
 			<i class="fa-solid fa-copy"></i>
