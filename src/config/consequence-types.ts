@@ -339,9 +339,9 @@ type DamageConsequenceShared = {
 	/** manually added as part of processing */
 };
 
-export type NonDeprecatedConsequences = Exclude<Consequence, DeprecatedConsequences>;
+export type NonDeprecatedConsequence = Exclude<Consequence, DeprecatedConsequence>;
 
-type DeprecatedConsequences =
+export type DeprecatedConsequence =
 	OldDamageConsequence
 ;
 
@@ -586,4 +586,5 @@ const ARITHMETIC_OPERATOR_LIST = [
 type ArithmeticOperator = typeof ARITHMETIC_OPERATOR_LIST[number];
 
 export const ARITHMETIC_OPERATORS = HTMLTools.createLocalizationObject(ARITHMETIC_OPERATOR_LIST, "persona.consequences.consequences-operators");
+
 

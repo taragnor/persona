@@ -13,7 +13,7 @@ import { PersonaError } from "./persona-error.js";
 import { FREQUENCY } from "../config/frequency.js";
 import { CardEvent } from "../config/social-card-config.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
-import { CClass, SocialCard } from "./item/persona-item.js";
+import { Carryable, CClass, SocialCard } from "./item/persona-item.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaItem } from "./item/persona-item.js";
@@ -676,8 +676,13 @@ export class PersonaHandleBarsHelpers {
 			return new Handlebars.SafeString(`<img class="damage-icon" src='${filepath}' title='${locName}'>`);
 		},
 
-		"displayStatusIcon": function (statusId: StatusEffectId) : SafeString {
+		"displayIcon": function (item :Power | Carryable, user: Persona | ValidAttackers) : SafeString {
+			const filepath =  item.getIconPath(user);
+			if (!filepath) {return "";}
+			return new Handlebars.SafeString(`<img class="item-icon" src='${filepath}' title='${item.displayedName.toString()}'>`);
 
+		},
+		"displayStatusIcon": function (statusId: StatusEffectId) : SafeString {
 			const status = CONFIG.statusEffects.find( x=> x.id == statusId);
 			if (status) {
 				const locName = localize(status.name);

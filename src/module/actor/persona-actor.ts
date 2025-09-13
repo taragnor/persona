@@ -281,7 +281,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get trueConsumables(): Consumable[] {
-		const items = this.consumables.filter( x=> !x.isCraftingMaterial());
+		const items = this.consumables.filter( x=> !x.isCraftingMaterial() && !x.isSkillCard());
 		return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
 	}
 
@@ -2437,7 +2437,7 @@ getSourcedEffects(this: ValidAttackers, condTypes :TypedConditionalEffect["condi
 	return this.persona().mainModifiers().flatMap( x=> x.getSourcedEffects(this, condTypes));
 }
 
-getEffects(this: ValidAttackers) : readonly ConditionalEffect[] {
+getEffects(this: ValidAttackers) : readonly TypedConditionalEffect[] {
 	return this.mainModifiers().flatMap( x=> x.getEffects(this));
 }
 
@@ -3299,9 +3299,9 @@ async onMetaverseTimeAdvance(): Promise<string[]> {
 	return ret;
 }
 
-socialEffects(this: SocialLink) : readonly ConditionalEffect[] {
+socialEffects(this: SocialLink) : readonly TypedConditionalEffect[] {
 	// weird bug where sometimes the this isn't set properly
-	return this?.system?.socialEffects ?? [];
+	return ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this );
 }
 
 async fatigueRecoveryRoll(this: PC): Promise<string[]> {

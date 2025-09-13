@@ -21,7 +21,7 @@ import { localize } from "./persona.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
 import { MODIFIER_VARIABLES } from "../config/effect-types.js";
 import { MODIFIERS_TABLE } from "../config/item-modifiers.js";
-import { Consequence, ConsequenceAmount } from "../config/consequence-types.js";
+import { Consequence, ConsequenceAmount, NonDeprecatedConsequence } from "../config/consequence-types.js";
 import { RESIST_STRENGTHS } from "../config/damage-types.js";
 import { STUDENT_SKILLS } from "../config/student-skills.js";
 import { SLOTTYPES } from "../config/slot-types.js";
@@ -45,6 +45,7 @@ import { ConsequenceType } from "../config/effect-types.js";
 import { CONSQUENCELIST } from "../config/effect-types.js";
 import { PRECONDITIONLIST } from "../config/precondition-types.js";
 import { PersonaDB } from "./persona-db.js";
+import {ConsequenceConverter} from "./migration/convertConsequence.js";
 
 export class ConditionalEffectManager {
 
@@ -409,14 +410,17 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 		}));
 	}
 
-	static getConsequences<T extends Actor<any>, I extends Item<any>>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null): ConditionalEffect["consequences"] {
-		const consequences = this.ArrayCorrector(consObject);
-		return  consequences.map( eff=> ({
-			...eff,
+static getConsequences<T extends Actor<any>, I extends Item<any>>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null): NonDeprecatedConsequence[] {
+	const consequences = this.ArrayCorrector(consObject);
+	return  consequences.map( eff=> {
+		const nondep = ConsequenceConverter.convertDeprecated(eff, sourceItem);
+		return {
+			...nondep,
 			actorOwner: sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner,
 			sourceItem: sourceItem ? PersonaDB.getUniversalItemAccessor(sourceItem): (("sourceItem" in eff) ? eff.sourceItem : undefined),
-		}));
-	}
+		};
+	});
+}
 
 	static ArrayCorrector<T>(obj: (DeepReadonly<T[]> | Record<string | number, T>)): DeepReadonly<T[]> {
 		// eslint-disable-next-line no-useless-catch
@@ -1318,9 +1322,15 @@ type ConditonalEffectHolderItem = Item<any> & Partial<{isDefensive : () => boole
 declare global{
 
 	interface ConditionalEffect {
-		isDefensive: boolean,
-			conditions: Precondition[],
-			consequences: Consequence[]
+		isDefensive: boolean;
+		conditions: Precondition[];
+		consequences: Consequence[];
+	}
+
+	interface NonDeprecatedConditionalEffect {
+		conditions: Precondition[];
+		consequences: NonDeprecatedConsequence[];
+		isDefensive: boolean;
 	}
 
 	interface SourcedConditionalEffect {
@@ -1328,7 +1338,7 @@ declare global{
 		effects: DeepReadonly<TypedConditionalEffect[]>;
 	}
 
-	interface TypedConditionalEffect extends ConditionalEffect {
+	interface TypedConditionalEffect extends NonDeprecatedConditionalEffect {
 		conditionalType: typeof CETypes[number];
 	}
 

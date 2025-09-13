@@ -54,6 +54,8 @@
 			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.trueConsumables }}
 		</section>
 		<section class="tab tab-content inventory-section" data-group="social" data-tab="equip">
+			{{> "systems/persona/parts/equipped-items.hbs" actor=actor CONST=CONST}}
+			<hr>
 			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.equippables }}
 		</section>
 		<section class="tab tab-content inventory-section" data-group="social" data-tab="crafting">

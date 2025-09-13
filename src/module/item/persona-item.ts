@@ -3,7 +3,7 @@ import { STATUS_AILMENT_SET } from '../../config/status-effects.js';
 import { AILMENT_BONUS_LEVELS, DamageCalculation, DamageCalculator, INSTANT_KILL_CRIT_BOOST, NewDamageParams } from '../combat/damage-calc.js';
 import { PowerCostCalculator } from '../power-cost-calculator.js';
 import { StatusEffectId } from '../../config/status-effects.js';
-import { DAMAGE_ICONS } from '../../config/icons.js';
+import { CATEGORY_SORT_ORDER, DAMAGE_ICONS, ITEM_ICONS, ItemCategory } from '../../config/icons.js';
 import { Persona } from '../persona-class.js';
 import { POWER_ICONS } from '../../config/icons.js';
 import { RealDamageType } from '../../config/damage-types.js';
@@ -152,6 +152,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
 	static sortInventoryItems( this: void, a: Carryable, b: Carryable) : number {
+		const catSort = PersonaItem.categorySort(a,b);
+		if (catSort != 0) {return catSort;}
 		const typesort = a.system.type.localeCompare(b.system.type);
 		if (typesort != 0) {return typesort;}
 		if (a.system.type == "item" && b.system.type == "item") {
@@ -160,6 +162,248 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 		return a.name.localeCompare(b.name);
 	}
+
+	static categorySort(this: void, a: Carryable, b: Carryable) : number {
+		const aCat = a.getItemCategory() ?? "";
+		const bCat = b.getItemCategory() ?? "";
+		return CATEGORY_SORT_ORDER[aCat] - CATEGORY_SORT_ORDER[bCat];
+		// return aCat.localeCompare(bCat);
+	}
+
+	getItemCategory(this: Power | Carryable, user ?: ValidAttackers) : U<ItemCategory> {
+		switch (true) {
+			case this.isPower(): {
+				return this.getPowerCategory(user);
+			}
+			case this.isInvItem(): {
+				return this.getInvItemCategory();
+			}
+			case this.isWeapon(): {
+				return this.getWeaponCategory();
+			}
+			case this.isConsumable(): {
+				return this.getConsumableCategory(user);
+			}
+			case this.isSkillCard(): {
+				return "card";
+			}
+			default:
+				this satisfies never;
+				return undefined;
+		}
+
+	}
+
+	getPowerCategory(this: Usable, user?: ValidAttackers | Persona ) : U<ItemCategory> {
+		const dtype = this.system.dmg_type;
+		switch (dtype) {
+			case 'fire':
+			case 'wind':
+			case 'light':
+			case 'dark':
+			case 'physical':
+			case 'gun':
+			case 'healing':
+			case 'cold':
+			case 'lightning':
+			case 'untyped':
+				return dtype;
+			case 'by-power': {
+				if (!user) {
+					PersonaError.softFail("No user provided for get item category");
+					return undefined;
+				}
+				const altDtype = this.getDamageType(user);
+				return altDtype;
+			}
+			case 'none':
+			case 'all-out':
+				break;
+		}
+		if (this.hasTag('ailment')) {
+			return "ailment";
+		}
+		if (this.isPassive() || this.isDefensive()) {
+			return "passive";
+		}
+		if (this.isConsumable()) {
+			return "consumable";
+		}
+		return "support";
+	}
+
+
+getConsumableCategory(this: Consumable, user ?: ValidAttackers) : ItemCategory{
+	const restoresHP = this.restoresHP();
+	const restoresMP = this.restoresMP();
+	if (restoresHP && restoresMP) {
+		return "hpsp-item";
+	}
+	if (restoresHP) {
+		return "hp-item";
+	}
+	if (restoresMP) {
+		return "sp-item";
+	}
+	if (this.isCraftingMaterial()) {return "material-1";}
+	const powerCatAttempt = this.getPowerCategory(user);
+	if (powerCatAttempt) {return powerCatAttempt;}
+	return "consumable";
+}
+
+	getWeaponCategory(this: Weapon) : ItemCategory {
+		switch (true) {
+			case this.hasTag("spear"):
+				return "spear";
+			case this.hasTag("light-weapon"):
+				return "knife";
+			case this.hasTag("axe"):
+				return "axe";
+			case this.hasTag("fist"):
+				return "fist";
+			case this.hasTag("heavy"):
+				return "2hsword";
+			case this.hasTag("blade"):
+				return "rapier";
+			case this.hasTag("bow"):
+				return "bow";
+			default:
+				return "sword";
+		}
+	}
+
+	getInvItemCategory(this: InvItem) : ItemCategory {
+		switch (this.system.slot) {
+			case "key-item":
+				return "key-item";
+			case "none":
+				break;
+			case "body":
+				if (this.hasTag("female")) {
+					return "female-armor";
+				}
+				if (this.hasTag("male")) {
+					return "male-armor";
+				}
+				return "generic-armor";
+			case "accessory":
+				return "accessory";
+			case "weapon_crystal":
+				return "gem";
+			case "crafting":
+				return "material-2";
+		}
+		if (this.hasTag("crafting")) {
+			return "material-1";
+		}
+		return "gift"; ///sort of a default
+	}
+
+getIconPath(this: Power | Carryable, user?: ValidAttackers | Persona) : string | undefined {
+	if (user && user instanceof Persona) {
+		user = user.user;
+	}
+	const category = this.getItemCategory(user);
+	if (!category) {return undefined;}
+	return ITEM_ICONS[category];
+}
+
+	restoresHP(this: Consumable | Power) : boolean {
+		if (this.system.dmg_type != "healing") {return false;}
+		return this.getEffects(null).some( eff => {
+			return eff.consequences.some( cons => {
+				return (cons.type == "damage-new");
+			});
+		});
+	}
+
+	restoresMP(this: Consumable | Power) : boolean {
+		return this.getEffects(null).some( eff => {
+			return eff.consequences.some( cons => {
+				return (cons.type == "alter-mp");
+			});
+		});
+	}
+
+	inflictsDamage(this:Consumable) : boolean {
+		if (this.system.dmg_type == "healing" || this.system.dmg_type == "none") {return false;}
+		return this.getEffects(null).some( eff => {
+			return eff.consequences.some( cons => {
+				return (cons.type == "damage-new");
+			});
+		});
+	}
+
+
+// getConsumableIcon(this: Consumable) : string | undefined {
+// 	const restoresHP = this.restoresHP();
+// 	const restoresMP = this.restoresMP();
+// 	if (restoresHP && restoresMP) {
+// 		return EQUIPMENT_ICONS["hpsp-item"];
+// 	}
+// 	if (restoresHP) {
+// 		return EQUIPMENT_ICONS["hp-item"];
+// 	}
+// 	if (restoresMP) {
+// 		return EQUIPMENT_ICONS["sp-item"];
+// 	}
+// 	if (this.system.dmg_type != "healing" && this.inflictsDamage()) {
+// 		const dtype = this.system.dmg_type;
+// 		if (dtype != "by-power") {
+// 			return PersonaItem.getDamageIconPath(dtype);
+// 		}
+// 	}
+// 	return EQUIPMENT_ICONS["consumable"];
+// }
+
+// 	getWeaponIcon(this: Weapon) : string {
+// 		switch (true) {
+// 			case this.hasTag("spear"):
+// 				return EQUIPMENT_ICONS["spear"];
+// 			case this.hasTag("light-weapon"):
+// 				return EQUIPMENT_ICONS["knife"];
+// 			case this.hasTag("axe"):
+// 				return EQUIPMENT_ICONS["axe"];
+// 			case this.hasTag("fist"):
+// 				return EQUIPMENT_ICONS["fist"];
+// 			case this.hasTag("heavy"):
+// 				return EQUIPMENT_ICONS["2hsword"];
+// 			case this.hasTag("blade"):
+// 				return EQUIPMENT_ICONS["rapier"];
+// 			case this.hasTag("bow"):
+// 				return EQUIPMENT_ICONS["bow"];
+// 			default:
+// 				return EQUIPMENT_ICONS["sword"];
+// 		}
+// 	}
+
+// 	getInvItemIcon(this: InvItem) : string {
+// 		switch (this.system.slot) {
+// 			case "key-item":
+// 				return EQUIPMENT_ICONS["key-item"];
+// 			case "none":
+// 				break;
+// 			case "body":
+// 				if (this.hasTag("female")) {
+// 					return EQUIPMENT_ICONS["female-armor"];
+// 				}
+// 				if (this.hasTag("male")) {
+// 					return EQUIPMENT_ICONS["male-armor"];
+// 				}
+// 				return EQUIPMENT_ICONS["generic-armor"];
+// 			case "accessory":
+// 				return EQUIPMENT_ICONS["accessory"];
+// 			case "weapon_crystal":
+// 				return EQUIPMENT_ICONS["gem"];
+// 			case "crafting":
+// 				return EQUIPMENT_ICONS["material-2"];
+// 		}
+// 		if (this.hasTag("crafting")) {
+// 			return EQUIPMENT_ICONS["material-1"];
+// 		}
+// 		return EQUIPMENT_ICONS["gift"];
+// 	}
+
 
   static getDamageIconPath(dmgType : RealDamageType) : string  | undefined {
     switch (dmgType) {
@@ -492,6 +736,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   hasTag(this: Power, tag: PowerTag, user : null | ValidAttackers) : boolean;
   hasTag(this: Consumable, tag: PowerTag, user ?: null) : boolean;
+  hasTag(this: Carryable, tag: EquipmentTag | PowerTag, user ?: null) : boolean;
   hasTag(this: InvItem | Weapon | SkillCard, tag: EquipmentTag, user ?: null): boolean;
   hasTag(this: UsableAndCard, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
 	hasTag(this: ModifierContainer, tag: PowerTag, user ?: null): boolean;
@@ -1526,7 +1771,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.hasTag("key-item");
 	}
 
-	isCraftingMaterial(): this is CraftingMaterial {
+	isCraftingMaterial(): boolean {
 		if (!this.isCarryableType()) {return false;}
 		if (this.isInvItem()) {
 			return this.system.slot == "crafting";
@@ -1716,6 +1961,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       return newData;
     }
   }
+
 
   getTriggeredEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly TypedConditionalEffect[] {
     return this.#accessEffectsCache('triggeredEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'triggered'));

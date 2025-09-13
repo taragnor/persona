@@ -2,6 +2,8 @@ import { HTMLTools } from "../module/utility/HTMLTools.js";
 
 import { PersonaError } from "../module/persona-error.js";
 
+const PERSONA_ICONS_PATH = "systems/persona/img/icon" as const;
+
 export const STATUS_EFFECT_LIST = [
 	{
 		id: "burn",
@@ -9,7 +11,8 @@ export const STATUS_EFFECT_LIST = [
 		tags: ["distracting", "baneful"]
 	}, {
 		id: "charmed",
-		icon:  "icons/svg/heal.svg",
+		icon:`${PERSONA_ICONS_PATH}/P3R_Charm_Icon.png`,
+		// icon:  "icons/svg/heal.svg",
 		tags: ["baneful"]
 	}, {
 		id: "blocking",
@@ -53,7 +56,8 @@ export const STATUS_EFFECT_LIST = [
 		tags: ["incapacitating", "fade"],
 	}, {
 		id: "fear",
-		icon:  "icons/svg/terror.svg",
+		icon:`${PERSONA_ICONS_PATH}/P3R_Fear_Icon.png`,
+		// icon:  "icons/svg/terror.svg",
 		tags: ["distracting", "baneful"],
 	}, {
 		id: "poison",
@@ -69,7 +73,8 @@ export const STATUS_EFFECT_LIST = [
 		tags: ["baneful", "distracting"],
 	}, {
 		id: "frozen",
-		icon:  "icons/svg/frozen.svg",
+		icon:`${PERSONA_ICONS_PATH}/P3R_Freeze_Icon.png`,
+		// icon:  "icons/svg/frozen.svg",
 		tags: ["baneful", "distracting"],
 	}, {
 		id: "sleep",

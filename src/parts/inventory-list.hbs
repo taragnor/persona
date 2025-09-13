@@ -1,5 +1,5 @@
 <section class="items f-col">
-	<div class="item-list f-col">
+	<div class="item-list">
 		{{#each itemlist as |item|}}
 		<div class="{{#if (ne item.system.noTrade true)}} item item-entry {{/if}} inventory-item" data-item-id="{{item.id}}">
 			{{#if (isItemUsable item)}}
@@ -8,31 +8,10 @@
 				<img class="inline" src="icons/dice/d20black.svg">
 			</a>
 			{{/if}}
-			<span class="itemName">
-				{{#if item.isCraftingItem}}
-				<i class="fa-solid fa-hammer"></i>
-				{{/if}}
-				{{#if (eq item.system.type "consumable")}}
-
-				{{/if}}
-				{{#if (eq item.system.type "weapon")}}
-				<i class="fa-solid fa-baseball-bat-ball"></i>
-				{{/if}}
-				{{#if (eq item.system.slot "body")}}
-				<i class="fa-solid fa-shirt"></i>
-				{{/if}}
-				{{#if (eq item.system.slot "accessory")}}
-				<i class="fa-solid fa-ring"></i>
-				{{/if}}
-				{{#if (eq item.system.slot "none")}}
-				<i class="fa-solid fa-circle-question"></i>
-				{{/if}}
-				{{#if (eq item.system.slot "weapon_crystal")}}
-				<i class="fa-solid fa-gem"></i>
-				{{/if}}
-				{{#if (eq item.system.slot "key-item")}}
-				<i class="fa-solid fa-key"></i>
-				{{/if}}
+			<span class="item-icon">
+				{{displayIcon item}}
+			</span>
+			<span class="itemName" title="{{item.description}}">
 				{{item.name}}
 				{{#if (gt item.amount 1)}}
 				( {{item.amount}} )

@@ -1291,3 +1291,24 @@ img.inline {
 	display:inline;
 }
 
+.item-list {
+  display: flex;
+  flex-wrap: wrap;        /* allow items to wrap onto new rows */
+  gap: 1em;               /* consistent spacing between items */
+
+}
+
+.item-list > .inventory-item {
+	flex: 1 1 calc(50% - 1em); /* two items per row, minus the gap */
+	box-sizing: border-box;    /* include padding/borders in width */
+	padding: 0.25em;
+	border-radius: 0.5em;
+	text-align: center;
+	background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%) !important;
+	color: #E6F8FF !important; /* pale cyan for readable text */
+}
+
+img.item-icon {
+	height: 21px;
+	width: 76px;
+}

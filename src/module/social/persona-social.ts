@@ -842,7 +842,7 @@ export class PersonaSocial {
 
 	static getCardModifiers(cardData: CardData, rollTags: (RollTag | CardTag)[] ) : ModifierList {
 		const card = cardData.card;
-		const effects : ConditionalEffect[] = [];
+		const effects : TypedConditionalEffect[] = [];
 		const globalMods = ConditionalEffectManager.getEffects(card.system.globalModifiers, null, null);
 		effects.push(...globalMods);
 		const universal = PersonaDB.getGlobalModifiers().flatMap(x => x.getEffects(null));

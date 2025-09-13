@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { ValidSocialTarget } from '../social/persona-social.js';
 import { EvaluatedDamage } from './damage-calc.js';
-import { NonDeprecatedConsequences } from '../../config/consequence-types.js';
+import { NonDeprecatedConsequence} from '../../config/consequence-types.js';
 import { SourcedConsequence } from '../../config/consequence-types.js';
 import { DamageCalculation } from './damage-calc.js';
 import { sleep } from '../utility/async-wait.js';
@@ -1864,7 +1864,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	static async consequencesToResult(cons: DeepReadonly<Consequence[]>, power: ModifierContainer, situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkResult: AttackResult | null, source: SourcedConsequence['source'] | null): Promise<CombatResult> {
 		const CombatRes = new CombatResult(atkResult);
 		try {
-		const x = await this.ProcessConsequences(power, situation, cons, attacker, target, atkResult, source);
+		const x = this.ProcessConsequences(power, situation, cons, attacker, target, atkResult, source);
 		CombatRes.escalationMod += x.escalationMod;
 		const result = await this.getCombatResultFromConsequences(x.consequences, situation, attacker, target, atkResult);
 		CombatRes.merge(result);
@@ -2097,8 +2097,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 
-	static async ProcessConsequences(power: ModifierContainer, situation: Situation, relevantConsequences: DeepReadonly<Consequence[]>, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkresult : Partial<AttackResult> | null, source: SourcedConsequence['source'] | null)
-	: Promise<ConsequenceProcessed> {
+	static ProcessConsequences(power: ModifierContainer, situation: Situation, relevantConsequences: DeepReadonly<Consequence[]>, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkresult : Partial<AttackResult> | null, source: SourcedConsequence['source'] | null)
+	: ConsequenceProcessed {
 		let escalationMod = 0;
 		let consequences : ConsequenceProcessed['consequences']= [];
 		for (const cons of relevantConsequences) {
@@ -2107,7 +2107,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				source
 			};
 			if (attacker) {
-				const newCons = await this.processConsequence(power, situation, sourcedC, attacker, target, atkresult);
+				const newCons = this.processConsequence(power, situation, sourcedC, attacker, target, atkresult);
 				consequences = consequences.concat(newCons);
 			} else {
 				const applyTo = sourcedC.applyTo ?? (sourcedC.applyToSelf ? 'owner' : 'target');
@@ -2123,7 +2123,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return {consequences, escalationMod} satisfies ConsequenceProcessed;
 	}
 
-static async processConsequence( power: ModifierContainer, situation: Situation, cons: SourcedConsequence, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : Promise<ConsequenceProcessed['consequences']> {
+static processConsequence( power: ModifierContainer, situation: Situation, cons: SourcedConsequence, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed['consequences'] {
 	//need to fix this so it knows who the target actual is so it can do a proper compariosn, right now when applying to Self it won't consider resistance or consider the target's resist.
 	const applyTo = cons.applyTo ?? (cons.applyToSelf ? 'owner' : 'target');
 	const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
@@ -2144,7 +2144,7 @@ static async processConsequence( power: ModifierContainer, situation: Situation,
 		case 'hp-loss':
 		case 'revive': {
 			const newFormCons = DamageCalculation.convertToNewFormConsequence(cons, (power as Usable)?.getDamageType(attacker) ?? 'none');
-			return await this.processConsequence_damage(newFormCons, consTargets, attacker, power, situation);
+			return this.processConsequence_damage(newFormCons, consTargets, attacker, power, situation);
 		}
 		case 'none':
 		case 'modifier':
@@ -2161,7 +2161,7 @@ static async processConsequence( power: ModifierContainer, situation: Situation,
 	return [];
 }
 
-static async processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, power: ModifierContainer, situation: Situation) : Promise<ConsequenceProcessed['consequences']> {
+static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, power: ModifierContainer, situation: Situation) : ConsequenceProcessed['consequences'] {
 	const consList : ConsequenceProcessed['consequences'] = [];
 	let dmgCalc: U<DamageCalculation>;
 	let dmgAmt : number = 0;
@@ -3173,12 +3173,12 @@ async generateTreasureAndXP() {
 displayCombatHeader(element : JQuery<HTMLElement>) {
 	try {
 		if ($(element).find('.escalation-die').length == 0) {
-			const escalation = `
-						<div class="escalation-tracker">
-							 <span class="title"> Escalation Die: </span>
-							 <span class="escalation-die">N/A
-						</div>
-			`;
+			// const escalation = `
+			// 			<div class="escalation-tracker">
+			// 				 <span class="title"> Escalation Die: </span>
+			// 				 <span class="escalation-die">N/A
+			// 			</div>
+			// `;
 			const escalationTracker = `
 				 <div class="combat-info flexrow">
 					 <div class="weather-icon">
@@ -3405,7 +3405,7 @@ export type ConsequenceProcessed = {
 		applyTo: 'global' | ValidAttackers,
 		// applyTo: ConditionTarget | "global",
 		// applyToSelf: boolean,
-		cons: SourcedConsequence<NonDeprecatedConsequences>,
+		cons: SourcedConsequence<NonDeprecatedConsequence>,
 	}[],
 	escalationMod: number
 }

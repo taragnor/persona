@@ -6,6 +6,7 @@ import { OldDamageConsequence } from "../../config/consequence-types.js";
 import { DamageType } from "../../config/damage-types.js";
 import {ItemSubtype, Power} from "../item/persona-item.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
+import {ConsequenceConverter} from "../migration/convertConsequence.js";
 
 export class DamageCalculation {
 	#resisted: boolean = false;
@@ -67,45 +68,10 @@ export class DamageCalculation {
 	}
 
 	static convertToNewFormConsequence( cons: SourcedConsequence<OldDamageConsequence>, defaultDamageType: DamageType) : SourcedConsequence<DamageConsequence> {
-		let st : DamageConsequence["damageSubtype"];
-		let dtype = cons.damageType != undefined ? cons.damageType : defaultDamageType;
-		let amount = cons.amount ?? 0;
-		switch (cons.type) {
-			case "dmg-high":
-				st = "high";
-				break;
-			case "dmg-low":
-				st = "low";
-				break;
-			case "absorb":
-				st = "constant";
-				break;
-			case "dmg-mult":
-				st ="multiplier";
-				break;
-			case "dmg-allout-low":
-			case "dmg-allout-high":
-				st = "allout";
-				break;
-			case "revive":
-				st = "percentage";
-				dtype = "healing";
-				if (amount < 1) {
-					amount *= 100;
-				}
-				break;
-			case "hp-loss":
-				st ="constant";
-				dtype = "none";
-				break;
-		}
+		const convert = ConsequenceConverter.convertDeprecatedDamageConsequence(cons, defaultDamageType);
 		return {
-			type: "damage-new",
-			damageSubtype: st,
+			...convert,
 			source: cons.source,
-			damageType: dtype,
-			amount: amount,
-			calc: cons.calc,
 		};
 	}
 
