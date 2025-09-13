@@ -689,10 +689,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			case "shadow":
 				return 0;
 			case "pc": {
-         const extraMaxPowers = this.getBonuses("extraMaxPowers");
+				if (!this.source.class.system.canUsePowerSideboard) {return 0;}
+				const extraMaxPowers = this.getBonuses("extraMaxPowers");
 				return extraMaxPowers
-					.total ( {user: this.user.accessor});
-      }
+				.total ( {user: this.user.accessor});
+			}
 			default:
 				this.source.system satisfies never;
 				return -1;
