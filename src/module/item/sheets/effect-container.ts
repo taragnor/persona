@@ -211,10 +211,15 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 		const data = {
 			...this.powerStuffBase,
 			SOCIAL_LINKS,
+			COMPENDIUM_TALENTS: Object.fromEntries(
+				PersonaDB.allTalents().slice()
+				.sort((a,b) => a.name.localeCompare(b.name))
+				.map(t=> ([t.id, t.displayedName]))
+			),
 			COMPENDIUM_POWERS: Object.fromEntries(
 				PersonaDB.allPowersArr().slice()
 				.sort((a,b) => a.name.localeCompare(b.name))
-				.map(pwr=> ([pwr.id, pwr.name]))
+				.map(pwr=> ([pwr.id, pwr.displayedName]))
 			),
 			CLOCKS,
 			SCENES,

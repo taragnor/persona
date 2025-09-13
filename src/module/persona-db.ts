@@ -1,6 +1,6 @@
 import { TarotCard } from "../config/tarot.js";
 import { TreasureItem } from "./metaverse.js";
-import { SkillCard } from "./item/persona-item.js";
+import { SkillCard, Talent } from "./item/persona-item.js";
 import { NPCAlly } from "./actor/persona-actor.js";
 import { SocialEncounterCard } from "./social/persona-social.js";
 import { ModifierContainer } from "./item/persona-item.js";
@@ -141,6 +141,10 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	allPowersArr(): readonly Power[] {
 		return Array.from(this.allPowers().values());
+	}
+
+	allTalents(): readonly Talent[] {
+		return this.allItems().filter( x=> x.isTalent());
 	}
 
 	allPowers() : Map<string, Power> {

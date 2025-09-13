@@ -87,6 +87,12 @@
 		{{selectOptions POWERSTUFF.COMPENDIUM_POWERS localize=false selected=cons.id}}
 	</select>
 	{{/if}}
+	{{#if (eqAny cons.type	"add-talent-to-list")}}
+	<select name="{{strcat namePrefix 'id'}}">
+		{{selectOptions POWERSTUFF.COMPENDIUM_TALENTS localize=false selected=cons.id}}
+	</select>
+
+	{{/if}}
 
 	{{#if (eq cons.type "add-creature-tag")}}
 	<select name="{{strcat namePrefix 'creatureTag'}}">

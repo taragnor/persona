@@ -45,11 +45,7 @@ export type RecoverSlotEffect = {
 	amt: number;
 }
 
-
 type SimpleOtherEffect =DeprecatedSimpleEffect
-
-
-
 
 export type SetFlagEffect = {
 	type: "set-flag",
@@ -187,6 +183,7 @@ type NonGenericConsequences = UsePowerConsequence
 	| StatusResistanceAlterConsequence
 	| OtherEffectConsequence
 	| AddPowerConsequence
+	| AddTalentConsequence
 	| InspirationChangeConsequence
 	| AddStatusConsequence
 	| RemoveStatusConsequence
@@ -300,6 +297,10 @@ type AddPowerConsequence = {
 	id: string, // id of power
 }
 
+type AddTalentConsequence = {
+	type: "add-talent-to-list",
+	id: string, //id of talent
+}
 
 type OtherEffectConsequence = {
 	type: "other-effect",

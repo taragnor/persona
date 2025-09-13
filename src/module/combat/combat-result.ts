@@ -301,6 +301,7 @@ export class CombatResult  {
 				});
 				break;
 			case "add-power-to-list":
+			case "add-talent-to-list":
 				break;
 			case "other-effect":
 				break;

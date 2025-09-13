@@ -605,6 +605,7 @@
 	"persona.effecttypes.extraTurn": "Get a follow up",
 	"persona.effecttypes.expend-item": "Expend Item",
 	"persona.effecttypes.recover-slot": "(Deprecated) Recover Power Slot",
+	"persona.effecttypes.add-talent-to-list": "Add a talent to the list",
 	"persona.effecttypes.add-power-to-list": "Add a power to the list",
 	"persona.effecttypes.teach-power": "Permanently Teach power",
 	"persona.effecttypes.other-effect": "Other Effects",

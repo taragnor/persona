@@ -115,13 +115,15 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		await this.source.learnPower(power, logChanges);
 	}
 
-
-
-
 	get talents() : readonly Talent[] {
+		const extraTalents = this.mainModifiers({omitTalents: true, omitPowers: true})
+			.filter( mod=> mod.grantsTalents())
+			.flatMap(mod => mod.getGrantedTalents(this.user));
+		;
 		return this.source.system.combat.talents
 			.map( id => PersonaDB.getItemById<Talent>(id))
-			.filter( tal => tal != undefined);
+			.filter( tal => tal != undefined)
+			.concat(extraTalents);
 	}
 
 	getTalentLevel(talent: Talent | Talent["id"]) : number {
@@ -336,7 +338,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return modList;
 	}
 
-	mainModifiers(options?: {omitPowers?: boolean} ): readonly ModifierContainer[] {
+	mainModifiers(options?: {omitPowers?: boolean, omitTalents?: boolean} ): readonly ModifierContainer[] {
 		//NOTE: this could be a risky operation
 		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!options && PersonaCaching && this.#cache.mainModifiers) {
@@ -350,9 +352,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			roomModifiers.push(...(Metaverse.getRegion()?.allRoomEffects ?? []));
 		}
 		const passiveOrTriggeredPowers = (options && options.omitPowers) ? [] : this.passiveOrTriggeredPowers();
+		const talents = (options && options?.omitTalents) ? [] : this.talents;
 		const mainMods = [
 			...this.passiveFocii(),
-			...this.talents,
+			...talents,
 			...passiveOrTriggeredPowers,
 			...user.actorMainModifiers(),
 			...roomModifiers,

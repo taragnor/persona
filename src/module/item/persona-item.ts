@@ -71,18 +71,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   declare parent: PersonaActor | undefined;
 
-	 cache: {
-			effects: AdvancedEffectsCache;
-			// effectsNull: ConditionalEffect[] | undefined;
-			// effectsMap: WeakMap<PersonaActor, ConditionalEffect[]>;
-			containsModifier: boolean | undefined;
-			containsTagAdd: boolean | undefined;
-			statsModified: Map<ModifierTarget, boolean>,
-			hasTriggers: U<boolean>,
-			grantsPowers: U<boolean>,
-			mpCost: U<number>,
-			mpGrowthTable: U<GrowthCalculator>,
-			hpGrowthTable: U<GrowthCalculator>,
+	cache: {
+		effects: AdvancedEffectsCache;
+		// effectsNull: ConditionalEffect[] | undefined;
+		// effectsMap: WeakMap<PersonaActor, ConditionalEffect[]>;
+		containsModifier: boolean | undefined;
+		containsTagAdd: boolean | undefined;
+		statsModified: Map<ModifierTarget, boolean>,
+		hasTriggers: U<boolean>,
+		grantsPowers: U<boolean>,
+		grantsTalents: U<boolean>,
+		mpCost: U<number>,
+		mpGrowthTable: U<GrowthCalculator>,
+		hpGrowthTable: U<GrowthCalculator>,
 
   };
 
@@ -109,21 +110,22 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
   }
 
-	 clearCache() {
-			this.cache = {
-				 effects: PersonaItem.#newEffectsCache(),
-				 // effectsNull: undefined,
-				 // effectsMap: new WeakMap(),
-				 containsModifier: undefined,
-				 containsTagAdd: undefined,
-				 statsModified: new Map(),
-				 hasTriggers: undefined,
-				 grantsPowers: undefined,
-				 mpCost: undefined,
-				 mpGrowthTable: undefined,
-				 hpGrowthTable: undefined,
-			};
-	 }
+	clearCache() {
+		this.cache = {
+			effects: PersonaItem.#newEffectsCache(),
+			// effectsNull: undefined,
+			// effectsMap: new WeakMap(),
+			containsModifier: undefined,
+			containsTagAdd: undefined,
+			statsModified: new Map(),
+			hasTriggers: undefined,
+			grantsPowers: undefined,
+			grantsTalents: undefined,
+			mpCost: undefined,
+			mpGrowthTable: undefined,
+			hpGrowthTable: undefined,
+		};
+	}
 
   static #newEffectsCache() : AdvancedEffectsCache {
     const cache : AdvancedEffectsCache = {
@@ -960,6 +962,24 @@ getIconPath(this: Power | Carryable, user?: ValidAttackers | Persona) : string |
     }
   }
 
+grantsTalents(this: ModifierContainer) : boolean {
+    if (!PersonaDB.isLoaded) {return false;}
+    if (this.cache.grantsTalents != undefined) {
+      return this.cache.grantsTalents;
+    }
+    try{
+      const grantsTalents= this.getEffects(null).some(
+        eff => eff.consequences.some(
+          cons => cons.type == 'add-talent-to-list'
+        ));
+      this.cache.grantsTalents = grantsTalents;
+      return this.cache.grantsTalents;
+    } catch  {
+      console.log(this);
+      return false;
+    }
+}
+
   testOpenerPrereqs (this: UsableAndCard, situation: Situation, user: PersonaActor) : boolean {
     switch (this.system.type) {
       case 'skillCard': return false;
@@ -993,6 +1013,11 @@ getIconPath(this: Power | Carryable, user?: ValidAttackers | Persona) : string |
     // .filter(pwr => !pwr.hasTag("opener"));
   }
 
+  getGrantedTalents(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Talent[] {
+    return this.getAllGrantedTalents(user, situation);
+    // .filter(pwr => !pwr.hasTag("opener"));
+  }
+
   getOpenerPowers(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
     return this.getAllGrantedPowers(user, situation)
       .filter (pwr=> pwr.hasTag('opener'));
@@ -1015,6 +1040,25 @@ getIconPath(this: Power | Carryable, user?: ValidAttackers | Persona) : string |
       .map(id=> PersonaDB.allPowers().get(id))
       .flatMap( pwr=> pwr? [pwr]: []);
     return removeDuplicates(powers);
+  }
+
+  getAllGrantedTalents(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Talent[] {
+    if (!this.grantsTalents()) {return [];}
+    if (!situation) {
+      situation = {
+        user: user.accessor
+      };
+    }
+    const talents= this.getPassiveEffects(user)
+      .filter(
+        eff => eff.consequences.some(
+          cons => cons.type == 'add-talent-to-list'
+        ))
+      .flatMap(eff=> getActiveConsequences(eff, situation, this))
+      .flatMap(x=> x.type == 'add-talent-to-list' ? [x.id] : [])
+      .map(id=> PersonaDB.allTalents().find(x=> x.id == id))
+      .flatMap( tal=> tal? [tal]: []);
+    return removeDuplicates(talents);
   }
 
   modifiedHpCost(this: Usable, persona: Persona, situation ?: Situation) : number {
@@ -1737,6 +1781,10 @@ getIconPath(this: Power | Carryable, user?: ValidAttackers | Persona) : string |
   isPower() : this is Power {
     return this.system.type == 'power';
   }
+
+	isTalent() : this is Talent {
+		return this.system.type == 'talent';
+	}
 
   isConsumable(): this is Consumable {
     return this.system.type == 'consumable';

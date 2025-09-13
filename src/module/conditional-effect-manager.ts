@@ -12,7 +12,7 @@ import { ROLL_TAGS_AND_CARD_TAGS } from "../config/roll-tags.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { ModifierTarget } from "../config/item-modifiers.js";
 import { getActiveConsequences } from "./preconditions.js";
-import { ModifierContainer, PowerContainer } from "./item/persona-item.js";
+import { ModifierContainer, PowerContainer, Talent } from "./item/persona-item.js";
 import { STATUS_EFFECT_DURATION_TYPES } from "../config/status-effects.js";
 import { Helpers } from "./utility/helpers.js";
 import { multiCheckToArray } from "./preconditions.js";
@@ -848,6 +848,11 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 			case "add-power-to-list": {
 				const grantedPower = PersonaDB.getPower(cons.id);
 				return `Add power to list ${grantedPower?.displayedName?.toString() ?? "ERROR"}`;
+			}
+			case "add-talent-to-list": {
+				const grantedTalent = PersonaDB.getItemById(cons.id) as Talent;
+				return `Add Talent to list ${grantedTalent?.displayedName?.toString() ?? "ERROR"}`;
+
 			}
 			case "other-effect":
 				return this.#printOtherEffect(cons);

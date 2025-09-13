@@ -2311,6 +2311,7 @@ static processConsequence_simple( cons: SourcedConsequence, targets: ValidAttack
 		case 'other-effect':
 		case 'set-flag':
 		case 'add-power-to-list':
+		case 'add-talent-to-list':
 		case 'raise-resistance':
 		case 'lower-resistance':
 		case 'raise-status-resistance':
