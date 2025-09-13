@@ -331,12 +331,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return game.i18n.localize(TAROT_DECK[this.name as keyof typeof TAROT_DECK] ?? "-");
 			case "npcAlly":
 			case "shadow": {
-        const combat = game.combat as PersonaCombat | undefined;
+				const combat = game.combat as PersonaCombat | undefined;
 				if (!combat) {return this.name;}
 				const token = combat.getCombatantByActor(this as ValidAttackers)?.token;
 				if (!token) {return this.name;}
 				return token.name;
-      }
+			}
 			default:
 				return this.name;
 		}
@@ -366,7 +366,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	getNPCProxyActor(this: NPCAlly) : NPC | PC | undefined {
 		const proxyId = this.system.NPCSocialProxyId;
 		if (!proxyId)
-			{return undefined;}
+		{return undefined;}
 		const npc = PersonaDB.socialLinks()
 			.find( x=> x.id == proxyId);
 		if (!npc || npc.system.type != "npc" && npc.system.type != "pc") {
@@ -560,7 +560,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!cl) {
 			const namesearch = PersonaDB.getItemByName(classNameDefault);
 			if (!namesearch)
-				{throw new Error(`Couldn't find class id: ${id} or name: ${classNameDefault}`);}
+			{throw new Error(`Couldn't find class id: ${id} or name: ${classNameDefault}`);}
 			if (namesearch.system.type != "characterClass")
 			{
 				throw new Error("Bad Item named: ${classNameDefault}, expecting a character class");
@@ -731,15 +731,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "pc":
 			case "npc":
 			case "npcAlly": {
-         let targetActor : NPC | PC | NPCAlly = this as PC;
+				let targetActor : NPC | PC | NPCAlly = this as PC;
 				if (this.isNPCAlly()) {
 					const proxy = this.getNPCProxyActor();
 					if (!proxy) {return 0;}
 					targetActor = proxy;
 				}
 				return PersonaDB.realPCs()
-					.reduce( (acc, pc) => acc + pc.getSocialSLWith(targetActor), 0);
-      }
+				.reduce( (acc, pc) => acc + pc.getSocialSLWith(targetActor), 0);
+			}
 			default:
 				this.system satisfies never;
 				return -1;
@@ -809,7 +809,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async addNewActivity(this: PC, activity: Activity) {
 		const act= this.system.activities;
 		if (act.find(x=> x.linkId == activity.id))
-			{return;}
+		{return;}
 		const item : typeof act[number] = {
 			linkId: activity.id,
 			strikes: 0,
@@ -1053,27 +1053,27 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return pcPowers;
 	}
 
-  get basicPowers() : readonly Power [] {
-    switch (this.system.type) {
-      case "npc": case "tarot":
-        return [];
-      case "shadow":
-        return PersonaItem.getBasicShadowPowers();
-      case "pc":
-      case "npcAlly": {
-        const arr = PersonaItem.getBasicPCPowers().slice();
-        const extraSkills = [
-          this.teamworkMove,
-          ...this.navigatorSkills,
-        ].flatMap( x=> x != undefined ? [x] : []);
-        arr.push (...extraSkills);
-        return arr; 
-      }
-      default:
-        this.system satisfies never;
-        return [];
-    }
-  }
+	get basicPowers() : readonly Power [] {
+		switch (this.system.type) {
+			case "npc": case "tarot":
+				return [];
+			case "shadow":
+				return PersonaItem.getBasicShadowPowers();
+			case "pc":
+			case "npcAlly": {
+				const arr = PersonaItem.getBasicPCPowers().slice();
+				const extraSkills = [
+					this.teamworkMove,
+					...this.navigatorSkills,
+				].flatMap( x=> x != undefined ? [x] : []);
+				arr.push (...extraSkills);
+				return arr; 
+			}
+			default:
+				this.system satisfies never;
+				return [];
+		}
+	}
 
 	get maxPowers() : number {
 		if (!this.isValidCombatant()) {return 0;}
@@ -1082,9 +1082,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return 8;
 			case "pc":
 			case "shadow": {
-        const extraMaxPowers = this.persona().getBonuses("extraMaxPowers");
+				const extraMaxPowers = this.persona().getBonuses("extraMaxPowers");
 				return 8 + extraMaxPowers.total ( {user: (this as PC | Shadow).accessor});
-      }
+			}
 			default:
 				this.system satisfies never;
 				return -1;
@@ -1111,12 +1111,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "pc":
 				return [];
 			case "npcAlly": {
-        const powers = this.system.combat.navigatorSkills
-					.map( id => PersonaDB.getPower(id))
-					.filter( x=> x != undefined);
+				const powers = this.system.combat.navigatorSkills
+				.map( id => PersonaDB.getPower(id))
+				.filter( x=> x != undefined);
 				// const powers = PersonaDB.allPowers().filter(x=> x.id == id);
 				return powers;
-      }
+			}
 			default:
 				this.system satisfies never;
 				return [];
@@ -1158,7 +1158,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!this.isValidCombatant()) {return [];}
 		return this.powerLearningListFull
 			.filter( x=> x.level > this.system.combat.lastLearnedLevel)
-		.filter( x=> this.checkPowerLegality(x.power ));
+			.filter( x=> this.checkPowerLegality(x.power ));
 	}
 
 	checkPowerLegality( pwr: Power)  :boolean {
@@ -1313,7 +1313,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "block":
 				return true;
 			case "resist": {
-        const save = await PersonaRoller.rollSave(this as Shadow, {
+				const save = await PersonaRoller.rollSave(this as Shadow, {
 					DC: 11,
 					label:`Resist status ${id}`,
 					askForModifier: false,
@@ -1324,7 +1324,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				await save.toModifiedMessage(true);
 				if (save.success) {return true;}
 				break;
-      }
+			}
 			default:
 				resist satisfies never;
 		}
@@ -1346,50 +1346,50 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	/** returns true if status is added*/
 	async addStatus({id, potency, duration}: StatusEffect, ignoreFatigue= false): Promise<boolean> {
 		try {
-		if (!ignoreFatigue && statusMap?.get(id)?.tags.includes("fatigue")) {
-			const lvl = statusToFatigueLevel(id as FatigueStatusId);
-			const oldLvl = this.fatigueLevel;
-			await this.setFatigueLevel(lvl);
-			const newLvl = this.fatigueLevel;
-			return oldLvl != newLvl;
-		}
-		if (await this.isStatusResisted(id)) {return false;}
-		const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
-		if (!stateData) {
-			throw new Error(`Couldn't find status effect Id: ${id}`);
-		}
-		const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
-		if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
-			await this.setHP(0);
-		}
-		// id = await this.checkStatusEscalation(id);
-		const eff = this.effects.find( eff => eff.statuses.has(id));
-		if (!eff) {
-			const s = [id];
-			const newState = {
-				...stateData,
-				name: game.i18n.localize(stateData.name),
-				statuses: s
-			};
-			if (await this.checkStatusNullificaton(id)) {return false;}
-			const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
-			await newEffect.setPotency(potency ?? 0);
-			const adjustedDuration = this.getAdjustedDuration(duration, id);
-			await newEffect.setDuration(adjustedDuration);
-			return true;
-		} else  {
-			if (potency && eff.potency < potency) {
-				await eff.setPotency(potency);
+			if (!ignoreFatigue && statusMap?.get(id)?.tags.includes("fatigue")) {
+				const lvl = statusToFatigueLevel(id as FatigueStatusId);
+				const oldLvl = this.fatigueLevel;
+				await this.setFatigueLevel(lvl);
+				const newLvl = this.fatigueLevel;
+				return oldLvl != newLvl;
 			}
-			eff.duration.startRound = game?.combat?.round ?? 0;
-			await eff.update({"duration": eff.duration});
-			const adjustedDuration = this.getAdjustedDuration(duration, id);
-			if (typeof duration != "string" && eff.durationLessThanOrEqualTo(adjustedDuration)) {
-				await eff.setDuration(adjustedDuration);
+			if (await this.isStatusResisted(id)) {return false;}
+			const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
+			if (!stateData) {
+				throw new Error(`Couldn't find status effect Id: ${id}`);
 			}
-			//TODO: update the effect
-			return false;
-		}
+			const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
+			if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
+				await this.setHP(0);
+			}
+			// id = await this.checkStatusEscalation(id);
+			const eff = this.effects.find( eff => eff.statuses.has(id));
+			if (!eff) {
+				const s = [id];
+				const newState = {
+					...stateData,
+					name: game.i18n.localize(stateData.name),
+					statuses: s
+				};
+				if (await this.checkStatusNullificaton(id)) {return false;}
+				const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
+				await newEffect.setPotency(potency ?? 0);
+				const adjustedDuration = this.getAdjustedDuration(duration, id);
+				await newEffect.setDuration(adjustedDuration);
+				return true;
+			} else  {
+				if (potency && eff.potency < potency) {
+					await eff.setPotency(potency);
+				}
+				eff.duration.startRound = game?.combat?.round ?? 0;
+				await eff.update({"duration": eff.duration});
+				const adjustedDuration = this.getAdjustedDuration(duration, id);
+				if (typeof duration != "string" && eff.durationLessThanOrEqualTo(adjustedDuration)) {
+					await eff.setDuration(adjustedDuration);
+				}
+				//TODO: update the effect
+				return false;
+			}
 		} catch (e) {
 			PersonaError.softFail(`Error adding status :${id}`, e);
 			return false;
@@ -1403,7 +1403,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			switch (duration.dtype)  {
 				case "X-rounds":
 				case "3-rounds": {
-          const tags = CONFIG.statusEffects.find(x=> x.id == id)?.tags;
+					const tags = CONFIG.statusEffects.find(x=> x.id == id)?.tags;
 					if (!tags) {
 						PersonaError.softFail(`Bad status Id: ${id}`);
 						return duration;
@@ -1422,7 +1422,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						...duration,
 						amount: reducedAmt,
 					};
-        }
+				}
 				default:
 					return duration;
 			}
@@ -1435,7 +1435,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get openerActions() : Usable[] {
 		if (this.system.type == "npc" || this.system.type == "tarot")
-			{return [];}
+		{return [];}
 		const powerBased = (this.system.type == "shadow" ? this.mainPowers : this.consumables)
 			.filter( power => power.isOpener());
 		const arr : Usable[] = (this as ValidAttackers).mainModifiers({omitPowers:true})
@@ -1472,7 +1472,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		const id = this.system.combat.teamworkMove;
 		if (!id)
-			{return undefined;}
+		{return undefined;}
 		return PersonaDB.allPowers().get(id);
 	}
 
@@ -1634,12 +1634,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!this.isValidCombatant()) {return 1;}
 		switch (this.system.type) {
 			case "pc": case "npcAlly": {
-        const situation :Situation = {
+				const situation :Situation = {
 					user: (this as PC | NPCAlly).accessor
 				};
 				const bonus= this.persona().getBonuses("shadowMoneyBoostPercent").total(situation, "percentage");
 				return !Number.isNaN(bonus) ? bonus : 1;
-      }
+			}
 			default:
 				return 1;
 		}
@@ -1675,7 +1675,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		for (const eff of this.effects.contents) {
 			if (eff.isFatigueStatus) {
 				if (!eff.statuses.has(newId!))
-					{await eff.delete();}
+				{await eff.delete();}
 			}
 		}
 		if (newId) {
@@ -1840,9 +1840,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	userDefensivePowers(this: ValidAttackers) : ModifierContainer [] {
 		if (!this.isValidCombatant()) {return [];}
-		return  [
-			...this.equippedItems(),
-		].filter(x=> x.hasDefensiveEffects(this));
+		return this.actorMainModifiers()
+			.filter(x=> x.hasDefensiveEffects(this));
+		// return  [
+		// 	...this.equippedItems(),
+		// ].filter(x=> x.hasDefensiveEffects(this));
 	}
 
 	getSourcedDefensivePowers(this: ValidAttackers) : SourcedConditionalEffect[] {
@@ -2050,7 +2052,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			await this.update( {"system.combat.powers": powers});
 			await this.checkMainPowerEmptySpace();
 			if (this.hasPlayerOwner) {
-			await Logger.sendToChat(`${this.name} deleted power ${power.name}` , this);
+				await Logger.sendToChat(`${this.name} deleted power ${power.name}` , this);
 			}
 			return true;
 		}
@@ -2086,114 +2088,114 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	async checkMainPowerEmptySpace(this: ValidAttackers) {
-		const powers = this.system.combat.powers;
-		while (powers.length < this.persona().maxMainPowers) {
-			if (!this.isShadow()) {
-				const sideboard = this.system.combat.powers_sideboard;
-				const pow1 = sideboard.shift();
-				if (pow1) {
-					powers.push(pow1);
-					await this.update( {"system.combat.powers": powers});
-					await this.update( {"system.combat.powers_sideboard": sideboard});
-					await this.checkSideboardEmptySpace();
-					continue;
-				}
+async checkMainPowerEmptySpace(this: ValidAttackers) {
+	const powers = this.system.combat.powers;
+	while (powers.length < this.persona().maxMainPowers) {
+		if (!this.isShadow()) {
+			const sideboard = this.system.combat.powers_sideboard;
+			const pow1 = sideboard.shift();
+			if (pow1) {
+				powers.push(pow1);
+				await this.update( {"system.combat.powers": powers});
+				await this.update( {"system.combat.powers_sideboard": sideboard});
+				await this.checkSideboardEmptySpace();
+				continue;
 			}
-			if (this.learnedPowersBuffer.length > 0) {
-				const buffer = this.system.combat.learnedPowersBuffer;
-				const bufferItem = buffer.shift();
-				if (bufferItem) {
-					powers.push(bufferItem);
-					await this.update( {"system.combat.powers": powers});
-					await this.update( {"system.combat.learnedPowersBuffer" : buffer});
-					continue;
-				}
+		}
+		if (this.learnedPowersBuffer.length > 0) {
+			const buffer = this.system.combat.learnedPowersBuffer;
+			const bufferItem = buffer.shift();
+			if (bufferItem) {
+				powers.push(bufferItem);
+				await this.update( {"system.combat.powers": powers});
+				await this.update( {"system.combat.learnedPowersBuffer" : buffer});
+				continue;
 			}
-			return;
 		}
-	}
-
-	async movePowerToSideboard(this: PC, powerId: Power["id"]) {
-		const newPowers = this.system.combat.powers
-			.filter( id => id != powerId);
-		await this.update({"system.combat.powers": newPowers});
-		const sideboard = this.system.combat.powers_sideboard;
-		sideboard.push(powerId);
-		await this.update({"system.combat.powers_sideboard": sideboard});
-		const power = PersonaDB.getItemById(powerId) as Power;
-		await Logger.sendToChat(`${this.name} moved power ${power.name} to sideboard` , this);
-	}
-
-	async retrievePowerFromSideboard(this: PC, powerId: Power["id"]) {
-		if (this.mainPowers.length >= this.basePersona.maxMainPowers) {
-			ui.notifications.warn(`Can't have more than ${this.basePersona.maxMainPowers} main powers.`);
-			return;
-		}
-		const newSideboard = this.system.combat.powers_sideboard
-			.filter( id => id != powerId);
-		await this.update({"system.combat.powers_sideboard": newSideboard});
-		const powers = this.system.combat.powers;
-		powers.push(powerId);
-		await this.update({"system.combat.powers": powers});
-		const power = PersonaDB.getItemById(powerId) as Power;
-		await Logger.sendToChat(`${this.name} moved power ${power.name} out of sideboard` , this);
-	}
-
-	addFocus(this: PC, focus: Focus) {
-		PersonaError.softFail(`Can't drop ${focus.name}. Focii are no longer supported on PCs`);
 		return;
 	}
+}
 
-	async deleteFocus(focusId: string) {
-		const item = this.items.find(x => x.id == focusId);
-		if (item) {
-			await item.delete();
-			return;
-		}
-		const actorType = this.system.type;
-		switch (actorType) {
-			case "npc": return;
-			case "tarot": return;
-			case "pc": case "shadow": case "npcAlly": {
-        let foci = this.system.combat.focuses;
-				if (!foci.includes(focusId)) {return;}
-				foci = foci.filter( x=> x != focusId);
-				return await this.update( {"system.combat.focuses": foci});
-      }
-			default:
-				actorType satisfies never;
-		}
-	}
+async movePowerToSideboard(this: PC, powerId: Power["id"]) {
+	const newPowers = this.system.combat.powers
+		.filter( id => id != powerId);
+	await this.update({"system.combat.powers": newPowers});
+	const sideboard = this.system.combat.powers_sideboard;
+	sideboard.push(powerId);
+	await this.update({"system.combat.powers_sideboard": sideboard});
+	const power = PersonaDB.getItemById(powerId) as Power;
+	await Logger.sendToChat(`${this.name} moved power ${power.name} to sideboard` , this);
+}
 
-	async  setClass(this: ValidAttackers, cClass: CClass) {
-		await this.update( {"system.combat.classData.classId": cClass.id});
-		await Logger.sendToChat(`${this.displayedName} changes class to ${cClass.name}`);
+async retrievePowerFromSideboard(this: PC, powerId: Power["id"]) {
+	if (this.mainPowers.length >= this.basePersona.maxMainPowers) {
+		ui.notifications.warn(`Can't have more than ${this.basePersona.maxMainPowers} main powers.`);
+		return;
 	}
+	const newSideboard = this.system.combat.powers_sideboard
+		.filter( id => id != powerId);
+	await this.update({"system.combat.powers_sideboard": newSideboard});
+	const powers = this.system.combat.powers;
+	powers.push(powerId);
+	await this.update({"system.combat.powers": powers});
+	const power = PersonaDB.getItemById(powerId) as Power;
+	await Logger.sendToChat(`${this.name} moved power ${power.name} out of sideboard` , this);
+}
 
-	hasPowerInhibitingStatus() : boolean {
-		switch (true) {
-			case this.hasStatus("rage"):
-			case this.hasStatus("sealed"):
-				return true;
-		}
-		return false;
-	}
+addFocus(this: PC, focus: Focus) {
+	PersonaError.softFail(`Can't drop ${focus.name}. Focii are no longer supported on PCs`);
+	return;
+}
 
-	canLearnNewSkill() : boolean {
-		switch (this.system.type) {
-			case "shadow":
-			case "npc":
-			case "tarot":
-				return false;
-			case "npcAlly":
-			case "pc":
-				return this.maxPowers - this.mainPowers.length - this.sideboardPowers.length >= 0;
-			default:
-				this.system satisfies never;
-				return false;
-		}
+async deleteFocus(focusId: string) {
+	const item = this.items.find(x => x.id == focusId);
+	if (item) {
+		await item.delete();
+		return;
 	}
+	const actorType = this.system.type;
+	switch (actorType) {
+		case "npc": return;
+		case "tarot": return;
+		case "pc": case "shadow": case "npcAlly": {
+			let foci = this.system.combat.focuses;
+			if (!foci.includes(focusId)) {return;}
+			foci = foci.filter( x=> x != focusId);
+			return await this.update( {"system.combat.focuses": foci});
+		}
+		default:
+			actorType satisfies never;
+	}
+}
+
+async  setClass(this: ValidAttackers, cClass: CClass) {
+	await this.update( {"system.combat.classData.classId": cClass.id});
+	await Logger.sendToChat(`${this.displayedName} changes class to ${cClass.name}`);
+}
+
+hasPowerInhibitingStatus() : boolean {
+	switch (true) {
+		case this.hasStatus("rage"):
+		case this.hasStatus("sealed"):
+			return true;
+	}
+	return false;
+}
+
+canLearnNewSkill() : boolean {
+	switch (this.system.type) {
+		case "shadow":
+		case "npc":
+		case "tarot":
+			return false;
+		case "npcAlly":
+		case "pc":
+			return this.maxPowers - this.mainPowers.length - this.sideboardPowers.length >= 0;
+		default:
+			this.system satisfies never;
+			return false;
+	}
+}
 
 getSocialStat(this: PC, socialStat: SocialStat) : ModifierList {
 	const stat = this.system.skills[socialStat];
@@ -2573,7 +2575,7 @@ async onEnterMetaverse()  : Promise<void> {
 			user: this.accessor,
 		};
 		await TriggeredEffect
-		.autoApplyTrigger("enter-metaverse", this, situation);
+			.autoApplyTrigger("enter-metaverse", this, situation);
 		// await TriggeredEffect
 		// 	.onTrigger("enter-metaverse", this, situation)
 		// 	.emptyCheck()
@@ -2617,7 +2619,7 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 				await TriggeredEffect.autoApplyTrigger("exit-metaverse", this);
 				break;
 			default:
-					this.system satisfies never;
+				this.system satisfies never;
 		}
 	} catch (e) {
 		Debug(e);
@@ -2654,7 +2656,7 @@ async levelUp_manual(this: ValidAttackers) : Promise<void> {
 		const XPNeeded = XPForNext - currXP;
 		console.log(`${this.name} XP needed: ${XPNeeded}`);
 		await this.awardPersonalXP(XPNeeded, false);
-}
+	}
 	await this.basePersona.levelUp_manual();
 }
 
@@ -2931,9 +2933,9 @@ totalDefenseBoosts(this: ValidAttackers) : number {
 issues() : string {
 	const issues : string[] = [];
 	if (this.basePersona.isUnderDefenseCap || this.basePersona.isOverDefenseCap)
-		{issues.push("Defense");}
+	{issues.push("Defense");}
 	if (this.basePersona.isUnderResistCap || this.basePersona.isOverResistCap)
-		{issues.push("Resists");}
+	{issues.push("Resists");}
 	return issues.join("/");
 }
 
@@ -2990,7 +2992,7 @@ maxIncrementalAdvancesInCategory(this: ValidAttackers, incrementalType: keyof Va
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 	const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incrementalType] as {max ?: number};
 	if (typeof x?.max == "number")
-		{return x.max;}
+	{return x.max;}
 	PersonaError.softFail("Trouble calculating max incremental advances");
 	return 0;
 }
@@ -3095,7 +3097,7 @@ isIncrementalMaxed( this: ValidAttackers,  incremental:  keyof ValidAttackers["s
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 	const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incremental] as {max ?: number};
 	if (x.max)
-		{return incValue >= x.max ;}
+	{return incValue >= x.max ;}
 	const msg = `Unknown Max incremental for ${incremental}`;
 	PersonaError.softFail(msg);
 	return true;
@@ -3155,9 +3157,9 @@ async expendAction(this: ValidAttackers): Promise<number> {
 }
 
 get actionsRemaining(): number {
-	 return this.isValidCombatant()
-			? this.system.combat.actionsRemaining
-			: 0;
+	return this.isValidCombatant()
+		? this.system.combat.actionsRemaining
+		: 0;
 }
 
 get perk() : string {
@@ -3356,7 +3358,7 @@ async onEndDay(this: PC): Promise<string[]> {
 	const ret = [] as string[];
 	for (const eff of this.effects) {
 		if (await eff.onEndSocialTurn())
-			{ret.push(`Removed Condition ${eff.displayedName} at end of day.`);}
+		{ret.push(`Removed Condition ${eff.displayedName} at end of day.`);}
 	}
 	ret.push(...await this.fatigueRecoveryRoll());
 	await this.resetFatigueChecks();
@@ -3367,7 +3369,7 @@ async onEndSocialTurn(this: PC) : Promise<string[]> {
 	const ret = [] as string[];
 	for (const eff of this.effects) {
 		if (await eff.onEndSocialTurn())
-			{ret.push(`Removed Condition ${eff.displayedName} at end of social turn`);}
+		{ret.push(`Removed Condition ${eff.displayedName} at end of social turn`);}
 	}
 	return ret;
 }
@@ -3392,7 +3394,7 @@ encounterSizeValue() : number {
 
 isNewEnemy(): boolean {
 	if (!this.isShadow()) {return false;}
-	return this.system.encounter.timesDefeated == 0 && this.persona().scanLevel == 0;
+	return this.system.encounter.timesDefeated == 0 && this.persona().scanLevelRaw == 0;
 }
 
 async onDefeat(this: ValidAttackers) {
@@ -3514,7 +3516,7 @@ isAvailable(pc: PersonaActor) : boolean {
 }
 
 getAvailabilityConditions(this: NPC | NPCAlly)  : DeepReadonly<Precondition>[] {
-			const conds = ConditionalEffectManager.getConditionals(this.system.availabilityConditions, null, null);
+	const conds = ConditionalEffectManager.getConditionals(this.system.availabilityConditions, null, null);
 	return conds;
 
 }
@@ -3525,9 +3527,9 @@ isSociallyDisabled(): boolean {
 		case "tarot":
 			return true;
 		case "pc": {
-      const statuses : StatusEffectId[] = ["jailed", "exhausted", "crippled", "injured"];
+			const statuses : StatusEffectId[] = ["jailed", "exhausted", "crippled", "injured"];
 			return statuses.some( x=> this.hasStatus(x));
-    }
+		}
 
 		case "npcAlly":
 		case "npc":
@@ -3554,10 +3556,10 @@ async moneyFix() {
 	//updates money to new x10 total
 	switch (this.system.type) {
 		case "pc": {
-      const money = this.system.money * 10;
+			const money = this.system.money * 10;
 			await this.update({"system.money": money});
-      break;
-    }
+			break;
+		}
 		default:
 			return;
 	}
@@ -3594,7 +3596,7 @@ getPoisonDamage(this: ValidAttackers): number {
 
 static calcPowerRequirement(role: Shadow["system"]["role"], power: Readonly<Power>,  diff: number) : number {
 	if (power.system.tags.includes("basicatk"))
-		{return 0;}
+	{return 0;}
 	const tags = power.system.tags;
 	switch (role) {
 		case "support":
@@ -3614,7 +3616,7 @@ static calcPowerRequirement(role: Shadow["system"]["role"], power: Readonly<Powe
 
 static calcPowerCost(_role: Shadow["system"]["role"], power: Readonly<Power>, diff: number) : Power["system"]["reqEscalation"] {
 	if (power.system.tags.includes("basicatk"))
-		{return 0;}
+	{return 0;}
 	if (diff <= 0) {return 0;}
 	const esc = Math.round(Math.abs(diff) / 2);
 	return Math.clamp(esc, 0, 6);
@@ -3634,7 +3636,7 @@ async increaseScanLevel(this: Shadow, amt :number) {
 }
 
 async clearScanLevel(this:Shadow) {
-	const scanLevel = this.persona().scanLevel ?? 0;
+	const scanLevel = this.persona().scanLevelRaw ?? 0;
 	if (scanLevel == 0) {return;}
 	await this.update({"system.scanLevel": 0});
 }
@@ -3769,11 +3771,11 @@ async onAddToCombat() {
 	if (!game.user.isGM) {return;}
 	switch (this.system.type) {
 		case "shadow": {
-      if (!this.isShadow()) {return;}// a double check purely for TS to recognize it;
+			if (!this.isShadow()) {return;}// a double check purely for TS to recognize it;
 			const energy = this.startingEnergy();
 			await this.setEnergy(energy);
 			break;
-    }
+		}
 		case "pc":
 		case "npc":
 		case "tarot":
@@ -4015,14 +4017,14 @@ Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
 		const minXP = LevelUpCalculator.minXPForEffectiveLevel(lvl);
 		const maxXP = LevelUpCalculator.minXPForEffectiveLevel(lvl + 1);
 		if (actor.system.combat.personaStats.xp < minXP) {
-		console.log("Actor XP update raised");
+			console.log("Actor XP update raised");
 			await actor.update({"system.combat.personaStats.xp" : minXP});
 		}
 		if (actor.system.combat.personaStats.xp >= maxXP) {
-		console.log("Actor XP update lowered");
+			console.log("Actor XP update lowered");
 
 			await actor.update({"system.combat.personaStats.xp" : minXP});
-			}
+		}
 	}
 	if (lvl != undefined) {
 		await actor.onLevelUp_checkLearnedPowers(lvl, !actor.isShadow());
@@ -4109,7 +4111,7 @@ Hooks.on("createActor", async function (actor: PersonaActor) {
 			.filter( (x: PersonaActor)=> x.isRealPC() && x.hasPlayerOwner);
 		const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.personaleLevel, 0 );
 		const avgLevel = Math.round(totalLevels/ pcs.length);
-			await actor.update({ "system.combat.personaStats.pLevel" : avgLevel});
+		await actor.update({ "system.combat.personaStats.pLevel" : avgLevel});
 		await actor.setWeaponDamageByLevel(avgLevel);
 	}
 });

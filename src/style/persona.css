@@ -1314,3 +1314,24 @@ img.item-icon {
 	height: 21px;
 	width: 76px;
 }
+
+
+.tarot-list .card {
+	padding: 5px;
+	border: 2px;
+}
+
+.focus-list .focus {
+	padding-left: 5px;
+	padding-right: 5px;
+
+}
+
+.focus-list .focus-name {
+	font-weight: bold;
+}
+
+.focus-list .description {
+	font-style: italic;
+}
+

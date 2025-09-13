@@ -1,5 +1,5 @@
 import { PersonaStat } from "../config/persona-stats.js";
-import { MODIFIER_CATEGORIES, MODIFIERLIST, MODIFIERS_TABLE } from "../config/item-modifiers.js";
+import { MODIFIER_CATEGORIES, MODIFIERS_TABLE } from "../config/item-modifiers.js";
 import { ConsequenceAmount } from "../config/consequence-types.js";
 import { DAMAGE_LEVELS } from "../config/damage-types.js";
 import { DAMAGE_ICONS } from "../config/icons.js";
@@ -8,7 +8,6 @@ import { ROLL_TAGS_AND_CARD_TAGS } from "../config/roll-tags.js";
 import { CardRoll } from "../config/social-card-config.js";
 import { Persona } from "./persona-class.js";
 import { RESIST_STRENGTHS } from "../config/damage-types.js";
-import { PersonaI } from "../config/persona-interface.js";
 import { PersonaError } from "./persona-error.js";
 import { FREQUENCY } from "../config/frequency.js";
 import { CardEvent } from "../config/social-card-config.js";
@@ -619,7 +618,7 @@ export class PersonaHandleBarsHelpers {
 		"getPowerTagsL": function (actor: ValidAttackers, power: Usable) {
 			return power.tagListLocalized(actor);
 		},
-		"persona": function (actor: ValidAttackers) : PersonaI {
+		"persona": function (actor: ValidAttackers) : Persona {
 			return actor.persona();
 		},
 
@@ -630,12 +629,12 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"scanLevel": function (persona: Persona) : number {
-			return persona.scanLevel;
+			return persona.effectiveScanLevel;
 		},
 
 		"scanLevelgte": function (persona: Persona, val: number) : boolean {
 			if (game.user.isGM) {return true;}
-			return persona.scanLevel >= val;
+			return persona.effectiveScanLevel >= val;
 		},
 
 		"usingBasePersona": function (actor: ValidAttackers) : boolean {
@@ -815,6 +814,15 @@ export class PersonaHandleBarsHelpers {
 			return (combat != undefined && combat.isSocial);
 
 		},
+		"tarotFocii": function (actor: PersonaActor) : Focus[] {
+			const sortFn = function (a: Focus, b: Focus) {
+				return a.requiredLinkLevel() - b.requiredLinkLevel();
+			};
+			return actor.focii()
+				.sort( sortFn) ;
+		},
 	};
+
+
 
 } //end of class

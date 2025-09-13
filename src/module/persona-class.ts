@@ -185,7 +185,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.system.combat.personaStats.xp - LevelUpCalculator.minXPForEffectiveLevel(this.level);
 	}
 
-	get scanLevel(): number {
+	get effectiveScanLevel(): number {
 		const user = this.user;
 		const source = this.source;
 		if (game.user.isGM) {return 3;}
@@ -198,6 +198,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			return source.system.scanLevel ?? 0;
 		}
 		return 0;
+	}
+
+	get scanLevelRaw() : number {
+		const source = this.source;
+		if (source.isShadow()) {
+			return source.system.scanLevel ?? 0;
+		}
+		return 3;
 	}
 
 	critResist(): ModifierList {

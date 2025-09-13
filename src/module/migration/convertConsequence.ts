@@ -21,15 +21,24 @@ export class ConsequenceConverter {
 				if (usable && usable instanceof PersonaItem && usable.isUsableType()) {
 					return this.convertDeprecatedDamageConsequence(dep, usable.system.dmg_type);
 				}
-				PersonaError.softFail(`No usable provided for ${usable.name}`);
-				return cons as NonDeprecatedConsequence;
+				return this.convertDeprecatedDamageConsequence(dep);
+			case "save-slot":
+			case "half-hp-cost":
+			case "add-escalation":
+				console.log(`Deprecated Consequence type ${dep.type} in ${usable?.name}`);
+				return {
+					type: "none"
+				};
 			default:
-				dep.type satisfies never;
+				dep satisfies never;
 		}
 		return cons as NonDeprecatedConsequence;
 	}
 
-	static convertDeprecatedDamageConsequence( cons: OldDamageConsequence, defaultDamageType: DamageType) : DamageConsequence {
+	static convertDeprecatedDamageConsequence( cons: OldDamageConsequence, defaultDamageType?: DamageType) : DamageConsequence {
+		if (!defaultDamageType) {
+			defaultDamageType = "by-power";
+		}
 		let st : DamageConsequence["damageSubtype"];
 		let dtype = cons.damageType != undefined ? cons.damageType : defaultDamageType;
 		let amount = cons.amount ?? 0;

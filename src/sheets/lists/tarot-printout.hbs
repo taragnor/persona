@@ -1,0 +1,22 @@
+<section class="tarot-list">
+	<h2> Tarot List </h2>
+	{{#each tarotDeck as |card i|}}
+	<div class="card" data-tarot-id="{{card.id}}">
+		<h3>
+			{{card.displayedName}}
+		</h3>
+		<div class="focus-list">
+			{{#each (tarotFocii card) as |focus j|}}
+			<div class="focus" data-focus-id="{{focus.id}}">
+				<span class="focus-name">
+					{{focus.displayedName}}:
+				</span>
+				<span class="description">
+					{{focus.description}}
+				</span>
+			</div>
+			{{/each}}
+		</div>
+	</div>
+	{{/each}}
+</section>

@@ -74,7 +74,7 @@ export class NumericV2 {
 				case "==":
 					return op1 == op2;
 				case "!=":
-					op1 != op2;
+					return op1 != op2;
 				case ">=":
 					return op1 >= op2;
 				case "<=":
@@ -158,28 +158,12 @@ export class NumericV2 {
 			case "social-link-level": {
 				if (!situation.user) {return null;}
 				const actor = PersonaDB.findActor(situation.user);
-				if (!actor  || !actor.isRealPC()) {return null;}
-
 				if (op.socialLinkIdOrTarot == "SLSource"){
 					//in theory these should be preverified so we're automatically letting them through
 					return true;
 				}
-				const socialLink = getSocialLinkTarget(op.socialLinkIdOrTarot, situation, source);
-				if (!socialLink) {
-					return 0;
-				}
-				const link = actor.system.social.find(data=> data.linkId == socialLink.id);
-				return link ? link.linkLevel : 0;
-			}
-			case "social-link-level": {
-				if (!situation.user) {return null;}
-				const actor = PersonaDB.findActor(situation.user);
 				if (!actor  || !actor.isRealPC()) {return null;}
 
-				if (op.socialLinkIdOrTarot == "SLSource"){
-					//in theory these should be preverified so we're automatically letting them through
-					return true;
-				}
 				const socialLink = getSocialLinkTarget(op.socialLinkIdOrTarot, situation, source);
 				if (!socialLink) {
 					return 0;
@@ -208,12 +192,13 @@ export class NumericV2 {
 				if (!situation.user) {return null;}
 				const actor = PersonaDB.findActor(situation.user);
 				if (actor.system.type != "pc") {return null;}
-				return actor.system.skills[op.studentSkill!] ?? 0;
+				return actor.system.skills[op.studentSkill] ?? 0;
 			}
 			case "talent-level": {
 				if (!situation.user) {return null;}
 				const user = PersonaDB.findActor(situation.user);
-				//@ts-ignore
+				//@ts-expect-error some reason
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 				const sourceItem = "sourceItem" in condition ? PersonaDB.findItem(condition.sourceItem) : "";
 				const id = sourceItem ? sourceItem.id : undefined;
 				if (!id) {
@@ -222,12 +207,6 @@ export class NumericV2 {
 				return user.persona().getTalentLevel(id);
 
 			}
-			case "has-resources":
-				if (!situation.user) {return null;}
-				const actor = PersonaDB.findActor(situation.user);
-				if (actor.system.type != "pc") {return null;}
-				return actor.system.money ?? 0;
-
 			case "character-level": {
 				if (!situation.user) {return null;}
 				const actor = PersonaDB.findActor(situation.user);
@@ -270,11 +249,12 @@ export class NumericV2 {
 					case "tarot":
 					case "shadow":
 						break;
-					case "npcAlly":
+					case "npcAlly": {
 						const proxy = (subject as NPCAlly).getNPCProxyActor();
 						if (!proxy) {break;}
 						targetActor = proxy;
 						break;
+					}
 					case "pc": case "npc":
 						targetActor = subject as PC | NPC;
 						break;
@@ -340,10 +320,11 @@ export class NumericV2 {
 				// 	? (a + x.system.amount)
 				// 	: a
 				// 	, 0);
-			case "scan-level":
+			case "scan-level": {
 				const targetActor = getSubjectActors(op, situation, source, "conditionTarget")[0];
 				if (!targetActor || !targetActor.isValidCombatant()) {return null;}
-				return targetActor.persona().scanLevel;
+				return targetActor.persona().scanLevelRaw;
+			}
 			default:
 				op satisfies never;
 				return null;

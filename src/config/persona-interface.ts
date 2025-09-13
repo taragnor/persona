@@ -20,7 +20,8 @@ export interface PersonaI {
 	focii: readonly Focus[];
 	XPForNextLevel: number;
 	level: number;
-	scanLevel: number;
+	scanLevelRaw: number;
+	effectiveScanLevel: number;
 	getDefense( defType : keyof ValidAttackers["system"]["combat"]["defenses"]) : ModifierList;
 	combatInit: number;
 }

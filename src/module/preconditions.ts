@@ -112,25 +112,25 @@ function numericComparison(condition: DeepReadonly<Precondition>, situation: Sit
 	switch (condition.comparisonTarget) {
 		case "natural-roll":
 			if (situation.naturalRoll == undefined)
-				{return false;}
+			{return false;}
 			target = situation.naturalRoll;
 			break;
 		case "activation-roll":
 			if (situation.naturalRoll == undefined) {return false;}
 			if (!situation?.rollTags?.includes("activation"))
-				{return false;}
+			{return false;}
 			target = situation.naturalRoll;
 			break;
 		case "escalation": {
-       const combat = game.combat as PersonaCombat | undefined;
+			const combat = game.combat as PersonaCombat | undefined;
 			if (!combat) {return false;}
 			const die = combat.getEscalationDie();
 			target = die;
 			break;
-    }
+		}
 		case "total-roll":
 			if (situation.rollTotal == undefined)
-				{return false;}
+			{return false;}
 			target = situation.rollTotal;
 			break;
 		case "talent-level": {
@@ -148,12 +148,11 @@ function numericComparison(condition: DeepReadonly<Precondition>, situation: Sit
 		case "social-link-level": {
 			if (!situation.user) {return false;}
 			const actor = PersonaDB.findActor(situation.user);
-			if (!actor  || !actor.isRealPC()) {return false;}
-
 			if (condition.socialLinkIdOrTarot == "SLSource"){
-				//in theory these should be preverified so we're automatically letting them through
 				return true;
 			}
+			if (!actor  || !actor.isRealPC()) {return false;}
+
 			const socialLink = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
 			if (!socialLink) {
 				target = 0;
@@ -370,7 +369,7 @@ function numericComparison(condition: DeepReadonly<Precondition>, situation: Sit
 		case "scan-level": {
        const targetActor = getSubjectActors(condition, situation, source, "conditionTarget")[0];
 			if (!targetActor || !targetActor.isValidCombatant()) {return false;}
-			target = targetActor.persona().scanLevel;
+			target = targetActor.persona().scanLevelRaw;
 			break;
     }
 		default:

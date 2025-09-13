@@ -12,6 +12,7 @@ declare global {
 
 }
 
+import { TarotPrinter } from "./printers/tarot-list.js";
 import { PowerPrinter } from "./printers/power-list.js";
 import { Simulations } from "./exploration/simulations.js";
 import { AnyaPlanets } from "./exploration/anya-planets.js";
@@ -112,6 +113,7 @@ Hooks.once("init", function() {
 	// ErrorScanner.check();
 	Heartbeat.start();
 	PowerPrinter.init();
+	TarotPrinter.init();
 });
 
 function registerHandlebarsHelpers() {

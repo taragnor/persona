@@ -45,9 +45,11 @@ export type RecoverSlotEffect = {
 	amt: number;
 }
 
-type SimpleOtherEffect = {
-	type: "save-slot" | "half-hp-cost";
-}
+
+type SimpleOtherEffect =DeprecatedSimpleEffect
+
+
+
 
 export type SetFlagEffect = {
 	type: "set-flag",
@@ -341,8 +343,18 @@ type DamageConsequenceShared = {
 
 export type NonDeprecatedConsequence = Exclude<Consequence, DeprecatedConsequence>;
 
+type DeprecatedSimpleEffect = {
+	type: "save-slot" | "half-hp-cost";
+}
+
+ type AddEscalationConsequence = {
+	 type: "add-escalation"
+ };
+
 export type DeprecatedConsequence =
 	OldDamageConsequence
+	| DeprecatedSimpleEffect
+	| AddEscalationConsequence;
 ;
 
 

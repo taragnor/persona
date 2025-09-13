@@ -1108,6 +1108,7 @@
 	"persona.availability.N/A": "Not Available (N/A)",
 
 	"persona.applications.powerPrinter" : "Persona Powers List",
+	"persona.applications.tarotPrinter" : "Persona Tarot List",
 
 	"persona.calculation.operation.multiply": "Multiply",
 	"persona.calculation.operation.add": "Add",
