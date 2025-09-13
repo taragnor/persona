@@ -1306,6 +1306,8 @@ img.inline {
 	text-align: center;
 	background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%) !important;
 	color: #E6F8FF !important; /* pale cyan for readable text */
+	border: 2px solid #1a3c6e;  /* dark blue border */
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
 }
 
 img.item-icon {
