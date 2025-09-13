@@ -34,6 +34,7 @@ export const EQUIPMENT_TAGS_LIST = [
 	"tech",
 	"book",
 	"fashion",
+	"fitness",
 	"female",
 	"male",
 	"music",
