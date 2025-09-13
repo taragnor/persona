@@ -1571,8 +1571,12 @@ grantsTalents(this: ModifierContainer) : boolean {
       case 'focus':
       case 'talent':
       case 'universalModifier':
-      case 'weapon':
-        return this.system.description?.trim() ?? '';
+      case 'weapon': {
+			const description = this.system.description ?? "";
+			 const parts=  description.split("\n")
+			 .map( x=> x.trim());
+        return `${this.displayedName.toString()}\n` + parts.join("\n");
+	 }
       case 'characterClass':
       case 'skillCard':
       case 'socialCard':

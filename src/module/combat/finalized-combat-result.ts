@@ -250,7 +250,7 @@ export class FinalizedCombatResult {
 		const manualApply = !PersonaSettings.autoApplyCombatResults() || !game.users.contents.some( x=> x.isGM && x.active);
 		const attackerName = initiator.token?.name ?? initiatorToken?.name ?? initiator.displayedName;
 		const attackerToken = initiatorToken;
-		const attackerPersona = (initiator as ValidAttackers).persona();
+		const attackerPersona = initiator.isValidCombatant() && (initiator.basePersona.equals(initiator.persona())) ? initiator.persona(): undefined;
 		const html = await renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attackerToken, attackerPersona, attackerName, effectName,  attacks, escalation: 0, result: this, costs: this.costs, manualApply});
 		const chatMsg = await ChatMessage.create( {
 			speaker: {
@@ -450,28 +450,10 @@ export class FinalizedCombatResult {
 		const actor = PersonaDB.findActor(change.actor);
 		const token  = change.actor.token ? PersonaDB.findToken(change.actor.token) as PToken: undefined;
 		for (const dmg of change.damage)  {
-			if (Number.isNaN(dmg.hpChange)) {
-				PersonaError.softFail("NaN damage!");
-				continue;
-			}
-			if (dmg.hpChange != 0) {
-				if (dmg.hpChange < 0) {
-					setTimeout( async () => {
-						const CR = await TriggeredEffect
-							.autoTriggerToCR("on-damage", actor);
-						if (CR) {
-							await CR?.toMessage("Reaction (Taking Damage)" , actor);
-						}
-					});
-				}
-				if (token) {
-					const power = this.power;
-					if (power && !power.isAoE()) {
-						await PersonaSFX.onDamage(token, dmg.hpChange, dmg.damageType, power);
-					}
-					Hooks.callAll("onTakeDamage", token, dmg.hpChange, dmg.damageType);
-				}
-				await actor.modifyHP(dmg.hpChange);
+			try {
+				await this.applyDamage(actor, token, dmg);
+			} catch (e) {
+				PersonaError.softFail(`Error applying Damage to ${actor.name}`, e);
 			}
 		}
 		for (const status of change.addStatus) {
@@ -497,6 +479,31 @@ export class FinalizedCombatResult {
 			mutableState.mpCost *= mpmult;
 			await (actor as PC).modifyMP(mutableState.mpCost);
 		}
+	}
+
+	async applyDamage(actor: ValidAttackers, token: PToken | undefined, dmg: EvaluatedDamage) {
+		if (Number.isNaN(dmg.hpChange)) {
+			PersonaError.softFail("NaN damage!");
+			return;
+		}
+		if (dmg.hpChange == 0) {return;}
+		if (dmg.hpChange < 0) {
+			setTimeout( async () => {
+				const CR = await TriggeredEffect
+					.autoTriggerToCR("on-damage", actor);
+				if (CR) {
+					await CR?.toMessage("Reaction (Taking Damage)" , actor);
+				}
+			});
+		}
+		if (token) {
+			const power = this.power;
+			if (power && !power.isAoE()) {
+				await PersonaSFX.onDamage(token, dmg.hpChange, dmg.damageType, power);
+			}
+			Hooks.callAll("onTakeDamage", token, dmg.hpChange, dmg.damageType);
+		}
+		await actor.modifyHP(dmg.hpChange);
 	}
 
 	async applyOtherEffect(actor: ValidAttackers, token: PToken | undefined, otherEffect:OtherEffect, mutableState: {mpCost: number}): Promise<void> {
@@ -631,6 +638,7 @@ export class FinalizedCombatResult {
 				break;
 			case "gain-levels": {
 				const {gainTarget, value}=  otherEffect;
+				if (!value) {break;}
 				if (gainTarget == "persona" || gainTarget == "both") {
 					await actor.persona().gainLevel(value);
 				}
