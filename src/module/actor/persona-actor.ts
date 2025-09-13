@@ -3944,7 +3944,7 @@ getPrimaryPlayerOwner() : typeof game.users.contents[number] | undefined {
 	return game.users.get(userIdPair[0]);
 }
 
-async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) {
+async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) : Promise<void> {
 	if (typeof amt != "number" || amt == 0 || Number.isNaN(amt)) {return;}
 	switch (buffType) {
 		case "max-hp": {
@@ -3957,6 +3957,19 @@ async addPermaBuff(this: ValidAttackers, buffType: PermaBuffType, amt: number) {
 			await this.update( {"system.combat.bonusMP": newMP});
 			break;
 		}
+		case "str":
+		case "mag":
+		case "end":
+		case "agi":
+		case "luk": { const persona = this.persona();
+			if (persona.source != this) {
+				return await persona.source.addPermaBuff(buffType, amt);
+			}
+			const bonuses = this.system.combat.personaStats.permanentStatsBonuses;
+			bonuses[buffType] += amt;
+			await this.update({ "system.combat.personaStats.permanentStatBonuses": bonuses});
+		}
+			break;
 		default:
 			buffType satisfies never;
 			return;

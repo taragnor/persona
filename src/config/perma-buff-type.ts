@@ -1,6 +1,8 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
+import {PERSONA_STATS_LIST} from "./persona-stats.js";
 
 export const PERMA_BUFF_LIST = [
+	...PERSONA_STATS_LIST,
 	"max-hp",
 	"max-mp",
 ] as const;

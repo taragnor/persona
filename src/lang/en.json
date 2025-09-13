@@ -1073,6 +1073,11 @@
 
 	"persona.permabuff.max-hp": "Max HP",
 	"persona.permabuff.max-mp": "Max MP",
+	"persona.permabuff.str": "Equipped Persona's Strength",
+	"persona.permabuff.agi": "Equipped Persona's Agility",
+	"persona.permabuff.mag": "Equipped Persona's Magic",
+	"persona.permabuff.end": "Equipped Persona's Endurance",
+	"persona.permabuff.luk": "Equipped Persona's Luck",
 
 	"persona.probability.common": "Super Common",
 	"persona.probability.common-minus": "Common",
