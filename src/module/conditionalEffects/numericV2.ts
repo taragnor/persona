@@ -311,15 +311,6 @@ export class NumericV2 {
 							, 0);
 				}, 0);
 			}
-				// const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
-				// if (!subject) return null;
-				// const item = game.items.get(op.itemId);
-				// if (!item) return null;
-				// return subject.items.contents
-				// .reduce( (a,x) => (x.name == item.name && ("amount" in x.system))
-				// 	? (a + x.system.amount)
-				// 	: a
-				// 	, 0);
 			case "scan-level": {
 				const targetActor = getSubjectActors(op, situation, source, "conditionTarget")[0];
 				if (!targetActor || !targetActor.isValidCombatant()) {return null;}

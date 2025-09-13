@@ -726,6 +726,7 @@ form h5 {
 	margin: 10px;
 	color: white;
 	padding: 10px;
+	opacity: 0.6;
 }
 
 .region-panel .points-of-interest h3 {
