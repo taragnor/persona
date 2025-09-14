@@ -3157,7 +3157,7 @@ async generateTreasureAndXP() {
 	}
 	this.defeatedFoes = [];
 	const pcs = actors.filter( x => x.isPC());
-	const party = actors.filter( x=> x.isPC() ||  x.isNPCAlly() || x.isDMon());
+	const party = actors.filter( x=> x.isPC() ||  x.isNPCAlly() || (x.isDMon() && x.hasPlayerOwner));
 	try {
 		await Metaverse.awardXP(defeatedFoes as Shadow[], party);
 	} catch  {

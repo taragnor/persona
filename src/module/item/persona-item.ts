@@ -1217,6 +1217,10 @@ grantsTalents(this: ModifierContainer) : boolean {
     return this.system.targets;
   }
 
+toSkillCard(this: Power) : Promise<SkillCard> {
+	return PersonaItem.createSkillCardFromPower(this);
+}
+
   static async createSkillCardFromPower(power: Power) : Promise<SkillCard> {
     if (power.system.type != 'power') {
       throw new Error('Not a power');

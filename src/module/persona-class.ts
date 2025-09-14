@@ -31,6 +31,7 @@ import {PersonaTag} from "../config/creature-tags.js";
 import {Defense} from "../config/defense-types.js";
 import {DamageCalculator, NewDamageParams} from "./combat/damage-calc.js";
 import {PersonaSFX} from "./combat/persona-sfx.js";
+import {PersonaStat} from "../config/persona-stats.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
 	#combatStats: U<PersonaCombatStats>;
@@ -201,6 +202,21 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			return source.system.scanLevel ?? 0;
 		}
 		return 0;
+	}
+
+	async resetCombatStats() {
+		const source = this.source;
+		const stats = source.system.combat.personaStats.stats;
+		for (const k of Object.keys(stats)) {
+			stats[k as PersonaStat] = 1;
+		}
+		await source.update({
+"system.combat.personaStats.stats": stats
+		});
+		if (source.isNPCAlly() || source.isShadow()) {
+			await this.combatStats.autoSpendStatPoints();
+		}
+
 	}
 
 	get scanLevelRaw() : number {
@@ -961,7 +977,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
          }
 			case "shadow":
 				return {
-					baseAmt: DamageCalculator.getWeaponDamageByWpnLevel(Math.floor(this.level / 10) + 1),
+					baseAmt: DamageCalculator.getWeaponDamageByWpnLevel(Math.floor(this.level / 10)),
 					extraVariance: 0
 				};
 			default:

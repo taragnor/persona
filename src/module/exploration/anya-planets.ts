@@ -30,8 +30,12 @@ export class AnyaPlanets {
 		this.inner.createPlanet("BattleGround Nezumi", 3);
 		this.middle.createPlanet("Crimson Glow Asteroid Field(Sini)", 0);
 		this.middle.createPlanet("Desolate Asteroid (marines)", 2);
-		this.middle.createPlanet("Alestone Asteroid Field(Sini-R)", 4);
-		this.middle.createPlanet("Infernal Asteroid (demons)", 6);
+		//Tab Modified
+		this.middle.createPlanet("Alestone Asteroid Field(Sini-R)", 6);
+		this.middle.createPlanet("Infernal Asteroid (demons)", 4);
+		//Original positons
+		// this.middle.createPlanet("Alestone Asteroid Field(Sini-R)", 4);
+		// this.middle.createPlanet("Infernal Asteroid (demons)", 6);
 		this.outer.createPlanet("Fantastic Biodome (DW basic)", 1);
 		this.outer.createPlanet("Odd Biodome (DW Rev)", 2 );
 

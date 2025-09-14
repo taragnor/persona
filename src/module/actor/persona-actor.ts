@@ -1937,8 +1937,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return arr;
 	}
 
-	isDMon(this: Shadow) : boolean {
-		return this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon");
+	isDMon() : boolean {
+		return this.isShadow() && (this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon"));
 	}
 
 	isPersona(): boolean {
@@ -4156,8 +4156,14 @@ Hooks.on("createActor", async function (actor: PersonaActor) {
 	}
 });
 
-Hooks.on("updateActor", function (actor: PersonaActor) {
+Hooks.on("updateActor", async function (actor: PersonaActor) {
 	actor.clearCache();
+	if (actor.isShadow()) {
+		const xp= LevelUpCalculator.minXPForEffectiveLevel(actor.system.combat.personaStats.pLevel);
+		if (actor.system.combat.personaStats.xp < xp) {
+			await actor.update({"system.combat.personaStats.xp" : xp});
+		}
+	}
 });
 
 

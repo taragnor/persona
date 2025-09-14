@@ -12,7 +12,7 @@
 		<span>
 			{{localize "persona.statistic.level"}}:
 		</span>
-		{{#if (isPCOrNPCAlly actor)}}
+		{{#if (canGainLevels actor)}}
 		<span>
 			{{actor.basePersona.level}}
 		</span>
