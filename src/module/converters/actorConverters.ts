@@ -88,6 +88,7 @@ export class ActorConverters {
 				combat: {
 					...json.combat,
 					talents: talents.map( x=> x.id),
+					lastLearnedLevel: 0,
 					statusResists,
 					personaStats: {
 						...json.combat.personaStats,
@@ -104,6 +105,7 @@ export class ActorConverters {
 	}
 
 	static async toDMon(shadow: Shadow): Promise<Shadow> {
+		//TODO: remember to make linked token
 		if (!shadow.isShadow()) {
 			throw new PersonaError("Can't convert a non-shadow into a d-mon.");
 		}
@@ -135,6 +137,10 @@ export class ActorConverters {
 					...json.personaConversion,
 					baseShadowId: shadow.system.personaConversion.baseShadowId ?? shadow.id,
 					startingLevel: shadow.system.personaConversion.startingLevel,
+				},
+				combat: {
+					...json.combat,
+					lastLearnedLevel: 0,
 				}
 			},
 		};

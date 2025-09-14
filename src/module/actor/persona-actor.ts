@@ -1147,16 +1147,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get powerLearningListFull() : readonly Readonly<{power: Power, level: number}>[] {
 		if (!this.isValidCombatant()) {return [];}
+		let powerList = this.system.combat.powersToLearn;
 		if (this.isShadow()) {
 			const baseId= (this.system.personaConversion.baseShadowId);
 			if (baseId) {
 				const baseShadow = PersonaDB.getActorById(baseId);
-				if (baseShadow) {
-					return baseShadow.powerLearningList;
+				if (baseShadow && baseShadow.isShadow()) {
+					powerList = baseShadow.system.combat.powersToLearn;
 				}
 			}
 		}
-		return this.system.combat.powersToLearn
+		return powerList
 			.sort( (a,b) => a.level - b.level)
 			.map( data => {
 				const power = PersonaDB.getPower(data.powerId);
@@ -1171,7 +1172,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get powerLearningList() : readonly Readonly<{power: Power, level: number}>[] {
 		if (!this.isValidCombatant()) {return [];}
 		return this.powerLearningListFull
-			.filter( x=> x.level > this.system.combat.lastLearnedLevel)
+			.filter( x=> x.level > (this.system.combat.lastLearnedLevel ?? 0))
 			.filter( x=> this.checkPowerLegality(x.power ));
 	}
 

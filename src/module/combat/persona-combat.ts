@@ -3148,7 +3148,7 @@ async generateTreasureAndXP() {
 		.contents.flatMap( x=> x?.actor ? [x.actor] : [] );
 	const shadows= actors
 		.filter (x => x.system.type == 'shadow');
-	if (shadows.some(x=> x.hp > 0)) {
+	if (shadows.some(x=> !x.hasPlayerOwner && x.hp > 0)) {
 		return;
 	}
 	const defeatedFoes = this.defeatedFoes.concat(shadows);
@@ -3157,7 +3157,7 @@ async generateTreasureAndXP() {
 	}
 	this.defeatedFoes = [];
 	const pcs = actors.filter( x => x.isPC());
-	const party = actors.filter( x=> x.isPC() ||  x.isNPCAlly());
+	const party = actors.filter( x=> x.isPC() ||  x.isNPCAlly() || x.isDMon());
 	try {
 		await Metaverse.awardXP(defeatedFoes as Shadow[], party);
 	} catch  {
