@@ -18,6 +18,7 @@ import { DAYS } from "../../../config/days.js";
 import {REAL_DEFENSE_TYPES} from "../../../config/defense-types.js";
 import {PersonaEffectContainerBaseSheet} from "../../item/sheets/effect-container.js";
 import {TarotPrinter} from "../../printers/tarot-list.js";
+import {TalentPrinter} from "../../printers/talent-list.js";
 
 export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
@@ -100,6 +101,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 		html.find(".question-list .question-name").on("click", this.selectQuestion.bind(this));
 		html.find(".questions-breakdown .back-button").on("click", this.goBackToIndex.bind(this));
 		html.find(".showTarotList").on("click", (ev) => this.showTarotTable(ev));
+		html.find(".showTalentsTable").on("click", (ev) => this.showTalentTable(ev));
 		this.refreshQuestionFocus();
 
 	}
@@ -231,6 +233,10 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
 	showTarotTable(_ev: JQuery.ClickEvent) {
 		void TarotPrinter.open();
+	}
+
+	showTalentTable(_ev : JQuery.ClickEvent) {
+		void TalentPrinter.open();
 	}
 }
 

@@ -37,7 +37,7 @@
 				<td> {{localizeAilmentLevel power}}</td>
 				{{/if}}
 			</tr>
-			{{#if (and power.description (not (canUseShortFormPower power)))}}
+			{{#if (and (hasDescriptionText power) (not (canUseShortFormPower power)))}}
 			<tr>
 				<td class="description" colspan="9">
 					{{power.description}}

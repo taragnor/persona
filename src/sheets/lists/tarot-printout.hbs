@@ -1,10 +1,10 @@
 <section class="tarot-list">
-	<h2> Tarot List </h2>
+	<h1> Tarot List </h1>
 	{{#each tarotDeck as |card i|}}
 	<div class="card" data-tarot-id="{{card.id}}">
-		<h3>
+		<h2>
 			{{card.displayedName}}
-		</h3>
+		</h2>
 		<div class="focus-list">
 			{{#each (tarotFocii card) as |focus j|}}
 			<div class="focus" data-focus-id="{{focus.id}}">

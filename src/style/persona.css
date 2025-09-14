@@ -1317,9 +1317,12 @@ img.item-icon {
 }
 
 
+.talent-list .talent,
 .tarot-list .card {
-	padding: 5px;
-	border: 2px;
+	border: 2px solid white;   /* 2px thick, solid line, dark gray */
+	border-radius: 8px;       /* rounded corners */
+	padding: 1em;             /* optional: gives space inside */
+	margin: 10px;
 }
 
 .focus-list .focus {
@@ -1327,10 +1330,12 @@ img.item-icon {
 	padding-right: 5px;
 }
 
+.talent-list .name,
 .focus-list .focus-name {
 	font-weight: bold;
 }
 
+.talent-list .description,
 .focus-list .description {
 	font-style: italic;
 }

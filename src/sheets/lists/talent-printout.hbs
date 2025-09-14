@@ -1,0 +1,16 @@
+<div>
+	<section class="talent-list">
+		<h1> Talent List </h1>
+		{{#each talentList as |talent i|}}
+		<div class="talent" data-talent-id="{{talent.id}}">
+			<h2 class="name">
+				{{talent.displayedName}} :
+			</h2>
+			<div class="description">
+				{{talent.description}}
+			</div>
+		</div>
+		{{/each}}
+	</section>
+</div>
+

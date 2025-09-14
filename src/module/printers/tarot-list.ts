@@ -58,7 +58,7 @@ export class TarotPrinter extends Application {
 
 Hooks.on("updateItem", function (item: PersonaItem ) {
 	const instance = TarotPrinter._instance;
-	if (instance && item?.parent?.type == "tarot")  {
+	if (instance && item?.parent?.isTarot())  {
 		instance.render(true);
 	}
 

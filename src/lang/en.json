@@ -1117,6 +1117,7 @@
 
 	"persona.applications.powerPrinter" : "Persona Powers List",
 	"persona.applications.tarotPrinter" : "Persona Tarot List",
+	"persona.applications.talentPrinter" : "Talent List",
 
 	"persona.calculation.operation.multiply": "Multiply",
 	"persona.calculation.operation.add": "Add",

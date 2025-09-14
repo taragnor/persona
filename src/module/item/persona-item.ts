@@ -1587,29 +1587,30 @@ grantsTalents(this: ModifierContainer) : boolean {
     }
   }
 
-  get description(): string {
-    switch (this.system.type) {
-      case 'consumable':
-      case 'item':
-      case 'power':
-      case 'focus':
-      case 'talent':
-      case 'universalModifier':
-      case 'weapon': {
+get description(): SafeString {
+	switch (this.system.type) {
+		case 'consumable':
+		case 'item':
+		case 'power':
+		case 'focus':
+		case 'talent':
+		case 'universalModifier':
+		case 'weapon': {
 			const description = this.system.description ?? "";
-			 const parts=  description.split("\n")
-			 .map( x=> x.trim());
-        return parts.join("<br>");
-	 }
-      case 'characterClass':
-      case 'skillCard':
-      case 'socialCard':
-        return '';
-      default:
-        this.system satisfies never;
-        return '';
-    }
-  }
+			const parts=  description.split("\n")
+			.map( x=> x.trim());
+			const join = parts.join("<br>");
+			return new Handlebars.SafeString(join);
+		}
+		case 'characterClass':
+		case 'skillCard':
+		case 'socialCard':
+			return '';
+		default:
+			this.system satisfies never;
+			return '';
+	}
+}
 
   defaultConditionalEffectType() : TypedConditionalEffect['conditionalType'] {
     if (this.isTrulyUsable()) {return 'on-use';}

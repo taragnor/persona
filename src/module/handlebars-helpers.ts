@@ -821,6 +821,9 @@ export class PersonaHandleBarsHelpers {
 			return actor.focii()
 				.sort( sortFn) ;
 		},
+		"hasDescriptionText": function(power:Power) : boolean{
+			return (power.system.description ?? "").length > 0;
+		}
 	};
 
 
