@@ -477,16 +477,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async resetStats(_ev: JQuery.ClickEvent) {
 		if (!await HTMLTools.confirmBox("Reset", "Really reset stats?")) {return;}
 		await this.actor.basePersona.resetCombatStats();
-		// const stats = this.actor.system.combat.personaStats.stats;
-		// for (const k of Object.keys(stats)) {
-		// 	stats[k as PersonaStat] = 1;
-		// }
-		// await this.actor.update({
-		// "system.combat.personaStats.stats": stats
-		// });
-		// if (this.actor.isNPCAlly() || this.actor.isShadow()) {
-		// 	await this.actor.basePersona.combatStats.autoSpendStatPoints();
-		// }
 	}
 
 	static async getDamage(persona: PersonaActor | Persona, usable: Usable) {
