@@ -105,27 +105,20 @@ export class TriggeredEffect {
 			return result;
 		}
 		const situationCopy = { ...situation, trigger } as Situation; //copy the object so it doesn't permanently change it
-		let triggers : ModifierContainer[];
+		let triggers : ModifierContainer[] = PersonaDB.getGlobalModifiers().slice();
 		if (actor) {
 			// triggers = actor.triggers;
 			triggers = actor.triggersOn(trigger);
-		} else {
-			const roomEffects : UniversalModifier[] = [];
-			if (game.combat) {
-				roomEffects.push(...(game.combat as PersonaCombat)?.getRoomEffects() ?? []);
-			} else {
-				const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
-				roomEffects.push(...arr);
-			}
-			const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
-			triggers = removeDuplicates(
-				[
-					...PersonaDB.getGlobalModifiers(), //testin only
-					...roomEffects,
-					...PCTriggers,
-				]
-			);
 		}
+		if (game.combat) {
+			triggers.push(...(game.combat as PersonaCombat)?.getRoomEffects() ?? []);
+		} else {
+			const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
+			triggers.push(...arr);
+			const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
+			triggers.push(...PCTriggers);
+		}
+		triggers = removeDuplicates(triggers);
 		for (const trig of triggers) {
 			for (const eff of trig.getTriggeredEffects(actor ?? null)) {
 				try {
