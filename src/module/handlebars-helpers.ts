@@ -12,7 +12,7 @@ import { PersonaError } from "./persona-error.js";
 import { FREQUENCY } from "../config/frequency.js";
 import { CardEvent } from "../config/social-card-config.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
-import { Carryable, CClass, SocialCard } from "./item/persona-item.js";
+import { Carryable, CClass, ModifierContainer, SocialCard } from "./item/persona-item.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaItem } from "./item/persona-item.js";
@@ -121,7 +121,7 @@ export class PersonaHandleBarsHelpers {
 
 		},
 		"canGainLevels": function (actor: PersonaActor) : boolean {
-			if (!actor.isValidCombatant()) return false;
+			if (!actor.isValidCombatant()) {return false;}
 			return actor.isRealPC() || actor.isNPCAlly() || actor.isDMon() || actor.isPersona();
 		},
 		"isShadow" : (actor: PersonaActor) => {
@@ -457,8 +457,12 @@ export class PersonaHandleBarsHelpers {
 			return item.tagListLocalized(null);
 		},
 
-		"getCreatureTagList": function (actor: PersonaActor) : string[] {
-			return actor.tagList.map(tag=> localize(CREATURE_TAGS[tag]));
+		"getCreatureTagList": function (actor: PersonaActor) : SafeString[] {
+			const ret =  actor.tagList.map(tag=> {
+				if (tag instanceof PersonaItem) {return tag.displayedName;}
+				return new Handlebars.SafeString(localize(CREATURE_TAGS[tag]));
+			});
+			return ret;
 		},
 		"getSocialCardTagList": function (card: SocialCard) : string {
 			return card.cardTags;
@@ -714,7 +718,7 @@ export class PersonaHandleBarsHelpers {
 					someObj = someObj["parent"] as object;
 				}
 			}
-			return ConditionalEffectManager.getConditionalType(ce, item);
+			return ConditionalEffectManager.getConditionalType(ce, item as ModifierContainer);
 		},
 
 		"hasPersona": function (actor: PersonaActor) : boolean {

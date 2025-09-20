@@ -603,7 +603,10 @@ function DeriveOperand1 (old: NumericComparisonOld) : NumericOperand {
 						varType: old.varType,
 						variableId: old.variableId,
 					};
+				default:
+					old satisfies never;
 			}
+			break;
 		case "escalation":
 			return {
 				comparisonTarget: "deprecated",
@@ -611,8 +614,9 @@ function DeriveOperand1 (old: NumericComparisonOld) : NumericOperand {
 			};
 		default:
 			old satisfies never;
-			throw new PersonaError(`Unhandled choice -- ${(old as any)?.comparisonTarget}`);
 	}
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+	throw new PersonaError(`Unhandled choice -- ${(old as any)?.comparisonTarget}`);
 }
 
 function deriveConstant (oldC: NumericComparator | DerivedComparator) : NumericOperand & (ConstantComparison | OddEvenComparison)  {

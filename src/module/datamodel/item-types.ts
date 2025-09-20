@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { damageNew } from "./power-dm.js";
 import { powerOnlyUsableProps } from "./power-dm.js";
@@ -102,6 +101,18 @@ class WeaponDM extends foundry.abstract.TypeDataModel {
 
 class FocusDM extends foundry.abstract.TypeDataModel {
 	get type() { return "focus" as const;}
+	static override defineSchema() {
+		const ret = {
+			description: new txt(),
+			defensive: new bool(),
+			...effects (false),
+		};
+		return ret;
+	}
+}
+
+class TagSchema extends foundry.abstract.TypeDataModel {
+	get type() { return "tag" as const;}
 	static override defineSchema() {
 		const ret = {
 			description: new txt(),
@@ -429,7 +440,8 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 	}
 
 	get appendedText() : string {
-		const data = this as SocialCard["system"]["events"][number]["choices"][number];
+		type Choice = SocialCard["system"]["events"][number]["choices"][number];
+		const data = this as Choice;
 		let starterTxt = "";
 
 		const roll = data.roll;
@@ -501,17 +513,18 @@ export const ITEMMODELS = {
 	skillCard: SkillCardSchema,
 	// job: JobItemSchema,
 	socialCard: SocialCardSchema,
+	tag: TagSchema,
 } as const;
 
-namespace Test{
-	type CardSChema = Foundry.SystemDataObjectFromDM<typeof SocialCardSchema>;
-	type CCEDM = Foundry.SystemDataObjectFromDM<typeof SocialCardEventDM>;
-	type CCDM = Foundry.SystemDataObjectFromDM<typeof CardChoiceDM>;
+//namespace Test{
+//	type CardSChema = Foundry.SystemDataObjectFromDM<typeof SocialCardSchema>;
+//	type CCEDM = Foundry.SystemDataObjectFromDM<typeof SocialCardEventDM>;
+//	type CCDM = Foundry.SystemDataObjectFromDM<typeof CardChoiceDM>;
 
-	//testing the types, purely for debug purposes
-	type CEDM = Foundry.SystemDataObjectFromDM<typeof ConditionalEffectDM>;
-	type CClass = Foundry.SystemDataObjectFromDM<typeof CharacterClassDM>;
-	type PowerSO= Foundry.SystemDataObjectFromDM<typeof PowerSchema>;
-	type SC = Foundry.SystemDataObjectFromDM<typeof SkillCardSchema>;
+//	//testing the types, purely for debug purposes
+//	type CEDM = Foundry.SystemDataObjectFromDM<typeof ConditionalEffectDM>;
+//	type CClass = Foundry.SystemDataObjectFromDM<typeof CharacterClassDM>;
+//	type PowerSO= Foundry.SystemDataObjectFromDM<typeof PowerSchema>;
+//	type SC = Foundry.SystemDataObjectFromDM<typeof SkillCardSchema>;
 
-}
+//}

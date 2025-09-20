@@ -3,7 +3,7 @@ import { PersonaStat } from "../../../config/persona-stats.js";
 import { PowerPrinter } from "../../printers/power-list.js";
 import { PersonaRoller } from "../../persona-roll.js";
 import { PersonaDB } from "../../persona-db.js";
-import { Usable, UsableAndCard } from "../../item/persona-item.js";
+import { Tag, Usable, UsableAndCard } from "../../item/persona-item.js";
 import { NPCAlly, PersonaActor } from "../persona-actor.js";
 import { Consumable } from "../../item/persona-item.js";
 import { Logger } from "../../utility/logger.js";
@@ -171,6 +171,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			case "universalModifier":
 				throw new PersonaError("Universal Modifiers can't be added to sheets");
 			case "socialCard":
+				return undefined;
+			case "tag":
+				await this.actor.addCreatureTag(item as Tag);
 				return undefined;
 			default:
 				item.system satisfies never;

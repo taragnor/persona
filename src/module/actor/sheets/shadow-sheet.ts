@@ -34,13 +34,10 @@ export class ShadowSheet extends CombatantSheetBase {
 		const item: PersonaItem = await Item.implementation.fromDropData(itemD);
 		switch (item.system.type) {
 			case "talent":
-				return super._onDropItem(_event, itemD);
 			case "consumable":
-				return super._onDropItem(_event, itemD);
 			case "power":
-				return super._onDropItem(_event, itemD);
 			case "focus":
-				return super._onDropItem(_event, itemD);
+			case "tag":
 			case "characterClass":
 				return super._onDropItem(_event, itemD);
 			case "universalModifier":

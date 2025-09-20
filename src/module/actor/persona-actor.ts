@@ -23,7 +23,7 @@ import { PersonaScene } from "../persona-scene.js";
 import { poisonDamageMultiplier } from "../../config/shadow-types.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { RealDamageType } from "../../config/damage-types.js";
-import { Carryable, CraftingMaterial, SkillCard } from "../item/persona-item.js";
+import { Carryable, CraftingMaterial, SkillCard, Tag } from "../item/persona-item.js";
 import { UsableAndCard } from "../item/persona-item.js";
 import { ValidSocialTarget } from "../social/persona-social.js";
 import { ValidAttackers } from "../combat/persona-combat.js";
@@ -31,7 +31,7 @@ import { FlagData } from "../../config/actor-parts.js";
 import { TarotCard } from "../../config/tarot.js";
 import { removeDuplicates } from "../utility/array-tools.js";
 import { testPreconditions } from "../preconditions.js";
-import { CreatureTag } from "../../config/creature-tags.js";
+import { CreatureTag, InternalCreatureTag } from "../../config/creature-tags.js";
 import { PersonaSocial } from "../social/persona-social.js";
 import { TAROT_DECK } from "../../config/tarot.js";
 import { localize } from "../persona.js";
@@ -309,7 +309,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	hasTag(this: ValidAttackers ,tag : CreatureTag  ): boolean {
-		return this.tagList.includes(tag);
+		return this.tagListPartial.includes(tag);
 	}
 
 	get nonUsableInventory() : (SkillCard | InvItem | Weapon)[] {
@@ -1637,11 +1637,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return modList;
 	}
 
-	actorMainModifiers(): readonly ModifierContainer[] {
+	actorMainModifiers(options ?: {omitTags ?: boolean}): readonly ModifierContainer[] {
+		const tags = (options && options.omitTags) ? [] : this.realTags();
 		return [
 			...this.passiveItems(),
 			...this.getAllSocialFocii(),
 			...this.equippedItems(),
+			...tags,
 		].filter (x=> x.getEffects(this).length > 0);
 	}
 
@@ -1848,9 +1850,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.persona().getBonuses("instantDeathResistanceMult").total(situation, "percentage");
 	}
 
-	mainModifiers(options?: {omitPowers?: boolean} ): readonly ModifierContainer[] {
+	mainModifiers(...args: Parameters<Persona["mainModifiers"]>): readonly ModifierContainer[] {
 		if (!this.isValidCombatant()) {return [];}
-		return this.persona().mainModifiers(options);
+		return this.persona().mainModifiers(...args);
 	}
 
 	userDefensivePowers(this: ValidAttackers) : ModifierContainer [] {
@@ -3735,15 +3737,34 @@ onRevive() : Promise<void> {
 }
 
 
-get tagList() : CreatureTag[] {
+get tagListNames(): string[] {
+	return this.tagListPartial
+		.map( tag=> {
+			return PersonaDB.allTags().get(tag)?.displayedName?.toString()
+				?? tag;
+		});
+}
+
+realTags() : Tag[] {
+	const ret =  this.tagListPartial.flatMap( tag => {
+		const IdCheck = PersonaDB.allTags().get(tag);
+		if (IdCheck) {return [IdCheck];}
+		const nameCheck = PersonaDB.allTagNames().get(tag);
+		if (nameCheck) {return [nameCheck];}
+		return [];
+	});
+	return ret;
+}
+
+get tagListPartial() : CreatureTag[] {
 	//NOTE: This is a candidate for caching
 	if (this.isTarot()) { return []; }
-	const list = this.system.creatureTags.slice();
+	const list : CreatureTag[] = this.system.creatureTags.slice();
 	if (this.isValidCombatant()) {
-		list.push(...this.persona().tagList());
+		list.push(...this.persona().tagListPartial());
 	}
 	if (this.isValidCombatant()) {
-		const extraTags = this.mainModifiers().flatMap( x=> x.getConferredTags(this as ValidAttackers));
+		const extraTags = this.mainModifiers({omitPowers:true, omitTalents: true, omitTags: true}).flatMap( x=> x.getConferredTags(this as ValidAttackers));
 		for (const tag of extraTags) {
 			if (!list.includes(tag))
 			{list.push(tag);}
@@ -3782,8 +3803,13 @@ get tagList() : CreatureTag[] {
 	}
 }
 
+get tagList() : (Tag | InternalCreatureTag)[] {
+	return this.tagListPartial
+	.map(tag => PersonaDB.allTags().get(tag) ?? (tag as InternalCreatureTag));
+}
+
 hasCreatureTag(tag: CreatureTag) : boolean{
-	return this.tagList.includes(tag);
+	return this.tagListPartial.includes(tag);
 }
 
 async deleteCreatureTag(index: number) : Promise<void> {
@@ -3792,9 +3818,13 @@ async deleteCreatureTag(index: number) : Promise<void> {
 	await this.update( {"system.creatureTags": tags});
 }
 
-async addCreatureTag() : Promise<void> {
+async addCreatureTag(tag ?: Tag) : Promise<void> {
 	const tags = this.system.creatureTags;
-	tags.push("neko");
+	if (tag && tag instanceof PersonaItem) {
+		tags.push(tag.id);
+	} else {
+		tags.push("neko");
+	}
 	await this.update( {"system.creatureTags": tags});
 }
 

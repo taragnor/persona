@@ -549,26 +549,27 @@ getIconPath(this: Power | Carryable, user?: ValidAttackers | Persona) : string |
     return this.hasTag('follow-up');
   }
 
-  isDefensive(): boolean {
-    switch (this.system.type) {
-      case 'power':
-        return this.system.subtype == 'defensive';
-      case 'focus':
-      case 'item':
-      case 'talent':
-      case 'weapon':
-      case 'consumable':
-        return (this as Usable | Focus | InvItem | Talent | Weapon).tagList(null).includes('defensive');
-      case 'universalModifier':
-      case 'skillCard':
-      case 'socialCard':
-      case 'characterClass':
-        return false;
-      default:
-        this.system satisfies never;
-        return false;
-    }
-  }
+isDefensive(): boolean {
+	switch (this.system.type) {
+		case 'power':
+			return this.system.subtype == 'defensive';
+		case 'focus':
+		case 'item':
+		case 'talent':
+		case 'weapon':
+		case 'consumable':
+			return (this as Usable | Focus | InvItem | Talent | Weapon).tagList(null).includes('defensive');
+		case 'universalModifier':
+		case 'tag':
+		case 'skillCard':
+		case 'socialCard':
+		case 'characterClass':
+			return false;
+		default:
+			this.system satisfies never;
+			return false;
+	}
+}
 
 	isUsableType() : this is Usable {
 		switch (this.system.type) {
@@ -614,6 +615,7 @@ getIconPath(this: Power | Carryable, user?: ValidAttackers | Persona) : string |
       case 'socialCard':
       case 'item':
       case 'weapon':
+		 case 'tag':
         return false;
       default:
         this.system satisfies never;
@@ -651,27 +653,28 @@ getIconPath(this: Power | Carryable, user?: ValidAttackers | Persona) : string |
   }
 
 
-  /** @deprecated
+/** @deprecated
   tags Localized */
-  get tags() : string {
-    if (PersonaSettings.debugMode()) {
-      PersonaError.softFail('tags getter is deprecated, tagListLocalized instead');
-    }
-    switch (this.system.type) {
-      case 'consumable':
-      case 'item':
-      case 'power':
-      case 'weapon':
-      case 'skillCard':
-        return (this as UsableAndCard | Weapon | InvItem).tagListLocalized(null);
-      case 'talent':
-      case 'focus':
-      case 'characterClass':
-      case 'universalModifier':
-      case 'socialCard':
-        return 'ERROR';
-    }
-  }
+get tags() : string {
+	if (PersonaSettings.debugMode()) {
+		PersonaError.softFail('tags getter is deprecated, tagListLocalized instead');
+	}
+	switch (this.system.type) {
+		case 'consumable':
+		case 'item':
+		case 'power':
+		case 'weapon':
+		case 'skillCard':
+			return (this as UsableAndCard | Weapon | InvItem).tagListLocalized(null);
+		case 'talent':
+		case 'focus':
+		case 'characterClass':
+		case 'universalModifier':
+		case 'tag':
+		case 'socialCard':
+			return 'ERROR';
+	}
+}
 
   get slotLocalized() : SafeString {
     if (!this.isPower()) {
@@ -929,6 +932,7 @@ getIconPath(this: Power | Carryable, user?: ValidAttackers | Persona) : string |
       case 'talent':
       case 'universalModifier':
       case 'socialCard':
+		 case "tag":
         return false;
       default:
         this.system satisfies never;
@@ -1567,29 +1571,30 @@ toSkillCard(this: Power) : Promise<SkillCard> {
 	  }
 	}
 
-  get tooltip(): string {
-    switch (this.system.type) {
-      case 'consumable':
-      case 'item':
-      case 'power':
-      case 'focus':
-      case 'talent':
-      case 'universalModifier':
-      case 'weapon': {
+get tooltip(): string {
+	switch (this.system.type) {
+		case 'consumable':
+		case 'item':
+		case 'power':
+		case 'focus':
+		case 'talent':
+		case 'universalModifier':
+		case 'tag':
+		case 'weapon': {
 			const description = this.system.description ?? "";
-			 const parts=  description.split("\n")
-			 .map( x=> x.trim());
-        return `${this.displayedName.toString()}\n` + parts.join("\n");
-	 }
-      case 'characterClass':
-      case 'skillCard':
-      case 'socialCard':
-        return '';
-      default:
-        this.system satisfies never;
-        return '';
-    }
-  }
+			const parts=  description.split("\n")
+			.map( x=> x.trim());
+			return `${this.displayedName.toString()}\n` + parts.join("\n");
+		}
+		case 'characterClass':
+		case 'skillCard':
+		case 'socialCard':
+			return '';
+		default:
+			this.system satisfies never;
+			return '';
+	}
+}
 
 get description(): SafeString {
 	switch (this.system.type) {
@@ -1599,6 +1604,7 @@ get description(): SafeString {
 		case 'focus':
 		case 'talent':
 		case 'universalModifier':
+		case 'tag':
 		case 'weapon': {
 			const description = this.system.description ?? "";
 			const parts=  description.split("\n")
@@ -1823,9 +1829,13 @@ get description(): SafeString {
     return this.system.type == 'consumable';
   }
 
-	isWeapon() : this is Weapon {
-		return this.system.type == "weapon";
-	}
+isWeapon() : this is Weapon {
+	return this.system.type == "weapon";
+}
+
+isTag() : this is Tag {
+	return this.system.type == "tag";
+}
 
 	isCarryableType(): this is Carryable  {
 		switch (this.system.type) {
@@ -2713,13 +2723,14 @@ export type Activity = SocialCard;
 export type SocialCard = Subtype<PersonaItem, 'socialCard'>;
 export type SkillCard = Subtype<PersonaItem, 'skillCard'>;
 export type Carryable = InvItem | Weapon | Consumable | SkillCard;
+export type Tag = Subtype<PersonaItem, "tag">;
 
 type CraftingInventoryItem= InvItem & {system: {slot: "crafting"}};
 export type CraftingMaterial = CraftingInventoryItem | Consumable;
 
 export type UniversalModifier = Subtype<PersonaItem, 'universalModifier'>;
 
-export type ModifierContainer = Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier | SkillCard;
+export type ModifierContainer = Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier | SkillCard | Tag;
 
 export type PowerContainer = Consumable | Power | ModifierContainer;
 export type Usable = Power | Consumable ;

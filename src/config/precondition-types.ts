@@ -1,14 +1,13 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { NumericComparisonPC } from "./numeric-comparison.js";
 import { BooleanComparisonPC } from "./boolean-comparison.js";
-import { PC } from "../module/actor/persona-actor.js";
-import { Shadow } from "../module/actor/persona-actor.js";
 import { TarotCard } from "./tarot.js";
 import { PowerTag } from "../config/power-tags.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PowerType } from "../config/effect-types.js";
 import { DamageType } from "../config/damage-types.js";
 import { Trigger } from "../config/triggers.js";
+import {ValidAttackers} from "../module/combat/persona-combat.js";
 
 export const PRECONDITIONLIST = [
 	"always",
@@ -30,7 +29,7 @@ export const PRECONDITIONTYPES = Object.fromEntries( PRECONDITIONLIST.map(x=> [x
 
 declare global {
 	type Precondition =
-		{actorOwner ?: UniversalActorAccessor<PC | Shadow>}
+		{actorOwner ?: UniversalActorAccessor<ValidAttackers>}
 		& PreconditionComparison
 	;
 }

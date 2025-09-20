@@ -1,3 +1,4 @@
+import {Tag} from "../module/item/persona-item.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 
 export const PERSON_TAG_LIST = [
@@ -68,6 +69,8 @@ export const CREATURE_TAG_LIST = [
 	...AI_TAGS,
 ] as const;
 
-export type CreatureTag = typeof CREATURE_TAG_LIST[number];
+export type InternalCreatureTag = typeof CREATURE_TAG_LIST[number];
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+export type CreatureTag = InternalCreatureTag | Tag["id"];
 
 export const CREATURE_TAGS = HTMLTools.createLocalizationObject(CREATURE_TAG_LIST, "persona.creatureType");

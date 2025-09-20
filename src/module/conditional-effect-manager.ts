@@ -12,7 +12,7 @@ import { ROLL_TAGS_AND_CARD_TAGS } from "../config/roll-tags.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { ModifierTarget } from "../config/item-modifiers.js";
 import { getActiveConsequences } from "./preconditions.js";
-import { ModifierContainer, PowerContainer, Talent } from "./item/persona-item.js";
+import { ModifierContainer, PersonaItem, PowerContainer, Talent } from "./item/persona-item.js";
 import { STATUS_EFFECT_DURATION_TYPES } from "../config/status-effects.js";
 import { Helpers } from "./utility/helpers.js";
 import { multiCheckToArray } from "./preconditions.js";
@@ -46,6 +46,7 @@ import { CONSQUENCELIST } from "../config/effect-types.js";
 import { PRECONDITIONLIST } from "../config/precondition-types.js";
 import { PersonaDB } from "./persona-db.js";
 import {ConsequenceConverter} from "./migration/convertConsequence.js";
+import {ValidAttackers} from "./combat/persona-combat.js";
 
 export class ConditionalEffectManager {
 
@@ -320,8 +321,8 @@ export class ConditionalEffectManager {
 		// setTimeout( () => this.restoreLastClick(html), 100);
 	}
 
-	static getEffects<T extends Actor<any>, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null) : TypedConditionalEffect[] {
-		const conditionalEffects = this.ArrayCorrector(CEObject);
+	static getEffects<T extends PersonaActor, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null) : TypedConditionalEffect[] {
+			const conditionalEffects = Array.isArray(CEObject) ? CEObject : this.ArrayCorrector(CEObject);
 		return conditionalEffects.map( ce=> {
 			const conditions = this.getConditionals(ce.conditions, sourceItem, sourceActor);
 			const consequences= this.getConsequences(ce.consequences, sourceItem, sourceActor);
@@ -401,23 +402,23 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 			return (cond.type == "on-trigger");
 		}
 
-	static getConditionals<T extends Actor<any>, I extends Item<any>>(condObject: DeepNoArray<ConditionalEffect["conditions"]>, sourceItem: I | null, sourceActor: T | null): ConditionalEffect["conditions"] {
+	static getConditionals<T extends PersonaActor, I extends ModifierContainer>(condObject: DeepNoArray<ConditionalEffect["conditions"]>, sourceItem: I | null, sourceActor: T | null): ConditionalEffect["conditions"] {
 		const conditionalEffects = this.ArrayCorrector(condObject);
 		return conditionalEffects.map( eff=> ({
 			...eff,
-			actorOwner: sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner,
-			sourceItem: sourceItem ? PersonaDB.getUniversalItemAccessor(sourceItem): (eff as any).sourceItem,
+			actorOwner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner) as UniversalActorAccessor<ValidAttackers>,
+			sourceItem: (sourceItem ? PersonaDB.getUniversalItemAccessor(sourceItem): (eff as any).sourceItem) as U<UniversalItemAccessor<PersonaItem>>,
 		}));
 	}
 
-static getConsequences<T extends Actor<any>, I extends Item<any>>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null): NonDeprecatedConsequence[] {
+static getConsequences<T extends PersonaActor, I extends ModifierContainer>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null): NonDeprecatedConsequence[] {
 	const consequences = this.ArrayCorrector(consObject);
 	return  consequences.map( eff=> {
 		const nondep = ConsequenceConverter.convertDeprecated(eff, sourceItem);
 		return {
 			...nondep,
-			actorOwner: sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner,
-			sourceItem: sourceItem ? PersonaDB.getUniversalItemAccessor(sourceItem): (("sourceItem" in eff) ? eff.sourceItem : undefined),
+			actorOwner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner) as UniversalActorAccessor<ValidAttackers>,
+			sourceItem: (sourceItem ? PersonaDB.getUniversalItemAccessor(sourceItem): (("sourceItem" in eff) ? eff.sourceItem : undefined)) as U<UniversalItemAccessor<PersonaItem>>,
 		};
 	});
 }
@@ -1327,7 +1328,7 @@ const CETypes = [
 //@ts-expect-error added to window objects
 window.CEManager = ConditionalEffectManager;
 
-type ConditonalEffectHolderItem = Item<any> & Partial<{isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]}> ;
+type ConditonalEffectHolderItem = ModifierContainer & Partial<{isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]}> ;
 
 
 declare global{

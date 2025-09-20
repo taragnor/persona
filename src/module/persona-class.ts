@@ -2,7 +2,7 @@ import { ELEMENTAL_DEFENSE_LINK } from "../config/damage-types.js";
 import { LevelUpCalculator } from "../config/level-up-calculator.js";
 import { PersonaCombatStats } from "./actor/persona-combat-stats.js";
 import { NonDeprecatedModifierType } from "../config/item-modifiers.js";
-import { Consumable, InvItem, PersonaItem } from "./item/persona-item.js";
+import { Consumable, InvItem, PersonaItem, Tag } from "./item/persona-item.js";
 import { Logger } from "./utility/logger.js";
 import { removeDuplicates } from "./utility/array-tools.js";
 import { Shadow } from "./actor/persona-actor.js";
@@ -30,7 +30,6 @@ import {Power, Talent, Focus} from "./item/persona-item.js";
 import {PersonaTag} from "../config/creature-tags.js";
 import {Defense} from "../config/defense-types.js";
 import {DamageCalculator, NewDamageParams} from "./combat/damage-calc.js";
-import {PersonaSFX} from "./combat/persona-sfx.js";
 import {PersonaStat} from "../config/persona-stats.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
@@ -83,7 +82,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	get bonusPowers() : readonly Power [] {
 		const bonusPowers : Power[] =
-			this.mainModifiers({omitPowers:true})
+			this.mainModifiers({omitPowers:true, omitTalents: true})
 			.filter(trait => trait.grantsPowers())
 			.flatMap(powerGranter=> powerGranter.getGrantedPowers(this.user))
 			.sort ( (a,b)=> a.name.localeCompare(b.name)) ;
@@ -367,7 +366,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return modList;
 	}
 
-	mainModifiers(options?: {omitPowers?: boolean, omitTalents?: boolean} ): readonly ModifierContainer[] {
+	mainModifiers(options?: {omitPowers?: boolean, omitTalents?: boolean, omitTags ?: boolean} ): readonly ModifierContainer[] {
 		//NOTE: this could be a risky operation
 		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!options && PersonaCaching && this.#cache.mainModifiers) {
@@ -382,12 +381,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 		const passiveOrTriggeredPowers = (options && options.omitPowers) ? [] : this.passiveOrTriggeredPowers();
 		const talents = (options && options?.omitTalents) ? [] : this.talents;
+		// const tags = (options && options.omitTags) ? [] : this.realTags();
 		const mainMods = [
 			...this.passiveFocii(),
 			...talents,
 			...passiveOrTriggeredPowers,
-			...user.actorMainModifiers(),
+			...user.actorMainModifiers(options),
 			...roomModifiers,
+			// ...tags, //tags are takenc are of in actormain
 			...PersonaDB.getGlobalPassives(),
 			// ...PersonaDB.getGlobalModifiers(),
 			...PersonaDB.navigatorModifiers(),
@@ -938,10 +939,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 
 	hasTag(tag: PersonaTag) : boolean {
-		return this.tagList().includes(tag);
+		return this.tagListPartial().includes(tag);
 	}
 
-	tagList() : PersonaTag[] {
+	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+	tagListPartial() : (PersonaTag | Tag["id"])[] {
 		const base = this.source.system.combat.personaTags.slice();
 		if (this.source.isPC() || this.source.isNPCAlly()){
 			base.pushUnique("persona");
@@ -958,12 +960,30 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				base.pushUnique("d-mon");
 				break;
 		}
-
-
-		if (this.source.isShadow() && this.source.system.creatureType == "daemon") {
-			base.pushUnique("simulated");
+		if (this.source.isShadow()) {
+			if ( this.source.system.creatureType == "daemon") {
+				base.pushUnique("simulated");
+			}
+			if (this.source.system.role != "base") {
+				base.pushUnique(this.source.system.role);
+			}
+			if (this.source.system.role2 != "base") {
+				base.pushUnique(this.source.system.role2);
+			}
 		}
 		return base;
+	}
+
+	realTags() : Tag[] {
+	const ret =  this.tagListPartial().flatMap( tag => {
+		const IdCheck = PersonaDB.allTags().get(tag);
+		if (IdCheck) {return [IdCheck];}
+		const nameCheck = PersonaDB.allTagNames().get(tag);
+		if (nameCheck) {return [nameCheck];}
+		return [];
+	});
+	return ret;
+
 	}
 
 	wpnDamage() : NewDamageParams {

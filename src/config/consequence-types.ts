@@ -1,7 +1,7 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { ValidAttackers } from "../module/combat/persona-combat.js";
 import { TargettingContextList } from "../module/combat/persona-combat.js";
-import { PowerContainer } from "../module/item/persona-item.js";
+import { PersonaItem, PowerContainer } from "../module/item/persona-item.js";
 import { PermaBuffType } from "./perma-buff-type.js";
 import { SocialCardAction } from "./effect-types.js";
 import { CardTag } from "./card-tags.js";
@@ -346,8 +346,8 @@ type AlterMPConsequence = {
 type ExpendItemConsequence = {
 	type : "expend-item",
 	itemId: string,
-	itemAcc ?: UniversalItemAccessor<Consumable | SkillCard>,
-	sourceItem ?: UniversalItemAccessor<Consumable | SkillCard>,
+	itemAcc ?: UniversalItemAccessor<PersonaItem>,
+	sourceItem ?: UniversalItemAccessor<PersonaItem>,
 }
 
 type DamageConsequenceShared = {

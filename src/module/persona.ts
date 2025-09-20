@@ -47,6 +47,7 @@ import { TarotSheet } from "./actor/sheets/tarot-sheet.js";
 import { SearchMenu } from "./exploration/searchMenu.js";
 import { PersonaSocialCardSheet } from "./item/sheets/social-card-sheet.js";
 import { Heartbeat } from "./utility/heartbeat.js";
+import {PersonaTagSheet} from "./item/sheets/tag-sheet.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -81,6 +82,7 @@ function registerSheetApplications() {
 	Items.registerSheet("persona", PersonaTalentSheet, {types: ["talent"], makeDefault: true});
 	Items.registerSheet("persona", PersonaFocusSheet, {types: ["focus"], makeDefault: true});
 	Items.registerSheet("persona", ConsumableSheet, {types: ["consumable"], makeDefault: true});
+	Items.registerSheet("persona", PersonaTagSheet, {types: ["tag"], makeDefault: true});
 	// Items.registerSheet("persona", PersonaJobSheet, {types: ["job"], makeDefault: true});
 	Items.registerSheet("persona", UniversalModifierSheet, {types: ["universalModifier"], makeDefault: true});
 	Items.registerSheet("persona", PersonaSocialCardSheet, {types: ["socialCard"], makeDefault: true});
@@ -175,5 +177,5 @@ Hooks.on("renderChatMessage", (msg: ChatMessage, elem: JQuery) => {
 		default:
 			elem.addClass("unknown-style");
 			break;
-	}
+		}
 });

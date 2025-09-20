@@ -12,7 +12,7 @@ import { SocialLinkIdOrTarot } from "./precondition-types.js";
 import { ConditionTarget } from "./precondition-types.js";
 import { MultiCheck } from "./precondition-types.js";
 import { MultiCheckOrSingle } from "./precondition-types.js";
-import { CreatureTag } from "./creature-tags.js";
+import { CreatureTag} from "./creature-tags.js";
 import { CreatureType } from "./shadow-types.js";
 import { ShadowRole } from "./shadow-types.js";
 import { DAYS_LIST } from "./days.js";
@@ -254,7 +254,7 @@ type GeneralTagComparison = {
 	powerTag: MultiCheckOrSingle<PowerTag>,
 } | {
 	tagComparisonType: "actor",
-	creatureTag : MultiCheckOrSingle<CreatureTag>,
+	creatureTag : MultiCheckOrSingle<string>,
 	conditionTarget : ConditionTarget,
 } | {
 	tagComparisonType: "roll",
@@ -269,7 +269,7 @@ type GeneralTagComparison = {
 
 type CreatureTagComparison = {
 	boolComparisonTarget: "has-creature-tag",
-	creatureTag : CreatureTag | Record<CreatureTag, boolean>,
+	creatureTag : MultiCheckOrSingle<string>,
 	conditionTarget : ConditionTarget,
 }
 
@@ -281,7 +281,7 @@ type ArcanaComparison = {
 
 type DamageTypeComparisonPC= {
 	boolComparisonTarget: "damage-type-is" ,
-	powerDamageType : (DamageType | "by-power") | MultiCheck<DamageType | "by-power">,
+	powerDamageType : (DamageType) | MultiCheck<DamageType>,
 }
 
 type ResistanceCheck = {

@@ -16,6 +16,7 @@
 	"TYPES.Item.talent": "Talent",
 	"TYPES.Item.universalModifier": "Universal Modifier",
 	"TYPES.Item.job": "Job",
+	"TYPES.Item.tag": "Tag",
 	"TYPES.Item.socialCard": "Social Card",
 	"TYPES.Item.skillCard": "Skill Card",
 

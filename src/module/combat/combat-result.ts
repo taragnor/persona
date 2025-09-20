@@ -5,7 +5,7 @@ import { DamageConsequence } from "../../config/consequence-types.js";
 import { OldDamageConsequence } from "../../config/consequence-types.js";
 import { DamageCalculation } from "./damage-calc.js";
 import { RollSituation } from "../../config/situation.js";
-import { UsableAndCard } from "../item/persona-item.js";
+import { Consumable, UsableAndCard } from "../item/persona-item.js";
 import { ValidAttackers } from "./persona-combat.js";
 import { StatusDuration } from "../active-effect.js";
 import { getSocialLinkTarget } from "../preconditions.js";
@@ -288,7 +288,7 @@ export class CombatResult  {
 				effect.otherEffects.push({
 					itemId: cons.itemId,
 					type: 	"expend-item",
-					itemAcc: cons.itemAcc!
+					itemAcc: cons.itemAcc! as UniversalItemAccessor<Consumable>,
 				});
 				break;
 			case "recover-slot":

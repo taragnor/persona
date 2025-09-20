@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Tag } from "../item/persona-item.js";
 import { PCAndAllyStuff } from "../../config/actor-parts.js";
 import { FREQUENCY } from "../../config/frequency.js";
 import { frequencyConvert2 } from "../../config/actor-parts.js";
@@ -18,7 +19,7 @@ import { shadowOnlyCombatAbilities } from "../../config/actor-parts.js";
 import { encounterDataSchema } from "../../config/actor-parts.js";
 import { sharedAbilities } from "../../config/actor-parts.js";
 import { personalBio } from "../../config/actor-parts.js";
-import { CREATURE_TAG_LIST } from "../../config/creature-tags.js";
+import { CREATURE_TAG_LIST, CreatureTag } from "../../config/creature-tags.js";
 const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
 import { SHADOW_CREATURE_TYPE_LIST } from "../../config/shadow-types.js";
 import { PC } from "../actor/persona-actor.js";
@@ -34,7 +35,7 @@ abstract class BaseStuff extends window.foundry.abstract.DataModel {
 			locked: new bool( { initial: false}),
 			short_desc: new txt(),
 			// flags: new arr(new obj<FlagData>()),
-			creatureTags: new arr(new txt({choices:CREATURE_TAG_LIST})),
+			creatureTags: new arr(new txt<CreatureTag>()),
 		};
 	}
 

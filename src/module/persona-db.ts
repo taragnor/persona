@@ -1,6 +1,6 @@
 import { TarotCard } from "../config/tarot.js";
 import { TreasureItem } from "./metaverse.js";
-import { SkillCard, Talent } from "./item/persona-item.js";
+import { SkillCard, Tag, Talent } from "./item/persona-item.js";
 import { NPCAlly } from "./actor/persona-actor.js";
 import { SocialEncounterCard } from "./social/persona-social.js";
 import { ModifierContainer } from "./item/persona-item.js";
@@ -55,6 +55,8 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			worldModifiers: undefined,
 			worldPassives: undefined,
 			worldDefensives: undefined,
+			tags: undefined,
+			tagNames: undefined,
 		};
 		Hooks.callAll("DBrefresh");
 		return newCache;
@@ -216,6 +218,22 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			.filter( x=> x.system.type == "socialCard") as SocialCard[];
 	}
 
+	allTags() :  Map<Tag["id"],Tag> {
+		if (this.#cache.tags) {return this.#cache.tags;}
+		const tags= this.allItems()
+		.filter (x=> x.isTag())
+		.map( tag=> [tag.id, tag] as [string, Tag]);
+		return this.#cache.tags = new Map(tags);
+	}
+
+	allTagNames() : Map<Tag["name"], Tag> {
+		if (this.#cache.tagNames) {return this.#cache.tagNames;}
+		const tags= this.allItems()
+		.filter (x=> x.isTag())
+		.map( tag=> [tag.name, tag] as [string, Tag]);
+		return this.#cache.tagNames = new Map(tags);
+	}
+
 	socialEncounterCards(): readonly SocialEncounterCard[] {
 		return this.allSocialCards()
 			.filter( x=> x.system.cardType == "social") as SocialEncounterCard[];
@@ -336,5 +354,7 @@ type PersonaDBCache =	{
 	worldModifiers: U<UniversalModifier[]>;
 	worldPassives: U<UniversalModifier[]>;
 	worldDefensives: U<UniversalModifier[]>;
+	tags: U<Map<Tag["id"], Tag>>;
+	tagNames: U<Map<Tag["name"], Tag>>;
 };
 
