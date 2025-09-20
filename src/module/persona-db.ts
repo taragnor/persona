@@ -57,6 +57,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			worldDefensives: undefined,
 			tags: undefined,
 			tagNames: undefined,
+			tagsArr: undefined,
 		};
 		Hooks.callAll("DBrefresh");
 		return newCache;
@@ -218,6 +219,40 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			.filter( x=> x.system.type == "socialCard") as SocialCard[];
 	}
 
+	tagsOfCategory(cat: MaybeArray<Tag["system"]["tagType"]>) : Tag[] {
+		if (typeof cat == "string") {
+			cat  = [cat];
+		}
+		return this.tagsArr().filter( x=> cat.includes(x.system.tagType));
+	}
+
+	tagsOfCategoryLoc(cat: MaybeArray<Tag["system"]["tagType"]>): Record<Tag["id"], Tag["name"]> {
+		const tags = this.tagsOfCategory(cat);
+		return Object.fromEntries(
+			tags.map( tag => [tag.id, tag.name])
+		);
+	}
+
+	createMergedTagLocList(cat: MaybeArray<Tag["system"]["tagType"]>, originalLocObject: Record<string, string>) : Record<string, string> {
+		const tags = this.tagsOfCategory(["actor", "persona"]);
+		const locListEntries = Object.entries(originalLocObject)
+		.filter( ([tagName,_locString]) => {
+			return !tags.some( tag => tag.system.linkedInternalTag == tagName);
+		});
+		return {
+			...Object.fromEntries(locListEntries),
+			...this.tagsOfCategoryLoc(cat),
+		};
+
+	}
+
+	tagsArr(): Tag[] {
+		if (this.#cache.tagsArr != undefined) {return this.#cache.tagsArr;}
+		const tags= this.allItems()
+		.filter (x=> x.isTag());
+		return this.#cache.tagsArr = tags;
+	}
+
 	allTags() :  Map<Tag["id"],Tag> {
 		if (this.#cache.tags) {return this.#cache.tags;}
 		const tags= this.allItems()
@@ -358,5 +393,6 @@ type PersonaDBCache =	{
 	worldDefensives: U<UniversalModifier[]>;
 	tags: U<Map<Tag["id"], Tag>>;
 	tagNames: U<Map<Tag["name"], Tag>>;
+	tagsArr: U<Tag[]>;
 };
 

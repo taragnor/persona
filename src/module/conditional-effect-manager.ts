@@ -290,12 +290,14 @@ export class ConditionalEffectManager {
 
 	static handler_clickMCSelected<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, _item: D) {
 		ev.stopPropagation();
-		$(ev.currentTarget).parent().find(".MC-selectors").toggle();
-		this.lastClick = "";
+		// $(ev.currentTarget).parent().find(".MC-selectors").toggleClass("hidden");
+		// this.lastClick = "";
 	}
 
 	static handler_clickMCSelector<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, _item: D) {
-		$(ev.currentTarget).show();
+		ev.stopPropagation();
+		console.log("ClickMC selector");
+		$(ev.currentTarget).parent().find(".MC-selectors").toggleClass("hidden");
 		this.lastClick= HTMLTools.getClosestDataSafe(ev.currentTarget, "name", "");
 		if (this.lastClick == "") {
 			// eslint-disable-next-line no-debugger
@@ -316,8 +318,8 @@ export class ConditionalEffectManager {
 		html.find(".copy-effect").on("click", (ev) => void this.handler_copyEffect(ev, doc));
 		html.find(".copy-consequence").on("click", (ev) => void this.handler_copyConsequence(ev, doc));
 		html.find(".copy-condition").on("click", (ev) => void this.handler_copyCondition(ev, doc));
-		html.find("div.multi-check .selected").on("click", (ev) => void this.handler_clickMCSelected(ev, doc));
-		html.find(".MC-selectors").on("click", (ev) => void this.handler_clickMCSelector(ev, doc));
+		html.find("div.multi-check .selected").on("click", (ev) => void this.handler_clickMCSelector(ev, doc));
+		html.find(".MC-selectors").on("click", (ev) => void this.handler_clickMCSelected(ev, doc));
 		// setTimeout( () => this.restoreLastClick(html), 100);
 	}
 

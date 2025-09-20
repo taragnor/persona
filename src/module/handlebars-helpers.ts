@@ -832,6 +832,7 @@ export class PersonaHandleBarsHelpers {
 		"hasDescriptionText": function(power:Power) : boolean{
 			return (power.system.description ?? "").length > 0;
 		}
+
 	};
 
 
