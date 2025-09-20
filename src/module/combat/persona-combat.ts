@@ -1604,10 +1604,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				combat.lastActivationRoll = r.total;
 			}
 		}
-		const attackbonus = this.getAttackBonus(attackerPersona, power, target, modifiers);
+		let attackbonus = this.getAttackBonus(attackerPersona, power, target, modifiers);
 		if (rollType == 'reflect' && (def == "fort" || def =="ref" || def =="will")) {
 			attackbonus.add('Reflected Attack', 15);
 		}
+		const powerTagModifiers = power.powerTagModifiers(attacker.actor);
+		attackbonus = attackbonus.concat(powerTagModifiers);
 		const cssClass=  (!target.actor.isPC()) ? 'gm-only' : '';
 		const roll = new RollBundle('Temp', r, attacker.actor.system.type == 'pc', attackbonus, baseSituation);
 		const naturalAttackRoll = roll.dice[0].total;
@@ -2020,68 +2022,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				return [];
 		}
 	}
-	// static resolveEffectiveTargets(applyTo :Consequence["applyTo"], situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, cons?: Consequence) : ValidAttackers[]  {
-	//    switch (applyTo) {
-	//       case "target" :
-	//          return target ? [target]: [];
-	//       case "attacker":
-	//          return attacker ? [attacker]: [];
-	//       case "owner":
-	//          if (cons && cons.actorOwner) {
-	//             const pt =  this.getPTokenFromActorAccessor(cons.actorOwner);
-	//             if (pt) return [pt.actor];
-	//             else return [];
-	//          }
-	//          ui.notifications.notify("Can't find Owner of Consequnece");
-	//          return [];
-	//       case "user":
-	//          if (!situation.user) {return [];}
-	//          const userToken  = this.getPTokenFromActorAccessor(situation.user);
-	//          return userToken ? [userToken.actor] : [];
-	//       case "triggering-character":
-	//          const triggerer = "triggeringCharacter" in situation? situation.triggeringCharacter: undefined;
-	//          if (!triggerer) {
-	//             PersonaError.softFail(`Can't target triggering character for ${situation.trigger}`, situation);
-	//             return [];
-	//          }
-	//          const token = this.getPTokenFromActorAccessor(triggerer);
-	//          return token ? [token.actor] : [];
-	//       case "cameo":
-	//          return [];
-	//       case "all-foes": {
-	//          if (!attacker) return [];
-	//          const attackerToken = this.getPTokenFromActorAccessor(attacker.accessor);
-	//          if (!attackerToken) return [];
-	//          return this.getAllEnemiesOf(attackerToken).map( x=> x.actor);
-	//       }
-	//       case "all-allies": {
-	//          if (!attacker) return [];
-	//          const attackerToken = this.getPTokenFromActorAccessor(attacker.accessor);
-	//          if (!attackerToken) return [];
-	//          return this.getAllAlliesOf(attackerToken)
-	//          .map( x=> x.actor);
-	//       }
-	//       case undefined:
-	//          return target ? [target] : []; //default to target since this is old material
-	//          // PersonaError.softFail("cons.applyTo is undefined");
-	//       case "all-in-region": {
-	//          let id : string | undefined;
-	//          if ("triggeringRegionId" in situation) {
-	//             id = situation.triggeringRegionId;
-	//          }
-	//          const region = Metaverse.getRegion(id);
-	//          if (!region) return [];
-	//          const tokens = Array.from(region.tokens);
-	//          const actors = tokens
-	//          .filter( x=> x.actor && x.actor.isValidCombatant())
-	//          .map( x=> x.actor! as ValidAttackers);
-	//          return actors;
-	//       }
-	//       default:
-	//          applyTo satisfies never;
-	//          return [];
-	//    }
-	// }
 
 	static processConsequences_simple(consequence_list: SourcedConsequence[], situation: Situation): ConsequenceProcessed {
 		let consequences : ConsequenceProcessed['consequences'] = [];
@@ -2112,7 +2052,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			} else {
 				const applyTo = sourcedC.applyTo ?? (sourcedC.applyToSelf ? 'owner' : 'target');
 				const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
-				// const consTargets = PersonaCombat.resolveEffectiveTargets(applyTo, situation, attacker, target, cons);
 				const newCons = this.processConsequence_simple( sourcedC, consTargets);
 				consequences = consequences.concat(newCons);
 			}

@@ -359,11 +359,16 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.numOfIncAdvances();
 	}
 
-	getBonuses (modnames : NonDeprecatedModifierType | NonDeprecatedModifierType[], sources: readonly ModifierContainer[] = this.mainModifiers() ): ModifierList {
+	getBonuses (modnames : NonDeprecatedModifierType | NonDeprecatedModifierType[], sources: readonly ModifierContainer[] = this.passiveCEs() ): ModifierList {
 		const modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this.source)
 			.filter( mod => mod.modifier != 0)
 		));
 		return modList;
+	}
+
+	passiveCEs() : readonly ModifierContainer[] {
+		return this.mainModifiers()
+		.filter( x=> x.hasPassiveEffects(null));
 	}
 
 	mainModifiers(options?: {omitPowers?: boolean, omitTalents?: boolean, omitTags ?: boolean} ): readonly ModifierContainer[] {
@@ -547,9 +552,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 		// const baseDef = this.#translateDefenseString(defense, this.defenses[defense]);
 		// mods.add("Base Defense Bonus", baseDef);
-		const otherBonuses = this.getBonuses([defense, "allDefenses"]);
-		const defenseMods = this.getBonuses([defense, "allDefenses"], this.defensiveModifiers());
-		return mods.concat(otherBonuses).concat(defenseMods);
+		const modifiers = [
+			...this.passiveCEs(),
+		];
+		modifiers.pushUnique(...this.defensiveModifiers());
+		// const otherBonuses = this.getBonuses([defense, "allDefenses"]);
+		// const defenseMods = this.getBonuses([defense, "allDefenses"], this.defensiveModifiers());
+		const defenseMods = this.getBonuses([defense, "allDefenses"], modifiers);
+		return mods.concat(defenseMods);
 
 	}
 
@@ -978,7 +988,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	const ret =  this.tagListPartial().flatMap( tag => {
 		const IdCheck = PersonaDB.allTags().get(tag);
 		if (IdCheck) {return [IdCheck];}
-		const nameCheck = PersonaDB.allTagNames().get(tag);
+		const nameCheck = PersonaDB.allTagLinks().get(tag);
 		if (nameCheck) {return [nameCheck];}
 		return [];
 	});

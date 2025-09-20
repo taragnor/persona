@@ -1,4 +1,10 @@
+import {CREATURE_TAGS} from "../../../config/creature-tags.js";
+import {EQUIPMENT_TAGS} from "../../../config/equipment-tags.js";
 import {HBS_TEMPLATES_DIR} from "../../../config/persona-settings.js";
+import {POWER_TAGS} from "../../../config/power-tags.js";
+import {ROLL_TAGS_AND_CARD_TAGS} from "../../../config/roll-tags.js";
+import {SHADOW_ROLE} from "../../../config/shadow-types.js";
+import {TAG_TYPES} from "../../../config/tags-general.js";
 import {Tag} from "../persona-item.js";
 import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 
@@ -16,7 +22,35 @@ export class PersonaTagSheet extends PersonaEffectContainerBaseSheet {
 	}
 
 	override async getData() {
-		const data = await super.getData();
+		let data = await super.getData();
+		data = {
+			...data,
+			TAG_TYPES: {
+				"": "-",
+				...TAG_TYPES,
+			},
+			EQUIPMENT_TAGS : {
+				"": "-",
+				...EQUIPMENT_TAGS,
+			},
+			POWER_TAGS :{
+				"": "-",
+				...POWER_TAGS,
+			},
+			CREATURE_TAGS :{
+				"": "-",
+				...CREATURE_TAGS,
+			},
+			ROLL_TAGS_AND_CARD_TAGS:  {
+				// "": "-",
+				...ROLL_TAGS_AND_CARD_TAGS,
+			} ,
+			SHADOW_ROLE: {
+				"": "-",
+				...SHADOW_ROLE,
+			},
+		};
+
 		return data;
 	}
 

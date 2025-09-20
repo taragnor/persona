@@ -3417,11 +3417,16 @@ async onEndCombat(this: ValidAttackers) : Promise<void> {
 encounterSizeValue() : number {
 	let val = 1;
 	if (!this.isValidCombatant()) {return 1;}
-	if (this.hasRole("solo")) {val *= 4;}
-	if (this.hasRole("duo")) {val*= 2;}
-	if (this.hasRole("elite")) {val*= 1.5;}
-	if (this.hasRole("summoner")) {val *= 1.5;}
-	if (this.hasRole("minion")) {val *= 0.666;}
+	const sit : Situation = {
+		user: this.accessor,
+	};
+	const mult = this.persona().getBonuses("encounter-size-multiplier").total(sit, "percentage");
+	val *= mult;
+	// if (this.hasRole("solo")) {val *= 4;}
+	// if (this.hasRole("duo")) {val*= 2;}
+	// if (this.hasRole("elite")) {val*= 1.5;}
+	// if (this.hasRole("summoner")) {val *= 1.5;}
+	// if (this.hasRole("minion")) {val *= 0.666;}
 	if (this.isNewEnemy() && !this.hasRole("solo")) {val *= 1.2;}
 	return val;
 }
@@ -3747,11 +3752,9 @@ get tagListNames(): string[] {
 
 realTags() : Tag[] {
 	const ret =  this.tagListPartial.flatMap( tag => {
-		const IdCheck = PersonaDB.allTags().get(tag);
-		if (IdCheck) {return [IdCheck];}
-		const nameCheck = PersonaDB.allTagNames().get(tag);
-		if (nameCheck) {return [nameCheck];}
-		return [];
+		const x = PersonaItem.searchForPotentialTagMatch(tag);
+		if (x) {return [x];}
+		else {return [];}
 	});
 	return ret;
 }
@@ -3805,7 +3808,7 @@ get tagListPartial() : CreatureTag[] {
 
 get tagList() : (Tag | InternalCreatureTag)[] {
 	return this.tagListPartial
-	.map(tag => PersonaDB.allTags().get(tag) ?? (tag as InternalCreatureTag));
+	.map(tag => PersonaItem.searchForPotentialTagMatch(tag) ?? (tag as InternalCreatureTag));
 }
 
 hasCreatureTag(tag: CreatureTag) : boolean{

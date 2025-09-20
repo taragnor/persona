@@ -37,6 +37,7 @@ import { PERK_TYPES_LIST } from "../../config/perk-types.js";
 import { TREASURE_TABLES } from "../../config/treasure-tables.js";
 import { PROBABILITIES } from "../../config/probability.js";
 import {DamageCalculator} from "../combat/damage-calc.js";
+import {TAG_TYPES} from "../../config/tags-general.js";
 
 function itemBase() {
 	return {
@@ -117,6 +118,8 @@ class TagSchema extends foundry.abstract.TypeDataModel {
 		const ret = {
 			description: new txt(),
 			defensive: new bool(),
+			tagType: new txt({choices: TAG_TYPES}),
+			linkedInternalTag: new txt(),
 			...effects (false),
 		};
 		return ret;

@@ -308,6 +308,7 @@
 	"persona.modifier.energy-per-turn": "Energy Gained at end of Turn",
 	"persona.modifier.max-energy": "Maximum Energy",
 	"persona.modifier.xp-multiplier": "% change to XP gained",
+	"persona.modifier.encounter-size-multiplier": "Creature Size Multiplier (Encounter building)",
 	"persona.modifier.shadow-xp-value": "Multiplier to XP Value",
 	"persona.modifier.shadowPresence": "Shadow Presence",
 	"persona.modifier.challengeLevel": "Challenge Level",
@@ -1124,9 +1125,18 @@
 	"persona.calculation.operation.add": "Add",
 	"persona.calculation.operation.noStackMultiply": "Multiply (no stacking)",
 
+	"persona.tag.tagtype.persona": "Persona Tag",
+	"persona.tag.tagtype.actor": "Character Tag",
+	"persona.tag.tagtype.power": "Power Tag",
+	"persona.tag.tagtype.equipment": "Equipment Tag",
+	"persona.tag.tagtype.roll": "Roll Tag",
+	"persona.tag.tagtype.card": "Card Tag",
+	"persona.tag.tagtype.role": "Shadow Role",
+
 	"persona.affinity.ranking.all": "All",
 	"persona.affinity.ranking.strong": "Strong",
 	"persona.affinity.ranking.standard": "Standard",
 	"persona.affinity.ranking.weak": "Weak"
+
 }
 

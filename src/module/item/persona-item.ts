@@ -336,77 +336,6 @@ getIconPath(this: Power | Carryable, user?: ValidAttackers | Persona) : string |
 		});
 	}
 
-
-// getConsumableIcon(this: Consumable) : string | undefined {
-// 	const restoresHP = this.restoresHP();
-// 	const restoresMP = this.restoresMP();
-// 	if (restoresHP && restoresMP) {
-// 		return EQUIPMENT_ICONS["hpsp-item"];
-// 	}
-// 	if (restoresHP) {
-// 		return EQUIPMENT_ICONS["hp-item"];
-// 	}
-// 	if (restoresMP) {
-// 		return EQUIPMENT_ICONS["sp-item"];
-// 	}
-// 	if (this.system.dmg_type != "healing" && this.inflictsDamage()) {
-// 		const dtype = this.system.dmg_type;
-// 		if (dtype != "by-power") {
-// 			return PersonaItem.getDamageIconPath(dtype);
-// 		}
-// 	}
-// 	return EQUIPMENT_ICONS["consumable"];
-// }
-
-// 	getWeaponIcon(this: Weapon) : string {
-// 		switch (true) {
-// 			case this.hasTag("spear"):
-// 				return EQUIPMENT_ICONS["spear"];
-// 			case this.hasTag("light-weapon"):
-// 				return EQUIPMENT_ICONS["knife"];
-// 			case this.hasTag("axe"):
-// 				return EQUIPMENT_ICONS["axe"];
-// 			case this.hasTag("fist"):
-// 				return EQUIPMENT_ICONS["fist"];
-// 			case this.hasTag("heavy"):
-// 				return EQUIPMENT_ICONS["2hsword"];
-// 			case this.hasTag("blade"):
-// 				return EQUIPMENT_ICONS["rapier"];
-// 			case this.hasTag("bow"):
-// 				return EQUIPMENT_ICONS["bow"];
-// 			default:
-// 				return EQUIPMENT_ICONS["sword"];
-// 		}
-// 	}
-
-// 	getInvItemIcon(this: InvItem) : string {
-// 		switch (this.system.slot) {
-// 			case "key-item":
-// 				return EQUIPMENT_ICONS["key-item"];
-// 			case "none":
-// 				break;
-// 			case "body":
-// 				if (this.hasTag("female")) {
-// 					return EQUIPMENT_ICONS["female-armor"];
-// 				}
-// 				if (this.hasTag("male")) {
-// 					return EQUIPMENT_ICONS["male-armor"];
-// 				}
-// 				return EQUIPMENT_ICONS["generic-armor"];
-// 			case "accessory":
-// 				return EQUIPMENT_ICONS["accessory"];
-// 			case "weapon_crystal":
-// 				return EQUIPMENT_ICONS["gem"];
-// 			case "crafting":
-// 				return EQUIPMENT_ICONS["material-2"];
-// 		}
-// 		if (this.hasTag("crafting")) {
-// 			return EQUIPMENT_ICONS["material-1"];
-// 		}
-// 		return EQUIPMENT_ICONS["gift"];
-// 	}
-
-
   static getDamageIconPath(dmgType : RealDamageType) : string  | undefined {
     switch (dmgType) {
       case 'fire':
@@ -571,6 +500,14 @@ isDefensive(): boolean {
 	}
 }
 
+static searchForPotentialTagMatch (idOrInternalTag: string) : U<Tag> {
+		const IdCheck = PersonaDB.allTags().get(idOrInternalTag);
+		if (IdCheck) {return IdCheck;}
+		const nameCheck = PersonaDB.allTagLinks().get(idOrInternalTag);
+		if (nameCheck) {return nameCheck;}
+		return undefined;
+}
+
 	isUsableType() : this is Usable {
 		switch (this.system.type) {
 			case 'power':
@@ -626,6 +563,14 @@ isDefensive(): boolean {
 	targettedDefenseLocalized(this: Usable) : string {
 		return localize(DEFENSE_TYPES[this.system.defense]);
 	}
+
+powerTagModifiers(this: Usable, user: ValidAttackers) : ModifierList {
+	//TODO
+	//next step onvert over power tags
+	const tags = this.tagList(user);
+
+	return new ModifierList();
+}
 
   tagListLocalized(this: Weapon | UsableAndCard | InvItem  , user: null  | ValidAttackers) : string {
     let tags : string[] = [];

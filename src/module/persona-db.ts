@@ -226,13 +226,15 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.tags = new Map(tags);
 	}
 
-	allTagNames() : Map<Tag["name"], Tag> {
+	allTagLinks() : Map<Tag["name"], Tag> {
 		if (this.#cache.tagNames) {return this.#cache.tagNames;}
 		const tags= this.allItems()
-		.filter (x=> x.isTag())
-		.map( tag=> [tag.name, tag] as [string, Tag]);
+		.filter( x=> x.isTag())
+		.filter (x=> x.system.linkedInternalTag)
+		.map( tag => [tag.system.linkedInternalTag, tag] as [string, Tag]);
 		return this.#cache.tagNames = new Map(tags);
 	}
+
 
 	socialEncounterCards(): readonly SocialEncounterCard[] {
 		return this.allSocialCards()

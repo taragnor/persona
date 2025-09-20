@@ -57,27 +57,6 @@ export class CombatResult  {
 		return new FinalizedCombatResult(this);
 	}
 
-	// static addPending(res: CombatResult): Promise<unknown> {
-	// 	const promise = new Promise(
-	// 		(resolve, reject) => {
-	// 			this.pendingPromises.set(res.id, resolve);
-	// 			setTimeout( () => {
-	// 				reject("Timeout");
-	// 				this.pendingPromises.delete(res.id);
-	// 			}	, 16000);
-	// 		});
-	// 	return promise;
-
-	// }
-
-	// static resolvePending( resId: CombatResult["id"]) {
-	// 	const resolver = this.pendingPromises.get(resId);
-	// 	if (!resolver) throw new Error(`No Resolver for ${resId}`);
-	// 	resolver();
-	// 	this.pendingPromises.delete(resId);
-	// }
-
-
 	findEffects<T extends OtherEffect["type"]>(effectType: T): (OtherEffect & {type:T})[] {
 		const arr = [] as (OtherEffect & {type:T})[];
 		for (const v of this.attacks.values()) {
@@ -97,41 +76,6 @@ export class CombatResult  {
 	addSound(sound: ValidSound, timing: this["sounds"][number]["timing"]) {
 		this.sounds.push({sound, timing});
 	}
-
-	// calcDamageMult(change :ActorChange<ValidAttackers>, mult : number) {
-	// 	change.hpchangemult = CombatResult.calcHpChangeMult(change.hpchangemult, mult);
-	// }
-
-	// static calcHpChangeMult(origValue: number, mult: number): number {
-	// 	if (!PersonaSettings.get("damageMult")) {
-	// 		return origValue *= mult;
-	// 	}
-	// 	switch (true) {
-	// 		case origValue == 0:
-	// 			return 0;
-	// 		case mult == 1:
-	// 			return origValue;
-	// 		case mult == 0:
-	// 			return 0;
-	// 		case mult == -1:
-	// 			return origValue *= -1;
-	// 		case mult <0:
-	// 			PersonaError.softFail("calcDamageMult doesn't handle values less than 0 that aren't -1");
-	// 			break;
-	// 		case mult > 1:
-	// 			mult -= 1;
-	// 			return origValue += mult;
-	// 		case mult < 1:
-	// 			return origValue *= mult;
-	// 			// mult = 1 - mult;
-	// 			// origValue -= mult;
-	// 			// return Math.max(0, origValue);
-	// 		default:
-	// 			PersonaError.softFail(`Odd value for damage multiplier :${mult}`);
-	// 			break;
-	// 	}
-	// 			return origValue;
-	// }
 
 	#getDamageCalc(cons: OldDamageConsequence | DamageConsequence, atkResult: U<AttackResult>, effect: U<ActorChange<ValidAttackers>>  ) : U<DamageCalculation> {
 		if (!effect) {return undefined;}

@@ -77,6 +77,7 @@ export const ACTOR_STATS_TYPES = [
 ] as const;
 
 export const SHADOW_STATS_TYPES = [
+	"encounter-size-multiplier",
 	"shadow-xp-value",
 	"starting-energy",
 	"energy-per-turn",
