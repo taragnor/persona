@@ -267,7 +267,7 @@ input.single-digit {
 }
 
 	.faded {
-	opacity: 50%;
+	opacity: 0.5;
 }
 
 input.flag-id {
@@ -692,7 +692,7 @@ div.weather-icon{
 }
 
 .deprecated {
-	opacity: 50%;
+	opacity: 0.5;
 }
 
 form h4 {
@@ -713,7 +713,7 @@ form h5 {
 
 .social-card-event button:disabled{
 	cursor: not-allowed !important;
-	opacity: 75%;
+	opacity: 0.75;
 }
 
 
@@ -859,7 +859,7 @@ span.skill-card img {
 }
 
 .bonus-HP, .bonus-MP {
-	opacity: 60%;
+	opacity: 0.7;
 }
 
 .error {
@@ -1347,4 +1347,16 @@ section.power-sideboard {
 
 .easy-notes textarea {
 	color: #E6F8FF !important; /* pale cyan for readable text */
+}
+
+.message-header h4.message-sender {
+	color: #E6F8FF !important; /* pale cyan for readable text */
+	text-decoration: underline;
+	font-size: larger;
+	opacity: 0.7;
+	/* text-transform: uppercase; */
+}
+
+.item-piles-chat-card li {
+	color: black !important; /* pale cyan for readable text */
 }

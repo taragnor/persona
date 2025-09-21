@@ -4,6 +4,7 @@ import {PersonaItem} from "../item/persona-item.js";
 import {PersonaError} from "../persona-error.js";
 
 export class ConsequenceConverter {
+
 	static convertDeprecated( cons: Consequence, usable?: Item | null): NonDeprecatedConsequence {
 		const dep = cons as DeprecatedConsequence;
 		switch (dep.type) {
@@ -15,9 +16,6 @@ export class ConsequenceConverter {
 			case "dmg-allout-high":
 			case "revive":
 			case "hp-loss":
-				if (!usable) {
-					throw new Error("No Usable provided");
-				}
 				if (usable && usable instanceof PersonaItem && usable.isUsableType()) {
 					return this.convertDeprecatedDamageConsequence(dep, usable.system.dmg_type);
 				}

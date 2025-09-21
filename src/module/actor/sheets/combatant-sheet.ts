@@ -28,6 +28,10 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	override async getData() {
 		const data= await super.getData();
+		if (this.actor.isNPCAlly() || this.actor.isRealPC()) {
+			await this.actor.refreshMaxMP();
+		}
+		await this.actor.refreshHpStatus();
 		data.selectedPersona = this.selectedPersona;
 		data.persona = this.actor.persona();
 		const personas = this.actor.personaList

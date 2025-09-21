@@ -4080,6 +4080,7 @@ Hooks.on("preUpdateActor", async (actor: PersonaActor, changes) => {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
+	if (!game.user.isGM) {return;}
 	if (!actor.isOwner) {return;}
 	if (!actor.isValidCombatant()) {return;}
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
