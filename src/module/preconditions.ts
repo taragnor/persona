@@ -60,7 +60,7 @@ export function testPreconditions(conditionArr: DeepReadonly<Precondition[]>, si
 			testPrecondition(cond, situation, source));
 	} catch (e) {
 		if (e instanceof Error) {
-			PersonaError.softFail(e.toString(), e);
+			PersonaError.softFail(e.toString(), e, conditionArr, situation, source);
 		}
 		return false;
 	}

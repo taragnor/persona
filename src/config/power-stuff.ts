@@ -15,7 +15,8 @@ import {DAYS_LIST} from "./days.js";
 import {ALTER_MP_SUBTYPES, COMBAT_EFFECTS, CONSQUENCETYPES, DAMAGE_SUBTYPES, DUNGEON_ACTIONS, MODIFIER_CONS_TYPES, MODIFIER_VARIABLES, POWERTYPES, SHADOW_CHARGE_REQ, SOCIAL_CARD_ACTIONS, TARGETING} from "./effect-types.js";
 import {CONSUMABLE_SUBTYPES} from "./equip-slots.js";
 import {EQUIPMENT_TAGS, WEAPON_TAGS} from "./equipment-tags.js";
-import {DEFENSE_TYPES, MODIFIER_CATEGORIES_LOCALIZATION, MODIFIERS_TABLE} from "./item-modifiers.js";
+import {MODIFIER_CATEGORIES_LOCALIZATION, MODIFIERS_TABLE} from "./item-modifiers.js";
+import { DEFENSE_TYPES } from "./defense-types.js";
 import {COMPARATORS, COMPARISON_GROUPS, NUMERIC_COMPARISON_TARGET, NUMERIC_V2_ACTOR_STATS, NUMERIC_V2_COMPARISON_TARGETS, RESULT_SUBTYPE_COMPARISON, SIMPLE_COMPARATORS} from "./numeric-comparison.js";
 import {PERMA_BUFFS} from "./perma-buff-type.js";
 import {POWER_TAGS} from "./power-tags.js";
@@ -81,7 +82,6 @@ private static _powerStuffBase: Record<string, unknown>;
 			STATUSEFFECTS: STATUS_EFFECT_TRANSLATION_TABLE,
 			STATUSDURATIONS : STATUS_EFFECT_DURATION_TYPES,
 			TARGETING : TARGETING,
-			TAGS: POWER_TAGS,
 			MODIFIER_TARGETS: MODIFIERS_TABLE,
 			DEFENSES: DEFENSE_TYPES,
 			SHADOW_CHARGE_REQ: SHADOW_CHARGE_REQ,
@@ -159,9 +159,12 @@ private static _powerStuffBase: Record<string, unknown>;
 		);
 		const UNIFIED_CREATURE_TAGS = PersonaDB.createMergedTagLocList(["actor", "persona"], CREATURE_TAGS);
 
+		const TAGS = PersonaDB.createMergedTagLocList( ["power", "equipment"], POWER_TAGS);
+
 		const data = {
 			...this.powerStuffBase(),
 			SOCIAL_LINKS,
+			TAGS,
 			COMPENDIUM_TALENTS: Object.fromEntries(
 				PersonaDB.allTalents().slice()
 				.sort((a,b) => a.name.localeCompare(b.name))

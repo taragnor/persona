@@ -44,7 +44,7 @@ export const OFFENSE_TYPES = [
 
 	] as const;
 
-export const DEFENSE_TYPES = [
+const DEFENSE_TYPES = [
 	"allDefenses",
 	"ref",
 	"fort",

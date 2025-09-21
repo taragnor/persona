@@ -626,7 +626,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				return "absorb";
 		}
 		const baseResist = this.resists[type] ?? "normal";
-		const effectChangers=  this.mainModifiers().filter( x=> x.getEffects(this.user)
+		const modifiers = [
+			...this.defensiveModifiers(),
+			...this.mainModifiers(),
+		];
+		const effectChangers=  modifiers.filter( x=> x.getEffects(this.user)
 			.some(x=> x.consequences
 				.some( cons=>cons.type == "raise-resistance" || cons.type == "lower-resistance")));
 		const situation : Situation = {

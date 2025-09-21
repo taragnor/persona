@@ -69,7 +69,7 @@ export function powerOnlyUsableProps() {
 export function UsablePowerProps() {
   return {
     sound: new file ({categories: ["AUDIO"] }),
-    tags: new arr( new txt<typeof POWER_TAGS_LIST[number]>({choices: POWER_TAGS_LIST})),
+    tags: new arr( new txt<typeof POWER_TAGS_LIST[number]>()),
     instantKillChance: new txt({choices: INSTANT_KILL_LEVELS, initial: "none"}),
     ailmentChance: new txt({choices: INSTANT_KILL_LEVELS, initial: "none"}),
     damage: damage(),
