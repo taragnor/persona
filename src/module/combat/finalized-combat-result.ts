@@ -25,7 +25,7 @@ import { ValidAttackers } from "./persona-combat.js";
 import { ValidSound } from "../persona-sounds.js";
 import { PersonaDB } from "../persona-db.js";
 import { ActorChange } from "./combat-result.js";
-import {TimeoutError, VerificationFailedError} from "../utility/socket-manager.js";
+import {SocketsNotConnectedError, TimeoutError, VerificationFailedError} from "../utility/socket-manager.js";
 
 
 
@@ -305,12 +305,16 @@ export class FinalizedCombatResult {
 			switch (true) {
 				case e instanceof TimeoutError: {
 					PersonaError.softFail( "Timeout Error from Server", e);
-				}
 					break;
+				}
 				case e instanceof VerificationFailedError :{
 					PersonaError.softFail( "Verification Error on the GM computer", e);
-				}
 					break;
+				}
+				case e instanceof SocketsNotConnectedError: {
+					PersonaError.softFail( "Network Sockets not connected", e);
+					break;
+				}
 				default:
 					PersonaError.softFail( "Something went wrong with sending combat result", e);
 			}

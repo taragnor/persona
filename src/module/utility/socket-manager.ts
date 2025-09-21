@@ -53,7 +53,7 @@ export class SocketManager {
 		if (!game.socket.connected)  {
 			const msg = "Socket Error: Socket Not connected";
 			ui.notifications.error(msg);
-			throw new Error(msg);
+			throw new SocketsNotConnectedError(msg);
 		}
 	}
 
@@ -259,5 +259,9 @@ export class TimeoutError extends Error{
 };
 
 export class VerificationFailedError extends Error{
+
+}
+
+export class SocketsNotConnectedError extends Error {
 
 }
