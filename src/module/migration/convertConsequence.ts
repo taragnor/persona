@@ -1,7 +1,6 @@
 import {Consequence, DamageConsequence, DeprecatedConsequence, NonDeprecatedConsequence, OldDamageConsequence} from "../../config/consequence-types.js";
 import {DamageType} from "../../config/damage-types.js";
 import {PersonaItem} from "../item/persona-item.js";
-import {PersonaError} from "../persona-error.js";
 
 export class ConsequenceConverter {
 

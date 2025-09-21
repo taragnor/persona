@@ -1,8 +1,9 @@
 declare global {
 	export interface SocketMessage {
-		"TEST": string,
-			"X": number,
-			"__VERIFY__": VerificationId,
+		"TEST": string;
+		"X": number;
+		"__VERIFY__": VerificationId;
+		"__VERIFY_ERROR__": VerificationId
 	}
 
 	interface HOOKS {
@@ -41,6 +42,7 @@ export class SocketManager {
 				Hooks.callAll("socketsReady", this);
 				this.setHandler("__VERIFY__", (verificationId, payload) => this.clearPending(verificationId, payload.sender) );
 			});
+				this.setHandler("__VERIFY_ERROR__", (verificationId, payload) => this.clearPendingErr(verificationId, payload.sender) );
 	}
 
 	get socketsReady() : boolean {
@@ -49,7 +51,7 @@ export class SocketManager {
 
 	#checkSockets(): void {
 		if (!game.socket.connected)  {
-			const msg = "Socket Error: SOcket Not connected";
+			const msg = "Socket Error: Socket Not connected";
 			ui.notifications.error(msg);
 			throw new Error(msg);
 		}
@@ -128,6 +130,11 @@ export class SocketManager {
 	}
 
 
+	clearPendingErr(verificationId: VerificationId, sender: User["id"]) {
+		this.clearPending(verificationId, sender);
+		throw new VerificationFailedError("Verification Failed!");
+	}
+
 	clearPending(verificationId: VerificationId, sender: User["id"]) : void {
 		console.debug(`Initial: Verification Msg recieved ${verificationId}, clearing log`);
 		const userPending = this._pendingVerifications.get(sender)!;
@@ -159,25 +166,24 @@ private async onMsgRecieve(packet: SocketPayload<keyof SocketMessage>) :Promise<
 		console.warn(`No handler for message ${code}`);
 		return;
 	}
-	if (packet.verificationId != undefined) {
-		if (this.#recordVerifiedMessage(packet.verificationId, packet.sender)) {return;}
-	}
+	if (this.#recordVerifiedMessage(packet)) {return;}
 	for (const handler of handlers) {
 		try{
 			await handler(packet.data, packet);
+			void this.#sendVerification(packet);
 		} catch (e) {
+			void this.#sendVerificationError(packet);
 			PersonaError.softFail("Error during handler",e);
 			continue;
 		}
 	}
-	if (packet.verificationId != undefined) {
-		console.debug(`Reciever: Verified Request recieved ${packet.verificationId}, sending Verification`);
-		void this.#sendVerification(packet.verificationId, [packet.sender]);
-	}
 }
 
 /** returns true if this message has already been verified, to prevent invoking the handler for an alrady handled request */
-#recordVerifiedMessage(verificationId: VerificationId, sender: User["id"])  : boolean {
+#recordVerifiedMessage(packet: SocketPayload<keyof SocketMessage>)  : boolean {
+	const verificationId = packet.verificationId;
+	if (verificationId == undefined)  {return false;}
+	const sender = packet.sender;
 
 	if( !this._handledVerifications.has(sender)) {
 		this._handledVerifications.set(sender, new Set());
@@ -186,8 +192,6 @@ private async onMsgRecieve(packet: SocketPayload<keyof SocketMessage>) :Promise<
 	if (handledSet.has(verificationId)) {return true;}
 	handledSet.add(verificationId);
 	return false;
-
-
 }
 
 	createChannel<T extends ChannelMessage>(linkCode: string, recipients: SocketChannel<T>["recipients"] = [], _sessionCode?: number) : SocketChannel<T> {
@@ -200,12 +204,27 @@ private async onMsgRecieve(packet: SocketPayload<keyof SocketMessage>) :Promise<
 		return channel;
 	}
 
-	async #sendVerification(verificationId: number, targets: User["id"][]) {
-		for (let i = 0; i< 10; i++) {
-			this.simpleSend("__VERIFY__", verificationId, targets);
-			await sleep(5000);
-		}
+async #sendVerification(packet: SocketPayload<keyof SocketMessage>) {
+	const verificationId = packet.verificationId;
+	if (verificationId == undefined) { return; }
+	const targets = [packet.sender];
+	console.debug(`Reciever: Verified Request recieved ${packet.verificationId}, sending Verification`);
+	for (let i = 0; i< 10; i++) {
+		this.simpleSend("__VERIFY__", verificationId, targets);
+		await sleep(5000);
 	}
+}
+
+async #sendVerificationError(packet: SocketPayload<keyof SocketMessage>) {
+	const verificationId = packet.verificationId;
+	if (verificationId == undefined) { return; }
+	const targets = [packet.sender];
+	console.debug(`Reciever: Error on handling Verifified Packet Request ${packet.verificationId}, sending Error Result`);
+	for (let i = 0; i< 10; i++) {
+		this.simpleSend("__VERIFY_ERROR__", verificationId, targets);
+		await sleep(5000);
+	}
+}
 
 }
 
@@ -239,3 +258,6 @@ export class TimeoutError extends Error{
 
 };
 
+export class VerificationFailedError extends Error{
+
+}

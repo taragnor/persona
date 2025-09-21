@@ -25,6 +25,7 @@ import { ValidAttackers } from "./persona-combat.js";
 import { ValidSound } from "../persona-sounds.js";
 import { PersonaDB } from "../persona-db.js";
 import { ActorChange } from "./combat-result.js";
+import {TimeoutError, VerificationFailedError} from "../utility/socket-manager.js";
 
 
 
@@ -290,35 +291,29 @@ export class FinalizedCombatResult {
 			return;
 		}
 		const gmTarget = game.users.find(x=> x.isGM && x.active);
-		if (gmTarget)  {
-			const sendObj = {
-				resultObj : this.toJSON(),
-				sender: game.user.id,
-			};
-			try {
+		if (!gmTarget) {
+			throw new PersonaError("Can't apply no GM connected");
+		}
+		const sendObj = {
+			resultObj : this.toJSON(),
+			sender: game.user.id,
+		};
+		try {
 			await PersonaSockets.verifiedSend("COMBAT_RESULT_APPLY", sendObj, gmTarget.id);
+		}
+		catch (e) {
+			switch (true) {
+				case e instanceof TimeoutError: {
+					PersonaError.softFail( "Timeout Error from Server", e);
+				}
+					break;
+				case e instanceof VerificationFailedError :{
+					PersonaError.softFail( "Verification Error on the GM computer", e);
+				}
+					break;
+				default:
+					PersonaError.softFail( "Something went wrong with sending combat result", e);
 			}
-			catch (e) {
-				PersonaError.softFail( "Something went wrong with sending combat result", e);
-			}
-			// let tries = 3;
-			// while (tries> 0) {
-			// 	try {
-			// 		await FinalizedCombatResult.addPending(this);
-			// 		return;
-			// 	} catch (e) {
-			// 		if (e instanceof TimeoutError) {
-			// 			PersonaError.softFail("Timeout error on communicationg to GM computer", e);
-			// 			tries--;
-			// 		} else {
-			// 			Debug(this);
-			// 			PersonaError.softFail("Generic Error Autoapplying Effect", e);
-			// 			return;
-			// 		}
-			// 	}
-			// }
-		} else {
-			throw new Error("Can't apply no GM connected");
 		}
 	}
 
@@ -326,19 +321,13 @@ export class FinalizedCombatResult {
 		const {resultObj} = x;
 		const result = FinalizedCombatResult.fromJSON(resultObj);
 		await result.#apply();
-		// PersonaSockets.simpleSend("COMBAT_RESULT_APPLIED", result.id, [sender]);
 	}
-
-	// static resolvedHandler(replyId: SocketMessage["COMBAT_RESULT_APPLIED"]) : void {
-	// 	FinalizedCombatResult.resolvePending(replyId);
-	// }
 
 	async applyButton() {
 		return this.#apply();
 	}
 
 	async #apply(): Promise<void> {
-		// await this.#processEscalationChange();
 		await this.#processAttacks();
 		await this.#applyCosts();
 		await this.#applyGlobalOtherEffects();

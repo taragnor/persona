@@ -37,11 +37,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const personas = this.actor.personaList
 			.map( x=> [x.source.id, x.name]);
 		const PERSONA_LIST = Object.fromEntries(personas) as Record<string, string>;
-
 		data["PERSONA_LIST"]= PERSONA_LIST;
 		return data;
 	}
-
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
