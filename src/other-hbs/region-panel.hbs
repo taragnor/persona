@@ -99,10 +99,10 @@
 
 
 	<div class="buttons">
-		<button class="search-button" {{#if (or region.isSafe (inCombat))}} disabled {{/if}}>
+		<button id="search-room-button" class="search-button" {{#if (or region.isSafe (inCombat))}} disabled {{/if}}>
 			Search Room
 		</button>
-		<button class="crunch-button" {{#if (inCombat)}} disabled {{/if}}>
+		<button id="crunch-party-button" class="crunch-button" {{#if (inCombat)}} disabled {{/if}}>
 			Crunch/Uncrunch Party
 		</button>
 	</div>
