@@ -104,7 +104,7 @@ private static _powerStuffBase: Record<string, unknown>;
 			WEAPON_TAGS,
 			CARD_TAGS,
 			ROLL_TAGS_AND_CARD_TAGS,
-			EQUIPMENT_TAGS,
+			// EQUIPMENT_TAGS,
 			VARIABLE_ACTIONS,
 			COMBAT_EFFECTS,
 			RESULT_SUBTYPE_COMPARISON,
@@ -159,6 +159,8 @@ private static _powerStuffBase: Record<string, unknown>;
 		);
 		const UNIFIED_CREATURE_TAGS = PersonaDB.createMergedTagLocList(["actor", "persona"], CREATURE_TAGS);
 
+		const UNIFIED_EQUIPMENT_TAGS = PersonaDB.createMergedTagLocList(["equipment", "enchantment"], EQUIPMENT_TAGS);
+
 		const TAGS = PersonaDB.createMergedTagLocList( ["power", "equipment"], POWER_TAGS);
 
 		const data = {
@@ -179,6 +181,7 @@ private static _powerStuffBase: Record<string, unknown>;
 			SCENES,
 			ITEMS,
 			ITEMS_PLUS_NULL,
+			EQUIPMENT_TAGS: UNIFIED_EQUIPMENT_TAGS,
 			CREATURE_TAGS: UNIFIED_CREATURE_TAGS,
 			RELATIONSHIP_TYPE_OBJECT,
 			SOCIAL_CARDS,

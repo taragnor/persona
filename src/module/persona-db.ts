@@ -234,7 +234,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	createMergedTagLocList(cat: MaybeArray<Tag["system"]["tagType"]>, originalLocObject: Record<string, string>) : Record<string, string> {
-		const tags = this.tagsOfCategory(["actor", "persona"]);
+		const tags = this.tagsOfCategory(cat);
 		const locListEntries = Object.entries(originalLocObject)
 		.filter( ([tagName,_locString]) => {
 			return !tags.some( tag => tag.system.linkedInternalTag == tagName);
