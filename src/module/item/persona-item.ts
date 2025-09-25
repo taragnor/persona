@@ -1281,7 +1281,7 @@ static getModifier( effects: readonly SourcedConditionalEffect[], bonusTypes: Ma
       .filter( eff => eff.consequences.some( cons => 'modifiedFields' in cons || 'modifiedField' in cons))
       .map(eff =>
         ({
-          name: this.name,
+          name: eff.source?.name ?? "Unknown Source",
           source: eff.source?.accessor ?? null,
           conditions: ArrayCorrector(eff.conditions),
           modifier: ModifierList.getModifierAmount(eff.consequences, btype),
