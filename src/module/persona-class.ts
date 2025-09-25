@@ -632,7 +632,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 		const baseResist = this.resists[type] ?? "normal";
 		const modifiers = [
-			...this.defensiveModifiers(),
+			// ...this.defensiveModifiers(),
 			...this.mainModifiers(),
 		];
 		const effectChangers=  modifiers.filter( x=>

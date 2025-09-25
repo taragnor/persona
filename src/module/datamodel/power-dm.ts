@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 const {StringField:txt, EmbeddedDataField: embedded, ObjectField:obj, NumberField: num, SchemaField: sch, ArrayField: arr, DocumentIdField: id, BooleanField: bool, FilePathField: file } = foundry.data.fields;
 
 import { ConditionalEffectDM } from "./item-types.js";
@@ -69,7 +70,7 @@ export function powerOnlyUsableProps() {
 export function UsablePowerProps() {
   return {
     sound: new file ({categories: ["AUDIO"] }),
-    tags: new arr( new txt<typeof POWER_TAGS_LIST[number]>()),
+    tags: new arr( new txt<typeof POWER_TAGS_LIST[number] | Item["id"]>()),
     instantKillChance: new txt({choices: INSTANT_KILL_LEVELS, initial: "none"}),
     ailmentChance: new txt({choices: INSTANT_KILL_LEVELS, initial: "none"}),
     damage: damage(),

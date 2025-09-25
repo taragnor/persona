@@ -564,38 +564,46 @@ static searchForPotentialTagMatch (idOrInternalTag: string) : U<Tag> {
 		return localize(DEFENSE_TYPES[this.system.defense]);
 	}
 
-powerTagModifiers(this: Usable, user: ValidAttackers) : ModifierList {
-	//TODO
-	//next step onvert over power tags
+powerTagModifiers(this: Usable, user: ValidAttackers) : SourcedConditionalEffect[] {
 	const tags = this.tagList(user);
-
-	return new ModifierList();
+	return tags
+		.filter( x=> x instanceof PersonaItem)
+		.flatMap( tag => tag.getEffects(user));
 }
 
-  tagListLocalized(this: Weapon | UsableAndCard | InvItem  , user: null  | ValidAttackers) : string {
-    let tags : string[] = [];
-    const localizeTable  =  {
-      ...EQUIPMENT_TAGS,
-      ...POWER_TAGS
-    };
-    switch (true) {
-      case ('itemTags' in this.system): {
-        tags = tags.concat(
-          this.tagList(user)
-          .map(tag => localize(localizeTable[tag]))
-        );
-        break;
-      }
-      case ('tags' in this.system): {
-        tags = tags.concat(
-          (this as Power).tagList(user)
-          .map(tag => localize(localizeTable[tag]))
-        );
-        break;
-      }
-    }
-    return tags.join(', ');
-  }
+static resolveTag<T extends (string | Tag)>(tag: string | Tag) : Tag | Exclude<T, Tag>  {
+	if (tag instanceof PersonaItem) {return tag;}
+	const tagGetTest = PersonaDB.allTags().get(tag);
+	if (tagGetTest) {return tagGetTest;}
+	const linkTagTest = PersonaDB.allTagLinks().get(tag);
+	if (linkTagTest) {return linkTagTest;}
+	return tag as Exclude<T, Tag>;
+}
+
+tagListLocalized(this: Weapon | UsableAndCard | InvItem  , user: null  | ValidAttackers) : string {
+	let tags : (string | Tag)[] = [];
+	const localizeTable : Record<string, string>  =  {
+		...EQUIPMENT_TAGS,
+		...POWER_TAGS
+	};
+	switch (true) {
+		case ('itemTags' in this.system): {
+			tags = tags.concat(
+				this.tagList(user)
+			);
+			break;
+		}
+		case ('tags' in this.system): {
+			tags = tags.concat(
+				(this as Power).tagList(user)
+			);
+			break;
+		}
+	}
+	return tags
+		.map(tag => typeof tag == "string" ? localize(localizeTable[tag]) : tag.name)
+		.join(', ');
+}
 
 
 /** @deprecated
@@ -730,7 +738,7 @@ get tags() : string {
       case 'power':
         return (this as Power).#autoTags_power(user);
       case 'consumable': {
-        const list : (PowerTag | EquipmentTag)[]= (this.system.tags as (PowerTag | EquipmentTag)[]).concat(this.system.itemTags);
+        const list : string[]= this.system.tags.concat(this.system.itemTags);
         if (!list.includes(itype)) {
           list.pushUnique(itype);
         }
@@ -743,7 +751,7 @@ get tags() : string {
         }
         const subtype = this.system.subtype;
         list.pushUnique(subtype);
-        return list;
+        return list.map ( t=> PersonaItem.resolveTag<EquipmentTag | PowerTag>(t));
       }
       case 'item': {
         const list= this.system.itemTags.slice();
@@ -766,7 +774,7 @@ get tags() : string {
           default:
             subtype satisfies never;
         }
-        return list;
+        return list.map( t=> PersonaItem.resolveTag<EquipmentTag>(t));
       }
       case 'weapon': {
         const list = this.system.itemTags.slice();
@@ -777,7 +785,7 @@ get tags() : string {
         if (!list.includes(itype)) {
           list.pushUnique(itype);
         }
-        return list;
+        return list.map( t=> PersonaItem.resolveTag<EquipmentTag>(t));
       }
       case 'skillCard': {
         return [
@@ -792,7 +800,7 @@ get tags() : string {
         } else {
           list.push('passive');
         }
-        return list;
+        return list.map( t=> PersonaItem.resolveTag<PowerTag>(t as string));
       }
       default:
         itype satisfies never;
@@ -802,7 +810,7 @@ get tags() : string {
   }
 
   #autoTags_power(this: Power, user ?: null | ValidAttackers): (PowerTag | EquipmentTag)[] {
-    const list : (PowerTag | EquipmentTag) [] = this.system.tags.slice();
+    const list : (PowerTag | EquipmentTag) [] = this.system.tags.map( x=> PersonaItem.resolveTag(x));
     list.pushUnique(this.system.type);
     if (this.system.instantKillChance != 'none') {
       list.pushUnique('instantKill');
@@ -948,7 +956,7 @@ static grantsTalents (eff: TypedConditionalEffect) : boolean {
       default:
         this.system satisfies never;
     }
-    const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this,user );
+    const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this, user );
     return testPreconditions(conditions, situation, this as Usable);
   }
 
@@ -1641,20 +1649,21 @@ get description(): SafeString {
     return 'passive';
   }
 
-  critBoost(this: Usable, user: ValidAttackers) : ModifierList {
-    const x = this.getModifier('criticalBoost', user);
-    let list = new ModifierList(x);
-    list = list.concat(user.persona().critBoost());
-    let powerCrit = (this.system.crit_boost ?? 0);
-    if (this.isWeaponSkill()
-      && !this.isBasicPower()
-      && this.system.ailmentChance == 'none'
-      && !this.isInstantDeathAttack()) {
-      powerCrit += 2;
-    }
-    list.add('Power Modifier', powerCrit);
-    return list;
-  }
+critBoost(this: Usable, user: ValidAttackers) : ModifierList {
+	// const x = this.getModifier('criticalBoost', user);
+	// let list = new ModifierList(x);
+	let list = new ModifierList();
+	list = list.concat(user.persona().critBoost());
+	let powerCrit = (this.system.crit_boost ?? 0);
+	if (this.isWeaponSkill()
+		&& !this.isBasicPower()
+		&& this.system.ailmentChance == 'none'
+		&& !this.isInstantDeathAttack()) {
+		powerCrit += 2;
+	}
+	list.add('Power Modifier', powerCrit);
+	return list;
+}
 
   canBeReflectedByPhyiscalShield(this: UsableAndCard, attacker: ValidAttackers): boolean {
     if (this.isSkillCard()) {return false;}
@@ -1850,6 +1859,10 @@ isTag() : this is Tag {
 	return this.system.type == "tag";
 }
 
+isUniversalModifier(): this is UniversalModifier {
+	return this.system.type == "universalModifier";
+}
+
 	isCarryableType(): this is Carryable  {
 		switch (this.system.type) {
 			case "consumable":
@@ -2043,9 +2056,18 @@ getEffects(this: ModifierContainer, sourceActor : PersonaActor | null, CETypes ?
 		];
 		return arr;
 	}
+	const tagEffects : SourcedConditionalEffect[] = [];
+	if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()){
+		const tags=  this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
+		.filter (tag=> tag instanceof PersonaItem);
+		tagEffects.push(...tags.flatMap(tag =>
+			tag.getEffects(sourceActor, CETypes)
+		));
+	}
 	if (!CETypes || CETypes.length == 0) {
 		const effects = this.system.effects;
-		return this.#accessEffectsCache('allEffects', sourceActor, () => ConditionalEffectManager.getEffects(effects, this, sourceActor));
+		return this.#accessEffectsCache('allEffects', sourceActor, () => ConditionalEffectManager.getEffects(effects, this, sourceActor))
+			.concat(tagEffects);
 	} else {
 		const effects: SourcedConditionalEffect[] = [];
 		for (const cType of CETypes) {
@@ -2069,7 +2091,8 @@ getEffects(this: ModifierContainer, sourceActor : PersonaActor | null, CETypes ?
 					cType satisfies never;
 			}
 		}
-		return effects;
+		return effects
+			.concat(tagEffects);
 	}
 }
 
@@ -2661,12 +2684,14 @@ canInstantKill(this: Usable) : boolean {
 }
 
 causesAilment(this: Usable) : boolean {
-  if (this.statusesAdded().some (
-    status => STATUS_AILMENT_SET.has(status)
-  )) {
-    return true;
-  }
-  return false;
+	if (this.system.ailmentChance != "none") {return true;}
+	return false;
+  // if (this.statusesAdded().some (
+  //   status => STATUS_AILMENT_SET.has(status)
+  // )) {
+  //   return true;
+  // }
+  // return false;
   // return this.hasTag("ailment");
 }
 
@@ -2753,9 +2778,10 @@ isStatusRemoval(this: Usable) : boolean {
 }
 
 /** Handlebars keeps turning my arrays inside an object into an object with numeric keys, this fixes that */
-export function ArrayCorrector<T>(obj: (DeepReadonly<T[]> | Record<string | number, T>)): DeepReadonly<T[]> {
+export function ArrayCorrector<T>(obj: T[] | Record<string | number, T>): T[] {
   return ConditionalEffectManager.ArrayCorrector(obj);
 }
+
 
 export type CClass = Subtype<PersonaItem, 'characterClass'>;
 export type Power = Subtype<PersonaItem, 'power'>;

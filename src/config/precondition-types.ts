@@ -2,7 +2,7 @@ import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { NumericComparisonPC } from "./numeric-comparison.js";
 import { BooleanComparisonPC } from "./boolean-comparison.js";
 import { TarotCard } from "./tarot.js";
-import { PowerTag } from "../config/power-tags.js";
+import { PowerTag, PowerTagOrId } from "../config/power-tags.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PowerType } from "../config/effect-types.js";
 import { DamageType } from "../config/damage-types.js";
@@ -40,7 +40,7 @@ export type PreconditionComparison =
 type GenericPC = {
 	type: Exclude<PreconditionType, "numeric" | "boolean" | 'save-versus' | "on-trigger" | "numeric-v2">;
 	status ?: StatusEffectId | Record<StatusEffectId, boolean>,
-	powerTag ?: PowerTag | Record<PowerTag, boolean>,
+	powerTag ?: PowerTagOrId | Record<PowerTagOrId, boolean>,
 	powerType ?: PowerType,
 	powerDamageType ?: (DamageType | "by-power"),
 	num ?: number,

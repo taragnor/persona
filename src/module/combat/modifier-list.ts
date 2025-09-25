@@ -9,7 +9,7 @@ import { PersonaDB } from "../persona-db.js";
 export type ModifierListItem = {
 	name: string;
 	source: Option<UniversalItemAccessor<PowerContainer>>;
-	conditions: DeepReadonly<Precondition[]>;
+	conditions:  Precondition[];
 	modifier: number;
 }
 
@@ -21,9 +21,23 @@ export class ModifierList {
 	_data: ModifierListItem[];
 	listType: MLListType;
 
-	constructor ( list: ModifierListItem[] = [], listType: MLListType = "standard") {
-		this._data = list;
-		this.listType = listType;
+	constructor ( sourcedEffects: SourcedConditionalEffect[], bonusFn : (eff :SourcedConditionalEffect) => number ,listType?: MLListType);
+	constructor ( list?: ModifierListItem[], listType?: MLListType);
+	constructor ( list: ModifierListItem[] | SourcedConditionalEffect[] = [], listTypeOrFn: MLListType | ((eff: SourcedConditionalEffect) => number) = "standard", listType ?: MLListType)
+	{
+		this.listType = typeof listTypeOrFn != "function" ? listTypeOrFn : (listType ? listType : "standard");
+		if (list.length == 0 || ("name" in list.at(0)!)) {
+			this._data = list as ModifierListItem[];
+			return;
+		}
+		const ModListItems = (list as SourcedConditionalEffect[]).map( eff=> ({
+          name: eff.source?.name ?? "Unknown Source",
+          source: eff.source?.accessor ?? null,
+          conditions: ArrayCorrector(eff.conditions),
+          modifier: typeof listTypeOrFn == "function" ? listTypeOrFn(eff): 0,
+		}));
+		this._data = ModListItems;
+		this._data= this._data.filter( x=> x.modifier != 0);
 	}
 
 	add(name: string, modifier: number, sourceItem: Option<ModifierContainer> = null, conditions: Precondition[] = []) : ModifierList {
@@ -35,6 +49,10 @@ export class ModifierList {
 			modifier,
 		});
 		return this;
+	}
+
+	filterZero() {
+		this._data= this._data.filter( x=> x.modifier != 0);
 	}
 
 	list(situtation: Situation): [number, string][] {
@@ -60,7 +78,7 @@ export class ModifierList {
 	}
 
 
-	 static getModifierAmount(consequences: DeepReadonly<Consequence[]>, targetMods: ModifierTarget[] | ModifierTarget) : number {
+	 static getModifierAmount(consequences: Consequence[], targetMods: ModifierTarget[] | ModifierTarget) : number {
 			targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
 			return (ArrayCorrector(consequences) ?? [])
 				 .reduce( (acc,cons)=> {

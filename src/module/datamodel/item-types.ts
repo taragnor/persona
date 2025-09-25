@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
@@ -45,7 +46,7 @@ function itemBase() {
 		amount: new num({ integer: true, initial: 1, min: 0}),
 		price: new num({ integer: true, initial: 0, min:0}),
 		noTrade: new bool({initial: false}),
-		itemTags: new arr(new txt({choices: EQUIPMENT_TAGS_LIST})),
+		itemTags: new arr(new txt<typeof EQUIPMENT_TAGS_LIST[number] | Item["id"]>()),
 		treasure: itemTreasureStats(),
 	};
 }

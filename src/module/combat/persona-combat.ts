@@ -1609,8 +1609,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (rollType == 'reflect' && (def == "fort" || def =="ref" || def =="will")) {
 			attackbonus.add('Reflected Attack', 15);
 		}
-		const powerTagModifiers = power.powerTagModifiers(attacker.actor);
-		attackbonus = attackbonus.concat(powerTagModifiers);
+		// const powerTagModifiers = power.powerTagModifiers(attacker.actor);
+		// const tagMods = new ModifierList(powerTagModifiers);
+		// attackbonus = attackbonus.concat(powerTagModifiers);
 		const cssClass=  (!target.actor.isPC()) ? 'gm-only' : '';
 		const roll = new RollBundle('Temp', r, attacker.actor.system.type == 'pc', attackbonus, baseSituation);
 		const naturalAttackRoll = roll.dice[0].total;
@@ -1845,10 +1846,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const power = PersonaDB.findItem(atkResult.power);
 		const attacker = PersonaDB.findToken(atkResult.attacker);
 		const target = PersonaDB.findToken(atkResult.target);
-		const attackerEffects= attacker.actor.getEffects(['passive', 'on-use']);
+		const attackerEffects= attacker.actor.getEffects(['passive']);
 		const defenderEffects = target.actor.getEffects(['defensive']);
 		const sourcedEffects = [
-			...power.getEffects(attacker.actor, ['on-use', 'passive'])
+			...power.getEffects(attacker.actor, ['on-use'])
 		].concat(attackerEffects)
 		.concat(defenderEffects);
 		const CombatRes = new CombatResult(atkResult);
@@ -2099,6 +2100,7 @@ static processConsequence( power: U<ModifierContainer>, situation: Situation, co
 }
 
 static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, power: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'] {
+	debugger;
 	const consList : ConsequenceProcessed['consequences'] = [];
 	let dmgCalc: U<DamageCalculation>;
 	let dmgAmt : number = 0;

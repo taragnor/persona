@@ -431,7 +431,7 @@ static getConsequences<T extends PersonaActor, I extends ModifierContainer>(cons
 	});
 }
 
-	static ArrayCorrector<T>(obj: (DeepReadonly<T[]> | Record<string | number, T>)): DeepReadonly<T[]> {
+	static ArrayCorrector<T>(obj: T[] | Record<string | number, T>) : T[] {
 		// eslint-disable-next-line no-useless-catch
 		try {
 			if (obj == null) {return[];}
@@ -439,7 +439,7 @@ static getConsequences<T extends PersonaActor, I extends ModifierContainer>(cons
 				if (PersonaSettings.debugMode()) {
 					console.debug("Array Correction Required");
 				}
-				return Object.keys(obj).map(function(k) { return obj[k as keyof typeof obj] as DeepReadonly<T>; });
+				return Object.keys(obj).map(function(k) { return obj[k as keyof typeof obj]; });
 			}
 		} catch (e) {
 			throw e;

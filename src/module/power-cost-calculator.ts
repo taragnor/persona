@@ -2,7 +2,7 @@ import { Shadow } from './actor/persona-actor.js';
 import { PowerTag } from '../config/power-tags.js';
 import { DamageType } from '../config/damage-types.js';
 import { DamageLevel } from '../config/damage-types.js';
-import { Power } from './item/persona-item.js';
+import { Power, Tag } from './item/persona-item.js';
 import {InstantKillLevel} from './combat/damage-calc.js';
 
 export class PowerCostCalculator {
@@ -131,7 +131,8 @@ export class PowerCostCalculator {
   static tagAdjust(pwr: Power) : CostModifier {
     let total = 0;
     for (const tag of pwr.tagList(null)) {
-      total += TAG_ADJUST_HP[tag as PowerTag] ?? 0;
+		 const tagName = (typeof tag == "string" ? tag : tag.id);
+      total += TAG_ADJUST_HP[tagName as keyof typeof TAG_ADJUST_HP] ?? 0;
     }
     return i(total);
   }
@@ -291,7 +292,8 @@ export class PowerCostCalculator {
     let mult = 1;
     const tags = pwr.tagList();
     for (const x of tags) {
-      const modMult = TAG_ADJUST_MP_MULT[x as PowerTag];
+		 const tagName = (typeof x == "string" ? x : x.id);
+      const modMult = TAG_ADJUST_MP_MULT[tagName as keyof typeof TAG_ADJUST_MP_MULT];
       if (modMult == undefined) {continue;}
       mult *= modMult;
     }
@@ -387,7 +389,7 @@ const DAMAGE_LEVEL_MULTIPLIERS_MP : Record<DamageLevel, number>  = {
 };
 
 
-const TAG_ADJUST_HP : Partial<Record<PowerTag, number>> = {
+const TAG_ADJUST_HP : Partial<Record<Exclude<PowerTag, Tag>, number>> = {
   inaccurate: -3,
   accurate: 3,
   "high-crit": 3,
@@ -398,7 +400,7 @@ const TAG_ADJUST_HP : Partial<Record<PowerTag, number>> = {
   "pierce": 5,
 };
 
-const TAG_ADJUST_MP_MULT : Partial<Record<PowerTag, number>> = {
+const TAG_ADJUST_MP_MULT : Partial<Record<Exclude<PowerTag, Tag>, number>> = {
   "half-on-miss": 1.1,
   "pierce": 1.5,
   "high-crit":1.25,

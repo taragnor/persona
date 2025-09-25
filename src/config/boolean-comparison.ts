@@ -1,4 +1,3 @@
-import { WeaponTag } from "./equipment-tags.js";
 import { RollTag } from "./roll-tags.js";
 import { CardTag } from "./card-tags.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
@@ -12,12 +11,11 @@ import { SocialLinkIdOrTarot } from "./precondition-types.js";
 import { ConditionTarget } from "./precondition-types.js";
 import { MultiCheck } from "./precondition-types.js";
 import { MultiCheckOrSingle } from "./precondition-types.js";
-import { CreatureTag} from "./creature-tags.js";
 import { CreatureType } from "./shadow-types.js";
 import { ShadowRole } from "./shadow-types.js";
 import { DAYS_LIST } from "./days.js";
 import { WeatherType } from "./weather-types.js";
-import { Power } from "../module/item/persona-item.js";
+import { Power, Tag } from "../module/item/persona-item.js";
 
 const BASIC_BOOLEAN_COMPARISON_LIST = [
 	"in-combat",
@@ -251,7 +249,7 @@ type GeneralTagComparison = {
 } & (
 	{
 	tagComparisonType: "power" | undefined,
-	powerTag: MultiCheckOrSingle<PowerTag>,
+	powerTag: MultiCheckOrSingle<Exclude<PowerTag, Tag>>,
 } | {
 	tagComparisonType: "actor",
 	creatureTag : MultiCheckOrSingle<string>,
@@ -261,7 +259,7 @@ type GeneralTagComparison = {
 	rollTag: MultiCheckOrSingle<RollTag | CardTag>,
 } | {
 	tagComparisonType: "weapon",
-	rollTag: MultiCheckOrSingle<WeaponTag>,
+	rollTag: MultiCheckOrSingle<Tag["id"]>,
 	conditionTarget : ConditionTarget,
 }
 

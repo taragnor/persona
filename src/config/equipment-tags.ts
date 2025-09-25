@@ -1,3 +1,4 @@
+import {Tag} from "../module/item/persona-item.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 
 export const WEAPON_TAGS_LIST = [
@@ -61,9 +62,9 @@ export const EQUIPMENT_TAGS_LIST = [
 ] as const;
 
 
-export type WeaponTag= typeof WEAPON_TAGS_LIST[number];
+export type WeaponTag= typeof WEAPON_TAGS_LIST[number] | Tag;
 
-export type EquipmentTag = typeof EQUIPMENT_TAGS_LIST[number];
+export type EquipmentTag = typeof EQUIPMENT_TAGS_LIST[number] | Tag;
 
 export const WEAPON_TAGS = HTMLTools.createLocalizationObject(WEAPON_TAGS_LIST.slice().sort(), "persona.equipment.tag");
 
