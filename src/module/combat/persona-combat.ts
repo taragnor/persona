@@ -2100,7 +2100,6 @@ static processConsequence( power: U<ModifierContainer>, situation: Situation, co
 }
 
 static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, power: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'] {
-	debugger;
 	const consList : ConsequenceProcessed['consequences'] = [];
 	let dmgCalc: U<DamageCalculation>;
 	let dmgAmt : number = 0;
