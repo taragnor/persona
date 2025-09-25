@@ -12,6 +12,7 @@ declare global {
 
 }
 
+import { Tooltip } from "./tooltip.js";
 import { TarotPrinter } from "./printers/tarot-list.js";
 import { PowerPrinter } from "./printers/power-list.js";
 import { Simulations } from "./exploration/simulations.js";
@@ -82,7 +83,7 @@ function registerSheetApplications() {
 	Items.registerSheet("persona", PersonaTalentSheet, {types: ["talent"], makeDefault: true});
 	Items.registerSheet("persona", PersonaFocusSheet, {types: ["focus"], makeDefault: true});
 	Items.registerSheet("persona", ConsumableSheet, {types: ["consumable"], makeDefault: true});
-	Items.registerSheet("persona", PersonaTagSheet, {types: ["tag"], makeDefault: true});
+		Items.registerSheet("persona", PersonaTagSheet, {types: ["tag"], makeDefault: true});
 	// Items.registerSheet("persona", PersonaJobSheet, {types: ["job"], makeDefault: true});
 	Items.registerSheet("persona", UniversalModifierSheet, {types: ["universalModifier"], makeDefault: true});
 	Items.registerSheet("persona", PersonaSocialCardSheet, {types: ["socialCard"], makeDefault: true});
@@ -92,6 +93,7 @@ Hooks.once("ready", () => {Darkness.init();});
 
 Hooks.once("init", function() {
 	console.log("*** PERSONA SYSTEM INIT START ***");
+
 
 	DebugTools.setDebugMode(true);
 
@@ -116,6 +118,7 @@ Hooks.once("init", function() {
 	Heartbeat.start();
 	PowerPrinter.init();
 	TarotPrinter.init();
+	Tooltip.init();
 });
 
 function registerHandlebarsHelpers() {

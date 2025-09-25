@@ -258,9 +258,9 @@ input.single-digit {
   top: -200%;
 }
 
-.tooltip:hover .tooltiptext {
-  visibility: visible;
-}
+/* .tooltip:hover .tooltiptext { */
+/*   visibility: visible; */
+/* } */
 
 .social-link .name {
 	cursor: pointer;
@@ -1396,4 +1396,40 @@ button.crunch-party-button {
 	cursor: pointer;
 }
 
+.toolTip {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.85); /* dark background */
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  pointer-events: none;  /* don’t block clicks */
+  white-space: pre-line; /* support line breaks */
+  z-index: 99999;
+  display: none;         /* hidden by default */
+}
 
+#tooltip-root {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; /* allows clicks through when tooltip isn't interactive */
+  z-index: 99999; /* above everything */
+}
+
+.tooltip-box {
+  position: absolute;
+  background: rgba(0,0,0,0.9);
+  color: #fff;
+  padding: 0.5em 0.75em;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  white-space: nowrap;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: auto; /* if you want links/buttons inside */
+}
+.tooltip-box.visible {
+  opacity: 1;
+}

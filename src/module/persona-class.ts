@@ -374,7 +374,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	mainModifiers(options?: {omitPowers?: boolean, omitTalents?: boolean, omitTags ?: boolean} ): readonly SourcedConditionalEffect[] {
-	// mainModifiers(options?: {omitPowers?: boolean, omitTalents?: boolean, omitTags ?: boolean} ): readonly ModifierContainer[] {
 		//NOTE: this could be a risky operation
 		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!options && PersonaCaching && this.#cache.mainModifiers) {
@@ -401,7 +400,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			// ...PersonaDB.getGlobalModifiers(),
 			...PersonaDB.navigatorModifiers(),
 		].flatMap( x=> x.getEffects(this.user));
-		// ].filter( x => x.getEffects(this.user).length > 0);
 		if (!options) {
 			this.#cache.mainModifiers = mainMods;
 		}
