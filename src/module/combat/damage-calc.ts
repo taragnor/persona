@@ -72,6 +72,7 @@ export class DamageCalculation {
 		return {
 			...convert,
 			source: cons.source,
+			owner: cons.owner,
 		};
 	}
 

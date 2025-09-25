@@ -22,7 +22,6 @@ import { SocialLinkIdOrTarot } from "../config/precondition-types.js";
 import { MultiCheck } from "../config/precondition-types.js";
 import { UserComparisonTarget } from "../config/precondition-types.js";
 import { ProgressClock } from "./utility/progress-clock.js";
-import { PowerTag } from "../config/power-tags.js";
 import { DamageType } from "../config/damage-types.js";
 import { RESIST_STRENGTH_LIST } from "../config/damage-types.js";
 import { PersonaCalendar } from "./social/persona-calendar.js";
@@ -51,6 +50,7 @@ export function getActiveConsequences(condEffect: SourcedConditionalEffect, situ
 	return arr.map( cons => ({
 		...cons,
 		source,
+		owner: condEffect.owner,
 	}));
 }
 
@@ -443,6 +443,8 @@ function triggerComparison(condition: DeepReadonly<Triggered>, situation: Situat
 		case "on-inflict-status":
 			if (!("statusEffect" in situation)) {return false;}
 			return condition.status == situation.statusEffect;
+		case "start-turn":
+			return true;
 		case "on-combat-end":
 		case "exit-metaverse":
 		case "enter-metaverse":
@@ -450,7 +452,6 @@ function triggerComparison(condition: DeepReadonly<Triggered>, situation: Situat
 		case "on-combat-start":
 		case "on-kill-target":
 		case "on-damage":
-		case "start-turn":
 		case "end-turn":
 		case "on-combat-end-global":
 		case "on-search-end":

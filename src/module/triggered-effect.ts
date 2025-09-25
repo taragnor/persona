@@ -126,7 +126,7 @@ export class TriggeredEffect {
 		);
 		for (const eff of triggers) {
 			try {
-				const validCons = getActiveConsequences(eff, situation);
+				const validCons = getActiveConsequences(eff, situationCopy);
 				// if (!testPreconditions(eff.conditions, situationCopy, trig)) { continue; }
 				// const res = await PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null);
 				const res = await PersonaCombat.consequencesToResult(validCons ,undefined, situationCopy, actor, actor, null);

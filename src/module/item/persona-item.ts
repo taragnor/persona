@@ -1243,11 +1243,11 @@ toSkillCard(this: Power) : Promise<SkillCard> {
       }
       effects.forEach( ({conditions, consequences}, i) => {
         if (!isArray(conditions)) {
-          effects[i].conditions = ArrayCorrector(conditions) as (typeof effects)[number]["conditions"];
+          effects[i].conditions = ArrayCorrector(conditions);
           update = true;
         }
         if (!isArray(consequences)) {
-          effects[i].consequences = ArrayCorrector(consequences) as (typeof effects)[number]["consequences"];
+          effects[i].consequences = ArrayCorrector(consequences);
           update = true;
         }
       });
@@ -1989,35 +1989,6 @@ isUniversalModifier(): this is UniversalModifier {
 		return 0;
 	}
 
-  // getSourcedEffects(this: ModifierContainer, sourceActor: ValidAttackers, condTypes :TypedConditionalEffect['conditionalType'][] = []): readonly SourcedConditionalEffect[] {
-  //   if (condTypes.length == 0) {
-  //     return this.getEffects(sourceActor);
-  //   }
-  //   const effects: SourcedConditionalEffect[] = [];
-  //   for (const cType of condTypes) {
-  //     switch (cType) {
-  //       case 'defensive':
-  //         effects.push(...this.getDefensiveEffects(sourceActor));
-  //         break;
-  //       case 'triggered':
-  //         effects.push(...this.getTriggeredEffects(sourceActor));
-  //         break;
-  //       case 'passive':
-  //         effects.push(...this.getPassiveEffects(sourceActor));
-  //         break;
-  //       case 'on-use':
-  //         effects.push(...this.getOnUseEffects(sourceActor));
-  //         break;
-  //       case 'unknown':
-  //         effects.push(...this.getEffects(sourceActor).filter( x=> x.conditionalType == cType));
-  //         break;
-  //       default:
-  //         cType satisfies never;
-  //     }
-  //   }
-  //   return effects;
-  // }
-
 generateSkillCardTeach(this: SkillCard): SourcedConditionalEffect {
 	if (!this.system.skillId) {
 		return {
@@ -2025,7 +1996,8 @@ generateSkillCardTeach(this: SkillCard): SourcedConditionalEffect {
 			conditionalType: 'on-use',
 			isDefensive: false,
 			conditions: [],
-			consequences: []
+			consequences: [],
+			owner: this.parent?.accessor,
 		};
 	}
 	const cardEffect: TypedConditionalEffect = {
@@ -2042,6 +2014,7 @@ generateSkillCardTeach(this: SkillCard): SourcedConditionalEffect {
 	return {
 		source: this,
 		...cardEffect,
+		owner: this.parent?.accessor,
 	};
 }
 

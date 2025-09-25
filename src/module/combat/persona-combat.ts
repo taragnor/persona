@@ -537,7 +537,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			for (const user of this.combatants) {
 				if (user.token.actor == undefined) {continue;}
 				const situation : Situation = {
+					trigger: "start-turn",
 					triggeringCharacter: triggeringCharacter.accessor,
+					triggeringUser: game.user,
 					user: user.token.actor.accessor,
 					activeCombat: true,
 				};
@@ -1605,7 +1607,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				combat.lastActivationRoll = r.total;
 			}
 		}
-		let attackbonus = this.getAttackBonus(attackerPersona, power, target, modifiers);
+		const attackbonus = this.getAttackBonus(attackerPersona, power, target, modifiers);
 		if (rollType == 'reflect' && (def == "fort" || def =="ref" || def =="will")) {
 			attackbonus.add('Reflected Attack', 15);
 		}
@@ -1808,6 +1810,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				if ( targetActor.hasStatus('magic-shield') && power.canBeReflectedByMagicShield(attacker.actor)) {
 					const cons : SourcedConsequence = {
 						type: 'removeStatus',
+						owner: targetActor.accessor,
 						statusName: 'magic-shield',
 						source: power,
 					};
@@ -1816,6 +1819,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				if (targetActor.hasStatus('phys-shield') && power.canBeReflectedByPhyiscalShield(attacker.actor)) {
 					const cons : SourcedConsequence = {
 						type: 'removeStatus',
+						owner: targetActor.accessor,
 						statusName: 'phys-shield',
 						source: power,
 					};
@@ -1950,7 +1954,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	// }
 
 
-	static solveEffectiveTargets< T extends keyof TargettingContextList>(applyTo :T, situation: Situation, cons?: Consequence) : (ValidAttackers | ValidSocialTarget)[]  {
+	static solveEffectiveTargets< T extends keyof TargettingContextList>(applyTo :T, situation: Situation, cons?: SourcedConsequence) : (ValidAttackers | ValidSocialTarget)[]  {
 		switch (applyTo) {
 			case 'target' : {
 				const target = situation.target
@@ -1963,9 +1967,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				const attacker = situation.attacker ? PersonaDB.findActor(situation.attacker) : undefined;
 				return attacker ? [attacker]: []; }
 			case 'owner':
-				if (cons && cons.actorOwner) {
-					const pt =  this.getPTokenFromActorAccessor(cons.actorOwner);
-					if (pt && pt.actor) {return [pt.actor];}
+				if (cons) {
+					if (cons.actorOwner) {
+						const pt =  this.getPTokenFromActorAccessor(cons.actorOwner);
+						if (pt && pt.actor) {return [pt.actor];}
+					}
+					if (cons.owner) {
+						const pt =  this.getPTokenFromActorAccessor(cons.owner);
+						if (pt && pt.actor) {return [pt.actor];}
+					}
 					else {return [];}
 				}
 				ui.notifications.notify("Can't find Owner of Consequnece");
@@ -2178,9 +2188,9 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 		default:
 			cons satisfies never;
 	}
-	if (power && (dmgAmt || dmgCalc)) {
+	if (dmgAmt || dmgCalc) {
 		for (const applyTo of targets) {
-			const piercePower = power.hasTag('pierce');
+			const piercePower = power && power.hasTag('pierce');
 			const pierceTag = 'addedTags' in situation && situation.addedTags && situation.addedTags.includes('pierce');
 			if (!piercePower && !pierceTag) {
 				const resist = applyTo.persona().elemResist(damageType);
@@ -2199,7 +2209,7 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 			}
 			const consItems = targets.map( target => {
 				const DC = dmgCalc != undefined ? dmgCalc.clone(): undefined;
-				if (DC) {
+				if (DC && power) {
 					const DR = target.persona().combatStats.damageReduction(damageType, power);
 					DC.merge(DR);
 				};
@@ -2289,6 +2299,7 @@ static processConsequence_simple( cons: SourcedConsequence, targets: ValidAttack
 							itemId: item.id,
 							itemAcc: (item as Consumable | SkillCard).accessor,
 							source: cons.source,
+							owner: item.parent instanceof PersonaActor? item.parent.accessor: undefined,
 						}
 					};
 				});
@@ -2301,6 +2312,7 @@ static processConsequence_simple( cons: SourcedConsequence, targets: ValidAttack
 							itemId: '',
 							itemAcc: cons.sourceItem,
 							source: cons.source,
+							owner: applyTo.accessor,
 						}
 					};
 				});
@@ -2341,6 +2353,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 						amount: power.system.inspirationCost,
 						socialLinkIdOrTarot: power.system.inspirationId as unknown as AnyStringObject,
 						source: usableOrCard,
+						owner: attacker.actor.accessor,
 					}, situation);
 				}
 			}
@@ -2350,6 +2363,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 					damageType: 'none',
 					amount: power.modifiedHpCost(attacker.actor.persona()),
 					source: usableOrCard,
+					owner: attacker.actor.accessor,
 				}, power.getDamageType(attacker.actor));
 				await res.addEffect(null, attacker.actor, deprecatedConvert, situation );
 			}
@@ -2359,6 +2373,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 					subtype: 'direct',
 					amount: -power.mpCost(attacker.actor.persona()),
 					source: usableOrCard,
+					owner: attacker.actor.accessor,
 				}, situation);
 			}
 			if (attacker.actor.isShadow()) {
@@ -2367,6 +2382,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 						type: 'alter-energy',
 						amount: -power.energyCost(attacker.actor.persona()),
 						source: usableOrCard,
+						owner: attacker.actor.accessor,
 					}, situation);
 				}
 			}
@@ -2381,6 +2397,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 					itemId: '',
 					itemAcc: PersonaDB.getUniversalItemAccessor(usableOrCard as SkillCard | Consumable),
 					source: usableOrCard,
+					owner: attacker.actor.accessor,
 				}, situation);
 			}
 			break;

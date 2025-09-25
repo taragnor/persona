@@ -324,7 +324,7 @@ export class ConditionalEffectManager {
 		// setTimeout( () => this.restoreLastClick(html), 100);
 	}
 
-	static getEffects<T extends PersonaActor, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null) : SourcedConditionalEffects {
+	static getEffects<T extends PersonaActor, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null) : SourcedConditionalEffect[] {
 			const conditionalEffects = Array.isArray(CEObject) ? CEObject : this.ArrayCorrector(CEObject);
 		return conditionalEffects.map( ce=> {
 			const conditions = this.getConditionals(ce.conditions, sourceItem, sourceActor);
@@ -351,6 +351,7 @@ export class ConditionalEffectManager {
 				consequences,
 				// consequences,
 				isDefensive: conditionalType == "defensive",
+				owner: sourceActor?.accessor,
 				source: sourceItem,
 			};
 		}
@@ -1353,10 +1354,11 @@ declare global{
 		isDefensive: boolean;
 	}
 
-	type SourcedConditionalEffects = SourcedConditionalEffect[];
+	// type SourcedConditionalEffects = SourcedConditionalEffect[];
 
 	interface SourcedConditionalEffect extends TypedConditionalEffect {
 		source: ModifierContainer | null;
+		owner: U<UniversalActorAccessor<PersonaActor>>;
 	}
 
 	interface TypedConditionalEffect extends NonDeprecatedConditionalEffect {

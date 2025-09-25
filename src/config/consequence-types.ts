@@ -31,7 +31,7 @@ import { OtherConsequence } from "../module/datamodel/other-effects.js";
 import { StatusDuration } from "../module/active-effect.js";
 import { StatusEffectId } from "./status-effects.js";
 import { ModifierCategory, ModifierTarget } from "./item-modifiers.js";
-import { PC } from "../module/actor/persona-actor.js";
+import { PC, PersonaActor } from "../module/actor/persona-actor.js";
 
 type ExpendOtherEffect = {
 	type: "expend-item";
@@ -141,6 +141,7 @@ type StatusEffect_FollowUp = {
 
 export type SourcedConsequence<C extends Consequence = Consequence> = C & {
 	source: {displayedName: string} | PowerContainer | null;
+	owner: U<UniversalActorAccessor<PersonaActor>>;
 	modifiers?: ConsModifiers[];
 }
 
