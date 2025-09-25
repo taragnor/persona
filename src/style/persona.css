@@ -1370,14 +1370,19 @@ section.power-sideboard {
 	flex-direction: column;
 	flex-wrap: nowrap;
 	justify-content: flex-start;
+	max-height: 90%;
+	max-width: 300px;
+	flex: 1;
 }
 
 .chat-notifications-container {
+	margin-left: auto;
 	display: flex;
 	flex-direction: column;
 	flex-wrap: nowrap;
-	justify-content: flex-start;
+	justify-content: flex-end;
 	min-height: 33%;
+	flex: 1;
 	min-width: 75%;
 	max-width: 100%;
 	/* max-height: 50%; */

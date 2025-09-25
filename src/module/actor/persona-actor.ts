@@ -638,12 +638,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 
 	mhpCalculation(this: ValidAttackers) {
+		const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
 		try {
 			if (this.system == undefined) {return new Calculation().eval();}
 			const lvlbase = this.class.getClassMHP(this.level);
 			const calc = new Calculation(lvlbase);
 			const persona = this.persona();
-			const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
 			const nonMultbonuses = persona.getBonuses("maxhp");
 			const newForm = persona.getBonuses("maxhpMult-new");
 			const hpAdjustPercent = this.#hpAdjustPercent();
@@ -669,7 +669,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}	 catch(e) {
 			PersonaError.softFail(`Error in calculating ${this.name} MHP`, e);
 		}
-		return new Calculation().eval();
+		return new Calculation().eval(sit);
 	}
 
 
@@ -1454,8 +1454,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const powerBased = (this.system.type == "shadow" ? this.mainPowers : this.consumables)
 			.filter( power => power.isOpener());
 		const arr : Usable[] = (this as ValidAttackers).mainModifiers({omitPowers:true})
-			.filter(x=> x.grantsPowers())
-			.flatMap(x=> x.getOpenerPowers(this as PC ) as Usable[])
+			.filter(x=> PersonaItem.grantsPowers(x))
+			.flatMap(eff=> PersonaItem.getAllGrantedPowers(eff, this as ValidAttackers) as Usable[])
+			.filter( eff => eff.isOpener())
+		// .flatMap(x=> x.getOpenerPowers(this as PC ) as Usable[])
 			.concat(powerBased);
 		return removeDuplicates(arr);
 	}
@@ -1850,7 +1852,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.persona().getBonuses("instantDeathResistanceMult").total(situation, "percentage");
 	}
 
-	mainModifiers(...args: Parameters<Persona["mainModifiers"]>): readonly ModifierContainer[] {
+	mainModifiers(...args: Parameters<Persona["mainModifiers"]>): readonly SourcedConditionalEffect[] {
 		if (!this.isValidCombatant()) {return [];}
 		return this.persona().mainModifiers(...args);
 	}
@@ -1864,15 +1866,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		// ].filter(x=> x.hasDefensiveEffects(this));
 	}
 
-	getSourcedDefensivePowers(this: ValidAttackers) : SourcedConditionalEffect[] {
-		return this.persona().defensiveModifiers().flatMap( x=> x.getSourcedEffects(this));
-	}
+	// getSourcedDefensivePowers(this: ValidAttackers) : SourcedConditionalEffect[] {
+	// 	return this.persona().defensiveModifiers();
+	// }
 
 	getDefense(this: ValidAttackers,  type : keyof PC["system"]["combat"]["defenses"]) : ModifierList {
 		return this.persona().getDefense(type);
 	}
 
-	statusResist(status: StatusEffectId, modifiers ?: readonly ModifierContainer[]) : ResistStrength {
+	statusResist(status: StatusEffectId, modifiers ?: readonly SourcedConditionalEffect[]) : ResistStrength {
 		switch (this.system.type) {
 			case "tarot":
 			case "npc":
@@ -1890,18 +1892,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!modifiers) {
 			modifiers = actor.mainModifiers();
 		}
-		const effectChangers=  modifiers.filter( x=> x.getEffects(actor)
-			.some(x=> x.consequences
-				.some( cons=>cons.type == "raise-status-resistance" && cons.statusName == status)));
+		const effectChangers=  modifiers
+		.filter ( mod => mod.consequences
+				.some( cons=>cons.type == "raise-status-resistance" && cons.statusName == status));
 		const situation : Situation = {
 			user: actor.accessor,
 			target: actor.accessor,
 		};
 		const consequences = effectChangers.flatMap(
-			item => item.getEffects(actor).flatMap(eff =>
-				getActiveConsequences(eff, situation, item)
-			)
-		);
+			item => getActiveConsequences(item, situation)
+			);
 		let baseStatusResist : ResistStrength = "normal";
 		if ("statusResists" in actor.system.combat) {
 			const statusResist = actor.system.combat.statusResists;
@@ -2452,12 +2452,16 @@ getAllSocialFocii() : Focus[] {
 	}
 }
 
-getSourcedEffects(this: ValidAttackers, condTypes :TypedConditionalEffect["conditionalType"][] = []): SourcedConditionalEffect[] {
-	return this.persona().mainModifiers().flatMap( x=> x.getSourcedEffects(this, condTypes));
-}
+// getSourcedEffects(this: ValidAttackers, condTypes :TypedConditionalEffect["conditionalType"][] = []): SourcedConditionalEffect[] {
+// 	return this.persona().mainModifiers();
+// }
 
-getEffects(this: ValidAttackers) : readonly TypedConditionalEffect[] {
-	return this.mainModifiers().flatMap( x=> x.getEffects(this));
+getEffects(this: ValidAttackers, CETypes ?: TypedConditionalEffect['conditionalType'][] ) : readonly SourcedConditionalEffect[] {
+	const mods =  this.persona().mainModifiers();
+	if (!CETypes || CETypes.length == 0) {
+		return mods;
+	}
+	return mods.filter ( mod => CETypes.includes(mod.conditionalType)) ;
 }
 
 // getPassivePowers(this: ValidAttackers): readonly Power[] {
@@ -2481,14 +2485,21 @@ hasBanefulStatus(): boolean {
 }
 
 getSaveBonus( this: ValidAttackers) : ModifierList {
-	const mods = this.mainModifiers().flatMap( item => item.getModifier("save", this));
+	const mods = this.mainModifiers()
+		.filter( x => x.conditionalType == "passive" || x.conditionalType == "defensive");
+	const modsProcessed = PersonaItem.getModifier(mods, "save");
+
+		// .flatMap( item => PersonaItem.getModifier("save", this));
 	// const x = this.getActiveTokens()[0]
-	return new ModifierList(mods);
+	return new ModifierList(modsProcessed);
 }
 
 getDisengageBonus( this: ValidAttackers) : ModifierList {
-	const mods = this.mainModifiers().flatMap( item => item.getModifier("disengage", this));
-	return new ModifierList(mods);
+	const mods = this.mainModifiers()
+		.filter( x => x.conditionalType == "passive" || x.conditionalType == "defensive");
+	const modsProcessed= PersonaItem.getModifier(mods, "disengage");
+		// .flatMap( item => item.getModifier("disengage", this));
+	return new ModifierList(modsProcessed);
 }
 
 /** returns current team (taking into account charm)*/
@@ -2721,12 +2732,12 @@ isFading(this: ValidAttackers): boolean {
 }
 
 
-triggersOn( trigger : Trigger) : ModifierContainer[] {
+triggersOn( trigger : Trigger) : SourcedConditionalEffect[] {
 	const triggers= this.triggers;
-	return triggers.filter( modC => modC.triggersOn(trigger));
+	return triggers.filter( CE => PersonaItem.triggersOn(CE, trigger));
 }
 
-get triggers() : ModifierContainer[] {
+get triggers() : SourcedConditionalEffect[] {
 	switch (this.system.type ) {
 		case "npc":
 		case "tarot":
@@ -2734,7 +2745,7 @@ get triggers() : ModifierContainer[] {
 		case "pc":
 		case "shadow":
 		case "npcAlly":
-			return (this as ValidAttackers).mainModifiers().filter( x=> x.hasTriggeredEffects(this));
+			return (this as ValidAttackers).mainModifiers().filter( x=> x.conditionalType == "triggered");
 		default:
 			this.system satisfies never;
 			return [];
@@ -3767,7 +3778,8 @@ get tagListPartial() : CreatureTag[] {
 		list.push(...this.persona().tagListPartial());
 	}
 	if (this.isValidCombatant()) {
-		const extraTags = this.mainModifiers({omitPowers:true, omitTalents: true, omitTags: true}).flatMap( x=> x.getConferredTags(this as ValidAttackers));
+		const extraTags = this.mainModifiers({omitPowers:true, omitTalents: true, omitTags: true})
+			.flatMap( CE=> PersonaItem.getConferredTags(CE , this as ValidAttackers));
 		for (const tag of extraTags) {
 			if (!list.includes(tag))
 			{list.push(tag);}

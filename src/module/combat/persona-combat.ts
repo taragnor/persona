@@ -10,7 +10,7 @@ import { RollTag } from '../../config/roll-tags.js';
 import { RollSituation } from '../../config/situation.js';
 import { Persona } from '../persona-class.js';
 import { PersonaScene } from '../persona-scene.js';
-import { Power } from '../item/persona-item.js';
+import { PersonaItem, Power } from '../item/persona-item.js';
 import { SkillCard } from '../item/persona-item.js';
 import { UsableAndCard } from '../item/persona-item.js';
 import { NPCAlly } from '../actor/persona-actor.js';
@@ -25,7 +25,6 @@ import { PersonaCalendar } from '../social/persona-calendar.js';
 import { ConsTarget } from '../../config/consequence-types.js';
 import { PersonaSocial } from '../social/persona-social.js';
 import { UniversalModifier } from '../item/persona-item.js';
-import { CombatTriggerTypes } from '../../config/triggers.js';
 import { PersonaSFX } from './persona-sfx.js';
 import { PersonaSettings } from '../../config/persona-settings.js';
 import { StatusEffect } from '../../config/consequence-types.js';
@@ -50,7 +49,7 @@ import { EngagementList } from './engagementList.js';
 import { OtherEffect } from '../../config/consequence-types.js';
 import { Consumable } from '../item/persona-item.js';
 import {Defense} from '../../config/defense-types.js';
-import {testPreconditions} from '../preconditions.js';
+import {getActiveConsequences} from '../preconditions.js';
 
 declare global {
 	interface SocketMessage {
@@ -120,7 +119,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		};
 		const CR = await TriggeredEffect
 			.autoTriggerToCR('on-combat-start', token.actor, situation);
-		await CR?.toMessage('Triggered Effect', token.actor);
+		if (CR) {
+			await CR?.toMessage('Triggered Effect', token.actor);
+		}
 		// this._startedList.add(comb.id);
 	}
 
@@ -540,7 +541,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					user: user.token.actor.accessor,
 					activeCombat: true,
 				};
-				await PersonaCombat.execTrigger('start-turn', user.token.actor, situation);
+				await TriggeredEffect.execCombatTrigger('start-turn', user.token.actor, situation);
 				console.log(`Triggering Start turn for ${triggeringCharacter.name} on ${user.name}`);
 			}
 		}
@@ -1844,29 +1845,27 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const power = PersonaDB.findItem(atkResult.power);
 		const attacker = PersonaDB.findToken(atkResult.attacker);
 		const target = PersonaDB.findToken(atkResult.target);
-		const attackerEffects= attacker.actor.getSourcedEffects(['passive', 'on-use']);
-		const defenderEffects = target.actor.getSourcedDefensivePowers();
+		const attackerEffects= attacker.actor.getEffects(['passive', 'on-use']);
+		const defenderEffects = target.actor.getEffects(['defensive']);
 		const sourcedEffects = [
-			power.getSourcedEffects(attacker.actor, ['on-use', 'passive'])
+			...power.getEffects(attacker.actor, ['on-use', 'passive'])
 		].concat(attackerEffects)
-			.concat(defenderEffects);
+		.concat(defenderEffects);
 		const CombatRes = new CombatResult(atkResult);
-		for (const {source, effects} of sourcedEffects){
-			for (const effect of effects) {
-				const {conditions, consequences}  = effect;
-				if (testPreconditions(conditions, situation, source)) {
-					const res = await this.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult, source);
-					CombatRes.merge(res);
-				}
-			}
-		}
+		const consequences = sourcedEffects.flatMap( eff => getActiveConsequences(eff, situation));
+		// for (const {source, effects} of sourcedEffects){
+		// 	for (const effect of effects) {
+		// 		const {conditions, consequences}  = effect;
+		// 		if (testPreconditions(conditions, situation, source)) {
+		const res = await this.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult);
+		CombatRes.merge(res);
 		return CombatRes;
 	}
 
-	static async consequencesToResult(cons: DeepReadonly<Consequence[]>, power: ModifierContainer, situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkResult: AttackResult | null, source: SourcedConsequence['source'] | null): Promise<CombatResult> {
+	static async consequencesToResult(cons: SourcedConsequence[], power: U<ModifierContainer>, situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkResult: AttackResult | null): Promise<CombatResult> {
 		const CombatRes = new CombatResult(atkResult);
 		try {
-		const x = this.ProcessConsequences(power, situation, cons, attacker, target, atkResult, source);
+		const x = this.ProcessConsequences(power, situation, cons, attacker, target, atkResult);
 		CombatRes.escalationMod += x.escalationMod;
 		const result = await this.getCombatResultFromConsequences(x.consequences, situation, attacker, target, atkResult);
 		CombatRes.merge(result);
@@ -2037,14 +2036,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 
-	static ProcessConsequences(power: ModifierContainer, situation: Situation, relevantConsequences: DeepReadonly<Consequence[]>, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkresult : Partial<AttackResult> | null, source: SourcedConsequence['source'] | null)
+	static ProcessConsequences(power: U<ModifierContainer>, situation: Situation, relevantConsequences: SourcedConsequence[], attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkresult : Partial<AttackResult> | null)
 	: ConsequenceProcessed {
 		let escalationMod = 0;
 		let consequences : ConsequenceProcessed['consequences']= [];
 		for (const cons of relevantConsequences) {
 			const sourcedC = {
 				...cons,
-				source
 			};
 			if (attacker) {
 				const newCons = this.processConsequence(power, situation, sourcedC, attacker, target, atkresult);
@@ -2062,7 +2060,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return {consequences, escalationMod} satisfies ConsequenceProcessed;
 	}
 
-static processConsequence( power: ModifierContainer, situation: Situation, cons: SourcedConsequence, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed['consequences'] {
+static processConsequence( power: U<ModifierContainer>, situation: Situation, cons: SourcedConsequence, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed['consequences'] {
 	//need to fix this so it knows who the target actual is so it can do a proper compariosn, right now when applying to Self it won't consider resistance or consider the target's resist.
 	const applyTo = cons.applyTo ?? (cons.applyToSelf ? 'owner' : 'target');
 	const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
@@ -2100,12 +2098,12 @@ static processConsequence( power: ModifierContainer, situation: Situation, cons:
 	return [];
 }
 
-static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, power: ModifierContainer, situation: Situation) : ConsequenceProcessed['consequences'] {
+static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, power: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'] {
 	const consList : ConsequenceProcessed['consequences'] = [];
 	let dmgCalc: U<DamageCalculation>;
 	let dmgAmt : number = 0;
 	let damageType : U<RealDamageType> = cons.damageType != "by-power" ? cons.damageType : "none";
-	if (power.isUsableType()) {
+	if (power && power.isUsableType()) {
 		damageType = cons.damageType != 'by-power' && cons.damageType != undefined ? cons.damageType : power.getDamageType(attacker);
 	}
 	const mods : SourcedConsequence<DamageConsequence>['modifiers'] = [];
@@ -2114,13 +2112,14 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 		damageType,
 	};
 	if (cons.damageType == undefined) {
-		PersonaError.softFail(`Damage type is undefined for ${power.name}`, cons);
+		PersonaError.softFail(`Damage type is undefined for ${power?.name ?? "Undefined Power"}`, cons);
 		return [];
 	}
 	switch (cons.damageSubtype) {
 		case 'low':
 		case 'high':
 		case 'odd-even': {
+			if (!power) {return [];}
 			if (!power.isUsableType()) {
 				PersonaError.softFail(` Bad damage for power: ${power.displayedName.toString()}, it is not a usable type`);
 				return [];
@@ -2178,7 +2177,7 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 		default:
 			cons satisfies never;
 	}
-	if (dmgAmt || dmgCalc) {
+	if (power && (dmgAmt || dmgCalc)) {
 		for (const applyTo of targets) {
 			const piercePower = power.hasTag('pierce');
 			const pierceTag = 'addedTags' in situation && situation.addedTags && situation.addedTags.includes('pierce');
@@ -2316,9 +2315,9 @@ static processConsequence_simple( cons: SourcedConsequence, targets: ValidAttack
 	return [];
 }
 
-static async execTrigger(trigger: CombatTriggerTypes, actor: ValidAttackers, situation?: Situation) : Promise<void> {
-	return await TriggeredEffect.execCombatTrigger(trigger, actor, situation);
-}
+// static async execTrigger(trigger: CombatTriggerTypes, actor: ValidAttackers, situation?: Situation) : Promise<void> {
+// 	return await TriggeredEffect.execCombatTrigger(trigger, actor, situation);
+// }
 
 // static onTrigger(trigger: CombatTriggerTypes | NonCombatTriggerTypes, actor ?: ValidAttackers, situation ?: Situation) : CombatResult {
 // 	return TriggeredEffect.onTrigger(trigger, actor, situation);
@@ -2405,8 +2404,11 @@ static getAttackBonus(attackerP: Persona, power: Usable, target: PToken | undefi
 static getDefenderAttackModifiers(target: PToken | undefined, defense : Defense) : ModifierList {
 	if (!target || defense == "none") {return new ModifierList();}
 	const defenseMod = new ModifierList(
-		target.actor.persona().defensiveModifiers()
-		.flatMap (item => item.getModifier(['allAtk', defense], target.actor))
+		PersonaItem.getModifier(
+			target.actor.persona().defensiveModifiers(),
+			['allAtk',defense]
+		)
+		// .flatMap (item => item.getModifier(['allAtk', defense], target.actor))
 	);
 	return defenseMod;
 }

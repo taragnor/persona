@@ -721,14 +721,10 @@ async function updateRegionDisplay (region: PersonaRegion) {
 		const chatContainer= $("<div>")
 			.addClass("region-chat-container");
 		$(document).find("#interface #ui-right-column-1").prepend(chatContainer);
-		// chatNotifications.remove();
 		const chatNotificationsContainer = $("<div>").addClass("chat-notifications-container");
 		chatNotificationsContainer.append(chatNotifications);
 		chatContainer.append(infoPanel)
 			.append(chatNotificationsContainer);
-		// $(document).find("#interface #ui-right-column-1").prepend(infoPanel);
-		// $(document).find("#interface #ui-right-column-1 #chat-notifications").prepend(infoPanel);
-		// infoPanel.insertAfter("#interface #ui-middle");
 	}
 	infoPanel.empty();
 	infoPanel.html(html);

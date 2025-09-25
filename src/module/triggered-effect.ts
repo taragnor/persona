@@ -1,6 +1,5 @@
 import { removeDuplicates } from "./utility/array-tools.js";
 import { Metaverse } from "./metaverse.js";
-import { UniversalModifier } from "./item/persona-item.js";
 import { PersonaError } from "./persona-error.js";
 import { PC } from "./actor/persona-actor.js";
 import { NonCombatTriggerTypes } from "../config/triggers.js";
@@ -8,10 +7,9 @@ import { CombatTriggerTypes } from "../config/triggers.js";
 import { Trigger } from "../config/triggers.js";
 import { CombatResult } from "./combat/combat-result.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
-import { ModifierContainer } from "./item/persona-item.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
-import {testPreconditions} from "./preconditions.js";
+import {getActiveConsequences} from "./preconditions.js";
 
 export class TriggeredEffect {
 
@@ -105,34 +103,42 @@ export class TriggeredEffect {
 			return result;
 		}
 		const situationCopy = { ...situation, trigger } as Situation; //copy the object so it doesn't permanently change it
-		let triggers : ModifierContainer[] = PersonaDB.getGlobalModifiers().slice();
+		let triggers : SourcedConditionalEffect[] = PersonaDB.getGlobalModifiers().flatMap( x=> x.getEffects(null));
 		if (actor) {
 			// triggers = actor.triggers;
 			triggers = actor.triggersOn(trigger);
 		}
 		if (game.combat) {
-			triggers.push(...(game.combat as PersonaCombat)?.getRoomEffects() ?? []);
+			const roomEffects = (game.combat as PersonaCombat)?.getRoomEffects() ?? [];
+			triggers.push(
+				...roomEffects.flatMap (RE=> RE.getEffects(null))
+			);
 		} else {
 			const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
-			triggers.push(...arr);
+			triggers.push(
+				...arr.flatMap (RE=> RE.getEffects(null))
+			);
 			const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
 			triggers.push(...PCTriggers);
 		}
-		triggers = removeDuplicates(triggers);
-		for (const trig of triggers) {
-			for (const eff of trig.getTriggeredEffects(actor ?? null)) {
-				try {
-					if (!testPreconditions(eff.conditions, situationCopy, trig)) { continue; }
-					const res = await PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null, trig);
-					result.merge(res);
-				} catch (e) {
-					PersonaError.softFail(`Problem with triggered effects ${trig.name} running on actor ${actor?.name ?? "none"}`, e);
-					continue;
-				}
+		triggers = removeDuplicates(triggers
+			.filter ( x=> x.conditionalType == "triggered")
+		);
+		for (const eff of triggers) {
+			try {
+				const validCons = getActiveConsequences(eff, situation);
+				// if (!testPreconditions(eff.conditions, situationCopy, trig)) { continue; }
+				// const res = await PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null);
+				const res = await PersonaCombat.consequencesToResult(validCons ,undefined, situationCopy, actor, actor, null);
+				// const res = await PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null);
+				result.merge(res);
+			} catch (e) {
+				PersonaError.softFail(`Problem with triggered effects ${eff.source?.name ?? "Unknown source"} running on actor ${actor?.name ?? "none"}`, e);
+				continue;
 			}
 		}
-		return result;
-	}
+	return result;
+}
 
 	static async autoApplyTrigger(...args : Parameters<typeof TriggeredEffect["onTrigger"]>) : Promise<void> {
 		const CR = await this.autoTriggerToCR(...args);

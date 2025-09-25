@@ -16,7 +16,6 @@ import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { ModifierList } from "./combat/modifier-list.js";
-import { ModifierContainer } from "./item/persona-item.js";
 import { PersonaError } from "./persona-error.js";
 import { localize } from "./persona.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../config/status-effects.js";
@@ -56,7 +55,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		this.#cache = {
 			mainModifiers: undefined,
 			passivePowers: undefined,
-			defensivePowers : undefined,
+			defensiveModifiers : undefined,
 		};
 	}
 
@@ -83,8 +82,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	get bonusPowers() : readonly Power [] {
 		const bonusPowers : Power[] =
 			this.mainModifiers({omitPowers:true, omitTalents: true})
-			.filter(trait => trait.grantsPowers())
-			.flatMap(powerGranter=> powerGranter.getGrantedPowers(this.user))
+			.filter(trait => PersonaItem.grantsPowers(trait))
+			.flatMap(powerGranter=> PersonaItem.getAllGrantedPowers(powerGranter, this.user))
+			.filter( pwr=> !pwr.hasTag("opener"))
 			.sort ( (a,b)=> a.name.localeCompare(b.name)) ;
 		return removeDuplicates(bonusPowers);
 	}
@@ -118,8 +118,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	get talents() : readonly Talent[] {
 		const extraTalents = this.mainModifiers({omitTalents: true, omitPowers: true})
-			.filter( mod=> mod.grantsTalents())
-			.flatMap(mod => mod.getGrantedTalents(this.user));
+			.filter( CE=> PersonaItem.grantsTalents(CE))
+			.flatMap(CE => PersonaItem.getGrantedTalents(CE, this.user));
 		;
 		return this.source.system.combat.talents
 			.map( id => PersonaDB.getItemById<Talent>(id))
@@ -228,14 +228,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	critResist(): ModifierList {
 		const ret = new ModifierList();
-		const mods = this.mainModifiers().flatMap( item => item.getModifier("critResist", this.user));
+		const mods = PersonaItem.getModifier(this.mainModifiers(), "critResist");
 		const list =  ret.concat(new ModifierList(mods));
 		list.add("Luck Bonus", this.combatStats.lukCriticalResist());
 		return list;
 	}
 
 	critBoost() : ModifierList {
-		const mods = this.mainModifiers().flatMap( item => item.getModifier("criticalBoost", this.user));
+		const mods = PersonaItem.getModifier(this.mainModifiers(), "criticalBoost");
 		const list= new ModifierList(mods);
 		list.add("Luck Bonus", this.combatStats.lukCriticalBoost());
 		return list;
@@ -359,19 +359,22 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.numOfIncAdvances();
 	}
 
-	getBonuses (modnames : NonDeprecatedModifierType | NonDeprecatedModifierType[], sources: readonly ModifierContainer[] = this.passiveCEs() ): ModifierList {
-		const modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this.source)
-			.filter( mod => mod.modifier != 0)
-		));
-		return modList;
+	getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, sources: SourcedConditionalEffect[] = this.passiveCEs()): ModifierList {
+		const mods = PersonaItem.getModifier(sources, modnames)
+		.filter( mod => mod.modifier != 0);
+		// const modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this.source)
+			// .filter( mod => mod.modifier != 0)
+		// ));
+		// return modList;
+		return new ModifierList(mods);
 	}
 
-	passiveCEs() : readonly ModifierContainer[] {
-		return this.mainModifiers()
-		.filter( x=> x.hasPassiveEffects(null));
+	passiveCEs() : SourcedConditionalEffect[] {
+		return this.mainModifiers().filter ( x=>x.conditionalType == "passive");
 	}
 
-	mainModifiers(options?: {omitPowers?: boolean, omitTalents?: boolean, omitTags ?: boolean} ): readonly ModifierContainer[] {
+	mainModifiers(options?: {omitPowers?: boolean, omitTalents?: boolean, omitTags ?: boolean} ): readonly SourcedConditionalEffect[] {
+	// mainModifiers(options?: {omitPowers?: boolean, omitTalents?: boolean, omitTags ?: boolean} ): readonly ModifierContainer[] {
 		//NOTE: this could be a risky operation
 		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!options && PersonaCaching && this.#cache.mainModifiers) {
@@ -388,7 +391,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const talents = (options && options?.omitTalents) ? [] : this.talents;
 		// const tags = (options && options.omitTags) ? [] : this.realTags();
 		const mainMods = [
-			...this.passiveFocii(),
+			...this.focii,
 			...talents,
 			...passiveOrTriggeredPowers,
 			...user.actorMainModifiers(options),
@@ -397,7 +400,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			...PersonaDB.getGlobalPassives(),
 			// ...PersonaDB.getGlobalModifiers(),
 			...PersonaDB.navigatorModifiers(),
-		].filter( x => x.getEffects(this.user).length > 0);
+		].flatMap( x=> x.getEffects(this.user));
+		// ].filter( x => x.getEffects(this.user).length > 0);
 		if (!options) {
 			this.#cache.mainModifiers = mainMods;
 		}
@@ -413,19 +417,22 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.#cache.passivePowers;
 	}
 
-	defensiveModifiers(): readonly ModifierContainer[] {
+	defensiveModifiers(): readonly SourcedConditionalEffect[] {
 		const PersonaCaching = PersonaSettings.agressiveCaching();
-		if (!this.#cache.defensivePowers || !PersonaCaching) {
-			this.#cache.defensivePowers =
-				[
-					//can't do this yet becuase it mixes defensives and passives in main
-					// ...PersonaDB.getGlobalDefensives(),
-					...this.user.userDefensivePowers(),
-					...this.defensiveFocii(),
-					...this.powers,
-				].filter( power=> power.hasDefensiveEffects(this.user));
+		if (!this.#cache.defensiveModifiers || !PersonaCaching) {
+			//this.#cache.defensiveModifiers =
+			//	[
+			//		//can't do this yet becuase it mixes defensives and passives in main
+			//		// ...PersonaDB.getGlobalDefensives(),
+			//		...this.user.userDefensivePowers(),
+			//		...this.defensiveFocii(),
+			//		...this.powers,
+			//	].filter( power=> power.hasDefensiveEffects(this.user))
+			//	.flatMap( pwr => pwr.getEffects(this.user))
+			//	.filter (eff => eff.conditionalType == "defensive");
+				this.#cache.defensiveModifiers = this.mainModifiers().filter ( eff => eff.conditionalType == "defensive");
 		}
-		return this.#cache.defensivePowers;
+		return this.#cache.defensiveModifiers;
 
 	}
 
@@ -500,18 +507,18 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return initBonus + agi + initMod;
 	}
 
-	#translateInitString(initString: ValidAttackers["system"]["combat"]["initiative"]): number {
-		switch (initString) {
-			case "pathetic": return -8;
-			case "weak": return -4;
-			case "normal": return 0;
-			case "strong": return 4;
-			case "ultimate": return 8;
-			default:
-				initString satisfies never;
-				return -999;
-		}
-	}
+	// #translateInitString(initString: ValidAttackers["system"]["combat"]["initiative"]): number {
+	// 	switch (initString) {
+	// 		case "pathetic": return -8;
+	// 		case "weak": return -4;
+	// 		case "normal": return 0;
+	// 		case "strong": return 4;
+	// 		case "ultimate": return 8;
+	// 		default:
+	// 			initString satisfies never;
+	// 			return -999;
+	// 	}
+	// }
 
 	printableDefenseMods( defense: Defense) {
 		const def = this.getDefense(defense);
@@ -563,25 +570,25 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	}
 
-	#translateDefenseString(defType: keyof ValidAttackers["system"]["combat"]["defenses"], val: ValidAttackers["system"]["combat"]["defenses"]["fort"],): number {
-		const weaknesses= this.#getWeaknessesInCategory(defType);
-		switch (val) {
-			case "pathetic": return Math.min(-4 + 2 * weaknesses,-2) ;
-			case "weak": return Math.min(-2 + 1 * weaknesses, -1);
-			case "normal": return 0;
-			case "strong": return Math.max(2 - 1 * weaknesses, 1);
-			case "ultimate": return Math.max(4 - 2 * weaknesses, 2);
-			default:
-				PersonaError.softFail(`Bad defense tsring ${String(val)} for ${defType}`);
-				return -999;
-		}
-	}
+	// #translateDefenseString(defType: keyof ValidAttackers["system"]["combat"]["defenses"], val: ValidAttackers["system"]["combat"]["defenses"]["fort"],): number {
+	// 	const weaknesses= this.#getWeaknessesInCategory(defType);
+	// 	switch (val) {
+	// 		case "pathetic": return Math.min(-4 + 2 * weaknesses,-2) ;
+	// 		case "weak": return Math.min(-2 + 1 * weaknesses, -1);
+	// 		case "normal": return 0;
+	// 		case "strong": return Math.max(2 - 1 * weaknesses, 1);
+	// 		case "ultimate": return Math.max(4 - 2 * weaknesses, 2);
+	// 		default:
+	// 			PersonaError.softFail(`Bad defense tsring ${String(val)} for ${defType}`);
+	// 			return -999;
+	// 	}
+	// }
 
-	#getWeaknessesInCategory( defType: keyof ValidAttackers["system"]["combat"]["defenses"]): number {
-		const damageTypes = ELEMENTAL_DEFENSE_LINK[defType];
-		const weaknesses= damageTypes.filter( dt => this.resists[dt] == "weakness");
-		return weaknesses.length;
-	}
+	// #getWeaknessesInCategory( defType: keyof ValidAttackers["system"]["combat"]["defenses"]): number {
+	// 	const damageTypes = ELEMENTAL_DEFENSE_LINK[defType];
+	// 	const weaknesses= damageTypes.filter( dt => this.resists[dt] == "weakness");
+	// 	return weaknesses.length;
+	// }
 
 	get defenses(): ValidAttackers["system"]["combat"]["defenses"] {
 		return this.source.system.combat.defenses;
@@ -630,18 +637,17 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			...this.defensiveModifiers(),
 			...this.mainModifiers(),
 		];
-		const effectChangers=  modifiers.filter( x=> x.getEffects(this.user)
-			.some(x=> x.consequences
-				.some( cons=>cons.type == "raise-resistance" || cons.type == "lower-resistance")));
+		const effectChangers=  modifiers.filter( x=>
+			x.consequences
+				.some( cons=>cons.type == "raise-resistance" || cons.type == "lower-resistance"));
 		const situation : Situation = {
 			user: this.user.accessor,
 			target: this.user.accessor,
 		};
-		const consequences = effectChangers.flatMap(
-			item => item.getEffects(this.user).flatMap(eff =>
-				getActiveConsequences(eff, situation, item)
-			)
-		);
+		const consequences = effectChangers
+			.flatMap( eff =>
+				getActiveConsequences(eff, situation)
+			);
 		const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
 		let resBonus = 0;
 		let resPenalty = 0;
@@ -1068,7 +1074,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 
 interface PersonaClassCache {
-	mainModifiers: U<readonly ModifierContainer[]>;
+	mainModifiers: U<readonly SourcedConditionalEffect[]>;
 	passivePowers: U<readonly Power[]>;
-	defensivePowers: U<readonly ModifierContainer[]>;
+	defensiveModifiers: U<readonly SourcedConditionalEffect[]>;
 }

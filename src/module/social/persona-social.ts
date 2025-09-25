@@ -1218,8 +1218,9 @@ export class PersonaSocial {
 		}
 	}
 
-	static async applyEffects(effects: TypedConditionalEffect[], situation: Situation, actor: PC) {
-		const results = ArrayCorrector(effects ?? []).flatMap( eff=> getActiveConsequences(eff, situation, null));
+	static async applyEffects(effects: SourcedConditionalEffect[], situation: Situation, actor: PC) {
+		const results = effects.flatMap( eff=> getActiveConsequences(eff, situation));
+		// const results = ArrayCorrector(effects ?? []).flatMap( eff=> getActiveConsequences(eff, situation));
 		const processed= PersonaCombat.processConsequences_simple(results, situation);
 		const result = new CombatResult();
 		for (const c of processed.consequences) {

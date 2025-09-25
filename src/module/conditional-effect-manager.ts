@@ -12,7 +12,7 @@ import { ROLL_TAGS_AND_CARD_TAGS } from "../config/roll-tags.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { ModifierTarget } from "../config/item-modifiers.js";
 import { getActiveConsequences } from "./preconditions.js";
-import { ModifierContainer, PersonaItem, PowerContainer, Talent } from "./item/persona-item.js";
+import { ModifierContainer, PersonaItem, Talent } from "./item/persona-item.js";
 import { STATUS_EFFECT_DURATION_TYPES } from "../config/status-effects.js";
 import { Helpers } from "./utility/helpers.js";
 import { multiCheckToArray } from "./preconditions.js";
@@ -117,7 +117,8 @@ export class ConditionalEffectManager {
 		return { topPath, dataPath };
 	}
 
-	static canModifyStat (effects: readonly ConditionalEffect[], stat: ModifierTarget): boolean {
+	static canModifyStat (effects: readonly ConditionalEffect[] | ConditionalEffect, stat: ModifierTarget): boolean {
+		effects = Array.isArray(effects) ? effects : [effects];
 		return effects.some( eff => eff.consequences.some( c=> {
 			if ( "modifiedField" in c ) {
 				if (c.modifiedField == stat) {return true;}
@@ -131,8 +132,8 @@ export class ConditionalEffectManager {
 		);
 	}
 
-	static getAllActiveConsequences(condEffects: DeepReadonly<TypedConditionalEffect[]>, situation: Situation, source: PowerContainer | null) : Consequence[] {
-		return condEffects.flatMap( effect=> getActiveConsequences(effect, situation, source));
+	static getAllActiveConsequences(condEffects: readonly SourcedConditionalEffect[], situation: Situation) : Consequence[] {
+		return condEffects.flatMap( effect=> getActiveConsequences(effect, situation));
 	}
 
 	static #getEffectIndex(ev: JQuery.ClickEvent) {
@@ -323,7 +324,7 @@ export class ConditionalEffectManager {
 		// setTimeout( () => this.restoreLastClick(html), 100);
 	}
 
-	static getEffects<T extends PersonaActor, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null) : TypedConditionalEffect[] {
+	static getEffects<T extends PersonaActor, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null) : SourcedConditionalEffects {
 			const conditionalEffects = Array.isArray(CEObject) ? CEObject : this.ArrayCorrector(CEObject);
 		return conditionalEffects.map( ce=> {
 			const conditions = this.getConditionals(ce.conditions, sourceItem, sourceActor);
@@ -345,9 +346,12 @@ export class ConditionalEffectManager {
 			}
 			return {
 				conditionalType,
+				// conditions,
 				conditions,
 				consequences,
+				// consequences,
 				isDefensive: conditionalType == "defensive",
+				source: sourceItem,
 			};
 		}
 		);
@@ -404,16 +408,17 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 			return (cond.type == "on-trigger");
 		}
 
-	static getConditionals<T extends PersonaActor, I extends ModifierContainer>(condObject: DeepNoArray<ConditionalEffect["conditions"]>, sourceItem: I | null, sourceActor: T | null): ConditionalEffect["conditions"] {
+	static getConditionals<T extends PersonaActor, I extends ModifierContainer>(condObject: DeepNoArray<ConditionalEffect["conditions"]>, sourceItem: I | null, sourceActor: T | null): SourcedConditionalEffect["conditions"] {
 		const conditionalEffects = this.ArrayCorrector(condObject);
 		return conditionalEffects.map( eff=> ({
 			...eff,
 			actorOwner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner) as UniversalActorAccessor<ValidAttackers>,
 			sourceItem: (sourceItem ? PersonaDB.getUniversalItemAccessor(sourceItem): (eff as any).sourceItem) as U<UniversalItemAccessor<PersonaItem>>,
+			source: sourceItem,
 		}));
 	}
 
-static getConsequences<T extends PersonaActor, I extends ModifierContainer>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null): NonDeprecatedConsequence[] {
+static getConsequences<T extends PersonaActor, I extends ModifierContainer>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null): SourcedConditionalEffect["consequences"] {
 	const consequences = this.ArrayCorrector(consObject);
 	return  consequences.map( eff=> {
 		const nondep = ConsequenceConverter.convertDeprecated(eff, sourceItem);
@@ -421,6 +426,7 @@ static getConsequences<T extends PersonaActor, I extends ModifierContainer>(cons
 			...nondep,
 			actorOwner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner) as UniversalActorAccessor<ValidAttackers>,
 			sourceItem: (sourceItem ? PersonaDB.getUniversalItemAccessor(sourceItem): (("sourceItem" in eff) ? eff.sourceItem : undefined)) as U<UniversalItemAccessor<PersonaItem>>,
+			source: sourceItem,
 		};
 	});
 }
@@ -1347,9 +1353,10 @@ declare global{
 		isDefensive: boolean;
 	}
 
-	interface SourcedConditionalEffect {
-		source: ModifierContainer;
-		effects: DeepReadonly<TypedConditionalEffect[]>;
+	type SourcedConditionalEffects = SourcedConditionalEffect[];
+
+	interface SourcedConditionalEffect extends TypedConditionalEffect {
+		source: ModifierContainer | null;
 	}
 
 	interface TypedConditionalEffect extends NonDeprecatedConditionalEffect {

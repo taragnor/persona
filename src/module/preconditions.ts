@@ -42,7 +42,8 @@ import { Shadow } from "./actor/persona-actor.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 
-export function getActiveConsequences(condEffect: SourcedConditionalEffect["effects"][number], situation: Situation, source: PowerContainer | null) : SourcedConsequence[] {
+export function getActiveConsequences(condEffect: SourcedConditionalEffect, situation: Situation) : SourcedConsequence[] {
+	const source = condEffect.source;
 	if (ArrayCorrector(condEffect.conditions).some(
 		cond=>!testPrecondition(cond, situation, source)
 	)) {return [];}
