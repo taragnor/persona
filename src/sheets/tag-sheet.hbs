@@ -44,6 +44,11 @@
 			{{selectOptions SHADOW_ROLE localize=true selected=item.system.linkedInternalTag}}
 		</select>
 		{{/if}}
+		{{#if (eqAny item.system.tagType "status")}}
+		<select name="system.linkedInternalTag">
+			{{selectOptions STATUS_EFFECTS localize=true selected=item.system.linkedInternalTag}}
+		</select>
+		{{/if}}
 		</div>
 	</header>
 	<body>

@@ -697,7 +697,7 @@ get tags() : string {
   hasTag(this: Carryable, tag: EquipmentTag | PowerTag, user ?: null) : boolean;
   hasTag(this: InvItem | Weapon | SkillCard, tag: EquipmentTag, user ?: null): boolean;
   hasTag(this: UsableAndCard, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
-	hasTag(this: ModifierContainer, tag: PowerTag, user ?: null): boolean;
+	hasTag(this: ItemModifierContainer, tag: PowerTag, user ?: null): boolean;
   hasTag(this: SkillCard | Consumable | InvItem | Weapon, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
   hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user : null) : boolean;
   hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user?: null | ValidAttackers) : boolean {
@@ -906,7 +906,7 @@ static grantsPowers(eff: SourcedConditionalEffect) : boolean{
           cons => cons.type == 'add-power-to-list'
         );
 }
-  grantsPowers(this: ModifierContainer): boolean {
+  grantsPowers(this: ItemModifierContainer): boolean {
     if (!PersonaDB.isLoaded) {return false;}
     if (this.cache.grantsPowers != undefined) {
       return this.cache.grantsPowers;
@@ -924,7 +924,7 @@ static grantsPowers(eff: SourcedConditionalEffect) : boolean{
     }
   }
 
-grantsTalents(this: ModifierContainer) : boolean {
+grantsTalents(this: ItemModifierContainer) : boolean {
     if (!PersonaDB.isLoaded) {return false;}
     if (this.cache.grantsTalents != undefined) {
       return this.cache.grantsTalents;
@@ -976,17 +976,17 @@ static grantsTalents (eff: TypedConditionalEffect) : boolean {
     return this.testTeamworkPrereqs(situation, user);
   }
 
-  // getGrantedPowers(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
+  // getGrantedPowers(this: ItemModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
   //   return this.getAllGrantedPowers(user, situation);
   //   // .filter(pwr => !pwr.hasTag("opener"));
   // }
 
-  // getGrantedTalents(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Talent[] {
+  // getGrantedTalents(this: ItemModifierContainer, user: ValidAttackers, situation?: Situation): Talent[] {
   //   return this.getAllGrantedTalents(user, situation);
   //   // .filter(pwr => !pwr.hasTag("opener"));
   // }
 
-  // getOpenerPowers(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
+  // getOpenerPowers(this: ItemModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
   //   return this.getAllGrantedPowers(user, situation)
   //     .filter (pwr=> pwr.hasTag('opener'));
   // }
@@ -1005,7 +1005,7 @@ static getAllGrantedPowers (eff: SourcedConditionalEffect, user: ValidAttackers,
 	return removeDuplicates(powers);
 }
 
-  // getAllGrantedPowers(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
+  // getAllGrantedPowers(this: ItemModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
   //   if (!this.grantsPowers()) {return [];}
   //   if (!situation) {
   //     situation = {
@@ -1024,7 +1024,7 @@ static getAllGrantedPowers (eff: SourcedConditionalEffect, user: ValidAttackers,
   //   return removeDuplicates(powers);
   // }
 
-  getAllGrantedTalents(this: ModifierContainer, user: ValidAttackers, situation?: Situation): Talent[] {
+  getAllGrantedTalents(this: ItemModifierContainer, user: ValidAttackers, situation?: Situation): Talent[] {
     if (!this.grantsTalents()) {return [];}
     if (!situation) {
       situation = {
@@ -1276,7 +1276,7 @@ toSkillCard(this: Power) : Promise<SkillCard> {
     return this.name;
   }
 
-  toModifierList(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow | null): ModifierList {
+  toModifierList(this: ItemModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow | null): ModifierList {
     const modifiers = this.getModifier(bonusTypes, sourceActor);
     return new ModifierList(modifiers);
   }
@@ -1298,7 +1298,7 @@ static getModifier( effects: readonly SourcedConditionalEffect[], bonusTypes: Ma
 	});
 }
 
-  getModifier(this: ModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null) : ModifierListItem[] {
+  getModifier(this: ItemModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null) : ModifierListItem[] {
     PersonaItem.cacheStats.modifierRead++;
     if (this.cache.containsModifier === false) {
       PersonaItem.cacheStats.modifierSkip++;
@@ -1324,11 +1324,12 @@ static getModifier( effects: readonly SourcedConditionalEffect[], bonusTypes: Ma
       .filter( eff => eff.consequences.some( cons => 'modifiedFields' in cons || 'modifiedField' in cons))
     ;
     this.cache.containsModifier = filteredEffects.length > 0;
+	  const acc = PersonaDB.getUniversalAccessor(this);
     return filteredEffects
       .map(x =>
         ({
           name: this.name,
-          source: PersonaDB.getUniversalItemAccessor(this),
+          source: acc,
           conditions: ArrayCorrector(x.conditions),
           modifier: ModifierList.getModifierAmount(x.consequences, bonusTypes),
         })
@@ -1347,7 +1348,7 @@ static getConferredTags (eff: SourcedConditionalEffect, actor: ValidAttackers) :
 	return tagGivingCons.map( x=> x.creatureTag);
 }
 
-  getConferredTags(this: ModifierContainer, actor: ValidAttackers) : CreatureTag[] {
+  getConferredTags(this: ItemModifierContainer, actor: ValidAttackers) : CreatureTag[] {
     if (this.cache.containsTagAdd === false) {
       return [];
     }
@@ -2022,7 +2023,7 @@ generateSkillCardTeach(this: SkillCard): SourcedConditionalEffect {
   //TODO: Finish later
   // }
 
-getEffects(this: ModifierContainer, sourceActor : PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][] ): readonly SourcedConditionalEffect[] {
+getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][] ): readonly SourcedConditionalEffect[] {
 	if (this.isSkillCard()) {
 		const arr = [
 			this.generateSkillCardTeach()
@@ -2031,7 +2032,7 @@ getEffects(this: ModifierContainer, sourceActor : PersonaActor | null, CETypes ?
 	}
 	const tagEffects : SourcedConditionalEffect[] = [];
 	if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()){
-		const tags=  this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
+		const tags = this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
 		.filter (tag=> tag instanceof PersonaItem);
 		tagEffects.push(...tags.flatMap(tag =>
 			tag.getEffects(sourceActor, CETypes)
@@ -2069,7 +2070,7 @@ getEffects(this: ModifierContainer, sourceActor : PersonaActor | null, CETypes ?
 	}
 }
 
-  #accessEffectsCache(this: ModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, refresherFn: () => SourcedConditionalEffect[]) : readonly SourcedConditionalEffect[] {
+  #accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, refresherFn: () => SourcedConditionalEffect[]) : readonly SourcedConditionalEffect[] {
     if (!PersonaDB.isLoaded) {return [];}
     PersonaItem.cacheStats.total++;
     const cache = this.cache.effects[cacheType];
@@ -2090,54 +2091,46 @@ getEffects(this: ModifierContainer, sourceActor : PersonaActor | null, CETypes ?
   }
 
 
-  getTriggeredEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly SourcedConditionalEffect[] {
+  getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : readonly SourcedConditionalEffect[] {
     return this.#accessEffectsCache('triggeredEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'triggered'));
   }
 
-  hasTriggeredEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
+  hasTriggeredEffects(this: ItemModifierContainer, actor: PersonaActor) : boolean {
     return this.getTriggeredEffects(actor).length > 0;
   }
 
 
-  getOnUseEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly SourcedConditionalEffect[] {
+  getOnUseEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : readonly SourcedConditionalEffect[] {
     return this.#accessEffectsCache('onUseEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'on-use'));
   }
 
-  getPassiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly SourcedConditionalEffect[] {
+  getPassiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : readonly SourcedConditionalEffect[] {
     return this.#accessEffectsCache('passiveEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'passive'));
   }
 
-  getPassiveAndDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor  | null) : readonly ConditionalEffect[] {
+  getPassiveAndDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor  | null) : readonly ConditionalEffect[] {
     return this.getPassiveEffects(sourceActor)
       .concat(this.getDefensiveEffects(sourceActor));
   }
 
-  hasPassiveEffects(this: ModifierContainer, actor: PersonaActor | null) : boolean {
+  hasPassiveEffects(this: ItemModifierContainer, actor: PersonaActor | null) : boolean {
     return this.getPassiveEffects(actor).length > 0;
   }
 
-  getDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : readonly SourcedConditionalEffect[] {
+  getDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : readonly SourcedConditionalEffect[] {
     return this.#accessEffectsCache('defensiveEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'defensive'));
   }
 
-  hasDefensiveEffects(this: ModifierContainer, sourceActor: PersonaActor | null) : boolean {
+  hasDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : boolean {
     return this.getDefensiveEffects(sourceActor).length > 0;
   }
-
-  // hasTriggeredEffects(this: ModifierContainer, actor: PersonaActor) : boolean {
-  //  if ( this.cache.hasTriggers == undefined) {
-  //    this.cache.hasTriggers = this.getEffects(actor)
-  //      .some( eff => eff.conditions.some( cond => cond.type == "on-trigger"));
-  //  }
-  //  return this.cache.hasTriggers;
-  // }
 
 static triggersOn( eff: SourcedConditionalEffect, trig: Trigger) : boolean {
     return eff.conditions
       .some (cond => cond.type === 'on-trigger' && cond.trigger == trig);
 }
 
-  triggersOn(this: ModifierContainer, trig: Trigger)  :boolean {
+  triggersOn(this: ItemModifierContainer, trig: Trigger)  :boolean {
     const effects= this.getTriggeredEffects(null);
     return effects.some( eff=> eff.conditions
       .some (cond => cond.type === 'on-trigger' && cond.trigger == trig)
@@ -2774,9 +2767,27 @@ export type CraftingMaterial = CraftingInventoryItem | Consumable;
 
 export type UniversalModifier = Subtype<PersonaItem, 'universalModifier'>;
 
-export type ModifierContainer = Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier | SkillCard | Tag;
+// export type ModifierContainer = ItemModifierContainer | PersonaAE;
 
-export type PowerContainer = Consumable | Power | ModifierContainer;
+type ItemContainers = Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier | SkillCard | Tag;
+
+export type ItemModifierContainer = ItemContainers;
+// export type ItemModifierContainer = (Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier | SkillCard | Tag);
+
+export type ContainerTypes = ItemContainers | PersonaAE;
+
+export interface ModifierContainer <T extends Actor | TokenDocument | Item | ActiveEffect = ContainerTypes> {
+	getEffects(sourceActor : PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) : readonly SourcedConditionalEffect[];
+	parent: T["parent"];
+	name: string;
+	id: string;
+	displayedName: SafeString | string;
+	accessor : UniversalAccessor<T>,
+	getModifier(bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null): ModifierListItem[];
+
+}
+
+export type PowerContainer = Consumable | Power | ItemModifierContainer;
 export type Usable = Power | Consumable ;
 export type UsableAndCard = Usable | SkillCard; 
 

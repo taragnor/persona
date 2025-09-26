@@ -12,7 +12,7 @@ import { PersonaError } from "./persona-error.js";
 import { FREQUENCY } from "../config/frequency.js";
 import { CardEvent } from "../config/social-card-config.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
-import { Carryable, CClass, ModifierContainer, SocialCard } from "./item/persona-item.js";
+import { Carryable, CClass, ContainerTypes, SocialCard } from "./item/persona-item.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaItem } from "./item/persona-item.js";
@@ -718,7 +718,7 @@ export class PersonaHandleBarsHelpers {
 					someObj = someObj["parent"] as object;
 				}
 			}
-			return ConditionalEffectManager.getConditionalType(ce, item as ModifierContainer);
+			return ConditionalEffectManager.getConditionalType(ce, item as ContainerTypes);
 		},
 
 		"hasPersona": function (actor: PersonaActor) : boolean {

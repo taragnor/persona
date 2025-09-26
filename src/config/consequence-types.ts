@@ -1,7 +1,7 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { ValidAttackers } from "../module/combat/persona-combat.js";
 import { TargettingContextList } from "../module/combat/persona-combat.js";
-import { PersonaItem, PowerContainer } from "../module/item/persona-item.js";
+import { ModifierContainer, PersonaItem, PowerContainer } from "../module/item/persona-item.js";
 import { PermaBuffType } from "./perma-buff-type.js";
 import { SocialCardAction } from "./effect-types.js";
 import { CardTag } from "./card-tags.js";
@@ -140,7 +140,7 @@ type StatusEffect_FollowUp = {
 }
 
 export type SourcedConsequence<C extends Consequence = Consequence> = C & {
-	source: {displayedName: string} | PowerContainer | null;
+	source: {displayedName: string} | ModifierContainer | null;
 	owner: U<UniversalActorAccessor<PersonaActor>>;
 	modifiers?: ConsModifiers[];
 }

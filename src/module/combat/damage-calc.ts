@@ -120,7 +120,7 @@ export class DamageCalculation {
 				return this;
 		}
 		if (cons.amount) {
-			const effectName = cons.source?.displayedName?.toString() ?? "Unknown Source";
+			const effectName = cons.source ? cons.source?.displayedName?.toString() ?? "Unknown Source" : "Unknown Source";
 			this.add(damageOrder, amt ?? 0, effectName);
 		}
 		if (this.damageType == "healing") {

@@ -4,6 +4,7 @@ import {HBS_TEMPLATES_DIR} from "../../../config/persona-settings.js";
 import {POWER_TAGS} from "../../../config/power-tags.js";
 import {ROLL_TAGS_AND_CARD_TAGS} from "../../../config/roll-tags.js";
 import {SHADOW_ROLE} from "../../../config/shadow-types.js";
+import {STATUS_EFFECT_TRANSLATION_TABLE} from "../../../config/status-effects.js";
 import {TAG_TYPES} from "../../../config/tags-general.js";
 import {Tag} from "../persona-item.js";
 import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
@@ -48,6 +49,10 @@ export class PersonaTagSheet extends PersonaEffectContainerBaseSheet {
 			SHADOW_ROLE: {
 				"": "-",
 				...SHADOW_ROLE,
+			},
+			STATUS_EFFECTS: {
+				"": "-",
+				...STATUS_EFFECT_TRANSLATION_TABLE,
 			},
 		};
 

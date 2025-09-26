@@ -9,6 +9,7 @@ const TAG_TYPES_LIST = [
 	"card",
 	"role",
 	"enchantment",
+	"status",
 ] as const;
 
 export type TagType = typeof TAG_TYPES_LIST[number];

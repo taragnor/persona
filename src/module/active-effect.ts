@@ -3,13 +3,15 @@ import { FatigueStatusId } from "../config/status-effects.js";
 import { statusMap } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
 import { StatusDurationType } from "../config/status-effects.js";
-import { PersonaItem } from "./item/persona-item.js";
+import { ModifierContainer, PersonaItem, Tag } from "./item/persona-item.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaError } from "./persona-error.js";
 import { StatusEffectId } from "../config/status-effects.js";
+import {ModifierTarget} from "../config/item-modifiers.js";
+import {ModifierListItem} from "./combat/modifier-list.js";
 
 
-export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
+export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implements ModifierContainer<PersonaAE> {
 
 	declare statuses: Set<StatusEffectId>;
 	_flaggedDeletion: boolean;
@@ -58,7 +60,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 			if (!stData) {continue;}
 			const tags = stData.tags;
 			if (tags.includes(tag))
-				{return true;}
+			{return true;}
 		}
 		return false;
 	}
@@ -486,6 +488,21 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		await this.setFlag("persona", "linkedEffectFlag", flagId);
 	}
 
+
+	hasEffects() : boolean {
+		return this.getEffects(null).length > 0;
+	}
+
+	getEffects(sourceActor: Option<PersonaActor>, CETypes ?: TypedConditionalEffect['conditionalType'][] ): SourcedConditionalEffect[] {
+		if (!sourceActor) {
+			sourceActor = this.parent instanceof PersonaActor ? this.parent : sourceActor;
+		}
+		return this.getLinkedTags().flatMap( tag => tag.getEffects(sourceActor, CETypes));
+	}
+
+
+
+
 	static async onPreDelete(this: never, effect: PersonaAE) {
 		const flag = effect.linkedFlagId;
 		try {
@@ -531,7 +548,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 			this.getFlag<string>("persona", "linkedEffectFlag") == undefined
 			&& this.flagId == undefined
 		)
-			{return false;}
+		{return false;}
 		if (!flagId)  {return true;}
 		return flagId.toLowerCase() == this.flagId;
 	}
@@ -549,7 +566,18 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> {
 		await this.update({"changes": changes});
 	}
 
+	getModifier(bonusTypes: ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null = this.parent instanceof PersonaActor ? this.parent : null): ModifierListItem[] {
+		return this.getLinkedTags().flatMap( tag => tag.getModifier(bonusTypes, sourceActor));
+	}
+
+	getLinkedTags() : Tag[] {
+		const statusEffects = this.statuses.values().map( status =>  PersonaDB.allTagLinks().get(status))
+			.filter( x=> x != undefined);
+		return Array.from(statusEffects);
+	}
+
 }
+
 
 // eslint-disable-next-line @typescript-eslint/unbound-method
 Hooks.on("preDeleteActiveEffect", PersonaAE.onPreDelete);

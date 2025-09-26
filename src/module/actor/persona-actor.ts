@@ -1646,7 +1646,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.getAllSocialFocii(),
 			...this.equippedItems(),
 			...tags,
-		].filter (x=> x.getEffects(this).length > 0);
+			...this.statusModifiers(),
+		];
+	}
+
+	statusModifiers() : ModifierContainer[]{
+		return this.effects.filter( eff => eff.hasEffects());
 	}
 
 	get treasureMultiplier () : number {
@@ -1857,13 +1862,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.persona().mainModifiers(...args);
 	}
 
-	userDefensivePowers(this: ValidAttackers) : ModifierContainer [] {
+	userDefensiveEffects(this: ValidAttackers) : ModifierContainer [] {
 		if (!this.isValidCombatant()) {return [];}
 		return this.actorMainModifiers()
-			.filter(x=> x.hasDefensiveEffects(this));
-		// return  [
-		// 	...this.equippedItems(),
-		// ].filter(x=> x.hasDefensiveEffects(this));
+			.filter(x=> x.getEffects(this, ["defensive"]));
 	}
 
 	// getSourcedDefensivePowers(this: ValidAttackers) : SourcedConditionalEffect[] {

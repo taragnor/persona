@@ -1,14 +1,16 @@
 import { Consequence } from "../../config/consequence-types.js";
-import { ArrayCorrector } from "../item/persona-item.js";
+import { ArrayCorrector, ContainerTypes,  PersonaItem } from "../item/persona-item.js";
 import { testPreconditions } from "../preconditions.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { ModifierContainer } from "../item/persona-item.js";
 import { PowerContainer } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
+import {PersonaActor} from "../actor/persona-actor.js";
+import {PersonaAE} from "../active-effect.js";
 
-export type ModifierListItem = {
+export type ModifierListItem<T extends ContainerTypes = ContainerTypes> = {
 	name: string;
-	source: Option<UniversalItemAccessor<PowerContainer>>;
+	source: Option<UniversalAccessor<T>>;
 	conditions:  Precondition[];
 	modifier: number;
 }
@@ -18,7 +20,7 @@ type MLListType = "standard"
 	| "percentage-special" //presented in additive format +.35 instad of +135%;
 
 export class ModifierList {
-	_data: ModifierListItem[];
+	_data: ModifierListItem<ContainerTypes>[];
 	listType: MLListType;
 
 	constructor ( sourcedEffects: SourcedConditionalEffect[], bonusFn : (eff :SourcedConditionalEffect) => number ,listType?: MLListType);
@@ -40,10 +42,18 @@ export class ModifierList {
 		this._data= this._data.filter( x=> x.modifier != 0);
 	}
 
-	add(name: string, modifier: number, sourceItem: Option<ModifierContainer> = null, conditions: Precondition[] = []) : ModifierList {
-		const source = sourceItem ? PersonaDB.getUniversalItemAccessor(sourceItem) : null;
+	add<T extends ContainerTypes>(name: string, modifier: number, sourceItem: Option<ModifierContainer & T> = null, conditions: Precondition[] = []) : ModifierList {
+		const source = !sourceItem 
+			? null
+			: sourceItem instanceof PersonaActor
+			? PersonaDB.getUniversalActorAccessor(sourceItem)
+			: sourceItem instanceof PersonaItem
+			? PersonaDB.getUniversalItemAccessor(sourceItem)
+			: sourceItem instanceof PersonaAE
+			? PersonaDB.getUniversalAEAccessor(sourceItem)
+			: null;
 		this._data.push( {
-			source,
+			source: source as UniversalAccessor<ContainerTypes>,
 			name,
 			conditions,
 			modifier,
@@ -67,7 +77,7 @@ export class ModifierList {
 
 	validModifiers (situation: Situation) : ModifierListItem[]  {
 		return this._data.filter( item => {
-			const source = item.source ? PersonaDB.findItem(item.source): null;
+			const source = item.source ? PersonaDB.find(item.source) ?? null: null;
 			if (testPreconditions(item.conditions, situation, source)) {
 				if (item.modifier != 0) {
 					return true;

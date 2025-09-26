@@ -2,7 +2,7 @@ import { ELEMENTAL_DEFENSE_LINK } from "../config/damage-types.js";
 import { LevelUpCalculator } from "../config/level-up-calculator.js";
 import { PersonaCombatStats } from "./actor/persona-combat-stats.js";
 import { NonDeprecatedModifierType } from "../config/item-modifiers.js";
-import { Consumable, InvItem, PersonaItem, Tag } from "./item/persona-item.js";
+import { Consumable, InvItem, ModifierContainer, PersonaItem, Tag } from "./item/persona-item.js";
 import { Logger } from "./utility/logger.js";
 import { removeDuplicates } from "./utility/array-tools.js";
 import { Shadow } from "./actor/persona-actor.js";
@@ -389,7 +389,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const passiveOrTriggeredPowers = (options && options.omitPowers) ? [] : this.passiveOrTriggeredPowers();
 		const talents = (options && options?.omitTalents) ? [] : this.talents;
 		// const tags = (options && options.omitTags) ? [] : this.realTags();
-		const mainMods = [
+		const mainModsList : ModifierContainer[]= [
 			...this.focii,
 			...talents,
 			...passiveOrTriggeredPowers,
@@ -399,7 +399,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			...PersonaDB.getGlobalPassives(),
 			// ...PersonaDB.getGlobalModifiers(),
 			...PersonaDB.navigatorModifiers(),
-		].flatMap( x=> x.getEffects(this.user));
+		];
+		const mainMods = mainModsList
+			.flatMap( x=> x.getEffects(this.user));
 		if (!options) {
 			this.#cache.mainModifiers = mainMods;
 		}

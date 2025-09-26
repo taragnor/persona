@@ -2109,11 +2109,12 @@ static processConsequence( power: U<ModifierContainer>, situation: Situation, co
 	return [];
 }
 
-static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, power: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'] {
+static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'] {
 	const consList : ConsequenceProcessed['consequences'] = [];
 	let dmgCalc: U<DamageCalculation>;
 	let dmgAmt : number = 0;
 	let damageType : U<RealDamageType> = cons.damageType != "by-power" ? cons.damageType : "none";
+	const power = powerUsed instanceof PersonaItem && powerUsed.isUsableType() ? powerUsed : undefined;
 	if (power && power.isUsableType()) {
 		damageType = cons.damageType != 'by-power' && cons.damageType != undefined ? cons.damageType : power.getDamageType(attacker);
 	}
@@ -2131,10 +2132,6 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 		case 'high':
 		case 'odd-even': {
 			if (!power) {return [];}
-			if (!power.isUsableType()) {
-				PersonaError.softFail(` Bad damage for power: ${power.displayedName.toString()}, it is not a usable type`);
-				return [];
-			}
 			if (situation.naturalRoll == undefined) {
 				PersonaError.softFail(`Can't get odd even for damage of ${power.displayedName.toString() }` );
 				return [];

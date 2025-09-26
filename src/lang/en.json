@@ -1133,6 +1133,7 @@
 	"persona.tag.tagtype.card": "Card Tag",
 	"persona.tag.tagtype.role": "Shadow Role",
 	"persona.tag.tagtype.enchantment": "Item Enchantment",
+	"persona.tag.tagtype.status": "Status",
 
 	"persona.affinity.ranking.all": "All",
 	"persona.affinity.ranking.strong": "Strong",

@@ -5,7 +5,7 @@ import { Persona } from "../persona-class.js";
 import {PersonaStat} from "../../config/persona-stats.js";
 import {RealDamageType} from "../../config/damage-types.js";
 import {DamageCalculation} from "../combat/damage-calc.js";
-import {ModifierContainer} from "../item/persona-item.js";
+import {Usable} from "../item/persona-item.js";
 
 export class PersonaCombatStats {
 
@@ -83,7 +83,7 @@ export class PersonaCombatStats {
 		return Math.floor(this.endurance);
 	}
 
-	damageReduction(damageType : RealDamageType, power: ModifierContainer): DamageCalculation {
+	damageReduction(damageType : RealDamageType, power: Usable): DamageCalculation {
 		const calc = new DamageCalculation(damageType);
 		if (damageType == "healing") {return calc;}
 		if (!power.isUsableType()) {return calc;}
