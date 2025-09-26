@@ -50,6 +50,7 @@ import { OtherEffect } from '../../config/consequence-types.js';
 import { Consumable } from '../item/persona-item.js';
 import {Defense} from '../../config/defense-types.js';
 import {getActiveConsequences} from '../preconditions.js';
+import {ModifierTarget} from '../../config/item-modifiers.js';
 
 declare global {
 	interface SocketMessage {
@@ -2408,7 +2409,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 static getAttackBonus(attackerP: Persona, power: Usable, target: PToken | undefined, modifiers ?: ModifierList) : ModifierList {
 	let attackBonus = this.getBaseAttackBonus(attackerP, power);
 	attackBonus.add('Custom modifier', this.customAtkBonus ?? 0);
-	const defense = this.getDefenderAttackModifiers(target, power.system.defense);
+	const defense = this.getDefenderAttackModifiers(target, power.system.defense, power);
 	attackBonus = attackBonus.concat(defense);
 	if (modifiers) {
 		attackBonus = attackBonus.concat(modifiers);
@@ -2416,12 +2417,19 @@ static getAttackBonus(attackerP: Persona, power: Usable, target: PToken | undefi
 	return attackBonus;
 }
 
-static getDefenderAttackModifiers(target: PToken | undefined, defense : Defense) : ModifierList {
+static getDefenderAttackModifiers(target: PToken | undefined, defense : Defense, power: Usable) : ModifierList {
 	if (!target || defense == "none") {return new ModifierList();}
+	const vectors : ModifierTarget[] = ['allAtk'];
+	if (power.isMagicSkill())  {
+		vectors.push("magAtk");
+	}
+	if (power.isWeaponSkill())  {
+		vectors.push("wpnAtk");
+	}
 	const defenseMod = new ModifierList(
 		PersonaItem.getModifier(
 			target.actor.persona().defensiveModifiers(),
-			['allAtk',defense]
+			['allAtk']
 		)
 		// .flatMap (item => item.getModifier(['allAtk', defense], target.actor))
 	);
