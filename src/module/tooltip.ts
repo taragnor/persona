@@ -23,7 +23,6 @@ export class Tooltip {
 		});
 
 		$(document).on("mouseleave", ".tooltip", function (this: HTMLElement) {
-			console.log("Mouse Leave!");
 			$("#tooltip-root .tooltip-box").each(function () {
 				$(this).remove();
 				// const $tip = $(this);

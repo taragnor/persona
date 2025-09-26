@@ -199,8 +199,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	treasureItems(): readonly TreasureItem[] {
 		if (this.#cache.treasureItems) {return this.#cache.treasureItems;}
 		const items = this.allItems();
-		this.#cache.treasureItems =
-			this.#cache.treasureItems = items
+		this.#cache.treasureItems = items
 			.filter ( item =>
 				item.system.type == "weapon"
 				|| item.system.type == "consumable"

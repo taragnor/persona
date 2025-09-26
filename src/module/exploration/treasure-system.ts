@@ -3,23 +3,49 @@ import { PersonaDB } from "../persona-db.js";
 import { weightedChoice } from "../utility/array-tools.js";
 import { ProbabilityRate } from "../../config/probability.js";
 import { TreasureTable } from "../../config/treasure-tables.js";
+import {PersonaError} from "../persona-error.js";
 
 export class TreasureSystem {
-	static get treasureList() {
-		return PersonaDB.treasureItems()
-		.filter ( item => item.system.treasure.table != "none");
+	static generate(treasureLevel: number, modifier : number = 0) : U<TreasureItem> {
+		const table = this.convertRollToTreasureTable(modifier);
+		return this.generateFromTable(table, treasureLevel);
 	}
 
-	static generate(table: Exclude<TreasureTable, "none">, treasureLevel: number) : U<TreasureItem> {
+	static convertRollToTreasureTable(modifier: number) : Exclude<TreasureTable, "none"> {
+		const die = modifier + 1 + Math.floor(Math.random() * 100);
+		switch (true) {
+			case die < 50: return "trinkets";
+			case die < 75: return "lesser";
+			case die < 100: return "greater";
+			case die >= 100: return "royal";
+			default: {
+				PersonaError.softFail(`Defaulting to trinkets due to bad value for die ${die}`);
+				return "trinkets";
+			}
+		}
+	}
+
+	static get treasureList() {
+		return PersonaDB.treasureItems()
+			.filter ( item =>
+				item.system.treasure.trinkets.enabled
+				|| item.system.treasure.lesser.enabled
+				|| item.system.treasure.greater.enabled
+				|| item.system.treasure.royal.enabled
+			);
+	}
+
+	static generateFromTable(table: Exclude<TreasureTable, "none">, treasureLevel: number) : U<TreasureItem> {
 		const list =this.treasureList
 		.filter( item =>
-			item.system.treasure.table == table
-			&& item.system.treasure.minLevel >= treasureLevel
-			&& item.system.treasure.maxLevel <= treasureLevel);
-
-	const weights = list
+			item.system.treasure[table].enabled
+			&& treasureLevel >= item.system.treasure[table].minLevel
+			&& treasureLevel <= item.system.treasure[table].maxLevel
+		);
+		if (list.length == 0) {return undefined;}
+		const weights = list
 		.map( item=> {
-			const rarity = item.system.treasure.rarity;
+			const rarity = item.system.treasure[table].rarity;
 			const possessionMult =this.possessionWeightMod(item);
 			const baseWeight = ENCOUNTER_RATE_PROBABILITY[rarity];
 			const weight = baseWeight * possessionMult;
@@ -74,3 +100,6 @@ export const ENCOUNTER_RATE_PROBABILITY : ProbabilityRate = {
 	always: Infinity,
 } ;
 
+
+//@ts-expect-error testing
+window.TreasureSystem = TreasureSystem;

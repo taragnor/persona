@@ -29,6 +29,7 @@ import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { NPCAlly } from "./actor/persona-actor.js";
 import { PersonaScene } from "./persona-scene.js";
+import { TreasureSystem } from "./exploration/treasure-system.js";
 
 export class Metaverse {
 	static lastCrunch : number = 0;
@@ -385,6 +386,9 @@ static async reportXPGain(xpReport: {actor: ValidAttackers, xp: number, levelUps
 }
 
 	static async generateTreasure(shadows: PersonaActor[]): Promise<Treasure> {
+		if ("justTesting" in window) {
+			TreasureSystem.generate(0, 0);
+		}
 		const items : TreasureItem[] = [];
 		let money = 0;
 		const considerSkillCard = async function (powerId: string, prob: number) {

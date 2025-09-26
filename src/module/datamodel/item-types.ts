@@ -52,10 +52,22 @@ function itemBase() {
 }
 
 function itemTreasureStats() {
+	const tablesEntries = {
+		trinkets: treasureEntry(),
+		lesser: treasureEntry(),
+		greater: treasureEntry(),
+		royal: treasureEntry()
+	} satisfies Record<Exclude<keyof typeof TREASURE_TABLES, "none">, unknown>;
+	return new sch(
+		tablesEntries
+	);
+}
+
+function treasureEntry() {
 	return new sch({
+		enabled: new bool(),
 		minLevel: new num({initial: 0, integer: true}),
 		maxLevel: new num({initial: 0, integer: true}),
-		table: new txt({choices: TREASURE_TABLES, initial: "none"}),
 		rarity: new txt({choices: PROBABILITIES, initial:"normal"}),
 	});
 

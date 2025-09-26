@@ -1,0 +1,89 @@
+{{#if (isGM)}}
+<div class="treasure-section">
+	<div class="trinkets">
+		<div class="level-range">
+			<span>
+				<label>
+					Trinkets
+				</label>
+				<input type="checkbox" name="system.treasure.trinkets.enabled" {{checked item.system.treasure.trinkets.enabled}}>
+				<label> Level Range</label>
+				{{numberInput item.system.treasure.trinkets.minLevel class="short" name="system.treasure.trinkets.minLevel" step=1 min=1 max=100}}
+				{{numberInput item.system.treasure.trinkets.maxLevel class="short" name="system.treasure.trinkets.maxLevel" step=1 min=1 max=100}}
+			</span>
+		</div>
+		<div class="Rarity">
+			<label>
+				Rarity
+			</label>
+			<select name="system.treasure.trinkets.rarity">
+				{{selectOptions POWERSTUFF.PROBABILITIES localize=true selected=item.system.treasure.trinkets.rarity}}
+			</select>
+		</div>
+	</div>
+	<div class="lesser">
+		<div class="level-range">
+			<span>
+				<label>
+					Lesser
+				</label>
+				<input type="checkbox" name="system.treasure.lesser.enabled" {{checked item.system.treasure.lesser.enabled}}>
+				<label> Level Range</label>
+				{{numberInput item.system.treasure.lesser.minLevel class="short" name="system.treasure.lesser.minLevel" step=1 min=1 max=100}}
+				{{numberInput item.system.treasure.lesser.maxLevel class="short" name="system.treasure.lesser.maxLevel" step=1 min=1 max=100}}
+			</span>
+		</div>
+		<div class="Rarity">
+			<label>
+				Rarity
+			</label>
+			<select name="system.treasure.lesser.rarity">
+				{{selectOptions POWERSTUFF.PROBABILITIES localize=true selected=item.system.treasure.lesser.rarity}}
+			</select>
+		</div>
+	</div>
+	<div class="greater">
+		<div class="level-range">
+			<span>
+				<label>
+					Greater
+				</label>
+				<input type="checkbox" name="system.treasure.greater.enabled" {{checked item.system.treasure.greater.enabled}}>
+				<label> Level Range</label>
+				{{numberInput item.system.treasure.greater.minLevel class="short" name="system.treasure.greater.minLevel" step=1 min=1 max=100}}
+				{{numberInput item.system.treasure.greater.maxLevel class="short" name="system.treasure.greater.maxLevel" step=1 min=1 max=100}}
+			</span>
+		</div>
+		<div class="Rarity">
+			<label>
+				Rarity
+			</label>
+			<select name="system.treasure.greater.rarity">
+				{{selectOptions POWERSTUFF.PROBABILITIES localize=true selected=item.system.treasure.greater.rarity}}
+			</select>
+		</div>
+	</div>
+	<div class="royal">
+		<div class="level-range">
+			<span>
+				<label>
+					Royal
+				</label>
+				<input type="checkbox" name="system.treasure.royal.enabled" {{checked item.system.treasure.royal.enabled}}>
+				<label> Level Range</label>
+				{{numberInput item.system.treasure.royal.minLevel class="short" name="system.treasure.royal.minLevel" step=1 min=1 max=100}}
+				{{numberInput item.system.treasure.royal.maxLevel class="short" name="system.treasure.royal.maxLevel" step=1 min=1 max=100}}
+			</span>
+		</div>
+		<div class="Rarity">
+			<label>
+				Rarity
+			</label>
+			<select name="system.treasure.royal.rarity">
+				{{selectOptions POWERSTUFF.PROBABILITIES localize=true selected=item.system.treasure.royal.rarity}}
+			</select>
+		</div>
+	</div>
+
+</div>
+{{/if}}

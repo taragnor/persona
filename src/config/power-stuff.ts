@@ -30,6 +30,8 @@ import {STUDENT_SKILLS} from "./student-skills.js";
 import {TAROT_DECK} from "./tarot.js";
 import {TRIGGERS} from "./triggers.js";
 import {WEATHER_TYPES} from "./weather-types.js";
+import {TREASURE_TABLES} from "./treasure-tables.js";
+import {PROBABILITIES} from "./probability.js";
 
 export class PowerStuff {
 private static _powerStuffBase: Record<string, unknown>;
@@ -116,6 +118,8 @@ private static _powerStuffBase: Record<string, unknown>;
 			MODIFIER_CATEGORIES_LOCALIZATION,
 			LEVEL_GAIN_TARGETS,
 			CALCULATION_OPERATION,
+			TREASURE_TABLES,
+			PROBABILITIES,
 			SCENE_WEATHER_TYPES: Object.fromEntries(
 				([""].concat(Object.keys(CONFIG.weatherEffects))).map( x=> [x,x])
 			),
