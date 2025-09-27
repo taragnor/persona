@@ -1,4 +1,3 @@
-import { ELEMENTAL_DEFENSE_LINK } from "../config/damage-types.js";
 import { LevelUpCalculator } from "../config/level-up-calculator.js";
 import { PersonaCombatStats } from "./actor/persona-combat-stats.js";
 import { NonDeprecatedModifierType } from "../config/item-modifiers.js";
@@ -946,33 +945,42 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 	tagListPartial() : (PersonaTag | Tag["id"])[] {
 		const base = this.source.system.combat.personaTags.slice();
+		base.pushUnique(...this._autoTags());
+		return base;
+	}
+
+	_autoTags() : PersonaTag[] {
+		const autoPTags :PersonaTag[]= [];
 		if (this.source.isPC() || this.source.isNPCAlly()){
-			base.pushUnique("persona");
+			autoPTags.pushUnique("persona");
 		}
 		if (this.user.isUsingMetaPod()) {
-			base.pushUnique("simulated");
+			autoPTags.pushUnique("simulated");
 		}
 		switch (this.source.system.creatureType) {
 			case "enemy-metaverse-user":
 			case "persona":
-				base.pushUnique("persona");
+				autoPTags.pushUnique("persona");
 				break;
 			case "d-mon":
-				base.pushUnique("d-mon");
+				autoPTags.pushUnique("d-mon");
 				break;
 		}
 		if (this.source.isShadow()) {
 			if ( this.source.system.creatureType == "daemon") {
-				base.pushUnique("simulated");
+				autoPTags.pushUnique("simulated");
 			}
 			if (this.source.system.role != "base") {
-				base.pushUnique(this.source.system.role);
+				autoPTags.pushUnique(this.source.system.role);
 			}
 			if (this.source.system.role2 != "base") {
-				base.pushUnique(this.source.system.role2);
+				autoPTags.pushUnique(this.source.system.role2);
 			}
 		}
-		return base;
+		if (autoPTags.includes("persona") && this.source.hasSoloPersona) {
+			autoPTags.pushUnique("lone-persona");
+		}
+		return autoPTags;
 	}
 
 	realTags() : Tag[] {

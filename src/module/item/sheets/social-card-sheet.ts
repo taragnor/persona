@@ -108,6 +108,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 
 	async addCardTag(_ev: JQuery.ClickEvent) {
 		await this.item.addCardTag();
+		await this.render(false);
 	}
 
 	async addEventTag(ev: JQuery.ClickEvent) {
@@ -118,13 +119,14 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 	async deleteCardTag(ev: JQuery.ClickEvent) {
 		const index = HTMLTools.getClosestData(ev, "tagIndex");
 		await this.item.deleteCardTag(Number(index));
-
+		await this.render(false);
 	}
 
 	async deleteEventTag(ev: JQuery.ClickEvent) {
 		const eventIndex = HTMLTools.getClosestDataNumber(ev, "eventIndex");
 		const tagIndex = HTMLTools.getClosestDataNumber(ev, "tagIndex");
 		await this.item.deleteEventTag(eventIndex, tagIndex);
+		await this.render(false);
 	}
 
 	async addOpportunity(_ev: JQuery.ClickEvent) {
@@ -166,7 +168,9 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 
 	async addCardEvent( _ev: JQuery.ClickEvent) {
 		await this.item.addCardEvent();
+		await this.render(false);
 	}
+
 	async deleteCardEvent( ev: JQuery.ClickEvent) {
 		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
 		this.focusedEvent = undefined;

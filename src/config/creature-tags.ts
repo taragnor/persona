@@ -1,5 +1,6 @@
 import {Tag} from "../module/item/persona-item.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
+import {ShadowRole} from "./shadow-types.js";
 
 export const PERSON_TAG_LIST = [
 	"student",
@@ -55,9 +56,10 @@ export const PERSONA_TAG_LIST = [
 	"d-mon",
 	"pc-d-mon",
 	"persona",
+	"lone-persona",
 ] as const;
 
-export type PersonaTag = typeof PERSONA_TAG_LIST[number];
+export type PersonaTag = typeof PERSONA_TAG_LIST[number] | ShadowRole;
 
 export const PERSONA_TAGS = HTMLTools.createLocalizationObject(PERSONA_TAG_LIST, "persona.creatureType");
 
