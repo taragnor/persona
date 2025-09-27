@@ -312,6 +312,7 @@ export class CombatResult  {
 				effect.otherEffects.push( {
 					type: cons.type,
 					level: cons.amount ?? 1,
+					downgrade: cons.downgrade ?? false,
 				});
 				break;
 			case "social-card-action": {

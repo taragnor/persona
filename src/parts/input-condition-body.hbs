@@ -30,7 +30,12 @@
 			{{selectOptions POWERSTUFF.COMPARATORS localize=false selected=cond.comparator}}
 		</select>
 		{{#if (neq-m cond.comparator "odd" "even")}}
+		{{#if false}}
 		<input class="short" type=number name="{{strcat namePrefix 'num'}}" value="{{cond.num}}">
+		{{else}}
+		{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'num.') cons=cond.num POWERSTUFF=POWERSTUFF owner=owner}}
+		{{/if}}
+
 		{{/if}}
 		{{#if (eq cond.comparator "range")}}
 		<input class="short" type=number name="{{strcat namePrefix 'high'}}" value="{{cond.high}}">

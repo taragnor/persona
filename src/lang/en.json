@@ -620,7 +620,7 @@
 	"persona.effecttypes.inspiration-cost": "Pay Inspiration",
 	"persona.effecttypes.display-msg": "Print Message",
 	"persona.effecttypes.use-power": "Activate Power",
-	"persona.effecttypes.scan": "Scan Target",
+	"persona.effecttypes.scan": "Alter Scan Level",
 	"persona.effecttypes.social-card-action": "Social Card Action",
 	"persona.effecttypes.dungeon-action": "Dungeon Action",
 	"persona.effecttypes.alter-variable": "Alter Variable",
@@ -724,7 +724,7 @@
 	"persona.preconditions.target-is-same-arcana": "Target is the same arcana as attacker" ,
 	"persona.preconditions.flag-state": "Flag State" ,
 
-	"persona.preconditions.targets.owner": "Owner of Power" ,
+	"persona.preconditions.targets.owner": "Owner of Condition Holder" ,
 	"persona.preconditions.targets.target": "Target of Attack" ,
 	"persona.preconditions.targets.user": "User of Main Power" ,
 	"persona.preconditions.targets.attacker": "Attacker" ,

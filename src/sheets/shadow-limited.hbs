@@ -15,22 +15,15 @@
 		{{#if (scanLevelgte persona 2)}}
 		<h3> Powers</h3>
 		<div class="main-powers">
-			{{#each actor.mainPowers as |power i|}}
+			{{#each persona.powers as |power i|}}
 			<div class="main-power" data-power-id="{{power.id}}">
 				<div class="power-name-block {{#if (lte ../actor.maxPowers i)}} over-max-power {{/if}} ">
-					{{#if (false)}}
-					<a class="rollPower" >
-						<img src="icons/dice/d20black.svg">
-					</a>
-						{{/if}}
-						<div class="power-name">
-							{{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../actor}}
-							{{#if (gt ../actor.system.scanLevel 1)}}
-							<span class="cost-string">
-								({{powerCostString power ../actor}})
-							</span>
-						</div>
-						{{/if}}
+					<div class="power-name">
+						{{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../persona}}
+						<span class="cost-string">
+							({{powerCostString power ../actor}})
+						</span>
+					</div>
 				</div>
 				<div class="power-operations">
 				</div>
@@ -38,13 +31,14 @@
 			{{/each}}
 		</div>
 		{{/if}}
+		{{#if (scanLevelgte persona 2)}}
+		<div class="treasure">
+			<span><b> Treasure: </b></span>
+			<span>
+				{{actor.treasureString}}
+			</span>
+		</div>
+		{{/if}}
+
 	</div>
-	{{#if (scanLevelgte persona 2)}}
-	<div class="treasure">
-		<span><b> Treasure: </b></span>
-		<span>
-			{{actor.treasureString}}
-		</span>
-	</div>
-	{{/if}}
 </form>

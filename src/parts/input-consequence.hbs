@@ -201,6 +201,10 @@
 		<label> Scan Level</label>
 		<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 	</div>
+	<div>
+		<label>Downgrade Scan Level</label>
+		<input type="checkbox" name="{{strcat namePrefix 'downgrade'}}" {{checked cons.downgrade}}>
+	</div>
 	{{/if}}
 
 	{{#if (eq cons.type "alter-energy")}}

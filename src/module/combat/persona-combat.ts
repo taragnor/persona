@@ -545,7 +545,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					activeCombat: true,
 				};
 				await TriggeredEffect.execCombatTrigger('start-turn', user.token.actor, situation);
-				console.log(`Triggering Start turn for ${triggeringCharacter.name} on ${user.name}`);
+				// console.log(`Triggering Start turn for ${triggeringCharacter.name} on ${user.name}`);
 			}
 		}
 	}
@@ -1906,7 +1906,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const foes :TargettingContextList['all-foes'] = [];
 		const allies : TargettingContextList['all-allies'] = [];
 
-		if (attacker) {
+		if (attacker && game.combat) {
 			const attackerToken = this.getPTokenFromActorAccessor(attacker);
 			if (attackerToken) {
 				foes.push(...this

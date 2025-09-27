@@ -53,6 +53,7 @@ import { Shadow } from '../actor/persona-actor.js';
 import { ITEMMODELS } from '../datamodel/item-types.js';
 import { PersonaDB } from '../persona-db.js';
 import {DEFENSE_TYPES} from '../../config/defense-types.js';
+import {resolveConsequenceAmount} from '../persona-variables.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -2153,7 +2154,8 @@ static triggersOn( eff: SourcedConditionalEffect, trig: Trigger) : boolean {
           || cond.socialLinkIdOrTarot == this.parent?.name
           || cond.socialLinkIdOrTarot == this.parent?.tarot?.name
         ) {
-          return 'num' in cond ? cond.num ?? 0 : 0;
+          // return 'num' in cond ? cond.num ?? 0 : 0;
+          return 'num' in cond ? resolveConsequenceAmount(cond.num, {}): 0;
         }
       }
     }

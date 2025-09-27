@@ -7,6 +7,7 @@ import { PowerContainer } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaAE} from "../active-effect.js";
+import {PersonaError} from "../persona-error.js";
 
 export type ModifierListItem<T extends ContainerTypes = ContainerTypes> = {
 	name: string;
@@ -77,13 +78,18 @@ export class ModifierList {
 
 	validModifiers (situation: Situation) : ModifierListItem[]  {
 		return this._data.filter( item => {
-			const source = item.source ? PersonaDB.find(item.source) ?? null: null;
-			if (testPreconditions(item.conditions, situation, source)) {
-				if (item.modifier != 0) {
-					return true;
+			try {
+				const source = item.source ? PersonaDB.find(item.source) ?? null: null;
+				if (testPreconditions(item.conditions, situation, source)) {
+					if (item.modifier != 0) {
+						return true;
+					}
 				}
+				return false;
+			} catch (e) {
+				PersonaError.softFail("Problem with Valid MOdifiers in situation, can't get source",e,item );
+				return false;
 			}
-			return false;
 		});
 	}
 

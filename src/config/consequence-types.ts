@@ -95,6 +95,7 @@ type ExecPowerEffect = {
 type ScanEffect = {
 	type: "scan",
 	level: number,
+	downgrade: boolean,
 }
 
 export type AlterEnergyEffect = {
@@ -196,12 +197,19 @@ type NonGenericConsequences = UsePowerConsequence
 	| PermabuffConsequence
 	| PlaySoundConsequence
 	| GainLevelConsequence
+	| ScanConsequence
 ;
 
 type GainLevelConsequence = {
 	type: "gain-levels",
 	value: number,
 	gainTarget: LevelGainTarget,
+}
+
+type ScanConsequence = {
+	type: "scan",
+	amount: number,
+	downgrade: boolean,
 }
 
 const LEVEL_GAIN_TARGETS_LIST = [

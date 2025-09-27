@@ -5,7 +5,7 @@ import { SceneClock } from "./exploration/scene-clock.js";
 import { NumberOfOthersWithComparison } from "../config/numeric-comparison.js";
 import { CombatResultComparison } from "../config/numeric-comparison.js";
 // import { NumericV2 } from "./conditionalEffects/numericV2.js";
-import { PersonaVariables } from "./persona-variables.js";
+import { PersonaVariables, resolveConsequenceAmount } from "./persona-variables.js";
 import { PersonaScene } from "./persona-scene.js";
 import { ActorChange } from "./combat/combat-result.js";
 import { AttackResult } from "./combat/combat-result.js";
@@ -212,7 +212,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 		case "health-percentage": {
        const subject = getSubjectActors(condition, situation, source, "conditionTarget")[0];
 			if (!subject) {return false;}
-			target = (subject.hp / subject.mhp) * 100;
+			target = (subject.hp / subject.mhpEstimate) * 100;
 			break;
     }
 		case "clock-comparison": {
@@ -224,7 +224,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 		case "percentage-of-hp": {
 			const subject = getSubjectActors(condition, situation, source, "conditionTarget")[0];
 			if (!subject) {return false;}
-			target = subject.hp / subject.mhp;
+			target = subject.hp / subject.mhpEstimate;
 			break;
 		}
 		case "percentage-of-mp": {
@@ -336,11 +336,11 @@ function numericComparison(condition: Precondition, situation: Situation, source
 		}
 
 		case "combat-result-based": {
-       const res = combatResultBasedNumericTarget(condition, situation, source) ;
+			const res = combatResultBasedNumericTarget(condition, situation, source) ;
 			if (typeof res == "boolean") {return res;}
 			target= res;
 			break;
-    }
+		}
 		case "num-of-others-with": {
 			const res  =  numberOfOthersWithResolver(condition, situation, source);
 			if (typeof res == "boolean") {return res;}
@@ -368,16 +368,26 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			break;
 		}
 		case "scan-level": {
-       const targetActor = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+			const targetActor = getSubjectActors(condition, situation, source, "conditionTarget")[0];
 			if (!targetActor || !targetActor.isValidCombatant()) {return false;}
 			target = targetActor.persona().scanLevelRaw;
 			break;
-    }
+		}
 		default:
 			condition satisfies never;
 			PersonaError.softFail(`Unknown numeric comparison type ${(condition as Record<string, string>)["comparisonTarget"]}`);
 			return false;
 	}
+	const ownersList = condition.actorOwner
+		? [condition.actorOwner]
+		: source?.parent instanceof PersonaActor
+		&& source.parent.isValidCombatant()
+		? [source.parent.accessor]
+		: [];
+	const contextList = PersonaCombat.createTargettingContextList(situation);
+	contextList["owner"] = ownersList;
+	testCase = resolveConsequenceAmount(testCase, contextList);
+
 	switch (condition.comparator) {
 		case "!=" : return target != testCase;
 		case "==" : return target == testCase;

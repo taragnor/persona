@@ -2,7 +2,7 @@ import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { NumericComparisonPC } from "./numeric-comparison.js";
 import { BooleanComparisonPC } from "./boolean-comparison.js";
 import { TarotCard } from "./tarot.js";
-import { PowerTag, PowerTagOrId } from "../config/power-tags.js";
+import { PowerTagOrId } from "../config/power-tags.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PowerType } from "../config/effect-types.js";
 import { DamageType } from "../config/damage-types.js";
@@ -101,9 +101,6 @@ export type ConditionTarget= typeof CONDITION_TARGETS_LIST[number];
 export type ConsequenceTarget = ConditionTarget;
 
 export const CONDITION_TARGETS = HTMLTools.createLocalizationObject(CONDITION_TARGETS_LIST, "persona.preconditions.targets");
-// export const CONDITION_TARGETS = Object.fromEntries(
-// 	CONDITION_TARGETS_LIST.map( x=> [x, `persona.preconditions.targets.${x}`])
-// );
 
 const CONDITION_DICE_LIST= [
 	"escalation",

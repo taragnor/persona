@@ -3687,6 +3687,15 @@ async increaseScanLevel(this: Shadow, amt :number) {
 	}
 }
 
+async decreaseScanLevel(this: Shadow, lvl: number) {
+	const scanLevel = this.system.scanLevel ?? 0;
+	if (scanLevel <= lvl) {return;}
+	if (this.token) {
+		await this.token.baseActor.decreaseScanLevel(lvl);
+	}
+	await this.update({"system.scanLevel": lvl});
+}
+
 async clearScanLevel(this:Shadow) {
 	const scanLevel = this.persona().scanLevelRaw ?? 0;
 	if (scanLevel == 0) {return;}

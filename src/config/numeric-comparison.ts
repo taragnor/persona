@@ -1,6 +1,6 @@
 import { PersonaError } from "../module/persona-error.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
-import { VariableTypeSpecifier } from "./consequence-types.js";
+import { ConsequenceAmount, VariableTypeSpecifier } from "./consequence-types.js";
 import { VariableType } from "../module/persona-variables.js";
 import { SocialLinkIdOrTarot } from "./precondition-types.js";
 import { ConditionTarget } from "./precondition-types.js";
@@ -91,7 +91,7 @@ export const NUMERIC_V2_ACTOR_STATS = HTMLTools.createLocalizationObject(ACTOR_S
 
 type BasicNumericComparator = {
 	comparator : Exclude<Comparator, NonBasicComparator["comparator"]>,
-	num: number,
+	num: ConsequenceAmount,
 }
 
 type NonBasicComparator =
@@ -639,7 +639,7 @@ function deriveConstant (oldC: NumericComparator | DerivedComparator) : NumericO
 		return  {
 			comparisonTarget:"constant",
 			subtype: "number",
-			num: oldC.num,
+			num: oldC.num as number,
 		};
 	}
 	if ("resistLevel" in oldC) {

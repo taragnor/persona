@@ -420,16 +420,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	defensiveModifiers(): readonly SourcedConditionalEffect[] {
 		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!this.#cache.defensiveModifiers || !PersonaCaching) {
-			//this.#cache.defensiveModifiers =
-			//	[
-			//		//can't do this yet becuase it mixes defensives and passives in main
-			//		// ...PersonaDB.getGlobalDefensives(),
-			//		...this.user.userDefensivePowers(),
-			//		...this.defensiveFocii(),
-			//		...this.powers,
-			//	].filter( power=> power.hasDefensiveEffects(this.user))
-			//	.flatMap( pwr => pwr.getEffects(this.user))
-			//	.filter (eff => eff.conditionalType == "defensive");
 				this.#cache.defensiveModifiers = this.mainModifiers().filter ( eff => eff.conditionalType == "defensive");
 		}
 		return this.#cache.defensiveModifiers;
@@ -594,19 +584,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.system.combat.defenses;
 	}
 
-	// #emptyStatPlaceholder(): number{
-	// 	// return Math.round(30 * this.level / 5);//placeholder
-	// 	const statsPerLevel = PersonaCombatStats.STAT_POINTS_PER_LEVEL;
-	// 	return Math.round(1 + statsPerLevel * this.level / 5);//placeholder
-	// }
-
 	get tarot() {
 		return this.source.tarot;
 	}
 
-	// get combatStats() {
-	// 	return this.source.system.combat.personaStats;
-	// }
 
 	get combatStats(): PersonaCombatStats {
 		if (this.#combatStats == undefined) {

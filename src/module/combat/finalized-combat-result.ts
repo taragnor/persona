@@ -569,9 +569,13 @@ export class FinalizedCombatResult {
 			case "use-power":
 				break;
 			case "scan":
-				if (actor.system.type == "shadow") {
-					await (actor as Shadow).increaseScanLevel(otherEffect.level);
+				if (actor.isShadow()) {
+					if (otherEffect.downgrade == false) {
+					await actor.increaseScanLevel(otherEffect.level);
 					void PersonaSFX.onScan(token, otherEffect.level);
+					} else {
+					await actor.decreaseScanLevel(otherEffect.level ?? 0);
+					}
 				}
 				break; // done elsewhere for local player
 			case "social-card-action":
