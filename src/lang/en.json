@@ -318,7 +318,7 @@
 	"persona.modifier.mixedMod": "Encounter Frequence (mixed)",
 	"persona.modifier.numberOfSearches": "Number of Searches",
 	"persona.modifier.treasureFind": "Bonus to d6 to find treasure",
-	"persona.modifier.shadowMoneyBoostPercent": "Bonus % to Money found",
+	"persona.modifier.shadowMoneyBoostPercent": "Money Found (multiplier)",
 	"persona.modifier.actions-per-turn": "Actions per turn",
 	"persona.modifier.baleful-status-duration": "Baleful Status Duration",
 	"persona.modifier.d-mon-storage": "Max D-Mon storage",

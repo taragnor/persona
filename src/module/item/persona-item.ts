@@ -2066,8 +2066,7 @@ getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETyp
 					cType satisfies never;
 			}
 		}
-		return effects
-			.concat(tagEffects);
+		return effects;
 	}
 }
 

@@ -450,6 +450,16 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		return false;
 	}
 
+	sortLocalizationObject(object: Record<string, LocalizationString>) : Record<string, LocalizationString> {
+		const locArr = Object.entries(object)
+		.sort( (a,b) => {
+			const str1 = game.i18n.localize(a[1]);
+			const str2 = game.i18n.localize(b[1]);
+			return str1.localeCompare(str2);
+		});
+		return Object.fromEntries(locArr);
+	}
+
 } //End of class
 
 

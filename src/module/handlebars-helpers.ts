@@ -12,7 +12,7 @@ import { PersonaError } from "./persona-error.js";
 import { FREQUENCY } from "../config/frequency.js";
 import { CardEvent } from "../config/social-card-config.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
-import { Carryable, CClass, ContainerTypes, SocialCard } from "./item/persona-item.js";
+import { Carryable, CClass, ContainerTypes, SocialCard, Tag } from "./item/persona-item.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaItem } from "./item/persona-item.js";
@@ -453,8 +453,23 @@ export class PersonaHandleBarsHelpers {
 			return PersonaSocial.meetsConditionsToStartLink(pc, target);
 		},
 
-		"getItemTagList": function (item: Usable | InvItem | Weapon) : string {
-			return item.tagListLocalized(null);
+		"getItemTagListAsString": function (item: Usable | InvItem | Weapon) : SafeString {
+			const list = item.tagList(null);
+			return list.map( i => {
+				if (i instanceof PersonaItem) {
+					return `<div class="tag" title="${i.description.toString()}">
+${i.displayedName.toString()}
+</div>`;
+				}
+				return localize(i);
+			})
+			.map( x=> new Handlebars.SafeString(x));
+		},
+
+		"tagTooltip" : function (item: string): SafeString {
+			const tag = PersonaDB.allTags().get(item) ?? PersonaDB.allTagLinks().get(item) ?? "";
+			if (typeof tag == "string") {return "";}
+			return tag.description;
 		},
 
 		"getCreatureTagList": function (actor: PersonaActor) : SafeString[] {

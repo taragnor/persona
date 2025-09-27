@@ -238,11 +238,11 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		.filter( ([tagName,_locString]) => {
 			return !tags.some( tag => tag.system.linkedInternalTag == tagName);
 		});
-		return {
+		const locObj = {
 			...Object.fromEntries(locListEntries),
 			...this.tagsOfCategoryLoc(cat),
 		};
-
+		return this.sortLocalizationObject(locObj);
 	}
 
 	tagsArr(): Tag[] {

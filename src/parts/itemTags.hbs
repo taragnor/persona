@@ -8,7 +8,7 @@
 	</h2>
 	<div class="tag-list">
 		{{#each item.system.itemTags as |tag i|}}
-		<div class="tag-item", data-tag-index="{{i}}">
+		<div class="tag-item" data-tag-index="{{i}}" title="{{tagTooltip tag}}">
 			<select name="system.itemTags.{{i}}">
 				{{selectOptions ../POWERSTUFF.EQUIPMENT_TAGS localize=true selected=tag}}
 			</select>
@@ -19,6 +19,7 @@
 		{{/each}}
 	</div>
 	{{else}}
-	<span>Tags: </span> <span>{{getItemTagList item}}</span>
+	<span>Tags: </span>
+	<span>{{getItemTagList item}}</span>
 	{{/if}}
 </div>
