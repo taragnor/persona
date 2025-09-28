@@ -74,6 +74,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	declare statuses: Set<StatusEffectId>;
 	declare sheet: PersonaActorSheetBase;
 
+	_antiloop : boolean = false;
 
 	static MPMap = new Map<number, number>;
 
@@ -351,7 +352,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!combat) {
 			throw new PersonaError("Can't get initiative when not in combat!");
 		}
-		if (combat.combatants.contents.some( x=> x.actor && x.actor.system.type =="shadow")) {
+		if (combat.combatants.contents.some( x=> x.actor && x.actor.isShadow())) {
 			return this.combatInit;
 		}
 		return this.socialInit;
@@ -1138,7 +1139,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	getUsableById(id: Usable["id"]) : Usable | undefined {
-		const power = this.powers.find(pow => pow.id == id);
+		const usables: Usable[] = (this.powers as Usable[]).concat(this.openerActions);
+		const power = usables.find(pow => pow.id == id);
 		if (power) {return power;}
 		const usable = this.items.find( item=> item.id == id && item.isUsableType());
 		if (usable) {return usable as Usable;}
@@ -1279,27 +1281,35 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async refreshHpStatus(this: ValidAttackers, newval?: number) {
-		const startingHP = this.system.combat.hp;
-		const hp = newval ?? this.system.combat.hp;
-		const mhp = this.mhp;
-		if (hp > 0) {
-			await this.clearFadingState();
-		}
-		if (hp > mhp) {
-			await this.update( {"system.combat.hp": mhp});
-		}
-		if (this.hasStatus("full-fade")) {
-			await this.update( {"system.combat.hp": 0});
-		}
-		if (newval != undefined) {
-			if (startingHP > 0  && newval <= 0) {
-				await this.onKO();
+		if (this._antiloop) {return;}
+		this._antiloop = true;
+		try {
+			console.debug("Refreshing HP status");
+			const startingHP = this.system.combat.hp;
+			const hp = newval ?? this.system.combat.hp;
+			const mhp = this.mhp;
+			if (hp > 0) {
+				await this.clearFadingState();
 			}
-			if (startingHP <= 0 && newval > 0) {
-				await this.onRevive();
+			if (hp > mhp) {
+				await this.update( {"system.combat.hp": mhp});
 			}
+			if (this.hasStatus("full-fade") && this.system.combat.hp != 0) {
+				await this.update( {"system.combat.hp": 0});
+			}
+			if (newval != undefined) {
+				if (startingHP > 0  && newval <= 0) {
+					await this.onKO();
+				}
+				if (startingHP <= 0 && newval > 0) {
+					await this.onRevive();
+				}
+			}
+			await this.updateOpacity(hp);
+		} catch (e) {
+			PersonaError.softFail(`Error on Refresh HP Status for ${this.name}`, e);
 		}
-		await this.updateOpacity(hp);
+		this._antiloop = false;
 	}
 
 	async updateOpacity(this: ValidAttackers, hp: number) {

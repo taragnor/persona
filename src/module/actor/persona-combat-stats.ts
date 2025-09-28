@@ -13,6 +13,7 @@ export class PersonaCombatStats {
 	static AILMENT_RESIST_DIVISOR = 5 as const;
 	static INSTANT_DEATH_RESIST_DIVISOR = 5 as const;
 	static STAT_POINTS_PER_LEVEL = 3 as const;
+	static INIT_DIVISOR = 3 as const;
 	static MAX_STAT_GAP =  10 as const;
 	static MAX_STAT_VAL = 99 as const;
 	static MIN_STAT_VAL = 1 as const;
@@ -76,7 +77,7 @@ export class PersonaCombatStats {
 	}
 
 	baseInit() : number {
-		return Math.floor(this.agility / PersonaCombatStats.DEFENSE_DIVISOR);
+		return Math.floor(this.agility / PersonaCombatStats.INIT_DIVISOR);
 	}
 
 	staminaDR() : number{

@@ -332,9 +332,13 @@ export class FinalizedCombatResult {
 	}
 
 	async #apply(): Promise<void> {
-		await this.#processAttacks();
-		await this.#applyCosts();
-		await this.#applyGlobalOtherEffects();
+		try {
+			await this.#processAttacks();
+			await this.#applyCosts();
+			await this.#applyGlobalOtherEffects();
+		} catch (e) {
+			PersonaError.softFail("Trouble executing combat result", e, this);
+		}
 	}
 
 	async #processAttacks() {

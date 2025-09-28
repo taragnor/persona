@@ -453,7 +453,7 @@ export class PersonaHandleBarsHelpers {
 			return PersonaSocial.meetsConditionsToStartLink(pc, target);
 		},
 
-		"getItemTagListAsString": function (item: Usable | InvItem | Weapon) : SafeString {
+		"getItemTagList": function (item: Usable | InvItem | Weapon) : SafeString {
 			const list = item.tagList(null);
 			return list.map( i => {
 				if (i instanceof PersonaItem) {

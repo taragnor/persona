@@ -558,7 +558,6 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 			throw new PersonaError("Room is safe can't be searched");
 		}
 		await this.searchRegion(region);
-		await this.passMetaverseTurn();
 	}
 
 static async passMetaverseTurn() {
@@ -569,6 +568,8 @@ static async passMetaverseTurn() {
 }
 
 static async #passMetaverseTurn() {
+	debugger;
+	console.log("Trying to pass MV turn");
 	const pcs = game.scenes.active.tokens.contents.filter( tok => tok.actor && (tok.actor as PersonaActor).isPC());
 	const ret : string[] = [];
 	for (const pc of pcs) {
@@ -641,6 +642,7 @@ static #sendPassTurnRequest() {
 		if (treasureRolls.length) {
 			await this.handleTreasureRolls(treasureRolls);
 		}
+		await this.passMetaverseTurn();
 	}
 
 	static async handleTreasureRolls( rolls: Roll[]) {
