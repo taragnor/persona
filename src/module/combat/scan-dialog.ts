@@ -15,14 +15,14 @@ export class ScanDialog extends Dialog {
 
 	}
 
-	static onRender(_html: string) {
+	static onRender(this: void, _html: string) {
 
 	}
 
 	static async create(shadow: Combatant<Shadow>, scanLevel: number) : Promise<ScanDialog> {
 		const CONST = PersonaActorSheetBase.CONST();
 		const templateData = {token: shadow.token, actor: shadow.actor, scanLevel, CONST};
-		const html = await renderTemplate("systems/persona/sheets/dialogs/scan-dialog.hbs" , templateData);
+		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/sheets/dialogs/scan-dialog.hbs" , templateData);
 		const dialog = new ScanDialog(html);
 		dialog.render(true);
 		return dialog;

@@ -196,7 +196,7 @@ export class PersonaSocial {
 				"secondary" : "persona.term.secondary"
 			} ,
 			STUDENT_SKILLS);
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/dialogs/social-skill-selector.hbs`, {skillList, defaultChoice} );
+		const html = await foundry.applications.handlebars.renderTemplate(`${HBS_TEMPLATES_DIR}/dialogs/social-skill-selector.hbs`, {skillList, defaultChoice} );
 		return await new Promise( (conf, reject) => {
 			const dialog = new Dialog({
 				title: `Prompt`,
@@ -664,7 +664,7 @@ export class PersonaSocial {
 		if (!card.system.opportunity
 			&& !card.system.opportunity_choices)
 			{return;}
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-opportunity.hbs`, {item: card,card,cardData} );
+		const html = await foundry.applications.handlebars.renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-opportunity.hbs`, {item: card,card,cardData} );
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
 			speaker,
@@ -745,7 +745,7 @@ export class PersonaSocial {
 		const linkId =  "actor" in link ? link.actor.id : link.activity.id;
 		const { perkDisabled } = card.system;
 		const isCameo = card.system.cameoType != "none";
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-intro.hbs`, {item: card,card, cameos, perk, perkDisabled, link: link, linkId, pc: actor, isCameo, user: game.user, DC} );
+		const html = await foundry.applications.handlebars.renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-intro.hbs`, {item: card,card, cameos, perk, perkDisabled, link: link, linkId, pc: actor, isCameo, user: game.user, DC} );
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
 			speaker,
@@ -768,7 +768,8 @@ export class PersonaSocial {
 			//@ts-expect-error forcing this on there
 			roll.DCVal = DC;
 		});
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event, eventNumber, cardData, situation : cardData.situation, eventIndex});
+		const html = await foundry.applications.handlebars.renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event, eventNumber, cardData, situation : cardData.situation, eventIndex});
+
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
 			speaker,
@@ -1417,7 +1418,7 @@ export class PersonaSocial {
 			text,
 			linkImg
 		};
-		const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-response.hbs`, templateData);
+		const html = await foundry.applications.handlebars.renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-response.hbs`, templateData);
 		const messageData = {
 			speaker: {alias: "Question Response"},
 			content: html,

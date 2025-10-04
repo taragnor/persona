@@ -1,20 +1,38 @@
 <form class="talent-sheet">
 	<header class="flexcol">
+		<div>
+			<b> Talent </b>
+		</div>
 		<div class="">
 			<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Talent Name" placeholder="Talent Name">
 		</div>
+	<div class="f-row">
+		<div class="defensive-checkbox">
+			<span>
+				<label>
+					Defensive
+				</label>
+				<input type="checkbox" id="defensive" name="system.defensive" {{checked item.system.defensive}}>
+			</span>
+		</div>
+		<div class="shadow-only">
+			<span>
+				<label>
+					Shadow Only
+				</label>
+				<input type="checkbox" id="shadow-only" name="system.shadowOnly" {{checked item.system.shadowOnly}}>
+			</span>
+		</div>
+		<div class="shadow-only">
+			<span>
+				<label>
+					Hide on List
+				</label>
+				<input type="checkbox" id="shadow-only" name="system.hideOnList" {{checked item.system.hideOnList}}>
+			</span>
+		</div>
+	</div>
 	</header>
-	<div>
-		<b> Talent </b>
-	</div>
-	<div class="defensive-checkbox">
-		<span>
-			<label>
-				Defensive
-			</label>
-			<input type="checkbox" id="defensive" name="system.defensive" {{checked item.system.defensive}}>
-		</span>
-	</div>
 	<textarea name="system.description">{{item.system.description}}</textarea>
 
 	<body>

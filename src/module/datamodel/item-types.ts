@@ -250,6 +250,8 @@ class TalentDM extends foundry.abstract.TypeDataModel {
 		const ret = {
 			description: new html(),
 			defensive: new bool(),
+			shadowOnly: new bool(),
+			hideOnList: new bool(),
 			...effects(false),
 		};
 		return ret;

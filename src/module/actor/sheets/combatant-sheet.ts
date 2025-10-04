@@ -9,7 +9,7 @@ import { Consumable } from "../../item/persona-item.js";
 import { Logger } from "../../utility/logger.js";
 import { Helpers } from "../../utility/helpers.js";
 import { PersonaError } from "../../persona-error.js";
-import { PersonaCombat } from "../../combat/persona-combat.js";
+import { PersonaCombat, TargettingError } from "../../combat/persona-combat.js";
 import { PToken } from "../../combat/persona-combat.js";
 import { CanceledDialgogError, HTMLTools } from "../../utility/HTMLTools.js";
 import { CClass } from "../../item/persona-item.js";
@@ -221,6 +221,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			await PersonaCombat.usePower(token, power );
 		} catch (e) {
 			if (e instanceof CanceledDialgogError) {
+				return;
+			}
+			if (e instanceof TargettingError) {
 				return;
 			}
 			if (e instanceof Error) {
@@ -442,7 +445,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!power) {return;}
 		const persona = this.actor.persona();
 		const damage = await CombatantSheetBase.getDamage(persona, power as Power);
-			const html = await renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona(), damage});
+			const html = await foundry.applications.handlebars.renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona(), damage});
 			$(ev.currentTarget).prop('title', html);
 		}
 

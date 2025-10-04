@@ -3,7 +3,6 @@ import { StatusEffectId } from "../config/status-effects.js";
 import { HTMLTools } from "./utility/HTMLTools.js";
 import { RollSituation } from "../config/situation.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
-import { PToken } from "./combat/persona-combat.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { PersonaError } from "./persona-error.js";
 import { ResolvedModifierList } from "./combat/modifier-list.js";
@@ -98,7 +97,8 @@ export class PersonaRoller {
 	}
 
 	static async rollSave (actor: ValidAttackers, options: SaveOptions): Promise< RollBundle & {modList: ResolvedMods}> {
-		let {rollTags, saveVersus, label, situation} = options;
+		const {saveVersus, label} = options;
+		let {rollTags, situation} = options;
 		rollTags = rollTags == undefined ? [] : rollTags;
 		const baseMods = actor.getSaveBonus();
 		rollTags = rollTags.slice();
@@ -186,7 +186,7 @@ export class RollBundle {
 			return rollSituation;
 		}
 		PersonaError.softFail("No user for this roll", situation);
-		return situation as any;
+		return situation as Situation & RollSituation;
 	}
 
 	get gmRoll() : boolean {
@@ -240,7 +240,7 @@ export class RollBundle {
 				throw new PersonaError("Mod List not resolved");
 			}
 			return this.roll.total + this.modList.modtotal;
-		} catch (e) {
+		} catch {
 			return -999;
 		}
 	}
@@ -251,7 +251,7 @@ export class RollBundle {
 			throw new PersonaError("Mod List not resolved");
 		}
 		if (this.DC == 0) {debugger;}
-		const html = await renderTemplate("systems/persona/parts/simple-roll.hbs", {roll: this, showSuccess});
+		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/parts/simple-roll.hbs", {roll: this, showSuccess});
 		return html;
 	}
 
@@ -261,8 +261,8 @@ export class RollBundle {
 		let speaker: Foundry.ChatSpeakerObject;
 		if (actorAcc) {
 			const actor  = PersonaDB.findActor(actorAcc);
-			let token : PToken | undefined;
-			token = PersonaCombat.getPTokenFromActorAccessor(actor.accessor);
+			// let token : PToken | undefined;
+			const token = PersonaCombat.getPTokenFromActorAccessor(actor.accessor);
 			speaker = {
 				actor: token?.actor?.id ?? actor.id,
 				token: token?.id,

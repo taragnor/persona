@@ -81,7 +81,7 @@ export class HTMLTools {
 	static async singleChoiceBox<K extends string, const T extends Record<K, unknown>>(choices: T, options: ChoiceBoxOptions<T> = {}) : Promise<K | null> {
 		const localize = options.localize ?? false;
 		const defaultChoice = options.default ?? undefined;
-		const html = await renderTemplate(`systems/${game.system.id}/module/utility/singleChoiceBox.hbs`, {choices, localize, defaultChoice});
+		const html = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/module/utility/singleChoiceBox.hbs`, {choices, localize, defaultChoice});
 		return await new Promise( (conf, _rej) => {
 			const dialog = new Dialog( {
 				title: options.title ?? "Choose One",

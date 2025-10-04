@@ -53,13 +53,14 @@ const DEFENSE_TYPES = [
 	"ail", //ailment defnese bonus
 	"dr",
 	"armor-dr",
+	"armor-dr-mult",
 	"instantDeathResistanceMult",
 	"critResist",
 	"baleful-status-duration",
+	"save",
 ] as const;
 
 export const ACTOR_STATS_TYPES = [
-	"save",
 	"recovery",
 	"recovery-mult",
 	"maxhp",

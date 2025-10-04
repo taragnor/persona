@@ -23,7 +23,6 @@ interface FoundryStuff {
 	canvas: FoundryCanvasTools;
 	utils: FoundryUtil;
 	applications: foundryApps.Applications;
-
 }
 
 

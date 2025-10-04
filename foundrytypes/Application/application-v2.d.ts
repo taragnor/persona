@@ -3,7 +3,9 @@ namespace foundryApps {
 	interface Applications {
 		api: ApplicationsAPI
 		ux: UXStuff;
-
+		handlebars: {
+			renderTemplate(templatePath: string, templateData: Record<string|number, unknown>): Promise<string>;
+		}
 	}
 
 	interface UXStuff{

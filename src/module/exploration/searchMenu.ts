@@ -213,7 +213,7 @@ export class SearchMenu {
 		if (roll) {
 			rolls.push(roll);
 		}
-		const html  = await renderTemplate(`${HBS_TEMPLATES_DIR}/search-result.hbs`, {tensionRoll : roll? roll.dice[0].values: [], results, options, tensionResult: result} );
+		const html  = await foundry.applications.handlebars.renderTemplate(`${HBS_TEMPLATES_DIR}/search-result.hbs`, {tensionRoll : roll? roll.dice[0].values: [], results, options, tensionResult: result} );
 		const msg = ChatMessage.create({
 			speaker: {
 				scene: undefined,
@@ -307,7 +307,6 @@ export class SearchMenu {
 		${inputsDiv}
 		</section>
 			`;
-		// const html = await renderTemplate(`${HBS_TEMPLATES_DIR}/dialogs/searchOptions.hbs`, {options});
 		return await new Promise( (res , rej) => {
 			const dialog = new Dialog( {
 				title: "Search Options",
@@ -492,7 +491,7 @@ export class SearchMenu {
 
 		private static async renderTemplate() : Promise<string> {
 			const updateData = this.data!;
-			const html = await renderTemplate( `${HBS_TEMPLATES_DIR}/dialogs/search-dialog.hbs`, {data: updateData, SEARCH_ACTIONS});
+			const html = await foundry.applications.handlebars.renderTemplate( `${HBS_TEMPLATES_DIR}/dialogs/search-dialog.hbs`, {data: updateData, SEARCH_ACTIONS});
 			return html;
 		}
 

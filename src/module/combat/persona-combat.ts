@@ -944,18 +944,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			PersonaError.softFail("Can't find Combatant", Tacc);
 			return [];
 		}
-		// if (! (Tacc instanceof Combatant)) {
-		//    const token = PersonaDB.findToken(Tacc);
-		//    if (!token) return [];
-		//    const combTest =  this.findCombatant(token);
-		//    if (!combTest) return [];
-		//    comb = combTest;
-		// } else {
-		//    if (!Tacc.token.actor) {
-		//       return [];
-		//    }
-		//    comb = Tacc;
-		// }
 		const meleeCombatants = EngagementChecker.listOfCombatantsInMelee(comb, this);
 		return meleeCombatants
 			.filter( x=> x.actor && x.actor.hasDefenderAura()
@@ -2014,7 +2002,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case undefined: {
 				const target = situation.target ? PersonaDB.findActor(situation.target) : undefined;
 				return target ? [target] : []; } //default to target since this is old material
-				// PersonaError.softFail("cons.applyTo is undefined");
 			case 'all-in-region': {
 				let id : string | undefined;
 				if ('triggeringRegionId' in situation) {
@@ -2590,10 +2577,10 @@ static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[])
 			const engagingTarget  = combat.isInMeleeWith(attacker, target);
 			if (attacker.id == target.id) {continue;}
 			if (attackerActor.hasStatus('challenged') && !engagingTarget) {
-				throw new PersonaError("Can't target non-engaged when challenged");
+				throw new TargettingError("Can't target non-engaged when challenged");
 			}
 			if (targetActor.hasStatus('challenged') && !engagingTarget) {
-				throw new PersonaError("Can't target a challenged target you're not engaged with");
+				throw new TargettingError("Can't target a challenged target you're not engaged with");
 			}
 			const situation : Situation = {
 				user: attacker.actor.accessor,
@@ -2604,7 +2591,7 @@ static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[])
 			};
 			const canUse = power.targetMeetsConditions(attacker.actor, targetActor, situation);
 			if (!canUse) {
-				throw new PersonaError('Target doesn\'t meet custom Power conditions to target');
+				throw new TargettingError('Target doesn\'t meet custom Power conditions to target');
 			}
 		}
 	}
@@ -2651,7 +2638,7 @@ static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[])
 		case '1d4-random-rep':
 		case '1d3-random-rep':
 		case '1d3-random':
-			throw new PersonaError('Targetting type not yet implemented');
+			throw new TargettingError('Targetting type not yet implemented');
 		case 'all-others': {
 			const combat= this.ensureCombatExists();
 			return combat.validCombatants(attacker)
@@ -2677,7 +2664,7 @@ static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[])
 		}
 		default:
 			targets satisfies never;
-			throw new PersonaError(`targets ${targets as string} Not yet implemented`);
+			throw new TargettingError(`targets ${targets as string} Not yet implemented`);
 	}
 }
 
@@ -3040,7 +3027,7 @@ async setRoomEffects(effects: ModifierContainer[]) {
 async roomEffectsDialog(initialRoomModsIds: string[] = [], startSocial: boolean) : Promise<DialogReturn> {
 	const roomMods = PersonaDB.getSceneAndRoomModifiers();
 	const ROOMMODS = Object.fromEntries(roomMods.map( mod => [mod.id, mod.name]));
-	const html = await renderTemplate('systems/persona/sheets/dialogs/room-effects.hbs', {
+	const html = await foundry.applications.handlebars.renderTemplate('systems/persona/sheets/dialogs/room-effects.hbs', {
 		ROOMMODS : {
 			'': '-',
 			...ROOMMODS
@@ -3415,3 +3402,10 @@ type ValidAttackersApplies = Exclude<NonNullable<Consequence['applyTo']>, 'cameo
 
 export type TargettingContext = <T extends keyof TargettingContextList>( applyTo: T) => TargettingContextList[T]
 
+
+export class TargettingError extends Error {
+	constructor (errormsg: string) {
+		super(errormsg);
+		ui.notifications.warn(errormsg);
+	}
+}

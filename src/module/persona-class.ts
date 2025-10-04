@@ -358,7 +358,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.numOfIncAdvances();
 	}
 
-	getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, sources: SourcedConditionalEffect[] = this.passiveCEs()): ModifierList {
+	getDefensiveBonuses( modNames : MaybeArray<NonDeprecatedModifierType>)  : ModifierList {
+		return this.getBonuses(modNames, this.defensiveModifiers());
+	}
+
+	getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, sources: readonly SourcedConditionalEffect[] = this.passiveCEs()): ModifierList {
 		const mods = PersonaItem.getModifier(sources, modnames)
 		.filter( mod => mod.modifier != 0);
 		// const modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this.source)
@@ -428,6 +432,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	async addTalent(talent: Talent) {
 		const source = this.source;
 		const arr = source.system.combat.talents;
+		if (!this.source.isShadow() && talent.system.shadowOnly) {
+			ui.notifications.error("This talent can only be used by shadows");
+		}
 		arr.push(talent.id);
 		await source.update( {"system.combat.talents": arr});
 		await Logger.sendToChat(`${this.name} added ${talent.name} Talent` , source);
@@ -496,19 +503,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return initBonus + agi + initMod;
 	}
 
-	// #translateInitString(initString: ValidAttackers["system"]["combat"]["initiative"]): number {
-	// 	switch (initString) {
-	// 		case "pathetic": return -8;
-	// 		case "weak": return -4;
-	// 		case "normal": return 0;
-	// 		case "strong": return 4;
-	// 		case "ultimate": return 8;
-	// 		default:
-	// 			initString satisfies never;
-	// 			return -999;
-	// 	}
-	// }
-
 	printableDefenseMods( defense: Defense) {
 		const def = this.getDefense(defense);
 		const situation : Situation  = {
@@ -546,32 +540,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				ui.notifications.warn(`Attmept to access nonsense Defense :${defense as string}`);
 				return mods;
 		}
-		// const baseDef = this.#translateDefenseString(defense, this.defenses[defense]);
-		// mods.add("Base Defense Bonus", baseDef);
 		const modifiers = [
 			...this.passiveCEs(),
 		];
 		modifiers.pushUnique(...this.defensiveModifiers());
-		// const otherBonuses = this.getBonuses([defense, "allDefenses"]);
-		// const defenseMods = this.getBonuses([defense, "allDefenses"], this.defensiveModifiers());
 		const defenseMods = this.getBonuses([defense, "allDefenses"], modifiers);
 		return mods.concat(defenseMods);
-
 	}
-
-	// #translateDefenseString(defType: keyof ValidAttackers["system"]["combat"]["defenses"], val: ValidAttackers["system"]["combat"]["defenses"]["fort"],): number {
-	// 	const weaknesses= this.#getWeaknessesInCategory(defType);
-	// 	switch (val) {
-	// 		case "pathetic": return Math.min(-4 + 2 * weaknesses,-2) ;
-	// 		case "weak": return Math.min(-2 + 1 * weaknesses, -1);
-	// 		case "normal": return 0;
-	// 		case "strong": return Math.max(2 - 1 * weaknesses, 1);
-	// 		case "ultimate": return Math.max(4 - 2 * weaknesses, 2);
-	// 		default:
-	// 			PersonaError.softFail(`Bad defense tsring ${String(val)} for ${defType}`);
-	// 			return -999;
-	// 	}
-	// }
 
 	// #getWeaknessesInCategory( defType: keyof ValidAttackers["system"]["combat"]["defenses"]): number {
 	// 	const damageTypes = ELEMENTAL_DEFENSE_LINK[defType];

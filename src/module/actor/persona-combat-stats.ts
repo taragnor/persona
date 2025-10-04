@@ -102,7 +102,7 @@ export class PersonaCombatStats {
 		};
 		const calc= new DamageCalculation(null);
 		const stamina = this.staminaDR();
-		const generalDRBonus = this.persona.getBonuses("dr").total(situation);
+		const generalDRBonus = this.persona.getDefensiveBonuses("dr").total(situation);
 		const staminaString = 'Endurance Damage Reduction';
 		calc.add("base", -Math.abs(stamina), staminaString);
 		calc.add("base", -generalDRBonus, "DR Modifiers");
@@ -119,15 +119,16 @@ export class PersonaCombatStats {
 	}
 
 	armorDR() : DamageCalculation {
-		const calc= new DamageCalculation(null);
+		const calc = new DamageCalculation(null);
 		const situation = {
 			user: this.persona.user.accessor,
 			target: this.persona.user.accessor,
 		};
 		const armor = this.persona.armorDR();
-		const armorBonus = this.persona.getBonuses("armor-dr").total(situation);
+		const armorBonus = this.persona.getDefensiveBonuses("armor-dr").total(situation);
+		const armorMult = this.persona.getDefensiveBonuses("armor-dr-mult").total(situation);
 		const armorString = "Armor DR";
-		calc.add("base", -Math.abs(armor), armorString);
+		calc.add("base", -Math.abs(armor * armorMult), armorString);
 		calc.add("base", -armorBonus, "Armor Modifiers");
 		return calc;
 	}

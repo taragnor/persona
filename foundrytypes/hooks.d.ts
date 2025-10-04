@@ -2,8 +2,15 @@
 declare interface Hooks {
 	once< T extends keyof HOOKS>(hookname: T, fn: HOOKS[T]): void;
 	on <T extends keyof HOOKS, R extends HOOKS[T]>(hookname: T, fn: R): void;
+	/** @deprecated */
+	on <T extends keyof DEPRECATED_HOOKS, R extends DEPRECATED_HOOKS[T]>(hookname: T, fn: R): void;
 	callAll<T extends keyof HOOKS>(hookname:T, ...args: Parameters<HOOKS[T]>): void;
 	call<T extends keyof HOOKS>(hookname: T, ...args: Parameters<HOOKS[T]>): boolean;
+}
+
+declare interface DEPRECATED_HOOKS {
+	/** deprecated */
+	"renderChatMessage": (msg: ChatMessage, htmlElement: JQuery<HTMLElement>, data: unknown) => unknown;
 }
 
 declare interface HOOKS {
@@ -53,7 +60,7 @@ declare interface HOOKS {
 	"renderJournalDirectory": (...args : unknown[]) => unknown;
 	"renderCombatTracker": RenderCombatTabFn;
 	"renderApplication": (...args : unknown[]) => unknown;
-	"renderChatMessage": (msg: ChatMessage, htmlElement: JQuery<HTMLElement>, data: unknown) => unknown;
+	"renderChatMessageHTML": (msg: ChatMessage, htmlElement: HTMLElement, data: unknown) => unknown;
 	"renderSceneConfig": (app: unknown, html: JQuery, options: unknown) => unknown;
 	"renderRegionConfig": (app: ConfigApp<RegionDocument>, html: JQuery, options: unknown) => unknown;
 	"closeRegionConfig": (app: ConfigApp<RegionDocument>) => unknown,

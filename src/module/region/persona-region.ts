@@ -713,7 +713,7 @@ function clearRegionDisplay() {
 }
 
 async function updateRegionDisplay (region: PersonaRegion) {
-	const html = await renderTemplate("systems/persona/other-hbs/region-panel.hbs", {region, data: region.regionData});
+	const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/region-panel.hbs", {region, data: region.regionData});
 	let infoPanel = $(document).find(".region-info-panel");
 	if (infoPanel.length == 0) {
 		infoPanel = $("<section>").addClass("region-info-panel");
