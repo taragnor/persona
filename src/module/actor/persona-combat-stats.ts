@@ -95,7 +95,7 @@ export class PersonaCombatStats {
 		return calc;
 	}
 
-	magDR(): DamageCalculation {
+	enduranceDR() : DamageCalculation {
 		const situation = {
 			user: this.persona.user.accessor,
 			target: this.persona.user.accessor,
@@ -109,8 +109,17 @@ export class PersonaCombatStats {
 		return calc;
 	}
 
+	magDR(): DamageCalculation {
+		return this.enduranceDR();
+	}
+
 	physDR() : DamageCalculation {
-		const calc = this.magDR();
+		const calc = this.enduranceDR();
+		return calc.merge(this.armorDR());
+	}
+
+	armorDR() : DamageCalculation {
+		const calc= new DamageCalculation(null);
 		const situation = {
 			user: this.persona.user.accessor,
 			target: this.persona.user.accessor,

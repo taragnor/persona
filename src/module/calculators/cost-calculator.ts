@@ -15,18 +15,12 @@ export abstract class CostCalculator {
 		return subtotal.add * subtotal.mult;
 	}
 
-	static INSTANT_KILL_LEVELS_MULT : Record<InstantKillLevel, number> = {
-		none: 0,
-		low: 1,
-		medium: 1.875,
-		high: 2.5,
-		always: 4,
-	};
-
+	/**generate a simple multiplier only*/
 	static s(mult: number) : CostModifier {
 		return {mult, add:0};
 	}
 
+	/**generate a simple add only only*/
 	static i(add: number) : CostModifier {
 		return {mult: 1, add};
 	}
@@ -46,6 +40,15 @@ export abstract class CostCalculator {
 		"all-out": this.s(0),
 		"by-power": this.s(1),
 	};
+
+	static INSTANT_KILL_LEVELS_MULT : Record<InstantKillLevel, number> = {
+		none: 0,
+		low: 1,
+		medium: 1.875,
+		high: 2.5,
+		always: 4,
+	};
+
 
 }
 

@@ -3638,8 +3638,9 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 		ui.notifications.warn("Shadow can't edit power it doesn't own");
 		return;
 	}
-	const {energyReq, cost} = power.estimateShadowCosts(this);
-	return await power.setPowerCost(energyReq, cost);
+	// const {energyReq, cost} = power.estimateShadowCosts(this);
+	const {cost, required} = power.estimateShadowCosts(this);
+	return await power.setPowerCost(cost, required);
 }
 
 getPoisonDamage(this: ValidAttackers): number {

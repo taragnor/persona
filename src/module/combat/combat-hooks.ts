@@ -147,7 +147,8 @@ export class CombatHooks {
 			});
 		});
 
-		Hooks.on("renderChatMessage", (_msg, elem) => {
+		Hooks.on("renderChatMessageHTML", (_msg, html) => {
+			const elem = $(html);
 			if (elem.find(".opener-block").length > 0) {
 				PersonaCombat.addOpeningActionListeners(elem);
 			}

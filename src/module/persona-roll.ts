@@ -308,9 +308,9 @@ type ResolvedMods = {
 	resolvedSituation: Situation & RollSituation,
 };
 
-Hooks.on("renderChatMessage", async (_msg, html) => {
+Hooks.on("renderChatMessageHTML", (_msg, html) => {
 	if (!game.user.isGM) {
-		html.find(".gm-only").hide();
+		$(html).find(".gm-only").hide();
 	}
 });
 

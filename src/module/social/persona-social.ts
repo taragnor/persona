@@ -1774,12 +1774,11 @@ Hooks.on("updateItem", (_item: PersonaItem, changes) => {
 	}
 });
 
-Hooks.on("renderChatMessage", (message: ChatMessage, html: JQuery ) => {
+Hooks.on("renderChatMessageHTML", (message: ChatMessage, htm: HTMLElement ) => {
+	const html = $(htm);
 	if ((message?.author ?? message?.user) == game.user) {
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-		html.find(".social-card-roll .make-roll").on("click", PersonaSocial.makeCardRoll.bind(PersonaSocial));
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-		html.find(".social-card-roll .next").on("click", PersonaSocial.makeCardRoll.bind(PersonaSocial));
+		html.find(".social-card-roll .make-roll").on("click", ev => void PersonaSocial.makeCardRoll(ev));
+		html.find(".social-card-roll .next").on("click", ev => void PersonaSocial.makeCardRoll(ev));
 	}
 });
 

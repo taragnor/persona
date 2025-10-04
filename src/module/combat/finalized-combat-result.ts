@@ -716,7 +716,8 @@ interface ResolvedAttackResult<T extends ValidAttackers = ValidAttackers> {
 
 }
 
-Hooks.on("renderChatMessage", (msg: ChatMessage, html: JQuery<HTMLElement>) => {
+Hooks.on("renderChatMessageHTML", (msg: ChatMessage, htm: HTMLElement) => {
+	const html = $(htm);
 	const flag = msg.getFlag("persona", "atkResult") as string;
 	if (!flag) {
 		html.find(".applyChanges").each( function () { this.remove();});

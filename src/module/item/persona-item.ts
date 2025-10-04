@@ -54,6 +54,7 @@ import { ITEMMODELS } from '../datamodel/item-types.js';
 import { PersonaDB } from '../persona-db.js';
 import {DEFENSE_TYPES} from '../../config/defense-types.js';
 import {resolveConsequenceAmount} from '../persona-variables.js';
+import {EnergyClassCalculator} from '../calculators/shadow-energy-cost-calculator.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -1108,56 +1109,71 @@ static getGrantedTalents(sourcedEffect: SourcedConditionalEffect, user: ValidAtt
 	  return 'free';
   }
 
-  estimateShadowCosts(this: Power, user: ValidAttackers) : {energyReq: number, cost: number} {
-    const diff = this.comparativePowerRatingToUsePower(user);
-    let energyReq= 0, cost= 1;
-    const reducedCostType = this.hasTag('buff') || this.hasTag('debuff') || this.hasTag('status-removal');
-    let reqMin = reducedCostType ? 0 : 1;
-    const energyMod = reducedCostType ? -3: 0;
-    switch (true) {
-      case (this.isDefensive() == true):
-      case (this.isPassive() == true):
-        energyReq = 0;
-        cost = 0;
-        reqMin = 0;
-        break;
-      case (diff == 0):
-        energyReq += 3;
-        cost += 1;
-        break;
-      case (diff > 0):
-        energyReq += Math.max(reqMin, 3-diff);
-        cost += 2 - Math.floor((1+diff)/2);
-        break;
-      case (diff < 0):
-        if (this.hasTag('debuff') || this.hasTag('buff')) {
-          energyReq += Math.min(3, 3 - diff);
-        } else {
-          energyReq += Math.min(10, 3-diff);
-        }
-        cost += 2 - diff;
-        break;
-    }
-    energyReq += energyMod;
-    cost = Math.clamp(cost, 0, 10);
-    energyReq = Math.clamp(energyReq, reqMin, 10);
-    return {energyReq, cost};
+estimateShadowCosts(this: Power, user: ValidAttackers) : Power["system"]["energy"] {
+	if (!user.isShadow()) {return {
+		cost: 0,
+		required: 0,
+		newForm: true,
+	};
+	}
+	const cost= EnergyClassCalculator.calcEnergyCost(this, user);
+	return {
+		cost: cost.energyCost,
+		required: cost.energyRequired,
+		newForm: true,
+	};
+}
 
-  }
+  // estimateShadowCosts(this: Power, user: ValidAttackers) : {energyReq: number, cost: number} {
+  //   const diff = this.comparativePowerRatingToUsePower(user);
+  //   let energyReq= 0, cost= 1;
+  //   const reducedCostType = this.hasTag('buff') || this.hasTag('debuff') || this.hasTag('status-removal');
+  //   let reqMin = reducedCostType ? 0 : 1;
+  //   const energyMod = reducedCostType ? -3: 0;
+  //   switch (true) {
+  //     case (this.isDefensive() == true):
+  //     case (this.isPassive() == true):
+  //       energyReq = 0;
+  //       cost = 0;
+  //       reqMin = 0;
+  //       break;
+  //     case (diff == 0):
+  //       energyReq += 3;
+  //       cost += 1;
+  //       break;
+  //     case (diff > 0):
+  //       energyReq += Math.max(reqMin, 3-diff);
+  //       cost += 2 - Math.floor((1+diff)/2);
+  //       break;
+  //     case (diff < 0):
+  //       if (this.hasTag('debuff') || this.hasTag('buff')) {
+  //         energyReq += Math.min(3, 3 - diff);
+  //       } else {
+  //         energyReq += Math.min(10, 3-diff);
+  //       }
+  //       cost += 2 - diff;
+  //       break;
+  //   }
+  //   energyReq += energyMod;
+  //   cost = Math.clamp(cost, 0, 10);
+  //   energyReq = Math.clamp(energyReq, reqMin, 10);
+  //   return {energyReq, cost};
 
-  comparativePowerRatingToUsePower(this: Power, user: ValidAttackers) : number {
-    const userLevel = Math.floor(user.level / 10) + 1;
-    let powerSlot = this.system.slot;
-    let extraMod = 0;
-    if (this.hasTag('price-lower-for-shadow')) {
-      powerSlot -= 1;
-    }
-    if (this.hasTag('high-cost')) {
-      extraMod += 2;
-    }
-    const effectiveLevel = extraMod + (powerSlot*3);
-    return Math.round(userLevel - effectiveLevel);
-  }
+  // }
+
+  // comparativePowerRatingToUsePower(this: Power, user: ValidAttackers) : number {
+  //   const userLevel = Math.floor(user.level / 10) + 1;
+  //   let powerSlot = this.system.slot;
+  //   let extraMod = 0;
+  //   if (this.hasTag('price-lower-for-shadow')) {
+  //     powerSlot -= 1;
+  //   }
+  //   if (this.hasTag('high-cost')) {
+  //     extraMod += 2;
+  //   }
+  //   const effectiveLevel = extraMod + (powerSlot*3);
+  //   return Math.round(userLevel - effectiveLevel);
+  // }
 
   powerCostString_Shadow(this: Power, persona: Persona) : string {
     const costs : string[] = [];
@@ -1192,12 +1208,13 @@ static getGrantedTalents(sourcedEffect: SourcedConditionalEffect, user: ValidAtt
 		if (this.customCost) {
 			return this.system.energy;
 		}
-		const estimate = this.estimateShadowCosts(persona.user);
-		return {
-			cost: estimate.cost,
-			required: estimate.energyReq,
-			newForm: false,
-		};
+		return this.estimateShadowCosts(persona.user);
+		// const estimate = this.estimateShadowCosts(persona.user);
+		// return {
+		// 	cost: estimate.cost,
+		// 	required: estimate.energyReq,
+		// 	newForm: false,
+		// };
 	}
 
   energyCost(this: UsableAndCard, persona:Persona) : number {
@@ -1435,7 +1452,7 @@ static getConferredTags (eff: SourcedConditionalEffect, actor: ValidAttackers) :
     calc.add('base', str, `${userPersona.publicName} Strength`);
     const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
 	  if (this.isFlurryPower()) {
-		  calc.add("multiplier", 0.666, "Flurry Attack Power");
+		  calc.add("multiplier", 0.90, "Flurry Attack Power");
 
 	  }
 	  calc.add('base', weaponDmg.baseAmt, weaponName.toString());
