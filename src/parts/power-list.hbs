@@ -7,6 +7,9 @@
 				<th>Targets</th>
 				<th> Tags</th>
 				<th> Cost</th>
+				{{#if (isGM)}}
+				<th>En</th>
+				{{/if}}
 				<th> Damage </th>
 				<th> Defense </th>
 				<th> Kill</th>
@@ -31,6 +34,7 @@
 					{{power.description}}
 				</td>
 				{{else}}
+				<td> {{baseShadowCostString power}} </td>
 				<td> {{localizeDamageLevel power}}</td>
 				<td> {{localizeDefenseTarget power}}</td>
 				<td> {{localizeKillLevel power}}</td>

@@ -11,6 +11,7 @@ type SafeString = HandleBarsExtras.SafeString;
 namespace HandleBarsExtras {
 
 	class SafeString {
+		__brand : "SafeString";
 		constructor(txt: string);
 		toString() : string;
 	}

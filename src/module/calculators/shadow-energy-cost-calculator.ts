@@ -118,10 +118,10 @@ export class EnergyClassCalculator extends CostCalculator {
 
 	static INSTANT_KILL_LEVELS_ENERGY_COST : Record<InstantKillLevel, number> = {
 		none: 0,
-		medium: 60,
-		always: 120,
-		low: 30,
-		high: 90,
+		medium: 90,
+		always: 150,
+		low: 45,
+		high: 125,
 	} as const;
 
 	static DAMAGE_LEVEL_MULTIPLIERS_ENERGY : Record<DamageLevel, number>  = {

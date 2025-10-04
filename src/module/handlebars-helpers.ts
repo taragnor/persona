@@ -12,7 +12,7 @@ import { PersonaError } from "./persona-error.js";
 import { FREQUENCY } from "../config/frequency.js";
 import { CardEvent } from "../config/social-card-config.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
-import { Carryable, CClass, ContainerTypes, SocialCard, Tag } from "./item/persona-item.js";
+import { Carryable, CClass, ContainerTypes, SocialCard } from "./item/persona-item.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaItem } from "./item/persona-item.js";
@@ -46,6 +46,7 @@ import {Defense, DEFENSE_TYPES} from "../config/defense-types.js";
 import {INSTANT_KILL_LEVELS} from "./combat/damage-calc.js";
 import {PersonaEffectContainerBaseSheet} from "./item/sheets/effect-container.js";
 import {HTMLTools} from "./utility/HTMLTools.js";
+import {EnergyClassCalculator} from "./calculators/shadow-energy-cost-calculator.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -455,20 +456,23 @@ export class PersonaHandleBarsHelpers {
 
 		"getItemTagList": function (item: Usable | InvItem | Weapon) : SafeString {
 			const list = item.tagList(null);
-			return list.map( i => {
-				if (i instanceof PersonaItem) {
-					return `<div class="tag" title="${i.description.toString()}">
-${i.displayedName.toString()}
-</div>`;
-				}
-				return localize(i);
-			})
-			.map( x=> new Handlebars.SafeString(x));
+			return new Handlebars.SafeString(
+				list.map( i => {
+					if (i instanceof PersonaItem) {
+						return `<span class="tag" title="${i.system.description ?? ''}">
+							${i.displayedName.toString()}
+</span>`;
+					}
+					return localize(i);
+				})
+				.join(", ")
+			);
+			// .map( x=> new Handlebars.SafeString(x));
 		},
 
 		"tagTooltip" : function (item: string): SafeString {
 			const tag = PersonaDB.allTags().get(item) ?? PersonaDB.allTagLinks().get(item) ?? "";
-			if (typeof tag == "string") {return "";}
+			if (typeof tag == "string") {return new HandleBarsExtras.SafeString("");}
 			return tag.description;
 		},
 
@@ -569,7 +573,7 @@ ${i.displayedName.toString()}
 		"powerCostString": function (power: Power, persona: Persona)  : SafeString {
 			try {
 			return new Handlebars.SafeString(power.costString1(persona));
-			} catch {return "ERROR";}
+			} catch {return new HandleBarsExtras.SafeString("ERROR");}
 		},
 
 		"isExotic" : function (power: Power) : boolean {
@@ -694,13 +698,13 @@ ${i.displayedName.toString()}
 		"displayDamageIcon": function (damageType: DamageType): SafeString {
 			const filepath = DAMAGE_ICONS[damageType];
 			const locName = localize(DAMAGETYPES[damageType]);
-			if (!locName) {return "";}
+			if (!locName) {return new HandleBarsExtras.SafeString("");}
 			return new Handlebars.SafeString(`<img class="damage-icon" src='${filepath}' title='${locName}'>`);
 		},
 
 		"displayIcon": function (item :Power | Carryable, user: Persona | ValidAttackers) : SafeString {
 			const filepath =  item.getIconPath(user);
-			if (!filepath) {return "";}
+			if (!filepath) {return new HandleBarsExtras.SafeString("");}
 			return new Handlebars.SafeString(`<img class="item-icon" src='${filepath}' title='${item.displayedName.toString()}'>`);
 
 		},
@@ -846,7 +850,14 @@ ${i.displayedName.toString()}
 		},
 		"hasDescriptionText": function(power:Power) : boolean{
 			return (power.system.description ?? "").length > 0;
-		}
+		},
+
+		"baseShadowCostString": function (power: Power) : string {
+			if (!power.isPower()) {return "";}
+			const cost = EnergyClassCalculator.calcBaseEnergyCost(power);
+			return `${Math.round(cost.energyCost)}R${Math.round(cost.energyRequired)}`;
+
+		},
 
 	};
 

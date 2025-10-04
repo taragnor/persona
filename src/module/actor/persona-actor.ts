@@ -3955,7 +3955,7 @@ async deleteQuestion(this: NPC | PC, index: number) {
 }
 
 get roleString() : SafeString {
-	if (!this.isShadow()) {return "";}
+	if (!this.isShadow()) {return new HandleBarsExtras.SafeString("");}
 	const roles: (typeof this.system.role)[] = [];
 	roles.push(this.system.role);
 	roles.push(this.system.role2);
@@ -3963,7 +3963,7 @@ get roleString() : SafeString {
 		.filter( x=> x != undefined && x != "base")
 		.map( x=> localize(SHADOW_ROLE[x]))
 		.join(", ");
-	return localized;
+	return new HandleBarsExtras.SafeString(localized);
 }
 
 async setWeaponDamageByLevel(this: Shadow, lvl: number) {
@@ -3976,7 +3976,7 @@ async setWeaponDamageByLevel(this: Shadow, lvl: number) {
 }
 
 get treasureString() : SafeString {
-	if (this.system.type != "shadow") {return "";}
+	if (this.system.type != "shadow") {return new HandleBarsExtras.SafeString("");}
 	const treasure = this.system.encounter.treasure;
 	const items = [treasure.item0, treasure.item1, treasure.item2]
 		.filter( id=> id)
