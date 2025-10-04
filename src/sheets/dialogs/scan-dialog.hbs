@@ -27,6 +27,14 @@
 				<label> HP </label>
 				<span> {{actor.hp}} / {{actor.mhp}} </span>
 			</div>
+			{{#if (isShadow persona.user)}}
+			<div>
+				<label> Energy </label>
+				<span>
+				{{persona.user.energy}} / {{persona.user.maxEnergy}}
+				</span>
+			</div>
+			{{/if}}
 			{{/if}}
 
 		</div>

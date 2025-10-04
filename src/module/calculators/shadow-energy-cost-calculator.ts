@@ -64,8 +64,8 @@ export class EnergyClassCalculator extends CostCalculator {
 
 	static #multiattack(power: Power) : EnergyCostBase {
 		if (power.system.attacksMax <= 1) {return this.NULL_COST;}
-		const cost = (power.system.attacksMax -1) * 10
-			+ (power.system.attacksMin - 1) * 5;
+		const cost = (power.system.attacksMax -1) * 20
+			+ (power.system.attacksMin - 1) * 20;
 		return new EnergyCostBase(cost, cost);
 	}
 

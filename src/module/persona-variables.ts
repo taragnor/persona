@@ -115,9 +115,7 @@ export class PersonaVariables {
 				break;
 			}
 			case "actor": {
-				const vars : Record<string, number> = data.actor.getFlag("persona", "variables") ?? {};
-				vars[data.variableId] = value;
-				await data.actor.setFlag("persona", "variables", vars);
+				await data.actor.setVariable(data.variableId, value);
 				break;
 			}
 			case "social-temp": {
@@ -141,8 +139,7 @@ export class PersonaVariables {
 				return vars[data.variableId];
 			}
 			case "actor": {
-				const vars : Record<string, number> = data.actor.getFlag("persona", "variables") ?? {};
-				return vars[data.variableId];
+				return data.actor.getVariable(data.variableId);
 			}
 			case "social-temp":
 				return PersonaSocial.getSocialVariable(data.variableId);

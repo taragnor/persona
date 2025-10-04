@@ -19,7 +19,7 @@ import { PersonaError } from "./persona-error.js";
 import { localize } from "./persona.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../config/status-effects.js";
 import { RESIST_STRENGTH_LIST } from "../config/damage-types.js";
-import { getActiveConsequences } from "./preconditions.js";
+import { getActiveConsequences, multiCheckContains } from "./preconditions.js";
 import { PersonaI } from "../config/persona-interface.js";
 import { DamageType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";
@@ -594,7 +594,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		];
 		const effectChangers=  modifiers.filter( x=>
 			x.consequences
-				.some( cons=>cons.type == "raise-resistance" || cons.type == "lower-resistance"));
+			.some( cons=>cons.type == "raise-resistance" || cons.type == "lower-resistance"));
 		const situation : Situation = {
 			user: this.user.accessor,
 			target: this.user.accessor,
@@ -608,18 +608,23 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		let resPenalty = 0;
 		for (const cons of consequences) {
 			switch (cons.type) {
-				case "raise-resistance":
-					if (cons.resistType == type &&
+				case "raise-resistance": {
+					const isSameType = multiCheckContains(cons.resistType, [type]);
+					// if (cons.resistType == type &&
+					if (isSameType &&
 						resval(cons.resistanceLevel) > resval(baseResist)) {
 						resBonus = Math.max(resBonus, resval(cons.resistanceLevel) - resval(baseResist));
 					}
 					break;
-				case "lower-resistance":
-					if (cons.resistType == type &&
+				}
+				case "lower-resistance": {
+					const isSameType = multiCheckContains(cons.resistType, [type]);
+					if (isSameType &&
 						resval (cons.resistanceLevel) < resval(baseResist))  {
 						resPenalty = Math.min(resPenalty, resval(cons.resistanceLevel) - resval(baseResist));
 					}
 					break;
+				}
 				default:
 					break;
 			}

@@ -3704,8 +3704,29 @@ get maxEnergy() : number {
 		user: this.accessor,
 	};
 	const maxEnergy = BASE_MAX_ENERGY + this.basePersona.getBonuses("max-energy").total(situation);
-	// const maxEnergy = Math.min(BASE_MAX_ENERGY, bonuses);
 	return maxEnergy;
+}
+
+get energy() : number {
+	if (!this.isShadow()) {return 0;}
+	return this.system.combat.energy.value;
+}
+
+async setVariable ( varName: string, value: number) : Promise<void> {
+				const vars : Record<string, number> = this.getFlag("persona", "variables") ?? {};
+				vars[varName] = value;
+				await this.setFlag("persona", "variables", vars);
+}
+
+getVariable(varName: string) : number {
+	const vars : Record<string, number> = this.getFlag("persona", "variables") ?? {};
+	return vars[varName] ?? 0;
+
+}
+
+get variables(): Record<string, number>  {
+	const vars : Record<string, number> = this.getFlag("persona", "variables") ?? {};
+	return vars;
 }
 
 async setEnergy(this: Shadow, amt: number) {

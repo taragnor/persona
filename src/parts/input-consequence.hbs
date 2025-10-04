@@ -107,9 +107,7 @@
 	{{/if}}
 	{{#if (eqAny cons.type "raise-resistance" "lower-resistance")}}
 	<div>
-		<select name="{{strcat namePrefix 'resistType'}}">
-			{{selectOptions POWERSTUFF.DAMAGETYPES localize=true selected=cons.resistType}}
-		</select>
+		{{multicheck (strcat namePrefix 'resistType') POWERSTUFF.DAMAGETYPES localize=true checked=cons.resistType}}
 		<select name="{{strcat namePrefix 'resistanceLevel'}}">
 			{{selectOptions POWERSTUFF.RESIST_STRENGTHS localize=true selected=cons.resistanceLevel}}
 		</select>

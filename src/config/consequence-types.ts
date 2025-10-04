@@ -1,7 +1,7 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { ValidAttackers } from "../module/combat/persona-combat.js";
 import { TargettingContextList } from "../module/combat/persona-combat.js";
-import { ModifierContainer, PersonaItem, PowerContainer } from "../module/item/persona-item.js";
+import { ModifierContainer, PersonaItem } from "../module/item/persona-item.js";
 import { PermaBuffType } from "./perma-buff-type.js";
 import { SocialCardAction } from "./effect-types.js";
 import { CardTag } from "./card-tags.js";
@@ -13,7 +13,7 @@ import { ConsequenceType } from "./effect-types.js";
 import { CreatureTag } from "./creature-tags.js";
 import { SaveType } from "./save-types.js";
 import { StatusDurationType } from "./status-effects.js";
-import { SocialLinkIdOrTarot } from "./precondition-types.js";
+import { MultiCheckOrSingle, SocialLinkIdOrTarot } from "./precondition-types.js";
 import { AlterMPSubtype } from "./effect-types.js";
 import { ConsequenceTarget } from "./precondition-types.js";
 import { DamageSubtype } from "./effect-types.js";
@@ -57,7 +57,7 @@ export type SetFlagEffect = {
 
 export type ResistanceShiftEffect = {
 	type: "raise-resistance" | "lower-resistance",
-	element: keyof PC["system"]["combat"]["resists"],
+	element: MultiCheckOrSingle<keyof PC["system"]["combat"]["resists"]>,
 	level: PC["system"]["combat"]["resists"]["physical"],
 	duration: StatusDuration,
 }
@@ -335,7 +335,7 @@ type OtherEffectConsequence = {
 
 type ElementalResistanceAlterConsequence = {
 	type: "raise-resistance" | "lower-resistance";
-	resistType : ResistType,
+	resistType : MultiCheckOrSingle<ResistType>,
 	resistanceLevel : ResistStrength,
 }
 
