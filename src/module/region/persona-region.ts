@@ -255,8 +255,8 @@ export class PersonaRegion extends RegionDocument {
 
 	encounterList(): Shadow[] {
 		const baseList = this.parent.encounterList();
-		const regionRange = this.EnemyDifficultyRange;
-		return baseList.filter( shadow => shadow.CR >= regionRange.low && shadow.CR <= regionRange.high);
+		// const regionRange = this.EnemyDifficultyRange;
+		return baseList;
 	}
 
 	get EnemyDifficultyRange(): {low:number, high:number} {

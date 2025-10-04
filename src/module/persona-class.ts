@@ -1012,7 +1012,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			const DR =  DamageCalculator.getArmorDRByArmorLevel(Math.floor(this.level /10));
 			return DR;
 		}
-		const armor = this.user.equippedItems().find(x => x.isInvItem() && x.system.slot =="body") as U<InvItem>;
+		const armor = this.user.equippedItems().find(x => x.isInvItem() && x.system.slot == "body") as U<InvItem>;
 		return armor  != undefined ? armor.armorDR() : 0;
 	}
 

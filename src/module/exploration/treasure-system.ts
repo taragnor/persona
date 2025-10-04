@@ -46,7 +46,7 @@ export class TreasureSystem {
 		const weights = list
 		.map( item=> {
 			const rarity = item.system.treasure[table].rarity;
-			const possessionMult =this.possessionWeightMod(item);
+			const possessionMult = this.possessionWeightMod(item);
 			const baseWeight = ENCOUNTER_RATE_PROBABILITY[rarity];
 			const weight = baseWeight * possessionMult;
 			return { item, weight };

@@ -75,6 +75,7 @@ const templateFileNames : string[] =[
 	"persona-list.hbs",
 	"persona-viewer.hbs",
 	"treasure-section.hbs",
+	"basic-powers-section.hbs",
 ];
 
 export const templatePaths = templateFileNames.

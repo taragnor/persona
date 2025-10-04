@@ -1600,10 +1600,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (rollType == 'reflect' && (def == "fort" || def =="ref" || def =="will")) {
 			attackbonus.add('Reflected Attack', 15);
 		}
-		// const powerTagModifiers = power.powerTagModifiers(attacker.actor);
-		// const tagMods = new ModifierList(powerTagModifiers);
-		// attackbonus = attackbonus.concat(powerTagModifiers);
-		const cssClass=  (!target.actor.isPC()) ? 'gm-only' : '';
+		const cssClass= (!target.actor.isPC()) ? 'gm-only' : '';
 		const roll = new RollBundle('Temp', r, attacker.actor.system.type == 'pc', attackbonus, baseSituation);
 		const naturalAttackRoll = roll.dice[0].total;
 		// situation.naturalRoll = naturalAttackRoll;
@@ -2312,14 +2309,6 @@ static processConsequence_simple( cons: SourcedConsequence, targets: ValidAttack
 	}
 	return [];
 }
-
-// static async execTrigger(trigger: CombatTriggerTypes, actor: ValidAttackers, situation?: Situation) : Promise<void> {
-// 	return await TriggeredEffect.execCombatTrigger(trigger, actor, situation);
-// }
-
-// static onTrigger(trigger: CombatTriggerTypes | NonCombatTriggerTypes, actor ?: ValidAttackers, situation ?: Situation) : CombatResult {
-// 	return TriggeredEffect.onTrigger(trigger, actor, situation);
-// }
 
 static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifiers: OtherEffect[]) : Promise<CombatResult> {
 	const situation : Situation = {

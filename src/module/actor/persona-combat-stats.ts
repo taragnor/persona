@@ -126,9 +126,10 @@ export class PersonaCombatStats {
 		};
 		const armor = this.persona.armorDR();
 		const armorBonus = this.persona.getDefensiveBonuses("armor-dr").total(situation);
-		const armorMult = this.persona.getDefensiveBonuses("armor-dr-mult").total(situation);
+		const armorMult = this.persona.getDefensiveBonuses("armor-dr-mult").total(situation, "percentage");
 		const armorString = "Armor DR";
-		calc.add("base", -Math.abs(armor * armorMult), armorString);
+		const modifiedArmor = -Math.abs(Math.round(armor * armorMult));
+		calc.add("base", modifiedArmor, armorString);
 		calc.add("base", -armorBonus, "Armor Modifiers");
 		return calc;
 	}

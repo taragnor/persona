@@ -2927,26 +2927,6 @@ get personalXPTowardsNextLevel() : number {
 	return this.system.personalXP - LevelUpCalculator.minXPForEffectiveLevel(lvl);
 }
 
-// get XPForNextLevel() : number {
-// 	const incAdvances = this.numOfIncAdvances();
-// 	const typeMult = this.isPC() ? 1.0 : 0.75;
-// 	const base = Persona.leveling.BASE_XP;
-// 	const growth = 0;
-// 	return Math.floor( base + growth * incAdvances * typeMult);
-// }
-
-/** Calculates challenge rating by adding level + incremental advances
- */
-get CR() : number {
-	if (!this.isValidCombatant()) {return 0;}
-	const effectiveLevel = this.persona().effectiveLevel;
-	const valPerExtraDefenseBoost = 0.2;
-	const defenseBoosts = (this.totalDefenseBoosts() -2) * valPerExtraDefenseBoost;
-	const rawCR= effectiveLevel + defenseBoosts;
-	const roundedCR = Math.round(rawCR *10) / 10;
-	return roundedCR;
-}
-
 totalDefenseBoosts(this: ValidAttackers) : number {
 	if (!this.isValidCombatant())  {return 0;}
 	const defenses = this.system.combat.defenses;
