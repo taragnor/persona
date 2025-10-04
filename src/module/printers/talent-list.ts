@@ -33,7 +33,10 @@ export class TalentPrinter extends Application {
 	override async getData(options: Record<string, unknown>) {
 		await PersonaDB.waitUntilLoaded();
 		const data = await super.getData(options);
-		data["talentList"]= PersonaDB.allTalents();
+		data["talentList"]= PersonaDB.allTalents()
+			.filter (talent => !talent.system.hideOnList
+				&& !talent.system.shadowOnly
+			);
 		return data;
 	}
 

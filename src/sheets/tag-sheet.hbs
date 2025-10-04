@@ -7,48 +7,55 @@
 			<b> Tag </b>
 		</div>
 		<textarea name="system.description">{{item.system.description}}</textarea>
-		<div class="tag-type">
-			<label> Tag Type</label>
-			<select name="system.tagType">
-				{{selectOptions TAG_TYPES localize=true selected=item.system.tagType}}
-			</select>
+		<div class="f-row">
+			<div class="tag-type">
+				<label> Tag Type</label>
+				<select name="system.tagType">
+					{{selectOptions TAG_TYPES localize=true selected=item.system.tagType}}
+				</select>
+			</div>
+
+			<div class="tag-link">
+				<label>
+					Linked to Internal Tag
+				</label>
+				{{#if (eqAny item.system.tagType "equipment")}}
+				<div>
+					<select name="system.linkedInternalTag">
+						{{selectOptions EQUIPMENT_TAGS localize=true selected=item.system.linkedInternalTag}}
+					</select>
+				</div>
+				{{/if}}
+				{{#if (eqAny item.system.tagType "power")}}
+				<select name="system.linkedInternalTag">
+					{{selectOptions POWER_TAGS localize=true selected=item.system.linkedInternalTag}}
+				</select>
+				{{/if}}
+				{{#if (eqAny item.system.tagType "roll" "card")}}
+				<select name="system.linkedInternalTag">
+					{{selectOptions ROLL_TAGS_AND_CARD_TAGS localize=true selected=item.system.linkedInternalTag}}
+				</select>
+				{{/if}}
+				{{#if (eqAny item.system.tagType "persona" "actor")}}
+				<select name="system.linkedInternalTag">
+					{{selectOptions CREATURE_TAGS localize=true selected=item.system.linkedInternalTag}}
+				</select>
+				{{/if}}
+				{{#if (eqAny item.system.tagType "role")}}
+				<select name="system.linkedInternalTag">
+					{{selectOptions SHADOW_ROLE localize=true selected=item.system.linkedInternalTag}}
+				</select>
+				{{/if}}
+				{{#if (eqAny item.system.tagType "status")}}
+				<select name="system.linkedInternalTag">
+					{{selectOptions STATUS_EFFECTS localize=true selected=item.system.linkedInternalTag}}
+				</select>
+				{{/if}}
+			</div>
 		</div>
-		<div class="tag-link">
-		<label>
-			Linked to Internal Tag
-		</label>
-		{{#if (eqAny item.system.tagType "equipment")}}
 		<div>
-			<select name="system.linkedInternalTag">
-				{{selectOptions EQUIPMENT_TAGS localize=true selected=item.system.linkedInternalTag}}
-			</select>
-		</div>
-		{{/if}}
-		{{#if (eqAny item.system.tagType "power")}}
-		<select name="system.linkedInternalTag">
-			{{selectOptions POWER_TAGS localize=true selected=item.system.linkedInternalTag}}
-		</select>
-		{{/if}}
-		{{#if (eqAny item.system.tagType "roll" "card")}}
-		<select name="system.linkedInternalTag">
-			{{selectOptions ROLL_TAGS_AND_CARD_TAGS localize=true selected=item.system.linkedInternalTag}}
-		</select>
-		{{/if}}
-		{{#if (eqAny item.system.tagType "persona" "actor")}}
-		<select name="system.linkedInternalTag">
-			{{selectOptions CREATURE_TAGS localize=true selected=item.system.linkedInternalTag}}
-		</select>
-		{{/if}}
-		{{#if (eqAny item.system.tagType "role")}}
-		<select name="system.linkedInternalTag">
-			{{selectOptions SHADOW_ROLE localize=true selected=item.system.linkedInternalTag}}
-		</select>
-		{{/if}}
-		{{#if (eqAny item.system.tagType "status")}}
-		<select name="system.linkedInternalTag">
-			{{selectOptions STATUS_EFFECTS localize=true selected=item.system.linkedInternalTag}}
-		</select>
-		{{/if}}
+			<label> Hidden </label>
+			<input type="checkbox" id="hidden-tag" name="system.hidden" {{checked item.system.hidden}}>
 		</div>
 	</header>
 	<body>

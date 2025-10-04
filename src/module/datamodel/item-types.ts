@@ -129,6 +129,7 @@ class TagSchema extends foundry.abstract.TypeDataModel {
 	get type() { return "tag" as const;}
 	static override defineSchema() {
 		const ret = {
+			hidden: new bool(),
 			description: new txt(),
 			defensive: new bool(),
 			tagType: new txt({choices: TAG_TYPES}),
@@ -535,14 +536,6 @@ export const ITEMMODELS = {
 } as const;
 
 //namespace Test{
-//	type CardSChema = Foundry.SystemDataObjectFromDM<typeof SocialCardSchema>;
-//	type CCEDM = Foundry.SystemDataObjectFromDM<typeof SocialCardEventDM>;
-//	type CCDM = Foundry.SystemDataObjectFromDM<typeof CardChoiceDM>;
-
-//	//testing the types, purely for debug purposes
-//	type CEDM = Foundry.SystemDataObjectFromDM<typeof ConditionalEffectDM>;
-//	type CClass = Foundry.SystemDataObjectFromDM<typeof CharacterClassDM>;
 //	type PowerSO= Foundry.SystemDataObjectFromDM<typeof PowerSchema>;
-//	type SC = Foundry.SystemDataObjectFromDM<typeof SkillCardSchema>;
 
 //}

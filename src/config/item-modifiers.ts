@@ -84,6 +84,7 @@ export const SHADOW_STATS_TYPES = [
 	"energy-per-turn",
 	"actions-per-turn",
 	"max-energy",
+	"power-energy-cost",
 ] as const;
 
 export const STUDENT_SKILLS_TYPES = [

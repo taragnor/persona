@@ -1278,7 +1278,21 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	get displayedName() : SafeString {
+	get displayedName() : string {
+		switch (this.system.type) {
+			case 'skillCard': {
+				const skillId = this.system.skillId;
+				const power = PersonaDB.allItems().find(x=> x.id == skillId);
+				if (power && power.system.type == 'power') {
+					return `${power.displayedName} Card`;
+				}
+				else {return 'Unlinked Skill Card';}
+			}
+		}
+		return this.name;
+	}
+
+	get displayedNameHTML() : SafeString {
 		switch (this.system.type) {
 			case 'skillCard': {
 				const skillId = this.system.skillId;
@@ -1286,7 +1300,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				const cardPath = 'systems/persona/img/icon/persona-card.png';
 				const cardImg = `<span class="skill-card"> <img class="name-icon" src="${cardPath}">`;
 				if (power && power.system.type == 'power') {
-					return new Handlebars.SafeString(`${cardImg} ${power.displayedName.toString()} Card </span>`);
+					return new Handlebars.SafeString(`${cardImg} ${power.displayedNameHTML.toString()} Card </span>`);
 				}
 				else {return new HandleBarsExtras.SafeString('Unlinked Skill Card');}
 			}
@@ -1669,8 +1683,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	critBoost(this: Usable, user: ValidAttackers) : ModifierList {
-		// const x = this.getModifier('criticalBoost', user);
-		// let list = new ModifierList(x);
 		let list = new ModifierList();
 		list = list.concat(user.persona().critBoost());
 		let powerCrit = (this.system.crit_boost ?? 0);
@@ -2801,7 +2813,7 @@ export interface ModifierContainer <T extends Actor | TokenDocument | Item | Act
 	parent: T["parent"];
 	name: string;
 	id: string;
-	displayedName: SafeString | string;
+	displayedName: string;
 	accessor : UniversalAccessor<T>,
 	getModifier(bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null): ModifierListItem[];
 

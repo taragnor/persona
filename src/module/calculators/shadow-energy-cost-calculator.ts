@@ -1,5 +1,6 @@
 import {DamageLevel} from "../../config/damage-types.js";
 import {PowerTag} from "../../config/power-tags.js";
+import {STATUS_EFFECT_LIST, StatusEffectId} from "../../config/status-effects.js";
 import {Shadow} from "../actor/persona-actor.js";
 import {InstantKillLevel} from "../combat/damage-calc.js";
 import {PersonaItem, Power, Tag} from "../item/persona-item.js";
@@ -9,6 +10,7 @@ import {EnergyCostBase} from "./energy-cost-base.js";
 export class EnergyClassCalculator extends CostCalculator {
 	static calcEnergyCost(pwr: Power, shadow: Shadow) : {energyRequired: number, energyCost: number} {
 		const emptyCost = { energyRequired:0, energyCost:0 };
+		if (pwr.isPassive()) {return emptyCost;}
 		if (pwr.isBasicPower()) {return emptyCost;}
 		const baseCost = this.calcBaseEnergyCost(pwr);
 		return this.personalizedCostForShadow(baseCost, shadow);
@@ -18,8 +20,12 @@ export class EnergyClassCalculator extends CostCalculator {
 		const shadow_lvl = shadow.level;
 		let {energyRequired, energyCost} = basePowerLevel;
 
-		const effectiveCost  = this.BASE_COST + energyCost - shadow_lvl;
-		const effectiveER  = this.BASE_COST + energyRequired - shadow_lvl;
+		const situation = {
+			user: shadow.accessor,
+		};
+		const modifiers = shadow.persona().getBonuses("power-energy-cost").total(situation);
+		const effectiveCost  = this.BASE_COST + energyCost - shadow_lvl + modifiers;
+		const effectiveER  = this.BASE_COST + energyRequired - shadow_lvl + modifiers;
 		energyRequired  = Math.floor(Math.max(0 , effectiveER) / 10);
 		energyCost  = Math.floor(Math.max(0, effectiveCost) / 10);
 		if (energyCost <= 0) {
@@ -36,6 +42,7 @@ export class EnergyClassCalculator extends CostCalculator {
 			this.#energyLevel_ailment(pwr),
 			this.#energyLevel_instantKill(pwr),
 			this.#energyLevel_buffOrDebuff(pwr),
+			this.#energyLevel_statusAdd(pwr),
 			this.#energyLevel_statusRemoval(pwr),
 			this.#targetsMod(pwr),
 			this.#tags(pwr),
@@ -76,17 +83,19 @@ export class EnergyClassCalculator extends CostCalculator {
 	}
 
 	static #energyLevel_damage(pwr: Power) : EnergyCostBase {
-		const base = this.DAMAGE_LEVEL_MULTIPLIERS_ENERGY[pwr.system.damageLevel] ?? 0;
-		return new EnergyCostBase(base, base);
+		const base = this.DAMAGE_LEVEL_BASE_ENERGY[pwr.system.damageLevel] ?? 0;
+		const mult = this.DAMAGE_TYPE_MODIFIER[pwr.system.dmg_type].mult ?? 1;
+		const cost = base * mult;
+		return new EnergyCostBase(cost, cost);
 	}
 
 	static #energyLevel_ailment(pwr: Power) : EnergyCostBase {
-		if (!pwr.hasTag("ailment")) {return this.NULL_COST;}
+		if (!pwr.hasTag("ailment") || pwr.isInstantDeathAttack()) {return this.NULL_COST;}
 		switch (pwr.system.ailmentChance) {
 			case "none": return this.NULL_COST;
-			case "medium": return new EnergyCostBase(25,25);
-			case "low": return new EnergyCostBase(12 ,12);
-			case "high": return new EnergyCostBase(30 ,30);
+			case "medium": return new EnergyCostBase(15,15);
+			case "low": return new EnergyCostBase(5 ,5);
+			case "high": return new EnergyCostBase(25 ,25);
 			case "always": return new EnergyCostBase(40 ,40);
 		}
 	}
@@ -104,10 +113,29 @@ export class EnergyClassCalculator extends CostCalculator {
 		return new EnergyCostBase( 0, cost);
 	}
 
+	static #energyLevel_statusAdd(pwr: Power) : EnergyCostBase {
+		const statusesAdded = pwr.statusesAdded()
+			.filter( status => (STATUS_EFFECT_LIST
+				.find(x=> x.id == status)?.tags as U<string[]>)
+				?.includes("beneficial"))
+		.map (status => this.BENEFICIAL_STATUS_VALUES[status] ?? 0);
+		// const numStatuses = statusesAdded.length;
+		// const cost = numStatuses * 35;
+		const cost = statusesAdded
+			.reduce( (acc, st) => acc + st, 0);
+		return new EnergyCostBase(0, cost);
+	}
+
 	static #energyLevel_statusRemoval(pwr: Power) : EnergyCostBase {
-		const statusesRemoved = pwr.statusesRemoved();
+		const statusesRemoved = pwr.statusesRemoved()
+		.filter( status => (STATUS_EFFECT_LIST
+			.find(x=> x.id == status)?.tags as U<string[]>)
+			?.includes("baneful"));
 		const numStatuses = statusesRemoved.length;
-		const cost = numStatuses * 5;
+		let cost = 0;
+		for (let amt = 7 ; amt < numStatuses && amt > 0; amt --) {
+			cost += amt;
+		}
 		return new EnergyCostBase(0, cost);
 	}
 
@@ -124,12 +152,12 @@ export class EnergyClassCalculator extends CostCalculator {
 		high: 125,
 	} as const;
 
-	static DAMAGE_LEVEL_MULTIPLIERS_ENERGY : Record<DamageLevel, number>  = {
+	static DAMAGE_LEVEL_BASE_ENERGY : Record<DamageLevel, number>  = {
 		none: 0,
 		"-": 0,
 		fixed: 0,
-		miniscule: 0.25,
-		basic: 0.5,
+		miniscule: 5,
+		basic: 10,
 		light: 25,
 		medium: 50,
 		heavy: 75,
@@ -140,11 +168,19 @@ export class EnergyClassCalculator extends CostCalculator {
 	static NULL_COST :Readonly<EnergyCostBase>=  new EnergyCostBase(0, 0);
 
 	static TAG_ENERGY_COST_MODS : Partial<Record<Exclude<PowerTag, Tag>, number>> = {
-		"half-on-miss": 15,
+		"half-on-miss": 10,
 		"pierce": 30,
-		"high-crit": 10,
+		"high-crit": 20,
 		"accurate": 10,
 		"inaccurate": -10,
+	};
+
+	static BENEFICIAL_STATUS_VALUES : Partial<Record<StatusEffectId, number>> = {
+		"magic-shield": 60,
+		"phys-shield": 60,
+		"protected": 60,
+		"power-charge": 45,
+		"magic-charge": 45,
 	};
 }
 

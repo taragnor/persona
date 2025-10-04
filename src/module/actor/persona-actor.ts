@@ -343,6 +343,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
+	get displayedNameHTML() : SafeString {
+		return new HandleBarsExtras.SafeString(this.displayedName);
+	}
+
 	get publicName() : string {
 		return this.prototypeToken.name;
 	}

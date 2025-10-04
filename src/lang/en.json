@@ -308,6 +308,7 @@
 	"persona.modifier.starting-energy": "Shadow Starting Energy",
 	"persona.modifier.energy-per-turn": "Energy Gained at end of Turn",
 	"persona.modifier.max-energy": "Maximum Energy",
+	"persona.modifier.power-energy-cost": "Modifier to energy cost of powers (10 equals 1EN)",
 	"persona.modifier.xp-multiplier": "% change to XP gained",
 	"persona.modifier.encounter-size-multiplier": "Creature Size Multiplier (Encounter building)",
 	"persona.modifier.shadow-xp-value": "Multiplier to XP Value",

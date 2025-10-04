@@ -74,7 +74,6 @@ export const STATUS_EFFECT_LIST = [
 	}, {
 		id: "frozen",
 		icon:`${PERSONA_ICONS_PATH}/P3R_Freeze_Icon.png`,
-		// icon:  "icons/svg/frozen.svg",
 		tags: ["baneful", "distracting"],
 	}, {
 		id: "sleep",
@@ -131,11 +130,11 @@ export const STATUS_EFFECT_LIST = [
 	}, {
 		id: "magic-charge",
 		icon:  "icons/magic/lightning/bolt-strike-explosion-blue.webp",
-		tags: [],
+		tags: ["beneficial"],
 	}, {
 		id: "power-charge",
 		icon:  "icons/magic/control/buff-strength-muscle-damage-orange.webp",
-		tags: [],
+		tags: ["beneficial"],
 	}, {
 		id: "crippled",
 		icon:  "icons/skills/wounds/injury-eyes-blood-red.webp",
@@ -184,19 +183,19 @@ export const STATUS_EFFECT_LIST = [
 	}, {
 		id:"phys-shield",
 		icon: "icons/equipment/shield/heater-steel-grey.webp",
-		tags: [],
+		tags: ["beneficial"],
 	}, {
 		id:"magic-shield",
 		icon: "icons/equipment/shield/heater-steel-segmented-purple.webp",
-		tags: [],
+		tags: ["beneficial"],
 	}, {
 		id:"fight-in-spirit-attack",
 		icon: "icons/skills/melee/strike-polearm-light-orange.webp",
-		tags: [],
+		tags: ["beneficial"],
 	}, {
 		id:"fight-in-spirit-defense",
 		icon: "icons/skills/melee/shield-block-gray-yellow.webp",
-		tags: [],
+		tags: ["beneficial"],
 		changes: [
 			{
 				key: "system.autoFailThreshold",

@@ -478,7 +478,7 @@ export class PersonaHandleBarsHelpers {
 
 		"getCreatureTagList": function (actor: PersonaActor) : SafeString[] {
 			const ret =  actor.tagList.map(tag=> {
-				if (tag instanceof PersonaItem) {return tag.displayedName;}
+				if (tag instanceof PersonaItem) {return tag.displayedNameHTML;}
 				return new Handlebars.SafeString(localize(CREATURE_TAGS[tag]));
 			});
 			return ret;
