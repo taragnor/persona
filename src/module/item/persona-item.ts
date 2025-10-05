@@ -633,14 +633,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	get slotLocalized() : SafeString {
 		if (!this.isPower()) {
-			return new HandleBarsExtras.SafeString('');
+			return new Handlebars.SafeString('');
 		}
 		const slot = this.system.slot;
 		const slotName = SLOTTYPES[slot];
 		if (slotName) {
 			return new Handlebars.SafeString (game.i18n.localize(slotName));
 		}
-		return new HandleBarsExtras.SafeString('');
+		return new Handlebars.SafeString('');
 	}
 
 
@@ -1302,7 +1302,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				if (power && power.system.type == 'power') {
 					return new Handlebars.SafeString(`${cardImg} ${power.displayedNameHTML.toString()} Card </span>`);
 				}
-				else {return new HandleBarsExtras.SafeString('Unlinked Skill Card');}
+				else {return new Handlebars.SafeString('Unlinked Skill Card');}
 			}
 		}
 		return new Handlebars.SafeString(this.name);
@@ -1669,10 +1669,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case 'characterClass':
 			case 'skillCard':
 			case 'socialCard':
-				return new HandleBarsExtras.SafeString('');
+				return new Handlebars.SafeString('');
 			default:
 				this.system satisfies never;
-				return new HandleBarsExtras.SafeString('');
+				return new Handlebars.SafeString('');
 		}
 	}
 

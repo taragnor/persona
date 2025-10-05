@@ -580,7 +580,7 @@ export class PersonaHandleBarsHelpers {
 		"powerCostString": function (power: Power, persona: Persona)  : SafeString {
 			try {
 			return new Handlebars.SafeString(power.costString1(persona));
-			} catch {return new HandleBarsExtras.SafeString("ERROR");}
+			} catch {return new Handlebars.SafeString("ERROR");}
 		},
 
 		"isExotic" : function (power: Power) : boolean {
@@ -705,13 +705,13 @@ export class PersonaHandleBarsHelpers {
 		"displayDamageIcon": function (damageType: DamageType): SafeString {
 			const filepath = DAMAGE_ICONS[damageType];
 			const locName = localize(DAMAGETYPES[damageType]);
-			if (!locName) {return new HandleBarsExtras.SafeString("");}
+			if (!locName) {return new Handlebars.SafeString("");}
 			return new Handlebars.SafeString(`<img class="damage-icon" src='${filepath}' title='${locName}'>`);
 		},
 
 		"displayIcon": function (item :Power | Carryable, user: Persona | ValidAttackers) : SafeString {
 			const filepath =  item.getIconPath(user);
-			if (!filepath) {return new HandleBarsExtras.SafeString("");}
+			if (!filepath) {return new Handlebars.SafeString("");}
 			return new Handlebars.SafeString(`<img class="item-icon" src='${filepath}' title='${item.displayedName.toString()}'>`);
 
 		},

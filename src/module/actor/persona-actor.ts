@@ -344,7 +344,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get displayedNameHTML() : SafeString {
-		return new HandleBarsExtras.SafeString(this.displayedName);
+		return new Handlebars.SafeString(this.displayedName);
 	}
 
 	get publicName() : string {
@@ -3979,7 +3979,7 @@ async deleteQuestion(this: NPC | PC, index: number) {
 }
 
 get roleString() : SafeString {
-	if (!this.isShadow()) {return new HandleBarsExtras.SafeString("");}
+	if (!this.isShadow()) {return new Handlebars.SafeString("");}
 	const roles: (typeof this.system.role)[] = [];
 	roles.push(this.system.role);
 	roles.push(this.system.role2);
@@ -3987,8 +3987,7 @@ get roleString() : SafeString {
 		.filter( x=> x != undefined && x != "base")
 		.map( x=> localize(SHADOW_ROLE[x]))
 		.join(", ");
-	return new HandleBarsExtras.SafeString(localized);
-}
+	return new Handlebars.SafeString(localized); }
 
 async setWeaponDamageByLevel(this: Shadow, lvl: number) {
 	const low = 3 + Math.floor(lvl /2);
@@ -4000,7 +3999,7 @@ async setWeaponDamageByLevel(this: Shadow, lvl: number) {
 }
 
 get treasureString() : SafeString {
-	if (this.system.type != "shadow") {return new HandleBarsExtras.SafeString("");}
+	if (this.system.type != "shadow") {return new Handlebars.SafeString("");}
 	const treasure = this.system.encounter.treasure;
 	const items = [treasure.item0, treasure.item1, treasure.item2]
 		.filter( id=> id)
