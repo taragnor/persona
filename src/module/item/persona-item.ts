@@ -1466,7 +1466,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		calc.add('base', str, `${userPersona.publicName} Strength`);
 		const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
 		if (this.isFlurryPower()) {
-			calc.add("multiplier", 0.90, "Flurry Attack Power");
+			calc.add("multiplier", 0.66, "Flurry Attack Power");
 
 		}
 		calc.add('base', weaponDmg.baseAmt, weaponName.toString());
