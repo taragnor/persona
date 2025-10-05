@@ -883,7 +883,7 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 			case "dungeon-action":
 				return this.#printDungeonAction(cons);
 			case "raise-resistance": {
-				const resistType =this.translate(cons.resistType, DAMAGETYPES);
+				const resistType = this.translate(cons.resistType, DAMAGETYPES);
 				const resistLevel = this.translate(cons.resistanceLevel, RESIST_STRENGTHS);;
 				return `Raise ${resistType} Resistance ${resistLevel}` ; }
 			case "lower-resistance" : {

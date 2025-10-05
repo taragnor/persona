@@ -3721,7 +3721,6 @@ async setVariable ( varName: string, value: number) : Promise<void> {
 getVariable(varName: string) : number {
 	const vars : Record<string, number> = this.getFlag("persona", "variables") ?? {};
 	return vars[varName] ?? 0;
-
 }
 
 get variables(): Record<string, number>  {
