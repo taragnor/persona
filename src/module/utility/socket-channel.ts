@@ -58,6 +58,7 @@ export class SocketChannel<MSGTYPE extends ChannelMessage = ChannelMessage> {
 	linkCode: string;
 	static nextSessionCode = 0;
 	sessionCode: number = 0;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	static channels: SocketChannel<any>[] = [];
 	awaiters: Map<SocketMessage["CHANNEL_MESSAGE"]["sessionCode"], {
 		res: (reply: MSGTYPE[string]["initial" | "reply"]) => void ,
