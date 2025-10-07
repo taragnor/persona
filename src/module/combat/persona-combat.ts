@@ -168,7 +168,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			};
 			await ChatMessage.create(messageData, {});
 		}
-		const starters = this.combatants.contents.map( comb => comb?.actor?.onCombatStart());
+		const starters = this.combatants.contents.map( comb => comb?.actor?.onCombatStart())
+			.filter (x=> x != undefined);
 		await Promise.all(starters);
 		void this.refreshActorSheets();
 		const unrolledInit = this.combatants
@@ -423,7 +424,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const openingReturn = await this.execOpeningRoll(combatant);
 		if (openingReturn) {
 			const {data, roll} = openingReturn;
-			const openerMsg = await renderTemplate('systems/persona/parts/openers-list.hbs', {roll, openers: data, combatant});
+			const openerMsg = await foundry.applications.handlebars.renderTemplate('systems/persona/parts/openers-list.hbs', {roll, openers: data, combatant});
 			startTurnMsg.push(openerMsg);
 			baseRolls.push(roll);
 		}
@@ -1853,7 +1854,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return CombatRes;
 	}
 
-	static async consequencesToResult(cons: SourcedConsequence[], power: U<ModifierContainer>, situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkResult: AttackResult | null): Promise<CombatResult> {
+	static async consequencesToResult(cons: SourcedConsequence<NonDeprecatedConsequence>[], power: U<ModifierContainer>, situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkResult: AttackResult | null): Promise<CombatResult> {
 		const CombatRes = new CombatResult(atkResult);
 		try {
 		const x = this.ProcessConsequences(power, situation, cons, attacker, target, atkResult);
@@ -2018,7 +2019,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 	}
 
-	static processConsequences_simple(consequence_list: SourcedConsequence[], situation: Situation): ConsequenceProcessed {
+	static processConsequences_simple(consequence_list: SourcedConsequence<NonDeprecatedConsequence>[], situation: Situation): ConsequenceProcessed {
 		let consequences : ConsequenceProcessed['consequences'] = [];
 		for (const cons of consequence_list) {
 			const applyTo = cons.applyTo ?? (cons.applyToSelf ? 'owner' : 'target');
@@ -2032,9 +2033,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 
-	static ProcessConsequences(power: U<ModifierContainer>, situation: Situation, relevantConsequences: SourcedConsequence[], attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkresult : Partial<AttackResult> | null)
+	static ProcessConsequences(power: U<ModifierContainer>, situation: Situation, relevantConsequences: SourcedConsequence<NonDeprecatedConsequence>[], attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkresult : Partial<AttackResult> | null)
 	: ConsequenceProcessed {
-		let escalationMod = 0;
+		const escalationMod = 0;
 		let consequences : ConsequenceProcessed['consequences']= [];
 		for (const cons of relevantConsequences) {
 			const sourcedC = {
@@ -2049,14 +2050,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				const newCons = this.processConsequence_simple( sourcedC, consTargets);
 				consequences = consequences.concat(newCons);
 			}
-			if (cons.type == 'escalationManipulation') {
-				escalationMod += (cons.amount ?? 0);
-			}
 		}
 		return {consequences, escalationMod} satisfies ConsequenceProcessed;
 	}
 
-static processConsequence( power: U<ModifierContainer>, situation: Situation, cons: SourcedConsequence, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed['consequences'] {
+static processConsequence( power: U<ModifierContainer>, situation: Situation, cons: SourcedConsequence<NonDeprecatedConsequence>, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed['consequences'] {
 	//need to fix this so it knows who the target actual is so it can do a proper compariosn, right now when applying to Self it won't consider resistance or consider the target's resist.
 	const applyTo = cons.applyTo ?? (cons.applyToSelf ? 'owner' : 'target');
 	const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
@@ -2068,20 +2066,19 @@ static processConsequence( power: U<ModifierContainer>, situation: Situation, co
 	switch (cons.type) {
 		case 'damage-new':
 			return this.processConsequence_damage(cons, consTargets, attacker, power, situation);
-		case 'absorb':
-		case 'dmg-mult':
-		case 'dmg-high':
-		case 'dmg-low':
-		case 'dmg-allout-low':
-		case 'dmg-allout-high':
-		case 'hp-loss':
-		case 'revive': {
-			const newFormCons = DamageCalculation.convertToNewFormConsequence(cons, (power as Usable)?.getDamageType(attacker) ?? 'none');
-			return this.processConsequence_damage(newFormCons, consTargets, attacker, power, situation);
-		}
+		// case 'absorb':
+		// case 'dmg-mult':
+		// case 'dmg-high':
+		// case 'dmg-low':
+		// case 'dmg-allout-low':
+		// case 'dmg-allout-high':
+		// case 'hp-loss':
+		// case 'revive': {
+		// 	const newFormCons = DamageCalculation.convertToNewFormConsequence(cons, (power as Usable)?.getDamageType(attacker) ?? 'none');
+		// 	return this.processConsequence_damage(newFormCons, consTargets, attacker, power, situation);
+		// }
 		case 'none':
 		case 'modifier':
-		case 'escalationManipulation': //since this is no llonger handled here we do nothing
 			break;
 		case 'addStatus': case 'removeStatus':
 			if (!applyToSelf && (absorb || block)) {return [];}
@@ -2211,17 +2208,9 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 	return consList;
 }
 
-static processConsequence_simple( cons: SourcedConsequence, targets: ValidAttackers[]) :ConsequenceProcessed['consequences'] {
+static processConsequence_simple( cons: SourcedConsequence<NonDeprecatedConsequence>, targets: ValidAttackers[]) :ConsequenceProcessed['consequences'] {
 	switch (cons.type) {
-		case 'dmg-low':
-		case 'dmg-high':
-		case 'dmg-allout-low':
-		case 'dmg-allout-high':
-		case 'dmg-mult':
 		case 'damage-new':
-		case 'hp-loss':
-		case 'absorb':
-		case 'revive':
 			PersonaError.softFail(`Process Consequence Simple does not handle ${cons.type}`);
 			return [];
 		case 'addStatus':
@@ -2231,18 +2220,15 @@ static processConsequence_simple( cons: SourcedConsequence, targets: ValidAttack
 		case 'modifier':
 		case 'modifier-new':
 		case 'add-creature-tag':
-		case 'escalationManipulation': //since this is no llonger handled here we do nothing
 			break;
 		case 'extraAttack' :
 		case 'expend-slot':
-		case 'add-escalation':
-		case 'save-slot':
-		case 'recover-slot':
-		case 'half-hp-cost':
+			return targets.map( applyTo => ({applyTo, cons}));
 		case 'other-effect':
 		case 'set-flag':
 		case 'add-power-to-list':
 		case 'add-talent-to-list':
+			return targets.map( applyTo => ({applyTo, cons}));
 		case 'raise-resistance':
 		case 'lower-resistance':
 		case 'raise-status-resistance':
@@ -2252,10 +2238,14 @@ static processConsequence_simple( cons: SourcedConsequence, targets: ValidAttack
 		case 'scan':
 		case 'alter-energy':
 		case 'alter-mp':
+			return targets.map( applyTo => ({applyTo, cons}));
 		case 'extraTurn':
+			return targets.map( applyTo => ({applyTo, cons}));
 		case 'teach-power':
 		case 'combat-effect':
+			return targets.map( applyTo => ({applyTo, cons}));
 		case 'alter-variable':
+			return targets.map( applyTo => ({applyTo, cons}));
 		case 'perma-buff':
 		case 'alter-fatigue-lvl':
 		case "gain-levels":

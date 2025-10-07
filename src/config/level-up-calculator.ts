@@ -112,6 +112,6 @@ export class LevelUpCalculator {
 
 }
 
-//@ts-ignore
+//@ts-expect-error adding to global scope
 window.LevelUpCalculator = LevelUpCalculator;
 

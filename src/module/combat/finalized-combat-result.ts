@@ -167,8 +167,6 @@ export class FinalizedCombatResult {
 					this.costs.push(extraTurnChange);
 					break;
 				}
-				case "recover-slot":
-					break;
 				case "set-flag":
 					break;
 				case "raise-resistance":
@@ -541,9 +539,6 @@ export class FinalizedCombatResult {
 			case "half-hp-cost":
 				break;
 			case "extraTurn":
-				break;
-			case "recover-slot":
-				PersonaError.softFail("Recover slot is deprecated as an effect");
 				break;
 			case "set-flag":
 				await actor.setEffectFlag(otherEffect.flagId, otherEffect.state, otherEffect.duration, otherEffect.flagName);

@@ -45,7 +45,7 @@ export class TensionPool extends ProgressClock {
 		 .flatMap( die=> die.total == 6 ? [die] : [])
 		 .length;
 		 await this.add(-sixes);
-		 this.generateEncounter();
+		 await this.generateEncounter();
 		 return new TensionPoolResult (roll, "battle");
 	 }
 

@@ -37,10 +37,10 @@ export type ValidSound = keyof typeof SOUNDS;
 
 export class PersonaSounds {
 
-	static init() {
+	static async init() {
 		for  (const src of Object.values(SOUNDS)) {
 			if (src) {
-				this.preloadSnd(src);
+				await this.preloadSnd(src);
 			}
 		}
 	}
@@ -80,7 +80,7 @@ export class PersonaSounds {
 				loop: false
 			}, socketOpts);
 			return sound;
-		} catch (e) {
+		} catch  {
 			const msg =`Trouble playing sound ${filename}`;
 			ui.notifications.error(msg);
 			console.warn(msg);
@@ -132,7 +132,7 @@ export class PersonaSounds {
 
 }
 
-Hooks.on("ready",function () {PersonaSounds.init();});
+Hooks.on("ready",function () {void PersonaSounds.init();});
 
-//@ts-ignore
+//@ts-expect-errora putting this in global for debugging purposes
 window.PersonaSounds = PersonaSounds;

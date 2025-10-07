@@ -5,7 +5,7 @@ import { PersonaScene } from "../persona-scene.js";
 import { HTMLTools } from "../utility/HTMLTools.js";
 
 export class AmongUs {
-	static async admin(shipScene: string | PersonaScene = (game.scenes.current as PersonaScene)): Promise<ChatMessage<any> | undefined> {
+	static async admin(shipScene: string | PersonaScene = (game.scenes.current as PersonaScene)): Promise<ChatMessage<Roll> | undefined> {
 		if (typeof shipScene == "string") {
 			shipScene = game.scenes.get(shipScene) as PersonaScene;
 		}
@@ -66,7 +66,7 @@ export class AmongUs {
 				} else {
 					return await this.assignNewTask(token, shipScene);
 				}
-			case "Move To":
+			case "Move To": {
 				const location = this.getLocation(token, shipScene);
 				if (location != undefined && location.id != current.regionId) {
 					return current;
@@ -77,6 +77,7 @@ export class AmongUs {
 					};
 					return await this.setAction(token, task);
 				}
+			}
 			case "Do Nothing":
 				return await this.assignNewTask(token, shipScene);
 			default:
@@ -100,18 +101,18 @@ export class AmongUs {
 					action : "Do Nothing"
 				};
 				break;
-			case 2:
 			case 3:
 			case 4:
 			case 5:
 			case 6:
-			default:
+			default: {
 				const target = randomSelect(scene.regions.filter( reg => reg.regionData.treasures.max >= 2)).id;
 				action = {
 					action: "Move To",
 					regionId: target
 				};
 				break;
+			}
 		}
 		return await this.setAction(token, action);
 	}
@@ -143,9 +144,10 @@ export class AmongUs {
 				return `Do Task (${action.timeRemaining} remaining)`;
 			case "Do Nothing":
 				return "Do Nothing";
-			case "Move To":
+			case "Move To": {
 				const target = scene.regions.get(action.regionId);
 				return `Go To ${target?.name ?? "Region Not found"}`;
+			}
 		}
 	}
 

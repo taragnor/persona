@@ -22,12 +22,6 @@
 	<select name="{{strcat namePrefix 'modifierType'}}">
 		{{selectOptions POWERSTUFF.MODIFIER_CONS_TYPES localize=true selected=(defVal cons.modifierType "constant")}}
 	</select>
-	{{#if (eq (defVal cons.modifierType "constant") "constant")}}
-	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
-	{{/if}}
-</div>
-
-	{{#if false}}
 	{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amount.') cons=cons.amount POWERSTUFF=POWERSTUFF owner=owner}}
-	{{/if}}
+</div>
 

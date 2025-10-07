@@ -45,8 +45,8 @@ export class Simulations {
 
 }
 
-//@ts-ignore
+//@ts-expect-error including in global scope
 window.Simulations = Simulations;
 
-//@ts-ignore
+//@ts-expect-error including in global scope
 window.d = d;

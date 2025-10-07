@@ -8,8 +8,8 @@ export class PersonaSocialSheetBase extends PersonaItemSheetBase {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
-		html.find(".add-token-spend").on("click", this.addTokenSpend.bind(this));
-		html.find(".del-token-spend").on("click", this.deleteTokenSpend.bind(this));
+		html.find(".add-token-spend").on("click", ev => void this.addTokenSpend(ev));
+		html.find(".del-token-spend").on("click", ev => void this.deleteTokenSpend(ev));
 
 	}
 

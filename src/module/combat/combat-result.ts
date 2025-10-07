@@ -5,7 +5,7 @@ import { DamageConsequence } from "../../config/consequence-types.js";
 import { OldDamageConsequence } from "../../config/consequence-types.js";
 import { DamageCalculation } from "./damage-calc.js";
 import { RollSituation } from "../../config/situation.js";
-import { Consumable, UsableAndCard } from "../item/persona-item.js";
+import { UsableAndCard } from "../item/persona-item.js";
 import { ValidAttackers } from "./persona-combat.js";
 import { StatusDuration } from "../active-effect.js";
 import { getSocialLinkTarget } from "../preconditions.js";
@@ -22,6 +22,7 @@ import { RollBundle } from "../persona-roll.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { PersonaDB } from "../persona-db.js";
 import { PersonaActor } from "../actor/persona-actor.js";
+import {resolveConsequenceAmount} from "../persona-variables.js";
 
 declare global {
 	interface SocketMessage {
@@ -181,10 +182,6 @@ export class CombatResult  {
 				}
 				break;
 			}
-			case "escalationManipulation" : {
-				this.escalationMod += Number(cons.amount ?? 0);
-				break;
-			}
 			case "extraAttack":
 				if (!effect) {break;}
 				effect.otherEffects.push({
@@ -202,15 +199,7 @@ export class CombatResult  {
 			case "raise-resistance":
 			case "lower-resistance":
 			case "raise-status-resistance":
-			case "add-escalation":
-				break;
-			case "save-slot":
-				if (!effect) {break;}
-				effect.otherEffects.push({ type: "save-slot"});
-				break;
-			case "half-hp-cost":
-				if (!effect) {break;}
-				effect.otherEffects.push({type: "half-hp-cost"});
+			case "expend-item":
 				break;
 			case "extraTurn": {
 				if (atkResult) {
@@ -227,22 +216,6 @@ export class CombatResult  {
 				});
 				break;
 			}
-			case "expend-item":
-				if (!effect) {break;}
-				effect.otherEffects.push({
-					itemId: cons.itemId,
-					type: 	"expend-item",
-					itemAcc: cons.itemAcc! as UniversalItemAccessor<Consumable>,
-				});
-				break;
-			case "recover-slot":
-				if (!effect) {break;}
-				effect.otherEffects.push( {
-					type: "recover-slot",
-					slot: cons.slotType!,
-					amt: cons.amount ?? 1,
-				});
-				break;
 			case "add-power-to-list":
 			case "add-talent-to-list":
 				break;
@@ -279,19 +252,19 @@ export class CombatResult  {
 				break;
 			}
 			case "display-msg":
-					if (effect) {
-						effect.otherEffects.push( {
-							type: "display-message",
-							newChatMsg: cons.newChatMsg ?? false,
-							msg: cons.msg ?? "",
-						});
-					} else {
-						this.globalOtherEffects.push({
-							type: "display-message",
-							newChatMsg: cons.newChatMsg ?? false,
-							msg: cons.msg ?? "",
-						});
-					}
+				if (effect) {
+					effect.otherEffects.push( {
+						type: "display-message",
+						newChatMsg: cons.newChatMsg ?? false,
+						msg: cons.msg ?? "",
+					});
+				} else {
+					this.globalOtherEffects.push({
+						type: "display-message",
+						newChatMsg: cons.newChatMsg ?? false,
+						msg: cons.msg ?? "",
+					});
+				}
 				break;
 			case "use-power":  {
 				if (!effect) {break;}
@@ -330,13 +303,17 @@ export class CombatResult  {
 					...cons
 				});
 				break;
-			case "alter-energy":
+			case "alter-energy": {
 				if (!effect) {break;}
+				const contextList = PersonaCombat.createTargettingContextList(situation, cons);
+				const amount = resolveConsequenceAmount(cons.amount ?? 0, contextList) ?? 0;
 				effect.otherEffects.push( {
 					type: cons.type,
-					amount: cons.amount ?? 0,
+					amount,
+					// amount: cons.amount ?? 0,
 				});
 				break;
+			}
 			case "alter-mp":
 				if (!effect) {break;}
 				effect.otherEffects.push( {

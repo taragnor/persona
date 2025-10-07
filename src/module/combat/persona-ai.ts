@@ -4,9 +4,10 @@ import { AttackResult } from "./combat-result.js";
 import { PToken } from "./persona-combat.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { PersonaCombat } from "./persona-combat.js";
+import {Persona} from "../persona-class.js";
 
 export abstract class PersonaAI {
-   actor: Shadow;
+   persona: Persona;
    token: PToken;
    combatant: Combatant<Shadow>;
    combat: PersonaCombat;
@@ -16,7 +17,7 @@ export abstract class PersonaAI {
          throw new Error("Persona AI requires a combatnat with a token");
       }
       this.combatant = combatant;
-      this.actor = combatant.actor;
+      this.persona = combatant.actor.persona();
       this.token = combatant.token as PToken;
       this.combat= combat;
    }
@@ -40,14 +41,15 @@ export class RandomAI extends PersonaAI {
    }
 
    override getAction(): AIAction | null {
-      const shadow= this.actor;
-      const powers = this.actor.powers;
-      const usablePowers = powers.filter( pwr => shadow.persona().canUsePower(pwr));
-      const chargeAblePowers = powers.filter (pwr => !shadow.persona().canUsePower(pwr) && pwr.system.energy.required > shadow.system.combat.energy.value);
-      const freePowers = usablePowers.filter( pwr=> pwr.system.energy.cost == 0);
-      const tokenAcc = PersonaDB.getUniversalTokenAccessor(this.token);
+      const {persona, token} = this;
+      const tokenAcc = PersonaDB.getUniversalTokenAccessor(token);
+      const powers = this.persona.powers;
+      const usablePowers = powers.filter( pwr => persona.canUsePower(pwr));
+      const chargeAblePowers = powers.filter (pwr => pwr.energyRequired(persona) > persona.user.energy);
+      // const freePowers = usablePowers.filter( pwr=> pwr.energyCost(persona) == 0);
       const engaged = this.combat.isEngagedByAnyFoe(tokenAcc);
       if (!chargeAblePowers)  {
+
       }
       return null;
    }

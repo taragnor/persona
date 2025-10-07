@@ -58,6 +58,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			tags: undefined,
 			tagNames: undefined,
 			tagsArr: undefined,
+			enchantments: undefined,
 		};
 		Hooks.callAll("DBrefresh");
 		return newCache;
@@ -260,6 +261,14 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.tags = new Map(tags);
 	}
 
+	enchantments() : Tag[] {
+		if (this.#cache.enchantments) {return this.#cache.enchantments;}
+		const tags= this.allItems()
+			.filter (x=> x.isTag())
+			.filter(tag=> tag.system.tagType == "enchantment");
+		return this.#cache.enchantments = tags;
+	}
+
 	allTagLinks() : Map<Tag["name"], Tag> {
 		if (this.#cache.tagNames) {return this.#cache.tagNames;}
 		const tags= this.allItems()
@@ -382,6 +391,7 @@ type PersonaDBCache =	{
 	treasureItems: TreasureItem[] | undefined;
 	tarot: Tarot[] | undefined;
 	navigator: NPCAlly | undefined;
+	enchantments: U<Tag[]>;
 	pcs: PC[] | undefined;
 	teammateSocialLink: NPC | undefined;
 	personalSocialLink: NPC | undefined;

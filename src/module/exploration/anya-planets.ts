@@ -41,12 +41,11 @@ export class AnyaPlanets {
 
 		this.outer.createPlanet("Satellite A", 5 );
 		this.outer.createPlanet("Anarchy City", 6 );
-		const gundam = this.outer.createPlanet("Orbital Military Installation", 9 );
 		this.outer.createPlanet("Satellite B", 10 );
 		this.outer.createPlanet("City of the Iron Fist", 13 );
 		this.outer.createPlanet("Satellite C", 14 );
 		// this.outer.createPlanet("outer F", 15 );
-		const PB = this.periphery.createPlanet("Satellite Control Station", 2 );
+		// const PB = this.periphery.createPlanet("Satellite Control Station", 2 );
 		const PA = this.periphery.createPlanet("GateWay To M", 20 );
 		const asteroidM = { name: "Asteroid M", hardLinks: [PA]};
 		const Fleetwood = { name: "Fleetwood School for the Badass (shadow Anya)", hardLinks: [asteroidM]};
@@ -207,7 +206,7 @@ export class AnyaPlanets {
 			paths.push(...orbit.adjacent(index));
 			const outer = this.getOuterOrbit(orbit);
 			const inner = this.getInnerOrbit(orbit);
-			const [innerR, outerR] = orbit?.getRanges(index);
+			const [innerR, outerR] = orbit ? orbit.getRanges(index) : [undefined, undefined];
 			// console.log( `${start.name}: Inner ${innerR?.low}-${innerR?.high}, Outer: ${outerR?.low} - ${outerR?.high} `);
 			paths.push(
 				...(inner?.planetsInRange(innerR!) ?? []),
@@ -219,8 +218,9 @@ export class AnyaPlanets {
 
 	pathsTest() {
 		for (const planet of this.allPlanets()) {
-			const paths = this.getPaths(planet!).map( x=> x.name).join(",");
-			const [orbit, index] = this.findPlanet(planet);
+			const paths = this.getPaths(planet).map( x=> x.name).join(",");
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const [_orbit, index] = this.findPlanet(planet);
 			console.log( `${planet?.name} (${index}) : ${paths}`);
 		}
 
@@ -233,11 +233,12 @@ export class AnyaPlanets {
 		if (typeof end == "string") {
 			end = this.getPlanetByName(end)!;
 		}
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		return breadthFirstSearch(start, end, this.getPaths.bind(this));
 	}
 
 	getOrbit(planetName: string) : Orbit | undefined {
-		return this.findPlanet(planetName)![0];
+		return this.findPlanet(planetName)[0];
 	}
 
 }
@@ -248,7 +249,7 @@ export class Orbit {
 	blockSize: number;
 
 	constructor(size: number, orbitMove: number) {
-		this.planets =new Array(size);
+		this.planets =[];
 		this.orbitMove = orbitMove;
 		this.blockSize = Math.floor(size / 4);
 	}
@@ -267,12 +268,13 @@ export class Orbit {
 				return undefined;
 			case PERIPHERY_SIZE:
 			case OUTER_SIZE:
-			case MIDDLE_SIZE:
-				const myblock = Math.floor(index / this.blockSize);
-				const innerBlockSize = Math.floor(this.blockSize / GROWTH_FACTOR);
+			case MIDDLE_SIZE: {
+				// const myblock = Math.floor(index / this.blockSize);
+				// const innerBlockSize = Math.floor(this.blockSize / GROWTH_FACTOR);
 				// const low= myblock * innerBlockSize;
 				const low= Math.floor(index / GROWTH_FACTOR);
-				return {low, high: low + GROWTH_FACTOR};
+				return {low, high: low + GROWTH_FACTOR}; 
+			}
 				default:
 				throw new Error(`Unknown size: ${this.planets.length}`);
 		}
@@ -292,10 +294,11 @@ export class Orbit {
 				return undefined;
 			case INNER_SIZE:
 			case OUTER_SIZE:
-			case MIDDLE_SIZE:
-				const outerBlockSize = Math.floor(this.blockSize * GROWTH_FACTOR);
+			case MIDDLE_SIZE: {
+				// const outerBlockSize = Math.floor(this.blockSize * GROWTH_FACTOR);
 				const low = index * GROWTH_FACTOR;
 				return {low, high: low + GROWTH_FACTOR};
+			}
 		}
 	}
 

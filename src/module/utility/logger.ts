@@ -1,6 +1,6 @@
 export class Logger {
 
-	static async log(txt: string) {
+	static log(txt: string) {
 		console.log(txt);
 	}
 
@@ -20,7 +20,7 @@ export class Logger {
 		return await ChatMessage.create(messageData, {});
 	}
 
-	static async sendToChat<T extends Actor<any, Item<any>>>(text: string, actor?: T) {
+	static async sendToChat<T extends Actor>(text: string, actor?: T) {
 		// const speaker = ChatMessage.getSpeaker(sender);
 		const speaker = ChatMessage.getSpeaker({alias: actor?.name ?? "System"});
 		const messageData = {
@@ -28,7 +28,7 @@ export class Logger {
 			content: text,
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 		};
-		ChatMessage.create(messageData, {});
+		await ChatMessage.create(messageData, {});
 		return messageData;
 	}
 

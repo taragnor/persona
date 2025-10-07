@@ -1,4 +1,3 @@
-import { HTMLTools } from "../module/utility/HTMLTools.js";
 
 export const STUDENT_SKILLS_LIST = [
 	"diligence",

@@ -250,7 +250,10 @@ export class RollBundle {
 		if ("situation" in this.modList) {
 			throw new PersonaError("Mod List not resolved");
 		}
-		if (this.DC == 0) {debugger;}
+		if (this.DC == 0) {
+			PersonaError.softFail("DC of 0 in roll", this);
+			// debugger;
+		}
 		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/parts/simple-roll.hbs", {roll: this, showSuccess});
 		return html;
 	}

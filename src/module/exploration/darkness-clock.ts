@@ -23,19 +23,19 @@ export class Darkness {
 
 	static init() {
 		if (!game.user.isGM) {return;}
-		Hooks.on("canvasReady", () => {
-			this.updateClockVisibility();
+		Hooks.on("canvasReady", async () => {
+			await this.updateClockVisibility();
 		});
-		Hooks.on("updateClock", (clock) => {
+		Hooks.on("updateClock", async (clock) => {
 			if (clock != Darkness.lightClock) {return;}
-			this.updateClockVisibility();
-			this.updateLight();
+			await this.updateClockVisibility();
+			await this.updateLight();
 		});
-		Hooks.on("enterMetaverse", () => {
-			this.lightClock?.set(0);
+		Hooks.on("enterMetaverse", async () => {
+			await this.lightClock?.set(0);
 		});
-		Hooks.on("exitMetaverse", () => {
-			this.lightClock?.set(0);
+		Hooks.on("exitMetaverse", async () => {
+			await this.lightClock?.set(0);
 		});
 		// this.updateLightVisibility();
 		this.setListener();
@@ -51,10 +51,11 @@ export class Darkness {
 
 	static setListener() {
 		console.log("Listener Set");
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		setInterval( this.updateLight.bind(this), 1500);
 	}
 
-	static updateLight() {
+	static async updateLight() {
 		const clockVal = (this.lightClock?.visible) ? this.lightClock.amt: 0;
 		if (clockVal != this.lastLight) {
 			this.lastLight = clockVal;
@@ -77,14 +78,15 @@ export class Darkness {
 				color: 13695488,
 				animation,
 			};
-			game.scenes.active.tokens.forEach( (tok: TokenDocument<PersonaActor>) => {
+			const promises = game.scenes.active.tokens.contents.map( (tok: TokenDocument<PersonaActor>) => {
 				if (tok.actor && (tok.actor.isPC() || tok.actor.isNPCAlly()) && tok.actor.hasPlayerOwner) {
 					//TODO: Change light source here
 					console.log(`Updating Light for ${tok.name}, alpha ${lightObj.alpha}`);
-					tok.update({"light" : lightObj });
-
+					return tok.update({"light" : lightObj });
 				}
-			});
+			})
+			.filter (x=> x != undefined);
+			await Promise.allSettled(promises);
 		}
 	}
 }

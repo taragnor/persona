@@ -134,6 +134,7 @@ class TagSchema extends foundry.abstract.TypeDataModel {
 			defensive: new bool(),
 			tagType: new txt({choices: TAG_TYPES}),
 			linkedInternalTag: new txt(),
+			treasure: itemTreasureStats(),
 			...effects (false),
 		};
 		return ret;
@@ -205,7 +206,6 @@ class ConsumableSchema extends foundry.abstract.TypeDataModel {
 	get type() {return "consumable" as const;}
 	static override defineSchema() {
 		const ret = {
-
 			subtype: new txt({ initial: "consumable", choices: CONSUMABLE_SUBTYPE_LIST}),
 			...itemBase(),
 			...UsablePowerProps(),

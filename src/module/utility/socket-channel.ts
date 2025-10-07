@@ -1,4 +1,4 @@
-import { SocketManager } from "./socket-manager.js";
+import { SocketManager, TimeoutError } from "./socket-manager.js";
 
 
 declare global {
@@ -6,7 +6,7 @@ declare global {
 		"CHANNEL_MESSAGE":  ChannelMessagePayload
 	}
 	interface HOOKS {
-"newRecieverChannel": (reciever: SocketChannel<any>) => void;
+		"newRecieverChannel": <T extends ChannelMessage>(reciever: SocketChannel<T>) => void;
 		"channelsReady": () => void;
 
 	}
@@ -17,19 +17,21 @@ interface OpenChannel {
 }
 
 type ChannelMessagePayload = {
+	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 	channelMsgCode: (keyof ChannelMessage | keyof OpenChannel) & string;
 	channelId: number;
 	sessionCode: number;
 	msgType: "initial" | "reply" | "open" | "close";
 	data: ChannelMessage[string]["initial" | "reply"];
 	sender: FoundryUser["id"];
-	linkCode: SocketChannel<any>["linkCode"];
-
+	linkCode: SocketChannel["linkCode"];
 };
 
 
 export type ChannelMessage =
 	{
+		[k: number]: never,
+		[k: symbol]: never,
 		[key: string]: {
 			// initial: string,
 			// reply: string
@@ -42,11 +44,11 @@ export type ChannelMessage =
 type MsgObjectData = undefined | string | number  |boolean | {[key:string] : MsgObjectData};
 
 
-type HandlerFn<T extends ChannelMessage, K extends keyof T> = (data: T[K]["initial"]) => Promise <T[K]["reply"] | undefined>;
+type HandlerFn<T extends ChannelMessage, K extends keyof T & string> = (data: T[K]["initial"]) => Promise <T[K]["reply"] | undefined>;
 
 
 
-export class SocketChannel<MSGTYPE extends ChannelMessage> {
+export class SocketChannel<MSGTYPE extends ChannelMessage = ChannelMessage> {
 	closed= false;
 	recipients: FoundryUser["id"][]= [];
 	static nextId = 0;
@@ -59,9 +61,9 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 	static channels: SocketChannel<any>[] = [];
 	awaiters: Map<SocketMessage["CHANNEL_MESSAGE"]["sessionCode"], {
 		res: (reply: MSGTYPE[string]["initial" | "reply"]) => void ,
-		rej: (reason: any) => void
+		rej: (reason: unknown) => void
 	}> = new Map();
-	handlers: Map<keyof MSGTYPE, HandlerFn<MSGTYPE, keyof MSGTYPE>> = new Map();
+	handlers: Map<keyof MSGTYPE & string, HandlerFn<MSGTYPE, keyof MSGTYPE & string>> = new Map();
 
 	constructor (linkCode: string, recipients: SocketChannel<MSGTYPE>["recipients"], channelId?: number) {
 		if (channelId == undefined) {
@@ -86,23 +88,25 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 	static init() {
 		Hooks.on("socketsReady", (socketManager) => {
 			this.socket = socketManager;
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			socketManager.setHandler("CHANNEL_MESSAGE", this.onChannelMessage.bind(this));
 			Hooks.callAll("channelsReady");
 		});
 
 	}
 
-	setHandler<T extends keyof MSGTYPE>( msgCode: T, replyFn: HandlerFn<MSGTYPE, T>) {
+	setHandler<T extends keyof MSGTYPE & string>( msgCode: T, replyFn: HandlerFn<MSGTYPE, T>) {
 		this.handlers.set(msgCode, replyFn);
 	}
 
 	static onChannelMessage( payload: SocketMessage["CHANNEL_MESSAGE"]) : void {
 		switch (payload.msgType) {
-			case "open":
+			case "open": {
 				const reciever = SocketChannel.open(payload.channelId, payload.linkCode);
 				Hooks.callAll("newRecieverChannel", reciever);
 				console.debug("Opening Channel");
 				break;
+			}
 		}
 		const channel = this.channels.find(ch => ch.linkCode == payload.linkCode && payload.channelId == ch.id);
 		if (!channel) {
@@ -119,23 +123,23 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 	}
 
 	onChannelMessage( payload: SocketMessage["CHANNEL_MESSAGE"]) {
-		const sessionCode = payload.sessionCode;
+		// const sessionCode = payload.sessionCode;
 		switch (payload.msgType) {
 			case "open":
 				return;
 			case "initial":
-				this.#onInitialMsg(payload.channelMsgCode, payload.data, payload);
+				void this.#onInitialMsg(payload.channelMsgCode, payload.data, payload);
 				break;
 			case "reply":
-				this.#onReplyMsg(payload.channelMsgCode, payload.data, payload);
+				void this.#onReplyMsg(payload.channelMsgCode, payload.data, payload);
 				break;
 			case "close":
 				this.#closeSub();
 				break;
 			default:
 				payload.msgType satisfies never;
-				throw new Error(`Unknown Payload Msg Type : ${payload.msgType}`);
 		}
+		throw new Error(`Unknown Payload Msg Type : ${payload.msgType}`);
 	}
 
 	async #onInitialMsg<T extends keyof MSGTYPE & string> (msgCode: T, data: MSGTYPE[T]["initial"], payload: ChannelMessagePayload) {
@@ -153,7 +157,7 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 		}
 	}
 
-	async #onReplyMsg<T extends keyof MSGTYPE & string> (msgCode: T, data: MSGTYPE[T]["reply"], payload: ChannelMessagePayload) {
+	#onReplyMsg<T extends keyof MSGTYPE & string> (msgCode: T, data: MSGTYPE[T]["reply"], payload: ChannelMessagePayload) {
 		const {sessionCode} = payload;
 		const awaiter = this.awaiters.get(sessionCode);
 		if (!awaiter) {
@@ -166,7 +170,7 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 
 	async sendInitial<T extends keyof MSGTYPE & string> (msgCode: T, initialMsg: MSGTYPE[T]["initial"]) : Promise<MSGTYPE[T]["reply"]> {
 		if (this.closed) {
-			return Promise.reject("Channel closed");
+			return Promise.reject(new ChannelClosedError());
 		}
 		const recipients = this.recipients;
 		this.sessionCode = SocketChannel.nextSessionCode++;
@@ -183,13 +187,13 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 				linkCode: this.linkCode
 			}, recipients);
 			setTimeout( () => {
-				rej("Timeout");
+				rej(new TimeoutError());
 			}, 8000);
 		});
 	}
 
 	#reply<T extends keyof MSGTYPE & string> (msgCode: T, reply: MSGTYPE[T]["reply"], sessionCode: ChannelMessagePayload["sessionCode"], target: FoundryUser["id"] ) {
-		const recipients = this.recipients;
+		// const recipients = this.recipients;
 		this.socket.simpleSend("CHANNEL_MESSAGE", {
 			channelMsgCode: msgCode,
 			channelId: this.id,
@@ -246,3 +250,10 @@ export class SocketChannel<MSGTYPE extends ChannelMessage> {
 
 Hooks.on("ready", () => SocketChannel.init());
 
+
+export class ChannelClosedError extends Error {
+	constructor() {
+		super ("Channel Closed");
+	}
+
+}

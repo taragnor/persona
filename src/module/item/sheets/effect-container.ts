@@ -1,6 +1,4 @@
 import { SocialCard } from "../persona-item.js";
-import { PersonaItem } from "../persona-item.js";
-import { ProgressClock } from "../../utility/progress-clock.js";
 import { PersonaItemSheetBase } from "./base-item-sheet.js";
 import { PowerContainer } from "../persona-item.js";
 import { PersonaDB } from "../../persona-db.js";

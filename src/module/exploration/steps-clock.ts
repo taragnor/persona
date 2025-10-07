@@ -18,7 +18,7 @@ export class StepsClock extends ProgressClock {
 	static init() {
 		this._instance = new StepsClock();
 		this._instance.setGMOnly(false);
-		this._instance.show();
+		void this._instance.show();
 	}
 }
 

@@ -568,7 +568,6 @@ static async passMetaverseTurn() {
 }
 
 static async #passMetaverseTurn() {
-	debugger;
 	console.log("Trying to pass MV turn");
 	const pcs = game.scenes.active.tokens.contents.filter( tok => tok.actor && (tok.actor as PersonaActor).isPC());
 	const ret : string[] = [];

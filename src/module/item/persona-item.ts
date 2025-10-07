@@ -2031,18 +2031,28 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				owner: this.parent?.accessor,
 			};
 		}
-		const cardEffect: TypedConditionalEffect = {
+		const cardEffect = {
 			conditionalType: 'on-use',
 			isDefensive: false,
-			conditions: [
-				{type: 'always'}
-			],
-			consequences: [{
+		} as const;
+		const conditions = [
+				{
+					conditionalType: "on-use",
+					type: 'always'
+				} as const
+		];
+		const consequences = [
+			{
 				type: 'teach-power',
 				id: this.system.skillId,
-			}]
-		};
+				sourceItem: this.accessor,
+				source: this,
+				owner: this.parent?.accessor,
+			} as const
+		];
 		return {
+			conditions,
+			consequences,
 			source: this,
 			...cardEffect,
 			owner: this.parent?.accessor,
@@ -2732,6 +2742,10 @@ get instantDeathRange(): {low: number, high: number} | undefined {
 		default:
 			this.system.instantKillChance satisfies never;
 	}
+}
+
+isEnchantable(this: Carryable) : boolean {
+	return (this.isEquippable());
 }
 
 isDamagePower(this: Usable): boolean {

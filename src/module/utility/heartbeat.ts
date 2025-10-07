@@ -35,11 +35,13 @@ export class Heartbeat {
 					heartbeatChecker.refreshPlayerStatus();
 				}, 3000);
 			}
+			//@ts-expect-error TS has trouble with this for some reason
 			Hooks.on("newRecieverChannel", (reciever: SocketChannel<HEARTBEAT_MSG>) => {
 				if (reciever.linkCode != this.LINK_CODE) {
 					return;
 				}
-				reciever.setHandler("HEARTBEAT", async ( time) => {
+				// eslint-disable-next-line @typescript-eslint/require-await
+				reciever.setHandler("HEARTBEAT", async (time) => {
 					return time;
 				});
 			});
@@ -68,7 +70,7 @@ export class Heartbeat {
 			const channel = PersonaSockets.createChannel<HEARTBEAT_MSG>( Heartbeat.LINK_CODE, [user.id]);
 			this.sessions.push(channel);
 			this.lastContact.set(user.id, 0);
-			this.pingTarget(channel);
+			await this.pingTarget(channel);
 			} else {
 				//USER DIsconnect
 				ui.notifications.notify( `${user.name} has disconnected`);
@@ -85,7 +87,7 @@ export class Heartbeat {
 
 	mainHeartbeatLoop() {
 		for (const session of this.sessions) {
-			this.pingTarget(session);
+			void this.pingTarget(session);
 		}
 	}
 
@@ -101,10 +103,10 @@ export class Heartbeat {
 			// console.log(`Sending pulse to ${target.name}`);
 			const initialTime= Date.now();
 			try {
-				const x = await session.sendInitial("HEARTBEAT", {initialTime});
+				await session.sendInitial("HEARTBEAT", {initialTime});
 				// console.log(`Heartbeat: ${Date.now() - initialTime}`);
 				this.lastContact.set(target.id, Date.now());
-			} catch (e) {
+			} catch  {
 				const timeSinceLastContact = this.secondsUntilLastContact(target);
 				if (timeSinceLastContact > 30 && notifyTime == 0) {
 					Hooks.callAll("UserNonResponsive", target, timeSinceLastContact);
@@ -120,7 +122,8 @@ export class Heartbeat {
 	}
 
 	refreshPlayerStatus() {
-		const that=  this;
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		const that =  this;
 		$(document).find("aside#players").find("li.player")
 		.each( function f() {
 			const id = $(this).data("userId") as string;

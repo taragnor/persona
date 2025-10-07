@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Tag } from "../item/persona-item.js";
 import { PCAndAllyStuff } from "../../config/actor-parts.js";
 import { FREQUENCY } from "../../config/frequency.js";
 import { frequencyConvert2 } from "../../config/actor-parts.js";
@@ -19,7 +19,7 @@ import { shadowOnlyCombatAbilities } from "../../config/actor-parts.js";
 import { encounterDataSchema } from "../../config/actor-parts.js";
 import { sharedAbilities } from "../../config/actor-parts.js";
 import { personalBio } from "../../config/actor-parts.js";
-import { CREATURE_TAG_LIST, CreatureTag } from "../../config/creature-tags.js";
+import { CreatureTag } from "../../config/creature-tags.js";
 const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
 import { SHADOW_CREATURE_TYPE_LIST } from "../../config/shadow-types.js";
 import { PC } from "../actor/persona-actor.js";
@@ -44,6 +44,7 @@ abstract class BaseStuff extends window.foundry.abstract.DataModel {
 function talentConversion(data: any) {
 	if (data.talents != undefined) {
 		if (data.combat.talents == undefined || data.combat.talents.length == 0)  {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 			const ids= data.talents.map((x:any)=> x.talentId);
 			data.combat.talents = ids;
 		}

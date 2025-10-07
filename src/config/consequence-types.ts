@@ -18,7 +18,6 @@ import { AlterMPSubtype } from "./effect-types.js";
 import { ConsequenceTarget } from "./precondition-types.js";
 import { DamageSubtype } from "./effect-types.js";
 import { DamageType } from "./damage-types.js";
-import { ModifierVariable } from "./effect-types.js";
 import { DungeonAction } from "./effect-types.js";
 import { SlotType } from "./slot-types.js";
 import { CONDITION_TARGETS_LIST } from "./precondition-types.js";
@@ -37,12 +36,6 @@ type ExpendOtherEffect = {
 	type: "expend-item";
 	itemAcc: UniversalItemAccessor<Consumable | SkillCard>;
 	itemId: string;
-}
-
-export type RecoverSlotEffect = {
-	type: "recover-slot",
-	slot: SlotType;
-	amt: number;
 }
 
 type SimpleOtherEffect =DeprecatedSimpleEffect
@@ -114,7 +107,7 @@ export type ExtraTurnEffect = {
 	activation: number,
 };
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | RecoverSlotEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence;
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence;
 ;
 
 type AlterVariableOtherEffect = AlterVariableConsequence & {contextList: TargettingContextList}
@@ -160,9 +153,6 @@ export type Consequence =
 
 type GenericConsequence = {
 	type: Exclude<ConsequenceType, NonGenericConsequences["type"]>,
-	amount ?: number,
-	iterativePenalty ?: number,
-	modifiedField ?: ModifierTarget,
 	itemAcc ?: UniversalItemAccessor<Usable>,
 	slotType ?: SlotType,
 	id ?: string,
@@ -172,11 +162,16 @@ type GenericConsequence = {
 	msg ?: string,
 }
 
+type NumberedConsequencePart = {
+	amount: number;
+}
+
 type NonGenericConsequences = UsePowerConsequence
 	| SocialCardActionConsequence
 	| DungeonActionConsequence
 	| ModifierConsequence
 	| OldDamageConsequence
+	| OldModifier
 	| DamageConsequence
 	| DisplayMessageConsequence
 	| ExpendItemConsequence
@@ -198,7 +193,24 @@ type NonGenericConsequences = UsePowerConsequence
 	| PlaySoundConsequence
 	| GainLevelConsequence
 	| ScanConsequence
+	| BasicNumberedConsequence
+	| ExtraAttackConsequence
+	| ExtraActionConsequence
 ;
+
+type ExtraActionConsequence = {
+	type: "extraTurn"
+};
+
+type BasicNumberedConsequence = {
+	type: "alter-energy",
+} & NumberedConsequencePart;
+
+
+type ExtraAttackConsequence = {
+	type: "extraAttack";
+	iterativePenalty: number;
+} & NumberedConsequencePart;
 
 type GainLevelConsequence = {
 	type: "gain-levels",
@@ -368,11 +380,12 @@ type DamageConsequenceShared = {
 	/** manually added as part of processing */
 };
 
-export type NonDeprecatedConsequence = Exclude<Consequence, DeprecatedConsequence>;
+export type NonDeprecatedConsequence = Consequence & { type: Exclude<Consequence["type"], DeprecatedConsequence["type"]>};
 
 type DeprecatedSimpleEffect = {
 	type: "save-slot" | "half-hp-cost";
 }
+
 
  type AddEscalationConsequence = {
 	 type: "add-escalation"
@@ -381,9 +394,20 @@ type DeprecatedSimpleEffect = {
 export type DeprecatedConsequence =
 	OldDamageConsequence
 	| DeprecatedSimpleEffect
-	| AddEscalationConsequence;
+	| AddEscalationConsequence
+	| SlotRecoveryConsequence
+	| EscalationManipulation;
 ;
 
+type EscalationManipulation = {
+	type: "escalationManipulation";
+}
+
+type SlotRecoveryConsequence = {
+	type: "recover-slot";
+	amount?: number;
+	slot?: number;
+};
 
 
 export type OldDamageConsequence = {
@@ -414,37 +438,23 @@ type DamageMultiplierCons = {
 }
 
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _errorCheckDType : Expect<DamageConsequence["damageSubtype"], DamageSubtype> = true;
 
 type ModifierConsequence = {
 	type: "modifier-new",
 	modifiedFields : Record<ModifierTarget,boolean>,
-	// modifierType: ModifierConsType,
 	modifierCategory: ModifierCategory,
-	// calcPriority: number,
-	// calcOperation: CalculationOperation,
-} & ModifierData;
+	amount: ConsequenceAmount,
+};
 
-type ModifierData = ConstantModifier
-	| SystemVariableModifier
-;
-
-// type ConsAmountModifier = {
-// 	amount: ConsequenceAmount;
-// 	modifierType ?: undefined;
-// }
-
-type ConstantModifier = {
-	modifierType: "constant",
-	amount: number
+type OldModifier = {
+	type: "modifier",
+	modifiedField : ModifierTarget,
+	amount: number,
 }
 
 
-type SystemVariableModifier = {
-	modifierType : "system-variable",
-	varName : ModifierVariable,
-	makeNegative: boolean,
-}
 
 export type SocialCardActionConsequence =
 	{ type: "social-card-action", cardAction: SocialCardAction} & CardActionTypes[number];

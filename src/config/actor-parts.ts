@@ -1,4 +1,5 @@
-import { CREATURE_TAG_LIST, PERSONA_TAGS, PersonaTag } from "./creature-tags.js";
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import { PersonaTag } from "./creature-tags.js";
 import { PersonaStat } from "./persona-stats.js";
 import { Power, Tag } from "../module/item/persona-item.js";
 import { FREQUENCY } from "./frequency.js";
@@ -10,7 +11,7 @@ import { TAROT_DECK } from "./tarot.js";
 import { DEFENSE_CATEGORY_LIST } from "./defense-categories.js";
 import { TarotCard } from "./tarot.js";
 import { StatusDuration } from "../module/active-effect.js";
-const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, FilePathField: file } = foundry.data.fields;
+const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 import { ResistType } from "./damage-types.js";
 import { RESIST_STRENGTH_LIST } from "./damage-types.js";
 import { ResistStrength } from "./damage-types.js";
@@ -180,10 +181,11 @@ export class ClassDataDM extends foundry.abstract.DataModel {
 		incremental: incremental(),
 		};
 	}
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	static override migrateData(oldData: Record<string, any>) {
-		const data= super.migrateData(oldData);
+		const data = super.migrateData(oldData);
 		if (data?.incremental?.initiative >=3 ) {
-			data.incremental.initiative == 2;
+			data.incremental.initiative = 2;
 		}
 		return data;
 	}
@@ -345,7 +347,7 @@ class EncounterDataDM extends foundry.abstract.DataModel {
 		};
 	}
 
-	static override migrateData(oldData: Record<string, any>) {
+	static override migrateData(oldData: Record<string, unknown>) {
 		const data = super.migrateData(oldData);
 		const oldFreq = data.frequency as keyof typeof FREQUENCY;
 		if (oldFreq != undefined) {
@@ -413,7 +415,7 @@ export function frequencyConvert2(oldFreq: keyof typeof FREQUENCY): typeof PROBA
 			return "always";
 		default:
 			oldFreq satisfies never;
-			console.warn(`Weird value for old frequncy ${oldFreq} on probability`);
+			console.warn(`Weird value for old frequncy ${oldFreq as number} on probability`);
 			return "never";
 	}
 }

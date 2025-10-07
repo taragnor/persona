@@ -8,6 +8,7 @@ import { PersonaDB } from "../persona-db.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaAE} from "../active-effect.js";
 import {PersonaError} from "../persona-error.js";
+import {resolveConsequenceAmount} from "../persona-variables.js";
 
 export type ModifierListItem<T extends ContainerTypes = ContainerTypes> = {
 	name: string;
@@ -94,24 +95,26 @@ export class ModifierList {
 	}
 
 
-	 static getModifierAmount(consequences: Consequence[], targetMods: ModifierTarget[] | ModifierTarget) : number {
-			targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
-			return (ArrayCorrector(consequences) ?? [])
-				 .reduce( (acc,cons)=> {
-						if ("modifiedFields" in cons
-							 && targetMods
-							 .some( f => cons.modifiedFields[f] == true)
-						) {
-							 if (cons.modifierType == "constant") {
-									return acc + (cons.amount ?? 0);
-							 }
-						}
-						if ("modifiedField" in cons && cons.modifiedField && targetMods.includes(cons.modifiedField)) {
-							 if (cons.amount) {return acc + cons.amount;}
-						}
-						return acc;
-				 }, 0);
-	 }
+	static getModifierAmount(consequences: Consequence[], targetMods: ModifierTarget[] | ModifierTarget) : number {
+		targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
+		return (ArrayCorrector(consequences) ?? [])
+			.reduce( (acc,cons)=> {
+				if ("modifiedFields" in cons
+					&& targetMods
+					.some( f => cons.modifiedFields[f] == true)
+				) {
+					const amount = resolveConsequenceAmount(cons.amount, {}) ?? 0;
+					return acc + amount;
+				}
+				if ("modifiedField" in cons && cons.modifiedField && targetMods.includes(cons.modifiedField)) {
+					if (cons.amount) {
+						const amount = resolveConsequenceAmount(cons.amount, {}) ?? 0;
+						return acc + amount;
+					}
+				}
+				return acc;
+			}, 0);
+	}
 
 	 addConditionalEffects( effects: ConditionalEffect[], source: PowerContainer  | string, bonusTypes: ModifierTarget[]) : this {
 			const sourceName = typeof source =="string" ? source : source.name;

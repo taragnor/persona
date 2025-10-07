@@ -1,6 +1,6 @@
 import { TargettingContextList } from "./combat/persona-combat.js";
 import { TarotCard } from "../config/tarot.js";
-import { SourcedConsequence } from "../config/consequence-types.js";
+import { NonDeprecatedConsequence, SourcedConsequence } from "../config/consequence-types.js";
 import { SceneClock } from "./exploration/scene-clock.js";
 import { NumberOfOthersWithComparison } from "../config/numeric-comparison.js";
 import { CombatResultComparison } from "../config/numeric-comparison.js";
@@ -40,7 +40,7 @@ import { Shadow } from "./actor/persona-actor.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 
-export function getActiveConsequences(condEffect: SourcedConditionalEffect, situation: Situation) : SourcedConsequence[] {
+export function getActiveConsequences(condEffect: SourcedConditionalEffect, situation: Situation) : SourcedConsequence<NonDeprecatedConsequence>[] {
 	const source = condEffect.source;
 	if (ArrayCorrector(condEffect.conditions).some(
 		cond=>!testPrecondition(cond, situation, source)

@@ -62,9 +62,9 @@ function NumericResolver(x: unknown, _sit: Situation): number {
     }
 }
 
-type x= Prettify<FieldDescriptorToObject<typeof NumericValue[]>>;
+// type x= Prettify<FieldDescriptorToObject<typeof NumericValue[]>>;
 
-function ActorStatResolver (x: unknown, sit: Situation): number | undefined{
+function ActorStatResolver (x: unknown, _sit: Situation): number | undefined{
   const y= x as FieldDescriptorToObject<typeof ActorStatSelector>;
     const actor=  game.actors.get(y.actorId);
   if (!actor) {return undefined;}

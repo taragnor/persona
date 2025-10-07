@@ -1,4 +1,3 @@
-import { SocketManager } from "./socket-manager.js";
 
 export class SocketSharedState<T> implements SharedState<T> {
 
@@ -13,7 +12,7 @@ export class SocketSharedState<T> implements SharedState<T> {
 			this.socketData = socketData;
 			return;
 		}
-		this.#setUpSockets();
+		void this.#setUpSockets();
 	}
 
 	async #setUpSockets(): Promise<void> {
@@ -40,18 +39,18 @@ export class SocketSharedState<T> implements SharedState<T> {
 		}
 	}
 
-	async #reportStateChange(data :T) : Promise<void> {
+	async #reportStateChange(_data :T) : Promise<void> {
 		//TODO, do socket stuff here
 
 	}
 
-	onStateChange(stateChangeFunction: StateChangeFn<T>): void {
+	onStateChange(_stateChangeFunction: StateChangeFn<T>): void {
 		throw new Error("Method not implemented.");
 	}
 
 }
 
-interface SharedState<T extends any> {
+interface SharedState<T> {
 	setState(data: T): Promise<void>;
 	onStateChange( stateChangeFunction : StateChangeFn<T>) : void;
 

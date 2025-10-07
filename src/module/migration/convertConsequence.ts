@@ -22,6 +22,8 @@ export class ConsequenceConverter {
 			case "save-slot":
 			case "half-hp-cost":
 			case "add-escalation":
+			case "recover-slot":
+			case "escalationManipulation":
 				console.log(`Deprecated Consequence type ${dep.type} in ${usable?.name}`);
 				return {
 					type: "none"

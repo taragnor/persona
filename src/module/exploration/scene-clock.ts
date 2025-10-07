@@ -1,4 +1,3 @@
-import { Darkness } from "./darkness-clock.js";
 import { ProgressClock } from "../utility/progress-clock.js";
 
 const SCENE_CLOCK_ID = "SceneClock";

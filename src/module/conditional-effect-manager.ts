@@ -19,7 +19,6 @@ import { multiCheckToArray } from "./preconditions.js";
 import { TAROT_DECK } from "../config/tarot.js";
 import { localize } from "./persona.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
-import { MODIFIER_VARIABLES } from "../config/effect-types.js";
 import { MODIFIERS_TABLE } from "../config/item-modifiers.js";
 import { Consequence, ConsequenceAmount, LEVEL_GAIN_TARGETS, NonDeprecatedConsequence } from "../config/consequence-types.js";
 import { RESIST_STRENGTHS } from "../config/damage-types.js";
@@ -47,6 +46,7 @@ import { PRECONDITIONLIST } from "../config/precondition-types.js";
 import { PersonaDB } from "./persona-db.js";
 import {ConsequenceConverter} from "./migration/convertConsequence.js";
 import {ValidAttackers} from "./combat/persona-combat.js";
+import {PersonaAE} from "./active-effect.js";
 
 export class ConditionalEffectManager {
 
@@ -353,6 +353,7 @@ export class ConditionalEffectManager {
 				isDefensive: conditionalType == "defensive",
 				owner: sourceActor?.accessor,
 				source: sourceItem,
+				// sourceItem: sourceItem? PersonaDB.getUniversalAccessor(sourceItem): undefined,
 			};
 		}
 		);
@@ -419,16 +420,18 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 		}));
 	}
 
-static getConsequences<T extends PersonaActor, I extends ModifierContainer & (Item | ActiveEffect)>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null): SourcedConditionalEffect["consequences"] {
+static getConsequences<T extends PersonaActor, I extends (PersonaItem | PersonaAE)>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null): SourcedConditionalEffect["consequences"] {
 	const consequences = this.ArrayCorrector(consObject);
-	return  consequences.map( eff=> {
+	return consequences.map( eff=> {
 		const nondep = ConsequenceConverter.convertDeprecated(eff, sourceItem instanceof Item ? sourceItem : null);
+		const SI = (sourceItem ? PersonaDB.getUniversalAccessor(sourceItem): (("sourceItem" in eff) ? eff.sourceItem : undefined));
 		return {
 			...nondep,
 			actorOwner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner) as UniversalActorAccessor<ValidAttackers>,
-			sourceItem: (sourceItem ? PersonaDB.getUniversalAccessor(sourceItem): (("sourceItem" in eff) ? eff.sourceItem : undefined)) as U<UniversalItemAccessor<PersonaItem>>,
-			source: sourceItem,
-		};
+			sourceItem:SI,
+			// sourceItem: (sourceItem ? PersonaDB.getUniversalAccessor(sourceItem): (("sourceItem" in eff) ? eff.sourceItem : undefined)) as U<UniversalItemAccessor<PersonaItem>>,
+			source: sourceActor,
+		} as SourcedConditionalEffect["consequences"][number];
 	});
 }
 
@@ -484,7 +487,7 @@ static getConsequences<T extends PersonaActor, I extends ModifierContainer & (It
 			case "boolean":
 				return this.#printBooleanCond(cond);
 			case "numeric":
-				return this.#printNumericCond(cond);
+				return this.printNumericCond(cond);
 			case "always":
 				return "always";
 			case "miss-all-targets":
@@ -681,8 +684,8 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 
 	}
 
-	static  #printNumericCond(cond: Precondition & {type: "numeric"}) : string {
-		const endString = function(cond: Precondition & {type: "numeric"} , derivedVar?: string) {
+	private static printNumericCond(cond: Precondition & {type: "numeric"}) : string {
+		const endString = (cond: Precondition & {type: "numeric"} , derivedVar?: string) => {
 			if (!("comparator" in cond)) {
 				return "ERROR";
 			}
@@ -698,7 +701,7 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 				case "<":
 				case "<=":
 					if ("num" in cond) {
-						return `${cond.comparator} ${cond.num}`;
+						return `${cond.comparator} ${this.printConsequenceAmount(cond.num)}`;
 					} else {
 						return `${cond.comparator} ${derivedVar}`;
 					}
@@ -809,61 +812,41 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 			.join (", ");
 	}
 
-	static printConsequence (cons: Consequence) : string {
-		switch (cons.type) {
-			case "none":
-				return "";
-			case "absorb":
-				return "Absorb";
-			case "modifier-new": {
-				const modifiers = this.translate(cons.modifiedFields, MODIFIERS_TABLE);
-				let amt: string;
-				switch (cons.modifierType) {
-
-					case "constant":
-						amt = String(cons.amount);
-						break;
-					case"system-variable":
-						amt = cons.makeNegative? "-" : "" + this.translate(cons.varName, MODIFIER_VARIABLES);
-						break;
-					default:
-						cons satisfies never;
-						amt = "error";
-				}
-				return `${modifiers}: ${amt}`;
-			}
-			case "damage-new":
-				return this.printDamageConsequence(cons);
-			case "addStatus": {
-				const status = this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE);
-				const dur = cons.statusDuration;
-				if (!dur) {return `ERROR`;}
-				const duration = this.translate(dur, STATUS_EFFECT_DURATION_TYPES);
-				return `Add Status ${status} (${duration})`;
-			} case "removeStatus": {
-				const status = this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE);
-				return `Remove Status ${status}`;
-			} case "escalationManipulation":
-				return `Modify Escalation Die ${cons.amount}`;
-			case "extraAttack":
-				return `extra attack`;
-			case "expend-slot":
-				return `expend Slot`;
-			case "half-hp-cost":
-				return `halve hp costs`;
-			case "revive":
-				return `heal percentage of health ${cons.amount}`;
-			case "extraTurn":
-				return `Take an extra turn`;
-			case "expend-item":
-				return `expend item`;
-			case "add-power-to-list": {
-				const grantedPower = PersonaDB.getPower(cons.id);
-				return `Add power to list ${grantedPower?.displayedName?.toString() ?? "ERROR"}`;
-			}
-			case "add-talent-to-list": {
-				const grantedTalent = PersonaDB.getItemById(cons.id) as Talent;
-				return `Add Talent to list ${grantedTalent?.displayedName?.toString() ?? "ERROR"}`;
+static printConsequence (cons: NonDeprecatedConsequence) : string {
+	switch (cons.type) {
+		case "none":
+			return "";
+		case "modifier-new": {
+			const modifiers = this.translate(cons.modifiedFields, MODIFIERS_TABLE);
+			return `${modifiers}: ${this.printConsequenceAmount(cons.amount)}`;
+		}
+		case "damage-new":
+			return this.printDamageConsequence(cons);
+		case "addStatus": {
+			const status = this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE);
+			const dur = cons.statusDuration;
+			if (!dur) {return `ERROR`;}
+			const duration = this.translate(dur, STATUS_EFFECT_DURATION_TYPES);
+			return `Add Status ${status} (${duration})`;
+		} case "removeStatus": {
+			const status = this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE);
+			return `Remove Status ${status}`;
+		}
+		case "extraAttack":
+			return `extra attack`;
+		case "expend-slot":
+			return `expend Slot`;
+		case "extraTurn":
+			return `Take an extra turn`;
+		case "expend-item":
+			return `expend item`;
+		case "add-power-to-list": {
+			const grantedPower = PersonaDB.getPower(cons.id);
+			return `Add power to list ${grantedPower?.displayedName?.toString() ?? "ERROR"}`;
+		}
+		case "add-talent-to-list": {
+			const grantedTalent = PersonaDB.getItemById(cons.id) as Talent;
+			return `Add Talent to list ${grantedTalent?.displayedName?.toString() ?? "ERROR"}`;
 
 			}
 			case "other-effect":
@@ -896,28 +879,11 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 			}
 			case "alter-mp":
 				return this.#printMPAlter(cons);
-			case "save-slot":
-				return "";
-			case "recover-slot":
-				return "";
 			case "modifier": {
-				const modified = this.translate(cons.modifiedField!, MODIFIERS_TABLE);
-				return `${modified} ${cons.amount}`;
-			} case "add-escalation": {
-				const modified = this.translate(cons.modifiedField!, MODIFIERS_TABLE);
-				return `add escalation to ${modified}`;
+				const modified = this.translate(cons.modifiedField, MODIFIERS_TABLE);
+				const amount = this.printConsequenceAmount(cons.amount);
+				return `${modified} ${amount}`;
 			}
-			case "dmg-low":
-				return "Low Damage";
-			case "dmg-high":
-				return "High Damage";
-			case "dmg-allout-low":
-			case "dmg-allout-high":
-				return "";
-			case "dmg-mult":
-				return `damage multiplier: ${cons.amount}`;
-			case "hp-loss":
-				return `HP loss: ${cons.amount}`;
 			case "teach-power": {
 				const power = PersonaDB.getPower(cons.id);
 				return `Teach Power ${power?.displayedName?.toString() ?? "ERROR"}`;
@@ -934,7 +900,7 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 				return `Alter Fatigue Level ${cons.amount}`;
 			case "alter-variable":
 				if (cons.operator != "set-range") {
-				return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${this.#printConsequenceAmount(cons.value)}`; } else {
+				return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${this.printConsequenceAmount(cons.value)}`; } else {
 				return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${cons.min} - ${cons.max}`; }
 			case "perma-buff":
 				return `Add Permabuff ${cons.buffType} :${cons.value}`;
@@ -951,7 +917,7 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 
 	}
 
-static #printConsequenceAmount(consAmt: ConsequenceAmount) : string {
+private static printConsequenceAmount(consAmt: ConsequenceAmount) : string {
 	if (typeof consAmt =="number") {return String(consAmt);}
 	return `Complex Consequence Amount`;
 
@@ -1224,9 +1190,8 @@ export class EMAccessor<T> {
 		if (this.#effectIndexChecker(effectIndex)) {
 			return await (this as EMAccessor<DeepNoArray<ConditionalEffect[]>>).consequences(effectIndex).addNewConsequence(cons);
 		}
-		const item : ConditionalEffect["consequences"][number] = cons ? cons : {
+		const item : (ConditionalEffect["consequences"][number]) = cons ? cons : {
 			type: "none",
-			amount: 0,
 		};
 		const that = this as EMAccessor<DeepNoArray<ConditionalEffect["consequences"]>>;
 		const newData = that.data;
@@ -1337,7 +1302,7 @@ const CETypes = [
 //@ts-expect-error added to window objects
 window.CEManager = ConditionalEffectManager;
 
-type ConditonalEffectHolderItem = ModifierContainer & (Item | ActiveEffect) & Partial<{isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]}> ;
+type ConditonalEffectHolderItem = ModifierContainer & (PersonaItem | PersonaAE) & Partial<{isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]}> ;
 
 
 declare global{
@@ -1350,7 +1315,7 @@ declare global{
 
 	interface NonDeprecatedConditionalEffect {
 		conditions: Precondition[];
-		consequences: NonDeprecatedConsequence[];
+		consequences: SourcedConsequence<NonDeprecatedConsequence>[];
 		isDefensive: boolean;
 	}
 
@@ -1358,11 +1323,18 @@ declare global{
 
 	interface SourcedConditionalEffect extends TypedConditionalEffect {
 		source: ModifierContainer | null;
+		// sourceItem: U<UniversalItemAccessor | UniversalAEAccessor>;
 		owner: U<UniversalActorAccessor<PersonaActor>>;
 	}
 
 	interface TypedConditionalEffect extends NonDeprecatedConditionalEffect {
 		conditionalType: typeof CETypes[number];
+	}
+
+	type SourcedConsequence<T extends Consequence> = T & {
+		sourceItem: U<UniversalItemAccessor | UniversalAEAccessor>;
+		owner: U<UniversalActorAccessor<PersonaActor>>;
+		source: ModifierContainer | null;
 	}
 
 }

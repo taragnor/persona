@@ -4,11 +4,27 @@ import { weightedChoice } from "../utility/array-tools.js";
 import { ProbabilityRate } from "../../config/probability.js";
 import { TreasureTable } from "../../config/treasure-tables.js";
 import {PersonaError} from "../persona-error.js";
+import {Carryable, Tag} from "../item/persona-item.js";
 
 export class TreasureSystem {
-	static generate(treasureLevel: number, modifier : number = 0) : U<TreasureItem> {
+	static generate(treasureLevel: number, modifier : number = 0) : U<{item: TreasureItem, enchantments: Tag[]}> {
 		const table = this.convertRollToTreasureTable(modifier);
-		return this.generateFromTable(table, treasureLevel);
+		const item =  this.generateFromTable(table, treasureLevel);
+		if (item == undefined) {return undefined;}
+		if (item.isEnchantable()) {
+			const enchantmentTable = this.convertRollToTreasureTable(modifier);
+			const enchantment = this.generateEnchantmentFromTable(enchantmentTable, treasureLevel);
+			if (enchantment) {
+				return {
+					item,
+					enchantments: [enchantment],
+				};
+			}
+		}
+		return {
+			item,
+			enchantments: [],
+		};
 	}
 
 	static convertRollToTreasureTable(modifier: number) : Exclude<TreasureTable, "none"> {
@@ -25,23 +41,38 @@ export class TreasureSystem {
 		}
 	}
 
-	static get treasureList() {
+	static enchantmentList(table: Exclude<TreasureTable, "none">, treasureLevel: number) : Tag[] {
+		return PersonaDB.enchantments()
+			.filter ( item =>
+				item.system.treasure.trinkets.enabled
+				|| item.system.treasure.lesser.enabled
+				|| item.system.treasure.greater.enabled
+				|| item.system.treasure.royal.enabled
+			)
+		.filter( tag =>
+			tag.system.treasure[table].enabled
+			&& treasureLevel >= tag.system.treasure[table].minLevel
+			&& treasureLevel <= tag.system.treasure[table].maxLevel
+		);
+	}
+
+	static treasureList(table: Exclude<TreasureTable, "none">, treasureLevel: number)  : Carryable[] {
 		return PersonaDB.treasureItems()
 			.filter ( item =>
 				item.system.treasure.trinkets.enabled
 				|| item.system.treasure.lesser.enabled
 				|| item.system.treasure.greater.enabled
 				|| item.system.treasure.royal.enabled
+			)
+			.filter( item =>
+				item.system.treasure[table].enabled
+				&& treasureLevel >= item.system.treasure[table].minLevel
+				&& treasureLevel <= item.system.treasure[table].maxLevel
 			);
 	}
 
 	static generateFromTable(table: Exclude<TreasureTable, "none">, treasureLevel: number) : U<TreasureItem> {
-		const list =this.treasureList
-		.filter( item =>
-			item.system.treasure[table].enabled
-			&& treasureLevel >= item.system.treasure[table].minLevel
-			&& treasureLevel <= item.system.treasure[table].maxLevel
-		);
+		const list = this.treasureList(table, treasureLevel);
 		if (list.length == 0) {return undefined;}
 		const weights = list
 		.map( item=> {
@@ -56,7 +87,7 @@ export class TreasureSystem {
 
 	static amountOfItemOwnedByParty(item : TreasureItem) : number {
 		const pcsAndAllies = game.actors.filter( (act:PersonaActor) => act.isPC() || act.isNPCAlly()) as PersonaActor[];
-		const items=  pcsAndAllies.map( actor => actor.items.find(i=> i == item)?.amount ?? 0);
+		const items = pcsAndAllies.map( actor => actor.items.find(i=> i == item)?.amount ?? 0);
 		return items.reduce( (acc,i) => acc+i, 0);
 	}
 
@@ -82,6 +113,19 @@ export class TreasureSystem {
 				return false;
 		}
 
+	}
+
+	static generateEnchantmentFromTable(table: Exclude<TreasureTable, "none">, treasureLevel: number) : U<Tag> {
+		const list = this.enchantmentList(table, treasureLevel);
+		if (list.length == 0) {return undefined;}
+		const weights = list
+		.map( item=> {
+			const rarity = item.system.treasure[table].rarity;
+			const baseWeight = ENCOUNTER_RATE_PROBABILITY[rarity];
+			const weight = baseWeight;
+			return { item, weight };
+		});
+		return weightedChoice(weights);
 	}
 
 }

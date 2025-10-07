@@ -6,7 +6,7 @@ declare class Handlebars {
 
 declare function loadTemplates(templatePaths: readonly string[]);
 
-type SafeString = HandleBarsExtras.SafeString;
+type SafeString = Foundry.HandleBarsExtras.SafeString;
 
 namespace Foundry {
 	namespace HandleBarsExtras {

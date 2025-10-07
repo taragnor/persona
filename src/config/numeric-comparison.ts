@@ -63,6 +63,7 @@ const V2_OPERANDS = [
 	"actor-stat",
 ] as const;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CONSTANT_SUBTYPE = [
 	"number",
 	"range",
@@ -668,6 +669,7 @@ function deriveComparator(oldC: NumericComparator | DerivedComparator) : Compara
 }
 
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ROLL_TYPE = [
 	"natural-roll",
 	"activation-roll",
@@ -676,14 +678,3 @@ const ROLL_TYPE = [
 ] as const;
 
 
-//Future stuff
-//replaces the basic number in the num field
-type LegacyNumericAmount = number;
-type NumericAmount  =
-	LegacyNumericAmount
-	| NewNumericAmount;
-
-
-type NewNumericAmount = {
-
-}
