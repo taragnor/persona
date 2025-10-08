@@ -1296,6 +1296,7 @@ img.inline {
 	display:inline;
 }
 
+.social-list,
 .item-list {
   display: flex;
   flex-wrap: wrap;        /* allow items to wrap onto new rows */
@@ -1303,6 +1304,7 @@ img.inline {
 
 }
 
+.social-list > .social-item,
 .item-list > .inventory-item {
 	flex: 1 1 calc(50% - 1em); /* two items per row, minus the gap */
 	box-sizing: border-box;    /* include padding/borders in width */
@@ -1432,4 +1434,47 @@ button.crunch-party-button {
 }
 .tooltip-box.visible {
   opacity: 1;
+}
+
+i.red {
+	color: red;
+}
+
+
+i.gold {
+  position: relative;
+  font-weight: 700;
+  color: #fceabb;
+  background: linear-gradient(45deg, #fff7c0, #d4af37, #b8860b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 10px rgba(255, 230, 150, 0.8);
+}
+
+
+i.gold::after {
+  content: "✨";
+  position: absolute;
+  animation: sparkle 2s infinite ease-in-out;
+  font-size: 0.8em;
+  color: #fff8dc;
+  opacity: 0;
+}
+
+@keyframes sparkle {
+  0%, 80%, 100% { opacity: 0; transform: translate(-20%, -50%) scale(0.8); }
+  10% { opacity: 1; transform: translate(100%, -50%) scale(1.2); }
+}
+
+img.greyed-out {
+	filter: grayscale(100%) brightness(70%);
+	opacity: 50%;
+}
+
+.gold-border {
+	border: 2px solid #d4af37 !important;
+	border-radius: 0.5em !important;
+	box-shadow:
+	0 0 6px rgba(212, 175, 55, 0.6),
+	0 0 12px rgba(212, 175, 55, 0.3) !important;
 }

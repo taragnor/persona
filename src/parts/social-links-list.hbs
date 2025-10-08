@@ -1,65 +1,88 @@
-<section class="social-links f-col">
+<section class="social-list social-links f-col">
 	<h2> Social Links</h2>
 	{{#each actor.socialLinks as |link|}}
-	<div class="social-link" data-link-id="{{link.actor.id}}">
-		{{#if link.available}}
-		<span class="social-command social-card">
+	<div class="social-link social-item f-row {{#if (gte link.linkLevel 10)}} gold-border {{/if}}" data-link-id="{{link.actor.id}}">
+		<div>
+			{{#if link.available}}
 			<a class="draw-social-card" title="Draw Social card">
-				<i class="fa-regular fa-id-card"></i>
+				<img class="portrait" src={{actor.img}}>
 			</a>
-		</span>
-		{{/if}}
-
-		<img class="portrait" src={{actor.img}}>
-		{{#if (isHighestLinker ../actor link)}}
-		<i title="Highest Link Level" class="fa-solid fa-star"></i>
-		{{/if}}
-		<a class="name">
-			{{link.actor.displayedName}}
-		</a>
-		<span class="tarot">
-			( {{link.actor.tarot.displayedName}} )
-		</span>
-		<span class="relationshipType">
-			[ {{link.relationshipType}} ]
-		</span>
-		<span class="inspiration">
-			{{link.inspiration}} / {{link.linkLevel}}
-		</span>
-		{{#if link.currentProgress}}
-		( {{link.currentProgress}} progress )
-		{{/if}}
-		<span class="social-icons">
-			<a class="useInspiration" title="Spend Inspiration">
-				<i class="fa-solid fa-user-minus"></i>
+			{{else}}
+			<img class="portrait greyed-out" src={{actor.img}}>
+			{{/if}}
+		</div>
+		<div class="f-col">
+			{{#if (and (lt link.linkLevel 10) (isHighestLinker ../actor link))}}
+			<div>
+				<i title="Highest Link Level" class="fa-solid fa-star gold"></i>
+			</div>
+			{{/if}}
+			{{#if link.isDating}}
+			<div>
+				<span class="relationshipType" title="Dating">
+					<i class="fa fa-heart red" aria-hidden="true"></i>
+				</span>
+			</div>
+			{{/if}}
+		</div>
+		<div>
+			<a class="name">
+				{{link.actor.displayedName}}
 			</a>
-			<a class="useRecovery" title="Use Recovery">
-				<i class="fa fa-heart" aria-hidden="true"></i>
-			</a>
-			<a class="refreshLink" title="Refresh Inspiration">
-				<i class="fa fa-refresh" aria-hidden="true"></i>
-			</a>
-			{{#if (isGM)}}
+		</div>
+		<div>
+			<span class="tarot">
+				( {{link.actor.tarot.displayedName}} )
+			</span>
+		</div>
+		<div class="f-col">
+			<div>
+				<span class="inspiration">
+					{{link.inspiration}} / {{link.linkLevel}}
+				</span>
+			</div>
+			<div class="inspiration-spends">
+				<span class="social-icons">
+					<a class="useInspiration" title="Spend Inspiration">
+						<i class="fa-solid fa-user-minus"></i>
+					</a>
+					<a class="useRecovery" title="Use Recovery">
+						<i class="fa fa-heart" aria-hidden="true"></i>
+					</a>
+					<a class="refreshLink" title="Refresh Inspiration">
+						<i class="fa fa-refresh" aria-hidden="true"></i>
+					</a>
+			</div>
+		</div>
+		{{#if (isGM)}}
+		<div class="f-col">
 			<a class="addSocialRank" title="Increase Social Rank ">
 				<i class="fa-solid fa-user-plus"></i>
 			</a>
 			<a class="removeSocialRank" title="Decrease Social Rank ">
 				<i class="fa-solid fa-user-minus"></i>
 			</a>
-			{{/if}}
+		</div>
+		{{/if}}
+		<div class="f-col">
+			<div title="Progress Tokens">
+				{{link.currentProgress}}
+			</div>
 			<a class="add-progress-token" title="Add Progress Token">
 				<i class="fa-solid fa-arrow-up"></i>
 			</a>
 			<a class="rem-progress-token" title="Remove Progress Token">
 				<i class="fa-solid fa-arrow-down"></i>
 			</a>
-		</span>
+		</div>
 		{{#if (isGM)}}
-		<span>
-			<select class="relationship-type">
-				{{selectOptions ../RELATIONSHIP_TYPES localize=false selected=link.relationshipType}}
-			</select>
-		</span>
+		<div>
+			<span>
+				<select class="relationship-type">
+					{{selectOptions ../RELATIONSHIP_TYPES localize=false selected=link.relationshipType}}
+				</select>
+			</span>
+		</div>
 		{{/if}}
 	</div>
 	{{/each}}
