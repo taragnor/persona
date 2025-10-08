@@ -22,7 +22,7 @@ import { RollBundle } from "../persona-roll.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { PersonaDB } from "../persona-db.js";
 import { PersonaActor } from "../actor/persona-actor.js";
-import {resolveConsequenceAmount} from "../persona-variables.js";
+import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
 
 declare global {
 	interface SocketMessage {
@@ -182,7 +182,7 @@ export class CombatResult  {
 				}
 				break;
 			}
-			case "extraAttack":
+			case "extraAttack": {
 				if (!effect) {break;}
 				effect.otherEffects.push({
 					type: "extra-attack",
@@ -190,6 +190,7 @@ export class CombatResult  {
 					iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
 				});
 				break;
+			}
 			case "expend-slot": {
 				console.warn("Expend slot is unused and does nnothing");
 				break;
@@ -242,7 +243,7 @@ export class CombatResult  {
 						target: effect.actor,
 					};
 				}
-				const socialTarget = getSocialLinkTarget(cons.socialLinkIdOrTarot, situation, null);
+				const socialTarget = getSocialLinkTarget(cons.socialLinkIdOrTarot, situation, undefined);
 				if (!socialTarget) {break;}
 				effect.otherEffects.push( {
 					type: "inspiration-cost",
@@ -306,7 +307,7 @@ export class CombatResult  {
 			case "alter-energy": {
 				if (!effect) {break;}
 				const contextList = PersonaCombat.createTargettingContextList(situation, cons);
-				const amount = resolveConsequenceAmount(cons.amount ?? 0, contextList) ?? 0;
+				const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, contextList) ?? 0;
 				effect.otherEffects.push( {
 					type: cons.type,
 					amount,

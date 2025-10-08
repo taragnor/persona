@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { ValidSocialTarget } from '../social/persona-social.js';
 import { EvaluatedDamage } from './damage-calc.js';
-import { NonDeprecatedConsequence} from '../../config/consequence-types.js';
-import { SourcedConsequence } from '../../config/consequence-types.js';
+import { EnhancedSourcedConsequence, NonDeprecatedConsequence, OldDamageConsequence} from '../../config/consequence-types.js';
 import { DamageCalculation } from './damage-calc.js';
 import { sleep } from '../utility/async-wait.js';
 import { CardTag } from '../../config/card-tags.js';
@@ -2100,7 +2099,7 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 	if (power && power.isUsableType()) {
 		damageType = cons.damageType != 'by-power' && cons.damageType != undefined ? cons.damageType : power.getDamageType(attacker);
 	}
-	const mods : SourcedConsequence<DamageConsequence>['modifiers'] = [];
+	const mods : EnhancedSourcedConsequence<DamageConsequence>['modifiers'] = [];
 	cons = {
 		...cons,
 		damageType,
@@ -3335,9 +3334,7 @@ export type SaveOptions = {
 export type ConsequenceProcessed = {
 	consequences: {
 		applyTo: 'global' | ValidAttackers,
-		// applyTo: ConditionTarget | "global",
-		// applyToSelf: boolean,
-		cons: SourcedConsequence<NonDeprecatedConsequence>,
+		cons: EnhancedSourcedConsequence<NonDeprecatedConsequence>,
 	}[],
 	escalationMod: number
 }
@@ -3375,7 +3372,9 @@ type CombatRollSituation = AttackResult['situation'];
 type IntoCombatant = PersonaCombatant | UniversalTokenAccessor<PToken> | UniversalActorAccessor<ValidAttackers>;
 
 
-export type TargettingContextList = Record<ValidAttackersApplies, UniversalActorAccessor<ValidAttackers>[]> & { cameo: UniversalActorAccessor<ValidSocialTarget>[]};
+export type TargettingContextList = Omit<Record<ValidAttackersApplies, UniversalActorAccessor<ValidAttackers>[]>, "owner"> & {
+	owner: UniversalActorAccessor<PersonaActor>[],
+	cameo: UniversalActorAccessor<ValidSocialTarget>[]};
 
 type ValidAttackersApplies = Exclude<NonNullable<Consequence['applyTo']>, 'cameo'>;
 

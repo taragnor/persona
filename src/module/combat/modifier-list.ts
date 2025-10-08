@@ -1,28 +1,23 @@
-import { Consequence } from "../../config/consequence-types.js";
-import { ArrayCorrector, ContainerTypes,  PersonaItem } from "../item/persona-item.js";
+import { ArrayCorrector } from "../item/persona-item.js";
 import { testPreconditions } from "../preconditions.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
-import { ModifierContainer } from "../item/persona-item.js";
 import { PowerContainer } from "../item/persona-item.js";
-import { PersonaDB } from "../persona-db.js";
-import {PersonaActor} from "../actor/persona-actor.js";
-import {PersonaAE} from "../active-effect.js";
 import {PersonaError} from "../persona-error.js";
-import {resolveConsequenceAmount} from "../persona-variables.js";
+import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
 
-export type ModifierListItem<T extends ContainerTypes = ContainerTypes> = {
+export type ModifierListItem = Sourced<{
 	name: string;
-	source: Option<UniversalAccessor<T>>;
-	conditions:  Precondition[];
+	// source: Option<UniversalAccessor<T>>;
+	conditions:  SourcedPrecondition[];
 	modifier: number;
-}
+}>;
 
 type MLListType = "standard"
 	| "percentage"
 	| "percentage-special" //presented in additive format +.35 instad of +135%;
 
 export class ModifierList {
-	_data: ModifierListItem<ContainerTypes>[];
+	_data: ModifierListItem[];
 	listType: MLListType;
 
 	constructor ( sourcedEffects: SourcedConditionalEffect[], bonusFn : (eff :SourcedConditionalEffect) => number ,listType?: MLListType);
@@ -35,27 +30,20 @@ export class ModifierList {
 			return;
 		}
 		const ModListItems = (list as SourcedConditionalEffect[]).map( eff=> ({
-          name: eff.source?.name ?? "Unknown Source",
-          source: eff.source?.accessor ?? null,
-          conditions: ArrayCorrector(eff.conditions),
-          modifier: typeof listTypeOrFn == "function" ? listTypeOrFn(eff): 0,
+			name: eff.source?.name ?? "Unknown Source",
+			source: eff.source,
+			owner: eff.owner,
+			conditions: ArrayCorrector(eff.conditions),
+			modifier: typeof listTypeOrFn == "function" ? listTypeOrFn(eff): 0,
 		}));
 		this._data = ModListItems;
 		this._data= this._data.filter( x=> x.modifier != 0);
 	}
 
-	add<T extends ContainerTypes>(name: string, modifier: number, sourceItem: Option<ModifierContainer & T> = null, conditions: Precondition[] = []) : ModifierList {
-		const source = !sourceItem 
-			? null
-			: sourceItem instanceof PersonaActor
-			? PersonaDB.getUniversalActorAccessor(sourceItem)
-			: sourceItem instanceof PersonaItem
-			? PersonaDB.getUniversalItemAccessor(sourceItem)
-			: sourceItem instanceof PersonaAE
-			? PersonaDB.getUniversalAEAccessor(sourceItem)
-			: null;
+	add(name: string, modifier: number, sourceItem?: ModifierListItem["source"]  , owner ?: ModifierListItem["owner"], conditions: SourcedPrecondition[] = []) : ModifierList {
 		this._data.push( {
-			source: source as UniversalAccessor<ContainerTypes>,
+			source: sourceItem,
+			owner,
 			name,
 			conditions,
 			modifier,
@@ -80,8 +68,8 @@ export class ModifierList {
 	validModifiers (situation: Situation) : ModifierListItem[]  {
 		return this._data.filter( item => {
 			try {
-				const source = item.source ? PersonaDB.find(item.source) ?? null: null;
-				if (testPreconditions(item.conditions, situation, source)) {
+				// const source = item.source ? PersonaDB.find(item.source) ?? null: null;
+				if (testPreconditions(item.conditions, situation)) {
 					if (item.modifier != 0) {
 						return true;
 					}
@@ -95,7 +83,7 @@ export class ModifierList {
 	}
 
 
-	static getModifierAmount(consequences: Consequence[], targetMods: ModifierTarget[] | ModifierTarget) : number {
+	static getModifierAmount(consequences: SourcedConsequence[], targetMods: ModifierTarget[] | ModifierTarget) : number {
 		targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
 		return (ArrayCorrector(consequences) ?? [])
 			.reduce( (acc,cons)=> {
@@ -103,12 +91,14 @@ export class ModifierList {
 					&& targetMods
 					.some( f => cons.modifiedFields[f] == true)
 				) {
-					const amount = resolveConsequenceAmount(cons.amount, {}) ?? 0;
+					const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
+					const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, {}) ?? 0;
 					return acc + amount;
 				}
 				if ("modifiedField" in cons && cons.modifiedField && targetMods.includes(cons.modifiedField)) {
 					if (cons.amount) {
-						const amount = resolveConsequenceAmount(cons.amount, {}) ?? 0;
+						const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
+						const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, {}) ?? 0;
 						return acc + amount;
 					}
 				}
@@ -116,19 +106,19 @@ export class ModifierList {
 			}, 0);
 	}
 
-	 addConditionalEffects( effects: ConditionalEffect[], source: PowerContainer  | string, bonusTypes: ModifierTarget[]) : this {
-			const sourceName = typeof source =="string" ? source : source.name;
-			const sourceAccessor = typeof source == "string" ? null : source.accessor;
-			const stuff : ModifierListItem[] = (ArrayCorrector(effects) ?? []).map( eff=>{
-				 return {
-						name: sourceName,
-						source: sourceAccessor,
-						conditions: ArrayCorrector(eff.conditions),
-						modifier: ModifierList.getModifierAmount(eff.consequences, bonusTypes),
-				 };
-			});
-this._data = this._data.concat(stuff);
-return this;
+	addConditionalEffects( effects: SourcedConditionalEffect[], source: PowerContainer  | string, bonusTypes: ModifierTarget[]) : this {
+		const sourceName = typeof source =="string" ? source : source.name;
+		const stuff : ModifierListItem[] = (ArrayCorrector(effects) ?? []).map( eff=>{
+			return {
+				name: sourceName,
+				source: eff.source,
+				owner: eff.owner,
+				conditions: ArrayCorrector(eff.conditions),
+				modifier: ModifierList.getModifierAmount(eff.consequences, bonusTypes),
+			};
+		});
+		this._data = this._data.concat(stuff);
+		return this;
 
 	}
 

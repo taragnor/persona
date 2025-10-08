@@ -1,11 +1,7 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
+
 import { ValidAttackers } from "./combat/persona-combat.js";
 import { TargettingContextList } from "./combat/persona-combat.js";
 import { PersonaDB } from "./persona-db.js";
-import { VariableAmount } from "../config/consequence-types.js";
-import { AmountOperation } from "../config/consequence-types.js";
-import { ConsequenceAmount } from "../config/consequence-types.js";
-import { ConsequenceAmountV2 } from "../config/consequence-types.js";
 import { VariableTypeSpecifier } from "../config/consequence-types.js";
 import { PersonaError } from "./persona-error.js";
 import { PersonaScene } from "./persona-scene.js";
@@ -13,9 +9,10 @@ import { PersonaSocial } from "./social/persona-social.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { AlterVariableConsequence } from "../config/consequence-types.js";
+import {ConsequenceAmountResolver} from "./conditionalEffects/consequence-amount.js";
 
 export class PersonaVariables {
-	static async alterVariable (cons: Mutator<AlterVariableConsequence>, contextList : TargettingContextList) {
+	static async alterVariable (cons: Sourced<AlterVariableConsequence>, contextList : TargettingContextList) {
 		const variableLocation = this.#convertTypeSpecToLocation(cons, contextList);
 		if (!variableLocation) {return;}
 		const origValue = this.#get(variableLocation) ?? 0;
@@ -75,22 +72,26 @@ export class PersonaVariables {
 				};
 		}
 	}
-	static #applyMutator<T extends Mutator<AlterVariableConsequence>>( mutator: T, origValue :number | undefined, contextList: TargettingContextList) : number | undefined {
+
+	static #applyMutator<T extends Sourced<AlterVariableConsequence>>( mutator: T, origValue :number | undefined, contextList: TargettingContextList) : number | undefined {
+	// static #applyMutator<T extends Mutator<AlterVariableConsequence>>( mutator: T, origValue :number | undefined, contextList: TargettingContextList) : number | undefined {
 		if (Number.isNaN(origValue)) {return undefined;}
 		switch (mutator.operator) {
 			case "set": {
-				const {value} = mutator;
-				return resolveConsequenceAmount(value, contextList);
+				const value = ConsequenceAmountResolver.extractSourcedValue(mutator);
+				return ConsequenceAmountResolver.resolveConsequenceAmount(value, contextList);
 			}
 			case "add": {
-				const {value} = mutator;
+				const value = ConsequenceAmountResolver.extractSourcedValue(mutator);
 				if (origValue == undefined) {return undefined;}
-				return resolveConsequenceAmount(value, contextList) + origValue;
+				const val = ConsequenceAmountResolver.resolveConsequenceAmount(value, contextList);
+				return (val ?? 0) + origValue;
 			}
 			case "multiply": {
-				const {value} = mutator;
+				const value = ConsequenceAmountResolver.extractSourcedValue(mutator);
 				if (origValue == undefined) {return undefined;}
-				return resolveConsequenceAmount(value, contextList) + origValue;
+				const val = ConsequenceAmountResolver.resolveConsequenceAmount(value, contextList);
+				return (val ?? 1) * origValue;
 			}
 			case "set-range": {
 				const {min, max} = mutator;
@@ -179,49 +180,6 @@ type VariableSpecifier = {
 };
 
 
-export function resolveConsequenceAmount< C extends ConsequenceAmount, T extends PreparedConsequenceAmountV2<C>>(amt: T, contextList: Partial<TargettingContextList>) : number {
-	if (typeof amt == "number") {return amt;}
-	switch (amt.type) {
-		case "operation":
-			return resolveOperation(amt, contextList);
-		case "constant":
-			return amt.val ?? 0;
-		case "variable-value":
-				return PersonaVariables.getVariable(amt, contextList) ?? 0;
-		case "random-range": {
-			const rand = Math.floor(amt.min + Math.random() * (amt.max - amt.min));
-			return rand;
-		}
-		default:
-				amt satisfies never;
-			PersonaError.softFail(`Unknwon consequence Amount type :${amt["type"] as string}`);
-			return -1;
-	}
-
-}
-
-function resolveOperation <T extends PreparedConsequenceAmountV2<C> , C extends ConsequenceAmountV2>(amt: T & {type : "operation"}, contextList: Partial<TargettingContextList> ) : number {
-	const val1 = resolveConsequenceAmount(amt.amt1, contextList);
-	const val2 = resolveConsequenceAmount(amt.amt2, contextList);
-
-	switch (amt.operator) {
-		case "add":
-			return val1 + val2;
-		case "subtract":
-			return val1 - val2;
-		case "divide":
-			return val1 / val2;
-		case "multiply":
-			return val1 * val2;
-		case "modulus":
-			return val1 % val2;
-		default:
-			amt.operator satisfies never;
-			PersonaError.softFail(`Unknown Operator: ${amt["operator"] as string}`);
-			return -1;
-	}
-}
-
 export function createTargettingContextListFromSituation( situation: Situation) : Partial<TargettingContextList> {
 	 const list : Partial<TargettingContextList> = {};
 
@@ -238,41 +196,66 @@ export function createTargettingContextListFromSituation( situation: Situation) 
 	 return list;
 }
 
-export type Mutator<T extends AlterVariableConsequence> =
-	//unknwon trick oddly seems to extend to unions
-	T extends unknown ?
-	(
-		Required<T>
-	& (
-		T extends {value: ConsequenceAmount}
-		? {
-			value: PreparedConsequenceAmountV2<T["value"]>,
-			// found: true
-		}
-		: {}
-	)
-	) : never;
+//type Mutator<T extends AlterVariableConsequence> =
+//	//unknwon trick oddly seems to extend to unions
+//	T extends unknown ?
+//	(
+//		Required<T>
+//	& (
+//		T extends {value: ConsequenceAmount}
+//		? {
+//			value: PreparedConsequenceAmountV2<T["value"]>,
+//			// found: true
+//		}
+//		: {}
+//	)
+//	) : never;
 
 
-type PreparedConsequenceAmountV2<T extends ConsequenceAmount= ConsequenceAmountV2> =
-	T extends number
-	? number
-	: T extends unknown ? (
-	Required<T>
-	// & {test: string}
-	& (
-		T extends VariableAmount
-		? Required<VariableAmount>
-		: {}
-	)
-	& (
-		T extends AmountOperation
-		? {
-			type: "operation",
-			amt1: PreparedConsequenceAmountV2<ConsequenceAmountV2>;
-			amt2: PreparedConsequenceAmountV2<ConsequenceAmountV2>;
-		}
-		:{}
-	)
-	) : never;
+//type PreparedConsequenceAmountV2<T extends ConsequenceAmount= ConsequenceAmountV2> =
+//	T extends number
+//	? number
+//	: SourcedConsequenceAmountV2<Exclude<T, number>>;
+//	// : T extends unknown ? (
+//	// Required<T>
+//	// // & {test: string}
+//	// & (
+//	// 	T extends VariableAmount
+//	// 	? Required<VariableAmount>
+//	// 	: {}
+//	// )
+//	// & (
+//	// 	T extends AmountOperation
+//	// 	? {
+//	// 		type: "operation",
+//	// 		amt1: PreparedConsequenceAmountV2<ConsequenceAmountV2>;
+//	// 		amt2: PreparedConsequenceAmountV2<ConsequenceAmountV2>;
+//	// 	}
+//	// 	:{}
+//	// )
+//	// ) : never;
 
+//type SourcedConsequenceAmountV2<T extends ConsequenceAmountV2 = ConsequenceAmountV2> =
+//	// Sourced<ActualConsequenceAmountV2<T>>;
+//	Sourced<test>;
+
+
+//type ActualConsequenceAmountV2<T extends ConsequenceAmountV2 = ConsequenceAmountV2> =
+//	T extends unknown ? (
+//		Required<T>
+//		// & {test: string}
+//		& (
+//			T extends VariableAmount
+//			? Required<VariableAmount>
+//			: {}
+//		)
+//		& (
+//			T extends AmountOperation
+//			? {
+//				type: "operation",
+//				amt1: ActualConsequenceAmountV2<ConsequenceAmountV2>;
+//				amt2: ActualConsequenceAmountV2<ConsequenceAmountV2>;
+//			}
+//			:{}
+//		)
+//	) : never;

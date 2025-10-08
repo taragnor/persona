@@ -1,15 +1,15 @@
 import { TargettingContextList } from "./combat/persona-combat.js";
 import { TarotCard } from "../config/tarot.js";
-import { NonDeprecatedConsequence, SourcedConsequence } from "../config/consequence-types.js";
+import { EnhancedSourcedConsequence, NonDeprecatedConsequence } from "../config/consequence-types.js";
 import { SceneClock } from "./exploration/scene-clock.js";
 import { NumberOfOthersWithComparison } from "../config/numeric-comparison.js";
 import { CombatResultComparison } from "../config/numeric-comparison.js";
 // import { NumericV2 } from "./conditionalEffects/numericV2.js";
-import { PersonaVariables, resolveConsequenceAmount } from "./persona-variables.js";
+import { PersonaVariables } from "./persona-variables.js";
 import { PersonaScene } from "./persona-scene.js";
 import { ActorChange } from "./combat/combat-result.js";
 import { AttackResult } from "./combat/combat-result.js";
-import { ModifierContainer, Usable } from "./item/persona-item.js";
+import { Usable } from "./item/persona-item.js";
 import { SocialLink } from "./actor/persona-actor.js";
 import { NPCAlly } from "./actor/persona-actor.js";
 import { ValidSocialTarget } from "./social/persona-social.js";
@@ -39,11 +39,12 @@ import { PC } from "./actor/persona-actor.js";
 import { Shadow } from "./actor/persona-actor.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
+import {ConsequenceAmountResolver} from "./conditionalEffects/consequence-amount.js";
 
-export function getActiveConsequences(condEffect: SourcedConditionalEffect, situation: Situation) : SourcedConsequence<NonDeprecatedConsequence>[] {
+export function getActiveConsequences(condEffect: SourcedConditionalEffect, situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
 	const source = condEffect.source;
 	if (ArrayCorrector(condEffect.conditions).some(
-		cond=>!testPrecondition(cond, situation, source)
+		cond=>!testPrecondition(cond, situation)
 	)) {return [];}
 	const arr=  ArrayCorrector(condEffect.consequences);
 	return arr.map( cons => ({
@@ -53,21 +54,21 @@ export function getActiveConsequences(condEffect: SourcedConditionalEffect, situ
 	}));
 }
 
-export function testPreconditions(conditionArr: Precondition[], situation: Situation, source : ModifierContainer | null) : boolean {
+export function testPreconditions(conditionArr: readonly SourcedPrecondition[], situation: Situation) : boolean {
 	// return ConditionalEffectManager.getConditionals(conditionArr,source, null)
 	try {
 		return conditionArr.every( cond =>
-			testPrecondition(cond, situation, source));
+			testPrecondition(cond, situation));
 	} catch (e) {
 		if (e instanceof Error) {
-			PersonaError.softFail(e.toString(), e, conditionArr, situation, source);
+			PersonaError.softFail(e.toString(), e, conditionArr, situation);
 		}
 		return false;
 	}
 }
 
 
-export function testPrecondition (condition: Precondition, situation:Situation, source: ModifierContainer| null) : boolean {
+export function testPrecondition (condition: SourcedPrecondition, situation:Situation) : boolean {
 	switch (condition.type) {
 		case "always":
 			return true;
@@ -77,15 +78,15 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 			if (!situation.saveVersus) {return false;}
 			return situation.saveVersus == condition.status;
 		case "on-trigger":
-			return triggerComparison(condition, situation, source);
+			return triggerComparison(condition, situation);
 		case "numeric": {
-			return numericComparison(condition, situation, source);
+			return numericComparison(condition, situation);
 		}
 		case "numeric-v2":
 			return false;
 			// return NumericV2.eval(condition, situation, source);
 		case "boolean": {
-			return booleanComparison(condition, situation, source);
+			return booleanComparison(condition, situation);
 		}
 		case "never":
 			return false;
@@ -106,7 +107,7 @@ export function testPrecondition (condition: Precondition, situation:Situation, 
 }
 
 
-function numericComparison(condition: Precondition, situation: Situation, source:Option<ModifierContainer>) : boolean {
+function numericComparison(condition: SourcedPrecondition, situation: Situation) : boolean {
 	if (condition.type != "numeric") {throw new PersonaError("Not a numeric comparison");}
 	let target: number;
 	let testCase = ("num" in condition) ? condition.num : 0;
@@ -154,7 +155,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			}
 			if (!actor  || !actor.isRealPC()) {return false;}
 
-			const socialLink = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
+			const socialLink = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, condition.source);
 			if (!socialLink) {
 				target = 0;
 				break;
@@ -190,7 +191,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			break;
 		}
 		case "resistance-level" : {
-			const subject = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+			const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!subject) {return false;}
 			testCase = RESIST_STRENGTH_LIST.indexOf(condition.resistLevel);
 			let element : DamageType | "by-power" = condition.element;
@@ -210,7 +211,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			break;
 		}
 		case "health-percentage": {
-       const subject = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+       const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!subject) {return false;}
 			target = (subject.hp / subject.mhpEstimate) * 100;
 			break;
@@ -222,19 +223,19 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			break;
     }
 		case "percentage-of-hp": {
-			const subject = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+			const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!subject) {return false;}
 			target = subject.hp / subject.mhpEstimate;
 			break;
 		}
 		case "percentage-of-mp": {
-			const subject = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+			const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!subject) {return false;}
 			target = subject.mp / subject.mmp;
 			break;
 		}
 		case "energy": {
-			const subject = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+			const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!subject) {return false;}
 			if (!subject.isShadow()) {return false;}
 			target = subject.system.combat.energy.value;
@@ -248,7 +249,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			break;
 		}
 		case "itemCount": {
-			const arr = getSubjectActors(condition, situation, source, "conditionTarget");
+			const arr = getSubjectActors(condition, situation, "conditionTarget");
 			if (arr.length == 0) {return false;}
 			target = arr.reduce( (acc,subject) => {
 			const item = game.items.get(condition.itemId);
@@ -262,9 +263,9 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			break;
 		}
 		case "inspirationWith": {
-			const subject = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+			const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!subject) {return false;}
-			const link = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
+			const link = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, condition.source);
 			if (!link) {return false;}
 			target = subject.getInspirationWith(link.id);
 			break;
@@ -297,7 +298,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			break;
 		}
 		case "total-SL-levels": {
-			const subject : PersonaActor | undefined = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+			const subject : PersonaActor | undefined = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!subject) {return false;}
 			let targetActor : SocialLink | undefined = undefined;
 			switch (subject.system.type) {
@@ -323,7 +324,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			break;
 		}
 		case "progress-tokens-with": {
-			const targetActor = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+			const targetActor = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!targetActor || !targetActor.isSocialLink()) {
 				return false;
 			}
@@ -336,13 +337,13 @@ function numericComparison(condition: Precondition, situation: Situation, source
 		}
 
 		case "combat-result-based": {
-			const res = combatResultBasedNumericTarget(condition, situation, source) ;
+			const res = combatResultBasedNumericTarget(condition, situation) ;
 			if (typeof res == "boolean") {return res;}
 			target= res;
 			break;
 		}
 		case "num-of-others-with": {
-			const res  =  numberOfOthersWithResolver(condition, situation, source);
+			const res  =  numberOfOthersWithResolver(condition, situation);
 			if (typeof res == "boolean") {return res;}
 			target = res;
 			break;
@@ -350,7 +351,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 		case "variable-value": {
 			let val: number | undefined;
 			if (condition.varType == "actor") {
-				const subject = getSubjectActors(condition, situation, source, "applyTo")[0];
+				const subject = getSubjectActors(condition, situation, "applyTo")[0];
 				if (subject == undefined) {return false;}
 				const reqCondition = {
 					...condition,
@@ -368,7 +369,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			break;
 		}
 		case "scan-level": {
-			const targetActor = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+			const targetActor = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!targetActor || !targetActor.isValidCombatant()) {return false;}
 			target = targetActor.persona().scanLevelRaw;
 			break;
@@ -378,16 +379,25 @@ function numericComparison(condition: Precondition, situation: Situation, source
 			PersonaError.softFail(`Unknown numeric comparison type ${(condition as Record<string, string>)["comparisonTarget"]}`);
 			return false;
 	}
-	const ownersList = condition.actorOwner
-		? [condition.actorOwner]
+	const source = condition.source;
+	const ownersList = condition.owner
+		? [condition.owner]
 		: source?.parent instanceof PersonaActor
 		&& source.parent.isValidCombatant()
 		? [source.parent.accessor]
 		: [];
 	const contextList = PersonaCombat.createTargettingContextList(situation);
 	contextList["owner"] = ownersList;
-	testCase = resolveConsequenceAmount(testCase, contextList);
-
+	if (typeof testCase != "number") {
+		const sourced = {
+			source: condition.source,
+			owner: condition.owner,
+			...testCase,
+		};
+		const resolvedCA = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, contextList);
+		if (resolvedCA == undefined) {return false;}
+		testCase = resolvedCA;
+	}
 	switch (condition.comparator) {
 		case "!=" : return target != testCase;
 		case "==" : return target == testCase;
@@ -404,7 +414,7 @@ function numericComparison(condition: Precondition, situation: Situation, source
 	return false;
 }
 
-export function combatResultBasedNumericTarget(condition: CombatResultComparison, situation: Situation, _source:Option<ModifierContainer>): number | boolean {
+export function combatResultBasedNumericTarget(condition: CombatResultComparison, situation: Situation): number | boolean {
 	const invert = condition.invertComparison ?? false;
 	let resultCompFn : (atk: AttackResult) => boolean = (_atk) => true;
 	let changeCompFn: (  changes: ActorChange<ValidAttackers>) => boolean = () => true;
@@ -441,7 +451,7 @@ export function combatResultBasedNumericTarget(condition: CombatResultComparison
 	return count;
 }
 
-function triggerComparison(condition: DeepReadonly<Triggered>, situation: Situation, _source:Option<ModifierContainer>) : boolean {
+function triggerComparison(condition: DeepReadonly<Triggered>, situation: Situation) : boolean {
 	if (!("trigger" in situation)) {return false;}
 	if (!condition.trigger) {return false;}
 	if (condition.trigger != situation.trigger) {return false;}
@@ -490,10 +500,10 @@ function triggerComparison(condition: DeepReadonly<Triggered>, situation: Situat
 }
 
 /** returns undefined in case of a state that just shouldn't be analzyed at all*/
-function getBoolTestState(condition: Precondition & BooleanComparisonPC, situation: Situation, source: Option<ModifierContainer>): boolean | undefined {
+function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Situation): boolean | undefined {
    switch(condition.boolComparisonTarget) {
       case "engaged": {
-         const subjects = getSubjects(condition, situation, source, "conditionTarget");
+         const subjects = getSubjects(condition, situation, "conditionTarget");
          if (!subjects) {return undefined;}
          const combat = game.combat as PersonaCombat;
          if (!combat) {return undefined;}
@@ -513,8 +523,8 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
          //return true if X is engaging Y
          const combat = game.combat as PersonaCombat;
          if (!combat) {return undefined;}
-         const target = getSubjectTokens(condition, situation, source, "conditionTarget")[0];
-         const target2 = getSubjectTokens(condition, situation, source, "conditionTarget2")[0];
+         const target = getSubjectTokens(condition, situation, "conditionTarget")[0];
+         const target2 = getSubjectTokens(condition, situation, "conditionTarget2")[0];
          if (!target || !target2) {return undefined;}
          const tok1 = PersonaDB.getUniversalTokenAccessor(target);
          const tok2 = PersonaDB.getUniversalTokenAccessor(target2);
@@ -523,7 +533,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
       case "metaverse-enhanced":
          return Metaverse.isEnhanced();
       case "is-shadow": {
-         const arr = getSubjects(condition, situation, source,  "conditionTarget");
+         const arr = getSubjects(condition, situation, "conditionTarget");
          if (!arr) {return undefined;}
          return arr.some( target => {
             const targetActor = target instanceof PersonaActor ? target : target.actor;
@@ -531,12 +541,12 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
          });
       }
       case "is-pc": {
-         const targets = getSubjectActors(condition, situation, source,  "conditionTarget");
+         const targets = getSubjectActors(condition, situation,  "conditionTarget");
          if (!targets) {return undefined;}
          return targets.some( target => target.isPC());
       }
       case "has-tag": {
-         return hasTagConditional(condition, situation, source);
+         return hasTagConditional(condition, situation);
       }
       case "power-type-is": {
          if (!situation.usedPower) {
@@ -568,7 +578,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
          return multiCheckContains(condition.powerDamageType, [dtype as string]);
       }
       case "has-status" : {
-         const arr = getSubjects(condition, situation, source,  "conditionTarget");
+         const arr = getSubjects(condition, situation, "conditionTarget");
          if (!arr) {return undefined;}
          return arr.some( target => {
             const targetActor = target instanceof PersonaActor ? target : target.actor;
@@ -585,7 +595,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
          if (!situation.usedPower) {
             return false;
          }
-         const arr = getSubjects(condition, situation, source,  "conditionTarget");
+         const arr = getSubjects(condition, situation, "conditionTarget");
          if (!arr) {return undefined;}
          for (const target of arr) {
             const targetActor = target instanceof PersonaActor ? target : target.actor;
@@ -600,7 +610,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
          return false;
       }
       case "is-resistant-to": {
-         const arr = getSubjects(condition, situation, source,  "conditionTarget");
+         const arr = getSubjects(condition, situation, "conditionTarget");
          if (!arr) {return undefined;}
          return arr.some( target => {
             const targetActor = target instanceof PersonaActor ? target : target.actor;
@@ -625,7 +635,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
          });
       }
       case "flag-state": {
-         const targetActor = getSubjectActors(condition, situation, source,  "conditionTarget")[0];
+         const targetActor = getSubjectActors(condition, situation,  "conditionTarget")[0];
          if (!targetActor) {return undefined;}
          return targetActor.getFlagState(condition.flagId);
       }
@@ -635,12 +645,12 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
          if(!situation.target) {
             return undefined;
          }
-         const targetActor = getSubjectActors(condition, situation, source,  "conditionTarget")[0];
+         const targetActor = getSubjectActors(condition, situation,  "conditionTarget")[0];
          if (!targetActor) {return undefined;}
          return actor.system.tarot == targetActor.system.tarot;
       }
       case "is-dead": {
-         const arr = getSubjects(condition, situation, source,  "conditionTarget");
+         const arr = getSubjects(condition, situation, "conditionTarget");
          if (!arr) {return undefined;}
          return arr.some( target => {
             const targetActor = target instanceof PersonaActor ? target : target.actor;
@@ -655,8 +665,8 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
          return power.system.type == "consumable";
       }
       case "target-owner-comparison": {
-         let target = getSubjects(condition, situation, source, "conditionTarget")[0];
-         let target2 = getSubjects(condition, situation, source, "conditionTarget2")[0];
+         let target = getSubjects(condition, situation, "conditionTarget")[0];
+         let target2 = getSubjects(condition, situation, "conditionTarget2")[0];
          if (target instanceof TokenDocument) {
             target = target.actor;
          }
@@ -689,21 +699,21 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
          return condition.days[weekday];
       }
       case "social-target-is": {
-         const arr = getSubjects(condition, situation, source, "conditionTarget");
+         const arr = getSubjects(condition, situation, "conditionTarget");
          if (!arr) {return undefined;}
          return arr.some( target => {
-            const desiredActor = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, source);
+            const desiredActor = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, condition.source);
             return target == desiredActor;
          });
       }
       case "social-target-is-multi": {
-         const target = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+         const target = getSubjectActors(condition, situation, "conditionTarget")[0];
          if (!target) { return undefined; }
          const actors= multiCheckToArray(condition.socialLinkIdOrTarot) as SocialLinkIdOrTarot[];
-         return actors.some(actor => getSocialLinkTarget(actor, situation, source) == target);
+         return actors.some(actor => getSocialLinkTarget(actor, situation, condition.source) == target);
       }
       case "shadow-role-is": {
-         const target = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+         const target = getSubjectActors(condition, situation, "conditionTarget")[0];
          if (!target) {return undefined;}
          if (target.system.type != "shadow") {return false;}
          if (typeof condition.shadowRole == "string") {
@@ -712,7 +722,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
          return multiCheckContains(condition.shadowRole, [target.system.role, target.system.role2]);
       }
       case "is-distracted": {
-         const target = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+         const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
          if (!target) {return undefined;}
          return target.isDistracted();
       }
@@ -728,7 +738,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
       case "has-item-in-inventory": {
          const item = game.items.get(condition.itemId);
          if (!item) {return undefined;}
-         const targets = getSubjectActors(condition, situation, source, "conditionTarget");
+         const targets = getSubjectActors(condition, situation,  "conditionTarget");
          if (!targets) {return undefined;}
          return targets.some( target => {
             const itemList = condition.equipped
@@ -738,7 +748,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
          });
       }
       case "creature-type-is": {
-         const target = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+         const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
          if (!target) {return undefined;}
          return multiCheckContains(condition.creatureType, [target.system.creatureType]);
 
@@ -755,7 +765,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (!condition.conditionTarget) {
 				condition.conditionTarget = "user";
 			}
-			let target1 = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+			let target1 = getSubjectActors(condition, situation,  "conditionTarget")[0];
 			if (!target1) {
 				if (!situation.user) {return undefined;}
 				target1 = PersonaDB.findActor(situation.user);
@@ -764,7 +774,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			if (target1.system.type == "shadow") {return undefined;}
 			switch (condition.socialTypeCheck) {
 				case "relationship-type-check": {
-					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, source);
+					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
 					const link = target1.socialLinks.find(x=>x.actor == target2);
 					if (!link) {return undefined;}
 					return link.relationshipType.toUpperCase() == condition.relationshipType.toUpperCase();
@@ -775,12 +785,12 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 					if (target1.system.type != "pc") {
 						return undefined;
 					}
-					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, source);
+					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
 					if (!target2) {return undefined;}
 					return target1.isAvailable(target2);
 				}
 				case "is-dating": {
-					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, source);
+					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
 					if (!target2) {return undefined;}
 					return target1.isDating(target2);
 				}
@@ -793,7 +803,7 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			}
 		}
 		case "has-creature-tag":  {
-			const target = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!target) {return undefined;}
 			return multiCheckTest(condition.creatureTag, x => target.hasCreatureTag(x));
 		}
@@ -801,23 +811,34 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 			return Boolean(situation.cameo);
 		}
 		case "arcana-is": {
-			const target = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!target) {return undefined;}
 			const tarot = target.system.tarot;
 			if (!tarot) {return undefined;}
 			return target.system.tarot == condition.tarot;
 		}
 		case "is-enemy": {
-			const target = getSubjectTokens(condition, situation, source,  "conditionTarget")[0];
-			const target2 = getSubjectTokens(condition, situation, source, "conditionTarget2")[0];
+			const target = getSubjectTokens(condition, situation,   "conditionTarget")[0];
+			const target2 = getSubjectTokens(condition, situation, "conditionTarget2")[0];
 			if (!target || !target2) {return undefined;}
 			const combat = game.combat as PersonaCombat;
 			if (!combat) {return undefined;}
 			const enemies = combat.getAllEnemiesOf(target);
 			return enemies.includes(target2);
 		}
-		case "logical-or":
-			return testPrecondition(condition.comparison1, situation, source) || testPrecondition(condition.comparison2, situation, source);
+		case "logical-or": {
+			const comp1 = {
+				...condition.comparison1,
+				source: condition.source,
+				owner: condition.owner
+			};
+			const comp2 = {
+				...condition.comparison2,
+				source: condition.source,
+				owner: condition.owner
+			};
+			return testPrecondition(comp1, situation) || testPrecondition(comp2, situation);
+		}
 		case "scene-clock-name-is":
 			return SceneClock.instance.clockName.toUpperCase().trim() == condition.clockName.toUpperCase().trim();
 		case "is-within-ailment-range":
@@ -825,17 +846,17 @@ function getBoolTestState(condition: Precondition & BooleanComparisonPC, situati
 		case "is-within-instant-death-range":
 				return "withinInstantKillRange" in situation ? situation.withinInstantKillRange ?? false : false;
 		case "using-meta-pod": {
-			const target = getSubjectActors(condition, situation, source,  "conditionTarget")[0];
+			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!target.isValidCombatant()) {return false;}
 			return target.isUsingMetaPod();
 		}
 		default :
-			condition satisfies never;
+				condition satisfies never;
 			return undefined;
 	}
 }
 
-function hasTagConditional(condition: Precondition & BooleanComparisonPC & {boolComparisonTarget: "has-tag"}, situation: Situation, source: Option<ModifierContainer>) : boolean | undefined {
+function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC & {boolComparisonTarget: "has-tag"}, situation: Situation) : boolean | undefined {
 	switch (condition.tagComparisonType) {
 		case undefined:
 		case "power": {
@@ -860,6 +881,7 @@ function hasTagConditional(condition: Precondition & BooleanComparisonPC & {bool
 			const powerTags = power.tagList(user).concat(extraTags);
 			if (condition.powerTag == undefined) {
 				//weird Sachi Error
+				const source = condition.source;
 				if (source) {
 					PersonaError.softFail(`Error in ${source.name}, no Power Tags provided`, condition, situation, source);
 				} else {
@@ -877,7 +899,7 @@ function hasTagConditional(condition: Precondition & BooleanComparisonPC & {bool
 			// .some (([tag, _]) => powerTags.includes(tag as PowerTag));
 		}
 		case "actor": {
-			const target = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!target) {return undefined;}
 			return multiCheckTest(condition.creatureTag, x => target.hasCreatureTag(x));
 		}
@@ -886,7 +908,7 @@ function hasTagConditional(condition: Precondition & BooleanComparisonPC & {bool
 			return multiCheckContains(condition.rollTag, rollTags);
 		}
 		case "weapon":{
-			const target = getSubjectActors(condition, situation, source, "conditionTarget")[0];
+			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!target || !target.weapon || target.isNPC()) {return undefined;}
 			const tagCheck = condition.rollTag;
 			const tagIds = target.weapon.tagList(target).flatMap( x=> typeof x == "string" ? [x] : [x.id, x.system.linkedInternalTag]);
@@ -900,9 +922,9 @@ function hasTagConditional(condition: Precondition & BooleanComparisonPC & {bool
 	}
 }
 
-function booleanComparison(condition : Precondition, situation: Situation, source:Option<ModifierContainer>): boolean {
+function booleanComparison(condition : SourcedPrecondition, situation: Situation): boolean {
 	if (condition.type != "boolean") {throw new PersonaError("Not a boolean comparison");}
-	const testState = getBoolTestState(condition, situation, source);
+	const testState = getBoolTestState(condition, situation);
 	if (testState === undefined) {return false;}
 	const targetState = condition.booleanState ?? false;
 	return targetState == testState;
@@ -924,19 +946,19 @@ function getUser (target: UserComparisonTarget, situation : Situation) : Foundry
 	return undefined;
 }
 
-function getSubjectTokens<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<ModifierContainer>, field : K): PToken[] {
-	const subjects = getSubjects(cond, situation, source, field)
+function getSubjectTokens<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K): PToken[] {
+	const subjects = getSubjects(cond, situation, field)
 	.filter( subject =>  subject instanceof TokenDocument);
 	return subjects;
 }
 
-export function getSubjectActors<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<ModifierContainer>, field : K): (ValidAttackers | NPC) []{
-	const subjects = getSubjects(cond, situation, source, field)
+export function getSubjectActors<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K): (ValidAttackers | NPC) []{
+	const subjects = getSubjects(cond, situation, field)
 	.map( subject => subject instanceof TokenDocument ? subject.actor : subject);
 	return subjects;
 }
 
-export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, situation: Situation, source: Option<ModifierContainer>): NPC | PC | undefined {
+export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, situation: Situation, source: Sourced<object>["source"]): NPC | PC | undefined {
 	if (socialLinkIdOrTarot == undefined ) {return undefined;}
 	let targetIdOrTarot : SocialLinkIdOrTarot | undefined = socialLinkIdOrTarot;
 	const test = targetIdOrTarot as keyof typeof SOCIAL_LINK_OR_TAROT_OTHER;
@@ -993,7 +1015,7 @@ export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, si
 	return PersonaDB.getSocialLinkByTarot(targetIdOrTarot as TarotCard | (string & {}));
 }
 
-function getSubjects<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, source: Option<ModifierContainer>, field : K) : (PToken | ValidAttackers | NPC) []{
+function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K) : (PToken | ValidAttackers | NPC) []{
   if (!(field in cond)) {
     Debug(cond);
     Debug(situation);
@@ -1005,12 +1027,12 @@ function getSubjects<K extends string, T extends Record<K, ConditionTarget>>( co
   switch (condTarget) {
       //owner of the power in question
     case "owner":
-      if (source && source.parent) {
-        const parent = source.parent;
+      if (cond.source && cond.source.parent) {
+        const parent = cond.source.parent;
 			if (parent instanceof PersonaActor && parent.isValidCombatant()) {return [parent];}
       }
       if ("actorOwner" in cond && cond.actorOwner) {
-        const tok = 	PersonaCombat.getPTokenFromActorAccessor(cond.actorOwner as NonNullable<Precondition["actorOwner"]>);
+        const tok = 	PersonaCombat.getPTokenFromActorAccessor(cond.owner as NonNullable<SourcedPrecondition["owner"]>);
         return tok ? [tok] : [];
       }
       return [];
@@ -1116,9 +1138,9 @@ function multiCheckTest<T extends string>(multiCheck: MultiCheck<T> | T, testFn:
 
 }
 
-export function numberOfOthersWithResolver(condition: NumberOfOthersWithComparison, situation : Situation, source: Option<ModifierContainer>) : number | false {
+export function numberOfOthersWithResolver(condition: Sourced<NumberOfOthersWithComparison>, situation : Situation) : number | false {
 	let targets : PersonaActor[] = [];
-	getSubjectActors(condition, situation, source, "conditionTarget").some ( subject => {
+	getSubjectActors(condition, situation, "conditionTarget").some ( subject => {
 		if (!subject) {return false;}
 		const combat = game.combat as PersonaCombat | undefined;
 		switch (condition.group) {
@@ -1182,7 +1204,12 @@ export function numberOfOthersWithResolver(condition: NumberOfOthersWithComparis
 				user: acc,
 				target: acc,
 			};
-			return	a + (testPrecondition(condition.otherComparison, situation, null) ? 1 : 0);
+			const sourcedP = {
+				...condition.otherComparison,
+				source: condition.source,
+				owner: condition.owner,
+			};
+			return	a + (testPrecondition(sourcedP, situation) ? 1 : 0);
 		}
 		, 0);
 }

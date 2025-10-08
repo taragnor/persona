@@ -3342,7 +3342,7 @@ async onMetaverseTimeAdvance(): Promise<string[]> {
 	return ret;
 }
 
-socialEffects(this: SocialLink) : readonly TypedConditionalEffect[] {
+socialEffects(this: SocialLink) : readonly SourcedConditionalEffect[] {
 	// weird bug where sometimes the this isn't set properly
 	return ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this );
 }
@@ -3543,7 +3543,7 @@ isAvailable(pc: PersonaActor) : boolean {
 				user: (pc as PC).accessor,
 				socialTarget: npc.accessor,
 			};
-			if(!testPreconditions(npc.getAvailabilityConditions(), sit, null)) {
+			if(!testPreconditions(npc.getAvailabilityConditions(), sit)) {
 				return false;
 			}
 			break;
@@ -3561,10 +3561,9 @@ isAvailable(pc: PersonaActor) : boolean {
 	return availability?.available ?? false;
 }
 
-getAvailabilityConditions(this: NPC | NPCAlly)  : DeepReadonly<Precondition>[] {
+getAvailabilityConditions(this: NPC | NPCAlly)  : readonly SourcedPrecondition[] {
 	const conds = ConditionalEffectManager.getConditionals(this.system.availabilityConditions, null, null);
 	return conds;
-
 }
 
 isSociallyDisabled(): boolean {

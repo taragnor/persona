@@ -248,7 +248,7 @@ export class PersonaSocial {
 		}
 		const preconditionPass =  cardList
 			.filter( card => card.system.frequency > 0)
-			.filter( card => testPreconditions(card.cardConditionsToSelect(), situation, null));
+			.filter( card => testPreconditions(card.cardConditionsToSelect(), situation));
 		if (PersonaSettings.debugMode() == true) {
 			console.log(`Valid Cards: ${preconditionPass.map(x=> x.name).join(", ")}`);
 		}
@@ -483,7 +483,8 @@ export class PersonaSocial {
 				socialRandom : Math.floor(Math.random() * 20) + 1,
 			};
 			if (this.disqualifierStatuses.some( st => cameo.hasStatus(st))) { return false;}
-			return testPreconditions(card.system.cameoConditions , situation, null);
+			const sourcedConditions = ConditionalEffectManager.getConditionals(card.system.cameoConditions, null, null);
+			return testPreconditions(sourcedConditions, situation);
 		};
 		const allCameos = PersonaDB.socialLinks().
 			filter (link => testCameo(link));
@@ -699,7 +700,7 @@ export class PersonaSocial {
 			.filter ( ev => !ev.eventTags.includes("disabled"))
 			.filter( (ev) => !cardData.eventsChosen.includes(ev) && testPreconditions(
 				ConditionalEffectManager.getConditionals( ev.conditions, null, null),
-				situation, null));
+				situation));
 		const isEvType = function (ev: CardEvent, evType: keyof NonNullable<CardEvent["placement"]>) {
 			let placement = ev.placement ?? {
 				starter: true,
@@ -843,7 +844,7 @@ export class PersonaSocial {
 
 	static getCardModifiers(cardData: CardData, rollTags: (RollTag | CardTag)[] ) : ModifierList {
 		const card = cardData.card;
-		const effects : TypedConditionalEffect[] = [];
+		const effects : SourcedConditionalEffect[] = [];
 		const globalMods = ConditionalEffectManager.getEffects(card.system.globalModifiers, null, null);
 		effects.push(...globalMods);
 		const universal = PersonaDB.getGlobalModifiers().flatMap(x => x.getEffects(null));
@@ -882,7 +883,7 @@ export class PersonaSocial {
 		.concat(cardData.activity != cardData.card ?  cardData.activity.system.tokenSpends ?? [] : [])
 		.filter( spend => {
 			const conds = ConditionalEffectManager.getConditionals(spend.conditions, null, null);
-			return testPreconditions(conds ?? [], cardData.situation, null);
+			return testPreconditions(conds ?? [], cardData.situation);
 		})
 		.map(x=> `spend ${x.amount} progress tokens to ${x.text}.`)
 		.map(x=> `<li class="token-spend"> ${x} </li>`);
@@ -931,7 +932,8 @@ export class PersonaSocial {
 				attacker: actor.accessor,
 				isSocial: true,
 			};
-			if (!testPreconditions( activity.system.conditions, situation, null)) {
+			const sourced = ConditionalEffectManager.getConditionals(activity.system.conditions, null, null);
+			if (!testPreconditions( sourced, situation)) {
 				ui.notifications.warn("Fails to meet preconditions for this activity.");
 				return;
 			}
@@ -1658,7 +1660,13 @@ export class PersonaSocial {
 			// target: target.accessor,
 			socialTarget: target.accessor,
 		};
-		return testPreconditions(target.system.type == "npc" ? target.system.conditions : [], situation, null);
+		if (!target.isNPC()) {return true;}
+		const sourced = target.system.conditions.map( cond => ({
+			...cond,
+			source: undefined,
+			owner: target.accessor,
+		}));
+		return testPreconditions(sourced, situation);
 	}
 
 	static async getExpendQuestionRequest(msg : SocketMessage["EXPEND_QUESTION"], payload: SocketPayload<"EXPEND_QUESTION">) {

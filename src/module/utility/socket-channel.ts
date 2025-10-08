@@ -33,8 +33,6 @@ export type ChannelMessage =
 		[k: number]: never,
 		[k: symbol]: never,
 		[key: string]: {
-			// initial: string,
-			// reply: string
 			initial: MsgObjectData,
 			reply?:	MsgObjectData,
 		}

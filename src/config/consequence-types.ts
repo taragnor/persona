@@ -110,7 +110,7 @@ export type ExtraTurnEffect = {
 export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence;
 ;
 
-type AlterVariableOtherEffect = AlterVariableConsequence & {contextList: TargettingContextList}
+type AlterVariableOtherEffect = AlterVariableConsequence & {contextList: TargettingContextList} & SourcedConsequence<NonDeprecatedConsequence>;
 
 export type StatusEffect = StatusEffect_Basic | StatusEffect_NonBasic;
 
@@ -133,9 +133,7 @@ type StatusEffect_FollowUp = {
 	activationRoll: number,
 }
 
-export type SourcedConsequence<C extends Consequence = Consequence> = C & {
-	source: {displayedName: string} | ModifierContainer | null;
-	owner: U<UniversalActorAccessor<PersonaActor>>;
+export type EnhancedSourcedConsequence<C extends Consequence = Consequence> = SourcedConsequence<C> & {
 	modifiers?: ConsModifiers[];
 }
 
@@ -600,17 +598,16 @@ type RandomRangeAmount = {
    type: "random-range",
    min: number,
    max: number
-}
+};
 
 type ConstantAmount = {
 	type: "constant",
 	val: number
-}
+};
 
 export type VariableAmount = {
 	type: "variable-value",
-	} & VariableTypeSpecifier
-// & { varType : Exclude<VariableTypeSpecifier["varType"], "actor">;};
+	} & VariableTypeSpecifier;
 
 const CONSEQUENCE_AMOUNT_TYPES_LIST = [
 	"constant",

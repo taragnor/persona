@@ -285,7 +285,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"choiceMeetsConditions": function(cardData: CardData, choice: SocialCard["system"]["events"][number]["choices"][number]) : boolean {
-			const conditions = choice.conditions;
+			const conditions = choice.conditions ?? [];
 			if (choice.resourceCost > 0) {
 				conditions.push( {
 					type: "numeric",
@@ -294,11 +294,16 @@ export class PersonaHandleBarsHelpers {
 					num: choice.resourceCost,
 				});
 			}
-			return testPreconditions(conditions ?? [], cardData.situation, null);
+			const sourced = conditions.map( cond => ({
+				...cond,
+				owner: undefined,
+				source: undefined,
+			}));
+			return testPreconditions(sourced, cardData.situation);
 
 		},
-		"meetsConditions" : function (cardData: CardData, conditions: Precondition[]) : boolean {
-			return testPreconditions(conditions ?? [], cardData.situation, null);
+		"meetsConditions" : function (cardData: CardData, conditions: SourcedPrecondition[]) : boolean {
+			return testPreconditions(conditions ?? [], cardData.situation);
 		},
 
 		"isActivitySelectable": function (pc: PC, activity: Activity): boolean {
@@ -310,7 +315,12 @@ export class PersonaHandleBarsHelpers {
 				user: pc.accessor,
 				attacker: pc.accessor,
 			};
-			return testPreconditions(activity.system.conditions, situation, null);
+			const sourced=  (activity.system.conditions ?? []).map( cond => ({
+				owner: undefined,
+				source: undefined,
+				...cond,
+			}));
+			return testPreconditions(sourced, situation);
 		},
 		"getActivityProgress": function( actor: PersonaActor, activity: Activity): number {
 			if (actor.system.type == "pc") {

@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { WEAPON_TAGS } from "../config/equipment-tags.js";
-import { NumericV2 } from "./conditionalEffects/numericV2.js";
+// import { NumericV2 } from "./conditionalEffects/numericV2.js";
 import { CombatResultComparison } from "../config/numeric-comparison.js";
 import { DAMAGE_SUBTYPES } from "../config/effect-types.js";
 
@@ -352,7 +352,7 @@ export class ConditionalEffectManager {
 				// consequences,
 				isDefensive: conditionalType == "defensive",
 				owner: sourceActor?.accessor,
-				source: sourceItem,
+				source: sourceItem != null ? sourceItem : undefined,
 				// sourceItem: sourceItem? PersonaDB.getUniversalAccessor(sourceItem): undefined,
 			};
 		}
@@ -414,24 +414,21 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 		const conditionalEffects = this.ArrayCorrector(condObject);
 		return conditionalEffects.map( eff=> ({
 			...eff,
-			actorOwner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner) as UniversalActorAccessor<ValidAttackers>,
-			sourceItem: (sourceItem ? PersonaDB.getUniversalAccessor(sourceItem): (eff as any).sourceItem) as U<UniversalItemAccessor<PersonaItem>>,
-			source: sourceItem,
+			owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : undefined) as UniversalActorAccessor<ValidAttackers>,
+			source: sourceItem != null ? sourceItem : undefined,
 		}));
 	}
 
-static getConsequences<T extends PersonaActor, I extends (PersonaItem | PersonaAE)>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null): SourcedConditionalEffect["consequences"] {
+static getConsequences<T extends PersonaActor, I extends (ModifierContainer & (PersonaItem | PersonaAE))>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null): SourcedConditionalEffect["consequences"] {
 	const consequences = this.ArrayCorrector(consObject);
 	return consequences.map( eff=> {
 		const nondep = ConsequenceConverter.convertDeprecated(eff, sourceItem instanceof Item ? sourceItem : null);
-		const SI = (sourceItem ? PersonaDB.getUniversalAccessor(sourceItem): (("sourceItem" in eff) ? eff.sourceItem : undefined));
+		// const SI = (sourceItem ? PersonaDB.getUniversalAccessor(sourceItem): (("sourceItem" in eff) ? eff.sourceItem : undefined));
 		return {
 			...nondep,
-			actorOwner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner) as UniversalActorAccessor<ValidAttackers>,
-			sourceItem:SI,
-			// sourceItem: (sourceItem ? PersonaDB.getUniversalAccessor(sourceItem): (("sourceItem" in eff) ? eff.sourceItem : undefined)) as U<UniversalItemAccessor<PersonaItem>>,
-			source: sourceActor,
-		} as SourcedConditionalEffect["consequences"][number];
+			owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner) as UniversalActorAccessor<ValidAttackers>,
+			source: sourceItem != null ? sourceItem: undefined,
+		};
 	});
 }
 
@@ -504,7 +501,8 @@ static getConsequences<T extends PersonaActor, I extends (PersonaItem | PersonaA
 			case "disable-on-debug":
 				return "Disabled on Debug Mode";
 			case "numeric-v2":
-				return NumericV2.prettyPrintCondition(cond);
+				return "Numeric V2 amount (not used)";
+				// return NumericV2.prettyPrintCondition(cond);
 			case "diagnostic":
 				return "Diagnostic breakpoint";
 			default:
@@ -1314,27 +1312,27 @@ declare global{
 	}
 
 	interface NonDeprecatedConditionalEffect {
-		conditions: Precondition[];
+		conditions: SourcedPrecondition<Precondition>[];
 		consequences: SourcedConsequence<NonDeprecatedConsequence>[];
 		isDefensive: boolean;
 	}
 
 	// type SourcedConditionalEffects = SourcedConditionalEffect[];
 
-	interface SourcedConditionalEffect extends TypedConditionalEffect {
-		source: ModifierContainer | null;
-		// sourceItem: U<UniversalItemAccessor | UniversalAEAccessor>;
-		owner: U<UniversalActorAccessor<PersonaActor>>;
-	}
+	type SourcedConditionalEffect<T extends TypedConditionalEffect= TypedConditionalEffect> = Sourced<T>;
 
 	interface TypedConditionalEffect extends NonDeprecatedConditionalEffect {
 		conditionalType: typeof CETypes[number];
 	}
 
-	type SourcedConsequence<T extends Consequence> = T & {
-		sourceItem: U<UniversalItemAccessor | UniversalAEAccessor>;
+	export type SourcedConsequence<T extends Consequence= Consequence> = Sourced<T>;
+
+	type SourcedPrecondition<T extends Precondition = Precondition> = 
+		Sourced<T>;
+
+	type Sourced<T extends object>= T & {
+		source: U<ModifierContainer>;
 		owner: U<UniversalActorAccessor<PersonaActor>>;
-		source: ModifierContainer | null;
 	}
 
 }

@@ -28,10 +28,7 @@ export const PRECONDITIONTYPES = Object.fromEntries( PRECONDITIONLIST.map(x=> [x
 
 
 declare global {
-	type Precondition =
-		{actorOwner ?: UniversalActorAccessor<ValidAttackers>}
-		& PreconditionComparison
-	;
+	type Precondition = PreconditionComparison ;
 }
 
 export type PreconditionComparison =

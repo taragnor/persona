@@ -14,6 +14,7 @@ import { PersonaDB } from "./persona-db.js";
 import { PersonaCalendar } from "./social/persona-calendar.js";
 import { PersonaRegion } from "./region/persona-region.js";
 import { PersonaActor } from "./actor/persona-actor.js";
+import {ConditionalEffectManager} from "./conditional-effect-manager.js";
 
 export class PersonaScene extends Scene {
 	declare regions: Collection<PersonaRegion>;
@@ -44,7 +45,8 @@ export class PersonaScene extends Scene {
 					user: shadow.accessor,
 					target: shadow.accessor,
 				};
-				return testPreconditions(shadow.system.encounter.conditions, situation, null);
+				const sourced = ConditionalEffectManager.getConditionals(shadow.system.encounter.conditions, null, shadow);
+				return testPreconditions(sourced, situation);
 			});
 		if (!PersonaCalendar.isStormy()) {
 			encounterList = encounterList.filter( shadow => shadow.system.encounter.rareShadow != true);

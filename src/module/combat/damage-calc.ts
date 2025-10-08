@@ -1,12 +1,12 @@
-import { PersonaError } from "../persona-error.js"; import { SourcedConsequence } from "../../config/consequence-types.js";
 import { ValidAttackers } from "./persona-combat.js";
 import { DamageLevel, RealDamageType } from "../../config/damage-types.js";
-import { DamageConsequence } from "../../config/consequence-types.js";
+import { DamageConsequence, EnhancedSourcedConsequence } from "../../config/consequence-types.js";
 import { OldDamageConsequence } from "../../config/consequence-types.js";
 import { DamageType } from "../../config/damage-types.js";
 import {ItemSubtype, Power} from "../item/persona-item.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {ConsequenceConverter} from "../migration/convertConsequence.js";
+import {PersonaError} from "../persona-error.js";
 
 export class DamageCalculation {
 	#resisted: boolean = false;
@@ -76,7 +76,7 @@ export class DamageCalculation {
 		};
 	}
 
-	addConsequence(cons: SourcedConsequence<DamageConsequence>, target: ValidAttackers): DamageCalculation {
+	addConsequence(cons: EnhancedSourcedConsequence<DamageConsequence>, target: ValidAttackers): DamageCalculation {
 		let damageOrder: DamageOrder;
 		let amt : number;
 		if (cons.modifiers) {

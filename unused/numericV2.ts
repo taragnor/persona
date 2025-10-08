@@ -164,7 +164,7 @@ export class NumericV2 {
 				}
 				if (!actor  || !actor.isRealPC()) {return null;}
 
-				const socialLink = getSocialLinkTarget(op.socialLinkIdOrTarot, situation, source);
+				const socialLink = getSocialLinkTarget(op.socialLinkIdOrTarot, situation, source ?? undefined);
 				if (!socialLink) {
 					return 0;
 				}
@@ -172,7 +172,7 @@ export class NumericV2 {
 				return link ? link.linkLevel : 0;
 			}
 			case "progress-tokens-with": {
-				const targetActor = getSubjectActors(op, situation, source, "conditionTarget")[0];
+				const targetActor = getSubjectActors(op, situation, source ?? undefined, "conditionTarget")[0];
 				if (!targetActor || !targetActor.isSocialLink()) {
 					return null;
 				}
@@ -197,10 +197,7 @@ export class NumericV2 {
 			case "talent-level": {
 				if (!situation.user) {return null;}
 				const user = PersonaDB.findActor(situation.user);
-				//@ts-expect-error some reason
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-				const sourceItem = "sourceItem" in condition ? PersonaDB.findItem(condition.sourceItem) : "";
-				const id = sourceItem ? sourceItem.id : undefined;
+				const id = source ? source.id : undefined;
 				if (!id) {
 					return null;
 				}
@@ -223,7 +220,7 @@ export class NumericV2 {
 				.length;
 			}
 			case "resistance-level": {
-				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
+				const subject = getSubjectActors(op, situation, "conditionTarget")[0];
 				if (!subject) {return null;}
 				let element : DamageType | "by-power" = op.element;
 				if (element == "by-power") {
@@ -242,7 +239,7 @@ export class NumericV2 {
 			}
 
 			case "total-SL-levels": {
-				const subject : PersonaActor | undefined = getSubjectActors(op, situation, source, "conditionTarget")[0];
+				const subject : PersonaActor | undefined = getSubjectActors(op, situation, "conditionTarget")[0];
 				if (!subject) {return null;}
 				let targetActor : SocialLink | undefined = undefined;
 				switch (subject.system.type) {
@@ -268,38 +265,38 @@ export class NumericV2 {
 			}
 
 			case "health-percentage": {
-				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
+				const subject = getSubjectActors(op, situation, "conditionTarget")[0];
 				if (!subject) {return null;}
 				return (subject.hp / subject.mhp) * 100;
 			}
 
 			case "percentage-of-hp": {
-				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
+				const subject = getSubjectActors(op, situation, "conditionTarget")[0];
 				if (!subject) {return null;}
 				return subject.hp / subject.mhp;
 			}
 			case "percentage-of-mp":{
-				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
+				const subject = getSubjectActors(op, situation,"conditionTarget")[0];
 				if (!subject) {return null;}
 				return subject.mp / subject.mmp;
 			}
 
 			case "energy": {
-				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
+				const subject = getSubjectActors(op, situation,  "conditionTarget")[0];
 				if (!subject) {return null;}
 				if (subject.system.type != "shadow") {return null;}
 				return subject.system.combat.energy.value;
 			}
 
 			case "inspirationWith": {
-				const subject = getSubjectActors(op, situation, source, "conditionTarget")[0];
+				const subject = getSubjectActors(op, situation,  "conditionTarget")[0];
 				if (!subject) {return null;}
-				const link = getSocialLinkTarget(op.socialLinkIdOrTarot, situation, source);
+				const link = getSocialLinkTarget(op.socialLinkIdOrTarot, situation, source ?? undefined);
 				if (!link) {return null;}
 				return subject.getInspirationWith(link.id);
 			}
 			case "itemCount":  {
-				const arr = getSubjectActors(op, situation, source, "conditionTarget");
+				const arr = getSubjectActors(op, situation, "conditionTarget");
 				if (arr.length == 0) {return null;}
 				return arr.reduce( (acc,subject) => {
 					const item = game.items.get(op.itemId);
@@ -312,7 +309,7 @@ export class NumericV2 {
 				}, 0);
 			}
 			case "scan-level": {
-				const targetActor = getSubjectActors(op, situation, source, "conditionTarget")[0];
+				const targetActor = getSubjectActors(op, situation, "conditionTarget")[0];
 				if (!targetActor || !targetActor.isValidCombatant()) {return null;}
 				return targetActor.persona().scanLevelRaw;
 			}
@@ -338,7 +335,7 @@ export class NumericV2 {
 				return RESIST_STRENGTH_LIST.indexOf(op.resistLevel);
 			default:
 				op satisfies never;
-				PersonaError.softFail(`Invalid subtype for constant: ${op["subtype"]}`);
+				PersonaError.softFail(`Invalid subtype for constant: ${(op as Record<string, string>)["subtype"] ?? undefined}`);
 				return -999;
 		}
 	}
@@ -347,25 +344,25 @@ export class NumericV2 {
 		switch (op.rollType) {
 			case "natural-roll":
 				if (situation.naturalRoll == undefined)
-					{return null;}
+				{return null;}
 				return situation.naturalRoll ?? null;
 			case "activation-roll":
 					if (situation.naturalRoll == undefined) {return null;}
 				if (!situation?.rollTags?.includes("activation"))
-					{return null;}
+				{return null;}
 				return situation.naturalRoll ?? null;
 			case "opening-roll":
 					if (situation.naturalRoll == undefined  || !situation.rollTags?.includes("opening")) {return null;}
 				return situation.naturalRoll ?? null;
 			case "total-roll":
 					if (situation.rollTotal == undefined)
-					{return null;}
+				{return null;}
 				return situation.rollTotal ?? null;
 			default:
 					op.rollType satisfies never;
-				PersonaError.softFail(`Unrecognized Roll Type ${op["rollType"]}`);
-				return null;
 		}
+		PersonaError.softFail(`Unrecognized Roll Type ${(op as Record<string, string>)["rollType"]}`);
+		return null;
 	}
 
 	static handleDeprecated(op: NumericComparisonV2["op1"] & {comparisonTarget: "deprecated"}, _situation: Situation, _source: Option< PowerContainer>) : number | null {
@@ -380,7 +377,7 @@ export class NumericV2 {
 			}
 			default:
 					op.deprecatedType satisfies never;
-				PersonaError.softFail(`Unknown Deprecated Type ${op["deprecatedType"]}`);
+				PersonaError.softFail(`Unknown Deprecated Type ${(op as Record<string, string>)["deprecatedType"]}`);
 				return null;
 		}
 	}
@@ -403,7 +400,10 @@ export class NumericV2 {
 						return `${cond.low} - ${cond.high}`;
 					case "resistance-level":
 						return localize(RESIST_STRENGTHS[cond.resistLevel]);
+					default:
+						cond satisfies never;
 				}
+				break;
 			case "actor-stat":
 				return this.prettyPrintActorStat(cond);
 			case "odd-even":
@@ -414,9 +414,10 @@ export class NumericV2 {
 				return `round count`;
 			case "clock-comparison":
 				return `Clock ${cond.clockId}`;
-			case "combat-result-based":
+			case "combat-result-based": {
 				const combatResult = ConditionalEffectManager.printCombatResultString(cond);
 				return `${combatResult}`;
+			}
 			case "num-of-others-with":
 				return `Number of ${cond.group} that meet Special Condition`;
 			case "variable-value": 
@@ -431,11 +432,14 @@ export class NumericV2 {
 						return "Opening Roll";
 					case "total-roll":
 						return "Total Roll";
+					default:
+						cond.rollType satisfies never;
 				}
+				break;
 			case "deprecated":
 				return "Deprecated Condition";
 		}
-
+		return "ERROR";
 	}
 
 	static prettyPrintActorStat(cond: NumericComparisonV2["op1"] & {comparisonTarget: "actor-stat"}) : string {
@@ -444,26 +448,30 @@ export class NumericV2 {
 				return `Shadow Energy`;
 			case "inspirationWith":
 				return `Inspiration With Link ???`;
-			case "itemCount":
+			case "itemCount": {
 				const item = game.items.get(cond.itemId);
 				return `Has Amount of ${item?.name ?? "UNKNOWN"}`;
-			case "social-link-level":
+			}
+			case "social-link-level": {
 				const socialTarget  = PersonaDB.allActors()
 					.find( x=> x.id == cond.socialLinkIdOrTarot)
 					?? PersonaDB.socialLinks()
 					.find(x=> x.tarot?.name  == cond.socialLinkIdOrTarot);
 				const name = socialTarget ? socialTarget.displayedName : "Unknown";
 				return `${name} SL `;
+			}
 			case "progress-tokens-with":
 					return `Progress tokens with ${cond.conditionTarget}`;
 			case "total-SL-levels":
 					return `Total SL levels among all PCs`;
-			case "student-skill":
-				const skill = this.translate(cond.studentSkill!, STUDENT_SKILLS);
+			case "student-skill": {
+				const skill = this.translate(cond.studentSkill, STUDENT_SKILLS);
 				return `${skill}`;
-			case "resistance-level":
+			}
+			case "resistance-level": {
 				const damage = this.translate(cond.element, DAMAGETYPES);
 				return `${damage} resistance`;
+			}
 			case "talent-level":
 				return `Talent Level `;
 			case "has-resources":
