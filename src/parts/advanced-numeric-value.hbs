@@ -15,11 +15,9 @@
 {{#if (eqAny cons.type "operation")}}
 (
 {{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amt1.') cons=cons.amt1 POWERSTUFF=POWERSTUFF owner=owner}}
-)
 <select name="{{strcat namePrefix 'operator'}}">
 	{{selectOptions POWERSTUFF.ARITHMETIC_OPERATORS localize=true selected=cons.operator}}
 </select>
-(
 {{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amt2.') cons=cons.amt2 POWERSTUFF=POWERSTUFF owner=owner}}
 )
 {{/if}}
@@ -32,6 +30,16 @@
 			<input class="short" type=number name="{{strcat namePrefix 'min'}}" value="{{cons.min}}">
 			to
 			<input class="short" type=number name="{{strcat namePrefix 'max'}}" value="{{cons.max}}">
+{{/if}}
+
+{{#if (eqAny cons.type "item-property")}}
+<select name="{{strcat namePrefix 'itemTarget'}}">
+	{{selectOptions POWERSTUFF.ITEM_TARGETS localize=true selected=cons.itemTarget}}
+</select>
+<select name="{{strcat namePrefix 'property'}}">
+	{{selectOptions POWERSTUFF.ITEM_PROPERTIES localize=true selected=cons.property}}
+</select>
+
 {{/if}}
 
 </span>

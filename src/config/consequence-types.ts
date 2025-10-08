@@ -29,7 +29,7 @@ import { Usable } from "../module/item/persona-item.js";
 import { OtherConsequence } from "../module/datamodel/other-effects.js";
 import { StatusDuration } from "../module/active-effect.js";
 import { StatusEffectId } from "./status-effects.js";
-import { ModifierCategory, ModifierTarget } from "./item-modifiers.js";
+import { ItemProperty, ModifierCategory, ModifierTarget } from "./item-modifiers.js";
 import { PC, PersonaActor } from "../module/actor/persona-actor.js";
 
 type ExpendOtherEffect = {
@@ -372,7 +372,7 @@ type ExpendItemConsequence = {
 type DamageConsequenceShared = {
 	type : "damage-new",
 	damageSubtype: DamageSubtype,
-	amount ?: number; //only added later for effects
+	amount ?: ConsequenceAmount; //only added later for effects
 	calc ?: unknown, //this is a DamageCalc but typescript doesn't like it
 	damageType: DamageType | "by-power",
 	/** manually added as part of processing */
@@ -585,7 +585,16 @@ export type ConsequenceAmountV2 =
 	| ConstantAmount
 	| AmountOperation
 	| RandomRangeAmount
+	| ItemPropertyAmount
 );
+
+export type ItemPropertyAmount = {
+	type : "item-property",
+	itemTarget: "source",
+	property: ItemProperty,
+
+}
+
 
 export type AmountOperation = {
 	type: "operation",
@@ -614,6 +623,7 @@ const CONSEQUENCE_AMOUNT_TYPES_LIST = [
 	"random-range",
 	"operation",
 	"variable-value",
+	"item-property",
 ] as const;
 
 		type ConsequenceAmountType = typeof CONSEQUENCE_AMOUNT_TYPES_LIST[number];

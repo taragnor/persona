@@ -1438,6 +1438,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					extraVariance: this.system.damageNew.extraVariance ?? 0,
 				};
 			}
+			if (this.itemLevel() > 0) {
+				return {
+					baseAmt: DamageCalculator.getWeaponDamageByWpnLevel(this.itemLevel()),
+					extraVariance: this.system.damageNew.extraVariance ?? 0,
+				};
+			}
 		}
 		if (this.system.damage.high >0) {
 			return PersonaItem.convertOldDamageToNew(this.system.damage);
@@ -1875,6 +1881,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 
+	/** returns the level of the inventory item */
+	itemLevel() : number {
+		if (!this.isCarryableType()) {return 0;}
+		if (this.isConsumable()) { return 1;}
+		return this.system.itemLevel;
+	}
+
 	isPower() : this is Power {
 		return this.system.type == 'power';
 	}
@@ -2016,11 +2029,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	armorDR(this: InvItem) : number {
+		if (this.system.slot != "body") {return 0;}
 		if (this.system.armorLevel > 0) {
 			return DamageCalculator.getArmorDRByArmorLevel(this.system.armorLevel);
 		}
 		if (this.system.armorDR > 0) {
 			return this.system.armorDR;
+		}
+		if (this.itemLevel() > 0) {
+			return DamageCalculator.getArmorDRByArmorLevel(this.itemLevel());
 		}
 		return 0;
 	}
@@ -2070,7 +2087,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	//TODO: Finish later
 	// }
 
-	getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][] ): readonly SourcedConditionalEffect[] {
+	getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][], proxyItem : ItemModifierContainer = this ): readonly SourcedConditionalEffect[] {
+		//proxy item is used for tags to redirect their source to their parent item (for purposes of reading item level)
 		if (this.isSkillCard()) {
 			const arr = [
 				this.generateSkillCardTeach()
@@ -2082,31 +2100,31 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			const tags = this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
 				.filter (tag=> tag instanceof PersonaItem);
 			tagEffects.push(...tags.flatMap(tag =>
-				tag.getEffects(sourceActor, CETypes)
+				tag.getEffects(sourceActor, CETypes, this)
 			));
 		}
 		if (!CETypes || CETypes.length == 0) {
 			const effects = this.system.effects;
-			return this.#accessEffectsCache('allEffects', sourceActor, () => ConditionalEffectManager.getEffects(effects, this, sourceActor))
+			return this.#accessEffectsCache('allEffects', sourceActor, () => ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor))
 				.concat(tagEffects);
 		} else {
 			const effects: SourcedConditionalEffect[] = [];
 			for (const cType of CETypes) {
 				switch (cType) {
 					case 'defensive':
-						effects.push(...this.getDefensiveEffects(sourceActor));
+						effects.push(...this.getDefensiveEffects(sourceActor, proxyItem));
 						break;
 					case 'triggered':
-						effects.push(...this.getTriggeredEffects(sourceActor));
+						effects.push(...this.getTriggeredEffects(sourceActor, proxyItem));
 						break;
 					case 'passive':
-						effects.push(...this.getPassiveEffects(sourceActor));
+						effects.push(...this.getPassiveEffects(sourceActor, proxyItem));
 						break;
 					case 'on-use':
-						effects.push(...this.getOnUseEffects(sourceActor));
+						effects.push(...this.getOnUseEffects(sourceActor, proxyItem));
 						break;
 					case 'unknown':
-						effects.push(...this.getEffects(sourceActor).filter( x=> x.conditionalType == cType));
+						effects.push(...this.getEffects(sourceActor, [], proxyItem).filter( x=> x.conditionalType == cType));
 						break;
 					default:
 						cType satisfies never;
@@ -2137,8 +2155,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 }
 
 
-getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : readonly SourcedConditionalEffect[] {
-	return this.#accessEffectsCache('triggeredEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'triggered'));
+getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, proxyItem: ItemModifierContainer = this) : readonly SourcedConditionalEffect[] {
+	return this.#accessEffectsCache('triggeredEffects', sourceActor, () => this.getEffects(sourceActor, [], proxyItem).filter( x => x.conditionalType === 'triggered'));
 }
 
 hasTriggeredEffects(this: ItemModifierContainer, actor: PersonaActor) : boolean {
@@ -2146,12 +2164,12 @@ hasTriggeredEffects(this: ItemModifierContainer, actor: PersonaActor) : boolean 
 }
 
 
-getOnUseEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : readonly SourcedConditionalEffect[] {
-	return this.#accessEffectsCache('onUseEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'on-use'));
+getOnUseEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, proxyItem: ItemModifierContainer = this) : readonly SourcedConditionalEffect[] {
+	return this.#accessEffectsCache('onUseEffects', sourceActor, () => this.getEffects(sourceActor, [], proxyItem).filter( x => x.conditionalType === 'on-use'));
 }
 
-getPassiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : readonly SourcedConditionalEffect[] {
-	return this.#accessEffectsCache('passiveEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'passive'));
+getPassiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, proxyItem: ItemModifierContainer = this) : readonly SourcedConditionalEffect[] {
+	return this.#accessEffectsCache('passiveEffects', sourceActor, () => this.getEffects(sourceActor, [], proxyItem).filter( x => x.conditionalType === 'passive'));
 }
 
 getPassiveAndDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor  | null) : readonly ConditionalEffect[] {
@@ -2163,8 +2181,8 @@ hasPassiveEffects(this: ItemModifierContainer, actor: PersonaActor | null) : boo
 	return this.getPassiveEffects(actor).length > 0;
 }
 
-getDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : readonly SourcedConditionalEffect[] {
-	return this.#accessEffectsCache('defensiveEffects', sourceActor, () => this.getEffects(sourceActor).filter( x => x.conditionalType === 'defensive'));
+getDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, proxyItem: ItemModifierContainer = this) : readonly SourcedConditionalEffect[] {
+	return this.#accessEffectsCache('defensiveEffects', sourceActor, () => this.getEffects(sourceActor, [], proxyItem ).filter( x => x.conditionalType === 'defensive'));
 }
 
 hasDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : boolean {

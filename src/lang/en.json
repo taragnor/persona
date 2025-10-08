@@ -817,6 +817,7 @@
 	"persona.preconditions.comparison.combat-result-based": "Combat Result Data",
 	"persona.preconditions.comparison.num-of-others-with": "Number of Others Meeting Condition",
 	"persona.preconditions.comparison.variable-value": "Value of Variable",
+	"persona.preconditions.comparison.advanced-number": "Advanced Number",
 
 	"persona.preconditions.socialChecks.relationship-type-check": "Relationship Type is",
 	"persona.preconditions.socialChecks.is-social-disabled": "Is Socially Disabled",
@@ -928,20 +929,25 @@
 	"persona.consequence.targets.all-allies" : "All Allies",
 	"persona.consequence.targets.all-combatants" : "All Combatants",
 
-"persona.consequences.consequences-amount.operation": "O",
-"persona.consequences.consequences-amount.constant": "C",
-"persona.consequences.consequences-amount.random-range": "R",
-"persona.consequences.consequences-amount.variable-value": "V",
+"persona.consequences.consequences-amount.operation": "Op",
+"persona.consequences.consequences-amount.constant": "Con",
+"persona.consequences.consequences-amount.random-range": "Ran",
+"persona.consequences.consequences-amount.variable-value": "Var",
+"persona.consequences.consequences-amount.item-property": "I-P",
+
+"persona.item-property.item-level": "Item Level",
 
 
 "persona.consequences.consequences-operators.add" : "+",
 "persona.consequences.consequences-operators.subtract" : "-",
-"persona.consequences.consequences-operators.divide" : "+",
+"persona.consequences.consequences-operators.divide" : "/",
 "persona.consequences.consequences-operators.multiply" : "*",
 "persona.consequences.consequences-operators.modulus" : "%",
 
 	"persona.modifier-variable.escalationDie": "Escalation Die",
 	"persona.modifier-variable.tensionPool": "Tension Pool",
+
+	"persona.item-targets.source" : "Source Item",
 
 	"persona.card.cameo.defaultBenefits": "The Cameo gains one social progress token with  a character in the scene of their choice.",
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { ValidSocialTarget } from '../social/persona-social.js';
 import { EvaluatedDamage } from './damage-calc.js';
-import { EnhancedSourcedConsequence, NonDeprecatedConsequence, OldDamageConsequence} from '../../config/consequence-types.js';
+import { EnhancedSourcedConsequence, NonDeprecatedConsequence} from '../../config/consequence-types.js';
 import { DamageCalculation } from './damage-calc.js';
 import { sleep } from '../utility/async-wait.js';
 import { CardTag } from '../../config/card-tags.js';

@@ -54,7 +54,7 @@
 	</span>
 	{{/if}}
 
-	{{#if (eqAny cons.type "dmg-mult" "revive" "escalationManipulation" "modifier" "recover-slot" "alter-fatigue-lvl")}}
+	{{#if (eqAny cons.type "dmg-mult" "revive" "escalationManipulation" "recover-slot" "alter-fatigue-lvl")}}
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 	{{/if}}
 	{{#if (eq cons.type "extraAttack")}}
@@ -319,11 +319,12 @@
 
 	{{/if}}
 
+	{{#if (eq cons.type "modifier")}}
+	{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amount.') cons=cons.amount POWERSTUFF=POWERSTUFF owner=owner}}
+	{{/if}}
 
 	{{#if (eq cons.type "modifier-new")}}
 		{{> "systems/persona/parts/input-modifier-new.hbs" namePrefix=(strcat namePrefix '') cons=cons POWERSTUFF=POWERSTUFF owner=owner}}
-
-
 	{{/if}}
 
 	{{#if (eq cons.type "alter-mp")}}
@@ -344,7 +345,10 @@
 	</select>
 
 	{{#if (eqAny cons.damageSubtype "constant" "multiplier" "percentage" "mult-stack")}}
+	{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amount.') cons=cons.amount POWERSTUFF=POWERSTUFF owner=owner}}
+	{{#if false}}
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+	{{/if}}
 	{{/if}}
 
 	{{/if}}

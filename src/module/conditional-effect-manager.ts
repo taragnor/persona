@@ -10,7 +10,7 @@ import { DAMAGE_SUBTYPES } from "../config/effect-types.js";
 
 import { ROLL_TAGS_AND_CARD_TAGS } from "../config/roll-tags.js";
 import { PersonaSettings } from "../config/persona-settings.js";
-import { ModifierTarget } from "../config/item-modifiers.js";
+import { ITEM_PROPERTIES, ModifierTarget } from "../config/item-modifiers.js";
 import { getActiveConsequences } from "./preconditions.js";
 import { ModifierContainer, PersonaItem, Talent } from "./item/persona-item.js";
 import { STATUS_EFFECT_DURATION_TYPES } from "../config/status-effects.js";
@@ -20,7 +20,7 @@ import { TAROT_DECK } from "../config/tarot.js";
 import { localize } from "./persona.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
 import { MODIFIERS_TABLE } from "../config/item-modifiers.js";
-import { Consequence, ConsequenceAmount, LEVEL_GAIN_TARGETS, NonDeprecatedConsequence } from "../config/consequence-types.js";
+import { Consequence, ConsequenceAmount, ConsequenceAmountV2, DeprecatedConsequence, LEVEL_GAIN_TARGETS, NonDeprecatedConsequence } from "../config/consequence-types.js";
 import { RESIST_STRENGTHS } from "../config/damage-types.js";
 import { STUDENT_SKILLS } from "../config/student-skills.js";
 import { SLOTTYPES } from "../config/slot-types.js";
@@ -422,8 +422,7 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 static getConsequences<T extends PersonaActor, I extends (ModifierContainer & (PersonaItem | PersonaAE))>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null): SourcedConditionalEffect["consequences"] {
 	const consequences = this.ArrayCorrector(consObject);
 	return consequences.map( eff=> {
-		const nondep = ConsequenceConverter.convertDeprecated(eff, sourceItem instanceof Item ? sourceItem : null);
-		// const SI = (sourceItem ? PersonaDB.getUniversalAccessor(sourceItem): (("sourceItem" in eff) ? eff.sourceItem : undefined));
+		const nondep = ConsequenceConverter.convertDeprecated(eff as DeprecatedConsequence, sourceItem instanceof Item ? sourceItem : null);
 		return {
 			...nondep,
 			owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner) as UniversalActorAccessor<ValidAttackers>,
@@ -784,6 +783,10 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 				return `Value of ${cond.varType} variable named ${cond.variableId} is ${endString(cond)}`;
 			case "scan-level":
 				return `Scan level of ${cond.conditionTarget} ${endString(cond)}`;
+			case "advanced-number": {
+				const operand1 =  this.printConsequenceAmount(cond.comparisonVal);
+				return `${operand1} ${endString(cond)}`;
+			}
 			default:
 				cond satisfies never;
 				return "UNKNOWN CONDITION";
@@ -917,8 +920,41 @@ static printConsequence (cons: NonDeprecatedConsequence) : string {
 
 private static printConsequenceAmount(consAmt: ConsequenceAmount) : string {
 	if (typeof consAmt =="number") {return String(consAmt);}
-	return `Complex Consequence Amount`;
+	switch (consAmt.type) {
+		case "constant":
+			return String(consAmt.val);
+		case "random-range":
+			return `Random (${consAmt.min} - ${consAmt.max})`;
+		case "operation":
+			return this.printConsAmountOperation(consAmt);
+		case "variable-value":
+			return `Variable: ${consAmt.varType} ${consAmt.variableId}`;
+		case "item-property":
+			return `${this.translate(consAmt.property, ITEM_PROPERTIES)} of ${consAmt.itemTarget} - $`;
+		default:
+			consAmt satisfies never;
+	}
+	return `Unknown Complex Consequence Amount`;
+}
 
+static printConsAmountOperation( consAmt: ConsequenceAmountV2 & {type: "operation"} ) :string {
+	const v1 = this.printConsequenceAmount(consAmt.amt1);
+	const v2 = this.printConsequenceAmount(consAmt.amt2);
+	switch (consAmt.operator) {
+		case "add":
+			return `${v1} + ${v2}`;
+		case "subtract":
+			return `${v1} - ${v2}`;
+		case "divide":
+			return `${v1} / ${v2}`;
+		case "multiply":
+			return `${v1} * ${v2}`;
+		case "modulus":
+			return `${v1} % ${v2}`;
+		default:
+			consAmt.operator satisfies never;
+			return "ERROR";
+	}
 }
 
 	static #printCombatEffect( cons: Consequence & {type: "combat-effect"}) : string {

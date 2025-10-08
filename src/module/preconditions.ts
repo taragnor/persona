@@ -4,7 +4,6 @@ import { EnhancedSourcedConsequence, NonDeprecatedConsequence } from "../config/
 import { SceneClock } from "./exploration/scene-clock.js";
 import { NumberOfOthersWithComparison } from "../config/numeric-comparison.js";
 import { CombatResultComparison } from "../config/numeric-comparison.js";
-// import { NumericV2 } from "./conditionalEffects/numericV2.js";
 import { PersonaVariables } from "./persona-variables.js";
 import { PersonaScene } from "./persona-scene.js";
 import { ActorChange } from "./combat/combat-result.js";
@@ -372,6 +371,26 @@ function numericComparison(condition: SourcedPrecondition, situation: Situation)
 			const targetActor = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!targetActor || !targetActor.isValidCombatant()) {return false;}
 			target = targetActor.persona().scanLevelRaw;
+			break;
+		}
+		case "advanced-number": {
+			const source = condition.source;
+			const ownersList = condition.owner
+			? [condition.owner]
+			: source?.parent instanceof PersonaActor
+			&& source.parent.isValidCombatant()
+			? [source.parent.accessor]
+			: [];
+			const contextList = PersonaCombat.createTargettingContextList(situation);
+			contextList["owner"] = ownersList;
+			const sourced = {
+				source: condition.source,
+				owner: condition.owner,
+				...condition.comparisonVal,
+			};
+			const resolved = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, contextList);
+			if (resolved == undefined) {return false;}
+			target = resolved;
 			break;
 		}
 		default:

@@ -1,5 +1,7 @@
 import {ConsequenceAmount, ConsequenceAmountV2} from "../../config/consequence-types.js";
+import {PersonaAE} from "../active-effect.js";
 import {TargettingContextList} from "../combat/persona-combat.js";
+import {PersonaItem} from "../item/persona-item.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaVariables} from "../persona-variables.js";
 
@@ -42,9 +44,38 @@ static resolveConsequenceAmountV2< C extends ConsequenceAmountV2>(amt: C, contex
 			const rand = Math.floor(amt.min + Math.random() * (amt.max - amt.min));
 			return rand;
 		}
+		case "item-property": {
+			return this.resolveItemProperty(amt, contextList, source);
+		}
 		default:
 				amt satisfies never;
 			PersonaError.softFail(`Unknwon consequence Amount type :${amt["type"] as string}`);
+			return undefined;
+	}
+}
+
+static resolveItemProperty<T extends ConsequenceAmountV2 & {type: "item-property"}>( amt: T, _contextList: Partial<TargettingContextList>, source: Sourced<T>["source"]) : U<number> {
+	let item : U<PersonaItem>;
+	switch (amt.itemTarget) {
+		case "source":
+			if (source instanceof PersonaItem) {
+				item = source;
+				break;
+			}
+			if (source instanceof PersonaAE
+				&& source.parent instanceof PersonaItem) {
+				item = source.parent;
+			}
+			break;
+		default:
+			amt.itemTarget satisfies never;
+	}
+	if (!item) {return undefined;}
+	switch (amt.property) {
+		case "item-level":
+			return item.itemLevel();
+		default:
+			amt.property satisfies never;
 			return undefined;
 	}
 }

@@ -38,7 +38,7 @@ export class PersonaCombatStats {
 		const modBonuses = this.persona
 			.getBonuses(x)
 			.total(situation);
-		const statTotal = Math.floor( permaBonus + this.combatStats.stats[x] + modBonuses);
+		const statTotal = Math.round( permaBonus + this.combatStats.stats[x] + modBonuses);
 		return Math.min(99, statTotal);
 	}
 

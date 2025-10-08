@@ -130,10 +130,24 @@ export const MODIFIER_CATEGORIES_LOCALIZATION = HTMLTools.createLocalizationObje
 
 
 export const MODIFIERS_TABLE = HTMLTools.createLocalizationObject(MODIFIERLIST, "persona.modifier");
-// export const MODIFIERS_TABLE = Object.fromEntries(
-// 	MODIFIERLIST.map ( x=> [x, `persona.modifier.${x}`])
-// );
 
 export type NonDeprecatedModifierType = Exclude<ModifierTarget, typeof DEPRECATED_TYPES[number]>;
 export type ModifierTarget = typeof MODIFIERLIST[number];
 
+
+const ITEM_TARGETS_LIST = [
+	"source"
+];
+
+export type ItemTarget = typeof ITEM_TARGETS_LIST[number];
+
+export const ITEM_TARGETS = HTMLTools.createLocalizationObject(ITEM_TARGETS_LIST, "persona.item-targets");
+
+const ITEM_PROPERTIES_LIST = [
+	"item-level",
+] as const;
+
+export type ItemProperty = typeof ITEM_PROPERTIES_LIST[number];
+
+
+export const ITEM_PROPERTIES = HTMLTools.createLocalizationObject(ITEM_PROPERTIES_LIST, "persona.item-property");

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -8,7 +9,7 @@ import { powerOnlyUsableProps } from "./power-dm.js";
 import { triEffects } from "./power-dm.js";
 import { CONSUMABLE_SUBTYPE_LIST } from "../../config/equip-slots.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../../config/roll-tags.js";
-import { SocialCard } from "../item/persona-item.js";
+import { InvItem, SocialCard, Weapon } from "../item/persona-item.js";
 import { UniversalModifier } from "../item/persona-item.js";
 import { UNIVERSAL_MODIFIERS_TYPE_LIST } from "./universal-modifiers-types.js";
 import { frequencyConvert } from "../../config/frequency.js";
@@ -48,6 +49,7 @@ function itemBase() {
 		noTrade: new bool({initial: false}),
 		itemTags: new arr(new txt<typeof EQUIPMENT_TAGS_LIST[number] | Item["id"]>()),
 		treasure: itemTreasureStats(),
+		itemLevel: new num( {initial: 0, integer: true}),
 	};
 }
 
@@ -100,13 +102,18 @@ class WeaponDM extends foundry.abstract.TypeDataModel {
 		return ret;
 	}
 
-	static override migrateData(data: any) {
-		if (data.damageNew == undefined) {
+	static override migrateData(data: Weapon["system"]): Weapon["system"] {
+		if (data?.damageNew == undefined && data?.damage?.low > 0) {
 			data.damageNew = {
 				weaponLevel: data.damage.low -1,
 				baseAmt: DamageCalculator.convertFromOldLowDamageToNewBase(data?.damage?.low ?? 0),
 				extraVariance: 0,
 			};
+			data.itemLevel = data.damage.low - 1;
+		}
+		if (data?.damageNew?.weaponLevel && data?.itemLevel == undefined) {
+			data.itemLevel = data.damageNew.weaponLevel;
+			// data.damageNew.weaponLevel = 0;
 		}
 		return data;
 	}
@@ -273,6 +280,14 @@ class InventoryItemSchema extends foundry.abstract.TypeDataModel {
 			...triEffects(),
 		};
 		return ret;
+	}
+
+	static override migrateData(data: InvItem["system"]) : InvItem["system"] {
+		if ("armorLevel" in data && data.itemLevel == undefined) {
+			data.itemLevel = data.armorLevel;
+			// data.armorLevel = 0;
+		}
+		return data;
 	}
 }
 

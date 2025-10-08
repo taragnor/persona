@@ -1086,7 +1086,7 @@ export class PersonaSocial {
 		return modifiers;
 	}
 
-	static getRollTags(cardData: CardData, cardChoice: CardChoice) : (RollTag | CardTag)[] {
+	static getRollTags(cardData: CardData, cardChoice: SocialCard["system"]["events"][number]["choices"][number]) : (RollTag | CardTag)[] {
 		const cardRoll = cardChoice.roll;
 		const rollTags = this.getCardRollTags(cardRoll);
 		rollTags.pushUnique(...cardData.extraCardTags);

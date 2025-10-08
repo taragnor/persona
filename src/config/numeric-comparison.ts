@@ -1,6 +1,6 @@
 import { PersonaError } from "../module/persona-error.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
-import { ConsequenceAmount, VariableTypeSpecifier } from "./consequence-types.js";
+import { ConsequenceAmount, ConsequenceAmountV2, VariableTypeSpecifier } from "./consequence-types.js";
 import { VariableType } from "../module/persona-variables.js";
 import { SocialLinkIdOrTarot } from "./precondition-types.js";
 import { ConditionTarget } from "./precondition-types.js";
@@ -20,6 +20,7 @@ const COMMON_COMPARISON_TARGET_LIST = [
 	"combat-result-based",
 	"num-of-others-with",
 	"variable-value",
+	"advanced-number",
 ] as const;
 
 const FOLDED_COMPARISON_TARGETS = [
@@ -166,7 +167,13 @@ type BaseNumericComparisons =
 	| DeprecatedComparison
 	| ScanLevelComparison
 	| V2SpecificComparisons
+	| AdvancedNumberComparison
 ;
+
+type AdvancedNumberComparison = {
+	comparisonTarget: "advanced-number",
+	comparisonVal: ConsequenceAmountV2,
+}
 
 
 type V2SpecificComparisons =
@@ -311,7 +318,6 @@ type EnergyComparison =  {
 
 type GenericNumericComparison =  NumericComparisonBase & {
 	comparisonTarget : Exclude<NumericComparisonTarget, NonGenericNumericComparison["comparisonTarget"] | "constant" | "">,
-	studentSkill ?: SocialStat;
 }
 
 type SocialLinkLevelComparison =  {
@@ -613,6 +619,8 @@ function DeriveOperand1 (old: NumericComparisonOld) : NumericOperand {
 				comparisonTarget: "deprecated",
 				deprecatedType: old.comparisonTarget,
 			};
+		case "advanced-number":
+			throw new Error("Screw V2 for now");
 		default:
 			old satisfies never;
 	}

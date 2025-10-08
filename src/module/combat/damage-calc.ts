@@ -1,12 +1,13 @@
 import { ValidAttackers } from "./persona-combat.js";
 import { DamageLevel, RealDamageType } from "../../config/damage-types.js";
-import { DamageConsequence, EnhancedSourcedConsequence } from "../../config/consequence-types.js";
+import { ConsequenceAmount, DamageConsequence, EnhancedSourcedConsequence } from "../../config/consequence-types.js";
 import { OldDamageConsequence } from "../../config/consequence-types.js";
 import { DamageType } from "../../config/damage-types.js";
 import {ItemSubtype, Power} from "../item/persona-item.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {ConsequenceConverter} from "../migration/convertConsequence.js";
 import {PersonaError} from "../persona-error.js";
+import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
 
 export class DamageCalculation {
 	#resisted: boolean = false;
@@ -95,28 +96,43 @@ export class DamageCalculation {
 			}
 		}
 		switch (cons.damageSubtype) {
-			case "multiplier":
+			case "multiplier": {
 				damageOrder = "multiplier";
-				amt = cons.amount;
+				if (cons.amount == undefined) {amt= 0; break;}
+				const res = this.resolveConsAmount(cons);
+				amt = res ?? 0;
 				break;
+			}
 			case "odd-even":
 			case "high":
 			case "low":
 			case "allout":
-			case "constant":
 				damageOrder= "base";
-				amt = cons.amount ?? 0;
+				amt = 0;
 				break;
-			case "percentage":
-					damageOrder = "nonMultPostAdd";
-				amt = Math.round(target.mhp * (cons.amount * 0.01));
+			case "constant": {
+				damageOrder= "base";
+				if (cons.amount == undefined) {amt= 0; break;}
+				const res = this.resolveConsAmount(cons);
+				amt = res ?? 0;
 				break;
-			case "mult-stack":
-					damageOrder = "stackMult";
-				amt = cons.amount ?? 1;
+			}
+			case "percentage": {
+				damageOrder = "nonMultPostAdd";
+				if (cons.amount == undefined) {amt= 0; break;}
+				const res = this.resolveConsAmount(cons);
+				amt = Math.round(target.mhp * ((res ?? 0) * 0.01));
 				break;
+			}
+			case "mult-stack": {
+				damageOrder = "stackMult";
+				if (cons.amount == undefined) {amt= 0; break;}
+				const res = this.resolveConsAmount(cons);
+				amt = res ?? 1;
+				break;
+			}
 			default:
-					cons satisfies never;
+				cons satisfies never;
 				return this;
 		}
 		if (cons.amount) {
@@ -132,6 +148,14 @@ export class DamageCalculation {
 		}
 		return this;
 	}
+
+	resolveConsAmount (cons: EnhancedSourcedConsequence<DamageConsequence> & {amount: ConsequenceAmount}) : U<number> {
+		const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
+		const contextList = {};
+		const resolvedCE = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, contextList);
+		return resolvedCE;
+
+}
 
 	isMergeable( other: DamageCalculation) : boolean {
 		return this.target == other.target && this.damageType == other.damageType;
