@@ -37,6 +37,7 @@
 					{{selectOptions SOCIAL_CARD_TYPES localize=true selected=item.system.cardType}}
 				</select>
 			</div>
+			{{#if (ne item.system.cardType "mixin")}}
 			<div>
 				<label>
 					Frequency
@@ -51,6 +52,7 @@
 					<input type="checkbox" id="AnnounceWhenAvailable" name="system.announceWhenAvailable" {{checked item.system.announceWhenAvailable}}>
 				</div>
 			</div>
+			{{/if}}
 			{{#if (eq item.system.cardType "social")}}
 			{{#if item.system.qualifiers}}
 			<section class="qualifiers">
@@ -80,7 +82,7 @@
 			</section>
 			{{/if}}
 			{{/if}}
-			{{#if (ne item.system.cardType "social")}}
+			{{#if (neAll item.system.cardType "social" "mixin")}}
 			<section class="non-social-attributes">
 				{{> "systems/persona/parts/weekly-availability.hbs" item=item CONST=CONST}}
 				<div class="primary">

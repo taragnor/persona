@@ -76,6 +76,8 @@ const templateFileNames : string[] =[
 	"persona-viewer.hbs",
 	"treasure-section.hbs",
 	"basic-powers-section.hbs",
+	"input-conditional-boolean.hbs",
+	"input-conditional-numeric.hbs",
 ];
 
 export const templatePaths = templateFileNames.

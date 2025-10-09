@@ -1,0 +1,160 @@
+<div>
+	<label for="comparison-target">
+		Target
+	</label>
+	<select id="comparison-target" name="{{strcat namePrefix 'comparisonTarget'}}">
+		{{selectOptions POWERSTUFF.NUMERIC_COMPARISON_TARGET localize=true selected=cond.comparisonTarget}}
+	</select>
+</div>
+<div>
+	<select id="comparator" name="{{strcat namePrefix 'comparator'}}">
+		{{selectOptions POWERSTUFF.COMPARATORS localize=false selected=cond.comparator}}
+	</select>
+	{{#if (neq-m cond.comparator "odd" "even")}}
+	{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'num.') cons=cond.num POWERSTUFF=POWERSTUFF owner=owner}}
+
+	{{/if}}
+	{{#if (eq cond.comparator "range")}}
+	<input class="short" type=number name="{{strcat namePrefix 'high'}}" value="{{cond.high}}">
+	{{/if}}
+</div>
+
+{{#if (eq cond.comparisonTarget "advanced-number")}}
+{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'comparisonVal.') cons=cond.comparisonVal POWERSTUFF=POWERSTUFF owner=owner}}
+{{/if}}
+
+{{#if (eq cond.comparisonTarget "variable-value") }}
+<select name="{{strcat namePrefix 'varType'}}">
+	{{selectOptions POWERSTUFF.VARIABLE_TYPE localize=true selected=cond.varType}}
+</select>
+<div>
+	{{#if (eqAny cond.varType "scene")}}
+	<select name="{{strcat namePrefix 'sceneId'}}">
+		{{selectOptions POWERSTUFF.SCENES localize=true selected=cond.sceneId}}
+	</select>
+	{{/if}}
+
+	{{#if (eqAny cond.varType "actor")}}
+	<select name="{{strcat namePrefix 'applyTo'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.applyTo}}
+	</select>
+	{{/if}}
+</div>
+<input type=string name="{{strcat namePrefix 'variableId'}}" value="{{cond.variableId}}">
+{{/if}}
+
+{{#if (eq cond.comparisonTarget "social-link-level")}}
+<select name="{{strcat namePrefix 'socialLinkIdOrTarot'}}">
+	{{selectOptions POWERSTUFF.SOCIAL_LINK_OR_TAROT localize=true selected=cond.socialLinkIdOrTarot}}
+</select>
+{{/if}}
+
+{{#if (eqAny cond.comparisonTarget "total-SL-levels" "progress-tokens-with")}}
+<select name="{{strcat namePrefix 'conditionTarget'}}">
+	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+</select>
+{{/if}}
+
+{{#if (eq cond.comparisonTarget "inspirationWith")}}
+<select name="{{strcat namePrefix 'conditionTarget'}}">
+	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+</select>
+<select name="{{strcat namePrefix 'socialLinkIdOrTarot'}}">
+	{{selectOptions POWERSTUFF.SOCIAL_LINK_OR_TAROT localize=true selected=cond.socialLinkIdOrTarot}}
+</select>
+{{/if}}
+
+{{#if (eq cond.comparisonTarget "itemCount")}}
+<select name="{{strcat namePrefix 'conditionTarget'}}">
+	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+</select>
+<select name="{{strcat namePrefix 'itemId'}}">
+	{{selectOptions POWERSTUFF.ITEMS localize=false selected=cond.itemId}}
+</select>
+{{/if}}
+
+{{#if (eq cond.comparisonTarget "student-skill")}}
+<select name="{{strcat namePrefix 'studentSkill'}}">
+	{{selectOptions POWERSTUFF.STUDENT_SKILLS localize=true selected=cond.studentSkill}}
+</select>
+{{/if}}
+
+{{#if (eq cond.comparisonTarget "health-percentage")}}
+<select name="{{strcat namePrefix 'conditionTarget'}}">
+	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+</select>
+{{/if}}
+{{#if (eqAny cond.comparisonTarget "percentage-of-hp" "percentage-of-mp")}}
+<select name="{{strcat namePrefix 'conditionTarget'}}">
+	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+</select>
+{{/if}}
+
+{{#if (eq cond.comparisonTarget "resistance-level")}}
+<select name="{{strcat namePrefix 'conditionTarget'}}">
+	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+</select>
+<select name="{{strcat namePrefix 'element'}}">
+	{{selectOptions POWERSTUFF.DAMAGETYPESPLUS localize=true selected=cond.element}}
+</select>
+<select name="{{strcat namePrefix 'resistLevel'}}">
+	{{selectOptions POWERSTUFF.RESIST_STRENGTHS localize=true selected=cond.resistLevel}}
+</select>
+{{/if}}
+
+{{#if (eq cond.comparisonTarget "clock-comparison")}}
+<select name="{{strcat namePrefix 'clockId'}}">
+	{{selectOptions POWERSTUFF.CLOCKS localize=true selected=cond.clockId}}
+</select>
+{{/if}}
+
+{{#if (eq cond.comparisonTarget "energy")}}
+<select name="{{strcat namePrefix 'conditionTarget'}}">
+	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+</select>
+{{/if}}
+
+{{#if (eq cond.comparisonTarget "social-variable")}}
+<div>
+	<label> varname</label>
+	<input class="var-id" type="text" width=2 name="{{strcat namePrefix 'variableId'}}" value="{{cond.variableId}}">
+</div>
+{{/if}}
+
+{{#if (eq cond.comparisonTarget "combat-result-based")}}
+<div>
+	<span>
+		<select name="{{strcat namePrefix 'resultSubtypeComparison'}}">
+			{{selectOptions POWERSTUFF.RESULT_SUBTYPE_COMPARISON localize=true selected=cond.resultSubtypeComparison}}
+		</select>
+		<span>
+			<label> invert comparison</label>
+			<input type="checkbox" id="invert" name="{{strcat namePrefix 'invertComparison'}}" {{checked cond.invertComparison}}>
+		</span>
+	</span>
+</div>
+{{/if}}
+
+{{#if (eq cond.comparisonTarget "num-of-others-with")}}
+<div>
+	<select name="{{strcat namePrefix 'conditionTarget'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+	</select>
+</div>
+<div>
+	<select name="{{strcat namePrefix 'group'}}">
+		{{selectOptions POWERSTUFF.COMPARISON_GROUPS localize=true selected=cond.group}}
+	</select>
+</div>
+<div class="sub-condition">
+	{{> "systems/persona/parts/input-condition-body.hbs" namePrefix=(strcat namePrefix "otherComparison.")  cond=cond.otherComparison POWERSTUFF=POWERSTUFF owner=owner}}
+</div>
+{{/if}}
+
+{{#if (eq cond.comparisonTarget "scan-level")}}
+<select name="{{strcat namePrefix 'conditionTarget'}}">
+	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+</select>
+{{/if}}
+
+

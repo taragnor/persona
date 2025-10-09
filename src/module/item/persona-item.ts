@@ -10,7 +10,7 @@ import { RealDamageType } from '../../config/damage-types.js';
 import { AttackResult } from '../combat/combat-result.js';
 import { EvaluatedDamage } from '../combat/damage-calc.js';
 import { PToken } from '../combat/persona-combat.js';
-import { DamageConsequence } from '../../config/consequence-types.js';
+import { DamageConsequence, ItemSelector } from '../../config/consequence-types.js';
 import { Trigger } from '../../config/triggers.js';
 import { CombatResult } from '../combat/combat-result.js';
 import { ROLL_TAGS_AND_CARD_TAGS } from '../../config/roll-tags.js';
@@ -55,6 +55,7 @@ import { PersonaDB } from '../persona-db.js';
 import {DEFENSE_TYPES} from '../../config/defense-types.js';
 import {EnergyClassCalculator} from '../calculators/shadow-energy-cost-calculator.js';
 import {ConsequenceAmountResolver} from '../conditionalEffects/consequence-amount.js';
+import {EnchantedTreasureFormat, TreasureSystem} from '../exploration/treasure-system.js';
 
 declare global {
 	type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -2083,56 +2084,56 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		};
 	}
 
-	// hasTargettedEffects(this: Usable): boolean {
-	//TODO: Finish later
-	// }
+// hasTargettedEffects(this: Usable): boolean {
+//TODO: Finish later
+// }
 
-	getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][], proxyItem : ItemModifierContainer = this ): readonly SourcedConditionalEffect[] {
-		//proxy item is used for tags to redirect their source to their parent item (for purposes of reading item level)
-		if (this.isSkillCard()) {
-			const arr = [
-				this.generateSkillCardTeach()
-			];
-			return arr;
-		}
-		const tagEffects : SourcedConditionalEffect[] = [];
-		if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()){
-			const tags = this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
-				.filter (tag=> tag instanceof PersonaItem);
-			tagEffects.push(...tags.flatMap(tag =>
-				tag.getEffects(sourceActor, CETypes, this)
-			));
-		}
-		if (!CETypes || CETypes.length == 0) {
-			const effects = this.system.effects;
-			return this.#accessEffectsCache('allEffects', sourceActor, () => ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor))
-				.concat(tagEffects);
-		} else {
-			const effects: SourcedConditionalEffect[] = [];
-			for (const cType of CETypes) {
-				switch (cType) {
-					case 'defensive':
-						effects.push(...this.getDefensiveEffects(sourceActor, proxyItem));
-						break;
-					case 'triggered':
-						effects.push(...this.getTriggeredEffects(sourceActor, proxyItem));
-						break;
-					case 'passive':
-						effects.push(...this.getPassiveEffects(sourceActor, proxyItem));
-						break;
-					case 'on-use':
-						effects.push(...this.getOnUseEffects(sourceActor, proxyItem));
-						break;
-					case 'unknown':
-						effects.push(...this.getEffects(sourceActor, [], proxyItem).filter( x=> x.conditionalType == cType));
-						break;
-					default:
-						cType satisfies never;
-				}
-			}
-			return effects;
-		}
+getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][], proxyItem : ItemModifierContainer = this ): readonly SourcedConditionalEffect[] {
+	//proxy item is used for tags to redirect their source to their parent item (for purposes of reading item level)
+	if (this.isSkillCard()) {
+		const arr = [
+			this.generateSkillCardTeach()
+		];
+		return arr;
 	}
+	const tagEffects : SourcedConditionalEffect[] = [];
+	if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()){
+		const tags = this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
+			.filter (tag=> tag instanceof PersonaItem);
+		tagEffects.push(...tags.flatMap(tag =>
+			tag.getEffects(sourceActor, CETypes, this)
+		));
+	}
+	if (!CETypes || CETypes.length == 0) {
+		const effects = this.system.effects;
+		return this.#accessEffectsCache('allEffects', sourceActor, () => ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor))
+			.concat(tagEffects);
+	} else {
+		const effects: SourcedConditionalEffect[] = [];
+		for (const cType of CETypes) {
+			switch (cType) {
+				case 'defensive':
+					effects.push(...this.getDefensiveEffects(sourceActor, proxyItem));
+					break;
+				case 'triggered':
+					effects.push(...this.getTriggeredEffects(sourceActor, proxyItem));
+					break;
+				case 'passive':
+					effects.push(...this.getPassiveEffects(sourceActor, proxyItem));
+					break;
+				case 'on-use':
+					effects.push(...this.getOnUseEffects(sourceActor, proxyItem));
+					break;
+				case 'unknown':
+					effects.push(...this.getEffects(sourceActor, [], proxyItem).filter( x=> x.conditionalType == cType));
+					break;
+				default:
+					cType satisfies never;
+			}
+		}
+		return effects;
+	}
+}
 
 #accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, refresherFn: () => SourcedConditionalEffect[]) : readonly SourcedConditionalEffect[] {
 	if (!PersonaDB.isLoaded) {return [];}
@@ -2221,8 +2222,8 @@ requiredLinkLevel(this: Focus) : number  {
 				if ('num' in cond) {
 					const sourced = ConsequenceAmountResolver.extractSourcedFromField(cond, "num");
 					const val = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, {});
-						return val ?? 0;
-					}
+					return val ?? 0;
+				}
 				return 0;
 			}
 		}
@@ -2239,7 +2240,7 @@ isAvailable(this: Activity, pc: PC): boolean {
 		user: pc.accessor
 	};
 	if (this.system.weeklyAvailability.disabled) {return false;}
-		const sourcedConditions = ConditionalEffectManager.getConditionals(this.system.conditions, null, null );
+	const sourcedConditions = ConditionalEffectManager.getConditionals(this.system.conditions, null, null );
 	if(!testPreconditions(sourcedConditions, sit)) {return false;}
 	return this.system.weeklyAvailability.available;
 }
@@ -2815,6 +2816,27 @@ isBuffOrDebuff(this: Usable) : boolean {
 isStatusRemoval(this: Usable) : boolean {
 	const removed = this.statusesRemoved();
 	return removed.length > 0;
+}
+
+static resolveItemSelector(selector: ItemSelector): U<EnchantedTreasureFormat> {
+	switch (selector.selectType) {
+		case "specific": {
+			const item= PersonaDB.getItemById(selector.itemId);
+			if (item?.isCarryableType()) {
+				return {
+					item,
+					enchantments:[],
+				};
+			}
+		}
+			break;
+		case "randomTreasure": {
+			return TreasureSystem.generate(selector.treasureLevel, selector.rollModifier);
+		}
+		default :
+			selector satisfies never;
+	}
+	return undefined;
 }
 
 }

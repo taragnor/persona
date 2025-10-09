@@ -102,7 +102,7 @@ type NonBasicComparator =
 
 type RangeComparator = {
 	comparator : Extract<Comparator, "range">,
-	num: number, //lowend of the range
+	num: ConsequenceAmount, //lowend of the range
 	high: number,
 }
 
@@ -640,6 +640,7 @@ function deriveConstant (oldC: NumericComparator | DerivedComparator) : NumericO
 			return  {
 				comparisonTarget:"constant",
 				subtype: "range",
+				//@ts-expect-error a Numeric V2 thing
 				low: oldC.num,
 				high: oldC.high,
 			};

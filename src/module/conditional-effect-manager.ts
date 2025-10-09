@@ -656,6 +656,12 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 			return `Attack roll hits and is within instant death range`;
 		case "using-meta-pod":
 			return `${target1} is using Meta Pod`;
+		case "actor-exists":
+			return `${target1} is present in scene`;
+		case "knows-power": {
+			const pwr = PersonaDB.allPowers().get(cond.powerId);
+			return `${target1} knows Power ${pwr?.displayedName ?? "UNKNOWN POWER"}`;
+		}
 		default:
 			cond satisfies never;
 			return "";
@@ -1018,6 +1024,8 @@ static printConsAmountOperation( consAmt: ConsequenceAmountV2 & {type: "operatio
 				return `Add card tag: ${cons.cardTag}`;
 			case "remove-cameo":
 				return `Remove Cameo(s) from scene`;
+			case "set-social-card-item":
+				return `set social card item`;
 			default:
 				cons satisfies never;
 				return "ERROR";

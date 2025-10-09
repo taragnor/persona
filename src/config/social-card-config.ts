@@ -11,7 +11,8 @@ export const SOCIAL_CARD_TYPES_LIST = [
 	"job",
 	"training",
 	"recovery",
-	"other"
+	"other",
+	"mixin",
 ] as const;
 
 export const SIMPLE_SOCIAL_CARD_ROLL_TYPES_LIST = [

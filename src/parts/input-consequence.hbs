@@ -263,6 +263,25 @@
 		<textarea class="text-msg" id="text-msg" name="{{strcat namePrefix 'text'}}">{{cons.text}}</textarea>
 	{{/if}}
 
+	{{#if (eq cons.cardAction "set-social-card-item")}}
+	<div>
+		<select name="{{strcat namePrefix 'item.selectType'}}">
+			{{selectOptions POWERSTUFF.ITEM_SELECTOR_TYPE localize=true selected=cons.item.selectType}}
+		</select>
+	{{#if (eq (defVal cons.item.selectType "specific") "specific")}}
+		<select name="{{strcat namePrefix 'item.itemId'}}">
+			{{selectOptions POWERSTUFF.ITEMS localize=true selected=cons.item.itemId}}
+		</select>
+	{{/if}}
+	{{#if (eq cons.item.selectType "randomTreasure")}}
+	<label>Treasure Level</label>
+	<input class="short" type=number name="{{strcat namePrefix 'item.treasureLevel'}}" value="{{cons.item.treasureLevel}}">
+	<label>Modifier</label>
+	<input class="short" type=number name="{{strcat namePrefix 'item.rollModifier'}}" value="{{cons.item.rollModifier}}">
+	{{/if}}
+	</div>
+	{{/if}}
+
 	{{/if}}
 
 	{{#if (eq cons.type "inspiration-cost")}}

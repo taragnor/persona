@@ -7,7 +7,7 @@ import {PersonaError} from "../persona-error.js";
 import {Carryable, Tag} from "../item/persona-item.js";
 
 export class TreasureSystem {
-	static generate(treasureLevel: number, modifier : number = 0) : U<{item: TreasureItem, enchantments: Tag[]}> {
+	static generate(treasureLevel: number, modifier : number = 0) : U<EnchantedTreasureFormat> {
 		const table = this.convertRollToTreasureTable(modifier);
 		const item =  this.generateFromTable(table, treasureLevel);
 		if (item == undefined) {return undefined;}
@@ -128,6 +128,15 @@ export class TreasureSystem {
 		return weightedChoice(weights);
 	}
 
+	static printEnchantedTreasureString(treasure: EnchantedTreasureFormat) : string {
+const basename = treasure.item.name;
+		if (treasure.enchantments.length == 0) {
+			return basename;
+		}
+		const enchantments = treasure.enchantments.map( x=> x.name);
+		return `$baseName (${enchantments.join(", ")})`;
+	}
+
 }
 
 type TreasureItem = ReturnType<typeof PersonaDB["treasureItems"]>[number];
@@ -147,3 +156,8 @@ export const ENCOUNTER_RATE_PROBABILITY : ProbabilityRate = {
 
 //@ts-expect-error testing
 window.TreasureSystem = TreasureSystem;
+
+export type EnchantedTreasureFormat = {
+	item: TreasureItem,
+	enchantments: Tag[]
+}

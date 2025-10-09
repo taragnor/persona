@@ -8,7 +8,7 @@ import { NPCAlly } from "../actor/persona-actor.js";
 import { StatusEffectId } from "../../config/status-effects.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { TurnAlert } from "../utility/turnAlert.js";
-import { VariableAction } from "../../config/consequence-types.js";
+import { ItemSelector, VariableAction } from "../../config/consequence-types.js";
 import { SocialCardActionConsequence } from "../../config/consequence-types.js";
 import { PersonaSounds } from "../persona-sounds.js";
 import { randomSelect } from "../utility/array-tools.js";
@@ -48,6 +48,7 @@ import { STUDENT_SKILLS } from "../../config/student-skills.js";
 import { PersonaDB } from "../persona-db.js";
 import { HTMLTools } from "../utility/HTMLTools.js";
 import { StudentSkillExt } from "../../config/student-skills.js";
+import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-system.js";
 
 export class PersonaSocial {
 	static allowMetaverse: boolean = true;
@@ -322,6 +323,7 @@ export class PersonaSocial {
 			variables: {},
 			extraCardTags: [],
 			currentEvent: null,
+			item: undefined,
 		};
 		return await this.#execCardSequence(cardData);
 	}
@@ -1015,6 +1017,7 @@ export class PersonaSocial {
 			case "training":
 			case "other":
 			case "job":
+			case "mixin":
 			case "recovery":
 				switch (cardData.card.system.dc.thresholdType) {
 					case "static":
@@ -1205,7 +1208,7 @@ export class PersonaSocial {
 		}
 	}
 
-	static async applyCardProgress(cardData: CardData, amount: number) {
+	static async applyCardProgress(cardData: CardData, amount: number) : Promise<void> {
 		const actor = cardData.actor;
 		switch (cardData.card.system.cardType) {
 			case "social":
@@ -1215,6 +1218,9 @@ export class PersonaSocial {
 			case "recovery":
 			case "other":
 				return await actor.activityProgress(cardData.card.id, amount);
+			case "mixin":
+				ui.notifications.warn("Can't assign cardProgress for Add-on Cards");
+				return;
 			default:
 				cardData.card.system.cardType satisfies never;
 				return;
@@ -1378,10 +1384,25 @@ export class PersonaSocial {
 			case "remove-cameo":
 				this.#removeCameo();
 				break;
+			case "set-social-card-item":
+				this.#setSocialCardItem(eff.item);
+				break;
 			default:
 					eff satisfies never;
 				break;
 		}
+	}
+
+	static #setSocialCardItem(selector: ItemSelector){
+		const item = PersonaItem.resolveItemSelector(selector);
+		if (!this.rollState) {
+			PersonaError.softFail("Can't find Rollstate when trying to apply Card Response");
+			return;
+		}
+		const cardData = this.rollState.cardData;
+		cardData.item = item;
+		cardData.replaceSet["$ITEM"] = item ? TreasureSystem.printEnchantedTreasureString(item): `No Item` ;
+
 	}
 
 	static #removeCameo() {
@@ -1808,6 +1829,7 @@ export type CardData = {
 	sound?: FOUNDRY.AUDIO.Sound
 	variables: Record<string, number>;
 	extraCardTags: (CardTag | RollTag)[];
+	item : U<EnchantedTreasureFormat>;
 
 };
 

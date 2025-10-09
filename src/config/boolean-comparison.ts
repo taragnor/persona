@@ -29,6 +29,7 @@ const BASIC_BOOLEAN_COMPARISON_LIST = [
 
 const BOOLEAN_COMPARISON_TARGET_LIST = [
 	...BASIC_BOOLEAN_COMPARISON_LIST,
+	"actor-exists",
 	"engaged",
 	"engaged-with",
 	"is-shadow",
@@ -61,6 +62,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"logical-or",
 	"scene-clock-name-is",
 	"using-meta-pod",
+	"knows-power",
 	"has-creature-tag", // Deprecated
 	"metaverse-enhanced", // Deprecated
 ] as const;
@@ -90,8 +92,20 @@ type BooleanComparisionSpecifics =
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison | SceneClockNameComparison;
+StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison;
 ;
+
+
+type KnowsPowerComparison = {
+	boolComparisonTarget: "knows-power";
+	powerId: string;
+	conditionTarget: ConditionTarget,
+}
+
+type ActorExistsComparison =  {
+	boolComparisonTarget: "actor-exists";
+	conditionTarget: ConditionTarget,
+}
 
 
 type DeprecatedBoolComparisons =

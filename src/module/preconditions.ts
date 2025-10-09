@@ -869,6 +869,16 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
 			if (!target.isValidCombatant()) {return false;}
 			return target.isUsingMetaPod();
 		}
+		case "actor-exists": {
+			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+			return (target != undefined);
+		}
+		case "knows-power": {
+			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+			const power = PersonaDB.allPowers().get(condition.powerId);
+			if (!power) {return false;}
+			return target.powers.includes(power);
+		}
 		default :
 				condition satisfies never;
 			return undefined;

@@ -496,8 +496,30 @@ type CardActionTypes = [
 		cardTag: CardTag,
 	}, {
 		cardAction: "remove-cameo",
+	}, {
+		cardAction: "set-social-card-item",
+		item: ItemSelector,
 	}
+
 ];
+
+const ITEM_SELECTOR_TYPE_LIST = [
+	"specific",
+	"randomTreasure",
+] as const;
+
+type ItemSelectorType = typeof ITEM_SELECTOR_TYPE_LIST[number];
+
+export const ITEM_SELECTOR_TYPE = HTMLTools.createLocalizationObject(ITEM_SELECTOR_TYPE_LIST, "persona.consequences.item-selector");
+
+export type ItemSelector = {
+	selectType: Extract<ItemSelectorType, "specific">,
+	itemId: PersonaItem["id"],
+} | {
+	selectType: Extract<ItemSelectorType, "randomTreasure">,
+	treasureLevel: number,
+	rollModifier: number,
+}
 
 export const VARIABLE_ACTION_LIST =  [
 	"set",

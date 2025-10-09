@@ -642,6 +642,7 @@
 	"persona.effecttypes.social-card.set-temporary-variable": "Set Temporary Variable",
 	"persona.effecttypes.social-card.append-card-tag": "Add Card Tag",
 	"persona.effecttypes.social-card.remove-cameo": "Remove Cameo from Scene",
+	"persona.effecttypes.social-card.set-social-card-item": "Set Social Card Item",
 
 
 	"persona.effecttypes.dungeonAction.roll-tension-pool": "Roll Tension Pool",
@@ -744,6 +745,7 @@
 	"persona.preconditions.comparison.constant": "Constant",
 	"persona.preconditions.comparison.roll-comparison": "Roll Comparison",
 	"persona.preconditions.comparison.using-meta-pod": "Using a Metaverse Pod",
+	"persona.preconditions.comparison.knows-power": "Knows Power",
 	"persona.preconditions.comparison.odd-even": "Odd/Even",
 	"persona.preconditions.comparison.escalation": "Escalation Die",
 	"persona.preconditions.comparison.actor-stat": "Actor Stat",
@@ -763,6 +765,7 @@
 	"persona.preconditions.comparison.health-percentage": "Health Percentage (0-100)",
 	"persona.preconditions.comparison.clock-comparison": "Clock Value",
 	"persona.preconditions.comparison.student-skill": "Rank in Student Skill",
+	"persona.preconditions.comparison.actor-exists": "Character Exists",
 	"persona.preconditions.comparison.engaged": "Is Being Engaged By Any Foe",
 	"persona.preconditions.comparison.engaged-with": "X is Engaging Y",
 	"persona.preconditions.comparison.metaverse-enhanced": "(Deprecated) Metaverse Enhanced ",
@@ -771,7 +774,7 @@
 	"persona.preconditions.comparison.is-enemy": "Is Enemy",
 	"persona.preconditions.comparison.has-tag": "Has Tag",
 	"persona.preconditions.comparison.has-creature-tag": " (Deprecated) Has Creature Tag",
-	"persona.preconditions.comparison.cameo-in-scene": "Card has a Cameo",
+	"persona.preconditions.comparison.cameo-in-scene": "Card has a Cameo (Deprecated)",
 	"persona.preconditions.comparison.arcana-is": "Arcana is",
 	"persona.preconditions.comparison.logical-or": "Or",
 	"persona.preconditions.comparison.scene-clock-name-is": "Scene Clock Name is",
@@ -897,6 +900,7 @@
 	"persona.social.card.types.job": "Job",
 	"persona.social.card.types.training": "Training",
 	"persona.social.card.types.recovery": "Recovery",
+	"persona.social.card.types.mixin": "Supplemental",
 	"persona.social.card.types.other": "Other",
 
 	"persona.social.card.rolls.types.none": "None",
@@ -937,6 +941,8 @@
 
 "persona.item-property.item-level": "Item Level",
 
+"persona.consequences.item-selector.specific": "Specific Item",
+"persona.consequences.item-selector.randomTreasure": "Random Treasure",
 
 "persona.consequences.consequences-operators.add" : "+",
 "persona.consequences.consequences-operators.subtract" : "-",

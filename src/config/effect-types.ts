@@ -149,6 +149,7 @@ export const SOCIAL_CARD_ACTION_LIST = [
 	"card-response",
 	"append-card-tag",
 	"remove-cameo",
+	"set-social-card-item",
 ] as const;
 
 export type SocialCardAction = typeof SOCIAL_CARD_ACTION_LIST[number];
