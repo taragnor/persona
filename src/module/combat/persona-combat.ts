@@ -255,7 +255,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				user: comb.actor!.accessor,
 			};
 			const CR =  await TriggeredEffect.autoTriggerToCR('on-combat-end', comb.actor, situation);
-				return await CR?.toMessage('End Combat Triggered Effect', comb.actor);
+			return await CR?.toMessage('End Combat Triggered Effect', comb.actor);
 		});
 		await Promise.allSettled(promises);
 		// for (const comb of this.combatants) {
@@ -1037,7 +1037,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					activeCombat: true,
 				};
 				const CR = await TriggeredEffect.autoTriggerToCR('end-turn', user.actor, situation);
-					await CR?.toMessage('On End Turn', combatant.actor);
+				await CR?.toMessage('On End Turn', combatant.actor);
 				// await PersonaCombat.execTrigger("end-turn", user.token.actor as ValidAttackers, situation);
 			}
 		}
@@ -1744,9 +1744,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	static #calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) : U<{low: number, high:number}> {
 		const ailmentMods =
-			attackerPersona.getBonuses('afflictionRange').concat(
-				targetPersona.getBonuses('ail')
-			);
+		attackerPersona.getBonuses('afflictionRange').concat(
+			targetPersona.getBonuses('ail')
+		);
 		ailmentMods.add("Persona Luck Boost", attackerPersona.combatStats.ailmentBonus());
 		ailmentMods.add("Target Luck Resistance", -targetPersona.combatStats.ailmentResist());
 		const total = ailmentMods.total(situation);
@@ -1856,10 +1856,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	static async consequencesToResult(cons: SourcedConsequence<NonDeprecatedConsequence>[], power: U<ModifierContainer>, situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkResult: AttackResult | null): Promise<CombatResult> {
 		const CombatRes = new CombatResult(atkResult);
 		try {
-		const x = this.ProcessConsequences(power, situation, cons, attacker, target, atkResult);
-		CombatRes.escalationMod += x.escalationMod;
-		const result = await this.getCombatResultFromConsequences(x.consequences, situation, attacker, target, atkResult);
-		CombatRes.merge(result);
+			const x = this.ProcessConsequences(power, situation, cons, attacker, target, atkResult);
+			CombatRes.escalationMod += x.escalationMod;
+			const result = await this.getCombatResultFromConsequences(x.consequences, situation, attacker, target, atkResult);
+			CombatRes.merge(result);
 		}
 		catch (e) {
 			PersonaError.softFail("Error turning consequence into Result", e, cons);
@@ -1965,64 +1965,64 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					if (userToken)  { return [userToken.actor];}
 					const userActor = PersonaDB.findActor(situation.user);
 					if (userActor) {return [userActor];}
-					}
-					if (cons && cons.owner) {
-						const owner =  PersonaDB.findActor(cons.owner);
-						if (owner) {return [owner as ValidAttackers];}
-					}
-					return [];
 				}
-				case 'triggering-character': {
-					const triggerer = 'triggeringCharacter' in situation? situation.triggeringCharacter: undefined;
-					if (!triggerer) {
-						PersonaError.softFail(`Can't target triggering character for ${situation.trigger}`, situation);
-						return [];
-					}
-					const token = this.getPTokenFromActorAccessor(triggerer);
-					if (token) { return [token.actor];}
-					const actor = PersonaDB.findActor(triggerer);
-					if (actor) { return [actor];}
-					return [];
+				if (cons && cons.owner) {
+					const owner =  PersonaDB.findActor(cons.owner);
+					if (owner) {return [owner as ValidAttackers];}
 				}
-				case 'cameo': {
-					const cameo = 'cameo' in situation && situation.cameo ? PersonaDB.findActor(situation.cameo) : undefined;
-					return cameo ? [cameo] : []; }
-				case 'all-foes': {
-					const attacker = situation.attacker ? PersonaDB.findActor(situation.attacker) : undefined;
-					if (!attacker) {return [];}
-					const attackerToken = this.getPTokenFromActorAccessor(attacker.accessor);
-					if (!attackerToken) {return [];}
-					return this.getAllEnemiesOf(attackerToken).map( x=> x.actor);
-				}
-				case 'all-allies': {
-					const attacker = situation.attacker ? PersonaDB.findActor(situation.attacker) : undefined;
-					if (!attacker) {return [];}
-					const attackerToken = this.getPTokenFromActorAccessor(attacker.accessor);
-					if (!attackerToken) {return [];}
-					return this.getAllAlliesOf(attackerToken)
-					.map( x=> x.actor);
-				}
-				case undefined: {
-					const target = situation.target ? PersonaDB.findActor(situation.target) : undefined;
-					return target ? [target] : []; } //default to target since this is old material
-				case 'all-in-region': {
-					let id : string | undefined;
-					if ('triggeringRegionId' in situation) {
-						id = situation.triggeringRegionId;
-					}
-					const region = Metaverse.getRegion(id);
-					if (!region) {return [];}
-					const tokens = Array.from(region.tokens);
-					const actors = tokens
-					.filter( x=> x.actor && x.actor.isValidCombatant())
-					.map( x=> x.actor! as ValidAttackers);
-					return actors;
-				}
-				default:
-				applyTo satisfies never;
 				return [];
 			}
+			case 'triggering-character': {
+				const triggerer = 'triggeringCharacter' in situation? situation.triggeringCharacter: undefined;
+				if (!triggerer) {
+					PersonaError.softFail(`Can't target triggering character for ${situation.trigger}`, situation);
+					return [];
+				}
+				const token = this.getPTokenFromActorAccessor(triggerer);
+				if (token) { return [token.actor];}
+				const actor = PersonaDB.findActor(triggerer);
+				if (actor) { return [actor];}
+				return [];
+			}
+			case 'cameo': {
+				const cameo = 'cameo' in situation && situation.cameo ? PersonaDB.findActor(situation.cameo) : undefined;
+				return cameo ? [cameo] : []; }
+			case 'all-foes': {
+				const attacker = situation.attacker ? PersonaDB.findActor(situation.attacker) : undefined;
+				if (!attacker) {return [];}
+				const attackerToken = this.getPTokenFromActorAccessor(attacker.accessor);
+				if (!attackerToken) {return [];}
+				return this.getAllEnemiesOf(attackerToken).map( x=> x.actor);
+			}
+			case 'all-allies': {
+				const attacker = situation.attacker ? PersonaDB.findActor(situation.attacker) : undefined;
+				if (!attacker) {return [];}
+				const attackerToken = this.getPTokenFromActorAccessor(attacker.accessor);
+				if (!attackerToken) {return [];}
+				return this.getAllAlliesOf(attackerToken)
+				.map( x=> x.actor);
+			}
+			case undefined: {
+				const target = situation.target ? PersonaDB.findActor(situation.target) : undefined;
+				return target ? [target] : []; } //default to target since this is old material
+			case 'all-in-region': {
+				let id : string | undefined;
+				if ('triggeringRegionId' in situation) {
+					id = situation.triggeringRegionId;
+				}
+				const region = Metaverse.getRegion(id);
+				if (!region) {return [];}
+				const tokens = Array.from(region.tokens);
+				const actors = tokens
+				.filter( x=> x.actor && x.actor.isValidCombatant())
+				.map( x=> x.actor! as ValidAttackers);
+				return actors;
+			}
+			default:
+				applyTo satisfies never;
+				return [];
 		}
+	}
 
 	static processConsequences_simple(consequence_list: SourcedConsequence<NonDeprecatedConsequence>[], situation: Situation): ConsequenceProcessed {
 		let consequences : ConsequenceProcessed['consequences'] = [];
@@ -2059,30 +2059,30 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return {consequences, escalationMod} satisfies ConsequenceProcessed;
 	}
 
-static processConsequence( power: U<ModifierContainer>, situation: Situation, cons: SourcedConsequence<NonDeprecatedConsequence>, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed['consequences'] {
-	//need to fix this so it knows who the target actual is so it can do a proper compariosn, right now when applying to Self it won't consider resistance or consider the target's resist.
-	const applyTo = cons.applyTo ?? (cons.applyToSelf ? 'owner' : 'target');
-	const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
-	const applyToSelf = cons.applyToSelf ?? (cons.applyTo == 'attacker' || cons.applyTo =='user' || cons.applyTo == 'owner');
-	const absorb = (situation.isAbsorbed && !applyToSelf) ?? false;
-	const block = atkresult && atkresult.result == 'block' && !applyToSelf;
-	// const applyTo = cons.applyTo ? cons.applyTo : (applyToSelf ? "owner" : "target");
-	switch (cons.type) {
-		case 'damage-new':
-			return this.processConsequence_damage(cons, consTargets, attacker, power, situation);
-		case 'none':
-		case 'modifier':
-			break;
-		case 'addStatus': case 'removeStatus':
-			if (!applyToSelf && (absorb || block)) {return [];}
-			return consTargets.map( target => {
-				return  {applyTo: target ,cons};
-			});
-		default:
-			return this.processConsequence_simple(cons, consTargets);
+	static processConsequence( power: U<ModifierContainer>, situation: Situation, cons: SourcedConsequence<NonDeprecatedConsequence>, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed['consequences'] {
+		//need to fix this so it knows who the target actual is so it can do a proper compariosn, right now when applying to Self it won't consider resistance or consider the target's resist.
+		const applyTo = cons.applyTo ?? (cons.applyToSelf ? 'owner' : 'target');
+		const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
+		const applyToSelf = cons.applyToSelf ?? (cons.applyTo == 'attacker' || cons.applyTo =='user' || cons.applyTo == 'owner');
+		const absorb = (situation.isAbsorbed && !applyToSelf) ?? false;
+		const block = atkresult && atkresult.result == 'block' && !applyToSelf;
+		// const applyTo = cons.applyTo ? cons.applyTo : (applyToSelf ? "owner" : "target");
+		switch (cons.type) {
+			case 'damage-new':
+				return this.processConsequence_damage(cons, consTargets, attacker, power, situation);
+			case 'none':
+			case 'modifier':
+				break;
+			case 'addStatus': case 'removeStatus':
+				if (!applyToSelf && (absorb || block)) {return [];}
+				return consTargets.map( target => {
+					return  {applyTo: target ,cons};
+				});
+			default:
+				return this.processConsequence_simple(cons, consTargets);
+		}
+		return [];
 	}
-	return [];
-}
 
 static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'] {
 	const consList : ConsequenceProcessed['consequences'] = [];
@@ -2431,7 +2431,7 @@ static getBaseAttackBonus(attackerPersona: Persona, power:Usable): ModifierList 
 			power.system.defense satisfies never;
 	}
 	if (power.isMultiTarget()) {
-			modList.add('Multitarget power attack penalty', -4);
+		modList.add('Multitarget power attack penalty', -4);
 	}
 	return modList;
 }

@@ -92,7 +92,7 @@ export class PersonaSocial {
 
 	static async startSocialTurn( pc: PC) {
 		if (pc.isOwner && !game.user.isGM)
-			{TurnAlert.alert();}
+		{TurnAlert.alert();}
 		if (!game.user.isGM) {return;}
 		//only GM access beyond this point
 		const startTurnMsg = [ `<u><h2> ${pc.name}'s Social Turn</h2></u><hr>`];
@@ -266,9 +266,9 @@ export class PersonaSocial {
 		const cards = this.validSocialCards(actor, link);
 		const undrawn = cards;
 		const weightedList = undrawn.map( card=> ({
-				item: card,
-				weight: Number(card.system.frequency ?? 1),
-			}));
+			item: card,
+			weight: Number(card.system.frequency ?? 1),
+		}));
 		const chosenCard = weightedChoice(weightedList);
 		if (!chosenCard) {throw new PersonaError("Can't find valid social card!");}
 		return chosenCard;
@@ -330,7 +330,7 @@ export class PersonaSocial {
 
 	static questionsAsEvents( socialTarget: SocialLink) : SocialCard["system"]["events"] {
 		const questions = socialTarget.questions
-		.filter( q=>!q.expended);
+			.filter( q=>!q.expended);
 		return questions.map(this.questionToEvent);
 	}
 
@@ -462,7 +462,7 @@ export class PersonaSocial {
 	static lookupSocialLink(actor: PC, linkId: string) :SocialLinkData {
 		const link= actor.socialLinks.find(link => link.actor.id == linkId);
 		if (!link)
-			{throw new PersonaError(`Can't find link ${linkId}`);}
+		{throw new PersonaError(`Can't find link ${linkId}`);}
 		return link;
 	}
 
@@ -601,10 +601,10 @@ export class PersonaSocial {
 					}
 				}
 				return "Choose One: <br>" +
-					[actor.perk, datePerk]
-					.filter ( x=> x != undefined)
-					.map( x=> `* ${x}`)
-					.join("<br>");
+				[actor.perk, datePerk]
+				.filter ( x=> x != undefined)
+				.map( x=> `* ${x}`)
+				.join("<br>");
 			}
 			case "none":
 				return "";
@@ -666,7 +666,7 @@ export class PersonaSocial {
 		const card = cardData.card;
 		if (!card.system.opportunity
 			&& !card.system.opportunity_choices)
-			{return;}
+		{return;}
 		const html = await foundry.applications.handlebars.renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-opportunity.hbs`, {item: card,card,cardData} );
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
@@ -1029,7 +1029,7 @@ export class PersonaSocial {
 						return 10 + (cardData.actor.system.skills[stat] ?? -999);
 					}
 					default:
-							cardData.card.system.dc satisfies never;
+						cardData.card.system.dc satisfies never;
 						return 20;
 				}
 			default:
@@ -1240,7 +1240,7 @@ export class PersonaSocial {
 
 	static async makeCardRoll(ev: JQuery.ClickEvent) {
 		if (!this.rollState)
-			{throw new PersonaError("No event state present, can't resume roll");}
+		{throw new PersonaError("No event state present, can't resume roll");}
 		const cardId = HTMLTools.getClosestData(ev, "cardId");
 		const messageId = HTMLTools.getClosestData(ev, "messageId");
 		const message = game.messages.get(messageId);
@@ -1254,10 +1254,10 @@ export class PersonaSocial {
 		if (!card) {
 			throw new PersonaError(`Can't find card ${cardId}`);
 		}
-	if (!this.rollState) {
-		PersonaError.softFail("No roll state found");
-		return;
-	}
+		if (!this.rollState) {
+			PersonaError.softFail("No roll state found");
+			return;
+		}
 		const cardEvent = this.rollState.cardData.eventList[eventIndex];
 		const choice = cardEvent.choices[choiceIndex];
 		// await this.handleCardChoice(this.rollState.cardData, choice);
@@ -1364,14 +1364,14 @@ export class PersonaSocial {
 				break;
 			}
 			case "add-card-events-to-list":
-					 this.addCardEvents(eff.cardId);
+					this.addCardEvents(eff.cardId);
 				break;
 			case "replace-card-events":
-					 this.replaceCardEvents(eff.cardId, eff.keepEventChain);
+					this.replaceCardEvents(eff.cardId, eff.keepEventChain);
 				break;
 			case "set-temporary-variable": {
 				const val = "value" in eff ? eff.value : Math.floor(eff.min + (eff.max * Math.random()));
-					this.variableAction(eff.operator, eff.variableId, val);
+				this.variableAction(eff.operator, eff.variableId, val);
 				break;
 			}
 			case "card-response":
@@ -1387,7 +1387,7 @@ export class PersonaSocial {
 				this.#setSocialCardItem(eff.item);
 				break;
 			default:
-					eff satisfies never;
+				eff satisfies never;
 				break;
 		}
 	}
