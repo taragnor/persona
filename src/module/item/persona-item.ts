@@ -824,6 +824,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (this.system.dmg_type == 'by-power') {
 			list.pushUnique('variable-damage');
 		}
+		if (this.system.attacksMax > 1) {
+			list.pushUnique('flurry');
+		}
 		if ( list.includes('weapon') && this.system.dmg_type == 'by-power' && user) {
 			const wpnList : readonly (PowerTag | EquipmentTag)[] = user?.weapon?.tagList() ?? user.unarmedTagList();
 			list.pushUnique(...wpnList);
@@ -832,14 +835,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				list.pushUnique(this.system.dmg_type as any);
 			}
-			return list;
 		}
 		if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
 			list.pushUnique('ailment');
 		}
 		const subtype : typeof POWER_TYPE_TAGS[number]  = this.system.subtype as typeof POWER_TYPE_TAGS[number];
 		if (POWER_TYPE_TAGS.includes(subtype) && !list.includes(subtype)) { list.pushUnique(subtype);}
-		return list;
+		return list.map ( x=> PersonaItem.resolveTag(x));
 	}
 
 	get amount() : number {
@@ -1475,10 +1477,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
 		calc.add('base', str, `${userPersona.publicName} Strength`);
 		const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
-		if (this.isFlurryPower()) {
-			calc.add("multiplier", 0.66, "Flurry Attack Power");
+		// if (this.isFlurryPower()) {
+		// 	calc.add("multiplier", 0.66, "Flurry Attack Power");
 
-		}
+		// }
 		calc.add('base', weaponDmg.baseAmt, weaponName.toString());
 		calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Power Bonus`);
 		calc.add('base', bonusDamage, 'Bonus Damage');

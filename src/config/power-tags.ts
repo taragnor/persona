@@ -52,6 +52,7 @@ const POWER_TRAIT_TAGS = [
 	"price-lower-for-shadow",
 	"mobile",
 	"half-on-miss",
+	"flurry",
 ] as const;
 
 export const POWER_TAGS_LIST = [
