@@ -291,11 +291,11 @@ export class CombatResult  {
 				break;
 			case "social-card-action": {
 				//must be executed playerside as event execution is a player thing
-				if (!effect) {break;}
 				const otherEffect : SocialCardActionConsequence = {
 					...cons
 				};
 				await PersonaSocial.execSocialCardAction(otherEffect);
+				if (!effect) {break;}
 				effect.otherEffects.push( otherEffect);
 				break;
 			}

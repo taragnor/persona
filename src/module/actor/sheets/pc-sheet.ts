@@ -35,12 +35,6 @@ export class PCSheet extends PCLikeSheet {
 	override async getData() {
 		await PersonaDB.waitUntilLoaded();
 		const data = await super.getData();
-		// const personas = this.actor.system.personaList.map( x=> game.actors.get(x) as ValidAttackers);
-		// const PERSONA_LIST = Object.fromEntries(
-		// 	personas.map( x=> [x.id, x.displayedName])
-		// );
-		// PERSONA_LIST[this.actor.id] = this.actor.system.personaName;
-		// data["PERSONA_LIST"]= PERSONA_LIST;
 		return data;
 	}
 

@@ -1114,6 +1114,9 @@ export class PersonaSocial {
 		if (cardChoice.resourceCost > 0) {
 			await cardData.actor.spendMoney(Math.abs(cardChoice.resourceCost ?? 0));
 		}
+		if (rollTags.includes("free-event")) {
+			this.addExtraEvent(1);
+		}
 		switch (cardRoll.rollType) {
 			case "question":
 			case "none": {
@@ -1163,9 +1166,6 @@ export class PersonaSocial {
 				const situation = saveResult.resolvedSituation();
 				await this.processAutoProgress(cardData, cardRoll, saveResult.success ?? false, false);
 				await this.#onCardRoll(cardData, cardRoll, situation);
-				if (rollTags.includes("free-event")) {
-					this.addExtraEvent(1);
-				}
 				await this.applyEffects(effectList, situation, cardData.actor);
 				break;
 			}
@@ -1229,7 +1229,6 @@ export class PersonaSocial {
 
 	static async applyEffects(effects: SourcedConditionalEffect[], situation: Situation, actor: PC) {
 		const results = effects.flatMap( eff=> getActiveConsequences(eff, situation));
-		// const results = ArrayCorrector(effects ?? []).flatMap( eff=> getActiveConsequences(eff, situation));
 		const processed= PersonaCombat.processConsequences_simple(results, situation);
 		const result = new CombatResult();
 		for (const c of processed.consequences) {
