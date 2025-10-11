@@ -1979,7 +1979,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 						return [];
 					}
 					const token = this.getPTokenFromActorAccessor(triggerer);
-					return token ? [token.actor] : []; }
+					if (token) { return [token.actor];}
+					const actor = PersonaDB.findActor(triggerer);
+					if (actor) { return [actor];}
+					return [];
+				}
 				case 'cameo': {
 					const cameo = 'cameo' in situation && situation.cameo ? PersonaDB.findActor(situation.cameo) : undefined;
 					return cameo ? [cameo] : []; }
