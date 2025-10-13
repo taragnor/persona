@@ -86,6 +86,10 @@ export class CombatHooks {
 			}
 		});
 
+		Hooks.on("personaCalendarAdvance", () => {
+			ui.combat.render(false);
+		});
+
 		Hooks.on("renderCombatTracker", (_item: CombatTracker, element: JQuery<HTMLElement> | HTMLElement, _options: RenderCombatTabOptions) => {
 			const combat = (game.combat as (PersonaCombat | undefined));
 			if (!combat) {return;}
@@ -94,7 +98,6 @@ export class CombatHooks {
 				PersonaSocial.displaySocialPanel(element);
 			} else {
 				combat.displayCombatHeader(element);
-				// combat.displayRoomEffectChanger(element);
 			}
 		});
 

@@ -11,6 +11,13 @@ import { PersonaSettings } from "../../config/persona-settings.js";
 import { WeatherType } from "../../config/weather-types.js";
 import { PersonaError } from "../persona-error.js";
 
+declare global {
+	interface HOOKS {
+		"personaCalendarAdvance": () => unknown;
+	}
+
+}
+
 export class PersonaCalendar {
 
 	static get DoomsdayClock() {
@@ -87,7 +94,6 @@ export class PersonaCalendar {
 		const weekday = calendar.getCurrentWeekday().name;
 		const newWeather =  this.determineWeather(calendar.currentDateTime());
 		await this.setWeather(newWeather);
-		// rolls.push(await this.randomizeWeather());
 		const weather = this.getWeather();
 		if (weather != newWeather) {
 			PersonaError.softFail(`Weather is incorrect. Shoudl be ${newWeather}`);
@@ -119,6 +125,7 @@ export class PersonaCalendar {
 			rolls,
 		};
 		await ChatMessage.create(msgData,{} );
+		Hooks.callAll("personaCalendarAdvance");
 		return date;
 	}
 
@@ -160,9 +167,7 @@ export class PersonaCalendar {
 		const {day, month, year} = date;
 		const str = `${year}-${day}-${month}`;
 		const rng = new SeededRandom(str);
-		// const hash = this.hash(str);
 		const rand = rng.die(2,6);
-		// const rand = 2 + (hash[0] % 6) + (hash[1] % 6) ;
 		let prevWeather :WeatherType = "cloudy";
 		if (rand > 10) {
 			prevWeather = this.determineWeather(this.#calcPrevDay(date));
@@ -245,24 +250,6 @@ export class PersonaCalendar {
 		day = months[month].numberOfDays - 1;
 		return {day, month, year};
 	}
-
-	// static hash(str: string) {
-	// 	let h1 = 1779033703, h2 = 3144134277,
-	// 	h3 = 1013904242, h4 = 2773480762;
-	// 	for (let i = 0, k; i < str.length; i++) {
-	// 		k = str.charCodeAt(i);
-	// 		h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
-	// 		h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
-	// 		h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
-	// 		h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
-	// 	}
-	// 	h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
-	// 	h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
-	// 	h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
-	// 	h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
-	// 	h1 ^= (h2 ^ h3 ^ h4), h2 ^= h1, h3 ^= h1, h4 ^= h1;
-	// 	return [h1>>>0, h2>>>0, h3>>>0, h4>>>0];
-	// }
 
 	static getWeather() : WeatherType {
 		const weather = PersonaSettings.get("weather");

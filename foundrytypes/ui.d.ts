@@ -9,9 +9,15 @@ declare const ui : {
 	notifications: Notifications;
 	chat: ChatUI;
 	actors: ActorDirectory;
+	combat: CombatTracker;
 }
 
 
+
+
+interface CombatTracker extends Application {
+
+}
 
 interface ChatUI {
 	updateMessage( msg: ChatMessage, notify: boolean = false):Promise<void>
