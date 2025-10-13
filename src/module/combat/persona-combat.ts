@@ -122,7 +122,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (CR) {
 			await CR?.toMessage('Triggered Effect', token.actor);
 		}
-		// this._startedList.add(comb.id);
 	}
 
 	get validEngagementCombatants(): PersonaCombatant[] {
@@ -2253,39 +2252,24 @@ static processConsequence_simple( cons: SourcedConsequence<NonDeprecatedConseque
 			}
 		case 'dungeon-action':
 			return [{applyTo: 'global', cons}];
-		case 'expend-item':
-			if (cons.itemId) {
-				const item = game.items.get(cons.itemId) as Usable;
-				if (!item) {return [];}
-				return targets.map( applyTo => {
-					return {applyTo,
-						cons: {
-							type: 'expend-item',
-							itemId: item.id,
-							itemAcc: (item as Consumable | SkillCard).accessor,
-							source: cons.source,
-							owner: item.parent instanceof PersonaActor? item.parent.accessor: undefined,
-						}
-					};
-				});
-			}
-			if (cons.sourceItem) {
-				return targets.map( applyTo => {
-					return {applyTo,
-						cons: {
-							type: 'expend-item',
-							itemId: '',
-							itemAcc: cons.sourceItem,
-							source: cons.source,
-							owner: applyTo.accessor,
-						}
-					};
-				});
-			} else {
-				console.log("Warning: can't expend item, no sourceItem");
+		case 'expend-item': {
+			const source = cons.source;
+			if (!(source instanceof PersonaItem)) {return [];}
+			if (! (source.isConsumable() || source.isSkillCard())) {
 				return [];
 			}
-
+			const itemAcc = source.accessor;
+			return targets.map( applyTo => {
+				return {applyTo,
+					cons: {
+						type: 'expend-item',
+						itemAcc,
+						source: cons.source,
+						owner: cons.owner,
+					}
+				};
+			});
+		}
 		default:
 			cons satisfies never;
 			break;
@@ -2351,8 +2335,6 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 			if (consumable.system.subtype == 'consumable') {
 				await res.addEffect(null, attacker.actor, {
 					type: 'expend-item',
-					itemId: '',
-					itemAcc: PersonaDB.getUniversalItemAccessor(usableOrCard as SkillCard | Consumable),
 					source: usableOrCard,
 					owner: attacker.actor.accessor,
 				}, situation);
@@ -2647,25 +2629,23 @@ static canBeTargetted(token : PToken) : boolean {
 static checkTargets(min: number, max: number, targets: PToken[], aliveTargets: boolean) {
 	if (!targets.every(x=> PersonaCombat.canBeTargetted(x))) {
 		const error = 'Selection includes an untargettable target';
-		ui.notifications.warn(error);
-		throw new Error(error);
+		throw new TargettingError(error);
 	}
 	const selected = targets
 		.filter(x=> aliveTargets ? x.actor.isAlive() : (!x.actor.isAlive() && !x.actor.isFullyFaded()));
 	if (selected.length == 0)  {
 		const error = 'Requires Target to be selected';
-		ui.notifications.warn(error);
-		throw new Error(error);
+		throw new TargettingError(error);
 	}
 	if (selected.length < min) {
 		const error = 'Too few targets selected';
 		ui.notifications.warn(error);
-		throw new Error(error);
+		throw new TargettingError(error);
 	}
 	if (selected.length > max) {
 		const error = 'Too many targets selected';
 		ui.notifications.warn(error);
-		throw new Error(error);
+		throw new TargettingError(error);
 	}
 }
 

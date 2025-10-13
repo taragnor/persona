@@ -1,7 +1,7 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { ValidAttackers } from "../module/combat/persona-combat.js";
 import { TargettingContextList } from "../module/combat/persona-combat.js";
-import { ModifierContainer, PersonaItem } from "../module/item/persona-item.js";
+import { PersonaItem } from "../module/item/persona-item.js";
 import { PermaBuffType } from "./perma-buff-type.js";
 import { SocialCardAction } from "./effect-types.js";
 import { CardTag } from "./card-tags.js";
@@ -30,12 +30,12 @@ import { OtherConsequence } from "../module/datamodel/other-effects.js";
 import { StatusDuration } from "../module/active-effect.js";
 import { StatusEffectId } from "./status-effects.js";
 import { ItemProperty, ModifierCategory, ModifierTarget } from "./item-modifiers.js";
-import { PC, PersonaActor } from "../module/actor/persona-actor.js";
+import { PC } from "../module/actor/persona-actor.js";
 
 type ExpendOtherEffect = {
 	type: "expend-item";
 	itemAcc: UniversalItemAccessor<Consumable | SkillCard>;
-	itemId: string;
+	// itemId: string;
 }
 
 type SimpleOtherEffect =DeprecatedSimpleEffect
@@ -364,9 +364,6 @@ type AlterMPConsequence = {
 
 type ExpendItemConsequence = {
 	type : "expend-item",
-	itemId: string,
-	itemAcc ?: UniversalItemAccessor<PersonaItem>,
-	sourceItem ?: UniversalItemAccessor<PersonaItem>,
 }
 
 type DamageConsequenceShared = {

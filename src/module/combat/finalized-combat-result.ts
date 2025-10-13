@@ -504,33 +504,16 @@ export class FinalizedCombatResult {
 	async applyOtherEffect(actor: ValidAttackers, token: PToken | undefined, otherEffect:OtherEffect, mutableState: {mpCost: number}): Promise<void> {
 		switch (otherEffect.type) {
 			case "expend-item":
-				if (otherEffect.itemId) {
-					const item = game.items.get(otherEffect.itemId);
-					if (!item) {
-						PersonaError.softFail(`Couldn't find personal Item to expend ${otherEffect.itemId}`);
-						return;
-					}
-					const playerItem = actor.items.getName(item.name) as Consumable;
-					if (!playerItem) {
-						PersonaError.softFail(`Couldn't find personal Item to expend ${item.name}`);
-						return;
-					}
-					await actor.expendConsumable(playerItem);
-					return;
-				}
-				if (!otherEffect.itemAcc) {
-					PersonaError.softFail("Can't find item to expend");
-					return;
-				}
-				try {
+				if (otherEffect.itemAcc) {
 					const item = PersonaDB.findItem(otherEffect.itemAcc);
-					if ( item.parent) {
-						await (item.parent).expendConsumable(item);
-					} else  {
-						PersonaError.softFail("Can't find item's parent to execute consume item");
+					if (!item) {
+						PersonaError.softFail(`Couldn't find personal Item to expend ${JSON.stringify(otherEffect.itemAcc)}`);
+						return;
 					}
-				} catch (e) {
-					PersonaError.softFail("Can't find item to expend", e);
+					debugger;
+					if ( item.parent) {
+						await item.parent.expendConsumable(item);
+					}
 					return;
 				}
 				break;
@@ -570,10 +553,10 @@ export class FinalizedCombatResult {
 			case "scan":
 				if (actor.isShadow()) {
 					if (otherEffect.downgrade == false) {
-					await actor.increaseScanLevel(otherEffect.level);
-					void PersonaSFX.onScan(token, otherEffect.level);
+						await actor.increaseScanLevel(otherEffect.level);
+						void PersonaSFX.onScan(token, otherEffect.level);
 					} else {
-					await actor.decreaseScanLevel(otherEffect.level ?? 0);
+						await actor.decreaseScanLevel(otherEffect.level ?? 0);
 					}
 				}
 				break; // done elsewhere for local player

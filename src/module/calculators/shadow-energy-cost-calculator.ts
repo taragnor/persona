@@ -1,4 +1,4 @@
-import {DamageLevel} from "../../config/damage-types.js";
+import {DamageLevel, DamageType} from "../../config/damage-types.js";
 import {PowerTag} from "../../config/power-tags.js";
 import {STATUS_EFFECT_LIST, StatusEffectId} from "../../config/status-effects.js";
 import {Shadow} from "../actor/persona-actor.js";
@@ -64,8 +64,8 @@ export class EnergyClassCalculator extends CostCalculator {
 
 	static #multiattack(power: Power) : EnergyCostBase {
 		if (power.system.attacksMax <= 1) {return this.NULL_COST;}
-		const cost = (power.system.attacksMax -1) * 20
-			+ (power.system.attacksMin - 1) * 20;
+		const cost = (power.system.attacksMax -1) * 24
+			+ (power.system.attacksMin - 1) * 24;
 		return new EnergyCostBase(cost, cost);
 	}
 
@@ -84,8 +84,8 @@ export class EnergyClassCalculator extends CostCalculator {
 
 	static #energyLevel_damage(pwr: Power) : EnergyCostBase {
 		const base = this.DAMAGE_LEVEL_BASE_ENERGY[pwr.system.damageLevel] ?? 0;
-		const mult = this.DAMAGE_TYPE_MODIFIER[pwr.system.dmg_type].mult ?? 1;
-		const cost = base * mult;
+		const modifier = this.SHADOW_DAMAGE_TYPE_MODIFIER[pwr.system.dmg_type] ?? 0;
+		const cost = base + modifier;
 		return new EnergyCostBase(cost, cost);
 	}
 
@@ -93,10 +93,10 @@ export class EnergyClassCalculator extends CostCalculator {
 		if (!pwr.hasTag("ailment") || pwr.isInstantDeathAttack()) {return this.NULL_COST;}
 		switch (pwr.system.ailmentChance) {
 			case "none": return this.NULL_COST;
-			case "medium": return new EnergyCostBase(15,15);
+			case "medium": return new EnergyCostBase(12,12);
 			case "low": return new EnergyCostBase(5 ,5);
-			case "high": return new EnergyCostBase(25 ,25);
-			case "always": return new EnergyCostBase(40 ,40);
+			case "high": return new EnergyCostBase(20 ,20);
+			case "always": return new EnergyCostBase(30 ,30);
 		}
 	}
 
@@ -179,9 +179,24 @@ export class EnergyClassCalculator extends CostCalculator {
 		"magic-shield": 60,
 		"phys-shield": 60,
 		"protected": 60,
-		"power-charge": 45,
-		"magic-charge": 45,
+		"power-charge": 55,
+		"magic-charge": 55,
 	};
+	static SHADOW_DAMAGE_TYPE_MODIFIER : Record<DamageType, number> = {
+		none: 0,
+		light: 0,
+		fire: 0,
+		wind: -5,
+		dark: 0,
+		physical: 0,
+		gun: 0,
+		healing: 10,
+		cold: 0,
+		lightning: 0,
+		untyped: 20,
+		"all-out": 0,
+		"by-power": 0
+	}
 }
 
 

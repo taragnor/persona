@@ -476,7 +476,7 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 			moneyOverflow--;
 		}
 		if (entry.pc.system.type == "pc") {
-			await (entry.pc as PC).gainMoney(entry.share, true);
+			await (entry.pc as PC).gainMoney(entry.share, true, true);
 		}
 	}
 }

@@ -5,7 +5,7 @@ import { DamageConsequence } from "../../config/consequence-types.js";
 import { OldDamageConsequence } from "../../config/consequence-types.js";
 import { DamageCalculation } from "./damage-calc.js";
 import { RollSituation } from "../../config/situation.js";
-import { UsableAndCard } from "../item/persona-item.js";
+import { PersonaItem, UsableAndCard } from "../item/persona-item.js";
 import { ValidAttackers } from "./persona-combat.js";
 import { StatusDuration } from "../active-effect.js";
 import { getSocialLinkTarget } from "../preconditions.js";
@@ -127,7 +127,6 @@ export class CombatResult  {
 		}
 		return undefined;
 	}
-
 	async addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
 		const effect = this.#getEffect(target);
 		switch (cons.type) {
@@ -182,6 +181,26 @@ export class CombatResult  {
 				}
 				break;
 			}
+			case "expend-item": {
+				if (!effect) {break;}
+				const item = cons.source;
+				if (! (item instanceof PersonaItem)) {
+					const msg = "Illegal target for expend item";
+					PersonaError.softFail(msg, item, cons);
+					break;
+				}
+				if( !(item.isConsumable() || item.isSkillCard())) {
+					const msg = "Illegal target for expend item";
+					PersonaError.softFail(msg, item, cons);
+					break;
+				}
+				const itemAcc =  item.accessor;
+				effect.otherEffects.push( {
+					type: "expend-item",
+					itemAcc,
+				});
+				break;
+			}
 			case "extraAttack": {
 				if (!effect) {break;}
 				effect.otherEffects.push({
@@ -200,7 +219,6 @@ export class CombatResult  {
 			case "raise-resistance":
 			case "lower-resistance":
 			case "raise-status-resistance":
-			case "expend-item":
 				break;
 			case "extraTurn": {
 				if (atkResult) {
