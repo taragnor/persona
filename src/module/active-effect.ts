@@ -95,6 +95,46 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		}
 	}
 
+	async mergeDuration(newDuration : StatusDuration) : Promise<void> {
+		if (newDuration.dtype == "UEoNT") {
+			this.durationFix(newDuration);
+		}
+		if (!this.durationLessThanOrEqualTo(newDuration)) {
+			return;
+		}
+		const oldDuration = this.statusDuration;
+		switch (newDuration.dtype) {
+			case "UEoNT":
+			case "USoNT":
+			case "UEoT": {
+				if (newDuration.anchorStatus) {return;}
+				if (!newDuration.actorTurn) {return;}
+				const actorTurn = PersonaDB.findActor(newDuration.actorTurn);
+				if (actorTurn == this.parent) {break;}
+				const anchor = await this.createAnchoredHolder(newDuration);
+				if (!anchor) {break;}
+				const anchorD : StatusDuration = {
+					dtype: "anchored",
+					anchor: anchor.accessor,
+				};
+				await this.setFlag("persona", "duration", anchorD);
+				return;
+			}
+			case "X-rounds":
+			case "3-rounds":
+				if ("amount" in oldDuration) {
+					oldDuration.amount+= newDuration.amount;
+					await this.setFlag("persona", "duration", oldDuration);
+					return;
+				}
+				break;
+			default:
+				break;
+		}
+		await this.setFlag("persona", "duration", newDuration);
+
+	}
+
 	async setDuration(duration: StatusDuration) : Promise<void> {
 		if (duration.dtype == "UEoNT") {
 			this.durationFix(duration);
@@ -181,13 +221,11 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 				return true;
 			case "X-rounds":
 			case "3-rounds":
-				if (duration.amount <= 0) {
-					await this.delete();
-					return true;
+				if (this.duration.startRound + duration.amount >= (game.combat!.round ?? 0)) {
+					return false;
 				}
-				duration.amount -= 1;
-				await this.setDuration(duration);
-				return false;
+				await this.delete();
+				return true;
 			case "USoNT":
 				await this.delete();
 				return true;

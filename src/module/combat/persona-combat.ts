@@ -2308,7 +2308,9 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 				}, power.getDamageType(attacker.actor));
 				await res.addEffect(null, attacker.actor, deprecatedConvert, situation );
 			}
-			if (!attacker.actor.isShadow() && power.system.subtype == 'magic' && power.mpCost(attacker.actor.persona()) > 0) {
+			if (!attacker.actor.isShadow()
+				&& power.system.subtype == 'magic'
+				&& power.mpCost(attacker.actor.persona()) > 0) {
 				await res.addEffect(null, attacker.actor, {
 					type: 'alter-mp',
 					subtype: 'direct',

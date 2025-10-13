@@ -1407,18 +1407,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				await newEffect.setDuration(adjustedDuration);
 				return true;
 			} else  {
-				if (potency && eff.potency < potency) {
-					await eff.setPotency(potency);
-				}
-				eff.duration.startRound = game?.combat?.round ?? 0;
-				await eff.update({"duration": eff.duration});
-				const adjustedDuration = this.getAdjustedDuration(duration, id);
-				if (typeof duration != "string" && eff.durationLessThanOrEqualTo(adjustedDuration)) {
-					await eff.setDuration(adjustedDuration);
-				}
-				//TODO: update the effect
-				return false;
+				await eff.mergeDuration(duration);
 			}
+			//TODO: update the effect
+			return false;
 		} catch (e) {
 			PersonaError.softFail(`Error adding status :${id}`, e);
 			return false;
