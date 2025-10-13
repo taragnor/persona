@@ -137,8 +137,7 @@ function numericComparison(condition: SourcedPrecondition, situation: Situation)
 		case "talent-level": {
 			if (!situation.user) {return false;}
 			const user = PersonaDB.findActor(situation.user);
-			//@ts-expect-error not sure why this is here
-			const sourceItem = "sourceItem" in condition ? PersonaDB.findItem(condition.sourceItem) : "";
+			const sourceItem = condition.source;
 			const id = sourceItem ? sourceItem.id : undefined;
 			if (!id) {
 				return false;
