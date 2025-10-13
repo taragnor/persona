@@ -510,7 +510,6 @@ export class FinalizedCombatResult {
 						PersonaError.softFail(`Couldn't find personal Item to expend ${JSON.stringify(otherEffect.itemAcc)}`);
 						return;
 					}
-					debugger;
 					if ( item.parent) {
 						await item.parent.expendConsumable(item);
 					}
