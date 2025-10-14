@@ -1956,27 +1956,27 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 
-	async learnPower(this: ValidAttackers, power: Power, logChanges = true) {
-		if (power.isNavigator()) {
-			if (!this.isNPCAlly()) {
-				PersonaError.softFail("Only NPC Allies can learn Navigator skills!");
-				return;
-			}
-			await this.addNavigatorSkill(power);
-			return;
-		}
+	knowsPowerInnately(this: ValidAttackers, power : Power)  : boolean{
 		const powers = this.system.combat.powers;
 		if (powers.includes(power.id)) {
-			ui.notifications.notify("You already know this power in main powers!");
-			return;
+			return true;
 		}
 		if (!this.isShadow()) {
 			const sideboard =  this.system.combat.powers_sideboard;
 			if (sideboard.includes(power.id)) {
-				ui.notifications.notify("You already know this power in sideboard!");
-				return;
+				return true;
 			}
 		}
+		const buffer= this.system.combat.learnedPowersBuffer;
+		if (buffer.includes(power.id)) {
+			return true;
+
+		}
+		return false;
+	}
+
+	async tryToAddToMain(this: ValidAttackers, power: Power, logChanges = true) : Promise<boolean> {
+		const powers = this.system.combat.powers;
 		if (powers.length < this.basePersona.maxMainPowers) {
 			powers.push(power.id);
 			await this.update( {"system.combat.powers": powers});
@@ -1986,30 +1986,67 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (logChanges && this.hasPlayerOwner) {
 				await Logger.sendToChat(`${this.name} learned Power: ${power.name}`);
 			}
-			return;
+			return true;
 		}
-		if (!this.isShadow()) {
-			const sideboard =  this.system.combat.powers_sideboard;
-			if (sideboard.length < this.persona().maxSideboardPowers) {
-				sideboard.push(power.id);
-				await this.update( {"system.combat.powers_sideboard": sideboard});
-				if (logChanges && this.hasPlayerOwner) {
-					await Logger.sendToChat(`${this.name} learned Power: ${power.name} (placed in sideboard)`);
+		return false;
+	}
+
+	async tryToAddToSideboard(this: ValidAttackers, power: Power, logChanges: boolean) : Promise<boolean> {
+		if (this.isShadow()) {return false;}
+		const sideboard =  this.system.combat.powers_sideboard;
+		if (sideboard.length < this.persona().maxSideboardPowers) {
+			sideboard.push(power.id);
+			await this.update( {"system.combat.powers_sideboard": sideboard});
+			if (logChanges && this.hasPlayerOwner) {
+				await Logger.sendToChat(`${this.name} learned Power: ${power.name} (placed in sideboard)`);
+			}
+			return true;
+		}
+		return false;
+	}
+
+	async tryToAddToLearnedPowersBuffer(this: ValidAttackers, power: Power, logChanges: boolean) : Promise<boolean> {
+
+		// const totalPowers = this.mainPowers.length + this.sideboardPowers.length;
+		// if (totalPowers >= this.maxPowers) {
+		const buffer= this.system.combat.learnedPowersBuffer;
+		buffer.push(power.id);
+		await this.update( {"system.combat.learnedPowersBuffer": buffer});
+		const maxMsg = `<br>${this.name} has exceeded their allowed number of powers (${this.maxPowers})  and must forget one or more powers.`;
+		if (logChanges) {
+			await Logger.sendToChat(`${this.name} learned ${power.name} ${maxMsg}` , this);
+		}
+		return true;
+		// }
+	}
+
+	async learnPower(this: ValidAttackers, power: Power, logChanges = true): Promise<boolean> {
+		try {
+			if (power.isNavigator()) {
+				if (!this.isNPCAlly()) {
+					PersonaError.softFail("Only NPC Allies can learn Navigator skills!");
+					return false;
 				}
-				return;
+				await this.addNavigatorSkill(power);
+				return true;
 			}
-		}
-		const totalPowers = this.mainPowers.length + this.sideboardPowers.length;
-		if (totalPowers >= this.maxPowers) {
-			const buffer= this.system.combat.learnedPowersBuffer;
-			buffer.push(power.id);
-			await this.update( {"system.combat.learnedPowersBuffer": buffer});
-			const maxMsg = `<br>${this.name} has exceeded their allowed number of powers (${this.maxPowers})  and must forget one or more powers.`;
-			if (logChanges) {
-				await Logger.sendToChat(`${this.name} learned ${power.name} ${maxMsg}` , this);
+			if (this.knowsPowerInnately(power)) {
+				ui.notifications.notify(`You already know ${power.displayedName}`);
+				return true;
 			}
-		} else {
-			PersonaError.softFail(`There was a problem adding power to ${this.name}`);
+			if (await this.tryToAddToMain(power, logChanges)) {
+				return true;
+			}
+			if (await this.tryToAddToSideboard(power, logChanges)) {
+				return true;
+			}
+			await this.tryToAddToLearnedPowersBuffer(power, logChanges);
+			return true;
+		} catch (e) {
+			if (e instanceof Error) {
+				PersonaError.softFail(`There was a problem adding power to ${this.name}: ${e.toString()} `);
+			}
+			return false;
 		}
 	}
 
