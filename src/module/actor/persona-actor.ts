@@ -480,10 +480,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const actorList : ValidAttackers[] = this.system.personaList
 			.map( personaId=> PersonaDB.getActorById(personaId))
 			.filter(x=> x && x?.isValidCombatant()) as ValidAttackers[];
-		;
 		if (this.hasSoloPersona || this.isShadow()) {
+			if (this.isPC()) { return [this.basePersona];};
 			actorList.push(this);
 		}
+
 		return actorList.map( source=> new Persona(source, this));
 	}
 
@@ -3051,10 +3052,9 @@ maxIncrementalAdvancesInCategory(this: ValidAttackers, incrementalType: keyof Va
 	return 0;
 }
 
-calcXP (this: ValidAttackers, killedTargets: ValidAttackers[], numOfAllies: number) : number {
-	return this.persona().calcXP(killedTargets, numOfAllies);
-
-}
+// calcXP (this: ValidAttackers, killedTargets: ValidAttackers[], numOfAllies: number) : number {
+// 	return Persona.calcXP(killedTargets, numOfAllies);
+// }
 
 get personalELevel() : number {
 	if (!this.isPC()) {return 0;}
@@ -3077,7 +3077,7 @@ get XPForNextPersonalLevel() : number {
 }
 
 
-async awardPersonalXP(this: ValidAttackers, amt: number, allowMult= true) : Promise<U<PersonaActor>> {
+async awardPersonalXP(this: ValidAttackers, amt: number, allowMult= true) : Promise<U<XPGainReport>> {
 	if (!this.isPC() ) {return undefined;}
 	if (!amt) {return;}
 	const situation =  {
@@ -3094,9 +3094,12 @@ async awardPersonalXP(this: ValidAttackers, amt: number, allowMult= true) : Prom
 		const currLvl = this.system.personaleLevel;
 		const newlvl = currLvl + levelsGained;
 		await this.update({"system.personaleLevel" : newlvl});
-		return this;
 	}
-	return undefined;
+	return {
+		name: this.name,
+		amount: amt,
+		leveled: levelsGained > 0,
+	};
 }
 
 /**gains X amount of levels */
@@ -3118,11 +3121,13 @@ async gainLevel(this: ValidAttackers, amt: number) : Promise<void> {
 }
 
 /** returns true on level up */
-async awardXP(this: ValidAttackers, amt: number) : Promise<(Persona | PersonaActor)[]> {
-	const possibleLevelUps = [
+async awardXP(this: ValidAttackers, amt: number) : Promise<XPGainReport[]> {
+	const personaXPAwards = this.personaList.map<Promise<U<XPGainReport>>>( persona=> persona.awardXP(amt));
+		const personaGains = (await Promise.allSettled(personaXPAwards))
+	.map( pr => pr.status == "fulfilled" ? pr.value : undefined);
+	const possibleLevelUps : U<XPGainReport>[] = [
 		await this.awardPersonalXP(amt),
-		await this.persona().awardXP(amt),
-		//possible code later for multiple personas with growth
+		...personaGains,
 	];
 	return possibleLevelUps.filter(x=> x != undefined);
 }
@@ -4267,3 +4272,9 @@ Hooks.on("updateActor", async function (actor: PersonaActor) {
 });
 
 
+
+export type XPGainReport = {
+	name: string,
+	amount: number,
+	leveled: boolean,
+};

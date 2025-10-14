@@ -304,6 +304,7 @@
 	"persona.modifier.weakestSlot": "Extra slots of weakest type",
 	"persona.modifier.pay": "Job Pay",
 	"persona.modifier.extraMaxPowers": "Extra Sideboard Powers",
+	"persona.modifier.inactive-persona-xp": "XP for Inactive Personas (decimal%)",
 	"persona.modifier.initiative": "Initiative",
 	"persona.modifier.starting-energy": "Shadow Starting Energy",
 	"persona.modifier.energy-per-turn": "Energy Gained at end of Turn",

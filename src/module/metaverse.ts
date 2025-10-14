@@ -22,7 +22,7 @@ import { Consumable } from "./item/persona-item.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaError } from "./persona-error.js";
 import { TensionPool } from "./exploration/tension-pool.js";
-import { Shadow } from "./actor/persona-actor.js";
+import { Shadow, XPGainReport } from "./actor/persona-actor.js";
 import { Logger } from "./utility/logger.js";
 import { PC } from "./actor/persona-actor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
@@ -347,32 +347,33 @@ static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void>
 	if (!game.user.isGM) {return;}
 	//TEmp fix since it was bugged
 	const numOfPCs = party.length;
+	const xp= Persona.calcXP(shadows, numOfPCs );
 	const XPAwardDataPromises = party.map( async actor=> {
-		const persona  = actor.persona();
-		const xp= persona.calcXP(shadows, numOfPCs );
 		try {
-			const levelUps = await actor.awardXP(xp);
-			return { actor, xp , levelUps};
+			const XPReport = await actor.awardXP(xp);
+			return XPReport;
 		} catch (e) {
 			PersonaError.softFail(`Error giving XP to ${actor.name}`, e);
-			return {actor, xp: 0, levelUps:[]};
+			return [];
 		}
 	});
-	const data = await Promise.all(XPAwardDataPromises);
+	const data = (await Promise.all(XPAwardDataPromises))
+	.flatMap(x=> x);
 	await this.reportXPGain(data);
 }
 
-static async reportXPGain(xpReport: {actor: ValidAttackers, xp: number, levelUps: (Persona | PersonaActor)[] }[]) : Promise<void> {
+static async reportXPGain(xpReport: XPGainReport[]) : Promise<void> {
 	const xpStringParts = xpReport
-	.map( ({actor, xp, levelUps}) => {
-		const base =  `<div> ${actor.name}: ${xp} </div>`;
-		const LUMsg = levelUps.map( LU => {
-			return `<div class="level-up-msg"> ${LU.displayedName} Level Up! (${xp}) </div>`;
-		});
-		return base + LUMsg.join("");
+	.map( ({name, amount, leveled}) => {
+		let LUMsg = "";
+		const base =  `<div> ${name}: +${amount} XP </div>`;
+		if (leveled) {
+			LUMsg =  `<div class="level-up-msg"> Level Up!</div>`;
+		}
+		return base + LUMsg;
 	});
 	const text = xpStringParts.join("");
-	if (xpReport.some(x=> x.levelUps.length > 0)) {
+	if (xpReport.some(x=> x.leveled)) {
 		void PersonaSFX.onLevelUp();
 	}
 	await ChatMessage.create({

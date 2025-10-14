@@ -4,7 +4,7 @@ import { NonDeprecatedModifierType } from "../config/item-modifiers.js";
 import { Consumable, InvItem, ModifierContainer, PersonaItem, Tag } from "./item/persona-item.js";
 import { Logger } from "./utility/logger.js";
 import { removeDuplicates } from "./utility/array-tools.js";
-import { Shadow } from "./actor/persona-actor.js";
+import { Shadow, XPGainReport } from "./actor/persona-actor.js";
 import { NPCAlly } from "./actor/persona-actor.js";
 import { PC } from "./actor/persona-actor.js";
 import { UsableAndCard } from "./item/persona-item.js";
@@ -269,7 +269,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		await Logger.sendToChat(`${this.displayedName} gained ${amt} levels`);
 	}
 	/** return leveled Persona on level up*/
-	async awardXP(amt: number, allowMult = true): Promise<U<Persona>> {
+	async awardXP(amt: number, allowMult = true): Promise<U<XPGainReport>> {
+		const isBackup = !this.user.persona().equals(this);
 		if (!amt) {
 			return undefined;
 		}
@@ -289,6 +290,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			PersonaError.softFail(`Could be an error as XP gained is now ${amt}`);
 			return undefined;
 		}
+		if (isBackup) {
+			let multiplier = this.getBonuses("inactive-persona-xp").total(sit);
+			multiplier = Math.clamp(multiplier, 0, 1);
+			amt *= multiplier;
+		}
+		if (amt == 0) {return undefined;}
 		let levelUp = false;
 		const currXP  = this.source.system.combat.personaStats.xp;
 		const newXP = currXP + amt;
@@ -310,7 +317,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			// const newLevel = 1; //placeholder
 			await this.source.onLevelUp_BasePersona(newLevel);
 		}
-		return levelUp ? this : undefined;
+		return {
+			name: `${this.source.name} (${this.user.name})`,
+			amount: amt,
+			leveled: levelUp,
+		};
 	}
 
 	get baseSituation() : Required<Pick<Situation, "user" | "persona">> {
@@ -479,19 +490,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	static MIN_XP_MULT = 0.05;
 	static MAX_XP_MULT = 3;
 
-	calcXP(killedTargets: ValidAttackers[], numOfAllies: number): number {
+	static calcXP(killedTargets: ValidAttackers[], numOfAllies: number): number {
 		const XP= killedTargets.reduce( (a,x) => x.XPValue() + a, 0);
 		return Math.floor(XP / numOfAllies);
-		// const XPSubtotal = killedTargets.reduce ((acc, target) => {
-		// 	if (!target.isShadow()) return acc;
-		// 	const levelDifference = target.persona().effectiveLevel - this.effectiveLevel;
-		// 	const rawXPMult= 1 + (levelDifference * 0.75)
-		// 	const XPMult= Math.clamp(rawXPMult, Persona.MIN_XP_MULT, Persona.MAX_XP_MULT);
-		// 	const realXP = Persona.BaselineXP * XPMult;
-		// 	return acc + realXP;
-		// }, 0);
-
-		// return Math.round(XPSubtotal / numOfAllies);
 	}
 
 	get baseInitRank() : ValidAttackers["system"]["combat"]["initiative"] {

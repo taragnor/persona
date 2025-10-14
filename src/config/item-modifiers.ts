@@ -70,6 +70,7 @@ export const ACTOR_STATS_TYPES = [
 	"mpCostMult",
 	"xp-multiplier",
 	"extraMaxPowers",
+	"inactive-persona-xp",
 	"max-defense-boosts",
 	"max-resist-boosts",
 	"d-mon-storage",
