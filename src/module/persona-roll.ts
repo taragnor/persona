@@ -13,6 +13,7 @@ import { CardTag } from "../config/card-tags.js";
 import { SocialStat } from "../config/student-skills.js";
 import { PC } from "./actor/persona-actor.js";
 import { STUDENT_SKILLS } from "../config/student-skills.js";
+import {Calculation} from "./utility/calculation.js";
 
 
 export class PersonaRoller {
@@ -131,8 +132,6 @@ export class PersonaRoller {
 
 }
 
-
-
 export class RollBundle {
 	roll: Roll;
 	modList: UnresolvedMods | ResolvedMods;
@@ -140,10 +139,10 @@ export class RollBundle {
 	DC ?: number;
 	_playerRoll: boolean;
 
-	constructor (rollName: string,roll : Roll, playerRoll : boolean,  modList ?: ModifierList, situation ?: Situation, DC ?: number) {
+	constructor (rollName: string,roll : Roll, playerRoll : boolean,  modList ?: ModifierList | Calculation, situation ?: Situation, DC ?: number) {
 		this._playerRoll = playerRoll;
 		if (!roll._evaluated)
-			{throw new Error("Can't construct a Roll bundle with unevaluated roll");}
+		{throw new Error("Can't construct a Roll bundle with unevaluated roll");}
 		this.roll = roll;
 		this.modList = {
 			mods: modList ?? new ModifierList(),
@@ -163,15 +162,26 @@ export class RollBundle {
 		}
 		const {mods, situation} = this.modList;
 		if (!situation)
-			{throw new Error("Situation can't resolve");}
-		const total = mods.total(situation);
-		this.modList =  {
-			mods : mods.printable(situation),
-			modtotal: total,
-			actor: situation.user,
-			resolvedSituation: this.generateResolvedSituation(situation, total),
-		} satisfies ResolvedMods;
-		return this.modList;
+		{throw new Error("Situation can't resolve");}
+		if (mods instanceof ModifierList) {
+			const total = mods.total(situation);
+			this.modList =  {
+				mods : mods.printable(situation),
+				modtotal: total,
+				actor: situation.user,
+				resolvedSituation: this.generateResolvedSituation(situation, total),
+			} satisfies ResolvedMods;
+			return this.modList;
+		} else {
+			const resolved = mods.eval(situation);
+			this.modList = {
+				modtotal: resolved.total,
+				mods: resolved.steps,
+				actor: situation.user,
+				resolvedSituation: this.generateResolvedSituation(situation, resolved.total),
+			} satisfies ResolvedMods;
+			return this.modList;
+		}
 	}
 
 	generateResolvedSituation(situation: Situation , total: number) : Situation & RollSituation {
@@ -295,12 +305,11 @@ export class RollBundle {
 	get result(): string {
 		return this.total.toString();
 	}
-
 }
 
 
 type UnresolvedMods = {
-	mods: ModifierList,
+	mods: ModifierList | Calculation,
 	situation: (Situation) | null,
 }
 

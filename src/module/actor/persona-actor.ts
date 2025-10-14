@@ -528,7 +528,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get combatInit(): number {
 		if (!this.isValidCombatant()) {return -666;}
-		return this.persona().combatInit;
+		const situation = {user: this.accessor};
+		return this.persona().combatInit.eval(situation).total;
 	}
 
 	get accessor() : UniversalActorAccessor<typeof this> {
@@ -1878,7 +1879,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	// 	return this.persona().defensiveModifiers();
 	// }
 
-	getDefense(this: ValidAttackers,  type : keyof PC["system"]["combat"]["defenses"]) : ModifierList {
+	getDefense(this: ValidAttackers,  type : keyof PC["system"]["combat"]["defenses"]) : Calculation {
 		return this.persona().getDefense(type);
 	}
 

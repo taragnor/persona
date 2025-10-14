@@ -179,7 +179,8 @@ export class ModifierList {
 				const total = modifier;
 				return { name, modifier: signedFormatter.format(total), raw: total};
 			})
-			.filter(x=> x.raw != 0);
+			.filter(x=> x.raw != 0)
+			.map ( ({name, modifier}) => `${modifier} ${name}`);
 	}
 
 }
@@ -195,5 +196,6 @@ type Modifier = {
 	amount: number;
 }
 
-export type ResolvedModifierList ={name: string, modifier:string}[];
+export type ResolvedModifierList =string[];
+// export type ResolvedModifierList ={name: string, modifier:string}[];
 

@@ -40,8 +40,6 @@ export const OFFENSE_TYPES = [
 	"afflictionRange",
 	"instantDeathRange",
 	"allOutDmgMult", //adds to weapon multiplier on AoA
-
-
 	] as const;
 
 const DEFENSE_TYPES = [

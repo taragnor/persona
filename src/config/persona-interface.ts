@@ -6,7 +6,7 @@ import { Focus } from "../module/item/persona-item.js";
 import { ValidAttackers } from "../module/combat/persona-combat.js";
 import { ResistStrength } from "./damage-types.js";
 import { DamageType } from "./damage-types.js";
-import { ModifierList } from "../module/combat/modifier-list.js";
+import {Calculation} from "../module/utility/calculation.js";
 
 export interface PersonaI {
 	user: ValidAttackers;
@@ -22,8 +22,8 @@ export interface PersonaI {
 	level: number;
 	scanLevelRaw: number;
 	effectiveScanLevel: number;
-	getDefense( defType : keyof ValidAttackers["system"]["combat"]["defenses"]) : ModifierList;
-	combatInit: number;
+	getDefense( defType : keyof ValidAttackers["system"]["combat"]["defenses"]) : Calculation;
+	combatInit: Calculation;
 }
 
 export interface PersonaCombatI {

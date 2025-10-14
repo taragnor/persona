@@ -531,16 +531,17 @@ export type AttackResult = {
 	defenseValue?: number,
 	hitWeakness?: boolean,
 	hitResistance?: boolean,
-	validAtkModifiers?: [number, string][],
-	validDefModifiers?: [number, string][],
+	validAtkModifiers?: string[],
+	validDefModifiers?: string[],
+	// validDefModifiers?: [number, string][],
 	target: UniversalTokenAccessor<PToken>,
 	attacker: UniversalTokenAccessor<PToken>,
 	power: UniversalItemAccessor<UsableAndCard>,
 	situation: Situation & RollSituation,
 	roll: RollBundle | null ,
 	critBoost: number,
-	printableModifiers: {name: string, modifier:string} [],
-	critPrintable?: {name: string, modifier:string} []
+	// printableModifiers: string [],
+	critPrintable?: string []
 };
 
 

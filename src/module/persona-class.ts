@@ -29,6 +29,7 @@ import {PersonaTag} from "../config/creature-tags.js";
 import {Defense} from "../config/defense-types.js";
 import {DamageCalculator, NewDamageParams} from "./combat/damage-calc.js";
 import {PersonaStat} from "../config/persona-stats.js";
+import {Calculation, EvaluatedCalculation} from "./utility/calculation.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
 	#combatStats: U<PersonaCombatStats>;
@@ -225,19 +226,25 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return 3;
 	}
 
-	critResist(): ModifierList {
-		const ret = new ModifierList();
+	critResist(): Calculation {
+		// const ret = new ModifierList();
 		const mods = PersonaItem.getModifier(this.mainModifiers(), "critResist");
-		const list =  ret.concat(new ModifierList(mods));
-		list.add("Luck Bonus", this.combatStats.lukCriticalResist());
-		return list;
+		const list =  new ModifierList(mods);
+		const calc = this.combatStats.lukCriticalResist();
+		calc.add(1, list, "Mods", "add");
+		return calc;
+		// list.add("Luck Bonus", this.combatStats.lukCriticalResist());
+		// return list;
 	}
 
-	critBoost() : ModifierList {
+	critBoost() : Calculation {
 		const mods = PersonaItem.getModifier(this.mainModifiers(), "criticalBoost");
 		const list= new ModifierList(mods);
-		list.add("Luck Bonus", this.combatStats.lukCriticalBoost());
-		return list;
+		const calc = this.combatStats.lukCriticalBoost();
+		calc.add(1, list, "Mods", "add");
+		return calc;
+		// list.add("Luck Bonus", this.combatStats.lukCriticalBoost());
+		// return list;
 	}
 
 	equals(other: Persona) : boolean {
@@ -491,61 +498,65 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.system.combat.initiative;
 	}
 
-	get combatInit(): number {
-		// const inc = this.classData.incremental.initiative;
-		const situation = {user: this.user.accessor};
+	get combatInit(): Calculation {
 		const initBonus = this
-			.getBonuses("initiative")
-			.total(situation);
+			.getBonuses("initiative");
 		const agi = this.combatStats.baseInit();
-		const initMod = 0;
-		// const initMod = this.#translateInitString(this.baseInitRank);
-		return initBonus + agi + initMod;
+		agi.add(1, initBonus, "Init bonus", "add");
+		return agi;
 	}
 
-	printableDefenseMods( defense: Defense) {
+	printableDefenseMods( defense: Defense) :EvaluatedCalculation["steps"] {
 		const def = this.getDefense(defense);
 		const situation : Situation  = {
 			user: this.user.accessor,
 			target: this.user.accessor,
 		};
-		return def.printable(situation);
+		return def.eval(situation).steps;
 	}
 
-	getDefense(defense: Defense) : ModifierList {
-		const mods = new ModifierList();
+	getDefense(defense: Defense) : Calculation {
+		let calc : Calculation; 
+		// const mods = new ModifierList();
 		switch (defense) {
 			case "ref": {
-				mods.add("Agility Bonus", this.combatStats.baseRef());
+				calc =this.combatStats.baseRef();
+				// mods.add("Agility Bonus", this.combatStats.baseRef());
 				break;
 			}
 			case "will": {
-				mods.add("Luck Bonus", this.combatStats.baseWill());
+				calc =this.combatStats.baseWill();
+				// mods.add("Luck Bonus", this.combatStats.baseWill());
 				break;
 			}
 			case "fort": {
-				mods.add("Endurance Bonus", this.combatStats.baseWill());
+				calc =this.combatStats.baseFort();
+				// mods.add("Endurance Bonus", this.combatStats.baseWill());
 				break;
       }
 			case "kill":
-				mods.add("Luck Death Resist", this.combatStats.instantDeathDefense());
+				calc = this.combatStats.instantDeathDefense();
+				// mods.add("Luck Death Resist", this.combatStats.instantDeathDefense());
 				break;
 			case "ail":
-				mods.add("Luck Ailment Resist", this.combatStats.ailmentDefense());
+				calc = this.combatStats.ailmentDefense();
+				// mods.add("Luck Ailment Resist", this.combatStats.ailmentDefense());
 				break;
 			case "none":
-				return mods;
+				return new Calculation(0);
 			default:
 				defense satisfies never;
 				ui.notifications.warn(`Attmept to access nonsense Defense :${defense as string}`);
-				return mods;
+				return new Calculation(0);
 		}
 		const modifiers = [
 			...this.passiveCEs(),
 		];
 		modifiers.pushUnique(...this.defensiveModifiers());
 		const defenseMods = this.getBonuses([defense, "allDefenses"], modifiers);
-		return mods.concat(defenseMods);
+		const modList = new ModifierList();
+		return calc.add(1, modList.concat(defenseMods), "Other Modifiers", "add");
+		// return mods.concat(defenseMods);
 	}
 
 	// #getWeaknessesInCategory( defType: keyof ValidAttackers["system"]["combat"]["defenses"]): number {
@@ -760,38 +771,46 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.totalResists() > this.maxResists();
 	}
 
-	wpnAtkBonus() : ModifierList {
+	wpnAtkBonus() : Calculation {
 		const mods = this.getBonuses(["allAtk", "wpnAtk"]);
 		const wpnAtk = this.combatStats.baseWpnAttackBonus();
-		mods.add("Base Weapon Attack Bonus", wpnAtk);
-		return mods;
+		return wpnAtk.add(1, mods, "Mods", "add");
+		// mods.add("Base Weapon Attack Bonus", wpnAtk);
+		// return mods;
 	}
 
-	magAtkBonus() : ModifierList {
+	magAtkBonus() : Calculation {
 		const mods = this.getBonuses(["allAtk", "magAtk"]);
 		const magAtk = this.combatStats.baseMagAttackBonus();
-		mods.add("Base Magic Attack Bonus", magAtk);
-		return mods;
+		return magAtk.add(1, mods, "Mods", "add");
+		// mods.add("Base Magic Attack Bonus", magAtk);
+		// return mods;
 	}
 
-	instantDeathAtkBonus() : ModifierList {
+	instantDeathAtkBonus() : Calculation {
 		const mods = this.getBonuses(["instantDeathRange"]);
 		const deathAtk = this.combatStats.baseDeathAtkBonus();
-		mods.add("Base Magic Attack Bonus", deathAtk);
-		return mods;
+		return deathAtk.add(1, mods, "Mods", "add");
+		// mods.add("Base Magic Attack Bonus", deathAtk);
+		// return mods;
 	}
 
-	ailmentAtkBonus() :ModifierList {
+	ailmentAtkBonus() :Calculation {
 		const mods = this.getBonuses("afflictionRange");
 		const ailAtk = this.combatStats.baseAilmentAtkBonus();
-		mods.add("Base Magic Attack Bonus", ailAtk);
-		return mods;
+		return ailAtk.add(1, mods, "Mods", "add");
+		// mods.add("Base Magic Attack Bonus", ailAtk);
+		// return mods;
 	}
 
-	itemAtkBonus(item :Consumable) : ModifierList {
+	itemAtkBonus(item :Consumable) : Calculation {
+		const calc=new Calculation();
 		const mods = this.getBonuses(["itemAtk", "allAtk"]);
-		mods.add("Item Base Bonus", item.system.atk_bonus);
-		return mods;
+		return calc
+			.add(1, item?.system?.atk_bonus ?? 0, "Item Modifier", "add")
+			.add(1, mods, "Modifiers", "add");
+		// mods.add("Item Base Bonus", item.system.atk_bonus);
+		// return mods;
 	}
 
 	get isUnderResistCap(): boolean {

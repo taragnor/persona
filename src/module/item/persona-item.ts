@@ -56,6 +56,7 @@ import {DEFENSE_TYPES} from '../../config/defense-types.js';
 import {EnergyClassCalculator} from '../calculators/shadow-energy-cost-calculator.js';
 import {ConsequenceAmountResolver} from '../conditionalEffects/consequence-amount.js';
 import {EnchantedTreasureFormat, TreasureSystem} from '../exploration/treasure-system.js';
+import {Calculation} from '../utility/calculation.js';
 
 declare global {
 	type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -1475,12 +1476,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const skillDamage = DamageCalculator.weaponSkillDamage(this);
 		const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
-		calc.add('base', str, `${userPersona.publicName} Strength`);
+		const strRes = str.eval(situation);
+		calc.add('base', strRes.total, `${userPersona.publicName} Strength (${strRes.steps.join(" ,")})`);
 		const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
-		// if (this.isFlurryPower()) {
-		// 	calc.add("multiplier", 0.66, "Flurry Attack Power");
-
-		// }
 		calc.add('base', weaponDmg.baseAmt, weaponName.toString());
 		calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Power Bonus`);
 		calc.add('base', bonusDamage, 'Bonus Damage');
@@ -1500,7 +1498,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
 		const dtype = this.getDamageType(userPersona);
 		const calc= new DamageCalculation(dtype);
-		calc.add('base', magicDmg, `${userPersona.publicName} Magic`, );
+		const resMag = magicDmg.eval(situation);
+		calc.add('base', resMag.total, `${userPersona.publicName} Magic (${resMag.steps.join(" ,")})`, );
 		calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Damage`);
 		calc.add('base', damageBonus, 'Bonus Damage');
 		const variance  = (DamageCalculator.BASE_VARIANCE + skillDamage.extraVariance + bonusVariance );
@@ -1694,9 +1693,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return 'passive';
 	}
 
-	critBoost(this: Usable, user: ValidAttackers) : ModifierList {
-		let list = new ModifierList();
-		list = list.concat(user.persona().critBoost());
+	critBoost(this: Usable, user: ValidAttackers) : Calculation {
+		const calc = user.persona().critBoost();
 		let powerCrit = (this.system.crit_boost ?? 0);
 		if (this.isWeaponSkill()
 			&& !this.isBasicPower()
@@ -1704,8 +1702,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			&& !this.isInstantDeathAttack()) {
 			powerCrit += 2;
 		}
-		list.add('Power Modifier', powerCrit);
-		return list;
+		calc.add(1, powerCrit, 'Power Modifier', "add");
+		return calc;
 	}
 
 	canBeReflectedByPhyiscalShield(this: UsableAndCard, attacker: ValidAttackers): boolean {

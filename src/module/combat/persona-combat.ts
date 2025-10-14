@@ -10,7 +10,6 @@ import { RollSituation } from '../../config/situation.js';
 import { Persona } from '../persona-class.js';
 import { PersonaScene } from '../persona-scene.js';
 import { PersonaItem, Power } from '../item/persona-item.js';
-import { SkillCard } from '../item/persona-item.js';
 import { UsableAndCard } from '../item/persona-item.js';
 import { NPCAlly } from '../actor/persona-actor.js';
 import { PC } from '../actor/persona-actor.js';
@@ -50,6 +49,7 @@ import { Consumable } from '../item/persona-item.js';
 import {Defense} from '../../config/defense-types.js';
 import {getActiveConsequences} from '../preconditions.js';
 import {ModifierTarget} from '../../config/item-modifiers.js';
+import {Calculation} from '../utility/calculation.js';
 
 declare global {
 	interface SocketMessage {
@@ -71,6 +71,7 @@ type AttackRollType = 'activation' | 'standard' | 'reflect' | 'iterative' | numb
 export class PersonaCombat extends Combat<ValidAttackers> {
 	// declare combatants: Collection<Combatant<ValidAttackers>>;
 	// engagedList: Combatant<PersonaActor>[][] = [];
+	static CRIT_MAX = 10 as const;
 	_engagedList: EngagementList;
 	static customAtkBonus: number;
 	consecutiveCombat: number =0;
@@ -1357,7 +1358,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			situation,
 			roll: null,
 			critBoost: 0,
-			printableModifiers: []
+			// printableModifiers: []
 		};
 		const CR = await this.processEffects(simAtkResult);
 		return CR;
@@ -1458,7 +1459,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			situation: combatRollSituation,
 			roll,
 			critBoost: 0,
-			printableModifiers: []
+			// printableModifiers: []
 		};
 		return res;
 	}
@@ -1474,7 +1475,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case 'reflect': {
 				return {
 					result: rollType != 'reflect' ? 'reflect': 'block',
-					printableModifiers: [],
+					// printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					critBoost: 0,
@@ -1494,7 +1495,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					result: 'block',
 					ailmentRange: undefined,
 					instantKillRange: undefined,
-					printableModifiers: [],
+					// printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					critBoost: 0,
@@ -1512,7 +1513,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					result: 'absorb',
 					ailmentRange: undefined,
 					instantKillRange: undefined,
-					printableModifiers: [],
+					// printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
 					critBoost: 0,
@@ -1529,7 +1530,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (target.actor.hasStatus('phys-shield') && power.canBeReflectedByPhyiscalShield(attacker.actor)) {
 			return {
 				result: rollType != 'reflect' ? 'reflect': 'block',
-				printableModifiers: [],
+				// printableModifiers: [],
 				ailmentRange: undefined,
 				instantKillRange: undefined,
 				validAtkModifiers: [],
@@ -1547,7 +1548,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (target.actor.hasStatus('magic-shield') && power.canBeReflectedByMagicShield(attacker.actor)) {
 			return {
 				result: rollType != 'reflect' ? 'reflect': 'block',
-				printableModifiers: [],
+				// printableModifiers: [],
 				ailmentRange: undefined,
 				instantKillRange: undefined,
 				validAtkModifiers: [],
@@ -1597,14 +1598,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		const attackbonus = this.getAttackBonus(attackerPersona, power, target, modifiers);
 		if (rollType == 'reflect' && (def == "fort" || def =="ref" || def =="will")) {
-			attackbonus.add('Reflected Attack', 15);
+			attackbonus.add(1, 15, 'Reflected Attack',"add");
 		}
 		const cssClass= (!target.actor.isPC()) ? 'gm-only' : '';
 		const roll = new RollBundle('Temp', r, attacker.actor.system.type == 'pc', attackbonus, baseSituation);
 		const naturalAttackRoll = roll.dice[0].total;
 		// situation.naturalRoll = naturalAttackRoll;
-		const defenseVal = def != 'none' ? targetPersona.getDefense(def).total(baseSituation): 0;
-		const validDefModifiers = def != 'none' ? targetPersona.getDefense(def).list(baseSituation): [];
+		const defenseCalc = targetPersona.getDefense(def).eval(baseSituation);
+		const defenseVal = def != 'none' ? defenseCalc.total: 0;
+		const validDefModifiers = def != 'none' ? defenseCalc.steps: [];
 		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
 		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.targettedDefenseLocalized()} ${defenseStr}`;
 		roll.setName(rollName);
@@ -1626,8 +1628,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (testNullify)  {
 			return testNullify;
 		}
-		const validAtkModifiers = attackbonus.list(situation);
-		const printableModifiers = attackbonus.printable(situation);
+		const resolvedAttackMods = attackbonus.eval(situation);
+		const validAtkModifiers = resolvedAttackMods.steps;
+		// const printableModifiers = attackbonus.steps;
+		// const validAtkModifiers = attackbonus.list(situation);
+		// const printableModifiers = attackbonus.printable(situation);
 		const ailmentRange = this.#calculateAilmentRange(attackerPersona, targetPersona, power, baseSituation);
 		const instantDeathRange = this.#calculateInstantDeathRange(attackerPersona, targetPersona, power, baseSituation);
 		if (def == 'none') {
@@ -1635,7 +1640,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			return {
 				result: 'hit',
 				critBoost: 0,
-				printableModifiers,
+				// printableModifiers,
 				validAtkModifiers,
 				validDefModifiers: [],
 				situation,
@@ -1649,9 +1654,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const critBoostMod = this.calcCritModifier(attacker.actor, target.actor, power, situation);
 		const rageOrBlind = attacker.actor.hasStatus('rage') || attacker.actor.hasStatus('blind');
 		const critMin = situation.resisted ? -999 : 0;
-		const CRIT_MAX = 10 as const;
-		const critBoost = Math.clamp(critBoostMod.total(situation), critMin, CRIT_MAX);
-		const critPrintable = critBoostMod.printable(situation);
+		const critResolved = critBoostMod.eval(situation);
+		const critBoost = Math.clamp(critResolved.total, critMin, PersonaCombat.CRIT_MAX);
+		const critPrintable = critResolved.steps;
 		const autoHit = rollType == "reflect" && !power.isInstantDeathAttack() && !power.isAilment();
 		const Mod20 = naturalAttackRoll == 20 ? 3 : 0;
 		// const autoHit = naturalAttackRoll == 20;
@@ -1668,7 +1673,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				defenseValue: defenseVal,
 				hitWeakness: situation.struckWeakness ?? false,
 				hitResistance: situation.resisted ?? false,
-				printableModifiers,
+				// printableModifiers,
 				validAtkModifiers,
 				validDefModifiers,
 				ailmentRange,
@@ -1714,7 +1719,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				validDefModifiers,
 				ailmentRange,
 				instantKillRange: instantDeathRange,
-				printableModifiers,
+				// printableModifiers,
 				critBoost,
 				critPrintable,
 				situation,
@@ -1732,7 +1737,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				ailmentRange,
 				instantKillRange: instantDeathRange,
 				validDefModifiers,
-				printableModifiers,
+				// printableModifiers,
 				critBoost,
 				critPrintable,
 				situation,
@@ -1746,10 +1751,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		attackerPersona.getBonuses('afflictionRange').concat(
 			targetPersona.getBonuses('ail')
 		);
-		ailmentMods.add("Persona Luck Boost", attackerPersona.combatStats.ailmentBonus());
-		ailmentMods.add("Target Luck Resistance", -targetPersona.combatStats.ailmentResist());
-		const total = ailmentMods.total(situation);
-
+		const calc = attackerPersona.combatStats.ailmentBonus();
+		// ailmentMods.add("Persona Luck Boost", attackerPersona.combatStats.ailmentBonus());
+		calc.add(1, -targetPersona.combatStats.ailmentResist().eval(situation).total, " Target Ailment Resistance", "add");
+		// ailmentMods.add("Target Luck Resistance", -targetPersona.combatStats.ailmentResist());
+		calc.add(1, ailmentMods, "mods", "add");
+		// const total = ailmentMods.total(situation);
+		const total = calc.eval(situation).total;
 		const ailmentRange = power.ailmentRange;
 		if (!ailmentRange) {return undefined;}
 		ailmentRange.low -= total;
@@ -1757,7 +1765,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return ailmentRange;
 	}
 
-	static #calculateInstantDeathRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) {
+	static #calculateInstantDeathRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) : U<{low: number, high:number}> {
 		if (!power.isInstantDeathAttack()) {return undefined
 			;}
 		if (!power.canDealDamage()) {return {low: -10, high: 30};}
@@ -1765,10 +1773,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			attackerPersona.getBonuses('instantDeathRange');
 		const killDefense =
 			targetPersona.getBonuses('kill').total(situation);
-		instantDeathMods.add("Attacker Instant Death bonus", attackerPersona.combatStats.instantDeathBonus());
-		instantDeathMods.add("Target Instant Death Resist", -attackerPersona.combatStats.instantDeathResist());
+		const instantDeathBonus= attackerPersona.combatStats.instantDeathBonus();
+		// instantDeathMods.add("Attacker Instant Death bonus", attackerPersona.combatStats.instantDeathBonus());
+		instantDeathBonus.add(1, -targetPersona.combatStats.instantDeathResist().eval(situation).total, "Target Mods", "add");
+		// instantDeathMods.add("Target Instant Death Resist", -attackerPersona.combatStats.instantDeathResist());
 		instantDeathMods.add("Misc Mods to kill defense", -killDefense);
-		const total = instantDeathMods.total(situation);
+		instantDeathBonus.add(1, instantDeathMods, "MOds", "add");
+
+		// const total = instantDeathMods.total(situation);
+		const total = instantDeathBonus.eval(situation).total;
 		const deathRange = power.instantDeathRange;
 		if (deathRange) {
 			deathRange.low -= total;
@@ -1776,10 +1789,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return deathRange;
 	}
 
-	static calcCritModifier( attacker: ValidAttackers, target: ValidAttackers, power: Usable, situation: Situation, ) : ModifierList {
+	static calcCritModifier( attacker: ValidAttackers, target: ValidAttackers, power: Usable, situation: Situation, ) : Calculation {
 		const critBoostMod = power.critBoost(attacker);
-		const critResist = target.persona().critResist().total(situation);
-		critBoostMod.add('Enemy Critical Resistance', -critResist);
+		const critResist = target.persona().critResist().eval(situation).total;
+		critBoostMod.add(1, -critResist, 'Enemy Critical Resistance',"add");
 		return critBoostMod;
 	}
 
@@ -2349,13 +2362,15 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 	return res;
 }
 
-static getAttackBonus(attackerP: Persona, power: Usable, target: PToken | undefined, modifiers ?: ModifierList) : ModifierList {
-	let attackBonus = this.getBaseAttackBonus(attackerP, power);
-	attackBonus.add('Custom modifier', this.customAtkBonus ?? 0);
+static getAttackBonus(attackerP: Persona, power: Usable, target: PToken | undefined, modifiers ?: ModifierList) : Calculation {
+	const attackBonus = this.getBaseAttackBonus(attackerP, power);
+	attackBonus.add(1, this.customAtkBonus ?? 0, 'Custom modifier', "add");
 	const defense = this.getDefenderAttackModifiers(target, power.system.defense, power);
-	attackBonus = attackBonus.concat(defense);
+	attackBonus.add(1, defense, "Defense MOds", "add");
+	// attackBonus = attackBonus.concat(defense);
 	if (modifiers) {
-		attackBonus = attackBonus.concat(modifiers);
+		attackBonus.add(1, modifiers, "Extra Mods", "add");
+		// attackBonus = attackBonus.concat(modifiers);
 	}
 	return attackBonus;
 }
@@ -2379,36 +2394,44 @@ static getDefenderAttackModifiers(target: PToken | undefined, defense : Defense,
 	return defenseMod;
 }
 
-static getBaseAttackBonus(attackerPersona: Persona, power:Usable): ModifierList {
+static getBaseAttackBonus(attackerPersona: Persona, power:Usable): Calculation {
 	let modList = new ModifierList();
-	modList.add('Power attack modifier', power.system.atk_bonus);
+	const calc = new Calculation(0, 3);
+	// modList.add('Power attack modifier', power.system.atk_bonus);
+	calc.add(1, power.system.atk_bonus,`${power.name} attack bonus`, "add");
+
 	switch (power.system.defense) {
 		case "none":
-			return modList;
-		case "ref": // weapon attack
-			modList = modList.concat(attackerPersona.wpnAtkBonus());
+			return calc;
+		case "ref": {// weapon attack
+			calc.merge(attackerPersona.wpnAtkBonus());
 			modList =  modList.concat(new ModifierList(power.getModifier('wpnAtk', attackerPersona.user)));
 			break;
+		}
 		case "fort": //magic attack
-			modList = modList.concat(attackerPersona.magAtkBonus());
+			calc.merge(attackerPersona.magAtkBonus());
+			// modList = modList.concat(attackerPersona.magAtkBonus());
 			modList = modList.concat(new ModifierList(power.getModifier('magAtk', attackerPersona.user)));
 			break;
 		case "kill": {
-			modList = modList.concat(attackerPersona.instantDeathAtkBonus());
+			calc.merge(attackerPersona.instantDeathAtkBonus());
+			// modList = modList.concat(attackerPersona.instantDeathAtkBonus());
 			const ID_Bonus = power.baseInstantKillBonus();
 			modList.add(`${power.displayedName.toString()} Bonus`, ID_Bonus);
 			modList = modList.concat(new ModifierList(power.getModifier('instantDeathRange', attackerPersona.user)));
 			break;
 		}
 		case "ail": {
-			modList = modList.concat(attackerPersona.ailmentAtkBonus());
+			calc.merge(attackerPersona.ailmentAtkBonus());
+			// modList = modList.concat(attackerPersona.ailmentAtkBonus());
 			const Ail_Bonus = power.baseAilmentBonus();
 			modList.add(`${power.displayedName.toString()} Bonus`, Ail_Bonus);
 			modList = modList.concat(new ModifierList(power.getModifier('afflictionRange', attackerPersona.user)));
 			break;
 		}
 		case "will":// mostly legacy
-			modList = modList.concat(attackerPersona.magAtkBonus());
+			calc.merge(attackerPersona.magAtkBonus());
+			// modList = modList.concat(attackerPersona.magAtkBonus());
 			modList = modList.concat(new ModifierList(power.getModifier('magAtk', attackerPersona.user)));
 			break;
 		default:
@@ -2417,7 +2440,8 @@ static getBaseAttackBonus(attackerPersona: Persona, power:Usable): ModifierList 
 	if (power.isMultiTarget()) {
 		modList.add('Multitarget power attack penalty', -4);
 	}
-	return modList;
+	return calc.add(1, modList, "Mods", "add");
+	// return modList;
 }
 
 static getAltTargets ( attacker: PToken, situation : Situation, targettingType :  ConsTarget) : PToken[] {

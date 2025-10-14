@@ -65,21 +65,28 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"getCritResist": (persona: Persona) => {
-			return persona.critResist().total({user: persona.user.accessor, target:persona.user.accessor});
+			return persona.critResist().eval({user: persona.user.accessor, target:persona.user.accessor}).total;
 		},
 
 		"getDefense" : (actorOrPersona: ValidAttackers | Persona, defense: Defense): number => {
 			const persona = (actorOrPersona instanceof PersonaActor) ? actorOrPersona.persona() : actorOrPersona;
 			const acc = persona.user.accessor;
-			return persona.getDefense(defense).total({user: acc, target: acc});
+			return persona.getDefense(defense).eval({user: acc, target: acc}).total;
 		},
-		"getInit" : (persona: Persona) => {
-			return persona.combatInit;
+		"getInit" : (persona: Persona) : number => {
+			const situation = {user: persona.user.accessor};
+			return persona.combatInit.eval(situation).total;
+		},
+
+		"getInitBreakdown": function (persona: Persona) : SafeString {
+			const situation = {user: persona.user.accessor};
+			const init= persona.combatInit.eval(situation).steps;
+			return new Handlebars.SafeString( init.join("\n"));
 		},
 
 		"defenseBreakdown": function (persona: Persona, defense: Defense) :SafeString {
 			const SS = new Handlebars.SafeString(persona.printableDefenseMods(defense)
-				.map (x=> `${x.name} (${x.modifier})`.trim())
+				.map (x=> `${x}`.trim())
 				.join("\n")
 			);
 			return SS;
@@ -186,7 +193,7 @@ export class PersonaHandleBarsHelpers {
 				user: actor.accessor,
 			};
 			const critBonus = PersonaCombat.calcCritModifier(actor, actor, power, situation);
-			return critBonus.total(situation);
+			return critBonus.eval(situation).total;
 		},
 		"getTokenAccName" : (tokenAcc: UniversalTokenAccessor<PToken> | UniversalActorAccessor<PC | Shadow>) =>  {
 
@@ -584,7 +591,7 @@ export class PersonaHandleBarsHelpers {
 				user: persona.user.accessor,
 				usedPower: power.accessor,
 			};
-			return PersonaCombat.getAttackBonus(persona, power, undefined).total(situation);
+			return PersonaCombat.getAttackBonus(persona, power, undefined).eval(situation).total;
 		},
 
 		"powerCostString": function (power: Power, persona: Persona)  : SafeString {
