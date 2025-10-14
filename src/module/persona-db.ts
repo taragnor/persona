@@ -1,6 +1,6 @@
 import { TarotCard } from "../config/tarot.js";
 import { TreasureItem } from "./metaverse.js";
-import { SkillCard, Tag, Talent } from "./item/persona-item.js";
+import { CClass, SkillCard, Tag, Talent } from "./item/persona-item.js";
 import { NPCAlly } from "./actor/persona-actor.js";
 import { SocialEncounterCard } from "./social/persona-social.js";
 import { ModifierContainer } from "./item/persona-item.js";
@@ -59,6 +59,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			tagNames: undefined,
 			tagsArr: undefined,
 			enchantments: undefined,
+			classes: undefined,
 		};
 		Hooks.callAll("DBrefresh");
 		return newCache;
@@ -355,6 +356,13 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return skills as ModifierContainer[];
 	}
 
+	classes(): CClass[] {
+		if (!this.#cache.classes) {
+		this.#cache.classes = this.allItems().filter(item=> item.isCharacterClass());
+		}
+		return this.#cache.classes;
+	}
+
 	PersonaableShadowsOfArcana(min: number, max: number) : Shadow[] {
 		const shadows = this.allActors()
 			.filter ( x=> x.isShadow()
@@ -403,5 +411,6 @@ type PersonaDBCache =	{
 	tags: U<Map<Tag["id"], Tag>>;
 	tagNames: U<Map<Tag["name"], Tag>>;
 	tagsArr: U<Tag[]>;
+	classes: U<CClass[]>;
 };
 

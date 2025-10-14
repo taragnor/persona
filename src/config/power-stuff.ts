@@ -134,6 +134,10 @@ private static _powerStuffBase: Record<string, unknown>;
 		const SOCIAL_LINKS = Object.fromEntries(
 			PersonaDB.socialLinks().map(actor => [actor.id, actor.name])
 		);
+		const CLASSES = Object.fromEntries(
+			PersonaDB.classes()
+			.map( cl => [cl.id, cl.name])
+		);
 		SOCIAL_LINKS[""] = "-";
 		const SOCIAL_CARDS = Object.fromEntries(
 			PersonaDB.allSocialCards()
@@ -184,6 +188,7 @@ private static _powerStuffBase: Record<string, unknown>;
 				.sort((a,b) => a.name.localeCompare(b.name))
 				.map(pwr=> ([pwr.id, pwr.displayedName]))
 			),
+			CLASSES,
 			CLOCKS,
 			SCENES,
 			ITEMS,

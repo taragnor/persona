@@ -15,7 +15,7 @@ import { CreatureType } from "./shadow-types.js";
 import { ShadowRole } from "./shadow-types.js";
 import { DAYS_LIST } from "./days.js";
 import { WeatherType } from "./weather-types.js";
-import { Power, Tag } from "../module/item/persona-item.js";
+import { CClass, Power, Tag } from "../module/item/persona-item.js";
 
 const BASIC_BOOLEAN_COMPARISON_LIST = [
 	"in-combat",
@@ -63,6 +63,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"scene-clock-name-is",
 	"using-meta-pod",
 	"knows-power",
+	"has-class",
 	"has-creature-tag", // Deprecated
 	"metaverse-enhanced", // Deprecated
 ] as const;
@@ -92,9 +93,14 @@ type BooleanComparisionSpecifics =
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison;
+StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison | HasClassComparison;
 ;
 
+type HasClassComparison = {
+	boolComparisonTarget: "has-class",
+	classId: MultiCheck<CClass["id"]>;
+	conditionTarget: ConditionTarget;
+}
 
 type KnowsPowerComparison = {
 	boolComparisonTarget: "knows-power";

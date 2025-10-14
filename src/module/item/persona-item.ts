@@ -465,6 +465,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.system.type == 'focus';
 	}
 
+	isCharacterClass(): this is CClass {
+		return this.system.type == "characterClass";
+	}
+
 	isOutfit(): this is InvItem {
 		return this.system.type == 'item' && this.system.slot == 'body';
 	}
@@ -2867,12 +2871,9 @@ export type CraftingMaterial = CraftingInventoryItem | Consumable;
 
 export type UniversalModifier = Subtype<PersonaItem, 'universalModifier'>;
 
-// export type ModifierContainer = ItemModifierContainer | PersonaAE;
-
 type ItemContainers = Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier | SkillCard | Tag;
 
 export type ItemModifierContainer = ItemContainers;
-// export type ItemModifierContainer = (Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier | SkillCard | Tag);
 
 export type ContainerTypes = ItemContainers | PersonaAE;
 

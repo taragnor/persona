@@ -662,6 +662,14 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 			const pwr = PersonaDB.allPowers().get(cond.powerId);
 			return `${target1} knows Power ${pwr?.displayedName ?? "UNKNOWN POWER"}`;
 		}
+		case "has-class": {
+			const classes= multiCheckToArray(cond.classId);
+			const CharClasses = classes
+			.map( id => PersonaDB.getClassById(id)?.name ?? "Unknown class")
+			.join(" ,");
+			;
+			return `${target1} has Class: ${CharClasses}`;
+		}
 		default:
 			cond satisfies never;
 			return "";

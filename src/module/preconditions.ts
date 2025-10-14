@@ -878,8 +878,12 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
 			if (!power) {return false;}
 			return target.powers.includes(power);
 		}
+		case "has-class": {
+			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+			return multiCheckContains(condition.classId, [target.class.id]);
+		}
 		default :
-				condition satisfies never;
+			condition satisfies never;
 			return undefined;
 	}
 }

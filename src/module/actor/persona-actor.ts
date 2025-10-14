@@ -656,10 +656,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const hpAdjustPercent = this.#hpAdjustPercent();
 			const hpAdjust = this.system.hp_adjust;
 			calc.add(0, hpAdjustPercent,`HP Adjust (${hpAdjust})`, "multiply");
-			if (this.isShadow()) {
-				const shadowRelHPChange = 0.75 + (this.level * .005);
-				calc.add(0, shadowRelHPChange,`Shadow Adjust (${hpAdjust})`, "multiply");
-			}
+			// if (this.isShadow()) {
+			// 	const shadowRelHPChange = 0.75 + (this.level * .005);
+			// 	calc.add(0, shadowRelHPChange,`Shadow Adjust (${hpAdjust})`, "multiply");
+			// }
 			const multmods = persona.getBonuses("maxhpMult");
 			if (this.isPC() || this.isNPCAlly()) {
 				const ArmorHPBoost = this.equippedItems().find(x=> x.isOutfit())?.system?.armorHPBoost ?? 0;

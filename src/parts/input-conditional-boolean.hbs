@@ -244,4 +244,11 @@
 	</select>
 	{{/if}}
 
+	{{#if (eq cond.boolComparisonTarget "has-class")}}
+	<select name="{{strcat namePrefix 'conditionTarget'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+	</select>
+	{{multicheck (strcat namePrefix 'classId') POWERSTUFF.CLASSES checked=cond.classId localize=true}}
+	{{/if}}
+
 
