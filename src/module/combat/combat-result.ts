@@ -182,8 +182,12 @@ export class CombatResult  {
 				break;
 			}
 			case "expend-item": {
-				if (!effect) {break;}
 				const item = cons.source;
+				if (!effect) {
+					const msg=`Can't expend item ${item?.name ?? "Unknown Item"} due to no effect present in combat result`;
+					PersonaError.softFail(msg, item, cons);
+					break;
+				}
 				if (! (item instanceof PersonaItem)) {
 					const msg = "Illegal target for expend item";
 					PersonaError.softFail(msg, item, cons);

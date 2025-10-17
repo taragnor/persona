@@ -1630,9 +1630,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		const resolvedAttackMods = attackbonus.eval(situation);
 		const validAtkModifiers = resolvedAttackMods.steps;
-		// const printableModifiers = attackbonus.steps;
-		// const validAtkModifiers = attackbonus.list(situation);
-		// const printableModifiers = attackbonus.printable(situation);
 		const ailmentRange = this.#calculateAilmentRange(attackerPersona, targetPersona, power, baseSituation);
 		const instantDeathRange = this.#calculateInstantDeathRange(attackerPersona, targetPersona, power, baseSituation);
 		if (def == 'none') {
@@ -1752,12 +1749,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			targetPersona.getBonuses('ail')
 		);
 		const calc = attackerPersona.combatStats.ailmentBonus();
-		// ailmentMods.add("Persona Luck Boost", attackerPersona.combatStats.ailmentBonus());
-		calc.add(1, -targetPersona.combatStats.ailmentResist().eval(situation).total, " Target Ailment Resistance", "add");
-		// ailmentMods.add("Target Luck Resistance", -targetPersona.combatStats.ailmentResist());
+		calc.add(1, -targetPersona.combatStats.ailmentResist().eval(situation).total, "Target Ailment Resistance", "add");
 		calc.add(1, ailmentMods, "mods", "add");
-		// const total = ailmentMods.total(situation);
-		const total = calc.eval(situation).total;
+		const calcResolved = calc.eval(situation);
+		const total = calcResolved.total;
+		if (PersonaSettings.debugMode()) {
+			const steps = calcResolved.steps;
+			console.debug(steps);
+		}
 		const ailmentRange = power.ailmentRange;
 		if (!ailmentRange) {return undefined;}
 		ailmentRange.low -= total;
@@ -1774,9 +1773,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const killDefense =
 			targetPersona.getBonuses('kill').total(situation);
 		const instantDeathBonus= attackerPersona.combatStats.instantDeathBonus();
-		// instantDeathMods.add("Attacker Instant Death bonus", attackerPersona.combatStats.instantDeathBonus());
 		instantDeathBonus.add(1, -targetPersona.combatStats.instantDeathResist().eval(situation).total, "Target Mods", "add");
-		// instantDeathMods.add("Target Instant Death Resist", -attackerPersona.combatStats.instantDeathResist());
 		instantDeathMods.add("Misc Mods to kill defense", -killDefense);
 		instantDeathBonus.add(1, instantDeathMods, "MOds", "add");
 
@@ -2347,7 +2344,8 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 		case 'skillCard':
 		case 'consumable' :{
 			const consumable = usableOrCard as Consumable;
-			if (consumable.system.subtype == 'consumable') {
+			if (consumable.isSkillCard()
+				|| consumable.system.subtype == 'consumable') {
 				await res.addEffect(null, attacker.actor, {
 					type: 'expend-item',
 					source: usableOrCard,

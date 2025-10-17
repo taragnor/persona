@@ -24,7 +24,7 @@
 	</section>
 	{{/if}}
 
-	<nav class="inventory-tabs tabs" data-group="social">
+	<nav class="inventory-tabs tabs" data-group="inventory">
 		<a class="item" data-tab="consumables">
 			Consumables
 		</a>
@@ -50,21 +50,21 @@
 			{{/if}}
 		</h2>
 
-		<section class="tab tab-content inventory-section" data-group="social" data-tab="consumables">
+		<section class="tab tab-content inventory-section" data-group="inventory" data-tab="consumables">
 			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.trueConsumables }}
 		</section>
-		<section class="tab tab-content inventory-section" data-group="social" data-tab="equip">
+		<section class="tab tab-content inventory-section" data-group="inventory" data-tab="equip">
 			{{> "systems/persona/parts/equipped-items.hbs" actor=actor CONST=CONST}}
 			<hr>
 			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.equippables }}
 		</section>
-		<section class="tab tab-content inventory-section" data-group="social" data-tab="crafting">
+		<section class="tab tab-content inventory-section" data-group="inventory" data-tab="crafting">
 			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.craftingMaterials }}
 		</section>
-		<section class="tab tab-content inventory-section" data-group="social" data-tab="key">
+		<section class="tab tab-content inventory-section" data-group="inventory" data-tab="key">
 			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.keyItems }}
 		</section>
-		<section class="tab tab-content inventory-section" data-group="social" data-tab="cards">
+		<section class="tab tab-content inventory-section" data-group="inventory" data-tab="cards">
 			{{> "systems/persona/parts/inventory-list.hbs" actor=actor itemlist=actor.skillCards }}
 
 		</section>

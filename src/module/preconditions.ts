@@ -1059,7 +1059,11 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
   switch (condTarget) {
       //owner of the power in question
     case "owner":
-      if (cond.source && cond.source.parent) {
+		  if (cond.owner) {
+			  const owner = PersonaDB.findActor(cond.owner);
+			  if (owner) { return [owner as ValidAttackers];}
+		  }
+      if (cond.source && cond.source.parent instanceof PersonaActor) {
         const parent = cond.source.parent;
 			if (parent instanceof PersonaActor && parent.isValidCombatant()) {return [parent];}
       }
