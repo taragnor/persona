@@ -26,6 +26,13 @@
 		<span>
 			<progress id="progressBar" max="{{persona.XPForNextLevel}}" value="{{persona.xp}}" title="{{persona.xp}} / {{persona.XPForNextLevel}}"></progress>
 		</span>
+		{{#if (isGM)}}
+		<label> XP </label>
+			<input class="short" type="number" name="system.combat.personaStats.xp" value="{{actor.system.combat.personaStats.xp}}">
+			/
+			{{XPRequiredForLevelUp persona}}
+		{{/if}}
+
 		{{/if}}
 		{{#if (isShadow actor) }}
 		<span>
@@ -62,6 +69,19 @@
 	{{#if (canUseTalents actor)}}
 	{{> "systems/persona/parts/talents-table.hbs" actor=actor CONST=CONST persona=persona}}
 	{{/if}}
+
+	{{#if (isGM)}}
 	{{> "systems/persona/parts/focii-table.hbs" actor=actor CONST=CONST persona=persona}}
+	{{/if}}
+
 
 </section>
+{{#if (isGM)}}
+<hr>
+<div class="conversions">
+	<button class="dmon-convert"> Convert to DMon</button>
+	<button class="persona-convert"> Convert to Persona</button>
+</div>
+{{/if}}
+
+

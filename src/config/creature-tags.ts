@@ -57,6 +57,7 @@ export const PERSONA_TAG_LIST = [
 	"pc-d-mon",
 	"persona",
 	"lone-persona",
+	"custom-persona",
 ] as const;
 
 export type PersonaTag = typeof PERSONA_TAG_LIST[number] | ShadowRole;

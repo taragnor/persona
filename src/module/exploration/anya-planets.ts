@@ -249,7 +249,7 @@ export class Orbit {
 	blockSize: number;
 
 	constructor(size: number, orbitMove: number) {
-		this.planets =[];
+		this.planets =new Array(size) as SpaceLocation[];
 		this.orbitMove = orbitMove;
 		this.blockSize = Math.floor(size / 4);
 	}
@@ -319,8 +319,8 @@ export class Orbit {
 				hardLinks: [],
 			};
 		}
-		if (location >= this.planets.length) {throw new Error(`Invalid location ${location} foir size {$this.planets.length}`);}
-		if (this.planets[location]) {
+		if (location >= this.planets.length) {throw new Error(`Invalid location ${location} foir size ${this.planets.length}`);}
+		if (this.planets[location] != undefined) {
 			throw new Error(`Location ${location} already contains ${this.planets[location].name}`);
 		}
 		this.planets[location] = planet;

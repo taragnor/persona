@@ -212,7 +212,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		await source.update({
 "system.combat.personaStats.stats": stats
 		});
-		if (source.isNPCAlly() || source.isShadow()) {
+		if (source.isNPCAlly()
+			|| (source.isShadow() && !source.isCustomPersona())
+		) {
 			await this.combatStats.autoSpendStatPoints();
 		}
 
@@ -358,6 +360,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		if (source.isPC() || source.isNPCAlly()) {return true;}
 		if (source.system.creatureType == "persona") {return true;}
 		return false;
+	}
+
+	get isCustomPersona() : boolean {
+		return this.source.isShadow()
+			&& this.isPersona()
+			&& this.source.isCustomPersona();
 	}
 
 	isDMon() : boolean {

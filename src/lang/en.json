@@ -1012,6 +1012,7 @@
 	"persona.creatureType.d-mon": "D-Mon",
 	"persona.creatureType.pc-d-mon": "PC D-Mon",
 	"persona.creatureType.lone-persona" : "Lone Persona",
+	"persona.creatureType.custom-persona" : "Custom Persona",
 	"persona.creatureType.simulated": "Simulated",
 	"persona.creatureType.persona": "Persona",
 	"persona.creatureType.student": "Student",

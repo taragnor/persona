@@ -477,12 +477,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get personaList(): Persona[] {
 		if (!this.isValidCombatant()) {return [];}
+		const maxCustomPersonas = this.class.system.uniquePersonas;
 		const actorList : ValidAttackers[] = this.system.personaList
 			.map( personaId=> PersonaDB.getActorById(personaId))
 			.filter(x=> x && x?.isValidCombatant()) as ValidAttackers[];
 		if (this.hasSoloPersona || this.isShadow()) {
 			if (this.isPC()) { return [this.basePersona];};
-			actorList.push(this);
+			actorList.pushUnique(this);
+		}
+		if (maxCustomPersonas < actorList.length) {
+			actorList.pushUnique(this);
 		}
 
 		return actorList.map( source=> new Persona(source, this));
@@ -656,10 +660,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const hpAdjustPercent = this.#hpAdjustPercent();
 			const hpAdjust = this.system.hp_adjust;
 			calc.add(0, hpAdjustPercent,`HP Adjust (${hpAdjust})`, "multiply");
-			// if (this.isShadow()) {
-			// 	const shadowRelHPChange = 0.75 + (this.level * .005);
-			// 	calc.add(0, shadowRelHPChange,`Shadow Adjust (${hpAdjust})`, "multiply");
-			// }
 			const multmods = persona.getBonuses("maxhpMult");
 			if (this.isPC() || this.isNPCAlly()) {
 				const ArmorHPBoost = this.equippedItems().find(x=> x.isOutfit())?.system?.armorHPBoost ?? 0;
@@ -1066,6 +1066,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			default:
 				this.system satisfies never;
 		}
+		if (!this.hasSoloPersona) {return [];}
 		const powerIds = this.system.combat.powers_sideboard;
 		const pcPowers : Power[] = powerIds.flatMap( id=> {
 			const i = PersonaDB.getItemById(id);
@@ -1957,6 +1958,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.isShadow() && this.system.creatureType == "persona" ||  this.hasCreatureTag("persona");
 	}
 
+	isCustomPersona(this: Shadow): boolean {
+		return this.isPersona() &&
+		(	this.hasTag("custom-persona") || this.hasTag("lone-persona"));
+	}
 
 	knowsPowerInnately(this: ValidAttackers, power : Power)  : boolean{
 		const powers = this.system.combat.powers;

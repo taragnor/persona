@@ -47,6 +47,7 @@ import {INSTANT_KILL_LEVELS} from "./combat/damage-calc.js";
 import {PersonaEffectContainerBaseSheet} from "./item/sheets/effect-container.js";
 import {HTMLTools} from "./utility/HTMLTools.js";
 import {EnergyClassCalculator} from "./calculators/shadow-energy-cost-calculator.js";
+import {LevelUpCalculator} from "../config/level-up-calculator.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -883,6 +884,20 @@ export class PersonaHandleBarsHelpers {
 
 		},
 
+		"canEditBasePersona": function (actor: PersonaActor) : boolean {
+			if (game.user.isGM) {return true;}
+			if (!actor.isOwner) {return false;}
+			if (actor.isPC()) {return true;}
+			if (actor.isShadow()) {
+				if (actor.isCustomPersona())  {return true;}
+			}
+			return false;
+		},
+
+		"XPRequiredForLevelUp": function (persona: Persona) {
+			const level = persona.level;
+			return LevelUpCalculator.minXPForEffectiveLevel(level +1);
+		},
 	};
 
 
