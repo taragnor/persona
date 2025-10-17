@@ -1,7 +1,7 @@
 
 <section class="resistance">
 	<h3> Damage Resistance </h3>
-	{{#if (or (isGM) (isPC actor))}}
+	{{#if (isOwner actor)}}
 	{{#if persona.isUnderResistCap}}
 	<div class="error">
 		UNSPENT BOOSTS

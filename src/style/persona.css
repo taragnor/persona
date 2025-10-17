@@ -1484,3 +1484,7 @@ img.greyed-out {
 	0 0 6px rgba(212, 175, 55, 0.6),
 	0 0 12px rgba(212, 175, 55, 0.3) !important;
 }
+
+.persona-viewer .persona-name {
+	justify-content: center;
+}

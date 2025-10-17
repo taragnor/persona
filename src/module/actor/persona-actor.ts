@@ -332,6 +332,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return game.i18n.localize(TAROT_DECK[this.name as keyof typeof TAROT_DECK] ?? "-");
 			case "npcAlly":
 			case "shadow": {
+				if (this.isShadow() && this.isCustomPersona()) {return this.name;}
 				const combat = game.combat as PersonaCombat | undefined;
 				if (!combat) {return this.name;}
 				const token = combat.getCombatantByActor(this as ValidAttackers)?.token;
@@ -348,6 +349,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get publicName() : string {
+		if (this.isShadow() && this.isCustomPersona()) {return this.displayedName;}
 		return this.prototypeToken.name;
 	}
 
@@ -1964,10 +1966,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	isPersona(): boolean {
-		return this.isShadow() && this.system.creatureType == "persona" ||  this.hasCreatureTag("persona");
+		return this.isShadow() && (this.system.creatureType == "persona" ||  this.hasCreatureTag("persona"));
 	}
 
-	isCustomPersona(this: Shadow): boolean {
+	isCustomPersona(this: ValidAttackers): boolean {
 		return this.isPersona() &&
 		(	this.hasTag("custom-persona") || this.hasTag("lone-persona"));
 	}
@@ -2976,33 +2978,10 @@ get personalXPTowardsNextLevel() : number {
 	return this.system.personalXP - LevelUpCalculator.minXPForEffectiveLevel(lvl);
 }
 
-totalDefenseBoosts(this: ValidAttackers) : number {
-	if (!this.isValidCombatant())  {return 0;}
-	const defenses = this.system.combat.defenses;
-	const evalDef = function (defVal: typeof defenses["fort"]) {
-		switch (defVal) {
-			case "pathetic": return -2;
-			case "weak": return -1;
-			case "normal": return 0;
-			case "strong": return 1;
-			case "ultimate": return 2;
-			default:
-				defVal satisfies never;
-				return 99;
-		}
-	};
-	const defScore = Object.values(defenses).reduce<number>( (acc, def) =>
-		acc+ evalDef(def) , 0);
-	const initScore = evalDef(this.system.combat.initiative);
-	return defScore + initScore;
-}
-
-
-
 issues() : string {
 	const issues : string[] = [];
-	if (this.basePersona.isUnderDefenseCap || this.basePersona.isOverDefenseCap)
-	{issues.push("Defense");}
+	// if (this.basePersona.isUnderDefenseCap || this.basePersona.isOverDefenseCap)
+	// {issues.push("Defense");}
 	if (this.basePersona.isUnderResistCap || this.basePersona.isOverResistCap)
 	{issues.push("Resists");}
 	return issues.join("/");
@@ -3034,7 +3013,8 @@ totalResists (this:ValidAttackers) : number {
 		absorb: 2.5,
 		reflect:2.5,
 	} as const;
-	const resistTranslator = this.isShadow() ? shadowTranslator : pcTranslator;
+	const shadow = this.isShadow() && !this.isCustomPersona();
+	const resistTranslator = shadow ? shadowTranslator : pcTranslator;
 	const resists = this.system.combat.resists;
 	const entries = Object.entries(resists) as [keyof typeof resists, typeof resists["cold"]][];
 	return Math.round(entries.reduce(

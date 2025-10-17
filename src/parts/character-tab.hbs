@@ -16,7 +16,7 @@
 			<label>
 				{{localize "persona.tarot.cardname"}}
 			</label>
-			<select name="system.tarot" {{#if actor.tarot}} disabled{{/if}}>
+			<select name="system.tarot" {{#if (and actor.tarot (not (isGM)))}} disabled{{/if}}>
 				{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
 			</select>
 		</div>

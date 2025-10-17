@@ -910,7 +910,11 @@ export class PersonaHandleBarsHelpers {
 
 		"isPersona": function (actor: PersonaActor) : boolean {
 			return actor.isPersona();
-		}
+		},
+
+		"isOwner": function (actor: PersonaActor) : boolean {
+			return actor.isOwner;
+		},
 
 	};
 

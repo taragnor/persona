@@ -129,13 +129,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	getTalentLevel(talent: Talent | Talent["id"]) : number {
 		const id = talent instanceof PersonaItem ? talent.id : talent;
-		const source = this.source;
 		const talents = this.talents;
 		let index = talents.findIndex(tal => tal.id == id);
 		if (index == -1) {return 0;}
-		const inc = source.system.combat.classData.incremental.talent ? 1 : 0;
 		const convertedLevel = Math.floor(this.level/10) + 1;
-		const effectiveLevel = Math.max(0, convertedLevel + inc -1);
+		const effectiveLevel = Math.max(0, convertedLevel  -1);
 		const baseVal = Math.floor(effectiveLevel / 3);
 		const partial = effectiveLevel % 3;
 		index = index >= 2 ? 2 : index;
@@ -742,7 +740,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	#baseDefenseBoosts() : number {
 		switch (this.source.system.type) {
 			case "pc": return 1;
-			case "shadow": return 2;
+			case "shadow": {
+				if (this.source.isCustomPersona()) {return 1;}
+				return 2;
+			}
 			case "npcAlly": return 1;
 			default:
 				this.source.system satisfies never;
@@ -763,17 +764,17 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	#baseResists() : number {
 		switch (this.source.system.type) {
 			case "pc": return -1;
-			case "shadow" : return 1;
+			case "shadow" : {
+				if (this.source.isCustomPersona()) {
+					return -1;
+				}
+				return 1;
+			}
 			case "npcAlly": return -1;
+			default:
+				this.source.system satisfies never;
+				return -999;
 		}
-	}
-
-	get isUnderDefenseCap(): boolean {
-		return this.source.totalDefenseBoosts() < this.maxDefensiveBoosts();
-	}
-
-	get isOverDefenseCap(): boolean {
-		return this.source.totalDefenseBoosts() > this.maxDefensiveBoosts();
 	}
 
 	get isOverResistCap(): boolean {
