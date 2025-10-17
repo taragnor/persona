@@ -21,7 +21,7 @@ export class HPCostCalculator extends CostCalculator {
   static tagAdjust(pwr: Power) : CostModifier {
     let total = 0;
     for (const tag of pwr.tagList(null)) {
-		 const tagName = (typeof tag == "string" ? tag : tag.id);
+		 const tagName = (typeof tag == "string" ? tag : tag.system.linkedInternalTag);
       total += TAG_ADJUST_HP[tagName as keyof typeof TAG_ADJUST_HP] ?? 0;
     }
     return this.i(total);

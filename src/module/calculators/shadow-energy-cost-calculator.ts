@@ -72,7 +72,7 @@ export class EnergyClassCalculator extends CostCalculator {
 	static #tags(power: Power) : EnergyCostBase {
 		const cost = power.tagList(null).map(tag=> {
 			tag = PersonaItem.resolveTag(tag);
-			const tagName = tag instanceof PersonaItem ? tag.name : tag;
+			const tagName = tag instanceof PersonaItem ? tag.system.linkedInternalTag  || tag.name : tag;
 			if (tagName in this.TAG_ENERGY_COST_MODS) {
 				return this.TAG_ENERGY_COST_MODS[tagName as keyof typeof this.TAG_ENERGY_COST_MODS];
 			}

@@ -4,12 +4,14 @@
 			<i class="fa-solid fa-backward"></i>
 		</a>
 		<div>
-			<h2 class="persona-name">
-				<a>
-					{{persona.name}}
-				</a>
-			</h2>
-			<img class="profile-img" src="{{persona.img}}">
+			<div>
+				<h2 class="persona-name">
+					<a>
+						{{persona.name}}
+					</a>
+				</h2>
+				<img class="profile-img" src="{{persona.img}}">
+			</div>
 		</div>
 	</div>
 	{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=persona}}

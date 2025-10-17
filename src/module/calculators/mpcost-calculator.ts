@@ -105,7 +105,7 @@ export class MPCostCalculator extends CostCalculator {
 		let mult = 1;
 		const tags = pwr.tagList();
 		for (const x of tags) {
-			const tagName = (typeof x == "string" ? x : x.id);
+			const tagName = (typeof x == "string" ? x : x.system.linkedInternalTag);
 			const modMult = this.TAG_ADJUST_MP_MULT[tagName as keyof typeof this.TAG_ADJUST_MP_MULT];
 			if (modMult == undefined) {continue;}
 			mult *= modMult;
