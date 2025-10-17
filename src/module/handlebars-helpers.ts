@@ -48,6 +48,7 @@ import {PersonaEffectContainerBaseSheet} from "./item/sheets/effect-container.js
 import {HTMLTools} from "./utility/HTMLTools.js";
 import {EnergyClassCalculator} from "./calculators/shadow-energy-cost-calculator.js";
 import {LevelUpCalculator} from "../config/level-up-calculator.js";
+import {PersonaSettings} from "../config/persona-settings.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -914,6 +915,10 @@ export class PersonaHandleBarsHelpers {
 
 		"isOwner": function (actor: PersonaActor) : boolean {
 			return actor.isOwner;
+		},
+
+		"debugMode": function() : boolean {
+			return PersonaSettings.debugMode();
 		},
 
 	};

@@ -31,7 +31,7 @@
 			<input class="short" type="number" name="system.combat.personaStats.pLevel" value="{{actor.system.combat.personaStats.pLevel}}">
 		</span>
 		{{/if}}
-		{{#if (isGM)}}
+		{{#if (and (isGM) (debugMode))}}
 		<div>
 			<label> XP </label>
 			<input class="long-number" type="number" name="system.combat.personaStats.xp" value="{{actor.system.combat.personaStats.xp}}">
