@@ -1488,4 +1488,5 @@ img.greyed-out {
 .persona-viewer .persona-name {
 	justify-content: center;
 	align-items: center;
+	text-align: center;
 }
