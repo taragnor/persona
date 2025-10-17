@@ -1772,13 +1772,17 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			attackerPersona.getBonuses('instantDeathRange');
 		const killDefense =
 			targetPersona.getBonuses('kill').total(situation);
-		const instantDeathBonus= attackerPersona.combatStats.instantDeathBonus();
+		const instantDeathBonus = attackerPersona.combatStats.instantDeathBonus();
 		instantDeathBonus.add(1, -targetPersona.combatStats.instantDeathResist().eval(situation).total, "Target Mods", "add");
 		instantDeathMods.add("Misc Mods to kill defense", -killDefense);
 		instantDeathBonus.add(1, instantDeathMods, "MOds", "add");
 
-		// const total = instantDeathMods.total(situation);
-		const total = instantDeathBonus.eval(situation).total;
+		const resolved = instantDeathBonus.eval(situation);
+		const total = resolved.total;
+		if (PersonaSettings.debugMode()) {
+			const steps = resolved.steps;
+			console.debug(steps);
+		}
 		const deathRange = power.instantDeathRange;
 		if (deathRange) {
 			deathRange.low -= total;

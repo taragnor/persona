@@ -177,7 +177,6 @@ export class PersonaCombatStats {
 		return calc
 			.add(0, this.luck + 0, `${this.persona.displayedName} Luck`, "add")
 			.add(1, 1/PersonaCombatStats.CRITICAL_HIT_DIVISOR, `Critical Hit Divisor`, "multiply");
-		// return Math.floor(this.luck / 5);
 	}
 
 	lukCriticalBoost() : Calculation {
@@ -185,7 +184,6 @@ export class PersonaCombatStats {
 		return calc
 			.add(0, this.luck + 1, `${this.persona.displayedName} Luck + 1`, "add")
 			.add(1, 1/PersonaCombatStats.CRITICAL_HIT_DIVISOR, `Critical Hit Divisor`, "multiply");
-		// return Math.floor((this.luck + 2) / 5);
 	}
 
 	instantDeathBonus() : Calculation {
@@ -193,7 +191,6 @@ export class PersonaCombatStats {
 		calc.add(0, this.luck + 1, `${this.persona.displayedName} Luck + 1`, "add");
 		calc.add(1, 1/PersonaCombatStats.INSTANT_DEATH_RESIST_DIVISOR, `Instant Kill Attack Divisor`, "multiply");
 		return calc;
-		// return Math.floor((this.luck + 1) / 5);
 	}
 
 	instantDeathResist() : Calculation {
@@ -201,7 +198,6 @@ export class PersonaCombatStats {
 		calc.add(0, this.luck + 3, `${this.persona.displayedName} Luck + 3`, "add");
 		calc.add(1, 1/PersonaCombatStats.INSTANT_DEATH_RESIST_DIVISOR, `Instant Kill Attack Divisor`, "multiply");
 		return calc;
-		// return Math.floor((this.luck + 3) / 5);
 	}
 
 	instantDeathDefense() : Calculation {
@@ -219,8 +215,6 @@ export class PersonaCombatStats {
 		calc.add(0, this.luck + 3, `${this.persona.displayedName} Luck + 3`, "add");
 		calc.add(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`, "multiply");
 		return calc;
-		// const luckAilmentResist=  Math.floor((this.luck + 3) / PersonaCombatStats.AILMENT_RESIST_DIVISOR);
-		// return luckAilmentResist;
 	}
 
 	ailmentBonus(): Calculation {
@@ -228,8 +222,6 @@ export class PersonaCombatStats {
 		calc.add(0, this.luck + 4, `${this.persona.displayedName} Luck + 4`, "add");
 		calc.add(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`, "multiply");
 		return calc;
-
-		// return Math.floor((this.luck + 4) / PersonaCombatStats.AILMENT_RESIST_DIVISOR);
 	}
 
 	magDamageBonus() : Calculation {
