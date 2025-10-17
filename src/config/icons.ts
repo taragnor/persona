@@ -5,6 +5,9 @@ const iconPathBase =   `systems/persona/img/icon/` as const;
 /** applies the full iconpath to a list of iconfilenames*/
 function iconize<const T extends string>(obj: Record<T, string>, iconPath : string = iconPathBase) {
 	function i<const T extends string>(fileName: T) {
+		if (fileName.length == 0) {
+			return "";
+		}
 		return `${iconPath}${fileName}`;
 	}
 	return Object.fromEntries(

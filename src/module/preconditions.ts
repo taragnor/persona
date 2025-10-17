@@ -1061,6 +1061,10 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
     case "owner":
 		  if (cond.owner) {
 			  const owner = PersonaDB.findActor(cond.owner);
+			  if (game.combat) {
+				  const combatant = game.combat.getCombatantByActor(owner);
+				  if (combatant) { return [combatant.token as PToken];}
+			  }
 			  if (owner) { return [owner as ValidAttackers];}
 		  }
       if (cond.source && cond.source.parent instanceof PersonaActor) {
