@@ -570,6 +570,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			await this.fadingRoll(combatant, situation),
 			this.mandatoryOtherOpeners(combatant, situation),
 			this.sleepEffect(combatant),
+			this.saveVsDizzy(combatant, situation),
 			this.saveVsFear(combatant, situation),
 			// this.saveVsDespair(combatant, situation),
 			this.saveVsConfusion(combatant, situation),
@@ -727,6 +728,27 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		return {msg, options};
 	}
+
+	saveVsDizzy( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsReturn {
+		const options : OpenerOptionsReturn['options'] = [];
+		const msg : string[] = [];
+		const saveTotal = this.mockOpeningSaveTotal(combatant, situation, 'dizzy');
+		if (saveTotal == undefined) {
+			return {msg, options};
+		}
+		msg.push(`Resisting Dizzy (${saveTotal}) -->`);
+		if (saveTotal >= 6){
+			msg.push('Success');
+			return {msg, options};
+		}
+		msg.push('Do Nothing (Miss Turn)');
+		options.push({
+			optionName: 'Why is Everything Spinning?',
+			mandatory: true,
+			optionEffects: [],
+		});
+		return {msg, options};
+}
 
 	saveVsFear( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsReturn {
 		const options : OpenerOptionsReturn['options'] = [];

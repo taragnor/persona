@@ -49,6 +49,7 @@ import { SearchMenu } from "./exploration/searchMenu.js";
 import { PersonaSocialCardSheet } from "./item/sheets/social-card-sheet.js";
 import { Heartbeat } from "./utility/heartbeat.js";
 import {PersonaTagSheet} from "./item/sheets/tag-sheet.js";
+import {TagPrinter} from "./printers/tag-printer.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -118,6 +119,7 @@ Hooks.once("init", function() {
 	Heartbeat.start();
 	PowerPrinter.init();
 	TarotPrinter.init();
+	TagPrinter.init();
 	Tooltip.init();
 });
 

@@ -1,0 +1,17 @@
+<div>
+	<section class="tag-list print-out">
+		<h1> Tag List </h1>
+		{{#each tagList as |tag i|}}
+		<div class="tag" data-tag-id="{{tag.id}}">
+			<label>
+				{{tag.displayedName}} :
+			<label>
+			<span class="description">
+				{{tag.description}}
+			</span>
+		</div>
+		{{/each}}
+	</section>
+</div>
+
+

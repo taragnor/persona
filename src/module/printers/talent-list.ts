@@ -36,7 +36,8 @@ export class TalentPrinter extends Application {
 		data["talentList"]= PersonaDB.allTalents()
 			.filter (talent => !talent.system.hideOnList
 				&& !talent.system.shadowOnly
-			);
+			)
+		.sort( (a,b) => a.displayedName.localeCompare(b.displayedName));
 		return data;
 	}
 
@@ -54,12 +55,12 @@ export class TalentPrinter extends Application {
 		void talent.sheet.render(true);
 	}
 
-	}
+}
 
 Hooks.on("updateItem", function (item: PersonaItem ) {
 	const instance = TalentPrinter._instance;
 	if (instance && item.isTalent())  {
-		instance.render(true);
+		instance.render(false);
 	}
 });
 

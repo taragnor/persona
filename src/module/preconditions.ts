@@ -917,12 +917,6 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
 			}
 			const tagIds = powerTags.flatMap( x=> typeof x == "string" ? [x] : [x.id, x.system.linkedInternalTag]);
 			return multiCheckContains(condition.powerTag, tagIds);
-			// if (typeof condition.powerTag == "string") {
-			// 	return powerTags.includes(condition.powerTag);
-			// }
-			// return Object.entries(condition.powerTag)
-			// .filter( ([_, val]) => val == true)
-			// .some (([tag, _]) => powerTags.includes(tag as PowerTag));
 		}
 		case "actor": {
 			const target = getSubjectActors(condition, situation, "conditionTarget")[0];

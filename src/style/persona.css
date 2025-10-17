@@ -1490,3 +1490,11 @@ img.greyed-out {
 	align-items: center;
 	text-align: center;
 }
+
+.tag-list .tag {
+	padding-bottom: 5px;
+}
+
+.print-out {
+	user-select: text !important;
+}

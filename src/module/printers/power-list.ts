@@ -111,7 +111,7 @@ export class PowerPrinter extends Application {
 Hooks.on("DBrefresh", function () {
 	const instance = PowerPrinter._instance;
 	if (instance && instance._state >= 2) {
-		instance.render(true);
+		instance.render(false);
 	}
 });
 
