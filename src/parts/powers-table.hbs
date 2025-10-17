@@ -7,7 +7,7 @@
 		</a>
 		{{/if}}
 
-		{{#if (isShadow actor)}}
+		{{#if (and (isShadow actor) (isGM))}}
 		<a class="addShadowPower">
 			<i class="fa-solid fa-plus"> </i>
 		</a>

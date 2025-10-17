@@ -50,11 +50,12 @@
 		<a class="item" data-tab="personal-stat">
 			{{localize "persona.sheet.tabs.personal-stats.tabname" }}
 		</a>
-		{{#if actor.hasSoloPersona}}
+		{{#if (PersonaListContainsBasePersona actor)}}
 		<a class="item" data-tab="persona">
 			{{actor.system.personaName}}
 		</a>
-		{{else}}
+		{{/if}}
+		{{#if (hasMultiplePersonas actor)}}
 		<a class="item" data-tab="persona-list">
 			Persona List
 		</a>
@@ -93,11 +94,12 @@
 		<section class="tab tab-content social-benefits-section" data-group="primary" data-tab="soc-benefits">
 			{{> "systems/persona/parts/social-benefits-section.hbs" actor=actor CONST=CONST equips=equips}}
 		</section>
-		{{#if actor.hasSoloPersona}}
+		{{#if (PersonaListContainsBasePersona actor)}}
 		<section class="tab tab-content base-persona-section" data-group="primary" data-tab="persona">
 			{{> "systems/persona/parts/base-persona-section.hbs" actor=actor CONST=CONST persona=actor.basePersona}}
 		</section>
-		{{else}}
+		{{/if}}
+		{{#if (hasMultiplePersonas actor)}}
 		<section class="tab tab-content persona-list f-col" data-group="primary" data-tab="persona-list">
 			{{> "systems/persona/parts/persona-list.hbs" actor=actor CONST=CONST selectedPersona=selectedPersona}}
 		</section>

@@ -83,6 +83,10 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 		const actor : PersonaActor = await Actor.implementation.fromDropData(actorD) as PersonaActor;
 		if (actor.isShadow() && (this.actor.isPC() || this.actor.isShadow()) && actor.isOwner) {
+			if (!actor.isPersona()) {
+				ui.notifications.warn("This isn't a persona!");
+				return undefined;
+			}
 				await this.actor.addPersona(actor);
 		}
 		return super._onDropActor(_event, actorD);
@@ -123,10 +127,13 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 							ui.notifications.warn(`Can't take Shadow only power ${item.name}`);
 							return;
 						}
-						if (this.isOnLearningTab())
-						{
+						if (this.isOnLearningTab()) {
 							await this.actor.addLearnedPower(power);
 							return power;
+						}
+						if (this.isOnPersonaListTab()) {
+							ui.notifications.warn("Can't add powers from this tab");
+							return undefined;
 						}
 						if (!game.user.isGM && power.hasTag("exotic")) {
 							ui.notifications.warn(`Can't directly take exotic power : ${item.name}`);
@@ -454,6 +461,11 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		await PowerPrinter.open();
 	}
 
+	isOnPersonaListTab() : boolean {
+		//placeholder
+		return (this._tabs.at(0)?.active == "persona-list");
+	}
+
 	isOnLearningTab() : boolean {
 		//placeholder
 		return (this._tabs.at(0)?.active == "learning");
@@ -519,7 +531,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async deletePersona(event: JQuery.ClickEvent) {
 		const personaId = HTMLTools.getClosestData(event, "personaId");
 		if (this.actor.isNPCAlly()) {return;}
-		await this.actor.deletePersona(personaId);
+		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this Persona?")) {
+			await this.actor.deletePersona(personaId);
+		}
 	}
 
 	async openPersona(event: JQuery.ClickEvent) { 

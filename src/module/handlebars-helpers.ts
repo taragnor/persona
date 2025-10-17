@@ -898,6 +898,20 @@ export class PersonaHandleBarsHelpers {
 			const level = persona.level;
 			return LevelUpCalculator.minXPForEffectiveLevel(level +1);
 		},
+
+		"hasMultiplePersonas": function (actor: PersonaActor) : boolean {
+			return actor.maxPersonas > 1;
+		},
+
+		"PersonaListContainsBasePersona": function (actor: PersonaActor): boolean {
+			const basePersona = actor.basePersona;
+			return actor.personaList.some( persona=> persona.equals (basePersona));
+		},
+
+		"isPersona": function (actor: PersonaActor) : boolean {
+			return actor.isPersona();
+		}
+
 	};
 
 

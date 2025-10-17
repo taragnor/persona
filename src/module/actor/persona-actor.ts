@@ -475,6 +475,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
+	get maxPersonas() : number {
+		if (!this.isValidCombatant()) {return 0;}
+		const maxCustomPersonas = this.class.system.uniquePersonas;
+		const wildPersonas = this.class.system.maxPersonas;
+		return maxCustomPersonas + wildPersonas;
+	}
+
 	get personaList(): Persona[] {
 		if (!this.isValidCombatant()) {return [];}
 		const maxCustomPersonas = this.class.system.uniquePersonas;
@@ -485,7 +492,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (this.isPC()) { return [this.basePersona];};
 			actorList.pushUnique(this);
 		}
-		if (maxCustomPersonas < actorList.length) {
+		const customPersonas = actorList.reduce( (acc, actor) => acc + (actor.isShadow() && actor.isCustomPersona() == true ? 1 : 0) , 0);
+		if (maxCustomPersonas > customPersonas) {
 			actorList.pushUnique(this);
 		}
 
@@ -515,9 +523,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	hasSpaceForNewPersona(this:ValidAttackers) : boolean {
 		if (this.isShadow()) {return true;}
-		const personas = this.personaList;
-		const totalPersonas = this.class.system.uniquePersonas + this.class.system.maxPersonas;
-		return personas.length < totalPersonas;
+		return this.personaList.length < this.maxPersonas;
 	}
 
 
@@ -1067,6 +1073,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				this.system satisfies never;
 		}
 		if (!this.hasSoloPersona) {return [];}
+		if (!this.class.system.canUsePowerSideboard) {return [];}
 		const powerIds = this.system.combat.powers_sideboard;
 		const pcPowers : Power[] = powerIds.flatMap( id=> {
 			const i = PersonaDB.getItemById(id);
@@ -1937,8 +1944,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get statusResists() : {id: string, img: string, local: string, val: string}[] {
+		if (!this.isShadow() || this.isPersona()) {
+			return [];
+		}
 		const arr: {id: string, img: string, local: string, val: string}[]   = [];
-		if (this.system.type != "shadow") {return [];}
 		for (const [k, v] of Object.entries(this.system.combat.statusResists)) {
 			arr.push( {
 				id: k,

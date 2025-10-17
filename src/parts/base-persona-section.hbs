@@ -1,11 +1,9 @@
-<section class="f-col base-persona-section {{#if (isSimulated persona)}} simulated-persona {{/if}}"
+<section class="f-col base-persona-section {{#if (isSimulated persona)}} simulated-persona {{/if}}">
+	{{#if (not (isShadow actor))}}
 	<input type="text" class="borderless character-name" name="system.personaName" value="{{actor.system.personaName}}" title="Persona Name" placeholder="Persona Name">
+	{{/if}}
 	{{#if (and (isGM) (not (isPC actor)))}}
 	{{> "systems/persona/parts/hp-mp-section.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
-	{{/if}}
-
-	{{#if false}}
-	{{> "systems/persona/parts/defenses-input.hbs" actor=actor persona=persona CONST=CONST}}
 	{{/if}}
 
 	<div class="lvl">
@@ -26,21 +24,24 @@
 		<span>
 			<progress id="progressBar" max="{{persona.XPForNextLevel}}" value="{{persona.xp}}" title="{{persona.xp}} / {{persona.XPForNextLevel}}"></progress>
 		</span>
-		{{#if (isGM)}}
-		<label> XP </label>
-			<input class="short" type="number" name="system.combat.personaStats.xp" value="{{actor.system.combat.personaStats.xp}}">
-			/
-			{{XPRequiredForLevelUp persona}}
-		{{/if}}
 
 		{{/if}}
-		{{#if (isShadow actor) }}
+		{{#if (and (isGM) (isShadow actor)) }}
 		<span>
 			<input class="short" type="number" name="system.combat.personaStats.pLevel" value="{{actor.system.combat.personaStats.pLevel}}">
 		</span>
 		{{/if}}
+		{{#if (isGM)}}
+		<div>
+			<label> XP </label>
+			<input class="long-number" type="number" name="system.combat.personaStats.xp" value="{{actor.system.combat.personaStats.xp}}">
+			/
+			{{XPRequiredForLevelUp persona}}
+		</div>
+		{{/if}}
 	</div>
-	{{#if (isShadow actor)}}
+
+	{{#if (and (isShadow actor) (isGM))}}
 	<div class="shadow-dmg">
 		<label>
 			Damage
@@ -50,12 +51,6 @@
 				{{selectOptions CONST.DAMAGETYPES  localize=true selected=actor.system.combat.baseDamageType }}
 			</select>
 		</span>
-		{{#if false}}
-		<span>
-			{{numberInput actor.system.combat.wpndmg.low class="short" name="system.combat.wpndmg.low" step=1 min=0 max=100}}
-			{{numberInput actor.system.combat.wpndmg.high class="short" name="system.combat.wpndmg.high" step=1 min=0 max=100}}
-		</span>
-		{{/if}}
 	</div>
 	{{/if}}
 

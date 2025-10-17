@@ -3,6 +3,12 @@ input.short{
 	max-width: 3em;
 }
 
+input.long-number {
+	width: 5em;
+	max-width: 5em;
+
+}
+
 div.short{
 	width: 4em;
 	max-width: 5%;

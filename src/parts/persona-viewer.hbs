@@ -3,12 +3,14 @@
 		<a class="back" title="Back to List">
 			<i class="fa-solid fa-backward"></i>
 		</a>
-		<img class="profile-img" src="{{persona.img}}">
-		<h2 class="persona-name">
-			<a>
-			{{persona.name}}
-			</a>
-		</h2>
+		<div>
+			<h2 class="persona-name">
+				<a>
+					{{persona.name}}
+				</a>
+			</h2>
+			<img class="profile-img" src="{{persona.img}}">
+		</div>
 	</div>
 	{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=persona}}
 	{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=persona}}

@@ -21,6 +21,7 @@
 					<select name="system.tarot">
 						{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
 					</select>
+					{{#if (isGM)}}
 					<select name="system.role">
 						{{selectOptions SHADOW_STUFF.SHADOW_ROLE localize=true selected=actor.system.role}}
 					</select>
@@ -30,6 +31,7 @@
 					<select name="system.creatureType">
 						{{selectOptions SHADOW_STUFF.SHADOW_CREATURE_TYPE localize=true selected=actor.system.creatureType}}
 					</select>
+					{{/if}}
 				</div>
 				<div>
 					<label> Energy</label>
@@ -47,9 +49,11 @@
 		</div>
 	</header>
 	<nav class="sheet-tabs tabs" data-group="primary">
+		{{#if (not (isPersona actor))}}
 		<a class="item" data-tab="combat">
 			{{localize "persona.sheet.tabs.combat.tabname" }}
 		</a>
+		{{/if}}
 		{{#if (canEditBasePersona actor)}}
 		<a  class="item" data-tab="persona">
 			Modify Combat Stats
@@ -70,18 +74,22 @@
 		{{/if}}
 	</nav>
 	<section class="sheet-body">
+		{{#if (not (isPersona actor))}}
 		<section class="tab tab-content combat-section" data-group="primary" data-tab="combat">
 			{{> "systems/persona/parts/combat-section.hbs" actor=actor persona=(persona actor) canDelete=actor.isOwner activePowersOnly=(isGM)}}
 		</section>
+		{{/if}}
 		{{#if (isGM)}}
 		<section class="tab tab-content learning-section" data-group="primary" data-tab="learning">
 			{{> "systems/persona/parts/learned-powers-section.hbs" actor=actor CONST=CONST persona=actor.basePersona}}
 		</section>
+		{{/if}}
 		{{#if (canEditBasePersona actor)}}
 		<section class="tab tab-content encounter-section" data-group="primary" data-tab="persona">
 			{{> "systems/persona/parts/base-persona-section.hbs" actor=actor CONST=CONST persona=actor.basePersona}}
 		</section>
 		{{/if}}
+		{{#if (isGM)}}
 		<section class="tab tab-content persona-section" data-group="primary" data-tab="encounter">
 			{{> "systems/persona/parts/encounter-section.hbs" actor=actor CONST=CONST SHADOW_STUFF=SHADOW_STUFF POWERSTUFF=POWERSTUFF}}
 		</section>
