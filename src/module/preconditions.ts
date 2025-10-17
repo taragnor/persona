@@ -683,14 +683,8 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
          return power.system.type == "consumable";
       }
       case "target-owner-comparison": {
-         let target = getSubjects(condition, situation, "conditionTarget")[0];
-         let target2 = getSubjects(condition, situation, "conditionTarget2")[0];
-         if (target instanceof TokenDocument) {
-            target = target.actor;
-         }
-         if (target2 instanceof TokenDocument) {
-            target2= target2.actor;
-         }
+         const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+         const target2 = getSubjectActors(condition, situation, "conditionTarget2")[0];
          if (!target || !target2) {return undefined;}
          return target == target2;
       }
@@ -1057,8 +1051,8 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
   }
   const condTarget = cond[field];
   switch (condTarget) {
-      //owner of the power in question
     case "owner":
+      //owner of the power in question
 		  if (cond.owner) {
 			  const owner = PersonaDB.findActor(cond.owner);
 			  if (game.combat) {
