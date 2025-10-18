@@ -385,6 +385,7 @@ function numericComparison(condition: SourcedPrecondition, situation: Situation)
 			const sourced = {
 				source: condition.source,
 				owner: condition.owner,
+				realSource: condition.realSource,
 				...condition.comparisonVal,
 			};
 			const resolved = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, contextList);
@@ -410,6 +411,7 @@ function numericComparison(condition: SourcedPrecondition, situation: Situation)
 		const sourced = {
 			source: condition.source,
 			owner: condition.owner,
+			realSource: condition.realSource,
 			...testCase,
 		};
 		const resolvedCA = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, contextList);
@@ -840,14 +842,16 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
 		}
 		case "logical-or": {
 			const comp1 = {
-				...condition.comparison1,
 				source: condition.source,
-				owner: condition.owner
+				owner: condition.owner,
+				realSource: condition.realSource,
+				...condition.comparison1,
 			};
 			const comp2 = {
-				...condition.comparison2,
 				source: condition.source,
-				owner: condition.owner
+				owner: condition.owner,
+				realSource: condition.realSource,
+				...condition.comparison2,
 			};
 			return testPrecondition(comp1, situation) || testPrecondition(comp2, situation);
 		}
@@ -1236,6 +1240,7 @@ export function numberOfOthersWithResolver(condition: Sourced<NumberOfOthersWith
 				...condition.otherComparison,
 				source: condition.source,
 				owner: condition.owner,
+				realSource: condition.realSource,
 			};
 			return	a + (testPrecondition(sourcedP, situation) ? 1 : 0);
 		}

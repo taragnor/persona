@@ -324,11 +324,11 @@ export class ConditionalEffectManager {
 		// setTimeout( () => this.restoreLastClick(html), 100);
 	}
 
-	static getEffects<T extends PersonaActor, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null) : SourcedConditionalEffect[] {
+	static getEffects<T extends PersonaActor, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null, realSource ?: ConditonalEffectHolderItem) : SourcedConditionalEffect[] {
 			const conditionalEffects = Array.isArray(CEObject) ? CEObject : this.ArrayCorrector(CEObject);
 		return conditionalEffects.map( ce=> {
-			const conditions = this.getConditionals(ce.conditions, sourceItem, sourceActor);
-			const consequences= this.getConsequences(ce.consequences, sourceItem, sourceActor);
+			const conditions = this.getConditionals(ce.conditions, sourceItem, sourceActor, realSource);
+			const consequences= this.getConsequences(ce.consequences, sourceItem, sourceActor, realSource);
 			const forceDefensive = (sourceItem?.isDefensive)
 				? sourceItem.isDefensive()
 				: false;
@@ -346,14 +346,12 @@ export class ConditionalEffectManager {
 			}
 			return {
 				conditionalType,
-				// conditions,
 				conditions,
 				consequences,
-				// consequences,
 				isDefensive: conditionalType == "defensive",
 				owner: sourceActor?.accessor,
 				source: sourceItem != null ? sourceItem : undefined,
-				// sourceItem: sourceItem? PersonaDB.getUniversalAccessor(sourceItem): undefined,
+				realSource: realSource,
 			};
 		}
 		);
@@ -410,16 +408,17 @@ static changesResistance(cons: ConditionalEffect["consequences"][number]) : bool
 			return (cond.type == "on-trigger");
 		}
 
-	static getConditionals<T extends PersonaActor, I extends ModifierContainer & (Item | ActiveEffect)>(condObject: DeepNoArray<ConditionalEffect["conditions"]>, sourceItem: I | null, sourceActor: T | null): SourcedConditionalEffect["conditions"] {
+	static getConditionals<T extends PersonaActor, I extends ModifierContainer & (Item | ActiveEffect)>(condObject: DeepNoArray<ConditionalEffect["conditions"]>, sourceItem: I | null, sourceActor: T | null, realSource: null | U<ModifierContainer>): SourcedConditionalEffect["conditions"] {
 		const conditionalEffects = this.ArrayCorrector(condObject);
 		return conditionalEffects.map( eff=> ({
 			...eff,
 			owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : undefined) as UniversalActorAccessor<ValidAttackers>,
 			source: sourceItem != null ? sourceItem : undefined,
+			realSource: realSource ? realSource : undefined,
 		}));
 	}
 
-static getConsequences<T extends PersonaActor, I extends (ModifierContainer & (PersonaItem | PersonaAE))>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null): SourcedConditionalEffect["consequences"] {
+static getConsequences<T extends PersonaActor, I extends (ModifierContainer & (PersonaItem | PersonaAE))>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null, realSource: null | U<ModifierContainer>): SourcedConditionalEffect["consequences"] {
 	const consequences = this.ArrayCorrector(consObject);
 	return consequences.map( eff=> {
 		const nondep = ConsequenceConverter.convertDeprecated(eff as DeprecatedConsequence, sourceItem instanceof Item ? sourceItem : null);
@@ -427,6 +426,7 @@ static getConsequences<T extends PersonaActor, I extends (ModifierContainer & (P
 			...nondep,
 			owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner) as UniversalActorAccessor<ValidAttackers>,
 			source: sourceItem != null ? sourceItem: undefined,
+			realSource: realSource ? realSource : undefined,
 		};
 	});
 }
@@ -456,10 +456,10 @@ static getConsequences<T extends PersonaActor, I extends (ModifierContainer & (P
 		}
 		const etype = element.type;
 		if (PRECONDITIONLIST.includes(etype as any)) {
-			return this.getConditionals(data as ConditionalEffect["conditions"], null, null) as any;
+			return this.getConditionals(data as ConditionalEffect["conditions"], null, null, null) as any;
 		}
 		if (CONSQUENCELIST.includes(etype as any)) {
-			return this.getConsequences(data as ConditionalEffect["consequences"], null, null) as any;
+			return this.getConsequences(data as ConditionalEffect["consequences"], null, null, null) as any;
 		}
 		return data as any;
 	}
@@ -473,7 +473,7 @@ static getConsequences<T extends PersonaActor, I extends (ModifierContainer & (P
 
 	}
 	static printConditions(cond: Precondition[]) : string {
-		return this.getConditionals(cond, null, null)
+		return this.getConditionals(cond, null, null, null)
 			.map( x=> this.printConditional(x))
 			.join (", ");
 	}
@@ -717,7 +717,7 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 						return `${cond.comparator} ${derivedVar}`;
 					}
 				case "range":
-					return `between ${cond.num} and ${cond.high}`;
+					return `between ${this.printConsequenceAmount(cond.num)} and ${cond.high}`;
 				default:
 					cond satisfies never;
 					return "ERROR";
@@ -821,7 +821,7 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 	}
 
 	static printConsequences(cons: Consequence[]) : string {
-		return this.getConsequences(cons, null , null)
+		return this.getConsequences(cons, null , null, null)
 			.map(x=> this.printConsequence(x))
 			.filter(x => x)
 			.join (", ");
@@ -1385,6 +1385,7 @@ declare global{
 	type Sourced<T extends object>= T & {
 		source: U<ModifierContainer>;
 		owner: U<UniversalActorAccessor<PersonaActor>>;
+		realSource: U<ModifierContainer>;
 	}
 
 }

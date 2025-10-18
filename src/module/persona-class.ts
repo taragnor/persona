@@ -439,6 +439,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!this.#cache.passivePowers || !PersonaCaching) {
 			this.#cache.passivePowers = this.powers
+				.filter( power => power.isPassive() || power.isDefensive())
 				.filter( power=> power.hasPassiveEffects(this.user) || power.hasTriggeredEffects(this.user));
 		}
 		return this.#cache.passivePowers;

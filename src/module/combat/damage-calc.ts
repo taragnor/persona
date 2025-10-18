@@ -74,6 +74,7 @@ export class DamageCalculation {
 			...convert,
 			source: cons.source,
 			owner: cons.owner,
+			realSource: cons.realSource,
 		};
 	}
 
@@ -136,7 +137,12 @@ export class DamageCalculation {
 				return this;
 		}
 		if (cons.amount) {
-			const effectName = cons.source ? cons.source?.displayedName?.toString() ?? "Unknown Source" : "Unknown Source";
+			const effectName = cons.realSource
+				? cons.realSource?.displayedName
+				: cons.source
+				? cons.source?.displayedName?.toString()
+				?? "Unknown Source"
+				: "Unknown Source";
 			this.add(damageOrder, amt ?? 0, effectName);
 		}
 		if (this.damageType == "healing") {
@@ -391,8 +397,8 @@ const DAMAGE_LEVEL_CONVERT_WEAPON = {
 	"light": {extraVariance: 1, baseAmt: 10},
 	"medium": {extraVariance: 2, baseAmt: 25},
 	"heavy": {extraVariance: 2, baseAmt: 50},
-	"severe": {extraVariance: 3, baseAmt: 70},
-	"colossal": {extraVariance: 3, baseAmt: 110},
+	"severe": {extraVariance: 3, baseAmt: 85},
+	"colossal": {extraVariance: 3, baseAmt: 130},
 } as const satisfies Readonly<Record<ConvertableDamageLevel, NewDamageParams>> ;
 
 
@@ -400,11 +406,11 @@ const DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE = {
 	"none": {extraVariance: 0, baseAmt: 0},
 	"miniscule": {extraVariance: 0, baseAmt: 0},
 	"basic": {extraVariance: 0, baseAmt: 0},
-	"light": {extraVariance: 1, baseAmt: 18},
-	"medium": {extraVariance: 2, baseAmt: 35},
+	"light": {extraVariance: 1, baseAmt: 10},
+	"medium": {extraVariance: 2, baseAmt: 30},
 	"heavy": {extraVariance: 2, baseAmt: 60},
-	"severe": {extraVariance: 3, baseAmt: 85},
-	"colossal": {extraVariance: 3, baseAmt: 120},
+	"severe": {extraVariance: 3, baseAmt: 90},
+	"colossal": {extraVariance: 3, baseAmt: 130},
 } as const satisfies Readonly<Record< ConvertableDamageLevel, NewDamageParams>>;
 
 type ConvertableDamageLevel = Exclude<DamageLevel, "-" | "fixed">;

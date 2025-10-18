@@ -45,7 +45,7 @@ export class PersonaScene extends Scene {
 					user: shadow.accessor,
 					target: shadow.accessor,
 				};
-				const sourced = ConditionalEffectManager.getConditionals(shadow.system.encounter.conditions, null, shadow);
+				const sourced = ConditionalEffectManager.getConditionals(shadow.system.encounter.conditions, null, shadow, null);
 				return testPreconditions(sourced, situation);
 			});
 		if (!PersonaCalendar.isStormy()) {

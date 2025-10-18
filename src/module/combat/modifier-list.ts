@@ -30,9 +30,10 @@ export class ModifierList {
 			return;
 		}
 		const ModListItems = (list as SourcedConditionalEffect[]).map( eff=> ({
-			name: eff.source?.name ?? "Unknown Source",
+			name: eff?.realSource?.name ?? eff.source?.name ?? "Unknown Source",
 			source: eff.source,
 			owner: eff.owner,
+			realSource : eff.realSource,
 			conditions: ArrayCorrector(eff.conditions),
 			modifier: typeof listTypeOrFn == "function" ? listTypeOrFn(eff): 0,
 		}));
@@ -47,6 +48,7 @@ export class ModifierList {
 			name,
 			conditions,
 			modifier,
+			realSource: undefined,
 		});
 		return this;
 	}
@@ -115,6 +117,7 @@ export class ModifierList {
 				owner: eff.owner,
 				conditions: ArrayCorrector(eff.conditions),
 				modifier: ModifierList.getModifierAmount(eff.consequences, bonusTypes),
+				realSource: eff.realSource,
 			};
 		});
 		this._data = this._data.concat(stuff);

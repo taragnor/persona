@@ -22,6 +22,7 @@ export class ConsequenceAmountResolver {
 		return {
 			owner: cons.owner,
 			source: cons.source,
+			realSource: cons.realSource,
 			...x,
 		};
 	}

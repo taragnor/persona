@@ -729,7 +729,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				// PersonaError.softFail(`Can't check tag list for ${this.system["type"]}`);
 				return false;
 		}
-		return list.includes(tag);
+		return list.some(t=> t instanceof PersonaItem ? t.system.linkedInternalTag == tag : t == tag );
 	}
 
 	tagList(this : Power, user: ValidAttackers | null): (PowerTag | EquipmentTag)[];
@@ -830,9 +830,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (this.system.attacksMax > 1) {
 			list.pushUnique('flurry');
 		}
+		if (this.isAoE()) {
+			list.pushUnique("multi-target");
+		}
 		if ( this.system.subtype == "weapon" && this.system.dmg_type == 'by-power' && user) {
-			const wpnList : readonly (PowerTag | EquipmentTag)[] = user?.weapon?.tagList() ?? user.unarmedTagList();
-			list.pushUnique(...wpnList);
+			list.pushUnique(this.getDamageType(user) as PowerTag);
+			//pushing weapon resulted in tag effects being duplicated
+			// const wpnList : readonly (PowerTag | EquipmentTag)[] = user?.weapon?.tagList() ?? user.unarmedTagList();
+			// list.pushUnique(...wpnList);
 		} else {
 			if (!list.includes(this.system.dmg_type as typeof list[number]) && POWER_TAGS_LIST.includes(this.system.dmg_type as typeof POWER_TAGS_LIST[number])) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -967,7 +972,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			default:
 				this.system satisfies never;
 		}
-		const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this, user );
+		const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this, user , this);
 		return testPreconditions(conditions, situation);
 	}
 
@@ -979,29 +984,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			default:
 				this.system satisfies never;
 		}
-		const conditions = ConditionalEffectManager.getConditionals(this.system.teamworkConditions, this,user );
+		const conditions = ConditionalEffectManager.getConditionals(this.system.teamworkConditions, this,user , this );
 		return testPreconditions(conditions, situation);
 	}
 
 	testFollowUpPrereqs(this: UsableAndCard, situation: Situation, user: PersonaActor): boolean {
 		return this.testTeamworkPrereqs(situation, user);
 	}
-
-	// getGrantedPowers(this: ItemModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
-	//   return this.getAllGrantedPowers(user, situation);
-	//   // .filter(pwr => !pwr.hasTag("opener"));
-	// }
-
-	// getGrantedTalents(this: ItemModifierContainer, user: ValidAttackers, situation?: Situation): Talent[] {
-	//   return this.getAllGrantedTalents(user, situation);
-	//   // .filter(pwr => !pwr.hasTag("opener"));
-	// }
-
-	// getOpenerPowers(this: ItemModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
-	//   return this.getAllGrantedPowers(user, situation)
-	//     .filter (pwr=> pwr.hasTag('opener'));
-	// }
-
 
 	static getAllGrantedPowers (eff: SourcedConditionalEffect, user: ValidAttackers, situation ?: Situation) : Power[] {
 		if (!situation) {
@@ -1133,57 +1122,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		};
 	}
 
-	// estimateShadowCosts(this: Power, user: ValidAttackers) : {energyReq: number, cost: number} {
-	//   const diff = this.comparativePowerRatingToUsePower(user);
-	//   let energyReq= 0, cost= 1;
-	//   const reducedCostType = this.hasTag('buff') || this.hasTag('debuff') || this.hasTag('status-removal');
-	//   let reqMin = reducedCostType ? 0 : 1;
-	//   const energyMod = reducedCostType ? -3: 0;
-	//   switch (true) {
-	//     case (this.isDefensive() == true):
-	//     case (this.isPassive() == true):
-	//       energyReq = 0;
-	//       cost = 0;
-	//       reqMin = 0;
-	//       break;
-	//     case (diff == 0):
-	//       energyReq += 3;
-	//       cost += 1;
-	//       break;
-	//     case (diff > 0):
-	//       energyReq += Math.max(reqMin, 3-diff);
-	//       cost += 2 - Math.floor((1+diff)/2);
-	//       break;
-	//     case (diff < 0):
-	//       if (this.hasTag('debuff') || this.hasTag('buff')) {
-	//         energyReq += Math.min(3, 3 - diff);
-	//       } else {
-	//         energyReq += Math.min(10, 3-diff);
-	//       }
-	//       cost += 2 - diff;
-	//       break;
-	//   }
-	//   energyReq += energyMod;
-	//   cost = Math.clamp(cost, 0, 10);
-	//   energyReq = Math.clamp(energyReq, reqMin, 10);
-	//   return {energyReq, cost};
-
-	// }
-
-	// comparativePowerRatingToUsePower(this: Power, user: ValidAttackers) : number {
-	//   const userLevel = Math.floor(user.level / 10) + 1;
-	//   let powerSlot = this.system.slot;
-	//   let extraMod = 0;
-	//   if (this.hasTag('price-lower-for-shadow')) {
-	//     powerSlot -= 1;
-	//   }
-	//   if (this.hasTag('high-cost')) {
-	//     extraMod += 2;
-	//   }
-	//   const effectiveLevel = extraMod + (powerSlot*3);
-	//   return Math.round(userLevel - effectiveLevel);
-	// }
-
 	powerCostString_Shadow(this: Power, persona: Persona) : string {
 		const costs : string[] = [];
 		let required: number, cost: number;
@@ -1218,12 +1156,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			return this.system.energy;
 		}
 		return this.estimateShadowCosts(persona.user);
-		// const estimate = this.estimateShadowCosts(persona.user);
-		// return {
-		// 	cost: estimate.cost,
-		// 	required: estimate.energyReq,
-		// 	newForm: false,
-		// };
 	}
 
 	energyCost(this: UsableAndCard, persona:Persona) : number {
@@ -1334,6 +1266,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 						// source: eff.source?.accessor ?? null,
 						source: eff.source,
 						owner: eff.owner,
+						realSource: eff.realSource,
 						conditions: ArrayCorrector(eff.conditions),
 						modifier: ModifierList.getModifierAmount(eff.consequences, btype),
 					})
@@ -1369,14 +1302,21 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		this.cache.containsModifier = filteredEffects.length > 0;
 		// const acc = PersonaDB.getUniversalAccessor(this);
 		return filteredEffects
-			.map(x =>
-				({
-					name: this.name,
-					source: x.source,
-					owner: x.owner,
-					conditions: ArrayCorrector(x.conditions),
-					modifier: ModifierList.getModifierAmount(x.consequences, bonusTypes),
-				})
+			.map(x => {
+				const name = x.realSource && x.realSource != this
+					? `${this.name} (${x.realSource.name})`
+					: x.source && x.source != this
+					? `${this.name} (${x.source.name})`
+					: this.name;
+					return {
+						name,
+						source: x.source,
+						owner: x.owner,
+						realSource: x.realSource,
+						conditions: ArrayCorrector(x.conditions),
+						modifier: ModifierList.getModifierAmount(x.consequences, bonusTypes),
+					};
+			}
 			);
 	}
 
@@ -1878,10 +1818,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				this.system.targets satisfies never;
 		}
 		if (this.isOpener()) {
-			const sourced = ConditionalEffectManager.getConditionals(this.system.openerConditions, this, user );
+			const sourced = ConditionalEffectManager.getConditionals(this.system.openerConditions, this, user, this );
 			if (!testPreconditions(sourced, situation)) {return false;}
 		}
-		const sourcedTC = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user );
+		const sourcedTC = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user, this );
 
 		return testPreconditions(sourcedTC, situation);
 	}
@@ -2057,6 +1997,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				conditions: [],
 				consequences: [],
 				owner: this.parent?.accessor,
+				realSource: undefined,
 			};
 		}
 		const cardEffect = {
@@ -2069,6 +2010,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				type: 'always',
 				source: this,
 				owner: this.parent?.accessor,
+				realSource: undefined,
 			} as const
 		];
 		const consequences = [
@@ -2078,11 +2020,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				sourceItem: this.accessor,
 				source: this,
 				owner: this.parent?.accessor,
+				realSource: undefined,
 			} as const
 		];
 		return {
 			conditions,
 			consequences,
+			realSource: undefined,
 			source: this,
 			...cardEffect,
 			owner: this.parent?.accessor,
@@ -2111,7 +2055,7 @@ getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETyp
 	}
 	if (!CETypes || CETypes.length == 0) {
 		const effects = this.system.effects;
-		return this.#accessEffectsCache('allEffects', sourceActor, () => ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor))
+		return this.#accessEffectsCache('allEffects', sourceActor, () => ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this))
 			.concat(tagEffects);
 	} else {
 		const effects: SourcedConditionalEffect[] = [];
@@ -2245,7 +2189,7 @@ isAvailable(this: Activity, pc: PC): boolean {
 		user: pc.accessor
 	};
 	if (this.system.weeklyAvailability.disabled) {return false;}
-	const sourcedConditions = ConditionalEffectManager.getConditionals(this.system.conditions, null, null );
+	const sourcedConditions = ConditionalEffectManager.getConditionals(this.system.conditions, null, null, null );
 	if(!testPreconditions(sourcedConditions, sit)) {return false;}
 	return this.system.weeklyAvailability.available;
 }
@@ -2480,7 +2424,7 @@ targetMeetsConditions(this: UsableAndCard, user: ValidAttackers, target: ValidAt
 	if (this.system.type == 'skillCard') {return target.canLearnNewSkill();}
 	const usable = this as Usable;
 	if (!usable.system.validTargetConditions) {return true;}
-	const conditions  = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user);
+	const conditions  = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user, this);
 	if (!situation) {
 		situation = {
 			attacker : user.accessor,
@@ -2524,10 +2468,10 @@ requiresTargetSelection(this: Usable) : boolean {
 cardConditionsToSelect( this: SocialCard) : readonly SourcedPrecondition[] {
 	const extraConditionsFromTags = this.extraConditionsFromTags();
 	if (extraConditionsFromTags.length == 0) {
-		return ConditionalEffectManager.getConditionals(this.system.conditions, null, null);
+		return ConditionalEffectManager.getConditionals(this.system.conditions, null, null, null);
 	}
 	const conditions =  this.system.conditions.concat(extraConditionsFromTags);
-	return ConditionalEffectManager.getConditionals(conditions, null, null);
+	return ConditionalEffectManager.getConditionals(conditions, null, null, null);
 }
 
 isInstantDeathAttack(this: Usable) : boolean {

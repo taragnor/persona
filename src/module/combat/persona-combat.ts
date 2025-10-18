@@ -1834,6 +1834,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 						owner: targetActor.accessor,
 						statusName: 'magic-shield',
 						source: power,
+						realSource: undefined,
 					};
 					await reflectRes.addEffect(atkResult, targetActor, cons, atkResult.situation );
 				}
@@ -1843,6 +1844,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 						owner: targetActor.accessor,
 						statusName: 'phys-shield',
 						source: power,
+						realSource: undefined,
 					};
 					await reflectRes.addEffect(atkResult, targetActor, cons, atkResult.situation);
 				}
@@ -1866,27 +1868,24 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return CombatRes;
 	}
 
-	static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<CombatResult> {
-		const {situation} = atkResult;
-		const power = PersonaDB.findItem(atkResult.power);
-		const attacker = PersonaDB.findToken(atkResult.attacker);
-		const target = PersonaDB.findToken(atkResult.target);
-		const attackerEffects= attacker.actor.getEffects(['passive']);
-		const defenderEffects = target.actor.getEffects(['defensive']);
-		const sourcedEffects = [
-			...power.getEffects(attacker.actor, ['on-use'])
-		].concat(attackerEffects)
-		.concat(defenderEffects);
-		const CombatRes = new CombatResult(atkResult);
-		const consequences = sourcedEffects.flatMap( eff => getActiveConsequences(eff, situation));
-		// for (const {source, effects} of sourcedEffects){
-		// 	for (const effect of effects) {
-		// 		const {conditions, consequences}  = effect;
-		// 		if (testPreconditions(conditions, situation, source)) {
-		const res = await this.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult);
-		CombatRes.merge(res);
-		return CombatRes;
-	}
+static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<CombatResult> {
+	const {situation} = atkResult;
+	const power = PersonaDB.findItem(atkResult.power);
+	const attacker = PersonaDB.findToken(atkResult.attacker);
+	const target = PersonaDB.findToken(atkResult.target);
+	const attackerEffects= attacker.actor.getEffects(['passive']);
+	const defenderEffects = target.actor.getEffects(['defensive']);
+	const sourcedEffects =
+	[ ...power.getEffects(attacker.actor, ['on-use', 'passive']) ]
+	.concat(attackerEffects)
+	.concat(defenderEffects);
+
+	const CombatRes = new CombatResult(atkResult);
+	const consequences = sourcedEffects.flatMap( eff => getActiveConsequences(eff, situation));
+	const res = await this.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult);
+	CombatRes.merge(res);
+	return CombatRes;
+}
 
 	static async consequencesToResult(cons: SourcedConsequence<NonDeprecatedConsequence>[], power: U<ModifierContainer>, situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkResult: AttackResult | null): Promise<CombatResult> {
 		const CombatRes = new CombatResult(atkResult);
@@ -2302,6 +2301,7 @@ static processConsequence_simple( cons: SourcedConsequence<NonDeprecatedConseque
 						itemAcc,
 						source: cons.source,
 						owner: cons.owner,
+						realSource: undefined,
 					}
 				};
 			});
@@ -2331,6 +2331,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 						socialLinkIdOrTarot: power.system.inspirationId as unknown as AnyStringObject,
 						source: usableOrCard,
 						owner: attacker.actor.accessor,
+						realSource: undefined,
 					}, situation);
 				}
 			}
@@ -2341,6 +2342,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 					amount: power.modifiedHpCost(attacker.actor.persona()),
 					source: usableOrCard,
 					owner: attacker.actor.accessor,
+					realSource: undefined,
 				}, power.getDamageType(attacker.actor));
 				await res.addEffect(null, attacker.actor, deprecatedConvert, situation );
 			}
@@ -2353,6 +2355,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 					amount: -power.mpCost(attacker.actor.persona()),
 					source: usableOrCard,
 					owner: attacker.actor.accessor,
+					realSource: undefined,
 				}, situation);
 			}
 			if (attacker.actor.isShadow()) {
@@ -2362,6 +2365,8 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 						amount: -power.energyCost(attacker.actor.persona()),
 						source: usableOrCard,
 						owner: attacker.actor.accessor,
+						realSource: undefined,
+
 					}, situation);
 				}
 			}
@@ -2376,6 +2381,7 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 					type: 'expend-item',
 					source: usableOrCard,
 					owner: attacker.actor.accessor,
+					realSource: undefined,
 				}, situation);
 			}
 			break;
@@ -2461,9 +2467,7 @@ static getBaseAttackBonus(attackerPersona: Persona, power:Usable): Calculation {
 		default:
 			power.system.defense satisfies never;
 	}
-	if (power.isMultiTarget()) {
-		modList.add('Multitarget power attack penalty', -4);
-	}
+	modList =  modList.concat(new ModifierList(power.getModifier('allAtk', attackerPersona.user)));
 	return calc.add(1, modList, "Mods", "add");
 	// return modList;
 }
@@ -2941,7 +2945,6 @@ static calculateAllOutAttackDamage(attacker: PToken, situation: AttackResult['si
 		const mult = actor == attackLeader ? 1 : (1/3);
 		const damageCalc = this.individualContributionToAllOutAttackDamage(actor, situation);
 		const result = damageCalc.eval();
-		// const dmg = combatResult?.finalize()?.attacks[0]?.changes[0]?.damage[0];
 		if (result == undefined || result.hpChange == 0) {
 			PersonaError.softFail('Allout contribution for ${actor.name} was 0 or undefined');
 			continue;

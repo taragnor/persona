@@ -53,6 +53,7 @@ const POWER_TRAIT_TAGS = [
 	"mobile",
 	"half-on-miss",
 	"flurry",
+	"multi-target",
 ] as const;
 
 export const POWER_TAGS_LIST = [

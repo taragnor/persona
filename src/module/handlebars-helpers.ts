@@ -49,6 +49,7 @@ import {HTMLTools} from "./utility/HTMLTools.js";
 import {EnergyClassCalculator} from "./calculators/shadow-energy-cost-calculator.js";
 import {LevelUpCalculator} from "../config/level-up-calculator.js";
 import {PersonaSettings} from "../config/persona-settings.js";
+import {POWER_TAGS} from "../config/power-tags.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -307,6 +308,7 @@ export class PersonaHandleBarsHelpers {
 				...cond,
 				owner: undefined,
 				source: undefined,
+				realSource: undefined,
 			}));
 			return testPreconditions(sourced, cardData.situation);
 
@@ -327,6 +329,7 @@ export class PersonaHandleBarsHelpers {
 			const sourced=  (activity.system.conditions ?? []).map( cond => ({
 				owner: undefined,
 				source: undefined,
+				realSource: undefined,
 				...cond,
 			}));
 			return testPreconditions(sourced, situation);
@@ -489,7 +492,11 @@ export class PersonaHandleBarsHelpers {
 							${i.displayedName.toString()}
 </span>`;
 					}
-					return localize(i);
+					const tagSearch = POWER_TAGS[i as keyof typeof POWER_TAGS];
+					if (tagSearch) {
+						return localize(tagSearch);
+					}
+					return i;
 				})
 				.join(", ")
 			);

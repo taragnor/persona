@@ -299,7 +299,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get keyItems(): Carryable[] {
 		const items= this.items
-			.filter( item => item.isKeyItem()) as Carryable[];
+			.filter( item => item.isKeyItem()
+				|| (item.system.type == "item"
+					&& item.system.slot == "none")
+			) as Carryable[];
 		return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
 	}
 
@@ -310,7 +313,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	hasTag(this: ValidAttackers ,tag : CreatureTag  ): boolean {
-		return this.tagListPartial.includes(tag);
+		return this.tagListPartial.some( (t : string | Tag) => t instanceof PersonaItem ? t.system.linkedInternalTag == tag : tag == t);
 	}
 
 	get nonUsableInventory() : (SkillCard | InvItem | Weapon)[] {
@@ -3591,7 +3594,7 @@ isAvailable(pc: PersonaActor) : boolean {
 }
 
 getAvailabilityConditions(this: NPC | NPCAlly)  : readonly SourcedPrecondition[] {
-	const conds = ConditionalEffectManager.getConditionals(this.system.availabilityConditions, null, null);
+	const conds = ConditionalEffectManager.getConditionals(this.system.availabilityConditions, null, null, null);
 	return conds;
 }
 

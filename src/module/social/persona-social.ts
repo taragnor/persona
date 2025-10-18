@@ -485,7 +485,7 @@ export class PersonaSocial {
 				socialRandom : Math.floor(Math.random() * 20) + 1,
 			};
 			if (this.disqualifierStatuses.some( st => cameo.hasStatus(st))) { return false;}
-			const sourcedConditions = ConditionalEffectManager.getConditionals(card.system.cameoConditions, null, null);
+			const sourcedConditions = ConditionalEffectManager.getConditionals(card.system.cameoConditions, null, null, null);
 			return testPreconditions(sourcedConditions, situation);
 		};
 		const allCameos = PersonaDB.socialLinks().
@@ -701,7 +701,7 @@ export class PersonaSocial {
 		let eventList = cardEventList
 			.filter ( ev => !ev.eventTags.includes("disabled"))
 			.filter( (ev) => !cardData.eventsChosen.includes(ev) && testPreconditions(
-				ConditionalEffectManager.getConditionals( ev.conditions, null, null),
+				ConditionalEffectManager.getConditionals( ev.conditions, null, null, null),
 				situation));
 		const isEvType = function (ev: CardEvent, evType: keyof NonNullable<CardEvent["placement"]>) {
 			let placement = ev.placement ?? {
@@ -884,7 +884,7 @@ export class PersonaSocial {
 		const tokenSpends = (cardData.card.system.tokenSpends ?? [])
 		.concat(cardData.activity != cardData.card ?  cardData.activity.system.tokenSpends ?? [] : [])
 		.filter( spend => {
-			const conds = ConditionalEffectManager.getConditionals(spend.conditions, null, null);
+			const conds = ConditionalEffectManager.getConditionals(spend.conditions, null, null, null);
 			return testPreconditions(conds ?? [], cardData.situation);
 		})
 		.map(x=> `spend ${x.amount} progress tokens to ${x.text}.`)
@@ -934,7 +934,7 @@ export class PersonaSocial {
 				attacker: actor.accessor,
 				isSocial: true,
 			};
-			const sourced = ConditionalEffectManager.getConditionals(activity.system.conditions, null, null);
+			const sourced = ConditionalEffectManager.getConditionals(activity.system.conditions, null, null, null);
 			if (!testPreconditions( sourced, situation)) {
 				ui.notifications.warn("Fails to meet preconditions for this activity.");
 				return;
@@ -1685,6 +1685,7 @@ export class PersonaSocial {
 			...cond,
 			source: undefined,
 			owner: target.accessor,
+			realSource: undefined,
 		}));
 		return testPreconditions(sourced, situation);
 	}

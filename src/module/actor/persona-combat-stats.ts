@@ -18,7 +18,7 @@ export class PersonaCombatStats {
 	static MAX_STAT_GAP =  10 as const;
 	static MAX_STAT_VAL = 99 as const;
 	static MIN_STAT_VAL = 1 as const;
-	static DEFENSE_DIVISOR = 2.5 as const;
+	static DEFENSE_DIVISOR = 3 as const;
 	static BASE_INSTANT_DEATH_DEFENSE = 20 as const;
 	static BASE_DEFENSE = 3 as const;
 	static BASE_AILMENT_DEFENSE = 18 as const;
@@ -26,6 +26,7 @@ export class PersonaCombatStats {
 	static CRITICAL_HIT_DIVISOR= 5 as const;
 	static WEAPON_DAMAGE_MULT = 2 as const;
 	static MAGIC_DAMAGE_MULT = 2 as const;
+	static ENDURANCE_DR_MULTIPLIER = 0.005;
 
 	constructor (persona: Persona) {
 		this.persona = persona;
@@ -105,13 +106,22 @@ export class PersonaCombatStats {
 	baseInit() : Calculation {
 		const calc = new Calculation(0, 2);
 		return calc
-			.add(0, this.agility, `${this.persona.displayedName} Agility`, "add")
+			.add(0, this.agility + 1, `${this.persona.displayedName} Agility + 1`, "add")
 			.add(1, 1/PersonaCombatStats.INIT_DIVISOR, `Initiative Divisor`, "multiply");
-		// return Math.floor(this.agility / PersonaCombatStats.INIT_DIVISOR);
 	}
 
-	staminaDR() : number{
+	baseEnduranceDR() : number{
 		return Math.floor(this.endurance);
+	}
+
+	endurancePercentDR() : number {
+		const situation = {
+			user: this.persona.user.accessor,
+			target: this.persona.user.accessor,
+		};
+		const generalDRBonus = this.persona.getDefensiveBonuses("dr").total(situation);
+		const percentageMult = 1 - ((this.endurance + generalDRBonus) * PersonaCombatStats.ENDURANCE_DR_MULTIPLIER);
+		return Math.max(0.25, percentageMult);
 	}
 
 	damageReduction(damageType : RealDamageType, power: Usable): DamageCalculation {
@@ -126,16 +136,18 @@ export class PersonaCombatStats {
 	}
 
 	enduranceDR() : DamageCalculation {
-		const situation = {
-			user: this.persona.user.accessor,
-			target: this.persona.user.accessor,
-		};
+		// const situation = {
+		// 	user: this.persona.user.accessor,
+		// 	target: this.persona.user.accessor,
+		// };
 		const calc= new DamageCalculation(null);
-		const stamina = this.staminaDR();
-		const generalDRBonus = this.persona.getDefensiveBonuses("dr").total(situation);
-		const staminaString = 'Endurance Damage Reduction';
-		calc.add("base", -Math.abs(stamina), staminaString);
-		calc.add("base", -generalDRBonus, "DR Modifiers");
+		// const stamina = this.baseEnduranceDR();
+		// const generalDRBonus = this.persona.getDefensiveBonuses("dr").total(situation);
+		// const staminaString = 'Endurance Damage Reduction';
+		const percentageMult = this.endurancePercentDR();
+		calc.add("multiplier", percentageMult, "Endurance DR modifier");
+		// calc.add("base", -Math.abs(stamina), staminaString);
+		// calc.add("base", -generalDRBonus, "DR Modifiers");
 		return calc;
 	}
 
@@ -169,7 +181,6 @@ export class PersonaCombatStats {
 		return calc
 			.add(0, this.strength + 0, `${this.persona.displayedName} Strength`, "add")
 			.add(1, PersonaCombatStats.WEAPON_DAMAGE_MULT, `Weapon Strength Damage Multiplier`, "multiply");
-		// return this.strength * 2;
 	}
 
 	lukCriticalResist() : Calculation {
@@ -188,7 +199,7 @@ export class PersonaCombatStats {
 
 	instantDeathBonus() : Calculation {
 		const calc = new Calculation(0, 2);
-		calc.add(0, this.luck + 1, `${this.persona.displayedName} Luck + 1`, "add");
+		calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 2`, "add");
 		calc.add(1, 1/PersonaCombatStats.INSTANT_DEATH_RESIST_DIVISOR, `Instant Kill Attack Divisor`, "multiply");
 		return calc;
 	}
@@ -212,14 +223,14 @@ export class PersonaCombatStats {
 
 	ailmentResist(): Calculation {
 		const calc = new Calculation(0, 2);
-		calc.add(0, this.luck + 3, `${this.persona.displayedName} Luck + 3`, "add");
+		calc.add(0, this.luck + 4, `${this.persona.displayedName} Luck + 3`, "add");
 		calc.add(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`, "multiply");
 		return calc;
 	}
 
 	ailmentBonus(): Calculation {
 		const calc = new Calculation(0, 2);
-		calc.add(0, this.luck + 4, `${this.persona.displayedName} Luck + 4`, "add");
+		calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 4`, "add");
 		calc.add(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`, "multiply");
 		return calc;
 	}
@@ -229,15 +240,14 @@ export class PersonaCombatStats {
 		return calc
 			.add(0, this.magic, `${this.persona.displayedName} Magic`, "add")
 			.add(1, PersonaCombatStats.MAGIC_DAMAGE_MULT, `Magic Damage Multiplier`, "multiply");
-		// return this.magic * 2;
 	}
 
 	getPhysicalVariance() : number {
-		return 2 + Math.round(this.strength / 5);
+		return 2 + Math.floor(this.strength / 5);
 	}
 
 	getMagicalVariance() : number {
-		return 2 + Math.round(this.magic / 5);
+		return 2 + Math.floor(this.magic / 5);
 	}
 
 	unspentStatPoints() : number {
