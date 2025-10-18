@@ -1498,3 +1498,7 @@ img.greyed-out {
 .print-out {
 	user-select: text !important;
 }
+
+.print-out label {
+	font-weight: bold;
+}

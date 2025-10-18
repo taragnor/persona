@@ -790,9 +790,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					list.pushUnique(this.system.dmg_type as any);
 				}
-				if (!list.includes(itype)) {
-					list.pushUnique(itype);
-				}
+				list.pushUnique(itype);
 				return list.map( t=> PersonaItem.resolveTag<EquipmentTag>(t));
 			}
 			case 'skillCard': {
@@ -818,7 +816,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	#autoTags_power(this: Power, user ?: null | ValidAttackers): (PowerTag | EquipmentTag)[] {
-		const list : (PowerTag | EquipmentTag) [] = this.system.tags.map( x=> PersonaItem.resolveTag(x));
+		const list : (PowerTag | EquipmentTag) [] = [];
 		list.pushUnique(this.system.type);
 		if (this.system.instantKillChance != 'none') {
 			list.pushUnique('instantKill');
@@ -832,7 +830,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (this.system.attacksMax > 1) {
 			list.pushUnique('flurry');
 		}
-		if ( list.includes('weapon') && this.system.dmg_type == 'by-power' && user) {
+		if ( this.system.subtype == "weapon" && this.system.dmg_type == 'by-power' && user) {
 			const wpnList : readonly (PowerTag | EquipmentTag)[] = user?.weapon?.tagList() ?? user.unarmedTagList();
 			list.pushUnique(...wpnList);
 		} else {
@@ -846,7 +844,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 		const subtype : typeof POWER_TYPE_TAGS[number]  = this.system.subtype as typeof POWER_TYPE_TAGS[number];
 		if (POWER_TYPE_TAGS.includes(subtype) && !list.includes(subtype)) { list.pushUnique(subtype);}
-		return list.map ( x=> PersonaItem.resolveTag(x));
+		const innateTags : (PowerTag | EquipmentTag) [] = this.system.tags.map( x=> PersonaItem.resolveTag(x));
+		const resolved= list.map ( x=> PersonaItem.resolveTag(x));
+		resolved.pushUnique(...innateTags);
+		return resolved as (PowerTag | EquipmentTag)[];
 	}
 
 	get amount() : number {

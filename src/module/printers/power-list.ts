@@ -24,9 +24,7 @@ export class PowerPrinter extends Application {
 
 	override activateListeners(html: JQuery) {
 		super.activateListeners(html);
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-		html.find(".power-name").on("click", this.openPower.bind(this));
-
+		html.find(".power-name").on("click", ev => void this.openPower(ev));
 	}
 
 	static async open() {
