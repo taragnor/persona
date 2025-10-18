@@ -529,26 +529,21 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		switch (defense) {
 			case "ref": {
 				calc =this.combatStats.baseRef();
-				// mods.add("Agility Bonus", this.combatStats.baseRef());
 				break;
 			}
 			case "will": {
 				calc =this.combatStats.baseWill();
-				// mods.add("Luck Bonus", this.combatStats.baseWill());
 				break;
 			}
 			case "fort": {
 				calc =this.combatStats.baseFort();
-				// mods.add("Endurance Bonus", this.combatStats.baseWill());
 				break;
       }
 			case "kill":
 				calc = this.combatStats.instantDeathDefense();
-				// mods.add("Luck Death Resist", this.combatStats.instantDeathDefense());
 				break;
 			case "ail":
 				calc = this.combatStats.ailmentDefense();
-				// mods.add("Luck Ailment Resist", this.combatStats.ailmentDefense());
 				break;
 			case "none":
 				return new Calculation(0);
@@ -564,14 +559,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const defenseMods = this.getBonuses([defense, "allDefenses"], modifiers);
 		const modList = new ModifierList();
 		return calc.add(1, modList.concat(defenseMods), "Other Modifiers", "add");
-		// return mods.concat(defenseMods);
 	}
-
-	// #getWeaknessesInCategory( defType: keyof ValidAttackers["system"]["combat"]["defenses"]): number {
-	// 	const damageTypes = ELEMENTAL_DEFENSE_LINK[defType];
-	// 	const weaknesses= damageTypes.filter( dt => this.resists[dt] == "weakness");
-	// 	return weaknesses.length;
-	// }
 
 	get defenses(): ValidAttackers["system"]["combat"]["defenses"] {
 		return this.source.system.combat.defenses;

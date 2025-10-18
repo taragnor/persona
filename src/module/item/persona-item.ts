@@ -1300,7 +1300,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			.filter( eff => eff.consequences.some( cons => 'modifiedFields' in cons || 'modifiedField' in cons))
 		;
 		this.cache.containsModifier = filteredEffects.length > 0;
-		// const acc = PersonaDB.getUniversalAccessor(this);
 		return filteredEffects
 			.map(x => {
 				const name = x.realSource && x.realSource != this

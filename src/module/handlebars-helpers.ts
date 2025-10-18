@@ -168,7 +168,8 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"getWeaponDR": function (persona: Persona) : number {
-			const DR = persona.combatStats.physDR();
+			// const DR = persona.combatStats.physDR();
+			const DR = persona.combatStats.armorDR();
 			DR.setMinValue(-Infinity);
 			return Math.abs(DR.eval().hpChange);
 		},
@@ -179,7 +180,8 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"WeaponDRBreakdown": function (persona: Persona) : string {
-			const DR = persona.combatStats.physDR();
+			const DR = persona.combatStats.armorDR();
+			// const DR = persona.combatStats.physDR();
 			DR.setMinValue(-Infinity);
 			return DR.eval().str.join("\n");
 		},

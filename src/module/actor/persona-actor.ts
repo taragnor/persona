@@ -2983,8 +2983,6 @@ get personalXPTowardsNextLevel() : number {
 
 issues() : string {
 	const issues : string[] = [];
-	// if (this.basePersona.isUnderDefenseCap || this.basePersona.isOverDefenseCap)
-	// {issues.push("Defense");}
 	if (this.basePersona.isUnderResistCap || this.basePersona.isOverResistCap)
 	{issues.push("Resists");}
 	return issues.join("/");
