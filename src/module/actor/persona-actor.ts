@@ -1670,7 +1670,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...this.statusModifiers(),
 		];
 	}
-
 	statusModifiers() : ModifierContainer[]{
 		return this.effects.filter( eff => eff.hasEffects());
 	}

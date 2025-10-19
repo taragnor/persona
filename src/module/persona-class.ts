@@ -683,7 +683,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	statusResist(status: StatusEffectId) : ResistStrength {
 		//caching trick to try to save time
 		const mods = this.mainModifiers();
-		return this.user.statusResist(status, mods);
+		return this.source.statusResist(status, mods);
 	}
 
 
