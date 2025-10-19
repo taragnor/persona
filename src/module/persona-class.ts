@@ -121,10 +121,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			.filter( CE=> PersonaItem.grantsTalents(CE))
 			.flatMap(CE => PersonaItem.getGrantedTalents(CE, this.user));
 		;
-		return this.source.system.combat.talents
+		const mainTalents= this.source.system.combat.talents
 			.map( id => PersonaDB.getItemById<Talent>(id))
-			.filter( tal => tal != undefined)
-			.concat(extraTalents);
+			.filter( tal => tal != undefined);
+		 extraTalents.pushUnique(...mainTalents);
+		return extraTalents;
 	}
 
 	getTalentLevel(talent: Talent | Talent["id"]) : number {
@@ -460,7 +461,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		if (!this.source.isShadow() && talent.system.shadowOnly) {
 			ui.notifications.error("This talent can only be used by shadows");
 		}
-		arr.push(talent.id);
+		arr.pushUnique(talent.id);
 		await source.update( {"system.combat.talents": arr});
 		await Logger.sendToChat(`${this.name} added ${talent.name} Talent` , source);
 	}

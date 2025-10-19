@@ -931,7 +931,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"canUseSideboard": function (actor: PersonaActor) : boolean {
-			return actor.isValidCombatant() && actor.class?.system?.canUsePowerSideboard;
+			return actor.isValidCombatant() && actor.class?.system?.canUsePowerSideboard && !actor.isNPCAlly();
 		}
 
 	};
