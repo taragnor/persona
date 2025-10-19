@@ -15,7 +15,6 @@ export const STATUS_AILMENT_POWER_TAGS  = [
 ] as const;
 
 export const POWER_TYPE_TAGS = [
-	"power",
 	"consumable",
 	"teamwork",
 	"opener",
@@ -28,6 +27,7 @@ export const POWER_TYPE_TAGS = [
 	"summon",
 	"passive",
 	"defensive",
+	"magic",
 	"instantKill",
 	"no-crit",
 	"pierce",

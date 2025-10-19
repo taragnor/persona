@@ -50,7 +50,7 @@ export class Darkness {
 	}
 
 	static setListener() {
-		console.log("Listener Set");
+		// console.log("Listener Set");
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		setInterval( this.updateLight.bind(this), 1500);
 	}
@@ -81,7 +81,7 @@ export class Darkness {
 			const promises = game.scenes.active.tokens.contents.map( (tok: TokenDocument<PersonaActor>) => {
 				if (tok.actor && (tok.actor.isPC() || tok.actor.isNPCAlly()) && tok.actor.hasPlayerOwner) {
 					//TODO: Change light source here
-					console.log(`Updating Light for ${tok.name}, alpha ${lightObj.alpha}`);
+					// console.log(`Updating Light for ${tok.name}, alpha ${lightObj.alpha}`);
 					return tok.update({"light" : lightObj });
 				}
 			})

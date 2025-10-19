@@ -817,7 +817,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	#autoTags_power(this: Power, user ?: null | ValidAttackers): (PowerTag | EquipmentTag)[] {
 		const list : (PowerTag | EquipmentTag) [] = [];
-		list.pushUnique(this.system.type);
+		if (this.system.subtype == "weapon" || this.system.subtype == "magic") {
+			list.pushUnique(this.system.subtype);
+		}
 		if (this.system.instantKillChance != 'none') {
 			list.pushUnique('instantKill');
 		}

@@ -34,10 +34,6 @@ import { TreasureSystem } from "./exploration/treasure-system.js";
 export class Metaverse {
 	static lastCrunch : number = 0;
 
-	static isEnhanced() : boolean {
-		return PersonaSettings.isMetaverseEnhanced(); //placeholder
-	}
-
 	static async enterMetaverse() {
 		if (!game.user.isGM) {return;}
 		(game.actors as Collection<PersonaActor>)
@@ -773,13 +769,13 @@ static async #presenceRoll (data: PresenceRollData) : Promise<boolean> {
 			case "wandering":
 				html+= `
 				<li> Evade (+1 tension on 1 on d6) </li>
-				<li> Try to sneak past (ambushed on 1, 2-3: +1 tension, 4-6 safe)</li>
-				<li> Ambush (+1 metaverse turn, 1 counter ambush, 2-3 no effect, 4-6 ambush shadows) </li>
+				<li> Try to sneak past (d6, ambushed on 1, 2-3: +1 tension, 4-6 safe)</li>
+				<li> Ambush (d8, +1 metaverse turn, 1 counter ambush, 2-3 no effect, 4-6 ambush shadows) </li>
 			`;
 				break;
 			case "room":
 				html+= `
-				<li> Evade (Requires Guard): +1 tension unless a guard rolls 4-6 on d6. </li>
+				<li> Evade (Requires Guard): +1 tension unless a guard rolls 3-6 on d6. </li>
 				<li> Ambush (Requires Guard + SL ability) </li>
 				`;
 				break;

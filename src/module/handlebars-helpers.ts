@@ -930,6 +930,10 @@ export class PersonaHandleBarsHelpers {
 			return PersonaSettings.debugMode();
 		},
 
+		"canUseSideboard": function (actor: PersonaActor) : boolean {
+			return actor.isValidCombatant() && actor.class?.system?.canUsePowerSideboard;
+		}
+
 	};
 
 

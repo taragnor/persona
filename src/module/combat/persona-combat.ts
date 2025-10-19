@@ -1775,10 +1775,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		calc.add(1, ailmentMods, "mods", "add");
 		const calcResolved = calc.eval(situation);
 		const total = calcResolved.total;
-		if (PersonaSettings.debugMode()) {
+		// if (PersonaSettings.debugMode()) {
 			const steps = calcResolved.steps;
 			console.debug(steps);
-		}
+		// }
 		const ailmentRange = power.ailmentRange;
 		if (!ailmentRange) {return undefined;}
 		ailmentRange.low -= total;
@@ -2185,6 +2185,7 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 		case 'constant':
 			dmgAmt = cons.amount;
 			break;
+		case 'percentage-current':
 		case 'percentage':
 			dmgAmt = cons.amount;
 			break;

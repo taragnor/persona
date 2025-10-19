@@ -30,14 +30,16 @@ export class PersonaSettings {
 
 	}
 
-	static isMetaverseEnhanced() : boolean {
-		return this.get("metaverseState").valueOf();
-	}
-
 	static debugMode() : boolean {
 		const debugMode  = this.get("debugMode").valueOf();
 		const realGame = game.users.filter( user => user.active).length > 3;
 		return !realGame && debugMode;
+	}
+
+	static freezeXPGain() : boolean {
+		const xpLock  = this.get("xpLock").valueOf();
+		const realGame = game.users.filter( user => user.active).length > 3;
+		return !realGame && xpLock;
 	}
 
 	static autoEndTurn() : boolean {
@@ -58,25 +60,6 @@ export class PersonaSettings {
 
 
 const SETTINGS = {
-	"metaverseState" : {
-		name: "Metaverse Enhanced",
-		hint: "Is Metaverse Enhanced?",
-		scope: "world",
-		restricted: true,
-		config: true, //turn this off eventually
-		type :Boolean,
-		default: false,
-		onChange: () => {
-			console.log("Executing MEtaverse state update");
-			if (game.user.isGM) {
-			game.scenes
-				.forEach( scene => scene.tokens.contents
-					.forEach( tok => void (tok.actor as PersonaActor | undefined)?.fullHeal()
-					)
-				);
-			}
-		}
-	},
 
 	"debugMode" : {
 		name: "Debug Mode",
@@ -87,6 +70,17 @@ const SETTINGS = {
 		type :Boolean,
 		default: false,
 	},
+
+	"xpLock" : {
+		name: "XP Lock",
+		hint: "Lock XP advancement",
+		scope: "world",
+		restricted: true,
+		config: true,
+		type :Boolean,
+		default: false,
+	},
+
 
 	"autoApplyCombatResults" : {
 		name: "Auto Apply Combat Results",

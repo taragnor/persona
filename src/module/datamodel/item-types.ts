@@ -9,7 +9,7 @@ import { powerOnlyUsableProps } from "./power-dm.js";
 import { triEffects } from "./power-dm.js";
 import { CONSUMABLE_SUBTYPE_LIST } from "../../config/equip-slots.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../../config/roll-tags.js";
-import { InvItem, SocialCard, Weapon } from "../item/persona-item.js";
+import { Consumable, InvItem, SocialCard, Weapon } from "../item/persona-item.js";
 import { UniversalModifier } from "../item/persona-item.js";
 import { UNIVERSAL_MODIFIERS_TYPE_LIST } from "./universal-modifiers-types.js";
 import { frequencyConvert } from "../../config/frequency.js";
@@ -221,7 +221,10 @@ class ConsumableSchema extends foundry.abstract.TypeDataModel {
 		return ret;
 	}
 
-	static override migrateData(data: any)  {
+	static override migrateData(data: Consumable["system"])  {
+		if (data.targets as string == "1-ally") {
+			data.targets = "1-engaged";
+		}
 		// const itemData = data as (Power["system"] | Consumable["system"]);
 		// let dmult = 0;
 		// if (itemData.melee_extra_mult == undefined && itemData?.damage?.low) {

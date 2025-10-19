@@ -297,7 +297,6 @@ export class ConditionalEffectManager {
 
 	static handler_clickMCSelector<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, _item: D) {
 		ev.stopPropagation();
-		console.log("ClickMC selector");
 		$(ev.currentTarget).parent().find(".MC-selectors").toggleClass("hidden");
 		this.lastClick= HTMLTools.getClosestDataSafe(ev.currentTarget, "name", "");
 		if (this.lastClick == "") {
@@ -1102,9 +1101,11 @@ static printConsAmountOperation( consAmt: ConsequenceAmountV2 & {type: "operatio
 			case "multiplier":
 				return `Damage Multiplier ${cons.amount}`;
 			case "percentage":
-				return `${cons.amount}% of target HP`;
+				return `${cons.amount}% of target MHP`;
 			case "mult-stack":
 				return `Damage Multiplier (stacking) ${cons.amount}`;
+			case "percentage-current":
+				return `${cons.amount}% of target HP`;
 			default:
 				cons satisfies never;
 				return "ERROR";

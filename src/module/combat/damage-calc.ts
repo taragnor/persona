@@ -125,6 +125,15 @@ export class DamageCalculation {
 				amt = Math.round(target.mhp * ((res ?? 0) * 0.01));
 				break;
 			}
+			case "percentage-current": {
+				damageOrder = "nonMultPostAdd";
+				if (cons.amount == undefined) {amt= 0; break;}
+				const res = this.resolveConsAmount(cons);
+				amt = Math.round(target.hp * ((res ?? 0) * 0.01));
+				amt = Math.min(target.mhp -1, amt);
+				break;
+
+			}
 			case "mult-stack": {
 				damageOrder = "stackMult";
 				if (cons.amount == undefined) {amt= 0; break;}

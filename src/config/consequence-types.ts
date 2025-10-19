@@ -422,7 +422,7 @@ export type SimpleDamageCons = {
 }
 
 type ConstantDamageCons = {
-	damageSubtype: Extract<DamageSubtype, "constant" | "percentage">;
+	damageSubtype: Extract<DamageSubtype, "constant" | "percentage" | "percentage-current">;
 	amount: number;
 }
 

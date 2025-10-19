@@ -551,7 +551,8 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
          return combat.isEngaging(tok1, tok2);
       }
       case "metaverse-enhanced":
-         return Metaverse.isEnhanced();
+			//this should be deprecated
+         return false;
       case "is-shadow": {
          const arr = getSubjects(condition, situation, "conditionTarget");
          if (!arr) {return undefined;}

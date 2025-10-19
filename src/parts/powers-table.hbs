@@ -18,8 +18,8 @@
 {{> "systems/persona/parts/main-powers-table.hbs" CONST=CONST persona=persona activePowersOnly=activePowersOnly canDelete=canDelete showSideboard=showSideboard usePowers=usePowers}}
 
 
+{{#if (and (canUseSideboard actor) showSideboard)}}
 <section class="power-sideboard">
-{{#if (and actor.sideboardPowers showSideboard)}}
 <h3> Sideboarded Powers (max {{persona.maxSideboardPowers}}) </h3>
 <div class="power-sideboard">
 	{{#each actor.sideboardPowers as |power i|}}
@@ -45,8 +45,8 @@
 	</div>
 	{{/each}}
 </div>
-{{/if}}
 </section>
+{{/if}}
 
 {{#if (and showLearnedBuffer persona.source.topLearnedBuffer)}}
 <hr>

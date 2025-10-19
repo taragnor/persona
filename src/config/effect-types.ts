@@ -195,6 +195,7 @@ export const DAMAGE_SUBTYPE_LIST = [
 	"multiplier",
 	"mult-stack",
 	"percentage",
+	"percentage-current",
 ] as const;
 
 export type DamageSubtype = typeof DAMAGE_SUBTYPE_LIST[number];

@@ -1949,9 +1949,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get statusResists() : {id: string, img: string, local: string, val: string}[] {
-		if (!this.isShadow() || this.isPersona()) {
-			return [];
-		}
+		if (!this.isValidCombatant()) { return [];}
+		// if (!this.isShadow() || this.isPersona()) {
+		// 	return [];
+		// }
 		const arr: {id: string, img: string, local: string, val: string}[]   = [];
 		for (const [k, v] of Object.entries(this.system.combat.statusResists)) {
 			arr.push( {
@@ -1996,9 +1997,62 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return false;
 	}
 
+	hasSpaceToAddPowerToMain(this: ValidAttackers) : boolean {
+		const powers = this.mainPowers;
+		return (powers.length < this.basePersona.maxMainPowers);
+	}
+
+	hasSpaceToAddToSideboard(this: ValidAttackers): boolean {
+		if (this.isShadow()) {return false;}
+		const sideboard = this.sideboardPowers;
+		return (sideboard.length < this.basePersona.maxSideboardPowers);
+	}
+
+	async _promotePowers(this: ValidAttackers) {
+		while (this.hasSpaceToAddPowerToMain()) {
+			const sideboard = this.sideboardPowers.at(0);
+			if (sideboard && this.isPC()) {
+				await this.retrievePowerFromSideboard(sideboard.id);
+				continue;
+			}
+			const bufferPower = this.learnedPowersBuffer.at(0);
+			if (bufferPower) {
+				await this.moveFromBufferToMain(bufferPower);
+				continue;
+			}
+			break;
+		}
+		while (this.hasSpaceToAddToSideboard()) {
+			const bufferPower = this.learnedPowersBuffer.at(0);
+			if (bufferPower && !this.isShadow()) {
+				await this.moveFromBufferToSideboard(bufferPower);
+				continue;
+			}
+			break;
+		}
+	}
+
+	async moveFromBufferToSideboard(this: PC | NPCAlly, power : Power) {
+		let buffer = this.system.combat.learnedPowersBuffer;
+		const sideboard = this.system.combat.powers_sideboard;
+		sideboard.push(power.id);
+		buffer = buffer.filter(x=> x != power.id);
+		await this.update( {"system.combat.powers_sideboard": sideboard});
+		await this.update( {"system.combat.learnedPowersBuffer": buffer});
+	}
+
+	async moveFromBufferToMain(this: ValidAttackers, power : Power) {
+		let buffer = this.system.combat.learnedPowersBuffer;
+		const mainPowers = this.system.combat.powers;
+		mainPowers.push(power.id);
+		buffer = buffer.filter(x=> x != power.id);
+		await this.update( {"system.combat.powers": mainPowers});
+		await this.update( {"system.combat.learnedPowersBuffer": buffer});
+	}
+
 	async tryToAddToMain(this: ValidAttackers, power: Power, logChanges = true) : Promise<boolean> {
 		const powers = this.system.combat.powers;
-		if (powers.length < this.basePersona.maxMainPowers) {
+		if (this.hasSpaceToAddPowerToMain()) {
 			powers.push(power.id);
 			await this.update( {"system.combat.powers": powers});
 			if (this.isShadow() && !this.isPersona() && !this.isDMon()) {
@@ -2015,7 +2069,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async tryToAddToSideboard(this: ValidAttackers, power: Power, logChanges: boolean) : Promise<boolean> {
 		if (this.isShadow()) {return false;}
 		const sideboard =  this.system.combat.powers_sideboard;
-		if (sideboard.length < this.persona().maxSideboardPowers) {
+		if (this.hasSpaceToAddToSideboard()) {
 			sideboard.push(power.id);
 			await this.update( {"system.combat.powers_sideboard": sideboard});
 			if (logChanges && this.hasPlayerOwner) {
@@ -2041,7 +2095,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		// }
 	}
 
-	async learnPower(this: ValidAttackers, power: Power, logChanges = true): Promise<boolean> {
+	async _learnPower(this: ValidAttackers, power: Power, logChanges = true): Promise<boolean> {
 		try {
 			if (power.isNavigator()) {
 				if (!this.isNPCAlly()) {
@@ -2200,6 +2254,10 @@ async checkMainPowerEmptySpace(this: ValidAttackers) {
 }
 
 async movePowerToSideboard(this: PC, powerId: Power["id"]) {
+	if (!this.class.system.canUsePowerSideboard) {
+		ui.notifications.error("You don't have a sideboard");
+		return;
+	}
 	const newPowers = this.system.combat.powers
 		.filter( id => id != powerId);
 	await this.update({"system.combat.powers": newPowers});
@@ -2730,7 +2788,7 @@ async onLevelUp_checkLearnedPowers(this: ValidAttackers, newLevel: number, logCh
 	for (const powerData of powersToLearn) {
 		if (newLevel < (powerData.level ?? Infinity) ){
 			continue; }
-		await this.learnPower(powerData.power, logChanges);
+		await this._learnPower(powerData.power, logChanges);
 	}
 	await this.update( {"system.combat.lastLearnedLevel": newLevel});
 }
@@ -3936,14 +3994,6 @@ getEncounterWeight(this: Shadow, scene: PersonaScene = game.scenes.current as Pe
 	}
 	return baseProb;
 }
-
-/* Old code
-getEncounterWeight(this: Shadow, scene: PersonaScene): number {
-	const encounterData= this.system.encounter.dungeonEncounters.find(x=> x.dungeonId == scene.id);
-	if (!encounterData) return 0;
-	return encounterData.frequency ?? 1;
-}
- */
 
 get questions(): NPC["system"]["questions"] {
 	switch (this.system.type) {

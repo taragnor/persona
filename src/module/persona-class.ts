@@ -113,7 +113,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	async learnPower(power: Power, logChanges = true) {
-		await this.source.learnPower(power, logChanges);
+		await this.source._learnPower(power, logChanges);
 	}
 
 	get talents() : readonly Talent[] {
