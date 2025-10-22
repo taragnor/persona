@@ -12,7 +12,7 @@ import { PersonaError } from "./persona-error.js";
 import { FREQUENCY } from "../config/frequency.js";
 import { CardEvent } from "../config/social-card-config.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
-import { Carryable, CClass, ContainerTypes, SocialCard } from "./item/persona-item.js";
+import { Carryable, CClass, Consumable, ContainerTypes, SocialCard, Tag } from "./item/persona-item.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaItem } from "./item/persona-item.js";
@@ -932,10 +932,15 @@ export class PersonaHandleBarsHelpers {
 
 		"canUseSideboard": function (actor: PersonaActor) : boolean {
 			return actor.isValidCombatant() && actor.class?.system?.canUsePowerSideboard && !actor.isNPCAlly();
-		}
+		},
+
+		"resolvedPowerTagList": function (item: Power | Consumable) : string[]{
+			return item.system.tags
+				.map( tagString =>  {
+					const tag = PersonaDB.allTagLinks().get(tagString);
+					return tag ? tag.id : tagString;
+				});
+		},
 
 	};
-
-
-
 } //end of class

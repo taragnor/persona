@@ -78,6 +78,7 @@ const templateFileNames : string[] =[
 	"basic-powers-section.hbs",
 	"input-conditional-boolean.hbs",
 	"input-conditional-numeric.hbs",
+	"power-tags.hbs",
 ];
 
 export const templatePaths = templateFileNames.

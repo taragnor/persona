@@ -13,27 +13,7 @@
 			</div>
 		</div>
 
-		<div class="power-tags">
-			<h2>
-				<span>Power Tags</span>
-				<a class="addTag">
-					<i class="fa-solid fa-plus"> </i>
-				</a>
-			</h2>
-			<div class="tag-list">
-				{{#each item.system.tags as |tag i|}}
-				<div class="tag-item", data-tag-index="{{i}}">
-					<select name="system.tags.{{i}}">
-						{{selectOptions ../POWERSTUFF.TAGS localize=true selected=tag}}
-					</select>
-					<a class="delTag">
-						<i class="fa-solid fa-trash-can"></i>
-					</a>
-				</div>
-				{{/each}}
-			</div>
-		</div>
-
+		{{> "systems/persona/parts/power-tags.hbs" item=item POWERSTUFF=POWERSTUFF}}
 		<div class="slot-cost">
 			<label>
 				{{localize	"persona.power.powertype"}}

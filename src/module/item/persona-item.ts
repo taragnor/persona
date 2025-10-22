@@ -823,7 +823,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (this.system.instantKillChance != 'none') {
 			list.pushUnique('instantKill');
 		}
-		if (this.system.ailmentChance != 'none' || this.causesAilment()) {
+		if (this.causesAilment()) {
 			list.pushUnique('ailment');
 		}
 		if (this.system.dmg_type == 'by-power') {
@@ -835,17 +835,34 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (this.isAoE()) {
 			list.pushUnique("multi-target");
 		}
-		if ( this.system.subtype == "weapon" && this.system.dmg_type == 'by-power' && user) {
-			list.pushUnique(this.getDamageType(user) as PowerTag);
-			//pushing weapon resulted in tag effects being duplicated
-			// const wpnList : readonly (PowerTag | EquipmentTag)[] = user?.weapon?.tagList() ?? user.unarmedTagList();
-			// list.pushUnique(...wpnList);
-		} else {
-			if (!list.includes(this.system.dmg_type as typeof list[number]) && POWER_TAGS_LIST.includes(this.system.dmg_type as typeof POWER_TAGS_LIST[number])) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				list.pushUnique(this.system.dmg_type as any);
+		if (this.system.damageLevel != "none") {
+			const damageType = user ? this.getDamageType(user) : this.system.dmg_type;
+			switch (damageType) {
+				case "none":
+				case "all-out":
+					break;
+				case "cold":
+					list.pushUnique("ice");
+					break;
+				case "by-power":
+					list.pushUnique("variable-damage");
+					break;
+				case "lightning":
+					list.push("elec");
+					break;
+				case "untyped":
+					list.push("almighty");
+					break;
+				default:
+					list.pushUnique(damageType);
 			}
 		}
+		// } else {
+		// 	if (!list.includes(this.system.dmg_type as typeof list[number]) && POWER_TAGS_LIST.includes(this.system.dmg_type as typeof POWER_TAGS_LIST[number])) {
+		// 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		// 		list.pushUnique(this.system.dmg_type as any);
+		// 	}
+		// }
 		if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
 			list.pushUnique('ailment');
 		}

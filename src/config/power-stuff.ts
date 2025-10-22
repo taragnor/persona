@@ -172,7 +172,11 @@ private static _powerStuffBase: Record<string, unknown>;
 
 		const UNIFIED_EQUIPMENT_TAGS = PersonaDB.createMergedTagLocList(["equipment", "enchantment"], EQUIPMENT_TAGS);
 
-		const TAGS = PersonaDB.createMergedTagLocList( ["power", "equipment"], POWER_TAGS);
+		const TAGS = {
+			"": "-",
+			...PersonaDB.createMergedTagLocList( ["power", "equipment"], POWER_TAGS)
+		};
+		Debug(TAGS);
 
 		const data = {
 			...this.powerStuffBase(),

@@ -270,7 +270,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.enchantments = tags;
 	}
 
-	allTagLinks() : Map<Tag["name"], Tag> {
+	allTagLinks() : Map<Tag["system"]["linkedInternalTag"], Tag> {
 		if (this.#cache.tagNames) {return this.#cache.tagNames;}
 		const tags= this.allItems()
 		.filter( x=> x.isTag())
