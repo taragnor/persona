@@ -71,12 +71,17 @@
 
 
 </section>
+<div class="conversions">
 {{#if (isGM)}}
 <hr>
-<div class="conversions">
 	<button class="dmon-convert"> Convert to DMon</button>
 	<button class="persona-convert"> Convert to Persona</button>
-</div>
 {{/if}}
+
+{{#if (isCopyableToCompendium actor)}}
+	<button class="copy-to-compendium"> Copy to Compendium </button>
+{{/if}}
+{{/if}}
+</div>
 
 

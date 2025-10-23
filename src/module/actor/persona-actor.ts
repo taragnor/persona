@@ -556,6 +556,27 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return ActorConverters.toPersona(this, newOwner);
 	}
 
+	get compendiumEntry() : U<Shadow> {
+		if (!this.isShadow() || !this.isPersona()) {
+			return undefined;
+		}
+		const entryId = this.system.personaConversion.compendiumId;
+		if (!entryId || entryId == this.id) {return undefined;}
+		const ret= PersonaDB.getActorById(entryId);
+		if (!ret || !ret.isShadow() || !ret.isPersona()) {return undefined;}
+		return ret;
+	}
+
+	async copyToCompendium(this: Shadow) : Promise<void> {
+		if (!this.isPersona()) {
+			throw new PersonaError(`Can't copy to compendium, ${this.name} isn't a valid Persona`);
+			}
+		const ret = await ActorConverters.copyPersonaToCompendium(this);
+		if (ret && !game.user.isGM) {
+			await Logger.sendToChat(`${this.name} saved to compendium`);
+		}
+	}
+
 	async toDMon(this: Shadow): Promise<Shadow> {
 		return ActorConverters.toDMon(this);
 	}
@@ -1444,7 +1465,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			PersonaError.softFail(`Error adding status :${id}`, e);
 			return false;
 		}
-
 	}
 
 	getAdjustedDuration( duration: StatusDuration, id: StatusEffect["id"]) : StatusDuration {
@@ -1984,6 +2004,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	isPersona(): boolean {
 		return this.isShadow() && (this.system.creatureType == "persona" ||  this.hasCreatureTag("persona"));
+	}
+
+	isCompendiumEntry(this: Shadow) : boolean {
+		return this.isPersona() && this.system.personaConversion.compendiumId == this.id;
 	}
 
 	isCustomPersona(this: ValidAttackers): boolean {

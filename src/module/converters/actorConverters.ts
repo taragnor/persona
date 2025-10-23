@@ -5,11 +5,45 @@ import { PersonaError } from "../persona-error.js";
 import { Shadow } from "../actor/persona-actor.js";
 import { PC } from "../actor/persona-actor.js";
 import { PersonaDB } from "../persona-db.js";
+import {PersonaSockets} from "../persona.js";
+
+declare global {
+	export interface SocketMessage {
+		"COMPENDIUM_COPY": {id: Shadow["id"]}
+	}
+}
+
+Hooks.on("socketsReady", (sockets) => {
+	sockets.setHandler("COMPENDIUM_COPY", async (data) => {
+		const actor = PersonaDB.getActorById(data.id);
+		if (!actor || !actor.isShadow()) {
+			PersonaError.softFail(`Bad Actor Id sent to attempt compendium copy: ${data.id}`, data);
+			return false;
+		}
+		return await ActorConverters.copyPersonaToCompendium(actor);
+	});
+
+});
 
 export class ActorConverters {
 
+	static async copyPersonaToCompendium(actor: Shadow) : Promise<boolean>  {
+		if (!game.user.isGM) {
+			const gm = game.users.find(x=> x.isGM && x.active);
+			if (!gm) {
+				throw new PersonaError("No GM connected, can't take this action");
+			};
+			const socketData = {id: actor.id};
+			return await PersonaSockets.verifiedSend("COMPENDIUM_COPY", socketData, gm.id);
+		} else {
+			return this.#copyPersonaToCompendium(actor);
+		}
+	}
 
-	static async copyPersonaToCompendium(actor: Shadow & {subtype :"persona"}) : Promise<void>  {
+	static async #copyPersonaToCompendium(actor: Shadow) {
+		if (!actor.isPersona()) {
+			throw new PersonaError(`Can't copy to compendium, ${actor.name} isn't a valid Persona`);
+		}
 		let existing : U<Shadow>;
 		const compId = actor.system.personaConversion.compendiumId;
 		if (compId == actor.id) {
@@ -23,7 +57,7 @@ export class ActorConverters {
 		}
 		if (existing) {
 			await existing.update(actor.system);
-			return;
+			return true;
 		}
 		const personaData = {
 			system: (actor.system.toJSON() as Shadow["system"]),
@@ -31,6 +65,7 @@ export class ActorConverters {
 		};
 		const persona = await PersonaActor.create<Shadow>(personaData);
 		await actor.update( {"system.personaConversion.compendiumId": persona.id});
+		return true;
 	}
 
 	static async convertShadowPowers(actor: Shadow) : Promise<void> {

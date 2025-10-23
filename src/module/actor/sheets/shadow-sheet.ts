@@ -122,6 +122,7 @@ export class ShadowSheet extends CombatantSheetBase {
 		html.find(".del-dungeon").on("click", this.deleteDungeon.bind(this));
 		html.find(".dmon-convert").on("click", this.convertToDMon.bind(this));
 		html.find(".persona-convert").on("click", this.convertToPersona.bind(this));
+		html.find(".copy-to-compendium").on("click", this.copyToCompendium.bind(this));
 	}
 
 	async onAddPower( _ev: Event) {
@@ -168,6 +169,10 @@ export class ShadowSheet extends CombatantSheetBase {
 
 	async convertToPersona() {
 		await this.actor.toPersona();
+	}
+
+	async copyToCompendium() {
+		await this.actor.copyToCompendium();
 	}
 }
 

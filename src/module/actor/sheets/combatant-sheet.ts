@@ -76,6 +76,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".persona-viewer .activate-persona").on("click", this.activatePersona.bind(this));
 		html.find(".persona-viewer .persona-name").on("click", this.openPersona.bind(this));
 		html.find(".persona-list li .persona-name").rightclick(this.activatePersona.bind(this));
+
 	}
 
 	override async _onDropActor(_event: Event, actorD: unknown) {

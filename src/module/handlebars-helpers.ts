@@ -942,5 +942,8 @@ export class PersonaHandleBarsHelpers {
 				});
 		},
 
+		"isCopyableToCompendium": function (actor: PersonaActor): boolean {
+			return actor.isShadow() && actor.isPersona() && !actor.isCompendiumEntry();
+		}
 	};
 } //end of class
