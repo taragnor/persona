@@ -8,7 +8,7 @@ import {CALCULATION_OPERATION} from "../module/utility/calculation.js";
 import {ProgressClock} from "../module/utility/progress-clock.js";
 import {BOOLEAN_COMPARISON_TARGET, SOCIAL_CHECKS, TAG_COMPARISON_TYPES} from "./boolean-comparison.js";
 import {CARD_TAGS} from "./card-tags.js";
-import {ARITHMETIC_OPERATORS, CONS_TARGETS, CONSEQUENCE_AMOUNT_TYPES, ITEM_SELECTOR_TYPE, LEVEL_GAIN_TARGETS, VARIABLE_ACTIONS} from "./consequence-types.js";
+import {ARITHMETIC_OPERATORS, CONS_TARGETS, CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES, CONSEQUENCE_AMOUNT_TYPES, ITEM_SELECTOR_TYPE, LEVEL_GAIN_TARGETS, SITUATION_PROPERTIES, VARIABLE_ACTIONS} from "./consequence-types.js";
 import {CREATURE_TAGS} from "./creature-tags.js";
 import {DAMAGE_LEVELS, DAMAGETYPES, REALDAMAGETYPES, RESIST_STRENGTHS} from "./damage-types.js";
 import {DAYS_LIST} from "./days.js";
@@ -106,8 +106,10 @@ private static _powerStuffBase: Record<string, unknown>;
 			CREATURE_TYPE,
 			ALTER_MP_SUBTYPES,
 			SOCIAL_CHECKS,
+			SITUATION_PROPERTIES,
 			WEAPON_TAGS,
 			CARD_TAGS,
+			ACTOR_PROPERTIES: CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES,
 			ROLL_TAGS_AND_CARD_TAGS,
 			// EQUIPMENT_TAGS,
 			VARIABLE_ACTIONS,

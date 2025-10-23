@@ -20,11 +20,9 @@
 		{{> "systems/persona/parts/input-conditional-numeric.hbs" namePrefix=namePrefix  cond=cond POWERSTUFF=POWERSTUFF owner=owner}}
 	{{/if}}
 
-
 	{{#if (eq cond.type "boolean")}}
 		{{> "systems/persona/parts/input-conditional-boolean.hbs" namePrefix=namePrefix  cond=cond POWERSTUFF=POWERSTUFF owner=owner}}
 	{{/if}}
-
 
 	{{#if (strIncludes cond.type "resistant")}}
 	<select name="{{strcat namePrefix 'powerDamageType'}}">

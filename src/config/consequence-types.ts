@@ -13,7 +13,7 @@ import { ConsequenceType } from "./effect-types.js";
 import { CreatureTag } from "./creature-tags.js";
 import { SaveType } from "./save-types.js";
 import { StatusDurationType } from "./status-effects.js";
-import { MultiCheckOrSingle, SocialLinkIdOrTarot } from "./precondition-types.js";
+import { ConditionTarget, MultiCheckOrSingle, SocialLinkIdOrTarot } from "./precondition-types.js";
 import { AlterMPSubtype } from "./effect-types.js";
 import { ConsequenceTarget } from "./precondition-types.js";
 import { DamageSubtype } from "./effect-types.js";
@@ -35,10 +35,9 @@ import { PC } from "../module/actor/persona-actor.js";
 type ExpendOtherEffect = {
 	type: "expend-item";
 	itemAcc: UniversalItemAccessor<Consumable | SkillCard>;
-	// itemId: string;
 }
 
-type SimpleOtherEffect =DeprecatedSimpleEffect
+type SimpleOtherEffect = DeprecatedSimpleEffect;
 
 export type SetFlagEffect = {
 	type: "set-flag",
@@ -438,13 +437,13 @@ export type SimpleDamageCons = {
 
 type ConstantDamageCons = {
 	damageSubtype: Extract<DamageSubtype, "constant" | "percentage" | "percentage-current" | "set-to-const" | "set-to-percent">;
-	amount: number;
+	amount: ConsequenceAmount;
 }
 
 
 type DamageMultiplierCons = {
 	damageSubtype: Extract<DamageSubtype, "multiplier" | "mult-stack">;
-	amount: number;
+	amount: ConsequenceAmount;
 }
 
 
@@ -620,7 +619,14 @@ export type ConsequenceAmountV2 =
 	| AmountOperation
 	| RandomRangeAmount
 	| ItemPropertyAmount
+	| SituationPropertyAmount
+	| ActorProperty
 );
+
+export type SituationPropertyAmount = {
+	type : "situation-property",
+	property: SituationProperty,
+}
 
 export type ItemPropertyAmount = {
 	type : "item-property",
@@ -629,6 +635,11 @@ export type ItemPropertyAmount = {
 
 }
 
+export type ActorProperty = {
+	type : "actor-property",
+	target:  ConditionTarget,
+	property: ConsAmountActorProperty,
+}
 
 export type AmountOperation = {
 	type: "operation",
@@ -658,6 +669,8 @@ const CONSEQUENCE_AMOUNT_TYPES_LIST = [
 	"operation",
 	"variable-value",
 	"item-property",
+	"situation-property",
+	"actor-property",
 ] as const;
 
 		type ConsequenceAmountType = typeof CONSEQUENCE_AMOUNT_TYPES_LIST[number];
@@ -677,4 +690,21 @@ type ArithmeticOperator = typeof ARITHMETIC_OPERATOR_LIST[number];
 
 export const ARITHMETIC_OPERATORS = HTMLTools.createLocalizationObject(ARITHMETIC_OPERATOR_LIST, "persona.consequences.consequences-operators");
 
+const CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST = [
+	"mhp",
+	"hp",
+] as const;
+
+type ConsAmountActorProperty = typeof CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST[number];
+
+ export const CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES = HTMLTools.createLocalizationObject(CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST, "persona.consequenceAmount.actorProperties");
+
+
+const CONSEQUENCE_AMOUNT_SITUATION_PROPERTIES_LIST = [
+	"damage-dealt",
+] as const;
+
+type SituationProperty = typeof CONSEQUENCE_AMOUNT_SITUATION_PROPERTIES_LIST[number];
+
+ export const SITUATION_PROPERTIES = HTMLTools.createLocalizationObject( CONSEQUENCE_AMOUNT_SITUATION_PROPERTIES_LIST, "persona.consequenceAmount.actorProperties");
 

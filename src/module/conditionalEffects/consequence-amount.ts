@@ -2,6 +2,7 @@ import {ConsequenceAmount, ConsequenceAmountV2} from "../../config/consequence-t
 import {PersonaAE} from "../active-effect.js";
 import {TargettingContextList} from "../combat/persona-combat.js";
 import {PersonaItem} from "../item/persona-item.js";
+import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaVariables} from "../persona-variables.js";
 
@@ -48,11 +49,44 @@ static resolveConsequenceAmountV2< C extends ConsequenceAmountV2>(amt: C, contex
 		case "item-property": {
 			return this.resolveItemProperty(amt, contextList, source);
 		}
+		case "situation-property": {
+			return this.resolveSituationProperty(amt, contextList, source);
+		}
+		case "actor-property": {
+			return this.resolveActorProperty(amt, contextList, source);
+		}
 		default:
 				amt satisfies never;
 			PersonaError.softFail(`Unknwon consequence Amount type :${amt["type"] as string}`);
 			return undefined;
 	}
+}
+
+private static resolveSituationProperty(amt: ConsequenceAmountV2 & {type: "situation-property"}, list: Partial<TargettingContextList> , _source: Sourced<ConsequenceAmountV2>["source"]): U<number> {
+	const situation = list.situation;
+	if (!situation) {return undefined;}
+	switch (amt.property) {
+		case "damage-dealt":
+			return ("amt" in situation) ? Math.abs(situation.amt) : undefined;
+		default:
+			amt.property satisfies never;
+	}
+
+}
+
+private static resolveActorProperty(amt: ConsequenceAmountV2 & {type: "actor-property"}, list: Partial<TargettingContextList> , _source: Sourced<ConsequenceAmountV2>["source"]): U<number> {
+	const targets = list[amt.target];
+	if (!targets) {return undefined;}
+	const returns = targets
+	.map (target => PersonaDB.findActor(target))
+	.map( target => {
+		switch (amt.property) {
+			case "mhp":
+			case "hp":
+				return target[amt.property];
+		}
+	});
+	return returns.at(0);
 }
 
 static resolveItemProperty<T extends ConsequenceAmountV2 & {type: "item-property"}>( amt: T, _contextList: Partial<TargettingContextList>, source: Sourced<T>["source"]) : U<number> {

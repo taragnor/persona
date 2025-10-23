@@ -947,6 +947,8 @@
 "persona.consequences.consequences-amount.random-range": "Ran",
 "persona.consequences.consequences-amount.variable-value": "Var",
 "persona.consequences.consequences-amount.item-property": "I-P",
+"persona.consequences.consequences-amount.actor-property": "A-P",
+"persona.consequences.consequences-amount.situation-property": "Sit",
 
 "persona.item-property.item-level": "Item Level",
 
@@ -1160,10 +1162,14 @@
 	"persona.tag.tagtype.enchantment": "Item Enchantment",
 	"persona.tag.tagtype.status": "Status",
 
+	"persona.consequenceAmount.actorProperties.hp": "HP",
+	"persona.consequenceAmount.actorProperties.mhp": "MHP",
+
+	"persona.consequenceAmount.actorProperties.damage-dealt": "Damage Dealt",
+
 	"persona.affinity.ranking.all": "All",
 	"persona.affinity.ranking.strong": "Strong",
 	"persona.affinity.ranking.standard": "Standard",
 	"persona.affinity.ranking.weak": "Weak"
-
 }
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { ValidSocialTarget } from '../social/persona-social.js';
 import { EvaluatedDamage } from './damage-calc.js';
-import { EnhancedSourcedConsequence, NonDeprecatedConsequence} from '../../config/consequence-types.js';
+import { ConsequenceAmount, EnhancedSourcedConsequence, NonDeprecatedConsequence} from '../../config/consequence-types.js';
 import { DamageCalculation } from './damage-calc.js';
 import { sleep } from '../utility/async-wait.js';
 import { CardTag } from '../../config/card-tags.js';
@@ -1962,11 +1962,12 @@ static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<Comb
 			'all-allies': allies,
 			'all-foes': foes,
 			'all-in-region': allInRegion,
+			situation: situation,
 		};
 		return context;
 	}
 
-	static solveEffectiveTargets< T extends keyof TargettingContextList>(applyTo :T, situation: Situation, cons?: SourcedConsequence) : (ValidAttackers | ValidSocialTarget)[]  {
+	static solveEffectiveTargets< T extends keyof Omit<TargettingContextList, "situation">>(applyTo :T, situation: Situation, cons?: SourcedConsequence) : (ValidAttackers | ValidSocialTarget)[]  {
 		switch (applyTo) {
 			case 'target' : {
 				const target = situation.target
@@ -2073,7 +2074,6 @@ static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<Comb
 
 	static ProcessConsequences(power: U<ModifierContainer>, situation: Situation, relevantConsequences: SourcedConsequence<NonDeprecatedConsequence>[], attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkresult : Partial<AttackResult> | null)
 	: ConsequenceProcessed {
-		const escalationMod = 0;
 		let consequences : ConsequenceProcessed['consequences']= [];
 		for (const cons of relevantConsequences) {
 			const sourcedC = {
@@ -2120,7 +2120,7 @@ static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<Comb
 static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'] {
 	const consList : ConsequenceProcessed['consequences'] = [];
 	let dmgCalc: U<DamageCalculation>;
-	let dmgAmt : number = 0;
+	let dmgAmt : ConsequenceAmount = 0;
 	let damageType : U<RealDamageType> = cons.damageType != "by-power" ? cons.damageType : "none";
 	const power = powerUsed instanceof PersonaItem && powerUsed.isUsableType() ? powerUsed : undefined;
 	if (power && power.isUsableType()) {
@@ -2131,6 +2131,19 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 		...cons,
 		damageType,
 	};
+	switch (cons.damageSubtype) {
+		case "set-to-const":
+		case "set-to-percent": {
+			const consArray   = targets
+			.map( target => {
+				return {
+					applyTo: target, 
+					cons: cons,
+				};
+			});
+			return consArray;
+		}
+	}
 	if (cons.damageType == undefined) {
 		PersonaError.softFail(`Damage type is undefined for ${power?.name ?? "Undefined Power"}`, cons);
 		return [];
@@ -2191,19 +2204,8 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 		case 'mult-stack':
 			dmgAmt =  cons.amount;
 			break;
-		case "set-to-const":
-		case "set-to-percent": {
-			const consArray   = targets
-			.map( target => {
-				return {
-					applyTo: target, 
-					cons: cons,
-				};
-			});
-			return consArray;
-		}
 		default:
-			cons satisfies never;
+			cons.damageSubtype satisfies never;
 	}
 	if (dmgAmt || dmgCalc) {
 		for (const applyTo of targets) {
@@ -3414,7 +3416,9 @@ type IntoCombatant = PersonaCombatant | UniversalTokenAccessor<PToken> | Univers
 
 export type TargettingContextList = Omit<Record<ValidAttackersApplies, UniversalActorAccessor<ValidAttackers>[]>, "owner"> & {
 	owner: UniversalActorAccessor<PersonaActor>[],
-	cameo: UniversalActorAccessor<ValidSocialTarget>[]};
+	cameo: UniversalActorAccessor<ValidSocialTarget>[];
+	situation ?: Situation;
+}
 
 type ValidAttackersApplies = Exclude<NonNullable<Consequence['applyTo']>, 'cameo'>;
 

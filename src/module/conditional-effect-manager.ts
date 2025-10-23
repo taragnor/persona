@@ -20,7 +20,7 @@ import { TAROT_DECK } from "../config/tarot.js";
 import { localize } from "./persona.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
 import { MODIFIERS_TABLE } from "../config/item-modifiers.js";
-import { Consequence, ConsequenceAmount, ConsequenceAmountV2, DeprecatedConsequence, LEVEL_GAIN_TARGETS, NonDeprecatedConsequence } from "../config/consequence-types.js";
+import { Consequence, CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES, ConsequenceAmount, ConsequenceAmountV2, DeprecatedConsequence, LEVEL_GAIN_TARGETS, NonDeprecatedConsequence, SITUATION_PROPERTIES } from "../config/consequence-types.js";
 import { RESIST_STRENGTHS } from "../config/damage-types.js";
 import { STUDENT_SKILLS } from "../config/student-skills.js";
 import { SLOTTYPES } from "../config/slot-types.js";
@@ -946,6 +946,10 @@ private static printConsequenceAmount(consAmt: ConsequenceAmount) : string {
 			return `Variable: ${consAmt.varType} ${consAmt.variableId}`;
 		case "item-property":
 			return `${this.translate(consAmt.property, ITEM_PROPERTIES)} of ${consAmt.itemTarget} - $`;
+		case "situation-property":
+			return `${this.translate(consAmt.property, SITUATION_PROPERTIES)}`;
+		case "actor-property":
+			return `${this.translate(consAmt.property, CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES)}`;
 		default:
 			consAmt satisfies never;
 	}
@@ -1091,7 +1095,7 @@ static printConsAmountOperation( consAmt: ConsequenceAmountV2 & {type: "operatio
 		const damageType = "damageType" in cons ? this.translate(cons.damageSubtype, DAMAGE_SUBTYPES): "";
 		switch (cons.damageSubtype) {
 			case "constant":
-				return `${cons.amount} ${damageType} damage`;
+				return `${this.printConsequenceAmount(cons.amount)} ${damageType} damage`;
 			case "high":
 				return `High Damage`;
 			case "odd-even":
@@ -1101,17 +1105,17 @@ static printConsAmountOperation( consAmt: ConsequenceAmountV2 & {type: "operatio
 			case "allout":
 				return `All Out Attack Damage`;
 			case "multiplier":
-				return `Damage Multiplier ${cons.amount}`;
+				return `Damage Multiplier ${this.printConsequenceAmount(cons.amount)}`;
 			case "percentage":
-				return `${cons.amount}% of target MHP`;
+				return `${this.printConsequenceAmount(cons.amount)}% of target MHP`;
 			case "mult-stack":
-				return `Damage Multiplier (stacking) ${cons.amount}`;
+				return `Damage Multiplier (stacking) ${this.printConsequenceAmount(cons.amount)}`;
 			case "percentage-current":
-				return `${cons.amount}% of target HP`;
+				return `${this.printConsequenceAmount(cons.amount)}% of target HP`;
 			case "set-to-const":
-				return `Set HP to ${cons.amount}`;
+				return `Set HP to ${this.printConsequenceAmount(cons.amount)}`;
 			case "set-to-percent":
-				return `Set HP to ${cons.amount}%`;
+				return `Set HP to ${this.printConsequenceAmount(cons.amount)}%`;
 			default:
 				cons satisfies never;
 				return "ERROR";

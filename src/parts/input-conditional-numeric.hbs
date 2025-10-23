@@ -6,6 +6,11 @@
 		{{selectOptions POWERSTUFF.NUMERIC_COMPARISON_TARGET localize=true selected=cond.comparisonTarget}}
 	</select>
 </div>
+
+{{#if (eq cond.comparisonTarget "advanced-number")}}
+{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'comparisonVal.') cons=cond.comparisonVal POWERSTUFF=POWERSTUFF owner=owner}}
+{{/if}}
+
 <div>
 	<select id="comparator" name="{{strcat namePrefix 'comparator'}}">
 		{{selectOptions POWERSTUFF.COMPARATORS localize=false selected=cond.comparator}}
@@ -18,10 +23,6 @@
 	<input class="short" type=number name="{{strcat namePrefix 'high'}}" value="{{cond.high}}">
 	{{/if}}
 </div>
-
-{{#if (eq cond.comparisonTarget "advanced-number")}}
-{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'comparisonVal.') cons=cond.comparisonVal POWERSTUFF=POWERSTUFF owner=owner}}
-{{/if}}
 
 {{#if (eq cond.comparisonTarget "variable-value") }}
 <select name="{{strcat namePrefix 'varType'}}">

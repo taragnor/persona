@@ -2,8 +2,8 @@ import { HTMLTools } from "../module/utility/HTMLTools.js";
 
 export const COMBAT_TRIGGER_LIST = [
 	"on-damage",
-	"on-kill-target",
 	"pre-take-damage",
+	"on-kill-target",
 	"on-combat-start",
 	"on-combat-start-global",
 	"on-use-power",
@@ -41,4 +41,3 @@ export type Trigger = typeof TRIGGER_LIST[number];
 export type CombatTriggerTypes = typeof COMBAT_TRIGGER_LIST[number];
 
 export type NonCombatTriggerTypes = typeof NONCOMBAT_TRIGGER_LIST[number];
-

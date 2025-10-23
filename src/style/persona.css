@@ -272,17 +272,16 @@ input.single-digit {
 	cursor: pointer;
 }
 
-	.faded {
+.faded {
 	opacity: 0.5;
 }
 
 input.flag-id {
-	width: 4em;
+	width: 8em;
 }
 
 input.flag-name {
 	width: 10em;
-
 }
 
 
@@ -1501,4 +1500,9 @@ img.greyed-out {
 
 .print-out label {
 	font-weight: bold;
+}
+
+.flag-id {
+	width: 5em;
+	max-width: 5em;
 }

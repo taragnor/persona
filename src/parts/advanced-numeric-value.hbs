@@ -39,6 +39,21 @@
 <select name="{{strcat namePrefix 'property'}}">
 	{{selectOptions POWERSTUFF.ITEM_PROPERTIES localize=true selected=cons.property}}
 </select>
+{{/if}}
+
+{{#if (eqAny cons.type "situation-property")}}
+<select name="{{strcat namePrefix 'property'}}">
+	{{selectOptions POWERSTUFF.SITUATION_PROPERTIES localize=true selected=cons.property}}
+</select>
+{{/if}}
+
+{{#if (eqAny cons.type "actor-property")}}
+<select name="{{strcat namePrefix 'property'}}">
+	{{selectOptions POWERSTUFF.ACTOR_PROPERTIES localize=true selected=cons.property}}
+</select>
+<select name="{{strcat namePrefix 'target'}}">
+	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.target}}
+</select>
 
 {{/if}}
 

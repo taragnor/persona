@@ -1,6 +1,6 @@
 import { DAMAGETYPES } from "../../config/damage-types.js";
 import { FinalizedCombatResult } from "./finalized-combat-result.js";
-import { ConsequenceProcessed } from "./persona-combat.js";
+import { ConsequenceProcessed, TargettingContextList } from "./persona-combat.js";
 import { DamageConsequence } from "../../config/consequence-types.js";
 import { OldDamageConsequence } from "../../config/consequence-types.js";
 import { DamageCalculation } from "./damage-calc.js";
@@ -23,7 +23,6 @@ import { PersonaCombat } from "./persona-combat.js";
 import { PersonaDB } from "../persona-db.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
-import {PersonaSettings} from "../../config/persona-settings.js";
 
 declare global {
 	interface SocketMessage {
@@ -127,14 +126,28 @@ export class CombatResult  {
 		if (!target) {return;}
 		switch  (cons.damageSubtype) {
 			case "set-to-percent":
-			case "set-to-const":
+			case "set-to-const": {
 				if (!effect) {return;}
+				const attacker = atkResult?.attacker ? PersonaDB.findToken(atkResult.attacker).actor : undefined;
+				const list : Partial<TargettingContextList> = {
+					"triggering-character": [target.accessor],
+					target: [target.accessor],
+					attacker: attacker ? [attacker.accessor] : undefined,
+					situation: atkResult?.situation,
+				};
+				const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
+				const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, list);
+				if (amount == undefined) {
+					PersonaError.softFail("Can't resolve Consequence Amount.", cons.amount);
+					return;
+				}
 				effect.otherEffects.push( {
 					type: "set-hp",
 					subtype: cons.damageSubtype,
-					value: cons.amount,
+					value: amount,
 				});
 				break;
+			}
 			default: {
 				const damageCalc = this.#getDamageCalc(cons, atkResult ?? undefined, effect);
 				if (!damageCalc) {break;}
