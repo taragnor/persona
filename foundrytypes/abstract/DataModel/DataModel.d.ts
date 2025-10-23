@@ -8,7 +8,7 @@ declare abstract class DataModelClass  {
 	 */
 	static migrateData(source: Record<string, any>): Record<string,any>;
 	updateSource(updateObject: Record<string, unknown>);
-	toJSON(): unknown;
+	toJSON(): object;
 	schema: SchemaData;
 }
 

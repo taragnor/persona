@@ -8,6 +8,31 @@ import { PersonaDB } from "../persona-db.js";
 
 export class ActorConverters {
 
+
+	static async copyPersonaToCompendium(actor: Shadow & {subtype :"persona"}) : Promise<void>  {
+		let existing : U<Shadow>;
+		const compId = actor.system.personaConversion.compendiumId;
+		if (compId == actor.id) {
+			throw new Error("This is already a compendium Persona!");
+		}
+		if (compId) {
+			const entry = PersonaDB.getActorById(compId);
+			if (entry && entry.isShadow()) {
+				existing = entry;
+			}
+		}
+		if (existing) {
+			await existing.update(actor.system);
+			return;
+		}
+		const personaData = {
+			system: (actor.system.toJSON() as Shadow["system"]),
+			name: `${actor.name} (Compendium)`,
+		};
+		const persona = await PersonaActor.create<Shadow>(personaData);
+		await actor.update( {"system.personaConversion.compendiumId": persona.id});
+	}
+
 	static async convertShadowPowers(actor: Shadow) : Promise<void> {
 		if (!actor.isShadow()) {return;}
 		const compPowers= PersonaDB.allPowersArr();
@@ -190,5 +215,6 @@ export class ActorConverters {
 		}
 		return lvl;
 	}
+
 }
 
