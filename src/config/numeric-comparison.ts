@@ -258,10 +258,6 @@ type DeprecatedComparison = {
 	variableId ?: string,
 }
 
-
-
-
-
 type ConstantComparison = {
 	comparisonTarget: "constant",
 	subtype: typeof CONSTANT_SUBTYPE[number],
@@ -269,8 +265,7 @@ type ConstantComparison = {
 	NumericConstant
 | ResistanceLevelConstant
 | RangeConstant
-)
-	;
+) ;
 
 type NumericConstant = {
 	comparisonTarget: "constant",
