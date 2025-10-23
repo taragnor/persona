@@ -669,6 +669,8 @@ static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
 			;
 			return `${target1} has Class: ${CharClasses}`;
 		}
+		case "status-to-be-inflicted":
+			return `Status ${this.translate(cond.status, STATUS_EFFECT_TRANSLATION_TABLE)} is about to be inflicted`;
 		default:
 			cond satisfies never;
 			return "";

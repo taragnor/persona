@@ -85,7 +85,7 @@ type UsePowerTrigger = UserSituation & {
 }
 
 type InflictStatusTrigger = UserSituation & {
-	trigger: "on-inflict-status",
+	trigger: "on-inflict-status" | "pre-inflict-status",
 	statusEffect: StatusEffectId,
 }
 

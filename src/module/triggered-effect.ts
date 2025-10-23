@@ -80,6 +80,7 @@ export class TriggeredEffect {
 					situation = newSit;
 					break;
 				}
+				case "pre-inflict-status":
 				case "on-inflict-status":
 				case "on-enter-region":
 				case "on-presence-check":

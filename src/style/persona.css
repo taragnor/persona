@@ -278,6 +278,7 @@ input.single-digit {
 
 input.flag-id {
 	width: 8em;
+	max-width: 8em;
 }
 
 input.flag-name {
@@ -1503,6 +1504,6 @@ img.greyed-out {
 }
 
 .flag-id {
-	width: 5em;
-	max-width: 5em;
+	width: 8em;
+	max-width: 8em;
 }

@@ -41,6 +41,7 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"damage-type-is",
 	"power-type-is",
 	"has-status",
+	"status-to-be-inflicted",
 	"struck-weakness",
 	"is-resistant-to",
 	"is-same-arcana",
@@ -93,7 +94,7 @@ type BooleanComparisionSpecifics =
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison | HasClassComparison;
+StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison | HasClassComparison | StatusInflictComparisonPC;
 ;
 
 type HasClassComparison = {
@@ -242,15 +243,14 @@ type StatusComparisonPC = {
 	conditionTarget : ConditionTarget,
 }
 
-// type TagComparisonPC = PowerTagComparison | CreatureTagComparison;
+type StatusInflictComparisonPC = {
+	boolComparisonTarget: "status-to-be-inflicted",
+	status : StatusEffectId | Record<StatusEffectId, boolean>,
+};
+
 type TagComparisonPC = GeneralTagComparison | DeprecatedTagComparisons;
 
 type DeprecatedTagComparisons=  CreatureTagComparison;
-
-// type PowerTagComparison = {
-// 	boolComparisonTarget: "has-tag",
-// 	powerTag : PowerTag | Record<PowerTag, boolean>,
-// }
 
 const TAG_COMPARISON_TYPE_LIST = [
 	"power",

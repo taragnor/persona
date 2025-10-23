@@ -10,6 +10,7 @@ export const COMBAT_TRIGGER_LIST = [
 	"on-combat-end",
 	"on-combat-end-global",
 	"on-inflict-status",
+	"pre-inflict-status",
 	"start-turn",
 	"end-turn",
 ] as const;

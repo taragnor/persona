@@ -482,6 +482,9 @@ function triggerComparison(condition: DeepReadonly<Triggered>, situation: Situat
 		case "on-inflict-status":
 			if (!("statusEffect" in situation)) {return false;}
 			return condition.status == situation.statusEffect;
+		case "pre-inflict-status":
+			if (!("statusEffect" in situation)) {return false;}
+			return true;
 		case "start-turn":
 			return true;
 		case "on-combat-end":
@@ -881,6 +884,12 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
 		case "has-class": {
 			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
 			return multiCheckContains(condition.classId, [target.class.id]);
+		}
+		case "status-to-be-inflicted": {
+			if ("statusEffect" in situation && typeof situation.statusEffect == "string") {
+			return multiCheckContains(condition.status, [situation.statusEffect]);
+			}
+			return false;
 		}
 		default :
 			condition satisfies never;

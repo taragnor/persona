@@ -1406,7 +1406,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
 				await this.setHP(0);
 			}
-			// id = await this.checkStatusEscalation(id);
 			const eff = this.effects.find( eff => eff.statuses.has(id));
 			if (!eff) {
 				const s = [id];
@@ -1416,6 +1415,21 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					statuses: s
 				};
 				if (await this.checkStatusNullificaton(id)) {return false;}
+				if (this.isValidCombatant()) {
+					const situation: Situation ={
+						triggeringCharacter: this.accessor,
+						triggeringUser: game.user,
+						user: this.accessor,
+						statusEffect: id,
+						target: this.accessor,
+					};
+					const ret = (await TriggeredEffect.onTrigger("pre-inflict-status", this, situation)).finalize();
+					await ret
+						.emptyCheck()
+						?.toMessage("Response to acquiring Status", this);
+					if (ret.hasCancelRequest()) {return false;}
+
+				}
 				const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
 				await newEffect.setPotency(potency ?? 0);
 				const adjustedDuration = this.getAdjustedDuration(duration, id);
