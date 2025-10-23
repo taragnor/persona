@@ -44,20 +44,24 @@ export class ActorConverters {
 		if (!actor.isPersona()) {
 			throw new PersonaError(`Can't copy to compendium, ${actor.name} isn't a valid Persona`);
 		}
-		let existing : U<Shadow>;
 		const compId = actor.system.personaConversion.compendiumId;
 		if (compId == actor.id) {
 			throw new Error("This is already a compendium Persona!");
 		}
 		if (compId) {
+			let existing : U<Shadow>;
 			const entry = PersonaDB.getActorById(compId);
 			if (entry && entry.isShadow()) {
 				existing = entry;
 			}
-		}
-		if (existing) {
-			await existing.update(actor.system);
-			return true;
+			if (existing) {
+				const data = {
+					system: actor.system.toJSON()
+				};
+				await existing.update(data);
+				console.log(`Entry copied to existing ${existing.name}`);
+				return true;
+			}
 		}
 		const personaData = {
 			system: (actor.system.toJSON() as Shadow["system"]),
@@ -65,6 +69,7 @@ export class ActorConverters {
 			name: `${actor.name} (Compendium)`,
 			img: actor.img,
 			prototypeToken: actor.prototypeToken,
+			ownership: actor.ownership,
 		} as const;
 		const persona = await PersonaActor.create<Shadow>(personaData);
 		if (!persona) {return false;}
