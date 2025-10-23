@@ -61,9 +61,13 @@ export class ActorConverters {
 		}
 		const personaData = {
 			system: (actor.system.toJSON() as Shadow["system"]),
+			type: "shadow",
 			name: `${actor.name} (Compendium)`,
-		};
+			img: actor.img,
+			prototypeToken: actor.prototypeToken,
+		} as const;
 		const persona = await PersonaActor.create<Shadow>(personaData);
+		if (!persona) {return false;}
 		await actor.update( {"system.personaConversion.compendiumId": persona.id});
 		return true;
 	}

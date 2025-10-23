@@ -20,7 +20,7 @@ namespace Foundry {
 			getRollData(): TotalConvert<T>;
 			sheet: ActorSheet<Actor<T, ItemType, AEType>>;
 			statuses: Set<string>;
-			prototypeToken: PrototypeToken<this>;
+			prototypeToken: PrototypeToken<typeof this>;
 			effects: Collection<AEType>;
 			statuses: Set<string>;
 			token: TokenDocument<this> | undefined;
