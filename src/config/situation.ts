@@ -11,6 +11,7 @@ import { StatusEffectId } from "./status-effects";
 import { CombatResult } from "../module/combat/combat-result.js";
 import { CombatTriggerTypes } from "./triggers.js";
 import { ValidAttackers } from "../module/combat/persona-combat.js";
+import {RealDamageType} from "./damage-types.js";
 
 export type UserSituation = {
 	user: UniversalActorAccessor<ValidAttackers>;
@@ -57,8 +58,19 @@ type NonGenericCombatTrigger =
 	| CombatGlobalTrigger
 	| UsePowerTrigger
 	| KillTargetTrigger
-	| CombatEndIndividual;
+	| CombatEndIndividual
+	| PreDamageTrigger;
 ;
+
+type PreDamageTrigger = UserSituation & {
+	trigger: "pre-take-damage",
+	triggeringCharacter: UniversalActorAccessor<ValidAttackers>, // the one who was damaged
+	attacker: UniversalActorAccessor<ValidAttackers>,
+	amt: number,
+	target: UniversalActorAccessor<ValidAttackers>, //same as triggering character
+	usedPower ?: UniversalItemAccessor<UsableAndCard>;
+	damageType: RealDamageType,
+}
 
 type KillTargetTrigger = UserSituation & {
 	trigger: "on-kill-target",

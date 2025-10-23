@@ -107,8 +107,18 @@ export type ExtraTurnEffect = {
 	activation: number,
 };
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence;
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | SetHPOtherEffect;
 ;
+
+type SetHPOtherEffect = {
+	type: "set-hp",
+	subtype: "set-to-percent",
+	value: number,
+} | {
+	type: "set-hp",
+	subtype: "set-to-const",
+	value: number,
+};
 
 type AlterVariableOtherEffect = AlterVariableConsequence & {contextList: TargettingContextList} & SourcedConsequence<NonDeprecatedConsequence>;
 
@@ -194,7 +204,12 @@ type NonGenericConsequences = UsePowerConsequence
 	| BasicNumberedConsequence
 	| ExtraAttackConsequence
 	| ExtraActionConsequence
+	| CancelRequestConsequence
 ;
+
+type CancelRequestConsequence = {
+	type: "cancel";
+}
 
 type ExtraActionConsequence = {
 	type: "extraTurn"
@@ -422,7 +437,7 @@ export type SimpleDamageCons = {
 }
 
 type ConstantDamageCons = {
-	damageSubtype: Extract<DamageSubtype, "constant" | "percentage" | "percentage-current">;
+	damageSubtype: Extract<DamageSubtype, "constant" | "percentage" | "percentage-current" | "set-to-const" | "set-to-percent">;
 	amount: number;
 }
 

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { PersonaVariables } from "../persona-variables.js";
-import { UsableAndCard } from "../item/persona-item.js";
-import { Consumable } from "../item/persona-item.js";
+import { Usable, UsableAndCard } from "../item/persona-item.js";
 import { PersonaSounds } from "../persona-sounds.js";
 import { Metaverse } from "../metaverse.js";
 import { TriggeredEffect } from "../triggered-effect.js";
@@ -189,6 +188,8 @@ export class FinalizedCombatResult {
 				case "alter-variable":
 				case "play-sound":
 				case "gain-levels":
+				case "cancel":
+				case "set-hp":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -325,7 +326,7 @@ export class FinalizedCombatResult {
 		await result.#apply();
 	}
 
-	async applyButton() {
+	async applyButtonTrigger() {
 		return this.#apply();
 	}
 
@@ -339,7 +340,14 @@ export class FinalizedCombatResult {
 		}
 	}
 
+	hasCancelRequest() : boolean {
+		return this.globalOtherEffects.some(
+			eff => eff.type == "cancel"
+		);
+	}
+
 	async #processAttacks() {
+		const power = this.power && !this.power.isSkillCard() ? this.power : undefined;
 		for (const {atkResult, changes} of this.attacks ) {
 			switch (atkResult.result) {
 				case "miss":
@@ -355,13 +363,16 @@ export class FinalizedCombatResult {
 			let token: PToken | undefined;
 			for (const change of changes) {
 				if (change.actor.token)
-					{token = PersonaDB.findToken(change.actor.token) as PToken;}
+				{
+					token = PersonaDB.findToken(change.actor.token) as PToken;
+				}
 				const priorHP = token ?  token.actor.hp : 0;
-				await this.applyChange(change);
+				await this._applyChange(change, power, atkResult.attacker);
 				if (!token) {continue;}
-				if (token.actor && !token.actor.isAlive() && priorHP > 0) {
+				if (token.actor
+					&& !token.actor.isAlive()
+					&& priorHP > 0) {
 					const attacker = PersonaDB.findToken(atkResult.attacker);
-					//need to do constant zero HP checks instead of just checking here
 					await this.#onDefeatOpponent(token, attacker);
 				}
 			}
@@ -372,7 +383,6 @@ export class FinalizedCombatResult {
 		const combat = game.combat as PersonaCombat | undefined;
 		if (!combat) {return;}
 		if (target.actor.isShadow()) {
-			// const shadow = combat?.combatants.find( c=> c.token.id == target.id) as Combatant<PersonaActor> | undefined;
 			const shadow = combat.findCombatant(target);
 			if (shadow) {
 				if (!shadow.defeated) {
@@ -403,11 +413,9 @@ export class FinalizedCombatResult {
 	}
 
 	async #applyCosts() {
+		const power = this.power && !this.power.isSkillCard() ? this.power : undefined;
 		for (const cost of this.costs) {
-			// if (this.hasFlag(actor, "half-hp-cost")) {
-			// 	cost.hpchangemult *= 0.666;
-			// }
-			await this.applyChange(cost);
+			await this._applyChange(cost, power);
 		}
 	}
 
@@ -441,12 +449,12 @@ export class FinalizedCombatResult {
 		}
 	}
 
-	async applyChange(change: ResolvedActorChange<ValidAttackers>) {
+	private async _applyChange(change: ResolvedActorChange<ValidAttackers>, power: U<Usable>, attacker ?: UniversalTokenAccessor<PToken>) {
 		const actor = PersonaDB.findActor(change.actor);
 		const token  = change.actor.token ? PersonaDB.findToken(change.actor.token) as PToken: undefined;
 		for (const dmg of change.damage)  {
 			try {
-				await this.applyDamage(actor, token, dmg);
+				await this._applyDamage(actor, token, dmg, power, attacker);
 			} catch (e) {
 				PersonaError.softFail(`Error applying Damage to ${actor.name}`, e);
 			}
@@ -465,7 +473,7 @@ export class FinalizedCombatResult {
 		};
 		for (const otherEffect of change.otherEffects) {
 			try {
-				await this.applyOtherEffect(actor, token, otherEffect, mutableState);
+				await this._applyOtherEffect(actor, token, otherEffect, mutableState);
 			} catch (e) {
 				PersonaError.softFail(`Error trying to execute ${otherEffect.type} on ${actor.name}`, e);
 			}
@@ -476,9 +484,26 @@ export class FinalizedCombatResult {
 		}
 	}
 
-	async applyDamage(actor: ValidAttackers, token: PToken | undefined, dmg: EvaluatedDamage) {
+	private async _applyDamage(actor: ValidAttackers, token: PToken | undefined, dmg: EvaluatedDamage, power: Usable | undefined, attackerToken ?: UniversalTokenAccessor<PToken>) {
 		if (Number.isNaN(dmg.hpChange)) {
 			PersonaError.softFail("NaN damage!");
+			return;
+		}
+		const attacker = attackerToken ? PersonaDB.findToken(attackerToken).actor.accessor : undefined;
+		const actorAcc= actor.accessor;
+		const situation : Situation =  {
+			user: actorAcc,
+			usedPower: power?.accessor,
+			triggeringCharacter: actorAcc,
+			target: actorAcc,
+			attacker,
+			amt: dmg.hpChange,
+			damageType: dmg.damageType,
+			triggeringUser: game.user,
+		};
+		const CR = (await TriggeredEffect.onTrigger("pre-take-damage", actor, situation)).finalize();
+		if (CR.hasCancelRequest()) {
+			await CR.emptyCheck()?.toMessage("Pre-Damage response", actor);
 			return;
 		}
 		if (dmg.hpChange == 0) {return;}
@@ -501,7 +526,7 @@ export class FinalizedCombatResult {
 		await actor.modifyHP(dmg.hpChange);
 	}
 
-	async applyOtherEffect(actor: ValidAttackers, token: PToken | undefined, otherEffect:OtherEffect, mutableState: {mpCost: number}): Promise<void> {
+	private async _applyOtherEffect(actor: ValidAttackers, token: PToken | undefined, otherEffect:OtherEffect, mutableState: {mpCost: number}): Promise<void> {
 		switch (otherEffect.type) {
 			case "expend-item":
 				if (otherEffect.itemAcc) {
@@ -577,11 +602,10 @@ export class FinalizedCombatResult {
 					case "percent-of-total":
 						mutableState.mpCost += actor.mmp * (otherEffect.amount / 100);
 						break;
-
 					default:
-						otherEffect.subtype satisfies never;
+						otherEffect satisfies never;
 						// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-						PersonaError.softFail(`Bad subtype for Alter MP effect : ${otherEffect.subtype}`);
+						PersonaError.softFail(`Bad subtype for Alter MP effect : ${otherEffect["subtype"]}`);
 				}
 				break;
 			case "combat-effect":
@@ -626,30 +650,25 @@ export class FinalizedCombatResult {
 				void PersonaSFX.onLevelUp();
 				break;
 			}
+			case "cancel":
+				break;
+			case "set-hp": {
+				let newhp : number;
+				switch (otherEffect.subtype) {
+					case "set-to-const":
+						newhp = otherEffect.value;
+						break;
+					case "set-to-percent":
+						newhp = otherEffect.value * actor.mhp;
+						break;
+				}
+				await actor.setHP(newhp);
+				break;
+			}
 			default:
 				otherEffect satisfies never;
 		}
 	}
-
-	// static addPending(res: FinalizedCombatResult): Promise<unknown> {
-	// 	const promise = new Promise(
-	// 		(resolve, reject) => {
-	// 			this.pendingPromises.set(res.id, resolve);
-	// 			setTimeout( () => {
-	// 				this.pendingPromises.delete(res.id);
-	// 				reject(new TimeoutError("Timeout"));
-	// 			}	, 16000);
-	// 		});
-	// 	return promise;
-
-	// }
-
-// 	static resolvePending( resId: CombatResult["id"]) {
-// 		const resolver = this.pendingPromises.get(resId);
-// 		if (!resolver) {throw new Error(`No Resolver for ${resId}`);}
-// 		resolver(undefined);
-// 		this.pendingPromises.delete(resId);
-// 	}
 
 	get power() : UsableAndCard | undefined {
 		for (const {atkResult} of this.attacks) {
@@ -683,8 +702,6 @@ export interface ResolvedActorChange<T extends PersonaActor> {
 	addStatus: StatusEffect[],
 	otherEffects: OtherEffect[]
 	removeStatus: Pick<StatusEffect, "id">[],
-	// attackResult: AttackResult | null,
-	// expendSlot: [number, number, number, number];
 }
 
 interface ResolvedAttackResult<T extends ValidAttackers = ValidAttackers> {
@@ -707,7 +724,7 @@ Hooks.on("renderChatMessageHTML", (msg: ChatMessage, htm: HTMLElement) => {
 			throw new PersonaError("Only GM can click this");
 		}
 		const res = FinalizedCombatResult.fromJSON(flag);
-		await res.applyButton();
+		await res.applyButtonTrigger();
 		await msg.unsetFlag("persona", "atkResult");
 	});
 });

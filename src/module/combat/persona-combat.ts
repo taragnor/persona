@@ -1891,7 +1891,7 @@ static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<Comb
 		const CombatRes = new CombatResult(atkResult);
 		try {
 			const x = this.ProcessConsequences(power, situation, cons, attacker, target, atkResult);
-			CombatRes.escalationMod += x.escalationMod;
+			// CombatRes.escalationMod += x.escalationMod;
 			const result = await this.getCombatResultFromConsequences(x.consequences, situation, attacker, target, atkResult);
 			CombatRes.merge(result);
 		}
@@ -2066,7 +2066,6 @@ static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<Comb
 			consequences= consequences.concat(this.processConsequence_simple(cons, consTargets));
 		}
 		return {
-			escalationMod:0,
 			consequences
 		};
 	}
@@ -2090,7 +2089,7 @@ static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<Comb
 				consequences = consequences.concat(newCons);
 			}
 		}
-		return {consequences, escalationMod} satisfies ConsequenceProcessed;
+		return {consequences} satisfies ConsequenceProcessed;
 	}
 
 	static processConsequence( power: U<ModifierContainer>, situation: Situation, cons: SourcedConsequence<NonDeprecatedConsequence>, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed['consequences'] {
@@ -2192,6 +2191,17 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 		case 'mult-stack':
 			dmgAmt =  cons.amount;
 			break;
+		case "set-to-const":
+		case "set-to-percent": {
+			const consArray   = targets
+			.map( target => {
+				return {
+					applyTo: target, 
+					cons: cons,
+				};
+			});
+			return consArray;
+		}
 		default:
 			cons satisfies never;
 	}
@@ -2307,6 +2317,8 @@ static processConsequence_simple( cons: SourcedConsequence<NonDeprecatedConseque
 				};
 			});
 		}
+		case "cancel":
+			return [{applyTo: 'global', cons}];
 		default:
 			cons satisfies never;
 			break;
@@ -3364,7 +3376,7 @@ export type ConsequenceProcessed = {
 		applyTo: 'global' | ValidAttackers,
 		cons: EnhancedSourcedConsequence<NonDeprecatedConsequence>,
 	}[],
-	escalationMod: number
+	// escalationMod ?: number
 }
 
 CombatHooks.init();

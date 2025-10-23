@@ -11,11 +11,11 @@ const DEPRECATED_CONSEQUENCE_TYPES = [
 	"dmg-mult", //deprecated
 	"hp-loss", //deprecated
 	"half-hp-cost", //deprecated
+	"absorb",
 ] as const;
 
 export const CONSQUENCELIST = [
 	"none",
-	"absorb",
 	"modifier", //singular-mod
 	"modifier-new", //multi-mod
 	"damage-new",
@@ -50,6 +50,7 @@ export const CONSQUENCELIST = [
 	"combat-effect",
 	"alter-fatigue-lvl",
 	"gain-levels",
+	"cancel",
 	 ...DEPRECATED_CONSEQUENCE_TYPES,
 ] as const;
 
@@ -196,6 +197,8 @@ export const DAMAGE_SUBTYPE_LIST = [
 	"mult-stack",
 	"percentage",
 	"percentage-current",
+	"set-to-const",
+	"set-to-percent",
 ] as const;
 
 export type DamageSubtype = typeof DAMAGE_SUBTYPE_LIST[number];

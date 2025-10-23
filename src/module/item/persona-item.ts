@@ -857,12 +857,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					list.pushUnique(damageType);
 			}
 		}
-		// } else {
-		// 	if (!list.includes(this.system.dmg_type as typeof list[number]) && POWER_TAGS_LIST.includes(this.system.dmg_type as typeof POWER_TAGS_LIST[number])) {
-		// 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		// 		list.pushUnique(this.system.dmg_type as any);
-		// 	}
-		// }
 		if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
 			list.pushUnique('ailment');
 		}

@@ -3,6 +3,7 @@ import { HTMLTools } from "../module/utility/HTMLTools.js";
 export const COMBAT_TRIGGER_LIST = [
 	"on-damage",
 	"on-kill-target",
+	"pre-take-damage",
 	"on-combat-start",
 	"on-combat-start-global",
 	"on-use-power",
@@ -34,9 +35,6 @@ export const TRIGGER_LIST = [
 ] as const;
 
 export const TRIGGERS = HTMLTools.createLocalizationObject(TRIGGER_LIST, "persona.triggers");
-// export const TRIGGERS = Object.fromEntries(
-// 	TRIGGER_LIST.map( x=> [x, `persona.triggers.${x}`])
-// );
 
 export type Trigger = typeof TRIGGER_LIST[number];
 

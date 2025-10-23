@@ -141,6 +141,10 @@ export class DamageCalculation {
 				amt = res ?? 1;
 				break;
 			}
+			case "set-to-const":
+			case "set-to-percent":
+				PersonaError.softFail(`Attempting to assign a ${cons.damageSubtype} to a damage calculation`);
+				return this;
 			default:
 				cons satisfies never;
 				return this;

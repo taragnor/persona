@@ -89,6 +89,7 @@ export class TriggeredEffect {
 				case "on-roll":
 				case "on-combat-end":
 				case "on-open-door":
+				case "pre-take-damage":
 					PersonaError.softFail(`Must proivide a situation with this trigger:  ${trigger}`);
 					return result;
 

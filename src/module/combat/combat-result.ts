@@ -23,6 +23,7 @@ import { PersonaCombat } from "./persona-combat.js";
 import { PersonaDB } from "../persona-db.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
+import {PersonaSettings} from "../../config/persona-settings.js";
 
 declare global {
 	interface SocketMessage {
@@ -32,12 +33,6 @@ declare global {
 }
 
 export class CombatResult  {
-	// _finalized : boolean = false;
-	// static pendingPromises: Map< CombatResult["id"], Function> = new Map();
-	// tokenFlags: {
-	// 	actor: UniversalActorAccessor<PersonaActor>,
-	// 		effects: OtherEffect[]
-	// }[] = [] ;
 	static lastId = 0;
 	id : number;
 	attacks: Map<AttackResult, ActorChange<ValidAttackers>[]> = new Map();
@@ -127,16 +122,36 @@ export class CombatResult  {
 		}
 		return undefined;
 	}
+
+	private addEffect_damage(cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type : "damage-new"}, effect: ActorChange<ValidAttackers>, target: ValidAttackers, atkResult: U<AttackResult> | null) {
+		if (!target) {return;}
+		switch  (cons.damageSubtype) {
+			case "set-to-percent":
+			case "set-to-const":
+				if (!effect) {return;}
+				effect.otherEffects.push( {
+					type: "set-hp",
+					subtype: cons.damageSubtype,
+					value: cons.amount,
+				});
+				break;
+			default: {
+				const damageCalc = this.#getDamageCalc(cons, atkResult ?? undefined, effect);
+				if (!damageCalc) {break;}
+				damageCalc.addConsequence(cons, target);
+				break;
+			}
+		}
+	}
+
 	async addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
 		const effect = this.#getEffect(target);
 		switch (cons.type) {
 			case "none":
 				break;
 			case "damage-new": {
-				if (!target) {break;}
-				const damageCalc = this.#getDamageCalc(cons, atkResult ?? undefined, effect);
-				if (!damageCalc) {break;}
-				damageCalc.addConsequence(cons, target);
+				if (!effect || !target) {break;}
+				this.addEffect_damage(cons, effect, target, atkResult);
 				break;
 			}
 			case "addStatus": {
@@ -380,6 +395,9 @@ export class CombatResult  {
 			case "play-sound":
 				this.globalOtherEffects.push(cons);
 				break;
+			case "cancel":
+				this.globalOtherEffects.push(cons);
+				break;
 			default: {
 				cons satisfies never;
 				throw new Error("Should be unreachable");
@@ -507,7 +525,11 @@ export class CombatResult  {
 	get power() : UsableAndCard | undefined {
 		for (const atkResult of this.attacks.keys()) {
 			if (atkResult.power) {
-				return PersonaDB.findItem(atkResult.power);
+				try {
+					return PersonaDB.findItem(atkResult.power);
+				} catch {
+					continue;
+				}
 			}
 		}
 		return undefined;
@@ -518,13 +540,9 @@ export class CombatResult  {
 export interface ActorChange<T extends PersonaActor> {
 	actor: UniversalActorAccessor<T>;
 	damage: Partial<Record<NonNullable<DamageCalculation["damageType"]>, DamageCalculation>>;
-	// hpchange: number;
-	// damageType: RealDamageType;
-	// hpchangemult: number;
 	addStatus: StatusEffect[],
 	otherEffects: OtherEffect[]
 	removeStatus: Pick<StatusEffect, "id">[],
-	// expendSlot: [number, number, number, number];
 }
 
 
@@ -537,14 +555,12 @@ export type AttackResult = {
 	hitResistance?: boolean,
 	validAtkModifiers?: string[],
 	validDefModifiers?: string[],
-	// validDefModifiers?: [number, string][],
 	target: UniversalTokenAccessor<PToken>,
 	attacker: UniversalTokenAccessor<PToken>,
 	power: UniversalItemAccessor<UsableAndCard>,
 	situation: Situation & RollSituation,
 	roll: RollBundle | null ,
 	critBoost: number,
-	// printableModifiers: string [],
 	critPrintable?: string []
 };
 
@@ -567,7 +583,7 @@ function resolveStatusDurationAnchor (anchor: (Consequence & {type : "addStatus"
 			if (userAcc)
 				{return userAcc;}
 			PersonaError.softFail("Can't resolve user for status Duration anchor");
-			return null; 
+			return null;
 		}
 		case "attacker":
 			accessor = atkResult.attacker;

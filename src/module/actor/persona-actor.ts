@@ -2008,12 +2008,30 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async _promotePowers(this: ValidAttackers) {
+		await this._promotePowers_learnedToMain();
+		await this._promotePowers_sideboardToMain();
+		await this._promotePowers_learnedToSideboard();
+	}
+
+	get hasPowerSideboard() : boolean  {
+		if (!this.isPC()) {return false;}
+		return this.class.system.canUsePowerSideboard ?? false;
+	}
+
+	async _promotePowers_sideboardToMain(this: ValidAttackers) {
+		if (!this.hasPowerSideboard) { return false;}
 		while (this.hasSpaceToAddPowerToMain()) {
 			const sideboard = this.sideboardPowers.at(0);
 			if (sideboard && this.isPC()) {
 				await this.retrievePowerFromSideboard(sideboard.id);
 				continue;
 			}
+			break;
+		}
+	}
+
+	async _promotePowers_learnedToMain(this: ValidAttackers) {
+		while (this.hasSpaceToAddPowerToMain()) {
 			const bufferPower = this.learnedPowersBuffer.at(0);
 			if (bufferPower) {
 				await this.moveFromBufferToMain(bufferPower);
@@ -2021,6 +2039,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			}
 			break;
 		}
+	}
+
+	async _promotePowers_learnedToSideboard(this: ValidAttackers) {
+		if (!this.hasPowerSideboard) { return false;}
 		while (this.hasSpaceToAddToSideboard()) {
 			const bufferPower = this.learnedPowersBuffer.at(0);
 			if (bufferPower && !this.isShadow()) {
@@ -2029,6 +2051,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			}
 			break;
 		}
+
 	}
 
 	async moveFromBufferToSideboard(this: PC | NPCAlly, power : Power) {
@@ -2081,8 +2104,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async tryToAddToLearnedPowersBuffer(this: ValidAttackers, power: Power, logChanges: boolean) : Promise<boolean> {
 
-		// const totalPowers = this.mainPowers.length + this.sideboardPowers.length;
-		// if (totalPowers >= this.maxPowers) {
 		const buffer= this.system.combat.learnedPowersBuffer;
 		buffer.push(power.id);
 		await this.update( {"system.combat.learnedPowersBuffer": buffer});
@@ -2159,6 +2180,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const result = await this.deletefromLearnBuffer(id)
 			|| await this.deleteFromMainPowers(id)
 			|| (!this.isShadow() ? await this.deleteFromSideboard(id) : false) ;
+		await this._promotePowers();
 		return result;
 	}
 
@@ -2186,7 +2208,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (powers.includes(id)) {
 			powers = powers.filter( x=> x != id);
 			await this.update( {"system.combat.powers": powers});
-			await this.checkMainPowerEmptySpace();
+			// await this.checkMainPowerEmptySpace();
 			if (this.hasPlayerOwner) {
 				await Logger.sendToChat(`${this.name} deleted power ${power.name}` , this);
 			}
@@ -2202,7 +2224,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			sideboard = sideboard.filter( x=> x != id);
 			await this.update( {"system.combat.powers_sideboard": sideboard});
 			await Logger.sendToChat(`${this.name} deleted sideboard power ${power.name}` , this);
-			await this.checkSideboardEmptySpace();
+			// await this.checkSideboardEmptySpace();
 			return true;
 		}
 		return false;
@@ -2224,33 +2246,33 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-async checkMainPowerEmptySpace(this: ValidAttackers) {
-	const powers = this.system.combat.powers;
-	while (powers.length < this.persona().maxMainPowers) {
-		if (!this.isShadow()) {
-			const sideboard = this.system.combat.powers_sideboard;
-			const pow1 = sideboard.shift();
-			if (pow1) {
-				powers.push(pow1);
-				await this.update( {"system.combat.powers": powers});
-				await this.update( {"system.combat.powers_sideboard": sideboard});
-				await this.checkSideboardEmptySpace();
-				continue;
-			}
-		}
-		if (this.learnedPowersBuffer.length > 0) {
-			const buffer = this.system.combat.learnedPowersBuffer;
-			const bufferItem = buffer.shift();
-			if (bufferItem) {
-				powers.push(bufferItem);
-				await this.update( {"system.combat.powers": powers});
-				await this.update( {"system.combat.learnedPowersBuffer" : buffer});
-				continue;
-			}
-		}
-		return;
-	}
-}
+// async checkMainPowerEmptySpace(this: ValidAttackers) {
+// 	const powers = this.system.combat.powers;
+// 	while (powers.length < this.persona().maxMainPowers) {
+// 		if (!this.isShadow()) {
+// 			const sideboard = this.system.combat.powers_sideboard;
+// 			const pow1 = sideboard.shift();
+// 			if (pow1) {
+// 				powers.push(pow1);
+// 				await this.update( {"system.combat.powers": powers});
+// 				await this.update( {"system.combat.powers_sideboard": sideboard});
+// 				await this.checkSideboardEmptySpace();
+// 				continue;
+// 			}
+// 		}
+// 		if (this.learnedPowersBuffer.length > 0) {
+// 			const buffer = this.system.combat.learnedPowersBuffer;
+// 			const bufferItem = buffer.shift();
+// 			if (bufferItem) {
+// 				powers.push(bufferItem);
+// 				await this.update( {"system.combat.powers": powers});
+// 				await this.update( {"system.combat.learnedPowersBuffer" : buffer});
+// 				continue;
+// 			}
+// 		}
+// 		return;
+// 	}
+// }
 
 async movePowerToSideboard(this: PC, powerId: Power["id"]) {
 	if (!this.class.system.canUsePowerSideboard) {

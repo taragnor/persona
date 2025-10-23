@@ -359,11 +359,13 @@
 	<select name="{{strcat namePrefix 'damageSubtype'}}">
 		{{selectOptions POWERSTUFF.DAMAGE_SUBTYPES localize=true selected=cons.damageSubtype}}
 	</select>
+	{{#if (neq-m cons.damageSubtype "set-to-const" "set-to-percent")}}
 	<select name="{{strcat namePrefix 'damageType'}}">
 		{{selectOptions POWERSTUFF.DAMAGETYPESPLUS localize=true selected=cons.damageType}}
 	</select>
+	{{/if}}
 
-	{{#if (eqAny cons.damageSubtype "constant" "multiplier" "percentage" "mult-stack" "percentage-current")}}
+	{{#if (eqAny cons.damageSubtype "constant" "multiplier" "percentage" "mult-stack" "percentage-current" "set-to-const" "set-to-percent")}}
 	{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amount.') cons=cons.amount POWERSTUFF=POWERSTUFF owner=owner}}
 	{{#if false}}
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">

@@ -862,72 +862,74 @@ static printConsequence (cons: NonDeprecatedConsequence) : string {
 			const grantedTalent = PersonaDB.getItemById(cons.id) as Talent;
 			return `Add Talent to list ${grantedTalent?.displayedName?.toString() ?? "ERROR"}`;
 
-			}
-			case "other-effect":
-				return this.#printOtherEffect(cons);
-			case "set-flag":
-				return `${cons.flagState ? "set" : "clear"} Flag ${cons.flagId}`;
-			case "inspiration-cost":
-				return `Inpsiration Cost : ${cons.amount}`;
-			case "display-msg":
-				return `Display Msg: ${cons.msg?.trim()}`;
-			case "scan":
-				return `Scan Target Level ${cons.amount}`;
-			case "social-card-action":
-				return this.#printSocialCardAction(cons);
-			case "alter-energy":
-				return `Energy ${cons.amount}`;
-			case "dungeon-action":
-				return this.#printDungeonAction(cons);
-			case "raise-resistance": {
-				const resistType = this.translate(cons.resistType, DAMAGETYPES);
-				const resistLevel = this.translate(cons.resistanceLevel, RESIST_STRENGTHS);;
-				return `Raise ${resistType} Resistance ${resistLevel}` ; }
-			case "lower-resistance" : {
-				const resistType =this.translate(cons.resistType, DAMAGETYPES);
-				const resistLevel = this.translate(cons.resistanceLevel, RESIST_STRENGTHS);;
-				return `Lower ${resistType} Resistance ${resistLevel}` ;
-			} case "use-power": {
-				const power = PersonaDB.getPower(cons.powerId);
-				return `Use Power ${power?.name}`;
-			}
-			case "alter-mp":
-				return this.#printMPAlter(cons);
-			case "modifier": {
-				const modified = this.translate(cons.modifiedField, MODIFIERS_TABLE);
-				const amount = this.printConsequenceAmount(cons.amount);
-				return `${modified} ${amount}`;
-			}
-			case "teach-power": {
-				const power = PersonaDB.getPower(cons.id);
-				return `Teach Power ${power?.displayedName?.toString() ?? "ERROR"}`;
-			}
-			case "raise-status-resistance":
-				return `${this.translate(cons.resistanceLevel, RESIST_STRENGTHS)} status ${this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE)}`;
-			case "add-creature-tag": {
-				const tag = this.translate(cons.creatureTag, CREATURE_TAGS);
-				return `Add ${tag} tag`;
-			}
-			case "combat-effect":
-				return this.#printCombatEffect(cons);
-			case "alter-fatigue-lvl":
-				return `Alter Fatigue Level ${cons.amount}`;
-			case "alter-variable":
-				if (cons.operator != "set-range") {
-				return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${this.printConsequenceAmount(cons.value)}`; } else {
-				return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${cons.min} - ${cons.max}`; }
-			case "perma-buff":
-				return `Add Permabuff ${cons.buffType} :${cons.value}`;
-			case "play-sound":
-				return `Play Sound: ${cons.soundSrc} (${cons.volume})`;
-			case "gain-levels": {
-				const gainTarget =this.translate(cons.gainTarget, LEVEL_GAIN_TARGETS);
-				return `Gain ${cons.value} Levels for ${gainTarget}`;
-			}
-			default:
-				cons satisfies never;
-				return "ERROR";
 		}
+		case "other-effect":
+			return this.#printOtherEffect(cons);
+		case "set-flag":
+			return `${cons.flagState ? "set" : "clear"} Flag ${cons.flagId}`;
+		case "inspiration-cost":
+			return `Inpsiration Cost : ${cons.amount}`;
+		case "display-msg":
+			return `Display Msg: ${cons.msg?.trim()}`;
+		case "scan":
+			return `Scan Target Level ${cons.amount}`;
+		case "social-card-action":
+			return this.#printSocialCardAction(cons);
+		case "alter-energy":
+			return `Energy ${cons.amount}`;
+		case "dungeon-action":
+			return this.#printDungeonAction(cons);
+		case "raise-resistance": {
+			const resistType = this.translate(cons.resistType, DAMAGETYPES);
+			const resistLevel = this.translate(cons.resistanceLevel, RESIST_STRENGTHS);;
+			return `Raise ${resistType} Resistance ${resistLevel}` ; }
+		case "lower-resistance" : {
+			const resistType =this.translate(cons.resistType, DAMAGETYPES);
+			const resistLevel = this.translate(cons.resistanceLevel, RESIST_STRENGTHS);;
+			return `Lower ${resistType} Resistance ${resistLevel}` ;
+		} case "use-power": {
+			const power = PersonaDB.getPower(cons.powerId);
+			return `Use Power ${power?.name}`;
+		}
+		case "alter-mp":
+			return this.#printMPAlter(cons);
+		case "modifier": {
+			const modified = this.translate(cons.modifiedField, MODIFIERS_TABLE);
+			const amount = this.printConsequenceAmount(cons.amount);
+			return `${modified} ${amount}`;
+		}
+		case "teach-power": {
+			const power = PersonaDB.getPower(cons.id);
+			return `Teach Power ${power?.displayedName?.toString() ?? "ERROR"}`;
+		}
+		case "raise-status-resistance":
+			return `${this.translate(cons.resistanceLevel, RESIST_STRENGTHS)} status ${this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE)}`;
+		case "add-creature-tag": {
+			const tag = this.translate(cons.creatureTag, CREATURE_TAGS);
+			return `Add ${tag} tag`;
+		}
+		case "combat-effect":
+			return this.#printCombatEffect(cons);
+		case "alter-fatigue-lvl":
+			return `Alter Fatigue Level ${cons.amount}`;
+		case "alter-variable":
+			if (cons.operator != "set-range") {
+				return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${this.printConsequenceAmount(cons.value)}`; } else {
+					return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${cons.min} - ${cons.max}`; }
+		case "perma-buff":
+			return `Add Permabuff ${cons.buffType} :${cons.value}`;
+		case "play-sound":
+			return `Play Sound: ${cons.soundSrc} (${cons.volume})`;
+		case "gain-levels": {
+			const gainTarget =this.translate(cons.gainTarget, LEVEL_GAIN_TARGETS);
+			return `Gain ${cons.value} Levels for ${gainTarget}`;
+		}
+		case "cancel":
+			return `Cancel Triggering Event`;
+		default:
+			cons satisfies never;
+			return "ERROR";
+	}
 
 	}
 
@@ -1106,6 +1108,10 @@ static printConsAmountOperation( consAmt: ConsequenceAmountV2 & {type: "operatio
 				return `Damage Multiplier (stacking) ${cons.amount}`;
 			case "percentage-current":
 				return `${cons.amount}% of target HP`;
+			case "set-to-const":
+				return `Set HP to ${cons.amount}`;
+			case "set-to-percent":
+				return `Set HP to ${cons.amount}%`;
 			default:
 				cons satisfies never;
 				return "ERROR";

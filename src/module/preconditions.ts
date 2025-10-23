@@ -497,6 +497,7 @@ function triggerComparison(condition: DeepReadonly<Triggered>, situation: Situat
 		case "on-metaverse-turn":
 		case "on-open-door":
 		case "on-active-scene-change":
+		case "pre-take-damage":
 		case "on-combat-start-global":
 			return true;
 		case "on-clock-change":

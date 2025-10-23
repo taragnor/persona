@@ -219,6 +219,8 @@
 	"persona.damage-subtype.mult-stack" : "Multiply (full stacking)",
 	"persona.damage-subtype.percentage" : "% of Total HP (1= 1%)",
 	"persona.damage-subtype.percentage-current" : "% of Current HP (1 = 1%, min 1)",
+	"persona.damage-subtype.set-to-const" : "Set HP to constant",
+	"persona.damage-subtype.set-to-percent" : "Set to Percentage of Max HP (1 = 1%, min 1)",
 
 
 	"persona.status.duration.permanent": "Permanent",
@@ -603,7 +605,8 @@
 	"persona.effecttypes.combat-effect": "Combat Effect",
 	"persona.effecttypes.alter-fatigue-lvl": "Alter Rested Level (negative = fatigue)",
 	"persona.effecttypes.gain-levels": "Gain Levels",
-	"persona.effecttypes.escalationManipulation": "Change Escalation",
+	"persona.effecttypes.cancel": "Request Cancel of Triggering Event",
+	"persona.effecttypes.escalationManipulation": " (Deprecated) Change Escalation",
 	"persona.effecttypes.extraAttack": "Extra Attack",
 	"persona.effecttypes.modifier-new": "Apply Modifier (multi)",
 	"persona.effecttypes.modifier": "Apply Modifier (singular)",
@@ -858,6 +861,7 @@
 	"persona.triggers.on-metaverse-turn": "On Metaverse Turn",
 	"persona.triggers.on-roll": "On Roll",
 	"persona.triggers.on-active-scene-change": "On Active Scene Change",
+	"persona.triggers.pre-take-damage": "Pre-Take-Damage",
 	"persona.triggers.start-turn": "Start Turn",
 	"persona.triggers.end-turn": "End Turn",
 	"persona.triggers.on-open-door": "A door opens",
