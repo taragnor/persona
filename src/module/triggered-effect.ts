@@ -105,10 +105,13 @@ export class TriggeredEffect {
 			return result;
 		}
 		const situationCopy = { ...situation, trigger } as Situation; //copy the object so it doesn't permanently change it
-		let triggers : SourcedConditionalEffect[] = PersonaDB.getGlobalModifiers().flatMap( x=> x.getEffects(null));
+		const triggers : SourcedConditionalEffect[] = PersonaDB.getGlobalModifiers().flatMap( x=> x
+			.getTriggeredEffects(null)
+			.filter(x=> x.conditions.some( x=> x.type == "on-trigger" && x.trigger == trigger))
+		);
 		if (actor) {
 			// triggers = actor.triggers;
-			triggers = actor.triggersOn(trigger);
+			triggers.push(...actor.triggersOn(trigger));
 		}
 		if (game.combat) {
 			const roomEffects = (game.combat as PersonaCombat)?.getRoomEffects() ?? [];
@@ -123,16 +126,13 @@ export class TriggeredEffect {
 			const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
 			triggers.push(...PCTriggers);
 		}
-		triggers = removeDuplicates(triggers
+		const filteredEffects = removeDuplicates(triggers
 			.filter ( x=> x.conditionalType == "triggered")
 		);
-		for (const eff of triggers) {
+		for (const eff of filteredEffects) {
 			try {
 				const validCons = getActiveConsequences(eff, situationCopy);
-				// if (!testPreconditions(eff.conditions, situationCopy, trig)) { continue; }
-				// const res = await PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null);
 				const res = await PersonaCombat.consequencesToResult(validCons ,undefined, situationCopy, actor, actor, null);
-				// const res = await PersonaCombat.consequencesToResult(eff.consequences ,trig, situationCopy, actor, actor, null);
 				result.merge(res);
 			} catch (e) {
 				PersonaError.softFail(`Problem with triggered effects ${eff.source?.name ?? "Unknown source"} running on actor ${actor?.name ?? "none"}`, e);

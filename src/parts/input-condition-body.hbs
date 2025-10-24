@@ -58,6 +58,11 @@
 	</select>
 	{{/if}}
 
+	{{#if (eqAny cond.trigger "on-inflict-status" "pre-inflict-status")}}
+	{{multicheck (strcat namePrefix 'status') POWERSTUFF.STATUSEFFECTS checked=cond.status localize=true}}
+	{{/if}}
+
+
 	{{/if}}
 
 

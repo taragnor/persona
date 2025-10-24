@@ -2117,8 +2117,11 @@ getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETyp
 }
 
 
-getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, proxyItem: ItemModifierContainer = this) : readonly SourcedConditionalEffect[] {
-	return this.#accessEffectsCache('triggeredEffects', sourceActor, () => this.getEffects(sourceActor, [], proxyItem).filter( x => x.conditionalType === 'triggered'));
+getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, proxyItem: ItemModifierContainer = this, triggerType ?: Trigger) : readonly SourcedConditionalEffect[] {
+	return this.#accessEffectsCache('triggeredEffects', sourceActor, () => this.getEffects(sourceActor, [], proxyItem)
+		.filter( x => x.conditionalType === 'triggered')
+		.filter( x=> triggerType != undefined ? x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == triggerType) : true)
+	);
 }
 
 hasTriggeredEffects(this: ItemModifierContainer, actor: PersonaActor) : boolean {

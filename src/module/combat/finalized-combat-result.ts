@@ -25,6 +25,7 @@ import { ValidSound } from "../persona-sounds.js";
 import { PersonaDB } from "../persona-db.js";
 import { ActorChange } from "./combat-result.js";
 import {SocketsNotConnectedError, TimeoutError, VerificationFailedError} from "../utility/socket-manager.js";
+import {RealDamageType} from "../../config/damage-types.js";
 
 
 
@@ -460,7 +461,31 @@ export class FinalizedCombatResult {
 			}
 		}
 		for (const status of change.addStatus) {
-			if (await actor.addStatus(status) && token) {
+			const statusAdd= await actor.addStatus(status);
+			if (statusAdd && attacker) {
+				const attackerActor = PersonaDB.findToken(attacker).actor;
+				if (attackerActor) {
+					const situation : Situation= {
+						target: actor.accessor,
+						user: actor.accessor,
+						triggeringCharacter: actor.accessor,
+						attacker: attackerActor.accessor,
+						trigger : "on-inflict-status",
+						usedPower: power?.accessor,
+						statusEffect: status.id,
+						triggeringUser: game.user,
+					};
+					debugger;
+					const res = await TriggeredEffect.onTrigger("on-inflict-status", actor, situation);
+					const msg = await res
+						.emptyCheck()
+						?.toMessage("On Status Response", actor);
+					if (msg) {
+						Debug(res);
+					}
+				}
+			}
+			if (statusAdd && token) {
 				Hooks.callAll("onAddStatus", token, status);
 			}
 		}
@@ -754,3 +779,10 @@ Hooks.on("updateActor", async (updatedActor : PersonaActor, changes) => {
 // 	return nums[index];
 // }
 
+
+declare global {
+	interface HOOKS {
+		'onAddStatus': (token: PToken, status: StatusEffect) => unknown;
+		'onTakeDamage': (token: PToken, amount: number, damageType: RealDamageType)=> unknown;
+	}
+}

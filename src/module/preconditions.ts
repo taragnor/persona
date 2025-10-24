@@ -480,11 +480,11 @@ function triggerComparison(condition: DeepReadonly<Triggered>, situation: Situat
 			if (!("tarot" in situation)) {return false;}
 			return condition.tarot == situation.tarot;
 		case "on-inflict-status":
-			if (!("statusEffect" in situation)) {return false;}
-			return condition.status == situation.statusEffect;
+			if (!("statusEffect" in situation) || situation.statusEffect == undefined) {return false;}
+			return multiCheckContains(condition.status, [situation.statusEffect]);
 		case "pre-inflict-status":
-			if (!("statusEffect" in situation)) {return false;}
-			return true;
+			if (!("statusEffect" in situation) || situation.statusEffect == undefined) {return false;}
+			return multiCheckContains(condition.status, [situation.statusEffect]);
 		case "start-turn":
 			return true;
 		case "on-combat-end":

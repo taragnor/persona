@@ -84,10 +84,31 @@ type UsePowerTrigger = UserSituation & {
 	combatResult: CombatResult,
 }
 
-type InflictStatusTrigger = UserSituation & {
-	trigger: "on-inflict-status" | "pre-inflict-status",
+type InflictStatusTrigger_Generic = {
+	// trigger: "on-inflict-status" | "pre-inflict-status",
 	statusEffect: StatusEffectId,
-}
+	usedPower : U<UniversalItemAccessor<UsableAndCard>>;
+	/**  The one recieving the status */
+	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,
+	/**  The one recieving the status */
+	target: UniversalActorAccessor<ValidAttackers>,
+
+};
+
+type OnInflictStatusTrigger = UserSituation & InflictStatusTrigger_Generic & {
+	trigger: "on-inflict-status",
+	/** The one who inflicted the status */
+	attacker: UniversalActorAccessor<ValidAttackers>,
+};
+
+type OnPreInflictStatusTrigger =  UserSituation & InflictStatusTrigger_Generic & {
+	trigger :"pre-inflict-status",
+};
+
+type InflictStatusTrigger = 
+	OnInflictStatusTrigger
+	| OnPreInflictStatusTrigger;
+
 
 type CombatGlobalTrigger = CombatEndGlobal | CombatStartGlobal;
 

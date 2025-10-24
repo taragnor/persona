@@ -67,8 +67,8 @@ type NonSimpleTrigger =
 ;
 
 type onInflictStatus = {
-	trigger: "on-inflict-status",
-	status : StatusEffectId | Record<StatusEffectId, boolean>,
+	trigger: "on-inflict-status" | "pre-inflict-status",
+	status : MultiCheckOrSingle<StatusEffectId>,
 }
 
 type onTarotPerk = {

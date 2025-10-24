@@ -60,8 +60,6 @@ declare global {
 declare global {
 	interface HOOKS {
 		'onUsePower': (power: UsableAndCard, user: PToken, defender: PToken) => unknown;
-		'onTakeDamage': (token: PToken, amount: number, damageType: DamageType)=> unknown;
-		'onAddStatus': (token: PToken, status: StatusEffect) => unknown;
 	}
 }
 
@@ -2597,7 +2595,7 @@ static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[])
 		const attackerActor = attacker.actor;
 		for (const target of selected) {
 			const targetActor = target.actor;
-			const engagingTarget  = combat.isInMeleeWith(attacker, target);
+			const engagingTarget  = combat.isInMeleeWith(attacker, target) ?? false;
 			if (attacker.id == target.id) {continue;}
 			if (attackerActor.hasStatus('challenged') && !engagingTarget) {
 				throw new TargettingError("Can't target non-engaged when challenged");
