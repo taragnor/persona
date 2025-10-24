@@ -1423,10 +1423,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (!stateData) {
 				throw new Error(`Couldn't find status effect Id: ${id}`);
 			}
-			const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
-			if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
-				await this.setHP(0);
-			}
 			const eff = this.effects.find( eff => eff.statuses.has(id));
 			if (!eff) {
 				const s = [id];
@@ -1445,11 +1441,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						target: this.accessor,
 					};
 					const ret = (await TriggeredEffect.onTrigger("pre-inflict-status", this, situation)).finalize();
+
 					await ret
 						.emptyCheck()
 						?.toMessage("Response to acquiring Status", this);
 					if (ret.hasCancelRequest()) {return false;}
-
+					const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
+					if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
+						await this.setHP(0);
+					}
 				}
 				const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
 				await newEffect.setPotency(potency ?? 0);

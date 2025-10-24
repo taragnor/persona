@@ -475,7 +475,6 @@ export class FinalizedCombatResult {
 						statusEffect: status.id,
 						triggeringUser: game.user,
 					};
-					debugger;
 					const res = await TriggeredEffect.onTrigger("on-inflict-status", actor, situation);
 					const msg = await res
 						.emptyCheck()
