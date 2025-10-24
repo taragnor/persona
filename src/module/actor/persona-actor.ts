@@ -3200,12 +3200,16 @@ async awardPersonalXP(this: ValidAttackers, amt: number, allowMult= true) : Prom
 	}
 	const currentXP = this.system.personalXP;
 	const newTotal = currentXP + amt;
-	await this.update({"system.personalXP": newTotal});
+	if (!PersonaSettings.freezeXPGain()) {
+		await this.update({"system.personalXP": newTotal});
+	}
 	const levelsGained = LevelUpCalculator.levelsGained(this, newTotal);
 	if (levelsGained > 0) {
 		const currLvl = this.system.personaleLevel;
 		const newlvl = currLvl + levelsGained;
-		await this.update({"system.personaleLevel" : newlvl});
+		if (!PersonaSettings.freezeXPGain()) {
+			await this.update({"system.personaleLevel" : newlvl});
+		}
 	}
 	return {
 		name: this.name,
@@ -3225,11 +3229,13 @@ async gainLevel(this: ValidAttackers, amt: number) : Promise<void> {
 	const currLevel = this.system.personaleLevel;
 	const newLevel = amt + currLevel;
 	const neededXP = LevelUpCalculator.minXPForEffectiveLevel(newLevel);
-	await this.update( {
-		"system.personalXP" : neededXP,
-		"system.personaleLevel": newLevel
-	});
-	await Logger.sendToChat(`${this.displayedName} gained ${amt} levels`);
+	if (!PersonaSettings.freezeXPGain()) {
+		await this.update( {
+			"system.personalXP" : neededXP,
+			"system.personaleLevel": newLevel
+		});
+		await Logger.sendToChat(`${this.displayedName} gained ${amt} levels`);
+	}
 }
 
 /** returns true on level up */

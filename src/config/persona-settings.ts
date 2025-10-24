@@ -49,6 +49,7 @@ export class PersonaSettings {
 	static autoApplyCombatResults(): boolean {
 		return this.get("autoApplyCombatResults").valueOf();
 	}
+
 	static agressiveCaching(): boolean {
 		if (this.cache.aggressiveCaching === undefined) {
 			this.cache.aggressiveCaching = this.get("aggressiveCaching");

@@ -309,13 +309,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			//TODO: FINISH THIS
 			// await this.source.onLevelUp_BasePersona(newLevel);
 		}
-		await this.source.update({
-			"system.combat.personaStats.xp" : newXP,
-			"system.combat.personaStats.pLevel" : newLevel
-		});
-		// await this.source.update({"system.combat.xp" : newxp});
+		if (!PersonaSettings.freezeXPGain()) {
+			await this.source.update({
+				"system.combat.personaStats.xp" : newXP,
+				"system.combat.personaStats.pLevel" : newLevel
+			});
+		}
 		if (levelUp ) {
-			// const newLevel = 1; //placeholder
 			await this.source.onLevelUp_BasePersona(newLevel);
 		}
 		return {
