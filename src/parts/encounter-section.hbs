@@ -38,11 +38,13 @@
 		</div>
 	</div>
 	<div class="treasure-section">
+		{{#if false}}
 		<div class="flexrow">
 			<label> Money </label>
 			<input class="short" type="number" name="system.encounter.treasure.moneyLow" value="{{actor.system.encounter.treasure.moneyLow}}">-
 			<input class="short" type="number" name="system.encounter.treasure.moneyHigh" value="{{actor.system.encounter.treasure.moneyHigh}}">
 		</div>
+		{{/if}}
 		<div class="flexrow">
 			<label> Common Item</label>
 			<input class="short" type="number" name="system.encounter.treasure.item0prob" value="{{actor.system.encounter.treasure.item0prob}}">%

@@ -322,8 +322,8 @@ export function encounterDataSchema() {
 		dungeons: new arr( new id()), //deprecated but left for conversion purposes
 		frequency: new num({integer: false, initial: 1.0}), ///deprecated but left for conversion purposes
 		treasure: new sch( {
-			moneyLow: new num( {initial: 0, integer: true}),
-			moneyHigh: new num( {initial: 0, integer: true}),
+			// moneyLow: new num( {initial: 0, integer: true}),
+			// moneyHigh: new num( {initial: 0, integer: true}),
 			cardPowerId: new id(), //Power Id
 			cardProb: new num( {initial: 2, integer: false, min: 0, max: 100}),
 			item0: new id(),
