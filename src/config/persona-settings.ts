@@ -38,7 +38,10 @@ export class PersonaSettings {
 
 	static freezeXPGain() : boolean {
 		const xpLock  = this.get("xpLock").valueOf();
-		// const realGame = game.users.filter( user => user.active).length > 3;
+		const realGame = game.users.filter( user => user.active).length > 3;
+		if (realGame && xpLock) {
+			ui.notifications.warn("XP lock is on and this seems to be a real game, no XP is being awarded");
+		}
 		return xpLock;
 		// return !realGame && xpLock;
 	}

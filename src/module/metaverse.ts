@@ -387,7 +387,7 @@ static async reportXPGain(xpReport: XPGainReport[]) : Promise<void> {
 			TreasureSystem.generate(0, 0);
 		}
 		const items : TreasureItem[] = [];
-		let money = 0;
+		// let money = 0;
 		const considerSkillCard = async function (powerId: string, prob: number) {
 			if (!powerId) {return;}
 			if (Math.random() > (prob ?? 0) / 100) {return;}
@@ -413,28 +413,31 @@ static async reportXPGain(xpReport: XPGainReport[]) : Promise<void> {
 			if (Math.random() > (prob ?? 0) / 100) {return;}
 			items.push(item);
 		};
+		const money = shadows.reduce( (a,s) => a + s.moneyDropped(), 0);
 		for (const shadow of shadows) {
 			if (shadow.system.type != "shadow") { continue;}
 			if (shadow.hasCreatureTag("d-mon")) { continue;}
 			const treasure = shadow.system.encounter.treasure;
-			const moneyLow = treasure.moneyLow ?? 0;
-			const moneyHigh = treasure.moneyHigh ?? 0;
-			const variability = moneyHigh - moneyLow;
-			if (variability >= 0) {
-				const bonus = Math.floor(Math.random() * (variability +1));
-				money += Math.floor(moneyLow + bonus);
-			}
 			considerItem(treasure.item0, treasure.item0prob);
 			considerItem(treasure.item1, treasure.item1prob);
 			considerItem(treasure.item2, treasure.item2prob);
 			await considerSkillCard(treasure.cardPowerId, treasure.cardProb);
 		}
-		const treasure : Treasure = {
-			money,
-			items
-		};
+		const treasure : Treasure = { money, items };
 		return treasure;
 	}
+
+// getShadowMoney(shadow: Shadow) : number {
+// 	const treasure = shadow.system.encounter.treasure;
+// 	const moneyLow = treasure.moneyLow ?? 0;
+// 	const moneyHigh = treasure.moneyHigh ?? 0;
+// 	const variability = moneyHigh - moneyLow;
+// 	if (variability >= 0) {
+// 		const bonus = Math.floor(Math.random() * (variability +1));
+// 		return Math.floor(moneyLow + bonus);
+// 	}
+// 	return moneyLow;
+// }
 
 	static async printTreasure(treasure : Treasure) {
 		const {money, items} = treasure;

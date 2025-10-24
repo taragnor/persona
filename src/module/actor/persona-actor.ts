@@ -570,7 +570,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async copyToCompendium(this: Shadow) : Promise<void> {
 		if (!this.isPersona()) {
 			throw new PersonaError(`Can't copy to compendium, ${this.name} isn't a valid Persona`);
-			}
+		}
 		const ret = await ActorConverters.copyPersonaToCompendium(this);
 		if (ret && !game.user.isGM) {
 			await Logger.sendToChat(`${this.name} saved to compendium`);
@@ -989,7 +989,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					}
 				}
 			})
-			.sort((a, b) => (a.actor.tarot?.system.sortOrder ?? 99) - (b.actor.tarot?.system.sortOrder ?? 99));
+				.sort((a, b) => (a.actor.tarot?.system.sortOrder ?? 99) - (b.actor.tarot?.system.sortOrder ?? 99));
 		}
 		return this.cache.socialData;
 	}
@@ -1949,7 +1949,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			modifiers = actor.mainModifiers();
 		}
 		const effectChangers=  modifiers
-		.filter ( mod => mod.consequences
+			.filter ( mod => mod.consequences
 				.some( cons=>cons.type == "raise-status-resistance" && cons.statusName == status));
 		const situation : Situation = {
 			user: actor.accessor,
@@ -1957,7 +1957,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		};
 		const consequences = effectChangers.flatMap(
 			item => getActiveConsequences(item, situation)
-			);
+		);
 		let baseStatusResist : ResistStrength = "normal";
 		if ("statusResists" in actor.system.combat) {
 			const statusResist = actor.system.combat.statusResists;
@@ -2012,7 +2012,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	isCustomPersona(this: ValidAttackers): boolean {
 		return this.isPersona() &&
-		(	this.hasTag("custom-persona") || this.hasTag("lone-persona"));
+			(	this.hasTag("custom-persona") || this.hasTag("lone-persona"));
 	}
 
 	knowsPowerInnately(this: ValidAttackers, power : Power)  : boolean{
@@ -2079,210 +2079,210 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	async _promotePowers_learnedToSideboard(this: ValidAttackers) {
-		if (!this.hasPowerSideboard) { return false;}
-		while (this.hasSpaceToAddToSideboard()) {
-			const bufferPower = this.learnedPowersBuffer.at(0);
-			if (bufferPower && !this.isShadow()) {
-				await this.moveFromBufferToSideboard(bufferPower);
-				continue;
-			}
-			break;
+async _promotePowers_learnedToSideboard(this: ValidAttackers) {
+	if (!this.hasPowerSideboard) { return false;}
+	while (this.hasSpaceToAddToSideboard()) {
+		const bufferPower = this.learnedPowersBuffer.at(0);
+		if (bufferPower && !this.isShadow()) {
+			await this.moveFromBufferToSideboard(bufferPower);
+			continue;
 		}
-
+		break;
 	}
 
-	async moveFromBufferToSideboard(this: PC | NPCAlly, power : Power) {
-		let buffer = this.system.combat.learnedPowersBuffer;
-		const sideboard = this.system.combat.powers_sideboard;
-		sideboard.push(power.id);
-		buffer = buffer.filter(x=> x != power.id);
-		await this.update( {"system.combat.powers_sideboard": sideboard});
-		await this.update( {"system.combat.learnedPowersBuffer": buffer});
-	}
+}
 
-	async moveFromBufferToMain(this: ValidAttackers, power : Power) {
-		let buffer = this.system.combat.learnedPowersBuffer;
-		const mainPowers = this.system.combat.powers;
-		mainPowers.push(power.id);
-		buffer = buffer.filter(x=> x != power.id);
-		await this.update( {"system.combat.powers": mainPowers});
-		await this.update( {"system.combat.learnedPowersBuffer": buffer});
-	}
+async moveFromBufferToSideboard(this: PC | NPCAlly, power : Power) {
+	let buffer = this.system.combat.learnedPowersBuffer;
+	const sideboard = this.system.combat.powers_sideboard;
+	sideboard.push(power.id);
+	buffer = buffer.filter(x=> x != power.id);
+	await this.update( {"system.combat.powers_sideboard": sideboard});
+	await this.update( {"system.combat.learnedPowersBuffer": buffer});
+}
 
-	async tryToAddToMain(this: ValidAttackers, power: Power, logChanges = true) : Promise<boolean> {
-		const powers = this.system.combat.powers;
-		if (this.hasSpaceToAddPowerToMain()) {
-			powers.push(power.id);
-			await this.update( {"system.combat.powers": powers});
-			if (this.isShadow() && !this.isPersona() && !this.isDMon()) {
-				await this.addLearnedPower(power, this.level);
-			}
-			if (logChanges && this.hasPlayerOwner) {
-				await Logger.sendToChat(`${this.name} learned Power: ${power.name}`);
-			}
-			return true;
+async moveFromBufferToMain(this: ValidAttackers, power : Power) {
+	let buffer = this.system.combat.learnedPowersBuffer;
+	const mainPowers = this.system.combat.powers;
+	mainPowers.push(power.id);
+	buffer = buffer.filter(x=> x != power.id);
+	await this.update( {"system.combat.powers": mainPowers});
+	await this.update( {"system.combat.learnedPowersBuffer": buffer});
+}
+
+async tryToAddToMain(this: ValidAttackers, power: Power, logChanges = true) : Promise<boolean> {
+	const powers = this.system.combat.powers;
+	if (this.hasSpaceToAddPowerToMain()) {
+		powers.push(power.id);
+		await this.update( {"system.combat.powers": powers});
+		if (this.isShadow() && !this.isPersona() && !this.isDMon()) {
+			await this.addLearnedPower(power, this.level);
 		}
-		return false;
-	}
-
-	async tryToAddToSideboard(this: ValidAttackers, power: Power, logChanges: boolean) : Promise<boolean> {
-		if (this.isShadow()) {return false;}
-		const sideboard =  this.system.combat.powers_sideboard;
-		if (this.hasSpaceToAddToSideboard()) {
-			sideboard.push(power.id);
-			await this.update( {"system.combat.powers_sideboard": sideboard});
-			if (logChanges && this.hasPlayerOwner) {
-				await Logger.sendToChat(`${this.name} learned Power: ${power.name} (placed in sideboard)`);
-			}
-			return true;
-		}
-		return false;
-	}
-
-	async tryToAddToLearnedPowersBuffer(this: ValidAttackers, power: Power, logChanges: boolean) : Promise<boolean> {
-
-		const buffer= this.system.combat.learnedPowersBuffer;
-		buffer.push(power.id);
-		await this.update( {"system.combat.learnedPowersBuffer": buffer});
-		const maxMsg = `<br>${this.name} has exceeded their allowed number of powers (${this.maxPowers})  and must forget one or more powers.`;
-		if (logChanges) {
-			await Logger.sendToChat(`${this.name} learned ${power.name} ${maxMsg}` , this);
+		if (logChanges && this.hasPlayerOwner) {
+			await Logger.sendToChat(`${this.name} learned Power: ${power.name}`);
 		}
 		return true;
-		// }
 	}
+	return false;
+}
 
-	async _learnPower(this: ValidAttackers, power: Power, logChanges = true): Promise<boolean> {
-		try {
-			if (power.isNavigator()) {
-				if (!this.isNPCAlly()) {
-					PersonaError.softFail("Only NPC Allies can learn Navigator skills!");
-					return false;
-				}
-				await this.addNavigatorSkill(power);
-				return true;
-			}
-			if (this.knowsPowerInnately(power)) {
-				ui.notifications.notify(`You already know ${power.displayedName}`);
-				return true;
-			}
-			if (await this.tryToAddToMain(power, logChanges)) {
-				return true;
-			}
-			if (await this.tryToAddToSideboard(power, logChanges)) {
-				return true;
-			}
-			await this.tryToAddToLearnedPowersBuffer(power, logChanges);
-			return true;
-		} catch (e) {
-			if (e instanceof Error) {
-				PersonaError.softFail(`There was a problem adding power to ${this.name}: ${e.toString()} `);
-			}
-			return false;
+async tryToAddToSideboard(this: ValidAttackers, power: Power, logChanges: boolean) : Promise<boolean> {
+	if (this.isShadow()) {return false;}
+	const sideboard =  this.system.combat.powers_sideboard;
+	if (this.hasSpaceToAddToSideboard()) {
+		sideboard.push(power.id);
+		await this.update( {"system.combat.powers_sideboard": sideboard});
+		if (logChanges && this.hasPlayerOwner) {
+			await Logger.sendToChat(`${this.name} learned Power: ${power.name} (placed in sideboard)`);
 		}
+		return true;
 	}
+	return false;
+}
 
-	isUsingMetaPod(this: ValidAttackers): boolean {
-		if (this.isShadow()) {return false;}
-		return this.system.combat.usingMetaPod ?? true;
+async tryToAddToLearnedPowersBuffer(this: ValidAttackers, power: Power, logChanges: boolean) : Promise<boolean> {
+
+	const buffer= this.system.combat.learnedPowersBuffer;
+	buffer.push(power.id);
+	await this.update( {"system.combat.learnedPowersBuffer": buffer});
+	const maxMsg = `<br>${this.name} has exceeded their allowed number of powers (${this.maxPowers})  and must forget one or more powers.`;
+	if (logChanges) {
+		await Logger.sendToChat(`${this.name} learned ${power.name} ${maxMsg}` , this);
 	}
+	return true;
+	// }
+}
 
-	async checkForMissingLearnedPowers(this: Shadow) {
-		if (!this.isShadow()) {return;}
-		const powers = this.system.combat.powers;
-		const learned= this.powerLearningList;
-		const missing = powers
-			.filter( pwr => !learned
-				.some(learnedPwr => learnedPwr.power.id == pwr))
-			.map (pwr=> PersonaDB.getPower(pwr))
-			.filter (pwr=> pwr != undefined);
-		for (const pwr of missing) {
-			await this.addLearnedPower(pwr, this.system.personaConversion.startingLevel ?? this.system.combat.personaStats.pLevel);
-		}
-	}
-
-	async addLearnedPower(this: ValidAttackers, power: Power, level = 99) : Promise<void> {
-		const arr = this.system.combat.powersToLearn;
-		arr.push( { powerId: power.id, level});
-		await this.update({ "system.combat.powersToLearn": arr});
-	}
-
-
-	async deletePower(this: ValidAttackers, id: string ) {
-		const item = this.items.find(x => x.id == id);
-		if (item) {
-			await item.delete();
+async _learnPower(this: ValidAttackers, power: Power, logChanges = true): Promise<boolean> {
+	try {
+		if (power.isNavigator()) {
+			if (!this.isNPCAlly()) {
+				PersonaError.softFail("Only NPC Allies can learn Navigator skills!");
+				return false;
+			}
+			await this.addNavigatorSkill(power);
 			return true;
 		}
-		const result = await this.deletefromLearnBuffer(id)
-			|| await this.deleteFromMainPowers(id)
-			|| (!this.isShadow() ? await this.deleteFromSideboard(id) : false) ;
-		await this._promotePowers();
-		return result;
-	}
-
-	async deleteLearnablePower(this: ValidAttackers, id: Power["id"])  {
-		let learnables = this.system.combat.powersToLearn;
-		learnables = learnables.filter(x=> x.powerId != id);
-		await this.update({"system.combat.powersToLearn": learnables});
-	}
-
-	async deletefromLearnBuffer(this: ValidAttackers, id: Power["id"]) : Promise<boolean> {
-		let buffer = this.system.combat.learnedPowersBuffer;
-		const power = PersonaDB.getItemById(id) as Power;
-		if (buffer.includes(id)) {
-			buffer = buffer.filter( x=> x != id);
-			await this.update( {"system.combat.learnedPowersBuffer": buffer});
-			await Logger.sendToChat(`${this.name} chose to forget new power:  ${power.name}` , this);
+		if (this.knowsPowerInnately(power)) {
+			ui.notifications.notify(`You already know ${power.displayedName}`);
 			return true;
+		}
+		if (await this.tryToAddToMain(power, logChanges)) {
+			return true;
+		}
+		if (await this.tryToAddToSideboard(power, logChanges)) {
+			return true;
+		}
+		await this.tryToAddToLearnedPowersBuffer(power, logChanges);
+		return true;
+	} catch (e) {
+		if (e instanceof Error) {
+			PersonaError.softFail(`There was a problem adding power to ${this.name}: ${e.toString()} `);
 		}
 		return false;
 	}
+}
 
-	async deleteFromMainPowers(this: ValidAttackers, id: Power["id"]) {
-		let powers = this.system.combat.powers;
-		const power = PersonaDB.getItemById(id) as Power;
-		if (powers.includes(id)) {
-			powers = powers.filter( x=> x != id);
-			await this.update( {"system.combat.powers": powers});
-			// await this.checkMainPowerEmptySpace();
-			if (this.hasPlayerOwner) {
-				await Logger.sendToChat(`${this.name} deleted power ${power.name}` , this);
-			}
-			return true;
-		}
-		return false;
+isUsingMetaPod(this: ValidAttackers): boolean {
+	if (this.isShadow()) {return false;}
+	return this.system.combat.usingMetaPod ?? true;
+}
+
+async checkForMissingLearnedPowers(this: Shadow) {
+	if (!this.isShadow()) {return;}
+	const powers = this.system.combat.powers;
+	const learned= this.powerLearningList;
+	const missing = powers
+		.filter( pwr => !learned
+			.some(learnedPwr => learnedPwr.power.id == pwr))
+		.map (pwr=> PersonaDB.getPower(pwr))
+		.filter (pwr=> pwr != undefined);
+	for (const pwr of missing) {
+		await this.addLearnedPower(pwr, this.system.personaConversion.startingLevel ?? this.system.combat.personaStats.pLevel);
 	}
+}
 
-	async deleteFromSideboard(this: PC | NPCAlly, id: Power["id"]) {
-		let sideboard = this.system.combat.powers_sideboard;
-		if (sideboard && sideboard.includes(id)) {
-			const power = PersonaDB.getItemById(id) as Power;
-			sideboard = sideboard.filter( x=> x != id);
+async addLearnedPower(this: ValidAttackers, power: Power, level = 99) : Promise<void> {
+	const arr = this.system.combat.powersToLearn;
+	arr.push( { powerId: power.id, level});
+	await this.update({ "system.combat.powersToLearn": arr});
+}
+
+
+async deletePower(this: ValidAttackers, id: string ) {
+	const item = this.items.find(x => x.id == id);
+	if (item) {
+		await item.delete();
+		return true;
+	}
+	const result = await this.deletefromLearnBuffer(id)
+		|| await this.deleteFromMainPowers(id)
+		|| (!this.isShadow() ? await this.deleteFromSideboard(id) : false) ;
+	await this._promotePowers();
+	return result;
+}
+
+async deleteLearnablePower(this: ValidAttackers, id: Power["id"])  {
+	let learnables = this.system.combat.powersToLearn;
+	learnables = learnables.filter(x=> x.powerId != id);
+	await this.update({"system.combat.powersToLearn": learnables});
+}
+
+async deletefromLearnBuffer(this: ValidAttackers, id: Power["id"]) : Promise<boolean> {
+	let buffer = this.system.combat.learnedPowersBuffer;
+	const power = PersonaDB.getItemById(id) as Power;
+	if (buffer.includes(id)) {
+		buffer = buffer.filter( x=> x != id);
+		await this.update( {"system.combat.learnedPowersBuffer": buffer});
+		await Logger.sendToChat(`${this.name} chose to forget new power:  ${power.name}` , this);
+		return true;
+	}
+	return false;
+}
+
+async deleteFromMainPowers(this: ValidAttackers, id: Power["id"]) {
+	let powers = this.system.combat.powers;
+	const power = PersonaDB.getItemById(id) as Power;
+	if (powers.includes(id)) {
+		powers = powers.filter( x=> x != id);
+		await this.update( {"system.combat.powers": powers});
+		// await this.checkMainPowerEmptySpace();
+		if (this.hasPlayerOwner) {
+			await Logger.sendToChat(`${this.name} deleted power ${power.name}` , this);
+		}
+		return true;
+	}
+	return false;
+}
+
+async deleteFromSideboard(this: PC | NPCAlly, id: Power["id"]) {
+	let sideboard = this.system.combat.powers_sideboard;
+	if (sideboard && sideboard.includes(id)) {
+		const power = PersonaDB.getItemById(id) as Power;
+		sideboard = sideboard.filter( x=> x != id);
+		await this.update( {"system.combat.powers_sideboard": sideboard});
+		await Logger.sendToChat(`${this.name} deleted sideboard power ${power.name}` , this);
+		// await this.checkSideboardEmptySpace();
+		return true;
+	}
+	return false;
+}
+
+async checkSideboardEmptySpace(this: ValidAttackers) {
+	if (this.isShadow()) {return;}
+	while (this.sideboardPowers.length < this.persona().maxSideboardPowers) {
+		const sideboard = this.system.combat.powers_sideboard;
+		const buffer = this.system.combat.learnedPowersBuffer;
+		if (buffer.length > 0) {
+			const bufferItem = buffer.shift()!;
+			sideboard.push(bufferItem);
 			await this.update( {"system.combat.powers_sideboard": sideboard});
-			await Logger.sendToChat(`${this.name} deleted sideboard power ${power.name}` , this);
-			// await this.checkSideboardEmptySpace();
-			return true;
+			await this.update( {"system.combat.learnedPowersBuffer" : buffer});
+			continue;
 		}
-		return false;
+		break;
 	}
-
-	async checkSideboardEmptySpace(this: ValidAttackers) {
-		if (this.isShadow()) {return;}
-		while (this.sideboardPowers.length < this.persona().maxSideboardPowers) {
-			const sideboard = this.system.combat.powers_sideboard;
-			const buffer = this.system.combat.learnedPowersBuffer;
-			if (buffer.length > 0) {
-				const bufferItem = buffer.shift()!;
-				sideboard.push(bufferItem);
-				await this.update( {"system.combat.powers_sideboard": sideboard});
-				await this.update( {"system.combat.learnedPowersBuffer" : buffer});
-				continue;
-			}
-			break;
-		}
-	}
+}
 
 // async checkMainPowerEmptySpace(this: ValidAttackers) {
 // 	const powers = this.system.combat.powers;
@@ -2672,7 +2672,7 @@ getSaveBonus( this: ValidAttackers) : ModifierList {
 		.filter( x => x.conditionalType == "passive" || x.conditionalType == "defensive");
 	const modsProcessed = PersonaItem.getModifier(mods, "save");
 
-		// .flatMap( item => PersonaItem.getModifier("save", this));
+	// .flatMap( item => PersonaItem.getModifier("save", this));
 	// const x = this.getActiveTokens()[0]
 	return new ModifierList(modsProcessed);
 }
@@ -2681,7 +2681,7 @@ getDisengageBonus( this: ValidAttackers) : ModifierList {
 	const mods = this.mainModifiers()
 		.filter( x => x.conditionalType == "passive" || x.conditionalType == "defensive");
 	const modsProcessed= PersonaItem.getModifier(mods, "disengage");
-		// .flatMap( item => item.getModifier("disengage", this));
+	// .flatMap( item => item.getModifier("disengage", this));
 	return new ModifierList(modsProcessed);
 }
 
@@ -3241,7 +3241,7 @@ async gainLevel(this: ValidAttackers, amt: number) : Promise<void> {
 /** returns true on level up */
 async awardXP(this: ValidAttackers, amt: number) : Promise<XPGainReport[]> {
 	const personaXPAwards = this.personaList.map<Promise<U<XPGainReport>>>( persona=> persona.awardXP(amt));
-		const personaGains = (await Promise.allSettled(personaXPAwards))
+	const personaGains = (await Promise.allSettled(personaXPAwards))
 	.map( pr => pr.status == "fulfilled" ? pr.value : undefined);
 	const possibleLevelUps : U<XPGainReport>[] = [
 		await this.awardPersonalXP(amt),
@@ -3865,9 +3865,9 @@ get energy() : number {
 }
 
 async setVariable ( varName: string, value: number) : Promise<void> {
-				const vars : Record<string, number> = this.getFlag("persona", "variables") ?? {};
-				vars[varName] = value;
-				await this.setFlag("persona", "variables", vars);
+	const vars : Record<string, number> = this.getFlag("persona", "variables") ?? {};
+	vars[varName] = value;
+	await this.setFlag("persona", "variables", vars);
 }
 
 getVariable(varName: string) : number {
@@ -3998,7 +3998,7 @@ get tagListPartial() : CreatureTag[] {
 
 get tagList() : (Tag | InternalCreatureTag)[] {
 	return this.tagListPartial
-	.map(tag => PersonaItem.searchForPotentialTagMatch(tag) ?? (tag as InternalCreatureTag));
+		.map(tag => PersonaItem.searchForPotentialTagMatch(tag) ?? (tag as InternalCreatureTag));
 }
 
 hasCreatureTag(tag: CreatureTag) : boolean{
@@ -4192,7 +4192,7 @@ getPrimaryPlayerOwner() : typeof game.users.contents[number] | undefined {
 }
 
 getNPCAllyProxy(this: NPC) : U<NPCAlly> {
-		return PersonaDB.NPCAllies().find( x=> x.system.NPCSocialProxyId == this.id);
+	return PersonaDB.NPCAllies().find( x=> x.system.NPCSocialProxyId == this.id);
 }
 
 async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: number) : Promise<void> {
@@ -4235,6 +4235,21 @@ async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: num
 	await Logger.sendToChat(`+${amt} ${permaBuffLocalized} applied to ${this.name}`);
 }
 
+moneyDropped(): number {
+	if (!this.isShadow() || this.isPersona()) {return 0;}
+	const moneyHigh = Math.floor(this.level / 2);
+	const moneyLow = Math.floor(this.level / 4);
+	const variability = moneyHigh - moneyLow;
+	const situation = {
+		user: this.accessor,
+	};
+	const mult = this.basePersona.getBonuses("shadowMoneyBoostPercent").total(situation, "percentage");
+	if (variability >= 0) {
+		const bonus = Math.floor(Math.random() * (variability +1));
+		return Math.floor(mult * (moneyLow + bonus));
+	}
+	return Math.floor(mult * moneyLow);
+}
 
 }
 

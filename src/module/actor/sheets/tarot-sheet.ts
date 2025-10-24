@@ -6,7 +6,7 @@ export class TarotSheet extends NoncombatantSheet {
 	declare actor: Subtype<PersonaActor, "tarot">;
 
 	static override get defaultOptions() {
-		return mergeObject(super.defaultOptions, {
+		return foundry.utils.mergeObject(super.defaultOptions, {
 			classes: ["persona", "sheet", "actor"],
 			template: `${HBS_TEMPLATES_DIR}/tarot-sheet.hbs`,
 			width: 800,
