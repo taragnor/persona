@@ -1,4 +1,4 @@
-import { TarotCard } from "../config/tarot.js";
+import { TAROT_DECK, TarotCard } from "../config/tarot.js";
 import { TreasureItem } from "./metaverse.js";
 import { CClass, SkillCard, Tag, Talent } from "./item/persona-item.js";
 import { NPCAlly } from "./actor/persona-actor.js";
@@ -363,7 +363,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.classes;
 	}
 
-	PersonaableShadowsOfArcana(min: number, max: number) : Shadow[] {
+	PersonaableShadowsOfArcana(min: number, max: number) : Partial<Record<TarotCard, Shadow[]>> {
 		const shadows = this.allActors()
 			.filter ( x=> x.isShadow()
 				&& !x.hasCreatureTag("d-mon")
@@ -375,14 +375,19 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		for (const shadow of shadows) {
 			console.log(`${shadow.name} (${shadow.tarot?.displayedName ?? "No Tarot"})`);
 		}
-		return shadows as Shadow[];
+		const tarotList = {} as Partial<Record<TarotCard, Shadow[]>>;
+		for (const tarot of Object.keys(TAROT_DECK)) {
+			tarotList[tarot as TarotCard] = shadows.filter(sh => sh.isShadow() && sh.tarot?.name == tarot) as Shadow[];
+		}
+		return tarotList;
+		// return shadows as Shadow[];
 	}
 }
 
 export const PersonaDB = new PersonaDatabase();
 
 //@ts-expect-error adding to global objects
-window.PersonaDB =PersonaDB;
+window.PersonaDB = PersonaDB;
 
 Hooks.on("createItem", (item: PersonaItem) => {
 	PersonaDB.onCreateItem(item);

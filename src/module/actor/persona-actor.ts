@@ -4332,7 +4332,6 @@ Hooks.on("createToken", async function (token: TokenDocument<PersonaActor>)  {
 	}
 });
 
-
 export type SocialBenefit = {
 	id: string,
 	focus: Focus,
@@ -4345,7 +4344,6 @@ export type NPC = Subtype<PersonaActor, "npc">;
 export type NPCAlly =Subtype<PersonaActor, "npcAlly">;
 export type Tarot = Subtype<PersonaActor, "tarot">;
 export type SocialLink = PC | NPC | NPCAlly;
-
 
 export type ActivityLink = {
 	strikes: number,
@@ -4366,14 +4364,12 @@ export type SocialLinkData = {
 	isDating: boolean,
 }
 
-
 type Team = "PCs" | "Shadows" | "Neutral" ;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const EMPTYARR :any[] = [] as const; //to speed up things by not needing to create new empty arrays for immutables;
 
 Object.seal(EMPTYARR);
-
 
 Hooks.on("createActor", async function (actor: PersonaActor) {
 	if (actor.isShadow() && !actor.hasTag("persona") && !actor.hasTag("d-mon")  && actor.level <= 1) {
@@ -4395,8 +4391,6 @@ Hooks.on("updateActor", async function (actor: PersonaActor) {
 		}
 	}
 });
-
-
 
 export type XPGainReport = {
 	name: string,

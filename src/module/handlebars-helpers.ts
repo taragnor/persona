@@ -50,6 +50,7 @@ import {EnergyClassCalculator} from "./calculators/shadow-energy-cost-calculator
 import {LevelUpCalculator} from "../config/level-up-calculator.js";
 import {PersonaSettings} from "../config/persona-settings.js";
 import {POWER_TAGS} from "../config/power-tags.js";
+import {FusionTable} from "../config/fusion-table.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -944,6 +945,11 @@ export class PersonaHandleBarsHelpers {
 
 		"isCopyableToCompendium": function (actor: PersonaActor): boolean {
 			return actor.isShadow() && actor.isPersona() && !actor.isCompendiumEntry();
+		},
+
+		"fusionResult": function (s1: Shadow, s2: Shadow) : U<Shadow> {
+
+			return FusionTable.fusionResult(s1, s2);
 		}
 	};
 } //end of class

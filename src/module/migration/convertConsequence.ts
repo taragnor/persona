@@ -24,7 +24,7 @@ export class ConsequenceConverter {
 			case "add-escalation":
 			case "recover-slot":
 			case "escalationManipulation":
-				console.log(`Deprecated Consequence type ${dep.type} in ${usable?.name}`);
+				console.log(`Deprecated Consequence type ${dep.type} in ${usable?.name} - ${usable?.parent?.name}`);
 				return {
 					type: "none"
 				};
