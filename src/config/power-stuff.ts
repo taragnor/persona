@@ -178,8 +178,6 @@ private static _powerStuffBase: Record<string, unknown>;
 			"": "-",
 			...PersonaDB.createMergedTagLocList( ["power", "equipment"], POWER_TAGS)
 		};
-		Debug(TAGS);
-
 		const data = {
 			...this.powerStuffBase(),
 			SOCIAL_LINKS,

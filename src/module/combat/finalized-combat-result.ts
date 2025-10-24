@@ -479,7 +479,7 @@ export class FinalizedCombatResult {
 					const msg = await res
 						.emptyCheck()
 						?.toMessage("On Status Response", actor);
-					if (msg) {
+					if (msg && PersonaSettings.debugMode()) {
 						Debug(res);
 					}
 				}
