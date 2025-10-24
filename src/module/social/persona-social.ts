@@ -868,12 +868,17 @@ export class PersonaSocial {
 
 	static async #finalizeCard( cardData: CardData) : Promise<ChatMessage<Roll>> {
 		let html = "";
-		let pcImproveSpend = "";
+		let SLImproveSpend = "";
 		let giftStr= "";
 		if (cardData.card.system.cardType == "social") {
 			const link = this.lookupLink(cardData) as SocialLinkData;
-			if (link.actor.isPC()) {
-				pcImproveSpend = `<li class="token-spend"> spend 4 progress tokens to raise link with ${link.actor.name}</li>`;
+			if (link.actor) {
+				const SL=  (cardData.actor.getSocialSLWith(link.actor));
+					let improveAmt = 5;
+					if (SL <= 3 && cardData.actor?.tarot?.name == "Fool") {
+						improveAmt -= 1;
+					}
+				SLImproveSpend = `<li class="token-spend"> spend ${improveAmt} progress tokens to raise link with ${link.actor.name}</li>`;
 			}
 			giftStr += `You may give a gift to anyone in the scene (max 1 gift per person). `;
 			const SLCameos = cardData.cameos.filter(cameo => cardData.actor.getSocialSLWith(cameo) >= 4);
@@ -902,7 +907,7 @@ export class PersonaSocial {
 		html += `<div class="token-spends">
 		<h3>Token Spends:</h3>
 		<ul>
-		${pcImproveSpend}
+		${SLImproveSpend}
 		${tokenSpends.join("")}
 		</ul>
 		</div>

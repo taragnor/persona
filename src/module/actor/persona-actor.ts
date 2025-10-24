@@ -1324,7 +1324,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (this._antiloop) {return;}
 		this._antiloop = true;
 		try {
-			console.debug("Refreshing HP status");
+			// console.debug("Refreshing HP status");
 			const startingHP = this.system.combat.hp;
 			const hp = newval ?? this.system.combat.hp;
 			const mhp = this.mhp;

@@ -365,16 +365,16 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	PersonaableShadowsOfArcana(min: number, max: number) : Partial<Record<TarotCard, Shadow[]>> {
 		const shadows = this.allActors()
-			.filter ( x=> x.isShadow()
-				&& !x.hasCreatureTag("d-mon")
-				&& x.persona().isEligibleToBecomePersona()
-				&& x.persona().level >= min
-				&& x.persona().level <= max
-			)
-			.sort( (a,b) => (b.tarot?.displayedName ?? "").localeCompare(a.tarot?.displayedName ?? ""));
-		for (const shadow of shadows) {
-			console.log(`${shadow.name} (${shadow.tarot?.displayedName ?? "No Tarot"})`);
-		}
+		.filter ( x=> x.isShadow()
+			&& !x.hasCreatureTag("d-mon")
+			&& x.persona().isEligibleToBecomePersona()
+			&& x.persona().level >= min
+			&& x.persona().level <= max
+		)
+		.sort( (a,b) => (b.tarot?.displayedName ?? "").localeCompare(a.tarot?.displayedName ?? ""));
+		// for (const shadow of shadows) {
+		// console.log(`${shadow.name} (${shadow.tarot?.displayedName ?? "No Tarot"})`);
+		// }
 		const tarotList = {} as Partial<Record<TarotCard, Shadow[]>>;
 		for (const tarot of Object.keys(TAROT_DECK)) {
 			tarotList[tarot as TarotCard] = shadows.filter(sh => sh.isShadow() && sh.tarot?.name == tarot) as Shadow[];
