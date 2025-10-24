@@ -38,8 +38,9 @@ export class PersonaSettings {
 
 	static freezeXPGain() : boolean {
 		const xpLock  = this.get("xpLock").valueOf();
-		const realGame = game.users.filter( user => user.active).length > 3;
-		return !realGame && xpLock;
+		// const realGame = game.users.filter( user => user.active).length > 3;
+		return xpLock;
+		// return !realGame && xpLock;
 	}
 
 	static autoEndTurn() : boolean {
