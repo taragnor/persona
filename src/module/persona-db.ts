@@ -372,15 +372,11 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			&& x.persona().level <= max
 		)
 		.sort( (a,b) => (b.tarot?.displayedName ?? "").localeCompare(a.tarot?.displayedName ?? ""));
-		// for (const shadow of shadows) {
-		// console.log(`${shadow.name} (${shadow.tarot?.displayedName ?? "No Tarot"})`);
-		// }
 		const tarotList = {} as Partial<Record<TarotCard, Shadow[]>>;
 		for (const tarot of Object.keys(TAROT_DECK)) {
 			tarotList[tarot as TarotCard] = shadows.filter(sh => sh.isShadow() && sh.tarot?.name == tarot) as Shadow[];
 		}
 		return tarotList;
-		// return shadows as Shadow[];
 	}
 
 	downtimeActions() : SocialCard[] {

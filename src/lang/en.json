@@ -38,10 +38,10 @@
 	"persona.shadow.role.boss": "Boss",
 	"persona.shadow.role.treasure-shadow": "Treasure",
 	"persona.shadow.role.solo": "Solo",
+	"persona.shadow.role.summoner": "Summoner",
 	"persona.shadow.role.duo": "Duo",
 	"persona.shadow.role.boss-minion": "Boss Minion",
-	"persona.shadow.role.summoner": "Summoner",
-	"persona.shadow.role.gatekeeper": "Summoner",
+	"persona.shadow.role.gatekeeper": "Gatekeeper",
 
 	"persona.foe.type.shadow": "Shadow",
 	"persona.foe.type.daemon": "Daemon",
