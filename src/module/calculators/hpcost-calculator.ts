@@ -30,13 +30,13 @@ export class HPCostCalculator extends CostCalculator {
 
   static hpCost_multiattack(pwr: Power) :CostModifier {
     if (pwr.system.attacksMax == 1) {return this.i(0);}
-    const min =pwr.system.attacksMin;
+    const min = pwr.system.attacksMin;
     const max = pwr.system.attacksMax;
-    const maxMult =  0.75 * (max -1);
-    const minMult = 0.5 * (min -1);
+    const maxAdd =  3 * (max -1);
+    const minAdd = 3 * (min -1);
     const costMod : CostModifier = {
-      mult: 1 + maxMult + minMult,
-      add: 1 + Math.round(maxMult + minMult),
+      mult: 1,
+      add: 1 + Math.round(maxAdd + minAdd),
     };
     return costMod;
   }

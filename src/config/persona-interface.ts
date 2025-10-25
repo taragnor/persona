@@ -7,6 +7,7 @@ import { ValidAttackers } from "../module/combat/persona-combat.js";
 import { ResistStrength } from "./damage-types.js";
 import { DamageType } from "./damage-types.js";
 import {Calculation} from "../module/utility/calculation.js";
+import {Defense} from "./defense-types.js";
 
 export interface PersonaI {
 	user: ValidAttackers;
@@ -22,7 +23,7 @@ export interface PersonaI {
 	level: number;
 	scanLevelRaw: number;
 	effectiveScanLevel: number;
-	getDefense( defType : keyof ValidAttackers["system"]["combat"]["defenses"]) : Calculation;
+	getDefense( defType : Defense) : Calculation;
 	combatInit: Calculation;
 }
 

@@ -533,14 +533,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				calc =this.combatStats.baseRef();
 				break;
 			}
-			case "will": {
-				calc =this.combatStats.baseWill();
-				break;
-			}
 			case "fort": {
 				calc =this.combatStats.baseFort();
 				break;
-      }
+			}
 			case "kill":
 				calc = this.combatStats.instantDeathDefense();
 				break;
@@ -561,10 +557,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const defenseMods = this.getBonuses([defense, "allDefenses"], modifiers);
 		const modList = new ModifierList();
 		return calc.add(1, modList.concat(defenseMods), "Other Modifiers", "add");
-	}
-
-	get defenses(): ValidAttackers["system"]["combat"]["defenses"] {
-		return this.source.system.combat.defenses;
 	}
 
 	get tarot() {

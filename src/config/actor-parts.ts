@@ -203,12 +203,12 @@ export function combatCommonStats() {
 		lastLearnedLevel: new num({initial: 1, integer: true, min: 0}),
 		powersToLearn: new arr( new obj<PowerToLearn>()),
 		learnedPowersBuffer: new arr( new id()),
-		defenses :
-		new sch({
-			ref: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
-			will: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
-			fort: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
-		}),
+		// defenses :
+		// new sch({
+		// 	ref: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
+		// 	// will: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
+		// 	fort: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
+		// }),
 		personaStats: new embedded(PersonaStatsDM),
 		initiative: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 		resists: elementalResists(),

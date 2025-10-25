@@ -3,7 +3,7 @@ import {HTMLTools} from "../module/utility/HTMLTools.js";
 const DEFENSE_TYPE_LIST = [
 "fort" ,
 "ref" ,
-"will",
+// "will",
 "kill", // instantkill
 "ail", //ailment
 ] as const;

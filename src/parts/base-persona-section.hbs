@@ -26,7 +26,7 @@
 		</span>
 
 		{{/if}}
-		{{#if (and (isGM) (isShadow actor)) }}
+		{{#if (and (isGM) (isShadowOrNPCAlly actor)) }}
 		<span>
 			<input class="short" type="number" name="system.combat.personaStats.pLevel" value="{{actor.system.combat.personaStats.pLevel}}">
 		</span>

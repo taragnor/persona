@@ -68,6 +68,7 @@ import { PersonaAE } from "../active-effect.js";
 import { StatusDuration } from "../active-effect.js";
 import {Calculation} from "../utility/calculation.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
+import {Defense} from "../../config/defense-types.js";
 
 
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
@@ -1938,7 +1939,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	// 	return this.persona().defensiveModifiers();
 	// }
 
-	getDefense(this: ValidAttackers,  type : keyof PC["system"]["combat"]["defenses"]) : Calculation {
+	getDefense(this: ValidAttackers,  type : Defense) : Calculation {
 		return this.persona().getDefense(type);
 	}
 

@@ -83,23 +83,6 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 	static override migrateData(data: any) {
 		data = talentConversion(data);
 		const system = data as PC["system"];
-		const convert = function (x: number) {
-			switch (true) {
-				case x >= 5: return "ultimate";
-				case x >= 2: return "strong";
-				case x > -2: return "normal";
-				case x >= -5: return "weak";
-				case x >= -10 : return "pathetic";
-				default: return "normal";
-			}
-		};
-		const defensesSection =system?.combat?.defenses;
-		for (const def of ["fort", "ref", "will"] as const) {
-			if (defensesSection == undefined) {continue;}
-			if (typeof system?.combat?.defenses[def] == "number") {
-				system.combat.defenses[def] = convert(data.combat.defenses[def]);
-			}
-		}
 		return data;
 	}
 }
@@ -169,11 +152,6 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 		} catch  {
 			console.log("Something went wrong with migrating dungeondata.");
 			// Debug(data.encounter);
-		}
-		if (typeof system?.combat?.defenses?.fort == "number") {
-			system.combat.defenses.fort = convert(data.combat.defenses.fort);
-			system.combat.defenses.ref = convert(data.combat.defenses.ref);
-			system.combat.defenses.will = convert(data.combat.defenses.will);
 		}
 		return data;
 	}

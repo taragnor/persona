@@ -25,8 +25,7 @@ import { PersonaSocial } from '../social/persona-social.js';
 import { UniversalModifier } from '../item/persona-item.js';
 import { PersonaSFX } from './persona-sfx.js';
 import { PersonaSettings } from '../../config/persona-settings.js';
-import { StatusEffect } from '../../config/consequence-types.js';
-import { DamageType, RealDamageType } from '../../config/damage-types.js';
+import { RealDamageType } from '../../config/damage-types.js';
 import { ModifierContainer } from '../item/persona-item.js';
 import { Consequence } from '../../config/consequence-types.js';
 import { TurnAlert } from '../utility/turnAlert.js';
@@ -1617,7 +1616,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			}
 		}
 		const attackbonus = this.getAttackBonus(attackerPersona, power, target, modifiers);
-		if (rollType == 'reflect' && (def == "fort" || def =="ref" || def =="will")) {
+		if (rollType == 'reflect' && (def == "fort" || def =="ref")) {
 			attackbonus.add(1, 15, 'Reflected Attack',"add");
 		}
 		const cssClass= (!target.actor.isPC()) ? 'gm-only' : '';
@@ -2453,12 +2452,10 @@ static getBaseAttackBonus(attackerPersona: Persona, power:Usable): Calculation {
 		}
 		case "fort": //magic attack
 			calc.merge(attackerPersona.magAtkBonus());
-			// modList = modList.concat(attackerPersona.magAtkBonus());
 			modList = modList.concat(new ModifierList(power.getModifier('magAtk', attackerPersona.user)));
 			break;
 		case "kill": {
 			calc.merge(attackerPersona.instantDeathAtkBonus());
-			// modList = modList.concat(attackerPersona.instantDeathAtkBonus());
 			const ID_Bonus = power.baseInstantKillBonus();
 			modList.add(`${power.displayedName.toString()} Bonus`, ID_Bonus);
 			modList = modList.concat(new ModifierList(power.getModifier('instantDeathRange', attackerPersona.user)));
@@ -2466,17 +2463,11 @@ static getBaseAttackBonus(attackerPersona: Persona, power:Usable): Calculation {
 		}
 		case "ail": {
 			calc.merge(attackerPersona.ailmentAtkBonus());
-			// modList = modList.concat(attackerPersona.ailmentAtkBonus());
 			const Ail_Bonus = power.baseAilmentBonus();
 			modList.add(`${power.displayedName.toString()} Bonus`, Ail_Bonus);
 			modList = modList.concat(new ModifierList(power.getModifier('afflictionRange', attackerPersona.user)));
 			break;
 		}
-		case "will":// mostly legacy
-			calc.merge(attackerPersona.magAtkBonus());
-			// modList = modList.concat(attackerPersona.magAtkBonus());
-			modList = modList.concat(new ModifierList(power.getModifier('magAtk', attackerPersona.user)));
-			break;
 		default:
 			power.system.defense satisfies never;
 	}
