@@ -23,7 +23,7 @@ import { PersonaScene } from "../persona-scene.js";
 import { poisonDamageMultiplier } from "../../config/shadow-types.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { RealDamageType } from "../../config/damage-types.js";
-import { Carryable, CraftingMaterial, SkillCard, Tag } from "../item/persona-item.js";
+import { Carryable, CraftingMaterial, SkillCard, SocialCard, Tag } from "../item/persona-item.js";
 import { UsableAndCard } from "../item/persona-item.js";
 import { ValidSocialTarget } from "../social/persona-social.js";
 import { ValidAttackers } from "../combat/persona-combat.js";
@@ -1706,6 +1706,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 	statusModifiers() : ModifierContainer[]{
 		return this.effects.filter( eff => eff.hasEffects());
+	}
+
+	get downtimeMinorActions() : (Usable | SocialCard)[] {
+		const list = [
+			...this.powers,
+			...this.consumables,
+		];
+		const allUsable = list.filter ( pwr => pwr.hasTag("downtime-minor"));
+		return [
+			...PersonaDB.downtimeActions(),
+			...allUsable,
+		];
 	}
 
 	get treasureMultiplier () : number {

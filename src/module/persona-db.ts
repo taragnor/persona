@@ -382,6 +382,12 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return tarotList;
 		// return shadows as Shadow[];
 	}
+
+	downtimeActions() : SocialCard[] {
+		return this.allSocialCards()
+			.filter( card=> card.system.cardType == "minor");
+	}
+
 }
 
 export const PersonaDB = new PersonaDatabase();

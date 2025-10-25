@@ -13,6 +13,7 @@ export const SOCIAL_CARD_TYPES_LIST = [
 	"recovery",
 	"other",
 	"mixin",
+	"minor",
 ] as const;
 
 export const SIMPLE_SOCIAL_CARD_ROLL_TYPES_LIST = [

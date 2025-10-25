@@ -39,7 +39,9 @@
 	"persona.shadow.role.treasure-shadow": "Treasure",
 	"persona.shadow.role.solo": "Solo",
 	"persona.shadow.role.duo": "Duo",
+	"persona.shadow.role.boss-minion": "Boss Minion",
 	"persona.shadow.role.summoner": "Summoner",
+	"persona.shadow.role.gatekeeper": "Summoner",
 
 	"persona.foe.type.shadow": "Shadow",
 	"persona.foe.type.daemon": "Daemon",
@@ -912,6 +914,7 @@
 	"persona.social.card.types.training": "Training",
 	"persona.social.card.types.recovery": "Recovery",
 	"persona.social.card.types.mixin": "Supplemental",
+	"persona.social.card.types.minor": "Minor Action",
 	"persona.social.card.types.other": "Other",
 
 	"persona.social.card.rolls.types.none": "None",
