@@ -700,6 +700,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		await this.update( {'system.events': json});
 	}
 
+	/** used by item piles to determine if the items stack*/
+	get itemPilesStackId(): string {
+		console.log(`Calling item Piles Stack Id on ${this.name} (${this.id})`);
+		const name = this.name;
+		const tags = this.tagList().map( x=> x instanceof PersonaItem ? x.name : x)
+		.join(", ");
+		return `${name} (${tags})`;
+	}
+
 	hasTag(this: Power, tag: PowerTag, user : null | ValidAttackers) : boolean;
 	hasTag(this: Consumable, tag: PowerTag, user ?: null) : boolean;
 	hasTag(this: Carryable, tag: EquipmentTag | PowerTag, user ?: null) : boolean;
@@ -740,6 +749,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	tagList(this : Focus, user ?: null): PowerTag[];
 	tagList(this: Consumable | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : (PowerTag | EquipmentTag)[];
 	tagList(this: UsableAndCard | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : (PowerTag | EquipmentTag)[];
+	tagList(this: PersonaItem, user ?: null | ValidAttackers): (PowerTag | EquipmentTag)[];
 	tagList(this: Talent | Focus | UsableAndCard | InvItem | Weapon, user ?: ValidAttackers | null) : (PowerTag | EquipmentTag)[] {
 		const itype = this.system.type;
 		switch (itype) {
@@ -810,7 +820,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			}
 			default:
 				itype satisfies never;
-				PersonaError.softFail(`Can't get tag list for ${itype as string}`);
+				// PersonaError.softFail(`Can't get tag list for ${itype as string}`);
 				return [];
 		}
 	}

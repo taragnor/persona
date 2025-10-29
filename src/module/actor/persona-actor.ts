@@ -1935,10 +1935,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			.filter(x=> x.getEffects(this, ["defensive"]));
 	}
 
-	// getSourcedDefensivePowers(this: ValidAttackers) : SourcedConditionalEffect[] {
-	// 	return this.persona().defensiveModifiers();
-	// }
-
 	getDefense(this: ValidAttackers,  type : Defense) : Calculation {
 		return this.persona().getDefense(type);
 	}

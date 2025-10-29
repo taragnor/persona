@@ -2492,8 +2492,8 @@ static getAltTargets ( attacker: PToken, situation : Situation, targettingType :
 			if (token) {return [token];} else {return [];}
 		}
 		case 'all-enemies': {
-			const combat= this.ensureCombatExists();
-			const targets= combat.combatants.filter( x => {
+			const combat = this.ensureCombatExists();
+			const targets = combat.combatants.filter( x => {
 				const actor = x.actor;
 				if (!actor || !(actor).isAlive())  {return false;}
 				return ((x.actor as ValidAttackers).getAllegiance() != attackerType);
