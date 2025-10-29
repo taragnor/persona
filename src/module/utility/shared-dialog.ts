@@ -7,6 +7,8 @@ export class SharedDialog<const T extends SharedDataDefinition> {
 	private _definition: T;
 	private resolver : (data:SharedDataType<T>) => void;
 	private reject : (reason: unknown ) => void;
+	/** if true then return data*/
+	private _breakout : (data: SharedDataType<T>) => boolean; 
 
 	constructor (definition: T, name: string) {
 		this._definition = definition;
@@ -59,7 +61,7 @@ export class SharedDialog<const T extends SharedDataDefinition> {
 
 
 	isOpen() : boolean {
-		return !!this._dialog && !(this._data && this.suspended);
+		return this._dialog != undefined && !(this._data && this.suspended);
 	}
 
 	setListeners(html : string | JQuery | HTMLElement) : void {
@@ -72,14 +74,18 @@ export class SharedDialog<const T extends SharedDataDefinition> {
 		html.find('input[name], select[name]').on("change", () => this.refreshData(html));
 	}
 
-	openDialog() {
+	private _openDialog() {
 		if (this._dialog) {
 			this._dialog.render(true);
 		}
 	}
 
 	closeDialog() {
-		this._dialog = undefined;
+		if (this._dialog) {
+			const dialog = this._dialog;
+			this._dialog = undefined;
+			dialog.close();
+		}
 	}
 
 	generateHTML() : string {
@@ -90,8 +96,9 @@ export class SharedDialog<const T extends SharedDataDefinition> {
 					case "choices" in v: {
 						const options = v.choices
 							.map( ch => {
-								return `<option value='${ch}'` + 
+								return `<option value='${ch}'` +
 									(this._data[k] == ch ? "selected" : "")
+									+ ">"
 									+ `${ch}</option>`;
 							})
 							.join("");
@@ -106,7 +113,8 @@ export class SharedDialog<const T extends SharedDataDefinition> {
 								const displayedName = v.type == "localizedString" ? game.i18n.localize(tv) : tv;
 								return `<option value='${key}'` + 
 									(this._data[k] == key ? "selected" : "")
-									+`${displayedName}</option>`;
+									+ ">"
+									+ `${displayedName}</option>`;
 							})
 							.join("");
 						const elem = `${label}<select name='${k}'>
@@ -128,11 +136,13 @@ export class SharedDialog<const T extends SharedDataDefinition> {
 					}
 				}
 			})
+			.map( x=> `<div> ${x} </div>`)
 			.join();
 		return selectors;
 	};
 
-	async open( options : SharedDialogOptions = {}) : Promise<SharedDataType<T>> {
+	public async open( breakoutFn : typeof this._breakout, options : SharedDialogOptions = {}) : Promise<SharedDataType<T>> {
+		this._breakout = breakoutFn;
 		const content = this.generateHTML();
 		if (this._dialog == undefined) {
 			this._dialog = new Dialog( {
@@ -140,9 +150,9 @@ export class SharedDialog<const T extends SharedDataDefinition> {
 				content,
 				render: (html) => this.setListeners(html),
 				buttons: {},
-				close: () => void (this.isOpen() ? this.openDialog() : this.closeDialog()),
+				close: () => void (this.isOpen() ? this._openDialog() : this.closeDialog()),
 			}, {});
-			this.openDialog();
+			this._openDialog();
 		}
 		const promise : Promise <SharedDataType<T>>= new Promise ( (res, rej) => {
 			this.resolver = res;
@@ -151,7 +161,7 @@ export class SharedDialog<const T extends SharedDataDefinition> {
 		return promise;
 	}
 
-	collectFormValues($root: JQuery): Record<string, unknown> {
+	private collectFormValues($root: JQuery): Record<string, unknown> {
 		const result: Record<string, unknown> = {};
 		
 		$root.find('input[name], select[name]').each((_i, el) => {
@@ -188,12 +198,16 @@ export class SharedDialog<const T extends SharedDataDefinition> {
 		return result;
 	}
 
-	refreshData(jquery: JQuery) {
+	private refreshData(jquery: JQuery) {
 		this._data = this.collectFormValues(jquery) as SharedDataType<T>;
 		this.sendData();
+		if (this._breakout( this._data)) {
+			this.resolver(this._data);
+			this.closeDialog();
+		}
 	}
 
-	sendData() {
+	private sendData() {
 		const data = this._data;
 	}
 
@@ -277,6 +291,7 @@ type SharedFieldDataType<T extends SharedFieldDefinition< string | number | bool
 
 
 
+async function testSD() {
 const x = new SharedDialog( 
 	{ "x" : {
 		label: "Some Number",
@@ -292,4 +307,8 @@ const x = new SharedDialog(
 	}
 	, "My Dialog");
 
+	return await x.open( (data) => data.x != 2);
+}
 
+//@ts-expect-error adding to global
+window.testSD = testSD;

@@ -12,6 +12,7 @@ declare global {
 
 }
 
+import { SharedDialog } from "./utility/shared-dialog.js";
 import { Tooltip } from "./tooltip.js";
 import { TarotPrinter } from "./printers/tarot-list.js";
 import { PowerPrinter } from "./printers/power-list.js";
@@ -121,6 +122,7 @@ Hooks.once("init", function() {
 	TarotPrinter.init();
 	TagPrinter.init();
 	Tooltip.init();
+	const r = new SharedDialog({}, "Purely so it loads");
 });
 
 function registerHandlebarsHelpers() {
