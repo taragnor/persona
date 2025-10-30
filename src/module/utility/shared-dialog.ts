@@ -25,7 +25,7 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 	private _dialog: U<Dialog>;
 	private _data: SharedDataType<T>;
 	private id: string;
-	name: string;
+	private name: string;
 	private suspended: boolean = false;
 	private _definition: T;
 	private resolver : (data:SharedDataType<T>) => void;
@@ -57,7 +57,6 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 		this.activeSessions.set(data.dialogId, SD);
 	}
 
-
 	static onRemoteUpdate( data: SocketMessage["SHARED_DIALOG_UPDATE"], _payload : SocketPayload<"SHARED_DIALOG_UPDATE">) {
 		const session = this.activeSessions.get(data.dialogId);
 		if (!session) {
@@ -77,11 +76,9 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 		}
 	}
 
-
 	generateDefaultData() : SharedDataType<T> {
 		return HTMLTools.generateDefaultData(this._definition);
 	}
-
 
 	isOpen() : boolean {
 		return this._dialog != undefined && !(this._data && this.suspended);
@@ -116,7 +113,7 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 		return HTMLTools.generateFormHTML(this._definition, this._data);
 	};
 
-	public async open( breakoutFn : typeof this._breakout, options : SharedDialogOptions = {}) : Promise<SharedDataType<T>> {
+	public async open( breakoutFn : typeof this._breakout, _options : SharedDialogOptions = {}) : Promise<SharedDataType<T>> {
 		this._breakout = breakoutFn;
 		const content = this.generateHTML();
 		if (this._dialog == undefined) {
@@ -140,7 +137,6 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 		return data;
 	}
 
-
 	private refreshData(jquery: JQuery) {
 		this._data = HTMLTools.collectFormValues(jquery) as SharedDataType<T>;
 		this.sendData();
@@ -156,10 +152,7 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 
 }
 
-
-
 type SharedDialogOptions = object;
-
 
 type SharedDataDefinition = HTMLDataInputDefinition;
 

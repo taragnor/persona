@@ -60,6 +60,8 @@ namespace foundryApps {
 		maximize(): Promise<void>;
 		bringToFront(): void;
 		changeTab(tab: string, group: string, options?: Partial<ChangeTabOptions> = {}): void
+
+		get document(): FoundryDocument;
 	}
 
 	interface ChangeTabOptions {

@@ -15,10 +15,15 @@ import { PersonaCalendar } from "./social/persona-calendar.js";
 import { PersonaRegion } from "./region/persona-region.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import {ConditionalEffectManager} from "./conditional-effect-manager.js";
+import {HTMLDataInputDefinition, HTMLTools} from "./utility/HTMLTools.js";
+import {FREQUENCY} from "../config/frequency.js";
+import {PROBABILITIES} from "../config/probability.js";
 
 export class PersonaScene extends Scene {
+	static ENCOUNTER_DATA_FLAG_NAME = "encounterData" as const;
 	declare regions: Collection<PersonaRegion>;
 	declare tokens: Collection<TokenDocument<PersonaActor>>;
+
 
 	get challengeLevel(): number {
 		//TODO: placeholder
@@ -285,6 +290,72 @@ export class PersonaScene extends Scene {
 		await sleep(250);
 	}
 
+	_addExtraSheetHTML(html: JQuery) : void {
+		html.find("nav.sheet-tabs").append(`
+<a data-action="tab" data-group="sheet" data-tab="encounter">
+		  <span>Encounter</span>
+	 </a>
+`);
+		const listElements = this.encounterData.monsters.map( entry=> {
+			const shadow = PersonaDB.getActorById(entry.id);
+			if (!shadow) {return $("");}
+			const div = $(`<div class="encounter" data-shadow-id="${shadow.id}"></div>`);
+			div.append( $(`<span class="shadow-name">
+							${shadow.name} (${shadow.roleString.toString()}) [${entry.frequency}]
+				</span>
+`).on("click", (ev) => {
+	const id = HTMLTools.getClosestData(ev, "shadowId");
+	const shadow = PersonaDB.getActorById(id);
+	if (!shadow) {return;}
+	void shadow.sheet.render(true);
+})
+			);
+				return div;
+		});
+		const tab = $(`<div class="tab scrollable" data-group="sheet" data-tab="encounter" data-application-part="encounter"> </div>`);
+		tab.append($("<h2> Encounters </h2>"));
+		for (const jq of listElements) {
+			tab.append(jq);
+		}
+
+		html.find("section.window-content").children().last().before(tab);
+
+	}
+
+
+
+	async removeShadowFromEncounterList(id: Shadow["id"])  : Promise< PersonaScene>{
+		const data = this.encounterData;
+		data.monsters = data.monsters.filter( entry=> entry.id == id);
+		return await this.setEncounterData(data);
+	}
+
+	static defaultSceneEncounterData() : SceneEncounterData {
+		return {
+			monsters : [],
+		};
+	}
+
+	async setEncounterData(data: SceneEncounterData) : Promise<PersonaScene>{
+		await this.setFlag("persona", PersonaScene.ENCOUNTER_DATA_FLAG_NAME, data);
+		return this;
+	}
+
+	get encounterData() : SceneEncounterData {
+		const monsterList = this.encounterList().map (shadow=> ({
+			id: shadow.id,
+			frequency: shadow.getEncounterWeight(this),
+		})
+		);
+		const data =
+			foundry.utils.mergeObject(
+				PersonaScene.defaultSceneEncounterData(),
+				this.getFlag("persona", PersonaScene.ENCOUNTER_DATA_FLAG_NAME) as Partial<SceneEncounterData> ?? {}
+			);
+		return foundry.utils.mergeObject(data,
+			{monsters: monsterList});
+	}
+
 }
 
 
@@ -302,6 +373,14 @@ type WeatherData = {
 };
 
 
+type SceneEncounterData = {
+	monsters: {
+		id: Shadow["id"]
+		frequency: number
+	}[],
+
+}
+
 
 Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
 	if (!game.user.isGM) {return;}
@@ -315,3 +394,7 @@ Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
 });
 
 
+Hooks.on("renderHandlebarsApplication", (app, html) => {
+	const htm = $(html);
+	(app.document as PersonaScene)._addExtraSheetHTML(htm);
+});

@@ -4381,10 +4381,11 @@ Object.seal(EMPTYARR);
 
 Hooks.on("createActor", async function (actor: PersonaActor) {
 	if (actor.isShadow() && !actor.hasTag("persona") && !actor.hasTag("d-mon")  && actor.level <= 1) {
-		const pcs = game.actors
-			.filter( (x: PersonaActor)=> x.isRealPC() && x.hasPlayerOwner);
-		const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.personaleLevel, 0 );
-		const avgLevel = Math.round(totalLevels/ pcs.length);
+		// const pcs = game.actors
+		// 	.filter( (x: PersonaActor)=> x.isRealPC() && x.hasPlayerOwner);
+		// const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.personaleLevel, 0 );
+		// const avgLevel = Math.round(totalLevels/ pcs.length);
+		const avgLevel = PersonaDB.averagePCLevel();
 		await actor.update({ "system.combat.personaStats.pLevel" : avgLevel});
 		await actor.setWeaponDamageByLevel(avgLevel);
 	}

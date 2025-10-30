@@ -384,6 +384,14 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			.filter( card=> card.system.cardType == "minor");
 	}
 
+	averagePCLevel(): number {
+		const pcs = game.actors
+			.filter( (x: PersonaActor)=> x.isRealPC() && x.hasPlayerOwner);
+		const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.personaleLevel, 0 );
+		const avgLevel = Math.round(totalLevels/ pcs.length);
+		return avgLevel;
+	}
+
 }
 
 export const PersonaDB = new PersonaDatabase();
