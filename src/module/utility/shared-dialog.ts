@@ -1,62 +1,85 @@
+import {HTMLDataInputDefinition, HTMLInputReturnType, HTMLTools} from "./HTMLTools.js";
+import {SocketManager, SocketPayload} from "./socket-manager.js";
 
-export class SharedDialog<const T extends SharedDataDefinition> {
+declare global {
+	interface SocketMessage {
+		"SHARED_DIALOG_START" : {
+			name: string,
+			dataDef: SharedDataDefinition,
+			dialogId: string,
+		};
+		"SHARED_DIALOG_UPDATE" : {
+			name: string;
+			data: object;
+			dialogId: string;
+		};
+	}
+}
+
+Hooks.on("socketsReady", (sm) => {
+	sm.setHandler("SHARED_DIALOG_START", function (data, payload) { SharedDialog.onRemoteStartMsg(data, payload);});
+	sm.setHandler("SHARED_DIALOG_UPDATE", function (data, payload) { SharedDialog.onRemoteUpdate(data, payload);});
+});
+
+export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefinition> {
 	private _dialog: U<Dialog>;
 	private _data: SharedDataType<T>;
+	private id: string;
 	name: string;
 	private suspended: boolean = false;
 	private _definition: T;
 	private resolver : (data:SharedDataType<T>) => void;
+	private terminated : boolean = false;
 	private reject : (reason: unknown ) => void;
 	/** if true then return data*/
 	private _breakout : (data: SharedDataType<T>) => boolean; 
+	static socketManager : SocketManager;
+	static activeSessions: Map<string, SharedDialog> = new Map();
 
 	constructor (definition: T, name: string) {
 		this._definition = definition;
 		this.name = name;
 		this._data = this.generateDefaultData();
+		this.id = SharedDialog.generateId();
 	}
 
-	generateDefaultData() : SharedDataType<T> {
-		const data : Partial<typeof this._data> = {};
-		for (const [k,v] of Object.entries(this._definition)) {
-			const key = k as keyof typeof this._definition;
-			switch (true) {
-				case ("default" in v && v.default != undefined): {
-					//@ts-expect-error TS being annoying
-					data[key] = v.default;
-					break;
-				}
-				case ("choices" in v && v.choices.length > 0) :{
-					//@ts-expect-error TS being annoying
-					data[key] = v.choices.at(0);
-					break;
-				}
-				case ("table" in v) : {
-					//@ts-expect-error TS being annoying
-					data[key] = Object.keys(v.table).at(0);
-					break;
-				}
-				case (v.type == "string") : {
-					//@ts-expect-error TS being annoying
-					data[key] = "";
-					break;
-				}
-				case (v.type == "number") : {
-					//@ts-expect-error TS being annoying
-					data[key] = 0;
-					break;
-				}
-				case (v.type == "boolean") : {
-					//@ts-expect-error TS being annoying
-					data[key] = false;
-					break;
-				}
-				default: 
-					console.log(key, v, this._definition);
-					throw new Error(`Bad Data Definition: ${JSON.stringify(this._definition)}`);
-			}
+	static generateId() : string {
+		return game.user.name + Date.now();
+	}
+
+	static init (socketManager: SocketManager) {
+		this.socketManager = socketManager;
+	}
+
+	static onRemoteStartMsg( data: SocketMessage["SHARED_DIALOG_START"], _payload : SocketPayload<"SHARED_DIALOG_START">) {
+		const SD = new SharedDialog(data.dataDef, data.name);
+		void SD.open( (_data) => SD.isTerminated());
+		this.activeSessions.set(data.dialogId, SD);
+	}
+
+
+	static onRemoteUpdate( data: SocketMessage["SHARED_DIALOG_UPDATE"], _payload : SocketPayload<"SHARED_DIALOG_UPDATE">) {
+		const session = this.activeSessions.get(data.dialogId);
+		if (!session) {
+			throw new Error(`Can't find session ${data.dialogId}`);
 		}
-		return data as typeof this._data;
+		session.onRemoteDataUpdate(data.data as SharedDataType<SharedDataDefinition>);
+	}
+
+	isTerminated() : boolean {
+		return this.terminated;
+	}
+
+	onRemoteDataUpdate(data: SharedDataType<T>) {
+		this._data = data;
+		if (this._dialog) {
+			this._dialog.render(false);
+		}
+	}
+
+
+	generateDefaultData() : SharedDataType<T> {
+		return HTMLTools.generateDefaultData(this._definition);
 	}
 
 
@@ -75,7 +98,7 @@ export class SharedDialog<const T extends SharedDataDefinition> {
 	}
 
 	private _openDialog() {
-		if (this._dialog) {
+		if (this._dialog && !this.isTerminated()) {
 			this._dialog.render(true);
 		}
 	}
@@ -86,59 +109,11 @@ export class SharedDialog<const T extends SharedDataDefinition> {
 			this._dialog = undefined;
 			dialog.close();
 		}
+		this.terminated = true;
 	}
 
 	generateHTML() : string {
-		const selectors = Object.entries(this._definition)
-			.map( ([k,v]) => {
-				const label = `<label> ${v.label} </label>`;
-				switch (true) {
-					case "choices" in v: {
-						const options = v.choices
-							.map( ch => {
-								return `<option value='${ch}'` +
-									(this._data[k] == ch ? "selected" : "")
-									+ ">"
-									+ `${ch}</option>`;
-							})
-							.join("");
-						const elem = `${label}<select name='${k}'>
-					${options}
-					</select>`;
-						return elem;
-					}
-					case "table" in v: {
-						const options = Object.entries(v.table)
-							.map( ([key,tv]) => {
-								const displayedName = v.type == "localizedString" ? game.i18n.localize(tv) : tv;
-								return `<option value='${key}'` + 
-									(this._data[k] == key ? "selected" : "")
-									+ ">"
-									+ `${displayedName}</option>`;
-							})
-							.join("");
-						const elem = `${label}<select name='${k}'>
-					${options}
-					</select>`;
-						return elem;
-					}
-					case v.type == "string": {
-						const elem = `${label}<input type='string' name='${k}' value='${this._data[k] as string}'>`;
-						return elem;
-					}
-					case v.type == "number": {
-						const elem = `${label}<input type='number' name='${k}' value=${this._data[k] as string}>`;
-						return elem;
-					}
-					case v.type == "boolean": {
-						const elem = `${label}<input type='checkbox' name='${k}' ${this._data[k] ? 'checked' : ''}>`;
-						return elem;
-					}
-				}
-			})
-			.map( x=> `<div> ${x} </div>`)
-			.join();
-		return selectors;
+		return HTMLTools.generateFormHTML(this._definition, this._data);
 	};
 
 	public async open( breakoutFn : typeof this._breakout, options : SharedDialogOptions = {}) : Promise<SharedDataType<T>> {
@@ -158,48 +133,16 @@ export class SharedDialog<const T extends SharedDataDefinition> {
 			this.resolver = res;
 			this.reject = rej;
 		});
-		return promise;
+		const data= await promise;
+		this.closeDialog();
+		this.terminated = true;
+		SharedDialog.activeSessions.delete(this.id);
+		return data;
 	}
 
-	private collectFormValues($root: JQuery): Record<string, unknown> {
-		const result: Record<string, unknown> = {};
-		
-		$root.find('input[name], select[name]').each((_i, el) => {
-			const $el = $(el);
-			const name = $el.attr('name');
-			
-			if (!name) {return;} // skip if no name
-			
-			let value: unknown;
-			
-			if ($el.is(':checkbox')) {
-				// checkboxes: boolean or list depending on name pattern
-				if ($root.find(`input[name="${name}"][type="checkbox"]`).length > 1) {
-					// multiple checkboxes with same name
-					value = $root
-						.find(`input[name="${name}"]:checked`)
-						.map((_j, e) => $(e).val())
-						.get();
-				} else {
-					// single checkbox
-					value = $el.is(':checked');
-				}
-			} else if ($el.is(':radio')) {
-				// radios: get checked one
-				value = $root.find(`input[name="${name}"]:checked`).val() ?? null;
-			} else {
-				// regular input/select
-				value = $el.val();
-			}
-			
-			result[name] = value;
-		});
-		
-		return result;
-	}
 
 	private refreshData(jquery: JQuery) {
-		this._data = this.collectFormValues(jquery) as SharedDataType<T>;
+		this._data = HTMLTools.collectFormValues(jquery) as SharedDataType<T>;
 		this.sendData();
 		if (this._breakout( this._data)) {
 			this.resolver(this._data);
@@ -217,77 +160,11 @@ export class SharedDialog<const T extends SharedDataDefinition> {
 
 type SharedDialogOptions = object;
 
-type SharedFieldDefinition<T extends string | number | boolean> =
 
-	{
-		label: string,
-		disabled ?: boolean | (() => boolean)
-		default ?: T;
-	}
-	& ({
-	type: "string";
-	choices: never;
-	default ?: string;
-} | {
-	type: "number";
-	default ?: number;
-} | {
-	type: "boolean";
-	default ?: boolean;
-}
-	|
-	(T extends number
-		? NumberChoiceFieldDef<T>
-		: T extends string ?
-		StringChoiceFieldDef<T>
-		: never
-	)
-	)
-;
+type SharedDataDefinition = HTMLDataInputDefinition;
 
-type NumberChoiceFieldDef<T extends number> = {
-	type: "number";
-	choices: T[];
-	default?: T;
-};
+type SharedDataType<T extends SharedDataDefinition> = HTMLInputReturnType<T>;
 
-type StringChoiceFieldDef<T extends string> = 
-	{
-	type: "string";
-	choices: T[];
-	default?: T;
-} | {
-	type : "localizedString";
-	table: Record<T, LocalizationString>;
-	default?: T;
-} | {
-	type : "stringTable";
-	table: Record<T, string>;
-	default?: T;
-};
-
-type SharedDataDefinition = Record< string, SharedFieldDefinition<string | number | boolean>>;
-
-type SharedDataType<T extends SharedDataDefinition> = {
-	[K in keyof T] : K extends string ? SharedFieldDataType<T[K]> : never};
-
-
-type SharedFieldDataType<T extends SharedFieldDefinition< string | number | boolean>> =
-	"choices" extends keyof T
-		? (
-			T["choices"] extends Array<unknown>
-			? T["choices"][number]
-			: never
-		)
-		: T["type"] extends "number" 
-		? number
-		: T["type"] extends "string"
-		? string
-		: T["type"] extends "boolean"
-		? boolean
-		: "table" extends keyof T
-		? keyof T["table"]
-		: never;
 
 
 

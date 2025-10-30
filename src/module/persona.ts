@@ -122,7 +122,7 @@ Hooks.once("init", function() {
 	TarotPrinter.init();
 	TagPrinter.init();
 	Tooltip.init();
-	const r = new SharedDialog({}, "Purely so it loads");
+	SharedDialog.init(PersonaSockets);
 });
 
 function registerHandlebarsHelpers() {

@@ -182,6 +182,143 @@ export class HTMLTools {
 		return obj as Readonly<Record<T[number], string>>;
 	}
 
+
+static generateDefaultData<T extends HTMLDataInputDefinition>(definition: T) : HTMLInputReturnType<T> {
+		const data : Partial<HTMLInputReturnType<T>> = {};
+		for (const [k,v] of Object.entries(definition)) {
+			const key = k as keyof typeof definition;
+			switch (true) {
+				case ("default" in v && v.default != undefined): {
+					//@ts-expect-error TS being annoying
+					data[key] = v.default;
+					break;
+				}
+				case ("choices" in v && v.choices.length > 0) :{
+					//@ts-expect-error TS being annoying
+					data[key] = v.choices.at(0);
+					break;
+				}
+				case ("table" in v) : {
+					//@ts-expect-error TS being annoying
+					data[key] = Object.keys(v.table).at(0);
+					break;
+				}
+				case (v.type == "string") : {
+					//@ts-expect-error TS being annoying
+					data[key] = "";
+					break;
+				}
+				case (v.type == "number") : {
+					//@ts-expect-error TS being annoying
+					data[key] = 0;
+					break;
+				}
+				case (v.type == "boolean") : {
+					//@ts-expect-error TS being annoying
+					data[key] = false;
+					break;
+				}
+				default: 
+					console.log(key, v, definition);
+					throw new Error(`Bad Data Definition: ${JSON.stringify(definition)}`);
+			}
+		}
+		return data as HTMLInputReturnType<T>;
+	}
+
+	static generateFormHTML<T extends HTMLDataInputDefinition>(definition: T, data?: HTMLInputReturnType<T> | null, _options : HTMLGenerationOptions = {}) : string {
+		if (!data) {
+			data = this.generateDefaultData(definition);
+		}
+		const selectors = Object.entries(definition)
+			.map( ([k,v]) => {
+				const label = `<label> ${v.label} </label>`;
+				switch (true) {
+					case "choices" in v: {
+						const options = v.choices
+							.map( ch => {
+								return `<option value='${ch}'` +
+									(data[k] == ch ? "selected" : "")
+									+ ">"
+									+ `${ch}</option>`;
+							})
+							.join("");
+						const elem = `${label}<select name='${k}'>
+					${options}
+					</select>`;
+						return elem;
+					}
+					case "table" in v: {
+						const options = Object.entries(v.table)
+							.map( ([key,tv]) => {
+								const displayedName = v.type == "localizedString" ? game.i18n.localize(tv) : tv;
+								return `<option value='${key}'` + 
+									(data[k] == key ? "selected" : "")
+									+ ">"
+									+ `${displayedName}</option>`;
+							})
+							.join("");
+						const elem = `${label}<select name='${k}'>
+					${options}
+					</select>`;
+						return elem;
+					}
+					case v.type == "string": {
+						const elem = `${label}<input type='string' name='${k}' value='${data[k] as string}'>`;
+						return elem;
+					}
+					case v.type == "number": {
+						const elem = `${label}<input type='number' name='${k}' value=${data[k] as string}>`;
+						return elem;
+					}
+					case v.type == "boolean": {
+						const elem = `${label}<input type='checkbox' name='${k}' ${data[k] ? 'checked' : ''}>`;
+						return elem;
+					}
+				}
+			})
+			.map( x=> `<div> ${x} </div>`)
+			.join();
+		return selectors;
+	}
+
+	static collectFormValues($root: JQuery): Record<string, unknown> {
+		const result: Record<string, unknown> = {};
+		
+		$root.find('input[name], select[name]').each((_i, el) => {
+			const $el = $(el);
+			const name = $el.attr('name');
+			
+			if (!name) {return;} // skip if no name
+			
+			let value: unknown;
+			
+			if ($el.is(':checkbox')) {
+				// checkboxes: boolean or list depending on name pattern
+				if ($root.find(`input[name="${name}"][type="checkbox"]`).length > 1) {
+					// multiple checkboxes with same name
+					value = $root
+						.find(`input[name="${name}"]:checked`)
+						.map((_j, e) => $(e).val())
+						.get();
+				} else {
+					// single checkbox
+					value = $el.is(':checked');
+				}
+			} else if ($el.is(':radio')) {
+				// radios: get checked one
+				value = $root.find(`input[name="${name}"]:checked`).val() ?? null;
+			} else {
+				// regular input/select
+				value = $el.val();
+			}
+			
+			result[name] = value;
+		});
+		
+		return result;
+	}
+
 // **************************************************
 // **************   EventHandlers  *************** *
 // **************************************************
@@ -244,3 +381,79 @@ type ChoiceBoxOptions<T> = {
 export class CanceledDialgogError extends Error {
 
 }
+
+
+type HTMLGenerationOptions = object;
+
+type HTMLInputFieldDefinition<T extends string | number | boolean> =
+	{
+		label: string,
+		disabled ?: boolean | (() => boolean)
+		default ?: T;
+	}
+	& ({
+	type: "string";
+	choices: never;
+	default ?: string;
+} | {
+	type: "number";
+	default ?: number;
+} | {
+	type: "boolean";
+	default ?: boolean;
+}
+	|
+	(T extends number
+		? NumberChoiceFieldDef<T>
+		: T extends string ?
+		StringChoiceFieldDef<T>
+		: never
+	)
+	)
+;
+
+type NumberChoiceFieldDef<T extends number> = {
+	type: "number";
+	choices: T[];
+	default?: T;
+};
+
+type StringChoiceFieldDef<T extends string> = 
+	{
+	type: "string";
+	choices: T[];
+	default?: T;
+} | {
+	type : "localizedString";
+	table: Record<T, LocalizationString>;
+	default?: T;
+} | {
+	type : "stringTable";
+	table: Record<T, string>;
+	default?: T;
+};
+
+export type HTMLDataInputDefinition = Record< string, HTMLInputFieldDefinition<string | number | boolean>>;
+
+export type HTMLInputReturnType<T extends HTMLDataInputDefinition> = {
+	[K in keyof T] : K extends string ? HTMLReturnField<T[K]> : never};
+
+
+type HTMLReturnField<T extends HTMLInputFieldDefinition< string | number | boolean>> =
+	"choices" extends keyof T
+		? (
+			T["choices"] extends Array<unknown>
+			? T["choices"][number]
+			: never
+		)
+		: T["type"] extends "number" 
+		? number
+		: T["type"] extends "string"
+		? string
+		: T["type"] extends "boolean"
+		? boolean
+		: "table" extends keyof T
+		? keyof T["table"]
+		: never;
+
+
