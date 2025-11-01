@@ -84,6 +84,7 @@ export class PCSheet extends PCLikeSheet {
 		html.find(`.gain-money`).on('click', this.gainMoney.bind(this));
 		html.find(".draw-social-card").on("click", this.drawSocialCard.bind(this));
 		html.find(".draw-activity-card").on("click", this.drawActivityCard.bind(this));
+		html.find(".engage-minor-action").on("click", this.doMinorAction.bind(this));
 		html.find(".relationship-type").on("change", this.relationshipTypeChange.bind(this));
 		html.find(".add-strike").on("click", this.addStrike.bind(this));
 		html.find(".rem-strike").on("click", this.removeStrike.bind(this));
@@ -280,6 +281,27 @@ export class PCSheet extends PCLikeSheet {
 			await PersonaSocial.chooseActivity(this.actor, activity, {noDegrade:true});
 		}
 	}
+
+	async doMinorAction(event: JQuery.ClickEvent) {
+		const minorId= String(HTMLTools.getClosestData(event, "minorActionId"));
+		const minorAction= this.actor.downtimeMinorActions.find(x=> x.id == minorId);
+		if (! minorAction) {
+			throw new PersonaError(`Can't find Minor Action Id: ${minorId}`)
+		}
+		if (minorAction.isUsableType()) {
+			if (await HTMLTools.confirmBox("Minor Action", `Use ${minorAction.name}?`)) {
+				await this._useItemOrPower(minorAction);
+			}
+			return;
+		}
+		if (minorAction.isSocialCard()) {
+			if (await HTMLTools.confirmBox("Minor Action", `Perform Minor Action: ${minorAction.name}?`)) {
+				await PersonaSocial.chooseActivity(this.actor, minorAction, {noDegrade:true});
+			}
+			return;
+		}
+	}
+
 	async drawSocialCard(event: JQuery.ClickEvent) {
 		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
 		const link = PersonaSocial.lookupSocialLink(this.actor, linkId);

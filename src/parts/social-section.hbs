@@ -6,6 +6,9 @@
 		<a class="item" data-tab="activities">
 			Activities
 		</a>
+		<a class="item" data-tab="minor-actions">
+			Minor Actions
+		</a>
 	</nav>
 	<section class="inner-body">
 		<section class="tab tab-content social-section" data-group="social" data-tab="SL">
@@ -14,6 +17,9 @@
 		<section class="tab tab-content social-section" data-group="social" data-tab="activities">
 			{{> "systems/persona/parts/social-activities-list.hbs" actor=actor CONST=CONST}}
 		</section>
+		<section class="tab tab-content social-section" data-group="social" data-tab="minor-actions">
+			{{> "systems/persona/parts/social-minor-actions.hbs" actor=actor CONST=CONST}}
+			</section>
 	</section>
 </div>
 

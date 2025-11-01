@@ -1,0 +1,19 @@
+<section class="social-list f-col">
+	<h2> Downtime Minor Actions</h2>
+	{{#each actor.downtimeMinorActions as |action|}}
+	{{#if true}}
+	<div class="minor-action f-row social-item" data-minor-action-id="{{action.id}}">
+		<a class="engage-minor-action" title="Take this action">
+			<img class="portrait" src='{{action.img}}'>
+		</a>
+		{{else}}
+		<img class="portrait greyed-out" src='{{action.img}}'>
+		{{/if}}
+		<span class="name" title="{{action.description}}">
+			{{action.displayedName}}
+		</span>
+	</div>
+	{{/each}}
+
+</section>
+

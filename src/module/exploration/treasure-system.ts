@@ -5,7 +5,6 @@ import { ProbabilityRate } from "../../config/probability.js";
 import { TreasureTable } from "../../config/treasure-tables.js";
 import {PersonaError} from "../persona-error.js";
 import {Carryable, Tag} from "../item/persona-item.js";
-import {Metaverse} from "../metaverse.js";
 
 export class TreasureSystem {
 	static generate(treasureLevel: number, modifier : number = 0, treasureMin = 1) : U<EnchantedTreasureFormat> {
@@ -97,7 +96,7 @@ export class TreasureSystem {
 	static possessionWeightMod(item: TreasureItem) : number {
 		if (this.isCollectableItem(item)) {return 1;}
 		const amtOwned= this.amountOfItemOwnedByParty(item);
-		return Math.max(0, 1 - amtOwned/3);
+		return Math.max(0.25, 1 - amtOwned/3);
 	}
 
 	static isCollectableItem( item: TreasureItem) {
@@ -146,8 +145,25 @@ export class TreasureSystem {
 			const treasure = this.generate(treasureLevel, modifier, minLevel);
 			if (treasure) { arr.push(treasure); }
 		}
-		await Metaverse.handleTreasureRolls(arr);
+		await this.handleTreasureRolls(arr);
 	}
+
+	static async handleTreasureRolls (treasures: EnchantedTreasureFormat[]) {
+		if (treasures.length == 0) {return;}
+		let html = `<h2> Treasure Found </h2>`;
+		for (const treasure of treasures) {
+			const treasureString = TreasureSystem.printEnchantedTreasureString(treasure);
+			html +=`<div> ${treasureString} </div>`;
+		}
+		return await ChatMessage.create({
+			speaker: {
+				alias: "Treasure Rolls"
+			},
+			content: html,
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+		});
+	}
+
 
 }
 

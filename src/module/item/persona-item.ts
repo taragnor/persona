@@ -1691,6 +1691,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return (this.system.subtype == 'weapon');
 	}
 
+	isSocialCard() : this is SocialCard {
+		return this.system.type == "socialCard";
+	}
+
 	isMagicSkill(this: UsableAndCard): this is PowerSub<'magic'> {
 		if (this.isSkillCard()) {return false;}
 		return (this.system.subtype == 'magic');

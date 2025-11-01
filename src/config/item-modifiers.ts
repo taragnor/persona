@@ -11,6 +11,7 @@ export const ENVIRONMENTAL_MODIFIERS = [
 	"numberOfSearches",
 	"treasureFind", // adds to search rolls of 4 or better
 	"shadowMoneyBoostPercent",
+	"treasure-roll-bonus", // adds to actual treasure roll in new treasure system
 ] as const;
 
 const DEPRECATED_TYPES = [
@@ -94,7 +95,6 @@ export const STUDENT_SKILLS_TYPES = [
 
 export const OTHER_TYPES = [
 
-
 ];
 
 export const MODIFIERLIST = [
@@ -107,6 +107,7 @@ export const MODIFIERLIST = [
 	...ACTOR_STATS_TYPES,
 	...ENVIRONMENTAL_MODIFIERS,
 	...DEPRECATED_TYPES,
+	...OTHER_TYPES,
 
 ] as const;
 

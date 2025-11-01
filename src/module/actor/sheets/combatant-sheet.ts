@@ -203,10 +203,10 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const ptype = power.system.type;
 		if (ptype != "power" && ptype != "consumable")
 			{throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);}
-		await this.#useItemOrPower(power);
+		await this._useItemOrPower(power);
 	}
 
-	async #useItemOrPower(power : UsableAndCard) {
+	protected async _useItemOrPower(power : UsableAndCard) {
 		Helpers.pauseCheck();
 		Helpers.ownerCheck(this.actor);
 		const actor = this.actor;
@@ -254,7 +254,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!item.isSkillCard() && (!item.isUsableType() || !item.isTrulyUsable())) {
 			throw new PersonaError(`item ${item.name} isn't usable`);
 		}
-		await this.#useItemOrPower(item);
+		await this._useItemOrPower(item);
 	}
 
 	async deleteTalent(event: Event) {

@@ -16,6 +16,7 @@ import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaDB } from "../persona-db.js";
 import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-system.js";
+import {ValidAttackers} from "../combat/persona-combat.js";
 
 declare global {
 	interface SocketMessage {
@@ -190,22 +191,23 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	// async treasureFound(searchRoll: number): Promise<Roll | undefined> {
-	async treasureFound(searchRoll: number): Promise<U<EnchantedTreasureFormat>> {
+	async treasureFound(searchRoll: number, searcher: ValidAttackers): Promise<U<EnchantedTreasureFormat>> {
 		const regionData = this.regionData;
+		const searchBonus = searcher.getPersonalBonuses("treasure-roll-bonus").total( {user: searcher.accessor});
 		if (this.treasuresRemaining <= 0) {
 			PersonaError.softFail("Can't find a treasure in room with no treasure left");
 			return undefined;
 		}
 		regionData.treasures.found += 1;
 		await this.setRegionData(regionData);
-		return this.#treasureRoll(searchRoll);
+		return this.#treasureRoll(searchRoll, searchBonus);
 	}
 
-	#treasureRoll(searchRoll: number) : U<EnchantedTreasureFormat> {
+	#treasureRoll(searchRoll: number, personalModifier : number = 0) : U<EnchantedTreasureFormat> {
 		const treasureLevel = this.parent.treasureLevel;
 		if (treasureLevel <= 0) {return undefined;}
 		const mods = this.regionData.specialMods;
-		let treasureMod = 0;
+		let treasureMod = personalModifier ?? 0;
 		let treasureMin = 1;
 
 		switch (true) {

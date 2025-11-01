@@ -4,62 +4,68 @@
 	<textarea name="system.description"> {{item.system.description}} </textarea>
 
 	{{> "systems/persona/parts/itemTags.hbs" item=item POWERSTUFF=POWERSTUFF}}
-	<div>
-		{{#if (isGM)}}
-		<div class="item-level">
-			<label>
-				Item Level:
-			</label>
-			{{numberInput item.system.itemLevel class="short" name="system.itemLevel" step=1 min=0 max=15}}
+	<div class="f-row">
+		<div class="f-col">
+			{{#if (isGM)}}
+			<div class="item-level">
+				<label>
+					Item Level:
+				</label>
+				{{numberInput item.system.itemLevel class="short" name="system.itemLevel" step=1 min=0 max=15}}
+			</div>
+			<label> Price </label>
+			{{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}
+			<label> No Trade </label>
+			<input type="checkbox" name="system.noTrade" {{checked item.system.noTrade}}>
+			{{else}}
+			<label> Price </label>
+			{{item.system.price}}
+			{{#if item.system.noTrade}}
+			<b> Can't trade</b>
+			{{/if}}
+			{{/if}}
 		</div>
-		<label> Price </label>
-		{{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}
-		<label> No Trade </label>
-		<input type="checkbox" name="system.noTrade" {{checked item.system.noTrade}}>
-		{{else}}
-		<label> Price </label>
-		{{item.system.price}}
-		{{#if item.system.noTrade}}
-		<b> Can't trade</b>
-		{{/if}}
-		{{/if}}
-	</div>
-	<hr>
-	<div class="dmg">
-		<select name="system.dmg_type">
-			{{selectOptions POWERSTUFF.REALDAMAGETYPES localize=true selected=item.system.dmg_type}}
-		</select>
-		{{#if (not item.system.damageNew.weaponLevel)}}
-		<div class="dmg-low">
-			<label>
-				{{localize	"persona.damage.low"}}
-			</label>
-			{{numberInput item.system.damage.low class="short" name="system.damage.low" step=1 min=0 max=900}}
+		<hr>
+		<div class="dmg">
+			<select name="system.dmg_type">
+				{{selectOptions POWERSTUFF.REALDAMAGETYPES localize=true selected=item.system.dmg_type}}
+			</select>
+			{{#if (not item.system.damageNew.weaponLevel)}}
+			<div class="dmg-low">
+				<label>
+					{{localize	"persona.damage.low"}}
+				</label>
+				{{numberInput item.system.damage.low class="short" name="system.damage.low" step=1 min=0 max=900}}
+			</div>
 		</div>
-	</div>
-	<div class="dmg">
-		<div class="dmg-high">
-			<label>
-				{{localize	"persona.damage.high"}}
-			</label>
-			{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=900}}
+		<div class="dmg">
+			<div class="dmg-high">
+				<label>
+					{{localize	"persona.damage.high"}}
+				</label>
+				{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=900}}
+			</div>
+			{{/if}}
+			{{#if (isGM)}}
+			<div class="new-dmg">
+				<label> Weapon Level </label>
+				{{numberInput item.system.damageNew.weaponLevel class="short" name="system.damageNew.weaponLevel" step=1 min=0 max=11}}
+			</div>
+			{{/if}}
+			<div>
+				<label> Damage Amt </label>
+				{{getWeaponDamageAmt item}}
+			</div>
+			<div>
+				<label>Extra Variance</label>
+				{{numberInput item.system.damageNew.extraVariance class="short" name="system.damageNew.extraVariance" step=1 min=0 max=10}}
+			</div>
 		</div>
-		{{/if}}
-		{{#if (isGM)}}
-		<div class="new-dmg">
-			<label> Weapon Level </label>
-			{{numberInput item.system.damageNew.weaponLevel class="short" name="system.damageNew.weaponLevel" step=1 min=0 max=11}}
-		</div>
-		{{/if}}
 		<div>
-			<label> Damage Amt </label>
-			{{getWeaponDamageAmt item}}
-		</div>
-		<div>
-			<label>Extra Variance</label>
-			{{numberInput item.system.damageNew.extraVariance class="short" name="system.damageNew.extraVariance" step=1 min=0 max=10}}
+			{{> "systems/persona/parts/treasure-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
 		</div>
 	</div>
 	{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
 
 </form>
+

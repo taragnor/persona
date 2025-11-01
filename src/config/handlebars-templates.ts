@@ -79,6 +79,7 @@ const templateFileNames : string[] =[
 	"input-conditional-boolean.hbs",
 	"input-conditional-numeric.hbs",
 	"power-tags.hbs",
+	"social-minor-actions.hbs",
 ];
 
 export const templatePaths = templateFileNames.

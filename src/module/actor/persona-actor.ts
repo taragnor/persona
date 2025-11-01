@@ -1618,6 +1618,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const remList : StatusEffectId[] = [];
 		let returnStatus: StatusEffectId = statusId;
 		switch (statusId) {
+			case "fatigued":
+				if (!this.hasStatus("fatigued")) {break;}
+				remList.push("fatigued");
+				returnStatus = "tired";
+				break;
 			case "tired":
 				if (!this.hasStatus("tired")) {break;}
 				remList.push("tired");
@@ -1779,7 +1784,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				}
 			}, true);
 		}
-		if (lvl < -1) {
+		if (lvl < statusToFatigueLevel("exhausted")) {
 			await this.addStatus( {
 				id: "crippled",
 				duration: {
@@ -1791,7 +1796,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (log && (oldId != newId || lvl < -1)) {
 			const oldName = oldId ? localize(statusMap.get(oldId)!.name) : "Normal";
 			const newName = newId ? localize(statusMap.get(newId)!.name): "Normal";
-			const hospital = lvl < -1 ? `${this.displayedName} is over-fatigued and need to be hospitalized!`: "";
+			const hospital = lvl < statusToFatigueLevel("exhausted") ? `${this.displayedName} is over-fatigued and need to be hospitalized!`: "";
 			await Logger.sendToChat(`${this.displayedName}  fatigue changed from ${oldName} to ${newName}. ${hospital}`);
 		}
 		return newId;
@@ -2826,6 +2831,8 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 			if (this.hasStatus("full-fade")) {
 				await this.removeStatus("full-fade");
 				await this.alterFatigueLevel(-2);
+			} else {
+				await this.alterFatigueLevel(-1);
 			}
 		}
 		await this.fullHeal();
@@ -3511,44 +3518,44 @@ socialEffects(this: SocialLink) : readonly SourcedConditionalEffect[] {
 	return ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this );
 }
 
-async fatigueRecoveryRoll(this: PC): Promise<string[]> {
-	const ret = [] as string[];
-	const fatigueStat = this.getFatigueStatus();
-	if (fatigueStat == undefined) {return ret;}
-	if (this.hasAlteredFatigueToday()) {return ret;}
-	let DC = 11;
-	switch (fatigueStat) {
-		case "rested": DC = 16; break;
-		case "exhausted": DC = 11;
-			if (this.hasMadeFatigueRollToday()) {return ret;}
-			break;
-		case "tired": DC= 6;
-			if (this.hasMadeFatigueRollToday()) {return ret;}
-			break;
-	}
-	const roll = await PersonaRoller.rollSave(this, {
-		DC,
-		label: `Save to end ${localizeStatusId(fatigueStat)}`,
-		saveVersus: fatigueStat,
-		rollTags: ["rest"],
-	});
-	await roll.toModifiedMessage(true);
-	const locStat = localizeStatusId(fatigueStat);
-	const fatLevel = this.fatigueLevel;
-	if (roll.success && fatLevel < 1) {
-		const newStat = await this.alterFatigueLevel(1);
-		if (newStat) {
-			ret.push(`${this.displayedName} is now ${localizeStatusId(newStat)}`);
-		} else {
-			ret.push(`${this.displayedName} is no longer ${locStat}`);
-		}
-	}
-	if (!roll.success && fatLevel > 1) {
-		await this.alterFatigueLevel(-1);
-		ret.push(`${this.displayedName} is no longer ${locStat}`);
-	}
-	return ret;
-}
+// async fatigueRecoveryRoll(this: PC): Promise<string[]> {
+// 	const ret = [] as string[];
+// 	const fatigueStat = this.getFatigueStatus();
+// 	if (fatigueStat == undefined) {return ret;}
+// 	if (this.hasAlteredFatigueToday()) {return ret;}
+// 	let DC = 11;
+// 	switch (fatigueStat) {
+// 		case "rested": DC = 16; break;
+// 		case "exhausted": DC = 11;
+// 			if (this.hasMadeFatigueRollToday()) {return ret;}
+// 			break;
+// 		case "tired": DC= 6;
+// 			if (this.hasMadeFatigueRollToday()) {return ret;}
+// 			break;
+// 	}
+// 	const roll = await PersonaRoller.rollSave(this, {
+// 		DC,
+// 		label: `Save to end ${localizeStatusId(fatigueStat)}`,
+// 		saveVersus: fatigueStat,
+// 		rollTags: ["rest"],
+// 	});
+// 	await roll.toModifiedMessage(true);
+// 	const locStat = localizeStatusId(fatigueStat);
+// 	const fatLevel = this.fatigueLevel;
+// 	if (roll.success && fatLevel < 1) {
+// 		const newStat = await this.alterFatigueLevel(1);
+// 		if (newStat) {
+// 			ret.push(`${this.displayedName} is now ${localizeStatusId(newStat)}`);
+// 		} else {
+// 			ret.push(`${this.displayedName} is no longer ${locStat}`);
+// 		}
+// 	}
+// 	if (!roll.success && fatLevel > 1) {
+// 		await this.alterFatigueLevel(-1);
+// 		ret.push(`${this.displayedName} is no longer ${locStat}`);
+// 	}
+// 	return ret;
+// }
 
 async resetFatigueChecks(this: PC) {
 	if (this.hasAlteredFatigueToday() || this.hasMadeFatigueRollToday()) {
@@ -3565,7 +3572,7 @@ async onEndDay(this: PC): Promise<string[]> {
 		if (await eff.onEndSocialTurn())
 		{ret.push(`Removed Condition ${eff.displayedName} at end of day.`);}
 	}
-	ret.push(...await this.fatigueRecoveryRoll());
+	// ret.push(...await this.fatigueRecoveryRoll());
 	await this.resetFatigueChecks();
 	return ret;
 }

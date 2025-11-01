@@ -333,7 +333,7 @@ get treasureLevel() : number {
 	return Math.floor(list.reduce( (a,s) => a + (s.level * s.getEncounterWeight(this)) , 0) / totalWeight);
 }
 
-async removeShadowFromEncounterList(id: Shadow["id"])  : Promise< PersonaScene>{
+async removeShadowFromEncounterList(id: Shadow["id"])  : Promise<PersonaScene>{
 	const data = this.encounterData;
 	data.monsters = data.monsters.filter( entry=> entry.id == id);
 	return await this.setEncounterData(data);
@@ -405,5 +405,7 @@ Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
 
 Hooks.on("renderHandlebarsApplication", (app, html) => {
 	const htm = $(html);
-	(app.document as PersonaScene)._addExtraSheetHTML(htm);
+	if (app.document instanceof PersonaScene) {
+		app.document._addExtraSheetHTML(htm);
+	}
 });

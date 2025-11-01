@@ -54,7 +54,7 @@ export class Metaverse {
 		await Promise.allSettled(promises);
 		await TensionPool.instance.clear();
 		Hooks.callAll("exitMetaverse");
-		await Logger.sendToChat(`Exiting Metaverse...`);
+		await Logger.sendToChat(`Exiting Metaverse... Everyone gains 1 level of fatigue`);
 	}
 
 	static weightedTest(type :Shadow["system"]["creatureType"] = "shadow") {
@@ -609,6 +609,7 @@ static async searchRegion(region: PersonaRegion) {
 	const results = await SearchMenu.start(searchOptions, region);
 	const treasureRolls : EnchantedTreasureFormat[] = [];
 	for (const resultSet of results) {
+		const searcher = PersonaDB.findActor(resultSet.searcher.actor);
 		for (const result of resultSet.results) {
 			switch (result.result) {
 				case "nothing":
@@ -618,9 +619,9 @@ static async searchRegion(region: PersonaRegion) {
 						PersonaError.softFail("Treasure Found but no roll given");
 						break;
 					}
-					const treasureRoll = await region.treasureFound(result.roll);
+					const treasureRoll = await region.treasureFound(result.roll, searcher as ValidAttackers);
 					if (treasureRoll) {
-						treasureRolls.push(treasureRoll);
+						treasureRolls.push(treasureRoll)
 					}
 					break;
 				}
@@ -638,40 +639,25 @@ static async searchRegion(region: PersonaRegion) {
 			}
 		}
 	}
-	await this.handleTreasureRolls(treasureRolls);
+	await TreasureSystem.handleTreasureRolls(treasureRolls);
 	await this.passMetaverseTurn();
 }
 
-static async handleTreasureRolls (treasures: EnchantedTreasureFormat[]) {
-	if (treasures.length == 0) {return;}
-	let html = `<h2> Treasure Found </h2>`;
-	for (const treasure of treasures) {
-		const treasureString = TreasureSystem.printEnchantedTreasureString(treasure);
-		html +=`<div> ${treasureString} </div>`;
-	}
-	return await ChatMessage.create({
-		speaker: {
-			alias: "Treasure Rolls"
-		},
-		content: html,
-		style: CONST.CHAT_MESSAGE_STYLES.OOC,
-	});
-}
-
-	// static async handleTreasureRolls( rolls: Roll[]) {
-	// 	let html = `<h2> Treasure Rolls </h2>`;
-	// 	const rollstring = rolls.map( r => `<li>${r.formula} (${r.total})</li>`).join("");
-	// 	html += `<ul> ${rollstring} </ul>`;
-	// 	html = `<div class="treasure-rolls"> ${html} </div>`;
-	// 	return await ChatMessage.create({
-	// 		speaker: {
-	// 			alias: "Treasure Rolls"
-	// 		},
-	// 		content: html,
-	// 		rolls,
-	// 		style: CONST.CHAT_MESSAGE_STYLES.OOC,
-	// 	});
-	// }
+//OLD TREAUSRE SYSTEM
+// static async handleTreasureRolls( rolls: Roll[]) {
+// 	let html = `<h2> Treasure Rolls </h2>`;
+// 	const rollstring = rolls.map( r => `<li>${r.formula} (${r.total})</li>`).join("");
+// 	html += `<ul> ${rollstring} </ul>`;
+// 	html = `<div class="treasure-rolls"> ${html} </div>`;
+// 	return await ChatMessage.create({
+// 		speaker: {
+// 			alias: "Treasure Rolls"
+// 		},
+// 		content: html,
+// 		rolls,
+// 		style: CONST.CHAT_MESSAGE_STYLES.OOC,
+// 	});
+// }
 
 	static getRegion(regionId ?: string) : PersonaRegion | undefined {
 		if (game.user.isGM) {

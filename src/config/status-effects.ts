@@ -160,6 +160,10 @@ export const STATUS_EFFECT_LIST = [
 		icon:   "icons/svg/down.svg",
 		tags: ["downtime", "fatigue"],
 	}, {
+		id: "fatigued",
+		icon:   "icons/svg/down.svg",
+		tags: ["downtime", "fatigue"],
+	}, {
 		id: "sticky",
 		icon:   "icons/svg/anchor.svg",
 		tags: ["identifier"],
@@ -225,7 +229,7 @@ CONFIG.statusEffects = STATUS_EFFECT_LIST
 
 export type StatusEffectId = typeof STATUS_EFFECT_LIST[number]["id"];
 
-export type FatigueStatusId = Extract<StatusEffectId, "tired" | "exhausted" | "rested">
+export type FatigueStatusId = Extract<StatusEffectId, "tired" | "exhausted" | "rested" | "fatigued">
 
 export const STATUS_EFFECT_TRANSLATION_TABLE = Object.fromEntries(
 	CONFIG.statusEffects.map( ({id, name}) => [id, name])
@@ -270,10 +274,11 @@ Hooks.on("ready", () => {
 
 export function statusToFatigueLevel(id: FatigueStatusId | undefined) :number {
 	switch (id) {
-		case undefined:return 1;
 		case "rested": return 2;
-		case "exhausted": return -1;
-		case "tired": return 0;
+		case undefined:return 1;
+		case "exhausted": return -2;
+		case "fatigued": return 0;
+		case "tired": return -1;
 	}
 }
 
@@ -289,8 +294,9 @@ export function localizeStatusId(id: StatusEffectId) : string {
 
 export function fatigueLevelToStatus(lvl: number): FatigueStatusId | undefined {
 	switch (true) {
-		case lvl <= -1: return "exhausted";
-		case lvl == 0: return "tired";
+		case lvl <= -2: return "exhausted";
+		case lvl == -1: return "tired";
+		case lvl == 0: return "fatigued";
 		case lvl == 1: return undefined;
 		case lvl >= 2: return "rested";
 		default:
