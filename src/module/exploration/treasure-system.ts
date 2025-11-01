@@ -12,6 +12,13 @@ export class TreasureSystem {
 		const item = this.generateFromTable(table, treasureLevel);
 		if (item == undefined) {return undefined;}
 		if (item.isEnchantable()) {
+			if (item.isInvItem()) {
+				if (item.system.slot == "weapon_crystal") {
+					modifier -= 50;
+
+				}
+
+			}
 			const enchantmentTable = this.convertRollToTreasureTable(modifier, treasureMin);
 			const enchantment = this.generateEnchantmentFromTable(enchantmentTable, treasureLevel);
 			if (enchantment) {
