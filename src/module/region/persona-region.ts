@@ -212,14 +212,14 @@ export class PersonaRegion extends RegionDocument {
 
 		switch (true) {
 			case mods.includes("treasure-poor"):
-				treasureMod = -35;
+				treasureMod = -50;
 				break;
 			case mods.includes("treasure-rich"):
 				treasureMod = +10;
 				treasureMin = 25;
 				break;
 			case mods.includes("treasure-ultra"):
-				treasureMod = 20;
+				treasureMod = 25;
 				treasureMin = 50;
 				break;
 			case mods.includes("bonus-on-6") && searchRoll == 6:

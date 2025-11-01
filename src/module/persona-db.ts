@@ -381,7 +381,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	downtimeActions() : SocialCard[] {
 		return this.allSocialCards()
-			.filter( card=> card.system.cardType == "minor");
+			.filter( card=> card.isMinorActionItem());
 	}
 
 	averagePCLevel(): number {

@@ -304,6 +304,7 @@ input.baseRelationship
 }
 
 .social-link img.portrait,
+.social-list img.portrait,
 .job img.portrait {
   max-width: 40px;
   min-width: 40px;

@@ -1603,6 +1603,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
+	isMinorActionItem() : boolean {
+		if (this.isSocialCard() && this.system.cardType == "minor") {return true;}
+		if (!this.isUsableType()) {return false;}
+		return this.hasTag("downtime-minor");
+	}
+
 	get tooltip(): string {
 		switch (this.system.type) {
 			case 'consumable':

@@ -1257,7 +1257,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get displayedBonusPowers() : Power[] {
 		if (!this.isValidCombatant()) {return [];}
 		return this.persona().bonusPowers.filter( power=>
-			!power.isOpener()
+			!power.isOpener() && !power.isMinorActionItem()
 		);
 	}
 
@@ -1726,6 +1726,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...PersonaDB.downtimeActions(),
 			...allUsable,
 		];
+	}
+
+	get usableDowntimeMinorActions(): (Usable | SocialCard)[] {
+		if (!this.isPC()) {return [];};
+		return this.downtimeMinorActions.filter( action=>  {
+			if (action.isUsableType()) {
+				return this.persona().canUsePower(action, false);
+			}
+			if (action.isSocialCard()) {
+				return PersonaSocial.isActivitySelectable(action, this);
+			}
+		})
+		.sort( (a,b) => a.displayedName.localeCompare(b.displayedName));
+
 	}
 
 	get treasureMultiplier () : number {
