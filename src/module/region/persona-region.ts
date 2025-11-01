@@ -15,6 +15,7 @@ import { UniversalModifier } from "../item/persona-item.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaDB } from "../persona-db.js";
+import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-system.js";
 
 declare global {
 	interface SocketMessage {
@@ -188,7 +189,8 @@ export class PersonaRegion extends RegionDocument {
 		await this.setRegionData(regionData);
 	}
 
-	async treasureFound(searchRoll: number): Promise<Roll | undefined> {
+	// async treasureFound(searchRoll: number): Promise<Roll | undefined> {
+	async treasureFound(searchRoll: number): Promise<U<EnchantedTreasureFormat>> {
 		const regionData = this.regionData;
 		if (this.treasuresRemaining <= 0) {
 			PersonaError.softFail("Can't find a treasure in room with no treasure left");
@@ -199,30 +201,58 @@ export class PersonaRegion extends RegionDocument {
 		return this.#treasureRoll(searchRoll);
 	}
 
-	async #treasureRoll(searchRoll: number) : Promise<Roll> {
+	#treasureRoll(searchRoll: number) : U<EnchantedTreasureFormat> {
+		const treasureLevel = this.parent.treasureLevel;
+		if (treasureLevel <= 0) {return undefined;}
 		const mods = this.regionData.specialMods;
-		let expr : string;
+		let treasureMod = 0;
+		let treasureMin = 1;
+
 		switch (true) {
 			case mods.includes("treasure-poor"):
-				expr = "1d10";
+				treasureMod = -35;
 				break;
 			case mods.includes("treasure-rich"):
-				expr = "1d20+5";
+				treasureMod = +10;
+				treasureMin = 25;
 				break;
 			case mods.includes("treasure-ultra"):
-				expr = "1d10+15";
+				treasureMod = 20;
+				treasureMin = 50;
 				break;
 			case mods.includes("bonus-on-6") && searchRoll == 6:
-				expr = "1d20+5";
+				treasureMod += 10;
+				treasureMin += 50;
 				break;
 			default:
-				expr = "1d20";
 				break;
 		}
-		const roll = new Roll(expr);
-		await roll.evaluate();
-		return roll;
+		return TreasureSystem.generate(treasureLevel, treasureMod, treasureMin);
 	}
+	// async #treasureRoll(searchRoll: number) : Promise<Roll> {
+	// 	const mods = this.regionData.specialMods;
+	// 	let expr : string;
+	// 	switch (true) {
+	// 		case mods.includes("treasure-poor"):
+	// 			expr = "1d10";
+	// 			break;
+	// 		case mods.includes("treasure-rich"):
+	// 			expr = "1d20+5";
+	// 			break;
+	// 		case mods.includes("treasure-ultra"):
+	// 			expr = "1d10+15";
+	// 			break;
+	// 		case mods.includes("bonus-on-6") && searchRoll == 6:
+	// 			expr = "1d20+5";
+	// 			break;
+	// 		default:
+	// 			expr = "1d20";
+	// 			break;
+	// 	}
+	// 	const roll = new Roll(expr);
+	// 	await roll.evaluate();
+	// 	return roll;
+	// }
 
 	get treasuresRemaining(): number {
 		const t= this.regionData.treasures;

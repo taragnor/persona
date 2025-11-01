@@ -15,9 +15,7 @@ import { PersonaCalendar } from "./social/persona-calendar.js";
 import { PersonaRegion } from "./region/persona-region.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import {ConditionalEffectManager} from "./conditional-effect-manager.js";
-import {HTMLDataInputDefinition, HTMLTools} from "./utility/HTMLTools.js";
-import {FREQUENCY} from "../config/frequency.js";
-import {PROBABILITIES} from "../config/probability.js";
+import {HTMLTools} from "./utility/HTMLTools.js";
 
 export class PersonaScene extends Scene {
 	static ENCOUNTER_DATA_FLAG_NAME = "encounterData" as const;
@@ -296,12 +294,18 @@ export class PersonaScene extends Scene {
 		  <span>Encounter</span>
 	 </a>
 `);
-		const listElements = this.encounterData.monsters.map( entry=> {
+		const listElements = this.encounterData.monsters
+		.sort ( (a,b) => {
+			const shadow1 = PersonaDB.getActorById(a.id);
+			const shadow2 = PersonaDB.getActorById(b.id);
+			return shadow1!.level  - shadow2!.level;
+		})
+		.map( entry=> {
 			const shadow = PersonaDB.getActorById(entry.id);
 			if (!shadow) {return $("");}
 			const div = $(`<div class="encounter" data-shadow-id="${shadow.id}"></div>`);
 			div.append( $(`<span class="shadow-name">
-							${shadow.name} (${shadow.roleString.toString()}) [${entry.frequency}]
+							L${shadow.level} ${shadow.name} (${shadow.roleString.toString()}) [${entry.frequency}]
 				</span>
 `).on("click", (ev) => {
 	const id = HTMLTools.getClosestData(ev, "shadowId");
@@ -310,7 +314,7 @@ export class PersonaScene extends Scene {
 	void shadow.sheet.render(true);
 })
 			);
-				return div;
+			return div;
 		});
 		const tab = $(`<div class="tab scrollable" data-group="sheet" data-tab="encounter" data-application-part="encounter"> </div>`);
 		tab.append($("<h2> Encounters </h2>"));
@@ -318,43 +322,48 @@ export class PersonaScene extends Scene {
 			tab.append(jq);
 		}
 
-		html.find("section.window-content").children().last().before(tab);
+html.find("section.window-content").children().last().before(tab);
+}
 
-	}
+get treasureLevel() : number {
+	const list = this.encounterList()
+		.filter( x=> !x.hasRole("treasure-shadow"));
+	if (list.length ==0) {return 0;}
+	const totalWeight = list.reduce( (a,s) => a + s.getEncounterWeight(this), 0);
+	return Math.floor(list.reduce( (a,s) => a + (s.level * s.getEncounterWeight(this)) , 0) / totalWeight);
+}
 
+async removeShadowFromEncounterList(id: Shadow["id"])  : Promise< PersonaScene>{
+	const data = this.encounterData;
+	data.monsters = data.monsters.filter( entry=> entry.id == id);
+	return await this.setEncounterData(data);
+}
 
+static defaultSceneEncounterData() : SceneEncounterData {
+	return {
+		monsters : [],
+	};
+}
 
-	async removeShadowFromEncounterList(id: Shadow["id"])  : Promise< PersonaScene>{
-		const data = this.encounterData;
-		data.monsters = data.monsters.filter( entry=> entry.id == id);
-		return await this.setEncounterData(data);
-	}
+async setEncounterData(data: SceneEncounterData) : Promise<PersonaScene>{
+	await this.setFlag("persona", PersonaScene.ENCOUNTER_DATA_FLAG_NAME, data);
+	return this;
+}
 
-	static defaultSceneEncounterData() : SceneEncounterData {
-		return {
-			monsters : [],
-		};
-	}
-
-	async setEncounterData(data: SceneEncounterData) : Promise<PersonaScene>{
-		await this.setFlag("persona", PersonaScene.ENCOUNTER_DATA_FLAG_NAME, data);
-		return this;
-	}
-
-	get encounterData() : SceneEncounterData {
-		const monsterList = this.encounterList().map (shadow=> ({
-			id: shadow.id,
-			frequency: shadow.getEncounterWeight(this),
-		})
+get encounterData() : SceneEncounterData {
+	const monsterList = this.encounterList().map (shadow=> ({
+		id: shadow.id,
+		frequency: shadow.getEncounterWeight(this),
+	})
+	);
+	const data =
+		foundry.utils.mergeObject(
+			PersonaScene.defaultSceneEncounterData(),
+			this.getFlag("persona", PersonaScene.ENCOUNTER_DATA_FLAG_NAME) as Partial<SceneEncounterData> ?? {}
 		);
-		const data =
-			foundry.utils.mergeObject(
-				PersonaScene.defaultSceneEncounterData(),
-				this.getFlag("persona", PersonaScene.ENCOUNTER_DATA_FLAG_NAME) as Partial<SceneEncounterData> ?? {}
-			);
-		return foundry.utils.mergeObject(data,
-			{monsters: monsterList});
-	}
+	return foundry.utils.mergeObject(data,
+		{monsters: monsterList});
+}
 
 }
 

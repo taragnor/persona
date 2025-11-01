@@ -5,14 +5,15 @@ import { ProbabilityRate } from "../../config/probability.js";
 import { TreasureTable } from "../../config/treasure-tables.js";
 import {PersonaError} from "../persona-error.js";
 import {Carryable, Tag} from "../item/persona-item.js";
+import {Metaverse} from "../metaverse.js";
 
 export class TreasureSystem {
-	static generate(treasureLevel: number, modifier : number = 0) : U<EnchantedTreasureFormat> {
-		const table = this.convertRollToTreasureTable(modifier);
-		const item =  this.generateFromTable(table, treasureLevel);
+	static generate(treasureLevel: number, modifier : number = 0, treasureMin = 1) : U<EnchantedTreasureFormat> {
+		const table = this.convertRollToTreasureTable(modifier, treasureMin);
+		const item = this.generateFromTable(table, treasureLevel);
 		if (item == undefined) {return undefined;}
 		if (item.isEnchantable()) {
-			const enchantmentTable = this.convertRollToTreasureTable(modifier);
+			const enchantmentTable = this.convertRollToTreasureTable(modifier, treasureMin);
 			const enchantment = this.generateEnchantmentFromTable(enchantmentTable, treasureLevel);
 			if (enchantment) {
 				return {
@@ -27,8 +28,10 @@ export class TreasureSystem {
 		};
 	}
 
-	static convertRollToTreasureTable(modifier: number) : Exclude<TreasureTable, "none"> {
-		const die = modifier + 1 + Math.floor(Math.random() * 100);
+	static convertRollToTreasureTable(modifier: number, treasureRollMin: number) : Exclude<TreasureTable, "none"> {
+		modifier += treasureRollMin;
+		const dieSize = 101 - treasureRollMin;
+		const die = modifier + Math.floor(Math.random() * dieSize);
 		switch (true) {
 			case die < 50: return "trinkets";
 			case die < 75: return "lesser";
@@ -129,12 +132,21 @@ export class TreasureSystem {
 	}
 
 	static printEnchantedTreasureString(treasure: EnchantedTreasureFormat) : string {
-const basename = treasure.item.name;
+		const basename = treasure.item.name;
 		if (treasure.enchantments.length == 0) {
 			return basename;
 		}
 		const enchantments = treasure.enchantments.map( x=> x.name);
-		return `$baseName (${enchantments.join(", ")})`;
+		return `${basename} (${enchantments.join(", ")})`;
+	}
+
+	static async test(treasureLevel: number, modifier: number = 0, minLevel: number = 1) {
+		const arr : EnchantedTreasureFormat[] = [];
+		for (let i = 0; i <100; i++ ) {
+			const treasure = this.generate(treasureLevel, modifier, minLevel);
+			if (treasure) { arr.push(treasure); }
+		}
+		await Metaverse.handleTreasureRolls(arr);
 	}
 
 }
@@ -161,3 +173,4 @@ export type EnchantedTreasureFormat = {
 	item: TreasureItem,
 	enchantments: Tag[]
 }
+

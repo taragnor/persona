@@ -369,8 +369,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get socialInit(): number {
-		if (this.system.type != "pc") {return -999;}
-		return (this as PC).getSocialStat("courage").total({user:(this as PC).accessor});
+		if (!this.isPC()) {return -999;}
+		const courage= this.getSocialStat("courage").total({user:this.accessor});
+		const diligence = this.getSocialStat("diligence").total({user:this.accessor});
+		return courage + diligence;
 	}
 
 	/** gets the real NPC of an NPC Ally*/

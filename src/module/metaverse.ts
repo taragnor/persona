@@ -29,7 +29,7 @@ import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { NPCAlly } from "./actor/persona-actor.js";
 import { PersonaScene } from "./persona-scene.js";
-import { TreasureSystem } from "./exploration/treasure-system.js";
+import { EnchantedTreasureFormat, TreasureSystem } from "./exploration/treasure-system.js";
 
 export class Metaverse {
 	static lastCrunch : number = 0;
@@ -594,70 +594,84 @@ static #sendPassTurnRequest() {
 	PersonaSockets.simpleSend("PASS_MV_TURN", {}, gms);
 }
 
-	static async searchRegion(region: PersonaRegion) {
-		const data = region.regionData;
-		const searchOptions :typeof SearchMenu["options"] = {
-			treasureRemaining: region.treasuresRemaining,
-			stopOnHazard: data.specialMods.includes("stop-on-hazard"),
-			isHazard: data.hazard != "none" && data.hazard != "found",
-			isSecret: data.secret != "none" && data.secret != "found",
-			incTension: data.specialMods.includes("no-tension-increase") ? 0 : 0, // set to always 0 due to new rules change
-			hazardOnTwo: data.specialMods.includes("hazard-on-2"),
-			cycle: false,
-			treasureFindBonus: 0,
-		};
-		const results = await SearchMenu.start(searchOptions, region);
-		const treasureRolls : Roll[] = [];
-		for (const resultSet of results) {
-			for (const result of resultSet.results) {
-				switch (result.result) {
-					case "nothing":
-						break;
-					case "treasure": {
-						if (!result.roll) {
-							PersonaError.softFail("Treasure Found but no roll given");
-							break;
-						}
-						const treasureRoll = await region.treasureFound(result.roll);
-						if (treasureRoll) {
-							treasureRolls.push(treasureRoll);
-						}
+static async searchRegion(region: PersonaRegion) {
+	const data = region.regionData;
+	const searchOptions :typeof SearchMenu["options"] = {
+		treasureRemaining: region.treasuresRemaining,
+		stopOnHazard: data.specialMods.includes("stop-on-hazard"),
+		isHazard: data.hazard != "none" && data.hazard != "found",
+		isSecret: data.secret != "none" && data.secret != "found",
+		incTension: data.specialMods.includes("no-tension-increase") ? 0 : 0, // set to always 0 due to new rules change
+		hazardOnTwo: data.specialMods.includes("hazard-on-2"),
+		cycle: false,
+		treasureFindBonus: 0,
+	};
+	const results = await SearchMenu.start(searchOptions, region);
+	const treasureRolls : EnchantedTreasureFormat[] = [];
+	for (const resultSet of results) {
+		for (const result of resultSet.results) {
+			switch (result.result) {
+				case "nothing":
+					break;
+				case "treasure": {
+					if (!result.roll) {
+						PersonaError.softFail("Treasure Found but no roll given");
 						break;
 					}
-					case "hazard":
-						await region.hazardFound();
-						break;
-					case "secret":
-						await region.secretFound();
-						break;
-					case "other":
-					case "disconnected":
-						break;
-					default:
-						result.result satisfies undefined;
+					const treasureRoll = await region.treasureFound(result.roll);
+					if (treasureRoll) {
+						treasureRolls.push(treasureRoll);
+					}
+					break;
 				}
+				case "hazard":
+					await region.hazardFound();
+					break;
+				case "secret":
+					await region.secretFound();
+					break;
+				case "other":
+				case "disconnected":
+					break;
+				default:
+					result.result satisfies undefined;
 			}
 		}
-		if (treasureRolls.length) {
-			await this.handleTreasureRolls(treasureRolls);
-		}
-		await this.passMetaverseTurn();
 	}
+	await this.handleTreasureRolls(treasureRolls);
+	await this.passMetaverseTurn();
+}
 
-	static async handleTreasureRolls( rolls: Roll[]) {
-		let html = `<h2> Treasure Rolls </h2>`;
-		const rollstring = rolls.map( r => `<li>${r.formula} (${r.total})</li>`).join("");
-		html += `<ul> ${rollstring} </ul>`;
-		html = `<div class="treasure-rolls"> ${html} </div>`;
-		return await ChatMessage.create({
-			speaker: {
-				alias: "Treasure Rolls"
-			},
-			content: html,
-			rolls,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
-		});
+static async handleTreasureRolls (treasures: EnchantedTreasureFormat[]) {
+	if (treasures.length == 0) {return;}
+	let html = `<h2> Treasure Found </h2>`;
+	for (const treasure of treasures) {
+		const treasureString = TreasureSystem.printEnchantedTreasureString(treasure);
+		html +=`<div> ${treasureString} </div>`;
 	}
+	return await ChatMessage.create({
+		speaker: {
+			alias: "Treasure Rolls"
+		},
+		content: html,
+		style: CONST.CHAT_MESSAGE_STYLES.OOC,
+	});
+}
+
+	// static async handleTreasureRolls( rolls: Roll[]) {
+	// 	let html = `<h2> Treasure Rolls </h2>`;
+	// 	const rollstring = rolls.map( r => `<li>${r.formula} (${r.total})</li>`).join("");
+	// 	html += `<ul> ${rollstring} </ul>`;
+	// 	html = `<div class="treasure-rolls"> ${html} </div>`;
+	// 	return await ChatMessage.create({
+	// 		speaker: {
+	// 			alias: "Treasure Rolls"
+	// 		},
+	// 		content: html,
+	// 		rolls,
+	// 		style: CONST.CHAT_MESSAGE_STYLES.OOC,
+	// 	});
+	// }
 
 	static getRegion(regionId ?: string) : PersonaRegion | undefined {
 		if (game.user.isGM) {
