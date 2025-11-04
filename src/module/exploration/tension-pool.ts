@@ -1,5 +1,3 @@
-import { PersonaError } from "../persona-error.js";
-import { Metaverse } from "../metaverse.js";
 import { HBS_TEMPLATES_DIR } from "../../config/persona-settings.js";
 import { ProgressClock } from "../utility/progress-clock.js";
 
@@ -23,44 +21,44 @@ export class TensionPool extends ProgressClock {
 		 this._instance.setHideOnZero(true);
 	 }
 
-	 async rollAuto() {
-		 if (!game.user.isGM)
-			 {throw new PersonaError("Can't roll tension pool as non-GM");}
-		 const result = await this.roll();
-		 await result.print();
-	 }
+	 // async rollAuto() {
+		 // if (!game.user.isGM)
+			 // {throw new PersonaError("Can't roll tension pool as non-GM");}
+		 // const result = await this.roll();
+		 // await result.print();
+	 // }
 
-	 async roll() : Promise<TensionPoolResult> {
-		 if (!game.user.isGM)
-			 {throw new PersonaError("Can't roll tension pool as non-GM");}
-		 const roll = new Roll(`${this.amt}d6`);
-		 await roll.roll();
-		 if (!roll.dice.some(dice => dice.values.some(v => v == 1))) {
-			 return new TensionPoolResult(roll, "none");
-		 }
-		 if (this.isMaxed())  {
-			 return new TensionPoolResult(roll, "reaper");
-		 }
-		 const sixes = roll.dice
-		 .flatMap( die=> die.total == 6 ? [die] : [])
-		 .length;
-		 await this.add(-sixes);
-		 await this.generateEncounter();
-		 return new TensionPoolResult (roll, "battle");
-	 }
+	 // async roll() : Promise<TensionPoolResult> {
+		 // if (!game.user.isGM)
+			 // {throw new PersonaError("Can't roll tension pool as non-GM");}
+		 // const roll = new Roll(`${this.amt}d6`);
+		 // await roll.roll();
+		 // if (!roll.dice.some(dice => dice.values.some(v => v == 1))) {
+			 // return new TensionPoolResult(roll, "none");
+		 // }
+		 // if (this.isMaxed())  {
+			 // return new TensionPoolResult(roll, "reaper");
+		 // }
+		 // const sixes = roll.dice
+		 // .flatMap( die=> die.total == 6 ? [die] : [])
+		 // .length;
+		 // await this.add(-sixes);
+		 // // await this.generateEncounter();
+		 // return new TensionPoolResult (roll, "battle");
+	 // }
 
 	  nullResult() : TensionPoolResult{
 		  return new TensionPoolResult(undefined, "none");
 	  }
 
-	 async generateEncounter() {
-		 try {
-			 const encounter = Metaverse.generateEncounter();
-			 await Metaverse.printRandomEncounterList(encounter);
-		 } catch (e) {
-			 console.log(e);
-		 }
-	 }
+	 // async generateEncounter() {
+		 // try {
+			 // const encounter = Metaverse.generateEncounter();
+			 // await Metaverse.printRandomEncounterList(encounter);
+		 // } catch (e) {
+			 // console.log(e);
+		 // }
+	 // }
 
  }
 

@@ -974,9 +974,9 @@
 
 	"persona.card.cameo.defaultBenefits": "The Cameo gains one social progress token with  a character in the scene of their choice.",
 
-	"persona.specialRoomMods.treasure-poor": "Treasure Poor (1d10 treasure roll)",
-	"persona.specialRoomMods.treasure-rich": "Treasure Rich (1d20+5 treasure roll)",
-	"persona.specialRoomMods.treasure-ultra": "Great Treasure (1d10+15 treasure roll)",
+	"persona.specialRoomMods.treasure-poor": "Treasure Poor (Mostly only Trinket Level treasure)",
+	"persona.specialRoomMods.treasure-rich": "Treasure Rich (higher chance for good treasure)",
+	"persona.specialRoomMods.treasure-ultra": "Great Treasure (Much higher chance of rare loot)",
 	"persona.specialRoomMods.hazard-on-2": "Hazard on natural 2",
 	"persona.specialRoomMods.no-tension-roll": "No tension roll",
 	"persona.specialRoomMods.safe": "Safe (can't search, no tension/concordia roll)",

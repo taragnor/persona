@@ -15,7 +15,9 @@ export class TreasureSystem {
 			if (item.isInvItem()) {
 				if (item.system.slot == "weapon_crystal") {
 					modifier -= 50;
-
+				}
+				if (item.system.slot == "accessory") {
+					treasureMin = Math.max(50, treasureMin);
 				}
 
 			}

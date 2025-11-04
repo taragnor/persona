@@ -4,7 +4,6 @@ import { PersonaRegion } from "../region/persona-region.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaSFX } from "../combat/persona-sfx.js";
 import { PersonaDB } from "../persona-db.js";
-import { TensionPoolResult } from "./tension-pool.js";
 import { PersonaError } from "../persona-error.js";
 import { HTMLTools } from "../utility/HTMLTools.js";
 import { SEARCH_ACTIONS } from "../../config/search-actions.js";
@@ -267,16 +266,16 @@ export class SearchMenu {
 			return [result, val];
 		}
 
-	static async tensionPool(_guards: number, options: SearchOptions<typeof SearchMenu["template"]>) : Promise<TensionPoolResult> {
-		// if (!options.rollTension) return TensionPool.nullResult();
-		const tensionRoll =  await TensionPool.instance.roll();
-		let inc = options.incTension;
-		while (inc--) {
-			await TensionPool.instance.inc();
-		}
-		return tensionRoll;
+	// static async tensionPool(_guards: number, options: SearchOptions<typeof SearchMenu["template"]>) : Promise<TensionPoolResult> {
+	// 	// if (!options.rollTension) return TensionPool.nullResult();
+	// 	const tensionRoll =  await TensionPool.instance.roll();
+	// 	let inc = options.incTension;
+	// 	while (inc--) {
+	// 		await TensionPool.instance.inc();
+	// 	}
+	// 	return tensionRoll;
 
-	}
+	// }
 
 	static async searchOptionsDialog<T extends SearchPromptConfigObject>(optionsToFill: T) : Promise<SearchOptions<T>> {
 		const ret: Partial<SearchOptions<T>> = {};

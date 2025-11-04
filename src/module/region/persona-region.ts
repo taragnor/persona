@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { PresenceRollData } from "../metaverse.js";
-import { EncounterOptions } from "../metaverse.js";
 import { PersonaScene } from "../persona-scene.js";
 import { Helpers } from "../utility/helpers.js";
 import { ModifierList } from "../combat/modifier-list.js";
@@ -17,6 +16,7 @@ import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaDB } from "../persona-db.js";
 import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-system.js";
 import {ValidAttackers} from "../combat/persona-combat.js";
+import {EncounterOptions, RandomEncounter} from "../exploration/random-encounters.js";
 
 declare global {
 	interface SocketMessage {
@@ -231,30 +231,6 @@ export class PersonaRegion extends RegionDocument {
 		}
 		return TreasureSystem.generate(treasureLevel, treasureMod, treasureMin);
 	}
-	// async #treasureRoll(searchRoll: number) : Promise<Roll> {
-	// 	const mods = this.regionData.specialMods;
-	// 	let expr : string;
-	// 	switch (true) {
-	// 		case mods.includes("treasure-poor"):
-	// 			expr = "1d10";
-	// 			break;
-	// 		case mods.includes("treasure-rich"):
-	// 			expr = "1d20+5";
-	// 			break;
-	// 		case mods.includes("treasure-ultra"):
-	// 			expr = "1d10+15";
-	// 			break;
-	// 		case mods.includes("bonus-on-6") && searchRoll == 6:
-	// 			expr = "1d20+5";
-	// 			break;
-	// 		default:
-	// 			expr = "1d20";
-	// 			break;
-	// 	}
-	// 	const roll = new Roll(expr);
-	// 	await roll.evaluate();
-	// 	return roll;
-	// }
 
 	get treasuresRemaining(): number {
 		const t= this.regionData.treasures;
@@ -400,8 +376,9 @@ export class PersonaRegion extends RegionDocument {
 				mixed: mixedMod,
 			},
 		};
-		const encounter = Metaverse.generateEncounter(shadowType, options);
-		await Metaverse.printRandomEncounterList(encounter);
+		const encounter = RandomEncounter.generateEncounter(shadowType, options);
+		await RandomEncounter.printRandomEncounterList(encounter);
+		void RandomEncounter.queryPlayerResponse(encounter);
 		return true;
 	}
 
