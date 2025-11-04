@@ -81,6 +81,7 @@ export class SocketManager {
 
 	/** as simple send but returns a boolean as a promise if the message was recieved*/
 	async verifiedSend<T extends keyof SocketMessage>(msgType: T, dataToSend: SocketMessage[T], recipient: string) : Promise<boolean> {
+		if (recipient == game.user.id) {return true;}
 		this.#checkSockets();
 		const sessionInfo = {};
 		const sPayload = {
@@ -131,17 +132,20 @@ export class SocketManager {
 
 
 	clearPendingErr(verificationId: VerificationId, sender: User["id"]) {
-		this.clearPending(verificationId, sender);
-		throw new VerificationFailedError("Verification Failed!");
+		const realClear= this.clearPending(verificationId, sender);
+		if (realClear) {
+			throw new VerificationFailedError(`Verification Failed! verificationId: ${verificationId} Sender: ${sender}`);
+		}
 	}
 
-	clearPending(verificationId: VerificationId, sender: User["id"]) : void {
+	clearPending(verificationId: VerificationId, sender: User["id"]) : boolean {
 		console.debug(`Initial: Verification Msg recieved ${verificationId}, clearing log`);
 		const userPending = this._pendingVerifications.get(sender)!;
 		const pendingProm =  userPending.get(verificationId);
-		if (!pendingProm) {return;}
+		if (!pendingProm) {return false;}
 		pendingProm.resolve(true);
 		userPending.delete(verificationId);
+		return true;
 }
 
 	setHandler<T extends keyof SocketMessage>(msgType: T, handlerFn : DataHandlerFn<T>) : void {
@@ -161,6 +165,7 @@ export class SocketManager {
 private async onMsgRecieve(packet: SocketPayload<keyof SocketMessage>) :Promise<void> {
 	const {code, recipients} = packet;
 	if (!recipients.includes(game.user.id)) {return;}
+	if (packet.sender == game.user.id) {return;}
 	const handlers = this.#handlers.get(code);
 	if (!handlers) {
 		console.warn(`No handler for message ${code}`);
@@ -172,8 +177,8 @@ private async onMsgRecieve(packet: SocketPayload<keyof SocketMessage>) :Promise<
 			await handler(packet.data, packet);
 			void this.#sendVerification(packet);
 		} catch (e) {
+			PersonaError.softFail("Error during handler", e);
 			void this.#sendVerificationError(packet);
-			PersonaError.softFail("Error during handler",e);
 			continue;
 		}
 	}
@@ -222,7 +227,7 @@ async #sendVerificationError(packet: SocketPayload<keyof SocketMessage>) {
 	console.debug(`Reciever: Error on handling Verifified Packet Request ${packet.verificationId}, sending Error Result`);
 	for (let i = 0; i< 10; i++) {
 		this.simpleSend("__VERIFY_ERROR__", verificationId, targets);
-		await sleep(5000);
+		await sleep (5000);
 	}
 }
 

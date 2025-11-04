@@ -4,7 +4,7 @@ export class PersonaError extends Error {
 
 	constructor (errortxt: string, ...debugArgs: unknown[]) {
 		super(errortxt);
-		PersonaError.notifyGM(errortxt, this.stack);
+		PersonaError.notifyGM(errortxt, this.stack, debugArgs);
 		ui.notifications.error(errortxt);
 		console.error(errortxt);
 		debugArgs.forEach(x=> Debug(x));
@@ -36,6 +36,23 @@ export class PersonaError extends Error {
 		}
 	}
 
+	private static toText( x: unknown) : string {
+		if (typeof x == "string" || typeof x == "boolean" || typeof x =="number") {return x.toString();}
+		if (Array.isArray(x)) {
+			return x.flatMap( y => this.toText(y))
+				.join ("\n");
+		}
+		if (typeof x == "object") {
+			if (x instanceof Error) {
+				return `${x.message}: \n${x.stack}`;
+			}
+			return JSON.stringify(x);}
+		// eslint-disable-next-line @typescript-eslint/no-base-to-string
+		return x?.toString() ?? "undefined";
+
+
+	}
+
 	static notifyGM(errorMsg: string, stack ?: string, ...debugArgs : unknown[]) {
 		if (!game || !game.user || game.user.isGM) {return;}
 		const trace = stack ? stack : this.getTrace();
@@ -43,12 +60,7 @@ export class PersonaError extends Error {
 		const gmIds = game.users
 			.filter ( user => user.isGM && user.active)
 			.map( user => user.id);
-		const args = debugArgs.map( x=> {
-			if (typeof x == "string" || typeof x == "boolean" || typeof x =="number") {return x.toString();}
-			if (typeof x == "object") {return JSON.stringify(x);}
-			// eslint-disable-next-line @typescript-eslint/no-base-to-string
-			return x?.toString() ?? "undefined";
-		});
+		const args = debugArgs.flatMap( x=> this.toText(x));
 		PersonaSockets.simpleSend("ERROR_REPORT", {
 			errorMsg,
 			trace,

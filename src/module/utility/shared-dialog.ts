@@ -19,6 +19,7 @@ declare global {
 Hooks.on("socketsReady", (sm) => {
 	sm.setHandler("SHARED_DIALOG_START", function (data, payload) { SharedDialog.onRemoteStartMsg(data, payload);});
 	sm.setHandler("SHARED_DIALOG_UPDATE", function (data, payload) { SharedDialog.onRemoteUpdate(data, payload);});
+	SharedDialog.init(sm);
 });
 
 export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefinition> {
@@ -36,11 +37,11 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 	static socketManager : SocketManager;
 	static activeSessions: Map<string, SharedDialog> = new Map();
 
-	constructor (definition: T, name: string) {
+	constructor (definition: T, name: string, id ?: string) {
 		this._definition = definition;
 		this.name = name;
 		this._data = this.generateDefaultData();
-		this.id = SharedDialog.generateId();
+		this.id = id ? id : SharedDialog.generateId();
 	}
 
 	static generateId() : string {
@@ -52,15 +53,15 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 	}
 
 	static onRemoteStartMsg( data: SocketMessage["SHARED_DIALOG_START"], _payload : SocketPayload<"SHARED_DIALOG_START">) {
-		const SD = new SharedDialog(data.dataDef, data.name);
-		void SD.open( (_data) => SD.isTerminated());
+		const SD = new SharedDialog(data.dataDef, data.name, data.dialogId);
+		void SD._openSlave();
 		this.activeSessions.set(data.dialogId, SD);
 	}
 
 	static onRemoteUpdate( data: SocketMessage["SHARED_DIALOG_UPDATE"], _payload : SocketPayload<"SHARED_DIALOG_UPDATE">) {
 		const session = this.activeSessions.get(data.dialogId);
 		if (!session) {
-			throw new Error(`Can't find session ${data.dialogId}`);
+			throw new Error(`${game.user.name} : Can't find session ${data.dialogId}`);
 		}
 		session.onRemoteDataUpdate(data.data as SharedDataType<SharedDataDefinition>);
 	}
@@ -69,9 +70,11 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 		return this.terminated;
 	}
 
-	onRemoteDataUpdate(data: SharedDataType<T>) {
-		this._data = data;
+	onRemoteDataUpdate(remoteData: SharedDataType<T>) {
+		this.setData(remoteData, false);
+		const html = this.generateHTML();
 		if (this._dialog) {
+			this._dialog.element.find(".dialog-content").html(html);
 			this._dialog.render(false);
 		}
 	}
@@ -100,6 +103,16 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 		}
 	}
 
+	private _sendOpenMsg(users: FoundryUser[]) {
+		for (const user of users) {
+			void SharedDialog.socketManager.verifiedSend("SHARED_DIALOG_START", {
+				name: this.name,
+				dataDef: this._definition,
+				dialogId: this.id,
+			}, user.id);
+		}
+	}
+
 	closeDialog() {
 		if (this._dialog) {
 			const dialog = this._dialog;
@@ -113,8 +126,7 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 		return HTMLTools.generateFormHTML(this._definition, this._data);
 	};
 
-	public async open( breakoutFn : typeof this._breakout, _options : SharedDialogOptions = {}) : Promise<SharedDataType<T>> {
-		this._breakout = breakoutFn;
+	private _createDialog() {
 		const content = this.generateHTML();
 		if (this._dialog == undefined) {
 			this._dialog = new Dialog( {
@@ -124,8 +136,24 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 				buttons: {},
 				close: () => void (this.isOpen() ? this._openDialog() : this.closeDialog()),
 			}, {});
-			this._openDialog();
+			SharedDialog.activeSessions.set(this.id, this as unknown as SharedDialog<HTMLDataInputDefinition>);
 		}
+	}
+
+	private _openSlave() {
+		this._breakout = (_data) => this.isTerminated();
+		this._createDialog();
+		this._openDialog();
+	}
+
+
+	public async open( breakoutFn : typeof this._breakout, _options : SharedDialogOptions = {}) : Promise<SharedDataType<T>> {
+		this._breakout = breakoutFn;
+		this._sendOpenMsg(game.users.contents
+			.filter( x=> x.active)
+		);
+		this._createDialog();
+		this._openDialog();
 		const promise : Promise <SharedDataType<T>>= new Promise ( (res, rej) => {
 			this.resolver = res;
 			this.reject = rej;
@@ -137,17 +165,39 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 		return data;
 	}
 
-	private refreshData(jquery: JQuery) {
-		this._data = HTMLTools.collectFormValues(jquery) as SharedDataType<T>;
-		this.sendData();
+	private setData(newData: typeof this._data, sendUpdate: boolean) {
+		this._data = newData;
+		if (sendUpdate) {
+			this._sendData(game.users.filter( x=> x.active));
+		}
 		if (this._breakout( this._data)) {
 			this.resolver(this._data);
 			this.closeDialog();
+			return false;
 		}
+		return true;
 	}
 
-	private sendData() {
+	private refreshData(jquery: JQuery) {
+		const newData= HTMLTools.collectFormValues(jquery) as SharedDataType<T>;
+		this.setData(newData, true);
+		// this._sendData(game.users.filter( x=> x.active));
+		// if (this._breakout( this._data)) {
+		// 	this.resolver(this._data);
+		// 	this.closeDialog();
+		// }
+	}
+
+	private _sendData(users : FoundryUser[]) {
 		const data = this._data;
+		const payload = {
+			name: this.name,
+			data: data,
+			dialogId: this.id,
+		};
+		for (const user of users) {
+			void SharedDialog.socketManager.verifiedSend( "SHARED_DIALOG_UPDATE", payload, user.id);
+		}
 	}
 
 }
@@ -246,3 +296,6 @@ const x = new SharedDialog(
 
 //@ts-expect-error adding to global
 window.testSD = testSD;
+
+//@ts-expect-error adding to global
+window.SharedDialog = SharedDialog;

@@ -226,6 +226,14 @@ static generateDefaultData<T extends HTMLDataInputDefinition>(definition: T) : H
 		return data as HTMLInputReturnType<T>;
 	}
 
+	private static _getDisabledState( editingIds: U<FoundryUser["id"][]>) : "" | " disabled" {
+		if (editingIds == undefined) {return "";}
+		if (game.user.isGM || editingIds.includes (game.user.id))
+		{return "";}
+		return " disabled";
+	}
+
+
 	static generateFormHTML<T extends HTMLDataInputDefinition>(definition: T, data?: HTMLInputReturnType<T> | null, _options : HTMLGenerationOptions = {}) : string {
 		if (!data) {
 			data = this.generateDefaultData(definition);
@@ -233,13 +241,14 @@ static generateDefaultData<T extends HTMLDataInputDefinition>(definition: T) : H
 		const selectors = Object.entries(definition)
 			.map( ([k,v]) => {
 				const label = `<label> ${v.label} </label>`;
+				const disabled = this._getDisabledState(v.editingUsers);
 				switch (true) {
 					case "choices" in v: {
 						const options = v.choices
 							.map( ch => {
 								return `<option value='${ch}'` +
 									(data[k] == ch ? "selected" : "")
-									+ ">"
+									+ `${disabled}>`
 									+ `${ch}</option>`;
 							})
 							.join("");
@@ -254,7 +263,7 @@ static generateDefaultData<T extends HTMLDataInputDefinition>(definition: T) : H
 								const displayedName = v.type == "localizedString" ? game.i18n.localize(tv) : tv;
 								return `<option value='${key}'` + 
 									(data[k] == key ? "selected" : "")
-									+ ">"
+									+ `${disabled}>`
 									+ `${displayedName}</option>`;
 							})
 							.join("");
@@ -264,15 +273,15 @@ static generateDefaultData<T extends HTMLDataInputDefinition>(definition: T) : H
 						return elem;
 					}
 					case v.type == "string": {
-						const elem = `${label}<input type='string' name='${k}' value='${data[k] as string}'>`;
+						const elem = `${label}<input type='string' name='${k}' value='${data[k] as string}' ${disabled}>`;
 						return elem;
 					}
 					case v.type == "number": {
-						const elem = `${label}<input type='number' name='${k}' value=${data[k] as string}>`;
+						const elem = `${label}<input type='number' name='${k}' value=${data[k] as string} ${disabled}>`;
 						return elem;
 					}
 					case v.type == "boolean": {
-						const elem = `${label}<input type='checkbox' name='${k}' ${data[k] ? 'checked' : ''}>`;
+						const elem = `${label}<input type='checkbox' name='${k}' ${data[k] ? 'checked' : ''} ${disabled}>`;
 						return elem;
 					}
 				}
@@ -445,7 +454,7 @@ type HTMLReturnField<T extends HTMLInputFieldDefinition< string | number | boole
 		? (
 			T["choices"] extends readonly unknown[]
 			? T["choices"][number]
-			: symbol
+			: never
 		)
 		: T["type"] extends "number"
 		? number
