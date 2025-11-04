@@ -4,8 +4,20 @@ import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
 import {PersonaRegion} from "../region/persona-region.js";
 import {weightedChoice} from "../utility/array-tools.js";
+import {HTMLDataInputDefinition, HTMLInputFieldDefinition} from "../utility/HTMLTools.js";
+import {SharedDialog, VotingDialog} from "../utility/shared-dialog.js";
 
 export class RandomEncounter {
+
+
+	static encounterChoices = [
+		"fight",
+		"evade",
+		"sneak",
+		"ambush",
+	] as const;
+
+
 	static async printRandomEncounterList(encounter: Encounter) {
 		const {enemies, encounterType} = encounter;
 		const speaker = ChatMessage.getSpeaker({alias: "Encounter Generator"});
@@ -34,8 +46,11 @@ export class RandomEncounter {
 
 	/** queries player to determine if they will ambush, fight , etc.*/
 static async queryPlayerResponse(encounter: Encounter) : Promise<EncounterAction> {
-	throw new Error("Not yet implemented");
-	///TODO: fniish later
+	const dialog = new VotingDialog(this.encounterChoices, `${encounter.encounterType} Encounter`);
+	const action = await dialog.majorityVote();
+	return {
+		action,
+	};
 }
 
 

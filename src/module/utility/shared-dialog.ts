@@ -1,4 +1,4 @@
-import {HTMLDataInputDefinition, HTMLInputReturnType, HTMLTools} from "./HTMLTools.js";
+import {HTMLDataInputDefinition, HTMLInputFieldDefinition, HTMLInputReturnType, HTMLTools} from "./HTMLTools.js";
 import {SocketManager, SocketPayload} from "./socket-manager.js";
 
 declare global {
@@ -152,14 +152,77 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 
 }
 
+type VotingDataDef<Choices extends string>  =
+	Record< FoundryUser["id"], 
+	{
+		label: FoundryUser["name"],
+		type: "string",
+		choices: readonly (Choices |  "undecided")[],
+		default: Choices |  "undecided",
+		editingUsers: FoundryUser["id"][],
+	}>;
+
+
+type VotingDataDefPart<T extends string> = VotingDataDef<T>[keyof VotingDataDef<T>]
+// type r= VotingDataDefPart<"hello" | "goodbye">;
+
+export class VotingDialog<Choices extends string> {
+	_dialog : SharedDialog<VotingDataDef<Choices>>;
+	constructor( choices : readonly Choices[], name : string) {
+		const def : VotingDataDef<Choices> = 
+			Object.fromEntries(
+				game.users.contents.map( user => {
+					const choicesTotal = [...choices, "undecided"] as const;
+					const userD : VotingDataDefPart<Choices> = {
+						label: user.name,
+						type: "string",
+						choices: choicesTotal,
+						default: "undecided",
+						editingUsers: [user.id],
+					};
+					return [user.id, userD];
+				})
+			);
+		this._dialog = new SharedDialog(def, name);
+	}
+
+
+	async majorityVote() : Promise<Choices> {
+		const dialogRet = await this._dialog.open( x=> {
+			const totalVoters= Object.values(x).length;
+			const votes = Object.values(x).reduce<Map<string, number>>( (map, v) => {
+				if (v == "undecided") {return map;}
+				const val = map.get(v) ?? 0;
+				map.set(v, val+1);
+				return map;
+			}, new Map());
+			return votes.entries().some( ([_k,v]) => v >= Math.round(totalVoters / 2));
+			});
+
+		const totalVoters = Object.values(dialogRet).length;
+		const votesMap :Map<Choices, number>= new Map();
+		for (const v of Object.values(dialogRet)) {
+			if (v == "undecided") {continue;}
+			const val = votesMap.get(v) ?? 0;
+			votesMap.set(v, val+1);
+		}
+		const winner=  votesMap.entries().find( ([_k, v]) => v >= Math.round(totalVoters/2));
+		if (winner == undefined) {
+			Debug(dialogRet);
+			throw new Error("Problem with vote, couldn't reach Majority");
+		}
+		const val = winner[0];
+		return val;
+	}
+
+}
+
+
 type SharedDialogOptions = object;
 
 type SharedDataDefinition = HTMLDataInputDefinition;
 
 type SharedDataType<T extends SharedDataDefinition> = HTMLInputReturnType<T>;
-
-
-
 
 async function testSD() {
 const x = new SharedDialog( 
@@ -177,7 +240,8 @@ const x = new SharedDialog(
 	}
 	, "My Dialog");
 
-	return await x.open( (data) => data.x != 2);
+	const l =await x.open( (data) => data.x != 2);
+	return l;
 }
 
 //@ts-expect-error adding to global

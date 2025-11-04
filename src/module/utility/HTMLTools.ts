@@ -385,11 +385,12 @@ export class CanceledDialgogError extends Error {
 
 type HTMLGenerationOptions = object;
 
-type HTMLInputFieldDefinition<T extends string | number | boolean> =
+export type HTMLInputFieldDefinition<T extends string | number | boolean> =
 	{
 		label: string,
 		disabled ?: boolean | (() => boolean)
 		default ?: T;
+		editingUsers ?: FoundryUser["id"][];
 	}
 	& ({
 	type: "string";
@@ -414,14 +415,14 @@ type HTMLInputFieldDefinition<T extends string | number | boolean> =
 
 type NumberChoiceFieldDef<T extends number> = {
 	type: "number";
-	choices: T[];
+	choices: readonly T[];
 	default?: T;
 };
 
-type StringChoiceFieldDef<T extends string> = 
+type StringChoiceFieldDef<T extends string> =
 	{
 	type: "string";
-	choices: T[];
+	choices: readonly T[];
 	default?: T;
 } | {
 	type : "localizedString";
@@ -442,11 +443,11 @@ export type HTMLInputReturnType<T extends HTMLDataInputDefinition> = {
 type HTMLReturnField<T extends HTMLInputFieldDefinition< string | number | boolean>> =
 	"choices" extends keyof T
 		? (
-			T["choices"] extends Array<unknown>
+			T["choices"] extends readonly unknown[]
 			? T["choices"][number]
-			: never
+			: symbol
 		)
-		: T["type"] extends "number" 
+		: T["type"] extends "number"
 		? number
 		: T["type"] extends "string"
 		? string
