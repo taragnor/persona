@@ -93,7 +93,7 @@ export class SocketManager {
 			data: dataToSend,
 		};
 		game.socket.emit(this.#socketName, sPayload );
-		console.debug(`Initial: Verified Send out ${sPayload.verificationId}`);
+		// console.debug(`Initial: Verified Send out ${sPayload.verificationId}`);
 		let killTimeout = false;
 		const p = new Promise( (resolve, reject) => {
 			this.setPending( sPayload.verificationId, recipient, { resolve, reject});
@@ -105,7 +105,8 @@ export class SocketManager {
 					return;
 				}
 				game.socket.emit(this.#socketName, sPayload );
-				ui.notifications.notify("Trouble sending data to remote client, retrying....");
+				const user = game.users.get(recipient);
+				ui.notifications.notify(`Trouble sending data to remote client ${user?.name}, retrying....`);
 				setTimeout(timeout, 3000);
 			};
 			setTimeout(timeout, 3000);
@@ -134,15 +135,16 @@ export class SocketManager {
 	clearPendingErr(verificationId: VerificationId, sender: User["id"]) {
 		const realClear= this.clearPending(verificationId, sender);
 		if (realClear) {
-			throw new VerificationFailedError(`Verification Failed! verificationId: ${verificationId} Sender: ${sender}`);
+			// throw new VerificationFailedError(`Verification Failed! verificationId: ${verificationId} Sender: ${sender}`);
 		}
 	}
 
 	clearPending(verificationId: VerificationId, sender: User["id"]) : boolean {
-		console.debug(`Initial: Verification Msg recieved ${verificationId}, clearing log`);
+		const user = game.users.get(sender);
+		console.debug(`Initial: Verification Msg recieved ${verificationId} from ${user?.name}, clearing log`);
 		const userPending = this._pendingVerifications.get(sender)!;
 		const pendingProm =  userPending.get(verificationId);
-		if (!pendingProm) {return false;}
+		if (pendingProm == undefined) {return false;}
 		pendingProm.resolve(true);
 		userPending.delete(verificationId);
 		return true;

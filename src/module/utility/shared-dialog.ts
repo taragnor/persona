@@ -1,4 +1,5 @@
-import {HTMLDataInputDefinition, HTMLInputFieldDefinition, HTMLInputReturnType, HTMLTools} from "./HTMLTools.js";
+import {RandomEncounter} from "../exploration/random-encounters.js";
+import {HTMLDataInputDefinition, HTMLInputReturnType, HTMLTools} from "./HTMLTools.js";
 import {SocketManager, SocketPayload} from "./socket-manager.js";
 
 declare global {
@@ -13,12 +14,22 @@ declare global {
 			data: object;
 			dialogId: string;
 		};
+		"SHARED_DIALOG_CLOSE": {
+			dialogId: string;
+		};
 	}
 }
 
 Hooks.on("socketsReady", (sm) => {
-	sm.setHandler("SHARED_DIALOG_START", function (data, payload) { SharedDialog.onRemoteStartMsg(data, payload);});
-	sm.setHandler("SHARED_DIALOG_UPDATE", function (data, payload) { SharedDialog.onRemoteUpdate(data, payload);});
+	sm.setHandler("SHARED_DIALOG_START", function (data, payload) {
+		SharedDialog.onRemoteStartMsg(data, payload);
+	});
+	sm.setHandler("SHARED_DIALOG_UPDATE", function (data, payload) {
+		SharedDialog.onRemoteUpdate(data, payload)
+		;});
+	sm.setHandler("SHARED_DIALOG_CLOSE", function (data, payload) {
+		SharedDialog.onCloseRequest(data, payload);
+	});
 	SharedDialog.init(sm);
 });
 
@@ -33,7 +44,7 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 	private terminated : boolean = false;
 	private reject : (reason: unknown ) => void;
 	/** if true then return data*/
-	private _breakout : (data: SharedDataType<T>) => boolean; 
+	private _breakout : (data: SharedDataType<T>) => boolean;
 	static socketManager : SocketManager;
 	static activeSessions: Map<string, SharedDialog> = new Map();
 
@@ -66,16 +77,28 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 		session.onRemoteDataUpdate(data.data as SharedDataType<SharedDataDefinition>);
 	}
 
+	static onCloseRequest( data: SocketMessage["SHARED_DIALOG_CLOSE"], _payload : SocketPayload<"SHARED_DIALOG_CLOSE">) {
+		const session = this.activeSessions.get(data.dialogId);
+		if (!session) {
+			throw new Error(`${game.user.name} : Can't find session ${data.dialogId}`);
+		}
+		session.closeDialog();
+	}
+
 	isTerminated() : boolean {
 		return this.terminated;
 	}
 
 	onRemoteDataUpdate(remoteData: SharedDataType<T>) {
+		console.log("Remote Data updated");
+		console.log(remoteData);
 		this.setData(remoteData, false);
 		const html = this.generateHTML();
 		if (this._dialog) {
-			this._dialog.element.find(".dialog-content").html(html);
+			this._dialog.data.content = html;
+			// this._dialog.element.find(".dialog-content").html(html);
 			this._dialog.render(false);
+			Debug(this._dialog);
 		}
 	}
 
@@ -172,10 +195,18 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 		}
 		if (this._breakout( this._data)) {
 			this.resolver(this._data);
+			this.sendCloseMsg();
 			this.closeDialog();
 			return false;
 		}
 		return true;
+	}
+
+	private sendCloseMsg() {
+		const users= game.users.contents;
+		for (const user of users) {
+			void SharedDialog.socketManager.verifiedSend("SHARED_DIALOG_CLOSE", {dialogId: this.id}, user.id );
+		}
 	}
 
 	private refreshData(jquery: JQuery) {
@@ -221,7 +252,9 @@ export class VotingDialog<Choices extends string> {
 	constructor( choices : readonly Choices[], name : string) {
 		const def : VotingDataDef<Choices> = 
 			Object.fromEntries(
-				game.users.contents.map( user => {
+				game.users.contents
+				.filter( x=> !x.isGM && x.active)
+				.map( user => {
 					const choicesTotal = [...choices, "undecided"] as const;
 					const userD : VotingDataDefPart<Choices> = {
 						label: user.name,
@@ -248,7 +281,6 @@ export class VotingDialog<Choices extends string> {
 			}, new Map());
 			return votes.entries().some( ([_k,v]) => v >= Math.round(totalVoters / 2));
 			});
-
 		const totalVoters = Object.values(dialogRet).length;
 		const votesMap :Map<Choices, number>= new Map();
 		for (const v of Object.values(dialogRet)) {
@@ -285,7 +317,7 @@ const x = new SharedDialog(
 		"bool": {
 			label: "boolean",
 			type: "boolean",
-			default: false,
+			default: true,
 		}
 	}
 	, "My Dialog");
@@ -294,8 +326,16 @@ const x = new SharedDialog(
 	return l;
 }
 
+async function testVoting() {
+	return await RandomEncounter.queryPlayerResponse( {encounterType: "standard", enemies: []});
+
+}
+
 //@ts-expect-error adding to global
 window.testSD = testSD;
+
+//@ts-expect-error adding to global
+window.testVoting = testVoting ;
 
 //@ts-expect-error adding to global
 window.SharedDialog = SharedDialog;

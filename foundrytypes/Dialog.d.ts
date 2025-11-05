@@ -5,6 +5,7 @@ class Dialog {
 	element: JQuery;
 	close(): void;
 	submit(data: unknown) : void;
+	data: { content: string };
 
 }
 

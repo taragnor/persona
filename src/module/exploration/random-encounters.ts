@@ -4,8 +4,7 @@ import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
 import {PersonaRegion} from "../region/persona-region.js";
 import {weightedChoice} from "../utility/array-tools.js";
-import {HTMLDataInputDefinition, HTMLInputFieldDefinition} from "../utility/HTMLTools.js";
-import {SharedDialog, VotingDialog} from "../utility/shared-dialog.js";
+import {VotingDialog} from "../utility/shared-dialog.js";
 
 export class RandomEncounter {
 
