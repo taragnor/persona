@@ -1,4 +1,3 @@
-import {RandomEncounter} from "../exploration/random-encounters.js";
 import {HTMLDataInputDefinition, HTMLInputReturnType, HTMLTools} from "./HTMLTools.js";
 import {SocketManager, SocketPayload} from "./socket-manager.js";
 
@@ -327,3 +326,5 @@ const x = new SharedDialog(
 //@ts-expect-error adding to global
 window.testSD = testSD;
 
+//@ts-expect-error adding to global
+window.VotingDialog = VotingDialog;
