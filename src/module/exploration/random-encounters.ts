@@ -1,10 +1,11 @@
 import {Shadow} from "../actor/persona-actor.js";
-import {Metaverse} from "../metaverse.js";
+import {Metaverse, PresenceRollData} from "../metaverse.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
 import {PersonaRegion} from "../region/persona-region.js";
 import {weightedChoice} from "../utility/array-tools.js";
 import {VotingDialog} from "../utility/shared-dialog.js";
+import {TensionPool} from "./tension-pool.js";
 
 export class RandomEncounter {
 
@@ -44,13 +45,125 @@ export class RandomEncounter {
 	}
 
 	/** queries player to determine if they will ambush, fight , etc.*/
-static async queryPlayerResponse(encounter: Encounter) : Promise<EncounterAction> {
-	const dialog = new VotingDialog(this.encounterChoices, `${encounter.encounterType} Encounter`);
-	const action = await dialog.majorityVote();
-	return {
-		action,
-	};
-}
+	static async queryPlayerResponse(encounter: Encounter, validChoices: typeof this.encounterChoices[number][]) : Promise<EncounterAction> {
+		const dialog = new VotingDialog(validChoices, `${encounter.encounterType} Encounter`);
+		const action = await dialog.majorityVote();
+		return {
+			action,
+		};
+	}
+
+	static async encounterProcess(battleType: PresenceRollData["encounterType"], shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}) {
+		const encounter = RandomEncounter.generateEncounter(shadowType, options);
+		await RandomEncounter.printRandomEncounterList(encounter);
+		const validChoices = VALID_CHOICES[battleType];
+		const choice = await RandomEncounter.queryPlayerResponse(encounter, validChoices);
+		return await this.processPlayerPreCombatAction(choice.action);
+	}
+
+	static async processPlayerPreCombatAction(action: typeof this.encounterChoices[number]) {
+		switch (action) {
+			case "fight":
+				return await this.processFight();
+			case "ambush":
+				return await this.processAmbush();
+			case "evade":
+				return await this.processEvade();
+			case "sneak":
+				return await this.processSneak();
+			default:
+				action satisfies never;
+				PersonaError.softFail(`Unknown Pre Combat choice ${action}`);
+		}
+
+	}
+
+	static async processEvade() {
+		const roll = await new Roll("1d6").evaluate();
+		let html = `<div>Evade</div>
+		<div> Roll : ${roll.total} </div>`;
+		if (roll.total == 1) {
+			void TensionPool._instance.inc();
+			html += `<div> Tension +1</div>`;
+		}
+		await ChatMessage.create({
+			speaker: {
+				alias: "Player Decision"
+			},
+			content: html,
+			rolls: [roll],
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+		});
+	}
+
+	static async processFight() {
+		const html = `<div>Fight!</div>`;
+		await ChatMessage.create({
+			speaker: {
+				alias: "Player Decision"
+			},
+			content: html,
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+		});
+	}
+
+	static async processSneak() {
+		const roll = await new Roll("1d6").evaluate();
+		const total = roll.total;
+		let html = `<div>Sneak</div>
+		<div> Roll : ${total} </div>`;
+		switch (true) {
+			case total == 1 : {
+				html += `<div> Ambushed By Shadows!!</div>`;
+				break;
+			}
+			case total >= 2 && total <= 3: {
+				void TensionPool._instance.inc();
+				html += `<div> Tension +1</div>`;
+				break;
+			}
+			default: {
+				html += `<div> Ambush Successful!</div>`;
+			}
+		}
+		await ChatMessage.create({
+			speaker: {
+				alias: "Player Decision"
+			},
+			content: html,
+			rolls: [roll],
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+		});
+
+	}
+
+	static async processAmbush() {
+		const roll = await new Roll("1d8").evaluate();
+		const total = roll.total;
+		let html = `<div>Ambush</div>
+		<div> Roll : ${total} </div>`;
+		switch (true) {
+			case total == 1 : {
+				html += `<div> Counter Ambushed By Shadows!!</div>`;
+				break;
+			}
+			case total >= 2 && total <= 3: {
+				html += `<div> No Effect</div>`;
+				break;
+			}
+			default: {
+				html += `<div> Ambush Successful!</div>`;
+			}
+		}
+		await ChatMessage.create({
+			speaker: {
+				alias: "Player Decision"
+			},
+			content: html,
+			rolls: [roll],
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+		});
+	}
 
 
 	static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}): Encounter {
@@ -148,20 +261,20 @@ static async queryPlayerResponse(encounter: Encounter) : Promise<EncounterAction
 		}
 	}
 
-static #choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encounterList: Shadow[]): Shadow | undefined {
-	if (!pick1 || !pick2) {
-		PersonaError.softFail("Couldn't get a pick from choice list");
-		return undefined;
+	static #choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encounterList: Shadow[]): Shadow | undefined {
+		if (!pick1 || !pick2) {
+			PersonaError.softFail("Couldn't get a pick from choice list");
+			return undefined;
+		}
+		if (encounterList.length <= 0) {return pick1;}
+		if (Math.random() < 0.3333) {return pick1;} //favor weights less heavily
+		const p1score = encounterList
+			.reduce ( (acc, shadow) => acc + shadow.complementRating(pick1), 0);
+		const p2score = encounterList
+			.reduce ( (acc, shadow) => acc + shadow.complementRating(pick2), 0);
+		const pick = p2score < p1score ? pick1 : pick2;
+		return pick;
 	}
-	if (encounterList.length <= 0) {return pick1;}
-	if (Math.random() < 0.3333) {return pick1;} //favor weights less heavily
-	const p1score = encounterList
-		.reduce ( (acc, shadow) => acc + shadow.complementRating(pick1), 0);
-	const p2score = encounterList
-		.reduce ( (acc, shadow) => acc + shadow.complementRating(pick2), 0);
-	const pick = p2score < p1score ? pick1 : pick2;
-	return pick;
-}
 
 	static #getEncounterSize(etype: EncounterType) : number {
 		const DIE_SIZE = 10;
@@ -183,23 +296,23 @@ static #choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encoun
 
 	}
 
-private static getSubgroupAmt(pick: Shadow) : number {
-	switch (true) {
-		case pick.hasRole("minion"):
-			return Math.floor(Math.random() * 3 + 3);
-		case pick.hasRole("duo"): return 2;
-		case pick.hasRole("solo"): return 1;
-		case pick.hasRole("elite"): return Math.floor(Math.random() * 2 + 2);
-		case pick.hasRole(["soldier", "artillery", "tank", "brute", "assassin"]): return Math.floor(Math.random() * 3 + 1);
-		case pick.hasRole("controller"):
-		case pick.hasRole("treasure-shadow"):
-		case pick.hasRole("lurker"):
-		case pick.hasRole("support"):
-			return Math.floor(Math.random() * 2 + 1);
-		default:
-			return Math.floor(Math.random() * 5 + 1);
+	private static getSubgroupAmt(pick: Shadow) : number {
+		switch (true) {
+			case pick.hasRole("minion"):
+				return Math.floor(Math.random() * 3 + 3);
+			case pick.hasRole("duo"): return 2;
+			case pick.hasRole("solo"): return 1;
+			case pick.hasRole("elite"): return Math.floor(Math.random() * 2 + 2);
+			case pick.hasRole(["soldier", "artillery", "tank", "brute", "assassin"]): return Math.floor(Math.random() * 3 + 1);
+			case pick.hasRole("controller"):
+			case pick.hasRole("treasure-shadow"):
+			case pick.hasRole("lurker"):
+			case pick.hasRole("support"):
+				return Math.floor(Math.random() * 2 + 1);
+			default:
+				return Math.floor(Math.random() * 5 + 1);
+		}
 	}
-}
 
 
 	static #filterByEncounterType(shadowList : Shadow[], etype : EncounterType) : Shadow[] {
@@ -252,3 +365,13 @@ export type EncounterAction = {
 	action: "fight" | "ambush" | "evade" | "sneak";
 
 }
+
+const VALID_CHOICES : Record<PresenceRollData["encounterType"], typeof RandomEncounter["encounterChoices"][number][]> = {
+	room: ["fight", "evade", "ambush"],
+	secondary: ["fight"],
+	wandering: ["fight", "evade", "sneak", "ambush"],
+};
+
+//@ts-expect-error adding to global
+window.RandomEncounter = RandomEncounter;
+

@@ -376,9 +376,10 @@ export class PersonaRegion extends RegionDocument {
 				mixed: mixedMod,
 			},
 		};
-		const encounter = RandomEncounter.generateEncounter(shadowType, options);
-		await RandomEncounter.printRandomEncounterList(encounter);
-		void RandomEncounter.queryPlayerResponse(encounter);
+		void RandomEncounter.encounterProcess(battleType, shadowType, options);
+		// const encounter = RandomEncounter.generateEncounter(shadowType, options);
+		// await RandomEncounter.printRandomEncounterList(encounter);
+		// void RandomEncounter.queryPlayerResponse(encounter);
 		return true;
 	}
 

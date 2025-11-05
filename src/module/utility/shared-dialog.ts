@@ -269,7 +269,6 @@ export class VotingDialog<Choices extends string> {
 		this._dialog = new SharedDialog(def, name);
 	}
 
-
 	async majorityVote() : Promise<Choices> {
 		const dialogRet = await this._dialog.open( x=> {
 			const totalVoters= Object.values(x).length;
@@ -299,7 +298,6 @@ export class VotingDialog<Choices extends string> {
 
 }
 
-
 type SharedDialogOptions = object;
 
 type SharedDataDefinition = HTMLDataInputDefinition;
@@ -326,16 +324,6 @@ const x = new SharedDialog(
 	return l;
 }
 
-async function testVoting() {
-	return await RandomEncounter.queryPlayerResponse( {encounterType: "standard", enemies: []});
-
-}
-
 //@ts-expect-error adding to global
 window.testSD = testSD;
 
-//@ts-expect-error adding to global
-window.testVoting = testVoting ;
-
-//@ts-expect-error adding to global
-window.SharedDialog = SharedDialog;
