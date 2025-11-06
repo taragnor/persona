@@ -702,8 +702,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		switch (this.source.system.type) {
 			case "pc":
 			case "npcAlly":
-			case "shadow":
 				return 8;
+			case "shadow":
+				if (this.isPersona()) {return 8;}
+				return 16;
 			default:
 				this.source.system satisfies never;
 				return -1;

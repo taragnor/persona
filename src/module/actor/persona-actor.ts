@@ -1344,34 +1344,41 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update( {"system.combat.mp.value": mp});
 	}
 
-	async refreshHpStatus(this: ValidAttackers, newval?: number) {
+	async refreshHpStatus(this: ValidAttackers, newval?: number) : Promise<void> {
 		if (this._antiloop) {return;}
 		this._antiloop = true;
+		const startingHP = this.system.combat.hp;
+		const hp = newval ?? this.system.combat.hp;
+		let debugMarker = 0;
+		const mhp = this.mhp;
 		try {
 			// console.debug("Refreshing HP status");
-			const startingHP = this.system.combat.hp;
-			const hp = newval ?? this.system.combat.hp;
-			const mhp = this.mhp;
 			if (hp > 0) {
+				debugMarker = 1;
 				await this.clearFadingState();
 			}
 			if (hp > mhp) {
+				debugMarker = 2;
 				await this.update( {"system.combat.hp": mhp});
 			}
 			if (this.hasStatus("full-fade") && this.system.combat.hp != 0) {
+				debugMarker = 3;
 				await this.update( {"system.combat.hp": 0});
 			}
 			if (newval != undefined) {
 				if (startingHP > 0  && newval <= 0) {
+					debugMarker = 4;
 					await this.onKO();
 				}
 				if (startingHP <= 0 && newval > 0) {
+					debugMarker = 5;
 					await this.onRevive();
 				}
 			}
+			debugMarker = 6;
 			await this.updateOpacity(hp);
 		} catch (e) {
-			PersonaError.softFail(`Error on Refresh HP Status for ${this.name}`, e);
+			PersonaError.softFail(`Error on Refresh HP Status for ${this.name}, ${this.id}, hp: ${hp}, mhp: ${mhp}, debug:${debugMarker}`, e);
 		}
 		this._antiloop = false;
 	}
@@ -1385,7 +1392,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 			for (const iterableList of this._dependentTokens.values()) {
 				for (const tokDoc of iterableList) {
+					try {
 					await (tokDoc as TokenDocument<PersonaActor>).update({"alpha": opacity});
+					} catch {
+						//throw away errors from tokens that have gone out of scope as this is expected
+						continue;
+					}
 				}
 			}
 		}
