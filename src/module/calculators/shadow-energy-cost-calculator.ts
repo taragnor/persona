@@ -73,12 +73,13 @@ export class EnergyClassCalculator extends CostCalculator {
 		const cost = power.tagList(null).map(tag=> {
 			tag = PersonaItem.resolveTag(tag);
 			const tagName = tag instanceof PersonaItem ? tag.system.linkedInternalTag  || tag.name : tag;
+			const AoEMult = power.isAoE() ? 1.5 : 1;
 			if (tagName in this.TAG_ENERGY_COST_MODS) {
-				return this.TAG_ENERGY_COST_MODS[tagName as keyof typeof this.TAG_ENERGY_COST_MODS];
+				return (this.TAG_ENERGY_COST_MODS[tagName as keyof typeof this.TAG_ENERGY_COST_MODS] ?? 0) * AoEMult;
 			}
 			return this.NULL_COST;
 		})
-		.reduce<EnergyCostBase>( (acc, item) => acc.add(item!), this.NULL_COST);
+		.reduce<EnergyCostBase>( (acc, item) => acc.add(item), this.NULL_COST);
 		return cost;
 	}
 
@@ -171,8 +172,8 @@ export class EnergyClassCalculator extends CostCalculator {
 		"half-on-miss": 10,
 		"pierce": 30,
 		"high-crit": 20,
-		"accurate": 10,
-		"inaccurate": -10,
+		"accurate": 20,
+		"inaccurate": -20,
 	};
 
 	static BENEFICIAL_STATUS_VALUES : Partial<Record<StatusEffectId, number>> = {

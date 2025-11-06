@@ -162,16 +162,6 @@ export class PersonaSFX {
 		//placeholder
 	}
 
-	static getTokens (actor: PersonaActor) : TokenDocument<PersonaActor>[] {
-		if (actor.token) {
-			return [actor.token];
-		}
-		//@ts-expect-error using weird stuff
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
-		const dependentTokens : TokenDocument<PersonaActor>[] = Array.from(actor._dependentTokens.values()).flatMap(x=> Array.from(x.values()));
-		return dependentTokens.filter( x=> x.actorLink == true);
-	}
-
 	static async addTMFiltersStatus(statusId: StatusEffectId, token: TokenDocument) {
 		if (!window.TokenMagic) {return;}
 		if (!token.isOwner) {return;}
