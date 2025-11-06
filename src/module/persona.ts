@@ -51,6 +51,7 @@ import { PersonaSocialCardSheet } from "./item/sheets/social-card-sheet.js";
 import { Heartbeat } from "./utility/heartbeat.js";
 import {PersonaTagSheet} from "./item/sheets/tag-sheet.js";
 import {TagPrinter} from "./printers/tag-printer.js";
+import {EnhancedActorDirectory} from "./enhanced-directory/enhanced-directory.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -122,6 +123,7 @@ Hooks.once("init", function() {
 	TarotPrinter.init();
 	TagPrinter.init();
 	Tooltip.init();
+	EnhancedActorDirectory.init("systems/persona");
 });
 
 function registerHandlebarsHelpers() {

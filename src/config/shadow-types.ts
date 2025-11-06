@@ -39,9 +39,10 @@ export const SHADOW_CREATURE_TYPE_LIST = [
 
 
 
-export const SHADOW_CREATURE_TYPE =  Object.fromEntries(
-	SHADOW_CREATURE_TYPE_LIST.map( x=> [x, `persona.foe.type.${x}`])
-);
+// export const SHADOW_CREATURE_TYPE =  Object.fromEntries(
+// 	SHADOW_CREATURE_TYPE_LIST.map( x=> [x, `persona.foe.type.${x}`])
+// );
+export const SHADOW_CREATURE_TYPE = HTMLTools.createLocalizationObject(SHADOW_CREATURE_TYPE_LIST, "persona.foe.type");
 
 
 export const CREATURE_TYPE_LIST = [

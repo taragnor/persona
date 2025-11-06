@@ -29,6 +29,7 @@ namespace Foundry {
 			permission: number;
 			uuid: string;
 			img: string;
+			isToken: boolean;
 			_dependentTokens:WeakMap<Scene, WeakSet<TokenDocument<typeof Actor<T, ItemType, AEType>>>> ;
 			/** Retrieve an iterator over all effects that can apply to the actor.
   The effect might exist on the Actor, or it might exist on one of the Actor's Items.

@@ -11,10 +11,9 @@ import { PersonaRoller } from "../persona-roll.js";
 import { RollSituation } from "../../config/situation.js";
 import { randomSelect } from "../utility/array-tools.js";
 import { Persona } from "../persona-class.js";
-import { SHADOW_ROLE } from "../../config/shadow-types.js";
+import { SHADOW_CREATURE_TYPE, SHADOW_ROLE } from "../../config/shadow-types.js";
 import { PowerTag } from "../../config/power-tags.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
-import { localizeStatusId } from "../../config/status-effects.js";
 import { fatigueLevelToStatus } from "../../config/status-effects.js";
 import { statusToFatigueLevel } from "../../config/status-effects.js";
 import { FatigueStatusId } from "../../config/status-effects.js";
@@ -69,6 +68,7 @@ import { StatusDuration } from "../active-effect.js";
 import {Calculation} from "../utility/calculation.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {Defense} from "../../config/defense-types.js";
+import {EnhancedActorDirectory} from "../enhanced-directory/enhanced-directory.js";
 
 
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
@@ -346,6 +346,27 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			default:
 				return this.name;
 		}
+	}
+
+	get directoryName() : string {
+		if (this.isPC() || this.isNPCAlly() || this.isTarot()) {
+			return this.displayedName;
+		}
+		if (this.isShadow()) {
+			const subtype  = localize(SHADOW_CREATURE_TYPE[this.system.creatureType]);
+			if (game.user.isGM || this.isOwner) {
+				return `${this.displayedName} (L ${this.level}, ${subtype})`;
+			}
+			if (this.basePersona.isPersona()) {
+				return `${this.displayedName} (L ${this.level}, ${subtype})`;
+
+			}
+			if (this.basePersona.scanLevelRaw > 0) {
+				return `${this.displayedName} (L ${this.level})`;
+			}
+			return this.prototypeToken.name;
+		}
+		return this.name;
 	}
 
 	get displayedNameHTML() : SafeString {
@@ -1739,8 +1760,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			}
 		})
 		.sort( (a,b) => a.displayedName.localeCompare(b.displayedName));
-
 	}
+
+
 
 	get treasureMultiplier () : number {
 		if (!this.isValidCombatant()) {return 1;}
@@ -4429,3 +4451,16 @@ export type XPGainReport = {
 	amount: number,
 	leveled: boolean,
 };
+
+Hooks.on("updateActor", function (actor: PersonaActor, diff)  {
+	if (!actor.isToken && diff?.prototypeToken?.name) {
+		EnhancedActorDirectory.refresh();
+	}
+	if (actor.isValidCombatant()) {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		if (diff.system.combat.personaStats.pLevel) {
+			EnhancedActorDirectory.refresh();
+		}
+	}
+});
+
