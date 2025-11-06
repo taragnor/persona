@@ -14,6 +14,7 @@ export class MPCostCalculator extends CostCalculator {
 			this.mpCost_dekaja(pwr),
 			// this.statusRemoval(pwr),
 			this.#mpCost_tags(pwr),
+			this.mpCost_multiattack(pwr),
 		];
 		return Math.round(this.combineModifiers(mods));
 		// ].reduce ( (acc, x) => acc * x.mult + x.add, 0);
@@ -100,6 +101,19 @@ export class MPCostCalculator extends CostCalculator {
 		}
 		return this.i(cost);
 	}
+
+  static mpCost_multiattack(pwr: Power) :CostModifier {
+    if (pwr.system.attacksMax == 1) {return this.i(0);}
+    const min = pwr.system.attacksMin;
+    const max = pwr.system.attacksMax;
+    const maxAdd =  0.666 * (max -1);
+    const minAdd = 0.666 * (min -1);
+    const costMod : CostModifier = {
+      mult: 1 + maxAdd + minAdd,
+      add: 1 + Math.round(maxAdd + minAdd),
+    };
+    return costMod;
+  }
 
 	static #mpCost_tags(pwr: Power) : CostModifier {
 		let mult = 1;

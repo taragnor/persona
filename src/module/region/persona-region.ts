@@ -17,6 +17,7 @@ import { PersonaDB } from "../persona-db.js";
 import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-system.js";
 import {ValidAttackers} from "../combat/persona-combat.js";
 import {EncounterOptions, RandomEncounter} from "../exploration/random-encounters.js";
+import {randomSelect, removeDuplicates} from "../utility/array-tools.js";
 
 declare global {
 	interface SocketMessage {
@@ -80,7 +81,7 @@ type RegionData = {
 	roomEffects: Item["id"][],
 	pointsOfInterest: string[],
 	specialMods: SpecialMod[],
-	concordiaPresence: number,
+	// concordiaPresence: number,
 	shadowPresence: number,
 	secretNotes: string,
 	challengeLevel: number,
@@ -107,7 +108,7 @@ export class PersonaRegion extends RegionDocument {
 			roomEffects: [],
 			pointsOfInterest: [],
 			specialMods: [],
-			concordiaPresence: 0,
+			// concordiaPresence: 0,
 			shadowPresence: 0,
 			secretNotes: "",
 			challengeLevel: 1,
@@ -144,9 +145,9 @@ export class PersonaRegion extends RegionDocument {
 		);
 	}
 
-	get concordiaPresence(): number {
-		return Number(this.regionData.concordiaPresence ?? 0);
-	}
+	// get concordiaPresence(): number {
+	// 	return Number(this.regionData.concordiaPresence ?? 0);
+	// }
 
 	get shadowPresence(): number {
 		if (this.regionData.shadowPresence)
@@ -329,21 +330,23 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	async presenceCheck(battleType: PresenceRollData["encounterType"], modifier = 0) : Promise<boolean> {
-		const presence = await Metaverse.presenceCheck(battleType, this, undefined, modifier);
+		const presence = await RandomEncounter.presenceCheck(battleType, this, undefined, modifier);
 		if (!presence) {return false;}
-		let shadowType : Shadow["system"]["creatureType"] | undefined = undefined;
-		switch (presence) {
-			case "shadows":
-				shadowType = "shadow";
-				break;
-			case "daemons":
-				shadowType = "daemon";
-				break;
-			case "any":
-				break;
-			default:
-				presence satisfies never;
-		}
+		const shadowTypes =this.encounterList().map(x=> x.system.creatureType);
+		const shadowType = randomSelect(removeDuplicates(shadowTypes));
+		// let shadowType : Shadow["system"]["creatureType"] | undefined = undefined;
+		// switch (presence) {
+		// 	case "shadows":
+		// 		shadowType = "shadow";
+		// 		break;
+		// 	case "daemons":
+		// 		shadowType = "daemon";
+		// 		break;
+		// 	case "any":
+		// 		break;
+		// 	default:
+		// 		presence satisfies never;
+		// }
 		const situation : Situation = {
 			trigger: "on-presence-check",
 			triggeringUser: game.user,
@@ -394,11 +397,11 @@ export class PersonaRegion extends RegionDocument {
 		await this.setRegionData(rdata);
 	}
 
-	async setConcordiaPresence(newPresence: number) {
-		const rdata = this.regionData;
-		rdata.concordiaPresence = newPresence;
-		await this.setRegionData(rdata);
-	}
+	// async setConcordiaPresence(newPresence: number) {
+	// 	const rdata = this.regionData;
+	// 	rdata.concordiaPresence = newPresence;
+	// 	await this.setRegionData(rdata);
+	// }
 
 	formEntryField(field: keyof RegionData) {
 		const element = $("<div>");
@@ -497,14 +500,14 @@ export class PersonaRegion extends RegionDocument {
 				}
 				break;
 			}
-			case "concordiaPresence": {
-				const val = this.regionData[field];
-				element.append(
-					$(`<input type="number">`).addClass(`${fieldClass}`).val(val ?? 0)
-					.on("change", this.#refreshRegionData.bind(this))
-				);
-				break;
-			}
+			// case "concordiaPresence": {
+			// 	const val = this.regionData[field];
+			// 	element.append(
+			// 		$(`<input type="number">`).addClass(`${fieldClass}`).val(val ?? 0)
+			// 		.on("change", this.#refreshRegionData.bind(this))
+			// 	);
+			// 	break;
+			// }
 			case "shadowPresence": {
 				const val = this.regionData[field];
 				element.append(
@@ -575,9 +578,9 @@ export class PersonaRegion extends RegionDocument {
 					}
 					break;
 				}
+				// case "concordiaPresence": {
 				case "challengeLevel":
-				case "shadowPresence":
-				case "concordiaPresence": {
+				case "shadowPresence": {
 					const input = topLevel.find(`.${fieldClass}`).val();
 					if (input != undefined) {
 						(data[k] as unknown) = Number(input ?? 0);

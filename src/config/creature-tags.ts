@@ -38,6 +38,7 @@ export const AI_TAGS = [
 export const PERSONA_TAG_LIST = [
 	"neko",
 	"cu",
+	"angel",
 	"fairy",
 	"foul",
 	"human",

@@ -12,7 +12,7 @@ import { PersonaError } from "./persona-error.js";
 import { FREQUENCY } from "../config/frequency.js";
 import { CardEvent } from "../config/social-card-config.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
-import { Carryable, CClass, Consumable, ContainerTypes, SocialCard, Tag } from "./item/persona-item.js";
+import { Carryable, CClass, Consumable, ContainerTypes, SocialCard } from "./item/persona-item.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaItem } from "./item/persona-item.js";
@@ -385,9 +385,7 @@ export class PersonaHandleBarsHelpers {
 				default:
 					result.result satisfies never;
 					return "ERROR";
-
 			}
-
 		},
 
 		"multicheck": function (name: string, list: Record<string, string>, options: {hash: {localize: boolean, checked: (Record<string, boolean> | string | undefined)}}) : SafeString {

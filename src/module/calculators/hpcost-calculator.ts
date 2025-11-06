@@ -5,18 +5,19 @@ import {CostCalculator, CostModifier} from "./cost-calculator.js";
 
 export class HPCostCalculator extends CostCalculator {
 
-  static calcHPPercentCost(pwr: Power) : number {
-    if (pwr.isBasicPower()) {return 0;}
-    const mods : CostModifier[] = [
-      this.hpCost_damage(pwr),
-      this.tagAdjust(pwr),
-      this.hpCost_instantKill(pwr),
-      this.hpCost_ailment(pwr),
-      this.hpCost_multiattack(pwr),
-	 ];
-    // ].reduce ( (acc, x) => acc * x.mult + x.add, 0);
-    return Math.round(this.combineModifiers(mods));
-  }
+	static calcHPPercentCost(pwr: Power) : number {
+		if (pwr.isBasicPower()) {return 0;}
+		const mods : CostModifier[] = [
+			this.hpCost_damage(pwr),
+			this.tagAdjust(pwr),
+			this.hpCost_instantKill(pwr),
+			this.hpCost_ailment(pwr),
+			this.hpCost_multiattack(pwr),
+			this.hpCost_buffOrDebuff(pwr),
+		];
+		// ].reduce ( (acc, x) => acc * x.mult + x.add, 0);
+		return Math.round(this.combineModifiers(mods));
+	}
 
   static tagAdjust(pwr: Power) : CostModifier {
     let total = 0;
@@ -81,6 +82,16 @@ export class HPCostCalculator extends CostCalculator {
         return {mult: 3, add: 10};
     }
   }
+
+	static hpCost_buffOrDebuff(pwr: Power) : CostModifier {
+		const buffsGranted=  pwr.addsStatus(["attack-boost", "damage-boost", "defense-boost", "attack-nerf", "damage-nerf", "defense-nerf"]);
+		const baseCost = buffsGranted * 3;
+		// if (buffsGranted >= 3) {baseCost += 6;}
+		// if (pwr.isAoE()) {
+		// 	baseCost *= 3;
+		// }
+		return this.i(baseCost);
+	}
 
 
 }

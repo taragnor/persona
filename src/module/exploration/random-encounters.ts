@@ -1,5 +1,7 @@
 import {Shadow} from "../actor/persona-actor.js";
+import {ModifierList} from "../combat/modifier-list.js";
 import {Metaverse, PresenceRollData} from "../metaverse.js";
+import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
 import {PersonaRegion} from "../region/persona-region.js";
@@ -17,6 +19,108 @@ export class RandomEncounter {
 		"ambush",
 	] as const;
 
+	static async presenceCheck(encounterType: PresenceRollData["encounterType"], region ?: PersonaRegion, situation ?: Situation, modifier = 0) : Promise<PresenceCheckResult> {
+		if (!region) {
+			region = Metaverse.getRegion();
+			if (!region) {return null;}
+		}
+		if  (!situation) {
+			situation = {
+				trigger: "on-presence-check",
+				triggeringRegionId : region.id,
+				triggeringUser: game.user,
+			};
+		}
+		const sModifiers = new ModifierList(
+			PersonaDB.getGlobalModifiers()
+			.concat(region.allRoomEffects)
+			.flatMap(x=> x.getModifier("shadowPresence", null))
+		);
+		const sPresence = region.shadowPresence > 0 ? region.shadowPresence + sModifiers.total(situation) : 0;
+		if (sPresence > 0) {
+			if( await this.#enemyPresenceRoll(encounterType, sPresence + modifier, this.name) == true) {
+				return "shadows";
+			}
+		}
+		// const cModifiers = new ModifierList(
+		// 	PersonaDB.getGlobalModifiers()
+		// 	.concat(region.allRoomEffects)
+		// 	.flatMap(x=> x.getModifier("concordiaPresence", null))
+		// );
+		// const cPresence = region.concordiaPresence > 0 ? region.concordiaPresence + cModifiers.total(situation): 0;
+		// if (cPresence > 0) {
+		// 	if ( await this.#concordiaPresenceRoll(encounterType, cPresence + modifier, this.name) == true)  {
+		// 		return "daemons";
+		// 	}
+		// }
+		return null;
+	}
+
+	// static async #concordiaPresenceRoll( encounterType: PresenceRollData["encounterType"], presenceValue: number, regionName: string = ""): Promise<boolean> {
+	// 	return await this.#presenceRoll({
+	// 		presenceValue,
+	// 		regionName,
+	// 		encounterType,
+	// 		label: "Concordia Presence",
+	// 		rollString: "1d8",
+	// 		atkText: "Daemons Attack!",
+	// 	});
+	// }
+
+	static async #enemyPresenceRoll ( encounterType: PresenceRollData["encounterType"], presenceValue:number, regionName: string = ""): Promise<boolean> {
+		return await this.#presenceRoll({
+			presenceValue,
+			regionName,
+			encounterType,
+			label: "Enemy Presence",
+			rollString: "1d12",
+			atkText: "Enemies Attack!",
+		});
+	}
+
+static async #presenceRoll (data: PresenceRollData) : Promise<boolean> {
+	const roll = new Roll(data.rollString);
+	await roll.roll();
+	const isEncounter = roll.total <= data.presenceValue;
+	let html = `<h2> ${data.label} (${data.regionName})</h2>`;
+	html += `<div> Roll vs ${data.label} ${data.presenceValue}: ${roll.total} </div>`;
+	const result = isEncounter ? data.atkText ?? `Danger`: data.safeText ?? `Safe`;
+	html += `<div class="action-result">${result}</div>`;
+	if (isEncounter) {
+		html += `<br><hr><div>Will you?</div>`;
+		html += `<ul>`;
+		html += `<li> Fight</li>`;
+		switch (data.encounterType) {
+			case "wandering":
+				html+= `
+				<li> Evade (+1 tension on 1 on d6) </li>
+				<li> Try to sneak past (d6, ambushed on 1, 2-3: +1 tension, 4-6 safe)</li>
+				<li> Ambush (d8, +1 metaverse turn, 1 counter ambush, 2-3 no effect, 4-6 ambush shadows) </li>
+			`;
+				break;
+			case "room":
+				html+= `
+				<li> Evade (Requires Guard): +1 tension unless a guard rolls 3-6 on d6. </li>
+				<li> Ambush (Requires Guard + SL ability) </li>
+				`;
+				break;
+			case "secondary":
+				break;
+			default:
+				data.encounterType satisfies never;
+		}
+		html+= `</ul>`;
+	}
+await ChatMessage.create({
+	speaker: {
+		alias: data.label
+	},
+	content: html,
+	rolls: [roll],
+	style: CONST.CHAT_MESSAGE_STYLES.OOC,
+});
+return roll.total <= data.presenceValue;
+}
 
 	static async printRandomEncounterList(encounter: Encounter) {
 		const {enemies, encounterType} = encounter;
@@ -320,7 +424,7 @@ export class RandomEncounter {
 			case "standard":
 				return shadowList.filter( x=> !x.hasRole(["treasure-shadow", "duo", "solo"]));
 			case "tough":
-				return shadowList.filter( x=> x.hasRole(["duo", "solo", "elite"]));
+				return shadowList.filter( x=> x.hasRole(["duo", "solo"]));
 			case "treasure":
 				return shadowList.filter( x=> x.hasRole(["treasure-shadow"]));
 			case "mixed":
@@ -374,4 +478,10 @@ const VALID_CHOICES : Record<PresenceRollData["encounterType"], typeof RandomEnc
 
 //@ts-expect-error adding to global
 window.RandomEncounter = RandomEncounter;
+
+type PresenceCheckResult = null
+	| "shadows"
+	| "daemons"
+	| "any";
+
 
