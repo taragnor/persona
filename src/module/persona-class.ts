@@ -464,7 +464,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 		arr.pushUnique(talent.id);
 		await source.update( {"system.combat.talents": arr});
-		await Logger.sendToChat(`${this.name} added ${talent.name} Talent` , source);
+		if (source.hasPlayerOwner) {
+			await Logger.sendToChat(`${this.name} added ${talent.name} Talent` , source);
+		}
 	}
 
 	async deleteTalent(id: string) {
