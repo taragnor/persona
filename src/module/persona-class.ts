@@ -257,6 +257,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.system.combat.personaStats.pLevel ?? 0;
 	}
 
+	get startingLevel() : number {
+		return this.source.startingLevel;
+	}
+
 	/**gains X amount of levels */
 	async gainLevel(amt: number) : Promise<void> {
 		const source=  this.source;
@@ -348,6 +352,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	isEligibleToBecomePersona(): boolean {
 		const source = this.source;
 		if (!source.isShadow()) {return false;}
+		if (!source.tarot || source.tarot.name.length == 0) { return false; }
+		if (source.level <= 0) {return false;}
 		if (source.prototypeToken.actorLink == true) {return false;}
 		if (source.system.creatureType == "daemon") {return false;}
 		if (this.isPersona()) {return true;}

@@ -60,6 +60,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			tagsArr: undefined,
 			enchantments: undefined,
 			classes: undefined,
+			possiblePersonas: undefined,
 		};
 		Hooks.callAll("DBrefresh");
 		return newCache;
@@ -363,18 +364,31 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.classes;
 	}
 
-	PersonaableShadowsOfArcana(min: number, max: number) : Partial<Record<TarotCard, Shadow[]>> {
+	possiblePersonas() : Shadow[] {
+		if (this.#cache.possiblePersonas) {
+			return this.#cache.possiblePersonas;
+		}
 		const shadows = this.allActors()
 		.filter ( x=> x.isShadow()
-			&& !x.hasCreatureTag("d-mon")
+			&& !x.isDMon()
 			&& x.persona().isEligibleToBecomePersona()
-			&& x.persona().level >= min
-			&& x.persona().level <= max
-		)
+		) as Shadow[];
+		return this.#cache.possiblePersonas = shadows;
+	}
+
+	possiblePersonasByStartingLevel(min: number, max: number) : Shadow[] {
+		return this.possiblePersonas().filter (x=> 
+			x.startingLevel >= min
+			&& x.startingLevel <= max
+		);
+	}
+
+	PersonaableShadowsOfArcana(min: number, max: number) : Partial<Record<TarotCard, Shadow[]>> {
+		const shadows = this.possiblePersonasByStartingLevel(min, max)
 		.sort( (a,b) => (b.tarot?.displayedName ?? "").localeCompare(a.tarot?.displayedName ?? ""));
 		const tarotList = {} as Partial<Record<TarotCard, Shadow[]>>;
 		for (const tarot of Object.keys(TAROT_DECK)) {
-			tarotList[tarot as TarotCard] = shadows.filter(sh => sh.isShadow() && sh.tarot?.name == tarot) as Shadow[];
+			tarotList[tarot as TarotCard] = shadows.filter(sh => sh.isShadow() && sh.tarot?.name == tarot);
 		}
 		return tarotList;
 	}
@@ -427,5 +441,6 @@ type PersonaDBCache =	{
 	tagNames: U<Map<Tag["name"], Tag>>;
 	tagsArr: U<Tag[]>;
 	classes: U<CClass[]>;
+	possiblePersonas: U<Shadow[]>;
 };
 

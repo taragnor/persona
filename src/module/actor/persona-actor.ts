@@ -69,6 +69,7 @@ import {Calculation} from "../utility/calculation.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {Defense} from "../../config/defense-types.js";
 import {EnhancedActorDirectory} from "../enhanced-directory/enhanced-directory.js";
+import {FusionTable} from "../../config/fusion-table.js";
 
 
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
@@ -80,10 +81,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	static MPMap = new Map<number, number>;
 
 	cache: {
+		startingLevel: U<number>,
+		level: U<number>,
 		tarot: Tarot | undefined;
 		complementRating: Map<Shadow["id"], number>;
 		// triggers: U<ModifierContainer[]>;
-		socialData: U<readonly SocialLinkData[]>,
+		socialData: U<readonly SocialLinkData[]>;
+		isDMon: U<boolean>;
 	};
 
 	constructor(...arr: unknown[]) {
@@ -93,10 +97,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	clearCache() {
 		this.cache = {
+			startingLevel: undefined,
+			level: undefined,
 			tarot: undefined,
 			complementRating: new Map(),
 			socialData: undefined,
 			// triggers: undefined,
+			isDMon: undefined,
 		};
 	}
 
@@ -166,11 +173,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get level() : number {
-		if (!this.isValidCombatant()) {return 0;}
-		if (this.isPC()) {
-			return this.system.personaleLevel;
+		if (this.cache.level != undefined) {
+			return this.cache.level;
 		}
-		return this.basePersona.level;
+		if (!this.isValidCombatant()) {return this.cache.level = 0;}
+		if (this.isPC()) {
+			return this.cache.level = this.system.personaleLevel;
+		}
+		return this.cache.level = this.system.combat.personaStats.pLevel ?? 0;
 	}
 
 	get personalLevel(): number {
@@ -2063,7 +2073,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	isDMon() : boolean {
-		return this.isShadow() && (this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon"));
+		if (this.cache.isDMon) {return this.cache.isDMon;}
+		return this.cache.isDMon = this.isShadow() && (this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon"));
 	}
 
 	isPersona(): boolean {
@@ -3089,23 +3100,17 @@ async setAvailability(this: SocialLink, bool: boolean) {
 	}
 }
 get tarot() : (Tarot | undefined) {
+	if (this.cache.tarot != undefined) {
+		if (this.cache.tarot.name == "") {return undefined;}
+		return this.cache.tarot;
+	}
 	switch (this.system.type) {
+		case "shadow":
 		case "pc": {
-			if (this.cache.tarot?.name == this.system.tarot)
-			{break;}
 			if (this.system.tarot == "")
-			{return undefined;}
-			const PC = this as PC;
+			{return this.cache.tarot = undefined;}
+			const PC = this as PC | Shadow;
 			this.cache.tarot = PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
-			break;
-		}
-		case "shadow": {
-			if (this.cache.tarot?.name == this.system.tarot)
-			{break;}
-			if (this.system.tarot == "")
-			{return undefined;}
-			const shadow = this as Shadow;
-			this.cache.tarot =  PersonaDB.tarotCards().find(x=> x.name == shadow.system.tarot);
 			break;
 		}
 		case "npcAlly":
@@ -3115,8 +3120,6 @@ get tarot() : (Tarot | undefined) {
 			}
 			//switch fallthrough is deliberate here
 		case "npc": {
-			if (this.cache.tarot?.name == this.system.tarot)
-			{break;}
 			if (this.system.tarot == "")
 			{return undefined;}
 			// console.debug("cached value no good (NPC)");
@@ -4300,6 +4303,21 @@ async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: num
 	await Logger.sendToChat(`+${amt} ${permaBuffLocalized} applied to ${this.name}`);
 }
 
+fusions() : [Shadow, Shadow][] {
+	const retList : [Shadow, Shadow][] = [];
+	const possibles = PersonaDB.possiblePersonas()
+		.filter (x=> x!= this);
+	for (let persona = possibles.pop(); persona != undefined; persona = possibles.pop()) {
+		for (const p2 of possibles) {
+			const fusion = FusionTable.fusionResult(persona, p2);
+			if (fusion && fusion == this) {
+				retList.push([persona, p2]);
+			}
+		}
+	}
+	return retList;
+}
+
 moneyDropped(): number {
 	if (!this.isShadow() || this.isPersona()) {return 0;}
 	const moneyHigh = Math.floor(this.level / 2);
@@ -4316,7 +4334,19 @@ moneyDropped(): number {
 	return Math.floor(mult * moneyLow);
 }
 
+get startingLevel() : number {
+	const cVal = this.cache.startingLevel;
+	if (cVal != undefined) {
+		return cVal;
+	}
+	if (!this.isShadow()) {return this.cache.startingLevel = 0;}
+	const lvl = this.system.personaConversion.startingLevel;
+	if (lvl == 1) {return this.cache.startingLevel = this.level;}
+	return this.cache.startingLevel = lvl;
 }
+
+}
+
 
 Hooks.on("preUpdateActor", async (actor: PersonaActor, changes) => {
 	if (!actor.isOwner) {return;}
