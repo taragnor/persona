@@ -10,7 +10,6 @@ import { weightedChoice } from "./utility/array-tools.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { SkillCard } from "./item/persona-item.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
-import { ModifierList } from "./combat/modifier-list.js";
 import { SearchMenu } from "./exploration/searchMenu.js";
 import { PersonaRegion } from "./region/persona-region.js";
 import { Weapon } from "./item/persona-item.js";
@@ -309,6 +308,8 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 				}
 				break;
 			}
+			case "disable-region":
+				break; // handled in persona-region class
 			default:
 				action satisfies never;
 		}
@@ -523,7 +524,7 @@ declare global {
 export type PresenceRollData = {
 	presenceValue: number,
 	rollString: string,
-	regionName: string,
+	region: PersonaRegion,
 	label: string,
 	encounterType: "wandering" | "room" | "secondary",
 	atkText ?: string,

@@ -561,6 +561,7 @@ type GenericDungeonAction = {
 	dungeonAction: "roll-tension-pool"
 	| "modify-tension-pool"
 	| "close-all-doors"
+	| "disable-region"
 }
 
 type ClockDungeonActionCons = {

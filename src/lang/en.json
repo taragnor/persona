@@ -662,6 +662,7 @@
 	"persona.effecttypes.dungeonAction.set-clock": "Set Clock",
 	"persona.effecttypes.dungeonAction.close-all-doors": "Close all Doors",
 	"persona.effecttypes.dungeonAction.change-scene-weather": "Change Scene Weather",
+	"persona.effecttypes.dungeonAction.disable-region": "Set Region Inactive",
 
 	"persona.effecttypes.modifierType.constant" : "Constant",
 	"persona.effecttypes.modifierType.system-variable" : "System Variable",

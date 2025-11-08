@@ -625,7 +625,7 @@ export class FusionTable {
 
 	static #downwardFusion(targetArcana: TarotCard, targetLevel : number, p1: Shadow, p2: Shadow) : U<Shadow> {
 		// const shadowList = PersonaDB.PersonaableShadowsOfArcana(1,targetLevel -1)[targetArcana]
-		const shadowList = PersonaDB.possiblePersonasByStartingLevel(1,targetLevel -1)
+		const shadowList = PersonaDB.possiblePersonasByStartingLevel(2,targetLevel -1)
 		?.filter(shadow =>
 			shadow?.tarot?.name == targetArcana
 			&& shadow.startingLevel < targetLevel

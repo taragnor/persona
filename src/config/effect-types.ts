@@ -168,6 +168,7 @@ export const DUNGEON_ACTION_LIST = [
 	"rename-scene-clock",
 	"close-all-doors",
 	"change-scene-weather",
+	"disable-region",
 ] as const;
 
 export type DungeonAction = typeof DUNGEON_ACTION_LIST[number];

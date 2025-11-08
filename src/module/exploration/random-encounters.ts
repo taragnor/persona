@@ -1,4 +1,4 @@
-import {Shadow} from "../actor/persona-actor.js";
+import {PersonaActor, Shadow} from "../actor/persona-actor.js";
 import {ModifierList} from "../combat/modifier-list.js";
 import {Metaverse, PresenceRollData} from "../metaverse.js";
 import {PersonaDB} from "../persona-db.js";
@@ -38,7 +38,7 @@ export class RandomEncounter {
 		);
 		const sPresence = region.shadowPresence > 0 ? region.shadowPresence + sModifiers.total(situation) : 0;
 		if (sPresence > 0) {
-			if( await this.#enemyPresenceRoll(encounterType, sPresence + modifier, this.name) == true) {
+			if( await this.#enemyPresenceRoll(encounterType, sPresence + modifier, region)) {
 				return "shadows";
 			}
 		}
@@ -67,10 +67,10 @@ export class RandomEncounter {
 	// 	});
 	// }
 
-	static async #enemyPresenceRoll ( encounterType: PresenceRollData["encounterType"], presenceValue:number, regionName: string = ""): Promise<boolean> {
+	static async #enemyPresenceRoll ( encounterType: PresenceRollData["encounterType"], presenceValue:number, region: PersonaRegion): Promise<boolean> {
 		return await this.#presenceRoll({
 			presenceValue,
-			regionName,
+			region,
 			encounterType,
 			label: "Enemy Presence",
 			rollString: "1d12",
@@ -82,35 +82,13 @@ static async #presenceRoll (data: PresenceRollData) : Promise<boolean> {
 	const roll = new Roll(data.rollString);
 	await roll.roll();
 	const isEncounter = roll.total <= data.presenceValue;
-	let html = `<h2> ${data.label} (${data.regionName})</h2>`;
+	let html = `<h2> ${data.label} (${data.region.name})</h2>`;
 	html += `<div> Roll vs ${data.label} ${data.presenceValue}: ${roll.total} </div>`;
 	const result = isEncounter ? data.atkText ?? `Danger`: data.safeText ?? `Safe`;
 	html += `<div class="action-result">${result}</div>`;
-	if (isEncounter) {
-		html += `<br><hr><div>Will you?</div>`;
-		html += `<ul>`;
-		html += `<li> Fight</li>`;
-		switch (data.encounterType) {
-			case "wandering":
-				html+= `
-				<li> Evade (+1 tension on 1 on d6) </li>
-				<li> Try to sneak past (d6, ambushed on 1, 2-3: +1 tension, 4-6 safe)</li>
-				<li> Ambush (d8, +1 metaverse turn, 1 counter ambush, 2-3 no effect, 4-6 ambush shadows) </li>
-			`;
-				break;
-			case "room":
-				html+= `
-				<li> Evade (Requires Guard): +1 tension unless a guard rolls 3-6 on d6. </li>
-				<li> Ambush (Requires Guard + SL ability) </li>
-				`;
-				break;
-			case "secondary":
-				break;
-			default:
-				data.encounterType satisfies never;
-		}
-		html+= `</ul>`;
-	}
+	// if (isEncounter) {
+	// 	html += this.encounterChoiceList(data.encounterType);
+	// }
 await ChatMessage.create({
 	speaker: {
 		alias: data.label
@@ -122,14 +100,43 @@ await ChatMessage.create({
 return roll.total <= data.presenceValue;
 }
 
-	static async printRandomEncounterList(encounter: Encounter) {
-		const {enemies, encounterType} = encounter;
+static encounterChoiceList(encounterType : PresenceRollData["encounterType"]) : string {
+	let html = "";
+	html += `<br><hr><div>Will you?</div>`;
+	html += `<ul>`;
+	html += `<li> Fight</li>`;
+	switch (encounterType) {
+		case "wandering":
+			html+= `
+				<li> Evade (+1 tension on 1 on d6) </li>
+				<li> Try to sneak past (d6, ambushed on 1, 2-3: +1 tension, 4-6 safe)</li>
+				<li> Ambush (d8, +1 metaverse turn, 1 counter ambush, 2-3 no effect, 4-6 ambush shadows) </li>
+			`;
+			break;
+		case "room":
+			html+= `
+				<li> Evade (Requires Guard): +1 tension unless a guard rolls 3-6 on d6. </li>
+				<li> Ambush (Requires Guard + SL ability) </li>
+				`;
+			break;
+		case "secondary":
+			break;
+		default:
+			encounterType satisfies never;
+	}
+	html+= `</ul>`;
+	return html;
+
+}
+
+	static async printRandomEncounterList(encounter: Omit<Encounter, "encounterType">) {
+		const {enemies, encounterDifficulty} = encounter;
 		const speaker = ChatMessage.getSpeaker({alias: "Encounter Generator"});
 		const enchtml = enemies.map( shadow =>
 			`<li class="shadow"> ${shadow.name} </div>`
 		).join("");
 		const text = `
-		<h2> ${encounterType} Encounter </h2>
+		<h2> ${encounterDifficulty} Encounter </h2>
 		<ul class="enc-list">
 		${enchtml}
 		</ul>
@@ -148,17 +155,74 @@ return roll.total <= data.presenceValue;
 			.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
 	}
 
-	/** queries player to determine if they will ambush, fight , etc.*/
-	static async queryPlayerResponse(encounter: Encounter, validChoices: typeof this.encounterChoices[number][]) : Promise<EncounterAction> {
-		const dialog = new VotingDialog(validChoices, `${encounter.encounterType} Encounter`);
+/** queries player to determine if they will ambush, fight , etc.*/
+static async queryPlayerResponse(encounter: Encounter, validChoices: typeof this.encounterChoices[number][]) : Promise<EncounterAction> {
+	await this.PlayerNotifyChatMsg(encounter);
+	try {
+		const dialog = new VotingDialog(validChoices, `${encounter.encounterDifficulty} Encounter`);
 		const action = await dialog.majorityVote();
 		return {
 			action,
 		};
+	} catch (e) {
+		if (e instanceof Error) {
+			PersonaError.softFail("Error with Playuer Vote", e);
+		}
+		return {
+			action : "fight"
+		};
+	}
+}
+
+static avgPartyLevel () {
+	const pcs = game.scenes.active.tokens.filter( (x : TokenDocument<PersonaActor>)=>
+		x.actor != undefined && (x.actor.isRealPC() || x.actor.isNPCAlly()));
+	return Math.round(pcs.reduce( (acc,x : TokenDocument<PersonaActor>)=> acc + (x.actor?.level ?? 0), 0) / pcs.length);
+
+}
+
+static avgLevelOfEncounter (encounter: Encounter) {
+	const total = encounter.enemies.reduce( (acc, sh) => acc + sh.level, 0);
+	return Math.round(total / encounter.enemies.length);
+}
+
+static getLevelDiffString(encounter: Encounter) : string {
+	const levelDiff = this.avgPartyLevel() - this.avgLevelOfEncounter(encounter);
+	switch (true) {
+		case (levelDiff >= 10):  return "Very Easy";
+		case (levelDiff >= 5): return "Easy";
+		case (levelDiff >= 0): return "Moderate";
+		case (levelDiff >= -5): return "Strong";
+		case (levelDiff >= -10): return "Very Strong";
+		default: return "Overwhelming";
 	}
 
+}
+
+static async PlayerNotifyChatMsg(encounter : Encounter)  {
+	let html = `
+	<div>
+	${encounter.encounterDifficulty} Encounter
+	</div>`;
+	html += `<div>
+	Relative Strength Comparison: ${this.getLevelDiffString(encounter)}
+	</div> `;
+	html += this.encounterChoiceList(encounter.encounterType);
+ await ChatMessage.create({
+	speaker: {
+		alias: "Engagement Options",
+	},
+	content: html,
+	style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+});
+
+}
+
 	static async encounterProcess(battleType: PresenceRollData["encounterType"], shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}) {
-		const encounter = RandomEncounter.generateEncounter(shadowType, options);
+		const encounter = {
+			...RandomEncounter.generateEncounter(shadowType, options),
+			encounterType : battleType,
+		};
 		await RandomEncounter.printRandomEncounterList(encounter);
 		const validChoices = VALID_CHOICES[battleType];
 		const choice = await RandomEncounter.queryPlayerResponse(encounter, validChoices);
@@ -177,7 +241,7 @@ return roll.total <= data.presenceValue;
 				return await this.processSneak();
 			default:
 				action satisfies never;
-				PersonaError.softFail(`Unknown Pre Combat choice ${action}`);
+				PersonaError.softFail(`Unknown Pre Combat choice ${action as string}`);
 		}
 
 	}
@@ -270,7 +334,7 @@ return roll.total <= data.presenceValue;
 	}
 
 
-	static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}): Encounter {
+	static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}): Omit<Encounter, "encounterType"> {
 		const region = Metaverse.getRegion();
 		const scene =  game.scenes.current as PersonaScene;
 		const regionOrScene = region ? region : scene;
@@ -284,10 +348,10 @@ return roll.total <= data.presenceValue;
 			PersonaError.softFail(`Base Encounter List is empty for ${scene.name} ${shadowType ? "(" + shadowType+ ")"  :""}`);
 			return {
 				enemies: [],
-				encounterType: "error",
+				encounterDifficulty: "error",
 			};
 		}
-		let etype : EncounterType;
+		let etype : EncounterDifficulty;
 		do {
 			etype = options.encounterType ? options.encounterType : this.#getEncounterType(options.frequencies ?? {});
 			const size = this.#getEncounterSize(etype) + (options.sizeMod ?? 0);
@@ -303,7 +367,7 @@ return roll.total <= data.presenceValue;
 				PersonaError.softFail(`Had to bail out, couldn't find match for ${scene.name}`);
 				return {
 					enemies: encounter,
-					encounterType: "error"
+					encounterDifficulty: "error"
 				};
 			}
 			if (bailout == 20) {
@@ -342,10 +406,10 @@ return roll.total <= data.presenceValue;
 			}
 		}
 		encounter.sort( (a,b) => a.name.localeCompare(b.name));
-		return {enemies: encounter, encounterType: etype};
+		return {enemies: encounter, encounterDifficulty: etype};
 	}
 
-	static #getEncounterType(frequencies: {hard ?: number, mixed ?: number}): EncounterType {
+	static #getEncounterType(frequencies: {hard ?: number, mixed ?: number}): EncounterDifficulty {
 		const mixed = frequencies.mixed ? frequencies.mixed : 0;
 		const DIE_SIZE = 16 + mixed;
 		const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
@@ -380,7 +444,7 @@ return roll.total <= data.presenceValue;
 		return pick;
 	}
 
-	static #getEncounterSize(etype: EncounterType) : number {
+	static #getEncounterSize(etype: EncounterDifficulty) : number {
 		const DIE_SIZE = 10;
 		const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
 		const addon = etype == "tough" || etype == "mixed" ? 1 : 0;
@@ -419,7 +483,7 @@ return roll.total <= data.presenceValue;
 	}
 
 
-	static #filterByEncounterType(shadowList : Shadow[], etype : EncounterType) : Shadow[] {
+	static #filterByEncounterType(shadowList : Shadow[], etype : EncounterDifficulty) : Shadow[] {
 		switch (etype) {
 			case "standard":
 				return shadowList.filter( x=> !x.hasRole(["treasure-shadow", "duo", "solo"]));
@@ -451,16 +515,17 @@ return roll.total <= data.presenceValue;
 
 export type Encounter =  {
 	enemies: Shadow[],
-	encounterType : EncounterType,
+	encounterDifficulty : EncounterDifficulty,
+	encounterType: PresenceRollData["encounterType"];
 }
 
 
-type EncounterType = "standard" | "tough" | "treasure" | "mixed" | "error";
+type EncounterDifficulty = "standard" | "tough" | "treasure" | "mixed" | "error";
 
 
 export interface EncounterOptions {
 	sizeMod ?: number;
-	encounterType ?: EncounterType;
+	encounterType ?: EncounterDifficulty;
 	frequencies ?: {hard: number, mixed: number},
 }
 

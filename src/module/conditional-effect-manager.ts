@@ -1069,6 +1069,9 @@ static printConsAmountOperation( consAmt: ConsequenceAmountV2 & {type: "operatio
 			case "rename-scene-clock": {
 				return `Change Scene Clock details`;
 			}
+			case "disable-region": {
+				return `Render Region Inactive`;
+			}
 			default:
 				cons satisfies never;
 				return "ERROR";

@@ -370,6 +370,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		}
 		const shadows = this.allActors()
 		.filter ( x=> x.isShadow()
+			&& !x.isPersona()
 			&& !x.isDMon()
 			&& x.persona().isEligibleToBecomePersona()
 		) as Shadow[];

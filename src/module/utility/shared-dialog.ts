@@ -265,6 +265,9 @@ export class VotingDialog<Choices extends string> {
 					return [user.id, userD];
 				})
 			);
+		if (Object.keys(def).length == 0) {
+			throw new Error("Malformed Dialog, no players connected");
+		}
 		this._dialog = new SharedDialog(def, name);
 	}
 

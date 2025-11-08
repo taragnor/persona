@@ -18,6 +18,7 @@ import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-s
 import {ValidAttackers} from "../combat/persona-combat.js";
 import {EncounterOptions, RandomEncounter} from "../exploration/random-encounters.js";
 import {randomSelect, removeDuplicates} from "../utility/array-tools.js";
+import {getActiveConsequences} from "../preconditions.js";
 
 declare global {
 	interface SocketMessage {
@@ -113,6 +114,26 @@ export class PersonaRegion extends RegionDocument {
 			secretNotes: "",
 			challengeLevel: 1,
 		} as const;
+	}
+
+	get disabled() : boolean {
+		// return this.allRoomEffects.some( eff=>
+		// 	eff.getPassiveEffects(null).some( CE=>
+		// 		CE.consequences.some( cons => cons.type == "dungeon-action" && cons.dungeonAction == "disable-region")
+		// 	)
+		// );
+		const situation : Situation = {
+			trigger: "on-enter-region",
+			triggeringRegionId: this.id,
+			triggeringUser: game.user,
+		};
+		return this.allRoomEffects
+			.flatMap( eff=> eff.getPassiveEffects(null))
+			.some( CE=> {
+				const cons = getActiveConsequences(CE, situation);
+				return cons.some( cons =>
+					cons.type == "dungeon-action" && cons.dungeonAction == "disable-region");
+			});
 	}
 
 	get regionData(): RegionData {
@@ -279,7 +300,9 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	async onEnterRegion(token: TokenDocument<PersonaActor>) {
-		console.debug(`Region Entered: ${this.name}`);
+		if (PersonaSettings.debugMode()) {
+			console.debug(`Region Entered: ${this.name}`);
+		}
 		if (!token.actor?.isPC()) {return;}
 		const tokens = Array.from(this.tokens);
 		const situation : Situation = {
@@ -288,10 +311,12 @@ export class PersonaRegion extends RegionDocument {
 			triggeringCharacter: token.actor.accessor,
 			triggeringUser: game.user,
 		};
-		await TriggeredEffect.autoApplyTrigger("on-enter-region", token.actor, situation);
-		if (tokens.some(t => t.actor?.isShadow() && !t.hidden) ) {return;}
-		await this.presenceCheck("wandering");
-		await Metaverse.passMetaverseTurn();
+		if (!this.disabled) {
+			await TriggeredEffect.autoApplyTrigger("on-enter-region", token.actor, situation);
+			if (!tokens.some(t => t.actor?.isShadow() && !t.hidden) )
+			{ await this.presenceCheck("wandering"); }
+			await Metaverse.passMetaverseTurn();
+		}
 	}
 
 	/** for batch_adding */
@@ -328,6 +353,7 @@ export class PersonaRegion extends RegionDocument {
 		await this.setRegionData(data);
 		return true;
 	}
+
 
 	async presenceCheck(battleType: PresenceRollData["encounterType"], modifier = 0) : Promise<boolean> {
 		const presence = await RandomEncounter.presenceCheck(battleType, this, undefined, modifier);
