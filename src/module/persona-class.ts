@@ -205,6 +205,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	async resetCombatStats() {
 		const source = this.source;
 		const stats = source.system.combat.personaStats.stats;
+		console.log(`Resetting stats for ${this.name}`);
 		for (const k of Object.keys(stats)) {
 			stats[k as PersonaStat] = 1;
 		}
@@ -323,7 +324,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			await this.source.onLevelUp_BasePersona(newLevel);
 		}
 		return {
-			name: `${this.source.name} (${this.user.name})`,
+			name: `${this.name} (${this.user.name})`,
 			amount: amt,
 			leveled: levelUp,
 		};
@@ -355,7 +356,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		if (!source.tarot || source.tarot.name.length == 0) { return false; }
 		if (source.level <= 0) {return false;}
 		if (source.prototypeToken.actorLink == true) {return false;}
-		if (source.system.creatureType == "daemon") {return false;}
+		// if (source.system.creatureType == "daemon") {return false;}
 		if (this.isPersona()) {return true;}
 		if (this.isDMon()) {return true;}
 		return this.isEligibleToBecomeDMon();
@@ -951,7 +952,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return base;
 	}
 
-	_autoTags() : PersonaTag[] {
+	private _autoTags() : PersonaTag[] {
 		const autoPTags :PersonaTag[]= [];
 		if (this.source.isPC() || this.source.isNPCAlly()){
 			autoPTags.pushUnique("persona");
@@ -979,7 +980,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				autoPTags.pushUnique(this.source.system.role2);
 			}
 		}
-		if (autoPTags.includes("persona") && this.source.hasSoloPersona) {
+		if (autoPTags.includes("persona") && this.source.isPC() &&  this.source.hasSoloPersona) {
 			autoPTags.pushUnique("lone-persona");
 		}
 		return autoPTags;

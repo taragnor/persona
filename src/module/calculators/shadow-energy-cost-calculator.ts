@@ -170,9 +170,9 @@ export class EnergyClassCalculator extends CostCalculator {
 
 	static TAG_ENERGY_COST_MODS : Partial<Record<Exclude<PowerTag, Tag>, number>> = {
 		"half-on-miss": 10,
-		"pierce": 30,
-		"high-crit": 20,
-		"accurate": 20,
+		"pierce": 25,
+		"high-crit": 15,
+		"accurate": 15,
 		"inaccurate": -20,
 	};
 
@@ -194,7 +194,7 @@ export class EnergyClassCalculator extends CostCalculator {
 		healing: 10,
 		cold: 0,
 		lightning: 0,
-		untyped: 20,
+		untyped: 15,
 		"all-out": 0,
 		"by-power": 0
 	}

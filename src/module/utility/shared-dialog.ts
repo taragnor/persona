@@ -202,7 +202,7 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 	}
 
 	private sendCloseMsg() {
-		const users= game.users.contents;
+		const users= game.users.contents.filter(x=> x.active);
 		for (const user of users) {
 			void SharedDialog.socketManager.verifiedSend("SHARED_DIALOG_CLOSE", {dialogId: this.id}, user.id );
 		}
@@ -219,6 +219,8 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 	}
 
 	private _sendData(users : FoundryUser[]) {
+		users= users.filter(x=> x.active);
+
 		const data = this._data;
 		const payload = {
 			name: this.name,

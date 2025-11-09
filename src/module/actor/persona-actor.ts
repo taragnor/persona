@@ -3569,44 +3569,6 @@ socialEffects(this: SocialLink) : readonly SourcedConditionalEffect[] {
 	return ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this );
 }
 
-// async fatigueRecoveryRoll(this: PC): Promise<string[]> {
-// 	const ret = [] as string[];
-// 	const fatigueStat = this.getFatigueStatus();
-// 	if (fatigueStat == undefined) {return ret;}
-// 	if (this.hasAlteredFatigueToday()) {return ret;}
-// 	let DC = 11;
-// 	switch (fatigueStat) {
-// 		case "rested": DC = 16; break;
-// 		case "exhausted": DC = 11;
-// 			if (this.hasMadeFatigueRollToday()) {return ret;}
-// 			break;
-// 		case "tired": DC= 6;
-// 			if (this.hasMadeFatigueRollToday()) {return ret;}
-// 			break;
-// 	}
-// 	const roll = await PersonaRoller.rollSave(this, {
-// 		DC,
-// 		label: `Save to end ${localizeStatusId(fatigueStat)}`,
-// 		saveVersus: fatigueStat,
-// 		rollTags: ["rest"],
-// 	});
-// 	await roll.toModifiedMessage(true);
-// 	const locStat = localizeStatusId(fatigueStat);
-// 	const fatLevel = this.fatigueLevel;
-// 	if (roll.success && fatLevel < 1) {
-// 		const newStat = await this.alterFatigueLevel(1);
-// 		if (newStat) {
-// 			ret.push(`${this.displayedName} is now ${localizeStatusId(newStat)}`);
-// 		} else {
-// 			ret.push(`${this.displayedName} is no longer ${locStat}`);
-// 		}
-// 	}
-// 	if (!roll.success && fatLevel > 1) {
-// 		await this.alterFatigueLevel(-1);
-// 		ret.push(`${this.displayedName} is no longer ${locStat}`);
-// 	}
-// 	return ret;
-// }
 
 async resetFatigueChecks(this: PC) {
 	if (this.hasAlteredFatigueToday() || this.hasMadeFatigueRollToday()) {
@@ -3651,11 +3613,6 @@ encounterSizeValue() : number {
 	};
 	const mult = this.persona().getBonuses("encounter-size-multiplier").total(sit, "percentage");
 	val *= mult;
-	// if (this.hasRole("solo")) {val *= 4;}
-	// if (this.hasRole("duo")) {val*= 2;}
-	// if (this.hasRole("elite")) {val*= 1.5;}
-	// if (this.hasRole("summoner")) {val *= 1.5;}
-	// if (this.hasRole("minion")) {val *= 0.666;}
 	if (this.isNewEnemy() && !this.hasRole("solo")) {val *= 1.2;}
 	return val;
 }
@@ -4320,8 +4277,8 @@ fusions() : [Shadow, Shadow][] {
 
 moneyDropped(): number {
 	if (!this.isShadow() || this.isPersona()) {return 0;}
-	const moneyHigh = Math.floor(this.level / 2);
-	const moneyLow = Math.floor(this.level / 4);
+	const moneyHigh = Math.floor(this.level / 5);
+	const moneyLow = Math.floor(this.level / 10);
 	const variability = moneyHigh - moneyLow;
 	const situation = {
 		user: this.accessor,
@@ -4500,7 +4457,7 @@ Hooks.on("updateActor", function (actor: PersonaActor, diff)  {
 	}
 	if (actor.isValidCombatant()) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-		if (diff.system.combat.personaStats.pLevel) {
+		if (diff?.system?.combat?.personaStats?.pLevel != undefined) {
 			EnhancedActorDirectory.refresh();
 		}
 	}

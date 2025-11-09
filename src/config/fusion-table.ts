@@ -625,24 +625,36 @@ export class FusionTable {
 
 	static #downwardFusion(targetArcana: TarotCard, targetLevel : number, p1: Shadow, p2: Shadow) : U<Shadow> {
 		// const shadowList = PersonaDB.PersonaableShadowsOfArcana(1,targetLevel -1)[targetArcana]
-		const shadowList = PersonaDB.possiblePersonasByStartingLevel(2,targetLevel -1)
-		?.filter(shadow =>
-			shadow?.tarot?.name == targetArcana
-			&& shadow.startingLevel < targetLevel
-				&& shadow.id != p1.system.personaConversion.baseShadowId
-				&& shadow.id != p2.system.personaConversion.baseShadowId
-		);
+		const shadowList = this.fusionTargetsByLevel(targetArcana, 2, targetLevel-1);
+		// const shadowList = PersonaDB.possiblePersonasByStartingLevel(2,targetLevel -1)
+		// ?.filter(shadow =>
+		// 	shadow?.tarot?.name == targetArcana
+		// 	&& shadow.startingLevel < targetLevel
+		// 		&& shadow.id != p1.system.personaConversion.baseShadowId
+		// 		&& shadow.id != p2.system.personaConversion.baseShadowId
+		// );
 		if (!shadowList || shadowList.length == 0) {return undefined;}
 		shadowList.sort( (a,b)=> a.startingLevel - b.startingLevel);
 		return shadowList.at(0);
 	}
 
+	static fusionTargetsByLevel (targetArcana: TarotCard, min: number = 2, max: number = 999) : Shadow[] {
+		return PersonaDB.possiblePersonasByStartingLevel(min,max)
+		?.filter(shadow =>
+			shadow.system.creatureType != "daemon"
+			&& shadow?.tarot?.name == targetArcana
+			&& shadow.system.personaConversion.startingLevel <= max
+			&& shadow.system.personaConversion.startingLevel >= min
+		);
+	}
+
 	static #upwardFusion(targetArcana: TarotCard, targetLevel : number) : U<Shadow> {
 		// const shadowList = PersonaDB.PersonaableShadowsOfArcana(targetLevel,100)[targetArcana]
-		const shadowList = PersonaDB.possiblePersonasByStartingLevel(targetLevel,100)
-		?.filter(shadow =>
-			shadow?.tarot?.name == targetArcana
-			&& shadow.system.personaConversion.startingLevel >= targetLevel);
+		const shadowList = this.fusionTargetsByLevel(targetArcana, targetLevel, 100);
+		// const shadowList = PersonaDB.possiblePersonasByStartingLevel(targetLevel,100)
+		// ?.filter(shadow =>
+		// 	shadow?.tarot?.name == targetArcana
+		// 	&& shadow.system.personaConversion.startingLevel >= targetLevel);
 		if (!shadowList || shadowList.length == 0) {return undefined;}
 		shadowList.sort( (a,b)=> a.system.personaConversion.startingLevel - b.system.personaConversion.startingLevel);
 		return shadowList.at(0);

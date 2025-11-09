@@ -14,6 +14,9 @@
 			</div>
 		</div>
 	</div>
+	<div>
+	Level: {{persona.level}}
+	</div>
 	{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=persona}}
 	{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=persona}}
 	{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=false showLearnedBuffer=true activePowersOnly=false canDelete=false showSideboard=false usePowers=false}}

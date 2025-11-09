@@ -2946,7 +2946,7 @@ static calculateAllOutAttackDamage(attacker: PToken, situation: AttackResult['si
 	const list : Awaited<ReturnType<typeof PersonaCombat['calculateAllOutAttackDamage']>> = [];
 	for (const actor of attackers) {
 		if (!actor.canAllOutAttack()) {continue;}
-		const mult = actor == attackLeader ? 1 : (1/3);
+		const mult = actor == attackLeader ? 1 : (1/2);
 		const damageCalc = this.individualContributionToAllOutAttackDamage(actor, situation);
 		const result = damageCalc.eval();
 		if (result == undefined || result.hpChange == 0) {
