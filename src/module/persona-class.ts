@@ -986,7 +986,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return autoPTags;
 	}
 
-	realTags() : Tag[] {
+realTags() : Tag[] {
 	const ret =  this.tagListPartial().flatMap( tag => {
 		const IdCheck = PersonaDB.allTags().get(tag);
 		if (IdCheck) {return [IdCheck];}
@@ -995,8 +995,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return [];
 	});
 	return ret;
-
-	}
+}
 
 	wpnDamage() : NewDamageParams {
 		switch (this.user.system.type) {

@@ -296,13 +296,6 @@ export class PersonaCombatStats {
 						weight,
 						item: st
 					};
-					// if (favored && st == favored) {
-					// 	return [st,st, st, st];
-					// }
-					// if (disfavored && st == disfavored) {
-					// 	return [st, st];
-					// }
-					// return [st,st, st];
 				});
 			const totalStatPoints = Object.values(stblk).reduce ((acc, x) => acc + x, 0);
 			const rng = new SeededRandom(`${persona.source.name}${tarotName}${totalStatPoints}`);
