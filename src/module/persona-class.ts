@@ -72,7 +72,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	get powers() : readonly Power[] {
 		return this.mainPowers
 			.concat(this.bonusPowers)
-		.filter( pwr => this.highestPowerSlotUsable() >= pwr.system.slot);
+			.filter( pwr => this.highestPowerSlotUsable() >= pwr.system.slot);
 	}
 
 	get activeCombatPowers() : readonly Power[] {
@@ -124,7 +124,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const mainTalents= this.source.system.combat.talents
 			.map( id => PersonaDB.getItemById<Talent>(id))
 			.filter( tal => tal != undefined);
-		 extraTalents.pushUnique(...mainTalents);
+		extraTalents.pushUnique(...mainTalents);
 		return extraTalents;
 	}
 
@@ -457,534 +457,534 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	defensiveModifiers(): readonly SourcedConditionalEffect[] {
 		const PersonaCaching = PersonaSettings.agressiveCaching();
 		if (!this.#cache.defensiveModifiers || !PersonaCaching) {
-				this.#cache.defensiveModifiers = this.mainModifiers().filter ( eff => eff.conditionalType == "defensive");
+			this.#cache.defensiveModifiers = this.mainModifiers().filter ( eff => eff.conditionalType == "defensive");
 		}
 		return this.#cache.defensiveModifiers;
 
 	}
 
-	async addTalent(talent: Talent) {
-		const source = this.source;
-		const arr = source.system.combat.talents;
-		if (!this.source.isShadow() && talent.system.shadowOnly) {
-			ui.notifications.error("This talent can only be used by shadows");
+async addTalent(talent: Talent) {
+	const source = this.source;
+	const arr = source.system.combat.talents;
+	if (!this.source.isShadow() && talent.system.shadowOnly) {
+		ui.notifications.error("This talent can only be used by shadows");
+	}
+	arr.pushUnique(talent.id);
+	await source.update( {"system.combat.talents": arr});
+	if (source.hasPlayerOwner) {
+		await Logger.sendToChat(`${this.name} added ${talent.name} Talent` , source);
+	}
+}
+
+async deleteTalent(id: string) {
+	const source = this.source;
+	const talent = PersonaDB.getItemById<Talent>(id);
+	if (!talent) {throw new PersonaError(`No such talent ${id}`);}
+	const arr = source.system.combat.talents
+		.filter(x=> x != id);
+	await source.update( {"system.combat.talents": arr});
+	await Logger.sendToChat(`${this.name} deleted ${talent.name} Talent` , source);
+}
+
+
+get effectiveLevel() : number {
+	const advances = this.numOfIncAdvances();
+	const maxIncAdvances = this.maxIncrementalAdvances();
+	const valPerAdvance = 1 / maxIncAdvances;
+	return this.source.system.combat.classData.level + (valPerAdvance * advances);
+}
+
+maxIncrementalAdvances(): number {
+	return this.source.maxIncrementalAdvances();
+}
+
+/* Base XP for one shadow of equal power **/
+static get BaselineXP(): number {
+	const SHADOWS_TO_LEVEL = Persona.leveling.SHADOWS_TO_LEVEL;
+	const firstLevelUp = Persona.leveling.BASE_XP;
+	return firstLevelUp/SHADOWS_TO_LEVEL;
+}
+
+static MIN_XP_MULT = 0.05;
+static MAX_XP_MULT = 3;
+
+static calcXP(killedTargets: ValidAttackers[], numOfAllies: number): number {
+	const XP= killedTargets.reduce( (a,x) => x.XPValue() + a, 0);
+	return Math.floor(XP / numOfAllies);
+}
+
+get baseInitRank() : ValidAttackers["system"]["combat"]["initiative"] {
+	return this.source.system.combat.initiative;
+}
+
+get combatInit(): Calculation {
+	const initBonus = this
+		.getBonuses("initiative");
+	const agi = this.combatStats.baseInit();
+	agi.add(1, initBonus, "Init bonus", "add");
+	return agi;
+}
+
+printableDefenseMods( defense: Defense) :EvaluatedCalculation["steps"] {
+	const def = this.getDefense(defense);
+	const situation : Situation  = {
+		user: this.user.accessor,
+		target: this.user.accessor,
+	};
+	return def.eval(situation).steps;
+}
+
+getDefense(defense: Defense) : Calculation {
+	let calc : Calculation; 
+	// const mods = new ModifierList();
+	switch (defense) {
+		case "ref": {
+			calc =this.combatStats.baseRef();
+			break;
 		}
-		arr.pushUnique(talent.id);
-		await source.update( {"system.combat.talents": arr});
-		if (source.hasPlayerOwner) {
-			await Logger.sendToChat(`${this.name} added ${talent.name} Talent` , source);
+		case "fort": {
+			calc =this.combatStats.baseFort();
+			break;
 		}
+		case "kill":
+			calc = this.combatStats.instantDeathDefense();
+			break;
+		case "ail":
+			calc = this.combatStats.ailmentDefense();
+			break;
+		case "none":
+			return new Calculation(0);
+		default:
+			defense satisfies never;
+			ui.notifications.warn(`Attmept to access nonsense Defense :${defense as string}`);
+			return new Calculation(0);
 	}
+	const modifiers = [
+		...this.passiveCEs(),
+	];
+	modifiers.pushUnique(...this.defensiveModifiers());
+	const defenseMods = this.getBonuses([defense, "allDefenses"], modifiers);
+	const modList = new ModifierList();
+	return calc.add(1, modList.concat(defenseMods), "Other Modifiers", "add");
+}
 
-	async deleteTalent(id: string) {
-		const source = this.source;
-		const talent = PersonaDB.getItemById<Talent>(id);
-		if (!talent) {throw new PersonaError(`No such talent ${id}`);}
-		const arr = source.system.combat.talents
-			.filter(x=> x != id);
-		await source.update( {"system.combat.talents": arr});
-		await Logger.sendToChat(`${this.name} deleted ${talent.name} Talent` , source);
+get tarot() {
+	return this.source.tarot;
+}
+
+
+get combatStats(): PersonaCombatStats {
+	if (this.#combatStats == undefined) {
+		this.#combatStats = new PersonaCombatStats(this);
 	}
+	return this.#combatStats;
+}
 
 
-	get effectiveLevel() : number {
-		const advances = this.numOfIncAdvances();
-		const maxIncAdvances = this.maxIncrementalAdvances();
-		const valPerAdvance = 1 / maxIncAdvances;
-		return this.source.system.combat.classData.level + (valPerAdvance * advances);
+passiveFocii() : Focus[] {
+	return this.focii.filter( f=> f.hasPassiveEffects(this.user));
+}
+
+defensiveFocii(): Focus[] {
+	return this.focii.filter( f=> f.hasDefensiveEffects(this.user));
+}
+
+elemResist(type: Exclude<DamageType, "by-power">): ResistStrength {
+	switch (type) {
+		case "untyped":  case "none":
+		case "all-out":
+			return "normal";
+		case "healing":
+			return "absorb";
 	}
-
-	maxIncrementalAdvances(): number {
-		return this.source.maxIncrementalAdvances();
-	}
-
-	/* Base XP for one shadow of equal power **/
-	static get BaselineXP(): number {
-		const SHADOWS_TO_LEVEL = Persona.leveling.SHADOWS_TO_LEVEL;
-		const firstLevelUp = Persona.leveling.BASE_XP;
-		return firstLevelUp/SHADOWS_TO_LEVEL;
-	}
-
-	static MIN_XP_MULT = 0.05;
-	static MAX_XP_MULT = 3;
-
-	static calcXP(killedTargets: ValidAttackers[], numOfAllies: number): number {
-		const XP= killedTargets.reduce( (a,x) => x.XPValue() + a, 0);
-		return Math.floor(XP / numOfAllies);
-	}
-
-	get baseInitRank() : ValidAttackers["system"]["combat"]["initiative"] {
-		return this.source.system.combat.initiative;
-	}
-
-	get combatInit(): Calculation {
-		const initBonus = this
-			.getBonuses("initiative");
-		const agi = this.combatStats.baseInit();
-		agi.add(1, initBonus, "Init bonus", "add");
-		return agi;
-	}
-
-	printableDefenseMods( defense: Defense) :EvaluatedCalculation["steps"] {
-		const def = this.getDefense(defense);
-		const situation : Situation  = {
-			user: this.user.accessor,
-			target: this.user.accessor,
-		};
-		return def.eval(situation).steps;
-	}
-
-	getDefense(defense: Defense) : Calculation {
-		let calc : Calculation; 
-		// const mods = new ModifierList();
-		switch (defense) {
-			case "ref": {
-				calc =this.combatStats.baseRef();
+	const baseResist = this.resists[type] ?? "normal";
+	const modifiers = [
+		// ...this.defensiveModifiers(),
+		...this.mainModifiers(),
+	];
+	const effectChangers=  modifiers.filter( x=>
+		x.consequences
+		.some( cons=>cons.type == "raise-resistance" || cons.type == "lower-resistance"));
+	const situation : Situation = {
+		user: this.user.accessor,
+		target: this.user.accessor,
+	};
+	const consequences = effectChangers
+		.flatMap( eff =>
+			getActiveConsequences(eff, situation)
+		);
+	const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
+	let resBonus = 0;
+	let resPenalty = 0;
+	for (const cons of consequences) {
+		switch (cons.type) {
+			case "raise-resistance": {
+				const isSameType = multiCheckContains(cons.resistType, [type]);
+				// if (cons.resistType == type &&
+				if (isSameType &&
+					resval(cons.resistanceLevel) > resval(baseResist)) {
+					resBonus = Math.max(resBonus, resval(cons.resistanceLevel) - resval(baseResist));
+				}
 				break;
 			}
-			case "fort": {
-				calc =this.combatStats.baseFort();
+			case "lower-resistance": {
+				const isSameType = multiCheckContains(cons.resistType, [type]);
+				if (isSameType &&
+					resval (cons.resistanceLevel) < resval(baseResist))  {
+					resPenalty = Math.min(resPenalty, resval(cons.resistanceLevel) - resval(baseResist));
+				}
 				break;
-			}
-			case "kill":
-				calc = this.combatStats.instantDeathDefense();
-				break;
-			case "ail":
-				calc = this.combatStats.ailmentDefense();
-				break;
-			case "none":
-				return new Calculation(0);
-			default:
-				defense satisfies never;
-				ui.notifications.warn(`Attmept to access nonsense Defense :${defense as string}`);
-				return new Calculation(0);
-		}
-		const modifiers = [
-			...this.passiveCEs(),
-		];
-		modifiers.pushUnique(...this.defensiveModifiers());
-		const defenseMods = this.getBonuses([defense, "allDefenses"], modifiers);
-		const modList = new ModifierList();
-		return calc.add(1, modList.concat(defenseMods), "Other Modifiers", "add");
-	}
-
-	get tarot() {
-		return this.source.tarot;
-	}
-
-
-	get combatStats(): PersonaCombatStats {
-		if (this.#combatStats == undefined) {
-			this.#combatStats = new PersonaCombatStats(this);
-		}
-		return this.#combatStats;
-	}
-
-
-	passiveFocii() : Focus[] {
-		return this.focii.filter( f=> f.hasPassiveEffects(this.user));
-	}
-
-	defensiveFocii(): Focus[] {
-		return this.focii.filter( f=> f.hasDefensiveEffects(this.user));
-	}
-
-	elemResist(type: Exclude<DamageType, "by-power">): ResistStrength {
-		switch (type) {
-			case "untyped":  case "none":
-			case "all-out":
-				return "normal";
-			case "healing":
-				return "absorb";
-		}
-		const baseResist = this.resists[type] ?? "normal";
-		const modifiers = [
-			// ...this.defensiveModifiers(),
-			...this.mainModifiers(),
-		];
-		const effectChangers=  modifiers.filter( x=>
-			x.consequences
-			.some( cons=>cons.type == "raise-resistance" || cons.type == "lower-resistance"));
-		const situation : Situation = {
-			user: this.user.accessor,
-			target: this.user.accessor,
-		};
-		const consequences = effectChangers
-			.flatMap( eff =>
-				getActiveConsequences(eff, situation)
-			);
-		const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
-		let resBonus = 0;
-		let resPenalty = 0;
-		for (const cons of consequences) {
-			switch (cons.type) {
-				case "raise-resistance": {
-					const isSameType = multiCheckContains(cons.resistType, [type]);
-					// if (cons.resistType == type &&
-					if (isSameType &&
-						resval(cons.resistanceLevel) > resval(baseResist)) {
-						resBonus = Math.max(resBonus, resval(cons.resistanceLevel) - resval(baseResist));
-					}
-					break;
-				}
-				case "lower-resistance": {
-					const isSameType = multiCheckContains(cons.resistType, [type]);
-					if (isSameType &&
-						resval (cons.resistanceLevel) < resval(baseResist))  {
-						resPenalty = Math.min(resPenalty, resval(cons.resistanceLevel) - resval(baseResist));
-					}
-					break;
-				}
-				default:
-					break;
-			}
-		}
-		const resLevel = Math.clamp(resval(baseResist) + resBonus + resPenalty, 0 , RESIST_STRENGTH_LIST.length-1);
-		return RESIST_STRENGTH_LIST[resLevel];
-	}
-
-	static combinedPersona<T extends ValidAttackers>(basePersona: Persona<T>, attachedPersona: Persona) : Persona<T> {
-		const fusedPowers = attachedPersona.powers.concat(
-			basePersona.powers);
-		fusedPowers.length = Math.min(6, fusedPowers.length);
-		const fusedPersona = new Persona(attachedPersona.source, attachedPersona.user, fusedPowers);
-		fusedPersona.user = basePersona.user;
-		fusedPersona.source = attachedPersona.source;
-     //I am not sure if this really persona<T> as there were errors but not sure if this ufnction is even used
-		return fusedPersona as Persona<T>;
-	}
-
-	get isBasePersona(): boolean {
-		return this.source == this.user;
-	}
-
-	get printableResistanceString() : string {
-		const resists = this.statusResists;
-		const retdata = Object.entries(resists)
-			.map(([statusRaw, _level]) => {
-				const actual = this.statusResist(statusRaw as StatusEffectId);
-				const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[statusRaw as StatusEffectId]);
-				if (statusTrans == undefined) {
-					// eslint-disable-next-line no-debugger
-					debugger;
-					return "";
-				}
-				switch (actual) {
-					case "resist": return `Resist ${statusTrans}`;
-					case "absorb":
-					case "reflect":
-					case "block": return `Block ${statusTrans}`;
-					default: return "";
-				}
-			})
-			.filter( x=> x.length > 0)
-			.join(", ");
-		return retdata;
-	}
-
-	statusResist(status: StatusEffectId) : ResistStrength {
-		//caching trick to try to save time
-		const mods = this.mainModifiers();
-		return this.source.statusResist(status, mods);
-	}
-
-
-	get maxSideboardPowers() : number {
-		if (!this.source.isValidCombatant()) {return 0;}
-		switch (this.source.system.type) {
-			case "npcAlly":
-			case "shadow":
-				return 0;
-			case "pc": {
-				if (!this.source.class.system.canUsePowerSideboard) {return 0;}
-				const extraMaxPowers = this.getBonuses("extraMaxPowers");
-				return extraMaxPowers
-				.total ( {user: this.user.accessor});
 			}
 			default:
-				this.source.system satisfies never;
+				break;
+		}
+	}
+	const resLevel = Math.clamp(resval(baseResist) + resBonus + resPenalty, 0 , RESIST_STRENGTH_LIST.length-1);
+	return RESIST_STRENGTH_LIST[resLevel];
+}
+
+static combinedPersona<T extends ValidAttackers>(basePersona: Persona<T>, attachedPersona: Persona) : Persona<T> {
+	const fusedPowers = attachedPersona.powers.concat(
+		basePersona.powers);
+	fusedPowers.length = Math.min(6, fusedPowers.length);
+	const fusedPersona = new Persona(attachedPersona.source, attachedPersona.user, fusedPowers);
+	fusedPersona.user = basePersona.user;
+	fusedPersona.source = attachedPersona.source;
+	//I am not sure if this really persona<T> as there were errors but not sure if this ufnction is even used
+	return fusedPersona as Persona<T>;
+}
+
+get isBasePersona(): boolean {
+	return this.source == this.user;
+}
+
+get printableResistanceString() : string {
+	const resists = this.statusResists;
+	const retdata = Object.entries(resists)
+		.map(([statusRaw, _level]) => {
+			const actual = this.statusResist(statusRaw as StatusEffectId);
+			const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[statusRaw as StatusEffectId]);
+			if (statusTrans == undefined) {
+				// eslint-disable-next-line no-debugger
+				debugger;
+				return "";
+			}
+			switch (actual) {
+				case "resist": return `Resist ${statusTrans}`;
+				case "absorb":
+				case "reflect":
+				case "block": return `Block ${statusTrans}`;
+				default: return "";
+			}
+		})
+		.filter( x=> x.length > 0)
+		.join(", ");
+	return retdata;
+}
+
+statusResist(status: StatusEffectId) : ResistStrength {
+	//caching trick to try to save time
+	const mods = this.mainModifiers();
+	return this.source.statusResist(status, mods);
+}
+
+
+get maxSideboardPowers() : number {
+	if (!this.source.isValidCombatant()) {return 0;}
+	switch (this.source.system.type) {
+		case "npcAlly":
+		case "shadow":
+			return 0;
+		case "pc": {
+			if (!this.source.class.system.canUsePowerSideboard) {return 0;}
+			const extraMaxPowers = this.getBonuses("extraMaxPowers");
+			return extraMaxPowers
+			.total ( {user: this.user.accessor});
+		}
+		default:
+			this.source.system satisfies never;
+			return -1;
+	}
+}
+
+get maxMainPowers() : number {
+	switch (this.source.system.type) {
+		case "pc":
+		case "npcAlly":
+			return 8;
+		case "shadow":
+			if (this.isPersona()) {return 8;}
+			return 16;
+		default:
+			this.source.system satisfies never;
+			return -1;
+	}
+}
+
+maxDefensiveBoosts() : number {
+	const baseBoosts = this.#baseDefenseBoosts();
+	const situation: Situation = {
+		user: this.user.accessor,
+		target: this.user.accessor,
+	};
+	const bonusBoosts =this.getBonuses("max-defense-boosts").total(situation);
+	return baseBoosts + bonusBoosts;
+}
+
+#baseDefenseBoosts() : number {
+	switch (this.source.system.type) {
+		case "pc": return 1;
+		case "shadow": {
+			if (this.source.isCustomPersona()) {return 1;}
+			return 2;
+		}
+		case "npcAlly": return 1;
+		default:
+			this.source.system satisfies never;
+			return 0;
+	}
+}
+
+maxResists () : number {
+	const baseResists = this.#baseResists();
+	const situation: Situation = {
+		user: this.user.accessor,
+		target: this.user.accessor,
+	};
+	const bonusBoosts = this.getBonuses("max-resist-boosts").total(situation);
+	return baseResists + bonusBoosts;
+}
+
+#baseResists() : number {
+	switch (this.source.system.type) {
+		case "pc": return -1;
+		case "shadow" : {
+			if (this.source.isCustomPersona()) {
 				return -1;
-		}
-	}
-
-	get maxMainPowers() : number {
-		switch (this.source.system.type) {
-			case "pc":
-			case "npcAlly":
-				return 8;
-			case "shadow":
-				if (this.isPersona()) {return 8;}
-				return 16;
-			default:
-				this.source.system satisfies never;
-				return -1;
-		}
-	}
-
-	maxDefensiveBoosts() : number {
-		const baseBoosts = this.#baseDefenseBoosts();
-		const situation: Situation = {
-			user: this.user.accessor,
-			target: this.user.accessor,
-		};
-		const bonusBoosts =this.getBonuses("max-defense-boosts").total(situation);
-		return baseBoosts + bonusBoosts;
-	}
-
-	#baseDefenseBoosts() : number {
-		switch (this.source.system.type) {
-			case "pc": return 1;
-			case "shadow": {
-				if (this.source.isCustomPersona()) {return 1;}
-				return 2;
 			}
-			case "npcAlly": return 1;
-			default:
-				this.source.system satisfies never;
-				return 0;
+			return 1;
 		}
+		case "npcAlly": return -1;
+		default:
+			this.source.system satisfies never;
+			return -999;
 	}
+}
 
-	maxResists () : number {
-		const baseResists = this.#baseResists();
-		const situation: Situation = {
-			user: this.user.accessor,
-			target: this.user.accessor,
-		};
-		const bonusBoosts = this.getBonuses("max-resist-boosts").total(situation);
-		return baseResists + bonusBoosts;
-	}
+get isOverResistCap(): boolean {
+	return this.source.totalResists() > this.maxResists();
+}
 
-	#baseResists() : number {
-		switch (this.source.system.type) {
-			case "pc": return -1;
-			case "shadow" : {
-				if (this.source.isCustomPersona()) {
-					return -1;
-				}
-				return 1;
-			}
-			case "npcAlly": return -1;
-			default:
-				this.source.system satisfies never;
-				return -999;
+wpnAtkBonus() : Calculation {
+	const mods = this.getBonuses(["allAtk", "wpnAtk"]);
+	const wpnAtk = this.combatStats.baseWpnAttackBonus();
+	return wpnAtk.add(1, mods, "Mods", "add");
+	// mods.add("Base Weapon Attack Bonus", wpnAtk);
+	// return mods;
+}
+
+magAtkBonus() : Calculation {
+	const mods = this.getBonuses(["allAtk", "magAtk"]);
+	const magAtk = this.combatStats.baseMagAttackBonus();
+	return magAtk.add(1, mods, "Mods", "add");
+	// mods.add("Base Magic Attack Bonus", magAtk);
+	// return mods;
+}
+
+instantDeathAtkBonus() : Calculation {
+	const mods = this.getBonuses(["instantDeathRange"]);
+	const deathAtk = this.combatStats.baseDeathAtkBonus();
+	return deathAtk.add(1, mods, "Mods", "add");
+	// mods.add("Base Magic Attack Bonus", deathAtk);
+	// return mods;
+}
+
+ailmentAtkBonus() :Calculation {
+	const mods = this.getBonuses("afflictionRange");
+	const ailAtk = this.combatStats.baseAilmentAtkBonus();
+	return ailAtk.add(1, mods, "Mods", "add");
+	// mods.add("Base Magic Attack Bonus", ailAtk);
+	// return mods;
+}
+
+itemAtkBonus(item :Consumable) : Calculation {
+	const calc=new Calculation();
+	const mods = this.getBonuses(["itemAtk", "allAtk"]);
+	return calc
+		.add(1, item?.system?.atk_bonus ?? 0, "Item Modifier", "add")
+		.add(1, mods, "Modifiers", "add");
+	// mods.add("Item Base Bonus", item.system.atk_bonus);
+	// return mods;
+}
+
+get isUnderResistCap(): boolean {
+	const leeway  = 0;  //allow leeway for double weakness
+	return this.source.totalResists() + leeway < this.maxResists();
+}
+
+hpCostMod() : ModifierList {
+	return this.getBonuses("hpCostMult");
+}
+
+canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
+	const user = this.user;
+	if (usable.isPower() && this.highestPowerSlotUsable() < usable.system.slot) {
+		if (outputReason) {
+			ui.notifications.warn("Power is too advanced for you to use");
 		}
-	}
-
-	get isOverResistCap(): boolean {
-		return this.source.totalResists() > this.maxResists();
-	}
-
-	wpnAtkBonus() : Calculation {
-		const mods = this.getBonuses(["allAtk", "wpnAtk"]);
-		const wpnAtk = this.combatStats.baseWpnAttackBonus();
-		return wpnAtk.add(1, mods, "Mods", "add");
-		// mods.add("Base Weapon Attack Bonus", wpnAtk);
-		// return mods;
-	}
-
-	magAtkBonus() : Calculation {
-		const mods = this.getBonuses(["allAtk", "magAtk"]);
-		const magAtk = this.combatStats.baseMagAttackBonus();
-		return magAtk.add(1, mods, "Mods", "add");
-		// mods.add("Base Magic Attack Bonus", magAtk);
-		// return mods;
-	}
-
-	instantDeathAtkBonus() : Calculation {
-		const mods = this.getBonuses(["instantDeathRange"]);
-		const deathAtk = this.combatStats.baseDeathAtkBonus();
-		return deathAtk.add(1, mods, "Mods", "add");
-		// mods.add("Base Magic Attack Bonus", deathAtk);
-		// return mods;
-	}
-
-	ailmentAtkBonus() :Calculation {
-		const mods = this.getBonuses("afflictionRange");
-		const ailAtk = this.combatStats.baseAilmentAtkBonus();
-		return ailAtk.add(1, mods, "Mods", "add");
-		// mods.add("Base Magic Attack Bonus", ailAtk);
-		// return mods;
-	}
-
-	itemAtkBonus(item :Consumable) : Calculation {
-		const calc=new Calculation();
-		const mods = this.getBonuses(["itemAtk", "allAtk"]);
-		return calc
-			.add(1, item?.system?.atk_bonus ?? 0, "Item Modifier", "add")
-			.add(1, mods, "Modifiers", "add");
-		// mods.add("Item Base Bonus", item.system.atk_bonus);
-		// return mods;
-	}
-
-	get isUnderResistCap(): boolean {
-		const leeway  = 0;  //allow leeway for double weakness
-		return this.source.totalResists() + leeway < this.maxResists();
-	}
-
-	hpCostMod() : ModifierList {
-		return this.getBonuses("hpCostMult");
-	}
-
-	canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
-		const user = this.user;
-		if (usable.isPower() && this.highestPowerSlotUsable() < usable.system.slot) {
-			if (outputReason) {
-				ui.notifications.warn("Power is too advanced for you to use");
-			}
-			return false;
-		}
-		if (!this.user.isAlive() && !usable.hasTag("usable-while-dead")) {return false;}
-		if (!usable.isTrulyUsable()) {return false;}
-
-		if (user.hasStatus("rage") && usable != PersonaDB.getBasicPower("Basic Attack")) {
-			if (outputReason) {
-				ui.notifications.warn("Can't only use basic attacks when raging");
-			}
-			return false;
-		}
-		if (user.hasPowerInhibitingStatus() && usable.system.type == "power" && !usable.isBasicPower()) {
-			if (outputReason) {
-				ui.notifications.warn("Can't use that power due to a status");
-			}
-			return false;
-		}
-		return this.canPayActivationCost(usable, outputReason);
-	}
-
-	canPayActivationCost(usable: UsableAndCard, outputReason: boolean = true) : boolean {
-		switch (this.user.system.type) {
-			case "npcAlly":
-			case "pc":
-				return (this as Persona<PC | NPCAlly>).canPayActivationCost_pc(usable, outputReason);
-			case "shadow":
-				return (this as Persona<Shadow>).canPayActivationCost_shadow(usable, outputReason);
-			default:
-				this.user.system satisfies never;
-				throw new PersonaError("Unknown Type");
-		}
-	}
-
-   canPayActivationCost_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard, _outputReason: boolean) : boolean {
-      switch (usable.system.type) {
-         case "power": {
-            if (usable.system.tags.includes("basicatk")) {
-               return true;
-            }
-            switch (usable.system.subtype) {
-               case "weapon":
-                  return  this.user.hp > (usable as Power).hpCost();
-               case "magic": {
-                  const mpcost = (usable as Power).mpCost(this);
-                  if (mpcost > 0) {
-                     return this.user.mp >= mpcost;
-                  }
-               }
-                  break;
-               case "social-link": {
-                  const inspirationId = usable.system.inspirationId;
-                  if (!this.user.isPC()) {return false;}
-                  if (inspirationId) {
-                     const socialLink = this.user.system.social.find( x=> x.linkId == inspirationId);
-                     if (!socialLink) {return false;}
-                     return socialLink.inspiration >= usable.system.inspirationCost;
-                  } else {
-                     const inspiration = this.user.system.social.reduce( (acc, item) => acc + item.inspiration , 0);
-                     return inspiration >= usable.system.inspirationCost;
-                  }
-               }
-               case "downtime": {
-                  const combat = game.combat as PersonaCombat;
-                  if (!combat) {return false;}
-                  return combat.isSocial; 
-               }
-               default:
-                  return true;
-            }
-         }
-            break;
-         case "consumable":
-            return usable.system.amount > 0;
-         case "skillCard":
-            return this.user.canLearnNewSkill();
-      }
-      return true;
-   }
-
-	canPayActivationCost_shadow(this: Persona<Shadow>, usable: UsableAndCard, outputReason: boolean) : boolean { if (usable.system.type == "skillCard") {
 		return false;
 	}
-		if (usable.system.type == "power") {
-			const combat = game.combat;
-			// if (combat && usable.system.reqEscalation > 0 && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
-			const energyRequired = usable.energyRequired(this);
-			const energyCost = usable.energyCost(this);
-			const currentEnergy = this.user.system.combat.energy.value;
-			if (combat && energyRequired > 0 && energyRequired > currentEnergy) {
-				if (outputReason) {
-					ui.notifications.notify(`Requires ${energyRequired} energy and you only have ${currentEnergy}`);
-				}
-				return false;
+	if (!this.user.isAlive() && !usable.hasTag("usable-while-dead")) {return false;}
+	if (!usable.isTrulyUsable()) {return false;}
+
+	if (user.hasStatus("rage") && usable != PersonaDB.getBasicPower("Basic Attack")) {
+		if (outputReason) {
+			ui.notifications.warn("Can't only use basic attacks when raging");
+		}
+		return false;
+	}
+	if (user.hasPowerInhibitingStatus() && usable.system.type == "power" && !usable.isBasicPower()) {
+		if (outputReason) {
+			ui.notifications.warn("Can't use that power due to a status");
+		}
+		return false;
+	}
+	return this.canPayActivationCost(usable, outputReason);
+}
+
+canPayActivationCost(usable: UsableAndCard, outputReason: boolean = true) : boolean {
+	switch (this.user.system.type) {
+		case "npcAlly":
+		case "pc":
+			return (this as Persona<PC | NPCAlly>).canPayActivationCost_pc(usable, outputReason);
+		case "shadow":
+			return (this as Persona<Shadow>).canPayActivationCost_shadow(usable, outputReason);
+		default:
+			this.user.system satisfies never;
+			throw new PersonaError("Unknown Type");
+	}
+}
+
+canPayActivationCost_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard, _outputReason: boolean) : boolean {
+	switch (usable.system.type) {
+		case "power": {
+			if (usable.system.tags.includes("basicatk")) {
+				return true;
 			}
-			if (combat && energyCost > (currentEnergy + 3)) {
-				if (outputReason) {
-					ui.notifications.notify(`Costs ${energyCost} energy and you only have ${currentEnergy}`);
+			switch (usable.system.subtype) {
+				case "weapon":
+					return  this.user.hp > (usable as Power).hpCost();
+				case "magic": {
+					const mpcost = (usable as Power).mpCost(this);
+					if (mpcost > 0) {
+						return this.user.mp >= mpcost;
+					}
 				}
-				return false;
-			}
-			if (usable.system.reqHealthPercentage < 100) {
-				const reqHp = (usable.system.reqHealthPercentage / 100) * this.user.mhpEstimate ;
-				if (this.user.hp > reqHp) {return false;}
+					break;
+				case "social-link": {
+					const inspirationId = usable.system.inspirationId;
+					if (!this.user.isPC()) {return false;}
+					if (inspirationId) {
+						const socialLink = this.user.system.social.find( x=> x.linkId == inspirationId);
+						if (!socialLink) {return false;}
+						return socialLink.inspiration >= usable.system.inspirationCost;
+					} else {
+						const inspiration = this.user.system.social.reduce( (acc, item) => acc + item.inspiration , 0);
+						return inspiration >= usable.system.inspirationCost;
+					}
+				}
+				case "downtime": {
+					const combat = game.combat as PersonaCombat;
+					if (!combat) {return false;}
+					return combat.isSocial; 
+				}
+				default:
+					return true;
 			}
 		}
-		return true; //placeholder
+			break;
+		case "consumable":
+			return usable.system.amount > 0;
+		case "skillCard":
+			return this.user.canLearnNewSkill();
 	}
+	return true;
+}
 
-
-	hasTag(tag: PersonaTag) : boolean {
-		return this.tagListPartial().includes(tag);
+canPayActivationCost_shadow(this: Persona<Shadow>, usable: UsableAndCard, outputReason: boolean) : boolean { if (usable.system.type == "skillCard") {
+	return false;
+}
+if (usable.system.type == "power") {
+	const combat = game.combat;
+	// if (combat && usable.system.reqEscalation > 0 && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
+	const energyRequired = usable.energyRequired(this);
+	const energyCost = usable.energyCost(this);
+	const currentEnergy = this.user.system.combat.energy.value;
+	if (combat && energyRequired > 0 && energyRequired > currentEnergy) {
+		if (outputReason) {
+			ui.notifications.notify(`Requires ${energyRequired} energy and you only have ${currentEnergy}`);
+		}
+		return false;
 	}
-
-	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-	tagListPartial() : (PersonaTag | Tag["id"])[] {
-		const base = this.source.system.combat.personaTags.slice();
-		base.pushUnique(...this._autoTags());
-		return base;
+	if (combat && energyCost > (currentEnergy + 3)) {
+		if (outputReason) {
+			ui.notifications.notify(`Costs ${energyCost} energy and you only have ${currentEnergy}`);
+		}
+		return false;
 	}
+	if (usable.system.reqHealthPercentage < 100) {
+		const reqHp = (usable.system.reqHealthPercentage / 100) * this.user.mhpEstimate ;
+		if (this.user.hp > reqHp) {return false;}
+	}
+}
+return true; //placeholder
+}
 
-	private _autoTags() : PersonaTag[] {
-		const autoPTags :PersonaTag[]= [];
-		if (this.source.isPC() || this.source.isNPCAlly()){
+
+hasTag(tag: PersonaTag) : boolean {
+	return this.tagListPartial().includes(tag);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+tagListPartial() : (PersonaTag | Tag["id"])[] {
+	const base = this.source.system.combat.personaTags.slice();
+	base.pushUnique(...this._autoTags());
+	return base;
+}
+
+private _autoTags() : PersonaTag[] {
+	const autoPTags :PersonaTag[]= [];
+	if (this.source.isPC() || this.source.isNPCAlly()){
+		autoPTags.pushUnique("persona");
+	}
+	if (this.user.isUsingMetaPod()) {
+		autoPTags.pushUnique("simulated");
+	}
+	switch (this.source.system.creatureType) {
+		case "enemy-metaverse-user":
+		case "persona":
 			autoPTags.pushUnique("persona");
-		}
-		if (this.user.isUsingMetaPod()) {
+			break;
+		case "d-mon":
+			autoPTags.pushUnique("d-mon");
+			break;
+	}
+	if (this.source.isShadow()) {
+		if ( this.source.system.creatureType == "daemon") {
 			autoPTags.pushUnique("simulated");
 		}
-		switch (this.source.system.creatureType) {
-			case "enemy-metaverse-user":
-			case "persona":
-				autoPTags.pushUnique("persona");
-				break;
-			case "d-mon":
-				autoPTags.pushUnique("d-mon");
-				break;
+		if (this.source.system.role != "base") {
+			autoPTags.pushUnique(this.source.system.role);
 		}
-		if (this.source.isShadow()) {
-			if ( this.source.system.creatureType == "daemon") {
-				autoPTags.pushUnique("simulated");
-			}
-			if (this.source.system.role != "base") {
-				autoPTags.pushUnique(this.source.system.role);
-			}
-			if (this.source.system.role2 != "base") {
-				autoPTags.pushUnique(this.source.system.role2);
-			}
+		if (this.source.system.role2 != "base") {
+			autoPTags.pushUnique(this.source.system.role2);
 		}
-		if (autoPTags.includes("persona") && this.source.isPC() &&  this.source.hasSoloPersona) {
-			autoPTags.pushUnique("lone-persona");
-		}
-		return autoPTags;
 	}
+	if (autoPTags.includes("persona") && this.source.isPC() &&  this.source.hasSoloPersona) {
+		autoPTags.pushUnique("lone-persona");
+	}
+	return autoPTags;
+}
 
 realTags() : Tag[] {
 	const ret =  this.tagListPartial().flatMap( tag => {
@@ -997,69 +997,69 @@ realTags() : Tag[] {
 	return ret;
 }
 
-	wpnDamage() : NewDamageParams {
-		switch (this.user.system.type) {
-			case "pc": case "npcAlly": {
-         const wpn = this.user.weapon;
-				if (!wpn) {
-					return  {baseAmt: 0, extraVariance: 0};
-				}
-				return wpn.baseDamage();
-         }
-			case "shadow":
-				return {
-					baseAmt: DamageCalculator.getWeaponDamageByWpnLevel(Math.floor(this.level / 10)),
-					extraVariance: 0
-				};
-			default:
-				this.user.system satisfies never;
-				return {baseAmt: 0, extraVariance: 0};
+wpnDamage() : NewDamageParams {
+	switch (this.user.system.type) {
+		case "pc": case "npcAlly": {
+			const wpn = this.user.weapon;
+			if (!wpn) {
+				return  {baseAmt: 0, extraVariance: 0};
+			}
+			return wpn.baseDamage();
 		}
+		case "shadow":
+			return {
+				baseAmt: DamageCalculator.getWeaponDamageByWpnLevel(Math.floor(this.level / 10)),
+				extraVariance: 0
+			};
+		default:
+			this.user.system satisfies never;
+			return {baseAmt: 0, extraVariance: 0};
+	}
+}
+
+highestPowerSlotUsable() : number {
+	if (this.user.isShadow()) {return 99;}
+	const level = Math.floor(this.level / 10) +1;
+	const CAP = this.user.system.combat.usingMetaPod ? 2 : 99;
+	return Math.min(CAP, this.#powerSlotMaxByLevel(level));
+}
+
+#powerSlotMaxByLevel(this: void, level: number) {
+	switch (true) {
+		case level > 6: return 3;
+		case level > 4: return 2;
+		case level > 2: return 1;
+		default: return 0;
 	}
 
-	highestPowerSlotUsable() : number {
-		if (this.user.isShadow()) {return 99;}
-		const level = Math.floor(this.level / 10) +1;
-		const CAP = this.user.system.combat.usingMetaPod ? 2 : 99;
-		return Math.min(CAP, this.#powerSlotMaxByLevel(level));
+}
+
+armorDR() : number {
+	if (this.user.isShadow()) {
+		const DR =  DamageCalculator.getArmorDRByArmorLevel(Math.floor(this.level /10));
+		return DR;
 	}
-
-	#powerSlotMaxByLevel(this: void, level: number) {
-		switch (true) {
-			case level > 6: return 3;
-			case level > 4: return 2;
-			case level > 2: return 1;
-			default: return 0;
-		}
-
-	}
-
-	armorDR() : number {
-		if (this.user.isShadow()) {
-			const DR =  DamageCalculator.getArmorDRByArmorLevel(Math.floor(this.level /10));
-			return DR;
-		}
-		const armor = this.user.equippedItems().find(x => x.isInvItem() && x.system.slot == "body") as U<InvItem>;
-		return armor  != undefined ? armor.armorDR() : 0;
-	}
+	const armor = this.user.equippedItems().find(x => x.isInvItem() && x.system.slot == "body") as U<InvItem>;
+	return armor  != undefined ? armor.armorDR() : 0;
+}
 
 
-	getBonusWpnDamage() : ModifierList {
-		return this.getBonuses("wpnDmg");
-	}
+getBonusWpnDamage() : ModifierList {
+	return this.getBonuses("wpnDmg");
+}
 
-	getBonusVariance() : ModifierList {
-		return this.getBonuses("variance");
-	}
+getBonusVariance() : ModifierList {
+	return this.getBonuses("variance");
+}
 
-	async levelUp_manual() {
-		const level = this.source.system.combat.personaStats.pLevel;
-		const currXP = this.source.system.combat.personaStats.xp;
-		const XPForNext = LevelUpCalculator.minXPForEffectiveLevel(level + 1);
-		const XPNeeded = XPForNext - currXP;
-		console.log(`${this.name} XP needed: ${XPNeeded}`);
-		await this.awardXP(XPNeeded, false);
-	}
+async levelUp_manual() {
+	const level = this.source.system.combat.personaStats.pLevel;
+	const currXP = this.source.system.combat.personaStats.xp;
+	const XPForNext = LevelUpCalculator.minXPForEffectiveLevel(level + 1);
+	const XPNeeded = XPForNext - currXP;
+	console.log(`${this.name} XP needed: ${XPNeeded}`);
+	await this.awardXP(XPNeeded, false);
+}
 
 }
 

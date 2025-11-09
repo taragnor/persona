@@ -4347,6 +4347,7 @@ Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
 
 			await actor.update({"system.combat.personaStats.xp" : minXP});
 		}
+		//NEEd to refresh stat points on level change
 	}
 	if (lvl != undefined) {
 		await actor.onLevelUp_checkLearnedPowers(lvl, !actor.isShadow());

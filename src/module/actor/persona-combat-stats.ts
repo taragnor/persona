@@ -262,7 +262,6 @@ export class PersonaCombatStats {
 		const persona = this.persona;
 		const favored = this.combatStats.preferred_stat;
 		const disfavored = this.combatStats.disfavored_stat;
-		const tarotName = persona.tarot?.name;
 		const stIncreases : StatGroup = {
 			str: 0,
 			mag: 0,
@@ -271,10 +270,6 @@ export class PersonaCombatStats {
 			luk: 0
 		};
 
-		if (!tarotName) {
-			PersonaError.softFail(`No Tarot Card for ${persona.source.name}`);
-			return  stIncreases;
-		}
 		const stblk : StatGroup = {
 			...this.combatStats.stats
 		};
@@ -297,21 +292,39 @@ export class PersonaCombatStats {
 						item: st
 					};
 				});
-			const totalStatPoints = Object.values(stblk).reduce ((acc, x) => acc + x, 0);
-			const rng = new SeededRandom(`${persona.source.name}${tarotName}${totalStatPoints}`);
-			if (slist.length == 0) {
-				throw new PersonaError(`All stats unselectable for ${persona.source.name}`);
-			}
-			// const stat = rng.randomArraySelect(slist)!;
-			const stat = rng.weightedChoice(slist);
-			if (stat) {
-				// console.log(`${stat} chosen`);
-				stblk[stat] += 1;
-				stIncreases[stat] += 1;
-				statsToBeChosen -= 1;
+			try {
+				const seed = this._advancementSeed(stblk);
+				const rng = new SeededRandom(seed);
+				if (slist.length == 0) {
+					throw new PersonaError(`All stats unselectable for ${persona.source.name}`);
+				}
+				// const stat = rng.randomArraySelect(slist)!;
+				const stat = rng.weightedChoice(slist);
+				if (stat) {
+					// console.log(`${stat} chosen`);
+					stblk[stat] += 1;
+					stIncreases[stat] += 1;
+					statsToBeChosen -= 1;
+				}
+			} catch (e) {
+				if (e instanceof Error) {
+					PersonaError.softFail(e.message, e.stack);
+					return stIncreases;
+				}
 			}
 		}
 		return stIncreases;
+	}
+
+	_advancementSeed(stblk : StatGroup) : string {
+		const sourceName = this.persona.source.name;
+		const totalStatPoints = Object.values(stblk).reduce ((acc, x) => acc + x, 0);
+		const tarotName = this.persona.tarot?.name;
+		if (!tarotName) {
+			throw new PersonaError(`No Tarot Card for ${this.persona.source.name}`);
+		}
+		return `${sourceName}${tarotName}${totalStatPoints}`;
+
 	}
 
 	canRaiseStat(st: PersonaStatType, statBlock: StatGroup = this.combatStats.stats) : boolean {
