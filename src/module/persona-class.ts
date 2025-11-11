@@ -1061,7 +1061,12 @@ async levelUp_manual() {
 	await this.awardXP(XPNeeded, false);
 }
 
+get isActivateable() : boolean {
+	return this.user.personaList
+		.some( persona => this.equals(persona));
 }
+
+} // end of class
 
 
 interface PersonaClassCache {

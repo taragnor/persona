@@ -71,6 +71,7 @@ import {Defense} from "../../config/defense-types.js";
 import {EnhancedActorDirectory} from "../enhanced-directory/enhanced-directory.js";
 import {FusionTable} from "../../config/fusion-table.js";
 
+const BASE_PERSONA_SIDEBOARD = 5 as const;
 
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
 	declare statuses: Set<StatusEffectId>;
@@ -430,7 +431,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async switchPersona(this: ValidAttackers, sourceId: ValidAttackers["id"]) {
 		const persona = this.personaList.find( x=> x.source.id == sourceId);
 		if (!persona || !persona.source.isOwner) {
-			PersonaError.softFail(`Couldn't find Persona ${sourceId} or you don't own it`);
+			PersonaError.softFail(`Couldn't find Persona ${sourceId} in your persona List or you aren't its owner`);
 			return;
 		}
 		await this.update({"system.activePersona": sourceId});
@@ -518,7 +519,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!this.isValidCombatant()) {return 0;}
 		const maxCustomPersonas = this.class.system.uniquePersonas;
 		const wildPersonas = this.class.system.maxPersonas;
-		return maxCustomPersonas + wildPersonas;
+		return Math.max( 0, maxCustomPersonas -1) + wildPersonas;
 	}
 
 	get personaList(): Persona[] {
@@ -545,6 +546,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			return;
 		}
 		if (!this.hasSpaceForNewPersona()) {
+			if (this.maxPersonaSideboard > 0) {
+				await this.addSideboardPersona(shadow);
+				return;
+			}
 			PersonaError.softFail("No Space for a new persona");
 			return;
 		}
@@ -568,7 +573,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async deletePersona(this: PC | Shadow, personaId: ValidAttackers["id"]) {
 		const persona =this.personaList.find( x=> x.source.id == personaId);
-		if (!persona) {PersonaError.softFail(`Couldn't find persona ${personaId}`); return;}
+		if (!persona) {
+			if (this.isPC()) {
+				let sideboard = this.system.combat.persona_sideboard;
+				if (sideboard.includes(personaId)) {
+					sideboard = sideboard.filter( x=> x != personaId);
+					await this.update( {"system.combat.persona_sideboard": sideboard});
+					return;
+				}
+			}
+			PersonaError.softFail(`Couldn't find persona ${personaId}`); return;}
 		const newList = this.system.personaList.filter( x=> x != personaId);
 		await this.update( {"system.personaList": newList});
 		if (this.isPC()) {
@@ -1140,6 +1154,52 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			return (i ? [i as Power] : []);
 		});
 		return pcPowers;
+	}
+
+	get sideboardPersonas(): readonly Persona[] {
+		if (!this.isPC()) {return [];}
+		if (!this.class.system.canUsePersonaSideboard) {return [];}
+		const sideboardIds = this.system.combat.persona_sideboard;
+		const personas = sideboardIds
+			.flatMap( id =>  {
+				const shadow = PersonaDB.getActor(id);
+				return shadow != undefined && shadow.isShadow() ? [shadow] : [];
+			})
+			.map( shadow => new Persona(shadow, this)) ;
+		return personas;
+	}
+
+	get maxPersonaSideboard() : number {
+		if (!this.isPC()) {return 0;}
+		if (!this.class.system.canUsePersonaSideboard) {return 0;}
+		const base = BASE_PERSONA_SIDEBOARD;
+		// const base = this.class.system.maxPersonas;
+		const bonuses = this.getPersonalBonuses("persona-sideboard").total( {user: this.accessor});
+		return base + bonuses;
+	}
+
+	async addSideboardPersona(shadow: Shadow) : Promise<boolean> {
+		if (!this.isPC() || this.maxPersonaSideboard <= 0) {
+			ui.notifications.warn(`${this.name} can't add sideboard Personas`);
+			return false;
+		}
+		if (!shadow.isPersona()) {
+			ui.notifications.warn(`Can't add ${shadow.name} as sideboard persona (not a persona)`);
+			return false;
+		}
+		const sideboardIds = this.system.combat.persona_sideboard;
+		if (sideboardIds.includes(shadow.id)) {
+			ui.notifications.warn(`${shadow.name} already in Persona sideboard`);
+			return false;
+		}
+		if (sideboardIds.length >= this.maxPersonaSideboard) {
+			ui.notifications.warn(` Can't add to ${this.name} Sideboard, Sideboard is full`);
+			return false;
+		}
+		sideboardIds.push(shadow.id);
+		await this.update( {"system.combat.persona_sideboard": sideboardIds});
+		await Logger.sendToChat(`${this.name} added ${shadow.name} as sideboard persona`);
+		return true;
 	}
 
 	get basicPowers() : readonly Power [] {

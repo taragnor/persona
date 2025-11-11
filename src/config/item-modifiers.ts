@@ -70,7 +70,8 @@ export const ACTOR_STATS_TYPES = [
 	"hpCostMult",
 	"mpCostMult",
 	"xp-multiplier",
-	"extraMaxPowers",
+	"extraMaxPowers", // extra sideobard powers
+	"persona-sideboard", // extra sideobard peronsas
 	"inactive-persona-xp",
 	"max-defense-boosts",
 	"max-resist-boosts",

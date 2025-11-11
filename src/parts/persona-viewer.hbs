@@ -14,8 +14,11 @@
 			</div>
 		</div>
 	</div>
-	<div>
-	Level: {{persona.level}}
+	<div class="level">
+		Level: {{persona.level}}
+		<span>
+			<progress id="progressBar" max="{{persona.XPForNextLevel}}" value="{{persona.xp}}" title="{{persona.xp}} / {{persona.XPForNextLevel}}"></progress>
+		</span>
 	</div>
 	{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=persona}}
 	{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=persona}}
@@ -24,8 +27,10 @@
 		{{> "systems/persona/parts/persona-stats-display.hbs" CONST=CONST persona=persona}}
 	</div>
 
+	{{#if selectedPersona.isActivateable}}
 	<button class="activate-persona">
 		Switch to this Persona
 	</button>
+	{{/if}}
 </section>
 

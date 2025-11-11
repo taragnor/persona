@@ -135,7 +135,8 @@ export class ActorConverters {
 		const json = shadow.system.toJSON() as Shadow["system"];
 		const talents = shadow.basePersona.talents;
 		const personaData : DeepPartial<Shadow> = {
-			name: `${shadow.name} (Persona)`,
+			// name: `${shadow.name} (Persona)`,
+			name: shadow.name,
 			type: "shadow",
 			...ownership,
 			img: shadow.img,

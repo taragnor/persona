@@ -229,6 +229,7 @@ export function combatCommonStats() {
 export function PCAndNPCAllyCombatStats() {
 	return {
 		powers_sideboard: new arr( new id()),
+		persona_sideboard: new arr( new id()),
 		teamworkMove: new id(),
 		usingMetaPod: new bool({initial: true}),
 		personaImg: new txt(),

@@ -7,7 +7,7 @@
 		<li class="f-row" data-persona-id="{{persona.source.id}}">
 			<div class="persona-name">
 				<a>
-					{{persona.name}} ({{persona.level}})
+					{{persona.name}} ({{persona.level}}, {{persona.tarot.displayedName}})
 				</a>
 			</div>
 			<div>
@@ -18,7 +18,30 @@
 		</li>
 		{{/each}}
 	</ul>
+
+	{{#if actor.sideboardPersonas}}
+	<h2> Sideboard (max {{actor.maxPersonaSideboard}})</h2>
+	<ul class="persona-list">
+		{{#each actor.sideboardPersonas as |persona i|}}
+
+		<li class="f-row" data-persona-id="{{persona.source.id}}">
+			<div class="persona-name">
+				<a>
+					{{persona.name}} ({{persona.level}}, {{persona.tarot.displayedName}})
+				</a>
+			</div>
+			<div>
+				<a class="delPersona">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</div>
+		</li>
+		{{/each}}
+	</ul>
+	{{/if}}
+
 	{{else}}
+
 
 	{{> "systems/persona/parts/persona-viewer.hbs" actor=actor CONST=CONST persona=selectedPersona selectedPersona=selectedPersona}}
 	{{/if}}

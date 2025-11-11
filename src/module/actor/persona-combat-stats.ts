@@ -293,15 +293,14 @@ export class PersonaCombatStats {
 					};
 				});
 			try {
-				const seed = this._advancementSeed(stblk);
-				const rng = new SeededRandom(seed);
+				const seed = this._advancementSeed();
+				const totalStatPoints = Object.values(stblk).reduce ((acc, x) => acc + x, 0);
+				const rng = new SeededRandom(seed + String(totalStatPoints));
 				if (slist.length == 0) {
 					throw new PersonaError(`All stats unselectable for ${persona.source.name}`);
 				}
-				// const stat = rng.randomArraySelect(slist)!;
 				const stat = rng.weightedChoice(slist);
 				if (stat) {
-					// console.log(`${stat} chosen`);
 					stblk[stat] += 1;
 					stIncreases[stat] += 1;
 					statsToBeChosen -= 1;
@@ -316,14 +315,13 @@ export class PersonaCombatStats {
 		return stIncreases;
 	}
 
-	private _advancementSeed(stblk : StatGroup) : string {
+	private _advancementSeed() : string {
 		const sourceName = this.persona.source.name;
-		const totalStatPoints = Object.values(stblk).reduce ((acc, x) => acc + x, 0);
 		const tarotName = this.persona.tarot?.name;
 		if (!tarotName) {
 			throw new PersonaError(`No Tarot Card for ${this.persona.source.name}`);
 		}
-		return `${sourceName}${tarotName}${totalStatPoints}`;
+		return `${sourceName}${tarotName}`;
 	}
 
 	canRaiseStat(st: PersonaStatType, statBlock: StatGroup = this.combatStats.stats) : boolean {

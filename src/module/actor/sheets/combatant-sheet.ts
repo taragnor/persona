@@ -515,7 +515,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	setPersonaViewer(event: JQuery.ClickEvent) {
 		const personaId = HTMLTools.getClosestData(event, "personaId");
-		this.selectedPersona = this.actor.personaList.find( x=> x.source.id == personaId);
+		this.selectedPersona = this.actor.personaList.find( x=> x.source.id == personaId) ?? this.actor.sideboardPersonas.find(x=> x.source.id == personaId) ;
 		void this.render(true);
 	}
 
