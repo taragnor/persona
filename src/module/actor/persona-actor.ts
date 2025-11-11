@@ -365,10 +365,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (this.isShadow()) {
 			const subtype  = localize(SHADOW_CREATURE_TYPE[this.system.creatureType]);
 			if (game.user.isGM || this.isOwner) {
-				return `${this.displayedName} (L ${this.level}, ${subtype})`;
+				return `${this.name} (L ${this.level}, ${subtype})`;
 			}
 			if (this.basePersona.isPersona()) {
-				return `${this.displayedName} (L ${this.level}, ${subtype})`;
+				return `${this.name} (L ${this.level}, ${subtype})`;
 
 			}
 			if (this.basePersona.scanLevelRaw > 0) {
@@ -1403,7 +1403,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			for (const iterableList of this._dependentTokens.values()) {
 				for (const tokDoc of iterableList) {
 					try {
-					await (tokDoc as TokenDocument<PersonaActor>).update({"alpha": opacity});
+						await (tokDoc as TokenDocument<PersonaActor>).update({"alpha": opacity});
 					} catch {
 						//throw away errors from tokens that have gone out of scope as this is expected
 						continue;
@@ -1781,7 +1781,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return PersonaSocial.isActivitySelectable(action, this);
 			}
 		})
-		.sort( (a,b) => a.displayedName.localeCompare(b.displayedName));
+			.sort( (a,b) => a.displayedName.localeCompare(b.displayedName));
 	}
 
 
@@ -2077,82 +2077,82 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.cache.isDMon = this.isShadow() && (this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon"));
 	}
 
-	isPersona(): boolean {
-		return this.isShadow() && (this.system.creatureType == "persona" ||  this.hasCreatureTag("persona"));
-	}
+isPersona(): boolean {
+	return this.isShadow() && (this.system.creatureType == "persona" ||  this.hasCreatureTag("persona"));
+}
 
-	isCompendiumEntry(this: Shadow) : boolean {
-		return this.isPersona() && this.system.personaConversion.compendiumId == this.id;
-	}
+isCompendiumEntry(this: Shadow) : boolean {
+	return this.isPersona() && this.system.personaConversion.compendiumId == this.id;
+}
 
-	isCustomPersona(this: ValidAttackers): boolean {
-		return this.isPersona() &&
-			(	this.hasTag("custom-persona") || this.hasTag("lone-persona"));
-	}
+isCustomPersona(this: ValidAttackers): boolean {
+	return this.isPersona() &&
+		(	this.hasTag("custom-persona") || this.hasTag("lone-persona"));
+}
 
-	knowsPowerInnately(this: ValidAttackers, power : Power)  : boolean{
-		const powers = this.system.combat.powers;
-		if (powers.includes(power.id)) {
+knowsPowerInnately(this: ValidAttackers, power : Power)  : boolean{
+	const powers = this.system.combat.powers;
+	if (powers.includes(power.id)) {
+		return true;
+	}
+	if (!this.isShadow()) {
+		const sideboard =  this.system.combat.powers_sideboard;
+		if (sideboard.includes(power.id)) {
 			return true;
 		}
-		if (!this.isShadow()) {
-			const sideboard =  this.system.combat.powers_sideboard;
-			if (sideboard.includes(power.id)) {
-				return true;
-			}
+	}
+	const buffer= this.system.combat.learnedPowersBuffer;
+	if (buffer.includes(power.id)) {
+		return true;
+
+	}
+	return false;
+}
+
+hasSpaceToAddPowerToMain(this: ValidAttackers) : boolean {
+	const powers = this.mainPowers;
+	return (powers.length < this.basePersona.maxMainPowers);
+}
+
+hasSpaceToAddToSideboard(this: ValidAttackers): boolean {
+	if (this.isShadow()) {return false;}
+	const sideboard = this.sideboardPowers;
+	return (sideboard.length < this.basePersona.maxSideboardPowers);
+}
+
+async _promotePowers(this: ValidAttackers) {
+	await this._promotePowers_learnedToMain();
+	await this._promotePowers_sideboardToMain();
+	await this._promotePowers_learnedToSideboard();
+}
+
+get hasPowerSideboard() : boolean  {
+	if (!this.isPC()) {return false;}
+	return this.class.system.canUsePowerSideboard ?? false;
+}
+
+async _promotePowers_sideboardToMain(this: ValidAttackers) {
+	if (!this.hasPowerSideboard) { return false;}
+	while (this.hasSpaceToAddPowerToMain()) {
+		const sideboard = this.sideboardPowers.at(0);
+		if (sideboard && this.isPC()) {
+			await this.retrievePowerFromSideboard(sideboard.id);
+			continue;
 		}
-		const buffer= this.system.combat.learnedPowersBuffer;
-		if (buffer.includes(power.id)) {
-			return true;
+		break;
+	}
+}
 
+async _promotePowers_learnedToMain(this: ValidAttackers) {
+	while (this.hasSpaceToAddPowerToMain()) {
+		const bufferPower = this.learnedPowersBuffer.at(0);
+		if (bufferPower) {
+			await this.moveFromBufferToMain(bufferPower);
+			continue;
 		}
-		return false;
+		break;
 	}
-
-	hasSpaceToAddPowerToMain(this: ValidAttackers) : boolean {
-		const powers = this.mainPowers;
-		return (powers.length < this.basePersona.maxMainPowers);
-	}
-
-	hasSpaceToAddToSideboard(this: ValidAttackers): boolean {
-		if (this.isShadow()) {return false;}
-		const sideboard = this.sideboardPowers;
-		return (sideboard.length < this.basePersona.maxSideboardPowers);
-	}
-
-	async _promotePowers(this: ValidAttackers) {
-		await this._promotePowers_learnedToMain();
-		await this._promotePowers_sideboardToMain();
-		await this._promotePowers_learnedToSideboard();
-	}
-
-	get hasPowerSideboard() : boolean  {
-		if (!this.isPC()) {return false;}
-		return this.class.system.canUsePowerSideboard ?? false;
-	}
-
-	async _promotePowers_sideboardToMain(this: ValidAttackers) {
-		if (!this.hasPowerSideboard) { return false;}
-		while (this.hasSpaceToAddPowerToMain()) {
-			const sideboard = this.sideboardPowers.at(0);
-			if (sideboard && this.isPC()) {
-				await this.retrievePowerFromSideboard(sideboard.id);
-				continue;
-			}
-			break;
-		}
-	}
-
-	async _promotePowers_learnedToMain(this: ValidAttackers) {
-		while (this.hasSpaceToAddPowerToMain()) {
-			const bufferPower = this.learnedPowersBuffer.at(0);
-			if (bufferPower) {
-				await this.moveFromBufferToMain(bufferPower);
-				continue;
-			}
-			break;
-		}
-	}
+}
 
 async _promotePowers_learnedToSideboard(this: ValidAttackers) {
 	if (!this.hasPowerSideboard) { return false;}
@@ -4260,20 +4260,23 @@ async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: num
 	await Logger.sendToChat(`+${amt} ${permaBuffLocalized} applied to ${this.name}`);
 }
 
-fusions() : [Shadow, Shadow][] {
-	const retList : [Shadow, Shadow][] = [];
-	const possibles = PersonaDB.possiblePersonas()
-		.filter (x=> x!= this);
-	for (let persona = possibles.pop(); persona != undefined; persona = possibles.pop()) {
-		for (const p2 of possibles) {
-			const fusion = FusionTable.fusionResult(persona, p2);
-			if (fusion && fusion == this) {
-				retList.push([persona, p2]);
-			}
-		}
-	}
-	return retList;
+fusions(this: Shadow, min= 2, max=999) : [Shadow, Shadow][] {
+	return FusionTable.fusionCombinationsFor(this, min, max);
 }
+
+// fusionsTest(this: Shadow) : boolean {
+// 	const f1 = FusionTable.fusionCombinationsFor(this);
+// 	const f2 = FusionTable.fusionCombinationsForFull(this);
+// 	console.log(f1
+// 		.map( ([x,y]) => `${x.name}, ${y.name} -> ${this.name}`)
+// 		.join("\n")
+// 	);
+// 	console.log(f2
+// 		.map( ([x,y]) => `${x.name}, ${y.name} -> ${this.name}`)
+// 		.join("\n")
+// 	);
+// 	return f1.length == f2.length;
+// }
 
 moneyDropped(): number {
 	if (!this.isShadow() || this.isPersona()) {return 0;}
@@ -4302,8 +4305,7 @@ get startingLevel() : number {
 	return this.cache.startingLevel = lvl;
 }
 
-}
-
+}//end of class
 
 Hooks.on("preUpdateActor", async (actor: PersonaActor, changes) => {
 	if (!actor.isOwner) {return;}

@@ -395,7 +395,7 @@ export class DamageCalculator {
 	}
 
 	static getArmorDRByArmorLevel(lvl: number) : number {
-		const ARMOR_DIVISOR = 0.80;
+		const ARMOR_DIVISOR = 0.90;
 		const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
 		if (val) {return Math.floor(val * ARMOR_DIVISOR);}
 		return 0;

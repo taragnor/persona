@@ -624,15 +624,7 @@ export class FusionTable {
 	}
 
 	static #downwardFusion(targetArcana: TarotCard, targetLevel : number, p1: Shadow, p2: Shadow) : U<Shadow> {
-		// const shadowList = PersonaDB.PersonaableShadowsOfArcana(1,targetLevel -1)[targetArcana]
 		const shadowList = this.fusionTargetsByLevel(targetArcana, 2, targetLevel-1);
-		// const shadowList = PersonaDB.possiblePersonasByStartingLevel(2,targetLevel -1)
-		// ?.filter(shadow =>
-		// 	shadow?.tarot?.name == targetArcana
-		// 	&& shadow.startingLevel < targetLevel
-		// 		&& shadow.id != p1.system.personaConversion.baseShadowId
-		// 		&& shadow.id != p2.system.personaConversion.baseShadowId
-		// );
 		if (!shadowList || shadowList.length == 0) {return undefined;}
 		shadowList.sort( (a,b)=> a.startingLevel - b.startingLevel);
 		return shadowList.at(0);
@@ -651,13 +643,44 @@ export class FusionTable {
 	static #upwardFusion(targetArcana: TarotCard, targetLevel : number) : U<Shadow> {
 		// const shadowList = PersonaDB.PersonaableShadowsOfArcana(targetLevel,100)[targetArcana]
 		const shadowList = this.fusionTargetsByLevel(targetArcana, targetLevel, 100);
-		// const shadowList = PersonaDB.possiblePersonasByStartingLevel(targetLevel,100)
-		// ?.filter(shadow =>
-		// 	shadow?.tarot?.name == targetArcana
-		// 	&& shadow.system.personaConversion.startingLevel >= targetLevel);
 		if (!shadowList || shadowList.length == 0) {return undefined;}
 		shadowList.sort( (a,b)=> a.system.personaConversion.startingLevel - b.system.personaConversion.startingLevel);
 		return shadowList.at(0);
+	}
+
+	// static fusionCombinationsForFull(fusionTarget: Shadow) : [Shadow, Shadow][] {
+	// const retList : [Shadow, Shadow][] = [];
+	// const possibles = PersonaDB.possiblePersonas()
+	// 	.filter (x=> x!= fusionTarget);
+	// for (let persona = possibles.pop(); persona != undefined; persona = possibles.pop()) {
+	// 	for (const p2 of possibles) {
+	// 		const fusion = FusionTable.fusionResult(persona, p2);
+	// 		if (fusion && fusion == fusionTarget) {
+	// 			retList.push([persona, p2]);
+	// 		}
+	// 	}
+	// }
+	// return retList;
+	// }
+
+	static fusionCombinationsFor(fusionTarget: Shadow, min=2, max= 999) : [Shadow, Shadow][] {
+		const retList : [Shadow, Shadow][] = [];
+		const possibles = PersonaDB.possiblePersonas()
+			.filter (x=> 
+				x.startingLevel >= min
+				&& x.startingLevel <= max
+				&& x!= fusionTarget);
+		for (let persona = possibles.pop(); persona != undefined; persona = possibles.pop()) {
+			const filteredPossibles = possibles
+				.filter ( x=> this._arcanaResult(persona, x) == fusionTarget?.tarot?.name);
+			for (const p2 of filteredPossibles) {
+				const fusion = FusionTable.fusionResult(persona, p2);
+				if (fusion && fusion == fusionTarget) {
+					retList.push([persona, p2]);
+				}
+			}
+		}
+		return retList;
 	}
 
 	private static _arcanaResult(p1: Shadow, p2: Shadow) : U<TarotCard>{

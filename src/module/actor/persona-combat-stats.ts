@@ -316,7 +316,7 @@ export class PersonaCombatStats {
 		return stIncreases;
 	}
 
-	_advancementSeed(stblk : StatGroup) : string {
+	private _advancementSeed(stblk : StatGroup) : string {
 		const sourceName = this.persona.source.name;
 		const totalStatPoints = Object.values(stblk).reduce ((acc, x) => acc + x, 0);
 		const tarotName = this.persona.tarot?.name;
@@ -324,7 +324,6 @@ export class PersonaCombatStats {
 			throw new PersonaError(`No Tarot Card for ${this.persona.source.name}`);
 		}
 		return `${sourceName}${tarotName}${totalStatPoints}`;
-
 	}
 
 	canRaiseStat(st: PersonaStatType, statBlock: StatGroup = this.combatStats.stats) : boolean {

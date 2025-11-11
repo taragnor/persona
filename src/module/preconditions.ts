@@ -139,10 +139,10 @@ function numericComparison(condition: SourcedPrecondition, situation: Situation)
 			const user = PersonaDB.findActor(situation.user);
 			const sourceItem = condition.source;
 			const id = sourceItem ? sourceItem.id : undefined;
-			if (!id) {
+			if (!id || !user) {
 				return false;
 			}
-			target= user.persona().getTalentLevel(id);
+			target = user.persona().getTalentLevel(id);
 			break;
 		}
 		case "social-link-level": {
