@@ -54,6 +54,15 @@
 	</span>
 	{{/if}}
 
+	{{#if (eqAny cons.type "set-flag")}}
+	<div>
+		<label>
+			Attach Embedded
+		</label>
+		<input type="checkbox" name="{{strcat namePrefix 'applyEmbedded'}}" {{checked cons.applyEmbedded}}>
+	</div>
+	{{/if}}
+
 	{{#if (eqAny cons.type "dmg-mult" "revive" "escalationManipulation" "recover-slot" "alter-fatigue-lvl")}}
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 	{{/if}}

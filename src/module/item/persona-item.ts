@@ -133,7 +133,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	static #newEffectsCache() : AdvancedEffectsCache {
 		const cache : AdvancedEffectsCache = {
-			allEffects: {
+			allNonEmbeddedEffects: {
 				actors: new WeakMap(),
 				nullActor: undefined,
 			},
@@ -152,7 +152,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			onUseEffects: {
 				actors: new WeakMap(),
 				nullActor: undefined,
-			}
+			},
+			embeddedEffects: {
+				actors: new WeakMap(),
+				nullActor: undefined,
+			},
 		};
 		return cache;
 	}
@@ -2067,9 +2071,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		};
 	}
 
-// hasTargettedEffects(this: Usable): boolean {
-//TODO: Finish later
-// }
 
 getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][], proxyItem : ItemModifierContainer = this ): readonly SourcedConditionalEffect[] {
 	//proxy item is used for tags to redirect their source to their parent item (for purposes of reading item level)
@@ -2089,7 +2090,11 @@ getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETyp
 	}
 	if (!CETypes || CETypes.length == 0) {
 		const effects = this.system.effects;
-		return this.#accessEffectsCache('allEffects', sourceActor, () => ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this))
+		const effectsGetterFn = () => {
+	return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
+			.filter (ce => !ce.isEmbedded);
+		};
+		return this.#accessEffectsCache('allNonEmbeddedEffects', sourceActor, effectsGetterFn)
 			.concat(tagEffects);
 	} else {
 		const effects: SourcedConditionalEffect[] = [];
@@ -2117,6 +2122,20 @@ getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETyp
 		return effects;
 	}
 }
+
+getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][], proxyItem : ItemModifierContainer = this ) : readonly SourcedConditionalEffect[] {
+	if (this.isSkillCard()) { return []; }
+	const effects = this.system.effects;
+	const effectsGetterFn = () => {
+		return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
+			.filter (ce => ce.isEmbedded);
+	};
+	const embedded= this.#accessEffectsCache('embeddedEffects', sourceActor, effectsGetterFn);
+	if (CETypes == undefined || CETypes.length == 0) {return embedded;}
+	return embedded
+		.filter( x=> CETypes.includes(x.conditionalType));
+}
+
 
 #accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, refresherFn: () => SourcedConditionalEffect[]) : readonly SourcedConditionalEffect[] {
 	if (!PersonaDB.isLoaded) {return [];}
@@ -2861,6 +2880,7 @@ export type ContainerTypes = ItemContainers | PersonaAE;
 
 export interface ModifierContainer <T extends Actor | TokenDocument | Item | ActiveEffect = ContainerTypes> {
 	getEffects(sourceActor : PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) : readonly SourcedConditionalEffect[];
+	getEmbeddedEffects ?: (sourceActor : PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) => readonly SourcedConditionalEffect[];
 	parent: T["parent"];
 	name: string;
 	id: string;
@@ -2905,11 +2925,12 @@ type SystemSubtype<X extends string> = {system: {subytpe : X }};
 
 
 type AdvancedEffectsCache = {
-	allEffects: WeakMapPlus,
+	allNonEmbeddedEffects: WeakMapPlus,
 	passiveEffects: WeakMapPlus,
 	triggeredEffects: WeakMapPlus,
 	defensiveEffects: WeakMapPlus,
 	onUseEffects: WeakMapPlus
+	embeddedEffects: WeakMapPlus,
 }
 
 type WeakMapPlus = {

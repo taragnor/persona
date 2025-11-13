@@ -572,7 +572,7 @@ export class FinalizedCombatResult {
 			case "extraTurn":
 				break;
 			case "set-flag":
-				await actor.setEffectFlag(otherEffect.flagId, otherEffect.state, otherEffect.duration, otherEffect.flagName);
+				await actor.setEffectFlag(otherEffect);
 				break;
 			case "teach-power": {
 				const power = PersonaDB.allPowers().get(otherEffect.id);

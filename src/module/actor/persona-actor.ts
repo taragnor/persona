@@ -53,7 +53,7 @@ import { ModifierTarget } from "../../config/item-modifiers.js";
 import { StatusEffectId } from "../../config/status-effects.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { ResistStrength } from "../../config/damage-types.js";
-import { StatusEffect } from "../../config/consequence-types.js";
+import { SetFlagEffect, StatusEffect } from "../../config/consequence-types.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { Focus } from "../item/persona-item.js";
 import { ModifierContainer } from "../item/persona-item.js";
@@ -3708,15 +3708,18 @@ getFlagDuration(flagName: string) : StatusDuration | undefined {
 	return this.getEffectFlag(flagName)?.duration;
 }
 
-async setEffectFlag(flagId: string, setting: boolean, duration: StatusDuration = {dtype: "instant"}, flagName ?: string) {
-	if (setting) {
-		await this.createEffectFlag(flagId, duration, flagName);
+async setEffectFlag(effect: Omit<SetFlagEffect, "type">) {
+	if (effect.state == true) {
+		const flag = await this.createEffectFlag(effect.flagId, effect.duration, effect.flagName);
+		if (effect.embeddedEffects!.length> 0) {
+		await flag.setEmbeddedEffects(effect.embeddedEffects!);
+		}
 	} else {
-		await this.clearEffectFlag(flagId);
+		await this.clearEffectFlag(effect.flagId);
 	}
 }
 
-async createEffectFlag(flagId: string, duration: StatusDuration = {dtype: "instant"}, flagName ?: string) {
+async createEffectFlag(flagId: string, duration: StatusDuration = {dtype: "instant"}, flagName ?: string) : Promise<PersonaAE> {
 	flagId = flagId.toLowerCase();
 	const eff = this.effects.find(x=> x.isFlag(flagId));
 	const newAE = {
@@ -3724,10 +3727,12 @@ async createEffectFlag(flagId: string, duration: StatusDuration = {dtype: "insta
 	};
 	if (eff) {
 		await eff.setDuration(duration);
+		return eff;
 	} else {
 		const AE = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
 		await AE.setDuration(duration);
 		await AE.markAsFlag(flagId);
+		return AE;
 	}
 }
 

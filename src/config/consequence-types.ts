@@ -42,10 +42,20 @@ type SimpleOtherEffect = DeprecatedSimpleEffect;
 export type SetFlagEffect = {
 	type: "set-flag",
 	flagId: string,
-	flagName: string,
 	state: boolean,
-	duration: StatusDuration
-}
+	flagName: string,
+	duration: StatusDuration,
+	embeddedEffects: readonly SourcedConditionalEffect[],
+} | ClearFlagEffect;
+
+type ClearFlagEffect = {
+	type : "set-flag",
+	flagId: string,
+	state: false,
+	flagName?: string,
+	duration?: StatusDuration,
+	embeddedEffects ?: readonly SourcedConditionalEffect[],
+};
 
 export type ResistanceShiftEffect = {
 	type: "raise-resistance" | "lower-resistance",
@@ -317,6 +327,7 @@ type SetFlagConsequence = {
 	flagName : string,
 	flagId : string,
 	flagState : boolean,
+	applyEmbedded: boolean,
 } & DurationComponent;
 
 type AddStatusConsequence = {

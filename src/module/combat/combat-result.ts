@@ -1,7 +1,7 @@
 import { DAMAGETYPES } from "../../config/damage-types.js";
 import { FinalizedCombatResult } from "./finalized-combat-result.js";
 import { ConsequenceProcessed, TargettingContextList } from "./persona-combat.js";
-import { DamageConsequence } from "../../config/consequence-types.js";
+import { DamageConsequence, SetFlagEffect } from "../../config/consequence-types.js";
 import { OldDamageConsequence } from "../../config/consequence-types.js";
 import { DamageCalculation } from "./damage-calc.js";
 import { RollSituation } from "../../config/situation.js";
@@ -275,13 +275,20 @@ export class CombatResult  {
 			case "set-flag": {
 				if (!effect) {break;}
 				const dur = convertConsToStatusDuration(cons, atkResult ?? target!);
+				let embeddedEffects: readonly SourcedConditionalEffect[]= [];
+				const source = cons.source;
+				if (source && "getEmbeddedEffects" in source && source.getEmbeddedEffects != undefined) {
+					const owner = cons.owner ? PersonaDB.findActor(cons.owner) : null;
+				embeddedEffects = source.getEmbeddedEffects(owner);
+				}
 				effect.otherEffects.push( {
 					type: "set-flag",
 					flagId: cons.flagId ?? "",
 					flagName: cons.flagName ?? "",
 					state: cons.flagState ?? true,
 					duration: dur,
-				});
+					embeddedEffects
+				} satisfies SetFlagEffect);
 				break;
 			}
 			case "inspiration-cost": {

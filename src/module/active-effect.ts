@@ -163,6 +163,70 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		await this.setFlag("persona", "duration", duration);
 	}
 
+	async setEmbeddedEffects( effects: readonly SourcedConditionalEffect[])  : Promise<this> {
+		const effectsRedux : ConditionalEffect[]= effects
+		.map( eff=> {
+			return {
+				...eff,
+				conditions: eff.conditions
+				.map (cond => {
+					return  {
+						...cond,
+						owner: null,
+						realSource: null,
+						source: null,
+					};
+				}),
+				consequences: eff.consequences
+				.map( cons => {
+					return  {
+						...cons,
+						owner: null,
+						realSource: null,
+						source: null,
+					};
+				}),
+				owner: null,
+				realSource: null,
+				source: null,
+			};
+		});
+		const effectString = JSON.stringify(effectsRedux);
+		await this.setFlag("persona", "embeddedEffects", effectString);
+		return this;
+	}
+
+	getEmbeddedEffects(sourceActor: PersonaActor | null, CETypes?: TypedConditionalEffect["conditionalType"][]) : readonly SourcedConditionalEffect[] {
+		const effects = this.getFlag("persona", "embeddedEffects") as string;
+		if (!effects) {
+			return [];
+		}
+		const effectsArr = JSON.parse(effects) as SourcedConditionalEffect[];
+		const sourceActorAcc = sourceActor?.accessor ?? undefined;
+		const effectsArrModified : SourcedConditionalEffect[]=  effectsArr
+			.map ( eff => {
+				const conditions:  SourcedConditionalEffect["conditions"] = eff.conditions.map( cond => {
+					return { ...cond, owner: sourceActorAcc, source: this, realSource: this, };
+				});
+				const consequences : SourcedConditionalEffect["consequences"] = eff.consequences.map( cons => { return { ...cons, owner: sourceActorAcc, source: this, realSource: this, };
+				});
+
+				return {
+					...eff,
+					conditions,
+					consequences,
+					owner: sourceActorAcc,
+					source: this,
+					realSource: this,
+				};
+			});
+		if (CETypes == undefined || CETypes.length == 0){
+			return effectsArrModified;
+		}
+		return effectsArrModified
+			.filter( x=> CETypes.includes(x.conditionalType));
+	}
+
 	get accessor() : UniversalAEAccessor<this> {
 		return PersonaDB.getUniversalAEAccessor(this);
 	}
@@ -535,7 +599,11 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		if (!sourceActor) {
 			sourceActor = this.parent instanceof PersonaActor ? this.parent : sourceActor;
 		}
-		return this.getLinkedTags().flatMap( tag => tag.getEffects(sourceActor, CETypes));
+		const actor = this.parent instanceof PersonaActor ? this.parent : null;
+		return this.getLinkedTags().flatMap( tag => tag.getEffects(sourceActor, CETypes))
+		.concat(
+			this.getEmbeddedEffects(actor, CETypes)
+		);
 	}
 
 
@@ -550,7 +618,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		}
 		if (flag && effect.parent instanceof PersonaActor) {
 			effect["_flaggedDeletion"] = true;
-			await effect.parent.setEffectFlag(flag, false);
+			await effect.parent.setEffectFlag({flagId: flag, state: false});
 		}
 	}
 

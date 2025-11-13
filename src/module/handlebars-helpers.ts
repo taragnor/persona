@@ -280,7 +280,7 @@ export class PersonaHandleBarsHelpers {
 		"getEffectFlagName" : function (acc: UniversalActorAccessor<PC | Shadow>, flagEffect: SetFlagEffect): string {
 			const actor = PersonaDB.findActor(acc);
 			const flag = actor.getEffectFlag(flagEffect.flagId);
-			if (flag) {return flag.flagName ?? flagEffect.flagName ?? flag.flagId;}
+			if (flag) {return flag?.flagName ?? flagEffect?.flagName ?? flag.flagId;}
 			return flagEffect.flagName ?? flagEffect.flagId;
 		},
 
