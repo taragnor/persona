@@ -2046,12 +2046,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return rating;
 	}
 
-	// basePowerCritResist(this: ValidAttackers, power: Usable): number {
-	// 	if (!power.isInstantDeathAttack()) {return 0;}
-	// 	const level = this.system.combat.classData.level;
-	// 	return Math.floor(level / 2);
-	// }
-
 	instantKillResistanceMultiplier(this: ValidAttackers, attacker: ValidAttackers) : number {
 		const situation : Situation = {
 			attacker: attacker.accessor,
@@ -2431,34 +2425,6 @@ async checkSideboardEmptySpace(this: ValidAttackers) {
 	}
 }
 
-// async checkMainPowerEmptySpace(this: ValidAttackers) {
-// 	const powers = this.system.combat.powers;
-// 	while (powers.length < this.persona().maxMainPowers) {
-// 		if (!this.isShadow()) {
-// 			const sideboard = this.system.combat.powers_sideboard;
-// 			const pow1 = sideboard.shift();
-// 			if (pow1) {
-// 				powers.push(pow1);
-// 				await this.update( {"system.combat.powers": powers});
-// 				await this.update( {"system.combat.powers_sideboard": sideboard});
-// 				await this.checkSideboardEmptySpace();
-// 				continue;
-// 			}
-// 		}
-// 		if (this.learnedPowersBuffer.length > 0) {
-// 			const buffer = this.system.combat.learnedPowersBuffer;
-// 			const bufferItem = buffer.shift();
-// 			if (bufferItem) {
-// 				powers.push(bufferItem);
-// 				await this.update( {"system.combat.powers": powers});
-// 				await this.update( {"system.combat.learnedPowersBuffer" : buffer});
-// 				continue;
-// 			}
-// 		}
-// 		return;
-// 	}
-// }
-
 async movePowerToSideboard(this: PC, powerId: Power["id"]) {
 	if (!this.class.system.canUsePowerSideboard) {
 		ui.notifications.error("You don't have a sideboard");
@@ -2595,7 +2561,6 @@ async increaseSocialLink(this: PC, linkId: string) {
 		throw new PersonaError("Social Link is already maxed out");
 	}
 	link.linkLevel +=1 ;
-	// link.currentProgress= 0;
 	link.inspiration = link.linkLevel;
 	if (link.linkLevel == 10) {
 		void PersonaSounds.socialLinkMax();
@@ -2782,10 +2747,6 @@ getAllSocialFocii() : Focus[] {
 	}
 }
 
-// getSourcedEffects(this: ValidAttackers, condTypes :TypedConditionalEffect["conditionalType"][] = []): SourcedConditionalEffect[] {
-// 	return this.persona().mainModifiers();
-// }
-
 getEffects(this: ValidAttackers, CETypes ?: TypedConditionalEffect['conditionalType'][] ) : readonly SourcedConditionalEffect[] {
 	const mods =  this.persona().mainModifiers();
 	if (!CETypes || CETypes.length == 0) {
@@ -2793,10 +2754,6 @@ getEffects(this: ValidAttackers, CETypes ?: TypedConditionalEffect['conditionalT
 	}
 	return mods.filter ( mod => CETypes.includes(mod.conditionalType)) ;
 }
-
-// getPassivePowers(this: ValidAttackers): readonly Power[] {
-// 	return this.persona().powers().filter;
-// }
 
 canEngage() :boolean {
 	return !this.isDistracted() && this.isCapableOfAction();
@@ -2818,9 +2775,6 @@ getSaveBonus( this: ValidAttackers) : ModifierList {
 	const mods = this.mainModifiers()
 		.filter( x => x.conditionalType == "passive" || x.conditionalType == "defensive");
 	const modsProcessed = PersonaItem.getModifier(mods, "save");
-
-	// .flatMap( item => PersonaItem.getModifier("save", this));
-	// const x = this.getActiveTokens()[0]
 	return new ModifierList(modsProcessed);
 }
 
@@ -2828,7 +2782,6 @@ getDisengageBonus( this: ValidAttackers) : ModifierList {
 	const mods = this.mainModifiers()
 		.filter( x => x.conditionalType == "passive" || x.conditionalType == "defensive");
 	const modsProcessed= PersonaItem.getModifier(mods, "disengage");
-	// .flatMap( item => item.getModifier("disengage", this));
 	return new ModifierList(modsProcessed);
 }
 
@@ -3004,7 +2957,6 @@ async onLevelUp_checkLearnedPowers(this: ValidAttackers, newLevel: number, logCh
 async onLevelUp_BasePersona(this: ValidAttackers, newLevel: number) : Promise<void> {
 	if (this.isNPCAlly() || this.isShadow()) {
 		await this.basePersona.combatStats.autoSpendStatPoints();
-		// await this.levelUp_Incremental();
 	}
 	await this.onLevelUp_checkLearnedPowers(newLevel);
 }
@@ -3305,10 +3257,6 @@ maxIncrementalAdvancesInCategory(this: ValidAttackers, incrementalType: keyof Va
 	return 0;
 }
 
-// calcXP (this: ValidAttackers, killedTargets: ValidAttackers[], numOfAllies: number) : number {
-// 	return Persona.calcXP(killedTargets, numOfAllies);
-// }
-
 get personalELevel() : number {
 	if (!this.isPC()) {return 0;}
 	return this.system.personaleLevel;
@@ -3446,16 +3394,6 @@ XPValue(this: ValidAttackers) : number {
 	const xpValue = LevelUpCalculator.shadowXPValue(pLevel);
 	const xpMult = persona.getBonuses("shadow-xp-value").total ( {user: this.accessor}, "percentage");
 	return xpValue * xpMult;
-	// const SHADOWS_TO_LEVEL = Persona.leveling.SHADOWS_TO_LEVEL;
-	// const firstLevelUp = Persona.leveling.BASE_XP;
-	// const baseXP = firstLevelUp/SHADOWS_TO_LEVEL;
-	// const role = shadowRoleMultiplier(this.system.role) * shadowRoleMultiplier(this.system.role2);
-	// const incrementals = Object.values(this.system.combat.classData.incremental).reduce<number> ( (acc, i) => {
-	// 	if (typeof i == "number") return acc+i;
-	// 	if (typeof i == "boolean") return acc + (i ? 1 : 0);
-	// 	return acc;
-	// }, 0);
-	// return baseXP * role * (1 + (incrementals * 0.05));
 }
 
 maxActions(this: ValidAttackers): number  {
@@ -3581,12 +3519,6 @@ async onStartCombatTurn(this: PC | Shadow): Promise<string[]> {
 		PersonaError.softFail(msg, e);
 	}
 	return ret;
-	// for (const eff of this.effects) {
-	// 	if ( await eff.onStartCombatTurn()) {
-	// 		ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
-	// 	}
-	// }
-	// return ret;
 }
 
 async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
@@ -4334,20 +4266,6 @@ async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: num
 fusions(this: Shadow, min= 2, max=999) : [Shadow, Shadow][] {
 	return FusionTable.fusionCombinationsFor(this, min, max);
 }
-
-// fusionsTest(this: Shadow) : boolean {
-// 	const f1 = FusionTable.fusionCombinationsFor(this);
-// 	const f2 = FusionTable.fusionCombinationsForFull(this);
-// 	console.log(f1
-// 		.map( ([x,y]) => `${x.name}, ${y.name} -> ${this.name}`)
-// 		.join("\n")
-// 	);
-// 	console.log(f2
-// 		.map( ([x,y]) => `${x.name}, ${y.name} -> ${this.name}`)
-// 		.join("\n")
-// 	);
-// 	return f1.length == f2.length;
-// }
 
 moneyDropped(): number {
 	if (!this.isShadow() || this.isPersona()) {return 0;}

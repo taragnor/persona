@@ -180,7 +180,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	get XPForNextLevel() : number {
 		return LevelUpCalculator.XPRequiredToAdvanceToLevel(this.level +1);
-		// return this.source.XPForNextLevel;
 	}
 
 	get xp(): number {
@@ -233,14 +232,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	critResist(): Calculation {
-		// const ret = new ModifierList();
 		const mods = PersonaItem.getModifier(this.mainModifiers(), "critResist");
 		const list =  new ModifierList(mods);
 		const calc = this.combatStats.lukCriticalResist();
 		calc.add(1, list, "Mods", "add");
 		return calc;
-		// list.add("Luck Bonus", this.combatStats.lukCriticalResist());
-		// return list;
 	}
 
 	critBoost() : Calculation {
@@ -249,8 +245,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const calc = this.combatStats.lukCriticalBoost();
 		calc.add(1, list, "Mods", "add");
 		return calc;
-		// list.add("Luck Bonus", this.combatStats.lukCriticalBoost());
-		// return list;
 	}
 
 	equals(other: Persona) : boolean {
@@ -402,10 +396,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, sources: readonly SourcedConditionalEffect[] = this.passiveCEs()): ModifierList {
 		const mods = PersonaItem.getModifier(sources, modnames)
 		.filter( mod => mod.modifier != 0);
-		// const modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this.source)
-			// .filter( mod => mod.modifier != 0)
-		// ));
-		// return modList;
 		return new ModifierList(mods);
 	}
 
@@ -780,32 +770,24 @@ wpnAtkBonus() : Calculation {
 	const mods = this.getBonuses(["allAtk", "wpnAtk"]);
 	const wpnAtk = this.combatStats.baseWpnAttackBonus();
 	return wpnAtk.add(1, mods, "Mods", "add");
-	// mods.add("Base Weapon Attack Bonus", wpnAtk);
-	// return mods;
 }
 
 magAtkBonus() : Calculation {
 	const mods = this.getBonuses(["allAtk", "magAtk"]);
 	const magAtk = this.combatStats.baseMagAttackBonus();
 	return magAtk.add(1, mods, "Mods", "add");
-	// mods.add("Base Magic Attack Bonus", magAtk);
-	// return mods;
 }
 
 instantDeathAtkBonus() : Calculation {
 	const mods = this.getBonuses(["instantDeathRange"]);
 	const deathAtk = this.combatStats.baseDeathAtkBonus();
 	return deathAtk.add(1, mods, "Mods", "add");
-	// mods.add("Base Magic Attack Bonus", deathAtk);
-	// return mods;
 }
 
 ailmentAtkBonus() :Calculation {
 	const mods = this.getBonuses("afflictionRange");
 	const ailAtk = this.combatStats.baseAilmentAtkBonus();
 	return ailAtk.add(1, mods, "Mods", "add");
-	// mods.add("Base Magic Attack Bonus", ailAtk);
-	// return mods;
 }
 
 itemAtkBonus(item :Consumable) : Calculation {
@@ -814,8 +796,6 @@ itemAtkBonus(item :Consumable) : Calculation {
 	return calc
 		.add(1, item?.system?.atk_bonus ?? 0, "Item Modifier", "add")
 		.add(1, mods, "Modifiers", "add");
-	// mods.add("Item Base Bonus", item.system.atk_bonus);
-	// return mods;
 }
 
 get isUnderResistCap(): boolean {
