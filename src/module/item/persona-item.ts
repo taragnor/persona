@@ -2823,15 +2823,15 @@ isStatusRemoval(this: Usable) : boolean {
 	return removed.length > 0;
 }
 
-static resolveItemSelector(selector: ItemSelector): U<EnchantedTreasureFormat> {
+static resolveItemSelector(selector: ItemSelector): EnchantedTreasureFormat[] {
 	switch (selector.selectType) {
 		case "specific": {
 			const item= PersonaDB.getItemById(selector.itemId);
 			if (item?.isCarryableType()) {
-				return {
+				return [{
 					item,
 					enchantments:[],
-				};
+				}];
 			}
 		}
 			break;
@@ -2841,7 +2841,7 @@ static resolveItemSelector(selector: ItemSelector): U<EnchantedTreasureFormat> {
 		default :
 			selector satisfies never;
 	}
-	return undefined;
+	return [];
 }
 
 }

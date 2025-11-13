@@ -396,7 +396,7 @@ static async searchRegion(region: PersonaRegion) {
 					}
 					const treasureRoll = await region.treasureFound(result.roll, searcher as ValidAttackers);
 					if (treasureRoll) {
-						treasureRolls.push(treasureRoll);
+						treasureRolls.push(...treasureRoll);
 					}
 					break;
 				}

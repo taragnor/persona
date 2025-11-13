@@ -7,10 +7,12 @@ import {PersonaError} from "../persona-error.js";
 import {Carryable, Tag} from "../item/persona-item.js";
 
 export class TreasureSystem {
-	static generate(treasureLevel: number, modifier : number = 0, treasureMin = 1) : U<EnchantedTreasureFormat> {
-		const table = this.convertRollToTreasureTable(modifier, treasureMin);
+	static generate(treasureLevel: number, modifier : number = 0, treasureMin = 1) : EnchantedTreasureFormat[] {
+		const treasureRoll = this.treasureRoll(modifier, treasureMin);
+		const table = this.convertRollToTreasureTable(treasureRoll);
 		const item = this.generateFromTable(table, treasureLevel);
-		if (item == undefined) {return undefined;}
+		const otherTreasure = this.moreTreasure(treasureRoll) ? this.generate(treasureLevel, modifier, treasureMin) : [];
+		if (!item) {return otherTreasure;}
 		if (item.isEnchantable()) {
 			if (item.isInvItem()) {
 				if (item.system.slot == "weapon_crystal") {
@@ -21,25 +23,39 @@ export class TreasureSystem {
 				}
 
 			}
-			const enchantmentTable = this.convertRollToTreasureTable(modifier, treasureMin);
+			const enchantmentRoll = this.treasureRoll(modifier, treasureMin);
+			const enchantmentTable = this.convertRollToTreasureTable(enchantmentRoll);
 			const enchantment = this.generateEnchantmentFromTable(enchantmentTable, treasureLevel);
 			if (enchantment) {
-				return {
+				return [{
 					item,
 					enchantments: [enchantment],
-				};
+				} ] .concat(otherTreasure);
 			}
 		}
-		return {
+		return [{
 			item,
 			enchantments: [],
-		};
+		} as EnchantedTreasureFormat].concat(otherTreasure);
 	}
 
-	static convertRollToTreasureTable(modifier: number, treasureRollMin: number) : Exclude<TreasureTable, "none"> {
+	static moreTreasure (treasureRoll: number) : boolean {
+		const die = treasureRoll ;
+		switch (true)  {
+			case die > 40 && die <= 50: return true;
+			case die >= 73 && die < 75: return true;
+			default: return false;
+		}
+	}
+	static treasureRoll(modifier: number, treasureRollMin: number) : number {
 		modifier += treasureRollMin;
 		const dieSize = 101 - treasureRollMin;
 		const die = modifier + Math.floor(Math.random() * dieSize);
+		return die;
+	}
+
+	static convertRollToTreasureTable(rollValue: number) : Exclude<TreasureTable, "none"> {
+		const die = rollValue;
 		switch (true) {
 			case die < 50: return "trinkets";
 			case die < 75: return "lesser";
@@ -152,7 +168,7 @@ export class TreasureSystem {
 		const arr : EnchantedTreasureFormat[] = [];
 		for (let i = 0; i <100; i++ ) {
 			const treasure = this.generate(treasureLevel, modifier, minLevel);
-			if (treasure) { arr.push(treasure); }
+			if (treasure) { arr.push(...treasure); }
 		}
 		await this.handleTreasureRolls(arr);
 	}

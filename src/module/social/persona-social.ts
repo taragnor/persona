@@ -1409,8 +1409,8 @@ static #setSocialCardItem(selector: ItemSelector){
 		return;
 	}
 	const cardData = this.rollState.cardData;
-	cardData.item = item;
-	cardData.replaceSet["$ITEM"] = item ? TreasureSystem.printEnchantedTreasureString(item): `No Item` ;
+	cardData.item = item.at(0);
+	cardData.replaceSet["$ITEM"] = cardData.item ? TreasureSystem.printEnchantedTreasureString(cardData.item): `No Item` ;
 
 }
 
