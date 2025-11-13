@@ -133,7 +133,7 @@ export class SocketManager {
 
 
 	clearPendingErr(verificationId: VerificationId, sender: User["id"]) {
-		const realClear= this.clearPending(verificationId, sender);
+		const realClear = this.clearPending(verificationId, sender);
 		if (realClear) {
 			console.warn(`Verification Error Received from ${sender}`);
 			// throw new VerificationFailedError(`Verification Failed! verificationId: ${verificationId} Sender: ${sender}`);
@@ -144,7 +144,7 @@ export class SocketManager {
 		const user = game.users.get(sender);
 		// console.debug(`Initial: Verification Msg recieved ${verificationId} from ${user?.name}, clearing log`);
 		const userPending = this._pendingVerifications.get(sender)!;
-		const pendingProm =  userPending.get(verificationId);
+		const pendingProm = userPending.get(verificationId);
 		if (pendingProm == undefined) {return false;}
 		pendingProm.resolve(true);
 		console.debug(`resolved ${verificationId} from ${user?.name}, clearing log`);
@@ -166,7 +166,7 @@ export class SocketManager {
 		arr.push(handlerFn);
 	}
 
-private async onMsgRecieve(packet: SocketPayload<keyof SocketMessage>) :Promise<void> {
+private async onMsgRecieve(packet: SocketPayload<keyof SocketMessage>) : Promise<void> {
 	const {code, recipients} = packet;
 	if (!recipients.includes(game.user.id)) {return;}
 	if (packet.sender == game.user.id) {return;}
