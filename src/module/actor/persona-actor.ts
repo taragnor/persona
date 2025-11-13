@@ -1434,7 +1434,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		let debugMarker = 0;
 		const mhp = this.mhp;
 		try {
-			console.debug(`Refreshing HP status on ${this.name}`);
+			// console.debug(`Refreshing HP status on ${this.name}`);
 			if (hp > 0) {
 				debugMarker = 1;
 				await this.clearFadingState();
@@ -4503,11 +4503,15 @@ const EMPTYARR :any[] = [] as const; //to speed up things by not needing to crea
 Object.seal(EMPTYARR);
 
 Hooks.on("createActor", async function (actor: PersonaActor) {
+	if (actor.isShadow()) {
+		await actor.update({
+			"prototypeToken.displayBars": 50,
+			"prototypeToken.displayName": 30,
+			"prototypeToken.bar1": {attribute: "combat.hpTracker"},
+			"prototypeToken.bar2": {attribute: "combat.energy"}
+		});
+	}
 	if (actor.isShadow() && !actor.hasTag("persona") && !actor.hasTag("d-mon")  && actor.level <= 1) {
-		// const pcs = game.actors
-		// 	.filter( (x: PersonaActor)=> x.isRealPC() && x.hasPlayerOwner);
-		// const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.personaleLevel, 0 );
-		// const avgLevel = Math.round(totalLevels/ pcs.length);
 		const avgLevel = PersonaDB.averagePCLevel();
 		await actor.update({ "system.combat.personaStats.pLevel" : avgLevel});
 		await actor.setWeaponDamageByLevel(avgLevel);
