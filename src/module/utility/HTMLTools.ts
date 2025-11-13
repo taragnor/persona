@@ -287,7 +287,7 @@ static generateDefaultData<T extends HTMLDataInputDefinition>(definition: T) : H
 				}
 			})
 			.map( x=> `<div> ${x} </div>`)
-			.join();
+			.join("");
 		return selectors;
 	}
 
