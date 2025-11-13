@@ -405,6 +405,7 @@ export class PersonaSocial {
 				isDefensive: false,
 				conditions: [{type: "always"}],
 				consequences: responseEffects,
+				isEmbedded: false,
 			});
 		}
 		return  {

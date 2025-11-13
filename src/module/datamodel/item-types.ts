@@ -357,6 +357,7 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 export class ConditionalEffectDM extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		return {
+			isEmbedded: new bool(),
 			isDefensive: new bool(),
 			conditions: new arr(new obj<Precondition>({required: true})),
 			consequences: new arr(new obj<Consequence>({required: true})),

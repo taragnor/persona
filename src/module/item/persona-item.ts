@@ -2026,6 +2026,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				source: this,
 				conditionalType: 'on-use',
 				isDefensive: false,
+				isEmbedded: false,
 				conditions: [],
 				consequences: [],
 				owner: this.parent?.accessor,
@@ -2062,6 +2063,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			source: this,
 			...cardEffect,
 			owner: this.parent?.accessor,
+			isEmbedded: false,
 		};
 	}
 

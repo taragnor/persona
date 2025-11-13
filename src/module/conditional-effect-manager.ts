@@ -324,7 +324,7 @@ export class ConditionalEffectManager {
 	}
 
 	static getEffects<T extends PersonaActor, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null, realSource ?: ConditonalEffectHolderItem) : SourcedConditionalEffect[] {
-			const conditionalEffects = Array.isArray(CEObject) ? CEObject : this.ArrayCorrector(CEObject);
+		const conditionalEffects = Array.isArray(CEObject) ? CEObject : this.ArrayCorrector(CEObject);
 		return conditionalEffects.map( ce=> {
 			const conditions = this.getConditionals(ce.conditions, sourceItem, sourceActor, realSource);
 			const consequences= this.getConsequences(ce.consequences, sourceItem, sourceActor, realSource);
@@ -333,12 +333,13 @@ export class ConditionalEffectManager {
 				: false;
 			let conditionalType : TypedConditionalEffect["conditionalType"];
 			const isDefensive= (ce.isDefensive || forceDefensive) ?? false;
+			const isEmbedded = ce.isEmbedded ?? false;
 			switch (true) {
 				case forceDefensive || ce.isDefensive: 
 					conditionalType = "defensive";
 					break;
 				default:
-					conditionalType = !forceDefensive ? this.getConditionalType({conditions, consequences, isDefensive}, sourceItem): "defensive";
+					conditionalType = !forceDefensive ? this.getConditionalType({conditions, consequences, isDefensive, isEmbedded}, sourceItem): "defensive";
 					if (conditionalType == "unknown" && sourceItem) {
 						conditionalType = (sourceItem.defaultConditionalEffectType) ? sourceItem.defaultConditionalEffectType() : "passive";
 					}
@@ -347,6 +348,7 @@ export class ConditionalEffectManager {
 				conditionalType,
 				conditions,
 				consequences,
+				isEmbedded,
 				isDefensive: conditionalType == "defensive",
 				owner: sourceActor?.accessor,
 				source: sourceItem != null ? sourceItem : undefined,
@@ -1233,6 +1235,7 @@ export class EMAccessor<T> {
 		if (!effect) {
 			effect= {
 				isDefensive: false,
+				isEmbedded: false,
 				conditions: [ {
 					type: "always"
 				}],
@@ -1375,6 +1378,7 @@ declare global{
 
 	interface ConditionalEffect {
 		isDefensive: boolean;
+		isEmbedded: boolean;
 		conditions: Precondition[];
 		consequences: Consequence[];
 	}
@@ -1383,6 +1387,7 @@ declare global{
 		conditions: SourcedPrecondition<Precondition>[];
 		consequences: SourcedConsequence<NonDeprecatedConsequence>[];
 		isDefensive: boolean;
+		isEmbedded: boolean;
 	}
 
 	// type SourcedConditionalEffects = SourcedConditionalEffect[];

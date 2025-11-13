@@ -208,6 +208,7 @@ export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
 
 	defaultConditionalEffect(_ev: JQuery.ClickEvent): ConditionalEffect {
 		const effect : ConditionalEffect = {
+			isEmbedded: false,
 			isDefensive: false,
 			conditions: [{
 				type: "always",
