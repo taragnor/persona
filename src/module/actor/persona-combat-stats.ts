@@ -136,18 +136,9 @@ export class PersonaCombatStats {
 	}
 
 	enduranceDR() : DamageCalculation {
-		// const situation = {
-		// 	user: this.persona.user.accessor,
-		// 	target: this.persona.user.accessor,
-		// };
 		const calc= new DamageCalculation(null);
-		// const stamina = this.baseEnduranceDR();
-		// const generalDRBonus = this.persona.getDefensiveBonuses("dr").total(situation);
-		// const staminaString = 'Endurance Damage Reduction';
 		const percentageMult = this.endurancePercentDR();
 		calc.add("multiplier", percentageMult, "Endurance DR modifier");
-		// calc.add("base", -Math.abs(stamina), staminaString);
-		// calc.add("base", -generalDRBonus, "DR Modifiers");
 		return calc;
 	}
 
@@ -282,7 +273,6 @@ export class PersonaCombatStats {
 			...this.combatStats.stats
 		};
 		let statsToBeChosen = pointsToSpend;
-		// let statsToBeChosen = this.STAT_POINTS_PER_LEVEL;
 		while (statsToBeChosen > 0) {
 			const slist = (Object.keys(stblk) as PersonaStatType[])
 				.filter(( st) => PersonaCombatStats.canRaiseStat(st, stblk))
@@ -290,12 +280,6 @@ export class PersonaCombatStats {
 					let weight = 1;
 					weight = favored.reduce( (acc, x)=> x == st ? acc * 1.5 : acc, weight);
 					weight = disfavored.reduce( (acc, x)=> x == st ? acc * 0.75 : acc, weight);
-					// if (favored == st) {
-					// 	weight *= 1.5;
-					// }
-					// if (disfavored == st) {
-					// 	weight *= 0.80;
-					// }
 					return {
 						weight,
 						item: st

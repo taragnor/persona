@@ -428,16 +428,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 		const passiveOrTriggeredPowers = (options && options.omitPowers) ? [] : this.passiveOrTriggeredPowers();
 		const talents = (options && options?.omitTalents) ? [] : this.talents;
-		// const tags = (options && options.omitTags) ? [] : this.realTags();
 		const mainModsList : ModifierContainer[]= [
 			...this.focii,
 			...talents,
 			...passiveOrTriggeredPowers,
 			...user.actorMainModifiers(options),
 			...roomModifiers,
-			// ...tags, //tags are takenc are of in actormain
 			...PersonaDB.getGlobalPassives(),
-			// ...PersonaDB.getGlobalModifiers(),
 			...PersonaDB.navigatorModifiers(),
 		];
 		const mainMods = mainModsList
