@@ -260,8 +260,16 @@ export class PersonaCombatStats {
 
 	#autoSpendPoints(pointsToSpend: number = this.persona.unspentStatPoints) : StatGroup {
 		const persona = this.persona;
-		const favored = this.combatStats.preferred_stat;
-		const disfavored = this.combatStats.disfavored_stat;
+		const favored = [
+			this.combatStats.preferred_stat,
+			this.combatStats.preferred_stat2,
+			persona?.tarot?.system?.preferred_stat ?? "",
+		];
+		const disfavored = [
+			this.combatStats.disfavored_stat,
+			this.combatStats.disfavored_stat2,
+			persona?.tarot?.system?.disfavored_stat ?? "",
+	];
 		const stIncreases : StatGroup = {
 			str: 0,
 			mag: 0,
@@ -280,13 +288,14 @@ export class PersonaCombatStats {
 				.filter(( st) => PersonaCombatStats.canRaiseStat(st, stblk))
 				.map( st => {
 					let weight = 1;
-					if (favored == st) {
-						weight *= 1.5;
-					}
-					if (disfavored == st) {
-						weight *= 0.80;
-					}
-
+					weight = favored.reduce( (acc, x)=> x == st ? acc * 1.5 : acc, weight);
+					weight = disfavored.reduce( (acc, x)=> x == st ? acc * 0.75 : acc, weight);
+					// if (favored == st) {
+					// 	weight *= 1.5;
+					// }
+					// if (disfavored == st) {
+					// 	weight *= 0.80;
+					// }
 					return {
 						weight,
 						item: st

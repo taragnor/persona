@@ -13,6 +13,8 @@ declare global {
 	}
 }
 
+const ActorDirectory = foundry.applications.sidebar.tabs.ActorDirectory;
+
 export class EnhancedActorDirectory {
 
 	static init(systemPath: string) {

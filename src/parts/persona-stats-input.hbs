@@ -29,11 +29,14 @@
 	</div>
 	{{/each}}
 
-	{{#if (isShadowOrNPCAlly actor)}}
+	{{#if (and (isGM) (isShadowOrNPCAlly actor))}}
 	<div>
 		<label>Favored Stat</label>
 		<select name="system.combat.personaStats.preferred_stat">
 			{{selectOptions CONST.PERSONA_STATS_PLUS_EMPTY  localize=true selected=actor.system.combat.personaStats.preferred_stat}}
+		</select>
+		<select name="system.combat.personaStats.preferred_stat2">
+			{{selectOptions CONST.PERSONA_STATS_PLUS_EMPTY  localize=true selected=actor.system.combat.personaStats.preferred_stat2}}
 		</select>
 	</div>
 
@@ -41,6 +44,9 @@
 		<label>Disfavored Stat</label>
 		<select name="system.combat.personaStats.disfavored_stat">
 			{{selectOptions CONST.PERSONA_STATS_PLUS_EMPTY  localize=true selected=actor.system.combat.personaStats.disfavored_stat}}
+		</select>
+		<select name="system.combat.personaStats.disfavored_stat2">
+			{{selectOptions CONST.PERSONA_STATS_PLUS_EMPTY  localize=true selected=actor.system.combat.personaStats.disfavored_stat2}}
 		</select>
 	</div>
 	{{/if}}

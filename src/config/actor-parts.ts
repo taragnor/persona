@@ -384,9 +384,11 @@ class PersonaStatsDM extends foundry.abstract.DataModel {
 		// const k = Object.keys(statsObj) as PersonaStat[];
 		return {
 			stats: new sch({...statsObj()}),
-			preferred_stat: new txt<PersonaStat | "">({initial:"" }),
 			permanentStatsBonuses: new sch({...permaBonuses()}),
+			preferred_stat: new txt<PersonaStat | "">({initial:"" }),
 			disfavored_stat: new txt<PersonaStat | "">({initial:"" }),
+			preferred_stat2: new txt<PersonaStat | "">({initial:"" }),
+			disfavored_stat2: new txt<PersonaStat | "">({initial:"" }),
 			pLevel: new num({min: 1, max: 150, initial: 1}),
 			xp: new num({min:0, integer: true, initial: 0}),
 		};

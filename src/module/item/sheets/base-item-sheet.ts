@@ -6,7 +6,7 @@ import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { ConditionalEffectManager } from "../../conditional-effect-manager.js";
 import {PersonaDB} from "../../persona-db.js";
 
-export class PersonaItemSheetBase extends ItemSheet<PersonaItem> {
+export class PersonaItemSheetBase extends foundry.appv1.sheets.ItemSheet<PersonaItem> {
 
 	static override get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {

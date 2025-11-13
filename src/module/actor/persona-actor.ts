@@ -78,6 +78,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	declare sheet: PersonaActorSheetBase;
 
 	_antiloop : boolean = false;
+	_trackerAntiLoop : boolean = false;
 
 	static MPMap = new Map<number, number>;
 
@@ -263,16 +264,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async #refreshHpTracker(this:ValidAttackers)  : Promise<void> {
 		if (!game.user.isGM) {return;}
+		if (this._trackerAntiLoop) {return;}
+		this._trackerAntiLoop = true;
 		const mhp = this.mhp;
 		if (this.hp > mhp) {
 			await this.update({"system.combat.hp": mhp});
 		}
 		if (this.system.combat.hpTracker.value != this.hp
-			|| this.system.combat.hpTracker.max != mhp){
-			await this.update( {"system.combat.hpTracker.value" : this.hp,
-				"system.combat.hpTracker.max": mhp
-			});
+			|| this.system.combat.hpTracker.max != mhp) {
+			this.system.combat.hpTracker.max = mhp;
+			this.system.combat.hpTracker.value = this.hp;
+			await this.update(
+				{
+					"system.combat.hpTracker.value" : this.hp,
+					"system.combat.hpTracker.max": mhp
+				});
+			console.log(`Tracker Value: ${this.system.combat.hpTracker.max}`);
 		}
+		this._trackerAntiLoop = false;
 	}
 
 	async createNewItem() {
@@ -729,7 +738,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 
 	mhpCalculation(this: ValidAttackers) {
-		const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
+		const sit ={user: this.accessor};
 		try {
 			if (this.system == undefined) {return new Calculation().eval();}
 			const lvlbase = this.class.getClassMHP(this.level);
@@ -752,11 +761,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			calc.add(0, newForm, "Mod List", "multiply");
 			calc.add(0, multmods, "Old Form Mods", "noStackMultiply");
 			calc.add(0, nonMultbonuses, "Adds", "add");
-			return calc.eval(sit);
+			const mhp = calc.eval(sit);
+			// console.log(`MHP: ${mhp.total}`);
+			return mhp;
 		}	 catch(e) {
 			PersonaError.softFail(`Error in calculating ${this.name} MHP`, e);
 		}
-		return new Calculation().eval(sit);
+		const mhp = new Calculation().eval(sit);
+		return mhp;
 	}
 
 
@@ -1422,7 +1434,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		let debugMarker = 0;
 		const mhp = this.mhp;
 		try {
-			// console.debug("Refreshing HP status");
+			console.debug(`Refreshing HP status on ${this.name}`);
 			if (hp > 0) {
 				debugMarker = 1;
 				await this.clearFadingState();
@@ -4408,6 +4420,11 @@ Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
 
 			await actor.update({"system.combat.personaStats.xp" : minXP});
 		}
+		await actor.basePersona.resetCombatStats(true);
+		if (actor.isPC() || actor.isNPCAlly()) {
+			await actor.refreshMaxMP();
+		}
+		await actor.refreshHpStatus();
 		//NEEd to refresh stat points on level change
 	}
 	if (lvl != undefined) {

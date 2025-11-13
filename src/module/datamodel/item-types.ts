@@ -201,6 +201,11 @@ class PowerSchema extends foundry.abstract.TypeDataModel {
 
 	static override migrateData(data: any)  {
 		const itemData = data as (Power["system"]);
+		//@ts-expect-error will is no longer a valid choice
+		if (itemData.defense == "will") {
+			itemData.defense = "ail";
+		}
+
 		if (itemData?.ailmentChance =="always" && itemData?.damageLevel == "none") {
 			itemData.ailmentChance = "high";
 			itemData.defense = "ail";
@@ -224,6 +229,10 @@ class ConsumableSchema extends foundry.abstract.TypeDataModel {
 	static override migrateData(data: Consumable["system"])  {
 		if (data.targets as string == "1-ally") {
 			data.targets = "1-engaged";
+		}
+		//@ts-expect-error will is no longer a valid choice
+		if (data.defense == "will") {
+			data.defense = "ail";
 		}
 		// const itemData = data as (Power["system"] | Consumable["system"]);
 		// let dmult = 0;

@@ -17,17 +17,30 @@
 			</div>
 		</div>
 	</header>
-	<label/> Perk
-		<textarea name="system.perk"> {{actor.system.perk}} </textarea>
-		<label/> Student Advantage
-			<textarea name="system.studentAbility"> {{actor.system.studentAbility}} </textarea>
-			<section class="focii">
-				<h2>
-					Social Link Benefits
-					<a class="addFocus">
-						<i class="fa-solid fa-plus"> </i>
-					</a>
-				</h2>
+	<label> Perk </label>
+	<textarea name="system.perk"> {{actor.system.perk}} </textarea>
+	<label> Student Advantage </label>
+	<textarea name="system.studentAbility"> {{actor.system.studentAbility}} </textarea>
+	<div>
+		<label>Favored Stat</label>
+		<select name="system.preferred_stat">
+			{{selectOptions CONST.PERSONA_STATS_PLUS_EMPTY  localize=true selected=actor.system.preferred_stat}}
+		</select>
+	</div>
+	<div>
+		<label>Disfavored Stat</label>
+		<select name="system.disfavored_stat">
+			{{selectOptions CONST.PERSONA_STATS_PLUS_EMPTY  localize=true selected=actor.system.disfavored_stat}}
+		</select>
+	</div>
+
+	<section class="focii">
+		<h2>
+			Social Link Benefits
+			<a class="addFocus">
+				<i class="fa-solid fa-plus"> </i>
+			</a>
+		</h2>
 
 		{{#each actor.socialBenefits as |benefit|}}
 		<div class="focus" data-focus-id="{{benefit.focus.id}}">

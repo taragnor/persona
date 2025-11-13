@@ -734,7 +734,7 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
       case "shadow-role-is": {
          const target = getSubjectActors(condition, situation, "conditionTarget")[0];
          if (!target) {return undefined;}
-         if (target.system.type != "shadow") {return false;}
+         if (!target.isShadow()) {return false;}
          if (typeof condition.shadowRole == "string") {
             return (condition.shadowRole == target.system.role || target.system.role2 == condition.shadowRole);
          }

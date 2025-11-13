@@ -171,7 +171,7 @@ export class ActorConverters {
 		const persona = await PersonaActor.create<Shadow>(personaData);
 		await persona.createEmbeddedDocuments("Item", shadow.items.contents.map (x=> x.toJSON()));
 		await this.convertPowers(shadow, persona);
-		await persona.basePersona.resetCombatStats();
+		await persona.basePersona.resetCombatStats(true);
 		return persona;
 	}
 
@@ -220,7 +220,7 @@ export class ActorConverters {
 		const nonPowerItems = shadow.items.contents.filter(x=> !x.isPower());
 		await dmon.createEmbeddedDocuments("Item", nonPowerItems.map (x=> x.toJSON()));
 		await this.convertPowers(shadow, dmon);
-		await dmon.basePersona.resetCombatStats();
+		await dmon.basePersona.resetCombatStats(true);
 		return dmon;
 	}
 

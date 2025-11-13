@@ -11,6 +11,7 @@ declare const game: Game;
 
 interface FoundryStuff {
 	abstract: FoundryAbstract;
+	appv1: AppV1Stuff;
 	data: FoundryData;
 	documents: {
 		BaseCombat: typeof BaseCombat;
@@ -23,6 +24,13 @@ interface FoundryStuff {
 	canvas: FoundryCanvasTools;
 	utils: FoundryUtil;
 	applications: foundryApps.Applications;
+}
+
+interface AppV1Stuff {
+	sheets: {
+		ItemSheet: typeof ItemSheet,
+		ActorSheet: typeof ActorSheet,
+	}
 }
 
 

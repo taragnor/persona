@@ -1631,8 +1631,10 @@ static displaySocialPanel( tracker: JQuery) {
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 	tracker.find("div.weather-icon").append(weatherIcon).on("click" , PersonaCalendar.openWeatherForecast.bind(PersonaCalendar));
 	const doom = PersonaCalendar.DoomsdayClock;
+	if (doom) {
 	const doomtxt = `${doom.amt} / ${doom.max}`;
 	tracker.find("span.doomsday").text(doomtxt);
+	}
 	const weekday = PersonaCalendar.getDateString();
 	tracker.find(".day").text(weekday);
 }

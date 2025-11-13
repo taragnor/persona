@@ -6,6 +6,13 @@ namespace foundryApps {
 		handlebars: {
 			renderTemplate(templatePath: string, templateData: Record<string|number, unknown>): Promise<string>;
 		}
+		sidebar: foundryApps.Sidebar
+	}
+
+	interface Sidebar {
+		tabs: {
+			ActorDirectory: typeof ActorDirectory
+		}
 	}
 
 	interface UXStuff{

@@ -20,7 +20,7 @@ import {PersonaEffectContainerBaseSheet} from "../../item/sheets/effect-containe
 import {TarotPrinter} from "../../printers/tarot-list.js";
 import {TalentPrinter} from "../../printers/talent-list.js";
 
-export abstract class PersonaActorSheetBase extends ActorSheet<PersonaActor> {
+export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSheet<PersonaActor> {
 
 	#activeQuestion = -1;
 

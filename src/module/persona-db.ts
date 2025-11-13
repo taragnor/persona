@@ -98,6 +98,20 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 
+	async refreshCombatStats() {
+		for (const actor of this.allActors()) {
+			if (!actor.isValidCombatant()) {continue;}
+			if (actor.tarot == undefined) {continue;}
+			if (actor.isPC()) {continue;}
+			try {
+			await actor.basePersona.resetCombatStats(true);
+			} catch (e) {
+				console.error(`Problem resetting stats for ${actor.name} (${actor.id})`);
+				Debug(e);
+			}
+		}
+	}
+
 	getGlobalDefensives(): readonly UniversalModifier [] {
 		if (this.#cache.worldDefensives == undefined) {
 		this.#cache.worldDefensives = this.getGlobalModifiers()

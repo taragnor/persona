@@ -498,7 +498,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async resetStats(_ev: JQuery.ClickEvent) {
 		if (!await HTMLTools.confirmBox("Reset", "Really reset stats?")) {return;}
-		await this.actor.basePersona.resetCombatStats();
+		await this.actor.basePersona.resetCombatStats(false);
 	}
 
 	static async getDamage(persona: PersonaActor | Persona, usable: Usable) {

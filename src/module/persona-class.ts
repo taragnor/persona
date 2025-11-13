@@ -202,7 +202,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return 0;
 	}
 
-	async resetCombatStats() {
+	async resetCombatStats( autoSpendersOnly :boolean) {
+		if (autoSpendersOnly && !this.canAutoSpendStatPoints() ) {return;}
 		const source = this.source;
 		const stats = source.system.combat.personaStats.stats;
 		console.log(`Resetting stats for ${this.name}`);
@@ -212,12 +213,15 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		await source.update({
 "system.combat.personaStats.stats": stats
 		});
-		if (source.isNPCAlly()
-			|| (source.isShadow() && !source.isCustomPersona())
-		) {
+		if (this.canAutoSpendStatPoints()) {
 			await this.combatStats.autoSpendStatPoints();
 		}
+	}
 
+	canAutoSpendStatPoints() : boolean {
+		const source = this.source;
+		return source.isNPCAlly()
+			|| (source.isShadow() && !source.isCustomPersona());
 	}
 
 	get scanLevelRaw() : number {

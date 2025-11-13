@@ -27,6 +27,7 @@ import { SHADOW_ROLE_LIST } from "../../config/shadow-types.js";
 import { equipslots } from "../../config/actor-parts.js";
 import { tarotFields } from "../../config/actor-parts.js";
 import { combatCommonStats } from "../../config/actor-parts.js";
+import {PersonaStat} from "../../config/persona-stats.js";
 
 abstract class BaseStuff extends window.foundry.abstract.DataModel {
 
@@ -211,6 +212,8 @@ export class TarotSchema extends foundry.abstract.TypeDataModel {
 			...BaseStuff.defineSchema(),
 			studentAbility: new txt(),
 			sortOrder: new num({initial: 0}),
+			preferred_stat: new txt<PersonaStat | "">({initial:"" }),
+			disfavored_stat: new txt<PersonaStat | "">({initial:"" }),
 			perk: new txt(),
 		} as const;
 		return ret;
