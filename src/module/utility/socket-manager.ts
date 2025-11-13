@@ -135,17 +135,19 @@ export class SocketManager {
 	clearPendingErr(verificationId: VerificationId, sender: User["id"]) {
 		const realClear= this.clearPending(verificationId, sender);
 		if (realClear) {
+			console.warn(`Verification Error Received from ${sender}`);
 			// throw new VerificationFailedError(`Verification Failed! verificationId: ${verificationId} Sender: ${sender}`);
 		}
 	}
 
 	clearPending(verificationId: VerificationId, sender: User["id"]) : boolean {
 		const user = game.users.get(sender);
-		console.debug(`Initial: Verification Msg recieved ${verificationId} from ${user?.name}, clearing log`);
+		// console.debug(`Initial: Verification Msg recieved ${verificationId} from ${user?.name}, clearing log`);
 		const userPending = this._pendingVerifications.get(sender)!;
 		const pendingProm =  userPending.get(verificationId);
 		if (pendingProm == undefined) {return false;}
 		pendingProm.resolve(true);
+		console.debug(`resolved ${verificationId} from ${user?.name}, clearing log`);
 		userPending.delete(verificationId);
 		return true;
 }

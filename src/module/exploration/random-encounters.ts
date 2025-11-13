@@ -156,10 +156,14 @@ static encounterChoiceList(encounterType : PresenceRollData["encounterType"]) : 
 	}
 
 /** queries player to determine if they will ambush, fight , etc.*/
-static async queryPlayerResponse(encounter: Encounter, validChoices: typeof this.encounterChoices[number][]) : Promise<EncounterAction> {
+private static async queryPlayerResponse(encounter: Encounter, validChoices: typeof this.encounterChoices[number][]) : Promise<EncounterAction> {
 	await this.PlayerNotifyChatMsg(encounter);
+	return await this.takePlayerVote(validChoices, encounter.encounterDifficulty);
+}
+
+static async takePlayerVote( validChoices: typeof this.encounterChoices[number][], difficulty ?: string) : Promise<EncounterAction> {
 	try {
-		const dialog = new VotingDialog(validChoices, `${encounter.encounterDifficulty} Encounter`);
+		const dialog = new VotingDialog(validChoices, `${difficulty ?? "???"} Encounter`);
 		const action = await dialog.majorityVote();
 		return {
 			action,
@@ -172,6 +176,7 @@ static async queryPlayerResponse(encounter: Encounter, validChoices: typeof this
 			action : "fight"
 		};
 	}
+
 }
 
 static avgPartyLevel () {

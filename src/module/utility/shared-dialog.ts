@@ -7,6 +7,7 @@ declare global {
 			name: string,
 			dataDef: SharedDataDefinition,
 			dialogId: string,
+			userIds: string[]
 		};
 		"SHARED_DIALOG_UPDATE" : {
 			name: string;
@@ -44,13 +45,15 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 	private reject : (reason: unknown ) => void;
 	/** if true then return data*/
 	private _breakout : (data: SharedDataType<T>) => boolean;
+	private users: FoundryUser[];
 	static socketManager : SocketManager;
 	static activeSessions: Map<string, SharedDialog> = new Map();
 
-	constructor (definition: T, name: string, id ?: string) {
+	constructor (definition: T, name: string, users ?: FoundryUser[], id ?: string) {
 		this._definition = definition;
 		this.name = name;
 		this._data = this.generateDefaultData();
+		this.users = users ? users : game.users.filter( x=> x.active);
 		this.id = id ? id : SharedDialog.generateId();
 	}
 
@@ -63,7 +66,10 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 	}
 
 	static onRemoteStartMsg( data: SocketMessage["SHARED_DIALOG_START"], _payload : SocketPayload<"SHARED_DIALOG_START">) {
-		const SD = new SharedDialog(data.dataDef, data.name, data.dialogId);
+		const users = data.userIds.map(id=> game.users.get(id))
+		.filter( x=> x != undefined)
+		.filter( x=> x.active);
+		const SD = new SharedDialog(data.dataDef, data.name, users, data.dialogId);
 		void SD._openSlave();
 		this.activeSessions.set(data.dialogId, SD);
 	}
@@ -126,12 +132,14 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 	}
 
 	private _sendOpenMsg(users: FoundryUser[]) {
-		for (const user of users) {
+		const userIds = users.map( x=> x.id);
+		for (const id of userIds) {
 			void SharedDialog.socketManager.verifiedSend("SHARED_DIALOG_START", {
 				name: this.name,
 				dataDef: this._definition,
 				dialogId: this.id,
-			}, user.id);
+				userIds : userIds,
+			}, id);
 		}
 	}
 
@@ -202,8 +210,7 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 	}
 
 	private sendCloseMsg() {
-		const users= game.users.contents.filter(x=> x.active);
-		for (const user of users) {
+		for (const user of this.users) {
 			void SharedDialog.socketManager.verifiedSend("SHARED_DIALOG_CLOSE", {dialogId: this.id}, user.id );
 		}
 	}
@@ -218,9 +225,7 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 		// }
 	}
 
-	private _sendData(users : FoundryUser[]) {
-		users= users.filter(x=> x.active);
-
+	private _sendData(users : FoundryUser[] = this.users) {
 		const data = this._data;
 		const payload = {
 			name: this.name,

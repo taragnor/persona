@@ -83,7 +83,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		this.#resetCache();
 	}
 
-	getClassById(id: string): Option<ItemSub<"characterClass">> {
+	getClassById(id: string): Option<CClass> {
 		const item = this.getItemById(id);
 		if (!item) {return null;}
 		if (item.system.type == "characterClass") {
@@ -91,6 +91,12 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		}
 		throw new Error("Id ${id} points towards invalid type");
 	}
+
+	getClassByName(name: string) : U<CClass> {
+		const classes=  this.classes();
+		return classes.find (x=> x.name == name);
+	}
+
 
 	getGlobalDefensives(): readonly UniversalModifier [] {
 		if (this.#cache.worldDefensives == undefined) {

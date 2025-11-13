@@ -178,7 +178,7 @@ function numericComparison(condition: SourcedPrecondition, situation: Situation)
 			if (!situation.user) {return false;}
 			const actor = PersonaDB.findActor(situation.user);
 			if (!actor) { return false;}
-			target= actor.level;
+			target = actor.level;
 			break;
 		}
 		case "has-resources": {

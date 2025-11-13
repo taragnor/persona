@@ -662,12 +662,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const id = this.system.combat.classData.classId;
 		let cl = PersonaDB.getClassById(id);
 		if (!cl) {
-			const namesearch = PersonaDB.getItemByName(classNameDefault);
+			const namesearch = PersonaDB.getClassByName(classNameDefault);
 			if (!namesearch)
 			{throw new Error(`Couldn't find class id: ${id} or name: ${classNameDefault}`);}
 			if (namesearch.system.type != "characterClass")
 			{
-				throw new Error("Bad Item named: ${classNameDefault}, expecting a character class");
+				throw new Error(`Bad Item named: ${classNameDefault}, expecting a character class`);
 			}
 			cl = namesearch as ItemSub<"characterClass">;
 		}
@@ -4066,15 +4066,9 @@ get tagListPartial() : CreatureTag[] {
 			return list;
 		case "npc": return list;
 		case "shadow": {
-			if (this.system.creatureType == "d-mon") {
-				list.pushUnique("d-mon");
-				if (this.hasPlayerOwner) {
-					list.pushUnique("pc-d-mon");
-				}
-
-			}
-			if (this.system.creatureType == "persona") {
-				list.pushUnique("persona");
+			list.pushUnique(this.system.creatureType);
+			if (this.system.creatureType == "d-mon" && this.hasPlayerOwner) {
+				list.pushUnique("pc-d-mon");
 			}
 			return list;
 		}
