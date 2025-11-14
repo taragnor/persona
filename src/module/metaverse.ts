@@ -116,6 +116,10 @@ static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void>
 	//TEmp fix since it was bugged
 	const numOfPCs = party.length;
 	const xp= Persona.calcXP(shadows, numOfPCs );
+	const navigator = PersonaDB.getNavigator();
+	if (navigator) {
+		party.push(navigator);
+	}
 	const XPAwardDataPromises = party.map( async actor=> {
 		try {
 			const XPReport = await actor.awardXP(xp);
@@ -417,22 +421,6 @@ static async searchRegion(region: PersonaRegion) {
 	await TreasureSystem.handleTreasureRolls(treasureRolls);
 	await this.passMetaverseTurn();
 }
-
-//OLD TREAUSRE SYSTEM
-// static async handleTreasureRolls( rolls: Roll[]) {
-// 	let html = `<h2> Treasure Rolls </h2>`;
-// 	const rollstring = rolls.map( r => `<li>${r.formula} (${r.total})</li>`).join("");
-// 	html += `<ul> ${rollstring} </ul>`;
-// 	html = `<div class="treasure-rolls"> ${html} </div>`;
-// 	return await ChatMessage.create({
-// 		speaker: {
-// 			alias: "Treasure Rolls"
-// 		},
-// 		content: html,
-// 		rolls,
-// 		style: CONST.CHAT_MESSAGE_STYLES.OOC,
-// 	});
-// }
 
 	static getRegion(regionId ?: string) : PersonaRegion | undefined {
 		if (game.user.isGM) {

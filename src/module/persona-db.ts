@@ -29,7 +29,6 @@ declare global {
 class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	#cache: PersonaDBCache;
-	navigator: NPC | PC;
 	failLog: Map<string, string>;
 
 

@@ -317,6 +317,7 @@
 	"persona.modifier.max-energy": "Maximum Energy",
 	"persona.modifier.power-energy-cost": "Modifier to energy cost of powers (10 equals 1EN)",
 	"persona.modifier.xp-multiplier": "% change to XP gained",
+	"persona.modifier.navigator-xp-mult": "multiplier gained while navigating (max 1)",
 	"persona.modifier.encounter-size-multiplier": "Creature Size Multiplier (Encounter building)",
 	"persona.modifier.shadow-xp-value": "Multiplier to XP Value",
 	"persona.modifier.shadowPresence": "Shadow Presence",

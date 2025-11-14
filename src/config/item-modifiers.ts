@@ -70,6 +70,7 @@ export const ACTOR_STATS_TYPES = [
 	"hpCostMult",
 	"mpCostMult",
 	"xp-multiplier",
+	"navigator-xp-mult", //XP gained while navigating
 	"extraMaxPowers", // extra sideobard powers
 	"persona-sideboard", // extra sideobard peronsas
 	"inactive-persona-xp",

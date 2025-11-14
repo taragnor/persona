@@ -3136,6 +3136,10 @@ get tarot() : (Tarot | undefined) {
 			break;
 		}
 		case "npcAlly":
+			if (this.system.tarot.length > 0) {
+				this.cache.tarot = PersonaDB.tarotCards().find(x=> x.name == (this as NPCAlly).system.tarot);
+				break;
+			}
 			if (this.system.NPCSocialProxyId) {
 				const actor = PersonaDB.socialLinks().find( x=> x.id == (this as NPCAlly).system.NPCSocialProxyId);
 				if (actor) {return actor.tarot;}
@@ -3327,6 +3331,11 @@ async gainLevel(this: ValidAttackers, amt: number) : Promise<void> {
 
 /** returns true on level up */
 async awardXP(this: ValidAttackers, amt: number) : Promise<XPGainReport[]> {
+	if (PersonaDB.getNavigator() == this) {
+		const navigatorXP = this.persona().getBonuses("navigator-xp-mult").total({user: this.accessor});
+		amt = Math.clamp(navigatorXP, 0.1, 1) * amt;
+	}
+	if (amt ==0) {return [];}
 	const personaXPAwards = this.personaList.map<Promise<U<XPGainReport>>>( persona=> persona.awardXP(amt));
 	const personaGains = (await Promise.allSettled(personaXPAwards))
 	.map( pr => pr.status == "fulfilled" ? pr.value : undefined);
@@ -3336,53 +3345,6 @@ async awardXP(this: ValidAttackers, amt: number) : Promise<XPGainReport[]> {
 	];
 	return possibleLevelUps.filter(x=> x != undefined);
 }
-
-//async levelUp_Incremental(this: ValidAttackers) {
-//	if (this.isPC()) {return;}
-//	const incData = this.system.combat.classData.incremental;
-//	const incrementals = Object.keys(incData) as (keyof typeof incData)[];
-//	const filtered = incrementals.filter ((incChoice: keyof typeof incData)=> !this.isIncrementalMaxed(incChoice));
-//	if (filtered.length > 0) {
-//		const favored = this.system.combat.classData.favoredIncremental ?? "";
-//		if (favored && filtered.includes(favored)) {
-//			filtered.push(favored, favored, favored); // make the favored upgrade more likely;
-//		}
-//		const rng = new SeededRandom((this.tarot?.name ?? "UNKNOWN TAROT") + String(this.numOfIncAdvances()));
-//		const result = rng.randomArraySelect(filtered);
-//		if (!result) {
-//			PersonaError.softFail("Can't find Incremental to Level, error with random Array selection");
-//			return;
-//		}
-//		if ( typeof incData[result] == "boolean") {
-//			//@ts-expect-error typescript had issues with this
-//			incData[result] = true;
-//		}
-//		if (typeof incData[result] == "number") {
-//			//@ts-expect-error typescript had issues with this
-//			incData[result] = incData[result] +  1;
-//		}
-
-//		await this.update( {"system.combat.classData.incremental": incData});
-//		const msg = `${this.name} upgraded ${result} to ${incData[result]}`;
-//		console.log(msg);
-//		if (this.hasPlayerOwner) {
-//			await Logger.sendToChat(msg);
-//		}
-//	}
-//}
-
-//isIncrementalMaxed( this: ValidAttackers,  incremental:  keyof ValidAttackers["system"]["combat"]["classData"]["incremental"]): boolean {
-//	const incValue = this.system.combat.classData.incremental[incremental];
-//	if (typeof incValue == "boolean") {return incValue;}
-//	//@ts-expect-error foundrytypes doesn't handle this sort of schema reflection yet
-//	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-//	const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incremental] as {max ?: number};
-//	if (x.max)
-//	{return incValue >= x.max ;}
-//	const msg = `Unknown Max incremental for ${incremental}`;
-//	PersonaError.softFail(msg);
-//	return true;
-//}
 
 XPValue(this: ValidAttackers) : number {
 	if (!this.isShadow()) {return 0;}
