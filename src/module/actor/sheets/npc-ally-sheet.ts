@@ -41,7 +41,7 @@ export class NPCAllySheet extends PCLikeSheet {
 			case "power": {
 				const power = item as Power;
 				const actor = this.actor;
-				if (power.isNavigator()) {
+				if (power.isNavigator() && !this.isOnLearningTab()) {
 					await actor.addNavigatorSkill(power);
 					return power;
 				}
@@ -57,7 +57,7 @@ export class NPCAllySheet extends PCLikeSheet {
 		if (!await HTMLTools.confirmBox("Really Delete", `Really Delete ${power.name}`)) {return;}
 		switch (true) {
 			case power.isNavigator(): {
-				return await this.actor.deleteNavigatorSkill(power);
+				return await this.actor.deleteNavigatorSkill(power.id);
 			}
 			default: {
 				throw new PersonaError("Can't delete skill of this stype");

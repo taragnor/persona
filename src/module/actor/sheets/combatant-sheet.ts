@@ -110,10 +110,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 						const actor = this.actor as PC | NPCAlly;
 						if (power.isTeamwork()) {
 							await actor.setTeamworkMove(power);
-							if (power.isNavigator()) {
-								ui.notifications.warn("This cahracter can't use a navigator skill");
-								return undefined;
-							}
 							return power;
 						}
 						if (power.hasTag("shadow-only")) {

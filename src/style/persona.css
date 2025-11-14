@@ -523,6 +523,7 @@ img.small-die {
 
 div.powers-table,
 div.main-powers,
+div.navigator-skills,
 div.power-sideboard {
 	display: flex;
 	flex-direction: row;
@@ -548,7 +549,9 @@ div.main-power {
 }
 
 div.powers-table-item,
-div.sideboard-power {
+div.sideboard-power,
+div.navigator-power
+{
 	flex: 1 1 50%;
 	max-width: 45%;
 	/* box-sizing: border-box; */
@@ -592,6 +595,7 @@ div.power-operations {
 	font-weight: bold;
 }
 
+.navigator-power .powerName,
 .sideboard-power .powerName {
 	font-size: 1.2em;
 }
@@ -1353,6 +1357,7 @@ img.item-icon {
 	font-style: italic;
 }
 
+section.navigator-skills,
 section.power-sideboard {
 	margin-top: 10px;
 	margin-bottom: 10px;
@@ -1512,5 +1517,5 @@ img.greyed-out {
 .persona-viewer .level {
 	justify-content: center;
 	align-items: center;
-	text-align: center;
+		text-align: center;
 }

@@ -1223,7 +1223,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				const arr = PersonaItem.getBasicPCPowers().slice();
 				const extraSkills = [
 					this.teamworkMove,
-					...this.navigatorSkills,
+					// ...this.navigatorSkills,
 				].flatMap( x=> x != undefined ? [x] : []);
 				arr.push (...extraSkills);
 				return arr; 
@@ -1256,10 +1256,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await Logger.sendToChat(`${this.name} added Navigator skill: ${pwr.name}` , this);
 	}
 
-	async deleteNavigatorSkill(this: NPCAlly, power: Power ) {
-		this.system.combat.navigatorSkills= this.system.combat.navigatorSkills.filter(x=> x != power.id);
+	async deleteNavigatorSkill(this: NPCAlly, powerId: Power["id"] ) : Promise<boolean> {
+		if (!this.system.combat.navigatorSkills.find( x=> powerId == x)) {return false;}
+		const power = this.navigatorSkills.find( x=> x.id == powerId);
+		this.system.combat.navigatorSkills= this.system.combat.navigatorSkills.filter(x=> x != powerId);
 		await this.update( {"system.combat.navigatorSkills" : this.system.combat.navigatorSkills});
-		await Logger.sendToChat(`${this.name} deleted Navigator skill ${power.name}` , this);
+		await Logger.sendToChat(`${this.name} deleted Navigator skill ${power?.name ?? "unknown power"}` , this);
+		return true;
 	}
 
 	get navigatorSkills(): Power[] {
@@ -1273,7 +1276,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				const powers = this.system.combat.navigatorSkills
 				.map( id => PersonaDB.getPower(id))
 				.filter( x=> x != undefined);
-				// const powers = PersonaDB.allPowers().filter(x=> x.id == id);
 				return powers;
 			}
 			default:
@@ -2356,6 +2358,7 @@ async deletePower(this: ValidAttackers, id: string ) {
 	}
 	const result = await this.deletefromLearnBuffer(id)
 		|| await this.deleteFromMainPowers(id)
+		|| (this.isNPCAlly() ? await this.deleteNavigatorSkill(id) : undefined)
 		|| (!this.isShadow() ? await this.deleteFromSideboard(id) : false) ;
 	await this._promotePowers();
 	return result;
