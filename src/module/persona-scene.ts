@@ -317,6 +317,7 @@ export class PersonaScene extends Scene {
 			return div;
 		});
 		const tab = $(`<div class="tab scrollable" data-group="sheet" data-tab="encounter" data-application-part="encounter"> </div>`);
+		tab.append($(`<div> Treasure Level: ${this.treasureLevel}</div>`));
 		tab.append($("<h2> Encounters </h2>"));
 		for (const jq of listElements) {
 			tab.append(jq);
