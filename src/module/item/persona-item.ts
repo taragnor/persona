@@ -2844,6 +2844,10 @@ static resolveItemSelector(selector: ItemSelector): EnchantedTreasureFormat[] {
 	return [];
 }
 
+canBecomeSkillCard(this: Power) : boolean {
+	return !this.hasTag("shadow-only") && !this.hasTag("non-inheritable");
+}
+
 }
 
 

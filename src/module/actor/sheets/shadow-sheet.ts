@@ -70,7 +70,7 @@ export class ShadowSheet extends CombatantSheetBase {
 		);
 		// SCENE_LIST[""] = "-";
 		const databasePowers = this.actor.mainPowers
-			.filter (pwr => !pwr.hasTag("shadow-only"))
+			.filter (pwr => pwr.canBecomeSkillCard())
 			.map( x=> PersonaDB.allPowersArr().find(pwr => pwr.name == x.name))
 			.filter( x=> x != undefined);
 		const CARD_CANDIDATES = Object.fromEntries(

@@ -1,5 +1,6 @@
 import {Tag} from "../module/item/persona-item.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
+
 export const STATUS_AILMENT_POWER_TAGS  = [
 	"dizzy",
 	"charm",
@@ -36,10 +37,10 @@ export const POWER_TYPE_TAGS = [
 	"usable-while-dead",
 ] as const;
 
-
 const RESTRICTION_TAGS = [
 	"exotic",
 	"shadow-only",
+	"non-inheritable",
 	"lone-persona-only",
 	"persona-only",
 ] as const;
@@ -81,8 +82,6 @@ export const POWER_TAGS_LIST = [
 	...POWER_TYPE_TAGS,
 	...POWER_TRAIT_TAGS,
 ] as const;
-
-
 
 export type PowerTag = typeof POWER_TAGS_LIST[number] | Tag;
 

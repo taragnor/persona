@@ -651,7 +651,7 @@ export class FusionTable {
 	static fusionCombinationsFor(fusionTarget: Shadow, min=2, max= 999) : [Shadow, Shadow][] {
 		const retList : [Shadow, Shadow][] = [];
 		const possibles = PersonaDB.possiblePersonas()
-			.filter (x=> 
+			.filter (x=>
 				x.startingLevel >= min
 				&& x.startingLevel <= max
 				&& x!= fusionTarget);
@@ -706,7 +706,7 @@ export class FusionTable {
 		return arr;
 	}
 
-}// end of class
+} // end of class
 
 
 // @ts-expect-error adding to global state

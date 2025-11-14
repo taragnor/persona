@@ -6,7 +6,6 @@ import { PersonaDB } from "../../persona-db.js";
 import { Tag, Usable, UsableAndCard } from "../../item/persona-item.js";
 import { NPCAlly, PersonaActor } from "../persona-actor.js";
 import { Consumable } from "../../item/persona-item.js";
-import { Logger } from "../../utility/logger.js";
 import { Helpers } from "../../utility/helpers.js";
 import { PersonaError } from "../../persona-error.js";
 import { PersonaCombat, TargettingError } from "../../combat/persona-combat.js";
@@ -56,13 +55,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".focusName").on("click", this.openFocus.bind(this));
 		html.find(".itemName").on("click", this.openItem.bind(this));
 		html.find(".rollSave").on("click", this.rollSave.bind(this));
-		html.find(".incremental-advance-block .hp .add").on("click", this.addIncremental_HP.bind(this));
-		html.find(".incremental-advance-block .mp .add").on("click", this.addIncremental_MP.bind(this));
-		html.find(".incremental-advance-block .wpnDamage .add").on("click", this.addIncremental_wpnDamage.bind(this));
-		html.find(".incremental-advance-block .attack .add").on("click", this.addIncremental_attack.bind(this));
-		html.find(".incremental-advance-block .defense .add").on("click", this.addIncremental_defense.bind(this));
-		html.find(".incremental-advance-block .initiative .add").on("click", this.addIncremental_initiative.bind(this));
-		// html.find("button.random-incremental").on("click", this.randomIncremental.bind(this));
 		html.find(".powerName").on("mouseover", this.createDamageEstimate.bind(this));
 		html.find(".power-img").on("mouseover", this.createDamageEstimate.bind(this));
 		html.find("button.basic-power").on("mouseover", this.createDamageEstimate.bind(this));
@@ -343,87 +335,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		await roll.toModifiedMessage(false);
 	}
 
-	async addIncremental_HP(_ev: JQuery.ClickEvent) {
-		const target = "hp";
-		const current = this.actor.system.combat.classData.incremental[target];
-		const max = this.actor.maxIncrementalAdvancesInCategory(target);
-		if (current < max) {
-			await this.actor.update({
-				"system.combat.classData.incremental.hp" : current +1});
-			if (this.actor.isPC() || this.actor.isNPCAlly()) {
-				await Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
-			}
-		}
-	}
-
-	async addIncremental_MP(_ev: JQuery.ClickEvent) {
-		const target = "mp";
-		const current = this.actor.system.combat.classData.incremental[target];
-		const max = this.actor.maxIncrementalAdvancesInCategory(target);
-		if (current < max) {
-			await this.actor.update({
-				"system.combat.classData.incremental.mp" : current +1});
-			if (this.actor.isPC() || this.actor.isNPCAlly()) {
-				await Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
-			}
-		}
-	}
-
-	async addIncremental_wpnDamage(_ev: JQuery.ClickEvent) {
-		const target = "wpnDamage";
-		const current = this.actor.system.combat.classData.incremental[target];
-		const max = this.actor.maxIncrementalAdvancesInCategory(target);
-		if (current < max) {
-			await this.actor.update({
-				"system.combat.classData.incremental.wpnDamage" : current +1});
-			if (this.actor.isPC() || this.actor.isNPCAlly()) {
-				await Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
-			}
-		}
-	}
-
-	async addIncremental_attack(_ev: JQuery.ClickEvent) {
-		const target = "attack";
-		const current = this.actor.system.combat.classData.incremental[target];
-		const max = this.actor.maxIncrementalAdvancesInCategory(target);
-		if (current < max) {
-			await this.actor.update({
-				"system.combat.classData.incremental.attack" : current +1});
-			if (this.actor.isPC() || this.actor.isNPCAlly()) {
-				await Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
-			}
-		}
-	}
-	async addIncremental_defense(_ev: JQuery.ClickEvent) {
-		const target = "defense";
-		const current = this.actor.system.combat.classData.incremental[target];
-		const max = this.actor.maxIncrementalAdvancesInCategory(target);
-		if (current <max) {
-			await this.actor.update({
-				"system.combat.classData.incremental.defense" : current +1});
-			if (this.actor.isPC() || this.actor.isNPCAlly()) {
-				await Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
-			}
-		}
-	}
-	async addIncremental_initiative(_ev: JQuery.ClickEvent) {
-		const target = "initiative";
-		const current = this.actor.system.combat.classData.incremental[target];
-		const max = this.actor.maxIncrementalAdvancesInCategory(target);
-		if (current < max) {
-			await this.actor.update({
-				"system.combat.classData.incremental.initiative" : current +1});
-			if (this.actor.isPC() || this.actor.isNPCAlly()) {
-				await Logger.sendToChat(`${this.actor.name} took incremental for ${target} and raised it to ${current+1} from ${current}`, this.actor);
-			}
-		}
-	}
-
-	// async randomIncremental(_ev: JQuery.ClickEvent) {
-	// 	await this.actor.levelUp_Incremental();
-
-	// }
-
 	async levelUp(_event: Event) {
 		if (!game.user.isGM) {return;}
 		if (await HTMLTools.confirmBox("Level Up", "Level Up Character")) {
@@ -545,7 +456,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 		await persona.sheet.render(true);
 	}
-
 
 }
 
