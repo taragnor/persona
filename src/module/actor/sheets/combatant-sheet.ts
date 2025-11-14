@@ -62,7 +62,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".incremental-advance-block .attack .add").on("click", this.addIncremental_attack.bind(this));
 		html.find(".incremental-advance-block .defense .add").on("click", this.addIncremental_defense.bind(this));
 		html.find(".incremental-advance-block .initiative .add").on("click", this.addIncremental_initiative.bind(this));
-		html.find("button.random-incremental").on("click", this.randomIncremental.bind(this));
+		// html.find("button.random-incremental").on("click", this.randomIncremental.bind(this));
 		html.find(".powerName").on("mouseover", this.createDamageEstimate.bind(this));
 		html.find(".power-img").on("mouseover", this.createDamageEstimate.bind(this));
 		html.find("button.basic-power").on("mouseover", this.createDamageEstimate.bind(this));
@@ -419,10 +419,10 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 	}
 
-	async randomIncremental(_ev: JQuery.ClickEvent) {
-		await this.actor.levelUp_Incremental();
+	// async randomIncremental(_ev: JQuery.ClickEvent) {
+	// 	await this.actor.levelUp_Incremental();
 
-	}
+	// }
 
 	async levelUp(_event: Event) {
 		if (!game.user.isGM) {return;}

@@ -279,7 +279,7 @@ export class PersonaCombatStats {
 				.map( st => {
 					let weight = 1;
 					weight = favored.reduce( (acc, x)=> x == st ? acc * 1.5 : acc, weight);
-					weight = disfavored.reduce( (acc, x)=> x == st ? acc * 0.75 : acc, weight);
+					weight = disfavored.reduce( (acc, x)=> x == st ? acc * 0.666 : acc, weight);
 					return {
 						weight,
 						item: st

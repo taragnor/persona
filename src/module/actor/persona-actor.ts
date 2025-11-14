@@ -190,11 +190,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.system.personaleLevel;
 	}
 
-
 	mmpCalculation(this: ValidAttackers) {
 		if (this.isShadow()) {return new Calculation().eval();}
 		try {
-			// const lvlmaxMP = this.calcBaseClassMMP();
 			const lvlmaxMP = this.class.getClassMMP(this.level);
 			const x = new Calculation(lvlmaxMP);
 			const persona = this.persona();
@@ -3339,52 +3337,52 @@ async awardXP(this: ValidAttackers, amt: number) : Promise<XPGainReport[]> {
 	return possibleLevelUps.filter(x=> x != undefined);
 }
 
-async levelUp_Incremental(this: ValidAttackers) {
-	if (this.isPC()) {return;}
-	const incData = this.system.combat.classData.incremental;
-	const incrementals = Object.keys(incData) as (keyof typeof incData)[];
-	const filtered = incrementals.filter ((incChoice: keyof typeof incData)=> !this.isIncrementalMaxed(incChoice));
-	if (filtered.length > 0) {
-		const favored = this.system.combat.classData.favoredIncremental ?? "";
-		if (favored && filtered.includes(favored)) {
-			filtered.push(favored, favored, favored); // make the favored upgrade more likely;
-		}
-		const rng = new SeededRandom((this.tarot?.name ?? "UNKNOWN TAROT") + String(this.numOfIncAdvances()));
-		const result = rng.randomArraySelect(filtered);
-		if (!result) {
-			PersonaError.softFail("Can't find Incremental to Level, error with random Array selection");
-			return;
-		}
-		if ( typeof incData[result] == "boolean") {
-			//@ts-expect-error typescript had issues with this
-			incData[result] = true;
-		}
-		if (typeof incData[result] == "number") {
-			//@ts-expect-error typescript had issues with this
-			incData[result] = incData[result] +  1;
-		}
+//async levelUp_Incremental(this: ValidAttackers) {
+//	if (this.isPC()) {return;}
+//	const incData = this.system.combat.classData.incremental;
+//	const incrementals = Object.keys(incData) as (keyof typeof incData)[];
+//	const filtered = incrementals.filter ((incChoice: keyof typeof incData)=> !this.isIncrementalMaxed(incChoice));
+//	if (filtered.length > 0) {
+//		const favored = this.system.combat.classData.favoredIncremental ?? "";
+//		if (favored && filtered.includes(favored)) {
+//			filtered.push(favored, favored, favored); // make the favored upgrade more likely;
+//		}
+//		const rng = new SeededRandom((this.tarot?.name ?? "UNKNOWN TAROT") + String(this.numOfIncAdvances()));
+//		const result = rng.randomArraySelect(filtered);
+//		if (!result) {
+//			PersonaError.softFail("Can't find Incremental to Level, error with random Array selection");
+//			return;
+//		}
+//		if ( typeof incData[result] == "boolean") {
+//			//@ts-expect-error typescript had issues with this
+//			incData[result] = true;
+//		}
+//		if (typeof incData[result] == "number") {
+//			//@ts-expect-error typescript had issues with this
+//			incData[result] = incData[result] +  1;
+//		}
 
-		await this.update( {"system.combat.classData.incremental": incData});
-		const msg = `${this.name} upgraded ${result} to ${incData[result]}`;
-		console.log(msg);
-		if (this.hasPlayerOwner) {
-			await Logger.sendToChat(msg);
-		}
-	}
-}
+//		await this.update( {"system.combat.classData.incremental": incData});
+//		const msg = `${this.name} upgraded ${result} to ${incData[result]}`;
+//		console.log(msg);
+//		if (this.hasPlayerOwner) {
+//			await Logger.sendToChat(msg);
+//		}
+//	}
+//}
 
-isIncrementalMaxed( this: ValidAttackers,  incremental:  keyof ValidAttackers["system"]["combat"]["classData"]["incremental"]): boolean {
-	const incValue = this.system.combat.classData.incremental[incremental];
-	if (typeof incValue == "boolean") {return incValue;}
-	//@ts-expect-error foundrytypes doesn't handle this sort of schema reflection yet
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-	const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incremental] as {max ?: number};
-	if (x.max)
-	{return incValue >= x.max ;}
-	const msg = `Unknown Max incremental for ${incremental}`;
-	PersonaError.softFail(msg);
-	return true;
-}
+//isIncrementalMaxed( this: ValidAttackers,  incremental:  keyof ValidAttackers["system"]["combat"]["classData"]["incremental"]): boolean {
+//	const incValue = this.system.combat.classData.incremental[incremental];
+//	if (typeof incValue == "boolean") {return incValue;}
+//	//@ts-expect-error foundrytypes doesn't handle this sort of schema reflection yet
+//	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+//	const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incremental] as {max ?: number};
+//	if (x.max)
+//	{return incValue >= x.max ;}
+//	const msg = `Unknown Max incremental for ${incremental}`;
+//	PersonaError.softFail(msg);
+//	return true;
+//}
 
 XPValue(this: ValidAttackers) : number {
 	if (!this.isShadow()) {return 0;}
@@ -4182,16 +4180,6 @@ get treasureString() : SafeString {
 	return new Handlebars.SafeString(items.concat(cardName).join(", "));
 }
 
-static convertSlotToMP(slotLevel: number) {
-	switch (slotLevel) {
-		case 0: return 4;
-		case 1: return 8;
-		case 2: return 12;
-		case 3: return 24;
-		default: return 48;
-	}
-}
-
 get isTrueOwner() : boolean {
 	switch (this.system.type) {
 		case "tarot":
@@ -4202,6 +4190,13 @@ get isTrueOwner() : boolean {
 		case "pc":
 			return game.user.isGM || game.user.id == this.system.trueOwner;
 	}
+}
+
+get fusionCombinations() {
+	const arr = this.personaList
+		.concat(this.sideboardPersonas);
+	return FusionTable.fusionCombinations(arr);
+
 }
 
 getPrimaryPlayerOwner() : typeof game.users.contents[number] | undefined {
@@ -4217,6 +4212,13 @@ getPrimaryPlayerOwner() : typeof game.users.contents[number] | undefined {
 		});
 	if (!userIdPair) {return undefined;}
 	return game.users.get(userIdPair[0]);
+}
+
+get startingPowers() : Power[] {
+	if (!this.isShadow()) {return [];}
+	const startingLevel = this.system.personaConversion.startingLevel;
+	const learnedPowers = this.powerLearningListFull.filter( x=> x.level <= startingLevel);
+	return learnedPowers.map( x=> x.power);
 }
 
 getNPCAllyProxy(this: NPC) : U<NPCAlly> {

@@ -1,4 +1,5 @@
 import {Shadow} from "../module/actor/persona-actor.js";
+import {Persona} from "../module/persona-class.js";
 import {PersonaDB} from "../module/persona-db.js";
 import {TarotCard} from "./tarot.js";
 
@@ -616,14 +617,14 @@ export class FusionTable {
 		const targetLevel2 =  p2.system.personaConversion.startingLevel;
 		if (p1.tarot == p2.tarot) {
 			const targetLevel = Math.max(targetLevel1, targetLevel2);
-			return this.#downwardFusion(targetArcana, targetLevel, p1, p2);
+			return this.#downwardFusion(targetArcana, targetLevel);
 		} else {
 			const targetLevel = Math.floor((targetLevel1 + targetLevel2)/2);
 			return this.#upwardFusion(targetArcana, targetLevel);
 		}
 	}
 
-	static #downwardFusion(targetArcana: TarotCard, targetLevel : number, p1: Shadow, p2: Shadow) : U<Shadow> {
+	static #downwardFusion(targetArcana: TarotCard, targetLevel : number) : U<Shadow> {
 		const shadowList = this.fusionTargetsByLevel(targetArcana, 2, targetLevel-1);
 		if (!shadowList || shadowList.length == 0) {return undefined;}
 		shadowList.sort( (a,b)=> a.startingLevel - b.startingLevel);
@@ -641,27 +642,11 @@ export class FusionTable {
 	}
 
 	static #upwardFusion(targetArcana: TarotCard, targetLevel : number) : U<Shadow> {
-		// const shadowList = PersonaDB.PersonaableShadowsOfArcana(targetLevel,100)[targetArcana]
 		const shadowList = this.fusionTargetsByLevel(targetArcana, targetLevel, 100);
 		if (!shadowList || shadowList.length == 0) {return undefined;}
 		shadowList.sort( (a,b)=> a.system.personaConversion.startingLevel - b.system.personaConversion.startingLevel);
 		return shadowList.at(0);
 	}
-
-	// static fusionCombinationsForFull(fusionTarget: Shadow) : [Shadow, Shadow][] {
-	// const retList : [Shadow, Shadow][] = [];
-	// const possibles = PersonaDB.possiblePersonas()
-	// 	.filter (x=> x!= fusionTarget);
-	// for (let persona = possibles.pop(); persona != undefined; persona = possibles.pop()) {
-	// 	for (const p2 of possibles) {
-	// 		const fusion = FusionTable.fusionResult(persona, p2);
-	// 		if (fusion && fusion == fusionTarget) {
-	// 			retList.push([persona, p2]);
-	// 		}
-	// 	}
-	// }
-	// return retList;
-	// }
 
 	static fusionCombinationsFor(fusionTarget: Shadow, min=2, max= 999) : [Shadow, Shadow][] {
 		const retList : [Shadow, Shadow][] = [];
@@ -693,9 +678,43 @@ export class FusionTable {
 		return undefined;
 	}
 
+	private static numOfInheritedSkills(p1: Shadow, p2: Shadow, result: Shadow) : number {
+		const totalSkills = p1.mainPowers.length + p2.mainPowers.length;
+		const startingSkills = result.startingPowers.length;
+		const max = 8 - startingSkills;
+		const learnedMax = Math.max(1, Math.ceil(totalSkills/2) - startingSkills);
+		return Math.min(max, learnedMax);
+	}
 
-}
+	static fusionCombinations(personas: readonly Persona[]) : FusionCombination[] {
+		const possibles : Shadow[] = personas
+			.map( x=> x.source as Shadow)
+			.filter( x=> x.isShadow() && !x.isCustomPersona()) ;
+		const arr : FusionCombination[] = [];
+		for (let p1 = possibles.pop(); p1 != undefined; p1 = possibles.pop()) {
+			for (const p2 of possibles) {
+				const result = this.fusionResult(p1, p2);
+				if (!result) {continue;}
+				const inheritedSkills = this.numOfInheritedSkills(p1, p2, result);
+				arr.push( {
+					result,
+					components: [p1, p2],
+					inheritedSkills
+				});
+			}
+		}
+		return arr;
+	}
+
+}// end of class
 
 
 // @ts-expect-error adding to global state
 window.FusionTable = FusionTable;
+
+
+type FusionCombination = {
+	components: Shadow[],
+	result: Shadow,
+	inheritedSkills: number,
+}
