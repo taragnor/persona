@@ -709,7 +709,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		console.log(`Calling item Piles Stack Id on ${this.name} (${this.id})`);
 		const name = this.name;
 		const tags = this.tagList().map( x=> x instanceof PersonaItem ? x.name : x)
-		.join(", ");
+			.join(", ");
 		return `${name} (${tags})`;
 	}
 
@@ -1334,14 +1334,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					: x.source && x.source != this
 					? `${this.name} (${x.source.name})`
 					: this.name;
-					return {
-						name,
-						source: x.source,
-						owner: x.owner,
-						realSource: x.realSource,
-						conditions: ArrayCorrector(x.conditions),
-						modifier: ModifierList.getModifierAmount(x.consequences, bonusTypes),
-					};
+				return {
+					name,
+					source: x.source,
+					owner: x.owner,
+					realSource: x.realSource,
+					conditions: ArrayCorrector(x.conditions),
+					modifier: ModifierList.getModifierAmount(x.consequences, bonusTypes),
+				};
 			}
 			);
 	}
@@ -2091,8 +2091,8 @@ getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETyp
 	if (!CETypes || CETypes.length == 0) {
 		const effects = this.system.effects;
 		const effectsGetterFn = () => {
-	return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
-			.filter (ce => !ce.isEmbedded);
+			return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
+				.filter (ce => !ce.isEmbedded);
 		};
 		return this.#accessEffectsCache('allNonEmbeddedEffects', sourceActor, effectsGetterFn)
 			.concat(tagEffects);
@@ -2848,9 +2848,12 @@ canBecomeSkillCard(this: Power) : boolean {
 	return !this.hasTag("shadow-only") && !this.hasTag("non-inheritable");
 }
 
+canUseConsumable(this: Consumable, user: ValidAttackers) : boolean {
+	if (user.isShadow()) {return false;}
+	return true;
 }
 
-
+}
 
 /** Handlebars keeps turning my arrays inside an object into an object with numeric keys, this fixes that */
 export function ArrayCorrector<T>(obj: T[] | Record<string | number, T>): T[] {

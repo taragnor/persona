@@ -1585,182 +1585,187 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return null;
 	}
 
-	static async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, modifiers: ModifierList, rollType: AttackRollType) : Promise<AttackResult> {
-		const combat = game.combat as PersonaCombat | undefined;
-		const attackerPersona = attacker.actor.persona();
-		const targetPersona = target.actor.persona();
-		const rollTags: NonNullable<Situation['rollTags']> = ['attack'];
-		const activationRoll = rollType == 'activation';
-		if (activationRoll) {
-			rollTags.push('activation');
-		}
-		const baseSituation : Situation = {
-			target: target.actor.accessor,
-			usedPower: PersonaDB.getUniversalItemAccessor(usableOrCard),
-			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
-			rollTags,
-			attacker: attacker.actor.accessor,
-			activeCombat:combat ? Boolean(combat.combatants.find( x=> x.actor?.system.type != attacker.actor.system.type)): false ,
-		};
-		const cardReturn = await this.processSkillCard(attacker, usableOrCard, target, baseSituation);
-		if (cardReturn) {return cardReturn;}
-		const power = usableOrCard as Usable;
-		const element = power.getDamageType(attacker.actor);
-		const resist = targetPersona.elemResist(element);
-		const def = power.system.defense;
-		const r = await new Roll('1d20').roll();
-		if (activationRoll) {
-			const combat = game.combat as PersonaCombat;
-			if (combat && !combat.isSocial) {
-				combat.lastActivationRoll = r.total;
-			}
-		}
-		const attackbonus = this.getAttackBonus(attackerPersona, power, target, modifiers);
-		if (rollType == 'reflect' && (def == "fort" || def =="ref")) {
-			attackbonus.add(1, 15, 'Reflected Attack',"add");
-		}
-		const cssClass= (!target.actor.isPC()) ? 'gm-only' : '';
-		const roll = new RollBundle('Temp', r, attacker.actor.system.type == 'pc', attackbonus, baseSituation);
-		const naturalAttackRoll = roll.dice[0].total;
-		// situation.naturalRoll = naturalAttackRoll;
-		const defenseCalc = targetPersona.getDefense(def).eval(baseSituation);
-		const defenseVal = def != 'none' ? defenseCalc.total: 0;
-		const validDefModifiers = def != 'none' ? defenseCalc.steps: [];
-		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
-		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.targettedDefenseLocalized()} ${defenseStr}`;
-		roll.setName(rollName);
-		const baseData = {
-			roll,
-			attacker: PersonaDB.getUniversalTokenAccessor(attacker) ,
-			target: PersonaDB.getUniversalTokenAccessor(target),
-			power: PersonaDB.getUniversalItemAccessor(power)
-		} satisfies Pick<AttackResult, 'attacker' | 'target'  | 'power' | 'roll'>;
-		const total = roll.total;
-		const situation : CombatRollSituation = {
-			...baseSituation,
-			naturalRoll: naturalAttackRoll,
-			rollTags,
-			rollTotal: roll.total,
-			withinAilmentRange: false,
-		};
-		const testNullify = this.processAttackNullifiers(attacker, power, target, baseData, situation, rollType);
-		if (testNullify)  {
-			return testNullify;
-		}
-		const resolvedAttackMods = attackbonus.eval(situation);
-		const validAtkModifiers = resolvedAttackMods.steps;
-		const ailmentRange = this.#calculateAilmentRange(attackerPersona, targetPersona, power, baseSituation);
-		const instantDeathRange = this.#calculateInstantDeathRange(attackerPersona, targetPersona, power, baseSituation);
-		if (def == 'none') {
-			situation.hit = true;
-			return {
-				result: 'hit',
-				critBoost: 0,
-				// printableModifiers,
-				validAtkModifiers,
-				validDefModifiers: [],
-				situation,
-				ailmentRange,
-				instantKillRange: instantDeathRange,
-				...baseData,
-			} satisfies AttackResult;
-		}
-		situation.resisted = resist == 'resist' && !power.hasTag('pierce');
-		situation.struckWeakness = resist == 'weakness';
-		const critBoostMod = this.calcCritModifier(attacker.actor, target.actor, power, situation);
-		const rageOrBlind = attacker.actor.hasStatus('rage') || attacker.actor.hasStatus('blind');
-		const critMin = situation.resisted ? -999 : 0;
-		const critResolved = critBoostMod.eval(situation);
-		const critBoost = Math.clamp(critResolved.total, critMin, PersonaCombat.CRIT_MAX);
-		const critPrintable = critResolved.steps;
-		const autoHit = rollType == "reflect" && !power.isInstantDeathAttack() && !power.isAilment();
-		const Mod20 = naturalAttackRoll == 20 ? 3 : 0;
-		// const autoHit = naturalAttackRoll == 20;
-		if (!autoHit &&
-			(naturalAttackRoll == 1
-				|| (total+Mod20) < defenseVal
-				|| (rageOrBlind && naturalAttackRoll % 2 == 1)
-			)
-		) {
-			situation.hit = false;
-			situation.criticalHit = false;
-			return {
-				result: 'miss',
-				defenseValue: defenseVal,
-				hitWeakness: situation.struckWeakness ?? false,
-				hitResistance: situation.resisted ?? false,
-				// printableModifiers,
-				validAtkModifiers,
-				validDefModifiers,
-				ailmentRange,
-				instantKillRange: instantDeathRange,
-				critBoost,
-				critPrintable,
-				situation,
-				...baseData,
-			};
-		}
-		let withinInstantKillRange = false;
-		if (power.system.defense == "kill" && naturalAttackRoll > 5) {
-			withinInstantKillRange = true;
-		} else {
-			withinInstantKillRange = instantDeathRange ? naturalAttackRoll > 5 && naturalAttackRoll >= instantDeathRange.low && naturalAttackRoll <= instantDeathRange.high : false;
-		}
-		let withinAilmentRange = false;
-		if (power.system.defense == "ail") {
-			withinAilmentRange = true;
-		} else {
-			withinAilmentRange = ailmentRange ? naturalAttackRoll >= ailmentRange.low && naturalAttackRoll <= ailmentRange.high : false;
-		}
-		situation["withinAilmentRange"]= withinAilmentRange;
-		situation["withinInstantKillRange"] = withinInstantKillRange;
-		const canCrit = typeof rollType == 'number' || rollType == 'iterative' ? false : true;
-		const cancelCritsForInstantDeath = false;
-		if (naturalAttackRoll + critBoost >= 20
-			&& total >= defenseVal
-			&& (!power.isMultiTarget() || naturalAttackRoll % 2 == 0)
-			&& !target.actor.hasStatus('blocking')
-			&& !power.hasTag('no-crit')
-			&& canCrit
-			&& !cancelCritsForInstantDeath
-		) {
-			situation.hit = true;
-			situation.criticalHit  = true;
-			return {
-				result: 'crit',
-				defenseValue: defenseVal,
-				hitWeakness: situation.struckWeakness ?? false,
-				hitResistance: situation.resisted ?? false,
-				validAtkModifiers,
-				validDefModifiers,
-				ailmentRange,
-				instantKillRange: instantDeathRange,
-				// printableModifiers,
-				critBoost,
-				critPrintable,
-				situation,
-				...baseData,
-			};
-		} else {
-			situation.hit = true;
-			situation.criticalHit = false;
-			return {
-				result: 'hit',
-				defenseValue: defenseVal,
-				hitWeakness: situation.struckWeakness ?? false,
-				hitResistance: situation.resisted ?? false,
-				validAtkModifiers,
-				ailmentRange,
-				instantKillRange: instantDeathRange,
-				validDefModifiers,
-				// printableModifiers,
-				critBoost,
-				critPrintable,
-				situation,
-				...baseData,
-			};
+static async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, modifiers: ModifierList, rollType: AttackRollType) : Promise<AttackResult> {
+	const combat = game.combat as PersonaCombat | undefined;
+	const attackerPersona = attacker.actor.persona();
+	const targetPersona = target.actor.persona();
+	const rollTags: NonNullable<Situation['rollTags']> = ['attack'];
+	const activationRoll = rollType == 'activation';
+	if (activationRoll) {
+		rollTags.push('activation');
+	}
+	const baseSituation : Situation = {
+		target: target.actor.accessor,
+		usedPower: PersonaDB.getUniversalItemAccessor(usableOrCard),
+		user: PersonaDB.getUniversalActorAccessor(attacker.actor),
+		rollTags,
+		attacker: attacker.actor.accessor,
+		activeCombat:combat ? Boolean(combat.combatants.find( x=> x.actor?.system.type != attacker.actor.system.type)): false ,
+	};
+	const cardReturn = await this.processSkillCard(attacker, usableOrCard, target, baseSituation);
+	if (cardReturn) {return cardReturn;}
+	const power = usableOrCard as Usable;
+	const element = power.getDamageType(attacker.actor);
+	const resist = targetPersona.elemResist(element);
+	const def = power.system.defense;
+	const r = await new Roll('1d20').roll();
+	if (activationRoll) {
+		const combat = game.combat as PersonaCombat;
+		if (combat && !combat.isSocial) {
+			combat.lastActivationRoll = r.total;
 		}
 	}
+	const attackbonus = this.getAttackBonus(attackerPersona, power, target, modifiers);
+	if (rollType == 'reflect' && (def == "fort" || def =="ref")) {
+		attackbonus.add(1, 15, 'Reflected Attack',"add");
+	}
+	const cssClass= (!target.actor.isPC()) ? 'gm-only' : '';
+	const roll = new RollBundle('Temp', r, attacker.actor.system.type == 'pc', attackbonus, baseSituation);
+	const naturalAttackRoll = roll.dice[0].total;
+	// situation.naturalRoll = naturalAttackRoll;
+	const defenseCalc = targetPersona.getDefense(def).eval(baseSituation);
+	const defenseVal = def != 'none' ? defenseCalc.total: 0;
+	const validDefModifiers = def != 'none' ? defenseCalc.steps: [];
+	const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
+	const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.targettedDefenseLocalized()} ${defenseStr}`;
+	roll.setName(rollName);
+	const baseData = {
+		roll,
+		attacker: PersonaDB.getUniversalTokenAccessor(attacker) ,
+		target: PersonaDB.getUniversalTokenAccessor(target),
+		power: PersonaDB.getUniversalItemAccessor(power)
+	} satisfies Pick<AttackResult, 'attacker' | 'target'  | 'power' | 'roll'>;
+	const total = roll.total;
+	const situation : CombatRollSituation = {
+		...baseSituation,
+		naturalRoll: naturalAttackRoll,
+		rollTags,
+		rollTotal: roll.total,
+		withinAilmentRange: false,
+	};
+	const testNullify = this.processAttackNullifiers(attacker, power, target, baseData, situation, rollType);
+	if (testNullify)  {
+		return testNullify;
+	}
+	const resolvedAttackMods = attackbonus.eval(situation);
+	const validAtkModifiers = resolvedAttackMods.steps;
+	const ailmentRange = this.#calculateAilmentRange(attackerPersona, targetPersona, power, baseSituation);
+	const instantDeathRange = this.#calculateInstantDeathRange(attackerPersona, targetPersona, power, baseSituation);
+	if (def == 'none') {
+		situation.hit = true;
+		return {
+			result: 'hit',
+			critBoost: 0,
+			// printableModifiers,
+			validAtkModifiers,
+			validDefModifiers: [],
+			situation,
+			ailmentRange,
+			instantKillRange: instantDeathRange,
+			...baseData,
+		} satisfies AttackResult;
+	}
+	situation.resisted = resist == 'resist' && !power.hasTag('pierce');
+	situation.struckWeakness = resist == 'weakness';
+	const critBoostMod = this.calcCritModifier(attacker.actor, target.actor, power, situation);
+	const rageOrBlind = attacker.actor.hasStatus('rage') || attacker.actor.hasStatus('blind');
+	const critMin = situation.resisted ? -999 : 0;
+	const critResolved = critBoostMod.eval(situation);
+	const critBoost = Math.clamp(critResolved.total, critMin, PersonaCombat.CRIT_MAX);
+	const critPrintable = critResolved.steps;
+	const autoHit = rollType == "reflect" && !power.isInstantDeathAttack() && !power.isAilment();
+	const Mod20 = naturalAttackRoll == 20 ? 3 : 0;
+	// const autoHit = naturalAttackRoll == 20;
+	if (!autoHit &&
+		(naturalAttackRoll == 1
+			|| (total+Mod20) < defenseVal
+			|| (rageOrBlind && naturalAttackRoll % 2 == 1)
+		)
+	) {
+		situation.hit = false;
+		situation.criticalHit = false;
+		return {
+			result: 'miss',
+			defenseValue: defenseVal,
+			hitWeakness: situation.struckWeakness ?? false,
+			hitResistance: situation.resisted ?? false,
+			// printableModifiers,
+			validAtkModifiers,
+			validDefModifiers,
+			ailmentRange,
+			instantKillRange: instantDeathRange,
+			critBoost,
+			critPrintable,
+			situation,
+			...baseData,
+		};
+	}
+	let withinInstantKillRange = false;
+	if (power.system.defense == "kill" && naturalAttackRoll > 5) {
+		withinInstantKillRange = true;
+	} else {
+		const IKDefense = targetPersona.getDefense("kill").eval(situation).total;
+		if (instantDeathRange) {
+			withinInstantKillRange = naturalAttackRoll > 5
+				&& this.withinRange(naturalAttackRoll, instantDeathRange)
+				&& total > IKDefense;
+		}
+	}
+	let withinAilmentRange = false;
+	if (power.system.defense == "ail") {
+		withinAilmentRange = true;
+	} else {
+		withinAilmentRange = this.withinRange(naturalAttackRoll, ailmentRange);
+	}
+	situation["withinAilmentRange"]= withinAilmentRange;
+	situation["withinInstantKillRange"] = withinInstantKillRange;
+	const canCrit = typeof rollType == 'number' || rollType == 'iterative' ? false : true;
+	const cancelCritsForInstantDeath = false;
+	if (naturalAttackRoll + critBoost >= 20
+		&& total >= defenseVal
+		&& (!power.isMultiTarget() || naturalAttackRoll % 2 == 0)
+		&& !target.actor.hasStatus('blocking')
+		&& !power.hasTag('no-crit')
+		&& canCrit
+		&& !cancelCritsForInstantDeath
+	) {
+		situation.hit = true;
+		situation.criticalHit  = true;
+		return {
+			result: 'crit',
+			defenseValue: defenseVal,
+			hitWeakness: situation.struckWeakness ?? false,
+			hitResistance: situation.resisted ?? false,
+			validAtkModifiers,
+			validDefModifiers,
+			ailmentRange,
+			instantKillRange: instantDeathRange,
+			// printableModifiers,
+			critBoost,
+			critPrintable,
+			situation,
+			...baseData,
+		};
+	} else {
+		situation.hit = true;
+		situation.criticalHit = false;
+		return {
+			result: 'hit',
+			defenseValue: defenseVal,
+			hitWeakness: situation.struckWeakness ?? false,
+			hitResistance: situation.resisted ?? false,
+			validAtkModifiers,
+			ailmentRange,
+			instantKillRange: instantDeathRange,
+			validDefModifiers,
+			// printableModifiers,
+			critBoost,
+			critPrintable,
+			situation,
+			...baseData,
+		};
+	}
+}
 
 	static #calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) : U<{low: number, high:number}> {
 		const ailmentMods =
@@ -1783,10 +1788,17 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return ailmentRange;
 	}
 
+private static withinRange(num: number, range: U<{low: number, high: number}>) : boolean {
+	if (range == undefined) {return false;}
+	return num >= range.low
+		&& num <= range.high;
+
+}
+
 	static #calculateInstantDeathRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) : U<{low: number, high:number}> {
 		if (!power.isInstantDeathAttack()) {return undefined
 			;}
-		if (!power.canDealDamage()) {return {low: -10, high: 30};}
+		if (!power.canDealDamage()) {return {low: 5, high: 99};}
 		const instantDeathMods =
 			attackerPersona.getBonuses('instantDeathRange');
 		const killDefense =
@@ -1805,6 +1817,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const deathRange = power.instantDeathRange;
 		if (deathRange) {
 			deathRange.low -= total;
+			deathRange.low = Math.max(deathRange.low, 5);
+			if (deathRange.high - deathRange.low <= 0) {
+				return undefined;
+			}
 		}
 		return deathRange;
 	}

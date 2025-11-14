@@ -809,6 +809,20 @@ hpCostMod() : ModifierList {
 
 canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
 	const user = this.user;
+	if (usable.isConsumable() && !usable.canUseConsumable(this.user)) {
+		if (outputReason) {
+			ui.notifications.warn("You don't meet the conditions to use this consumable");
+		}
+		return false;
+	}
+	if (usable.hasTag("downtime") || usable.hasTag("downtime-minor")) {
+		if (!game.combat || !(game.combat as PersonaCombat).isSocial) {
+		if (outputReason) {
+			ui.notifications.warn("Can only use this item during downtime in social rounds");
+		}
+			return false;
+		}
+	}
 	if (usable.isPower() && this.highestPowerSlotUsable() < usable.system.slot) {
 		if (outputReason) {
 			ui.notifications.warn("Power is too advanced for you to use");

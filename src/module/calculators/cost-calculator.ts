@@ -1,5 +1,9 @@
+import {Consequence, NonDeprecatedConsequence} from "../../config/consequence-types.js";
 import {DamageType} from "../../config/damage-types.js";
+import {StatusEffectId} from "../../config/status-effects.js";
+import {StatusDuration} from "../active-effect.js";
 import {InstantKillLevel} from "../combat/damage-calc.js";
+import {Power} from "../item/persona-item.js";
 export abstract class CostCalculator {
 
 	static combineModifiers (this: void, mods: CostModifier[]) : number {
@@ -13,6 +17,34 @@ export abstract class CostCalculator {
 			return a;
 		}, base);
 		return subtotal.add * subtotal.mult;
+	}
+
+	static durationFactor(pwr: Power, st: StatusEffectId): number | StatusDuration["dtype"] {
+		for (const eff of pwr.getEffects(null)) {
+			const statusAdd=  eff.consequences
+				.find( cons=> cons.type == "addStatus" && cons.statusName == st) as (NonDeprecatedConsequence & {type : "addStatus"});
+			if (!statusAdd) {continue;}
+			switch (statusAdd.statusDuration) {
+				case "X-rounds":
+					return statusAdd.amount ?? 3;
+				case "3-rounds":
+						return 3;
+				case "UEoT":
+				case "UEoNT":
+				case "USoNT":
+					return 1;
+				case "save-normal":
+				case "save-easy":
+				case "save-hard":
+				case "presave-easy":
+				case "presave-normal":
+				case "presave-hard":
+					return "save";
+				default:
+					return statusAdd.statusDuration;
+			}
+		}
+		return 0;
 	}
 
 	/**generate a simple multiplier only*/

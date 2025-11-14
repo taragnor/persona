@@ -410,8 +410,8 @@ const DAMAGE_LEVEL_CONVERT_WEAPON = {
 	"light": {extraVariance: 1, baseAmt: 10},
 	"medium": {extraVariance: 2, baseAmt: 25},
 	"heavy": {extraVariance: 2, baseAmt: 50},
-	"severe": {extraVariance: 3, baseAmt: 85},
-	"colossal": {extraVariance: 3, baseAmt: 130},
+	"severe": {extraVariance: 3, baseAmt: 90},
+	"colossal": {extraVariance: 3, baseAmt: 140},
 } as const satisfies Readonly<Record<ConvertableDamageLevel, NewDamageParams>> ;
 
 
@@ -422,8 +422,8 @@ const DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE = {
 	"light": {extraVariance: 1, baseAmt: 10},
 	"medium": {extraVariance: 2, baseAmt: 30},
 	"heavy": {extraVariance: 2, baseAmt: 60},
-	"severe": {extraVariance: 3, baseAmt: 90},
-	"colossal": {extraVariance: 3, baseAmt: 130},
+	"severe": {extraVariance: 3, baseAmt: 95},
+	"colossal": {extraVariance: 3, baseAmt: 140},
 } as const satisfies Readonly<Record< ConvertableDamageLevel, NewDamageParams>>;
 
 type ConvertableDamageLevel = Exclude<DamageLevel, "-" | "fixed">;

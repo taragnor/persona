@@ -1025,7 +1025,7 @@
 	"persona.creatureType.card-soldier": "Card Soldier",
 	"persona.creatureType.rat": "Nezumi",
 	"persona.creatureType.npc": "NPC",
-	"persona.creatureType.metaverse-user": "Metaverse Users",
+	"persona.creatureType.enemy-metaverse-user": "Metaverse User",
 	"persona.creatureType.daemon": "Daemon",
 	"persona.creatureType.shadow": "Shadow",
 	"persona.creatureType.true-demon": "True Demon",

@@ -12,6 +12,7 @@ export class MPCostCalculator extends CostCalculator {
 			this.mpCost_buffOrDebuff(pwr),
 			this.mpCost_ailment(pwr),
 			this.mpCost_dekaja(pwr),
+			this.mpcost_shields(pwr),
 			// this.statusRemoval(pwr),
 			this.#mpCost_tags(pwr),
 			this.mpCost_multiattack(pwr),
@@ -88,6 +89,18 @@ export class MPCostCalculator extends CostCalculator {
 		return this.i(baseCost);
 	}
 
+	static mpcost_shields(pwr: Power) : CostModifier {
+		const shields= pwr.addsStatus(["magic-shield", "phys-shield"]);
+		if (shields < 1) {return this.i(0);}
+		const duration = this.durationFactor(pwr, "magic-shield") || this.durationFactor(pwr, "phys-shield");
+		const durationFactor = typeof duration == "number" ? duration : 1.5;
+		let baseCost = (shields > 2 ? 1.5 : 1) * 24 * Math.min(1.5, durationFactor);
+		if (pwr.isAoE()) {
+			baseCost *= 2.75;
+		}
+		return this.i(baseCost);
+	}
+
 	static mpCost_instantKill(pwr: Power): CostModifier {
 		if (!pwr.canInstantKill()) {return this.i(0);}
 		const mult = this.INSTANT_KILL_LEVELS_MULT[pwr.system.instantKillChance];
@@ -132,8 +145,8 @@ export class MPCostCalculator extends CostCalculator {
 		"half-on-miss": 1.1,
 		"pierce": 1.5,
 		"high-crit":1.25,
-		"accurate": 1.10,
-		"inaccurate": 0.90,
+		"accurate": 1.15,
+		"inaccurate": 0.80,
 	};
 
 	static DAMAGE_LEVEL_MULTIPLIERS_MP : Record<DamageLevel, number>  = {

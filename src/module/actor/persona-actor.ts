@@ -4226,6 +4226,9 @@ getNPCAllyProxy(this: NPC) : U<NPCAlly> {
 }
 
 async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: number) : Promise<void> {
+	if (amt <= 0) {
+		PersonaError.softFail(`Negative amount for perma buff for ${this.name}`);
+		return;}
 	if (this.isNPC()) {
 		const proxyAlly = this.getNPCAllyProxy();
 		if (!proxyAlly) {return;}
@@ -4247,11 +4250,13 @@ async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: num
 		case "mag":
 		case "end":
 		case "agi":
-		case "luk": { const persona = this.persona();
+		case "luk": {
+			const persona = this.persona();
 			if (persona.source != this) {
 				return await persona.source.addPermaBuff(buffType, amt);
 			}
 			const bonuses = this.system.combat.personaStats.permanentStatsBonuses;
+			if (this.hasSoloPersona) {amt = Math.min(1, amt / 2);}
 			bonuses[buffType] += amt;
 			await this.update({ "system.combat.personaStats.permanentStatBonuses": bonuses});
 		}

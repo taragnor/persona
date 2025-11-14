@@ -103,8 +103,18 @@ export class EnergyClassCalculator extends CostCalculator {
 
 	static #energyLevel_instantKill(pwr: Power) : EnergyCostBase {
 		if (!pwr.isInstantDeathAttack()) {return this.NULL_COST;}
-		const cost = this.INSTANT_KILL_LEVELS_ENERGY_COST[pwr.system.instantKillChance];
-		return new EnergyCostBase(cost, cost);
+		if (!pwr.canDealDamage()) {
+			const cost = this.INSTANT_KILL_LEVELS_ENERGY_COST[pwr.system.instantKillChance];
+			return new EnergyCostBase(cost, cost);
+		}
+		switch (pwr.system.instantKillChance) {
+			case "none": return this.NULL_COST;
+			case "medium": return new EnergyCostBase(24,24);
+			case "low": return new EnergyCostBase(10 ,10);
+			case "high": return new EnergyCostBase(40 ,40);
+			case "always": return new EnergyCostBase(60 ,60);
+		}
+
 	}
 
 	static #energyLevel_buffOrDebuff(pwr: Power) : EnergyCostBase {
