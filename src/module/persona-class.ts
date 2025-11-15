@@ -784,13 +784,13 @@ instantDeathAtkBonus() : Calculation {
 	return deathAtk.add(1, mods, "Mods", "add");
 }
 
-ailmentAtkBonus() :Calculation {
+ailmentAtkBonus() : Calculation {
 	const mods = this.getBonuses("afflictionRange");
 	const ailAtk = this.combatStats.baseAilmentAtkBonus();
 	return ailAtk.add(1, mods, "Mods", "add");
 }
 
-itemAtkBonus(item :Consumable) : Calculation {
+itemAtkBonus(item : Consumable) : Calculation {
 	const calc=new Calculation();
 	const mods = this.getBonuses(["itemAtk", "allAtk"]);
 	return calc
