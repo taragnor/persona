@@ -455,13 +455,24 @@ export class PersonaSocial {
 	}
 
 	static lookupActivity(actor: PC, activityId: string): ActivityLink {
-		const link = actor.activityLinks.find( x=> x.activity.id == activityId);
-		if (!link) {throw new PersonaError(`Can't find activity: ${activityId}`);}
-		return link;
+		const link = actor.activityLinks.find( x=> x.activity.id == activityId); 
+		if (!link) {
+			const minorLink=  actor.downtimeMinorActions.find(x=> x.isSocialCard() && x.id == activityId) as SocialCard;
+			if (!minorLink) {
+				throw new PersonaError(`Can't find activity: ${activityId}`);
+			}
+			return {
+				strikes: 0,
+				available: true,
+				activity: minorLink,
+				currentProgress: 0,
+			} satisfies ActivityLink;
+		}
+	return link;
 	}
 
 	static lookupSocialLink(actor: PC, linkId: string) :SocialLinkData {
-		const link= actor.socialLinks.find(link => link.actor.id == linkId);
+		const link = actor.socialLinks.find(link => link.actor.id == linkId);
 		if (!link)
 		{throw new PersonaError(`Can't find link ${linkId}`);}
 		return link;

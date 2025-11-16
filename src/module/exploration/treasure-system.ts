@@ -57,8 +57,8 @@ export class TreasureSystem {
 	static convertRollToTreasureTable(rollValue: number) : Exclude<TreasureTable, "none"> {
 		const die = rollValue;
 		switch (true) {
-			case die < 50: return "trinkets";
-			case die < 75: return "lesser";
+			case die < 60: return "trinkets";
+			case die < 80: return "lesser";
 			case die < 100: return "greater";
 			case die >= 100: return "royal";
 			default: {

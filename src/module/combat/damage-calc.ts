@@ -445,9 +445,9 @@ export const INSTANT_KILL_LEVELS = HTMLTools.createLocalizationObject( INSTANT_K
 
 export const INSTANT_KILL_CRIT_BOOST : Record< InstantKillLevel, number>= {
 	none: 0,
-	high: 11,
-	low: 5,
-	medium: 8,
+	high: 9,
+	low: 3,
+	medium: 5,
 	always: 1000,
 };
 

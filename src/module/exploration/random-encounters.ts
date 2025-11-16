@@ -474,9 +474,9 @@ static async PlayerNotifyChatMsg(encounter : Encounter)  {
 		switch (true) {
 			case pick.hasRole("minion"):
 				return Math.floor(Math.random() * 3 + 3);
-			case pick.hasRole("duo"): return 2;
+			case pick.hasRole("duo"): return 1;
 			case pick.hasRole("solo"): return 1;
-			case pick.hasRole("elite"): return Math.floor(Math.random() * 2 + 2);
+			case pick.hasRole("elite"): return 1;
 			case pick.hasRole(["soldier", "artillery", "tank", "brute", "assassin"]): return Math.floor(Math.random() * 3 + 1);
 			case pick.hasRole("controller"):
 			case pick.hasRole("treasure-shadow"):

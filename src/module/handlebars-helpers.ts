@@ -911,7 +911,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"hasMultiplePersonas": function (actor: PersonaActor) : boolean {
-			return actor.maxPersonas > 1;
+			return !actor.hasSoloPersona;
 		},
 
 		"PersonaListContainsBasePersona": function (actor: PersonaActor): boolean {

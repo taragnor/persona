@@ -832,9 +832,9 @@ canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
 	if (!this.user.isAlive() && !usable.hasTag("usable-while-dead")) {return false;}
 	if (!usable.isTrulyUsable()) {return false;}
 
-	if (user.hasStatus("rage") && usable != PersonaDB.getBasicPower("Basic Attack")) {
+	if (user.hasStatus("rage") && usable.id != PersonaDB.getBasicPower("Basic Attack")?.id) {
 		if (outputReason) {
-			ui.notifications.warn("Can't only use basic attacks when raging");
+			ui.notifications.warn("Can only use basic attacks when raging");
 		}
 		return false;
 	}

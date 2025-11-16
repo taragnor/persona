@@ -251,7 +251,6 @@ type VotingDataDef<Choices extends string>  =
 
 
 type VotingDataDefPart<T extends string> = VotingDataDef<T>[keyof VotingDataDef<T>]
-// type r= VotingDataDefPart<"hello" | "goodbye">;
 
 export class VotingDialog<Choices extends string> {
 	_dialog : SharedDialog<VotingDataDef<Choices>>;
@@ -282,7 +281,7 @@ export class VotingDialog<Choices extends string> {
 		const dialogRet = await this._dialog.open( x=> {
 			const totalVoters= Object.values(x).length;
 			const votes = Object.values(x).reduce<Map<string, number>>( (map, v) => {
-				if (v == "undecided") {return map;}
+				if (!v || v == "undecided") {return map;}
 				const val = map.get(v) ?? 0;
 				map.set(v, val+1);
 				return map;
