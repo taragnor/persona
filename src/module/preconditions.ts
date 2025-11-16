@@ -204,7 +204,7 @@ function numericComparison(condition: SourcedPrecondition, situation: Situation)
 				if (element == "healing" || element == "untyped" || element == "all-out" || element =="none" ) {return false;}
 			}
 			if (subject.system.type == "npc") {return false;}
-			const targetResist = subject.system.combat.resists[element] ?? "normal";
+			const targetResist = subject.persona().resists[element]?? "normal";
 			target = RESIST_STRENGTH_LIST.indexOf(targetResist);
 			break;
 		}

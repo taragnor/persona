@@ -353,10 +353,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		if (!source.isShadow()) {return false;}
 		if (!source.tarot || source.tarot.name.length == 0) { return false; }
 		if (source.level <= 0) {return false;}
-		if (source.prototypeToken.actorLink == true) {return false;}
 		// if (source.system.creatureType == "daemon") {return false;}
 		if (this.isPersona()) {return true;}
 		if (this.isDMon()) {return true;}
+		if (source.prototypeToken.actorLink == true) {return false;}
 		return this.isEligibleToBecomeDMon();
 	}
 
