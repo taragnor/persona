@@ -312,7 +312,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	PCs() : readonly PC[] {
 		if (this.#cache.pcs) {return this.#cache.pcs;}
-		this.#cache.pcs=  this.allActors().filter( actor => actor.isPC() && actor.hasPlayerOwner) as PC[];
+		this.#cache.pcs=  this.allActors().filter( actor => actor.isPC() && actor.isRealPC()) as PC[];
 		return this.#cache.pcs;
 	}
 

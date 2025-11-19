@@ -361,7 +361,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!power) {return;}
 		const persona = this.actor.persona();
 		const damage = await CombatantSheetBase.getDamage(persona, power as Power);
-			const html = await foundry.applications.handlebars.renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona(), damage});
+		const balanceReport = await this.getBalanceTest(power as Usable);
+			const html = await foundry.applications.handlebars.renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona(), damage, balanceReport});
 			$(ev.currentTarget).prop('title', html);
 		}
 
@@ -453,6 +454,17 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		await persona.sheet.render(true);
 	}
 
+async getBalanceTest(power: Usable) : Promise<U<string>> {
+	const actor = this.actor;
+	if (actor.isShadow() && !actor.hasPlayerOwner && !actor.isPersona() && !actor.isDMon()) {
+		const token = game.scenes.current.tokens.find( x=> x.actor == actor);
+		if (!token) {return "No token to test balance";}
+		const test = await PersonaCombat.testPowerVersusPCs(token as PToken, power);
+		return test
+			.join(", ");
+	}
+	return undefined;
 }
 
+}
 

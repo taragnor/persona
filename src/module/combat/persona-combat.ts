@@ -49,6 +49,7 @@ import {Defense} from '../../config/defense-types.js';
 import {getActiveConsequences} from '../preconditions.js';
 import {ModifierTarget} from '../../config/item-modifiers.js';
 import {Calculation} from '../utility/calculation.js';
+import {FinalizedCombatResult} from './finalized-combat-result.js';
 
 declare global {
 	interface SocketMessage {
@@ -70,7 +71,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	// engagedList: Combatant<PersonaActor>[][] = [];
 	static CRIT_MAX = 10 as const;
 	_engagedList: EngagementList;
-	static customAtkBonus: number;
+	static customAtkBonus: number = 0;
 	consecutiveCombat: number =0;
 	defeatedFoes : ValidAttackers[] = [];
 	lastActivationRoll: number;
@@ -1203,41 +1204,46 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return true;
 	}
 
-	static async usePower(attacker: PToken, power: UsableAndCard, presetTargets ?: PToken[] ) : Promise<CombatResult> {
-		if (attacker instanceof Token) {
-			throw new Error('Actual token found instead of token document');
+static async usePower(attacker: PToken, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) : Promise<FinalizedCombatResult> {
+	if (attacker instanceof Token) {
+		throw new Error('Actual token found instead of token document');
+	}
+	if (!options.ignorePrereqs && !await this.checkPowerPreqs(attacker, power)) {
+		return new CombatResult().finalize();
+	}
+	try {
+		const targets = presetTargets ? presetTargets :  this.getTargets(attacker, power);
+		if (!power.isSkillCard() && targets.some( target => target.actor.system.type == 'shadow' ) && (power).system.targets != 'self' ) {
+			this.ensureCombatExists();
 		}
-		if (!await this.checkPowerPreqs(attacker, power)) {
-			return new CombatResult();
-		}
-		try {
-			const targets = presetTargets ? presetTargets :  this.getTargets(attacker, power);
-			if (!power.isSkillCard() && targets.some( target => target.actor.system.type == 'shadow' ) && (power).system.targets != 'self' ) {
-				this.ensureCombatExists();
-			}
+		if (options.askForModifier) {
 			this.customAtkBonus = await HTMLTools.getNumber('Attack Modifier');
-			const result = new CombatResult();
-			await PersonaSFX.onUsePower(power);
-			result.merge(await this.usePowerOn(attacker, power, targets, 'standard'));
-			const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
-			result.merge(costs);
-			const finalizedResult = result.finalize();
-			if (!power.isOpener())  {
-				await attacker.actor.expendAction();
-			}
-			await attacker.actor.removeStatus('baton-pass');
-			await finalizedResult.toMessage(power.name, attacker.actor);
-			await sleep(750); //allopw bonus action statuses and such to be placed;
-			await this.postActionCleanup(attacker, result);
-			return result;
-		} catch(e) {
-			if (e instanceof CanceledDialgogError) {
-				throw e;
-			}
-			console.log(e);
+		} else {
+			this.customAtkBonus = 0;
+		}
+		const result = new CombatResult();
+		if (!options.simulated) { await PersonaSFX.onUsePower(power);}
+		result.merge(await this.usePowerOn(attacker, power, targets, 'standard', options));
+		const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
+		result.merge(costs);
+		const finalizedResult = result.finalize();
+		if (options.simulated) { return finalizedResult;}
+		if (!power.isOpener())  {
+			await attacker.actor.expendAction();
+		}
+		await attacker.actor.removeStatus('baton-pass');
+		await finalizedResult.toMessage(power.name, attacker.actor);
+		await sleep(750); //allopw bonus action statuses and such to be placed;
+		await this.postActionCleanup(attacker, result);
+		return finalizedResult;
+	} catch(e) {
+		if (e instanceof CanceledDialgogError) {
 			throw e;
 		}
+		console.log(e);
+		throw e;
 	}
+}
 
 	static async postActionCleanup(attacker: PToken, result: CombatResult ) {
 		await this.afterActionTriggered(attacker, result);
@@ -1383,7 +1389,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return CR;
 	}
 
-	static async usePowerOn(attacker: PToken, power: UsableAndCard, targets: PToken[], rollType : AttackRollType, modifiers: ModifierList = new ModifierList()) : Promise<CombatResult> {
+	static async usePowerOn(attacker: PToken, power: UsableAndCard, targets: PToken[], rollType : AttackRollType, options: CombatOptions = {}, modifiers: ModifierList = new ModifierList()) : Promise<CombatResult> {
 		let i = 0;
 		const result = new CombatResult();
 		for (const target of targets) {
@@ -1395,7 +1401,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			}
 			for (let atkNum = 0; atkNum < num_of_attacks; atkNum++) {
 				rollType = atkNum > 0 ? 'iterative': rollType;
-				const atkResult = await this.processAttackRoll( attacker, power, target, modifiers, rollType == 'standard' && i==0 ? 'activation' : rollType);
+				const atkResult = await this.processAttackRoll( attacker, power, target, modifiers, rollType == 'standard' && i==0 ? 'activation' : rollType, options);
 				const this_result = await this.processEffects(atkResult);
 				result.merge(this_result);
 				if (atkResult.result == 'reflect') {
@@ -1411,7 +1417,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 						mods.add('Iterative Penalty', (bonusRollType + 1) * extraAttack.iterativePenalty);
 					}
 					if (bonusRollType < extraAttack.maxChain) {
-						const extra = await this.usePowerOn(attacker, power, [target], bonusRollType, mods);
+						const extra = await this.usePowerOn(attacker, power, [target], bonusRollType, options, mods);
 						result.merge(extra);
 					}
 				}
@@ -1423,7 +1429,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					if (execPower && newAttacker) {
 						const altTargets= this.getAltTargets(newAttacker, atkResult.situation, usePower.target );
 						const newTargets = this.getTargets(newAttacker, execPower, altTargets);
-						const extraPower = await this.usePowerOn(newAttacker, execPower, newTargets, 'standard');
+						const extraPower = await this.usePowerOn(newAttacker, execPower, newTargets, 'standard', options);
 						result.merge(extraPower);
 					}
 				}
@@ -1585,7 +1591,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return null;
 	}
 
-static async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, modifiers: ModifierList, rollType: AttackRollType) : Promise<AttackResult> {
+static async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, modifiers: ModifierList, rollType: AttackRollType, options: CombatOptions = {}) : Promise<AttackResult> {
 	const combat = game.combat as PersonaCombat | undefined;
 	const attackerPersona = attacker.actor.persona();
 	const targetPersona = target.actor.persona();
@@ -1608,7 +1614,7 @@ static async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, t
 	const element = power.getDamageType(attacker.actor);
 	const resist = targetPersona.elemResist(element);
 	const def = power.system.defense;
-	const r = await new Roll('1d20').roll();
+	const r = await (options.setRoll ? new Roll(`0d1+${options.setRoll}`).roll():  new Roll('1d20').roll());
 	if (activationRoll) {
 		const combat = game.combat as PersonaCombat;
 		if (combat && !combat.isSocial) {
@@ -1777,10 +1783,10 @@ static async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, t
 		calc.add(1, ailmentMods, "mods", "add");
 		const calcResolved = calc.eval(situation);
 		const total = calcResolved.total;
-		// if (PersonaSettings.debugMode()) {
+		if (PersonaSettings.debugMode()) {
 			const steps = calcResolved.steps;
 			console.debug(steps);
-		// }
+		}
 		const ailmentRange = power.ailmentRange;
 		if (!ailmentRange) {return undefined;}
 		ailmentRange.low -= total;
@@ -3349,6 +3355,33 @@ async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll
 	return await ChatMessage.create(chatMessage, messageOptions);
 }
 
+static async testPowerVersusPCs(attacker: PToken, power: Usable) :Promise<number[]> {
+	const PCs= PersonaDB.PCs();
+	const scene = game.scenes
+		.find( sc=> PCs
+			.every( pc => sc.tokens.contents
+				.some(tok => tok.actor == pc)
+			)
+		);
+	if (!scene) {
+		throw new PersonaError("Can't find scnee containing all PCs");
+	}
+	const PCTokens= scene.tokens.filter( (tok: PToken)=> tok.actor != undefined && tok.actor.isPC() && PCs.includes(tok.actor)) as PToken[];
+	const result = await this.usePower(attacker, power, PCTokens, {askForModifier: false, setRoll: 16, ignorePrereqs : true, simulated: true});
+	const changes = result.attacks.flatMap( atk => atk.changes);
+	const PCResult = PCs.map( pc => {
+		const PCChanges = changes.filter( ch => {
+			const actor = PersonaDB.findActor(ch.actor);
+			return actor == pc;
+		});
+		const HPChanges = PCChanges.map ( x=> x.damage.reduce (
+			(acc, dmg) => acc + dmg.hpChange, 0));
+		const dmg= -1 * HPChanges.reduce( (acc,ch) => acc+ch, 0);
+		return Number((pc.mhp / dmg).toFixed(2));
+	});
+	return PCResult;
+}
+
 } // end of class
 
 
@@ -3435,4 +3468,11 @@ export class TargettingError extends Error {
 		super(errormsg);
 		ui.notifications.warn(errormsg);
 	}
+}
+
+interface CombatOptions {
+	askForModifier ?: boolean;
+	setRoll?: number;
+	ignorePrereqs?: boolean;
+	simulated?: boolean;
 }

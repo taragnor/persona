@@ -24,8 +24,8 @@ export class PersonaCombatStats {
 	static BASE_AILMENT_DEFENSE = 18 as const;
 	static INSTANT_DEATH_DIVISOR = 5 as const;
 	static CRITICAL_HIT_DIVISOR= 5 as const;
-	static WEAPON_DAMAGE_MULT = 2 as const;
-	static MAGIC_DAMAGE_MULT = 2 as const;
+	static WEAPON_DAMAGE_MULT = 1.5 as const;
+	static MAGIC_DAMAGE_MULT = 1.5 as const;
 	static ENDURANCE_DR_MULTIPLIER = 0.005;
 
 	constructor (persona: Persona) {

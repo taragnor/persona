@@ -950,6 +950,18 @@ export class PersonaHandleBarsHelpers {
 		"fusionResult": function (s1: Shadow, s2: Shadow) : U<Shadow> {
 
 			return FusionTable.fusionResult(s1, s2);
-		}
+		},
+
+		"isFoe": function (actor: PersonaActor) : boolean {
+			return actor.isShadow() && !actor.hasPlayerOwner && !actor.isPersona() && !actor.isDMon();
+		},
+		"DamageBalanceCheck": async function (actor: PersonaActor, power: Usable) : Promise<string> {
+			const token = game.scenes.current.tokens.find( x=> x.actor == actor);
+			if (!token) {return "No token to test balance";}
+			const test = await PersonaCombat.testPowerVersusPCs(token as PToken, power);
+			return test
+			.join(", ");
+		},
+
 	};
 } //end of class
