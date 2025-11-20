@@ -118,6 +118,7 @@ export class SocketManager {
 			return false;
 		}
 		killTimeout = true;
+		this.clearPending(sPayload.verificationId, recipient);
 		return true;
 	}
 

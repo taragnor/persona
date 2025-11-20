@@ -293,15 +293,11 @@ static generateDefaultData<T extends HTMLDataInputDefinition>(definition: T) : H
 
 	static collectFormValues($root: JQuery): Record<string, unknown> {
 		const result: Record<string, unknown> = {};
-		
 		$root.find('input[name], select[name]').each((_i, el) => {
 			const $el = $(el);
 			const name = $el.attr('name');
-			
 			if (!name) {return;} // skip if no name
-			
 			let value: unknown;
-			
 			if ($el.is(':checkbox')) {
 				// checkboxes: boolean or list depending on name pattern
 				if ($root.find(`input[name="${name}"][type="checkbox"]`).length > 1) {
@@ -321,10 +317,10 @@ static generateDefaultData<T extends HTMLDataInputDefinition>(definition: T) : H
 				// regular input/select
 				value = $el.val();
 			}
-			
-			result[name] = value;
+			if (value != undefined) {
+				result[name] = value;
+			}
 		});
-		
 		return result;
 	}
 

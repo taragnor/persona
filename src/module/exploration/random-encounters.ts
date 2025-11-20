@@ -11,7 +11,6 @@ import {TensionPool} from "./tension-pool.js";
 
 export class RandomEncounter {
 
-
 	static encounterChoices = [
 		"fight",
 		"evade",
@@ -42,30 +41,8 @@ export class RandomEncounter {
 				return "shadows";
 			}
 		}
-		// const cModifiers = new ModifierList(
-		// 	PersonaDB.getGlobalModifiers()
-		// 	.concat(region.allRoomEffects)
-		// 	.flatMap(x=> x.getModifier("concordiaPresence", null))
-		// );
-		// const cPresence = region.concordiaPresence > 0 ? region.concordiaPresence + cModifiers.total(situation): 0;
-		// if (cPresence > 0) {
-		// 	if ( await this.#concordiaPresenceRoll(encounterType, cPresence + modifier, this.name) == true)  {
-		// 		return "daemons";
-		// 	}
-		// }
 		return null;
 	}
-
-	// static async #concordiaPresenceRoll( encounterType: PresenceRollData["encounterType"], presenceValue: number, regionName: string = ""): Promise<boolean> {
-	// 	return await this.#presenceRoll({
-	// 		presenceValue,
-	// 		regionName,
-	// 		encounterType,
-	// 		label: "Concordia Presence",
-	// 		rollString: "1d8",
-	// 		atkText: "Daemons Attack!",
-	// 	});
-	// }
 
 	static async #enemyPresenceRoll ( encounterType: PresenceRollData["encounterType"], presenceValue:number, region: PersonaRegion): Promise<boolean> {
 		return await this.#presenceRoll({
@@ -86,9 +63,6 @@ static async #presenceRoll (data: PresenceRollData) : Promise<boolean> {
 	html += `<div> Roll vs ${data.label} ${data.presenceValue}: ${roll.total} </div>`;
 	const result = isEncounter ? data.atkText ?? `Danger`: data.safeText ?? `Safe`;
 	html += `<div class="action-result">${result}</div>`;
-	// if (isEncounter) {
-	// 	html += this.encounterChoiceList(data.encounterType);
-	// }
 await ChatMessage.create({
 	speaker: {
 		alias: data.label
@@ -176,7 +150,6 @@ static async takePlayerVote( validChoices: typeof this.encounterChoices[number][
 			action : "fight"
 		};
 	}
-
 }
 
 static avgPartyLevel () {
@@ -201,7 +174,6 @@ static getLevelDiffString(encounter: Encounter) : string {
 		case (levelDiff >= -10): return "Very Strong";
 		default: return "Overwhelming";
 	}
-
 }
 
 static async PlayerNotifyChatMsg(encounter : Encounter)  {
@@ -213,14 +185,13 @@ static async PlayerNotifyChatMsg(encounter : Encounter)  {
 	Relative Strength Comparison: ${this.getLevelDiffString(encounter)}
 	</div> `;
 	html += this.encounterChoiceList(encounter.encounterType);
- await ChatMessage.create({
-	speaker: {
-		alias: "Engagement Options",
-	},
-	content: html,
-	style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-});
-
+	await ChatMessage.create({
+		speaker: {
+			alias: "Engagement Options",
+		},
+		content: html,
+		style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+	});
 }
 
 	static async encounterProcess(battleType: PresenceRollData["encounterType"], shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}) {
@@ -234,22 +205,21 @@ static async PlayerNotifyChatMsg(encounter : Encounter)  {
 		return await this.processPlayerPreCombatAction(choice.action);
 	}
 
-	static async processPlayerPreCombatAction(action: typeof this.encounterChoices[number]) {
-		switch (action) {
-			case "fight":
-				return await this.processFight();
-			case "ambush":
-				return await this.processAmbush();
-			case "evade":
-				return await this.processEvade();
-			case "sneak":
-				return await this.processSneak();
-			default:
-				action satisfies never;
-				PersonaError.softFail(`Unknown Pre Combat choice ${action as string}`);
-		}
-
+static async processPlayerPreCombatAction(action: typeof this.encounterChoices[number]) {
+	switch (action) {
+		case "fight":
+			return await this.processFight();
+		case "ambush":
+			return await this.processAmbush();
+		case "evade":
+			return await this.processEvade();
+		case "sneak":
+			return await this.processSneak();
+		default:
+			action satisfies never;
+			PersonaError.softFail(`Unknown Pre Combat choice ${action as string}`);
 	}
+}
 
 	static async processEvade() {
 		const roll = await new Roll("1d6").evaluate();
@@ -488,7 +458,6 @@ static async PlayerNotifyChatMsg(encounter : Encounter)  {
 		}
 	}
 
-
 	static #filterByEncounterType(shadowList : Shadow[], etype : EncounterDifficulty) : Shadow[] {
 		switch (etype) {
 			case "standard":
@@ -516,8 +485,11 @@ static async PlayerNotifyChatMsg(encounter : Encounter)  {
 			});
 	}
 
-
+static async testVote() {
+	return await this.takePlayerVote(["fight", "evade", "sneak", "ambush"]);
 }
+
+} // End of Class
 
 export type Encounter =  {
 	enemies: Shadow[],
@@ -525,9 +497,7 @@ export type Encounter =  {
 	encounterType: PresenceRollData["encounterType"];
 }
 
-
 type EncounterDifficulty = "standard" | "tough" | "treasure" | "mixed" | "error";
-
 
 export interface EncounterOptions {
 	sizeMod ?: number;
@@ -535,10 +505,8 @@ export interface EncounterOptions {
 	frequencies ?: {hard: number, mixed: number},
 }
 
-
 export type EncounterAction = {
 	action: "fight" | "ambush" | "evade" | "sneak";
-
 }
 
 const VALID_CHOICES : Record<PresenceRollData["encounterType"], typeof RandomEncounter["encounterChoices"][number][]> = {
@@ -554,5 +522,4 @@ type PresenceCheckResult = null
 	| "shadows"
 	| "daemons"
 	| "any";
-
 

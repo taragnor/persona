@@ -97,13 +97,12 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 	onRemoteDataUpdate(remoteData: SharedDataType<T>) {
 		console.log("Remote Data updated");
 		console.log(remoteData);
+		if (remoteData == undefined) {return;}
 		this.setData(remoteData, false);
 		const html = this.generateHTML();
 		if (this._dialog) {
 			this._dialog.data.content = html;
-			// this._dialog.element.find(".dialog-content").html(html);
 			this._dialog.render(false);
-			Debug(this._dialog);
 		}
 	}
 
@@ -196,7 +195,7 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 	}
 
 	private setData(newData: typeof this._data, sendUpdate: boolean) {
-		this._data = newData;
+		this._data = foundry.utils.mergeObject(this._data, newData);
 		if (sendUpdate) {
 			this._sendData(game.users.filter( x=> x.active));
 		}
@@ -218,11 +217,6 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 	private refreshData(jquery: JQuery) {
 		const newData= HTMLTools.collectFormValues(jquery) as SharedDataType<T>;
 		this.setData(newData, true);
-		// this._sendData(game.users.filter( x=> x.active));
-		// if (this._breakout( this._data)) {
-		// 	this.resolver(this._data);
-		// 	this.closeDialog();
-		// }
 	}
 
 	private _sendData(users : FoundryUser[] = this.users) {
