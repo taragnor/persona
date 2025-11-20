@@ -3379,6 +3379,7 @@ static async testPowerVersusPCs(attacker: PToken, power: Usable) :Promise<number
 		const dmg= -1 * HPChanges.reduce( (acc,ch) => acc+ch, 0);
 		return Number((pc.mhp / dmg).toFixed(2));
 	});
+	//BUG does not work well for flurry powers yet
 	return PCResult;
 }
 

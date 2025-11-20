@@ -371,14 +371,8 @@ export class DamageCalculator {
 					baseAmt: magic.system.damage.low,
 				};
 			default: {
-				const isHealing = magic.system.dmg_type == "healing";
+				// const isHealing = magic.system.dmg_type == "healing";
 				const val = DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE[magic.system.damageLevel];
-				if (isHealing) {
-					return {
-						extraVariance: val.extraVariance + 1,
-						baseAmt: val.baseAmt,
-					};
-				}
 				return val;
 			}
 		}
@@ -428,8 +422,6 @@ const DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE = {
 
 type ConvertableDamageLevel = Exclude<DamageLevel, "-" | "fixed">;
 
-
-
 const INSTANT_KILL_LEVELS_LIST= [
 	"none",
 	"low",
@@ -444,19 +436,19 @@ export const INSTANT_KILL_LEVELS = HTMLTools.createLocalizationObject( INSTANT_K
 
 
 export const INSTANT_KILL_CRIT_BOOST : Record< InstantKillLevel, number>= {
-	none: 0,
-	high: 9,
-	low: 3,
-	medium: 5,
 	always: 1000,
+	high: 10,
+	medium: 7,
+	low: 4,
+	none: 0,
 };
 
 export const AILMENT_BONUS_LEVELS : Record <InstantKillLevel, number> = {
-	none: 0,
-	high: 11,
-	low: 5,
-	medium: 8,
 	always: 11,//treat as always
+	high: 11,
+	medium: 8,
+	low: 5,
+	none: 0,
 };
 
 export type NewDamageParams = {

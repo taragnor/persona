@@ -13,6 +13,7 @@ export class PersonaCombatStats {
 	persona : Persona;
 	static AILMENT_RESIST_DIVISOR = 5 as const;
 	static INSTANT_DEATH_RESIST_DIVISOR = 5 as const;
+	static INSTANT_DEATH_BONUS_DIVISOR = 7 as const;
 	static STAT_POINTS_PER_LEVEL = 3 as const;
 	static INIT_DIVISOR = 3 as const;
 	static MAX_STAT_GAP =  10 as const;
@@ -191,14 +192,14 @@ export class PersonaCombatStats {
 	instantDeathBonus() : Calculation {
 		const calc = new Calculation(0, 2);
 		calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 2`, "add");
-		calc.add(1, 1/PersonaCombatStats.INSTANT_DEATH_RESIST_DIVISOR, `Instant Kill Attack Divisor`, "multiply");
+		calc.add(1, 1/PersonaCombatStats.INSTANT_DEATH_BONUS_DIVISOR, `Instant Kill Attack Divisor`, "multiply");
 		return calc;
 	}
 
 	instantDeathResist() : Calculation {
 		const calc = new Calculation(0, 2);
 		calc.add(0, this.luck + 3, `${this.persona.displayedName} Luck + 3`, "add");
-		calc.add(1, 1/PersonaCombatStats.INSTANT_DEATH_RESIST_DIVISOR, `Instant Kill Attack Divisor`, "multiply");
+		calc.add(1, 1/PersonaCombatStats.INSTANT_DEATH_RESIST_DIVISOR, `Instant Kill Defense Divisor`, "multiply");
 		return calc;
 	}
 

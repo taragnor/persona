@@ -150,7 +150,7 @@ export class EnergyClassCalculator extends CostCalculator {
 		return new EnergyCostBase(0, cost);
 	}
 
-	static AOE_COST_INCREASE: Readonly<EnergyCostBase> = new EnergyCostBase(25, 25);
+	static AOE_COST_INCREASE: Readonly<EnergyCostBase> = new EnergyCostBase(32, 32);
 
 	static BASE_COST = 30;
 	static BASE_POWER_REQUIRED = 25;

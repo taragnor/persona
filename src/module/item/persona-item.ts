@@ -1966,7 +1966,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	baseInstantKillBonus(this: Usable) : number {
 		if (!this.isInstantDeathAttack()) {return 0;}
 		const boost = INSTANT_KILL_CRIT_BOOST[this.system.instantKillChance] ?? 0;
-		// if (this.isAoE()) {boost += 4;}
 		return boost;
 	}
 
@@ -2776,7 +2775,7 @@ get instantDeathRange(): {low: number, high: number} | undefined {
 		case 'low': return {low: 19, high: 20};
 		case 'medium': return {low: 17, high: 20};
 		case 'high': return {low: 15, high: 20};
-		case 'always': return {low: 1, high: 20};
+		case 'always': return {low: 6, high: 20};
 		default:
 			this.system.instantKillChance satisfies never;
 	}
