@@ -60,7 +60,7 @@ export class SocketManager {
 		const pending = this._pendingVerifications.get(id);
 		if (pending != undefined) {
 			for (const [, promiseData] of pending) {
-				promiseData.reject(new Error("User Disconnected"));
+				promiseData.reject(new PlayerDisconnectedError("User Disconnected"));
 			}
 			this._pendingVerifications.delete(id);
 		}
@@ -263,7 +263,6 @@ export type SocketPayload<T extends keyof SocketMessage> = {
 	sender: string,
 	recipients: string[],
 	targetInfo: SessionInfo,
-
 };
 
 type DataHandlerFn<T extends keyof SocketMessage> =
@@ -294,4 +293,6 @@ export class SocketsNotConnectedError extends Error {
 }
 
 
+class PlayerDisconnectedError extends Error {
 
+}
