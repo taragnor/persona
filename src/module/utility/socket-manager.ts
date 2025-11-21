@@ -42,11 +42,28 @@ export class SocketManager {
 				Hooks.callAll("socketsReady", this);
 				this.setHandler("__VERIFY__", (verificationId, payload) => this.clearPending(verificationId, payload.sender) );
 			});
-				this.setHandler("__VERIFY_ERROR__", (verificationId, payload) => this.clearPendingErr(verificationId, payload.sender) );
+		this.setHandler("__VERIFY_ERROR__", (verificationId, payload) => this.clearPendingErr(verificationId, payload.sender) );
+		Hooks.on("userConnected", (user, isConnection) => {
+			if (!isConnection && user) {
+				this.clearVerificationsFor(user);
+			}
+		});
 	}
 
 	get socketsReady() : boolean {
 		return this._socketsReady;
+	}
+
+	clearVerificationsFor(user: FoundryUser) {
+		const id = user.id;
+		this._handledVerifications.delete(id);
+		const pending = this._pendingVerifications.get(id);
+		if (pending != undefined) {
+			for (const [, promiseData] of pending) {
+				promiseData.reject(new Error("User Disconnected"));
+			}
+			this._pendingVerifications.delete(id);
+		}
 	}
 
 	#checkSockets(): void {
@@ -113,7 +130,6 @@ export class SocketManager {
 		});
 		try {
 			await p;
-			//clear out pending
 		} catch {
 			return false;
 		}
@@ -188,6 +204,7 @@ private async onMsgRecieve(packet: SocketPayload<keyof SocketMessage>) : Promise
 		}
 	}
 }
+
 
 /** returns true if this message has already been verified, to prevent invoking the handler for an alrady handled request */
 #recordVerifiedMessage(packet: SocketPayload<keyof SocketMessage>)  : boolean {
@@ -275,3 +292,6 @@ export class VerificationFailedError extends Error{
 export class SocketsNotConnectedError extends Error {
 
 }
+
+
+
