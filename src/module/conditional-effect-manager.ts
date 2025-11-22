@@ -710,6 +710,14 @@ export class ConditionalEffectManager {
 				const slot = this.translate(cond.slotType, SLOTTYPES);
 				return `Power is ${not} of slot type: ${slot}`;
 			}
+			case "power-name-is": {
+				const power = PersonaDB.getPower(cond.powerId);
+				const powerName = power?.name ?? "ERROR";
+				return `Power is ${powerName}`;
+			}
+			default:
+				cond satisfies never;
+				return "ERROR";
 		}
 
 	}

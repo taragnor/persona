@@ -280,5 +280,11 @@
 		{{multicheck (strcat namePrefix 'powerTag') POWERSTUFF.TAGS checked=cond.powerTag localize=true}}
 	{{/if}}
 
+	{{#if (eq cond.powerProp "power-name-is") }}
+	<select name="{{strcat namePrefix 'powerId'}}">
+		{{selectOptions POWERSTUFF.COMPENDIUM_POWERS localize=true selected=cond.powerId}}
+	</select>
+	{{/if}}
+
 	{{/if}}
 

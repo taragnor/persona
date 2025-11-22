@@ -86,6 +86,7 @@ const POWER_COMPARISON_SUBLIST_LIST = [
 	"power-slot-is",
 	"damage-type-is",
 	"has-tag",
+	"power-name-is",
 ] as const;
 
 export type BooleanComparisonTarget = typeof BOOLEAN_COMPARISON_TARGET_LIST[number];
@@ -135,6 +136,9 @@ type PowerComparisonsSub = {
 } | {
 	powerProp: "has-tag",
 	powerTag: MultiCheckOrSingle<Exclude<PowerTag, Tag>>,
+} | {
+	powerProp: "power-name-is",
+	powerId: Power["id"],
 };
 
 type HasClassComparison = {

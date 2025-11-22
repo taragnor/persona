@@ -1260,10 +1260,10 @@ export function numberOfOthersWithResolver(condition: Sourced<NumberOfOthersWith
 }
 
 function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "power-has"}, situation: Situation) : U<boolean> {
+	if (!situation.usedPower) {return undefined;}
+	const power = PersonaDB.findItem(situation.usedPower);
 	switch (condition.powerProp) {
 		case "power-target-type-is": {
-			if (!situation.usedPower) {return undefined;}
-			const power = PersonaDB.findItem(situation.usedPower);
 			if (!power) {
 				PersonaError.softFail(`Can't find power in conditional`);
 				return undefined;
@@ -1279,10 +1279,6 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
 			return hasTagConditional(conditionMod, situation);
 		}
 		case "damage-type-is": {
-			if (!situation.usedPower) {
-				return undefined;
-			}
-			const power = PersonaDB.findItem(situation.usedPower);
 			if (!power || power.isSkillCard()) {return undefined;}
 			if (!situation.attacker && !situation.user) {return undefined;}
 			const attackerAcc = situation.attacker ? situation.attacker : situation.user!;
@@ -1292,20 +1288,17 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
 			return multiCheckContains(condition.powerDamageType, [dtype as string]);
 		}
 		case "power-type-is": {
-			if (!situation.usedPower) {
-				return undefined;
-			}
-			const power = PersonaDB.findItem(situation.usedPower);
 			return power.system.type == "power" && power.system.subtype == condition.powerType;
 
 		}
 		case "power-slot-is": {
-			if (!situation.usedPower) {return undefined;}
-			const power = PersonaDB.findItem(situation.usedPower);
 			if (power.system.type == "consumable") {return undefined;}
 			if (power.system.type == "skillCard") {return undefined;}
 			const slot = condition.slotType;
 			return slot[String(power.system.slot)];
+		}
+		case "power-name-is": {
+			return power.id == condition.powerId;
 		}
 		default:
 			condition satisfies never;
