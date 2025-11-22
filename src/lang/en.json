@@ -788,6 +788,7 @@
 	"persona.preconditions.comparison.is-enemy": "Is Enemy",
 	"persona.preconditions.comparison.has-tag": "Has Tag",
 	"persona.preconditions.comparison.has-class": "Has Character Class",
+	"persona.preconditions.comparison.power-has": "Power Comparison",
 	"persona.preconditions.comparison.has-creature-tag": " (Deprecated) Has Creature Tag",
 	"persona.preconditions.comparison.cameo-in-scene": "Card has a Cameo (Deprecated)",
 	"persona.preconditions.comparison.arcana-is": "Arcana is",

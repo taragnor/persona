@@ -7,7 +7,6 @@ import { StatusEffectId } from "../config/status-effects.js";
 import { PowerType } from "../config/effect-types.js";
 import { DamageType } from "../config/damage-types.js";
 import { Trigger } from "../config/triggers.js";
-import {ValidAttackers} from "../module/combat/persona-combat.js";
 
 export const PRECONDITIONLIST = [
 	"always",

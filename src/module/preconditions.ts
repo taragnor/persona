@@ -66,7 +66,6 @@ export function testPreconditions(conditionArr: readonly SourcedPrecondition[], 
 	}
 }
 
-
 export function testPrecondition (condition: SourcedPrecondition, situation:Situation) : boolean {
 	switch (condition.type) {
 		case "always":
@@ -891,6 +890,8 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
 			}
 			return false;
 		}
+		case "power-has":
+			return powerHasConditional(condition, situation);
 		default :
 			condition satisfies never;
 			return undefined;
@@ -1257,3 +1258,60 @@ export function numberOfOthersWithResolver(condition: Sourced<NumberOfOthersWith
 		}
 		, 0);
 }
+
+function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "power-has"}, situation: Situation) : U<boolean> {
+	switch (condition.powerProp) {
+		case "power-target-type-is": {
+			if (!situation.usedPower) {return undefined;}
+			const power = PersonaDB.findItem(situation.usedPower);
+			if (!power) {
+				PersonaError.softFail(`Can't find power in conditional`);
+				return undefined;
+			}
+			return multiCheckContains(condition.powerTargetType, [power.targets()]);
+		}
+		case "has-tag": {
+			const conditionMod = {
+				...condition,
+				tagComparisonType: "power",
+				boolComparisonTarget: "has-tag",
+			} as const;
+			return hasTagConditional(conditionMod, situation);
+		}
+		case "damage-type-is": {
+			if (!situation.usedPower) {
+				return undefined;
+			}
+			const power = PersonaDB.findItem(situation.usedPower);
+			if (!power || power.isSkillCard()) {return undefined;}
+			if (!situation.attacker && !situation.user) {return undefined;}
+			const attackerAcc = situation.attacker ? situation.attacker : situation.user!;
+			const attacker = PersonaDB.findActor(attackerAcc);
+			if (!attacker) {return undefined;}
+			const dtype = power.getDamageType(attacker);
+			return multiCheckContains(condition.powerDamageType, [dtype as string]);
+		}
+		case "power-type-is": {
+			if (!situation.usedPower) {
+				return undefined;
+			}
+			const power = PersonaDB.findItem(situation.usedPower);
+			return power.system.type == "power" && power.system.subtype == condition.powerType;
+
+		}
+		case "power-slot-is": {
+			if (!situation.usedPower) {return undefined;}
+			const power = PersonaDB.findItem(situation.usedPower);
+			if (power.system.type == "consumable") {return undefined;}
+			if (power.system.type == "skillCard") {return undefined;}
+			const slot = condition.slotType;
+			return slot[String(power.system.slot)];
+		}
+		default:
+			condition satisfies never;
+			return undefined;
+	}
+
+}
+
+

@@ -27,7 +27,7 @@ const BASIC_BOOLEAN_COMPARISON_LIST = [
 	"cameo-in-scene",
 ] as const;
 
-const BOOLEAN_COMPARISON_TARGET_LIST = [
+const ACTIVE_BOOLEAN_COMPARISON_TARGET_LIST = [
 	...BASIC_BOOLEAN_COMPARISON_LIST,
 	"actor-exists",
 	"engaged",
@@ -37,16 +37,14 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"is-enemy",
 	"has-tag",//universal tag finder
 	"is-dead",
+	"power-has",
 	"target-owner-comparison",
-	"damage-type-is",
-	"power-type-is",
 	"has-status",
 	"status-to-be-inflicted",
 	"struck-weakness",
 	"is-resistant-to",
 	"is-same-arcana",
 	"flag-state",
-	"power-target-type-is",
 	"weather-is",
 	"weekday-is",
 	"social-target-is",
@@ -57,7 +55,6 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"is-gm",
 	"has-item-in-inventory",
 	"creature-type-is",
-	"power-slot-is",
 	"social-availability",
 	"arcana-is",
 	"logical-or",
@@ -65,20 +62,42 @@ const BOOLEAN_COMPARISON_TARGET_LIST = [
 	"using-meta-pod",
 	"knows-power",
 	"has-class",
+] as const;
+
+const DEPRECATED_BOOLEAN_COMPARISON_LIST = [
 	"has-creature-tag", // Deprecated
 	"metaverse-enhanced", // Deprecated
+	"power-target-type-is",
+	"power-type-is",
+	"power-slot-is",
+	"damage-type-is",
+
+] as const;
+
+const BOOLEAN_COMPARISON_TARGET_LIST = [
+	...BASIC_BOOLEAN_COMPARISON_LIST,
+	...ACTIVE_BOOLEAN_COMPARISON_TARGET_LIST,
+	...DEPRECATED_BOOLEAN_COMPARISON_LIST,
+] as const;
+
+const POWER_COMPARISON_SUBLIST_LIST = [
+	"power-target-type-is",
+	"power-type-is",
+	"power-slot-is",
+	"damage-type-is",
+	"has-tag",
 ] as const;
 
 export type BooleanComparisonTarget = typeof BOOLEAN_COMPARISON_TARGET_LIST[number];
+
+export const POWER_COMPARISON_SUBLIST = HTMLTools.createLocalizationObject(POWER_COMPARISON_SUBLIST_LIST, "persona.preconditions.comparison");
 
 export const BOOLEAN_COMPARISON_TARGET = Object.fromEntries(
 	BOOLEAN_COMPARISON_TARGET_LIST.map( x=> [x, `persona.preconditions.comparison.${x}`])
 );
 
+
 type BasicComparisonTargets=  typeof BASIC_BOOLEAN_COMPARISON_LIST[number];
-
-
-
 
 export type BooleanComparisonPC = {
 	type : "boolean",
@@ -94,25 +113,46 @@ type BooleanComparisionSpecifics =
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison | HasClassComparison | StatusInflictComparisonPC;
+StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison | HasClassComparison | StatusInflictComparisonPC | PowerComparison
 ;
+
+type PowerComparison = {
+	boolComparisonTarget: "power-has",
+} & PowerComparisonsSub;
+
+type PowerComparisonsSub = {
+	powerProp: "power-target-type-is",
+	powerTargetType: MultiCheck<Power["system"]["targets"]>,
+} | {
+	powerProp: "power-type-is",
+	powerType : PowerType,
+} | {
+	powerProp: "power-slot-is",
+	slotType: MultiCheck<string>,
+} | {
+	powerProp: "damage-type-is",
+	powerDamageType : (DamageType) | MultiCheck<DamageType>,
+} | {
+	powerProp: "has-tag",
+	powerTag: MultiCheckOrSingle<Exclude<PowerTag, Tag>>,
+};
 
 type HasClassComparison = {
 	boolComparisonTarget: "has-class",
 	classId: MultiCheck<CClass["id"]>;
 	conditionTarget: ConditionTarget;
-}
+};
 
 type KnowsPowerComparison = {
 	boolComparisonTarget: "knows-power";
 	powerId: string;
 	conditionTarget: ConditionTarget,
-}
+};
 
 type ActorExistsComparison =  {
 	boolComparisonTarget: "actor-exists";
 	conditionTarget: ConditionTarget,
-}
+};
 
 
 type DeprecatedBoolComparisons =
@@ -120,18 +160,18 @@ type DeprecatedBoolComparisons =
 
 type MetaverseEnhancedComparison = {
 	boolComparisonTarget: "metaverse-enhanced",
-}
+};
 
 
 type GeneralActorComparison = {
 	boolComparisonTarget: "is-pc" | "is-shadow" | "using-meta-pod",
 	conditionTarget: ConditionTarget,
-}
+};
 
 type SceneClockNameComparison = {
 	boolComparisonTarget: "scene-clock-name-is";
 	clockName: string;
-}
+};
 
 type IsEnemyComparison = {
 	boolComparisonTarget: "is-enemy",

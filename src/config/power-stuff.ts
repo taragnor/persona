@@ -6,7 +6,7 @@ import {PersonaDB} from "../module/persona-db.js";
 import {VARIABLE_TYPE} from "../module/persona-variables.js";
 import {CALCULATION_OPERATION} from "../module/utility/calculation.js";
 import {ProgressClock} from "../module/utility/progress-clock.js";
-import {BOOLEAN_COMPARISON_TARGET, SOCIAL_CHECKS, TAG_COMPARISON_TYPES} from "./boolean-comparison.js";
+import {BOOLEAN_COMPARISON_TARGET, POWER_COMPARISON_SUBLIST, SOCIAL_CHECKS, TAG_COMPARISON_TYPES} from "./boolean-comparison.js";
 import {CARD_TAGS} from "./card-tags.js";
 import {ARITHMETIC_OPERATORS, CONS_TARGETS, CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES, CONSEQUENCE_AMOUNT_TYPES, ITEM_SELECTOR_TYPE, LEVEL_GAIN_TARGETS, SITUATION_PROPERTIES, VARIABLE_ACTIONS} from "./consequence-types.js";
 import {CREATURE_TAGS} from "./creature-tags.js";
@@ -125,6 +125,7 @@ private static _powerStuffBase: Record<string, unknown>;
 			CALCULATION_OPERATION,
 			TREASURE_TABLES,
 			PROBABILITIES,
+			POWER_COMPARISON_SUBLIST,
 			SCENE_WEATHER_TYPES: Object.fromEntries(
 				([""].concat(Object.keys(CONFIG.weatherEffects))).map( x=> [x,x])
 			),

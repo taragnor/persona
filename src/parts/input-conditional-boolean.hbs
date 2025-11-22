@@ -251,4 +251,34 @@
 	{{multicheck (strcat namePrefix 'classId') POWERSTUFF.CLASSES checked=cond.classId localize=true}}
 	{{/if}}
 
+	{{#if (eq cond.boolComparisonTarget "power-has")}}
+	<select name="{{strcat namePrefix 'powerProp'}}">
+		{{selectOptions POWERSTUFF.POWER_COMPARISON_SUBLIST localize=true selected=cond.powerProp}}
+	</select>
+
+	{{#if (eq cond.powerProp "power-target-type-is") }}
+	<div>
+		{{multicheck (strcat namePrefix 'powerTargetType') POWERSTUFF.TARGETING checked=cond.powerTargetType localize=true}}
+	</div>
+	{{/if}}
+
+	{{#if (eq cond.powerProp "power-type-is") }}
+	<select name="{{strcat namePrefix 'powerType'}}">
+		{{selectOptions POWERSTUFF.POWERTYPES localize=true selected=cond.powerType}}
+	</select>
+	{{/if}}
+
+	{{#if (eq cond.powerProp "power-slot-is") }}
+	{{multicheck (strcat namePrefix 'slotType') POWERSTUFF.SLOTTYPES checked=cond.slotType localize=true}}
+	{{/if}}
+
+	{{#if (eq cond.powerProp "damage-type-is") }}
+	{{multicheck (strcat namePrefix 'powerDamageType') POWERSTUFF.DAMAGETYPES checked=cond.powerDamageType localize=true}}
+	{{/if}}
+
+	{{#if (eq cond.powerProp "has-tag") }}
+		{{multicheck (strcat namePrefix 'powerTag') POWERSTUFF.TAGS checked=cond.powerTag localize=true}}
+	{{/if}}
+
+	{{/if}}
 

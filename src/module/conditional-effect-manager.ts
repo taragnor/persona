@@ -674,10 +674,44 @@ export class ConditionalEffectManager {
 			}
 			case "status-to-be-inflicted":
 				return `Status ${this.translate(cond.status, STATUS_EFFECT_TRANSLATION_TABLE)} is about to be inflicted`;
+			case "power-has":
+				return this.printPowerHasConditional(cond);
 			default:
 				cond satisfies never;
 				return "";
 		}
+	}
+
+	static printPowerHasConditional(cond: Precondition & {type: "boolean"; boolComparisonTarget: "power-has"}) : string {
+		const not =  !cond.booleanState ? "not" : "";
+		switch (cond.powerProp) {
+			case "has-tag": {
+				const modCond = {
+					...cond,
+					boolComparisonTarget: "has-tag",
+					tagComparisonType: "power",
+				} as const;
+				const tagName = this.getTagNameForHasTag(modCond);
+				return `used power ${not} has tag: ${tagName}`;
+			}
+			case "damage-type-is":{
+				const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
+				return `Power Damage Type is ${not} ${damageType}`;
+			}
+			case "power-type-is": {
+				const powerType = this.translate(cond.powerType, POWERTYPES);
+				return `Power Type is ${not} ${powerType}`;
+			}
+			case "power-target-type-is": {
+				const targetType = this.translate(cond.powerTargetType, TARGETING);
+				return `used power targets type is ${not}: ${targetType}`;
+			}
+			case "power-slot-is": {
+				const slot = this.translate(cond.slotType, SLOTTYPES);
+				return `Power is ${not} of slot type: ${slot}`;
+			}
+		}
+
 	}
 
 	static getTagNameForHasTag(cond: Precondition & {type: "boolean"} & {boolComparisonTarget: "has-tag"}): string {
