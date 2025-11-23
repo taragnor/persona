@@ -51,7 +51,6 @@
 	</select>
 	{{/if}}
 
-
 	{{#if (eqAny cond.trigger "on-clock-tick" "on-clock-change")}}
 	<select name="{{strcat namePrefix 'triggeringClockId'}}">
 		{{selectOptions POWERSTUFF.CLOCKS localize=true selected=cond.triggeringClockId}}
@@ -62,9 +61,7 @@
 	{{multicheck (strcat namePrefix 'status') POWERSTUFF.STATUSEFFECTS checked=cond.status localize=true}}
 	{{/if}}
 
-
 	{{/if}}
-
 
 	{{#if (eq cond.type	"flag-state")}}
 	<select name="{{strcat namePrefix 'conditionTarget'}}">
@@ -81,6 +78,5 @@
 		<input type="checkbox" id="flagState" name="{{strcat namePrefix 'booleanState'}}" {{checked cond.booleanState}}>
 	</div>
 	{{/if}}
-
 
 </div>

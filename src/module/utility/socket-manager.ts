@@ -160,7 +160,8 @@ export class SocketManager {
 	clearPending(verificationId: VerificationId, sender: User["id"]) : boolean {
 		const user = game.users.get(sender);
 		// console.debug(`Initial: Verification Msg recieved ${verificationId} from ${user?.name}, clearing log`);
-		const userPending = this._pendingVerifications.get(sender)!;
+		const userPending = this._pendingVerifications.get(sender);
+		if (!userPending) {return false;}
 		const pendingProm = userPending.get(verificationId);
 		if (pendingProm == undefined) {return false;}
 		pendingProm.resolve(true);
