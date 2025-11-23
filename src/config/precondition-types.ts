@@ -33,6 +33,14 @@ declare global {
 export type PreconditionComparison =
 	(GenericPC | NumericComparisonPC | BooleanComparisonPC | SaveVersus | Triggered);
 
+export type DeprecatedPrecondition<T extends object> = T & {
+	___deprecated: true;
+}
+
+export type NonDeprecatedPrecondition<T extends object> = T & {
+	___deprecated ?: never;
+}
+
 type GenericPC = {
 	type: Exclude<PreconditionType, "numeric" | "boolean" | 'save-versus' | "on-trigger" | "numeric-v2">;
 	status ?: StatusEffectId | Record<StatusEffectId, boolean>,

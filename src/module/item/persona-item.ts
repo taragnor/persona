@@ -2561,7 +2561,8 @@ extraConditionsFromTags( this: SocialCard) : SocialCard['system']['conditions'] 
 			case 'real-world': {
 				const realWorld : Precondition = {
 					type: 'boolean',
-					boolComparisonTarget: 'has-creature-tag',
+					boolComparisonTarget: 'has-tag',
+					tagComparisonType: 'actor',
 					conditionTarget: 'target',
 					creatureTag: 'stuck-in-metaverse',
 					booleanState: false,
@@ -2583,7 +2584,8 @@ extraConditionsFromTags( this: SocialCard) : SocialCard['system']['conditions'] 
 			case 'student-stuff': {
 				const isStudent: Precondition = {
 					type: 'boolean',
-					boolComparisonTarget: 'has-creature-tag',
+					boolComparisonTarget: 'has-tag',
+					tagComparisonType: 'actor',
 					booleanState: true,
 					conditionTarget: 'target',
 					creatureTag: 'student',

@@ -20,7 +20,7 @@
 	{{/if}}
 	<div class="type-select">
 		<select name="{{strcat namePrefix 'type'}}">
-			{{selectOptions POWERSTUFF.CONSTYPES localize=true selected=cons.type}}
+			{{selectOptions (deprecationList cons.type POWERSTUFF.NONDEP_CONSTYPES POWERSTUFF.CONSTYPES) localize=true selected=cons.type}}
 		</select>
 	</div>
 	{{#if (or (eq cons.type "addStatus") (eq cons.type "removeStatus"))}}

@@ -1,7 +1,7 @@
 import { RollTag } from "./roll-tags.js";
 import { CardTag } from "./card-tags.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
-import { UserComparisonTarget } from "./precondition-types.js";
+import { DeprecatedPrecondition, NonDeprecatedPrecondition, UserComparisonTarget } from "./precondition-types.js";
 import { PowerType } from "./effect-types.js";
 import { DamageType } from "./damage-types.js";
 import { TarotCard } from "./tarot.js";
@@ -71,11 +71,9 @@ const DEPRECATED_BOOLEAN_COMPARISON_LIST = [
 	"power-type-is",
 	"power-slot-is",
 	"damage-type-is",
-
 ] as const;
 
 const BOOLEAN_COMPARISON_TARGET_LIST = [
-	...BASIC_BOOLEAN_COMPARISON_LIST,
 	...ACTIVE_BOOLEAN_COMPARISON_TARGET_LIST,
 	...DEPRECATED_BOOLEAN_COMPARISON_LIST,
 ] as const;
@@ -97,6 +95,8 @@ export const BOOLEAN_COMPARISON_TARGET = Object.fromEntries(
 	BOOLEAN_COMPARISON_TARGET_LIST.map( x=> [x, `persona.preconditions.comparison.${x}`])
 );
 
+export const NONDEPBOOLEAN_COMPARISON_TARGET = HTMLTools.createLocalizationObject(ACTIVE_BOOLEAN_COMPARISON_TARGET_LIST, "persona.preconditions.comparison");
+
 
 type BasicComparisonTargets=  typeof BASIC_BOOLEAN_COMPARISON_LIST[number];
 
@@ -107,14 +107,16 @@ export type BooleanComparisonPC = {
 } & (BooleanComparisionSpecifics);
 
 type BooleanComparisionSpecifics =
-	BasicBComparisonPC | NonBasicBoolComparison | DeprecatedBoolComparisons;
+	NonDeprecatedPrecondition<NonDeprecatedBoolComparisons> | DeprecatedPrecondition<DeprecatedBoolComparisons>;
+
+type NonDeprecatedBoolComparisons = BasicBComparisonPC | NonBasicBoolComparison;
 
 	type BasicBComparisonPC = {
 	boolComparisonTarget:BasicComparisonTargets,
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | DamageTypeComparisonPC | PowerTypeComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck | PowerTypeComparison | WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SlotTypeComparison | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison | HasClassComparison | StatusInflictComparisonPC | PowerComparison
+StatusComparisonPC | TagComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck |  WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison | HasClassComparison | StatusInflictComparisonPC | PowerComparison
 ;
 
 type PowerComparison = {
@@ -160,7 +162,8 @@ type ActorExistsComparison =  {
 
 
 type DeprecatedBoolComparisons =
-	MetaverseEnhancedComparison;
+	MetaverseEnhancedComparison | PowerTypeComparison | PowerTypeComparisonPC | DeprecatedTagComparisons | SlotTypeComparison | DamageTypeComparisonPC;
+;
 
 type MetaverseEnhancedComparison = {
 	boolComparisonTarget: "metaverse-enhanced",
@@ -292,9 +295,9 @@ type StatusInflictComparisonPC = {
 	status : StatusEffectId | Record<StatusEffectId, boolean>,
 };
 
-type TagComparisonPC = GeneralTagComparison | DeprecatedTagComparisons;
+type TagComparisonPC = GeneralTagComparison;
 
-type DeprecatedTagComparisons=  CreatureTagComparison;
+type DeprecatedTagComparisons =  CreatureTagComparison;
 
 const TAG_COMPARISON_TYPE_LIST = [
 	"power",
@@ -341,7 +344,7 @@ type ArcanaComparison = {
 	tarot: TarotCard;
 }
 
-type DamageTypeComparisonPC= {
+type DamageTypeComparisonPC = {
 	boolComparisonTarget: "damage-type-is" ,
 	powerDamageType : (DamageType) | MultiCheck<DamageType>,
 }

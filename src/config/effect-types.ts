@@ -14,7 +14,7 @@ const DEPRECATED_CONSEQUENCE_TYPES = [
 	"absorb",
 ] as const;
 
-export const CONSQUENCELIST = [
+export const NON_DEPRECATED_CONSQUENCELIST = [
 	"none",
 	"modifier", //singular-mod
 	"modifier-new", //multi-mod
@@ -51,7 +51,11 @@ export const CONSQUENCELIST = [
 	"alter-fatigue-lvl",
 	"gain-levels",
 	"cancel",
-	 ...DEPRECATED_CONSEQUENCE_TYPES,
+] as const;
+
+export const CONSQUENCELIST = [
+	...NON_DEPRECATED_CONSQUENCELIST,
+	...DEPRECATED_CONSEQUENCE_TYPES,
 ] as const;
 
 
@@ -73,6 +77,8 @@ export const MODIFIER_VARIABLES = HTMLTools.createLocalizationObject(MODIFIER_VA
 export const CONSQUENCETYPES = Object.fromEntries(
 CONSQUENCELIST.map( x=> [x, `persona.effecttypes.${x}`])
 );
+
+export const NONDEP_CONSQUENCETYPES = HTMLTools.createLocalizationObject(NON_DEPRECATED_CONSQUENCELIST, "persona.effecttypes");
 
 export const POWERTYPESLIST = [
 	"weapon",

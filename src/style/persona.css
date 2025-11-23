@@ -1519,3 +1519,10 @@ img.greyed-out {
 	align-items: center;
 		text-align: center;
 }
+
+textarea.field-secretNotes {
+	min-width: 100%;
+	max-width: 100%;
+	width: 100%;
+	box-sizing: border-box;
+}

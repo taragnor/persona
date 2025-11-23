@@ -963,5 +963,20 @@ export class PersonaHandleBarsHelpers {
 			.join(", ");
 		},
 
+		"deprecationList" : function<T extends string | number, L extends T[] | Record<T, unknown>>(listElement: T, nonDepList: L, fullList: L): L {
+			if (!listElement) {return nonDepList;}
+			if (Array.isArray(nonDepList)) {
+				if (nonDepList.includes(listElement)) {
+					return nonDepList;
+				}
+				return fullList;
+			} else {
+			if ((nonDepList as Record<T, unknown>)[listElement] != undefined) {
+				return nonDepList;
+			}
+			return fullList;
+			}
+		},
+
 	};
 } //end of class
