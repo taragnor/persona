@@ -895,6 +895,8 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
 			return powerHasConditional(condition, situation);
 		case "roll-property-is":
 			return rollPropertyIs(condition, situation);
+		case "combat-comparison":
+			return combatComparison(condition, situation);
 		default :
 			condition satisfies never;
 			return undefined;
@@ -1327,6 +1329,94 @@ function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boo
 				condition.rollProp satisfies never;
 			return undefined;
 	}
+}
+
+function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "combat-comparison"}, situation: Situation)  : U<boolean> {
+	if (condition.combatProp == "in-combat") {
+		return Boolean(situation.activeCombat);
+	}
+	const subjects = getSubjects(condition, situation, "conditionTarget");
+	if (!subjects || !subjects.at(0)) {return undefined;}
+	const combat = game.combat as PersonaCombat;
+	switch (condition.combatProp) {
+		case "engaged": {
+			if (!combat) {return undefined;}
+			return subjects.some( subject => {
+				if (subject instanceof PersonaActor) {
+					if (subject.isNPC()) {return false;}
+				}
+				const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken((subject).accessor);
+				if (!subjectToken) {
+					// PersonaError.softFail(`Can't find token for ${subject?.name}`);
+					return false;
+				}
+				return combat.isEngagedByAnyFoe(subjectToken);
+			});
+		}
+		case "is-dead": {
+			return subjects.some( target => {
+				const targetActor = target instanceof PersonaActor ? target : target.actor;
+				return targetActor.hp <= 0;
+			});
+		}
+		case "struck-weakness": {
+			if (!situation.usedPower) {
+				return false;
+			}
+			for (const target of subjects) {
+				const targetActor = target instanceof PersonaActor ? target : target.actor;
+				const power = PersonaDB.findItem(situation.usedPower);
+				if (targetActor.system.type == "npc") {continue;}
+				if (power.system.type == "skillCard") {continue;}
+				if (!situation.attacker) {continue;}
+				const attacker = PersonaDB.findActor(situation?.attacker);
+				const resist = (targetActor as PC | Shadow).persona().elemResist((power as Usable).getDamageType(attacker));
+				if (resist == "weakness") {return true;}
+			}
+			return false;
+		}
+		case "is-distracted": {
+			const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
+			if (!target) {return undefined;}
+			return target.isDistracted();
+		}
+		case "engaged-with" : {
+			if (!combat) {return undefined;}
+			const target = getSubjectTokens(condition, situation, "conditionTarget")[0];
+			const target2 = getSubjectTokens(condition, situation, "conditionTarget2")[0];
+			if (!target || !target2) {return undefined;}
+			const tok1 = PersonaDB.getUniversalTokenAccessor(target);
+			const tok2 = PersonaDB.getUniversalTokenAccessor(target2);
+			return combat.isEngaging(tok1, tok2);
+		}
+		case "is-resistant-to": {
+			return subjects.some( target => {
+				const targetActor = target instanceof PersonaActor ? target : target.actor;
+				let dtype = condition.powerDamageType;
+				if (dtype == "by-power") {
+					if (!situation.usedPower) { return undefined; }
+					const power = PersonaDB.findItem(situation.usedPower);
+					if (power.system.type == "skillCard") {return undefined;}
+					if (!situation.attacker) {return undefined;}
+					const attacker = PersonaDB.findActor(situation?.attacker);
+					dtype = (power as Usable).getDamageType(attacker);
+				}
+				if (targetActor.system.type == "npc") {return undefined;}
+				const resist = (targetActor as PC | Shadow).persona().elemResist(dtype);
+				switch (resist) {
+					case "resist": case "block": case "absorb": case "reflect": return true;
+					case "weakness": case "normal": return  false;
+					default:
+						resist satisfies never;
+						return false;
+				}
+			});
+		}
+		default:
+			condition satisfies never;
+	}
+
+
 }
 
 

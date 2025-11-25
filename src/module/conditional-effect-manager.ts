@@ -684,6 +684,8 @@ export class ConditionalEffectManager {
 				return this.printPowerHasConditional(cond);
 			case "roll-property-is":
 				return this.printRollPropertyConditional(cond);
+			case "combat-comparison":
+				return this.printCombatComparison(cond);
 			default:
 				cond satisfies never;
 				return "";
@@ -743,6 +745,36 @@ export class ConditionalEffectManager {
 				return `Attack Roll hits and is ${not} within ailment range`;
 			case "is-within-instant-death-range":
 				return `Attack roll hits and is ${not} within instant death range`;
+			default:
+				cond.rollProp satisfies never;
+				return "ERROR";
+		}
+	}
+
+	static printCombatComparison(cond: Precondition & {type: "boolean"; boolComparisonTarget: "combat-comparison"}) : string {
+		const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, CONDITION_TARGETS) : "";
+		const target2 = ("conditionTarget2" in cond) ? this.translate(cond.conditionTarget2, CONDITION_TARGETS): "" ;
+		const not =  !cond.booleanState ? "not" : "";
+		switch (cond.combatProp) {
+			case "in-combat":
+				return `is ${not} in combat`;
+			case "is-dead":
+				return `${target1} is ${not} dead`;
+			case "struck-weakness":
+				return `attack ${not} targets a weakness`;
+			case "is-distracted":
+				return `${target1} is ${not} distracted`;
+			case "engaged":
+				return `${target1} is ${not} engaged with anyone`;
+			case "engaged-with":
+				return `${target1} is ${not} engaged with ${target2}`;
+			case "is-resistant-to": {
+				const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
+				return `${target1} is ${not} resistant to ${damageType}`;
+			}
+			default:
+				cond satisfies never;
+				return "ERROR";
 		}
 	}
 
