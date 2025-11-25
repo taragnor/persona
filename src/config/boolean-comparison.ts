@@ -19,11 +19,6 @@ import { CClass, Power, Tag } from "../module/item/persona-item.js";
 
 const BASIC_BOOLEAN_COMPARISON_LIST = [
 	"in-combat",
-	"is-critical",
-	"is-hit",
-	"is-within-ailment-range",
-	"is-within-instant-death-range",
-	"is-consumable",
 	"cameo-in-scene",
 ] as const;
 
@@ -38,6 +33,7 @@ const ACTIVE_BOOLEAN_COMPARISON_TARGET_LIST = [
 	"has-tag",//universal tag finder
 	"is-dead",
 	"power-has",
+	"roll-property-is",
 	"target-owner-comparison",
 	"has-status",
 	"status-to-be-inflicted",
@@ -71,6 +67,11 @@ const DEPRECATED_BOOLEAN_COMPARISON_LIST = [
 	"power-type-is",
 	"power-slot-is",
 	"damage-type-is",
+	"is-consumable",
+	"is-critical",
+	"is-hit",
+	"is-within-ailment-range",
+	"is-within-instant-death-range",
 ] as const;
 
 const BOOLEAN_COMPARISON_TARGET_LIST = [
@@ -85,7 +86,17 @@ const POWER_COMPARISON_SUBLIST_LIST = [
 	"damage-type-is",
 	"has-tag",
 	"power-name-is",
+	"is-consumable",
 ] as const;
+
+const ROLL_COMPARISON_SUBLIST_LIST = [
+	"is-critical",
+	"is-hit",
+	"is-within-ailment-range",
+	"is-within-instant-death-range",
+] as const;
+
+export const ROLL_COMPARISON_SUBLIST = HTMLTools.createLocalizationObject(ROLL_COMPARISON_SUBLIST_LIST, "persona.preconditions.comparison");
 
 export type BooleanComparisonTarget = typeof BOOLEAN_COMPARISON_TARGET_LIST[number];
 
@@ -114,12 +125,21 @@ type NonDeprecatedBoolComparisons = BasicBComparisonPC | NonBasicBoolComparison;
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck |  WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison | HasClassComparison | StatusInflictComparisonPC | PowerComparison
+StatusComparisonPC | TagComparisonPC | FlagComparisonPC | TargettedBComparisonPC | ResistanceCheck |  WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SocialComparison | ArcanaComparison | GeneralActorComparison | IsEnemyComparison | OrComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison | HasClassComparison | StatusInflictComparisonPC | PowerComparison | RollPropertyComparison
 ;
 
 type PowerComparison = {
 	boolComparisonTarget: "power-has",
 } & PowerComparisonsSub;
+
+type RollPropertyComparison = {
+	boolComparisonTarget: "roll-property-is",
+} & RollComparisonSub;
+
+type RollComparisonSub = {
+	//simple Roll Comparisons
+	rollProp: "is-critical" | "is-hit" | "is-within-ailment-range" | "is-within-instant-death-range";
+};
 
 type PowerComparisonsSub = {
 	powerProp: "power-target-type-is",
@@ -139,6 +159,8 @@ type PowerComparisonsSub = {
 } | {
 	powerProp: "power-name-is",
 	powerId: Power["id"],
+} | {
+	powerProp: "is-consumable",
 };
 
 type HasClassComparison = {
@@ -160,12 +182,15 @@ type ActorExistsComparison =  {
 
 
 type DeprecatedBoolComparisons =
-	MetaverseEnhancedComparison | PowerTypeComparison | PowerTypeComparisonPC | DeprecatedTagComparisons | SlotTypeComparison | DamageTypeComparisonPC;
-;
+	DeprecatedSimpleComparisons | PowerTypeComparison | PowerTypeComparisonPC | DeprecatedTagComparisons | SlotTypeComparison | DamageTypeComparisonPC;
 
-type MetaverseEnhancedComparison = {
-	boolComparisonTarget: "metaverse-enhanced",
-};
+type DeprecatedSimpleComparisons = {
+	boolComparisonTarget: "is-critical" | "is-hit" | "is-within-ailment-range" | "is-within-instant-death-range" | "metaverse-enhanced" | "is-consumable";
+}
+
+// type MetaverseEnhancedComparison = {
+// 	boolComparisonTarget: "metaverse-enhanced",
+// };
 
 
 type GeneralActorComparison = {
@@ -281,6 +306,7 @@ type PowerTypeComparison = {
 	boolComparisonTarget:  "power-target-type-is",
 	powerTargetType: MultiCheck<Power["system"]["targets"]>,
 }
+
 
 type StatusComparisonPC = {
 	boolComparisonTarget: "has-status",

@@ -288,3 +288,9 @@
 
 {{/if}}
 
+{{#if (eq cond.boolComparisonTarget "roll-property-is")}}
+<select name="{{strcat namePrefix 'rollProp'}}">
+	{{selectOptions POWERSTUFF.ROLL_COMPARISON_SUBLIST localize=true selected=cond.rollProp}}
+</select>
+{{/if}}
+

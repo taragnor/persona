@@ -208,17 +208,17 @@ function numericComparison(condition: SourcedPrecondition, situation: Situation)
 			break;
 		}
 		case "health-percentage": {
-       const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
+			const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!subject) {return false;}
 			target = (subject.hp / subject.mhpEstimate) * 100;
 			break;
-    }
+		}
 		case "clock-comparison": {
-       const clock = ProgressClock.getClock(condition.clockId);
+			const clock = ProgressClock.getClock(condition.clockId);
 			if (!clock) {return false;}
 			target = clock.amt;
 			break;
-    }
+		}
 		case "percentage-of-hp": {
 			const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!subject) {return false;}
@@ -249,13 +249,13 @@ function numericComparison(condition: SourcedPrecondition, situation: Situation)
 			const arr = getSubjectActors(condition, situation, "conditionTarget");
 			if (arr.length == 0) {return false;}
 			target = arr.reduce( (acc,subject) => {
-			const item = game.items.get(condition.itemId);
-			if (!item) {return acc;}
-			return acc + subject.items.contents
-			.reduce( (a,x) => (x.name == item.name && ("amount" in x.system))
-				? (a + x.system.amount)
-				: a
-				, 0);
+				const item = game.items.get(condition.itemId);
+				if (!item) {return acc;}
+				return acc + subject.items.contents
+					.reduce( (a,x) => (x.name == item.name && ("amount" in x.system))
+						? (a + x.system.amount)
+						: a
+						, 0);
 			}, 0);
 			break;
 		}
@@ -303,11 +303,11 @@ function numericComparison(condition: SourcedPrecondition, situation: Situation)
 				case "shadow":
 					break;
 				case "npcAlly": {
-           const proxy = (subject as NPCAlly).getNPCProxyActor();
+					const proxy = (subject as NPCAlly).getNPCProxyActor();
 					if (!proxy) {break;}
 					targetActor = proxy;
 					break;
-        }
+				}
 				case "pc": case "npc":
 					targetActor = subject as PC | NPC;
 					break;
@@ -524,251 +524,252 @@ function triggerComparison(condition: DeepReadonly<Triggered>, situation: Situat
 
 /** returns undefined in case of a state that just shouldn't be analzyed at all*/
 function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Situation): boolean | undefined {
-   switch(condition.boolComparisonTarget) {
-      case "engaged": {
-         const subjects = getSubjects(condition, situation, "conditionTarget");
-         if (!subjects) {return undefined;}
-         const combat = game.combat as PersonaCombat;
-         if (!combat) {return undefined;}
-         return subjects.some( subject => {
-            if (subject instanceof PersonaActor) {
-               if (subject.isNPC()) {return false;}
-            }
-            const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken((subject).accessor);
-            if (!subjectToken) {
-               // PersonaError.softFail(`Can't find token for ${subject?.name}`);
-               return false;
-            }
-            return combat.isEngagedByAnyFoe(subjectToken);
-         });
-      }
-      case "engaged-with": {
-         //return true if X is engaging Y
-         const combat = game.combat as PersonaCombat;
-         if (!combat) {return undefined;}
-         const target = getSubjectTokens(condition, situation, "conditionTarget")[0];
-         const target2 = getSubjectTokens(condition, situation, "conditionTarget2")[0];
-         if (!target || !target2) {return undefined;}
-         const tok1 = PersonaDB.getUniversalTokenAccessor(target);
-         const tok2 = PersonaDB.getUniversalTokenAccessor(target2);
-         return combat.isEngaging(tok1, tok2);
-      }
-      case "metaverse-enhanced":
+	switch(condition.boolComparisonTarget) {
+		case "engaged": {
+			const subjects = getSubjects(condition, situation, "conditionTarget");
+			if (!subjects) {return undefined;}
+			const combat = game.combat as PersonaCombat;
+			if (!combat) {return undefined;}
+			return subjects.some( subject => {
+				if (subject instanceof PersonaActor) {
+					if (subject.isNPC()) {return false;}
+				}
+				const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken((subject).accessor);
+				if (!subjectToken) {
+					// PersonaError.softFail(`Can't find token for ${subject?.name}`);
+					return false;
+				}
+				return combat.isEngagedByAnyFoe(subjectToken);
+			});
+		}
+		case "engaged-with": {
+			//return true if X is engaging Y
+			const combat = game.combat as PersonaCombat;
+			if (!combat) {return undefined;}
+			const target = getSubjectTokens(condition, situation, "conditionTarget")[0];
+			const target2 = getSubjectTokens(condition, situation, "conditionTarget2")[0];
+			if (!target || !target2) {return undefined;}
+			const tok1 = PersonaDB.getUniversalTokenAccessor(target);
+			const tok2 = PersonaDB.getUniversalTokenAccessor(target2);
+			return combat.isEngaging(tok1, tok2);
+		}
+		case "metaverse-enhanced":
 			//this should be deprecated
-         return false;
-      case "is-shadow": {
-         const arr = getSubjects(condition, situation, "conditionTarget");
-         if (!arr) {return undefined;}
-         return arr.some( target => {
-            const targetActor = target instanceof PersonaActor ? target : target.actor;
-            if (targetActor.system.type == "shadow") {return true;}
-         });
-      }
-      case "is-pc": {
-         const targets = getSubjectActors(condition, situation,  "conditionTarget");
-         if (!targets) {return undefined;}
-         return targets.some( target => target.isPC());
-      }
-      case "has-tag": {
-         return hasTagConditional(condition, situation);
-      }
-      case "power-type-is": {
-         if (!situation.usedPower) {
-            return undefined;
-         }
-         const power = PersonaDB.findItem(situation.usedPower);
-         return power.system.type == "power" && power.system.subtype == condition.powerType;
-      }
-      case "in-combat": {
-         return Boolean(situation.activeCombat);
-      }
-      case "is-critical": {
-         return situation.criticalHit ?? false;
-      }
-      case "is-hit": {
-         return situation.hit === true;
-      }
-      case "damage-type-is": {
-         if (!situation.usedPower) {
-            return undefined;
-         }
-         const power = PersonaDB.findItem(situation.usedPower);
-         if (!power || power.isSkillCard()) {return undefined;}
-         if (!situation.attacker && !situation.user) {return undefined;}
-         const attackerAcc = situation.attacker ? situation.attacker : situation.user!;
-         const attacker = PersonaDB.findActor(attackerAcc);
-         if (!attacker) {return undefined;}
-         const dtype = power.getDamageType(attacker);
-         return multiCheckContains(condition.powerDamageType, [dtype as string]);
-      }
-      case "has-status" : {
-         const arr = getSubjects(condition, situation, "conditionTarget");
-         if (!arr) {return undefined;}
-         return arr.some( target => {
-            const targetActor = target instanceof PersonaActor ? target : target.actor;
-            if (typeof condition.status == "string") {
-               return (targetActor.statuses.has(condition.status));
-            } else {
-               return Object.entries(condition.status)
-                  .filter( ([_, val]) => val== true)
-                  .some( ([sname,_]) => targetActor.statuses.has(sname as StatusEffectId));
-            }
-         });
-      }
-      case  "struck-weakness": {
-         if (!situation.usedPower) {
-            return false;
-         }
-         const arr = getSubjects(condition, situation, "conditionTarget");
-         if (!arr) {return undefined;}
-         for (const target of arr) {
-            const targetActor = target instanceof PersonaActor ? target : target.actor;
-            const power = PersonaDB.findItem(situation.usedPower);
-            if (targetActor.system.type == "npc") {continue;}
-            if (power.system.type == "skillCard") {continue;}
-            if (!situation.attacker) {continue;}
-            const attacker = PersonaDB.findActor(situation?.attacker);
-            const resist = (targetActor as PC | Shadow).persona().elemResist((power as Usable).getDamageType(attacker));
-            if (resist == "weakness") {return true;}
-         }
-         return false;
-      }
-      case "is-resistant-to": {
-         const arr = getSubjects(condition, situation, "conditionTarget");
-         if (!arr) {return undefined;}
-         return arr.some( target => {
-            const targetActor = target instanceof PersonaActor ? target : target.actor;
-            let dtype = condition.powerDamageType;
-            if (dtype == "by-power") {
-               if (!situation.usedPower) { return undefined; }
-               const power = PersonaDB.findItem(situation.usedPower);
-               if (power.system.type == "skillCard") {return undefined;}
-               if (!situation.attacker) {return undefined;}
-               const attacker = PersonaDB.findActor(situation?.attacker);
-               dtype = (power as Usable).getDamageType(attacker);
-            }
-            if (targetActor.system.type == "npc") {return undefined;}
-            const resist = (targetActor as PC | Shadow).persona().elemResist(dtype);
-            switch (resist) {
-               case "resist": case "block": case "absorb": case "reflect": return true;
-               case "weakness": case "normal": return  false;
-               default:
-                  resist satisfies never;
-                  return false;
-            }
-         });
-      }
-      case "flag-state": {
-         const targetActor = getSubjectActors(condition, situation,  "conditionTarget")[0];
-         if (!targetActor) {return undefined;}
-         return targetActor.getFlagState(condition.flagId);
-      }
-      case "is-same-arcana": {
-         if (!situation.attacker) {return undefined;}
-         const actor = PersonaDB.findActor(situation.attacker);
-         if(!situation.target) {
-            return undefined;
-         }
-         const targetActor = getSubjectActors(condition, situation,  "conditionTarget")[0];
-         if (!targetActor) {return undefined;}
-         return actor.system.tarot == targetActor.system.tarot;
-      }
-      case "is-dead": {
-         const arr = getSubjects(condition, situation, "conditionTarget");
-         if (!arr) {return undefined;}
-         return arr.some( target => {
-            const targetActor = target instanceof PersonaActor ? target : target.actor;
-            return targetActor.hp <= 0;
-         });
-      }
-      case "is-consumable": {
-         if (!situation.usedPower) {
-            return undefined;
-         }
-         const power = PersonaDB.findItem(situation.usedPower);
-         return power.system.type == "consumable";
-      }
-      case "target-owner-comparison": {
-         const target = getSubjectActors(condition, situation, "conditionTarget")[0];
-         const target2 = getSubjectActors(condition, situation, "conditionTarget2")[0];
-         if (!target || !target2) {return undefined;}
-         return target == target2;
-      }
-      case "power-target-type-is": {
-         if (!situation.usedPower) {return undefined;}
-         const power = PersonaDB.findItem(situation.usedPower);
-         if (!power) {
-            PersonaError.softFail(`Can't find power in conditional`);
-            return undefined;
-         }
-         return multiCheckContains(condition.powerTargetType, [power.targets()]);
-         // return power.system.targets == condition.powerTargetType;
-      }
-      case "weather-is": {
-         const weather = PersonaCalendar.getWeather();
-         const comparison = condition.weatherComparison;
-         if (typeof comparison == "string") {
-            return condition.weatherComparison == weather;
-         }
-         return comparison[weather] ?? false; 
-      }
-      case "weekday-is": {
-         const weekday = PersonaCalendar.weekday();
-         return condition.days[weekday];
-      }
-      case "social-target-is": {
-         const arr = getSubjects(condition, situation, "conditionTarget");
-         if (!arr) {return undefined;}
-         return arr.some( target => {
-            const desiredActor = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, condition.source);
-            return target == desiredActor;
-         });
-      }
-      case "social-target-is-multi": {
-         const target = getSubjectActors(condition, situation, "conditionTarget")[0];
-         if (!target) { return undefined; }
-         const actors= multiCheckToArray(condition.socialLinkIdOrTarot) as SocialLinkIdOrTarot[];
-         return actors.some(actor => getSocialLinkTarget(actor, situation, condition.source) == target);
-      }
-      case "shadow-role-is": {
-         const target = getSubjectActors(condition, situation, "conditionTarget")[0];
-         if (!target) {return undefined;}
-         if (!target.isShadow()) {return false;}
-         if (typeof condition.shadowRole == "string") {
-            return (condition.shadowRole == target.system.role || target.system.role2 == condition.shadowRole);
-         }
-         return multiCheckContains(condition.shadowRole, [target.system.role, target.system.role2]);
-      }
-      case "is-distracted": {
-         const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
-         if (!target) {return undefined;}
-         return target.isDistracted();
-      }
-      case "active-scene-is": {
-         const scene = game.scenes.active;
-         if (!scene) {return false;}
-         return scene.id == condition.sceneId;
-      }
-      case "is-gm": {
-         const user = getUser(condition.userComparisonTarget, situation);
-         return user?.isGM ?? undefined;
-      }
-      case "has-item-in-inventory": {
-         const item = game.items.get(condition.itemId);
-         if (!item) {return undefined;}
-         const targets = getSubjectActors(condition, situation,  "conditionTarget");
-         if (!targets) {return undefined;}
-         return targets.some( target => {
-            const itemList = condition.equipped
-               ? target.equippedItems()
-               : target.items.contents;
-            return itemList.some(x=> x.name == item.name && (("amount" in x.system)? x.system.amount > 0 : true ));
-         });
-      }
-      case "creature-type-is": {
-         const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
-         if (!target) {return undefined;}
-         return multiCheckContains(condition.creatureType, [target.system.creatureType]);
+			return false;
+		case "is-shadow": {
+			const arr = getSubjects(condition, situation, "conditionTarget");
+			if (!arr) {return undefined;}
+			return arr.some( target => {
+				const targetActor = target instanceof PersonaActor ? target : target.actor;
+				if (targetActor.system.type == "shadow") {return true;}
+			});
+		}
+		case "is-pc": {
+			const targets = getSubjectActors(condition, situation,  "conditionTarget");
+			if (!targets) {return undefined;}
+			return targets.some( target => target.isPC());
+		}
+		case "has-tag": {
+			return hasTagConditional(condition, situation);
+		}
+		case "power-type-is": {
+			if (!situation.usedPower) {
+				return undefined;
+			}
+			const power = PersonaDB.findItem(situation.usedPower);
+			return power.system.type == "power" && power.system.subtype == condition.powerType;
+		}
+		case "in-combat": {
+			return Boolean(situation.activeCombat);
+		}
+		case "is-critical": {
+			return situation.criticalHit ?? false;
+		}
+		case "is-hit": {
+			return situation.hit === true;
+		}
+		case "damage-type-is": {
+			if (!situation.usedPower) {
+				return undefined;
+			}
+			const power = PersonaDB.findItem(situation.usedPower);
+			if (!power || power.isSkillCard()) {return undefined;}
+			if (!situation.attacker && !situation.user) {return undefined;}
+			const attackerAcc = situation.attacker ? situation.attacker : situation.user!;
+			const attacker = PersonaDB.findActor(attackerAcc);
+			if (!attacker) {return undefined;}
+			const dtype = power.getDamageType(attacker);
+			return multiCheckContains(condition.powerDamageType, [dtype as string]);
+		}
+		case "has-status" : {
+			const arr = getSubjects(condition, situation, "conditionTarget");
+			if (!arr) {return undefined;}
+			return arr.some( target => {
+				const targetActor = target instanceof PersonaActor ? target : target.actor;
+				if (typeof condition.status == "string") {
+					return (targetActor.statuses.has(condition.status));
+				} else {
+					return Object.entries(condition.status)
+						.filter( ([_, val]) => val== true)
+						.some( ([sname,_]) => targetActor.statuses.has(sname as StatusEffectId));
+				}
+			});
+		}
+		case  "struck-weakness": {
+			if (!situation.usedPower) {
+				return false;
+			}
+			const arr = getSubjects(condition, situation, "conditionTarget");
+			if (!arr) {return undefined;}
+			for (const target of arr) {
+				const targetActor = target instanceof PersonaActor ? target : target.actor;
+				const power = PersonaDB.findItem(situation.usedPower);
+				if (targetActor.system.type == "npc") {continue;}
+				if (power.system.type == "skillCard") {continue;}
+				if (!situation.attacker) {continue;}
+				const attacker = PersonaDB.findActor(situation?.attacker);
+				const resist = (targetActor as PC | Shadow).persona().elemResist((power as Usable).getDamageType(attacker));
+				if (resist == "weakness") {return true;}
+			}
+			return false;
+		}
+		case "is-resistant-to": {
+			const arr = getSubjects(condition, situation, "conditionTarget");
+			if (!arr) {return undefined;}
+			return arr.some( target => {
+				const targetActor = target instanceof PersonaActor ? target : target.actor;
+				let dtype = condition.powerDamageType;
+				if (dtype == "by-power") {
+					if (!situation.usedPower) { return undefined; }
+					const power = PersonaDB.findItem(situation.usedPower);
+					if (power.system.type == "skillCard") {return undefined;}
+					if (!situation.attacker) {return undefined;}
+					const attacker = PersonaDB.findActor(situation?.attacker);
+					dtype = (power as Usable).getDamageType(attacker);
+				}
+				if (targetActor.system.type == "npc") {return undefined;}
+				const resist = (targetActor as PC | Shadow).persona().elemResist(dtype);
+				switch (resist) {
+					case "resist": case "block": case "absorb": case "reflect": return true;
+					case "weakness": case "normal": return  false;
+					default:
+						resist satisfies never;
+						return false;
+				}
+			});
+		}
+		case "flag-state": {
+			const targetActor = getSubjectActors(condition, situation,  "conditionTarget")[0];
+			if (!targetActor) {return undefined;}
+			return targetActor.getFlagState(condition.flagId);
+		}
+		case "is-same-arcana": {
+			if (!situation.attacker) {return undefined;}
+			const actor = PersonaDB.findActor(situation.attacker);
+			if(!situation.target) {
+				return undefined;
+			}
+			const targetActor = getSubjectActors(condition, situation,  "conditionTarget")[0];
+			if (!targetActor) {return undefined;}
+			return actor.system.tarot == targetActor.system.tarot;
+		}
+		case "is-dead": {
+			const arr = getSubjects(condition, situation, "conditionTarget");
+			if (!arr) {return undefined;}
+			return arr.some( target => {
+				const targetActor = target instanceof PersonaActor ? target : target.actor;
+				return targetActor.hp <= 0;
+			});
+		}
+		case "is-consumable": {
+			//Deprecated
+			if (!situation.usedPower) {
+				return undefined;
+			}
+			const power = PersonaDB.findItem(situation.usedPower);
+			return power.system.type == "consumable";
+		}
+		case "target-owner-comparison": {
+			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+			const target2 = getSubjectActors(condition, situation, "conditionTarget2")[0];
+			if (!target || !target2) {return undefined;}
+			return target == target2;
+		}
+		case "power-target-type-is": {
+			if (!situation.usedPower) {return undefined;}
+			const power = PersonaDB.findItem(situation.usedPower);
+			if (!power) {
+				PersonaError.softFail(`Can't find power in conditional`);
+				return undefined;
+			}
+			return multiCheckContains(condition.powerTargetType, [power.targets()]);
+			// return power.system.targets == condition.powerTargetType;
+		}
+		case "weather-is": {
+			const weather = PersonaCalendar.getWeather();
+			const comparison = condition.weatherComparison;
+			if (typeof comparison == "string") {
+				return condition.weatherComparison == weather;
+			}
+			return comparison[weather] ?? false; 
+		}
+		case "weekday-is": {
+			const weekday = PersonaCalendar.weekday();
+			return condition.days[weekday];
+		}
+		case "social-target-is": {
+			const arr = getSubjects(condition, situation, "conditionTarget");
+			if (!arr) {return undefined;}
+			return arr.some( target => {
+				const desiredActor = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, condition.source);
+				return target == desiredActor;
+			});
+		}
+		case "social-target-is-multi": {
+			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+			if (!target) { return undefined; }
+			const actors= multiCheckToArray(condition.socialLinkIdOrTarot) as SocialLinkIdOrTarot[];
+			return actors.some(actor => getSocialLinkTarget(actor, situation, condition.source) == target);
+		}
+		case "shadow-role-is": {
+			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+			if (!target) {return undefined;}
+			if (!target.isShadow()) {return false;}
+			if (typeof condition.shadowRole == "string") {
+				return (condition.shadowRole == target.system.role || target.system.role2 == condition.shadowRole);
+			}
+			return multiCheckContains(condition.shadowRole, [target.system.role, target.system.role2]);
+		}
+		case "is-distracted": {
+			const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
+			if (!target) {return undefined;}
+			return target.isDistracted();
+		}
+		case "active-scene-is": {
+			const scene = game.scenes.active;
+			if (!scene) {return false;}
+			return scene.id == condition.sceneId;
+		}
+		case "is-gm": {
+			const user = getUser(condition.userComparisonTarget, situation);
+			return user?.isGM ?? undefined;
+		}
+		case "has-item-in-inventory": {
+			const item = game.items.get(condition.itemId);
+			if (!item) {return undefined;}
+			const targets = getSubjectActors(condition, situation,  "conditionTarget");
+			if (!targets) {return undefined;}
+			return targets.some( target => {
+				const itemList = condition.equipped
+					? target.equippedItems()
+					: target.items.contents;
+				return itemList.some(x=> x.name == item.name && (("amount" in x.system)? x.system.amount > 0 : true ));
+			});
+		}
+		case "creature-type-is": {
+			const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
+			if (!target) {return undefined;}
+			return multiCheckContains(condition.creatureType, [target.system.creatureType]);
 
 		}
 		case "power-slot-is": {
@@ -886,12 +887,14 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
 		}
 		case "status-to-be-inflicted": {
 			if ("statusEffect" in situation && typeof situation.statusEffect == "string") {
-			return multiCheckContains(condition.status, [situation.statusEffect]);
+				return multiCheckContains(condition.status, [situation.statusEffect]);
 			}
 			return false;
 		}
 		case "power-has":
 			return powerHasConditional(condition, situation);
+		case "roll-property-is":
+			return rollPropertyIs(condition, situation);
 		default :
 			condition satisfies never;
 			return undefined;
@@ -984,13 +987,13 @@ function getUser (target: UserComparisonTarget, situation : Situation) : Foundry
 
 function getSubjectTokens<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K): PToken[] {
 	const subjects = getSubjects(cond, situation, field)
-	.filter( subject =>  subject instanceof TokenDocument);
+		.filter( subject =>  subject instanceof TokenDocument);
 	return subjects;
 }
 
 export function getSubjectActors<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K): (ValidAttackers | NPC) []{
 	const subjects = getSubjects(cond, situation, field)
-	.map( subject => subject instanceof TokenDocument ? subject.actor : subject);
+		.map( subject => subject instanceof TokenDocument ? subject.actor : subject);
 	return subjects;
 }
 
@@ -1052,109 +1055,109 @@ export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, si
 }
 
 function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K) : (PToken | ValidAttackers | NPC) []{
-  if (!(field in cond)) {
-    Debug(cond);
-    Debug(situation);
-    // const printCondition = ConditionalEffectManager.printConditional(cond as unknown as Precondition);
-    // PersonaError.softFail(`No field ${field} in ${printCondition} ${source?.name} of ${source?.parent?.name}`)
-    return [];
-  }
-  const condTarget = cond[field];
-  switch (condTarget) {
-    case "owner":
-      //owner of the power in question
-		  if (cond.owner) {
-			  const owner = PersonaDB.findActor(cond.owner);
-			  if (game.combat) {
-				  const combatant = game.combat.getCombatantByActor(owner);
-				  if (combatant) { return [combatant.token as PToken];}
-			  }
-			  if (owner) { return [owner as ValidAttackers];}
-		  }
-      if (cond.source && cond.source.parent instanceof PersonaActor) {
-        const parent = cond.source.parent;
-			if (parent instanceof PersonaActor && parent.isValidCombatant()) {return [parent];}
-      }
-      if ("actorOwner" in cond && cond.actorOwner) {
-        const tok = 	PersonaCombat.getPTokenFromActorAccessor(cond.owner as NonNullable<SourcedPrecondition["owner"]>);
-        return tok ? [tok] : [];
-      }
-      return [];
-    case "attacker":
-      if (situation.attacker?.token){
-        const tok =  PersonaDB.findToken(situation.attacker.token) as PToken ;
-        return tok ? [tok] : [];
-      } else {
-        const tok = situation.attacker ? PersonaDB.findActor(situation.attacker): undefined;
-        return tok ? [tok] : [];
-      }
-    case "target": {
-      if (situation.target?.token) {
-        const tok = PersonaDB.findToken(situation.target.token) as PToken | undefined;
-        return tok ? [tok] : [];
-      }
-      const target : UniversalActorAccessor<ValidAttackers | ValidSocialTarget> | undefined = situation.target ?? situation.socialTarget;
-      const tok = target ? PersonaDB.findActor(target): undefined;
-      return tok ? [tok] : [];
-    }
-    case "user":
-      if (!situation.user) {return [];}
-      if (situation?.user?.token) {
-        const tok =  PersonaDB.findToken(situation.user.token) as PToken | undefined;
-        return tok ? [tok] : [];
-      } else {
-        const tok=  PersonaDB.findActor(situation.user);
-        return tok ? [tok] : [];
-      }
-    case "triggering-character":
-      if ( !("triggeringCharacter" in situation)|| !situation.triggeringCharacter) {return [];}
-      if (situation.triggeringCharacter.token) {
-        const tok= PersonaDB.findToken(situation.triggeringCharacter.token) as PToken | undefined;
-        return tok ? [tok] : [];
-      } else {
-        const actor =  PersonaDB.findActor(situation.triggeringCharacter);
-        return actor ? [actor] : [];
-      }
-    case "cameo":
-      if (!situation.cameo) {return [];}
-      if (situation.cameo.token) {
-        const tok =  PersonaDB.findToken(situation.cameo.token) as PToken | undefined;
-        return tok ? [tok] : [];
-      } else {
-        const actor = PersonaDB.findActor(situation.cameo);
-        return actor ? [actor] : [];
-      }
-    case "all-foes":
-    case "all-allies": {
-      PersonaError.softFail("all-foes and all-allies not allowed as part of a conditional");
-      return [];
-    }
-    case "all-in-region": {
-      let id : string | undefined;
-      if ("triggeringRegionId" in situation) {
-        id = situation.triggeringRegionId;
-      }
-      const region = Metaverse.getRegion(id);
-      if (!region) {return [];}
-      //have to get all in scene due to party token mucking it up
-      // const tokens = Array.from(region.tokens)
-      const tokens = region.parent.tokens.contents
-      .filter( tok => tok.actor && tok.actor.isValidCombatant());
-      return tokens as PToken[];
-    }
-    default: {
-      condTarget satisfies undefined;
-      if (situation.target?.token) {
-        const tok = PersonaDB.findToken(situation.target.token) as PToken | undefined;
-        return tok ? [tok] : [];
-      }
-      if (!situation.user) {
-        return [];
-      }
-      const actor=  PersonaDB.findActor(situation.user);
-      return actor ? [actor] : [];
-    }
-  }
+	if (!(field in cond)) {
+		Debug(cond);
+		Debug(situation);
+		// const printCondition = ConditionalEffectManager.printConditional(cond as unknown as Precondition);
+		// PersonaError.softFail(`No field ${field} in ${printCondition} ${source?.name} of ${source?.parent?.name}`)
+		return [];
+	}
+	const condTarget = cond[field];
+	switch (condTarget) {
+		case "owner":
+			//owner of the power in question
+			if (cond.owner) {
+				const owner = PersonaDB.findActor(cond.owner);
+				if (game.combat) {
+					const combatant = game.combat.getCombatantByActor(owner);
+					if (combatant) { return [combatant.token as PToken];}
+				}
+				if (owner) { return [owner as ValidAttackers];}
+			}
+			if (cond.source && cond.source.parent instanceof PersonaActor) {
+				const parent = cond.source.parent;
+				if (parent instanceof PersonaActor && parent.isValidCombatant()) {return [parent];}
+			}
+			if ("actorOwner" in cond && cond.actorOwner) {
+				const tok = 	PersonaCombat.getPTokenFromActorAccessor(cond.owner as NonNullable<SourcedPrecondition["owner"]>);
+				return tok ? [tok] : [];
+			}
+			return [];
+		case "attacker":
+			if (situation.attacker?.token){
+				const tok =  PersonaDB.findToken(situation.attacker.token) as PToken ;
+				return tok ? [tok] : [];
+			} else {
+				const tok = situation.attacker ? PersonaDB.findActor(situation.attacker): undefined;
+				return tok ? [tok] : [];
+			}
+		case "target": {
+			if (situation.target?.token) {
+				const tok = PersonaDB.findToken(situation.target.token) as PToken | undefined;
+				return tok ? [tok] : [];
+			}
+			const target : UniversalActorAccessor<ValidAttackers | ValidSocialTarget> | undefined = situation.target ?? situation.socialTarget;
+			const tok = target ? PersonaDB.findActor(target): undefined;
+			return tok ? [tok] : [];
+		}
+		case "user":
+			if (!situation.user) {return [];}
+			if (situation?.user?.token) {
+				const tok =  PersonaDB.findToken(situation.user.token) as PToken | undefined;
+				return tok ? [tok] : [];
+			} else {
+				const tok=  PersonaDB.findActor(situation.user);
+				return tok ? [tok] : [];
+			}
+		case "triggering-character":
+			if ( !("triggeringCharacter" in situation)|| !situation.triggeringCharacter) {return [];}
+			if (situation.triggeringCharacter.token) {
+				const tok= PersonaDB.findToken(situation.triggeringCharacter.token) as PToken | undefined;
+				return tok ? [tok] : [];
+			} else {
+				const actor =  PersonaDB.findActor(situation.triggeringCharacter);
+				return actor ? [actor] : [];
+			}
+		case "cameo":
+			if (!situation.cameo) {return [];}
+			if (situation.cameo.token) {
+				const tok =  PersonaDB.findToken(situation.cameo.token) as PToken | undefined;
+				return tok ? [tok] : [];
+			} else {
+				const actor = PersonaDB.findActor(situation.cameo);
+				return actor ? [actor] : [];
+			}
+		case "all-foes":
+		case "all-allies": {
+			PersonaError.softFail("all-foes and all-allies not allowed as part of a conditional");
+			return [];
+		}
+		case "all-in-region": {
+			let id : string | undefined;
+			if ("triggeringRegionId" in situation) {
+				id = situation.triggeringRegionId;
+			}
+			const region = Metaverse.getRegion(id);
+			if (!region) {return [];}
+			//have to get all in scene due to party token mucking it up
+			// const tokens = Array.from(region.tokens)
+			const tokens = region.parent.tokens.contents
+			.filter( tok => tok.actor && tok.actor.isValidCombatant());
+			return tokens as PToken[];
+		}
+		default: {
+			condTarget satisfies undefined;
+			if (situation.target?.token) {
+				const tok = PersonaDB.findToken(situation.target.token) as PToken | undefined;
+				return tok ? [tok] : [];
+			}
+			if (!situation.user) {
+				return [];
+			}
+			const actor=  PersonaDB.findActor(situation.user);
+			return actor ? [actor] : [];
+		}
+	}
 }
 
 export function multiCheckToArray<T extends string>(multiCheck: MultiCheck<T>) : T[] {
@@ -1300,11 +1303,30 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
 		case "power-name-is": {
 			return power.id == condition.powerId;
 		}
+		case "is-consumable": {
+			return power.system.type == "consumable";
+		}
 		default:
 			condition satisfies never;
 			return undefined;
 	}
 
+}
+
+function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "roll-property-is"}, situation: Situation) : U<boolean> {
+	switch (condition.rollProp) {
+		case "is-critical":
+			return situation.criticalHit ?? false;
+		case "is-hit":
+				return situation.hit === true;
+		case "is-within-ailment-range":
+				return "withinAilmentRange" in situation ? situation.withinAilmentRange ?? false : false;
+		case "is-within-instant-death-range":
+				return "withinInstantKillRange" in situation ? situation.withinInstantKillRange ?? false : false;
+		default:
+				condition.rollProp satisfies never;
+			return undefined;
+	}
 }
 
 

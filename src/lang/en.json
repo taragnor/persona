@@ -789,6 +789,7 @@
 	"persona.preconditions.comparison.has-tag": "Has Tag",
 	"persona.preconditions.comparison.has-class": "Has Character Class",
 	"persona.preconditions.comparison.power-has": "Power Comparison",
+	"persona.preconditions.comparison.roll-property-is": "Roll Property",
 	"persona.preconditions.comparison.power-name-is": "Power Name Is",
 	"persona.preconditions.comparison.has-creature-tag": " (Deprecated) Has Creature Tag",
 	"persona.preconditions.comparison.cameo-in-scene": "Card has a Cameo (Deprecated)",

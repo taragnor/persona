@@ -2585,7 +2585,7 @@ extraConditionsFromTags( this: SocialCard) : SocialCard['system']['conditions'] 
 					creatureTag: 'stuck-in-metaverse',
 					booleanState: false,
 				};
-				return [ realWorld ]; 
+				return [ realWorld ];
 			}
 			case 'date':
 			case 'friends': {

@@ -682,6 +682,8 @@ export class ConditionalEffectManager {
 				return `Status ${this.translate(cond.status, STATUS_EFFECT_TRANSLATION_TABLE)} is about to be inflicted`;
 			case "power-has":
 				return this.printPowerHasConditional(cond);
+			case "roll-property-is":
+				return this.printRollPropertyConditional(cond);
 			default:
 				cond satisfies never;
 				return "";
@@ -721,11 +723,27 @@ export class ConditionalEffectManager {
 				const powerName = power?.name ?? "ERROR";
 				return `Power is ${powerName}`;
 			}
+			case "is-consumable":
+				return `Usable is Consumable Item`;
 			default:
 				cond satisfies never;
 				return "ERROR";
 		}
 
+	}
+
+	static printRollPropertyConditional(cond: Precondition & {type: "boolean"; boolComparisonTarget: "roll-property-is"}) : string {
+		const not =  !cond.booleanState ? "not" : "";
+		switch (cond.rollProp) {
+			case "is-critical":
+				return `${not} critical hit/success`;
+			case "is-hit":
+				return `${not} hit/success`;
+			case "is-within-ailment-range":
+				return `Attack Roll hits and is ${not} within ailment range`;
+			case "is-within-instant-death-range":
+				return `Attack roll hits and is ${not} within instant death range`;
+		}
 	}
 
 	static getTagNameForHasTag(cond: Precondition & {type: "boolean"} & {boolComparisonTarget: "has-tag"}): string {
