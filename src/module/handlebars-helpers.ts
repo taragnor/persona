@@ -964,6 +964,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"deprecationList" : function<T extends string | number, L extends T[] | Record<T, unknown>>(listElement: T, nonDepList: L, fullList: L): L {
+			debugger;
 			if (!listElement) {return nonDepList;}
 			if (Array.isArray(nonDepList)) {
 				if (nonDepList.includes(listElement)) {

@@ -75,16 +75,7 @@
 		</button>
 		{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=true showLearnedBuffer=true activePowersOnly=activePowersOnly canDelete=canDelete showSideboard=false usePowers=true}}
 	</div>
-	<div class="talents">
-		<span>
-			Talents:
-		</span>
-			{{#each persona.talents as |talent i|}}
-			<span class="talent" data-talent-id="{{talent.id}}" title="{{talent.tooltip}}">
-				{{talent.displayedName}} ({{getTalentLevel ../persona talent}})
-		</span>
-			{{/each}}
-	</div>
+		{{> "systems/persona/parts/talents-section.hbs" actor=actor CONST=CONST persona=persona}}
 	<div>
 		{{> "systems/persona/parts/persona-stats-display.hbs" CONST=CONST persona=persona}}
 	</div>

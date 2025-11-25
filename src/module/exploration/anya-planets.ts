@@ -41,11 +41,12 @@ export class AnyaPlanets {
 
 		this.outer.createPlanet("Satellite A", 5 );
 		this.outer.createPlanet("Anarchy City", 6 );
+		this.outer.createPlanet("Oribtal Military", 9 );
 		this.outer.createPlanet("Satellite B", 10 );
 		this.outer.createPlanet("City of the Iron Fist", 13 );
 		this.outer.createPlanet("Satellite C", 14 );
 		// this.outer.createPlanet("outer F", 15 );
-		// const PB = this.periphery.createPlanet("Satellite Control Station", 2 );
+		this.periphery.createPlanet("Satellite Control Station", 2 );
 		const PA = this.periphery.createPlanet("GateWay To M", 20 );
 		const asteroidM = { name: "Asteroid M", hardLinks: [PA]};
 		const Fleetwood = { name: "Fleetwood School for the Badass (shadow Anya)", hardLinks: [asteroidM]};

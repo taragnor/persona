@@ -2,7 +2,6 @@ import { ActorConverters } from "../converters/actorConverters.js";
 import { LevelUpCalculator } from "../../config/level-up-calculator.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { ENCOUNTER_RATE_PROBABILITY } from "../../config/probability.js";
-import { SeededRandom } from "../utility/seededRandom.js";
 import { PersonaSFX } from "../combat/persona-sfx.js";
 import { PERMA_BUFFS } from "../../config/perma-buff-type.js";
 import { PermaBuffType } from "../../config/perma-buff-type.js";
@@ -2063,7 +2062,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	userDefensiveEffects(this: ValidAttackers) : ModifierContainer [] {
 		if (!this.isValidCombatant()) {return [];}
 		return this.actorMainModifiers()
-			.filter(x=> x.getEffects(this, ["defensive"]));
+			.filter(x=> x.getEffects(this, {CETypes: ["defensive"]}));
 	}
 
 	getDefense(this: ValidAttackers,  type : Defense) : Calculation {

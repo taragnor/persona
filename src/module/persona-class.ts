@@ -1013,9 +1013,10 @@ wpnDamage() : NewDamageParams {
 
 highestPowerSlotUsable() : number {
 	if (this.user.isShadow()) {return 99;}
-	const level = Math.floor(this.level / 10) +1;
+	const level = Math.floor(this.user.level / 10) +1;
 	const CAP = this.user.system.combat.usingMetaPod ? 2 : 99;
-	return Math.min(CAP, this.#powerSlotMaxByLevel(level));
+	const maxLevel = this.source.isPersona() && !this.source.isCustomPersona() ? 99 : this.#powerSlotMaxByLevel(level);
+	return Math.min(CAP, maxLevel);
 }
 
 #powerSlotMaxByLevel(this: void, level: number) {

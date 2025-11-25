@@ -839,6 +839,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 		if (this.causesAilment()) {
 			list.pushUnique('ailment');
+			for (const ail of this.ailmentsCaused(false)) {
+				if (POWER_TAGS[ail as keyof typeof POWER_TAGS] != undefined) {
+					list.pushUnique(ail as keyof typeof POWER_TAGS);
+				}
+			}
 		}
 		if (this.system.dmg_type == 'by-power') {
 			list.pushUnique('variable-damage');
@@ -2070,26 +2075,33 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		};
 	}
 
+private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) : readonly SourcedConditionalEffect[] {
+	const tagEffects : SourcedConditionalEffect[] = [];
+	if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()){
+		const tags = this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
+			.filter (tag=> tag instanceof PersonaItem);
+		tagEffects.push(...tags.flatMap(tag =>
+			tag.getEffects(sourceActor, {CETypes})
+		));
+	}
+	return tagEffects;
+}
 
-getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][], proxyItem : ItemModifierContainer = this ): readonly SourcedConditionalEffect[] {
+getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): readonly SourcedConditionalEffect[] {
 	//proxy item is used for tags to redirect their source to their parent item (for purposes of reading item level)
+	const {CETypes} = options;
 	if (this.isSkillCard()) {
 		const arr = [
 			this.generateSkillCardTeach()
 		];
 		return arr;
 	}
-	const tagEffects : SourcedConditionalEffect[] = [];
-	if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()){
-		const tags = this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
-			.filter (tag=> tag instanceof PersonaItem);
-		tagEffects.push(...tags.flatMap(tag =>
-			tag.getEffects(sourceActor, CETypes, this)
-		));
-	}
+	const deepTags = options.deepTags ?? true;
+	const tagEffects = deepTags ? this._getLinkedEffects(sourceActor, CETypes) : [];
 	if (!CETypes || CETypes.length == 0) {
 		const effects = this.system.effects;
 		const effectsGetterFn = () => {
+			const proxyItem = options.proxyItem ? options.proxyItem : this;
 			return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
 				.filter (ce => !ce.isEmbedded);
 		};
@@ -2100,19 +2112,19 @@ getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETyp
 		for (const cType of CETypes) {
 			switch (cType) {
 				case 'defensive':
-					effects.push(...this.getDefensiveEffects(sourceActor, proxyItem));
+					effects.push(...this.getDefensiveEffects(sourceActor, options));
 					break;
 				case 'triggered':
-					effects.push(...this.getTriggeredEffects(sourceActor, proxyItem));
+					effects.push(...this.getTriggeredEffects(sourceActor, options));
 					break;
 				case 'passive':
-					effects.push(...this.getPassiveEffects(sourceActor, proxyItem));
+					effects.push(...this.getPassiveEffects(sourceActor, options));
 					break;
 				case 'on-use':
-					effects.push(...this.getOnUseEffects(sourceActor, proxyItem));
+					effects.push(...this.getOnUseEffects(sourceActor, options));
 					break;
 				case 'unknown':
-					effects.push(...this.getEffects(sourceActor, [], proxyItem).filter( x=> x.conditionalType == cType));
+					effects.push(...this.getEffects(sourceActor, options).filter( x=> x.conditionalType == cType));
 					break;
 				default:
 					cType satisfies never;
@@ -2122,14 +2134,16 @@ getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETyp
 	}
 }
 
-getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][], proxyItem : ItemModifierContainer = this ) : readonly SourcedConditionalEffect[] {
+getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions) : readonly SourcedConditionalEffect[] {
 	if (this.isSkillCard()) { return []; }
 	const effects = this.system.effects;
 	const effectsGetterFn = () => {
+		const proxyItem = options.proxyItem ?? this;
 		return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
 			.filter (ce => ce.isEmbedded);
 	};
 	const embedded= this.#accessEffectsCache('embeddedEffects', sourceActor, effectsGetterFn);
+	const {CETypes} = options;
 	if (CETypes == undefined || CETypes.length == 0) {return embedded;}
 	return embedded
 		.filter( x=> CETypes.includes(x.conditionalType));
@@ -2157,8 +2171,9 @@ getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | nul
 }
 
 
-getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, proxyItem: ItemModifierContainer = this, triggerType ?: Trigger) : readonly SourcedConditionalEffect[] {
-	return this.#accessEffectsCache('triggeredEffects', sourceActor, () => this.getEffects(sourceActor, [], proxyItem)
+getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}, triggerType ?: Trigger) : readonly SourcedConditionalEffect[] {
+	options = {...options, CETypes: []};
+	return this.#accessEffectsCache('triggeredEffects', sourceActor, () => this.getEffects(sourceActor, options)
 		.filter( x => x.conditionalType === 'triggered')
 		.filter( x=> triggerType != undefined ? x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == triggerType) : true)
 	);
@@ -2169,12 +2184,14 @@ hasTriggeredEffects(this: ItemModifierContainer, actor: PersonaActor) : boolean 
 }
 
 
-getOnUseEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, proxyItem: ItemModifierContainer = this) : readonly SourcedConditionalEffect[] {
-	return this.#accessEffectsCache('onUseEffects', sourceActor, () => this.getEffects(sourceActor, [], proxyItem).filter( x => x.conditionalType === 'on-use'));
+getOnUseEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : readonly SourcedConditionalEffect[] {
+	options = {...options, CETypes: []};
+	return this.#accessEffectsCache('onUseEffects', sourceActor, () => this.getEffects(sourceActor, options).filter( x => x.conditionalType === 'on-use'));
 }
 
-getPassiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, proxyItem: ItemModifierContainer = this) : readonly SourcedConditionalEffect[] {
-	return this.#accessEffectsCache('passiveEffects', sourceActor, () => this.getEffects(sourceActor, [], proxyItem).filter( x => x.conditionalType === 'passive'));
+getPassiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : readonly SourcedConditionalEffect[] {
+	options = {...options, CETypes: []};
+	return this.#accessEffectsCache('passiveEffects', sourceActor, () => this.getEffects(sourceActor, options).filter( x => x.conditionalType === 'passive'));
 }
 
 getPassiveAndDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor  | null) : readonly ConditionalEffect[] {
@@ -2186,8 +2203,9 @@ hasPassiveEffects(this: ItemModifierContainer, actor: PersonaActor | null) : boo
 	return this.getPassiveEffects(actor).length > 0;
 }
 
-getDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, proxyItem: ItemModifierContainer = this) : readonly SourcedConditionalEffect[] {
-	return this.#accessEffectsCache('defensiveEffects', sourceActor, () => this.getEffects(sourceActor, [], proxyItem ).filter( x => x.conditionalType === 'defensive'));
+getDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options : GetEffectsOptions = {}) : readonly SourcedConditionalEffect[] {
+	options = {...options, CETypes: []};
+	return this.#accessEffectsCache('defensiveEffects', sourceActor, () => this.getEffects(sourceActor, options ).filter( x => x.conditionalType === 'defensive'));
 }
 
 hasDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : boolean {
@@ -2740,6 +2758,11 @@ causesAilment(this: Usable) : boolean {
 	// return this.hasTag("ailment");
 }
 
+ailmentsCaused (this:Usable, deepTagList = true) : StatusEffectId[]{
+	return this.statusesAdded(deepTagList)
+		.filter ( status => STATUS_AILMENT_SET.has(status));
+}
+
 removesAilment(this:Power) : boolean {
 	if (this.statusesRemoved().some (
 		status => STATUS_AILMENT_SET.has(status)
@@ -2797,9 +2820,10 @@ isDamagePower(this: Usable): boolean {
 	return this.system.damage.high > 0; //for consumables
 }
 
-statusesAdded(this: Usable): StatusEffectId[] {
-	const effects= this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == 'addStatus'? [cons.statusName] : []));
-	return effects;
+statusesAdded(this: Usable, deepTagList = true): StatusEffectId[] {
+	const options : GetEffectsOptions = {deepTags: deepTagList};
+		const effects= this.getEffects(null, options).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == 'addStatus'? [cons.statusName] : []));
+		return effects;
 }
 
 statusesRemoved(this: Usable): StatusEffectId[] {
@@ -2887,8 +2911,8 @@ export type ItemModifierContainer = ItemContainers;
 export type ContainerTypes = ItemContainers | PersonaAE;
 
 export interface ModifierContainer <T extends Actor | TokenDocument | Item | ActiveEffect = ContainerTypes> {
-	getEffects(sourceActor : PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) : readonly SourcedConditionalEffect[];
-	getEmbeddedEffects ?: (sourceActor : PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) => readonly SourcedConditionalEffect[];
+	getEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : readonly SourcedConditionalEffect[];
+	getEmbeddedEffects ?: (sourceActor : PersonaActor | null, options ?: GetEffectsOptions) => readonly SourcedConditionalEffect[];
 	parent: T["parent"];
 	name: string;
 	id: string;
@@ -2948,3 +2972,10 @@ type WeakMapPlus = {
 };
 
 type PowerSub<T extends Power['system']['subtype']> = Power & {system: {subtype: T}}
+
+export interface GetEffectsOptions {
+	proxyItem ?: ItemModifierContainer | null;
+	/** defaults to true*/
+	deepTags ?: boolean;
+	CETypes ?: TypedConditionalEffect['conditionalType'][],
+}

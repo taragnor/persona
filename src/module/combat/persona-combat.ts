@@ -1773,26 +1773,27 @@ static async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, t
 	}
 }
 
-	static #calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) : U<{low: number, high:number}> {
-		const ailmentMods =
-		attackerPersona.getBonuses('afflictionRange').concat(
-			targetPersona.getBonuses('ail')
-		);
-		const calc = attackerPersona.combatStats.ailmentBonus();
-		calc.add(1, -targetPersona.combatStats.ailmentResist().eval(situation).total, "Target Ailment Resistance", "add");
-		calc.add(1, ailmentMods, "mods", "add");
-		const calcResolved = calc.eval(situation);
-		const total = calcResolved.total;
-		if (PersonaSettings.debugMode()) {
-			const steps = calcResolved.steps;
-			console.debug(steps);
-		}
-		const ailmentRange = power.ailmentRange;
-		if (!ailmentRange) {return undefined;}
-		ailmentRange.low -= total;
-		if (ailmentRange.low > ailmentRange.high) {return undefined;}
-		return ailmentRange;
+static #calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) : U<{low: number, high:number}> {
+	const ailmentMods =
+	attackerPersona.getBonuses('afflictionRange').concat(
+		targetPersona.getBonuses('ail')
+	);
+	const calc = attackerPersona.combatStats.ailmentBonus();
+	calc.add(1, -targetPersona.combatStats.ailmentResist().eval(situation).total, "Target Ailment Resistance", "add");
+	calc.add(1, ailmentMods, "mods", "add");
+	const calcResolved = calc.eval(situation);
+	const total = calcResolved.total;
+	if (PersonaSettings.debugMode()) {
+		//
 	}
+	const steps = calcResolved.steps;
+	console.debug(steps);
+	const ailmentRange = power.ailmentRange;
+	if (!ailmentRange) {return undefined;}
+	ailmentRange.low -= total;
+	if (ailmentRange.low > ailmentRange.high) {return undefined;}
+	return ailmentRange;
+}
 
 private static withinRange(num: number, range: U<{low: number, high: number}>) : boolean {
 	if (range == undefined) {return false;}
@@ -1895,7 +1896,7 @@ static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<Comb
 	const attackerEffects= attacker.actor.getEffects(['passive']);
 	const defenderEffects = target.actor.getEffects(['defensive']);
 	const sourcedEffects =
-	[ ...power.getEffects(attacker.actor, ['on-use', 'passive']) ]
+	[ ...power.getEffects(attacker.actor, {CETypes: ['on-use', 'passive']}) ]
 	.concat(attackerEffects)
 	.concat(defenderEffects);
 

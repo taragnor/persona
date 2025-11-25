@@ -3,7 +3,7 @@ import { FatigueStatusId } from "../config/status-effects.js";
 import { statusMap } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
 import { StatusDurationType } from "../config/status-effects.js";
-import { ModifierContainer, PersonaItem, Tag } from "./item/persona-item.js";
+import { GetEffectsOptions, ModifierContainer, PersonaItem, Tag } from "./item/persona-item.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaError } from "./persona-error.js";
 import { StatusEffectId } from "../config/status-effects.js";
@@ -196,7 +196,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		return this;
 	}
 
-	getEmbeddedEffects(sourceActor: PersonaActor | null, CETypes?: TypedConditionalEffect["conditionalType"][]) : readonly SourcedConditionalEffect[] {
+	getEmbeddedEffects(sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : readonly SourcedConditionalEffect[] {
+		const {CETypes} = options;
 		const effects = this.getFlag("persona", "embeddedEffects") as string;
 		if (!effects) {
 			return [];
@@ -595,14 +596,14 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		return this.getEffects(null).length > 0;
 	}
 
-	getEffects(sourceActor: Option<PersonaActor>, CETypes ?: TypedConditionalEffect['conditionalType'][] ): SourcedConditionalEffect[] {
+	getEffects(sourceActor: Option<PersonaActor>, options:GetEffectsOptions = {}): SourcedConditionalEffect[] {
 		if (!sourceActor) {
 			sourceActor = this.parent instanceof PersonaActor ? this.parent : sourceActor;
 		}
 		const actor = this.parent instanceof PersonaActor ? this.parent : null;
-		return this.getLinkedTags().flatMap( tag => tag.getEffects(sourceActor, CETypes))
+		return this.getLinkedTags().flatMap( tag => tag.getEffects(sourceActor, options))
 		.concat(
-			this.getEmbeddedEffects(actor, CETypes)
+			this.getEmbeddedEffects(actor, options)
 		);
 	}
 

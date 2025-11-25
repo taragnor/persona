@@ -91,9 +91,7 @@ export type BooleanComparisonTarget = typeof BOOLEAN_COMPARISON_TARGET_LIST[numb
 
 export const POWER_COMPARISON_SUBLIST = HTMLTools.createLocalizationObject(POWER_COMPARISON_SUBLIST_LIST, "persona.preconditions.comparison");
 
-export const BOOLEAN_COMPARISON_TARGET = Object.fromEntries(
-	BOOLEAN_COMPARISON_TARGET_LIST.map( x=> [x, `persona.preconditions.comparison.${x}`])
-);
+export const BOOLEAN_COMPARISON_TARGET = HTMLTools.createLocalizationObject(BOOLEAN_COMPARISON_TARGET_LIST,"persona.preconditions.comparison");
 
 export const NONDEPBOOLEAN_COMPARISON_TARGET = HTMLTools.createLocalizationObject(ACTIVE_BOOLEAN_COMPARISON_TARGET_LIST, "persona.preconditions.comparison");
 

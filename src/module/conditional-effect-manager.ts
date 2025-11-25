@@ -410,15 +410,21 @@ export class ConditionalEffectManager {
 		return (cond.type == "on-trigger");
 	}
 
-	static getConditionals<T extends PersonaActor, I extends ModifierContainer & (Item | ActiveEffect)>(condObject: DeepNoArray<ConditionalEffect["conditions"]>, sourceItem: I | null, sourceActor: T | null, realSource: null | U<ModifierContainer>): SourcedConditionalEffect["conditions"] {
-		const conditionalEffects = this.ArrayCorrector(condObject);
-		return conditionalEffects.map( eff=> ({
-			...eff,
-			owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : undefined) as UniversalActorAccessor<ValidAttackers>,
-			source: sourceItem != null ? sourceItem : undefined,
-			realSource: realSource ? realSource : undefined,
-		}));
-	}
+	static getConditionals<T extends PersonaActor, I extends ModifierContainer & (Item | ActiveEffect)>
+		(
+			condObject: DeepNoArray<ConditionalEffect["conditions"]>,
+			sourceItem: I | null, 
+			sourceActor: T | null, realSource: null | U<ModifierContainer>
+		)
+		: SourcedConditionalEffect["conditions"] {
+			const conditionalEffects = this.ArrayCorrector(condObject);
+			return conditionalEffects.map( eff=> ({
+				...eff,
+				owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : undefined) as UniversalActorAccessor<ValidAttackers>,
+				source: sourceItem != null ? sourceItem : undefined,
+				realSource: realSource ? realSource : undefined,
+			}));
+		}
 
 	static getConsequences<T extends PersonaActor, I extends (ModifierContainer & (PersonaItem | PersonaAE))>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null, realSource: null | U<ModifierContainer>): SourcedConditionalEffect["consequences"] {
 		const consequences = this.ArrayCorrector(consObject);
