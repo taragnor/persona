@@ -129,7 +129,7 @@ type SetHPOtherEffect = {
 	value: number,
 };
 
-type AlterVariableOtherEffect = AlterVariableConsequence & {contextList: TargettingContextList} & SourcedConsequence<NonDeprecatedConsequence>;
+type AlterVariableOtherEffect = AlterVariableConsequence & {situation: Partial<Situation>} & SourcedConsequence<NonDeprecatedConsequence>;
 
 export type StatusEffect = StatusEffect_Basic | StatusEffect_NonBasic;
 
@@ -705,6 +705,7 @@ export const ARITHMETIC_OPERATORS = HTMLTools.createLocalizationObject(ARITHMETI
 const CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST = [
 	"mhp",
 	"hp",
+	"baseClassHP",
 ] as const;
 
 type ConsAmountActorProperty = typeof CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST[number];

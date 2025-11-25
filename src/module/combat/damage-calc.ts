@@ -170,8 +170,7 @@ export class DamageCalculation {
 
 	resolveConsAmount (cons: EnhancedSourcedConsequence<DamageConsequence> & {amount: ConsequenceAmount}) : U<number> {
 		const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
-		const contextList = {};
-		const resolvedCE = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, contextList);
+		const resolvedCE = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, {});
 		return resolvedCE;
 
 }

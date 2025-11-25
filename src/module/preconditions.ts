@@ -1,4 +1,3 @@
-import { TargettingContextList } from "./combat/persona-combat.js";
 import { TarotCard } from "../config/tarot.js";
 import { EnhancedSourcedConsequence, NonDeprecatedConsequence } from "../config/consequence-types.js";
 import { SceneClock } from "./exploration/scene-clock.js";
@@ -15,7 +14,7 @@ import { ValidSocialTarget } from "./social/persona-social.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaSocial } from "./social/persona-social.js";
-import { SOCIAL_LINK_OR_TAROT_OTHER } from "../config/precondition-types.js";
+import { NonDeprecatedPrecondition, SOCIAL_LINK_OR_TAROT_OTHER } from "../config/precondition-types.js";
 import { AnyStringObject } from "../config/precondition-types.js";
 import { SocialLinkIdOrTarot } from "../config/precondition-types.js";
 import { MultiCheck } from "../config/precondition-types.js";
@@ -39,6 +38,7 @@ import { Shadow } from "./actor/persona-actor.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import {ConsequenceAmountResolver} from "./conditionalEffects/consequence-amount.js";
+import {PreconditionConverter} from "./migration/convertPrecondition.js";
 
 export function getActiveConsequences(condEffect: SourcedConditionalEffect, situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
 	const source = condEffect.source;
@@ -105,8 +105,8 @@ export function testPrecondition (condition: SourcedPrecondition, situation:Situ
 }
 
 
-function numericComparison(condition: SourcedPrecondition, situation: Situation) : boolean {
-	if (condition.type != "numeric") {throw new PersonaError("Not a numeric comparison");}
+function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, situation: Situation) : boolean {
+	// if (condition.type != "numeric") {throw new PersonaError("Not a numeric comparison");}
 	let target: number;
 	let testCase = ("num" in condition) ? condition.num : 0;
 	switch (condition.comparisonTarget) {
@@ -354,10 +354,10 @@ function numericComparison(condition: SourcedPrecondition, situation: Situation)
 					...condition,
 					actor:subject.accessor,
 				};
-				const contextList : Partial<TargettingContextList> ={};
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				contextList[condition.applyTo]  = [subject.accessor as any];
-				val = PersonaVariables.getVariable(reqCondition, contextList);
+				// const contextList : Partial<TargettingContextList> ={};
+				// // eslint-disable-next-line @typescript-eslint/no-explicit-any
+				// contextList[condition.applyTo]  = [subject.accessor as any];
+				val = PersonaVariables.getVariable(reqCondition, situation);
 			} else {
 				val = PersonaVariables.getVariable(condition,{});
 			}
@@ -379,15 +379,20 @@ function numericComparison(condition: SourcedPrecondition, situation: Situation)
 			&& source.parent.isValidCombatant()
 			? [source.parent.accessor]
 			: [];
-			const contextList = PersonaCombat.createTargettingContextList(situation);
-			contextList["owner"] = ownersList;
+			// const contextList = PersonaCombat.createTargettingContextList(situation);
+			// contextList["owner"] = ownersList;
+			const actorOwner = ownersList.at(0);
+			const situationN= {
+				actorOwner,
+				...situation,
+			};
 			const sourced = {
 				source: condition.source,
 				owner: condition.owner,
 				realSource: condition.realSource,
 				...condition.comparisonVal,
 			};
-			const resolved = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, contextList);
+			const resolved = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situationN);
 			if (resolved == undefined) {return false;}
 			target = resolved;
 			break;
@@ -404,8 +409,8 @@ function numericComparison(condition: SourcedPrecondition, situation: Situation)
 		&& source.parent.isValidCombatant()
 		? [source.parent.accessor]
 		: [];
-	const contextList = PersonaCombat.createTargettingContextList(situation);
-	contextList["owner"] = ownersList;
+	// const contextList = PersonaCombat.createTargettingContextList(situation);
+	// contextList["owner"] = ownersList;
 	if (typeof testCase != "number") {
 		const sourced = {
 			source: condition.source,
@@ -413,7 +418,11 @@ function numericComparison(condition: SourcedPrecondition, situation: Situation)
 			realSource: condition.realSource,
 			...testCase,
 		};
-		const resolvedCA = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, contextList);
+		const situationN = {
+			actorOwner: ownersList.at(0),
+			...situation,
+		};
+		const resolvedCA = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situationN);
 		if (resolvedCA == undefined) {return false;}
 		testCase = resolvedCA;
 	}
@@ -523,39 +532,39 @@ function triggerComparison(condition: DeepReadonly<Triggered>, situation: Situat
 }
 
 /** returns undefined in case of a state that just shouldn't be analzyed at all*/
-function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Situation): boolean | undefined {
+function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, situation: Situation): boolean | undefined {
 	switch(condition.boolComparisonTarget) {
-		case "engaged": {
-			const subjects = getSubjects(condition, situation, "conditionTarget");
-			if (!subjects) {return undefined;}
-			const combat = game.combat as PersonaCombat;
-			if (!combat) {return undefined;}
-			return subjects.some( subject => {
-				if (subject instanceof PersonaActor) {
-					if (subject.isNPC()) {return false;}
-				}
-				const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken((subject).accessor);
-				if (!subjectToken) {
-					// PersonaError.softFail(`Can't find token for ${subject?.name}`);
-					return false;
-				}
-				return combat.isEngagedByAnyFoe(subjectToken);
-			});
-		}
-		case "engaged-with": {
-			//return true if X is engaging Y
-			const combat = game.combat as PersonaCombat;
-			if (!combat) {return undefined;}
-			const target = getSubjectTokens(condition, situation, "conditionTarget")[0];
-			const target2 = getSubjectTokens(condition, situation, "conditionTarget2")[0];
-			if (!target || !target2) {return undefined;}
-			const tok1 = PersonaDB.getUniversalTokenAccessor(target);
-			const tok2 = PersonaDB.getUniversalTokenAccessor(target2);
-			return combat.isEngaging(tok1, tok2);
-		}
-		case "metaverse-enhanced":
-			//this should be deprecated
-			return false;
+		//case "engaged": {
+		//	const subjects = getSubjects(condition, situation, "conditionTarget");
+		//	if (!subjects) {return undefined;}
+		//	const combat = game.combat as PersonaCombat;
+		//	if (!combat) {return undefined;}
+		//	return subjects.some( subject => {
+		//		if (subject instanceof PersonaActor) {
+		//			if (subject.isNPC()) {return false;}
+		//		}
+		//		const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken((subject).accessor);
+		//		if (!subjectToken) {
+		//			// PersonaError.softFail(`Can't find token for ${subject?.name}`);
+		//			return false;
+		//		}
+		//		return combat.isEngagedByAnyFoe(subjectToken);
+		//	});
+		//}
+		//case "engaged-with": {
+		//	//return true if X is engaging Y
+		//	const combat = game.combat as PersonaCombat;
+		//	if (!combat) {return undefined;}
+		//	const target = getSubjectTokens(condition, situation, "conditionTarget")[0];
+		//	const target2 = getSubjectTokens(condition, situation, "conditionTarget2")[0];
+		//	if (!target || !target2) {return undefined;}
+		//	const tok1 = PersonaDB.getUniversalTokenAccessor(target);
+		//	const tok2 = PersonaDB.getUniversalTokenAccessor(target2);
+		//	return combat.isEngaging(tok1, tok2);
+		//}
+		//case "metaverse-enhanced":
+		//	//this should be deprecated
+		//	return false;
 		case "is-shadow": {
 			const arr = getSubjects(condition, situation, "conditionTarget");
 			if (!arr) {return undefined;}
@@ -572,35 +581,35 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
 		case "has-tag": {
 			return hasTagConditional(condition, situation);
 		}
-		case "power-type-is": {
-			if (!situation.usedPower) {
-				return undefined;
-			}
-			const power = PersonaDB.findItem(situation.usedPower);
-			return power.system.type == "power" && power.system.subtype == condition.powerType;
-		}
-		case "in-combat": {
-			return Boolean(situation.activeCombat);
-		}
-		case "is-critical": {
-			return situation.criticalHit ?? false;
-		}
-		case "is-hit": {
-			return situation.hit === true;
-		}
-		case "damage-type-is": {
-			if (!situation.usedPower) {
-				return undefined;
-			}
-			const power = PersonaDB.findItem(situation.usedPower);
-			if (!power || power.isSkillCard()) {return undefined;}
-			if (!situation.attacker && !situation.user) {return undefined;}
-			const attackerAcc = situation.attacker ? situation.attacker : situation.user!;
-			const attacker = PersonaDB.findActor(attackerAcc);
-			if (!attacker) {return undefined;}
-			const dtype = power.getDamageType(attacker);
-			return multiCheckContains(condition.powerDamageType, [dtype as string]);
-		}
+		// case "power-type-is": {
+		// 	if (!situation.usedPower) {
+		// 		return undefined;
+		// 	}
+		// 	const power = PersonaDB.findItem(situation.usedPower);
+		// 	return power.system.type == "power" && power.system.subtype == condition.powerType;
+		// }
+		// case "in-combat": {
+		// 	return Boolean(situation.activeCombat);
+		// }
+		// case "is-critical": {
+		// 	return situation.criticalHit ?? false;
+		// }
+		// case "is-hit": {
+		// 	return situation.hit === true;
+		// }
+		// case "damage-type-is": {
+		// 	if (!situation.usedPower) {
+		// 		return undefined;
+		// 	}
+		// 	const power = PersonaDB.findItem(situation.usedPower);
+		// 	if (!power || power.isSkillCard()) {return undefined;}
+		// 	if (!situation.attacker && !situation.user) {return undefined;}
+		// 	const attackerAcc = situation.attacker ? situation.attacker : situation.user!;
+		// 	const attacker = PersonaDB.findActor(attackerAcc);
+		// 	if (!attacker) {return undefined;}
+		// 	const dtype = power.getDamageType(attacker);
+		// 	return multiCheckContains(condition.powerDamageType, [dtype as string]);
+		// }
 		case "has-status" : {
 			const arr = getSubjects(condition, situation, "conditionTarget");
 			if (!arr) {return undefined;}
@@ -615,49 +624,49 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
 				}
 			});
 		}
-		case  "struck-weakness": {
-			if (!situation.usedPower) {
-				return false;
-			}
-			const arr = getSubjects(condition, situation, "conditionTarget");
-			if (!arr) {return undefined;}
-			for (const target of arr) {
-				const targetActor = target instanceof PersonaActor ? target : target.actor;
-				const power = PersonaDB.findItem(situation.usedPower);
-				if (targetActor.system.type == "npc") {continue;}
-				if (power.system.type == "skillCard") {continue;}
-				if (!situation.attacker) {continue;}
-				const attacker = PersonaDB.findActor(situation?.attacker);
-				const resist = (targetActor as PC | Shadow).persona().elemResist((power as Usable).getDamageType(attacker));
-				if (resist == "weakness") {return true;}
-			}
-			return false;
-		}
-		case "is-resistant-to": {
-			const arr = getSubjects(condition, situation, "conditionTarget");
-			if (!arr) {return undefined;}
-			return arr.some( target => {
-				const targetActor = target instanceof PersonaActor ? target : target.actor;
-				let dtype = condition.powerDamageType;
-				if (dtype == "by-power") {
-					if (!situation.usedPower) { return undefined; }
-					const power = PersonaDB.findItem(situation.usedPower);
-					if (power.system.type == "skillCard") {return undefined;}
-					if (!situation.attacker) {return undefined;}
-					const attacker = PersonaDB.findActor(situation?.attacker);
-					dtype = (power as Usable).getDamageType(attacker);
-				}
-				if (targetActor.system.type == "npc") {return undefined;}
-				const resist = (targetActor as PC | Shadow).persona().elemResist(dtype);
-				switch (resist) {
-					case "resist": case "block": case "absorb": case "reflect": return true;
-					case "weakness": case "normal": return  false;
-					default:
-						resist satisfies never;
-						return false;
-				}
-			});
-		}
+		// case  "struck-weakness": {
+		// 	if (!situation.usedPower) {
+		// 		return false;
+		// 	}
+		// 	const arr = getSubjects(condition, situation, "conditionTarget");
+		// 	if (!arr) {return undefined;}
+		// 	for (const target of arr) {
+		// 		const targetActor = target instanceof PersonaActor ? target : target.actor;
+		// 		const power = PersonaDB.findItem(situation.usedPower);
+		// 		if (targetActor.system.type == "npc") {continue;}
+		// 		if (power.system.type == "skillCard") {continue;}
+		// 		if (!situation.attacker) {continue;}
+		// 		const attacker = PersonaDB.findActor(situation?.attacker);
+		// 		const resist = (targetActor as PC | Shadow).persona().elemResist((power as Usable).getDamageType(attacker));
+		// 		if (resist == "weakness") {return true;}
+		// 	}
+		// 	return false;
+		// }
+		// case "is-resistant-to": {
+		// 	const arr = getSubjects(condition, situation, "conditionTarget");
+		// 	if (!arr) {return undefined;}
+		// 	return arr.some( target => {
+		// 		const targetActor = target instanceof PersonaActor ? target : target.actor;
+		// 		let dtype = condition.powerDamageType;
+		// 		if (dtype == "by-power") {
+		// 			if (!situation.usedPower) { return undefined; }
+		// 			const power = PersonaDB.findItem(situation.usedPower);
+		// 			if (power.system.type == "skillCard") {return undefined;}
+		// 			if (!situation.attacker) {return undefined;}
+		// 			const attacker = PersonaDB.findActor(situation?.attacker);
+		// 			dtype = (power as Usable).getDamageType(attacker);
+		// 		}
+		// 		if (targetActor.system.type == "npc") {return undefined;}
+		// 		const resist = (targetActor as PC | Shadow).persona().elemResist(dtype);
+		// 		switch (resist) {
+		// 			case "resist": case "block": case "absorb": case "reflect": return true;
+		// 			case "weakness": case "normal": return  false;
+		// 			default:
+		// 				resist satisfies never;
+		// 				return false;
+		// 		}
+		// 	});
+		// }
 		case "flag-state": {
 			const targetActor = getSubjectActors(condition, situation,  "conditionTarget")[0];
 			if (!targetActor) {return undefined;}
@@ -673,38 +682,38 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
 			if (!targetActor) {return undefined;}
 			return actor.system.tarot == targetActor.system.tarot;
 		}
-		case "is-dead": {
-			const arr = getSubjects(condition, situation, "conditionTarget");
-			if (!arr) {return undefined;}
-			return arr.some( target => {
-				const targetActor = target instanceof PersonaActor ? target : target.actor;
-				return targetActor.hp <= 0;
-			});
-		}
-		case "is-consumable": {
-			//Deprecated
-			if (!situation.usedPower) {
-				return undefined;
-			}
-			const power = PersonaDB.findItem(situation.usedPower);
-			return power.system.type == "consumable";
-		}
+		//case "is-dead": {
+		//	const arr = getSubjects(condition, situation, "conditionTarget");
+		//	if (!arr) {return undefined;}
+		//	return arr.some( target => {
+		//		const targetActor = target instanceof PersonaActor ? target : target.actor;
+		//		return targetActor.hp <= 0;
+		//	});
+		//}
+		//case "is-consumable": {
+		//	//Deprecated
+		//	if (!situation.usedPower) {
+		//		return undefined;
+		//	}
+		//	const power = PersonaDB.findItem(situation.usedPower);
+		//	return power.system.type == "consumable";
+		//}
 		case "target-owner-comparison": {
 			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
 			const target2 = getSubjectActors(condition, situation, "conditionTarget2")[0];
 			if (!target || !target2) {return undefined;}
 			return target == target2;
 		}
-		case "power-target-type-is": {
-			if (!situation.usedPower) {return undefined;}
-			const power = PersonaDB.findItem(situation.usedPower);
-			if (!power) {
-				PersonaError.softFail(`Can't find power in conditional`);
-				return undefined;
-			}
-			return multiCheckContains(condition.powerTargetType, [power.targets()]);
-			// return power.system.targets == condition.powerTargetType;
-		}
+		// case "power-target-type-is": {
+		// 	if (!situation.usedPower) {return undefined;}
+		// 	const power = PersonaDB.findItem(situation.usedPower);
+		// 	if (!power) {
+		// 		PersonaError.softFail(`Can't find power in conditional`);
+		// 		return undefined;
+		// 	}
+		// 	return multiCheckContains(condition.powerTargetType, [power.targets()]);
+		// 	// return power.system.targets == condition.powerTargetType;
+		// }
 		case "weather-is": {
 			const weather = PersonaCalendar.getWeather();
 			const comparison = condition.weatherComparison;
@@ -740,11 +749,11 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
 			}
 			return multiCheckContains(condition.shadowRole, [target.system.role, target.system.role2]);
 		}
-		case "is-distracted": {
-			const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
-			if (!target) {return undefined;}
-			return target.isDistracted();
-		}
+		// case "is-distracted": {
+		// 	const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
+		// 	if (!target) {return undefined;}
+		// 	return target.isDistracted();
+		// }
 		case "active-scene-is": {
 			const scene = game.scenes.active;
 			if (!scene) {return false;}
@@ -772,14 +781,14 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
 			return multiCheckContains(condition.creatureType, [target.system.creatureType]);
 
 		}
-		case "power-slot-is": {
-			if (!situation.usedPower) {return undefined;}
-			const power = PersonaDB.findItem(situation.usedPower);
-			if (power.system.type == "consumable") {return undefined;}
-			if (power.system.type == "skillCard") {return undefined;}
-			const slot = condition.slotType;
-			return slot[String(power.system.slot)];
-		}
+		// case "power-slot-is": {
+		// 	if (!situation.usedPower) {return undefined;}
+		// 	const power = PersonaDB.findItem(situation.usedPower);
+		// 	if (power.system.type == "consumable") {return undefined;}
+		// 	if (power.system.type == "skillCard") {return undefined;}
+		// 	const slot = condition.slotType;
+		// 	return slot[String(power.system.slot)];
+		// }
 		case "social-availability": {
 			if (!condition.conditionTarget) {
 				condition.conditionTarget = "user";
@@ -821,11 +830,11 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
 					return undefined;
 			}
 		}
-		case "has-creature-tag":  {
-			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
-			if (!target) {return undefined;}
-			return multiCheckTest(condition.creatureTag, x => target.hasCreatureTag(x));
-		}
+		// case "has-creature-tag":  {
+		// 	const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+		// 	if (!target) {return undefined;}
+		// 	return multiCheckTest(condition.creatureTag, x => target.hasCreatureTag(x));
+		// }
 		case "cameo-in-scene": {
 			return Boolean(situation.cameo);
 		}
@@ -836,36 +845,38 @@ function getBoolTestState(condition: Sourced<BooleanComparisonPC>, situation: Si
 			if (!tarot) {return undefined;}
 			return target.system.tarot == condition.tarot;
 		}
-		case "is-enemy": {
-			const target = getSubjectTokens(condition, situation,   "conditionTarget")[0];
-			const target2 = getSubjectTokens(condition, situation, "conditionTarget2")[0];
-			if (!target || !target2) {return undefined;}
-			const combat = game.combat as PersonaCombat;
-			if (!combat) {return undefined;}
-			const enemies = combat.getAllEnemiesOf(target);
-			return enemies.includes(target2);
-		}
+		// case "is-enemy": {
+		// 	const target = getSubjectTokens(condition, situation,   "conditionTarget")[0];
+		// 	const target2 = getSubjectTokens(condition, situation, "conditionTarget2")[0];
+		// 	if (!target || !target2) {return undefined;}
+		// 	const combat = game.combat as PersonaCombat;
+		// 	if (!combat) {return undefined;}
+		// 	const enemies = combat.getAllEnemiesOf(target);
+		// 	return enemies.includes(target2);
+		// }
 		case "logical-or": {
 			const comp1 = {
 				source: condition.source,
 				owner: condition.owner,
 				realSource: condition.realSource,
-				...condition.comparison1,
+				...condition.comparison1 as NonDeprecatedPrecondition<Precondition>,
+				//this is guaranteed to be nondeprecated by convertPrecondition function working deep into logical ors
 			};
 			const comp2 = {
 				source: condition.source,
 				owner: condition.owner,
 				realSource: condition.realSource,
-				...condition.comparison2,
+				...condition.comparison2 as NonDeprecatedPrecondition<Precondition>,
+				//this is guaranteed to be nondeprecated by convertPrecondition function working deep into logical ors
 			};
 			return testPrecondition(comp1, situation) || testPrecondition(comp2, situation);
 		}
 		case "scene-clock-name-is":
 			return SceneClock.instance.clockName.toUpperCase().trim() == condition.clockName.toUpperCase().trim();
-		case "is-within-ailment-range":
-			return "withinAilmentRange" in situation ? situation.withinAilmentRange ?? false : false;
-		case "is-within-instant-death-range":
-				return "withinInstantKillRange" in situation ? situation.withinInstantKillRange ?? false : false;
+		// case "is-within-ailment-range":
+		// 	return "withinAilmentRange" in situation ? situation.withinAilmentRange ?? false : false;
+		// case "is-within-instant-death-range":
+		// 		return "withinInstantKillRange" in situation ? situation.withinInstantKillRange ?? false : false;
 		case "using-meta-pod": {
 			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!target.isValidCombatant()) {return false;}
@@ -963,8 +974,8 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
 	}
 }
 
-function booleanComparison(condition : SourcedPrecondition, situation: Situation): boolean {
-	if (condition.type != "boolean") {throw new PersonaError("Not a boolean comparison");}
+function booleanComparison(condition : SourcedPrecondition & {type: "boolean"}, situation: Situation): boolean {
+	// if (condition.type != "boolean") {throw new PersonaError("Not a boolean comparison");}
 	const testState = getBoolTestState(condition, situation);
 	if (testState === undefined) {return false;}
 	const targetState = condition.booleanState ?? false;
@@ -1254,7 +1265,7 @@ export function numberOfOthersWithResolver(condition: Sourced<NumberOfOthersWith
 				target: acc,
 			};
 			const sourcedP = {
-				...condition.otherComparison,
+				...PreconditionConverter.convertDeprecated(condition.otherComparison),
 				source: condition.source,
 				owner: condition.owner,
 				realSource: condition.realSource,
@@ -1411,6 +1422,15 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 						return false;
 				}
 			});
+		}
+		case "is-enemy":{
+			const target = getSubjectTokens(condition, situation,   "conditionTarget")[0];
+			const target2 = getSubjectTokens(condition, situation, "conditionTarget2")[0];
+			if (!target || !target2) {return undefined;}
+			const combat = game.combat as PersonaCombat;
+			if (!combat) {return undefined;}
+			const enemies = combat.getAllEnemiesOf(target);
+			return enemies.includes(target2);
 		}
 		default:
 			condition satisfies never;

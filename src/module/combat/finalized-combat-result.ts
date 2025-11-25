@@ -644,13 +644,13 @@ export class FinalizedCombatResult {
 				const varCons = otherEffect;
 				switch (varCons.varType) {
 					case "actor": {
-						await PersonaVariables.alterVariable(varCons, varCons.contextList);
+						await PersonaVariables.alterVariable(varCons, varCons.situation);
 						break;
 					}
 					case "global":
 					case "scene":
 					case "social-temp": {
-						await PersonaVariables.alterVariable(varCons, varCons.contextList);
+						await PersonaVariables.alterVariable(varCons, varCons.situation);
 						break;
 					}
 				}

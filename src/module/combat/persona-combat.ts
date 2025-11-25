@@ -1934,7 +1934,7 @@ static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<Comb
 		return result;
 	}
 
-	static createTargettingContextList(situation: Situation, cons ?: Consequence) : TargettingContextList {
+	static createTargettingContextList(situation: Partial<Situation>, cons : Consequence | null) : TargettingContextList {
 		const {target, attacker, user, cameo} = situation;
 		const triggeringCharacter = 'triggeringCharacter' in situation ? situation.triggeringCharacter : undefined;
 		const owner = [];
@@ -1944,7 +1944,6 @@ static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<Comb
 		}
 		const foes :TargettingContextList['all-foes'] = [];
 		const allies : TargettingContextList['all-allies'] = [];
-
 		if (attacker && game.combat) {
 			const attackerToken = this.getPTokenFromActorAccessor(attacker);
 			if (attackerToken) {
@@ -1982,7 +1981,6 @@ static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<Comb
 			'all-allies': allies,
 			'all-foes': foes,
 			'all-in-region': allInRegion,
-			situation: situation,
 		};
 		return context;
 	}
@@ -3457,7 +3455,6 @@ type IntoCombatant = PersonaCombatant | UniversalTokenAccessor<PToken> | Univers
 export type TargettingContextList = Omit<Record<ValidAttackersApplies, UniversalActorAccessor<ValidAttackers>[]>, "owner"> & {
 	owner: UniversalActorAccessor<PersonaActor>[],
 	cameo: UniversalActorAccessor<ValidSocialTarget>[];
-	situation ?: Situation;
 }
 
 type ValidAttackersApplies = Exclude<NonNullable<Consequence['applyTo']>, 'cameo'>;

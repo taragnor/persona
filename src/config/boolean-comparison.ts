@@ -149,7 +149,7 @@ type PowerComparison = {
 type CombatComparison = { boolComparisonTarget: "combat-comparison"} & CombatComparisonSub;
 
 type CombatComparisonSub = {
-	combatProp: 	"engaged-with",
+	combatProp: 	"engaged-with"  | "is-enemy",
 	conditionTarget : ConditionTarget,
 	conditionTarget2: ConditionTarget,
 } | {

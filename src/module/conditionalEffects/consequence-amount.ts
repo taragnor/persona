@@ -1,6 +1,6 @@
 import {ConsequenceAmount, ConsequenceAmountV2} from "../../config/consequence-types.js";
 import {PersonaAE} from "../active-effect.js";
-import {TargettingContextList} from "../combat/persona-combat.js";
+import {PersonaCombat} from "../combat/persona-combat.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
@@ -28,53 +28,53 @@ export class ConsequenceAmountResolver {
 		};
 	}
 
-	static resolveConsequenceAmount< C extends ConsequenceAmount>(amt: C extends object ? Sourced<C> : number, contextList: Partial<TargettingContextList>) : U<number> {
+	static resolveConsequenceAmount< C extends ConsequenceAmount>(amt: C extends object ? Sourced<C> : number, situation: Partial<Situation>) : U<number> {
 		if (typeof amt == "number") {return amt;}
-		return this.resolveConsequenceAmountV2(amt, contextList, amt.source);
+		return this.resolveConsequenceAmountV2(amt, situation, amt.source);
 	}
 
-static resolveConsequenceAmountV2< C extends ConsequenceAmountV2>(amt: C, contextList: Partial<TargettingContextList>, source: Sourced<ConsequenceAmountV2>["source"]) : U<number> {
+static resolveConsequenceAmountV2< C extends ConsequenceAmountV2>(amt: C, situation: Partial<Situation>, source: Sourced<ConsequenceAmountV2>["source"]) : U<number> {
 	switch (amt.type) {
 		case "operation": {
-			return this.resolveOperation(amt, contextList, source);
+			return this.resolveOperation(amt, situation, source);
 		}
 		case "constant":
 			return amt.val;
 		case "variable-value":
-				return PersonaVariables.getVariable(amt, contextList) ?? 0;
+				return PersonaVariables.getVariable(amt, situation) ?? 0;
 		case "random-range": {
 			const rand = Math.floor(amt.min + Math.random() * (amt.max - amt.min));
 			return rand;
 		}
 		case "item-property": {
-			return this.resolveItemProperty(amt, contextList, source);
+			return this.resolveItemProperty(amt, situation, source);
 		}
 		case "situation-property": {
-			return this.resolveSituationProperty(amt, contextList, source);
+			return this.resolveSituationProperty(amt, situation, source);
 		}
 		case "actor-property": {
-			return this.resolveActorProperty(amt, contextList, source);
+			return this.resolveActorProperty(amt, situation, source);
 		}
 		default:
 				amt satisfies never;
-			PersonaError.softFail(`Unknwon consequence Amount type :${amt["type"] as string}`);
+			PersonaError.softFail(`Unknown consequence Amount type :${amt["type"] as string}`);
 			return undefined;
 	}
 }
 
-private static resolveSituationProperty(amt: ConsequenceAmountV2 & {type: "situation-property"}, list: Partial<TargettingContextList> , _source: Sourced<ConsequenceAmountV2>["source"]): U<number> {
-	const situation = list.situation;
+private static resolveSituationProperty(amt: ConsequenceAmountV2 & {type: "situation-property"}, situation :Partial<Situation>, _source: Sourced<ConsequenceAmountV2>["source"]): U<number> {
 	if (!situation) {return undefined;}
 	switch (amt.property) {
 		case "damage-dealt":
-			return ("amt" in situation) ? Math.abs(situation.amt) : undefined;
+			return ("amt" in situation) ? Math.abs(situation.amt ?? 0) : undefined;
 		default:
 			amt.property satisfies never;
 	}
 
 }
 
-private static resolveActorProperty(amt: ConsequenceAmountV2 & {type: "actor-property"}, list: Partial<TargettingContextList> , _source: Sourced<ConsequenceAmountV2>["source"]): U<number> {
+private static resolveActorProperty(amt: ConsequenceAmountV2 & {type: "actor-property"}, situation: Partial<Situation>, _source: Sourced<ConsequenceAmountV2>["source"]): U<number> {
+	const list= PersonaCombat.createTargettingContextList(situation, null);
 	const targets = list[amt.target];
 	if (!targets) {return undefined;}
 	const returns = targets
@@ -82,6 +82,7 @@ private static resolveActorProperty(amt: ConsequenceAmountV2 & {type: "actor-pro
 	.map( target => {
 		switch (amt.property) {
 			case "mhp":
+			case "baseClassHP":
 			case "hp":
 				return target[amt.property];
 		}
@@ -89,7 +90,7 @@ private static resolveActorProperty(amt: ConsequenceAmountV2 & {type: "actor-pro
 	return returns.at(0);
 }
 
-static resolveItemProperty<T extends ConsequenceAmountV2 & {type: "item-property"}>( amt: T, _contextList: Partial<TargettingContextList>, source: Sourced<T>["source"]) : U<number> {
+static resolveItemProperty<T extends ConsequenceAmountV2 & {type: "item-property"}>( amt: T, _situation: Partial<Situation>, source: Sourced<T>["source"]) : U<number> {
 	let item : U<PersonaItem>;
 	switch (amt.itemTarget) {
 		case "source":
@@ -115,9 +116,9 @@ static resolveItemProperty<T extends ConsequenceAmountV2 & {type: "item-property
 	}
 }
 
-static resolveOperation <T extends ConsequenceAmountV2 & {type: "operation"}> (amt: T, contextList: Partial<TargettingContextList>, source: Sourced<T>["source"] ) : U<number> {
-	let val1 = this.resolveConsequenceAmountV2(amt.amt1, contextList, source);
-	let val2 = this.resolveConsequenceAmountV2(amt.amt2, contextList, source);
+static resolveOperation <T extends ConsequenceAmountV2 & {type: "operation"}> (amt: T, situation: Partial<Situation>, source: Sourced<T>["source"] ) : U<number> {
+	let val1 = this.resolveConsequenceAmountV2(amt.amt1, situation, source);
+	let val2 = this.resolveConsequenceAmountV2(amt.amt2, situation, source);
 	switch (amt.operator) {
 		case "add":
 			val1 = val1 == undefined ? 0 : val1;

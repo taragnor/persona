@@ -1183,6 +1183,7 @@
 
 	"persona.consequenceAmount.actorProperties.hp": "HP",
 	"persona.consequenceAmount.actorProperties.mhp": "MHP",
+	"persona.consequenceAmount.actorProperties.baseClassHP": "Base Class HP",
 
 	"persona.consequenceAmount.actorProperties.damage-dealt": "Damage Dealt",
 

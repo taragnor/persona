@@ -49,6 +49,7 @@ import { PersonaDB } from "../persona-db.js";
 import { HTMLTools } from "../utility/HTMLTools.js";
 import { StudentSkillExt } from "../../config/student-skills.js";
 import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-system.js";
+import {PreconditionConverter} from "../migration/convertPrecondition.js";
 
 export class PersonaSocial {
 	static allowMetaverse: boolean = true;
@@ -1705,7 +1706,7 @@ static meetsConditionsToStartLink(pc: PC, target: SocialLink): boolean {
 	};
 	if (!target.isNPC()) {return true;}
 	const sourced = target.system.conditions.map( cond => ({
-		...cond,
+		...PreconditionConverter.convertDeprecated(cond),
 		source: undefined,
 		owner: target.accessor,
 		realSource: undefined,
@@ -1748,7 +1749,7 @@ static isActivitySelectable(activity: SocialCard, pc: PC) : boolean {
 		owner: undefined,
 		source: undefined,
 		realSource: undefined,
-		...cond,
+		...PreconditionConverter.convertDeprecated(cond),
 	}));
 	return testPreconditions(sourced, situation);
 }

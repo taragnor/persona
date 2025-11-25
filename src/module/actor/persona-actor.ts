@@ -734,11 +734,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 
+	get baseClassHP () : number {
+		if (!this.isValidCombatant()) {return 0;}
+		return this.class.getClassMHP(this.level);
+	}
+
 	mhpCalculation(this: ValidAttackers) {
 		const sit ={user: this.accessor};
 		try {
 			if (this.system == undefined) {return new Calculation().eval();}
-			const lvlbase = this.class.getClassMHP(this.level);
+			const lvlbase = this.baseClassHP;
 			const calc = new Calculation(lvlbase);
 			const persona = this.persona();
 			const nonMultbonuses = persona.getBonuses("maxhp");
@@ -3776,17 +3781,18 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 }
 
 getPoisonDamage(this: ValidAttackers): number {
-	const base = Math.round(this.mhpEstimate * 0.15);
+	const base = Math.round(this.baseClassHP * 0.15);
 	switch (this.system.type) {
 		case "pc":
 		case "npcAlly":
 			return base;
 		case "shadow":
-			break;
+			return base;
 		default:
 			this.system satisfies never;
+			return 0;
 	}
-	return Math.round(base * poisonDamageMultiplier(this.system.role) * poisonDamageMultiplier(this.system.role2));
+	// return Math.round(base * poisonDamageMultiplier(this.system.role) * poisonDamageMultiplier(this.system.role2));
 }
 
 static calcPowerRequirement(role: Shadow["system"]["role"], power: Readonly<Power>,  diff: number) : number {

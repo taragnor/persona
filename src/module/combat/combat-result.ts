@@ -1,7 +1,7 @@
 import { DAMAGETYPES } from "../../config/damage-types.js";
 import { FinalizedCombatResult } from "./finalized-combat-result.js";
-import { ConsequenceProcessed, TargettingContextList } from "./persona-combat.js";
-import { DamageConsequence, SetFlagEffect } from "../../config/consequence-types.js";
+import { ConsequenceProcessed } from "./persona-combat.js";
+import { ConsequenceAmount, DamageConsequence, SetFlagEffect } from "../../config/consequence-types.js";
 import { OldDamageConsequence } from "../../config/consequence-types.js";
 import { DamageCalculation } from "./damage-calc.js";
 import { RollSituation } from "../../config/situation.js";
@@ -129,14 +129,21 @@ export class CombatResult  {
 			case "set-to-const": {
 				if (!effect) {return;}
 				const attacker = atkResult?.attacker ? PersonaDB.findToken(atkResult.attacker).actor : undefined;
-				const list : Partial<TargettingContextList> = {
-					"triggering-character": [target.accessor],
-					target: [target.accessor],
-					attacker: attacker ? [attacker.accessor] : undefined,
-					situation: atkResult?.situation,
+				// const list : Partial<TargettingContextList> = {
+				// 	"triggering-character": [target.accessor],
+				// 	target: [target.accessor],
+				// 	attacker: attacker ? [attacker.accessor] : undefined,
+				// 	situation: atkResult?.situation,
+				// };
+				const situation = {
+					"triggering-character": target.accessor,
+					user: attacker ? attacker.accessor : target.accessor,
+					target: target.accessor,
+					attacker: attacker ? attacker.accessor : undefined,
+					...(atkResult ?  atkResult.situation : {}),
 				};
 				const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
-				const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, list);
+				const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation);
 				if (amount == undefined) {
 					PersonaError.softFail("Can't resolve Consequence Amount.", cons.amount);
 					return;
@@ -149,6 +156,20 @@ export class CombatResult  {
 				break;
 			}
 			default: {
+				if (cons.amount != undefined && typeof cons.amount == "object") {
+				const attacker = atkResult?.attacker ? PersonaDB.findToken(atkResult.attacker).actor : undefined;
+				const situation = {
+					"triggering-character": target.accessor,
+					user: attacker ? attacker.accessor : target.accessor,
+					target: target.accessor,
+					attacker: attacker ? attacker.accessor : undefined,
+					...(atkResult ?  atkResult.situation : {}),
+				};
+				const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons as typeof cons & {amount: ConsequenceAmount});
+				const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation);
+					//@ts-expect-error writing to read only
+					cons.amount = amount;
+				}
 				const damageCalc = this.#getDamageCalc(cons, atkResult ?? undefined, effect);
 				if (!damageCalc) {break;}
 				damageCalc.addConsequence(cons, target);
@@ -363,8 +384,8 @@ export class CombatResult  {
 				break;
 			case "alter-energy": {
 				if (!effect) {break;}
-				const contextList = PersonaCombat.createTargettingContextList(situation, cons);
-				const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, contextList) ?? 0;
+				// const contextList = PersonaCombat.createTargettingContextList(situation, cons);
+				const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
 				effect.otherEffects.push( {
 					type: cons.type,
 					amount,
@@ -399,7 +420,7 @@ export class CombatResult  {
 			case "alter-variable": {
 				const alterVarCons = {
 					...cons,
-					contextList: PersonaCombat.createTargettingContextList(situation, cons),
+					situation: situation,
 				};
 				effect?.otherEffects.push(alterVarCons);
 				break;

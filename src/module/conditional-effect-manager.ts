@@ -33,7 +33,7 @@ import { TARGETING } from "../config/effect-types.js";
 import { POWERTYPES } from "../config/effect-types.js";
 import { DAMAGETYPES } from "../config/damage-types.js";
 import { POWER_TAGS } from "../config/power-tags.js";
-import { CONDITION_TARGETS } from "../config/precondition-types.js";
+import { CONDITION_TARGETS, NonDeprecatedPrecondition } from "../config/precondition-types.js";
 import { TRIGGERS } from "../config/triggers.js";
 import { MultiCheck } from "../config/precondition-types.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../config/status-effects.js";
@@ -47,6 +47,7 @@ import { PersonaDB } from "./persona-db.js";
 import {ConsequenceConverter} from "./migration/convertConsequence.js";
 import {ValidAttackers} from "./combat/persona-combat.js";
 import {PersonaAE} from "./active-effect.js";
+import {PreconditionConverter} from "./migration/convertPrecondition.js";
 
 export class ConditionalEffectManager {
 
@@ -418,12 +419,15 @@ export class ConditionalEffectManager {
 		)
 		: SourcedConditionalEffect["conditions"] {
 			const conditionalEffects = this.ArrayCorrector(condObject);
-			return conditionalEffects.map( eff=> ({
-				...eff,
-				owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : undefined) as UniversalActorAccessor<ValidAttackers>,
-				source: sourceItem != null ? sourceItem : undefined,
-				realSource: realSource ? realSource : undefined,
-			}));
+			return conditionalEffects.map( maybeDeprecatedEff=> {
+				const eff = PreconditionConverter.convertDeprecated (maybeDeprecatedEff);
+				return {
+					...eff,
+					owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : undefined) as UniversalActorAccessor<ValidAttackers>,
+					source: sourceItem != null ? sourceItem : undefined,
+					realSource: realSource ? realSource : undefined,
+				};
+			});
 		}
 
 	static getConsequences<T extends PersonaActor, I extends (ModifierContainer & (PersonaItem | PersonaAE))>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null, realSource: null | U<ModifierContainer>): SourcedConditionalEffect["consequences"] {
@@ -772,6 +776,8 @@ export class ConditionalEffectManager {
 				const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
 				return `${target1} is ${not} resistant to ${damageType}`;
 			}
+			case "is-enemy":
+				return `${target1} is ${not} enemy of ${target2}`;
 			default:
 				cond satisfies never;
 				return "ERROR";
@@ -1483,7 +1489,7 @@ declare global{
 	}
 
 	interface NonDeprecatedConditionalEffect {
-		conditions: SourcedPrecondition<Precondition>[];
+		conditions: SourcedPrecondition<NonDeprecatedPrecondition<Precondition>>[];
 		consequences: SourcedConsequence<NonDeprecatedConsequence>[];
 		isDefensive: boolean;
 		isEmbedded: boolean;
@@ -1499,7 +1505,7 @@ declare global{
 
 	export type SourcedConsequence<T extends Consequence= Consequence> = Sourced<T>;
 
-	type SourcedPrecondition<T extends Precondition = Precondition> = 
+	type SourcedPrecondition<T extends Precondition = NonDeprecatedPrecondition<Precondition>> = 
 		Sourced<T>;
 
 	type Sourced<T extends object>= T & {

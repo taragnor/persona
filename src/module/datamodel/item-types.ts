@@ -40,6 +40,8 @@ import { TREASURE_TABLES } from "../../config/treasure-tables.js";
 import { PROBABILITIES } from "../../config/probability.js";
 import {DamageCalculator} from "../combat/damage-calc.js";
 import {TAG_TYPES} from "../../config/tags-general.js";
+import {PreconditionConverter} from "../migration/convertPrecondition.js";
+import {ConsequenceConverter} from "../migration/convertConsequence.js";
 
 function itemBase() {
 	return {
@@ -387,10 +389,14 @@ export class ConditionalEffectDM extends foundry.abstract.DataModel {
 			change = true;
 			data.conditions = ArrayCorrector(data.conditions) as typeof data.conditions ;
 		}
+		data.conditions = data.conditions
+			.map (cond => PreconditionConverter.convertDeprecated(cond));
 		if(!Array.isArray(data.consequences)) {
 			change = true;
 			data.consequences = ArrayCorrector(data.consequences) as typeof data.consequences;
 		}
+		data.consequences = data.consequences
+			.map (cons=> ConsequenceConverter.convertDeprecated(cons));
 		if (change) {
 			console.debug("Migrate Data for ConditionalEffectDM making changes ");
 		}

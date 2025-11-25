@@ -1,5 +1,5 @@
 
-import { ValidAttackers } from "./combat/persona-combat.js";
+import { PersonaCombat, ValidAttackers } from "./combat/persona-combat.js";
 import { TargettingContextList } from "./combat/persona-combat.js";
 import { PersonaDB } from "./persona-db.js";
 import { VariableTypeSpecifier } from "../config/consequence-types.js";
@@ -12,11 +12,11 @@ import { AlterVariableConsequence } from "../config/consequence-types.js";
 import {ConsequenceAmountResolver} from "./conditionalEffects/consequence-amount.js";
 
 export class PersonaVariables {
-	static async alterVariable (cons: Sourced<AlterVariableConsequence>, contextList : TargettingContextList) {
-		const variableLocation = this.#convertTypeSpecToLocation(cons, contextList);
+	static async alterVariable (cons: Sourced<AlterVariableConsequence>, situation : Partial<Situation>) {
+		const variableLocation = this.#convertTypeSpecToLocation(cons, situation);
 		if (!variableLocation) {return;}
 		const origValue = this.#get(variableLocation) ?? 0;
-		const newValue = this.#applyMutator( cons, origValue, contextList);
+		const newValue = this.#applyMutator( cons, origValue, situation);
 		if (newValue == undefined) {
 			PersonaError.softFail(`Couldn't execute ${cons.operator} on ${cons.varType} variable ${cons.variableId}`);
 			return;
@@ -25,13 +25,13 @@ export class PersonaVariables {
 	}
 
 	/** returns 0 on a non-existent variable, returns undefined if the request was invalid (bad actor Id, etc) */
-	static getVariable( cond: Required<VariableTypeSpecifier>, contextList : Partial<TargettingContextList>) : number | undefined {
-		const varData = this.#convertTypeSpecToLocation(cond, contextList);
+	static getVariable( cond: Required<VariableTypeSpecifier>, situation : Partial<Situation>) : number | undefined {
+		const varData = this.#convertTypeSpecToLocation(cond, situation);
 		if (!varData) {return undefined;}
 		return this.#get(varData) ?? 0;
 	}
 
-	static #convertTypeSpecToLocation(cons: Required<VariableTypeSpecifier>, contextList: Partial<TargettingContextList>) : VariableData | undefined {
+	static #convertTypeSpecToLocation(cons: Required<VariableTypeSpecifier>, situation: Partial<Situation>) : VariableData | undefined {
 		const {varType, variableId} = cons;
 		switch (varType) {
 			case "global":
@@ -51,6 +51,7 @@ export class PersonaVariables {
 				};
 			}
 			case "actor": {
+				const contextList = PersonaCombat.createTargettingContextList(situation, null);
 				const actorAccs = contextList[cons.applyTo];
 				if (!actorAccs) {return undefined;}
 				const actors = actorAccs
@@ -73,24 +74,23 @@ export class PersonaVariables {
 		}
 	}
 
-	static #applyMutator<T extends Sourced<AlterVariableConsequence>>( mutator: T, origValue :number | undefined, contextList: TargettingContextList) : number | undefined {
-	// static #applyMutator<T extends Mutator<AlterVariableConsequence>>( mutator: T, origValue :number | undefined, contextList: TargettingContextList) : number | undefined {
+	static #applyMutator<T extends Sourced<AlterVariableConsequence>>( mutator: T, origValue :number | undefined, situation: Partial<Situation>) : number | undefined {
 		if (Number.isNaN(origValue)) {return undefined;}
 		switch (mutator.operator) {
 			case "set": {
 				const value = ConsequenceAmountResolver.extractSourcedValue(mutator);
-				return ConsequenceAmountResolver.resolveConsequenceAmount(value, contextList);
+				return ConsequenceAmountResolver.resolveConsequenceAmount(value, situation);
 			}
 			case "add": {
 				const value = ConsequenceAmountResolver.extractSourcedValue(mutator);
 				if (origValue == undefined) {return undefined;}
-				const val = ConsequenceAmountResolver.resolveConsequenceAmount(value, contextList);
+				const val = ConsequenceAmountResolver.resolveConsequenceAmount(value, situation);
 				return (val ?? 0) + origValue;
 			}
 			case "multiply": {
 				const value = ConsequenceAmountResolver.extractSourcedValue(mutator);
 				if (origValue == undefined) {return undefined;}
-				const val = ConsequenceAmountResolver.resolveConsequenceAmount(value, contextList);
+				const val = ConsequenceAmountResolver.resolveConsequenceAmount(value, situation);
 				return (val ?? 1) * origValue;
 			}
 			case "set-range": {

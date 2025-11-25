@@ -211,13 +211,9 @@ export const DAMAGE_SUBTYPE_LIST = [
 export type DamageSubtype = typeof DAMAGE_SUBTYPE_LIST[number];
 
 export const DAMAGE_SUBTYPES = HTMLTools.createLocalizationObject(DAMAGE_SUBTYPE_LIST, "persona.damage-subtype");
-// export const DAMAGE_SUBTYPES = Object.fromEntries(
-	// DAMAGE_SUBTYPE_LIST.map( x=> [x, `persona.damage-subtype.${x}`])
-// );
 
 export const ALTER_MP_SUBTYPES_LIST = [
 	"direct",
-	// "cost-reduction", // remplaced with a modifier
 	"percent-of-total",
 ] as const;
 

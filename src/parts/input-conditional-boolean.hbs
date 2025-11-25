@@ -299,17 +299,22 @@
 	{{selectOptions POWERSTUFF.COMBAT_COMPARISON_SUBLIST localize=true selected=cond.combatProp}}
 </select>
 
-{{#if (eqAny cond.combatProp "engaged" "is-dead" "struck-weakness" "is-distracted" "is-resistant-to" "engaged-with")}}
+{{#if (eqAny cond.combatProp "engaged" "is-dead" "struck-weakness" "is-distracted" "is-resistant-to" "engaged-with" "is-enemy")}}
 	<select name="{{strcat namePrefix 'conditionTarget'}}">
 		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
 	</select>
 {{/if}}
 
-{{#if (eqAny cond.combatProp "engaged-with")}}
+{{#if (eqAny cond.combatProp "engaged-with" "is-enemy")}}
 <select name="{{strcat namePrefix 'conditionTarget2'}}">
 	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget2}}
 </select>
 {{/if}}
+
+{{#if (eqAny cond.combatProp "is-resistant-to")}}
+{{multicheck (strcat namePrefix 'powerDamageType') POWERSTUFF.DAMAGETYPES checked=cond.powerDamageType localize=true}}
+{{/if}}
+
 
 {{/if}}
 

@@ -51,6 +51,7 @@ import {LevelUpCalculator} from "../config/level-up-calculator.js";
 import {PersonaSettings} from "../config/persona-settings.js";
 import {POWER_TAGS} from "../config/power-tags.js";
 import {FusionTable} from "../config/fusion-table.js";
+import {PreconditionConverter} from "./migration/convertPrecondition.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -308,7 +309,7 @@ export class PersonaHandleBarsHelpers {
 				});
 			}
 			const sourced = conditions.map( cond => ({
-				...cond,
+				...PreconditionConverter.convertDeprecated(cond),
 				owner: undefined,
 				source: undefined,
 				realSource: undefined,
@@ -964,7 +965,6 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"deprecationList" : function<T extends string | number, L extends T[] | Record<T, unknown>>(listElement: T, nonDepList: L, fullList: L): L {
-			debugger;
 			if (!listElement) {return nonDepList;}
 			if (Array.isArray(nonDepList)) {
 				if (nonDepList.includes(listElement)) {
