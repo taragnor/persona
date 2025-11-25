@@ -1,6 +1,7 @@
+import { INSTANT_KILL_LEVELS } from "../combat/damage-calc.js";
 import {DamageLevel, DamageType} from "../../config/damage-types.js";
 import {PowerTag} from "../../config/power-tags.js";
-import {STATUS_EFFECT_LIST, StatusEffectId} from "../../config/status-effects.js";
+import {STATUS_AILMENT_LIST, STATUS_EFFECT_LIST, StatusEffectId} from "../../config/status-effects.js";
 import {Shadow} from "../actor/persona-actor.js";
 import {InstantKillLevel} from "../combat/damage-calc.js";
 import {PersonaItem, Power, Tag} from "../item/persona-item.js";
@@ -92,13 +93,9 @@ export class EnergyClassCalculator extends CostCalculator {
 
 	static #energyLevel_ailment(pwr: Power) : EnergyCostBase {
 		if (!pwr.hasTag("ailment") || pwr.isInstantDeathAttack()) {return this.NULL_COST;}
-		switch (pwr.system.ailmentChance) {
-			case "none": return this.NULL_COST;
-			case "medium": return new EnergyCostBase(12,12);
-			case "low": return new EnergyCostBase(5 ,5);
-			case "high": return new EnergyCostBase(20 ,20);
-			case "always": return new EnergyCostBase(30 ,30);
-		}
+		const ailmentBase = pwr.ailmentsCaused().reduce( (acc, ail) => Math.max (acc, this.AILMENT_VALUE[ail as keyof typeof this.AILMENT_VALUE] ?? 0), 0);
+		const ailMult = this.AILMENT_MULT_CHANCE[pwr.system.ailmentChance];
+		return new EnergyCostBase(ailMult.energyCost * ailmentBase, ailMult.energyRequired * ailmentBase) ;
 	}
 
 	static #energyLevel_instantKill(pwr: Power) : EnergyCostBase {
@@ -208,8 +205,38 @@ export class EnergyClassCalculator extends CostCalculator {
 		"all-out": 0,
 		"by-power": 0
 	};
+
+static AILMENT_MULT_CHANCE : Record<keyof typeof INSTANT_KILL_LEVELS, EnergyCostBase> = {
+	none: this.NULL_COST,
+	low: new EnergyCostBase(5, 5),
+	medium: new EnergyCostBase(12,12),
+	high: new EnergyCostBase(20, 20),
+	always: new EnergyCostBase(30, 30),
+};
+
+static AILMENT_VALUE : Record<typeof STATUS_AILMENT_LIST[number], number> = {
+	dizzy: 0.75,
+	fear: 1,
+	sleep: 1,
+	poison: 0.5,
+	rage: 0.75,
+	blind: 1,
+	mouse: 1,
+	sealed: 1,
+	despair: 1,
+	charmed: 1,
+	confused: 1
+};
+
 }
 
+// switch (pwr.system.ailmentChance) {
+// 	case "none": return this.NULL_COST;
+// 	case "medium": return new EnergyCostBase(12,12);
+// 	case "low": return new EnergyCostBase(5 ,5);
+// 	case "high": return new EnergyCostBase(20 ,20);
+// 	case "always": return new EnergyCostBase(30 ,30);
+// }
 
 // type EnergyCostModifier = {
 // 	energyRequired: CostModifier;

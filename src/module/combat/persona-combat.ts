@@ -1812,25 +1812,54 @@ private static withinRange(num: number, range: U<{low: number, high: number}>) :
 			targetPersona.getBonuses('kill').total(situation);
 		const instantDeathBonus = attackerPersona.combatStats.instantDeathBonus();
 		instantDeathBonus.add(1, -targetPersona.combatStats.instantDeathResist().eval(situation).total, "Target Mods", "add");
+		//think this is already factored in
+		// const elemResMod = this.resistIKMod(targetPersona, power);
+		// instantDeathBonus.add(1, -elemResMod, "Affinity Mod");
 		instantDeathMods.add("Misc Mods to kill defense", -killDefense);
 		instantDeathBonus.add(1, instantDeathMods, "MOds", "add");
 
 		const resolved = instantDeathBonus.eval(situation);
 		const total = resolved.total;
-		if (PersonaSettings.debugMode()) {
-			const steps = resolved.steps;
-			console.debug(steps);
-		}
+		const steps = resolved.steps;
+		console.debug(steps);
 		const deathRange = power.instantDeathRange;
 		if (deathRange) {
 			deathRange.low -= total;
-			deathRange.low = Math.max(deathRange.low, 5);
+			deathRange.low = Math.max(deathRange.low, 6);
 			if (deathRange.high - deathRange.low <= 0) {
 				return undefined;
 			}
 		}
 		return deathRange;
 	}
+
+static resistIKMod(targetPersona: Persona, power: Usable) : number {
+	const fn = function (elem: RealDamageType) {
+		const resist = targetPersona.elemResist(elem);
+		switch (resist) {
+			case "weakness":
+				return -3;
+			case "normal":
+				return 0;
+			case "resist": return 3;
+			case "block":
+			case "absorb":
+			case "reflect": return 9999;
+			default:
+				resist satisfies never;
+				return 0;
+		}
+	};
+	let ret = 0;
+	if (power.hasTag("dark")) {
+		ret += fn ("dark");
+	}
+	if (power.hasTag("light")) {
+		ret += fn ("light");
+	}
+	return ret;
+
+}
 
 	static calcCritModifier( attacker: ValidAttackers, target: ValidAttackers, power: Usable, situation: Situation, ) : Calculation {
 		const critBoostMod = power.critBoost(attacker);
