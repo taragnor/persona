@@ -62,7 +62,6 @@ export class PersonaCombatStats {
 		subCalc.add(0, this.endurance, `${this.persona.displayedName} Endurance`, "add");
 		subCalc.add(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Defense Divisor`, "multiply");
 		return calc.add(0, subCalc, "Endurance Mod");
-		// return PersonaCombatStats.BASE_DEFENSE + Math.floor(this.endurance / PersonaCombatStats.DEFENSE_DIVISOR);
 	}
 
 	baseWill() : Calculation {
@@ -106,7 +105,6 @@ export class PersonaCombatStats {
 		calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 2`, "add");
 		calc.add(1, 1/PersonaCombatStats.INSTANT_DEATH_ATTACK_DIVISOR, `Instant Kill Attack Divisor`, "multiply");
 		return calc;
-		// return this.instantDeathBonus();
 	}
 
 	baseInit() : Calculation {

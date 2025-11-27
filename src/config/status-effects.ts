@@ -68,10 +68,6 @@ export const STATUS_EFFECT_LIST = [
 		icon:  "icons/svg/paralysis.svg",
 		tags: ["baneful"],
 	}, {
-		id: "forgetful",
-		icon:  "icons/svg/silenced.svg",
-		tags: ["baneful", "distracting"],
-	}, {
 		id: "frozen",
 		icon:`${PERSONA_ICONS_PATH}/P3R_Freeze_Icon.png`,
 		tags: ["baneful", "distracting"],
@@ -216,11 +212,7 @@ declare global {
 	}
 }
 
-
-
 type StatusTag = "distracting" | "baneful" | "incapacitating" | "debuff" | "buff" | "lethal" | "downtime" | "beneficial" | "fade" | "fatigue" | "identifier";
-
-
 
 CONFIG.statusEffects = STATUS_EFFECT_LIST
 	.map( ({id, icon, tags})=> {
@@ -317,6 +309,5 @@ export const STATUS_AILMENT_LIST = [
 	"sealed",
 	"despair",
 ] as const satisfies StatusEffectId[];
-
 
 export const STATUS_AILMENT_SET : Set<StatusEffectId> = new Set(STATUS_AILMENT_LIST);

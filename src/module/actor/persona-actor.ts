@@ -18,7 +18,6 @@ import { statusToFatigueLevel } from "../../config/status-effects.js";
 import { FatigueStatusId } from "../../config/status-effects.js";
 import { statusMap } from "../../config/status-effects.js";
 import { PersonaScene } from "../persona-scene.js";
-import { poisonDamageMultiplier } from "../../config/shadow-types.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { RealDamageType } from "../../config/damage-types.js";
 import { Carryable, CraftingMaterial, SkillCard, SocialCard, Tag } from "../item/persona-item.js";
@@ -817,7 +816,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			default:
 				throw new Error("Doesn't have incremental");
 		}
-
 	}
 
 	getSocialSLWithTarot(this: PC, tarot: TarotCard) : number {
@@ -3515,7 +3513,6 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 		}
 		await this.alterEnergy(bonusEnergy);
 	}
-
 	ret.push(...await this.endTurnStatusEffects());
 	return ret;
 }
@@ -3539,7 +3536,6 @@ socialEffects(this: SocialLink) : readonly SourcedConditionalEffect[] {
 	// weird bug where sometimes the this isn't set properly
 	return ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this );
 }
-
 
 async resetFatigueChecks(this: PC) {
 	if (this.hasAlteredFatigueToday() || this.hasMadeFatigueRollToday()) {
@@ -3614,7 +3610,6 @@ getFlagState(flagName: string) : boolean {
 	return Boolean(this.getEffectFlag(flagName));
 }
 
-
 getFlagDuration(flagName: string) : StatusDuration | undefined {
 	return this.getEffectFlag(flagName)?.duration;
 }
@@ -3651,7 +3646,6 @@ async clearEffectFlag(flagId: string) {
 	const eff = this.effects.find(x=> x.isFlag(flagId));
 	if (eff) {await eff.delete();}
 }
-
 
 async setRelationshipType(this: PC, socialLinkId: string, newRelationshipType: string) {
 	const link = this.system.social.find(x=> x.linkId == socialLinkId);
@@ -4099,16 +4093,17 @@ async addQuestion(this: NPC | PC) {
 			progressSuccess: 0,
 		}
 	];
-	const question : NPC["system"]["questions"][number] = {
-		name: "Unnamed Question",
-		text: "",
-		label: "",
-		choices,
-		expended: false,
-		requiresDating: false,
-		SLmin: 1,
-		SLmax: 10,
-	};
+	const question : NPC["system"]["questions"][number] =
+		{
+			name: "Unnamed Question",
+			text: "",
+			label: "",
+			choices,
+			expended: false,
+			requiresDating: false,
+			SLmin: 1,
+			SLmax: 10,
+		};
 	this.system.questions.push(question);
 	await this.update( { "system.questions": this.system.questions});
 }

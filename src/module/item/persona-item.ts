@@ -2919,7 +2919,6 @@ export interface ModifierContainer <T extends Actor | TokenDocument | Item | Act
 	displayedName: string;
 	accessor : UniversalAccessor<T>,
 	getModifier(bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null): ModifierListItem[];
-
 }
 
 export type PowerContainer = Consumable | Power | ItemModifierContainer;
@@ -2949,12 +2948,10 @@ Hooks.on('deleteItem', async (item: PersonaItem) => {
 	if (item.parent instanceof PersonaActor && item.hasPlayerOwner && item.isOwner && !game.user.isGM) {
 		await Logger.sendToChat(`${item.parent.displayedName} deletes ${item.name}(${item.amount})`, item.parent);
 	}
-
 });
 
 export type ItemSubtype <I extends Power, X extends I['system']['subtype']> = I & SystemSubtype<X>;
 type SystemSubtype<X extends string> = {system: {subytpe : X }};
-
 
 type AdvancedEffectsCache = {
 	allNonEmbeddedEffects: WeakMapPlus,
@@ -2968,7 +2965,6 @@ type AdvancedEffectsCache = {
 type WeakMapPlus = {
 	actors: WeakMap<PersonaActor, SourcedConditionalEffect[]>;
 	nullActor: U<SourcedConditionalEffect[]>;
-
 };
 
 type PowerSub<T extends Power['system']['subtype']> = Power & {system: {subtype: T}}
