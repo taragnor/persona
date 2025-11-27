@@ -1185,7 +1185,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!this.isPC()) {return 0;}
 		if (!this.class.system.canUsePersonaSideboard) {return 0;}
 		const base = BASE_PERSONA_SIDEBOARD;
-		// const base = this.class.system.maxPersonas;
 		const bonuses = this.getPersonalBonuses("persona-sideboard").total( {user: this.accessor});
 		return base + bonuses;
 	}
@@ -4271,9 +4270,11 @@ async swapPersona( this: PC, p1: Persona, p2: Persona) {
 		return;
 	}
 	if (await this._trySwapPersona(p1, p2)) {
+		await Logger.sendToChat(`${p1.name} moved from sideboard to active, replacing ${p2.name}`);
 		return;
 	}
 	if (await this._trySwapPersona(p2, p1)) {
+		await Logger.sendToChat(`${p2.name} moved from sideboard to active, replacing ${p1.name}`);
 		return;
 	}
 	ui.notifications.notify("These two personas can't be swapped");

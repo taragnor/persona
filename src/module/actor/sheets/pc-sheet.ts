@@ -348,8 +348,9 @@ export class PCSheet extends PCLikeSheet {
 			await this.render(false);
 			return;
 		}
-		await this.actor.swapPersona(this.personaMoveSelector, persona);
+		const target1= this.personaMoveSelector;
 		this.personaMoveSelector = undefined;
+		await this.actor.swapPersona(target1, persona);
 	}
 
 }
