@@ -52,6 +52,7 @@ import {PersonaSettings} from "../config/persona-settings.js";
 import {POWER_TAGS} from "../config/power-tags.js";
 import {FusionTable} from "../config/fusion-table.js";
 import {PreconditionConverter} from "./migration/convertPrecondition.js";
+import {PCSheet} from "./actor/sheets/pc-sheet.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -978,6 +979,12 @@ export class PersonaHandleBarsHelpers {
 			return fullList;
 			}
 		},
+
+		"isSwapSelected" : function(actor: PC, persona: Persona) : boolean {
+			debugger;
+			const sheet = actor.sheet as PCSheet;
+			return sheet.personaMoveSelector?.equals( persona) ?? false;
+		}
 
 	};
 } //end of class

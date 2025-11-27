@@ -1,0 +1,25 @@
+{{#if persona.user.navigatorSkills}}
+<section class="navigator-skills">
+	<h2>Navigator Skills</h2>
+	<div class="navigator-skills">
+		{{#each actor.navigatorSkills as |power i|}}
+		<div class="navigator-power" data-power-id="{{power.id}}">
+			<div class="power-name-block {{#if (isPowerIllegal ../persona power)}} illegal-level {{/if}}">
+				<a class="powerName" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power persona=../persona}}'>
+					{{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../actor}}
+					<span class="cost-string">
+						({{powerCostString power ../persona}})
+					</span>
+				</a>
+			</div>
+			<div class="power-operations">
+				<a class="delPower" title="Delete Power">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</div>
+		</div>
+		{{/each}}
+	</div>
+</section>
+{{/if}}
+

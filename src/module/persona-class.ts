@@ -655,9 +655,7 @@ get printableResistanceString() : string {
 			const actual = this.statusResist(statusRaw as StatusEffectId);
 			const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[statusRaw as StatusEffectId]);
 			if (statusTrans == undefined) {
-				// eslint-disable-next-line no-debugger
-				debugger;
-				return "";
+				return "ERROR";
 			}
 			switch (actual) {
 				case "resist": return `Resist ${statusTrans}`;

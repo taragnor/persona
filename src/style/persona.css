@@ -1520,6 +1520,19 @@ img.greyed-out {
 	text-align: center;
 }
 
+.navigator-skills {
+	margin: 10px;
+	border: 2px;
+	border-style: dotted;
+	border-width: 2px;
+	border-radius:5px;
+}
+
+li.swap-selected {
+	background-color: blue;
+
+}
+
 textarea.field-secretNotes {
 	min-width: 100%;
 	max-width: 100%;

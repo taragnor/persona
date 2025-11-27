@@ -4,13 +4,18 @@
 	<ul class="persona-list">
 		{{#each actor.personaList as |persona i|}}
 
-		<li class="f-row" data-persona-id="{{persona.source.id}}">
+		<li class="f-row {{#if (isSwapSelected ../actor persona)}} swap-selected {{/if}}" data-persona-id="{{persona.source.id}}">
 			<div class="persona-name">
 				<a>
 					{{persona.name}} ({{persona.level}}, {{persona.tarot.displayedName}})
 				</a>
 			</div>
 			<div>
+				{{#if ../actor.sideboardPersonas}}
+				<a class="swap-persona">
+					<i class="fa-solid fa-retweet"></i>
+				</a>
+				{{/if}}
 				<a class="delPersona">
 					<i class="fa-solid fa-trash-can"></i>
 				</a>
@@ -24,13 +29,16 @@
 	<ul class="persona-list">
 		{{#each actor.sideboardPersonas as |persona i|}}
 
-		<li class="f-row" data-persona-id="{{persona.source.id}}">
+		<li class="f-row {{#if (isSwapSelected ../actor persona)}} swap-selected {{/if}}" data-persona-id="{{persona.source.id}}">
 			<div class="persona-name">
 				<a>
 					{{persona.name}} ({{persona.level}}, {{persona.tarot.displayedName}})
 				</a>
 			</div>
 			<div>
+				<a class="swap-persona">
+					<i class="fa-solid fa-retweet"></i>
+				</a>
 				<a class="delPersona">
 					<i class="fa-solid fa-trash-can"></i>
 				</a>

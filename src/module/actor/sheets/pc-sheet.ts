@@ -14,9 +14,13 @@ import { PersonaDB } from "../../persona-db.js";
 import { NPC } from "../persona-actor.js";
 import { PC } from "../persona-actor.js";
 import { PCLikeSheet } from "./pc-like-sheet.js";
+import {Persona} from "../../persona-class.js";
 
 export class PCSheet extends PCLikeSheet {
 	declare actor: Subtype<PersonaActor, "pc">;
+
+	personaMoveSelector : U<Persona>;
+
 	static override get defaultOptions() {
 		const def = super.defaultOptions;
 		return foundry.utils.mergeObject(def, {
@@ -91,6 +95,7 @@ export class PCSheet extends PCLikeSheet {
 		html.find(".init-social-link").on("click", this.startSocialLink.bind(this));
 		html.find(".move-to-sideboard").on("click", this.movePowerToSideboard.bind(this));
 		html.find(".move-to-main").on("click", this.movePowerToMain.bind(this));
+		html.find(".swap-persona").on("click", (ev) => void this.selectPersonaForSideboardMove(ev));
 	}
 
 	async rollSocial (ev: JQuery.Event) {
@@ -326,6 +331,25 @@ export class PCSheet extends PCLikeSheet {
 	async movePowerToMain( event: JQuery.ClickEvent) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		await this.actor.retrievePowerFromSideboard(powerId);
+	}
+
+	async selectPersonaForSideboardMove(event: JQuery.ClickEvent) {
+		const personaId = HTMLTools.getClosestData(event, "personaId");
+		if (personaId == this.actor.id) {return;}
+		const persona = this.actor.personaList.find( x=> x.source.id == personaId) ?? this.actor.sideboardPersonas.find(x=> x.source.id == personaId) ;
+		if (!persona) {return;}
+		if (this.personaMoveSelector == undefined) {
+			this.personaMoveSelector = persona;
+			await this.render(false);
+			return;
+		}
+		if (this.personaMoveSelector.equals(persona)) {
+			this.personaMoveSelector = undefined;
+			await this.render(false);
+			return;
+		}
+		await this.actor.swapPersona(this.personaMoveSelector, persona);
+		this.personaMoveSelector = undefined;
 	}
 
 }

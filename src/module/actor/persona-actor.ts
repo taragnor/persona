@@ -4266,6 +4266,36 @@ get startingLevel() : number {
 	return this.cache.startingLevel = lvl;
 }
 
+async swapPersona( this: PC, p1: Persona, p2: Persona) {
+	if (this.maxPersonaSideboard == 0) {
+		return;
+	}
+	if (await this._trySwapPersona(p1, p2)) {
+		return;
+	}
+	if (await this._trySwapPersona(p2, p1)) {
+		return;
+	}
+	ui.notifications.notify("These two personas can't be swapped");
+	}
+
+private async _trySwapPersona(this: PC, p1: Persona, p2: Persona)  : Promise<boolean> {
+	const sideboardIds = this.system.combat.persona_sideboard;
+	const personaList = this.system.personaList;
+	if (sideboardIds.includes(p1.source.id)) {
+		if (personaList.includes(p2.source.id)) {
+			sideboardIds.splice(sideboardIds.indexOf(p1.source.id), 1, p2.source.id);
+			personaList.splice(personaList.indexOf(p2.source.id), 1, p1.source.id);
+			await this.update( {
+				"system.combat.persona_sideboard": sideboardIds,
+				"system.personaList": personaList,
+			})
+			return true;
+		}
+	}
+	return false;
+}
+
 }//end of class
 
 Hooks.on("preUpdateActor", async (actor: PersonaActor, changes) => {

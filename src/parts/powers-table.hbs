@@ -48,76 +48,10 @@
 </section>
 {{/if}}
 
+{{> "systems/persona/parts/next-learned-powers-section.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers showLearnedBuffer=showLearnedBuffer}}
 
-{{#if (and showLearnedBuffer persona.source.topLearnedBuffer)}}
 
-<hr>
-<section class="learned-powers">
-	<h3> Learned Powers (out of space) </h3>
-	<div class="powers-table">
-		<div class="powers-table-item" data-power-id="{{actor.topLearnedBuffer.id}}">
-			<div class="power-name-block">
-				<a class="powerName">
-					{{> "systems/persona/parts/pretty-power-name.hbs" CONST=CONST power=persona.source.topLearnedBuffer user=actor}}
-				</a>
-			</div>
-			<div class="power-operations">
-				<a class="delPower" title="Delete Power">
-					<i class="fa-solid fa-trash-can"></i>
-				</a>
-			</div>
-		</div>
-	</div>
-</section>
-
-{{else}}
-
-{{#if persona.source.nextPowerToLearn}}
-<section class="next-power-to-learn">
-	<div>Next Power to Learn: </div>
-	<div class="powers-table">
-		<div class="next-power-to-learn powers-table-item" data-power-id="{{actor.nextPowerToLearn.id}}">
-			<div class="power-name-block">
-				<a class="powerName">
-					{{> "systems/persona/parts/pretty-power-name.hbs" CONST=CONST power=persona.source.nextPowerToLearn user=actor}}
-				</a>
-				<span class="level-to-learn">
-					at L {{persona.source.nextLevelLearnPower}}
-				</span>
-			</div>
-		</div>
-	</div>
-</section>
-{{/if}}
-
-{{/if}}
-
-{{#if persona.user.navigatorSkills}}
-<hr>
-<section class="navigator-skills">
-	<h2>Navigator Skills</h2>
-	<div class="navigator-skills">
-		{{#each actor.navigatorSkills as |power i|}}
-		<div class="navigator-power" data-power-id="{{power.id}}">
-			<div class="power-name-block {{#if (isPowerIllegal ../persona power)}} illegal-level {{/if}}">
-				<a class="powerName" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power persona=../persona}}'>
-					{{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../actor}}
-					<span class="cost-string">
-						({{powerCostString power ../persona}})
-					</span>
-				</a>
-			</div>
-			<div class="power-operations">
-				<a class="delPower" title="Delete Power">
-					<i class="fa-solid fa-trash-can"></i>
-				</a>
-			</div>
-		</div>
-		{{/each}}
-	</div>
-</section>
-<hr>
-{{/if}}
+{{> "systems/persona/parts/navigator-skills-section.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers}}
 
 {{#if showBonusPowers}}
 {{> "systems/persona/parts/bonus-powers-table.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers}}

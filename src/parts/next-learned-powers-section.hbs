@@ -1,0 +1,40 @@
+{{#if (and showLearnedBuffer persona.source.topLearnedBuffer)}}
+<hr>
+<section class="learned-powers">
+	<h3> Learned Powers (out of space) </h3>
+	<div class="powers-table">
+		<div class="powers-table-item" data-power-id="{{actor.topLearnedBuffer.id}}">
+			<div class="power-name-block">
+				<a class="powerName">
+					{{> "systems/persona/parts/pretty-power-name.hbs" CONST=CONST power=persona.source.topLearnedBuffer user=actor}}
+				</a>
+			</div>
+			<div class="power-operations">
+				<a class="delPower" title="Delete Power">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</div>
+		</div>
+	</div>
+</section>
+
+{{else}}
+
+{{#if persona.source.nextPowerToLearn}}
+<section class="next-power-to-learn">
+	<div>Next Power to Learn: </div>
+	<div class="powers-table">
+		<div class="next-power-to-learn powers-table-item" data-power-id="{{actor.nextPowerToLearn.id}}">
+			<div class="power-name-block">
+				<a class="powerName">
+					{{> "systems/persona/parts/pretty-power-name.hbs" CONST=CONST power=persona.source.nextPowerToLearn user=actor}}
+				</a>
+				<span class="level-to-learn">
+					at L {{persona.source.nextLevelLearnPower}}
+				</span>
+			</div>
+		</div>
+	</div>
+</section>
+{{/if}}
+{{/if}}

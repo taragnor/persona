@@ -81,6 +81,8 @@ const templateFileNames : string[] =[
 	"power-tags.hbs",
 	"social-minor-actions.hbs",
 	"talents-section.hbs",
+	"navigator-skills-section.hbs",
+	"next-learned-powers-section.hbs",
 ];
 
 export const templatePaths = templateFileNames.
