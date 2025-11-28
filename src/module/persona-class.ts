@@ -37,6 +37,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	source: ValidAttackers;
 	_powers: Power[];
 	#cache: PersonaClassCache;
+	_isHypothetical: boolean;
 
 	static leveling = {
 		SHADOWS_TO_LEVEL: 10,
@@ -44,10 +45,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		XP_GROWTH: 200, //added XP for additional level ups
 	};
 
-	constructor (source: ValidAttackers, user: T, powers?: Power[]) {
+	constructor (source: ValidAttackers, user: T, powers?: Power[], isHypothetical = false) {
 		this.user = user;
 		this.source = source;
 		this._powers = powers == undefined ? source._mainPowers(): powers;
+		this._isHypothetical = isHypothetical;
 		this.resetCache();
 	}
 
@@ -404,8 +406,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	mainModifiers(options?: {omitPowers?: boolean, omitTalents?: boolean, omitTags ?: boolean} ): readonly SourcedConditionalEffect[] {
 		//NOTE: this could be a risky operation
-		const PersonaCaching = PersonaSettings.agressiveCaching();
-		if (!options && PersonaCaching && this.#cache.mainModifiers) {
+		const canCache = !options && this.canCache;
+		if (canCache && this.#cache.mainModifiers) {
 			return this.#cache.mainModifiers;
 		}
 		const user = this.user;
@@ -428,26 +430,29 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		];
 		const mainMods = mainModsList
 			.flatMap( x=> x.getEffects(this.user));
-		if (!options) {
+		if (!canCache) {
 			this.#cache.mainModifiers = mainMods;
 		}
 		return mainMods;
 	}
 
 	passiveOrTriggeredPowers() : readonly Power[] {
-		const PersonaCaching = PersonaSettings.agressiveCaching();
+		const PersonaCaching = this.canCache;
 		if (!this.#cache.passivePowers || !PersonaCaching) {
-			this.#cache.passivePowers = this.powers
+			const val =  this.powers
 				.filter( power => power.isPassive() || power.isDefensive())
 				.filter( power=> power.hasPassiveEffects(this.user) || power.hasTriggeredEffects(this.user));
+			if (!PersonaCaching) {return val;}
+			this.#cache.passivePowers = val;
 		}
 		return this.#cache.passivePowers;
 	}
 
 	defensiveModifiers(): readonly SourcedConditionalEffect[] {
-		const PersonaCaching = PersonaSettings.agressiveCaching();
-		if (!this.#cache.defensiveModifiers || !PersonaCaching) {
-			this.#cache.defensiveModifiers = this.mainModifiers().filter ( eff => eff.conditionalType == "defensive");
+		if (!this.#cache.defensiveModifiers || !this.canCache) {
+			const val =  this.mainModifiers().filter ( eff => eff.conditionalType == "defensive");
+			if (!this.canCache) {return val;}
+			this.#cache.defensiveModifiers = val;
 		}
 		return this.#cache.defensiveModifiers;
 
@@ -1053,9 +1058,19 @@ async levelUp_manual() {
 }
 
 get isActivateable() : boolean {
+	if (this._isHypothetical) {return false;}
 	if (!this.source.hasPlayerOwner) {return false;}
 	return this.user.personaList
 		.some( persona => this.equals(persona));
+}
+
+get isPartial() : boolean {
+	return this._isHypothetical;
+}
+
+get canCache() : boolean {
+		const PersonaCaching = PersonaSettings.agressiveCaching();
+		return !this.isPartial && PersonaCaching;
 }
 
 } // end of class

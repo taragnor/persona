@@ -200,7 +200,7 @@ export function combatCommonStats() {
 		wpnatk: new num( {integer:true, initial: 0}),
 		magatk: new num( {integer:true, initial: 0}),
 		powers: new arr( new id()),
-		lastLearnedLevel: new num({initial: 1, integer: true, min: 0}),
+		lastLearnedLevel: new num({initial: 0, integer: true, min: 0}),
 		powersToLearn: new arr( new obj<PowerToLearn>()),
 		learnedPowersBuffer: new arr( new id()),
 		// defenses :

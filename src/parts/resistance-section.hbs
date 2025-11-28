@@ -53,6 +53,7 @@
 </section>
 {{/if}}
 
+{{#if (not persona.isPartial)}}
 {{#if (scanLevelgte persona 2)}}
 {{#if (resistStr persona)}}
 <div class="status-resists">
@@ -61,5 +62,6 @@
 		{{resistStr persona}}
 	</span>
 </div>
+{{/if}}
 {{/if}}
 {{/if}}

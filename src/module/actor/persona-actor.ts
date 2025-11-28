@@ -1320,8 +1320,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get powerLearningList() : readonly Readonly<{power: Power, level: number}>[] {
 		if (!this.isValidCombatant()) {return [];}
+		const lastLearn = this.system.combat.lastLearnedLevel <= 1 ? this.startingLevel: this.system.combat.lastLearnedLevel;
 		return this.powerLearningListFull
-			.filter( x=> x.level > (this.system.combat.lastLearnedLevel ?? 0))
+			.filter( x=> x.level > lastLearn)
 			.filter( x=> this.checkPowerLegality(x.power ));
 	}
 
