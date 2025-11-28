@@ -19,7 +19,9 @@ import {Persona} from "../../persona-class.js";
 export class PCSheet extends PCLikeSheet {
 	declare actor: Subtype<PersonaActor, "pc">;
 
-	personaMoveSelector : U<Persona>;
+
+	personaMoveSelector : U<Persona> = undefined;
+	selectedFusion:  U<Persona> = undefined;
 
 	static override get defaultOptions() {
 		const def = super.defaultOptions;
@@ -31,7 +33,8 @@ export class PCSheet extends PCLikeSheet {
 			tabs: [
 				{navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "combat"},
 				{navSelector: ".secondary-tabs", contentSelector: ".inner-body", initial: "SL"},
-				{navSelector: ".inventory-tabs", contentSelector: ".inventory-body", initial: "consumables"}
+				{navSelector: ".inventory-tabs", contentSelector: ".inventory-body", initial: "consumables"},
+				{navSelector: ".persona-tabs", contentSelector: ".persona-body", initial: "personaList"}
 			],
 		});
 	}
@@ -96,6 +99,8 @@ export class PCSheet extends PCLikeSheet {
 		html.find(".move-to-sideboard").on("click", this.movePowerToSideboard.bind(this));
 		html.find(".move-to-main").on("click", this.movePowerToMain.bind(this));
 		html.find(".swap-persona").on("click", (ev) => void this.selectPersonaForSideboardMove(ev));
+		html.find("li.fusion-option").on("click", (ev) => void this.fusionOptionSelect(ev));
+		html.find(".fusions-list .persona-viewer .back").on("click", ev => void this.clearFusionSelect(ev));
 	}
 
 	async rollSocial (ev: JQuery.Event) {
@@ -352,5 +357,22 @@ export class PCSheet extends PCLikeSheet {
 		this.personaMoveSelector = undefined;
 		await this.actor.swapPersona(target1, persona);
 	}
+
+	async fusionOptionSelect (ev: JQuery.ClickEvent) {
+		const shadowId = HTMLTools.getClosestData(ev, "shadowId");
+		const shadow = PersonaDB.getActorById(shadowId) as Shadow;
+		if (!shadow) {
+			throw new PersonaError(`Couldn't find Shadow ${shadowId}`);
+	}
+		this.selectedFusion = new Persona(shadow, this.actor, shadow.startingPowers);
+		await this.render(false);
+	}
+
+	async clearFusionSelect (_ev ?: JQuery.ClickEvent) {
+		this.selectedFusion = undefined;
+		await this.render(false);
+	}
+
+
 
 }

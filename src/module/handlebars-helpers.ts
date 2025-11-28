@@ -981,10 +981,8 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"isSwapSelected" : function(actor: PC, persona: Persona) : boolean {
-			debugger;
 			const sheet = actor.sheet as PCSheet;
 			return sheet.personaMoveSelector?.equals( persona) ?? false;
-		}
-
+		},
 	};
 } //end of class

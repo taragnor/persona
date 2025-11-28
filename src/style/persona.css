@@ -1539,3 +1539,14 @@ textarea.field-secretNotes {
 	width: 100%;
 	box-sizing: border-box;
 }
+
+nav.persona-tabs {
+	font-size: larger;
+	border-bottom: 1px solid #ccc;
+	padding-bottom: 0.5em; /* optional spacing above line */
+	margin-bottom: 0.5em;  /* optional spacing below line */
+}
+
+li.fusion-option.disabled {
+	opacity: 0.5;
+}

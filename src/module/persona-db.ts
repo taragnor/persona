@@ -396,15 +396,16 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.possiblePersonas = shadows;
 	}
 
-	possiblePersonasByStartingLevel(min: number, max: number) : Shadow[] {
-		return this.possiblePersonas().filter (x=> 
+	possiblePersonasByStartingLevel(min: number, max: number, excludeDaemon = false) : Shadow[] {
+		return this.possiblePersonas().filter (x=>
 			x.startingLevel >= min
 			&& x.startingLevel <= max
+			&& (!excludeDaemon || x.system.creatureType != "daemon")
 		);
 	}
 
-	PersonaableShadowsOfArcana(min: number, max: number) : Partial<Record<TarotCard, Shadow[]>> {
-		const shadows = this.possiblePersonasByStartingLevel(min, max)
+	PersonaableShadowsOfArcana(min: number, max: number, excludeDaemon= false) : Partial<Record<TarotCard, Shadow[]>> {
+		const shadows = this.possiblePersonasByStartingLevel(min, max, excludeDaemon)
 		.sort( (a,b) => (b.tarot?.displayedName ?? "").localeCompare(a.tarot?.displayedName ?? ""));
 		const tarotList = {} as Partial<Record<TarotCard, Shadow[]>>;
 		for (const tarot of Object.keys(TAROT_DECK)) {

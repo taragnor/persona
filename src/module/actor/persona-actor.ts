@@ -4151,8 +4151,13 @@ get isTrueOwner() : boolean {
 get fusionCombinations() {
 	const arr = this.personaList
 		.concat(this.sideboardPersonas);
-	return FusionTable.fusionCombinations(arr);
+	return FusionTable.fusionCombinationsOutOf(arr);
+}
 
+fusionCombinationsRaw() {
+	const arr = this.personaList
+		.concat(this.sideboardPersonas);
+	return FusionTable.fusionCombinationsOutOf(arr, true);
 }
 
 getPrimaryPlayerOwner() : typeof game.users.contents[number] | undefined {
@@ -4226,8 +4231,8 @@ async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: num
 	await Logger.sendToChat(`+${amt} ${permaBuffLocalized} applied to ${this.name}`);
 }
 
-fusions(this: Shadow, min= 2, max=999) : [Shadow, Shadow][] {
-	return FusionTable.fusionCombinationsFor(this, min, max);
+fusionsInto(this: Shadow, min= 2, max=999) : [Shadow, Shadow][] {
+	return FusionTable.fusionCombinationsInto(this, min, max);
 }
 
 moneyDropped(): number {

@@ -604,8 +604,7 @@ elemResist(type: Exclude<DamageType, "by-power">): ResistStrength {
 			getActiveConsequences(eff, situation)
 		);
 	const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
-	let resBonus = 0;
-	let resPenalty = 0;
+	let resBonus = 0, resPenalty = 0;
 	for (const cons of consequences) {
 		switch (cons.type) {
 			case "raise-resistance": {
@@ -1054,6 +1053,7 @@ async levelUp_manual() {
 }
 
 get isActivateable() : boolean {
+	if (!this.source.hasPlayerOwner) {return false;}
 	return this.user.personaList
 		.some( persona => this.equals(persona));
 }

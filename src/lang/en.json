@@ -65,6 +65,11 @@
 	"persona.sheet.tabs.personal-stats.tabname" : "Character Stats",
 	"persona.sheet.tabs.personal-stats.header" : "Character Stats",
 
+	"persona.sheet.tabs.persona.list" : "Persona List",
+	"persona.sheet.tabs.persona.fusions" : "Fusions",
+	"persona.sheet.tabs.persona.compendium" : "Compendium",
+
+
 	"persona.sheet.tabs.social-benefits.tabname" : "Social Benefits",
 	"persona.sheet.tabs.social-benefits.header" : "Social Benefits",
 	"persona.sheet.tabs.social-section.header" : "Relationship Info",

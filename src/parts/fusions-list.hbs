@@ -1,0 +1,25 @@
+<section class="fusions-list">
+	{{#if (not actor.sheet.selectedFusion)}}
+	<h2> Fusions</h2>
+	<ul class="fusion-options">
+		{{#each actor.fusionCombinations as |fusion i|}}
+		<li class="fusion-option {{#if (gt fusion.result.startingLevel ../actor.level)}} disabled {{/if}}" data-shadow-id="{{fusion.result.id}}">
+			<span class="name">
+				{{fusion.result.displayedName}}
+				- {{fusion.result.level}} {{fusion.result.tarot.displayedName}}
+			</span>
+			(
+			{{#each fusion.components as |comp j|}}
+			<span>{{comp.displayedName}} </span>
+			{{/each}}
+			)
+			<span class="inherited-skills">
+				{{fusion.inheritedSkills}} Skills Inherited
+			</span>
+		</li>
+		{{/each}}
+	</ul>
+	{{else}}
+	{{> "systems/persona/parts/persona-viewer.hbs" actor=actor CONST=CONST persona=actor.sheet.selectedFusion partial=true}}
+	{{/if}}
+</section>
