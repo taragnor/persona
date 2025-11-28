@@ -671,7 +671,6 @@ get printableResistanceString() : string {
 }
 
 statusResist(status: StatusEffectId) : ResistStrength {
-	//caching trick to try to save time
 	const mods = this.mainModifiers();
 	return this.source.statusResist(status, mods);
 }

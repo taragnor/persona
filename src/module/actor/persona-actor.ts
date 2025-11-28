@@ -1397,7 +1397,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return [];
 	}
 
-
 	passiveFocii(this: ValidAttackers): Focus[] {
 		return this.persona().passiveFocii();
 	}
@@ -1857,8 +1856,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			.sort( (a,b) => a.displayedName.localeCompare(b.displayedName));
 	}
 
-
-
 	get treasureMultiplier () : number {
 		if (!this.isValidCombatant()) {return 1;}
 		switch (this.system.type) {
@@ -2124,9 +2121,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get statusResists() : {id: string, img: string, local: string, val: string}[] {
 		if (!this.isValidCombatant()) { return [];}
-		// if (!this.isShadow() || this.isPersona()) {
-		// 	return [];
-		// }
 		const arr: {id: string, img: string, local: string, val: string}[]   = [];
 		for (const [k, v] of Object.entries(this.system.combat.statusResists)) {
 			arr.push( {
@@ -2405,7 +2399,6 @@ async deleteFromSideboard(this: PC | NPCAlly, id: Power["id"]) {
 		sideboard = sideboard.filter( x=> x != id);
 		await this.update( {"system.combat.powers_sideboard": sideboard});
 		await Logger.sendToChat(`${this.name} deleted sideboard power ${power.name}` , this);
-		// await this.checkSideboardEmptySpace();
 		return true;
 	}
 	return false;
@@ -2691,7 +2684,6 @@ getInspirationWith(linkId: SocialLink["id"]): number {
 	if (!link) {return 0;}
 	return link.inspiration;
 }
-
 
 async addInspiration(this:PC, linkId:SocialLink["id"], amt: number) {
 	const link = this.system.social.find( x=> x.linkId == linkId);

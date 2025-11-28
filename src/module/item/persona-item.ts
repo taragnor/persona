@@ -1037,25 +1037,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return removeDuplicates(powers);
 	}
 
-	// getAllGrantedPowers(this: ItemModifierContainer, user: ValidAttackers, situation?: Situation): Power[] {
-	//   if (!this.grantsPowers()) {return [];}
-	//   if (!situation) {
-	//     situation = {
-	//       user: user.accessor
-	//     };
-	//   }
-	//   const powers=  this.getPassiveEffects(user)
-	//     .filter(
-	//       eff => eff.consequences.some(
-	//         cons => cons.type == 'add-power-to-list'
-	//       ))
-	//     .flatMap(eff=> getActiveConsequences(eff, situation, this))
-	//     .flatMap(x=> x.type == 'add-power-to-list' ? [x.id] : [])
-	//     .map(id=> PersonaDB.allPowers().get(id))
-	//     .flatMap( pwr=> pwr? [pwr]: []);
-	//   return removeDuplicates(powers);
-	// }
-
 	getAllGrantedTalents(this: ItemModifierContainer, user: ValidAttackers, situation?: Situation): Talent[] {
 		if (!this.grantsTalents()) {return [];}
 		if (!situation) {
@@ -1536,38 +1517,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	async displayDamageStack(this: Usable, persona: Persona) : Promise<string> {
-		// const estimate = this.generateSimulatedDamageObject(user, 6);
-		// if (!estimate) {console.warn(`Can't get damage stack for ${this.name}`); return;}
-		// const sim = estimate?.str;
-		// if (!sim) {console.warn(`Can't get damage stack for ${this.name}`); return;}
 		const st = await this.getDamageStack(persona.user);
 		console.log(`Damage stack ${st}`);
 		return st;
 	}
-
-
-	// getDamageStack(this: Usable, userPersona: Persona): string {
-	//   const estimate = this.getDamage(userPersona).setApplyEvenBonus().eval();
-	//   if (!estimate) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return '';}
-	//   const sim = estimate?.str;
-	//   if (!sim) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return '';}
-	//   return `
-	//   ${this.name}: ${estimate.damageType}
-	//   ${sim.join('\n')}
-	//     `;
-	// }
-
-	// estimateDamage(this: Usable, userPersona: Persona) : {low: number, high: number} {
-	// if (!this.isTrulyUsable()) {return {high:0, low: 0};}
-
-	// if (this.isWeaponSkill() || this.isMagicSkill() || this.isConsumable()) {
-	// const damage = this.getDamage(userPersona);
-	// const high = Math.abs(damage.clone().setApplyEvenBonus().eval().hpChange);
-	// const low = Math.abs(damage.clone().eval().hpChange);
-	// return {high, low};
-	// }
-	// return {high: -1, low: -1};
-	// }
 
 	async getDamageStack(this: Usable, user: ValidAttackers): Promise<string> {
 		const estimate = await this.generateSimulatedDamageObject(user, 6);
@@ -2749,13 +2702,6 @@ canInstantKill(this: Usable) : boolean {
 causesAilment(this: Usable) : boolean {
 	if (this.system.ailmentChance != "none") {return true;}
 	return false;
-	// if (this.statusesAdded().some (
-	//   status => STATUS_AILMENT_SET.has(status)
-	// )) {
-	//   return true;
-	// }
-	// return false;
-	// return this.hasTag("ailment");
 }
 
 ailmentsCaused (this:Usable, deepTagList = true) : StatusEffectId[]{
