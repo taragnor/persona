@@ -372,7 +372,4 @@ export class PCSheet extends PCLikeSheet {
 		this.selectedFusion = undefined;
 		await this.render(false);
 	}
-
-
-
 }
