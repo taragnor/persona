@@ -106,51 +106,51 @@ export class Metaverse {
 		await RandomEncounter.printRandomEncounterList(encounter);
 	}
 
-static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void> {
-	if (!game.user.isGM) {return;}
-	const numOfPCs = party.length;
-	const xp= Persona.calcXP(shadows, numOfPCs );
-	const navigator = PersonaDB.getNavigator();
-	if (navigator) {
-		party.push(navigator);
-	}
-	const XPAwardDataPromises = party.map( async actor=> {
-		try {
-			const XPReport = await actor.awardXP(xp);
-			return XPReport;
-		} catch (e) {
-			PersonaError.softFail(`Error giving XP to ${actor.name}`, e);
-			return [];
+	static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void> {
+		if (!game.user.isGM) {return;}
+		const numOfPCs = party.length;
+		const xp= Persona.calcXP(shadows, numOfPCs );
+		const navigator = PersonaDB.getNavigator();
+		if (navigator) {
+			party.push(navigator);
 		}
-	});
-	const data = (await Promise.all(XPAwardDataPromises))
-	.flatMap(x=> x);
-	await this.reportXPGain(data);
-}
+		const XPAwardDataPromises = party.map( async actor=> {
+			try {
+				const XPReport = await actor.awardXP(xp);
+				return XPReport;
+			} catch (e) {
+				PersonaError.softFail(`Error giving XP to ${actor.name}`, e);
+				return [];
+			}
+		});
+		const data = (await Promise.all(XPAwardDataPromises))
+		.flatMap(x=> x);
+		await this.reportXPGain(data);
+	}
 
-static async reportXPGain(xpReport: XPGainReport[]) : Promise<void> {
-	const xpStringParts = xpReport
-	.map( ({name, amount, leveled}) => {
-		let LUMsg = "";
-		const base =  `<div> ${name}: +${amount} XP </div>`;
-		if (leveled) {
-			LUMsg =  `<div class="level-up-msg"> Level Up!</div>`;
+	static async reportXPGain(xpReport: XPGainReport[]) : Promise<void> {
+		const xpStringParts = xpReport
+		.map( ({name, amount, leveled}) => {
+			let LUMsg = "";
+			const base =  `<div> ${name}: +${amount} XP </div>`;
+			if (leveled) {
+				LUMsg =  `<div class="level-up-msg"> Level Up!</div>`;
+			}
+			return base + LUMsg;
+		});
+		const text = xpStringParts.join("");
+		if (xpReport.some(x=> x.leveled)) {
+			void PersonaSFX.onLevelUp();
 		}
-		return base + LUMsg;
-	});
-	const text = xpStringParts.join("");
-	if (xpReport.some(x=> x.leveled)) {
-		void PersonaSFX.onLevelUp();
+		await ChatMessage.create({
+			speaker: {
+				alias: "XP Award",
+			},
+			content: text ,
+			rolls: [],
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+		});
 	}
-	await ChatMessage.create({
-		speaker: {
-			alias: "XP Award",
-		},
-		content: text ,
-		rolls: [],
-		style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-	});
-}
 
 	static async generateTreasure(shadows: PersonaActor[]): Promise<Treasure> {
 		if ("justTesting" in window) {
@@ -197,18 +197,6 @@ static async reportXPGain(xpReport: XPGainReport[]) : Promise<void> {
 		return treasure;
 	}
 
-// getShadowMoney(shadow: Shadow) : number {
-// 	const treasure = shadow.system.encounter.treasure;
-// 	const moneyLow = treasure.moneyLow ?? 0;
-// 	const moneyHigh = treasure.moneyHigh ?? 0;
-// 	const variability = moneyHigh - moneyLow;
-// 	if (variability >= 0) {
-// 		const bonus = Math.floor(Math.random() * (variability +1));
-// 		return Math.floor(moneyLow + bonus);
-// 	}
-// 	return moneyLow;
-// }
-
 	static async printTreasure(treasure : Treasure) {
 		const {money, items} = treasure;
 		const speaker = ChatMessage.getSpeaker({alias: "Treasure Generator"});
@@ -230,26 +218,26 @@ static async reportXPGain(xpReport: XPGainReport[]) : Promise<void> {
 		await ChatMessage.create(messageData, {});
 	}
 
-static async distributeMoney(money: number, players: PersonaActor[]) {
-	if (players.length <= 0) {return;}
-	const moneyShare = Math.floor(money / players.length);
-	const shareDist =
-		players.map( actor => ({
-			pc: actor,
-			share: Math.round(moneyShare * actor.treasureMultiplier)
-		}));
-	shuffle(shareDist);
-	let moneyOverflow = money - (moneyShare * players.length);
-	for (const entry of shareDist) {
-		if (moneyOverflow > 0) {
-			entry.share += 1;
-			moneyOverflow--;
-		}
-		if (entry.pc.system.type == "pc") {
-			await (entry.pc as PC).gainMoney(entry.share, true, true);
+	static async distributeMoney(money: number, players: PersonaActor[]) {
+		if (players.length <= 0) {return;}
+		const moneyShare = Math.floor(money / players.length);
+		const shareDist =
+			players.map( actor => ({
+				pc: actor,
+				share: Math.round(moneyShare * actor.treasureMultiplier)
+			}));
+		shuffle(shareDist);
+		let moneyOverflow = money - (moneyShare * players.length);
+		for (const entry of shareDist) {
+			if (moneyOverflow > 0) {
+				entry.share += 1;
+				moneyOverflow--;
+			}
+			if (entry.pc.system.type == "pc") {
+				await (entry.pc as PC).gainMoney(entry.share, true, true);
+			}
 		}
 	}
-}
 
 	static async executeDungeonAction( action: DungeonActionConsequence) : Promise<void> {
 		switch (action.dungeonAction) {
@@ -333,88 +321,88 @@ static async distributeMoney(money: number, players: PersonaActor[]) {
 		await this.searchRegion(region);
 	}
 
-static async passMetaverseTurn() {
-	if (game.user.isGM)
+	static async passMetaverseTurn() {
+		if (game.user.isGM)
 		{return await this.#passMetaverseTurn();}
-	else
+		else
 		{return this.#sendPassTurnRequest();}
-}
-
-static async #passMetaverseTurn() {
-	console.log("Trying to pass MV turn");
-	const pcs = game.scenes.active.tokens.contents.filter( tok => tok.actor && (tok.actor as PersonaActor).isPC());
-	const ret : string[] = [];
-	for (const pc of pcs) {
-		ret.push(...await (pc.actor as PersonaActor).onMetaverseTimeAdvance());
 	}
-	if (ret.length > 0) {
-		const changes = ret
-			.map( x=> `<li>${x}</li>`)
-			.join("");
-		await ChatMessage.create( {
-			speaker: {alias: "Metaverse Exploration"},
-			content: `<ul>${changes}</ul>`,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
-		});
+
+	static async #passMetaverseTurn() {
+		console.log("Trying to pass MV turn");
+		const pcs = game.scenes.active.tokens.contents.filter( tok => tok.actor && (tok.actor as PersonaActor).isPC());
+		const ret : string[] = [];
+		for (const pc of pcs) {
+			ret.push(...await (pc.actor as PersonaActor).onMetaverseTimeAdvance());
+		}
+		if (ret.length > 0) {
+			const changes = ret
+				.map( x=> `<li>${x}</li>`)
+				.join("");
+			await ChatMessage.create( {
+				speaker: {alias: "Metaverse Exploration"},
+				content: `<ul>${changes}</ul>`,
+				style: CONST.CHAT_MESSAGE_STYLES.OOC,
+			});
+		}
+		await StepsClock.instance.inc();
+		await TriggeredEffect.autoApplyTrigger("on-metaverse-turn");
+		ui.notifications.notify("Passing Metaverse turn");
 	}
-	await StepsClock.instance.inc();
-	await TriggeredEffect.autoApplyTrigger("on-metaverse-turn");
-	ui.notifications.notify("Passing Metaverse turn");
-}
 
-static #sendPassTurnRequest() {
-	const gms = game.users.filter(x=> x.isGM).map (x=> x.id);
-	PersonaSockets.simpleSend("PASS_MV_TURN", {}, gms);
-}
+	static #sendPassTurnRequest() {
+		const gms = game.users.filter(x=> x.isGM).map (x=> x.id);
+		PersonaSockets.simpleSend("PASS_MV_TURN", {}, gms);
+	}
 
-static async searchRegion(region: PersonaRegion) {
-	const data = region.regionData;
-	const searchOptions :typeof SearchMenu["options"] = {
-		treasureRemaining: region.treasuresRemaining,
-		stopOnHazard: data.specialMods.includes("stop-on-hazard"),
-		isHazard: data.hazard != "none" && data.hazard != "found",
-		isSecret: data.secret != "none" && data.secret != "found",
-		incTension: data.specialMods.includes("no-tension-increase") ? 0 : 0, // set to always 0 due to new rules change
-		hazardOnTwo: data.specialMods.includes("hazard-on-2"),
-		cycle: false,
-		treasureFindBonus: 0,
-	};
-	const results = await SearchMenu.start(searchOptions, region);
-	const treasureRolls : EnchantedTreasureFormat[] = [];
-	for (const resultSet of results) {
-		const searcher = PersonaDB.findActor(resultSet.searcher.actor);
-		for (const result of resultSet.results) {
-			switch (result.result) {
-				case "nothing":
-					break;
-				case "treasure": {
-					if (!result.roll) {
-						PersonaError.softFail("Treasure Found but no roll given");
+	static async searchRegion(region: PersonaRegion) {
+		const data = region.regionData;
+		const searchOptions :typeof SearchMenu["options"] = {
+			treasureRemaining: region.treasuresRemaining,
+			stopOnHazard: data.specialMods.includes("stop-on-hazard"),
+			isHazard: data.hazard != "none" && data.hazard != "found",
+			isSecret: data.secret != "none" && data.secret != "found",
+			incTension: data.specialMods.includes("no-tension-increase") ? 0 : 0, // set to always 0 due to new rules change
+			hazardOnTwo: data.specialMods.includes("hazard-on-2"),
+			cycle: false,
+			treasureFindBonus: 0,
+		};
+		const results = await SearchMenu.start(searchOptions, region);
+		const treasureRolls : EnchantedTreasureFormat[] = [];
+		for (const resultSet of results) {
+			const searcher = PersonaDB.findActor(resultSet.searcher.actor);
+			for (const result of resultSet.results) {
+				switch (result.result) {
+					case "nothing":
+						break;
+					case "treasure": {
+						if (!result.roll) {
+							PersonaError.softFail("Treasure Found but no roll given");
+							break;
+						}
+						const treasureRoll = await region.treasureFound(result.roll, searcher as ValidAttackers);
+						if (treasureRoll) {
+							treasureRolls.push(...treasureRoll);
+						}
 						break;
 					}
-					const treasureRoll = await region.treasureFound(result.roll, searcher as ValidAttackers);
-					if (treasureRoll) {
-						treasureRolls.push(...treasureRoll);
-					}
-					break;
+					case "hazard":
+						await region.hazardFound();
+						break;
+					case "secret":
+						await region.secretFound();
+						break;
+					case "other":
+					case "disconnected":
+						break;
+					default:
+						result.result satisfies undefined;
 				}
-				case "hazard":
-					await region.hazardFound();
-					break;
-				case "secret":
-					await region.secretFound();
-					break;
-				case "other":
-				case "disconnected":
-					break;
-				default:
-					result.result satisfies undefined;
 			}
 		}
+		await TreasureSystem.handleTreasureRolls(treasureRolls);
+		await this.passMetaverseTurn();
 	}
-	await TreasureSystem.handleTreasureRolls(treasureRolls);
-	await this.passMetaverseTurn();
-}
 
 	static getRegion(regionId ?: string) : PersonaRegion | undefined {
 		let scene = game.scenes.current;
@@ -475,8 +463,8 @@ static async searchRegion(region: PersonaRegion) {
 	}
 
 	static sendPartyCrunchRequest() {
-			const gms = game.users.filter(x=> x.isGM);
-			PersonaSockets.simpleSend("CRUNCH_TOGGLE", {}, gms.map( x=> x.id));
+		const gms = game.users.filter(x=> x.isGM);
+		PersonaSockets.simpleSend("CRUNCH_TOGGLE", {}, gms.map( x=> x.id));
 	}
 
 	static async onCrunchRequest() {
