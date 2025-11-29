@@ -14,7 +14,7 @@ import { PersonaDB } from "../../persona-db.js";
 import { NPC } from "../persona-actor.js";
 import { PC } from "../persona-actor.js";
 import { PCLikeSheet } from "./pc-like-sheet.js";
-import {Persona} from "../../persona-class.js";
+import { Persona } from "../../persona-class.js";
 
 export class PCSheet extends PCLikeSheet {
 	declare actor: Subtype<PersonaActor, "pc">;

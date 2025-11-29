@@ -395,7 +395,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 			};
 		}
 		for (const comb of game.combat?.combatants ?? [])
-		{if (comb.actor == actor && comb.token.actorLink) {
+		{if (comb.actor == actor && comb?.token?.actorLink) {
 			return  {
 				actorId: actor.id,
 				token: this.getUniversalTokenAccessor(comb.token),

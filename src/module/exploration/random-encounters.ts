@@ -1,4 +1,5 @@
 import {PersonaActor, Shadow} from "../actor/persona-actor.js";
+import {CombatScene} from "../combat/combat-scene.js";
 import {ModifierList} from "../combat/modifier-list.js";
 import {Metaverse, PresenceRollData} from "../metaverse.js";
 import {PersonaDB} from "../persona-db.js";
@@ -6,6 +7,7 @@ import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
 import {PersonaRegion} from "../region/persona-region.js";
 import {weightedChoice} from "../utility/array-tools.js";
+import {CreateToken} from "../utility/createToken.js";
 import {VotingDialog} from "../utility/shared-dialog.js";
 import {TensionPool} from "./tension-pool.js";
 
@@ -136,6 +138,11 @@ private static async queryPlayerResponse(encounter: Encounter, validChoices: typ
 }
 
 static async takePlayerVote( validChoices: typeof this.encounterChoices[number][], difficulty ?: string) : Promise<EncounterAction> {
+	if (!game.users.contents.some( x=> x.active && !x.isGM)) {
+		return {
+			action: "fight"
+		};
+	}
 	try {
 		const dialog = new VotingDialog(validChoices, `${difficulty ?? "???"} Encounter`);
 		const action = await dialog.majorityVote();
@@ -202,26 +209,26 @@ static async PlayerNotifyChatMsg(encounter : Encounter)  {
 		await RandomEncounter.printRandomEncounterList(encounter);
 		const validChoices = VALID_CHOICES[battleType];
 		const choice = await RandomEncounter.queryPlayerResponse(encounter, validChoices);
-		return await this.processPlayerPreCombatAction(choice.action);
+		return await this.processPlayerPreCombatAction(choice.action, encounter);
 	}
 
-static async processPlayerPreCombatAction(action: typeof this.encounterChoices[number]) {
+static async processPlayerPreCombatAction(action: typeof this.encounterChoices[number], encounter: Encounter) {
 	switch (action) {
 		case "fight":
-			return await this.processFight();
+			return await this.processFight(encounter);
 		case "ambush":
-			return await this.processAmbush();
+			return await this.processAmbush(encounter);
 		case "evade":
-			return await this.processEvade();
+			return await this.processEvade(encounter);
 		case "sneak":
-			return await this.processSneak();
+			return await this.processSneak(encounter);
 		default:
 			action satisfies never;
 			PersonaError.softFail(`Unknown Pre Combat choice ${action as string}`);
 	}
 }
 
-	static async processEvade() {
+	static async processEvade(_encounter: Encounter) {
 		const roll = await new Roll("1d6").evaluate();
 		let html = `<div>Evade</div>
 		<div> Roll : ${roll.total} </div>`;
@@ -239,7 +246,7 @@ static async processPlayerPreCombatAction(action: typeof this.encounterChoices[n
 		});
 	}
 
-	static async processFight() {
+	static async processFight(encounter: Encounter) {
 		const html = `<div>Fight!</div>`;
 		await ChatMessage.create({
 			speaker: {
@@ -248,39 +255,40 @@ static async processPlayerPreCombatAction(action: typeof this.encounterChoices[n
 			content: html,
 			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		});
+		await CombatScene.create(encounter);
 	}
 
-	static async processSneak() {
-		const roll = await new Roll("1d6").evaluate();
-		const total = roll.total;
-		let html = `<div>Sneak</div>
+static async processSneak(encounter: Encounter) {
+	const roll = await new Roll("1d6").evaluate();
+	const total = roll.total;
+	let html = `<div>Sneak</div>
 		<div> Roll : ${total} </div>`;
-		switch (true) {
-			case total == 1 : {
-				html += `<div> Ambushed By Shadows!!</div>`;
-				break;
-			}
-			case total >= 2 && total <= 3: {
-				void TensionPool._instance.inc();
-				html += `<div> Tension +1</div>`;
-				break;
-			}
-			default: {
-				html += `<div> Ambush Successful!</div>`;
-			}
+	switch (true) {
+		case total == 1 : {
+			html += `<div> Ambushed By Shadows!!</div>`;
+			await CombatScene.create(encounter);
+			break;
 		}
-		await ChatMessage.create({
-			speaker: {
-				alias: "Player Decision"
-			},
-			content: html,
-			rolls: [roll],
-			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-		});
-
+		case total >= 2 && total <= 3: {
+			void TensionPool._instance.inc();
+			html += `<div> Tension +1</div>`;
+			break;
+		}
+		default: {
+			html += `<div> Sneak Successful!</div>`;
+		}
 	}
+	await ChatMessage.create({
+		speaker: {
+			alias: "Player Decision"
+		},
+		content: html,
+		rolls: [roll],
+		style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+	});
+}
 
-	static async processAmbush() {
+	static async processAmbush(encounter: Encounter) {
 		const roll = await new Roll("1d8").evaluate();
 		const total = roll.total;
 		let html = `<div>Ambush</div>
@@ -306,12 +314,13 @@ static async processPlayerPreCombatAction(action: typeof this.encounterChoices[n
 			rolls: [roll],
 			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		});
+		await CombatScene.create(encounter);
 	}
 
 
 	static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}): Omit<Encounter, "encounterType"> {
 		const region = Metaverse.getRegion();
-		const scene =  game.scenes.current as PersonaScene;
+		const scene =  region ?  region.parent : game.scenes.current as PersonaScene;
 		const regionOrScene = region ? region : scene;
 		const baseList  = this.getEncounterList(regionOrScene); //allow for mixed daemon/shadow encounters
 		// const baseList  = this.getEncounterList(regionOrScene, shadowType);
@@ -336,18 +345,35 @@ static async processPlayerPreCombatAction(action: typeof this.encounterChoices[n
 		} while (encounterList.length <= 0);
 
 		console.log(`Encounter list : ${encounterList.map( x=> x.name).join(", ")}`);
-		const weightedList = this.weightedEncounterList(encounterList, scene);
+		let weightedList = this.weightedEncounterList(encounterList, scene);
 		const minSize = encounterList.reduce ( (a, x) => Math.min(a, x.encounterSizeValue()), 10);
 		while (encounterSizeRemaining > 0) {
-			if (bailout > 200) {
+			if (bailout > 500) {
 				PersonaError.softFail(`Had to bail out, couldn't find match for ${scene.name}`);
 				return {
 					enemies: encounter,
 					encounterDifficulty: "error"
 				};
 			}
-			if (bailout == 20) {
-				ui.notifications.warn("Over 20 fail attempts getting random encounter");
+			if (bailout == 50) {
+				encounterList = encounterList
+					.filter ( x=> 
+						x.encounterSizeValue() <= encounterSizeRemaining
+						&& x.system.creatureType == enemyType
+					);
+				if (encounterList.length == 0) {
+					return {
+						enemies: encounter,
+						encounterDifficulty: "error"
+					};
+				}
+				weightedList = this.weightedEncounterList(encounterList, scene);
+			}
+			if (bailout == 100) {
+				ui.notifications.warn("Over 100 fail attempts getting random encounter");
+				Debug(`Encounter Size remianing: ${encounterSizeRemaining}, enemyType: ${enemyType}, options: ${etype},\n Foes: ${encounter.map( x=> x.name).join(", ")}, minSize: ${minSize}`);
+				Debug(weightedList);
+				Debug(encounterList);
 			}
 			const pick1 = weightedChoice(weightedList);
 			const pick2 = weightedChoice(weightedList);
@@ -487,6 +513,12 @@ static async processPlayerPreCombatAction(action: typeof this.encounterChoices[n
 
 static async testVote() {
 	return await this.takePlayerVote(["fight", "evade", "sneak", "ambush"]);
+}
+
+static async testPlaceToken(x: number, y: number) {
+	const pixie = game.actors.getName("Pixie");
+	if (!pixie) {throw new Error("Can't find Pixie for test");}
+	await CreateToken.create(pixie, {x, y});
 }
 
 } // End of Class

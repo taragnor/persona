@@ -3566,7 +3566,7 @@ async onEndCombat(this: ValidAttackers) : Promise<void> {
 
 encounterSizeValue() : number {
 	let val = 1;
-	if (!this.isValidCombatant()) {return 1;}
+	if (!this.isValidCombatant()) {return 0;}
 	const sit : Situation = {
 		user: this.accessor,
 	};
@@ -4464,4 +4464,3 @@ Hooks.on("updateActor", function (actor: PersonaActor, diff)  {
 		}
 	}
 });
-

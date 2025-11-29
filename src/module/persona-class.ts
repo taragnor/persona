@@ -455,7 +455,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			this.#cache.defensiveModifiers = val;
 		}
 		return this.#cache.defensiveModifiers;
-
 	}
 
 async addTalent(talent: Talent) {
@@ -911,7 +910,6 @@ canPayActivationCost_shadow(this: Persona<Shadow>, usable: UsableAndCard, output
 }
 if (usable.system.type == "power") {
 	const combat = game.combat;
-	// if (combat && usable.system.reqEscalation > 0 && (combat as PersonaCombat).getEscalationDie() < usable.system.reqEscalation) {
 	const energyRequired = usable.energyRequired(this);
 	const energyCost = usable.energyCost(this);
 	const currentEnergy = this.user.system.combat.energy.value;

@@ -1,8 +1,8 @@
 interface Notifications {
-	warn(msg: string, options ?: NotificationOptions): void;
-	notify(msg: string, options ?: NotificationOptions): void;
+	warn(msg: string, options ?: UINotificationOptions): void;
+	notify(msg: string, options ?: UINotificationOptions): void;
 	/** this actually throws an error*/
-	error(msg: string, options ?: NotificationOptions): void;
+	error(msg: string, options ?: UINotificationOptions): void;
 };
 
 declare const ui : {
@@ -10,7 +10,7 @@ declare const ui : {
 	chat: ChatUI;
 	actors: ActorDirectory;
 	combat: CombatTracker;
-}
+};
 
 
 
@@ -23,7 +23,7 @@ interface ChatUI {
 	updateMessage( msg: ChatMessage, notify: boolean = false):Promise<void>
 }
 
-type NotificationOptions = {
+type UINotificationOptions = {
 	localize: boolean;
 
 }

@@ -26,6 +26,7 @@ namespace Foundry {
 			img: string
 			visible: boolean;
 			hidden: boolean;
+			position: Position;
 		}
 
 	type SightObject = Record < string, any>;
@@ -33,10 +34,18 @@ namespace Foundry {
 declare const TokenDocument : Foundry.TokenDocumentConstructor;
 type TokenDocument<T extends Actor<any, any, any> = Actor<any>> = Foundry.TokenDocument<T>;
 
+interface Position {
+	x: number;
+	y: number;
+	elevation: number;
+	width: number;
+	height: number;
+	shape: unknown;
+}
 
 
 //this is canvas stuff so I've ignored it for now
-class Token<Act extends Actor<any, any> = Actor<any,any,any>> extends PlaceableObject {
+class Token<Act extends Actor = Actor<any,any,any>> extends PlaceableObject {
 	get actor(): Act;
 	document: TokenDocument<Act>;
 	get scene(): Scene;
@@ -51,6 +60,8 @@ class Token<Act extends Actor<any, any> = Actor<any,any,any>> extends PlaceableO
 	get worldTransform(): {a: number, b:number, c: number, d: number, tx: number, ty: number, array: null | unknown[]};
 	get w():number;
 	get h():number;
+	static create<A extends Actor>(td: TokenDocument<A>,parendData: {parent: Scene}): Promise<Token<A>>;
+
 }
 
 

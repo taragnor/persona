@@ -50,6 +50,7 @@ import {getActiveConsequences} from '../preconditions.js';
 import {ModifierTarget} from '../../config/item-modifiers.js';
 import {Calculation} from '../utility/calculation.js';
 import {FinalizedCombatResult} from './finalized-combat-result.js';
+import {CombatScene} from './combat-scene.js';
 
 declare global {
 	interface SocketMessage {
@@ -256,19 +257,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			return await CR?.toMessage('End Combat Triggered Effect', comb.actor);
 		});
 		await Promise.allSettled(promises);
-		// for (const comb of this.combatants) {
-		//    if (!comb.actor) continue;
-		//    const situation : Situation = {
-		//       trigger: "on-combat-end",
-		//       triggeringUser: game.user,
-		//       hit: PCsWin,
-		//       triggeringCharacter: comb.actor.accessor,
-		//       user: comb.actor.accessor,
-		//    };
-		//    await TriggeredEffect.onTrigger("on-combat-end", comb.actor, situation)
-		//       .emptyCheck()
-		//       ?.toMessage("End Combat Triggered Effect", comb.actor);
-		// }
 		const CR = await TriggeredEffect.autoTriggerToCR('on-combat-end-global');
 		await CR?.toMessage('End Combat Global Trigger', undefined);
 	}
@@ -355,15 +343,23 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	async checkForConsecutiveCombat() : Promise<boolean> {
-		const region = Metaverse.getRegion();
-		if (!region)  {return false;}
-		this.consecutiveCombat += 1;
-		const check = await region.presenceCheck('secondary', -this.consecutiveCombat);
-		if (!check) {
+		try {
+			const region = CombatScene.instance && game.scenes.active == CombatScene.instance.scene ? CombatScene.instance.region : Metaverse.getRegion();
+			if (!region)  {return false;}
+			this.consecutiveCombat += 1;
+			const check = await region.presenceCheck('secondary', -this.consecutiveCombat);
+			if (!check) {
+				this.consecutiveCombat = 0;
+				return false;
+			}
+			return true;
+		} catch (e) {
+			if (e instanceof Error) {
+				PersonaError.softFail(`Error with checking for consecutive combats: ${e.message}`, e);
+			}
 			this.consecutiveCombat = 0;
 			return false;
 		}
-		return true;
 	}
 
 	validCombatants(attacker?: PToken): Combatant<ValidAttackers>[] {

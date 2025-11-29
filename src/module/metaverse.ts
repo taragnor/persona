@@ -30,6 +30,7 @@ import { NPCAlly } from "./actor/persona-actor.js";
 import { PersonaScene } from "./persona-scene.js";
 import { EnchantedTreasureFormat, TreasureSystem } from "./exploration/treasure-system.js";
 import {RandomEncounter} from "./exploration/random-encounters.js";
+import {CombatScene} from "./combat/combat-scene.js";
 
 export class Metaverse {
 	static lastCrunch : number = 0;
@@ -423,9 +424,16 @@ static async searchRegion(region: PersonaRegion) {
 }
 
 	static getRegion(regionId ?: string) : PersonaRegion | undefined {
+		let scene = game.scenes.current;
+		if (CombatScene.instance) {
+			const prev = CombatScene.instance.previous;
+			if (prev) {
+				scene= prev;
+			}
+		}
 		if (game.user.isGM) {
 			regionId = regionId ? regionId : PersonaSettings.get("lastRegionExplored").toString();
-			const region = game.scenes.current.regions.find( (r: PersonaRegion) => r.id == regionId && !r?.regionData?.ignore);
+			const region = scene.regions.find( (r: PersonaRegion) => r.id == regionId && !r?.regionData?.ignore);
 			if (!region) {
 				return undefined;
 			}
@@ -435,14 +443,14 @@ static async searchRegion(region: PersonaRegion) {
 		if (!actor) {
 			throw new PersonaError("No controlled Character");
 		}
-		let region = game.scenes.current.regions.find( (region : PersonaRegion) => {
+		let region = scene.regions.find( (region : PersonaRegion) => {
 			if (region?.regionData?.ignore) {return false;}
 			const arr = Array.from(region.tokens);
 			return arr.some( tok => tok.actor?.id == actor.id);
 		});
 		if (!region) {
 			//Search for party token
-			region = game.scenes.current.regions.find(
+			region = scene.regions.find(
 				(region : PersonaRegion) => {
 					if (region?.regionData?.ignore) {return false;}
 					const arr = Array.from(region.tokens);

@@ -45,9 +45,9 @@ declare const CONFIG : CONFIG;
 
 
 declare interface Game {
-	actors: Collection<Actor<any, any>>;
+	actors: Collection<Actor>;
 	i18n: Localization;
-	items: Collection<Item<any>>;
+	items: Collection<Item>;
 	packs: Collection<FoundryCompendium<any>>;
 	users: Collection<FoundryUser>;
 	system: FoundrySystem;
@@ -56,9 +56,10 @@ declare interface Game {
 	combat?: Foundry.Combat<Actor>;
 	settings: ClientSettings;
 	socket: Socket;
+	canvas: Canvas;
 	messages: Collection<ChatMessage>;
 	keybindings: Keybindings;
-	combats: Collection<Combat>;
+	combats: CombatCollection<Combat>;
 	journal: Collection<JournalEntry>;
 	world: World;
 	get paused(): boolean;
@@ -91,7 +92,13 @@ class Collection<T> extends Map<string, T> {
 	get(id: string) : T | undefined;
 	getName(name: string): T | undefined;
 	find (fn : (item: T) => boolean): T | undefined;
+	fromCompendium (item: T) : T;
 }
+
+class CombatCollection<T extends Combat> extends Collection<T> {
+	viewed: T | undefined;
+}
+
 
 class FoundryCompendium<T extends FoundryDocument> extends FoundryDocument<never> {
 	find(condition: (x:T) => boolean): T;

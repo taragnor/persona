@@ -12,6 +12,9 @@ namespace Foundry {
 		regions: Collection<RegionDocument>;
 		weather: keyof CONFIG["weatherEffects"];
 		active: boolean;
+		activate(): Promise<void>;
+		view(): Promise<void>;
+		grid: {size: number};
 	}
 
 	interface WallDocumentConstructor extends DocumentConstructor {

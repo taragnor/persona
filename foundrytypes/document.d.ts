@@ -3,7 +3,7 @@ namespace Foundry {
 		// new<Embedded extends (FoundryDocument | never) = never>(...args: unknown[]) : Document<Embedded>;
 
 		defineSchema(): Record<string, FoundryDMField<any>>;
-		create<const T extends Document<any>>(data: CreationData<T>): Promise<T>;
+		create<const T extends Document<any>>(data: CreationData<T>, options ?: unknown): Promise<T>;
 
 	}
 
@@ -35,9 +35,10 @@ namespace Foundry {
 		prepareEmbeddedDocuments(): void;
 		testUserPermission(user: FoundryUser, permissionLevel: keyof DOCUMENT_OWNERSHIP_LEVELS, options: {exact?: boolean} = {}): boolean;
 		migrateSystemData(sourceMaybe?: unknown): unknown;
-		updateSource(updateData: Record<string, unknown>): Promise<unknown>;
+		updateSource(updateData: Record<string, any>): unknown;
 		get folder(): Folder;
-		toJSON(): Object;
+		toJSON(): object;
+		_source: Record<string, unknown>;
 	}
 
 	type CreationData<T extends Document> = 

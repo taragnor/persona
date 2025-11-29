@@ -72,10 +72,10 @@ export class CombatHooks {
 			}
 		});
 
-		Hooks.on("deleteCombat", (_combat: PersonaCombat) => {
-			if (!game.user.isGM)
-				{return;}
-		});
+		// Hooks.on("deleteCombat", (_combat: PersonaCombat) => {
+		// 	if (!game.user.isGM)
+		// 		{return;}
+		// });
 
 
 		Hooks.on("createCombatant", async (combatant: Combatant<ValidAttackers>) => {
