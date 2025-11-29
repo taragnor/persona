@@ -86,7 +86,6 @@ export class Metaverse {
 		return this.#averageMap(map);
 	}
 
-
 	static #averageMap(map: Map<string, number>) : string[] {
 		let total = 0;
 		const ret = [] as string[];
@@ -101,20 +100,14 @@ export class Metaverse {
 		return ret;
 	}
 
-
-
-
 	/** for use by macro */
 	static async randomEncounter() {
 		const encounter = RandomEncounter.generateEncounter();
 		await RandomEncounter.printRandomEncounterList(encounter);
 	}
 
-
-
 static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void> {
 	if (!game.user.isGM) {return;}
-	//TEmp fix since it was bugged
 	const numOfPCs = party.length;
 	const xp= Persona.calcXP(shadows, numOfPCs );
 	const navigator = PersonaDB.getNavigator();
@@ -466,10 +459,6 @@ static async searchRegion(region: PersonaRegion) {
 		}
 		return region as PersonaRegion;
 	}
-
-
-
-
 
 	static async toggleCrunchParty () : Promise<void> {
 		if (game.user.isGM) {

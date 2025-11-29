@@ -1,10 +1,9 @@
 import {PersonaActor} from "../actor/persona-actor.js";
 import {Encounter} from "../exploration/random-encounters.js";
-import {Metaverse} from "../metaverse.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
 import {PersonaRegion} from "../region/persona-region.js";
-import {sleep, waitUntilTrue} from "../utility/async-wait.js";
+import {waitUntilTrue} from "../utility/async-wait.js";
 import {CreateToken} from "../utility/createToken.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {PersonaCombat} from "./persona-combat.js";
@@ -18,8 +17,8 @@ export class CombatScene {
 	region: U<PersonaRegion>;
 
 	constructor (previous: Scene, encounter: Encounter) {
-		this._previous= previous.id;
-		this.encounter= encounter;
+		this._previous = previous.id;
+		this.encounter = encounter;
 	}
 
 	get previous()  : PersonaScene {
@@ -45,20 +44,22 @@ export class CombatScene {
 	}
 
 	async setupCombat() {
+		const INITIAL_OFFSET = { x: 6, y: 6} as const;
+		const SPACING_BLOCKS = 4 as const;
 		const scene= this.scene;
 		await scene.activate();
 		await scene.view();
 		await waitUntilTrue( () => game.scenes.current == scene && game.canvas.scene == scene && game.canvas.ready);
 		const gridsize = scene.grid.size;
-		const y = 6 * gridsize;
-		let x = 6 * gridsize;
+		let x = INITIAL_OFFSET.x * gridsize;
+		const y = INITIAL_OFFSET.y * gridsize;
 		const tokens : Token<PersonaActor>[] = [];
 		for (const shadow of this.encounter.enemies) {
 			const token = await CreateToken.create(shadow, {x,y}, this.scene);
 			if (token) {
 				tokens.push(token.object!);
 			}
-			x += 4 * gridsize;
+			x += SPACING_BLOCKS * gridsize;
 		}
 		const playerTokens = this.getPlayerTokens();
 		tokens.push(...playerTokens);

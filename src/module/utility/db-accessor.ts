@@ -365,19 +365,17 @@ private allItemsMap : Map<string, ItemType> = new Map();
 
 	getUniversalAccessor<T extends UniversalAccessorTypes>(document: T) : UniversalAccessor<T>{
 		switch (true) {
-			case document instanceof Item: 
+			case document instanceof Item:
 				return this.getUniversalItemAccessor(document) as UniversalAccessor<T>;
-			case document instanceof Actor: 
+			case document instanceof Actor:
 				return this.getUniversalActorAccessor(document) as UniversalAccessor<T>;
-			case document instanceof TokenDocument: 
+			case document instanceof TokenDocument:
 				return this.getUniversalTokenAccessor(document) as UniversalAccessor<T>;
-			case document instanceof ActiveEffect: 
+			case document instanceof ActiveEffect:
 				return this.getUniversalAEAccessor(document) as UniversalAccessor<T>;
 			default:
 				throw new Error("Unknwon Type!");
 		}
-
-
 	}
 
 	getUniversalItemAccessor<T extends Item<any>>(item: T) : UniversalItemAccessor<T> {
@@ -395,7 +393,8 @@ private allItemsMap : Map<string, ItemType> = new Map();
 			};
 		}
 		for (const comb of game.combat?.combatants ?? [])
-		{if (comb.actor == actor && comb?.token?.actorLink) {
+		{
+			if (comb.actor == actor && comb?.token?.actorLink) {
 			return  {
 				actorId: actor.id,
 				token: this.getUniversalTokenAccessor(comb.token),
