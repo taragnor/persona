@@ -80,7 +80,7 @@ export class EnergyClassCalculator extends CostCalculator {
 			}
 			return this.NULL_COST;
 		})
-		.reduce<EnergyCostBase>( (acc, item) => acc.add(item), this.NULL_COST);
+			.reduce<EnergyCostBase>( (acc, item) => acc.add(item), this.NULL_COST);
 		return cost;
 	}
 
@@ -126,7 +126,7 @@ export class EnergyClassCalculator extends CostCalculator {
 			.filter( status => (STATUS_EFFECT_LIST
 				.find(x=> x.id == status)?.tags as U<string[]>)
 				?.includes("beneficial"))
-		.map (status => this.BENEFICIAL_STATUS_VALUES[status] ?? 0);
+			.map (status => this.BENEFICIAL_STATUS_VALUES[status] ?? 0);
 		// const numStatuses = statusesAdded.length;
 		// const cost = numStatuses * 35;
 		const cost = statusesAdded
@@ -136,9 +136,9 @@ export class EnergyClassCalculator extends CostCalculator {
 
 	static #energyLevel_statusRemoval(pwr: Power) : EnergyCostBase {
 		const statusesRemoved = pwr.statusesRemoved()
-		.filter( status => (STATUS_EFFECT_LIST
-			.find(x=> x.id == status)?.tags as U<string[]>)
-			?.includes("baneful"));
+			.filter( status => (STATUS_EFFECT_LIST
+				.find(x=> x.id == status)?.tags as U<string[]>)
+				?.includes("baneful"));
 		const numStatuses = statusesRemoved.length;
 		let cost = 0;
 		for (let amt = 7 ; amt < numStatuses && amt > 0; amt --) {
@@ -179,7 +179,7 @@ export class EnergyClassCalculator extends CostCalculator {
 		"half-on-miss": 10,
 		"pierce": 25,
 		"high-crit": 15,
-		"accurate": 15,
+		"accurate": 10,
 		"inaccurate": -20,
 	};
 
@@ -206,40 +206,27 @@ export class EnergyClassCalculator extends CostCalculator {
 		"by-power": 0
 	};
 
-static AILMENT_MULT_CHANCE : Record<keyof typeof INSTANT_KILL_LEVELS, EnergyCostBase> = {
-	none: this.NULL_COST,
-	low: new EnergyCostBase(5, 5),
-	medium: new EnergyCostBase(12,12),
-	high: new EnergyCostBase(20, 20),
-	always: new EnergyCostBase(30, 30),
-};
+	static AILMENT_MULT_CHANCE : Record<keyof typeof INSTANT_KILL_LEVELS, EnergyCostBase> = {
+		none: this.NULL_COST,
+		low: new EnergyCostBase(5, 5),
+		medium: new EnergyCostBase(12,12),
+		high: new EnergyCostBase(20, 20),
+		always: new EnergyCostBase(30, 30),
+	};
 
-static AILMENT_VALUE : Record<typeof STATUS_AILMENT_LIST[number], number> = {
-	dizzy: 0.75,
-	fear: 1,
-	sleep: 1,
-	poison: 0.5,
-	rage: 0.75,
-	blind: 1,
-	mouse: 1,
-	sealed: 1,
-	despair: 1,
-	charmed: 1,
-	confused: 1
-};
+	static AILMENT_VALUE : Record<typeof STATUS_AILMENT_LIST[number], number> = {
+		dizzy: 0.5,
+		fear: 1,
+		sleep: 0.8,
+		poison: 0.333,
+		rage: 0.666,
+		blind: 0.8,
+		mouse: 1.25,
+		sealed: 1,
+		despair: 1,
+		charmed: 0.8,
+		confused: 0.8,
+	};
 
 }
-
-// switch (pwr.system.ailmentChance) {
-// 	case "none": return this.NULL_COST;
-// 	case "medium": return new EnergyCostBase(12,12);
-// 	case "low": return new EnergyCostBase(5 ,5);
-// 	case "high": return new EnergyCostBase(20 ,20);
-// 	case "always": return new EnergyCostBase(30 ,30);
-// }
-
-// type EnergyCostModifier = {
-// 	energyRequired: CostModifier;
-// 	energyCost: CostModifier;
-// };
 
