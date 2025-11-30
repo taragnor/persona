@@ -2914,6 +2914,7 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 				fatigue += 2;
 			}
 			await this.alterFatigueLevel(fatigue);
+			await this.refreshSocialLink(this);
 		}
 		if (this.isNPCAlly()) {
 			if (this.hasStatus("full-fade")) {
@@ -2922,19 +2923,7 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 		}
 		await this.fullHeal();
 		await this.endEffectsOfDurationOrLess( {dtype :"expedition"});
-		if (this.system.type == "pc") {
-			const pc = this as PC;
-			await pc.refreshSocialLink(pc);
-		}
-		switch (this.system.type) {
-			case "pc":
-			case "shadow":
-			case "npcAlly":
-				await TriggeredEffect.autoApplyTrigger("exit-metaverse", this);
-				break;
-			default:
-				this.system satisfies never;
-		}
+		await TriggeredEffect.autoApplyTrigger("exit-metaverse", this);
 	} catch (e) {
 		Debug(e);
 		console.log(e);
