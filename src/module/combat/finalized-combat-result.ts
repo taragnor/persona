@@ -727,7 +727,7 @@ export class FinalizedCombatResult {
 					PersonaError.softFail(`Can't find Item for add-item: ${otherEffect.itemId}`);
 					break;
 				}
-				if (!item.isCarryableType()) { 
+				if (!item.isCarryableType()) {
 					PersonaError.softFail(`Can't remove non-carryable type: ${item.name}`);
 					break;
 				}
@@ -738,7 +738,6 @@ export class FinalizedCombatResult {
 				otherEffect satisfies never;
 				break;
 		}
-
 	}
 
 	get power() : UsableAndCard | undefined {
