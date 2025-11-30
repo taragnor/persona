@@ -889,7 +889,7 @@ export class PersonaSocial {
 				const SL=  (cardData.actor.getSocialSLWith(link.actor));
 				let improveAmt = 5;
 				if (SL <= 3 && cardData.actor?.tarot?.name == "Fool") {
-					improveAmt -= 1;
+					improveAmt -= 2;
 				}
 				SLImproveSpend = `<li class="token-spend"> spend ${improveAmt} progress tokens to raise link with ${link.actor.name}</li>`;
 			}

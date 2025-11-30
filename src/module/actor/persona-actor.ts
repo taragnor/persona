@@ -2906,12 +2906,18 @@ async endEffectsOfDurationOrLess( duration: StatusDuration) : Promise<ActiveEffe
 async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 	try {
 		if (this.isPC() && !this.isRealPC()) {return;} //skip fake PCs like itempiles and the party token
-		if (this.isRealPC() || this.isNPCAlly()) {
+		if (this.isRealPC()) {
+			let fatigue = (this.tarot?.name == "Strength") ?
+				0 : 1;
 			if (this.hasStatus("full-fade")) {
 				await this.removeStatus("full-fade");
+				fatigue += 2;
+			}
+			await this.alterFatigueLevel(fatigue);
+		}
+		if (this.isNPCAlly()) {
+			if (this.hasStatus("full-fade")) {
 				await this.alterFatigueLevel(-2);
-			} else {
-				await this.alterFatigueLevel(-1);
 			}
 		}
 		await this.fullHeal();
