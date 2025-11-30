@@ -198,10 +198,10 @@ export class EnergyClassCalculator extends CostCalculator {
 		dark: 0,
 		physical: 0,
 		gun: 0,
-		healing: 10,
+		healing: 0,
 		cold: 0,
 		lightning: 0,
-		untyped: 10,
+		untyped: 7,
 		"all-out": 0,
 		"by-power": 0
 	};

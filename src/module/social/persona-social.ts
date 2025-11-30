@@ -1346,19 +1346,27 @@ static getCardReply(req: SocketMessage["CARD_REPLY"]) {
 }
 
 static async execSocialCardAction(eff: SocialCardActionConsequence) : Promise<void> {
-	if (!this.rollState) {
-		PersonaError.softFail(`Can't execute card action ${eff.cardAction}. No roll state`);
-		return;
-	}
 	switch (eff.cardAction) {
 		case "stop-execution":
+			if (!this.rollState) {
+				PersonaError.softFail(`Can't execute card action ${eff.cardAction}. No roll state`);
+				return;
+			}
 			this.stopCardExecution();
 			break;
 		case "exec-event":
+			if (!this.rollState) {
+				PersonaError.softFail(`Can't execute card action ${eff.cardAction}. No roll state`);
+				return;
+			}
 			this.forceEvent(eff.eventLabel);
 			this.addExtraEvent(1);
 			break;
 		case "inc-events":
+			if (!this.rollState) {
+				PersonaError.softFail(`Can't execute card action ${eff.cardAction}. No roll state`);
+				return;
+			}
 			this.addExtraEvent(eff.amount ?? 0);
 			break;
 		case "gain-money":
@@ -1375,6 +1383,10 @@ static async execSocialCardAction(eff: SocialCardActionConsequence) : Promise<vo
 			await this.alterStudentSkill( eff.studentSkill, eff.amount ?? 0);
 			break;
 		case "modify-progress-tokens-cameo": {
+			if (!this.rollState) {
+				PersonaError.softFail(`Can't execute card action ${eff.cardAction}. No roll state`);
+				return;
+			}
 			const cameos = this.rollState.cardData.cameos;
 			const actor  = this.rollState.cardData.actor;
 			if (!cameos || cameos.length < 1) {

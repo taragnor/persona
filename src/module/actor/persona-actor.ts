@@ -2908,10 +2908,10 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 		if (this.isPC() && !this.isRealPC()) {return;} //skip fake PCs like itempiles and the party token
 		if (this.isRealPC()) {
 			let fatigue = (this.tarot?.name == "Strength") ?
-				0 : 1;
+				0 : -1;
 			if (this.hasStatus("full-fade")) {
 				await this.removeStatus("full-fade");
-				fatigue += 2;
+				fatigue -= 2;
 			}
 			await this.alterFatigueLevel(fatigue);
 			await this.refreshSocialLink(this);
