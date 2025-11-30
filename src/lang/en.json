@@ -661,6 +661,7 @@
 	"persona.effecttypes.social-card.append-card-tag": "Add Card Tag",
 	"persona.effecttypes.social-card.remove-cameo": "Remove Cameo from Scene",
 	"persona.effecttypes.social-card.set-social-card-item": "Set Social Card Item",
+	"persona.effecttypes.inventory-action": "Inventory Action",
 
 
 	"persona.effecttypes.dungeonAction.roll-tension-pool": "Roll Tension Pool",
@@ -974,11 +975,15 @@
 "persona.consequences.item-selector.specific": "Specific Item",
 "persona.consequences.item-selector.randomTreasure": "Random Treasure",
 
+
 "persona.consequences.consequences-operators.add" : "+",
 "persona.consequences.consequences-operators.subtract" : "-",
 "persona.consequences.consequences-operators.divide" : "/",
 "persona.consequences.consequences-operators.multiply" : "*",
 "persona.consequences.consequences-operators.modulus" : "%",
+"persona.consequences.inventoryAction.add-item" : "Add Item",
+"persona.consequences.inventoryAction.add-treasure" : "Add Treasure",
+"persona.consequences.inventoryAction.remove-item" : "Remove Item",
 
 	"persona.modifier-variable.escalationDie": "Escalation Die",
 	"persona.modifier-variable.tensionPool": "Tension Pool",
@@ -1189,6 +1194,7 @@
 	"persona.consequenceAmount.actorProperties.hp": "HP",
 	"persona.consequenceAmount.actorProperties.mhp": "MHP",
 	"persona.consequenceAmount.actorProperties.baseClassHP": "Base Class HP",
+	"persona.consequenceAmount.actorProperties.level": "Level",
 
 	"persona.consequenceAmount.actorProperties.damage-dealt": "Damage Dealt",
 

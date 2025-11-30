@@ -1889,6 +1889,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 
+	get isStackable() : boolean {
+		return this.isCraftingMaterial() || this.isConsumable() || this.isSkillCard();
+	}
+
+	isStackableWith(a: PersonaItem): boolean {
+		const tagListA= a.tagList();
+		const thisTagList = this.tagList();
+		return this.isStackable && a.isStackable
+			&& this.name == a.name
+			&& tagListA.every(tag => thisTagList.includes(tag))
+			&& thisTagList.every(tag => tagListA.includes(tag));
+	}
+
 	isEquippable(): boolean {
 		if (!this.isCarryableType()) {return false;}
 		if (this.isWeapon()) {return true;}

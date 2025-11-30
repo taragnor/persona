@@ -1,9 +1,8 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { ValidAttackers } from "../module/combat/persona-combat.js";
-import { TargettingContextList } from "../module/combat/persona-combat.js";
 import { PersonaItem } from "../module/item/persona-item.js";
 import { PermaBuffType } from "./perma-buff-type.js";
-import { SocialCardAction } from "./effect-types.js";
+import { INVENTORY_ACTION, SocialCardAction } from "./effect-types.js";
 import { CardTag } from "./card-tags.js";
 import { VariableType } from "../module/persona-variables.js";
 import { CombatEffect } from "./effect-types.js";
@@ -116,7 +115,7 @@ export type ExtraTurnEffect = {
 	activation: number,
 };
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | SetHPOtherEffect;
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | SetHPOtherEffect | InventoryActionConsequence;
 ;
 
 type SetHPOtherEffect = {
@@ -214,7 +213,30 @@ type NonGenericConsequences = UsePowerConsequence
 	| ExtraAttackConsequence
 	| ExtraActionConsequence
 	| CancelRequestConsequence
+	| InventoryActionConsequence
 ;
+
+type InventoryActionConsequence = {
+	type: "inventory-action",
+} & InventoryActions;
+
+type InventoryActions = {
+	invAction : Extract<keyof typeof INVENTORY_ACTION, "add-item">;
+	itemId: PersonaItem["id"];
+	amount: ConsequenceAmount,
+} | {
+	invAction : Extract<keyof typeof INVENTORY_ACTION, "add-treasure">;
+	treasureLevel: ConsequenceAmount,
+	treasureModifier: number,
+	minLevel: number,
+	amount: ConsequenceAmount,
+} | {
+	invAction : Extract<keyof typeof INVENTORY_ACTION, "remove-item">;
+	itemId: PersonaItem["id"];
+	amount: ConsequenceAmount,
+}
+
+
 
 type CancelRequestConsequence = {
 	type: "cancel";
@@ -706,6 +728,7 @@ const CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST = [
 	"mhp",
 	"hp",
 	"baseClassHP",
+	"level",
 ] as const;
 
 type ConsAmountActorProperty = typeof CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST[number];
@@ -720,4 +743,5 @@ const CONSEQUENCE_AMOUNT_SITUATION_PROPERTIES_LIST = [
 type SituationProperty = typeof CONSEQUENCE_AMOUNT_SITUATION_PROPERTIES_LIST[number];
 
  export const SITUATION_PROPERTIES = HTMLTools.createLocalizationObject( CONSEQUENCE_AMOUNT_SITUATION_PROPERTIES_LIST, "persona.consequenceAmount.actorProperties");
+
 

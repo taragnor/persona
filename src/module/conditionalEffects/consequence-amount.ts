@@ -83,6 +83,7 @@ private static resolveActorProperty(amt: ConsequenceAmountV2 & {type: "actor-pro
 		switch (amt.property) {
 			case "mhp":
 			case "baseClassHP":
+			case "level":
 			case "hp":
 				return target[amt.property];
 		}

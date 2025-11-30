@@ -1035,12 +1035,33 @@ export class ConditionalEffectManager {
 			}
 			case "cancel":
 				return `Cancel Triggering Event`;
+			case "inventory-action":
+				return this.printInventoryAction(cons);
 			default:
 				cons satisfies never;
 				return "ERROR";
 		}
 
 	}
+
+	private static printInventoryAction (cons: Consequence & {type: "inventory-action"}) {
+		const amount = this.printConsequenceAmount(cons.amount);
+		switch (cons.invAction) {
+			case "add-item": {
+				return `Add ${amount} item`;
+			}
+			case "add-treasure": {
+				const treasureLevel = this.printConsequenceAmount(cons.treasureLevel);
+				return `Add ${amount} Treasure ${treasureLevel} , treasure Modifier:  ${cons.treasureModifier}, minLevel ${cons.minLevel}`;
+			}
+			case "remove-item":
+				return `remove ${amount} item`;
+			default:
+				cons satisfies never;
+				return "ERROR";
+		}
+	}
+
 
 	private static printConsequenceAmount(consAmt: ConsequenceAmount) : string {
 		if (typeof consAmt =="number") {return String(consAmt);}

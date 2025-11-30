@@ -151,3 +151,5 @@ export type SocialLinkIdOrTarot = TarotCard
 	|  AnyStringObject;
 
 export type AnyStringObject = {__nonsensePhantomData: number}; // a placehodler to allow typescript to handle satisfies cases better, it represents any string without having the entire type turn to string
+
+

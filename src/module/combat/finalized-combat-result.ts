@@ -26,6 +26,7 @@ import { PersonaDB } from "../persona-db.js";
 import { ActorChange } from "./combat-result.js";
 import {SocketsNotConnectedError, TimeoutError, VerificationFailedError} from "../utility/socket-manager.js";
 import {RealDamageType} from "../../config/damage-types.js";
+import {TreasureSystem} from "../exploration/treasure-system.js";
 
 
 
@@ -191,6 +192,7 @@ export class FinalizedCombatResult {
 				case "gain-levels":
 				case "cancel":
 				case "set-hp":
+				case "inventory-action":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -689,9 +691,54 @@ export class FinalizedCombatResult {
 				await actor.setHP(newhp);
 				break;
 			}
+			case "inventory-action":
+				await this.resolveInventoryAction(actor, otherEffect);
+				break;
 			default:
 				otherEffect satisfies never;
 		}
+	}
+
+	async resolveInventoryAction( actor: PersonaActor,  otherEffect: OtherEffect & {type: "inventory-action"}) : Promise<void> {
+		const amount = typeof otherEffect.amount == "number" ? otherEffect.amount ?? 1 : 1;
+		switch (otherEffect.invAction) {
+			case "add-item": {
+				const item = PersonaDB.getItemById(otherEffect.itemId);
+				if (!item) {
+					PersonaError.softFail(`Can't find Item for add-item: ${otherEffect.itemId}`);
+					break;
+				}
+				if (item.isCarryableType()) {
+					await actor.addItem(item, amount);
+				}
+			}
+				break;
+			case "add-treasure": {
+				const treasureLevel = typeof otherEffect.treasureLevel == "number" ? otherEffect.treasureLevel ?? 0 : 0;
+				const treasures = TreasureSystem.generate(treasureLevel, otherEffect.treasureModifier ?? 0, otherEffect.minLevel ?? 0);
+				for (const treasure of treasures) {
+					await actor.addTreasureItem(treasure);
+				}
+				break;
+			}
+			case "remove-item": {
+				const item = PersonaDB.getItemById(otherEffect.itemId);
+				if (!item) {
+					PersonaError.softFail(`Can't find Item for add-item: ${otherEffect.itemId}`);
+					break;
+				}
+				if (!item.isCarryableType()) { 
+					PersonaError.softFail(`Can't remove non-carryable type: ${item.name}`);
+					break;
+				}
+				await actor.expendConsumable(item,amount);
+				break;
+			}
+			default:
+				otherEffect satisfies never;
+				break;
+		}
+
 	}
 
 	get power() : UsableAndCard | undefined {

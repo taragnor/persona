@@ -2318,6 +2318,7 @@ static processConsequence_simple( cons: SourcedConsequence<NonDeprecatedConseque
 		case 'set-flag':
 		case 'add-power-to-list':
 		case 'add-talent-to-list':
+		case "inventory-action":
 			return targets.map( applyTo => ({applyTo, cons}));
 		case 'raise-resistance':
 		case 'lower-resistance':

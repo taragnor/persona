@@ -51,6 +51,7 @@ export const NON_DEPRECATED_CONSQUENCELIST = [
 	"alter-fatigue-lvl",
 	"gain-levels",
 	"cancel",
+	"inventory-action",
 ] as const;
 
 export const CONSQUENCELIST = [
@@ -69,10 +70,6 @@ export  const MODIFIER_VARIABLE_LIST= [
 export type ModifierVariable = typeof MODIFIER_VARIABLE_LIST[number];
 
 export const MODIFIER_VARIABLES = HTMLTools.createLocalizationObject(MODIFIER_VARIABLE_LIST, "persona.modifier-variable");
-
-// export const MODIFIER_VARIABLES = Object.fromEntries(
-// 	MODIFIER_VARIABLE_LIST.map( x=> [x, `persona.modifier-variable.${x}`])
-// );
 
 export const CONSQUENCETYPES = Object.fromEntries(
 CONSQUENCELIST.map( x=> [x, `persona.effecttypes.${x}`])
@@ -232,3 +229,14 @@ export type CombatEffect = typeof COMBAT_EFFECTS_LIST[number];
 export const COMBAT_EFFECTS = Object.fromEntries(
 	COMBAT_EFFECTS_LIST.map( x=> [x, `persona.combat-effects-subtypes.${x}`])
 );
+
+const INVENTORY_ACTION_LIST = [
+	"add-item",
+	"add-treasure",
+	"remove-item",
+] as const;
+
+
+export const INVENTORY_ACTION = HTMLTools.createLocalizationObject(INVENTORY_ACTION_LIST, "persona.consequences.inventoryAction");
+
+

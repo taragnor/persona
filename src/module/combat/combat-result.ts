@@ -300,7 +300,7 @@ export class CombatResult  {
 				const source = cons.source;
 				if (source && "getEmbeddedEffects" in source && source.getEmbeddedEffects != undefined) {
 					const owner = cons.owner ? PersonaDB.findActor(cons.owner) : null;
-				embeddedEffects = source.getEmbeddedEffects(owner);
+					embeddedEffects = source.getEmbeddedEffects(owner);
 				}
 				effect.otherEffects.push( {
 					type: "set-flag",
@@ -439,6 +439,29 @@ export class CombatResult  {
 			case "cancel":
 				this.globalOtherEffects.push(cons);
 				break;
+			case "inventory-action": {
+				if (!effect) {break;}
+				const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
+				const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation) ?? 1;
+				if (cons.invAction != "add-treasure") {
+					const resolvedCons = {
+						...cons,
+						amount,
+					};
+					effect.otherEffects.push( resolvedCons);
+				} else {
+					const sourced2=  ConsequenceAmountResolver.extractSourcedFromField(cons, "treasureLevel");
+					const treasureLevel = ConsequenceAmountResolver.resolveConsequenceAmount(sourced2, situation) ?? 0;
+					const resolvedCons = {
+						...cons,
+						amount,
+						treasureLevel,
+					};
+					effect.otherEffects.push( resolvedCons);
+				}
+
+				break;
+			}
 			default: {
 				cons satisfies never;
 				throw new Error("Should be unreachable");

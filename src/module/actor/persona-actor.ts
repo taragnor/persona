@@ -21,7 +21,6 @@ import { PersonaScene } from "../persona-scene.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { RealDamageType } from "../../config/damage-types.js";
 import { Carryable, CraftingMaterial, SkillCard, SocialCard, Tag } from "../item/persona-item.js";
-import { UsableAndCard } from "../item/persona-item.js";
 import { ValidSocialTarget } from "../social/persona-social.js";
 import { ValidAttackers } from "../combat/persona-combat.js";
 import { FlagData } from "../../config/actor-parts.js";
@@ -68,6 +67,7 @@ import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {Defense} from "../../config/defense-types.js";
 import {EnhancedActorDirectory} from "../enhanced-directory/enhanced-directory.js";
 import {FusionTable} from "../../config/fusion-table.js";
+import {EnchantedTreasureFormat} from "../exploration/treasure-system.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -282,6 +282,55 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async createNewItem() {
 		return (await this.createEmbeddedDocuments("Item", [{"name": "Unnamed Item", type: "item"}]))[0];
+	}
+
+	async addItem(newItem: Carryable, amount= 1) {
+		if (newItem.isStackable) {
+			const existing = this.items.find( item=> item.isStackableWith(newItem)) as Carryable;
+			if (existing) {
+				const newAmount = existing.system.amount + amount;
+				await existing.update( {
+					"system.amount": newAmount,
+				});
+				void Logger.sendToChat(`${this.name} gained ${amount} ${existing.name} (total: ${newAmount})`);
+				return existing;
+			}
+		}
+		const baseData = newItem.toJSON() as typeof newItem;
+		baseData.system.amount = amount;
+		const itemData = {
+			...baseData
+		};
+		const item = (await this.createEmbeddedDocuments("Item", [itemData]))[0];
+		void Logger.sendToChat(`${this.name} gained ${amount} ${item.name}`);
+		return item;
+	}
+
+	async addTreasureItem( treasure: EnchantedTreasureFormat) {
+		const baseItem = treasure.item;
+		const tags = baseItem.system.itemTags;
+		if (treasure.enchantments.length == 0) {
+			return await this.addItem(baseItem);
+		}
+		const tagIds =
+			[
+				...tags,
+				...treasure.enchantments.map( x=> x.id),
+			];
+		const tagsString = treasure.enchantments
+			.map( x=>x.name )
+			.join(", ");
+		const name =`${baseItem.name} (${tagsString})`;
+		const baseData = baseItem.toJSON() as typeof baseItem;
+		baseData.system.amount = 1;
+		baseData.system.itemTags = tagIds;
+		const itemData = {
+			...baseData,
+			name,
+		};
+		const item = (await this.createEmbeddedDocuments("Item", [itemData]))[0];
+		void Logger.sendToChat(`${this.name} gained ${item.name}`);
+		return item;
 	}
 
 	get inventory() : (Consumable | InvItem | Weapon | SkillCard)[] {
@@ -2800,18 +2849,18 @@ getAllegiance()  : Team {
 	}
 }
 
-async expendConsumable(item: UsableAndCard) {
-	if (item.system.type == "power") {
-		PersonaError.softFail("Can't expend a power, this function requires an item");
-		return;
-	}
+async expendConsumable(item: Carryable, amountUsed = 1) {
+	// if (item.system.type == "power") {
+	// 	PersonaError.softFail("Can't expend a power, this function requires an item");
+	// 	return;
+	// }
 	const amount = item.system.amount;
-	if (amount <= 1) {
+	if (amount <= amountUsed) {
 		await item.delete();
 		return;
 	}
-	if (amount > 1) {
-		await item.update({"system.amount": amount-1});
+	if (amount > amountUsed) {
+		await item.update({"system.amount": amount-amountUsed});
 		return;
 	}
 }
@@ -4283,7 +4332,7 @@ private async _trySwapPersona(this: PC, p1: Persona, p2: Persona)  : Promise<boo
 			await this.update( {
 				"system.combat.persona_sideboard": sideboardIds,
 				"system.personaList": personaList,
-			})
+			});
 			return true;
 		}
 	}
