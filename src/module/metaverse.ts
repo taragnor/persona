@@ -405,7 +405,7 @@ export class Metaverse {
 	}
 
 	static getRegion(regionId ?: string) : PersonaRegion | undefined {
-		let scene = game.scenes.current;
+		let scene = game.scenes.active;
 		if (CombatScene.instance) {
 			const prev = CombatScene.instance.previous;
 			if (prev) {

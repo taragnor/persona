@@ -2087,7 +2087,7 @@ getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, optio
 	}
 }
 
-getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions) : readonly SourcedConditionalEffect[] {
+getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions = {}) : readonly SourcedConditionalEffect[] {
 	if (this.isSkillCard()) { return []; }
 	const effects = this.system.effects;
 	const effectsGetterFn = () => {

@@ -140,7 +140,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		this._engagedList = new EngagementList(this);
 		await this._engagedList.flushData();
 		const assumeSocial = !(this.combatants.contents.some(comb=> comb.actor && comb.actor.system.type == 'shadow'));
-		const regionMods = (game.scenes.current as PersonaScene).getRoomEffects();
+		const regionMods: UniversalModifier["id"][] = [];
+		const region = Metaverse.getRegion();
+		if (region) {
+			regionMods.push(...region.parent.getRoomEffects());
+		} else {
+		const rmods = (game.scenes.current as PersonaScene).getRoomEffects();
+			regionMods.push(...rmods);
+		}
 		// const regionMods = Metaverse.getRegion()?.roomEffects.map(x=> x.id) ?? [];
 		const combatInit = await this.roomEffectsDialog(regionMods, assumeSocial);
 		await this.setSocialEncounter(combatInit.isSocialScene);
