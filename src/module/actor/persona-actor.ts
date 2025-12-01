@@ -2097,48 +2097,48 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return rating;
 	}
 
-	instantKillResistanceMultiplier(this: ValidAttackers, attacker: ValidAttackers) : number {
-		const situation : Situation = {
-			attacker: attacker.accessor,
-			user: this.accessor,
-			target: this.accessor,
-		};
-		return this.persona().getBonuses("instantDeathResistanceMult").total(situation, "percentage");
-	}
+instantKillResistanceMultiplier(this: ValidAttackers, attacker: ValidAttackers) : number {
+	const situation : Situation = {
+		attacker: attacker.accessor,
+		user: this.accessor,
+		target: this.accessor,
+	};
+	return this.persona().getBonuses("instantDeathResistanceMult").total(situation, "percentage");
+}
 
-	mainModifiers(...args: Parameters<Persona["mainModifiers"]>): readonly SourcedConditionalEffect[] {
-		if (!this.isValidCombatant()) {return [];}
-		return this.persona().mainModifiers(...args);
-	}
+mainModifiers(...args: Parameters<Persona["mainModifiers"]>): readonly SourcedConditionalEffect[] {
+	if (!this.isValidCombatant()) {return [];}
+	return this.persona().mainModifiers(...args);
+}
 
-	userDefensiveEffects(this: ValidAttackers) : ModifierContainer [] {
-		if (!this.isValidCombatant()) {return [];}
-		return this.actorMainModifiers()
-			.filter(x=> x.getEffects(this, {CETypes: ["defensive"]}));
-	}
+userDefensiveEffects(this: ValidAttackers) : ModifierContainer [] {
+	if (!this.isValidCombatant()) {return [];}
+	return this.actorMainModifiers()
+		.filter(x=> x.getEffects(this, {CETypes: ["defensive"]}));
+}
 
-	getDefense(this: ValidAttackers,  type : Defense) : Calculation {
-		return this.persona().getDefense(type);
-	}
+getDefense(this: ValidAttackers,  type : Defense) : Calculation {
+	return this.persona().getDefense(type);
+}
 
-	get statusResists() : {id: string, img: string, local: string, val: string}[] {
-		if (!this.isValidCombatant()) { return [];}
-		const arr: {id: string, img: string, local: string, val: string}[]   = [];
-		for (const [k, v] of Object.entries(this.system.combat.statusResists)) {
-			arr.push( {
-				id: k,
-				val: v,
-				local: localize(STATUS_EFFECT_TRANSLATION_TABLE[k as StatusEffectId]),
-				img: STATUS_EFFECT_LIST.find(x=> x.id == k)?.icon ?? "",
-			});
-		}
-		return arr;
+get statusResists() : {id: string, img: string, local: string, val: string}[] {
+	if (!this.isValidCombatant()) { return [];}
+	const arr: {id: string, img: string, local: string, val: string}[]   = [];
+	for (const [k, v] of Object.entries(this.system.combat.statusResists)) {
+		arr.push( {
+			id: k,
+			val: v,
+			local: localize(STATUS_EFFECT_TRANSLATION_TABLE[k as StatusEffectId]),
+			img: STATUS_EFFECT_LIST.find(x=> x.id == k)?.icon ?? "",
+		});
 	}
+	return arr;
+}
 
-	isDMon() : boolean {
-		if (this.cache.isDMon) {return this.cache.isDMon;}
-		return this.cache.isDMon = this.isShadow() && (this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon"));
-	}
+isDMon() : boolean {
+	if (this.cache.isDMon) {return this.cache.isDMon;}
+	return this.cache.isDMon = this.isShadow() && (this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon"));
+}
 
 isPersona(): boolean {
 	return this.isShadow() && (this.system.creatureType == "persona" ||  this.hasCreatureTag("persona"));
@@ -3606,7 +3606,7 @@ async setEffectFlag(effect: Omit<SetFlagEffect, "type">) {
 	if (effect.state == true) {
 		const flag = await this.createEffectFlag(effect.flagId, effect.duration, effect.flagName);
 		if (effect.embeddedEffects!.length> 0) {
-		await flag.setEmbeddedEffects(effect.embeddedEffects!);
+			await flag.setEmbeddedEffects(effect.embeddedEffects!);
 		}
 	} else {
 		await this.clearEffectFlag(effect.flagId);
@@ -4272,7 +4272,7 @@ async swapPersona( this: PC, p1: Persona, p2: Persona) {
 		return;
 	}
 	ui.notifications.notify("These two personas can't be swapped");
-	}
+}
 
 private async _trySwapPersona(this: PC, p1: Persona, p2: Persona)  : Promise<boolean> {
 	const sideboardIds = this.system.combat.persona_sideboard;

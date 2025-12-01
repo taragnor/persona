@@ -430,7 +430,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		];
 		const mainMods = mainModsList
 			.flatMap( x=> x.getEffects(this.user));
-		if (!canCache) {
+		if (canCache) {
 			this.#cache.mainModifiers = mainMods;
 		}
 		return mainMods;
@@ -674,17 +674,12 @@ get printableResistanceString() : string {
 	return retdata;
 }
 
-// statusResist(status: StatusEffectId) : ResistStrength {
-// 	const mods = this.mainModifiers();
-// 	return this.source.statusResist(status, mods);
-// }
-
 statusResist(status: StatusEffectId, modifiers ?: readonly SourcedConditionalEffect[]) : ResistStrength {
 	const actor= this.source;
 	if (!modifiers) {
 		modifiers = actor.mainModifiers();
 	}
-	const effectChangers=  modifiers
+	const effectChangers = modifiers
 		.filter ( mod => mod.consequences
 			.some( cons=>cons.type == "raise-status-resistance" && cons.statusName == status));
 	const situation : Situation = {
