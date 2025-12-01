@@ -404,12 +404,20 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.mainModifiers().filter ( x=>x.conditionalType == "passive");
 	}
 
-	mainModifiers(options?: {omitPowers?: boolean, omitTalents?: boolean, omitTags ?: boolean} ): readonly SourcedConditionalEffect[] {
+	mainModifiers(options?: MainModifierOptions ): readonly SourcedConditionalEffect[] {
 		//NOTE: this could be a risky operation
 		const canCache = !options && this.canCache;
 		if (canCache && this.#cache.mainModifiers) {
 			return this.#cache.mainModifiers;
 		}
+		const mainMods = this._mainModifiers(options);
+		if (canCache) {
+			this.#cache.mainModifiers = mainMods;
+		}
+		return mainMods;
+	}
+
+	private _mainModifiers(options?: MainModifierOptions): readonly SourcedConditionalEffect[] {
 		const user = this.user;
 		const roomModifiers : UniversalModifier[] = [];
 		if (game.combat) {
@@ -428,12 +436,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			...PersonaDB.getGlobalPassives(),
 			...PersonaDB.navigatorModifiers(),
 		];
-		const mainMods = mainModsList
+		return mainModsList
 			.flatMap( x=> x.getEffects(this.user));
-		if (canCache) {
-			this.#cache.mainModifiers = mainMods;
-		}
-		return mainMods;
 	}
 
 	passiveOrTriggeredPowers() : readonly Power[] {
@@ -1114,4 +1118,10 @@ interface PersonaClassCache {
 	mainModifiers: U<readonly SourcedConditionalEffect[]>;
 	passivePowers: U<readonly Power[]>;
 	defensiveModifiers: U<readonly SourcedConditionalEffect[]>;
+}
+
+interface MainModifierOptions {
+	omitPowers?: boolean;
+	omitTalents?: boolean;
+	omitTags ?: boolean;
 }

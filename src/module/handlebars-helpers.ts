@@ -688,9 +688,6 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"elemResist": function (actorOrPersona: ValidAttackers | Persona, resistType: Exclude<DamageType, "by-power">) : string {
-			if (resistType == "physical") {
-				debugger;
-			}
 			const persona = (actorOrPersona instanceof PersonaActor) ? actorOrPersona.persona() : actorOrPersona;
 			const resist= persona.elemResist(resistType);
 			return game.i18n.localize(RESIST_STRENGTHS[resist]);
