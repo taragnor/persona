@@ -100,7 +100,7 @@ export class ActorConverters {
 		if (!shadow.isShadow()) {
 			throw new PersonaError("Can't convert a non-shadow into a persona.");
 		}
-		if (!shadow.basePersona.isEligibleToBecomePersona()) {
+		if (!shadow.basePersona.isEligibleToBecomeWildPersona()) {
 			throw new PersonaError(`${shadow.name} is Ineligible to become a Persona`);
 		}
 		const ownership = newOwner != undefined

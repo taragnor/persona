@@ -124,9 +124,7 @@
 	{{/if}}
 
 	{{#if (eqAny cons.type "raise-status-resistance")}}
-	<select name="{{strcat namePrefix 'statusName' }}">
-		{{selectOptions POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
-	</select>
+		{{multicheck (strcat namePrefix 'statusName') POWERSTUFF.STATUSEFFECTS localize=true checked=cons.statusName}}
 	<select name="{{strcat namePrefix 'resistanceLevel'}}">
 		{{selectOptions POWERSTUFF.RESIST_STRENGTHS localize=true selected=cons.resistanceLevel}}
 	</select>

@@ -391,7 +391,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		.filter ( x=> x.isShadow()
 			&& !x.isPersona()
 			&& !x.isDMon()
-			&& x.persona().isEligibleToBecomePersona()
+			&& x.persona().isEligibleToBecomeWildPersona()
 		) as Shadow[];
 		return this.#cache.possiblePersonas = shadows;
 	}

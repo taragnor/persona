@@ -416,13 +416,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			return this.displayedName;
 		}
 		if (this.isShadow()) {
-			const subtype  = localize(SHADOW_CREATURE_TYPE[this.system.creatureType]);
-			if (game.user.isGM || this.isOwner) {
-				return `${this.name} (L ${this.level}, ${subtype})`;
-			}
+			const subtype = this.system.creatureType;
+			const subtypeloc  = localize(SHADOW_CREATURE_TYPE[subtype]);
 			if (this.basePersona.isPersona()) {
-				return `${this.name} (L ${this.level}, ${subtype})`;
-
+				return `${this.name} (L ${this.level}, ${subtypeloc})`;
+			}
+			if (game.user.isGM || this.isOwner) {
+				const roles = this.roleString.toString();
+				return `${this.name} (${this.level}, ${roles})`;
 			}
 			if (this.basePersona.scanLevelRaw > 0) {
 				return `${this.displayedName} (L ${this.level})`;

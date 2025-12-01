@@ -350,7 +350,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return true;
 	}
 
-	isEligibleToBecomePersona(): boolean {
+	isEligibleToBecomeWildPersona(): boolean {
 		const source = this.source;
 		if (!source.isShadow()) {return false;}
 		if (!source.tarot || source.tarot.name.length == 0) { return false; }
@@ -358,7 +358,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		if (this.isPersona()) {return true;}
 		if (this.isDMon()) {return true;}
 		if (source.prototypeToken.actorLink == true) {return false;}
-		return this.isEligibleToBecomeDMon();
+		if (source.hasRole(["boss", "miniboss", "treasure-shadow", "summoner"])) {return false;}
+		if (source.system.creatureType != "shadow" && source.system.creatureType != "daemon") {return false;}
+		if (source.hasCreatureTag("pure-shadow")) {return false;}
+		return true;
 	}
 
 	isPersona(): boolean {
