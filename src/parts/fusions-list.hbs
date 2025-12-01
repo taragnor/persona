@@ -5,7 +5,7 @@
 		{{#each actor.fusionCombinations as |fusion i|}}
 		<li class="fusion-option {{#if (gt fusion.result.startingLevel ../actor.level)}} disabled {{/if}}" data-shadow-id="{{fusion.result.id}}">
 			<span class="name">
-				{{fusion.result.displayedName}}
+				{{fusion.result.name}}
 				- {{fusion.result.level}} {{fusion.result.tarot.displayedName}}
 			</span>
 			(

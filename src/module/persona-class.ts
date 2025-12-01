@@ -358,9 +358,16 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		if (this.isPersona()) {return true;}
 		if (this.isDMon()) {return true;}
 		if (source.prototypeToken.actorLink == true) {return false;}
-		if (source.hasRole(["boss", "miniboss", "treasure-shadow", "summoner"])) {return false;}
+		if (source.hasRole(["boss", "miniboss", "treasure-shadow", "summoner", "minion"])) {return false;}
 		if (source.system.creatureType != "shadow" && source.system.creatureType != "daemon") {return false;}
 		if (source.hasCreatureTag("pure-shadow")) {return false;}
+		return true;
+	}
+
+	isFusable(): boolean {
+		if (!this.isEligibleToBecomeWildPersona()) {return false;}
+		if (this.hasTag("non-fusable-variant")) {return false;}
+		if (this.source.system.creatureType == "daemon") {return false;}
 		return true;
 	}
 
@@ -984,6 +991,7 @@ hasTag(tag: PersonaTag) : boolean {
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 tagListPartial() : (PersonaTag | Tag["id"])[] {
 	const base = this.source.system.combat.personaTags.slice();
+	base.pushUnique (...this.source.system.creatureTags);
 	base.pushUnique(...this._autoTags());
 	return base;
 }

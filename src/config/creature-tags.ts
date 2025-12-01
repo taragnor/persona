@@ -56,6 +56,7 @@ export const PERSONA_TAG_LIST = [
 	"enemy-metaverse-user",
 	"true-demon",
 	"pure-shadow",
+	"non-fusable-variant",
 	"simulated",
 	"d-mon",
 	"pc-d-mon",
