@@ -14,7 +14,7 @@ import { ValidSocialTarget } from "./social/persona-social.js";
 import { ValidAttackers } from "./combat/persona-combat.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaSocial } from "./social/persona-social.js";
-import { NonDeprecatedPrecondition, SOCIAL_LINK_OR_TAROT_OTHER } from "../config/precondition-types.js";
+import { MultiCheckOrSingle, NonDeprecatedPrecondition, SOCIAL_LINK_OR_TAROT_OTHER } from "../config/precondition-types.js";
 import { AnyStringObject } from "../config/precondition-types.js";
 import { SocialLinkIdOrTarot } from "../config/precondition-types.js";
 import { MultiCheck } from "../config/precondition-types.js";
@@ -1173,10 +1173,11 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
 	}
 }
 
-export function multiCheckToArray<T extends string>(multiCheck: MultiCheck<T>) : T[] {
-	return Object.entries(multiCheck)
+export function multiCheckToArray<const T extends MultiCheckOrSingle<S>, const S extends string>(multiCheck: T) : S[] {
+	if (typeof multiCheck == "string") {return [multiCheck as S];}
+	return Object.entries(multiCheck as MultiCheck<S>)
 		.filter( ([_, val]) => val == true)
-		.map( ([k,_v]) => k as T) ;
+		.map( ([k,_v]) => k as S) ;
 }
 
 export function multiCheckContains<T extends R, R extends string>(multiCheck: MultiCheck<T> | T, arr: R[]) : boolean {

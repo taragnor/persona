@@ -19,7 +19,7 @@ import { PersonaError } from "./persona-error.js";
 import { localize } from "./persona.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../config/status-effects.js";
 import { RESIST_STRENGTH_LIST } from "../config/damage-types.js";
-import { getActiveConsequences, multiCheckContains } from "./preconditions.js";
+import { getActiveConsequences, multiCheckContains, multiCheckToArray } from "./preconditions.js";
 import { PersonaI } from "../config/persona-interface.js";
 import { DamageType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";
@@ -654,6 +654,7 @@ get isBasePersona(): boolean {
 get printableResistanceString() : string {
 	const resists = this.statusResists;
 	const retdata = Object.entries(resists)
+		.filter ( ([statusId, _y]) => CONFIG.statusEffects.some(st=> st.id == statusId))
 		.map(([statusRaw, _level]) => {
 			const actual = this.statusResist(statusRaw as StatusEffectId);
 			const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[statusRaw as StatusEffectId]);
@@ -673,9 +674,49 @@ get printableResistanceString() : string {
 	return retdata;
 }
 
-statusResist(status: StatusEffectId) : ResistStrength {
-	const mods = this.mainModifiers();
-	return this.source.statusResist(status, mods);
+// statusResist(status: StatusEffectId) : ResistStrength {
+// 	const mods = this.mainModifiers();
+// 	return this.source.statusResist(status, mods);
+// }
+
+statusResist(status: StatusEffectId, modifiers ?: readonly SourcedConditionalEffect[]) : ResistStrength {
+	const actor= this.source;
+	if (!modifiers) {
+		modifiers = actor.mainModifiers();
+	}
+	const effectChangers=  modifiers
+		.filter ( mod => mod.consequences
+			.some( cons=>cons.type == "raise-status-resistance" && cons.statusName == status));
+	const situation : Situation = {
+		user: actor.accessor,
+		target: actor.accessor,
+	};
+	const consequences = effectChangers.flatMap(
+		item => getActiveConsequences(item, situation)
+	);
+	let baseStatusResist : ResistStrength = "normal";
+	if ("statusResists" in actor.system.combat) {
+		const statusResist = actor.system.combat.statusResists;
+		if (status in statusResist) {
+			baseStatusResist = statusResist[status as keyof typeof statusResist];
+		}
+	}
+	const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
+	let resist= baseStatusResist;
+	for (const cons of consequences) {
+		if (cons.type == "raise-status-resistance") {
+			const statusList = multiCheckToArray(cons.statusName);
+			if (statusList.includes(status)) {
+				if (!cons.lowerResist && resval(cons.resistanceLevel) > resval(resist)) {
+					resist = cons.resistanceLevel;
+				}
+				if (cons.lowerResist && resval(cons.resistanceLevel) < resval(resist)) {
+					resist = cons.resistanceLevel;
+				}
+			}
+		}
+	}
+	return resist;
 }
 
 

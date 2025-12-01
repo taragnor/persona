@@ -33,9 +33,7 @@ import { TAROT_DECK } from "../../config/tarot.js";
 import { localize } from "../persona.js";
 import { STATUS_EFFECT_LIST } from "../../config/status-effects.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../../config/status-effects.js";
-import { RESIST_STRENGTH_LIST } from "../../config/damage-types.js";
 import { Activity } from "../item/persona-item.js";
-import { getActiveConsequences } from "../preconditions.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { PersonaActorSheetBase } from "./sheets/actor-sheet.base.js";
 import { Logger } from "../utility/logger.js";
@@ -49,7 +47,6 @@ import { CClass } from "../item/persona-item.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { StatusEffectId } from "../../config/status-effects.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
-import { ResistStrength } from "../../config/damage-types.js";
 import { SetFlagEffect, StatusEffect } from "../../config/consequence-types.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { Focus } from "../item/persona-item.js";
@@ -1389,6 +1386,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.powerLearningList.at(0)?.level;
 	}
 
+	get learnedSkillsRemaining(): number {
+		return this.powerLearningList.length;
+	}
+
 	get topLearnedBuffer(): Power | undefined {
 		return this.learnedPowersBuffer.at(0);
 	}
@@ -1537,7 +1538,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async isStatusResisted( id : StatusEffect["id"]) : Promise<boolean> {
-		const resist = this.statusResist(id);
+		if (!this.isValidCombatant()) {return false;}
+		const resist = this.persona().statusResist(id);
 		switch (resist) {
 			case "absorb":
 			case "reflect":
@@ -2117,57 +2119,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	getDefense(this: ValidAttackers,  type : Defense) : Calculation {
 		return this.persona().getDefense(type);
-	}
-
-	statusResist(status: StatusEffectId, modifiers ?: readonly SourcedConditionalEffect[]) : ResistStrength {
-		switch (this.system.type) {
-			case "tarot":
-			case "npc":
-				return "normal";
-			case "pc":
-			case "shadow":
-			case "npcAlly":
-				break;
-			default:
-				this.system satisfies never;
-				PersonaError.softFail("Unknown Type");
-				return "normal";
-		}
-		const actor = this as PC | Shadow;
-		if (!modifiers) {
-			modifiers = actor.mainModifiers();
-		}
-		const effectChangers=  modifiers
-			.filter ( mod => mod.consequences
-				.some( cons=>cons.type == "raise-status-resistance" && cons.statusName == status));
-		const situation : Situation = {
-			user: actor.accessor,
-			target: actor.accessor,
-		};
-		const consequences = effectChangers.flatMap(
-			item => getActiveConsequences(item, situation)
-		);
-		let baseStatusResist : ResistStrength = "normal";
-		if ("statusResists" in actor.system.combat) {
-			const statusResist = actor.system.combat.statusResists;
-			if (status in statusResist) {
-				baseStatusResist = statusResist[status as keyof typeof statusResist];
-			}
-		}
-		const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
-		let resist= baseStatusResist;
-		for (const cons of consequences) {
-			if (cons.type == "raise-status-resistance"
-				&& cons.statusName == status) {
-				if (!cons.lowerResist && resval(cons.resistanceLevel) > resval(resist)) {
-					resist = cons.resistanceLevel;
-				}
-				if (cons.lowerResist && resval(cons.resistanceLevel) < resval(resist)) {
-					resist = cons.resistanceLevel;
-				}
-			}
-		}
-		return resist;
 	}
 
 	get statusResists() : {id: string, img: string, local: string, val: string}[] {

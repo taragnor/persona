@@ -134,7 +134,7 @@ export const USER_COMPARISON_TARGETS = Object.fromEntries(
 );
 
 export type MultiCheck<T extends string> = Record<T, boolean> ;
-export type MultiCheckOrSingle<T extends string> = T | Record<T, boolean> ;
+export type MultiCheckOrSingle<T extends string> = T | MultiCheck<T>;
 
 export const SOCIAL_LINK_OR_TAROT_OTHER = {
 			"target": "current Social Target / Current Target",

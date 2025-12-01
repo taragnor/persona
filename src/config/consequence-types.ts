@@ -398,7 +398,7 @@ type ElementalResistanceAlterConsequence = {
 
 type StatusResistanceAlterConsequence = {
 	type: "raise-status-resistance",
-	statusName: StatusEffectId,
+	statusName: MultiCheckOrSingle<StatusEffectId>,
 	resistanceLevel: ResistStrength,
 	lowerResist: boolean,
 }
