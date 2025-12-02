@@ -45,7 +45,7 @@ type ClockTrigger = {
 }
 
 type OnAETimeoutTrigger = {
-	trigger: "on-active-effect-time-out",
+	trigger: "on-active-effect-time-out" | "on-active-effect-end",
 	activeEffect: UniversalAEAccessor<PersonaAE>,
 	user: UniversalActorAccessor<ValidAttackers>,
 	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,

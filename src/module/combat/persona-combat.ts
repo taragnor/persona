@@ -230,6 +230,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				console.warn(e);
 			}
 		});
+		const nav = PersonaDB.getNavigator();
+		if (nav) {
+			await nav.onEndCombat();
+		}
 		await Promise.allSettled(promises);
 	}
 
@@ -2003,6 +2007,7 @@ static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<Comb
 			allInRegion.push(...actors);
 		}
 
+		const nav = PersonaDB.getNavigator();
 		const context : TargettingContextList = {
 			target: target ? [target] : [],
 			owner,
@@ -2013,6 +2018,7 @@ static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<Comb
 			'all-allies': allies,
 			'all-foes': foes,
 			'all-in-region': allInRegion,
+			navigator: nav ? [nav.accessor] : [],
 		};
 		return context;
 	}
@@ -2102,6 +2108,10 @@ static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<Comb
 				.filter( x=> x.actor && x.actor.isValidCombatant())
 				.map( x=> x.actor! as ValidAttackers);
 				return actors;
+			}
+			case "navigator": {
+				const nav = PersonaDB.getNavigator();
+				return nav ? [nav] : [];
 			}
 			default:
 				applyTo satisfies never;
@@ -2581,6 +2591,9 @@ static getAltTargets ( attacker: PToken, situation : Situation, targettingType :
 		}
 		case 'all-in-region':
 			PersonaError.softFail('all-in-region does not support alt targets');
+			return [];
+		case "navigator":
+			PersonaError.softFail(`navigator doesn't support alt targets`);
 			return [];
 		default:
 			targettingType satisfies never;

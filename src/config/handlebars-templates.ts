@@ -78,6 +78,7 @@ const templateFileNames : string[] =[
 	"basic-powers-section.hbs",
 	"input-conditional-boolean.hbs",
 	"input-conditional-numeric.hbs",
+	"input-conditional-trigger.hbs",
 	"power-tags.hbs",
 	"social-minor-actions.hbs",
 	"talents-section.hbs",

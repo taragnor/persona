@@ -1,0 +1,38 @@
+	<select name="{{strcat namePrefix 'trigger'}}">
+		{{selectOptions POWERSTUFF.TRIGGERS localize=true selected=cond.trigger}}
+	</select>
+
+	{{#if (eq cond.trigger "on-attain-tarot-perk")}}
+	<select name="{{strcat namePrefix 'tarot'}}">
+		{{selectOptions POWERSTUFF.TAROT_DECK localize=true selected=cond.tarot}}
+	</select>
+	{{/if}}
+
+	{{#if (eqAny cond.trigger "on-clock-tick" "on-clock-change")}}
+	<select name="{{strcat namePrefix 'triggeringClockId'}}">
+		{{selectOptions POWERSTUFF.CLOCKS localize=true selected=cond.triggeringClockId}}
+	</select>
+	{{/if}}
+
+	{{#if (eqAny cond.trigger "on-inflict-status" "pre-inflict-status")}}
+	{{multicheck (strcat namePrefix 'status') POWERSTUFF.STATUSEFFECTS checked=cond.status localize=true}}
+	{{/if}}
+
+	{{#if (eqAny cond.trigger "on-active-effect-time-out" "on-active-effect-end")}}
+	<select name="{{strcat namePrefix 'timeoutTarget'}}">
+		{{selectOptions POWERSTUFF.AE_TIMEOUT_TARGETS localize=true selected=cond.timeoutTarget}}
+	</select>
+
+	{{#if (eqAny cond.timeoutTarget "status")}}
+	{{multicheck (strcat namePrefix 'statusId') POWERSTUFF.STATUSEFFECTS checked=cond.statusId localize=true}}
+	{{/if}}
+
+	{{#if (eqAny cond.timeoutTarget "flag")}}
+	<div>
+		<label>Flag Id </label>
+		<input class="flag-id" type="text" width=2 name="{{strcat namePrefix 'flagId'}}" value="{{cond.flagId}}">
+	</div>
+	{{/if}}
+
+	{{/if}}
+

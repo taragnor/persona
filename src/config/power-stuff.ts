@@ -32,6 +32,7 @@ import {TRIGGERS} from "./triggers.js";
 import {WEATHER_TYPES} from "./weather-types.js";
 import {TREASURE_TABLES} from "./treasure-tables.js";
 import {PROBABILITIES} from "./probability.js";
+import {HTMLTools} from "../module/utility/HTMLTools.js";
 
 export class PowerStuff {
 private static _powerStuffBase: Record<string, unknown>;
@@ -167,6 +168,9 @@ private static _powerStuffBase: Record<string, unknown>;
 			"": "usedItem",
 			...ITEMS
 		};
+		const AE_TIMEOUT_TARGETS = HTMLTools.createLocalizationObject([
+			"self", "status", "flag",
+		], "persona.preconditions.AETimeoutTargets");
 		const RELATIONSHIP_TYPES_LIST = PersonaDB.allSocialCards()
 		.flatMap(card => card.system.qualifiers)
 		.map(qual=> qual.relationshipName)
@@ -187,6 +191,7 @@ private static _powerStuffBase: Record<string, unknown>;
 			...this.powerStuffBase(),
 			SOCIAL_LINKS,
 			TAGS,
+			AE_TIMEOUT_TARGETS,
 			COMPENDIUM_TALENTS: Object.fromEntries(
 				PersonaDB.allTalents().slice()
 				.sort((a,b) => a.name.localeCompare(b.name))

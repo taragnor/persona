@@ -3980,8 +3980,15 @@ get tagList() : (Tag | InternalCreatureTag)[] {
 		.map(tag => PersonaItem.searchForPotentialTagMatch(tag) ?? (tag as InternalCreatureTag));
 }
 
-hasCreatureTag(tag: CreatureTag) : boolean{
-	return this.tagListPartial.includes(tag);
+hasCreatureTag(tagNameOrId: CreatureTag) : boolean{
+	const tag = PersonaDB.allTags().get(tagNameOrId);
+	const tagList = this.tagListPartial;
+	if (!tag) {
+		return tagList.includes(tagNameOrId);
+	}
+	return tagList.includes(tag.id)
+	|| tagList.includes(tag.system.linkedInternalTag)
+	|| tagList.includes(tag.name);
 }
 
 async deleteCreatureTag(index: number) : Promise<void> {

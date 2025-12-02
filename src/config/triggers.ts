@@ -32,6 +32,7 @@ export const NONCOMBAT_TRIGGER_LIST = [
 
 export const SHARED_TRIGGERS = [
 	"on-active-effect-time-out",
+	"on-active-effect-end",
 ] as const;
 
 export const TRIGGER_LIST = [

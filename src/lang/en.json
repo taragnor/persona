@@ -756,6 +756,7 @@
 	"persona.preconditions.targets.all-foes": "All Foes" ,
 	"persona.preconditions.targets.all-in-region": "Everyone in the Region" ,
 	"persona.preconditions.targets.cameo": "Cameo Character" ,
+	"persona.preconditions.targets.navigator": "Navigator" ,
 
 	"persona.preconditions.dice.escalation": "Escalation DIe" ,
 	"persona.preconditions.dice.activation": "Activation Roll" ,
@@ -863,6 +864,10 @@
 	"persona.preconditions.combat-result-subtype.total-hits": "total Hits",
 	"persona.preconditions.combat-result-subtype.total-knocks-down": "Total Knock downs",
 
+	"persona.preconditions.AETimeoutTargets.self": "This Efffect",
+	"persona.preconditions.AETimeoutTargets.status": "Status",
+	"persona.preconditions.AETimeoutTargets.flag": "Flag",
+
 	"persona.effecttypes.targets.levelgain.persona": "Currently Equipped Persona",
 	"persona.effecttypes.targets.levelgain.actor": "Student Level",
 	"persona.effecttypes.targets.levelgain.both": "Both Student and Persona",
@@ -891,6 +896,8 @@
 	"persona.triggers.on-search-end": "On End of Search",
 	"persona.triggers.on-presence-check": "On Presence Check",
 	"persona.triggers.on-enter-region": "On Enter Region",
+	"persona.triggers.on-active-effect-time-out": "On Active Effect Timeout",
+	"persona.triggers.on-active-effect-end": "On Active Effect End",
 
 	"persona.othereffect.search-twice": "Search Twice",
 	"persona.othereffect.ignore-surprise": "Act during surprise rounds",
@@ -961,6 +968,7 @@
 	"persona.consequence.targets.all-enemies" : "All Enemies",
 	"persona.consequence.targets.all-allies" : "All Allies",
 	"persona.consequence.targets.all-combatants" : "All Combatants",
+	"persona.consequence.targets.navigator" : "Navigator",
 
 "persona.consequences.consequences-amount.operation": "Op",
 "persona.consequences.consequences-amount.constant": "Con",

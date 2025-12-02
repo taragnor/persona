@@ -41,26 +41,7 @@
 	{{/if}}
 
 	{{#if (eq cond.type	"on-trigger")}}
-	<select name="{{strcat namePrefix 'trigger'}}">
-		{{selectOptions POWERSTUFF.TRIGGERS localize=true selected=cond.trigger}}
-	</select>
-
-	{{#if (eq cond.trigger "on-attain-tarot-perk")}}
-	<select name="{{strcat namePrefix 'tarot'}}">
-		{{selectOptions POWERSTUFF.TAROT_DECK localize=true selected=cond.tarot}}
-	</select>
-	{{/if}}
-
-	{{#if (eqAny cond.trigger "on-clock-tick" "on-clock-change")}}
-	<select name="{{strcat namePrefix 'triggeringClockId'}}">
-		{{selectOptions POWERSTUFF.CLOCKS localize=true selected=cond.triggeringClockId}}
-	</select>
-	{{/if}}
-
-	{{#if (eqAny cond.trigger "on-inflict-status" "pre-inflict-status")}}
-	{{multicheck (strcat namePrefix 'status') POWERSTUFF.STATUSEFFECTS checked=cond.status localize=true}}
-	{{/if}}
-
+	{{> "systems/persona/parts/input-conditional-trigger.hbs" namePrefix=namePrefix  cond=cond POWERSTUFF=POWERSTUFF owner=owner}}
 	{{/if}}
 
 	{{#if (eq cond.type	"flag-state")}}

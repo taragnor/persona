@@ -267,7 +267,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 	}
 
 	/** when the statuses natural duration ends*/
-	async endStatusTimeOut() : Promise<void> {
+	async endStatusTimeout() : Promise<void> {
 		if (this.parent instanceof PersonaActor && this.parent.isValidCombatant()) {
 			const activeDuration = game.combat && "amount" in this.statusDuration ? game.combat.round - this.duration.startRound : undefined ;
 			const situation : Situation = {
@@ -280,34 +280,87 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 			};
 			await TriggeredEffect.autoApplyTrigger("on-active-effect-time-out", this.parent, situation);
 		}
+	const duration = this.statusDuration;
+	switch (duration.dtype) {
+		case "USoNT":
+		case "UEoNT":
+		case "UEoT": {
+			const acc = duration.anchorStatus;
+			if (!acc) {break;}
+			try {
+				const anchorStatus = PersonaDB.findAE(acc);
+				await anchorStatus?.endStatusTimeout();
+			} catch (e) {
+				console.log(e);
+			}
+			break;
+		}
+		default:
+			break;
+	}
 	await this.delete();
+	}
+
+	async onAEDelete() : Promise<void> {
+		if (this.parent instanceof PersonaActor && this.parent.isValidCombatant()) {
+			const activeDuration = game.combat && "amount" in this.statusDuration ? game.combat.round - this.duration.startRound : undefined ;
+			const situation : Situation = {
+				trigger: "on-active-effect-end",
+				triggeringUser: game.user,
+				activeEffect: this.accessor,
+				user: this.parent.accessor,
+				triggeringCharacter: this.parent.accessor,
+				activeDuration
+			};
+			await TriggeredEffect.autoApplyTrigger("on-active-effect-end", this.parent, situation);
+		}
+		const duration = this.statusDuration;
+		switch (duration.dtype) {
+			case "USoNT":
+			case "UEoNT":
+			case "UEoT": {
+				const acc = duration.anchorStatus;
+				if (!acc) {break;}
+				try {
+					const anchorStatus = PersonaDB.findAE(acc);
+					if (anchorStatus) {
+						await anchorStatus.delete();
+					}
+				} catch (e) {
+					console.log(e);
+				}
+				break;
+			}
+			default:
+				break;
+		}
 	}
 
 	/** returns true if the status expires*/
 	async onStartCombatTurn() : Promise<boolean> {
 		const duration = this.statusDuration;
 		if (this.statuses.has("blocking")) {
-			await this.endStatusTimeOut();
+			await this.endStatusTimeout();
 			return true;
 		}
 		if (this.statuses.has("bonus-action")) {
-			await this.endStatusTimeOut();
+			await this.endStatusTimeout();
 			return true;
 		}
 
 		switch (duration.dtype) {
 			case "instant":
-				await this.endStatusTimeOut();
+				await this.endStatusTimeout();
 				return true;
 			case "X-rounds":
 			case "3-rounds":
 				if (this.duration.startRound + duration.amount >= (game.combat!.round ?? 0)) {
 					return false;
 				}
-				await this.endStatusTimeOut();
+				await this.endStatusTimeout();
 				return true;
 			case "USoNT":
-				await this.endStatusTimeOut();
+				await this.endStatusTimeout();
 				return true;
 			case "save": {
 				const owner = this.parent;
@@ -376,15 +429,12 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		if (!actor.isValidCombatant()) {return false;}
 		const DC = this.statusSaveDC;
 		const bundle = await PersonaRoller.rollSave(actor, { DC, label: this.name, saveVersus: this.statusId, rollTags: [] } );
-		if (bundle.success) { await this.endStatusTimeOut();}
+		if (bundle.success) { await this.endStatusTimeout();}
 		await bundle.toModifiedMessage(true);
 		return bundle.success ?? false;
 	}
 
 
-	override async delete() {
-		await super.delete();
-	}
 
 	/** returns true if the status expires*/
 	async onEndCombatTurn() : Promise<boolean> {
@@ -757,7 +807,6 @@ Hooks.on("createActiveEffect", async function (eff: PersonaAE) {
 });
 
 Hooks.on("deleteActiveEffect", async function (eff: PersonaAE) {
-	console.log(`${eff.name} on ${eff.parent?.displayedName.toString()} deleted `);
 	if (!game.user.isGM) {return;}
 	if (eff.isFatigueStatus) {
 		const parent = eff.parent;
@@ -765,24 +814,7 @@ Hooks.on("deleteActiveEffect", async function (eff: PersonaAE) {
 			await parent.setAlteredFatigue();
 		}
 	}
-	const duration = eff.statusDuration;
-	switch (duration.dtype) {
-		case "USoNT":
-		case "UEoNT":
-		case "UEoT": {
-			const acc = duration.anchorStatus;
-			if (!acc) {break;}
-			try {
-				const anchorStatus = PersonaDB.findAE(acc);
-				await anchorStatus?.delete();
-			} catch (e) {
-				console.log(e);
-			}
-			break;
-		}
-		default:
-			break;
-	}
+	await eff.onAEDelete();
 
 });
 

@@ -75,7 +75,7 @@ type NonSimpleTrigger =
 ;
 
 type StatusTimeOut = {
-	trigger: "on-active-effect-time-out",
+	trigger: "on-active-effect-time-out" | "on-active-effect-end",
 } & (
 	OwningAETimeout
 	| StatusTimeout
@@ -121,6 +121,7 @@ export const CONDITION_TARGETS_LIST = [
 	"all-allies",
 	"all-foes",
 	"all-in-region",
+	"navigator",
 ] as const;
 
 export type ConditionTarget= typeof CONDITION_TARGETS_LIST[number];

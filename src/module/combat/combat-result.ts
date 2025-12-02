@@ -670,6 +670,10 @@ function resolveStatusDurationAnchor (anchor: (Consequence & {type : "addStatus"
 		case "all-in-region":
 			PersonaError.softFail(`${anchor} not supported as a status anchor`);
 			return null;
+		case "navigator": {
+			const nav = PersonaDB.getNavigator();
+			return nav ? nav.accessor : null;
+		}
 		default:
 			anchor satisfies never;
 			return null;
