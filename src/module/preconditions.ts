@@ -25,7 +25,6 @@ import { RESIST_STRENGTH_LIST } from "../config/damage-types.js";
 import { PersonaCalendar } from "./social/persona-calendar.js";
 import { ArrayCorrector } from "./item/persona-item.js";
 import { BooleanComparisonPC } from "../config/boolean-comparison.js";
-import { Triggered } from "../config/precondition-types.js";
 import { PToken } from "./combat/persona-combat.js";
 import { ConditionTarget } from "../config/precondition-types.js";
 import { PersonaActor } from "./actor/persona-actor.js";
@@ -39,6 +38,7 @@ import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import {ConsequenceAmountResolver} from "./conditionalEffects/consequence-amount.js";
 import {PreconditionConverter} from "./migration/convertPrecondition.js";
+import {PersonaAE} from "./active-effect.js";
 
 export function getActiveConsequences(condEffect: SourcedConditionalEffect, situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
 	const source = condEffect.source;
@@ -479,9 +479,7 @@ export function combatResultBasedNumericTarget(condition: CombatResultComparison
 	return count;
 }
 
-function triggerComparison(condition: DeepReadonly<Triggered>, situation: Situation) : boolean {
-	if (!("trigger" in situation)) {return false;}
-	if (!condition.trigger) {return false;}
+function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}, situation: Situation) : boolean {
 	if (condition.trigger != situation.trigger) {return false;}
 	switch (condition.trigger) {
 		case "on-attain-tarot-perk":
@@ -525,8 +523,25 @@ function triggerComparison(condition: DeepReadonly<Triggered>, situation: Situat
 			return true;
 		case "on-roll":
 			return true;
+		case "on-active-effect-time-out": {
+			if (situation.trigger != condition.trigger) {return false;}
+			const effect = PersonaDB.findAE(situation.activeEffect);
+			if (!effect) {return false;}
+			switch (condition.timeoutTarget) {
+				case "status":
+					return effect.statusId == condition.statusId;
+				case "self":
+					if (! (condition.realSource instanceof PersonaAE)) { return false;}
+					return effect == condition.realSource;
+				case "flag":
+					return effect.flagId == condition.flagId;
+				default:
+					condition satisfies never;
+					return false;
+			}
+		}
 		default:
-			condition.trigger satisfies never;
+			condition satisfies never;
 			return false;
 	}
 }

@@ -64,14 +64,37 @@ type  TriggeredEvents = SimpleTrigger
 ;
 
 type SimpleTrigger = {
-	trigger ?: Exclude<Trigger, NonSimpleTrigger["trigger"]>,
+	trigger : Exclude<Trigger, NonSimpleTrigger["trigger"]>,
 }
 
 type NonSimpleTrigger =
 	onInflictStatus
 	| onTarotPerk
 	| ClockTickTrigger
+	| StatusTimeOut
 ;
+
+type StatusTimeOut = {
+	trigger: "on-active-effect-time-out",
+} & (
+	OwningAETimeout
+	| StatusTimeout
+	| FlagTimeout
+);
+
+type OwningAETimeout = {
+	timeoutTarget: "self",
+}
+
+type StatusTimeout = {
+	timeoutTarget: "status",
+	statusId: StatusEffectId,
+}
+
+type FlagTimeout = {
+	timeoutTarget: "flag";
+	flagId: string;
+}
 
 type onInflictStatus = {
 	trigger: "on-inflict-status" | "pre-inflict-status",

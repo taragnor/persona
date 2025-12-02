@@ -12,6 +12,7 @@ import { CombatResult } from "../module/combat/combat-result.js";
 import { CombatTriggerTypes } from "./triggers.js";
 import { ValidAttackers } from "../module/combat/persona-combat.js";
 import {RealDamageType} from "./damage-types.js";
+import {PersonaAE} from "../module/active-effect.js";
 
 export type UserSituation = {
 	user: UniversalActorAccessor<ValidAttackers>;
@@ -24,6 +25,7 @@ type TriggerSituation = TriggerSituation_base & (
 	| ExplorationTrigger
 	| ClockTrigger
 	| OnRollTrigger
+	| OnAETimeoutTrigger
 );
 
 type ExplorationTrigger = {
@@ -40,6 +42,14 @@ export type OnRollTrigger = {
 type ClockTrigger = {
 	trigger: "on-clock-tick" | "on-clock-change",
 	triggeringClockId: string,
+}
+
+type OnAETimeoutTrigger = {
+	trigger: "on-active-effect-time-out",
+	activeEffect: UniversalAEAccessor<PersonaAE>,
+	user: UniversalActorAccessor<ValidAttackers>,
+	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,
+	activeDuration: U<number>,  //number of turns active
 }
 
 type CombatTrigger = (

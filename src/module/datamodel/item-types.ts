@@ -58,7 +58,6 @@ function treasureEntry() {
 		maxLevel: new num({initial: 0, integer: true}),
 		rarity: new txt({choices: PROBABILITIES, initial:"normal"}),
 	});
-
 }
 
 function weeklyAvailability() {

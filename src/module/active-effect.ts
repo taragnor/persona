@@ -9,6 +9,7 @@ import { PersonaError } from "./persona-error.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import {ModifierTarget} from "../config/item-modifiers.js";
 import {ModifierListItem} from "./combat/modifier-list.js";
+import {TriggeredEffect} from "./triggered-effect.js";
 
 
 export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implements ModifierContainer<PersonaAE> {
@@ -132,7 +133,6 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 				break;
 		}
 		await this.setFlag("persona", "duration", newDuration);
-
 	}
 
 	async setDuration(duration: StatusDuration) : Promise<void> {
@@ -158,7 +158,6 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 			}
 			default:
 				break;
-
 		}
 		await this.setFlag("persona", "duration", duration);
 	}
@@ -211,7 +210,6 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 				});
 				const consequences : SourcedConditionalEffect["consequences"] = eff.consequences.map( cons => { return { ...cons, owner: sourceActorAcc, source: this, realSource: this, };
 				});
-
 				return {
 					...eff,
 					conditions,
@@ -268,31 +266,48 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		}
 	}
 
+	/** when the statuses natural duration ends*/
+	async endStatusTimeOut() : Promise<void> {
+		if (this.parent instanceof PersonaActor && this.parent.isValidCombatant()) {
+			const activeDuration = game.combat && "amount" in this.statusDuration ? game.combat.round - this.duration.startRound : undefined ;
+			const situation : Situation = {
+				trigger: "on-active-effect-time-out",
+				triggeringUser: game.user,
+				activeEffect: this.accessor,
+				user: this.parent.accessor,
+				triggeringCharacter: this.parent.accessor,
+				activeDuration
+			};
+			await TriggeredEffect.autoApplyTrigger("on-active-effect-time-out", this.parent, situation);
+		}
+	await this.delete();
+	}
+
 	/** returns true if the status expires*/
 	async onStartCombatTurn() : Promise<boolean> {
 		const duration = this.statusDuration;
 		if (this.statuses.has("blocking")) {
-			await this.delete();
+			await this.endStatusTimeOut();
 			return true;
 		}
 		if (this.statuses.has("bonus-action")) {
-			await this.delete();
+			await this.endStatusTimeOut();
 			return true;
 		}
 
 		switch (duration.dtype) {
 			case "instant":
-				await this.delete();
+				await this.endStatusTimeOut();
 				return true;
 			case "X-rounds":
 			case "3-rounds":
 				if (this.duration.startRound + duration.amount >= (game.combat!.round ?? 0)) {
 					return false;
 				}
-				await this.delete();
+				await this.endStatusTimeOut();
 				return true;
 			case "USoNT":
-				await this.delete();
+				await this.endStatusTimeOut();
 				return true;
 			case "save": {
 				const owner = this.parent;
@@ -361,7 +376,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		if (!actor.isValidCombatant()) {return false;}
 		const DC = this.statusSaveDC;
 		const bundle = await PersonaRoller.rollSave(actor, { DC, label: this.name, saveVersus: this.statusId, rollTags: [] } );
-		if (bundle.success) { await this.delete();}
+		if (bundle.success) { await this.endStatusTimeOut();}
 		await bundle.toModifiedMessage(true);
 		return bundle.success ?? false;
 	}

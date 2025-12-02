@@ -30,9 +30,14 @@ export const NONCOMBAT_TRIGGER_LIST = [
 	"on-active-scene-change",
 ] as const;
 
+export const SHARED_TRIGGERS = [
+	"on-active-effect-time-out",
+] as const;
+
 export const TRIGGER_LIST = [
 	...COMBAT_TRIGGER_LIST,
 	...NONCOMBAT_TRIGGER_LIST,
+	...SHARED_TRIGGERS,
 ] as const;
 
 export const TRIGGERS = HTMLTools.createLocalizationObject(TRIGGER_LIST, "persona.triggers");
