@@ -1,47 +1,31 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { damageNew } from "./power-dm.js";
-import { powerOnlyUsableProps } from "./power-dm.js";
-import { triEffects } from "./power-dm.js";
+import { damage, damageNew, effects, powerCost, powerOnlyUsableProps, powerSpecific, triEffects, UsablePowerProps } from "./power-dm.js";
 import { CONSUMABLE_SUBTYPE_LIST } from "../../config/equip-slots.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../../config/roll-tags.js";
-import { Consumable, InvItem, SocialCard, Weapon } from "../item/persona-item.js";
-import { UniversalModifier } from "../item/persona-item.js";
+import { Consumable, InvItem, SocialCard, UniversalModifier, Weapon } from "../item/persona-item.js";
 import { UNIVERSAL_MODIFIERS_TYPE_LIST } from "./universal-modifiers-types.js";
-import { frequencyConvert } from "../../config/frequency.js";
-import { FREQUENCY } from "../../config/frequency.js";
+import { FREQUENCY, frequencyConvert } from "../../config/frequency.js";
 import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
-import { CardRoll } from "../../config/social-card-config.js";
+import { CardRoll, Opportunity, SOCIAL_CARD_TYPES_LIST, ThresholdOrDC, TokenSpend } from "../../config/social-card-config.js";
 import { ArrayCorrector } from "../item/persona-item.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { EQUIPMENT_TAGS_LIST } from "../../config/equipment-tags.js";
 import { Power } from "../item/persona-item.js";
-import { TokenSpend } from "../../config/social-card-config.js";
-import { ThresholdOrDC } from "../../config/social-card-config.js";
-import { Opportunity } from "../../config/social-card-config.js";
 const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, FilePathField: file } = foundry.data.fields;
 
-import { SOCIAL_CARD_TYPES_LIST } from "../../config/social-card-config.js";
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
 import { CharacterClassDM } from "./character-class-dm.js";
-import { UsablePowerProps } from "./power-dm.js";
-import { powerCost } from "./power-dm.js";
-import { powerSpecific } from "./power-dm.js";
-import { damage } from "./power-dm.js";
 import { EQUIP_SLOTS_LIST } from "../../config/equip-slots.js";
-import { effects } from "./power-dm.js";
 import { CAMEO_TYPES_LIST } from "../../config/cameo-types.js";
 import { PERK_TYPES_LIST } from "../../config/perk-types.js";
 import { TREASURE_TABLES } from "../../config/treasure-tables.js";
 import { PROBABILITIES } from "../../config/probability.js";
-import {DamageCalculator} from "../combat/damage-calc.js";
 import {TAG_TYPES} from "../../config/tags-general.js";
 import {PreconditionConverter} from "../migration/convertPrecondition.js";
 import {ConsequenceConverter} from "../migration/convertConsequence.js";
+import {DamageSystem} from "../combat/damage-system.js";
 
 function itemBase() {
 	return {
@@ -108,7 +92,7 @@ class WeaponDM extends foundry.abstract.TypeDataModel {
 		if (data?.damageNew == undefined && data?.damage?.low > 0) {
 			data.damageNew = {
 				weaponLevel: data.damage.low -1,
-				baseAmt: DamageCalculator.convertFromOldLowDamageToNewBase(data?.damage?.low ?? 0),
+				baseAmt: DamageSystem.convertFromOldLowDamageToNewBase(data?.damage?.low ?? 0),
 				extraVariance: 0,
 			};
 			data.itemLevel = data.damage.low - 1;

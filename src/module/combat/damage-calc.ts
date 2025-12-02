@@ -333,28 +333,6 @@ function signed(num: number) : string {
 	else {return `${num}`;}
 }
 
-export class DamageCalculator {
-	// static BASE_VARIANCE = 2 as const;
-
-	static convertFromOldLowDamageToNewBase(low: number) : number {
-		return this.getWeaponDamageByWpnLevel(low-1);
-	}
-
-	static getWeaponDamageByWpnLevel(lvl: number) : number {
-		const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
-		if (val) {return val;}
-		return 0;
-	}
-
-	static getArmorDRByArmorLevel(lvl: number) : number {
-		const ARMOR_DIVISOR = 0.90;
-		const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
-		if (val) {return Math.floor(val * ARMOR_DIVISOR);}
-		return 0;
-	}
-
-}
-
 const INSTANT_KILL_LEVELS_LIST= [
 	"none",
 	"low",
@@ -387,23 +365,6 @@ export const AILMENT_BONUS_LEVELS : Record <InstantKillLevel, number> = {
 export type NewDamageParams = {
 	baseAmt: number,
 	extraVariance: number,
-};
-
-//formual start at 6, then to get further levels , add (newlvl+1) to previous value
-const WEAPON_LEVEL_TO_DAMAGE: Record<number, number> = {
-	0: 10,
-	1: 14,
-	2: 18,
-	3: 24,
-	4: 32,
-	5: 42,
-	6: 54,
-	7: 68,
-	8: 84,
-	9: 102,
-	10: 122,
-	11: 144,
-	12: 168,
 };
 
 

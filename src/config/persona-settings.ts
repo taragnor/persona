@@ -42,7 +42,6 @@ export class PersonaSettings {
 			ui.notifications.warn("XP lock is on and this seems to be a real game, no XP is being awarded");
 		}
 		return xpLock;
-		// return !realGame && xpLock;
 	}
 
 	static autoEndTurn() : boolean {

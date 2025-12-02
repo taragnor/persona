@@ -10,7 +10,7 @@ export class PercentBasedDamageSystem extends DamageSystem {
 		const dtype = power.getDamageType(userPersona);
 		const calc = new DamageCalculation(dtype);
 		const str = this.strDamageBonus(userPersona);
-		const weaponDmg = userPersona.wpnDamage();
+		const weaponDmg = this.weaponDamage(userPersona);
 		const skillDamageMult = this.weaponSkillDamageMult(power);
 		const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
 		const bonusVariance = userPersona.getBonusVariance().total(situation);

@@ -48,7 +48,7 @@ export class DamageSystem implements DamageInterface {
 		const dtype = power.getDamageType(userPersona);
 		const calc = new DamageCalculation(dtype);
 		const str = this.strDamageBonus(userPersona);
-		const weaponDmg = userPersona.wpnDamage();
+		const weaponDmg = this.weaponDamage(userPersona);
 		const skillDamage = this.weaponSkillDamage(power);
 		const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
@@ -150,12 +150,46 @@ export class DamageSystem implements DamageInterface {
 		}
 	}
 
+	weaponDamage(persona: Persona) : NewDamageParams {
+		if (persona.user.isShadow()) {
+			return {
+				baseAmt: DamageSystem.getWeaponDamageByWpnLevel(Math.floor(persona.level / 10)),
+				extraVariance: 0
+			};
+		} else {
+			const wpn = persona.user.weapon;
+			if (!wpn) {
+				return  {baseAmt: 0, extraVariance: 0};
+			}
+			return wpn.baseDamage();
+		}
+	}
+
+	static convertFromOldLowDamageToNewBase(low: number) : number {
+		return this.getWeaponDamageByWpnLevel(low-1);
+	}
+
+	 static getWeaponDamageByWpnLevel(lvl: number) : number {
+		const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
+		if (val) {return val;}
+		return 0;
+	}
+
+	static getArmorDRByArmorLevel(lvl: number) : number {
+		const ARMOR_DIVISOR = 0.90;
+		const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
+		if (val) {return Math.floor(val * ARMOR_DIVISOR);}
+		return 0;
+	}
+
 }
 
 export const DAMAGE_SYSTEM = new DamageSystem();
 
 export interface DamageInterface {
 	getDamage(power: Usable,attackerPersona: Persona, situation ?: Situation, overrideDamageType ?: DamageType) : DamageCalculation;
+
+
 }
 
 const DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE = {
@@ -179,6 +213,23 @@ const DAMAGE_LEVEL_CONVERT_WEAPON = {
 	"severe": {extraVariance: 3, baseAmt: 95},
 	"colossal": {extraVariance: 4, baseAmt: 140},
 } as const satisfies Readonly<Record<ConvertableDamageLevel, NewDamageParams>> ;
+
+//formual start at 6, then to get further levels , add (newlvl+1) to previous value
+const WEAPON_LEVEL_TO_DAMAGE: Record<number, number> = {
+	0: 10,
+	1: 14,
+	2: 18,
+	3: 24,
+	4: 32,
+	5: 42,
+	6: 54,
+	7: 68,
+	8: 84,
+	9: 102,
+	10: 122,
+	11: 144,
+	12: 168,
+};
 
 
 export type ConvertableDamageLevel = Exclude<DamageLevel, "-" | "fixed">;

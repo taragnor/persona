@@ -27,9 +27,9 @@ import {ValidAttackers} from "./combat/persona-combat.js";
 import {Power, Talent, Focus} from "./item/persona-item.js";
 import {PersonaTag} from "../config/creature-tags.js";
 import {Defense} from "../config/defense-types.js";
-import {DamageCalculator, NewDamageParams} from "./combat/damage-calc.js";
 import {PersonaStat} from "../config/persona-stats.js";
 import {Calculation, EvaluatedCalculation} from "./utility/calculation.js";
+import {DamageSystem} from "./combat/damage-system.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
 	#combatStats: U<PersonaCombatStats>;
@@ -1041,26 +1041,6 @@ realTags() : Tag[] {
 	return ret;
 }
 
-wpnDamage() : NewDamageParams {
-	switch (this.user.system.type) {
-		case "pc": case "npcAlly": {
-			const wpn = this.user.weapon;
-			if (!wpn) {
-				return  {baseAmt: 0, extraVariance: 0};
-			}
-			return wpn.baseDamage();
-		}
-		case "shadow":
-			return {
-				baseAmt: DamageCalculator.getWeaponDamageByWpnLevel(Math.floor(this.level / 10)),
-				extraVariance: 0
-			};
-		default:
-			this.user.system satisfies never;
-			return {baseAmt: 0, extraVariance: 0};
-	}
-}
-
 highestPowerSlotUsable() : number {
 	if (this.user.isShadow()) {return 99;}
 	const level = Math.floor(this.user.level / 10) +1;
@@ -1081,7 +1061,7 @@ highestPowerSlotUsable() : number {
 
 armorDR() : number {
 	if (this.user.isShadow()) {
-		const DR =  DamageCalculator.getArmorDRByArmorLevel(Math.floor(this.level /10));
+		const DR =  DamageSystem.getArmorDRByArmorLevel(Math.floor(this.level /10));
 		return DR;
 	}
 	const armor = this.user.equippedItems().find(x => x.isInvItem() && x.system.slot == "body") as U<InvItem>;

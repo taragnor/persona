@@ -1,6 +1,6 @@
 import { GrowthCalculator } from '../utility/growth-calculator.js';
 import { STATUS_AILMENT_SET } from '../../config/status-effects.js';
-import { AILMENT_BONUS_LEVELS, DamageCalculator, INSTANT_KILL_CRIT_BOOST, NewDamageParams } from '../combat/damage-calc.js';
+import { AILMENT_BONUS_LEVELS, INSTANT_KILL_CRIT_BOOST, NewDamageParams } from '../combat/damage-calc.js';
 import { PowerCostCalculator } from '../power-cost-calculator.js';
 import { StatusEffectId } from '../../config/status-effects.js';
 import { CATEGORY_SORT_ORDER, DAMAGE_ICONS, ITEM_ICONS, ItemCategory } from '../../config/icons.js';
@@ -56,7 +56,7 @@ import {EnergyClassCalculator} from '../calculators/shadow-energy-cost-calculato
 import {ConsequenceAmountResolver} from '../conditionalEffects/consequence-amount.js';
 import {EnchantedTreasureFormat, TreasureSystem} from '../exploration/treasure-system.js';
 import {Calculation} from '../utility/calculation.js';
-import {DAMAGE_SYSTEM, DamageInterface, DamageSystem} from '../combat/damage-system.js';
+import {DAMAGE_SYSTEM, DamageInterface,  DamageSystem} from '../combat/damage-system.js';
 import {ALT_DAMAGE_SYSTEM} from '../combat/alt-damage-system.js';
 
 declare global {
@@ -1391,13 +1391,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			if (this.system.damageNew.baseAmt > 0) {return this.system.damageNew;}
 			if (this.system.damageNew.weaponLevel > 0) {
 				return {
-					baseAmt: DamageCalculator.getWeaponDamageByWpnLevel(this.system.damageNew.weaponLevel),
+					baseAmt: DamageSystem.getWeaponDamageByWpnLevel(this.system.damageNew.weaponLevel),
 					extraVariance: this.system.damageNew.extraVariance ?? 0,
 				};
 			}
 			if (this.itemLevel() > 0) {
 				return {
-					baseAmt: DamageCalculator.getWeaponDamageByWpnLevel(this.itemLevel()),
+					baseAmt: DamageSystem.getWeaponDamageByWpnLevel(this.itemLevel()),
 					extraVariance: this.system.damageNew.extraVariance ?? 0,
 				};
 			}
@@ -1416,8 +1416,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const diff = high-low;
 		let extraVariance = 0;
 		if (diff >=4) { extraVariance= 1;}
-		return {extraVariance,
-			baseAmt: DamageCalculator.convertFromOldLowDamageToNewBase(low)
+		return {
+			extraVariance,
+			baseAmt: DamageSystem.convertFromOldLowDamageToNewBase(low),
 		};
 	}
 
@@ -1907,13 +1908,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	armorDR(this: InvItem) : number {
 		if (this.system.slot != "body") {return 0;}
 		if (this.system.armorLevel > 0) {
-			return DamageCalculator.getArmorDRByArmorLevel(this.system.armorLevel);
+			return DamageSystem.getArmorDRByArmorLevel(this.system.armorLevel);
 		}
 		if (this.system.armorDR > 0) {
 			return this.system.armorDR;
 		}
 		if (this.itemLevel() > 0) {
-			return DamageCalculator.getArmorDRByArmorLevel(this.itemLevel());
+			return DamageSystem.getArmorDRByArmorLevel(this.itemLevel());
 		}
 		return 0;
 	}
