@@ -2207,7 +2207,7 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 				PersonaError.softFail(`Can't get odd even for damage of ${power.displayedName.toString() }` );
 				return [];
 			}
-			dmgCalc = power.getDamage(attacker.persona(), situation, cons.damageType);
+			dmgCalc = power.damage.getDamage(power, attacker.persona(), situation, cons.damageType);
 			const evenRoll = (situation.naturalRoll ?? 0) % 2 == 0;
 			if ( cons.damageSubtype == "high" || (cons.damageSubtype == "odd-even" && evenRoll)) {
 				dmgCalc.setApplyEvenBonus();
@@ -3028,7 +3028,7 @@ static individualContributionToAllOutAttackDamage(actor: ValidAttackers, situati
 		PersonaError.softFail("Can't find Basic attack power");
 		return new DamageCalculation("physical");
 	}
-	const damage = basicAttack.getDamage(actor.persona(), situation);
+	const damage = basicAttack.damage.getDamage(basicAttack, actor.persona(), situation);
 	return damage;
 }
 

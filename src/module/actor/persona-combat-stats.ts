@@ -26,8 +26,6 @@ export class PersonaCombatStats {
 	static BASE_AILMENT_DEFENSE = 18 as const;
 	static INSTANT_DEATH_DIVISOR = 5 as const;
 	static CRITICAL_HIT_DIVISOR= 5 as const;
-	static WEAPON_DAMAGE_MULT = 1.75 as const;
-	static MAGIC_DAMAGE_MULT = 1.75 as const;
 	static ENDURANCE_DR_MULTIPLIER = 0.005;
 
 	constructor (persona: Persona) {
@@ -171,12 +169,6 @@ export class PersonaCombatStats {
 		return calc;
 	}
 
-	strDamageBonus() : Calculation {
-		const calc = new Calculation(0, 2);
-		return calc
-			.add(0, this.strength + 0, `${this.persona.displayedName} Strength`, "add")
-			.add(1, PersonaCombatStats.WEAPON_DAMAGE_MULT, `Weapon Strength Damage Multiplier`, "multiply");
-	}
 
 	lukCriticalResist() : Calculation {
 		const calc = new Calculation(0, 2);
@@ -230,12 +222,12 @@ export class PersonaCombatStats {
 		return calc;
 	}
 
-	magDamageBonus() : Calculation {
-		const calc = new Calculation(0);
-		return calc
-			.add(0, this.magic, `${this.persona.displayedName} Magic`, "add")
-			.add(1, PersonaCombatStats.MAGIC_DAMAGE_MULT, `Magic Damage Multiplier`, "multiply");
-	}
+	// magDamageBonus() : Calculation {
+	// 	const calc = new Calculation(0);
+	// 	return calc
+	// 		.add(0, this.magic, `${this.persona.displayedName} Magic`, "add")
+	// 		.add(1, PersonaCombatStats.MAGIC_DAMAGE_MULT, `Magic Damage Multiplier`, "multiply");
+	// }
 
 	getPhysicalVariance() : number {
 		return 2 + Math.floor(this.strength / 5);

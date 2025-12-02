@@ -1,6 +1,6 @@
 import { GrowthCalculator } from '../utility/growth-calculator.js';
 import { STATUS_AILMENT_SET } from '../../config/status-effects.js';
-import { AILMENT_BONUS_LEVELS, DamageCalculation, DamageCalculator, INSTANT_KILL_CRIT_BOOST, NewDamageParams } from '../combat/damage-calc.js';
+import { AILMENT_BONUS_LEVELS, DamageCalculator, INSTANT_KILL_CRIT_BOOST, NewDamageParams } from '../combat/damage-calc.js';
 import { PowerCostCalculator } from '../power-cost-calculator.js';
 import { StatusEffectId } from '../../config/status-effects.js';
 import { CATEGORY_SORT_ORDER, DAMAGE_ICONS, ITEM_ICONS, ItemCategory } from '../../config/icons.js';
@@ -10,7 +10,7 @@ import { RealDamageType } from '../../config/damage-types.js';
 import { AttackResult } from '../combat/combat-result.js';
 import { EvaluatedDamage } from '../combat/damage-calc.js';
 import { PToken } from '../combat/persona-combat.js';
-import { DamageConsequence, ItemSelector } from '../../config/consequence-types.js';
+import { ItemSelector } from '../../config/consequence-types.js';
 import { Trigger } from '../../config/triggers.js';
 import { CombatResult } from '../combat/combat-result.js';
 import { ROLL_TAGS_AND_CARD_TAGS } from '../../config/roll-tags.js';
@@ -47,7 +47,6 @@ import { PersonaActor } from '../actor/persona-actor.js';
 import { SLOTTYPES } from '../../config/slot-types.js';
 import { ModifierListItem } from '../combat/modifier-list.js';
 import { ModifierTarget } from '../../config/item-modifiers.js';
-import { PowerType } from '../../config/effect-types.js';
 import { PC } from '../actor/persona-actor.js';
 import { Shadow } from '../actor/persona-actor.js';
 import { ITEMMODELS } from '../datamodel/item-types.js';
@@ -57,6 +56,7 @@ import {EnergyClassCalculator} from '../calculators/shadow-energy-cost-calculato
 import {ConsequenceAmountResolver} from '../conditionalEffects/consequence-amount.js';
 import {EnchantedTreasureFormat, TreasureSystem} from '../exploration/treasure-system.js';
 import {Calculation} from '../utility/calculation.js';
+import {DAMAGE_SYSTEM, DamageSystem} from '../combat/damage-system.js';
 
 declare global {
 	type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -64,9 +64,7 @@ declare global {
 
 export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE> {
 
-	// hpGrowthTable : U<GrowthCalculator>= new GrowthCalculator(1.02, 45, 2);
-	// mpGrowthTable: U<GrowthCalculator> = new GrowthCalculator(1.02, 30, 1.5);
-
+	static damage = new DamageSystem();
 
 	static #cache =  {
 		basicPCPowers: undefined as Power[] | undefined,
@@ -77,8 +75,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	cache: {
 		effects: AdvancedEffectsCache;
-		// effectsNull: ConditionalEffect[] | undefined;
-		// effectsMap: WeakMap<PersonaActor, ConditionalEffect[]>;
 		containsModifier: boolean | undefined;
 		containsTagAdd: boolean | undefined;
 		statsModified: Map<ModifierTarget, boolean>,
@@ -88,7 +84,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		mpCost: U<number>,
 		mpGrowthTable: U<GrowthCalculator>,
 		hpGrowthTable: U<GrowthCalculator>,
-
 	};
 
 	static cacheStats = {
@@ -114,11 +109,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
+	get damage() {
+		return DAMAGE_SYSTEM;
+	}
+
 	clearCache() {
 		this.cache = {
 			effects: PersonaItem.#newEffectsCache(),
-			// effectsNull: undefined,
-			// effectsMap: new WeakMap(),
 			containsModifier: undefined,
 			containsTagAdd: undefined,
 			statsModified: new Map(),
@@ -1425,77 +1422,77 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		};
 	}
 
-	getWeaponSkillDamage(this: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
-		const dtype = this.getDamageType(userPersona);
-		const calc= new DamageCalculation(dtype);
-		const str = userPersona.combatStats.strDamageBonus();
-		const weaponDmg = userPersona.wpnDamage();
-		const skillDamage = DamageCalculator.weaponSkillDamage(this);
-		const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
-		const bonusVariance = userPersona.getBonusVariance().total(situation);
-		const strRes = str.eval(situation);
-		calc.add('base', strRes.total, `${userPersona.publicName} Strength (${strRes.steps.join(" ,")})`);
-		const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
-		calc.add('base', weaponDmg.baseAmt, weaponName.toString());
-		calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Power Bonus`);
-		calc.add('base', bonusDamage, 'Bonus Damage');
-		const variance  = (DamageCalculator.BASE_VARIANCE + weaponDmg.extraVariance + skillDamage.extraVariance + bonusVariance );
-		const varianceMult = userPersona.combatStats.getPhysicalVariance();
-		calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` );
-		calc.setMinValue(1);
-		return calc ;
-	}
+	// getWeaponSkillDamage(this: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
+	// 	const dtype = this.getDamageType(userPersona);
+	// 	const calc= new DamageCalculation(dtype);
+	// 	const str = userPersona.combatStats.strDamageBonus();
+	// 	const weaponDmg = userPersona.wpnDamage();
+	// 	const skillDamage = DamageCalculator.weaponSkillDamage(this);
+	// 	const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
+	// 	const bonusVariance = userPersona.getBonusVariance().total(situation);
+	// 	const strRes = str.eval(situation);
+	// 	calc.add('base', strRes.total, `${userPersona.publicName} Strength (${strRes.steps.join(" ,")})`);
+	// 	const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
+	// 	calc.add('base', weaponDmg.baseAmt, weaponName.toString());
+	// 	calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Power Bonus`);
+	// 	calc.add('base', bonusDamage, 'Bonus Damage');
+	// 	const variance  = (DamageCalculator.BASE_VARIANCE + weaponDmg.extraVariance + skillDamage.extraVariance + bonusVariance );
+	// 	const varianceMult = userPersona.combatStats.getPhysicalVariance();
+	// 	calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` );
+	// 	calc.setMinValue(1);
+	// 	return calc ;
+	// }
 
-	getMagicSkillDamage(this: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: Situation): DamageCalculation {
-		const persona = userPersona;
-		const magicDmg = userPersona.combatStats.magDamageBonus();
-		// const magicDmg = Math.floor(persona.magic);
-		const skillDamage = DamageCalculator.magicSkillDamage(this);
-		const damageBonus =  persona.getBonuses('magDmg').total(situation);
-		const bonusVariance = userPersona.getBonusVariance().total(situation);
-		const dtype = this.getDamageType(userPersona);
-		const calc= new DamageCalculation(dtype);
-		const resMag = magicDmg.eval(situation);
-		calc.add('base', resMag.total, `${userPersona.publicName} Magic (${resMag.steps.join(" ,")})`, );
-		calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Damage`);
-		calc.add('base', damageBonus, 'Bonus Damage');
-		const variance  = (DamageCalculator.BASE_VARIANCE + skillDamage.extraVariance + bonusVariance );
-		const varianceMult = userPersona.combatStats.getMagicalVariance();
-		calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` );
-		calc.setMinValue(1);
-		return calc;
-	}
+	// getMagicSkillDamage(this: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: Situation): DamageCalculation {
+	// 	const persona = userPersona;
+	// 	const magicDmg = userPersona.combatStats.magDamageBonus();
+	// 	// const magicDmg = Math.floor(persona.magic);
+	// 	const skillDamage = DamageCalculator.magicSkillDamage(this);
+	// 	const damageBonus =  persona.getBonuses('magDmg').total(situation);
+	// 	const bonusVariance = userPersona.getBonusVariance().total(situation);
+	// 	const dtype = this.getDamageType(userPersona);
+	// 	const calc= new DamageCalculation(dtype);
+	// 	const resMag = magicDmg.eval(situation);
+	// 	calc.add('base', resMag.total, `${userPersona.publicName} Magic (${resMag.steps.join(" ,")})`, );
+	// 	calc.add('base', skillDamage.baseAmt, `${this.displayedName.toString()} Damage`);
+	// 	calc.add('base', damageBonus, 'Bonus Damage');
+	// 	const variance  = (DamageCalculator.BASE_VARIANCE + skillDamage.extraVariance + bonusVariance );
+	// 	const varianceMult = userPersona.combatStats.getMagicalVariance();
+	// 	calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` );
+	// 	calc.setMinValue(1);
+	// 	return calc;
+	// }
 
-	getDamage(this:Usable , userPersona: Persona, situation: Situation = {user: userPersona.user.accessor , usedPower: this.accessor, hit: true,  attacker: userPersona.user.accessor}, typeOverride : DamageConsequence['damageType'] = 'none') : DamageCalculation {
-		//TODO: handle type override check to see if power damage is by-power or has other type
-		if (!typeOverride || typeOverride == 'by-power') {
-			if (this.system.dmg_type == 'none') {
-				return new DamageCalculation('none');
-			}
-		}
-		if (this.isPower() && this.system.damageLevel == 'none') {
-			return new DamageCalculation('none');
-		}
-		const subtype : PowerType  = this.system.type == 'power' ? this.system.subtype : 'standalone';
-		switch(subtype) {
-			case 'weapon' : {
-				return (this as ItemSubtype<Power, 'weapon'>).getWeaponSkillDamage(userPersona, situation);
-			}
-			case 'magic': {
-				return (this as ItemSubtype<Power, 'magic'>).getMagicSkillDamage(userPersona, situation);
-			}
-			case 'standalone': {
-				const dmg = this.system.damage;
-				const dtype = this.system.dmg_type == 'by-power' ? 'untyped' : this.system.dmg_type;
-				const calc = new DamageCalculation(dtype);
-				calc.add('base', dmg.low, `${this.displayedName.toString()} base damage`);
-				calc.add('evenBonus', dmg.high - dmg.low, `${this.displayedName.toString()} Even Bonus Damage`);
-				return calc;
-			}
-			default:
-				return new DamageCalculation('none');
-		}
-	}
+	//getDamage(this:Usable , userPersona: Persona, situation: Situation = {user: userPersona.user.accessor , usedPower: this.accessor, hit: true,  attacker: userPersona.user.accessor}, typeOverride : DamageConsequence['damageType'] = 'none') : DamageCalculation {
+	//	//TODO: handle type override check to see if power damage is by-power or has other type
+	//	if (!typeOverride || typeOverride == 'by-power') {
+	//		if (this.system.dmg_type == 'none') {
+	//			return new DamageCalculation('none');
+	//		}
+	//	}
+	//	if (this.isPower() && this.system.damageLevel == 'none') {
+	//		return new DamageCalculation('none');
+	//	}
+	//	const subtype : PowerType  = this.system.type == 'power' ? this.system.subtype : 'standalone';
+	//	switch(subtype) {
+	//		case 'weapon' : {
+	//			return (this as ItemSubtype<Power, 'weapon'>).getWeaponSkillDamage(userPersona, situation);
+	//		}
+	//		case 'magic': {
+	//			return (this as ItemSubtype<Power, 'magic'>).getMagicSkillDamage(userPersona, situation);
+	//		}
+	//		case 'standalone': {
+	//			const dmg = this.system.damage;
+	//			const dtype = this.system.dmg_type == 'by-power' ? 'untyped' : this.system.dmg_type;
+	//			const calc = new DamageCalculation(dtype);
+	//			calc.add('base', dmg.low, `${this.displayedName.toString()} base damage`);
+	//			calc.add('evenBonus', dmg.high - dmg.low, `${this.displayedName.toString()} Even Bonus Damage`);
+	//			return calc;
+	//		}
+	//		default:
+	//			return new DamageCalculation('none');
+	//	}
+	//}
 
 	/** used for damage calculation estaimate for char sheet*/
 	async generateSimulatedResult(this: Usable, user: ValidAttackers, situation: AttackResult['situation']) : Promise<CombatResult | undefined>;
