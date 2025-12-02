@@ -200,7 +200,7 @@ export class CombatResult  {
 					const attacker = PersonaDB.findToken(atkResult.attacker).actor;
 					status_damage = attacker
 						? (power as Usable)
-						.damage.getDamage(power as Usable, attacker.persona())
+							.damage.getDamage(power as Usable, attacker.persona())
 						.eval()
 						.hpChange ?? 0
 						: 0;

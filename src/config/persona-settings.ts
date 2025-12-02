@@ -1,5 +1,4 @@
 import { WEATHER_TYPES } from "./weather-types.js";
-import { PersonaActor } from "../module/actor/persona-actor.js";
 
 export const SYSTEMNAME = `persona` as const;
 export const SYSTEMPATH = `systems/${SYSTEMNAME}` as const;
@@ -86,6 +85,15 @@ const SETTINGS = {
 		default: false,
 	},
 
+	"alternateDamageSystem" : {
+		name: "Alternate Damage System",
+		hint: "Use Alternate Damage System (multiplier based)",
+		scope: "world",
+		restricted: true,
+		config: true,
+		type :Boolean,
+		default: false,
+	},
 
 	"autoApplyCombatResults" : {
 		name: "Auto Apply Combat Results",
@@ -147,16 +155,6 @@ const SETTINGS = {
 		choices: WEATHER_TYPES,
 		default: "cloudy",
 		type: String,
-	},
-
-	"damageMult": {
-		name: "Damage Multiplier",
-		hint: "Use New Damage Multiplier system",
-		scope: "world",
-		restricted: true,
-		config: true,
-		type: Boolean,
-		default: true,
 	},
 
 	"searchReminder": {
