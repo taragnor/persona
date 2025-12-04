@@ -12,7 +12,6 @@ declare global {
 
 }
 
-import { SharedDialog } from "./utility/shared-dialog.js";
 import { Tooltip } from "./tooltip.js";
 import { TarotPrinter } from "./printers/tarot-list.js";
 import { PowerPrinter } from "./printers/power-list.js";
@@ -52,6 +51,7 @@ import { Heartbeat } from "./utility/heartbeat.js";
 import {PersonaTagSheet} from "./item/sheets/tag-sheet.js";
 import {TagPrinter} from "./printers/tag-printer.js";
 import {EnhancedActorDirectory} from "./enhanced-directory/enhanced-directory.js";
+import {PersonaPrinter} from "./printers/persona-list.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -123,6 +123,7 @@ Hooks.once("init", function() {
 	TarotPrinter.init();
 	TagPrinter.init();
 	Tooltip.init();
+	PersonaPrinter.init();
 	EnhancedActorDirectory.init("systems/persona");
 });
 

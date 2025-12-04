@@ -984,5 +984,19 @@ export class PersonaHandleBarsHelpers {
 			const sheet = actor.sheet as PCSheet;
 			return sheet.personaMoveSelector?.equals( persona) ?? false;
 		},
+
+		"fusionsInto" : function (shadow: Shadow) {
+			const fusionsInto = shadow.fusionsInto();
+			const fusionList = fusionsInto
+				.map( ([a, b])=> `${a.name}, ${b.name}`)
+				.join("\n");
+			const tooltip = fusionList;
+			const html = `
+			<span title="${tooltip}">
+				${fusionsInto.length}
+</span>
+`;
+			return new Handlebars.SafeString(html);
+		}
 	};
 } //end of class

@@ -1,0 +1,38 @@
+<div>
+	<section class="persona-list print-out">
+		<h1> Persona List </h1>
+		{{#each personaList as |arcanaList arcana|}}
+		<h2> {{arcana}} </h2>
+		<table>
+			<tr>
+				<th>
+					Name
+				</th>
+				<th>
+					Level
+				</th>
+				<th>
+					Fusions
+				</th>
+			</tr>
+			{{#each arcanaList as |shadow j|}}
+			<tr class="persona" data-persona-id="{{shadow.id}}">
+				<td>
+					<span class="name">
+						{{shadow.displayedName}}
+					</span>
+				</td>
+				<td>
+					{{shadow.startingLevel}}
+				</td>
+				<td>
+					{{fusionsInto shadow}}
+				</td>
+			</tr>
+			{{/each}}
+		</table>
+		{{/each}}
+	</section>
+</div>
+
+
