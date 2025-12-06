@@ -66,6 +66,51 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		return false;
 	}
 
+	get statusTags() : Tag[] {
+		return Array.from(
+			this.statuses.values()
+			.map( st => PersonaDB
+				.allTagLinks()
+				.get(st)
+			)
+			.filter( x=> x != undefined)
+		);
+	}
+
+	statusDurationString() : string {
+		const dur = this.statusDuration;
+		switch (dur.dtype) {
+			case "permanent":
+				return "Permanent";
+			case "expedition":
+				return "Ends on Return from MV";
+			case "X-exploration-turns":
+				return `Ends in ${dur.amount} exploration turns`;
+			case "combat":
+				return `Ends at end of Combat`;
+			case "save":
+				return `${dur.saveType} save ends`;
+			case "3-rounds":
+			case "X-rounds":
+				return `Lasts ${dur.amount ?? 3} rounds`;
+			case "X-days":
+				return `Lasts ${dur.amount} days`;
+			case "UEoNT":
+				return `Lasts until end of Next turn`;
+			case "USoNT":
+				return `Lasts until start of Next Turn`;
+			case "UEoT":
+				return `Lasts Until end of turn`;
+			case "instant":
+				return `Instant`;
+			case "anchored":
+				return `Special non-standard Duration`;
+			default:
+				dur satisfies never;
+				return `ERROR`;
+		}
+	}
+
 	get isDistracting() : boolean {
 		return this.statusHasTag("distracting");
 	}
@@ -712,7 +757,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 
 	get flagId() : string | undefined {
 		const flag = this.getFlag<string>("persona", "flagId");
-		if (flag == undefined) {return flag;}
+		if (flag == undefined) {return undefined;}
 		return flag.toLowerCase();
 	}
 

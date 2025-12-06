@@ -1550,3 +1550,25 @@ nav.persona-tabs {
 li.fusion-option.disabled {
 	opacity: 0.5;
 }
+
+.active-statuses {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+}
+
+.active-statuses .status-effect {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+	padding: 5px;
+	flex: 0 10 auto;
+	max-width: 30%;
+	border: 1px solid #bfcbe0;
+	border-radius: 16px;
+	padding: 0.5em 0.5em;
+	background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%) !important;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}

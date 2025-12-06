@@ -2136,6 +2136,25 @@ get statusResists() : {id: string, img: string, local: string, val: string}[] {
 	return arr;
 }
 
+get printableActiveStatuses(): {name: string, description: string}[] {
+	const effects= this.effects.contents;
+	const statuses = effects
+		.filter( eff=> eff.isStatus)
+		.flatMap (eff => {
+			return eff.statusTags.map( stTag=> ({
+				name: stTag.name,
+				description: stTag.description.toString() + "\n" + eff.statusDurationString()
+			}));
+		});
+	const flags = effects
+		.filter( eff=> eff.isFlag() && eff.statusDuration.dtype != "permanent")
+		.map (eff => ({
+			name: eff.name,
+			description: eff.statusDurationString()
+		}));
+	return statuses.concat(flags);
+}
+
 isDMon() : boolean {
 	if (this.cache.isDMon) {return this.cache.isDMon;}
 	return this.cache.isDMon = this.isShadow() && (this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon"));

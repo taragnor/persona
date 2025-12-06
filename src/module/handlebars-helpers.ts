@@ -999,4 +999,5 @@ export class PersonaHandleBarsHelpers {
 			return new Handlebars.SafeString(html);
 		}
 	};
+
 } //end of class
