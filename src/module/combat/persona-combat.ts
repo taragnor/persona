@@ -99,12 +99,27 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const combatants = this.combatants
 			.filter( c => c.actor != undefined
 				&& !this.hasCombatantRanStartCombatTrigger(c));
-		for (const comb of combatants) {
-			await this.runCombatantStartCombatTriggers(comb);
+		const promises = combatants.map( comb => this.runCombatantStartCombatTriggers(comb));
+		const resolutions = (await Promise.allSettled(promises));
+		const errors = resolutions
+			.filter( res => res.status=="rejected") 
+			.map (x => x.reason as unknown);
+		if (errors.length) {
+			console.error(errors);
+			ui.notifications.error("Errors on start Combat triggers");
+		}
+		const results = resolutions
+			.filter( res => res.status == "fulfilled")
+			.map(res => res.value)
+			.filter( res=> res != undefined);
+		if (results.length > 0) {
+			const CR = results.reduce ( (acc, res) => acc.addChained(res));
+			const header = `<h3> Start Combat Triggers</h3>`;
+			await CR.toMessage(header);
 		}
 	}
 
-	async runCombatantStartCombatTriggers(comb: Combatant<ValidAttackers>) {
+	async runCombatantStartCombatTriggers(comb: Combatant<ValidAttackers>) : Promise<U<FinalizedCombatResult>> {
 		if (!comb.actor) {return;}
 		if (!game.user.isGM) {return;}
 		if (this.hasCombatantRanStartCombatTrigger(comb)) {
@@ -119,9 +134,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		};
 		const CR = await TriggeredEffect
 			.autoTriggerToCR('on-combat-start', token.actor, situation);
-		if (CR) {
-			await CR?.toMessage('Triggered Effect', token.actor);
-		}
+		return CR?.finalize();
+		// if (CR) {
+		// 	await CR?.toMessage('Triggered Effect', token.actor);
+		// }
 	}
 
 	get validEngagementCombatants(): PersonaCombatant[] {
@@ -398,18 +414,24 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 	}
 
+	playerAlert( combatant: Combatant<PersonaActor>) : boolean {
+		if (combatant.actor?.isOwner && !game.user.isGM)
+		{
+			TurnAlert.alert();
+			return true;
+		}
+		return false;
+	}
+
 	async startCombatantTurn( combatant: Combatant<PersonaActor>){
 		if (!PersonaCombat.isPersonaCombatant(combatant)) {return;}
-		const baseRolls : Roll[] = [];
-		const rolls : RollBundle[] = [];
 		const actor = combatant.actor;
-		if (!actor) {return;}
-		if (actor.isOwner && !game.user.isGM)
-		{TurnAlert.alert();}
 		if (!game.user.isGM) {return;}
 		if (await this.checkEndCombat() == true) {
 			return;
 		}
+		const baseRolls : Roll[] = [];
+		const rolls : RollBundle[] = [];
 		await actor.refreshActions();
 		if (!combatant.actor?.hasPlayerOwner) {
 			await this.ensureSheetOpen(combatant);

@@ -254,41 +254,21 @@ export class FinalizedCombatResult {
 		return html;
 	}
 
-	async toMessage( effectName: string, initiator: PersonaActor | undefined, header ?: string) : Promise<ChatMessage> {
-		if (!header) {
-			header = await this.HTMLHeader(effectName, initiator);
+	async toMessage( header: string) : Promise<ChatMessage>;
+	async toMessage( effectName: string, initiator: U<PersonaActor>) : Promise<ChatMessage>;
+	async toMessage( effectNameOrHeader: string, initiator?: U<PersonaActor>) : Promise<ChatMessage> {
+		let header: string;
+		if (initiator) {
+			header = await this.HTMLHeader(effectNameOrHeader, initiator);
+		} else {
+			header = effectNameOrHeader;
 		}
-		// if (!initiator) {
-		// 	const speaker = ChatMessage.getSpeaker();
-		// 	const msg = await ChatMessage.create( {
-		// 		speaker,
-		// 		content: "Userless triggered action PLACEHOLDER" ,
-		// 	});
-		// 	try {
-		// 		await this.autoApplyResult();
-		// 	} catch {
-		// 		// await msg.setFlag("persona", "atkResult", this.toJSON());
-		// 		ui.notifications.error("ERROR with auto apply");
-		// 	}
-		// 	return msg;
-		// }
 		let initiatorToken : PToken | undefined;
 		if (game.combat) {
 			initiatorToken = initiator ? PersonaCombat.getPTokenFromActorAccessor(initiator.accessor) : undefined;
 		}
 		const rolls : RollBundle[] = this.attacks
 		.flatMap( (attack) => attack.atkResult.roll? [attack.atkResult.roll] : []);
-		// const attacks = this.attacks.map( (attack)=> {
-		// 	return {
-		// 		attackResult: attack.atkResult,
-		// 		changes: attack.changes,
-		// 	};
-		// });
-		// const manualApply = !PersonaSettings.autoApplyCombatResults() || !game.users.contents.some( x=> x.isGM && x.active);
-		// const attackerName = initiator.token?.name ?? initiatorToken?.name ?? initiator.displayedName;
-		// const attackerToken = initiatorToken;
-		// const attackerPersona = initiator.isValidCombatant() && (initiator.basePersona.equals(initiator.persona())) ? initiator.persona(): undefined;
-		// const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-body.hbs", {attackerToken, attackerPersona, attackerName, effectName,  attacks, escalation: 0, result: this, costs: this.costs, manualApply});
 		try {
 			await this.autoApplyResult();
 		} catch (e) {
@@ -321,16 +301,6 @@ export class FinalizedCombatResult {
 			user: game.user,
 			style: CONST?.CHAT_MESSAGE_STYLES.ROLL,
 		}, {});
-		// if (manualApply) {
-		// 	await chatMsg.setFlag("persona", "atkResult", this.toJSON());
-		// 	return chatMsg;
-		// }
-		// try {
-		// 	await this.autoApplyResult();
-		// } catch (e) {
-		// 	await chatMsg.setFlag("persona", "atkResult", this.toJSON());
-		// 	PersonaError.softFail("Error with automatic result application", e);
-		// }
 		return chatMsg;
 	}
 
