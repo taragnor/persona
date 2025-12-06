@@ -26,7 +26,6 @@ export class PersonaSettings {
 
 	static async set<T extends SETTINGKEYS>(settingName: T, value: SettingNameSpace["persona"][T]) {
 		await game.settings.set("persona", settingName, value);
-
 	}
 
 	static debugMode() : boolean {

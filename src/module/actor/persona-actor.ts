@@ -272,7 +272,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 					"system.combat.hpTracker.value" : this.hp,
 					"system.combat.hpTracker.max": mhp
 				});
-			console.log(`Tracker Value: ${this.system.combat.hpTracker.max}`);
+			if (PersonaSettings.debugMode()) {
+				console.log(`Tracker Value: ${this.system.combat.hpTracker.max}`);
+			}
 		}
 		this._trackerAntiLoop = false;
 	}

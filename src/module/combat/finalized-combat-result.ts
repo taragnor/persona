@@ -5,7 +5,6 @@ import { PersonaSounds } from "../persona-sounds.js";
 import { Metaverse } from "../metaverse.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { PersonaSFX } from "./persona-sfx.js";
-import { PersonaSettings } from "../../config/persona-settings.js";
 import { RollBundle } from "../persona-roll.js";
 import { PC } from "../actor/persona-actor.js";
 import { Shadow } from "../actor/persona-actor.js";
@@ -41,6 +40,7 @@ export class FinalizedCombatResult {
 	costs: ResolvedActorChange<ValidAttackers>[] = [];
 	sounds: {sound: ValidSound, timing: "pre" | "post"}[] = [];
 	globalOtherEffects: OtherEffect[] = [];
+	chainedResults: FinalizedCombatResult[]= [];
 
 	constructor( cr: CombatResult | null) {
 		//TODO: needs to be adapted
@@ -57,6 +57,7 @@ export class FinalizedCombatResult {
 		ret.tokenFlags = x.tokenFlags;
 		ret.globalOtherEffects = x.globalOtherEffects;
 		ret.id = x.id;
+		ret.chainedResults = x.chainedResults.map( subresult=> FinalizedCombatResult.fromJSON(JSON.stringify(subresult)));
 		return ret;
 	}
 
@@ -67,6 +68,7 @@ export class FinalizedCombatResult {
 			tokenFlags: this.tokenFlags,
 			globalOtherEffects : this.globalOtherEffects,
 			id: this.id,
+			chainedResults: this.chainedResults,
 		};
 		const json = JSON.stringify(obj);
 		return json;
@@ -83,6 +85,7 @@ export class FinalizedCombatResult {
 			case this.costs.length > 0:
 			case this.globalOtherEffects.length > 0:
 			case this.sounds.length > 0:
+			case this.chainedResults.length > 0:
 				return this;
 		}
 		return undefined;
@@ -144,8 +147,10 @@ export class FinalizedCombatResult {
 					break;
 				case "save-slot":
 					this.addFlag(actor, otherEffect);
+					ui.notifications.warn("Save Slot is deprecated");
 					break;
 				case "half-hp-cost":
+					ui.notifications.warn("Half HP cost is deprecated");
 					this.addFlag(actor, otherEffect);
 					break;
 				case "extraTurn": {
@@ -238,6 +243,7 @@ export class FinalizedCombatResult {
 	}
 
 	async HTMLBody(): Promise<string> {
+		this.compressChained();
 		const attacks = this.attacks.map( (attack)=> {
 			return {
 				attackResult: attack.atkResult,
@@ -386,6 +392,7 @@ export class FinalizedCombatResult {
 			await this.#processAttacks();
 			await this.#applyCosts();
 			await this.#applyGlobalOtherEffects();
+			await this.#applyChained();
 		} catch (e) {
 			PersonaError.softFail("Trouble executing combat result", e, this);
 		}
@@ -395,6 +402,12 @@ export class FinalizedCombatResult {
 		return this.globalOtherEffects.some(
 			eff => eff.type == "cancel"
 		);
+	}
+
+	async #applyChained() {
+		for (const res of this.chainedResults) {
+			await res.#apply();
+		}
 	}
 
 	async #processAttacks() {
@@ -430,12 +443,22 @@ export class FinalizedCombatResult {
 		}
 	}
 
-	add( otherResult: FinalizedCombatResult) : this {
-		this.attacks.push(...otherResult.attacks);
-		this.globalOtherEffects.push(...otherResult.globalOtherEffects);
-		this.costs.push(...otherResult.costs);
+	addChained( otherResult: U<FinalizedCombatResult>) : this {
+		if (!otherResult) {return this;}
+		this.chainedResults.push(otherResult);
 		return this;
+	}
 
+	compressChained() : this {
+		for (const chain of this.chainedResults) {
+			chain.compressChained();
+			this.attacks.push(...chain.attacks);
+			this.globalOtherEffects.push(...chain.globalOtherEffects);
+			this.costs.push(...chain.costs);
+			this.sounds.push(...chain.sounds);
+			this.tokenFlags.push(...chain.tokenFlags);
+		}
+		return this;
 	}
 
 	async #onDefeatOpponent(target: PToken, attacker ?: PToken) {
@@ -466,7 +489,8 @@ export class FinalizedCombatResult {
 			for (const comb of combat.combatants) {
 				if (!comb.actor) {continue;}
 				situation.user = comb.actor.accessor;
-				await TriggeredEffect.execCombatTrigger("on-kill-target", comb.actor, situation);
+				this.addChained((await TriggeredEffect.onTrigger("on-kill-target", comb.actor, situation)).finalize());
+				// await TriggeredEffect.execCombatTrigger("on-kill-target", comb.actor, situation);
 			}
 		}
 	}
@@ -533,13 +557,14 @@ export class FinalizedCombatResult {
 						statusEffect: status.id,
 						triggeringUser: game.user,
 					};
-					const res = await TriggeredEffect.onTrigger("on-inflict-status", actor, situation);
-					const msg = await res
-						.emptyCheck()
-						?.toMessage("On Status Response", actor);
-					if (msg && PersonaSettings.debugMode()) {
-						Debug(res);
-					}
+					this.addChained((await TriggeredEffect.onTrigger("on-inflict-status", actor, situation)).finalize());
+					// const res = await TriggeredEffect.onTrigger("on-inflict-status", actor, situation);
+					// const msg = await res
+					// 	.emptyCheck()
+					// 	?.toMessage("On Status Response", actor);
+					// if (msg && PersonaSettings.debugMode()) {
+					// 	Debug(res);
+					// }
 				}
 			}
 			if (statusAdd && token) {
@@ -583,20 +608,26 @@ export class FinalizedCombatResult {
 			damageType: dmg.damageType,
 			triggeringUser: game.user,
 		};
+
 		const CR = (await TriggeredEffect.onTrigger("pre-take-damage", actor, situation)).finalize();
 		if (CR.hasCancelRequest()) {
-			await CR.emptyCheck()?.toMessage("Pre-Damage response", actor);
+			this.addChained(CR);
+			// await CR.emptyCheck()?.toMessage("Pre-Damage response", actor);
 			return;
 		}
 		if (dmg.hpChange == 0) {return;}
 		if (dmg.hpChange < 0) {
-			setTimeout( async () => {
-				const CR = await TriggeredEffect
-					.autoTriggerToCR("on-damage", actor);
-				if (CR) {
-					await CR?.toMessage("Reaction (Taking Damage)" , actor);
-				}
-			});
+			const CR = (await TriggeredEffect
+				.autoTriggerToCR("on-damage", actor))
+				?.finalize();
+			this.addChained(CR);
+			// setTimeout( async () => {
+			// 	const CR = await TriggeredEffect
+			// 		.autoTriggerToCR("on-damage", actor);
+			// 	if (CR) {
+			// 		await CR?.toMessage("Reaction (Taking Damage)" , actor);
+			// 	}
+			// });
 		}
 		if (token) {
 			const power = this.power;

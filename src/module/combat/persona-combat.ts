@@ -1791,10 +1791,9 @@ static #calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona,
 	const calcResolved = calc.eval(situation);
 	const total = calcResolved.total;
 	if (PersonaSettings.debugMode()) {
-		//
+		const steps = calcResolved.steps;
+		console.debug(steps);
 	}
-	const steps = calcResolved.steps;
-	console.debug(steps);
 	const ailmentRange = power.ailmentRange;
 	if (!ailmentRange) {return undefined;}
 	ailmentRange.low -= total;
