@@ -405,15 +405,18 @@ export class Metaverse {
 	}
 
 	static getRegion(regionId ?: string) : PersonaRegion | undefined {
+		// if (CombatScene.instance) {
+		// 	const prev = CombatScene.instance.previous;
+		// 	if (prev) {
+		// 		scene= prev;
+		// 	}
+		// }
 		let scene = game.scenes.active;
-		if (CombatScene.instance) {
-			const prev = CombatScene.instance.previous;
-			if (prev) {
-				scene= prev;
-			}
-		}
-		if (game.user.isGM) {
-			regionId = regionId ? regionId : PersonaSettings.get("lastRegionExplored").toString();
+		const regionData = PersonaSettings.getLastRegion();
+		if (regionData.lastRegionId && regionData.lastSceneId) {
+			const storedScene = game.scenes.get(regionData.lastSceneId);
+			regionId = regionId || regionData.lastRegionId;
+			if (storedScene) {scene = storedScene;}
 			const region = scene.regions.find( (r: PersonaRegion) => r.id == regionId && !r?.regionData?.ignore);
 			if (!region) {
 				return undefined;

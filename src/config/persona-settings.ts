@@ -35,6 +35,31 @@ export class PersonaSettings {
 		return !realGame && debugMode;
 	}
 
+	static async clearLastRegion() {
+		const nullResult : RegionExploredData= {lastRegionId: undefined, lastSceneId: undefined};
+		await this.set("lastRegionExplored", nullResult);
+	}
+
+	static async setLastRegion(x : RegionExploredData) {
+		await this.set("lastRegionExplored", x);
+	}
+
+	static getLastRegion() : RegionExploredData {
+		const data= this.get("lastRegionExplored") as RegionExploredData;
+		if (typeof data == "string") {
+			const scene = game.scenes.find(x=> x.regions.contents.some( r=> r.id == data));
+			if ((data as string).length == 0 || !scene) {
+				const nullResult : RegionExploredData= {lastRegionId: undefined, lastSceneId: undefined};
+				return nullResult;
+			}
+			return {
+				lastRegionId: data,
+				lastSceneId: scene.id,
+			};
+		}
+		return data;
+	}
+
 	static freezeXPGain() : boolean {
 		const xpLock  = this.get("xpLock").valueOf();
 		const realGame = game.users.filter( user => user.active).length > 3;
@@ -172,8 +197,8 @@ const SETTINGS = {
 		scope: "world",
 		restricted: true,
 		config: false,
-		type: String,
-		default: ""
+		type: Object,
+		default:{},
 	},
 
 } as const;
@@ -200,3 +225,7 @@ declare global {
 }
 
 
+interface RegionExploredData {
+	lastRegionId: U<string>;
+	lastSceneId: U<string>;
+}

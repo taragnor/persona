@@ -669,10 +669,13 @@ export class PersonaRegion extends RegionDocument {
 		}
 		//TODO: refactor into onMove, onSelect and actual updateRegion functions
 		await updateRegionDisplay(region as PersonaRegion);
-		const lastRegion = PersonaSettings.get("lastRegionExplored");
-		if (tokenMove && lastRegion != region.id) {
+		const lastRegion = PersonaSettings.getLastRegion();
+		if (tokenMove && lastRegion.lastRegionId != region.id) {
 			if (game.user.isGM) {
-				await PersonaSettings.set("lastRegionExplored", region.id);
+				await PersonaSettings.setLastRegion({
+					lastRegionId: region.id,
+					lastSceneId: scene.id,
+				});
 				await (region as PersonaRegion).onEnterRegion(token);
 			}
 		}
@@ -691,7 +694,6 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	async onExitMetaverse() : Promise<void> {
-
 	}
 
 } //end of class
@@ -719,8 +721,8 @@ Hooks.on("renderRegionConfig", async (app, html) => {
 });
 
 Hooks.on("updateRegion", async (region) => {
-	const lastRegion = PersonaSettings.get("lastRegionExplored");
-	if (region.id == lastRegion) {
+	const lastRegion = PersonaSettings.getLastRegion();
+	if (region.id == lastRegion.lastRegionId) {
 		await updateRegionDisplay(region as PersonaRegion);
 	}
 });

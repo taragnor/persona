@@ -1,4 +1,3 @@
-import {PersonaActor} from "../actor/persona-actor";
 import {PersonaDB} from "../persona-db.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 
@@ -37,7 +36,7 @@ export class PersonaPrinter extends Application {
 		const data = await super.getData(options);
 		const personaList = PersonaDB.PersonaableShadowsOfArcana(1, 100, true);
 		for (const listKey of Object.keys(personaList)) {
-			const key = listKey as keyof typeof personaList; 
+			const key = listKey as keyof typeof personaList;
 			if (!personaList[key]) {continue;}
 			personaList[key] = personaList[key]
 				.sort( (a,b) => a.startingLevel - b.startingLevel);
@@ -62,6 +61,7 @@ export class PersonaPrinter extends Application {
 
 }
 
+//This is way too expensive and was removed
 // Hooks.on("updateActor", function (actor: PersonaActor ) {
 // 	const instance = PersonaPrinter._instance;
 // 	if (instance && actor.isShadow())  {

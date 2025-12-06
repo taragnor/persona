@@ -302,6 +302,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 	}
 
 	async onAEDelete() : Promise<void> {
+		if (!game.user.isGM) {return;}
 		if (this.parent instanceof PersonaActor && this.parent.isValidCombatant()) {
 			const activeDuration = game.combat && "amount" in this.statusDuration ? game.combat.round - this.duration.startRound : undefined ;
 			const situation : Situation = {

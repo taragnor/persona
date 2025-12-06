@@ -80,8 +80,8 @@ export class PersonaScene extends Scene {
 	}
 
 	async onEnterMetaverse() : Promise<void> {
-		const regionActions =
-		this.regions.contents
+		await PersonaSettings.clearLastRegion();
+		const regionActions = this.regions.contents
 		.map( region => region.onEnterMetaverse());
 		const actorActions =
 		this.tokens.contents
@@ -104,6 +104,7 @@ export class PersonaScene extends Scene {
 	}
 
 	async onExitMetaverse(): Promise<void> {
+		await PersonaSettings.clearLastRegion();
 		const regionPromises : Promise<unknown>[] = this.regions.contents.map( reg => reg.onExitMetaverse());
 		const tokenPromises : Promise<unknown>[] = this.tokens.contents
 		.map( tok => {
@@ -395,7 +396,6 @@ type SceneEncounterData = {
 Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
 	if (!game.user.isGM) {return;}
 	if (diff.active == true) {
-		await PersonaSettings.set("lastRegionExplored", "");
 		if (game.combats.contents.some( (cmb: PersonaCombat) => cmb.isSocial)) {
 			await Logger.gmMessage("Social Scene still active, consider ending it before starting metaverse activity");
 		}
