@@ -87,6 +87,7 @@ const templateFileNames : string[] =[
 	"persona-list-tab.hbs",
 	"fusions-list.hbs",
 	"persona-compendium.hbs",
+	"combat-roll-roll.hbs",
 ];
 
 export const templatePaths = templateFileNames.

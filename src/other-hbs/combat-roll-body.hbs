@@ -1,0 +1,18 @@
+<section class="combat-roll">
+	<section class="persona-roll">
+		{{#each attacks as |atk|}}
+		<div class="atk-block">
+			{{> "systems/persona/parts/combat-roll-roll.hbs" atk=atk}}
+			{{#each atk.changes as |change|}}
+			{{> "systems/persona/parts/display-token-change.hbs" change=change attack=atk}}
+			{{/each}}
+			{{#if ../escalation}}
+			Escalation Die {{../escalation}}
+			{{/if}}
+		</div>
+		{{/each}}
+		{{#each costs as |cost|}}
+		{{> "systems/persona/parts/display-token-change.hbs" change=cost }}
+		{{/each}}
+	</section>
+</section>

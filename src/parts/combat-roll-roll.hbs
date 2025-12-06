@@ -1,0 +1,49 @@
+<div class="roll-block">
+	{{> "systems/persona/parts/simple-roll.hbs" roll=atk.attackResult.roll }}
+	{{#if atk.attackResult.critBoost}}
+	<div class="crit-boost gm-only">
+		<div class="tooltip">
+			<span>
+				Critical Boost:
+			</span>
+			<span>
+				{{atk.attackResult.critBoost}}
+			</span>
+			{{> "systems/persona/parts/printable-mods.hbs" mods=atk.attackResult.critPrintable gmOnly=atk.attackResult.roll.gmRoll}}
+		</div>
+	</div>
+	{{/if}}
+	{{#if atk.attackResult.instantKillRange}}
+	<div class="instant-kill">
+		<div class="tooltip">
+			<span>
+				Instant Kill Range:
+			</span>
+			<span>
+				{{atk.attackResult.instantKillRange.low}}
+				-
+				{{atk.attackResult.instantKillRange.high}}
+			</span>
+		</div>
+	</div>
+	{{/if}}
+	{{#if atk.attackResult.ailmentRange}}
+	<div class="ailment-range">
+		<div class="tooltip">
+			<span>
+				Ailment Range:
+			</span>
+			<span>
+				{{atk.attackResult.ailmentRange.low}}
+				-
+				{{atk.attackResult.ailmentRange.high}}
+			</span>
+		</div>
+	</div>
+	{{/if}}
+	<hr>
+	<div class="attack-result">
+		{{prettyAtkResult atk.attackResult}}
+	</div>
+</div>
+

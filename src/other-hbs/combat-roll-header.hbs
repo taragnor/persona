@@ -1,0 +1,19 @@
+<section class="combat-roll-header">
+<h2>
+	{{#if attackerToken}}
+	<img class="inline" src="{{attackerToken.actor.img}}" title="{{attackerName}}">
+	{{#if attackerPersona}}
+	<img class="inline persona-img" src="{{attackerPersona.img}}" title="{{attackerPersona.publicName}}">
+	{{/if}}
+	{{else}}
+	<span class="token-name">
+		{{attackerName}}
+	</span>
+	{{/if}}
+</h2>
+<h2>
+	<span class="power-name">
+		{{effectName}}
+	</span>
+</h2>
+</section>

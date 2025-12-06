@@ -224,59 +224,107 @@ export class FinalizedCombatResult {
 		this.tokenFlags = [];
 	}
 
-	async toMessage( effectName: string, initiator: PersonaActor | undefined) : Promise<ChatMessage> {
-		if (!initiator) {
-			const speaker = ChatMessage.getSpeaker();
-			const msg = await ChatMessage.create( {
-				speaker,
-				content: "Userless triggered action PLACEHOLDER" ,
-			});
-			try {
-				await this.autoApplyResult();
-			} catch {
-				await msg.setFlag("persona", "atkResult", this.toJSON());
-			}
-			return msg;
-		}
+	async HTMLHeader(effectName: string,  initiator: PersonaActor | undefined) : Promise<string> {
+		if (!initiator) {return "";}
 		let initiatorToken : PToken | undefined;
 		if (game.combat) {
 			initiatorToken = PersonaCombat.getPTokenFromActorAccessor(initiator.accessor);
 		}
-		const rolls : RollBundle[] = this.attacks
-		.flatMap( (attack) => attack.atkResult.roll? [attack.atkResult.roll] : []);
+		const attackerToken = initiatorToken;
+		const attackerPersona = initiator.isValidCombatant() && initiator.persona().isPersona() ? initiator.persona(): undefined;
+		const attackerName = initiator.token?.name ?? initiatorToken?.name ?? initiator.displayedName;
+		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-header.hbs", {attackerToken, attackerPersona, attackerName, effectName});
+		return html;
+	}
+
+	async HTMLBody(): Promise<string> {
 		const attacks = this.attacks.map( (attack)=> {
 			return {
 				attackResult: attack.atkResult,
 				changes: attack.changes,
 			};
 		});
-		const manualApply = !PersonaSettings.autoApplyCombatResults() || !game.users.contents.some( x=> x.isGM && x.active);
-		const attackerName = initiator.token?.name ?? initiatorToken?.name ?? initiator.displayedName;
-		const attackerToken = initiatorToken;
-		const attackerPersona = initiator.isValidCombatant() && (initiator.basePersona.equals(initiator.persona())) ? initiator.persona(): undefined;
-		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll.hbs", {attackerToken, attackerPersona, attackerName, effectName,  attacks, escalation: 0, result: this, costs: this.costs, manualApply});
+		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-body.hbs", {attacks, escalation: 0, result: this, costs: this.costs});
+		return html;
+	}
+
+	async toMessage( effectName: string, initiator: PersonaActor | undefined, header ?: string) : Promise<ChatMessage> {
+		if (!header) {
+			header = await this.HTMLHeader(effectName, initiator);
+		}
+		// if (!initiator) {
+		// 	const speaker = ChatMessage.getSpeaker();
+		// 	const msg = await ChatMessage.create( {
+		// 		speaker,
+		// 		content: "Userless triggered action PLACEHOLDER" ,
+		// 	});
+		// 	try {
+		// 		await this.autoApplyResult();
+		// 	} catch {
+		// 		// await msg.setFlag("persona", "atkResult", this.toJSON());
+		// 		ui.notifications.error("ERROR with auto apply");
+		// 	}
+		// 	return msg;
+		// }
+		let initiatorToken : PToken | undefined;
+		if (game.combat) {
+			initiatorToken = initiator ? PersonaCombat.getPTokenFromActorAccessor(initiator.accessor) : undefined;
+		}
+		const rolls : RollBundle[] = this.attacks
+		.flatMap( (attack) => attack.atkResult.roll? [attack.atkResult.roll] : []);
+		// const attacks = this.attacks.map( (attack)=> {
+		// 	return {
+		// 		attackResult: attack.atkResult,
+		// 		changes: attack.changes,
+		// 	};
+		// });
+		// const manualApply = !PersonaSettings.autoApplyCombatResults() || !game.users.contents.some( x=> x.isGM && x.active);
+		// const attackerName = initiator.token?.name ?? initiatorToken?.name ?? initiator.displayedName;
+		// const attackerToken = initiatorToken;
+		// const attackerPersona = initiator.isValidCombatant() && (initiator.basePersona.equals(initiator.persona())) ? initiator.persona(): undefined;
+		// const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-body.hbs", {attackerToken, attackerPersona, attackerName, effectName,  attacks, escalation: 0, result: this, costs: this.costs, manualApply});
+		try {
+			await this.autoApplyResult();
+		} catch (e) {
+			const html = header + await this.HTMLBody();
+			PersonaError.softFail("Error with automatic result application", e, this, html);
+			return await ChatMessage.create( {
+				speaker: {
+					scene: initiatorToken?.parent?.id ?? initiator?.token?.parent.id,
+					actor: initiatorToken?.actor?.id ?? initiator?.id,
+					token:  initiatorToken?.id,
+					alias: initiatorToken?.name ?? "System",
+				},
+				rolls: rolls.map( rb=> rb.roll),
+				content: "ERROR WITH ROLL APPLICATION",
+				user: game.user,
+				style: CONST?.CHAT_MESSAGE_STYLES.ROLL,
+			}, {});
+		}
+
+		const html = header + await this.HTMLBody();
 		const chatMsg = await ChatMessage.create( {
 			speaker: {
 				scene: initiatorToken?.parent?.id ?? initiator?.token?.parent.id,
-				actor: initiatorToken?.actor?.id ?? initiator.id,
+				actor: initiatorToken?.actor?.id ?? initiator?.id,
 				token:  initiatorToken?.id,
-				alias: initiatorToken?.name ?? undefined,
+				alias: initiatorToken?.name ?? "System",
 			},
 			rolls: rolls.map( rb=> rb.roll),
 			content: html,
 			user: game.user,
 			style: CONST?.CHAT_MESSAGE_STYLES.ROLL,
 		}, {});
-		if (manualApply) {
-			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
-			return chatMsg;
-		}
-		try {
-			await this.autoApplyResult();
-		} catch (e) {
-			await chatMsg.setFlag("persona", "atkResult", this.toJSON());
-			PersonaError.softFail("Error with automatic result application", e);
-		}
+		// if (manualApply) {
+		// 	await chatMsg.setFlag("persona", "atkResult", this.toJSON());
+		// 	return chatMsg;
+		// }
+		// try {
+		// 	await this.autoApplyResult();
+		// } catch (e) {
+		// 	await chatMsg.setFlag("persona", "atkResult", this.toJSON());
+		// 	PersonaError.softFail("Error with automatic result application", e);
+		// }
 		return chatMsg;
 	}
 
@@ -380,6 +428,14 @@ export class FinalizedCombatResult {
 				}
 			}
 		}
+	}
+
+	add( otherResult: FinalizedCombatResult) : this {
+		this.attacks.push(...otherResult.attacks);
+		this.globalOtherEffects.push(...otherResult.globalOtherEffects);
+		this.costs.push(...otherResult.costs);
+		return this;
+
 	}
 
 	async #onDefeatOpponent(target: PToken, attacker ?: PToken) {
