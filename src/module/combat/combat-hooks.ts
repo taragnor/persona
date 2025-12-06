@@ -48,7 +48,7 @@ export class CombatHooks {
 				if (currentActor && diffObject.direction > 0) {
 					if (combat.isSocial) {
 						if (currentActor.system.type == "pc") {
-							console.log("Hook start social combat turn");
+							// console.log("Hook start social combat turn");
 							await PersonaSocial.startSocialTurn(currentActor as PC);
 						}
 					} else {
@@ -71,12 +71,6 @@ export class CombatHooks {
 				}
 			}
 		});
-
-		// Hooks.on("deleteCombat", (_combat: PersonaCombat) => {
-		// 	if (!game.user.isGM)
-		// 		{return;}
-		// });
-
 
 		Hooks.on("createCombatant", async (combatant: Combatant<ValidAttackers>) => {
 			if (!game.user.isGM) {return;}

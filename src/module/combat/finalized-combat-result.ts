@@ -282,7 +282,7 @@ export class FinalizedCombatResult {
 					alias: initiatorToken?.name ?? "System",
 				},
 				rolls: rolls.map( rb=> rb.roll),
-				content: "ERROR WITH ROLL APPLICATION",
+				content: "ERROR WITH APPLYING COMBAT RESULT",
 				user: game.user,
 				style: CONST?.CHAT_MESSAGE_STYLES.ROLL,
 			}, {});

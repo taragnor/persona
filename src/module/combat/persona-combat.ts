@@ -102,7 +102,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const promises = combatants.map( comb => this.runCombatantStartCombatTriggers(comb));
 		const resolutions = (await Promise.allSettled(promises));
 		const errors = resolutions
-			.filter( res => res.status=="rejected") 
+			.filter( res => res.status=="rejected")
 			.map (x => x.reason as unknown);
 		if (errors.length) {
 			console.error(errors);
@@ -135,9 +135,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const CR = await TriggeredEffect
 			.autoTriggerToCR('on-combat-start', token.actor, situation);
 		return CR?.finalize();
-		// if (CR) {
-		// 	await CR?.toMessage('Triggered Effect', token.actor);
-		// }
 	}
 
 	get validEngagementCombatants(): PersonaCombatant[] {
