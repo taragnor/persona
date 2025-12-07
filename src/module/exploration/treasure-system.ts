@@ -14,6 +14,33 @@ export class TreasureSystem {
 		const otherTreasure = this.moreTreasure(treasureRoll) ? this.generate(treasureLevel, modifier, treasureMin) : [];
 		if (!item) {return otherTreasure;}
 		if (item.isEnchantable()) {
+			// if (item.isInvItem()) {
+			// 	if (item.system.slot == "weapon_crystal") {
+			// 		modifier -= 50;
+			// 	}
+			// 	if (item.system.slot == "accessory") {
+			// 		treasureMin = Math.max(50, treasureMin);
+			// 	}
+
+			// }
+			// const enchantmentRoll = this.treasureRoll(modifier, treasureMin);
+			// const enchantmentTable = this.convertRollToTreasureTable(enchantmentRoll);
+			// const enchantment = this.generateEnchantmentFromTable(enchantmentTable, treasureLevel);
+			const enchantment = this.generateEnchantment(item, treasureLevel, modifier, treasureMin);
+			if (enchantment) {
+				return [{
+					item,
+					enchantments: [enchantment],
+				} ] .concat(otherTreasure);
+			}
+		}
+		return [{
+			item,
+			enchantments: [],
+		} as EnchantedTreasureFormat].concat(otherTreasure);
+	}
+
+	static generateEnchantment(item: Carryable, treasureLevel: number, modifier = 0, treasureMin = 1) : U<Tag> {
 			if (item.isInvItem()) {
 				if (item.system.slot == "weapon_crystal") {
 					modifier -= 50;
@@ -26,17 +53,28 @@ export class TreasureSystem {
 			const enchantmentRoll = this.treasureRoll(modifier, treasureMin);
 			const enchantmentTable = this.convertRollToTreasureTable(enchantmentRoll);
 			const enchantment = this.generateEnchantmentFromTable(enchantmentTable, treasureLevel);
-			if (enchantment) {
-				return [{
-					item,
-					enchantments: [enchantment],
-				} ] .concat(otherTreasure);
-			}
+			return enchantment;
+	}
+
+	static async DorisAbility(item: Carryable) {
+		if (!item.parent) {
+			ui.notifications.warn("This requires an item held by a PC");
+			return null;
 		}
-		return [{
-			item,
-			enchantments: [],
-		} as EnchantedTreasureFormat].concat(otherTreasure);
+		const enchantment = this.generateEnchantment(item, item.parent.level);
+		const html = `
+			<h2> Re-enchanting ${item.name} </h2>
+			Result : ${enchantment?.name ?? "Ritual Fizzled"}
+			`;
+		await ChatMessage.create( {
+			speaker: {
+				alias: "Re-enchantment ${item.name}"
+			},
+			content: html,
+			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+
+			});
+		return enchantment;
 	}
 
 	static moreTreasure (treasureRoll: number) : boolean {
