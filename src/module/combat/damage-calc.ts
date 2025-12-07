@@ -356,8 +356,8 @@ export const INSTANT_KILL_CRIT_BOOST : Record< InstantKillLevel, number>= {
 
 export const AILMENT_BONUS_LEVELS : Record <InstantKillLevel, number> = {
 	always: 11,//treat as always
-	high: 11,
-	medium: 8,
+	high: 9,
+	medium: 7,
 	low: 5,
 	none: 0,
 };

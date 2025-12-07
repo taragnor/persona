@@ -187,8 +187,8 @@ export class EnergyClassCalculator extends CostCalculator {
 		"magic-shield": 60,
 		"phys-shield": 60,
 		"protected": 60,
-		"power-charge": 55,
-		"magic-charge": 55,
+		"power-charge": 65,
+		"magic-charge": 65,
 	};
 	static SHADOW_DAMAGE_TYPE_MODIFIER : Record<DamageType, number> = {
 		none: 0,
@@ -215,17 +215,17 @@ export class EnergyClassCalculator extends CostCalculator {
 	};
 
 	static AILMENT_VALUE : Record<typeof STATUS_AILMENT_LIST[number], number> = {
-		dizzy: 0.5,
+		dizzy: 0.75,
 		fear: 1,
-		sleep: 0.8,
-		poison: 0.333,
-		rage: 0.666,
-		blind: 0.8,
+		sleep:1,
+		poison: 0.5,
+		rage: 0.75,
+		blind: 1,
 		mouse: 1.25,
 		sealed: 1,
 		despair: 1,
-		charmed: 0.8,
-		confused: 0.8,
+		charmed: 1,
+		confused: 1,
 	};
 
 }

@@ -424,9 +424,7 @@ export class Metaverse {
 			return region as PersonaRegion;
 		}
 		const actor = game.user.character;
-		if (!actor) {
-			throw new PersonaError("No controlled Character");
-		}
+		if (!actor) {return undefined;}
 		let region = scene.regions.find( (region : PersonaRegion) => {
 			if (region?.regionData?.ignore) {return false;}
 			const arr = Array.from(region.tokens);

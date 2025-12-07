@@ -664,12 +664,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 					mandatory: true,
 					optionEffects: [],
 				});
+				void combatant.actor?.removeStatus("charmed");
 				break;
 			}
 			case (saveTotal >= 11): {
-				msg.push('Success (Dazed)');
+				msg.push('Partial Success');
 				options.push({
-					optionName: 'You stand around and do nothing',
+					optionName: 'Act normally but charm remains (lose opening action)',
 					mandatory: true,
 					optionEffects: [],
 				});
@@ -705,7 +706,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		msg.push(`Resisting Confusion (${saveTotal}) -->`);
 		switch (true) {
-			case (saveTotal >= 16):{
+			case (saveTotal >= 11):{
 				msg.push('Success');
 				break;
 			}
@@ -1703,7 +1704,8 @@ static async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, t
 	const rageOrBlind = attacker.actor.hasStatus('rage') || attacker.actor.hasStatus('blind');
 	const critMin = situation.resisted ? -999 : 0;
 	const critResolved = critBoostMod.eval(situation);
-	const critBoost = Math.clamp(critResolved.total, critMin, PersonaCombat.CRIT_MAX);
+	const critMax = critResolved.total < 100 ? PersonaCombat.CRIT_MAX : 100;
+	const critBoost = Math.clamp(critResolved.total, critMin, critMax);
 	const critPrintable = critResolved.steps;
 	const autoHit = rollType == "reflect" && !power.isInstantDeathAttack() && !power.isAilment();
 	const Mod20 = naturalAttackRoll == 20 ? 3 : 0;

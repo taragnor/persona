@@ -229,7 +229,7 @@ export class ActorConverters {
 		await convert.update( {
 			"system.combat.personaStats.pLevel": baseLevel,
 			"system.combat.lastLearnedLevel": 0,
-			"system.combat.powers": [],
+			"system.combat.powers": original.startingPowers,
 		});
 		await convert.onLevelUp_checkLearnedPowers(baseLevel, false);
 	}
