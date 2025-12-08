@@ -78,16 +78,6 @@ export class PercentBasedDamageSystem extends DamageSystemBase {
 		return calc;
 	}
 
-	// #endurancePercentDR(targetPersona: Persona) : number {
-	// 	const situation = {
-	// 		user: targetPersona.user.accessor,
-	// 		target: targetPersona.user.accessor,
-	// 	};
-	// 	const generalDRBonus = targetPersona.getDefensiveBonuses("dr").total(situation);
-	// 	const percentageMult = 1 - ((targetPersona.combatStats.endurance + generalDRBonus) * this.ENDURANCE_DR_MULTIPLIER);
-	// 	return Math.max(0.25, percentageMult);
-	// }
-
 	armorDR(targetPersona: Persona) : DamageCalculation {
 		const calc = new DamageCalculation(null);
 		const situation = {

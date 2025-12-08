@@ -14,6 +14,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 	WEAPON_DAMAGE_MULT = 2 as const;
 	MAGIC_DAMAGE_MULT = 2 as const;
 	BASE_VARIANCE = 2 as const;
+	ARMOR_TO_DAMAGE_DIVISOR = 0.80 as const;
 
 	getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
 		const dtype = power.getDamageType(userPersona);
@@ -218,7 +219,8 @@ export class OriginalDamageSystem extends DamageSystemBase {
 	}
 
 	getArmorDRByArmorLevel(lvl: number) : number {
-		const ARMOR_DIVISOR = 0.90;
+		const ARMOR_DIVISOR = this.ARMOR_TO_DAMAGE_DIVISOR;
+		// const ARMOR_DIVISOR = 0.90;
 		const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
 		if (val) {return Math.floor(val * ARMOR_DIVISOR);}
 		return 0;
