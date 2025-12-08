@@ -3,9 +3,6 @@ import { SeededRandom } from "../utility/seededRandom.js";
 import { ValidAttackers } from "../combat/persona-combat.js";
 import { Persona } from "../persona-class.js";
 import {PersonaStat} from "../../config/persona-stats.js";
-import {RealDamageType} from "../../config/damage-types.js";
-import {DamageCalculation} from "../combat/damage-calc.js";
-import {Usable} from "../item/persona-item.js";
 import {Calculation} from "../utility/calculation.js";
 
 export class PersonaCombatStats {
@@ -17,16 +14,16 @@ export class PersonaCombatStats {
 	static INSTANT_DEATH_ATTACK_DIVISOR = 7 as const;
 	static STAT_POINTS_PER_LEVEL = 3 as const;
 	static INIT_DIVISOR = 3 as const;
-	static MAX_STAT_GAP =  10 as const;
+	static MAX_STAT_GAP = 10 as const;
 	static MAX_STAT_VAL = 99 as const;
 	static MIN_STAT_VAL = 1 as const;
 	static DEFENSE_DIVISOR = 3 as const;
 	static BASE_INSTANT_DEATH_DEFENSE = 20 as const;
-	static BASE_DEFENSE = 3 as const;
+	static BASE_DEFENSE = 5 as const;
 	static BASE_AILMENT_DEFENSE = 18 as const;
 	static INSTANT_DEATH_DIVISOR = 5 as const;
-	static CRITICAL_HIT_DIVISOR= 5 as const;
-	static ENDURANCE_DR_MULTIPLIER = 0.005;
+	static CRITICAL_HIT_DIVISOR = 5 as const;
+	// static ENDURANCE_DR_MULTIPLIER = 0.005;
 
 	constructor (persona: Persona) {
 		this.persona = persona;
@@ -116,60 +113,6 @@ export class PersonaCombatStats {
 		return Math.floor(this.endurance);
 	}
 
-	endurancePercentDR() : number {
-		const situation = {
-			user: this.persona.user.accessor,
-			target: this.persona.user.accessor,
-		};
-		const generalDRBonus = this.persona.getDefensiveBonuses("dr").total(situation);
-		const percentageMult = 1 - ((this.endurance + generalDRBonus) * PersonaCombatStats.ENDURANCE_DR_MULTIPLIER);
-		return Math.max(0.25, percentageMult);
-	}
-
-	damageReduction(damageType : RealDamageType, power: Usable): DamageCalculation {
-		const calc = new DamageCalculation(damageType);
-		if (damageType == "healing") {return calc;}
-		if (!power.isUsableType()) {return calc;}
-		if (power.isConsumable()) {return calc;}
-		if (power.isWeaponSkill())  { return this.physDR();}
-		if (power.isMagicSkill()) {return this.magDR();}
-		if (damageType == "all-out") {return this.physDR();}
-		return calc;
-	}
-
-	enduranceDR() : DamageCalculation {
-		const calc= new DamageCalculation(null);
-		const percentageMult = this.endurancePercentDR();
-		calc.add("multiplier", percentageMult, "Endurance DR modifier");
-		return calc;
-	}
-
-	magDR(): DamageCalculation {
-		return this.enduranceDR();
-	}
-
-	physDR() : DamageCalculation {
-		const calc = this.enduranceDR();
-		return calc.merge(this.armorDR());
-	}
-
-	armorDR() : DamageCalculation {
-		const calc = new DamageCalculation(null);
-		const situation = {
-			user: this.persona.user.accessor,
-			target: this.persona.user.accessor,
-		};
-		const armor = this.persona.armorDR();
-		const armorBonus = this.persona.getDefensiveBonuses("armor-dr").total(situation);
-		const armorMult = this.persona.getDefensiveBonuses("armor-dr-mult").total(situation, "percentage");
-		const armorString = "Armor DR";
-		const modifiedArmor = -Math.abs(Math.round(armor * armorMult));
-		calc.add("base", modifiedArmor, armorString);
-		calc.add("base", -armorBonus, "Armor Modifiers");
-		return calc;
-	}
-
-
 	lukCriticalResist() : Calculation {
 		const calc = new Calculation(0, 2);
 		return calc
@@ -221,13 +164,6 @@ export class PersonaCombatStats {
 		calc.add(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`, "multiply");
 		return calc;
 	}
-
-	// magDamageBonus() : Calculation {
-	// 	const calc = new Calculation(0);
-	// 	return calc
-	// 		.add(0, this.magic, `${this.persona.displayedName} Magic`, "add")
-	// 		.add(1, PersonaCombatStats.MAGIC_DAMAGE_MULT, `Magic Damage Multiplier`, "multiply");
-	// }
 
 	getPhysicalVariance() : number {
 		return 2 + Math.floor(this.strength / 5);

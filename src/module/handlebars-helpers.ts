@@ -53,6 +53,7 @@ import {POWER_TAGS} from "../config/power-tags.js";
 import {FusionTable} from "../config/fusion-table.js";
 import {PreconditionConverter} from "./migration/convertPrecondition.js";
 import {PCSheet} from "./actor/sheets/pc-sheet.js";
+import {OriginalDamageSystem} from "./combat/original-damage-system.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -171,25 +172,24 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"getWeaponDR": function (persona: Persona) : number {
-			// const DR = persona.combatStats.physDR();
-			const DR = persona.combatStats.armorDR();
+			const DR = (PersonaSettings.getDamageSystem() as OriginalDamageSystem).armorDR(persona);
 			DR.setMinValue(-Infinity);
 			return Math.abs(DR.eval().hpChange);
 		},
 		"getMagicDR": function (persona: Persona) : number {
-			const DR = persona.combatStats.magDR();
+
+			const DR = (PersonaSettings.getDamageSystem() as OriginalDamageSystem).magDR(persona);
 			DR.setMinValue(-Infinity);
 			return Math.abs(DR.eval().hpChange);
 		},
 
 		"WeaponDRBreakdown": function (persona: Persona) : string {
-			const DR = persona.combatStats.armorDR();
-			// const DR = persona.combatStats.physDR();
+			const DR = (PersonaSettings.getDamageSystem() as OriginalDamageSystem).armorDR(persona);
 			DR.setMinValue(-Infinity);
 			return DR.eval().str.join("\n");
 		},
 		"MagicDRBreakdown": function (persona: Persona) : string {
-			const DR = persona.combatStats.magDR();
+			const DR = (PersonaSettings.getDamageSystem() as OriginalDamageSystem).magDR(persona);
 			DR.setMinValue(-Infinity);
 			return DR.eval().str.join("\n");
 		},
@@ -847,13 +847,14 @@ export class PersonaHandleBarsHelpers {
 			return (combat != undefined && !combat.isSocial);
 		},
 
-		"isSimulated": function (persona: Persona) : boolean{
+		"isSimulated": function (persona: Persona) : boolean {
 			const source = persona.source;
 			if (source.isShadow() && source.system.creatureType == "daemon") {return true;}
 			return source.hasTag("simulated");
 		},
 		"armorDR": function (item: InvItem) {
-			return item.armorDR();
+			const DR = (PersonaSettings.getDamageSystem() as OriginalDamageSystem).armorDRByEquipment(item);
+			return DR;
 		},
 
 		"getModifierTypesByCategory": function (category: U<keyof typeof MODIFIER_CATEGORIES>) {

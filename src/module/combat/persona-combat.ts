@@ -2309,8 +2309,7 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 			const consItems = targets.map( target => {
 				const DC = dmgCalc != undefined ? dmgCalc.clone(): undefined;
 				if (DC && power) {
-					const DR = target.persona().combatStats.damageReduction(damageType, power);
-					DC.merge(DR);
+					power.damage.applyDR(DC, damageType, power, target.persona());
 				};
 				return {
 					applyTo: target,

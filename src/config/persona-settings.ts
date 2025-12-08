@@ -1,3 +1,6 @@
+import {ALT_DAMAGE_SYSTEM} from "../module/combat/alt-damage-system.js";
+import {DamageInterface} from "../module/combat/damage-system.js";
+import {ORIGINAL_DAMAGE_SYSTEM} from "../module/combat/original-damage-system.js";
 import { WEATHER_TYPES } from "./weather-types.js";
 
 export const SYSTEMNAME = `persona` as const;
@@ -81,6 +84,10 @@ export class PersonaSettings {
 			this.cache.aggressiveCaching = this.get("aggressiveCaching");
 		}
 		return this.cache.aggressiveCaching as boolean;
+	}
+
+	static getDamageSystem() : DamageInterface {
+		return PersonaSettings.get("alternateDamageSystem") ? ALT_DAMAGE_SYSTEM : ORIGINAL_DAMAGE_SYSTEM;
 	}
 
 }

@@ -56,8 +56,7 @@ import {EnergyClassCalculator} from '../calculators/shadow-energy-cost-calculato
 import {ConsequenceAmountResolver} from '../conditionalEffects/consequence-amount.js';
 import {EnchantedTreasureFormat, TreasureSystem} from '../exploration/treasure-system.js';
 import {Calculation} from '../utility/calculation.js';
-import {DAMAGE_SYSTEM, DamageInterface,  DamageSystem} from '../combat/damage-system.js';
-import {ALT_DAMAGE_SYSTEM} from '../combat/alt-damage-system.js';
+import {DamageInterface} from '../combat/damage-system.js';
 
 declare global {
 	type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -109,7 +108,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	get damage() : DamageInterface {
-		return PersonaSettings.get("alternateDamageSystem") ? ALT_DAMAGE_SYSTEM : DAMAGE_SYSTEM;
+		return PersonaSettings.getDamageSystem();
+		// return PersonaSettings.get("alternateDamageSystem") ? ALT_DAMAGE_SYSTEM : DAMAGE_SYSTEM;
 	}
 
 	clearCache() {
@@ -417,7 +417,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			const {growthRate, initial, initialGrowthAmount, growthAcceleration}  = this.system.hpgrowth;
 			this.cache.hpGrowthTable = new GrowthCalculator(
 				growthRate, initial, initialGrowthAmount, growthAcceleration / 100);
-			// this.cache.hpGrowthTable = new GrowthCalculator(1.02, 45, 2);
 		}
 		return this.cache.hpGrowthTable.valueAt(lvl);
 	}
@@ -427,7 +426,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			const {growthRate, initial, initialGrowthAmount, growthAcceleration}  = this.system.mpgrowth;
 			this.cache.mpGrowthTable = new GrowthCalculator(
 				growthRate, initial, initialGrowthAmount, growthAcceleration / 100);
-			// this.cache.mpGrowthTable = new GrowthCalculator(1.02, 30, 1.5);
 		}
 		return this.cache.mpGrowthTable.valueAt(lvl);
 	}
@@ -520,7 +518,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		switch (this.system.type) {
 			case 'power':
 			case 'consumable':
-				// case "skillCard":
 				return true;
 			default:
 				return false;
@@ -1391,13 +1388,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			if (this.system.damageNew.baseAmt > 0) {return this.system.damageNew;}
 			if (this.system.damageNew.weaponLevel > 0) {
 				return {
-					baseAmt: DamageSystem.getWeaponDamageByWpnLevel(this.system.damageNew.weaponLevel),
+					baseAmt: this.damage.getWeaponDamageByWpnLevel(this.system.damageNew.weaponLevel),
 					extraVariance: this.system.damageNew.extraVariance ?? 0,
 				};
 			}
 			if (this.itemLevel() > 0) {
 				return {
-					baseAmt: DamageSystem.getWeaponDamageByWpnLevel(this.itemLevel()),
+					baseAmt: this.damage.getWeaponDamageByWpnLevel(this.itemLevel()),
 					extraVariance: this.system.damageNew.extraVariance ?? 0,
 				};
 			}
@@ -1418,7 +1415,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (diff >=4) { extraVariance= 1;}
 		return {
 			extraVariance,
-			baseAmt: DamageSystem.convertFromOldLowDamageToNewBase(low),
+			baseAmt: PersonaSettings.getDamageSystem().convertFromOldLowDamageToNewBase(low),
 		};
 	}
 
@@ -1903,20 +1900,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			return this.cache.mpCost;
 		}
 		return this.system.mpcost;
-	}
-
-	armorDR(this: InvItem) : number {
-		if (this.system.slot != "body") {return 0;}
-		if (this.system.armorLevel > 0) {
-			return DamageSystem.getArmorDRByArmorLevel(this.system.armorLevel);
-		}
-		if (this.system.armorDR > 0) {
-			return this.system.armorDR;
-		}
-		if (this.itemLevel() > 0) {
-			return DamageSystem.getArmorDRByArmorLevel(this.itemLevel());
-		}
-		return 0;
 	}
 
 	generateSkillCardTeach(this: SkillCard): SourcedConditionalEffect {

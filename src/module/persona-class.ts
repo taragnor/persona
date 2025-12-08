@@ -29,7 +29,6 @@ import {PersonaTag} from "../config/creature-tags.js";
 import {Defense} from "../config/defense-types.js";
 import {PersonaStat} from "../config/persona-stats.js";
 import {Calculation, EvaluatedCalculation} from "./utility/calculation.js";
-import {DamageSystem} from "./combat/damage-system.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
 	#combatStats: U<PersonaCombatStats>;
@@ -1059,14 +1058,14 @@ highestPowerSlotUsable() : number {
 
 }
 
-armorDR() : number {
-	if (this.user.isShadow()) {
-		const DR =  DamageSystem.getArmorDRByArmorLevel(Math.floor(this.level /10));
-		return DR;
-	}
-	const armor = this.user.equippedItems().find(x => x.isInvItem() && x.system.slot == "body") as U<InvItem>;
-	return armor  != undefined ? armor.armorDR() : 0;
-}
+// armorDR() : number {
+// 	if (this.user.isShadow()) {
+// 		const DR =  PersonaSettings.getDamageSystem().getArmorDRByArmorLevel(Math.floor(this.level /10));
+// 		return DR;
+// 	}
+// 	const armor = this.user.equippedItems().find(x => x.isInvItem() && x.system.slot == "body") as U<InvItem>;
+// 	return armor  != undefined ? armor.armorDR() : 0;
+// }
 
 
 getBonusWpnDamage() : ModifierList {

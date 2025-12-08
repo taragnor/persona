@@ -25,7 +25,7 @@ import { PROBABILITIES } from "../../config/probability.js";
 import {TAG_TYPES} from "../../config/tags-general.js";
 import {PreconditionConverter} from "../migration/convertPrecondition.js";
 import {ConsequenceConverter} from "../migration/convertConsequence.js";
-import {DamageSystem} from "../combat/damage-system.js";
+import {PersonaSettings} from "../../config/persona-settings.js";
 
 function itemBase() {
 	return {
@@ -91,7 +91,7 @@ class WeaponDM extends foundry.abstract.TypeDataModel {
 		if (data?.damageNew == undefined && data?.damage?.low > 0) {
 			data.damageNew = {
 				weaponLevel: data.damage.low -1,
-				baseAmt: DamageSystem.convertFromOldLowDamageToNewBase(data?.damage?.low ?? 0),
+				baseAmt: PersonaSettings.getDamageSystem().convertFromOldLowDamageToNewBase(data?.damage?.low ?? 0),
 				extraVariance: 0,
 			};
 			data.itemLevel = data.damage.low - 1;
