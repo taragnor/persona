@@ -15,6 +15,8 @@ export class OriginalDamageSystem extends DamageSystemBase {
 	MAGIC_DAMAGE_MULT = 2 as const;
 	BASE_VARIANCE = 2 as const;
 	ARMOR_TO_DAMAGE_DIVISOR = 0.80 as const;
+	BASE_WEAPON_DAMAGE = 5 as const;
+	BASE_MAGIC_DAMAGE = 5 as const;
 
 	getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
 		const dtype = power.getDamageType(userPersona);
@@ -25,6 +27,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 		const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
 		const strRes = str.eval(situation);
+		calc.add('base', this.BASE_WEAPON_DAMAGE, `General Starting Weapon Damage`);
 		calc.add('base', strRes.total, `${userPersona.publicName} Strength (${strRes.steps.join(" ,")})`);
 		const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
 		calc.add('base', weaponDmg.baseAmt, weaponName.toString());
@@ -131,6 +134,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 		const dtype = power.getDamageType(userPersona);
 		const calc= new DamageCalculation(dtype);
 		const resMag = magicDmg.eval(situation);
+		calc.add('base', this.BASE_MAGIC_DAMAGE, `General Starting Magic Damage`);
 		calc.add('base', resMag.total, `${userPersona.publicName} Magic (${resMag.steps.join(" ,")})`, );
 		calc.add('base', skillDamage.baseAmt, `${power.displayedName.toString()} Damage`);
 		calc.add('base', damageBonus, 'Bonus Damage');
@@ -252,7 +256,7 @@ const DAMAGE_LEVEL_CONVERT_WEAPON = {
 
 //formual start at 6, then to get further levels , add (newlvl+1) to previous value
 const WEAPON_LEVEL_TO_DAMAGE: Record<number, number> = {
-	0: 10,
+	0: 11,
 	1: 14,
 	2: 18,
 	3: 24,
