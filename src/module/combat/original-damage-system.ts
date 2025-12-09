@@ -13,14 +13,13 @@ export class OriginalDamageSystem extends DamageSystemBase {
 	// WEAPON_DAMAGE_MULT = 1.75 as const;
 	// MAGIC_DAMAGE_MULT = 1.75 as const;
 	// ENDURANCE_DR_MULTIPLIER = 0.005 as const;
-	ENDURANCE_DR_MULTIPLIER = 0.0075 as const;
+	ENDURANCE_DR_MULTIPLIER = 0.01 as const;
 	WEAPON_DAMAGE_MULT = 2 as const;
 	MAGIC_DAMAGE_MULT = 2 as const;
 	BASE_VARIANCE = 2 as const;
 	ARMOR_TO_DAMAGE_DIVISOR = 0.80 as const;
-	BASE_WEAPON_DAMAGE = 5 as const;
-	BASE_MAGIC_DAMAGE = 5 as const;
-	ALL_OUT_ATTACK_HELPER_DIVISOR = 1/3;
+	ALL_OUT_ATTACK_HELPER_DIVISOR = 1/4;
+	BASE_DAMAGE_LEVEL_DIVISOR = 1;
 
 	getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
 		const dtype = power.getDamageType(userPersona);
@@ -31,7 +30,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 		const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
 		const strRes = str.eval(situation);
-		calc.add('base', this.BASE_WEAPON_DAMAGE, `General Starting Weapon Damage`);
+		calc.add('base', userPersona.user.level * this.BASE_DAMAGE_LEVEL_DIVISOR, `Character Level * ${this.BASE_DAMAGE_LEVEL_DIVISOR} `);
 		calc.add('base', strRes.total, `${userPersona.publicName} Strength (${strRes.steps.join(" ,")})`);
 		const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
 		calc.add('base', weaponDmg.baseAmt, weaponName.toString());
@@ -138,7 +137,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 		const dtype = power.getDamageType(userPersona);
 		const calc= new DamageCalculation(dtype);
 		const resMag = magicDmg.eval(situation);
-		calc.add('base', this.BASE_MAGIC_DAMAGE, `General Starting Magic Damage`);
+		calc.add('base', userPersona.user.level * this.BASE_DAMAGE_LEVEL_DIVISOR, `Character Level * ${this.BASE_DAMAGE_LEVEL_DIVISOR} `);
 		calc.add('base', resMag.total, `${userPersona.publicName} Magic (${resMag.steps.join(" ,")})`, );
 		calc.add('base', skillDamage.baseAmt, `${power.displayedName.toString()} Damage`);
 		calc.add('base', damageBonus, 'Bonus Damage');

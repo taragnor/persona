@@ -61,13 +61,11 @@ export abstract class DamageSystemBase implements DamageInterface {
 				continue;
 			}
 			const contribution= Math.round(Math.abs(result.hpChange));
-			list.push(
-				{
-					contributor: actor,
-					amt: contribution,
-					stack: result.str,
-				}
-			);
+			list.push( {
+				contributor: actor,
+				amt: contribution,
+				stack: result.str,
+			});
 		}
 		return list;
 	}

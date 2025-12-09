@@ -18,7 +18,7 @@ export class PercentBasedDamageSystem extends DamageSystemBase {
 	ENDURANCE_DR_MULTIPLIER = 0.005 as const;
 	BASE_STAT_MULT_ADJUST = 10 as const;
 	BASE_DAMAGE = 15 as const;
-	ALL_OUT_ATTACK_HELPER_DIVISOR = 1/3;
+	ALL_OUT_ATTACK_HELPER_DIVISOR = 1/4;
 
 	getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
 		const dtype = power.getDamageType(userPersona);
@@ -35,8 +35,6 @@ export class PercentBasedDamageSystem extends DamageSystemBase {
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
 		const basedmg = baseCalc.eval({user: userPersona.user.accessor});
 		calc.add('base', basedmg.total, `Base Damage (${basedmg.steps.join(" ,")})`);
-		// calc.add('base', weaponDmg.baseAmt, weaponName.toString());
-		// calc.add('base', skillDamage.baseAmt, `${power.displayedName.toString()} Power Bonus`);
 		calc.add('base', bonusDamage, 'Bonus Damage');
 		const variance  = this.BASE_VARIANCE + bonusVariance;
 		const varianceMult = userPersona.combatStats.getPhysicalVariance();
