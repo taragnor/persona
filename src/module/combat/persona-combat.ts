@@ -3029,39 +3029,7 @@ static calculateAllOutAttackDamage(attacker: PToken, situation: AttackResult['si
 	if (PersonaSettings.debugMode()) {
 		console.debug(`All out attack leader ${attacker.name}`);
 	}
-	const list : Awaited<ReturnType<typeof PersonaCombat['calculateAllOutAttackDamage']>> = [];
-	for (const actor of attackers) {
-		if (!actor.canAllOutAttack()) {continue;}
-		const mult = actor == attackLeader ? 1 : (1/2);
-		const damageCalc = this.individualContributionToAllOutAttackDamage(actor, situation);
-		const result = damageCalc.eval();
-		if (result == undefined || result.hpChange == 0) {
-			PersonaError.softFail('Allout contribution for ${actor.name} was 0 or undefined');
-			continue;
-		}
-		const contribution= Math.round(Math.abs(result.hpChange) * mult);
-		list.push(
-			{
-				contributor: actor,
-				amt: contribution,
-				stack: result.str,
-			}
-		);
-	}
-	return list;
-}
-
-static individualContributionToAllOutAttackDamage(actor: ValidAttackers, situation: AttackResult['situation']) : DamageCalculation {
-	if (!actor.canAllOutAttack()) {
-		return new DamageCalculation("physical");
-	}
-	const basicAttack = PersonaDB.getBasicPower('Basic Attack');
-	if (!basicAttack) {
-		PersonaError.softFail("Can't find Basic attack power");
-		return new DamageCalculation("physical");
-	}
-	const damage = basicAttack.damage.getDamage(basicAttack, actor.persona(), situation);
-	return damage;
+	return PersonaSettings.getDamageSystem().calculateAllOutDamage(attackLeader, attackers, situation);
 }
 
 getToken( acc: UniversalActorAccessor<PersonaActor>  | undefined): UniversalTokenAccessor<PToken> | undefined {

@@ -1,10 +1,13 @@
 import {DamageLevel, RealDamageType} from "../../config/damage-types.js";
 import {InvItem, ItemSubtype, Power, Usable} from "../item/persona-item.js";
 import {Persona} from "../persona-class.js";
+import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {Calculation} from "../utility/calculation.js";
+import {AttackResult} from "./combat-result.js";
 import {DamageCalculation, NewDamageParams} from "./damage-calc.js";
 import {DamageSystemBase} from "./damage-system.js";
+import {ValidAttackers} from "./persona-combat.js";
 
 export class OriginalDamageSystem extends DamageSystemBase {
 	// WEAPON_DAMAGE_MULT = 1.75 as const;
@@ -17,6 +20,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 	ARMOR_TO_DAMAGE_DIVISOR = 0.80 as const;
 	BASE_WEAPON_DAMAGE = 5 as const;
 	BASE_MAGIC_DAMAGE = 5 as const;
+	ALL_OUT_ATTACK_HELPER_DIVISOR = 1/3;
 
 	getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
 		const dtype = power.getDamageType(userPersona);
@@ -68,7 +72,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 	}
 
 	enduranceDR(targetPersona: Persona) : DamageCalculation {
-		const calc= new DamageCalculation(null);
+		const calc = new DamageCalculation(null);
 		const percentageMult = this.#endurancePercentDR(targetPersona);
 		calc.add("multiplier", percentageMult, "Endurance DR modifier");
 		return calc;
@@ -228,6 +232,22 @@ export class OriginalDamageSystem extends DamageSystemBase {
 		const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
 		if (val) {return Math.floor(val * ARMOR_DIVISOR);}
 		return 0;
+	}
+
+	individualContributionToAllOutAttackDamage(actor: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation {
+		if (!actor.canAllOutAttack()) {
+			return new DamageCalculation("physical");
+		}
+		const basicAttack = PersonaDB.getBasicPower('Basic Attack');
+		if (!basicAttack) {
+			PersonaError.softFail("Can't find Basic attack power");
+			return new DamageCalculation("physical");
+		}
+		const damage = basicAttack.damage.getDamage(basicAttack, actor.persona(), situation);
+		if (!isAttackLeader) {
+			damage.add("multiplier", this.ALL_OUT_ATTACK_HELPER_DIVISOR, "All out attack helper multiplier");
+		}
+		return damage;
 	}
 
 }

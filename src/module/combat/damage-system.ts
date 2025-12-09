@@ -2,7 +2,10 @@ import {DamageLevel, DamageType, RealDamageType} from "../../config/damage-types
 import {PowerType} from "../../config/effect-types.js";
 import {ItemSubtype, Power, Usable} from "../item/persona-item.js";
 import {Persona} from "../persona-class.js";
-import {DamageCalculation} from "./damage-calc.js";
+import {PersonaError} from "../persona-error.js";
+import {AttackResult} from "./combat-result.js";
+import {DamageCalculation, EvaluatedDamage} from "./damage-calc.js";
+import {ValidAttackers} from "./persona-combat.js";
 
 export abstract class DamageSystemBase implements DamageInterface {
 
@@ -23,7 +26,14 @@ export abstract class DamageSystemBase implements DamageInterface {
 		if (power.isPower() && power.system.damageLevel == 'none') {
 			return new DamageCalculation('none');
 		}
-		const subtype : PowerType = power.isPower() ? power.system.subtype : 'standalone';
+		let subtype : Power["system"]["subtype"] = "none";
+		if (power.isPower()) {
+			subtype = power.system.damageLevel == "fixed" ?
+				"standalone" : power.system.subtype;
+		} else {
+			subtype = 'standalone';
+		}
+		// const subtype : PowerType = power.isPower() ? power.system.subtype : 'standalone';
 		switch(subtype) {
 			case 'weapon' : {
 				return this.getWeaponSkillDamage(power as ItemSubtype<Power, 'weapon'>, attackerPersona, situation);
@@ -38,6 +48,31 @@ export abstract class DamageSystemBase implements DamageInterface {
 				return new DamageCalculation('none');
 		}
 	}
+
+	calculateAllOutDamage(attackLeader: ValidAttackers, allAttackers: ValidAttackers[], situation: AttackResult['situation'] ) : AllOutReturn[] {
+		const list : AllOutReturn[] = [];
+		for (const actor of allAttackers) {
+			if (!actor.canAllOutAttack()) {continue;}
+			const isAttackLeader = actor == attackLeader;
+			const damageCalc = this.individualContributionToAllOutAttackDamage(actor, situation, isAttackLeader);
+			const result = damageCalc.eval();
+			if (result == undefined) {
+				PersonaError.softFail('Allout contribution for ${actor.name} was undefined');
+				continue;
+			}
+			const contribution= Math.round(Math.abs(result.hpChange));
+			list.push(
+				{
+					contributor: actor,
+					amt: contribution,
+					stack: result.str,
+				}
+			);
+		}
+		return list;
+	}
+
+	abstract individualContributionToAllOutAttackDamage(attacker: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation;
 
 	abstract applyDR(calc: DamageCalculation, damageType: RealDamageType, power: Usable, targetPersona: Persona) : DamageCalculation;
 
@@ -61,7 +96,6 @@ abstract	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Pe
 
 	 abstract getWeaponDamageByWpnLevel(lvl: number) : number;
 	abstract getArmorDRByArmorLevel(lvl: number) : number;
-
 }
 
 
@@ -71,47 +105,9 @@ export interface DamageInterface {
 	convertFromOldLowDamageToNewBase(lowDmg: number): number;
 	getWeaponDamageByWpnLevel(lvl: number) : number;
 	getArmorDRByArmorLevel(lvl: number) : number;
+	calculateAllOutDamage(attackLeader: ValidAttackers, allAttackers: ValidAttackers[], situation: AttackResult['situation'] ) : AllOutReturn[];
+	individualContributionToAllOutAttackDamage(actor: ValidAttackers, situation: AttackResult["situation"], isAttackLeader: boolean) : DamageCalculation;
 }
-
-// const DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE = {
-// 	"none": {extraVariance: 0, baseAmt: 0},
-// 	"miniscule": {extraVariance: 0, baseAmt: 0},
-// 	"basic": {extraVariance: 0, baseAmt: 0},
-// 	"light": {extraVariance: 1, baseAmt: 10},
-// 	"medium": {extraVariance: 2, baseAmt: 30},
-// 	"heavy": {extraVariance: 2, baseAmt: 60},
-// 	"severe": {extraVariance: 3, baseAmt: 95},
-// 	"colossal": {extraVariance: 4, baseAmt: 140},
-// } as const satisfies Readonly<Record< ConvertableDamageLevel, NewDamageParams>>;
-
-// const DAMAGE_LEVEL_CONVERT_WEAPON = {
-// 	"none": {extraVariance: 0, baseAmt: 0},
-// 	"miniscule": {extraVariance: 0, baseAmt: 0},
-// 	"basic": {extraVariance: 0, baseAmt: 0},
-// 	"light": {extraVariance: 1, baseAmt: 10},
-// 	"medium": {extraVariance: 2, baseAmt: 30},
-// 	"heavy": {extraVariance: 2, baseAmt: 60},
-// 	"severe": {extraVariance: 3, baseAmt: 95},
-// 	"colossal": {extraVariance: 4, baseAmt: 140},
-// } as const satisfies Readonly<Record<ConvertableDamageLevel, NewDamageParams>> ;
-
-//formual start at 6, then to get further levels , add (newlvl+1) to previous value
-// const WEAPON_LEVEL_TO_DAMAGE: Record<number, number> = {
-// 	0: 10,
-// 	1: 14,
-// 	2: 18,
-// 	3: 24,
-// 	4: 32,
-// 	5: 42,
-// 	6: 54,
-// 	7: 68,
-// 	8: 84,
-// 	9: 102,
-// 	10: 122,
-// 	11: 144,
-// 	12: 168,
-// };
-
 
 export type ConvertableDamageLevel = Exclude<DamageLevel, "-" | "fixed">;
 
@@ -120,3 +116,9 @@ export type NewDamageParams = {
 	extraVariance: number,
 };
 
+
+export type AllOutReturn  = {
+	contributor: ValidAttackers,
+	amt: number,
+	stack: EvaluatedDamage['str']
+};

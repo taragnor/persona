@@ -1,10 +1,13 @@
 import {DamageLevel, RealDamageType} from "../../config/damage-types.js";
 import {InvItem, ItemSubtype, Power, Usable} from "../item/persona-item.js";
 import {Persona} from "../persona-class.js";
+import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {Calculation} from "../utility/calculation.js";
+import {AttackResult} from "./combat-result.js";
 import {DamageCalculation} from "./damage-calc.js";
 import {DamageSystemBase} from "./damage-system.js";
+import {ValidAttackers} from "./persona-combat.js";
 
 export class PercentBasedDamageSystem extends DamageSystemBase {
 	WEAPON_DAMAGE_MULT = 1.75 as const;
@@ -15,6 +18,7 @@ export class PercentBasedDamageSystem extends DamageSystemBase {
 	ENDURANCE_DR_MULTIPLIER = 0.005 as const;
 	BASE_STAT_MULT_ADJUST = 10 as const;
 	BASE_DAMAGE = 15 as const;
+	ALL_OUT_ATTACK_HELPER_DIVISOR = 1/3;
 
 	getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
 		const dtype = power.getDamageType(userPersona);
@@ -97,12 +101,12 @@ export class PercentBasedDamageSystem extends DamageSystemBase {
 	}
 
 	#armorDR(persona: Persona) : number {
-	if (persona.user.isShadow()) {
-		const DR =  this.getArmorDRByArmorLevel(Math.floor(persona.level /10));
-		return DR;
-	}
-	const armor = persona.user.equippedItems().find(x => x.isInvItem() && x.system.slot == "body") as U<InvItem>;
-	return armor  != undefined ? this.armorDRByEquipment(armor) : 0;
+		if (persona.user.isShadow()) {
+			const DR =  this.getArmorDRByArmorLevel(Math.floor(persona.level /10));
+			return DR;
+		}
+		const armor = persona.user.equippedItems().find(x => x.isInvItem() && x.system.slot == "body") as U<InvItem>;
+		return armor  != undefined ? this.armorDRByEquipment(armor) : 0;
 	}
 
 	armorDRByEquipment(item: InvItem) : number {
@@ -162,6 +166,7 @@ export class PercentBasedDamageSystem extends DamageSystemBase {
 		}
 	}
 
+
 	strDamageBonus(persona: Persona) : Calculation {
 		const strength = persona.combatStats.strength;
 		const calc = new Calculation(0, 2);
@@ -205,7 +210,7 @@ export class PercentBasedDamageSystem extends DamageSystemBase {
 		}
 	}
 
-	 getWeaponDamageByWpnLevel(lvl: number) : number {
+	getWeaponDamageByWpnLevel(lvl: number) : number {
 		const val =  WEAPON_LEVEL_TO_DAMAGE_MULT[lvl];
 		if (val) {return val;}
 		return 0;
@@ -218,7 +223,21 @@ export class PercentBasedDamageSystem extends DamageSystemBase {
 		return 0;
 	}
 
-
+	override individualContributionToAllOutAttackDamage(attacker: ValidAttackers, situation: AttackResult["situation"], isAttackLeader: boolean): DamageCalculation {
+		if (!attacker.canAllOutAttack()) {
+			return new DamageCalculation("physical");
+		}
+		const basicAttack = PersonaDB.getBasicPower('Basic Attack');
+		if (!basicAttack) {
+			PersonaError.softFail("Can't find Basic attack power");
+			return new DamageCalculation("physical");
+		}
+		const damage = basicAttack.damage.getDamage(basicAttack, attacker.persona(), situation);
+		if (!isAttackLeader) {
+			damage.add("multiplier", this.ALL_OUT_ATTACK_HELPER_DIVISOR, "All out attack helper multiplier");
+		}
+		return damage;
+	}
 
 }
 
@@ -254,7 +273,7 @@ const WEAPON_LEVEL_TO_DAMAGE_MULT: Record<number, number> = {
 	5: 2.25,
 	6: 2.5,
 	7: 2.75,
-	8: 3, 
+	8: 3,
 	9: 3.25,
 	10:  3.50,
 	11: 3.75,
