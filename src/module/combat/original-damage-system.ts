@@ -18,7 +18,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 	WEAPON_DAMAGE_MULT = 2 as const;
 	MAGIC_DAMAGE_MULT = 2 as const;
 	BASE_VARIANCE = 2 as const;
-	ARMOR_TO_DAMAGE_DIVISOR = 0.9 as const;
+	ARMOR_TO_DAMAGE_DIVISOR = 0.8 as const;
 	ALL_OUT_ATTACK_HELPER_DIVISOR = 1/4;
 	BASE_DAMAGE_LEVEL_DIVISOR = 0.5;
 	private _weaponDmgGrowth = new GrowthCalculator(1.20, 11, 4.5);
