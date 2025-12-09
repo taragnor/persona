@@ -4,6 +4,7 @@ import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {Calculation} from "../utility/calculation.js";
+import {GrowthCalculator} from "../utility/growth-calculator.js";
 import {AttackResult} from "./combat-result.js";
 import {DamageCalculation, NewDamageParams} from "./damage-calc.js";
 import {DamageSystemBase} from "./damage-system.js";
@@ -17,9 +18,10 @@ export class OriginalDamageSystem extends DamageSystemBase {
 	WEAPON_DAMAGE_MULT = 2 as const;
 	MAGIC_DAMAGE_MULT = 2 as const;
 	BASE_VARIANCE = 2 as const;
-	ARMOR_TO_DAMAGE_DIVISOR = 0.80 as const;
+	ARMOR_TO_DAMAGE_DIVISOR = 0.9 as const;
 	ALL_OUT_ATTACK_HELPER_DIVISOR = 1/4;
-	BASE_DAMAGE_LEVEL_DIVISOR = 1;
+	BASE_DAMAGE_LEVEL_DIVISOR = 0.5;
+	private _weaponDmgGrowth = new GrowthCalculator(1.20, 11, 4.5);
 
 	getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
 		const dtype = power.getDamageType(userPersona);
@@ -218,17 +220,22 @@ export class OriginalDamageSystem extends DamageSystemBase {
 		}
 	}
 
-
-	 getWeaponDamageByWpnLevel(lvl: number) : number {
-		const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
-		if (val) {return val;}
-		return 0;
+	getWeaponDamageByWpnLevel(lvl: number) : number {
+		lvl = Math.round(lvl);
+		return this._weaponDmgGrowth.valueAt(lvl + 1);
 	}
+
+	// getWeaponDamageByWpnLevel(lvl: number) : number {
+	// 	lvl = Math.clamp(Math.round(lvl), 0, 12);
+	// 	const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
+	// 	if (val) {return val;}
+	// 	return 0;
+	// }
 
 	getArmorDRByArmorLevel(lvl: number) : number {
 		const ARMOR_DIVISOR = this.ARMOR_TO_DAMAGE_DIVISOR;
 		// const ARMOR_DIVISOR = 0.90;
-		const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
+		const val =  this.getWeaponDamageByWpnLevel(lvl);
 		if (val) {return Math.floor(val * ARMOR_DIVISOR);}
 		return 0;
 	}
@@ -273,22 +280,22 @@ const DAMAGE_LEVEL_CONVERT_WEAPON = {
 	"colossal": {extraVariance: 4, baseAmt: 140},
 } as const satisfies Readonly<Record<ConvertableDamageLevel, NewDamageParams>> ;
 
-//formual start at 6, then to get further levels , add (newlvl+1) to previous value
-const WEAPON_LEVEL_TO_DAMAGE: Record<number, number> = {
-	0: 11,
-	1: 14,
-	2: 18,
-	3: 24,
-	4: 32,
-	5: 42,
-	6: 54,
-	7: 68,
-	8: 84,
-	9: 102,
-	10: 122,
-	11: 144,
-	12: 168,
-};
+
+// const WEAPON_LEVEL_TO_DAMAGE: Record<number, number> = {
+// 	0: 11,
+// 	1: 14,
+// 	2: 18,
+// 	3: 24,
+// 	4: 32,
+// 	5: 42,
+// 	6: 54,
+// 	7: 68,
+// 	8: 84,
+// 	9: 102,
+// 	10: 122,
+// 	11: 144,
+// 	12: 168,
+// };
 
 type ConvertableDamageLevel = Exclude<DamageLevel, "-" | "fixed">;
 

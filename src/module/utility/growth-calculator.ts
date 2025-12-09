@@ -7,8 +7,8 @@ export class GrowthCalculator {
 	 _growthRate : number;
 	 _initialGrowth : number;
 
-	 constructor (growth_rate: number, initial: number, initialGrowth: number, growthAcceleration : number = 0) {
-			this._growthRate = growth_rate;
+	 constructor (base_growth_rate: number, initial: number, initialGrowth: number, growthAcceleration : number = 0) {
+			this._growthRate = base_growth_rate;
 			this._initial = initial;
 			this._initialGrowth = initialGrowth;
 			this._growthAcceleration = growthAcceleration;
@@ -59,7 +59,7 @@ export class GrowthCalculator {
 			return this._growthRate + (lvl * this._growthAcceleration);
 	 }
 
-  printMilestones(xp_growth ?: number, initialGrowth ?: number) {
+  printMilestones(xp_growth ?: number, initialGrowth ?: number, milestoneSize = 10) {
     if (xp_growth) {
       this._growthRate = xp_growth;
       this.resetCache();
@@ -68,7 +68,7 @@ export class GrowthCalculator {
       this._initialGrowth = initialGrowth;
       this.resetCache();
     }
-    for (let lvl = 1; lvl <= 105; lvl+=10) {
+    for (let lvl = 1; lvl <= 1+ (milestoneSize * 10); lvl+=milestoneSize) {
       const XPNeeded = this.valueAt(lvl);
       console.log(` ${lvl} : ${XPNeeded}`);
     }
