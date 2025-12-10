@@ -212,6 +212,7 @@ type SituationUniversal = {
 	socialTarget ?: UniversalActorAccessor<ValidSocialTarget>;
 	socialRandom ?: number;
 	cameo ?: UniversalActorAccessor<ValidSocialTarget>;
+	"triggering-character" ?: never;
 } & (RollSituation | NonRollSituation);
 
 

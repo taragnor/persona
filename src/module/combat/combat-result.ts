@@ -130,7 +130,7 @@ export class CombatResult  {
 				if (!effect) {return;}
 				const attacker = atkResult?.attacker ? PersonaDB.findToken(atkResult.attacker).actor : undefined;
 				const situation = {
-					"triggering-character": target.accessor,
+					triggeringCharacter: target.accessor,
 					user: attacker ? attacker.accessor : target.accessor,
 					target: target.accessor,
 					attacker: attacker ? attacker.accessor : undefined,
@@ -153,7 +153,7 @@ export class CombatResult  {
 				if (cons.amount != undefined && typeof cons.amount == "object") {
 				const attacker = atkResult?.attacker ? PersonaDB.findToken(atkResult.attacker).actor : undefined;
 				const situation = {
-					"triggering-character": target.accessor,
+					triggeringCharacter: target.accessor,
 					user: attacker ? attacker.accessor : target.accessor,
 					target: target.accessor,
 					attacker: attacker ? attacker.accessor : undefined,
