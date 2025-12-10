@@ -198,6 +198,7 @@ export class FinalizedCombatResult {
 				case "cancel":
 				case "set-hp":
 				case "inventory-action":
+				case "apply-recovery":
 					break;
 				default:
 					otherEffect satisfies never;
@@ -751,6 +752,10 @@ export class FinalizedCombatResult {
 			case "inventory-action":
 				await this.resolveInventoryAction(actor, otherEffect);
 				break;
+			case "apply-recovery" :
+				await actor.spendRecovery(null);
+				break;
+
 			default:
 				otherEffect satisfies never;
 		}

@@ -115,7 +115,11 @@ export type ExtraTurnEffect = {
 	activation: number,
 };
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | SetHPOtherEffect | InventoryActionConsequence;
+type RecoveryEffect = {
+	type: "apply-recovery",
+}
+
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | SetHPOtherEffect | InventoryActionConsequence | RecoveryEffect;
 ;
 
 type SetHPOtherEffect = {
@@ -188,7 +192,6 @@ type NonGenericConsequences = UsePowerConsequence
 	| ModifierConsequence
 	| OldDamageConsequence
 	| OldModifier
-	| DamageConsequence
 	| DisplayMessageConsequence
 	| ExpendItemConsequence
 	| AlterMPConsequence
@@ -198,8 +201,6 @@ type NonGenericConsequences = UsePowerConsequence
 	| AddPowerConsequence
 	| AddTalentConsequence
 	| InspirationChangeConsequence
-	| AddStatusConsequence
-	| RemoveStatusConsequence
 	| SetFlagConsequence
 	| AddTagConsequence
 	| CombatEffectConsequence
@@ -208,10 +209,6 @@ type NonGenericConsequences = UsePowerConsequence
 	| PermabuffConsequence
 	| PlaySoundConsequence
 	| GainLevelConsequence
-	| ScanConsequence
-	| BasicNumberedConsequence
-	| ExtraAttackConsequence
-	| ExtraActionConsequence
 	| CancelRequestConsequence
 	| InventoryActionConsequence
 ;
@@ -337,7 +334,47 @@ type FatigueConsequence = {
 type CombatEffectConsequence = {
 	type: "combat-effect";
 	combatEffect: CombatEffect
-};
+} & CombatEffectConsequencesList;
+
+type CombatEffectConsequencesList =
+	NewDamageConsequence
+	| ({
+		combatEffect : "addStatus",
+		statusName: StatusEffect["id"],
+	} & DurationComponent)
+	| {
+		combatEffect: "removeStatus",
+		statusName: StatusEffect["id"],
+	} | {
+		combatEffect: "extraTurn",
+	} | {
+		combatEffect: "scan",
+		amount: number,
+		downgrade: boolean,
+	} | {
+		combatEffect: "auto-end-turn",
+	} | ( {
+		combatEffect : "extraAttack",
+		iterativePenalty: number,
+	} & NumberedConsequencePart)
+	| {
+		combatEffect: "alter-energy",
+		amount: number,
+	} | {
+		combatEffect: "apply-recovery",
+	}
+;
+
+
+export type NewDamageConsequence =
+
+	{
+		type: "combat-effect",
+		combatEffect: "damage"
+	}
+	& DamageConsequenceShared
+	& DamageConsequenceSubtypes;
+
 
 type AddTagConsequence = {
 	type: "add-creature-tag",
@@ -413,12 +450,15 @@ type ExpendItemConsequence = {
 	type : "expend-item",
 }
 
+type DamageConsequenceSubtypes = SimpleDamageCons
+	| ConstantDamageCons
+	| DamageMultiplierCons
+
 type DamageConsequenceShared = {
-	type : "damage-new",
 	damageSubtype: DamageSubtype,
 	amount ?: ConsequenceAmount; //only added later for effects
 	calc ?: unknown, //this is a DamageCalc but typescript doesn't like it
-	damageType: DamageType | "by-power",
+	damageType: DamageType,
 	/** manually added as part of processing */
 };
 
@@ -438,7 +478,14 @@ export type DeprecatedConsequence =
 	| DeprecatedSimpleEffect
 	| AddEscalationConsequence
 	| SlotRecoveryConsequence
-	| EscalationManipulation;
+	| EscalationManipulation
+	| DamageConsequence
+	| AddStatusConsequence
+	| RemoveStatusConsequence
+	| ExtraAttackConsequence
+	| ExtraActionConsequence
+	| ScanConsequence
+	| BasicNumberedConsequence
 ;
 
 type EscalationManipulation = {
@@ -458,11 +505,11 @@ export type OldDamageConsequence = {
 	damageType: DamageType | "by-power",
 	calc ?: unknown, //this is a DamageCalc but typescript doesn't like it
 }
-export type DamageConsequence = DamageConsequenceShared & (
-	SimpleDamageCons
-	| ConstantDamageCons
-	| DamageMultiplierCons
-);
+export type DamageConsequence =
+	{	type : "damage-new" }
+	& DamageConsequenceShared
+	& DamageConsequenceSubtypes
+;
 
 export type SimpleDamageCons = {
 	damageSubtype: Extract<DamageSubtype, "high" | "low" | "allout"| "odd-even">,

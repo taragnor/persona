@@ -1,8 +1,7 @@
 import { DAMAGETYPES } from "../../config/damage-types.js";
 import { FinalizedCombatResult } from "./finalized-combat-result.js";
 import { ConsequenceProcessed } from "./persona-combat.js";
-import { ConsequenceAmount, DamageConsequence, SetFlagEffect } from "../../config/consequence-types.js";
-import { OldDamageConsequence } from "../../config/consequence-types.js";
+import { ConsequenceAmount, NewDamageConsequence, SetFlagEffect } from "../../config/consequence-types.js";
 import { DamageCalculation } from "./damage-calc.js";
 import { RollSituation } from "../../config/situation.js";
 import { PersonaItem, UsableAndCard } from "../item/persona-item.js";
@@ -23,6 +22,7 @@ import { PersonaCombat } from "./persona-combat.js";
 import { PersonaDB } from "../persona-db.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
+import {ConsequenceTarget} from "../../config/precondition-types.js";
 
 declare global {
 	interface SocketMessage {
@@ -72,7 +72,7 @@ export class CombatResult  {
 		this.sounds.push({sound, timing});
 	}
 
-	#getDamageCalc(cons: OldDamageConsequence | DamageConsequence, atkResult: U<AttackResult>, effect: U<ActorChange<ValidAttackers>>  ) : U<DamageCalculation> {
+	#getDamageCalc(cons: NewDamageConsequence, atkResult: U<AttackResult>, effect: U<ActorChange<ValidAttackers>>  ) : U<DamageCalculation> {
 		if (!effect) {return undefined;}
 		let damageType = cons.damageType;
 		if (damageType == "by-power") {
@@ -122,19 +122,13 @@ export class CombatResult  {
 		return undefined;
 	}
 
-	private addEffect_damage(cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type : "damage-new"}, effect: ActorChange<ValidAttackers>, target: ValidAttackers, atkResult: U<AttackResult> | null) {
+	private addEffect_damage(cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type : "combat-effect", combatEffect:"damage"}, effect: ActorChange<ValidAttackers>, target: ValidAttackers, atkResult: U<AttackResult> | null) {
 		if (!target) {return;}
 		switch  (cons.damageSubtype) {
 			case "set-to-percent":
 			case "set-to-const": {
 				if (!effect) {return;}
 				const attacker = atkResult?.attacker ? PersonaDB.findToken(atkResult.attacker).actor : undefined;
-				// const list : Partial<TargettingContextList> = {
-				// 	"triggering-character": [target.accessor],
-				// 	target: [target.accessor],
-				// 	attacker: attacker ? [attacker.accessor] : undefined,
-				// 	situation: atkResult?.situation,
-				// };
 				const situation = {
 					"triggering-character": target.accessor,
 					user: attacker ? attacker.accessor : target.accessor,
@@ -178,16 +172,12 @@ export class CombatResult  {
 		}
 	}
 
-	async addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
-		const effect = this.#getEffect(target);
-		switch (cons.type) {
-			case "none":
-				break;
-			case "damage-new": {
+	private addEffect_combatEffect( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "combat-effect"}, effect: ActorChange<ValidAttackers>, target: U<ValidAttackers>, atkResult: U<AttackResult>, situation: Readonly<Situation>) {
+		switch (cons.combatEffect) {
+			case "damage":
 				if (!effect || !target) {break;}
 				this.addEffect_damage(cons, effect, target, atkResult);
 				break;
-			}
 			case "addStatus": {
 				if (!effect) {break;}
 				let status_damage : number | undefined = undefined;
@@ -219,7 +209,7 @@ export class CombatResult  {
 				}
 				break;
 			}
-			case "removeStatus" : {
+			case "removeStatus": {
 				if (!effect) {break;}
 				const id = cons.statusName;
 				const actor = PersonaDB.findActor(effect.actor);
@@ -230,6 +220,114 @@ export class CombatResult  {
 				}
 				break;
 			}
+			case "extraAttack": {
+				if (!effect) {break;}
+				effect.otherEffects.push({
+					type: "extra-attack",
+					maxChain: cons.amount ?? 1,
+					iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
+				});
+				break;
+			}
+			case "extraTurn": {
+				if (atkResult) {
+					const power = PersonaDB.findItem(atkResult.power);
+					if (power.isOpener()) {break;}
+					if (power.isTeamwork()) {break;}
+				}
+				if (!effect) {break;}
+				const combat = game.combat as PersonaCombat;
+				if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) {break;}
+				effect.otherEffects.push({
+					type: "extraTurn",
+					activation: combat.lastActivationRoll
+				});
+				break;
+			}
+			case "scan":
+				if (!effect) {break;}
+				effect.otherEffects.push( {
+					type: cons.combatEffect,
+					level: cons.amount ?? 1,
+					downgrade: cons.downgrade ?? false,
+				});
+				break;
+			case "auto-end-turn":
+				if (!effect) {break;}
+				effect.otherEffects.push(cons);
+				break;
+			case "alter-energy": {
+				if (!effect) {break;}
+				const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
+				effect.otherEffects.push( {
+					type: cons.combatEffect,
+					amount,
+				});
+				break;
+			}
+			case "apply-recovery":
+				effect.otherEffects.push( {
+					type: cons.combatEffect,
+				});
+				break;
+			default:
+				cons satisfies never;
+		}
+
+	}
+
+	async addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
+		const effect = this.#getEffect(target);
+		switch (cons.type) {
+			case "none":
+				break;
+			// case "damage-new": {
+			// 	if (!effect || !target) {break;}
+			// 	this.addEffect_damage(cons, effect, target, atkResult);
+			// 	break;
+			// }
+			// case "addStatus": {
+			// 	if (!effect) {break;}
+			// 	let status_damage : number | undefined = undefined;
+			// 	if (atkResult && cons.statusName == "burn") {
+			// 		const power = PersonaDB.findItem(atkResult.power);
+			// 		if (power.system.type == "skillCard") {
+			// 			PersonaError.softFail("Skill Card shouldn't be here");
+			// 			break;
+			// 		}
+			// 		const attacker = PersonaDB.findToken(atkResult.attacker).actor;
+			// 		status_damage = attacker
+			// 			? (power as Usable)
+			// 				.damage.getDamage(power as Usable, attacker.persona())
+			// 			.eval()
+			// 			.hpChange ?? 0
+			// 			: 0;
+			// 	}
+			// 	const id = cons.statusName;
+			// 	if (id != "bonus-action") {
+			// 		if (!target) {
+			// 			PersonaError.softFail(`No Target for ${id}`);
+			// 			break;
+			// 		}
+			// 		effect.addStatus.push({
+			// 			id,
+			// 			potency: Math.abs(status_damage ?? cons.amount ?? 0),
+			// 			duration: convertConsToStatusDuration(cons, atkResult ?? target),
+			// 		});
+			// 	}
+			// 	break;
+			// }
+			// case "removeStatus" : {
+			// 	if (!effect) {break;}
+			// 	const id = cons.statusName;
+			// 	const actor = PersonaDB.findActor(effect.actor);
+			// 	if (actor.hasStatus(id)) {
+			// 		effect.removeStatus.push({
+			// 			id,
+			// 		});
+			// 	}
+			// 	break;
+			// }
 			case "expend-item": {
 				const item = cons.source;
 				if (!effect) {
@@ -254,15 +352,15 @@ export class CombatResult  {
 				});
 				break;
 			}
-			case "extraAttack": {
-				if (!effect) {break;}
-				effect.otherEffects.push({
-					type: "extra-attack",
-					maxChain: cons.amount ?? 1,
-					iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
-				});
-				break;
-			}
+			// case "extraAttack": {
+			// 	if (!effect) {break;}
+			// 	effect.otherEffects.push({
+			// 		type: "extra-attack",
+			// 		maxChain: cons.amount ?? 1,
+			// 		iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
+			// 	});
+			// 	break;
+			// }
 			case "expend-slot": {
 				console.warn("Expend slot is unused and does nnothing");
 				break;
@@ -273,21 +371,21 @@ export class CombatResult  {
 			case "lower-resistance":
 			case "raise-status-resistance":
 				break;
-			case "extraTurn": {
-				if (atkResult) {
-					const power = PersonaDB.findItem(atkResult.power);
-					if (power.isOpener()) {break;}
-					if (power.isTeamwork()) {break;}
-				}
-				if (!effect) {break;}
-				const combat = game.combat as PersonaCombat;
-				if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) {break;}
-				effect.otherEffects.push({
-					type: "extraTurn",
-					activation: combat.lastActivationRoll
-				});
-				break;
-			}
+			// case "extraTurn": {
+			// 	if (atkResult) {
+			// 		const power = PersonaDB.findItem(atkResult.power);
+			// 		if (power.isOpener()) {break;}
+			// 		if (power.isTeamwork()) {break;}
+			// 	}
+			// 	if (!effect) {break;}
+			// 	const combat = game.combat as PersonaCombat;
+			// 	if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) {break;}
+			// 	effect.otherEffects.push({
+			// 		type: "extraTurn",
+			// 		activation: combat.lastActivationRoll
+			// 	});
+			// 	break;
+			// }
 			case "add-power-to-list":
 			case "add-talent-to-list":
 				break;
@@ -359,14 +457,14 @@ export class CombatResult  {
 				});
 				break;
 			}
-			case "scan":
-				if (!effect) {break;}
-				effect.otherEffects.push( {
-					type: cons.type,
-					level: cons.amount ?? 1,
-					downgrade: cons.downgrade ?? false,
-				});
-				break;
+			// case "scan":
+			// 	if (!effect) {break;}
+			// 	effect.otherEffects.push( {
+			// 		type: cons.type,
+			// 		level: cons.amount ?? 1,
+			// 		downgrade: cons.downgrade ?? false,
+			// 	});
+			// 	break;
 			case "social-card-action": {
 				//must be executed playerside as event execution is a player thing
 				const otherEffect : SocialCardActionConsequence = {
@@ -382,17 +480,17 @@ export class CombatResult  {
 					...cons
 				});
 				break;
-			case "alter-energy": {
-				if (!effect) {break;}
-				// const contextList = PersonaCombat.createTargettingContextList(situation, cons);
-				const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
-				effect.otherEffects.push( {
-					type: cons.type,
-					amount,
-					// amount: cons.amount ?? 0,
-				});
-				break;
-			}
+			// case "alter-energy": {
+			// 	if (!effect) {break;}
+			// 	// const contextList = PersonaCombat.createTargettingContextList(situation, cons);
+			// 	const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
+			// 	effect.otherEffects.push( {
+			// 		type: cons.type,
+			// 		amount,
+			// 		// amount: cons.amount ?? 0,
+			// 	});
+			// 	break;
+			// }
 			case "alter-mp":
 				if (!effect) {break;}
 				effect.otherEffects.push( {
@@ -411,7 +509,8 @@ export class CombatResult  {
 				break;
 			case "combat-effect":
 				if (!effect) {break;}
-				effect.otherEffects.push(cons);
+				this.addEffect_combatEffect(cons, effect, target, atkResult ?? undefined, situation);
+				// effect.otherEffects.push(cons);
 				break;
 			case "alter-fatigue-lvl":
 				if (!effect) {break;}
@@ -629,7 +728,7 @@ export type AttackResult = {
 };
 
 
-function resolveStatusDurationAnchor (anchor: (Consequence & {type : "addStatus" | "set-flag"})["durationApplyTo"], atkResult: AttackResult) : UniversalActorAccessor<ValidAttackers> | null {
+function resolveStatusDurationAnchor (anchor: ConsequenceTarget, atkResult: AttackResult) : UniversalActorAccessor<ValidAttackers> | null {
 	if (!anchor) {
 		anchor = "target";
 	}
@@ -686,7 +785,7 @@ function resolveStatusDurationAnchor (anchor: (Consequence & {type : "addStatus"
 	return null;
 }
 
-function convertConsToStatusDuration(cons: Consequence & {type : "addStatus" | "set-flag"}, atkResultOrActor: AttackResult | ValidAttackers) : StatusDuration {
+function convertConsToStatusDuration(cons: Consequence & ({type : "set-flag"} | {type: "combat-effect", combatEffect:"addStatus"}) , atkResultOrActor: AttackResult | ValidAttackers) : StatusDuration {
 	const dur = cons.statusDuration;
 	switch (dur) {
 		case "X-rounds":
@@ -735,7 +834,7 @@ function convertConsToStatusDuration(cons: Consequence & {type : "addStatus" | "
 					actorTurn: atkResultOrActor.accessor
 				};
 			}
-			const anchorHolder = resolveStatusDurationAnchor(cons.durationApplyTo, atkResultOrActor);
+			const anchorHolder = resolveStatusDurationAnchor(cons.durationApplyTo!, atkResultOrActor);
 			//this isn't necessarily target, it has to be  determined by who the anchor is
 			if (anchorHolder)  {
 				return {

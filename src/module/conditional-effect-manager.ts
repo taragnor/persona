@@ -943,24 +943,24 @@ export class ConditionalEffectManager {
 				const modifiers = this.translate(cons.modifiedFields, MODIFIERS_TABLE);
 				return `${modifiers}: ${this.printConsequenceAmount(cons.amount)}`;
 			}
-			case "damage-new":
-				return this.printDamageConsequence(cons);
-			case "addStatus": {
-				const status = this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE);
-				const dur = cons.statusDuration;
-				if (!dur) {return `ERROR`;}
-				const duration = this.translate(dur, STATUS_EFFECT_DURATION_TYPES);
-				return `Add Status ${status} (${duration})`;
-			} case "removeStatus": {
-				const status = this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE);
-				return `Remove Status ${status}`;
-			}
-			case "extraAttack":
-				return `extra attack`;
+			// case "damage-new":
+			// 	return this.printDamageConsequence(cons);
+			// case "addStatus": {
+			// 	const status = this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE);
+			// 	const dur = cons.statusDuration;
+			// 	if (!dur) {return `ERROR`;}
+			// 	const duration = this.translate(dur, STATUS_EFFECT_DURATION_TYPES);
+			// 	return `Add Status ${status} (${duration})`;
+			// } case "removeStatus": {
+			// 	const status = this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE);
+			// 	return `Remove Status ${status}`;
+			// }
+			// case "extraAttack":
+			// 	return `extra attack`;
+			// case "extraTurn":
+			// 	return `Take an extra turn`;
 			case "expend-slot":
 				return `expend Slot`;
-			case "extraTurn":
-				return `Take an extra turn`;
 			case "expend-item":
 				return `expend item`;
 			case "add-power-to-list": {
@@ -980,12 +980,12 @@ export class ConditionalEffectManager {
 				return `Inpsiration Cost : ${cons.amount}`;
 			case "display-msg":
 				return `Display Msg: ${cons.msg?.trim()}`;
-			case "scan":
-				return `Scan Target Level ${cons.amount}`;
 			case "social-card-action":
 				return this.#printSocialCardAction(cons);
-			case "alter-energy":
-				return `Energy ${cons.amount}`;
+			// case "scan":
+			// 	return `Scan Target Level ${cons.amount}`;
+			// case "alter-energy":
+			// 	return `Energy ${cons.amount}`;
 			case "dungeon-action":
 				return this.#printDungeonAction(cons);
 			case "raise-resistance": {
@@ -1110,8 +1110,30 @@ export class ConditionalEffectManager {
 		switch (cons.combatEffect) {
 			case "auto-end-turn":
 				return `Automatically End Turn`;
+			case "damage":
+				return this.printDamageConsequence(cons);
+			case "addStatus": {
+				const status = this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE);
+				const dur = cons.statusDuration;
+				if (!dur) {return `ERROR`;}
+				const duration = this.translate(dur, STATUS_EFFECT_DURATION_TYPES);
+				return `Add Status ${status} (${duration})`;
+			} case "removeStatus": {
+				const status = this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE);
+				return `Remove Status ${status}`;
+			}
+			case "extraAttack":
+				return `extra attack`;
+			case "extraTurn":
+				return `Take an extra turn`;
+			case "scan":
+				return `Scan Target Level ${cons.amount}`;
+			case "alter-energy":
+				return `Energy ${cons.amount}`;
+			case "apply-recovery":
+				return `Apply Recovery`;
 			default:
-				cons.combatEffect satisfies never;
+				cons satisfies never;
 				return "ERROR";
 		}
 
@@ -1224,7 +1246,7 @@ export class ConditionalEffectManager {
 		return amt > 0 ?`+${amt}` : `${amt}`;
 	}
 
-	static printDamageConsequence(cons: Consequence & {type: "damage-new"}) : string {
+	static printDamageConsequence(cons: Consequence & {type: "combat-effect",combatEffect:"damage"}) : string {
 		const damageType = "damageType" in cons ? this.translate(cons.damageSubtype, DAMAGE_SUBTYPES): "";
 		switch (cons.damageSubtype) {
 			case "constant":

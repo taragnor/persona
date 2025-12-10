@@ -1,4 +1,4 @@
-import {Consequence, NonDeprecatedConsequence} from "../../config/consequence-types.js";
+import {NonDeprecatedConsequence} from "../../config/consequence-types.js";
 import {DamageType} from "../../config/damage-types.js";
 import {StatusEffectId} from "../../config/status-effects.js";
 import {StatusDuration} from "../active-effect.js";
@@ -22,7 +22,7 @@ export abstract class CostCalculator {
 	static durationFactor(pwr: Power, st: StatusEffectId): number | StatusDuration["dtype"] {
 		for (const eff of pwr.getEffects(null)) {
 			const statusAdd=  eff.consequences
-				.find( cons=> cons.type == "addStatus" && cons.statusName == st) as (NonDeprecatedConsequence & {type : "addStatus"});
+				.find( cons=> cons.type == "combat-effect" && cons.combatEffect == "addStatus" && cons.statusName == st) as (NonDeprecatedConsequence & {type: "combat-effect", combatEffect : "addStatus"});
 			if (!statusAdd) {continue;}
 			switch (statusAdd.statusDuration) {
 				case "X-rounds":

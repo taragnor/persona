@@ -12,20 +12,34 @@ const DEPRECATED_CONSEQUENCE_TYPES = [
 	"hp-loss", //deprecated
 	"half-hp-cost", //deprecated
 	"absorb",
+	"addStatus",
+	"removeStatus",
+	"escalationManipulation",
+	"expend-slot",
+	"alter-energy",
+	"damage-new",
+	"addStatus",
+	"removeStatus",
+	"escalationManipulation",
+	"extraAttack",
+	"revive",
+	"extraTurn",
+	"scan",
+
 ] as const;
 
 export const NON_DEPRECATED_CONSQUENCELIST = [
 	"none",
 	"modifier", //singular-mod
 	"modifier-new", //multi-mod
-	"damage-new",
-	"addStatus",
-	"removeStatus",
-	"escalationManipulation",
-	"extraAttack",
-	"expend-slot",
-	"revive",
-	"extraTurn",
+	"combat-effect",
+	// "damage-new",
+	// "addStatus",
+	// "removeStatus",
+	// "escalationManipulation",
+	// "extraAttack",
+	// "revive",
+	// "extraTurn",
 	"expend-item",
 	"add-talent-to-list",
 	"add-power-to-list",
@@ -34,11 +48,11 @@ export const NON_DEPRECATED_CONSQUENCELIST = [
 	"set-flag",
 	"inspiration-cost",
 	"display-msg",
-	"scan",
+	// "scan",
 	"social-card-action",
 	"alter-variable",
 	"add-creature-tag",
-	"alter-energy",
+	// "alter-energy",
 	"dungeon-action",
 	"perma-buff",
 	"play-sound",
@@ -47,7 +61,6 @@ export const NON_DEPRECATED_CONSQUENCELIST = [
 	"lower-resistance",
 	"use-power",
 	"alter-mp",
-	"combat-effect",
 	"alter-fatigue-lvl",
 	"gain-levels",
 	"cancel",
@@ -221,7 +234,16 @@ export const ALTER_MP_SUBTYPES = Object.fromEntries(
 );
 
 export const COMBAT_EFFECTS_LIST = [
-	"auto-end-turn"
+	"damage",
+	"alter-energy",
+	"addStatus",
+	"removeStatus",
+	"extraAttack",
+	// "revive",
+	"extraTurn",
+	"scan",
+	"auto-end-turn",
+	"apply-recovery",
 ] as const;
 
 export type CombatEffect = typeof COMBAT_EFFECTS_LIST[number];

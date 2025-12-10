@@ -1,0 +1,84 @@
+<select name="{{strcat namePrefix 'combatEffect'}}">
+	{{selectOptions POWERSTUFF.COMBAT_EFFECTS localize=true selected=(defVal cons.combatEffect "damage")}}
+</select>
+
+
+{{#if (eq (defVal cons.combatEffect "damage") "damage")}}
+<select name="{{strcat namePrefix 'damageSubtype'}}">
+	{{selectOptions POWERSTUFF.DAMAGE_SUBTYPES localize=true selected=cons.damageSubtype}}
+</select>
+
+{{#if (neq-m cons.damageSubtype "set-to-const" "set-to-percent")}}
+<select name="{{strcat namePrefix 'damageType'}}">
+	{{selectOptions POWERSTUFF.DAMAGETYPESPLUS localize=true selected=cons.damageType}}
+</select>
+{{/if}}
+
+{{#if (eqAny cons.damageSubtype "constant" "multiplier" "percentage" "mult-stack" "percentage-current" "set-to-const" "set-to-percent")}}
+{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amount.') cons=cons.amount POWERSTUFF=POWERSTUFF owner=owner}}
+{{/if}}
+
+{{/if}}
+
+{{#if (eqAny cons.combatEffect "addStatus" "removeStatus")}}
+<select name="{{strcat namePrefix 'statusName' }}">
+	{{selectOptions POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
+</select>
+{{/if}}
+
+{{#if (eqAny cons.combatEffect "addStatus")}}
+<span>
+	<select name="{{strcat namePrefix 'statusDuration'}}">
+		{{selectOptions POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusDuration}}
+	</select>
+	{{#if (eqAny cons.statusDuration "save") }}
+	<select name="{{strcat namePrefix 'saveType'}}">
+		{{selectOptions POWERSTUFF.SAVE_DIFFICULTY localize=true selected=cons.saveType}}
+	</select>
+	{{/if}}
+	{{#if (eqAny cons.statusDuration "X-days" "X-rounds" "X-exploration-turns") }}
+	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+	{{/if}}
+	{{#if (eqAny cons.statusDuration "UEoNT" "USoNT" "UEoT") }}
+	<div>
+		<label>
+			Status Anchored to
+		</label>
+		<select name="{{strcat namePrefix 'durationApplyTo'}}">
+			{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.durationApplyTo}}
+		</select>
+	</div>
+	{{/if}}
+</span>
+{{/if}}
+
+{{#if (eq cons.combatEffect "alter-energy")}}
+<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+{{/if}}
+
+{{#if (eq cons.combatEffect "extraAttack")}}
+<div>
+	<label>
+		Max Chain
+	</label>
+	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+</div>
+<div>
+	<label>
+		Iterative Penalty
+	</label>
+	<input class="short" type=number name="{{strcat namePrefix 'iterativePenalty'}}" value="{{cons.iterativePenalty}}">
+</div>
+{{/if}}
+
+{{#if (eq cons.combatEffect "scan")}}
+<div>
+	<label> Scan Level</label>
+	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+</div>
+<div>
+	<label>Downgrade Scan Level</label>
+	<input type="checkbox" name="{{strcat namePrefix 'downgrade'}}" {{checked cons.downgrade}}>
+</div>
+{{/if}}
+

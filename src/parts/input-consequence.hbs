@@ -361,11 +361,11 @@
 
 	{{/if}}
 
-
 	{{#if (eq cons.type "damage-new")}}
 	<select name="{{strcat namePrefix 'damageSubtype'}}">
 		{{selectOptions POWERSTUFF.DAMAGE_SUBTYPES localize=true selected=cons.damageSubtype}}
 	</select>
+
 	{{#if (neq-m cons.damageSubtype "set-to-const" "set-to-percent")}}
 	<select name="{{strcat namePrefix 'damageType'}}">
 		{{selectOptions POWERSTUFF.DAMAGETYPESPLUS localize=true selected=cons.damageType}}
@@ -381,10 +381,7 @@
 
 	{{/if}}
 	{{#if (eq cons.type "combat-effect")}}
-	<select name="{{strcat namePrefix 'combatEffect'}}">
-		{{selectOptions POWERSTUFF.COMBAT_EFFECTS localize=true selected=cons.combatEffect}}
-	</select>
-
+		{{> "systems/persona/parts/input-consequence-combat-effect.hbs" namePrefix=(strcat namePrefix '') cons=cons POWERSTUFF=POWERSTUFF owner=owner}}
 	{{/if}}
 
 	{{#if (eq cons.type "perma-buff")}}

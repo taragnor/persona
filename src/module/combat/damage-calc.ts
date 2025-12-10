@@ -1,6 +1,6 @@
 import { ValidAttackers } from "./persona-combat.js";
 import { RealDamageType } from "../../config/damage-types.js";
-import { ConsequenceAmount, DamageConsequence, EnhancedSourcedConsequence } from "../../config/consequence-types.js";
+import { ConsequenceAmount, DamageConsequence, EnhancedSourcedConsequence, NewDamageConsequence } from "../../config/consequence-types.js";
 import { OldDamageConsequence } from "../../config/consequence-types.js";
 import { DamageType } from "../../config/damage-types.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
@@ -67,7 +67,7 @@ export class DamageCalculation {
 		return this;
 	}
 
-	static convertToNewFormConsequence( cons: SourcedConsequence<OldDamageConsequence>, defaultDamageType: DamageType) : SourcedConsequence<DamageConsequence> {
+	static convertToNewFormConsequence( cons: SourcedConsequence<OldDamageConsequence> | SourcedConsequence<DamageConsequence>, defaultDamageType: DamageType) : SourcedConsequence<NewDamageConsequence> {
 		const convert = ConsequenceConverter.convertDeprecatedDamageConsequence(cons, defaultDamageType);
 		return {
 			...convert,
@@ -77,7 +77,7 @@ export class DamageCalculation {
 		};
 	}
 
-	addConsequence(cons: EnhancedSourcedConsequence<DamageConsequence>, target: ValidAttackers): DamageCalculation {
+	addConsequence(cons: EnhancedSourcedConsequence<NewDamageConsequence>, target: ValidAttackers): DamageCalculation {
 		let damageOrder: DamageOrder;
 		let amt : number;
 		if (cons.modifiers) {
@@ -167,7 +167,7 @@ export class DamageCalculation {
 		return this;
 	}
 
-	resolveConsAmount (cons: EnhancedSourcedConsequence<DamageConsequence> & {amount: ConsequenceAmount}) : U<number> {
+	resolveConsAmount (cons: EnhancedSourcedConsequence<NewDamageConsequence> & {amount: ConsequenceAmount}) : U<number> {
 		const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
 		const resolvedCE = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, {});
 		return resolvedCE;

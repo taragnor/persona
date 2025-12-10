@@ -88,6 +88,7 @@ const templateFileNames : string[] =[
 	"fusions-list.hbs",
 	"persona-compendium.hbs",
 	"combat-roll-roll.hbs",
+	"input-consequence-combat-effect.hbs",
 ];
 
 export const templatePaths = templateFileNames.

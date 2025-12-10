@@ -690,7 +690,16 @@
 	"persona.alter-mp-subtypes.cost-reduction": "Cost Multiplier",
 	"persona.alter-mp-subtypes.percent-of-total": "% of total",
 
+"persona.combat-effects-subtypes.damage": "Damage Effect",
+"persona.combat-effects-subtypes.addStatus": "Add Status",
+"persona.combat-effects-subtypes.removeStatus": "Remove Status",
+"persona.combat-effects-subtypes.extraAttack": "Extra Attack",
+"persona.combat-effects-subtypes.extraTurn": "Gain a Follow Up",
+"persona.combat-effects-subtypes.scan": "Alter Scan Level",
 "persona.combat-effects-subtypes.auto-end-turn": "Automatically End Turn",
+"persona.combat-effects-subtypes.alter-energy": "Alter Energy",
+"persona.combat-effects-subtypes.apply-recovery": "Apply Recovery",
+
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",

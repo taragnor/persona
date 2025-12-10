@@ -318,7 +318,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (this.system.dmg_type != "healing") {return false;}
 		return this.getEffects(null).some( eff => {
 			return eff.consequences.some( cons => {
-				return (cons.type == "damage-new");
+				return (cons.type == "combat-effect" && cons.combatEffect == "damage");
 			});
 		});
 	}
@@ -335,7 +335,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (this.system.dmg_type == "healing" || this.system.dmg_type == "none") {return false;}
 		return this.getEffects(null).some( eff => {
 			return eff.consequences.some( cons => {
-				return (cons.type == "damage-new");
+				return (cons.type == "combat-effect" && cons.combatEffect == "damage");
 			});
 		});
 	}
@@ -2429,7 +2429,7 @@ canDealDamage(this: Usable) :  boolean {
 	if (this.isPower() && this.system.damageLevel == "none") {return false;}
 	return this.getOnUseEffects(null)
 		.some( eff => eff.consequences
-			.some( cons => cons.type == "damage-new" || cons.type.includes("dmg")
+			.some( cons => cons.type == "combat-effect" && cons.combatEffect == "damage" || cons.type.includes("dmg")
 			)
 		);
 }
@@ -2689,12 +2689,14 @@ isDamagePower(this: Usable): boolean {
 
 statusesAdded(this: Usable, deepTagList = true): StatusEffectId[] {
 	const options : GetEffectsOptions = {deepTags: deepTagList};
-		const effects= this.getEffects(null, options).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == 'addStatus'? [cons.statusName] : []));
+		const effects= this.getEffects(null, options).flatMap( (eff) => eff.consequences.flatMap( cons => 
+			cons.type == "combat-effect" && cons.combatEffect == 'addStatus'? [cons.statusName] : []));
 		return effects;
 }
 
 statusesRemoved(this: Usable): StatusEffectId[] {
-	const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => cons.type == 'removeStatus'? [cons.statusName] : []));
+	const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => 
+		cons.type == "combat-effect" && cons.combatEffect == 'removeStatus'? [cons.statusName] : []));
 	return statusesRemoved;
 }
 

@@ -1126,7 +1126,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get recoveryAmt(): number {
-		if (!this.isPC()) {return 0;}
+		if (!this.isValidCombatant()) {return 0;}
+		if (this.isShadow()) {return 0;}
+		if (this.isNPCAlly()) {
+			return Math.floor(this.mhp / 10);
+		}
+		if (!this.isRealPC()) {return 0;}
 		const persona = this.persona();
 		const rec_bonuses = persona.getBonuses("recovery");
 		rec_bonuses.add("Base", 10);
@@ -1139,20 +1144,25 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 
-	async spendRecovery(this: PC, socialLinkId: string) {
-		const link = this.system.social.find( x=> x.linkId == socialLinkId);
-		if (!link) {
-			throw new PersonaError(`Can't find link ${socialLinkId}`);
-		}
-		if (link.inspiration <= 0) {
-			throw new PersonaError("Can't spend recovery!");
-		}
-		link.inspiration -= 1;
+	async spendRecovery(this: ValidAttackers, socialLinkId: null): Promise<void>;
+	async spendRecovery(this: PC, socialLinkId: string): Promise<void>;
+	async spendRecovery(this: ValidAttackers, socialLinkId: string | null) {
 		const healing = this.recoveryAmt;
-		const linkActor = game.actors.get(socialLinkId);
-
-		await Logger.sendToChat(`${this.name} used inspiration from link ${linkActor?.name} to heal ${healing} hit points (original HP: ${this.hp})` , this);
-		await this.update({"system.social": this.system.social});
+		if (this.isPC() && socialLinkId != null)  {
+			const linkActor = game.actors.get(socialLinkId);
+			const link = this.system.social.find( x=> x.linkId == socialLinkId);
+			if (!link) {
+				throw new PersonaError(`Can't find link ${socialLinkId}`);
+			}
+			if (link.inspiration <= 0) {
+				throw new PersonaError("Can't spend recovery!");
+			}
+			link.inspiration -= 1;
+			await this.update({"system.social": this.system.social});
+			await Logger.sendToChat(`${this.name} used inspiration from link ${linkActor?.name} to heal ${healing} hit points (original HP: ${this.hp})` , this);
+		} else {
+			await Logger.sendToChat(`${this.name} used a recovery to heal ${healing} hit points (original HP: ${this.hp})` , this);
+		}
 		await this.modifyHP(healing);
 	}
 

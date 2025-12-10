@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { ValidSocialTarget } from '../social/persona-social.js';
 import { EvaluatedDamage } from './damage-calc.js';
-import { ConsequenceAmount, EnhancedSourcedConsequence, NonDeprecatedConsequence} from '../../config/consequence-types.js';
+import { ConsequenceAmount, EnhancedSourcedConsequence, NewDamageConsequence, NonDeprecatedConsequence} from '../../config/consequence-types.js';
 import { DamageCalculation } from './damage-calc.js';
 import { sleep } from '../utility/async-wait.js';
 import { CardTag } from '../../config/card-tags.js';
@@ -1906,7 +1906,8 @@ static resistIKMod(targetPersona: Persona, power: Usable) : number {
 				const attacker = PersonaDB.findToken(atkResult.attacker);
 				if ( targetActor.hasStatus('magic-shield') && power.canBeReflectedByMagicShield(attacker.actor)) {
 					const cons : SourcedConsequence = {
-						type: 'removeStatus',
+						type: "combat-effect",
+						combatEffect: 'removeStatus',
 						owner: targetActor.accessor,
 						statusName: 'magic-shield',
 						source: power,
@@ -1916,7 +1917,8 @@ static resistIKMod(targetPersona: Persona, power: Usable) : number {
 				}
 				if (targetActor.hasStatus('phys-shield') && power.canBeReflectedByPhyiscalShield(attacker.actor)) {
 					const cons : SourcedConsequence = {
-						type: 'removeStatus',
+						type: "combat-effect",
+						combatEffect: 'removeStatus',
 						owner: targetActor.accessor,
 						statusName: 'phys-shield',
 						source: power,
@@ -2172,32 +2174,53 @@ static async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<Comb
 		return {consequences} satisfies ConsequenceProcessed;
 	}
 
-	static processConsequence( power: U<ModifierContainer>, situation: Situation, cons: SourcedConsequence<NonDeprecatedConsequence>, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed['consequences'] {
-		//need to fix this so it knows who the target actual is so it can do a proper compariosn, right now when applying to Self it won't consider resistance or consider the target's resist.
-		const applyTo = cons.applyTo ?? (cons.applyToSelf ? 'owner' : 'target');
-		const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
-		const applyToSelf = cons.applyToSelf ?? (cons.applyTo == 'attacker' || cons.applyTo =='user' || cons.applyTo == 'owner');
-		const absorb = (situation.isAbsorbed && !applyToSelf) ?? false;
-		const block = atkresult && atkresult.result == 'block' && !applyToSelf;
-		// const applyTo = cons.applyTo ? cons.applyTo : (applyToSelf ? "owner" : "target");
-		switch (cons.type) {
-			case 'damage-new':
-				return this.processConsequence_damage(cons, consTargets, attacker, power, situation);
-			case 'none':
-			case 'modifier':
-				break;
-			case 'addStatus': case 'removeStatus':
-				if (!applyToSelf && (absorb || block)) {return [];}
-				return consTargets.map( target => {
-					return  {applyTo: target ,cons};
-				});
-			default:
-				return this.processConsequence_simple(cons, consTargets);
+static processConsequence( power: U<ModifierContainer>, situation: Situation, cons: SourcedConsequence<NonDeprecatedConsequence>, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed['consequences'] {
+	//need to fix this so it knows who the target actual is so it can do a proper compariosn, right now when applying to Self it won't consider resistance or consider the target's resist.
+	const applyTo = cons.applyTo ?? (cons.applyToSelf ? 'owner' : 'target');
+	const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
+	const applyToSelf = cons.applyToSelf ?? (cons.applyTo == 'attacker' || cons.applyTo =='user' || cons.applyTo == 'owner');
+	const absorb = (situation.isAbsorbed && !applyToSelf) ?? false;
+	const block = atkresult && atkresult.result == 'block' && !applyToSelf;
+	// const applyTo = cons.applyTo ? cons.applyTo : (applyToSelf ? "owner" : "target");
+	switch (cons.type) {
+		case 'none':
+		case 'modifier':
+			return [];
+		case "combat-effect": {
+			switch (cons.combatEffect) {
+				case 'damage':
+					return this.processConsequence_damage(cons, consTargets, attacker, power, situation);
+				case 'addStatus': case 'removeStatus':
+					if (!applyToSelf && (absorb || block)) {return [];}
+					return consTargets.map( target => {
+						return  {applyTo: target ,cons};
+					});
+			}
 		}
-		return [];
 	}
+	return this.processConsequence_simple(cons, consTargets);
+		// switch (cons.type) {
+		// 	case 'damage-new':
+		// 		return this.processConsequence_damage(cons, consTargets, attacker, power, situation);
+		// 	case 'none':
+		// 	case 'modifier':
+		// 		break;
+		// 	case 'addStatus': case 'removeStatus':
+		// 		if (!applyToSelf && (absorb || block)) {return [];}
+		// 		return consTargets.map( target => {
+		// 			return  {applyTo: target ,cons};
+		// 		});
+		// 	default:
+		// 		return this.processConsequence_simple(cons, consTargets);
+		// }
+		// return [];
+	// }
 
-static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'] {
+}
+
+
+
+static processConsequence_damage( cons: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'] {
 	const consList : ConsequenceProcessed['consequences'] = [];
 	let dmgCalc: U<DamageCalculation>;
 	let dmgAmt : ConsequenceAmount = 0;
@@ -2329,18 +2352,18 @@ static processConsequence_damage( cons: SourcedConsequence<DamageConsequence>, t
 
 static processConsequence_simple( cons: SourcedConsequence<NonDeprecatedConsequence>, targets: ValidAttackers[]) :ConsequenceProcessed['consequences'] {
 	switch (cons.type) {
-		case 'damage-new':
-			PersonaError.softFail(`Process Consequence Simple does not handle ${cons.type}`);
-			return [];
-		case 'addStatus':
-		case 'removeStatus':
-			return targets.map( applyTo => ({applyTo, cons}));
+		// case 'damage-new':
+		// 	PersonaError.softFail(`Process Consequence Simple does not handle ${cons.type}`);
+		// 	return [];
+		// case 'addStatus':
+		// case 'removeStatus':
+		// 	return targets.map( applyTo => ({applyTo, cons}));
 		case 'none':
 		case 'modifier':
 		case 'modifier-new':
 		case 'add-creature-tag':
 			break;
-		case 'extraAttack' :
+		// case 'extraAttack' :
 		case 'expend-slot':
 			return targets.map( applyTo => ({applyTo, cons}));
 		case 'other-effect':
@@ -2349,18 +2372,18 @@ static processConsequence_simple( cons: SourcedConsequence<NonDeprecatedConseque
 		case 'add-talent-to-list':
 		case "inventory-action":
 			return targets.map( applyTo => ({applyTo, cons}));
+		// case 'scan':
+		// case 'alter-energy':
 		case 'raise-resistance':
 		case 'lower-resistance':
 		case 'raise-status-resistance':
 		case 'inspiration-cost':
 		case 'use-power':
-		case 'scan':
-		case 'alter-energy':
 		case 'alter-mp':
 			return targets.map( applyTo => ({applyTo, cons}));
+		// case 'extraTurn':
+		// 	return targets.map( applyTo => ({applyTo, cons}));
 		case 'social-card-action':
-		case 'extraTurn':
-			return targets.map( applyTo => ({applyTo, cons}));
 		case 'teach-power':
 		case 'combat-effect':
 			return targets.map( applyTo => ({applyTo, cons}));
@@ -2456,7 +2479,8 @@ static async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _cost
 			if (attacker.actor.isShadow()) {
 				if (power.energyCost(attacker.actor.persona()) > 0) {
 					await res.addEffect(null, attacker.actor, {
-						type: 'alter-energy',
+						type: "combat-effect",
+						combatEffect: 'alter-energy',
 						amount: -power.energyCost(attacker.actor.persona()),
 						source: usableOrCard,
 						owner: attacker.actor.accessor,
