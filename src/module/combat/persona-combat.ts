@@ -2692,10 +2692,11 @@ static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[])
 		? altTargets
 		: this.selectedPTokens();
 	const combat = game.combat as PersonaCombat | undefined;
-	if (combat) {
-		const attackerActor = attacker.actor;
-		for (const target of selected) {
-			const targetActor = target.actor;
+	for (const target of selected) {
+		const targetActor = target.actor;
+		if (combat) {
+			const attackerActor = attacker.actor;
+			// for (const target of selected) {
 			const engagingTarget  = combat.isInMeleeWith(attacker, target) ?? false;
 			if (attacker.id == target.id) {continue;}
 			if (attackerActor.hasStatus('challenged') && !engagingTarget) {
@@ -2704,17 +2705,17 @@ static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[])
 			if (targetActor.hasStatus('challenged') && !engagingTarget) {
 				throw new TargettingError("Can't target a challenged target you're not engaged with");
 			}
-			const situation : Situation = {
-				user: attacker.actor.accessor,
-				attacker: attacker.actor.accessor,
-				target: target.actor.accessor,
-				usedPower: power.accessor,
-				activeCombat: true,
-			};
-			const canUse = power.targetMeetsConditions(attacker.actor, targetActor, situation);
-			if (!canUse) {
-				throw new TargettingError('Target doesn\'t meet custom Power conditions to target');
-			}
+		}
+		const situation : Situation = {
+			user: attacker.actor.accessor,
+			attacker: attacker.actor.accessor,
+			target: target.actor.accessor,
+			usedPower: power.accessor,
+			activeCombat: !!combat,
+		};
+		const canUse = power.targetMeetsConditions(attacker.actor, targetActor, situation);
+		if (!canUse) {
+			throw new TargettingError('Target doesn\'t meet custom Power conditions to target');
 		}
 	}
 	const attackerType = attacker.actor.getAllegiance();

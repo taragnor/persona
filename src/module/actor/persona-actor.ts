@@ -1128,17 +1128,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	get recoveryAmt(): number {
 		if (!this.isValidCombatant()) {return 0;}
 		if (this.isShadow()) {return 0;}
-		if (this.isNPCAlly()) {
-			return Math.floor(this.mhp / 10);
-		}
 		if (!this.isRealPC()) {return 0;}
-		const persona = this.persona();
-		const rec_bonuses = persona.getBonuses("recovery");
-		rec_bonuses.add("Base", 10);
 		const situation : Situation = {
 			user: (this as PC).accessor
 		};
+		const persona = this.persona();
+		const rec_bonuses = persona.getBonuses("recovery");
 		const rec_mult = persona.getBonuses("recovery-mult").total(situation, "percentage");
+		if (this.isNPCAlly()) {
+			return Math.floor(this.baseClassHP / 5 * rec_mult);
+		}
+		rec_bonuses.add("Base", 10);
 		const healing = rec_bonuses.total(situation);
 		return healing * rec_mult;
 	}

@@ -812,6 +812,7 @@
 	"persona.preconditions.comparison.cameo-in-scene": "Card has a Cameo (Deprecated)",
 	"persona.preconditions.comparison.arcana-is": "Arcana is",
 	"persona.preconditions.comparison.logical-or": "Or",
+	"persona.preconditions.comparison.logical-and": "And",
 	"persona.preconditions.comparison.scene-clock-name-is": "Scene Clock Name is",
 	"persona.preconditions.comparison.in-combat": "In Combat",
 	"persona.preconditions.comparison.is-critical": "Critical Hit",

@@ -668,14 +668,14 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 			return multiCheckContains(condition.creatureType, [target.system.creatureType]);
 
 		}
-		// case "power-slot-is": {
-		// 	if (!situation.usedPower) {return undefined;}
-		// 	const power = PersonaDB.findItem(situation.usedPower);
-		// 	if (power.system.type == "consumable") {return undefined;}
-		// 	if (power.system.type == "skillCard") {return undefined;}
-		// 	const slot = condition.slotType;
-		// 	return slot[String(power.system.slot)];
-		// }
+			// case "power-slot-is": {
+			// 	if (!situation.usedPower) {return undefined;}
+			// 	const power = PersonaDB.findItem(situation.usedPower);
+			// 	if (power.system.type == "consumable") {return undefined;}
+			// 	if (power.system.type == "skillCard") {return undefined;}
+			// 	const slot = condition.slotType;
+			// 	return slot[String(power.system.slot)];
+			// }
 		case "social-availability": {
 			if (!condition.conditionTarget) {
 				condition.conditionTarget = "user";
@@ -727,6 +727,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 			if (!tarot) {return undefined;}
 			return target.system.tarot == condition.tarot;
 		}
+		case "logical-and":
 		case "logical-or": {
 			const comp1 = {
 				source: condition.source,
@@ -742,14 +743,14 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 				...condition.comparison2 as NonDeprecatedPrecondition<Precondition>,
 				//this is guaranteed to be nondeprecated by convertPrecondition function working deep into logical ors
 			};
-			return testPrecondition(comp1, situation) || testPrecondition(comp2, situation);
+			if (condition.boolComparisonTarget == "logical-or") {
+				return testPrecondition(comp1, situation) || testPrecondition(comp2, situation);
+			} else {
+				return testPrecondition(comp1, situation) && testPrecondition(comp2, situation);
+			}
 		}
 		case "scene-clock-name-is":
 			return SceneClock.instance.clockName.toUpperCase().trim() == condition.clockName.toUpperCase().trim();
-		// case "is-within-ailment-range":
-		// 	return "withinAilmentRange" in situation ? situation.withinAilmentRange ?? false : false;
-		// case "is-within-instant-death-range":
-		// 		return "withinInstantKillRange" in situation ? situation.withinInstantKillRange ?? false : false;
 		case "using-meta-pod": {
 			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!target.isValidCombatant()) {return false;}

@@ -162,7 +162,7 @@
 </div>
 {{/if}}
 
-{{#if (eq cond.boolComparisonTarget "logical-or")}}
+{{#if (eqAny cond.boolComparisonTarget "logical-or" "logical-and")}}
 <div class="sub-condition">
 	{{> "systems/persona/parts/input-condition-body.hbs" namePrefix=(strcat namePrefix "comparison1.")  cond=cond.comparison1 POWERSTUFF=POWERSTUFF owner=owner}}
 </div>

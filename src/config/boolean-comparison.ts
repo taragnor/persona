@@ -45,6 +45,7 @@ const ACTIVE_BOOLEAN_COMPARISON_TARGET_LIST = [
 	"social-availability",
 	"arcana-is",
 	"logical-or",
+	"logical-and",
 	"scene-clock-name-is",
 	"using-meta-pod",
 	"knows-power",
@@ -139,7 +140,7 @@ type NonDeprecatedBoolComparisons = BasicBComparisonPC | NonBasicBoolComparison 
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | FlagComparisonPC | TargettedBComparisonPC |   WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SocialComparison | ArcanaComparison | GeneralActorComparison | OrComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison | HasClassComparison | StatusInflictComparisonPC | PowerComparison | RollPropertyComparison | CombatComparison;
+StatusComparisonPC | TagComparisonPC | FlagComparisonPC | TargettedBComparisonPC |   WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SocialComparison | ArcanaComparison | GeneralActorComparison | BinaryLogicalComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison | HasClassComparison | StatusInflictComparisonPC | PowerComparison | RollPropertyComparison | CombatComparison;
 ;
 
 type PowerComparison = {
@@ -159,7 +160,7 @@ type CombatComparisonSub = {
 	combatProp: "in-combat",
 } | {
 	combatProp:  "is-resistant-to",
-	powerDamageType : (DamageType | "by-power"),
+	powerDamageType : DamageType,
 	conditionTarget : ConditionTarget,
 };
 
@@ -409,7 +410,7 @@ type DamageTypeComparisonPC = {
 
 type ResistanceCheck = {
 	boolComparisonTarget:  "is-resistant-to",
-	powerDamageType : (DamageType | "by-power"),
+	powerDamageType : DamageType,
 	conditionTarget : ConditionTarget,
 }
 
@@ -440,8 +441,8 @@ type PlayerTypeCheckComparison = {
 }
 
 
-type OrComparison = {
-	boolComparisonTarget: "logical-or",
+type BinaryLogicalComparison = {
+	boolComparisonTarget: "logical-or" | "logical-and",
 	comparison1: Precondition,
 	comparison2: Precondition,
 }

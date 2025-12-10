@@ -655,6 +655,11 @@ export class ConditionalEffectManager {
 			}
 			case "is-enemy":
 				return `${target1} is ${not} enemy of ${target2}`;
+			case "logical-and": {
+				const c1= this.printConditional(cond.comparison1);
+				const c2= this.printConditional(cond.comparison2);
+				return `(${c1} AND ${c2})`;
+			}
 			case "logical-or": {
 				const c1= this.printConditional(cond.comparison1);
 				const c2= this.printConditional(cond.comparison2);
