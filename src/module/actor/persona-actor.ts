@@ -1592,8 +1592,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
+	private downResistNewStatus({duration}: StatusEffect) :boolean {
+		if (!this.hasStatus("down")) {return false;}
+		return PersonaAE.durationLessThanOrEqualTo(duration, {dtype: "combat"});
+	}
+
 	/** returns true if status is added*/
-	async addStatus({id, potency, duration}: StatusEffect, ignoreFatigue= false): Promise<boolean> {
+	async addStatus(statusEffect: StatusEffect, ignoreFatigue= false): Promise<boolean> {
+		const {id, potency, duration} = statusEffect;
 		try {
 			if (!ignoreFatigue && statusMap?.get(id)?.tags.includes("fatigue")) {
 				const lvl = statusToFatigueLevel(id as FatigueStatusId);
@@ -1601,6 +1607,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				await this.setFatigueLevel(lvl);
 				const newLvl = this.fatigueLevel;
 				return oldLvl != newLvl;
+			}
+			if (this.downResistNewStatus(statusEffect)) {
+				return false;
 			}
 			if (await this.isStatusResisted(id)) {return false;}
 			const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
@@ -1625,7 +1634,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						target: this.accessor,
 					};
 					const ret = (await TriggeredEffect.onTrigger("pre-inflict-status", this, situation)).finalize();
-
 					await ret
 						.emptyCheck()
 						?.toMessage("Response to acquiring Status", this);

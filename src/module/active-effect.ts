@@ -628,7 +628,13 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 	}
 
 	durationLessThanOrEqualTo(x : StatusDuration): boolean {
-		return  PersonaAE.getStatusValue(this.statusDuration) <= PersonaAE.getStatusValue(x);
+		return PersonaAE.durationLessThanOrEqualTo(this.statusDuration, x);
+		// return  PersonaAE.getStatusValue(this.statusDuration) <= PersonaAE.getStatusValue(x);
+	}
+
+	static durationLessThanOrEqualTo (a: StatusDuration, b: StatusDuration): boolean {
+		return  PersonaAE.getStatusValue(a) <= PersonaAE.getStatusValue(b);
+
 	}
 
 	get statusId() : StatusEffectId | undefined {

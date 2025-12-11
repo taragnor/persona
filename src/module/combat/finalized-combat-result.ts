@@ -91,6 +91,13 @@ export class FinalizedCombatResult {
 		return undefined;
 	}
 
+	static changeIsEmpty( change: ResolvedActorChange<ValidAttackers>) : boolean {
+		return change.addStatus.length == 0
+			&& change.damage.length == 0
+			&& change.otherEffects.length == 0
+			&& change.removeStatus.length == 0;
+	}
+
 	#evaluateDamage (dmg : ActorChange<ValidAttackers>["damage"]) : EvaluatedDamage[] {
 		const dmgArr = Object.values(dmg)
 			.map( v=> v.eval());
@@ -123,8 +130,14 @@ export class FinalizedCombatResult {
 				} satisfies ResolvedAttackResult;
 			});
 		this.attacks = attacks;
+		for (const atk of this.attacks) {
+			atk.changes = atk.changes
+			.filter (chg => !FinalizedCombatResult.changeIsEmpty(chg));
+		}
 		this.id = cr.id;
-		this.costs = cr.costs.map( cost=> this.#resolveActorChange(cost));
+		this.costs = cr.costs
+		.map( cost=> this.#resolveActorChange(cost))
+		.filter( cost => !FinalizedCombatResult.changeIsEmpty(cost));
 		this.globalOtherEffects = cr.globalOtherEffects;
 		this.sounds = cr.sounds;
 		// this.clearFlags();
@@ -163,14 +176,15 @@ export class FinalizedCombatResult {
 						duration: { dtype:  "UEoT"},
 						activationRoll: otherEffect.activation,
 					};
-					const extraTurnChange : ResolvedActorChange<ValidAttackers> = {
-						actor:change.actor,
-						damage: [],
-						addStatus: [bonusAction],
-						otherEffects: [],
-						removeStatus: [],
-					};
-					this.costs.push(extraTurnChange);
+					// const extraTurnChange : ResolvedActorChange<ValidAttackers> = {
+					// 	actor:change.actor,
+					// 	damage: [],
+					// 	addStatus: [bonusAction],
+					// 	otherEffects: [],
+					// 	removeStatus: [],
+					// };
+					// this.costs.push(extraTurnChange);
+					change.addStatus.push(bonusAction);
 					break;
 				}
 				case "set-flag":
@@ -359,6 +373,7 @@ export class FinalizedCombatResult {
 	}
 
 	async #apply(): Promise<void> {
+		Debug(this);
 		try {
 			await this.#processAttacks();
 			await this.#applyCosts();
@@ -375,7 +390,47 @@ export class FinalizedCombatResult {
 		);
 	}
 
+	// cleanUpStatusChanges(redundant : StatusEffect[] = []) : StatusEffect[] {
+	// 	const statusAddMap : Map<PersonaActor, StatusEffect[]> = new Map();
+	// 	if (this.attacks.length == 0) {return [];}
+	// 	for (const res of this.attacks) {
+	// 		for (const change of res.changes) {
+	// 			const target= PersonaDB.findActor(change.actor);
+	// 			if (!target) {continue;}
+	// 			const existing = statusAddMap.get(target) ?? [];
+	// 			for (const st of change.addStatus) {
+	// 				if (
+	// 					existing
+	// 					.find( existSt => existSt.id == st.id && PersonaAE.durationLessThanOrEqualTo(st.duration, existSt.duration))
+	// 				) {
+	// 					redundant.push(st);
+	// 					continue;
+	// 				}
+	// 				existing.push(st);
+	// 				statusAddMap.set(target, existing);
+	// 			}
+	// 			change.addStatus = change.addStatus
+	// 				.filter (st=> !redundant.includes(st));
+	// 		}
+	// 	}
+	// 	return redundant;
+	// }
+
+	// cleanUpChained() : this {
+	// 	let redundant : StatusEffect[] = [];
+	// 	for (const chained of this.chainedResults) {
+	// 		redundant = chained.cleanUpStatusChanges(redundant);
+	// 	}
+	// 	return this;
+	// }
+
+
 	async #applyChained() {
+		//merge the chained results for better printing
+		// this.cleanUpChained();
+		// if (this.chainedResults.length > 0 ) {
+		// 	Debug(this.chainedResults);
+		// }
 		for (const res of this.chainedResults) {
 			await res.#apply();
 		}
@@ -429,6 +484,7 @@ export class FinalizedCombatResult {
 			this.sounds.push(...chain.sounds);
 			this.tokenFlags.push(...chain.tokenFlags);
 		}
+		this.chainedResults = [];
 		return this;
 	}
 
@@ -514,7 +570,7 @@ export class FinalizedCombatResult {
 			}
 		}
 		for (const status of change.addStatus) {
-			const statusAdd= await actor.addStatus(status);
+			const statusAdd = await actor.addStatus(status);
 			if (statusAdd && attacker) {
 				const attackerActor = PersonaDB.findToken(attacker).actor;
 				if (attackerActor) {
@@ -529,13 +585,6 @@ export class FinalizedCombatResult {
 						triggeringUser: game.user,
 					};
 					this.addChained((await TriggeredEffect.onTrigger("on-inflict-status", actor, situation)).finalize());
-					// const res = await TriggeredEffect.onTrigger("on-inflict-status", actor, situation);
-					// const msg = await res
-					// 	.emptyCheck()
-					// 	?.toMessage("On Status Response", actor);
-					// if (msg && PersonaSettings.debugMode()) {
-					// 	Debug(res);
-					// }
 				}
 			}
 			if (statusAdd && token) {

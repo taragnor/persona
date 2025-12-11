@@ -2715,7 +2715,7 @@ static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[])
 		};
 		const canUse = power.targetMeetsConditions(attacker.actor, targetActor, situation);
 		if (!canUse) {
-			throw new TargettingError('Target doesn\'t meet custom Power conditions to target');
+			throw new TargettingError(`Target doesn't meet custom Power conditions to target`);
 		}
 	}
 	const attackerType = attacker.actor.getAllegiance();

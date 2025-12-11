@@ -148,7 +148,7 @@ type BaseNumericComparisons =
 	ConstantComparison
 	| OddEvenComparison
 	| SimpleComparison
-	| ResistanceLevelConstant
+	// | ResistanceLevelConstant
 	| TargettedNumericComparison
 	| ClockNumericComparison
 	| HPMPComparison
@@ -268,7 +268,6 @@ type ConstantComparison = {
 ) ;
 
 type NumericConstant = {
-	comparisonTarget: "constant",
 	subtype: "number",
 	num: number,
 }
@@ -279,13 +278,11 @@ type OddEvenComparison = {
 }
 
 type ResistanceLevelConstant = {
-	comparisonTarget: "constant",
 	subtype: "resistance-level",
 	resistLevel : ResistStrength,
 };
 
 type RangeConstant = {
-	comparisonTarget: "constant",
 	subtype: "range",
 	low: number,
 	high: number,
@@ -312,7 +309,7 @@ type EnergyComparison =  {
 }
 
 type GenericNumericComparison =  NumericComparisonBase & {
-	comparisonTarget : Exclude<NumericComparisonTarget, NonGenericNumericComparison["comparisonTarget"] | "constant" | "">,
+	comparisonTarget : Exclude<NumericComparisonTarget, NonGenericNumericComparison["comparisonTarget"] | "">,
 }
 
 type SocialLinkLevelComparison =  {

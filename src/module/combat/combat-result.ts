@@ -6,7 +6,7 @@ import { DamageCalculation } from "./damage-calc.js";
 import { RollSituation } from "../../config/situation.js";
 import { PersonaItem, UsableAndCard } from "../item/persona-item.js";
 import { ValidAttackers } from "./persona-combat.js";
-import { StatusDuration } from "../active-effect.js";
+import { PersonaAE, StatusDuration } from "../active-effect.js";
 import { getSocialLinkTarget } from "../preconditions.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { SocialCardActionConsequence } from "../../config/consequence-types.js";
@@ -201,10 +201,14 @@ export class CombatResult  {
 						PersonaError.softFail(`No Target for ${id}`);
 						break;
 					}
+					const duration = convertConsToStatusDuration(cons, atkResult ?? target);
+					if (effect.addStatus.find( st => st.id == id && PersonaAE.durationLessThanOrEqualTo(duration, st.duration))) {
+						break;
+					}
 					effect.addStatus.push({
 						id,
 						potency: Math.abs(status_damage ?? cons.amount ?? 0),
-						duration: convertConsToStatusDuration(cons, atkResult ?? target),
+						duration,
 					});
 				}
 				break;
@@ -281,53 +285,6 @@ export class CombatResult  {
 		switch (cons.type) {
 			case "none":
 				break;
-			// case "damage-new": {
-			// 	if (!effect || !target) {break;}
-			// 	this.addEffect_damage(cons, effect, target, atkResult);
-			// 	break;
-			// }
-			// case "addStatus": {
-			// 	if (!effect) {break;}
-			// 	let status_damage : number | undefined = undefined;
-			// 	if (atkResult && cons.statusName == "burn") {
-			// 		const power = PersonaDB.findItem(atkResult.power);
-			// 		if (power.system.type == "skillCard") {
-			// 			PersonaError.softFail("Skill Card shouldn't be here");
-			// 			break;
-			// 		}
-			// 		const attacker = PersonaDB.findToken(atkResult.attacker).actor;
-			// 		status_damage = attacker
-			// 			? (power as Usable)
-			// 				.damage.getDamage(power as Usable, attacker.persona())
-			// 			.eval()
-			// 			.hpChange ?? 0
-			// 			: 0;
-			// 	}
-			// 	const id = cons.statusName;
-			// 	if (id != "bonus-action") {
-			// 		if (!target) {
-			// 			PersonaError.softFail(`No Target for ${id}`);
-			// 			break;
-			// 		}
-			// 		effect.addStatus.push({
-			// 			id,
-			// 			potency: Math.abs(status_damage ?? cons.amount ?? 0),
-			// 			duration: convertConsToStatusDuration(cons, atkResult ?? target),
-			// 		});
-			// 	}
-			// 	break;
-			// }
-			// case "removeStatus" : {
-			// 	if (!effect) {break;}
-			// 	const id = cons.statusName;
-			// 	const actor = PersonaDB.findActor(effect.actor);
-			// 	if (actor.hasStatus(id)) {
-			// 		effect.removeStatus.push({
-			// 			id,
-			// 		});
-			// 	}
-			// 	break;
-			// }
 			case "expend-item": {
 				const item = cons.source;
 				if (!effect) {
@@ -352,15 +309,6 @@ export class CombatResult  {
 				});
 				break;
 			}
-			// case "extraAttack": {
-			// 	if (!effect) {break;}
-			// 	effect.otherEffects.push({
-			// 		type: "extra-attack",
-			// 		maxChain: cons.amount ?? 1,
-			// 		iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
-			// 	});
-			// 	break;
-			// }
 			case "expend-slot": {
 				console.warn("Expend slot is unused and does nnothing");
 				break;
@@ -371,21 +319,6 @@ export class CombatResult  {
 			case "lower-resistance":
 			case "raise-status-resistance":
 				break;
-			// case "extraTurn": {
-			// 	if (atkResult) {
-			// 		const power = PersonaDB.findItem(atkResult.power);
-			// 		if (power.isOpener()) {break;}
-			// 		if (power.isTeamwork()) {break;}
-			// 	}
-			// 	if (!effect) {break;}
-			// 	const combat = game.combat as PersonaCombat;
-			// 	if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) {break;}
-			// 	effect.otherEffects.push({
-			// 		type: "extraTurn",
-			// 		activation: combat.lastActivationRoll
-			// 	});
-			// 	break;
-			// }
 			case "add-power-to-list":
 			case "add-talent-to-list":
 				break;
@@ -480,17 +413,6 @@ export class CombatResult  {
 					...cons
 				});
 				break;
-			// case "alter-energy": {
-			// 	if (!effect) {break;}
-			// 	// const contextList = PersonaCombat.createTargettingContextList(situation, cons);
-			// 	const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
-			// 	effect.otherEffects.push( {
-			// 		type: cons.type,
-			// 		amount,
-			// 		// amount: cons.amount ?? 0,
-			// 	});
-			// 	break;
-			// }
 			case "alter-mp":
 				if (!effect) {break;}
 				effect.otherEffects.push( {
@@ -632,17 +554,6 @@ export class CombatResult  {
 		const finalized = this.finalize();
 		return finalized.autoApplyResult();
 	}
-
-	// async print(): Promise<void> {
-	// 	const signedFormatter = new Intl.NumberFormat("en-US", {signDisplay : "always"});
-	// 	let msg = "";
-	// 	if (this.escalationMod) {
-	// 		msg += `escalation Mod: ${signedFormatter.format(this.escalationMod)}`;
-	// 	}
-	// }
-
-
-
 
 	/** combines other's data into initial*/
 	static combineChanges (initial: ActorChange<ValidAttackers>, other: ActorChange<ValidAttackers>) : ActorChange<ValidAttackers> {
