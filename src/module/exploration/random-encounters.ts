@@ -357,14 +357,16 @@ static async processSneak(encounter: Encounter) {
 			}
 			if (bailout == 50) {
 				encounterList = encounterList
-					.filter ( x=> 
+					.filter ( x=>
 						x.encounterSizeValue() <= encounterSizeRemaining
 						&& x.system.creatureType == enemyType
 					);
 				if (encounterList.length == 0) {
+					console.log(`Encounter size remianing: ${encounterSizeRemaining} ${enemyType}`);
+					// PersonaError.softFail(`Error on encounter size value ${encounterSizeRemaining} for ${enemyType}`);
 					return {
 						enemies: encounter,
-						encounterDifficulty: "error"
+						encounterDifficulty: etype
 					};
 				}
 				weightedList = this.weightedEncounterList(encounterList, scene);
@@ -446,23 +448,35 @@ static async processSneak(encounter: Encounter) {
 		return pick;
 	}
 
-	static #getEncounterSize(etype: EncounterDifficulty) : number {
-		const DIE_SIZE = 10;
-		const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
-		const addon = etype == "tough" || etype == "mixed" ? 1 : 0;
-		switch (sizeRoll)  {
-			case 1:
-				return 3 + addon;
-			case 2: case 3: case 4: case 5:
-				return 4 + addon;
-			case 8: case 9: case 10:
-				return 5 + addon;
-			default:
-				if (sizeRoll > DIE_SIZE) {
-					PersonaError.softFail(`Encounter number is ${sizeRoll}`);
-				}
-				return 4 + addon;
-		}
+static #getEncounterSize(etype: EncounterDifficulty) : number {
+	const DIE_SIZE = 10;
+	const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
+	const addon = etype == "tough" || etype == "mixed" ? 1 : 0;
+	switch (sizeRoll)  {
+		case 1:
+			return 2.5 + addon;
+		case 2:
+			return 3 + addon;
+		case 3:
+			return 3.25 + addon;
+		case 4:
+			return 3.5 + addon;
+		case 5:
+			return 4 + addon;
+		case 6:
+			return 4.25 + addon;
+		case 7:
+			return 4.5 + addon;
+		case 8: case 9:
+			return 5 + addon;
+		case 10:
+			return 5.25 +addon;
+		default:
+			if (sizeRoll > DIE_SIZE) {
+				PersonaError.softFail(`Encounter number is ${sizeRoll}`);
+			}
+			return 4 + addon;
+	}
 
 	}
 
