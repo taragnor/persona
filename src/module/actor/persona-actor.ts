@@ -3490,7 +3490,7 @@ isBossOrMiniBossType() : boolean {
 	return bossRoles.some( role => this.hasRole(role));
 }
 
-async onStartCombatTurn(this: PC | Shadow): Promise<string[]> {
+async onStartCombatTurn(this: ValidAttackers): Promise<string[]> {
 	console.log(`${this.name} on Start turn`);
 	const ret = [] as string[];
 	const promises = this.effects.contents.map( async (eff) => {

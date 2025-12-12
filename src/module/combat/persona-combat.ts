@@ -161,7 +161,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const rmods = (game.scenes.current as PersonaScene).getRoomEffects();
 			regionMods.push(...rmods);
 		}
-		// const regionMods = Metaverse.getRegion()?.roomEffects.map(x=> x.id) ?? [];
 		const combatInit = await this.roomEffectsDialog(regionMods, assumeSocial);
 		await this.setSocialEncounter(combatInit.isSocialScene);
 		if (combatInit.isSocialScene != this.isSocial) {
@@ -418,6 +417,17 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			return true;
 		}
 		return false;
+	}
+
+	async onNewRound() {
+		if (!game.user.isGM) {return;}
+		const nav = PersonaDB.getNavigator();
+		console.log("New Round Start");
+		if (nav) {
+			const exp = await nav.onStartCombatTurn();
+			console.log(`On new round: ${exp.join()}`);
+		}
+		// await combat.incEscalationDie();
 	}
 
 	async startCombatantTurn( combatant: Combatant<PersonaActor>){

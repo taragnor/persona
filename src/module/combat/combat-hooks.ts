@@ -34,7 +34,7 @@ export class CombatHooks {
 					if (combat.isSocial) {
 						await PersonaSocial.startSocialCombatRound();
 					} else {
-						await combat.incEscalationDie();
+						await combat.onNewRound();
 					}
 				}
 				if (diffObject.direction < 0 && game.user.isGM) {
