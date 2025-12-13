@@ -469,10 +469,8 @@ export class CombatEngine {
 		attackBonus.add(1, this.customAtkBonus ?? 0, 'Custom modifier', "add");
 		const defense = this.getDefenderAttackModifiers(target, power.system.defense, power);
 		attackBonus.add(1, defense, "Defense MOds", "add");
-		// attackBonus = attackBonus.concat(defense);
 		if (modifiers) {
 			attackBonus.add(1, modifiers, "Extra Mods", "add");
-			// attackBonus = attackBonus.concat(modifiers);
 		}
 		return attackBonus;
 	}

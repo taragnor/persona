@@ -54,14 +54,9 @@ declare global {
 	}
 }
 
-
-
 export class PersonaCombat extends Combat<ValidAttackers> {
-	// declare combatants: Collection<Combatant<ValidAttackers>>;
-	// engagedList: Combatant<PersonaActor>[][] = [];
 	static CRIT_MAX = 10 as const;
 	_engagedList: EngagementList;
-	static customAtkBonus: number = 0;
 	consecutiveCombat: number =0;
 	defeatedFoes : ValidAttackers[] = [];
 	lastActivationRoll: number;
@@ -136,7 +131,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			if (!actor.isAlive()) {return false;}
 			return true;
 		}) as PersonaCombatant[];
-
 	}
 
 	override async startCombat() {
@@ -166,7 +160,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const mods = combatInit.roomModifiers;
 		await this.setRoomEffects(mods);
 		await this.setEscalationDie(0);
-
 		msg += this.roomEffectsMsg();
 		if (msg.length > 0) {
 			const messageData: MessageData = {
