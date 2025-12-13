@@ -10,6 +10,8 @@ import { ValidAttackers } from "./combat/persona-combat.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import {getActiveConsequences} from "./preconditions.js";
+import {ConsequenceProcessor} from "./conditionalEffects/consequence-processor.js";
+import {CombatEngine} from "./combat/combat-engine.js";
 
 export class TriggeredEffect {
 
@@ -134,7 +136,7 @@ export class TriggeredEffect {
 		for (const eff of filteredEffects) {
 			try {
 				const validCons = getActiveConsequences(eff, situationCopy);
-				const res = await PersonaCombat.consequencesToResult(validCons ,undefined, situationCopy, actor, actor, null);
+				const res = await ConsequenceProcessor.consequencesToResult(validCons ,undefined, situationCopy, actor, actor, null);
 				result.merge(res);
 			} catch (e) {
 				PersonaError.softFail(`Problem with triggered effects ${eff.source?.name ?? "Unknown source"} running on actor ${actor?.name ?? "none"}`, e);
@@ -179,7 +181,8 @@ export class TriggeredEffect {
 				if (execPower && newAttacker) {
 					const altTargets= PersonaCombat.getAltTargets(newAttacker, situation, usePower.target );
 					const newTargets = PersonaCombat.getTargets(newAttacker, execPower, altTargets);
-					const extraPower = await PersonaCombat.usePowerOn(newAttacker, execPower, newTargets, "standard");
+					const combatEngine = new CombatEngine();
+					const extraPower = await combatEngine.usePowerOn(newAttacker, execPower, newTargets, "standard");
 					triggerResult.merge(extraPower);
 				}
 			} catch (e) {

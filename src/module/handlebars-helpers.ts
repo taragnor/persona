@@ -54,6 +54,7 @@ import {FusionTable} from "../config/fusion-table.js";
 import {PreconditionConverter} from "./migration/convertPrecondition.js";
 import {PCSheet} from "./actor/sheets/pc-sheet.js";
 import {OriginalDamageSystem} from "./combat/original-damage-system.js";
+import {CombatEngine} from "./combat/combat-engine.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -200,7 +201,8 @@ export class PersonaHandleBarsHelpers {
 				attacker: actor.accessor,
 				user: actor.accessor,
 			};
-			const critBonus = PersonaCombat.calcCritModifier(actor, actor, power, situation);
+			const engine = new CombatEngine(undefined);
+			const critBonus = engine.calcCritModifier(actor, actor, power, situation);
 			return critBonus.eval(situation).total;
 		},
 		"getTokenAccName" : (tokenAcc: UniversalTokenAccessor<PToken> | UniversalActorAccessor<PC | Shadow>) =>  {
@@ -605,7 +607,8 @@ export class PersonaHandleBarsHelpers {
 				user: persona.user.accessor,
 				usedPower: power.accessor,
 			};
-			return PersonaCombat.getAttackBonus(persona, power, undefined).eval(situation).total;
+			const engine = new CombatEngine();
+			return engine.getAttackBonus(persona, power, undefined).eval(situation).total;
 		},
 
 		"powerCostString": function (power: Power, persona: Persona)  : SafeString {

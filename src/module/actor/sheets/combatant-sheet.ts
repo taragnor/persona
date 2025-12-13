@@ -20,6 +20,7 @@ import { Talent } from "../../item/persona-item.js";
 import { Power } from "../../item/persona-item.js";
 import { Focus } from "../../item/persona-item.js";
 import {Persona} from "../../persona-class.js";
+import {CombatEngine} from "../../combat/combat-engine.js";
 
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	declare actor: ValidAttackers;
@@ -215,7 +216,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` );
 		}
 		try {
-			await PersonaCombat.usePower(token, power );
+			const engine = new CombatEngine(undefined);
+			await engine.usePower(token, power );
 		} catch (e) {
 			if (e instanceof CanceledDialgogError) {
 				return;
