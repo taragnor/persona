@@ -796,7 +796,6 @@ export class CombatEngine {
 							source: usableOrCard,
 							owner: attacker.actor.accessor,
 							realSource: undefined,
-
 						}, situation);
 					}
 				}

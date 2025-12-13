@@ -42,8 +42,8 @@ export function powerCost() {
     hpcost: new num( {min: 0,  integer:true}),
     slot: new num( {integer: true, min:0, max:20, initial: 0}),
     energy: new sch({
-      required: new num({initial: 0, min:0, max:10, integer: true}),
-      cost: new num({initial: 0, min:0, max:10, integer: true}),
+      required: new num({initial: 0, min:0, max:20, integer: true}),
+      cost: new num({initial: 0, min:0, max:20, integer: true}),
       newForm: new bool(),
     }),
     reqCharge: new txt( {choices: SHADOW_CHANGE_REQ_LIST_FULL , initial: "none"}),

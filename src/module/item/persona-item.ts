@@ -1138,7 +1138,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			const Ecost= this.energyCostData(persona);
 			// const estimates = this.estimateShadowCosts(persona.user);
 			required = Ecost.required;
-			cost = Ecost.cost;
+			cost = this.energyCost(persona);
+			// cost = Ecost.cost;
 		}
 		if (required > 0) {
 			costs.push(`EN>=${required}`);
@@ -1166,7 +1167,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	energyCost(this: UsableAndCard, persona:Persona) : number {
 		const cost =this.energyCostData(persona);
-		return cost.cost;
+		const sit : Situation= {
+			usedPower: this.accessor,
+			user: persona.user.accessor,
+		};
+		const mod = persona.getBonuses("power-energy-cost").total(sit, "standard");
+		const rounded = Math.round(mod /10);
+		return cost.cost + rounded;
 	}
 
 	static getSlotName(num : number) {
