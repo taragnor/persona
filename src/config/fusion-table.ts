@@ -635,12 +635,12 @@ export class FusionTable {
 
 	static fusionTargetsByLevel (targetArcana: TarotCard, min: number = 2, max: number = 999) : Shadow[] {
 		return PersonaDB.possiblePersonasByStartingLevel(min,max)
-		?.filter(shadow =>
-			shadow.system.creatureType != "daemon"
-			&& shadow?.tarot?.name == targetArcana
-			&& shadow.startingLevel <= max
-			&& shadow.startingLevel >= min
-		);
+			?.filter(shadow =>
+				shadow.system.creatureType != "daemon"
+				&& shadow?.tarot?.name == targetArcana
+				&& shadow.startingLevel <= max
+				&& shadow.startingLevel >= min
+			);
 	}
 
 	static #upwardFusion(targetArcana: TarotCard, targetLevel : number) : U<Shadow> {
