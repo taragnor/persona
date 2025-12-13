@@ -1563,18 +1563,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return calc;
 	}
 
-	canBeReflectedByPhyiscalShield(this: UsableAndCard, attacker: ValidAttackers): boolean {
-		if (this.isSkillCard()) {return false;}
-		const dtype = (this).getDamageType(attacker);
-		switch (dtype) {
-			case 'physical':
-			case 'gun':
-				return true;
-			default:
-				return false;
-		}
-	}
-
 	isWeaponSkill(): this is PowerSub<'weapon'> {
 		if (!this.isUsableType()) {return false;}
 		if (this.isSkillCard()) {return false;}
@@ -1625,30 +1613,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	canBeReflectedByMagicShield(this: UsableAndCard, attacker: ValidAttackers) : boolean {
-		if (this.isSkillCard()) {return false;}
-		const dtype = (this).getDamageType(attacker);
-		switch (dtype) {
-			case 'fire':
-			case 'wind':
-			case 'light':
-			case 'dark':
-			case 'cold':
-			case 'lightning':
-				return true;
-			case 'gun':
-			case 'none':
-			case 'healing':
-			case 'physical':
-			case 'untyped':
-			case 'all-out':
-				break;
-			default:
-				dtype satisfies never;
-		}
-		return false;
-
-	}
 	isOpener(this: UsableAndCard) : boolean {
 		return this.hasTag('opener');
 	}
