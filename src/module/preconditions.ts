@@ -191,7 +191,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
 			const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!subject) {return false;}
 			testCase = RESIST_STRENGTH_LIST.indexOf(condition.resistLevel);
-			let element : DamageType | "by-power" = condition.element;
+			let element : DamageType = condition.element;
 			if (element == "by-power") {
 				if (!situation.usedPower) {return false;}
 				const power = PersonaDB.findItem(situation.usedPower);
@@ -610,7 +610,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 			return comparison[weather] ?? false; 
 		}
 		case "weekday-is": {
-			const weekday = PersonaCalendar.weekday();
+			const weekday = PersonaCalendar.getCurrentWeekday();
 			return condition.days[weekday];
 		}
 		case "social-target-is": {

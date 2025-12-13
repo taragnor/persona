@@ -23,11 +23,16 @@ export class PersonaCalendar {
 		return DoomsdayClock.instance;
 	}
 
-	static weekday() : SimpleCalendar.WeekdayName {
-		if (!window.SimpleCalendar)
-			{throw new PersonaError("Simple Calendar isn't enabled!");}
-		return window.SimpleCalendar.api.getCurrentWeekday().name;
-	}
+	// static weekday() : SimpleCalendar.WeekdayName {
+	// 	if (window.SimpleCalendar) {
+	// 	return window.SimpleCalendar.api.getCurrentWeekday().name;
+	// 	}
+	// 	if (game.seasonsStars) {
+	// 		game.seasonsStars.api.
+
+	// 	}
+	// 		{throw new PersonaError("Simple Calendar isn't enabled!");}
+	// }
 
 	static getSeason() : SeasonName {
 		if (window.SimpleCalendar) {
