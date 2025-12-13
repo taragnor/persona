@@ -1,6 +1,8 @@
-import {Shadow} from "../module/actor/persona-actor.js";
+import {PC, Shadow} from "../module/actor/persona-actor.js";
+import {ConditionalEffectManager} from "../module/conditional-effect-manager.js";
 import {Persona} from "../module/persona-class.js";
 import {PersonaDB} from "../module/persona-db.js";
+import {testPreconditions} from "../module/preconditions.js";
 import {TarotCard} from "./tarot.js";
 
 type TarotTable = Record<TarotCard, U<TarotCard>>;
@@ -716,14 +718,21 @@ export class FusionTable {
 		return arr;
 	}
 
-} // end of class
+	static meetsConditionsToFuse(fusionResult: Shadow, fusor: PC) : boolean {
+		const fusionConditions = ConditionalEffectManager.getConditionals(fusionResult.system.personaConversion.fusionConditions, null, fusionResult, null);
+		const situation = {
+			user: fusor.accessor,
+			target: fusionResult.accessor,
+		};
+		return testPreconditions(fusionConditions, situation);
+	}
 
+} // end of class
 
 // @ts-expect-error adding to global state
 window.FusionTable = FusionTable;
 
-
-type FusionCombination = {
+export type FusionCombination = {
 	components: Shadow[],
 	result: U<Shadow>,
 	inheritedSkills: number,

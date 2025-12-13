@@ -2,7 +2,7 @@
 	{{#if (not actor.sheet.selectedFusion)}}
 	<h2> Fusions</h2>
 	<ul class="fusion-options">
-		{{#each actor.fusionCombinations as |fusion i|}}
+		{{#each (fusableCombinations actor) as |fusion i|}}
 		<li class="fusion-option {{#if (gt fusion.result.startingLevel ../actor.level)}} disabled {{/if}}" data-shadow-id="{{fusion.result.id}}">
 			<span class="name">
 				{{fusion.result.name}}

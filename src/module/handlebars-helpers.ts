@@ -50,7 +50,7 @@ import {EnergyClassCalculator} from "./calculators/shadow-energy-cost-calculator
 import {LevelUpCalculator} from "../config/level-up-calculator.js";
 import {PersonaSettings} from "../config/persona-settings.js";
 import {POWER_TAGS} from "../config/power-tags.js";
-import {FusionTable} from "../config/fusion-table.js";
+import {FusionCombination, FusionTable} from "../config/fusion-table.js";
 import {PreconditionConverter} from "./migration/convertPrecondition.js";
 import {PCSheet} from "./actor/sheets/pc-sheet.js";
 import {OriginalDamageSystem} from "./combat/original-damage-system.js";
@@ -1001,7 +1001,14 @@ export class PersonaHandleBarsHelpers {
 </span>
 `;
 			return new Handlebars.SafeString(html);
-		}
+		},
+
+		fusableCombinations( fusor: PC) : FusionCombination[]  {
+			return fusor.fusionCombinations
+			.filter (comb=> comb.result != undefined)
+			.filter (comb=> FusionTable.meetsConditionsToFuse(comb.result!, fusor));
+		},
+
 	};
 
 } //end of class

@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { ROLL_TAGS } from "../../../config/roll-tags.js";
+/* eslint-disable @typescript-eslint/no-unsafe-argument */ import { ROLL_TAGS } from "../../../config/roll-tags.js";
 import { CARD_TAGS } from "../../../config/card-tags.js";
 import { SIMPLE_SOCIAL_CARD_ROLL_TYPES } from "../../../config/social-card-config.js";
 import { CARD_DC_TYPES } from "../../../config/social-card-config.js";
@@ -33,6 +32,10 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 	declare item: SocialCard;
 	focusedEvent: number | undefined = undefined;
 	static _socialData: Record<string, unknown>;
+	static clipboard: {
+		event ?: SocialCard["system"]["events"][number];
+		choice ?: SocialCard["system"]["events"][number]["choices"][number];
+	} = {};
 
 	override async getData() {
 		const data = await super.getData();
@@ -100,8 +103,12 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		html.find(".del-opportunity").on("click", this.deleteOpportunity.bind(this));
 		html.find(".add-event").on("click", this.addCardEvent.bind(this));
 		html.find(".del-event").on("click", this.deleteCardEvent.bind(this));
+		html.find(".copy-event").on("click", this.copyEvent.bind(this));
+		html.find(".paste-event").on("click", this.pasteEvent.bind(this));
 		html.find(".add-choice").on("click", this.addChoice.bind(this));
 		html.find(".del-choice").on("click", this.deleteChoice.bind(this));
+		html.find(".paste-choice").on("click", this.pasteChoice.bind(this));
+		html.find(".copy-choice").on("click", this.copyChoice.bind(this));
 		html.find(".event-index li .name").on("click", this.loadCardEvent.bind(this));
 		html.find(".card-event .go-back").on("click", this.goBackEventList.bind(this));
 	}
@@ -171,8 +178,12 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		await this.render(false);
 	}
 
+
 	async deleteCardEvent( ev: JQuery.ClickEvent) {
 		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
+		if (!await HTMLTools.confirmBox(`Delete Event ${eventIndex}`, "Really delete event?")) {
+			return;
+		}
 		this.focusedEvent = undefined;
 		this.element.find(".event-index").show().addClass("hidden");
 		this.element.find(".card-event").hide().removeClass("hidden");
@@ -185,10 +196,36 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 
 	}
 
+
+
 	async deleteChoice(ev: JQuery.ClickEvent) {
 		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
 		const choiceIndex = Number(HTMLTools.getClosestData(ev, "choiceIndex"));
+		if (!await HTMLTools.confirmBox(`Delete Choice ${choiceIndex}`, `Really Delete this choice`)) {
+			return;
+		}
 		await this.item.deleteEventChoice(eventIndex,choiceIndex);
+	}
+
+	async pasteChoice(ev: JQuery.ClickEvent) {
+		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
+		const choice = PersonaSocialCardSheet.clipboard.choice;
+		if (!choice) {
+			ui.notifications.warn("No choice stored in clipboard, nothing to paste");
+			return;
+		}
+		await this.item.addEventChoice(eventIndex, choice);
+	}
+
+	copyChoice( ev: JQuery.ClickEvent) {
+		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
+		const choiceIndex = Number(HTMLTools.getClosestData(ev, "choiceIndex"));
+		const choice = this.item.system.events[eventIndex].choices[choiceIndex];
+		if (!choice) {
+			return;
+		}
+		ui.notifications.notify("Choice copied to clipboard");
+		PersonaSocialCardSheet.clipboard.choice = JSON.parse(JSON.stringify(choice)) as typeof choice;
 	}
 
 	async addQualifier(_ev: JQuery.ClickEvent) {
@@ -227,6 +264,25 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		this.focusedEvent = undefined;
 		this.element.find(".event-index").show().removeClass("hidden");
 		this.element.find(".card-event").hide().addClass("hidden");
+	}
+
+	copyEvent (ev: JQuery.ClickEvent) {
+		const eventIndex = HTMLTools.getClosestDataNumber(ev, "eventIndex");
+		const event = this.item.system.events.at(eventIndex);
+		if (event) {
+			PersonaSocialCardSheet.clipboard.event = JSON.parse(JSON.stringify(event)) as typeof event;
+			ui.notifications.notify(`Event ${event.name} copied to Clipboard`);
+		}
+	}
+
+	async pasteEvent( _ev: JQuery.ClickEvent) {
+		const event= PersonaSocialCardSheet.clipboard.event;
+		if (!event) {
+			ui.notifications.warn("No data to paste");
+			return;
+		}
+		event.name = `${event.name} (copy)`;
+		await this.item.addCardEvent(event);
 	}
 
 } // end of class

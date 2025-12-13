@@ -63,7 +63,7 @@ import {Calculation} from "../utility/calculation.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {Defense} from "../../config/defense-types.js";
 import {EnhancedActorDirectory} from "../enhanced-directory/enhanced-directory.js";
-import {FusionTable} from "../../config/fusion-table.js";
+import {FusionCombination, FusionTable} from "../../config/fusion-table.js";
 import {EnchantedTreasureFormat} from "../exploration/treasure-system.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
@@ -4192,7 +4192,7 @@ get isTrueOwner() : boolean {
 	}
 }
 
-get fusionCombinations() {
+get fusionCombinations() : FusionCombination[] {
 	const arr = this.personaList
 		.concat(this.sideboardPersonas);
 	return FusionTable.fusionCombinationsOutOf(arr);

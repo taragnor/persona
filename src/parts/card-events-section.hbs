@@ -11,6 +11,9 @@
 				<span class="name"> {{event.name}} </span>
 				<span> ({{getEventType event}}) </span>
 				</span>
+				<a class="copy-event">
+					<i class="fa-solid fa-copy"></i>
+				</a>
 				<a class="del-event">
 					<i class="fa-solid fa-trash-can"></i>
 				</a>
@@ -18,8 +21,8 @@
 
 			{{/each}}
 		</ul>
-
 	</section>
+
 	{{#each item.system.events as |event i|}}
 	<div class="card-event {{#if (ne ../focusedEvent i)}} hidden {{/if}}" data-event-index='{{i}}'>
 		<a class="go-back"> Back </a>
@@ -106,6 +109,9 @@
 				<a class="add-choice">
 					<i class="fa-solid fa-plus"> </i>
 				</a>
+				<a class="paste-choice">
+					<i class="fa-solid fa-paste"> </i>
+				</a>
 			</label>
 		</div>
 	</div>
@@ -115,6 +121,9 @@
 		<h4>Add Event
 			<a class="add-event">
 				<i class="fa-solid fa-plus"> </i>
+			</a>
+			<a class="paste-event">
+				<i class="fa-solid fa-paste"></i>
 			</a>
 		</h4>
 		{{/if}}

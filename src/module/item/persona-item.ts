@@ -2128,25 +2128,28 @@ async setAvailability(this: SocialCard, bool: boolean) : Promise<void> {
 	}
 }
 
-async addCardEvent(this: SocialCard) {
-	const newEv : SocialCard['system']['events'][number] = {
-		sound: '',
-		text: '',
-		img: '',
-		volume: 1.0,
-		placement: {
-			starter: true,
-			middle: true,
-			finale: true,
-			special: false,
-		},
-		label: '',
-		name: 'Unnamed Event',
-		frequency: 1,
-		choices: [],
-		conditions: [],
-		eventTags: [],
-	};
+async addCardEvent(this: SocialCard, newEv ?: SocialCard['system']['events'][number]) {
+	if (!newEv) {
+		const blankEvent : SocialCard['system']['events'][number] = {
+			sound: '',
+			text: '',
+			img: '',
+			volume: 1.0,
+			placement: {
+				starter: true,
+				middle: true,
+				finale: true,
+				special: false,
+			},
+			label: '',
+			name: 'Unnamed Event',
+			frequency: 1,
+			choices: [],
+			conditions: [],
+			eventTags: [],
+		};
+		newEv = blankEvent;
+	}
 	this.system.events.push( newEv);
 	await this.update({'system.events': this.system.events});
 }
@@ -2156,26 +2159,29 @@ async deleteCardEvent(this: SocialCard, eventIndex: number) {
 	await this.update({'system.events': this.system.events});
 }
 
-async addEventChoice(this: SocialCard, eventIndex: number) {
+async addEventChoice(this: SocialCard, eventIndex: number, newChoice ?: CardChoice ) {
 	const event = this.system.events[eventIndex];
 	const arr = ArrayCorrector(event.choices) as CardChoice[];
-	const roll: CardRoll = {
-		rollType: 'none',
-		progressSuccess:0,
-		progressCrit: 0,
-		progressFail: 0,
-		rollTag1: '',
-		rollTag2: '',
-		rollTag3: '',
-	};
-	const newChoice: CardChoice = {
-		name: 'Unnamed Choice',
-		conditions: [],
-		text: '',
-		postEffects: {effects:[]},
-		roll,
-		resourceCost: 0,
-	};
+	if (newChoice == undefined) {
+		const roll: CardRoll = {
+			rollType: 'none',
+			progressSuccess:0,
+			progressCrit: 0,
+			progressFail: 0,
+			rollTag1: '',
+			rollTag2: '',
+			rollTag3: '',
+		};
+		const choice: CardChoice = {
+			name: 'Unnamed Choice',
+			conditions: [],
+			text: '',
+			postEffects: {effects:[]},
+			roll,
+			resourceCost: 0,
+		};
+		newChoice = choice;
+	}
 	arr.push( newChoice);
 	event.choices = arr;
 	await this.update({'system.events': Helpers.expandObject(this.system.events)});

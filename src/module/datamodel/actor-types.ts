@@ -105,6 +105,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 				baseShadowId: new id(), // the base shadow that DMon and Persona are based off of, used to make learning abilities easier
 				compendiumId: new id(), //Id of the compendium entry relating to this shadow
 				startingLevel: new num({integer: true, min: 1, max: 150, initial: 1}),
+				fusionConditions: new arr(new obj<Precondition>()),
 			}),
 			combat: new sch({
 				...combatCommonStats(),
@@ -131,10 +132,11 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 			if (system.combat.resists?.gun == undefined) {
 				system.combat.resists.gun = "normal";
 			}
-		} catch {
+		} catch (e) {
 			if (game.user.isGM && PersonaSettings.debugMode()) {
 				// Debug(system);
 				console.log("Error on Shadow Schema Convert");
+				Debug(e);
 			}
 		}
 		try {

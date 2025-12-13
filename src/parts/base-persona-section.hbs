@@ -69,6 +69,13 @@
 	{{> "systems/persona/parts/focii-table.hbs" actor=actor CONST=CONST persona=persona}}
 	{{/if}}
 
+	{{#if (isGM)}}
+	<h3> Fusion Conditions</h3>
+	<div class="fusion-conditions" data-top-path="system.personaConversion.fusionConditions" data-path="system.personaConversion.fusionConditions">
+		{{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.personaConversion.fusionConditions." POWERSTUFF=POWERSTUFF owner=actor}}
+	</div>
+	{{/if}}
+
 
 </section>
 <div class="conversions">
