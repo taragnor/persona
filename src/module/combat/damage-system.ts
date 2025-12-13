@@ -1,5 +1,4 @@
 import {DamageLevel, DamageType, RealDamageType} from "../../config/damage-types.js";
-import {PowerType} from "../../config/effect-types.js";
 import {ItemSubtype, Power, Usable} from "../item/persona-item.js";
 import {Persona} from "../persona-class.js";
 import {PersonaError} from "../persona-error.js";

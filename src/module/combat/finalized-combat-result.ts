@@ -723,8 +723,8 @@ export class FinalizedCombatResult {
 				await Metaverse.executeDungeonAction(otherEffect);
 				break;
 			case "alter-energy":
-				if (actor.system.type == "shadow") {
-					await (actor as Shadow).alterEnergy(otherEffect.amount);
+				if (actor.isShadow()) {
+					await actor.alterEnergy(otherEffect.amount);
 				}
 				break;
 			case "alter-mp":

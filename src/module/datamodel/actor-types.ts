@@ -129,7 +129,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 			}
 		};
 		try {
-			if (system.combat.resists?.gun == undefined) {
+			if (system?.combat?.resists && system.combat.resists?.gun == undefined) {
 				system.combat.resists.gun = "normal";
 			}
 		} catch (e) {
@@ -137,6 +137,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 				// Debug(system);
 				console.log("Error on Shadow Schema Convert");
 				Debug(e);
+				Debug(data);
 			}
 		}
 		try {

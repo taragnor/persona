@@ -704,7 +704,6 @@ statusResist(status: StatusEffectId, modifiers ?: readonly SourcedConditionalEff
 	const consequences = effectChangers.flatMap(
 		item => getActiveConsequences(item, situation)
 	);
-	// let baseStatusResist : ResistStrength = "normal";
 	const resists = this.statusResists;
 	type ResistableStatus = keyof typeof resists;
 	const baseStatusResist = resists[status as ResistableStatus] ? resists[status as ResistableStatus] : "normal" ;

@@ -489,7 +489,6 @@ export class CombatEngine {
 				target.actor.persona().defensiveModifiers(),
 				['allAtk']
 			)
-			// .flatMap (item => item.getModifier(['allAtk', defense], target.actor))
 		);
 		return defenseMod;
 	}
@@ -788,11 +787,12 @@ export class CombatEngine {
 					}, situation);
 				}
 				if (attacker.actor.isShadow()) {
+					const ecost = power.energyCost(attacker.actor.persona());
 					if (power.energyCost(attacker.actor.persona()) > 0) {
 						await res.addEffect(null, attacker.actor, {
 							type: "combat-effect",
 							combatEffect: 'alter-energy',
-							amount: -power.energyCost(attacker.actor.persona()),
+							amount: -ecost,
 							source: usableOrCard,
 							owner: attacker.actor.accessor,
 							realSource: undefined,
