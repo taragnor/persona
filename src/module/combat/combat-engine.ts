@@ -217,11 +217,6 @@ export class CombatEngine {
 				defenseValue: defenseVal,
 				hitWeakness: situation.struckWeakness ?? false,
 				hitResistance: situation.resisted ?? false,
-				// printableModifiers,
-				// ailmentRange,
-				// instantKillRange: instantDeathRange,
-				// critBoost,
-				// critPrintable,
 				situation,
 				...this.getBaseAttackResult(roll, attacker, target, power),
 			} as const;
@@ -507,58 +502,58 @@ export class CombatEngine {
 		// modList.add('Power attack modifier', power.system.atk_bonus);
 		calc.add(1, power.system.atk_bonus,`${power.name} attack bonus`, "add");
 
-	switch (power.system.defense) {
-		case "none":
-			return calc;
-		case "ref": {// weapon attack
-			calc.merge(attackerPersona.wpnAtkBonus());
-			modList =  modList.concat(new ModifierList(power.getModifier('wpnAtk', attackerPersona.user)));
-			break;
+		switch (power.system.defense) {
+			case "none":
+				return calc;
+			case "ref": {// weapon attack
+				calc.merge(attackerPersona.wpnAtkBonus());
+				modList =  modList.concat(new ModifierList(power.getModifier('wpnAtk', attackerPersona.user)));
+				break;
+			}
+			case "fort": //magic attack
+				calc.merge(attackerPersona.magAtkBonus());
+				modList = modList.concat(new ModifierList(power.getModifier('magAtk', attackerPersona.user)));
+				break;
+			case "kill": {
+				calc.merge(attackerPersona.instantDeathAtkBonus());
+				const ID_Bonus = power.baseInstantKillBonus();
+				modList.add(`${power.displayedName.toString()} Bonus`, ID_Bonus);
+				modList = modList.concat(new ModifierList(power.getModifier('instantDeathRange', attackerPersona.user)));
+				break;
+			}
+			case "ail": {
+				calc.merge(attackerPersona.ailmentAtkBonus());
+				const Ail_Bonus = power.baseAilmentBonus();
+				modList.add(`${power.displayedName.toString()} Bonus`, Ail_Bonus);
+				modList = modList.concat(new ModifierList(power.getModifier('afflictionRange', attackerPersona.user)));
+				break;
+			}
+			default:
+				power.system.defense satisfies never;
 		}
-		case "fort": //magic attack
-			calc.merge(attackerPersona.magAtkBonus());
-			modList = modList.concat(new ModifierList(power.getModifier('magAtk', attackerPersona.user)));
-			break;
-		case "kill": {
-			calc.merge(attackerPersona.instantDeathAtkBonus());
-			const ID_Bonus = power.baseInstantKillBonus();
-			modList.add(`${power.displayedName.toString()} Bonus`, ID_Bonus);
-			modList = modList.concat(new ModifierList(power.getModifier('instantDeathRange', attackerPersona.user)));
-			break;
-		}
-		case "ail": {
-			calc.merge(attackerPersona.ailmentAtkBonus());
-			const Ail_Bonus = power.baseAilmentBonus();
-			modList.add(`${power.displayedName.toString()} Bonus`, Ail_Bonus);
-			modList = modList.concat(new ModifierList(power.getModifier('afflictionRange', attackerPersona.user)));
-			break;
-		}
-		default:
-			power.system.defense satisfies never;
+		modList =  modList.concat(new ModifierList(power.getModifier('allAtk', attackerPersona.user)));
+		return calc.add(1, modList, "Mods", "add");
+		// return modList;
 	}
-	modList =  modList.concat(new ModifierList(power.getModifier('allAtk', attackerPersona.user)));
-	return calc.add(1, modList, "Mods", "add");
-	// return modList;
-}
 
-async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<CombatResult> {
-	const {situation} = atkResult;
-	const power = PersonaDB.findItem(atkResult.power);
-	const attacker = PersonaDB.findToken(atkResult.attacker);
-	const target = PersonaDB.findToken(atkResult.target);
-	const attackerEffects= attacker.actor.getEffects(['passive']);
-	const defenderEffects = target.actor.getEffects(['defensive']);
-	const sourcedEffects =
-	[ ...power.getEffects(attacker.actor, {CETypes: ['on-use', 'passive']}) ]
-	.concat(attackerEffects)
-	.concat(defenderEffects);
+	async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<CombatResult> {
+		const {situation} = atkResult;
+		const power = PersonaDB.findItem(atkResult.power);
+		const attacker = PersonaDB.findToken(atkResult.attacker);
+		const target = PersonaDB.findToken(atkResult.target);
+		const attackerEffects= attacker.actor.getEffects(['passive']);
+		const defenderEffects = target.actor.getEffects(['defensive']);
+		const sourcedEffects =
+		[ ...power.getEffects(attacker.actor, {CETypes: ['on-use', 'passive']}) ]
+		.concat(attackerEffects)
+		.concat(defenderEffects);
 
-	const CombatRes = new CombatResult(atkResult);
-	const consequences = sourcedEffects.flatMap( eff => getActiveConsequences(eff, situation));
-	const res = await ConsequenceProcessor.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult);
-	CombatRes.merge(res);
-	return CombatRes;
-}
+		const CombatRes = new CombatResult(atkResult);
+		const consequences = sourcedEffects.flatMap( eff => getActiveConsequences(eff, situation));
+		const res = await ConsequenceProcessor.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult);
+		CombatRes.merge(res);
+		return CombatRes;
+	}
 
 	processAttackNullifiers(attacker : PToken , power :Usable, target: PToken, baseData: Pick<AttackResult, 'attacker' | 'target'  | 'power' | 'roll'>, situation: Situation & RollSituation, rollType: AttackRollType): AttackResult | null
 	{
@@ -662,41 +657,41 @@ async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<CombatResul
 		return null;
 	}
 
-#calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) : U<{low: number, high:number}> { const ailmentMods =
-	attackerPersona.getBonuses('afflictionRange').concat(
-		targetPersona.getBonuses('ail')
-	);
-	const calc = attackerPersona.combatStats.ailmentBonus();
-	calc.add(1, -targetPersona.combatStats.ailmentResist().eval(situation).total, "Target Ailment Resistance", "add");
-	calc.add(1, ailmentMods, "mods", "add");
-	const calcResolved = calc.eval(situation);
-	const total = calcResolved.total;
-	if (PersonaSettings.debugMode()) {
-		const steps = calcResolved.steps;
-		console.debug(steps);
+	#calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) : U<{low: number, high:number}> { const ailmentMods =
+		attackerPersona.getBonuses('afflictionRange').concat(
+			targetPersona.getBonuses('ail')
+		);
+		const calc = attackerPersona.combatStats.ailmentBonus();
+		calc.add(1, -targetPersona.combatStats.ailmentResist().eval(situation).total, "Target Ailment Resistance", "add");
+		calc.add(1, ailmentMods, "mods", "add");
+		const calcResolved = calc.eval(situation);
+		const total = calcResolved.total;
+		if (PersonaSettings.debugMode()) {
+			const steps = calcResolved.steps;
+			console.debug(steps);
+		}
+		const ailmentRange = power.ailmentRange;
+		if (!ailmentRange) {return undefined;}
+		ailmentRange.low -= total;
+		if (ailmentRange.low > ailmentRange.high) {return undefined;}
+		return ailmentRange;
 	}
-	const ailmentRange = power.ailmentRange;
-	if (!ailmentRange) {return undefined;}
-	ailmentRange.low -= total;
-	if (ailmentRange.low > ailmentRange.high) {return undefined;}
-	return ailmentRange;
-}
 
-#calculateInstantDeathRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) : U<{low: number, high:number}> {
-	if (!power.isInstantDeathAttack()) {return undefined
-		;}
-	if (!power.canDealDamage()) {return {low: 5, high: 99};}
-	const instantDeathMods =
-	attackerPersona.getBonuses('instantDeathRange');
-	const killDefense =
-	targetPersona.getBonuses('kill').total(situation);
-	const instantDeathBonus = attackerPersona.combatStats.instantDeathBonus();
-	instantDeathBonus.add(1, -targetPersona.combatStats.instantDeathResist().eval(situation).total, "Target Mods", "add");
-	//think this is already factored in
-	// const elemResMod = this.resistIKMod(targetPersona, power);
-	// instantDeathBonus.add(1, -elemResMod, "Affinity Mod");
-	instantDeathMods.add("Misc Mods to kill defense", -killDefense);
-	instantDeathBonus.add(1, instantDeathMods, "MOds", "add");
+	#calculateInstantDeathRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) : U<{low: number, high:number}> {
+		if (!power.isInstantDeathAttack()) {return undefined
+			;}
+		if (!power.canDealDamage()) {return {low: 5, high: 99};}
+		const instantDeathMods =
+		attackerPersona.getBonuses('instantDeathRange');
+		const killDefense =
+		targetPersona.getBonuses('kill').total(situation);
+		const instantDeathBonus = attackerPersona.combatStats.instantDeathBonus();
+		instantDeathBonus.add(1, -targetPersona.combatStats.instantDeathResist().eval(situation).total, "Target Mods", "add");
+		//think this is already factored in
+		// const elemResMod = this.resistIKMod(targetPersona, power);
+		// instantDeathBonus.add(1, -elemResMod, "Affinity Mod");
+		instantDeathMods.add("Misc Mods to kill defense", -killDefense);
+		instantDeathBonus.add(1, instantDeathMods, "MOds", "add");
 
 		const resolved = instantDeathBonus.eval(situation);
 		const total = resolved.total;
@@ -720,11 +715,11 @@ async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<CombatResul
 		return critBoostMod;
 	}
 
-private withinRange(num: number, range: U<{low: number, high: number}>) : boolean {
-	if (range == undefined) {return false;}
-	return num >= range.low
-		&& num <= range.high;
-}
+	private withinRange(num: number, range: U<{low: number, high: number}>) : boolean {
+		if (range == undefined) {return false;}
+		return num >= range.low
+			&& num <= range.high;
+	}
 
 	async checkPowerPreqs(attacker: PToken, power: UsableAndCard) : Promise<boolean> {
 		const combat = game.combat as PersonaCombat;
@@ -749,85 +744,85 @@ private withinRange(num: number, range: U<{low: number, high: number}>) : boolea
 		return true;
 	}
 
-async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifiers: OtherEffect[]) : Promise<CombatResult> {
-	const situation : Situation = {
-		user: attacker.actor.accessor,
-		attacker: attacker.actor.accessor,
-		usedPower: usableOrCard.accessor,
-	};
-	const res = new CombatResult();
-	switch (usableOrCard.system.type) {
-		case 'power': {
-			const power  = usableOrCard as Power;
-			if (power.system.subtype == 'social-link') {
-				if (power.system.inspirationId) {
+	async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifiers: OtherEffect[]) : Promise<CombatResult> {
+		const situation : Situation = {
+			user: attacker.actor.accessor,
+			attacker: attacker.actor.accessor,
+			usedPower: usableOrCard.accessor,
+		};
+		const res = new CombatResult();
+		switch (usableOrCard.system.type) {
+			case 'power': {
+				const power  = usableOrCard as Power;
+				if (power.system.subtype == 'social-link') {
+					if (power.system.inspirationId) {
+						await res.addEffect(null, attacker.actor, {
+							type:'inspiration-cost',
+							amount: power.system.inspirationCost,
+							socialLinkIdOrTarot: power.system.inspirationId as unknown as AnyStringObject,
+							source: usableOrCard,
+							owner: attacker.actor.accessor,
+							realSource: undefined,
+						}, situation);
+					}
+				}
+				if (!attacker.actor.isShadow() && power.hpCost()) {
+					const deprecatedConvert = DamageCalculation.convertToNewFormConsequence({
+						type: 'hp-loss',
+						damageType: 'none',
+						amount: power.modifiedHpCost(attacker.actor.persona()),
+						source: usableOrCard,
+						owner: attacker.actor.accessor,
+						realSource: undefined,
+					}, power.getDamageType(attacker.actor));
+					await res.addEffect(null, attacker.actor, deprecatedConvert, situation );
+				}
+				if (!attacker.actor.isShadow()
+					&& power.system.subtype == 'magic'
+					&& power.mpCost(attacker.actor.persona()) > 0) {
 					await res.addEffect(null, attacker.actor, {
-						type:'inspiration-cost',
-						amount: power.system.inspirationCost,
-						socialLinkIdOrTarot: power.system.inspirationId as unknown as AnyStringObject,
+						type: 'alter-mp',
+						subtype: 'direct',
+						amount: -power.mpCost(attacker.actor.persona()),
 						source: usableOrCard,
 						owner: attacker.actor.accessor,
 						realSource: undefined,
 					}, situation);
 				}
-			}
-			if (!attacker.actor.isShadow() && power.hpCost()) {
-				const deprecatedConvert = DamageCalculation.convertToNewFormConsequence({
-					type: 'hp-loss',
-					damageType: 'none',
-					amount: power.modifiedHpCost(attacker.actor.persona()),
-					source: usableOrCard,
-					owner: attacker.actor.accessor,
-					realSource: undefined,
-				}, power.getDamageType(attacker.actor));
-				await res.addEffect(null, attacker.actor, deprecatedConvert, situation );
-			}
-			if (!attacker.actor.isShadow()
-				&& power.system.subtype == 'magic'
-				&& power.mpCost(attacker.actor.persona()) > 0) {
-				await res.addEffect(null, attacker.actor, {
-					type: 'alter-mp',
-					subtype: 'direct',
-					amount: -power.mpCost(attacker.actor.persona()),
-					source: usableOrCard,
-					owner: attacker.actor.accessor,
-					realSource: undefined,
-				}, situation);
-			}
-			if (attacker.actor.isShadow()) {
-				if (power.energyCost(attacker.actor.persona()) > 0) {
-					await res.addEffect(null, attacker.actor, {
-						type: "combat-effect",
-						combatEffect: 'alter-energy',
-						amount: -power.energyCost(attacker.actor.persona()),
-						source: usableOrCard,
-						owner: attacker.actor.accessor,
-						realSource: undefined,
+				if (attacker.actor.isShadow()) {
+					if (power.energyCost(attacker.actor.persona()) > 0) {
+						await res.addEffect(null, attacker.actor, {
+							type: "combat-effect",
+							combatEffect: 'alter-energy',
+							amount: -power.energyCost(attacker.actor.persona()),
+							source: usableOrCard,
+							owner: attacker.actor.accessor,
+							realSource: undefined,
 
-					}, situation);
+						}, situation);
+					}
 				}
 			}
-		}
-			break;
-		case 'skillCard':
-		case 'consumable' :{
-			const consumable = usableOrCard as Consumable;
-			if (consumable.isSkillCard()
-				|| consumable.system.subtype == 'consumable') {
-				await res.addEffect(null, attacker.actor, {
-					type: 'expend-item',
-					source: usableOrCard,
-					owner: attacker.actor.accessor,
-					realSource: undefined,
-				}, situation);
+				break;
+			case 'skillCard':
+			case 'consumable' :{
+				const consumable = usableOrCard as Consumable;
+				if (consumable.isSkillCard()
+					|| consumable.system.subtype == 'consumable') {
+					await res.addEffect(null, attacker.actor, {
+						type: 'expend-item',
+						source: usableOrCard,
+						owner: attacker.actor.accessor,
+						realSource: undefined,
+					}, situation);
+				}
+				break;
 			}
-			break;
+			default:
+				usableOrCard.system satisfies never;
 		}
-		default:
-			usableOrCard.system satisfies never;
+		return res;
 	}
-	return res;
-}
 
 }
 

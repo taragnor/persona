@@ -2449,7 +2449,6 @@ export type ConsequenceProcessed = {
 		applyTo: 'global' | ValidAttackers,
 		cons: EnhancedSourcedConsequence<NonDeprecatedConsequence>,
 	}[],
-	// escalationMod ?: number
 }
 
 CombatHooks.init();
@@ -2462,7 +2461,6 @@ type OpenerOptionsReturn = {
 type OpenerOption = {
 	mandatory: boolean,
 	optionName: string,
-	// optionTxt: string,
 	optionEffects: OptionEffect[],
 	toolTip ?: string,
 	power ?: {
