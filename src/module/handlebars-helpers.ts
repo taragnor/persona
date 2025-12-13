@@ -326,21 +326,6 @@ export class PersonaHandleBarsHelpers {
 
 		"isActivitySelectable": function (pc: PC, activity: Activity): boolean {
 			return PersonaSocial.isActivitySelectable(activity, pc);
-			// if (!activity.system.weeklyAvailability.available)
-			// 	{return false;}
-			// if ((pc.system.activities.find( act=> act.linkId == activity.id)?.strikes ?? 0) >= 3)
-			// 	{return false;}
-			// const situation : Situation=  {
-			// 	user: pc.accessor,
-			// 	attacker: pc.accessor,
-			// };
-			// const sourced=  (activity.system.conditions ?? []).map( cond => ({
-			// 	owner: undefined,
-			// 	source: undefined,
-			// 	realSource: undefined,
-			// 	...cond,
-			// }));
-			// return testPreconditions(sourced, situation);
 		},
 
 		"getActivityProgress": function( actor: PersonaActor, activity: Activity): number {
