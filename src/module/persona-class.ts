@@ -690,11 +690,13 @@ get printableResistanceString() : string {
 statusResist(status: StatusEffectId, modifiers ?: readonly SourcedConditionalEffect[]) : ResistStrength {
 	const actor= this.source;
 	if (!modifiers) {
-		modifiers = actor.mainModifiers();
+		modifiers = this.mainModifiers();
 	}
 	const effectChangers = modifiers
 		.filter ( mod => mod.consequences
-			.some( cons=>cons.type == "raise-status-resistance" && cons.statusName == status));
+			.some( cons=>
+				cons.type == "raise-status-resistance" && multiCheckContains(cons.statusName,status)
+			));
 	const situation : Situation = {
 		user: actor.accessor,
 		target: actor.accessor,
@@ -702,13 +704,10 @@ statusResist(status: StatusEffectId, modifiers ?: readonly SourcedConditionalEff
 	const consequences = effectChangers.flatMap(
 		item => getActiveConsequences(item, situation)
 	);
-	let baseStatusResist : ResistStrength = "normal";
-	if ("statusResists" in actor.system.combat) {
-		const statusResist = actor.system.combat.statusResists;
-		if (status in statusResist) {
-			baseStatusResist = statusResist[status as keyof typeof statusResist];
-		}
-	}
+	// let baseStatusResist : ResistStrength = "normal";
+	const resists = this.statusResists;
+	type ResistableStatus = keyof typeof resists;
+	const baseStatusResist = resists[status as ResistableStatus] ? resists[status as ResistableStatus] : "normal" ;
 	const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
 	let resist= baseStatusResist;
 	for (const cons of consequences) {

@@ -1058,7 +1058,10 @@ export function multiCheckToArray<const T extends MultiCheckOrSingle<S>, const S
 		.map( ([k,_v]) => k as S) ;
 }
 
-export function multiCheckContains<T extends R, R extends string>(multiCheck: MultiCheck<T> | T, arr: R[]) : boolean {
+export function multiCheckContains<T extends R, R extends string>(multiCheck: MultiCheck<T> | T, arrOrSingle: R[] | R) : boolean {
+	const arr = Array.isArray(arrOrSingle)
+	? arrOrSingle
+	: [arrOrSingle];
 	if (typeof multiCheck != "object") {
 		return arr.includes(multiCheck);
 	}
