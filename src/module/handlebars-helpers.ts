@@ -302,7 +302,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"choiceMeetsConditions": function(cardData: CardData, choice: SocialCard["system"]["events"][number]["choices"][number]) : boolean {
-			const conditions = choice.conditions ?? [];
+			const conditions = choice.conditions?.slice() ?? [];
 			if (choice.resourceCost > 0) {
 				conditions.push( {
 					type: "numeric",
