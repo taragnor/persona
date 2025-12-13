@@ -150,23 +150,49 @@ export class CombatEngine {
 		return result;
 	}
 
-	async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, modifiers: ModifierList, rollType: AttackRollType, options: CombatOptions = {}) : Promise<AttackResult> {
-		const combat = game.combat as PersonaCombat | undefined;
-		const attackerPersona = attacker.actor.persona();
-		const targetPersona = target.actor.persona();
-		const rollTags: NonNullable<Situation['rollTags']> = ['attack'];
-		const activationRoll = rollType == 'activation';
-		if (activationRoll) {
-			rollTags.push('activation');
-		}
-		const baseSituation : Situation = {
+	getBaseSituation(attacker: PToken, target: PToken, usableOrCard: UsableAndCard, rollTags: NonNullable<Situation['rollTags']>) {
+		rollTags.pushUnique('attack');
+		const combat= this.combat;
+		const baseSituation = {
 			target: target.actor.accessor,
 			usedPower: PersonaDB.getUniversalItemAccessor(usableOrCard),
 			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
 			rollTags,
 			attacker: attacker.actor.accessor,
 			activeCombat:combat ? Boolean(combat.combatants.find( x=> x.actor?.system.type != attacker.actor.system.type)): false ,
-		};
+		} satisfies Situation;
+		return baseSituation;
+	}
+
+	generateRollTags(rollType: AttackRollType): NonNullable<Situation['rollTags']> {
+		const rollTags: NonNullable<Situation['rollTags']> = ['attack'];
+		const activationRoll = rollType == 'activation';
+		if (activationRoll) {
+			rollTags.push('activation');
+		}
+		return rollTags;
+	}
+
+	storeActivationRoll(rollType: AttackRollType, roll: Roll) {
+		if (this.combat
+			&& !this.combat.isSocial
+			&& rollType == "activation") {
+			this.combat.lastActivationRoll = roll.total;
+		}
+	}
+
+	getRollName(attacker: PToken, power: Usable, target: PToken, defenseVal: number) {
+		const cssClass= (!target.actor.isPC()) ? 'gm-only' : '';
+		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
+		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.targettedDefenseLocalized()} ${defenseStr}`;
+		return rollName;
+	}
+
+	async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, modifiers: ModifierList, rollType: AttackRollType, options: CombatOptions = {}) : Promise<AttackResult> {
+		const attackerPersona = attacker.actor.persona();
+		const targetPersona = target.actor.persona();
+		const rollTags = this.generateRollTags(rollType);
+		const baseSituation = this.getBaseSituation(attacker, target, usableOrCard, rollTags);
 		const cardReturn = await this.processSkillCard(attacker, usableOrCard, target, baseSituation);
 		if (cardReturn) {return cardReturn;}
 		const power = usableOrCard as Usable;
@@ -174,25 +200,17 @@ export class CombatEngine {
 		const resist = targetPersona.elemResist(element);
 		const def = power.system.defense;
 		const r = await (options.setRoll ? new Roll(`0d1+${options.setRoll}`).roll():  new Roll('1d20').roll());
-		if (activationRoll) {
-			const combat = game.combat as PersonaCombat;
-			if (combat && !combat.isSocial) {
-				combat.lastActivationRoll = r.total;
-			}
-		}
+		this.storeActivationRoll(rollType, r);
 		const attackbonus = this.getAttackBonus(attackerPersona, power, target, modifiers);
 		if (rollType == 'reflect' && (def == "fort" || def =="ref")) {
 			attackbonus.add(1, 15, 'Reflected Attack',"add");
 		}
-		const cssClass= (!target.actor.isPC()) ? 'gm-only' : '';
 		const roll = new RollBundle('Temp', r, attacker.actor.system.type == 'pc', attackbonus, baseSituation);
 		const naturalAttackRoll = roll.dice[0].total;
-		// situation.naturalRoll = naturalAttackRoll;
 		const defenseCalc = targetPersona.getDefense(def).eval(baseSituation);
 		const defenseVal = def != 'none' ? defenseCalc.total: 0;
 		const validDefModifiers = def != 'none' ? defenseCalc.steps: [];
-		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
-		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.targettedDefenseLocalized()} ${defenseStr}`;
+		const rollName = this.getRollName(attacker, power, target, defenseVal);
 		roll.setName(rollName);
 		const baseData = {
 			roll,
@@ -204,9 +222,9 @@ export class CombatEngine {
 		const situation : CombatRollSituation = {
 			...baseSituation,
 			naturalRoll: naturalAttackRoll,
-			rollTags,
 			rollTotal: roll.total,
 			withinAilmentRange: false,
+			withinInstantKillRange: false,
 		};
 		const testNullify = this.processAttackNullifiers(attacker, power, target, baseData, situation, rollType);
 		if (testNullify)  {
