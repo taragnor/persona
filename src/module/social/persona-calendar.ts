@@ -15,7 +15,6 @@ declare global {
 	interface HOOKS {
 		"personaCalendarAdvance": () => unknown;
 	}
-
 }
 
 export class PersonaCalendar {
@@ -159,18 +158,11 @@ export class PersonaCalendar {
 
 	static async nextDay(extraMsgs : string[] = []) {
 		if(!game.user.isGM) {return;}
-		// console.debug("nextday Called");
 		const rolls: Roll[] = [];
-		// const calendar = window?.SimpleCalendar?.api;
-		// if (!calendar) {
-		// 	throw new PersonaError("Simple Calendar isn't enabled!");
-		// }
 		const requireManual = !(await this.advanceCalendar());
-		// const date = calendar.currentDateTimeDisplay().date;
 		const date = this.getDateString();
 		const weekday = this.getCurrentWeekday();
 		const newWeather =  this.determineWeather(this.getCurrentDate());
-		// const newWeather =  this.determineWeather(calendar.currentDateTime());
 		await this.setWeather(newWeather);
 		const weather = this.getWeather();
 		if (weather != newWeather) {
@@ -297,13 +289,11 @@ export class PersonaCalendar {
 	static #calcNextDay (date: Readonly<CalendarDate>) : CalendarDate {
 		const d = game.seasonsStars!.api.getCurrentDate();
 		const months = d.calendar.months;
-		// const months = window.SimpleCalendar?.api.getAllMonths();
 		if (!months) {throw new PersonaError("Calendar Module not loaded");}
 		const currMonth = months[date.month];
 		let {day, month, year} = date;
 		day += 1;
 		if (day >= currMonth.days) {
-		// if (day >= currMonth.numberOfDays) {
 			day = 0;
 			month += 1;
 		}
@@ -317,8 +307,6 @@ export class PersonaCalendar {
 	static #calcPrevDay (date: Readonly<CalendarDate>) : CalendarDate {
 		const d = game.seasonsStars!.api.getCurrentDate();
 		const months = d.calendar.months;
-		// const months = window.SimpleCalendar?.api.getAllMonths();
-		// if (!months) {throw new PersonaError("Calendar Module not loaded");}
 		let {day, month} = date;
 		const {year} = date;
 		day -= 1;
@@ -331,7 +319,6 @@ export class PersonaCalendar {
 			month = months.length - 1;
 		}
 		day = months[month].days - 1;
-		// day = months[month].numberOfDays - 1;
 		return {day, month, year};
 	}
 
@@ -345,8 +332,6 @@ export class PersonaCalendar {
 
 	static weatherReport(days: number = 5) : WeatherType[] {
 		let day = this.getCurrentDate();
-		// let day : CalendarDate | undefined = window.SimpleCalendar?.api.currentDateTime();
-		// if (!day) {throw new PersonaError("Can't get weather report as calendar can't be reached");}
 		const arr : WeatherType[]  = [];
 		while (days-- > 0) {
 			day = this.#calcNextDay(day);
@@ -360,16 +345,6 @@ export class PersonaCalendar {
 		await PersonaSettings.set("weather", weather);
 		await PersonaSFX.onWeatherChange(weather);
 	}
-
-	// static getDateString() : string {
-	// 	const calendar = window.SimpleCalendar;
-	// 	if (!calendar) {return "ERROR";}
-	// 	const day = calendar.api.currentDateTimeDisplay();
-	// 	let daystr = day.date;
-	// 	daystr = daystr.substring(0, daystr.length -6);
-	// 	daystr =`${this.weekday()}, ${daystr}`;
-	// 	return daystr;
-	// }
 
 	static getWeatherIcon(weather ?: WeatherType) : JQuery {
 		if (weather == undefined) {
@@ -412,29 +387,6 @@ export class PersonaCalendar {
 	}
 
 }
-
-// **************************************************
-// ******   Calendar Date check debug code  ******* *
-// **************************************************
-
-// Hooks.on("preUpdateSetting", function (updateItem, changes) {
-	// if (updateItem.key == "smalltime.current-date" && changes.value != undefined) {
-	// }
-	// if (updateItem.key == "foundryvtt-simple-calendar.calendar-configuration" && changes.value != undefined) {
-	// }
-// });
-
-// Hooks.on("updateSetting", function (updateItem, changes) {
-	// if (updateItem.key == "smalltime.current-date" && changes.value != undefined) {
-	// 	console.log(`SmallTime Update: ${JSON.stringify(updateItem.value)}`);
-	// 	// Debug(updateItem, changes);
-	// }
-	// if (updateItem.key == "foundryvtt-simple-calendar.calendar-configuration" && changes.value != undefined) {
-	// 	// console.log(`SimpleCalendar Update:`);
-	// 	// Debug(updateItem, changes);
-	// }
-// });
-
 
 type CalendarDate = {day: number, year:number, month: number}
 
