@@ -45,7 +45,7 @@ export class CombatEngine {
 			if (!power.isSkillCard()
 				&& targetsShadows
 				&& !selfOnly) {
-				PersonaCombat.ensureCombatExists();
+				this.ensureCombatExists();
 			}
 			if (options.askForModifier) {
 				this.customAtkBonus = await HTMLTools.getNumber('Attack Modifier');
@@ -722,7 +722,7 @@ export class CombatEngine {
 	}
 
 	async checkPowerPreqs(attacker: PToken, power: UsableAndCard) : Promise<boolean> {
-		const combat = game.combat as PersonaCombat;
+		const combat = this.combat;
 		if (combat && !combat.turnCheck(attacker, power)) {
 			if (!game.user.isGM) {
 				ui.notifications.warn("It's not your turn!");
@@ -824,6 +824,10 @@ export class CombatEngine {
 		return res;
 	}
 
+	ensureCombatExists() : PersonaCombat {
+		if (this.combat) {return this.combat;}
+		return PersonaCombat.ensureCombatExists();
+	}
 }
 
 
