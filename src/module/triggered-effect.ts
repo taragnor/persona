@@ -12,6 +12,7 @@ import { PersonaCombat } from "./combat/persona-combat.js";
 import {getActiveConsequences} from "./preconditions.js";
 import {ConsequenceProcessor} from "./conditionalEffects/consequence-processor.js";
 import {CombatEngine} from "./combat/combat-engine.js";
+import {PersonaItem} from "./item/persona-item.js";
 
 export class TriggeredEffect {
 
@@ -114,8 +115,14 @@ export class TriggeredEffect {
 			.filter(x=> x.conditions.some( x=> x.type == "on-trigger" && x.trigger == trigger))
 		);
 		if (actor) {
-			// triggers = actor.triggers;
 			triggers.push(...actor.triggersOn(trigger));
+		}
+		if (situation.usedPower) {
+			const power = PersonaDB.findItem(situation.usedPower);
+			const user = situation.user ? PersonaDB.findActor(situation.user) : null;
+			const PowerTriggers = power.getTriggeredEffects(user)
+			.filter ( ce => PersonaItem.triggersOn(ce, trigger));
+			triggers.push(...PowerTriggers);
 		}
 		if (game.combat) {
 			const roomEffects = (game.combat as PersonaCombat)?.getRoomEffects() ?? [];

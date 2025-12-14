@@ -7,7 +7,6 @@ import { TriggeredEffect } from "../triggered-effect.js";
 import { PersonaSFX } from "./persona-sfx.js";
 import { RollBundle } from "../persona-roll.js";
 import { PC } from "../actor/persona-actor.js";
-import { Shadow } from "../actor/persona-actor.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { PToken } from "./persona-combat.js";
 import { PersonaSockets } from "../persona.js";
@@ -617,24 +616,24 @@ export class FinalizedCombatResult {
 			return;
 		}
 		if (dmg.hpChange == 0) {return;}
-		const attacker = attackerToken ? PersonaDB.findToken(attackerToken).actor.accessor : undefined;
-		const actorAcc = actor.accessor;
-		const situation : Situation =  {
-			user: actorAcc,
-			usedPower: power?.accessor,
-			triggeringCharacter: actorAcc,
-			target: actorAcc,
-			attacker,
-			amt: -dmg.hpChange,
-			damageType: dmg.damageType,
-			triggeringUser: game.user,
-		};
-		const CR = (await TriggeredEffect.onTrigger("pre-take-damage", actor, situation)).finalize();
-		if (CR.hasCancelRequest()) {
-			this.addChained(CR);
-			return;
-		}
 		if (dmg.hpChange < 0) {
+			const attacker = attackerToken ? PersonaDB.findToken(attackerToken).actor.accessor : undefined;
+			const actorAcc = actor.accessor;
+			const situation : Situation =  {
+				user: actorAcc,
+				usedPower: power?.accessor,
+				triggeringCharacter: actorAcc,
+				target: actorAcc,
+				attacker,
+				amt: -dmg.hpChange,
+				damageType: dmg.damageType,
+				triggeringUser: game.user,
+			};
+			const preCR = (await TriggeredEffect.onTrigger("pre-take-damage", actor, situation)).finalize();
+			if (preCR.hasCancelRequest()) {
+				this.addChained(preCR);
+				return;
+			}
 			const CR = (await TriggeredEffect
 				.autoTriggerToCR("on-damage", actor, situation))
 				?.finalize();
