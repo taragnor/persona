@@ -1593,7 +1593,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	private downResistNewStatus({duration}: StatusEffect) :boolean {
-		if (!this.hasStatus("down")) {return false;}
+		if (this.hp > 0) {return false;}
 		return PersonaAE.durationLessThanOrEqualTo(duration, {dtype: "combat"});
 	}
 
@@ -4422,6 +4422,7 @@ Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
 });
 
 Hooks.on("createToken", async function (token: TokenDocument<PersonaActor>)  {
+	if (!game.user.isGM) { return;}
 	if (token.actor && game.user.isGM && token.actor.system.type == "shadow") {
 		await token.actor.fullHeal();
 	}

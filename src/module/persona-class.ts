@@ -203,6 +203,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	async resetCombatStats( autoSpendersOnly :boolean) {
+		if (!game.user.isGM) {return;}
 		if (autoSpendersOnly && !this.canAutoSpendStatPoints() ) {return;}
 		const source = this.source;
 		const stats = source.system.combat.personaStats.stats;
@@ -220,8 +221,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	canAutoSpendStatPoints() : boolean {
 		const source = this.source;
-		return source.isNPCAlly()
-			|| (source.isShadow() && !source.isCustomPersona());
+		const isNPCAllyOrShadow = source.isNPCAlly()
+			|| source.isShadow();
+		return isNPCAllyOrShadow
+			&& !source.isCustomPersona() 
+			&& source.tarot != undefined;
 	}
 
 	get scanLevelRaw() : number {
