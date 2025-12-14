@@ -636,7 +636,7 @@ export class FinalizedCombatResult {
 		}
 		if (dmg.hpChange < 0) {
 			const CR = (await TriggeredEffect
-				.autoTriggerToCR("on-damage", actor))
+				.autoTriggerToCR("on-damage", actor, situation))
 				?.finalize();
 			this.addChained(CR);
 		}
