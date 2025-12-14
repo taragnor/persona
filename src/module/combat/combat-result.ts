@@ -72,20 +72,30 @@ export class CombatResult  {
 		this.sounds.push({sound, timing});
 	}
 
-	#getDamageCalc(cons: NewDamageConsequence, atkResult: U<AttackResult>, effect: U<ActorChange<ValidAttackers>>  ) : U<DamageCalculation> {
+	#getDamageCalc(cons: NewDamageConsequence, situation: Situation, effect: U<ActorChange<ValidAttackers>>) : U<DamageCalculation> {
 		if (!effect) {return undefined;}
 		let damageType = cons.damageType;
 		if (damageType == "by-power") {
-			if (!atkResult) {
-				PersonaError.softFail("Can't get atk Result for determining damage type");
+			// if (!atkResult) {
+			// 	PersonaError.softFail("Can't get atk Result for determining damage type");
+			// 	return undefined;
+			// }
+			if (!situation.usedPower) {
+				PersonaError.softFail("Can't get situation: Used Power for determining damage type");
 				return undefined;
 			}
-			const power = PersonaDB.findItem(atkResult.power);
+			if (!situation.attacker) {
+				PersonaError.softFail("Can't get situation: attacker for determining damage type");
+				return undefined;
+			}
+			const power = PersonaDB.findItem(situation.usedPower);
+			// const power = PersonaDB.findItem(atkResult.power);
 			if (power.isSkillCard()) {
 				PersonaError.softFail("Skill Cards can't do damage");
 				return undefined;
 			}
-			const attacker = PersonaDB.findToken(atkResult.attacker).actor;
+			const attacker = PersonaDB.findActor(situation.attacker);
+			// const attacker = PersonaDB.findToken(situation.attacker).actor;
 			if (!attacker) {
 				PersonaError.softFail("Can't get attacker");
 				return undefined;
@@ -97,7 +107,7 @@ export class CombatResult  {
 		if (damageType == undefined) {
 			// eslint-disable-next-line no-debugger
 			debugger;
-			PersonaError.softFail("Damage Type is undefined on this consequence", cons, atkResult, effect);
+			PersonaError.softFail("Damage Type is undefined on this consequence", cons, effect, situation);
 			return undefined;
 		}
 		if (effect.damage[damageType]) {
@@ -122,20 +132,32 @@ export class CombatResult  {
 		return undefined;
 	}
 
-	private addEffect_damage(cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type : "combat-effect", combatEffect:"damage"}, effect: ActorChange<ValidAttackers>, target: ValidAttackers, atkResult: U<AttackResult> | null) {
+	private addEffect_damage(
+		cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type : "combat-effect", combatEffect:"damage"},
+		situation: Situation,
+		effect: ActorChange<ValidAttackers>,
+		target: ValidAttackers,
+		// atkResult: U<AttackResult> | null
+	) {
 		if (!target) {return;}
+		// const sitAttacker = situation.attacker;
+		// const user = situation.user;
 		switch  (cons.damageSubtype) {
 			case "set-to-percent":
 			case "set-to-const": {
 				if (!effect) {return;}
-				const attacker = atkResult?.attacker ? PersonaDB.findToken(atkResult.attacker).actor : undefined;
-				const situation = {
-					triggeringCharacter: target.accessor,
-					user: attacker ? attacker.accessor : target.accessor,
-					target: target.accessor,
-					attacker: attacker ? attacker.accessor : undefined,
-					...(atkResult ?  atkResult.situation : {}),
-				};
+				// const attacker = sitAttacker;
+				// const attacker = atkResult?.attacker
+				// ? PersonaDB.findToken(atkResult.attacker).actor.accessor
+				// : sitAttacker;
+				// const NewSituation = {
+				// 	triggeringCharacter: target.accessor,
+				// 	user: user ? user : attacker,
+				// 	target: target.accessor,
+				// 	attacker: attacker,
+				// 	...situation,
+					// ...(atkResult ?  atkResult.situation : {}),
+				// };
 				const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
 				const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation);
 				if (amount == undefined) {
@@ -149,22 +171,24 @@ export class CombatResult  {
 				});
 				break;
 			}
+			case "constant":
+				// eslint-disable-next-line no-fallthrough
 			default: {
 				if (cons.amount != undefined && typeof cons.amount == "object") {
-				const attacker = atkResult?.attacker ? PersonaDB.findToken(atkResult.attacker).actor : undefined;
-				const situation = {
-					triggeringCharacter: target.accessor,
-					user: attacker ? attacker.accessor : target.accessor,
-					target: target.accessor,
-					attacker: attacker ? attacker.accessor : undefined,
-					...(atkResult ?  atkResult.situation : {}),
-				};
-				const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons as typeof cons & {amount: ConsequenceAmount});
-				const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation);
+					// const attacker = atkResult?.attacker ? PersonaDB.findToken(atkResult.attacker).actor : undefined;
+					// const situation = {
+					// 	triggeringCharacter: target.accessor,
+					// 	user: attacker ? attacker.accessor : target.accessor,
+					// 	target: target.accessor,
+					// 	attacker: attacker ? attacker.accessor : undefined,
+					// 	...(atkResult ?  atkResult.situation : {}),
+					// };
+					const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons as typeof cons & {amount: ConsequenceAmount});
+					const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation);
 					//@ts-expect-error writing to read only
 					cons.amount = amount;
 				}
-				const damageCalc = this.#getDamageCalc(cons, atkResult ?? undefined, effect);
+				const damageCalc = this.#getDamageCalc(cons, situation, effect);
 				if (!damageCalc) {break;}
 				damageCalc.addConsequence(cons, target);
 				break;
@@ -172,22 +196,26 @@ export class CombatResult  {
 		}
 	}
 
-	private addEffect_combatEffect( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "combat-effect"}, effect: ActorChange<ValidAttackers>, target: U<ValidAttackers>, atkResult: U<AttackResult>, situation: Readonly<Situation>) {
+	private addEffect_combatEffect( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "combat-effect"}, effect: ActorChange<ValidAttackers>, target: U<ValidAttackers>, situation: Readonly<Situation>) {
+		if (!target && situation.target) {
+			target = PersonaDB.findActor(situation.target);
+		}
 		switch (cons.combatEffect) {
 			case "damage":
 				if (!effect || !target) {break;}
-				this.addEffect_damage(cons, effect, target, atkResult);
+				this.addEffect_damage(cons, situation, effect, target);
 				break;
 			case "addStatus": {
 				if (!effect) {break;}
 				let status_damage : number | undefined = undefined;
-				if (atkResult && cons.statusName == "burn") {
-					const power = PersonaDB.findItem(atkResult.power);
+				if (situation.attacker && situation.usedPower &&  cons.statusName == "burn") {
+					const power = PersonaDB.findItem(situation.usedPower);
 					if (power.system.type == "skillCard") {
 						PersonaError.softFail("Skill Card shouldn't be here");
 						break;
 					}
-					const attacker = PersonaDB.findToken(atkResult.attacker).actor;
+					const attacker = PersonaDB.findActor(situation.attacker);
+					// const attacker = PersonaDB.findToken(atkResult.attacker).actor;
 					status_damage = attacker
 						? (power as Usable)
 							.damage.getDamage(power as Usable, attacker.persona())
@@ -201,7 +229,7 @@ export class CombatResult  {
 						PersonaError.softFail(`No Target for ${id}`);
 						break;
 					}
-					const duration = convertConsToStatusDuration(cons, atkResult ?? target);
+					const duration = convertConsToStatusDuration(cons, target);
 					if (effect.addStatus.find( st => st.id == id && PersonaAE.durationLessThanOrEqualTo(duration, st.duration))) {
 						break;
 					}
@@ -234,8 +262,8 @@ export class CombatResult  {
 				break;
 			}
 			case "extraTurn": {
-				if (atkResult) {
-					const power = PersonaDB.findItem(atkResult.power);
+				if (situation.usedPower) {
+					const power = PersonaDB.findItem(situation.usedPower);
 					if (power.isOpener()) {break;}
 					if (power.isTeamwork()) {break;}
 				}
@@ -281,6 +309,9 @@ export class CombatResult  {
 	}
 
 	async addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
+		if (!target && situation.target) {
+			target = PersonaDB.findActor(situation.target);
+		}
 		const effect = this.#getEffect(target);
 		switch (cons.type) {
 			case "none":
@@ -326,7 +357,8 @@ export class CombatResult  {
 				break;
 			case "set-flag": {
 				if (!effect) {break;}
-				const dur = convertConsToStatusDuration(cons, atkResult ?? target!);
+				// const target = PersonaDB.findActor(situation.target);
+				const dur = convertConsToStatusDuration(cons, target!);
 				let embeddedEffects: readonly SourcedConditionalEffect[]= [];
 				const source = cons.source;
 				if (source && "getEmbeddedEffects" in source && source.getEmbeddedEffects != undefined) {
@@ -344,14 +376,14 @@ export class CombatResult  {
 				break;
 			}
 			case "inspiration-cost": {
-				let situation: Situation | undefined = atkResult?.situation;
+				// let situation: Situation | undefined = atkResult?.situation;
 				if (!effect) {break;}
-				if (!situation) {
-					situation = {
-						user: effect.actor,
-						target: effect.actor,
-					};
-				}
+				// if (!situation) {
+				// 	situation = {
+				// 		user: effect.actor,
+				// 		target: effect.actor,
+				// 	};
+				// }
 				const socialTarget = getSocialLinkTarget(cons.socialLinkIdOrTarot, situation, undefined);
 				if (!socialTarget) {break;}
 				effect.otherEffects.push( {
@@ -431,7 +463,7 @@ export class CombatResult  {
 				break;
 			case "combat-effect":
 				if (!effect) {break;}
-				this.addEffect_combatEffect(cons, effect, target, atkResult ?? undefined, situation);
+				this.addEffect_combatEffect(cons, effect, target, situation);
 				// effect.otherEffects.push(cons);
 				break;
 			case "alter-fatigue-lvl":

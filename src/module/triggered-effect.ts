@@ -1,7 +1,7 @@
 import { removeDuplicates } from "./utility/array-tools.js";
 import { Metaverse } from "./metaverse.js";
 import { PersonaError } from "./persona-error.js";
-import { PC } from "./actor/persona-actor.js";
+import { PC, PersonaActor } from "./actor/persona-actor.js";
 import { NonCombatTriggerTypes } from "../config/triggers.js";
 import { CombatTriggerTypes } from "../config/triggers.js";
 import { Trigger } from "../config/triggers.js";
@@ -110,37 +110,38 @@ export class TriggeredEffect {
 			return result;
 		}
 		const situationCopy = { ...situation, trigger } as Situation; //copy the object so it doesn't permanently change it
-		const triggers : SourcedConditionalEffect[] = PersonaDB.getGlobalModifiers().flatMap( x=> x
-			.getTriggeredEffects(null)
-			.filter(x=> x.conditions.some( x=> x.type == "on-trigger" && x.trigger == trigger))
-		);
-		if (actor) {
-			triggers.push(...actor.triggersOn(trigger));
-		}
-		if (situation.usedPower) {
-			const power = PersonaDB.findItem(situation.usedPower);
-			const user = situation.user ? PersonaDB.findActor(situation.user) : null;
-			const PowerTriggers = power.getTriggeredEffects(user)
-			.filter ( ce => PersonaItem.triggersOn(ce, trigger));
-			triggers.push(...PowerTriggers);
-		}
-		if (game.combat) {
-			const roomEffects = (game.combat as PersonaCombat)?.getRoomEffects() ?? [];
-			triggers.push(
-				...roomEffects.flatMap (RE=> RE.getEffects(null))
-			);
-		} else {
-			const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
-			triggers.push(
-				...arr.flatMap (RE=> RE.getEffects(null))
-			);
-			const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
-			triggers.push(...PCTriggers);
-		}
-		const filteredEffects = removeDuplicates(triggers
-			.filter ( x=> x.conditionalType == "triggered")
-		);
-		for (const eff of filteredEffects) {
+		const triggers = this.getTriggerList(trigger, actor, situation);
+		// const triggers : SourcedConditionalEffect[] = PersonaDB.getGlobalModifiers().flatMap( x=> x
+		// 	.getTriggeredEffects(null)
+		// 	.filter(x=> x.conditions.some( x=> x.type == "on-trigger" && x.trigger == trigger))
+		// );
+		// if (actor) {
+		// 	triggers.push(...actor.triggersOn(trigger));
+		// }
+		// if (situation.usedPower) {
+		// 	const power = PersonaDB.findItem(situation.usedPower);
+		// 	const user = situation.user ? PersonaDB.findActor(situation.user) : null;
+		// 	const PowerTriggers = power.getTriggeredEffects(user)
+		// 	.filter ( ce => PersonaItem.triggersOn(ce, trigger));
+		// 	triggers.push(...PowerTriggers);
+		// }
+		// if (game.combat) {
+		// 	const roomEffects = (game.combat as PersonaCombat)?.getRoomEffects() ?? [];
+		// 	triggers.push(
+		// 		...roomEffects.flatMap (RE=> RE.getEffects(null))
+		// 	);
+		// } else {
+		// 	const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
+		// 	triggers.push(
+		// 		...arr.flatMap (RE=> RE.getEffects(null))
+		// 	);
+		// 	const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
+		// 	triggers.push(...PCTriggers);
+		// }
+		// const filteredEffects = removeDuplicates(triggers
+		// 	.filter ( x=> x.conditionalType == "triggered")
+		// );
+		for (const eff of triggers) {
 			try {
 				const validCons = getActiveConsequences(eff, situationCopy);
 				const res = await ConsequenceProcessor.consequencesToResult(validCons ,undefined, situationCopy, actor, actor, null);
@@ -151,6 +152,40 @@ export class TriggeredEffect {
 			}
 		}
 	return result;
+}
+
+static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Situation) :  SourcedConditionalEffect[] {
+	const triggers : SourcedConditionalEffect[] = PersonaDB.getGlobalModifiers().flatMap( x=> x
+		.getTriggeredEffects(null)
+		.filter(x=> x.conditions.some( x=> x.type == "on-trigger" && x.trigger == trigger))
+	);
+	if (actor) {
+		triggers.push(...actor.triggersOn(trigger));
+	}
+	if (situation.usedPower) {
+		const power = PersonaDB.findItem(situation.usedPower);
+		const user = situation.user ? PersonaDB.findActor(situation.user) : null;
+		const PowerTriggers = power.getTriggeredEffects(user)
+			.filter ( ce => PersonaItem.triggersOn(ce, trigger));
+		triggers.push(...PowerTriggers);
+	}
+	if (game.combat) {
+		const roomEffects = (game.combat as PersonaCombat)?.getRoomEffects() ?? [];
+		triggers.push(
+			...roomEffects.flatMap (RE=> RE.getEffects(null))
+		);
+	} else {
+		const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
+		triggers.push(
+			...arr.flatMap (RE=> RE.getEffects(null))
+		);
+		const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
+		triggers.push(...PCTriggers);
+	}
+	const filteredEffects = removeDuplicates(triggers
+		.filter ( x=> x.conditionalType == "triggered")
+	);
+	return filteredEffects;
 }
 
 	static async autoApplyTrigger(...args : Parameters<typeof TriggeredEffect["onTrigger"]>) : Promise<void> {
