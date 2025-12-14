@@ -202,7 +202,7 @@ export class PersonaHandleBarsHelpers {
 				user: actor.accessor,
 			};
 			const engine = new CombatEngine(undefined);
-			const critBonus = engine.calcCritModifier(actor, actor, power, situation);
+			const critBonus = engine.calcCritModifier(actor.persona(), actor.persona(), power, situation);
 			return critBonus.eval(situation).total;
 		},
 		"getTokenAccName" : (tokenAcc: UniversalTokenAccessor<PToken> | UniversalActorAccessor<PC | Shadow>) =>  {
