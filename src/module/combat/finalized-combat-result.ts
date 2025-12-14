@@ -616,38 +616,29 @@ export class FinalizedCombatResult {
 			PersonaError.softFail("NaN damage!");
 			return;
 		}
+		if (dmg.hpChange == 0) {return;}
 		const attacker = attackerToken ? PersonaDB.findToken(attackerToken).actor.accessor : undefined;
-		const actorAcc= actor.accessor;
+		const actorAcc = actor.accessor;
 		const situation : Situation =  {
 			user: actorAcc,
 			usedPower: power?.accessor,
 			triggeringCharacter: actorAcc,
 			target: actorAcc,
 			attacker,
-			amt: dmg.hpChange,
+			amt: -dmg.hpChange,
 			damageType: dmg.damageType,
 			triggeringUser: game.user,
 		};
-
 		const CR = (await TriggeredEffect.onTrigger("pre-take-damage", actor, situation)).finalize();
 		if (CR.hasCancelRequest()) {
 			this.addChained(CR);
-			// await CR.emptyCheck()?.toMessage("Pre-Damage response", actor);
 			return;
 		}
-		if (dmg.hpChange == 0) {return;}
 		if (dmg.hpChange < 0) {
 			const CR = (await TriggeredEffect
 				.autoTriggerToCR("on-damage", actor))
 				?.finalize();
 			this.addChained(CR);
-			// setTimeout( async () => {
-			// 	const CR = await TriggeredEffect
-			// 		.autoTriggerToCR("on-damage", actor);
-			// 	if (CR) {
-			// 		await CR?.toMessage("Reaction (Taking Damage)" , actor);
-			// 	}
-			// });
 		}
 		if (token) {
 			const power = this.power;
@@ -874,7 +865,6 @@ export class FinalizedCombatResult {
 		}
 		return arr;
 	}
-
 }
 
 export interface ResolvedActorChange<T extends PersonaActor> {

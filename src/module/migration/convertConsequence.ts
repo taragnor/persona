@@ -1,11 +1,14 @@
-import {Consequence, DamageConsequence, DeprecatedConsequence, NewDamageConsequence, NonDeprecatedConsequence, OldDamageConsequence} from "../../config/consequence-types.js";
+import {Consequence, DamageConsequence, DeprecatedConsequence, NewDamageConsequence, NonDeprecatedConsequence, NonDeprecatedDamageCons, OldDamageConsequence} from "../../config/consequence-types.js";
 import {DamageType} from "../../config/damage-types.js";
+import {ConditionTarget} from "../../config/precondition-types.js";
 import {PersonaItem} from "../item/persona-item.js";
 
 export class ConsequenceConverter {
 
+
 	static convertDeprecated( cons: Consequence, usable?: Item | null): NonDeprecatedConsequence {
 		const dep = cons as DeprecatedConsequence;
+		const applyTo = this.resolveApplyTo(dep);
 		switch (dep.type) {
 			case "dmg-high":
 			case "dmg-low":
@@ -27,7 +30,8 @@ export class ConsequenceConverter {
 			case "escalationManipulation":
 				console.log(`Deprecated Consequence type ${dep.type} in ${usable?.name} - ${usable?.parent?.name}`);
 				return {
-					type: "none"
+					type: "none",
+					applyTo: undefined,
 				};
 			case "addStatus":
 				return {
@@ -38,12 +42,14 @@ export class ConsequenceConverter {
 					durationApplyTo: dep.durationApplyTo,
 					statusDuration: dep.statusDuration,
 					saveType: dep.saveType,
+					applyTo,
 				};
 			case "removeStatus":
 				return {
 					type: "combat-effect",
 					combatEffect: dep.type,
 					statusName: dep.statusName,
+					applyTo,
 				};
 			case "extraAttack":
 				return {
@@ -51,11 +57,13 @@ export class ConsequenceConverter {
 					combatEffect: dep.type,
 					iterativePenalty: dep.iterativePenalty,
 					amount: dep.amount,
+					applyTo,
 				};
 			case "extraTurn":
 				return {
 					type: "combat-effect",
 					combatEffect: dep.type,
+					applyTo,
 				};
 			case "scan":
 				return {
@@ -63,6 +71,7 @@ export class ConsequenceConverter {
 					combatEffect: dep.type,
 					amount: dep.amount,
 					downgrade: dep.downgrade ?? false,
+					applyTo,
 				};
 
 			case "alter-energy":
@@ -70,6 +79,7 @@ export class ConsequenceConverter {
 					type: "combat-effect",
 					combatEffect: dep.type,
 					amount: dep.amount,
+					applyTo,
 				};
 			default:
 				dep satisfies never;
@@ -77,7 +87,7 @@ export class ConsequenceConverter {
 		return cons as NonDeprecatedConsequence;
 	}
 
-	static convertDeprecatedDamageConsequence( cons: OldDamageConsequence | DamageConsequence, defaultDamageType?: DamageType) : NewDamageConsequence {
+	static convertDeprecatedDamageConsequence( cons: OldDamageConsequence | DamageConsequence, defaultDamageType?: DamageType) : NonDeprecatedDamageCons {
 		if (!defaultDamageType) {
 			defaultDamageType = "by-power";
 		}
@@ -116,6 +126,7 @@ export class ConsequenceConverter {
 				st = cons.damageSubtype;
 				break;
 		}
+		const applyTo = this.resolveApplyTo(cons);
 		return {
 			type: "combat-effect",
 			combatEffect: "damage",
@@ -123,7 +134,19 @@ export class ConsequenceConverter {
 			damageType: dtype,
 			amount: amount,
 			calc: cons.calc,
+			applyTo,
 		};
+	}
+
+	static resolveApplyTo ( cons: DeprecatedConsequence) : ConditionTarget {
+		if ("applyTo" in cons && cons.applyTo != undefined) {
+			return cons.applyTo;
+		}
+		if ("applyToSelf" in cons) {
+			return cons.applyToSelf ? "user" : "target";
+		}
+		console.debug(`Applying default applyTo of 'target' for ${cons.type}`);
+		return "target";
 	}
 
 }

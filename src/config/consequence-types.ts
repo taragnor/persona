@@ -163,8 +163,8 @@ type ConsModifiers = "blocked" | "absorbed" | "resisted";
 
 export type Consequence =
 	{
-		applyToSelf ?: boolean,
-		applyTo ?: ConsequenceTarget,
+		// applyToSelf ?: boolean,
+		// applyTo ?: ConsequenceTarget,
 		actorOwner ?: UniversalActorAccessor<ValidAttackers>,
 	} & (
 		GenericConsequence | NonGenericConsequences
@@ -323,6 +323,7 @@ type VariableTypes = ({
 		varType: "social-temp",
 	});
 
+export type NonDeprecatedDamageCons = NonDeprecatedConsequence & {type: "combat-effect", combatEffect: "damage"};
 
 
 
@@ -333,7 +334,8 @@ type FatigueConsequence = {
 
 type CombatEffectConsequence = {
 	type: "combat-effect";
-	combatEffect: CombatEffect
+	applyTo : ConsequenceTarget,
+	combatEffect: CombatEffect,
 } & CombatEffectConsequencesList;
 
 type CombatEffectConsequencesList =
@@ -367,10 +369,10 @@ type CombatEffectConsequencesList =
 
 
 export type NewDamageConsequence =
-
 	{
 		type: "combat-effect",
 		combatEffect: "damage"
+		applyTo: ConditionTarget,
 	}
 	& DamageConsequenceShared
 	& DamageConsequenceSubtypes;
@@ -442,6 +444,7 @@ type StatusResistanceAlterConsequence = {
 
 type AlterMPConsequence = {
 	type: "alter-mp",
+	applyTo : ConsequenceTarget,
 	subtype: AlterMPSubtype,
 	amount: number,
 }
@@ -462,7 +465,8 @@ type DamageConsequenceShared = {
 	/** manually added as part of processing */
 };
 
-export type NonDeprecatedConsequence = Consequence & { type: Exclude<Consequence["type"], DeprecatedConsequence["type"]>};
+export type NonDeprecatedConsequence = Consequence & { type: Exclude<Consequence["type"], DeprecatedConsequence["type"]>}
+	& {applyTo: U<ConditionTarget>};
 
 type DeprecatedSimpleEffect = {
 	type: "save-slot" | "half-hp-cost";
@@ -473,19 +477,26 @@ type DeprecatedSimpleEffect = {
 	 type: "add-escalation"
  };
 
+type OldDeprecatedStyle =
+	{ applyToSelf : boolean} |
+	{applyTo : U<ConsequenceTarget>}
+;
+
 export type DeprecatedConsequence =
-	OldDamageConsequence
-	| DeprecatedSimpleEffect
-	| AddEscalationConsequence
-	| SlotRecoveryConsequence
-	| EscalationManipulation
-	| DamageConsequence
-	| AddStatusConsequence
-	| RemoveStatusConsequence
-	| ExtraAttackConsequence
-	| ExtraActionConsequence
-	| ScanConsequence
-	| BasicNumberedConsequence
+	OldDeprecatedStyle & (
+		OldDamageConsequence
+		| DeprecatedSimpleEffect
+		| AddEscalationConsequence
+		| SlotRecoveryConsequence
+		| EscalationManipulation
+		| DamageConsequence
+		| AddStatusConsequence
+		| RemoveStatusConsequence
+		| ExtraAttackConsequence
+		| ExtraActionConsequence
+		| ScanConsequence
+		| BasicNumberedConsequence
+	)
 ;
 
 type EscalationManipulation = {
@@ -502,13 +513,15 @@ type SlotRecoveryConsequence = {
 export type OldDamageConsequence = {
 	type: "dmg-high" | "dmg-low" | "dmg-mult" | "absorb" | "dmg-allout-low" | "dmg-allout-high" | "revive" | "hp-loss" ;
 	amount ?: number;
-	damageType: DamageType | "by-power",
+	damageType: DamageType,
 	calc ?: unknown, //this is a DamageCalc but typescript doesn't like it
-}
+} & OldDeprecatedStyle;
+
 export type DamageConsequence =
 	{	type : "damage-new" }
 	& DamageConsequenceShared
 	& DamageConsequenceSubtypes
+	& OldDeprecatedStyle
 ;
 
 export type SimpleDamageCons = {

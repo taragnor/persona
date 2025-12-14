@@ -1903,11 +1903,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			{
 				type: 'teach-power',
 				id: this.system.skillId,
-				sourceItem: this.accessor,
 				source: this,
 				owner: this.parent?.accessor,
 				realSource: undefined,
-			} as const
+				applyTo: "user",
+			} satisfies SourcedConditionalEffect["consequences"][number]
 		];
 		return {
 			conditions,

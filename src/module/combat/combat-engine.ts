@@ -402,6 +402,7 @@ export class CombatEngine {
 						statusName: 'magic-shield',
 						source: power,
 						realSource: undefined,
+						applyTo: "target",
 					};
 					await reflectRes.addEffect(atkResult, targetActor, cons, atkResult.situation );
 				}
@@ -413,6 +414,7 @@ export class CombatEngine {
 						statusName: 'phys-shield',
 						source: power,
 						realSource: undefined,
+						applyTo: "target",
 					};
 					await reflectRes.addEffect(atkResult, targetActor, cons, atkResult.situation);
 				}
@@ -760,6 +762,7 @@ export class CombatEngine {
 							source: usableOrCard,
 							owner: attacker.actor.accessor,
 							realSource: undefined,
+							applyTo: "attacker",
 						}, situation);
 					}
 				}
@@ -771,6 +774,7 @@ export class CombatEngine {
 						source: usableOrCard,
 						owner: attacker.actor.accessor,
 						realSource: undefined,
+						applyTo: "attacker",
 					}, power.getDamageType(attacker.actor));
 					await res.addEffect(null, attacker.actor, deprecatedConvert, situation );
 				}
@@ -784,6 +788,7 @@ export class CombatEngine {
 						source: usableOrCard,
 						owner: attacker.actor.accessor,
 						realSource: undefined,
+						applyTo: "attacker",
 					}, situation);
 				}
 				if (attacker.actor.isShadow()) {
@@ -796,6 +801,7 @@ export class CombatEngine {
 							source: usableOrCard,
 							owner: attacker.actor.accessor,
 							realSource: undefined,
+							applyTo: "attacker",
 						}, situation);
 					}
 				}
@@ -811,6 +817,7 @@ export class CombatEngine {
 						source: usableOrCard,
 						owner: attacker.actor.accessor,
 						realSource: undefined,
+						applyTo: "attacker",
 					}, situation);
 				}
 				break;

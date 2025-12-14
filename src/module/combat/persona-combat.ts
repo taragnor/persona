@@ -41,6 +41,7 @@ import { EngagementList } from './engagementList.js';
 import {FinalizedCombatResult} from './finalized-combat-result.js';
 import {CombatScene} from './combat-scene.js';
 import {CombatEngine} from './combat-engine.js';
+import {ConditionTarget} from '../../config/precondition-types.js';
 
 declare global {
 	interface SocketMessage {
@@ -2481,7 +2482,7 @@ export type TargettingContextList = Omit<Record<ValidAttackersApplies, Universal
 	cameo: UniversalActorAccessor<ValidSocialTarget>[];
 }
 
-type ValidAttackersApplies = Exclude<NonNullable<Consequence['applyTo']>, 'cameo'>;
+type ValidAttackersApplies = Exclude<NonNullable<ConditionTarget>, 'cameo'>;
 
 export type TargettingContext = <T extends keyof TargettingContextList>( applyTo: T) => TargettingContextList[T]
 

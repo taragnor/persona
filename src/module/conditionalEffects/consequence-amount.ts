@@ -66,7 +66,7 @@ private static resolveSituationProperty(amt: ConsequenceAmountV2 & {type: "situa
 	if (!situation) {return undefined;}
 	switch (amt.property) {
 		case "damage-dealt":
-			return ("amt" in situation) ? Math.abs(situation.amt ?? 0) : undefined;
+			return ("amt" in situation) ? situation.amt : undefined;
 		default:
 			amt.property satisfies never;
 	}

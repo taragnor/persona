@@ -1,6 +1,6 @@
 import { ValidAttackers } from "./persona-combat.js";
 import { RealDamageType } from "../../config/damage-types.js";
-import { ConsequenceAmount, DamageConsequence, EnhancedSourcedConsequence, NewDamageConsequence } from "../../config/consequence-types.js";
+import { ConsequenceAmount, DamageConsequence, EnhancedSourcedConsequence, NewDamageConsequence, NonDeprecatedDamageCons } from "../../config/consequence-types.js";
 import { OldDamageConsequence } from "../../config/consequence-types.js";
 import { DamageType } from "../../config/damage-types.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
@@ -67,7 +67,7 @@ export class DamageCalculation {
 		return this;
 	}
 
-	static convertToNewFormConsequence( cons: SourcedConsequence<OldDamageConsequence> | SourcedConsequence<DamageConsequence>, defaultDamageType: DamageType) : SourcedConsequence<NewDamageConsequence> {
+	static convertToNewFormConsequence( cons: SourcedConsequence<OldDamageConsequence> | SourcedConsequence<DamageConsequence>, defaultDamageType: DamageType) : SourcedConsequence<NonDeprecatedDamageCons> {
 		const convert = ConsequenceConverter.convertDeprecatedDamageConsequence(cons, defaultDamageType);
 		return {
 			...convert,
@@ -366,6 +366,5 @@ export type NewDamageParams = {
 	baseAmt: number,
 	extraVariance: number,
 };
-
 
 
