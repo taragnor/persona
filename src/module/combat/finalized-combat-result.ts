@@ -469,7 +469,10 @@ export class FinalizedCombatResult {
 	}
 
 	addChained( otherResult: U<FinalizedCombatResult>) : this {
-		if (!otherResult) {return this;}
+		if (
+			!otherResult
+			||  !otherResult.emptyCheck()
+		) { return this; }
 		this.chainedResults.push(otherResult);
 		return this;
 	}
