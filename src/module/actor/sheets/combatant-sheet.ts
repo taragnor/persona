@@ -1,4 +1,4 @@
-	/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { PersonaStat } from "../../../config/persona-stats.js";
 import { PowerPrinter } from "../../printers/power-list.js";
 import { PersonaRoller } from "../../persona-roll.js";
@@ -70,6 +70,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".persona-viewer .activate-persona").on("click", this.activatePersona.bind(this));
 		html.find(".persona-viewer .persona-name").on("click", this.openPersona.bind(this));
 		html.find(".persona-list li .persona-name").rightclick(this.activatePersona.bind(this));
+		html.find(".active-statuses .status-effect").rightclick(this.removeStatus.bind(this));
 
 	}
 
@@ -82,7 +83,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				ui.notifications.warn("This isn't a persona!");
 				return undefined;
 			}
-				await this.actor.addPersona(actor);
+			await this.actor.addPersona(actor);
 		}
 		return super._onDropActor(_event, actorD);
 	}
@@ -192,7 +193,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 		const ptype = power.system.type;
 		if (ptype != "power" && ptype != "consumable")
-			{throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);}
+		{throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);}
 		await this._useItemOrPower(power);
 	}
 
@@ -373,9 +374,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const persona = this.actor.persona();
 		const damage = await CombatantSheetBase.getDamage(persona, power as Power);
 		const balanceReport = await this.getBalanceTest(power as Usable);
-			const html = await foundry.applications.handlebars.renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona(), damage, balanceReport});
-			$(ev.currentTarget).prop('title', html);
-		}
+		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona(), damage, balanceReport});
+		$(ev.currentTarget).prop('title', html);
+	}
 
 	async showPowersTable(_ev: JQuery.ClickEvent) {
 		await PowerPrinter.open();
@@ -393,7 +394,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async addFiveToAll(_ev : JQuery.ClickEvent) {
 		if (this.actor.basePersona.unspentStatPoints < 25)
-			{return;}
+		{return;}
 		const stats = this.actor.system.combat.personaStats.stats;
 		for (const k of Object.keys(stats)) {
 			stats[k as PersonaStat] += 5;
@@ -465,17 +466,29 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		await persona.sheet.render(true);
 	}
 
-async getBalanceTest(power: Usable) : Promise<U<string>> {
-	const actor = this.actor;
-	if (actor.isShadow() && !actor.hasPlayerOwner && !actor.isPersona() && !actor.isDMon()) {
-		const token = game.scenes.current.tokens.find( x=> x.actor == actor);
-		if (!token) {return "No token to test balance";}
-		const test = await PersonaCombat.testPowerVersusPCs(token as PToken, power);
-		return test
-			.join(", ");
+	async getBalanceTest(power: Usable) : Promise<U<string>> {
+		const actor = this.actor;
+		if (actor.isShadow() && !actor.hasPlayerOwner && !actor.isPersona() && !actor.isDMon()) {
+			const token = game.scenes.current.tokens.find( x=> x.actor == actor);
+			if (!token) {return "No token to test balance";}
+			const test = await PersonaCombat.testPowerVersusPCs(token as PToken, power);
+			return test
+				.join(", ");
+		}
+		return undefined;
 	}
-	return undefined;
-}
+
+	async removeStatus(event: JQuery.ClickEvent) {
+		if (!game.user.isGM) {return;}
+		if (!await HTMLTools.confirmBox("Delete Confirm", "Really delete this status or flag?")) {
+			return;
+		}
+		const effectId = HTMLTools.getClosestData(event, "effectId");
+		const effect = this.actor.effects.get(effectId);
+		if (effect) {
+			await effect.delete();
+		}
+	}
 
 }
 

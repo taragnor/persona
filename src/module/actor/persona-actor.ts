@@ -484,6 +484,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async switchPersona(this: ValidAttackers, sourceId: ValidAttackers["id"]) {
+		if (this.hasStatus("sealed")) {
+			ui.notifications.warn("Can't swap persona while sealed");
+			return;
+		}
 		const persona = this.personaList.find( x=> x.source.id == sourceId);
 		if (!persona || !persona.source.isOwner) {
 			PersonaError.softFail(`Couldn't find Persona ${sourceId} in your persona List or you aren't its owner`);
@@ -2157,21 +2161,23 @@ get statusResists() : {id: string, img: string, local: string, val: string}[] {
 	return arr;
 }
 
-get printableActiveStatuses(): {name: string, description: string}[] {
-	const effects= this.effects.contents;
+get printableActiveStatuses(): {name: string, description: string, id: PersonaAE["id"]}[] {
+	const effects = this.effects.contents;
 	const statuses = effects
 		.filter( eff=> eff.isStatus)
 		.flatMap (eff => {
 			return eff.statusTags.map( stTag=> ({
 				name: stTag.name,
-				description: stTag.description.toString() + "\n" + eff.statusDurationString()
+				description: stTag.description.toString() + "\n" + eff.statusDurationString(),
+				id: eff.id,
 			}));
 		});
 	const flags = effects
 		.filter( eff=> eff.isFlag() && eff.statusDuration.dtype != "permanent")
 		.map (eff => ({
 			name: eff.name,
-			description: eff.statusDurationString()
+			description: eff.statusDurationString(),
+			id: eff.id,
 		}));
 	return statuses.concat(flags);
 }
