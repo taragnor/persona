@@ -25,6 +25,7 @@ import {CombatEngine} from "../../combat/combat-engine.js";
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	declare actor: ValidAttackers;
 	selectedPersona: U<Persona>;
+	_powerUseLock: boolean;
 
 	override async getData() {
 		const data= await super.getData();
@@ -197,6 +198,10 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	protected async _useItemOrPower(power : UsableAndCard) {
 		Helpers.pauseCheck();
+		if (this._powerUseLock) {
+			ui.notifications.notify("Can't use another power now, as a power is already in process");
+		}
+		this._powerUseLock = true;
 		Helpers.ownerCheck(this.actor);
 		const actor = this.actor;
 		let token : PToken | undefined;
@@ -219,20 +224,24 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			const engine = new CombatEngine(undefined);
 			await engine.usePower(token, power );
 		} catch (e) {
-			if (e instanceof CanceledDialgogError) {
-				return;
+			this._powerUseLock = false;
+			switch (true) {
+				case e instanceof CanceledDialgogError: {
+					break;
+				}
+				case e instanceof TargettingError: {
+					break;
+				}
+				case e instanceof Error: {
+					console.error(e);
+					console.error(e.stack);
+					PersonaError.softFail("Problem with Using Item or Power", e, e.stack);
+					break;
+				}
+				default: break;
 			}
-			if (e instanceof TargettingError) {
-				return;
-			}
-			if (e instanceof Error) {
-				console.error(e);
-				console.error(e.stack);
-				PersonaError.softFail("Problem with Using Item or Power", e, e.stack);
-			}
-			return;
 		}
-
+		this._powerUseLock = false;
 	}
 
 	async useItem(event: Event) {

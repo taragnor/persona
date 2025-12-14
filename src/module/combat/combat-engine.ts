@@ -239,8 +239,8 @@ export class CombatEngine {
 		return withinInstantKillRange;
 	}
 
-	private getEffectiveCritBoost(attacker: PToken, target: PToken, situation: Situation, power: Usable) : {critBoost: number, critPrintable: string[]} {
-		const critBoostMod = this.calcCritModifier(attacker.actor, target.actor, power, situation);
+	private getEffectiveCritBoost(attacker: Persona, target: Persona, situation: Situation, power: Usable) : {critBoost: number, critPrintable: string[]} {
+		const critBoostMod = this.calcCritModifier(attacker, target, power, situation);
 		const critMin = situation.resisted ? -999 : 0;
 		const critResolved = critBoostMod.eval(situation);
 		const critMax = critResolved.total < 100 ? PersonaCombat.CRIT_MAX : 100;
@@ -290,7 +290,7 @@ export class CombatEngine {
 		const validAtkModifiers = resolvedAttackMods.steps;
 		const ailmentRange = this.#calculateAilmentRange(attackerPersona, targetPersona, power, baseSituation);
 		const instantDeathRange = this.#calculateInstantDeathRange(attackerPersona, targetPersona, power, baseSituation);
-		const {critBoost, critPrintable} = this.getEffectiveCritBoost(attacker, target, situation, power);
+		const {critBoost, critPrintable} = this.getEffectiveCritBoost(attackerPersona, targetPersona, situation, power);
 		const addonAttackResultData = {
 			ailmentRange,
 			instantKillRange: instantDeathRange,
@@ -707,9 +707,9 @@ export class CombatEngine {
 		return deathRange;
 	}
 
-	calcCritModifier( attacker: ValidAttackers, target: ValidAttackers, power: Usable, situation: Situation, ) : Calculation {
-		const critBoostMod = power.critBoost(attacker);
-		const critResist = target.persona().critResist().eval(situation).total;
+	calcCritModifier( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation, ) : Calculation {
+		const critBoostMod = power.critBoost(attackerPersona);
+		const critResist = targetPersona.critResist().eval(situation).total;
 		critBoostMod.add(1, -critResist, 'Enemy Critical Resistance',"add");
 		return critBoostMod;
 	}

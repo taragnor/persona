@@ -1557,8 +1557,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return 'passive';
 	}
 
-	critBoost(this: Usable, user: ValidAttackers) : Calculation {
-		const calc = user.persona().critBoost();
+	critBoost(this: Usable, userPersona: Persona) : Calculation {
+		const calc = userPersona.critBoost();
 		let powerCrit = (this.system.crit_boost ?? 0);
 		if (this.isWeaponSkill()
 			&& !this.isBasicPower()
