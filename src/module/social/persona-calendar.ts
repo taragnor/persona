@@ -65,7 +65,7 @@ export class PersonaCalendar {
 		if (game.seasonsStars) {
 			return await this.#advanceSeasonStars(amt);
 		}
-			throw new PersonaError("No Calendar system found");
+		throw new PersonaError("No Calendar system found");
 	}
 
 
@@ -105,7 +105,7 @@ export class PersonaCalendar {
 			const date = game.seasonsStars.api.getCurrentDate();
 			return game.seasonsStars.api.formatDate(date);
 		}
-			throw new PersonaError("No Calendar system found");
+		throw new PersonaError("No Calendar system found");
 	}
 
 	static getCurrentWeekday() : WeekdayName {
@@ -119,7 +119,7 @@ export class PersonaCalendar {
 				return weekdayObj.name as WeekdayName;
 			}
 		}
-			throw new PersonaError("No Calendar system found");
+		throw new PersonaError("No Calendar system found");
 	}
 
 	static async advanceCalendar() {
@@ -414,7 +414,6 @@ export class PersonaCalendar {
 		const promises = stores.map( store => this.restockStore(store));
 		await Promise.allSettled(promises);
 	}
-
 }
 
 type CalendarDate = {day: number, year:number, month: number}
@@ -430,6 +429,6 @@ type DateObject = {
 	year: number,
 }
 
-	type WeekdayName= "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
+type WeekdayName= "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
 
 type SeasonName = "Winter" | "Summer" | "Fall" | "Spring";
