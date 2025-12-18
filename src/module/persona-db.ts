@@ -1,6 +1,6 @@
 import { TAROT_DECK, TarotCard } from "../config/tarot.js";
 import { TreasureItem } from "./metaverse.js";
-import { CClass, SkillCard, Tag, Talent } from "./item/persona-item.js";
+import { Carryable, CClass, SkillCard, Tag, Talent } from "./item/persona-item.js";
 import { NPCAlly } from "./actor/persona-actor.js";
 import { SocialEncounterCard } from "./social/persona-social.js";
 import { ModifierContainer } from "./item/persona-item.js";
@@ -358,6 +358,24 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 				x.system.type == "npcAlly") as NPCAlly[];
 		}
 		return this.#cache.NPCAllies;
+	}
+
+	getAllStores(): TokenDocument<PersonaActor>[] {
+		if (!game.itempiles) {return [];}
+		const IP = game.itempiles.API;
+		return game.scenes.contents.flatMap( sc => 
+			sc.tokens
+			.filter(  (tok) => IP.isItemPileMerchant(tok))
+		) as TokenDocument<PersonaActor>[];
+	}
+
+	stockableItems() : Carryable[] {
+		return game.items.filter ( (x: PersonaItem)=> 
+			x.isCarryableType() 
+			&& (x.system?.storeId?.length ?? 0) > 0
+			&& (x.system?.storeMax ?? 0) > 0
+		) as Carryable[];
+
 	}
 
 	getNavigator() : NPCAlly | undefined {

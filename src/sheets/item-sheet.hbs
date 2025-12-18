@@ -7,15 +7,14 @@
 			<div>
 				<h2> Item </h2>
 				<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Power Name" placeholder="Power Name">
-
-					{{#if (isGM)}}
-					<div class="item-level">
-						<label>
-							Item Level:
-						</label>
-						{{numberInput item.system.itemLevel class="short" name="system.itemLevel" step=1 min=0 max=15}}
-					</div>
-					{{/if}}
+				{{#if (isGM)}}
+				<div class="item-level">
+					<label>
+						Item Level:
+					</label>
+					{{numberInput item.system.itemLevel class="short" name="system.itemLevel" step=1 min=0 max=15}}
+				</div>
+				{{/if}}
 				<div class="equip-slot">
 					<label>
 						Slot
@@ -23,10 +22,10 @@
 					<select name="system.slot">
 						{{selectOptions EQUIP_SLOTS localize=true selected=item.system.slot}}
 					</select>
+					{{> "systems/persona/parts/item-quantity-part.hbs" item=item POWERSTUFF=POWERSTUFF}}
 				</div>
 				{{> "systems/persona/parts/itemTags.hbs" item=item POWERSTUFF=POWERSTUFF}}
 				<textarea name="system.description">{{item.system.description}}</textarea>
-
 				{{#if (isGM)}}
 				<label> Price </label>
 				{{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}

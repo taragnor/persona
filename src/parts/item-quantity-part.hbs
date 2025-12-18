@@ -1,0 +1,17 @@
+{{#if (isGM)}}
+<div class="item-quantity">
+	<div>
+		<label>Amount</label>
+		{{numberInput item.system.amount class="short" name="system.amount" step=1 min=1 max=100}}
+	</div>
+	<div>
+		<label>Store Max</label>
+		{{numberInput item.system.storeMax class="short" name="system.storeMax" step=1 min=1 max=100}}
+	</div>
+	<div>
+		<select name="system.storeId">
+			{{selectOptions POWERSTUFF.STORES localize=true selected=item.system.storeId}}
+		</select>
+	</div>
+</div>
+{{/if}}

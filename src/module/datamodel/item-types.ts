@@ -36,6 +36,8 @@ function itemBase() {
 		itemTags: new arr(new txt<typeof EQUIPMENT_TAGS_LIST[number] | Item["id"]>()),
 		treasure: itemTreasureStats(),
 		itemLevel: new num( {initial: 0, integer: true}),
+		storeMax: new num({ integer: true, initial: 0, min:0, max: 50}),
+		storeId: new id(), //id of store actor
 	};
 }
 

@@ -305,7 +305,6 @@ export class CombatResult  {
 			default:
 				cons satisfies never;
 		}
-
 	}
 
 	async addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {

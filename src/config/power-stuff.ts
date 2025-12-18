@@ -160,6 +160,15 @@ private static _powerStuffBase: Record<string, unknown>;
 			ProgressClock.allClocks()
 			.map(clock => [clock.id, clock.name])
 		) ;
+		const STORES = 
+		Object.fromEntries(
+			[
+				["", "-"],
+				...PersonaDB.getAllStores()
+				.map ( x => x.actor ? [x.actor.id, x.name] as [string, string] : undefined)
+				.filter ( x=> x != undefined)
+			]
+		);
 		const ITEMS = Object.fromEntries( (game.items.contents as PersonaItem[])
 			.filter( item => item.isAnyItemType())
 			.map (item => [item.id, item.name])
@@ -204,6 +213,7 @@ private static _powerStuffBase: Record<string, unknown>;
 			),
 			CLASSES,
 			CLOCKS,
+			STORES,
 			SCENES,
 			ITEMS,
 			ITEMS_PLUS_NULL,

@@ -10,6 +10,8 @@ import { WEATHER_TYPE_LIST } from "../../config/weather-types.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { WeatherType } from "../../config/weather-types.js";
 import { PersonaError } from "../persona-error.js";
+import {PersonaActor} from "../actor/persona-actor.js";
+import {Carryable} from "../item/persona-item.js";
 
 declare global {
 	interface HOOKS {
@@ -22,17 +24,6 @@ export class PersonaCalendar {
 	static get DoomsdayClock() {
 		return DoomsdayClock.instance;
 	}
-
-	// static weekday() : SimpleCalendar.WeekdayName {
-	// 	if (window.SimpleCalendar) {
-	// 	return window.SimpleCalendar.api.getCurrentWeekday().name;
-	// 	}
-	// 	if (game.seasonsStars) {
-	// 		game.seasonsStars.api.
-
-	// 	}
-	// 		{throw new PersonaError("Simple Calendar isn't enabled!");}
-	// }
 
 	static getSeason() : SeasonName {
 		if (window.SimpleCalendar) {
@@ -157,6 +148,9 @@ export class PersonaCalendar {
 		} catch (e) {
 			PersonaError.softFail("Error Updating Calendar with ChangeDate", e);
 			return false;
+		}
+		if (this.getCurrentWeekday() == "Monday") {
+			await this.restockStores();
 		}
 		return true;
 	}
@@ -389,6 +383,36 @@ export class PersonaCalendar {
 			whisper: [game.user],
 		};
 		await ChatMessage.create(messageData, {});
+	}
+
+	private static async restockStore(token: TokenDocument<PersonaActor>) {
+		const storeActor = token.actor;
+		if (!storeActor) {return;}
+		const stockables: Carryable[] = PersonaDB.stockableItems()
+			.filter ( item => item.system.storeId == storeActor.id);
+		const api = game.itempiles?.API;
+		if (!api) {
+			console.warn("Item Piles not installed");
+			return;
+		}
+		const itemList = await api.getActorItems(storeActor) as Carryable[];
+		for (const i of stockables) {
+			const currentAmt = itemList.find( item => item.name == i.name)?.amount ?? 0;
+			const itemsToAdd = i.system.storeMax - currentAmt;
+			if (itemsToAdd > 0) {
+				const addItem = {
+					...i,
+					quantity: itemsToAdd,
+				};
+				await api.addItems(storeActor, [addItem]);
+			}
+		}
+	}
+
+	static async restockStores() {
+		const stores=  PersonaDB.getAllStores();
+		const promises = stores.map( store => this.restockStore(store));
+		await Promise.allSettled(promises);
 	}
 
 }

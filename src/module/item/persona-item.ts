@@ -1753,8 +1753,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case "skillCard":
 				return true;
 			default:
-				return false;
 		}
+		return false;
 	}
 
 	isInvItem(): this is InvItem {
