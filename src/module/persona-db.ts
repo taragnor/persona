@@ -375,7 +375,6 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			&& (x.system?.storeId?.length ?? 0) > 0
 			&& (x.system?.storeMax ?? 0) > 0
 		) as Carryable[];
-
 	}
 
 	getNavigator() : NPCAlly | undefined {

@@ -386,6 +386,7 @@ export class PersonaCalendar {
 	}
 
 	private static async restockStore(token: TokenDocument<PersonaActor>) {
+		if (!game.user.isGM) {return;}
 		const storeActor = token.actor;
 		if (!storeActor) {return;}
 		const stockables: Carryable[] = PersonaDB.stockableItems()
@@ -410,9 +411,16 @@ export class PersonaCalendar {
 	}
 
 	static async restockStores() {
+		if (!game.user.isGM) {return;}
 		const stores=  PersonaDB.getAllStores();
 		const promises = stores.map( store => this.restockStore(store));
 		await Promise.allSettled(promises);
+		const msgData : MessageData = {
+			speaker: {alias: "Auto Store Restock"},
+			content: "Stores restocked",
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+		};
+		await ChatMessage.create(msgData,{} );
 	}
 }
 
