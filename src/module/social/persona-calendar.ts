@@ -412,9 +412,21 @@ export class PersonaCalendar {
 
 	static async restockStores() {
 		if (!game.user.isGM) {return;}
-		const stores=  PersonaDB.getAllStores();
+		const stores =  PersonaDB.getAllStores();
 		const promises = stores.map( store => this.restockStore(store));
-		await Promise.allSettled(promises);
+		const results = await Promise.allSettled(promises);
+		const errors = results
+			.filter(x => x.status == "rejected")
+			.map (x=> x.reason as unknown );
+		if (errors.length > 0) {
+			const msg = "Errors occured during restock of stores";
+			ui.notifications.warn(msg);
+			console.warn(msg);
+			for ( const err of errors) {
+				console.log(err);
+				Debug(err);
+			}
+		}
 		const msgData : MessageData = {
 			speaker: {alias: "Auto Store Restock"},
 			content: "Stores restocked",
