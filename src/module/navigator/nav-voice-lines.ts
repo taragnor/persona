@@ -1,7 +1,7 @@
 import {RealDamageType, ResistStrength} from "../../config/damage-types.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaActor} from "../actor/persona-actor.js";
-import {PersonaCombat} from "../combat/persona-combat.js";
+import {PersonaCombat, ValidAttackers} from "../combat/persona-combat.js";
 import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
@@ -34,7 +34,6 @@ const NAVIGATOR_TRIGGER_LIST = [
 	"injured",
 	"great-work",
 	"recovery",
-
 ] as const;
 
 export type NavigatorTrigger = typeof NAVIGATOR_TRIGGER_LIST[number];
@@ -86,7 +85,7 @@ export class NavigatorVoiceLines {
 			let lines = navigator.navigatorVoiceLines
 				.filter ( ln => ln.trigger == trigger.type);
 			if (trigger.type == "vulnerable" || trigger.type == "immune") {
-				lines= lines.filter ( x=> x.elementType == trigger.elementType)
+				lines = lines.filter ( x=> x.elementType == trigger.elementType)
 			}
 			if (lines.length == 0) {return;}
 			const line = randomSelect(lines);
@@ -106,8 +105,23 @@ export class NavigatorVoiceLines {
 		}
 	}
 
+	static async onTargetKilled(target: ValidAttackers, combat: PersonaCombat) {
+		if (target.isShadow()) {return;}
+		const remainingPCs = combat.combatants.filter( c=>
+				c.actor != undefined
+				&& !c.actor.isShadow()
+				&& c.actor.isAlive());
+		if (remainingPCs.length <= 2) {
+			await this.playVoice({
+				type: "injured",
+			});
+		}
+
+	}
+
 	static onHoverToken(token: Token<PersonaActor>, hover: boolean) {
 		if (hover != true) {return;}
+		if (game.user.isGM) {return;}
 		const combat = game.combat as PersonaCombat;
 		if(!combat || combat.isSocial) {return;}
 		if (!combat.started) {return;}

@@ -209,6 +209,7 @@ export function combatCommonStats() {
 		// 	// will: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 		// 	fort: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 		// }),
+		personaImg: new txt(),
 		personaStats: new embedded(PersonaStatsDM),
 		initiative: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 		resists: elementalResists(),
@@ -232,7 +233,7 @@ export function PCAndNPCAllyCombatStats() {
 		persona_sideboard: new arr( new id()),
 		teamworkMove: new id(),
 		usingMetaPod: new bool({initial: true}),
-		personaImg: new txt(),
+		// personaImg: new txt(),
 		mp: new sch({
 			value: new num({initial: 0, integer: true, min: 0, max: 1000}),
 			max: new num({initial: 1, integer: true, min:1, max:1000}),
@@ -260,31 +261,33 @@ export function studentSkills() {
 }
 
 export function sharedAbilities() {
-	return {
-		activePersona: new id(),
-		personaList: new arr(new id()),
-		hp_adjust: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
-		mp_adjust: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
-	};
+	 return {
+			activePersona: new id(),
+			personaList: new arr(new id()),
+			hp_adjust: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
+			mp_adjust: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
+			personaName: new txt({initial: "Persona"}),
+	 };
 
 };
 
 export function shadowOnlyCombatAbilities() {
-	return {
-		energy: new sch({
-			value: new num({initial: 0, integer: true, min: -10, max: 20}),
-			max: new num({initial: 10, integer: true, min:1, max:20}),
-		}),
-		wpndmg: new sch({
-			low: new num({integer:true, min:0, initial:1}),
-			high: new num({integer:true, min:0, initial:2}),
-		}),
-	};
+	 return {
+			builtInPersona: new bool(),
+			energy: new sch({
+				 value: new num({initial: 0, integer: true, min: -10, max: 20}),
+				 max: new num({initial: 10, integer: true, min:1, max:20}),
+			}),
+			wpndmg: new sch({
+				 low: new num({integer:true, min:0, initial:1}),
+				 high: new num({integer:true, min:0, initial:2}),
+			}),
+	 };
 }
 
 export function PCAndAllyStuff() {
 	return {
-			personaName: new txt({initial: "Persona"}),
+			// personaName: new txt({initial: "Persona"}),
 	};
 
 }

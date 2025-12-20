@@ -506,7 +506,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		} else {
 			// await Logger.sendToChat(`${this.name} switches to Persona ${persona.publicName}`);
 			let msg = "";
-			if (sourceId == this.id) {
+			if (sourceId == this.id && !this.basePersona.img) {
 				msg = `<div class="persona-switch">
 					${this.publicName} Changes to base Persona </div>`;
 			} else {

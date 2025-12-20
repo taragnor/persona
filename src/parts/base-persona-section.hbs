@@ -1,93 +1,115 @@
 <section class="f-col base-persona-section {{#if (isSimulated persona)}} simulated-persona {{/if}}">
-	{{#if (not (isShadow actor))}}
-	<input type="text" class="borderless character-name" name="system.personaName" value="{{actor.system.personaName}}" title="Persona Name" placeholder="Persona Name">
-	{{/if}}
-	{{#if (and (isGM) (not (isPC actor)))}}
-	{{> "systems/persona/parts/hp-mp-section.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
-	{{/if}}
+	 {{#if (or (not (isShadow actor)) actor.system.combat.builtInPersona)}}
+	 <input type="text" class="borderless character-name" name="system.personaName" value="{{actor.system.personaName}}" title="Persona Name" placeholder="Persona Name">
+	 {{/if}}
+	 <div class="f-row">
+			<div>
+				 {{#if (and (isGM) (not (isPC actor)))}}
+				 {{> "systems/persona/parts/hp-mp-section.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
+				 {{/if}}
 
-	<div class="lvl">
-		<span>
-			{{localize "persona.statistic.level"}}:
-		</span>
-		{{#if (canGainLevels actor)}}
-		<span>
-			{{actor.basePersona.level}}
-		</span>
-		{{#if (isGM)}}
-		<span>
-			<a class="levelUp">
-				<i class="fa-solid fa-circle-plus"></i>
-			</a>
-		</span>
-		{{/if}}
-		<span>
-			<progress id="progressBar" max="{{persona.XPForNextLevel}}" value="{{persona.xp}}" title="{{persona.xp}} / {{persona.XPForNextLevel}}"></progress>
-		</span>
+				 <div class="lvl">
+						<span>
+							 {{localize "persona.statistic.level"}}:
+						</span>
+						{{#if (canGainLevels actor)}}
+						<span>
+							 {{actor.basePersona.level}}
+						</span>
+						{{#if (isGM)}}
+						<span>
+							 <a class="levelUp">
+									<i class="fa-solid fa-circle-plus"></i>
+							 </a>
+						</span>
+						{{/if}}
+						<span>
+							 <progress id="progressBar" max="{{persona.XPForNextLevel}}" value="{{persona.xp}}" title="{{persona.xp}} / {{persona.XPForNextLevel}}"></progress>
+						</span>
 
-		{{/if}}
-		{{#if (and (isGM) (isShadowOrNPCAlly actor)) }}
-		<span>
-			<input class="short" type="number" name="system.combat.personaStats.pLevel" value="{{actor.system.combat.personaStats.pLevel}}">
-		</span>
-		{{/if}}
-		{{#if (and (isGM) (debugMode))}}
-		<div>
-			<label> XP </label>
-			<input class="long-number" type="number" name="system.combat.personaStats.xp" value="{{actor.system.combat.personaStats.xp}}">
-			/
-			{{XPRequiredForLevelUp persona}}
-		</div>
-		{{/if}}
-	</div>
+						{{/if}}
+						{{#if (and (isGM) (isShadowOrNPCAlly actor)) }}
+						<span>
+							 <input class="short" type="number" name="system.combat.personaStats.pLevel" value="{{actor.system.combat.personaStats.pLevel}}">
+						</span>
+						{{/if}}
+						{{#if (and (isGM) (debugMode))}}
+						<div>
+							 <label> XP </label>
+							 <input class="long-number" type="number" name="system.combat.personaStats.xp" value="{{actor.system.combat.personaStats.xp}}">
+							 /
+							 {{XPRequiredForLevelUp persona}}
+						</div>
+						{{/if}}
+				 </div>
 
-	{{#if (and (isShadow actor) (isGM))}}
-	<div class="shadow-dmg">
-		<label>
-			Damage
-		</label>
-		<span>
-			<select name="system.combat.baseDamageType">
-				{{selectOptions CONST.DAMAGETYPES  localize=true selected=actor.system.combat.baseDamageType }}
-			</select>
-		</span>
-	</div>
-	{{/if}}
+				 {{#if (and (isShadow actor) (isGM))}}
+				 <div class="shadow-dmg">
+						<label>
+							 Damage
+						</label>
+						<span>
+							 <select name="system.combat.baseDamageType">
+									{{selectOptions CONST.DAMAGETYPES  localize=true selected=actor.system.combat.baseDamageType }}
+							 </select>
+						</span>
+				 </div>
+				 {{/if}}
+			</div>
+			<div>
+				 <div>
+						{{#if actor.system.combat.builtInPersona}}
+						{{#if (not persona.img)}}
+						{{filePicker type="image" target="system.combat.personaImg"}}
+						<input class="img" type="hidden" name="system.combat.personaImg" value="{{actor.system.combat.personaImg}}">
+						{{else}}
+						<img class="profile-img persona-img" src="{{persona.img}}" title="{{persona.publicName}}">
+						{{/if}}
+						<div>
 
-	</div>
-	{{> "systems/persona/parts/resistance-input.hbs" actor=actor CONST=CONST persona=persona}}
-	{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=false showPowerTableButton=true showLearnedBuffer=true showSideboard=true canDelete=true}}
+						</div>
 
-	<hr>
-	{{> "systems/persona/parts/persona-stats-input.hbs" actor=actor persona=persona CONST=CONST}}
+						{{/if}}
+				 </div>
+			</div>
 
-	{{#if (canUseTalents actor)}}
-	{{> "systems/persona/parts/talents-table.hbs" actor=actor CONST=CONST persona=persona}}
-	{{/if}}
+			</div>
+	 </div>
 
-	{{#if (isGM)}}
-	{{> "systems/persona/parts/focii-table.hbs" actor=actor CONST=CONST persona=persona}}
-	{{/if}}
+	 </div>
+	 {{> "systems/persona/parts/resistance-input.hbs" actor=actor CONST=CONST persona=persona}}
+	 {{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=false showPowerTableButton=true showLearnedBuffer=true showSideboard=true canDelete=true}}
 
-	{{#if (isGM)}}
-	<h3> Fusion Conditions</h3>
-	<div class="fusion-conditions" data-top-path="system.personaConversion.fusionConditions" data-path="system.personaConversion.fusionConditions">
-		{{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.personaConversion.fusionConditions." POWERSTUFF=POWERSTUFF owner=actor}}
-	</div>
-	{{/if}}
+	 <hr>
+	 {{> "systems/persona/parts/persona-stats-input.hbs" actor=actor persona=persona CONST=CONST}}
+
+	 {{#if (canUseTalents actor)}}
+	 {{> "systems/persona/parts/talents-table.hbs" actor=actor CONST=CONST persona=persona}}
+	 {{/if}}
+
+	 {{#if (isGM)}}
+	 {{> "systems/persona/parts/focii-table.hbs" actor=actor CONST=CONST persona=persona}}
+	 {{/if}}
+
+	 {{#if (isGM)}}
+	 <h3> Fusion Conditions</h3>
+	 <div class="fusion-conditions" data-top-path="system.personaConversion.fusionConditions" data-path="system.personaConversion.fusionConditions">
+			{{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.personaConversion.fusionConditions." POWERSTUFF=POWERSTUFF owner=actor}}
+	 </div>
+	 {{/if}}
 
 
 </section>
 <div class="conversions">
-{{#if (isGM)}}
-<hr>
-	<button class="dmon-convert"> Convert to DMon</button>
-	<button class="persona-convert"> Convert to Persona</button>
-{{/if}}
+	 {{#if (isGM)}}
+	 <hr>
+	 <button class="dmon-convert"> Convert to DMon</button>
+	 <button class="persona-convert"> Convert to Persona</button>
+	 {{/if}}
 
-{{#if (isCopyableToCompendium actor)}}
-	<button class="copy-to-compendium"> Copy to Compendium </button>
-{{/if}}
+	 {{#if (isCopyableToCompendium actor)}}
+	 <button class="copy-to-compendium"> Copy to Compendium </button>
+	 {{/if}}
 </div>
 
 

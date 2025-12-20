@@ -1,105 +1,116 @@
 <form class="shadow-sheet">
-	<header class="flexcol">
-		<div class="flexrow">
-			<img class="profile-img" src="{{actor.img}}" data-edit="img"/>
-			<div>
-				<div class="f-row">
-					<input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
-					<div class="level">
-						<label>
-							Level
-						</label>
-						<span>
-							{{persona.level}}
-						</span>
-					</div>
-					<div class="arcana">
-						<label>
-							{{localize "persona.tarot.cardname"}}
-						</label>
-						<select name="system.tarot">
-							{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
-						</select>
-					</div>
-				</div>
-				<div class="flexrow">
-					{{#if (isGM)}}
-					<select name="system.role">
-						{{selectOptions SHADOW_STUFF.SHADOW_ROLE localize=true selected=actor.system.role}}
-					</select>
-					<select name="system.role2">
-						{{selectOptions SHADOW_STUFF.SHADOW_ROLE localize=true selected=actor.system.role2}}
-					</select>
-					<select name="system.creatureType">
-						{{selectOptions SHADOW_STUFF.SHADOW_CREATURE_TYPE localize=true selected=actor.system.creatureType}}
-					</select>
-					{{/if}}
-				</div>
-				<div>
-					<label> Energy</label>
-					<span>
-						<input class="short" type="number" name="system.combat.energy.value" value="{{actor.system.combat.energy.value}}">
-						/ {{actor.maxEnergy}}
-					</span>
-				</div>
-				<div>
-					<label> Scan Level</label>
-					<input class="short" type="number" name="system.scanLevel" value="{{actor.system.scanLevel}}">
-				</div>
-				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
+	 <header class="flexcol">
+			<div class="flexrow">
+				 <img class="profile-img" src="{{actor.img}}" data-edit="img"/>
+				 <div>
+						<div class="f-row">
+							 <input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
+							 <div class="level">
+									<label>
+										 Level
+									</label>
+									<span>
+										 {{persona.level}}
+									</span>
+							 </div>
+							 <div class="arcana">
+									<label>
+										 {{localize "persona.tarot.cardname"}}
+									</label>
+									<select name="system.tarot">
+										 {{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
+									</select>
+							 </div>
+						</div>
+						<div class="flexrow">
+							 {{#if (isGM)}}
+							 <select name="system.role">
+									{{selectOptions SHADOW_STUFF.SHADOW_ROLE localize=true selected=actor.system.role}}
+							 </select>
+							 <select name="system.role2">
+									{{selectOptions SHADOW_STUFF.SHADOW_ROLE localize=true selected=actor.system.role2}}
+							 </select>
+							 <select name="system.creatureType">
+									{{selectOptions SHADOW_STUFF.SHADOW_CREATURE_TYPE localize=true selected=actor.system.creatureType}}
+							 </select>
+							 {{/if}}
+						</div>
+						<div class="f-row">
+							 <div>
+									<div>
+										 <label> Energy</label>
+										 <span>
+												<input class="short" type="number" name="system.combat.energy.value" value="{{actor.system.combat.energy.value}}">
+												/ {{actor.maxEnergy}}
+										 </span>
+									</div>
+									<div>
+										 <label> Scan Level</label>
+										 <input class="short" type="number" name="system.scanLevel" value="{{actor.system.scanLevel}}">
+									</div>
+							 </div>
+							 <div>
+									{{#if (isGM)}}
+									<label>Built in Persona</label>
+									<input type="checkbox" name="system.combat.builtInPersona" {{checked actor.system.combat.builtInPersona}}>
+									{{/if}}
+							 </div>
+						</div>
+
+						{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
+				 </div>
 			</div>
-		</div>
-	</header>
-	<nav class="sheet-tabs tabs" data-group="primary">
-		{{#if (not (isPersona actor))}}
-		<a class="item" data-tab="combat">
-			{{localize "persona.sheet.tabs.combat.tabname" }}
-		</a>
-		{{/if}}
-		{{#if (canEditBasePersona actor)}}
-		<a  class="item" data-tab="persona">
-			Modify Combat Stats
-		</a>
-		{{/if}}
-		{{#if (isGM)}}
-		{{#if (gt actor.personaList.length 1)}}
-		<a class="item" data-tab="persona-list">
-			Persona List
-		</a>
-		{{/if}}
-		<a  class="item" data-tab="encounter">
-			{{localize "persona.sheet.tabs.encounter.tabname" }}
-		</a>
-		<a  class="item" data-tab="learning">
-			{{localize "persona.sheet.tabs.learning.tabname" }}
-		</a>
-		{{/if}}
-	</nav>
-	<section class="sheet-body">
-		{{#if (not (isPersona actor))}}
-		<section class="tab tab-content combat-section" data-group="primary" data-tab="combat">
-			{{> "systems/persona/parts/combat-section.hbs" actor=actor persona=(persona actor) canDelete=actor.isOwner activePowersOnly=(isGM)}}
-		</section>
-		{{/if}}
-		{{#if (isGM)}}
-		<section class="tab tab-content learning-section" data-group="primary" data-tab="learning">
-			{{> "systems/persona/parts/learned-powers-section.hbs" actor=actor CONST=CONST persona=actor.basePersona}}
-		</section>
-		{{/if}}
-		{{#if (canEditBasePersona actor)}}
-		<section class="tab tab-content base-persona-section" data-group="primary" data-tab="persona">
-			{{> "systems/persona/parts/base-persona-section.hbs" actor=actor CONST=CONST persona=actor.basePersona}}
-		</section>
-		{{/if}}
-		{{#if (isGM)}}
-		<section class="tab tab-content encounter-section" data-group="primary" data-tab="encounter">
-			{{> "systems/persona/parts/encounter-section.hbs" actor=actor CONST=CONST SHADOW_STUFF=SHADOW_STUFF POWERSTUFF=POWERSTUFF}}
-		</section>
-		<section class="tab tab-content persona-list" data-group="primary" data-tab="persona-list">
-			Persona List
-			{{> "systems/persona/parts/persona-list.hbs" actor=actor CONST=CONST selectedPersona=selectedPersona}}
-		</section>
-		{{/if}}
-	</section>
+	 </header>
+	 <nav class="sheet-tabs tabs" data-group="primary">
+			{{#if (not (isPersona actor))}}
+			<a class="item" data-tab="combat">
+				 {{localize "persona.sheet.tabs.combat.tabname" }}
+			</a>
+			{{/if}}
+			{{#if (canEditBasePersona actor)}}
+			<a  class="item" data-tab="persona">
+				 Modify Combat Stats
+			</a>
+			{{/if}}
+			{{#if (isGM)}}
+			{{#if (gt actor.personaList.length 1)}}
+			<a class="item" data-tab="persona-list">
+				 Persona List
+			</a>
+			{{/if}}
+			<a  class="item" data-tab="encounter">
+				 {{localize "persona.sheet.tabs.encounter.tabname" }}
+			</a>
+			<a  class="item" data-tab="learning">
+				 {{localize "persona.sheet.tabs.learning.tabname" }}
+			</a>
+			{{/if}}
+	 </nav>
+	 <section class="sheet-body">
+			{{#if (not (isPersona actor))}}
+			<section class="tab tab-content combat-section" data-group="primary" data-tab="combat">
+				 {{> "systems/persona/parts/combat-section.hbs" actor=actor persona=(persona actor) canDelete=actor.isOwner activePowersOnly=(isGM)}}
+			</section>
+			{{/if}}
+			{{#if (isGM)}}
+			<section class="tab tab-content learning-section" data-group="primary" data-tab="learning">
+				 {{> "systems/persona/parts/learned-powers-section.hbs" actor=actor CONST=CONST persona=actor.basePersona}}
+			</section>
+			{{/if}}
+			{{#if (canEditBasePersona actor)}}
+			<section class="tab tab-content base-persona-section" data-group="primary" data-tab="persona">
+				 {{> "systems/persona/parts/base-persona-section.hbs" actor=actor CONST=CONST persona=actor.basePersona}}
+			</section>
+			{{/if}}
+			{{#if (isGM)}}
+			<section class="tab tab-content encounter-section" data-group="primary" data-tab="encounter">
+				 {{> "systems/persona/parts/encounter-section.hbs" actor=actor CONST=CONST SHADOW_STUFF=SHADOW_STUFF POWERSTUFF=POWERSTUFF}}
+			</section>
+			<section class="tab tab-content persona-list" data-group="primary" data-tab="persona-list">
+				 Persona List
+				 {{> "systems/persona/parts/persona-list.hbs" actor=actor CONST=CONST selectedPersona=selectedPersona}}
+			</section>
+			{{/if}}
+	 </section>
 </form>
 

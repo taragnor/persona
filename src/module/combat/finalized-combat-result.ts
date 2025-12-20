@@ -522,16 +522,7 @@ export class FinalizedCombatResult {
 				this.addChained((await TriggeredEffect.onTrigger("on-kill-target", comb.actor, situation)).finalize());
 			}
 		}
-		if ((target.actor.isPC() || target.actor.isNPCAlly())
-			&& combat.combatants.filter( x=>
-				x.actor != undefined
-				&& !x.actor.isShadow()
-				&& !x.actor.isAlive()).length >= 2) {
-			void NavigatorVoiceLines.playVoice({
-				type: "injured",
-			}
-			);
-		}
+		void NavigatorVoiceLines.onTargetKilled(target.actor, combat);
 	}
 
 	 async #applyCosts() {

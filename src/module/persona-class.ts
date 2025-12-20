@@ -61,11 +61,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	 }
 
 	 get img() : string {
-			if (this.source.isShadow()) {
-				 return this.source.img;
-			}
 			if (this.source.system.combat.personaImg) {
 				 return this.source.system.combat.personaImg;
+			}
+			if (this.source.isShadow() && !this.source.system.combat.builtInPersona) {
+				 return this.source.img;
 			}
 			return "";
 	 }
@@ -151,7 +151,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				 case "npcAlly":
 						return this.source.system.personaName ?? this.source.displayedName;
 				 case "shadow":
-							 return this.source.displayedName;
+							 if (!this.source.system.combat.builtInPersona) {
+									return this.source.displayedName;
+							 }
+						return this.source.system.personaName;
 				 default:
 							 this.source.system satisfies never;
 						return "ERROR";
@@ -347,6 +350,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	 isEligibleToBecomeDMon() : boolean {
 			const source = this.source;
+			if (!source.isShadow()) {return false;}
+			if (source.system.combat.builtInPersona) {return false;}
 			if (source.hasRole(["boss", "miniboss", "treasure-shadow", "duo", "solo", "summoner"])) {return false;}
 			if (source.system.creatureType != "shadow" && source.system.creatureType != "daemon") {return false;}
 			if (source.hasCreatureTag("pure-shadow")) {return false;}
@@ -357,6 +362,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			const source = this.source;
 			if (!source.isShadow()) {return false;}
 			if (!source.tarot || source.tarot.name.length == 0) { return false; }
+			if (source.system.combat.builtInPersona) {return false;}
 			if (source.level <= 0) {return false;}
 			if (this.isPersona()) {return true;}
 			if (this.isDMon()) {return true;}
