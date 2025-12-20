@@ -1,5 +1,11 @@
 namespace foundryApps {
 
+	interface Apps {
+		FilePicker: {
+			implementation: typeof FilePicker;
+		}
+	}
+
 	interface Applications {
 		api: ApplicationsAPI
 		ux: UXStuff;
@@ -7,6 +13,7 @@ namespace foundryApps {
 			renderTemplate(templatePath: string, templateData: Record<string|number, unknown>): Promise<string>;
 		}
 		sidebar: foundryApps.Sidebar
+		apps: foundryApps.Apps;
 	}
 
 	interface Sidebar {

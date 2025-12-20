@@ -1,5 +1,4 @@
-import { ValidAttackers } from "./persona-combat.js";
-import { PermaBuffType } from "../../config/perma-buff-type.js";
+import { ValidAttackers } from "./persona-combat.js"; import { PermaBuffType } from "../../config/perma-buff-type.js";
 import { PersonaScene } from "../persona-scene.js";
 import { WeatherType } from "../../config/weather-types.js";
 import { BASIC_PC_POWER_NAMES } from "../../config/basic-powers.js";
@@ -26,7 +25,6 @@ const DoomDoor : DoorSound= {
 CONFIG.Wall.doorSounds["doomDoor"] = DoomDoor;
 
 export class PersonaSFX {
-
 	static async onDamage( _token: PToken | undefined, hpchange: number, damageType: RealDamageType, power ?: UsableAndCard) {
 		if (hpchange == 0) {return;}
 		if (hpchange > 0) {
@@ -68,7 +66,7 @@ export class PersonaSFX {
 			return;
 		}
 		if (usableOrCard.name == BASIC_PC_POWER_NAMES[1]) {
-				return PersonaSFX.onAllOutAttack();
+			return PersonaSFX.onAllOutAttack();
 		}
 		const power = usableOrCard as Usable;
 		if (power.system.sound) {
@@ -127,7 +125,7 @@ export class PersonaSFX {
 
 	static async onStatus( _token : PToken | undefined, statusEffect: StatusEffectId) {
 		if (PersonaSounds.isValidSound(statusEffect)) {
-			 await this.#play(statusEffect);
+			await this.#play(statusEffect);
 		}
 	}
 
@@ -446,14 +444,14 @@ export class PersonaSFX {
 				return;
 		}
 		for (const filterId of filters) {
-				await window.TokenMagic?.deleteFilters(token.object!, filterId);
+			await window.TokenMagic?.deleteFilters(token.object!, filterId);
 		}
 	}
 
 	static async #play(snd: Parameters<typeof PersonaSounds["playBattleSound"]>[0], volume = 0.5) {
 		await PersonaSounds.playBattleSound(snd, volume);
 	}
-static async onLevelUp(): Promise<void> {
+	static async onLevelUp(): Promise<void> {
 		await this.#play("level-up");
 	}
 

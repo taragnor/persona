@@ -1581,6 +1581,10 @@ div.message-content .answers {
 
 }
 
+.navigator-voicelines li {
+	padding: 5px;
+}
+
 
 .answers label.results {
 	padding-top: 5px;

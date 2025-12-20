@@ -42,6 +42,7 @@ import {FinalizedCombatResult} from './finalized-combat-result.js';
 import {CombatScene} from './combat-scene.js';
 import {CombatEngine} from './combat-engine.js';
 import {ConditionTarget} from '../../config/precondition-types.js';
+import {NavigatorVoiceLines} from '../navigator/nav-voice-lines.js';
 
 declare global {
 	interface SocketMessage {
@@ -134,57 +135,64 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}) as PersonaCombatant[];
 	}
 
-	override async startCombat() {
-		let msg = '';
-		this._engagedList = new EngagementList(this);
-		await this._engagedList.flushData();
-		const assumeSocial = !(this.combatants.contents.some(comb=> comb.actor && comb.actor.system.type == 'shadow'));
-		const regionMods: UniversalModifier["id"][] = [];
-		const region = Metaverse.getRegion();
-		if (region) {
-			regionMods.push(...region.parent.getRoomEffects());
-		} else {
-		const rmods = (game.scenes.current as PersonaScene).getRoomEffects();
-			regionMods.push(...rmods);
-		}
-		const combatInit = await this.roomEffectsDialog(regionMods, assumeSocial);
-		await this.setSocialEncounter(combatInit.isSocialScene);
-		if (combatInit.isSocialScene != this.isSocial) {
-			throw new PersonaError('WTF Combat not updating!');
-		}
-		if (combatInit.isSocialScene) {
-			if (PersonaSettings.debugMode() === false) {
-				await Metaverse.exitMetaverse();
+	 override async startCombat() {
+			let msg = '';
+			this._engagedList = new EngagementList(this);
+			await this._engagedList.flushData();
+			const assumeSocial = !(this.combatants.contents.some(comb=> comb.actor && comb.actor.system.type == 'shadow'));
+			const regionMods: UniversalModifier["id"][] = [];
+			const region = Metaverse.getRegion();
+			if (region) {
+				 regionMods.push(...region.parent.getRoomEffects());
+			} else {
+				 const rmods = (game.scenes.current as PersonaScene).getRoomEffects();
+				 regionMods.push(...rmods);
 			}
-			await PersonaSocial.startSocialCombatRound(combatInit.disallowMetaverse, combatInit.advanceCalendar);
-		}
-		const mods = combatInit.roomModifiers;
-		await this.setRoomEffects(mods);
-		await this.setEscalationDie(0);
-		msg += this.roomEffectsMsg();
-		if (msg.length > 0) {
-			const messageData: MessageData = {
-				speaker: {alias: 'Combat Start'},
-				content: msg,
-				style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-			};
-			await ChatMessage.create(messageData, {});
-		}
-		const starters = this.combatants.contents.map( comb => comb?.actor?.onCombatStart())
-			.filter (x=> x != undefined);
-		await Promise.all(starters);
-		void this.refreshActorSheets();
-		const unrolledInit = this.combatants
-			.filter( x=> x.initiative == undefined)
-			.map( c=> c.id);
-		if (!this.isSocial) {
-			await TriggeredEffect.autoApplyTrigger('on-combat-start-global');
-		}
-		if (unrolledInit.length > 0) {
-			await this.rollInitiative(unrolledInit);
-		}
-		return await super.startCombat();
-	}
+			const combatInit = await this.roomEffectsDialog(regionMods, assumeSocial);
+			await this.setSocialEncounter(combatInit.isSocialScene);
+			if (combatInit.isSocialScene != this.isSocial) {
+				 throw new PersonaError('WTF Combat not updating!');
+			}
+			if (combatInit.isSocialScene) {
+				 if (PersonaSettings.debugMode() === false) {
+						await Metaverse.exitMetaverse();
+				 }
+				 await PersonaSocial.startSocialCombatRound(combatInit.disallowMetaverse, combatInit.advanceCalendar);
+			}
+			const mods = combatInit.roomModifiers;
+			await this.setRoomEffects(mods);
+			await this.setEscalationDie(0);
+			msg += this.roomEffectsMsg();
+			if (msg.length > 0) {
+				 const messageData: MessageData = {
+						speaker: {alias: 'Combat Start'},
+						content: msg,
+						style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+				 };
+				 await ChatMessage.create(messageData, {});
+			}
+			const starters = this.combatants.contents.map( comb => comb?.actor?.onCombatStart())
+				 .filter (x=> x != undefined);
+			await Promise.all(starters);
+			void this.refreshActorSheets();
+			const unrolledInit = this.combatants
+				 .filter( x=> x.initiative == undefined)
+				 .map( c=> c.id);
+			if (!this.isSocial) {
+				 await TriggeredEffect.autoApplyTrigger('on-combat-start-global');
+			}
+			if (unrolledInit.length > 0) {
+				 await this.rollInitiative(unrolledInit);
+			}
+			void this.navigatorOpen();
+			return await super.startCombat();
+	 }
+
+	 async navigatorOpen() {
+			await sleep(12000);
+			await NavigatorVoiceLines.onStartCombat(this);
+
+	 }
 
 	override async delete() : Promise<void> {
 		await this.onEndCombat();
@@ -2141,34 +2149,35 @@ debug_engageList() {
 }
 
 async generateTreasureAndXP() {
-	if (this.isSocial) {return;}
-	if (this.didPCsWin() == false) {return;}
-	const actors = this.combatants
-		.contents.flatMap( x=> x?.actor ? [x.actor] : [] );
-	const shadows= actors
-		.filter (x => x.system.type == 'shadow');
-	if (shadows.some(x=> !x.hasPlayerOwner && x.hp > 0)) {
-		return;
-	}
-	const defeatedFoes = this.defeatedFoes.concat(shadows);
-	for (const foe of defeatedFoes) {
-		await foe.onDefeat();
-	}
-	this.defeatedFoes = [];
-	const pcs = actors.filter( x => x.isPC());
-	const party = actors.filter( x=> x.isPC() ||  x.isNPCAlly() || (x.isDMon() && x.hasPlayerOwner));
-	try {
-		await Metaverse.awardXP(defeatedFoes as Shadow[], party);
-	} catch  {
-		PersonaError.softFail('Problem with awarding XP');
-	}
-	try{
-		const treasure = await Metaverse.generateTreasure(defeatedFoes);
-		await Metaverse.printTreasure(treasure);
-		await Metaverse.distributeMoney(treasure.money, pcs);
-	} catch  {
-		PersonaError.softFail('Problem with generating treasure');
-	}
+	 if (this.isSocial) {return;}
+	 if (this.didPCsWin() == false) {return;}
+	 const actors = this.combatants
+			.contents.flatMap( x=> x?.actor ? [x.actor] : [] );
+	 const shadows= actors
+			.filter (x => x.system.type == 'shadow');
+	 if (shadows.some(x=> !x.hasPlayerOwner && x.hp > 0)) {
+			return;
+	 }
+	 const defeatedFoes = this.defeatedFoes.concat(shadows);
+	 for (const foe of defeatedFoes) {
+			await foe.onDefeat();
+	 }
+	 void NavigatorVoiceLines.playVoice("great-work");
+	 this.defeatedFoes = [];
+	 const pcs = actors.filter( x => x.isPC());
+	 const party = actors.filter( x=> x.isPC() ||  x.isNPCAlly() || (x.isDMon() && x.hasPlayerOwner));
+	 try {
+			await Metaverse.awardXP(defeatedFoes as Shadow[], party);
+	 } catch  {
+			PersonaError.softFail('Problem with awarding XP');
+	 }
+	 try{
+			const treasure = await Metaverse.generateTreasure(defeatedFoes);
+			await Metaverse.printTreasure(treasure);
+			await Metaverse.distributeMoney(treasure.money, pcs);
+	 } catch  {
+			PersonaError.softFail('Problem with generating treasure');
+	 }
 }
 
 displayCombatHeader(element : JQuery<HTMLElement>) {

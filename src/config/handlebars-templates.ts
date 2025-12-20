@@ -90,6 +90,7 @@ const templateFileNames : string[] =[
 	"combat-roll-roll.hbs",
 	"input-consequence-combat-effect.hbs",
 	"item-quantity-part.hbs",
+	"navigator-voicelines.hbs",
 ];
 
 export const templatePaths = templateFileNames.

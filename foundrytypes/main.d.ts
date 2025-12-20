@@ -33,8 +33,6 @@ interface AppV1Stuff {
 	}
 }
 
-
-
 class BaseCombat {
 	static defineSchema() : SchemaReturnObject
 }

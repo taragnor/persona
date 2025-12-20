@@ -56,6 +56,7 @@
 
 	"persona.sheet.tabs.encounter.tabname" : "Encounter",
 	"persona.sheet.tabs.learning.tabname" : "Learned Powers",
+	"persona.sheet.tabs.navigatorVoiceLines.tabname" : "Nav Voicelines",
 	"persona.sheet.tabs.inventory.tabname" : "Inventory",
 	"persona.sheet.tabs.social.tabname" : "Social",
 
@@ -377,6 +378,7 @@
 	"persona.tarot.20.name": "Judgment",
 	"persona.tarot.21.name": "The World",
 
+
 	"persona.power.subtype.weapon": "Weapon",
 	"persona.power.subtype.magic": "Magic",
 	"persona.power.subtype.other": "Other",
@@ -413,6 +415,9 @@
 	"persona.power.targets.all-others": "All Others (friend and foes)",
 	"persona.power.targets.everyone": "All Living Targets",
 	"persona.power.targets.everyone-even-dead": "All Combatants (living and dead)",
+
+	"persona.settings.navigator-voice.hint": "Turn on Navigator Voicelines (if available)",
+	"persona.settings.navigator-voice.name": "Navigator Voicelines",
 
 	"persona.power.tag.fire": "Fire",
 	"persona.power.tag.ice": "Ice",
@@ -1179,6 +1184,31 @@
 	"persona.treasureTable.label.lesser": "Lesser",
 	"persona.treasureTable.label.greater": "Greater",
 	"persona.treasureTable.label.royal": "Royal",
+
+	"persona.navigator.voicelines.types.unused": "Unused",
+	"persona.navigator.voicelines.types.rare-enemy": "Rare Enemy / Treasure Shadow",
+	"persona.navigator.voicelines.types.tough-enemy": "Tough Enemy",
+	"persona.navigator.voicelines.types.1-enemy": "1 enemy",
+	"persona.navigator.voicelines.types.2-enemy": "2 enemies",
+	"persona.navigator.voicelines.types.3-enemy": "3 enemies",
+	"persona.navigator.voicelines.types.4-enemy": "4 enemies",
+	"persona.navigator.voicelines.types.5-enemy": "5 enemies",
+	"persona.navigator.voicelines.types.1-enemy-adv": "1 enemies (advantage)",
+	"persona.navigator.voicelines.types.2-enemy-adv": "2 enemies (advantage)",
+	"persona.navigator.voicelines.types.3-enemy-adv": "3 enemies (advantage)",
+	"persona.navigator.voicelines.types.4-enemy-adv": "4 enemies (advantage)",
+	"persona.navigator.voicelines.types.5-enemy-adv": "5 enemies (advantage)",
+	"persona.navigator.voicelines.types.1-enemy-amb": "1 enemies (ambush)",
+	"persona.navigator.voicelines.types.2-enemy-amb": "2 enemies (ambush)",
+	"persona.navigator.voicelines.types.3-enemy-amb": "3 enemies (ambush)",
+	"persona.navigator.voicelines.types.4-enemy-amb": "4 enemies (ambush)",
+	"persona.navigator.voicelines.types.5-enemy-amb": "5 enemies (ambush)",
+	"persona.navigator.voicelines.types.boss-enemy": "Boss",
+	"persona.navigator.voicelines.types.immune": "Immunity",
+	"persona.navigator.voicelines.types.vulnerable": "Vulnerable",
+	"persona.navigator.voicelines.types.injured": "Injured",
+	"persona.navigator.voicelines.types.great-work": "Great Work!",
+	"persona.navigator.voicelines.types.recovery": "Recovery",
 
 	"persona.powers.instantKillLevels.none": "None",
 	"persona.powers.instantKillLevels.low": "Low",

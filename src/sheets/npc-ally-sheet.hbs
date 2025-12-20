@@ -68,6 +68,9 @@
 		<a  class="item" data-tab="learning">
 			{{localize "persona.sheet.tabs.learning.tabname" }}
 		</a>
+		<a  class="item" data-tab="voice">
+			{{localize "persona.sheet.tabs.navigatorVoiceLines.tabname" }}
+		</a>
 		{{/if}}
 	</nav>
 
@@ -78,7 +81,6 @@
 		<section class="tab tab-content inventory-section" data-group="primary" data-tab="inv">
 			{{> "systems/persona/parts/inventory-section.hbs" actor=actor CONST=CONST equips=equips}}
 		</section>
-		{{#if true}}
 		<section class="tab tab-content social-section flexcol" data-group="primary" data-tab="social">
 			{{> "systems/persona/parts/npc-social-focii.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
 		</section>
@@ -91,7 +93,9 @@
 		<section class="tab tab-content encounter-section" data-group="primary" data-tab="learning">
 			{{> "systems/persona/parts/learned-powers-section.hbs" actor=actor CONST=CONST persona=actor.basePersona}}
 		</section>
-		{{/if}}
+		<section class="tab tab-content voicelines-section" data-group="primary" data-tab="voice">
+			{{> "systems/persona/parts/navigator-voicelines.hbs" actor=actor CONST=CONST}}
+		</section>
 
 	</section>
 

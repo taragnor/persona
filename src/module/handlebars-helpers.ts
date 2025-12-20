@@ -994,6 +994,8 @@ export class PersonaHandleBarsHelpers {
 			.filter (comb=> FusionTable.meetsConditionsToFuse(comb.result!, fusor));
 		},
 
+
+
 	};
 
 } //end of class

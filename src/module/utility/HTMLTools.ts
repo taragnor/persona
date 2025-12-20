@@ -54,6 +54,36 @@ export class HTMLTools {
 		});
 	}
 
+	static async ArrayAddEvent <T extends FoundryDocument>(event: JQuery.Event, document: T) {
+		try {
+			const path = this.getClosestData(event, "path");
+			const resolvedData = foundry.utils.getProperty(document, path);
+			const existing : unknown[] = Array.isArray(resolvedData) ? resolvedData : [];
+			const updateObj : Record<typeof path, unknown[]> = { };
+			existing.push({});
+			updateObj[path] = existing;
+			await document.update( updateObj);
+		} catch {
+			ui.notifications.error("Can't find path for add Event, is data-path defined?");
+			return;
+		}
+	}
+
+	static async ArrayDeleteEvent <T extends FoundryDocument>(event: JQuery.Event, document: T, index: number) {
+		try {
+			const path = this.getClosestData(event, "path");
+			const resolvedData = foundry.utils.getProperty(document, path);
+			const existing : unknown[] = Array.isArray(resolvedData) ? resolvedData : [];
+			const updateObj : Record<typeof path, unknown[]> = { };
+			existing.splice(index, 1);
+			updateObj[path] = existing;
+			await document.update( updateObj);
+		} catch {
+			ui.notifications.error("Can't find path for add Event, is data-path defined?");
+			return;
+		}
+	}
+
 // **************************************************
 // *****************   Dialogs  ****************** *
 // **************************************************

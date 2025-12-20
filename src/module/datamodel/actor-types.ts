@@ -11,7 +11,7 @@ import { SocialQuestionDM } from "./item-types.js";
 import { frequencyConvert } from "../../config/frequency.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { Shadow } from "../actor/persona-actor.js";
-import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
+import { DamageType, REALDAMAGETYPESLIST } from "../../config/damage-types.js";
 import { PCAndNPCAllyCombatStats } from "../../config/actor-parts.js";
 import { PCSpecificStuff } from "../../config/actor-parts.js";
 import { SocialTargetBlockData } from "../../config/actor-parts.js";
@@ -28,6 +28,7 @@ import { equipslots } from "../../config/actor-parts.js";
 import { tarotFields } from "../../config/actor-parts.js";
 import { combatCommonStats } from "../../config/actor-parts.js";
 import {PersonaStat} from "../../config/persona-stats.js";
+import {NavigatorTrigger} from "../navigator/nav-voice-lines.js";
 
 abstract class BaseStuff extends window.foundry.abstract.DataModel {
 
@@ -174,9 +175,15 @@ class NPCAllySchema extends foundry.abstract.TypeDataModel {
 			combat: new sch( {
 				...combatCommonStats(),
 				...PCAndNPCAllyCombatStats(),
-				// navigatorSkill: new id(), //deprecated
 				navigatorSkills: new arr(new id()),
 				isNavigator: new bool(),
+				navigatorVoice: new arr(
+					new sch({
+						fileName: new txt(),
+						trigger: new txt<NavigatorTrigger>(),
+						elementType: new txt<DamageType>(),
+					})
+				),
 			}),
 			...PCAndAllyStuff(),
 			bio: personalBio(),

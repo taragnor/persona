@@ -10,6 +10,8 @@ import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { PCLikeSheet } from "./pc-like-sheet.js";
 import { Power } from "../../item/persona-item.js";
 import { Logger } from "../../utility/logger.js";
+import { NAVIGATOR_TRIGGERS } from "../../navigator/nav-voice-lines.js";
+import {PersonaSounds} from "../../persona-sounds.js";
 
 
 export class NPCAllySheet extends PCLikeSheet {
@@ -28,9 +30,19 @@ export class NPCAllySheet extends PCLikeSheet {
 		});
 	}
 
+	override CONST() {
+		return {
+			...super.CONST(),
+			NAVIGATOR_TRIGGERS,
+		};
+	}
+
 	override activateListeners(html: JQuery) {
 		super.activateListeners(html);
 		html.find(".basic-powers .power-img").rightclick( this.deleteBasicSkill.bind(this));
+		html.find(".add-voiceline").on("click", (ev) => void this.addNewVoiceline(ev));
+		html.find(".del-voiceline").on("click", (ev) => void this.deleteVoiceline(ev));
+		html.find(".play-voiceline").on("click", (ev) => void this.playVoiceLine(ev));
 	}
 
 	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:unknown[]) {
@@ -86,6 +98,24 @@ export class NPCAllySheet extends PCLikeSheet {
 		}
 
 	}
+
+	async addNewVoiceline(ev: JQuery.ClickEvent) {
+		await HTMLTools.ArrayAddEvent(ev, this.actor);
+
+	}
+
+	async deleteVoiceline(ev: JQuery.ClickEvent) {
+		const index = HTMLTools.getClosestDataNumber(ev, "vlIndex");
+		if (!await HTMLTools.confirmBox("Delete Sound", "Really Delete this sound?")) {return;}
+		await HTMLTools.ArrayDeleteEvent(ev, this.actor, index);
+
+	}
+
+	async playVoiceLine(ev: JQuery.ClickEvent) {
+		const file = HTMLTools.getClosestData(ev, "soundFile");
+		await PersonaSounds.playFile(file);
+	}
+
 }
 
 

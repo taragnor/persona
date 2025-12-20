@@ -1,0 +1,38 @@
+<section class="navigator-voicelines" data-path="system.combat.navigatorVoice">
+	<h3> Navigator Voicelines
+			<a class="add-voiceline">
+				<i class="fa-solid fa-plus"> </i>
+			</a>
+	</h3>
+
+	<ul>
+		{{#each actor.navigatorVoiceLines as |vl i|}}
+		<li data-vl-index="{{i}}" data-sound-file="{{vl.fileName}}" >
+			<span>
+				<select name="system.combat.navigatorVoice.{{i}}.trigger">
+					{{selectOptions ../CONST.NAVIGATOR_TRIGGERS localize=true selected=vl.trigger}}
+				</select>
+			</span>
+			{{#if (eqAny vl.trigger "immune" "vulnerable")}}
+				<select name="system.combat.navigatorVoice.{{i}}.elementType">
+					{{selectOptions ../CONST.DAMAGETYPES localize=true selected=vl.elementType}}
+				</select>
+			{{/if}}
+			{{#if vl.fileName}}
+			<span>
+				<a class="play-voiceline" title="{{vl.fileName}}">
+					<i class="fa-solid fa-play"></i>
+				</a>
+			</span>
+			{{else}}
+			{{filePicker type="audio" target=(strcat "system.combat.navigatorVoice." i ".fileName") }}
+			{{/if}}
+			<input type="hidden" name="system.combat.navigatorVoice.{{i}}.fileName" value="{{vl.fileName}}">
+			<a class="del-voiceline">
+				<i class="fa-solid fa-trash-can"></i>
+			</a>
+
+		</li>
+		{{/each}}
+	</ul>
+</section>

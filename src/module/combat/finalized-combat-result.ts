@@ -25,6 +25,7 @@ import { ActorChange } from "./combat-result.js";
 import {SocketsNotConnectedError, TimeoutError, VerificationFailedError} from "../utility/socket-manager.js";
 import {RealDamageType} from "../../config/damage-types.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
+import {NavigatorVoiceLines} from "../navigator/nav-voice-lines.js";
 
 
 
@@ -490,39 +491,45 @@ export class FinalizedCombatResult {
 			return this;
 	 }
 
-	 async #onDefeatOpponent(target: PToken, attacker ?: PToken) {
-			const combat = game.combat as PersonaCombat | undefined;
-			if (!combat) {return;}
-			if (target.actor.isShadow()) {
-				 const shadow = combat.findCombatant(target);
-				 if (shadow) {
-						if (!shadow.defeated) {
-							 try {
-									await shadow.update( {defeated: true});
-							 } catch (e) {
-									console.error(e);
-							 }
-						}
-				 }
+	async #onDefeatOpponent(target: PToken, attacker ?: PToken) {
+		const combat = game.combat as PersonaCombat | undefined;
+		if (!combat) {return;}
+		if (target.actor.isShadow()) {
+			const shadow = combat.findCombatant(target);
+			if (shadow) {
+				if (!shadow.defeated) {
+					try {
+						await shadow.update( {defeated: true});
+					} catch (e) {
+						console.error(e);
+					}
+				}
 			}
-			const attackerActor = attacker?.actor;
-			if (attackerActor) {
-				 const situation: Situation = {
-						trigger: "on-kill-target",
-						triggeringCharacter: attackerActor.accessor,
-						attacker: attacker.actor.accessor,
-						target: target.actor.accessor,
-						user: attackerActor.accessor,
-						triggeringUser: game.user,
-				 };
-				 for (const comb of combat.combatants) {
-						if (!comb.actor) {continue;}
-						situation.user = comb.actor.accessor;
-						this.addChained((await TriggeredEffect.onTrigger("on-kill-target", comb.actor, situation)).finalize());
-						// await TriggeredEffect.execCombatTrigger("on-kill-target", comb.actor, situation);
-				 }
+		}
+		const attackerActor = attacker?.actor;
+		if (attackerActor) {
+			const situation: Situation = {
+				trigger: "on-kill-target",
+				triggeringCharacter: attackerActor.accessor,
+				attacker: attacker.actor.accessor,
+				target: target.actor.accessor,
+				user: attackerActor.accessor,
+				triggeringUser: game.user,
+			};
+			for (const comb of combat.combatants) {
+				if (!comb.actor) {continue;}
+				situation.user = comb.actor.accessor;
+				this.addChained((await TriggeredEffect.onTrigger("on-kill-target", comb.actor, situation)).finalize());
 			}
-	 }
+		}
+		if ((target.actor.isPC() || target.actor.isNPCAlly())
+			&& combat.combatants.filter( x=>
+				x.actor != undefined
+				&& !x.actor.isShadow()
+				&& !x.actor.isAlive()).length >= 2) {
+			void NavigatorVoiceLines.playVoice("injured");
+		}
+	}
 
 	 async #applyCosts() {
 			const power = this.power && !this.power.isSkillCard() ? this.power : undefined;

@@ -95,6 +95,16 @@ export class PersonaSettings {
 
 const SETTINGS = {
 
+	"navigatorVoiceLines": {
+		name: "persona.settings.navigator-voice.name",
+		hint: "persona.settings.navigator-voice.hint",
+		scope: "client",
+		restricted: false,
+		config: true,
+		type :Boolean,
+		default: true,
+	},
+
 	"debugMode" : {
 		name: "Debug Mode",
 		hint: "Show more debug stats (like defenses in atk)",

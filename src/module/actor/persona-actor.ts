@@ -1349,6 +1349,43 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
+	get navigatorVoiceLines() : NPCAlly["system"]["combat"]["navigatorVoice"] {
+		if (!this.isNPCAlly()) {return [];}
+		const lines= this.system.combat?.navigatorVoice ?? [];
+		return lines;
+	}
+
+	async addNavigatorPath (this: NPCAlly) : Promise<number> {
+		return new Promise ( (resolve, _reject) => {
+			const callback  = async (path: string, fp: FilePicker) => {
+				let count = 0;
+				if (!path) {
+					ui.notifications.warn("No folder selected");
+					return -1;}
+				const files = (await foundry.applications.apps.FilePicker.implementation.browse("data", path)).files;
+				if (files && files.length > 0) {
+					const arr=  this.system.combat?.navigatorVoice;
+					for (const file of files) {
+						if (!arr.some(x=> x.fileName == file)) {
+							count++;
+							arr.push({
+								fileName: file,
+								trigger: "unused",
+								elementType: "none",
+							});
+						}
+					}
+					await this.update({
+						"system.combat.navigatorVoice": arr,
+					});
+				}
+				resolve(count);
+			};
+			const fp = new foundry.applications.apps.FilePicker.implementation({type: "folder", callback});
+			void fp.browse();
+		});
+	}
+
 	getUsableById(id: Usable["id"]) : Usable | undefined {
 		const usables: Usable[] = (this.powers as Usable[]).concat(this.openerActions);
 		const power = usables.find(pow => pow.id == id);
@@ -4034,8 +4071,8 @@ hasCreatureTag(tagNameOrId: CreatureTag) : boolean{
 		return tagList.includes(tagNameOrId);
 	}
 	return tagList.includes(tag.id)
-	|| tagList.includes(tag.system.linkedInternalTag)
-	|| tagList.includes(tag.name);
+		|| tagList.includes(tag.system.linkedInternalTag)
+		|| tagList.includes(tag.name);
 }
 
 async deleteCreatureTag(index: number) : Promise<void> {

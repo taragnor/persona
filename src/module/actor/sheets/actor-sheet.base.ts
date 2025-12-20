@@ -44,7 +44,7 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 		data.POWERSTUFF = PersonaEffectContainerBaseSheet.powerStuff;
 
 		data.CONST = {
-			...PersonaActorSheetBase.CONST(),
+			...this.CONST(),
 			//checkbox types only
 			INC: INCREMENTAL_ADVANCE_TYPES.map(x=> ({
 				local: INCREMENTAL_ADVANCES[x],
@@ -53,6 +53,10 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 			}))
 		};
 		return data;
+	}
+
+	CONST() {
+		return PersonaActorSheetBase.CONST();
 	}
 
 	static CONST() {
