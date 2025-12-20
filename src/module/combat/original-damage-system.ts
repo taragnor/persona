@@ -89,6 +89,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 		const armorBonus = targetPersona.getDefensiveBonuses("armor-dr").total(situation);
 		const armorMult = targetPersona.getDefensiveBonuses("armor-dr-mult").total(situation, "percentage");
 		const armorString = "Armor DR";
+		// console.log(`${targetPersona.name} DR mult : ${armorMult}`);
 		const modifiedArmor = -Math.abs(Math.round(armor * armorMult));
 		calc.add("base", modifiedArmor, armorString);
 		calc.add("base", -armorBonus, "Armor Modifiers");

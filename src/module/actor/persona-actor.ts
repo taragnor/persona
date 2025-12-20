@@ -4024,14 +4024,14 @@ get tagListPartial() : CreatureTag[] {
 	if (this.isTarot()) { return []; }
 	const list : CreatureTag[] = this.system.creatureTags.slice();
 	if (this.isValidCombatant()) {
-		list.push(...this.persona().tagListPartial());
+		list.pushUnique(...this.persona().tagListPartial());
 	}
 	if (this.isValidCombatant()) {
 		const extraTags = this.mainModifiers({omitPowers:true, omitTalents: true, omitTags: true})
 			.flatMap( CE=> PersonaItem.getConferredTags(CE , this as ValidAttackers));
 		for (const tag of extraTags) {
 			if (!list.includes(tag))
-			{list.push(tag);}
+			{list.pushUnique(tag);}
 		}
 	}
 	switch (this.system.type) {
