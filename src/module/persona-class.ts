@@ -171,6 +171,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				 case "npcAlly":
 						return this.displayedName;
 				 case "shadow":
+						if (this.source.system.combat.builtInPersona) {
+							 return this.displayedName;
+						}
 						return this.source.publicName;
 				 default:
 						this.source.system satisfies never;
@@ -1024,11 +1027,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				 if ( this.source.system.creatureType == "daemon") {
 						autoPTags.pushUnique("simulated");
 				 }
-				 if (this.source.system.role != "base") {
-						autoPTags.pushUnique(this.source.system.role);
+			}
+			if (this.user.isShadow()) {
+				 if (this.user.system.role != "base") {
+						autoPTags.pushUnique(this.user.system.role);
 				 }
-				 if (this.source.system.role2 != "base") {
-						autoPTags.pushUnique(this.source.system.role2);
+				 if (this.user.system.role2 != "base") {
+						autoPTags.pushUnique(this.user.system.role2);
 				 }
 			}
 			if (autoPTags.includes("persona") && this.source.isPC() &&  this.source.hasSoloPersona) {

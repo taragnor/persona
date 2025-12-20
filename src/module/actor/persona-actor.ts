@@ -2226,7 +2226,7 @@ isDMon() : boolean {
 }
 
 isPersona(): boolean {
-	return this.isShadow() && (this.system.creatureType == "persona" ||  this.hasCreatureTag("persona"));
+	return this.isShadow() && (this.system.creatureType == "persona");
 }
 
 isCompendiumEntry(this: Shadow) : boolean {
