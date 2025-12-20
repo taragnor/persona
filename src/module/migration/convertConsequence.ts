@@ -1,10 +1,10 @@
 import {Consequence, DamageConsequence, DeprecatedConsequence, NewDamageConsequence, NonDeprecatedConsequence, NonDeprecatedDamageCons, OldDamageConsequence} from "../../config/consequence-types.js";
 import {DamageType} from "../../config/damage-types.js";
+import {PersonaSettings} from "../../config/persona-settings.js";
 import {ConditionTarget} from "../../config/precondition-types.js";
 import {PersonaItem} from "../item/persona-item.js";
 
 export class ConsequenceConverter {
-
 
 	static convertDeprecated( cons: Consequence, usable?: Item | null): NonDeprecatedConsequence {
 		const dep = cons as DeprecatedConsequence;
@@ -145,7 +145,9 @@ export class ConsequenceConverter {
 		if ("applyToSelf" in cons) {
 			return cons.applyToSelf ? "user" : "target";
 		}
-		console.debug(`Applying default applyTo of 'target' for ${cons.type}`);
+		if (PersonaSettings.debugMode()) {
+			console.debug(`Applying default applyTo of 'target' for ${cons.type}`);
+		}
 		return "target";
 	}
 
