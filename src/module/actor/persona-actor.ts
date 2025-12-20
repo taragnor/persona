@@ -1357,7 +1357,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async addNavigatorPath (this: NPCAlly) : Promise<number> {
 		return new Promise ( (resolve, _reject) => {
-			const callback  = async (path: string, fp: FilePicker) => {
+			const callback  = async (path: string, _fp: FilePicker) => {
 				let count = 0;
 				if (!path) {
 					ui.notifications.warn("No folder selected");
@@ -1385,6 +1385,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			void fp.browse();
 		});
 	}
+
 
 	getUsableById(id: Usable["id"]) : Usable | undefined {
 		const usables: Usable[] = (this.powers as Usable[]).concat(this.openerActions);

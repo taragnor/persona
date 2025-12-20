@@ -2162,7 +2162,9 @@ async generateTreasureAndXP() {
 	 for (const foe of defeatedFoes) {
 			await foe.onDefeat();
 	 }
-	 void NavigatorVoiceLines.playVoice("great-work");
+	 void NavigatorVoiceLines.playVoice({
+			type: "great-work"
+	 });
 	 this.defeatedFoes = [];
 	 const pcs = actors.filter( x => x.isPC());
 	 const party = actors.filter( x=> x.isPC() ||  x.isNPCAlly() || (x.isDMon() && x.hasPlayerOwner));
@@ -2183,12 +2185,6 @@ async generateTreasureAndXP() {
 displayCombatHeader(element : JQuery<HTMLElement>) {
 	try {
 		if ($(element).find('.escalation-die').length == 0) {
-			// const escalation = `
-			// 			<div class="escalation-tracker">
-			// 				 <span class="title"> Escalation Die: </span>
-			// 				 <span class="escalation-die">N/A
-			// 			</div>
-			// `;
 			const escalationTracker = `
 				 <div class="combat-info flexrow">
 					 <div class="weather-icon">

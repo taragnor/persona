@@ -46,7 +46,7 @@ interface Position {
 
 //this is canvas stuff so I've ignored it for now
 class Token<Act extends Actor = Actor<any,any,any>> extends PlaceableObject {
-	get actor(): Act;
+	get actor(): U<Act>;
 	document: TokenDocument<Act>;
 	get scene(): Scene;
 	id: string;

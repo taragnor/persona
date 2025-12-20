@@ -527,7 +527,10 @@ export class FinalizedCombatResult {
 				x.actor != undefined
 				&& !x.actor.isShadow()
 				&& !x.actor.isAlive()).length >= 2) {
-			void NavigatorVoiceLines.playVoice("injured");
+			void NavigatorVoiceLines.playVoice({
+				type: "injured",
+			}
+			);
 		}
 	}
 
