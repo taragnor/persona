@@ -1051,14 +1051,16 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
 	}
 }
 
-export function multiCheckToArray<const T extends MultiCheckOrSingle<S>, const S extends string>(multiCheck: T) : S[] {
-	if (typeof multiCheck == "string") {return [multiCheck as S];}
-	return Object.entries(multiCheck as MultiCheck<S>)
+export function multiCheckToArray<
+	 const T extends string,
+	 > (multiCheck: MultiCheckOrSingle<T>) : T[] {
+	if (typeof multiCheck == "string") {return [multiCheck];}
+	return Object.entries(multiCheck)
 		.filter( ([_, val]) => val == true)
-		.map( ([k,_v]) => k as S) ;
+		.map( ([k,_v]) => k as T);
 }
 
-export function multiCheckContains<T extends R, R extends string>(multiCheck: MultiCheck<T> | T, arrOrSingle: R[] | R) : boolean {
+export function multiCheckContains<const T extends R, const R extends string>(multiCheck: MultiCheck<T> | T, arrOrSingle: R[] | R) : boolean {
 	const arr = Array.isArray(arrOrSingle)
 	? arrOrSingle
 	: [arrOrSingle];

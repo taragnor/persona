@@ -7,7 +7,7 @@ import { RollSituation } from "../../config/situation.js";
 import { PersonaItem, UsableAndCard } from "../item/persona-item.js";
 import { ValidAttackers } from "./persona-combat.js";
 import { PersonaAE, StatusDuration } from "../active-effect.js";
-import { getSocialLinkTarget } from "../preconditions.js";
+import { getSocialLinkTarget, multiCheckToArray } from "../preconditions.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { SocialCardActionConsequence } from "../../config/consequence-types.js";
 import { OtherEffect } from "../../config/consequence-types.js";
@@ -196,116 +196,118 @@ export class CombatResult  {
 		}
 	}
 
-	private addEffect_combatEffect( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "combat-effect"}, effect: ActorChange<ValidAttackers>, target: U<ValidAttackers>, situation: Readonly<Situation>) {
-		if (!target && situation.target) {
-			target = PersonaDB.findActor(situation.target);
-		}
-		switch (cons.combatEffect) {
-			case "damage":
-				if (!effect || !target) {break;}
-				this.addEffect_damage(cons, situation, effect, target);
-				break;
-			case "addStatus": {
-				if (!effect) {break;}
-				let status_damage : number | undefined = undefined;
-				if (situation.attacker && situation.usedPower &&  cons.statusName == "burn") {
-					const power = PersonaDB.findItem(situation.usedPower);
-					if (power.system.type == "skillCard") {
-						PersonaError.softFail("Skill Card shouldn't be here");
+	 private addEffect_combatEffect( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "combat-effect"}, effect: ActorChange<ValidAttackers>, target: U<ValidAttackers>, situation: Readonly<Situation>) {
+			if (!target && situation.target) {
+				 target = PersonaDB.findActor(situation.target);
+			}
+			switch (cons.combatEffect) {
+				 case "damage":
+						if (!effect || !target) {break;}
+						this.addEffect_damage(cons, situation, effect, target);
 						break;
-					}
-					const attacker = PersonaDB.findActor(situation.attacker);
-					// const attacker = PersonaDB.findToken(atkResult.attacker).actor;
-					status_damage = attacker
-						? (power as Usable)
-							.damage.getDamage(power as Usable, attacker.persona())
-						.eval()
-						.hpChange ?? 0
-						: 0;
-				}
-				const id = cons.statusName;
-				if (id != "bonus-action") {
-					if (!target) {
-						PersonaError.softFail(`No Target for ${id}`);
+				 case "addStatus": {
+						if (!effect) {break;}
+						let status_damage : number | undefined = undefined;
+						if (situation.attacker && situation.usedPower &&  cons.statusName == "burn") {
+							 const power = PersonaDB.findItem(situation.usedPower);
+							 if (power.system.type == "skillCard") {
+									PersonaError.softFail("Skill Card shouldn't be here");
+									break;
+							 }
+							 const attacker = PersonaDB.findActor(situation.attacker);
+							 // const attacker = PersonaDB.findToken(atkResult.attacker).actor;
+							 status_damage = attacker
+									? (power as Usable)
+									.damage.getDamage(power as Usable, attacker.persona())
+									.eval()
+									.hpChange ?? 0
+									: 0;
+						}
+						const id = cons.statusName;
+						if (id != "bonus-action") {
+							 if (!target) {
+									PersonaError.softFail(`No Target for ${id}`);
+									break;
+							 }
+							 const duration = convertConsToStatusDuration(cons, target);
+							 if (effect.addStatus.find( st => st.id == id && PersonaAE.durationLessThanOrEqualTo(duration, st.duration))) {
+									break;
+							 }
+							 effect.addStatus.push({
+									id,
+									potency: Math.abs(status_damage ?? cons.amount ?? 0),
+									duration,
+							 });
+						}
 						break;
-					}
-					const duration = convertConsToStatusDuration(cons, target);
-					if (effect.addStatus.find( st => st.id == id && PersonaAE.durationLessThanOrEqualTo(duration, st.duration))) {
+				 }
+				 case "removeStatus": {
+						if (!effect) {break;}
+						// const id = cons.statusName;
+						const actor = PersonaDB.findActor(effect.actor);
+						for (const id of multiCheckToArray(cons.statusName)) {
+							 if (actor.hasStatus(id)) {
+									effect.removeStatus.push({
+										 id,
+									});
+							 }
+						}
 						break;
-					}
-					effect.addStatus.push({
-						id,
-						potency: Math.abs(status_damage ?? cons.amount ?? 0),
-						duration,
-					});
-				}
-				break;
+				 }
+				 case "extraAttack": {
+						if (!effect) {break;}
+						effect.otherEffects.push({
+							 type: "extra-attack",
+							 maxChain: cons.amount ?? 1,
+							 iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
+						});
+						break;
+				 }
+				 case "extraTurn": {
+						if (situation.usedPower) {
+							 const power = PersonaDB.findItem(situation.usedPower);
+							 if (power.isOpener()) {break;}
+							 if (power.isTeamwork()) {break;}
+						}
+						if (!effect) {break;}
+						const combat = game.combat as PersonaCombat;
+						if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) {break;}
+						effect.otherEffects.push({
+							 type: "extraTurn",
+							 activation: combat.lastActivationRoll
+						});
+						break;
+				 }
+				 case "scan":
+						if (!effect) {break;}
+						effect.otherEffects.push( {
+							 type: cons.combatEffect,
+							 level: cons.amount ?? 1,
+							 downgrade: cons.downgrade ?? false,
+						});
+						break;
+				 case "auto-end-turn":
+						if (!effect) {break;}
+						effect.otherEffects.push(cons);
+						break;
+				 case "alter-energy": {
+						if (!effect) {break;}
+						const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
+						effect.otherEffects.push( {
+							 type: cons.combatEffect,
+							 amount,
+						});
+						break;
+				 }
+				 case "apply-recovery":
+						effect.otherEffects.push( {
+							 type: cons.combatEffect,
+						});
+						break;
+				 default:
+						cons satisfies never;
 			}
-			case "removeStatus": {
-				if (!effect) {break;}
-				const id = cons.statusName;
-				const actor = PersonaDB.findActor(effect.actor);
-				if (actor.hasStatus(id)) {
-					effect.removeStatus.push({
-						id,
-					});
-				}
-				break;
-			}
-			case "extraAttack": {
-				if (!effect) {break;}
-				effect.otherEffects.push({
-					type: "extra-attack",
-					maxChain: cons.amount ?? 1,
-					iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
-				});
-				break;
-			}
-			case "extraTurn": {
-				if (situation.usedPower) {
-					const power = PersonaDB.findItem(situation.usedPower);
-					if (power.isOpener()) {break;}
-					if (power.isTeamwork()) {break;}
-				}
-				if (!effect) {break;}
-				const combat = game.combat as PersonaCombat;
-				if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) {break;}
-				effect.otherEffects.push({
-					type: "extraTurn",
-					activation: combat.lastActivationRoll
-				});
-				break;
-			}
-			case "scan":
-				if (!effect) {break;}
-				effect.otherEffects.push( {
-					type: cons.combatEffect,
-					level: cons.amount ?? 1,
-					downgrade: cons.downgrade ?? false,
-				});
-				break;
-			case "auto-end-turn":
-				if (!effect) {break;}
-				effect.otherEffects.push(cons);
-				break;
-			case "alter-energy": {
-				if (!effect) {break;}
-				const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
-				effect.otherEffects.push( {
-					type: cons.combatEffect,
-					amount,
-				});
-				break;
-			}
-			case "apply-recovery":
-				effect.otherEffects.push( {
-					type: cons.combatEffect,
-				});
-				break;
-			default:
-				cons satisfies never;
-		}
-	}
+	 }
 
 	async addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
 		if (!target && situation.target) {

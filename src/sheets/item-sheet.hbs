@@ -43,7 +43,10 @@
 						<label>
 							Armor HP Bonus:
 						</label>
+						{{item.armorHPBoost}}
+						{{#if (isGM)}}
 						{{numberInput item.system.armorHPBoost class="short" name="system.armorHPBoost" step=1 min=0 max=200}}
+						{{/if}}
 					</div>
 					{{#if (isGM)}}
 					<div class="armor-level">

@@ -36,7 +36,7 @@ import { ConditionalEffectManager } from '../conditional-effect-manager.js';
 import { localize } from '../persona.js';
 import { POWER_TAGS } from '../../config/power-tags.js';
 import { ModifierList } from '../combat/modifier-list.js';
-import { testPreconditions } from '../preconditions.js';
+import { multiCheckToArray, testPreconditions } from '../preconditions.js';
 import { CardChoice } from '../../config/social-card-config.js';
 import { CardEvent } from '../../config/social-card-config.js';
 import { BASIC_PC_POWER_NAMES } from '../../config/basic-powers.js';
@@ -1757,6 +1757,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return false;
 	}
 
+	 get armorHPBoost() : number {
+			if (!this.isInvItem()
+				 || this.system.slot != "body"
+			) {return 0;}
+			return Math.round(this.system.armorHPBoost / 2);
+	 }
+
 	isInvItem(): this is InvItem {
 		return this.system.type == "item";
 	}
@@ -2673,7 +2680,8 @@ statusesAdded(this: Usable, deepTagList = true): StatusEffectId[] {
 
 statusesRemoved(this: Usable): StatusEffectId[] {
 	const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => 
-		cons.type == "combat-effect" && cons.combatEffect == 'removeStatus'? [cons.statusName] : []));
+		// cons.type == "combat-effect" && cons.combatEffect == 'removeStatus'? [cons.statusName] : []));
+		cons.type == "combat-effect" && cons.combatEffect == 'removeStatus'? multiCheckToArray(cons.statusName) : []));
 	return statusesRemoved;
 }
 

@@ -656,13 +656,14 @@ export class CombatEngine {
 		return null;
 	}
 
-	#calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) : U<{low: number, high:number}> { const ailmentMods =
+	#calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) : U<{low: number, high:number}> {
+		 const ailmentMods =
 		attackerPersona.getBonuses('afflictionRange').concat(
 			targetPersona.getBonuses('ail')
 		);
 		const calc = attackerPersona.combatStats.ailmentBonus();
 		calc.add(1, -targetPersona.combatStats.ailmentResist().eval(situation).total, "Target Ailment Resistance", "add");
-		calc.add(1, ailmentMods, "mods", "add");
+		calc.add(1, ailmentMods, "Target Ailment Mods", "add");
 		const calcResolved = calc.eval(situation);
 		const total = calcResolved.total;
 		if (PersonaSettings.debugMode()) {

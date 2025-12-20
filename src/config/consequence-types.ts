@@ -346,7 +346,7 @@ type CombatEffectConsequencesList =
 	} & DurationComponent)
 	| {
 		combatEffect: "removeStatus",
-		statusName: StatusEffect["id"],
+		statusName: MultiCheckOrSingle<StatusEffect["id"]>,
 	} | {
 		combatEffect: "extraTurn",
 	} | {
@@ -467,6 +467,7 @@ type DamageConsequenceShared = {
 
 export type NonDeprecatedConsequence = Consequence & { type: Exclude<Consequence["type"], DeprecatedConsequence["type"]>}
 	& {applyTo: U<ConditionTarget>};
+//modifier doiesn't have an applyTo but we need to fix this later
 
 type DeprecatedSimpleEffect = {
 	type: "save-slot" | "half-hp-cost";

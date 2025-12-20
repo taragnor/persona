@@ -20,13 +20,14 @@
 
 {{/if}}
 
-{{#if (eqAny cons.combatEffect "addStatus" "removeStatus")}}
-<select name="{{strcat namePrefix 'statusName' }}">
-	{{selectOptions POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
-</select>
+{{#if (eqAny cons.combatEffect "removeStatus")}}
+{{multicheck (strcat namePrefix 'statusName') POWERSTUFF.STATUSEFFECTS localize=true checked=cons.statusName}}
 {{/if}}
 
 {{#if (eqAny cons.combatEffect "addStatus")}}
+<select name="{{strcat namePrefix 'statusName' }}">
+	{{selectOptions POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
+</select>
 <span>
 	<select name="{{strcat namePrefix 'statusDuration'}}">
 		{{selectOptions POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusDuration}}

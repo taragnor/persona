@@ -806,7 +806,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			calc.add(0, hpAdjustPercent,`HP Adjust (${hpAdjust})`, "multiply");
 			const multmods = persona.getBonuses("maxhpMult");
 			if (this.isPC() || this.isNPCAlly()) {
-				const ArmorHPBoost = this.equippedItems().find(x=> x.isOutfit())?.system?.armorHPBoost ?? 0;
+				const ArmorHPBoost = this.equippedItems().find(x=> x.isOutfit())?.armorHPBoost ?? 0;
 				if (ArmorHPBoost > 0)
 				{
 					calc.add(0, ArmorHPBoost, "Armor HP Bonus", "add");
