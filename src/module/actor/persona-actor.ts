@@ -1634,9 +1634,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	private downResistNewStatus({duration}: StatusEffect) :boolean {
+	private downResistNewStatus(status: StatusEffect) :boolean {
 		if (this.hp > 0) {return false;}
-		return PersonaAE.durationLessThanOrEqualTo(duration, {dtype: "combat"});
+		if (status.id == "down") {return false;}
+		return PersonaAE.durationLessThanOrEqualTo(status.duration, {dtype: "combat"});
 	}
 
 	/** returns true if status is added*/

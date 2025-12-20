@@ -207,6 +207,7 @@ export class CombatResult  {
 						break;
 				 case "addStatus": {
 						if (!effect) {break;}
+
 						let status_damage : number | undefined = undefined;
 						if (situation.attacker && situation.usedPower &&  cons.statusName == "burn") {
 							 const power = PersonaDB.findItem(situation.usedPower);

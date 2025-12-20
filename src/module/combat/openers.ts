@@ -1,9 +1,9 @@
-import {StatusEffectId} from "../../config/status-effects";
-import {PC} from "../actor/persona-actor";
-import {Power} from "../item/persona-item";
-import {PersonaDB} from "../persona-db";
-import {PersonaError} from "../persona-error";
-import {HTMLTools} from "../utility/HTMLTools";
+import {StatusEffectId} from "../../config/status-effects.js";
+import {PC} from "../actor/persona-actor.js";
+import {Power} from "../item/persona-item.js";
+import {PersonaDB} from "../persona-db.js";
+import {PersonaError} from "../persona-error.js";
+import {HTMLTools} from "../utility/HTMLTools.js";
 import {PersonaCombat, PersonaCombatant, PToken, ValidAttackers} from "./persona-combat.js";
 
 export class OpenerManager {

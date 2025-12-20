@@ -32,7 +32,7 @@ export class CombatEngine {
 	}
 
 	async usePower(attacker: PToken, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) : Promise<FinalizedCombatResult> {
-		if (attacker instanceof Token) {
+		if (attacker instanceof foundry.canvas.placeables.Token) {
 			throw new Error('Actual token found instead of token document');
 		}
 		if (!options.ignorePrereqs && !await this.checkPowerPreqs(attacker, power)) {

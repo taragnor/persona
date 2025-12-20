@@ -13,7 +13,6 @@ export class ConsequenceProcessor {
 		const CombatRes = new CombatResult(atkResult);
 		try {
 			const x = this.ProcessConsequences(power, situation, cons, attacker, target, atkResult);
-			// CombatRes.escalationMod += x.escalationMod;
 			const result = await this.getCombatResultFromConsequences(x.consequences, situation, attacker, target, atkResult);
 			CombatRes.merge(result);
 		}
@@ -28,7 +27,6 @@ export class ConsequenceProcessor {
 		let consequences : ConsequenceProcessed['consequences'] = [];
 		for (const cons of consequence_list) {
 			const applyTo = cons.applyTo ?? "target";
-			// const applyTo = cons.applyTo ?? (cons.applyToSelf ? 'owner' : 'target');
 			const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
 			consequences= consequences.concat(this.processConsequence_simple(cons, consTargets));
 		}
@@ -61,12 +59,10 @@ export class ConsequenceProcessor {
 	static processConsequence( power: U<ModifierContainer>, situation: Situation, cons: SourcedConsequence<NonDeprecatedConsequence>, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed['consequences'] {
 		//need to fix this so it knows who the target actual is so it can do a proper compariosn, right now when applying to Self it won't consider resistance or consider the target's resist.
 		const applyTo = cons.applyTo ?? "target";
-		// const applyTo = cons.applyTo ?? (cons.applyToSelf ? 'owner' : 'target');
 		const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
 		const applyToSelf = applyTo == 'attacker' || applyTo =='user' || applyTo == 'owner';
 		const absorb = (situation.isAbsorbed && !applyToSelf) ?? false;
 		const block = atkresult && atkresult.result == 'block' && !applyToSelf;
-		// const applyTo = cons.applyTo ? cons.applyTo : (applyToSelf ? "owner" : "target");
 		switch (cons.type) {
 			case 'none':
 			case 'modifier':
@@ -93,7 +89,6 @@ export class ConsequenceProcessor {
 			case 'modifier-new':
 			case 'add-creature-tag':
 				break;
-				// case 'extraAttack' :
 			case 'expend-slot':
 				return targets.map( applyTo => ({applyTo, cons}));
 			case 'other-effect':
@@ -102,8 +97,6 @@ export class ConsequenceProcessor {
 			case 'add-talent-to-list':
 			case "inventory-action":
 				return targets.map( applyTo => ({applyTo, cons}));
-				// case 'scan':
-				// case 'alter-energy':
 			case 'raise-resistance':
 			case 'lower-resistance':
 			case 'raise-status-resistance':
@@ -111,8 +104,6 @@ export class ConsequenceProcessor {
 			case 'use-power':
 			case 'alter-mp':
 				return targets.map( applyTo => ({applyTo, cons}));
-				// case 'extraTurn':
-				// 	return targets.map( applyTo => ({applyTo, cons}));
 			case 'social-card-action':
 			case 'teach-power':
 			case 'combat-effect':
