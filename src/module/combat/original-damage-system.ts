@@ -20,7 +20,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 	BASE_VARIANCE = 2 as const;
 	ARMOR_TO_DAMAGE_DIVISOR = 0.8 as const;
 	ALL_OUT_ATTACK_HELPER_DIVISOR = 1/4;
-	BASE_DAMAGE_LEVEL_DIVISOR = 0.5;
+	BASE_DAMAGE_LEVEL_DIVISOR = 1;
 	private _weaponDmgGrowth = new GrowthCalculator(1.20, 11, 4.5);
 
 	getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
@@ -264,9 +264,9 @@ const DAMAGE_LEVEL_CONVERT_MAGIC_DAMAGE = {
 	"basic": {extraVariance: 0, baseAmt: 0},
 	"light": {extraVariance: 1, baseAmt: 10},
 	"medium": {extraVariance: 2, baseAmt: 30},
-	"heavy": {extraVariance: 2, baseAmt: 60},
-	"severe": {extraVariance: 3, baseAmt: 95},
-	"colossal": {extraVariance: 4, baseAmt: 140},
+	"heavy": {extraVariance: 2, baseAmt: 65},
+	"severe": {extraVariance: 3, baseAmt: 100},
+	"colossal": {extraVariance: 4, baseAmt: 150},
 } as const satisfies Readonly<Record< ConvertableDamageLevel, NewDamageParams>>;
 
 const DAMAGE_LEVEL_CONVERT_WEAPON = {
@@ -275,27 +275,11 @@ const DAMAGE_LEVEL_CONVERT_WEAPON = {
 	"basic": {extraVariance: 0, baseAmt: 0},
 	"light": {extraVariance: 1, baseAmt: 10},
 	"medium": {extraVariance: 2, baseAmt: 30},
-	"heavy": {extraVariance: 2, baseAmt: 60},
-	"severe": {extraVariance: 3, baseAmt: 95},
-	"colossal": {extraVariance: 4, baseAmt: 140},
+	"heavy": {extraVariance: 2, baseAmt: 65},
+	"severe": {extraVariance: 3, baseAmt: 100},
+	"colossal": {extraVariance: 4, baseAmt: 150},
 } as const satisfies Readonly<Record<ConvertableDamageLevel, NewDamageParams>> ;
 
-
-// const WEAPON_LEVEL_TO_DAMAGE: Record<number, number> = {
-// 	0: 11,
-// 	1: 14,
-// 	2: 18,
-// 	3: 24,
-// 	4: 32,
-// 	5: 42,
-// 	6: 54,
-// 	7: 68,
-// 	8: 84,
-// 	9: 102,
-// 	10: 122,
-// 	11: 144,
-// 	12: 168,
-// };
 
 type ConvertableDamageLevel = Exclude<DamageLevel, "-" | "fixed">;
 
