@@ -826,6 +826,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return mhp;
 	}
 
+	hasBuiltInPersona() : boolean {
+		if (!this.isShadow()) {return false;}
+		return this.system.combat.builtInPersona;
+	}
 
 
 	get mhp() : number {

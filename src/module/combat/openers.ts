@@ -1,6 +1,6 @@
 import {StatusEffectId} from "../../config/status-effects.js";
 import {PC} from "../actor/persona-actor.js";
-import {Power} from "../item/persona-item.js";
+import {Power, Usable} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
@@ -517,6 +517,11 @@ export class OpenerManager {
 			await combatant.parent.combatEngine.usePower(combatant.token as PToken, power, [(target as PersonaCombatant).token]);
 			await this.chooseOpener(ev);
 		}
+	}
+
+	getOpenerPrintableName(usable: Usable, targetList: PersonaCombatant[]) : string  | undefined {
+		const targets= targetList.map( target=> target.name);
+		return `${usable.displayedName.toString()} (${targets.join(', ')}): ${usable.system.description}`;
 	}
 
 }

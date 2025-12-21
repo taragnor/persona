@@ -251,7 +251,10 @@ export class FinalizedCombatResult {
 			initiatorToken = PersonaCombat.getPTokenFromActorAccessor(initiator.accessor);
 		}
 		const attackerToken = initiatorToken;
-		const attackerPersona = initiator.isValidCombatant() && initiator.persona().isPersona() ? initiator.persona(): undefined;
+		const attackerPersona = (initiator.isValidCombatant() && (
+			initiator.persona().isPersona()
+			|| initiator.persona().source.hasBuiltInPersona()
+		))	? initiator.persona(): undefined;
 		const attackerName = initiator.token?.name ?? initiatorToken?.name ?? initiator.displayedName;
 		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-header.hbs", {attackerToken, attackerPersona, attackerName, effectName});
 		return html;

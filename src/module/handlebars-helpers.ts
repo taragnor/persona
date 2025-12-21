@@ -974,6 +974,11 @@ export class PersonaHandleBarsHelpers {
 			return sheet.personaMoveSelector?.equals( persona) ?? false;
 		},
 
+		 "isActivePersona": function (actor: PersonaActor, p2: Persona) : boolean {
+				if (!actor.isValidCombatant()) {return false;}
+				return actor.persona().equals(p2);
+		 },
+
 		"fusionsInto" : function (shadow: Shadow) {
 			const fusionsInto = shadow.fusionsInto();
 			const fusionList = fusionsInto

@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { PERSONA_STATS } from "../../../config/persona-stats.js";
+/* eslint-disable @typescript-eslint/no-unsafe-argument */ import { PERSONA_STATS } from "../../../config/persona-stats.js";
 import { PersonaError } from "../../persona-error.js";
 import { PC } from "../persona-actor.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
@@ -107,7 +106,6 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 		html.find(".showTarotList").on("click", (ev) => this.showTarotTable(ev));
 		html.find(".showTalentsTable").on("click", (ev) => this.showTalentTable(ev));
 		this.refreshQuestionFocus();
-
 	}
 
 	refreshQuestionFocus() {
@@ -149,7 +147,7 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 
 	selectQuestion(ev: JQuery.ClickEvent) {
 		if (!this.actor.isPC() && !this.actor.isNPC()) {return;}
-	const index= Number(HTMLTools.getClosestDataNumber(ev, "questionIndex"));
+		const index= Number(HTMLTools.getClosestDataNumber(ev, "questionIndex"));
 		this.activeQuestion = index;
 	}
 
@@ -172,7 +170,6 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 	async deleteCreatureTag(ev: JQuery.ClickEvent) {
 		const index = HTMLTools.getClosestData(ev, "tagIndex");
 		await this.actor.deleteCreatureTag(Number(index));
-
 	}
 
 	async deleteFocus(event: Event) {
@@ -203,7 +200,7 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 		const focus = this.actor.focii()
 			.find(x=> x.id == focusId)
 			?? PersonaDB.tarotCards().find(x=> x.items.find(x=> x.id == focusId))
-				?.items.find(x=> x.id == focusId) ;
+			?.items.find(x=> x.id == focusId) ;
 		if (!focus) {
 			throw new PersonaError(`Can't find ${itemType} id ${focusId}`);
 		}

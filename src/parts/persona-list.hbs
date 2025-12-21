@@ -5,7 +5,7 @@
 		{{#each actor.personaList as |persona i|}}
 
 		<li class="f-row {{#if (isSwapSelected ../actor persona)}} swap-selected {{/if}}" data-persona-id="{{persona.source.id}}">
-			<div class="persona-name">
+			<div class="persona-name {{#if (isActivePersona ../actor persona)}} active-persona {{else}} inactive-persona {{/if}}">
 				<a>
 					{{persona.name}} ({{persona.level}}, {{persona.tarot.displayedName}})
 				</a>
@@ -30,7 +30,7 @@
 		{{#each actor.sideboardPersonas as |persona i|}}
 
 		<li class="f-row {{#if (isSwapSelected ../actor persona)}} swap-selected {{/if}}" data-persona-id="{{persona.source.id}}">
-			<div class="persona-name">
+			<div class="persona-name sideboard-persona">
 				<a>
 					{{persona.name}} ({{persona.level}}, {{persona.tarot.displayedName}})
 				</a>

@@ -47,7 +47,6 @@ export class ConsequenceProcessor {
 					consequences = consequences.concat(newCons);
 				} else {
 					const applyTo = sourcedC.applyTo ?? "target";
-					// const applyTo = sourcedC.applyTo ?? (sourcedC.applyToSelf ? 'owner' : 'target');
 					const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
 					const newCons = this.processConsequence_simple( sourcedC, consTargets);
 					consequences = consequences.concat(newCons);

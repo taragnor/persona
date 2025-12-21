@@ -1589,3 +1589,23 @@ div.message-content .answers {
 .answers label.results {
 	padding-top: 5px;
 }
+
+.persona-list .active-persona {
+	color: #ffffff;
+	border-left: 3px solid #7bb6ff;
+	/* font-weight: bold; */
+	/* color: #ffffff; */
+	/* font-weight: 600; */
+	/* text-shadow: 0 0 6px rgba(120, 180, 255, 0.8); */
+}
+
+.persona-list .sideboard-persona,
+.persona-list .inactive-persona {
+	color: rgba(255, 255, 255, 0.65);
+	padding-left: 0.5em;
+	/* font-weight: normal; */
+	/* color: rgba(255, 255, 255, 0.7); */
+}
+
+
+

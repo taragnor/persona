@@ -383,12 +383,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			return true;
 	 }
 
-	 isPersona(): boolean {
-			const source = this.source;
-			if (source.isPC() || source.isNPCAlly()) {return true;}
-			if (source.system.creatureType == "persona") {return true;}
-			return false;
-	 }
+	isPersona(): boolean {
+		const source = this.source;
+		if (source.isPC() || source.isNPCAlly()) {return true;}
+		if (source.system.creatureType == "persona") {return true;}
+		return false;
+	}
 
 	 get isCustomPersona() : boolean {
 			return this.source.isShadow()
