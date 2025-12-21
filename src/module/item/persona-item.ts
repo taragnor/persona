@@ -777,14 +777,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					case 'weapon_crystal':
 					case 'key-item':
 						if (!list.includes(subtype))
-						{list.push(subtype);}
+						{list.pushUnique(subtype);}
 						break;
 					case 'none':
-						list.push('non-equippable');
+						list.pushUnique('non-equippable');
 						break;
 					case 'crafting':
-						list.push('non-equippable');
-						list.push('crafting');
+						list.pushUnique('non-equippable');
+						list.pushUnique('crafting');
 						break;
 					default:
 						subtype satisfies never;
@@ -809,9 +809,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case 'focus' : {
 				const list : PowerTag[] = [];
 				if (this.system.defensive) {
-					list.push('defensive');
+					list.pushUnique('defensive');
 				} else {
-					list.push('passive');
+					list.pushUnique('passive');
 				}
 				return list.map( t=> PersonaItem.resolveTag<PowerTag>(t as string));
 			}
@@ -860,10 +860,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					list.pushUnique("variable-damage");
 					break;
 				case "lightning":
-					list.push("elec");
+					list.pushUnique("elec");
 					break;
 				case "untyped":
-					list.push("almighty");
+					list.pushUnique("almighty");
 					break;
 				default:
 					list.pushUnique(damageType);

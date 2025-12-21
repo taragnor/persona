@@ -1577,6 +1577,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async updateOpacity(this: ValidAttackers, hp: number) {
+		if (this.isPC() && !this.isRealPC()) {return;}
 		const opacity = hp > 0 ? 1.0 : (this.isFullyFaded(hp) ? 0.2 : 0.6);
 		if (this.token) {
 			await this.token.update({"alpha": opacity});

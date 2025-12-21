@@ -1642,34 +1642,34 @@ debug_engageList() {
 }
 
 async generateTreasureAndXP() {
-	 if (this.isSocial) {return;}
-	 if (this.didPCsWin() == false) {return;}
-	 const actors = this.combatants
-			.contents.flatMap( x=> x?.actor ? [x.actor] : [] );
-	 const shadows= actors
-			.filter (x => x.system.type == 'shadow');
-	 if (shadows.some(x=> !x.hasPlayerOwner && x.hp > 0)) {
-			return;
-	 }
-	 const defeatedFoes = this.defeatedFoes.concat(shadows);
-	 for (const foe of defeatedFoes) {
-			await foe.onDefeat();
-	 }
-	 void NavigatorVoiceLines.playVoice({
+	if (this.isSocial) {return;}
+	if (this.didPCsWin() == false) {return;}
+	const actors = this.combatants
+		.contents.flatMap( x=> x?.actor ? [x.actor] : [] );
+	const shadows= actors
+		.filter (x => x.system.type == 'shadow');
+	if (shadows.some(x=> !x.hasPlayerOwner && x.hp > 0)) {
+		return;
+	}
+	const defeatedFoes = this.defeatedFoes.concat(shadows);
+	for (const foe of defeatedFoes) {
+		await foe.onDefeat();
+	}
+	this.defeatedFoes = [];
+	const pcs = actors.filter( x => x.isPC());
+	const party = actors.filter( x=> x.isPC() ||  x.isNPCAlly() || (x.isDMon() && x.hasPlayerOwner));
+	try {
+		await Metaverse.awardXP(defeatedFoes as Shadow[], party);
+	} catch  {
+		PersonaError.softFail('Problem with awarding XP');
+	}
+	try{
+		const treasure = await Metaverse.generateTreasure(defeatedFoes);
+		await Metaverse.printTreasure(treasure);
+		await Metaverse.distributeMoney(treasure.money, pcs);
+		void NavigatorVoiceLines.playVoice({
 			type: "great-work"
-	 });
-	 this.defeatedFoes = [];
-	 const pcs = actors.filter( x => x.isPC());
-	 const party = actors.filter( x=> x.isPC() ||  x.isNPCAlly() || (x.isDMon() && x.hasPlayerOwner));
-	 try {
-			await Metaverse.awardXP(defeatedFoes as Shadow[], party);
-	 } catch  {
-			PersonaError.softFail('Problem with awarding XP');
-	 }
-	 try{
-			const treasure = await Metaverse.generateTreasure(defeatedFoes);
-			await Metaverse.printTreasure(treasure);
-			await Metaverse.distributeMoney(treasure.money, pcs);
+		});
 	 } catch  {
 			PersonaError.softFail('Problem with generating treasure');
 	 }
