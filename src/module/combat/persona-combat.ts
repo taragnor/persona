@@ -123,7 +123,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			triggeringCharacter: comb.actor.accessor,
 		};
 		const CR = await TriggeredEffect
-			.autoTriggerToCR('on-combat-start', token.actor, situation);
+		.autoTriggerToCR('on-combat-start', token.actor, situation);
 		return CR?.finalize();
 	}
 
@@ -137,64 +137,64 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}) as PersonaCombatant[];
 	}
 
-	 override async startCombat() {
-			let msg = '';
-			this._engagedList = new EngagementList(this);
-			await this._engagedList.flushData();
-			const assumeSocial = !(this.combatants.contents.some(comb=> comb.actor && comb.actor.system.type == 'shadow'));
-			const regionMods: UniversalModifier["id"][] = [];
-			const region = Metaverse.getRegion();
-			if (region) {
-				 regionMods.push(...region.parent.getRoomEffects());
-			} else {
-				 const rmods = (game.scenes.current as PersonaScene).getRoomEffects();
-				 regionMods.push(...rmods);
+	override async startCombat() {
+		let msg = '';
+		this._engagedList = new EngagementList(this);
+		await this._engagedList.flushData();
+		const assumeSocial = !(this.combatants.contents.some(comb=> comb.actor && comb.actor.system.type == 'shadow'));
+		const regionMods: UniversalModifier["id"][] = [];
+		const region = Metaverse.getRegion();
+		if (region) {
+			regionMods.push(...region.parent.getRoomEffects());
+		} else {
+			const rmods = (game.scenes.current as PersonaScene).getRoomEffects();
+			regionMods.push(...rmods);
+		}
+		const combatInit = await this.roomEffectsDialog(regionMods, assumeSocial);
+		await this.setSocialEncounter(combatInit.isSocialScene);
+		if (combatInit.isSocialScene != this.isSocial) {
+			throw new PersonaError('WTF Combat not updating!');
+		}
+		if (combatInit.isSocialScene) {
+			if (PersonaSettings.debugMode() === false) {
+				await Metaverse.exitMetaverse();
 			}
-			const combatInit = await this.roomEffectsDialog(regionMods, assumeSocial);
-			await this.setSocialEncounter(combatInit.isSocialScene);
-			if (combatInit.isSocialScene != this.isSocial) {
-				 throw new PersonaError('WTF Combat not updating!');
-			}
-			if (combatInit.isSocialScene) {
-				 if (PersonaSettings.debugMode() === false) {
-						await Metaverse.exitMetaverse();
-				 }
-				 await PersonaSocial.startSocialCombatRound(combatInit.disallowMetaverse, combatInit.advanceCalendar);
-			}
-			const mods = combatInit.roomModifiers;
-			await this.setRoomEffects(mods);
-			await this.setEscalationDie(0);
-			msg += this.roomEffectsMsg();
-			if (msg.length > 0) {
-				 const messageData: MessageData = {
-						speaker: {alias: 'Combat Start'},
-						content: msg,
-						style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-				 };
-				 await ChatMessage.create(messageData, {});
-			}
-			const starters = this.combatants.contents.map( comb => comb?.actor?.onCombatStart())
-				 .filter (x=> x != undefined);
-			await Promise.all(starters);
-			void this.refreshActorSheets();
-			const unrolledInit = this.combatants
-				 .filter( x=> x.initiative == undefined)
-				 .map( c=> c.id);
-			if (!this.isSocial) {
-				 await TriggeredEffect.autoApplyTrigger('on-combat-start-global');
-			}
-			if (unrolledInit.length > 0) {
-				 await this.rollInitiative(unrolledInit);
-			}
-			void this.navigatorOpen();
-			return await super.startCombat();
-	 }
+			await PersonaSocial.startSocialCombatRound(combatInit.disallowMetaverse, combatInit.advanceCalendar);
+		}
+		const mods = combatInit.roomModifiers;
+		await this.setRoomEffects(mods);
+		await this.setEscalationDie(0);
+		msg += this.roomEffectsMsg();
+		if (msg.length > 0) {
+			const messageData: MessageData = {
+				speaker: {alias: 'Combat Start'},
+				content: msg,
+				style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+			};
+			await ChatMessage.create(messageData, {});
+		}
+		const starters = this.combatants.contents.map( comb => comb?.actor?.onCombatStart())
+			.filter (x=> x != undefined);
+		await Promise.all(starters);
+		void this.refreshActorSheets();
+		const unrolledInit = this.combatants
+			.filter( x=> x.initiative == undefined)
+			.map( c=> c.id);
+		if (!this.isSocial) {
+			await TriggeredEffect.autoApplyTrigger('on-combat-start-global');
+		}
+		if (unrolledInit.length > 0) {
+			await this.rollInitiative(unrolledInit);
+		}
+		void this.navigatorOpen();
+		return await super.startCombat();
+	}
 
-	 async navigatorOpen() {
-			await sleep(12000);
-			await NavigatorVoiceLines.onStartCombat(this);
+	async navigatorOpen() {
+		await sleep(12000);
+		await NavigatorVoiceLines.onStartCombat(this);
 
-	 }
+	}
 
 	override async delete() : Promise<void> {
 		await this.onEndCombat();
@@ -879,49 +879,49 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return undefined;
 	}
 
-getPToken(actorAcc: UniversalActorAccessor<PersonaActor>) : U<PToken>;
-getPToken(actor: ValidAttackers) : U<PToken> ;
-getPToken(actor: ValidAttackers | UniversalActorAccessor<PersonaActor>) : U<PToken> {
-	if ("actorId" in actor) {
-		const act = PersonaDB.findActor(actor);
-		if (!act || !act.isValidCombatant()) {return undefined;}
-		actor = act;
-	}
-	const comb = this.combatants.find( c=> c.actor == actor);
-	if (comb) {return comb.token as PToken;}
-	const tok = game.scenes.current.tokens.contents.find( tok => tok.actor == actor);
-	if (tok) {return tok as PToken;}
-	return undefined;
-}
-
-
-static resistIKMod(targetPersona: Persona, power: Usable) : number {
-	const fn = function (elem: RealDamageType) {
-		const resist = targetPersona.elemResist(elem);
-		switch (resist) {
-			case "weakness":
-				return -3;
-			case "normal":
-				return 0;
-			case "resist": return 3;
-			case "block":
-			case "absorb":
-			case "reflect": return 9999;
-			default:
-				resist satisfies never;
-				return 0;
+	getPToken(actorAcc: UniversalActorAccessor<PersonaActor>) : U<PToken>;
+	getPToken(actor: ValidAttackers) : U<PToken> ;
+	getPToken(actor: ValidAttackers | UniversalActorAccessor<PersonaActor>) : U<PToken> {
+		if ("actorId" in actor) {
+			const act = PersonaDB.findActor(actor);
+			if (!act || !act.isValidCombatant()) {return undefined;}
+			actor = act;
 		}
-	};
-	let ret = 0;
-	if (power.hasTag("dark")) {
-		ret += fn ("dark");
+		const comb = this.combatants.find( c=> c.actor == actor);
+		if (comb) {return comb.token as PToken;}
+		const tok = game.scenes.current.tokens.contents.find( tok => tok.actor == actor);
+		if (tok) {return tok as PToken;}
+		return undefined;
 	}
-	if (power.hasTag("light")) {
-		ret += fn ("light");
-	}
-	return ret;
 
-}
+
+	static resistIKMod(targetPersona: Persona, power: Usable) : number {
+		const fn = function (elem: RealDamageType) {
+			const resist = targetPersona.elemResist(elem);
+			switch (resist) {
+				case "weakness":
+					return -3;
+				case "normal":
+					return 0;
+				case "resist": return 3;
+				case "block":
+				case "absorb":
+				case "reflect": return 9999;
+				default:
+					resist satisfies never;
+					return 0;
+			}
+		};
+		let ret = 0;
+		if (power.hasTag("dark")) {
+			ret += fn ("dark");
+		}
+		if (power.hasTag("light")) {
+			ret += fn ("light");
+		}
+		return ret;
+
+	}
 
 	static createTargettingContextList(situation: Partial<Situation>, cons : Consequence | null) : TargettingContextList {
 		const {target, attacker, user, cameo} = situation;
@@ -1072,613 +1072,613 @@ static resistIKMod(targetPersona: Persona, power: Usable) : number {
 		}
 	}
 
-static getAltTargets ( attacker: PToken, situation : Situation, targettingType :  ConsTarget) : PToken[] {
-	const attackerType = attacker.actor.getAllegiance();
-	switch (targettingType) {
-		case 'target': {
-			if (!situation.target) {return [];}
-			const token = this.getPTokenFromActorAccessor(situation.target);
-			if (token) {return [token];} else {return [];}
-		}
-		case 'owner':
-			return [attacker];
-		case 'attacker': {
-			if (!situation.attacker) {return [];}
-			const token = this.getPTokenFromActorAccessor(situation.attacker);
-			if (token) {return [token];} else {return [];}
-		}
-		case 'all-enemies': {
-			const combat = this.ensureCombatExists();
-			const targets = combat.combatants.filter( x => {
-				const actor = x.actor;
-				if (!actor || !(actor).isAlive())  {return false;}
-				return ((x.actor as ValidAttackers).getAllegiance() != attackerType);
-			});
-			return targets.map( x=> x.token as PToken);
-		}
-		case 'all-allies': {
-			return this.getAllAlliesOf(attacker);
-		}
-		case 'all-foes':{
-			return this.getAllEnemiesOf(attacker);
-		}
-		case 'all-combatants': {
-			const combat = game.combat as PersonaCombat;
-			if (!combat) {return [];}
-			return combat.validCombatants(attacker).flatMap( c=> c.actor ? [c.token as PToken] : []);
-		}
-		case 'user': {
-			if (!situation.user) {return [];}
-			const token = this.getPTokenFromActorAccessor(situation.user);
-			if (token) {return [token];} else {return [];}
-		}
-		case 'triggering-character': {
-			if (!('triggeringCharacter' in  situation)) {return [];}
-			if (!situation.triggeringCharacter) {return [];}
-			const token = this.getPTokenFromActorAccessor(situation.triggeringCharacter);
-			if (token) {return [token];} else {return [];}
-		}
-		case 'cameo': {
-			return [];
-		}
-		case 'all-in-region':
-			PersonaError.softFail('all-in-region does not support alt targets');
-			return [];
-		case "navigator":
-			PersonaError.softFail(`navigator doesn't support alt targets`);
-			return [];
-		default:
-			targettingType satisfies never;
-			return [];
-	}
-}
-
-getAllEnemiesOf(token: PToken) : PToken [] {
-	const attackerType = token.actor.getAllegiance();
-	const targets = this.validCombatants(token).filter( x => {
-		const actor = x.actor;
-		if (!actor || !actor.isAlive())  {return false;}
-		return (x.actor && x.actor.getAllegiance() != attackerType);
-	});
-	return targets.map( x=> x.token as PToken);
-
-}
-
-static getAllEnemiesOf(token: PToken) : PToken [] {
-	const combat= this.ensureCombatExists();
-	return combat.getAllEnemiesOf(token);
-}
-
-/** returns self and all allies */
-static getAllAlliesOf(token: PToken) : PToken[] {
-	const attackerType = token.actor.getAllegiance();
-	const combat= game.combat as PersonaCombat;
-	const tokens = combat
-		? ( combat.validCombatants(token)
-			.filter( x=> x.actor)
-			.map(x=> x.token))
-		: (game.scenes.current.tokens
-			.filter( (x : TokenDocument<PersonaActor>) => x.actor != undefined && (x.actor?.isPC() || x.actor?.isNPCAlly())
-			));
-	const targets= tokens.filter( x => {
-		const actor = x.actor as ValidAttackers | undefined;
-		if (!actor)  {return false;}
-		if (!actor.isAlive()) {return false;}
-		if (actor.isFullyFaded()) {return false;}
-		return (actor.getAllegiance() == attackerType);
-	});
-	return targets.map( x=> x as PToken);
-}
-
-static selectedPTokens(): PToken[] {
-	return Array.from(game.user.targets)
-		.map(x=> x.document)
-		.filter(x=> x.actor != undefined && x.actor instanceof PersonaActor && x.actor.isValidCombatant()) as PToken[];
-}
-
-static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[]): PToken[] {
-	const selected = altTargets != undefined
-		? altTargets
-		: this.selectedPTokens();
-	const combat = game.combat as PersonaCombat | undefined;
-	for (const target of selected) {
-		const targetActor = target.actor;
-		if (combat) {
-			const attackerActor = attacker.actor;
-			// for (const target of selected) {
-			const engagingTarget  = combat.isInMeleeWith(attacker, target) ?? false;
-			if (attacker.id == target.id) {continue;}
-			if (attackerActor.hasStatus('challenged') && !engagingTarget) {
-				throw new TargettingError("Can't target non-engaged when challenged");
+	static getAltTargets ( attacker: PToken, situation : Situation, targettingType :  ConsTarget) : PToken[] {
+		const attackerType = attacker.actor.getAllegiance();
+		switch (targettingType) {
+			case 'target': {
+				if (!situation.target) {return [];}
+				const token = this.getPTokenFromActorAccessor(situation.target);
+				if (token) {return [token];} else {return [];}
 			}
-			if (targetActor.hasStatus('challenged') && !engagingTarget) {
-				throw new TargettingError("Can't target a challenged target you're not engaged with");
+			case 'owner':
+				return [attacker];
+			case 'attacker': {
+				if (!situation.attacker) {return [];}
+				const token = this.getPTokenFromActorAccessor(situation.attacker);
+				if (token) {return [token];} else {return [];}
 			}
-		}
-		const situation : Situation = {
-			user: attacker.actor.accessor,
-			attacker: attacker.actor.accessor,
-			target: target.actor.accessor,
-			usedPower: power.accessor,
-			activeCombat: !!combat,
-		};
-		const canUse = power.targetMeetsConditions(attacker.actor, targetActor, situation);
-		if (!canUse) {
-			throw new TargettingError(`Target doesn't meet custom Power conditions to target`);
-		}
-	}
-	const attackerType = attacker.actor.getAllegiance();
-	const targets = 'targets' in power.system ? power.system.targets : 'self';
-	switch (targets) {
-		case '1-random-enemy': {
-			const list = this.getAllEnemiesOf(attacker)
-			.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
-			return [randomSelect(list)];
-		}
-		case '1-engaged':
-		case '1-nearby':
-			this.checkTargets(1,1, selected, true);
-			return selected;
-		case '1-nearby-dead':
-			this.checkTargets(1,1, selected, false);
-			return selected;
-		case 'all-enemies': {
-			return this.getAllEnemiesOf(attacker)
-			.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
-		}
-		case 'all-dead-allies': {
-			const combat = this.ensureCombatExists();
-			const targets = combat.validCombatants(attacker)
-			.filter( x => {
-				const actor = x.actor;
-				if (!actor) {return false;}
-				if ((actor).isAlive()) {return false;}
-				if ((actor).isFullyFaded()) {return false;}
-				return ((x.actor as ValidAttackers).getAllegiance() == attackerType);
-			});
-			return targets.map( x=> x.token as PToken);
-		}
-		case 'all-allies': {
-			return this.getAllAlliesOf(attacker)
-			.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
-		}
-		case 'self': {
-			return [attacker]
-			.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
-		}
-		case '1d4-random':
-		case '1d4-random-rep':
-		case '1d3-random-rep':
-		case '1d3-random':
-			throw new TargettingError('Targetting type not yet implemented');
-		case 'all-others': {
-			const combat= this.ensureCombatExists();
-			return combat.validCombatants(attacker)
-			.filter( x=> x.token != attacker
-				&& x?.actor?.isAlive())
-			.map( x=> x.token as PToken)
-			.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
-			;
-		}
-		case 'everyone':{
-			const combat= this.ensureCombatExists();
-			return combat.validCombatants(attacker)
-			.filter( x=> x?.actor?.isAlive())
-			.map( x=> x.token as PToken)
-			.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
-		}
-		case 'everyone-even-dead': {
-			const combat= this.ensureCombatExists();
-			return combat.validCombatants(attacker)
-			.filter( x=> x.actor && !x.actor.isFullyFaded())
-			.map( x=> x.token as PToken)
-			.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
-		}
-		default:
-			targets satisfies never;
-			throw new TargettingError(`targets ${targets as string} Not yet implemented`);
-	}
-}
-
-static canBeTargetted(token : PToken) : boolean {
-	return token.actor && !token.actor.hasStatus('protected');
-}
-
-static checkTargets(min: number, max: number, targets: PToken[], aliveTargets: boolean) {
-	if (!targets.every(x=> PersonaCombat.canBeTargetted(x))) {
-		const error = 'Selection includes an untargettable target';
-		throw new TargettingError(error);
-	}
-	const selected = targets
-		.filter(x=> aliveTargets ? x.actor.isAlive() : (!x.actor.isAlive() && !x.actor.isFullyFaded()));
-	if (selected.length == 0)  {
-		const error = 'Requires Target to be selected';
-		throw new TargettingError(error);
-	}
-	if (selected.length < min) {
-		const error = 'Too few targets selected';
-		ui.notifications.warn(error);
-		throw new TargettingError(error);
-	}
-	if (selected.length > max) {
-		const error = 'Too many targets selected';
-		ui.notifications.warn(error);
-		throw new TargettingError(error);
-	}
-}
-
-static ensureCombatExists() : PersonaCombat {
-	const combat = game.combat;
-	if (!combat) {
-		const error = 'No Combat';
-		throw new PersonaError(error);
-	}
-	return combat as PersonaCombat;
-}
-
-getEscalationDie() : number {
-	return (this.getFlag('persona', 'escalation') as number) ?? -1;
-}
-
-async incEscalationDie() : Promise<void> {
-	await this.setEscalationDie(Math.min(this.getEscalationDie() +1, 6));
-}
-
-async decEscalationDie() : Promise<void> {
-	await  this.setEscalationDie(Math.max(this.getEscalationDie() - 1, 0));
-}
-
-async setEscalationDie(val: number) : Promise<void> {
-	const clamp = Math.clamp(val,0,6);
-	await this.setFlag('persona', 'escalation', clamp);
-}
-
-async setSocialEncounter(isSocial: boolean) {
-	await this.setFlag('persona', 'isSocial', isSocial);
-}
-
-get isSocial() : boolean {
-	return this.getFlag('persona', 'isSocial') ?? false;
-}
-
-isEngagedByAnyFoe(subject: UniversalTokenAccessor<PToken>) : boolean {
-	const comb = this.findCombatant(subject);
-	if (!comb) {return false;}
-	return EngagementChecker.isEngagedByAnyFoe(comb, this);
-}
-
-isInMeleeWith (token1: UniversalTokenAccessor<PToken> | PToken, token2: UniversalTokenAccessor<PToken> | PToken) : boolean {
-	const c1 = token1 instanceof TokenDocument ? this.findCombatant(token1) : this.findCombatant(token1);
-	if (!c1) {
-		PersonaError.softFail("Can't find combatant");
-		return false;
-	}
-	const c2 = token2 instanceof TokenDocument ? this.findCombatant(token2) : this.findCombatant(token2);
-	if (!c2) {
-		PersonaError.softFail("Can't find combatant");
-		return false;
-	}
-	const melee = EngagementChecker.listOfCombatantsInMelee(c1, this);
-	return melee.includes(c2);
-}
-
-isEngaging(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
-	const c1 = this.findCombatant(token1);
-	const c2 = this.findCombatant(token2);
-	if (!c2 || !c1) {
-		PersonaError.softFail("Can't find combatant");
-		return false;
-	}
-	return EngagementChecker.isEngaging(c1, c2, this);
-}
-
-isEngagedBy(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
-	const c1 = this.findCombatant(token1);
-	const c2 = this.findCombatant(token2);
-	if (!c2 || !c1) {
-		PersonaError.softFail("Can't find combatant");
-		return false;
-	}
-	return EngagementChecker.isEngagedBy(c1, c2, this);
-}
-
-getCombatantFromTokenAcc(acc: UniversalTokenAccessor<PToken>): Combatant<ValidAttackers> {
-	const token = PersonaDB.findToken(acc);
-	const combatant = this.combatants.find( x=> x?.actor?.id == token.actor.id);
-	if (!combatant) {
-		throw new PersonaError(`Can't find combatant for ${token.name}. are you sure this token is in the fight? `);
-	}
-	return combatant;
-}
-
-async setEngageWith(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) {
-	const c1 = this.getCombatantFromTokenAcc(token1);
-	const c2 = this.getCombatantFromTokenAcc(token2);
-	await this.engagedList.setEngageWith(c1, c2);
-}
-
-static async disengageRoll( actor: ValidAttackers, DC = 11) : Promise<{total: number, rollBundle: RollBundle, success: boolean}> {
-	const situation : Situation = {
-		user: PersonaDB.getUniversalActorAccessor(actor),
-	};
-	const mods = actor.getDisengageBonus();
-	const labelTxt = 'Disengage Check';
-	const roll = new Roll('1d20');
-	await roll.roll();
-	const rollBundle = new RollBundle(labelTxt, roll, actor.system.type == 'pc', mods, situation);
-	return {
-		total: rollBundle.total,
-		rollBundle,
-		success: rollBundle.total >= DC,
-	};
-}
-
-/** return true if the token has any enemies remainig*/
-enemiesRemaining(token: PToken) : boolean{
-	return this.combatants.contents.some(x=> x.token.actor && x.token.actor.system.type != token.actor.system.type);
-}
-
-/**return true if the target is eligible to use the power based on whose turn it is
- */
-turnCheck(token: PToken, power: UsableAndCard): boolean {
-	if (this.isSocial) {return true;}
-	if (!this.combatant) {return false;}
-	if (token.actor.hasStatus('baton-pass'))
-	{return true;}
-	if (token.actor.hasStatus('bonus-action'))
-	{return true;}
-	if (power.isTeamwork() ) {
-		if ( this.combatant.actor?.hasStatus('bonus-action') && this.combatant.token.id != token.id) {
-			return true;
-		}
-		ui.notifications.warn("Can't use a teamwork move here.");
-		return false;
-	}
-	return (this.combatant.token.id == token.id);
-}
-
-static async allOutAttackPrompt() {
-	if (!PersonaSettings.get('allOutAttackPrompt'))
-	{return;}
-	const combat= this.ensureCombatExists();
-	const comb = combat?.combatant as Combatant<ValidAttackers> | undefined;
-	const actor = comb?.actor;
-	if (!comb || !actor) {return;}
-	if (!actor.canAllOutAttack()) {return;}
-	const allies = combat.getAllies(comb)
-		.filter(comb=> comb.actor && comb.actor.isCapableOfAction() && !comb.actor.isDistracted());
-	const numOfAllies = allies.length;
-	if (numOfAllies < 1) {
-		ui.notifications.notify('Not enough allies to all out attack!');
-		return;
-	}
-	if (!comb || !actor?.isOwner) {return;}
-	void PersonaSFX.onAllOutPrompt();
-	if (!await HTMLTools.confirmBox('All out attack!', `All out attack is available, would you like to do it? <br> (active Party members: ${numOfAllies})`)
-	) {return;}
-	if (!actor.hasStatus('bonus-action')) {ui.notifications.warn('No bonus action');}
-	const allOutAttack = PersonaDB.getBasicPower('All-out Attack');
-	if (!allOutAttack) {throw new PersonaError("Can't find all out attack in database");}
-	await combat.combatEngine.usePower(comb.token as PToken, allOutAttack);
-}
-
-findCombatant(acc :UniversalTokenAccessor<TokenDocument<ValidAttackers>>) : PersonaCombatant | undefined;
-findCombatant(actor: ValidAttackers): PersonaCombatant | undefined;
-findCombatant(comb :PersonaCombatant) : PersonaCombatant | undefined;
-findCombatant(token :PToken) : PersonaCombatant | undefined;
-findCombatant(thing :PToken | PersonaCombatant | UniversalTokenAccessor<TokenDocument<ValidAttackers>> | ValidAttackers) : Combatant<ValidAttackers> | undefined {
-	const validCombatants = this.validCombatants();
-	switch (true) {
-		case thing instanceof Combatant: {
-			return validCombatants.find( comb=> comb == thing);
-		}
-		case thing instanceof TokenDocument: {
-			return validCombatants.find( comb=> comb.token == thing);
-		}
-		case thing instanceof Actor: {
-			return validCombatants.find( comb=> comb.actor == thing);
-		}
-		default: {
-			const tokenDoc = PersonaDB.findToken(thing);
-			return validCombatants.find( comb=> comb.token != undefined && comb.token == tokenDoc); 
+			case 'all-enemies': {
+				const combat = this.ensureCombatExists();
+				const targets = combat.combatants.filter( x => {
+					const actor = x.actor;
+					if (!actor || !(actor).isAlive())  {return false;}
+					return ((x.actor as ValidAttackers).getAllegiance() != attackerType);
+				});
+				return targets.map( x=> x.token as PToken);
+			}
+			case 'all-allies': {
+				return this.getAllAlliesOf(attacker);
+			}
+			case 'all-foes':{
+				return this.getAllEnemiesOf(attacker);
+			}
+			case 'all-combatants': {
+				const combat = game.combat as PersonaCombat;
+				if (!combat) {return [];}
+				return combat.validCombatants(attacker).flatMap( c=> c.actor ? [c.token as PToken] : []);
+			}
+			case 'user': {
+				if (!situation.user) {return [];}
+				const token = this.getPTokenFromActorAccessor(situation.user);
+				if (token) {return [token];} else {return [];}
+			}
+			case 'triggering-character': {
+				if (!('triggeringCharacter' in  situation)) {return [];}
+				if (!situation.triggeringCharacter) {return [];}
+				const token = this.getPTokenFromActorAccessor(situation.triggeringCharacter);
+				if (token) {return [token];} else {return [];}
+			}
+			case 'cameo': {
+				return [];
+			}
+			case 'all-in-region':
+				PersonaError.softFail('all-in-region does not support alt targets');
+				return [];
+			case "navigator":
+				PersonaError.softFail(`navigator doesn't support alt targets`);
+				return [];
+			default:
+				targettingType satisfies never;
+				return [];
 		}
 	}
-}
 
-getAllies(comb: Combatant<ValidAttackers>) : Combatant<ValidAttackers>[] {
-	const allegiance = comb.actor?.getAllegiance();
-	if (!allegiance) {return [];}
-	return this.validCombatants().filter( c => c.actor != null
-		&& (c.actor.getAllegiance() == allegiance)
-		&& c != comb);
-}
+	getAllEnemiesOf(token: PToken) : PToken [] {
+		const attackerType = token.actor.getAllegiance();
+		const targets = this.validCombatants(token).filter( x => {
+			const actor = x.actor;
+			if (!actor || !actor.isAlive())  {return false;}
+			return (x.actor && x.actor.getAllegiance() != attackerType);
+		});
+		return targets.map( x=> x.token as PToken);
 
-getFoes(comb: Combatant<ValidAttackers>) : Combatant<ValidAttackers>[] {
-	const allegiance = comb.actor?.getAllegiance();
-	if (!allegiance) {return [];}
-	return this.validCombatants().filter( c => c.actor != null
-		&& (c.actor.getAllegiance() != allegiance)
-		&& c != comb);
-}
-
-static calculateAllOutAttackDamage(attacker: PToken, situation: AttackResult['situation']) :{contributor: ValidAttackers, amt: number, stack: EvaluatedDamage['str']}[] {
-	const attackLeader = PersonaDB.findActor(situation.attacker!);
-	const combat = game.combat as PersonaCombat | undefined;
-	if (!combat)
-	{return [];}
-	const attackerComb = combat.findCombatant(attacker);
-	if (!attackerComb) {return [];}
-	const attackers = [
-		attackerComb,
-		...combat.getAllies(attackerComb)
-	].flatMap (c=>c.actor?  [c.actor] : []);
-	if (PersonaSettings.debugMode()) {
-		console.debug(`All out attack leader ${attacker.name}`);
 	}
-	return PersonaSettings.getDamageSystem().calculateAllOutDamage(attackLeader, attackers, situation);
-}
 
-getToken( acc: UniversalActorAccessor<PersonaActor>  | undefined): UniversalTokenAccessor<PToken> | undefined {
-	if (!acc) {return undefined;}
-	if (acc.token) {return acc.token as UniversalTokenAccessor<PToken>;}
-	const token = this.combatants.find( comb=> comb?.actor?.id == acc.actorId && comb.actor.token == undefined)?.token;
-	if (token && token.actor) {return PersonaDB.getUniversalTokenAccessor(token as PToken);}
-	return undefined;
-}
-
-getRoomEffects() : UniversalModifier[] {
-	const effectIds= this.getFlag<string[]>('persona', 'roomEffects');
-	const allRoomEffects = PersonaDB.getSceneAndRoomModifiers();
-	if (!effectIds) {return [];}
-	return effectIds.flatMap(id=> {
-		const effect = allRoomEffects.find(eff => eff.id == id);
-		return effect ? [effect] : [];
-	});
-}
-
-static getRoomModifiers(persona: Persona) {
-	const user = persona.user;
-	return (game.combats.contents as PersonaCombat[])
-		.filter(combat => combat.combatants.contents
-			.some( comb => comb.actor == user)
-		).flatMap( combat=> combat.getRoomEffects());
-}
-
-async alterRoomEffects() {
-	const initial = this.getRoomEffects().map( x=> x.id);
-	const result = await this.roomEffectsDialog(initial, false);
-	await this.setRoomEffects(result.roomModifiers);
-	const msg = this.roomEffectsMsg();
-	const messageData: MessageData = {
-		speaker: {alias: 'Room Effects Update'},
-		content: msg,
-		style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-	};
-	await ChatMessage.create(messageData, {});
-}
-
-roomEffectsMsg(): string {
-	const mods = this.getRoomEffects();
-	if (mods.length == 0) {
-		return '';
+	static getAllEnemiesOf(token: PToken) : PToken [] {
+		const combat= this.ensureCombatExists();
+		return combat.getAllEnemiesOf(token);
 	}
-	let msg = '';
-	msg += '<u><h2>Room Effects</h2></u><ul>';
-	msg += mods.map( x=> `<li><b>${x.name}</b> : ${x.system.description}</li>`).join('');
-	msg += '</ul>';
-	return msg;
-}
 
-async setRoomEffects(effects: ModifierContainer[]) {
-	await this.setFlag('persona', 'roomEffects', effects.map(eff=> eff.id));
-}
+	/** returns self and all allies */
+	static getAllAlliesOf(token: PToken) : PToken[] {
+		const attackerType = token.actor.getAllegiance();
+		const combat= game.combat as PersonaCombat;
+		const tokens = combat
+			? ( combat.validCombatants(token)
+				.filter( x=> x.actor)
+				.map(x=> x.token))
+			: (game.scenes.current.tokens
+				.filter( (x : TokenDocument<PersonaActor>) => x.actor != undefined && (x.actor?.isPC() || x.actor?.isNPCAlly())
+				));
+		const targets= tokens.filter( x => {
+			const actor = x.actor as ValidAttackers | undefined;
+			if (!actor)  {return false;}
+			if (!actor.isAlive()) {return false;}
+			if (actor.isFullyFaded()) {return false;}
+			return (actor.getAllegiance() == attackerType);
+		});
+		return targets.map( x=> x as PToken);
+	}
 
-async roomEffectsDialog(initialRoomModsIds: string[] = [], startSocial: boolean) : Promise<DialogReturn> {
-	const roomMods = PersonaDB.getSceneAndRoomModifiers();
-	const ROOMMODS = Object.fromEntries(roomMods.map( mod => [mod.id, mod.name]));
-	const html = await foundry.applications.handlebars.renderTemplate('systems/persona/sheets/dialogs/room-effects.hbs', {
-		ROOMMODS : {
-			'': '-',
-			...ROOMMODS
-		},
-		roomMods: initialRoomModsIds,
-		startSocial,
-	});
-	return new Promise( (conf, rej) => {
-		const dialogOptions : DialogOptions = {
-			title: 'room Effects',
-			content: html,
-			close: () => rej(new Error('Closed')),
-			buttons: {
-				'ok': {
-					label: 'ok',
-					callback: (html: string) => {
-						const mods : UniversalModifier[] = [];
-						$(html)
-							.find('select.room-mod')
-							.find(':selected')
-							.each( function ()  {
-								const id= String( $(this).val());
-								const mod = roomMods.find(x=> x.id == id);
-								if (mod) {
-									mods.push(mod);
-								}
-							});
-						const isSocialScene = $(html).find('.social-round').is(':checked');
-						const advanceCalendar = $(html).find('.advance-calendar').is(':checked');
-						const disallowMetaverse = $(html).find('.disallow-metaverse').is(':checked');
-						const ret : DialogReturn = {
-							roomModifiers: mods,
-							isSocialScene,
-							advanceCalendar,
-							disallowMetaverse,
-						};
-						conf(ret);
-					},
+	static selectedPTokens(): PToken[] {
+		return Array.from(game.user.targets)
+			.map(x=> x.document)
+			.filter(x=> x.actor != undefined && x.actor instanceof PersonaActor && x.actor.isValidCombatant()) as PToken[];
+	}
+
+	static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[]): PToken[] {
+		const selected = altTargets != undefined
+			? altTargets
+			: this.selectedPTokens();
+		const combat = game.combat as PersonaCombat | undefined;
+		for (const target of selected) {
+			const targetActor = target.actor;
+			if (combat) {
+				const attackerActor = attacker.actor;
+				// for (const target of selected) {
+				const engagingTarget  = combat.isInMeleeWith(attacker, target) ?? false;
+				if (attacker.id == target.id) {continue;}
+				if (attackerActor.hasStatus('challenged') && !engagingTarget) {
+					throw new TargettingError("Can't target non-engaged when challenged");
+				}
+				if (targetActor.hasStatus('challenged') && !engagingTarget) {
+					throw new TargettingError("Can't target a challenged target you're not engaged with");
 				}
 			}
+			const situation : Situation = {
+				user: attacker.actor.accessor,
+				attacker: attacker.actor.accessor,
+				target: target.actor.accessor,
+				usedPower: power.accessor,
+				activeCombat: !!combat,
+			};
+			const canUse = power.targetMeetsConditions(attacker.actor, targetActor, situation);
+			if (!canUse) {
+				throw new TargettingError(`Target doesn't meet custom Power conditions to target`);
+			}
+		}
+		const attackerType = attacker.actor.getAllegiance();
+		const targets = 'targets' in power.system ? power.system.targets : 'self';
+		switch (targets) {
+			case '1-random-enemy': {
+				const list = this.getAllEnemiesOf(attacker)
+				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+				return [randomSelect(list)];
+			}
+			case '1-engaged':
+			case '1-nearby':
+				this.checkTargets(1,1, selected, true);
+				return selected;
+			case '1-nearby-dead':
+				this.checkTargets(1,1, selected, false);
+				return selected;
+			case 'all-enemies': {
+				return this.getAllEnemiesOf(attacker)
+				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+			}
+			case 'all-dead-allies': {
+				const combat = this.ensureCombatExists();
+				const targets = combat.validCombatants(attacker)
+				.filter( x => {
+					const actor = x.actor;
+					if (!actor) {return false;}
+					if ((actor).isAlive()) {return false;}
+					if ((actor).isFullyFaded()) {return false;}
+					return ((x.actor as ValidAttackers).getAllegiance() == attackerType);
+				});
+				return targets.map( x=> x.token as PToken);
+			}
+			case 'all-allies': {
+				return this.getAllAlliesOf(attacker)
+				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+			}
+			case 'self': {
+				return [attacker]
+				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+			}
+			case '1d4-random':
+			case '1d4-random-rep':
+			case '1d3-random-rep':
+			case '1d3-random':
+				throw new TargettingError('Targetting type not yet implemented');
+			case 'all-others': {
+				const combat= this.ensureCombatExists();
+				return combat.validCombatants(attacker)
+				.filter( x=> x.token != attacker
+					&& x?.actor?.isAlive())
+				.map( x=> x.token as PToken)
+				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+				;
+			}
+			case 'everyone':{
+				const combat= this.ensureCombatExists();
+				return combat.validCombatants(attacker)
+				.filter( x=> x?.actor?.isAlive())
+				.map( x=> x.token as PToken)
+				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+			}
+			case 'everyone-even-dead': {
+				const combat= this.ensureCombatExists();
+				return combat.validCombatants(attacker)
+				.filter( x=> x.actor && !x.actor.isFullyFaded())
+				.map( x=> x.token as PToken)
+				.filter(target => power.targetMeetsConditions(attacker.actor, target.actor));
+			}
+			default:
+				targets satisfies never;
+				throw new TargettingError(`targets ${targets as string} Not yet implemented`);
+		}
+	}
+
+	static canBeTargetted(token : PToken) : boolean {
+		return token.actor && !token.actor.hasStatus('protected');
+	}
+
+	static checkTargets(min: number, max: number, targets: PToken[], aliveTargets: boolean) {
+		if (!targets.every(x=> PersonaCombat.canBeTargetted(x))) {
+			const error = 'Selection includes an untargettable target';
+			throw new TargettingError(error);
+		}
+		const selected = targets
+			.filter(x=> aliveTargets ? x.actor.isAlive() : (!x.actor.isAlive() && !x.actor.isFullyFaded()));
+		if (selected.length == 0)  {
+			const error = 'Requires Target to be selected';
+			throw new TargettingError(error);
+		}
+		if (selected.length < min) {
+			const error = 'Too few targets selected';
+			ui.notifications.warn(error);
+			throw new TargettingError(error);
+		}
+		if (selected.length > max) {
+			const error = 'Too many targets selected';
+			ui.notifications.warn(error);
+			throw new TargettingError(error);
+		}
+	}
+
+	static ensureCombatExists() : PersonaCombat {
+		const combat = game.combat;
+		if (!combat) {
+			const error = 'No Combat';
+			throw new PersonaError(error);
+		}
+		return combat as PersonaCombat;
+	}
+
+	getEscalationDie() : number {
+		return (this.getFlag('persona', 'escalation') as number) ?? -1;
+	}
+
+	async incEscalationDie() : Promise<void> {
+		await this.setEscalationDie(Math.min(this.getEscalationDie() +1, 6));
+	}
+
+	async decEscalationDie() : Promise<void> {
+		await  this.setEscalationDie(Math.max(this.getEscalationDie() - 1, 0));
+	}
+
+	async setEscalationDie(val: number) : Promise<void> {
+		const clamp = Math.clamp(val,0,6);
+		await this.setFlag('persona', 'escalation', clamp);
+	}
+
+	async setSocialEncounter(isSocial: boolean) {
+		await this.setFlag('persona', 'isSocial', isSocial);
+	}
+
+	get isSocial() : boolean {
+		return this.getFlag('persona', 'isSocial') ?? false;
+	}
+
+	isEngagedByAnyFoe(subject: UniversalTokenAccessor<PToken>) : boolean {
+		const comb = this.findCombatant(subject);
+		if (!comb) {return false;}
+		return EngagementChecker.isEngagedByAnyFoe(comb, this);
+	}
+
+	isInMeleeWith (token1: UniversalTokenAccessor<PToken> | PToken, token2: UniversalTokenAccessor<PToken> | PToken) : boolean {
+		const c1 = token1 instanceof TokenDocument ? this.findCombatant(token1) : this.findCombatant(token1);
+		if (!c1) {
+			PersonaError.softFail("Can't find combatant");
+			return false;
+		}
+		const c2 = token2 instanceof TokenDocument ? this.findCombatant(token2) : this.findCombatant(token2);
+		if (!c2) {
+			PersonaError.softFail("Can't find combatant");
+			return false;
+		}
+		const melee = EngagementChecker.listOfCombatantsInMelee(c1, this);
+		return melee.includes(c2);
+	}
+
+	isEngaging(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
+		const c1 = this.findCombatant(token1);
+		const c2 = this.findCombatant(token2);
+		if (!c2 || !c1) {
+			PersonaError.softFail("Can't find combatant");
+			return false;
+		}
+		return EngagementChecker.isEngaging(c1, c2, this);
+	}
+
+	isEngagedBy(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) : boolean {
+		const c1 = this.findCombatant(token1);
+		const c2 = this.findCombatant(token2);
+		if (!c2 || !c1) {
+			PersonaError.softFail("Can't find combatant");
+			return false;
+		}
+		return EngagementChecker.isEngagedBy(c1, c2, this);
+	}
+
+	getCombatantFromTokenAcc(acc: UniversalTokenAccessor<PToken>): Combatant<ValidAttackers> {
+		const token = PersonaDB.findToken(acc);
+		const combatant = this.combatants.find( x=> x?.actor?.id == token.actor.id);
+		if (!combatant) {
+			throw new PersonaError(`Can't find combatant for ${token.name}. are you sure this token is in the fight? `);
+		}
+		return combatant;
+	}
+
+	async setEngageWith(token1: UniversalTokenAccessor<PToken>, token2: UniversalTokenAccessor<PToken>) {
+		const c1 = this.getCombatantFromTokenAcc(token1);
+		const c2 = this.getCombatantFromTokenAcc(token2);
+		await this.engagedList.setEngageWith(c1, c2);
+	}
+
+	static async disengageRoll( actor: ValidAttackers, DC = 11) : Promise<{total: number, rollBundle: RollBundle, success: boolean}> {
+		const situation : Situation = {
+			user: PersonaDB.getUniversalActorAccessor(actor),
 		};
-		const dialog = new Dialog( dialogOptions, {});
-		dialog.render(true);
-	});
-}
+		const mods = actor.getDisengageBonus();
+		const labelTxt = 'Disengage Check';
+		const roll = new Roll('1d20');
+		await roll.roll();
+		const rollBundle = new RollBundle(labelTxt, roll, actor.system.type == 'pc', mods, situation);
+		return {
+			total: rollBundle.total,
+			rollBundle,
+			success: rollBundle.total >= DC,
+		};
+	}
 
-debug_engageList() {
-	const list = [] as string[];
-	const combs= this.combatants;
-	for (const comb of combs) {
-		const combAcc = PersonaDB.getUniversalTokenAccessor(comb.token as PToken);
-		const foeEng = this.isEngagedByAnyFoe(combAcc) ? '*' : '';
-		const engagedBy = combs
-			.filter( c => this.isEngagedBy(combAcc, PersonaDB.getUniversalTokenAccessor(c.token as PToken)))
-			.map(c=> c.name);
-		list.push(`${comb.name}${foeEng} Engaged By: ${engagedBy.join(' , ')}`);
-		const engaging = combs
-			.filter( c=> this.isEngaging(combAcc, PersonaDB.getUniversalTokenAccessor(c.token as PToken)))
-			.map( c=> c.name);
-		list.push(`${comb.name}${foeEng} is Engaging: ${engaging.join(' , ')}`);
+	/** return true if the token has any enemies remainig*/
+	enemiesRemaining(token: PToken) : boolean{
+		return this.combatants.contents.some(x=> x.token.actor && x.token.actor.system.type != token.actor.system.type);
 	}
-	console.log(list.join('\n'));
-}
 
-async generateTreasureAndXP() {
-	if (this.isSocial) {return;}
-	if (this.didPCsWin() == false) {return;}
-	const actors = this.combatants
-		.contents.flatMap( x=> x?.actor ? [x.actor] : [] );
-	const shadows= actors
-		.filter (x => x.system.type == 'shadow');
-	if (shadows.some(x=> !x.hasPlayerOwner && x.hp > 0)) {
-		return;
+	/**return true if the target is eligible to use the power based on whose turn it is
+	 */
+	turnCheck(token: PToken, power: UsableAndCard): boolean {
+		if (this.isSocial) {return true;}
+		if (!this.combatant) {return false;}
+		if (token.actor.hasStatus('baton-pass'))
+		{return true;}
+		if (token.actor.hasStatus('bonus-action'))
+		{return true;}
+		if (power.isTeamwork() ) {
+			if ( this.combatant.actor?.hasStatus('bonus-action') && this.combatant.token.id != token.id) {
+				return true;
+			}
+			ui.notifications.warn("Can't use a teamwork move here.");
+			return false;
+		}
+		return (this.combatant.token.id == token.id);
 	}
-	const defeatedFoes = this.defeatedFoes.concat(shadows);
-	for (const foe of defeatedFoes) {
-		await foe.onDefeat();
+
+	static async allOutAttackPrompt() {
+		if (!PersonaSettings.get('allOutAttackPrompt'))
+		{return;}
+		const combat= this.ensureCombatExists();
+		const comb = combat?.combatant as Combatant<ValidAttackers> | undefined;
+		const actor = comb?.actor;
+		if (!comb || !actor) {return;}
+		if (!actor.canAllOutAttack()) {return;}
+		const allies = combat.getAllies(comb)
+			.filter(comb=> comb.actor && comb.actor.isCapableOfAction() && !comb.actor.isDistracted());
+		const numOfAllies = allies.length;
+		if (numOfAllies < 1) {
+			ui.notifications.notify('Not enough allies to all out attack!');
+			return;
+		}
+		if (!comb || !actor?.isOwner) {return;}
+		void PersonaSFX.onAllOutPrompt();
+		if (!await HTMLTools.confirmBox('All out attack!', `All out attack is available, would you like to do it? <br> (active Party members: ${numOfAllies})`)
+		) {return;}
+		if (!actor.hasStatus('bonus-action')) {ui.notifications.warn('No bonus action');}
+		const allOutAttack = PersonaDB.getBasicPower('All-out Attack');
+		if (!allOutAttack) {throw new PersonaError("Can't find all out attack in database");}
+		await combat.combatEngine.usePower(comb.token as PToken, allOutAttack);
 	}
-	this.defeatedFoes = [];
-	const pcs = actors.filter( x => x.isPC());
-	const party = actors.filter( x=> x.isPC() ||  x.isNPCAlly() || (x.isDMon() && x.hasPlayerOwner));
-	try {
-		await Metaverse.awardXP(defeatedFoes as Shadow[], party);
-	} catch  {
-		PersonaError.softFail('Problem with awarding XP');
+
+	findCombatant(acc :UniversalTokenAccessor<TokenDocument<ValidAttackers>>) : PersonaCombatant | undefined;
+	findCombatant(actor: ValidAttackers): PersonaCombatant | undefined;
+	findCombatant(comb :PersonaCombatant) : PersonaCombatant | undefined;
+	findCombatant(token :PToken) : PersonaCombatant | undefined;
+	findCombatant(thing :PToken | PersonaCombatant | UniversalTokenAccessor<TokenDocument<ValidAttackers>> | ValidAttackers) : Combatant<ValidAttackers> | undefined {
+		const validCombatants = this.validCombatants();
+		switch (true) {
+			case thing instanceof Combatant: {
+				return validCombatants.find( comb=> comb == thing);
+			}
+			case thing instanceof TokenDocument: {
+				return validCombatants.find( comb=> comb.token == thing);
+			}
+			case thing instanceof Actor: {
+				return validCombatants.find( comb=> comb.actor == thing);
+			}
+			default: {
+				const tokenDoc = PersonaDB.findToken(thing);
+				return validCombatants.find( comb=> comb.token != undefined && comb.token == tokenDoc); 
+			}
+		}
 	}
-	try{
-		const treasure = await Metaverse.generateTreasure(defeatedFoes);
-		await Metaverse.printTreasure(treasure);
-		await Metaverse.distributeMoney(treasure.money, pcs);
-		void NavigatorVoiceLines.playVoice({
-			type: "great-work"
+
+	getAllies(comb: Combatant<ValidAttackers>) : Combatant<ValidAttackers>[] {
+		const allegiance = comb.actor?.getAllegiance();
+		if (!allegiance) {return [];}
+		return this.validCombatants().filter( c => c.actor != null
+			&& (c.actor.getAllegiance() == allegiance)
+			&& c != comb);
+	}
+
+	getFoes(comb: Combatant<ValidAttackers>) : Combatant<ValidAttackers>[] {
+		const allegiance = comb.actor?.getAllegiance();
+		if (!allegiance) {return [];}
+		return this.validCombatants().filter( c => c.actor != null
+			&& (c.actor.getAllegiance() != allegiance)
+			&& c != comb);
+	}
+
+	static calculateAllOutAttackDamage(attacker: PToken, situation: AttackResult['situation']) :{contributor: ValidAttackers, amt: number, stack: EvaluatedDamage['str']}[] {
+		const attackLeader = PersonaDB.findActor(situation.attacker!);
+		const combat = game.combat as PersonaCombat | undefined;
+		if (!combat)
+		{return [];}
+		const attackerComb = combat.findCombatant(attacker);
+		if (!attackerComb) {return [];}
+		const attackers = [
+			attackerComb,
+			...combat.getAllies(attackerComb)
+		].flatMap (c=>c.actor?  [c.actor] : []);
+		if (PersonaSettings.debugMode()) {
+			console.debug(`All out attack leader ${attacker.name}`);
+		}
+		return PersonaSettings.getDamageSystem().calculateAllOutDamage(attackLeader, attackers, situation);
+	}
+
+	getToken( acc: UniversalActorAccessor<PersonaActor>  | undefined): UniversalTokenAccessor<PToken> | undefined {
+		if (!acc) {return undefined;}
+		if (acc.token) {return acc.token as UniversalTokenAccessor<PToken>;}
+		const token = this.combatants.find( comb=> comb?.actor?.id == acc.actorId && comb.actor.token == undefined)?.token;
+		if (token && token.actor) {return PersonaDB.getUniversalTokenAccessor(token as PToken);}
+		return undefined;
+	}
+
+	getRoomEffects() : UniversalModifier[] {
+		const effectIds= this.getFlag<string[]>('persona', 'roomEffects');
+		const allRoomEffects = PersonaDB.getSceneAndRoomModifiers();
+		if (!effectIds) {return [];}
+		return effectIds.flatMap(id=> {
+			const effect = allRoomEffects.find(eff => eff.id == id);
+			return effect ? [effect] : [];
 		});
-	 } catch  {
-			PersonaError.softFail('Problem with generating treasure');
-	 }
-}
+	}
 
-displayCombatHeader(element : JQuery<HTMLElement>) {
-	try {
-		if ($(element).find('.escalation-die').length == 0) {
-			const escalationTracker = `
+	static getRoomModifiers(persona: Persona) {
+		const user = persona.user;
+		return (game.combats.contents as PersonaCombat[])
+			.filter(combat => combat.combatants.contents
+				.some( comb => comb.actor == user)
+			).flatMap( combat=> combat.getRoomEffects());
+	}
+
+	async alterRoomEffects() {
+		const initial = this.getRoomEffects().map( x=> x.id);
+		const result = await this.roomEffectsDialog(initial, false);
+		await this.setRoomEffects(result.roomModifiers);
+		const msg = this.roomEffectsMsg();
+		const messageData: MessageData = {
+			speaker: {alias: 'Room Effects Update'},
+			content: msg,
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+		};
+		await ChatMessage.create(messageData, {});
+	}
+
+	roomEffectsMsg(): string {
+		const mods = this.getRoomEffects();
+		if (mods.length == 0) {
+			return '';
+		}
+		let msg = '';
+		msg += '<u><h2>Room Effects</h2></u><ul>';
+		msg += mods.map( x=> `<li><b>${x.name}</b> : ${x.system.description}</li>`).join('');
+		msg += '</ul>';
+		return msg;
+	}
+
+	async setRoomEffects(effects: ModifierContainer[]) {
+		await this.setFlag('persona', 'roomEffects', effects.map(eff=> eff.id));
+	}
+
+	async roomEffectsDialog(initialRoomModsIds: string[] = [], startSocial: boolean) : Promise<DialogReturn> {
+		const roomMods = PersonaDB.getSceneAndRoomModifiers();
+		const ROOMMODS = Object.fromEntries(roomMods.map( mod => [mod.id, mod.name]));
+		const html = await foundry.applications.handlebars.renderTemplate('systems/persona/sheets/dialogs/room-effects.hbs', {
+			ROOMMODS : {
+				'': '-',
+				...ROOMMODS
+			},
+			roomMods: initialRoomModsIds,
+			startSocial,
+		});
+		return new Promise( (conf, rej) => {
+			const dialogOptions : DialogOptions = {
+				title: 'room Effects',
+				content: html,
+				close: () => rej(new Error('Closed')),
+				buttons: {
+					'ok': {
+						label: 'ok',
+						callback: (html: string) => {
+							const mods : UniversalModifier[] = [];
+							$(html)
+								.find('select.room-mod')
+								.find(':selected')
+								.each( function ()  {
+									const id= String( $(this).val());
+									const mod = roomMods.find(x=> x.id == id);
+									if (mod) {
+										mods.push(mod);
+									}
+								});
+							const isSocialScene = $(html).find('.social-round').is(':checked');
+							const advanceCalendar = $(html).find('.advance-calendar').is(':checked');
+							const disallowMetaverse = $(html).find('.disallow-metaverse').is(':checked');
+							const ret : DialogReturn = {
+								roomModifiers: mods,
+								isSocialScene,
+								advanceCalendar,
+								disallowMetaverse,
+							};
+							conf(ret);
+						},
+					}
+				}
+			};
+			const dialog = new Dialog( dialogOptions, {});
+			dialog.render(true);
+		});
+	}
+
+	debug_engageList() {
+		const list = [] as string[];
+		const combs= this.combatants;
+		for (const comb of combs) {
+			const combAcc = PersonaDB.getUniversalTokenAccessor(comb.token as PToken);
+			const foeEng = this.isEngagedByAnyFoe(combAcc) ? '*' : '';
+			const engagedBy = combs
+				.filter( c => this.isEngagedBy(combAcc, PersonaDB.getUniversalTokenAccessor(c.token as PToken)))
+				.map(c=> c.name);
+			list.push(`${comb.name}${foeEng} Engaged By: ${engagedBy.join(' , ')}`);
+			const engaging = combs
+				.filter( c=> this.isEngaging(combAcc, PersonaDB.getUniversalTokenAccessor(c.token as PToken)))
+				.map( c=> c.name);
+			list.push(`${comb.name}${foeEng} is Engaging: ${engaging.join(' , ')}`);
+		}
+		console.log(list.join('\n'));
+	}
+
+	async generateTreasureAndXP() {
+		if (this.isSocial) {return;}
+		if (this.didPCsWin() == false) {return;}
+		const actors = this.combatants
+			.contents.flatMap( x=> x?.actor ? [x.actor] : [] );
+		const shadows= actors
+			.filter (x => x.system.type == 'shadow');
+		if (shadows.some(x=> !x.hasPlayerOwner && x.hp > 0)) {
+			return;
+		}
+		const defeatedFoes = this.defeatedFoes.concat(shadows);
+		for (const foe of defeatedFoes) {
+			await foe.onDefeat();
+		}
+		this.defeatedFoes = [];
+		const pcs = actors.filter( x => x.isPC());
+		const party = actors.filter( x=> x.isPC() ||  x.isNPCAlly() || (x.isDMon() && x.hasPlayerOwner));
+		try {
+			await Metaverse.awardXP(defeatedFoes as Shadow[], party);
+		} catch  {
+			PersonaError.softFail('Problem with awarding XP');
+		}
+		try{
+			const treasure = await Metaverse.generateTreasure(defeatedFoes);
+			await Metaverse.printTreasure(treasure);
+			await Metaverse.distributeMoney(treasure.money, pcs);
+			void NavigatorVoiceLines.playVoice({
+				type: "great-work"
+			});
+		} catch (e)  {
+			PersonaError.softFail('Problem with generating treasure', e);
+		}
+	}
+
+	displayCombatHeader(element : JQuery<HTMLElement>) {
+		try {
+			if ($(element).find('.escalation-die').length == 0) {
+				const escalationTracker = `
 				 <div class="combat-info flexrow">
 					 <div class="weather-icon">
 					 </div>
@@ -1686,128 +1686,128 @@ displayCombatHeader(element : JQuery<HTMLElement>) {
 					 </div>
 				 </div>
 						`;
-			element.find('.combat-tracker-header').append(escalationTracker);
+				element.find('.combat-tracker-header').append(escalationTracker);
+			}
+			const weatherIcon = PersonaCalendar.getWeatherIcon();
+			element.find('div.weather-icon').append(weatherIcon);
+			const treasures = Metaverse.getRegion()?.treasuresRemaining;
+			if (treasures && treasures >= 0) {
+				element.find('div.region-treasures').append(`<span> Treasures Remaining ${treasures} </span>`);
+			}
+			element.find('div.weather-icon').append(weatherIcon);
+			// const escalationDie = String(this.getEscalationDie());
+			// element.find('.escalation-die').text(escalationDie);
+		} catch (e) {
+			PersonaError.softFail("Can't display Combat Tracker stuff", e);
 		}
-		const weatherIcon = PersonaCalendar.getWeatherIcon();
-		element.find('div.weather-icon').append(weatherIcon);
-		const treasures = Metaverse.getRegion()?.treasuresRemaining;
-		if (treasures && treasures >= 0) {
-			element.find('div.region-treasures').append(`<span> Treasures Remaining ${treasures} </span>`);
-		}
-		element.find('div.weather-icon').append(weatherIcon);
-		// const escalationDie = String(this.getEscalationDie());
-		// element.find('.escalation-die').text(escalationDie);
-	} catch (e) {
-		PersonaError.softFail("Can't display Combat Tracker stuff", e);
+		this.displayRoomEffectChanger(element);
 	}
-	this.displayRoomEffectChanger(element);
-}
 
-displayRoomEffectChanger(element: JQuery<HTMLElement>) {
-	if (element.find('.room-effects-button').length == 0) {
-		const button = $( `
+	displayRoomEffectChanger(element: JQuery<HTMLElement>) {
+		if (element.find('.room-effects-button').length == 0) {
+			const button = $( `
 				 <button>
 				 <i class="fa-solid fa-wand-magic-sparkles"></i>
 				 </button>
 `).addClass('room-effects-button');
-		if (game.user.isGM) {
-			button.on('click', this.alterRoomEffects.bind(this));
-		} else {
-			button.on('click', this.showRoomEffects.bind(this));
+			if (game.user.isGM) {
+				button.on('click', this.alterRoomEffects.bind(this));
+			} else {
+				button.on('click', this.showRoomEffects.bind(this));
+			}
+			element.find('.combat-info').append(button);
 		}
-		element.find('.combat-info').append(button);
-	}
-}
-
-async showRoomEffects() {
-	const msg = this.roomEffectsMsg();
-	const messageData: MessageData = {
-		speaker: {alias: 'Room Effects'},
-		whisper: [game.user],
-		content: msg,
-		style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
-	};
-	await ChatMessage.create(messageData, {});
-}
-
-override async rollInitiative(ids: string[], {formula=null, updateTurn=true, messageOptions={}}={}) {
-
-	// Structure input data
-	ids = typeof ids === 'string' ? [ids] : ids;
-	const currentId = this.combatant?.id;
-
-	// Iterate over Combatants, performing an initiative roll for each
-	const updates = [];
-	const rolls :{ combatant: Combatant, roll: Roll}[]= [];
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	for ( const [_i, id] of ids.entries() ) {
-
-		// Get Combatant data (non-strictly)
-		const combatant = this.combatants.get(id);
-		if ( !combatant?.isOwner ) {continue;}
-
-		// Produce an initiative roll for the Combatant
-		const roll = combatant.getInitiativeRoll(formula);
-		await roll.evaluate();
-		rolls.push({combatant, roll});
-		updates.push({_id: id, initiative: roll.total});
-
-	}
-	if ( !updates.length ) {return this;}
-
-	// Update multiple combatants
-	await this.updateEmbeddedDocuments('Combatant', updates);
-
-	// Ensure the turn order remains with the same combatant
-	if ( updateTurn && currentId ) {
-		await this.update({turn: this.turns.findIndex(t => t.id === currentId)});
 	}
 
-	await this.generateInitRollMessage(rolls, messageOptions);
-	// Create multiple chat messages
-	// await ChatMessage.implementation.create(messages);
-	return this;
-}
+	async showRoomEffects() {
+		const msg = this.roomEffectsMsg();
+		const messageData: MessageData = {
+			speaker: {alias: 'Room Effects'},
+			whisper: [game.user],
+			content: msg,
+			style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
+		};
+		await ChatMessage.create(messageData, {});
+	}
 
-async onFollowUpAction(token: PToken, activationRoll: number) {
-	console.debug('Calling On Follow Up Action');
-	const combatant = token.object ? this.getCombatantByToken(token): null;
-	if (!combatant || !combatant.actor) {return;}
-	if (combatant.actor && combatant.actor.hasStatus('down')) {return;}
-	const combat = combatant.parent as PersonaCombat | undefined;
-	if (!combat) {return;}
-	const allies = this.getAllies(combatant as Combatant<ValidAttackers>)
-		.filter (ally => ally.actor?.canTakeFollowUpAction());
-	const followups = this.getUsableFollowUps(token, activationRoll).join('');
-	const validTeamworkAllies = allies
-		.flatMap( ally => {
-			if (ally == combatant) {return [];}
-			const actor = ally.actor;
-			if (!actor || !actor.teamworkMove ) {return [];}
-			if (!actor.persona().canUsePower(actor.teamworkMove, false)) {return [];}
-			const situation : CombatRollSituation = {
-				naturalRoll: activationRoll,
-				rollTags: ['attack', 'activation'],
-				rollTotal : activationRoll,
-				user: actor.accessor,
-			};
-			if (!actor.teamworkMove.testTeamworkPrereqs(situation, actor)) {return [];}
-			const targets = combat.getValidTargetsFor(actor.teamworkMove, combatant as Combatant<ValidAttackers>, situation);
-			if (targets.length == 0) {return [];}
-			return [ally];
-		});
-	const allout = (combat.getAllEnemiesOf(token)
-		.every(enemy => enemy.actor.hasStatus('down'))
-		&& combatant.actor.canAllOutAttack())
-		? '<li> All out attack </li>'
-		: '';
-	const listItems = validTeamworkAllies
-		.map( ally => {
-			const power = ally.actor!.teamworkMove!;
-			return `<li>${power.name} (${ally.name})</li>`;
-		}).join('');
-	const teamworkList = !combatant.actor.isDistracted() ? listItems: '';
-	const msg = `<h2> Valid Follow Up Actions </h2>
+	override async rollInitiative(ids: string[], {formula=null, updateTurn=true, messageOptions={}}={}) {
+
+		// Structure input data
+		ids = typeof ids === 'string' ? [ids] : ids;
+		const currentId = this.combatant?.id;
+
+		// Iterate over Combatants, performing an initiative roll for each
+		const updates = [];
+		const rolls :{ combatant: Combatant, roll: Roll}[]= [];
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		for ( const [_i, id] of ids.entries() ) {
+
+			// Get Combatant data (non-strictly)
+			const combatant = this.combatants.get(id);
+			if ( !combatant?.isOwner ) {continue;}
+
+			// Produce an initiative roll for the Combatant
+			const roll = combatant.getInitiativeRoll(formula);
+			await roll.evaluate();
+			rolls.push({combatant, roll});
+			updates.push({_id: id, initiative: roll.total});
+
+		}
+		if ( !updates.length ) {return this;}
+
+		// Update multiple combatants
+		await this.updateEmbeddedDocuments('Combatant', updates);
+
+		// Ensure the turn order remains with the same combatant
+		if ( updateTurn && currentId ) {
+			await this.update({turn: this.turns.findIndex(t => t.id === currentId)});
+		}
+
+		await this.generateInitRollMessage(rolls, messageOptions);
+		// Create multiple chat messages
+		// await ChatMessage.implementation.create(messages);
+		return this;
+	}
+
+	async onFollowUpAction(token: PToken, activationRoll: number) {
+		console.debug('Calling On Follow Up Action');
+		const combatant = token.object ? this.getCombatantByToken(token): null;
+		if (!combatant || !combatant.actor) {return;}
+		if (combatant.actor && combatant.actor.hasStatus('down')) {return;}
+		const combat = combatant.parent as PersonaCombat | undefined;
+		if (!combat) {return;}
+		const allies = this.getAllies(combatant as Combatant<ValidAttackers>)
+			.filter (ally => ally.actor?.canTakeFollowUpAction());
+		const followups = this.getUsableFollowUps(token, activationRoll).join('');
+		const validTeamworkAllies = allies
+			.flatMap( ally => {
+				if (ally == combatant) {return [];}
+				const actor = ally.actor;
+				if (!actor || !actor.teamworkMove ) {return [];}
+				if (!actor.persona().canUsePower(actor.teamworkMove, false)) {return [];}
+				const situation : CombatRollSituation = {
+					naturalRoll: activationRoll,
+					rollTags: ['attack', 'activation'],
+					rollTotal : activationRoll,
+					user: actor.accessor,
+				};
+				if (!actor.teamworkMove.testTeamworkPrereqs(situation, actor)) {return [];}
+				const targets = combat.getValidTargetsFor(actor.teamworkMove, combatant as Combatant<ValidAttackers>, situation);
+				if (targets.length == 0) {return [];}
+				return [ally];
+			});
+		const allout = (combat.getAllEnemiesOf(token)
+			.every(enemy => enemy.actor.hasStatus('down'))
+			&& combatant.actor.canAllOutAttack())
+			? '<li> All out attack </li>'
+			: '';
+		const listItems = validTeamworkAllies
+			.map( ally => {
+				const power = ally.actor!.teamworkMove!;
+				return `<li>${power.name} (${ally.name})</li>`;
+			}).join('');
+		const teamworkList = !combatant.actor.isDistracted() ? listItems: '';
+		const msg = `<h2> Valid Follow Up Actions </h2>
 <ul>
 			<li> Act again </li>
 			${allout}
@@ -1815,97 +1815,97 @@ async onFollowUpAction(token: PToken, activationRoll: number) {
 			${teamworkList}
 			</ul>
 `;
-	const messageData: MessageData = {
-		speaker: {alias: 'Follow Up Action'},
-		content: msg,
-		style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-	};
-	await ChatMessage.create(messageData, {});
-}
-
-getUsableFollowUps(token: PToken, activationRoll: number) : string []{
-	const combatant = token.object ? this.getCombatantByToken(token): null;
-	if (!combatant || !combatant.actor) {return [];}
-	const actor = combatant.actor;
-	const situation : CombatRollSituation = {
-		naturalRoll: activationRoll,
-		rollTags: ['attack', 'activation'],
-		rollTotal: activationRoll,
-		user: actor.accessor,
-	};
-	const persona = actor.persona();
-	const followUpMoves = actor.powers
-		.filter(pwr => pwr.isFollowUpMove()
-			&& persona.canPayActivationCost(pwr)
-			&& pwr.testFollowUpPrereqs(situation, actor)
-		);
-	const followup = followUpMoves
-		.map(usable => {
-			const targets =this.getValidTargetsFor(usable, combatant, situation)
-				.map (x=> x.token.name);
-
-			if (targets.length == 0) {return '';}
-			return `<li> ${usable.name} (${targets.join(', ')})</li>`;
-		});
-	return followup;
-}
-
-async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll: R}[], messageOptions: Foundry.MessageOptions = {}): Promise<ChatMessage<R>> {
-	const rollTransformer = function (roll: Roll) {
-		const total = roll.total;
-		if (total <= 0) {return 'last';}
-		else {return Math.round(total);}
-	};
-	const rolltxt = rolls
-	.sort( (a, b) => b.roll.total - a.roll.total)
-	.map(({roll, combatant}) => `<div class="init-roll"> ${combatant.name}: ${rollTransformer(roll)} </div>`)
-	.join('');
-	const html = `<h3 class="init-rolls"> Initiative Rolls </h3> ${rolltxt}`;
-	const chatMessage: MessageData<R> = {
-		speaker: {alias: 'Combat Start'},
-		content: html,
-		rolls: rolls.map(x=> x.roll),
-		style: CONST.CHAT_MESSAGE_STYLES.ROLL,
-	};
-	return await ChatMessage.create(chatMessage, messageOptions);
-}
-
-
-static get instance() : U<PersonaCombat> {
-	if (game.combat) {
-		return game.combat as PersonaCombat;
+		const messageData: MessageData = {
+			speaker: {alias: 'Follow Up Action'},
+			content: msg,
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+		};
+		await ChatMessage.create(messageData, {});
 	}
-	return undefined;
-}
 
-static async testPowerVersusPCs(attacker: PToken, power: Usable) :Promise<number[]> {
-	const PCs= PersonaDB.PCs();
-	const scene = game.scenes
+	getUsableFollowUps(token: PToken, activationRoll: number) : string []{
+		const combatant = token.object ? this.getCombatantByToken(token): null;
+		if (!combatant || !combatant.actor) {return [];}
+		const actor = combatant.actor;
+		const situation : CombatRollSituation = {
+			naturalRoll: activationRoll,
+			rollTags: ['attack', 'activation'],
+			rollTotal: activationRoll,
+			user: actor.accessor,
+		};
+		const persona = actor.persona();
+		const followUpMoves = actor.powers
+			.filter(pwr => pwr.isFollowUpMove()
+				&& persona.canPayActivationCost(pwr)
+				&& pwr.testFollowUpPrereqs(situation, actor)
+			);
+		const followup = followUpMoves
+			.map(usable => {
+				const targets =this.getValidTargetsFor(usable, combatant, situation)
+					.map (x=> x.token.name);
+
+				if (targets.length == 0) {return '';}
+				return `<li> ${usable.name} (${targets.join(', ')})</li>`;
+			});
+		return followup;
+	}
+
+	async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll: R}[], messageOptions: Foundry.MessageOptions = {}): Promise<ChatMessage<R>> {
+		const rollTransformer = function (roll: Roll) {
+			const total = roll.total;
+			if (total <= 0) {return 'last';}
+			else {return Math.round(total);}
+		};
+		const rolltxt = rolls
+		.sort( (a, b) => b.roll.total - a.roll.total)
+		.map(({roll, combatant}) => `<div class="init-roll"> ${combatant.name}: ${rollTransformer(roll)} </div>`)
+		.join('');
+		const html = `<h3 class="init-rolls"> Initiative Rolls </h3> ${rolltxt}`;
+		const chatMessage: MessageData<R> = {
+			speaker: {alias: 'Combat Start'},
+			content: html,
+			rolls: rolls.map(x=> x.roll),
+			style: CONST.CHAT_MESSAGE_STYLES.ROLL,
+		};
+		return await ChatMessage.create(chatMessage, messageOptions);
+	}
+
+
+	static get instance() : U<PersonaCombat> {
+		if (game.combat) {
+			return game.combat as PersonaCombat;
+		}
+		return undefined;
+	}
+
+	static async testPowerVersusPCs(attacker: PToken, power: Usable) :Promise<number[]> {
+		const PCs= PersonaDB.PCs();
+		const scene = game.scenes
 		.find( sc=> PCs
 			.every( pc => sc.tokens.contents
 				.some(tok => tok.actor == pc)
 			)
 		);
-	if (!scene) {
-		throw new PersonaError("Can't find scnee containing all PCs");
-	}
-	const PCTokens= scene.tokens.filter( (tok: PToken)=> tok.actor != undefined && tok.actor.isPC() && PCs.includes(tok.actor)) as PToken[];
-	const processor = this.instance?.combatEngine ?? new CombatEngine(undefined);
-	const result = await processor.usePower(attacker, power, PCTokens, {askForModifier: false, setRoll: 16, ignorePrereqs : true, simulated: true});
-	const changes = result.attacks.flatMap( atk => atk.changes);
-	const PCResult = PCs.map( pc => {
-		const PCChanges = changes.filter( ch => {
-			const actor = PersonaDB.findActor(ch.actor);
-			return actor == pc;
+		if (!scene) {
+			throw new PersonaError("Can't find scnee containing all PCs");
+		}
+		const PCTokens= scene.tokens.filter( (tok: PToken)=> tok.actor != undefined && tok.actor.isPC() && PCs.includes(tok.actor)) as PToken[];
+		const processor = this.instance?.combatEngine ?? new CombatEngine(undefined);
+		const result = await processor.usePower(attacker, power, PCTokens, {askForModifier: false, setRoll: 16, ignorePrereqs : true, simulated: true});
+		const changes = result.attacks.flatMap( atk => atk.changes);
+		const PCResult = PCs.map( pc => {
+			const PCChanges = changes.filter( ch => {
+				const actor = PersonaDB.findActor(ch.actor);
+				return actor == pc;
+			});
+			const HPChanges = PCChanges.map ( x=> x.damage.reduce (
+				(acc, dmg) => acc + dmg.hpChange, 0));
+			const dmg= -1 * HPChanges.reduce( (acc,ch) => acc+ch, 0);
+			return Number((pc.mhp / dmg).toFixed(2));
 		});
-		const HPChanges = PCChanges.map ( x=> x.damage.reduce (
-			(acc, dmg) => acc + dmg.hpChange, 0));
-		const dmg= -1 * HPChanges.reduce( (acc,ch) => acc+ch, 0);
-		return Number((pc.mhp / dmg).toFixed(2));
-	});
-	//BUG does not work well for flurry powers yet
-	return PCResult;
-}
+		//BUG does not work well for flurry powers yet
+		return PCResult;
+	}
 
 } // end of class
 

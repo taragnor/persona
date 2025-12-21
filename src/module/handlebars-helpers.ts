@@ -999,7 +999,9 @@ export class PersonaHandleBarsHelpers {
 			.filter (comb=> FusionTable.meetsConditionsToFuse(comb.result!, fusor));
 		},
 
-
+		"joinSteps": function (steps: string[]) : string {
+			return steps.join("\n");
+		}
 
 	};
 
