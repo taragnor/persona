@@ -229,23 +229,6 @@ export class CombatEngine {
 		return range.possible && naturalAttackRoll > range.low && naturalAttackRoll < range.high;
 	}
 
-	// private withinInstantKillRange(power: Usable, roll: Roll, instantDeathRange: U<{low: number, high:number}>, targetPersona: Persona, situation: Situation) : boolean {
-	// 	debugger;
-	// 	const naturalAttackRoll = roll.dice[0].total;
-	// 	let withinInstantKillRange = false;
-	// 	if (power.system.defense == "kill" && naturalAttackRoll > 5) {
-	// 		withinInstantKillRange = true;
-	// 	} else {
-	// 		const IKDefense = targetPersona.getDefense("kill").eval(situation).total;
-	// 		if (instantDeathRange) {
-	// 			withinInstantKillRange = naturalAttackRoll > 5
-	// 				&& this.withinRange(naturalAttackRoll, instantDeathRange)
-	// 				&& roll.total > IKDefense;
-	// 		}
-	// 	}
-	// 	return withinInstantKillRange;
-	// }
-
 	private getEffectiveCritBoost(attacker: Persona, target: Persona, situation: Situation, power: Usable) : {critBoost: number, critPrintable: string[]} {
 		const critBoostMod = this.calcCritModifier(attacker, target, power, situation);
 		const critMin = situation.resisted ? -999 : 0;
@@ -296,11 +279,11 @@ export class CombatEngine {
 		const resolvedAttackMods = attackbonus.eval(situation);
 		const validAtkModifiers = resolvedAttackMods.steps;
 		const ailmentRange = CombatEngine.calculateAilmentRange(attackerPersona, targetPersona, power, baseSituation);
-		const instantDeathRange = CombatEngine.calculateInstantDeathRange(attackerPersona, targetPersona, power, baseSituation);
+		const instantKillRange = CombatEngine.calculateInstantDeathRange(attackerPersona, targetPersona, power, baseSituation);
 		const {critBoost, critPrintable} = this.getEffectiveCritBoost(attackerPersona, targetPersona, situation, power);
 		const addonAttackResultData = {
 			ailmentRange,
-			instantKillRange: instantDeathRange,
+			instantKillRange,
 			critBoost, critPrintable,
 			validAtkModifiers, validDefModifiers,
 			situation,
@@ -323,7 +306,7 @@ export class CombatEngine {
 			};
 		}
 		situation.withinAilmentRange = CombatEngine.withinRange(ailmentRange, r);
-		situation.withinInstantKillRange = CombatEngine.withinRange(instantDeathRange, r);
+		situation.withinInstantKillRange = CombatEngine.withinRange(instantKillRange, r);
 		const canCrit = typeof rollType == 'number' || rollType == 'iterative' ? false : true;
 		const cancelCritsForInstantDeath = false;
 		if (naturalAttackRoll + critBoost >= 20
@@ -738,12 +721,6 @@ static defaultSituation(  attackerPersona: Persona, targetPersona: Persona, powe
 		const critResist = targetPersona.critResist().eval(situation).total;
 		critBoostMod.add(1, -critResist, 'Enemy Critical Resistance',"add");
 		return critBoostMod;
-	}
-
-	private withinRange(num: number, range: U<{low: number, high: number}>) : boolean {
-		if (range == undefined) {return false;}
-		return num >= range.low
-			&& num <= range.high;
 	}
 
 	async checkPowerPreqs(attacker: PToken, power: UsableAndCard) : Promise<boolean> {

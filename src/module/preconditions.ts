@@ -1207,7 +1207,6 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
 			condition satisfies never;
 			return undefined;
 	}
-
 }
 
 function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "roll-property-is"}, situation: Situation) : U<boolean> {

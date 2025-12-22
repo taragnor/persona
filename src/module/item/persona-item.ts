@@ -2680,7 +2680,6 @@ statusesAdded(this: Usable, deepTagList = true): StatusEffectId[] {
 
 statusesRemoved(this: Usable): StatusEffectId[] {
 	const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => 
-		// cons.type == "combat-effect" && cons.combatEffect == 'removeStatus'? [cons.statusName] : []));
 		cons.type == "combat-effect" && cons.combatEffect == 'removeStatus'? multiCheckToArray(cons.statusName) : []));
 	return statusesRemoved;
 }
