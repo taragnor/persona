@@ -16,6 +16,7 @@ import { ShadowRole } from "./shadow-types.js";
 import { DAYS_LIST } from "./days.js";
 import { WeatherType } from "./weather-types.js";
 import { CClass, Power, Tag } from "../module/item/persona-item.js";
+import {Defense} from "./defense-types.js";
 
 const BASIC_BOOLEAN_COMPARISON_LIST = [
 	"cameo-in-scene",
@@ -89,6 +90,7 @@ const POWER_COMPARISON_SUBLIST_LIST = [
 	"has-tag",
 	"power-name-is",
 	"is-consumable",
+	"power-targets-defense",
 ] as const;
 
 const ROLL_COMPARISON_SUBLIST_LIST = [
@@ -194,6 +196,10 @@ type PowerComparisonsSub = {
 	powerId: Power["id"],
 } | {
 	powerProp: "is-consumable",
+
+} | {
+	powerProp: "power-targets-defense",
+	defense: Defense,
 };
 
 type HasClassComparison = {

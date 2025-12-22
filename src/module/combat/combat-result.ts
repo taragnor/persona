@@ -363,17 +363,18 @@ export class CombatResult  {
 				const dur = convertConsToStatusDuration(cons, target!);
 				let embeddedEffects: readonly SourcedConditionalEffect[]= [];
 				const source = cons.source;
-				if (source && "getEmbeddedEffects" in source && source.getEmbeddedEffects != undefined) {
+				if (cons.flagState && cons.applyEmbedded && source && "getEmbeddedEffects" in source && source.getEmbeddedEffects != undefined) {
 					const owner = cons.owner ? PersonaDB.findActor(cons.owner) : null;
 					embeddedEffects = source.getEmbeddedEffects(owner);
 				}
 				effect.otherEffects.push( {
 					type: "set-flag",
 					flagId: cons.flagId ?? "",
-					flagName: cons.flagName ?? "",
+					flagName: cons.flagState ? cons.flagName ?? "" : "",
 					state: cons.flagState ?? true,
 					duration: dur,
-					embeddedEffects
+					embeddedEffects,
+					clearOnDeath: cons.flagState ? cons.clearOnDeath : false,
 				} satisfies SetFlagEffect);
 				break;
 			}

@@ -4,6 +4,10 @@ type U<const T> = T | undefined;
 type N<const T> = T | null;
 type UN<const T> = T | undefined | null;
 
+type DistributiveOmit<T, K extends keyof T> = T extends any
+  ? Omit<T, K>
+  : never
+
 type Expect<A, B> = (<T>() => T extends A ? 1 : 2) extends
                     (<T>() => T extends B ? 1 : 2) ? true : never;
 

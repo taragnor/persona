@@ -180,10 +180,15 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		await this.setFlag("persona", "duration", newDuration);
 	}
 
-	async setDuration(duration: StatusDuration) : Promise<void> {
+
+	async setDuration(duration: StatusDuration, options: DurationOptions = {}) : Promise<void> {
 		if (duration.dtype == "UEoNT") {
 			this.durationFix(duration);
 		}
+		duration = {
+			...duration,
+			...options,
+		};
 		switch (duration.dtype) {
 			case "UEoNT":
 			case "USoNT":
@@ -430,7 +435,9 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		}
 	}
 
-	removesOnDown() : boolean {
+	removesOnKO() : boolean {
+		const duration = this.statusDuration;
+		if (duration.clearOnDeath) { return true;}
 		if (this.statuses.size == 0) {return false;}
 		if (this.statusDuration.dtype == "instant") {return false;}
 		if (!this.durationLessThanOrEqualTo({ dtype: "combat"})) {return false;}
@@ -511,6 +518,14 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 				PersonaError.softFail(`Weird Duration: ${(duration as StatusDuration)?.dtype}`);
 				return false;
 		}
+	}
+
+	async onKO() {
+		if (this.removesOnKO()) {
+			await this.delete();
+			return true;
+		}
+		return false;
 	}
 
 	async onEndDay(): Promise<boolean> {
@@ -812,7 +827,7 @@ Hooks.on("applyActiveEffect", PersonaAE.applyHook);
 //Sachi told me to disable this because it sucks apparently
 CONFIG.ActiveEffect.legacyTransferral = false;
 
-export type StatusDuration = StatusDuration_Basic | StatusDuration_NonBasic;
+export type StatusDuration = (StatusDuration_Basic | StatusDuration_NonBasic) & DurationOptions;
 
 type StatusDuration_Basic = {
 	dtype: Exclude<StatusDurationType, StatusDuration_NonBasic["dtype"] | DeprecatedDurations["dtype"]>;
@@ -871,3 +886,7 @@ Hooks.on("deleteActiveEffect", async function (eff: PersonaAE) {
 });
 
 
+type DurationOptions = {
+	clearOnDeath?: boolean;
+
+}

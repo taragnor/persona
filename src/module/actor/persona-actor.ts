@@ -3693,33 +3693,39 @@ getFlagDuration(flagName: string) : StatusDuration | undefined {
 	return this.getEffectFlag(flagName)?.duration;
 }
 
-async setEffectFlag(effect: Omit<SetFlagEffect, "type">) {
+async setEffectFlag(effect: DistributiveOmit<SetFlagEffect, "type">) {
 	if (effect.state == true) {
-		const flag = await this.createEffectFlag(effect.flagId, effect.duration, effect.flagName);
-		if (effect.embeddedEffects!.length> 0) {
-			await flag.setEmbeddedEffects(effect.embeddedEffects!);
+		const flag = await this.createEffectFlag(effect.flagId, effect.duration, effect.flagName, effect.clearOnDeath);
+		if (effect.embeddedEffects.length> 0) {
+			await flag.setEmbeddedEffects(effect.embeddedEffects);
 		}
 	} else {
 		await this.clearEffectFlag(effect.flagId);
 	}
 }
 
-async createEffectFlag(flagId: string, duration: StatusDuration = {dtype: "instant"}, flagName ?: string) : Promise<PersonaAE> {
-	flagId = flagId.toLowerCase();
-	const eff = this.effects.find(x=> x.isFlag(flagId));
-	const newAE = {
-		name: flagName,
-	};
-	if (eff) {
-		await eff.setDuration(duration);
-		return eff;
-	} else {
-		const AE = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
-		await AE.setDuration(duration);
-		await AE.markAsFlag(flagId);
-		return AE;
+async createEffectFlag(flagId: string,
+	duration: StatusDuration = {dtype: "instant"},
+	flagName ?: string, clearOnDeath = false)
+	: Promise<PersonaAE> {
+		flagId = flagId.toLowerCase();
+		const eff = this.effects.find(x=> x.isFlag(flagId));
+		const newAE = {
+			name: flagName,
+		};
+		const durationOptions = {
+			clearOnDeath,
+		};
+		if (eff) {
+			await eff.setDuration(duration, durationOptions);
+			return eff;
+		} else {
+			const AE = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
+			await AE.setDuration(duration, durationOptions);
+			await AE.markAsFlag(flagId);
+			return AE;
+		}
 	}
-}
 
 async clearEffectFlag(flagId: string) {
 	const eff = this.effects.find(x=> x.isFlag(flagId));
@@ -3995,9 +4001,8 @@ async onCombatStart() {
 
 async onKO() : Promise<void> {
 	console.log("Calling onKO");
-	await Promise.allSettled(this.effects
-		.filter( eff => eff.removesOnDown())
-		.map(eff => eff.delete())
+	await Promise.allSettled(
+		this.effects.contents.map( eff => eff.onKO())
 	);
 }
 

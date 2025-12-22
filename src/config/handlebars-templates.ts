@@ -91,6 +91,7 @@ const templateFileNames : string[] =[
 	"input-consequence-combat-effect.hbs",
 	"item-quantity-part.hbs",
 	"navigator-voicelines.hbs",
+	"input-conditional-power-prop.hbs",
 ];
 
 export const templatePaths = templateFileNames.

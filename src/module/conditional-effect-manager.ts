@@ -48,6 +48,7 @@ import {ConsequenceConverter} from "./migration/convertConsequence.js";
 import {ValidAttackers} from "./combat/persona-combat.js";
 import {PersonaAE} from "./active-effect.js";
 import {PreconditionConverter} from "./migration/convertPrecondition.js";
+import {DEFENSE_TYPES} from "../config/defense-types.js";
 
 export class ConditionalEffectManager {
 
@@ -504,7 +505,7 @@ export class ConditionalEffectManager {
 				return `on save versus ${saveType}`;
 			}
 			case "on-trigger": {
-				const trig = this.translate(cond.trigger!, TRIGGERS);
+				const trig = this.translate(cond.trigger, TRIGGERS);
 				return `trigger: ${trig}`;
 			}
 			case "never":
@@ -736,6 +737,8 @@ export class ConditionalEffectManager {
 			}
 			case "is-consumable":
 				return `Usable is Consumable Item`;
+			case "power-targets-defense":
+				return `Power Targets ${not} ${this.translate(cond.defense, DEFENSE_TYPES)}`;
 			default:
 				cond satisfies never;
 				return "ERROR";

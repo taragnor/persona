@@ -393,47 +393,7 @@ export class FinalizedCombatResult {
 		);
 	}
 
-	// cleanUpStatusChanges(redundant : StatusEffect[] = []) : StatusEffect[] {
-	// 	const statusAddMap : Map<PersonaActor, StatusEffect[]> = new Map();
-	// 	if (this.attacks.length == 0) {return [];}
-	// 	for (const res of this.attacks) {
-	// 		for (const change of res.changes) {
-	// 			const target= PersonaDB.findActor(change.actor);
-	// 			if (!target) {continue;}
-	// 			const existing = statusAddMap.get(target) ?? [];
-	// 			for (const st of change.addStatus) {
-	// 				if (
-	// 					existing
-	// 					.find( existSt => existSt.id == st.id && PersonaAE.durationLessThanOrEqualTo(st.duration, existSt.duration))
-	// 				) {
-	// 					redundant.push(st);
-	// 					continue;
-	// 				}
-	// 				existing.push(st);
-	// 				statusAddMap.set(target, existing);
-	// 			}
-	// 			change.addStatus = change.addStatus
-	// 				.filter (st=> !redundant.includes(st));
-	// 		}
-	// 	}
-	// 	return redundant;
-	// }
-
-	// cleanUpChained() : this {
-	// 	let redundant : StatusEffect[] = [];
-	// 	for (const chained of this.chainedResults) {
-	// 		redundant = chained.cleanUpStatusChanges(redundant);
-	// 	}
-	// 	return this;
-	// }
-
-
 	async #applyChained() {
-		//merge the chained results for better printing
-		// this.cleanUpChained();
-		// if (this.chainedResults.length > 0 ) {
-		// 	Debug(this.chainedResults);
-		// }
 		for (const res of this.chainedResults) {
 			await res.#apply();
 		}

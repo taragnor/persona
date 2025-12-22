@@ -1201,8 +1201,13 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
 			return power.id == condition.powerId;
 		}
 		case "is-consumable": {
-			return power.system.type == "consumable";
+			return power.isConsumable();
 		}
+		case "power-targets-defense":
+			if (power.isSkillCard()) {
+				return condition.defense == "none";
+			}
+			return power.system.defense == condition.defense;
 		default:
 			condition satisfies never;
 			return undefined;

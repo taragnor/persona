@@ -90,6 +90,7 @@
 <label>Flag Id </label>
 <input class="flag-id" type="text" width=2 name="{{strcat namePrefix 'flagId'}}" value="{{cond.flagId}}">
 {{/if}}
+
 {{#if (eq cond.boolComparisonTarget "weather-is")}}
 <label>Weather </label>
 {{multicheck (strcat namePrefix 'weatherComparison') POWERSTUFF.WEATHER_TYPES checked=cond.weatherComparison localize=true}}
@@ -251,40 +252,7 @@
 {{/if}}
 
 {{#if (eq cond.boolComparisonTarget "power-has")}}
-<select name="{{strcat namePrefix 'powerProp'}}">
-	{{selectOptions POWERSTUFF.POWER_COMPARISON_SUBLIST localize=true selected=cond.powerProp}}
-</select>
-
-{{#if (eq cond.powerProp "power-target-type-is") }}
-<div>
-	{{multicheck (strcat namePrefix 'powerTargetType') POWERSTUFF.TARGETING checked=cond.powerTargetType localize=true}}
-</div>
-{{/if}}
-
-{{#if (eq cond.powerProp "power-type-is") }}
-<select name="{{strcat namePrefix 'powerType'}}">
-	{{selectOptions POWERSTUFF.POWERTYPES localize=true selected=cond.powerType}}
-</select>
-{{/if}}
-
-{{#if (eq cond.powerProp "power-slot-is") }}
-{{multicheck (strcat namePrefix 'slotType') POWERSTUFF.SLOTTYPES checked=cond.slotType localize=true}}
-{{/if}}
-
-{{#if (eq cond.powerProp "damage-type-is") }}
-{{multicheck (strcat namePrefix 'powerDamageType') POWERSTUFF.DAMAGETYPES checked=cond.powerDamageType localize=true}}
-{{/if}}
-
-{{#if (eq cond.powerProp "has-tag") }}
-{{multicheck (strcat namePrefix 'powerTag') POWERSTUFF.TAGS checked=cond.powerTag localize=true}}
-{{/if}}
-
-{{#if (eq cond.powerProp "power-name-is") }}
-<select name="{{strcat namePrefix 'powerId'}}">
-	{{selectOptions POWERSTUFF.COMPENDIUM_POWERS localize=true selected=cond.powerId}}
-</select>
-{{/if}}
-
+	{{> "systems/persona/parts/input-conditional-power-prop.hbs" namePrefix=namePrefix POWERSTUFF=POWERSTUFF owner=owner}}
 {{/if}}
 
 {{#if (eq cond.boolComparisonTarget "roll-property-is")}}

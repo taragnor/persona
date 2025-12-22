@@ -838,6 +838,7 @@
 	"persona.preconditions.comparison.has-item-in-inventory": "Has Item in Inventory",
 	"persona.preconditions.comparison.creature-type-is": "Creature Type Is",
 	"persona.preconditions.comparison.power-slot-is": "Power Slot Is",
+	"persona.preconditions.comparison.power-targets-defense": "Targets Defense",
 	"persona.preconditions.comparison.relationship-type-is": "Relationship Type is",
 	"persona.preconditions.comparison.power-target-type-is": "Power's targets are",
 	"persona.preconditions.comparison.social-availability": "Social Availability",

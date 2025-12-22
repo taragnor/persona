@@ -54,15 +54,6 @@
 	</span>
 	{{/if}}
 
-	{{#if (eqAny cons.type "set-flag")}}
-	<div>
-		<label>
-			Attach Embedded
-		</label>
-		<input type="checkbox" name="{{strcat namePrefix 'applyEmbedded'}}" {{checked cons.applyEmbedded}}>
-	</div>
-	{{/if}}
-
 	{{#if (eqAny cons.type "dmg-mult" "revive" "escalationManipulation" "recover-slot" "alter-fatigue-lvl")}}
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 	{{/if}}
@@ -163,13 +154,25 @@
 		<input class="flag-id" id="flag-id" type="text" name="{{strcat namePrefix 'flagId'}}" value="{{cons.flagId}}">
 	</div>
 	<div>
+		<label> State</label>
+		<input type="checkbox" name="{{strcat namePrefix 'flagState'}}" {{checked cons.flagState}}>
+		{{#if cons.flagState}}
+		<label> Clear On Death</label>
+		<input type="checkbox" name="{{strcat namePrefix 'clearOnDeath'}}" {{checked cons.clearOnDeath}}>
+		{{/if}}
+	</div>
+	{{#if cons.flagState}}
+	<div>
 		<label for="flag-name"> Flag Name </label>
 		<input class="flag-name" id="flag-name" type="text" name="{{strcat namePrefix 'flagName'}}" value="{{cons.flagName}}">
 	</div>
 	<div>
-		<label> State</label>
-		<input type="checkbox" name="{{strcat namePrefix 'flagState'}}" {{checked cons.flagState}}>
+		<label>
+			Attach Embedded
+		</label>
+		<input type="checkbox" name="{{strcat namePrefix 'applyEmbedded'}}" {{checked cons.applyEmbedded}}>
 	</div>
+	{{/if}}
 
 	{{/if}}
 

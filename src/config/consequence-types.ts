@@ -42,18 +42,22 @@ export type SetFlagEffect = {
 	type: "set-flag",
 	flagId: string,
 	state: boolean,
+} & ( EnableFlagEffect | ClearFlagEffect);
+
+type EnableFlagEffect = {
+	state: true,
 	flagName: string,
 	duration: StatusDuration,
 	embeddedEffects: readonly SourcedConditionalEffect[],
-} | ClearFlagEffect;
+	clearOnDeath: boolean,
+};
 
 type ClearFlagEffect = {
-	type : "set-flag",
-	flagId: string,
 	state: false,
-	flagName?: string,
-	duration?: StatusDuration,
-	embeddedEffects ?: readonly SourcedConditionalEffect[],
+	// flagName?: string,
+	// duration?: StatusDuration,
+	// embeddedEffects ?: readonly SourcedConditionalEffect[],
+	// clearOnDeath?: boolean,
 };
 
 export type ResistanceShiftEffect = {
@@ -384,12 +388,18 @@ type AddTagConsequence = {
 }
 
 type SetFlagConsequence = {
-	type: "set-flag",
-	flagName : string,
+	type: "set-flag"
 	flagId : string,
 	flagState : boolean,
-	applyEmbedded: boolean,
-} & DurationComponent;
+} & (
+	{flagState: false}
+	| {
+		flagState : true,
+		flagName : string,
+		applyEmbedded: boolean,
+		clearOnDeath: boolean,
+	}
+) & DurationComponent;
 
 type AddStatusConsequence = {
 	type : "addStatus",
