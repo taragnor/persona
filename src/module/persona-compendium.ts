@@ -29,6 +29,7 @@ Hooks.on("socketsReady", (sockets) => {
 export class PersonaCompendium {
 
 	static COMPENDIUM_NAME_SUFFIX =" (Compendium)" as const;
+	static PERSONA_SUMMON_LEVEL_MULT = 2 as const;
 
 	static async copyPersonaToCompendium(actor: Shadow) : Promise<boolean>  {
 		if (!game.user.isGM) {
@@ -139,6 +140,11 @@ export class PersonaCompendium {
 			return compName;
 		}
 		return compName.substring(0, compName.length-this.COMPENDIUM_NAME_SUFFIX.length);
+	}
+
+	static costToSummon(shadow: Shadow) : number {
+		if (!shadow.isCompendiumEntry()) {return -1;}
+		return shadow.level * this.PERSONA_SUMMON_LEVEL_MULT;
 	}
 
 }

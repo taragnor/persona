@@ -4418,7 +4418,7 @@ private async _trySwapPersona(this: PC, p1: Persona, p2: Persona)  : Promise<boo
 /** number of R to summon from compendium*/
 get summoningCost() : number {
 	if (!this.isShadow() || !this.isCompendiumEntry()) { return -1;}
-	return this.level * 2;
+	return PersonaCompendium.costToSummon(this);
 }
 
 }//end of class
