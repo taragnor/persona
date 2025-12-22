@@ -5,9 +5,21 @@ Tags: {{getPowerTagsL actor power}}
 
 Damage: {{damage}} {{getDamageType actor power}}
 Cost: {{powerCostString power persona}}
-{{#if power.ailmentRange}}
-Ailment Range: {{power.ailmentRange.low}} - {{power.ailmentRange.high}}
+
+{{#if ailmentRange}}
+Ailment Range: {{ailmentRange.low}} - {{ailmentRange.high}}
+------
+BaseRange: {{power.ailmentRange.low}} - {{power.ailmentRange.high}}
+{{joinSteps ailmentRange.steps}}
 {{/if}}
+
+{{#if instantDeathRange}}
+Instant Kill Range: {{instantDeathRange.low}} - {{instantDeathRange.high}}
+------
+BaseRange: {{power.instantDeathRange.low}} - {{power.instantDeathRange.high}}
+{{joinSteps instantDeathRange.steps}}
+{{/if}}
+
 {{#if power.system.description}}
 {{power.system.description}}
 {{/if}}

@@ -192,7 +192,7 @@ export class PersonaCombatStats {
 			this.combatStats.disfavored_stat,
 			this.combatStats.disfavored_stat2,
 			persona?.tarot?.system?.disfavored_stat ?? "",
-	];
+		];
 		const stIncreases : StatGroup = {
 			str: 0,
 			mag: 0,

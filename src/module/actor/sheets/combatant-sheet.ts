@@ -367,14 +367,15 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async createDamageEstimate( ev: JQuery.MouseOverEvent) {
 		const powerId = HTMLTools.getClosestData(ev, "powerId");
-		const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.getItemById(powerId);
+		const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.getItemById<Power>(powerId);
 		const CONST = PersonaActorSheetBase.CONST();
-
 		if (!power) {return;}
 		const persona = this.actor.persona();
-		const damage = await CombatantSheetBase.getDamage(persona, power as Power);
+		const damage = await CombatantSheetBase.getDamage(persona, power);
 		const balanceReport = await this.getBalanceTest(power as Usable);
-		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona(), damage, balanceReport});
+			const ailmentRange = CombatEngine.calculateAilmentRange(persona, persona, power as Usable, null);
+			const instantDeathRange = CombatEngine.calculateInstantDeathRange(persona, persona, power as Usable, null);
+		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona(), damage, balanceReport, ailmentRange, instantDeathRange});
 		$(ev.currentTarget).prop('title', html);
 	}
 

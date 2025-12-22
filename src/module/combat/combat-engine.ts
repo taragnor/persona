@@ -223,21 +223,28 @@ export class CombatEngine {
 		}
 	}
 
-	private withinInstantKillRange(power: Usable, roll: Roll, instantDeathRange: U<{low: number, high:number}>, targetPersona: Persona, situation: Situation) : boolean {
+	static withinRange(range: U<CalculatedRange>, roll: Roll) : boolean {
+		if (!range) {return false;}
 		const naturalAttackRoll = roll.dice[0].total;
-		let withinInstantKillRange = false;
-		if (power.system.defense == "kill" && naturalAttackRoll > 5) {
-			withinInstantKillRange = true;
-		} else {
-			const IKDefense = targetPersona.getDefense("kill").eval(situation).total;
-			if (instantDeathRange) {
-				withinInstantKillRange = naturalAttackRoll > 5
-					&& this.withinRange(naturalAttackRoll, instantDeathRange)
-					&& roll.total > IKDefense;
-			}
-		}
-		return withinInstantKillRange;
+		return range.possible && naturalAttackRoll > range.low && naturalAttackRoll < range.high;
 	}
+
+	// private withinInstantKillRange(power: Usable, roll: Roll, instantDeathRange: U<{low: number, high:number}>, targetPersona: Persona, situation: Situation) : boolean {
+	// 	debugger;
+	// 	const naturalAttackRoll = roll.dice[0].total;
+	// 	let withinInstantKillRange = false;
+	// 	if (power.system.defense == "kill" && naturalAttackRoll > 5) {
+	// 		withinInstantKillRange = true;
+	// 	} else {
+	// 		const IKDefense = targetPersona.getDefense("kill").eval(situation).total;
+	// 		if (instantDeathRange) {
+	// 			withinInstantKillRange = naturalAttackRoll > 5
+	// 				&& this.withinRange(naturalAttackRoll, instantDeathRange)
+	// 				&& roll.total > IKDefense;
+	// 		}
+	// 	}
+	// 	return withinInstantKillRange;
+	// }
 
 	private getEffectiveCritBoost(attacker: Persona, target: Persona, situation: Situation, power: Usable) : {critBoost: number, critPrintable: string[]} {
 		const critBoostMod = this.calcCritModifier(attacker, target, power, situation);
@@ -288,8 +295,8 @@ export class CombatEngine {
 		}
 		const resolvedAttackMods = attackbonus.eval(situation);
 		const validAtkModifiers = resolvedAttackMods.steps;
-		const ailmentRange = this.#calculateAilmentRange(attackerPersona, targetPersona, power, baseSituation);
-		const instantDeathRange = this.#calculateInstantDeathRange(attackerPersona, targetPersona, power, baseSituation);
+		const ailmentRange = CombatEngine.calculateAilmentRange(attackerPersona, targetPersona, power, baseSituation);
+		const instantDeathRange = CombatEngine.calculateInstantDeathRange(attackerPersona, targetPersona, power, baseSituation);
 		const {critBoost, critPrintable} = this.getEffectiveCritBoost(attackerPersona, targetPersona, situation, power);
 		const addonAttackResultData = {
 			ailmentRange,
@@ -315,14 +322,14 @@ export class CombatEngine {
 				...addonAttackResultData,
 			};
 		}
-		let withinAilmentRange = false;
-		if (power.system.defense == "ail") {
-			withinAilmentRange = true;
-		} else {
-			withinAilmentRange = this.withinRange(naturalAttackRoll, ailmentRange);
-		}
-		situation["withinAilmentRange"]= withinAilmentRange;
-		situation["withinInstantKillRange"] = this.withinInstantKillRange(power, r, instantDeathRange, targetPersona, situation);
+		// let withinAilmentRange = false;
+		// if (power.system.defense == "ail") {
+		// 	withinAilmentRange = true;
+		// } else {
+		// 	withinAilmentRange = this.withinRange(naturalAttackRoll, ailmentRange);
+		// }
+		situation["withinAilmentRange"]= CombatEngine.withinRange(ailmentRange, r);
+		situation["withinInstantKillRange"] = CombatEngine.withinRange(instantDeathRange, r);
 		const canCrit = typeof rollType == 'number' || rollType == 'iterative' ? false : true;
 		const cancelCritsForInstantDeath = false;
 		if (naturalAttackRoll + critBoost >= 20
@@ -655,7 +662,21 @@ export class CombatEngine {
 		return null;
 	}
 
-	#calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) : U<CalculatedRange> {
+static defaultSituation(  attackerPersona: Persona, targetPersona: Persona, power: Usable) {
+	const actorAcc = attackerPersona.user.accessor;
+	const sit = {
+		user: actorAcc,
+		attacker: actorAcc,
+		target: targetPersona.user.accessor,
+		usedPower: power.accessor,
+	} as const satisfies Situation;
+	return sit;
+}
+
+	static calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: N<Situation>) : U<CalculatedRange> {
+		if (!situation) {
+			situation = this.defaultSituation(attackerPersona, targetPersona, power);
+		}
 		const baseRange = power.ailmentRange;
 		if (!baseRange)  { return undefined; }
 		const ailmentMods =
@@ -678,22 +699,25 @@ export class CombatEngine {
 		if (!ailmentRange) {return undefined;}
 		ailmentRange.low -= total;
 		if (ailmentRange.low > ailmentRange.high) {return undefined;}
-		return ailmentRange;
+		return {
+			...ailmentRange,
+			possible: ailmentRange.low <= ailmentRange.high
+		};
 	}
 
-	#calculateInstantDeathRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation) : U<CalculatedRange> {
+	static calculateInstantDeathRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation?: N<Situation>) : U<CalculatedRange> {
+		if (!situation) {
+			situation = this.defaultSituation(attackerPersona, targetPersona, power);
+		}
 		if (!power.isInstantDeathAttack()) {return undefined
 			;}
-		if (!power.canDealDamage()) {return {low: 5, high: 99, steps: []};}
+		if (!power.canDealDamage()) {return {low: 5, high: 99, steps: [], possible: true};}
 		const instantDeathMods =
 		attackerPersona.getBonuses('instantDeathRange', power, attackerPersona);
 		const killDefense =
 		targetPersona.getBonuses('kill').total(situation);
 		const instantDeathBonus = attackerPersona.combatStats.instantDeathBonus();
 		instantDeathBonus.add(1, -targetPersona.combatStats.instantDeathResist().eval(situation).total, "Target Mods", "add");
-		//think this is already factored in
-		// const elemResMod = this.resistIKMod(targetPersona, power);
-		// instantDeathBonus.add(1, -elemResMod, "Affinity Mod");
 		instantDeathMods.add("Misc Mods to kill defense", -killDefense);
 		instantDeathBonus.add(1, instantDeathMods, "MOds", "add");
 
@@ -706,14 +730,12 @@ export class CombatEngine {
 		if (deathRange) {
 			deathRange.low -= total;
 			deathRange.low = Math.max(deathRange.low, 6);
-			if (deathRange.high - deathRange.low <= 0) {
-				return undefined;
-			}
 		}
 		if (!deathRange) {return undefined;}
 		return {
 			...deathRange,
-			steps
+			steps,
+			possible: deathRange.low <= deathRange.high,
 		};
 	}
 
@@ -854,5 +876,6 @@ type CalculatedRange = {
 	high: number,
 	low: number,
 	steps: string[],
+	possible: boolean,
 
 }

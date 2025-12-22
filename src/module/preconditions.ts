@@ -1219,6 +1219,7 @@ function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boo
 		case "is-within-ailment-range":
 				return "withinAilmentRange" in situation ? situation.withinAilmentRange ?? false : false;
 		case "is-within-instant-death-range":
+				debugger;
 				return "withinInstantKillRange" in situation ? situation.withinInstantKillRange ?? false : false;
 		default:
 				condition.rollProp satisfies never;

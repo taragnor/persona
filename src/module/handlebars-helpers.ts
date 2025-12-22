@@ -1000,8 +1000,17 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"joinSteps": function (steps: string[]) : string {
+			if (!steps || !Array.isArray(steps)) {return "ERROR";}
 			return steps.join("\n");
-		}
+		},
+
+		"joinStepsHTML" : function (steps: string[]) : SafeString {
+			return new Handlebars.SafeString(
+				steps
+				.map(x => `<div>${x}</div>`)
+				.join("")
+			);
+		},
 
 	};
 
