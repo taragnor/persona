@@ -449,7 +449,6 @@ export class Metaverse {
 		return region as PersonaRegion;
 	}
 
-
 	static async toggleCrunchParty () : Promise<void> {
 		if (game.user.isGM) {
 			if ("PartyCruncher" in window) {

@@ -19,5 +19,3 @@ export type Defense = typeof ALL_DEFENSE_TYPES_LIST[number];
 export const REAL_DEFENSE_TYPES = HTMLTools.createLocalizationObject(DEFENSE_TYPE_LIST,  "persona.defense");
 
 export const DEFENSE_TYPES = HTMLTools.createLocalizationObject(ALL_DEFENSE_TYPES_LIST, "persona.defense");
-
-
