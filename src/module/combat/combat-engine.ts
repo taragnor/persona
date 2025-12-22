@@ -322,14 +322,8 @@ export class CombatEngine {
 				...addonAttackResultData,
 			};
 		}
-		// let withinAilmentRange = false;
-		// if (power.system.defense == "ail") {
-		// 	withinAilmentRange = true;
-		// } else {
-		// 	withinAilmentRange = this.withinRange(naturalAttackRoll, ailmentRange);
-		// }
-		situation["withinAilmentRange"]= CombatEngine.withinRange(ailmentRange, r);
-		situation["withinInstantKillRange"] = CombatEngine.withinRange(instantDeathRange, r);
+		situation.withinAilmentRange = CombatEngine.withinRange(ailmentRange, r);
+		situation.withinInstantKillRange = CombatEngine.withinRange(instantDeathRange, r);
 		const canCrit = typeof rollType == 'number' || rollType == 'iterative' ? false : true;
 		const cancelCritsForInstantDeath = false;
 		if (naturalAttackRoll + critBoost >= 20
