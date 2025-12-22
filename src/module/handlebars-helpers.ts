@@ -55,6 +55,7 @@ import {PreconditionConverter} from "./migration/convertPrecondition.js";
 import {PCSheet} from "./actor/sheets/pc-sheet.js";
 import {OriginalDamageSystem} from "./combat/original-damage-system.js";
 import {CombatEngine} from "./combat/combat-engine.js";
+import {PersonaCompendium} from "./persona-compendium.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -936,8 +937,13 @@ export class PersonaHandleBarsHelpers {
 				});
 		},
 
-		"isCopyableToCompendium": function (actor: PersonaActor): boolean {
-			return actor.isShadow() && actor.isPersona() && !actor.isCompendiumEntry();
+		"canAccessCompendium": function () {
+			return PersonaCompendium.canUseCompendium();
+		},
+
+		"isCopyableToCompendium": function (persona: Persona): boolean {
+			return PersonaCompendium.canUseCompendium()
+				&& PersonaCompendium.isCopyableToCompendium(persona);
 		},
 
 		"fusionResult": function (s1: Shadow, s2: Shadow) : U<Shadow> {
@@ -1012,6 +1018,14 @@ export class PersonaHandleBarsHelpers {
 				.map(x => `<div>${x}</div>`)
 				.join("")
 			);
+		},
+
+		"compendium" : function () : Shadow[] {
+			return PersonaDB.personaCompendium();
+		},
+
+		"deCompendiumName": function (shadow: PersonaActor) : string {
+			return PersonaCompendium.convertToNormalName(shadow.name);
 		},
 
 	};

@@ -11,10 +11,12 @@
 				</a>
 			</div>
 			<div>
+				{{#if (canAccessCompendium)}}
 				{{#if ../actor.sideboardPersonas}}
 				<a class="swap-persona">
 					<i class="fa-solid fa-retweet"></i>
 				</a>
+				{{/if}}
 				{{/if}}
 				<a class="delPersona">
 					<i class="fa-solid fa-trash-can"></i>
@@ -36,9 +38,11 @@
 				</a>
 			</div>
 			<div>
+				{{#if (canAccessCompendium)}}
 				<a class="swap-persona">
 					<i class="fa-solid fa-retweet"></i>
 				</a>
+				{{/if}}
 				<a class="delPersona">
 					<i class="fa-solid fa-trash-can"></i>
 				</a>

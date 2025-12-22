@@ -9,7 +9,7 @@ import { PersonaSockets } from "./persona.js";
 import { weightedChoice } from "./utility/array-tools.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { SkillCard } from "./item/persona-item.js";
-import { ValidAttackers } from "./combat/persona-combat.js";
+import { PersonaCombat, ValidAttackers } from "./combat/persona-combat.js";
 import { SearchMenu } from "./exploration/searchMenu.js";
 import { PersonaRegion } from "./region/persona-region.js";
 import { Weapon } from "./item/persona-item.js";
@@ -448,6 +448,7 @@ export class Metaverse {
 		}
 		return region as PersonaRegion;
 	}
+
 
 	static async toggleCrunchParty () : Promise<void> {
 		if (game.user.isGM) {

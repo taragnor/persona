@@ -1,5 +1,22 @@
-<h2>
-	Compendium
-</h2>
+<section class="persona-compendium">
+	<h2>
+		Compendium
+	</h2>
+	{{#if (not actor.sheet.selectedCompendium)}}
+	<ul class="persona-compendium-list">
+		{{#each (compendium) as |shadow i|}}
+		<li class="f-row compendium-entry" data-persona-id="{{shadow.id}}">
+			<div class="persona-name">
+				{{deCompendiumName shadow}} ({{shadow.level}}, {{shadow.tarot.displayedName}})
+			</div>
+			<div>
+				Cost: {{shadow.summoningCost}}
+			</div>
+		</li>
+		{{/each}}
+	</ul>
+	{{else}}
+	{{> "systems/persona/parts/persona-viewer.hbs" actor=actor CONST=CONST persona=actor.sheet.selectedCompendium partial=false}}
+	{{/if}}
 
-Coming Soon
+</section>

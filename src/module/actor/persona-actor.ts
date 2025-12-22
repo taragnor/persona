@@ -65,6 +65,7 @@ import {Defense} from "../../config/defense-types.js";
 import {EnhancedActorDirectory} from "../enhanced-directory/enhanced-directory.js";
 import {FusionCombination, FusionTable} from "../../config/fusion-table.js";
 import {EnchantedTreasureFormat} from "../exploration/treasure-system.js";
+import {PersonaCompendium} from "../persona-compendium.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -667,18 +668,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!this.isShadow() || !this.isPersona()) {
 			return undefined;
 		}
-		const entryId = this.system.personaConversion.compendiumId;
-		if (!entryId || entryId == this.id) {return undefined;}
-		const ret= PersonaDB.getActorById(entryId);
-		if (!ret || !ret.isShadow() || !ret.isPersona()) {return undefined;}
-		return ret;
+		return PersonaCompendium.lookUpEntryFor(this);
 	}
 
 	async copyToCompendium(this: Shadow) : Promise<void> {
 		if (!this.isPersona()) {
 			throw new PersonaError(`Can't copy to compendium, ${this.name} isn't a valid Persona`);
 		}
-		const ret = await ActorConverters.copyPersonaToCompendium(this);
+		const ret = await PersonaCompendium.copyPersonaToCompendium(this);
 		if (ret && !game.user.isGM) {
 			await Logger.sendToChat(`${this.name} saved to compendium`);
 		}
@@ -2236,13 +2233,36 @@ isPersona(): boolean {
 }
 
 isCompendiumEntry(this: Shadow) : boolean {
-	return this.isPersona() && this.system.personaConversion.compendiumId == this.id;
+	return this.isPersona() &&
+		PersonaCompendium.isCompendiumEntry(this);
 }
 
 isCustomPersona(this: ValidAttackers): boolean {
 	return this.isPersona() &&
 		(	this.hasTag("custom-persona") || this.hasTag("lone-persona"));
 }
+
+// compendiumVersion(this: Shadow) : U<Shadow> {
+// 	if (!this.isPersona() || this.isCompendiumEntry()) {return undefined;}
+// 	const compId = this.system.personaConversion.compendiumId;
+// 	if (compId) {
+// 		const entry = PersonaDB.getActorById(compId);
+// 		if (entry && entry.isShadow()) {
+// 			if (!entry.isCompendiumEntry()) {
+// 				ui.notifications.warn(`${entry.name} is not registered as a compendium persona`);
+// 			}
+// 			return entry;
+// 		}
+// 	}
+// 	const check = PersonaDB.getActorByName(PersonaCompendium.convertToCompendiumName(this.name));
+// 	if (check && check.isShadow()) {
+// 		if (!check.isCompendiumEntry()) {
+// 			ui.notifications.warn(`${check.name} is not registered as a compendium persona`);
+// 		}
+// 		return check;
+// 	}
+// 	return undefined;
+// }
 
 knowsPowerInnately(this: ValidAttackers, power : Power)  : boolean{
 	const powers = this.system.combat.powers;
@@ -4393,6 +4413,12 @@ private async _trySwapPersona(this: PC, p1: Persona, p2: Persona)  : Promise<boo
 		}
 	}
 	return false;
+}
+
+/** number of R to summon from compendium*/
+get summoningCost() : number {
+	if (!this.isShadow() || !this.isCompendiumEntry()) { return -1;}
+	return this.level * 2;
 }
 
 }//end of class

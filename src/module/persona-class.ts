@@ -1140,6 +1140,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			.map ( x=> x.getDamageType(this.user));
 	}
 
+	get compendiumEntry(): U<Shadow> {
+		return this.source.compendiumEntry;
+	}
+
 } // end of class
 
 

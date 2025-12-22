@@ -71,6 +71,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".persona-viewer .persona-name").on("click", this.openPersona.bind(this));
 		html.find(".persona-list li .persona-name").rightclick(this.activatePersona.bind(this));
 		html.find(".active-statuses .status-effect").rightclick(this.removeStatus.bind(this));
+		html.find(".copy-to-compendium").on("click", this.copyToCompendium.bind(this));
 
 	}
 
@@ -489,6 +490,19 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (effect) {
 			await effect.delete();
 		}
+	}
+
+	async copyToCompendium(ev: JQuery.ClickEvent) {
+		const personaId = HTMLTools.getClosestData(ev, "personaId");
+		if (!personaId) {
+			throw new PersonaError("No Persona Id");
+		}
+		const shadow = PersonaDB.getActor(personaId);
+		if (!shadow || !shadow.isShadow()) {
+			throw new PersonaError(`Bad Actor Id For Persona Source : ${personaId}`);
+		}
+		if (!await HTMLTools.confirmBox("COnfirm Compendium Write", `Really copy ${shadow.name} level ${shadow.level} to the compendium?`)) {return;}
+		await shadow.copyToCompendium();
 	}
 
 }

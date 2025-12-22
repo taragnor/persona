@@ -37,6 +37,7 @@ const PLAYER_VISIBLE_MOD_LIST = [
 	"fixed-treasure", // Treasure is static
 	"treasure-refresh", // Treasure refreshes on enter metaverse
 	"no-tension-increase", //no tension increase after search
+	"compendium-access", //can access persona compendium
 
 ] as const;
 

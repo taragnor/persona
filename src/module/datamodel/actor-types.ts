@@ -107,6 +107,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 				compendiumId: new id(), //Id of the compendium entry relating to this shadow
 				startingLevel: new num({integer: true, min: 1, max: 150, initial: 1}),
 				fusionConditions: new arr(new obj<Precondition>()),
+				isCompendiumEntry: new bool(),
 			}),
 			combat: new sch({
 				...combatCommonStats(),

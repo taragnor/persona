@@ -60,6 +60,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			enchantments: undefined,
 			classes: undefined,
 			possiblePersonas: undefined,
+			personaCompendium: undefined,
 		};
 		Hooks.callAll("DBrefresh");
 		return newCache;
@@ -385,6 +386,16 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.navigator;
 	}
 
+	personaCompendium() : Shadow[] {
+		if (!this.#cache.personaCompendium) {
+		this.#cache.personaCompendium = this.allActors()
+			.filter ( x=> x.isShadow())
+			.filter(x=> x.isCompendiumEntry())
+			.sort( (a,b)=> a.name.localeCompare(b.name));
+		}
+		return this.#cache.personaCompendium;
+	}
+
 	navigatorModifiers(): ModifierContainer[] {
 		const navigator = this.getNavigator();
 		if (!navigator) {return [];}
@@ -480,5 +491,6 @@ type PersonaDBCache =	{
 	tagsArr: U<Tag[]>;
 	classes: U<CClass[]>;
 	possiblePersonas: U<Shadow[]>;
+	personaCompendium: U<Shadow[]>;
 };
 

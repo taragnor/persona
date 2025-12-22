@@ -7,75 +7,76 @@ import { PC } from "../actor/persona-actor.js";
 import { PersonaDB } from "../persona-db.js";
 import {PersonaSockets} from "../persona.js";
 
-declare global {
-	export interface SocketMessage {
-		"COMPENDIUM_COPY": {id: Shadow["id"]}
-	}
-}
-
-Hooks.on("socketsReady", (sockets) => {
-	sockets.setHandler("COMPENDIUM_COPY", async (data) => {
-		const actor = PersonaDB.getActorById(data.id);
-		if (!actor || !actor.isShadow()) {
-			PersonaError.softFail(`Bad Actor Id sent to attempt compendium copy: ${data.id}`, data);
-			return false;
-		}
-		return await ActorConverters.copyPersonaToCompendium(actor);
-	});
-
-});
 
 export class ActorConverters {
 
-	static async copyPersonaToCompendium(actor: Shadow) : Promise<boolean>  {
-		if (!game.user.isGM) {
-			const gm = game.users.find(x=> x.isGM && x.active);
-			if (!gm) {
-				throw new PersonaError("No GM connected, can't take this action");
-			};
-			const socketData = {id: actor.id};
-			return await PersonaSockets.verifiedSend("COMPENDIUM_COPY", socketData, gm.id);
-		} else {
-			return this.#copyPersonaToCompendium(actor);
-		}
-	}
+	// static async copyPersonaToCompendium(actor: Shadow) : Promise<boolean>  {
+	// 	if (!game.user.isGM) {
+	// 		const gm = game.users.find(x=> x.isGM && x.active);
+	// 		if (!gm) {
+	// 			throw new PersonaError("No GM connected, can't take this action");
+	// 		};
+	// 		const socketData = {id: actor.id};
+	// 		return await PersonaSockets.verifiedSend("COMPENDIUM_COPY", socketData, gm.id);
+	// 	} else {
+	// 		return this.#copyPersonaToCompendium(actor);
+	// 	}
+	// }
 
-	static async #copyPersonaToCompendium(actor: Shadow) {
-		if (!actor.isPersona()) {
-			throw new PersonaError(`Can't copy to compendium, ${actor.name} isn't a valid Persona`);
-		}
-		const compId = actor.system.personaConversion.compendiumId;
-		if (compId == actor.id) {
-			throw new Error("This is already a compendium Persona!");
-		}
-		if (compId) {
-			let existing : U<Shadow>;
-			const entry = PersonaDB.getActorById(compId);
-			if (entry && entry.isShadow()) {
-				existing = entry;
-			}
-			if (existing) {
-				const data = {
-					system: actor.system.toJSON()
-				};
-				await existing.update(data);
-				console.log(`Entry copied to existing ${existing.name}`);
-				return true;
-			}
-		}
-		const personaData = {
-			system: (actor.system.toJSON() as Shadow["system"]),
-			type: "shadow",
-			name: `${actor.name} (Compendium)`,
-			img: actor.img,
-			prototypeToken: actor.prototypeToken,
-			ownership: actor.ownership,
-		} as const;
-		const persona = await PersonaActor.create<Shadow>(personaData);
-		if (!persona) {return false;}
-		await actor.update( {"system.personaConversion.compendiumId": persona.id});
-		return true;
-	}
+	// static convertToCompendiumName(actorName: string) : string {
+	// 	return  `${actorName} (Compendium)`;
+	// }
+
+	// private static async createNewCompendiumEntry(actor: Shadow): Promise<Shadow> {
+	// 	const name = this.convertToCompendiumName(actor.name);
+	// 	const personaData = {
+	// 		system: (actor.system.toJSON() as Shadow["system"]),
+	// 		type: "shadow",
+	// 		name,
+	// 		// name: `${actor.name} (Compendium)`,
+	// 		img: actor.img,
+	// 		prototypeToken: actor.prototypeToken,
+	// 		ownership: actor.ownership,
+	// 	} as const;
+	// 	const persona = await PersonaActor.create<Shadow>(personaData);
+	// 	if (!persona) {throw new PersonaError(`Couldn't create Compendiume entry for ${actor.name}`);}
+	// 	return persona;
+	// }
+
+	// private static async updateExistingCompendiumEntry( actor: Shadow, existing: Shadow) {
+	// 		const data = {
+	// 			system: actor.system.toJSON()
+	// 		};
+	// 		await existing.update(data);
+	// 		await existing.update( {"system.personaConversion.isCompendiumEntry": true});
+	// 		console.log(`Entry copied to existing ${existing.name}`);
+	// 		return true;
+	// }
+
+	// static async #copyPersonaToCompendium(actor: Shadow) {
+	// 	if (!actor.isPersona()) {
+	// 		throw new PersonaError(`Can't copy to compendium, ${actor.name} isn't a valid Persona`);
+	// 	}
+	// 	if (actor.isCompendiumEntry()) {
+	// 		throw new PersonaError("This is already a compendium Persona!");
+	// 	}
+	// 	let compEntry = actor.compendiumVersion();
+	// 	if (compEntry) {
+	// 		await this.updateExistingCompendiumEntry(actor, compEntry);
+	// 		// const data = {
+	// 		// 	system: actor.system.toJSON()
+	// 		// };
+	// 		// await existing.update(data);
+	// 		// await existing.update( {"system.personaConversion.isCompendiumEntry": true});
+	// 		// console.log(`Entry copied to existing ${existing.name}`);
+	// 		// return true;
+	// 	} else {
+	// 		compEntry = await this.createNewCompendiumEntry(actor);
+	// 	}
+	// 	await compEntry.update( {"system.personaConversion.isCompendiumEntry": true});
+	// 	await actor.update( {"system.personaConversion.compendiumId": compEntry.id});
+	// 	return true;
+	// }
 
 	static async convertShadowPowers(actor: Shadow) : Promise<void> {
 		if (!actor.isShadow()) {return;}
