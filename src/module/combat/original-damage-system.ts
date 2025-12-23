@@ -8,7 +8,6 @@ import {GrowthCalculator} from "../utility/growth-calculator.js";
 import {AttackResult} from "./combat-result.js";
 import {DamageCalculation, NewDamageParams} from "./damage-calc.js";
 import {DamageSystemBase} from "./damage-system.js";
-import {ValidAttackers} from "./persona-combat.js";
 
 export class OriginalDamageSystem extends DamageSystemBase {
 	// WEAPON_DAMAGE_MULT = 1.75 as const;

@@ -20,7 +20,7 @@ import {AttackResult, CombatResult} from "./combat-result.js";
 import {DamageCalculation} from "./damage-calc.js";
 import {FinalizedCombatResult} from "./finalized-combat-result.js";
 import {ModifierList} from "./modifier-list.js";
-import {CombatOptions, PersonaCombat, PToken, ValidAttackers} from "./persona-combat.js";
+import {CombatOptions, PersonaCombat, PToken} from "./persona-combat.js";
 import {PersonaSFX} from "./persona-sfx.js";
 
 export class CombatEngine {

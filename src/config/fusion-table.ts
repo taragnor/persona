@@ -1,4 +1,3 @@
-import {PC, Shadow} from "../module/actor/persona-actor.js";
 import {ConditionalEffectManager} from "../module/conditional-effect-manager.js";
 import {Persona} from "../module/persona-class.js";
 import {PersonaDB} from "../module/persona-db.js";

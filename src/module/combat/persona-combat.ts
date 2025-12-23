@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { ValidSocialTarget } from '../social/persona-social.js';
 import { EvaluatedDamage } from './damage-calc.js';
 import { EnhancedSourcedConsequence, NonDeprecatedConsequence} from '../../config/consequence-types.js';
 import { sleep } from '../utility/async-wait.js';
@@ -8,12 +7,9 @@ import { RollTag } from '../../config/roll-tags.js';
 import { Persona } from '../persona-class.js';
 import { PersonaScene } from '../persona-scene.js';
 import { UsableAndCard } from '../item/persona-item.js';
-import { NPCAlly } from '../actor/persona-actor.js';
-import { PC } from '../actor/persona-actor.js';
 import { randomSelect } from '../utility/array-tools.js';
 import { CombatHooks } from './combat-hooks.js';
 import { TriggeredEffect } from '../triggered-effect.js';
-import { Shadow } from '../actor/persona-actor.js';
 import { PersonaCalendar } from '../social/persona-calendar.js';
 import { ConsTarget } from '../../config/consequence-types.js';
 import { PersonaSocial } from '../social/persona-social.js';
@@ -1909,8 +1905,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 } // end of class
 
-
-export type ValidAttackers = PC | Shadow | NPCAlly;
 
 export type PToken = TokenDocument<ValidAttackers> & {get actor(): ValidAttackers};
 

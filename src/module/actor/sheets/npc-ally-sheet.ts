@@ -5,7 +5,6 @@ import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaError } from "../../persona-error.js";
 import { PersonaItem } from "../../item/persona-item.js";
 import { PersonaActor } from "../persona-actor.js";
-import { NPCAlly } from "../persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { PCLikeSheet } from "./pc-like-sheet.js";
 import { Power } from "../../item/persona-item.js";

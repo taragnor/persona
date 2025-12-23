@@ -5,7 +5,6 @@ import { ConsequenceAmount, NewDamageConsequence, SetFlagEffect } from "../../co
 import { DamageCalculation } from "./damage-calc.js";
 import { RollSituation } from "../../config/situation.js";
 import { PersonaItem, UsableAndCard } from "../item/persona-item.js";
-import { ValidAttackers } from "./persona-combat.js";
 import { PersonaAE, StatusDuration } from "../active-effect.js";
 import { getSocialLinkTarget, multiCheckToArray } from "../preconditions.js";
 import { Consequence } from "../../config/consequence-types.js";

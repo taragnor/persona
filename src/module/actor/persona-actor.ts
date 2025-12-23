@@ -21,8 +21,6 @@ import { PersonaScene } from "../persona-scene.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { RealDamageType } from "../../config/damage-types.js";
 import { Carryable, CraftingMaterial, SkillCard, SocialCard, Tag } from "../item/persona-item.js";
-import { ValidSocialTarget } from "../social/persona-social.js";
-import { ValidAttackers } from "../combat/persona-combat.js";
 import { FlagData } from "../../config/actor-parts.js";
 import { TarotCard } from "../../config/tarot.js";
 import { removeDuplicates } from "../utility/array-tools.js";
@@ -62,10 +60,10 @@ import { StatusDuration } from "../active-effect.js";
 import {Calculation} from "../utility/calculation.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {Defense} from "../../config/defense-types.js";
-import {EnhancedActorDirectory} from "../enhanced-directory/enhanced-directory.js";
 import {FusionCombination, FusionTable} from "../../config/fusion-table.js";
 import {EnchantedTreasureFormat} from "../exploration/treasure-system.js";
 import {PersonaCompendium} from "../persona-compendium.js";
+import {ActorHooks} from "./actor-hooks.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -2071,98 +2069,98 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	complementRating (this: Shadow, other: Shadow) : number {
-		const cachedRating = this.cache.complementRating.get(other.id);
-		if (cachedRating != undefined) {
-			return cachedRating;
+complementRating (this: Shadow, other: Shadow) : number {
+	const cachedRating = this.cache.complementRating.get(other.id);
+	if (cachedRating != undefined) {
+		return cachedRating;
+	}
+	const rating = this.#complementRating(other) + other.#complementRating(this);
+	this.cache.complementRating.set(other.id, rating);
+	return rating;
+}
+
+#complementRating (this: Shadow, other: Shadow) : number {
+	let rating = 0;
+	if (this == other) {return 0;} //baseline
+	const scaledPairs : [Shadow["system"]["role"], Shadow["system"]["role"], number][] = [
+		["soldier", "lurker", 1],
+		["soldier", "support", 1],
+		["soldier", "artillery", 1],
+		["brute", "support", 1],
+		["brute", "controller", 1],
+		["assassin", "lurker", -1],
+		["lurker", "support", -1],
+		["lurker", "controller", 1],
+		["lurker", "lurker", -0.5],
+		["soldier", "soldier", -0.5],
+		["support", "support", -0.5],
+	] as const;
+	for (const [r1,r2, amt] of scaledPairs) {
+		if (this.hasRole(r1) && other.hasRole(r2)) {
+			rating += amt;
 		}
-		const rating = this.#complementRating(other) + other.#complementRating(this);
-		this.cache.complementRating.set(other.id, rating);
-		return rating;
+	}
+	const thisP= this.persona();
+	const otherP = other.persona();
+	const weaknesses = DAMAGETYPESLIST
+		.filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "weakness") as RealDamageType[];
+	rating -= 0.5 * weaknesses.length;
+	const normalR = DAMAGETYPESLIST
+		.filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "normal") as RealDamageType[];
+	for (const w of weaknesses) {
+		const res = otherP.elemResist(w);
+		switch (res)  {
+			case "block":
+				rating += 2;
+				break;
+			case "absorb":
+			case "reflect":
+				rating += 3;
+				break;
+			case "resist":
+				rating += 0.5;
+				break;
+			case "normal":
+				rating -= 1;
+				break;
+			case "weakness":
+				rating -= 2;
+				break;
+			default:
+				break;
+		}
+	}
+	for (const n of normalR) {
+		const res = otherP.elemResist(n);
+		switch (res) {
+			case "resist":
+				rating += 0.1;
+				break;
+			case "absorb":
+			case "reflect":
+			case "block":
+				rating += 1;
+				break;
+			case "weakness":
+				rating -= 1;
+				break;
+		}
 	}
 
-	#complementRating (this: Shadow, other: Shadow) : number {
-		let rating = 0;
-		if (this == other) {return 0;} //baseline
-		const scaledPairs : [Shadow["system"]["role"], Shadow["system"]["role"], number][] = [
-			["soldier", "lurker", 1],
-			["soldier", "support", 1],
-			["soldier", "artillery", 1],
-			["brute", "support", 1],
-			["brute", "controller", 1],
-			["assassin", "lurker", -1],
-			["lurker", "support", -1],
-			["lurker", "controller", 1],
-			["lurker", "lurker", -0.5],
-			["soldier", "soldier", -0.5],
-			["support", "support", -0.5],
-		] as const;
-		for (const [r1,r2, amt] of scaledPairs) {
-			if (this.hasRole(r1) && other.hasRole(r2)) {
-				rating += amt;
-			}
-		}
-		const thisP= this.persona();
-		const otherP = other.persona();
-		const weaknesses = DAMAGETYPESLIST
-			.filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "weakness") as RealDamageType[];
-		rating -= 0.5 * weaknesses.length;
-		const normalR = DAMAGETYPESLIST
-			.filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "normal") as RealDamageType[];
-		for (const w of weaknesses) {
-			const res = otherP.elemResist(w);
-			switch (res)  {
-				case "block":
-					rating += 2;
-					break;
-				case "absorb":
-				case "reflect":
-					rating += 3;
-					break;
-				case "resist":
-					rating += 0.5;
-					break;
-				case "normal":
-					rating -= 1;
-					break;
-				case "weakness":
-					rating -= 2;
-					break;
-				default:
-					break;
-			}
-		}
-		for (const n of normalR) {
-			const res = otherP.elemResist(n);
-			switch (res) {
-				case "resist":
-					rating += 0.1;
-					break;
-				case "absorb":
-				case "reflect":
-				case "block":
-					rating += 1;
-					break;
-				case "weakness":
-					rating -= 1;
-					break;
-			}
-		}
-
-		const attacks = new Set(
-			this.powers
-			.map(x=> x.system.dmg_type)
-			.filter (dmgType => dmgType != "untyped" && dmgType != "none")
-		);
-		const otherAttacks =
-			other.powers
-			.map(x=> x.system.dmg_type)
-			.filter (dmgType => dmgType != "healing" && dmgType != "untyped" && dmgType != "none");
-		rating += otherAttacks.reduce( (acc, dmg) =>
-			acc + (!attacks.has(dmg) ? 1 : 0)
-			, 0 );
-		return rating;
-	}
+	const attacks = new Set(
+		this.powers
+		.map(x=> x.system.dmg_type)
+		.filter (dmgType => dmgType != "untyped" && dmgType != "none")
+	);
+	const otherAttacks =
+		other.powers
+		.map(x=> x.system.dmg_type)
+		.filter (dmgType => dmgType != "healing" && dmgType != "untyped" && dmgType != "none");
+	rating += otherAttacks.reduce( (acc, dmg) =>
+		acc + (!attacks.has(dmg) ? 1 : 0)
+		, 0 );
+	return rating;
+}
 
 instantKillResistanceMultiplier(this: ValidAttackers, attacker: ValidAttackers) : number {
 	const situation : Situation = {
@@ -4423,91 +4421,7 @@ get summoningCost() : number {
 
 }//end of class
 
-Hooks.on("preUpdateActor", async (actor: PersonaActor, changes) => {
-	if (!actor.isOwner) {return;}
-	switch (actor.system.type) {
-		case "npc": return;
-		case "tarot": return;
-		case "pc":
-		case "npcAlly":
-		case "shadow":  {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-			const newHp = changes?.system?.combat?.hp as number | undefined;
-			if (newHp == undefined)
-			{return;}
-			await (actor as ValidAttackers).refreshHpStatus(newHp);
-			return ;
-		}
-		default:
-			actor.system satisfies never;
-			throw new PersonaError(`Unknown Type`);
-	}
-});
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-Hooks.on("updateActor", async (actor: PersonaActor, changes: {system: any}) => {
-	if (!game.user.isGM) {return;}
-	if (!actor.isOwner) {return;}
-	if (!actor.isValidCombatant()) {return;}
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-	const lvl =changes?.system?.combat?.personaStats?.pLevel as U<number>;
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-	if (changes?.system?.combat?.personaStats?.pLevel != undefined && lvl) {
-		console.log("Actor XP update");
-		const minXP = LevelUpCalculator.minXPForEffectiveLevel(lvl);
-		const maxXP = LevelUpCalculator.minXPForEffectiveLevel(lvl + 1);
-		if (actor.system.combat.personaStats.xp < minXP) {
-			console.log("Actor XP update raised");
-			await actor.update({"system.combat.personaStats.xp" : minXP});
-		}
-		if (actor.system.combat.personaStats.xp >= maxXP) {
-			console.log("Actor XP update lowered");
-
-			await actor.update({"system.combat.personaStats.xp" : minXP});
-		}
-		await actor.basePersona.resetCombatStats(true);
-		if (actor.isPC() || actor.isNPCAlly()) {
-			await actor.refreshMaxMP();
-		}
-		await actor.refreshHpStatus();
-		//NEEd to refresh stat points on level change
-	}
-	if (lvl != undefined) {
-		await actor.onLevelUp_checkLearnedPowers(lvl, !actor.isShadow());
-	}
-	switch (actor.system.type) {
-		case "npcAlly": {
-			const PCChanges = changes.system as Partial<NPCAlly["system"]>;
-			if (PCChanges?.combat?.isNavigator == true) {
-				await (actor as NPCAlly).setAsNavigator();
-			}
-			if (PCChanges?.combat?.usingMetaPod != undefined)
-			{
-				await Logger.sendToChat(`${actor.name} changed Metaverse Pod status to ${PCChanges.combat.usingMetaPod}`);
-			}
-			break; }
-		case "pc": {
-			const PCChanges = changes.system as Partial<PC["system"]>;
-			if (PCChanges?.combat?.usingMetaPod != undefined)
-			{
-				await Logger.sendToChat(`${actor.name} changed Metaverse Pod status to ${PCChanges.combat.usingMetaPod}`);
-			}
-			break;
-		}
-		case "shadow":
-			break;
-		default:
-			actor.system satisfies never;
-	}
-	await	actor.refreshTrackers();
-});
-
-Hooks.on("createToken", async function (token: TokenDocument<PersonaActor>)  {
-	if (!game.user.isGM) { return;}
-	if (token.actor && game.user.isGM && token.actor.system.type == "shadow") {
-		await token.actor.fullHeal();
-	}
-});
 
 export type SocialBenefit = {
 	id: string,
@@ -4515,79 +4429,21 @@ export type SocialBenefit = {
 	lvl_requirement: number,
 };
 
-export type PC = Subtype<PersonaActor, "pc">;
-export type Shadow = Subtype<PersonaActor, "shadow">;
-export type NPC = Subtype<PersonaActor, "npc">;
-export type NPCAlly =Subtype<PersonaActor, "npcAlly">;
-export type Tarot = Subtype<PersonaActor, "tarot">;
-export type SocialLink = PC | NPC | NPCAlly;
 
-export type ActivityLink = {
-	strikes: number,
-	available: boolean,
-	activity: Activity,
-	currentProgress: number,
-}
 
-export type SocialLinkData = {
-	linkLevel: number,
-	actor: SocialLink,
-	inspiration: number,
-	linkBenefits: SocialLink,
-	focii: Focus[],
-	currentProgress:number,
-	relationshipType: string,
-	available: boolean,
-	isDating: boolean,
-}
-
-type Team = "PCs" | "Shadows" | "Neutral" ;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const EMPTYARR :any[] = [] as const; //to speed up things by not needing to create new empty arrays for immutables;
+const EMPTYARR :unknown[] = [] as const; //to speed up things by not needing to create new empty arrays for immutables;
 
 Object.seal(EMPTYARR);
 
-Hooks.on("createActor", async function (actor: PersonaActor) {
-	if (actor.isShadow()) {
-		await actor.update({
-			"prototypeToken.displayBars": 50,
-			"prototypeToken.displayName": 30,
-			"prototypeToken.bar1": {attribute: "combat.hpTracker"},
-			"prototypeToken.bar2": {attribute: "combat.energy"}
-		});
-	}
-	if (actor.isShadow() && !actor.hasTag("persona") && !actor.hasTag("d-mon")  && actor.level <= 1) {
-		const avgLevel = PersonaDB.averagePCLevel();
-		await actor.update({ "system.combat.personaStats.pLevel" : avgLevel});
-		await actor.setWeaponDamageByLevel(avgLevel);
-	}
-});
 
-Hooks.on("updateActor", async function (actor: PersonaActor) {
-	actor.clearCache();
-	if (actor.isShadow()) {
-		const xp= LevelUpCalculator.minXPForEffectiveLevel(actor.system.combat.personaStats.pLevel);
-		if (actor.system.combat.personaStats.xp < xp) {
-			await actor.update({"system.combat.personaStats.xp" : xp});
-		}
-	}
-});
+ActorHooks.init();
 
-export type XPGainReport = {
-	name: string,
-	amount: number,
-	leveled: boolean,
-};
+declare global {
+	type PC = Subtype<PersonaActor, "pc">;
+	type Shadow = Subtype<PersonaActor, "shadow">;
+	type NPC = Subtype<PersonaActor, "npc">;
+	type NPCAlly =Subtype<PersonaActor, "npcAlly">;
+	type Tarot = Subtype<PersonaActor, "tarot">;
 
-Hooks.on("updateActor", function (actor: PersonaActor, diff)  {
-	if (!actor.isToken && diff?.prototypeToken?.name) {
-		EnhancedActorDirectory.refresh();
-	}
-	if (actor.isValidCombatant()) {
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-		if (diff?.system?.combat?.personaStats?.pLevel != undefined) {
-			EnhancedActorDirectory.refresh();
-		}
-	}
-});
+	type SocialLink = PC | NPC | NPCAlly;
+}

@@ -1,4 +1,3 @@
-import { ValidAttackers } from "./persona-combat.js";
 import { RealDamageType } from "../../config/damage-types.js";
 import { ConsequenceAmount, DamageConsequence, EnhancedSourcedConsequence, NewDamageConsequence, NonDeprecatedDamageCons } from "../../config/consequence-types.js";
 import { OldDamageConsequence } from "../../config/consequence-types.js";

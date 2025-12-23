@@ -4,13 +4,11 @@ import { SocialCard } from "../module/item/persona-item.js";
 import { UsableAndCard } from "../module/item/persona-item.js";
 import { Persona } from "../module/persona-class.js";
 import { RollTag } from "./roll-tags.js";
-import { ValidSocialTarget } from "../module/social/persona-social.js";
 import { SocialStat } from "../config/student-skills.js";
 import { TarotCard } from "../config/tarot.js";
 import { StatusEffectId } from "./status-effects";
 import { CombatResult } from "../module/combat/combat-result.js";
 import { CombatTriggerTypes } from "./triggers.js";
-import { ValidAttackers } from "../module/combat/persona-combat.js";
 import {RealDamageType} from "./damage-types.js";
 import {PersonaAE} from "../module/active-effect.js";
 

@@ -9,7 +9,6 @@ import { UniversalModifier } from "./item/persona-item.js";
 import { testPreconditions } from "./preconditions.js";
 import { DamageType } from "../config/damage-types.js";
 import { ShadowRole } from "../config/shadow-types.js";
-import { Shadow } from "./actor/persona-actor.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaCalendar } from "./social/persona-calendar.js";
 import { PersonaRegion } from "./region/persona-region.js";

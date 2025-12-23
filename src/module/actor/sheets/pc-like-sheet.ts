@@ -3,8 +3,6 @@ import { Logger } from "../../utility/logger.js";
 import { localize } from "../../persona.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaDB } from "../../persona-db.js";
-import { NPCAlly } from "../persona-actor.js";
-import { PC } from "../persona-actor.js";
 import { CombatantSheetBase } from "./combatant-sheet.js";
 
 export class PCLikeSheet extends CombatantSheetBase {

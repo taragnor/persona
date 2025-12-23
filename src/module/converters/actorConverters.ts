@@ -1,82 +1,10 @@
 import { LevelUpCalculator } from "../../config/level-up-calculator.js";
-import { ValidAttackers } from "../combat/persona-combat.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaError } from "../persona-error.js";
-import { Shadow } from "../actor/persona-actor.js";
-import { PC } from "../actor/persona-actor.js";
 import { PersonaDB } from "../persona-db.js";
-import {PersonaSockets} from "../persona.js";
 
 
 export class ActorConverters {
-
-	// static async copyPersonaToCompendium(actor: Shadow) : Promise<boolean>  {
-	// 	if (!game.user.isGM) {
-	// 		const gm = game.users.find(x=> x.isGM && x.active);
-	// 		if (!gm) {
-	// 			throw new PersonaError("No GM connected, can't take this action");
-	// 		};
-	// 		const socketData = {id: actor.id};
-	// 		return await PersonaSockets.verifiedSend("COMPENDIUM_COPY", socketData, gm.id);
-	// 	} else {
-	// 		return this.#copyPersonaToCompendium(actor);
-	// 	}
-	// }
-
-	// static convertToCompendiumName(actorName: string) : string {
-	// 	return  `${actorName} (Compendium)`;
-	// }
-
-	// private static async createNewCompendiumEntry(actor: Shadow): Promise<Shadow> {
-	// 	const name = this.convertToCompendiumName(actor.name);
-	// 	const personaData = {
-	// 		system: (actor.system.toJSON() as Shadow["system"]),
-	// 		type: "shadow",
-	// 		name,
-	// 		// name: `${actor.name} (Compendium)`,
-	// 		img: actor.img,
-	// 		prototypeToken: actor.prototypeToken,
-	// 		ownership: actor.ownership,
-	// 	} as const;
-	// 	const persona = await PersonaActor.create<Shadow>(personaData);
-	// 	if (!persona) {throw new PersonaError(`Couldn't create Compendiume entry for ${actor.name}`);}
-	// 	return persona;
-	// }
-
-	// private static async updateExistingCompendiumEntry( actor: Shadow, existing: Shadow) {
-	// 		const data = {
-	// 			system: actor.system.toJSON()
-	// 		};
-	// 		await existing.update(data);
-	// 		await existing.update( {"system.personaConversion.isCompendiumEntry": true});
-	// 		console.log(`Entry copied to existing ${existing.name}`);
-	// 		return true;
-	// }
-
-	// static async #copyPersonaToCompendium(actor: Shadow) {
-	// 	if (!actor.isPersona()) {
-	// 		throw new PersonaError(`Can't copy to compendium, ${actor.name} isn't a valid Persona`);
-	// 	}
-	// 	if (actor.isCompendiumEntry()) {
-	// 		throw new PersonaError("This is already a compendium Persona!");
-	// 	}
-	// 	let compEntry = actor.compendiumVersion();
-	// 	if (compEntry) {
-	// 		await this.updateExistingCompendiumEntry(actor, compEntry);
-	// 		// const data = {
-	// 		// 	system: actor.system.toJSON()
-	// 		// };
-	// 		// await existing.update(data);
-	// 		// await existing.update( {"system.personaConversion.isCompendiumEntry": true});
-	// 		// console.log(`Entry copied to existing ${existing.name}`);
-	// 		// return true;
-	// 	} else {
-	// 		compEntry = await this.createNewCompendiumEntry(actor);
-	// 	}
-	// 	await compEntry.update( {"system.personaConversion.isCompendiumEntry": true});
-	// 	await actor.update( {"system.personaConversion.compendiumId": compEntry.id});
-	// 	return true;
-	// }
 
 	static async convertShadowPowers(actor: Shadow) : Promise<void> {
 		if (!actor.isShadow()) {return;}

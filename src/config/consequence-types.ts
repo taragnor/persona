@@ -1,5 +1,4 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
-import { ValidAttackers } from "../module/combat/persona-combat.js";
 import { PersonaItem } from "../module/item/persona-item.js";
 import { PermaBuffType } from "./perma-buff-type.js";
 import { INVENTORY_ACTION, SocialCardAction } from "./effect-types.js";
@@ -29,7 +28,6 @@ import { OtherConsequence } from "../module/datamodel/other-effects.js";
 import { StatusDuration } from "../module/active-effect.js";
 import { StatusEffectId } from "./status-effects.js";
 import { ItemProperty, ModifierCategory, ModifierTarget } from "./item-modifiers.js";
-import { PC } from "../module/actor/persona-actor.js";
 
 type ExpendOtherEffect = {
 	type: "expend-item";

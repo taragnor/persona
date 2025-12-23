@@ -2,7 +2,6 @@ import { PersonaDB } from "../persona-db.js";
 import { Power } from "../item/persona-item.js";
 import { AttackResult } from "./combat-result.js";
 import { PToken } from "./persona-combat.js";
-import { Shadow } from "../actor/persona-actor.js";
 import { PersonaCombat } from "./persona-combat.js";
 import {Persona} from "../persona-class.js";
 

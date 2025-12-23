@@ -1,7 +1,7 @@
 import {RealDamageType, ResistStrength} from "../../config/damage-types.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaActor} from "../actor/persona-actor.js";
-import {PersonaCombat, ValidAttackers} from "../combat/persona-combat.js";
+import {PersonaCombat} from "../combat/persona-combat.js";
 import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";

@@ -9,7 +9,6 @@ import { PersonaSockets } from "./persona.js";
 import { weightedChoice } from "./utility/array-tools.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { SkillCard } from "./item/persona-item.js";
-import { PersonaCombat, ValidAttackers } from "./combat/persona-combat.js";
 import { SearchMenu } from "./exploration/searchMenu.js";
 import { PersonaRegion } from "./region/persona-region.js";
 import { Weapon } from "./item/persona-item.js";
@@ -21,16 +20,12 @@ import { Consumable } from "./item/persona-item.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaError } from "./persona-error.js";
 import { TensionPool } from "./exploration/tension-pool.js";
-import { Shadow, XPGainReport } from "./actor/persona-actor.js";
 import { Logger } from "./utility/logger.js";
-import { PC } from "./actor/persona-actor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaSettings } from "../config/persona-settings.js";
-import { NPCAlly } from "./actor/persona-actor.js";
 import { PersonaScene } from "./persona-scene.js";
 import { EnchantedTreasureFormat, TreasureSystem } from "./exploration/treasure-system.js";
 import {RandomEncounter} from "./exploration/random-encounters.js";
-import {CombatScene} from "./combat/combat-scene.js";
 
 export class Metaverse {
 	static lastCrunch : number = 0;

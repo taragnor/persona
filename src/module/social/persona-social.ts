@@ -4,7 +4,6 @@ import { CardTag } from "../../config/card-tags.js";
 import { RollSituation } from "../../config/situation.js";
 import { RollTag } from "../../config/roll-tags.js";
 import { shuffle } from "../utility/array-tools.js";
-import { NPCAlly } from "../actor/persona-actor.js";
 import { StatusEffectId } from "../../config/status-effects.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { TurnAlert } from "../utility/turnAlert.js";
@@ -13,7 +12,6 @@ import { SocialCardActionConsequence } from "../../config/consequence-types.js";
 import { PersonaSounds } from "../persona-sounds.js";
 import { randomSelect } from "../utility/array-tools.js";
 import { SocialCardSituation } from "../../config/situation.js";
-import { NPC } from "../actor/persona-actor.js";
 import { ConditionalEffectManager } from "../conditional-effect-manager.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { CardChoice } from "../../config/social-card-config.js";
@@ -21,7 +19,6 @@ import { weightedChoice } from "../utility/array-tools.js";
 import { SocketPayload } from "../utility/socket-manager.js";
 import { PersonaCalendar } from "./persona-calendar.js";
 import { ArrayCorrector } from "../item/persona-item.js";
-import { ActivityLink } from "../actor/persona-actor.js";
 import { Activity } from "../item/persona-item.js";
 import { StudentSkill } from "../../config/student-skills.js";
 
@@ -30,18 +27,15 @@ import { CardRoll } from "../../config/social-card-config.js";
 import { testPreconditions } from "../preconditions.js";
 import { CardEvent } from "../../config/social-card-config.js";
 import { PersonaSockets } from "../persona.js";
-import { SocialLinkData } from "../actor/persona-actor.js";
 import { TarotCard } from "../../config/tarot.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { CombatResult } from "../combat/combat-result.js";
 import { NonCombatTriggerTypes } from "../../config/triggers.js";
-import { SocialLink } from "../actor/persona-actor.js";
 import { PersonaItem } from "../item/persona-item.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../config/persona-settings.js";
 import { SocialCard } from "../item/persona-item.js";
 import { PersonaError } from "../persona-error.js";
-import { PC } from "../actor/persona-actor.js";
 import { SocialStat } from "../../config/student-skills.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { STUDENT_SKILLS } from "../../config/student-skills.js";
@@ -1889,8 +1883,5 @@ export type CardData = {
 
 };
 
-
 export type SocialEncounterCard = SocialCard & {system: {cardType: "social"}};
-
-export type ValidSocialTarget = NPC | PC | NPCAlly
 

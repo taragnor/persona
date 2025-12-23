@@ -1,5 +1,5 @@
 import {PersonaSettings} from "../config/persona-settings.js";
-import {PersonaActor, Shadow} from "./actor/persona-actor.js";
+import {PersonaActor} from "./actor/persona-actor.js";
 import {PersonaCombat} from "./combat/persona-combat.js";
 import {Metaverse} from "./metaverse.js";
 import {Persona} from "./persona-class.js";

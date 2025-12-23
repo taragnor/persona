@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */ import { PERSONA_STATS } from "../../../config/persona-stats.js";
 import { PersonaError } from "../../persona-error.js";
-import { PC } from "../persona-actor.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { ConditionalEffectManager } from "../../conditional-effect-manager.js";
 import { DEFENSE_CATEGORY } from "../../../config/defense-categories.js";

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { PersonaRoller } from "../../persona-roll.js";
-import { Shadow } from "../persona-actor.js";
 import { Logger } from "../../utility/logger.js";
 import { PersonaError } from "../../persona-error.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
@@ -11,8 +10,6 @@ import { SocialStat } from "../../../config/student-skills.js";
 import { STUDENT_SKILLS_LIST } from "../../../config/student-skills.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaDB } from "../../persona-db.js";
-import { NPC } from "../persona-actor.js";
-import { PC } from "../persona-actor.js";
 import { PCLikeSheet } from "./pc-like-sheet.js";
 import { Persona } from "../../persona-class.js";
 

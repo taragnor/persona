@@ -2,7 +2,6 @@ import { INSTANT_KILL_LEVELS } from "../combat/damage-calc.js";
 import { DamageLevel, DamageType } from "../../config/damage-types.js";
 import { PowerTag } from "../../config/power-tags.js";
 import { STATUS_AILMENT_LIST, STATUS_EFFECT_LIST, StatusEffectId } from "../../config/status-effects.js";
-import { Shadow } from "../actor/persona-actor.js";
 import { InstantKillLevel } from "../combat/damage-calc.js";
 import { PersonaItem, Power, Tag } from "../item/persona-item.js";
 import { CostCalculator } from "./cost-calculator.js";

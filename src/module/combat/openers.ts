@@ -1,10 +1,9 @@
 import {StatusEffectId} from "../../config/status-effects.js";
-import {PC} from "../actor/persona-actor.js";
 import {Power, Usable} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
-import {PersonaCombat, PersonaCombatant, PToken, ValidAttackers} from "./persona-combat.js";
+import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 
 export class OpenerManager {
 	combat: PersonaCombat;

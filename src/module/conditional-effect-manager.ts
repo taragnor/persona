@@ -45,7 +45,6 @@ import { CONSQUENCELIST } from "../config/effect-types.js";
 import { PRECONDITIONLIST } from "../config/precondition-types.js";
 import { PersonaDB } from "./persona-db.js";
 import {ConsequenceConverter} from "./migration/convertConsequence.js";
-import {ValidAttackers} from "./combat/persona-combat.js";
 import {PersonaAE} from "./active-effect.js";
 import {PreconditionConverter} from "./migration/convertPrecondition.js";
 import {DEFENSE_TYPES} from "../config/defense-types.js";

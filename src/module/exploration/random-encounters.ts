@@ -1,4 +1,4 @@
-import {PersonaActor, Shadow} from "../actor/persona-actor.js";
+import {PersonaActor} from "../actor/persona-actor.js";
 import {CombatScene} from "../combat/combat-scene.js";
 import {ModifierList} from "../combat/modifier-list.js";
 import {Metaverse, PresenceRollData} from "../metaverse.js";

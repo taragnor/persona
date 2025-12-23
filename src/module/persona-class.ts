@@ -4,9 +4,6 @@ import { NonDeprecatedModifierType } from "../config/item-modifiers.js";
 import { Consumable, ModifierContainer, PersonaItem, Tag, Usable } from "./item/persona-item.js";
 import { Logger } from "./utility/logger.js";
 import { removeDuplicates } from "./utility/array-tools.js";
-import { Shadow, XPGainReport } from "./actor/persona-actor.js";
-import { NPCAlly } from "./actor/persona-actor.js";
-import { PC } from "./actor/persona-actor.js";
 import { UsableAndCard } from "./item/persona-item.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { Metaverse } from "./metaverse.js";
@@ -23,7 +20,6 @@ import { getActiveConsequences, multiCheckContains, multiCheckToArray } from "./
 import { PersonaI } from "../config/persona-interface.js";
 import { DamageType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";
-import {ValidAttackers} from "./combat/persona-combat.js";
 import {Power, Talent, Focus} from "./item/persona-item.js";
 import {PersonaTag} from "../config/creature-tags.js";
 import {Defense} from "../config/defense-types.js";

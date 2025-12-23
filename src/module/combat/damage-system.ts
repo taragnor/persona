@@ -4,7 +4,6 @@ import {Persona} from "../persona-class.js";
 import {PersonaError} from "../persona-error.js";
 import {AttackResult} from "./combat-result.js";
 import {DamageCalculation, EvaluatedDamage} from "./damage-calc.js";
-import {ValidAttackers} from "./persona-combat.js";
 
 export abstract class DamageSystemBase implements DamageInterface {
 

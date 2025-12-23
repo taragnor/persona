@@ -1,6 +1,5 @@
 import { PersonaError } from "../persona-error.js";
 import { SeededRandom } from "../utility/seededRandom.js";
-import { ValidAttackers } from "../combat/persona-combat.js";
 import { Persona } from "../persona-class.js";
 import {PersonaStat} from "../../config/persona-stats.js";
 import {Calculation} from "../utility/calculation.js";

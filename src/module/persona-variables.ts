@@ -1,5 +1,5 @@
 
-import { PersonaCombat, ValidAttackers } from "./combat/persona-combat.js";
+import { PersonaCombat} from "./combat/persona-combat.js";
 import { TargettingContextList } from "./combat/persona-combat.js";
 import { PersonaDB } from "./persona-db.js";
 import { VariableTypeSpecifier } from "../config/consequence-types.js";

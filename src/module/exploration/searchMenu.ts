@@ -1,4 +1,3 @@
-import { NPCAlly } from "../actor/persona-actor.js";
 import { Metaverse } from "../metaverse.js";
 import { PersonaRegion } from "../region/persona-region.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
@@ -9,7 +8,6 @@ import { HTMLTools } from "../utility/HTMLTools.js";
 import { SEARCH_ACTIONS } from "../../config/search-actions.js";
 import { SearchAction } from "../../config/search-actions.js";
 import { HBS_TEMPLATES_DIR } from "../../config/persona-settings.js";
-import { PC } from "../actor/persona-actor.js";
 import { PersonaSockets } from "../persona.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { TensionPool } from "./tension-pool.js";

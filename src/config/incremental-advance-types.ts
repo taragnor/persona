@@ -1,5 +1,3 @@
-import { PC } from "../module/actor/persona-actor.js";
-
 export const INCREMENTAL_ADVANCE_TYPES = [
 	"magicLow",
 	"magicHigh",

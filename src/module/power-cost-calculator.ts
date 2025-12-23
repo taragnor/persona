@@ -1,4 +1,3 @@
-import {Shadow} from "./actor/persona-actor.js";
 import {HPCostCalculator} from "./calculators/hpcost-calculator.js";
 import {MPCostCalculator} from "./calculators/mpcost-calculator.js";
 import {EnergyClassCalculator} from "./calculators/shadow-energy-cost-calculator.js";

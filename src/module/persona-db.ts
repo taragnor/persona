@@ -1,16 +1,11 @@
 import { TAROT_DECK, TarotCard } from "../config/tarot.js";
 import { TreasureItem } from "./metaverse.js";
 import { Carryable, CClass, SkillCard, Tag, Talent } from "./item/persona-item.js";
-import { NPCAlly } from "./actor/persona-actor.js";
 import { SocialEncounterCard } from "./social/persona-social.js";
 import { ModifierContainer } from "./item/persona-item.js";
-import { PC } from "./actor/persona-actor.js";
-import { Shadow } from "./actor/persona-actor.js";
 import { PersonaError } from "./persona-error.js";
 import { Activity } from "./item/persona-item.js";
-import { NPC } from "./actor/persona-actor.js";
 import { UniversalModifier } from "./item/persona-item.js";
-import { Tarot } from "./actor/persona-actor.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { DBAccessor } from "./utility/db-accessor.js";
 import { PersonaActor } from "./actor/persona-actor.js";

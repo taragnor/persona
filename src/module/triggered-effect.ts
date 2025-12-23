@@ -1,12 +1,11 @@
 import { removeDuplicates } from "./utility/array-tools.js";
 import { Metaverse } from "./metaverse.js";
 import { PersonaError } from "./persona-error.js";
-import { PC, PersonaActor } from "./actor/persona-actor.js";
+import { PersonaActor } from "./actor/persona-actor.js";
 import { NonCombatTriggerTypes } from "../config/triggers.js";
 import { CombatTriggerTypes } from "../config/triggers.js";
 import { Trigger } from "../config/triggers.js";
 import { CombatResult } from "./combat/combat-result.js";
-import { ValidAttackers } from "./combat/persona-combat.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import {getActiveConsequences} from "./preconditions.js";

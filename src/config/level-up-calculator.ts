@@ -1,7 +1,3 @@
-import { PC } from "../module/actor/persona-actor.js";
-import { NPCAlly } from "../module/actor/persona-actor.js";
-
-
 export class LevelUpCalculator {
 	static LEVEL_GROWTH_RATE = 1.125;
 	static SHADOWS_TO_KILL_TO_LEVEL = 10;

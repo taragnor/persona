@@ -2,7 +2,7 @@ import {ConsequenceAmount, DamageConsequence, EnhancedSourcedConsequence, NewDam
 import {RealDamageType} from "../../config/damage-types.js";
 import {AttackResult, CombatResult} from "../combat/combat-result.js";
 import {DamageCalculation} from "../combat/damage-calc.js";
-import {ConsequenceProcessed, PersonaCombat, ValidAttackers} from "../combat/persona-combat.js";
+import {ConsequenceProcessed, PersonaCombat} from "../combat/persona-combat.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";

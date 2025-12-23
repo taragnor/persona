@@ -2,7 +2,6 @@ import { UserSituation } from "../config/situation.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { HTMLTools } from "./utility/HTMLTools.js";
 import { RollSituation } from "../config/situation.js";
-import { ValidAttackers } from "./combat/persona-combat.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { PersonaError } from "./persona-error.js";
 import { ResolvedModifierList } from "./combat/modifier-list.js";
@@ -11,7 +10,6 @@ import { PersonaDB } from "./persona-db.js";
 import { RollTag } from "../config/roll-tags.js";
 import { CardTag } from "../config/card-tags.js";
 import { SocialStat } from "../config/student-skills.js";
-import { PC } from "./actor/persona-actor.js";
 import { STUDENT_SKILLS } from "../config/student-skills.js";
 import {Calculation} from "./utility/calculation.js";
 

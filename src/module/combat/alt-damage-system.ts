@@ -7,7 +7,6 @@ import {Calculation} from "../utility/calculation.js";
 import {AttackResult} from "./combat-result.js";
 import {DamageCalculation} from "./damage-calc.js";
 import {DamageSystemBase} from "./damage-system.js";
-import {ValidAttackers} from "./persona-combat.js";
 
 export class PercentBasedDamageSystem extends DamageSystemBase {
 	WEAPON_DAMAGE_MULT = 1.75 as const;

@@ -1,9 +1,7 @@
 import { PersonaCombatant } from "./persona-combat.js";
-import { PC } from "../actor/persona-actor.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { PersonaSocial } from "../social/persona-social.js";
 import { PToken } from "./persona-combat.js";
-import { ValidAttackers } from "./persona-combat.js";
 import { StatusEffect } from "../../config/consequence-types.js";
 import { PersonaError } from "../persona-error.js";
 import { PersonaSockets } from "../persona.js";
