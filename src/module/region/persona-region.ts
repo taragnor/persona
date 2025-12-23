@@ -658,27 +658,6 @@ export class PersonaRegion extends RegionDocument {
 		return div;
 	}
 
-	//static async updateRegionDisplay(token: TokenDocument<PersonaActor>, tokenMove: boolean = true) {
-	//	const scene = token.parent;
-	//	const region = scene.regions.find( (region : PersonaRegion) => region.tokens.has(token) && !region?.regionData?.ignore);
-	//	if (!region || game?.combat?.active) {
-	//		RegionPanel.clearRegionDisplay();
-	//		return;
-	//	}
-	//	//TODO: refactor into onMove, onSelect and actual updateRegion functions
-	//	await updateRegionDisplay(region as PersonaRegion);
-	//	const lastRegion = PersonaSettings.getLastRegion();
-	//	if (tokenMove && lastRegion.lastRegionId != region.id) {
-	//		if (game.user.isGM) {
-	//			await PersonaSettings.setLastRegion({
-	//				lastRegionId: region.id,
-	//				lastSceneId: scene.id,
-	//			});
-	//			await (region as PersonaRegion).onEnterRegion(token);
-	//		}
-	//	}
-	//}
-
 	async onEnterMetaverse() : Promise<void> {
 		const data = this.regionData;
 		const refresh = data.specialMods.includes("treasure-refresh");

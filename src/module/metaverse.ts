@@ -523,7 +523,7 @@ Hooks.on("clockTick", async function (clock: ProgressClock, _newAmt: number) {
 		triggeringClockId: clock.id,
 		triggeringUser: game.user,
 	};
-	console.log("Triggering ClockTick");
+	// console.log("Triggering ClockTick");
 	await TriggeredEffect.autoApplyTrigger("on-clock-tick", undefined, situation);
 });
 
@@ -533,7 +533,7 @@ Hooks.on("updateClock", async function (clock: ProgressClock, _newAmt: number, _
 		triggeringClockId: clock.id,
 		triggeringUser: game.user,
 	};
-	console.log("Triggering Clock Change");
+	// console.log("Triggering Clock Change");
 	await TriggeredEffect.autoApplyTrigger("on-clock-change", undefined, situation);
 });
 

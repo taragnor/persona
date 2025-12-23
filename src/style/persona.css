@@ -1381,6 +1381,7 @@ section.power-sideboard {
 }
 
 .region-info-panel-chat-container,
+.custom-side-panel-chat-container,
 .region-chat-container {
 	display: flex;
 	flex-direction: column;

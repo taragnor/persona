@@ -52,7 +52,8 @@ export abstract class SidePanel {
 		const infoPanel = $("<section>").addClass(this.panelName);
 		const chatNotifications = $(document).find("#interface #ui-right-column-1 #chat-notifications");
 		const chatContainer= $("<div>")
-			.addClass(`${this.panelName}-chat-container`);
+			.addClass("custom-side-panel-chat-container");
+			// .addClass(`${this.panelName}-chat-container`);
 		$(document).find("#interface #ui-right-column-1").prepend(chatContainer);
 		const chatNotificationsContainer = $("<div>").addClass("chat-notifications-container");
 		chatNotificationsContainer.append(chatNotifications);

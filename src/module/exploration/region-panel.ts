@@ -75,6 +75,7 @@ export class RegionPanel {
 	}
 
 	private static initHooks() {
+		console.log("Init Region Panel Hooks");
 
 		Hooks.on("socketsReady", () => {
 			PersonaSockets.setHandler("SEARCH_REQUEST", async function (data) {
@@ -109,7 +110,6 @@ export class RegionPanel {
 			await RegionPanel.updateRegionDisplay(token);
 		});
 
-
 		Hooks.on("updateCombat", (_combat) => {
 			RegionPanel.clearRegionDisplay();
 		});
@@ -120,56 +120,8 @@ export class RegionPanel {
 			if (actor.isPC()) {
 				await RegionPanel.updateRegionDisplay(token.document, false);
 			}
-
 		});
 
-
-		Hooks.on("socketsReady", () => {
-			PersonaSockets.setHandler("SEARCH_REQUEST", async function (data) {
-				const region = game.scenes.current.regions.find( r=> data.regionId == r.id);
-				if (!region) {throw new PersonaError(`Can't find region ${data.regionId}`);}
-				await Metaverse.searchRegion(region as PersonaRegion);
-			});
-		});
-
-		Hooks.on("canvasInit", () => {
-			RegionPanel.clearRegionDisplay();
-		});
-
-		Hooks.on("updateRegion", async (region) => {
-			const lastRegion = PersonaSettings.getLastRegion();
-			if (region.id == lastRegion.lastRegionId) {
-				await RegionPanel._updateRegionDisplay(region as PersonaRegion);
-			}
-		});
-
-		Hooks.on("updateToken", async (token: TokenDocument<PersonaActor>, changes) => {
-			const actor = token.actor as PersonaActor;
-			if (!actor) {return;}
-			if (token.hidden) {return;}
-			if (actor.system.type != "pc" || !actor.hasPlayerOwner) {
-				return;
-			}
-			if ((changes.x ?? changes.y) == undefined)
-			{return;}
-			const scene = token.parent;
-			if (!scene) {return;}
-			await RegionPanel.updateRegionDisplay(token);
-		});
-
-
-		Hooks.on("updateCombat", (_combat) => {
-			RegionPanel.clearRegionDisplay();
-		});
-
-		Hooks.on("controlToken", async (token : Token<PersonaActor>) => {
-			const actor = token?.document?.actor;
-			if (!actor) {return;}
-			if (actor.isPC()) {
-				await RegionPanel.updateRegionDisplay(token.document, false);
-			}
-
-		});
 	}
 
 }
