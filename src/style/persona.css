@@ -1380,6 +1380,7 @@ section.power-sideboard {
 	color: black !important; /* pale cyan for readable text */
 }
 
+.region-info-panel-chat-container,
 .region-chat-container {
 	display: flex;
 	flex-direction: column;
