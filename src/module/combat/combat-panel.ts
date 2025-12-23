@@ -4,10 +4,9 @@ import {PersonaActorSheetBase} from "../actor/sheets/actor-sheet.base.js";
 import {UsableAndCard} from "../item/persona-item.js";
 import {PersonaError} from "../persona-error.js";
 import {SidePanel} from "../side-panel.js";
-import {Helpers} from "../utility/helpers.js";
-import {CanceledDialgogError, HTMLTools} from "../utility/HTMLTools.js";
+import {HTMLTools} from "../utility/HTMLTools.js";
 import {CombatEngine} from "./combat-engine.js";
-import {PersonaCombat, PToken, TargettingError} from "./persona-combat.js";
+import {PersonaCombat, PToken} from "./persona-combat.js";
 
 export class CombatPanel extends SidePanel {
 	target: U<PToken>;
@@ -18,8 +17,10 @@ export class CombatPanel extends SidePanel {
 		super ("combat-panel");
 	}
 
-	get actor() : U<PersonaActor> {
-		return this.target?.actor;
+	get actor() : U<ValidAttackers> {
+		const actor = this.target?.actor;
+		if (actor?.isValidCombatant()) {return actor;}
+		return undefined;
 	}
 
 	override get templatePath(): string {
@@ -113,7 +114,6 @@ export class CombatPanel extends SidePanel {
 
 	private async _onClickPower(ev: JQuery.ClickEvent) {
 		ev.stopPropagation();
-		console.log("Click Power Called");
 		if (!this.actor) {return;}
 		const powerId = HTMLTools.getClosestData(ev, "powerId");
 		const power = this.actor.powers.find(power => power.id == powerId);
@@ -128,51 +128,54 @@ export class CombatPanel extends SidePanel {
 
 	private async _useItemOrPower(power : UsableAndCard) {
 		if (!this.actor) {return;}
-		Helpers.pauseCheck();
-		Helpers.ownerCheck(this.actor);
+		// Helpers.pauseCheck();
+		// Helpers.ownerCheck(this.actor);
 		if (this._powerUseLock) {
 			ui.notifications.notify("Can't use another power now, as a power is already in process");
 			return;
 		}
 		this._powerUseLock = true;
-		const actor = this.actor;
-		let token : PToken | undefined;
-		if (actor.token) {
-			token = actor.token as PToken;
-		} else {
-			const tokens = this.actor._dependentTokens.get(game.scenes.current)!;
-			//THIS IS PROBABLY A bad idea to iterate over weakset
-			//@ts-expect-error not sure what type tokens are
-			token = Array.from(tokens)[0];
-		}
-		if (!token) {
-			token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
-		}
 
-		if (!token) {
-			throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` );
-		}
-		try {
-			const engine = new CombatEngine(undefined);
-			await engine.usePower(token, power );
-		} catch (e) {
-			this._powerUseLock = false;
-			switch (true) {
-				case e instanceof CanceledDialgogError: {
-					break;
-				}
-				case e instanceof TargettingError: {
-					break;
-				}
-				case e instanceof Error: {
-					console.error(e);
-					console.error(e.stack);
-					PersonaError.softFail("Problem with Using Item or Power", e, e.stack);
-					break;
-				}
-				default: break;
-			}
-		}
+		//let token : PToken | undefined;
+		//if (actor.token) {
+		//	token = actor.token as PToken;
+		//} else {
+		//	const tokens = this.actor._dependentTokens.get(game.scenes.current)!;
+		//	//THIS IS PROBABLY A bad idea to iterate over weakset
+		//	//@ts-expect-error not sure what type tokens are
+		//	token = Array.from(tokens)[0];
+		//}
+		//if (!token) {
+		//	token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
+		//}
+
+		//if (!token) {
+		//	throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` );
+		//}
+
+		await CombatEngine.usePower(this.actor, power);
+
+		// try {
+		// 	const engine = new CombatEngine(undefined);
+		// 	await engine.usePower(token, power );
+		// } catch (e) {
+		// 	switch (true) {
+		// 		case e instanceof CanceledDialgogError: {
+		// 			break;
+		// 		}
+		// 		case e instanceof TargettingError: {
+		// 			break;
+		// 		}
+		// 		case e instanceof Error: {
+		// 			console.error(e);
+		// 			console.error(e.stack);
+		// 			PersonaError.softFail("Problem with Using Item or Power", e, e.stack);
+		// 			break;
+		// 		}
+		// 		default: break;
+		// 	}
+		// }
+
 		this._powerUseLock = false;
 	}
 

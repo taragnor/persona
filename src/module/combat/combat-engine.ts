@@ -15,12 +15,13 @@ import {getActiveConsequences} from "../preconditions.js";
 import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
 import {Calculation} from "../utility/calculation.js";
+import {Helpers} from "../utility/helpers.js";
 import {CanceledDialgogError, HTMLTools} from "../utility/HTMLTools.js";
 import {AttackResult, CombatResult} from "./combat-result.js";
 import {DamageCalculation} from "./damage-calc.js";
 import {FinalizedCombatResult} from "./finalized-combat-result.js";
 import {ModifierList} from "./modifier-list.js";
-import {CombatOptions, PersonaCombat, PToken} from "./persona-combat.js";
+import {CombatOptions, PersonaCombat, PToken, TargettingError} from "./persona-combat.js";
 import {PersonaSFX} from "./persona-sfx.js";
 
 export class CombatEngine {
@@ -30,6 +31,58 @@ export class CombatEngine {
 
 	constructor (combat: U<PersonaCombat> = game.combat as U<PersonaCombat>) {
 		this.combat = combat;
+	}
+
+	static getTokenFromActor(actor: ValidAttackers) : PToken {
+		let token : PToken | undefined;
+		if (actor.token) {
+			token = actor.token as PToken;
+		} else {
+			const combat= game.combat as U<PersonaCombat>;
+			const combToken = combat?.getPToken(actor);
+			if (combToken) { return combToken;}
+			token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
+			if (token) {return token;}
+			const tokens = actor._dependentTokens.get(game.scenes.current)!;
+			//THIS IS PROBABLY A bad idea to iterate over weakset
+			//@ts-expect-error not sure what type tokens are
+			token = Array.from(tokens)[0];
+		}
+		// if (!token) {
+		// 	token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
+		// }
+
+		if (!token) {
+			throw new PersonaError(`Can't find token for ${actor.name}: ${actor.id}` );
+		}
+		return token;
+	}
+
+	static async usePower(actor: ValidAttackers, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) {
+		try {
+			Helpers.ownerCheck(actor);
+			Helpers.pauseCheck();
+			const attacker = this.getTokenFromActor(actor);
+			const combat= game.combat as U<PersonaCombat>;
+			const engine = combat ? combat.combatEngine : new CombatEngine(undefined);
+			return await engine.usePower(attacker, power, presetTargets, options );
+		} catch (e) {
+			switch (true) {
+				case e instanceof CanceledDialgogError: {
+					break;
+				}
+				case e instanceof TargettingError: {
+					break;
+				}
+				case e instanceof Error: {
+					console.error(e);
+					console.error(e.stack);
+					PersonaError.softFail("Problem with Using Item or Power", e, e.stack);
+					break;
+				}
+				default: break;
+			}
+		}
 	}
 
 	async usePower(attacker: PToken, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) : Promise<FinalizedCombatResult> {
@@ -365,7 +418,6 @@ export class CombatEngine {
 		return false;
 	}
 
-
 	async processEffects(atkResult: AttackResult) : Promise<CombatResult> {
 		const CombatRes = new CombatResult();
 		const {result } = atkResult;
@@ -637,16 +689,16 @@ export class CombatEngine {
 		return null;
 	}
 
-static defaultSituation(  attackerPersona: Persona, targetPersona: Persona, power: Usable) {
-	const actorAcc = attackerPersona.user.accessor;
-	const sit = {
-		user: actorAcc,
-		attacker: actorAcc,
-		target: targetPersona.user.accessor,
-		usedPower: power.accessor,
-	} as const satisfies Situation;
-	return sit;
-}
+	static defaultSituation(  attackerPersona: Persona, targetPersona: Persona, power: Usable) {
+		const actorAcc = attackerPersona.user.accessor;
+		const sit = {
+			user: actorAcc,
+			attacker: actorAcc,
+			target: targetPersona.user.accessor,
+			usedPower: power.accessor,
+		} as const satisfies Situation;
+		return sit;
+	}
 
 	static calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: N<Situation>) : U<CalculatedRange> {
 		if (!situation) {
@@ -835,16 +887,14 @@ static defaultSituation(  attackerPersona: Persona, targetPersona: Persona, powe
 	}
 }
 
-
 type AttackRollType = 'activation' | 'standard' | 'reflect' | 'iterative' | number; //number is used for bonus attacks
 
 type CombatRollSituation = AttackResult['situation'];
-
 
 type CalculatedRange = {
 	high: number,
 	low: number,
 	steps: string[],
 	possible: boolean,
-
 }
+
