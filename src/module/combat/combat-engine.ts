@@ -48,9 +48,6 @@ export class CombatEngine {
 			//@ts-expect-error not sure what type tokens are
 			token = Array.from(tokens)[0];
 		}
-		// if (!token) {
-		// 	token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
-		// }
 
 		if (!token) {
 			throw new PersonaError(`Can't find token for ${actor.name}: ${actor.id}` );

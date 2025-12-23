@@ -53,8 +53,9 @@ export class CombatPanel extends SidePanel {
 
 	 override activateListeners(html: JQuery) {
 		 super.activateListeners(html);
-		 html.find(".control-panel .main-power .pretty-power-name").on("click", (ev) => void this._onClickPower(ev));
+		 html.find(".control-panel .main-power .pretty-power-name").on("click", ev => void this._onClickPower(ev));
 		 html.find(".control-panel button.basic-power").on("click", (ev) => void this._onClickPower(ev));
+		 html.find(".control-panel .token-name").on("click", ev => void this.openToken(ev));
 		 console.log("listener activated");
 	 }
 
@@ -128,55 +129,26 @@ export class CombatPanel extends SidePanel {
 
 	private async _useItemOrPower(power : UsableAndCard) {
 		if (!this.actor) {return;}
-		// Helpers.pauseCheck();
-		// Helpers.ownerCheck(this.actor);
 		if (this._powerUseLock) {
 			ui.notifications.notify("Can't use another power now, as a power is already in process");
 			return;
 		}
+		await this.lockSection(CombatEngine.usePower(this.actor, power));
+	}
+
+	private async lockSection(promise: Promise<unknown>) {
 		this._powerUseLock = true;
-
-		//let token : PToken | undefined;
-		//if (actor.token) {
-		//	token = actor.token as PToken;
-		//} else {
-		//	const tokens = this.actor._dependentTokens.get(game.scenes.current)!;
-		//	//THIS IS PROBABLY A bad idea to iterate over weakset
-		//	//@ts-expect-error not sure what type tokens are
-		//	token = Array.from(tokens)[0];
-		//}
-		//if (!token) {
-		//	token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
-		//}
-
-		//if (!token) {
-		//	throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` );
-		//}
-
-		await CombatEngine.usePower(this.actor, power);
-
-		// try {
-		// 	const engine = new CombatEngine(undefined);
-		// 	await engine.usePower(token, power );
-		// } catch (e) {
-		// 	switch (true) {
-		// 		case e instanceof CanceledDialgogError: {
-		// 			break;
-		// 		}
-		// 		case e instanceof TargettingError: {
-		// 			break;
-		// 		}
-		// 		case e instanceof Error: {
-		// 			console.error(e);
-		// 			console.error(e.stack);
-		// 			PersonaError.softFail("Problem with Using Item or Power", e, e.stack);
-		// 			break;
-		// 		}
-		// 		default: break;
-		// 	}
-		// }
-
+		try {
+			await promise;
+		} catch (e) {
+			console.warn(e);
+			Debug(e);
+		}
 		this._powerUseLock = false;
+	}
+
+	async openToken(_ev: JQuery.ClickEvent) {
+		await this.actor?.sheet.render(true);
 	}
 
 	private static initHooks() {

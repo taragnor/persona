@@ -405,9 +405,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			if (comb != combatant && comb.actor && comb.actor.sheet._state >= 0)
 			{comb.actor.sheet.close();}
 		}
-		if (combatant.actor.sheet._state <= 0) {
-			await combatant.actor.sheet.render(true);
-		}
+		//NOTE: using the combat panel instead
+		// if (combatant.actor.sheet._state <= 0) {
+		// 	await combatant.actor.sheet.render(true);
+		// }
 		void CombatPanel.instance.setTarget(combatant.token as PToken);
 	}
 
