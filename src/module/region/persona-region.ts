@@ -2,10 +2,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { PresenceRollData } from "../metaverse.js";
 import { PersonaScene } from "../persona-scene.js";
-import { Helpers } from "../utility/helpers.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { TriggeredEffect } from "../triggered-effect.js";
-import { PersonaSockets } from "../persona.js";
 import { Metaverse } from "../metaverse.js";
 import { PersonaError } from "../persona-error.js";
 import { localize } from "../persona.js";
@@ -17,6 +15,7 @@ import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-s
 import {EncounterOptions, RandomEncounter} from "../exploration/random-encounters.js";
 import {randomSelect, removeDuplicates} from "../utility/array-tools.js";
 import {getActiveConsequences} from "../preconditions.js";
+import {RegionPanel} from "../exploration/region-panel.js";
 
 declare global {
 	interface SocketMessage {
@@ -659,26 +658,26 @@ export class PersonaRegion extends RegionDocument {
 		return div;
 	}
 
-	static async updateRegionDisplay(token: TokenDocument<PersonaActor>, tokenMove: boolean = true) {
-		const scene = token.parent;
-		const region = scene.regions.find( (region : PersonaRegion) => region.tokens.has(token) && !region?.regionData?.ignore);
-		if (!region || game?.combat?.active) {
-			clearRegionDisplay();
-			return;
-		}
-		//TODO: refactor into onMove, onSelect and actual updateRegion functions
-		await updateRegionDisplay(region as PersonaRegion);
-		const lastRegion = PersonaSettings.getLastRegion();
-		if (tokenMove && lastRegion.lastRegionId != region.id) {
-			if (game.user.isGM) {
-				await PersonaSettings.setLastRegion({
-					lastRegionId: region.id,
-					lastSceneId: scene.id,
-				});
-				await (region as PersonaRegion).onEnterRegion(token);
-			}
-		}
-	}
+	//static async updateRegionDisplay(token: TokenDocument<PersonaActor>, tokenMove: boolean = true) {
+	//	const scene = token.parent;
+	//	const region = scene.regions.find( (region : PersonaRegion) => region.tokens.has(token) && !region?.regionData?.ignore);
+	//	if (!region || game?.combat?.active) {
+	//		RegionPanel.clearRegionDisplay();
+	//		return;
+	//	}
+	//	//TODO: refactor into onMove, onSelect and actual updateRegion functions
+	//	await updateRegionDisplay(region as PersonaRegion);
+	//	const lastRegion = PersonaSettings.getLastRegion();
+	//	if (tokenMove && lastRegion.lastRegionId != region.id) {
+	//		if (game.user.isGM) {
+	//			await PersonaSettings.setLastRegion({
+	//				lastRegionId: region.id,
+	//				lastSceneId: scene.id,
+	//			});
+	//			await (region as PersonaRegion).onEnterRegion(token);
+	//		}
+	//	}
+	//}
 
 	async onEnterMetaverse() : Promise<void> {
 		const data = this.regionData;
@@ -719,93 +718,6 @@ Hooks.on("renderRegionConfig", async (app, html) => {
 	app.setPosition({ height: 'auto' });
 });
 
-Hooks.on("updateRegion", async (region) => {
-	const lastRegion = PersonaSettings.getLastRegion();
-	if (region.id == lastRegion.lastRegionId) {
-		await updateRegionDisplay(region as PersonaRegion);
-	}
-});
-
-Hooks.on("updateToken", async (token: TokenDocument<PersonaActor>, changes) => {
-	const actor = token.actor as PersonaActor;
-	if (!actor) {return;}
-	if (token.hidden) {return;}
-	if (actor.system.type != "pc" || !actor.hasPlayerOwner) {
-		return;
-	}
-	if ((changes.x ?? changes.y) == undefined)
-		{return;}
-	const scene = token.parent;
-	if (!scene) {return;}
-	await PersonaRegion.updateRegionDisplay(token);
-});
-
-Hooks.on("updateCombat", (_combat) => {
-	clearRegionDisplay();
-});
-
-
-function clearRegionDisplay() {
-	const infoPanel = $(document).find(".region-info-panel");
-	if (infoPanel.length) {
-		infoPanel.remove();
-	}
-}
-
-async function updateRegionDisplay (region: PersonaRegion) {
-	const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/region-panel.hbs", {region, data: region.regionData});
-	let infoPanel = $(document).find(".region-info-panel");
-	if (infoPanel.length == 0) {
-		infoPanel = $("<section>").addClass("region-info-panel");
-		const chatNotifications = $(document).find("#interface #ui-right-column-1 #chat-notifications");
-		const chatContainer= $("<div>")
-			.addClass("region-chat-container");
-		$(document).find("#interface #ui-right-column-1").prepend(chatContainer);
-		const chatNotificationsContainer = $("<div>").addClass("chat-notifications-container");
-		chatNotificationsContainer.append(chatNotifications);
-		chatContainer.append(infoPanel)
-			.append(chatNotificationsContainer);
-	}
-	infoPanel.empty();
-	infoPanel.html(html);
-	infoPanel.find(".search-button").on("click", searchButton);
-	infoPanel.find(".crunch-button").on("click", Metaverse.toggleCrunchParty.bind(Metaverse));
-}
-
-function searchButton(_ev: JQuery.ClickEvent) {
-	if (game.user.isGM) {
-		void Metaverse.searchRoom();
-		return;
-	}
-	Helpers.pauseCheck();
-	const region = Metaverse.getRegion();
-	if (!region) {
-		throw new PersonaError("Can't find region");
-	}
-	const data = {regionId: region.id};
-	PersonaSockets.simpleSend("SEARCH_REQUEST", data, game.users.filter(x=> x.isGM && x.active).map(x=> x.id));
-}
-
-Hooks.on("socketsReady", () => {
-	PersonaSockets.setHandler("SEARCH_REQUEST", async function (data) {
-		const region = game.scenes.current.regions.find( r=> data.regionId == r.id);
-		if (!region) {throw new PersonaError(`Can't find region ${data.regionId}`);}
-		await Metaverse.searchRegion(region as PersonaRegion);
-	});
-});
-
-Hooks.on("canvasInit", () => {
-	clearRegionDisplay();
-});
-
-Hooks.on("controlToken", async (token : Token<PersonaActor>) => {
-	const actor = token?.document?.actor;
-	if (!actor) {return;}
-	if (actor.isPC()) {
-		await PersonaRegion.updateRegionDisplay(token.document, false);
-	}
-
-});
-
+RegionPanel.init();
 
 
