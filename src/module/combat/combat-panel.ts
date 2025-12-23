@@ -53,20 +53,18 @@ export class CombatPanel extends SidePanel {
 	 override activateListeners(html: JQuery) {
 		 super.activateListeners(html);
 		 html.find(".control-panel .main-power .pretty-power-name").on("click", (ev) => void this._onClickPower(ev));
+		 html.find(".control-panel button.basic-power").on("click", (ev) => void this._onClickPower(ev));
 		 console.log("listener activated");
 	 }
 
 	async setTarget(token: UN<PToken>) {
 		if (!PersonaSettings.combatPanel()) {return;}
-		if (token == undefined) {
+		if (token == undefined || !token.actor) {
 			this.target = undefined;
 			this.clearPanel();
 			return;
 		}
 		console.log(`Setting Panel Target: ${token.name}`);
-		if (!token.actor) {
-			return;
-		}
 		if (token.actor.isPC() && !token.actor.isRealPC()) {
 			return;
 		}
@@ -94,12 +92,14 @@ export class CombatPanel extends SidePanel {
 		const CONST = PersonaActorSheetBase.CONST();
 		const actor = this.target?.actor;
 		const persona = actor?.persona();
+		const token = this.target;
 		return {
 			...data,
 			CONST,
 			target: this.target,
 			persona,
 			actor,
+			token,
 		};
 	}
 
@@ -110,29 +110,6 @@ export class CombatPanel extends SidePanel {
 		}
 	}
 
-	private static initHooks() {
-		Hooks.on("controlToken", async (token : Token<PersonaActor>, selected: boolean) => {
-			if (!selected) {return;}
-			const actor = token?.document?.actor;
-			const combat = game.combat as U<PersonaCombat>;
-			if (!combat || combat.isSocial) {return;}
-			if (!actor) {return;}
-			if (actor.isValidCombatant()) {
-				await this.instance.setTarget(token.document as PToken);
-			}
-		});
-
-		Hooks.on("deleteCombat", (_combat) => {
-			this.instance.clearPanel();
-		});
-
-		Hooks.on("canvasInit", () => {
-			void this.instance.setTarget(null);
-		});
-
-
-
-	}
 
 	private async _onClickPower(ev: JQuery.ClickEvent) {
 		ev.stopPropagation();
@@ -197,6 +174,42 @@ export class CombatPanel extends SidePanel {
 			}
 		}
 		this._powerUseLock = false;
+	}
+
+	private static initHooks() {
+		Hooks.on("controlToken", async (token : Token<PersonaActor>, selected: boolean) => {
+			if (!selected) {
+				await this.instance.setTarget(null);
+				return;}
+			const actor = token?.document?.actor;
+			const combat = game.combat as U<PersonaCombat>;
+			if (!combat || combat.isSocial) {return;}
+			if (!actor) {return;}
+			if (actor.isValidCombatant()) {
+				await this.instance.setTarget(token.document as PToken);
+			}
+		});
+
+		Hooks.on("deleteCombat", (_combat) => {
+			this.instance.clearPanel();
+		});
+
+		Hooks.on("canvasInit", () => {
+			void this.instance.setTarget(null);
+		});
+
+		Hooks.on("updateActor", (actor) => {
+			if (this.instance.target?.actor == actor) {
+				void this.instance.updatePanel({});
+			}
+		});
+
+		Hooks.on("updateToken", (token) => {
+			if (this.instance.target == token) {
+				void this.instance.updatePanel({});
+			}
+		});
+
 	}
 
 }

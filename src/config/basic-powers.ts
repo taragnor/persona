@@ -1,10 +1,10 @@
 const BASIC_POWER_NAMES = [
 	"Basic Attack",
-	"All-out Attack",
 ] as const;
 
 export const BASIC_PC_POWER_NAMES = [
 	...BASIC_POWER_NAMES,
+	"All-out Attack",
 	"Defend",
 	"Fight in Spirit (Offense)",
 	"Fight in Spirit (Defense)",

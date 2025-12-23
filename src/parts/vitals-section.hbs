@@ -1,0 +1,17 @@
+<section class="vitals">
+	<div>
+		<label> HP </label>
+		<span> {{persona.user.hp}} / {{persona.user.mhp}} </span>
+	</div>
+	{{#if persona.user.mp}}
+	<div>
+		<label> MP </label>
+		<span> {{persona.user.mp}} / {{persona.user.mmp}} </span>
+	</div>
+	{{/if}}
+	{{#if persona.user.energy}}
+	<label> Energy </label>
+	<span> {{persona.user.energy}} / {{persona.user.maxEnergy}} </span>
+	{{/if}}
+</section>
+

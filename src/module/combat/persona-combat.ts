@@ -409,6 +409,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (combatant.actor.sheet._state <= 0) {
 			await combatant.actor.sheet.render(true);
 		}
+		void CombatPanel.instance.setTarget(combatant.token as PToken);
 	}
 
 	playerAlert( combatant: Combatant<PersonaActor>) : boolean {
@@ -434,6 +435,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	async startCombatantTurn( combatant: Combatant<PersonaActor>){
 		if (!PersonaCombat.isPersonaCombatant(combatant)) {return;}
 		const actor = combatant.actor;
+		if (!game.user.isGM && actor.isOwner) {
+			void CombatPanel.instance.setTarget(combatant.token);
+		}
 		if (!game.user.isGM) {return;}
 		if (await this.checkEndCombat() == true) {
 			return;
@@ -441,7 +445,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		const baseRolls : Roll[] = [];
 		const rolls : RollBundle[] = [];
 		await actor.refreshActions();
-		if (!combatant.actor?.hasPlayerOwner) {
+		if (!actor.hasPlayerOwner) {
 			await this.ensureSheetOpen(combatant);
 		}
 		let startTurnMsg = [ `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`];
