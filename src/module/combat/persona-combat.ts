@@ -39,6 +39,7 @@ import {CombatEngine} from './combat-engine.js';
 import {ConditionTarget} from '../../config/precondition-types.js';
 import {NavigatorVoiceLines} from '../navigator/nav-voice-lines.js';
 import {OpenerManager} from './openers.js';
+import {CombatPanel} from './combat-panel.js';
 
 declare global {
 	interface SocketMessage {
@@ -1969,3 +1970,5 @@ export interface CombatOptions {
 	ignorePrereqs?: boolean;
 	simulated?: boolean;
 }
+
+CombatPanel.init();

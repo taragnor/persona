@@ -1019,6 +1019,10 @@ export class PersonaHandleBarsHelpers {
 			return PersonaDB.personaCompendium();
 		},
 
+		"getPersona": function (actor: ValidAttackers) : Persona {
+			return actor.persona();
+		},
+
 		"deCompendiumName": function (shadow: PersonaActor) : string {
 			return PersonaCompendium.convertToNormalName(shadow.name);
 		},

@@ -1,0 +1,44 @@
+<form class="shadow-sheet-limited">
+	<div class="scan-dialog">
+		<header>
+			{{> "systems/persona/parts/scan-sheet-header.hbs" persona=persona}}
+		</header>
+
+		<hr>
+
+		{{#if (scanLevelgte persona 1)}}
+		{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=persona}}
+
+		{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=persona}}
+		{{/if}}
+
+		{{#if (scanLevelgte persona 2)}}
+		<h3> Powers</h3>
+		<div class="main-powers">
+			{{#each persona.powers as |power i|}}
+			<div class="main-power" data-power-id="{{power.id}}">
+				<div class="power-name-block {{#if (lte ../actor.maxPowers i)}} over-max-power {{/if}} ">
+					<div class="power-name">
+						{{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../persona}}
+						<span class="cost-string">
+							({{powerCostString power ../actor}})
+						</span>
+					</div>
+				</div>
+				<div class="power-operations">
+				</div>
+			</div>
+			{{/each}}
+		</div>
+		{{/if}}
+		{{#if (scanLevelgte persona 2)}}
+		<div class="treasure">
+			<span><b> Treasure: </b></span>
+			<span>
+				{{actor.treasureString}}
+			</span>
+		</div>
+		{{/if}}
+
+	</div>
+</form>

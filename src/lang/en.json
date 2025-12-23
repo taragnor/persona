@@ -416,6 +416,8 @@
 	"persona.power.targets.everyone": "All Living Targets",
 	"persona.power.targets.everyone-even-dead": "All Combatants (living and dead)",
 
+	"persona.settings.combat-panel.name": "Combat Info Panel",
+	"persona.settings.combat-panel.hint": "Shows the Combat Info Panel if enabled",
 	"persona.settings.navigator-voice.hint": "Turn on Navigator Voicelines (if available)",
 	"persona.settings.navigator-voice.name": "Navigator Voicelines",
 

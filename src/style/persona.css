@@ -728,6 +728,7 @@ form h5 {
 }
 
 
+.combat-panel,
 .region-info-panel {
 	pointer-events: auto;
 	background-image: url(https://taragnorgaming.hopto.org/ui/denim075.png);

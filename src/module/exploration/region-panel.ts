@@ -27,8 +27,10 @@ export class RegionPanel {
 	private static panel: RegionPanelComponent;
 
 	static init() {
-		this.panel = new RegionPanelComponent();
-		this.initHooks();
+		if (!this.panel) {
+			this.panel = new RegionPanelComponent();
+			this.initHooks();
+		}
 	}
 
 	static clearRegionDisplay() {

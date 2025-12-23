@@ -35,6 +35,10 @@ export abstract class SidePanel {
 		if (!this.doesPanelExist()) {
 			this.createContainer();
 		}
+		templateData = {
+			...await this.getData(),
+			templateData,
+		};
 		const panel = this.HTMLPanel;
 		if (!panel) {
 			throw new PersonaError(`Can't find side panel for ${this.panelName}: This shoudl be impossible`);
@@ -46,6 +50,10 @@ export abstract class SidePanel {
 	}
 
 	activateListeners(_html: JQuery<HTMLElement>): void {
+	}
+
+	getData () : Promise<Record<string, unknown>> | Record<string, unknown> {
+		return {};
 	}
 
 	private createContainer() : SidePanel["HTMLPanel"] {

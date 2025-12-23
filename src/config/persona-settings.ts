@@ -37,6 +37,10 @@ export class PersonaSettings {
 		return !realGame && debugMode;
 	}
 
+	 static combatPanel(): boolean {
+			return this.get("combatPanel") ?? true;
+	 }
+
 	static async clearLastRegion() {
 		const nullResult : RegionExploredData= {lastRegionId: undefined, lastSceneId: undefined};
 		await this.set("lastRegionExplored", nullResult);
@@ -95,6 +99,15 @@ export class PersonaSettings {
 
 const SETTINGS = {
 
+	"combatPanel": {
+		name: "persona.settings.combat-panel.name",
+		hint: "persona.settings.combat-panel.hint",
+		scope: "client",
+		restricted: false,
+		config: true,
+		type : Boolean,
+		default: true,
+	},
 	"navigatorVoiceLines": {
 		name: "persona.settings.navigator-voice.name",
 		hint: "persona.settings.navigator-voice.hint",
