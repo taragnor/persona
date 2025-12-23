@@ -19,21 +19,24 @@
 		{{#if (scanLevelgte persona 1)}}
 		{{#if (ne persona.source persona.user)}}
 		<div>
-			Active Persona: {{persona.displayedName}}
+			<label>Active Persona: </label>
+			{{persona.displayedName}}
 		</div>
 		{{/if}}
 		{{/if}}
 		{{/if}}
 		<br>
 		<div>
-			<label>Tarot </label>
+			<label>Arcana </label>
 			<span> {{persona.user.tarot.name}} </span>
 		</div>
 		{{#if (scanLevelgte persona 1)}}
+		{{#if persona.source.roleString.length}}
 		<div>
 			<label>Role</label>
 			<span>{{persona.source.roleString}} </span>
 		</div>
+		{{/if}}
 		{{/if}}
 
 		{{#if (scanLevelgte persona 1)}}
@@ -41,6 +44,17 @@
 			<label> HP </label>
 			<span> {{persona.user.hp}} / {{persona.user.mhp}} </span>
 		</div>
+		{{#if persona.user.mp}}
+		<div>
+			<label> MP </label>
+			<span> {{persona.user.mp}} / {{persona.user.mmp}} </span>
+		</div>
+		{{/if}}
+		{{#if persona.user.energy}}
+		<label> Energy </label>
+		<span> {{persona.user.energy}} / {{persona.user.maxEnergy}} </span>
+		{{/if}}
+
 		{{#if persona.user.system.creatureTags}}
 		<div>
 			<label>

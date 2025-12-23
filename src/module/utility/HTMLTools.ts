@@ -94,16 +94,15 @@ export class HTMLTools {
 		${text}
 			</div>`;
 		return await new Promise( (conf, _reject) => {
-			Dialog.confirm({
+			const promise = Dialog.confirm({
 				title,
 				content: html,
 				yes: conf.bind(null, true) as typeof conf,
 				no: conf.bind(null, false) as typeof conf,
 				defaultYes,
-				close: () => {
-					conf(false);
-				},
+				rejectClose: true,
 			});
+			promise.catch( () => conf(false));
 		});
 	}
 
@@ -493,3 +492,5 @@ type HTMLReturnField<T extends HTMLInputFieldDefinition< string | number | boole
 		: never;
 
 
+//@ts-expect-error adding to global scope
+window.HTMLTools = HTMLTools;

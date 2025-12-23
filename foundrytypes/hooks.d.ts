@@ -69,7 +69,8 @@ declare interface HOOKS {
 	"hoverToken" : (token: Token, hover:boolean) => unknown;
 	/**hook boolean value is true on connect, false on disconnect*/
 	"userConnected": (user: FoundryUser, isConnectionEvent : boolean) => unknown;
-	"controlToken": (token: Token, unknownBool: boolean) => unknown;
+	/** selected is true for the token selected and false for a token unselected*/
+	"controlToken": (token: Token, selected: boolean) => unknown;
 	"renderHandlebarsApplication": (app: foundryApps.ApplicationV2, html: HTMLElement, data: Record< string, unknown>, renderOptions: Record<string, unknown>) => unknown;
 };
 

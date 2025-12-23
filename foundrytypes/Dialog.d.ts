@@ -1,5 +1,5 @@
 class Dialog {
-	static confirm(options: ConfirmDialogOptions);
+	static confirm(options: ConfirmDialogOptions): Promise<unknown>;
 	constructor(options : DialogOptions, secondaryOptions: Record<string, any>);
 	async render(force : boolean) : void;
 	element: JQuery;
@@ -15,7 +15,11 @@ interface ConfirmDialogOptions {
 	yes: (html: string) => void;
 	no: (html: string) => void;
 	defaultYes?:boolean;
-	close ?: (html:string) => void;
+	// close ?: (html:string) => void;
+	/** rejects promise if the thing is closed, default false*/
+	rejectClose?: boolean; //k
+
+
 
 }
 

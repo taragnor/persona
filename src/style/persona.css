@@ -89,6 +89,11 @@ div.defenses > *{
 	margin-right: 10px;
 }
 
+div.defenses > .defense {
+	min-width: 0;
+	min-height: 0;
+}
+
 div.resistance-item {
 	margin-left: 10px;
 	margin-right: 10px;
@@ -531,8 +536,19 @@ div.power-sideboard {
 	flex-wrap: wrap;
 }
 
+.combat-panel .control-panel .main-powers .power-name:hover {
+	cursor: pointer;
+}
 
+.combat-panel .control-panel .main-powers .pretty-power-name:hover {
+	background-color: #222; /* default is #333 dark grey*/
+	border: 1px solid #ffffff;
+}
 
+.scan-dialog div.main-power {
+	max-width: 49%;
+	font-size: smaller;
+}
 
 div.main-power {
 	flex: 1 1 50%;
@@ -617,6 +633,7 @@ div.power-operations {
 
 .scan-dialog label {
 	font-weight: bold;
+	overflow: hidden;
 }
 
 .scan-dialog header {
@@ -632,8 +649,8 @@ div.power-operations {
 .scan-dialog .defenses {
 	display: flex;
 	flex-direction: row;
-	row-gap: 20px;
-	column-gap: 20px;
+	row-gap: 10px;
+	column-gap: 10px;
 }
 
 .events-section .placement {

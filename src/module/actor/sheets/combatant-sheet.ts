@@ -200,6 +200,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		Helpers.pauseCheck();
 		if (this._powerUseLock) {
 			ui.notifications.notify("Can't use another power now, as a power is already in process");
+			return;
 		}
 		this._powerUseLock = true;
 		Helpers.ownerCheck(this.actor);

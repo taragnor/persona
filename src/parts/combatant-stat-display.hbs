@@ -18,26 +18,28 @@
 			{{#each persona.powers as |power i|}}
 			<div class="main-power" data-power-id="{{power.id}}">
 				<div class="power-name-block {{#if (lte ../actor.maxPowers i)}} over-max-power {{/if}} ">
-					<div class="power-name">
+					<div class="power-name-bubble-container">
 						{{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../persona}}
+						{{#if false}}
 						<span class="cost-string">
 							({{powerCostString power ../actor}})
 						</span>
+						{{/if}}
 					</div>
-				</div>
-				<div class="power-operations">
 				</div>
 			</div>
 			{{/each}}
 		</div>
 		{{/if}}
 		{{#if (scanLevelgte persona 2)}}
+		{{#if (isShadow persona.user)}}
 		<div class="treasure">
 			<span><b> Treasure: </b></span>
 			<span>
 				{{actor.treasureString}}
 			</span>
 		</div>
+		{{/if}}
 		{{/if}}
 
 	</div>

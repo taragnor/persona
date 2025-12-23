@@ -35,21 +35,22 @@ export abstract class SidePanel {
 		if (!this.doesPanelExist()) {
 			this.createContainer();
 		}
-		templateData = {
-			...await this.getData(),
-			templateData,
-		};
 		const panel = this.HTMLPanel;
 		if (!panel) {
 			throw new PersonaError(`Can't find side panel for ${this.panelName}: This shoudl be impossible`);
 		}
 		panel.empty();
+		templateData = {
+			...await this.getData(),
+			templateData,
+		};
 		const html = await foundry.applications.handlebars.renderTemplate(this.templatePath, templateData);
 		panel.html(html);
-		this.activateListeners($(html));
+		this.activateListeners($(panel));
 	}
 
 	activateListeners(_html: JQuery<HTMLElement>): void {
+		 console.log("Inner listener activated");
 	}
 
 	getData () : Promise<Record<string, unknown>> | Record<string, unknown> {
@@ -57,6 +58,7 @@ export abstract class SidePanel {
 	}
 
 	private createContainer() : SidePanel["HTMLPanel"] {
+		console.log("Creating Container");
 		const infoPanel = $("<section>").addClass(this.panelName);
 		const chatNotifications = $(document).find("#interface #ui-right-column-1 #chat-notifications");
 		const chatContainer= $("<div>")
