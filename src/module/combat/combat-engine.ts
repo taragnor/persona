@@ -26,6 +26,7 @@ import {PersonaSFX} from "./persona-sfx.js";
 export class CombatEngine {
 	combat: U<PersonaCombat>;
 	customAtkBonus: number = 0;
+	CRIT_MAX = 10 as const;
 
 	constructor (combat: U<PersonaCombat> = game.combat as U<PersonaCombat>) {
 		this.combat = combat;
@@ -233,7 +234,7 @@ export class CombatEngine {
 		const critBoostMod = this.calcCritModifier(attacker, target, power, situation);
 		const critMin = situation.resisted ? -999 : 0;
 		const critResolved = critBoostMod.eval(situation);
-		const critMax = critResolved.total < 100 ? PersonaCombat.CRIT_MAX : 100;
+		const critMax = critResolved.total < 100 ? this.CRIT_MAX : 100;
 		const critBoost = Math.clamp(critResolved.total, critMin, critMax);
 		const critPrintable = critResolved.steps;
 		return { critBoost, critPrintable};
@@ -253,9 +254,6 @@ export class CombatEngine {
 		const r = await (options.setRoll ? new Roll(`0d1+${options.setRoll}`).roll():  new Roll('1d20').roll());
 		this.storeActivationRoll(rollType, r);
 		const attackbonus = this.getAttackBonus(attackerPersona, power, target, modifiers);
-		// if (rollType == 'reflect' && (def == "fort" || def =="ref")) {
-		// 	attackbonus.add(1, 15, 'Reflected Attack',"add");
-		// }
 		const roll = new RollBundle('Temp', r, attacker.actor.system.type == 'pc', attackbonus, baseSituation);
 		const naturalAttackRoll = roll.dice[0].total;
 		const defenseCalc = targetPersona.getDefense(def).eval(baseSituation);

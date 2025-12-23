@@ -54,7 +54,6 @@ declare global {
 }
 
 export class PersonaCombat extends Combat<ValidAttackers> {
-	static CRIT_MAX = 10 as const;
 	_engagedList: EngagementList;
 	consecutiveCombat: number =0;
 	defeatedFoes : ValidAttackers[] = [];
