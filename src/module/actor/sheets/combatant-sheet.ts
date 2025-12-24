@@ -487,6 +487,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async copyToCompendium(ev: JQuery.ClickEvent) {
 		const personaId = HTMLTools.getClosestData(ev, "personaId");
+		if (!this.actor.isPC()) {
+			throw new PersonaError("Cant' use copy to compendium for a Shadow persona");
+		}
 		if (!personaId) {
 			throw new PersonaError("No Persona Id");
 		}

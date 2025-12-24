@@ -2755,11 +2755,10 @@ declare global {
 	type Usable = Power | Consumable ;
 	type UsableAndCard = Usable | SkillCard;
 	type TreasureItem = Weapon | InvItem | Consumable | SkillCard;
+	type PowerContainer = Consumable | Power | ItemModifierContainer;
+
 }
 type CraftingInventoryItem= InvItem & {system: {slot: "crafting"}};
-
-
-
 
 export type ItemModifierContainer = ItemContainers;
 
@@ -2775,8 +2774,6 @@ export interface ModifierContainer <T extends Actor | TokenDocument | Item | Act
 	accessor : UniversalAccessor<T>,
 	getModifier(bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null): ModifierListItem[];
 }
-
-export type PowerContainer = Consumable | Power | ItemModifierContainer;
 
 Hooks.on('updateItem', (item :PersonaItem, _diff: DeepPartial<typeof item>) => {
 	item.clearCache();
@@ -2795,7 +2792,6 @@ function cacheStats() {
 
 //@ts-expect-error isn't defined on window
 window.cacheStats = cacheStats;
-
 
 Hooks.on('deleteItem', async (item: PersonaItem) => {
 	if (item.parent instanceof PersonaActor && item.hasPlayerOwner && item.isOwner && !game.user.isGM) {

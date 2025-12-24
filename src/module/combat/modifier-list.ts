@@ -1,7 +1,6 @@
 import { ArrayCorrector } from "../item/persona-item.js";
 import { testPreconditions } from "../preconditions.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
-import { PowerContainer } from "../item/persona-item.js";
 import {PersonaError} from "../persona-error.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
 

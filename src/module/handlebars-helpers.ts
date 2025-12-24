@@ -931,7 +931,8 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"isCopyableToCompendium": function (persona: Persona): boolean {
-			return PersonaCompendium.canUseCompendium()
+			return persona.user.isPC()
+				&& PersonaCompendium.canUseCompendium()
 				&& PersonaCompendium.isCopyableToCompendium(persona);
 		},
 

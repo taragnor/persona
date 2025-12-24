@@ -1,8 +1,6 @@
 import { PersonaItemSheetBase } from "./base-item-sheet.js";
-import { PowerContainer } from "../persona-item.js";
 import { PersonaDB } from "../../persona-db.js";
-import {PowerStuff} from "../../../config/power-stuff.js";
-
+import { PowerStuff } from "../../../config/power-stuff.js";
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
 	declare item: PowerContainer | SocialCard;
@@ -21,7 +19,6 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 		return data;
 	}
 
-
 	static get powerStuff(): Record<string, unknown> {
 		return PowerStuff.powerStuff();
 	}
@@ -29,6 +26,5 @@ export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBa
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 	}
-
 
 }

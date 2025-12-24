@@ -167,6 +167,7 @@ export class CombatPanel extends SidePanel {
 		if (!combat || combat.isSocial || combat.combatant?.token == undefined) {return false;}
 		if (this.target != combat.combatant.token) {return false;}
 		return this.target?.actor?.isOwner ?? false;
+		//TODO: may want to check that target is combatant in battle
 	}
 
 	static isActiveControl() : boolean {
@@ -200,18 +201,16 @@ export class CombatPanel extends SidePanel {
 				void this.instance.updatePanel({});
 			}
 		});
+
 		Hooks.on("refreshToken", (token) => {
 			if (this.instance.target == token.document) {
 				void this.instance.updatePanel({});
 			}
 		});
 
-
 		Hooks.on("updateToken", (token) => {
 			if (this.instance.target == token) {
 				void this.instance.updatePanel({});
-				//for some reason update doesn't register on the combat for determining distance, so a bit of waiting is required,might have to do with animations for moving the token
-				// void sleep(250).then(() => void this.instance.updatePanel({}));
 			}
 		});
 
