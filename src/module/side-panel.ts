@@ -3,6 +3,7 @@ import {PersonaError} from "./persona-error.js";
 export abstract class SidePanel {
 	panelName: string;
 	HTMLPanel: U<JQuery<HTMLElement>>;
+	iterations : number = 0;
 
 	get CSSClassName() : string {
 		return `.${this.panelName}`;
@@ -43,7 +44,9 @@ export abstract class SidePanel {
 		templateData = {
 			...await this.getData(),
 			templateData,
+			_iteration : this.iterations,
 		};
+		this.iterations++;
 		const html = await foundry.applications.handlebars.renderTemplate(this.templatePath, templateData);
 		panel.html(html);
 		this.activateListeners($(panel));

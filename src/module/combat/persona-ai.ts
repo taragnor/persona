@@ -42,7 +42,7 @@ export class RandomAI extends PersonaAI {
    override getAction(): AIAction | null {
       const {persona, token} = this;
       const tokenAcc = PersonaDB.getUniversalTokenAccessor(token);
-      const powers = this.persona.powers;
+      const powers = this.persona.powers.concat(this.persona.basicPowers);
       const usablePowers = powers.filter( pwr => persona.canUsePower(pwr));
       const chargeAblePowers = powers.filter (pwr => pwr.energyRequired(persona) > persona.user.energy);
       // const freePowers = usablePowers.filter( pwr=> pwr.energyCost(persona) == 0);

@@ -4,9 +4,10 @@ import {PersonaActorSheetBase} from "../actor/sheets/actor-sheet.base.js";
 import {UsableAndCard} from "../item/persona-item.js";
 import {PersonaError} from "../persona-error.js";
 import {SidePanel} from "../side-panel.js";
+import {sleep} from "../utility/async-wait.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {CombatEngine} from "./combat-engine.js";
-import {PersonaCombat, PToken} from "./persona-combat.js";
+import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 
 export class CombatPanel extends SidePanel {
 	target: U<PToken>;
@@ -15,6 +16,14 @@ export class CombatPanel extends SidePanel {
 
 	constructor() {
 		super ("combat-panel");
+	}
+
+	get combat() : PersonaCombat {
+		const combat = game.combat as PersonaCombat;
+		if (!combat) {
+			ui.notifications.warn("No combat running");
+		}
+		return combat;
 	}
 
 	get actor() : U<ValidAttackers> {
@@ -95,8 +104,14 @@ export class CombatPanel extends SidePanel {
 		const actor = this.target?.actor;
 		const persona = actor?.persona();
 		const token = this.target;
+		const combatant = this.combat.getCombatantByActor(actor as ValidAttackers);
+		let engagedList : PersonaCombatant[] = [];
+		if (combatant && PersonaCombat.isPersonaCombatant(combatant))  {
+		engagedList = this.combat.getAllEngagedEnemies(combatant);
+		}
 		return {
 			...data,
+			engagedList,
 			CONST,
 			target: this.target,
 			persona,
@@ -181,7 +196,9 @@ export class CombatPanel extends SidePanel {
 
 		Hooks.on("updateToken", (token) => {
 			if (this.instance.target == token) {
-				void this.instance.updatePanel({});
+				console.log("On Token Update");
+			//for some reason update doesn't register on the combat for determining distance, so a bit of waiting is required
+				void sleep(250).then(() => void this.instance.updatePanel({}));
 			}
 		});
 

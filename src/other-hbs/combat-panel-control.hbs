@@ -1,4 +1,5 @@
 <div class="control-panel">
+	{{_iteration}}
 
 	<header>
 		<h3 class="token-name"> {{token.name}}</h3>
@@ -11,7 +12,11 @@
 
 	{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=persona}}
 
-{{> "systems/persona/parts/basic-powers-section.hbs" CONST=CONST persona=persona actor=actor}}
+	{{> "systems/persona/parts/basic-powers-section.hbs" CONST=CONST persona=persona actor=actor}}
+
+	{{#if engagedList}}
+	<img src="systems/persona/img/icon/engaged-icon.gif" title="Engaged By {{#each engagedList as |comb i|}} {{comb.name}} {{/each}}">
+	{{/if}}
 
 	<div class="main-powers">
 		{{#each persona.activeCombatPowers as |power i|}}

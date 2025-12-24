@@ -423,13 +423,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	async onNewRound() {
 		if (!game.user.isGM) {return;}
+		const debug = PersonaSettings.debugMode();
 		const nav = PersonaDB.getNavigator();
-		console.log("New Round Start");
+		if (debug) { console.log("New Round Start");}
 		if (nav) {
 			const exp = await nav.onStartCombatTurn();
-			console.log(`On new round: ${exp.join()}`);
+			if (debug) { console.log(`On new round: ${exp.join()}`);}
 		}
-		// await combat.incEscalationDie();
 	}
 
 	async startCombatantTurn( combatant: Combatant<PersonaActor>){
@@ -560,6 +560,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		throw new Error('Illegal Argument passed to toCombatant');
 	}
 
+	/** finds enemies with defender auara that are engaging the target*/
 	getEnemyEngagedDefenders(x: IntoCombatant) : PersonaCombatant[] {
 		const comb = this.toCombatant(x);
 		if (!comb) {

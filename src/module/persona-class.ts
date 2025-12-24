@@ -86,6 +86,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return removeDuplicates(bonusPowers);
 	}
 
+	get basicPowers() {
+		return this.user.basicPowers;
+	}
+
 	get mainPowers(): Power[] {
 		return this._powers;
 	}
