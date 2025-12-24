@@ -1,8 +1,5 @@
 import { statusResists } from "./actor-parts.js";
 import { elementalResists } from "./actor-parts.js";
-import { Power } from "../module/item/persona-item.js";
-import { Talent } from "../module/item/persona-item.js";
-import { Focus } from "../module/item/persona-item.js";
 import { ResistStrength } from "./damage-types.js";
 import { DamageType } from "./damage-types.js";
 import {Calculation} from "../module/utility/calculation.js";

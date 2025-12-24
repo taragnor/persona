@@ -1,13 +1,11 @@
 import { LevelUpCalculator } from "../config/level-up-calculator.js";
 import { PersonaCombatStats } from "./actor/persona-combat-stats.js";
 import { NonDeprecatedModifierType } from "../config/item-modifiers.js";
-import { Consumable, ModifierContainer, PersonaItem, Tag, Usable } from "./item/persona-item.js";
+import {  ModifierContainer, PersonaItem} from "./item/persona-item.js";
 import { Logger } from "./utility/logger.js";
 import { removeDuplicates } from "./utility/array-tools.js";
-import { UsableAndCard } from "./item/persona-item.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { Metaverse } from "./metaverse.js";
-import { UniversalModifier } from "./item/persona-item.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
@@ -20,7 +18,6 @@ import { getActiveConsequences, multiCheckContains, multiCheckToArray } from "./
 import { PersonaI } from "../config/persona-interface.js";
 import { DamageType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";
-import {Power, Talent, Focus} from "./item/persona-item.js";
 import {PersonaTag} from "../config/creature-tags.js";
 import {Defense} from "../config/defense-types.js";
 import {PersonaStat} from "../config/persona-stats.js";

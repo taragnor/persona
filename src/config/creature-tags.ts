@@ -1,4 +1,3 @@
-import {Tag} from "../module/item/persona-item.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import {ShadowRole} from "./shadow-types.js";
 

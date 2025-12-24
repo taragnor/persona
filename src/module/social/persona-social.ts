@@ -19,7 +19,6 @@ import { weightedChoice } from "../utility/array-tools.js";
 import { SocketPayload } from "../utility/socket-manager.js";
 import { PersonaCalendar } from "./persona-calendar.js";
 import { ArrayCorrector } from "../item/persona-item.js";
-import { Activity } from "../item/persona-item.js";
 import { StudentSkill } from "../../config/student-skills.js";
 
 import { getActiveConsequences } from "../preconditions.js";
@@ -34,7 +33,6 @@ import { NonCombatTriggerTypes } from "../../config/triggers.js";
 import { PersonaItem } from "../item/persona-item.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../config/persona-settings.js";
-import { SocialCard } from "../item/persona-item.js";
 import { PersonaError } from "../persona-error.js";
 import { SocialStat } from "../../config/student-skills.js";
 import { ModifierList } from "../combat/modifier-list.js";

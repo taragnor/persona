@@ -1,4 +1,3 @@
-import { InvItem } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { EQUIP_SLOTS } from "../../../config/equip-slots.js";
 import { PersonaDB } from "../../persona-db.js";

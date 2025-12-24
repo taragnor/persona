@@ -4,7 +4,6 @@ import { weightedChoice } from "../utility/array-tools.js";
 import { ProbabilityRate } from "../../config/probability.js";
 import { TreasureTable } from "../../config/treasure-tables.js";
 import {PersonaError} from "../persona-error.js";
-import {Carryable, Tag} from "../item/persona-item.js";
 
 export class TreasureSystem {
 	static generate(treasureLevel: number, modifier : number = 0, treasureMin = 1) : EnchantedTreasureFormat[] {

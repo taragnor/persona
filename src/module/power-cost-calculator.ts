@@ -1,7 +1,6 @@
 import {HPCostCalculator} from "./calculators/hpcost-calculator.js";
 import {MPCostCalculator} from "./calculators/mpcost-calculator.js";
 import {EnergyClassCalculator} from "./calculators/shadow-energy-cost-calculator.js";
-import {Power} from "./item/persona-item.js";
 
 export class PowerCostCalculator {
 

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { PersonaVariables } from "../persona-variables.js";
-import { Usable, UsableAndCard } from "../item/persona-item.js";
 import { PersonaSounds } from "../persona-sounds.js";
 import { Metaverse } from "../metaverse.js";
 import { TriggeredEffect } from "../triggered-effect.js";

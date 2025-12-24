@@ -7,7 +7,6 @@ import { PersonaVariables } from "./persona-variables.js";
 import { PersonaScene } from "./persona-scene.js";
 import { ActorChange } from "./combat/combat-result.js";
 import { AttackResult } from "./combat/combat-result.js";
-import { Usable } from "./item/persona-item.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaSocial } from "./social/persona-social.js";
 import { MultiCheckOrSingle, NonDeprecatedPrecondition, SOCIAL_LINK_OR_TAROT_OTHER } from "../config/precondition-types.js";

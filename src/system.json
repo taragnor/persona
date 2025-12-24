@@ -2,7 +2,7 @@
 	"id": "persona",
 	"title": "Persona d20 system",
 	"description": "Foundry VTT version of Persona homebrew system",
-	"version": "0.8.4",
+	"version": "0.9.0",
 	"compatibility": {
 		"minimum": 12,
 		"verified": 13

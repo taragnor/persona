@@ -11,7 +11,6 @@ import { PersonaSettings } from "../../config/persona-settings.js";
 import { WeatherType } from "../../config/weather-types.js";
 import { PersonaError } from "../persona-error.js";
 import {PersonaActor} from "../actor/persona-actor.js";
-import {Carryable} from "../item/persona-item.js";
 
 declare global {
 	interface HOOKS {

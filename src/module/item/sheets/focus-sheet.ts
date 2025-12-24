@@ -1,5 +1,4 @@
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
-import { Focus } from "../persona-item.js";
 import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 
 export class PersonaFocusSheet extends PersonaEffectContainerBaseSheet {

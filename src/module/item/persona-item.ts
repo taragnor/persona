@@ -2736,25 +2736,30 @@ export function ArrayCorrector<T>(obj: T[] | Record<string | number, T>): T[] {
 }
 
 
-export type CClass = Subtype<PersonaItem, 'characterClass'>;
-export type Power = Subtype<PersonaItem, 'power'>;
-export type Weapon = Subtype<PersonaItem, 'weapon'>;
-export type InvItem = Subtype<PersonaItem, 'item'>;
-export type Talent = Subtype<PersonaItem, 'talent'>;
-export type Focus = Subtype<PersonaItem, 'focus'>;
-export type Consumable = Subtype<PersonaItem, 'consumable'>;
-export type Activity = SocialCard;
-export type SocialCard = Subtype<PersonaItem, 'socialCard'>;
-export type SkillCard = Subtype<PersonaItem, 'skillCard'>;
-export type Carryable = InvItem | Weapon | Consumable | SkillCard;
-export type Tag = Subtype<PersonaItem, "tag">;
-
+declare global {
+	type CClass = Subtype<PersonaItem, 'characterClass'>;
+	type Power = Subtype<PersonaItem, 'power'>;
+	type Weapon = Subtype<PersonaItem, 'weapon'>;
+	type InvItem = Subtype<PersonaItem, 'item'>;
+	type Talent = Subtype<PersonaItem, 'talent'>;
+	type Focus = Subtype<PersonaItem, 'focus'>;
+	type Consumable = Subtype<PersonaItem, 'consumable'>;
+	type Activity = SocialCard;
+	type SocialCard = Subtype<PersonaItem, 'socialCard'>;
+	type SkillCard = Subtype<PersonaItem, 'skillCard'>;
+	type Carryable = InvItem | Weapon | Consumable | SkillCard;
+	type Tag = Subtype<PersonaItem, "tag">;
+	type CraftingMaterial = CraftingInventoryItem | Consumable;
+	type UniversalModifier = Subtype<PersonaItem, 'universalModifier'>;
+	type ItemContainers = Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier | SkillCard | Tag;
+	type Usable = Power | Consumable ;
+	type UsableAndCard = Usable | SkillCard;
+	type TreasureItem = Weapon | InvItem | Consumable | SkillCard;
+}
 type CraftingInventoryItem= InvItem & {system: {slot: "crafting"}};
-export type CraftingMaterial = CraftingInventoryItem | Consumable;
 
-export type UniversalModifier = Subtype<PersonaItem, 'universalModifier'>;
 
-type ItemContainers = Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier | SkillCard | Tag;
+
 
 export type ItemModifierContainer = ItemContainers;
 
@@ -2772,8 +2777,6 @@ export interface ModifierContainer <T extends Actor | TokenDocument | Item | Act
 }
 
 export type PowerContainer = Consumable | Power | ItemModifierContainer;
-export type Usable = Power | Consumable ;
-export type UsableAndCard = Usable | SkillCard; 
 
 Hooks.on('updateItem', (item :PersonaItem, _diff: DeepPartial<typeof item>) => {
 	item.clearCache();

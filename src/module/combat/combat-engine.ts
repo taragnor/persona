@@ -6,7 +6,7 @@ import {PersonaSettings} from "../../config/persona-settings.js";
 import {AnyStringObject} from "../../config/precondition-types.js";
 import {RollSituation} from "../../config/situation.js";
 import {ConsequenceProcessor} from "../conditionalEffects/consequence-processor.js";
-import {Consumable, PersonaItem, Power, Usable, UsableAndCard} from "../item/persona-item.js";
+import {PersonaItem} from "../item/persona-item.js";
 import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";

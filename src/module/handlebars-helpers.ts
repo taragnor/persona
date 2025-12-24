@@ -11,13 +11,11 @@ import { RESIST_STRENGTHS } from "../config/damage-types.js";
 import { PersonaError } from "./persona-error.js";
 import { FREQUENCY } from "../config/frequency.js";
 import { CardEvent } from "../config/social-card-config.js";
-import { Carryable, CClass, Consumable, ContainerTypes, SocialCard } from "./item/persona-item.js";
+import { ContainerTypes} from "./item/persona-item.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
-import { InvItem } from "./item/persona-item.js";
-import { Weapon } from "./item/persona-item.js";
 import { PersonaSocial } from "./social/persona-social.js";
 import { Consequence } from "../config/consequence-types.js";
 import { ConditionalEffectManager } from "./conditional-effect-manager.js";
@@ -25,18 +23,13 @@ import { DamageType } from "../config/damage-types.js";
 import { DAMAGETYPES } from "../config/damage-types.js";
 import { localize } from "./persona.js";
 import { AttackResult } from "./combat/combat-result.js";
-import { Activity } from "./item/persona-item.js";
 import { CardData } from "./social/persona-social.js";
 import { testPreconditions } from "./preconditions.js";
-import { Focus } from "./item/persona-item.js";
 import { SetFlagEffect } from "../config/consequence-types.js";
-import { Power } from "./item/persona-item.js";
 import { SocialBenefit } from "./actor/persona-actor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaDB } from "./persona-db.js";
-import { Talent } from "./item/persona-item.js";
 import { PToken } from "./combat/persona-combat.js";
-import { Usable } from "./item/persona-item.js";
 import {Defense, DEFENSE_TYPES} from "../config/defense-types.js";
 import {INSTANT_KILL_LEVELS} from "./combat/damage-calc.js";
 import {PersonaEffectContainerBaseSheet} from "./item/sheets/effect-container.js";
@@ -1029,7 +1022,14 @@ export class PersonaHandleBarsHelpers {
 
 		"showPersonaImage" : function (persona: Persona): boolean {
 			return persona.img != persona.user.img;
+		},
+
+		"isCombatPanelActive" : function () {
+			const combat = PersonaCombat.combat;
+			if (!combat || combat.isSocial) {return false;}
+			return combat.combatant?.actor?.isOwner ?? false;
 		}
+
 
 	};
 

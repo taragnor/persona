@@ -4,7 +4,6 @@
 import { damage, damageNew, effects, powerCost, powerOnlyUsableProps, powerSpecific, triEffects, UsablePowerProps } from "./power-dm.js";
 import { CONSUMABLE_SUBTYPE_LIST } from "../../config/equip-slots.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../../config/roll-tags.js";
-import { Consumable, InvItem, SocialCard, UniversalModifier, Weapon } from "../item/persona-item.js";
 import { UNIVERSAL_MODIFIERS_TYPE_LIST } from "./universal-modifiers-types.js";
 import { FREQUENCY, frequencyConvert } from "../../config/frequency.js";
 import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
@@ -12,7 +11,6 @@ import { CardRoll, Opportunity, SOCIAL_CARD_TYPES_LIST, ThresholdOrDC, TokenSpen
 import { ArrayCorrector } from "../item/persona-item.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { EQUIPMENT_TAGS_LIST } from "../../config/equipment-tags.js";
-import { Power } from "../item/persona-item.js";
 const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, FilePathField: file } = foundry.data.fields;
 
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";

@@ -1,6 +1,5 @@
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaItemSheetBase } from "./base-item-sheet.js";
-import { SocialCard } from "../persona-item.js";
 
 export class PersonaSocialSheetBase extends PersonaItemSheetBase {
 	declare item: SocialCard;

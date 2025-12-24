@@ -7,7 +7,6 @@ import { PersonaItem } from "../../item/persona-item.js";
 import { PersonaActor } from "../persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { PCLikeSheet } from "./pc-like-sheet.js";
-import { Power } from "../../item/persona-item.js";
 import { Logger } from "../../utility/logger.js";
 import { NAVIGATOR_TRIGGERS } from "../../navigator/nav-voice-lines.js";
 import {PersonaSounds} from "../../persona-sounds.js";

@@ -7,7 +7,6 @@ import { TriggeredEffect } from "../triggered-effect.js";
 import { Metaverse } from "../metaverse.js";
 import { PersonaError } from "../persona-error.js";
 import { localize } from "../persona.js";
-import { UniversalModifier } from "../item/persona-item.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { PersonaDB } from "../persona-db.js";

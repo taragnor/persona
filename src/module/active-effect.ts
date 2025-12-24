@@ -3,7 +3,7 @@ import { FatigueStatusId } from "../config/status-effects.js";
 import { statusMap } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
 import { StatusDurationType } from "../config/status-effects.js";
-import { GetEffectsOptions, ModifierContainer, PersonaItem, Tag } from "./item/persona-item.js";
+import { GetEffectsOptions, ModifierContainer, PersonaItem} from "./item/persona-item.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaError } from "./persona-error.js";
 import { StatusEffectId } from "../config/status-effects.js";

@@ -3,7 +3,7 @@ import { DamageLevel, DamageType } from "../../config/damage-types.js";
 import { PowerTag } from "../../config/power-tags.js";
 import { STATUS_AILMENT_LIST, STATUS_EFFECT_LIST, StatusEffectId } from "../../config/status-effects.js";
 import { InstantKillLevel } from "../combat/damage-calc.js";
-import { PersonaItem, Power, Tag } from "../item/persona-item.js";
+import { PersonaItem} from "../item/persona-item.js";
 import { CostCalculator } from "./cost-calculator.js";
 import { EnergyCostBase } from "./energy-cost-base.js";
 

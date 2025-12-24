@@ -20,7 +20,6 @@ import { statusMap } from "../../config/status-effects.js";
 import { PersonaScene } from "../persona-scene.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { RealDamageType } from "../../config/damage-types.js";
-import { Carryable, CraftingMaterial, SkillCard, SocialCard, Tag } from "../item/persona-item.js";
 import { FlagData } from "../../config/actor-parts.js";
 import { TarotCard } from "../../config/tarot.js";
 import { removeDuplicates } from "../utility/array-tools.js";
@@ -31,27 +30,19 @@ import { TAROT_DECK } from "../../config/tarot.js";
 import { localize } from "../persona.js";
 import { STATUS_EFFECT_LIST } from "../../config/status-effects.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../../config/status-effects.js";
-import { Activity } from "../item/persona-item.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { PersonaActorSheetBase } from "./sheets/actor-sheet.base.js";
 import { Logger } from "../utility/logger.js";
 import { STUDENT_SKILLS } from "../../config/student-skills.js";
-import { Consumable } from "../item/persona-item.js";
 import { SocialStat } from "../../config/student-skills.js";
 import { PersonaError } from "../persona-error.js";
 import { PersonaSounds } from "../persona-sounds.js";
-import { Usable } from "../item/persona-item.js";
-import { CClass } from "../item/persona-item.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { StatusEffectId } from "../../config/status-effects.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { SetFlagEffect, StatusEffect } from "../../config/consequence-types.js";
 import { ModifierList } from "../combat/modifier-list.js";
-import { Focus } from "../item/persona-item.js";
 import { ModifierContainer } from "../item/persona-item.js";
-import { InvItem } from "../item/persona-item.js";
-import { Weapon } from "../item/persona-item.js";
-import { Power } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
 import { ACTORMODELS } from "../datamodel/actor-types.js";
 import { PersonaItem } from "../item/persona-item.js";
@@ -401,7 +392,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "npcAlly":
 			case "shadow": {
 				if (this.isShadow() && this.isCustomPersona()) {return this.name;}
-				const combat = game.combat as PersonaCombat | undefined;
+				const combat = PersonaCombat.combat;
 				if (!combat) {return this.name;}
 				const token = combat.getCombatantByActor(this as ValidAttackers)?.token;
 				if (!token) {return this.prototypeToken.name;}
@@ -2836,10 +2827,11 @@ getSocialFocii_NPC(this: NPC, linkHolder: SocialLink) : Focus[] {
 
 getAllSocialFocii() : Focus[] {
 	switch (this.system.type) {
-		case "pc":
-			return this.socialLinks.flatMap( link => {
-				return link.focii;
-			});
+		case "pc": {
+			const x = this.socialLinks
+			.flatMap( link => link.focii);
+			return x;
+		}
 		case "npcAlly":
 			return []; //coming soon
 		case "shadow":

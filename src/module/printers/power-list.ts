@@ -1,6 +1,5 @@
 import { HTMLTools } from "../utility/HTMLTools.js";
 import { PersonaError } from "../persona-error.js";
-import { Power } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
 
 export class PowerPrinter extends Application {

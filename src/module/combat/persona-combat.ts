@@ -6,14 +6,12 @@ import { CardTag } from '../../config/card-tags.js';
 import { RollTag } from '../../config/roll-tags.js';
 import { Persona } from '../persona-class.js';
 import { PersonaScene } from '../persona-scene.js';
-import { UsableAndCard } from '../item/persona-item.js';
 import { randomSelect } from '../utility/array-tools.js';
 import { CombatHooks } from './combat-hooks.js';
 import { TriggeredEffect } from '../triggered-effect.js';
 import { PersonaCalendar } from '../social/persona-calendar.js';
 import { ConsTarget } from '../../config/consequence-types.js';
 import { PersonaSocial } from '../social/persona-social.js';
-import { UniversalModifier } from '../item/persona-item.js';
 import { PersonaSFX } from './persona-sfx.js';
 import { PersonaSettings } from '../../config/persona-settings.js';
 import { RealDamageType } from '../../config/damage-types.js';
@@ -29,7 +27,6 @@ import { PersonaError } from '../persona-error.js';
 import { CombatResult } from './combat-result.js';
 import { PersonaActor } from '../actor/persona-actor.js';
 import { AttackResult } from './combat-result.js';
-import { Usable } from '../item/persona-item.js';
 import { PersonaDB } from '../persona-db.js';
 import { RollBundle } from '../persona-roll.js';
 import { EngagementList } from './engagementList.js';
@@ -80,6 +77,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		await this.setFlag('persona', 'startedCombatList', startedList);
 	}
 
+	static get combat() : U<PersonaCombat> {
+		return game?.combat as U<PersonaCombat>;
+	}
 
 	async runAllCombatantStartCombatTriggers() {
 		const combatants = this.combatants
@@ -498,13 +498,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (this.combat) {
 			await this.combat.openers.activateTargettedOpener(ev);
 		}
-	}
-
-	static get combat() : U<PersonaCombat> {
-		if (game.combat) {
-			return game.combat as PersonaCombat;
-		}
-		return undefined;
 	}
 
 	static ensureActivatingCharacterValid(combatantId: PersonaCombatant['id']): PersonaCombatant | undefined {

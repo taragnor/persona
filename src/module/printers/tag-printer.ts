@@ -1,4 +1,4 @@
-import { PersonaItem, Tag } from "../item/persona-item.js";
+import { PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 
@@ -45,7 +45,7 @@ export class TagPrinter  extends Application {
 		const data = await super.getData(options);
 		data["tagList"]= PersonaDB.tagsArr()
 			.filter (tag => tag.system.tagType == this.tagType && !tag.system.hidden)
-		.sort( (a,b) => a.displayedName.localeCompare(b.displayedName))
+		.sort( (a,b) => a.displayedName.localeCompare(b.displayedName));
 		return data;
 	}
 

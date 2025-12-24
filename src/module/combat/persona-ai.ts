@@ -1,5 +1,4 @@
 import { PersonaDB } from "../persona-db.js";
-import { Power } from "../item/persona-item.js";
 import { AttackResult } from "./combat-result.js";
 import { PToken } from "./persona-combat.js";
 import { PersonaCombat } from "./persona-combat.js";

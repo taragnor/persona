@@ -1,7 +1,6 @@
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaActorSheetBase} from "../actor/sheets/actor-sheet.base.js";
-import {UsableAndCard} from "../item/persona-item.js";
 import {PersonaError} from "../persona-error.js";
 import {SidePanel} from "../side-panel.js";
 import {HTMLTools} from "../utility/HTMLTools.js";

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { PersonaTag } from "./creature-tags.js";
 import { PersonaStat } from "./persona-stats.js";
-import { Power, Tag } from "../module/item/persona-item.js";
 import { FREQUENCY } from "./frequency.js";
 import { PROBABILITY_LIST } from "./probability.js";
 

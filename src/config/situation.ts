@@ -1,7 +1,5 @@
 import { PowerTag } from "./power-tags.js";
 import { CardTag } from "./card-tags.js";
-import { SocialCard } from "../module/item/persona-item.js";
-import { UsableAndCard } from "../module/item/persona-item.js";
 import { Persona } from "../module/persona-class.js";
 import { RollTag } from "./roll-tags.js";
 import { SocialStat } from "../config/student-skills.js";

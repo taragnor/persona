@@ -5,7 +5,6 @@ import { Logger } from "./utility/logger.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { sleep } from "./utility/async-wait.js";
 import { Metaverse } from "./metaverse.js";
-import { UniversalModifier } from "./item/persona-item.js";
 import { testPreconditions } from "./preconditions.js";
 import { DamageType } from "../config/damage-types.js";
 import { ShadowRole } from "../config/shadow-types.js";

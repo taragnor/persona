@@ -1,5 +1,4 @@
 import {StatusEffectId} from "../../config/status-effects.js";
-import {Power, Usable} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {HTMLTools} from "../utility/HTMLTools.js";

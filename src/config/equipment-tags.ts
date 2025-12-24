@@ -1,4 +1,3 @@
-import {Tag} from "../module/item/persona-item.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 
 export const WEAPON_TAGS_LIST = [

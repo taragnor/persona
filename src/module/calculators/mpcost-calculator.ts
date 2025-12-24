@@ -1,6 +1,5 @@
 import {DamageLevel} from "../../config/damage-types.js";
 import {PowerTag} from "../../config/power-tags.js";
-import {Power, Tag} from "../item/persona-item.js";
 import {CostCalculator, CostModifier} from "./cost-calculator.js";
 
 export class MPCostCalculator extends CostCalculator {

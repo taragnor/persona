@@ -551,11 +551,11 @@ div.power-sideboard {
 	flex-wrap: wrap;
 }
 
-.combat-panel .control-panel .main-powers .power-name:hover {
+.active-combat-panel .combat-panel .control-panel .main-powers .power-name:hover {
 	cursor: pointer;
 }
 
-.combat-panel .control-panel .main-powers .pretty-power-name:hover {
+.active-combat-panel .combat-panel .control-panel .main-powers .pretty-power-name:hover {
 	background-color: #222; /* default is #333 dark grey*/
 	border: 1px solid #ffffff;
 }

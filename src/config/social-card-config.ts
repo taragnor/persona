@@ -1,5 +1,4 @@
 import { RollTag } from "./roll-tags.js";
-import { SocialCard } from "../module/item/persona-item.js";
 import { Consequence } from "./consequence-types.js";
 import { StudentSkillExt } from "./student-skills.js";
 import { SaveType } from "./save-types.js";

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { Usable } from "../persona-item.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 

@@ -3,7 +3,6 @@ import {DamageType} from "../../config/damage-types.js";
 import {StatusEffectId} from "../../config/status-effects.js";
 import {StatusDuration} from "../active-effect.js";
 import {InstantKillLevel} from "../combat/damage-calc.js";
-import {Power} from "../item/persona-item.js";
 export abstract class CostCalculator {
 
 	static combineModifiers (this: void, mods: CostModifier[]) : number {

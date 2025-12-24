@@ -8,15 +8,11 @@ import { Helpers } from "./utility/helpers.js";
 import { PersonaSockets } from "./persona.js";
 import { weightedChoice } from "./utility/array-tools.js";
 import { PersonaItem } from "./item/persona-item.js";
-import { SkillCard } from "./item/persona-item.js";
 import { SearchMenu } from "./exploration/searchMenu.js";
 import { PersonaRegion } from "./region/persona-region.js";
-import { Weapon } from "./item/persona-item.js";
 import { ProgressClock } from "./utility/progress-clock.js";
 import { DungeonActionConsequence } from "../config/consequence-types.js";
 import { shuffle } from "./utility/array-tools.js";
-import { InvItem } from "./item/persona-item.js";
-import { Consumable } from "./item/persona-item.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaError } from "./persona-error.js";
 import { TensionPool } from "./exploration/tension-pool.js";
@@ -539,9 +535,6 @@ Hooks.on("updateClock", async function (clock: ProgressClock, _newAmt: number, _
 
 //@ts-expect-error adding to window
 window.Metaverse = Metaverse;
-
-
-export type TreasureItem = Weapon | InvItem | Consumable | SkillCard;
 
 type Treasure = {
 	money : number,

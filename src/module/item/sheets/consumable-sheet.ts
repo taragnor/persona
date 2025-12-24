@@ -1,4 +1,3 @@
-import { Consumable } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { EQUIP_SLOTS } from "../../../config/equip-slots.js";
 import { PersonaPowerLikeBaseSheet } from "./powerlike-base-sheet.js";

@@ -7,7 +7,6 @@ import { THRESHOLD_TYPE } from "../../../config/social-card-config.js";
 import { PersonaSocialSheetBase } from "./social-sheet-base.js";
 import { Opportunity } from "../../../config/social-card-config.js";
 import { PersonaError } from "../../persona-error.js";
-import { SocialCard } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { PersonaDB } from "../../persona-db.js";
 import { ArrayCorrector } from "../persona-item.js";

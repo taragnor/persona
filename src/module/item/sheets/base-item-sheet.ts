@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { HTMLTools } from "../../utility/HTMLTools.js";
-import { Consumable } from "../persona-item.js";
 import { PersonaItem } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { ConditionalEffectManager } from "../../conditional-effect-manager.js";

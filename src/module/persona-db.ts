@@ -1,18 +1,12 @@
 import { TAROT_DECK, TarotCard } from "../config/tarot.js";
-import { TreasureItem } from "./metaverse.js";
-import { Carryable, CClass, SkillCard, Tag, Talent } from "./item/persona-item.js";
 import { SocialEncounterCard } from "./social/persona-social.js";
 import { ModifierContainer } from "./item/persona-item.js";
 import { PersonaError } from "./persona-error.js";
-import { Activity } from "./item/persona-item.js";
-import { UniversalModifier } from "./item/persona-item.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { DBAccessor } from "./utility/db-accessor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
-import { Power } from "./item/persona-item.js";
 import { BASIC_PC_POWER_NAMES } from "../config/basic-powers.js";
 import { BASIC_SHADOW_POWER_NAMES } from "../config/basic-powers.js";
-import { SocialCard } from "./item/persona-item.js";
 
 
 declare global {
@@ -294,7 +288,6 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		.map( tag => [tag.system.linkedInternalTag, tag] as [string, Tag]);
 		return this.#cache.tagNames = new Map(tags);
 	}
-
 
 	socialEncounterCards(): readonly SocialEncounterCard[] {
 		return this.allSocialCards()
