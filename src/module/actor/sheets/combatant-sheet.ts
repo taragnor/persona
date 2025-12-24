@@ -16,6 +16,7 @@ import {CombatEngine} from "../../combat/combat-engine.js";
 
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	declare actor: ValidAttackers;
+
 	selectedPersona: U<Persona>;
 	_powerUseLock: boolean;
 
@@ -64,7 +65,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".persona-list li .persona-name").rightclick(this.activatePersona.bind(this));
 		html.find(".active-statuses .status-effect").rightclick(this.removeStatus.bind(this));
 		html.find(".copy-to-compendium").on("click", this.copyToCompendium.bind(this));
-
 	}
 
 	override async _onDropActor(_event: Event, actorD: unknown) {
@@ -80,7 +80,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 		return super._onDropActor(_event, actorD);
 	}
-
 
 	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:unknown[]) {
 		Helpers.ownerCheck(this.actor);
@@ -342,7 +341,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (await HTMLTools.confirmBox("Level Up", "Level Up Character")) {
 			await this.actor.levelUp_manual();
 		}
-
 	}
 
 	async displayDamageStack(event: JQuery.ClickEvent) {
@@ -452,7 +450,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 	}
 
-	async openPersona(event: JQuery.ClickEvent) { 
+	async openPersona(event: JQuery.ClickEvent) {
 		const personaId = HTMLTools.getClosestData(event, "personaId");
 		const persona = PersonaDB.getActorById(personaId);
 		if (!persona) {
@@ -502,4 +500,3 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 }
-

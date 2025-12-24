@@ -4,6 +4,7 @@ import { PowerStuff } from "../../../config/power-stuff.js";
 
 export abstract class PersonaEffectContainerBaseSheet extends PersonaItemSheetBase {
 	declare item: PowerContainer | SocialCard;
+
 	static _powerStuffBase?: Record<string, unknown>;
 
 	override async getData() {

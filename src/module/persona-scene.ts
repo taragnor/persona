@@ -12,19 +12,17 @@ import { PersonaDB } from "./persona-db.js";
 import { PersonaCalendar } from "./social/persona-calendar.js";
 import { PersonaRegion } from "./region/persona-region.js";
 import { PersonaActor } from "./actor/persona-actor.js";
-import {ConditionalEffectManager} from "./conditional-effect-manager.js";
-import {HTMLTools} from "./utility/HTMLTools.js";
+import { ConditionalEffectManager } from "./conditional-effect-manager.js";
+import { HTMLTools } from "./utility/HTMLTools.js";
 
 export class PersonaScene extends Scene {
 	static ENCOUNTER_DATA_FLAG_NAME = "encounterData" as const;
 	declare regions: Collection<PersonaRegion>;
 	declare tokens: Collection<TokenDocument<PersonaActor>>;
 
-
 	get challengeLevel(): number {
 		//TODO: placeholder
 		return 0;
-
 	}
 
 	allFoes() : Shadow[] {
@@ -290,7 +288,7 @@ export class PersonaScene extends Scene {
 	_addExtraSheetHTML(html: JQuery) : void {
 		html.find("nav.sheet-tabs").append(`
 <a data-action="tab" data-group="sheet" data-tab="encounter">
-		  <span>Encounter</span>
+			<span>Encounter</span>
 	 </a>
 `);
 		const listElements = this.encounterData.monsters
