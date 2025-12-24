@@ -53,7 +53,6 @@ export abstract class SidePanel {
 	}
 
 	activateListeners(_html: JQuery<HTMLElement>): void {
-		 console.log("Inner listener activated");
 	}
 
 	getData () : Promise<Record<string, unknown>> | Record<string, unknown> {
@@ -61,7 +60,7 @@ export abstract class SidePanel {
 	}
 
 	private createContainer() : SidePanel["HTMLPanel"] {
-		console.log("Creating Container");
+		// console.log("Creating Container");
 		const infoPanel = $("<section>").addClass(this.panelName);
 		const chatNotifications = $(document).find("#interface #ui-right-column-1 #chat-notifications");
 		const chatContainer= $("<div>")

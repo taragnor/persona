@@ -39,6 +39,8 @@ declare interface HOOKS {
 	"createActiveEffect": CreateHook<ActiveEffect>;
 	"createWall": CreateHook<WallDocument>;
 	"updateToken": UpdateHook<TokenDocument>;
+	"moveToken": MoveTokenHook<TokenDocument>;
+	"refreshToken": (token: Token, stuff: unknown) => unknown;
 	"deleteToken": DeleteHook<TokenDocument>;
 	"deleteActor": DeleteHook<Actor>;
 	"deleteCombatant": DeleteHook<Combatant>;
@@ -81,6 +83,8 @@ type CreateHook<T extends FoundryDocument> = (item: T, metaData: Record<string, 
 type ApplyAEHookFn = (actor: Actor, change: AEChange , current: unknown , delta: object, changes: Record<string, unknown>) => unknown;
 
 type UpdateHook<T extends FoundryDocument, Diff = object> = (updatedItem: T, changes: DeepPartial<T>, diff: DiffObject & Diff, userId: string) => unknown;
+
+type MoveTokenHook< T extends FoundryDocument> = (updatedItem: T , otherstuff:unknown) => unknown;
 
 type DeleteHook<T extends FoundryDocument> = (deletedItem: T, something: Record<string, unknown>, id: string) => unknown;
 

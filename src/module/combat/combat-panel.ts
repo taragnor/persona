@@ -65,7 +65,6 @@ export class CombatPanel extends SidePanel {
 		 html.find(".control-panel .main-power .pretty-power-name").on("click", ev => void this._onClickPower(ev));
 		 html.find(".control-panel button.basic-power").on("click", (ev) => void this._onClickPower(ev));
 		 html.find(".control-panel .token-name").on("click", ev => void this.openToken(ev));
-		 console.log("listener activated");
 	 }
 
 	async setTarget(token: UN<PToken>) {
@@ -75,7 +74,6 @@ export class CombatPanel extends SidePanel {
 			this.clearPanel();
 			return;
 		}
-		console.log(`Setting Panel Target: ${token.name}`);
 		if (token.actor.isPC() && !token.actor.isRealPC()) {
 			return;
 		}
@@ -193,12 +191,18 @@ export class CombatPanel extends SidePanel {
 				void this.instance.updatePanel({});
 			}
 		});
+		Hooks.on("refreshToken", (token) => {
+			if (this.instance.target == token.document) {
+				void this.instance.updatePanel({});
+			}
+		});
+
 
 		Hooks.on("updateToken", (token) => {
 			if (this.instance.target == token) {
-				console.log("On Token Update");
-			//for some reason update doesn't register on the combat for determining distance, so a bit of waiting is required
-				void sleep(250).then(() => void this.instance.updatePanel({}));
+				void this.instance.updatePanel({});
+				//for some reason update doesn't register on the combat for determining distance, so a bit of waiting is required,might have to do with animations for moving the token
+				// void sleep(250).then(() => void this.instance.updatePanel({}));
 			}
 		});
 
