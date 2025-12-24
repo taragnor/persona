@@ -44,6 +44,7 @@ import {PCSheet} from "./actor/sheets/pc-sheet.js";
 import {OriginalDamageSystem} from "./combat/original-damage-system.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaCompendium} from "./persona-compendium.js";
+import {CombatPanel} from "./combat/combat-panel.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -1025,9 +1026,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"isCombatPanelActive" : function () {
-			const combat = PersonaCombat.combat;
-			if (!combat || combat.isSocial) {return false;}
-			return combat.combatant?.actor?.isOwner ?? false;
+			return CombatPanel.isActiveControl();
 		}
 
 

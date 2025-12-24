@@ -60,8 +60,8 @@ export class CombatPanel extends SidePanel {
 
 	 override activateListeners(html: JQuery) {
 		 super.activateListeners(html);
-		 html.find(".control-panel .main-power .pretty-power-name").on("click", ev => void this._onClickPower(ev));
-		 html.find(".control-panel button.basic-power").on("click", (ev) => void this._onClickPower(ev));
+		 html.find(".active-control-panel .control-panel .main-power .pretty-power-name").on("click", ev => void this._onClickPower(ev));
+		 html.find(".active-control-panel .control-panel button.basic-power").on("click", (ev) => void this._onClickPower(ev));
 		 html.find(".control-panel .token-name").on("click", ev => void this.openToken(ev));
 	 }
 
@@ -160,6 +160,17 @@ export class CombatPanel extends SidePanel {
 
 	async openToken(_ev: JQuery.ClickEvent) {
 		await this.actor?.sheet.render(true);
+	}
+
+	isActiveControl() : boolean {
+		const combat = PersonaCombat.combat;
+		if (!combat || combat.isSocial || combat.combatant?.token == undefined) {return false;}
+		if (this.target != combat.combatant.token) {return false;}
+		return this.target?.actor?.isOwner ?? false;
+	}
+
+	static isActiveControl() : boolean {
+		return this.instance.isActiveControl();
 	}
 
 	private static initHooks() {
