@@ -13,6 +13,7 @@ import {PersonaError} from "../persona-error.js";
 import {RollBundle} from "../persona-roll.js";
 import {getActiveConsequences} from "../preconditions.js";
 import {TriggeredEffect} from "../triggered-effect.js";
+import {removeDuplicates} from "../utility/array-tools.js";
 import {sleep} from "../utility/async-wait.js";
 import {Calculation} from "../utility/calculation.js";
 import {Helpers} from "../utility/helpers.js";
@@ -572,11 +573,20 @@ export class CombatEngine {
 		const target = PersonaDB.findToken(atkResult.target);
 		const attackerEffects= attacker.actor.getEffects(['passive']);
 		const defenderEffects = target.actor.getEffects(['defensive']);
+		const powerEffects= power.getEffects(attacker.actor, {CETypes: ['on-use', 'passive']});
 		const sourcedEffects =
-		[ ...power.getEffects(attacker.actor, {CETypes: ['on-use', 'passive']}) ]
-		.concat(attackerEffects)
+		attackerEffects
 		.concat(defenderEffects);
-
+		sourcedEffects.pushUnique(...powerEffects);
+		if (PersonaSettings.debugMode()) {
+			const dupFree = removeDuplicates(sourcedEffects);
+			if (dupFree.length > sourcedEffects.length) {
+				console.warn("Duplicates Detected in effects");
+				ui.notifications.warn("Duplicates detected in effects");
+				console.debug("Effects printed to DLog");
+				Debug("Effects", powerEffects, attackerEffects, defenderEffects);
+			}
+		}
 		const CombatRes = new CombatResult(atkResult);
 		const consequences = sourcedEffects.flatMap( eff => getActiveConsequences(eff, situation));
 		const res = await ConsequenceProcessor.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult);
