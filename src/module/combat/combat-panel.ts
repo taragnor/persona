@@ -4,7 +4,6 @@ import {PersonaActorSheetBase} from "../actor/sheets/actor-sheet.base.js";
 import {UsableAndCard} from "../item/persona-item.js";
 import {PersonaError} from "../persona-error.js";
 import {SidePanel} from "../side-panel.js";
-import {sleep} from "../utility/async-wait.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {CombatEngine} from "./combat-engine.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";

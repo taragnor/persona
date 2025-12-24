@@ -1015,6 +1015,12 @@ h5.choices-block {
 	min-width: 60%;
 }
 
+
+.img-column image {
+	max-width: 20%;
+	min-width: 15%;
+	height: auto;
+}
 .scan-header .img-column {
 	flex: 5 5 auto;
 	max-width: 20%;

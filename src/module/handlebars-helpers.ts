@@ -1027,6 +1027,10 @@ export class PersonaHandleBarsHelpers {
 			return PersonaCompendium.convertToNormalName(shadow.name);
 		},
 
+		"showPersonaImage" : function (persona: Persona): boolean {
+			return persona.img != persona.user.img;
+		}
+
 	};
 
 } //end of class

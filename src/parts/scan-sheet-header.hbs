@@ -1,7 +1,7 @@
 <section class="scan-header flexrow">
 	<div class="img-column">
 		<image src="{{persona.user.img}}"></image>
-		{{#if (ne persona.source persona.user)}}
+		{{#if (showPersonaImage persona)}}
 		<image src="{{persona.img}}"></image>
 		{{/if}}
 	</div>
