@@ -875,142 +875,168 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
-		const user = this.user;
-		if (usable.isConsumable() && !usable.canUseConsumable(this.user)) {
-			if (outputReason) {
-				ui.notifications.warn("You don't meet the conditions to use this consumable");
-			}
-			return false;
+		const msg =
+			this._consumableCheck(usable)
+			|| this._downtimeCheck(usable)
+			|| this._powerInhibitingStatusCheck(usable)
+			|| this._powerTooStrong(usable)
+			|| this._deadCheck(usable)
+			|| this._isTrulyUsable(usable)
+			|| this._canPayActivationCostCheck(usable);
+		;
+		if (msg === null) {return true;}
+		if (outputReason) {
+			ui.notifications.warn(msg);
 		}
-		if (usable.hasTag("downtime") || usable.hasTag("downtime-minor")) {
-			if (!game.combat || !(game.combat as PersonaCombat).isSocial) {
-				if (outputReason) {
-					ui.notifications.warn("Can only use this item during downtime in social rounds");
-				}
-				return false;
-			}
-		}
-		if (usable.isPower() && this.highestPowerSlotUsable() < usable.system.slot) {
-			if (outputReason) {
-				ui.notifications.warn("Power is too advanced for you to use");
-			}
-			return false;
-		}
-		if (!this.user.isAlive() && !usable.hasTag("usable-while-dead")) {return false;}
-		if (!usable.isTrulyUsable()) {return false;}
-		if (this._powerInhibitingStatusCheck(usable, outputReason)) {
-			return false;
-		}
-		return this.canPayActivationCost(usable, outputReason);
+		return false;
 	}
 
-	private _powerInhibitingStatusCheck(usable: UsableAndCard, outputReason: boolean = true) : N<FailReason> {
+	private _isTrulyUsable( usable: UsableAndCard) : N<FailReason> {
+		if (!usable.isTrulyUsable()) {
+			return `${usable.name} isn't a usable type of Power or Item`;
+		}
+		return null;
+	}
+
+	private _deadCheck(usable: UsableAndCard) : N<FailReason> {
+		if (!this.user.isAlive() && !usable.hasTag("usable-while-dead")) {return "Can't Use While Unconscious";}
+		return null;
+	}
+
+	private _powerTooStrong(usable: UsableAndCard) : N<FailReason> {
+		if (usable.isPower() && this.highestPowerSlotUsable() < usable.system.slot) {
+				return "Power is too advanced for you to use";
+			}
+		return null;
+	}
+
+	private _consumableCheck(usable: UsableAndCard) : N<FailReason> {
+		if (usable.isConsumable() && !usable.canUseConsumable(this.user)) {
+			return "You don't meet the conditions to use this consumable";
+		}
+		return null;
+	}
+
+	private _downtimeCheck(usable: UsableAndCard) : N<FailReason> {
+		if (usable.hasTag("downtime") || usable.hasTag("downtime-minor")) {
+			if (!game.combat || !(game.combat as PersonaCombat).isSocial) {
+					return "Can only use this item during downtime in social rounds";
+			}
+		}
+		return null;
+	}
+
+	private _powerInhibitingStatusCheck(usable: UsableAndCard) : N<FailReason> {
 		const user = this.user;
-		let msg : N<FailReason> = null;
 		switch (true) {
 			case (user.hasStatus("rage")
 				&& usable != PersonaDB.getBasicPower("Basic Attack") ): {
-					msg = "Can't only use Basic Attack while having Rage Status";
-					break;
+					return "Can't only use Basic Attack while having Rage Status";
 				}
 			case user.hasStatus("sealed")
 					&& usable.isPower()
 					&& !usable.isBasicPower()
 					&& !usable.hasTag("usable-while-sealed"):
-				msg =" Can't take that action because of status: Sealed";
-				break;
+				return " Can't take that action because of status: Sealed";
 		}
-	if (msg && outputReason) {
-		ui.notifications.warn(msg);
+		return null;
 	}
-	return msg;
-}
 
-	canPayActivationCost(usable: UsableAndCard, outputReason: boolean = true) : boolean {
+	canPayActivationCost(usable: UsableAndCard) : boolean {
+		return this._canPayActivationCostCheck(usable) == null;
+	}
+
+	private _canPayActivationCostCheck(usable: UsableAndCard) : N<FailReason> {
 		switch (this.user.system.type) {
 			case "npcAlly":
 			case "pc":
-				return (this as Persona<PC | NPCAlly>).canPayActivationCost_pc(usable, outputReason);
+				return (this as Persona<PC | NPCAlly>)._canPayActivationCostCheck_pc(usable);
 			case "shadow":
-				return (this as Persona<Shadow>).canPayActivationCost_shadow(usable, outputReason);
+				return (this as Persona<Shadow>)._canPayActivationCostCheck_shadow(usable);
 			default:
 				this.user.system satisfies never;
 				throw new PersonaError("Unknown Type");
 		}
 	}
 
-	canPayActivationCost_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard, _outputReason: boolean) : boolean {
+	private _canPayActivationCostCheck_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard) : N<FailReason> {
 		switch (usable.system.type) {
 			case "power": {
 				if (usable.system.tags.includes("basicatk")) {
-					return true;
+					return null;
 				}
 				switch (usable.system.subtype) {
 					case "weapon":
-						return  this.user.hp > (usable as Power).hpCost();
+						if ( this.user.hp <= (usable as Power).hpCost()) {return "HP cost would kill user";}
+						break;
 					case "magic": {
 						const mpcost = (usable as Power).mpCost(this);
-						if (mpcost > 0) {
-							return this.user.mp >= mpcost;
+						if (mpcost > 0 && this.user.mp < mpcost) {
+							return "Can't afford MP Cost";
 						}
 					}
 						break;
 					case "social-link": {
 						const inspirationId = usable.system.inspirationId;
-						if (!this.user.isPC()) {return false;}
+						if (!this.user.isPC()) {return "Non-PCs can't use social-link powers";}
 						if (inspirationId) {
 							const socialLink = this.user.system.social.find( x=> x.linkId == inspirationId);
-							if (!socialLink) {return false;}
-							return socialLink.inspiration >= usable.system.inspirationCost;
+							if (!socialLink) {return "You don't have the social link required";}
+							if (socialLink.inspiration < usable.system.inspirationCost) {
+								return "You can't pay the inspiration cost";
+							}
 						} else {
 							const inspiration = this.user.system.social.reduce( (acc, item) => acc + item.inspiration , 0);
-							return inspiration >= usable.system.inspirationCost;
+							if (inspiration < usable.system.inspirationCost) {return "You can't pay the inspiration cost";}
 						}
 					}
+						break;
 					case "downtime": {
-						const combat = game.combat as PersonaCombat;
-						if (!combat) {return false;}
-						return combat.isSocial; 
+						const combat = PersonaCombat.combat;
+						if (!combat || combat.isSocial) {return "Can only use this during downtime rounds";}
+						break;
 					}
 					default:
-						return true;
+						return null;
 				}
 			}
 				break;
 			case "consumable":
-				return usable.system.amount > 0;
+				if (usable.system.amount <= 0) {
+					return "You don't have any of that consumable";
+				}
+				break;
 			case "skillCard":
-				return this.user.canLearnNewSkill();
+				if(!this.user.canLearnNewSkill()) {
+					return "You have no space left to learn";
+				}
 		}
-		return true;
+		return null;
 	}
 
-	canPayActivationCost_shadow(this: Persona<Shadow>, usable: UsableAndCard, outputReason: boolean) : boolean { if (usable.system.type == "skillCard") {
-		return false;
-	}
-		if (usable.system.type == "power") {
+	private _canPayActivationCostCheck_shadow(this: Persona<Shadow>, usable: UsableAndCard) : N<FailReason> {
+		if (usable.system.type == "skillCard") {
+			return "Shadows cant use skill cards";
+		}
+		if (usable.isPower()) {
 			const combat = game.combat;
 			const energyRequired = usable.energyRequired(this);
 			const energyCost = usable.energyCost(this);
 			const currentEnergy = this.user.system.combat.energy.value;
 			if (combat && energyRequired > 0 && energyRequired > currentEnergy) {
-				if (outputReason) {
-					ui.notifications.notify(`Requires ${energyRequired} energy and you only have ${currentEnergy}`);
-				}
-				return false;
+				return `Requires ${energyRequired} energy and you only have ${currentEnergy}`;
 			}
 			if (combat && energyCost > (currentEnergy + 3)) {
-				if (outputReason) {
-					ui.notifications.notify(`Costs ${energyCost} energy and you only have ${currentEnergy}`);
-				}
-				return false;
+				return (`Costs ${energyCost} energy and you only have ${currentEnergy}`);
 			}
 			if (usable.system.reqHealthPercentage < 100) {
 				const reqHp = (usable.system.reqHealthPercentage / 100) * this.user.mhpEstimate ;
-				if (this.user.hp > reqHp) {return false;}
+				if (this.user.hp > reqHp) {
+					return `Power Only Usable when Hp < ${reqHp}`;
+				}
 			}
 		}
-		return true; //placeholder
+		return null;
 	}
 
 
