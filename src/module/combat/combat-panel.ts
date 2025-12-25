@@ -60,8 +60,8 @@ export class CombatPanel extends SidePanel {
 
 	 override activateListeners(html: JQuery) {
 		 super.activateListeners(html);
-		 html.find(".active-control-panel .control-panel .main-power .pretty-power-name").on("click", ev => void this._onClickPower(ev));
-		 html.find(".active-control-panel .control-panel button.basic-power").on("click", (ev) => void this._onClickPower(ev));
+		 html.find(".active-control-panel .main-power .pretty-power-name").on("click", ev => void this._onClickPower(ev));
+		 html.find(".active-control-panel button.basic-power").on("click", (ev) => void this._onClickPower(ev));
 		 html.find(".control-panel .token-name").on("click", ev => void this.openToken(ev));
 	 }
 

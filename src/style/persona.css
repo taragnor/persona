@@ -1,3 +1,7 @@
+:root {
+	--sheet-bg-color: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%);
+}
+
 input.short{
 	width: 3em;
 	max-width: 3em;
@@ -268,10 +272,6 @@ input.single-digit {
   /* right: 105%; */
   top: -200%;
 }
-
-/* .tooltip:hover .tooltiptext { */
-/*   visibility: visible; */
-/* } */
 
 .social-link .name {
 	cursor: pointer;
@@ -551,11 +551,11 @@ div.power-sideboard {
 	flex-wrap: wrap;
 }
 
-.active-combat-panel .combat-panel .control-panel .main-powers .power-name:hover {
+.combat-panel .active-control-panel .main-powers .power-name:hover {
 	cursor: pointer;
 }
 
-.active-combat-panel .combat-panel .control-panel .main-powers .pretty-power-name:hover {
+.combat-panel .active-control-panel .main-powers .pretty-power-name:hover {
 	background-color: #222; /* default is #333 dark grey*/
 	border: 1px solid #ffffff;
 }
@@ -759,11 +759,11 @@ form h5 {
 	opacity: 0.75;
 }
 
-
 .combat-panel,
 .region-info-panel {
 	pointer-events: auto;
-	background-image: url(https://taragnorgaming.hopto.org/ui/denim075.png);
+	background-image: var(--sheet-bg-color);
+	/* background-image: url(https://taragnorgaming.hopto.org/ui/denim075.png); */
 	/* max-width: 15%; */
 	/* min-width: 15%; */
 	/* width: 15%; */
@@ -774,7 +774,7 @@ form h5 {
 	margin: 3px;
 	color: white;
 	padding: 10px;
-	opacity: 0.7;
+	opacity: 0.8;
 }
 
 .region-panel .points-of-interest h3 {
@@ -1170,20 +1170,6 @@ nav.inventory-tabs a {
 	letter-spacing: 1px;
 	box-shadow: 0 4px 6px rgba(18, 105, 204, 0.3);
 	transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-	/* display: inline-block; */
-	/* /1* background-color: #333; *1/ */
-	/* /1* color: #fff; *1/ */
-	/* background-color: #e0f0ff;     /1* light blue background *1/ */
-	/* color: #003366;                /1* dark navy text for contrast *1/ */
-	/* padding: 0.4em 0.8em; */
-	/* border-radius: 6px; */
-	/* text-decoration: none; */
-	/* font-weight: 500; */
-	/* transition: background-color 0.2s ease */
-	/* font-family: 'Montserrat', sans-serif;  /1* important-looking font *1/ */
-	/* font-weight: 600;                       /1* semi-bold *1/ */
-	/* text-transform: uppercase;              /1* all caps *1/ */
-	/* letter-spacing: 1px;                    /1* spacing for authority *1/ */
 }
 
 nav.secondary-tabs a:hover,
