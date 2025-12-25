@@ -1154,7 +1154,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	energyCost(this: UsableAndCard, persona:Persona) : number {
-		const cost =this.energyCostData(persona);
+		const cost = this.energyCostData(persona);
 		const sit : Situation= {
 			usedPower: this.accessor,
 			user: persona.user.accessor,

@@ -385,7 +385,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 	}
 
-	validCombatants(attacker?: PToken): Combatant<ValidAttackers>[] {
+	validCombatants(attacker?: PToken): PersonaCombatant[] {
 		const challenged = attacker?.actor.hasStatus('challenged');
 		return this.combatants.contents.filter( x=> {
 			if (!x.actor) {return false;}
@@ -396,10 +396,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				}
 			}
 			return true;
-		}) as Combatant<ValidAttackers>[];
+		}) as PersonaCombatant[];
 	}
 
-	async ensureSheetOpen(combatant: Combatant<ValidAttackers>) {
+	async ensureSheetOpen(combatant: PersonaCombatant) {
 		if (!combatant.actor) {return;}
 		for (const comb of this.combatants) {
 			if (comb != combatant && comb.actor && comb.actor.sheet._state >= 0)
@@ -1480,20 +1480,25 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 	}
 
-	getAllies(comb: Combatant<ValidAttackers>) : Combatant<ValidAttackers>[] {
+	getAllies(comb: Combatant<ValidAttackers>, includeSelf = false) : PersonaCombatant[] {
 		const allegiance = comb.actor?.getAllegiance();
 		if (!allegiance) {return [];}
 		return this.validCombatants().filter( c => c.actor != null
 			&& (c.actor.getAllegiance() == allegiance)
-			&& c != comb);
+			&& (includeSelf || c != comb)
+		);
 	}
 
-	getFoes(comb: Combatant<ValidAttackers>) : Combatant<ValidAttackers>[] {
+	getFoes(comb: Combatant<ValidAttackers>) : PersonaCombatant[] {
 		const allegiance = comb.actor?.getAllegiance();
 		if (!allegiance) {return [];}
 		return this.validCombatants().filter( c => c.actor != null
 			&& (c.actor.getAllegiance() != allegiance)
 			&& c != comb);
+	}
+
+	getLivingFoes(comb: Combatant<ValidAttackers>) : PersonaCombatant[] {
+		return this.getFoes(comb).filter ( c=> c.actor && c.actor.isAlive());
 	}
 
 	static calculateAllOutAttackDamage(attacker: PToken, situation: AttackResult['situation']) :{contributor: ValidAttackers, amt: number, stack: EvaluatedDamage['str']}[] {
