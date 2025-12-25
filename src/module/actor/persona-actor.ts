@@ -2583,15 +2583,6 @@ async  setClass(this: ValidAttackers, cClass: CClass) {
 	await Logger.sendToChat(`${this.displayedName} changes class to ${cClass.name}`);
 }
 
-hasPowerInhibitingStatus() : boolean {
-	switch (true) {
-		case this.hasStatus("rage"):
-		case this.hasStatus("sealed"):
-			return true;
-	}
-	return false;
-}
-
 canLearnNewSkill() : boolean {
 	switch (this.system.type) {
 		case "shadow":

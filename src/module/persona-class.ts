@@ -905,14 +905,39 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			}
 			return false;
 		}
-		if (user.hasPowerInhibitingStatus() && usable.system.type == "power" && !usable.isBasicPower()) {
-			if (outputReason) {
-				ui.notifications.warn("Can't use that power due to a status");
-			}
+		if (this._powerInhibitingStatusCheck(usable, outputReason)) {
 			return false;
 		}
+		// if (user.hasPowerInhibitingStatus() && usable.system.type == "power" && !usable.isBasicPower()) {
+		// 	if (outputReason) {
+		// 		ui.notifications.warn("Can't use that power due to a status");
+		// 	}
+		// 	return false;
+		// }
 		return this.canPayActivationCost(usable, outputReason);
 	}
+
+	private _powerInhibitingStatusCheck(usable: UsableAndCard, outputReason: boolean = true) : N<FailReason> {
+		const user = this.user;
+		let msg : N<FailReason> = null;
+		switch (true) {
+			case (user.hasStatus("rage")
+				&& usable != PersonaDB.getBasicPower("Basic Attack") ): {
+					msg = "Can't use that power due to Rage";
+					break;
+				}
+			case user.hasStatus("sealed")
+					&& usable.isPower()
+					&& !usable.isBasicPower()
+					&& !usable.hasTag("usable-while-sealed"):
+				msg =" Can't take that action because of status: Sealed";
+				break;
+		}
+	if (msg && outputReason) {
+		ui.notifications.warn(msg);
+	}
+	return msg;
+}
 
 	canPayActivationCost(usable: UsableAndCard, outputReason: boolean = true) : boolean {
 		switch (this.user.system.type) {
@@ -1155,3 +1180,5 @@ interface MainModifierOptions {
 	omitTalents?: boolean;
 	omitTags ?: boolean;
 }
+
+type FailReason = string;
