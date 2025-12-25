@@ -898,22 +898,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 		if (!this.user.isAlive() && !usable.hasTag("usable-while-dead")) {return false;}
 		if (!usable.isTrulyUsable()) {return false;}
-
-		if (user.hasStatus("rage") && usable.id != PersonaDB.getBasicPower("Basic Attack")?.id) {
-			if (outputReason) {
-				ui.notifications.warn("Can only use basic attacks when raging");
-			}
-			return false;
-		}
 		if (this._powerInhibitingStatusCheck(usable, outputReason)) {
 			return false;
 		}
-		// if (user.hasPowerInhibitingStatus() && usable.system.type == "power" && !usable.isBasicPower()) {
-		// 	if (outputReason) {
-		// 		ui.notifications.warn("Can't use that power due to a status");
-		// 	}
-		// 	return false;
-		// }
 		return this.canPayActivationCost(usable, outputReason);
 	}
 
@@ -923,7 +910,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		switch (true) {
 			case (user.hasStatus("rage")
 				&& usable != PersonaDB.getBasicPower("Basic Attack") ): {
-					msg = "Can't use that power due to Rage";
+					msg = "Can't only use Basic Attack while having Rage Status";
 					break;
 				}
 			case user.hasStatus("sealed")
