@@ -3,29 +3,16 @@
 		<h3 class="token-name"> {{token.name}}</h3>
 		{{> "systems/persona/parts/vitals-section.hbs" CONST=CONST persona=persona}}
 	</header>
-
 	<hr>
-
-	{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=persona}}
-
-	{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=persona}}
-
-	{{> "systems/persona/parts/basic-powers-section.hbs" CONST=CONST persona=persona actor=actor disabled=(not (isCombatPanelActive))}}
-
-	{{#if engagedList}}
-	<img src="systems/persona/img/icon/engaged-icon.gif" title="Engaged By {{#each engagedList as |comb i|}} {{comb.name}} {{/each}}">
-	{{/if}}
-
-	<div class="main-powers">
-		{{#each persona.activeCombatPowers as |power i|}}
-		<div class="main-power {{#if (not (canUsePower ../persona power))}} faded {{/if}}" data-power-id="{{power.id}}" title="{{powerCostString power ../persona}}">
-			<div class="power-name-block">
-				<div class="power-name-bubble-container">
-					{{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../persona}}
-				</div>
-			</div>
-		</div>
-		{{/each}}
-	</div>
+	<body>
+		{{#if (eq mode "main")}}
+		{{> "systems/persona/parts/combat-panel-control-body-main.hbs" CONST=CONST persona=persona actor=persona.user}}
+		{{/if}}
+		{{#if (eq mode "inventory")}}
+		{{> "systems/persona/parts/combat-panel-control-body-inventory.hbs" CONST=CONST persona=persona actor=persona.user}}
+		{{/if}}
+		{{#if (eq mode "persona")}}
+		{{/if}}
+	</body>
 
 </div>

@@ -342,6 +342,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
 	}
 
+	get usableConsumables() : Consumable[] {
+		if (!this.isValidCombatant()) {return [];}
+		const persona= this.persona();
+		return this.trueConsumables
+			.filter( item => persona.canUsePower(item, false));
+	}
+
 	get equippables(): (InvItem | Weapon)[] {
 		const items=	this.items.filter( item => item.isEquippable() ) as (InvItem | Weapon)[];
 		return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));

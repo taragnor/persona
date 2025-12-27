@@ -11,6 +11,7 @@ export class CombatPanel extends SidePanel {
 	target: U<PToken>;
 	static instance: CombatPanel;
 	_powerUseLock: boolean = false;
+	mode: "main" | "inventory" | "persona";
 
 	constructor() {
 		super ("combat-panel");
@@ -22,6 +23,10 @@ export class CombatPanel extends SidePanel {
 			ui.notifications.warn("No combat running");
 		}
 		return combat;
+	}
+
+	get allowGMPCControl () {
+		return PersonaSettings.debugMode();
 	}
 
 	get actor() : U<ValidAttackers> {
@@ -36,7 +41,11 @@ export class CombatPanel extends SidePanel {
 		switch (true) {
 			case target.isNPCAlly():
 			case target.isPC() && target.isRealPC(): {
-				if (!game.user.isGM && target.isOwner) {
+				const allowGM = this.allowGMPCControl;
+				if (game.user.isGM && !allowGM) {
+					break;
+				}
+				if (target.isOwner) {
 					return this._controlledTemplate();
 				}
 				break;
@@ -63,6 +72,9 @@ export class CombatPanel extends SidePanel {
 		 html.find(".active-control-panel .main-power .pretty-power-name").on("click", ev => void this._onClickPower(ev));
 		 html.find(".active-control-panel button.basic-power").on("click", (ev) => void this._onClickPower(ev));
 		 html.find(".control-panel .token-name").on("click", ev => void this.openToken(ev));
+		 html.find(".active-control-panel button.inventory-button").on("click", (ev) => void this._onInventoryButton(ev));
+		 html.find(".active-control-panel button.return-button").on("click", (ev) => void this._onReturnToMainButton(ev));
+		 html.find(".active-control-panel .inventory-item:not(.faded)").on("click", (ev) => void this._onUseItem(ev));
 	 }
 
 	async setTarget(token: UN<PToken>) {
@@ -70,12 +82,14 @@ export class CombatPanel extends SidePanel {
 		if (token == undefined || !token.actor) {
 			this.target = undefined;
 			this.clearPanel();
+			this.mode = "main";
 			return;
 		}
 		if (token.actor.isPC() && !token.actor.isRealPC()) {
 			return;
 		}
 		this.target = token;
+		this.mode = "main";
 		try {
 			await this.updatePanel({});
 		} catch (e) {
@@ -107,6 +121,7 @@ export class CombatPanel extends SidePanel {
 		}
 		return {
 			...data,
+			mode: this.mode,
 			engagedList,
 			CONST,
 			target: this.target,
@@ -123,6 +138,31 @@ export class CombatPanel extends SidePanel {
 		}
 	}
 
+	private async _onInventoryButton(_ev: JQuery.ClickEvent) {
+
+		this.mode = "inventory";
+		await this.updatePanel({});
+	}
+
+	private async _onReturnToMainButton(_ev: JQuery.ClickEvent) {
+
+		this.mode = "main";
+		await this.updatePanel({});
+	}
+
+	private async _onUseItem(ev: JQuery.ClickEvent) {
+		ev.stopPropagation();
+		if (!this.actor) {return;}
+		const itemId = HTMLTools.getClosestData(ev, "itemId");
+		const item = this.actor.items.find(item => item.id == itemId);
+		if (!item) {
+			throw new PersonaError(`Can't find Item Id:${itemId}`);
+		}
+		if (!item.isConsumable()) {
+			throw new PersonaError(`Can't use this item`);
+		}
+		await this._useItemOrPower(item);
+	}
 
 	private async _onClickPower(ev: JQuery.ClickEvent) {
 		ev.stopPropagation();

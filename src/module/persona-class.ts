@@ -877,6 +877,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
 		const msg =
 			this._consumableCheck(usable)
+			|| this._explorationCheck(usable)
 			|| this._downtimeCheck(usable)
 			|| this._powerInhibitingStatusCheck(usable)
 			|| this._powerTooStrong(usable)
@@ -913,6 +914,16 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	private _consumableCheck(usable: UsableAndCard) : N<FailReason> {
 		if (usable.isConsumable() && !usable.canUseConsumable(this.user)) {
 			return "You don't meet the conditions to use this consumable";
+		}
+		return null;
+	}
+
+	private _explorationCheck (usable: UsableAndCard) : N<FailReason> {
+		if (usable.hasTag("exploration")) {
+			const combat = PersonaCombat.combat;
+			if (combat && !combat.isSocial) {
+				return "Can't use this during combat";
+			}
 		}
 		return null;
 	}

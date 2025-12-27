@@ -94,6 +94,8 @@ const templateFileNames : string[] =[
 	"input-conditional-power-prop.hbs",
 	"combatant-stat-display.hbs",
 	"vitals-section.hbs",
+	"combat-panel-control-body-main.hbs",
+	"combat-panel-control-body-inventory.hbs",
 ];
 
 export const templatePaths = templateFileNames.

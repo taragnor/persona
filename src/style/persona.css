@@ -515,6 +515,23 @@ div.job {
 	padding: 2px;
 }
 
+.control-panel .item-list {
+	flex-wrap: wrap;
+	gap: 1em;
+	flex-direction: row;
+}
+
+.control-panel .item-list .inventory-item {
+	font-size: smaller;
+	/* width: 50%; */
+	overflow-y: hidden;
+	height: 60px;
+	max-height: 60px;
+	min-height: 60px;
+	flex: 1 1 calc(50% - 1em);
+	box-sizing: border-box;
+}
+
 .basic-powers img.power-img {
 	height: 80px;
 	width: 80px;
@@ -551,10 +568,12 @@ div.power-sideboard {
 	flex-wrap: wrap;
 }
 
-.combat-panel .active-control-panel .main-powers .power-name:hover {
+.combat-panel .active-control-panel .main-powers .power-name:hover,
+.combat-panel .active-control-panel .inventory-item:hover:not(.faded) {
 	cursor: pointer;
 }
 
+.combat-panel .active-control-panel .inventory-item:hover:not(.faded),
 .combat-panel .active-control-panel .main-powers .pretty-power-name:hover {
 	background-color: #222; /* default is #333 dark grey*/
 	border: 1px solid #ffffff;
