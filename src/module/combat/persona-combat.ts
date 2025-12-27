@@ -399,6 +399,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}) as PersonaCombatant[];
 	}
 
+	// eslint-disable-next-line @typescript-eslint/require-await
 	async ensureSheetOpen(combatant: PersonaCombatant) {
 		if (!combatant.actor) {return;}
 		for (const comb of this.combatants) {
@@ -1803,7 +1804,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			: '';
 		const listItems = validTeamworkAllies
 			.map( ally => {
-				const power = ally.actor!.teamworkMove!;
+				const power = ally.actor.teamworkMove!;
 				return `<li>${power.name} (${ally.name})</li>`;
 			}).join('');
 		const teamworkList = !combatant.actor.isDistracted() ? listItems: '';

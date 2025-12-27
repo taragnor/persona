@@ -344,22 +344,7 @@ export type InstantKillLevel = typeof INSTANT_KILL_LEVELS_LIST[number];
 
 export const INSTANT_KILL_LEVELS = HTMLTools.createLocalizationObject( INSTANT_KILL_LEVELS_LIST, "persona.powers.instantKillLevels");
 
-
-export const INSTANT_KILL_CRIT_BOOST : Record< InstantKillLevel, number>= {
-	always: 1000,
-	high: 10,
-	medium: 7,
-	low: 4,
-	none: 0,
-};
-
-export const AILMENT_BONUS_LEVELS : Record <InstantKillLevel, number> = {
-	always: 11,//treat as always
-	high: 9,
-	medium: 7,
-	low: 5,
-	none: 0,
-};
+export const AILMENT_LEVELS = INSTANT_KILL_LEVELS;
 
 export type NewDamageParams = {
 	baseAmt: number,

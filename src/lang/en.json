@@ -284,7 +284,7 @@
 	"persona.modifier.critResist": "Critical Resistance",
 	"persona.modifier.instantDeathResistanceMult": "Instant Death Critical Range Multiplier",
 	"persona.modifier.afflictionRange": "Affliction Range",
-	"persona.modifier.instantDeathRange": "Instant Death Boost",
+	"persona.modifier.instantDeathRange": "Instant Death Range Modifier",
 	"persona.modifier.ref": "Defense (Weapon) Bonus",
 	"persona.modifier.fort": "Defense (Magic) Bonus",
 	"persona.modifier.will": "(Deprecated) Will Defense Bonus",

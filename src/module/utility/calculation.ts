@@ -20,7 +20,31 @@ export class Calculation {
 		return this.#priorityLevelsMax;
 	}
 
-	add(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"], operation: keyof CalcList = "add") {
+	setFinalizeStep(method: this["_finalizeStep"]) {
+		this._finalizeStep = method;
+	}
+
+	/**@deprecated : DOn't need to specify operation, use mult instead */
+	add(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"], operation: keyof CalcList) : this ;
+	add(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"]) : this ;
+	add(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"], operation: keyof CalcList = "add") : this {
+		return this.setTerm(priority, amt, name, operation);
+	}
+
+		subtract(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"]) : this {
+		return this.setTerm(priority, amt, name, "add", true);
+		}
+
+
+	mult(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"], noStacking = false) {
+		if (noStacking) {
+		return this.setTerm(priority, amt, name, "noStackMultiply");
+		} else {
+		return this.setTerm(priority, amt, name, "multiply");
+		}
+	}
+
+	protected setTerm(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"], operation: keyof CalcList, flipSign : boolean = false) : this {
 		const safePriority = Math.clamp(priority, 0, this.#priorityLevelsMax);
 		if (safePriority != priority) {
 			throw new Error(`Priority ${priority} is out of range for this calculation (max ${this.#priorityLevelsMax}`);
@@ -34,9 +58,10 @@ export class Calculation {
 			} satisfies CalcList;
 			this.data[priority] = arr;
 		}
-		arr[operation].push( {name, amt});
+		arr[operation].push( {name, amt, flipSign});
 		return this;
 	}
+
 
 
 	/** merges another calculation into the current one*/
@@ -72,7 +97,7 @@ export class Calculation {
 		const maxLevels = this.maxPriorityLevels();
 		for (let lvl = 0; lvl < maxLevels; lvl++) {
 			if (this.data[lvl] == undefined) {continue;}
-			const {multiply, add, noStackMultiply } = this.resolveModifierLists(this.data[lvl], situation);
+			const {multiply, add, noStackMultiply } = this.resolveCalculationNumbers(this.data[lvl], situation);
 			let subtotal = 0;
 			for (const {name, amt} of noStackMultiply) {
 				const addVal = amt * total;
@@ -123,25 +148,30 @@ export class Calculation {
 		} satisfies EvaluatedCalculation;
 	}
 
-	resolveModifierLists(cList: CalcList, situation ?: Situation) : Record<keyof CalcList, ResolvedCalculationNumber[]> {
+	resolveCalculationNumbers(cList: CalcList, situation ?: Situation) : Record<keyof CalcList, ResolvedCalculationNumber[]> {
 		const entries = Object.entries(cList).map( ([k, arr]) => {
 			const revised = arr.flatMap( entry => {
-				if (typeof entry.amt == "number") {return entry;}
+				const flip = entry.flipSign ? -1 : 1;
+				if (typeof entry.amt == "number") {return {
+					amt: entry.amt * flip,
+					name: entry.name,
+					entry
+				};}
 				if (entry.amt instanceof Calculation) {
 					const evaluated = entry.amt.eval(situation, true);
 					const stepsStr = evaluated.steps
 					.join (", ");
 					return {
-						amt: evaluated.total,
+						amt: evaluated.total * flip,
 						name: `${entry.name} (${stepsStr})`,
-					};
+					} satisfies ResolvedCalculationNumber;
 				}
 				if (!situation) {throw new Error("No situation provided yet this calculation contains a modifier List");}
 				const list = entry.amt.list(situation);
 				return list.map( ([val, txt]) =>
 					({
-						amt: val,
-						name: txt
+						amt: val * flip,
+						name: txt,
 					} satisfies ResolvedCalculationNumber)
 				);
 			});
@@ -166,7 +196,8 @@ export type CalculationOperation = typeof OPERATION_TYPE_LIST[number];
 type CalculationNumber = {
 	name: string,
 	amt: number | ModifierList | Calculation,
-}
+	flipSign ?: boolean,
+};
 
 type ResolvedCalculationNumber = {
 	name: string,

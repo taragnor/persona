@@ -854,7 +854,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	ailmentAtkBonus() : Calculation {
 		const mods = this.getBonuses("afflictionRange");
 		const ailAtk = this.combatStats.baseAilmentAtkBonus();
-		return ailAtk.add(1, mods, "Mods", "add");
+		return ailAtk.add(1, mods, "Mods");
 	}
 
 	itemAtkBonus(item : Consumable) : Calculation {

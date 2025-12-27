@@ -171,6 +171,7 @@ export type RollSituation = {
 	rollTags : (RollTag | CardTag)[],
 	rollTotal : number;
 	hit?: boolean;
+	miss?: boolean;
 	criticalHit ?: boolean;
 	DC ?: number;
 	addedTags ?: PowerTag[],

@@ -19,7 +19,7 @@ import {Calculation} from "../utility/calculation.js";
 import {Helpers} from "../utility/helpers.js";
 import {CanceledDialgogError, HTMLTools} from "../utility/HTMLTools.js";
 import {AttackResult, CombatResult} from "./combat-result.js";
-import {DamageCalculation} from "./damage-calc.js";
+import {AILMENT_LEVELS, DamageCalculation, INSTANT_KILL_LEVELS, InstantKillLevel} from "./damage-calc.js";
 import {FinalizedCombatResult} from "./finalized-combat-result.js";
 import {ModifierList} from "./modifier-list.js";
 import {CombatOptions, PersonaCombat, PToken, TargettingError} from "./persona-combat.js";
@@ -29,6 +29,7 @@ export class CombatEngine {
 	combat: U<PersonaCombat>;
 	customAtkBonus: number = 0;
 	CRIT_MAX = 10 as const;
+	static LUCK_DIFF_MULTIPLIER = (1/6);
 
 	constructor (combat: U<PersonaCombat> = game.combat as U<PersonaCombat>) {
 		this.combat = combat;
@@ -264,6 +265,7 @@ export class CombatEngine {
 		) {
 			situation.hit = false;
 			situation.criticalHit = false;
+			situation.miss = true;
 			return {
 				result: 'miss',
 				defenseValue: defenseVal,
@@ -327,18 +329,17 @@ export class CombatEngine {
 		}
 		const resolvedAttackMods = attackbonus.eval(situation);
 		const validAtkModifiers = resolvedAttackMods.steps;
-		const ailmentRange = CombatEngine.calculateAilmentRange(attackerPersona, targetPersona, power, baseSituation);
-		const instantKillRange = CombatEngine.calculateInstantDeathRange(attackerPersona, targetPersona, power, baseSituation);
+		const {ailmentRange, instantKillRange} = CombatEngine.calculateRanges(attackerPersona, targetPersona, power, baseSituation);
 		const {critBoost, critPrintable} = this.getEffectiveCritBoost(attackerPersona, targetPersona, situation, power);
 		const addonAttackResultData = {
-			ailmentRange,
-			instantKillRange,
+			ailmentRange, instantKillRange,
 			critBoost, critPrintable,
 			validAtkModifiers, validDefModifiers,
 			situation,
 		};
 		if (def == 'none') {
 			situation.hit = true;
+			situation.miss = false;
 			return {
 				result: 'hit',
 				...addonAttackResultData,
@@ -354,6 +355,8 @@ export class CombatEngine {
 				...addonAttackResultData,
 			};
 		}
+		situation.hit = true;
+		situation.miss = false;
 		situation.withinAilmentRange = CombatEngine.withinRange(ailmentRange, r);
 		situation.withinInstantKillRange = CombatEngine.withinRange(instantKillRange, r);
 		const canCrit = typeof rollType == 'number' || rollType == 'iterative' ? false : true;
@@ -366,7 +369,6 @@ export class CombatEngine {
 			&& canCrit
 			&& !cancelCritsForInstantDeath
 		) {
-			situation.hit = true;
 			situation.criticalHit  = true;
 			return {
 				result: 'crit',
@@ -377,7 +379,6 @@ export class CombatEngine {
 				...baseData,
 			};
 		} else {
-			situation.hit = true;
 			situation.criticalHit = false;
 			return {
 				result: 'hit',
@@ -499,11 +500,11 @@ export class CombatEngine {
 
 	getAttackBonus(attackerP: Persona, power: Usable, target: PToken | undefined, modifiers ?: ModifierList) : Calculation {
 		const attackBonus = this.getBaseAttackBonus(attackerP, power);
-		attackBonus.add(1, this.customAtkBonus ?? 0, 'Custom modifier', "add");
+		attackBonus.add(1, this.customAtkBonus ?? 0, 'Custom modifier');
 		const defense = this.getDefenderAttackModifiers(target, power.system.defense, power);
-		attackBonus.add(1, defense, "Defense MOds", "add");
+		attackBonus.add(1, defense, "Defense Mods");
 		if (modifiers) {
-			attackBonus.add(1, modifiers, "Extra Mods", "add");
+			attackBonus.add(1, modifiers, "Extra Mods");
 		}
 		return attackBonus;
 	}
@@ -529,8 +530,7 @@ export class CombatEngine {
 	getBaseAttackBonus(attackerPersona: Persona, power:Usable): Calculation {
 		let modList = new ModifierList();
 		const calc = new Calculation(0, 3);
-		// modList.add('Power attack modifier', power.system.atk_bonus);
-		calc.add(1, power.system.atk_bonus,`${power.name} attack bonus`, "add");
+		calc.add(1, power.system.atk_bonus,`${power.name} attack bonus`);
 
 		switch (power.system.defense) {
 			case "none":
@@ -546,14 +546,16 @@ export class CombatEngine {
 				break;
 			case "kill": {
 				calc.merge(attackerPersona.instantDeathAtkBonus());
-				const ID_Bonus = power.baseInstantKillBonus();
+				// const ID_Bonus = power.baseInstantKillBonus();
+				const ID_Bonus = CombatEngine.baseInstantKillBonus(power);
 				modList.add(`${power.displayedName.toString()} Bonus`, ID_Bonus);
 				modList = modList.concat(new ModifierList(power.getModifier('instantDeathRange', attackerPersona.user)));
 				break;
 			}
 			case "ail": {
 				calc.merge(attackerPersona.ailmentAtkBonus());
-				const Ail_Bonus = power.baseAilmentBonus();
+				// const Ail_Bonus = power.baseAilmentBonus();
+				const Ail_Bonus = CombatEngine.baseAilmentAttackBonus(power);
 				modList.add(`${power.displayedName.toString()} Bonus`, Ail_Bonus);
 				modList = modList.concat(new ModifierList(power.getModifier('afflictionRange', attackerPersona.user)));
 				break;
@@ -562,7 +564,7 @@ export class CombatEngine {
 				power.system.defense satisfies never;
 		}
 		modList =  modList.concat(new ModifierList(power.getModifier('allAtk', attackerPersona.user)));
-		return calc.add(1, modList, "Mods", "add");
+		return calc.add(1, modList, "Mods");
 		// return modList;
 	}
 
@@ -707,76 +709,131 @@ export class CombatEngine {
 		return sit;
 	}
 
+	static calculateRanges( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: N<Situation>) {
+		const ailmentRangeRaw = CombatEngine.calculateAilmentRange(attackerPersona, targetPersona, power, situation);
+		const instantKillRangeRaw = CombatEngine.calculateInstantDeathRange(attackerPersona, targetPersona, power, situation);
+		if (PersonaSettings.debugMode()) {
+			console.debug(ailmentRangeRaw);
+			console.debug(instantKillRangeRaw);
+		}
+		const ailmentRange = this.constrainRange(ailmentRangeRaw);
+		const instantKillRange = this.constrainRange(instantKillRangeRaw);
+		return {ailmentRange, instantKillRange};
+	}
+
+	static constrainRange(range: U<CalculatedRange> ) {
+		if (range == undefined) {return undefined;}
+		return {
+			...range,
+			low: Math.max(1, range.low),
+			high: Math.min(20, range.high),
+		};
+	}
+
+	static luckDiff( attackerPersona: Persona, targetPersona: Persona) : Calculation {
+		const calc = new Calculation(0, 3);
+		calc.setFinalizeStep("rounded");
+		const attackerLuck = attackerPersona.combatStats.luck;
+		const targetLuck = targetPersona.combatStats.luck;
+		calc.add(0,attackerLuck, "Attacker Luck");
+		calc.add(0,-targetLuck, "Attacker Luck");
+		calc.mult(1, this.LUCK_DIFF_MULTIPLIER, "Luck Diff Multiplier");
+		return calc;
+	}
+
 	static calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: N<Situation>) : U<CalculatedRange> {
 		if (!situation) {
 			situation = this.defaultSituation(attackerPersona, targetPersona, power);
 		}
-		const baseRange = power.ailmentRange;
-		if (!baseRange)  { return undefined; }
-		const ailmentMods =
-		attackerPersona.getBonuses('afflictionRange', power, attackerPersona)
-		.concat(
-			targetPersona.getBonuses('ail', power, attackerPersona)
-		);
-		const calc = attackerPersona.combatStats.ailmentBonus();
-		calc.add(1, -targetPersona.combatStats.ailmentResist().eval(situation).total, "Target Ailment Resistance", "add");
-		calc.add(1, ailmentMods, "Target Ailment Mods", "add");
+		if (power.targetsDefense == "ail") {
+			return {
+				high: 20,
+				low: 1,
+				possible: true,
+				steps: [],
+				type: "ailment",
+			};
+		}
+		const luckDiff = this.luckDiff(attackerPersona, targetPersona);
+		// const baseRange = power.ailmentRange;
+		const baseRangeData = this.calculateBaseAilmentRange(power);
+		if (!baseRangeData)  { return undefined; }
+		const {high, modifier, locType}= baseRangeData;
+		const attackerModifiers = attackerPersona.getBonuses('afflictionRange', power, attackerPersona);
+		const defenderModifiers = targetPersona.getBonuses('afflictionRange', power, attackerPersona);
+		const calc =  new Calculation(0, 3);
+		calc.add(1, attackerModifiers, "Attacker AIlment Modifiers");
+		calc.add(1, defenderModifiers, "Defender Ailment Modifiers");
+		calc.add(0, modifier, `Chance ${locType} modifier`);
+		calc.add(1, luckDiff, "Luck Difference Mod");
 		const calcResolved = calc.eval(situation);
 		const {total, steps} = calcResolved;
 		const ailmentRange = {
-			...baseRange,
+			high,
+			low: high - total,
 			steps,
 		};
-		if (PersonaSettings.debugMode()) {
-			console.debug(steps);
-		}
 		if (!ailmentRange) {return undefined;}
-		ailmentRange.low -= total;
 		if (ailmentRange.low > ailmentRange.high) {return undefined;}
 		return {
+			type: "ailment",
 			...ailmentRange,
 			possible: ailmentRange.low <= ailmentRange.high
 		};
 	}
 
 	static calculateInstantDeathRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation?: N<Situation>) : U<CalculatedRange> {
+		const baseRangeData = this.calculateBaseInstantKillRange(power);
+		if (!baseRangeData)  { return undefined; }
+		if (power.targetsDefense == "kill") {
+			return {
+				low: 6,
+				high: 20,
+				steps: [],
+				possible: true,
+				type: "instantKill",
+			};
+		}
+		const {high, modifier, locType}= baseRangeData;
+
 		if (!situation) {
 			situation = this.defaultSituation(attackerPersona, targetPersona, power);
 		}
-		if (!power.isInstantDeathAttack()) {return undefined
-			;}
-		if (!power.canDealDamage()) {return {low: 5, high: 99, steps: [], possible: true};}
-		const instantDeathMods =
-		attackerPersona.getBonuses('instantDeathRange', power, attackerPersona);
-		const killDefense =
-		targetPersona.getBonuses('kill').total(situation);
-		const instantDeathBonus = attackerPersona.combatStats.instantDeathBonus();
-		instantDeathBonus.add(1, -targetPersona.combatStats.instantDeathResist().eval(situation).total, "Target Mods", "add");
-		instantDeathMods.add("Misc Mods to kill defense", -killDefense);
-		instantDeathBonus.add(1, instantDeathMods, "MOds", "add");
+		const luckDiff = this.luckDiff(attackerPersona, targetPersona);
+		if (!power.canDealDamage()) {return {low: 6, high: 99, steps: [], possible: true, type: "instantKill"};}
+		const instantDeathMods = attackerPersona.getBonuses('instantDeathRange', power, attackerPersona);
+		const killDefense = targetPersona.getBonuses('instantDeathRange');
+		const calc= new Calculation(0, 3);
+		calc.add(1, instantDeathMods, "Attacker mods");
+		calc.add(1, killDefense,  "Defense Mods");
+		calc.add(1, luckDiff, "Luck Difference Mod");
+		calc.add(0, modifier, `Instant Kill Chance ${locType} modifier`);
 
-		const resolved = instantDeathBonus.eval(situation);
-		const {total, steps} = resolved;
+		const {total, steps} = calc.eval(situation);
 		if (PersonaSettings.debugMode()) {
 			console.debug(steps);
 		}
-		const deathRange = power.instantDeathRange;
+		const deathRange = {
+			high,
+			low: high - total,
+			steps,
+		};
 		if (deathRange) {
-			deathRange.low -= total;
 			deathRange.low = Math.max(deathRange.low, 6);
 		}
-		if (!deathRange) {return undefined;}
+		if (deathRange.low > deathRange.high) {return undefined;}
 		return {
 			...deathRange,
 			steps,
 			possible: deathRange.low <= deathRange.high,
+			type: "instantKill",
 		};
 	}
 
 	calcCritModifier( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation, ) : Calculation {
 		const critBoostMod = power.critBoost(attackerPersona);
 		const critResist = targetPersona.critResist().eval(situation).total;
-		critBoostMod.add(1, -critResist, 'Enemy Critical Resistance',"add");
+		critBoostMod.add(1, -critResist, 'Enemy Critical Resistance');
 		return critBoostMod;
 	}
 
@@ -892,6 +949,44 @@ export class CombatEngine {
 		if (this.combat) {return this.combat;}
 		return PersonaCombat.ensureCombatExists();
 	}
+
+	static calculateBaseAilmentRange(power: Usable):  U<{high: number, modifier: number, locType: string}> {
+		const chance  = AILMENT_RANGE_BY_POWER[power.system.ailmentChance];
+		if (power.targetsDefense == "ail") {return undefined;}
+		if (!chance) {return undefined;}
+		return {
+			...chance,
+			locType: AILMENT_LEVELS[power.system.ailmentChance],
+		};
+	}
+
+	static calculateBaseInstantKillRange(power: Usable):  U<{high: number, modifier: number, locType: string}> {
+		if (!power.isInstantDeathAttack()) {return undefined ;}
+		const chance = INSTANT_KILL_RANGE_BY_POWER[power.system.instantKillChance];
+		if (power.targetsDefense == "kill") {return undefined;}
+		if (!chance) {return undefined;}
+		return {
+			...chance,
+			locType: game.i18n.localize(INSTANT_KILL_LEVELS[power.system.instantKillChance]),
+		};
+	}
+
+
+private static baseAilmentAttackBonus(power: Usable) : number {
+	if (power.targetsDefense != "ail") {return 0;}
+	const boost = AILMENT_BONUS_LEVELS[power.system.ailmentChance] ?? 0;
+	if (power.system.ailmentChance == "always") {
+		ui.notifications.notify(`${this.name} Ailment Always not allowed on ailment targetting powers, treating as High`);
+	}
+	return boost;
+}
+
+private static baseInstantKillBonus(power: Usable): number {
+	if (!power.isInstantDeathAttack()) {return 0;}
+	const boost = INSTANT_KILL_CRIT_BOOST[power.system.instantKillChance] ?? 0;
+	return boost;
+}
+
 }
 
 type AttackRollType = 'activation' | 'standard' | 'reflect' | 'iterative' | number; //number is used for bonus attacks
@@ -903,5 +998,39 @@ type CalculatedRange = {
 	low: number,
 	steps: string[],
 	possible: boolean,
+	type: "instantKill" | "ailment",
 }
+
+const INSTANT_KILL_RANGE_BY_POWER = {
+		'none': undefined,
+		'low': {modifier: 1, high: 20},
+		'medium': {modifier: 3, high: 20},
+		'high': {modifier: 5, high: 20},
+		'always':{modifier: 14, high: 20},
+} as const;
+
+const AILMENT_RANGE_BY_POWER = {
+		'none': undefined,
+		'low': {modifier: 1, high: 18},
+		'medium': {modifier: 3, high: 18},
+		'high': {modifier: 8, high: 20},
+		'always':{modifier: 20, high: 20},
+} as const;
+
+
+const AILMENT_BONUS_LEVELS : Record <InstantKillLevel, number> = {
+	always: 11,//treat as always
+	high: 9,
+	medium: 7,
+	low: 5,
+	none: 0,
+};
+
+const INSTANT_KILL_CRIT_BOOST : Record< InstantKillLevel, number>= {
+	always: 1000,
+	high: 10,
+	medium: 7,
+	low: 4,
+	none: 0,
+};
 

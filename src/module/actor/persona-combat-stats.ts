@@ -150,17 +150,17 @@ export class PersonaCombatStats {
 		return calc.add(0, this.ailmentResist(), "Ailment Resist", "add");
 	}
 
-	ailmentResist(): Calculation {
+	private ailmentResist(): Calculation {
 		const calc = new Calculation(0, 2);
 		calc.add(0, this.luck + 4, `${this.persona.displayedName} Luck + 3`, "add");
 		calc.add(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`, "multiply");
 		return calc;
 	}
 
-	ailmentBonus(): Calculation {
+	private ailmentBonus(): Calculation {
 		const calc = new Calculation(0, 2);
-		calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 4`, "add");
-		calc.add(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`, "multiply");
+		calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 4`);
+		calc.mult(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`);
 		return calc;
 	}
 

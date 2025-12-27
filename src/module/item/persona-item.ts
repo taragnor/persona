@@ -1,6 +1,6 @@
 import { GrowthCalculator } from '../utility/growth-calculator.js';
 import { STATUS_AILMENT_SET } from '../../config/status-effects.js';
-import { AILMENT_BONUS_LEVELS, INSTANT_KILL_CRIT_BOOST, NewDamageParams, EvaluatedDamage } from '../combat/damage-calc.js';
+import { NewDamageParams, EvaluatedDamage } from '../combat/damage-calc.js';
 import { PowerCostCalculator } from '../power-cost-calculator.js';
 import { StatusEffectId } from '../../config/status-effects.js';
 import { CATEGORY_SORT_ORDER, DAMAGE_ICONS, ITEM_ICONS, ItemCategory } from '../../config/icons.js';
@@ -39,7 +39,7 @@ import { SLOTTYPES } from '../../config/slot-types.js';
 import { ModifierTarget } from '../../config/item-modifiers.js';
 import { ITEMMODELS } from '../datamodel/item-types.js';
 import { PersonaDB } from '../persona-db.js';
-import {DEFENSE_TYPES} from '../../config/defense-types.js';
+import {Defense, DEFENSE_TYPES} from '../../config/defense-types.js';
 import {EnergyClassCalculator} from '../calculators/shadow-energy-cost-calculator.js';
 import {ConsequenceAmountResolver} from '../conditionalEffects/consequence-amount.js';
 import {EnchantedTreasureFormat, TreasureSystem} from '../exploration/treasure-system.js';
@@ -1554,7 +1554,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			&& !this.isInstantDeathAttack()) {
 			powerCrit += 2;
 		}
-		calc.add(1, powerCrit, 'Power Modifier', "add");
+		calc.add(1, powerCrit, 'Power Modifier');
 		return calc;
 	}
 
@@ -1822,20 +1822,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return basics.includes(this as Power);
 	}
 
-	baseInstantKillBonus(this: Usable) : number {
-		if (!this.isInstantDeathAttack()) {return 0;}
-		const boost = INSTANT_KILL_CRIT_BOOST[this.system.instantKillChance] ?? 0;
-		return boost;
-	}
+	// baseInstantKillBonus(this: Usable) : number {
+	// 	if (!this.isInstantDeathAttack()) {return 0;}
+	// 	const boost = INSTANT_KILL_CRIT_BOOST[this.system.instantKillChance] ?? 0;
+	// 	return boost;
+	// }
 
-	baseAilmentBonus(this: Usable) : number {
-		if (this.system.defense != "ail") {return 0;}
-		const boost = AILMENT_BONUS_LEVELS[this.system.ailmentChance] ?? 0;
-		if (this.system.ailmentChance == "always") {
-			ui.notifications.notify(`${this.name} Ailment Always not allowed on ailment targetting powers, treating as High`);
-		}
-		return boost;
-	}
+	// baseAilmentBonus(this: Usable) : number {
+	// 	if (this.system.defense != "ail") {return 0;}
+	// 	const boost = AILMENT_BONUS_LEVELS[this.system.ailmentChance] ?? 0;
+	// 	if (this.system.ailmentChance == "always") {
+	// 		ui.notifications.notify(`${this.name} Ailment Always not allowed on ailment targetting powers, treating as High`);
+	// 	}
+	// 	return boost;
+	// }
 
 	mpCost(this: Usable, userPersona: Persona | null): number {
 		if (this.isConsumable()) {return 0;}
@@ -2617,32 +2617,11 @@ get customCost() : boolean {
 	return this.system.customCost || this.system.damageLevel == '-';
 }
 
-get ailmentRange() : {low: number, high:number} | undefined {
-	if (!this.isUsableType() || this.isSkillCard()) {return undefined;}
-	if (this.system.defense == "ail") {return undefined;}
-	switch (this.system.ailmentChance) {
-		case 'none': return undefined;
-		case 'low': return {low: 17, high: 18};
-		case 'medium': return {low: 15, high: 18};
-		case 'high': return {low: 11, high: 20};
-		case 'always': return {low: 1, high: 20};
-		default:
-			this.system.ailmentChance satisfies never;
+get targetsDefense() : Defense {
+	if (!this.isUsableType() || this.isSkillCard()) {
+		return "none";
 	}
-}
-
-get instantDeathRange(): {low: number, high: number} | undefined {
-	if (!this.isUsableType() || this.isSkillCard()) {return undefined;}
-	if (this.system.defense == "kill") {return undefined;}
-	switch (this.system.instantKillChance) {
-		case 'none': return undefined;
-		case 'low': return {low: 19, high: 20};
-		case 'medium': return {low: 17, high: 20};
-		case 'high': return {low: 15, high: 20};
-		case 'always': return {low: 6, high: 20};
-		default:
-			this.system.instantKillChance satisfies never;
-	}
+	return this.system.defense;
 }
 
 isEnchantable(this: Carryable) : boolean {
