@@ -97,6 +97,35 @@ export class Metaverse {
 		await RandomEncounter.printRandomEncounterList(encounter);
 	}
 
+	static inactiveMembersXPRate(party: ValidAttackers[], ally: NPCAlly): number {
+		const bonuses = party.reduce( (acc, actor) => {
+			const situation = {
+				user: actor.accessor,
+				target: ally.accessor,
+			};
+			return acc + actor.persona().getBonuses("inactive-party-member-xp-gains").total(situation);
+		}, 0 );
+		return Math.clamp(bonuses, 0, 1);
+	}
+
+	static inactiveMembersXP (amt: number, party: ValidAttackers[]) : Promise<XPGainReport[]>[]  {
+		const otherAllies = PersonaDB.NPCAllies()
+			.filter (x=> !party.includes( x));
+		const otherAlliesAwards = otherAllies.map( async ally=> {
+			try {
+				const XPRate= this.inactiveMembersXPRate(party, ally);
+				if (XPRate <= 0) {return [];}
+				const inactiveAmt = XPRate * amt;
+				const XPReport = await ally.awardXP(inactiveAmt);
+				return XPReport;
+			} catch (e) {
+				PersonaError.softFail(`Error giving XP to Inactive Ally ${ally.name}`, e);
+				return [];
+			}
+		});
+		return otherAlliesAwards;
+	}
+
 	static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void> {
 		if (!game.user.isGM) {return;}
 		const numOfPCs = party.length;
@@ -105,7 +134,8 @@ export class Metaverse {
 		if (navigator) {
 			party.push(navigator);
 		}
-		const XPAwardDataPromises = party.map( async actor=> {
+		const inactivePartyXP = this.inactiveMembersXP(xp, party);
+		const XPAwardDataPromises = party.map( async actor => {
 			try {
 				const XPReport = await actor.awardXP(xp);
 				return XPReport;
@@ -114,7 +144,7 @@ export class Metaverse {
 				return [];
 			}
 		});
-		const data = (await Promise.all(XPAwardDataPromises))
+		const data = (await Promise.all(XPAwardDataPromises.concat(inactivePartyXP)))
 		.flatMap(x=> x);
 		await this.reportXPGain(data);
 	}

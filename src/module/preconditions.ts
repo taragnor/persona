@@ -143,7 +143,6 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
 				return true;
 			}
 			if (!actor  || !actor.isRealPC()) {return false;}
-
 			const socialLink = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, condition.source);
 			if (!socialLink) {
 				target = 0;
@@ -876,7 +875,7 @@ export function getSubjectActors<K extends string, T extends Sourced<Record<K, C
 	return subjects;
 }
 
-export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, situation: Situation, source: Sourced<object>["source"]): NPC | PC | undefined {
+export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, situation: Situation, source: N<Sourced<object>["source"]>): NPC | PC | undefined {
 	if (socialLinkIdOrTarot == undefined ) {return undefined;}
 	let targetIdOrTarot : SocialLinkIdOrTarot | undefined = socialLinkIdOrTarot;
 	const test = targetIdOrTarot as keyof typeof SOCIAL_LINK_OR_TAROT_OTHER;

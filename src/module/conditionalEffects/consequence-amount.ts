@@ -5,6 +5,7 @@ import {PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaVariables} from "../persona-variables.js";
+import {getSocialLinkTarget} from "../preconditions.js";
 
 export class ConsequenceAmountResolver {
 
@@ -86,6 +87,12 @@ private static resolveActorProperty(amt: ConsequenceAmountV2 & {type: "actor-pro
 			case "level":
 			case "hp":
 				return target[amt.property];
+			case "linkLevelWith": {
+				const socialLink = getSocialLinkTarget(amt.socialLinkIdOrTarot, situation as Situation, null);
+				if (!target.isPC()) {return 0;}
+				if (!socialLink) {return 0;}
+				return target.getSocialSLWith(socialLink);
+			}
 		}
 	});
 	return returns.at(0);

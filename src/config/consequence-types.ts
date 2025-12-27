@@ -735,11 +735,24 @@ export type ItemPropertyAmount = {
 
 }
 
-export type ActorProperty = {
+export type ActorProperty =
+	{
 	type : "actor-property",
 	target:  ConditionTarget,
 	property: ConsAmountActorProperty,
+	} & (
+	GenericActorProperty | SpecificActorProperty
+	);
+
+type GenericActorProperty = {
+	property: Exclude<ConsAmountActorProperty, SpecificActorProperty["property"]>
 }
+
+type SpecificActorProperty = {
+	property : "linkLevelWith",
+	socialLinkIdOrTarot : SocialLinkIdOrTarot,
+};
+
 
 export type AmountOperation = {
 	type: "operation",
@@ -795,6 +808,7 @@ const CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST = [
 	"hp",
 	"baseClassHP",
 	"level",
+	"linkLevelWith",
 ] as const;
 
 type ConsAmountActorProperty = typeof CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST[number];

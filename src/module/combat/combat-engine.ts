@@ -576,10 +576,10 @@ export class CombatEngine {
 		const attackerEffects= attacker.actor.getEffects(['passive']);
 		const defenderEffects = target.actor.getEffects(['defensive']);
 		const powerEffects= power.getEffects(attacker.actor, {CETypes: ['on-use', 'passive']});
-		const sourcedEffects =
-		attackerEffects
-		.concat(defenderEffects);
+		const sourcedEffects = [...attackerEffects];
+		sourcedEffects.pushUnique(...defenderEffects);
 		sourcedEffects.pushUnique(...powerEffects);
+		//TODO: need a special class to handle lists of effects and to filter for duplicates
 		if (PersonaSettings.debugMode()) {
 			const dupFree = removeDuplicates(sourcedEffects);
 			if (dupFree.length > sourcedEffects.length) {
@@ -956,7 +956,7 @@ export class CombatEngine {
 		if (!chance) {return undefined;}
 		return {
 			...chance,
-			locType: AILMENT_LEVELS[power.system.ailmentChance],
+			locType: game.i18n.localize(AILMENT_LEVELS[power.system.ailmentChance]),
 		};
 	}
 

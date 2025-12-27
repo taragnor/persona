@@ -410,9 +410,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
+	private async _setLevelTo(this: NPCAlly, lvl: number) {
+		if (!this.isNPCAlly()) {return;}
+		await this.update( {"system.combat.personaStats.pLevel" : lvl});
+	}
+
 	get directoryName() : string {
-		if (this.isPC() || this.isNPCAlly() || this.isTarot()) {
+		if (this.isPC() || this.isTarot()) {
 			return this.displayedName;
+		}
+		if (this.isNPCAlly()) {
+			return `${this.displayedName} (Ally)`;
 		}
 		if (this.isShadow()) {
 			const subtype = this.system.creatureType;
@@ -3429,7 +3437,8 @@ async awardXP(this: ValidAttackers, amt: number) : Promise<XPGainReport[]> {
 	}
 	if (amt ==0) {return [];}
 	const personaXPAwards = this.personaList.map<Promise<U<XPGainReport>>>( persona=> persona.awardXP(amt));
-	const personaGains = (await Promise.allSettled(personaXPAwards))
+	const sideboardAwards = this.sideboardPersonas.map<Promise<U<XPGainReport>>>( persona=> persona.awardXP(amt));
+	const personaGains = (await Promise.allSettled(personaXPAwards.concat(sideboardAwards)))
 	.map( pr => pr.status == "fulfilled" ? pr.value : undefined);
 	const possibleLevelUps : U<XPGainReport>[] = [
 		await this.awardPersonalXP(amt),
@@ -4340,8 +4349,11 @@ async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: num
 	await Logger.sendToChat(`+${amt} ${permaBuffLocalized} applied to ${this.name}`);
 }
 
-fusionsInto(this: Shadow, min= 2, max=999) : [Shadow, Shadow][] {
-	return FusionTable.fusionCombinationsInto(this, min, max);
+fusionsInto(this: Shadow, min= 2, max=999, limited = false) : [Shadow, Shadow][] {
+	const fusions =  FusionTable.fusionCombinationsInto(this, min, max);
+	if (!limited) {return fusions;}
+	return fusions
+		.filter ( x=> x.every( shadow => shadow.basePersona.isFusable()));
 }
 
 moneyDropped(): number {

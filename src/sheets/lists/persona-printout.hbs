@@ -14,6 +14,9 @@
 				<th>
 					Fusions
 				</th>
+				<th>
+					Limited Fusions
+				</th>
 			</tr>
 			{{#each arcanaList as |shadow j|}}
 			<tr class="persona" data-persona-id="{{shadow.id}}">
@@ -27,6 +30,9 @@
 				</td>
 				<td>
 					{{fusionsInto shadow}}
+				</td>
+				<td>
+					{{fusionsIntoL shadow}}
 				</td>
 			</tr>
 			{{/each}}

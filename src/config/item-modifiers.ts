@@ -70,10 +70,12 @@ export const ACTOR_STATS_TYPES = [
 	"hpCostMult",
 	"mpCostMult",
 	"xp-multiplier",
+	"inactive-party-member-xp-gains", //decimal percentage additive , max 1.0
 	"navigator-xp-mult", //XP gained while navigating
 	"extraMaxPowers", // extra sideobard powers
 	"persona-sideboard", // extra sideobard peronsas
 	"inactive-persona-xp",
+	"sideboard-persona-xp",
 	"max-defense-boosts",
 	"max-resist-boosts",
 	"d-mon-storage",

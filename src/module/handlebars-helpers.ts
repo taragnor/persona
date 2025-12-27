@@ -991,6 +991,20 @@ export class PersonaHandleBarsHelpers {
 			return new Handlebars.SafeString(html);
 		},
 
+		"fusionsIntoL" : function (shadow: Shadow) {
+			const fusionsInto = shadow.fusionsInto(2, 99, true);
+			const fusionList = fusionsInto
+				.map( ([a, b])=> `${a.name}, ${b.name}`)
+				.join("\n");
+			const tooltip = fusionList;
+			const html = `
+			<span title="${tooltip}">
+				${fusionsInto.length}
+</span>
+`;
+			return new Handlebars.SafeString(html);
+		},
+
 		fusableCombinations( fusor: PC) : FusionCombination[]  {
 			return fusor.fusionCombinations
 			.filter (comb=> comb.result != undefined)

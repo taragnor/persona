@@ -1868,7 +1868,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.system.mpcost;
 	}
 
-	generateSkillCardTeach(this: SkillCard): SourcedConditionalEffect {
+	private _generateSkillCardTeach(this: SkillCard): SourcedConditionalEffect {
 		if (!this.system.skillId) {
 			return {
 				source: this,
@@ -1932,7 +1932,7 @@ getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, optio
 	const {CETypes} = options;
 	if (this.isSkillCard()) {
 		const arr = [
-			this.generateSkillCardTeach()
+			this._generateSkillCardTeach()
 		];
 		return arr;
 	}

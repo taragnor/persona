@@ -55,6 +55,12 @@
 	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.target}}
 </select>
 
+{{#if (eqAny cons.property "linkLevelWith")}}
+	<select name="{{strcat namePrefix 'socialLinkIdOrTarot'}}">
+		{{selectOptions POWERSTUFF.SOCIAL_LINK_OR_TAROT localize=true selected=cons.socialLinkIdOrTarot}}
+	</select>
+{{/if}}
+
 {{/if}}
 
 </span>
