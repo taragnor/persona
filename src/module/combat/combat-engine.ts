@@ -972,20 +972,20 @@ export class CombatEngine {
 	}
 
 
-private static baseAilmentAttackBonus(power: Usable) : number {
-	if (power.targetsDefense != "ail") {return 0;}
-	const boost = AILMENT_BONUS_LEVELS[power.system.ailmentChance] ?? 0;
-	if (power.system.ailmentChance == "always") {
-		ui.notifications.notify(`${this.name} Ailment Always not allowed on ailment targetting powers, treating as High`);
+	private static baseAilmentAttackBonus(power: Usable) : number {
+		if (power.targetsDefense != "ail") {return 0;}
+		const boost = AILMENT_BONUS_LEVELS[power.system.ailmentChance] ?? 0;
+		if (power.system.ailmentChance == "always") {
+			ui.notifications.notify(`${this.name} Ailment Always not allowed on ailment targetting powers, treating as High`);
+		}
+		return boost;
 	}
-	return boost;
-}
 
-private static baseInstantKillBonus(power: Usable): number {
-	if (!power.isInstantDeathAttack()) {return 0;}
-	const boost = INSTANT_KILL_CRIT_BOOST[power.system.instantKillChance] ?? 0;
-	return boost;
-}
+	private static baseInstantKillBonus(power: Usable): number {
+		if (!power.isInstantDeathAttack()) {return 0;}
+		const boost = INSTANT_KILL_CRIT_BOOST[power.system.instantKillChance] ?? 0;
+		return boost;
+	}
 
 }
 
@@ -1002,19 +1002,19 @@ type CalculatedRange = {
 }
 
 const INSTANT_KILL_RANGE_BY_POWER = {
-		'none': undefined,
-		'low': {modifier: 1, high: 20},
-		'medium': {modifier: 3, high: 20},
-		'high': {modifier: 5, high: 20},
-		'always':{modifier: 14, high: 20},
+	'none': undefined,
+	'low': {modifier: 1, high: 20},
+	'medium': {modifier: 3, high: 20},
+	'high': {modifier: 5, high: 20},
+	'always':{modifier: 14, high: 20},
 } as const;
 
 const AILMENT_RANGE_BY_POWER = {
-		'none': undefined,
-		'low': {modifier: 1, high: 18},
-		'medium': {modifier: 3, high: 18},
-		'high': {modifier: 8, high: 20},
-		'always':{modifier: 20, high: 20},
+	'none': undefined,
+	'low': {modifier: 1, high: 18},
+	'medium': {modifier: 3, high: 18},
+	'high': {modifier: 8, high: 20},
+	'always':{modifier: 20, high: 20},
 } as const;
 
 
