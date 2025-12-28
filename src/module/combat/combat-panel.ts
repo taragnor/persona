@@ -72,8 +72,8 @@ export class CombatPanel extends SidePanel {
 		 html.find(".active-control-panel .main-power .pretty-power-name").on("click", ev => void this._onClickPower(ev));
 		 html.find(".active-control-panel button.basic-power").on("click", (ev) => void this._onClickPower(ev));
 		 html.find(".control-panel .token-name").on("click", ev => void this.openToken(ev));
-		 html.find(".active-control-panel button.inventory-button").on("click", (ev) => void this._onInventoryButton(ev));
-		 html.find(".active-control-panel button.return-button").on("click", (ev) => void this._onReturnToMainButton(ev));
+		 html.find(".control-panel button.inventory-button").on("click", (ev) => void this._onInventoryButton(ev));
+		 html.find(".control-panel button.return-button").on("click", (ev) => void this._onReturnToMainButton(ev));
 		 html.find(".active-control-panel .inventory-item:not(.faded)").on("click", (ev) => void this._onUseItem(ev));
 	 }
 

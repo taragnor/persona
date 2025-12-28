@@ -152,7 +152,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			throw new PersonaError('WTF Combat not updating!');
 		}
 		if (combatInit.isSocialScene) {
-			if (PersonaSettings.debugMode() === false) {
+			if (combatInit.disallowMetaverse) {
+				//this is techincally for exiting the MV
 				await Metaverse.exitMetaverse();
 			}
 			await PersonaSocial.startSocialCombatRound(combatInit.disallowMetaverse, combatInit.advanceCalendar);
