@@ -602,6 +602,8 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 		}
 		case "weekday-is": {
 			const weekday = PersonaCalendar.getCurrentWeekday();
+			console.debug(`Checking ${weekday} against ${condition.days}`);
+			Debug(condition.days);
 			return condition.days[weekday];
 		}
 		case "social-target-is": {
@@ -945,12 +947,20 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
 		case "owner":
 			//owner of the power in question
 			if (cond.owner) {
-				const owner = PersonaDB.findActor(cond.owner);
-				if (game.combat) {
-					const combatant = game.combat.getCombatantByActor(owner);
-					if (combatant) { return [combatant.token as PToken];}
+				try {
+					const owner = PersonaDB.findActor(cond.owner);
+					if (game.combat) {
+						const combatant = game.combat.getCombatantByActor(owner);
+						if (combatant) { return [combatant.token as PToken];}
+					}
+					if (owner) { return [owner as ValidAttackers];}
+				} catch (e) {
+					//if owner can't be found
+					if (e instanceof Error) {
+						console.log(e, e.stack);
+						Debug(e);
+					}
 				}
-				if (owner) { return [owner as ValidAttackers];}
 			}
 			if (cond.source && cond.source.parent instanceof PersonaActor) {
 				const parent = cond.source.parent;

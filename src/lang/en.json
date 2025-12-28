@@ -488,6 +488,7 @@
 	"persona.power.tag.exploration": "Exploration",
 	"persona.power.tag.usable-while-dead": "Usable while downed",
 	"persona.power.tag.usable-while-sealed": "Usable while sealed",
+	"persona.power.tag.theurgy": "Theurgy",
 
 	"persona.card.tag.": "-",
 	"persona.card.tag.nil": "-",
@@ -709,6 +710,7 @@
 "persona.combat-effects-subtypes.auto-end-turn": "Automatically End Turn",
 "persona.combat-effects-subtypes.alter-energy": "Alter Energy",
 "persona.combat-effects-subtypes.apply-recovery": "Apply Recovery",
+"persona.combat-effects-subtypes.alter-theurgy": "Alter Current Theurgy Score",
 
 
 	"persona.preconditions.always": "always",
@@ -1251,6 +1253,7 @@
 	"persona.consequenceAmount.actorProperties.mhp": "MHP",
 	"persona.consequenceAmount.actorProperties.baseClassHP": "Base Class HP",
 	"persona.consequenceAmount.actorProperties.linkLevelWith": "SL Level with",
+	"persona.consequenceAmount.actorProperties.theurgyVal": "Current Theurgy Level",
 	"persona.consequenceAmount.actorProperties.level": "Level",
 
 	"persona.consequenceAmount.actorProperties.damage-dealt": "Damage Dealt",

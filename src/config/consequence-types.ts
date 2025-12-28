@@ -109,6 +109,12 @@ export type AlterMPEffect = {
 	amount: number,
 }
 
+export type AlterTheurgyEffect = {
+	type: "alter-theurgy",
+	subtype: AlterMPSubtype,
+	amount: number,
+}
+
 export type ExtraTurnEffect = {
 	type: "extraTurn",
 	activation: number,
@@ -118,7 +124,7 @@ type RecoveryEffect = {
 	type: "apply-recovery",
 }
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | SetHPOtherEffect | InventoryActionConsequence | RecoveryEffect;
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | AlterTheurgyEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | SetHPOtherEffect | InventoryActionConsequence | RecoveryEffect;
 ;
 
 type SetHPOtherEffect = {
@@ -363,6 +369,11 @@ type CombatEffectConsequencesList =
 		amount: number,
 	} | {
 		combatEffect: "apply-recovery",
+	} | {
+		type: "alter-theurgy",
+		applyTo : ConsequenceTarget,
+		subtype: AlterMPSubtype,
+		amount: number,
 	}
 ;
 
@@ -453,6 +464,7 @@ type AlterMPConsequence = {
 	subtype: AlterMPSubtype,
 	amount: number,
 }
+
 
 type ExpendItemConsequence = {
 	type : "expend-item",
@@ -808,6 +820,7 @@ const CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST = [
 	"hp",
 	"baseClassHP",
 	"level",
+	"theurgyVal",
 	"linkLevelWith",
 ] as const;
 

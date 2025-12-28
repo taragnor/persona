@@ -86,6 +86,7 @@ private static resolveActorProperty(amt: ConsequenceAmountV2 & {type: "actor-pro
 			case "baseClassHP":
 			case "level":
 			case "hp":
+			case "theurgyVal":
 				return target[amt.property];
 			case "linkLevelWith": {
 				const socialLink = getSocialLinkTarget(amt.socialLinkIdOrTarot, situation as Situation, null);

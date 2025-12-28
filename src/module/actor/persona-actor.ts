@@ -415,6 +415,21 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update( {"system.combat.personaStats.pLevel" : lvl});
 	}
 
+	isPCLike(): this is NPCAlly | PC {
+		return this.isPC() || this.isNPCAlly();
+	}
+
+	get theurgyVal() : number {
+		if (this.theurgyMax == 0) {return 0;}
+		if (!this.isPCLike()) {return 0;}
+		return this.system.combat.theurgy.value ?? 0;
+	}
+
+	get theurgyMax() : number {
+		if (!this.isPCLike()) {return 0;}
+		return this.system.combat.theurgy.max ?? 0;
+	}
+
 	get directoryName() : string {
 		if (this.isPC() || this.isTarot()) {
 			return this.displayedName;
@@ -1536,6 +1551,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		mp += delta;
 		mp = Math.clamp(Math.round(mp), 0, this.mmp);
 		await this.update( {"system.combat.mp.value": mp});
+	}
+
+	async modifyTheurgy (this: PC | NPCAlly, delta: number) {
+		let t = this.system.combat.theurgy.value;
+		t += delta;
+		t = Math.clamp(Math.floor(t), 0, this.theurgyMax);
+		await this.update( {"system.combat.theurgy.value": t});
+
 	}
 
 	async refreshHpStatus(this: ValidAttackers, newval?: number) : Promise<void> {
@@ -4018,6 +4041,9 @@ async onCombatStart() {
 
 async onKO() : Promise<void> {
 	console.log("Calling onKO");
+	if (this.isPCLike() && this.theurgyVal > 0) {
+		await this.modifyTheurgy(-1000);
+	}
 	await Promise.allSettled(
 		this.effects.contents.map( eff => eff.onKO())
 	);

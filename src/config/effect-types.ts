@@ -244,6 +244,7 @@ export const COMBAT_EFFECTS_LIST = [
 	"scan",
 	"auto-end-turn",
 	"apply-recovery",
+	"alter-theurgy"
 ] as const;
 
 export type CombatEffect = typeof COMBAT_EFFECTS_LIST[number];

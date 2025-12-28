@@ -280,7 +280,7 @@ export class CombatEngine {
 	static withinRange(range: U<CalculatedRange>, roll: Roll) : boolean {
 		if (!range) {return false;}
 		const naturalAttackRoll = roll.dice[0].total;
-		return range.possible && naturalAttackRoll > range.low && naturalAttackRoll < range.high;
+		return range.possible && naturalAttackRoll >= range.low && naturalAttackRoll <= range.high;
 	}
 
 	private getEffectiveCritBoost(attacker: Persona, target: Persona, situation: Situation, power: Usable) : {critBoost: number, critPrintable: string[]} {
@@ -970,7 +970,6 @@ export class CombatEngine {
 			locType: game.i18n.localize(INSTANT_KILL_LEVELS[power.system.instantKillChance]),
 		};
 	}
-
 
 	private static baseAilmentAttackBonus(power: Usable) : number {
 		if (power.targetsDefense != "ail") {return 0;}

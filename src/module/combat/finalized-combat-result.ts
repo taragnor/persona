@@ -173,14 +173,6 @@ export class FinalizedCombatResult {
 						duration: { dtype:  "UEoT"},
 						activationRoll: otherEffect.activation,
 					};
-					// const extraTurnChange : ResolvedActorChange<ValidAttackers> = {
-					// 	actor:change.actor,
-					// 	damage: [],
-					// 	addStatus: [bonusAction],
-					// 	otherEffects: [],
-					// 	removeStatus: [],
-					// };
-					// this.costs.push(extraTurnChange);
 					change.addStatus.push(bonusAction);
 					break;
 				}
@@ -200,6 +192,7 @@ export class FinalizedCombatResult {
 				case "add-power-to-list":
 				case "teach-power":
 				case "alter-mp":
+				case "alter-theurgy":
 				case "combat-effect":
 				case "alter-fatigue-lvl":
 				case "perma-buff":
@@ -560,7 +553,8 @@ export class FinalizedCombatResult {
 		const mpmult = 1;
 		const mutableState =  {
 			mpCost: 0,
-		};
+			theurgy: 0,
+		} satisfies MutableActorState;
 		for (const otherEffect of change.otherEffects) {
 			try {
 				await this._applyOtherEffect(actor, token, otherEffect, mutableState);
@@ -568,7 +562,10 @@ export class FinalizedCombatResult {
 				PersonaError.softFail(`Error trying to execute ${otherEffect.type} on ${actor.name}`, e);
 			}
 		}
-		if (mutableState.mpCost != 0 && actor.system.type != "shadow") {
+		if (mutableState.theurgy != 0 && !actor.isShadow()) {
+			await (actor as PC).modifyTheurgy(mutableState.theurgy);
+		}
+		if (mutableState.mpCost != 0 && !actor.isShadow()) {
 			mutableState.mpCost *= mpmult;
 			await (actor as PC).modifyMP(mutableState.mpCost);
 		}
@@ -613,7 +610,7 @@ export class FinalizedCombatResult {
 		await actor.modifyHP(dmg.hpChange);
 	}
 
-	private async _applyOtherEffect(actor: ValidAttackers, token: PToken | undefined, otherEffect:OtherEffect, mutableState: {mpCost: number}): Promise<void> {
+	private async _applyOtherEffect(actor: ValidAttackers, token: PToken | undefined, otherEffect:OtherEffect, mutableState: MutableActorState): Promise<void> {
 		switch (otherEffect.type) {
 			case "expend-item":
 				if (otherEffect.itemAcc) {
@@ -693,6 +690,20 @@ export class FinalizedCombatResult {
 						otherEffect satisfies never;
 						// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 						PersonaError.softFail(`Bad subtype for Alter MP effect : ${otherEffect["subtype"]}`);
+				}
+				break;
+			case "alter-theurgy":
+				switch (otherEffect.subtype) {
+					case "direct":
+						mutableState.theurgy += otherEffect.amount;
+						break;
+					case "percent-of-total":
+						mutableState.theurgy += actor.mmp * (otherEffect.amount / 100);
+						break;
+					default:
+						otherEffect satisfies never;
+						// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+						PersonaError.softFail(`Bad subtype for Alter Theurgy effect : ${otherEffect["subtype"]}`);
 				}
 				break;
 			case "combat-effect":
@@ -895,3 +906,8 @@ declare global {
 		'onTakeDamage': (token: PToken, amount: number, damageType: RealDamageType)=> unknown;
 	}
 }
+
+type MutableActorState = {
+			mpCost: number,
+			theurgy: number,
+};

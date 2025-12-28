@@ -45,6 +45,23 @@
 				{{/if}}
 			</div>
 			{{/if}}
+
+			{{#if (and (isGM) (isPCLike actor))}}
+			<div class="theurgy">
+				<label> Theurgy </label>
+				<span>
+					{{#if (isGM)}}
+					<input class="short" type="number" name="system.combat.theurgy.value" value="{{actor.system.combat.theurgy.value}}">
+					/
+					<input class="short" type="number" name="system.combat.theurgy.max" value="{{actor.system.combat.theurgy.max}}">
+					{{else}}
+					{{actor.theurgyVal}}
+					/ {{actor.theurgyMax}}
+					{{/if}}
+				</span>
+			</div>
+			{{/if}}
+
 		</div>
 
 		{{#if actor.printableActiveStatuses}}

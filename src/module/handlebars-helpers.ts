@@ -126,6 +126,11 @@ export class PersonaHandleBarsHelpers {
 			return actor.isRealPC() || actor.isNPCAlly();
 
 		},
+
+		"isPCLike": function (actor: PersonaActor): boolean {
+			return actor.isPCLike();
+		},
+
 		"canGainLevels": function (actor: PersonaActor) : boolean {
 			if (!actor.isValidCombatant()) {return false;}
 			return actor.isRealPC() || actor.isNPCAlly() || actor.isDMon() || actor.isPersona();

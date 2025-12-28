@@ -233,6 +233,10 @@ export function PCAndNPCAllyCombatStats() {
 		teamworkMove: new id(),
 		usingMetaPod: new bool({initial: true}),
 		// personaImg: new txt(),
+		theurgy: new sch({
+			value: new num({initial: 0, integer: true, min: 0, max: 500}),
+			max: new num({initial: 0, integer: true, min:0, max:500}),
+		}),
 		mp: new sch({
 			value: new num({initial: 0, integer: true, min: 0, max: 1000}),
 			max: new num({initial: 1, integer: true, min:1, max:1000}),

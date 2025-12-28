@@ -35,6 +35,7 @@ export const POWER_TYPE_TAGS = [
 	"exploration",
 	"usable-while-dead",
 	"usable-while-sealed",
+	"theurgy",
 ] as const;
 
 const RESTRICTION_TAGS = [
