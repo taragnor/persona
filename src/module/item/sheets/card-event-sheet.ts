@@ -156,7 +156,6 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> {
 	}
 
 	async deleteChoice(ev: JQuery.ClickEvent) {
-		// const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
 		const eventIndex = this.eventIndex;
 		const choiceIndex = Number(HTMLTools.getClosestData(ev, "choiceIndex"));
 		if (!await HTMLTools.confirmBox(`Delete Choice ${choiceIndex}`, `Really Delete this choice`)) {
@@ -177,8 +176,6 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> {
 	}
 
 	copyChoice( ev: JQuery.ClickEvent) {
-		// const eventIndex = this.eventIndex;
-		// const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
 		const choiceIndex = Number(HTMLTools.getClosestData(ev, "choiceIndex"));
 		const choice = this.event.choices[choiceIndex];
 		if (!choice) {

@@ -473,9 +473,9 @@ export class SocialCardEventDM extends foundry.abstract.DataModel {
 		console.log(subUpdateObj);
 		const ret = await cardObj.update(updateObj);
 		if (ret == undefined) {
-			Debug(updateObj);
-			Debug(subUpdateObj);
-			ui.notifications.warn("Update may not have gone through");
+			// Debug(updateObj);
+			// Debug(subUpdateObj);
+			// ui.notifications.warn("Update may not have gone through");
 			cardObj._initialize();
 		}
 		const evRefresh = cardObj.system.events[index];
