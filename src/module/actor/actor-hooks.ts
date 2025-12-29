@@ -45,6 +45,15 @@ export class ActorHooks {
 		});
 
 		Hooks.on("updateActor", async function (actor: PersonaActor) {
+			if (!actor.isNPC() || !actor.tarot) { return; }
+			for (const PC of PersonaDB.PCs()) {
+				PC.clearCache();
+				await PC.sheet.render(false);
+			}
+		});
+
+
+		Hooks.on("updateActor", async function (actor: PersonaActor) {
 			actor.clearCache();
 			if (actor.isShadow()) {
 				const xp= LevelUpCalculator.minXPForEffectiveLevel(actor.system.combat.personaStats.pLevel);
