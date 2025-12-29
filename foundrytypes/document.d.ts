@@ -1,8 +1,8 @@
 namespace Foundry {
 	interface DocumentConstructor {
 		// new<Embedded extends (FoundryDocument | never) = never>(...args: unknown[]) : Document<Embedded>;
-
-		defineSchema(): Record<string, FoundryDMField<any>>;
+		get hierarchy(): Record<string, EmbeddedCollectionField<unknown>>;
+		defineSchema(): SchemaReturnObject;
 		create<const T extends Document<any>>(data: CreationData<T>, options ?: unknown): Promise<T>;
 
 	}
@@ -36,9 +36,12 @@ namespace Foundry {
 		testUserPermission(user: FoundryUser, permissionLevel: keyof DOCUMENT_OWNERSHIP_LEVELS, options: {exact?: boolean} = {}): boolean;
 		migrateSystemData(sourceMaybe?: unknown): unknown;
 		updateSource(updateData: Record<string, any>): unknown;
+		get schema() : SchemaField<Record<string, unknown>>;
+		get collections(): Record<string, unknown>;
 		get folder(): Folder;
 		toJSON(): object;
 		_source: Record<string, unknown>;
+		_initialize() : void;
 	}
 
 	type CreationData<T extends Document> = 

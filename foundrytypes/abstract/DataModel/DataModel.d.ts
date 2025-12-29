@@ -1,7 +1,7 @@
 
 declare abstract class DataModelClass  {
 	get parent(): DataModelClass | undefined;
-	constructor ();
+	constructor (data: object, options?:object);
 	static defineSchema() : SchemaReturnObject;
 	/** invoked when object is read from disk, can be used to update older fields,
 		returns super.migrateData(source)
@@ -10,6 +10,7 @@ declare abstract class DataModelClass  {
 	updateSource(updateObject: Record<string, unknown>);
 	toJSON(): object;
 	schema: SchemaData;
+	_initialize() : void;
 }
 
 interface SchemaData {

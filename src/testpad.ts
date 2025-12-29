@@ -1,1 +1,2 @@
+type x = FoundryDocument
 

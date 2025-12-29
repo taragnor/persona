@@ -1,0 +1,93 @@
+<form>
+	<div class="card-event" data-event-index='{{i}}'>
+		<a class="go-back"> Back </a>
+		<div class="flexrow">
+			<div>
+				{{filePicker type="image" target="img"}}
+				<input class="img" type="hidden" name="img" value="{{event.img}}">
+				<img class="event-img" src="{{event.img}}">
+				<div>
+					<label>
+						Sound
+					</label>
+					<div class="flexrow">
+						{{filePicker type="audio" target="sound"}}
+						<input class="img" type="hidden" name="sound" value="{{event.sound}}">
+					</div>
+					{{#if event.sound}}
+					<div>{{event.sound}}</div>
+					<div class="flexrow">
+						<label> Volume</label>
+						<input class="short" type="number" name="volume" value="{{event.volume}}">
+					</div>
+					{{/if}}
+				</div>
+			</div>
+			<div>
+				<h3>
+					<input class="event-name" type="string" name="name" value="{{event.name}}">
+				</h3>
+				<div class="placement">
+					<div>
+						<label> Frequency</label>
+						<select name="frequency">
+							{{selectOptions SOCIAL_DATA.FREQUENCY localize=false selected=event.frequency}}
+						</select>
+					</div>
+					<div>
+						<label>
+							Starter
+						</label>
+						<input type="checkbox" name="placement.starter" {{checked event.placement.starter}}>
+					</div>
+					<div>
+						<label>
+							Middle
+						</label>
+						<input type="checkbox" name="placement.middle" {{checked event.placement.middle}}>
+					</div>
+					<div>
+						<label>
+							Finale
+						</label>
+						<input type="checkbox" name="placement.finale" {{checked event.placement.finale}}>
+					</div>
+					<div>
+						<label>
+							Special
+						</label>
+						<input type="checkbox" name="placement.special" {{checked event.placement.special}}>
+					</div>
+					<div>
+						<label>
+							Label
+						</label>
+						<input type="string" name="label" value="{{event.label}}">
+					</div>
+				</div>
+			</div>
+		</div >
+		<div class="event-tags">
+			{{> "systems/persona/parts/eventTags.hbs" item=item event=event POWERSTUFF=POWERSTUFF eventIndex=i}}
+		</div>
+		<div class="card-event-conditions" data-top-path="conditions">
+			{{> "systems/persona/parts/conditions-section.hbs" namePrefix="conditions"  POWERSTUFF=POWERSTUFF i=i owner=event}}
+		</div>
+		<label> Event Setup</label>
+		<textarea name="text">{{trim event.text}}</textarea>
+		<h3> Choices </h3>
+		{{#each event.choices as |choice j|}}
+		{{> "systems/persona/parts/input-card-choice.hbs" CONST=../SOCIAL_DATA POWERSTUFF=../item.sheet.powerStuff namePrefix=(strcat "choices." j ".") choiceIndex=j item=../item choice=choice}}
+		{{/each}}
+		<div>
+			<label>Add Choice
+				<a class="add-choice">
+					<i class="fa-solid fa-plus"> </i>
+				</a>
+				<a class="paste-choice">
+					<i class="fa-solid fa-paste"> </i>
+				</a>
+			</label>
+		</div>
+	</div>
+</form>

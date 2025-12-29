@@ -656,13 +656,22 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	async addEventTag(this: SocialCard, eventIndex:number) : Promise<void> {
-		const data = this.system.events;
-		const ev = data[eventIndex];
-		const newTags =  ev.eventTags.slice();
+		const ev = this.system.events[eventIndex];
+		const newTags =  ArrayCorrector(ev.eventTags).slice();
 		newTags.push('');
 		ev.eventTags = newTags;
-		const json = data.map(x=> (x as unknown as JSONAble).toJSON());
-		await this.update( {'system.events': json});
+		await ev.update!(ev);
+		// const json = data.map(x=> (x as unknown as JSONAble).toJSON());
+		// await this.update( {'system.events': json});
+	}
+
+	async deleteEventTag(this: SocialCard, eventIndex:number, tagIndex: number) {
+		const data = this.system.events;
+		const ev= data[eventIndex];
+		ArrayCorrector(ev.eventTags).splice(tagIndex, 1);
+		await ev.update!(ev);
+		// const json = data.map(x=> (x as unknown as JSONAble).toJSON());
+		// await this.update( {'system.events': json});
 	}
 
 	async deleteItemTag(this: Consumable | InvItem | Weapon, index: number) : Promise<void> {
@@ -677,13 +686,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		await this.update( {'system.cardTags': tags});
 	}
 
-	async deleteEventTag(this: SocialCard, eventIndex:number, tagIndex: number) {
-		const data = this.system.events;
-		const ev= data[eventIndex];
-		ev.eventTags.splice(tagIndex, 1);
-		const json = data.map(x=> (x as unknown as JSONAble).toJSON());
-		await this.update( {'system.events': json});
-	}
 
 	/** used by item piles to determine if the items stack*/
 	get itemPilesStackId(): string {

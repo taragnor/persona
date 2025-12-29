@@ -23,6 +23,7 @@
 		</ul>
 	</section>
 
+	{{#if false}}
 	{{#each item.system.events as |event i|}}
 	<div class="card-event {{#if (ne ../focusedEvent i)}} hidden {{/if}}" data-event-index='{{i}}'>
 		<a class="go-back"> Back </a>
@@ -116,6 +117,7 @@
 		</div>
 	</div>
 	{{/each}}
+	{{/if}}
 	<div>
 		{{#if (gt item.system.num_of_events 0)}}
 		<h4>Add Event
@@ -128,4 +130,5 @@
 		</h4>
 		{{/if}}
 	</div>
+
 </section>

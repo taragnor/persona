@@ -14,7 +14,10 @@ interface FoundryStuff {
 	appv1: AppV1Stuff;
 	data: FoundryData;
 	documents: {
-		BaseCombat: typeof BaseCombat;
+
+		BaseCombat: Foundry.DocumentConstructor;
+		BaseActor: Foundry.DocumentConstructor;
+		BaseItem: Foundry.DocumentConstructor;
 	}
 	/** audio doesn't exist in v11 */
 	audio: {
@@ -33,9 +36,7 @@ interface AppV1Stuff {
 	}
 }
 
-class BaseCombat {
-	static defineSchema() : SchemaReturnObject
-}
+
 
 declare const Hooks: Hooks;
 

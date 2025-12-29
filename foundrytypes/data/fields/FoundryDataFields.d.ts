@@ -5,7 +5,7 @@ declare interface FoundryDataFields {
 	BooleanField: typeof BooleanFieldClass;
 	ColorField: typeof ColorFieldClass;
 	EmbeddedDataField: typeof EmbeddedDataField;
-	// EmbeddedCollectionField: any;
+	EmbeddedCollectionField: typeof EmbeddedCollectionField;
 	// EmbeddedCollectionDeltaField: any;
 	//EmbeddedDocumentField: any
 	//DocumentOwnershipField: any
@@ -85,6 +85,10 @@ class SchemaField<T extends Record<string, unknown>> extends FoundryDMField<T> {
 
 }
 
+class EmbeddedCollectionField<T extends ConstrutorOf<Item>> extends FoundryDMField<Collection<InstanceType<T>>> {
+	constructor(itemType: T, options ?: DataFieldOptions);
+}
+
 interface FilePathFieldOptions extends StringFieldOptions<string> {
 	categories: (keyof typeof CONST.FILE_CATEGORIES)[];
 	base64?: boolean;
@@ -116,6 +120,7 @@ declare interface StringFieldOptions<const T extends string> extends DataFieldOp
 	choices?: readonly T[] | Record < T, string> | (()=> T[]);
 }
 
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type NoInfer<A>= [A][A extends any ? 0 : never]
 
@@ -129,5 +134,6 @@ type DeepNoArray<I>=
 
 type AtLeastOne<const T, U = {[K in keyof T]: Pick<T, K> }> = Partial<T> & U[keyof U];
 
+type ConstructorOf<T> = new (...args: any[]) => T;
 
 

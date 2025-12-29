@@ -93,7 +93,7 @@ export class ConditionalEffectManager {
 		if (topPath.endsWith(".")) {
 			topPath = topPath.slice(0, -1);
 		}
-		if (!topPath) {
+		if (topPath == undefined) {
 			throw new PersonaError("No Top Path Given!");
 		}
 		let dataPath = HTMLTools.getClosestData(ev, "path").trim();

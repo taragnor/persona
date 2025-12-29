@@ -110,7 +110,6 @@ Hooks.once("init", function() {
 
 	//@ts-expect-error adding to global
 	window.SearchMenu = SearchMenu;
-
 	registerDataModels();
 	registerDocumentClasses();
 	registerSheetApplications();
@@ -189,3 +188,4 @@ Hooks.on("renderChatMessageHTML", (msg, html) => {
 			break;
 		}
 });
+

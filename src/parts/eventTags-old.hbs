@@ -9,7 +9,7 @@
 	<div class="tag-list">
 		{{#each event.eventTags as |tag i|}}
 		<div class="tag-item", data-tag-index="{{i}}">
-			<select name="eventTags.{{i}}">
+			<select name="system.events.{{../eventIndex}}.eventTags.{{i}}">
 				{{selectOptions ../POWERSTUFF.ROLL_TAGS_AND_CARD_TAGS localize=true selected=tag}}
 			</select>
 			<a class="delTag">

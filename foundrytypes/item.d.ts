@@ -1,6 +1,8 @@
 namespace Foundry {
 interface ItemConstructor extends DocumentConstructor {
-	new<T extends SchemaDict = any, ActorType extends Actor<any, InstanceType<this>, any> = Actor<any, InstanceType<this>, any>, AEType extends ActiveEffect<ActorType, InstanceType<this>> = ActiveEffect<ActorType, InstanceType<this>>>
+	// new<T extends SchemaDict = any, ActorType extends Actor<any, InstanceType<this>, any> = Actor<any, InstanceType<this>, any>, AEType extends ActiveEffect<ActorType, InstanceType<this>> = ActiveEffect<ActorType, InstanceType<this>>>
+		// (...args: unknown[]): Item<T, ActorType, AEType>;
+	new<T extends SchemaDict, ActorType extends Actor , AEType extends ActiveEffect>
 		(...args: unknown[]): Item<T, ActorType, AEType>;
 }
 

@@ -21,6 +21,8 @@ import { SAVE_TYPES_LOCALIZED } from "../../../config/save-types.js";
 
 import { STUDENT_SKILLS_EXT } from "../../../config/student-skills.js";
 import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
+import {SocialCardEventDM} from "../../datamodel/item-types.js";
+import {CardEventSheet} from "./card-event-sheet.js";
 
 const PRIMARY_SECONDARY = {
 	"primary": "persona.term.primary",
@@ -108,7 +110,8 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		html.find(".del-choice").on("click", this.deleteChoice.bind(this));
 		html.find(".paste-choice").on("click", this.pasteChoice.bind(this));
 		html.find(".copy-choice").on("click", this.copyChoice.bind(this));
-		html.find(".event-index li .name").on("click", this.loadCardEvent.bind(this));
+		// html.find(".event-index li .name").on("click", this.loadCardEvent.bind(this));
+		html.find(".event-index li .name").on("click", this._onEditEvent.bind(this));
 		html.find(".card-event .go-back").on("click", this.goBackEventList.bind(this));
 	}
 
@@ -284,4 +287,15 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		await this.item.addCardEvent(event);
 	}
 
+	private _onEditEvent(ev: JQuery.ClickEvent) {
+		ev.stopPropagation();
+		const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
+		const event = this.item.system.events.at(eventIndex) as unknown as SocialCardEventDM;
+		if (!event) {
+			throw new PersonaError(`No event found at index ${eventIndex}`);
+		}
+		event.sheet.render(true);
+	}
+
 } // end of class
+

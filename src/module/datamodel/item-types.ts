@@ -8,10 +8,10 @@ import { UNIVERSAL_MODIFIERS_TYPE_LIST } from "./universal-modifiers-types.js";
 import { FREQUENCY, frequencyConvert } from "../../config/frequency.js";
 import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
 import { CardRoll, Opportunity, SOCIAL_CARD_TYPES_LIST, ThresholdOrDC, TokenSpend } from "../../config/social-card-config.js";
-import { ArrayCorrector } from "../item/persona-item.js";
+import { ArrayCorrector, PersonaItem } from "../item/persona-item.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { EQUIPMENT_TAGS_LIST } from "../../config/equipment-tags.js";
-const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, FilePathField: file } = foundry.data.fields;
+const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, FilePathField: file, EmbeddedCollectionField : collection } = foundry.data.fields;
 
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
 import { CharacterClassDM } from "./character-class-dm.js";
@@ -24,6 +24,8 @@ import {TAG_TYPES} from "../../config/tags-general.js";
 import {PreconditionConverter} from "../migration/convertPrecondition.js";
 import {ConsequenceConverter} from "../migration/convertConsequence.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
+import {PersonaError} from "../persona-error.js";
+import {CardEventSheet} from "../item/sheets/card-event-sheet.js";
 
 function itemBase() {
 	return {
@@ -219,20 +221,6 @@ class ConsumableSchema extends foundry.abstract.TypeDataModel {
 		if (data.defense == "will") {
 			data.defense = "ail";
 		}
-		// const itemData = data as (Power["system"] | Consumable["system"]);
-		// let dmult = 0;
-		// if (itemData.melee_extra_mult == undefined && itemData?.damage?.low) {
-		// 	const dmglow = itemData.damage.low;
-		// 	switch (true) {
-		// 		case dmglow == 0: dmult = 0; break;
-		// 		case	dmglow <= 5: dmult = 2;   break;
-		// 		case dmglow <=10: dmult = 4; break;
-		// 		case dmglow <=25: dmult = 7; break;
-		// 		case dmglow >25: dmult= 10; break;
-		// 		default: break;
-		// 	}
-		// 	itemData.melee_extra_mult = dmult;
-		// }
 		return data;
 	}
 }
@@ -244,9 +232,6 @@ class TalentDM extends foundry.abstract.TypeDataModel {
 			;}
 
 	override prepareBaseData() {
-		// const d = this._systemData;
-		// const test = this._systemData.test!;
-		// const test2 = this._systemData.description;
 	}
 
 	get test() {return 5 as const;}
@@ -322,6 +307,7 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 			availabilityConditions: new arr(new obj<Precondition>()),
 			num_of_events: new num({initial: 0, min:0, max: 5, integer:true}),
 			events: new arr( new embedded(SocialCardEventDM)),
+			// eventsC: new collection(PersonaItem ) ,
 			automatic: new txt(),
 			skill: new txt<"primary" | "secondary">({initial: "primary"}),
 			cameoType: new txt({initial: "none", choices: CAMEO_TYPES_LIST}),
@@ -344,6 +330,10 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 			immediateEffects: new arr(new embedded(ConditionalEffectDM)),
 		};
 		return ret;
+	}
+
+	static override migrateData(data: SocialCard["system"]) {
+	return data;
 	}
 }
 
@@ -422,7 +412,21 @@ class QuestionChoiceDM extends foundry.abstract.DataModel {
 
 }
 
-class SocialCardEventDM extends foundry.abstract.DataModel {
+export class SocialCardEventDM extends foundry.abstract.DataModel {
+
+	#sheet: U<CardEventSheet>;
+
+	get sheet() {
+		if (this.#sheet) {return this.#sheet;}
+		const SC =this?.parent?.parent ;
+
+		if (!(SC instanceof PersonaItem) || !SC.isSocialCard() ) {
+			throw new PersonaError("Can't get containing social card for SocialCardEventDM");
+		}
+		return this.#sheet = new CardEventSheet(this, SC);
+	}
+
+
 	static override defineSchema() {
 		return {
 			name: new txt({initial: "New Event"}),
@@ -443,6 +447,63 @@ class SocialCardEventDM extends foundry.abstract.DataModel {
 			choices: new arr(new embedded(CardChoiceDM)),
 		};
 	}
+
+	async update(subUpdateObj : Record< string, unknown>):  Promise<unknown> {
+		const index= this.parentIndex();
+		if (index == undefined) {
+			Debug(subUpdateObj);
+			return;
+		}
+		const cardSystem = this.parent as SocialCard["system"];
+		if (!(this.parent instanceof SocialCardSchema)) {
+			Debug (this, this.parent);
+			throw new PersonaError("Parent isn't social card schema");
+		}
+		const oldSheet =this.sheet;
+		const cardObj = cardSystem.parent;
+		if (!(cardObj instanceof PersonaItem && cardObj.isSocialCard() )) {
+			throw new PersonaError("Parent isn't social card");
+		}
+		const events = cardObj.system.events;
+		events[index] = new SocialCardEventDM(foundry.utils.mergeObject(events[index].toJSON!(), subUpdateObj)) as unknown as typeof events[number];
+		const updateObj  = {
+			"system.events" : events,
+		};
+		console.log(updateObj);
+		console.log(subUpdateObj);
+		const ret = await cardObj.update(updateObj);
+		if (ret == undefined) {
+			Debug(updateObj);
+			Debug(subUpdateObj);
+			ui.notifications.warn("Update may not have gone through");
+			cardObj._initialize();
+		}
+		const evRefresh = cardObj.system.events[index];
+		if (!(evRefresh instanceof SocialCardEventDM)) {
+			throw new Error("Not instance of ocailCardEventDM");
+		}
+		evRefresh.#sheet = oldSheet;
+		this.#sheet = undefined;
+		evRefresh.sheet._event = evRefresh;
+		if (evRefresh.parentIndex() == undefined) {
+			throw new Error("Something weird happened");
+		}
+		evRefresh.sheet.render(false);
+		return ret;
+	}
+
+	parentIndex() : U<number> {
+		if (!(this.parent instanceof SocialCardSchema)) { return undefined;}
+		const parent = this.parent as SocialCard["system"];
+		const index = parent.events.findIndex( x=> x== this);
+		if (index == -1)  {
+			Debug(this);
+			ui.notifications.error("Index Not Found for event");
+			return undefined;
+		}
+		return index;
+	}
+
 
 	static override migrateData(source: Record<string, any>) : typeof source {
 		const data = source as Foundry.SystemDataObjectFromDM<typeof SocialCardEventDM>;
