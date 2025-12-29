@@ -297,5 +297,6 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		event.sheet.render(true);
 	}
 
+
 } // end of class
 

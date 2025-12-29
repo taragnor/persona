@@ -2188,7 +2188,8 @@ async addEventChoice(this: SocialCard, eventIndex: number, newChoice ?: CardChoi
 	}
 	arr.push( newChoice);
 	event.choices = arr;
-	await this.update({'system.events': Helpers.expandObject(this.system.events)});
+	await event.update!({choices: arr});
+	// await this.update({'system.events': Helpers.expandObject(this.system.events)});
 }
 
 async deleteEventChoice(this: SocialCard, eventIndex: number, choiceIndex: number) {
@@ -2196,7 +2197,8 @@ async deleteEventChoice(this: SocialCard, eventIndex: number, choiceIndex: numbe
 	const arr = ArrayCorrector(event.choices) as CardChoice[];
 	arr.splice(choiceIndex, 1);
 	event.choices = arr;
-	await this.update({'system.events': Helpers.expandObject(this.system.events)});
+	await event.update!({choices: arr});
+	// await this.update({'system.events': Helpers.expandObject(this.system.events)});
 }
 
 

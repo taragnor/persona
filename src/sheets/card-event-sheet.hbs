@@ -75,19 +75,21 @@
 		</div>
 		<label> Event Setup</label>
 		<textarea name="text">{{trim event.text}}</textarea>
-		<h3> Choices </h3>
-		{{#each event.choices as |choice j|}}
-		{{> "systems/persona/parts/input-card-choice.hbs" CONST=../SOCIAL_DATA POWERSTUFF=../item.sheet.powerStuff namePrefix=(strcat "choices." j ".") choiceIndex=j item=../item choice=choice}}
-		{{/each}}
-		<div>
-			<label>Add Choice
-				<a class="add-choice">
-					<i class="fa-solid fa-plus"> </i>
-				</a>
-				<a class="paste-choice">
-					<i class="fa-solid fa-paste"> </i>
-				</a>
-			</label>
-		</div>
+		<section data-top-path="choices">
+			<h3> Choices </h3>
+			{{#each event.choices as |choice j|}}
+			{{> "systems/persona/parts/input-card-choice.hbs" CONST=../SOCIAL_DATA POWERSTUFF=../event.sheet.powerStuff namePrefix=(strcat "choices." j ".") choiceIndex=j item=../event choice=choice}}
+			{{/each}}
+			<div>
+				<label>Add Choice
+					<a class="add-choice">
+						<i class="fa-solid fa-plus"> </i>
+					</a>
+					<a class="paste-choice">
+						<i class="fa-solid fa-paste"> </i>
+					</a>
+				</label>
+			</div>
+		</section>
 	</div>
 </form>

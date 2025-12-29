@@ -1,4 +1,5 @@
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
+import {PowerStuff} from "../../../config/power-stuff.js";
 import {ConditionalEffectManager} from "../../conditional-effect-manager.js";
 import {SocialCardEventDM} from "../../datamodel/item-types.js";
 import {PersonaError} from "../../persona-error.js";
@@ -56,9 +57,9 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> {
 		return this._card;
 	}
 
-	get event() : SocialCardEventDM {
+	get event() : SocialCardEventDM & SocialCard["system"]["events"][number] {
 		if (this._event instanceof SocialCardEventDM) {
-		return this._event;
+		return this._event as SocialCardEventDM & SocialCard["system"]["events"][number];
 		} else {
 			console.log("ERROR");
 			console.log(this._event);
@@ -72,7 +73,12 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> {
 		ConditionalEffectManager.applyHandlers(html, this.event as unknown as FoundryDocument);
 		html.find(".eventTags .addTag").on("click", (ev) => void this.addEventTag(ev));
 		html.find(".eventTags .delTag").on("click", (ev) => void this.deleteEventTag(ev));
+		html.find(".add-choice").on("click", (ev) => void this.addChoice(ev));
+		html.find(".del-choice").on("click", (ev) => void this.deleteChoice(ev));
+		html.find(".paste-choice").on("click", (ev) => void this.pasteChoice(ev));
+		html.find(".copy-choice").on("click", ev => this.copyChoice(ev));
 	}
+
 
 	get eventIndex() {
 		const index=  this.event.parentIndex();
@@ -139,6 +145,47 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> {
 			console.log(formData);
 			throw e;
 		}
+	}
+
+	powerStuff() {
+		return PowerStuff.powerStuff();
+	}
+
+	async addChoice(_ev: JQuery.ClickEvent) {
+		await this.item.addEventChoice(this.eventIndex);
+	}
+
+	async deleteChoice(ev: JQuery.ClickEvent) {
+		// const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
+		const eventIndex = this.eventIndex;
+		const choiceIndex = Number(HTMLTools.getClosestData(ev, "choiceIndex"));
+		if (!await HTMLTools.confirmBox(`Delete Choice ${choiceIndex}`, `Really Delete this choice`)) {
+			return;
+		}
+		await this.item.deleteEventChoice(eventIndex,choiceIndex);
+	}
+
+	async pasteChoice(_ev: JQuery.ClickEvent) {
+		const eventIndex = this.eventIndex;
+		// const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
+		const choice = PersonaSocialCardSheet.clipboard.choice;
+		if (!choice) {
+			ui.notifications.warn("No choice stored in clipboard, nothing to paste");
+			return;
+		}
+		await this.item.addEventChoice(eventIndex, choice);
+	}
+
+	copyChoice( ev: JQuery.ClickEvent) {
+		// const eventIndex = this.eventIndex;
+		// const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
+		const choiceIndex = Number(HTMLTools.getClosestData(ev, "choiceIndex"));
+		const choice = this.event.choices[choiceIndex];
+		if (!choice) {
+			return;
+		}
+		ui.notifications.notify("Choice copied to clipboard");
+		PersonaSocialCardSheet.clipboard.choice = JSON.parse(JSON.stringify(choice)) as typeof choice;
 	}
 
 }
