@@ -3807,25 +3807,13 @@ async deleteTokenSpend(this: SocialLink, deleteIndex:number) {
 }
 
 isAvailable(pc: PersonaActor) : boolean {
-	switch (this.system.type) {
-		case "shadow":
-		case "tarot":
-			return false;
-		case "npc": case "npcAlly": {
-			const npc = this as NPC | NPCAlly;
-			const sit: Situation = {
-				user: (pc as PC).accessor,
-				socialTarget: npc.accessor,
-			};
-			if(!testPreconditions(npc.getAvailabilityConditions(), sit)) {
-				return false;
-			}
-			break;
-		}
-		case "pc":
-			break;
-		default:
-			this.system satisfies never;
+	if (!this.isSocialLink() && !this.isNPCAlly()) {return false;}
+	const sit: Situation = {
+		user: (pc as ValidAttackers).accessor,
+		socialTarget: this.accessor,
+	};
+	if(!testPreconditions(this.getAvailabilityConditions(), sit)) {
+		return false;
 	}
 	if (PersonaSocial.disqualifierStatuses.some (st=> this.hasStatus(st))) {return false;}
 	const availability = this.system.weeklyAvailability;
@@ -3835,7 +3823,8 @@ isAvailable(pc: PersonaActor) : boolean {
 	return availability?.available ?? false;
 }
 
-getAvailabilityConditions(this: NPC | NPCAlly)  : readonly SourcedPrecondition[] {
+getAvailabilityConditions(this: SocialLink)  : readonly SourcedPrecondition[] {
+	if (this.isPC()){ return [];}
 	const conds = ConditionalEffectManager.getConditionals(this.system.availabilityConditions, null, null, null);
 	return conds;
 }
