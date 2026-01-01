@@ -22,6 +22,7 @@ import {PersonaTag} from "../config/creature-tags.js";
 import {Defense} from "../config/defense-types.js";
 import {PersonaStat} from "../config/persona-stats.js";
 import {Calculation, EvaluatedCalculation} from "./utility/calculation.js";
+import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
 	#combatStats: U<PersonaCombatStats>;
@@ -244,7 +245,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const mods = PersonaItem.getModifier(this.mainModifiers(), "critResist");
 		const list =  new ModifierList(mods);
 		const calc = this.combatStats.lukCriticalResist();
-		calc.add(1, list, "Mods", "add");
+		calc.add(1, list, "Mods");
 		return calc;
 	}
 
@@ -252,7 +253,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const mods = PersonaItem.getModifier(this.mainModifiers(), "criticalBoost");
 		const list= new ModifierList(mods);
 		const calc = this.combatStats.lukCriticalBoost();
-		calc.add(1, list, "Mods", "add");
+		calc.add(1, list, "Mods");
 		return calc;
 	}
 
@@ -440,7 +441,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.mainModifiers().filter ( x=>x.conditionalType == "passive");
 	}
 
-	mainModifiers(options?: MainModifierOptions ): readonly SourcedConditionalEffect[] {
+	mainModifiers(options?: MainModifierOptions ): ConditionalEffectC[] {
 		//NOTE: this could be a risky operation
 		const canCache = !options && this.canCache;
 		if (canCache && this.#cache.mainModifiers) {
@@ -453,7 +454,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return mainMods;
 	}
 
-	private _mainModifiers(options?: MainModifierOptions): readonly SourcedConditionalEffect[] {
+	private _mainModifiers(options?: MainModifierOptions): ConditionalEffectC[] {
 		const user = this.user;
 		const roomModifiers : UniversalModifier[] = [];
 		if (game.combat) {
@@ -555,7 +556,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const initBonus = this
 			.getBonuses("initiative");
 		const agi = this.combatStats.baseInit();
-		agi.add(1, initBonus, "Init bonus", "add");
+		agi.add(1, initBonus, "Init bonus");
 		return agi;
 	}
 
@@ -599,7 +600,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		modifiers.pushUnique(...this.defensiveModifiers());
 		const defenseMods = this.getBonuses([defense, "allDefenses"], modifiers);
 		const modList = new ModifierList();
-		return calc.add(1, modList.concat(defenseMods), "Other Modifiers", "add");
+		return calc.add(1, modList.concat(defenseMods), "Other Modifiers");
 	}
 
 	get tarot() {
@@ -714,7 +715,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return retdata;
 	}
 
-	statusResist(status: StatusEffectId, modifiers ?: readonly SourcedConditionalEffect[]) : ResistStrength {
+	statusResist(status: StatusEffectId, modifiers ?: ConditionalEffectC[]) : ResistStrength {
 		const actor= this.source;
 		if (!modifiers) {
 			modifiers = this.mainModifiers();
@@ -842,19 +843,19 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	wpnAtkBonus() : Calculation {
 		const mods = this.getBonuses(["allAtk", "wpnAtk"]);
 		const wpnAtk = this.combatStats.baseWpnAttackBonus();
-		return wpnAtk.add(1, mods, "Mods", "add");
+		return wpnAtk.add(1, mods, "Mods");
 	}
 
 	magAtkBonus() : Calculation {
 		const mods = this.getBonuses(["allAtk", "magAtk"]);
 		const magAtk = this.combatStats.baseMagAttackBonus();
-		return magAtk.add(1, mods, "Mods", "add");
+		return magAtk.add(1, mods, "Mods");
 	}
 
 	instantDeathAtkBonus() : Calculation {
 		const mods = this.getBonuses(["instantDeathRange"]);
 		const deathAtk = this.combatStats.baseDeathAtkBonus();
-		return deathAtk.add(1, mods, "Mods", "add");
+		return deathAtk.add(1, mods, "Mods");
 	}
 
 	ailmentAtkBonus() : Calculation {
@@ -867,8 +868,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		const calc=new Calculation();
 		const mods = this.getBonuses(["itemAtk", "allAtk"]);
 		return calc
-			.add(1, item?.system?.atk_bonus ?? 0, "Item Modifier", "add")
-			.add(1, mods, "Modifiers", "add");
+			.add(1, item?.system?.atk_bonus ?? 0, "Item Modifier")
+			.add(1, mods, "Modifiers");
 	}
 
 	get isUnderResistCap(): boolean {
@@ -1200,9 +1201,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 
 interface PersonaClassCache {
-	mainModifiers: U<readonly SourcedConditionalEffect[]>;
+	mainModifiers: U<ConditionalEffectC[]>;
 	passivePowers: U<readonly Power[]>;
-	defensiveModifiers: U<readonly SourcedConditionalEffect[]>;
+	defensiveModifiers: U<ConditionalEffectC[]>;
 }
 
 interface MainModifierOptions {

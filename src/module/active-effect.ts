@@ -10,6 +10,7 @@ import { StatusEffectId } from "../config/status-effects.js";
 import {ModifierTarget} from "../config/item-modifiers.js";
 import {ModifierListItem} from "./combat/modifier-list.js";
 import {TriggeredEffect} from "./triggered-effect.js";
+import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 
 
 export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implements ModifierContainer<PersonaAE> {
@@ -245,7 +246,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		return this;
 	}
 
-	getEmbeddedEffects(sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : readonly SourcedConditionalEffect[] {
+	getEmbeddedEffects(sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
 		const {CETypes} = options;
 		const effects = this.getFlag("persona", "embeddedEffects") as string;
 		if (!effects) {
@@ -270,10 +271,12 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 				};
 			});
 		if (CETypes == undefined || CETypes.length == 0){
-			return effectsArrModified;
+			return effectsArrModified
+				.map( x=> new ConditionalEffectC(x, this, sourceActor, this));
 		}
 		return effectsArrModified
-			.filter( x=> CETypes.includes(x.conditionalType));
+			.filter( x=> CETypes.includes(x.conditionalType))
+			.map( x=> new ConditionalEffectC(x, this, sourceActor, this));
 	}
 
 	get accessor() : UniversalAEAccessor<this> {
@@ -728,7 +731,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		return this.getEffects(null).length > 0;
 	}
 
-	getEffects(sourceActor: Option<PersonaActor>, options:GetEffectsOptions = {}): SourcedConditionalEffect[] {
+	getEffects(sourceActor: Option<PersonaActor>, options:GetEffectsOptions = {}): ConditionalEffectC[] {
 		if (!sourceActor) {
 			sourceActor = this.parent instanceof PersonaActor ? this.parent : sourceActor;
 		}

@@ -12,6 +12,7 @@ import {getActiveConsequences} from "./preconditions.js";
 import {ConsequenceProcessor} from "./conditionalEffects/consequence-processor.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaItem} from "./item/persona-item.js";
+import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 
 export class TriggeredEffect {
 
@@ -153,8 +154,8 @@ export class TriggeredEffect {
 	return result;
 }
 
-static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Situation) :  SourcedConditionalEffect[] {
-	const triggers : SourcedConditionalEffect[] = PersonaDB.getGlobalModifiers().flatMap( x=> x
+static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Situation) :  ConditionalEffectC[] {
+	const triggers : ConditionalEffectC[] = PersonaDB.getGlobalModifiers().flatMap( x=> x
 		.getTriggeredEffects(null)
 		.filter(x=> x.conditions.some( x=> x.type == "on-trigger" && x.trigger == trigger))
 	);

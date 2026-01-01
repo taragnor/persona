@@ -55,6 +55,7 @@ import {FusionCombination, FusionTable} from "../../config/fusion-table.js";
 import {EnchantedTreasureFormat} from "../exploration/treasure-system.js";
 import {PersonaCompendium} from "../persona-compendium.js";
 import {ActorHooks} from "./actor-hooks.js";
+import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -187,10 +188,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const bonuses = persona.getBonuses("maxmp");
 			const maxMult = persona.getBonuses("maxmpMult");
 			const nonMultMPBonus = this.system.combat.bonusMP ?? 0;
-			x.add(0, mpAdjustPercent, `MP adjust (${mpAdjust})`, "multiply");
-			x.add(0, bonuses, "additive bonuses", "add");
-			x.add(0, maxMult, "Multiplier Bonuses" ,"noStackMultiply");
-			x.add(0, nonMultMPBonus, "Permanent Bonus MP", "add");
+			x.mult(0, mpAdjustPercent, `MP adjust (${mpAdjust})`);
+			x.add(0, bonuses, "additive bonuses");
+			x.mult(0, maxMult, "Multiplier Bonuses" , true);
+			x.add(0, nonMultMPBonus, "Permanent Bonus MP");
 			return x.eval(sit);
 
 		} catch {
@@ -819,19 +820,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			const newForm = persona.getBonuses("maxhpMult-new");
 			const hpAdjustPercent = this.#hpAdjustPercent();
 			const hpAdjust = this.system.hp_adjust;
-			calc.add(0, hpAdjustPercent,`HP Adjust (${hpAdjust})`, "multiply");
+			calc.mult(0, hpAdjustPercent,`HP Adjust (${hpAdjust})`);
 			const multmods = persona.getBonuses("maxhpMult");
 			if (this.isPC() || this.isNPCAlly()) {
 				const ArmorHPBoost = this.equippedItems().find(x=> x.isOutfit())?.armorHPBoost ?? 0;
 				if (ArmorHPBoost > 0)
 				{
-					calc.add(0, ArmorHPBoost, "Armor HP Bonus", "add");
+					calc.add(0, ArmorHPBoost, "Armor HP Bonus");
 				}
 			}
-			calc.add(0, this.system.combat.bonusHP ?? 0, "Permanent Bonus HP", "add");
-			calc.add(0, newForm, "Mod List", "multiply");
-			calc.add(0, multmods, "Old Form Mods", "noStackMultiply");
-			calc.add(0, nonMultbonuses, "Adds", "add");
+			calc.add(0, this.system.combat.bonusHP ?? 0, "Permanent Bonus HP");
+			calc.mult(0, newForm, "Mod List");
+			calc.mult(0, multmods, "Old Form Mods", true);
+			calc.add(0, nonMultbonuses, "Adds");
 			const mhp = calc.eval(sit);
 			// console.log(`MHP: ${mhp.total}`);
 			return mhp;
@@ -2200,7 +2201,7 @@ instantKillResistanceMultiplier(this: ValidAttackers, attacker: ValidAttackers) 
 	return this.persona().getBonuses("instantDeathResistanceMult").total(situation, "percentage");
 }
 
-mainModifiers(...args: Parameters<Persona["mainModifiers"]>): readonly SourcedConditionalEffect[] {
+mainModifiers(...args: Parameters<Persona["mainModifiers"]>): ConditionalEffectC[] {
 	if (!this.isValidCombatant()) {return [];}
 	return this.persona().mainModifiers(...args);
 }
@@ -2873,7 +2874,7 @@ getAllSocialFocii() : Focus[] {
 	}
 }
 
-getEffects(this: ValidAttackers, CETypes ?: TypedConditionalEffect['conditionalType'][] ) : readonly SourcedConditionalEffect[] {
+getEffects(this: ValidAttackers, CETypes ?: TypedConditionalEffect['conditionalType'][] ) : ConditionalEffectC [] {
 	const mods =  this.persona().mainModifiers();
 	if (!CETypes || CETypes.length == 0) {
 		return mods;
@@ -3137,12 +3138,12 @@ isFading(this: ValidAttackers): boolean {
 }
 
 
-triggersOn( trigger : Trigger) : SourcedConditionalEffect[] {
+triggersOn( trigger : Trigger) : ConditionalEffectC[] {
 	const triggers= this.triggers;
 	return triggers.filter( CE => PersonaItem.triggersOn(CE, trigger));
 }
 
-get triggers() : SourcedConditionalEffect[] {
+get triggers() : ConditionalEffectC[] {
 	switch (this.system.type ) {
 		case "npc":
 		case "tarot":

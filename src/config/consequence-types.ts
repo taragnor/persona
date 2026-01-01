@@ -168,12 +168,9 @@ type ConsModifiers = "blocked" | "absorbed" | "resisted";
 
 export type Consequence =
 	{
-		// applyToSelf ?: boolean,
-		// applyTo ?: ConsequenceTarget,
 		actorOwner ?: UniversalActorAccessor<ValidAttackers>,
 	} & (
 		GenericConsequence | NonGenericConsequences
-
 	);
 
 type GenericConsequence = {

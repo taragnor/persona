@@ -31,18 +31,20 @@ import { PersonaCombat } from "./combat/persona-combat.js";
 import {ConsequenceAmountResolver} from "./conditionalEffects/consequence-amount.js";
 import {PreconditionConverter} from "./migration/convertPrecondition.js";
 import {PersonaAE} from "./active-effect.js";
+import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 
-export function getActiveConsequences(condEffect: SourcedConditionalEffect, situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
-	const source = condEffect.source;
-	if (ArrayCorrector(condEffect.conditions).some(
-		cond=>!testPrecondition(cond, situation)
-	)) {return [];}
-	const arr=  ArrayCorrector(condEffect.consequences);
-	return arr.map( cons => ({
-		...cons,
-		source,
-		owner: condEffect.owner,
-	}));
+export function getActiveConsequences(condEffect: ConditionalEffectC, situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
+	return condEffect.getActiveConsequences(situation);
+	// const source = condEffect.source;
+	// if (ArrayCorrector(condEffect.conditions).some(
+	// 	cond=>!testPrecondition(cond, situation)
+	// )) {return [];}
+	// const arr=  ArrayCorrector(condEffect.consequences);
+	// return arr.map( cons => ({
+	// 	...cons,
+	// 	source,
+	// 	owner: condEffect.owner,
+	// }));
 }
 
 export function testPreconditions(conditionArr: readonly SourcedPrecondition[], situation: Situation) : boolean {

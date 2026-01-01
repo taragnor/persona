@@ -5,6 +5,7 @@ import {ModifierTarget} from "../../config/item-modifiers.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {AnyStringObject} from "../../config/precondition-types.js";
 import {RollSituation} from "../../config/situation.js";
+import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 import {ConsequenceProcessor} from "../conditionalEffects/consequence-processor.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {Persona} from "../persona-class.js";
@@ -13,7 +14,6 @@ import {PersonaError} from "../persona-error.js";
 import {RollBundle} from "../persona-roll.js";
 import {getActiveConsequences} from "../preconditions.js";
 import {TriggeredEffect} from "../triggered-effect.js";
-import {removeDuplicates} from "../utility/array-tools.js";
 import {sleep} from "../utility/async-wait.js";
 import {Calculation} from "../utility/calculation.js";
 import {Helpers} from "../utility/helpers.js";
@@ -546,7 +546,6 @@ export class CombatEngine {
 				break;
 			case "kill": {
 				calc.merge(attackerPersona.instantDeathAtkBonus());
-				// const ID_Bonus = power.baseInstantKillBonus();
 				const ID_Bonus = CombatEngine.baseInstantKillBonus(power);
 				modList.add(`${power.displayedName.toString()} Bonus`, ID_Bonus);
 				modList = modList.concat(new ModifierList(power.getModifier('instantDeathRange', attackerPersona.user)));
@@ -554,7 +553,6 @@ export class CombatEngine {
 			}
 			case "ail": {
 				calc.merge(attackerPersona.ailmentAtkBonus());
-				// const Ail_Bonus = power.baseAilmentBonus();
 				const Ail_Bonus = CombatEngine.baseAilmentAttackBonus(power);
 				modList.add(`${power.displayedName.toString()} Bonus`, Ail_Bonus);
 				modList = modList.concat(new ModifierList(power.getModifier('afflictionRange', attackerPersona.user)));
@@ -577,18 +575,17 @@ export class CombatEngine {
 		const defenderEffects = target.actor.getEffects(['defensive']);
 		const powerEffects= power.getEffects(attacker.actor, {CETypes: ['on-use', 'passive']});
 		const sourcedEffects = [...attackerEffects];
-		sourcedEffects.pushUnique(...defenderEffects);
-		sourcedEffects.pushUnique(...powerEffects);
+		const eqTest = (a: ConditionalEffectC, b: ConditionalEffectC) => a.equals(b);
+		sourcedEffects.pushUniqueS(eqTest, ...defenderEffects);
+		sourcedEffects.pushUniqueS(eqTest, ...powerEffects);
 		//TODO: need a special class to handle lists of effects and to filter for duplicates
-		if (PersonaSettings.debugMode()) {
-			const dupFree = removeDuplicates(sourcedEffects);
-			if (dupFree.length > sourcedEffects.length) {
-				console.warn("Duplicates Detected in effects");
-				ui.notifications.warn("Duplicates detected in effects");
-				console.debug("Effects printed to DLog");
-				Debug("Effects", powerEffects, attackerEffects, defenderEffects);
-			}
-		}
+		// if (PersonaSettings.debugMode()) {
+
+		// 		console.warn("Duplicates Detected in effects");
+		// 		ui.notifications.warn("Duplicates detected in effects");
+		// 		console.debug("Effects printed to DLog");
+		// 		Debug("Effects", powerEffects, attackerEffects, defenderEffects);
+		// 	}
 		const CombatRes = new CombatResult(atkResult);
 		const consequences = sourcedEffects.flatMap( eff => getActiveConsequences(eff, situation));
 		const res = await ConsequenceProcessor.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult);
@@ -760,7 +757,7 @@ export class CombatEngine {
 		if (!baseRangeData)  { return undefined; }
 		const {high, modifier, locType}= baseRangeData;
 		const attackerModifiers = attackerPersona.getBonuses('afflictionRange', power, attackerPersona);
-		const defenderModifiers = targetPersona.getBonuses('afflictionRange', power, attackerPersona);
+		const defenderModifiers = targetPersona.getDefensiveBonuses('afflictionRange');
 		const calc =  new Calculation(0, 3);
 		calc.add(1, attackerModifiers, "Attacker AIlment Modifiers");
 		calc.add(1, defenderModifiers, "Defender Ailment Modifiers");
@@ -802,7 +799,7 @@ export class CombatEngine {
 		const luckDiff = this.luckDiff(attackerPersona, targetPersona);
 		if (!power.canDealDamage()) {return {low: 6, high: 99, steps: [], possible: true, type: "instantKill"};}
 		const instantDeathMods = attackerPersona.getBonuses('instantDeathRange', power, attackerPersona);
-		const killDefense = targetPersona.getBonuses('instantDeathRange');
+		const killDefense = targetPersona.getDefensiveBonuses('instantDeathRange') ;
 		const calc= new Calculation(0, 3);
 		calc.add(1, instantDeathMods, "Attacker mods");
 		calc.add(1, killDefense,  "Defense Mods");

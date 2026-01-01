@@ -8,11 +8,10 @@ import { PersonaScene } from "./persona-scene.js";
 import { PersonaSocial } from "./social/persona-social.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
-import { AlterVariableConsequence } from "../config/consequence-types.js";
 import {ConsequenceAmountResolver} from "./conditionalEffects/consequence-amount.js";
 
 export class PersonaVariables {
-	static async alterVariable (cons: Sourced<AlterVariableConsequence>, situation : Partial<Situation>) {
+	static async alterVariable (cons: SourcedConsequence & {type: "alter-variable"}, situation : Partial<Situation>) {
 		const variableLocation = this.#convertTypeSpecToLocation(cons, situation);
 		if (!variableLocation) {return;}
 		const origValue = this.#get(variableLocation) ?? 0;
@@ -74,7 +73,7 @@ export class PersonaVariables {
 		}
 	}
 
-	static #applyMutator<T extends Sourced<AlterVariableConsequence>>( mutator: T, origValue :number | undefined, situation: Partial<Situation>) : number | undefined {
+	static #applyMutator<T extends SourcedConsequence & {type: "alter-variable"}>( mutator: T, origValue :number | undefined, situation: Partial<Situation>) : number | undefined {
 		if (Number.isNaN(origValue)) {return undefined;}
 		switch (mutator.operator) {
 			case "set": {

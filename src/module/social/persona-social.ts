@@ -43,6 +43,7 @@ import { StudentSkillExt } from "../../config/student-skills.js";
 import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-system.js";
 import {PreconditionConverter} from "../migration/convertPrecondition.js";
 import {ConsequenceProcessor} from "../conditionalEffects/consequence-processor.js";
+import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 
 export class PersonaSocial {
 	static allowMetaverse: boolean = true;
@@ -1242,7 +1243,7 @@ export class PersonaSocial {
 		}
 	}
 
-static async applyEffects(effects: SourcedConditionalEffect[], situation: Situation, actor: PC) {
+static async applyEffects(effects: ConditionalEffectC[], situation: Situation, actor: PC) {
 	const results = effects.flatMap( eff=> getActiveConsequences(eff, situation));
 	const processed= ConsequenceProcessor.processConsequences_simple(results, situation);
 	const result = new CombatResult();

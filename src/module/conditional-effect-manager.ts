@@ -11,7 +11,6 @@ import { DAMAGE_SUBTYPES } from "../config/effect-types.js";
 import { ROLL_TAGS_AND_CARD_TAGS } from "../config/roll-tags.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { ITEM_PROPERTIES, ModifierTarget } from "../config/item-modifiers.js";
-import { getActiveConsequences } from "./preconditions.js";
 import { ModifierContainer, PersonaItem} from "./item/persona-item.js";
 import { STATUS_EFFECT_DURATION_TYPES } from "../config/status-effects.js";
 import { Helpers } from "./utility/helpers.js";
@@ -48,6 +47,7 @@ import {ConsequenceConverter} from "./migration/convertConsequence.js";
 import {PersonaAE} from "./active-effect.js";
 import {PreconditionConverter} from "./migration/convertPrecondition.js";
 import {DEFENSE_TYPES} from "../config/defense-types.js";
+import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 
 export class ConditionalEffectManager {
 
@@ -133,8 +133,8 @@ export class ConditionalEffectManager {
 		);
 	}
 
-	static getAllActiveConsequences(condEffects: readonly SourcedConditionalEffect[], situation: Situation) : Consequence[] {
-		return condEffects.flatMap( effect=> getActiveConsequences(effect, situation));
+	static getAllActiveConsequences(condEffects: ConditionalEffectC[], situation: Situation) : Consequence[] {
+		return condEffects.flatMap( effect=> effect.getActiveConsequences(situation));
 	}
 
 	static #getEffectIndex(ev: JQuery.ClickEvent) {
@@ -324,40 +324,41 @@ export class ConditionalEffectManager {
 		// setTimeout( () => this.restoreLastClick(html), 100);
 	}
 
-	static getEffects<T extends PersonaActor, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null, realSource ?: ConditonalEffectHolderItem) : SourcedConditionalEffect[] {
-		const conditionalEffects = Array.isArray(CEObject) ? CEObject : this.ArrayCorrector(CEObject);
+	static getEffects<T extends PersonaActor, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null, realSource ?: ConditonalEffectHolderItem) : ConditionalEffectC[] {
+		const conditionalEffects = Array.isArray(CEObject) ? CEObject : (this.ArrayCorrector(CEObject) as ConditionalEffect[]);
 		return conditionalEffects
-			.map( ce=> {
-				const conditions = this.getConditionals(ce.conditions, sourceItem, sourceActor, realSource);
-				const consequences= this.getConsequences(ce.consequences, sourceItem, sourceActor, realSource);
-				const forceDefensive = (sourceItem?.isDefensive)
-					? sourceItem.isDefensive()
-					: false;
-				let conditionalType : TypedConditionalEffect["conditionalType"];
-				const isDefensive= (ce.isDefensive || forceDefensive) ?? false;
-				const isEmbedded = ce.isEmbedded ?? false;
-				switch (true) {
-					case forceDefensive || ce.isDefensive: 
-						conditionalType = "defensive";
-						break;
-					default:
-						conditionalType = !forceDefensive ? this.getConditionalType({conditions, consequences, isDefensive, isEmbedded}, sourceItem): "defensive";
-						if (conditionalType == "unknown" && sourceItem) {
-							conditionalType = (sourceItem.defaultConditionalEffectType) ? sourceItem.defaultConditionalEffectType() : "passive";
-						}
-				}
-				return {
-					conditionalType,
-					conditions,
-					consequences,
-					isEmbedded,
-					isDefensive: conditionalType == "defensive",
-					owner: sourceActor?.accessor,
-					source: sourceItem != null ? sourceItem : undefined,
-					realSource: realSource,
-				};
-			}
-			);
+		.map( ce=> new ConditionalEffectC(ce, sourceItem, sourceActor, realSource)) satisfies SourcedConditionalEffect[];
+			// .map( ce=> {
+			// 	const conditions = this.getConditionals(ce.conditions, sourceItem, sourceActor, realSource);
+			// 	const consequences= this.getConsequences(ce.consequences, sourceItem, sourceActor, realSource);
+			// 	const forceDefensive = (sourceItem?.isDefensive)
+			// 		? sourceItem.isDefensive()
+			// 		: false;
+			// 	let conditionalType : TypedConditionalEffect["conditionalType"];
+			// 	const isDefensive= (ce.isDefensive || forceDefensive) ?? false;
+			// 	const isEmbedded = ce.isEmbedded ?? false;
+			// 	switch (true) {
+			// 		case forceDefensive || ce.isDefensive: 
+			// 			conditionalType = "defensive";
+			// 			break;
+			// 		default:
+			// 			conditionalType = !forceDefensive ? this.getConditionalType({conditions, consequences, isDefensive, isEmbedded}, sourceItem): "defensive";
+			// 			if (conditionalType == "unknown" && sourceItem) {
+			// 				conditionalType = (sourceItem.defaultConditionalEffectType) ? sourceItem.defaultConditionalEffectType() : "passive";
+			// 			}
+			// 	}
+			// 	return {
+			// 		conditionalType,
+			// 		conditions,
+			// 		consequences,
+			// 		isEmbedded,
+			// 		isDefensive: conditionalType == "defensive",
+			// 		owner: sourceActor?.accessor,
+			// 		source: sourceItem != null ? sourceItem : undefined,
+			// 		realSource: realSource,
+			// 	};
+			// }
+			// );
 	}
 
 	static getConditionalType<I extends ConditonalEffectHolderItem>( ce: ConditionalEffect, sourceItem ?: I | null ) : TypedConditionalEffect["conditionalType"] {
@@ -443,18 +444,18 @@ export class ConditionalEffectManager {
 		});
 	}
 
-	static ArrayCorrector<T>(obj: T[] | Record<string | number, T>) : T[] {
-		// eslint-disable-next-line no-useless-catch
+	static ArrayCorrector<T>(obj: T[] | DeepNoArray<T[]>) : T[] {
 		try {
 			if (obj == null) {return[];}
 			if (!Array.isArray(obj)) {
 				if (PersonaSettings.debugMode()) {
 					console.debug("Array Correction Required");
 				}
-				return Object.keys(obj).map(function(k) { return obj[k as keyof typeof obj]; });
+				return Object.keys(obj).map(function(k) { return obj[Number(k)]; }) as T[];
 			}
 		} catch (e) {
-			throw e;
+			Debug(obj);
+			throw new PersonaError("Conversion for Array failed", e);
 		}
 		return obj;
 	}
@@ -1511,10 +1512,7 @@ export type CEAction = {
 	consIndex: number
 };
 
-
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const CETypes = [
+export const CETypes = [
 	"on-use", // does something when power is used
 	"passive", // grants bonuses
 	"unknown", // can't classify
@@ -1553,7 +1551,7 @@ declare global{
 		conditionalType: typeof CETypes[number];
 	}
 
-	export type SourcedConsequence<T extends Consequence= Consequence> = Sourced<T>;
+	export type SourcedConsequence<T extends Consequence= NonDeprecatedConsequence> = Sourced<T>;
 
 	type SourcedPrecondition<T extends Precondition = NonDeprecatedPrecondition<Precondition>> = 
 		Sourced<T>;
