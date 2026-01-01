@@ -18,7 +18,6 @@ import { ProgressClock } from "./utility/progress-clock.js";
 import { DamageType } from "../config/damage-types.js";
 import { RESIST_STRENGTH_LIST } from "../config/damage-types.js";
 import { PersonaCalendar } from "./social/persona-calendar.js";
-import { ArrayCorrector } from "./item/persona-item.js";
 import { BooleanComparisonPC } from "../config/boolean-comparison.js";
 import { PToken } from "./combat/persona-combat.js";
 import { ConditionTarget } from "../config/precondition-types.js";
@@ -33,6 +32,7 @@ import {PreconditionConverter} from "./migration/convertPrecondition.js";
 import {PersonaAE} from "./active-effect.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 
+/** @deprecated Use ConditionalEffectC.getActiveConsequences instead */
 export function getActiveConsequences(condEffect: ConditionalEffectC, situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
 	return condEffect.getActiveConsequences(situation);
 	// const source = condEffect.source;
@@ -347,9 +347,6 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
 					...condition,
 					actor:subject.accessor,
 				};
-				// const contextList : Partial<TargettingContextList> ={};
-				// // eslint-disable-next-line @typescript-eslint/no-explicit-any
-				// contextList[condition.applyTo]  = [subject.accessor as any];
 				val = PersonaVariables.getVariable(reqCondition, situation);
 			} else {
 				val = PersonaVariables.getVariable(condition,{});
@@ -372,8 +369,6 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
 			&& source.parent.isValidCombatant()
 			? [source.parent.accessor]
 			: [];
-			// const contextList = PersonaCombat.createTargettingContextList(situation);
-			// contextList["owner"] = ownersList;
 			const actorOwner = ownersList.at(0);
 			const situationN= {
 				actorOwner,
@@ -604,7 +599,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 		}
 		case "weekday-is": {
 			const weekday = PersonaCalendar.getCurrentWeekday();
-			console.debug(`Checking ${weekday} against ${condition.days}`);
+			console.debug(`Checking ${weekday} against ${Object.values(condition.days).join(" ,")}`);
 			Debug(condition.days);
 			return condition.days[weekday];
 		}
@@ -631,11 +626,6 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 			}
 			return multiCheckContains(condition.shadowRole, [target.system.role, target.system.role2]);
 		}
-		// case "is-distracted": {
-		// 	const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
-		// 	if (!target) {return undefined;}
-		// 	return target.isDistracted();
-		// }
 		case "active-scene-is": {
 			const scene = game.scenes.active;
 			if (!scene) {return false;}
@@ -663,14 +653,6 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 			return multiCheckContains(condition.creatureType, [target.system.creatureType]);
 
 		}
-			// case "power-slot-is": {
-			// 	if (!situation.usedPower) {return undefined;}
-			// 	const power = PersonaDB.findItem(situation.usedPower);
-			// 	if (power.system.type == "consumable") {return undefined;}
-			// 	if (power.system.type == "skillCard") {return undefined;}
-			// 	const slot = condition.slotType;
-			// 	return slot[String(power.system.slot)];
-			// }
 		case "social-availability": {
 			if (!condition.conditionTarget) {
 				condition.conditionTarget = "user";
@@ -1327,7 +1309,5 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 			condition satisfies never;
 	}
 
-
 }
-
 
