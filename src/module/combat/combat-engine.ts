@@ -1,7 +1,7 @@
 import {OtherEffect} from "../../config/consequence-types.js";
 import {DamageType} from "../../config/damage-types.js";
 import {Defense} from "../../config/defense-types.js";
-import {ModifierTarget} from "../../config/item-modifiers.js";
+import {ModifierTarget, NonDeprecatedModifierType} from "../../config/item-modifiers.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {AnyStringObject} from "../../config/precondition-types.js";
 import {RollSituation} from "../../config/situation.js";
@@ -756,11 +756,13 @@ export class CombatEngine {
 		const baseRangeData = this.calculateBaseAilmentRange(power);
 		if (!baseRangeData)  { return undefined; }
 		const {high, modifier, locType}= baseRangeData;
-		const attackerModifiers = attackerPersona.getBonuses('afflictionRange', power, attackerPersona);
-		const defenderModifiers = targetPersona.getDefensiveBonuses('afflictionRange');
+		// const attackerModifiers = attackerPersona.getBonuses('afflictionRange', power, attackerPersona);
+		// const defenderModifiers = targetPersona.getDefensiveBonuses('afflictionRange');
+		const mods = this.getAttackerAndDefenderModifiers("afflictionRange", attackerPersona, targetPersona, power);
 		const calc =  new Calculation(0, 3);
-		calc.add(1, attackerModifiers, "Attacker AIlment Modifiers");
-		calc.add(1, defenderModifiers, "Defender Ailment Modifiers");
+		calc.add(1, mods, "Attacker And Defender Ailment Mods");
+		// calc.add(1, attackerModifiers, "Attacker AIlment Modifiers");
+		// calc.add(1, defenderModifiers, "Defender Ailment Modifiers");
 		calc.add(0, modifier, `Chance ${locType} modifier`);
 		calc.add(1, luckDiff, "Luck Difference Mod");
 		const calcResolved = calc.eval(situation);
@@ -777,6 +779,12 @@ export class CombatEngine {
 			...ailmentRange,
 			possible: ailmentRange.low <= ailmentRange.high
 		};
+	}
+
+	static getAttackerAndDefenderModifiers(modName: MaybeArray<NonDeprecatedModifierType>, attackerPersona: Persona, targetPersona: Persona, power: Usable) {
+		const attackerMods = attackerPersona.getBonuses(modName, power, attackerPersona);
+		const targetDefense = targetPersona.getDefensiveBonuses(modName) ;
+		return attackerMods.concat(targetDefense);
 	}
 
 	static calculateInstantDeathRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation?: N<Situation>) : U<CalculatedRange> {
@@ -798,11 +806,12 @@ export class CombatEngine {
 		}
 		const luckDiff = this.luckDiff(attackerPersona, targetPersona);
 		if (!power.canDealDamage()) {return {low: 6, high: 99, steps: [], possible: true, type: "instantKill"};}
-		const instantDeathMods = attackerPersona.getBonuses('instantDeathRange', power, attackerPersona);
-		const killDefense = targetPersona.getDefensiveBonuses('instantDeathRange') ;
+		// const instantDeathMods = attackerPersona.getBonuses('instantDeathRange', power, attackerPersona);
+		// const killDefense = targetPersona.getDefensiveBonuses('instantDeathRange') ;
+		const mods = this.getAttackerAndDefenderModifiers("instantDeathRange", attackerPersona, targetPersona, power);
 		const calc= new Calculation(0, 3);
-		calc.add(1, instantDeathMods, "Attacker mods");
-		calc.add(1, killDefense,  "Defense Mods");
+		calc.add(1, mods, "Attacker and Defender mods");
+		// calc.add(1, killDefense,  "Defense Mods");
 		calc.add(1, luckDiff, "Luck Difference Mod");
 		calc.add(0, modifier, `Instant Kill Chance ${locType} modifier`);
 

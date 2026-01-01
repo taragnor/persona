@@ -1870,53 +1870,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.system.mpcost;
 	}
 
-	// private _generateSkillCardTeach(this: SkillCard): SourcedConditionalEffect {
-	// 	if (!this.system.skillId) {
-	// 		return {
-	// 			source: this,
-	// 			conditionalType: 'on-use',
-	// 			isDefensive: false,
-	// 			isEmbedded: false,
-	// 			conditions: [],
-	// 			consequences: [],
-	// 			owner: this.parent?.accessor,
-	// 			realSource: undefined,
-	// 		};
-	// 	}
-	// 	const cardEffect = {
-	// 		conditionalType: 'on-use',
-	// 		isDefensive: false,
-	// 	} as const;
-	// 	const conditions = [
-	// 		{
-	// 			conditionalType: "on-use",
-	// 			type: 'always',
-	// 			source: this,
-	// 			owner: this.parent?.accessor,
-	// 			realSource: undefined,
-	// 		} as const
-	// 	];
-	// 	const consequences = [
-	// 		{
-	// 			type: 'teach-power',
-	// 			id: this.system.skillId,
-	// 			source: this,
-	// 			owner: this.parent?.accessor,
-	// 			realSource: undefined,
-	// 			applyTo: "user",
-	// 		} satisfies SourcedConditionalEffect["consequences"][number]
-	// 	];
-	// 	return {
-	// 		conditions,
-	// 		consequences,
-	// 		realSource: undefined,
-	// 		source: this,
-	// 		...cardEffect,
-	// 		owner: this.parent?.accessor,
-	// 		isEmbedded: false,
-	// 	};
-	// }
-
 private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) : readonly ConditionalEffectC[] {
 	const tagEffects : ConditionalEffectC[] = [];
 	if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()){
@@ -1929,15 +1882,11 @@ private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActo
 	return tagEffects;
 }
 
-// getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): readonly SourcedConditionalEffect[] {
 getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): ConditionalEffectC[] {
 	//proxy item is used for tags to redirect their source to their parent item (for purposes of reading item level)
 	const {CETypes} = options;
 	if (this.isSkillCard()) {
 		return [new ConditionalEffectC(this)];
-		// const arr = [
-		// 	this._generateSkillCardTeach()
-		// ];
 	}
 	const deepTags = options.deepTags ?? true;
 	const tagEffects = deepTags ? this._getLinkedEffects(sourceActor, CETypes) : [];
