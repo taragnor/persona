@@ -12,7 +12,6 @@ import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {RollBundle} from "../persona-roll.js";
-import {getActiveConsequences} from "../preconditions.js";
 import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
 import {Calculation} from "../utility/calculation.js";
@@ -106,7 +105,7 @@ export class CombatEngine {
 				this.customAtkBonus = 0;
 			}
 			const result = new CombatResult();
-			if (!options.simulated) { await PersonaSFX.onUsePower(power);}
+			if (!options.simulated) { await PersonaSFX.onUsePower(power, attacker, targets);}
 			result.merge(await this.usePowerOn(attacker, power, targets, 'standard', options));
 			const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
 			result.merge(costs);
@@ -587,7 +586,7 @@ export class CombatEngine {
 		// 		Debug("Effects", powerEffects, attackerEffects, defenderEffects);
 		// 	}
 		const CombatRes = new CombatResult(atkResult);
-		const consequences = sourcedEffects.flatMap( eff => getActiveConsequences(eff, situation));
+		const consequences = sourcedEffects.flatMap( eff => eff.getActiveConsequences(situation));
 		const res = await ConsequenceProcessor.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult);
 		CombatRes.merge(res);
 		return CombatRes;

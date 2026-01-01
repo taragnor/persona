@@ -10,6 +10,7 @@ import { StatusEffectId } from "../../config/status-effects.js";
 import { PToken } from "./persona-combat.js";
 import { PersonaSounds } from "../persona-sounds.js";
 import { RealDamageType } from "../../config/damage-types.js";
+import {PersonaAnimation} from "./persona-animations.js";
 
 const DoomDoor : DoorSound= {
 	close: "systems/persona/sound/doom/dsdorcls.wav",
@@ -59,20 +60,21 @@ export class PersonaSFX {
 		}
 	}
 
-	static async onUsePower(usableOrCard: UsableAndCard) : Promise<void> {
-		if (usableOrCard.system.type == "skillCard") {
+	static async onUsePower(usableOrCard: UsableAndCard,attacker: PToken, targets: PToken[]) : Promise<void> {
+		if (usableOrCard.isSkillCard()) {
 			return;
 		}
 		if (usableOrCard.name == BASIC_PC_POWER_NAMES[1]) {
 			return PersonaSFX.onAllOutAttack();
 		}
-		const power = usableOrCard as Usable;
+		const power = usableOrCard;
 		if (power.system.sound) {
 			const snd = PersonaSounds.playFile(power.system.sound, 0.5);
 			return snd;
 		}
+		const damageType =usableOrCard.getDamageType(attacker.actor);
+		void PersonaAnimation.onUsePower(usableOrCard, damageType, attacker, targets);
 		if (!power.isAoE()) {return;}
-		const damageType = power.system.dmg_type;
 		switch (damageType) {
 			case "fire":
 			case "untyped":
@@ -93,7 +95,6 @@ export class PersonaSFX {
 				break;
 			case "none":
 			case "all-out":
-			case "by-power":
 				break;
 			default:
 				damageType satisfies never;

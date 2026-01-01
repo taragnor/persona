@@ -31,7 +31,6 @@ import { multiCheckToArray, testPreconditions } from '../preconditions.js';
 import { CardChoice, CardEvent, CardRoll } from '../../config/social-card-config.js';
 import { BASIC_PC_POWER_NAMES } from '../../config/basic-powers.js';
 import { BASIC_SHADOW_POWER_NAMES } from '../../config/basic-powers.js';
-import { getActiveConsequences } from '../preconditions.js';
 import { PersonaError } from '../persona-error.js';
 import { PersonaActor } from '../actor/persona-actor.js';
 import { SLOTTYPES } from '../../config/slot-types.js';
@@ -1013,7 +1012,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				user: user.accessor
 			};
 		}
-		const powers = getActiveConsequences(eff, situation)
+		const powers = eff.getActiveConsequences(situation)
 			.flatMap(cons => cons.type == 'add-power-to-list' ? [cons.id] : [])
 			.map(id=> PersonaDB.allPowers().get(id))
 			.filter (pwr=> pwr != undefined);
@@ -1032,7 +1031,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				eff => eff.consequences.some(
 					cons => cons.type == 'add-talent-to-list'
 				))
-			.flatMap(eff=> getActiveConsequences(eff, situation))
+			.flatMap(eff=> eff.getActiveConsequences(situation))
 			.flatMap(x=> x.type == 'add-talent-to-list' ? [x.id] : [])
 			.map(id=> PersonaDB.allTalents().find(x=> x.id == id))
 			.flatMap( tal=> tal? [tal]: []);
@@ -1046,7 +1045,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			};
 		}
 		const cons =
-			getActiveConsequences(sourcedEffect, situation);
+			sourcedEffect.getActiveConsequences(situation);
 		return cons
 			.filter (x=> x.type == "add-talent-to-list")
 			.map(cons=> PersonaDB.allTalents().find(x=> x.id == cons.id))
@@ -1329,7 +1328,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		//need this double check to prevent infinite loops
 		const hasTagGivingCons =  eff.consequences.filter( c=> c.type == 'add-creature-tag') as (Consequence & {type : 'add-creature-tag'})[] ;
 		if (hasTagGivingCons.length == 0) {return [];}
-		const activeCons = getActiveConsequences(eff, situation);
+		const activeCons = eff.getActiveConsequences(situation);
 		const tagGivingCons =  activeCons.filter( c=> c.type == 'add-creature-tag') as (Consequence & {type : 'add-creature-tag'})[] ;
 		return tagGivingCons.map( x=> x.creatureTag);
 	}

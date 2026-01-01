@@ -35,20 +35,9 @@ import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.
 /** @deprecated Use ConditionalEffectC.getActiveConsequences instead */
 export function getActiveConsequences(condEffect: ConditionalEffectC, situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
 	return condEffect.getActiveConsequences(situation);
-	// const source = condEffect.source;
-	// if (ArrayCorrector(condEffect.conditions).some(
-	// 	cond=>!testPrecondition(cond, situation)
-	// )) {return [];}
-	// const arr=  ArrayCorrector(condEffect.consequences);
-	// return arr.map( cons => ({
-	// 	...cons,
-	// 	source,
-	// 	owner: condEffect.owner,
-	// }));
 }
 
 export function testPreconditions(conditionArr: readonly SourcedPrecondition[], situation: Situation) : boolean {
-	// return ConditionalEffectManager.getConditionals(conditionArr,source, null)
 	try {
 		return conditionArr.every( cond =>
 			testPrecondition(cond, situation));
