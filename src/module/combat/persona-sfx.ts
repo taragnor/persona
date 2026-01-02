@@ -11,6 +11,7 @@ import { PToken } from "./persona-combat.js";
 import { PersonaSounds } from "../persona-sounds.js";
 import { RealDamageType } from "../../config/damage-types.js";
 import {PersonaAnimation} from "./persona-animations.js";
+import {AttackResult} from "./combat-result.js";
 
 const DoomDoor : DoorSound= {
 	close: "systems/persona/sound/doom/dsdorcls.wav",
@@ -33,6 +34,19 @@ export class PersonaSFX {
 			PersonaError.softFail(`Troiuble with floating text on ${token.name}`, e);
 		}
 
+	}
+
+	static async onAttackResult(attacker: PToken, target: PToken, attackResult: AttackResult["result"]) {
+		switch (attackResult) {
+			case "hit":
+			case "miss":
+			case "crit":
+				break;
+			case "reflect":
+			case "block":
+			case "absorb":
+				await this.#play(attackResult);
+		}
 	}
 
 	static async onSingleTargetDamage( token: PToken | undefined, hpchange: number, damageType: RealDamageType, power ?: UsableAndCard) {
@@ -71,12 +85,13 @@ export class PersonaSFX {
 		}
 	}
 
-	static async onUsePower(usableOrCard: UsableAndCard,attacker: PToken, targets: PToken[]) : Promise<void> {
+	static async onUsePower(usableOrCard: UsableAndCard,attacker: PToken, target: PToken, result: AttackResult["result"]) : Promise<void> {
 		if (usableOrCard.isSkillCard()) {
 			return;
 		}
 		const damageType =usableOrCard.getDamageType(attacker.actor);
-		void PersonaAnimation.onUsePower(usableOrCard, damageType, attacker, targets);
+		void PersonaAnimation.onUsePower(usableOrCard, damageType, attacker, target, result);
+		await this.onAttackResult(attacker, target, result);
 		if (usableOrCard.name == BASIC_PC_POWER_NAMES[1]) {
 			return PersonaSFX.onAllOutAttack();
 		}
@@ -152,7 +167,6 @@ export class PersonaSFX {
 
 	static playerAlert() {
 		TurnAlert.alert();
-
 	}
 
 	static async onRemoveStatus(statusId: StatusEffectId, actor: PersonaActor) {

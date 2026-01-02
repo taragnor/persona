@@ -105,7 +105,6 @@ export class CombatEngine {
 				this.customAtkBonus = 0;
 			}
 			const result = new CombatResult();
-			if (!options.simulated) { await PersonaSFX.onUsePower(power, attacker, targets);}
 			result.merge(await this.usePowerOn(attacker, power, targets, 'standard', options));
 			const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
 			result.merge(costs);
@@ -125,6 +124,14 @@ export class CombatEngine {
 			}
 			console.log(e);
 			throw e;
+		}
+	}
+
+	private async attackRollSFX(attacker: PToken, target: PToken, power: UsableAndCard, result: AttackResult["result"]) {
+		try {
+			await PersonaSFX.onUsePower(power, attacker, target, result);
+		} catch(e) {
+			PersonaError.softFail("Error with doing PersonaSFX.onUsePower", e);
 		}
 	}
 
@@ -159,6 +166,9 @@ export class CombatEngine {
 				rollType = atkNum > 0 ? 'iterative': rollType;
 				const atkResult = await this.processAttackRoll( attacker, power, target, modifiers, rollType == 'standard' && i==0 ? 'activation' : rollType, options);
 				const this_result = await this.processEffects(atkResult);
+				if (!options.simulated) {
+					await this.attackRollSFX(attacker, target, power, atkResult.result);
+				}
 				result.merge(this_result);
 				if (atkResult.result == 'reflect') {
 					result.merge(await this.usePowerOn(attacker, power, [attacker], 'reflect'));

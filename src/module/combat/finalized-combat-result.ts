@@ -23,9 +23,6 @@ import {SocketsNotConnectedError, TimeoutError, VerificationFailedError} from ".
 import {RealDamageType} from "../../config/damage-types.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
 import {NavigatorVoiceLines} from "../navigator/nav-voice-lines.js";
-import {PersonaAnimation} from "./persona-animations.js";
-
-
 
 export class FinalizedCombatResult {
 	static pendingPromises: Map< CombatResult["id"], (val: unknown) => void> = new Map();
@@ -398,10 +395,10 @@ export class FinalizedCombatResult {
 				case "absorb":
 				case "block":
 				case "reflect": {
-					const power = PersonaDB.findItem(atkResult.power);
-					if (power.system.type != "skillCard" && power.system.dmg_type != "healing") {
-						await PersonaSFX.onDefend(PersonaDB.findToken(atkResult.target), atkResult.result);
-					}
+					// const power = PersonaDB.findItem(atkResult.power);
+					// if (power.system.type != "skillCard" && power.system.dmg_type != "healing") {
+					// 	await PersonaSFX.onDefend(PersonaDB.findToken(atkResult.target), atkResult.result);
+					// }
 				}
 			}
 			let token: PToken | undefined;
@@ -881,7 +878,6 @@ Hooks.on("renderChatMessageHTML", (msg: ChatMessage, htm: HTMLElement) => {
 
 Hooks.on("socketsReady", () => {
 	PersonaSockets.setHandler("COMBAT_RESULT_APPLY", FinalizedCombatResult.applyHandler.bind(CombatResult));
-	// PersonaSockets.setHandler("COMBAT_RESULT_APPLIED", FinalizedCombatResult.resolvedHandler.bind(CombatResult));
 });
 
 Hooks.on("updateActor", async (updatedActor : PersonaActor, changes) => {

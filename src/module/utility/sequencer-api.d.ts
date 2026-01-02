@@ -1,14 +1,17 @@
 class Sequence implements SequencerBase {
 	effect() : EffectProxy;
 	scrollingText(): ScrollingTextProxy;
+	play() : Promise<void>;
+	delay(randomLow: number, randomHigh: number): this;
+	delay(num: number): this;
 }
 
 interface SequencerBase {
 	effect() : EffectProxy;
-	text(): ScrollingTextProxy;
 	play() : Promise<void>;
 	delay(randomLow: number, randomHigh: number): this;
 	delay(num: number): this;
+	scrollingText(): ScrollingTextProxy;
 }
 
 interface EffectProxy extends SequencerBase {
