@@ -140,7 +140,9 @@ export class PersonaAnimation {
 
 	static appendCriticalHit<T extends SequencerBase>(seq: T) {
 		return seq.effect()
+		.file(CRITICAL_HIT)
 		.delay(750)
+		.playbackRate(0.75)
 		.scaleToObject(1.2)
 		.aboveInterface();
 	}
