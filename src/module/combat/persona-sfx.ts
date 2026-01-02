@@ -64,6 +64,8 @@ export class PersonaSFX {
 		if (usableOrCard.isSkillCard()) {
 			return;
 		}
+		const damageType =usableOrCard.getDamageType(attacker.actor);
+		void PersonaAnimation.onUsePower(usableOrCard, damageType, attacker, targets);
 		if (usableOrCard.name == BASIC_PC_POWER_NAMES[1]) {
 			return PersonaSFX.onAllOutAttack();
 		}
@@ -72,8 +74,6 @@ export class PersonaSFX {
 			const snd = PersonaSounds.playFile(power.system.sound, 0.5);
 			return snd;
 		}
-		const damageType =usableOrCard.getDamageType(attacker.actor);
-		void PersonaAnimation.onUsePower(usableOrCard, damageType, attacker, targets);
 		if (!power.isAoE()) {return;}
 		switch (damageType) {
 			case "fire":

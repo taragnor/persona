@@ -81,7 +81,7 @@ export class PersonaAnimation {
 	}
 
 	async allOutAttack() {
-		const TOTAL_CYCLES = 8;
+		const TOTAL_CYCLES = 5;
 		const sequences : EffectProxy[] = [];
 		for (let x = 0; x< TOTAL_CYCLES; ++x) {
 			const cycleSeq = this.targets.flatMap( target =>
@@ -108,6 +108,7 @@ export class PersonaAnimation {
 			.duration(data.duration)
 			.fadeOut(data.fadeOut)
 			.fadeIn(data.fadeIn ?? 0)
+			.opacity(data.opacity ?? 1)
 			.playbackRate(data.playbackRate ?? 1)
 			.atLocation(target, locationData);
 	}
@@ -119,6 +120,7 @@ export class PersonaAnimation {
 			.duration(this.duration)
 			.fadeOut(this.fadeOut)
 			.fadeIn(this.fadeIn)
+			.opacity(this.animData.opacity ?? 1)
 			.playbackRate(this.playbackRate);
 	}
 
@@ -145,6 +147,7 @@ interface BasicAnimationData {
 	fadeIn?: number;
 	playbackRate?: number;
 	randomOffsetPercent ?: number;
+	opacity?: number;
 }
 
 const BASE_VALUES : Record<RealDamageType, BasicAnimationData> = {
@@ -229,17 +232,40 @@ const ALL_OUT_ANIMATIONS : BasicAnimationData[] = [
 	{
 		fileName: "jb2a.flurry_of_blows.physical",
 		scale: 1.0,
-		duration: 1500,
+		duration: 1200,
 		fadeOut: 250,
 		randomOffsetPercent: 0.15,
 	}, {
 		fileName: "jb2a.impact.008.orange",
-		scale: .8,
-		duration: 1000,
+		scale: .4,
+		duration: 500,
 		fadeOut: 250,
 		randomOffsetPercent: 0.15,
 
-	},
+	}, {
+		fileName: "jb2a.flurry_of_blows.physical",
+		scale: 1.2,
+		duration: 1000,
+		fadeOut: 250,
+		randomOffsetPercent: 0.15,
+		playbackRate: 1.2,
+	}, {
+		fileName: "jb2a.flurry_of_blows.physical",
+		scale: 1.1,
+		duration: 1200,
+		fadeOut: 250,
+		randomOffsetPercent: 0.15,
+		playbackRate: 0.8,
+	}, {
+		fileName: "jb2a.ambient_fog.001.loop.small.white",
+		scale: 0.7,
+		duration: 2500,
+		fadeIn: 300,
+		fadeOut: 300,
+		randomOffsetPercent: 0.2,
+		playbackRate: 1.0,
+		opacity: 0.6,
+	}
 
 ];
 
