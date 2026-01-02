@@ -136,6 +136,24 @@ export class PersonaAnimation {
 		return this.basicAnimationOnTarget(source)
 			.stretchTo(target);
 	}
+
+	static async floatingDamageNumbers(target: PToken, hp_change: number) {
+		if (hp_change == 0) {return;}
+		const color = hp_change > 0 ? "green" : "red";
+		const style = {
+			fill: color,
+			fontFamily: "Arial Black",
+			fontSize: 32,
+			strokeThickness: 4,
+		};
+		const txt = String(Math.abs(hp_change));
+		console.log(`Playing Animation for ${hp_change} : ${txt}`);
+		await new Sequence().scrollingText()
+			.atLocation(target)
+			.delay(750)
+			.text(String(Math.abs(hp_change)), style)
+			.play();
+	}
 }
 
 interface BasicAnimationData {

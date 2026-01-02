@@ -23,6 +23,7 @@ import {SocketsNotConnectedError, TimeoutError, VerificationFailedError} from ".
 import {RealDamageType} from "../../config/damage-types.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
 import {NavigatorVoiceLines} from "../navigator/nav-voice-lines.js";
+import {PersonaAnimation} from "./persona-animations.js";
 
 
 
@@ -600,10 +601,13 @@ export class FinalizedCombatResult {
 				?.finalize();
 			this.addChained(CR);
 		}
+		if (power) {
+			PersonaSFX.onDamage(token, dmg.hpChange, dmg.damageType, power);
+		}
 		if (token) {
 			const power = this.power;
 			if (power && !power.isAoE()) {
-				await PersonaSFX.onDamage(token, dmg.hpChange, dmg.damageType, power);
+				await PersonaSFX.onSingleTargetDamage(token, dmg.hpChange, dmg.damageType, power);
 			}
 			Hooks.callAll("onTakeDamage", token, dmg.hpChange, dmg.damageType);
 		}
@@ -890,15 +894,6 @@ Hooks.on("updateActor", async (updatedActor : PersonaActor, changes) => {
 		}
 	}
 });
-
-
-// function absMax(...nums : number[]) {
-// 	const absnums = nums.map( x=> Math.abs(x));
-// 	const maxabs = Math.max(...absnums);
-// 	const index = absnums.indexOf(maxabs);
-// 	return nums[index];
-// }
-
 
 declare global {
 	interface HOOKS {

@@ -1,8 +1,17 @@
-class Sequence {
+class Sequence implements SequencerBase {
 	effect() : EffectProxy;
+	scrollingText(): ScrollingTextProxy;
 }
 
-interface EffectProxy {
+interface SequencerBase {
+	effect() : EffectProxy;
+	text(): ScrollingTextProxy;
+	play() : Promise<void>;
+	delay(randomLow: number, randomHigh: number): this;
+	delay(num: number): this;
+}
+
+interface EffectProxy extends SequencerBase {
 	file(name: string) : this;
 	atLocation(token: Token | TokenDocument, options?: LocationOptions) : this;
 	scale(scale: number): this;
@@ -16,8 +25,6 @@ interface EffectProxy {
 	playbackRate(multipier: number): this;
 	belowTokens(): this;
 	scaleToObject(num: number): this;
-	delay(randomLow: number, randomHigh: number): this;
-	delay(num: number): this;
 	opacity(percent: num) : this;
 	randomSpriteRotation() : this;
 	aboveInterface(): this;
@@ -25,7 +32,6 @@ interface EffectProxy {
 
 	/** target a location near but not at the target*/
 	missed(): this;
-	play() : Promise<void>;
 }
 
 interface FadeOptions {
@@ -35,5 +41,17 @@ interface FadeOptions {
 
 interface LocationOptions {
 	randomOffset ?: number | boolean;
+}
 
+interface ScrollingTextProxy extends SequencerBase {
+	text(txt: string, style?: TextStyle) : this;
+	atLocation(token: Token | TokenDocument, options?: LocationOptions) : this;
+}
+
+interface TextStyle {
+	/** color */
+	"fill": string;
+	"fontFamily": string;
+	"fontSize": number;
+	"strokeThickness": number;
 }

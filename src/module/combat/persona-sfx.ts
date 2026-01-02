@@ -24,7 +24,18 @@ const DoomDoor : DoorSound= {
 CONFIG.Wall.doorSounds["doomDoor"] = DoomDoor;
 
 export class PersonaSFX {
-	static async onDamage( _token: PToken | undefined, hpchange: number, damageType: RealDamageType, power ?: UsableAndCard) {
+
+	static onDamage(token: U<PToken>, hpchange: number, _damageType :RealDamageType, _power: UsableAndCard) {
+		if (!token) {return;}
+		try {
+			void PersonaAnimation.floatingDamageNumbers(token, hpchange);
+		} catch (e) {
+			PersonaError.softFail(`Troiuble with floating text on ${token.name}`, e);
+		}
+
+	}
+
+	static async onSingleTargetDamage( token: PToken | undefined, hpchange: number, damageType: RealDamageType, power ?: UsableAndCard) {
 		if (hpchange == 0) {return;}
 		if (hpchange > 0) {
 			if (power?.hasTag("resurrection")) {
