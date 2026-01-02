@@ -80,42 +80,44 @@ export class PersonaAnimation {
 
 	get target() { return this.targets.at(0)!;}
 
-	get scale() {
-		const baseScale =BASE_VALUES[this.damageType].scale;
-		const scaleMult = this.usable.isPower() ? SCALE_MULT[this.usable.system.damageLevel] : SCALE_MULT["light"];
-		return baseScale * scaleMult;
-	}
+	// get scale() {
+	// 	const baseScale =BASE_VALUES[this.damageType].scale;
+	// 	const scaleMult = this.usable.isPower() ? SCALE_MULT[this.usable.system.damageLevel] : SCALE_MULT["light"];
+	// 	return baseScale * scaleMult;
+	// }
 
-	get duration() {
-		return BASE_VALUES[this.damageType].duration;
-	}
+	// get duration() {
+	// 	return BASE_VALUES[this.damageType].duration;
+	// }
 
-	get fadeOut() {
-		return BASE_VALUES[this.damageType].fadeOut;
-	}
+	// get fadeOut() {
+	// 	return BASE_VALUES[this.damageType].fadeOut;
+	// }
 
-	get fadeIn() {
-		return BASE_VALUES[this.damageType].fadeIn ?? 0;
-	}
+	// get fadeIn() {
+	// 	return BASE_VALUES[this.damageType].fadeIn ?? 0;
+	// }
 
-	get fileName() {
-		return BASE_VALUES[this.damageType].fileName;
-	}
+	// get fileName() {
+	// 	return BASE_VALUES[this.damageType].fileName;
+	// }
 
-	get isProjectile() {
-		return BASE_VALUES[this.damageType].projectile ?? false;
-	}
+	// get isProjectile() {
+	// 	return BASE_VALUES[this.damageType].projectile ?? false;
+	// }
 
-	get playbackRate() {
-		return BASE_VALUES[this.damageType].playbackRate ?? 0;
-	}
+	// get playbackRate() {
+	// 	return BASE_VALUES[this.damageType].playbackRate ?? 0;
+	// }
 
-	get filename() {
-		return BASE_VALUES[this.damageType].fileName ?? "";
-	}
+	// get filename() {
+	// 	return BASE_VALUES[this.damageType].fileName ?? "";
+	// }
 
-	get animData() {
-		return BASE_VALUES[this.damageType];
+	get animData() : BasicAnimationData[] {
+		const x = BASE_VALUES[this.damageType];
+		if (Array.isArray(x)) {return x;}
+		return [x];
 	}
 
 	private async play() {
@@ -125,16 +127,25 @@ export class PersonaAnimation {
 		if (this.damageType == "none" && !this.usable.isInstantDeathAttack()) {
 			return this.onSupportPower();
 		}
-		if (this.fileName == "" || this.scale == 0) {return;}
-		const promises = this.targets.map( token=>
-			this.isProjectile
-			? this.projectileAnimation(this.attacker, token)
-			: this.basicAnimationOnTarget(token)
-		)
-			.map( x=> this.result == "miss" ? x.missed() : x)
-			.map( x=> this.result == "crit" ? PersonaAnimation.appendCriticalHit(x) : x)
-			.map( x=> x.play());
-		;
+		const promises = this.animData.flatMap( animData => {
+			if (animData.fileName == "") {return [];}
+			if (animData.hitOnly == true
+				&& this.result != "hit"
+				&& this.result != "crit"
+			) {
+				return [];
+			}
+			return this.targets.map( token=>
+				animData.isProjectile
+				? this.projectileAnimation(animData, this.attacker, token)
+				: this.basicAnimationOnTarget(animData, token)
+			)
+				.map( x=> this.result == "miss" ? x.missed() : x)
+				.map( x=> this.result == "crit" ? PersonaAnimation.appendCriticalHit(x) : x)
+				.map ( x=> x.delay(500))
+				.map( x=> x.play());
+			;
+		});
 		await Promise.allSettled(promises);
 	}
 
@@ -196,41 +207,55 @@ export class PersonaAnimation {
 
 	private fromAnimationData(data: BasicAnimationData, target: PToken) {
 		if (data.fileName.length == 0) {throw new PersonaError("Bad animation, no filename");}
-		const locationData =  this.animData.randomOffsetPercent
-			? {randomOffset: this.animData.randomOffsetPercent}
+		const locationData =  data.randomOffsetPercent
+			? {randomOffset: data.randomOffsetPercent}
 			: {};
-		return new Sequence() .effect()
-			.file(data.fileName)
-			.scale(data.scale)
-			.duration(data.duration)
-			.fadeOut(data.fadeOut)
-			.fadeIn(data.fadeIn ?? 0)
-			.opacity(data.opacity ?? 1)
-			.playbackRate(data.playbackRate ?? 1)
+		return this.loadAnimationData(data)
 			.atLocation(target, locationData);
 	}
 
-	private loadAnimationData () {
-		return new Sequence() .effect()
-			.file(this.filename)
-			.scale(this.scale)
-			.duration(this.duration)
-			.fadeOut(this.fadeOut)
-			.fadeIn(this.fadeIn)
-			.opacity(this.animData.opacity ?? 1)
-			.playbackRate(this.playbackRate);
+	private loadAnimationData (animData: BasicAnimationData, sequence : SequencerBase = new Sequence()) {
+		const scale = this.scale(animData);
+		let seq = sequence.effect();
+		seq= seq
+			.file(animData.fileName)
+			.fadeOut(animData.fadeOut ?? 0)
+			.fadeIn(animData.fadeIn ?? 0)
+			.opacity(animData.opacity ?? 1)
+			.playbackRate(animData.playbackRate ?? 1);
+		if (animData.duration) {
+			seq = seq.duration(animData.duration);
+		}
+		if (animData.delay) {
+			seq = seq.delay(animData.delay);
+		}
+		if (scale) {
+			seq = seq.scale(scale);
+		}
+		if (animData.objectScale) {
+			seq = seq.scaleToObject(animData.objectScale);
+		}
+		return seq;
 	}
 
-	private basicAnimationOnTarget(target: TokenDocument | Token) {
-		const locationData =  this.animData.randomOffsetPercent
-			? {randomOffset: this.animData.randomOffsetPercent}
+	scale(animData : BasicAnimationData) : U<number>{
+		// const baseScale = BASE_VALUES[this.damageType].scale;
+		const baseScale = animData.scale;
+		if (!baseScale) {return undefined;}
+		const scaleMult = this.usable.isPower() ? SCALE_MULT[this.usable.system.damageLevel] : SCALE_MULT["light"];
+		return baseScale * scaleMult;
+	}
+
+	private basicAnimationOnTarget(animData: BasicAnimationData, target: TokenDocument | Token) {
+		const locationData =  animData.randomOffsetPercent
+			? {randomOffset: animData.randomOffsetPercent}
 			: {};
-		return this.loadAnimationData()
+		return this.loadAnimationData(animData)
 			.atLocation(target, locationData);
 	}
 
-	private projectileAnimation (source: TokenDocument | Token, target: TokenDocument | Token)  {
-		return this.basicAnimationOnTarget(source)
+	private projectileAnimation (animData: BasicAnimationData, source: TokenDocument | Token, target: TokenDocument | Token)  {
+		return this.basicAnimationOnTarget(animData, source)
 			.stretchTo(target);
 	}
 
@@ -259,30 +284,50 @@ export class PersonaAnimation {
 
 interface BasicAnimationData {
 	fileName: string;
-	scale: number;
-	duration: number;
-	fadeOut: number;
-	projectile?: boolean;
+	duration?: number;
+	objectScale?: number;
+	scale?: number;
+	fadeOut?: number;
+	isProjectile?: boolean;
 	fadeIn?: number;
 	playbackRate?: number;
 	randomOffsetPercent ?: number;
 	opacity?: number;
+	hitOnly ?: boolean;
+	delay ?: number;
 }
 
-const BASE_VALUES : Record<RealDamageType, BasicAnimationData> = {
-	physical: {
+const BASE_VALUES : Record<RealDamageType, BasicAnimationData | BasicAnimationData[] > = {
+	physical: [{
 		fileName: "jb2a.melee_attack.01.magic_sword.yellow.01",
 		scale: 0.9,
 		duration: 1000,
 		fadeOut: 250,
+	}, {
+		fileName: "jb2a.impact",
+		objectScale: 0.5,
+		duration: 1000,
+		fadeOut: 250,
+		hitOnly: true,
+		delay: 500,
 	},
-	gun: {
+
+	],
+	gun: [{
 		fileName: "jb2a.ranged.01.projectile.01.dark_orange",
 		scale: 1,
 		duration: 500,
 		fadeOut: 100,
-		projectile: true,
-	},
+		isProjectile: true,
+	}, {
+		fileName: "jb2a.impact",
+		objectScale: 0.5,
+		duration: 1000,
+		fadeOut: 250,
+		hitOnly: true,
+		delay: 500,
+
+	}],
 	fire: {
 		fileName: "jb2a.eruption.orange",
 		scale: 0.2,

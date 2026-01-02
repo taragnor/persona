@@ -33,7 +33,6 @@ export class PersonaSFX {
 		} catch (e) {
 			PersonaError.softFail(`Troiuble with floating text on ${token.name}`, e);
 		}
-
 	}
 
 	static async onAttackResult(_attacker: PToken, _target: PToken, attackResult: AttackResult["result"]) {
