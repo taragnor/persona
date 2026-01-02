@@ -36,7 +36,7 @@ export class PersonaSFX {
 
 	}
 
-	static async onAttackResult(attacker: PToken, target: PToken, attackResult: AttackResult["result"]) {
+	static async onAttackResult(_attacker: PToken, _target: PToken, attackResult: AttackResult["result"]) {
 		switch (attackResult) {
 			case "hit":
 			case "miss":
@@ -49,7 +49,7 @@ export class PersonaSFX {
 		}
 	}
 
-	static async onSingleTargetDamage( token: PToken | undefined, hpchange: number, damageType: RealDamageType, power ?: UsableAndCard) {
+	static async onSingleTargetDamage( _token: PToken | undefined, hpchange: number, damageType: RealDamageType, power ?: UsableAndCard) {
 		if (hpchange == 0) {return;}
 		if (hpchange > 0) {
 			if (power?.hasTag("resurrection")) {
@@ -89,7 +89,7 @@ export class PersonaSFX {
 		if (usableOrCard.isSkillCard()) {
 			return;
 		}
-		const damageType =usableOrCard.getDamageType(attacker.actor);
+		const damageType = usableOrCard.getDamageType(attacker.actor);
 		void PersonaAnimation.onUsePower(usableOrCard, damageType, attacker, target, result);
 		await this.onAttackResult(attacker, target, result);
 		if (usableOrCard.name == BASIC_PC_POWER_NAMES[1]) {
