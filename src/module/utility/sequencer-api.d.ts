@@ -55,3 +55,4 @@ interface TextStyle {
 	"fontSize": number;
 	"strokeThickness": number;
 }
+

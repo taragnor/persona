@@ -142,15 +142,16 @@ export class PersonaAnimation {
 		const color = hp_change > 0 ? "green" : "red";
 		const style = {
 			fill: color,
-			fontFamily: "Arial Black",
-			fontSize: 32,
+			// fontFamily: "Arial Black",
+			fontFamily: "Almendra",
+			fontSize: 38,
 			strokeThickness: 4,
 		};
 		const txt = String(Math.abs(hp_change));
 		console.log(`Playing Animation for ${hp_change} : ${txt}`);
 		await new Sequence().scrollingText()
 			.atLocation(target)
-			.delay(750)
+			.delay(300)
 			.text(String(Math.abs(hp_change)), style)
 			.play();
 	}
