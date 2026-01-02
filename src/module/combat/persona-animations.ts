@@ -40,7 +40,7 @@ export class PersonaAnimation {
 		}
 	}
 
-	async onResist() {
+	private async onResist() {
 		switch (this.result) {
 			case "absorb":
 				await new Sequence().effect()
@@ -118,11 +118,11 @@ export class PersonaAnimation {
 		return BASE_VALUES[this.damageType];
 	}
 
-	async play() {
+	private async play() {
 		if (this.damageType == "all-out") {
 			return this.allOutAttack();
 		}
-		if (this.damageType == "none") {
+		if (this.damageType == "none" && !this.usable.isInstantDeathAttack()) {
 			return this.supportPower();
 		}
 		if (this.fileName == "" || this.scale == 0) {return;}
@@ -137,7 +137,7 @@ export class PersonaAnimation {
 		await Promise.allSettled(promises);
 	}
 
-	async supportPower() {
+	private async supportPower() {
 		const usable = this.usable;
 		if (this.result != "hit" && this.result != "miss") {
 			return;
@@ -167,7 +167,7 @@ export class PersonaAnimation {
 		}
 	}
 
-	async allOutAttack() {
+	private async allOutAttack() {
 		const TOTAL_CYCLES = 5;
 		const sequences : EffectProxy[] = [];
 		for (let x = 0; x< TOTAL_CYCLES; ++x) {
@@ -184,7 +184,7 @@ export class PersonaAnimation {
 	}
 
 
-	fromAnimationData(data: BasicAnimationData, target: PToken) {
+	private fromAnimationData(data: BasicAnimationData, target: PToken) {
 		if (data.fileName.length == 0) {throw new PersonaError("Bad animation, no filename");}
 		const locationData =  this.animData.randomOffsetPercent
 			? {randomOffset: this.animData.randomOffsetPercent}
@@ -200,7 +200,7 @@ export class PersonaAnimation {
 			.atLocation(target, locationData);
 	}
 
-	loadAnimationData () {
+	private loadAnimationData () {
 		return new Sequence() .effect()
 			.file(this.filename)
 			.scale(this.scale)
@@ -211,7 +211,7 @@ export class PersonaAnimation {
 			.playbackRate(this.playbackRate);
 	}
 
-	basicAnimationOnTarget(target: TokenDocument | Token) {
+	private basicAnimationOnTarget(target: TokenDocument | Token) {
 		const locationData =  this.animData.randomOffsetPercent
 			? {randomOffset: this.animData.randomOffsetPercent}
 			: {};
@@ -219,7 +219,7 @@ export class PersonaAnimation {
 			.atLocation(target, locationData);
 	}
 
-	projectileAnimation (source: TokenDocument | Token, target: TokenDocument | Token)  {
+	private projectileAnimation (source: TokenDocument | Token, target: TokenDocument | Token)  {
 		return this.basicAnimationOnTarget(source)
 			.stretchTo(target);
 	}
