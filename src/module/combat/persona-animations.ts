@@ -123,7 +123,7 @@ export class PersonaAnimation {
 			return this.allOutAttack();
 		}
 		if (this.damageType == "none" && !this.usable.isInstantDeathAttack()) {
-			return this.supportPower();
+			return this.onSupportPower();
 		}
 		if (this.fileName == "" || this.scale == 0) {return;}
 		const promises = this.targets.map( token=>
@@ -132,12 +132,20 @@ export class PersonaAnimation {
 			: this.basicAnimationOnTarget(token)
 		)
 			.map( x=> this.result == "miss" ? x.missed() : x)
+			.map( x=> this.result == "crit" ? PersonaAnimation.appendCriticalHit(x) : x)
 			.map( x=> x.play());
 		;
 		await Promise.allSettled(promises);
 	}
 
-	private async supportPower() {
+	static appendCriticalHit<T extends SequencerBase>(seq: T) {
+		return seq.effect()
+		.delay(750)
+		.scaleToObject(1.2)
+		.aboveInterface();
+	}
+
+	private async onSupportPower() {
 		const usable = this.usable;
 		if (this.result != "hit" && this.result != "miss") {
 			return;
