@@ -328,37 +328,6 @@ export class ConditionalEffectManager {
 		const conditionalEffects = Array.isArray(CEObject) ? CEObject : (this.ArrayCorrector(CEObject) as ConditionalEffect[]);
 		return conditionalEffects
 		.map( ce=> new ConditionalEffectC(ce, sourceItem, sourceActor, realSource)) satisfies SourcedConditionalEffect[];
-			// .map( ce=> {
-			// 	const conditions = this.getConditionals(ce.conditions, sourceItem, sourceActor, realSource);
-			// 	const consequences= this.getConsequences(ce.consequences, sourceItem, sourceActor, realSource);
-			// 	const forceDefensive = (sourceItem?.isDefensive)
-			// 		? sourceItem.isDefensive()
-			// 		: false;
-			// 	let conditionalType : TypedConditionalEffect["conditionalType"];
-			// 	const isDefensive= (ce.isDefensive || forceDefensive) ?? false;
-			// 	const isEmbedded = ce.isEmbedded ?? false;
-			// 	switch (true) {
-			// 		case forceDefensive || ce.isDefensive: 
-			// 			conditionalType = "defensive";
-			// 			break;
-			// 		default:
-			// 			conditionalType = !forceDefensive ? this.getConditionalType({conditions, consequences, isDefensive, isEmbedded}, sourceItem): "defensive";
-			// 			if (conditionalType == "unknown" && sourceItem) {
-			// 				conditionalType = (sourceItem.defaultConditionalEffectType) ? sourceItem.defaultConditionalEffectType() : "passive";
-			// 			}
-			// 	}
-			// 	return {
-			// 		conditionalType,
-			// 		conditions,
-			// 		consequences,
-			// 		isEmbedded,
-			// 		isDefensive: conditionalType == "defensive",
-			// 		owner: sourceActor?.accessor,
-			// 		source: sourceItem != null ? sourceItem : undefined,
-			// 		realSource: realSource,
-			// 	};
-			// }
-			// );
 	}
 
 	static getConditionalType<I extends ConditonalEffectHolderItem>( ce: ConditionalEffect, sourceItem ?: I | null ) : TypedConditionalEffect["conditionalType"] {
@@ -461,11 +430,13 @@ export class ConditionalEffectManager {
 	}
 
 	static getVariableEffects<T extends ConditionalEffect[] | ConditionalEffect["conditions"] | ConditionalEffect["consequences"]>(data: DeepNoArray<T>): T{
-		if (!data) {return [] as any;}
+		if (!data) {return [] as ConditionalEffect[] as T;}
 		const element = data[0];
-		if (!element) {return [] as any;}
+		if (!element) {return [] as ConditionalEffect[] as T;}
 		if ("consequences" in element || "effects" in element) {
-			return this.getEffects(data as ConditionalEffect[], null, null) as any;
+			const eff= this.getEffects(data as ConditionalEffect[], null, null);
+			const effJSON =  eff.map(x => x.toJSON());
+			return effJSON as T;
 		}
 		const etype = element.type;
 		if (PRECONDITIONLIST.includes(etype as any)) {
@@ -1304,9 +1275,15 @@ export class EMAccessor<T> {
 		return new EMAccessor(owner, path, master) as unknown as EMAccessor<T>;
 
 	}
+
 	get data(): T extends Record<number, unknown> ? T[number][] : never {
+		type retType = T extends Record<number, unknown> ? T[number][] : never ;
 		const data = foundry.utils.getProperty(this._owner, this._path) as T;
-		return ConditionalEffectManager.getVariableEffects(data as any);
+		const data2=  ConditionalEffectManager.getVariableEffects(data as any);
+		if (Array.isArray(data2) && data2.at(0) instanceof ConditionalEffectC) {
+			return (data2 as ConditionalEffectC[]).map(x=> x.toJSON()) as retType;
+		}
+		return data2 as retType;
 	}
 
 	//before datamodel but this doesn't work with embedded

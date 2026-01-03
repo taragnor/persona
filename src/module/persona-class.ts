@@ -677,6 +677,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return RESIST_STRENGTH_LIST[resLevel];
 	}
 
+	isWeakTo(dtype: RealDamageType) : boolean {
+		return this.elemResist(dtype) == "weakness";
+	}
+
 	static combinedPersona<T extends ValidAttackers>(basePersona: Persona<T>, attachedPersona: Persona) : Persona<T> {
 		const fusedPowers = attachedPersona.powers.concat(
 			basePersona.powers);

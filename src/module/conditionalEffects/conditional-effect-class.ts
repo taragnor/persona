@@ -15,6 +15,25 @@ export class ConditionalEffectC {
 	_realSource: U<ModifierContainer>;
 	_original : CondEffectObject | SkillCard;
 	_conditionalType: typeof CETypes[number];
+	_isDefensiveRaw: boolean;
+
+	constructor (card: SkillCard);
+	constructor (ce: CondEffectObject, sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem);
+	constructor (ce: CondEffectObject | SkillCard, sourceItem?: N<ConditonalEffectHolderItem> , sourceActor?: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem) {
+		if (ce instanceof PersonaItem)  {
+			this._generateSkillCardTeachEffect(ce);
+			return;
+		}
+		this._original = ce;
+		this._preconditions = ConditionalEffectManager.getConditionals(ce.conditions, sourceItem!, sourceActor!, realSource);
+		this._consequences = ConditionalEffectManager.getConsequences(ce.consequences, sourceItem!, sourceActor!, realSource);
+		this._isEmbedded = ce.isEmbedded ?? false;
+		this._conditionalType = this.#determineConditionalType(ce, this._preconditions, this._consequences, sourceItem!);
+		this._owner= sourceActor?.accessor;
+		this._source= sourceItem != null ? sourceItem : undefined;
+		this._realSource= realSource;
+		this._isDefensiveRaw = ce.isDefensive ?? false;
+	}
 
 	get conditionalType () {
 		return this._conditionalType;
@@ -32,6 +51,26 @@ export class ConditionalEffectC {
 			return "unknown";
 		}
 		return ret;
+	}
+
+	toJSON() : ConditionalEffect {
+		const conditions = this._conditionsRaw();
+		const consequences = this._consequencesRaw();
+		const ret: ConditionalEffect = {
+			isDefensive: this._isDefensiveRaw,
+			isEmbedded: this._isEmbedded,
+			conditions,
+			consequences,
+		};
+		return ret;
+	}
+
+	private _conditionsRaw(): ConditionalEffect["conditions"] {
+		return this.conditions;
+	}
+
+	private _consequencesRaw(): ConditionalEffect["consequences"] {
+		return this.consequences;
 	}
 
 	get conditions() {
@@ -90,22 +129,6 @@ export class ConditionalEffectC {
 		return condType;
 	}
 
-	constructor (card: SkillCard);
-	constructor (ce: CondEffectObject, sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem);
-	constructor (ce: CondEffectObject | SkillCard, sourceItem?: N<ConditonalEffectHolderItem> , sourceActor?: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem) {
-		if (ce instanceof PersonaItem)  {
-			this._generateSkillCardTeachEffect(ce);
-			return;
-		}
-		this._original = ce;
-		this._preconditions = ConditionalEffectManager.getConditionals(ce.conditions, sourceItem!, sourceActor!, realSource);
-		this._consequences = ConditionalEffectManager.getConsequences(ce.consequences, sourceItem!, sourceActor!, realSource);
-		this._isEmbedded = ce.isEmbedded ?? false;
-		this._conditionalType = this.#determineConditionalType(ce, this._preconditions, this._consequences, sourceItem!);
-		this._owner= sourceActor?.accessor;
-		this._source= sourceItem != null ? sourceItem : undefined;
-		this._realSource= realSource;
-	}
 
 	private _generateSkillCardTeachEffect(card: SkillCard) {
 		this._original = card;

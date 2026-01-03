@@ -20,14 +20,19 @@ export class PersonaAnimation {
 	}
 
 	static async onUsePower(usableOrCard: UsableAndCard, damageType: RealDamageType,attacker: PToken,  targets: PToken, result: AttackResult["result"]) : Promise<void> {
-		if (Sequence == undefined) {return;}
+		if (!this.sequencerIsLoaded()) {return;}
 		if (usableOrCard.isSkillCard()) {return;}
 		const anim = new PersonaAnimation(usableOrCard, damageType, attacker, targets, result);
+		//TODO: show icon on strike weakness
 		try {
 			switch(result) {
 				case "hit":
-				case "miss":
 				case "crit":
+					await anim.showWeakness();
+					await anim.play();
+					break;
+				case "miss":
+					await anim.onMiss();
 					await anim.play();
 					break;
 				case "reflect":
@@ -38,6 +43,27 @@ export class PersonaAnimation {
 		} catch(e) {
 			PersonaError.softFail(`problem with animation`, e);
 		}
+	}
+
+	private async showWeakness() {
+		if (!this.target.actor.persona().isWeakTo(this.damageType)) { return;}
+		let seq : SequencerBase= new Sequence().effect()
+			.file(BROKEN_SHIELD)
+			.atLocation(this.target)
+			.delay(250)
+			.duration(4000)
+			.fadeOut(1000)
+			.scaleToObject(1.0);
+		seq = PersonaAnimation.appendScrollingText(seq, "WEAK", this.target)
+			.delay(100)
+			.duration(3000);
+		await seq.play();
+	}
+
+	private async onMiss() {
+		await PersonaAnimation.appendScrollingText(new Sequence(), "Miss", this.target)
+			.delay(800)
+			.play();
 	}
 
 	private async onResist() {
@@ -68,8 +94,6 @@ export class PersonaAnimation {
 				break;
 			}
 			case "miss":
-				await PersonaAnimation.appendScrollingText(new Sequence(), "Miss", this.target).play();
-				break;
 			case "hit":
 			case "crit":
 				throw new PersonaError("Hit or Crit shoiuldn't be called in the resist context");
@@ -78,43 +102,9 @@ export class PersonaAnimation {
 		}
 	}
 
-	get target() { return this.targets.at(0)!;}
+	protected get target() { return this.targets.at(0)!;}
 
-	// get scale() {
-	// 	const baseScale =BASE_VALUES[this.damageType].scale;
-	// 	const scaleMult = this.usable.isPower() ? SCALE_MULT[this.usable.system.damageLevel] : SCALE_MULT["light"];
-	// 	return baseScale * scaleMult;
-	// }
-
-	// get duration() {
-	// 	return BASE_VALUES[this.damageType].duration;
-	// }
-
-	// get fadeOut() {
-	// 	return BASE_VALUES[this.damageType].fadeOut;
-	// }
-
-	// get fadeIn() {
-	// 	return BASE_VALUES[this.damageType].fadeIn ?? 0;
-	// }
-
-	// get fileName() {
-	// 	return BASE_VALUES[this.damageType].fileName;
-	// }
-
-	// get isProjectile() {
-	// 	return BASE_VALUES[this.damageType].projectile ?? false;
-	// }
-
-	// get playbackRate() {
-	// 	return BASE_VALUES[this.damageType].playbackRate ?? 0;
-	// }
-
-	// get filename() {
-	// 	return BASE_VALUES[this.damageType].fileName ?? "";
-	// }
-
-	get animData() : BasicAnimationData[] {
+	protected get animData() : BasicAnimationData[] {
 		const x = BASE_VALUES[this.damageType];
 		if (Array.isArray(x)) {return x;}
 		return [x];
@@ -149,7 +139,7 @@ export class PersonaAnimation {
 		await Promise.allSettled(promises);
 	}
 
-	static appendCriticalHit<T extends SequencerBase>(seq: T) {
+	private static appendCriticalHit<T extends SequencerBase>(seq: T) {
 		return seq.effect()
 		.file(CRITICAL_HIT)
 		.delay(750)
@@ -214,7 +204,7 @@ export class PersonaAnimation {
 			.atLocation(target, locationData);
 	}
 
-	private loadAnimationData (animData: BasicAnimationData, sequence : SequencerBase = new Sequence()) {
+	private loadAnimationData (animData: BasicAnimationData, sequence : SequencerBase | Sequence = new Sequence()) {
 		const scale = this.scale(animData);
 		let seq = sequence.effect();
 		seq= seq
@@ -238,7 +228,7 @@ export class PersonaAnimation {
 		return seq;
 	}
 
-	scale(animData : BasicAnimationData) : U<number>{
+	private scale(animData : BasicAnimationData) : U<number>{
 		// const baseScale = BASE_VALUES[this.damageType].scale;
 		const baseScale = animData.scale;
 		if (!baseScale) {return undefined;}
@@ -259,7 +249,14 @@ export class PersonaAnimation {
 			.stretchTo(target);
 	}
 
+	private static sequencerIsLoaded() : boolean {
+		if (Sequence == undefined || typeof Sequence != "function") {
+			return false;
+		}
+		return true;
+	}
 	static async floatingDamageNumbers(target: PToken, hp_change: number) {
+		if (!this.sequencerIsLoaded()) {return;}
 		if (hp_change == 0) {return;}
 		const color = hp_change > 0 ? "green" : "red";
 		const txt = String(Math.abs(hp_change));
@@ -267,7 +264,7 @@ export class PersonaAnimation {
 		.play();
 	}
 
-	static appendScrollingText<T extends SequencerBase>(seq: T, txt: string, location: PToken, color = "white") {
+	private static appendScrollingText<T extends SequencerBase | Sequence>(seq: T, txt: string, location: PToken, color = "white") {
 		const style = {
 			fill: color,
 			// fontFamily: "Arial Black",
@@ -305,11 +302,11 @@ const BASE_VALUES : Record<RealDamageType, BasicAnimationData | BasicAnimationDa
 		fadeOut: 250,
 	}, {
 		fileName: "jb2a.impact",
-		objectScale: 0.5,
+		objectScale: 0.8,
 		duration: 1000,
 		fadeOut: 250,
 		hitOnly: true,
-		delay: 500,
+		delay: 300,
 	},
 
 	],
@@ -321,11 +318,11 @@ const BASE_VALUES : Record<RealDamageType, BasicAnimationData | BasicAnimationDa
 		isProjectile: true,
 	}, {
 		fileName: "jb2a.impact",
-		objectScale: 0.5,
+		objectScale: 0.8,
 		duration: 1000,
 		fadeOut: 250,
 		hitOnly: true,
-		delay: 500,
+		delay: 300,
 
 	}],
 	fire: {
@@ -457,3 +454,14 @@ const SWIRLING_SPARKLES = "jb2a.swirling_sparkles";
 const MISS = "jb2a.ui.miss.white";
 const CRITICAL_HIT = "jb2a.ui.critical.red";
 const DEBUFF = "jb2a.cast_generic.sound.01";
+
+const BROKEN_SHIELD = "jb2a.icon.shield_cracked.purple";
+
+const STATUS_ICONS = {
+	FEAR_ICON : "jb2a.icon.fear.dark_purple",
+	CHARM_ICON : "jb2a.icon.heart.pink",
+	MUTE_ICON : "jb2a.icon.mute.dark_red",
+	POISON_ICON : "jb2a.icon.poison.dark_green",
+	CURSE_ICON : "jb2a.icon.skull.purple",
+} as const;
+

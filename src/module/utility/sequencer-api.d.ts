@@ -12,13 +12,13 @@ interface SequencerBase {
 	delay(randomLow: number, randomHigh: number): this;
 	delay(num: number): this;
 	scrollingText(): ScrollingTextProxy;
+	duration(ms: number): this;
 }
 
 interface EffectProxy extends SequencerBase {
 	file(name: string) : this;
 	atLocation(token: Token | TokenDocument, options?: LocationOptions) : this;
 	scale(scale: number): this;
-	duration(ms: number): this;
 	/** persists until deleted */
 	persist() : this;
 	fadeIn(ms: number) : this;
