@@ -71,7 +71,7 @@
 			{{> "systems/persona/parts/eventTags.hbs" item=item event=event POWERSTUFF=POWERSTUFF eventIndex=i}}
 		</div>
 		<div class="card-event-conditions" data-top-path="conditions">
-			{{> "systems/persona/parts/conditions-section.hbs" namePrefix="conditions"  POWERSTUFF=POWERSTUFF i=i owner=event}}
+			{{> "systems/persona/parts/conditions-section.hbs" namePrefix="conditions."  POWERSTUFF=event.sheet.powerStuff i=i owner=event}}
 		</div>
 		<label> Event Setup</label>
 		<textarea name="text">{{trim event.text}}</textarea>

@@ -22,7 +22,6 @@ import { SAVE_TYPES_LOCALIZED } from "../../../config/save-types.js";
 import { STUDENT_SKILLS_EXT } from "../../../config/student-skills.js";
 import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 import {SocialCardEventDM} from "../../datamodel/item-types.js";
-import {CardEventSheet} from "./card-event-sheet.js";
 
 const PRIMARY_SECONDARY = {
 	"primary": "persona.term.primary",
