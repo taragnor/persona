@@ -910,6 +910,7 @@
 	"persona.triggers.pre-take-damage": "Pre-Take-Damage",
 	"persona.triggers.start-turn": "Start Turn",
 	"persona.triggers.end-turn": "End Turn",
+	"persona.triggers.on-power-usage-check": "On Power Usage Check",
 	"persona.triggers.on-open-door": "A door opens",
 	"persona.triggers.on-inflict-status": "Inflict a Status",
 	"persona.triggers.pre-inflict-status": "Pre-Inflict Status",

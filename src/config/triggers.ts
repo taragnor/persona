@@ -13,6 +13,7 @@ export const COMBAT_TRIGGER_LIST = [
 	"pre-inflict-status",
 	"start-turn",
 	"end-turn",
+	"on-power-usage-check",
 ] as const;
 
 export const NONCOMBAT_TRIGGER_LIST = [

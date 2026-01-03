@@ -485,6 +485,7 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
 		case "on-active-scene-change":
 		case "pre-take-damage":
 		case "on-combat-start-global":
+		case "on-power-usage-check":
 			return true;
 		case "on-clock-change":
 		case "on-clock-tick":

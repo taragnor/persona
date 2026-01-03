@@ -22,6 +22,7 @@ type TriggerSituation = TriggerSituation_base & (
 	| ClockTrigger
 	| OnRollTrigger
 	| OnAETimeoutTrigger
+	| OnPowerUsageCheckTrigger
 );
 
 type ExplorationTrigger = {
@@ -38,6 +39,11 @@ export type OnRollTrigger = {
 type ClockTrigger = {
 	trigger: "on-clock-tick" | "on-clock-change",
 	triggeringClockId: string,
+}
+
+type OnPowerUsageCheckTrigger = UserSituation & {
+	trigger: "on-power-usage-check",
+	usedPower : UniversalItemAccessor<UsableAndCard>;
 }
 
 type OnAETimeoutTrigger = {

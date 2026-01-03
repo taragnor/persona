@@ -23,6 +23,7 @@ import {Defense} from "../config/defense-types.js";
 import {PersonaStat} from "../config/persona-stats.js";
 import {Calculation, EvaluatedCalculation} from "./utility/calculation.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
+import {ConditionalEffectManager} from "./conditional-effect-manager.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
 	#combatStats: U<PersonaCombatStats>;
@@ -894,7 +895,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			|| this._powerTooStrong(usable)
 			|| this._deadCheck(usable)
 			|| this._isTrulyUsable(usable)
-			|| this._canPayActivationCostCheck(usable);
+			|| this._canPayActivationCostCheck(usable)
+			|| this._checkConditionals(usable)
 		;
 		if (msg === null) {return true;}
 		if (outputReason) {
@@ -979,6 +981,24 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				this.user.system satisfies never;
 				throw new PersonaError("Unknown Type");
 		}
+	}
+
+	private _checkConditionals(usable: UsableAndCard) : N<FailReason> {
+		const effects= usable.getTriggeredEffects(this.user, {}, "on-power-usage-check");
+		const situation : Situation = {
+			trigger : "on-power-usage-check",
+			user: this.user.accessor,
+			usedPower: usable.accessor,
+			triggeringUser: game.user,
+		};
+		for (const eff of effects) {
+			const cons = eff.getActiveConsequences(situation);
+			const cancelEffect = cons.find(cons => cons.type =="cancel")
+			if (cancelEffect) {
+				return `Failed due to Conditional ${ConditionalEffectManager.printConditions(eff.conditions)}`;
+			}
+		}
+		return null;
 	}
 
 	private _canPayActivationCostCheck_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard) : N<FailReason> {

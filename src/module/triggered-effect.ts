@@ -8,7 +8,6 @@ import { Trigger } from "../config/triggers.js";
 import { CombatResult } from "./combat/combat-result.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
-import {getActiveConsequences} from "./preconditions.js";
 import {ConsequenceProcessor} from "./conditionalEffects/consequence-processor.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaItem} from "./item/persona-item.js";
@@ -96,9 +95,9 @@ export class TriggeredEffect {
 				case "pre-take-damage":
 				case "on-active-effect-time-out":
 				case "on-active-effect-end":
+				case "on-power-usage-check":
 					PersonaError.softFail(`Must proivide a situation with this trigger:  ${trigger}`);
 					return result;
-
 				default:
 					trigger satisfies never;
 					PersonaError.softFail(`Bad TRigger ${trigger}`);
@@ -111,39 +110,9 @@ export class TriggeredEffect {
 		}
 		const situationCopy = { ...situation, trigger } as Situation; //copy the object so it doesn't permanently change it
 		const triggers = this.getTriggerList(trigger, actor, situation);
-		// const triggers : SourcedConditionalEffect[] = PersonaDB.getGlobalModifiers().flatMap( x=> x
-		// 	.getTriggeredEffects(null)
-		// 	.filter(x=> x.conditions.some( x=> x.type == "on-trigger" && x.trigger == trigger))
-		// );
-		// if (actor) {
-		// 	triggers.push(...actor.triggersOn(trigger));
-		// }
-		// if (situation.usedPower) {
-		// 	const power = PersonaDB.findItem(situation.usedPower);
-		// 	const user = situation.user ? PersonaDB.findActor(situation.user) : null;
-		// 	const PowerTriggers = power.getTriggeredEffects(user)
-		// 	.filter ( ce => PersonaItem.triggersOn(ce, trigger));
-		// 	triggers.push(...PowerTriggers);
-		// }
-		// if (game.combat) {
-		// 	const roomEffects = (game.combat as PersonaCombat)?.getRoomEffects() ?? [];
-		// 	triggers.push(
-		// 		...roomEffects.flatMap (RE=> RE.getEffects(null))
-		// 	);
-		// } else {
-		// 	const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
-		// 	triggers.push(
-		// 		...arr.flatMap (RE=> RE.getEffects(null))
-		// 	);
-		// 	const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
-		// 	triggers.push(...PCTriggers);
-		// }
-		// const filteredEffects = removeDuplicates(triggers
-		// 	.filter ( x=> x.conditionalType == "triggered")
-		// );
 		for (const eff of triggers) {
 			try {
-				const validCons = getActiveConsequences(eff, situationCopy);
+				const validCons = eff.getActiveConsequences(situationCopy);
 				const res = await ConsequenceProcessor.consequencesToResult(validCons ,undefined, situationCopy, actor, actor, null);
 				result.merge(res);
 			} catch (e) {
