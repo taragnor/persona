@@ -1757,3 +1757,8 @@ animation:
 .control-panel .active-statuses {
 	margin: 10px;
 }
+
+.control-panel .item-list {
+	overflow-y: scroll;
+	max-height:600px;
+}
