@@ -1,3 +1,6 @@
+{{#if (eq mode "tactical")}}
+<h2 title="right click to exit"> Tactical View </h2>
+{{/if}}
 <div class="control-panel {{#if (isCombatPanelActive)}}active-control-panel{{/if}}">
 	<header>
 		<h3 class="token-name"> {{token.name}}</h3>
@@ -13,6 +16,11 @@
 		{{/if}}
 		{{#if (eq mode "persona")}}
 		{{/if}}
+
+		<button class="tacticalMode">
+			Tactical View
+		</button>
+
 	</body>
 
 </div>

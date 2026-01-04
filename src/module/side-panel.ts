@@ -32,7 +32,7 @@ export abstract class SidePanel {
 		return infoPanel.length > 0;
 	}
 
-	async updatePanel(templateData: Record<string, unknown>) : Promise<void> {
+	async updatePanel(templateData: Record<string, unknown> = {}) : Promise<void> {
 		if (!this.doesPanelExist()) {
 			this.createContainer();
 		}

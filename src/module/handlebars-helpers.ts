@@ -683,6 +683,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"scanLevelgte": function (persona: Persona, val: number) : boolean {
+			console.log("scan level GTE");
 			if (game.user.isGM) {return true;}
 			return persona.effectiveScanLevel >= val;
 		},

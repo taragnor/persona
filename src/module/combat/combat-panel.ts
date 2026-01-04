@@ -8,10 +8,11 @@ import {CombatEngine} from "./combat-engine.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 
 export class CombatPanel extends SidePanel {
-	target: U<PToken>;
+	_target: U<PToken>;
 	static instance: CombatPanel;
 	_powerUseLock: boolean = false;
-	mode: "main" | "inventory" | "persona";
+	mode: "main" | "inventory" | "persona" | "tactical";
+	tacticalTarget: U<PToken>;
 
 	constructor() {
 		super ("combat-panel");
@@ -29,6 +30,11 @@ export class CombatPanel extends SidePanel {
 		return PersonaSettings.debugMode();
 	}
 
+	get target() {
+		if (this.mode =="tactical") {return this.tacticalTarget ?? this._target;}
+		return this._target;
+	}
+
 	get actor() : U<ValidAttackers> {
 		const actor = this.target?.actor;
 		if (actor?.isValidCombatant()) {return actor;}
@@ -36,7 +42,7 @@ export class CombatPanel extends SidePanel {
 	}
 
 	override get templatePath(): string {
-		const target = this.target?.actor;
+		const target = this.mode != "tactical" ? this.target?.actor : this.tacticalTarget?.actor ?? this.target?.actor;
 		if (!target) {return "";}
 		switch (true) {
 			case target.isNPCAlly():
@@ -75,15 +81,29 @@ export class CombatPanel extends SidePanel {
 		 html.find(".control-panel button.inventory-button").on("click", (ev) => void this._onInventoryButton(ev));
 		 html.find(".control-panel button.return-button").on("click", (ev) => void this._onReturnToMainButton(ev));
 		 html.find(".active-control-panel .inventory-item:not(.faded)").on("click", (ev) => void this._onUseItem(ev));
+		 html.find(".control-panel .tacticalMode").on("click", (ev) => void this._onTacticalMode(ev));
+		 html.rightclick( (ev) => this._onReturnToMainButton(ev));
 		 if ( this.target) {
 			 this.target.actor.refreshTheurgyBarStyle();
 		 }
 	 }
 
+	async setTacticalTarget(token: UN<PToken>) {
+		if (!PersonaSettings.combatPanel()) {return;}
+		if (token == undefined) {
+			this.tacticalTarget = undefined;
+			await this.updatePanel({});
+			return;
+		}
+		if (!token.actor.isValidCombatant()) {return;}
+			this.tacticalTarget = token;
+			await this.updatePanel({});
+	}
+
 	async setTarget(token: UN<PToken>) {
 		if (!PersonaSettings.combatPanel()) {return;}
 		if (token == undefined || !token.actor) {
-			this.target = undefined;
+			this._target = undefined;
 			this.clearPanel();
 			this.mode = "main";
 			return;
@@ -91,7 +111,7 @@ export class CombatPanel extends SidePanel {
 		if (token.actor.isPC() && !token.actor.isRealPC()) {
 			return;
 		}
-		this.target = token;
+		this._target = token;
 		this.mode = "main";
 		try {
 			await this.updatePanel({});
@@ -147,8 +167,9 @@ export class CombatPanel extends SidePanel {
 		await this.updatePanel({});
 	}
 
-	private async _onReturnToMainButton(_ev: JQuery.ClickEvent) {
-
+	private async _onReturnToMainButton(ev: JQuery.ClickEvent) {
+		if (this.mode == "main") {return;}
+		ev.stopPropagation();
 		this.mode = "main";
 		await this.updatePanel({});
 	}
@@ -199,6 +220,12 @@ export class CombatPanel extends SidePanel {
 			Debug(e);
 		}
 		this._powerUseLock = false;
+	}
+
+	private async _onTacticalMode(ev: JQuery.ClickEvent) {
+		ev.stopPropagation();
+		this.mode = "tactical";
+		await this.updatePanel();
 	}
 
 	async openToken(_ev: JQuery.ClickEvent) {
@@ -255,6 +282,17 @@ export class CombatPanel extends SidePanel {
 			if (this.instance.target == token) {
 				void this.instance.updatePanel({});
 			}
+		});
+
+		Hooks.on("hoverToken", (token, isSelecting) => {
+			if (this.instance.mode != "tactical") {return;}
+			const panel = this.instance;
+			if (isSelecting) {
+				void panel.setTacticalTarget(token.document as PToken);
+			} else {
+				void panel.setTacticalTarget(null);
+			}
+
 		});
 
 	}

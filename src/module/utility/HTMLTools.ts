@@ -357,8 +357,8 @@ static generateDefaultData<T extends HTMLDataInputDefinition>(definition: T) : H
 // **************   EventHandlers  *************** *
 // **************************************************
 
-	static middleClick (handler: (ev: Event)=>unknown ) {
-		return function (event: MouseEvent) {
+	static middleClick (handler: (ev: JQuery.ClickEvent)=>unknown ) {
+		return function (event: JQuery.ClickEvent) {
 			if (event.which == 2) {
 				event.preventDefault();
 				event.stopPropagation();
@@ -367,8 +367,8 @@ static generateDefaultData<T extends HTMLDataInputDefinition>(definition: T) : H
 		};
 	}
 
-	static rightClick (handler: (ev:Event)=>unknown) {
-		return function (event: MouseEvent) {
+	static rightClick (handler: (ev:JQuery.ClickEvent)=>unknown) {
+		return function (event: JQuery.ClickEvent) {
 			if (event.which == 3) {
 				event.preventDefault();
 				event.stopPropagation();
@@ -379,13 +379,13 @@ static generateDefaultData<T extends HTMLDataInputDefinition>(definition: T) : H
 
 	static initCustomJqueryFunctions() {
 		if (!jQuery.fn.middleclick) {
-			jQuery.fn.middleclick = function (handler) {
+			jQuery.fn.middleclick = function (handler: (ev : JQuery.ClickEvent) => unknown) {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 				this.mousedown(HTMLTools.middleClick(handler));
 			};
 		}
 		if (!jQuery.fn.rightclick) {
-			jQuery.fn.rightclick = function (handler) {
+			jQuery.fn.rightclick = function (handler: (ev : JQuery.ClickEvent) => unknown) {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 				this.mousedown(HTMLTools.rightClick(handler));
 			};
@@ -400,8 +400,8 @@ HTMLTools.initCustomJqueryFunctions();
 
 declare global{
 	interface JQuery {
-		middleclick( fn: (ev: Event)=> unknown): void;
-		rightclick( fn: (ev: Event)=> unknown): void;
+		middleclick( fn: (ev: JQuery.ClickEvent)=> unknown): void;
+		rightclick( fn: (ev: JQuery.ClickEvent)=> unknown): void;
 	}
 }
 
