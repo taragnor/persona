@@ -38,7 +38,7 @@ export class PersonaAnimation {
 				case "reflect":
 				case "block":
 				case "absorb":
-					await anim.onResist();
+					await anim.onNullAttack();
 			}
 		} catch(e) {
 			PersonaError.softFail(`problem with animation`, e);
@@ -66,7 +66,7 @@ export class PersonaAnimation {
 			.play();
 	}
 
-	private async onResist() {
+	private async onNullAttack() {
 		switch (this.result) {
 			case "absorb":
 				await new Sequence().effect()
@@ -96,7 +96,7 @@ export class PersonaAnimation {
 			case "miss":
 			case "hit":
 			case "crit":
-				throw new PersonaError("Hit or Crit shoiuldn't be called in the resist context");
+				throw new PersonaError("Hit or Crit shoiuldn't be called in the null attack context");
 			default:
 				this.result satisfies never;
 		}
@@ -130,8 +130,9 @@ export class PersonaAnimation {
 				? this.projectileAnimation(animData, this.attacker, token)
 				: this.basicAnimationOnTarget(animData, token)
 			)
-				.map( x=> this.result == "miss" ? x.missed() : x)
-				.map( x=> this.result == "crit" ? PersonaAnimation.appendCriticalHit(x) : x)
+				.map( x=> this.result == "miss" ? this.appendMiss(x) : x)
+				// .map( x=> this.result == "miss" ? x.missed() : x)
+				.map( x=> this.result == "crit" ? this.appendCriticalHit(x) : x)
 				.map ( x=> x.delay(500))
 				.map( x=> x.play());
 			;
@@ -139,13 +140,25 @@ export class PersonaAnimation {
 		await Promise.allSettled(promises);
 	}
 
-	private static appendCriticalHit<T extends SequencerBase>(seq: T) {
+	private appendCriticalHit<T extends SequencerBase>(seq: T) {
 		return seq.effect()
-		.file(CRITICAL_HIT)
-		.delay(750)
-		.playbackRate(0.75)
-		.scaleToObject(1.2)
-		.aboveInterface();
+			.file(CRITICAL_HIT)
+			.delay(750)
+			.atLocation(this.target)
+			.playbackRate(0.75)
+			.scaleToObject(1.2)
+			.aboveInterface();
+	}
+
+	private appendMiss<T extends EffectProxy>(seq: T) {
+		return seq.missed()
+			.effect()
+			.file(MISS)
+			.atLocation(this.target)
+			.delay(750)
+			.playbackRate(0.75)
+			.scaleToObject(1.2)
+			.aboveInterface();
 	}
 
 	private async onSupportPower() {

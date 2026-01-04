@@ -4,6 +4,16 @@
 <div class="control-panel {{#if (isCombatPanelActive)}}active-control-panel{{/if}}">
 	<header>
 		<h3 class="token-name"> {{token.name}}</h3>
+		{{#if actor.canSwitchPersonas}}
+		<div>
+			<b>
+				Active Persona:
+			</b>
+			<span class="persona-name">
+				{{persona.name}}
+			</span>
+		</div>
+		{{/if}}
 		{{> "systems/persona/parts/vitals-section.hbs" CONST=CONST persona=persona}}
 	</header>
 	<hr>
@@ -15,11 +25,10 @@
 		{{> "systems/persona/parts/combat-panel-control-body-inventory.hbs" CONST=CONST persona=persona actor=persona.user}}
 		{{/if}}
 		{{#if (eq mode "persona")}}
+		{{> "systems/persona/parts/persona-list-list.hbs" actor=actor CONST=CONST persona=selectedPersona selectedPersona=selectedPersona showSideboard=false personaControls=false}}
 		{{/if}}
 
-		<button class="tacticalMode">
-			Tactical View
-		</button>
+
 
 	</body>
 

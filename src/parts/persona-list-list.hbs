@@ -1,0 +1,55 @@
+	<h2>Persona List</h2>
+	<ul class="persona-list">
+		{{#each actor.personaList as |persona i|}}
+
+		<li class="f-row {{#if (isSwapSelected ../actor persona)}} swap-selected {{/if}}" data-persona-id="{{persona.source.id}}">
+			<div class="persona-name {{#if persona.isActive}} active-persona {{else}} inactive-persona {{/if}}">
+				<a>
+	{{> "systems/persona/parts/persona-name.hbs" persona=persona buttonStyle=(not ../personaControls)}}
+				</a>
+			</div>
+			{{#if ../personaControls}}
+			<div>
+				{{#if (canAccessCompendium)}}
+				{{#if ../actor.sideboardPersonas}}
+				<a class="swap-persona">
+					<i class="fa-solid fa-retweet"></i>
+				</a>
+				{{/if}}
+				{{/if}}
+				<a class="delPersona">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</div>
+			{{/if}}
+		</li>
+		{{/each}}
+	</ul>
+
+	{{#if (and showSideboard actor.sideboardPersonas)}}
+	<h2> Sideboard (max {{actor.maxPersonaSideboard}})</h2>
+	<ul class="persona-list">
+		{{#each actor.sideboardPersonas as |persona i|}}
+
+		<li class="f-row {{#if (isSwapSelected ../actor persona)}} swap-selected {{/if}}" data-persona-id="{{persona.source.id}}">
+			<div class="persona-name sideboard-persona">
+					{{> "systems/persona/parts/persona-name.hbs" persona=persona buttonStyle=(not ../personaControls)}}
+			</div>
+			{{#if ../personaControls}}
+			<div>
+				{{#if (canAccessCompendium)}}
+				<a class="swap-persona">
+					<i class="fa-solid fa-retweet"></i>
+				</a>
+				{{/if}}
+				<a class="delPersona">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+			</div>
+			{{/if}}
+		</li>
+		{{/each}}
+	</ul>
+	{{/if}}
+
+

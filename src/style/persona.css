@@ -507,6 +507,10 @@ div.job {
 	min-width: 30px;
 }
 
+.control-panel-buttons > button {
+	margin: 8px;
+}
+
 .control-panel .basic-powers img.power-img {
 	height: 33px;
 	width: 33px;
@@ -569,6 +573,7 @@ div.power-sideboard {
 }
 
 .combat-panel .active-control-panel .main-powers .power-name:hover,
+.combat-panel .active-control-panel .persona-name-button:hover:not(:disabled),
 .combat-panel .active-control-panel .inventory-item:hover:not(.faded) {
 	cursor: pointer;
 }
@@ -1711,11 +1716,6 @@ animation:
     transform: scaleX(1.25);
   }
 }
-
-.control-panel .inventory-button {
-	margin-top: 6px;
-}
-
 
 .shimmer {
   position: relative;

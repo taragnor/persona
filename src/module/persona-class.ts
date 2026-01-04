@@ -266,6 +266,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source == other.source;
 	}
 
+	eq(other: Persona): boolean {
+		return this.equals (other);
+	}
+
 	get level() : number {
 		// return this.classData.level;
 		return this.source.system.combat.personaStats.pLevel ?? 0;
@@ -1177,16 +1181,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	}
 
-	// armorDR() : number {
-	// 	if (this.user.isShadow()) {
-	// 		const DR =  PersonaSettings.getDamageSystem().getArmorDRByArmorLevel(Math.floor(this.level /10));
-	// 		return DR;
-	// 	}
-	// 	const armor = this.user.equippedItems().find(x => x.isInvItem() && x.system.slot == "body") as U<InvItem>;
-	// 	return armor  != undefined ? armor.armorDR() : 0;
-	// }
-
-
 	getBonusWpnDamage() : ModifierList {
 		return this.getBonuses("wpnDmg");
 	}
@@ -1209,6 +1203,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		if (!this.source.hasPlayerOwner) {return false;}
 		return this.user.personaList
 			.some( persona => this.equals(persona));
+	}
+
+	get isActive() : boolean {
+		return this.user.persona().equals(this);
 	}
 
 	get isPartial() : boolean {

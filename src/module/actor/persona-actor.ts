@@ -3670,6 +3670,20 @@ despairMPDamage(this: PC | NPCAlly): number {
 	return Math.floor(this.mmp * 0.15);
 }
 
+get hasMultiplePersonas() : boolean {
+	if (!this.isValidCombatant()) {return false;}
+	return this.personaList.length > 1;
+}
+
+get canSwitchPersonas() : boolean {
+	if (!this.isValidCombatant()) {return false;}
+	return this.hasMultiplePersonas
+		&& this.isOwner
+		&& !this.hasStatus("sealed")
+		&& this.isAlive();
+}
+
+
 /** should get called after a search action or after entering a new region*/
 async onMetaverseTimeAdvance(): Promise<string[]> {
 	const ret: string[] = [];

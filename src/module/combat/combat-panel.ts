@@ -82,8 +82,10 @@ export class CombatPanel extends SidePanel {
 		 html.find(".control-panel button.return-button").on("click", (ev) => void this._onReturnToMainButton(ev));
 		 html.find(".active-control-panel .inventory-item:not(.faded)").on("click", (ev) => void this._onUseItem(ev));
 		 html.find(".control-panel .tacticalMode").on("click", (ev) => void this._onTacticalMode(ev));
+		 html.find(".control-panel button.persona-switch").on("click", (ev) => void this._onPersonaModeSwitchButton(ev));
+		 html.find(".control-panel button.persona-name-button").on("click", (ev) => void this._onPersonaSwitchButton(ev));
 		 html.rightclick( (ev) => this._onReturnToMainButton(ev));
-		 if ( this.target) {
+		 if ( this.target ) {
 			 this.target.actor.refreshTheurgyBarStyle();
 		 }
 	 }
@@ -226,6 +228,36 @@ export class CombatPanel extends SidePanel {
 		ev.stopPropagation();
 		this.mode = "tactical";
 		await this.updatePanel();
+	}
+
+	private async _onPersonaModeSwitchButton(ev: JQuery.ClickEvent) {
+		ev.stopPropagation();
+		if (!this.target) {return;}
+		const actor = this.target.actor;
+		const currentPersona = actor.persona();
+		const filteredPList = actor.personaList
+			.filter( p => !p.equals(currentPersona));
+		if (filteredPList.length == 1) {
+			if (!this.isActiveControl()) {
+				ui.notifications.notify("Can't swap right now.");
+				return;
+			}
+			await actor.switchPersona(filteredPList.at(0)!.source.id);
+			return;
+		}
+		this.mode = "persona";
+		await this.updatePanel();
+	}
+
+	private async _onPersonaSwitchButton(event: JQuery.ClickEvent) {
+		if (!this.isActiveControl()) {
+			ui.notifications.warn("Can't switch personas right now");
+			return;
+		}
+		const personaId = HTMLTools.getClosestData(event, "personaId");
+		if (this.target) {
+			await this.target.actor.switchPersona(personaId);
+		}
 	}
 
 	async openToken(_ev: JQuery.ClickEvent) {

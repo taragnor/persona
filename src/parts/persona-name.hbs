@@ -1,0 +1,13 @@
+<div data-persona-id="{{persona.source.id}}">
+	{{#if buttonStyle}}
+	<button class="persona-name-button {{#if persona.isActive}} disabled {{/if}}">
+		{{persona.name}}
+	</button>
+	{{else}}
+	<span class="persona-name-span">
+		<a>
+			{{persona.name}} ({{persona.level}}, {{persona.tarot.displayedName}})
+		</a>
+	</span>
+	{{/if}}
+</div>

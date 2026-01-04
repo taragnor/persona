@@ -73,6 +73,7 @@ const templateFileNames : string[] =[
 	"inventory-list.hbs",
 	"input-modifier-new.hbs",
 	"persona-list.hbs",
+	"persona-list-list.hbs",
 	"persona-viewer.hbs",
 	"treasure-section.hbs",
 	"basic-powers-section.hbs",
@@ -97,6 +98,7 @@ const templateFileNames : string[] =[
 	"combat-panel-control-body-main.hbs",
 	"combat-panel-control-body-inventory.hbs",
 	"status-block.hbs",
+	"persona-name.hbs",
 ];
 
 export const templatePaths = templateFileNames.

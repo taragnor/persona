@@ -22,7 +22,16 @@
 </div>
 
 <hr>
-<button class="inventory-button">
-	Item
-</button>
-
+<div class="f-row control-panel-buttons">
+	<button class="inventory-button">
+		Item
+	</button>
+	{{#if actor.hasMultiplePersonas}}
+	<button class="persona-switch" {{#if (not actor.canSwitchPersonas)}} disabled {{/if}}>
+		Persona
+	</button>
+	{{/if}}
+	<button class="tacticalMode">
+		Tactical View
+	</button>
+</div>
