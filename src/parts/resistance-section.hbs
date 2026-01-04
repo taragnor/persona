@@ -1,54 +1,15 @@
 {{#if (scanLevelgte persona 1)}}
 <section class="resistance">
 	<div class="resistance-block">
+		{{#each persona.resistancesPrintable as |resist i|}}
 		<div class="resistance-item">
-			<img src="systems/persona/img/icon/phys.webp">
+			<img src="{{resist.icon}}">
 			<div>
-				{{elemResist persona "physical"}}
+				<span class="resistance-level {{resist.modified}}">
+				{{resist.resistanceLoc}}
 			</div>
 		</div>
-		<div class="resistance-item">
-			<img src="systems/persona/img/icon/pierce.png">
-			<div>
-				{{elemResist persona "gun"}}
-			</div>
-		</div>
-		<div class="resistance-item">
-			<img src="systems/persona/img/icon/fire.webp">
-			<div>
-				{{elemResist persona "fire"}}
-			</div>
-		</div>
-		<div class="resistance-item">
-			<img src="systems/persona/img/icon/ice.webp">
-			<div>
-				{{elemResist persona "cold"}}
-			</div>
-		</div>
-		<div class="resistance-item">
-			<img src="systems/persona/img/icon/elec.webp">
-			<div>
-				{{elemResist persona "lightning"}}
-			</div>
-		</div>
-		<div class="resistance-item">
-			<img src="systems/persona/img/icon/wind.webp">
-			<div>
-				{{elemResist persona "wind"}}
-			</div>
-		</div>
-		<div class="resistance-item">
-			<img src="systems/persona/img/icon/light.webp">
-			<div>
-				{{elemResist persona "light"}}
-			</div>
-		</div>
-		<div class="resistance-item">
-			<img src="systems/persona/img/icon/dark.webp">
-			<div>
-				{{elemResist persona "dark"}}
-			</div>
-		</div>
+		{{/each}}
 	</div>
 </section>
 {{/if}}

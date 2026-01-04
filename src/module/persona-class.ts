@@ -8,13 +8,13 @@ import { PersonaSettings } from "../config/persona-settings.js";
 import { Metaverse } from "./metaverse.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
-import { PersonaCombat, PToken } from "./combat/persona-combat.js";
+import { PersonaCombat } from "./combat/persona-combat.js";
 import { ModifierList } from "./combat/modifier-list.js";
 import { PersonaError } from "./persona-error.js";
 import { localize } from "./persona.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../config/status-effects.js";
-import { RealDamageType, RESIST_STRENGTH_LIST } from "../config/damage-types.js";
-import { getActiveConsequences, multiCheckContains, multiCheckToArray } from "./preconditions.js";
+import { RealDamageType, RESIST_STRENGTH_LIST, RESIST_STRENGTHS } from "../config/damage-types.js";
+import { multiCheckContains, multiCheckToArray } from "./preconditions.js";
 import { PersonaI } from "../config/persona-interface.js";
 import { DamageType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";
@@ -633,6 +633,38 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.focii.filter( f=> f.hasDefensiveEffects(this.user));
 	}
 
+	get resistancesPrintable() : PrintableResistData[] {
+		return Object.entries(this.resists).map( ([k, originalResist]) => {
+			const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
+			const damageType = k as RealDamageType;
+			const actualResist = this.elemResist(damageType);
+			let modified : PrintableResistData["modified"];
+			switch (true) {
+				case actualResist == originalResist : 
+					modified= "normal";
+					break;
+				case resval(originalResist) > resval(actualResist):
+					modified = "downgraded"; 
+					break;
+				case resval(originalResist) < resval(actualResist):
+					modified ="upgraded";
+					break;
+				default:
+					modified = "upgraded";
+					break;
+			}
+			const icon = PersonaItem.getDamageIconPath(damageType);
+			const data : PrintableResistData =  {
+				icon: icon ?? "",
+				damageType: damageType,
+				resistance: actualResist,
+				resistanceLoc: localize(RESIST_STRENGTHS[actualResist]),
+				modified,
+			};
+			return data;
+		});
+	}
+
 	elemResist(type: Exclude<DamageType, "by-power">): ResistStrength {
 		switch (type) {
 			case "untyped":  case "none":
@@ -655,7 +687,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		};
 		const consequences = effectChangers
 			.flatMap( eff =>
-				getActiveConsequences(eff, situation)
+				eff.getActiveConsequences(situation)
 			);
 		const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
 		let resBonus = 0, resPenalty = 0;
@@ -743,7 +775,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			target: actor.accessor,
 		};
 		const consequences = effectChangers.flatMap(
-			item => getActiveConsequences(item, situation)
+			eff => eff.getActiveConsequences(situation)
 		);
 		const resists = this.statusResists;
 		type ResistableStatus = keyof typeof resists;
@@ -1015,7 +1047,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		};
 		for (const eff of effects) {
 			const cons = eff.getActiveConsequences(situation);
-			const cancelEffect = cons.find(cons => cons.type =="cancel")
+			const cancelEffect = cons.find(cons => cons.type =="cancel");
 			if (cancelEffect) {
 				return `Failed due to Conditional ${ConditionalEffectManager.printConditions(eff.conditions)}`;
 			}
@@ -1181,6 +1213,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	}
 
+
 	getBonusWpnDamage() : ModifierList {
 		return this.getBonuses("wpnDmg");
 	}
@@ -1253,3 +1286,13 @@ interface MainModifierOptions {
 }
 
 type FailReason = string;
+
+
+interface PrintableResistData {
+	/** Path to icon */
+	icon: string;
+	damageType: RealDamageType;
+	resistance: ResistStrength;
+	resistanceLoc: string;
+	modified: "normal" | "upgraded" | "downgraded"
+}

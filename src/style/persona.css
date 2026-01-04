@@ -1788,3 +1788,18 @@ animation:
 	padding: 1px;
 	border-radius: 6px;     /* rounded corners */
 }
+
+.combat-panel .main-powers {
+	margin-top: 5px;
+	margin-bottom: 5px;
+	font-size: 0.8em;
+}
+
+.resistance-level.upgraded {
+	color: green;
+}
+
+.resistance-level.downgraded {
+	color: red;
+}
+
