@@ -893,14 +893,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	getSocialSLWithTarot(this: PC, tarot: TarotCard) : number {
+	getSocialSLWithTarot(this: PC, tarot: TarotCard | Tarot) : number {
+		tarot = tarot instanceof PersonaActor ? tarot.name as TarotCard : tarot;
 		const link= this.socialLinks.find(
 			link => link.actor.tarot?.name == tarot);
 		if (!link) {return 0;}
 		return link.linkLevel;
 	}
 
-	getSocialSLWith(this: PC, sl : SocialLink | UniversalActorAccessor<SocialLink>) : number {
+	getSocialSLWith(sl : Tarot | SocialLink | UniversalActorAccessor<SocialLink>) : number {
+		if (!this.isPC()) {return 0;}
+		if (sl instanceof PersonaActor && sl.isTarot()) {
+			return this.getSocialSLWithTarot(sl);
+		}
 		if ("actorId" in sl) {
 			sl = PersonaDB.findActor(sl);
 
@@ -3432,7 +3437,6 @@ get XPForNextPersonalLevel() : number {
 	return 99999999;
 }
 
-
 async awardPersonalXP(this: ValidAttackers, amt: number, allowMult= true) : Promise<U<XPGainReport>> {
 	if (!this.isPC() ) {return undefined;}
 	if (!amt) {return;}
@@ -3481,6 +3485,7 @@ async gainLevel(this: ValidAttackers, amt: number) : Promise<void> {
 		await Logger.sendToChat(`${this.displayedName} gained ${amt} levels`);
 	}
 }
+
 
 /** returns true on level up */
 async awardXP(this: ValidAttackers, amt: number) : Promise<XPGainReport[]> {

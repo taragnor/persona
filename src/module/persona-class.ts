@@ -192,8 +192,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return LevelUpCalculator.XPRequiredToAdvanceToLevel(this.level +1);
 	}
 
+	get totalXP() : number {
+		return this.source.system.combat.personaStats.xp;
+	}
+
+	/**XP gained in excess of current level */
 	get xp(): number {
-		return this.source.system.combat.personaStats.xp - LevelUpCalculator.minXPForEffectiveLevel(this.level);
+		return this.totalXP - LevelUpCalculator.minXPForEffectiveLevel(this.level);
 	}
 
 	get effectiveScanLevel(): number {
@@ -353,6 +358,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		};
 	}
 
+	awardLevels(numOfLevels: number) : number {
+		const XPGain = LevelUpCalculator.XPToGainXLevels(this.totalXP, numOfLevels);
+		return XPGain;
+	}
+
 	get baseSituation() : Required<Pick<Situation, "user" | "persona">> {
 		return {
 			user: this.user.accessor,
@@ -363,6 +373,20 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	get pLevel() : number {
 		return this.source.system.combat.personaStats.pLevel;
+	}
+
+	fusionXPBoost(): number {
+		if (!this.tarot) {return 0;}
+		const SL = this.user.getSocialSLWith(this.tarot);
+		if (SL == 0) {return 0;}
+		const situation : Situation = {
+			user: this.user.accessor,
+		};
+		const XPBoost = this.user.getPersonalBonuses("fusion-xp-boost-sl-percent").total(situation, "standard");
+		if (XPBoost <= 0) {return 0;}
+		const levels = XPBoost * SL;
+		const XPGain = LevelUpCalculator.XPToGainXLevels(this.totalXP, levels);
+		return XPGain;
 	}
 
 	isEligibleToBecomeDMon() : boolean {

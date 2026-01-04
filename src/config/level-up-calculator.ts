@@ -16,7 +16,7 @@ export class LevelUpCalculator {
 	static getEffectiveLevel(xpTotal: number) : number {
 		for (let EL= 0; EL <= 100; EL += 1) {
 			if (xpTotal < this.minXPForEffectiveLevel(EL))
-				{return EL-1;}
+			{return EL-1;}
 		}
 		return 100;
 	}
@@ -49,7 +49,7 @@ export class LevelUpCalculator {
 	static XPRequiredToAdvanceToLevel(eLevel: number) : number {
 		const val = this.XPToAdvanceTable.get(eLevel);
 		if (val)
-			{return val;}
+		{return val;}
 		if (eLevel <= 1) {
 			if (eLevel < 1) {
 				this.XPToAdvanceTable.set(eLevel, 0);
@@ -64,12 +64,6 @@ export class LevelUpCalculator {
 		this.XPToAdvanceTable.set(eLevel, XPNeeded);
 		return XPNeeded;
 	}
-
-	//static async converterFromOldSystem( actor: PC | NPCAlly): Promise<void> {
-	//	if (actor.system.personaleLevel != 0) return;
-	//	//TODO: finish this
-	//	const eLevel = this.getElevelOfOldSystem(actor);
-	//}
 
 	static getElevelOfOldSystem(actor : PC | NPCAlly) : number {
 		const baseLvl = actor.system.combat.classData.level;
@@ -104,6 +98,39 @@ export class LevelUpCalculator {
 			console.log(` ${lvl} : ${XPNeeded}`);
 		}
 
+	}
+
+	static XPRequiredToNextLevel(currLevel: number) {
+		return this.minXPForEffectiveLevel(currLevel +1) - this.minXPForEffectiveLevel(currLevel);
+
+	}
+
+
+	static XPToGainXLevels(oldXP : number, levelsToGain: number) : number {
+		let newXP = oldXP;
+		let TotalXPGain = 0;
+		while (levelsToGain >= 1) {
+			const currLevel= this.getEffectiveLevel(newXP);
+			const neededXP = this.XPRequiredToNextLevel(currLevel);
+			levelsToGain -= 1;
+			newXP += neededXP;
+			TotalXPGain += neededXP;
+		}
+		while (levelsToGain > 0) {
+			const currLevel= this.getEffectiveLevel(newXP);
+			const neededXP = this.XPRequiredToNextLevel(currLevel);
+			const gainedXP = neededXP * levelsToGain;
+			newXP += gainedXP;
+			TotalXPGain += gainedXP;
+			levelsToGain = 0;
+		}
+		if (newXP - oldXP != TotalXPGain) {
+			console.log("XP Gain mismatch");
+			Debug(newXP, oldXP, TotalXPGain);
+		}
+		TotalXPGain = Math.round(TotalXPGain);
+		console.log(`Total XP gain: ${TotalXPGain}`);
+		return TotalXPGain;
 	}
 
 }

@@ -341,6 +341,7 @@
 	"persona.modifier.actions-per-turn": "Actions per turn",
 	"persona.modifier.baleful-status-duration": "Baleful Status Duration",
 	"persona.modifier.d-mon-storage": "Max D-Mon storage",
+	"persona.modifier.fusion-xp-boost-sl-percent": "SL XP Boost Multiplier (decimal%, additive)",
 	"persona.modifier.max-defense-boosts": "Max Defense Boosts",
 	"persona.modifier.max-resist-boosts": "Max Resist Boosts",
 

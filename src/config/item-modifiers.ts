@@ -79,6 +79,7 @@ export const ACTOR_STATS_TYPES = [
 	"max-defense-boosts",
 	"max-resist-boosts",
 	"d-mon-storage",
+	"fusion-xp-boost-sl-percent",
 ] as const;
 
 export const SHADOW_STATS_TYPES = [
