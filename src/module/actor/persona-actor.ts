@@ -1579,6 +1579,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				debugMarker = 2;
 				await this.update( {"system.combat.hp": mhp});
 			}
+			if (this.theurgyVal < 0 || this.theurgyVal > this.theurgyMax) {
+				await this.update( {"system.combat.theurgy.value": Math.clamp (this.theurgyVal, 0, this.theurgyMax)});
+			}
 			if (this.hasStatus("full-fade") && this.system.combat.hp != 0) {
 				debugMarker = 3;
 				await this.update( {"system.combat.hp": 0});
