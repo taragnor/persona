@@ -41,16 +41,7 @@
 
 		{{#if (scanLevelgte persona 1)}}
 		{{> "systems/persona/parts/vitals-section.hbs" CONST=CONST persona=persona}}
-		{{#if persona.user.system.creatureTags}}
-		<div>
-			<label>
-				Tags:
-			</label>
-			{{#each persona.user.system.creatureTags as |tag|}}
-			{{localize (lookup ../CREATURE_TAGS tag)}}
-			{{/each}}
-		</div>
-		{{/if}}
+		{{> "systems/persona/parts/creatureTags.hbs" actor=persona.user POWERSTUFF=POWERSTUFF allowEdit=false}}
 		{{/if}}
 	</div>
 </section>

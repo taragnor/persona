@@ -1762,3 +1762,29 @@ animation:
 	overflow-y: scroll;
 	max-height:600px;
 }
+
+.creature-tag-list > * {
+	width: 22%;
+	min-width: 22%;
+	max-width: 22%;
+	margin: 4px;
+	height: 1.2em;
+	overflow: hidden;
+	background-color: #222;
+	border-radius: 6px;     /* rounded corners */
+	color: white;           /* text stands out on dark background */
+	padding: 0.2em 0.5em;   /* some space inside */
+}
+
+.combat-panel .creature-tag-list > * {
+	margin-left: 3px;
+	margin-right: 3px;
+	margin-top: 2px;
+	margin-bottom: 2px;
+	width: 30%;
+	min-width: 30%;
+	max-width: 30%;
+	font-size: smaller;
+	padding: 1px;
+	border-radius: 6px;     /* rounded corners */
+}

@@ -1,5 +1,5 @@
 <div class="creatureTags">
-	{{#if (isGM)}}
+	{{#if (and allowEdit (isGM))}}
 	<h2>
 		<span>Tags</span>
 		<a class="addCreatureTag">
@@ -19,7 +19,18 @@
 		{{/each}}
 	</div>
 	{{else}}
-	<span>Tags: </span> <span>{{getCreatureTagList actor}}</span>
+	{{#if (getCreatureTagList actor)}}
+	<div>
+		<h4>Tags</h4>
+		<div class="creature-tag-list f-row">
+			{{#each (getCreatureTagList actor) as |tag i|}}
+			<div>
+				{{tag}}
+			</div>
+			{{/each}}
+		</div>
+	</div>
+	{{/if}}
 	{{/if}}
 </div>
 

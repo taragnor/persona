@@ -33,7 +33,7 @@
 						<input type="checkbox" name="system.combat.usingMetaPod" {{checked actor.system.combat.usingMetaPod}} {{#if (not (canChangePodStatus actor))}} disabled {{/if}}>
 					</div>
 				</div>
-				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
+				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF allowEdit=true}}
 			</div>
 			<div>
 				{{#if (not actor.system.combat.personaImg)}}

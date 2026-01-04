@@ -16,6 +16,7 @@ export class CombatPanel extends SidePanel {
 
 	constructor() {
 		super ("combat-panel");
+		this.mode = "main";
 	}
 
 	get combat() : PersonaCombat {
@@ -43,6 +44,9 @@ export class CombatPanel extends SidePanel {
 
 	override get templatePath(): string {
 		const target = this.mode != "tactical" ? this.target?.actor : this.tacticalTarget?.actor ?? this.target?.actor;
+		if (this.mode == "tactical") {
+			return this._observerTemplate();
+		}
 		if (!target) {return "";}
 		switch (true) {
 			case target.isNPCAlly():
@@ -92,6 +96,7 @@ export class CombatPanel extends SidePanel {
 
 	async setTacticalTarget(token: UN<PToken>) {
 		if (!PersonaSettings.combatPanel()) {return;}
+		if (this.tacticalTarget == token) {return;}
 		if (token == undefined) {
 			this.tacticalTarget = undefined;
 			await this.updatePanel({});
@@ -104,6 +109,7 @@ export class CombatPanel extends SidePanel {
 
 	async setTarget(token: UN<PToken>) {
 		if (!PersonaSettings.combatPanel()) {return;}
+		if (this._target == token) {return;}
 		if (token == undefined || !token.actor) {
 			this._target = undefined;
 			this.clearPanel();
@@ -116,6 +122,7 @@ export class CombatPanel extends SidePanel {
 		this._target = token;
 		this.mode = "main";
 		try {
+			await this.setTacticalTarget(null);
 			await this.updatePanel({});
 		} catch (e) {
 			if (e instanceof Error) {

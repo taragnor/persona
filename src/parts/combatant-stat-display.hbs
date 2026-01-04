@@ -3,9 +3,7 @@
 		<header>
 			{{> "systems/persona/parts/scan-sheet-header.hbs" persona=persona}}
 		</header>
-
 		<hr>
-
 		{{#if (scanLevelgte persona 1)}}
 		{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=persona}}
 
