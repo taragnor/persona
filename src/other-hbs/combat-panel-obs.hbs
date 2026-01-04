@@ -1,4 +1,4 @@
 {{#if (eq mode "tactical")}}
 <h2 title="right click to exit"> Tactical View </h2>
 {{/if}}
-{{> "systems/persona/parts/combatant-stat-display.hbs" persona=persona CONST=CONST actor=target.actor}}
+{{> "systems/persona/parts/combatant-stat-display.hbs" persona=persona CONST=CONST actor=target.actor hideNormal=true}}

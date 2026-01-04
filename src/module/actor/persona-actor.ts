@@ -3683,7 +3683,6 @@ get canSwitchPersonas() : boolean {
 		&& this.isAlive();
 }
 
-
 /** should get called after a search action or after entering a new region*/
 async onMetaverseTimeAdvance(): Promise<string[]> {
 	const ret: string[] = [];

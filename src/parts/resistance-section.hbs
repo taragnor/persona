@@ -2,6 +2,7 @@
 <section class="resistance">
 	<div class="resistance-block">
 		{{#each persona.resistancesPrintable as |resist i|}}
+		{{#if (or (not ../hideNormal) (ne resist.resistance "normal"))}}
 		<div class="resistance-item">
 			<img src="{{resist.icon}}">
 			<div>
@@ -9,6 +10,7 @@
 				{{resist.resistanceLoc}}
 			</div>
 		</div>
+		{{/if}}
 		{{/each}}
 	</div>
 </section>
