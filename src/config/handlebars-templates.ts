@@ -96,6 +96,7 @@ const templateFileNames : string[] =[
 	"vitals-section.hbs",
 	"combat-panel-control-body-main.hbs",
 	"combat-panel-control-body-inventory.hbs",
+	"status-block.hbs",
 ];
 
 export const templatePaths = templateFileNames.

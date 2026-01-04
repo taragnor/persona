@@ -1,0 +1,11 @@
+{{#if actor.printableActiveStatuses}}
+<section class="active-statuses">
+	<b>Active Effects:</b>
+	{{#each actor.printableActiveStatuses as |status i|}}
+	<span class="status-effect" title="{{status.description}}" data-effect-id="{{status.id}}">
+		{{status.name}}
+	</span>
+	{{/each}}
+</section>
+{{/if}}
+

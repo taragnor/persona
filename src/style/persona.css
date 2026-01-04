@@ -1753,3 +1753,7 @@ animation:
     transform: translateX(150%);
   }
 }
+
+.control-panel .active-statuses {
+	margin: 10px;
+}
