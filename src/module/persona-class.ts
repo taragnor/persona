@@ -72,7 +72,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	get activeCombatPowers() : readonly Power[] {
-		return this.powers.filter( pwr => pwr.system.subtype == "magic" || pwr.system.subtype == "weapon");
+		return this.powers.filter( pwr =>
+			pwr.isMagicSkill()
+			|| pwr.isWeaponSkill()
+			|| pwr.isCombatPower()
+		);
 	}
 
 	get bonusPowers() : readonly Power [] {

@@ -1612,11 +1612,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	refreshTheurgyBarStyle() {
-		// console.log("Refreshing Theurgy Bar");
 		const percent = Math.round(100 * this.theurgyVal / this.theurgyMax);
 		const fill = document.querySelector('.theurgy-fill');
 		if (fill == null) {return;}
-		// console.log("Theurgy Fill not found");
 		let hue;
 		if (percent < 35) {hue = 215;}      // blue
 		else if (percent < 70) {hue = 50;}  // yellow

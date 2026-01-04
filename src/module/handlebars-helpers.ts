@@ -1054,6 +1054,10 @@ export class PersonaHandleBarsHelpers {
 			return String(Math.round(100 * actor.theurgyVal / actor.theurgyMax));
 		},
 
+		"isSpecialPower": function (power: Power) : boolean {
+			return power.hasTag("theurgy");
+		}
+
 	};
 
 } //end of class

@@ -1712,3 +1712,44 @@ animation:
   }
 }
 
+.control-panel .inventory-button {
+	margin-top: 6px;
+}
+
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+/* shimmer overlay */
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.35) 45%,
+    rgba(255, 255, 255, 0.35) 55%,
+    transparent 70%
+  );
+
+  transform: translateX(-150%);
+  animation: shimmer-sweep 2.2s ease-in-out infinite;
+
+  pointer-events: none;
+}
+
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-150%);
+  }
+  50% {
+    transform: translateX(150%);
+  }
+  100% {
+    transform: translateX(150%);
+  }
+}

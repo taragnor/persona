@@ -1,8 +1,8 @@
 <div class="basic-powers">
 	{{#each actor.basicPowers as |power i|}}
 	<div>
-		<button class="rollPower basic-power {{#if (not (canUsePower ../persona power))}} faded disabled {{/if}} {{#if ../disabled}} disabled {{/if}}" data-power-id="{{power.id}}" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power}}'>
-			<img class="power-img" src="{{power.img}}" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power}}' data-basic-power-index='{{i}}'>
+		<button class="rollPower basic-power {{#if (not (canUsePower ../persona power))}} faded disabled {{/if}} {{#if ../disabled}} disabled {{/if}}" data-power-id="{{power.id}}" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power persona=../persona}}'>
+			<img class="power-img" src="{{power.img}}" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power persona=../persona}}' data-basic-power-index='{{i}}'>
 		</button>
 	</div>
 	{{/each}}

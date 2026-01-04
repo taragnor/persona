@@ -11,7 +11,7 @@
 
 <div class="main-powers">
 	{{#each persona.activeCombatPowers as |power i|}}
-	<div class="main-power {{#if (not (canUsePower ../persona power))}} faded {{/if}}" data-power-id="{{power.id}}" title="{{powerCostString power ../persona}}">
+	<div class="main-power {{#if (not (canUsePower ../persona power))}} faded {{/if}} {{#if (isSpecialPower power)}} shimmer {{/if}}" data-power-id="{{power.id}}" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power persona=../persona}}' >
 		<div class="power-name-block">
 			<div class="power-name-bubble-container">
 				{{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../persona}}
@@ -21,6 +21,7 @@
 	{{/each}}
 </div>
 
+<hr>
 <button class="inventory-button">
 	Item
 </button>

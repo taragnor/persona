@@ -16,7 +16,11 @@
 
 	{{#if persona.user.theurgyMax}}
 	<div class="theurgy-bar" title="Theurgy Charge">
-		<div class="theurgy-fill"></div>
+		<div class="theurgy-fill">
+			{{#if (eq persona.user.theurgyVal persona.user.theurgyMax)}}
+			<span> CHARGED</span>
+			{{/if}}
+		</div>
 	</div>
 	{{/if}}
 </section>

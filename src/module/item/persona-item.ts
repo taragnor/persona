@@ -1099,7 +1099,18 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			default:
 				this.system.subtype satisfies never;
 		}
+		if (this.hasTag("theurgy")) {
+			return "Expends Theurgy Energy";
+		}
 		return 'free';
+	}
+
+	isCombatPower(this: Usable): boolean {
+		const combatTags : PowerTag[] = ["healing", "status-removal", "ailment", "buff", "debuff", "instantKill"];
+		return this.isMagicSkill()
+			|| this.isWeaponSkill()
+			|| this.canDealDamage()
+			|| combatTags.some( tag => this.hasTag(tag));
 	}
 
 	estimateShadowCosts(this: Power, user: ValidAttackers) : Power["system"]["energy"] {
