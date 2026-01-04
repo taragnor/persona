@@ -75,6 +75,9 @@ export class CombatPanel extends SidePanel {
 		 html.find(".control-panel button.inventory-button").on("click", (ev) => void this._onInventoryButton(ev));
 		 html.find(".control-panel button.return-button").on("click", (ev) => void this._onReturnToMainButton(ev));
 		 html.find(".active-control-panel .inventory-item:not(.faded)").on("click", (ev) => void this._onUseItem(ev));
+		 if ( this.target) {
+			 this.target.actor.refreshTheurgyBarStyle();
+		 }
 	 }
 
 	async setTarget(token: UN<PToken>) {

@@ -1582,6 +1582,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			if (this.theurgyVal < 0 || this.theurgyVal > this.theurgyMax) {
 				await this.update( {"system.combat.theurgy.value": Math.clamp (this.theurgyVal, 0, this.theurgyMax)});
 			}
+			this.refreshTheurgyBarStyle();
 			if (this.hasStatus("full-fade") && this.system.combat.hp != 0) {
 				debugMarker = 3;
 				await this.update( {"system.combat.hp": 0});
@@ -1602,6 +1603,31 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			PersonaError.softFail(`Error on Refresh HP Status for ${this.name}, ${this.id}, hp: ${hp}, mhp: ${mhp}, debug:${debugMarker}`, e);
 		}
 		this._antiloop = false;
+	}
+
+	async resetTheurgy() {
+		if (this.theurgyVal == 0) {return;}
+		console.debug(`Theurgy for ${this.name} reset to 0 (was ${this.theurgyVal})`);
+		await this.update( {"system.combat.theurgy.value": 0});
+	}
+
+	refreshTheurgyBarStyle() {
+		// console.log("Refreshing Theurgy Bar");
+		const percent = Math.round(100 * this.theurgyVal / this.theurgyMax);
+		const fill = document.querySelector('.theurgy-fill');
+		if (fill == null) {return;}
+		// console.log("Theurgy Fill not found");
+		let hue;
+		if (percent < 35) {hue = 215;}      // blue
+		else if (percent < 70) {hue = 50;}  // yellow
+		else {hue = 0;}                     // red
+
+		//@ts-expect-error stuff that annoys TS
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+		fill.style.setProperty('--fill', `${percent}%`);
+		//@ts-expect-error stuff that annoys TS
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+		fill.style.setProperty('--hue', hue);
 	}
 
 	async updateOpacity(this: ValidAttackers, hp: number) {
@@ -3005,6 +3031,7 @@ async onEnterMetaverse()  : Promise<void> {
 	if (!this.isValidCombatant()) {return;}
 	if (this.system.type == "pc" && !this.hasPlayerOwner) {return;} //deal with removing item piles and such
 	try {
+		await this.resetTheurgy();
 		await this.fullHeal();
 		if (this.system.type == "pc") {
 			await (this as PC).refreshSocialLink(this as PC);
@@ -3040,6 +3067,7 @@ async endEffectsOfDurationOrLess( duration: StatusDuration) : Promise<ActiveEffe
 
 async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 	try {
+		await this.resetTheurgy();
 		if (this.isPC() && !this.isRealPC()) {return;} //skip fake PCs like itempiles and the party token
 		if (this.isRealPC()) {
 			let fatigue = (this.tarot?.name == "Strength") ?
@@ -4033,9 +4061,8 @@ async onCombatStart() {
 
 
 async onKO() : Promise<void> {
-	console.log("Calling onKO");
 	if (this.isPCLike() && this.theurgyVal > 0) {
-		await this.modifyTheurgy(-1000);
+		await this.resetTheurgy();
 	}
 	await Promise.allSettled(
 		this.effects.contents.map( eff => eff.onKO())

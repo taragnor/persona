@@ -13,5 +13,11 @@
 	<label> Energy </label>
 	<span> {{persona.user.energy}} / {{persona.user.maxEnergy}} </span>
 	{{/if}}
+
+	{{#if persona.user.theurgyMax}}
+	<div class="theurgy-bar" title="Theurgy Charge">
+		<div class="theurgy-fill"></div>
+	</div>
+	{{/if}}
 </section>
 

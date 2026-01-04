@@ -546,8 +546,8 @@ export class PersonaHandleBarsHelpers {
 				case "tarot":
 				case "pc":
 				case "npc":
-				case "npcAlly":
 					return false;
+				case "npcAlly":
 				case "shadow":
 					return true;
 				default:
@@ -1047,8 +1047,12 @@ export class PersonaHandleBarsHelpers {
 
 		"isCombatPanelActive" : function () {
 			return CombatPanel.isActiveControl();
-		}
+		},
 
+		"theurgyPercent": function (actor: ValidAttackers) : string {
+			if (actor.theurgyMax == 0) {return String(0);}
+			return String(Math.round(100 * actor.theurgyVal / actor.theurgyMax));
+		},
 
 	};
 
