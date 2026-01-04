@@ -377,14 +377,7 @@ export class CombatResult  {
 				break;
 			}
 			case "inspiration-cost": {
-				// let situation: Situation | undefined = atkResult?.situation;
 				if (!effect) {break;}
-				// if (!situation) {
-				// 	situation = {
-				// 		user: effect.actor,
-				// 		target: effect.actor,
-				// 	};
-				// }
 				const socialTarget = getSocialLinkTarget(cons.socialLinkIdOrTarot, situation, undefined);
 				if (!socialTarget) {break;}
 				effect.otherEffects.push( {
@@ -423,14 +416,6 @@ export class CombatResult  {
 				});
 				break;
 			}
-			// case "scan":
-			// 	if (!effect) {break;}
-			// 	effect.otherEffects.push( {
-			// 		type: cons.type,
-			// 		level: cons.amount ?? 1,
-			// 		downgrade: cons.downgrade ?? false,
-			// 	});
-			// 	break;
 			case "social-card-action": {
 				//must be executed playerside as event execution is a player thing
 				const otherEffect : SocialCardActionConsequence = {
@@ -476,7 +461,23 @@ export class CombatResult  {
 					...cons,
 					situation: situation,
 				};
-				effect?.otherEffects.push(alterVarCons);
+				if (cons.varType == "social-temp" && "amount" in cons && cons.operator != "set-range") {
+					const amount = this.resolveConsequenceAmount(cons, situation, "value");
+					const otherEffect : SocialCardActionConsequence & {cardAction: "set-temporary-variable"} = {
+						type: "social-card-action",
+						cardAction: "set-temporary-variable",
+						variableId: cons.variableId,
+						operator: cons.operator,
+						value: amount,
+					};
+					await PersonaSocial.execSocialCardAction(otherEffect);
+					break;
+				}
+				if (target) {
+					effect?.otherEffects.push(alterVarCons);
+				} else {
+					this.globalOtherEffects.push(alterVarCons);
+				}
 				break;
 			}
 			case "perma-buff":
@@ -495,8 +496,7 @@ export class CombatResult  {
 				break;
 			case "inventory-action": {
 				if (!effect) {break;}
-				const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
-				const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation) ?? 1;
+				const amount = this.resolveConsequenceAmount(cons, situation);
 				if (cons.invAction != "add-treasure") {
 					const resolvedCons = {
 						...cons,
@@ -531,6 +531,12 @@ export class CombatResult  {
 		}
 		const effects = this.attacks.get(atkResult)!;
 		CombatResult.mergeChanges(effects, [effect]);
+	}
+
+	resolveConsequenceAmount<T extends Sourced<object> & {[K in S]: ConsequenceAmount}, S extends string = "amount">(cons: T, situation: Situation, field: S | "amount" = "amount") {
+		const sourced = ConsequenceAmountResolver.extractSourcedFromField(cons, field as S);
+		const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation) ?? 1;
+		return amount;
 	}
 
 	merge(other: CombatResult) {

@@ -108,7 +108,11 @@ export class ConsequenceProcessor {
 			case 'combat-effect':
 				return targets.map( applyTo => ({applyTo, cons}));
 			case 'alter-variable':
+				if (cons.varType == "actor") {
 				return targets.map( applyTo => ({applyTo, cons}));
+				} else {
+					return [{applyTo: "global", cons}];
+				}
 			case 'perma-buff':
 			case 'alter-fatigue-lvl':
 			case "gain-levels":

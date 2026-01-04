@@ -21,7 +21,6 @@ import { PersonaCalendar } from "./persona-calendar.js";
 import { ArrayCorrector } from "../item/persona-item.js";
 import { StudentSkill } from "../../config/student-skills.js";
 
-import { getActiveConsequences } from "../preconditions.js";
 import { CardRoll } from "../../config/social-card-config.js";
 import { testPreconditions } from "../preconditions.js";
 import { CardEvent } from "../../config/social-card-config.js";
@@ -911,7 +910,8 @@ export class PersonaSocial {
 		</span>
 		` : "";
 		html += finale;
-		html += `<div class="token-spends">
+		if (tokenSpends.length + SLImproveSpend.length > 0) {
+			html += `<div class="token-spends">
 		<h3>Token Spends:</h3>
 		<ul>
 		${SLImproveSpend}
@@ -919,6 +919,7 @@ export class PersonaSocial {
 		</ul>
 		</div>
 		`;
+		}
 		const speaker = ChatMessage.getSpeaker();
 		const msgData : MessageData = {
 			speaker,
@@ -1244,7 +1245,7 @@ export class PersonaSocial {
 	}
 
 static async applyEffects(effects: ConditionalEffectC[], situation: Situation, actor: PC) {
-	const results = effects.flatMap( eff=> getActiveConsequences(eff, situation));
+	const results = effects.flatMap( eff=> eff.getActiveConsequences(situation));
 	const processed= ConsequenceProcessor.processConsequences_simple(results, situation);
 	const result = new CombatResult();
 	for (const c of processed.consequences) {
@@ -1526,6 +1527,9 @@ static setSocialVariable(varId: string, value: number) {
 		return;
 	}
 	const varData = this.rollState.cardData.variables;
+	if (PersonaSettings.debugMode()) {
+		console.log(`Changed social variable ${varId} to ${value}`);
+	}
 	varData[varId] = value;
 }
 

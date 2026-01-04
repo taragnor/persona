@@ -147,6 +147,8 @@ export class ConsequenceConverter {
 		}
 		if (PersonaSettings.debugMode()) {
 			console.debug(`Applying default applyTo of 'target' for ${cons.type}`);
+			// console.debug(cons);
+			// Debug(cons);
 		}
 		return "target";
 	}
