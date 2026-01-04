@@ -8,7 +8,7 @@ import { PersonaSettings } from "../config/persona-settings.js";
 import { Metaverse } from "./metaverse.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
-import { PersonaCombat } from "./combat/persona-combat.js";
+import { PersonaCombat, PToken } from "./combat/persona-combat.js";
 import { ModifierList } from "./combat/modifier-list.js";
 import { PersonaError } from "./persona-error.js";
 import { localize } from "./persona.js";
@@ -901,12 +901,26 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			|| this._isTrulyUsable(usable)
 			|| this._canPayActivationCostCheck(usable)
 			|| this._checkConditionals(usable)
+			|| this._checkTeamworkMove(usable)
 		;
 		if (msg === null) {return true;}
 		if (outputReason) {
 			ui.notifications.warn(msg);
 		}
 		return false;
+	}
+
+	private _checkTeamworkMove(power: UsableAndCard) :N<FailReason> {
+		if (!power.isTeamwork() ) {return null;}
+		const combat= PersonaCombat.combat;
+		if (!combat || !combat.combatant) {return "No Combat, can't use teamwork move";}
+		if (
+			combat.combatant?.actor != this.user &&
+			this.user.hasStatus('bonus-action')
+		) {
+			return null;
+		}
+		return "Can't use a teamwork move here.";
 	}
 
 	private _isTrulyUsable( usable: UsableAndCard) : N<FailReason> {

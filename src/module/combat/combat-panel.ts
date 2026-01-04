@@ -235,7 +235,7 @@ export class CombatPanel extends SidePanel {
 	isActiveControl() : boolean {
 		const combat = PersonaCombat.combat;
 		if (!combat || combat.isSocial || combat.combatant?.token == undefined) {return false;}
-		if (this.target != combat.combatant.token) {return false;}
+		if (!this.target || !combat.turnCheck(this.target)) {return false;}
 		return this.target?.actor?.isOwner ?? false;
 		//TODO: may want to check that target is combatant in battle
 	}

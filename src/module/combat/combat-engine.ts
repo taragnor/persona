@@ -854,7 +854,7 @@ export class CombatEngine {
 
 	async checkPowerPreqs(attacker: PToken, power: UsableAndCard) : Promise<boolean> {
 		const combat = this.combat;
-		if (combat && !combat.turnCheck(attacker, power)) {
+		if (combat && !combat.turnCheck(attacker)) {
 			if (!game.user.isGM) {
 				ui.notifications.warn("It's not your turn!");
 				return false;

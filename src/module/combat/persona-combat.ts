@@ -1417,20 +1417,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	/**return true if the target is eligible to use the power based on whose turn it is
 	 */
-	turnCheck(token: PToken, power: UsableAndCard): boolean {
+	turnCheck(token: PToken): boolean {
 		if (this.isSocial) {return true;}
 		if (!this.combatant) {return false;}
 		if (token.actor.hasStatus('baton-pass'))
 		{return true;}
 		if (token.actor.hasStatus('bonus-action'))
 		{return true;}
-		if (power.isTeamwork() ) {
-			if ( this.combatant.actor?.hasStatus('bonus-action') && this.combatant.token.id != token.id) {
-				return true;
-			}
-			ui.notifications.warn("Can't use a teamwork move here.");
-			return false;
-		}
 		return (this.combatant.token.id == token.id);
 	}
 
