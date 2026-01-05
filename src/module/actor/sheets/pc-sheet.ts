@@ -12,13 +12,14 @@ import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaDB } from "../../persona-db.js";
 import { PCLikeSheet } from "./pc-like-sheet.js";
 import { Persona } from "../../persona-class.js";
+import {HypotheticalPersona} from "../../pre-fusion-persona.js";
 
 export class PCSheet extends PCLikeSheet {
 	declare actor: Subtype<PersonaActor, "pc">;
 
 
 	personaMoveSelector : U<Persona> = undefined;
-	selectedFusion:  U<Persona> = undefined;
+	selectedFusion:  U<HypotheticalPersona> = undefined;
 	selectedCompendium: U<Persona> = undefined;
 
 	static override get defaultOptions() {
@@ -100,6 +101,7 @@ export class PCSheet extends PCLikeSheet {
 		html.find("li.fusion-option").on("click", (ev) => void this.fusionOptionSelect(ev));
 		html.find(".persona-compendium li.compendium-entry .persona-name").on("click", (ev) => void this.compendiumOptionSelect(ev));
 		html.find(".fusions-list .persona-viewer .back").on("click", ev => void this.clearFusionSelect(ev));
+		html.find(".fusions-list .persona-viewer .fuse-persona").on("click", ev => void this._initiateFusion(ev));
 		html.find(".persona-compendium .persona-viewer .back").on("click", ev => void this.clearCompendiumSelect(ev));
 	}
 
@@ -296,7 +298,7 @@ export class PCSheet extends PCLikeSheet {
 		const minorId= String(HTMLTools.getClosestData(event, "minorActionId"));
 		const minorAction= this.actor.downtimeMinorActions.find(x=> x.id == minorId);
 		if (! minorAction) {
-			throw new PersonaError(`Can't find Minor Action Id: ${minorId}`)
+			throw new PersonaError(`Can't find Minor Action Id: ${minorId}`);
 		}
 		if (minorAction.isUsableType()) {
 			if (await HTMLTools.confirmBox("Minor Action", `Use ${minorAction.name}?`)) {
@@ -363,8 +365,24 @@ export class PCSheet extends PCLikeSheet {
 		const shadow = PersonaDB.getActorById(shadowId) as Shadow;
 		if (!shadow) {
 			throw new PersonaError(`Couldn't find Shadow ${shadowId}`);
-	}
-		this.selectedFusion = new Persona(shadow, this.actor, shadow.startingPowers, true);
+		}
+		//get components
+		const componentIds: string[] = [];
+		$(ev.currentTarget).find("[data-shadow-component-id]")
+			.each( function () {
+				const x = $(this).data('shadow-component-id') as unknown;
+				if (x && typeof x == "string" && x.length > 0) {
+					componentIds.push(x);
+				}
+			});
+		const components = componentIds
+			.map(id => PersonaDB.getActorById(id))
+			.filter( act => act != undefined)
+			.filter( act => act instanceof PersonaActor && act.isShadow());
+		if (components.length < 2) {
+			throw new PersonaError("Error getting shadow components for fusion");
+		}
+		this.selectedFusion = new HypotheticalPersona(shadow, this.actor, components);
 		await this.render(false);
 	}
 
@@ -382,6 +400,14 @@ export class PCSheet extends PCLikeSheet {
 	async clearFusionSelect (_ev ?: JQuery.ClickEvent) {
 		this.selectedFusion = undefined;
 		await this.render(false);
+	}
+
+	private async _initiateFusion(_ev: JQuery.ClickEvent) {
+		const fusion = this.selectedFusion;
+		if (!fusion) {
+			throw new PersonaError("No Selected Persona for fusion");
+		}
+		await fusion.fusionProcess(this);
 	}
 
 	async clearCompendiumSelect(_ev ?: JQuery.ClickEvent) {

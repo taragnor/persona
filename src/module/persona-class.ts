@@ -31,7 +31,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	source: ValidAttackers;
 	_powers: Power[];
 	#cache: PersonaClassCache;
-	_isHypothetical: boolean;
 
 	static leveling = {
 		SHADOWS_TO_LEVEL: 10,
@@ -39,11 +38,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		XP_GROWTH: 200, //added XP for additional level ups
 	};
 
-	constructor (source: ValidAttackers, user: T, powers?: Power[], isHypothetical = false) {
+	constructor (source: ValidAttackers, user: T, powers?: Power[]) {
 		this.user = user;
 		this.source = source;
 		this._powers = powers == undefined ? source._mainPowers(): powers;
-		this._isHypothetical = isHypothetical;
 		this.resetCache();
 	}
 
@@ -375,8 +373,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.system.combat.personaStats.pLevel;
 	}
 
-	fusionXPBoost(): number {
+	get fusionXPBoost(): number {
 		if (!this.tarot) {return 0;}
+		if (!this.isHypothetical) {return 0;}
 		const SL = this.user.getSocialSLWith(this.tarot);
 		if (SL == 0) {return 0;}
 		const situation : Situation = {
@@ -638,6 +637,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	get tarot() {
 		return this.source.tarot;
+	}
+
+	get tarotLoc() {
+		return this.source.tarotLoc;
 	}
 
 
@@ -1255,8 +1258,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		await this.awardXP(XPNeeded, false);
 	}
 
+	get isHypothetical() : boolean {
+		return false;
+	}
+
 	get isActivateable() : boolean {
-		if (this._isHypothetical) {return false;}
+		if (this.isHypothetical) {return false;}
 		if (!this.source.hasPlayerOwner) {return false;}
 		return this.user.personaList
 			.some( persona => this.equals(persona));
@@ -1267,7 +1274,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	get isPartial() : boolean {
-		return this._isHypothetical;
+		return this.isHypothetical;
 	}
 
 	get canCache() : boolean {

@@ -3279,6 +3279,13 @@ async setAvailability(this: SocialLink, bool: boolean) {
 		PersonaSocial.requestAvailabilitySet(this.id, bool);
 	}
 }
+
+get tarotLoc() : string{
+	const tarot = this.tarot;
+	if (!tarot) {return "No Tarot";}
+	return localize(TAROT_DECK[tarot.name as TarotCard]);
+}
+
 get tarot() : (Tarot | undefined) {
 	if (this.cache.tarot != undefined) {
 		if (this.cache.tarot.name == "") {return undefined;}

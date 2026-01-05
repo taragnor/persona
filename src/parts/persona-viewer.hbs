@@ -30,15 +30,24 @@
 	</div>
 	{{/if}}
 
+
 	{{#if persona.isActivateable}}
 	<button class="activate-persona">
 		Switch to this Persona
 	</button>
 	{{/if}}
 	{{#if (isCopyableToCompendium persona)}}
-	 <button class="copy-to-compendium">
-		 Copy to Compendium
-	 </button>
+	<button class="copy-to-compendium">
+		Copy to Compendium
+	</button>
+	{{/if}}
+	{{#if persona.canInitiateFusion}}
+	<button class="fuse-persona">
+		Fuse Persona
+		{{#if partial}}
+		(+{{persona.fusionXPBoost}} XP {{persona.tarotLoc}})
+		{{/if}}
+	</button>
 	{{/if}}
 
 </section>

@@ -1,6 +1,7 @@
 import {ConditionalEffectManager} from "../module/conditional-effect-manager.js";
 import {Persona} from "../module/persona-class.js";
 import {PersonaDB} from "../module/persona-db.js";
+import {PersonaError} from "../module/persona-error.js";
 import {testPreconditions} from "../module/preconditions.js";
 import {TarotCard} from "./tarot.js";
 
@@ -679,13 +680,18 @@ export class FusionTable {
 		return undefined;
 	}
 
-	private static numOfInheritedSkills(p1: Shadow, p2: Shadow, result: Shadow) : number {
-		const totalSkills = p1.mainPowers.length + p2.mainPowers.length;
-		const startingSkills = result.startingPowers.length;
-		const max = 8 - startingSkills;
-		const learnedMax = Math.max(1, Math.ceil(totalSkills/2) - startingSkills);
-		return Math.min(max, learnedMax);
-	}
+	static numOfInheritedSkills(components: Shadow[], result: Shadow) : number {
+		if (components.length == 2) {
+			const p1 = components.at(0)!, p2 = components.at(1)!;
+			const totalSkills = p1.mainPowers.length + p2.mainPowers.length;
+			const startingSkills = result.startingPowers.length;
+			const max = 8 - startingSkills;
+			const learnedMax = Math.max(1, Math.ceil(totalSkills/2) - startingSkills);
+			return Math.min(max, learnedMax);
+		}
+		PersonaError.softFail(`Fusions of ${components.length} are not yet supported`);
+		return 0;
+		}
 
 	static fusionCombinationsOutOf(personas: readonly Persona[], raw= false) : FusionCombination[] {
 		const possibles : Shadow[] = personas
@@ -705,7 +711,7 @@ export class FusionTable {
 					});
 					continue;
 				}
-				const inheritedSkills = this.numOfInheritedSkills(p1, p2, result);
+				const inheritedSkills = this.numOfInheritedSkills([p1, p2], result);
 				arr.push( {
 					result,
 					components: [p1, p2],
