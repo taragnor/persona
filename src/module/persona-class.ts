@@ -162,6 +162,22 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 	}
 
+	get trueName() {
+		switch (this.source.system.type) {
+			case "pc":
+			case "npcAlly":
+				return this.source.system.personaName ?? this.source.name;
+			case "shadow":
+					if (!this.source.system.combat.builtInPersona) {
+						return this.source.name;
+					}
+				return this.source.system.personaName;
+			default:
+					this.source.system satisfies never;
+				return "ERROR";
+		}
+	}
+
 	get displayedName(): string {
 		return this.name;
 	}
