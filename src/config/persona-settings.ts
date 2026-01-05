@@ -1,6 +1,7 @@
 import {ALT_DAMAGE_SYSTEM} from "../module/combat/alt-damage-system.js";
 import {DamageInterface} from "../module/combat/damage-system.js";
 import {ORIGINAL_DAMAGE_SYSTEM} from "../module/combat/original-damage-system.js";
+import {PersonaError} from "../module/persona-error.js";
 import { WEATHER_TYPES } from "./weather-types.js";
 
 export const SYSTEMNAME = `persona` as const;
@@ -275,8 +276,20 @@ declare global {
 	}
 }
 
-
 interface RegionExploredData {
 	lastRegionId: U<string>;
 	lastSceneId: U<string>;
 }
+
+function printGlobals() {
+	if (!game.user.isGM) {throw new PersonaError("Only the GM can use this function");}
+	const globals = PersonaSettings.get("globalVariables");
+	let str = "Global Variables\n";
+	for (const [k,v] of Object.entries(globals)) {
+		str += `${k} : ${v}\n`;
+	}
+	console.log(str);
+}
+
+//@ts-expect-error adding to global scope
+window.printGlobals = printGlobals;
