@@ -916,8 +916,6 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
 	if (!(field in cond)) {
 		Debug(cond);
 		Debug(situation);
-		// const printCondition = ConditionalEffectManager.printConditional(cond as unknown as Precondition);
-		// PersonaError.softFail(`No field ${field} in ${printCondition} ${source?.name} of ${source?.parent?.name}`)
 		return [];
 	}
 	const condTarget = cond[field];
@@ -1302,6 +1300,5 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 		default:
 			condition satisfies never;
 	}
-
 }
 
