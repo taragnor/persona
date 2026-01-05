@@ -429,7 +429,7 @@
 		{{selectOptions POWERSTUFF.INVENTORY_ACTION localize=true selected=cons.invAction}}
 	</select>
 
-	{{#if (eqAny cons.invAction "add-item" "remove-item")}}
+	{{#if (eqAny (defVal cons.invAction "add-item") "add-item" "remove-item")}}
 	<div>
 		<select name="{{strcat namePrefix 'itemId'}}">
 			{{selectOptions POWERSTUFF.ITEMS localize=true selected=cons.itemId}}
