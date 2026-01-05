@@ -108,6 +108,7 @@ export class HypotheticalPersona extends Persona<PC> {
 		<div>Fused Personas: ${componentNames}</div>
 		<div>Result: ${newPersona.name}</div>
 		<div>Powers: ${newPersona.basePersona.mainPowers.map(x=> x.name).join (", ")} </div>
+		<div> NOTE: GM must manually delete component personas</div>
 		`;
 		const data : MessageData = {
 			speaker: {
