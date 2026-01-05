@@ -257,14 +257,6 @@ const SETTINGS = {
 
 type SETTINGKEYS = keyof typeof SETTINGS;
 
-// type S2 = {
-// 	[k in SETTINGKEYS] :
-// 	"choices" extends keyof Settings[k]
-// 	? keyof Settings[k]["choices"]
-// 	// ? Settings[k]["choices"][keyof Settings[k]["choices"]]
-// 	: Unwrap<InstanceType<Settings[k]["type"]>>
-// }
-
 type PersonaSettingKeysBase = Prettify<SettingsObjToSettingKeyType<typeof SETTINGS>>;
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type

@@ -660,7 +660,7 @@
 	"persona.effecttypes.play-sound": "Play Sound",
 
 	"persona.effecttypes.social-card.stop-execution": "Stop Card Execution",
-	"persona.effecttypes.social-card.exec-event": "Execute Event",
+	"persona.effecttypes.social-card.exec-event": "Execute Event (+1 event)",
 	"persona.effecttypes.social-card.inc-events": "Have Extra Event Happen",
 	"persona.effecttypes.social-card.gain-money": "Alter Money",
 	"persona.effecttypes.social-card.card-response": "Social Card Choice Response",
@@ -1132,6 +1132,7 @@
 	"persona.roll.rolltag.persuasive" : "Persuasive",
 	"persona.roll.rolltag.artistic" : "Artistic",
 	"persona.roll.rolltag.studying" : "Studying",
+	"persona.roll.rolltag.investigation" : "Investigation",
 	"persona.roll.rolltag.music" : "Music",
 	"persona.roll.rolltag.crime" : "Crime",
 	"persona.roll.rolltag.subject-math" : "Subject (Math)",

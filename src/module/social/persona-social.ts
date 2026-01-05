@@ -22,7 +22,7 @@ import { ArrayCorrector } from "../item/persona-item.js";
 import { StudentSkill } from "../../config/student-skills.js";
 
 import { CardRoll } from "../../config/social-card-config.js";
-import { testPreconditions } from "../preconditions.js";
+import { resolveActorIdOrTarot, testPreconditions } from "../preconditions.js";
 import { CardEvent } from "../../config/social-card-config.js";
 import { PersonaSockets } from "../persona.js";
 import { TarotCard } from "../../config/tarot.js";
@@ -1368,7 +1368,7 @@ static async execSocialCardAction(eff: SocialCardActionConsequence) : Promise<vo
 				await this.gainMoney(eff.amount ?? 0);
 			break;
 		case "modify-progress-tokens":
-				await this.modifyProgress(eff.amount ?? 0);
+				await this.modifyProgress(eff ?? 0);
 			break;
 		case "alter-student-skill":
 				if (!eff.studentSkill) {
@@ -1378,18 +1378,7 @@ static async execSocialCardAction(eff: SocialCardActionConsequence) : Promise<vo
 			await this.alterStudentSkill( eff.studentSkill, eff.amount ?? 0);
 			break;
 		case "modify-progress-tokens-cameo": {
-			if (!this.rollState) {
-				PersonaError.softFail(`Can't execute card action ${eff.cardAction}. No roll state`);
-				return;
-			}
-			const cameos = this.rollState.cardData.cameos;
-			const actor  = this.rollState.cardData.actor;
-			if (!cameos || cameos.length < 1) {
-				break;
-			}
-			for (const cameo of cameos) {
-				await actor.socialLinkProgress(cameo.id, eff.amount ?? 0);
-			}
+			this.modifyCameoProgress(eff.amount);
 			break;
 		}
 		case "add-card-events-to-list":
@@ -1571,7 +1560,28 @@ static replaceCardEvents(cardId: string, keepEventChain = false) {
 	cardData.extraCardTags = newCard.system.cardTags.slice();
 }
 
-static async modifyProgress(amt: number) {
+static async modifyProgress(eff: SocialCardActionConsequence & {cardAction: "modify-progress-tokens"} ) {
+	const choice = eff.socialLinkIdOrTarot;
+	if (choice == undefined || choice == "target") {
+		return this.modifyTargetProgress(eff.amount);
+	}
+	if (choice == "cameo") {
+		return this.modifyCameoProgress(eff.amount);
+	}
+	const target = resolveActorIdOrTarot(choice as string);
+	if (!this.rollState) {
+		PersonaError.softFail(`Can't add Progress to Tarot or specific SL. No roll state.`);
+		return;
+	}
+	if (!target) {
+		PersonaError.softFail(`Can't find target for ${choice as string}`);
+		return;
+	}
+	const actor  = this.rollState.cardData.actor;
+	await actor.socialLinkProgress(target.id, eff.amount);
+}
+
+static async modifyTargetProgress(amt: number) {
 	const  rs = this.checkRollState("modify Progress tokens");
 	if (!rs) {return;}
 	const actor = rs.cardData.actor;
@@ -1582,6 +1592,20 @@ static async modifyProgress(amt: number) {
 		const id = rs.cardData.card.id;
 		await actor.activityProgress(id, amt);
 	}
+}
+
+static async modifyCameoProgress (amt: number) {
+	if (!this.rollState) {
+		PersonaError.softFail(`Can't add Progress to Cameo. No roll state.`);
+		return;
+	}
+	const cameos = this.rollState.cardData.cameos;
+	const actor  = this.rollState.cardData.actor;
+	if (!cameos || cameos.length < 1) { return; }
+	for (const cameo of cameos) {
+		await actor.socialLinkProgress(cameo.id, amt ?? 0);
+	}
+
 }
 
 static checkRollState(operation: string = "perform Social Roll Operation") : typeof PersonaSocial["rollState"]  | undefined {

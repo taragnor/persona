@@ -583,9 +583,14 @@ type CardActionTypes = [
 		cardAction: "exec-event",
 		eventLabel: string,
 	}, {
-		cardAction: "inc-events" | "gain-money" | "modify-progress-tokens-cameo" | "modify-progress-tokens",
+		cardAction: "inc-events" | "gain-money" | "modify-progress-tokens-cameo" ,
 		amount: number,
 	},{
+		cardAction: "modify-progress-tokens",
+		//older versions may not have this value filled out
+		socialLinkIdOrTarot ?: SocialLinkIdOrTarot,
+		amount : number,
+	}, {
 		cardAction: "alter-student-skill",
 		studentSkill: StudentSkill,
 		amount : number,

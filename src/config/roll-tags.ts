@@ -23,6 +23,7 @@ export const ROLL_TAG_LIST = [
 	"persuasive",
 	"artistic",
 	"studying",
+	"investigation",
 	"subject-english",
 	"subject-math",
 	"subject-language",

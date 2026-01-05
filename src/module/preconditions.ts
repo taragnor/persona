@@ -896,7 +896,11 @@ export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, si
 			break;
 	}
 	if (!targetIdOrTarot) {return undefined;}
-	const idTest = PersonaDB.getActorById(targetIdOrTarot as string);
+	return resolveActorIdOrTarot(targetIdOrTarot as string);
+}
+
+export function resolveActorIdOrTarot (targetIdOrTarot: string)  {
+	const idTest = PersonaDB.getActorById(targetIdOrTarot);
 	if (idTest != undefined) {
 		if (idTest.isNPCAlly()) {
 			return idTest.getNPCProxyActor();
