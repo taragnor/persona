@@ -2,23 +2,27 @@
 	<a class="item" data-tab="personaList">
 		{{localize "persona.sheet.tabs.persona.list" }}
 	</a>
+	{{#if (canAccessCompendium)}}
 	<a class="item" data-tab="compendium">
 		{{localize "persona.sheet.tabs.persona.compendium" }}
 	</a>
 	<a class="item" data-tab="fusion-list">
 		{{localize "persona.sheet.tabs.persona.fusions" }}
 	</a>
+	{{/if}}
 </nav>
 
 <section class="persona-body">
 	<section class="tab tab-content" data-group="persona" data-tab="personaList">
 		{{> "systems/persona/parts/persona-list.hbs" actor=actor CONST=CONST selectedPersona=selectedPersona}}
 	</section>
+	{{#if (canAccessCompendium)}}
 	<section class="tab tab-content" data-group="persona" data-tab="compendium">
 		{{> "systems/persona/parts/persona-compendium.hbs" actor=actor CONST=CONST}}
 	</section>
 	<section class="tab tab-content" data-group="persona" data-tab="fusion-list">
 		{{> "systems/persona/parts/fusions-list.hbs" actor=actor CONST=CONST}}
 	</section>
+	{{/if}}
 </section>
 

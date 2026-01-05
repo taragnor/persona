@@ -946,7 +946,8 @@ export class PersonaHandleBarsHelpers {
 			return persona.isCompendiumEntry
 			&& persona.user.isPC()
 			&& persona.user.system.money >= cost
-			&& PersonaCompendium.canUseCompendium();
+			&& PersonaCompendium.canUseCompendium()
+			&& persona.user.hasSpaceForNewPersona();
 		},
 		"fusionResult": function (s1: Shadow, s2: Shadow) : U<Shadow> {
 
