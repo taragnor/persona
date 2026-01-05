@@ -41,6 +41,11 @@
 		Copy to Compendium
 	</button>
 	{{/if}}
+	{{#if (canSummon persona)}}
+	<button class="summon-persona">
+		Summon ({{persona.source.summoningCost}}) R
+	</button>
+	{{/if}}
 	{{#if persona.canInitiateFusion}}
 	<button class="fuse-persona">
 		Fuse Persona

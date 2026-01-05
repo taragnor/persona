@@ -83,7 +83,7 @@ export class PersonaCompendium {
 		if (!actor.isPersona()) {
 			throw new PersonaError(`Can't copy to compendium, ${actor.name} isn't a valid Persona`);
 		}
-		if (actor.isCompendiumEntry()) {
+		if (actor.isCompendiumEntry) {
 			throw new PersonaError("This is already a compendium Persona!");
 		}
 		let compEntry = actor.compendiumEntry;
@@ -98,12 +98,12 @@ export class PersonaCompendium {
 	}
 
 	static lookUpEntryFor(shadow: Shadow): U<Shadow> {
-		if (!shadow.isPersona() || shadow.isCompendiumEntry()) {return undefined;}
+		if (!shadow.isPersona() || shadow.isCompendiumEntry) {return undefined;}
 		const compId = shadow.system.personaConversion.compendiumId;
 		if (compId) {
 			const entry = PersonaDB.getActorById(compId);
 			if (entry && entry.isShadow()) {
-				if (!entry.isCompendiumEntry()) {
+				if (!entry.isCompendiumEntry) {
 					ui.notifications.warn(`${entry.name} is not registered as a compendium persona`);
 				}
 				return entry;
@@ -111,7 +111,7 @@ export class PersonaCompendium {
 		}
 		const check = PersonaDB.getActorByName(PersonaCompendium.convertToCompendiumName(this.name));
 		if (check && check.isShadow()) {
-			if (!check.isCompendiumEntry()) {
+			if (!check.isCompendiumEntry) {
 				ui.notifications.warn(`${check.name} is not registered as a compendium persona`);
 			}
 			return check;
@@ -124,7 +124,7 @@ export class PersonaCompendium {
 		return actor.isShadow()
 			&& actor.isPersona()
 			&& !persona.isPartial
-			&& !actor.isCompendiumEntry();
+			&& !actor.isCompendiumEntry;
 	}
 
 	static canUseCompendium() : boolean {
@@ -143,9 +143,27 @@ export class PersonaCompendium {
 	}
 
 	static costToSummon(shadow: Shadow) : number {
-		if (!shadow.isCompendiumEntry()) {return -1;}
+		if (!shadow.isCompendiumEntry) {return -1;}
 		return shadow.level * this.PERSONA_SUMMON_LEVEL_MULT;
 	}
 
+	static async retrieveFromCompendium(compEntry: Shadow,  summoner: ValidAttackers) {
+	if (!compEntry.isCompendiumEntry) {
+		throw new PersonaError(`${compEntry.name} isn't a compendium Persona`);
+	}
+		const name = this.convertToNormalName(compEntry.name);
+		const personaData = {
+			system: (compEntry.system.toJSON() as Shadow["system"]),
+			type: "shadow",
+			name,
+			img: compEntry.img,
+			prototypeToken: compEntry.prototypeToken,
+			ownership: summoner.ownership,
+		} as const;
+		const  summoned = await PersonaActor.create<Shadow>(personaData);
+		await summoned.update( {"system.personaConversion.isCompendiumEntry": false});
+		await summoned.update( {"system.personaConversion.compendiumId": compEntry.id});
+		return summoned;
+	}
 }
 

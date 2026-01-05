@@ -294,6 +294,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		});
 		await Logger.sendToChat(`${this.displayedName} gained ${amt} levels`);
 	}
+
 	/** return leveled Persona on level up*/
 	async awardXP(amt: number, allowMult = true): Promise<U<XPGainReport>> {
 		const isSideboard = this.user.sideboardPersonas.some(x=> x.equals(this));
@@ -328,18 +329,18 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			amt *= multiplier;
 		}
 		if (amt == 0) {return undefined;}
-		let levelUp = false;
+		return this.increaseXP(amt);
+
+	}
+
+	async increaseXP(amt: number): Promise<U<XPGainReport>> {
 		const currXP  = this.source.system.combat.personaStats.xp;
 		const newXP = currXP + amt;
 		let newLevel = this.level;
 		while (newXP >= LevelUpCalculator.minXPForEffectiveLevel(newLevel +1)) {
 			newLevel += 1;
 		}
-		if (newLevel > this.level) {
-			levelUp = true;
-			//TODO: FINISH THIS
-			// await this.source.onLevelUp_BasePersona(newLevel);
-		}
+		const	levelUp = newLevel> this.level;
 		if (!PersonaSettings.freezeXPGain()) {
 			await this.source.update({
 				"system.combat.personaStats.xp" : newXP,
@@ -371,21 +372,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	get pLevel() : number {
 		return this.source.system.combat.personaStats.pLevel;
-	}
-
-	get fusionXPBoost(): number {
-		if (!this.tarot) {return 0;}
-		if (!this.isHypothetical) {return 0;}
-		const SL = this.user.getSocialSLWith(this.tarot);
-		if (SL == 0) {return 0;}
-		const situation : Situation = {
-			user: this.user.accessor,
-		};
-		const XPBoost = this.user.getPersonalBonuses("fusion-xp-boost-sl-percent").total(situation, "standard");
-		if (XPBoost <= 0) {return 0;}
-		const levels = XPBoost * SL;
-		const XPGain = LevelUpCalculator.XPToGainXLevels(this.totalXP, levels);
-		return XPGain;
 	}
 
 	isEligibleToBecomeDMon() : boolean {
@@ -1260,6 +1246,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	get isHypothetical() : boolean {
 		return false;
+	}
+
+	get isCompendiumEntry() : boolean {
+		return this.source.isCompendiumEntry;
 	}
 
 	get isActivateable() : boolean {

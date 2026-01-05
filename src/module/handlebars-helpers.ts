@@ -683,7 +683,6 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"scanLevelgte": function (persona: Persona, val: number) : boolean {
-			console.log("scan level GTE");
 			if (game.user.isGM) {return true;}
 			return persona.effectiveScanLevel >= val;
 		},
@@ -942,6 +941,13 @@ export class PersonaHandleBarsHelpers {
 				&& PersonaCompendium.isCopyableToCompendium(persona);
 		},
 
+		"canSummon": function (persona: Persona) : boolean {
+			const cost = persona.user.summoningCost;
+			return persona.isCompendiumEntry
+			&& persona.user.isPC()
+			&& persona.user.system.money >= cost
+			&& PersonaCompendium.canUseCompendium();
+		},
 		"fusionResult": function (s1: Shadow, s2: Shadow) : U<Shadow> {
 
 			return FusionTable.fusionResult(s1, s2);

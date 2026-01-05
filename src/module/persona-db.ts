@@ -378,8 +378,8 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		if (!this.#cache.personaCompendium) {
 		this.#cache.personaCompendium = this.allActors()
 			.filter ( x=> x.isShadow())
-			.filter(x=> x.isCompendiumEntry())
-			.sort( (a,b)=> a.name.localeCompare(b.name));
+			.filter( x=> x.isCompendiumEntry )
+			.sort( (a,b)=> a.name.localeCompare(b.name) );
 		}
 		return this.#cache.personaCompendium;
 	}

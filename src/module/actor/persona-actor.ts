@@ -2292,7 +2292,8 @@ isPersona(): boolean {
 	return this.isShadow() && (this.system.creatureType == "persona");
 }
 
-isCompendiumEntry(this: Shadow) : boolean {
+get isCompendiumEntry() : boolean {
+	if (!this.isShadow()) {return false;}
 	return this.isPersona() &&
 		PersonaCompendium.isCompendiumEntry(this);
 }
@@ -2301,28 +2302,6 @@ isCustomPersona(this: ValidAttackers): boolean {
 	return this.isPersona() &&
 		(	this.hasTag("custom-persona") || this.hasTag("lone-persona"));
 }
-
-// compendiumVersion(this: Shadow) : U<Shadow> {
-// 	if (!this.isPersona() || this.isCompendiumEntry()) {return undefined;}
-// 	const compId = this.system.personaConversion.compendiumId;
-// 	if (compId) {
-// 		const entry = PersonaDB.getActorById(compId);
-// 		if (entry && entry.isShadow()) {
-// 			if (!entry.isCompendiumEntry()) {
-// 				ui.notifications.warn(`${entry.name} is not registered as a compendium persona`);
-// 			}
-// 			return entry;
-// 		}
-// 	}
-// 	const check = PersonaDB.getActorByName(PersonaCompendium.convertToCompendiumName(this.name));
-// 	if (check && check.isShadow()) {
-// 		if (!check.isCompendiumEntry()) {
-// 			ui.notifications.warn(`${check.name} is not registered as a compendium persona`);
-// 		}
-// 		return check;
-// 	}
-// 	return undefined;
-// }
 
 knowsPowerInnately(this: ValidAttackers, power : Power)  : boolean{
 	const powers = this.system.combat.powers;
@@ -4486,7 +4465,7 @@ private async _trySwapPersona(this: PC, p1: Persona, p2: Persona)  : Promise<boo
 
 /** number of R to summon from compendium*/
 get summoningCost() : number {
-	if (!this.isShadow() || !this.isCompendiumEntry()) { return -1;}
+	if (!this.isShadow() || !this.isCompendiumEntry) { return -1;}
 	return PersonaCompendium.costToSummon(this);
 }
 

@@ -293,7 +293,6 @@ export class FinalizedCombatResult {
 				style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 			}, {});
 		}
-
 		const html = header + await this.HTMLBody();
 		const chatMsg = await ChatMessage.create( {
 			speaker: {

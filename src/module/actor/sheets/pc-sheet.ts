@@ -13,6 +13,7 @@ import { PersonaDB } from "../../persona-db.js";
 import { PCLikeSheet } from "./pc-like-sheet.js";
 import { Persona } from "../../persona-class.js";
 import {HypotheticalPersona} from "../../pre-fusion-persona.js";
+import {PersonaCompendium} from "../../persona-compendium.js";
 
 export class PCSheet extends PCLikeSheet {
 	declare actor: Subtype<PersonaActor, "pc">;
@@ -102,6 +103,7 @@ export class PCSheet extends PCLikeSheet {
 		html.find(".persona-compendium li.compendium-entry .persona-name").on("click", (ev) => void this.compendiumOptionSelect(ev));
 		html.find(".fusions-list .persona-viewer .back").on("click", ev => void this.clearFusionSelect(ev));
 		html.find(".fusions-list .persona-viewer .fuse-persona").on("click", ev => void this._initiateFusion(ev));
+		html.find(".persona-viewer .summon-persona").on("click", ev => void this._summonPersona(ev));
 		html.find(".persona-compendium .persona-viewer .back").on("click", ev => void this.clearCompendiumSelect(ev));
 	}
 
@@ -387,7 +389,6 @@ export class PCSheet extends PCLikeSheet {
 	}
 
 	async compendiumOptionSelect(ev: JQuery.ClickEvent) {
-		ui.notifications.notify("click");
 		const shadowId = HTMLTools.getClosestData(ev, "personaId");
 		const shadow = PersonaDB.getActorById(shadowId) as Shadow;
 		if (!shadow) {
@@ -407,11 +408,32 @@ export class PCSheet extends PCLikeSheet {
 		if (!fusion) {
 			throw new PersonaError("No Selected Persona for fusion");
 		}
-		await fusion.fusionProcess(this);
+		const fused = await fusion.fusionProcess(this);
+		if (!fused) {return;}
+		this.selectedFusion = undefined;
+		await this.render(false);
 	}
 
 	async clearCompendiumSelect(_ev ?: JQuery.ClickEvent) {
 		this.selectedCompendium = undefined;
 		await this.render(false);
+	}
+
+	async _summonPersona (_ev ?: JQuery.ClickEvent) {
+		const selected=  this.selectedCompendium;
+		if (!selected || !selected.source.isShadow()) {return;}
+		const hasDuplicate = this.actor.sideboardPersonas.concat (this.actor.personaList).some(x => x.compendiumEntry && x.compendiumEntry == selected.source);
+		if (hasDuplicate) {
+			ui.notifications.notify("Can't summon, as you alerady have a persona of this type on your roster");
+			return;
+		}
+		const cost = selected.source.summoningCost;
+		const confirm = await HTMLTools.confirmBox("Summon Persona", `Really summon ${selected.name} for ${cost}R?`);
+		if (!confirm) {return;}
+		await this.actor.spendMoney(cost);
+		const summoned = await PersonaCompendium.retrieveFromCompendium(selected.source, this.actor);
+		await this.actor.addPersona(summoned);
+		await this.render(false);
+		await Logger.sendToChat(`${this.actor.name} summoned ${summoned.name} L${summoned.level} from Compendium for ${cost}.`);
 	}
 }
