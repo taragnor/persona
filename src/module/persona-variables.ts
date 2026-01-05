@@ -9,6 +9,7 @@ import { PersonaSocial } from "./social/persona-social.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import {ConsequenceAmountResolver} from "./conditionalEffects/consequence-amount.js";
+import {PersonaSettings} from "../config/persona-settings.js";
 
 export class PersonaVariables {
 	static async alterVariable (cons: SourcedConsequence & {type: "alter-variable"}, situation : Partial<Situation>) {
@@ -105,8 +106,7 @@ export class PersonaVariables {
 	static async #set(data: VariableData, value: number) {
 		switch (data.varType) {
 			case "global":
-				//TODO: implement
-				PersonaError.softFail("Setting global variable not yet implemented");
+				await PersonaSettings.setGlobalVariable(data.variableId, value);
 				break;
 			case "scene": {
 				const vars : Record<string, number> = data.scene.getFlag("persona", "variables") ?? {};
@@ -130,10 +130,10 @@ export class PersonaVariables {
 
 	static #get(data: VariableData) : number | undefined {
 		switch (data.varType) {
-			case "global":
-				//TODO: Global not yet implemented
-				// PersonaError.softFail("Setting global variable not yet implemented");
-				return undefined;
+			case "global": {
+				const globalVar= PersonaSettings.getGlobalVariable(data.variableId);
+				return globalVar ?? 0;
+			}
 			case "scene": {
 				const vars : Record<string, number> = data.scene.getFlag("persona", "variables") ?? {};
 				return vars[data.variableId];

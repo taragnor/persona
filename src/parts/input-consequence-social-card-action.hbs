@@ -1,0 +1,70 @@
+{{#if (eq cons.cardAction "exec-event")}}
+<div>
+	<label for="event-label"> Event Label </label>
+	<input class="flag-name" id="event-label" type="text" name="{{strcat namePrefix 'eventLabel'}}" value="{{cons.eventLabel}}">
+</div>
+{{/if}}
+
+{{#if (eqAny cons.cardAction "alter-student-skill")}}
+<select name="{{strcat namePrefix 'studentSkill'}}">
+	{{selectOptions POWERSTUFF.STUDENT_SKILLS localize=true selected=cons.studentSkill}}
+</select>
+{{/if}}
+
+{{#if (eqAny cons.cardAction "gain-money" "modify-progress-tokens" "modify-progress-tokens-cameo" "alter-student-skill" "inc-events")}}
+<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+{{/if}}
+
+{{#if (eqAny cons.cardAction "add-card-events-to-list"  "replace-card-events")}}
+<select name="{{strcat namePrefix 'cardId'}}">
+	{{selectOptions POWERSTUFF.SOCIAL_CARDS localize=false selected=cons.cardId}}
+</select>
+{{/if}}
+
+{{#if (eqAny cons.cardAction "replace-card-events")}}
+<div>
+	<label>Keep Event Chain</label>
+	<input type="checkbox" name="{{strcat namePrefix 'keepEventChain'}}" {{checked cons.keepEventChain}}>
+</div>
+{{/if}}
+
+{{#if (eqAny cons.cardAction "set-temporary-variable")}}
+<select name="{{strcat namePrefix 'operator'}}">
+	{{selectOptions POWERSTUFF.VARIABLE_ACTIONS localize=true selected=cons.operator}}
+</select>
+<input type=string name="{{strcat namePrefix 'variableId'}}" value="{{cons.variableId}}">
+<input class="short" type=number name="{{strcat namePrefix 'value'}}" value="{{cons.value}}">
+{{/if}}
+
+{{#if (eq cons.cardAction "append-card-tag")}}
+<div>
+	<select name="{{strcat namePrefix 'cardTag'}}">
+		{{selectOptions POWERSTUFF.CARD_TAGS localize=true selected=cons.cardTag}}
+	</select>
+</div>
+{{/if}}
+
+{{#if (eq cons.cardAction "card-response")}}
+<textarea class="text-msg" id="text-msg" name="{{strcat namePrefix 'text'}}">{{cons.text}}</textarea>
+{{/if}}
+
+{{#if (eq cons.cardAction "set-social-card-item")}}
+<div>
+	<select name="{{strcat namePrefix 'item.selectType'}}">
+		{{selectOptions POWERSTUFF.ITEM_SELECTOR_TYPE localize=true selected=cons.item.selectType}}
+	</select>
+	{{#if (eq (defVal cons.item.selectType "specific") "specific")}}
+	<select name="{{strcat namePrefix 'item.itemId'}}">
+		{{selectOptions POWERSTUFF.ITEMS localize=true selected=cons.item.itemId}}
+	</select>
+	{{/if}}
+	{{#if (eq cons.item.selectType "randomTreasure")}}
+	<label>Treasure Level</label>
+	<input class="short" type=number name="{{strcat namePrefix 'item.treasureLevel'}}" value="{{cons.item.treasureLevel}}">
+	<label>Modifier</label>
+	<input class="short" type=number name="{{strcat namePrefix 'item.rollModifier'}}" value="{{cons.item.rollModifier}}">
+	{{/if}}
+</div>
+{{/if}}
+
+

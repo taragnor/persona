@@ -41,6 +41,18 @@ export class PersonaSettings {
 			return this.get("combatPanel") ?? true;
 	 }
 
+	static async setGlobalVariable(varName: string, value: number) {
+		const globals = (this.get("globalVariables") || {}) as Record<string, number>;
+		globals[varName] = value;
+		await this.set("globalVariables", globals);
+	}
+
+	static getGlobalVariable(varName: string) : U<number> {
+		const globals = (this.get("globalVariables") || {}) as Record<string, number>;
+		return globals[varName];
+	}
+
+
 	static async clearLastRegion() {
 		const nullResult : RegionExploredData= {lastRegionId: undefined, lastSceneId: undefined};
 		await this.set("lastRegionExplored", nullResult);
@@ -223,6 +235,16 @@ const SETTINGS = {
 	"lastRegionExplored": {
 		name: "Last Region",
 		hint: "The Last Region a PC went into",
+		scope: "world",
+		restricted: true,
+		config: false,
+		type: Object,
+		default:{},
+	},
+
+	"globalVariables": {
+		name: "Global Variables",
+		hint: "Global Setting variables",
 		scope: "world",
 		restricted: true,
 		config: false,
