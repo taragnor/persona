@@ -824,6 +824,7 @@ const CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST = [
 	"level",
 	"theurgyVal",
 	"linkLevelWith",
+	"batonPassLevel",
 ] as const;
 
 type ConsAmountActorProperty = typeof CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST[number];

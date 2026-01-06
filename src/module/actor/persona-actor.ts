@@ -171,6 +171,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.cache.level = this.system.combat.personaStats.pLevel ?? 0;
 	}
 
+	get batonPassLevel() : number {
+		if (!this.hasStatus("baton-pass")) {return 0;}
+		const combat = PersonaCombat.combat;
+		if (!combat || !combat.isSocial) { return 0; }
+		return 1;
+	}
+
 	get personalLevel(): number {
 		if (!this.isPC()) {return 0;}
 		return this.system.personaleLevel;

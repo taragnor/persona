@@ -131,7 +131,7 @@ export class PersonaVariables {
 	static #get(data: VariableData) : number | undefined {
 		switch (data.varType) {
 			case "global": {
-				const globalVar= PersonaSettings.getGlobalVariable(data.variableId);
+				const globalVar = PersonaSettings.getGlobalVariable(data.variableId);
 				return globalVar ?? 0;
 			}
 			case "scene": {
@@ -144,7 +144,6 @@ export class PersonaVariables {
 			case "social-temp":
 				return PersonaSocial.getSocialVariable(data.variableId);
 		}
-
 	}
 
 }
