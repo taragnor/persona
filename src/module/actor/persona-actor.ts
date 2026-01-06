@@ -172,10 +172,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get batonPassLevel() : number {
+		if (this.isShadow()) {return 0;}
 		if (!this.hasStatus("baton-pass")) {return 0;}
 		const combat = PersonaCombat.combat;
 		if (!combat || !combat.isSocial) { return 0; }
-		return 1;
+		return this.getFlag("persona", "batonPass") || 1;
+	}
+
+	async setBatonLevel(num: number) : Promise<void> {
+		if (this.isShadow()) {return;}
+		await this.setFlag("persona", "batonPass", num);
 	}
 
 	get personalLevel(): number {
@@ -3609,9 +3615,12 @@ isBossOrMiniBossType() : boolean {
 	return bossRoles.some( role => this.hasRole(role));
 }
 
+
+
 async onStartCombatTurn(this: ValidAttackers): Promise<string[]> {
 	console.log(`${this.name} on Start turn`);
 	const ret = [] as string[];
+	await this.setBatonLevel(0);
 	const promises = this.effects.contents.map( async (eff) => {
 		if ( await eff.onStartCombatTurn()) {
 			return eff.displayedName;

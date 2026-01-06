@@ -1257,6 +1257,7 @@
 	"persona.consequenceAmount.actorProperties.baseClassHP": "Base Class HP",
 	"persona.consequenceAmount.actorProperties.linkLevelWith": "SL Level with",
 	"persona.consequenceAmount.actorProperties.theurgyVal": "Current Theurgy Level",
+	"persona.consequenceAmount.actorProperties.batonPassLevel": "Baton Pass Lvl",
 	"persona.consequenceAmount.actorProperties.level": "Level",
 
 	"persona.consequenceAmount.actorProperties.damage-dealt": "Damage Dealt",

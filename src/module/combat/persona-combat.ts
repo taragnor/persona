@@ -434,6 +434,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 	}
 
+	async resetBatonStates() {
+		for (const comb of this.combatants) {
+			await comb.actor?.setBatonLevel(0);
+		}
+	}
+
 	async startCombatantTurn( combatant: Combatant<PersonaActor>){
 		if (!PersonaCombat.isPersonaCombatant(combatant)) {return;}
 		const actor = combatant.actor;
@@ -441,6 +447,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			void CombatPanel.instance.setTarget(combatant.token);
 		}
 		if (!game.user.isGM) {return;}
+		await this.resetBatonStates();
 		if (await this.checkEndCombat() == true) {
 			return;
 		}
@@ -1426,6 +1433,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		{return true;}
 		return (this.combatant.token.id == token.id);
 	}
+
 
 	static async allOutAttackPrompt() {
 		if (!PersonaSettings.get('allOutAttackPrompt'))

@@ -89,7 +89,6 @@ private static resolveActorProperty(amt: ConsequenceAmountV2 & {type: "actor-pro
 			case "theurgyVal":
 			case "batonPassLevel":
 				return target[amt.property];
-			}
 			case "linkLevelWith": {
 				const socialLink = getSocialLinkTarget(amt.socialLinkIdOrTarot, situation as Situation, null);
 				if (!target.isPC()) {return 0;}
