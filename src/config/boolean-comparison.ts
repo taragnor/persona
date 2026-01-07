@@ -93,8 +93,8 @@ const POWER_COMPARISON_SUBLIST_LIST = [
 ] as const;
 
 const ROLL_COMPARISON_SUBLIST_LIST = [
-	"is-critical",
 	"is-hit",
+	"is-critical",
 	"is-within-ailment-range",
 	"is-within-instant-death-range",
 ] as const;
@@ -168,11 +168,14 @@ type CombatComparisonSub = {
 
 type RollPropertyComparison = {
 	boolComparisonTarget: "roll-property-is",
-} & RollComparisonSub;
+	rollProp:  typeof ROLL_COMPARISON_SUBLIST_LIST[number];
+} & (
+	SimpleRollComparison
+);
 
-type RollComparisonSub = {
+type SimpleRollComparison = {
 	//simple Roll Comparisons
-	rollProp: "is-critical" | "is-hit" | "is-within-ailment-range" | "is-within-instant-death-range";
+	rollProp: Extract< typeof ROLL_COMPARISON_SUBLIST_LIST[number], "is-critical" | "is-hit" | "is-within-ailment-range" | "is-within-instant-death-range">;
 };
 
 type PowerComparisonsSub = {

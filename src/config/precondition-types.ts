@@ -2,16 +2,14 @@ import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { NumericComparisonPC } from "./numeric-comparison.js";
 import { BooleanComparisonPC } from "./boolean-comparison.js";
 import { TarotCard } from "./tarot.js";
-import { PowerTagOrId } from "../config/power-tags.js";
 import { StatusEffectId } from "../config/status-effects.js";
-import { PowerType } from "../config/effect-types.js";
-import { DamageType } from "../config/damage-types.js";
 import { Trigger } from "../config/triggers.js";
 
 export const PRECONDITIONLIST = [
 	"always",
+	"is-hit",
 	"numeric",
-	"numeric-v2",
+	// "numeric-v2",
 	"boolean",
 	"miss-all-targets",
 	"save-versus",
@@ -31,7 +29,15 @@ declare global {
 }
 
 export type PreconditionComparison =
-	(GenericPC | NumericComparisonPC | BooleanComparisonPC | SaveVersus | Triggered);
+	{type: PreconditionType} &
+	(GenericPC  | NonGenericPCComparison);
+
+type NonGenericPCComparison = NumericComparisonPC | BooleanComparisonPC | RollSuccessShortcutComparison | SaveVersus | Triggered;
+
+type RollSuccessShortcutComparison = {
+	type : "is-hit";
+	booleanState: boolean;
+}
 
 export type DeprecatedPrecondition<T extends object> = T & {
 	___deprecated: true;
@@ -42,14 +48,7 @@ export type NonDeprecatedPrecondition<T extends object> = T & {
 }
 
 type GenericPC = {
-	type: Exclude<PreconditionType, "numeric" | "boolean" | 'save-versus' | "on-trigger" | "numeric-v2">;
-	status ?: StatusEffectId | Record<StatusEffectId, boolean>,
-	powerTag ?: PowerTagOrId | Record<PowerTagOrId, boolean>,
-	powerType ?: PowerType,
-	powerDamageType ?: (DamageType | "by-power"),
-	num ?: number,
-	flagId ?: string
-	booleanState ?: boolean,
+	type: Exclude<PreconditionType, NonGenericPCComparison["type"]>;
 }
 
 type SaveVersus = {

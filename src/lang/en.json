@@ -717,6 +717,7 @@
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",
 	"persona.preconditions.numeric-v2": "Numeric V2",
+	"persona.preconditions.is-hit": "Roll Successful (Hit)",
 	"persona.preconditions.boolean": "Boolean Comparison",
 	"persona.preconditions.natural+": "Natural >=",
 	"persona.preconditions.natural-": "Natural <=",

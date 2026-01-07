@@ -60,12 +60,16 @@ export function testPrecondition (condition: SourcedPrecondition, situation:Situ
 			return situation.saveVersus == condition.status;
 		case "on-trigger":
 			return triggerComparison(condition, situation);
+		case "is-hit": {
+			//deliberate duplication
+			return situation.hit === condition.booleanState;
+		}
 		case "numeric": {
 			return numericComparison(condition, situation);
 		}
-		case "numeric-v2":
-			return false;
-			// return NumericV2.eval(condition, situation, source);
+		// case "numeric-v2":
+		// 	return false;
+		// 	// return NumericV2.eval(condition, situation, source);
 		case "boolean": {
 			return booleanComparison(condition, situation);
 		}

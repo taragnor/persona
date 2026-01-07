@@ -12,6 +12,15 @@
 	{{multicheck (strcat namePrefix 'powerDamageType') POWERSTUFF.DAMAGETYPES checked=cond.powerDamageType localize=true}}
 	{{/if}}
 
+	{{#if (strIncludes cond.type "is-hit")}}
+	<div>
+		<label>
+			Is True
+		</label>
+		<input type="checkbox" id="flagState" name="{{strcat namePrefix 'booleanState'}}" {{checked cond.booleanState}}>
+	</div>
+	{{/if}}
+
 	{{#if (strIncludes cond.type "numeric-v2")}}
 		{{> "systems/persona/parts/input-numeric-v2.hbs" namePrefix=namePrefix  cond=cond POWERSTUFF=POWERSTUFF owner=owner}}
 	{{/if}}

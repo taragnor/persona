@@ -483,9 +483,11 @@ export class ConditionalEffectManager {
 				return "Never";
 			case "disable-on-debug":
 				return "Disabled on Debug Mode";
-			case "numeric-v2":
-				return "Numeric V2 amount (not used)";
-				// return NumericV2.prettyPrintCondition(cond);
+			case "is-hit":
+				return `Roll is ${cond.booleanState ? "" : "not"} a success`;
+			// case "numeric-v2":
+			// 	return "Numeric V2 amount (not used)";
+			// 	// return NumericV2.prettyPrintCondition(cond);
 			case "diagnostic":
 				return "Diagnostic breakpoint";
 			default:
