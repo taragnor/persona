@@ -129,7 +129,6 @@ export class ConditionalEffectC {
 		return condType;
 	}
 
-
 	private _generateSkillCardTeachEffect(card: SkillCard) {
 		this._original = card;
 		this._source = card;
@@ -164,6 +163,4 @@ export class ConditionalEffectC {
 
 type CondEffectObject = ConditionalEffect;
 
-
 type ConditonalEffectHolderItem = ModifierContainer & (PersonaItem | PersonaAE) & Partial<{isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]}> ;
-

@@ -231,7 +231,7 @@ export class TreasureSystem {
 		.filter ( pwr => pwr.isInheritable())
 		.filter ( pwr => slot != undefined ? pwr.system.slot == slot : true)
 		.filter ( pwr => forbidExotic ? !pwr.isExotic() : true)
-		const weightedPowers = powers.map ( pwr => 
+		const weightedPowers = powers.map ( pwr =>
 			({
 				item: pwr,
 				weight: RANDOM_POWER_RATE[pwr.system.rarity]
@@ -253,7 +253,6 @@ export const ENCOUNTER_RATE_PROBABILITY : ProbabilityRate = {
 	never: 0,
 	always: Infinity,
 } ;
-
 
 //@ts-expect-error testing
 window.TreasureSystem = TreasureSystem;

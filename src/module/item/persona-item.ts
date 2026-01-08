@@ -713,7 +713,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	hasTag(this: SkillCard | Consumable | InvItem | Weapon, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
 	hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user : null) : boolean;
 	hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user?: null | ValidAttackers) : boolean {
-		let list : (PowerTag | EquipmentTag)[];
+		let list : readonly (PowerTag | EquipmentTag)[];
 		switch (this.system.type) {
 			case 'power':
 				list = (this as Power).tagList(user ?? null);
@@ -736,30 +736,35 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return list.some(t=> t instanceof PersonaItem ? t.system.linkedInternalTag == tag : t == tag );
 	}
 
-	tagList(this : Power, user: ValidAttackers | null): (PowerTag | EquipmentTag)[];
-	tagList(this: UsableAndCard, user: ValidAttackers | null) : PowerTag[];
-	tagList(this : Weapon, user ?: null ): EquipmentTag[];
-	tagList(this : InvItem, user ?: null ): EquipmentTag[];
-	tagList(this : Talent, user ?: null): PowerTag[];
-	tagList(this : Focus, user ?: null): PowerTag[];
-	tagList(this: Consumable | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : (PowerTag | EquipmentTag)[];
-	tagList(this: UsableAndCard | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : (PowerTag | EquipmentTag)[];
-	tagList(this: PersonaItem, user ?: null | ValidAttackers): (PowerTag | EquipmentTag)[];
-	tagList(this: Talent | Focus | UsableAndCard | InvItem | Weapon, user ?: ValidAttackers | null) : (PowerTag | EquipmentTag)[] {
+	tagList(this : Power, user: ValidAttackers | null): readonly (PowerTag | EquipmentTag)[];
+	tagList(this: UsableAndCard, user: ValidAttackers | null) : readonly PowerTag[];
+	tagList(this : Weapon, user ?: null ): readonly EquipmentTag[];
+	tagList(this : InvItem, user ?: null ): readonly EquipmentTag[];
+	tagList(this : Talent, user ?: null): readonly PowerTag[];
+	tagList(this : Focus, user ?: null): readonly PowerTag[];
+	tagList(this: Consumable | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : readonly (PowerTag | EquipmentTag)[];
+	tagList(this: UsableAndCard | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : readonly (PowerTag | EquipmentTag)[];
+	tagList(this: PersonaItem, user ?: null | ValidAttackers): readonly (PowerTag | EquipmentTag)[];
+	tagList(this: Talent | Focus | UsableAndCard | InvItem | Weapon, user ?: ValidAttackers | null) : readonly (PowerTag | EquipmentTag)[] {
 		const itype = this.system.type;
 		switch (itype) {
 			case 'power': {
 				//this is still experimental but may save a lot of processing time
 				//NOTE: Test code
 				if (this.cache.tags == undefined) {
-					this.cache.tags= (this as Power).#autoTags_power(user);
+					this.cache.tags= (this as Power).#autoTags_power();
 					return this.cache.tags;
 				}
-				const checkTags =  (this as Power).#autoTags_power(user);
-				if (checkTags.length != this.cache.tags.length) {
-					PersonaError.softFail(`Tag Length mismatch, possible cache corruption on ${this.name}`);
+				if (PersonaSettings.debugMode()) {
+					const checkTags =  (this as Power).#autoTags_power();
+					if (checkTags.length != this.cache.tags.length) {
+						PersonaError.softFail(`Tag Length mismatch, possible cache corruption on ${this.name}`, checkTags, this.cache.tags);
+					}
 				}
-				return this.cache.tags;
+				const dmgTags = (this as Power).getWeaponDamageTypeTags(user ?? null);
+				const retTags = this.cache.tags.slice();
+				retTags.pushUnique(...dmgTags);
+				return retTags;
 			}
 			case 'consumable': {
 				const list : string[]= this.system.tags.concat(this.system.itemTags);
@@ -831,7 +836,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	#autoTags_power(this: Power, user ?: null | ValidAttackers): (PowerTag | EquipmentTag)[] {
+	#autoTags_power(this: Power): (PowerTag | EquipmentTag)[] {
 		const list : (PowerTag | EquipmentTag) [] = [];
 		if (this.system.subtype == "weapon" || this.system.subtype == "magic") {
 			list.pushUnique(this.system.subtype);
@@ -866,6 +871,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (this.isAoE()) {
 			list.pushUnique("multi-target");
 		}
+		if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
+			list.pushUnique('ailment');
+		}
+		const subtype : typeof POWER_TYPE_TAGS[number]  = this.system.subtype as typeof POWER_TYPE_TAGS[number];
+		if (POWER_TYPE_TAGS.includes(subtype) && !list.includes(subtype)) { list.pushUnique(subtype);}
+		const innateTags : (PowerTag | EquipmentTag) [] = this.system.tags.map( x=> PersonaItem.resolveTag(x));
+		const resolved= list.map ( x=> PersonaItem.resolveTag(x));
+		resolved.pushUnique(...innateTags);
+		return resolved as (PowerTag | EquipmentTag)[];
+	}
+
+	//this can vary by user so has to be in its own function
+	private getWeaponDamageTypeTags(this: Power, user: N<ValidAttackers>) :  (PowerTag | EquipmentTag)[] {
+		const list : (PowerTag | EquipmentTag)[]  = [];
 		if (this.system.damageLevel != "none") {
 			const damageType = user ? this.getDamageType(user) : this.system.dmg_type;
 			switch (damageType) {
@@ -888,14 +907,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					list.pushUnique(damageType);
 			}
 		}
-		if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
-			list.pushUnique('ailment');
-		}
-		const subtype : typeof POWER_TYPE_TAGS[number]  = this.system.subtype as typeof POWER_TYPE_TAGS[number];
-		if (POWER_TYPE_TAGS.includes(subtype) && !list.includes(subtype)) { list.pushUnique(subtype);}
-		const innateTags : (PowerTag | EquipmentTag) [] = this.system.tags.map( x=> PersonaItem.resolveTag(x));
 		const resolved= list.map ( x=> PersonaItem.resolveTag(x));
-		resolved.pushUnique(...innateTags);
 		return resolved as (PowerTag | EquipmentTag)[];
 	}
 

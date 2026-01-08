@@ -645,6 +645,7 @@ export class PersonaSocial {
 		const effectList = ConditionalEffectManager.getEffects(cardData.card.system.immediateEffects ?? [], null, null);
 		await this.applyEffects(effectList, cardData.situation, cardData.actor);
 		while (cardData.eventsRemaining > 0) {
+			if (!this.rollState) { return chatMessages;}
 			const ev = this.#getCardEvent(cardData);
 			if (!ev) {
 				cardData.currentEvent = null;
@@ -658,6 +659,7 @@ export class PersonaSocial {
 			const msg = await this.#execEvent(ev, cardData);
 			chatMessages.push(msg as ChatMessage);
 		}
+		if (!this.rollState) { return chatMessages;}
 		const opp = await this.#execOpportunity(cardData);
 		if (opp) {
 			chatMessages.push(opp as ChatMessage);
@@ -787,6 +789,7 @@ export class PersonaSocial {
 		};
 		const msg = await ChatMessage.create(msgData,{} );
 		if (event.sound && event.sound.length > 0) {
+			if (cardData.sound) {cardData.sound.stop();}
 			cardData.sound = await PersonaSounds.playFree(event.sound, event.volume ?? 0.5);
 		}
 		if (ArrayCorrector(event.choices).length > 0) {
@@ -1348,6 +1351,7 @@ static async execSocialCardAction(eff: SocialCardActionConsequence) : Promise<vo
 				return;
 			}
 			this.stopCardExecution();
+			// ui.notifications.notify("Card Execution stopped by event");
 			break;
 		case "exec-event":
 			if (!this.rollState) {

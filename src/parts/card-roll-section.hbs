@@ -47,12 +47,14 @@
 	</div>
 	{{/if}}
 	{{#if (eqAny roll.rollType "studentSkillCheck" "save")}}
+	{{#if (ne roll.DC.subtype "static")}}
 	<div>
 		<label>
 			Modifier
 		</label>
 		<input class="short" type=number name='{{strcat namePrefix "modifier"}}' value="{{roll.modifier}}">
 	</div>
+	{{/if}}
 
 {{/if}}
 </div>
