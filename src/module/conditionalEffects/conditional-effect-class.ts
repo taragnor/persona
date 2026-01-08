@@ -150,6 +150,7 @@ export class ConditionalEffectC {
 		} as const ];
 		this._consequences= [ {
 			type: 'teach-power',
+			randomPower: false,
 			id: card.system.skillId,
 			source: card,
 			owner: card.parent?.accessor,

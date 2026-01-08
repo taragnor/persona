@@ -40,3 +40,16 @@ export const SOCIAL_CARD_RATE : ProbabilityRate = {
 	never: 0,
 	always: Infinity,
 };
+
+export const RANDOM_POWER_RATE : ProbabilityRate = {
+	common: 5,
+	"common-minus": 2,
+	"normal-plus": 1.5,
+	normal: 1,
+	"normal-minus": .75,
+	"rare-plus": .5,
+	rare: .2,
+	never: 0,
+	always: Infinity,
+};
+

@@ -23,10 +23,19 @@
 			</select>
 		</div>
 
+		{{#if (isGM)}}
+		<div>
+			<label> Rarity </label>
+			<select name="system.rarity">
+				{{selectOptions POWERSTUFF.PROBABILITIES localize=true selected=item.system.rarity}}
+			</select>
+		</div>
 		<div>
 			<label> Custom Cost</label>
 			<input type="checkbox" name="system.customCost" {{checked item.system.customCost}}>
 		</div>
+
+		{{/if}}
 
 		{{#if (eq item.system.subtype "magic")}}
 		<div>

@@ -11,6 +11,7 @@ import { POWER_TAGS_LIST } from "../../config/power-tags.js";
 import { SHADOW_CHANGE_REQ_LIST_FULL } from "../../config/effect-types.js";
 import {DEFENSE_TYPES} from "../../config/defense-types.js";
 import {INSTANT_KILL_LEVELS} from "../combat/damage-calc.js";
+import {PROBABILITIES} from "../../config/probability.js";
 
 export  const damage = function() {
   return new sch( {
@@ -33,6 +34,7 @@ export function powerSpecific () {
   return {
     description: new txt(),
     subtype: new txt<typeof POWERTYPESLIST[number]>( {choices: POWERTYPESLIST, initial: "none"} ),
+	  rarity: new txt ({choices: PROBABILITIES, initial: "normal"}),
   };
 }
 

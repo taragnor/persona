@@ -58,7 +58,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	declare parent: PersonaActor | undefined;
 
-	cache: {
+	private cache: {
 		effects: AdvancedEffectsCache;
 		containsModifier: boolean | undefined;
 		containsTagAdd: boolean | undefined;
@@ -69,6 +69,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		mpCost: U<number>,
 		mpGrowthTable: U<GrowthCalculator>,
 		hpGrowthTable: U<GrowthCalculator>,
+		tags: U<(PowerTag | EquipmentTag)[]>,
 	};
 
 	static cacheStats = {
@@ -111,6 +112,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			mpCost: undefined,
 			mpGrowthTable: undefined,
 			hpGrowthTable: undefined,
+			tags: undefined,
 		};
 	}
 
@@ -350,6 +352,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
+	isInheritable(this: Power) : boolean {
+		return !this.hasTag("non-inheritable") && !this.hasTag("shadow-only")
+		&& (this.isMagicSkill() || this.isWeaponSkill() || this.isPassive() || this.isDefensive())
+		&& !this.hasTag("teamwork")
+		&&	!this.hasTag("opener")
+		&&	!this.hasTag("navigator");
+	}
 
 	getDisplayedIcon(this: Power | Consumable, user: ValidAttackers | Persona) : SafeString  | undefined {
 		function iconize( path: string | undefined) {
@@ -739,8 +748,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	tagList(this: Talent | Focus | UsableAndCard | InvItem | Weapon, user ?: ValidAttackers | null) : (PowerTag | EquipmentTag)[] {
 		const itype = this.system.type;
 		switch (itype) {
-			case 'power':
-				return (this as Power).#autoTags_power(user);
+			case 'power': {
+				//this is still experimental but may save a lot of processing time
+				//NOTE: Test code
+				if (this.cache.tags == undefined) {
+					this.cache.tags= (this as Power).#autoTags_power(user);
+					return this.cache.tags;
+				}
+				const checkTags =  (this as Power).#autoTags_power(user);
+				if (checkTags.length != this.cache.tags.length) {
+					PersonaError.softFail(`Tag Length mismatch, possible cache corruption on ${this.name}`);
+				}
+				return this.cache.tags;
+			}
 			case 'consumable': {
 				const list : string[]= this.system.tags.concat(this.system.itemTags);
 				if (!list.includes(itype)) {
@@ -826,6 +846,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					list.pushUnique(ail as keyof typeof POWER_TAGS);
 				}
 			}
+		}
+		switch (this.system.rarity) {
+			case "rare":
+			case "rare-plus":
+				list.pushUnique("exotic");
+				break;
+			case "never":
+				list.pushUnique("non-inheritable");
+				list.pushUnique("exotic");
+				break;
 		}
 		if (this.system.dmg_type == 'by-power') {
 			list.pushUnique('variable-damage');
@@ -1595,7 +1625,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (this.customCost) {return this.system.hpcost;}
 		const newSys=  PowerCostCalculator.calcHPPercentCost(this);
 		return newSys;
+	}
 
+	isExotic(this: Power) : boolean {
+		return this.hasTag('exotic');
 	}
 
 	oldhpCost(this: Usable): number {

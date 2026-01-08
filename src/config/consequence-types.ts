@@ -428,9 +428,16 @@ type InspirationChangeConsequence = {
 }
 
 type AddPowerConsequence = {
-	type: "add-power-to-list" | "teach-power",
+	type: "add-power-to-list",
 	id: string, // id of power
-}
+} | {
+	type:  "teach-power"
+	id: string, // id of power
+	randomPower: false,
+} | {
+	type:  "teach-power"
+	randomPower: true,
+};
 
 type AddTalentConsequence = {
 	type: "add-talent-to-list",

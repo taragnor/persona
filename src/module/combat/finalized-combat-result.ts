@@ -635,9 +635,30 @@ export class FinalizedCombatResult {
 				await actor.setEffectFlag(otherEffect);
 				break;
 			case "teach-power": {
-				const power = PersonaDB.allPowers().get(otherEffect.id);
-				if (power && (actor.isPC() || actor.isNPCAlly())) {
-					await actor.persona().learnPower(power);
+				if (!actor.isPC() && !actor.isNPCAlly()) {
+					break;
+				}
+				const persona = actor.persona();
+				if (otherEffect.randomPower == false) {
+					const power = PersonaDB.allPowers().get(otherEffect.id);
+					if (power) {
+						await persona.learnPower(power);
+					}
+				} else {
+					const highest = persona.highestPowerSlotUsable();
+					let safetyBreak = 0;
+					while (true) {
+						const power = TreasureSystem.randomPower(highest);
+						if (!power) {break;}
+						if (!persona.knowsPowerInnately(power)) {
+							await persona.learnPower(power);
+							break;
+						}
+						if (++safetyBreak > 100) {
+							PersonaError.softFail("Error trying to add random Power, couldn't find candidate");
+							break;
+						}
+					}
 				}
 				break;
 			}

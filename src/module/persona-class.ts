@@ -162,6 +162,25 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 	}
 
+knowsPowerInnately(power : Power)  : boolean {
+	const source = this.source;
+	const powers = source.system.combat.powers;
+	if (powers.includes(power.id)) {
+		return true;
+	}
+	if (!this.user.isShadow()) {
+		const sideboard =  this.user.system.combat.powers_sideboard;
+		if (sideboard.includes(power.id)) {
+			return true;
+		}
+	}
+	const buffer= source.system.combat.learnedPowersBuffer;
+	if (buffer.includes(power.id)) {
+		return true;
+	}
+	return false;
+}
+
 	get trueName() {
 		switch (this.source.system.type) {
 			case "pc":
@@ -1224,12 +1243,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return ret;
 	}
 
-	highestPowerSlotUsable() : number {
-		if (this.user.isShadow()) {return 99;}
+	highestPowerSlotUsable() : 0 | 1 | 2 | 3 {
+		const POWER_MAX = 3 as const;
+		if (this.user.isShadow()) {return POWER_MAX;}
 		const level = Math.floor(this.user.level / 10) +1;
-		const CAP = this.user.system.combat.usingMetaPod ? 2 : 99;
-		const maxLevel = this.source.isPersona() && !this.source.isCustomPersona() ? 99 : this.#powerSlotMaxByLevel(level);
-		return Math.min(CAP, maxLevel);
+		const CAP = this.user.system.combat.usingMetaPod ? 2 : POWER_MAX;
+		const maxLevel = this.source.isPersona() && !this.source.isCustomPersona() ? POWER_MAX : this.#powerSlotMaxByLevel(level);
+		return Math.min(CAP, maxLevel) as 0 | 1 | 2 | 3;
 	}
 
 	#powerSlotMaxByLevel(this: void, level: number) {

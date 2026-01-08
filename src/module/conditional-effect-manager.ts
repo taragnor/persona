@@ -963,10 +963,10 @@ export class ConditionalEffectManager {
 				return `Display Msg: ${cons.msg?.trim()}`;
 			case "social-card-action":
 				return this.#printSocialCardAction(cons);
-			// case "scan":
-			// 	return `Scan Target Level ${cons.amount}`;
-			// case "alter-energy":
-			// 	return `Energy ${cons.amount}`;
+				// case "scan":
+				// 	return `Scan Target Level ${cons.amount}`;
+				// case "alter-energy":
+				// 	return `Energy ${cons.amount}`;
 			case "dungeon-action":
 				return this.#printDungeonAction(cons);
 			case "raise-resistance": {
@@ -989,8 +989,12 @@ export class ConditionalEffectManager {
 				return `${modified} ${amount}`;
 			}
 			case "teach-power": {
-				const power = PersonaDB.getPower(cons.id);
-				return `Teach Power ${power?.displayedName?.toString() ?? "ERROR"}`;
+				if (cons.randomPower) {
+					return "Random Power";
+				} else {
+					const power = PersonaDB.getPower(cons.id);
+					return `Teach Power ${power?.displayedName?.toString() ?? "ERROR"}`;
+				}
 			}
 			case "raise-status-resistance":
 				return `${this.translate(cons.resistanceLevel, RESIST_STRENGTHS)} status ${this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE)}`;

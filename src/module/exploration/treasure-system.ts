@@ -1,7 +1,7 @@
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaDB } from "../persona-db.js";
-import { weightedChoice } from "../utility/array-tools.js";
-import { ProbabilityRate } from "../../config/probability.js";
+import { randomSelect, weightedChoice } from "../utility/array-tools.js";
+import { ProbabilityRate, RANDOM_POWER_RATE } from "../../config/probability.js";
 import { TreasureTable } from "../../config/treasure-tables.js";
 import {PersonaError} from "../persona-error.js";
 
@@ -226,7 +226,18 @@ export class TreasureSystem {
 		});
 	}
 
-
+	static randomPower(slot?:0 | 1 | 2 | 3, forbidExotic : boolean= false) {
+		const powers = PersonaDB.allPowersArr()
+		.filter ( pwr => pwr.isInheritable())
+		.filter ( pwr => slot != undefined ? pwr.system.slot == slot : true)
+		.filter ( pwr => forbidExotic ? !pwr.isExotic() : true)
+		const weightedPowers = powers.map ( pwr => 
+			({
+				item: pwr,
+				weight: RANDOM_POWER_RATE[pwr.system.rarity]
+			}));
+		return weightedChoice(weightedPowers);
+	}
 }
 
 type TreasureItem = ReturnType<typeof PersonaDB["treasureItems"]>[number];

@@ -932,7 +932,7 @@ export class PersonaSocial {
 
 	static async chooseActivity(actor: PC, activity: SocialLink | Activity, _options: ActivityOptions = {}) {
 		const debug = PersonaSettings.debugMode();
-		if (!debug &&
+		if (!debug && !game.user.isGM &&
 			(
 				!game.combat
 				|| !(game.combat.combatant?.actor == actor)
@@ -1378,7 +1378,7 @@ static async execSocialCardAction(eff: SocialCardActionConsequence) : Promise<vo
 			await this.alterStudentSkill( eff.studentSkill, eff.amount ?? 0);
 			break;
 		case "modify-progress-tokens-cameo": {
-			this.modifyCameoProgress(eff.amount);
+			await this.modifyCameoProgress(eff.amount);
 			break;
 		}
 		case "add-card-events-to-list":

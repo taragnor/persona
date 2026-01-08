@@ -82,10 +82,16 @@
 		{{selectOptions POWERSTUFF.SLOT_TYPES_EXPANDED localize=true selected=cons.slotType}}
 	</select>
 	{{/if}}
+	{{#if (eq cons.type "teach-power")}}
+	<label> Random Power </label>
+	<input type="checkbox" name="{{strcat namePrefix 'randomPower'}}" {{checked (defVal cons.randomPower false)}}>
+	{{/if}}
 	{{#if (eqAny cons.type	"add-power-to-list" "teach-power")}}
+	{{#if (not cons.randomPower)}}
 	<select name="{{strcat namePrefix 'id'}}">
 		{{selectOptions POWERSTUFF.COMPENDIUM_POWERS localize=false selected=cons.id}}
 	</select>
+	{{/if}}
 	{{/if}}
 	{{#if (eqAny cons.type	"add-talent-to-list")}}
 	<select name="{{strcat namePrefix 'id'}}">

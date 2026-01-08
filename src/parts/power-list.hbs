@@ -4,6 +4,7 @@
 			<tr>
 				<th> Name</th>
 				<th> Level </th>
+				<th> Rarity </th>
 				<th>Targets</th>
 				<th> Tags</th>
 				<th> Cost</th>
@@ -24,6 +25,7 @@
 					{{power.name}}
 				</td>
 				<td> {{power.slotLocalized}} </td>
+				<td> {{localizeRarity power.system.rarity}} </td>
 				<td> {{powerTargetsAbbrev power}}</td>
 				<td> {{getItemTagList power}} </td>
 				<td> {{simplePowerCost power}} </td>

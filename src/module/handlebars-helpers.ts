@@ -45,6 +45,7 @@ import {OriginalDamageSystem} from "./combat/original-damage-system.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaCompendium} from "./persona-compendium.js";
 import {CombatPanel} from "./combat/combat-panel.js";
+import {PROBABILITIES, ProbabilityRate} from "../config/probability.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -640,6 +641,9 @@ export class PersonaHandleBarsHelpers {
 			return new Handlebars.SafeString("");
 		},
 
+		"localizeRarity": function (rarityVal : keyof ProbabilityRate) : string {
+			return localize(PROBABILITIES[rarityVal]);
+		},
 		"localizeAilmentLevel": function (pwr: Power) : SafeString {
 			const dlevel = pwr.system.ailmentChance;
 			const lvlLocString = INSTANT_KILL_LEVELS[dlevel];
