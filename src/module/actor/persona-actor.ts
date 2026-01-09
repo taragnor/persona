@@ -1646,7 +1646,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 		fill.style.setProperty('--fill', `${percent}%`);
 		//@ts-expect-error stuff that annoys TS
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 		fill.style.setProperty('--hue', hue);
 	}
 
@@ -2306,7 +2306,7 @@ isDMon() : boolean {
 	return this.cache.isDMon = this.isShadow() && (this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon"));
 }
 
-isPersona(): boolean {
+isPersona(this: Shadow): boolean {
 	return this.isShadow() && (this.system.creatureType == "persona");
 }
 
@@ -2317,8 +2317,12 @@ get isCompendiumEntry() : boolean {
 }
 
 isCustomPersona(this: ValidAttackers): boolean {
-	return this.isPersona() &&
-		(	this.hasTag("custom-persona") || this.hasTag("lone-persona"));
+	const shadowPersona =
+		this.isShadow()
+		&& this.isPersona()
+		&& (	this.hasTag("custom-persona") || this.hasTag("lone-persona"));
+	const PC = this.isPC() || this.isNPCAlly();
+	return shadowPersona || PC;
 }
 
 knowsPowerInnately(this: ValidAttackers, power : Power)  : boolean{

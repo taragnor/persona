@@ -13,7 +13,7 @@ export class PersonaCombatStats {
 	static INSTANT_DEATH_ATTACK_DIVISOR = 5 as const;
 	static STAT_POINTS_PER_LEVEL = 3 as const;
 	static INIT_DIVISOR = 3 as const;
-	static MAX_STAT_GAP = 10 as const;
+	static MINIMUM_MAX_STAT_GAP = 10 as const;
 	static MAX_STAT_VAL = 99 as const;
 	static MIN_STAT_VAL = 1 as const;
 	static DEFENSE_DIVISOR = 3 as const;
@@ -22,7 +22,10 @@ export class PersonaCombatStats {
 	static BASE_AILMENT_DEFENSE = 18 as const;
 	static INSTANT_DEATH_DIVISOR = 5 as const;
 	static CRITICAL_HIT_DIVISOR = 5 as const;
-	// static ENDURANCE_DR_MULTIPLIER = 0.005;
+	static FAVORED_STAT_WEIGHT_INCREASE = 1.666 as const;
+	static DISFAVORED_STAT_WEIGHT_DECREASE = 0.4 as const;
+	static MAX_STAT_DIVISOR_WILD = 7 as const;
+	static MAX_STAT_DIVISOR_CUSTOM = 10 as const;
 
 	constructor (persona: Persona) {
 		this.persona = persona;
@@ -53,40 +56,40 @@ export class PersonaCombatStats {
 	baseFort() : Calculation {
 		const calc = new Calculation(PersonaCombatStats.BASE_DEFENSE);
 		const subCalc = new Calculation();
-		subCalc.add(0, this.endurance, `${this.persona.displayedName} Endurance`, "add");
-		subCalc.add(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Defense Divisor`, "multiply");
+		subCalc.add(0, this.endurance, `${this.persona.displayedName} Endurance`);
+		subCalc.mult(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Defense Divisor`);
 		return calc.add(0, subCalc, "Endurance Mod");
 	}
 
 	baseWill() : Calculation {
 		const calc = new Calculation(PersonaCombatStats.BASE_DEFENSE, 2);
 		const subCalc = new Calculation();
-		subCalc.add(0, this.luck, `${this.persona.displayedName} Luck`, "add");
-		subCalc.add(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Defense Divisor`, "multiply");
-		return calc.add(0, subCalc, "Luck Modifier", "add");
+		subCalc.add(0, this.luck, `${this.persona.displayedName} Luck`);
+		subCalc.mult(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Defense Divisor`);
+		return calc.add(0, subCalc, "Luck Modifier");
 	}
 
 	baseRef() : Calculation {
 		const calc = new Calculation(PersonaCombatStats.BASE_DEFENSE, 2);
 		const subCalc = new Calculation();
-		subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`, "add");
-		subCalc.add(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Defense Divisor`, "multiply");
+		subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
+		subCalc.mult(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Defense Divisor`);
 		return calc.add(0, subCalc, "Agility Modifier");
 	}
 
 	baseWpnAttackBonus() : Calculation {
 		const calc = new Calculation(0, 2);
 		const subCalc = new Calculation();
-		subCalc.add(0, this.strength, `${this.persona.displayedName} Strength`, "add");
-		subCalc.add(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Attack Divisor`, "multiply");
+		subCalc.add(0, this.strength, `${this.persona.displayedName} Strength`);
+		subCalc.mult(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Attack Divisor`);
 		return calc.add(0, subCalc, "Strength Modifier");
 	}
 
 	baseMagAttackBonus(): Calculation {
 		const calc = new Calculation(0, 2);
 		const subCalc = new Calculation();
-		subCalc.add(0, this.magic, `${this.persona.displayedName} Magic`, "add");
-		subCalc.add(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Attack Divisor`, "multiply");
+		subCalc.add(0, this.magic, `${this.persona.displayedName} Magic`);
+		subCalc.mult(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Attack Divisor`);
 		return calc.add(0, subCalc, "Magic Modifer") ;
 	}
 
@@ -96,16 +99,16 @@ export class PersonaCombatStats {
 
 	baseDeathAtkBonus() : Calculation {
 		const calc = new Calculation(0, 2);
-		calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 2`, "add");
-		calc.add(1, 1/PersonaCombatStats.INSTANT_DEATH_ATTACK_DIVISOR, `Instant Kill Attack Divisor`, "multiply");
+		calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 2`);
+		calc.mult(1, 1/PersonaCombatStats.INSTANT_DEATH_ATTACK_DIVISOR, `Instant Kill Attack Divisor`);
 		return calc;
 	}
 
 	baseInit() : Calculation {
 		const calc = new Calculation(0, 2);
 		return calc
-			.add(0, this.agility + 1, `${this.persona.displayedName} Agility + 1`, "add")
-			.add(1, 1/PersonaCombatStats.INIT_DIVISOR, `Initiative Divisor`, "multiply");
+			.add(0, this.agility + 1, `${this.persona.displayedName} Agility + 1`)
+			.mult(1, 1/PersonaCombatStats.INIT_DIVISOR, `Initiative Divisor`);
 	}
 
 	baseEnduranceDR() : number{
@@ -115,45 +118,45 @@ export class PersonaCombatStats {
 	lukCriticalResist() : Calculation {
 		const calc = new Calculation(0, 2);
 		return calc
-			.add(0, this.luck + 0, `${this.persona.displayedName} Luck`, "add")
-			.add(1, 1/PersonaCombatStats.CRITICAL_HIT_DIVISOR, `Critical Hit Divisor`, "multiply");
+			.add(0, this.luck + 0, `${this.persona.displayedName} Luck`)
+			.mult(1, 1/PersonaCombatStats.CRITICAL_HIT_DIVISOR, `Critical Hit Divisor`);
 	}
 
 	lukCriticalBoost() : Calculation {
 		const calc = new Calculation(0, 2);
 		return calc
-			.add(0, this.luck + 1, `${this.persona.displayedName} Luck + 1`, "add")
-			.add(1, 1/PersonaCombatStats.CRITICAL_HIT_DIVISOR, `Critical Hit Divisor`, "multiply");
+			.add(0, this.luck + 1, `${this.persona.displayedName} Luck + 1`)
+			.mult(1, 1/PersonaCombatStats.CRITICAL_HIT_DIVISOR, `Critical Hit Divisor`);
 	}
 
 	instantDeathBonus() : Calculation {
 		const calc = new Calculation(0, 2);
-		calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 2`, "add");
-		calc.add(1, 1/PersonaCombatStats.INSTANT_DEATH_BONUS_DIVISOR, `Instant Kill Attack Divisor`, "multiply");
+		calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 2`);
+		calc.mult(1, 1/PersonaCombatStats.INSTANT_DEATH_BONUS_DIVISOR, `Instant Kill Attack Divisor`);
 		return calc;
 	}
 
 	instantDeathResist() : Calculation {
 		const calc = new Calculation(0, 2);
-		calc.add(0, this.luck + 3, `${this.persona.displayedName} Luck + 3`, "add");
-		calc.add(1, 1/PersonaCombatStats.INSTANT_DEATH_RESIST_DIVISOR, `Instant Kill Defense Divisor`, "multiply");
+		calc.add(0, this.luck + 3, `${this.persona.displayedName} Luck + 3`);
+		calc.mult(1, 1/PersonaCombatStats.INSTANT_DEATH_RESIST_DIVISOR, `Instant Kill Defense Divisor`);
 		return calc;
 	}
 
 	instantDeathDefense() : Calculation {
 		const calc = new Calculation(PersonaCombatStats.BASE_INSTANT_DEATH_DEFENSE, 2);
-		return calc.add(0, this.instantDeathResist(), "Instant DeathResist", "add");
+		return calc.add(0, this.instantDeathResist(), "Instant DeathResist");
 	}
 
 	ailmentDefense(): Calculation {
 		const calc = new Calculation(PersonaCombatStats.BASE_AILMENT_DEFENSE, 2);
-		return calc.add(0, this.ailmentResist(), "Ailment Resist", "add");
+		return calc.add(0, this.ailmentResist(), "Ailment Resist");
 	}
 
 	private ailmentResist(): Calculation {
 		const calc = new Calculation(0, 2);
-		calc.add(0, this.luck + 4, `${this.persona.displayedName} Luck + 3`, "add");
-		calc.add(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`, "multiply");
+		calc.add(0, this.luck + 4, `${this.persona.displayedName} Luck + 3`);
+		calc.mult(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`);
 		return calc;
 	}
 
@@ -182,6 +185,7 @@ export class PersonaCombatStats {
 
 	#autoSpendPoints(pointsToSpend: number = this.persona.unspentStatPoints) : StatGroup {
 		const persona = this.persona;
+		const isCustomPersona = persona.isCustomPersona;
 		const favored = [
 			this.combatStats.preferred_stat,
 			this.combatStats.preferred_stat2,
@@ -206,11 +210,11 @@ export class PersonaCombatStats {
 		let statsToBeChosen = pointsToSpend;
 		while (statsToBeChosen > 0) {
 			const slist = (Object.keys(stblk) as PersonaStatType[])
-				.filter(( st) => PersonaCombatStats.canRaiseStat(st, stblk))
+				.filter(( st) => PersonaCombatStats.canRaiseStat(st, stblk, isCustomPersona))
 				.map( st => {
 					let weight = 1;
-					weight = favored.reduce( (acc, x)=> x == st ? acc * 1.5 : acc, weight);
-					weight = disfavored.reduce( (acc, x)=> x == st ? acc * 0.666 : acc, weight);
+					weight = favored.reduce( (acc, x)=> x == st ? acc * PersonaCombatStats.FAVORED_STAT_WEIGHT_INCREASE : acc, weight);
+					weight = disfavored.reduce( (acc, x)=> x == st ? acc * PersonaCombatStats.DISFAVORED_STAT_WEIGHT_DECREASE : acc, weight);
 					return {
 						weight,
 						item: st
@@ -249,28 +253,34 @@ export class PersonaCombatStats {
 	}
 
 	canRaiseStat(st: PersonaStatType, statBlock: StatGroup = this.combatStats.stats) : boolean {
-		return statBlock[st] < PersonaCombatStats.maxStatAmount(statBlock);
+		return statBlock[st] < PersonaCombatStats.maxStatAmount(statBlock, this.persona.isCustomPersona);
 	}
 
-	static canRaiseStat(st: PersonaStatType, statBlock: StatGroup) : boolean {
-		return statBlock[st] < PersonaCombatStats.maxStatAmount(statBlock);
+	static canRaiseStat(st: PersonaStatType, statBlock: StatGroup, isCustomPersona: boolean) : boolean {
+		return statBlock[st] < PersonaCombatStats.maxStatAmount(statBlock, isCustomPersona);
 	}
 
-	static canLowerStat(st: PersonaStatType, statBlock: StatGroup) : boolean {
-		return statBlock[st] > PersonaCombatStats.minStatAmount(statBlock);
+	static canLowerStat(st: PersonaStatType, statBlock: StatGroup, isCustomPersona: boolean) : boolean {
+		return statBlock[st] > PersonaCombatStats.minStatAmount(statBlock, isCustomPersona);
 	}
 
-	static minStatAmount(statBlock: StatGroup) : number {
-		const MaxStatGap = this.MAX_STAT_GAP;
-		const maxStat = Object.values(statBlock).reduce ( (a, x) => Math.max(a, x));
-		return Math.max(this.MIN_STAT_VAL, maxStat - MaxStatGap);
-	}
-
-	static maxStatAmount(statBlock: StatGroup): number {
+	static maxStatGap(statBlock: StatGroup, isCustomPersona: boolean): number {
 		const totalPoints = Object.values(statBlock).reduce ( (a, x) => a+x, 0);
-		const MaxStatGap = Math.max(this.MAX_STAT_GAP, Math.floor(totalPoints/ 10)) ;
+		const statGapDivisor = isCustomPersona ? this.MAX_STAT_DIVISOR_CUSTOM : this.MAX_STAT_DIVISOR_WILD;
+		const MaxStatGap = Math.max(this.MINIMUM_MAX_STAT_GAP, Math.floor(totalPoints / statGapDivisor)) ;
+		return MaxStatGap;
+	}
+
+	static minStatAmount(statBlock: StatGroup, isCustomPersona: boolean) : number {
+		const maxStatGap = this.maxStatGap(statBlock, isCustomPersona);
+		const maxStat = Object.values(statBlock).reduce ( (a, x) => Math.max(a, x));
+		return Math.max(this.MIN_STAT_VAL, maxStat - maxStatGap);
+	}
+
+	static maxStatAmount(statBlock: StatGroup, isCustomPersona: boolean): number {
+		const maxStatGap = this.maxStatGap(statBlock, isCustomPersona);
 		const minStat = Object.values(statBlock).reduce ( (a, x) => Math.min(a, x));
-		return Math.min(this.MAX_STAT_VAL, minStat + MaxStatGap);
+		return Math.min(this.MAX_STAT_VAL, minStat + maxStatGap);
 	}
 
 	async autoSpendStatPoints() : Promise<StatGroup> {

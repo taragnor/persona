@@ -134,7 +134,7 @@ export class PersonaHandleBarsHelpers {
 
 		"canGainLevels": function (actor: PersonaActor) : boolean {
 			if (!actor.isValidCombatant()) {return false;}
-			return actor.isRealPC() || actor.isNPCAlly() || actor.isDMon() || actor.isPersona();
+			return actor.isRealPC() || actor.isNPCAlly() || actor.isDMon() || (actor.isShadow() && actor.isPersona());
 		},
 		"isShadow" : (actor: PersonaActor) => {
 			return actor.isShadow();
@@ -912,7 +912,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"isPersona": function (actor: PersonaActor) : boolean {
-			return actor.isPersona();
+			return actor.isShadow() && actor.isPersona();
 		},
 
 		"isOwner": function (actor: PersonaActor) : boolean {
