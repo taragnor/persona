@@ -22,8 +22,10 @@ export class PersonaCombatStats {
 	static BASE_AILMENT_DEFENSE = 18 as const;
 	static INSTANT_DEATH_DIVISOR = 5 as const;
 	static CRITICAL_HIT_DIVISOR = 5 as const;
-	static FAVORED_STAT_WEIGHT_INCREASE = 1.666 as const;
-	static DISFAVORED_STAT_WEIGHT_DECREASE = 0.4 as const;
+	static FAVORED_STAT_WEIGHT_INCREASE = 2.0 as const;
+	static DISFAVORED_STAT_WEIGHT_DECREASE = 0.5 as const;
+	static FAVORED_TAROT_STAT_WEIGHT_INCREASE = 1.33 as const;
+	static DISFAVORED_TAROT_STAT_WEIGHT_DECREASE = 0.8 as const;
 	static MAX_STAT_DIVISOR_WILD = 7 as const;
 	static MAX_STAT_DIVISOR_CUSTOM = 10 as const;
 
@@ -189,12 +191,16 @@ export class PersonaCombatStats {
 		const favored = [
 			this.combatStats.preferred_stat,
 			this.combatStats.preferred_stat2,
+		];
+		const tarotFavored = [
 			persona?.tarot?.system?.preferred_stat ?? "",
+		];
+		const tarotDisfavored = [
+			persona?.tarot?.system?.disfavored_stat ?? "",
 		];
 		const disfavored = [
 			this.combatStats.disfavored_stat,
 			this.combatStats.disfavored_stat2,
-			persona?.tarot?.system?.disfavored_stat ?? "",
 		];
 		const stIncreases : StatGroup = {
 			str: 0,
@@ -203,7 +209,6 @@ export class PersonaCombatStats {
 			agi: 0,
 			luk: 0
 		};
-
 		const stblk : StatGroup = {
 			...this.combatStats.stats
 		};
@@ -215,6 +220,8 @@ export class PersonaCombatStats {
 					let weight = 1;
 					weight = favored.reduce( (acc, x)=> x == st ? acc * PersonaCombatStats.FAVORED_STAT_WEIGHT_INCREASE : acc, weight);
 					weight = disfavored.reduce( (acc, x)=> x == st ? acc * PersonaCombatStats.DISFAVORED_STAT_WEIGHT_DECREASE : acc, weight);
+					weight = tarotFavored.reduce( (acc, x)=> x == st ? acc * PersonaCombatStats.FAVORED_TAROT_STAT_WEIGHT_INCREASE : acc, weight);
+					weight = tarotDisfavored.reduce( (acc, x)=> x == st ? acc * PersonaCombatStats.DISFAVORED_TAROT_STAT_WEIGHT_DECREASE : acc, weight);
 					return {
 						weight,
 						item: st
