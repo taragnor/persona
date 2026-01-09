@@ -4454,7 +4454,9 @@ get startingLevel() : number {
 	if (cVal != undefined) {
 		return cVal;
 	}
-	if (!this.isShadow()) {return this.cache.startingLevel = 0;}
+	if (!this.isShadow()) {
+		return this.cache.startingLevel = 0;
+	}
 	const lvl = this.system.personaConversion.startingLevel;
 	if (lvl == 1) {return this.cache.startingLevel = this.level;}
 	return this.cache.startingLevel = lvl;
