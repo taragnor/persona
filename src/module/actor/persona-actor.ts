@@ -2053,6 +2053,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			.sort( (a,b) => a.displayedName.localeCompare(b.displayedName));
 	}
 
+	/** treasure multiplier on PCs wealth gained */
 	get treasureMultiplier () : number {
 		if (!this.isValidCombatant()) {return 1;}
 		switch (this.system.type) {
