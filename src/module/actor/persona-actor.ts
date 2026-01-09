@@ -2321,7 +2321,7 @@ isCustomPersona(this: ValidAttackers): boolean {
 		this.isShadow()
 		&& this.isPersona()
 		&& (	this.hasTag("custom-persona") || this.hasTag("lone-persona"));
-	const PC = this.isPC() || this.isNPCAlly();
+	const PC = this.isPC();
 	return shadowPersona || PC;
 }
 
